@@ -24,7 +24,7 @@ int main(int argc, char **argv)
   PetscCall(MatCreate(PETSC_COMM_WORLD, &A));
   PetscCall(MatSetSizes(A, PETSC_DECIDE, PETSC_DECIDE, N, M));
   PetscCall(MatSetType(A, MATAIJ));
-  nza = (PetscInt)(.3 * M); /* num of nozeros in each row of A */
+  nza = (PetscInt)(.3 * M); /* num of nonzeros in each row of A */
   PetscCall(MatSeqAIJSetPreallocation(A, nza, NULL));
   PetscCall(MatMPIAIJSetPreallocation(A, nza, NULL, nza, NULL));
   PetscCall(MatSetRandom(A, r));

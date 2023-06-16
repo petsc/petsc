@@ -604,7 +604,7 @@ static PetscErrorCode PCSetUp_MPI(PC pc)
     PetscCallMPI(MPI_Bcast(&request, 1, MPIU_ENUM, 0, MPI_COMM_WORLD));
     PetscCall(PCMPISetMat(pc));
   } else {
-    PetscCall(PetscInfo((PetscObject)pc, "Matrix has only changed nozero values\n"));
+    PetscCall(PetscInfo((PetscObject)pc, "Matrix has only changed nonzero values\n"));
     request = PCMPI_UPDATE_MAT_VALUES;
     PetscCallMPI(MPI_Bcast(&request, 1, MPIU_ENUM, 0, MPI_COMM_WORLD));
     PetscCall(PCMPIUpdateMatValues(pc));

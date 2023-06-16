@@ -6123,8 +6123,8 @@ PETSC_INTERN PetscErrorCode MatProductSetFromOptions_MPIDense_MPIAIJ(Mat C)
 
   Input Parameters:
 
-    j1,rowBegin1,rowEnd1,perm1,jmap1: describe the first set of nonzeros (Set1)
-    j2,rowBegin2,rowEnd2,perm2,jmap2: describe the second set of nonzeros (Set2)
+    j1,rowBegin1,rowEnd1,jmap1: describe the first set of nonzeros (Set1)
+    j2,rowBegin2,rowEnd2,jmap2: describe the second set of nonzeros (Set2)
 
     mat: both sets' nonzeros are on m rows, where m is the number of local rows of the matrix mat
 
@@ -6247,9 +6247,9 @@ static PetscErrorCode MatSplitEntries_Internal(Mat mat, PetscCount n, const Pets
   PetscCall(PetscLayoutGetRange(mat->cmap, &cstart, &cend));
   m = rend - rstart;
 
-  for (k = 0; k < n; k++) {
+  /* Skip negative rows */
+  for (k = 0; k < n; k++)
     if (i[k] >= 0) break;
-  } /* Skip negative rows */
 
   /* Process [k,n): sort and partition each local row into diag and offdiag portions,
      fill rowBegin[], rowMid[], rowEnd[], and count Atot, Btot, Annz, Bnnz.
@@ -6259,8 +6259,10 @@ static PetscErrorCode MatSplitEntries_Internal(Mat mat, PetscCount n, const Pets
     /* Entries in [k,s) are in one row. Shift diagonal block col indices so that diag is ahead of offdiag after sorting the row */
     for (s = k; s < n; s++)
       if (i[s] != row) break;
+
+    /* Shift diag columns to range of [-PETSC_MAX_INT, -1] */
     for (p = k; p < s; p++) {
-      if (j[p] >= cstart && j[p] < cend) j[p] -= PETSC_MAX_INT; /* Shift diag columns to range of [-PETSC_MAX_INT, -1]  */
+      if (j[p] >= cstart && j[p] < cend) j[p] -= PETSC_MAX_INT;
       else PetscAssert((j[p] >= 0) && (j[p] <= mat->cmap->N), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Column index %" PetscInt_FMT " is out of range", j[p]);
     }
     PetscCall(PetscSortIntWithCountArray(s - k, j + k, perm + k));
@@ -6273,16 +6275,17 @@ static PetscErrorCode MatSplitEntries_Internal(Mat mat, PetscCount n, const Pets
     Atot += mid - k;
     Btot += s - mid;
 
-    /* Count unique nonzeros of this diag/offdiag row */
+    /* Count unique nonzeros of this diag row */
     for (p = k; p < mid;) {
       col = j[p];
       do {
-        j[p] += PETSC_MAX_INT;
+        j[p] += PETSC_MAX_INT; /* Revert the modified diagonal indices */
         p++;
-      } while (p < mid && j[p] == col); /* Revert the modified diagonal indices */
+      } while (p < mid && j[p] == col);
       Annz++;
     }
 
+    /* Count unique nonzeros of this offdiag row */
     for (p = mid; p < s;) {
       col = j[p];
       do {
@@ -6350,7 +6353,7 @@ static PetscErrorCode MatSplitEntries_Internal(Mat mat, PetscCount n, const Pets
     nnz1: number of unique nonzeros in a set that was used to produce imap[], jmap[]
     nnz:  number of unique nonzeros in the merged matrix
     imap[nnz1]: i-th nonzero in the set is the imap[i]-th nonzero in the merged matrix
-    jmap[nnz1+1]: i-th nonzeron in the set has jmap[i+1] - jmap[i] repeats in the set
+    jmap[nnz1+1]: i-th nonzero in the set has jmap[i+1] - jmap[i] repeats in the set
 
   Output Parameter: (memory is allocated by the caller)
     jmap_new[nnz+1]: i-th nonzero in the merged matrix has jmap_new[i+1] - jmap_new[i] repeats in the set
@@ -6454,20 +6457,14 @@ PetscErrorCode MatSetPreallocationCOO_MPIAIJ(Mat mat, PetscCount coo_n, PetscInt
 
   /* Sort by row; after that, [0,k) have ignored entries, [k,rem) have local rows and [rem,n1) have remote rows */
   PetscCall(PetscSortIntWithIntCountArrayPair(n1, i1, j1, perm1));
-  for (k = 0; k < n1; k++) {
+
+  /* Advance k to the first entry we need to take care of */
+  for (k = 0; k < n1; k++)
     if (i1[k] > PETSC_MIN_INT) break;
-  }                                                                               /* Advance k to the first entry we need to take care of */
+  PetscInt i1start = k;
+
   PetscCall(PetscSortedIntUpperBound(i1, k, n1, rend - 1 - PETSC_MAX_INT, &rem)); /* rem is upper bound of the last local row */
   for (; k < rem; k++) i1[k] += PETSC_MAX_INT;                                    /* Revert row indices of local rows*/
-
-  /*           Split local rows into diag/offdiag portions                      */
-  PetscCount *rowBegin1, *rowMid1, *rowEnd1;
-  PetscCount *Ajmap1, *Aperm1, *Bjmap1, *Bperm1, *Cperm1;
-  PetscCount  Annz1, Bnnz1, Atot1, Btot1;
-
-  PetscCall(PetscCalloc3(m, &rowBegin1, m, &rowMid1, m, &rowEnd1));
-  PetscCall(PetscMalloc1(n1 - rem, &Cperm1));
-  PetscCall(MatSplitEntries_Internal(mat, rem, i1, j1, perm1, rowBegin1, rowMid1, rowEnd1, &Atot1, &Aperm1, &Annz1, &Ajmap1, &Btot1, &Bperm1, &Bnnz1, &Bjmap1));
 
   /*           Send remote rows to their owner                                  */
   /* Find which rows should be sent to which remote ranks*/
@@ -6551,9 +6548,6 @@ PetscErrorCode MatSetPreallocationCOO_MPIAIJ(Mat mat, PetscCount coo_n, PetscInt
   }
   PetscCall(PetscSFSetGraph(sf2, nroots, nleaves, NULL, PETSC_OWN_POINTER, iremote, PETSC_OWN_POINTER));
 
-  /* sf2 only sends contiguous leafdata to contiguous rootdata. We record the permutation which will be used to fill leafdata */
-  PetscCall(PetscArraycpy(Cperm1, perm1 + rem, n1 - rem));
-
   /* Send the remote COOs to their owner */
   PetscInt    n2 = nroots, *i2, *j2; /* Buffers for received COOs from other ranks, along with a permutation array */
   PetscCount *perm2;                 /* Though PetscInt is enough for remote entries, we use PetscCount here as we want to reuse MatSplitEntries_Internal() */
@@ -6570,12 +6564,63 @@ PetscErrorCode MatSetPreallocationCOO_MPIAIJ(Mat mat, PetscCount coo_n, PetscInt
   for (k = 0; k < n2; k++) perm2[k] = k;
   PetscCall(PetscSortIntWithIntCountArrayPair(n2, i2, j2, perm2));
 
-  /* Split received COOs into diag/offdiag portions                 */
+  /* sf2 only sends contiguous leafdata to contiguous rootdata. We record the permutation which will be used to fill leafdata */
+  PetscCount *Cperm1;
+  PetscCall(PetscMalloc1(nleaves, &Cperm1));
+  PetscCall(PetscArraycpy(Cperm1, perm1 + rem, nleaves));
+
+  /* Support for HYPRE matrices, kind of a hack.
+     Swap min column with diagonal so that diagonal values will go first */
+  PetscBool   hypre;
+  const char *name;
+  PetscCall(PetscObjectGetName((PetscObject)mat, &name));
+  PetscCall(PetscStrcmp("_internal_COO_mat_for_hypre", name, &hypre));
+  if (hypre) {
+    PetscInt *minj;
+    PetscBT   hasdiag;
+
+    PetscCall(PetscBTCreate(m, &hasdiag));
+    PetscCall(PetscMalloc1(m, &minj));
+    for (k = 0; k < m; k++) minj[k] = PETSC_MAX_INT;
+    for (k = i1start; k < rem; k++) {
+      if (j1[k] < cstart || j1[k] >= cend) continue;
+      const PetscInt rindex = i1[k] - rstart;
+      if ((j1[k] - cstart) == rindex) PetscCall(PetscBTSet(hasdiag, rindex));
+      minj[rindex] = PetscMin(minj[rindex], j1[k]);
+    }
+    for (k = 0; k < n2; k++) {
+      if (j2[k] < cstart || j2[k] >= cend) continue;
+      const PetscInt rindex = i2[k] - rstart;
+      if ((j2[k] - cstart) == rindex) PetscCall(PetscBTSet(hasdiag, rindex));
+      minj[rindex] = PetscMin(minj[rindex], j2[k]);
+    }
+    for (k = i1start; k < rem; k++) {
+      const PetscInt rindex = i1[k] - rstart;
+      if (j1[k] < cstart || j1[k] >= cend || !PetscBTLookup(hasdiag, rindex)) continue;
+      if (j1[k] == minj[rindex]) j1[k] = i1[k] + (cstart - rstart);
+      else if ((j1[k] - cstart) == rindex) j1[k] = minj[rindex];
+    }
+    for (k = 0; k < n2; k++) {
+      const PetscInt rindex = i2[k] - rstart;
+      if (j2[k] < cstart || j2[k] >= cend || !PetscBTLookup(hasdiag, rindex)) continue;
+      if (j2[k] == minj[rindex]) j2[k] = i2[k] + (cstart - rstart);
+      else if ((j2[k] - cstart) == rindex) j2[k] = minj[rindex];
+    }
+    PetscCall(PetscBTDestroy(&hasdiag));
+    PetscCall(PetscFree(minj));
+  }
+
+  /* Split local COOs and received COOs into diag/offdiag portions */
+  PetscCount *rowBegin1, *rowMid1, *rowEnd1;
+  PetscCount *Ajmap1, *Aperm1, *Bjmap1, *Bperm1;
+  PetscCount  Annz1, Bnnz1, Atot1, Btot1;
   PetscCount *rowBegin2, *rowMid2, *rowEnd2;
   PetscCount *Ajmap2, *Aperm2, *Bjmap2, *Bperm2;
   PetscCount  Annz2, Bnnz2, Atot2, Btot2;
 
+  PetscCall(PetscCalloc3(m, &rowBegin1, m, &rowMid1, m, &rowEnd1));
   PetscCall(PetscCalloc3(m, &rowBegin2, m, &rowMid2, m, &rowEnd2));
+  PetscCall(MatSplitEntries_Internal(mat, rem, i1, j1, perm1, rowBegin1, rowMid1, rowEnd1, &Atot1, &Aperm1, &Annz1, &Ajmap1, &Btot1, &Bperm1, &Bnnz1, &Bjmap1));
   PetscCall(MatSplitEntries_Internal(mat, n2, i2, j2, perm2, rowBegin2, rowMid2, rowEnd2, &Atot2, &Aperm2, &Annz2, &Ajmap2, &Btot2, &Bperm2, &Bnnz2, &Bjmap2));
 
   /* Merge local COOs with received COOs: diag with diag, offdiag with offdiag */

@@ -1398,7 +1398,7 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(Mat P, Mat 
   PetscCall(PetscFree(buf_s));
 
   /* (5) compute the local portion of C      */
-  /* set initial free space to be Crmax, sufficient for holding nozeros in each row of C */
+  /* set initial free space to be Crmax, sufficient for holding nonzeros in each row of C */
   PetscCall(PetscFreeSpaceGet(Crmax, &free_space));
   current_space = free_space;
 

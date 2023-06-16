@@ -22,8 +22,8 @@
 
 static PetscErrorCode MatHYPRE_CreateFromMat(Mat, Mat_HYPRE *);
 static PetscErrorCode MatHYPRE_IJMatrixPreallocate(Mat, Mat, HYPRE_IJMatrix);
-static PetscErrorCode MatHYPRE_IJMatrixFastCopy_MPIAIJ(Mat, HYPRE_IJMatrix);
-static PetscErrorCode MatHYPRE_IJMatrixFastCopy_SeqAIJ(Mat, HYPRE_IJMatrix);
+static PetscErrorCode MatHYPRE_IJMatrixCopyIJ_MPIAIJ(Mat, HYPRE_IJMatrix);
+static PetscErrorCode MatHYPRE_IJMatrixCopyIJ_SeqAIJ(Mat, HYPRE_IJMatrix);
 static PetscErrorCode MatHYPRE_MultKernel_Private(Mat, HYPRE_Complex, Vec, HYPRE_Complex, Vec, PetscBool);
 static PetscErrorCode hypre_array_destroy(void *);
 static PetscErrorCode MatSetValues_HYPRE(Mat, PetscInt, const PetscInt[], PetscInt, const PetscInt[], const PetscScalar[], InsertMode ins);
@@ -90,6 +90,10 @@ static PetscErrorCode MatHYPRE_CreateFromMat(Mat A, Mat_HYPRE *hA)
   cstart = A->cmap->rstart;
   cend   = A->cmap->rend;
   PetscHYPREInitialize();
+  if (hA->ij) {
+    if (!hA->inner_free) hypre_IJMatrixObject(hA->ij) = NULL;
+    PetscCallExternal(HYPRE_IJMatrixDestroy, hA->ij);
+  }
   PetscCallExternal(HYPRE_IJMatrixCreate, hA->comm, rstart, rend - 1, cstart, cend - 1, &hA->ij);
   PetscCallExternal(HYPRE_IJMatrixSetObjectType, hA->ij, HYPRE_PARCSR);
   {
@@ -122,12 +126,9 @@ static PetscErrorCode MatHYPRE_CreateFromMat(Mat A, Mat_HYPRE *hA)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MatHYPRE_IJMatrixCopy(Mat A, HYPRE_IJMatrix ij)
+static PetscErrorCode MatHYPRE_IJMatrixCopyIJ(Mat A, HYPRE_IJMatrix ij)
 {
-  PetscInt           i, rstart, rend, ncols, nr, nc;
-  const PetscScalar *values;
-  const PetscInt    *cols;
-  PetscBool          flg;
+  PetscBool flg;
 
   PetscFunctionBegin;
 #if PETSC_PKG_HYPRE_VERSION_LT(2, 19, 0)
@@ -136,35 +137,19 @@ static PetscErrorCode MatHYPRE_IJMatrixCopy(Mat A, HYPRE_IJMatrix ij)
   PetscCallExternal(HYPRE_IJMatrixInitialize_v2, ij, HYPRE_MEMORY_HOST);
 #endif
   PetscCall(PetscObjectBaseTypeCompare((PetscObject)A, MATMPIAIJ, &flg));
-  PetscCall(MatGetSize(A, &nr, &nc));
-  if (flg && nr == nc) {
-    PetscCall(MatHYPRE_IJMatrixFastCopy_MPIAIJ(A, ij));
+  if (flg) {
+    PetscCall(MatHYPRE_IJMatrixCopyIJ_MPIAIJ(A, ij));
     PetscFunctionReturn(PETSC_SUCCESS);
   }
   PetscCall(PetscObjectBaseTypeCompare((PetscObject)A, MATSEQAIJ, &flg));
   if (flg) {
-    PetscCall(MatHYPRE_IJMatrixFastCopy_SeqAIJ(A, ij));
+    PetscCall(MatHYPRE_IJMatrixCopyIJ_SeqAIJ(A, ij));
     PetscFunctionReturn(PETSC_SUCCESS);
   }
-
-  /* Do not need Aux since we have done precise i[],j[] allocation in MatHYPRE_CreateFromMat() */
-  hypre_AuxParCSRMatrixNeedAux((hypre_AuxParCSRMatrix *)hypre_IJMatrixTranslator(ij)) = 0;
-
-  PetscCall(MatGetOwnershipRange(A, &rstart, &rend));
-  for (i = rstart; i < rend; i++) {
-    PetscCall(MatGetRow(A, i, &ncols, &cols, &values));
-    if (ncols) {
-      HYPRE_Int nc = (HYPRE_Int)ncols;
-
-      PetscCheck((PetscInt)nc == ncols, PETSC_COMM_SELF, PETSC_ERR_SUP, "Hypre overflow! number of columns %" PetscInt_FMT " for row %" PetscInt_FMT, ncols, i);
-      PetscCallExternal(HYPRE_IJMatrixSetValues, ij, 1, &nc, (HYPRE_BigInt *)&i, (HYPRE_BigInt *)cols, (HYPRE_Complex *)values);
-    }
-    PetscCall(MatRestoreRow(A, i, &ncols, &cols, &values));
-  }
-  PetscFunctionReturn(PETSC_SUCCESS);
+  PetscCheck(PETSC_FALSE, PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "No support for matrix type %s", ((PetscObject)A)->type_name);
 }
 
-static PetscErrorCode MatHYPRE_IJMatrixFastCopy_SeqAIJ(Mat A, HYPRE_IJMatrix ij)
+static PetscErrorCode MatHYPRE_IJMatrixCopyIJ_SeqAIJ(Mat A, HYPRE_IJMatrix ij)
 {
   Mat_SeqAIJ            *pdiag = (Mat_SeqAIJ *)A->data;
   HYPRE_Int              type;
@@ -172,7 +157,6 @@ static PetscErrorCode MatHYPRE_IJMatrixFastCopy_SeqAIJ(Mat A, HYPRE_IJMatrix ij)
   hypre_AuxParCSRMatrix *aux_matrix;
   hypre_CSRMatrix       *hdiag;
   PetscBool              sameint = (PetscBool)(sizeof(PetscInt) == sizeof(HYPRE_Int));
-  const PetscScalar     *pa;
 
   PetscFunctionBegin;
   PetscCallExternal(HYPRE_IJMatrixGetObjectType, ij, &type);
@@ -192,16 +176,12 @@ static PetscErrorCode MatHYPRE_IJMatrixFastCopy_SeqAIJ(Mat A, HYPRE_IJMatrix ij)
     for (i = 0; i < pdiag->nz; i++) hdiag->j[i] = (HYPRE_Int)pdiag->j[i];
   }
 
-  PetscCall(MatSeqAIJGetArrayRead(A, &pa));
-  PetscCall(PetscArraycpy(hdiag->data, pa, pdiag->nz));
-  PetscCall(MatSeqAIJRestoreArrayRead(A, &pa));
-
   aux_matrix                               = (hypre_AuxParCSRMatrix *)hypre_IJMatrixTranslator(ij);
   hypre_AuxParCSRMatrixNeedAux(aux_matrix) = 0;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MatHYPRE_IJMatrixFastCopy_MPIAIJ(Mat A, HYPRE_IJMatrix ij)
+static PetscErrorCode MatHYPRE_IJMatrixCopyIJ_MPIAIJ(Mat A, HYPRE_IJMatrix ij)
 {
   Mat_MPIAIJ            *pA = (Mat_MPIAIJ *)A->data;
   Mat_SeqAIJ            *pdiag, *poffd;
@@ -211,7 +191,6 @@ static PetscErrorCode MatHYPRE_IJMatrixFastCopy_MPIAIJ(Mat A, HYPRE_IJMatrix ij)
   hypre_AuxParCSRMatrix *aux_matrix;
   hypre_CSRMatrix       *hdiag, *hoffd;
   PetscBool              sameint = (PetscBool)(sizeof(PetscInt) == sizeof(HYPRE_Int));
-  const PetscScalar     *pa;
 
   PetscFunctionBegin;
   pdiag = (Mat_SeqAIJ *)pA->A->data;
@@ -225,15 +204,12 @@ static PetscErrorCode MatHYPRE_IJMatrixFastCopy_MPIAIJ(Mat A, HYPRE_IJMatrix ij)
   hdiag = hypre_ParCSRMatrixDiag(par_matrix);
   hoffd = hypre_ParCSRMatrixOffd(par_matrix);
 
-  /*
-       this is the Hack part where we monkey directly with the hypre datastructures
-  */
   if (sameint) {
     PetscCall(PetscArraycpy(hdiag->i, pdiag->i, pA->A->rmap->n + 1));
   } else {
     for (i = 0; i < pA->A->rmap->n + 1; i++) hdiag->i[i] = (HYPRE_Int)(pdiag->i[i]);
   }
-  /* need to shift the diag column indices (hdiag->j) back to global numbering since hypre is expecting this */
+
   hjj = hdiag->j;
   pjj = pdiag->j;
 #if PETSC_PKG_HYPRE_VERSION_GE(2, 16, 0)
@@ -241,17 +217,12 @@ static PetscErrorCode MatHYPRE_IJMatrixFastCopy_MPIAIJ(Mat A, HYPRE_IJMatrix ij)
 #else
   for (i = 0; i < pdiag->nz; i++) hjj[i] = cstart + pjj[i];
 #endif
-  PetscCall(MatSeqAIJGetArrayRead(pA->A, &pa));
-  PetscCall(PetscArraycpy(hdiag->data, pa, pdiag->nz));
-  PetscCall(MatSeqAIJRestoreArrayRead(pA->A, &pa));
   if (sameint) {
     PetscCall(PetscArraycpy(hoffd->i, poffd->i, pA->A->rmap->n + 1));
   } else {
     for (i = 0; i < pA->A->rmap->n + 1; i++) hoffd->i[i] = (HYPRE_Int)(poffd->i[i]);
   }
 
-  /* need to move the offd column indices (hoffd->j) back to global numbering since hypre is expecting this
-     If we hacked a hypre a bit more we might be able to avoid this step */
 #if PETSC_PKG_HYPRE_VERSION_GE(2, 16, 0)
   PetscCallExternal(hypre_CSRMatrixBigInitialize, hoffd);
   jj = (PetscInt *)hoffd->big_j;
@@ -260,10 +231,6 @@ static PetscErrorCode MatHYPRE_IJMatrixFastCopy_MPIAIJ(Mat A, HYPRE_IJMatrix ij)
 #endif
   pjj = poffd->j;
   for (i = 0; i < poffd->nz; i++) jj[i] = garray[pjj[i]];
-
-  PetscCall(MatSeqAIJGetArrayRead(pA->B, &pa));
-  PetscCall(PetscArraycpy(hoffd->data, pa, poffd->nz));
-  PetscCall(MatSeqAIJRestoreArrayRead(pA->B, &pa));
 
   aux_matrix                               = (hypre_AuxParCSRMatrix *)hypre_IJMatrixTranslator(ij);
   hypre_AuxParCSRMatrixNeedAux(aux_matrix) = 0;
@@ -381,36 +348,122 @@ static PetscErrorCode MatConvert_HYPRE_IS(Mat A, MatType mtype, MatReuse reuse, 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PETSC_INTERN PetscErrorCode MatConvert_AIJ_HYPRE(Mat A, MatType type, MatReuse reuse, Mat *B)
+/* Move diagonal elements of the diagonal block to the front of their row, as needed by ParCSRMatrix. So damn hacky */
+static PetscErrorCode EnsureHypreCSR_SeqAIJ(Mat A, hypre_CSRMatrix *hA)
 {
-  Mat        M = NULL;
-  Mat_HYPRE *hB;
-  MPI_Comm   comm = PetscObjectComm((PetscObject)A);
+  Mat_SeqAIJ   *aij = (Mat_SeqAIJ *)A->data;
+  PetscBool     isseqaij;
+  HYPRE_Int     tmpj, *hj;
+  HYPRE_Complex tmpv, *ha;
 
   PetscFunctionBegin;
-  if (reuse == MAT_REUSE_MATRIX) {
-    /* always destroy the old matrix and create a new memory;
-       hope this does not churn the memory too much. The problem
-       is I do not know if it is possible to put the matrix back to
-       its initial state so that we can directly copy the values
-       the second time through. */
-    hB = (Mat_HYPRE *)((*B)->data);
-    PetscCallExternal(HYPRE_IJMatrixDestroy, hB->ij);
-  } else {
+  PetscCall(PetscObjectBaseTypeCompare((PetscObject)A, MATSEQAIJ, &isseqaij));
+  PetscCheck(isseqaij, PetscObjectComm((PetscObject)A), PETSC_ERR_PLIB, "Not for type %s\n", ((PetscObject)A)->type_name);
+  hj = hypre_CSRMatrixJ(hA);
+  ha = hypre_CSRMatrixData(hA);
+#define swap_with_tmp(a, b, t) \
+  { \
+    t = a; \
+    a = b; \
+    b = t; \
+  }
+  for (PetscInt i = 0; i < A->rmap->n; i++) {
+    if (aij->diag[i] >= aij->i[i] && aij->diag[i] < aij->i[i + 1]) { /* Diagonal element of this row exists in a[] and j[] */
+      swap_with_tmp(ha[aij->i[i]], ha[aij->diag[i]], tmpv);
+      if (hj[aij->i[i]] != i) swap_with_tmp(hj[aij->i[i]], hj[aij->diag[i]], tmpj);
+    }
+  }
+#undef swap_with_tmp
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode MatHYPRE_IJMatrixCopyValues(Mat A, HYPRE_IJMatrix ij)
+{
+  HYPRE_Int           type;
+  hypre_ParCSRMatrix *par_matrix;
+  hypre_CSRMatrix    *hdiag, *hoffd;
+  PetscBool           ismpiaij;
+  Mat                 dA = A, oA = NULL;
+  PetscInt            nnz;
+  const PetscScalar  *pa;
+
+  PetscFunctionBegin;
+  PetscCallExternal(HYPRE_IJMatrixGetObjectType, ij, &type);
+  PetscCheck(type == HYPRE_PARCSR, PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "Only HYPRE_PARCSR is supported");
+  PetscCall(PetscObjectBaseTypeCompare((PetscObject)A, MATMPIAIJ, &ismpiaij));
+  if (ismpiaij) PetscCall(MatMPIAIJGetSeqAIJ(A, &dA, &oA, NULL));
+  PetscCallExternal(HYPRE_IJMatrixGetObject, ij, (void **)&par_matrix);
+
+  hdiag = hypre_ParCSRMatrixDiag(par_matrix);
+  nnz   = hypre_CSRMatrixNumNonzeros(hdiag);
+  PetscCall(MatSeqAIJGetArrayRead(dA, &pa));
+  PetscCall(PetscArraycpy(hdiag->data, pa, nnz));
+  PetscCall(MatSeqAIJRestoreArrayRead(dA, &pa));
+  if (oA) {
+    hoffd = hypre_ParCSRMatrixOffd(par_matrix);
+    nnz   = hypre_CSRMatrixNumNonzeros(hoffd);
+    PetscCall(MatSeqAIJGetArrayRead(oA, &pa));
+    PetscCall(PetscArraycpy(hoffd->data, pa, nnz));
+    PetscCall(MatSeqAIJRestoreArrayRead(dA, &pa));
+  }
+  PetscCall(EnsureHypreCSR_SeqAIJ(dA, hdiag));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+PETSC_INTERN PetscErrorCode MatConvert_AIJ_HYPRE(Mat A, MatType type, MatReuse reuse, Mat *B)
+{
+  MPI_Comm   comm = PetscObjectComm((PetscObject)A);
+  Mat        M    = NULL;
+  Mat        dA = A, oA = NULL;
+  PetscBool  ismpiaij, issbaij, isbaij;
+  Mat_HYPRE *hA;
+
+  PetscFunctionBegin;
+  PetscCall(PetscObjectTypeCompareAny((PetscObject)A, &issbaij, MATSEQSBAIJ, MATMPIBAIJ, ""));
+  PetscCall(PetscObjectTypeCompareAny((PetscObject)A, &isbaij, MATSEQBAIJ, MATMPIBAIJ, ""));
+  if (isbaij || issbaij) { /* handle BAIJ and SBAIJ */
+    PetscBool ismpi;
+    MatType   newtype;
+
+    PetscCall(PetscObjectTypeCompareAny((PetscObject)A, &ismpi, MATMPISBAIJ, MATMPIBAIJ, ""));
+    newtype = ismpi ? MATMPIAIJ : MATSEQAIJ;
+    if (reuse == MAT_REUSE_MATRIX) {
+      PetscCall(MatConvert(*B, newtype, MAT_INPLACE_MATRIX, B));
+      PetscCall(MatConvert(A, newtype, MAT_REUSE_MATRIX, B));
+      PetscCall(MatConvert(*B, MATHYPRE, MAT_INPLACE_MATRIX, B));
+    } else if (reuse == MAT_INITIAL_MATRIX) {
+      PetscCall(MatConvert(A, newtype, MAT_INITIAL_MATRIX, B));
+      PetscCall(MatConvert(*B, MATHYPRE, MAT_INPLACE_MATRIX, B));
+    } else {
+      PetscCall(MatConvert(A, newtype, MAT_INPLACE_MATRIX, &A));
+      PetscCall(MatConvert(A, MATHYPRE, MAT_INPLACE_MATRIX, &A));
+    }
+    PetscFunctionReturn(PETSC_SUCCESS);
+  }
+  PetscCall(PetscObjectBaseTypeCompare((PetscObject)A, MATMPIAIJ, &ismpiaij));
+  if (ismpiaij) PetscCall(MatMPIAIJGetSeqAIJ(A, &dA, &oA, NULL));
+  if (reuse != MAT_REUSE_MATRIX) {
     PetscCall(MatCreate(comm, &M));
     PetscCall(MatSetType(M, MATHYPRE));
     PetscCall(MatSetSizes(M, A->rmap->n, A->cmap->n, A->rmap->N, A->cmap->N));
-    hB = (Mat_HYPRE *)(M->data);
+    PetscCall(MatSetOption(M, MAT_SORTED_FULL, PETSC_TRUE));
+    PetscCall(MatSetOption(M, MAT_NO_OFF_PROC_ENTRIES, PETSC_TRUE));
+    PetscCall(PetscLayoutSetUp(M->rmap));
+    PetscCall(PetscLayoutSetUp(M->cmap));
+
+    hA = (Mat_HYPRE *)M->data;
+    PetscCall(MatHYPRE_CreateFromMat(A, hA));      /* Create hmat->ij and preallocate it */
+    PetscCall(MatHYPRE_IJMatrixCopyIJ(A, hA->ij)); /* Copy A's (a,i,j) to hmat->ij */
+    M->preallocated = PETSC_TRUE;
     if (reuse == MAT_INITIAL_MATRIX) *B = M;
-  }
-  PetscCall(MatSetOption(*B, MAT_SORTED_FULL, PETSC_TRUE)); /* "perfect" preallocation, so no need for hypre_AuxParCSRMatrixNeedAux */
-  PetscCall(MatSetOption(*B, MAT_NO_OFF_PROC_ENTRIES, PETSC_TRUE));
-  PetscCall(MatHYPRE_CreateFromMat(A, hB));
-  PetscCall(MatHYPRE_IJMatrixCopy(A, hB->ij));
+  } else M = *B;
+
+  hA = (Mat_HYPRE *)M->data;
+  PetscCall(MatHYPRE_IJMatrixCopyValues(A, hA->ij));
+  PetscCall(MatAssemblyBegin(M, MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(M, MAT_FINAL_ASSEMBLY)); /* Migrate mat to device if it is bound to. Hypre builds its own SpMV context here */
+
   if (reuse == MAT_INPLACE_MATRIX) PetscCall(MatHeaderReplace(A, &M));
-  (*B)->preallocated = PETSC_TRUE;
-  PetscCall(MatAssemblyBegin(*B, MAT_FINAL_ASSEMBLY));
-  PetscCall(MatAssemblyEnd(*B, MAT_FINAL_ASSEMBLY));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -426,6 +479,7 @@ static PetscErrorCode MatConvert_HYPRE_AIJ(Mat A, MatType mtype, MatReuse reuse,
   HYPRE_Int           type;
   PetscMPIInt         size;
   PetscBool           sameint = (PetscBool)(sizeof(PetscInt) == sizeof(HYPRE_Int));
+  PetscBool           downs = PETSC_TRUE, oowns = PETSC_TRUE;
 
   PetscFunctionBegin;
   comm = PetscObjectComm((PetscObject)A);
@@ -470,14 +524,17 @@ static PetscErrorCode MatConvert_HYPRE_AIJ(Mat A, MatType mtype, MatReuse reuse,
       PetscCall(MatSeqAIJGetArray(*B, &da));
     }
   } else { /* MAT_INPLACE_MATRIX */
-    if (!sameint) {
+    downs = (PetscBool)(hypre_CSRMatrixOwnsData(hdiag));
+    if (!sameint || !downs) {
       PetscCall(PetscMalloc1(m + 1, &dii));
       PetscCall(PetscMalloc1(dnnz, &djj));
     } else {
       dii = (PetscInt *)hypre_CSRMatrixI(hdiag);
       djj = (PetscInt *)hypre_CSRMatrixJ(hdiag);
     }
-    da = (PetscScalar *)hypre_CSRMatrixData(hdiag);
+    if (!downs) {
+      PetscCall(PetscMalloc1(dnnz, &da));
+    } else da = (PetscScalar *)hypre_CSRMatrixData(hdiag);
   }
 
   if (!sameint) {
@@ -513,17 +570,20 @@ static PetscErrorCode MatConvert_HYPRE_AIJ(Mat A, MatType mtype, MatReuse reuse,
 
       PetscCall(MatGetRowIJ(b->B, 0, PETSC_FALSE, PETSC_FALSE, &nr, (const PetscInt **)&oii, (const PetscInt **)&ojj, &done));
       PetscCheck(nr == hr, PETSC_COMM_SELF, PETSC_ERR_USER, "Cannot reuse mat: invalid number of local rows in offdiag part! %" PetscInt_FMT " != %" PetscInt_FMT, nr, hr);
-      PetscCheck(oii[nr] >= onnz, PETSC_COMM_SELF, PETSC_ERR_USER, "Cannot reuse mat: invalid number of nonzeros in offdiag part! reuse %" PetscInt_FMT " hypre %" PetscInt_FMT, oii[nr], onnz);
+      PetscCheck(oii[nr] >= onnz, PETSC_COMM_SELF, PETSC_ERR_USER, "Cannot reuse matrix: different number of nonzeros in off-diagonal part of matrix! reuse %" PetscInt_FMT " hypre %" PetscInt_FMT, oii[nr], onnz);
       PetscCall(MatSeqAIJGetArray(b->B, &oa));
     } else { /* MAT_INPLACE_MATRIX */
-      if (!sameint) {
+      oowns = (PetscBool)(hypre_CSRMatrixOwnsData(hoffd));
+      if (!sameint || !oowns) {
         PetscCall(PetscMalloc1(m + 1, &oii));
         PetscCall(PetscMalloc1(onnz, &ojj));
       } else {
         oii = (PetscInt *)hypre_CSRMatrixI(hoffd);
         ojj = (PetscInt *)hypre_CSRMatrixJ(hoffd);
       }
-      oa = (PetscScalar *)hypre_CSRMatrixData(hoffd);
+      if (!oowns) {
+        PetscCall(PetscMalloc1(onnz, &oa));
+      } else oa = (PetscScalar *)hypre_CSRMatrixData(hoffd);
     }
     if (reuse != MAT_REUSE_MATRIX) {
       if (!sameint) {
@@ -579,18 +639,25 @@ static PetscErrorCode MatConvert_HYPRE_AIJ(Mat A, MatType mtype, MatReuse reuse,
       Mat T;
 
       PetscCall(MatCreateMPIAIJWithSplitArrays(comm, m, n, PETSC_DECIDE, PETSC_DECIDE, dii, djj, da, oii, ojj, oa, &T));
-      if (sameint) { /* ownership of CSR pointers is transferred to PETSc */
+      if (sameint && downs) { /* ownership of CSR pointers is transferred to PETSc */
         hypre_CSRMatrixI(hdiag) = NULL;
         hypre_CSRMatrixJ(hdiag) = NULL;
-        hypre_CSRMatrixI(hoffd) = NULL;
-        hypre_CSRMatrixJ(hoffd) = NULL;
-      } else { /* Hack MPIAIJ -> free ij but not a */
+      } else { /* Hack MPIAIJ -> free ij but maybe not a */
         Mat_MPIAIJ *b = (Mat_MPIAIJ *)(T->data);
         Mat_SeqAIJ *d = (Mat_SeqAIJ *)(b->A->data);
-        Mat_SeqAIJ *o = (Mat_SeqAIJ *)(b->B->data);
 
         d->free_ij = PETSC_TRUE;
+        d->free_a  = downs ? PETSC_FALSE : PETSC_TRUE;
+      }
+      if (sameint && oowns) { /* ownership of CSR pointers is transferred to PETSc */
+        hypre_CSRMatrixI(hoffd) = NULL;
+        hypre_CSRMatrixJ(hoffd) = NULL;
+      } else { /* Hack MPIAIJ -> free ij but maybe not a */
+        Mat_MPIAIJ *b = (Mat_MPIAIJ *)(T->data);
+        Mat_SeqAIJ *o = (Mat_SeqAIJ *)(b->B->data);
+
         o->free_ij = PETSC_TRUE;
+        o->free_a  = oowns ? PETSC_FALSE : PETSC_TRUE;
       }
       hypre_CSRMatrixData(hdiag) = NULL;
       hypre_CSRMatrixData(hoffd) = NULL;
@@ -612,13 +679,14 @@ static PetscErrorCode MatConvert_HYPRE_AIJ(Mat A, MatType mtype, MatReuse reuse,
       Mat T;
 
       PetscCall(MatCreateSeqAIJWithArrays(comm, m, n, dii, djj, da, &T));
-      if (sameint) { /* ownership of CSR pointers is transferred to PETSc */
+      if (sameint && downs) { /* ownership of CSR pointers is transferred to PETSc */
         hypre_CSRMatrixI(hdiag) = NULL;
         hypre_CSRMatrixJ(hdiag) = NULL;
-      } else { /* free ij but not a */
+      } else { /* free ij but maybe not a */
         Mat_SeqAIJ *b = (Mat_SeqAIJ *)(T->data);
 
         b->free_ij = PETSC_TRUE;
+        b->free_a  = downs ? PETSC_FALSE : PETSC_TRUE;
       }
       hypre_CSRMatrixData(hdiag) = NULL;
       PetscCall(MatHeaderReplace(A, &T));
@@ -628,11 +696,16 @@ static PetscErrorCode MatConvert_HYPRE_AIJ(Mat A, MatType mtype, MatReuse reuse,
   /* we have to use hypre_Tfree to free the HYPRE arrays
      that PETSc now owns */
   if (reuse == MAT_INPLACE_MATRIX) {
-    PetscInt    nh;
-    void       *ptrs[6]  = {da, oa, dii, djj, oii, ojj};
     const char *names[6] = {"_hypre_csr_da", "_hypre_csr_oa", "_hypre_csr_dii", "_hypre_csr_djj", "_hypre_csr_oii", "_hypre_csr_ojj"};
-    nh                   = sameint ? 6 : 2;
-    for (i = 0; i < nh; i++) {
+    // clang-format off
+    void *ptrs[6] = {downs ? da : NULL,
+                     oowns ? oa : NULL,
+                     downs && sameint ? dii : NULL,
+                     downs && sameint ? djj : NULL,
+                     oowns && sameint ? oii : NULL,
+                     oowns && sameint ? ojj : NULL};
+    // clang-format on
+    for (i = 0; i < 6; i++) {
       PetscContainer c;
 
       PetscCall(PetscContainerCreate(comm, &c));
@@ -1299,7 +1372,7 @@ static PetscErrorCode MatAssemblyEnd_HYPRE(Mat A, MatAssemblyType mode)
   PetscCallExternal(HYPRE_IJMatrixAssemble, hA->ij);
   /* The assembly routine destroys the aux_matrix, we recreate it here by calling HYPRE_IJMatrixInitialize */
   /* If the option MAT_SORTED_FULL is set to true, the indices and values can be passed to hypre directly, so we don't need the aux_matrix */
-  if (!hA->sorted_full) {
+  if (!A->sortedfull) {
     hypre_AuxParCSRMatrix *aux_matrix;
 
     /* call destroy just to make sure we do not leak anything */
@@ -1338,18 +1411,18 @@ static PetscErrorCode MatGetArray_HYPRE(Mat A, PetscInt size, void **array)
   Mat_HYPRE *hA = (Mat_HYPRE *)A->data;
 
   PetscFunctionBegin;
-  PetscCheck(hA->available, PETSC_COMM_SELF, PETSC_ERR_ARG_NULL, "Temporary space is in use");
+  PetscCheck(hA->array_available, PETSC_COMM_SELF, PETSC_ERR_ARG_NULL, "Temporary space is in use");
 
-  if (hA->size >= size) {
+  if (hA->array_size >= size) {
     *array = hA->array;
   } else {
     PetscCall(PetscFree(hA->array));
-    hA->size = size;
-    PetscCall(PetscMalloc(hA->size, &hA->array));
+    hA->array_size = size;
+    PetscCall(PetscMalloc(hA->array_size, &hA->array));
     *array = hA->array;
   }
 
-  hA->available = PETSC_FALSE;
+  hA->array_available = PETSC_FALSE;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1358,8 +1431,8 @@ static PetscErrorCode MatRestoreArray_HYPRE(Mat A, void **array)
   Mat_HYPRE *hA = (Mat_HYPRE *)A->data;
 
   PetscFunctionBegin;
-  *array        = NULL;
-  hA->available = PETSC_TRUE;
+  *array              = NULL;
+  hA->array_available = PETSC_TRUE;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1370,6 +1443,7 @@ static PetscErrorCode MatSetValues_HYPRE(Mat A, PetscInt nr, const PetscInt rows
   HYPRE_Complex *sscr;
   PetscInt      *cscr[2];
   PetscInt       i, nzc;
+  PetscInt       rst = A->rmap->rstart, ren = A->rmap->rend;
   void          *array = NULL;
 
   PetscFunctionBegin;
@@ -1403,6 +1477,12 @@ static PetscErrorCode MatSetValues_HYPRE(Mat A, PetscInt nr, const PetscInt rows
         PetscInt  j;
         HYPRE_Int hnc = (HYPRE_Int)nzc;
 
+        if (!nzc) continue;
+        /* nonlocal values */
+        if (rows[i] < rst || rows[i] >= ren) {
+          PetscCheck(!A->nooffprocentries, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Setting off process row %" PetscInt_FMT " even though MatSetOption(,MAT_NO_OFF_PROC_ENTRIES,PETSC_TRUE) was set", rows[i]);
+          if (hA->donotstash) continue;
+        }
         PetscCheck((PetscInt)hnc == nzc, PETSC_COMM_SELF, PETSC_ERR_SUP, "Hypre overflow! number of columns %" PetscInt_FMT " for row %" PetscInt_FMT, nzc, rows[i]);
         for (j = 0; j < nzc; j++) PetscCall(PetscHYPREScalarCast(vals[cscr[1][j]], &sscr[j]));
         PetscCallExternal(HYPRE_IJMatrixAddToValues, hA->ij, 1, &hnc, (HYPRE_BigInt *)(rows + i), (HYPRE_BigInt *)cscr[0], sscr);
@@ -1410,20 +1490,22 @@ static PetscErrorCode MatSetValues_HYPRE(Mat A, PetscInt nr, const PetscInt rows
       vals += nc;
     }
   } else { /* INSERT_VALUES */
-    PetscInt rst, ren;
-
-    PetscCall(MatGetOwnershipRange(A, &rst, &ren));
     for (i = 0; i < nr; i++) {
       if (rows[i] >= 0) {
         PetscInt  j;
         HYPRE_Int hnc = (HYPRE_Int)nzc;
 
+        if (!nzc) continue;
         PetscCheck((PetscInt)hnc == nzc, PETSC_COMM_SELF, PETSC_ERR_SUP, "Hypre overflow! number of columns %" PetscInt_FMT " for row %" PetscInt_FMT, nzc, rows[i]);
         for (j = 0; j < nzc; j++) PetscCall(PetscHYPREScalarCast(vals[cscr[1][j]], &sscr[j]));
         /* nonlocal values */
-        if (rows[i] < rst || rows[i] >= ren) PetscCall(MatStashValuesRow_Private(&A->stash, rows[i], nzc, cscr[0], (PetscScalar *)sscr, PETSC_FALSE));
+        if (rows[i] < rst || rows[i] >= ren) {
+          PetscCheck(!A->nooffprocentries, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Setting off process row %" PetscInt_FMT " even though MatSetOption(,MAT_NO_OFF_PROC_ENTRIES,PETSC_TRUE) was set", rows[i]);
+          if (!hA->donotstash) PetscCall(MatStashValuesRow_Private(&A->stash, rows[i], nzc, cscr[0], (PetscScalar *)sscr, PETSC_FALSE));
+        }
         /* local values */
-        else PetscCallExternal(HYPRE_IJMatrixSetValues, hA->ij, 1, &hnc, (HYPRE_BigInt *)(rows + i), (HYPRE_BigInt *)cscr[0], sscr);
+        else
+          PetscCallExternal(HYPRE_IJMatrixSetValues, hA->ij, 1, &hnc, (HYPRE_BigInt *)(rows + i), (HYPRE_BigInt *)cscr[0], sscr);
       }
       vals += nc;
     }
@@ -1485,7 +1567,7 @@ static PetscErrorCode MatHYPRESetPreallocation_HYPRE(Mat A, PetscInt dnz, const 
     hypre_IJMatrixTranslator(hA->ij) = NULL;
     PetscCallExternal(HYPRE_IJMatrixSetDiagOffdSizes, hA->ij, hdnnz, honnz);
     aux_matrix                               = (hypre_AuxParCSRMatrix *)hypre_IJMatrixTranslator(hA->ij);
-    hypre_AuxParCSRMatrixNeedAux(aux_matrix) = !hA->sorted_full;
+    hypre_AuxParCSRMatrixNeedAux(aux_matrix) = !A->sortedfull;
   } else {
     honnz = NULL;
     PetscCallExternal(HYPRE_IJMatrixSetRowSizes, hA->ij, hdnnz);
@@ -1974,8 +2056,8 @@ static PetscErrorCode MatSetOption_HYPRE(Mat A, MatOption op, PetscBool flg)
   case MAT_NO_OFF_PROC_ENTRIES:
     if (flg) PetscCallExternal(HYPRE_IJMatrixSetMaxOffProcElmts, hA->ij, 0);
     break;
-  case MAT_SORTED_FULL:
-    hA->sorted_full = flg;
+  case MAT_IGNORE_OFF_PROC_ENTRIES:
+    hA->donotstash = flg;
     break;
   default:
     break;
@@ -2182,13 +2264,6 @@ static PetscErrorCode MatAttachCOOMat_HYPRE(Mat mat, Mat cooMat)
   hypre_CSRMatrixData(diag)     = (HYPRE_Complex *)Aa;
   hypre_CSRMatrixOwnsData(diag) = 0; /* Take ownership of (j,a) away from hypre. As a result, we need to free them on our own */
 
-  /* Copy diagonal pointers of A to device to facilitate MatSeqAIJMoveDiagonalValuesFront_SeqAIJKokkos */
-  if (hypreMemtype == HYPRE_MEMORY_DEVICE) {
-    PetscStackCallExternalVoid("hypre_TAlloc", hmat->diag = hypre_TAlloc(PetscInt, rmap->n, hypreMemtype));
-    PetscCall(MatMarkDiagonal_SeqAIJ(A)); /* We need updated diagonal positions */
-    PetscStackCallExternalVoid("hypre_TMemcpy", hypre_TMemcpy(hmat->diag, ((Mat_SeqAIJ *)A->data)->diag, PetscInt, rmap->n, hypreMemtype, HYPRE_MEMORY_HOST));
-  }
-
   if (size > 1) {
     B = ((Mat_MPIAIJ *)cooMat->data)->B;
     PetscCall(MatSeqAIJGetCSRAndMemType(B, NULL, NULL, &Ba, &petscMemtype));
@@ -2222,8 +2297,10 @@ static PetscErrorCode MatDuplicate_HYPRE(Mat A, MatDuplicateOption op, Mat *B)
   PetscCall(MatCreateFromParCSR(parcsr, MATHYPRE, cpmode, B));
   hA = (Mat_HYPRE *)A->data;
   if (hA->cooMat) {
-    /* could not simply increase the reference count of hA->cooMat, since B needs to share cooMat's data array */
-    PetscCall(MatDuplicate(hA->cooMat, MAT_DO_NOT_COPY_VALUES, &cooMat));
+    op = (op == MAT_DO_NOT_COPY_VALUES) ? op : MAT_COPY_VALUES;
+    /* Cannot simply increase the reference count of hA->cooMat, since B needs to share cooMat's data array */
+    PetscCall(MatDuplicate(hA->cooMat, op, &cooMat));
+    PetscCall(PetscObjectSetName((PetscObject)cooMat, "_internal_COO_mat_for_hypre"));
     PetscCall(MatAttachCOOMat_HYPRE(*B, cooMat));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -2239,7 +2316,7 @@ static PetscErrorCode MatSetPreallocationCOO_HYPRE(Mat mat, PetscCount coo_n, Pe
   MatType     matType = MATAIJ; /* default type of cooMat */
 
   PetscFunctionBegin;
-  /* Build an agent matrix cooMat whose type is either MATAIJ or MATAIJKOKKOS.
+  /* Build an agent matrix cooMat with AIJ format
      It has the same sparsity pattern as mat, and also shares the data array with mat. We use cooMat to do the COO work.
    */
   PetscCall(PetscObjectGetComm((PetscObject)mat, &comm));
@@ -2248,32 +2325,42 @@ static PetscErrorCode MatSetPreallocationCOO_HYPRE(Mat mat, PetscCount coo_n, Pe
   PetscCall(PetscLayoutSetUp(mat->cmap));
   PetscCall(MatGetLayouts(mat, &rmap, &cmap));
 
-  /* I do not know how hypre_ParCSRMatrix stores diagonal elements for non-square matrices, so I just give up now */
-  PetscCheck(rmap->N == cmap->N, comm, PETSC_ERR_SUP, "MATHYPRE COO cannot handle non-square matrices");
-
-#if defined(PETSC_HAVE_DEVICE)
+#if defined(PETSC_HAVE_HYPRE_DEVICE)
   if (!mat->boundtocpu) { /* mat will be on device, so will cooMat */
-  #if defined(PETSC_HAVE_KOKKOS)
-    matType = MATAIJKOKKOS;
+  #if defined(HYPRE_USING_HIP)
+    matType = MATAIJHIPSPARSE;
+  #elif defined(HYPRE_USING_CUDA)
+    matType = MATAIJCUSPARSE;
   #else
-    SETERRQ(comm, PETSC_ERR_SUP, "To support MATHYPRE COO assembly on device, we need Kokkos, e.g., --download-kokkos --download-kokkos-kernels");
+    SETERRQ(comm, PETSC_ERR_SUP, "Do not know the HYPRE device");
   #endif
   }
 #endif
 
   /* Do COO preallocation through cooMat */
   hmat = (Mat_HYPRE *)mat->data;
-  PetscCall(MatDestroy(&hmat->cooMat));
+  if (hmat->cooMat) {
+    PetscCall(MatDestroy(&hmat->cooMat));
+    PetscStackCallExternalVoid("hypre_TFree", hypre_TFree(hmat->diagJ, hmat->memType));
+    PetscStackCallExternalVoid("hypre_TFree", hypre_TFree(hmat->offdJ, hmat->memType));
+    PetscStackCallExternalVoid("hypre_TFree", hypre_TFree(hmat->diag, hmat->memType));
+  }
   PetscCall(MatCreate(comm, &cooMat));
   PetscCall(MatSetType(cooMat, matType));
   PetscCall(MatSetLayouts(cooMat, rmap, cmap));
+  PetscCall(MatSetOption(cooMat, MAT_IGNORE_OFF_PROC_ENTRIES, hmat->donotstash));
+  PetscCall(MatSetOption(cooMat, MAT_NO_OFF_PROC_ENTRIES, mat->nooffprocentries));
+
+  /* MatSetPreallocationCOO_SeqAIJ and MatSetPreallocationCOO_MPIAIJ uses this specific
+     name to automatically put the diagonal entries first */
+  PetscCall(PetscObjectSetName((PetscObject)cooMat, "_internal_COO_mat_for_hypre"));
   PetscCall(MatSetPreallocationCOO(cooMat, coo_n, coo_i, coo_j));
+  cooMat->assembled = PETSC_TRUE;
 
   /* Copy the sparsity pattern from cooMat to hypre IJMatrix hmat->ij */
   PetscCall(MatSetOption(mat, MAT_SORTED_FULL, PETSC_TRUE));
-  PetscCall(MatSetOption(mat, MAT_NO_OFF_PROC_ENTRIES, PETSC_TRUE));
-  PetscCall(MatHYPRE_CreateFromMat(cooMat, hmat));    /* Create hmat->ij and preallocate it */
-  PetscCall(MatHYPRE_IJMatrixCopy(cooMat, hmat->ij)); /* Copy A's (a,i,j) to hmat->ij. To reuse code. Copying 'a' is not really needed */
+  PetscCall(MatHYPRE_CreateFromMat(cooMat, hmat));      /* Create hmat->ij and preallocate it */
+  PetscCall(MatHYPRE_IJMatrixCopyIJ(cooMat, hmat->ij)); /* Copy A's (i,j) to hmat->ij */
 
   mat->preallocated = PETSC_TRUE;
   PetscCall(MatAssemblyBegin(mat, MAT_FINAL_ASSEMBLY));
@@ -2286,35 +2373,12 @@ static PetscErrorCode MatSetPreallocationCOO_HYPRE(Mat mat, PetscCount coo_n, Pe
 
 static PetscErrorCode MatSetValuesCOO_HYPRE(Mat mat, const PetscScalar v[], InsertMode imode)
 {
-  Mat_HYPRE  *hmat = (Mat_HYPRE *)mat->data;
-  PetscMPIInt size;
-  Mat         A;
+  Mat_HYPRE *hmat = (Mat_HYPRE *)mat->data;
 
   PetscFunctionBegin;
-  PetscCheck(hmat->cooMat, hmat->comm, PETSC_ERR_PLIB, "HYPRE COO delegate matrix has not been created yet");
-  PetscCallMPI(MPI_Comm_size(hmat->comm, &size));
+  PetscCheck(hmat->cooMat, PetscObjectComm((PetscObject)mat), PETSC_ERR_PLIB, "HYPRE COO delegate matrix has not been created yet");
   PetscCall(MatSetValuesCOO(hmat->cooMat, v, imode));
-
-  /* Move diagonal elements of the diagonal block to the front of their row, as needed by ParCSRMatrix. So damn hacky */
-  A = (size == 1) ? hmat->cooMat : ((Mat_MPIAIJ *)hmat->cooMat->data)->A;
-  if (hmat->memType == HYPRE_MEMORY_HOST) {
-    Mat_SeqAIJ  *aij = (Mat_SeqAIJ *)A->data;
-    PetscInt     i, m, *Ai = aij->i, *Adiag = aij->diag;
-    PetscScalar *Aa = aij->a, tmp;
-
-    PetscCall(MatGetSize(A, &m, NULL));
-    for (i = 0; i < m; i++) {
-      if (Adiag[i] >= Ai[i] && Adiag[i] < Ai[i + 1]) { /* Digonal element of this row exists in a[] and j[] */
-        tmp          = Aa[Ai[i]];
-        Aa[Ai[i]]    = Aa[Adiag[i]];
-        Aa[Adiag[i]] = tmp;
-      }
-    }
-  } else {
-#if defined(PETSC_HAVE_KOKKOS_KERNELS)
-    PetscCall(MatSeqAIJMoveDiagonalValuesFront_SeqAIJKokkos(A, hmat->diag));
-#endif
-  }
+  PetscCall(MatViewFromOptions(hmat->cooMat, (PetscObject)mat, "-cooMat_view"));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -2334,14 +2398,10 @@ PETSC_EXTERN PetscErrorCode MatCreate_HYPRE(Mat B)
   PetscFunctionBegin;
   PetscCall(PetscNew(&hB));
 
-  hB->inner_free  = PETSC_TRUE;
-  hB->available   = PETSC_TRUE;
-  hB->sorted_full = PETSC_FALSE; /* no assumption whether column indices are sorted or not */
-  hB->size        = 0;
-  hB->array       = NULL;
+  hB->inner_free      = PETSC_TRUE;
+  hB->array_available = PETSC_TRUE;
 
-  B->data      = (void *)hB;
-  B->assembled = PETSC_FALSE;
+  B->data = (void *)hB;
 
   PetscCall(PetscMemzero(B->ops, sizeof(struct _MatOps)));
   B->ops->mult                  = MatMult_HYPRE;
@@ -2403,6 +2463,6 @@ PETSC_EXTERN PetscErrorCode MatCreate_HYPRE(Mat B)
 static PetscErrorCode hypre_array_destroy(void *ptr)
 {
   PetscFunctionBegin;
-  hypre_TFree(ptr, HYPRE_MEMORY_HOST);
+  if (ptr) hypre_TFree(ptr, HYPRE_MEMORY_HOST);
   PetscFunctionReturn(PETSC_SUCCESS);
 }

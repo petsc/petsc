@@ -496,7 +496,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_scalable(Mat A, Mat P, PetscReal fi
   PetscCall(PetscFree(buf_s));
 
   /* (5) compute the local portion of Cmpi      */
-  /* set initial free space to be Crmax, sufficient for holding nozeros in each row of Cmpi */
+  /* set initial free space to be Crmax, sufficient for holding nonzeros in each row of Cmpi */
   PetscCall(PetscFreeSpaceGet(Crmax, &free_space));
   current_space = free_space;
 
@@ -1788,7 +1788,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A, Mat P, PetscReal fill, Mat C
   PetscCall(PetscFree(buf_s));
 
   /* (5) compute the local portion of Cmpi      */
-  /* set initial free space to be Crmax, sufficient for holding nozeros in each row of Cmpi */
+  /* set initial free space to be Crmax, sufficient for holding nonzeros in each row of Cmpi */
   PetscCall(PetscFreeSpaceGet(Crmax, &free_space));
   current_space = free_space;
 

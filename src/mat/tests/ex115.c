@@ -116,10 +116,15 @@ int main(int argc, char **args)
   }
 
   /* check conversion routines */
+  PetscCall(MatViewFromOptions(A, NULL, "-view_A"));
   PetscCall(MatConvert(A, MATHYPRE, MAT_INITIAL_MATRIX, &B));
-  PetscCall(MatConvert(A, MATHYPRE, MAT_REUSE_MATRIX, &B));
+  PetscCall(MatViewFromOptions(B, NULL, "-view_convert"));
   PetscCall(MatMultEqual(B, A, 4, &flg));
-  PetscCheck(flg, PetscObjectComm((PetscObject)A), PETSC_ERR_PLIB, "Error Mat HYPRE");
+  PetscCheck(flg, PetscObjectComm((PetscObject)A), PETSC_ERR_PLIB, "Error Mat HYPRE init");
+  PetscCall(MatConvert(A, MATHYPRE, MAT_REUSE_MATRIX, &B));
+  PetscCall(MatViewFromOptions(B, NULL, "-view_convert"));
+  PetscCall(MatMultEqual(B, A, 4, &flg));
+  PetscCheck(flg, PetscObjectComm((PetscObject)A), PETSC_ERR_PLIB, "Error Mat HYPRE reuse");
   PetscCall(MatConvert(B, MATIS, MAT_INITIAL_MATRIX, &D));
   PetscCall(MatConvert(B, MATIS, MAT_REUSE_MATRIX, &D));
   PetscCall(MatMultEqual(D, A, 4, &flg));
@@ -256,7 +261,6 @@ int main(int argc, char **args)
   }
 
   /* Check MatView */
-  PetscCall(MatViewFromOptions(A, NULL, "-view_A"));
   PetscCall(MatConvert(A, MATHYPRE, MAT_INITIAL_MATRIX, &B));
   PetscCall(MatViewFromOptions(B, NULL, "-view_B"));
 
@@ -290,6 +294,7 @@ int main(int argc, char **args)
         PetscCall(MatViewFromOptions(A, NULL, "-view_duplicate_diff"));
         PetscCall(MatViewFromOptions(B, NULL, "-view_duplicate_diff"));
         PetscCall(MatViewFromOptions(C, NULL, "-view_duplicate_diff"));
+        PetscCall(MatViewFromOptions(D, NULL, "-view_duplicate_diff"));
         SETERRQ(PetscObjectComm((PetscObject)A), PETSC_ERR_PLIB, "Error test 1 MatDuplicate/MatCopy %g (%" PetscInt_FMT ",%" PetscInt_FMT ")", err, j, i);
       }
       /* AXPY with HYPRE and HYPRE */
