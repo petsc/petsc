@@ -1,5 +1,5 @@
 -include ../../../../petscdir.mk
-#requiresdefine   'PETSC_HAVE_FORTRAN'
+#requiresdefine   'PETSC_USE_FORTRAN_BINDINGS'
 #requiresdefine   'PETSC_USING_F2003'
 
 DIRS     = fsrc

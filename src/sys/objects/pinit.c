@@ -10,7 +10,7 @@
   #include <petsc/private/valgrind/valgrind.h>
 #endif
 
-#if defined(PETSC_HAVE_FORTRAN)
+#if defined(PETSC_USE_FORTRAN_BINDINGS)
   #include <petsc/private/fortranimpl.h>
 #endif
 
@@ -970,7 +970,7 @@ PETSC_INTERN PetscErrorCode PetscInitialize_Common(const char *prog, const char 
   PetscCallMPI(MPI_Comm_create_keyval(MPI_COMM_NULL_COPY_FN, MPI_COMM_NULL_DELETE_FN, &Petsc_CreationIdx_keyval, (void *)0));
   PetscCallMPI(MPI_Comm_create_keyval(MPI_COMM_NULL_COPY_FN, MPI_COMM_NULL_DELETE_FN, &Petsc_Garbage_HMap_keyval, (void *)0));
 
-#if defined(PETSC_HAVE_FORTRAN)
+#if defined(PETSC_USE_FORTRAN_BINDINGS)
   if (ftn) PetscCall(PetscInitFortran_Private(readarguments, file, len));
   else
 #endif

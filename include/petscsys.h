@@ -2339,4 +2339,7 @@ PETSC_EXTERN PetscErrorCode PetscHasExternalPackage(const char[], PetscBool *);
 PETSC_EXTERN PetscErrorCode PCMPIServerBegin(void);
 PETSC_EXTERN PetscErrorCode PCMPIServerEnd(void);
 PETSC_EXTERN PetscErrorCode PCMPICommsDestroy(void);
+
+#define PETSC_HAVE_FORTRAN PETSC_DEPRECATED_MACRO("GCC warning \"PETSC_HAVE_FORTRAN is deprecated, use PETSC_USE_FORTRAN_BINDINGS instead (since version 3.20)\"") PETSC_USE_FORTRAN_BINDINGS
+
 #endif

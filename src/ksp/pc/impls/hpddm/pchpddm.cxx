@@ -3,7 +3,7 @@
 #include <petsc/private/petschpddm.h> /*I "petscpc.h" I*/
 #include <petsc/private/pcimpl.h>     /* this must be included after petschpddm.h so that _PCIMPL_H is not defined            */
                                       /* otherwise, it is assumed that one is compiling libhpddm_petsc => circular dependency */
-#if PetscDefined(HAVE_FORTRAN)
+#if PetscDefined(USE_FORTRAN_BINDINGS)
   #include <petsc/private/fortranimpl.h>
 #endif
 
@@ -199,7 +199,7 @@ PetscErrorCode PCHPDDMSetAuxiliaryMat(PC pc, IS is, Mat A, PetscErrorCode (*setu
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   if (is) PetscValidHeaderSpecific(is, IS_CLASSID, 2);
   if (A) PetscValidHeaderSpecific(A, MAT_CLASSID, 3);
-#if PetscDefined(HAVE_FORTRAN)
+#if PetscDefined(USE_FORTRAN_BINDINGS)
   if (reinterpret_cast<void *>(setup) == reinterpret_cast<void *>(PETSC_NULL_FUNCTION_Fortran)) setup = nullptr;
   if (setup_ctx == PETSC_NULL_INTEGER_Fortran) setup_ctx = nullptr;
 #endif

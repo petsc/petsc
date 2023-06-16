@@ -151,7 +151,7 @@ class Petsc(object):
             f = self.pkg_arch_path('lib',self.pkg_name,'conf', self.pkg_name + 'variables')
             if os.path.isfile(f):
                 self.conf.update(parse_makefile(self.pkg_arch_path('lib',self.pkg_name,'conf', self.pkg_name + 'variables')))
-        self.have_fortran = int(self.conf.get('PETSC_HAVE_FORTRAN', '0'))
+        self.have_fortran = int(self.conf.get('PETSC_USE_FORTRAN_BINDINGS', '0'))
 
     def inconf(self, key, val):
         if key in ['package', 'function', 'define']:

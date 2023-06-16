@@ -112,3 +112,4 @@ Changes: Development
 .. rubric:: Fortran:
 
 - Add ``PetscCheck()`` and ``PetscCheckA()`` for Fortran
+- Change ``PETSC_HAVE_FORTRAN`` to ``PETSC_USE_FORTRAN_BINDINGS`` to indicate if PETSc is built with Fortran bindings

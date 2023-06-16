@@ -198,7 +198,7 @@ check_build:
            ${RUN_TEST} testex100; \
            ${RUN_TEST} clean-legacy; \
          fi;
-	+@grep -E "^#define PETSC_HAVE_FORTRAN 1" ${PETSCCONF_H} | tee .ftn.log > /dev/null; \
+	+@grep -E "^#define PETSC_USE_FORTRAN_BINDINGS 1" ${PETSCCONF_H} | tee .ftn.log > /dev/null; \
          if test -s .ftn.log; then \
            cd src/snes/tutorials >/dev/null; \
            ${RUN_TEST} clean-legacy; \
@@ -297,7 +297,7 @@ check_usermakefile:
 	-@echo "Using PETSC_DIR=${PETSC_DIR} and PETSC_ARCH=${PETSC_ARCH}"
 	@cd src/snes/tutorials; ${RUN_TEST} clean-legacy
 	@cd src/snes/tutorials; ${OMAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} -f ${PETSC_DIR}/share/petsc/Makefile.user ex19
-	@grep -E "^#define PETSC_HAVE_FORTRAN 1" ${PETSCCONF_H} | tee .ftn.log > /dev/null; \
+	@grep -E "^#define PETSC_USE_FORTRAN_BINDINGS 1" ${PETSCCONF_H} | tee .ftn.log > /dev/null; \
          if test -s .ftn.log; then \
           cd src/snes/tutorials; ${OMAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} -f ${PETSC_DIR}/share/petsc/Makefile.user ex5f; \
          fi; ${RM} .ftn.log;
