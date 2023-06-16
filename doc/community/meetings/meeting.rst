@@ -28,12 +28,14 @@ simulations by scientists and engineers.
 
 Upcoming Meetings
 =================
-- The next :any:`annual PETSc meeting<2023_meeting>` will take place June 5-7, 2023 at the IIT campus in Chicago.
-- The 2024 PETSc user meeting will take place May 23,24 in Cologne, Germany.
+
+- The 2024 user meeting will take place May 23,24 in Cologne, Germany.
+- The 2025 user meeting will take place in North America. Suggestions for a meeting location?
 
 Previous Meetings
 =================
 
+- :any:`Chicago, USA; June 5-7, 2023 <2023_meeting>`
 - `Atlanta, USA; June 5-7, 2019 <https://petsc.gitlab.io/annual-meetings/2019/index.html>`__
 - `London, UK; June 4-6, 2018 <https://petsc.gitlab.io/annual-meetings/2018/index.html>`__
 - `Boulder, Colorado; June 14-16, 2017 <https://petsc.gitlab.io/annual-meetings/2017/index.html>`__

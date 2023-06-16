@@ -644,10 +644,10 @@ PetscErrorCode PetscOptionsEnd_Private(PetscOptionItems *PetscOptionsObject)
 
           list is usually something like `PCASMTypes` or some other predefined list of enum names
 
-          If the user does not supply the option at all value is NOT changed. Thus
-          you should ALWAYS initialize value if you access it without first checking if the set flag is true.
+          If the user does not supply the option at all `value` is NOT changed. Thus
+          you should ALWAYS initialize `value` if you access it without first checking if `set` is `PETSC_TRUE`.
 
-          The default/currentvalue passed into this routine does not get transferred to the output value variable automatically.
+          The `currentvalue` passed into this routine does not get transferred to the output `value` variable automatically.
 
 .seealso: `PetscOptionsGetReal()`, `PetscOptionsHasName()`, `PetscOptionsGetString()`, `PetscOptionsGetInt()`,
           `PetscOptionsGetIntArray()`, `PetscOptionsGetRealArray()`, `PetscOptionsGetBool()`,
@@ -776,10 +776,10 @@ or
    Level: beginner
 
    Notes:
-    If the user does not supply the option at all value is NOT changed. Thus
-    you should ALWAYS initialize value if you access it without first checking if the set flag is true.
+    If the user does not supply the option at all `value` is NOT changed. Thus
+    you should ALWAYS initialize `value` if you access it without first checking if `flg` is `PETSC_TRUE`.
 
-    The default/currentvalue passed into this routine does not get transferred to the output value variable automatically.
+    The `currentvalue` passed into this routine does not get transferred to the output `value` variable automatically.
 
     Must be between a `PetscOptionsBegin()` and a `PetscOptionsEnd()`
 
@@ -822,10 +822,10 @@ M*/
    Level: beginner
 
    Notes:
-    If the user does not supply the option at all value is NOT changed. Thus
-    you should ALWAYS initialize value if you access it without first checking if the set flag is true.
+    If the user does not supply the option at all `value` is NOT changed. Thus
+    you should ALWAYS initialize `value` if you access it without first checking if `flg` is `PETSC_TRUE`.
 
-    The default/currentvalue passed into this routine does not get transferred to the output value variable automatically.
+    The `currentvalue` passed into this routine does not get transferred to the output `value` variable automatically.
 
     Must be between a `PetscOptionsBegin()` and a `PetscOptionsEnd()`
 
@@ -863,15 +863,15 @@ M*/
 +  value - the integer value to return
 -  flg - `PETSC_TRUE` if found, else `PETSC_FALSE`
 
-   Notes:
-    If the user does not supply the option at all value is NOT changed. Thus
-    you should ALWAYS initialize value if you access it without first checking if the set flag is true.
+   Level: beginner
 
-    The default/currentvalue passed into this routine does not get transferred to the output value variable automatically.
+   Notes:
+    If the user does not supply the option at all `value` is NOT changed. Thus
+    you should ALWAYS initialize `value` if you access it without first checking if `flg` is `PETSC_TRUE`.
+
+    The `currentvalue` passed into this routine does not get transferred to the output `value` variable automatically.
 
     Must be between a `PetscOptionsBegin()` and a `PetscOptionsEnd()`
-
-   Level: beginner
 
 .seealso: `PetscOptionsBoundedInt()`, `PetscOptionsGetReal()`, `PetscOptionsHasName()`, `PetscOptionsGetString()`, `PetscOptionsGetInt()`,
           `PetscOptionsGetIntArray()`, `PetscOptionsGetRealArray()`, `PetscOptionsGetBool()`, `PetscOptionsRangeInt()`
@@ -933,12 +933,12 @@ PetscErrorCode PetscOptionsInt_Private(PetscOptionItems *PetscOptionsObject, con
    Notes:
     Must be between a `PetscOptionsBegin()` and a `PetscOptionsEnd()`
 
-   Even if the user provided no string (for example -optionname -someotheroption) the flag is set to PETSC_TRUE (and the string is fulled with nulls).
+   If the user provided no string (for example `-optionname` `-someotheroption`) `flg` is set to `PETSC_TRUE` (and the string is filled with nulls).
 
-          If the user does not supply the option at all value is NOT changed. Thus
-          you should ALWAYS initialize value if you access it without first checking if the set flag is true.
+          If the user does not supply the option at all `value` is NOT changed. Thus
+          you should ALWAYS initialize `value` if you access it without first checking if `flg` is `PETSC_TRUE`.
 
-          The default/currentvalue passed into this routine does not get transferred to the output value variable automatically.
+          The `currentvalue` passed into this routine does not get transferred to the output `value` variable automatically.
 
 .seealso: `PetscOptionsGetReal()`, `PetscOptionsHasName()`, `PetscOptionsGetString()`, `PetscOptionsGetInt()`,
           `PetscOptionsGetIntArray()`, `PetscOptionsGetRealArray()`, `PetscOptionsGetBool()`,
@@ -993,15 +993,15 @@ PetscErrorCode PetscOptionsString_Private(PetscOptionItems *PetscOptionsObject, 
 +  value - the value to return
 -  flg - `PETSC_TRUE` if found, else `PETSC_FALSE`
 
-   Notes:
-    If the user does not supply the option at all value is NOT changed. Thus
-    you should ALWAYS initialize value if you access it without first checking if the set flag is true.
+   Level: beginner
 
-    The default/currentvalue passed into this routine does not get transferred to the output value variable automatically.
+   Notes:
+    If the user does not supply the option at all `value` is NOT changed. Thus
+    you should ALWAYS initialize `value` if you access it without first checking if `flg` is `PETSC_TRUE`.
+
+    The `currentvalue` passed into this routine does not get transferred to the output `value` variable automatically.
 
     Must be between a `PetscOptionsBegin()` and a `PetscOptionsEnd()`
-
-   Level: beginner
 
 .seealso: `PetscOptionsGetReal()`, `PetscOptionsHasName()`, `PetscOptionsGetString()`, `PetscOptionsGetInt()`,
           `PetscOptionsGetIntArray()`, `PetscOptionsGetRealArray()`, `PetscOptionsGetBool()`,
@@ -1057,15 +1057,15 @@ PetscErrorCode PetscOptionsReal_Private(PetscOptionItems *PetscOptionsObject, co
 +  value - the value to return
 -  flg - `PETSC_TRUE` if found, else `PETSC_FALSE`
 
-   Notes:
-    If the user does not supply the option at all value is NOT changed. Thus
-    you should ALWAYS initialize value if you access it without first checking if the set flag is true.
+   Level: beginner
 
-    The default/currentvalue passed into this routine does not get transferred to the output value variable automatically.
+   Notes:
+    If the user does not supply the option at all `value` is NOT changed. Thus
+    you should ALWAYS initialize `value` if you access it without first checking if `flg` is `PETSC_TRUE`.
+
+    The `currentvalue` passed into this routine does not get transferred to the output `value` variable automatically.
 
     Must be between a `PetscOptionsBegin()` and a `PetscOptionsEnd()`
-
-   Level: beginner
 
 .seealso: `PetscOptionsGetReal()`, `PetscOptionsHasName()`, `PetscOptionsGetString()`, `PetscOptionsGetInt()`,
           `PetscOptionsGetIntArray()`, `PetscOptionsGetRealArray()`, `PetscOptionsGetBool()`,
@@ -1167,10 +1167,10 @@ PetscErrorCode PetscOptionsName_Private(PetscOptionItems *PetscOptionsObject, co
    Notes:
     Must be between a `PetscOptionsBegin()` and a `PetscOptionsEnd()`
 
-          If the user does not supply the option at all value is NOT changed. Thus
-          you should ALWAYS initialize value if you access it without first checking if the set flag is true.
+          If the user does not supply the option at all `value` is NOT changed. Thus
+          you should ALWAYS initialize `value` if you access it without first checking if the `set` flag is `PETSC_TRUE`.
 
-          The default/currentvalue passed into this routine does not get transferred to the output value variable automatically.
+          The `currentvalue` passed into this routine does not get transferred to the output `value` variable automatically.
 
    See `PetscOptionsEList()` for when the choices are given in a string array
 
@@ -1237,8 +1237,8 @@ PetscErrorCode PetscOptionsFList_Private(PetscOptionItems *PetscOptionsObject, c
    Notes:
     Must be between a `PetscOptionsBegin()` and a `PetscOptionsEnd()`
 
-         If the user does not supply the option at all value is NOT changed. Thus
-          you should ALWAYS initialize value if you access it without first checking if the set flag is true.
+         If the user does not supply the option at all `value` is NOT changed. Thus
+          you should ALWAYS initialize `value` if you access it without first checking if the `set` flag is `PETSC_TRUE`.
 
    See `PetscOptionsFList()` for when the choices are given in a `PetscFunctionList()`
 
@@ -1297,7 +1297,7 @@ PetscErrorCode PetscOptionsEList_Private(PetscOptionItems *PetscOptionsObject, c
    Notes:
     Must be between a `PetscOptionsBegin()` and a `PetscOptionsEnd()`
 
-   Must be followed by 0 or more P`etscOptionsBoolGroup()`s and `PetscOptionsBoolGroupEnd()`
+   Must be followed by 0 or more `PetscOptionsBoolGroup()`s and `PetscOptionsBoolGroupEnd()`
 
 .seealso: `PetscOptionsGetInt()`, `PetscOptionsGetReal()`,
           `PetscOptionsHasName()`, `PetscOptionsGetIntArray()`, `PetscOptionsGetRealArray()`, `PetscOptionsBool()`,
@@ -1450,19 +1450,19 @@ PetscErrorCode PetscOptionsBoolGroupEnd_Private(PetscOptionItems *PetscOptionsOb
 +  flg -` PETSC_TRUE` or `PETSC_FALSE`
 -  set - `PETSC_TRUE` if found, else `PETSC_FALSE`
 
+   Level: beginner
+
    Notes:
        TRUE, true, YES, yes, nostring, and 1 all translate to `PETSC_TRUE`
        FALSE, false, NO, no, and 0 all translate to `PETSC_FALSE`
 
-      If the option is given, but no value is provided, then flg and set are both given the value `PETSC_TRUE`. That is -requested_bool
-     is equivalent to -requested_bool true
+      If the option is given, but no value is provided, then flg and set are both given the value `PETSC_TRUE`. That is `-requested_bool`
+     is equivalent to `-requested_bool true`
 
-       If the user does not supply the option at all flg is NOT changed. Thus
-     you should ALWAYS initialize the flg if you access it without first checking if the set flag is true.
+       If the user does not supply the option at all `flg` is NOT changed. Thus
+     you should ALWAYS initialize the `flg` variable if you access it without first checking if the `set` flag is `PETSC_TRUE`.
 
     Must be between a `PetscOptionsBegin()` and a `PetscOptionsEnd()`
-
-   Level: beginner
 
 .seealso: `PetscOptionsGetReal()`, `PetscOptionsHasName()`, `PetscOptionsGetString()`, `PetscOptionsGetInt()`,
           `PetscOptionsGetIntArray()`, `PetscOptionsGetRealArray()`, `PetscOptionsGetBool()`,
@@ -1518,6 +1518,7 @@ PetscErrorCode PetscOptionsBool_Private(PetscOptionItems *PetscOptionsObject, co
 
    Level: beginner
 
+   Note:
    Must be between a `PetscOptionsBegin()` and a `PetscOptionsEnd()`
 
 .seealso: `PetscOptionsGetInt()`, `PetscOptionsGetReal()`,
@@ -1576,6 +1577,7 @@ PetscErrorCode PetscOptionsRealArray_Private(PetscOptionItems *PetscOptionsObjec
 
    Level: beginner
 
+   Note:
    Must be between a `PetscOptionsBegin()` and a `PetscOptionsEnd()`
 
 .seealso: `PetscOptionsGetInt()`, `PetscOptionsGetReal()`,
@@ -1760,7 +1762,7 @@ PetscErrorCode PetscOptionsStringArray_Private(PetscOptionItems *PetscOptionsObj
    Level: beginner
 
    Notes:
-   The user should pass in an array of doubles
+   The user should pass in an array of `PetscBool`
 
    Must be between a `PetscOptionsBegin()` and a `PetscOptionsEnd()`
 
