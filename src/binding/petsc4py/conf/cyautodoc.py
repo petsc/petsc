@@ -140,7 +140,7 @@ class EmbedSignature(CythonTransform):
         return func_doc
 
     def _fmt_relative_position(self, pos):
-        return ':'.join((str(pos[0].get_filenametable_entry()), str(pos[1])))
+        return 'Source code at ' + ':'.join((str(pos[0].get_filenametable_entry()), str(pos[1])))
 
     def _embed_signature(self, signature, pos, node_doc):
         pos = self._fmt_relative_position(pos)

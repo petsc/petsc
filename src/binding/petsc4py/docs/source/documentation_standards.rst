@@ -20,8 +20,9 @@ to be preferred over "Get" in this sentence. A blank line must follow this
 description.
 
 If the corresponding C API documentation lists a function as being collective,
-then this information must be repeated on the next line of the docstring.  E.g.
-"Not collective.", "Logically collective on X.", "Collective."
+then this information must be repeated on the next line of the docstring.
+Valid strings are: "Not collective.", "Logically collective.", "Collective.",
+or "Neighborwise collective.".
 
 The initial description section can contain more information if this is useful.
 In particular, if there is a PETSc manual chapter about a class, then this

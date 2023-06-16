@@ -41,7 +41,7 @@ cdef class DMPlex(DM):
         return self
 
     def createFromCellList(self, dim: int, cells: Sequence[int], coords: Sequence[float], interpolate: bool | None = True, comm: Comm | None = None) -> Self:
-        """Create `DMPlex` from a list of vertices for each cell (common mesh generator output).
+        """Create a `DMPlex` from a list of vertices for each cell.
 
         Collective.
 
@@ -96,7 +96,7 @@ cdef class DMPlex(DM):
 
     def createBoxMesh(self, faces: Sequence[int], lower: Sequence[float] | None = (0,0,0), upper: Sequence[float] | None = (1,1,1),
                       simplex: bool | None = True, periodic: Sequence | str | int | bool | None = False, interpolate: bool | None = True, comm: Comm | None = None) -> Self:
-        """Create a mesh on the tensor product of unit intervals (box) using simplices or tensor cells (hexahedra).
+        """Create a mesh on the tensor product of intervals.
 
         Collective.
 
@@ -146,7 +146,7 @@ cdef class DMPlex(DM):
 
     def createBoxSurfaceMesh(self, faces: Sequence[int], lower: Sequence[float] | None = (0,0,0), upper: Sequence[float] | None = (1,1,1),
                              interpolate: bool | None = True, comm: Comm | None = None) -> Self:
-        """Create a mesh on the surface of the tensor product of unit intervals (box) using tensor cells (hexahedra).
+        """Create a mesh on the surface of a box mesh using tensor cells.
 
         Collective.
 
@@ -376,7 +376,7 @@ cdef class DMPlex(DM):
         return self
 
     def createCohesiveSubmesh(self, hasLagrange: bool, value: int) -> DMPlex:
-        """Extract from this `DMPlex` with cohesive cells the hypersurface defined by one face of the cells.
+        """Extract the hypersurface defined by one face of the cohesive cells.
 
         Parameters
         ----------
@@ -514,7 +514,7 @@ cdef class DMPlex(DM):
         return array_i(ncone, icone)
 
     def setCone(self, p: int, cone: Sequence[int], orientation: Sequence[int] | None = None) -> None:
-        """Set the points on the in-edges for this point in the DAG; that is these are the points that cover the specific point.
+        """Set the points on the in-edges for this point in the DAG.
 
         Not collective.
 
@@ -794,7 +794,7 @@ cdef class DMPlex(DM):
         return array_i(nsupp, isupp)
 
     def setSupport(self, p: int, supp: Sequence[int]) -> None:
-        """Set the points on the out-edges for this point in the DAG, that is the list of points that this point covers.
+        """Set the points on the out-edges for this point in the DAG.
 
         Not collective.
 
@@ -823,7 +823,7 @@ cdef class DMPlex(DM):
         CHKERR( DMPlexSetSupport(self.dm, cp, isupp) )
 
     def getMaxSizes(self) -> tuple[int, int]:
-        """Return the maximum number of in-edges (cone) and out-edges (support) for any point in the DAG.
+        """Return the maximum number of in-edges and out-edges of the DAG.
 
         Not collective.
 
@@ -1109,7 +1109,7 @@ cdef class DMPlex(DM):
             CHKERR( DMPlexRestoreJoin(self.dm, numPoints, ipoints, &numCoveringPoints, &coveringPoints) )
 
     def getTransitiveClosure(self, p: int, useCone: bool | None = True) -> tuple[ArrayInt, ArrayInt]:
-        """Return the points and point orientations on the transitive closure of the in-edges or out-edges for this point in the DAG.
+        """Return the points and orientations on the transitive closure of this point.
 
         Not collective.
 
@@ -1370,7 +1370,7 @@ cdef class DMPlex(DM):
         CHKERR( DMPlexMarkBoundaryFaces(self.dm, ival, clbl) )
 
     def labelComplete(self, DMLabel label) -> None:
-        """Starting with a label marking points on a surface, add the transitive closure to the surface.
+        """Add the transitive closure to the surface.
 
         Parameters
         ----------
@@ -1385,7 +1385,7 @@ cdef class DMPlex(DM):
         CHKERR( DMPlexLabelComplete(self.dm, label.dmlabel) )
 
     def labelCohesiveComplete(self, DMLabel label, DMLabel bdlabel, bdvalue: int, flip: bool, DMPlex subdm) -> None:
-        """Starting with a label marking points on an internal surface, add all other mesh pieces to complete the surface.
+        """Add all other mesh pieces to complete the surface.
 
         Parameters
         ----------
@@ -1498,7 +1498,7 @@ cdef class DMPlex(DM):
         return part
 
     def rebalanceSharedPoints(self, entityDepth: int | None = 0, useInitialGuess: bool | None = True, parallel: bool | None = True) -> bool:
-        """Redistribute points in the plex that are shared in order to achieve better balancing.
+        """Redistribute shared points in order to achieve better balancing.
 
         Parameters
         ----------
@@ -1599,7 +1599,7 @@ cdef class DMPlex(DM):
         return sf
 
     def isDistributed(self) -> bool:
-        """Find out whether this `DMPlex` is distributed, i.e. more than one rank owns some points.
+        """Return the flag indicating if the mesh is distributed.
 
         Collective.
 
@@ -1613,7 +1613,7 @@ cdef class DMPlex(DM):
         return toBool(flag)
 
     def isSimplex(self) -> bool:
-        """Is the first cell in this mesh a simplex?
+        """Return the flag indicating if the first cell is a simplex.
 
         See Also
         --------
@@ -1734,7 +1734,7 @@ cdef class DMPlex(DM):
 
     def distributeField(self, SF sf, Section sec, Vec vec,
                         Section newsec=None, Vec newvec=None) -> tuple[Section, Vec]:
-        """Distribute field data to match a given `SF`, usually the `SF` from mesh distribution.
+        """Distribute field data with a with a given `SF`.
 
         Collective.
 
@@ -2001,7 +2001,7 @@ cdef class DMPlex(DM):
         return toInt(start), toInt(end)
 
     def createClosureIndex(self, Section sec or None) -> None:
-        """Calculate an index for the given `Section` for the closure operation on the `DMPlex`.
+        """Calculate an index for ``sec`` for the closure operation.
 
         Not collective.
 
@@ -2320,7 +2320,7 @@ cdef class DMPlex(DM):
         CHKERR( DMPlexMetricSetRestrictAnisotropyFirst(self.dm, bval) )
 
     def metricRestrictAnisotropyFirst(self) -> bool:
-        """Return the flag indicating whether anisotropy is restricted before or after normalization.
+        """Return ``true`` if anisotropy is restricted before normalization.
 
         See Also
         --------
@@ -2333,7 +2333,7 @@ cdef class DMPlex(DM):
         return toBool(restrictAnisotropyFirst)
 
     def metricSetNoInsertion(self, noInsert: bool) -> None:
-        """Set the flag indicating whether node insertion and deletion should be turned off.
+        """Set the flag indicating whether node insertion should be turned off.
 
         Parameters
         ----------
@@ -3020,7 +3020,7 @@ cdef class DMPlex(DM):
         return metricInt
 
     def computeGradientClementInterpolant(self, Vec locX, Vec locC) -> Vec:
-        """Compute and return the L2 projection of the cellwise gradient of a function onto P1.
+        """Return the L2 projection of the cellwise gradient of a function onto P1.
 
         Collective.
 

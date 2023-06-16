@@ -552,7 +552,7 @@ cdef class IS(Object):
     def equal(self, IS iset) -> bool:
         """Return whether the index sets have the same set of indices or not.
 
-        Collective on ``self``.
+        Collective.
 
         Parameters
         ----------
@@ -590,7 +590,7 @@ cdef class IS(Object):
     def expand(self, IS iset) -> IS:
         """Compute the union of two (possibly unsorted) index sets.
 
-        Collective on ``self``.
+        Collective.
 
         To compute the union, `expand` concatenates the two index sets
         and removes any duplicates.

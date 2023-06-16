@@ -673,7 +673,7 @@ cdef class TS(Object):
     def getRHSJacobian(self) -> tuple[Mat, Mat, TSRHSJacobian]:
         """Return the Jacobian and the function used to compute them.
 
-        Not collective, but parallel objects are returned if `TS` is parallel.
+        Not collective.
 
         See Also
         --------
@@ -846,7 +846,9 @@ cdef class TS(Object):
                          Mat J, Mat P=None, imex: bool=False) -> None:
         """Evaluate the Jacobian of the DAE.
 
-        Collective. If ``F(t,U,Udot)=0`` is the DAE, the required Jacobian is
+        Collective.
+
+        If ``F(t,U,Udot)=0`` is the DAE, the required Jacobian is
         ``dF/dU + shift*dF/dUdot``
 
         Parameters
@@ -1063,7 +1065,9 @@ cdef class TS(Object):
         Mat P=None) -> None:
         """Evaluate the Jacobian of the DAE.
 
-        Collective. If ``F(t,U,V,A)=0`` is the DAE, the required Jacobian is ``dF/dU + v dF/dV + a dF/dA``.
+        Collective.
+
+        If ``F(t,U,V,A)=0`` is the DAE, the required Jacobian is ``dF/dU + v dF/dV + a dF/dA``.
 
         Parameters
         ----------
@@ -1151,8 +1155,9 @@ cdef class TS(Object):
     def getSolution(self) -> Vec:
         """Return the solution at the present timestep.
 
-        Not collective, but the vector is parallel if the `TS` is parallel. It
-        is valid to call this routine inside the function that you are
+        Not collective.
+
+        It is valid to call this routine inside the function that you are
         evaluating in order to move to the new timestep. This vector is not
         changed until the solution at the next timestep has been calculated.
 
@@ -1188,10 +1193,11 @@ cdef class TS(Object):
     def getSolution2(self) -> tuple[Vec, Vec]:
         """Return the solution and time derivative at the present timestep.
 
-        Not collective, but vectors are parallel if `TS` is parallel. It is
-        valid to call this routine inside the function that you are evaluating
-        in order to move to the new timestep. These vectors are not changed
-        until the solution at the next timestep has been calculated.
+        Not collective.
+
+        It is valid to call this routine inside the function that you are
+        evaluating in order to move to the new timestep. These vectors are not
+        changed until the solution at the next timestep has been calculated.
 
         See Also
         --------
@@ -1210,7 +1216,9 @@ cdef class TS(Object):
     def setTimeSpan(self, tspan: Sequence[float]) -> None:
         """Set the time span.
 
-        Collective. The solution will be computed and stored for each time
+        Collective.
+
+        The solution will be computed and stored for each time
         requested in the span. The times must be all increasing and correspond
         to the intermediate points for time integration.
         `ExactFinalTime.MATCHSTEP` must be used to make the last time step in
@@ -1308,7 +1316,9 @@ cdef class TS(Object):
     def getDM(self) -> DM:
         """Return the `DM` associated with the `TS`.
 
-        Not collective. Only valid if nonlinear solvers or preconditioners are
+        Not collective.
+
+        Only valid if nonlinear solvers or preconditioners are
         used which use the `DM`.
 
         See Also
@@ -1363,7 +1373,9 @@ cdef class TS(Object):
     def getTime(self) -> float:
         """Return the time of the most recently completed step.
 
-        Not collective. When called during time step evaluation (e.g. during
+        Not collective.
+
+        When called during time step evaluation (e.g. during
         residual evaluation or via hooks set using `setPreStep` or
         `setPostStep`), the time returned is at the start of the step.
 
@@ -1393,7 +1405,9 @@ cdef class TS(Object):
     def getSolveTime(self) -> float:
         """Return the time after a call to `solve`.
 
-        Not collective. This time corresponds to the final time set with
+        Not collective.
+
+        This time corresponds to the final time set with
         `setMaxTime`.
 
         See Also
@@ -1440,7 +1454,9 @@ cdef class TS(Object):
     def setStepNumber(self, step_number: int) -> None:
         """Set the number of steps completed.
 
-        Logically collective. For most uses of the `TS` solvers the user need
+        Logically collective.
+
+        For most uses of the `TS` solvers the user need
         not explicitly call `setStepNumber`, as the step counter is
         appropriately updated in `solve`/`step`/`rollBack`. Power users may call
         this routine to reinitialize timestepping by setting the step counter to
@@ -1501,7 +1517,9 @@ cdef class TS(Object):
     def getMaxTime(self) -> float:
         """Return the maximum (final) time.
 
-        Not collective. Defaults to 5.
+        Not collective.
+
+        Defaults to ``5``.
 
         See Also
         --------
@@ -1515,7 +1533,9 @@ cdef class TS(Object):
     def setMaxSteps(self, max_steps: int) -> None:
         """Set the maximum number of steps to use.
 
-        Logically collective. Defaults to 5000.
+        Logically collective.
+
+        Defaults to ``5000``.
 
         Parameters
         ----------
@@ -1547,7 +1567,9 @@ cdef class TS(Object):
     def getSNESIterations(self) -> int:
         """Return the total number of nonlinear iterations used by the `TS`.
 
-        Not collective. This counter is reset to zero for each successive call
+        Not collective.
+
+        This counter is reset to zero for each successive call
         to `solve`.
 
         See Also
@@ -1562,7 +1584,9 @@ cdef class TS(Object):
     def getKSPIterations(self) -> int:
         """Return the total number of linear iterations used by the `TS`.
 
-        Not collective. This counter is reset to zero for each successive call
+        Not collective.
+
+        This counter is reset to zero for each successive call
         to `solve`.
 
         See Also
@@ -1604,7 +1628,9 @@ cdef class TS(Object):
     def getStepRejections(self) -> int:
         """Return the total number of rejected steps.
 
-        Not collective. This counter is reset to zero for each successive call
+        Not collective.
+
+        This counter is reset to zero for each successive call
         to `solve`.
 
         See Also
@@ -1642,7 +1668,9 @@ cdef class TS(Object):
     def getSNESFailures(self) -> int:
         """Return the total number of failed `SNES` solves in the `TS`.
 
-        Not collective. This counter is reset to zero for each successive call
+        Not collective.
+
+        This counter is reset to zero for each successive call
         to `solve`.
 
         See Also
@@ -1716,7 +1744,7 @@ cdef class TS(Object):
         CHKERR( TSSetTolerances(self.ts, ratol, vatol, rrtol, vrtol) )
 
     def getTolerances(self) ->tuple[float,float]:
-        """Return the tolerances for local truncation error when using adaptive controller.
+        """Return the tolerances for local truncation error.
 
         Logically collective.
 
@@ -1774,7 +1802,9 @@ cdef class TS(Object):
     def setConvergedReason(self, reason: ConvergedReason) -> None:
         """Set the reason for handling the convergence of `solve`.
 
-        Logically collective. Can only be called when `solve` is active and
+        Logically collective.
+
+        Can only be called when `solve` is active and
         ``reason`` must contain common value.
 
         Parameters
@@ -1793,7 +1823,9 @@ cdef class TS(Object):
     def getConvergedReason(self) -> ConvergedReason:
         """Return the reason the `TS` step was stopped.
 
-        Not collective. Can only be called once `solve` is complete.
+        Not collective.
+
+        Can only be called once `solve` is complete.
 
         See Also
         --------
@@ -1950,7 +1982,9 @@ cdef class TS(Object):
     def setEventTolerances(self, tol: float=None, vtol: Sequence[float]=None) -> None:
         """Set tolerances for event zero crossings when using event handler.
 
-        Logically collective. ``setEventHandler`` must have already been called.
+        Logically collective.
+
+        ``setEventHandler`` must have already been called.
 
         Parameters
         ----------
@@ -2103,7 +2137,9 @@ cdef class TS(Object):
     def step(self) -> None:
         """Take one step.
 
-        Collective. The preferred interface for the `TS` solvers is `solve`. If
+        Collective.
+
+        The preferred interface for the `TS` solvers is `solve`. If
         you need to execute code at the beginning or ending of each step, use
         `setPreStep` and `setPostStep` respectively.
 
@@ -2117,7 +2153,9 @@ cdef class TS(Object):
     def restartStep(self) -> None:
         """Flag the solver to restart the next step.
 
-        Collective. Multistep methods like TSBDF or Runge-Kutta methods with
+        Collective.
+
+        Multistep methods like TSBDF or Runge-Kutta methods with
         FSAL property require restarting the solver in the event of
         discontinuities. These discontinuities may be introduced as a
         consequence of explicitly modifications to the solution vector (which
@@ -2186,7 +2224,7 @@ cdef class TS(Object):
         CHKERR( TSInterpolate(self.ts, rval, u.vec) )
 
     def setStepLimits(self, hmin: float, hmax: float) -> None:
-        """Set the minimum and maximum step sizes to be considered by the time step controller.
+        """Set the minimum and maximum allowed step sizes.
 
         Logically collective.
 
@@ -2213,7 +2251,7 @@ cdef class TS(Object):
         CHKERR( TSAdaptSetStepLimits(tsadapt, hminr, hmaxr) )
 
     def getStepLimits(self) -> tuple[float,float]:
-        """Return the minimum and maximum time step size to be used by the time step controller.
+        """Return the minimum and maximum allowed time step sizes.
 
         See Also
         --------
@@ -2232,7 +2270,9 @@ cdef class TS(Object):
     def setSaveTrajectory(self) -> None:
         """Enable to save solutions as an internal `TS` trajectory.
 
-        Collective. This routine should be called after all `TS` options have
+        Collective.
+
+        This routine should be called after all `TS` options have
         been set.
 
         Notes
@@ -2560,7 +2600,7 @@ cdef class TS(Object):
         return self
 
     def setPythonContext(self, context: Any) -> None:
-        """Set the instance of the Python class implementing the required Python methods.
+        """Set the instance of the class implementing the required Python methods.
 
         Not collective.
 
@@ -2572,7 +2612,7 @@ cdef class TS(Object):
         CHKERR( TSPythonSetContext(self.ts, <void*>context) )
 
     def getPythonContext(self) -> Any:
-        """Return the instance of the Python class implementing the required Python methods.
+        """Return the instance of the class implementing the required Python methods.
 
         Not collective.
 
@@ -2709,7 +2749,9 @@ cdef class TS(Object):
         gamma: float | None=None) -> None:
         """Set the algorithmic parameters for `Type.ALPHA`.
 
-        Logically collective. Users should call `setAlphaRadius`.
+        Logically collective.
+
+        Users should call `setAlphaRadius`.
 
         Parameters
         ----------

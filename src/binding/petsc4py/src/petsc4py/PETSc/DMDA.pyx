@@ -618,7 +618,7 @@ cdef class DMDA(DM):
         return toOwnershipRanges(dim, m, n, p, lx, ly, lz)
 
     def getCorners(self) -> tuple[tuple[int, ...], tuple[int, ...]]:
-        """Return the lower left corner and the size of the owned local region in each dimension.
+        """Return the lower left corner and the sizes of the owned local region.
 
         Not collective.
 
@@ -647,7 +647,7 @@ cdef class DMDA(DM):
                 (toInt(m), toInt(n), toInt(p))[:<Py_ssize_t>dim])
 
     def getGhostCorners(self) -> tuple[tuple[int, ...], tuple[int, ...]]:
-        """Return the lower left corner and the size of the local region in each dimension, including ghost points.
+        """Return the lower left corner and the size of the ghosted local region.
 
         Not collective.
 

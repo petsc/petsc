@@ -1065,7 +1065,7 @@ cdef class TAO(Object):
         CHKERR( TaoSetConstraintTolerances(self.tao, _catol, _crtol) )
 
     def getConstraintTolerances(self) -> tuple[float, float]:
-        """Return the constraints tolerance parameters used in the solver convergence tests.
+        """Return the constraints tolerance parameters used in the convergence tests.
 
         Not collective.
 
@@ -1342,7 +1342,7 @@ cdef class TAO(Object):
         return mat
 
     def getLMVMH0KSP(self) -> KSP:
-        """Return the linear solver for applying the inverse of the initial Hessian approximation.
+        """Return the `KSP` for the inverse of the initial Hessian approximation.
 
         Not collective.
 
@@ -1429,7 +1429,7 @@ cdef class TAO(Object):
         return reason
 
     def getSolutionNorm(self) -> tuple[float, float, float]:
-        """Return the value of the objective function, the norm of the gradient and the norm of the constraints.
+        """Return the objective function value and the norms of gradient and constraints.
 
         Not collective.
 
@@ -1629,7 +1629,7 @@ cdef class TAO(Object):
         return self
 
     def setPythonContext(self, context: Any) -> None:
-        """Set the instance of the Python class implementing the required Python methods.
+        """Set the instance of the class implementing the required Python methods.
 
         Not collective.
 
@@ -1641,7 +1641,7 @@ cdef class TAO(Object):
         CHKERR( TaoPythonSetContext(self.tao, <void*>context) )
 
     def getPythonContext(self) -> Any:
-        """Return the instance of the Python class implementing the required Python methods.
+        """Return the instance of the class implementing the required Python methods.
 
         Not collective.
 

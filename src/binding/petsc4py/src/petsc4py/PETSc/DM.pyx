@@ -802,7 +802,7 @@ cdef class DM(Object):
     def getGlobalVec(self) -> Vec:
         """Return a global vector.
 
-        Collective on `DM`.
+        Collective.
 
         See Also
         --------
@@ -1542,8 +1542,8 @@ cdef class DM(Object):
         globalsec
             Describe the global data layout.
 
-        Note
-        ----
+        Notes
+        -----
         Encoding based on the `Section` describing the data layout.
 
         See Also
@@ -2047,7 +2047,7 @@ cdef class DM(Object):
             ) -> None:
         """Set the `SNES` Jacobian evaluation function.
 
-        Not collective
+        Not collective.
 
         Parameters
         ----------

@@ -91,7 +91,7 @@ cdef class Device:
   def create(cls, dtype: Type | None = None, device_id: int = DECIDE) -> Device:
     """Create a device object.
 
-    Not Collective.
+    Not collective.
 
     Parameters
     ----------
@@ -116,7 +116,7 @@ cdef class Device:
   def destroy(self) -> None:
     """Destroy a device object.
 
-    Not Collective.
+    Not collective.
 
     See Also
     --------
@@ -128,7 +128,7 @@ cdef class Device:
   def configure(self) -> None:
     """Configure and setup a device object.
 
-    Not Collective.
+    Not collective.
 
     See Also
     --------
@@ -161,7 +161,7 @@ cdef class Device:
   def getDeviceType(self) -> str:
     """Return the type of the device.
 
-    Not Collective.
+    Not collective.
 
     See Also
     --------
@@ -176,7 +176,7 @@ cdef class Device:
   def getDeviceId(self) -> int:
     """Return the device id.
 
-    Not Collective.
+    Not collective.
 
     See Also
     --------
@@ -190,7 +190,7 @@ cdef class Device:
 
   @staticmethod
   def setDefaultType(device_type: Type | str) -> None:
-    """Set the type of device to be used as the default in subsequent calls to `create`.
+    """Set the device type to be used as the default in subsequent calls to `create`.
 
     See Also
     --------
@@ -238,7 +238,7 @@ cdef class DeviceContext(Object):
   def create(cls) -> DeviceContext:
     """Create an empty DeviceContext.
 
-    Not Collective.
+    Not collective.
 
     See Also
     --------
@@ -253,7 +253,7 @@ cdef class DeviceContext(Object):
   def getStreamType(self) -> str:
     """Return the `StreamType`.
 
-    Not Collective.
+    Not collective.
 
     See Also
     --------
@@ -268,7 +268,7 @@ cdef class DeviceContext(Object):
   def setStreamType(self, stream_type: StreamType | str) -> None:
     """Set the `StreamType`.
 
-    Not Collective.
+    Not collective.
 
     Parameters
     ----------
@@ -287,7 +287,7 @@ cdef class DeviceContext(Object):
   def getDevice(self) -> Device:
     """Get the `Device` which this instance is attached to.
 
-    Not Collective.
+    Not collective.
 
     See Also
     --------
@@ -322,7 +322,7 @@ cdef class DeviceContext(Object):
   def setUp(self) -> None:
     """Set up the internal data structures for using the device context.
 
-    Not Collective.
+    Not collective.
 
     See Also
     --------
@@ -334,7 +334,7 @@ cdef class DeviceContext(Object):
   def duplicate(self) -> DeviceContext:
     """Duplicate a the device context.
 
-    Not Collective.
+    Not collective.
 
     See Also
     --------
@@ -349,7 +349,7 @@ cdef class DeviceContext(Object):
   def idle(self) -> bool:
     """Return whether the underlying stream for the device context is idle.
 
-    Not Collective.
+    Not collective.
 
     See Also
     --------
@@ -364,7 +364,7 @@ cdef class DeviceContext(Object):
   def waitFor(self, other: DeviceContext | None) -> None:
     """Make this instance wait for ``other``.
 
-    Not Collective
+    Not collective.
 
     Parameters
     ----------
@@ -385,7 +385,7 @@ cdef class DeviceContext(Object):
   def fork(self, n: int, stream_type: DeviceContext.StreamType | str | None = None) -> list[DeviceContext]:
     """Create multiple device contexts which are all logically dependent on this one.
 
-    Not Collective.
+    Not collective.
 
     Parameters
     ----------
@@ -415,7 +415,7 @@ cdef class DeviceContext(Object):
   def join(self, join_mode: DeviceJoinMode | str, py_sub_ctxs: list[DeviceContext]) -> None:
     """Join a set of device contexts on this one.
 
-    Not Collective.
+    Not collective.
 
     Parameters
     ----------
@@ -449,7 +449,7 @@ cdef class DeviceContext(Object):
   def synchronize(self) -> None:
     """Synchronize a device context.
 
-    Not Collective.
+    Not collective.
 
     Notes
     -----
@@ -485,7 +485,7 @@ cdef class DeviceContext(Object):
   def getCurrent() -> DeviceContext:
     """Return the current device context.
 
-    Not Collective.
+    Not collective.
 
     See Also
     --------
@@ -501,7 +501,7 @@ cdef class DeviceContext(Object):
   def setCurrent(dctx: DeviceContext | None) -> None:
     """Set the current device context.
 
-    Not Collective.
+    Not collective.
 
     Parameters
     ----------
