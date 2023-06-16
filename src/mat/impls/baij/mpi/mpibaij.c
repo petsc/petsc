@@ -2811,18 +2811,25 @@ PETSC_INTERN PetscErrorCode MatConvert_MPIBAIJ_MPIAIJ(Mat A, MatType newtype, Ma
     PetscCall(MatConvert_SeqBAIJ_SeqAIJ(a->A, MATSEQAIJ, MAT_REUSE_MATRIX, &b->A));
     PetscCall(MatConvert_SeqBAIJ_SeqAIJ(a->B, MATSEQAIJ, MAT_REUSE_MATRIX, &b->B));
   } else {
-    PetscBool3 sym = A->symmetric, hermitian = A->hermitian, structurally_symmetric = A->structurally_symmetric, spd = A->spd;
+    PetscInt   *garray = a->garray;
+    Mat_SeqAIJ *bB;
+    PetscInt    bs, nnz;
     PetscCall(MatDestroy(&b->A));
     PetscCall(MatDestroy(&b->B));
-    PetscCall(MatDisAssemble_MPIBAIJ(A));
+    /* just clear out the data structure */
+    PetscCall(MatDisAssemble_MPIAIJ(B));
     PetscCall(MatConvert_SeqBAIJ_SeqAIJ(a->A, MATSEQAIJ, MAT_INITIAL_MATRIX, &b->A));
     PetscCall(MatConvert_SeqBAIJ_SeqAIJ(a->B, MATSEQAIJ, MAT_INITIAL_MATRIX, &b->B));
-    PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
-    PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
-    A->symmetric              = sym;
-    A->hermitian              = hermitian;
-    A->structurally_symmetric = structurally_symmetric;
-    A->spd                    = spd;
+
+    /* Global numbering for b->B columns */
+    bB  = (Mat_SeqAIJ *)b->B->data;
+    bs  = A->rmap->bs;
+    nnz = bB->i[A->rmap->n];
+    for (PetscInt k = 0; k < nnz; k++) {
+      PetscInt bj = bB->j[k] / bs;
+      PetscInt br = bB->j[k] % bs;
+      bB->j[k]    = garray[bj] * bs + br;
+    }
   }
   PetscCall(MatAssemblyBegin(B, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(B, MAT_FINAL_ASSEMBLY));
