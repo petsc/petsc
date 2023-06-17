@@ -155,6 +155,8 @@ cdef class Comm:
     def tompi4py(self) -> Intracomm:
         """Convert communicator to `mpi4py`.
 
+        Not collective.
+
         See Also
         --------
         mpi4py.MPI.Comm, mpi4py.MPI.Intracomm

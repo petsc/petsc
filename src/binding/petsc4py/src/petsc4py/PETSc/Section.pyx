@@ -853,6 +853,8 @@ cdef class Section(Object):
     def createGlobalSection(self, SF sf) -> Section:
         """Create a section describing the global field layout.
 
+        Collective.
+
         The section describes the global field layout using the local section
         and an `SF` describing the section point overlap.
 

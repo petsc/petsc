@@ -2542,7 +2542,8 @@ cdef class Mat(Object):
         cols
             Block column indices.
         values
-            The scalar values. A sequence of length at least ``len(rows) * len(cols) * bs * bs``,
+            The scalar values. A sequence of length at least
+            ``len(rows) * len(cols) * bs * bs``,
             where ``bs`` is the block size of the matrix.
         addv
             Insertion mode.
@@ -2802,7 +2803,8 @@ cdef class Mat(Object):
         cols
             Local block column indices.
         values
-            The scalar values. A sequence of length at least ``len(rows) * len(cols) * bs * bs``,
+            The scalar values. A sequence of length at least
+            ``len(rows) * len(cols) * bs * bs``,
             where ``bs`` is the block size of the matrix.
         addv
             Insertion mode.
@@ -5561,7 +5563,7 @@ cdef class NullSpace(Object):
         constant
             A flag to indicate the null space contains the constant vector.
         vectors
-            The sequence of vectors that span the null space, excluding the constant vector.
+            The sequence of vectors that span the null space.
         comm
             MPI communicator, defaults to `Sys.getDefaultComm`.
 
@@ -5586,10 +5588,13 @@ cdef class NullSpace(Object):
     def createRigidBody(self, Vec coords) -> Self:
         """Create rigid body modes from coordinates.
 
+        Collective.
+
         Parameters
         ----------
         coords
-            The block coordinates of each node. This requires the block size to have been set.
+            The block coordinates of each node.
+            Requires the block size to have been set.
 
         See Also
         --------
@@ -5638,6 +5643,8 @@ cdef class NullSpace(Object):
 
     def hasConstant(self) -> bool:
         """Return whether the null space contains the constant.
+
+        Not collective.
 
         See Also
         --------

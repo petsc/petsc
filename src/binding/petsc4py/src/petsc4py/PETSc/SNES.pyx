@@ -417,7 +417,8 @@ cdef class SNES(Object):
         levels
             The number of levels
         comms
-            An optional sequence of communicators of length `levels`, or `None` for the default communicator `Sys.getDefaultComm`.
+            An optional sequence of communicators of length `levels`,
+            or `None` for the default communicator `Sys.getDefaultComm`.
 
         See Also
         --------
@@ -675,6 +676,8 @@ cdef class SNES(Object):
 
     def getInitialGuess(self) -> SNESGuessFunction:
         """Return the callback to compute the initial guess.
+
+        Not collective.
 
         See Also
         --------
@@ -1787,6 +1790,8 @@ cdef class SNES(Object):
 
     def getUseEW(self) -> bool:
         """Return the flag indicating if the solver uses the Eisenstat-Walker trick.
+
+        Not Collective.
 
         See Also
         --------

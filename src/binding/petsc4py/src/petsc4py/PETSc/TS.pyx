@@ -1067,7 +1067,8 @@ cdef class TS(Object):
 
         Collective.
 
-        If ``F(t,U,V,A)=0`` is the DAE, the required Jacobian is ``dF/dU + v dF/dV + a dF/dA``.
+        If ``F(t,U,V,A)=0`` is the DAE,
+        the required Jacobian is ``dF/dU + v dF/dV + a dF/dA``.
 
         Parameters
         ----------
@@ -1282,8 +1283,7 @@ cdef class TS(Object):
     def getSNES(self) -> SNES:
         """Return the `SNES` associated with the `TS`.
 
-        Not collective but parallel if `TS` is parallel. Only valid for
-        nonlinear problems.
+        Not collective.
 
         See Also
         --------
@@ -1298,8 +1298,7 @@ cdef class TS(Object):
     def getKSP(self) -> KSP:
         """Return the `KSP` associated with the `TS`.
 
-        Not collective but parallel if `TS` is parallel. Only valid for methods
-        which use a `KSP`.
+        Not collective.
 
         See Also
         --------
@@ -2234,10 +2233,6 @@ cdef class TS(Object):
             the minimum step size
         hmax
             the maximum step size
-
-        Notes
-        -----
-        ``-ts_adapt_dt_min`` and ``-ts_adapt_dt_max`` may be used to set from the commandline.
 
         See Also
         --------

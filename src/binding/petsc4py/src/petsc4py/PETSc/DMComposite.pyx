@@ -111,7 +111,7 @@ cdef class DMComposite(DM):
             clvecs[i] = (<Vec?>lvecs[<Py_ssize_t>i]).vec
         CHKERR( DMCompositeScatterArray(self.dm, gvec.vec, clvecs) )
 
-    def gather(self, Vec gvec, imode: InsertMode, lvecs: Sequence[Vec]) -> None:
+    def gather(self, Vec gvec, imode: InsertModeSpec, lvecs: Sequence[Vec]) -> None:
         """Gather split local vectors into a coupled global vector.
 
         Collective.

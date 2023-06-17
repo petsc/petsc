@@ -159,6 +159,8 @@ cdef class AO(Object):
     ) -> Self:
         """Return an application mapping using two orderings.
 
+        Collective.
+
         The arrays ``app`` and ``petsc`` need NOT contain all the integers
         ``0`` to ``len(app)-1``, that is there CAN be "holes" in the indices.
         Use ``createBasic`` if they do not have holes for better performance.

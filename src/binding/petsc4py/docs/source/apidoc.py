@@ -110,13 +110,13 @@ def docstring(obj):
         if len(summary) > 79:
             logger.warning(f'Summary for {sig} too long.')
         # FIXME
-        # lines = docbody.split('\n')
-        # for i,l in enumerate(lines):
-        #     if len(l) > 79:
-        #         logger.warning(f'Line {i} for {sig} too long.')
-        # init = ("Collective.", "Not collective.", "Logically collective.", "Neighborwise collective.")
-        # if lines[0] not in init:
-        #    logger.warning(f'Unexpected collectiveness specification for {sig}\nFound {lines[0]}')
+        lines = docbody.split('\n')
+        for i,l in enumerate(lines):
+            if len(l) > 79:
+                logger.warning(f'Line {i} for {sig} too long.')
+        #init = ("Collective.", "Not collective.", "Logically collective.", "Neighborwise collective.")
+        #if lines[0] not in init:
+        #   logger.warning(f'Unexpected collectiveness specification for {sig}\nFound {lines[0]}')
 
     if link:
         linktxt, _, link = link.rpartition(' ')

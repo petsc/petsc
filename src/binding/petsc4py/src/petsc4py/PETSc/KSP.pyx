@@ -620,7 +620,7 @@ cdef class KSP(Object):
     def setAppCtx(self, appctx: Any) -> None:
         """Set the optional user-defined context for the linear solver.
 
-        Logically collective.
+        Not collective.
 
         Parameters
         ----------
@@ -630,14 +630,12 @@ cdef class KSP(Object):
         Notes
         -----
         The user context is a way for users to attach any information
-        to the `KSP` that they may need later when interacting with the
-
-        Use `getAppCtx` to get access to the context at a later
-        time.
+        to the `KSP` that they may need later when interacting with
+        the solver.
 
         See Also
         --------
-        petsc.KSPSetApplicationContext
+        getAppCtx
 
         """
         self.set_attr('__appctx__', appctx)
@@ -649,7 +647,7 @@ cdef class KSP(Object):
 
         See Also
         --------
-        petsc.KSPGetApplicationContext
+        setAppCtx
 
         """
         return self.get_attr('__appctx__')
@@ -2088,13 +2086,7 @@ cdef class KSP(Object):
     # --- application context ---
 
     property appctx:
-        """The solver application context.
-
-        See Also
-        --------
-        petsc.KSPGetApplicationContext, petsc.KSPSetApplicationContext
-
-        """
+        """The solver application context."""
         def __get__(self) -> Any:
             return self.getAppCtx()
         def __set__(self, value):
@@ -2103,13 +2095,7 @@ cdef class KSP(Object):
     # --- discretization space ---
 
     property dm:
-        """The solver data manager.
-
-        See Also
-        --------
-        petsc.KSPGetDM, petsc.KSPSetDM
-
-        """
+        """The solver `DM`."""
         def __get__(self) -> DM:
             return self.getDM()
         def __set__(self, value):
@@ -2118,75 +2104,38 @@ cdef class KSP(Object):
     # --- vectors ---
 
     property vec_sol:
-        """The solver solution vector.
-
-        See Also
-        --------
-        petsc.KSPGetSolution
-
-        """
+        """The solution vector."""
         def __get__(self) -> Vec:
             return self.getSolution()
 
     property vec_rhs:
-        """The solver right-hand side vector.
-
-        See Also
-        --------
-        petsc.KSPGetRhs
-
-        """
+        """The right-hand side vector."""
         def __get__(self) -> Vec:
             return self.getRhs()
 
     # --- operators ---
 
     property mat_op:
-        """The solver system matrix operator.
-
-        See Also
-        --------
-        getOperators, petsc.KSPGetOperators
-
-        """
+        """The system matrix operator."""
         def __get__(self) -> Mat:
             return self.getOperators()[0]
 
     property mat_pc:
-        """The solver preconditioner operator.
-
-        See Also
-        --------
-        getOperators, petsc.KSPGetOperators
-
-        """
+        """The preconditioner operator."""
         def __get__(self) -> Mat:
             return self.getOperators()[1]
 
     # --- initial guess ---
 
     property guess_nonzero:
-        """Whether guess is non-zero.
-
-        See Also
-        --------
-        getInitialGuessNonzero, setInitialGuessNonzero
-
-        """
+        """Whether guess is non-zero."""
         def __get__(self) -> bool:
             return self.getInitialGuessNonzero()
         def __set__(self, value):
             self.setInitialGuessNonzero(value)
 
     property guess_knoll:
-        """Whether solver uses Knoll trick.
-
-        See Also
-        --------
-        getInitialGuessKnoll, setInitialGuessKnoll
-        petsc.KSPGetInitialGuessKnoll, petsc.KSPSetInitialGuessKnoll
-
-        """
+        """Whether solver uses Knoll trick."""
         def __get__(self) -> bool:
             return self.getInitialGuessKnoll()
         def __set__(self, value):
@@ -2195,37 +2144,19 @@ cdef class KSP(Object):
     # --- preconditioner ---
 
     property pc:
-        """The preconditioner for the solver.
-
-        See Also
-        --------
-        getPC, setPC
-
-        """
+        """The `PC` of the solver."""
         def __get__(self) -> PC:
             return self.getPC()
 
     property pc_side:
-        """The side on which preconditioning is performed.
-
-        See Also
-        --------
-        getPCSide, setPCSide
-
-        """
+        """The side on which preconditioning is performed."""
         def __get__(self) -> PC.Side:
             return self.getPCSide()
         def __set__(self, value):
             self.setPCSide(value)
 
     property norm_type:
-        """The norm used by the solver.
-
-        See Also
-        --------
-        getNormType, setNormType
-
-        """
+        """The norm used by the solver."""
         def __get__(self) -> NormType:
             return self.getNormType()
         def __set__(self, value):
@@ -2234,52 +2165,28 @@ cdef class KSP(Object):
     # --- tolerances ---
 
     property rtol:
-        """The relative tolerance of the solver.
-
-        See Also
-        --------
-        getTolerances, setTolerances
-
-        """
+        """The relative tolerance of the solver."""
         def __get__(self) -> float:
             return self.getTolerances()[0]
         def __set__(self, value):
             self.setTolerances(rtol=value)
 
     property atol:
-        """The absolute tolerance of the solver.
-
-        See Also
-        --------
-        getTolerances, setTolerances
-
-        """
+        """The absolute tolerance of the solver."""
         def __get__(self) -> float:
             return self.getTolerances()[1]
         def __set__(self, value):
             self.setTolerances(atol=value)
 
     property divtol:
-        """The divergence tolerance of the solver.
-
-        See Also
-        --------
-        getTolerances, setTolerances
-
-        """
+        """The divergence tolerance of the solver."""
         def __get__(self) -> float:
             return self.getTolerances()[2]
         def __set__(self, value):
             self.setTolerances(divtol=value)
 
     property max_it:
-        """The maximum number of iteration the solver may take.
-
-        See Also
-        --------
-        getTolerances, setTolerances
-
-        """
+        """The maximum number of iteration the solver may take."""
         def __get__(self) -> int:
             return self.getTolerances()[3]
         def __set__(self, value):
@@ -2288,54 +2195,28 @@ cdef class KSP(Object):
     # --- iteration ---
 
     property its:
-        """The current number of iterations the solver has taken.
-
-        See Also
-        --------
-        getIterationNumber, setIterationNumber
-
-        """
+        """The current number of iterations the solver has taken."""
         def __get__(self) -> int:
             return self.getIterationNumber()
         def __set__(self, value):
             self.setIterationNumber(value)
 
     property norm:
-        """The the norm of the residual at the current iteration.
-
-        See Also
-        --------
-        getResidualNorm, setResidualNorm
-
-        """
+        """The norm of the residual at the current iteration."""
         def __get__(self) -> float:
             return self.getResidualNorm()
         def __set__(self, value):
             self.setResidualNorm(value)
 
     property history:
-        """The convergence history of the solver.
-
-        This is an array of norms at each iteration.
-
-        See Also
-        --------
-        getConvergenceHistory
-
-        """
+        """The convergence history of the solver."""
         def __get__(self) -> ndarray:
             return self.getConvergenceHistory()
 
     # --- convergence ---
 
     property reason:
-        """The reason for convergence.
-
-        See Also
-        --------
-        getConvergedReason, setConvergedReason
-
-        """
+        """The converged reason."""
         def __get__(self) -> KSP.ConvergedReason:
             return self.getConvergedReason()
         def __set__(self, value):

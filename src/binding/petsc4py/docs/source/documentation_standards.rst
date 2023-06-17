@@ -17,7 +17,7 @@ Docstrings are to be written in `numpydoc:format` format.
 The first line of a function or method docstring must be a short description of
 the method in imperative mood ("Return the norm of the matrix.") "Return" is
 to be preferred over "Get" in this sentence. A blank line must follow this
-description.
+description. Use one-liner descriptions for properties.
 
 If the corresponding C API documentation lists a function as being collective,
 then this information must be repeated on the next line of the docstring.

@@ -192,6 +192,8 @@ cdef class Device:
   def setDefaultType(device_type: Type | str) -> None:
     """Set the device type to be used as the default in subsequent calls to `create`.
 
+    Not collective.
+
     See Also
     --------
     create, petsc.PetscDeviceSetDefaultDeviceType
@@ -453,7 +455,8 @@ cdef class DeviceContext(Object):
 
     Notes
     -----
-    The underlying stream is considered idle after this routine returns, i.e. `idle` will return ``True``.
+    The underlying stream is considered idle after this routine returns,
+    i.e. `idle` will return ``True``.
 
     See Also
     --------
@@ -465,7 +468,7 @@ cdef class DeviceContext(Object):
   def setFromOptions(self, comm: Comm | None = None) -> None:
     """Configure the `DeviceContext` from the options database.
 
-    Collective,
+    Collective.
 
     Parameters
     ----------
@@ -506,7 +509,8 @@ cdef class DeviceContext(Object):
     Parameters
     ----------
     dctx
-        The `DeviceContext` to set as current (or `None` to use the default context).
+        The `DeviceContext` to set as current (or `None` to use
+        the default context).
 
     See Also
     --------

@@ -950,9 +950,11 @@ cdef class TAO(Object):
         gatol
             The absolute norm of the gradient. Defaults to `DEFAULT`.
         grtol
-            The relative norm of the gradient with respect to the initial norm of the objective. Defaults to `DEFAULT`.
+            The relative norm of the gradient with respect
+            to the initial norm of the objective. Defaults to `DEFAULT`.
         gttol
-            The relative norm of the gradient with respect to the initial norm of the gradient. Defaults to `DEFAULT`.
+            The relative norm of the gradient with respect
+            to the initial norm of the gradient. Defaults to `DEFAULT`.
 
         See Also
         --------
@@ -975,9 +977,11 @@ cdef class TAO(Object):
         gatol : float
             The absolute norm of the gradient.
         grtol : float
-            The relative norm of the gradient with respect to the initial norm of the objective.
+            The relative norm of the gradient with respect to
+            the initial norm of the objective.
         gttol : float
-            The relative norm of the gradient with respect to the initial norm of the gradient.
+            The relative norm of the gradient with respect to
+            the initial norm of the gradient.
 
         See Also
         --------
@@ -1218,15 +1222,20 @@ cdef class TAO(Object):
         Parameters
         ----------
         its
-            Current number of iterations or `None` to use the value stored internally by the solver.
+            Current number of iterations 
+            or `None` to use the value stored internally by the solver.
         f
-            Current value of the objective function or `None` to use the value stored internally by the solver.
+            Current value of the objective function 
+            or `None` to use the value stored internally by the solver.
         res
-            Current value of the residual norm or `None` to use the value stored internally by the solver.
+            Current value of the residual norm 
+            or `None` to use the value stored internally by the solver.
         cnorm
-            Current value of the constrains norm or `None` to use the value stored internally by the solver.
+            Current value of the constrains norm 
+            or `None` to use the value stored internally by the solver.
         step
-            Current value of the step or `None` to use the value stored internally by the solver.
+            Current value of the step 
+            or `None` to use the value stored internally by the solver.
 
         See Also
         --------

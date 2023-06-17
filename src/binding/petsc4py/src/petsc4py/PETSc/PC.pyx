@@ -1182,11 +1182,13 @@ cdef class PC(Object):
         RT_Pi_Full
             The Raviart-Thomas interpolation matrix or `None` to omit.
         RT_Pi
-            The xyz components of the Raviart-Thomas interpolation matrix, or `None` to omit.
+            The xyz components of the Raviart-Thomas interpolation matrix,
+            or `None` to omit.
         ND_Pi_Full
             The Nedelec interpolation matrix or `None` to omit.
         ND_Pi
-            The xyz components of the Nedelec interpolation matrix, or `None` to omit.
+            The xyz components of the Nedelec interpolation matrix,
+            or `None` to omit.
 
         See Also
         --------

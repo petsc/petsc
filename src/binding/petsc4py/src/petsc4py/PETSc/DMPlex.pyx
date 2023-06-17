@@ -41,7 +41,7 @@ cdef class DMPlex(DM):
         return self
 
     def createFromCellList(self, dim: int, cells: Sequence[int], coords: Sequence[float], interpolate: bool | None = True, comm: Comm | None = None) -> Self:
-        """Create a `DMPlex` from a list of vertices for each cell.
+        """Create a `DMPlex` from a list of vertices for each cell on process 0.
 
         Collective.
 
@@ -50,17 +50,18 @@ cdef class DMPlex(DM):
         dim
             The topological dimension of the mesh.
         cells
-            An array of number of cells times number of vertices on each cell, only on process 0.
+            An array of number of cells times number of vertices on each cell.
         coords
-            An array of number of vertices times spatial dimension for coordinates, only on process 0.
+            An array of number of vertices times spatial dimension for coordinates.
         interpolate
-            Flag indicating that intermediate mesh entities (faces, edges) should be created automatically.
+            Flag to interpolate the mesh.
         comm
             MPI communicator, defaults to `Sys.getDefaultComm`.
 
         See Also
         --------
-        DM, DMPlex, DMPlex.create, petsc.DMPlexCreateFromCellListPetsc
+        DM, DMPlex, DMPlex.create, DMPlex.interpolate,
+        petsc.DMPlexCreateFromCellListPetsc
 
         """
         cdef MPI_Comm  ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
@@ -103,7 +104,7 @@ cdef class DMPlex(DM):
         Parameters
         ----------
         faces
-            Number of faces per dimension, or `None` for (1,) in 1D and (2, 2) in 2D and (1, 1, 1) in 3D.
+            Number of faces per dimension, or `None` for the default.
         lower
             The lower left corner.
         upper
@@ -111,9 +112,10 @@ cdef class DMPlex(DM):
         simplex
             `True` for simplices, `False` for tensor cells.
         periodic
-            The boundary type for the X,Y,Z direction, or `None` for `DM.BoundaryType.NONE`.
+            The boundary type for the X,Y,Z direction,
+            or `None` for `DM.BoundaryType.NONE`.
         interpolate
-            Flag to create intermediate mesh pieces (edges, faces).
+            Flag to create intermediate mesh entities (edges, faces).
         comm
             MPI communicator, defaults to `Sys.getDefaultComm`.
 
@@ -153,7 +155,7 @@ cdef class DMPlex(DM):
         Parameters
         ----------
         faces
-            Number of faces per dimension, or `None` for (1,) in 1D and (2, 2) in 2D and (1, 1, 1) in 3D.
+            Number of faces per dimension, or `None` for the default.
         lower
             The lower left corner.
         upper
@@ -197,16 +199,12 @@ cdef class DMPlex(DM):
         filename
             A file name.
         plexname
-            The object name of the resulting `DMPlex`, also used for intra-datafile lookup by some formats.
+            The name of the resulting `DMPlex`,
+            also used for intra-datafile lookup by some formats.
         interpolate
             Flag to create intermediate mesh pieces (edges, faces).
         comm
             MPI communicator, defaults to `Sys.getDefaultComm`.
-
-        Notes
-        -----
-        ``-dm_plex_create_from_hdf5_xdmf`` allows for using the `Viewer.Format.HDF5_XDMF` format for reading HDF5.\n
-        ``-dm_plex_create_ prefix`` allows for passing options to the internal `Viewer`, e.g., ``-dm_plex_create_viewer_hdf5_collective``.\n
 
         See Also
         --------
@@ -355,13 +353,14 @@ cdef class DMPlex(DM):
         Notes
         -----
         ``-dm_plex_gmsh_hybrid`` forces triangular prisms to use tensor order.\n
-        ``-dm_plex_gmsh_periodic`` allows for reading Gmsh periodic section and construct a periodic `DMPlex`.\n
+        ``-dm_plex_gmsh_periodic`` allows for reading Gmsh periodic section.\n
         ``-dm_plex_gmsh_highorder`` allows for generating high-order coordinates.\n
-        ``-dm_plex_gmsh_project`` projects high-order coordinates to a different space, use the prefix ``-dm_plex_gmsh_project_`` to define the space.\n
+        ``-dm_plex_gmsh_project`` projects high-order coordinates to a different space,
+        use the prefix ``-dm_plex_gmsh_project_`` to define the space.\n
         ``-dm_plex_gmsh_use_regions`` generates labels with region names.\n
         ``-dm_plex_gmsh_mark_vertices`` adds vertices to generated labels.\n
         ``-dm_plex_gmsh_multiple_tags`` allows multiple tags for default labels.\n
-        ``-dm_plex_gmsh_spacedim <d>`` embeds space dimension, if different from topological dimension.\n
+        ``-dm_plex_gmsh_spacedim <d>`` embedding space dimension.
 
         See Also
         --------
@@ -381,7 +380,7 @@ cdef class DMPlex(DM):
         Parameters
         ----------
         hasLagrange
-            Flag indicating whether the mesh has Lagrange unknowns in the cohesive cells.
+            Flag indicating whether the mesh has Lagrange dofs in the cohesive cells.
         value
             A label value.
 
@@ -1148,7 +1147,7 @@ cdef class DMPlex(DM):
         return out[::2],out[1::2]
 
     def vecGetClosure(self, Section sec, Vec vec, p: int) -> ArrayScalar:
-        """Return an array of the values on the closure of ``point``.
+        """Return an array of values on the closure of ``p``.
 
         Not collective.
 
@@ -1183,7 +1182,8 @@ cdef class DMPlex(DM):
         Parameters
         ----------
         sec
-            The `Section` describing the layout in ``vec`` or `None` to use the default section.
+            The `Section` describing the layout in ``vec``
+            or `None` to use the default section.
         vec
             The local vector.
         point
@@ -1204,7 +1204,7 @@ cdef class DMPlex(DM):
             CHKERR( DMPlexVecRestoreClosure(self.dm, csec, vec.vec, cp, &csize, &cvals) )
         return closure
 
-    def setVecClosure(self, Section sec or None, Vec vec, point: int, values: Sequence[Scalar], addv: InsertMode | bool | None = None) -> None:
+    def setVecClosure(self, Section sec or None, Vec vec, point: int, values: Sequence[Scalar], addv: InsertModeSpec | None = None) -> None:
         """Set an array of the values on the closure of ``point``.
 
         Not collective.
@@ -1212,7 +1212,8 @@ cdef class DMPlex(DM):
         Parameters
         ----------
         sec
-            The section describing the layout in ``vec``, or `None` to use the default section.
+            The section describing the layout in ``vec``,
+            or `None` to use the default section.
         vec
             The local vector.
         point
@@ -1220,7 +1221,7 @@ cdef class DMPlex(DM):
         values
             The array of values.
         mode
-            The insert mode `InsertMode` (`InsertMode.INSERT_ALL_VALUES`, `InsertMode.ADD_ALL_VALUES`, `InsertMode.INSERT_VALUES`, `InsertMode.ADD_VALUES`, `InsertMode.INSERT_BC_VALUES`, and `InsertMode.ADD_BC_VALUES`, where `InsertMode.INSERT_ALL_VALUES` and `InsertMode.ADD_ALL_VALUES` also overwrite boundary conditions), or `True` for `InsertMode.ADD_VALUES`, `False` for `InsertMode.INSERT_VALUES`, and `None` for `InsertMode.INSERT_VALUES`.
+            The insertion mode.
 
         See Also
         --------
@@ -1236,7 +1237,7 @@ cdef class DMPlex(DM):
         CHKERR( DMPlexVecSetClosure(self.dm, csec, vec.vec, cp, cvals, im) )
 
     def setMatClosure(self, Section sec or None, Section gsec or None,
-                      Mat mat, point: int, values: Sequence[Scalar], addv: InsertMode | bool | None = None) -> None:
+                      Mat mat, point: int, values: Sequence[Scalar], addv: InsertModeSpec | None = None) -> None:
         """Set an array of the values on the closure of ``point``.
 
         Not collective.
@@ -1244,9 +1245,11 @@ cdef class DMPlex(DM):
         Parameters
         ----------
         sec
-            The section describing the layout in ``mat``, or `None` to use the default section.
+            The section describing the layout in ``mat``,
+            or `None` to use the default section.
         gsec
-            The section describing the layout in ``mat``, or `None` to use the default global section.
+            The section describing the layout in ``mat``,
+            or `None` to use the default global section.
         mat
             The matrix.
         point
@@ -1254,7 +1257,7 @@ cdef class DMPlex(DM):
         values
             The array of values.
         mode
-            The insert mode `InsertMode`, or `True` for `InsertMode.ADD_VALUES`, `False` for `InsertMode.INSERT_VALUES`, and `None` for `InsertMode.INSERT_VALUES`. `InsertMode.INSERT_ALL_VALUES` and `InsertMode.ADD_ALL_VALUES` also overwrite boundary conditions.
+            The insertion mode.
 
         See Also
         --------
@@ -1283,11 +1286,6 @@ cdef class DMPlex(DM):
             The mesh generation package name.
         interpolate
             Flag to create intermediate mesh elements.
-
-        Notes
-        -----
-        ``-dm_plex_generate <name>`` sets package to generate mesh, for example, triangle, ctetgen or tetgen.\n
-        ``-dm_generator <name>`` sets package to generate mesh, for example, triangle, ctetgen or tetgen.
 
         See Also
         --------
@@ -1351,7 +1349,8 @@ cdef class DMPlex(DM):
         Parameters
         ----------
         value
-            The marker value, or `DETERMINE` or `None` to use some value in the closure (or 1 if none are found).
+            The marker value, or `DETERMINE` or `None` to use some
+            value in the closure (or 1 if none are found).
 
         See Also
         --------
@@ -1392,17 +1391,20 @@ cdef class DMPlex(DM):
         label
             A `DMLabel` marking the surface.
         bdlabel
-            A `DMLabel` marking the vertices on the boundary which will not be duplicated.
+            A `DMLabel` marking the vertices on the boundary
+            which will not be duplicated.
         bdvalue
             Value of `DMLabel` marking the vertices on the boundary.
         flip
-            Flag to flip the submesh normal and replace points on the other side.
+            Flag to flip the submesh normal and replace points
+            on the other side.
         subdm
             The `DMPlex` associated with the label.
 
         See Also
         --------
-        DM, DMPlex, DMPlex.labelComplete, petsc.DMPlexLabelCohesiveComplete
+        DM, DMPlex, DMPlex.labelComplete
+        petsc.DMPlexLabelCohesiveComplete
 
         """
         cdef PetscBool flg = flip
@@ -1415,7 +1417,9 @@ cdef class DMPlex(DM):
         Parameters
         ----------
         useAnchors
-            Flag to use the constraints. If `True`, then constrained points are omitted from `DMPlex.getAdjacency`, and their anchor points appear in their place.
+            Flag to use the constraints.
+            If `True`, then constrained points are omitted from `DMPlex.getAdjacency`,
+            and their anchor points appear in their place.
 
         See Also
         --------
@@ -1505,21 +1509,16 @@ cdef class DMPlex(DM):
         entityDepth
             Depth of the entity to balance (e.g., 0 -> balance vertices).
         useInitialGuess
-            Whether to use the current distribution as initial guess (only used by ParMETIS).
+            Whether to use the current distribution as initial guess.
         parallel
-            Whether to use ParMETIS and do the partition in parallel or whether to gather the graph onto a single process and use METIS.
+            Whether to use ParMETIS and do the partition in parallel
+            or gather the graph onto a single process.
 
         Returns
         -------
         success : bool
-            Whether the graph partitioning was successful or not. Unsuccessful simply means no change to the partitioning.
-
-        Notes
-        -----
-        ``-dm_plex_rebalance_shared_points_parmetis`` allows for using ParMetis instead of Metis for the partitioner.\n
-        ``-dm_plex_rebalance_shared_points_use_initial_guess`` allows for using current partition to bootstrap ParMetis partition.\n
-        ``-dm_plex_rebalance_shared_points_use_mat_partitioning`` allows for using the `MatPartitioning` object to perform the partition, the prefix for those operations is ``-dm_plex_rebalance_shared_points_``.\n
-        ``-dm_plex_rebalance_shared_points_monitor`` allows for monitoring the shared points rebalance process.\n
+            Whether the graph partitioning was successful or not.
+            Unsuccessful simply means no change to the partitioning.
 
         See Also
         --------
@@ -1577,16 +1576,9 @@ cdef class DMPlex(DM):
         sf : SF
             The `SF` used for point distribution.
 
-        Notes
-        -----
-        ``-dm_plex_overlap_labels <name1,name2,...>`` sets list of overlap label names.\n
-        ``-dm_plex_overlap_values <int1,int2,...>`` sets list of overlap label values.\n
-        ``-dm_plex_overlap_exclude_label <name>`` sets label used to exclude points from overlap.\n
-        ``-dm_plex_overlap_exclude_value <int>`` sets label value used to exclude points from overlap.\n
-
         See Also
         --------
-        DM, DMPlex, SF, DMPlex.create, DMPlex.distribute, petsc_options
+        DM, DMPlex, SF, DMPlex.create, DMPlex.distribute,
         petsc.DMPlexDistributeOverlap
 
         """
@@ -1821,15 +1813,19 @@ cdef class DMPlex(DM):
         Parameters
         ----------
         numComp
-            An array of size ``numFields`` that holds the number of components for each field.
+            An array of size ``numFields`` holding the number of components per field.
         numDof
-            An array of size ``numFields*(dim+1)`` which holds the number of DOFs for each field on a mesh piece of dimension ``dim``.
+            An array of size ``numFields*(dim+1)`` holding the number of DOFs
+            per field on a mesh piece of dimension ``dim``.
         bcField
-            An array of size ``numBC`` giving the field number for each boundary condition, where ``numBC`` is the number of boundary conditions.
+            An array of size ``numBC`` giving the field number for each boundary
+            condition, where ``numBC`` is the number of boundary conditions.
         bcComps
-            An array of size ``numBC`` giving an `IS` holding the field components to which each boundary condition applies.
+            An array of size ``numBC`` giving an `IS` holding the field
+            components to which each boundary condition applies.
         bcPoints
-            An array of size ``numBC`` giving an `IS` holding the `DMPlex` points to which each boundary condition applies.
+            An array of size ``numBC`` giving an `IS` holding the `DMPlex` points
+            to which each boundary condition applies.
         perm
             Permutation of the chart.
 
@@ -2008,7 +2004,8 @@ cdef class DMPlex(DM):
         Parameters
         ----------
         sec
-            The `Section` describing the layout in the local vector, or `None` to use the default section.
+            The `Section` describing the layout in the local vector,
+            or `None` to use the default section.
 
         See Also
         --------
@@ -2103,7 +2100,7 @@ cdef class DMPlex(DM):
         Returns
         -------
         perm : IS
-            The point permutation as an `IS`, ``perm[old point number] = new point number``.
+            The point permutation.
 
         See Also
         --------
@@ -2217,7 +2214,8 @@ cdef class DMPlex(DM):
         Parameters
         ----------
         labelName
-            The name of the label specifying the boundary faces, ``"Face Sets"`` if `None`.
+            The name of the label specifying the boundary faces.
+            Defaults to ``"Face Sets"``.
 
         Returns
         -------
@@ -2743,29 +2741,6 @@ cdef class DMPlex(DM):
         field
             The field number to use.
 
-        Notes
-        -----
-        Command line options for Riemannian metrics:
-
-        ``-dm_plex_metric_isotropic`` sets whether the metric is isotropic.\n
-        ``-dm_plex_metric_uniform`` sets whether the metric is uniform.\n
-        ``-dm_plex_metric_restrict_anisotropy_first`` sets whether anisotropy should be restricted before normalization.\n
-        ``-dm_plex_metric_h_min`` sets the minimum tolerated metric magnitude.\n
-        ``-dm_plex_metric_h_max`` sets the maximum tolerated metric magnitude.\n
-        ``-dm_plex_metric_a_max`` sets the maximum tolerated anisotropy.\n
-        ``-dm_plex_metric_p`` sets the L-p normalization order.\n
-        ``-dm_plex_metric_target_complexity`` sets the target metric complexity.\n
-        ``-dm_adaptor <pragmatic/mmg/parmmg>`` allows for switching between dm adaptors to use.\n
-
-        Further options that are only relevant to Mmg and ParMmg:
-
-        ``-dm_plex_metric_gradation_factor`` sets maximum ratio by which edge lengths may grow during gradation.\n
-        ``-dm_plex_metric_num_iterations`` sets number of parallel mesh adaptation iterations for ParMmg.\n
-        ``-dm_plex_metric_no_insert`` sets whether node insertion/deletion should be turned off.\n
-        ``-dm_plex_metric_no_swap`` sets whether facet swapping should be turned off.\n
-        ``-dm_plex_metric_no_move`` sets whether node movement should be turned off.\n
-        ``-dm_plex_metric_verbosity`` sets a verbosity level from -1 (silent) to 10 (maximum).
-
         See Also
         --------
         DMPlex.metricCreateUniform, DMPlex.metricCreateIsotropic
@@ -2859,7 +2834,7 @@ cdef class DMPlex(DM):
         determinant
             The output determinant.
         restrictSizes
-            Flag indicating whether maximum/minimum metric magnitudes should be enforced.
+            Flag indicating whether maximum/minimum magnitudes should be enforced.
         restrictAnisotropy
             Flag indicating whether maximum anisotropy should be enforced.
 
@@ -2869,14 +2844,6 @@ cdef class DMPlex(DM):
             The output metric.
         determinant : Vec
             The output determinant.
-
-        Notes
-        -----
-        ``-dm_plex_metric_isotropic`` sets the flag indicating whether the metric is isotropic.\n
-        ``-dm_plex_metric_uniform`` sets the flag indicating whether the metric is uniform.\n
-        ``-dm_plex_metric_h_min`` sets the minimum tolerated metric magnitude.\n
-        ``-dm_plex_metric_h_max`` sets the maximum tolerated metric magnitude.\n
-        ``-dm_plex_metric_a_max`` sets the maximum tolerated anisotropy.\n
 
         See Also
         --------
@@ -2902,7 +2869,7 @@ cdef class DMPlex(DM):
         determinant
             The output determinant.
         restrictSizes
-            Flag indicating whether maximum/minimum metric magnitudes should be enforced.
+            Flag indicating whether maximum/minimum magnitudes should be enforced.
         restrictAnisotropy
             Flag indicating whether maximum anisotropy should be enforced.
 
@@ -2912,17 +2879,6 @@ cdef class DMPlex(DM):
             The output normalized metric.
         determinant : Vec
             The output determinant.
-
-        Notes
-        -----
-        ``-dm_plex_metric_isotropic`` sets the flag indicating whether the metric is isotropic.\n
-        ``-dm_plex_metric_uniform`` sets the flag indicating if the metric is uniform.\n
-        ``-dm_plex_metric_restrict_anisotropy_first`` sets the flag indicating if anisotropy should be restricted before normalization.\n
-        ``-dm_plex_metric_h_min`` sets the minimum tolerated metric magnitude.\n
-        ``-dm_plex_metric_h_max`` sets the maximum tolerated metric magnitude.\n
-        ``-dm_plex_metric_a_max`` sets the maximum tolerated anisotropy.\n
-        ``-dm_plex_metric_p`` sets the L-p normalization order.\n
-        ``-dm_plex_metric_target_complexity`` sets the target metric complexity.\n
 
         See Also
         --------
@@ -3126,7 +3082,8 @@ cdef class DMPlex(DM):
         viewer
             The `Viewer` to save data with.
         sectiondm
-            The `DM` that contains the global section on which ``vec`` is defined; may be the same as this `DMPlex` object.
+            The `DM` containing the global section on which ``vec``
+            is defined; may be the same as this `DMPlex` object.
         vec
             The global vector to be saved.
 
@@ -3201,7 +3158,7 @@ cdef class DMPlex(DM):
         viewer
             The `Viewer` for the saved coordinates.
         sfxc
-            The `SF` returned by `DMPlex.topologyLoad` when loading this `DMPlex` from viewer.
+            The `SF` returned by `topologyLoad`.
 
         See Also
         --------
@@ -3221,7 +3178,7 @@ cdef class DMPlex(DM):
         viewer
             The `Viewer` for the saved labels.
         sfxc
-            The `SF` returned by `DMPlex.topologyLoad` when loading this `DMPlex` from viewer.
+            The `SF` returned by `topologyLoad`.
 
         See Also
         --------
@@ -3243,7 +3200,7 @@ cdef class DMPlex(DM):
         sectiondm
             The `DM` into which the on-disk section (``sectionA``) is migrated.
         sfxc
-            The `SF` returned by `DMPlex.topologyLoad` when loading this `DMPlex` from viewer.
+            The `SF` returned by `topologyLoad`.
 
         Returns
         -------
