@@ -355,21 +355,63 @@ PetscErrorCode PCGetUseAmat(PC pc, PetscBool *flg)
 }
 
 /*@
-  PCCreate - Creates a preconditioner context, `PC`
+   PCSetKSPNestLevel - sets the amount of nesting the `KSP` that contains this `PC` has
 
-  Collective
+   Collective
 
-  Input Parameter:
-. comm - MPI communicator
+   Input Parameters:
++  pc - the `PC`
+-  level - the nest level
 
-  Output Parameter:
-. newpc - location to put the preconditioner context
+   Level: developer
 
-  Level: developer
+.seealso: [](ch_ksp), `KSPSetUp()`, `KSPSolve()`, `KSPDestroy()`, `KSP`, `KSPGMRES`, `KSPType`, `KSPGetNestLevel()`, `PCGetKSPNestLevel()`, `KSPSetNestLevel()`
+@*/
+PetscErrorCode PCSetKSPNestLevel(PC pc, PetscInt level)
+{
+  PetscFunctionBegin;
+  pc->kspnestlevel = level;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
 
-  Note:
-  The default preconditioner for sparse matrices is `PCILU` or `PCICC` with 0 fill on one process and block Jacobi (`PCBJACOBI`) with `PCILU` or `PCICC`
-  in parallel. For dense matrices it is always `PCNONE`.
+/*@
+   PCGetKSPNestLevel - gets the amount of nesting the `KSP` that contains this `PC` has
+
+   Collective
+
+   Input Parameter:
+.  pc - the `PC`
+
+   Output Parameter:
+.  level - the nest level
+
+   Level: developer
+
+.seealso: [](ch_ksp), `KSPSetUp()`, `KSPSolve()`, `KSPDestroy()`, `KSP`, `KSPGMRES`, `KSPType`, `KSPSetNestLevel()`, `PCSetKSPNestLevel()`, `KSPGetNestLevel()`
+@*/
+PetscErrorCode PCGetKSPNestLevel(PC pc, PetscInt *level)
+{
+  PetscFunctionBegin;
+  *level = pc->kspnestlevel;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+   PCCreate - Creates a preconditioner context, `PC`
+
+   Collective
+
+   Input Parameter:
+.  comm - MPI communicator
+
+   Output Parameter:
+.  pc - location to put the preconditioner context
+
+   Level: developer
+
+   Note:
+   The default preconditioner for sparse matrices is `PCILU` or `PCICC` with 0 fill on one process and block Jacobi (`PCBJACOBI`) with `PCILU` or `PCICC`
+   in parallel. For dense matrices it is always `PCNONE`.
 
 .seealso: `PC`, `PCSetUp()`, `PCApply()`, `PCDestroy()`
 @*/

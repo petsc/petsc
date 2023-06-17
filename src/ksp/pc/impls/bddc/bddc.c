@@ -2649,6 +2649,7 @@ static PetscErrorCode PCBDDCCreateFETIDPOperators_BDDC(PC pc, PetscBool fully_re
           PetscBool isschur, prec = PETSC_TRUE;
 
           PetscCall(KSPCreate(PetscObjectComm((PetscObject)ksps[i]), &kspC));
+          PetscCall(KSPSetNestLevel(kspC, pc->kspnestlevel));
           PetscCall(KSPSetOptionsPrefix(kspC, ((PetscObject)ksps[i])->prefix));
           PetscCall(KSPAppendOptionsPrefix(kspC, "check_"));
           PetscCall(KSPGetOperators(ksps[i], &F, &pF));

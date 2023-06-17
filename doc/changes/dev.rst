@@ -87,10 +87,12 @@ Changes: Development
 
 - Add ``PCMatGetApplyOperation()`` and ``PCMatSetApplyOperation()``
 - Add ``PCReduceFailedReason()``
+- Add ``PCSetKSPNestLevel()`` and ``PCSetKSPNestLevel()``
 
 .. rubric:: KSP:
 
 - Add ``KSPSetMinimumIterations()`` and ``KSPGetMinimumIterations()``
+- Add ``KSPSetNestLevel()`` and ``KSPGetNestLevel()``
 
 .. rubric:: SNES:
 

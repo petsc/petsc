@@ -385,6 +385,7 @@ PetscErrorCode PCMGSetLevels_MG(PC pc, PetscInt levels, MPI_Comm *comms)
     if (comms) comm = comms[i];
     if (comm != MPI_COMM_NULL) {
       PetscCall(KSPCreate(comm, &mglevels[i]->smoothd));
+      PetscCall(KSPSetNestLevel(mglevels[i]->smoothd, pc->kspnestlevel));
       PetscCall(KSPSetErrorIfNotConverged(mglevels[i]->smoothd, pc->erroriffailure));
       PetscCall(PetscObjectIncrementTabLevel((PetscObject)mglevels[i]->smoothd, (PetscObject)pc, levels - i));
       PetscCall(KSPSetOptionsPrefix(mglevels[i]->smoothd, prefix));
@@ -887,6 +888,7 @@ PetscErrorCode PCSetUp_MG(PC pc)
       char crprefix[128];
 
       PetscCall(KSPCreate(PetscObjectComm((PetscObject)pc), &mglevels[i]->cr));
+      PetscCall(KSPSetNestLevel(mglevels[i]->cr, pc->kspnestlevel));
       PetscCall(KSPSetErrorIfNotConverged(mglevels[i]->cr, PETSC_FALSE));
       PetscCall(PetscObjectIncrementTabLevel((PetscObject)mglevels[i]->cr, (PetscObject)pc, n - i));
       PetscCall(KSPSetOptionsPrefix(mglevels[i]->cr, prefix));

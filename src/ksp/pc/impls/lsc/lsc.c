@@ -17,6 +17,7 @@ static PetscErrorCode PCLSCAllocate_Private(PC pc)
   PetscFunctionBegin;
   if (lsc->allocated) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(KSPCreate(PetscObjectComm((PetscObject)pc), &lsc->kspL));
+  PetscCall(KSPSetNestLevel(lsc->kspL, pc->kspnestlevel));
   PetscCall(KSPSetErrorIfNotConverged(lsc->kspL, pc->erroriffailure));
   PetscCall(PetscObjectIncrementTabLevel((PetscObject)lsc->kspL, (PetscObject)pc, 1));
   PetscCall(KSPSetType(lsc->kspL, KSPPREONLY));

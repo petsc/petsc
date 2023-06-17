@@ -535,6 +535,7 @@ static PetscErrorCode PCSetUp_Telescope(PC pc)
 
     if (PCTelescope_isActiveRank(sred)) {
       PetscCall(KSPCreate(subcomm, &sred->ksp));
+      PetscCall(KSPSetNestLevel(sred->ksp, pc->kspnestlevel));
       PetscCall(KSPSetErrorIfNotConverged(sred->ksp, pc->erroriffailure));
       PetscCall(PetscObjectIncrementTabLevel((PetscObject)sred->ksp, (PetscObject)pc, 1));
       PetscCall(KSPSetType(sred->ksp, KSPPREONLY));

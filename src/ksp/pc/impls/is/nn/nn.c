@@ -341,6 +341,7 @@ PetscErrorCode PCNNCreateCoarseMatrix(PC pc)
     KSP inner_ksp;
 
     PetscCall(KSPCreate(PetscObjectComm((PetscObject)pc), &pcnn->ksp_coarse));
+    PetscCall(KSPSetNestLevel(pcnn->ksp_coarse, pc->kspnestlevel));
     PetscCall(PetscObjectIncrementTabLevel((PetscObject)pcnn->ksp_coarse, (PetscObject)pc, 2));
     PetscCall(KSPSetOperators(pcnn->ksp_coarse, pcnn->coarse_mat, pcnn->coarse_mat));
     PetscCall(KSPGetPC(pcnn->ksp_coarse, &pc_ctx));

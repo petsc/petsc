@@ -15,6 +15,7 @@ static PetscErrorCode PCKSPCreateKSP_KSP(PC pc)
 
   PetscFunctionBegin;
   PetscCall(KSPCreate(PetscObjectComm((PetscObject)pc), &jac->ksp));
+  PetscCall(KSPSetNestLevel(jac->ksp, pc->kspnestlevel));
   PetscCall(KSPSetErrorIfNotConverged(jac->ksp, pc->erroriffailure));
   PetscCall(PetscObjectIncrementTabLevel((PetscObject)jac->ksp, (PetscObject)pc, 1));
   PetscCall(PCGetOptionsPrefix(pc, &prefix));

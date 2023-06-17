@@ -730,9 +730,13 @@ static PetscErrorCode PCSetUp_BJacobi_Singleblock(PC pc, Mat mat, Mat pmat)
   PetscFunctionBegin;
   if (!pc->setupcalled) {
     if (!jac->ksp) {
+      PetscInt nestlevel;
+
       wasSetup = PETSC_FALSE;
 
       PetscCall(KSPCreate(PETSC_COMM_SELF, &ksp));
+      PetscCall(PCGetKSPNestLevel(pc, &nestlevel));
+      PetscCall(KSPSetNestLevel(ksp, nestlevel + 1));
       PetscCall(KSPSetErrorIfNotConverged(ksp, pc->erroriffailure));
       PetscCall(PetscObjectIncrementTabLevel((PetscObject)ksp, (PetscObject)pc, 1));
       PetscCall(KSPSetType(ksp, KSPPREONLY));
@@ -1014,6 +1018,8 @@ static PetscErrorCode PCSetUp_BJacobi_Multiblock(PC pc, Mat mat, Mat pmat)
   }
 
   if (!pc->setupcalled) {
+    PetscInt nestlevel;
+
     scall = MAT_INITIAL_MATRIX;
 
     if (!jac->ksp) {
@@ -1036,6 +1042,8 @@ static PetscErrorCode PCSetUp_BJacobi_Multiblock(PC pc, Mat mat, Mat pmat)
 
       for (i = 0; i < n_local; i++) {
         PetscCall(KSPCreate(PETSC_COMM_SELF, &ksp));
+        PetscCall(PCGetKSPNestLevel(pc, &nestlevel));
+        PetscCall(KSPSetNestLevel(ksp, nestlevel + 1));
         PetscCall(KSPSetErrorIfNotConverged(ksp, pc->erroriffailure));
         PetscCall(PetscObjectIncrementTabLevel((PetscObject)ksp, (PetscObject)pc, 1));
         PetscCall(KSPSetType(ksp, KSPPREONLY));
@@ -1232,6 +1240,8 @@ static PetscErrorCode PCSetUp_BJacobi_Multiproc(PC pc)
   PetscCheck(jac->n_local <= 1, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Only a single block in a subcommunicator is supported");
   jac->n_local = 1; /* currently only a single block is supported for a subcommunicator */
   if (!pc->setupcalled) {
+    PetscInt nestlevel;
+
     wasSetup = PETSC_FALSE;
     PetscCall(PetscNew(&mpjac));
     jac->data = (void *)mpjac;
@@ -1252,6 +1262,8 @@ static PetscErrorCode PCSetUp_BJacobi_Multiproc(PC pc)
     /* create a new PC that processors in each subcomm have copy of */
     PetscCall(PetscMalloc1(1, &jac->ksp));
     PetscCall(KSPCreate(subcomm, &jac->ksp[0]));
+    PetscCall(PCGetKSPNestLevel(pc, &nestlevel));
+    PetscCall(KSPSetNestLevel(jac->ksp[0], nestlevel + 1));
     PetscCall(KSPSetErrorIfNotConverged(jac->ksp[0], pc->erroriffailure));
     PetscCall(PetscObjectIncrementTabLevel((PetscObject)jac->ksp[0], (PetscObject)pc, 1));
     PetscCall(KSPSetOperators(jac->ksp[0], mpjac->submats, mpjac->submats));

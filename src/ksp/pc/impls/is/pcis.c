@@ -326,6 +326,7 @@ PetscErrorCode PCISSetUp(PC pc, PetscBool computematrices, PetscBool computesolv
     pcis->pure_neumann = matis->pure_neumann;
     /* Dirichlet */
     PetscCall(KSPCreate(PETSC_COMM_SELF, &pcis->ksp_D));
+    PetscCall(KSPSetNestLevel(pcis->ksp_D, pc->kspnestlevel));
     PetscCall(KSPSetErrorIfNotConverged(pcis->ksp_D, pc->erroriffailure));
     PetscCall(PetscObjectIncrementTabLevel((PetscObject)pcis->ksp_D, (PetscObject)pc, 1));
     PetscCall(KSPSetOperators(pcis->ksp_D, pcis->A_II, pcis->A_II));
@@ -338,6 +339,7 @@ PetscErrorCode PCISSetUp(PC pc, PetscBool computematrices, PetscBool computesolv
     PetscCall(KSPSetUp(pcis->ksp_D));
     /* Neumann */
     PetscCall(KSPCreate(PETSC_COMM_SELF, &pcis->ksp_N));
+    PetscCall(KSPSetNestLevel(pcis->ksp_N, pc->kspnestlevel));
     PetscCall(KSPSetErrorIfNotConverged(pcis->ksp_N, pc->erroriffailure));
     PetscCall(PetscObjectIncrementTabLevel((PetscObject)pcis->ksp_N, (PetscObject)pc, 1));
     PetscCall(KSPSetOperators(pcis->ksp_N, matis->A, matis->A));

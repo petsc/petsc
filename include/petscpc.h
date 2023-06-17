@@ -45,6 +45,9 @@ PETSC_EXTERN PetscErrorCode PCSetType(PC, PCType);
 PETSC_EXTERN PetscErrorCode PCGetType(PC, PCType *);
 PETSC_EXTERN PetscErrorCode PCSetUp(PC);
 
+PETSC_EXTERN PetscErrorCode PCSetKSPNestLevel(PC, PetscInt);
+PETSC_EXTERN PetscErrorCode PCGetKSPNestLevel(PC, PetscInt *);
+
 PETSC_EXTERN PetscErrorCode PCSetFailedReason(PC, PCFailedReason);
 PETSC_EXTERN PetscErrorCode PCGetFailedReason(PC, PCFailedReason *);
 PETSC_DEPRECATED_FUNCTION(3, 11, 0, "PCGetFailedReason()", ) static inline PetscErrorCode PCGetSetUpFailedReason(PC pc, PCFailedReason *reason)

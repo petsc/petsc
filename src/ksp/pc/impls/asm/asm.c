@@ -249,6 +249,7 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
       if (domain_dm) PetscCall(PetscInfo(pc, "Setting up ASM subproblems using the embedded DM\n"));
       for (i = 0; i < osm->n_local_true; i++) {
         PetscCall(KSPCreate(PETSC_COMM_SELF, &ksp));
+        PetscCall(KSPSetNestLevel(ksp, pc->kspnestlevel));
         PetscCall(KSPSetErrorIfNotConverged(ksp, pc->erroriffailure));
         PetscCall(PetscObjectIncrementTabLevel((PetscObject)ksp, (PetscObject)pc, 1));
         PetscCall(KSPSetType(ksp, KSPPREONLY));

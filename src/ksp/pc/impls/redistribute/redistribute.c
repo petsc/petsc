@@ -477,6 +477,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_Redistribute(PC pc)
   pc->ops->view           = PCView_Redistribute;
 
   PetscCall(KSPCreate(PetscObjectComm((PetscObject)pc), &red->ksp));
+  PetscCall(KSPSetNestLevel(red->ksp, pc->kspnestlevel));
   PetscCall(KSPSetErrorIfNotConverged(red->ksp, pc->erroriffailure));
   PetscCall(PetscObjectIncrementTabLevel((PetscObject)red->ksp, (PetscObject)pc, 1));
   PetscCall(PCGetOptionsPrefix(pc, &prefix));

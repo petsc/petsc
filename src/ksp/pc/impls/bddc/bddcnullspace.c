@@ -160,6 +160,7 @@ PetscErrorCode PCBDDCNullSpaceAssembleCorrection(PC pc, PetscBool isdir, PetscBo
     PetscCall(VecDuplicate(shell_ctx->fw[0], &work1));
     PetscCall(VecDuplicate(shell_ctx->fw[0], &work2));
     PetscCall(KSPCreate(PETSC_COMM_SELF, &check_ksp));
+    PetscCall(KSPSetNestLevel(check_ksp, pc->kspnestlevel));
     PetscCall(MatIsSPDKnown(local_mat, &isset, &isspd));
     if (isset && isspd) PetscCall(KSPSetType(check_ksp, KSPCG));
     PetscCall(PetscObjectIncrementTabLevel((PetscObject)check_ksp, (PetscObject)local_ksp, 0));

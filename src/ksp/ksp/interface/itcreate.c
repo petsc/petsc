@@ -637,20 +637,62 @@ PetscErrorCode KSPSetPostSolve(KSP ksp, PetscErrorCode (*postsolve)(KSP, Vec, Ve
 }
 
 /*@
-  KSPCreate - Creates the `KSP` context.
+   KSPSetNestLevel - sets the amount of nesting the `KSP` has
 
-  Collective
+   Collective
 
-  Input Parameter:
-. comm - MPI communicator
+   Input Parameters:
++  ksp - the `KSP`
+-  level - the nest level
 
-  Output Parameter:
-. inksp - location to put the `KSP` context
+   Level: developer
 
-  Level: beginner
+.seealso: [](ch_ksp), `KSPSetUp()`, `KSPSolve()`, `KSPDestroy()`, `KSP`, `KSPGMRES`, `KSPType`, `KSPGetNestLevel()`, `PCSetKSPNestLevel()`, `PCGetKSPNestLevel()`
+@*/
+PetscErrorCode KSPSetNestLevel(KSP ksp, PetscInt level)
+{
+  PetscFunctionBegin;
+  ksp->nestlevel = level;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
 
-  Note:
-  The default `KSPType` is `KSPGMRES` with a restart of 30, using modified Gram-Schmidt orthogonalization.
+/*@
+   KSPGetNestLevel - gets the amount of nesting the `KSP` has
+
+   Collective
+
+   Input Parameter:
+.  ksp - the `KSP`
+
+   Output Parameter:
+.  level - the nest level
+
+   Level: developer
+
+.seealso: [](ch_ksp), `KSPSetUp()`, `KSPSolve()`, `KSPDestroy()`, `KSP`, `KSPGMRES`, `KSPType`, `KSPSetNestLevel()`, `PCSetKSPNestLevel()`, `PCGetKSPNestLevel()`
+@*/
+PetscErrorCode KSPGetNestLevel(KSP ksp, PetscInt *level)
+{
+  PetscFunctionBegin;
+  *level = ksp->nestlevel;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+   KSPCreate - Creates the `KSP` context.
+
+   Collective
+
+   Input Parameter:
+.  comm - MPI communicator
+
+   Output Parameter:
+.  ksp - location to put the `KSP` context
+
+   Level: beginner
+
+   Note:
+   The default `KSPType` is `KSPGMRES` with a restart of 30, using modified Gram-Schmidt orthogonalization.
 
 .seealso: [](ch_ksp), `KSPSetUp()`, `KSPSolve()`, `KSPDestroy()`, `KSP`, `KSPGMRES`, `KSPType`
 @*/

@@ -1064,6 +1064,7 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
   PetscCall(PCGetOperators(pc, &A, &P));
   if (!data->levels[0]->ksp) {
     PetscCall(KSPCreate(PetscObjectComm((PetscObject)pc), &data->levels[0]->ksp));
+    PetscCall(KSPSetNestLevel(data->levels[0]->ksp, pc->kspnestlevel));
     PetscCall(PetscSNPrintf(prefix, sizeof(prefix), "%spc_hpddm_%s_", pcpre ? pcpre : "", data->N > 1 ? "levels_1" : "coarse"));
     PetscCall(KSPSetOptionsPrefix(data->levels[0]->ksp, prefix));
     PetscCall(KSPSetType(data->levels[0]->ksp, KSPPREONLY));
