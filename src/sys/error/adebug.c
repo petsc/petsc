@@ -1,8 +1,8 @@
 /*
       Code to handle PETSc starting up in debuggers,etc.
 */
-
-#include <petscsys.h> /*I   "petscsys.h"   I*/
+#define PETSC_DESIRE_FEATURE_TEST_MACROS /* for fileno() */
+#include <petscsys.h>                    /*I   "petscsys.h"   I*/
 #include <signal.h>
 #if defined(PETSC_HAVE_UNISTD_H)
   #include <unistd.h>
@@ -24,24 +24,24 @@ PetscBool        petscindebugger     = PETSC_FALSE;
 
    Input Parameter:
 .  terminal - name of terminal and any flags required to execute a program.
-              For example xterm, "urxvt -e", "gnome-terminal -x".
-              On Apple MacOS you can use Terminal (note the capital T)
+              For example "xterm", "urxvt -e", "gnome-terminal -x".
+              On Apple macOS you can use "Terminal} (note the capital T)
 
    Options Database Key:
-   -debug_terminal terminal - use this terminal instead of the default
+.  -debug_terminal terminal - use this terminal instead of the default
 
    Level: developer
 
    Notes:
    You can start the debugger for all processes in the same GNU screen session.
 
-     mpiexec -n 4 ./myapp -start_in_debugger -debug_terminal "screen -X -S debug screen"
+$     mpiexec -n 4 ./myapp -start_in_debugger -debug_terminal "screen -X -S debug screen"
 
    will open 4 windows in the session named "debug".
 
    The default on Apple is Terminal, on other systems the default is xterm
 
-.seealso: `PetscSetDebugger()`
+.seealso: `PetscSetDebugger()`, `PetscAttachDebugger()`
 @*/
 PetscErrorCode PetscSetDebugTerminal(const char terminal[])
 {
@@ -88,7 +88,7 @@ PetscErrorCode PetscSetDebugger(const char debugger[], PetscBool usedebugtermina
 
     Level: developer
 
-.seealso: `PetscSetDebugger()`, `PetscSetDebuggerFromString()`
+.seealso: `PetscSetDebugger()`, `PetscSetDebuggerFromString()`, `PetscAttachDebugger()`
 @*/
 PetscErrorCode PetscSetDefaultDebugger(void)
 {
@@ -128,7 +128,7 @@ static PetscErrorCode PetscCheckDebugger_Private(const char defaultDbg[], const 
 
    Level: developer
 
-.seealso: `PetscSetDebugger()`, `PetscSetDefaultDebugger()`
+.seealso: `PetscSetDebugger()`, `PetscSetDefaultDebugger()`, `PetscAttachDebugger()`
 @*/
 PetscErrorCode PetscSetDebuggerFromString(const char *string)
 {
@@ -170,7 +170,7 @@ PetscErrorCode PetscSetDebuggerFromString(const char *string)
    Level: advanced
 
    Note:
-      When -start_in_debugger -debugger_ranks x,y,z is used this prevents the processes NOT listed in x,y,z from calling MPI_Abort and
+      When `-start_in_debugger -debugger_ranks x,y,z` is used this prevents the processes NOT listed in x,y,z from calling `MPI_Abort()` and
       killing the user's debugging sessions.
 
 .seealso: `PetscSetDebugger()`, `PetscAttachDebugger()`
@@ -187,13 +187,19 @@ PetscErrorCode PetscWaitOnError(void)
    Not Collective
 
    Options Database Keys:
--  -start_in_debugger [noxterm,dbx,xxgdb,xdb,xldb,gdb] [-display name] [-debugger_ranks m,n] -debug_terminal xterm or Terminal (for Apple)
++  -start_in_debugger [noxterm,dbx,xxgdb,xdb,xldb,gdb] [-display name] [-debugger_ranks m,n] -debug_terminal xterm or Terminal (for Apple)
 .  -on_error_attach_debugger [noxterm,dbx,xxgdb,xdb,xldb,gdb] [-display name] - Activates debugger attachment
+-  -stop_for_debugger - print a message on how to attach the process with a debugger and then wait for the user to attach
 
    Level: advanced
 
+   Note:
+   If you get the message " stdin is not a tty, hence unable to attach debugger, see PetscAttachDebugger()", this means the application
+   is likely running in a batch system and you do not have terminal access to the process. You can try
+   running with `-start_in_debugger` without the `noxterm` argument or `-stop_for_debugger`
+
    Developer Note:
-    Since this can be called by the error handler should it be calling `SETERRQ()` and `PetscCall()`?
+    Since this can be called by the error handler, should it be calling `SETERRQ()` and `PetscCall()`?
 
 .seealso: `PetscSetDebugger()`, `PetscSetDefaultDebugger()`, `PetscSetDebugTerminal()`, `PetscAttachDebuggerErrorHandler()`, `PetscStopForDebugger()`
 @*/
@@ -213,20 +219,24 @@ PetscErrorCode PetscAttachDebugger(void)
   PETSCABORT(PETSC_COMM_WORLD, PETSC_ERR_SUP_SYS);
 #else
   if (PetscUnlikely(PetscGetDisplay(display, sizeof(display)))) {
-    ierr = (*PetscErrorPrintf)("Cannot determine display\n");
+    ierr = (*PetscErrorPrintf)("PetscAttachDebugger: Cannot determine display\n");
     return PETSC_ERR_SYS;
   }
   if (PetscUnlikely(PetscGetProgramName(program, sizeof(program)))) {
-    ierr = (*PetscErrorPrintf)("Cannot determine program name needed to attach debugger\n");
+    ierr = (*PetscErrorPrintf)("PetscAttachDebugger: Cannot determine program name needed to attach debugger\n");
     return PETSC_ERR_SYS;
   }
   if (PetscUnlikely(!program[0])) {
-    ierr = (*PetscErrorPrintf)("Cannot determine program name needed to attach debugger\n");
+    ierr = (*PetscErrorPrintf)("PetscAttachDebugger: Cannot determine program name needed to attach debugger\n");
+    return PETSC_ERR_SYS;
+  }
+  if (PetscUnlikely(!isatty(fileno(stdin)))) {
+    ierr = (*PetscErrorPrintf)("PetscAttachDebugger: stdin is not a tty, hence unable to attach debugger, see PetscAttachDebugger()\n");
     return PETSC_ERR_SYS;
   }
   child = (int)fork();
   if (PetscUnlikely(child < 0)) {
-    ierr = (*PetscErrorPrintf)("Error in fork() prior to attaching debugger\n");
+    ierr = (*PetscErrorPrintf)("PetscAttachDebugger: Error in fork() prior to attaching debugger\n");
     return PETSC_ERR_SYS;
   }
   petscindebugger = PETSC_TRUE;
@@ -457,8 +467,8 @@ PetscErrorCode PetscAttachDebugger(void)
 
    Input Parameters:
 +  comm - communicator over which error occurred
-.  line - the line number of the error (indicated by __LINE__)
-.  file - the file in which the error was detected (indicated by __FILE__)
+.  line - the line number of the error (indicated by `__LINE__`)
+.  file - the file in which the error was detected (indicated by `__FILE__`)
 .  message - an error text string, usually just printed to the screen
 .  number - the generic error number
 .  p - `PETSC_ERROR_INITIAL` if error just detected, otherwise `PETSC_ERROR_REPEAT`
@@ -466,12 +476,13 @@ PetscErrorCode PetscAttachDebugger(void)
 
    Options Database Keys:
 +  -on_error_attach_debugger [noxterm,dbx,xxgdb,xdb,xldb,gdb] [-display name] - Activates debugger attachment
--  -start_in_debugger [noxterm,dbx,xxgdb,xdb,xldb,gdb] [-display name] [-debugger_ranks m,n]
+.  -start_in_debugger [noxterm,dbx,xxgdb,xdb,xldb,gdb] [-display name] [-debugger_ranks m,n]
+-  -stop_for_debugger - prints a message on how to attach a debugger to the process and then waits for the attachment
 
    Level: developer
 
    Notes:
-   By default the GNU debugger, gdb, is used.  Alternatives are cuda-gdb, lldb, dbx and
+   By default the Gnu debugger, gdb, is used.  Alternatives are cuda-gdb, lldb, dbx and
    xxgdb,xldb (on IBM rs6000), xdb (on HP-UX).
 
    Most users need not directly employ this routine and the other error
