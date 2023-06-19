@@ -6,7 +6,7 @@ static char help[] = "Test global numbering\n\n";
 int main(int argc, char **argv)
 {
   DM      dm;
-  IS      point_numbering;
+  IS      point_numbering, point_numbering_parallel;
   PetscSF point_sf;
 
   PetscFunctionBeginUser;
@@ -17,7 +17,9 @@ int main(int argc, char **argv)
   PetscCall(DMViewFromOptions(dm, NULL, "-dm_view"));
 
   PetscCall(DMPlexCreatePointNumbering(dm, &point_numbering));
-  PetscCall(ISViewFromOptions(point_numbering, NULL, "-point_numbering_view"));
+  PetscCall(ISOnComm(point_numbering, PETSC_COMM_WORLD, PETSC_USE_POINTER, &point_numbering_parallel));
+  PetscCall(ISViewFromOptions(point_numbering_parallel, NULL, "-point_numbering_view"));
+  PetscCall(ISDestroy(&point_numbering_parallel));
   PetscCall(ISDestroy(&point_numbering));
 
   PetscCall(DMGetPointSF(dm, &point_sf));
