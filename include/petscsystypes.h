@@ -276,6 +276,10 @@ typedef __int64 PetscInt64;
   #error "cannot determine PetscInt64 type"
 #endif
 
+typedef int32_t PetscInt32;
+#define PETSC_INT32_MIN INT32_MIN
+#define PETSC_INT32_MAX INT32_MAX
+
 #if defined(PETSC_USE_64BIT_INDICES)
 typedef PetscInt64 PetscInt;
 
@@ -309,6 +313,9 @@ enum {
 #else
   #error "cannot determine PetscInt64 type"
 #endif
+
+#define MPIU_INT32     MPI_INT32_T
+#define PetscInt32_FMT PRId32
 
 /*MC
    PetscBLASInt - datatype used to represent 'int' parameters to BLAS/LAPACK functions.
@@ -652,7 +659,7 @@ typedef double PetscLogDouble;
    share/petsc/matlab/PetscBagRead.m and share/petsc/matlab/@PetscOpenSocket/read/write.m
 
    TODO:
-   Add PETSC_INT32 and remove use of improper `PETSC_ENUM`
+   Remove use of improper `PETSC_ENUM`
 
 .seealso: `PetscBinaryRead()`, `PetscBinaryWrite()`, `PetscDataTypeToMPIDataType()`,
           `PetscDataTypeGetSize()`
@@ -676,7 +683,8 @@ typedef enum {
   PETSC_STRUCT           = 15,
   PETSC_INT              = 16,
   PETSC_INT64            = 17,
-  PETSC_COUNT            = 18
+  PETSC_COUNT            = 18,
+  PETSC_INT32            = 19,
 } PetscDataType;
 PETSC_EXTERN const char *const PetscDataTypes[];
 
