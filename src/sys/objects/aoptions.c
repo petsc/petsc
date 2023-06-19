@@ -1488,7 +1488,7 @@ PetscErrorCode PetscOptionsBool_Private(PetscOptionItems *PetscOptionsObject, co
   PetscCall(PetscOptionsGetBool(PetscOptionsObject->options, PetscOptionsObject->prefix, opt, flg, &iset));
   if (set) *set = iset;
   if (PetscOptionsObject->printhelp && PetscOptionsObject->count == 1 && !PetscOptionsObject->alreadyprinted) {
-    const char *v = PetscBools[*flg], *vn = PetscBools[iset && flg ? *flg : currentvalue];
+    const char *vn = PetscBools[currentvalue], *v = PetscBools[iset && flg ? *flg : currentvalue];
     PetscCall((*PetscHelpPrintf)(PetscOptionsObject->comm, "  -%s%s: <now %s : formerly %s> %s (%s)\n", PetscOptionsObject->prefix ? PetscOptionsObject->prefix : "", opt + 1, v, vn, text, ManSection(man)));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
