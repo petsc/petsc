@@ -1213,6 +1213,13 @@ PetscErrorCode MatDestroy_SeqAIJ(Mat A)
   Mat_SeqAIJ *a = (Mat_SeqAIJ *)A->data;
 
   PetscFunctionBegin;
+  if (A->hash_active) {
+    PetscCall(PetscMemcpy(&A->ops, &a->cops, sizeof(*(A->ops))));
+    PetscCall(PetscHMapIJVDestroy(&a->ht));
+    PetscCall(PetscFree(a->dnz));
+    A->hash_active = PETSC_FALSE;
+  }
+
 #if defined(PETSC_USE_LOG)
   PetscCall(PetscLogObjectState((PetscObject)A, "Rows=%" PetscInt_FMT ", Cols=%" PetscInt_FMT ", NZ=%" PetscInt_FMT, A->rmap->n, A->cmap->n, a->nz));
 #endif
