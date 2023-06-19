@@ -334,6 +334,15 @@ These arguments have the following effect:
 Using both options in tandem allows one to use the normal ``output:`` mechanism to compare
 expected and actual error outputs.
 
+When writing ASCII output that may be not portable, so one wants `-petsc_ci_portable_error_output` to
+cause the output to be skipped, enclose the output with code such as
+
+.. code-block::
+
+   if (!PetscCIEnabledPortableErrorOutput)
+
+to prevent it from being output when the CI test harness is running.
+
 Test Block Examples
 ~~~~~~~~~~~~~~~~~~~
 
