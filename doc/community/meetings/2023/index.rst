@@ -196,7 +196,7 @@ Wednesday, June 7
 
 .. _c_04: https://petsc.gitlab.io/annual-meetings/2023/slides/HongZhangMr.ipynb
 
-.. _s_00: https://petsc.gitlab.io/annual-meetings/2022/tutorials/petsc_annual_meeting_2023_tutorial.pdf
+.. _s_00: https://petsc.gitlab.io/annual-meetings/2023/tutorials/petsc_annual_meeting_2023_tutorial.pdf
 
 .. _s_01: https://petsc.gitlab.io/annual-meetings/2023/slides/BarrySmith.pdf
 
