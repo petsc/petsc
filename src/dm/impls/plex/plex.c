@@ -8489,7 +8489,7 @@ PetscErrorCode DMPlexCreatePointNumbering(DM dm, IS *globalPointNumbers)
     PetscCall(DMPlexCreateNumbering_Plex(dm, pStart, pEnd, shift, &gsize, dm->sf, &nums[d]));
     shift += gsize;
   }
-  PetscCall(ISConcatenate(PetscObjectComm((PetscObject)dm), depth + 1, nums, globalPointNumbers));
+  PetscCall(ISConcatenate(PETSC_COMM_SELF, depth + 1, nums, globalPointNumbers));
   for (d = 0; d <= depth; ++d) PetscCall(ISDestroy(&nums[d]));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
