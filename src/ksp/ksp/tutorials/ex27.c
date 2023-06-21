@@ -55,6 +55,7 @@ int main(int argc, char **args)
   PetscBool   explicit_transpose = PETSC_FALSE;
   PetscBool   hdf5               = PETSC_FALSE;
   PetscBool   test_custom_layout = PETSC_FALSE;
+  PetscBool   sbaij              = PETSC_FALSE;
   PetscMPIInt rank, size;
 
   PetscFunctionBeginUser;
@@ -77,7 +78,10 @@ int main(int argc, char **args)
   */
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-solve_normal", &solve_normal, NULL));
   if (!solve_normal) PetscCall(PetscOptionsGetBool(NULL, NULL, "-solve_augmented", &solve_augmented, NULL));
-  if (solve_augmented) PetscCall(PetscOptionsGetBool(NULL, NULL, "-explicit_transpose", &explicit_transpose, NULL));
+  if (solve_augmented) {
+    PetscCall(PetscOptionsGetBool(NULL, NULL, "-explicit_transpose", &explicit_transpose, NULL));
+    PetscCall(PetscOptionsGetBool(NULL, NULL, "-sbaij", &sbaij, NULL));
+  }
   /*
      Decide whether to use the HDF5 reader.
   */
@@ -224,7 +228,7 @@ int main(int argc, char **args)
   if (solve_normal) {
     PetscCall(KSPSetOperators(ksp, N, N));
   } else if (solve_augmented) {
-    Mat       array[4], C;
+    Mat       array[4], C, S;
     Vec       view;
     PetscInt  M, n;
     PetscReal diag;
@@ -240,15 +244,33 @@ int main(int argc, char **args)
     if (has) PetscCall(MatCreateConstantDiagonal(PETSC_COMM_WORLD, n, n, PETSC_DECIDE, PETSC_DECIDE, diag, array + 3));
     else array[3] = NULL;
     PetscCall(MatCreateNest(PETSC_COMM_WORLD, 2, NULL, 2, NULL, array, &C));
-    PetscCall(MatNestSetVecType(C, VECNEST));
+    if (!sbaij) PetscCall(MatNestSetVecType(C, VECNEST));
     PetscCall(MatCreateVecs(C, v + 1, v));
     PetscCall(VecSet(v[0], 0.0));
     PetscCall(VecSet(v[1], 0.0));
-    PetscCall(VecNestGetSubVec(v[0], 0, &view));
-    PetscCall(VecCopy(b, view));
-    PetscCall(VecNestGetSubVec(v[1], 1, &view));
-    PetscCall(VecCopy(x, view));
-    PetscCall(KSPSetOperators(ksp, C, C));
+    if (!sbaij) {
+      PetscCall(VecNestGetSubVec(v[0], 0, &view));
+      PetscCall(VecCopy(b, view));
+      PetscCall(VecNestGetSubVec(v[1], 1, &view));
+      PetscCall(VecCopy(x, view));
+      PetscCall(KSPSetOperators(ksp, C, C));
+    } else {
+      const PetscScalar *read;
+      PetscScalar       *write;
+      PetscCall(VecGetArrayRead(b, &read));
+      PetscCall(VecGetArrayWrite(v[0], &write));
+      for (PetscInt i = 0; i < m; ++i) write[i] = read[i];
+      PetscCall(VecRestoreArrayWrite(v[0], &write));
+      PetscCall(VecRestoreArrayRead(b, &read));
+      PetscCall(VecGetArrayRead(x, &read));
+      PetscCall(VecGetArrayWrite(v[1], &write));
+      for (PetscInt i = 0; i < n; ++i) write[m + i] = read[i];
+      PetscCall(VecRestoreArrayWrite(v[1], &write));
+      PetscCall(VecRestoreArrayRead(x, &read));
+      PetscCall(MatConvert(C, MATSBAIJ, MAT_INITIAL_MATRIX, &S));
+      PetscCall(KSPSetOperators(ksp, S, S));
+      PetscCall(MatDestroy(&S));
+    }
     PetscCall(MatDestroy(&C));
     PetscCall(MatDestroy(array));
     PetscCall(MatDestroy(array + 2));
@@ -290,8 +312,19 @@ int main(int argc, char **args)
     Vec view;
 
     PetscCall(KSPSolve(ksp, v[0], v[1]));
-    PetscCall(VecNestGetSubVec(v[1], 1, &view));
-    PetscCall(VecCopy(view, x));
+    if (!sbaij) {
+      PetscCall(VecNestGetSubVec(v[1], 1, &view));
+      PetscCall(VecCopy(view, x));
+    } else {
+      const PetscScalar *read;
+      PetscScalar       *write;
+      PetscCall(MatGetLocalSize(A, &m, &n));
+      PetscCall(VecGetArrayRead(v[1], &read));
+      PetscCall(VecGetArrayWrite(x, &write));
+      for (PetscInt i = 0; i < n; ++i) write[i] = read[m + i];
+      PetscCall(VecRestoreArrayWrite(x, &write));
+      PetscCall(VecRestoreArrayRead(v[1], &read));
+    }
   } else {
     PetscCall(KSPSolve(ksp, b, x));
   }
@@ -454,6 +487,10 @@ int main(int argc, char **args)
         requires: hypre !defined(PETSC_HAVE_HYPRE_DEVICE)
         args: -ksp_converged_reason -ksp_monitor_short -ksp_rtol 1e-5 -ksp_max_it 100
         args: -ksp_type lsqr -pc_type hypre
+     test:
+        suffix: 4h
+        nsize: {{1 4}}
+        args: -solve_augmented -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_precondition self -pc_fieldsplit_detect_saddle_point -sbaij true -ksp_type fgmres
 
    test:
       # Load rectangular matrix from HDF5 (Version 7.3 MAT-File)

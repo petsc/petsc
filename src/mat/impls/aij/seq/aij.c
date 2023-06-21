@@ -2579,7 +2579,7 @@ PetscErrorCode MatCreateSubMatrix_SeqAIJ(Mat A, IS isrow, IS iscol, PetscInt csi
       c = (Mat_SeqAIJ *)((*B)->data);
       PetscCheck((*B)->rmap->n == nrows && (*B)->cmap->n == ncols, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Cannot reuse matrix. wrong size");
       PetscCall(PetscArraycmp(c->ilen, lens, (*B)->rmap->n, &equal));
-      PetscCheck(equal, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Cannot reuse matrix. wrong no of nonzeros");
+      PetscCheck(equal, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Cannot reuse matrix. wrong number of nonzeros");
       PetscCall(PetscArrayzero(c->ilen, (*B)->rmap->n));
       C = *B;
     } else {

@@ -10321,6 +10321,7 @@ PetscErrorCode MatCreateRedundantMatrix(Mat mat, PetscInt nsubcomm, MPI_Comm sub
     rstart = rend - mloc_sub;
     PetscCall(ISCreateStride(PETSC_COMM_SELF, mloc_sub, rstart, 1, &isrow));
     PetscCall(ISCreateStride(PETSC_COMM_SELF, N, 0, 1, &iscol));
+    PetscCall(ISSetIdentity(iscol));
   } else { /* reuse == MAT_REUSE_MATRIX */
     PetscCheck(*matredundant != mat, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "MAT_REUSE_MATRIX means reuse the matrix passed in as the final argument, not the original matrix");
     /* retrieve subcomm */

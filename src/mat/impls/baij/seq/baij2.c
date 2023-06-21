@@ -104,7 +104,7 @@ static PetscErrorCode MatCreateSubMatrix_SeqBAIJ_Private(Mat A, IS isrow, IS isc
 
     PetscCheck(c->mbs == nrows && c->nbs == ncols && (*B)->rmap->bs == bs, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Submatrix wrong size");
     PetscCall(PetscArraycmp(c->ilen, lens, c->mbs, &flag));
-    PetscCheck(flag, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Cannot reuse matrix. wrong no of nonzeros");
+    PetscCheck(flag, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Cannot reuse matrix. wrong number of nonzeros");
     PetscCall(PetscArrayzero(c->ilen, c->mbs));
     C = *B;
   } else {
