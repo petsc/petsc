@@ -1213,6 +1213,13 @@ PetscErrorCode MatDestroy_SeqAIJ(Mat A)
   Mat_SeqAIJ *a = (Mat_SeqAIJ *)A->data;
 
   PetscFunctionBegin;
+  if (A->hash_active) {
+    PetscCall(PetscMemcpy(&A->ops, &a->cops, sizeof(*(A->ops))));
+    PetscCall(PetscHMapIJVDestroy(&a->ht));
+    PetscCall(PetscFree(a->dnz));
+    A->hash_active = PETSC_FALSE;
+  }
+
 #if defined(PETSC_USE_LOG)
   PetscCall(PetscLogObjectState((PetscObject)A, "Rows=%" PetscInt_FMT ", Cols=%" PetscInt_FMT ", NZ=%" PetscInt_FMT, A->rmap->n, A->cmap->n, a->nz));
 #endif
@@ -4044,6 +4051,7 @@ PetscErrorCode MatResetPreallocation_SeqAIJ(Mat A)
 {
   Mat_SeqAIJ *a;
   PetscInt    i;
+  PetscBool   skipreset;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
@@ -4055,18 +4063,21 @@ PetscErrorCode MatResetPreallocation_SeqAIJ(Mat A)
   /* if no saved info, we error out */
   PetscCheck(a->ipre, PETSC_COMM_SELF, PETSC_ERR_ARG_NULL, "No saved preallocation info ");
 
-  PetscCheck(a->i && a->j && a->a && a->imax && a->ilen, PETSC_COMM_SELF, PETSC_ERR_ARG_NULL, "Memory info is incomplete, and can not reset preallocation ");
+  PetscCheck(a->i && a->imax && a->ilen, PETSC_COMM_SELF, PETSC_ERR_ARG_NULL, "Memory info is incomplete, and can not reset preallocation ");
 
-  PetscCall(PetscArraycpy(a->imax, a->ipre, A->rmap->n));
-  PetscCall(PetscArrayzero(a->ilen, A->rmap->n));
-  a->i[0] = 0;
-  for (i = 1; i < A->rmap->n + 1; i++) a->i[i] = a->i[i - 1] + a->imax[i - 1];
-  A->preallocated     = PETSC_TRUE;
-  a->nz               = 0;
-  a->maxnz            = a->i[A->rmap->n];
-  A->info.nz_unneeded = (double)a->maxnz;
-  A->was_assembled    = PETSC_FALSE;
-  A->assembled        = PETSC_FALSE;
+  PetscCall(PetscArraycmp(a->ipre, a->ilen, A->rmap->n, &skipreset));
+  if (!skipreset) {
+    PetscCall(PetscArraycpy(a->imax, a->ipre, A->rmap->n));
+    PetscCall(PetscArrayzero(a->ilen, A->rmap->n));
+    a->i[0] = 0;
+    for (i = 1; i < A->rmap->n + 1; i++) a->i[i] = a->i[i - 1] + a->imax[i - 1];
+    A->preallocated     = PETSC_TRUE;
+    a->nz               = 0;
+    a->maxnz            = a->i[A->rmap->n];
+    A->info.nz_unneeded = (double)a->maxnz;
+    A->was_assembled    = PETSC_FALSE;
+    A->assembled        = PETSC_FALSE;
+  }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
