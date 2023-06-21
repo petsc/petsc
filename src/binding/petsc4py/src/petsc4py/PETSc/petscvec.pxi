@@ -121,6 +121,7 @@ cdef extern from * nogil:
     PetscErrorCode VecNorm(PetscVec,PetscNormType,PetscReal*)
     PetscErrorCode VecNormBegin(PetscVec,PetscNormType,PetscReal*)
     PetscErrorCode VecNormEnd(PetscVec,PetscNormType,PetscReal*)
+    PetscErrorCode VecDotNorm2(PetscVec,PetscVec,PetscScalar*,PetscReal*)
 
     PetscErrorCode VecAssemblyBegin(PetscVec)
     PetscErrorCode VecAssemblyEnd(PetscVec)
