@@ -950,9 +950,11 @@ cdef class TAO(Object):
         gatol
             The absolute norm of the gradient. Defaults to `DEFAULT`.
         grtol
-            The relative norm of the gradient with respect to the initial norm of the objective. Defaults to `DEFAULT`.
+            The relative norm of the gradient with respect
+            to the initial norm of the objective. Defaults to `DEFAULT`.
         gttol
-            The relative norm of the gradient with respect to the initial norm of the gradient. Defaults to `DEFAULT`.
+            The relative norm of the gradient with respect
+            to the initial norm of the gradient. Defaults to `DEFAULT`.
 
         See Also
         --------
@@ -975,9 +977,11 @@ cdef class TAO(Object):
         gatol : float
             The absolute norm of the gradient.
         grtol : float
-            The relative norm of the gradient with respect to the initial norm of the objective.
+            The relative norm of the gradient with respect to
+            the initial norm of the objective.
         gttol : float
-            The relative norm of the gradient with respect to the initial norm of the gradient.
+            The relative norm of the gradient with respect to
+            the initial norm of the gradient.
 
         See Also
         --------
@@ -1065,7 +1069,7 @@ cdef class TAO(Object):
         CHKERR( TaoSetConstraintTolerances(self.tao, _catol, _crtol) )
 
     def getConstraintTolerances(self) -> tuple[float, float]:
-        """Return the constraints tolerance parameters used in the solver convergence tests.
+        """Return the constraints tolerance parameters used in the convergence tests.
 
         Not collective.
 
@@ -1218,15 +1222,20 @@ cdef class TAO(Object):
         Parameters
         ----------
         its
-            Current number of iterations or `None` to use the value stored internally by the solver.
+            Current number of iterations 
+            or `None` to use the value stored internally by the solver.
         f
-            Current value of the objective function or `None` to use the value stored internally by the solver.
+            Current value of the objective function 
+            or `None` to use the value stored internally by the solver.
         res
-            Current value of the residual norm or `None` to use the value stored internally by the solver.
+            Current value of the residual norm 
+            or `None` to use the value stored internally by the solver.
         cnorm
-            Current value of the constrains norm or `None` to use the value stored internally by the solver.
+            Current value of the constrains norm 
+            or `None` to use the value stored internally by the solver.
         step
-            Current value of the step or `None` to use the value stored internally by the solver.
+            Current value of the step 
+            or `None` to use the value stored internally by the solver.
 
         See Also
         --------
@@ -1342,7 +1351,7 @@ cdef class TAO(Object):
         return mat
 
     def getLMVMH0KSP(self) -> KSP:
-        """Return the linear solver for applying the inverse of the initial Hessian approximation.
+        """Return the `KSP` for the inverse of the initial Hessian approximation.
 
         Not collective.
 
@@ -1429,7 +1438,7 @@ cdef class TAO(Object):
         return reason
 
     def getSolutionNorm(self) -> tuple[float, float, float]:
-        """Return the value of the objective function, the norm of the gradient and the norm of the constraints.
+        """Return the objective function value and the norms of gradient and constraints.
 
         Not collective.
 
@@ -1629,7 +1638,7 @@ cdef class TAO(Object):
         return self
 
     def setPythonContext(self, context: Any) -> None:
-        """Set the instance of the Python class implementing the required Python methods.
+        """Set the instance of the class implementing the required Python methods.
 
         Not collective.
 
@@ -1641,7 +1650,7 @@ cdef class TAO(Object):
         CHKERR( TaoPythonSetContext(self.tao, <void*>context) )
 
     def getPythonContext(self) -> Any:
-        """Return the instance of the Python class implementing the required Python methods.
+        """Return the instance of the class implementing the required Python methods.
 
         Not collective.
 

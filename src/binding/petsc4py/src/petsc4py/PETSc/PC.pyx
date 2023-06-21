@@ -248,7 +248,9 @@ cdef class PC(Object):
     def create(self, comm: Comm | None = None) -> Self:
         """Create an empty `PC`.
 
-        Collective. The default preconditioner for sparse matrices is `ILU` or
+        Collective.
+
+        The default preconditioner for sparse matrices is `ILU` or
         `ICC` with 0 fill on one process and block Jacobi (`BJACOBI`) with `ILU`
         or `ICC` in parallel. For dense matrices it is always `None`.
 
@@ -368,7 +370,9 @@ cdef class PC(Object):
     def setOperators(self, Mat A=None, Mat P=None) -> None:
         """Set the matrices associated with the linear system.
 
-        Logically collective. Passing `None` for ``A`` or ``P`` removes the
+        Logically collective.
+
+        Passing `None` for ``A`` or ``P`` removes the
         matrix that is currently used. PETSc does not reset the matrix entries
         of either ``A`` or ``P`` to zero after a linear solve; the user is
         completely responsible for matrix assembly. See `Mat.zeroEntries` to
@@ -412,14 +416,16 @@ cdef class PC(Object):
     def setUseAmat(self, flag: bool) -> None:
         """Set to indicate to apply `PC` to ``A`` and not ``P``.
 
-        Logically collective. Sets a flag to indicate that when the
+        Logically collective.
+
+        Sets a flag to indicate that when the
         preconditioner needs to apply (part of) the operator during the
         preconditioning process, it applies to ``A`` provided to
         `TS.setRHSJacobian`, `TS.setIJacobian`, `SNES.setJacobian`,
         `KSP.setOperators` or `PC.setOperators` not the ``P``.
 
-        Parameter
-        ---------
+        Parameters
+        ----------
         flag
             Set True to use ``A`` and False to use ``P``.
 
@@ -455,7 +461,9 @@ cdef class PC(Object):
     def setReusePreconditioner(self, flag: bool) -> None:
         """Set to indicate the preconditioner is to be reused.
 
-        Logically collective. Normally if the ``A`` matrix inside a `PC`
+        Logically collective.
+
+        Normally if the ``A`` matrix inside a `PC`
         changes, the `PC` automatically updates itself using information from
         the changed matrix. Enable this option prevents this.
 
@@ -496,7 +504,9 @@ cdef class PC(Object):
     def getFailedReason(self) -> FailedReason:
         """Return the reason the `PC` terminated.
 
-        Logically collective. This is the maximum reason over all ranks in the
+        Logically collective.
+
+        This is the maximum reason over all ranks in the
         `PC` communicator.
 
         See Also
@@ -511,7 +521,9 @@ cdef class PC(Object):
     def getFailedReasonRank(self) -> FailedReason:
         """Return the reason the `PC` terminated on this rank.
 
-        Not collective. Different ranks may have different reasons.
+        Not collective.
+
+        Different ranks may have different reasons.
 
         See Also
         --------
@@ -549,7 +561,9 @@ cdef class PC(Object):
     def setUpOnBlocks(self) -> None:
         """Set up the `PC` for each block.
 
-        Collective. For nested preconditioners such as `BJACOBI`, `setUp` is not
+        Collective.
+
+        For nested preconditioners such as `BJACOBI`, `setUp` is not
         called on each sub-`KSP` when `setUp` is called on the outer `PC`. This
         routine ensures it is called.
 
@@ -601,7 +615,9 @@ cdef class PC(Object):
     def applyTranspose(self, Vec x, Vec y) -> None:
         """Apply the transpose of the `PC` to a vector.
 
-        Collective. For complex numbers this applies the non-Hermitian
+        Collective.
+
+        For complex numbers this applies the non-Hermitian
         transpose.
 
         Parameters
@@ -745,7 +761,7 @@ cdef class PC(Object):
         return self
 
     def setPythonContext(self, context: Any) -> None:
-        """Set the instance of the Python class implementing the required Python methods.
+        """Set the instance of the class implementing the required Python methods.
 
         Not collective.
 
@@ -757,7 +773,7 @@ cdef class PC(Object):
         CHKERR( PCPythonSetContext(self.pc, <void*>context) )
 
     def getPythonContext(self) -> Any:
-        """Return the instance of the Python class implementing the required Python methods.
+        """Return the instance of the class implementing the required Python methods.
 
         Not collective.
 
@@ -1166,11 +1182,13 @@ cdef class PC(Object):
         RT_Pi_Full
             The Raviart-Thomas interpolation matrix or `None` to omit.
         RT_Pi
-            The xyz components of the Raviart-Thomas interpolation matrix, or `None` to omit.
+            The xyz components of the Raviart-Thomas interpolation matrix,
+            or `None` to omit.
         ND_Pi_Full
             The Nedelec interpolation matrix or `None` to omit.
         ND_Pi
-            The xyz components of the Nedelec interpolation matrix, or `None` to omit.
+            The xyz components of the Nedelec interpolation matrix,
+            or `None` to omit.
 
         See Also
         --------
@@ -1439,7 +1457,9 @@ cdef class PC(Object):
     def setFieldSplitIS(self, *fields: Tuple[str, IS]) -> None:
         """Set the elements for the field split by `IS`.
 
-        Logically collective. Solve options for this split will be available
+        Logically collective.
+
+        Solve options for this split will be available
         under the prefix ``-fieldsplit_SPLITNAME_*``.
 
         Parameters
@@ -1944,7 +1964,9 @@ cdef class PC(Object):
     def setMGRhs(self, level: int, Vec rhs) -> None:
         """Set the vector where the right-hand side is stored.
 
-        Logically collective. If not provided, one will be set internally. Will
+        Logically collective.
+
+        If not provided, one will be set internally. Will
         be cleaned up in `destroy`.
 
         Parameters
@@ -1965,7 +1987,9 @@ cdef class PC(Object):
     def setMGX(self, level: int, Vec x) -> None:
         """Set the vector where the solution is stored.
 
-        Logically collective. If not provided, one will be set internally. Will
+        Logically collective.
+
+        If not provided, one will be set internally. Will
         be cleaned up in `destroy`.
 
         Parameters
@@ -1986,7 +2010,9 @@ cdef class PC(Object):
     def setMGR(self, level: int, Vec r) -> None:
         """Set the vector where the residual is stored.
 
-        Logically collective. If not provided, one will be set internally. Will
+        Logically collective.
+
+        If not provided, one will be set internally. Will
         be cleaned up in `destroy`.
 
         Parameters
@@ -2253,7 +2279,9 @@ cdef class PC(Object):
     def setBDDCDofsSplittingLocal(self, isfields: IS | Sequence[IS]):
         """Set the index set(s) defining fields of the local subdomain matrix.
 
-        Collective. Not all nodes need to be listed. Unlisted nodes will belong
+        Collective.
+
+        Not all nodes need to be listed. Unlisted nodes will belong
         to the complement field.
 
         Parameters
@@ -2440,7 +2468,7 @@ cdef class PC(Object):
         return cval
 
     def getHPDDMSTShareSubKSP(self) -> bool:
-        """Return whether the `KSP` in SLEPc ``ST`` and the fine-level subdomain solver is shared.
+        """Return true if the `KSP` in SLEPc ``ST`` and the subdomain solver is shared.
 
         See Also
         --------
@@ -2604,7 +2632,9 @@ cdef class PC(Object):
     def setDeflationInitOnly(self, flg: bool) -> None:
         """Set to only perform the initialization.
 
-        Logically collective. Sets initial guess to the solution on the
+        Logically collective.
+
+        Sets initial guess to the solution on the
         deflation space but does not apply the deflation preconditioner. The
         additional preconditioner is still applied.
 

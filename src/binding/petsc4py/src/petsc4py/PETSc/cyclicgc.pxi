@@ -41,8 +41,10 @@ cdef inline void TypeEnableGC(PyTypeObject *t):
 def garbage_cleanup(comm=None):
     """Clean up unused PETSc objects.
 
-    Note
-    ----
+    Collective.
+
+    Notes
+    -----
     If the communicator ``comm`` if not provided or it is `None`,
     first clean up on `COMM_WORLD`, then clean up on `COMM_SELF`.
 
@@ -64,8 +66,10 @@ def garbage_cleanup(comm=None):
 def garbage_view(comm=None):
     """Print summary of the garbage PETSc objects.
 
-    Note
-    ----
+    Collective.
+
+    Notes
+    -----
     Print out garbage summary on each rank of the communicator ``comm``.
     If no communicator is provided then `COMM_WORLD` is used.
 

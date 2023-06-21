@@ -82,21 +82,15 @@ The protocol for the `petsc4py.PETSc.KSP.Type.PYTHON` Krylov solver is:
 
 .. _petsc_python_snes:
 
-PETSc Python nonlinear solver type
-----------------------------------
-
-TODO
+PETSc Python nonlinear solver type (TODO)
+-----------------------------------------
 
 .. _petsc_python_ts:
 
-PETSc Python ode-integrator type
---------------------------------
-
-TODO
+PETSc Python ode-integrator type (TODO)
+---------------------------------------
 
 .. _petsc_python_tao:
 
-PETSc Python optimization solver type
--------------------------------------
-
-TODO
+PETSc Python optimization solver type (TODO)
+--------------------------------------------

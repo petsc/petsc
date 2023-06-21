@@ -41,10 +41,15 @@ PETSc for Python
    :maxdepth: 2
 
    overview
-   demo/demo
-   petsc_options
-   petsc_python_types
-   reference
-   citing
    install
+   citing
+
+.. toctree::
+   :caption: Python specifics
+   :maxdepth: 2
+
+   reference
+   petsc_python_types
+   petsc_options
+   demo/demo
    documentation_standards

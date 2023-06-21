@@ -150,7 +150,7 @@ cdef class DMShell(DM):
     ) -> None:
         """Set the routines used to perform a global to local scatter.
 
-        Logically collective on the DM.
+        Logically collective.
 
         Parameters
         ----------
@@ -192,7 +192,7 @@ cdef class DMShell(DM):
     def setGlobalToLocalVecScatter(self, Scatter gtol) -> None:
         """Set a `Scatter` context for global to local communication.
 
-        Logically collective on the DM.
+        Logically collective.
 
         Parameters
         ----------
@@ -217,7 +217,7 @@ cdef class DMShell(DM):
     ) -> None:
         """Set the routines used to perform a local to global scatter.
 
-        Logically collective on the DM.
+        Logically collective.
 
         Parameters
         ----------
@@ -257,7 +257,7 @@ cdef class DMShell(DM):
     def setLocalToGlobalVecScatter(self, Scatter ltog) -> None:
         """Set a `Scatter` context for local to global communication.
 
-        Logically collective on the DM.
+        Logically collective.
 
         Parameters
         ----------
@@ -282,7 +282,7 @@ cdef class DMShell(DM):
     ) -> None:
         """Set the routines used to perform a local to local scatter.
 
-        Logically collective on the DM.
+        Logically collective.
 
         Parameters
         ----------

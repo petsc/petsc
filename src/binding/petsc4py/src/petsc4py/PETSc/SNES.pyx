@@ -417,7 +417,8 @@ cdef class SNES(Object):
         levels
             The number of levels
         comms
-            An optional sequence of communicators of length `levels`, or `None` for the default communicator `Sys.getDefaultComm`.
+            An optional sequence of communicators of length `levels`,
+            or `None` for the default communicator `Sys.getDefaultComm`.
 
         See Also
         --------
@@ -676,6 +677,8 @@ cdef class SNES(Object):
     def getInitialGuess(self) -> SNESGuessFunction:
         """Return the callback to compute the initial guess.
 
+        Not collective.
+
         See Also
         --------
         setInitialGuess
@@ -749,7 +752,7 @@ cdef class SNES(Object):
     def setUpdate(self, update: SNESUpdateFunction,
                   args: tuple[Any, ...] | None = None,
                   kargs: dict[str, Any] | None = None) -> None:
-        """Set the callback to compute update at the beginning of the nonlinear step.
+        """Set the callback to compute update at the beginning of each step.
 
         Logically collective.
 
@@ -778,7 +781,7 @@ cdef class SNES(Object):
             CHKERR( SNESSetUpdate(self.snes, NULL) )
 
     def getUpdate(self) -> SNESUpdateFunction:
-        """Return the callback to compute the update at the beginning of the nonlinear step.
+        """Return the callback to compute the update at the beginning of each step.
 
         Not collective.
 
@@ -1592,9 +1595,11 @@ cdef class SNES(Object):
         return toBool(flag)
 
     def setIterationNumber(self, its: int) -> None:
-        """Set the current iteration number. This is only of use to implementers of custom SNES types.
+        """Set the current iteration number.
 
         Collective.
+
+        This is only of use to implementers of custom SNES types.
 
         See Also
         --------
@@ -1632,9 +1637,11 @@ cdef class SNES(Object):
         CHKERR( SNESSetForceIteration(self.snes, bval) )
 
     def setFunctionNorm(self, norm: float) -> None:
-        """Set the function norm value. This is only of use to implementers of custom SNES types.
+        """Set the function norm value.
 
         Collective.
+
+        This is only of use to implementers of custom SNES types.
 
         See Also
         --------
@@ -1782,7 +1789,9 @@ cdef class SNES(Object):
         if targs or kargs: self.setParamsEW(*targs, **kargs)
 
     def getUseEW(self) -> bool:
-        """Return the boolean flag indicating if the solver uses the Eisenstat-Walker trick.
+        """Return the flag indicating if the solver uses the Eisenstat-Walker trick.
+
+        Not Collective.
 
         See Also
         --------
@@ -1886,7 +1895,7 @@ cdef class SNES(Object):
         CHKERR( SNESSetUseMFFD(self.snes, bval) )
 
     def getUseMF(self) -> bool:
-        """Return the boolean flag indicating whether the solver uses matrix-free finite-differencing.
+        """Return the flag indicating if the solver uses matrix-free finite-differencing.
 
         Not collective.
 
@@ -1900,7 +1909,7 @@ cdef class SNES(Object):
         return toBool(flag)
 
     def setUseFD(self, flag=True) -> None:
-        """Set the boolean flag indicating to use coloring finite-differencing for Jacobian assembly.
+        """Set the boolean flag to use coloring finite-differencing for Jacobian assembly.
 
         Logically collective.
 
@@ -1913,7 +1922,7 @@ cdef class SNES(Object):
         CHKERR( SNESSetUseFDColoring(self.snes, bval) )
 
     def getUseFD(self) -> False:
-        """Return the boolean flag indicating whether the solver uses color finite-differencing assembly of the Jacobian.
+        """Return ``true`` if the solver uses color finite-differencing for the Jacobian.
 
         Not collective.
 
@@ -1983,7 +1992,7 @@ cdef class SNES(Object):
         return self
 
     def setPythonContext(self, context: Any) -> None:
-        """Set the instance of the Python class implementing the required Python methods.
+        """Set the instance of the class implementing the required Python methods.
 
         Not collective.
 
@@ -1995,7 +2004,7 @@ cdef class SNES(Object):
         CHKERR( SNESPythonSetContext(self.snes, <void*>context) )
 
     def getPythonContext(self) -> Any:
-        """Return the instance of the Python class implementing the required Python methods.
+        """Return the instance of the class implementing the required Python methods.
 
         Not collective.
 

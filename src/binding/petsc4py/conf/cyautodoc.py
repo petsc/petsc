@@ -139,12 +139,17 @@ class EmbedSignature(CythonTransform):
             func_doc = docfmt % (func_doc, ret_doc)
         return func_doc
 
-    def _embed_signature(self, signature, node_doc):
+    def _fmt_relative_position(self, pos):
+        return 'Source code at ' + ':'.join((str(pos[0].get_filenametable_entry()), str(pos[1])))
+
+    def _embed_signature(self, signature, pos, node_doc):
+        pos = self._fmt_relative_position(pos)
         if node_doc:
-            docfmt = self._select_format("%s\n%s", "%s\n--\n\n%s")
-            return docfmt % (signature, node_doc)
+            docfmt = self._select_format("%s\n%s\n%s", "%s\n--\n\n%s")
+            return docfmt % (signature, node_doc, pos)
         else:
-            return signature
+            docfmt = self._select_format("%s\n%s", "%s\n--\n\n%s")
+            return docfmt % (signature, pos)
 
     def __call__(self, node):
         if not Options.docstrings:
@@ -207,7 +212,7 @@ class EmbedSignature(CythonTransform):
                 old_doc = node.py_func.entry.doc
             else:
                 old_doc = None
-            new_doc = self._embed_signature(signature, old_doc)
+            new_doc = self._embed_signature(signature, node.pos, old_doc)
             doc_holder.doc = EncodedString(new_doc)
             if not is_constructor and getattr(node, 'py_func', None) is not None:
                 node.py_func.entry.doc = EncodedString(new_doc)
@@ -230,7 +235,7 @@ class EmbedSignature(CythonTransform):
                 old_doc = node.py_func.entry.doc
             else:
                 old_doc = None
-            new_doc = self._embed_signature(signature, old_doc)
+            new_doc = self._embed_signature(signature, node.pos, old_doc)
             node.entry.doc = EncodedString(new_doc)
             py_func = getattr(node, 'py_func', None)
             if py_func is not None:
@@ -265,7 +270,7 @@ class EmbedSignature(CythonTransform):
                     type_name = self._fmt_annotation(ret_annotation)
         if type_name is not None:
             signature = '%s: %s' % (prop_name, type_name)
-            new_doc = self._embed_signature(signature, entry.doc)
+            new_doc = self._embed_signature(signature, node.pos, entry.doc)
             entry.doc = EncodedString(new_doc)
         return node
 

@@ -350,7 +350,7 @@ cdef class DMSwarm(DM):
         CHKERR( DMSwarmRemovePoint(self.dm) )
 
     def removePointAtIndex(self, index: int) -> None:
-        """Remove a specific point from the `DMSwarm`
+        """Remove a specific point from the `DMSwarm`.
 
         Not collective.
 

@@ -87,12 +87,15 @@ cdef class DM(Object):
         Parameters
         ----------
         viewer
-            Viewer used to display the `DM`, either `Viewer.Type.BINARY` or `Viewer.Type.HDF5`.
+            Viewer used to store the `DM`,
+            like `Viewer.Type.BINARY` or `Viewer.Type.HDF5`.
 
         Notes
         -----
-        When using `Viewer.Type.HDF5` format, one can save multiple `DMPlex` meshes in a single HDF5 files.
-        This in turn requires one to name the `DMPlex` object with `Object.setName` before saving it with `DM.view` and before loading it with `DM.load` for identification of the mesh object.
+        When using `Viewer.Type.HDF5` format, one can save multiple `DMPlex` meshes
+        in a single HDF5 files. This in turn requires one to name the `DMPlex`
+        object with `Object.setName` before saving it with `DM.view` and before
+        loading it with `DM.load` for identification of the mesh object.
 
         See Also
         --------
@@ -298,11 +301,6 @@ cdef class DM(Object):
 
         Collective.
 
-        Notes
-        -----
-        Options database is available to set up a specific configuration.
-        For instance, ``-dm_vec_type`` sets the type of vector to create inside of the `DM`.
-
         See Also
         --------
         petsc_options, petsc.DMSetFromOptions
@@ -363,10 +361,10 @@ cdef class DM(Object):
 
         Parameters
         ----------
-        useCone
-            If `True`, the variable influence is set, starting with the cone operation.
-        useClosure
-            If `True`, the variable influence is set using transitive closure.
+        useCone : bool
+            Whether adjacency uses cone information.
+        useClosure : bool
+            Whether adjacency is computed using full closure information.
 
         See Also
         --------
@@ -384,10 +382,10 @@ cdef class DM(Object):
 
         Returns
         -------
-        toBool(uC) : bool
-            This flag provides the variable influence starting with the cone operation if `True`.
-        toBool(uCl) : bool
-            This flag provides the variable influence using transitive closure.
+        useCone : bool
+            Whether adjacency uses cone information.
+        useClosure : bool
+            Whether adjacency is computed using full closure information.
 
         See Also
         --------
@@ -406,12 +404,12 @@ cdef class DM(Object):
 
         Parameters
         ----------
-        field
+        field : int
             The field number.
-        useCone
-            If `True`, the variable influence is set, starting with the cone operation.
-        useClosure
-            If `True`, the variable influence is set using transitive closure.
+        useCone : bool
+            Whether adjacency uses cone information.
+        useClosure : bool
+            Whether adjacency is computed using full closure information.
 
         See Also
         --------
@@ -435,10 +433,10 @@ cdef class DM(Object):
 
         Returns
         -------
-        toBool(uC) : bool
-            This flag provides the variable influence starting with the cone operation if `True`.
-        toBool(uCl) : bool
-            This flag provides the variable influence using transitive closure.
+        useCone : bool
+            Whether adjacency uses cone information.
+        useClosure : bool
+            Whether adjacency is computed using full closure information.
 
         See Also
         --------
@@ -579,7 +577,8 @@ cdef class DM(Object):
         field
             The discretization object.
         label
-            The name of the label indicating the support of the field, or `None` for the entire mesh, currently must be `None`.
+            The name of the label indicating the support of the field,
+            or `None` for the entire mesh.
 
         See Also
         --------
@@ -627,7 +626,8 @@ cdef class DM(Object):
         field
             The discretization object.
         label
-            The name of the label indicating the support of the field, or `None` for the entire mesh, currently must be `None`.
+            The name of the label indicating the support of the field,
+            or `None` for the entire mesh.
 
         See Also
         --------
@@ -802,7 +802,7 @@ cdef class DM(Object):
     def getGlobalVec(self) -> Vec:
         """Return a global vector.
 
-        Collective on `DM`.
+        Collective.
 
         See Also
         --------
@@ -865,7 +865,7 @@ cdef class DM(Object):
         CHKERR( PetscObjectDereference(<PetscObject>vl.vec) )
         CHKERR( DMRestoreLocalVector(self.dm, &vl.vec) )
 
-    def globalToLocal(self, Vec vg, Vec vl, addv: InsertMode | None = None) -> None:
+    def globalToLocal(self, Vec vg, Vec vl, addv: InsertModeSpec | None = None) -> None:
         """Update local vectors from global vector.
 
         Neighborwise collective.
@@ -877,7 +877,7 @@ cdef class DM(Object):
         vl
             The local vector.
         addv
-            `InsertMode.INSERT_VALUES` or `InsertMode.ADD_VALUES`.
+            Insertion mode.
 
         See Also
         --------
@@ -888,19 +888,19 @@ cdef class DM(Object):
         CHKERR( DMGlobalToLocalBegin(self.dm, vg.vec, im, vl.vec) )
         CHKERR( DMGlobalToLocalEnd  (self.dm, vg.vec, im, vl.vec) )
 
-    def localToGlobal(self, Vec vl, Vec vg, addv: InsertMode | None = None) -> None:
+    def localToGlobal(self, Vec vl, Vec vg, addv: InsertModeSpec | None = None) -> None:
         """Update global vectors from local vector.
 
         Neighborwise collective.
 
         Parameters
         ----------
-        vg
-            The global vector.
         vl
             The local vector.
+        vg
+            The global vector.
         addv
-            If `InsertMode.INSERT_VALUES`, then no parallel communication is used, while, if `InsertMode.ADD_VALUES`, then all ghost points from the same base point accumulate into that base point.
+            Insertion mode.
 
         See Also
         --------
@@ -911,19 +911,19 @@ cdef class DM(Object):
         CHKERR( DMLocalToGlobalBegin(self.dm, vl.vec, im, vg.vec) )
         CHKERR( DMLocalToGlobalEnd(self.dm, vl.vec, im, vg.vec) )
 
-    def localToLocal(self, Vec vl, Vec vlg, addv: InsertMode | None = None) -> None:
+    def localToLocal(self, Vec vl, Vec vlg, addv: InsertModeSpec | None = None) -> None:
         """Map the values from a local vector to another local vector.
 
         Neighborwise collective.
 
         Parameters
         ----------
-        vg
-            The global vector.
         vl
             The local vector.
+        vlg
+            The global vector.
         addv
-            `InsertMode.INSERT_VALUES` or `InsertMode.ADD_VALUES`.
+            Insertion mode.
 
         See Also
         --------
@@ -1542,8 +1542,8 @@ cdef class DM(Object):
         globalsec
             Describe the global data layout.
 
-        Note
-        ----
+        Notes
+        -----
         Encoding based on the `Section` describing the data layout.
 
         See Also
@@ -2047,7 +2047,7 @@ cdef class DM(Object):
             ) -> None:
         """Set the `SNES` Jacobian evaluation function.
 
-        Not collective
+        Not collective.
 
         Parameters
         ----------

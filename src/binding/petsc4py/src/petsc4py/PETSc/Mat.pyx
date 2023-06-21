@@ -472,7 +472,7 @@ cdef class Mat(Object):
 
         Once created, the user should call `setType` or
         `setFromOptions` before using the matrix. Alternatively, specific
-        creation routines can be used such as `createAIJ` or
+        creation routines such as `createAIJ` or
         `createBAIJ` can be used.
 
         Parameters
@@ -1524,7 +1524,7 @@ cdef class Mat(Object):
         return self
 
     def setPythonContext(self, context: Any) -> None:
-        """Set the instance of the Python class implementing the required Python methods.
+        """Set the instance of the class implementing the required Python methods.
 
         Not collective.
 
@@ -1536,7 +1536,7 @@ cdef class Mat(Object):
         CHKERR( MatPythonSetContext(self.mat, <void*>context) )
 
     def getPythonContext(self) -> Any:
-        """Return the instance of the Python class implementing the required Python methods.
+        """Return the instance of the class implementing the required Python methods.
 
         Not collective.
 
@@ -1717,8 +1717,8 @@ cdef class Mat(Object):
         CHKERR( MatGetLocalSize(self.mat, &m, &n) )
         return (toInt(m), toInt(n))
 
-    def getSizes(self) -> tuple[tuple[int, int], tuple[int, int]]:
-        """Return the tuple of 2-tuples of the type ``(local, global)`` for rows and columns.
+    def getSizes(self) -> tuple[LayoutSizeSpec, LayoutSizeSpec]:
+        """Return the tuple of matrix layouts.
 
         Not collective.
 
@@ -2404,7 +2404,7 @@ cdef class Mat(Object):
         value: Scalar,
         addv: InsertModeSpec = None,
         ) -> None:
-        """Set or add a value to the ``(row, col)`` entry of the matrix.
+        """Set a value to the ``(row, col)`` entry of the matrix.
 
         Not collective.
 
@@ -2437,7 +2437,7 @@ cdef class Mat(Object):
         values: Sequence[Scalar],
         addv: InsertModeSpec = None,
         ) -> None:
-        """Set or add values to the rows ⊗ col entries of the matrix.
+        """Set values to the rows ⊗ col entries of the matrix.
 
         Not collective.
 
@@ -2471,7 +2471,7 @@ cdef class Mat(Object):
         addv: InsertModeSpec = None,
         rowmap: Sequence[int] = None,
         ) -> None:
-        """Set or add a subset of values stored in CSR format.
+        """Set a subset of values stored in CSR format.
 
         Not collective.
 
@@ -2502,7 +2502,7 @@ cdef class Mat(Object):
         V: Sequence[Scalar],
         addv: InsertModeSpec = None,
         ) -> None:
-        """Set or add values stored in CSR format.
+        """Set values stored in CSR format.
 
         Not collective.
 
@@ -2531,7 +2531,7 @@ cdef class Mat(Object):
         values: Sequence[Scalar],
         addv: InsertModeSpec = None,
         ) -> None:
-        """Set or add values to the rows ⊗ col block entries of the matrix.
+        """Set values to the rows ⊗ col block entries of the matrix.
 
         Not collective.
 
@@ -2542,7 +2542,8 @@ cdef class Mat(Object):
         cols
             Block column indices.
         values
-            The scalar values. A sequence of length at least ``len(rows) * len(cols) * bs * bs``,
+            The scalar values. A sequence of length at least
+            ``len(rows) * len(cols) * bs * bs``,
             where ``bs`` is the block size of the matrix.
         addv
             Insertion mode.
@@ -2566,7 +2567,7 @@ cdef class Mat(Object):
         addv: InsertModeSpec = None,
         rowmap: Sequence[int] = None,
         ) -> None:
-        """Set or add a subset of values stored in block CSR format.
+        """Set a subset of values stored in block CSR format.
 
         Not collective.
 
@@ -2597,7 +2598,7 @@ cdef class Mat(Object):
         V: Sequence[Scalar],
         addv: InsertModeSpec = None,
         ) -> None:
-        """Set or add values stored in block CSR format.
+        """Set values stored in block CSR format.
 
         Not collective.
 
@@ -2663,7 +2664,7 @@ cdef class Mat(Object):
         value: Scalar,
         addv: InsertModeSpec = None,
         ) -> None:
-        """Set or add a value to the ``(row, col)`` entry of the matrix in local ordering.
+        """Set a value to the ``(row, col)`` entry of the matrix in local ordering.
 
         Not collective.
 
@@ -2697,7 +2698,7 @@ cdef class Mat(Object):
         values: Sequence[Scalar],
         addv: InsertModeSpec = None,
         ) -> None:
-        """Set or add values to the rows ⊗ col entries of the matrix in local ordering.
+        """Set values to the rows ⊗ col entries of the matrix in local ordering.
 
         Not collective.
 
@@ -2731,7 +2732,7 @@ cdef class Mat(Object):
         addv: InsertModeSpec = None,
         rowmap: Sequence[int] = None,
         ) -> None:
-        """Set or add a subset of values stored in CSR format.
+        """Set a subset of values stored in CSR format.
 
         Not collective.
 
@@ -2762,7 +2763,7 @@ cdef class Mat(Object):
         V: Sequence[Scalar],
         addv: InsertModeSpec = None,
         ) -> None:
-        """Set or add values stored in CSR format.
+        """Set values stored in CSR format.
 
         Not collective.
 
@@ -2791,7 +2792,7 @@ cdef class Mat(Object):
         values: Sequence[Scalar],
         addv: InsertModeSpec = None,
         ) -> None:
-        """Set or add values to the rows ⊗ col block entries of the matrix in local ordering.
+        """Set values to the rows ⊗ col block entries of the matrix in local ordering.
 
         Not collective.
 
@@ -2802,7 +2803,8 @@ cdef class Mat(Object):
         cols
             Local block column indices.
         values
-            The scalar values. A sequence of length at least ``len(rows) * len(cols) * bs * bs``,
+            The scalar values. A sequence of length at least
+            ``len(rows) * len(cols) * bs * bs``,
             where ``bs`` is the block size of the matrix.
         addv
             Insertion mode.
@@ -2826,7 +2828,7 @@ cdef class Mat(Object):
         addv: InsertModeSpec = None,
         rowmap: Sequence[int] = None,
         ) -> None:
-        """Set or add a subset of values stored in block CSR format.
+        """Set a subset of values stored in block CSR format.
 
         Not collective.
 
@@ -2857,7 +2859,7 @@ cdef class Mat(Object):
         V: Sequence[Scalar],
         addv: InsertModeSpec = None,
         ) -> None:
-        """Set or add values stored in block CSR format.
+        """Set values stored in block CSR format.
 
         Not collective.
 
@@ -2910,7 +2912,7 @@ cdef class Mat(Object):
         value: Sequence[Scalar],
         addv: InsertModeSpec = None,
         ) -> None:
-        """Set or add a value to row and col stencil.
+        """Set a value to row and col stencil.
 
         Not collective.
 
@@ -2945,7 +2947,7 @@ cdef class Mat(Object):
         value: Sequence[Scalar],
         addv: InsertModeSpec = None,
         ) -> None:
-        """Set or add a block values to row and col stencil.
+        """Set a block of values to row and col stencil.
 
         Not collective.
 
@@ -4048,7 +4050,7 @@ cdef class Mat(Object):
         To determine the correct fill value, run with -info and search
         for the string "Fill ratio" to see the value actually needed.
 
-        See also
+        See Also
         --------
         petsc.MatMatMult, petsc.MatReuse
 
@@ -4096,7 +4098,7 @@ cdef class Mat(Object):
         To determine the correct fill value, run with -info and search
         for the string "Fill ratio" to see the value actually needed.
 
-        See also
+        See Also
         --------
         petsc.MatMatTransposeMult, petsc.MatReuse
 
@@ -4144,7 +4146,7 @@ cdef class Mat(Object):
         To determine the correct fill value, run with -info and search
         for the string "Fill ratio" to see the value actually needed.
 
-        See also
+        See Also
         --------
         petsc.MatTransposeMatMult, petsc.MatReuse
 
@@ -4196,7 +4198,7 @@ cdef class Mat(Object):
         `petsc.MatProductCreate` and set the desired options before the
         computation is done.
 
-        See also
+        See Also
         --------
         petsc.MatPtAP, petsc.MatReuse
 
@@ -4244,7 +4246,7 @@ cdef class Mat(Object):
         To determine the correct fill value, run with -info and search
         for the string "Fill ratio" to see the value actually needed.
 
-        See also
+        See Also
         --------
         petsc.MatRARt, petsc.MatReuse
 
@@ -4290,7 +4292,7 @@ cdef class Mat(Object):
         result : Mat
             The resultant product matrix D.
 
-        See also
+        See Also
         --------
         petsc.MatMatMatMult, petsc.MatReuse
 
@@ -4326,7 +4328,7 @@ cdef class Mat(Object):
         result : Mat
             The resultant matrix C, the Kronecker product of A and B.
 
-        See also
+        See Also
         --------
         petsc.MatSeqAIJKron, petsc.MatReuse
 
@@ -4349,7 +4351,7 @@ cdef class Mat(Object):
         flg
             Bind to the CPU if `True`.
 
-        See also
+        See Also
         --------
         petsc.MatBindToCPU
 
@@ -4360,7 +4362,7 @@ cdef class Mat(Object):
     def boundToCPU(self) -> bool:
         """Query if a matrix is bound to the CPU.
 
-        See also
+        See Also
         --------
         petsc.MatBoundToCPU
 
@@ -4569,7 +4571,9 @@ cdef class Mat(Object):
     def getInertia(self) -> tuple[int, int, int]:
         """Return the inertia from a factored matrix.
 
-        Collective. The matrix must have been factored by calling `factorCholesky`.
+        Collective.
+
+        The matrix must have been factored by calling `factorCholesky`.
 
         Returns
         -------
@@ -4980,7 +4984,9 @@ cdef class Mat(Object):
     def solve(self, Vec b, Vec x) -> None:
         """Solve Ax=b, given a factored matrix.
 
-        Neighborwise collective. The vectors ``b`` and ``x`` cannot be the same.
+        Neighborwise collective.
+
+        The vectors ``b`` and ``x`` cannot be the same.
         Most users should employ the `KSP` interface for linear solvers instead
         of working directly with matrix algebra routines.
 
@@ -5001,7 +5007,9 @@ cdef class Mat(Object):
     def solveTranspose(self, Vec b, Vec x) -> None:
         """Solve Aᵀx=b, given a factored matrix.
 
-        Neighborwise collective. The vectors ``b`` and ``x`` cannot be the same.
+        Neighborwise collective.
+
+        The vectors ``b`` and ``x`` cannot be the same.
 
         Parameters
         ----------
@@ -5020,7 +5028,9 @@ cdef class Mat(Object):
     def solveAdd(self, Vec b, Vec y, Vec x) -> None:
         """Solve x=y+A⁻¹b, given a factored matrix.
 
-        Neighborwise collective. The vectors ``b`` and ``x`` cannot be the same.
+        Neighborwise collective.
+
+        The vectors ``b`` and ``x`` cannot be the same.
 
         Parameters
         ----------
@@ -5041,7 +5051,9 @@ cdef class Mat(Object):
     def solveTransposeAdd(self, Vec b, Vec y, Vec x) -> None:
         """Solve x=y+A⁻ᵀb, given a factored matrix.
 
-        Neighborwise collective. The vectors ``b`` and ``x`` cannot be the same.
+        Neighborwise collective.
+
+        The vectors ``b`` and ``x`` cannot be the same.
 
         Parameters
         ----------
@@ -5551,7 +5563,7 @@ cdef class NullSpace(Object):
         constant
             A flag to indicate the null space contains the constant vector.
         vectors
-            The sequence of vectors that span the null space, excluding the constant vector.
+            The sequence of vectors that span the null space.
         comm
             MPI communicator, defaults to `Sys.getDefaultComm`.
 
@@ -5576,10 +5588,13 @@ cdef class NullSpace(Object):
     def createRigidBody(self, Vec coords) -> Self:
         """Create rigid body modes from coordinates.
 
+        Collective.
+
         Parameters
         ----------
         coords
-            The block coordinates of each node. This requires the block size to have been set.
+            The block coordinates of each node.
+            Requires the block size to have been set.
 
         See Also
         --------
@@ -5628,6 +5643,8 @@ cdef class NullSpace(Object):
 
     def hasConstant(self) -> bool:
         """Return whether the null space contains the constant.
+
+        Not collective.
 
         See Also
         --------

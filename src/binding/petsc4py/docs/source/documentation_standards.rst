@@ -17,11 +17,12 @@ Docstrings are to be written in `numpydoc:format` format.
 The first line of a function or method docstring must be a short description of
 the method in imperative mood ("Return the norm of the matrix.") "Return" is
 to be preferred over "Get" in this sentence. A blank line must follow this
-description.
+description. Use one-liner descriptions for properties.
 
 If the corresponding C API documentation lists a function as being collective,
-then this information must be repeated on the next line of the docstring.  E.g.
-"Not collective.", "Logically collective on X.", "Collective."
+then this information must be repeated on the next line of the docstring.
+Valid strings are: "Not collective.", "Logically collective.", "Collective.",
+or "Neighborwise collective.".
 
 The initial description section can contain more information if this is useful.
 In particular, if there is a PETSc manual chapter about a class, then this

@@ -892,6 +892,8 @@ cdef class Viewer(Object):
     def clearDraw(self) -> None:
         """Reset graphics.
 
+        Not collective.
+
         See Also
         --------
         petsc.PetscViewerDrawClear

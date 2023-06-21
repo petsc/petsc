@@ -41,7 +41,7 @@ or with
 
 .. code-block::
 
-   DMSetSetFromOptions(DM dm)
+   DMSetFromOptions(DM dm)
 
 and the options database option ``-dm_mat_type <aij or baij or aijcusparse etc>`` Matrices can be created for CPU usage, for GPU usage and for usage on
 both the CPUs and GPUs. 

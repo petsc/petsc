@@ -552,7 +552,7 @@ cdef class IS(Object):
     def equal(self, IS iset) -> bool:
         """Return whether the index sets have the same set of indices or not.
 
-        Collective on ``self``.
+        Collective.
 
         Parameters
         ----------
@@ -569,9 +569,9 @@ cdef class IS(Object):
         return toBool(flag)
 
     def sum(self, IS iset) -> IS:
-        """Compute the union of two (sorted) index sets.
+        """Return the union of two (sorted) index sets.
 
-        Sequential only.
+        Collective.
 
         Parameters
         ----------
@@ -588,9 +588,9 @@ cdef class IS(Object):
         return out
 
     def expand(self, IS iset) -> IS:
-        """Compute the union of two (possibly unsorted) index sets.
+        """Return the union of two (possibly unsorted) index sets.
 
-        Collective on ``self``.
+        Collective.
 
         To compute the union, `expand` concatenates the two index sets
         and removes any duplicates.
@@ -614,8 +614,10 @@ cdef class IS(Object):
         CHKERR( ISExpand(self.iset, iset.iset, &out.iset) )
         return out
 
-    def union(self, IS iset) -> IS: # XXX review this
-        """Compute the union of two (possibly unsorted) index sets.
+    def union(self, IS iset) -> IS:
+        """Return the union of two (possibly unsorted) index sets.
+
+        Collective.
 
         This function will call either `petsc.ISSum` or `petsc.ISExpand` depending
         on whether or not the input sets are already sorted.
@@ -648,7 +650,7 @@ cdef class IS(Object):
         return out
 
     def difference(self, IS iset: IS) -> IS:
-        """Compute the difference between two index sets.
+        """Return the difference between two index sets.
 
         Collective.
 

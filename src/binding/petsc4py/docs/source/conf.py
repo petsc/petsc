@@ -57,6 +57,7 @@ extensions = [
     'sphinx.ext.autosummary',
     'sphinx.ext.intersphinx',
     'sphinx.ext.napoleon',
+    'sphinx.ext.extlinks',
 ]
 
 templates_path = ['_templates']
@@ -96,6 +97,9 @@ autosummary_context = {
     'autotype': {},
 }
 
+# This can be customized
+www = 'https://gitlab.com/petsc/petsc/-/tree/main'
+extlinks = {'sources': (f'{www}/src/binding/petsc4py/src/%s','')}
 
 def _mangle_petsc_intersphinx():
     """Preprocess the keys in PETSc's intersphinx inventory.

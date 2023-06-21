@@ -2,7 +2,8 @@ import os
 import sys
 import inspect
 import textwrap
-
+from sphinx.util import logging
+logger = logging.getLogger(__name__)
 
 def is_cyfunction(obj):
     return type(obj).__name__ == 'cython_function_or_method'
@@ -91,13 +92,45 @@ def signature(obj):
 def docstring(obj):
     doc = obj.__doc__
     doc = doc or '' # FIXME
-    if is_class(obj):
+    link = None
+    sig = None
+    cl = is_class(obj)
+    if cl:
         doc = doc.strip()
     else:
-        doc = doc.partition('\n')[2]
+        sig, _, doc = doc.partition('\n')
+        doc, _, link = doc.rpartition('\n')
+
     summary, _, docbody = doc.partition('\n')
     summary = summary.strip()
     docbody = textwrap.dedent(docbody).strip()
+    if docbody and sig:
+        if not summary.endswith('.'):
+            logger.warning(f'Summary for {sig} does not end with period.')
+        if len(summary) > 79:
+            logger.warning(f'Summary for {sig} too long.')
+        # FIXME
+        lines = docbody.split('\n')
+        for i,l in enumerate(lines):
+            if len(l) > 79:
+                logger.warning(f'Line {i} for {sig} too long.')
+        #init = ("Collective.", "Not collective.", "Logically collective.", "Neighborwise collective.")
+        #if lines[0] not in init:
+        #   logger.warning(f'Unexpected collectiveness specification for {sig}\nFound {lines[0]}')
+
+    if link:
+        linktxt, _, link = link.rpartition(' ')
+        linkloc = link.replace(':','#L')
+        # FIXME do we want to use a special section?
+        # section = f'References\n----------`'
+        section = '\n'
+        linkbody = f':sources:`{linktxt} {link} <{linkloc}>`'
+        linkbody = f'{section}\n{linkbody}'
+        if docbody:
+            docbody = f'{docbody}\n\n{linkbody}'
+        else:
+            docbody = linkbody
+
     if docbody:
         doc = f'"""{summary}\n\n{docbody}\n\n"""'
     else:

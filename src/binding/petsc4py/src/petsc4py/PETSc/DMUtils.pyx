@@ -48,6 +48,8 @@ cdef class DMInterpolation:
     def evaluate(self, DM dm, Vec x, Vec v=None) -> Vec:
         """Calculate interpolated field values at the interpolation points.
 
+        Collective.
+
         Parameters
         ----------
         dm

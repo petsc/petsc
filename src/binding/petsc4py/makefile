@@ -73,7 +73,7 @@ SPHINXOPTS  =
 sphinx: sphinx-html sphinx-pdf sphinx-man sphinx-info
 sphinx-html:
 	mkdir -p build/doctrees docs/html
-	${SPHINXBUILD} -b html -d build/doctrees ${SPHINXOPTS} \
+	${SPHINXBUILD} -a -b html -d build/doctrees ${SPHINXOPTS} \
 	docs/source docs/html
 	${RM} docs/html/.buildinfo
 sphinx-pdf:

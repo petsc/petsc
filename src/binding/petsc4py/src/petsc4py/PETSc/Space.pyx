@@ -22,7 +22,7 @@ cdef class Space(Object):
     def setUp(self) -> None:
         """Construct data structures for the `Space`.
 
-        Collective on `Space`.
+        Collective.
 
         See Also
         --------
