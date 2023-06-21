@@ -1204,7 +1204,7 @@ PetscErrorCode MatDestroy_SeqAIJ(Mat A)
 
   PetscFunctionBegin;
   if (A->hash_active) {
-    PetscCall(PetscMemcpy(&A->ops, &a->cops, sizeof(*(A->ops))));
+    A->ops[0] = a->cops;
     PetscCall(PetscHMapIJVDestroy(&a->ht));
     PetscCall(PetscFree(a->dnz));
     A->hash_active = PETSC_FALSE;
