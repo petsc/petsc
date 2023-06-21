@@ -1556,7 +1556,7 @@ PetscErrorCode MatDestroy_SeqBAIJ(Mat A)
   PetscFunctionBegin;
   if (A->hash_active) {
     PetscInt bs;
-    PetscCall(PetscMemcpy(&A->ops, &a->cops, sizeof(*(A->ops))));
+    A->ops[0] = a->cops;
     PetscCall(PetscHMapIJVDestroy(&a->ht));
     PetscCall(MatGetBlockSize(A, &bs));
     if (bs > 1) PetscCall(PetscHSetIJDestroy(&a->bht));
