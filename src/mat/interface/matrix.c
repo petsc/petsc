@@ -895,6 +895,8 @@ PetscErrorCode MatResetPreallocation(Mat A)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
   PetscValidType(A, 1);
+  PetscCheck(A->insertmode == NOT_SET_VALUES, PETSC_COMM_SELF, PETSC_ERR_SUP, "Cannot reset preallocation after setting some values but not yet calling MatAssemblyBegin()/MatAsssemblyEnd()");
+  if (A->num_ass == 0) PetscFunctionReturn(PETSC_SUCCESS);
   PetscUseMethod(A, "MatResetPreallocation_C", (Mat), (A));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

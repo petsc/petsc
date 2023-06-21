@@ -3,6 +3,10 @@ import os
 import re
 import nargs
 
+re_win32fe_cl    = re.compile('win32fe\s+cl')
+re_win32fe_icl   = re.compile('win32fe\s+icl')
+re_win32fe_ifort = re.compile('win32fe\s+ifort')
+
 class CompilerOptions(config.base.Configure):
   def getCFlags(self, compiler, bopt, language):
     import config.setCompilers
@@ -57,7 +61,7 @@ class CompilerOptions(config.base.Configure):
           flags.append('-g')
           flags.append('-O3')
       # Windows Intel
-      elif compiler.find('win_icl') >= 0:
+      elif 'win_icl' in compiler or re_win32fe_icl.search(compiler):
         if bopt == '':
           flags.extend(['-Qstd=c99'])
           if self.argDB['with-shared-libraries']:
@@ -69,7 +73,7 @@ class CompilerOptions(config.base.Configure):
         elif bopt == 'O':
           flags.extend(['-O3', '-QxW'])
       # Windows Microsoft
-      elif compiler.find('win_cl') >= 0:
+      elif 'win_cl' in compiler or re_win32fe_cl.search(compiler):
         if bopt == '':
           dir(self)
           # cause compiler to generate only a single copy of static strings; needed usage of __func__ in PETSc
@@ -180,7 +184,7 @@ class CompilerOptions(config.base.Configure):
           flags.append('-g')
           flags.append('-O3')
       # Windows Intel
-      elif compiler.find('win_icl') >= 0:
+      elif 'win_icl' in compiler or re_win32fe_icl.search(compiler):
         if bopt == '':
           if self.argDB['with-shared-libraries']:
             flags.extend(['-MD','-GR','-EHsc'])
@@ -191,7 +195,7 @@ class CompilerOptions(config.base.Configure):
         elif bopt in ['O']:
           flags.extend(['-O3', '-QxW'])
       # Windows Microsoft
-      elif compiler.find('win_cl') >= 0:
+      elif 'win_cl' in compiler or re_win32fe_cl.search(compiler):
         if bopt == '':
           # cause compiler to generate only a single copy of static strings; needed usage of __func__ in PETSc
           flags.extend(['-GF'])
@@ -278,7 +282,7 @@ class CompilerOptions(config.base.Configure):
           flags.append('-g')
           flags.append('-O3')
       # Windows Intel
-      elif compiler.find('win_ifort') >= 0:
+      elif 'win_ifort' in compiler or re_win32fe_ifort.search(compiler):
         if bopt == '':
           if self.argDB['with-shared-libraries']:
             flags.extend(['-MD'])

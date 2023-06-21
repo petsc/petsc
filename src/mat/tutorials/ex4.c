@@ -27,11 +27,14 @@ int main(int argc, char **argv)
   PetscCall(MatSetUp(A));
   PetscCall(PetscFree2(dnnz, onnz));
 
+  /* since the matrix has never been assembled this reset should do nothing */
+  PetscCall(MatResetPreallocation(A));
+
   /* This assembly shrinks memory because we do not insert enough number of values */
   PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
 
-  /* MatResetPreallocation restores the memory required by users */
+  /* MatResetPreallocation() restores the memory required by users */
   PetscCall(MatResetPreallocation(A));
   PetscCall(MatSetOption(A, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_TRUE));
   PetscCall(MatGetOwnershipRange(A, &rstart, &rend));

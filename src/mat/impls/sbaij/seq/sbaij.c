@@ -175,6 +175,16 @@ PetscErrorCode MatDestroy_SeqSBAIJ(Mat A)
   Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ *)A->data;
 
   PetscFunctionBegin;
+  if (A->hash_active) {
+    PetscInt bs;
+    PetscCall(PetscMemcpy(&A->ops, &a->cops, sizeof(*(A->ops))));
+    PetscCall(PetscHMapIJVDestroy(&a->ht));
+    PetscCall(MatGetBlockSize(A, &bs));
+    if (bs > 1) PetscCall(PetscHSetIJDestroy(&a->bht));
+    PetscCall(PetscFree(a->dnz));
+    PetscCall(PetscFree(a->bdnz));
+    A->hash_active = PETSC_FALSE;
+  }
 #if defined(PETSC_USE_LOG)
   PetscCall(PetscLogObjectState((PetscObject)A, "Rows=%" PetscInt_FMT ", NZ=%" PetscInt_FMT, A->rmap->N, a->nz));
 #endif
@@ -1526,6 +1536,7 @@ static PetscErrorCode MatSeqSBAIJSetPreallocation_SeqSBAIJ(Mat B, PetscInt bs, P
   PetscInt      i, mbs, nbs, bs2;
   PetscBool     skipallocation = PETSC_FALSE, flg = PETSC_FALSE, realalloc = PETSC_FALSE;
 
+  PetscFunctionBegin;
   if (B->hash_active) {
     PetscInt bs;
     B->ops[0] = b->cops;
@@ -1536,7 +1547,6 @@ static PetscErrorCode MatSeqSBAIJSetPreallocation_SeqSBAIJ(Mat B, PetscInt bs, P
     PetscCall(PetscFree(b->bdnz));
     B->hash_active = PETSC_FALSE;
   }
-  PetscFunctionBegin;
   if (nz >= 0 || nnz) realalloc = PETSC_TRUE;
 
   PetscCall(MatSetBlockSize(B, PetscAbs(bs)));

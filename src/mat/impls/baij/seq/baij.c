@@ -1554,6 +1554,16 @@ PetscErrorCode MatDestroy_SeqBAIJ(Mat A)
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ *)A->data;
 
   PetscFunctionBegin;
+  if (A->hash_active) {
+    PetscInt bs;
+    PetscCall(PetscMemcpy(&A->ops, &a->cops, sizeof(*(A->ops))));
+    PetscCall(PetscHMapIJVDestroy(&a->ht));
+    PetscCall(MatGetBlockSize(A, &bs));
+    if (bs > 1) PetscCall(PetscHSetIJDestroy(&a->bht));
+    PetscCall(PetscFree(a->dnz));
+    PetscCall(PetscFree(a->bdnz));
+    A->hash_active = PETSC_FALSE;
+  }
 #if defined(PETSC_USE_LOG)
   PetscCall(PetscLogObjectState((PetscObject)A, "Rows=%" PetscInt_FMT ", Cols=%" PetscInt_FMT ", NZ=%" PetscInt_FMT, A->rmap->N, A->cmap->n, a->nz));
 #endif
