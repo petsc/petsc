@@ -355,63 +355,67 @@ PetscErrorCode PCGetUseAmat(PC pc, PetscBool *flg)
 }
 
 /*@
-   PCSetKSPNestLevel - sets the amount of nesting the `KSP` that contains this `PC` has
+  PCSetKSPNestLevel - sets the amount of nesting the `KSP` that contains this `PC` has
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  pc - the `PC`
--  level - the nest level
+  Input Parameters:
++ pc    - the `PC`
+- level - the nest level
 
-   Level: developer
+  Level: developer
 
 .seealso: [](ch_ksp), `KSPSetUp()`, `KSPSolve()`, `KSPDestroy()`, `KSP`, `KSPGMRES`, `KSPType`, `KSPGetNestLevel()`, `PCGetKSPNestLevel()`, `KSPSetNestLevel()`
 @*/
 PetscErrorCode PCSetKSPNestLevel(PC pc, PetscInt level)
 {
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
+  PetscValidLogicalCollectiveInt(pc, level, 2);
   pc->kspnestlevel = level;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
-   PCGetKSPNestLevel - gets the amount of nesting the `KSP` that contains this `PC` has
+  PCGetKSPNestLevel - gets the amount of nesting the `KSP` that contains this `PC` has
 
-   Collective
+  Not Collective
 
-   Input Parameter:
-.  pc - the `PC`
+  Input Parameter:
+. pc - the `PC`
 
-   Output Parameter:
-.  level - the nest level
+  Output Parameter:
+. level - the nest level
 
-   Level: developer
+  Level: developer
 
 .seealso: [](ch_ksp), `KSPSetUp()`, `KSPSolve()`, `KSPDestroy()`, `KSP`, `KSPGMRES`, `KSPType`, `KSPSetNestLevel()`, `PCSetKSPNestLevel()`, `KSPGetNestLevel()`
 @*/
 PetscErrorCode PCGetKSPNestLevel(PC pc, PetscInt *level)
 {
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
+  PetscAssertPointer(level, 2);
   *level = pc->kspnestlevel;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
-   PCCreate - Creates a preconditioner context, `PC`
+  PCCreate - Creates a preconditioner context, `PC`
 
-   Collective
+  Collective
 
-   Input Parameter:
-.  comm - MPI communicator
+  Input Parameter:
+. comm - MPI communicator
 
-   Output Parameter:
-.  pc - location to put the preconditioner context
+  Output Parameter:
+.  newpc - location to put the preconditioner context
 
-   Level: developer
+  Level: developer
 
-   Note:
-   The default preconditioner for sparse matrices is `PCILU` or `PCICC` with 0 fill on one process and block Jacobi (`PCBJACOBI`) with `PCILU` or `PCICC`
-   in parallel. For dense matrices it is always `PCNONE`.
+  Note:
+  The default preconditioner for sparse matrices is `PCILU` or `PCICC` with 0 fill on one process and block Jacobi (`PCBJACOBI`) with `PCILU` or `PCICC`
+  in parallel. For dense matrices it is always `PCNONE`.
 
 .seealso: `PC`, `PCSetUp()`, `PCApply()`, `PCDestroy()`
 @*/

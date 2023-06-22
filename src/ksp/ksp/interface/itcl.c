@@ -40,11 +40,28 @@
 @*/
 PetscErrorCode KSPSetOptionsPrefix(KSP ksp, const char prefix[])
 {
+  PetscBool ispcmpi;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
   if (!ksp->pc) PetscCall(KSPGetPC(ksp, &ksp->pc));
-  PetscCall(PCSetOptionsPrefix(ksp->pc, prefix));
-  PetscCall(PetscObjectSetOptionsPrefix((PetscObject)ksp, prefix));
+  PetscCall(PetscObjectTypeCompare((PetscObject)ksp->pc, PCMPI, &ispcmpi));
+  if (ispcmpi) {
+    size_t     len;
+    const char suffix[] = "mpi_linear_solver_server_";
+    char      *newprefix;
+
+    PetscCall(PetscStrlen(prefix, &len));
+    PetscCall(PetscMalloc1(len + sizeof(suffix) + 1, &newprefix));
+    PetscCall(PetscStrncpy(newprefix, prefix, len + sizeof(suffix)));
+    PetscCall(PetscStrlcat(newprefix, suffix, len + sizeof(suffix)));
+    PetscCall(PCSetOptionsPrefix(ksp->pc, newprefix));
+    PetscCall(PetscObjectSetOptionsPrefix((PetscObject)ksp, newprefix));
+    PetscCall(PetscFree(newprefix));
+  } else {
+    PetscCall(PCSetOptionsPrefix(ksp->pc, prefix));
+    PetscCall(PetscObjectSetOptionsPrefix((PetscObject)ksp, prefix));
+  }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -261,6 +278,8 @@ PetscErrorCode KSPMonitorSetFromOptions(KSP ksp, const char opt[], const char na
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+PETSC_INTERN PetscErrorCode KSPCheckPCMPI(KSP);
+
 /*@
   KSPSetFromOptions - Sets `KSP` options from the options database.
   This routine must be called before `KSPSetUp()` if the user is to be
@@ -332,6 +351,8 @@ PetscErrorCode KSPSetFromOptions(KSP ksp)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
+  PetscCall(KSPCheckPCMPI(ksp));
+
   PetscCall(PetscObjectGetComm((PetscObject)ksp, &comm));
   PetscCall(PetscObjectGetOptionsPrefix((PetscObject)ksp, &prefix));
   if (!ksp->skippcsetfromoptions) {

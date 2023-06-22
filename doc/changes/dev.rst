@@ -88,6 +88,8 @@ Changes: Development
 - Add ``PCMatGetApplyOperation()`` and ``PCMatSetApplyOperation()``
 - Add ``PCReduceFailedReason()``
 - Add ``PCSetKSPNestLevel()`` and ``PCSetKSPNestLevel()``
+- Refactor ``PCMPI`` to be a private system used automatically when ``-mpi_linear_solver_server`` is used. The ``KSP`` and ``PC`` objects that solve the system now inherit any prefix provided
+  initially with ``KSPSetPrefix()`` and do not require the previously required ``mpi_`` prefix
 
 .. rubric:: KSP:
 

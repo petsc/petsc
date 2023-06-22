@@ -637,62 +637,66 @@ PetscErrorCode KSPSetPostSolve(KSP ksp, PetscErrorCode (*postsolve)(KSP, Vec, Ve
 }
 
 /*@
-   KSPSetNestLevel - sets the amount of nesting the `KSP` has
+  KSPSetNestLevel - sets the amount of nesting the `KSP` has
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  ksp - the `KSP`
--  level - the nest level
+  Input Parameters:
++ ksp   - the `KSP`
+- level - the nest level
 
-   Level: developer
+  Level: developer
 
 .seealso: [](ch_ksp), `KSPSetUp()`, `KSPSolve()`, `KSPDestroy()`, `KSP`, `KSPGMRES`, `KSPType`, `KSPGetNestLevel()`, `PCSetKSPNestLevel()`, `PCGetKSPNestLevel()`
 @*/
 PetscErrorCode KSPSetNestLevel(KSP ksp, PetscInt level)
 {
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
+  PetscValidLogicalCollectiveInt(ksp, level, 2);
   ksp->nestlevel = level;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
-   KSPGetNestLevel - gets the amount of nesting the `KSP` has
+  KSPGetNestLevel - gets the amount of nesting the `KSP` has
 
-   Collective
+  Not Collective
 
-   Input Parameter:
-.  ksp - the `KSP`
+  Input Parameter:
+. ksp - the `KSP`
 
-   Output Parameter:
-.  level - the nest level
+  Output Parameter:
+. level - the nest level
 
-   Level: developer
+  Level: developer
 
 .seealso: [](ch_ksp), `KSPSetUp()`, `KSPSolve()`, `KSPDestroy()`, `KSP`, `KSPGMRES`, `KSPType`, `KSPSetNestLevel()`, `PCSetKSPNestLevel()`, `PCGetKSPNestLevel()`
 @*/
 PetscErrorCode KSPGetNestLevel(KSP ksp, PetscInt *level)
 {
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
+  PetscAssertPointer(level, 2);
   *level = ksp->nestlevel;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
-   KSPCreate - Creates the `KSP` context.
+  KSPCreate - Creates the `KSP` context.
 
-   Collective
+  Collective
 
-   Input Parameter:
-.  comm - MPI communicator
+  Input Parameter:
+. comm - MPI communicator
 
-   Output Parameter:
-.  ksp - location to put the `KSP` context
+  Output Parameter:
+.  inksp - location to put the `KSP` context
 
-   Level: beginner
+  Level: beginner
 
-   Note:
-   The default `KSPType` is `KSPGMRES` with a restart of 30, using modified Gram-Schmidt orthogonalization.
+  Note:
+  The default `KSPType` is `KSPGMRES` with a restart of 30, using modified Gram-Schmidt orthogonalization.
 
 .seealso: [](ch_ksp), `KSPSetUp()`, `KSPSolve()`, `KSPDestroy()`, `KSP`, `KSPGMRES`, `KSPType`
 @*/

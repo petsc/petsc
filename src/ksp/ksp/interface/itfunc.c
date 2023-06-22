@@ -319,9 +319,18 @@ PetscErrorCode KSPSetUp(KSP ksp)
   Mat            mat, pmat;
   MatNullSpace   nullsp;
   PCFailedReason pcreason;
+  PC             pc;
+  PetscBool      pcmpi;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
+  PetscCall(KSPGetPC(ksp, &pc));
+  PetscCall(PetscObjectTypeCompare((PetscObject)pc, PCMPI, &pcmpi));
+  if (pcmpi) {
+    PetscBool ksppreonly;
+    PetscCall(PetscObjectTypeCompare((PetscObject)ksp, KSPPREONLY, &ksppreonly));
+    if (!ksppreonly) PetscCall(KSPSetType(ksp, KSPPREONLY));
+  }
   level++;
 
   /* reset the convergence flag from the previous solves */
@@ -2100,6 +2109,39 @@ PetscErrorCode KSPSetPC(KSP ksp, PC pc)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+PETSC_INTERN PetscErrorCode PCCreate_MPI(PC);
+
+/*@C
+   KSPCheckPCMPI - Checks if `-mpi_linear_solver_server` is active and the `PC` should be changed to `PCMPI`
+
+   Collective
+
+   Input Parameter:
+.  ksp - iterative context obtained from `KSPCreate()`
+
+   Level: developer
+
+.seealso: [](ch_ksp), `KSPSetPC()`, `KSP`, `PCMPIServerBegin()`, `PCMPIServerEnd()`
+@*/
+PETSC_INTERN PetscErrorCode KSPCheckPCMPI(KSP ksp)
+{
+  PetscBool isPCMPI;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
+  PetscCall(PetscObjectTypeCompare((PetscObject)ksp->pc, PCMPI, &isPCMPI));
+  if (PCMPIServerActive && ksp->nestlevel == 0 && !isPCMPI) {
+    const char *prefix;
+    char       *found = NULL;
+
+    PetscCall(KSPGetOptionsPrefix(ksp, &prefix));
+    if (prefix) PetscCall(PetscStrstr(prefix, "mpi_linear_solver_server_", &found));
+    if (!found) PetscCall(KSPAppendOptionsPrefix(ksp, "mpi_linear_solver_server_"));
+    PetscCall(PCSetType(ksp->pc, PCMPI));
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 /*@
   KSPGetPC - Returns a pointer to the preconditioner context
   set with `KSPSetPC()`.
@@ -2125,7 +2167,9 @@ PetscErrorCode KSPGetPC(KSP ksp, PC *pc)
     PetscCall(PCCreate(PetscObjectComm((PetscObject)ksp), &ksp->pc));
     PetscCall(PetscObjectIncrementTabLevel((PetscObject)ksp->pc, (PetscObject)ksp, 0));
     PetscCall(PetscObjectSetOptions((PetscObject)ksp->pc, ((PetscObject)ksp)->options));
+    PetscCall(PCSetKSPNestLevel(ksp->pc, ksp->nestlevel));
   }
+  PetscCall(KSPCheckPCMPI(ksp));
   *pc = ksp->pc;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

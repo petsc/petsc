@@ -2457,8 +2457,8 @@ or message.
 
 .. _sec_pcmpi:
 
-Using a MPI parallel linear solver from a non-MPI program
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Using PETSc's MPI parallel linear solvers from a non-MPI program
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Using PETSc's MPI linear solver server it is possible to use multiple MPI processes to solve a
 a linear system when the application code, including the matrix generation, is run on a single
@@ -2469,16 +2469,26 @@ The code may create multiple matrices and `KSP` objects and call `KSPSolve()`, s
 code may utilize the `SNES` nonlinear solvers, the `TS` ODE integrators, and the `TAO` optimization algorithms
 which use `KSP`.
 
+The program must then be launched using the standard approaches for launching MPI programs with the additional
+PETSc option ``-mpi_linear_solver_server``.  The linear solves are controlled via the options database in the usual manner (using any options prefix
+you may have provided via ``KSPSetOptionsPrefix()``, for example ``-ksp_type cg -ksp_monitor -pc_type bjacobi -ksp_view``. The solver options cannot be set via
+the functional interface, for example ``KSPSetType()`` etc.
+
+The option ``-mpi_linear_solver_server_view`` will print
+a summary of all the systems solved by the MPI linear solver server when the program completes. By default the linear solver server
+will only parallelize the linear solve to the extent that it believes is appropriate to obtain speedup for the parallel solve, for example, if the
+matrix has 1,000 rows and columns the solution will not be parallelized by default. One can use the option ``-mpi_linear_solver_server_minimum_count_per_rank 5000``
+to cause the linear solver server to allow as few as 5,000 unknowns per rank in the parallel solve.
+
+See ``PCMPI``, ``PCMPIServerBegin()``, and ``PCMPIServerEnd()`` for more details on the solvers.
+
+
 Amdahl's law makes clear that parallelizing only a portion of a numerical code can only provide a limited improvement
 in the computation time; thus it is crucial to understand what phases of a computation must be parallelized (via MPI, OpenMP, or some other model)
 to ensure a useful increase in performance. One of the crucial phases is likely the generation of the matrix entries; the
-use of `MatSetPreallocationCOO()` and `MatSetValuesCOO()` in an OpenMP code allows parallelizing the generation of the matrix.
+use of ``MatSetPreallocationCOO()`` and ``MatSetValuesCOO()`` in an OpenMP code allows parallelizing the generation of the matrix.
 
-The program must then be launched using the standard approaches for launching MPI programs with the
-option `-mpi_linear_solver_server` and options to utilize the `PCMPI` preconditioners; for example,
-`-ksp_type preonly` and `pc_type mpi`. Any standard solver options may be passed to the parallel solvers using the
-options prefix `-mpi_`; for example, `-mpi_ksp_type cg`. The option `-mpi_linear_solver_server_view` will print
-a summary of all the systems solved by the MPI linear solver server.
+
 
 .. rubric:: Footnotes
 
