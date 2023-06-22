@@ -104,6 +104,7 @@ deleteshared:
 
 deletefortranstubs:
 	-@find . -type d -name ftn-auto | xargs rm -rf
+	-@find . -type d -name ftn-auto-interfaces | xargs rm -rf
 
 reconfigure: allclean
 	@unset MAKEFLAGS && ${PYTHON} ${PETSC_ARCH}/lib/petsc/conf/reconfigure-${PETSC_ARCH}.py
