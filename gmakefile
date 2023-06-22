@@ -89,9 +89,9 @@ ifneq ($(KOKKOS_LIB),)
 langs += kokkos.cxx
 endif
 
-concatlang = $(foreach lang, $(langs), $(srcs-$(1).$(lang):src/%.$(lang)=$(OBJDIR)/%.o))
+concatlang = $(foreach lang, $(langs), $(srcs-$(1).$(lang):%.$(lang)=$(OBJDIR)/%.o))
 srcs.o := $(foreach pkg, $(pkgs), $(call concatlang,$(pkg)))
-srcs.tidy := $(foreach pkg, $(pkgs), $(srcs-$(pkg).c:src/%.c=$(OBJDIR)/%.tidy))
+srcs.tidy := $(foreach pkg, $(pkgs), $(srcs-$(pkg).c:%.c=$(OBJDIR)/%.tidy))
 concatlangsrc = $(foreach lang, $(langs), $(srcs-$(1).$(lang)))
 csrc := $(foreach pkg, $(pkgs),  $(srcs-$(pkg).c))
 showcsrc:
@@ -190,27 +190,27 @@ $(call soname_function,%) : $(call libname_function,%)
 
 .PRECIOUS: $(call soname_function,%)
 
-$(OBJDIR)/%.o : src/%.sycl.cxx | $$(@D)/.DIR
+$(OBJDIR)/%.o : %.sycl.cxx | $$(@D)/.DIR
 	$(PETSC_COMPILE.sycl.cxx) $(abspath $<) -o $@
 
-$(OBJDIR)/%.o : src/%.c | $$(@D)/.DIR
+$(OBJDIR)/%.o : %.c | $$(@D)/.DIR
 	$(PETSC_COMPILE.c) $(abspath $<) -o $@
 
-$(OBJDIR)/%.o : src/%.kokkos.cxx | $$(@D)/.DIR
+$(OBJDIR)/%.o : %.kokkos.cxx | $$(@D)/.DIR
 	$(PETSC_COMPILE.kokkos.cxx) $(abspath $<) -o $@
 
-$(OBJDIR)/%.o : src/%.cxx | $$(@D)/.DIR
+$(OBJDIR)/%.o : %.cxx | $$(@D)/.DIR
 	$(PETSC_COMPILE.cxx) $(abspath $<) -o $@
 
-$(OBJDIR)/%.o : src/%.hip.cpp | $$(@D)/.DIR
+$(OBJDIR)/%.o : %.hip.cpp | $$(@D)/.DIR
 	$(PETSC_COMPILE.hip.cpp) $(abspath $<) -o $@
 
-$(OBJDIR)/%.o : src/%.cu | $$(@D)/.DIR
+$(OBJDIR)/%.o : %.cu | $$(@D)/.DIR
 	$(PETSC_COMPILE.cu) $(abspath $<) -o $@ # Compile first so that if there is an error, it comes from a normal compile
 	@$(PETSC_GENDEPS.cu) $(abspath $<) -o $(@:%.o=%.d) # Generate the dependencies for later
 
 FCMOD = cd
-$(OBJDIR)/%.o : src/%.F | $$(@D)/.DIR
+$(OBJDIR)/%.o : %.F | $$(@D)/.DIR
 ifeq ($(FC_MODULE_OUTPUT_FLAG),)
 	$(call quiet,FCMOD) $(MODDIR) && $(FC) -c $(FC_FLAGS) $(FFLAGS) $(FCPPFLAGS) $(FC_DEPFLAGS) $(abspath $<) -o $(abspath $@)
 else
@@ -218,7 +218,7 @@ else
 endif
 	-@$(GFORTRAN_DEP_CLEANUP)
 
-$(OBJDIR)/%.o : src/%.F90 | $$(@D)/.DIR
+$(OBJDIR)/%.o : %.F90 | $$(@D)/.DIR
 ifeq ($(FC_MODULE_OUTPUT_FLAG),)
 	$(call quiet,FCMOD) $(MODDIR) && $(FC) -c $(FC_FLAGS) $(FFLAGS) $(FCPPFLAGS) $(FC_DEPFLAGS) $(abspath $<) -o $(abspath $@)
 else
@@ -228,7 +228,7 @@ endif
 
 # Combine with Jacob's massive lint project?
 # Only works with ./configure --with-mpi=0 since clang-tidy cannot find MPI include files (love MPI compiler wrappers, the worse thing to come from MPI)
-$(OBJDIR)/%.tidy : src/%.c | $$(@D)/.DIR
+$(OBJDIR)/%.tidy : %.c | $$(@D)/.DIR
 	clang-tidy --checks="-*analyzer*,-*diagnostic*,bugprone-too-small-loop-variable"  $(abspath $<) -- ${CCPPFLAGS}  -Wno-implicit-function-declaration -Wno-error=implicit-function-declaration
 
 clang-tidy: $(srcs.tidy)
@@ -236,24 +236,24 @@ clang-tidy: $(srcs.tidy)
 # Hack: manual dependencies on object files
 ifeq ($(MPI_IS_MPIUNI),1)
   MPIUNI_MOD := $(MODDIR)/mpiuni.mod
-  $(OBJDIR)/sys/mpiuni/fsrc/somempifort.o : $(OBJDIR)/sys/mpiuni/f90-mod/mpiunimod.o
+  $(OBJDIR)/src/sys/mpiuni/fsrc/somempifort.o : $(OBJDIR)/src/sys/mpiuni/f90-mod/mpiunimod.o
 endif
-$(OBJDIR)/sys/f90-mod/petscsysmod.o   : $(if $(MPIUNI_MOD),$(OBJDIR)/sys/mpiuni/f90-mod/mpiunimod.o)
-$(OBJDIR)/vec/f90-mod/petscvecmod.o   : $(OBJDIR)/sys/f90-mod/petscsysmod.o
-$(OBJDIR)/mat/f90-mod/petscmatmod.o   : $(OBJDIR)/vec/f90-mod/petscvecmod.o
-$(OBJDIR)/dm/f90-mod/petscdmmod.o     : $(OBJDIR)/mat/f90-mod/petscmatmod.o
-$(OBJDIR)/dm/f90-mod/petscdmdamod.o   : $(OBJDIR)/dm/f90-mod/petscdmmod.o
-$(OBJDIR)/dm/f90-mod/petscdmplexmod.o : $(OBJDIR)/dm/f90-mod/petscdmmod.o
-$(OBJDIR)/dm/f90-mod/petscdmswarmmod.o : $(OBJDIR)/dm/f90-mod/petscdmmod.o
-$(OBJDIR)/ksp/f90-mod/petsckspdefmod.o : $(OBJDIR)/dm/f90-mod/petscdmplexmod.o
-$(OBJDIR)/ksp/f90-mod/petscpcmod.o    : $(OBJDIR)/ksp/f90-mod/petsckspdefmod.o
-$(OBJDIR)/ksp/f90-mod/petsckspmod.o   : $(OBJDIR)/ksp/f90-mod/petscpcmod.o
-$(OBJDIR)/snes/f90-mod/petscsnesmod.o : $(OBJDIR)/ksp/f90-mod/petsckspmod.o
-$(OBJDIR)/ts/f90-mod/petsctsmod.o     : $(OBJDIR)/snes/f90-mod/petscsnesmod.o
-$(OBJDIR)/tao/f90-mod/petsctaomod.o   : $(OBJDIR)/ts/f90-mod/petsctsmod.o
+$(OBJDIR)/src/sys/f90-mod/petscsysmod.o   : $(if $(MPIUNI_MOD),$(OBJDIR)/src/sys/mpiuni/f90-mod/mpiunimod.o)
+$(OBJDIR)/src/vec/f90-mod/petscvecmod.o   : $(OBJDIR)/src/sys/f90-mod/petscsysmod.o
+$(OBJDIR)/src/mat/f90-mod/petscmatmod.o   : $(OBJDIR)/src/vec/f90-mod/petscvecmod.o
+$(OBJDIR)/src/dm/f90-mod/petscdmmod.o     : $(OBJDIR)/src/mat/f90-mod/petscmatmod.o
+$(OBJDIR)/src/dm/f90-mod/petscdmdamod.o   : $(OBJDIR)/src/dm/f90-mod/petscdmmod.o
+$(OBJDIR)/src/dm/f90-mod/petscdmplexmod.o : $(OBJDIR)/src/dm/f90-mod/petscdmmod.o
+$(OBJDIR)/src/dm/f90-mod/petscdmswarmmod.o : $(OBJDIR)/src/dm/f90-mod/petscdmmod.o
+$(OBJDIR)/src/ksp/f90-mod/petsckspdefmod.o : $(OBJDIR)/src/dm/f90-mod/petscdmplexmod.o
+$(OBJDIR)/src/ksp/f90-mod/petscpcmod.o    : $(OBJDIR)/src/ksp/f90-mod/petsckspdefmod.o
+$(OBJDIR)/src/ksp/f90-mod/petsckspmod.o   : $(OBJDIR)/src/ksp/f90-mod/petscpcmod.o
+$(OBJDIR)/src/snes/f90-mod/petscsnesmod.o : $(OBJDIR)/src/ksp/f90-mod/petsckspmod.o
+$(OBJDIR)/src/ts/f90-mod/petsctsmod.o     : $(OBJDIR)/src/snes/f90-mod/petscsnesmod.o
+$(OBJDIR)/src/tao/f90-mod/petsctaomod.o   : $(OBJDIR)/src/ts/f90-mod/petsctsmod.o
 # F2003 interface
-$(OBJDIR)/sys/objects/f2003-src/fsrc/optionenum.o   : $(OBJDIR)/sys/f90-mod/petscsysmod.o
-$(OBJDIR)/sys/classes/bag/f2003-src/fsrc/bagenum.o  : $(OBJDIR)/sys/f90-mod/petscsysmod.o
+$(OBJDIR)/src/sys/objects/f2003-src/fsrc/optionenum.o   : $(OBJDIR)/src/sys/f90-mod/petscsysmod.o
+$(OBJDIR)/src/sys/classes/bag/f2003-src/fsrc/bagenum.o  : $(OBJDIR)/src/sys/f90-mod/petscsysmod.o
 
 # all sources should get recompiled when petscvariables changes (i.e when configure is rerun or when petscvariables is manually edited.)
 $(srcs.o) : $(petscvariables)

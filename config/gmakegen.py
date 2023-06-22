@@ -176,34 +176,34 @@ class Petsc(object):
         return source
 
     def gen_pkg(self, pkg):
+        from itertools import chain
         pkgsrcs = dict()
         for lang in LANGS:
             pkgsrcs[lang] = []
-        for root, dirs, files in os.walk(os.path.join(self.pkg_dir, 'src', pkg)):
+        for root, dirs, files in chain.from_iterable(os.walk(path) for path in [os.path.join(self.pkg_dir, 'src', pkg),os.path.join(self.pkg_dir, self.petsc_arch, 'src', pkg)]):
             if SKIPDIRS.intersection(pathsplit(self.pkg_dir, root)): continue
             dirs.sort()
             files.sort()
             makefile = os.path.join(root,'makefile')
-            if not os.path.exists(makefile):
-                dirs[:] = []
-                continue
-            with open(makefile) as mklines:
+            if os.path.isfile(makefile):
+              with open(makefile) as mklines:
                 conditions = set(tuple(stripsplit(line)) for line in mklines if line.startswith('#requires'))
-            if not all(self.inconf(key, val) for key, val in conditions):
+              if not all(self.inconf(key, val) for key, val in conditions):
                 dirs[:] = []
                 continue
-            makevars = parse_makefile(makefile)
-            mdirs = makevars.get('DIRS','').split() # Directories specified in the makefile
-            self.mistakes.compareDirLists(root, mdirs, dirs) # diagnostic output to find unused directories
-            candidates = set(mdirs).union(AUTODIRS).difference(SKIPDIRS)
-            dirs[:] = list(candidates.intersection(dirs))
+              makevars = parse_makefile(makefile)
+              mdirs = makevars.get('DIRS','').split() # Directories specified in the makefile
+              self.mistakes.compareDirLists(root, mdirs, dirs) # diagnostic output to find unused directories
+              candidates = set(mdirs).union(AUTODIRS).difference(SKIPDIRS)
+              dirs[:] = list(candidates.intersection(dirs))
             allsource = []
             def mkrel(src):
                 return self.relpath(root, src)
-            source = self.get_sources_from_files(files)
-            for lang, s in source.items():
-                pkgsrcs[lang] += [mkrel(t) for t in s]
-            self.gendeps.append(self.relpath(root, 'makefile'))
+            if files:
+              source = self.get_sources_from_files(files)
+              for lang, s in source.items():
+                  pkgsrcs[lang] += [mkrel(t) for t in s]
+              if os.path.isfile(makefile): self.gendeps.append(self.relpath(root, 'makefile'))
         return pkgsrcs
 
     def gen_gnumake(self, fd):
