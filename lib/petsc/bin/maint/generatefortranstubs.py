@@ -21,24 +21,7 @@ from __future__ import print_function
 import os
 
 import subprocess
-try:
-  from subprocess import check_output
-except ImportError:
-  def check_output(*popenargs, **kwargs):
-    """Implementation from Python-2.7 subprocess.check_output for use with
-    Python-2.6 which does not provide check_output.
-    """
-    if 'stdout' in kwargs:
-      raise ValueError('stdout argument not allowed, it will be overridden.')
-    process = subprocess.Popen(stdout=subprocess.PIPE, *popenargs, **kwargs)
-    output, unused_err = process.communicate()
-    retcode = process.poll()
-    if retcode:
-      cmd = kwargs.get("args")
-      if cmd is None:
-        cmd = popenargs[0]
-      raise subprocess.CalledProcessError(retcode, cmd, output=output)
-    return output
+from subprocess import check_output
 
 #
 def FixFile(filename):
