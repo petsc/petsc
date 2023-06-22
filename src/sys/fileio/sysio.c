@@ -239,6 +239,7 @@ PetscErrorCode PetscByteSwap(void *data, PetscDataType pdtype, PetscInt count)
   else if (pdtype == PETSC_FLOAT) PetscCall(PetscByteSwapFloat((float *)data, count));
   else if (pdtype == PETSC_SHORT) PetscCall(PetscByteSwapShort((short *)data, count));
   else if (pdtype == PETSC_LONG) PetscCall(PetscByteSwapLong((long *)data, count));
+  else if (pdtype == PETSC_CHAR) PetscFunctionReturn(PETSC_SUCCESS);
   else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Unknown type: %d", pdtype);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
