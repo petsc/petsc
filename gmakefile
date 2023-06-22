@@ -64,7 +64,7 @@ $(generated) : $(petscconf) $(petscvariables) config/gmakegen.py
 	$(PYTHON) ./config/gmakegen.py --petsc-arch=$(PETSC_ARCH)
 
 # Skip including generated files (which triggers rebuilding them) when we're just going to clean anyway.
-ifneq ($(filter-out help clean check info gmakeinfo,$(MAKECMDGOALS:clean%=clean)),)
+ifneq ($(filter-out alletags allfortranstubs help clean check info gmakeinfo,$(MAKECMDGOALS:clean%=clean)),)
 include $(generated)
 endif
 
