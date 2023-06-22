@@ -165,7 +165,7 @@ PetscErrorCode PetscInfoGetFile(char **filename, FILE **InfoFile)
     Level: developer
 
     Notes:
-    This function CANNOT be called after `PetscInfoGetClass()` or `PetscInfoProcessClass()` has been called.
+    This function CANNOT be called after `PetscInfoGetClass()` or `PetscInfoProcessClass()` has been called, unless the user calls `PetscInfoDestroy()` first.
 
     Names in the `classnames` list should correspond to the names returned by `PetscObjectGetClassName()`.
 
@@ -179,7 +179,7 @@ PetscErrorCode PetscInfoGetFile(char **filename, FILE **InfoFile)
 PetscErrorCode PetscInfoSetClasses(PetscBool exclude, PetscInt n, const char *const *classnames)
 {
   PetscFunctionBegin;
-  PetscCheck(!PetscInfoClassesLocked, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "PetscInfoSetClasses() cannot be called after PetscInfoGetClass() or PetscInfoProcessClass()");
+  PetscCheck(!PetscInfoClassesLocked, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Trying to modify PetscInfo() configuration after it has been locked to a read-only state. Usually, this is an *error*! To re-enable modification, you must reset PetscInfo() by calling PetscInfoDestroy() first");
   PetscCall(PetscStrNArrayDestroy(PetscInfoNumClasses, &PetscInfoClassnames));
   PetscCall(PetscStrNArrayallocpy(n, classnames, &PetscInfoClassnames));
   PetscInfoNumClasses    = n;
@@ -419,9 +419,14 @@ PetscErrorCode PetscInfoSetFromOptions(PetscOptions options)
 
   Level: developer
 
-  Note:
+  Notes:
   This is automatically called in `PetscFinalize()`. Useful for changing filters mid-program, or culling subsequent
   `PetscInfo()` calls down the line.
+
+  Users calling this routine midway through a program should note that `PetscInfoDestroy()`
+  constitutes a full reset of `PetscInfo()`. It flushes, then closes, the current info file,
+  re-enables all classes, and resets all internal state. Finally -- and perhaps crucially -- it
+  disables `PetscInfo()` as-if-by `PetscInfoAllow(PETSC_FALSE)`.
 
 .seealso: `PetscInfo()`, `PetscInfoSetFromOptions()`
 @*/
@@ -430,15 +435,19 @@ PetscErrorCode PetscInfoDestroy(void)
   PetscFunctionBegin;
   PetscCall(PetscInfoAllow(PETSC_FALSE));
   PetscCall(PetscStrNArrayDestroy(PetscInfoNumClasses, &PetscInfoClassnames));
-  PetscCall(PetscFFlush(PetscInfoFile));
-  if (PetscInfoFilename) PetscCall(PetscFClose(PETSC_COMM_SELF, PetscInfoFile));
-  PetscCall(PetscFree(PetscInfoFilename));
+  if (PetscInfoFile) PetscCall(PetscFFlush(PetscInfoFile));
+  if (PetscInfoFilename) {
+    PetscAssert(PetscInfoFile, PETSC_COMM_SELF, PETSC_ERR_ARG_NULL, "Have non-null PetscInfo file '%s', but corresponding FILE handle is null!", PetscInfoFilename);
+    PetscCall(PetscFree(PetscInfoFilename));
+    PetscCall(PetscFClose(PETSC_COMM_SELF, PetscInfoFile));
+  }
   PetscAssert(PETSC_STATIC_ARRAY_LENGTH(PetscInfoFlags) == PETSC_STATIC_ARRAY_LENGTH(PetscInfoNames), PETSC_COMM_SELF, PETSC_ERR_PLIB, "PetscInfoFlags and PetscInfoNames must be the same size");
   for (size_t i = 0; i < PETSC_STATIC_ARRAY_LENGTH(PetscInfoFlags); ++i) {
     PetscInfoFlags[i] = 1;
     PetscCall(PetscFree(PetscInfoNames[i]));
   }
 
+  PetscInfoFile          = NULL;
   PetscInfoClassesLocked = PETSC_FALSE;
   PetscInfoInvertClasses = PETSC_FALSE;
   PetscInfoClassesSet    = PETSC_FALSE;
