@@ -200,4 +200,6 @@ PETSC_INTERN PetscErrorCode MatSeqAIJGetKokkosView(Mat, MatScalarKokkosView *);
 PETSC_INTERN PetscErrorCode MatSeqAIJRestoreKokkosView(Mat, MatScalarKokkosView *);
 PETSC_INTERN PetscErrorCode MatSeqAIJGetKokkosViewWrite(Mat, MatScalarKokkosView *);
 PETSC_INTERN PetscErrorCode MatSeqAIJRestoreKokkosViewWrite(Mat, MatScalarKokkosView *);
+PETSC_INTERN PetscErrorCode MatInvertVariableBlockDiagonal_SeqAIJKokkos(Mat, const PetscIntKokkosView &, const PetscIntKokkosView &, const PetscIntKokkosView &, PetscScalarKokkosView &, PetscScalarKokkosView &);
+
 #endif

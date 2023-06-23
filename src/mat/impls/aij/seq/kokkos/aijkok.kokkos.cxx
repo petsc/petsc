@@ -13,6 +13,8 @@
 #include <KokkosSparse_sptrsv.hpp>
 #include <KokkosSparse_spgemm.hpp>
 #include <KokkosSparse_spadd.hpp>
+#include <KokkosBatched_LU_Decl.hpp>
+#include <KokkosBatched_InverseLU_Decl.hpp>
 
 #include <../src/mat/impls/aij/seq/kokkos/aijkok.hpp>
 
@@ -1322,6 +1324,87 @@ static PetscErrorCode MatSetOps_SeqAIJKokkos(Mat A)
 
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatSetPreallocationCOO_C", MatSetPreallocationCOO_SeqAIJKokkos));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatSetValuesCOO_C", MatSetValuesCOO_SeqAIJKokkos));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*
+   Extract the (prescribled) diagonal blocks of the matrix and then invert them
+
+  Input Parameters:
++  A       - the MATSEQAIJKOKKOS matrix
+.  bs      - block sizes in 'csr' format, i.e., the i-th block has size bs(i+1) - bs(i)
+.  bs2     - square of block sizes in 'csr' format, i.e., the i-th block should be stored at offset bs2(i) in diagVal[]
+.  blkMap  - map row ids to block ids, i.e., row i belongs to the block blkMap(i)
+-  work    - a pre-allocated work buffer (as big as diagVal) for use by this routine
+
+  Output Parameter:
+.  diagVal - the (pre-allocated) buffer to store the inverted blocks (each block is stored in column-major order)
+*/
+PETSC_INTERN PetscErrorCode MatInvertVariableBlockDiagonal_SeqAIJKokkos(Mat A, const PetscIntKokkosView &bs, const PetscIntKokkosView &bs2, const PetscIntKokkosView &blkMap, PetscScalarKokkosView &work, PetscScalarKokkosView &diagVal)
+{
+  Mat_SeqAIJKokkos *akok    = static_cast<Mat_SeqAIJKokkos *>(A->spptr);
+  PetscInt          N       = A->rmap->n;
+  PetscInt          nblocks = bs.extent(0) - 1;
+
+  PetscFunctionBegin;
+  // Set the diagonal pointer on device if not already
+  if (N && akok->diag_dual.extent(0) == 0) {
+    PetscCall(MatMarkDiagonal_SeqAIJ(A));
+    akok->SetDiagonal(static_cast<Mat_SeqAIJ *>(A->data)->diag);
+  }
+
+  PetscCall(MatSeqAIJKokkosSyncDevice(A)); // Since we'll access A's value on device
+
+  // Pull out the diagonal blocks of the matrix and then invert the blocks
+  auto Aa    = akok->a_dual.view_device();
+  auto Ai    = akok->i_dual.view_device();
+  auto Aj    = akok->j_dual.view_device();
+  auto Adiag = akok->diag_dual.view_device();
+  // TODO: how to tune the team size?
+#if defined(KOKKOS_ENABLE_DEFAULT_DEVICE_TYPE_HOST)
+  auto ts = Kokkos::AUTO();
+#else
+  auto ts         = 16; // improved performance 30% over Kokkos::AUTO() with CUDA, but failed with "Kokkos::abort: Requested Team Size is too large!" on CPUs
+#endif
+  PetscCallCXX(Kokkos::parallel_for(
+    Kokkos::TeamPolicy<>(nblocks, ts), KOKKOS_LAMBDA(const KokkosTeamMemberType &teamMember) {
+      const PetscInt bid    = teamMember.league_rank();                                                   // block id
+      const PetscInt rstart = bs(bid);                                                                    // this block starts from this row
+      const PetscInt m      = bs(bid + 1) - bs(bid);                                                      // size of this block
+      const auto    &B      = Kokkos::View<PetscScalar **, Kokkos::LayoutLeft>(&diagVal(bs2(bid)), m, m); // column-major order
+      const auto    &W      = PetscScalarKokkosView(&work(bs2(bid)), m * m);
+
+      Kokkos::parallel_for(Kokkos::TeamThreadRange(teamMember, m), [=](const PetscInt &r) { // r-th row in B
+        PetscInt i = rstart + r;                                                            // i-th row in A
+
+        if (Ai(i) <= Adiag(i) && Adiag(i) < Ai(i + 1)) { // if the diagonal exists (common case)
+          PetscInt first = Adiag(i) - r;                 // we start to check nonzeros from here along this row
+
+          for (PetscInt c = 0; c < m; c++) {                   // walk n steps to see what column indices we will meet
+            if (first + c < Ai(i) || first + c >= Ai(i + 1)) { // this entry (first+c) is out of range of this row, in other words, its value is zero
+              B(r, c) = 0.0;
+            } else if (Aj(first + c) == rstart + c) { // this entry is right on the (rstart+c) column
+              B(r, c) = Aa(first + c);
+            } else { // this entry does not show up in the CSR
+              B(r, c) = 0.0;
+            }
+          }
+        } else { // rare case that the diagonal does not exist
+          const PetscInt begin = Ai(i);
+          const PetscInt end   = Ai(i + 1);
+          for (PetscInt c = 0; c < m; c++) B(r, c) = 0.0;
+          for (PetscInt j = begin; j < end; j++) { // scan the whole row; could use binary search but this is a rare case so we did not.
+            if (rstart <= Aj(j) && Aj(j) < rstart + m) B(r, Aj(j) - rstart) = Aa(j);
+            else if (Aj(j) >= rstart + m) break;
+          }
+        }
+      });
+
+      // LU-decompose B (w/o pivoting) and then invert B
+      KokkosBatched::TeamLU<KokkosTeamMemberType, KokkosBatched::Algo::LU::Unblocked>::invoke(teamMember, B, 0.0);
+      KokkosBatched::TeamInverseLU<KokkosTeamMemberType, KokkosBatched::Algo::InverseLU::Unblocked>::invoke(teamMember, B, W);
+    }));
+  // PetscLogGpuFlops() is done in the caller PCSetUp_VPBJacobi_Kokkos as we don't want to compute the flops in kernels
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
