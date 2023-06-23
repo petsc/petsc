@@ -31,8 +31,11 @@ if __name__ == '__main__':
     '--with-hip',
     '--with-hipc=hipcc',
     'LIBS={GTLDIR} {GTLLIBS}'.format(GTLDIR=os.environ['PE_MPICH_GTL_DIR_amd_gfx90a'], GTLLIBS=os.environ['PE_MPICH_GTL_LIBS_amd_gfx90a']),
+    '--download-metis',
+    '--download-parmetis',
     '--download-kokkos',
     '--download-kokkos-kernels',
+    '--download-superlu_dist',
   ]
   configure.petsc_configure(configure_options)
 
