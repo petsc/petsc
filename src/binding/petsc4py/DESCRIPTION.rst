@@ -41,4 +41,5 @@ project.
   J. Roman, K. Rupp, P. Sanan, J Sarich, B. Smith,
   S. Zampini, H. Zhang, and H. Zhang, J. Zhang,
   *PETSc/TAO Users Manual*, ANL-21/39 - Revision 3.19, 2023.
+  http://dx.doi.org/10.2172/1968587,
   https://petsc.org/release/docs/manual/manual.pdf
