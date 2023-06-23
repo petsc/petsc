@@ -15,6 +15,6 @@ testex55:
            echo "Possible error running Python src/sys/tests/ex55.py with 2 MPI processes"; \
            echo "See https://petsc.org/release/faq/";\
            cat ex55_1.tmp; \
-           touch ${PETSC_DIR}/check_error;\
+           touch ../../../check_error;\
          fi; \
          ${RM} -f ex55.tmp

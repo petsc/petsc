@@ -3,9 +3,9 @@ import os
 import re
 import nargs
 
-re_win32fe_cl    = re.compile('win32fe\s+cl')
-re_win32fe_icl   = re.compile('win32fe\s+icl')
-re_win32fe_ifort = re.compile('win32fe\s+ifort')
+re_win32fe_cl    = re.compile(r'win32fe\s+cl')
+re_win32fe_icl   = re.compile(r'win32fe\s+icl')
+re_win32fe_ifort = re.compile(r'win32fe\s+ifort')
 
 class CompilerOptions(config.base.Configure):
   def getCFlags(self, compiler, bopt, language):
