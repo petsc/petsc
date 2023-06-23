@@ -11,6 +11,6 @@ runex47: ex47.PETSc
              echo "C/C++ example src/vec/vec/tests/ex47 run successfully with hdf5"; \
            else \
              printf "${PWD}\nPossible problem with ex47 running with hdf5, diffs above\n=========================================\n";\
-             touch ${PETSC_DIR}/check_error;\
+             touch ../../../../check_error;\
            fi; \
 	   ${RM} -f ex47_1.tmp $${H5OUT}
