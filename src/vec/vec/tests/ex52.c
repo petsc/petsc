@@ -2,11 +2,6 @@ static const char help[] = "Tests VecSum()\n\n";
 
 #include <petscvec.h>
 
-static PetscBool PetscIsCloseAtTolScalar(PetscScalar l, PetscScalar r, PetscReal atol, PetscReal rtol)
-{
-  return (PetscBool)(PetscIsCloseAtTol(PetscRealPart(l), PetscRealPart(r), atol, rtol) && PetscIsCloseAtTol(PetscImaginaryPart(l), PetscImaginaryPart(r), atol, rtol));
-}
-
 static PetscErrorCode CheckVecSumReturn(Vec v, PetscScalar expected)
 {
   PetscScalar actual;

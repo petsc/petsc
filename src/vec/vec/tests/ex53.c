@@ -2,11 +2,6 @@ static const char help[] = "Tests VecShift()\n\n";
 
 #include <petscvec.h>
 
-static PetscBool PetscIsCloseAtTolScalar(PetscScalar l, PetscScalar r, PetscReal atol, PetscReal rtol)
-{
-  return (PetscBool)(PetscIsCloseAtTol(PetscRealPart(l), PetscRealPart(r), atol, rtol) && PetscIsCloseAtTol(PetscImaginaryPart(l), PetscImaginaryPart(r), atol, rtol));
-}
-
 static PetscErrorCode CheckVecShift(Vec v, PetscInt n, PetscScalar *array_copy, PetscScalar shift)
 {
   const PetscScalar *array;

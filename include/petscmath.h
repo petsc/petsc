@@ -814,6 +814,31 @@ PETSC_EXTERN PetscBool PetscIsCloseAtTol(PetscReal, PetscReal, PetscReal, PetscR
 PETSC_EXTERN PetscBool PetscEqualReal(PetscReal, PetscReal);
 PETSC_EXTERN PetscBool PetscEqualScalar(PetscScalar, PetscScalar);
 
+/*@C
+  PetscIsCloseAtTolScalar - Like `PetscIsCloseAtTol()` but for `PetscScalar`
+
+  Input Parameters:
++ lhs  - The first number
+. rhs  - The second number
+. rtol - The relative tolerance
+- atol - The absolute tolerance
+
+  Level: beginner
+
+  Note:
+  This routine is equivalent to `PetscIsCloseAtTol()` when PETSc is configured without complex
+  numbers.
+
+.seealso: `PetscIsCloseAtTol()`
+@*/
+static inline PetscBool PetscIsCloseAtTolScalar(PetscScalar lhs, PetscScalar rhs, PetscReal rtol, PetscReal atol)
+{
+  PetscBool close = PetscIsCloseAtTol(PetscRealPart(lhs), PetscRealPart(rhs), rtol, atol);
+
+  if (PetscDefined(USE_COMPLEX)) close = (PetscBool)(close && PetscIsCloseAtTol(PetscImaginaryPart(lhs), PetscImaginaryPart(rhs), rtol, atol));
+  return close;
+}
+
 /*
     These macros are currently hardwired to match the regular data types, so there is no support for a different
     MatScalar from PetscScalar. We left the MatScalar in the source just in case we use it again.
