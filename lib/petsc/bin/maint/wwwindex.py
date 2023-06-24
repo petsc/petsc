@@ -39,15 +39,14 @@ def printindex(outfilename, headfilename, levels, titles, tables):
           fd.write(headbuf)
           fd.write('\n')
           all_names = []
-          fd.write('\n## Manual Pages by Level\n')
           for i, level in enumerate(levels):
                 title = titles[i]
                 if not tables[i]:
                       if level != 'none' and level != 'deprecated':
-                          fd.write('\n### No %s routines\n' % level)
+                          fd.write('\n## No %s routines\n' % level)
                       continue
 
-                fd.write('\n### %s\n' % title)
+                fd.write('\n## %s\n' % title)
                 fd.write('```{hlist}\n')
                 fd.write("---\n")
                 fd.write("columns: %d\n" % HLIST_COLUMNS)
