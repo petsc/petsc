@@ -422,7 +422,7 @@ allgtags:
 # ********* Rules for building "classic" documentation; uses rules also in lib/petsc/conf/rules.doc **************************************************
 
 docs:
-	cd doc; ${OMAKE_SELF} sphinxhtml
+	cd doc; time ${OMAKE_SELF} sphinxhtml
 
 chk_in_petscdir:
 	@if [ ! -f include/petscversion.h ]; then \
@@ -447,20 +447,20 @@ chk_c2html:
 # the ACTION=manualpages cannot run in parallel because they all write to the same manualpages.cit file
 hloc=include/petsc/private
 allmanpages: chk_loc deletemanualpages
-	-echo " /* SUBMANSEC = PetscH */ " > ${hloc}/generated_khash.h
-	-sed -e 's?<T>?I?g' -e 's?<t>?i?g' -e 's?<KeyType>?PetscInt?g' ${hloc}/hashset.txt >> ${hloc}/generated_khash.h
-	-sed -e 's?<T>?IJ?g' -e 's?<t>?ij?g' -e 's?<KeyType>?struct {PetscInt i, j;}?g' ${hloc}/hashset.txt >> ${hloc}/generated_khash.h
-	-sed -e 's?<T>?I?g' -e 's?<t>?i?g' -e 's?<KeyType>?PetscInt?g'  -e 's?<ValType>?PetscInt?g' ${hloc}/hashmap.txt >> ${hloc}/generated_khash.h
-	-sed -e 's?<T>?IJ?g' -e 's?<t>?ij?g' -e 's?<KeyType>?struct {PetscInt i, j;}?g' -e 's?<ValType>?PetscInt?g' ${hloc}/hashmap.txt >> ${hloc}/generated_khash.h
-	-sed -e 's?<T>?IJ?g' -e 's?<t>?ij?g' -e 's?<KeyType>?struct {PetscInt i, j;}?g' -e 's?<ValType>?PetscScalar?g' ${hloc}/hashmap.txt >> ${hloc}/generated_khash.h
-	-sed -e 's?<T>?IV?g' -e 's?<t>?iv?g' -e 's?<KeyType>?PetscInt?g'  -e 's?<ValType>?PetscScalar?g' ${hloc}/hashmap.txt >> ${hloc}/generated_khash.h
-	-sed -e 's?<T>?Obj?g' -e 's?<t>?obj?g' -e 's?<KeyType>?PetscInt64?g'  -e 's?<ValType>?PetscObject?g' ${hloc}/hashmap.txt >> ${hloc}/generated_khash.h
-	-${RM} ${PETSC_DIR}/${PETSC_ARCH}/manualpages.err
+	-@echo " /* SUBMANSEC = PetscH */ " > ${hloc}/generated_khash.h
+	-@sed -e 's?<T>?I?g' -e 's?<t>?i?g' -e 's?<KeyType>?PetscInt?g' ${hloc}/hashset.txt >> ${hloc}/generated_khash.h
+	-@sed -e 's?<T>?IJ?g' -e 's?<t>?ij?g' -e 's?<KeyType>?struct {PetscInt i, j;}?g' ${hloc}/hashset.txt >> ${hloc}/generated_khash.h
+	-@sed -e 's?<T>?I?g' -e 's?<t>?i?g' -e 's?<KeyType>?PetscInt?g'  -e 's?<ValType>?PetscInt?g' ${hloc}/hashmap.txt >> ${hloc}/generated_khash.h
+	-@sed -e 's?<T>?IJ?g' -e 's?<t>?ij?g' -e 's?<KeyType>?struct {PetscInt i, j;}?g' -e 's?<ValType>?PetscInt?g' ${hloc}/hashmap.txt >> ${hloc}/generated_khash.h
+	-@sed -e 's?<T>?IJ?g' -e 's?<t>?ij?g' -e 's?<KeyType>?struct {PetscInt i, j;}?g' -e 's?<ValType>?PetscScalar?g' ${hloc}/hashmap.txt >> ${hloc}/generated_khash.h
+	-@sed -e 's?<T>?IV?g' -e 's?<t>?iv?g' -e 's?<KeyType>?PetscInt?g'  -e 's?<ValType>?PetscScalar?g' ${hloc}/hashmap.txt >> ${hloc}/generated_khash.h
+	-@sed -e 's?<T>?Obj?g' -e 's?<t>?obj?g' -e 's?<KeyType>?PetscInt64?g'  -e 's?<ValType>?PetscObject?g' ${hloc}/hashmap.txt >> ${hloc}/generated_khash.h
+	-@${RM} ${PETSC_DIR}/${PETSC_ARCH}/manualpages.err
 	-${OMAKE_SELF} ACTION=manualpages tree_src LOC=${LOC}
 	-@sed -e s%man+../%man+manualpages/% ${LOC}/manualpages/manualpages.cit > ${LOC}/manualpages/htmlmap
 	-@cat ${PETSC_DIR}/doc/classic/mpi.www.index >> ${LOC}/manualpages/htmlmap
-	cat ${PETSC_DIR}/${PETSC_ARCH}/manualpages.err
-	a=`cat ${PETSC_DIR}/${PETSC_ARCH}/manualpages.err | wc -l`; test ! $$a -gt 0
+	@cat ${PETSC_DIR}/${PETSC_ARCH}/manualpages.err
+	@a=`cat ${PETSC_DIR}/${PETSC_ARCH}/manualpages.err | wc -l`; test ! $$a -gt 0
 
 allmanexamples: chk_loc allmanpages
 	-${OMAKE_SELF} ACTION=manexamples tree LOC=${LOC}

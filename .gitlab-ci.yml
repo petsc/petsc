@@ -1153,8 +1153,8 @@ docs-review:
     - .docs
     - .test-basic
   script:
-    - (make html BUILDDIR="../public" SPHINXOPTS="-T -E -W --keep-going -j 1") || (printf "Sphinx build failed (warnings count as errors)\n" && false)
-    - (make latexpdf SPHINXOPTS="-T -E -W --keep-going") || (printf "Sphinx build failed (warnings count as errors)\n" && false)
+    - (time make html BUILDDIR="../public" SPHINXOPTS="-T -E -W --keep-going -j 2") || (printf "Sphinx build failed (warnings count as errors)\n" && false)
+    - (time make latexpdf SPHINXOPTS="-T -E -W --keep-going -j 2") || (printf "Sphinx build failed (warnings count as errors)\n" && false)
     - cp _build/latex/manual.pdf ../public/html/manual/
   environment:
     name: review/$CI_COMMIT_REF_NAME
