@@ -51,9 +51,11 @@ static PetscErrorCode MatSetValues_MPI_Hash(Mat A, PetscInt m, const PetscInt *r
 
 static PetscErrorCode MatAssemblyBegin_MPI_Hash(Mat A, PETSC_UNUSED MatAssemblyType type)
 {
+  PetscConcat(Mat_MPI, TYPE) *a = (PetscConcat(Mat_MPI, TYPE) *)A->data;
   PetscInt nstash, reallocs;
 
   PetscFunctionBegin;
+  if (a->donotstash || A->nooffprocentries) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(MatStashScatterBegin_Private(A, &A->stash, A->rmap->range));
   PetscCall(MatStashGetInfo_Private(&A->stash, &nstash, &reallocs));
   PetscCall(PetscInfo(A, "Stash has %" PetscInt_FMT " entries, uses %" PetscInt_FMT " mallocs.\n", nstash, reallocs));
@@ -69,23 +71,25 @@ static PetscErrorCode MatAssemblyEnd_MPI_Hash(Mat A, MatAssemblyType type)
   PetscInt     j, ncols, flg, rstart;
 
   PetscFunctionBegin;
-  while (1) {
-    PetscCall(MatStashScatterGetMesg_Private(&A->stash, &n, &row, &col, &val, &flg));
-    if (!flg) break;
+  if (!a->donotstash && !A->nooffprocentries) {
+    while (1) {
+      PetscCall(MatStashScatterGetMesg_Private(&A->stash, &n, &row, &col, &val, &flg));
+      if (!flg) break;
 
-    for (PetscInt i = 0; i < n;) {
-      /* Now identify the consecutive vals belonging to the same row */
-      for (j = i, rstart = row[j]; j < n; j++) {
-        if (row[j] != rstart) break;
+      for (PetscInt i = 0; i < n;) {
+        /* Now identify the consecutive vals belonging to the same row */
+        for (j = i, rstart = row[j]; j < n; j++) {
+          if (row[j] != rstart) break;
+        }
+        if (j < n) ncols = j - i;
+        else ncols = n - i;
+        /* Now assemble all these values with a single function call */
+        PetscCall(MatSetValues_MPI_Hash(A, 1, row + i, ncols, col + i, val + i, A->insertmode));
+        i = j;
       }
-      if (j < n) ncols = j - i;
-      else ncols = n - i;
-      /* Now assemble all these values with a single function call */
-      PetscCall(MatSetValues_MPI_Hash(A, 1, row + i, ncols, col + i, val + i, A->insertmode));
-      i = j;
     }
+    PetscCall(MatStashScatterEnd_Private(&A->stash));
   }
-  PetscCall(MatStashScatterEnd_Private(&A->stash));
   if (type != MAT_FINAL_ASSEMBLY) PetscFunctionReturn(PETSC_SUCCESS);
 
   A->insertmode = NOT_SET_VALUES; /* this was set by the previous calls to MatSetValues() */
