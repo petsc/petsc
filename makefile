@@ -462,9 +462,14 @@ allmanpages: chk_loc deletemanualpages
 	@cat ${PETSC_DIR}/${PETSC_ARCH}/manualpages.err
 	@a=`cat ${PETSC_DIR}/${PETSC_ARCH}/manualpages.err | wc -l`; test ! $$a -gt 0
 
+#
+#   This code needs to be rewritten in Python to reduce by a factor of 100 the time it takes to run
+#
 allmanexamples: chk_loc allmanpages
 	-${OMAKE_SELF} ACTION=manexamples tree LOC=${LOC}
 
+#
+#  This code needs to be rewritten in Python to reduce by a factor of 100 the time it takes to run
 #
 #    Goes through all manual pages adding links to implementations of the method
 # or class, at the end of the file.
@@ -515,6 +520,10 @@ alldoc_pre: chk_loc allmanpages allmanexamples
 	-${OMAKE_SELF} LOC=${LOC} manimplementations
 	-${PYTHON} lib/petsc/bin/maint/wwwindex.py ${PETSC_DIR} ${LOC}
 
+#
+#  This code needs to be rewritten in Python to reduce by a factor of 100 the time it takes to run
+#
+#
 # Run after alldoc_pre to build html sources
 alldoc_post: chk_loc  chk_c2html
 	-@if command -v parallel &> /dev/null; then \
