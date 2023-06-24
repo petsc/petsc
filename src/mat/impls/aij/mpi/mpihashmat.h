@@ -24,10 +24,14 @@ static PetscErrorCode MatSetValues_MPI_Hash(Mat A, PetscInt m, const PetscInt *r
     PetscScalar value;
     if (rows[r] < 0) continue;
     if (rows[r] < rStart || rows[r] >= rEnd) {
-      if (a->roworiented) {
-        PetscCall(MatStashValuesRow_Private(&A->stash, rows[r], n, cols, values + r * n, PETSC_FALSE));
-      } else {
-        PetscCall(MatStashValuesCol_Private(&A->stash, rows[r], n, cols, values + r, m, PETSC_FALSE));
+      PetscCheck(!A->nooffprocentries, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Setting off process row %" PetscInt_FMT " even though MatSetOption(,MAT_NO_OFF_PROC_ENTRIES,PETSC_TRUE) was set", rows[r]);
+      if (!a->donotstash) {
+        A->assembled = PETSC_FALSE;
+        if (a->roworiented) {
+          PetscCall(MatStashValuesRow_Private(&A->stash, rows[r], n, cols, values + r * n, PETSC_FALSE));
+        } else {
+          PetscCall(MatStashValuesCol_Private(&A->stash, rows[r], n, cols, values + r, m, PETSC_FALSE));
+        }
       }
     } else {
       for (PetscInt c = 0; c < n; ++c) {
