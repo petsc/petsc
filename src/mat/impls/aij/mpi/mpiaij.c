@@ -6698,6 +6698,7 @@ PetscErrorCode MatSetPreallocationCOO_MPIAIJ(Mat mat, PetscCount coo_n, PetscInt
   PetscCall(MatCreateSeqAIJWithArrays(PETSC_COMM_SELF, m, n, Ai, Aj, Aa, &mpiaij->A));
   PetscCall(MatCreateSeqAIJWithArrays(PETSC_COMM_SELF, m, mat->cmap->N, Bi, Bj, Ba, &mpiaij->B));
   PetscCall(MatSetUpMultiply_MPIAIJ(mat));
+  mat->was_assembled = PETSC_TRUE; // was_assembled in effect means the Mvctx is built; doing so avoids redundant MatSetUpMultiply_MPIAIJ
 
   a               = (Mat_SeqAIJ *)mpiaij->A->data;
   b               = (Mat_SeqAIJ *)mpiaij->B->data;
