@@ -37,19 +37,35 @@ def _configure_minimal_petsc(petsc_dir, petsc_arch) -> None:
     if 'MAKEFLAGS' in os.environ: del os.environ['MAKEFLAGS']
     configure = [
         './configure',
+        '--with-coverage-exec=0',
         '--with-mpi=0',
         '--with-cxx=0',
+        '--with-syclc=0',
+        '--with-hipc=0',
+        '--with-cudac=0',
         '--with-x=0',
+        '--with-bison=0',
         '--with-cmake=0',
         '--with-pthread=0',
         '--with-regexp=0',
-        '--download-sowing',
-        '--download-c2html',
         '--with-mkl_sparse_optimize=0',
         '--with-mkl_sparse=0',
         '--with-petsc4py',
         'PETSC_ARCH=' + petsc_arch,
     ]
+    if 'PETSCBUIDTARBALL' in os.environ:
+        command.append('--download-c2html')
+        command.append('--download-sowing')
+    else:
+        command.append('--with-fc=0')
+        import shutil
+        c2html = shutil.which('c2html')
+        if c2html: command.append('--with-c2html')
+        else:  command.append('--download-c2html')
+        doctext = shutil.which('doctext')
+        if doctext: command.append('--with-sowing')
+        else:  command.append('--download-sowing')
+
     print('==================================================================')
     print('Performing a minimal PETSc (re-)configuration needed to build docs')
     print('PETSC_DIR=%s' % petsc_dir)
