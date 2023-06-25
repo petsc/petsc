@@ -159,7 +159,7 @@ static PetscErrorCode TestEphemeralLabels(DM dm)
   PetscCall(DMPlexTransformDestroy(&tr));
   PetscCall(PetscObjectSetName((PetscObject)tdm, "Ephemeral Mesh"));
 
-  PetscCall(DMGetLabel(tdm, "marker", &label));
+  PetscCall(DMGetLabel(tdm, "OuterBoundary", &label));
   PetscCall(DMLabelDuplicate(label, &labelTmp));
   PetscCall(CheckLabelsSame(label, labelTmp));
   PetscCall(DMLabelDestroy(&labelTmp));
