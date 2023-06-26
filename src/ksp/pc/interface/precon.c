@@ -994,11 +994,9 @@ PetscErrorCode PCSetUp(PC pc)
   if (!pc->setupcalled) {
     PetscCall(PetscInfo(pc, "Setting up PC for first time\n"));
     pc->flag = DIFFERENT_NONZERO_PATTERN;
-  } else if (matstate == pc->matstate) {
-    PetscCall(PetscInfo(pc, "Leaving PC with identical preconditioner since operator is unchanged\n"));
-    PetscFunctionReturn(PETSC_SUCCESS);
-  } else {
-    if (matnonzerostate > pc->matnonzerostate) {
+  } else if (matstate == pc->matstate) PetscFunctionReturn(PETSC_SUCCESS);
+  else {
+    if (matnonzerostate != pc->matnonzerostate) {
       PetscCall(PetscInfo(pc, "Setting up PC with different nonzero pattern\n"));
       pc->flag = DIFFERENT_NONZERO_PATTERN;
     } else {
