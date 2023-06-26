@@ -43,9 +43,6 @@ def loadmanualpagescit(loc):
   return keyre,mdict,uses
 
 def main(petsc_dir,loc):
-    import time
-    x = time.clock_gettime(time.CLOCK_REALTIME)
-    print('Adding links to tutorials to the manual pages\n')
     keyre,mdict,uses = loadmanualpagescit(loc)
     for dirpath, dirnames, filenames in os.walk(os.path.join(petsc_dir,'src'),topdown=True):
       dirnames[:] = [d for d in dirnames if d not in ['output', 'ftn-custom', 'f90-custom', 'ftn-auto', 'f90-mod', 'tests', 'binding']]
@@ -60,8 +57,6 @@ def main(petsc_dir,loc):
           for j in uses[i]:
             file = j.replace(petsc_dir+'/','')
             fd.write('<A HREF="PETSC_DOC_OUT_ROOT_PLACEHOLDER/'+file+'.html">'+file+'</A><BR>\n')
-
-    print("Time "+str(time.clock_gettime(time.CLOCK_REALTIME) - x))
 
 if __name__ == "__main__":
    main(os.path.abspath(os.environ['PETSC_DIR']),os.path.abspath(os.environ['LOC']))

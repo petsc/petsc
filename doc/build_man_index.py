@@ -209,9 +209,6 @@ def getallmandirs(dirs):
 
 
 def main(PETSC_DIR,LOC):
-      import time
-      x = time.clock_gettime(time.CLOCK_REALTIME)
-      print('Building manual page indices\n')
       HEADERDIR = 'doc/classic/manualpages-sec'
       dirs      = glob.glob(LOC + '/manualpages/*')
       mandirs   = getallmandirs(dirs)
@@ -245,7 +242,6 @@ def main(PETSC_DIR,LOC):
       alphabet_dict = createdict(singlelist)
       outfilename   = LOC + '/manualpages/singleindex.md'
       printsingleindex (outfilename,alphabet_dict)
-      print("Time "+str(time.clock_gettime(time.CLOCK_REALTIME) - x))
 
 if __name__ == '__main__':
       main(os.path.abspath(os.environ['PETSC_DIR']),os.path.abspath(os.environ['LOC']))
