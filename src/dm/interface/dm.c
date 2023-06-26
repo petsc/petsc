@@ -145,6 +145,7 @@ PetscErrorCode DMClone(DM dm, DM *newdm)
   (*newdm)->leveldown     = dm->leveldown;
   (*newdm)->levelup       = dm->levelup;
   (*newdm)->prealloc_only = dm->prealloc_only;
+  (*newdm)->prealloc_skip = dm->prealloc_skip;
   PetscCall(PetscFree((*newdm)->vectype));
   PetscCall(PetscStrallocpy(dm->vectype, (char **)&(*newdm)->vectype));
   PetscCall(PetscFree((*newdm)->mattype));
