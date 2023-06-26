@@ -268,6 +268,10 @@ PetscErrorCode MatMPIAIJSetPreallocation_MPIAIJCUSPARSE(Mat B, PetscInt d_nz, co
   PetscInt            i;
 
   PetscFunctionBegin;
+  if (B->hash_active) {
+    B->ops[0]      = b->cops;
+    B->hash_active = PETSC_FALSE;
+  }
   PetscCall(PetscLayoutSetUp(B->rmap));
   PetscCall(PetscLayoutSetUp(B->cmap));
   if (PetscDefined(USE_DEBUG) && d_nnz) {
@@ -304,7 +308,9 @@ PetscErrorCode MatMPIAIJSetPreallocation_MPIAIJCUSPARSE(Mat B, PetscInt d_nz, co
   PetscCall(MatSeqAIJSetPreallocation(b->B, o_nz, o_nnz));
   PetscCall(MatCUSPARSESetFormat(b->A, MAT_CUSPARSE_MULT, cusparseStruct->diagGPUMatFormat));
   PetscCall(MatCUSPARSESetFormat(b->B, MAT_CUSPARSE_MULT, cusparseStruct->offdiagGPUMatFormat));
-  B->preallocated = PETSC_TRUE;
+  B->preallocated  = PETSC_TRUE;
+  B->was_assembled = PETSC_FALSE;
+  B->assembled     = PETSC_FALSE;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
