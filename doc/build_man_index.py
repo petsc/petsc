@@ -208,18 +208,12 @@ def getallmandirs(dirs):
       return mandirs
 
 
-def main():
-      arg_len = len(sys.argv)
-
-      if arg_len < 3:
-            print('Error! Insufficient arguments.')
-            print('Usage:', sys.argv[0], 'PETSC_DIR','LOC')
-            exit()
-
-      PETSC_DIR = sys.argv[1]
-      LOC       = sys.argv[2]
-      HEADERDIR = (sys.argv[3] if arg_len > 3 else 'doc/classic/manualpages-sec')
-      dirs      = (glob.glob(LOC + '/manualpages/*') if arg_len < 5 else [sys.argv[4]])
+def main(PETSC_DIR,LOC):
+      import time
+      x = time.clock_gettime(time.CLOCK_REALTIME)
+      print('Building manual page indices\n')
+      HEADERDIR = 'doc/classic/manualpages-sec'
+      dirs      = glob.glob(LOC + '/manualpages/*')
       mandirs   = getallmandirs(dirs)
 
       levels = ['beginner','intermediate','advanced','developer','deprecated','none']
@@ -251,7 +245,7 @@ def main():
       alphabet_dict = createdict(singlelist)
       outfilename   = LOC + '/manualpages/singleindex.md'
       printsingleindex (outfilename,alphabet_dict)
-
+      print("Time "+str(time.clock_gettime(time.CLOCK_REALTIME) - x))
 
 if __name__ == '__main__':
-      main()
+      main(os.path.abspath(os.environ['PETSC_DIR']),os.path.abspath(os.environ['LOC']))

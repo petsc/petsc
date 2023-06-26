@@ -89,26 +89,33 @@ def _build_classic_docs_subset(petsc_dir, petsc_arch, outdir, stage):
         print(command)
         print('============================================')
         subprocess.run(command, cwd=petsc_dir, check=True)
+
         import build_man_examples_links
         build_man_examples_links.main(petsc_dir,loc)
-        target = "alldoc_pre"
+
+        command = ['make', 'manimplementations',
+                   'PETSC_DIR=%s' % petsc_dir,
+                   'PETSC_ARCH=%s' % petsc_arch,
+                   'HTMLMAP=%s' % os.path.join(os.getcwd(),'manualpages','htmlmap'),
+                   'LOC=%s' % loc]
+        print('============================================')
+        print(command)
+        print('============================================')
+        subprocess.run(command, cwd=petsc_dir, check=True)
+
+        import build_man_index
+        build_man_index.main(petsc_dir,loc)
     elif stage == "post":
-        target = "alldoc_post"
         loc = outdir
-    else:
-        raise Exception("Unrecognized stage %s" % stage)
-    command = ['make', target,
-               'PETSC_DIR=%s' % petsc_dir,
-               'PETSC_ARCH=%s' % petsc_arch,
-               'HTMLMAP=%s' % os.path.join(os.getcwd(),'manualpages','htmlmap'),
-               'LOC=%s' % loc]
-    print('============================================')
-    print('Building a subset of PETSc classic docs (%s)' % stage)
-    print('PETSC_DIR=%s' % petsc_dir)
-    print('PETSC_ARCH=%s' % petsc_arch)
-    print(command)
-    print('============================================')
-    subprocess.run(command, cwd=petsc_dir, check=True)
+        command = ['make', 'alldoc_post',
+                   'PETSC_DIR=%s' % petsc_dir,
+                   'PETSC_ARCH=%s' % petsc_arch,
+                   'HTMLMAP=%s' % os.path.join(os.getcwd(),'manualpages','htmlmap'),
+                   'LOC=%s' % loc]
+        print('============================================')
+        print(command)
+        print('============================================')
+        subprocess.run(command, cwd=petsc_dir, check=True)
 
 def classic_docs_subdirs(stage):
     if stage == 'pre':   # generated .md files that Sphinx will use to create website
