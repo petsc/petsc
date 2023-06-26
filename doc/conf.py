@@ -221,7 +221,7 @@ def _fix_man_page_edit_links(app, exception):
     if exception is None:
         import time
         print("============================================")
-        print("    Fixing man page edit links")
+        print("    Fixing manual page edit links")
         x = time.clock_gettime(time.CLOCK_REALTIME)
         fix_man_page_edit_links.fix_man_page_edit_links(app.outdir)
         print("Time: "+str(time.clock_gettime(time.CLOCK_REALTIME) - x))
