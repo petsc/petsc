@@ -3603,7 +3603,8 @@ PetscErrorCode MatDuplicateNoCreate_SeqBAIJ(Mat C, Mat A, MatDuplicateOption cpv
     c->compressedrow.i      = NULL;
     c->compressedrow.rindex = NULL;
   }
-  C->nonzerostate = A->nonzerostate;
+  c->nonzerorowcnt = a->nonzerorowcnt;
+  C->nonzerostate  = A->nonzerostate;
 
   PetscCall(PetscFunctionListDuplicate(((PetscObject)A)->qlist, &((PetscObject)C)->qlist));
   PetscFunctionReturn(PETSC_SUCCESS);
