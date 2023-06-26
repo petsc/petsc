@@ -174,6 +174,7 @@ PetscErrorCode PetscOptionsCreate(PetscOptions *options)
 PetscErrorCode PetscOptionsDestroy(PetscOptions *options)
 {
   PetscFunctionBegin;
+  PetscValidPointer(options, 1);
   if (!*options) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCheck(!(*options)->previous, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "You are destroying an option that has been used with PetscOptionsPush() but does not have a corresponding PetscOptionsPop()");
   PetscCall(PetscOptionsClear(*options));
@@ -296,9 +297,8 @@ PetscErrorCode PetscOptionsValidKey(const char key[], PetscBool *valid)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PetscOptionsInsertString_Private(PetscOptions options, const char in_str[], PetscOptionSource source)
+static PetscErrorCode PetscOptionsInsertString_Private(PetscOptions options, const char in_str[], PetscOptionSource source)
 {
-  MPI_Comm   comm = PETSC_COMM_SELF;
   char      *first, *second;
   PetscToken token;
 
@@ -307,6 +307,7 @@ PetscErrorCode PetscOptionsInsertString_Private(PetscOptions options, const char
   PetscCall(PetscTokenFind(token, &first));
   while (first) {
     PetscBool isfile, isfileyaml, isstringyaml, ispush, ispop, key;
+
     PetscCall(PetscStrcasecmp(first, "-options_file", &isfile));
     PetscCall(PetscStrcasecmp(first, "-options_file_yaml", &isfileyaml));
     PetscCall(PetscStrcasecmp(first, "-options_string_yaml", &isstringyaml));
@@ -317,11 +318,11 @@ PetscErrorCode PetscOptionsInsertString_Private(PetscOptions options, const char
       PetscCall(PetscTokenFind(token, &first));
     } else if (isfile) {
       PetscCall(PetscTokenFind(token, &second));
-      PetscCall(PetscOptionsInsertFile(comm, options, second, PETSC_TRUE));
+      PetscCall(PetscOptionsInsertFile(PETSC_COMM_SELF, options, second, PETSC_TRUE));
       PetscCall(PetscTokenFind(token, &first));
     } else if (isfileyaml) {
       PetscCall(PetscTokenFind(token, &second));
-      PetscCall(PetscOptionsInsertFileYAML(comm, options, second, PETSC_TRUE));
+      PetscCall(PetscOptionsInsertFileYAML(PETSC_COMM_SELF, options, second, PETSC_TRUE));
       PetscCall(PetscTokenFind(token, &first));
     } else if (isstringyaml) {
       PetscCall(PetscTokenFind(token, &second));
@@ -712,7 +713,7 @@ PetscErrorCode PetscOptionsInsertArgs(PetscOptions options, int argc, char *args
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static inline PetscErrorCode PetscOptionsStringToBoolIfSet_Private(enum PetscPrecedentOption opt, const char *val[], PetscBool set[], PetscBool *flg)
+static inline PetscErrorCode PetscOptionsStringToBoolIfSet_Private(enum PetscPrecedentOption opt, const char *val[], const PetscBool set[], PetscBool *flg)
 {
   PetscFunctionBegin;
   if (set[opt]) {

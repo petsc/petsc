@@ -1500,7 +1500,7 @@ static PetscErrorCode PetscViewerSetFromOptions_Binary(PetscViewer viewer, Petsc
 #if defined(PETSC_HAVE_MPIIO)
   PetscCall(PetscOptionsBool("-viewer_binary_mpiio", "Use MPI-IO functionality to write/read binary file", "PetscViewerBinarySetUseMPIIO", binary->usempiio, &binary->usempiio, NULL));
 #else
-  PetscCall(PetscOptionsBool("-viewer_binary_mpiio", "Use MPI-IO functionality to write/read binary file (NOT AVAILABLE)", "PetscViewerBinarySetUseMPIIO", PETSC_FALSE, NULL, NULL));
+  PetscCall(PetscOptionsBool("-viewer_binary_mpiio", "Use MPI-IO functionality to write/read binary file (NOT AVAILABLE)", "PetscViewerBinarySetUseMPIIO", PETSC_FALSE, &flg, NULL));
 #endif
   PetscOptionsHeadEnd();
   binary->setfromoptionscalled = PETSC_TRUE;

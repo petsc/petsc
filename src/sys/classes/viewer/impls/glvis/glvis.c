@@ -550,8 +550,8 @@ static PetscErrorCode PetscViewerSetFromOptions_GLVis(PetscViewer v, PetscOption
   PetscCall(PetscOptionsIntArray("-glvis_size", "Window sizes", NULL, socket->windowsizes, &nsizes, &set));
   if (set && (nsizes == 1 || socket->windowsizes[1] < 0)) socket->windowsizes[1] = socket->windowsizes[0];
   PetscCall(PetscOptionsReal("-glvis_pause", "-1 to pause after each visualization, otherwise sleeps for given seconds", NULL, socket->pause, &socket->pause, NULL));
-  PetscCall(PetscOptionsName("-glvis_keys", "Additional keys to configure visualization", NULL, NULL));
-  PetscCall(PetscOptionsName("-glvis_exec", "Additional commands to configure visualization", NULL, NULL));
+  PetscCall(PetscOptionsName("-glvis_keys", "Additional keys to configure visualization", NULL, &set));
+  PetscCall(PetscOptionsName("-glvis_exec", "Additional commands to configure visualization", NULL, &set));
   PetscOptionsHeadEnd();
   PetscFunctionReturn(PETSC_SUCCESS);
 }

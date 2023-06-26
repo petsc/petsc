@@ -67,7 +67,7 @@ def convert_to_correct_PetscValidXXXPointer(linter, obj, obj_type, func_cursor=N
   """
   valid_func_name = None
   obj_type_kind   = obj_type.kind
-  if obj_type_kind in {clx.TypeKind.RECORD, clx.TypeKind.VOID, clx.TypeKind.POINTER} | clx_array_type_kinds:
+  if obj_type_kind in {clx.TypeKind.RECORD, clx.TypeKind.VOID} | clx_pointer_type_kinds:
     # pointer to struct or void pointer, use PetscValidPointer() instead
     valid_func_name = 'PetscValidPointer'
   elif obj_type_kind in clx_char_type_kinds:
@@ -519,7 +519,7 @@ def check_matching_specific_type(linter, obj, expected_type_kinds, pointer, unex
     elif obj_type.kind == clx.TypeKind.POINTER:
       obj_type = cycle_type(obj_type, lambda otype: otype.get_pointee())
   else:
-    if obj_type.kind in clx_array_type_kinds or obj_type.kind == clx.TypeKind.POINTER:
+    if obj_type.kind in clx_pointer_type_kinds:
       handled = unexpected_pointer_function(linter, obj, obj_type, **kwargs)
       if not handled:
         mess = f'Object of clang type {obj_type.kind} is a pointer when it should not be'

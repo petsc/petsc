@@ -75,15 +75,13 @@ def checkPetscValidPointer(linter, func, parent):
   Specific check for PetscValidPointer(obj, idx)
   """
   def try_to_convert_to_specific_PetscValidXXXPointer(linter, obj, obj_type, **kwargs):
-    pointer_type_kinds = clx_array_type_kinds | {
-      clx.TypeKind.RECORD, clx.TypeKind.VOID, clx.TypeKind.POINTER
-    }
+    pointer_type_kinds = clx_pointer_type_kinds | {clx.TypeKind.RECORD, clx.TypeKind.VOID}
     if obj_type.kind not in pointer_type_kinds:
       convert_to_correct_PetscValidXXXPointer(linter, obj, obj_type, **kwargs)
     return True # PetscValidPointer is always good
 
   checkPetscValidPointerAndType(
-    linter, func, parent, clx_array_type_kinds | {clx.TypeKind.POINTER},
+    linter, func, parent, clx_pointer_type_kinds,
     success_function=try_to_convert_to_specific_PetscValidXXXPointer, permissive=True
   )
   return
