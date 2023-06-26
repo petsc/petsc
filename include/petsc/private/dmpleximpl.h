@@ -74,6 +74,7 @@ PETSC_EXTERN PetscLogEvent DMPLEX_RebalRewriteSF;
 PETSC_EXTERN PetscLogEvent DMPLEX_RebalGatherGraph;
 PETSC_EXTERN PetscLogEvent DMPLEX_RebalPartition;
 PETSC_EXTERN PetscLogEvent DMPLEX_RebalScatterPart;
+PETSC_EXTERN PetscLogEvent DMPLEX_Uninterpolate;
 
 /* Utility struct to store the contents of a Fluent file in memory */
 typedef struct {
@@ -136,7 +137,10 @@ typedef struct {
   PetscInt    *coneOrientations; /* Orientation of each cone point, means cone traversal should start on point 'o', and if negative start on -(o+1) and go in reverse */
   PetscSection supportSection;   /* Layout of cones (inedges for DAG) */
   PetscInt    *supports;         /* Cone for each point */
-  PetscInt    *facesTmp;         /* Work space for faces operation */
+
+  struct {                  // DMPolytopeType is an enum (usually size 4), but this needs frequent access
+    uint8_t value_as_uint8; // in a struct to guard for stronger typing
+  } *cellTypes;
 
   /* Transformation */
   DMPlexTransform tr;                                               /* Type of transform used to define an ephemeral mesh */

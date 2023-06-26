@@ -116,8 +116,8 @@ static PetscErrorCode LoadMeshLowLevel(AppCtx *options, PetscViewer v, PetscBool
     }
   }
   if (mode == POST_DIST) {
-    PetscCall(DMPlexCoordinatesLoad(dm, v, sfXC));
     PetscCall(DMPlexLabelsLoad(dm, v, sfXC));
+    PetscCall(DMPlexCoordinatesLoad(dm, v, sfXC));
   }
   PetscCall(PetscSFDestroy(&sfXC));
   *newdm = dm;

@@ -11,7 +11,7 @@
 
 /* Logging support */
 PetscLogEvent DMPLEX_Interpolate, DMPLEX_Partition, DMPLEX_Distribute, DMPLEX_DistributeCones, DMPLEX_DistributeLabels, DMPLEX_DistributeSF, DMPLEX_DistributeOverlap, DMPLEX_DistributeField, DMPLEX_DistributeData, DMPLEX_Migrate, DMPLEX_InterpolateSF, DMPLEX_GlobalToNaturalBegin, DMPLEX_GlobalToNaturalEnd, DMPLEX_NaturalToGlobalBegin, DMPLEX_NaturalToGlobalEnd, DMPLEX_Stratify, DMPLEX_Symmetrize, DMPLEX_Preallocate, DMPLEX_ResidualFEM, DMPLEX_JacobianFEM, DMPLEX_InterpolatorFEM, DMPLEX_InjectorFEM, DMPLEX_IntegralFEM, DMPLEX_CreateGmsh, DMPLEX_RebalanceSharedPoints, DMPLEX_PartSelf, DMPLEX_PartLabelInvert, DMPLEX_PartLabelCreateSF, DMPLEX_PartStratSF, DMPLEX_CreatePointSF, DMPLEX_LocatePoints, DMPLEX_TopologyView, DMPLEX_LabelsView, DMPLEX_CoordinatesView, DMPLEX_SectionView, DMPLEX_GlobalVectorView, DMPLEX_LocalVectorView, DMPLEX_TopologyLoad, DMPLEX_LabelsLoad, DMPLEX_CoordinatesLoad, DMPLEX_SectionLoad, DMPLEX_GlobalVectorLoad, DMPLEX_LocalVectorLoad;
-PetscLogEvent DMPLEX_RebalBuildGraph, DMPLEX_RebalRewriteSF, DMPLEX_RebalGatherGraph, DMPLEX_RebalPartition, DMPLEX_RebalScatterPart, DMPLEX_Generate, DMPLEX_Transform, DMPLEX_GetLocalOffsets;
+PetscLogEvent DMPLEX_RebalBuildGraph, DMPLEX_RebalRewriteSF, DMPLEX_RebalGatherGraph, DMPLEX_RebalPartition, DMPLEX_RebalScatterPart, DMPLEX_Generate, DMPLEX_Transform, DMPLEX_GetLocalOffsets, DMPLEX_Uninterpolate;
 
 PETSC_EXTERN PetscErrorCode VecView_MPI(Vec, PetscViewer);
 
@@ -64,7 +64,7 @@ PetscErrorCode DMPlexIsSimplex(DM dm, PetscBool *simplex)
   Note:
   This just gives the first range of cells found. If the mesh has several cell types, it will only give the first.
 
-.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexConstructGhostCells()`, `DMPlexGetGhostCellStratum()`
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexConstructGhostCells()`, `DMPlexGetCellTypeStratum()`
 @*/
 PetscErrorCode DMPlexGetSimplexOrBoxCells(DM dm, PetscInt height, PetscInt *cStart, PetscInt *cEnd)
 {
@@ -1433,7 +1433,7 @@ static PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
     if (cellHeight) PetscCall(PetscViewerASCIIPrintf(viewer, "  Cells are at height %" PetscInt_FMT "\n", cellHeight));
     PetscCall(DMPlexGetDepth(dm, &locDepth));
     PetscCall(MPIU_Allreduce(&locDepth, &depth, 1, MPIU_INT, MPI_MAX, comm));
-    PetscCall(DMPlexGetGhostCellStratum(dm, &gcStart, &gcEnd));
+    PetscCall(DMPlexGetCellTypeStratum(dm, DM_POLYTOPE_FV_GHOST, &gcStart, &gcEnd));
     gcNum = gcEnd - gcStart;
     if (size < maxSize) PetscCall(PetscCalloc3(size, &sizes, size, &hybsizes, size, &ghostsizes));
     else PetscCall(PetscCalloc3(3, &sizes, 3, &hybsizes, 3, &ghostsizes));
@@ -2533,8 +2533,8 @@ PetscErrorCode DMDestroy_Plex(DM dm)
   PetscCall(PetscSectionDestroy(&mesh->supportSection));
   PetscCall(PetscSectionDestroy(&mesh->subdomainSection));
   PetscCall(PetscFree(mesh->supports));
+  PetscCall(PetscFree(mesh->cellTypes));
   PetscCall(DMPlexTransformDestroy(&mesh->tr));
-  PetscCall(PetscFree(mesh->facesTmp));
   PetscCall(PetscFree(mesh->tetgenOpts));
   PetscCall(PetscFree(mesh->triangleOpts));
   PetscCall(PetscFree(mesh->transformType));
@@ -2760,6 +2760,7 @@ PetscErrorCode DMPlexSetChart(DM dm, PetscInt pStart, PetscInt pEnd)
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscCall(PetscSectionSetChart(mesh->coneSection, pStart, pEnd));
   PetscCall(PetscSectionSetChart(mesh->supportSection, pStart, pEnd));
+  PetscCall(PetscFree(mesh->cellTypes));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -3080,19 +3081,23 @@ PetscErrorCode DMPlexRestoreConeRecursive(DM dm, IS points, PetscInt *depth, IS 
 PetscErrorCode DMPlexSetCone(DM dm, PetscInt p, const PetscInt cone[])
 {
   DM_Plex *mesh = (DM_Plex *)dm->data;
-  PetscInt pStart, pEnd;
   PetscInt dof, off, c;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscCall(PetscSectionGetChart(mesh->coneSection, &pStart, &pEnd));
   PetscCall(PetscSectionGetDof(mesh->coneSection, p, &dof));
   if (dof) PetscValidIntPointer(cone, 3);
   PetscCall(PetscSectionGetOffset(mesh->coneSection, p, &off));
-  PetscCheck(!(p < pStart) && !(p >= pEnd), PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Mesh point %" PetscInt_FMT " is not in the valid range [%" PetscInt_FMT ", %" PetscInt_FMT ")", p, pStart, pEnd);
-  for (c = 0; c < dof; ++c) {
-    PetscCheck(!(cone[c] < pStart) && !(cone[c] >= pEnd), PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Cone point %" PetscInt_FMT " is not in the valid range [%" PetscInt_FMT ", %" PetscInt_FMT ")", cone[c], pStart, pEnd);
-    mesh->cones[off + c] = cone[c];
+  if (PetscDefined(USE_DEBUG)) {
+    PetscInt pStart, pEnd;
+    PetscCall(PetscSectionGetChart(mesh->coneSection, &pStart, &pEnd));
+    PetscCheck(!(p < pStart) && !(p >= pEnd), PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Mesh point %" PetscInt_FMT " is not in the valid range [%" PetscInt_FMT ", %" PetscInt_FMT ")", p, pStart, pEnd);
+    for (c = 0; c < dof; ++c) {
+      PetscCheck(!(cone[c] < pStart) && !(cone[c] >= pEnd), PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Cone point %" PetscInt_FMT " is not in the valid range [%" PetscInt_FMT ", %" PetscInt_FMT ")", cone[c], pStart, pEnd);
+      mesh->cones[off + c] = cone[c];
+    }
+  } else {
+    for (c = 0; c < dof; ++c) mesh->cones[off + c] = cone[c];
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -3169,17 +3174,21 @@ PetscErrorCode DMPlexSetConeOrientation(DM dm, PetscInt p, const PetscInt coneOr
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscCall(PetscSectionGetChart(mesh->coneSection, &pStart, &pEnd));
   PetscCall(PetscSectionGetDof(mesh->coneSection, p, &dof));
   if (dof) PetscValidIntPointer(coneOrientation, 3);
   PetscCall(PetscSectionGetOffset(mesh->coneSection, p, &off));
-  PetscCheck(!(p < pStart) && !(p >= pEnd), PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Mesh point %" PetscInt_FMT " is not in the valid range [%" PetscInt_FMT ", %" PetscInt_FMT ")", p, pStart, pEnd);
-  for (c = 0; c < dof; ++c) {
-    PetscInt cdof, o = coneOrientation[c];
+  if (PetscDefined(USE_DEBUG)) {
+    PetscCall(PetscSectionGetChart(mesh->coneSection, &pStart, &pEnd));
+    PetscCheck(!(p < pStart) && !(p >= pEnd), PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Mesh point %" PetscInt_FMT " is not in the valid range [%" PetscInt_FMT ", %" PetscInt_FMT ")", p, pStart, pEnd);
+    for (c = 0; c < dof; ++c) {
+      PetscInt cdof, o = coneOrientation[c];
 
-    PetscCall(PetscSectionGetDof(mesh->coneSection, mesh->cones[off + c], &cdof));
-    PetscCheck(!o || (o >= -(cdof + 1) && o < cdof), PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Cone orientation %" PetscInt_FMT " is not in the valid range [%" PetscInt_FMT ". %" PetscInt_FMT ")", o, -(cdof + 1), cdof);
-    mesh->coneOrientations[off + c] = o;
+      PetscCall(PetscSectionGetDof(mesh->coneSection, mesh->cones[off + c], &cdof));
+      PetscCheck(!o || (o >= -(cdof + 1) && o < cdof), PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Cone orientation %" PetscInt_FMT " is not in the valid range [%" PetscInt_FMT ". %" PetscInt_FMT ")", o, -(cdof + 1), cdof);
+      mesh->coneOrientations[off + c] = o;
+    }
+  } else {
+    for (c = 0; c < dof; ++c) mesh->coneOrientations[off + c] = coneOrientation[c];
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -3207,12 +3216,14 @@ PetscErrorCode DMPlexInsertCone(DM dm, PetscInt p, PetscInt conePos, PetscInt co
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscCall(PetscSectionGetChart(mesh->coneSection, &pStart, &pEnd));
-  PetscCheck(!(p < pStart) && !(p >= pEnd), PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Mesh point %" PetscInt_FMT " is not in the valid range [%" PetscInt_FMT ", %" PetscInt_FMT ")", p, pStart, pEnd);
-  PetscCheck(!(conePoint < pStart) && !(conePoint >= pEnd), PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Cone point %" PetscInt_FMT " is not in the valid range [%" PetscInt_FMT ", %" PetscInt_FMT ")", conePoint, pStart, pEnd);
-  PetscCall(PetscSectionGetDof(mesh->coneSection, p, &dof));
+  if (PetscDefined(USE_DEBUG)) {
+    PetscCall(PetscSectionGetChart(mesh->coneSection, &pStart, &pEnd));
+    PetscCheck(!(p < pStart) && !(p >= pEnd), PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Mesh point %" PetscInt_FMT " is not in the valid range [%" PetscInt_FMT ", %" PetscInt_FMT ")", p, pStart, pEnd);
+    PetscCheck(!(conePoint < pStart) && !(conePoint >= pEnd), PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Cone point %" PetscInt_FMT " is not in the valid range [%" PetscInt_FMT ", %" PetscInt_FMT ")", conePoint, pStart, pEnd);
+    PetscCall(PetscSectionGetDof(mesh->coneSection, p, &dof));
+    PetscCheck(!(conePos < 0) && !(conePos >= dof), PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Cone position %" PetscInt_FMT " of point %" PetscInt_FMT " is not in the valid range [0, %" PetscInt_FMT ")", conePos, p, dof);
+  }
   PetscCall(PetscSectionGetOffset(mesh->coneSection, p, &off));
-  PetscCheck(!(conePos < 0) && !(conePos >= dof), PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Cone position %" PetscInt_FMT " of point %" PetscInt_FMT " is not in the valid range [0, %" PetscInt_FMT ")", conePos, p, dof);
   mesh->cones[off + conePos] = conePoint;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -3243,11 +3254,13 @@ PetscErrorCode DMPlexInsertConeOrientation(DM dm, PetscInt p, PetscInt conePos, 
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscCall(PetscSectionGetChart(mesh->coneSection, &pStart, &pEnd));
-  PetscCheck(!(p < pStart) && !(p >= pEnd), PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Mesh point %" PetscInt_FMT " is not in the valid range [%" PetscInt_FMT ", %" PetscInt_FMT ")", p, pStart, pEnd);
-  PetscCall(PetscSectionGetDof(mesh->coneSection, p, &dof));
+  if (PetscDefined(USE_DEBUG)) {
+    PetscCall(PetscSectionGetChart(mesh->coneSection, &pStart, &pEnd));
+    PetscCheck(!(p < pStart) && !(p >= pEnd), PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Mesh point %" PetscInt_FMT " is not in the valid range [%" PetscInt_FMT ", %" PetscInt_FMT ")", p, pStart, pEnd);
+    PetscCall(PetscSectionGetDof(mesh->coneSection, p, &dof));
+    PetscCheck(!(conePos < 0) && !(conePos >= dof), PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Cone position %" PetscInt_FMT " of point %" PetscInt_FMT " is not in the valid range [0, %" PetscInt_FMT ")", conePos, p, dof);
+  }
   PetscCall(PetscSectionGetOffset(mesh->coneSection, p, &off));
-  PetscCheck(!(conePos < 0) && !(conePos >= dof), PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Cone position %" PetscInt_FMT " of point %" PetscInt_FMT " is not in the valid range [0, %" PetscInt_FMT ")", conePos, p, dof);
   mesh->coneOrientations[off + conePos] = coneOrientation;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -3590,6 +3603,51 @@ PetscErrorCode DMPlexConvertOldOrientations_Internal(DM dm)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+static inline PetscErrorCode DMPlexGetTransitiveClosure_Hot_Private(DM dm, PetscInt p, PetscBool useCone, PetscInt *size, const PetscInt *arr[], const PetscInt *ornt[])
+{
+  DM_Plex *mesh = (DM_Plex *)dm->data;
+
+  PetscFunctionBeginHot;
+  if (PetscDefined(USE_DEBUG) || mesh->tr) {
+    if (useCone) {
+      PetscCall(DMPlexGetConeSize(dm, p, size));
+      PetscCall(DMPlexGetOrientedCone(dm, p, arr, ornt));
+    } else {
+      PetscCall(DMPlexGetSupportSize(dm, p, size));
+      PetscCall(DMPlexGetSupport(dm, p, arr));
+    }
+  } else {
+    if (useCone) {
+      const PetscSection s   = mesh->coneSection;
+      const PetscInt     ps  = p - s->pStart;
+      const PetscInt     off = s->atlasOff[ps];
+
+      *size = s->atlasDof[ps];
+      *arr  = mesh->cones + off;
+      *ornt = mesh->coneOrientations + off;
+    } else {
+      const PetscSection s   = mesh->supportSection;
+      const PetscInt     ps  = p - s->pStart;
+      const PetscInt     off = s->atlasOff[ps];
+
+      *size = s->atlasDof[ps];
+      *arr  = mesh->supports + off;
+    }
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static inline PetscErrorCode DMPlexRestoreTransitiveClosure_Hot_Private(DM dm, PetscInt p, PetscBool useCone, PetscInt *size, const PetscInt *arr[], const PetscInt *ornt[])
+{
+  DM_Plex *mesh = (DM_Plex *)dm->data;
+
+  PetscFunctionBeginHot;
+  if (PetscDefined(USE_DEBUG) || mesh->tr) {
+    if (useCone) PetscCall(DMPlexRestoreOrientedCone(dm, p, arr, ornt));
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 static PetscErrorCode DMPlexGetTransitiveClosure_Depth1_Private(DM dm, PetscInt p, PetscInt ornt, PetscBool useCone, PetscInt *numPoints, PetscInt *points[])
 {
   DMPolytopeType  ct = DM_POLYTOPE_UNKNOWN;
@@ -3609,14 +3667,7 @@ static PetscErrorCode DMPlexGetTransitiveClosure_Depth1_Private(DM dm, PetscInt 
     PetscCall(DMPlexGetMaxSizes(dm, &maxConeSize, &maxSupportSize));
     PetscCall(DMGetWorkArray(dm, 2 * (PetscMax(maxConeSize, maxSupportSize) + 1), MPIU_INT, &closure));
   }
-  if (useCone) {
-    PetscCall(DMPlexGetConeSize(dm, p, &tmpSize));
-    PetscCall(DMPlexGetCone(dm, p, &tmp));
-    PetscCall(DMPlexGetConeOrientation(dm, p, &tmpO));
-  } else {
-    PetscCall(DMPlexGetSupportSize(dm, p, &tmpSize));
-    PetscCall(DMPlexGetSupport(dm, p, &tmp));
-  }
+  PetscCall(DMPlexGetTransitiveClosure_Hot_Private(dm, p, useCone, &tmpSize, &tmp, &tmpO));
   if (ct == DM_POLYTOPE_UNKNOWN) {
     closure[off++] = p;
     closure[off++] = 0;
@@ -3638,6 +3689,7 @@ static PetscErrorCode DMPlexGetTransitiveClosure_Depth1_Private(DM dm, PetscInt 
       closure[off++] = tmpO ? DMPolytopeTypeComposeOrientation(ft, ornt, tmpO[t]) : 0;
     }
   }
+  PetscCall(DMPlexRestoreTransitiveClosure_Hot_Private(dm, p, useCone, &tmpSize, &tmp, &tmpO));
   if (numPoints) *numPoints = tmpSize + 1;
   if (points) *points = closure;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -3655,9 +3707,7 @@ static PetscErrorCode DMPlexTransitiveClosure_Tensor_Internal(DM dm, PetscInt po
 
   PetscFunctionBeginHot;
   PetscCall(DMGetDimension(dm, &dim));
-  PetscCall(DMPlexGetConeSize(dm, point, &coneSize));
-  PetscCall(DMPlexGetCone(dm, point, &cone));
-  PetscCall(DMPlexGetConeOrientation(dm, point, &ornt));
+  PetscCall(DMPlexGetTransitiveClosure_Hot_Private(dm, point, PETSC_TRUE, &coneSize, &cone, &ornt));
   PetscCall(DMPlexGetMaxSizes(dm, &maxConeSize, &maxSupportSize));
   coneSeries    = (maxConeSize > 1) ? ((PetscPowInt(maxConeSize, dim + 1) - 1) / (maxConeSize - 1)) : dim + 1;
   supportSeries = (maxSupportSize > 1) ? ((PetscPowInt(maxSupportSize, dim + 1) - 1) / (maxSupportSize - 1)) : dim + 1;
@@ -3685,6 +3735,7 @@ static PetscErrorCode DMPlexTransitiveClosure_Tensor_Internal(DM dm, PetscInt po
     pts[c++] = cone[arr[d * 2 + 0]];
     pts[c++] = DMPolytopeTypeComposeOrientation(ft, arr[d * 2 + 1], ornt[d]);
   }
+  PetscCall(DMPlexRestoreTransitiveClosure_Hot_Private(dm, point, PETSC_TRUE, &coneSize, &cone, &ornt));
   if (dim >= 3) {
     for (d = 2; d < coneSize; ++d) {
       const PetscInt  fpoint = cone[arr[d * 2 + 0]];
@@ -3693,9 +3744,7 @@ static PetscErrorCode DMPlexTransitiveClosure_Tensor_Internal(DM dm, PetscInt po
 
       PetscCall(DMPlexGetCellType(dm, fpoint, &ft));
       const PetscInt *farr = DMPolytopeTypeGetArrangment(ft, DMPolytopeTypeComposeOrientation(ft, arr[d * 2 + 1], ornt[d]));
-      PetscCall(DMPlexGetConeSize(dm, fpoint, &fconeSize));
-      PetscCall(DMPlexGetCone(dm, fpoint, &fcone));
-      PetscCall(DMPlexGetConeOrientation(dm, fpoint, &fornt));
+      PetscCall(DMPlexGetTransitiveClosure_Hot_Private(dm, fpoint, PETSC_TRUE, &fconeSize, &fcone, &fornt));
       for (fc = 0; fc < fconeSize; ++fc) {
         const PetscInt cp = fcone[farr[fc * 2 + 0]];
         const PetscInt co = farr[fc * 2 + 1];
@@ -3708,6 +3757,7 @@ static PetscErrorCode DMPlexTransitiveClosure_Tensor_Internal(DM dm, PetscInt po
           pts[c++] = DMPolytopeTypeComposeOrientation(ft, co, fornt[farr[fc * 2 + 0]]);
         }
       }
+      PetscCall(DMPlexRestoreTransitiveClosure_Hot_Private(dm, fpoint, PETSC_TRUE, &fconeSize, &fcone, &fornt));
     }
   }
   *numPoints = c / 2;
@@ -3754,22 +3804,14 @@ PetscErrorCode DMPlexGetTransitiveClosure_Internal(DM dm, PetscInt p, PetscInt o
     const PetscInt       o    = fifo[fifoStart++];
     const DMPolytopeType qt   = (DMPolytopeType)fifo[fifoStart++];
     const PetscInt      *qarr = DMPolytopeTypeGetArrangment(qt, o);
-    const PetscInt      *tmp, *tmpO;
+    const PetscInt      *tmp, *tmpO = NULL;
     PetscInt             tmpSize, t;
 
     if (PetscDefined(USE_DEBUG)) {
       PetscInt nO = DMPolytopeTypeGetNumArrangments(qt) / 2;
       PetscCheck(!o || !(o >= nO || o < -nO), PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid orientation %" PetscInt_FMT " not in [%" PetscInt_FMT ",%" PetscInt_FMT ") for %s %" PetscInt_FMT, o, -nO, nO, DMPolytopeTypes[qt], q);
     }
-    if (useCone) {
-      PetscCall(DMPlexGetConeSize(dm, q, &tmpSize));
-      PetscCall(DMPlexGetCone(dm, q, &tmp));
-      PetscCall(DMPlexGetConeOrientation(dm, q, &tmpO));
-    } else {
-      PetscCall(DMPlexGetSupportSize(dm, q, &tmpSize));
-      PetscCall(DMPlexGetSupport(dm, q, &tmp));
-      tmpO = NULL;
-    }
+    PetscCall(DMPlexGetTransitiveClosure_Hot_Private(dm, q, useCone, &tmpSize, &tmp, &tmpO));
     for (t = 0; t < tmpSize; ++t) {
       const PetscInt ip = useCone && qarr ? qarr[t * 2] : t;
       const PetscInt io = useCone && qarr ? qarr[t * 2 + 1] : 0;
@@ -3790,6 +3832,7 @@ PetscErrorCode DMPlexGetTransitiveClosure_Internal(DM dm, PetscInt p, PetscInt o
         fifo[fifoSize++]       = ct;
       }
     }
+    PetscCall(DMPlexRestoreTransitiveClosure_Hot_Private(dm, q, useCone, &tmpSize, &tmp, &tmpO));
   }
   PetscCall(DMRestoreWorkArray(dm, 3 * maxSize, MPIU_INT, &fifo));
   if (numPoints) *numPoints = closureSize / 2;
@@ -4319,6 +4362,8 @@ PetscErrorCode DMPlexComputeCellTypes(DM dm)
   PetscCall(DMCreateLabel(dm, "celltype"));
   PetscCall(DMPlexGetCellTypeLabel(dm, &ctLabel));
   PetscCall(DMPlexGetChart(dm, &pStart, &pEnd));
+  PetscCall(PetscFree(mesh->cellTypes));
+  PetscCall(PetscMalloc1(pEnd - pStart, &mesh->cellTypes));
   for (p = pStart; p < pEnd; ++p) {
     DMPolytopeType ct = DM_POLYTOPE_UNKNOWN;
     PetscInt       pdepth;
@@ -4327,6 +4372,7 @@ PetscErrorCode DMPlexComputeCellTypes(DM dm)
     PetscCall(DMPlexComputeCellType_Internal(dm, p, pdepth, &ct));
     PetscCheck(ct != DM_POLYTOPE_UNKNOWN, PETSC_COMM_SELF, PETSC_ERR_SUP, "Point %" PetscInt_FMT " is screwed up", p);
     PetscCall(DMLabelSetValue(ctLabel, p, ct));
+    mesh->cellTypes[p - pStart].value_as_uint8 = ct;
   }
   PetscCall(PetscObjectStateGet((PetscObject)ctLabel, &mesh->celltypeState));
   PetscCall(PetscObjectViewFromOptions((PetscObject)ctLabel, NULL, "-dm_plex_celltypes_view"));
@@ -4967,7 +5013,7 @@ PetscErrorCode DMPlexGetDepth(DM dm, PetscInt *depth)
   often "vertices".  If the mesh is "interpolated" (see `DMPlexInterpolate()`), then depth stratum 1 contains the next
   higher dimension, e.g., "edges".
 
-.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexGetHeightStratum()`, `DMPlexGetDepth()`, `DMPlexGetDepthLabel()`, `DMPlexGetPointDepth()`, `DMPlexSymmetrize()`, `DMPlexInterpolate()`
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexGetHeightStratum()`, `DMPlexGetCellTypeStratum()`, `DMPlexGetDepth()`, `DMPlexGetDepthLabel()`, `DMPlexGetPointDepth()`, `DMPlexSymmetrize()`, `DMPlexInterpolate()`
 @*/
 PetscErrorCode DMPlexGetDepthStratum(DM dm, PetscInt depth, PetscInt *start, PetscInt *end)
 {
@@ -5022,7 +5068,7 @@ PetscErrorCode DMPlexGetDepthStratum(DM dm, PetscInt depth, PetscInt *start, Pet
   points, often called "cells" or "elements".  If the mesh is "interpolated" (see `DMPlexInterpolate()`), then height
   stratum 1 contains the boundary of these "cells", often called "faces" or "facets".
 
-.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexGetDepthStratum()`, `DMPlexGetDepth()`, `DMPlexGetPointHeight()`
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexGetDepthStratum()`, `DMPlexGetCellTypeStratum()`, `DMPlexGetDepth()`, `DMPlexGetPointHeight()`
 @*/
 PetscErrorCode DMPlexGetHeightStratum(DM dm, PetscInt height, PetscInt *start, PetscInt *end)
 {
@@ -5047,9 +5093,10 @@ PetscErrorCode DMPlexGetHeightStratum(DM dm, PetscInt height, PetscInt *start, P
     PetscFunctionReturn(PETSC_SUCCESS);
   }
   PetscCall(DMPlexGetDepthLabel(dm, &label));
-  PetscCheck(label, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "No label named depth was found");
-  PetscCall(DMLabelGetNumValues(label, &depth));
-  PetscCall(DMLabelGetStratumBounds(label, depth - 1 - height, start, end));
+  if (label) PetscCall(DMLabelGetNumValues(label, &depth));
+  else PetscCall(DMGetDimension(dm, &depth));
+  PetscCheck(depth >= 0, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Depth not yet computed");
+  PetscCall(DMPlexGetDepthStratum(dm, depth - 1 - height, start, end));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -5164,10 +5211,25 @@ PetscErrorCode DMPlexGetCellType(DM dm, PetscInt cell, DMPolytopeType *celltype)
   if (mesh->tr) {
     PetscCall(DMPlexTransformGetCellType(mesh->tr, cell, celltype));
   } else {
-    PetscCall(DMPlexGetCellTypeLabel(dm, &label));
-    PetscCall(DMLabelGetValue(label, cell, &ct));
-    PetscCheck(ct >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Cell %" PetscInt_FMT " has not been assigned a cell type", cell);
-    *celltype = (DMPolytopeType)ct;
+    PetscInt pStart, pEnd;
+
+    PetscCall(PetscSectionGetChart(mesh->coneSection, &pStart, NULL));
+    if (!mesh->cellTypes) { /* XXX remove? optimize? */
+      PetscCall(PetscSectionGetChart(mesh->coneSection, NULL, &pEnd));
+      PetscCall(PetscMalloc1(pEnd - pStart, &mesh->cellTypes));
+      PetscCall(DMPlexGetCellTypeLabel(dm, &label));
+      for (PetscInt p = pStart; p < pEnd; p++) {
+        PetscCall(DMLabelGetValue(label, p, &ct));
+        mesh->cellTypes[p - pStart].value_as_uint8 = (DMPolytopeType)ct;
+      }
+    }
+    *celltype = (DMPolytopeType)mesh->cellTypes[cell - pStart].value_as_uint8;
+    if (PetscDefined(USE_DEBUG)) {
+      PetscCall(DMPlexGetCellTypeLabel(dm, &label));
+      PetscCall(DMLabelGetValue(label, cell, &ct));
+      PetscCheck(ct >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Cell %" PetscInt_FMT " has not been assigned a cell type", cell);
+      PetscCheck(ct == *celltype, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid cellType for %" PetscInt_FMT ": %d != %" PetscInt_FMT, cell, (int)*celltype, ct);
+    }
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -5188,18 +5250,23 @@ PetscErrorCode DMPlexGetCellType(DM dm, PetscInt cell, DMPolytopeType *celltype)
   By default, cell types will be automatically computed using `DMPlexComputeCellTypes()` before this function
   is executed. This function will override the computed type. However, if automatic classification will not succeed
   and a user wants to manually specify all types, the classification must be disabled by calling
-  DMCreaateLabel(dm, "celltype") before getting or setting any cell types.
+  DMCreateLabel(dm, "celltype") before getting or setting any cell types.
 
 .seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexGetCellTypeLabel()`, `DMPlexGetDepthLabel()`, `DMPlexGetDepth()`, `DMPlexComputeCellTypes()`, `DMCreateLabel()`
 @*/
 PetscErrorCode DMPlexSetCellType(DM dm, PetscInt cell, DMPolytopeType celltype)
 {
-  DMLabel label;
+  DM_Plex *mesh = (DM_Plex *)dm->data;
+  DMLabel  label;
+  PetscInt pStart, pEnd;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscCall(PetscSectionGetChart(mesh->coneSection, &pStart, &pEnd));
   PetscCall(DMPlexGetCellTypeLabel(dm, &label));
   PetscCall(DMLabelSetValue(label, cell, celltype));
+  if (!mesh->cellTypes) PetscCall(PetscMalloc1(pEnd - pStart, &mesh->cellTypes));
+  mesh->cellTypes[cell - pStart].value_as_uint8 = celltype;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -8283,29 +8350,45 @@ PetscErrorCode DMPlexSetVTKCellHeight(DM dm, PetscInt cellHeight)
 }
 
 /*@
-  DMPlexGetGhostCellStratum - Get the range of cells which are used to enforce FV boundary conditions
+  DMPlexGetCellTypeStratum - Get the range of cells of a given celltype
 
-  Input Parameter:
-. dm - The `DMPLEX` object
+  Input Parameters:
++ dm - The `DMPLEX` object
+- ct - The `DMPolytopeType` of the cell
 
   Output Parameters:
-+ gcStart - The first ghost cell, or `NULL`
-- gcEnd   - The upper bound on ghost cells, or `NULL`
++ start - The first cell of this type, or `NULL`
+- end   - The upper bound on this celltype, or `NULL`
 
   Level: advanced
 
-.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexConstructGhostCells()`, `DMPlexGetGhostCellStratum()`
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexConstructGhostCells()`, `DMPlexGetDepthStratum()`, `DMPlexGetHeightStratum()`
 @*/
-PetscErrorCode DMPlexGetGhostCellStratum(DM dm, PetscInt *gcStart, PetscInt *gcEnd)
+PetscErrorCode DMPlexGetCellTypeStratum(DM dm, DMPolytopeType ct, PetscInt *start, PetscInt *end)
 {
-  DMLabel ctLabel;
+  DM_Plex *mesh = (DM_Plex *)dm->data;
+  DMLabel  label;
+  PetscInt pStart, pEnd;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscCall(DMPlexGetCellTypeLabel(dm, &ctLabel));
-  PetscCall(DMLabelGetStratumBounds(ctLabel, DM_POLYTOPE_FV_GHOST, gcStart, gcEnd));
-  // Reset label for fast lookup
-  PetscCall(DMLabelMakeAllInvalid_Internal(ctLabel));
+  if (start) {
+    PetscValidIntPointer(start, 3);
+    *start = 0;
+  }
+  if (end) {
+    PetscValidIntPointer(end, 4);
+    *end = 0;
+  }
+  PetscCall(DMPlexGetChart(dm, &pStart, &pEnd));
+  if (pStart == pEnd) PetscFunctionReturn(PETSC_SUCCESS);
+  if (mesh->tr) {
+    PetscCall(DMPlexTransformGetCellTypeStratum(mesh->tr, ct, start, end));
+  } else {
+    PetscCall(DMPlexGetCellTypeLabel(dm, &label));
+    PetscCheck(label, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "No label named celltype was found");
+    PetscCall(DMLabelGetStratumBounds(label, ct, start, end));
+  }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

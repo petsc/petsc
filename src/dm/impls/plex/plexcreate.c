@@ -5561,11 +5561,13 @@ PetscErrorCode DMPlexCreateFromFile(MPI_Comm comm, const char filename[], const 
   PetscCall(PetscLogEventEnd(DMPLEX_CreateFromFile, 0, 0, 0, 0));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
+
 /*@C
   DMPlexCreateEphemeral - This takes a `DMPlexTransform` and a base `DMPlex` and produces an ephemeral `DM`, meaning one that is created on the fly in response to queries.
 
-  Input Parameter:
-. tr - The `DMPlexTransform`
+  Input Parameters:
++ tr - The `DMPlexTransform`
+- prefix - An options prefix, or NULL
 
   Output Parameter:
 . dm - The `DM`
@@ -5577,21 +5579,42 @@ PetscErrorCode DMPlexCreateFromFile(MPI_Comm comm, const char filename[], const 
 
 .seealso: `DMPlexCreateFromFile`, `DMPlexCreateFromDAG()`, `DMPlexCreateFromCellListPetsc()`, `DMPlexCreate()`
 @*/
-PetscErrorCode DMPlexCreateEphemeral(DMPlexTransform tr, DM *dm)
+PetscErrorCode DMPlexCreateEphemeral(DMPlexTransform tr, const char prefix[], DM *dm)
 {
-  DM       bdm;
-  PetscInt Nl;
+  DM           bdm, bcdm, cdm;
+  Vec          coordinates, coordinatesNew;
+  PetscSection cs;
+  PetscInt     dim, cdim, Nl;
 
   PetscFunctionBegin;
   PetscCall(DMCreate(PetscObjectComm((PetscObject)tr), dm));
   PetscCall(DMSetType(*dm, DMPLEX));
-  PetscCall(DMSetFromOptions(*dm));
+  ((DM_Plex *)(*dm)->data)->interpolated = DMPLEX_INTERPOLATED_FULL;
+  // Handle coordinates
+  PetscCall(DMPlexTransformGetDM(tr, &bdm));
+  PetscCall(DMGetCoordinateDim(bdm, &cdim));
+  PetscCall(DMSetCoordinateDim(*dm, cdim));
+  PetscCall(DMGetDimension(bdm, &dim));
+  PetscCall(DMSetDimension(*dm, dim));
+  PetscCall(DMGetCoordinateDM(bdm, &bcdm));
+  PetscCall(DMGetCoordinateDM(*dm, &cdm));
+  PetscCall(DMCopyDisc(bcdm, cdm));
+  PetscCall(DMGetLocalSection(cdm, &cs));
+  PetscCall(PetscSectionSetNumFields(cs, 1));
+  PetscCall(PetscSectionSetFieldComponents(cs, 0, cdim));
+  PetscCall(DMGetCoordinatesLocal(bdm, &coordinates));
+  PetscCall(VecDuplicate(coordinates, &coordinatesNew));
+  PetscCall(VecCopy(coordinates, coordinatesNew));
+  PetscCall(DMSetCoordinatesLocal(*dm, coordinatesNew));
+  PetscCall(VecDestroy(&coordinatesNew));
 
   PetscCall(PetscObjectReference((PetscObject)tr));
   PetscCall(DMPlexTransformDestroy(&((DM_Plex *)(*dm)->data)->tr));
   ((DM_Plex *)(*dm)->data)->tr = tr;
+  PetscCall(DMPlexDistributeSetDefault(*dm, PETSC_FALSE));
+  PetscCall(PetscObjectSetOptionsPrefix((PetscObject)*dm, prefix));
+  PetscCall(DMSetFromOptions(*dm));
 
-  PetscCall(DMPlexTransformGetDM(tr, &bdm));
   PetscCall(DMGetNumLabels(bdm, &Nl));
   for (PetscInt l = 0; l < Nl; ++l) {
     DMLabel     label, labelNew;

@@ -699,7 +699,7 @@ PetscErrorCode ConstructCellBoundary(DM dm, User user)
   PetscFunctionBeginUser;
   PetscCall(DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd));
   PetscCall(DMPlexGetHeightStratum(dm, 1, &fStart, &fEnd));
-  PetscCall(DMPlexGetGhostCellStratum(dm, &cEndInterior, NULL));
+  PetscCall(DMPlexGetCellTypeStratum(dm, DM_POLYTOPE_FV_GHOST, &cEndInterior, NULL));
 
   PetscCall(DMHasLabel(dm, name, &hasLabel));
   if (!hasLabel) PetscFunctionReturn(PETSC_SUCCESS);
@@ -793,8 +793,7 @@ PetscErrorCode SplitFaces(DM *dmSplit, const char labelName[], User user)
   PetscCall(DMPlexGetChart(dm, &pStart, &pEnd));
   pEnd += user->numSplitFaces;
   PetscCall(DMPlexSetChart(sdm, pStart, pEnd));
-  PetscCall(DMPlexGetGhostCellStratum(dm, &cEndInterior, NULL));
-  PetscCall(DMPlexSetGhostCellStratum(sdm, cEndInterior, PETSC_DETERMINE));
+  PetscCall(DMPlexGetCellTypeStratum(dm, DM_POLYTOPE_FV_GHOST, &cEndInterior, NULL));
   PetscCall(DMPlexGetHeightStratum(dm, 0, NULL, &cEnd));
   numGhostCells = cEnd - cEndInterior;
   /* Set cone and support sizes */
@@ -1079,7 +1078,7 @@ PetscErrorCode SetUpLocalSpace(DM dm, User user)
 
   PetscFunctionBeginUser;
   PetscCall(DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd));
-  PetscCall(DMPlexGetGhostCellStratum(dm, &cEndInterior, NULL));
+  PetscCall(DMPlexGetCellTypeStratum(dm, DM_POLYTOPE_FV_GHOST, &cEndInterior, NULL));
   PetscCall(PetscSectionCreate(PetscObjectComm((PetscObject)dm), &stateSection));
   phys = user->model->physics;
   PetscCall(PetscSectionSetNumFields(stateSection, phys->nfields));

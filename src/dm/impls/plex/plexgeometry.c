@@ -2794,7 +2794,7 @@ PetscErrorCode DMPlexComputeGeometryFVM(DM dm, Vec *cellgeom, Vec *facegeom)
   PetscCall(DMSetCoordinatesLocal(dmCell, coordinates));
   PetscCall(PetscSectionCreate(PetscObjectComm((PetscObject)dm), &sectionCell));
   PetscCall(DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd));
-  PetscCall(DMPlexGetGhostCellStratum(dm, &cEndInterior, NULL));
+  PetscCall(DMPlexGetCellTypeStratum(dm, DM_POLYTOPE_FV_GHOST, &cEndInterior, NULL));
   PetscCall(PetscSectionSetChart(sectionCell, cStart, cEnd));
   for (c = cStart; c < cEnd; ++c) PetscCall(PetscSectionSetDof(sectionCell, c, (PetscInt)PetscCeilReal(((PetscReal)sizeof(PetscFVCellGeom)) / sizeof(PetscScalar))));
   PetscCall(PetscSectionSetUp(sectionCell));
@@ -2965,7 +2965,7 @@ static PetscErrorCode BuildGradientReconstruction_Internal(DM dm, PetscFV fvm, D
   PetscFunctionBegin;
   PetscCall(DMGetDimension(dm, &dim));
   PetscCall(DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd));
-  PetscCall(DMPlexGetGhostCellStratum(dm, &cEndInterior, NULL));
+  PetscCall(DMPlexGetCellTypeStratum(dm, DM_POLYTOPE_FV_GHOST, &cEndInterior, NULL));
   cEndInterior = cEndInterior < 0 ? cEnd : cEndInterior;
   PetscCall(DMPlexGetMaxSizes(dm, &maxNumFaces, NULL));
   PetscCall(PetscFVLeastSquaresSetMaxFaces(fvm, maxNumFaces));
@@ -3029,7 +3029,7 @@ static PetscErrorCode BuildGradientReconstruction_Internal_Tree(DM dm, PetscFV f
   PetscFunctionBegin;
   PetscCall(DMGetDimension(dm, &dim));
   PetscCall(DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd));
-  PetscCall(DMPlexGetGhostCellStratum(dm, &cEndInterior, NULL));
+  PetscCall(DMPlexGetCellTypeStratum(dm, DM_POLYTOPE_FV_GHOST, &cEndInterior, NULL));
   if (cEndInterior < 0) cEndInterior = cEnd;
   PetscCall(PetscSectionCreate(PetscObjectComm((PetscObject)dm), &neighSec));
   PetscCall(PetscSectionSetChart(neighSec, cStart, cEndInterior));
@@ -3160,7 +3160,7 @@ PetscErrorCode DMPlexComputeGradientFVM(DM dm, PetscFV fvm, Vec faceGeometry, Ve
   PetscCall(DMGetDimension(dm, &dim));
   PetscCall(PetscFVGetNumComponents(fvm, &pdim));
   PetscCall(DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd));
-  PetscCall(DMPlexGetGhostCellStratum(dm, &cEndInterior, NULL));
+  PetscCall(DMPlexGetCellTypeStratum(dm, DM_POLYTOPE_FV_GHOST, &cEndInterior, NULL));
   /* Construct the interpolant corresponding to each face from the least-square solution over the cell neighborhood */
   PetscCall(VecGetDM(faceGeometry, &dmFace));
   PetscCall(VecGetDM(cellGeometry, &dmCell));

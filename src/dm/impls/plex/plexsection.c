@@ -494,7 +494,7 @@ PetscErrorCode DMCreateLocalSection_Plex(DM dm)
     }
   }
   /* Add ghost cell boundaries for FVM */
-  PetscCall(DMPlexGetGhostCellStratum(dm, &cEndInterior, NULL));
+  PetscCall(DMPlexGetCellTypeStratum(dm, DM_POLYTOPE_FV_GHOST, &cEndInterior, NULL));
   for (f = 0; f < Nf; ++f)
     if (!isFE[f] && cEndInterior >= 0) ++numBC;
   PetscCall(PetscCalloc3(numBC, &bcFields, numBC, &bcPoints, numBC, &bcComps));

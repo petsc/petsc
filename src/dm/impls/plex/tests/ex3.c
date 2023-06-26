@@ -584,7 +584,7 @@ static PetscErrorCode TestFVGrad(DM dm, AppCtx *user)
   PetscCall(VecGetArrayRead(cellgeom, &cgeom));
   PetscCall(DMGetGlobalVector(dmgrad, &grad));
   PetscCall(DMGetLocalVector(dmgrad, &locGrad));
-  PetscCall(DMPlexGetGhostCellStratum(dmgrad, &cEndInterior, NULL));
+  PetscCall(DMPlexGetCellTypeStratum(dmgrad, DM_POLYTOPE_FV_GHOST, &cEndInterior, NULL));
   cEndInterior = (cEndInterior < 0) ? cEnd : cEndInterior;
   for (v = 0; v < nvecs; v++) {
     Vec                locX;

@@ -585,6 +585,7 @@ PetscErrorCode DMLabelDuplicate(DMLabel label, DMLabel *labelnew)
 
   (*labelnew)->numStrata    = label->numStrata;
   (*labelnew)->defaultValue = label->defaultValue;
+  (*labelnew)->readonly     = label->readonly;
   PetscCall(PetscMalloc1(label->numStrata, &(*labelnew)->stratumValues));
   PetscCall(PetscMalloc1(label->numStrata, &(*labelnew)->stratumSizes));
   PetscCall(PetscCalloc1(label->numStrata, &(*labelnew)->ht));

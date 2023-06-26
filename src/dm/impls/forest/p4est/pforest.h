@@ -3729,7 +3729,7 @@ static PetscErrorCode DMPforestMapCoordinates(DM dm, DM plex)
     DM           base;
 
     PetscCall(DMPlexGetHeightStratum(plex, 0, &cStart, &cEnd));
-    PetscCall(DMPlexGetGhostCellStratum(plex, &cEndInterior, NULL));
+    PetscCall(DMPlexGetCellTypeStratum(plex, DM_POLYTOPE_FV_GHOST, &cEndInterior, NULL));
     cEnd = cEndInterior < 0 ? cEnd : cEndInterior;
     PetscCall(DMForestGetBaseDM(dm, &base));
     PetscCall(DMGetCoordinateSection(plex, &coordSec));
@@ -3790,7 +3790,7 @@ static PetscErrorCode DMPforestMapCoordinates(DM dm, DM plex)
     PetscInt cStart, cEnd, cEndInterior;
 
     PetscCall(DMPlexGetHeightStratum(plex, 0, &cStart, &cEnd));
-    PetscCall(DMPlexGetGhostCellStratum(plex, &cEndInterior, NULL));
+    PetscCall(DMPlexGetCellTypeStratum(plex, DM_POLYTOPE_FV_GHOST, &cEndInterior, NULL));
     cEnd = cEndInterior < 0 ? cEnd : cEndInterior;
     if (cLocalStart > 0) {
       p4est_quadrant_t *ghosts = (p4est_quadrant_t *)pforest->ghost->ghosts.array;
@@ -3981,7 +3981,7 @@ static PetscErrorCode DMPforestLocalizeCoordinates(DM dm, DM plex)
   trees       = (p4est_tree_t *)pforest->forest->trees->array;
 
   PetscCall(DMPlexGetHeightStratum(plex, 0, &cStart, &cEnd));
-  PetscCall(DMPlexGetGhostCellStratum(plex, &cEndInterior, NULL));
+  PetscCall(DMPlexGetCellTypeStratum(plex, DM_POLYTOPE_FV_GHOST, &cEndInterior, NULL));
   cEnd = cEndInterior < 0 ? cEnd : cEndInterior;
   cp   = 0;
   if (cLocalStart > 0) {

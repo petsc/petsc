@@ -752,6 +752,15 @@ PetscErrorCode DMPlexTransformGetCellType(DMPlexTransform tr, PetscInt cell, DMP
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+PetscErrorCode DMPlexTransformGetCellTypeStratum(DMPlexTransform tr, DMPolytopeType celltype, PetscInt *start, PetscInt *end)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(tr, DMPLEXTRANSFORM_CLASSID, 1);
+  if (start) *start = tr->ctStartNew[celltype];
+  if (end) *end = tr->ctStartNew[tr->ctOrderNew[tr->ctOrderInvNew[celltype] + 1]];
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 PetscErrorCode DMPlexTransformGetDepth(DMPlexTransform tr, PetscInt *depth)
 {
   PetscFunctionBegin;

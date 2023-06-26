@@ -97,6 +97,7 @@ Changes: Development
 .. rubric:: DMPlex:
 
 - Add ``DMPlexTransformExtrudeGetPeriodic()`` and ``DMPlexTransformExtrudeSetPeriodic()``
+- Replace ``DMPlexGetGhostCellStratum()`` with ``DMPlexGetCellTypeStratum()``
 
 .. rubric:: FE/FV:
 
