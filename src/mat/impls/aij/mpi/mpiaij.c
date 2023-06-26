@@ -6683,9 +6683,10 @@ PetscErrorCode MatSetPreallocationCOO_MPIAIJ(Mat mat, PetscCount coo_n, PetscInt
   }
 
   /* Create new submatrices for on-process and off-process coupling                  */
-  PetscScalar *Aa, *Ba;
-  MatType      rtype;
-  Mat_SeqAIJ  *a, *b;
+  PetscScalar     *Aa, *Ba;
+  MatType          rtype;
+  Mat_SeqAIJ      *a, *b;
+  PetscObjectState state;
   PetscCall(PetscCalloc1(Annz, &Aa)); /* Zero matrix on device */
   PetscCall(PetscCalloc1(Bnnz, &Ba));
   /* make Aj[] local, i.e, based off the start column of the diagonal portion */
@@ -6699,6 +6700,8 @@ PetscErrorCode MatSetPreallocationCOO_MPIAIJ(Mat mat, PetscCount coo_n, PetscInt
   PetscCall(MatCreateSeqAIJWithArrays(PETSC_COMM_SELF, m, mat->cmap->N, Bi, Bj, Ba, &mpiaij->B));
   PetscCall(MatSetUpMultiply_MPIAIJ(mat));
   mat->was_assembled = PETSC_TRUE; // was_assembled in effect means the Mvctx is built; doing so avoids redundant MatSetUpMultiply_MPIAIJ
+  state              = mpiaij->A->nonzerostate + mpiaij->B->nonzerostate;
+  PetscCall(MPIU_Allreduce(&state, &mat->nonzerostate, 1, MPIU_INT64, MPI_SUM, PetscObjectComm((PetscObject)mat)));
 
   a               = (Mat_SeqAIJ *)mpiaij->A->data;
   b               = (Mat_SeqAIJ *)mpiaij->B->data;
