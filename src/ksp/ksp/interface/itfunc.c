@@ -2092,6 +2092,7 @@ PetscErrorCode KSPSetPC(KSP ksp, PC pc)
     PetscValidHeaderSpecific(pc, PC_CLASSID, 2);
     PetscCheckSameComm(ksp, 1, pc, 2);
   }
+  if (ksp->pc != pc && ksp->setupstage) ksp->setupstage = KSP_SETUP_NEWMATRIX;
   PetscCall(PetscObjectReference((PetscObject)pc));
   PetscCall(PCDestroy(&ksp->pc));
   ksp->pc = pc;
