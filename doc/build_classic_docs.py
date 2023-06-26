@@ -79,8 +79,19 @@ def _configure_minimal_petsc(petsc_dir, petsc_arch) -> None:
 
 def _build_classic_docs_subset(petsc_dir, petsc_arch, outdir, stage):
     if stage == "pre":
-        target = "alldoc_pre"
         loc = os.getcwd()
+        command = ['time', 'make', 'allmanpages',
+                   'PETSC_DIR=%s' % petsc_dir,
+                   'PETSC_ARCH=%s' % petsc_arch,
+                   'HTMLMAP=%s' % os.path.join(os.getcwd(),'manualpages','htmlmap'),
+                   'LOC=%s' % loc]
+        print('============================================')
+        print(command)
+        print('============================================')
+        subprocess.run(command, cwd=petsc_dir, check=True)
+        import build_man_examples_links
+        build_man_examples_links.main(petsc_dir,loc)
+        target = "alldoc_pre"
     elif stage == "post":
         target = "alldoc_post"
         loc = outdir

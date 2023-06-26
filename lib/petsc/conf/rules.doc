@@ -82,6 +82,8 @@ manualpages:
           if [ -f "${LOC}/manualpages/$${LMANSEC}" ]; then chmod g+w "${LOC}"/manualpages/$${LMANSEC}/*; fi; \
         fi;
 
+# This is no longer used and should be removed soon
+#
 #   Example usage for manual pages; adds each example that uses a function to that functions
 # manual page up to a limit of 10 examples.
 # Cannot run in parallel because writes to random manual pages
