@@ -15,7 +15,7 @@
     Reference:
 .   * -  https://www.python.org/dev/peps/pep-0485/
 
-.seealso: `PetscEqualReal()`, `PetscEqualScalar()`
+.seealso: `PetscIsCloseAtTolScalar()`, `PetscEqualReal()`, `PetscEqualScalar()`
 @*/
 PetscBool PetscIsCloseAtTol(PetscReal a, PetscReal b, PetscReal rtol, PetscReal atol)
 {

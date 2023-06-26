@@ -23,6 +23,7 @@ Changes: Development
 - Add ``PetscDeviceContextGetStreamHandle()`` to return a handle to the stream the current device context is using
 - Add ``PetscStrcmpAny()`` to compare against multiple non-empty strings
 - Change arguments 4 and 5 of ``PetscViewerBinaryReadAll()`` and ``PetscViewerBinaryWriteAll()`` to ``PetscInt64``
+- Add ``PetscIsCloseAtTolScalar()``
 
 .. rubric:: Event Logging:
 
