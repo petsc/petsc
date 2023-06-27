@@ -174,7 +174,8 @@ protected:
   template <typename F>
   static PetscErrorCode DiagonalUnaryTransform(Mat, PetscDeviceContext, F &&) noexcept;
 
-  static PetscErrorCode GetDiagonal_CUPMBase(Mat, Vec) noexcept;
+  static PetscErrorCode Shift(Mat, PetscScalar) noexcept;
+  static PetscErrorCode GetDiagonal(Mat, Vec) noexcept;
 
   PETSC_NODISCARD static auto DeviceArrayRead(PetscDeviceContext dctx, Mat m) noexcept PETSC_DECLTYPE_AUTO_RETURNS(MatrixArray<PETSC_MEMTYPE_DEVICE, PETSC_MEMORY_ACCESS_READ>{dctx, m})
   PETSC_NODISCARD static auto DeviceArrayWrite(PetscDeviceContext dctx, Mat m) noexcept PETSC_DECLTYPE_AUTO_RETURNS(MatrixArray<PETSC_MEMTYPE_DEVICE, PETSC_MEMORY_ACCESS_WRITE>{dctx, m})
@@ -425,7 +426,18 @@ inline PetscErrorCode MatDense_CUPM<T, D>::DiagonalUnaryTransform(Mat A, PetscDe
 }
 
 template <device::cupm::DeviceType T, typename D>
-inline PetscErrorCode MatDense_CUPM<T, D>::GetDiagonal_CUPMBase(Mat A, Vec v) noexcept
+inline PetscErrorCode MatDense_CUPM<T, D>::Shift(Mat A, PetscScalar alpha) noexcept
+{
+  PetscDeviceContext dctx;
+
+  PetscFunctionBegin;
+  PetscCall(GetHandles_(&dctx));
+  PetscCall(DiagonalUnaryTransform(A, dctx, device::cupm::functors::make_plus_equals(alpha)));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+template <device::cupm::DeviceType T, typename D>
+inline PetscErrorCode MatDense_CUPM<T, D>::GetDiagonal(Mat A, Vec v) noexcept
 {
   const auto         rstart = A->rmap->rstart;
   const auto         rend   = A->rmap->rend;
@@ -497,7 +509,8 @@ inline PetscErrorCode MatDense_CUPM<T, D>::GetDiagonal_CUPMBase(Mat A, Vec v) no
     using ::Petsc::mat::cupm::impl::MatDense_CUPM<T, __VA_ARGS__>::HostArrayWrite; \
     using ::Petsc::mat::cupm::impl::MatDense_CUPM<T, __VA_ARGS__>::HostArrayReadWrite; \
     using ::Petsc::mat::cupm::impl::MatDense_CUPM<T, __VA_ARGS__>::DiagonalUnaryTransform; \
-    using ::Petsc::mat::cupm::impl::MatDense_CUPM<T, __VA_ARGS__>::GetDiagonal_CUPMBase
+    using ::Petsc::mat::cupm::impl::MatDense_CUPM<T, __VA_ARGS__>::Shift; \
+    using ::Petsc::mat::cupm::impl::MatDense_CUPM<T, __VA_ARGS__>::GetDiagonal
 
 } // namespace impl
 

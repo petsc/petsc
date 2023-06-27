@@ -154,7 +154,6 @@ public:
   static PetscErrorCode Copy(Mat, Mat, MatStructure) noexcept;
   static PetscErrorCode ZeroEntries(Mat) noexcept;
   static PetscErrorCode Scale(Mat, PetscScalar) noexcept;
-  static PetscErrorCode Shift(Mat, PetscScalar) noexcept;
   static PetscErrorCode AXPY(Mat, PetscScalar, Mat, MatStructure) noexcept;
   static PetscErrorCode Duplicate(Mat, MatDuplicateOption, Mat *) noexcept;
   static PetscErrorCode SetRandom(Mat, PetscRandom) noexcept;
@@ -170,8 +169,6 @@ public:
 
   static PetscErrorCode GetSubMatrix(Mat, PetscInt, PetscInt, PetscInt, PetscInt, Mat *) noexcept;
   static PetscErrorCode RestoreSubMatrix(Mat, Mat *) noexcept;
-
-  static PetscErrorCode GetDiagonal(Mat, Vec) noexcept;
 };
 
 } // namespace impl
@@ -1433,18 +1430,6 @@ inline PetscErrorCode MatDense_Seq_CUPM<T>::Scale(Mat A, PetscScalar alpha) noex
 }
 
 template <device::cupm::DeviceType T>
-inline PetscErrorCode MatDense_Seq_CUPM<T>::Shift(Mat A, PetscScalar alpha) noexcept
-{
-  PetscDeviceContext dctx;
-
-  PetscFunctionBegin;
-  PetscCall(GetHandles_(&dctx));
-  PetscCall(PetscInfo(A, "Performing Shift %" PetscInt_FMT " x %" PetscInt_FMT " on backend\n", A->rmap->n, A->cmap->n));
-  PetscCall(DiagonalUnaryTransform(A, dctx, device::cupm::functors::make_plus_equals(alpha)));
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-template <device::cupm::DeviceType T>
 inline PetscErrorCode MatDense_Seq_CUPM<T>::AXPY(Mat Y, PetscScalar alpha, Mat X, MatStructure) noexcept
 {
   const auto         m_x = X->rmap->n, m_y = Y->rmap->n;
@@ -1794,14 +1779,6 @@ inline PetscErrorCode MatDense_Seq_CUPM<T>::RestoreSubMatrix(Mat A, Mat *m) noex
 
   cmat->offloadmask = PETSC_OFFLOAD_UNALLOCATED;
   *m                = nullptr;
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-template <device::cupm::DeviceType T>
-inline PetscErrorCode MatDense_Seq_CUPM<T>::GetDiagonal(Mat A, Vec v) noexcept
-{
-  PetscFunctionBegin;
-  PetscCall(GetDiagonal_CUPMBase(A, v));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

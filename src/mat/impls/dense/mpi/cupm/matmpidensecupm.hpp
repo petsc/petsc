@@ -75,10 +75,6 @@ public:
   static PetscErrorCode PlaceArray(Mat, const PetscScalar *) noexcept;
   static PetscErrorCode ReplaceArray(Mat, const PetscScalar *) noexcept;
   static PetscErrorCode ResetArray(Mat) noexcept;
-
-  static PetscErrorCode Shift(Mat, PetscScalar) noexcept;
-
-  static PetscErrorCode GetDiagonal(Mat, Vec) noexcept;
 };
 
 } // namespace impl
@@ -401,28 +397,6 @@ inline PetscErrorCode MatDense_MPI_CUPM<T>::ResetArray(Mat A) noexcept
   PetscCheck(!mimpl->vecinuse, PetscObjectComm(PetscObjectCast(A)), PETSC_ERR_ORDER, "Need to call MatDenseRestoreColumnVec() first");
   PetscCheck(!mimpl->matinuse, PetscObjectComm(PetscObjectCast(A)), PETSC_ERR_ORDER, "Need to call MatDenseRestoreSubMatrix() first");
   PetscCall(MatDenseCUPMResetArray<T>(mimpl->A));
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-// ==========================================================================================
-
-template <device::cupm::DeviceType T>
-inline PetscErrorCode MatDense_MPI_CUPM<T>::Shift(Mat A, PetscScalar alpha) noexcept
-{
-  PetscDeviceContext dctx;
-
-  PetscFunctionBegin;
-  PetscCall(GetHandles_(&dctx));
-  PetscCall(PetscInfo(A, "Performing Shift on backend\n"));
-  PetscCall(DiagonalUnaryTransform(A, dctx, device::cupm::functors::make_plus_equals(alpha)));
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-template <device::cupm::DeviceType T>
-inline PetscErrorCode MatDense_MPI_CUPM<T>::GetDiagonal(Mat A, Vec v) noexcept
-{
-  PetscFunctionBegin;
-  PetscCall(GetDiagonal_CUPMBase(A, v));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
