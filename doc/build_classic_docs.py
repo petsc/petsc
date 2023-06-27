@@ -94,14 +94,14 @@ def main(stage,outdir):
     else:
       if not os.path.isfile(os.path.join(petsc_dir, "configure.log")): raise Exception("Expected PETSc configuration not found")
       loc = outdir
-      command = ['make', 'alldoc_post',
+      command = ['make', 'c2html',
                  'PETSC_DIR=%s' % petsc_dir,
                  'PETSC_ARCH=%s' % petsc_arch,
                  'HTMLMAP=%s' % os.path.join(os.getcwd(),'manualpages','htmlmap'),
                  'LOC=%s' % loc]
       x = time.clock_gettime(time.CLOCK_REALTIME)
       print('============================================')
-      print('make alldoc')
+      print('make c2html')
       subprocess.run(command, cwd=petsc_dir, check=True)
       print("Time: "+str(time.clock_gettime(time.CLOCK_REALTIME) - x))
       print('============================================')

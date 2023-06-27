@@ -124,7 +124,6 @@ html:
               if [ -f $$file ]; then \
                 cmess=`grep "static\( const\)\? char help" $${file} | cut -d\" -f2 | cut -d\. -f1`; \
                 echo "<a href=\"$${file}.html\">$${file}: $${cmess}</a><br>" >> $${loc}/index.html;\
-                ${PYTHON} ${PETSC_DIR}/lib/petsc/bin/maint/latexinexamples.py $${loc}/$${file}.html;\
               fi; \
             done ;\
           else \
@@ -140,10 +139,6 @@ html:
               fi; \
             done; \
           fi ;\
-          echo " " >> $${loc}/index.html; \
-          echo "<a href=\"makefile.html\">makefile</a><br>" >> $${loc}/index.html ;\
-          loc=`pwd | sed -e s?\$${PETSC_DIR}?$${LOC}/?g -e s?/disks??g`;  \
-          cat makefile | ${C2HTML}  | ${MAPNAMES} -map $$htmlmap_tmp -inhtml > $${loc}/makefile.html ;\
           ${RM} $$htmlmap_tmp
 
 cleanhtml:

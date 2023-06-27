@@ -465,7 +465,7 @@ allmanpages: chk_loc deletemanualpages
 #
 #  This code needs to be rewritten in Python to reduce by a factor of 100 the time it takes to run
 #
-alldoc_post: chk_loc  chk_c2html
+c2html: chk_loc  chk_c2html
 	-@if command -v parallel &> /dev/null; then \
            ls include/makefile src/*/makefile | xargs dirname | parallel -j ${MAKE_TEST_NP} --load ${MAKE_LOAD} 'cd {}; ${OMAKE_SELF} HTMLMAP=${HTMLMAP} LOC=${LOC} PETSC_DIR=${PETSC_DIR} ACTION=html tree' ; \
          else \
