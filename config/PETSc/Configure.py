@@ -15,22 +15,24 @@ class Configure(config.base.Configure):
     return
 
   def __str2__(self):
+    import logger
+
     desc = ['  Using GNU make: ' + self.make.make]
     if self.defines.get('USE_COVERAGE'):
       desc.extend([
         '  Code coverage: yes',
         '  Using code coverage executable: {}'.format(self.getMakeMacro('PETSC_COVERAGE_EXEC'))
       ])
+    banner_ends   = 'xxx'
+    banner_middle = '=' * (logger.get_global_divider_length() - 2 * len(banner_ends))
+    banner_line   = banner_middle.join((banner_ends, banner_ends))
+    desc.append(banner_line)
     if not self.installed:
-      desc.append('xxx=========================================================================xxx')
       desc.append(' Configure stage complete. Now build PETSc libraries with:')
       desc.append('   %s PETSC_DIR=%s PETSC_ARCH=%s all' % (self.make.make_user, self.petscdir.dir, self.arch.arch))
-      desc.append('xxx=========================================================================xxx')
     else:
-      desc.append('xxx=========================================================================xxx')
       desc.append(' Installation complete. You do not need to run make to compile or install the software')
-      desc.append('xxx=========================================================================xxx')
-    desc.append('')
+    desc.extend([banner_line, ''])
     return '\n'.join(desc)
 
   def setupHelp(self, help):
