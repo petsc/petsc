@@ -1883,7 +1883,7 @@ cdef class DM(Object):
         CHKERR( DMClearLabelStratum(self.dm, cname, cvalue) )
 
     def setLabelOutput(self, name: str, output: bool) -> None:
-        """Set if a given lable should be saved to a view.
+        """Set if a given label should be saved to a view.
 
         Not collective.
 

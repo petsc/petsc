@@ -80,31 +80,6 @@ def _build_classic_docs_subset(petsc_dir, petsc_arch, outdir, stage):
     print(command)
     print('============================================')
     subprocess.run(command, cwd=petsc_dir, check=True)
-    if stage ==  "post":
-        try:
-            subprocess.run(['python2', '--version'])
-        except:
-            print('Skipping petsc4py documentation build since python2 is not available in PATH')
-            return
-        rawhtml.append('petsc4py')
-        command = ['make', 'all',
-                   'PETSC_DIR=%s' % petsc_dir,
-                   'PETSC_ARCH=%s' % petsc_arch]
-        print('==============================================')
-        print('Building library to make petsc4py classic docs')
-        print(command)
-        print('==============================================')
-        subprocess.run(command, cwd=petsc_dir, check=True)
-        command = ['make', 'website',
-                   'PETSC_DIR=%s' % petsc_dir,
-                   'PETSC_ARCH=%s' % petsc_arch,
-                   'LOC=%s' % loc]
-        print('============================================')
-        print('Building petsc4py classic docs')
-        print(command)
-        print('============================================')
-        subprocess.run(command, cwd=os.path.join(petsc_dir,'src','binding','petsc4py'), check=True)
-
 
 def classic_docs_subdirs(stage):
     if stage == 'pre':   # generated .md files that Sphinx will use to create website

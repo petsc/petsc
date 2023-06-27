@@ -2007,6 +2007,21 @@ cdef class Vec(Object):
         if ntype != norm_1_2: return toReal(rval[0])
         else: return (toReal(rval[0]), toReal(rval[1]))
 
+    def dotNorm2(self, Vec vec) -> tuple[Scalar, float]:
+        """Return the dot product with ``vec`` and its squared norm.
+
+        Collective.
+
+        See Also
+        --------
+        dot, norm, petsc.VecDotNorm2
+
+        """
+        cdef PetscScalar sval = 0
+        cdef PetscReal rval = 0
+        CHKERR( VecDotNorm2(self.vec, vec.vec, &sval, &rval) )
+        return toScalar(sval), toReal(float)
+
     def sum(self) -> Scalar:
         """Return the sum of all the entries of the vector.
 
@@ -2021,7 +2036,7 @@ cdef class Vec(Object):
         CHKERR( VecSum(self.vec, &sval) )
         return toScalar(sval)
 
-    def min(self) -> tuple[int, Scalar]:
+    def min(self) -> tuple[int, float]:
         """Return the vector entry with minimum real part and its location.
 
         Collective.
@@ -2044,7 +2059,7 @@ cdef class Vec(Object):
         CHKERR( VecMin(self.vec, &ival, &rval) )
         return (toInt(ival), toReal(rval))
 
-    def max(self) -> tuple[int, Scalar]:
+    def max(self) -> tuple[int, float]:
         """Return the vector entry with maximum real part and its location.
 
         Collective.

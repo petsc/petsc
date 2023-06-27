@@ -189,6 +189,7 @@ def builder_init_handler(app):
 def build_finished_handler(app, exception):
     if app.builder.name.endswith('html'):
         _build_classic_docs(app, 'post')
+        build_petsc4py_docs(app)
         _fix_links(app, exception)
         _fix_man_page_edit_links(app, exception)
         fix_pydata_margins.fix_pydata_margins(app.outdir)
@@ -247,3 +248,27 @@ def _update_htmlmap_links(app):
     print("    Updating htmlmap")
     print("============================================")
     update_htmlmap_links.update_htmlmap_links(app.builder,os.path.join('manualpages','htmlmap'))
+
+def build_petsc4py_docs(app):
+    petsc_dir = os.path.dirname(os.path.abspath(os.path.join(__file__,'..')))
+    petsc_arch = 'arch-classic-docs'
+
+    # Lisandro, does petsc4py need to be built to build petsc4py docs now?
+    command = ['make', 'all',
+               'PETSC_DIR=%s' % petsc_dir,
+               'PETSC_ARCH=%s' % petsc_arch]
+    print('==============================================')
+    print('Building library to make petsc4py docs')
+    print(command)
+    print('==============================================')
+    subprocess.run(command, cwd=petsc_dir, check=True)
+
+    command = ['make', 'website',
+               'PETSC_DIR=%s' % petsc_dir,
+               'PETSC_ARCH=%s' % petsc_arch,
+               'LOC=%s' % app.outdir]
+    print('============================================')
+    print('Building petsc4py docs')
+    print(command)
+    print('============================================')
+    subprocess.run(command, cwd=os.path.join(petsc_dir,'src','binding','petsc4py'), check=True)
