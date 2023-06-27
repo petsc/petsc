@@ -465,53 +465,6 @@ allmanpages: chk_loc deletemanualpages
 #
 #  This code needs to be rewritten in Python to reduce by a factor of 100 the time it takes to run
 #
-#    Goes through all manual pages adding links to implementations of the method
-# or class, at the end of the file.
-#
-# To find functions implementing methods, we use git grep to look for
-# well-formed PETSc functions
-# - with names containing a single underscore
-# - in files of appropriate types (.cu .c .cxx .h),
-# - in paths including "/impls/",
-# - excluding any line with a semicolon (to avoid matching prototypes), and
-# - excluding any line including "_Private",
-# storing potential matches in implsFuncAll.txt.
-#
-# For each man page we then grep in this file for the item's name followed by
-# a single underscore and process the resulting implsFunc.txt to generate HTML.
-#
-# To find class implementations, we populate implsClassAll.txt with candidates
-# - of the form "struct _p_itemName {",  and
-# - not containing a semicolon
-# and then grep for particular values of itemName, generating implsClass.txt,
-# which is processed to generate HTML.
-#
-# Note: PETSC_DOC_OUT_ROOT_PLACEHOLDER must match the term used elsewhere in doc/
-manimplementations:
-	-@git grep "struct\s\+_[pn]_[^\s]\+.*{" -- *.cpp *.cu *.c *.h *.cxx | grep -v -e ";" -e "/tests/" -e "/tutorials/" > implsClassAll.txt ; \
-  git grep -n "^\(static \)\?\(PETSC_EXTERN \)\?\(PETSC_INTERN \)\?\(extern \)\?PetscErrorCode \+[^_ ]\+_[^_ ]\+(" -- '*/impls/*.c' '*/impls/*.cpp' '*/impls/*.cu' '*/impls/*.cxx' '*/impls/*.h' | grep -v -e ";" -e "_[Pp]rivate" > implsFuncAll.txt ; \
-  for i in ${LOC}/manualpages/*/*.md foo; do \
-       if [ "$$i" != "foo" ] ; then \
-          itemName=`basename $$i .md`;\
-          grep "\s$${itemName}_" implsFuncAll.txt > implsFunc.txt ; \
-          grep "_p_$${itemName}\b" implsClassAll.txt > implsClass.txt ; \
-          if [ -s implsFunc.txt ] || [ -s implsClass.txt ] ; then \
-            printf "\n## Implementations\n\n" >> $$i; \
-          fi ; \
-          if [ -s implsFunc.txt ] ; then \
-            sed "s?\(.*\.[ch]x*u*\).*\($${itemName}.*\)(.*)?<A HREF=\"PETSC_DOC_OUT_ROOT_PLACEHOLDER/\1.html#\2\">\2 in \1</A><BR>?" implsFunc.txt >> $$i ; \
-          fi ; \
-          if [ -s implsClass.txt ] ; then \
-            sed "s?\(.*\.[ch]x*u*\):.*struct.*\(_p_$${itemName}\).*{?<A HREF=\"PETSC_DOC_OUT_ROOT_PLACEHOLDER/\1.html#\2\">\2 in \1</A><BR>?" implsClass.txt >> $$i ; \
-          fi ; \
-          ${RM} implsFunc.txt implsClass.txt; \
-       fi ; \
-  done ; \
-  ${RM} implsClassAll.txt implsFuncAll.txt
-
-#
-#  This code needs to be rewritten in Python to reduce by a factor of 100 the time it takes to run
-#
 alldoc_post: chk_loc  chk_c2html
 	-@if command -v parallel &> /dev/null; then \
            ls include/makefile src/*/makefile | xargs dirname | parallel -j ${MAKE_TEST_NP} --load ${MAKE_LOAD} 'cd {}; ${OMAKE_SELF} HTMLMAP=${HTMLMAP} LOC=${LOC} PETSC_DIR=${PETSC_DIR} ACTION=html tree' ; \

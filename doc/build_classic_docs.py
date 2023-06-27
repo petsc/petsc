@@ -72,19 +72,15 @@ def main(stage,outdir):
       x = time.clock_gettime(time.CLOCK_REALTIME)
       print('============================================')
       print('Building manual page links to tutorials')
-      build_man_examples_links.main(petsc_dir,loc)
+      build_man_examples_links.main(petsc_dir)
       print("Time: "+str(time.clock_gettime(time.CLOCK_REALTIME) - x))
       print('============================================')
 
-      command = ['make', 'manimplementations',
-                 'PETSC_DIR=%s' % petsc_dir,
-                 'PETSC_ARCH=%s' % petsc_arch,
-                 'HTMLMAP=%s' % os.path.join(os.getcwd(),'manualpages','htmlmap'),
-                 'LOC=%s' % loc]
+      import build_man_impls_links
       x = time.clock_gettime(time.CLOCK_REALTIME)
       print('============================================')
       print('Building manual page links to implementations')
-      subprocess.run(command, cwd=petsc_dir, check=True)
+      build_man_impls_links.main(petsc_dir)
       print("Time: "+str(time.clock_gettime(time.CLOCK_REALTIME) - x))
       print('============================================')
 
