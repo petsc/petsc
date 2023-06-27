@@ -9427,13 +9427,9 @@ PetscErrorCode MatCreateVecs(Mat mat, Vec *right, Vec *left)
   if (mat->ops->getvecs) {
     PetscUseTypeMethod(mat, getvecs, right, left);
   } else {
-    PetscInt rbs, cbs;
-    PetscCall(MatGetBlockSizes(mat, &rbs, &cbs));
     if (right) {
       PetscCheck(mat->cmap->n >= 0, PetscObjectComm((PetscObject)mat), PETSC_ERR_ARG_WRONGSTATE, "PetscLayout for columns not yet setup");
-      PetscCall(VecCreate(PetscObjectComm((PetscObject)mat), right));
-      PetscCall(VecSetSizes(*right, mat->cmap->n, PETSC_DETERMINE));
-      PetscCall(VecSetBlockSize(*right, cbs));
+      PetscCall(VecCreateWithLayout_Private(mat->cmap, right));
       PetscCall(VecSetType(*right, mat->defaultvectype));
 #if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA) || defined(PETSC_HAVE_HIP)
       if (mat->boundtocpu && mat->bindingpropagates) {
@@ -9441,13 +9437,10 @@ PetscErrorCode MatCreateVecs(Mat mat, Vec *right, Vec *left)
         PetscCall(VecBindToCPU(*right, PETSC_TRUE));
       }
 #endif
-      PetscCall(PetscLayoutReference(mat->cmap, &(*right)->map));
     }
     if (left) {
       PetscCheck(mat->rmap->n >= 0, PetscObjectComm((PetscObject)mat), PETSC_ERR_ARG_WRONGSTATE, "PetscLayout for rows not yet setup");
-      PetscCall(VecCreate(PetscObjectComm((PetscObject)mat), left));
-      PetscCall(VecSetSizes(*left, mat->rmap->n, PETSC_DETERMINE));
-      PetscCall(VecSetBlockSize(*left, rbs));
+      PetscCall(VecCreateWithLayout_Private(mat->rmap, left));
       PetscCall(VecSetType(*left, mat->defaultvectype));
 #if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA) || defined(PETSC_HAVE_HIP)
       if (mat->boundtocpu && mat->bindingpropagates) {
@@ -9455,7 +9448,6 @@ PetscErrorCode MatCreateVecs(Mat mat, Vec *right, Vec *left)
         PetscCall(VecBindToCPU(*left, PETSC_TRUE));
       }
 #endif
-      PetscCall(PetscLayoutReference(mat->rmap, &(*left)->map));
     }
   }
   PetscFunctionReturn(PETSC_SUCCESS);
