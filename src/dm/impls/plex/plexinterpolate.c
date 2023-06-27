@@ -508,7 +508,7 @@ static PetscErrorCode DMPlexInterpolateFaces_Internal(DM dm, PetscInt cellDepth,
   for (c = cStart, cntFaces = 0; c < cEnd; ++c) {
     const PetscInt *cone;
     DMPolytopeType  ct;
-    PetscInt        numFaces, coneSize;
+    PetscInt        numFaces = 0, coneSize;
 
     PetscCall(DMPlexGetCellType(dm, c, &ct));
     PetscCall(DMPlexGetCone(dm, c, &cone));
