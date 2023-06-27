@@ -446,10 +446,7 @@ inline PetscErrorCode MatDense_CUPM<T, D>::GetDiagonal(Mat A, Vec v) noexcept
   PetscDeviceContext dctx;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
-  PetscCheckTypeNames(A, D::MATSEQDENSECUPM(), D::MATMPIDENSECUPM());
   PetscCall(CheckSaneSequentialMatSizes_(A));
-  PetscValidHeaderSpecific(v, VEC_CLASSID, 2);
   PetscCall(GetHandles_(&dctx));
   PetscCall(MatDenseGetLDA(A, &lda));
   {
@@ -458,13 +455,6 @@ inline PetscErrorCode MatDense_CUPM<T, D>::GetDiagonal(Mat A, Vec v) noexcept
     auto         diagonal = detail::MakeDiagonalIterator(da.data(), rstart, rend, gcols, lda);
     cupmStream_t stream;
 
-    if (PetscDefined(USE_DEBUG)) {
-      const std::size_t ndiag = diagonal.end() - diagonal.begin();
-      PetscInt          nv;
-
-      PetscCall(VecGetLocalSize(v, &nv));
-      PetscCheck(nv == (diagonal.end() - diagonal.begin()), PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Nonconforming Mat and Vec. Vec local size %" PetscInt_FMT " != Mat local rows m %zu", nv, ndiag);
-    }
     PetscCall(GetHandlesFrom_(dctx, &stream));
     // clang-format off
     PetscCallThrust(
