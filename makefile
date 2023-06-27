@@ -531,8 +531,8 @@ gcov:
 	output_file_base_name=${PETSC_ARCH}-gcovr-report.json; \
 	petsc_arch_dir=${PETSC_DIR}/${PETSC_ARCH}; \
         tar_file=$${petsc_arch_dir}/$${output_file_base_name}.tar.bz2; \
-	cd $${petsc_arch_dir}/obj && \
-	gcovr --json --output $${petsc_arch_dir}/$${output_file_base_name} --exclude '.*/ftn-auto/.*' --exclude-lines-by-pattern '^\s*SETERR.*' --exclude-throw-branches --exclude-unreachable-branches -j 4 --gcov-executable "${PETSC_COVERAGE_EXEC}" --root ${PETSC_DIR} . ${PETSC_GCOV_OPTIONS} && \
+	cd $${petsc_arch_dir} && \
+	gcovr --json --output $${petsc_arch_dir}/$${output_file_base_name} --exclude '.*/ftn-auto/.*' --exclude-lines-by-pattern '^\s*SETERR.*' --exclude-throw-branches --exclude-unreachable-branches -j 4 --gcov-executable "${PETSC_COVERAGE_EXEC}" --root ${PETSC_DIR} ./obj ./tests ${PETSC_GCOV_OPTIONS} && \
 	${RM} -f $${tar_file} && \
 	tar --bzip2 -cf $${tar_file} -C $${petsc_arch_dir} ./$${output_file_base_name} && \
 	${RM} $${petsc_arch_dir}/$${output_file_base_name}
