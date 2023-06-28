@@ -851,6 +851,7 @@ class generateExamples(Petsc):
       for root in dataDict:
         relroot=self.srcrelpath(root)
         pkg=relroot.split("/")[1]
+        if not pkg in self.sources: continue
         fh.write(relroot+"\n")
         allSrcs=[]
         for lang in LANGS: allSrcs+=self.sources[pkg][lang]['srcs']
