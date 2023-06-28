@@ -62,6 +62,7 @@ Changes: Development
 - Add ``MATDIAGONAL`` which can be created with ``MatCreateDiagonal()``
 - Add ``MatDiagonalGetDiagonal()``, ``MatDiagonalRestoreDiagonal()``, ``MatDiagonalGetInverseDiagonal()``, and ``MatDiagonalRestoreInverseDiagonal()``
 - Add support for ``MatLoad()`` and ``MatView()`` to load and store ``MPIAIJ`` matrices that have more than ``PETSC_INT_MAX`` nonzeros, so long as each rank has fewer than ``PETSC_INT_MAX``
+- Add ``MatLRCSetMats()`` and register creation routine for ``MatLRC``
 
 .. rubric:: MatCoarsen:
 

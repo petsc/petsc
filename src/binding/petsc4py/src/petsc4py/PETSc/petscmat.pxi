@@ -448,6 +448,7 @@ cdef extern from * nogil:
     PetscErrorCode MatSetUnfactored(PetscMat)
 
     PetscErrorCode MatLRCGetMats(PetscMat,PetscMat*,PetscMat*,PetscVec*,PetscMat*)
+    PetscErrorCode MatLRCSetMats(PetscMat,PetscMat,PetscMat,PetscVec,PetscMat)
 
     PetscErrorCode MatMumpsSetIcntl(PetscMat,PetscInt,PetscInt)
     PetscErrorCode MatMumpsGetIcntl(PetscMat,PetscInt,PetscInt*)
