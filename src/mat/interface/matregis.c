@@ -7,6 +7,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_MFFD(Mat);
 PETSC_EXTERN PetscErrorCode MatCreate_MAIJ(Mat);
 PETSC_EXTERN PetscErrorCode MatCreate_KAIJ(Mat);
 PETSC_EXTERN PetscErrorCode MatCreate_IS(Mat);
+PETSC_EXTERN PetscErrorCode MatCreate_LRC(Mat);
 
 PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJ(Mat);
 PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJ(Mat);
@@ -137,6 +138,7 @@ PetscErrorCode MatRegisterAll(void)
   PetscCall(MatRegister(MATIS, MatCreate_IS));
   PetscCall(MatRegister(MATSHELL, MatCreate_Shell));
   PetscCall(MatRegister(MATCOMPOSITE, MatCreate_Composite));
+  PetscCall(MatRegister(MATLRC, MatCreate_LRC));
 
   PetscCall(MatRegisterRootName(MATAIJ, MATSEQAIJ, MATMPIAIJ));
   PetscCall(MatRegister(MATMPIAIJ, MatCreate_MPIAIJ));
