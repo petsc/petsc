@@ -550,21 +550,22 @@ PetscErrorCode MatMultTransposeAdd_MPIDense(Mat A, Vec xx, Vec yy, Vec zz)
 PetscErrorCode MatGetDiagonal_MPIDense(Mat A, Vec v)
 {
   Mat_MPIDense      *a = (Mat_MPIDense *)A->data;
-  PetscInt           lda, len, i, n, m = A->rmap->n, radd;
-  PetscScalar       *x, zero = 0.0;
+  PetscInt           lda, len, i, nl, ng, m = A->rmap->n, radd;
+  PetscScalar       *x;
   const PetscScalar *av;
 
   PetscFunctionBegin;
-  PetscCall(VecSet(v, zero));
   PetscCall(VecGetArray(v, &x));
-  PetscCall(VecGetSize(v, &n));
-  PetscCheck(n == A->rmap->N, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Nonconforming mat and vec");
+  PetscCall(VecGetSize(v, &ng));
+  PetscCheck(ng == A->rmap->N, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Nonconforming mat and vec");
+  PetscCall(VecGetLocalSize(v, &nl));
   len  = PetscMin(a->A->rmap->n, a->A->cmap->n);
   radd = A->rmap->rstart * m;
   PetscCall(MatDenseGetArrayRead(a->A, &av));
   PetscCall(MatDenseGetLDA(a->A, &lda));
   for (i = 0; i < len; i++) x[i] = av[radd + i * lda + i];
   PetscCall(MatDenseRestoreArrayRead(a->A, &av));
+  PetscCall(PetscArrayzero(x + i, nl - i));
   PetscCall(VecRestoreArray(v, &x));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
