@@ -3,6 +3,7 @@
 #include <petscdevice.h>
 #include <../src/ksp/pc/impls/vpbjacobi/vpbjacobi.h>
 #include <../src/mat/impls/aij/seq/kokkos/aijkok.hpp> // for MatInvertVariableBlockDiagonal_SeqAIJKokkos
+#include <KokkosBlas2_gemv.hpp>
 
 /* A class that manages helper arrays assisting parallel PCApply() with Kokkos */
 struct PC_VPBJacobi_Kokkos {
@@ -76,7 +77,7 @@ static PetscErrorCode PCApplyOrTranspose_VPBJacobi_Kokkos(PC pc, Vec x, Vec y)
   PetscIntKokkosView         bs     = pckok->bs_dual.view_device();
   PetscIntKokkosView         bs2    = pckok->bs2_dual.view_device();
   PetscIntKokkosView         blkMap = pckok->blkMap_dual.view_device();
-  const char                *label  = transpose ? "PCApplyTranspose_VPBJacobi_Kokkos" : "PCApply_VPBJacobi_Kokkos";
+  const char                *label  = transpose ? "PCApplyTranspose_VPBJacobi" : "PCApply_VPBJacobi";
 
   PetscFunctionBegin;
   PetscCall(PetscLogGpuTimeBegin());
@@ -84,25 +85,44 @@ static PetscErrorCode PCApplyOrTranspose_VPBJacobi_Kokkos(PC pc, Vec x, Vec y)
   VecErrorIfNotKokkos(y);
   PetscCall(VecGetKokkosView(x, &xv));
   PetscCall(VecGetKokkosViewWrite(y, &yv));
+#if 0 // TODO: Why the TeamGemv version is 2x worse than the naive one?
+  PetscCallCXX(Kokkos::parallel_for(
+    label, Kokkos::TeamPolicy<>(jac->nblocks, Kokkos::AUTO()), KOKKOS_LAMBDA(const KokkosTeamMemberType &team) {
+      PetscInt           bid  = team.league_rank();    // block id
+      PetscInt           n    = bs(bid + 1) - bs(bid); // size of this block
+      const PetscScalar *bbuf = &diag(bs2(bid));
+      const PetscScalar *xbuf = &xv(bs(bid));
+      PetscScalar       *ybuf = &yv(bs(bid));
+      const auto        &B    = Kokkos::View<const PetscScalar **, Kokkos::LayoutLeft>(bbuf, n, n); // wrap it in a 2D view in column-major order
+      const auto        &x1   = ConstPetscScalarKokkosView(xbuf, n);
+      const auto        &y1   = PetscScalarKokkosView(ybuf, n);
+      if (transpose) {
+        KokkosBlas::TeamGemv<KokkosTeamMemberType, KokkosBlas::Trans::Transpose>::invoke(team, 1., B, x1, 0., y1); // y1 = 0.0 * y1 + 1.0 * B^T * x1
+      } else {
+        KokkosBlas::TeamGemv<KokkosTeamMemberType, KokkosBlas::Trans::NoTranspose>::invoke(team, 1., B, x1, 0., y1); // y1 = 0.0 * y1 + 1.0 * B * x1
+      }
+    }));
+#else
   PetscCallCXX(Kokkos::parallel_for(
     label, pckok->n, KOKKOS_LAMBDA(PetscInt row) {
-      const PetscScalar *Ap, *xp;
+      const PetscScalar *Bp, *xp;
       PetscScalar       *yp;
       PetscInt           i, j, k, m;
 
       k  = blkMap(row);                             /* k-th block/matrix */
       m  = bs(k + 1) - bs(k);                       /* block size of the k-th block */
       i  = row - bs(k);                             /* i-th row of the block */
-      Ap = &diag(bs2(k) + i * (transpose ? m : 1)); /* Ap points to the first entry of i-th row/column */
+      Bp = &diag(bs2(k) + i * (transpose ? m : 1)); /* Bp points to the first entry of i-th row/column */
       xp = &xv(bs(k));
       yp = &yv(bs(k));
 
       yp[i] = 0.0;
       for (j = 0; j < m; j++) {
-        yp[i] += Ap[0] * xp[j];
-        Ap += transpose ? 1 : m;
+        yp[i] += Bp[0] * xp[j];
+        Bp += transpose ? 1 : m;
       }
     }));
+#endif
   PetscCall(VecRestoreKokkosView(x, &xv));
   PetscCall(VecRestoreKokkosViewWrite(y, &yv));
   PetscCall(PetscLogGpuFlops(pckok->nsize * 2)); /* FMA on entries in all blocks */
