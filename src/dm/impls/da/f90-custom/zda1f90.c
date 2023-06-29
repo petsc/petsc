@@ -19,6 +19,8 @@
   #define dmdavecrestorearrayreadf903_ DMDAVECRESTOREARRAYREADF903
   #define dmdavecgetarrayreadf904_     DMDAVECGETARRAYREADF904
   #define dmdavecrestorearrayreadf904_ DMDAVECRESTOREARRAYREADF904
+  #define dmdagetelements_             DMDAGETELEMENTS
+  #define dmdarestoreelements_         DMDARESTOREELEMENTS
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
   #define dmdagetlocalinfof90_         dmdagetlocalinfof90
   #define dmdavecgetarrayf901_         dmdavecgetarrayf901
@@ -37,7 +39,31 @@
   #define dmdavecrestorearrayreadf903_ dmdavecrestorearrayreadf903
   #define dmdavecgetarrayreadf904_     dmdavecgetarrayreadf904
   #define dmdavecrestorearrayreadf904_ dmdavecrestorearrayreadf904
+  #define dmdagetelements_             dmdagetelements
+  #define dmdarestoreelements_         dmdarestoreelements
 #endif
+
+PETSC_EXTERN void dmdagetelements_(DM *dm, PetscInt *nel, PetscInt *nen, F90Array1d *e, int *ierr PETSC_F90_2PTR_PROTO(ptrd))
+{
+  const PetscInt *fa;
+
+  if (!e) {
+    *ierr = PetscError(((PetscObject)e)->comm, __LINE__, PETSC_FUNCTION_NAME, __FILE__, PETSC_ERR_ARG_BADPTR, PETSC_ERROR_INITIAL, "e==NULL, maybe #include <petsc/finclude/petscvec.h> is missing?");
+    return;
+  }
+  *ierr = DMDAGetElements(*dm, nel, nen, &fa);
+  if (*ierr) return;
+  *ierr = F90Array1dCreate((PetscInt *)fa, MPIU_INT, 1, (*nel) * (*nen), e PETSC_F90_2PTR_PARAM(ptrd));
+}
+
+PETSC_EXTERN void dmdarestoreelements_(DM *dm, PetscInt *nel, PetscInt *nen, F90Array1d *e, int *ierr PETSC_F90_2PTR_PROTO(ptrd))
+{
+  if (!e) {
+    *ierr = PetscError(((PetscObject)e)->comm, __LINE__, PETSC_FUNCTION_NAME, __FILE__, PETSC_ERR_ARG_BADPTR, PETSC_ERROR_INITIAL, "e==NULL, maybe #include <petsc/finclude/petscvec.h> is missing?");
+    return;
+  }
+  *ierr = F90Array1dDestroy(e, MPIU_SCALAR PETSC_F90_2PTR_PARAM(ptrd));
+}
 
 PETSC_EXTERN void dmdagetlocalinfof90_(DM *da, DMDALocalInfo *info, PetscErrorCode *ierr)
 {
