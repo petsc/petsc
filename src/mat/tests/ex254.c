@@ -62,8 +62,9 @@ int main(int argc, char **args)
   PetscCall(MatCreate(PETSC_COMM_WORLD, &A));
   PetscCall(MatSetSizes(A, PETSC_DECIDE, PETSC_DECIDE, M, N));
   PetscCall(MatSetType(A, MATAIJ));
-  PetscCall(MatSeqAIJSetPreallocation(A, 2, NULL));
-  PetscCall(MatMPIAIJSetPreallocation(A, 2, NULL, 2, NULL));
+  // Do not preallocate A to also test MatHash with MAT_IGNORE_OFF_PROC_ENTRIES
+  // PetscCall(MatSeqAIJSetPreallocation(A, 2, NULL));
+  // PetscCall(MatMPIAIJSetPreallocation(A, 2, NULL, 2, NULL));
   PetscCall(MatSetOption(A, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_FALSE));
   PetscCall(MatSetOption(A, MAT_IGNORE_OFF_PROC_ENTRIES, flg));
 
