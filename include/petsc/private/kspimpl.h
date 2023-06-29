@@ -71,7 +71,7 @@ PETSC_EXTERN PetscErrorCode KSPGuessCreate_POD(KSPGuess);
   #define MAXKSPMONITORS    5
   #define MAXKSPREASONVIEWS 5
 typedef enum {
-  KSP_SETUP_NEW,
+  KSP_SETUP_NEW = 0,
   KSP_SETUP_NEWMATRIX,
   KSP_SETUP_NEWRHS
 } KSPSetUpStage;

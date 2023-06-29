@@ -367,9 +367,9 @@ PetscErrorCode KSPSetUp(KSP ksp)
   case KSP_SETUP_NEW:
     PetscUseTypeMethod(ksp, setup);
     break;
-  case KSP_SETUP_NEWMATRIX: { /* This should be replaced with a more general mechanism */
+  case KSP_SETUP_NEWMATRIX: /* This should be replaced with a more general mechanism */
     if (ksp->setupnewmatrix) PetscUseTypeMethod(ksp, setup);
-  } break;
+    break;
   default:
     break;
   }
@@ -381,7 +381,7 @@ PetscErrorCode KSPSetUp(KSP ksp)
     PetscScalar *xx;
     PetscInt     i, n;
     PetscBool    zeroflag = PETSC_FALSE;
-    if (!ksp->pc) PetscCall(KSPGetPC(ksp, &ksp->pc));
+
     if (!ksp->diagonal) { /* allocate vector to hold diagonal */
       PetscCall(MatCreateVecs(pmat, &ksp->diagonal, NULL));
     }
@@ -2092,6 +2092,7 @@ PetscErrorCode KSPSetPC(KSP ksp, PC pc)
     PetscValidHeaderSpecific(pc, PC_CLASSID, 2);
     PetscCheckSameComm(ksp, 1, pc, 2);
   }
+  if (ksp->pc != pc && ksp->setupstage) ksp->setupstage = KSP_SETUP_NEWMATRIX;
   PetscCall(PetscObjectReference((PetscObject)pc));
   PetscCall(PCDestroy(&ksp->pc));
   ksp->pc = pc;

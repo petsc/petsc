@@ -176,6 +176,22 @@ static PetscErrorCode PCSetUp_Composite(PC pc)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+static PetscErrorCode PCSetUpOnBlocks_Composite(PC pc)
+{
+  PC_Composite    *jac  = (PC_Composite *)pc->data;
+  PC_CompositeLink next = jac->head;
+  PCFailedReason   reason;
+
+  PetscFunctionBegin;
+  while (next) {
+    PetscCall(PCSetUp(next->pc));
+    PetscCall(PCGetFailedReasonRank(next->pc, &reason));
+    if (reason) pc->failedreason = reason;
+    next = next->next;
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 static PetscErrorCode PCReset_Composite(PC pc)
 {
   PC_Composite    *jac  = (PC_Composite *)pc->data;
@@ -591,6 +607,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_Composite(PC pc)
   pc->ops->apply           = PCApply_Composite_Additive;
   pc->ops->applytranspose  = PCApplyTranspose_Composite_Additive;
   pc->ops->setup           = PCSetUp_Composite;
+  pc->ops->setuponblocks   = PCSetUpOnBlocks_Composite;
   pc->ops->reset           = PCReset_Composite;
   pc->ops->destroy         = PCDestroy_Composite;
   pc->ops->setfromoptions  = PCSetFromOptions_Composite;

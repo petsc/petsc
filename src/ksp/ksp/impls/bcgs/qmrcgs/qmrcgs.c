@@ -55,7 +55,6 @@ static PetscErrorCode KSPSolve_QMRCGS(KSP ksp)
 
   /* Compute initial residual */
   PetscCall(KSPGetPC(ksp, &pc));
-  PetscCall(PCSetUp(pc));
   PetscCall(PCGetOperators(pc, &mat, NULL));
   if (!ksp->guess_zero) {
     PetscCall(KSP_MatMult(ksp, mat, X, S2));
