@@ -3488,7 +3488,8 @@ PetscErrorCode DMPlexGetHybridCellFields(DM dm, IS cellIS, Vec locX, Vec locX_t,
   for (c = cStart; c < cEnd; ++c) {
     const PetscInt  cell = cells ? cells[c] : c;
     const PetscInt  cind = c - cStart;
-    PetscScalar    *xf = NULL, *xc = NULL, *x = NULL, *x_t = NULL, *ul = &(*u)[cind * totDim];
+    PetscScalar    *xf = NULL, *xc = NULL, *x = NULL, *xf_t = NULL, *xc_t = NULL;
+    PetscScalar    *ul = &(*u)[cind * totDim], *ul_t = u_t ? &(*u_t)[cind * totDim] : NULL;
     const PetscInt *cone, *ornt;
     PetscInt        Nx = 0, Nxf, s;
 
@@ -3496,6 +3497,7 @@ PetscErrorCode DMPlexGetHybridCellFields(DM dm, IS cellIS, Vec locX, Vec locX_t,
     PetscCall(DMPlexGetConeOrientation(dm, cell, &ornt));
     // Put in cohesive unknowns
     PetscCall(DMPlexVecGetClosure(plex, section, locX, cell, &Nxf, &xf));
+    if (locX_t) PetscCall(DMPlexVecGetClosure(plex, section, locX_t, cell, NULL, &xf_t));
     for (f = 0; f < Nf; ++f) {
       PetscInt  fdofIn, foff, foffIn;
       PetscBool cohesive;
@@ -3506,9 +3508,12 @@ PetscErrorCode DMPlexGetHybridCellFields(DM dm, IS cellIS, Vec locX, Vec locX_t,
       PetscCall(PetscDSGetFieldOffsetCohesive(ds, f, &foff));
       PetscCall(PetscDSGetFieldOffsetCohesive(dsIn, f, &foffIn));
       for (PetscInt i = 0; i < fdofIn; ++i) ul[foffIn + i] = xf[foff + i];
+      if (locX_t)
+        for (PetscInt i = 0; i < fdofIn; ++i) ul_t[foffIn + i] = xf_t[foff + i];
       Nx += fdofIn;
     }
     PetscCall(DMPlexVecRestoreClosure(plex, section, locX, cell, &Nxf, &xf));
+    if (locX_t) PetscCall(DMPlexVecRestoreClosure(plex, section, locX_t, cell, NULL, &xf_t));
     // Loop over sides of surface
     for (s = 0; s < 2; ++s) {
       const PetscInt *support;
@@ -3524,6 +3529,7 @@ PetscErrorCode DMPlexGetHybridCellFields(DM dm, IS cellIS, Vec locX, Vec locX_t,
       else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Face %" PetscInt_FMT " does not have cell %" PetscInt_FMT " in its support", face, cell);
       // Get closure of both face and cell, stick in cell for normal fields and face for cohesive fields
       PetscCall(DMPlexVecGetClosure(plex, section, locX, ncell, &Nxc, &xc));
+      if (locX_t) PetscCall(DMPlexVecGetClosure(plex, section, locX_t, ncell, NULL, &xc_t));
       for (f = 0; f < Nf; ++f) {
         PetscInt  fdofIn, foffIn;
         PetscBool cohesive;
@@ -3533,19 +3539,15 @@ PetscErrorCode DMPlexGetHybridCellFields(DM dm, IS cellIS, Vec locX, Vec locX_t,
         PetscCall(PetscDSGetFieldSize(dsIn, f, &fdofIn));
         PetscCall(PetscDSGetFieldOffsetCohesive(dsIn, f, &foffIn));
         for (PetscInt i = 0; i < fdofIn; ++i) ul[foffIn + s * fdofIn + i] = xc[foffIn + i];
+        if (locX_t)
+          for (PetscInt i = 0; i < fdofIn; ++i) ul_t[foffIn + s * fdofIn + i] = xc_t[foffIn + i];
         Nx += fdofIn;
       }
       PetscCall(DMPlexVecRestoreClosure(plex, section, locX, ncell, &Nxc, &xc));
+      if (locX_t) PetscCall(DMPlexVecRestoreClosure(plex, section, locX_t, ncell, NULL, &xc_t));
     }
     PetscCheck(Nx == totDim, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Closure size %" PetscInt_FMT " for cell %" PetscInt_FMT " does not match DS size %" PetscInt_FMT, Nx, cell, totDim);
 
-    if (locX_t) {
-      PetscScalar *ul_t = &(*u_t)[cind * totDim];
-
-      PetscCall(DMPlexVecGetClosure(plex, section, locX_t, cell, NULL, &x_t));
-      for (PetscInt i = 0; i < totDim; ++i) ul_t[i] = x_t[i];
-      PetscCall(DMPlexVecRestoreClosure(plex, section, locX_t, cell, NULL, &x_t));
-    }
     if (locA) {
       PetscScalar *al = &(*a)[cind * totDimAux];
       PetscInt     subcell;
