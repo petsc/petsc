@@ -251,7 +251,7 @@ int main(int argc, char **args)
      args: -mat_type {{seqaij mpiaij}} -localapi {{0 1}} -neg {{0 1}}
 
    test:
-     requires: hypre !defined(PETSC_HAVE_HYPRE_DEVICE)
+     requires: hypre
      suffix: 1_hypre
      filter: grep -v type | grep -v "Mat Object"
      diff_args: -j
@@ -282,7 +282,7 @@ int main(int argc, char **args)
      args: -mat_type mpiaij -localapi {{0 1}} -neg {{0 1}}
 
    test:
-     requires: hypre !defined(PETSC_HAVE_HYPRE_DEVICE)
+     requires: hypre
      suffix: 2_hypre
      nsize: 7
      filter: grep -v type | grep -v "Mat Object"
@@ -316,7 +316,7 @@ int main(int argc, char **args)
      args: -mat_type mpiaij -loc -localapi {{0 1}} -neg {{0 1}}
 
    test:
-     requires: hypre !defined(PETSC_HAVE_HYPRE_DEVICE)
+     requires: hypre
      suffix: 3_hypre
      nsize: 3
      filter: grep -v type | grep -v "Mat Object"
@@ -350,7 +350,7 @@ int main(int argc, char **args)
      args: -mat_type mpiaij -loc -locdiag 0 -localapi {{0 1}} -neg {{0 1}}
 
    test:
-     requires: hypre !defined(PETSC_HAVE_HYPRE_DEVICE)
+     requires: hypre
      suffix: 4_hypre
      nsize: 4
      filter: grep -v type | grep -v "Mat Object"
