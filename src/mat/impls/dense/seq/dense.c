@@ -1854,7 +1854,7 @@ static PetscErrorCode MatEqual_SeqDense(Mat A1, Mat A2, PetscBool *flg)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MatGetDiagonal_SeqDense(Mat A, Vec v)
+PetscErrorCode MatGetDiagonal_SeqDense(Mat A, Vec v)
 {
   Mat_SeqDense      *mat = (Mat_SeqDense *)A->data;
   PetscInt           i, n, len;

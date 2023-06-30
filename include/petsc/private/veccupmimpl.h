@@ -990,7 +990,6 @@ inline PetscErrorCode Vec_CUPMBase<T, D>::BindToCPU_CUPMBase(Vec v, PetscBool us
   v->ops->restorearray = D::template RestoreArray<PETSC_MEMTYPE_HOST, PETSC_MEMORY_ACCESS_READ_WRITE>;
 
   // set device-only common functions
-  VecSetOp_CUPM(dotnorm2, nullptr, D::DotNorm2);
   VecSetOp_CUPM(getarray, nullptr, D::template GetArray<PETSC_MEMTYPE_HOST, PETSC_MEMORY_ACCESS_READ_WRITE>);
   VecSetOp_CUPM(getarraywrite, nullptr, D::template GetArray<PETSC_MEMTYPE_HOST, PETSC_MEMORY_ACCESS_WRITE>);
   VecSetOp_CUPM(restorearraywrite, nullptr, D::template RestoreArray<PETSC_MEMTYPE_HOST, PETSC_MEMORY_ACCESS_WRITE>);
@@ -1021,18 +1020,28 @@ inline PetscErrorCode Vec_CUPMBase<T, D>::BindToCPU_CUPMBase(Vec v, PetscBool us
   VecSetOp_CUPM(axpbypcz, VecAXPBYPCZ_Seq, VecSeq_T::AXPBYPCZ);
   VecSetOp_CUPM(pointwisemult, VecPointwiseMult_Seq, VecSeq_T::PointwiseMult);
   VecSetOp_CUPM(pointwisedivide, VecPointwiseDivide_Seq, VecSeq_T::PointwiseDivide);
+  VecSetOp_CUPM(pointwisemax, VecPointwiseMax_Seq, VecSeq_T::PointwiseMax);
+  VecSetOp_CUPM(pointwisemaxabs, VecPointwiseMaxAbs_Seq, VecSeq_T::PointwiseMaxAbs);
+  VecSetOp_CUPM(pointwisemin, VecPointwiseMin_Seq, VecSeq_T::PointwiseMin);
   VecSetOp_CUPM(setrandom, VecSetRandom_Seq, VecSeq_T::SetRandom);
   VecSetOp_CUPM(dot_local, VecDot_Seq, VecSeq_T::Dot);
   VecSetOp_CUPM(tdot_local, VecTDot_Seq, VecSeq_T::TDot);
   VecSetOp_CUPM(norm_local, VecNorm_Seq, VecSeq_T::Norm);
   VecSetOp_CUPM(mdot_local, VecMDot_Seq, VecSeq_T::MDot);
   VecSetOp_CUPM(reciprocal, VecReciprocal_Default, VecSeq_T::Reciprocal);
+  VecSetOp_CUPM(conjugate, VecConjugate_Seq, VecSeq_T::Conjugate);
+  VecSetOp_CUPM(abs, nullptr, VecSeq_T::Abs);
+  VecSetOp_CUPM(sqrt, nullptr, VecSeq_T::Sqrt);
+  VecSetOp_CUPM(exp, nullptr, VecSeq_T::Exp);
+  VecSetOp_CUPM(log, nullptr, VecSeq_T::Log);
   VecSetOp_CUPM(shift, nullptr, VecSeq_T::Shift);
+  VecSetOp_CUPM(dotnorm2, nullptr, D::DotNorm2);
   VecSetOp_CUPM(getlocalvector, nullptr, VecSeq_T::template GetLocalVector<PETSC_MEMORY_ACCESS_READ_WRITE>);
   VecSetOp_CUPM(restorelocalvector, nullptr, VecSeq_T::template RestoreLocalVector<PETSC_MEMORY_ACCESS_READ_WRITE>);
   VecSetOp_CUPM(getlocalvectorread, nullptr, VecSeq_T::template GetLocalVector<PETSC_MEMORY_ACCESS_READ>);
   VecSetOp_CUPM(restorelocalvectorread, nullptr, VecSeq_T::template RestoreLocalVector<PETSC_MEMORY_ACCESS_READ>);
   VecSetOp_CUPM(sum, nullptr, VecSeq_T::Sum);
+  VecSetOp_CUPM(errorwnorm, nullptr, D::ErrorWnorm);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

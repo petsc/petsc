@@ -75,8 +75,6 @@ public:
   static PetscErrorCode PlaceArray(Mat, const PetscScalar *) noexcept;
   static PetscErrorCode ReplaceArray(Mat, const PetscScalar *) noexcept;
   static PetscErrorCode ResetArray(Mat) noexcept;
-
-  static PetscErrorCode Shift(Mat, PetscScalar) noexcept;
 };
 
 } // namespace impl
@@ -187,6 +185,7 @@ inline PetscErrorCode MatDense_MPI_CUPM<T>::Convert_Dispatch_(Mat M, MatType, Ma
     // ============================================================
     // Function Pointer Ops
     // ============================================================
+    MatSetOp_CUPM(to_host, B, getdiagonal, MatGetDiagonal_MPIDense, GetDiagonal);
     MatSetOp_CUPM(to_host, B, bindtocpu, nullptr, BindToCPU);
   }
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -293,10 +292,13 @@ inline PetscErrorCode MatDense_MPI_CUPM<T>::Convert_MPIDense_MPIDenseCUPM(Mat M,
 
 template <device::cupm::DeviceType T>
 template <PetscMemType, PetscMemoryAccessMode access>
-inline PetscErrorCode MatDense_MPI_CUPM<T>::GetArray(Mat A, PetscScalar **array, PetscDeviceContext) noexcept
+inline PetscErrorCode MatDense_MPI_CUPM<T>::GetArray(Mat A, PetscScalar **array, PetscDeviceContext dctx) noexcept
 {
+  auto &mimplA = MatIMPLCast(A)->A;
+
   PetscFunctionBegin;
-  PetscCall(MatDenseCUPMGetArray_Private<T, access>(MatIMPLCast(A)->A, array));
+  if (!mimplA) PetscCall(MatCreateSeqDenseCUPM<T>(PETSC_COMM_SELF, A->rmap->n, A->cmap->N, nullptr, &mimplA, dctx));
+  PetscCall(MatDenseCUPMGetArray_Private<T, access>(mimplA, array));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -395,20 +397,6 @@ inline PetscErrorCode MatDense_MPI_CUPM<T>::ResetArray(Mat A) noexcept
   PetscCheck(!mimpl->vecinuse, PetscObjectComm(PetscObjectCast(A)), PETSC_ERR_ORDER, "Need to call MatDenseRestoreColumnVec() first");
   PetscCheck(!mimpl->matinuse, PetscObjectComm(PetscObjectCast(A)), PETSC_ERR_ORDER, "Need to call MatDenseRestoreSubMatrix() first");
   PetscCall(MatDenseCUPMResetArray<T>(mimpl->A));
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-// ==========================================================================================
-
-template <device::cupm::DeviceType T>
-inline PetscErrorCode MatDense_MPI_CUPM<T>::Shift(Mat A, PetscScalar alpha) noexcept
-{
-  PetscDeviceContext dctx;
-
-  PetscFunctionBegin;
-  PetscCall(GetHandles_(&dctx));
-  PetscCall(PetscInfo(A, "Performing Shift on backend\n"));
-  PetscCall(DiagonalUnaryTransform(A, A->rmap->rstart, A->rmap->rend, A->cmap->N, dctx, device::cupm::functors::make_plus_equals(alpha)));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

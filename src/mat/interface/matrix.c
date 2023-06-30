@@ -4911,6 +4911,10 @@ PetscErrorCode MatDuplicate(Mat mat, MatDuplicateOption op, Mat *M)
    Level: intermediate
 
    Note:
+   If `mat` has local sizes `n` x `m`, this routine fills the first `ndiag = min(n, m)` entries
+   of `v` with the diagonal values. Thus `v` must have local size of at least `ndiag`. If `v`
+   is larger than `ndiag`, the values of the remaining entries are unspecified.
+
    Currently only correct in parallel for square matrices.
 
 .seealso: [](ch_matrices), `Mat`, `Vec`, `MatGetRow()`, `MatCreateSubMatrices()`, `MatCreateSubMatrix()`, `MatGetRowMaxAbs()`
@@ -4923,6 +4927,14 @@ PetscErrorCode MatGetDiagonal(Mat mat, Vec v)
   PetscValidHeaderSpecific(v, VEC_CLASSID, 2);
   PetscCheck(mat->assembled, PetscObjectComm((PetscObject)mat), PETSC_ERR_ARG_WRONGSTATE, "Not for unassembled matrix");
   MatCheckPreallocated(mat, 1);
+  if (PetscDefined(USE_DEBUG)) {
+    PetscInt nv, row, col, ndiag;
+
+    PetscCall(VecGetLocalSize(v, &nv));
+    PetscCall(MatGetLocalSize(mat, &row, &col));
+    ndiag = PetscMin(row, col);
+    PetscCheck(nv >= ndiag, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Nonconforming Mat and Vec. Vec local size %" PetscInt_FMT " < Mat local diagonal length %" PetscInt_FMT, nv, ndiag);
+  }
 
   PetscUseTypeMethod(mat, getdiagonal, v);
   PetscCall(PetscObjectStateIncrease((PetscObject)v));

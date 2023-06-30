@@ -46,6 +46,8 @@ private:
   // common core for pointwise binary and pointwise unary thrust functions
   template <typename BinaryFuncT>
   static PetscErrorCode PointwiseBinary_(BinaryFuncT &&, Vec, Vec, Vec) noexcept;
+  template <typename BinaryFuncT>
+  static PetscErrorCode PointwiseBinaryDispatch_(PetscErrorCode (*)(Vec, Vec, Vec), BinaryFuncT &&, Vec, Vec, Vec) noexcept;
   template <typename UnaryFuncT>
   static PetscErrorCode PointwiseUnary_(UnaryFuncT &&, Vec, Vec /*out*/ = nullptr) noexcept;
   // mdot dispatchers
@@ -73,7 +75,14 @@ public:
   static PetscErrorCode AXPY(Vec, PetscScalar, Vec) noexcept;
   static PetscErrorCode PointwiseDivide(Vec, Vec, Vec) noexcept;
   static PetscErrorCode PointwiseMult(Vec, Vec, Vec) noexcept;
+  static PetscErrorCode PointwiseMax(Vec, Vec, Vec) noexcept;
+  static PetscErrorCode PointwiseMaxAbs(Vec, Vec, Vec) noexcept;
+  static PetscErrorCode PointwiseMin(Vec, Vec, Vec) noexcept;
   static PetscErrorCode Reciprocal(Vec) noexcept;
+  static PetscErrorCode Abs(Vec) noexcept;
+  static PetscErrorCode Sqrt(Vec) noexcept;
+  static PetscErrorCode Exp(Vec) noexcept;
+  static PetscErrorCode Log(Vec) noexcept;
   static PetscErrorCode WAXPY(Vec, PetscScalar, Vec, Vec) noexcept;
   static PetscErrorCode MAXPY(Vec, PetscInt, const PetscScalar[], Vec *) noexcept;
   static PetscErrorCode Dot(Vec, Vec, PetscScalar *) noexcept;

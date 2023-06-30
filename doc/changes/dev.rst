@@ -42,6 +42,7 @@ Changes: Development
 .. rubric:: Vec:
 
 - Add ``VecErrorWeightedNorms()`` to unify weighted local truncation error norms used in ``TS``
+- Add CUDA/HIP implementations for ``VecAbs()``, ``VecSqrt()``, ``VecExp()``, ``VecLog()``, ``VecPointwiseMax()``, ``VecPointwiseMaxAbs()``, and ``VecPointwiseMin()``
 
 .. rubric:: PetscSection:
 
@@ -63,6 +64,7 @@ Changes: Development
 - Add ``MatDiagonalGetDiagonal()``, ``MatDiagonalRestoreDiagonal()``, ``MatDiagonalGetInverseDiagonal()``, and ``MatDiagonalRestoreInverseDiagonal()``
 - Add support for ``MatLoad()`` and ``MatView()`` to load and store ``MPIAIJ`` matrices that have more than ``PETSC_INT_MAX`` nonzeros, so long as each rank has fewer than ``PETSC_INT_MAX``
 - Add ``MatLRCSetMats()`` and register creation routine for ``MatLRC``
+- Add CUDA/HIP implementation for ``MatGetDiagonal()``
 
 .. rubric:: MatCoarsen:
 

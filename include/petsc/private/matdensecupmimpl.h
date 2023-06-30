@@ -18,6 +18,7 @@
   #include <thrust/iterator/transform_iterator.h>
   #include <thrust/iterator/permutation_iterator.h>
   #include <thrust/transform.h>
+  #include <thrust/copy.h>
 
 namespace Petsc
 {
@@ -153,6 +154,9 @@ class MatDense_MPI_CUPM;
 
 template <device::cupm::DeviceType T, typename Derived>
 class MatDense_CUPM : protected MatDense_CUPM_Base<T> {
+private:
+  static PetscErrorCode CheckSaneSequentialMatSizes_(Mat) noexcept;
+
 protected:
   MATDENSECUPM_BASE_HEADER(T);
 
@@ -168,7 +172,10 @@ protected:
   static PetscErrorCode SetPreallocation(Mat, PetscDeviceContext, PetscScalar *) noexcept;
 
   template <typename F>
-  static PetscErrorCode DiagonalUnaryTransform(Mat, PetscInt, PetscInt, PetscInt, PetscDeviceContext, F &&) noexcept;
+  static PetscErrorCode DiagonalUnaryTransform(Mat, PetscDeviceContext, F &&) noexcept;
+
+  static PetscErrorCode Shift(Mat, PetscScalar) noexcept;
+  static PetscErrorCode GetDiagonal(Mat, Vec) noexcept;
 
   PETSC_NODISCARD static auto DeviceArrayRead(PetscDeviceContext dctx, Mat m) noexcept PETSC_DECLTYPE_AUTO_RETURNS(MatrixArray<PETSC_MEMTYPE_DEVICE, PETSC_MEMORY_ACCESS_READ>{dctx, m})
   PETSC_NODISCARD static auto DeviceArrayWrite(PetscDeviceContext dctx, Mat m) noexcept PETSC_DECLTYPE_AUTO_RETURNS(MatrixArray<PETSC_MEMTYPE_DEVICE, PETSC_MEMORY_ACCESS_WRITE>{dctx, m})
@@ -224,6 +231,29 @@ template <device::cupm::DeviceType T, typename D>
 template <PetscMemType MT, PetscMemoryAccessMode MA>
 inline constexpr MatDense_CUPM<T, D>::MatrixArray<MT, MA>::MatrixArray(MatrixArray &&other) noexcept : base_type{std::move(other)}, m_{util::exchange(other.m_, nullptr)}
 {
+}
+
+// ==========================================================================================
+// MatDense_CUPM -- Private API
+// ==========================================================================================
+
+template <device::cupm::DeviceType T, typename D>
+inline PetscErrorCode MatDense_CUPM<T, D>::CheckSaneSequentialMatSizes_(Mat A) noexcept
+{
+  PetscFunctionBegin;
+  if (PetscDefined(USE_DEBUG)) {
+    PetscBool isseq;
+
+    PetscCall(PetscObjectTypeCompare(PetscObjectCast(A), D::MATSEQDENSECUPM(), &isseq));
+    if (isseq) {
+      // doing this check allows both sequential and parallel implementations to just pass in
+      // A, otherwise they would need to specify rstart, rend, and cols separately!
+      PetscCheck(A->rmap->rstart == 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Sequential matrix row start %" PetscInt_FMT " != 0?", A->rmap->rstart);
+      PetscCheck(A->rmap->rend == A->rmap->n, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Sequential matrix row end %" PetscInt_FMT " != number of rows %" PetscInt_FMT, A->rmap->rend, A->rmap->n);
+      PetscCheck(A->cmap->n == A->cmap->N, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Sequential matrix number of local columns %" PetscInt_FMT " != number of global columns %" PetscInt_FMT, A->cmap->n, A->cmap->n);
+    }
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 // ==========================================================================================
@@ -345,29 +375,40 @@ public:
   PETSC_NODISCARD iterator end() const noexcept { return this->begin() + (this->last - this->first + this->func.stride - 1) / this->func.stride; }
 };
 
+template <typename T>
+inline DiagonalIterator<typename thrust::device_vector<T>::iterator> MakeDiagonalIterator(T *data, PetscInt rstart, PetscInt rend, PetscInt cols, PetscInt lda) noexcept
+{
+  const auto        rend2 = std::min(rend, cols);
+  const std::size_t begin = rstart * lda;
+  const std::size_t end   = rend2 - rstart + rend2 * lda;
+  const auto        dptr  = thrust::device_pointer_cast(data);
+
+  return {dptr + begin, dptr + end, lda + 1};
+}
+
 } // namespace detail
 
 template <device::cupm::DeviceType T, typename D>
 template <typename F>
-inline PetscErrorCode MatDense_CUPM<T, D>::DiagonalUnaryTransform(Mat A, PetscInt rstart, PetscInt rend, PetscInt cols, PetscDeviceContext dctx, F &&functor) noexcept
+inline PetscErrorCode MatDense_CUPM<T, D>::DiagonalUnaryTransform(Mat A, PetscDeviceContext dctx, F &&functor) noexcept
 {
-  const auto rend2 = std::min(rend, cols);
+  const auto rstart = A->rmap->rstart;
+  const auto rend   = A->rmap->rend;
+  const auto gcols  = A->cmap->N;
+  const auto rend2  = std::min(rend, gcols);
 
   PetscFunctionBegin;
+  PetscCall(CheckSaneSequentialMatSizes_(A));
   if (rend2 > rstart) {
-    const auto da = D::DeviceArrayReadWrite(dctx, A);
-    PetscInt   lda;
+    const auto   da = D::DeviceArrayReadWrite(dctx, A);
+    cupmStream_t stream;
+    PetscInt     lda;
 
     PetscCall(MatDenseGetLDA(A, &lda));
+    PetscCall(D::GetHandlesFrom_(dctx, &stream));
     {
-      using DiagonalIterator  = detail::DiagonalIterator<thrust::device_vector<PetscScalar>::iterator>;
-      const auto        dptr  = thrust::device_pointer_cast(da.data());
-      const std::size_t begin = rstart * lda;
-      const std::size_t end   = rend2 - rstart + rend2 * lda;
-      DiagonalIterator  diagonal{dptr + begin, dptr + end, lda + 1};
-      cupmStream_t      stream;
+      auto diagonal = detail::MakeDiagonalIterator(da.data(), rstart, rend, gcols, lda);
 
-      PetscCall(D::GetHandlesFrom_(dctx, &stream));
       // clang-format off
       PetscCallThrust(
         THRUST_CALL(
@@ -380,6 +421,48 @@ inline PetscErrorCode MatDense_CUPM<T, D>::DiagonalUnaryTransform(Mat A, PetscIn
       // clang-format on
     }
     PetscCall(PetscLogGpuFlops(rend2 - rstart));
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+template <device::cupm::DeviceType T, typename D>
+inline PetscErrorCode MatDense_CUPM<T, D>::Shift(Mat A, PetscScalar alpha) noexcept
+{
+  PetscDeviceContext dctx;
+
+  PetscFunctionBegin;
+  PetscCall(GetHandles_(&dctx));
+  PetscCall(DiagonalUnaryTransform(A, dctx, device::cupm::functors::make_plus_equals(alpha)));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+template <device::cupm::DeviceType T, typename D>
+inline PetscErrorCode MatDense_CUPM<T, D>::GetDiagonal(Mat A, Vec v) noexcept
+{
+  const auto         rstart = A->rmap->rstart;
+  const auto         rend   = A->rmap->rend;
+  const auto         gcols  = A->cmap->N;
+  PetscInt           lda;
+  PetscDeviceContext dctx;
+
+  PetscFunctionBegin;
+  PetscCall(CheckSaneSequentialMatSizes_(A));
+  PetscCall(GetHandles_(&dctx));
+  PetscCall(MatDenseGetLDA(A, &lda));
+  {
+    auto         dv       = VecSeq_CUPM::DeviceArrayWrite(dctx, v);
+    auto         da       = D::DeviceArrayRead(dctx, A);
+    auto         diagonal = detail::MakeDiagonalIterator(da.data(), rstart, rend, gcols, lda);
+    cupmStream_t stream;
+
+    PetscCall(GetHandlesFrom_(dctx, &stream));
+    // clang-format off
+    PetscCallThrust(
+      THRUST_CALL(
+        thrust::copy, stream, diagonal.begin(), diagonal.end(), thrust::device_pointer_cast(dv.data())
+      )
+    );
+    // clang-format on
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -415,7 +498,9 @@ inline PetscErrorCode MatDense_CUPM<T, D>::DiagonalUnaryTransform(Mat A, PetscIn
     using ::Petsc::mat::cupm::impl::MatDense_CUPM<T, __VA_ARGS__>::HostArrayRead; \
     using ::Petsc::mat::cupm::impl::MatDense_CUPM<T, __VA_ARGS__>::HostArrayWrite; \
     using ::Petsc::mat::cupm::impl::MatDense_CUPM<T, __VA_ARGS__>::HostArrayReadWrite; \
-    using ::Petsc::mat::cupm::impl::MatDense_CUPM<T, __VA_ARGS__>::DiagonalUnaryTransform
+    using ::Petsc::mat::cupm::impl::MatDense_CUPM<T, __VA_ARGS__>::DiagonalUnaryTransform; \
+    using ::Petsc::mat::cupm::impl::MatDense_CUPM<T, __VA_ARGS__>::Shift; \
+    using ::Petsc::mat::cupm::impl::MatDense_CUPM<T, __VA_ARGS__>::GetDiagonal
 
 } // namespace impl
 

@@ -152,6 +152,20 @@ inline PetscErrorCode VecSeq_CUPM<T>::PointwiseBinary_(BinaryFuncT &&binary, Vec
 }
 
 template <device::cupm::DeviceType T>
+template <typename BinaryFuncT>
+inline PetscErrorCode VecSeq_CUPM<T>::PointwiseBinaryDispatch_(PetscErrorCode (*VecSeqFunction)(Vec, Vec, Vec), BinaryFuncT &&binary, Vec wout, Vec xin, Vec yin) noexcept
+{
+  PetscFunctionBegin;
+  if (xin->boundtocpu || yin->boundtocpu) {
+    PetscCall((*VecSeqFunction)(wout, xin, yin));
+  } else {
+    // note order of arguments! xin and yin are read, wout is written!
+    PetscCall(PointwiseBinary_(std::forward<BinaryFuncT>(binary), xin, yin, wout));
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+template <device::cupm::DeviceType T>
 template <typename UnaryFuncT>
 inline PetscErrorCode VecSeq_CUPM<T>::PointwiseUnary_(UnaryFuncT &&unary, Vec xinout, Vec yin) noexcept
 {
@@ -259,12 +273,10 @@ inline PetscErrorCode VecSeq_CUPM<T>::BindToCPU(Vec v, PetscBool usehost) noexce
   VecSetOp_CUPM(resetarray, VecResetArray_Seq, base_type::template ResetArray<PETSC_MEMTYPE_HOST>);
   VecSetOp_CUPM(placearray, VecPlaceArray_Seq, base_type::template PlaceArray<PETSC_MEMTYPE_HOST>);
   v->ops->mtdot = v->ops->mtdot_local = VecMTDot_Seq;
-  VecSetOp_CUPM(conjugate, VecConjugate_Seq, Conjugate);
   VecSetOp_CUPM(max, VecMax_Seq, Max);
   VecSetOp_CUPM(min, VecMin_Seq, Min);
   VecSetOp_CUPM(setpreallocationcoo, VecSetPreallocationCOO_Seq, SetPreallocationCOO);
   VecSetOp_CUPM(setvaluescoo, VecSetValuesCOO_Seq, SetValuesCOO);
-  VecSetOp_CUPM(errorwnorm, nullptr, ErrorWnorm);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -439,36 +451,80 @@ inline PetscErrorCode VecSeq_CUPM<T>::AXPY(Vec yin, PetscScalar alpha, Vec xin) 
 
 // v->ops->pointwisedivide
 template <device::cupm::DeviceType T>
-inline PetscErrorCode VecSeq_CUPM<T>::PointwiseDivide(Vec win, Vec xin, Vec yin) noexcept
+inline PetscErrorCode VecSeq_CUPM<T>::PointwiseDivide(Vec wout, Vec xin, Vec yin) noexcept
 {
   PetscFunctionBegin;
-  if (xin->boundtocpu || yin->boundtocpu) {
-    PetscCall(VecPointwiseDivide_Seq(win, xin, yin));
-  } else {
-    // note order of arguments! xin and yin are read, win is written!
-    PetscCall(PointwiseBinary_(thrust::divides<PetscScalar>{}, xin, yin, win));
-  }
+  PetscCall(PointwiseBinaryDispatch_(VecPointwiseDivide_Seq, thrust::divides<PetscScalar>{}, wout, xin, yin));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 // v->ops->pointwisemult
 template <device::cupm::DeviceType T>
-inline PetscErrorCode VecSeq_CUPM<T>::PointwiseMult(Vec win, Vec xin, Vec yin) noexcept
+inline PetscErrorCode VecSeq_CUPM<T>::PointwiseMult(Vec wout, Vec xin, Vec yin) noexcept
 {
   PetscFunctionBegin;
-  if (xin->boundtocpu || yin->boundtocpu) {
-    PetscCall(VecPointwiseMult_Seq(win, xin, yin));
-  } else {
-    // note order of arguments! xin and yin are read, win is written!
-    PetscCall(PointwiseBinary_(thrust::multiplies<PetscScalar>{}, xin, yin, win));
-  }
+  PetscCall(PointwiseBinaryDispatch_(VecPointwiseMult_Seq, thrust::multiplies<PetscScalar>{}, wout, xin, yin));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 namespace detail
 {
 
-struct reciprocal {
+struct MaximumRealPart {
+  PETSC_HOSTDEVICE_INLINE_DECL PetscScalar operator()(PetscScalar lhs, PetscScalar rhs) const noexcept { return thrust::maximum<PetscReal>{}(PetscRealPart(lhs), PetscRealPart(rhs)); }
+};
+
+} // namespace detail
+
+// v->ops->pointwisemax
+template <device::cupm::DeviceType T>
+inline PetscErrorCode VecSeq_CUPM<T>::PointwiseMax(Vec wout, Vec xin, Vec yin) noexcept
+{
+  PetscFunctionBegin;
+  PetscCall(PointwiseBinaryDispatch_(VecPointwiseMax_Seq, detail::MaximumRealPart{}, wout, xin, yin));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+namespace detail
+{
+
+struct MaximumAbsoluteValue {
+  PETSC_HOSTDEVICE_INLINE_DECL PetscScalar operator()(PetscScalar lhs, PetscScalar rhs) const noexcept { return thrust::maximum<PetscReal>{}(PetscAbsScalar(lhs), PetscAbsScalar(rhs)); }
+};
+
+} // namespace detail
+
+// v->ops->pointwisemaxabs
+template <device::cupm::DeviceType T>
+inline PetscErrorCode VecSeq_CUPM<T>::PointwiseMaxAbs(Vec wout, Vec xin, Vec yin) noexcept
+{
+  PetscFunctionBegin;
+  PetscCall(PointwiseBinaryDispatch_(VecPointwiseMaxAbs_Seq, detail::MaximumAbsoluteValue{}, wout, xin, yin));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+namespace detail
+{
+
+struct MinimumRealPart {
+  PETSC_HOSTDEVICE_INLINE_DECL PetscScalar operator()(PetscScalar lhs, PetscScalar rhs) const noexcept { return thrust::minimum<PetscReal>{}(PetscRealPart(lhs), PetscRealPart(rhs)); }
+};
+
+} // namespace detail
+
+// v->ops->pointwisemin
+template <device::cupm::DeviceType T>
+inline PetscErrorCode VecSeq_CUPM<T>::PointwiseMin(Vec wout, Vec xin, Vec yin) noexcept
+{
+  PetscFunctionBegin;
+  PetscCall(PointwiseBinaryDispatch_(VecPointwiseMin_Seq, detail::MinimumRealPart{}, wout, xin, yin));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+namespace detail
+{
+
+struct Reciprocal {
   PETSC_HOSTDEVICE_INLINE_DECL PetscScalar operator()(PetscScalar s) const noexcept
   {
     // yes all of this verbosity is needed because sometimes PetscScalar is a thrust::complex
@@ -485,7 +541,79 @@ template <device::cupm::DeviceType T>
 inline PetscErrorCode VecSeq_CUPM<T>::Reciprocal(Vec xin) noexcept
 {
   PetscFunctionBegin;
-  PetscCall(PointwiseUnary_(detail::reciprocal{}, xin));
+  PetscCall(PointwiseUnary_(detail::Reciprocal{}, xin));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+namespace detail
+{
+
+struct AbsoluteValue {
+  PETSC_HOSTDEVICE_INLINE_DECL PetscScalar operator()(PetscScalar s) const noexcept { return PetscAbsScalar(s); }
+};
+
+} // namespace detail
+
+// v->ops->abs
+template <device::cupm::DeviceType T>
+inline PetscErrorCode VecSeq_CUPM<T>::Abs(Vec xin) noexcept
+{
+  PetscFunctionBegin;
+  PetscCall(PointwiseUnary_(detail::AbsoluteValue{}, xin));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+namespace detail
+{
+
+struct SquareRoot {
+  PETSC_HOSTDEVICE_INLINE_DECL PetscScalar operator()(PetscScalar s) const noexcept { return PetscSqrtScalar(s); }
+};
+
+} // namespace detail
+
+// v->ops->sqrt
+template <device::cupm::DeviceType T>
+inline PetscErrorCode VecSeq_CUPM<T>::Sqrt(Vec xin) noexcept
+{
+  PetscFunctionBegin;
+  PetscCall(PointwiseUnary_(detail::SquareRoot{}, xin));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+namespace detail
+{
+
+struct Exponent {
+  PETSC_HOSTDEVICE_INLINE_DECL PetscScalar operator()(PetscScalar s) const noexcept { return PetscExpScalar(s); }
+};
+
+} // namespace detail
+
+// v->ops->exp
+template <device::cupm::DeviceType T>
+inline PetscErrorCode VecSeq_CUPM<T>::Exp(Vec xin) noexcept
+{
+  PetscFunctionBegin;
+  PetscCall(PointwiseUnary_(detail::Exponent{}, xin));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+namespace detail
+{
+
+struct Logarithm {
+  PETSC_HOSTDEVICE_INLINE_DECL PetscScalar operator()(PetscScalar s) const noexcept { return PetscLogScalar(s); }
+};
+
+} // namespace detail
+
+// v->ops->log
+template <device::cupm::DeviceType T>
+inline PetscErrorCode VecSeq_CUPM<T>::Log(Vec xin) noexcept
+{
+  PetscFunctionBegin;
+  PetscCall(PointwiseUnary_(detail::Logarithm{}, xin));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

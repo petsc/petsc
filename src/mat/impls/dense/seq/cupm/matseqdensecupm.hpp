@@ -154,7 +154,6 @@ public:
   static PetscErrorCode Copy(Mat, Mat, MatStructure) noexcept;
   static PetscErrorCode ZeroEntries(Mat) noexcept;
   static PetscErrorCode Scale(Mat, PetscScalar) noexcept;
-  static PetscErrorCode Shift(Mat, PetscScalar) noexcept;
   static PetscErrorCode AXPY(Mat, PetscScalar, Mat, MatStructure) noexcept;
   static PetscErrorCode Duplicate(Mat, MatDuplicateOption, Mat *) noexcept;
   static PetscErrorCode SetRandom(Mat, PetscRandom) noexcept;
@@ -1061,6 +1060,7 @@ inline PetscErrorCode MatDense_Seq_CUPM<T>::BindToCPU(Mat A, PetscBool to_host) 
   MatSetOp_CUPM(to_host, A, zeroentries, MatZeroEntries_SeqDense, ZeroEntries);
   MatSetOp_CUPM(to_host, A, setup, MatSetUp_SeqDense, SetUp);
   MatSetOp_CUPM(to_host, A, setrandom, MatSetRandom_SeqDense, SetRandom);
+  MatSetOp_CUPM(to_host, A, getdiagonal, MatGetDiagonal_SeqDense, GetDiagonal);
   // seemingly always the same
   A->ops->productsetfromoptions = MatProductSetFromOptions_SeqDense;
 
@@ -1426,20 +1426,6 @@ inline PetscErrorCode MatDense_Seq_CUPM<T>::Scale(Mat A, PetscScalar alpha) noex
     }
   }
   PetscCall(PetscLogGpuFlops(N));
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-template <device::cupm::DeviceType T>
-inline PetscErrorCode MatDense_Seq_CUPM<T>::Shift(Mat A, PetscScalar alpha) noexcept
-{
-  const auto         m = A->rmap->n;
-  const auto         n = A->cmap->n;
-  PetscDeviceContext dctx;
-
-  PetscFunctionBegin;
-  PetscCall(GetHandles_(&dctx));
-  PetscCall(PetscInfo(A, "Performing Shift %" PetscInt_FMT " x %" PetscInt_FMT " on backend\n", m, n));
-  PetscCall(DiagonalUnaryTransform(A, 0, m, n, dctx, device::cupm::functors::make_plus_equals(alpha)));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
