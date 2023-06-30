@@ -85,7 +85,7 @@ PetscErrorCode MatIncreaseOverlap_SeqSBAIJ(Mat A, PetscInt is_max, IS is[], Pets
 }
 
 /* Bseq is non-symmetric SBAIJ matrix, only used internally by PETSc.
-        Zero some ops' to avoid invalid usse */
+        Zero some ops' to avoid invalid use */
 PetscErrorCode MatSeqSBAIJZeroOps_Private(Mat Bseq)
 {
   PetscFunctionBegin;
