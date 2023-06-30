@@ -715,7 +715,7 @@ PetscErrorCode DMDestroy(DM *dm)
   /* Destroy the work arrays */
   {
     DMWorkLink link, next;
-    PetscCheck(!(*dm)->workout, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Work array still checked out %p %p", (*dm)->workout, (*dm)->workout->mem);
+    PetscCheck(!(*dm)->workout, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Work array still checked out %p %p", (void *)(*dm)->workout, (void *)(*dm)->workout->mem);
     for (link = (*dm)->workin; link; link = next) {
       next = link->next;
       PetscCall(PetscFree(link->mem));
