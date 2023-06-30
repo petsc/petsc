@@ -385,6 +385,8 @@ PETSC_INTERN PetscErrorCode VecConvert_Seq_SeqKokkos_inplace(Vec);
 PETSC_INTERN PetscErrorCode VecConvert_MPI_MPIKokkos_inplace(Vec);
 #endif
 
+PETSC_EXTERN PetscErrorCode VecCreateWithLayout_Private(PetscLayout, Vec *);
+
 /* std::upper_bound(): Given a sorted array, return index of the first element in range [first,last) whose value
    is greater than value, or last if there is no such element.
 */

@@ -747,10 +747,8 @@ PetscErrorCode VecSetOption_Seq(Vec v, VecOption op, PetscBool flag)
 PetscErrorCode VecDuplicate_Seq(Vec win, Vec *V)
 {
   PetscFunctionBegin;
-  PetscCall(VecCreate(PetscObjectComm((PetscObject)win), V));
-  PetscCall(VecSetSizes(*V, win->map->n, win->map->n));
+  PetscCall(VecCreateWithLayout_Private(win->map, V));
   PetscCall(VecSetType(*V, ((PetscObject)win)->type_name));
-  PetscCall(PetscLayoutReference(win->map, &(*V)->map));
   PetscCall(PetscObjectListDuplicate(((PetscObject)win)->olist, &((PetscObject)(*V))->olist));
   PetscCall(PetscFunctionListDuplicate(((PetscObject)win)->qlist, &((PetscObject)(*V))->qlist));
 

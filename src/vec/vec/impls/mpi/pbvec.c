@@ -25,8 +25,7 @@ PetscErrorCode VecDuplicate_MPI(Vec win, Vec *v)
   PetscScalar *array;
 
   PetscFunctionBegin;
-  PetscCall(VecCreate(PetscObjectComm((PetscObject)win), v));
-  PetscCall(PetscLayoutReference(win->map, &(*v)->map));
+  PetscCall(VecCreateWithLayout_Private(win->map, v));
 
   PetscCall(VecCreate_MPI_Private(*v, PETSC_TRUE, w->nghost, NULL));
   vw           = (Vec_MPI *)(*v)->data;
@@ -50,7 +49,6 @@ PetscErrorCode VecDuplicate_MPI(Vec win, Vec *v)
   PetscCall(PetscObjectListDuplicate(((PetscObject)win)->olist, &((PetscObject)(*v))->olist));
   PetscCall(PetscFunctionListDuplicate(((PetscObject)win)->qlist, &((PetscObject)(*v))->qlist));
 
-  (*v)->map->bs   = PetscAbs(win->map->bs);
   (*v)->bstash.bs = win->bstash.bs;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
