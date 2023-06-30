@@ -589,7 +589,7 @@
 > 444:   Level: [33m[1mdpcrtd[0m (since 3.18.5)
                 [33m[1m^^^^^^[0m
   445: 
-  446: .seealso: [](ch_matrices), `testDeprecated()`
+  446: .seealso: [](ch_matrices), `testDeprecated()`, [Matrix Factorization](sec_matfactor)
 [31m[1m./src/sys/tests/linter/testValidFunctionDocStrings.c:476:1: error:[0m Multi parameter list entry must start with '.' [-fdoc-param-list-prefix]:
   474:   Input Parameter:
   475: + foo - the input description for an in-out param

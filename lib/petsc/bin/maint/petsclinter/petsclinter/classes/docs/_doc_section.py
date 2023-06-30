@@ -885,13 +885,13 @@ class SeeAlso(InlineList):
     """
     Ensure that every entry in the seealso list is enclosed in backticks
     """
-    def enclosed_by(string, char):
-      return string.startswith(char) and string.endswith(char)
+    def enclosed_by(string, begin_char, end_char):
+      return string.startswith(begin_char) and string.endswith(end_char)
 
     btick = self.special_chars
     assert btick == '`'
     for loc, text in item_remain:
-      if not enclosed_by(text, btick):
+      if not enclosed_by(text, btick, btick) and not re.search(r'\[.*\]\(\w+\)', text):
         docstring.add_error_from_source_range(
           self.diags.backticks, f"seealso symbol '{text}' not enclosed with '{btick}'",
           loc, patch=Patch(loc, f'{btick}{text.replace(btick, "")}{btick}')

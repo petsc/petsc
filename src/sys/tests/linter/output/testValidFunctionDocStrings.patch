@@ -341,7 +341,7 @@
 -  Level: dpcrtd (since 3.18.5)
 +  Level: deprecated (since 3.18.5)
  
- .seealso: [](ch_matrices), `testDeprecated()`
+ .seealso: [](ch_matrices), `testDeprecated()`, [Matrix Factorization](sec_matfactor)
 @@ -477,5 +477,5 @@
    Input Parameter:
  + foo - the input description for an in-out param

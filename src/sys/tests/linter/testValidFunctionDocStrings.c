@@ -443,7 +443,7 @@ PetscErrorCode testDeprecated(void)
 
   Level: dpcrtd (since 3.18.5)
 
-.seealso: `testDeprecated()`
+.seealso: [](ch_matrices), `testDeprecated()`, [Matrix Factorization](sec_matfactor)
 */
 PetscErrorCode testIllFormedDeprecated(void)
 {
