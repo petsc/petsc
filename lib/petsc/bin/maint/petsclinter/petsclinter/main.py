@@ -24,14 +24,14 @@ class ReturnCode(enum.IntFlag):
 def main(
     petsc_dir, petsc_arch,
     src_path=None,
-    clang_dir=None, clang_lib=None,
+    clang_dir=None, clang_lib=None, clang_compat_check=True,
     verbose=False,
     workers=-1,
     check_function_filter=None,
     patch_dir=None, apply_patches=False,
     extra_compiler_flags=None, extra_header_includes=None,
     test_output_dir=None, replace_tests=False,
-    werror=False
+    werror=False,
 ):
   """
   entry point for linter
@@ -41,19 +41,20 @@ def main(
   petsc_arch -- $PETSC_ARCH
 
   Keyword arguments:
-  src_path             -- directory (or file) to lint (default: $PETSC_DIR/src)
-  clang_dir            -- directory containing libclang.[so|dylib|dll] (default: None)
-  clang_lib            -- direct path to libclang.[so|dylib|dll], overrrides clang_dir if set (default: None)
-  verbose             -- display debugging statements (default: False)
-  workers             -- number of processes for multiprocessing, -1 is number of system CPU's-1, 0 or 1 for serial computation (default: -1)
+  src_path              -- directory (or file) to lint (default: $PETSC_DIR/src)
+  clang_dir             -- directory containing libclang.[so|dylib|dll] (default: None)
+  clang_lib             -- direct path to libclang.[so|dylib|dll], overrrides clang_dir if set (default: None)
+  clang_compat_check    -- do clang lib compatibility check
+  verbose               -- display debugging statements (default: False)
+  workers               -- number of processes for multiprocessing, -1 is number of system CPU's-1, 0 or 1 for serial computation (default: -1)
   check_function_filter -- list of function names as strings to only check for, none == all of them. For example ["PetscValidPointer","PetscValidHeaderSpecific"] (default: None)
-  patch_dir            -- directory to store patches if they are generated (default: $PETSC_DIR/petscLintPatches)
-  apply_patches        -- automatically apply patch files to source if they are generated (default: False)
+  patch_dir             -- directory to store patches if they are generated (default: $PETSC_DIR/petscLintPatches)
+  apply_patches         -- automatically apply patch files to source if they are generated (default: False)
   extra_compiler_flags  -- list of extra compiler flags to append to petsc and system flags. For example ["-I/my/non/standard/include","-Wsome_warning"] (default: None)
   extra_header_includes -- list of #include statements to append to the precompiled mega-header, these must be in the include search path. Use extra_compiler_flags to make any other search path additions. For example ["#include <slepc/private/epsimpl.h>"] (default: None)
   test_output_dir       -- directory containing test output to compare patches against, use special keyword '__at_src__' to use src_path/output (default: None)
-  replace_tests        -- replace output files in test_output_dir with patches generated (default: False)
-  werror              -- treat all linter-generated warnings as errors (default: False)
+  replace_tests         -- replace output files in test_output_dir with patches generated (default: False)
+  werror                -- treat all linter-generated warnings as errors (default: False)
   """
   if extra_compiler_flags is None:
     extra_compiler_flags = []
@@ -70,7 +71,9 @@ def main(
   # pre-processing setup
   if bool(apply_patches) and bool(test_output_dir):
     raise RuntimeError('Test directory and apply patches are both non-zero. It is probably not a good idea to apply patches over the test directory!')
-  clang_dir, clang_lib = pl.util.initialize_libclang(clang_dir=clang_dir, clang_lib=clang_lib)
+  clang_dir, clang_lib = pl.util.initialize_libclang(
+    clang_dir=clang_dir, clang_lib=clang_lib, compat_check=clang_compat_check
+  )
 
   petsc_dir = pl.Path(petsc_dir).resolve()
   if src_path is None:
@@ -129,7 +132,9 @@ def main(
   ):
     warnings, errors_left, errors_fixed, patches = pl.WorkerPool(
       workers, verbose=verbose
-    ).setup(compiler_flags, werror=werror).walk(src_path).finalize()
+    ).setup(compiler_flags, clang_compat_check=clang_compat_check, werror=werror).walk(
+      src_path
+    ).finalize()
 
   if test_output_dir is not None:
     from petsclinter.test_main import test_main
@@ -250,6 +255,7 @@ def __build_arg_parser(parent_parsers=None):
   )
 
   group_libclang = parser.add_argument_group(title='libClang location settings')
+  add_bool_argument(group_libclang, '--clang-compat-check', nargs='?', const=True, default=True, help='enable clang compatibility check')
   group          = group_libclang.add_mutually_exclusive_group(required=False)
   group.add_argument('--clang_dir', metavar='path', type=pl.Path, nargs='?', default=clang_dir, help='directory containing libclang.[so|dylib|dll], if not given attempts to automatically detect it via llvm-config', dest='clang_dir')
   group.add_argument('--clang_lib', metavar='path', type=pl.Path, nargs='?', help='direct location of libclang.[so|dylib|dll], overrides clang directory if set', dest='clang_lib')
@@ -346,7 +352,7 @@ def namespace_main(args):
   return main(
     args.petsc_dir, args.petsc_arch,
     src_path=args.src_path,
-    clang_dir=args.clang_dir, clang_lib=args.clang_lib,
+    clang_dir=args.clang_dir, clang_lib=args.clang_lib, clang_compat_check=args.clang_compat_check,
     verbose=args.verbose,
     workers=args.workers,
     check_function_filter=args.check_function_filter,

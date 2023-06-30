@@ -35,13 +35,13 @@ def subprocess_run(*args, **kwargs):
     raise RuntimeError(emess) from cpe
   return output
 
-def initialize_libclang(clang_dir=None, clang_lib=None):
+def initialize_libclang(clang_dir=None, clang_lib=None, compat_check=True):
   """
   Set the required library file or directory path to initialize libclang
   """
   clxconf = clx.conf
   if not clxconf.loaded:
-    clxconf.set_compatibility_check(True)
+    clxconf.set_compatibility_check(compat_check)
     if clang_lib:
       clang_lib = pl.Path(clang_lib).resolve()
       clxconf.set_library_file(str(clang_lib))
