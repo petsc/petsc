@@ -387,8 +387,14 @@ inline PetscErrorCode VecSeq_CUPM<T>::AYPX(Vec yin, PetscScalar alpha, Vec xin) 
   const auto         n    = static_cast<cupmBlasInt_t>(yin->map->n);
   const auto         sync = n != 0;
   PetscDeviceContext dctx;
+  PetscBool          xiscupm;
 
   PetscFunctionBegin;
+  PetscCall(PetscObjectTypeCompareAny(PetscObjectCast(xin), &xiscupm, VECSEQCUPM(), VECMPICUPM(), ""));
+  if (!xiscupm) {
+    PetscCall(VecAYPX_Seq(yin, alpha, xin));
+    PetscFunctionReturn(PETSC_SUCCESS);
+  }
   PetscCall(GetHandles_(&dctx));
   if (alpha == PetscScalar(0.0)) {
     cupmStream_t stream;
