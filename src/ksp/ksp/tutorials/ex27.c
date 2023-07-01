@@ -451,7 +451,7 @@ int main(int argc, char **args)
      test:
         suffix: 4g
         nsize: 4
-        requires: hypre
+        requires: hypre !defined(PETSC_HAVE_HYPRE_DEVICE)
         args: -ksp_converged_reason -ksp_monitor_short -ksp_rtol 1e-5 -ksp_max_it 100
         args: -ksp_type lsqr -pc_type hypre
 

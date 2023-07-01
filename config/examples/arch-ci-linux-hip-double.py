@@ -26,9 +26,11 @@ if __name__ == '__main__':
     '--with-clanguage=c',
     '--download-kokkos',
     '--download-kokkos-kernels',
-    '--download-hypre-configure-arguments=--enable-unified-memory',
+    '--download-hypre',
     '--download-magma',
     '--with-magma-fortran-bindings=0',
+    '--download-mfem',
+    '--download-metis',
     '--with-strict-petscerrorcode',
     #'--with-coverage',
   ]
