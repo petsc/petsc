@@ -3154,8 +3154,8 @@ PetscErrorCode MatMumpsGetNullPivots(Mat F, PetscInt *size, PetscInt **array)
   PetscFunctionBegin;
   PetscValidType(F, 1);
   PetscCheck(F->factortype, PetscObjectComm((PetscObject)F), PETSC_ERR_ARG_WRONGSTATE, "Only for factored matrix");
-  PetscValidIntPointer(size, 3);
-  PetscValidPointer(array, 4);
+  PetscValidIntPointer(size, 2);
+  PetscValidPointer(array, 3);
   PetscUseMethod(F, "MatMumpsGetNullPivots_C", (Mat, PetscInt *, PetscInt **), (F, size, array));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

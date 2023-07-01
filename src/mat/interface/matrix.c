@@ -3229,7 +3229,6 @@ PetscErrorCode MatLUFactorNumeric(Mat fact, Mat mat, const MatFactorInfo *info)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fact, MAT_CLASSID, 1);
   PetscValidHeaderSpecific(mat, MAT_CLASSID, 2);
-  PetscValidHeaderSpecific(fact, MAT_CLASSID, 1);
   PetscValidType(fact, 1);
   PetscValidType(mat, 2);
   PetscCheck(mat->assembled, PetscObjectComm((PetscObject)mat), PETSC_ERR_ARG_WRONGSTATE, "Not for unassembled matrix");
@@ -3398,7 +3397,6 @@ PetscErrorCode MatCholeskyFactorNumeric(Mat fact, Mat mat, const MatFactorInfo *
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fact, MAT_CLASSID, 1);
   PetscValidHeaderSpecific(mat, MAT_CLASSID, 2);
-  PetscValidHeaderSpecific(fact, MAT_CLASSID, 1);
   PetscValidType(fact, 1);
   PetscValidType(mat, 2);
   PetscCheck(mat->assembled, PetscObjectComm((PetscObject)mat), PETSC_ERR_ARG_WRONGSTATE, "Not for unassembled matrix");
