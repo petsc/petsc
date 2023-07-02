@@ -95,6 +95,8 @@ Changes: Development
 
 .. rubric:: DM/DA:
 
+- Add support for ``DMDAGetElements()`` for Fortran
+
 .. rubric:: DMSwarm:
 
 .. rubric:: DMPlex:

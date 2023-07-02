@@ -351,14 +351,14 @@ PetscErrorCode DMDAGetElementType(DM da, DMDAElementType *etype)
       DMDAGetElements - Gets an array containing the indices (in local coordinates)
                  of all the local elements
 
-    Not Collective; No Fortran Support
+    Not Collective
 
    Input Parameter:
 .     dm - the `DMDA` object
 
    Output Parameters:
 +     nel - number of local elements
-.     nen - number of element nodes
+.     nen - number of nodes in each element (for example in one dimension it is 2, in two dimensions it is 3 or 4)
 -     e - the local indices of the elements' vertices
 
    Level: intermediate
@@ -370,7 +370,14 @@ PetscErrorCode DMDAGetElementType(DM da, DMDAElementType *etype)
 
      If on each process you integrate over its owned elements and use `ADD_VALUES` in `Vec`/`MatSetValuesLocal()` then you'll obtain the correct result.
 
-.seealso: `DM`, `DMDA`, `DMDAElementType`, `DMDASetElementType()`, `VecSetValuesLocal()`, `MatSetValuesLocal()`, `DMGlobalToLocalBegin()`, `DMLocalToGlobalBegin()`
+   Fortran Note:
+   Use
+.vb
+   PetscScalar, pointer :: e(:)
+.ve
+   to declare the element array
+
+.seealso: `DM`, `DMDA`, `DMDAElementType`, `DMDASetElementType()`, `VecSetValuesLocal()`, `MatSetValuesLocal()`, `DMGlobalToLocalBegin()`, `DMLocalToGlobalBegin()`, `DMDARestoreElements()`
 @*/
 PetscErrorCode DMDAGetElements(DM dm, PetscInt *nel, PetscInt *nen, const PetscInt *e[])
 {
@@ -451,12 +458,12 @@ PetscErrorCode DMDAGetSubdomainCornersIS(DM dm, IS *is)
 /*@C
       DMDARestoreElements - Restores the array obtained with `DMDAGetElements()`
 
-    Not Collective; No Fortran Support
+    Not Collective
 
    Input Parameters:
 +     dm - the `DM` object
 .     nel - number of local elements
-.     nen - number of element nodes
+.     nen - number of nodes in each element
 -     e - the local indices of the elements' vertices
 
    Level: intermediate
@@ -473,9 +480,9 @@ PetscErrorCode DMDARestoreElements(DM dm, PetscInt *nel, PetscInt *nen, const Pe
   PetscValidIntPointer(nel, 2);
   PetscValidIntPointer(nen, 3);
   PetscValidPointer(e, 4);
-  *nel = 0;
-  *nen = -1;
-  *e   = NULL;
+  if (nel) *nel = 0;
+  if (nen) *nen = -1;
+  if (e) *e = NULL;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
