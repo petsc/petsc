@@ -1079,19 +1079,31 @@ To use currently downloaded (local) git snapshot - use: --download-'+self.packag
     cxxVersionConflict = not inVersionRange(cxxVersionRange,self.setCompilers.cxxDialectRange[self.getDefaultLanguage()])
     # if user did not request option, then turn it off if conflicts with configuration
     if self.lookforbydefault and 'with-'+self.package not in self.framework.clArgDB:
-      if ('Cxx' in self.buildLanguages and not hasattr(self.compilers, 'CXX')) or \
-         ('FC'  in self.buildLanguages and not hasattr(self.compilers, 'FC')) or \
-         (self.noMPIUni and self.mpi.usingMPIUni) or \
-         cxxVersionConflict or \
-         (not self.defaultPrecision.lower() in self.precisions) or \
-         (not self.complex and self.defaultScalarType.lower() == 'complex') or \
-         (self.defaultIndexSize == 64 and self.requires32bitint) or \
-         (blaslapackconflict):
-       self.argDB['with-'+self.package] = 0
+      mess = None
+      if 'Cxx' in self.buildLanguages and not hasattr(self.compilers, 'CXX'):
+        mess = 'requires C++ but C++ compiler not set'
+      if 'FC'  in self.buildLanguages and not hasattr(self.compilers, 'FC'):
+        mess = 'requires Fortran but Fortran compiler not set'
+      if self.noMPIUni and self.mpi.usingMPIUni:
+        mess = 'requires real MPI but MPIUNI is being used'
+      if cxxVersionConflict:
+        mess = 'cannot work with C++ version being used'
+      if not self.defaultPrecision.lower() in self.precisions:
+        mess = 'does not support the current precision '+ self.defaultPrecision.lower()
+      if not self.complex and self.defaultScalarType.lower() == 'complex':
+        mess = 'does not support complex numbers but PETSc being build with complex'
+      if self.defaultIndexSize == 64 and self.requires32bitint:
+        mess = 'does not support 64-bit indices which PETSc is configured for'
+      if blaslapackconflict:
+        mess = 'requires 32-bit BLAS/LAPACK indices but configure is building with 64-bit'
+
+      if mess:
+        self.logPrint('Turning off default package '+ self.package + ' because package ' + mess)
+        self.argDB['with-'+self.package] = 0
 
     if self.argDB['with-'+self.package]:
       if blaslapackconflict:
-        raise RuntimeError('Cannot use '+self.name+' with 64-bit BLAS/Lapack indices')
+        raise RuntimeError('Cannot use '+self.name+' with 64-bit BLAS/LAPACK indices')
       if 'Cxx' in self.buildLanguages and not hasattr(self.compilers, 'CXX'):
         raise RuntimeError('Cannot use '+self.name+' without C++, make sure you do NOT have --with-cxx=0')
       if 'FC'  in self.buildLanguages and not hasattr(self.compilers, 'FC'):
