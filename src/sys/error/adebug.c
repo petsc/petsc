@@ -230,7 +230,7 @@ PetscErrorCode PetscAttachDebugger(void)
     ierr = (*PetscErrorPrintf)("PetscAttachDebugger: Cannot determine program name needed to attach debugger\n");
     return PETSC_ERR_SYS;
   }
-  if (PetscUnlikely(!isatty(fileno(stdin)))) {
+  if (PetscUnlikely(!isatty(fileno(stdin))) && !UseDebugTerminal) {
     ierr = (*PetscErrorPrintf)("PetscAttachDebugger: stdin is not a tty, hence unable to attach debugger, see PetscAttachDebugger()\n");
     return PETSC_ERR_SYS;
   }
