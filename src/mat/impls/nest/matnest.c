@@ -100,7 +100,7 @@ PETSC_INTERN PetscErrorCode MatProductNumeric_Nest_Dense(Mat C)
   Mat                A, B;
 
   PetscFunctionBegin;
-  MatCheckProduct(C, 3);
+  MatCheckProduct(C, 1);
   A = C->product->A;
   B = C->product->B;
   PetscCall(MatGetSize(B, NULL, &N));
@@ -175,7 +175,7 @@ PETSC_INTERN PetscErrorCode MatProductSymbolic_Nest_Dense(Mat C)
   PetscReal          fill;
 
   PetscFunctionBegin;
-  MatCheckProduct(C, 4);
+  MatCheckProduct(C, 1);
   PetscCheck(!C->product->data, PetscObjectComm((PetscObject)C), PETSC_ERR_PLIB, "Product data not empty");
   A    = C->product->A;
   B    = C->product->B;

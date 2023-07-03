@@ -12,6 +12,14 @@ if __name__ == '__main__':
   sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
 import petsclinter as pl
+import enum
+
+class ReturnCode(enum.IntFlag):
+  SUCCESS           = 0
+  ERROR_WERROR      = 1
+  ERROR_ERROR_FIXED = 2
+  ERROR_ERROR_LEFT  = 4
+  ERROR_ERROR_TEST  = 8
 
 def main(
     petsc_dir, petsc_arch,
@@ -167,34 +175,41 @@ def main(
         )
         if verbose: pl.sync_print(output.stdout)
 
-  ret        = 0
+  ret        = ReturnCode.SUCCESS
   format_str = '{:=^85}'
-  if warnings and verbose:
-    pl.sync_print(format_str.format(' Found Warnings '))
-    pl.sync_print('\n'.join(s for tup in warnings for _, s in tup))
-    pl.sync_print(format_str.format(' End warnings '))
-  if errors_fixed and verbose:
-    pl.sync_print(format_str.format(' Fixed Errors ' if apply_patches else ' Fixable Errors '))
-    pl.sync_print('\n'.join(e for _, e in errors_fixed))
-    pl.sync_print(format_str.format(' End Fixed Errors '))
+  if warnings:
+    if verbose:
+      pl.sync_print(format_str.format(' Found Warnings '))
+      pl.sync_print('\n'.join(s for tup in warnings for _, s in tup))
+      pl.sync_print(format_str.format(' End warnings '))
+    if werror:
+      ret |= ReturnCode.ERROR_WERROR
+  if errors_fixed:
+    if verbose:
+      pl.sync_print(format_str.format(' Fixed Errors ' if apply_patches else ' Fixable Errors '))
+      pl.sync_print('\n'.join(e for _, e in errors_fixed))
+      pl.sync_print(format_str.format(' End Fixed Errors '))
+    ret |= ReturnCode.ERROR_ERROR_FIXED
   if errors_left:
     pl.sync_print(format_str.format(' Unfixable Errors '))
     pl.sync_print('\n'.join(e for _, e in errors_left))
     pl.sync_print(format_str.format(' End Unfixable Errors '))
     pl.sync_print('Some errors or warnings could not be automatically corrected via the patch files')
-    ret = 11
+    ret |= ReturnCode.ERROR_ERROR_LEFT
   if patches:
     if apply_patches:
       pl.sync_print('All fixable errors or warnings successfully patched')
+      if ret == ReturnCode.ERROR_ERROR_FIXED:
+        # if the only error is fixed errors, then we don't actually have an error
+        ret = ReturnCode.SUCCESS
     else:
       pl.sync_print('Patch files written to', patch_dir)
       pl.sync_print('Apply manually using:')
       pl.sync_print(
-        f'  for i in {patch_dir / ("*" + mangle_postfix)}; do {patch_exec} {root_dir} --strip=0 --unified --input=$i; done'
+        f'  for patch_file in {patch_dir / ("*" + mangle_postfix)}; do {patch_exec} {root_dir} --strip=0 --unified --input=${{patch_file}}; done'
       )
-      if ret != 0:
-        ret = 12
-  return ret
+      assert ret != ReturnCode.SUCCESS
+  return int(ret)
 
 def __build_arg_parser(parent_parsers=None):
   import argparse

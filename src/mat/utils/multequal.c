@@ -20,7 +20,7 @@ static PetscErrorCode MatMultEqual_Private(Mat A, Mat B, PetscInt n, PetscBool *
   PetscValidLogicalCollectiveInt(A, n, 3);
   PetscValidBoolPointer(flg, 4);
   PetscValidLogicalCollectiveInt(A, t, 5);
-  PetscValidLogicalCollectiveBool(A, add, 6);
+  PetscValidLogicalCollectiveInt(A, add, 6);
   PetscCall(MatGetLocalSize(A, &am, &an));
   PetscCall(MatGetLocalSize(B, &bm, &bn));
   PetscCheck(am == bm && an == bn, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Mat A,Mat B: local dim %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT, am, bm, an, bn);

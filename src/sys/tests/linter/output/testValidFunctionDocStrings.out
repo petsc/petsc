@@ -1168,7 +1168,7 @@ ERROR 11: ./src/sys/tests/linter/testValidFunctionDocStrings.c:289:16
   291:   return 0;
 
 Undocumented parameter 'unknown' not found in parameter section [-fdoc-param-list-func-parameter-documentation]:
-  276:   PetscErrorCode testExplicitSynopsis(PetscInt foo, PetscReal bar, void *baz)
+  276:   Collective
   277: 
 > 278:   Input Parameters:
 > 279: + foo - a foo
@@ -1300,14 +1300,14 @@ ERROR 16: ./src/sys/tests/linter/testValidFunctionDocStrings.c:419:16
 
 Extra docstring parameter 'foo_parm1' not found in symbol parameter list [-fdoc-param-list-func-parameter-documentation]:
   393: 
-  394:   Calling sequence of foo:
+  394:   Calling sequence of `foo`:
 > 395: + foo_parm1 - an int
          ^^^^^^^^^
   396: . foo_parm2 - a double
   397: - foo_parm3 - a float
 
 Extra docstring parameter 'foo_parm2' not found in symbol parameter list [-fdoc-param-list-func-parameter-documentation]:
-  394:   Calling sequence of foo:
+  394:   Calling sequence of `foo`:
   395: + foo_parm1 - an int
 > 396: . foo_parm2 - a double
          ^^^^^^^^^
@@ -1320,5 +1320,5 @@ Extra docstring parameter 'foo_parm3' not found in symbol parameter list [-fdoc-
 > 397: - foo_parm3 - a float
          ^^^^^^^^^
   398: 
-  399:   Calling sequence of bar:
+  399:   Calling sequence of `bar`:
 --------------------------------------------------------------------------------------------

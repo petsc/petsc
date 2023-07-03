@@ -206,14 +206,14 @@ PetscErrorCode MatLRCSetMats(Mat N, Mat A, Mat U, Vec c, Mat V)
   PetscBool match;
 
   PetscFunctionBegin;
-  if (A) PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
-  PetscValidHeaderSpecific(U, MAT_CLASSID, 2);
-  if (c) PetscValidHeaderSpecific(c, VEC_CLASSID, 3);
+  if (A) PetscValidHeaderSpecific(A, MAT_CLASSID, 2);
+  PetscValidHeaderSpecific(U, MAT_CLASSID, 3);
+  if (c) PetscValidHeaderSpecific(c, VEC_CLASSID, 4);
   if (V) {
-    PetscValidHeaderSpecific(V, MAT_CLASSID, 4);
-    PetscCheckSameComm(U, 2, V, 4);
+    PetscValidHeaderSpecific(V, MAT_CLASSID, 5);
+    PetscCheckSameComm(U, 3, V, 5);
   }
-  if (A) PetscCheckSameComm(A, 1, U, 2);
+  if (A) PetscCheckSameComm(A, 2, U, 3);
   if (!V) V = U;
   PetscCall(PetscObjectBaseTypeCompareAny((PetscObject)U, &match, MATSEQDENSE, MATMPIDENSE, ""));
   PetscCheck(match, PetscObjectComm((PetscObject)U), PETSC_ERR_SUP, "Matrix U must be of type dense, found %s", ((PetscObject)U)->type_name);

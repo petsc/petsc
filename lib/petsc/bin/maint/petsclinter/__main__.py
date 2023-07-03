@@ -4,6 +4,7 @@
 # @author: Jacob Faibussowitsch
 """
 if __name__ == '__main__':
+  import sys
   import petsclinter as pl
 
-  pl.main.command_line_main()
+  sys.exit(pl.main.command_line_main())
