@@ -177,10 +177,13 @@ class Synopsis(SectionBase):
     Ensure that a synopsis is present and properly formatted with Cursor - description
     """
     if symbol is None:
-      diag = docstring.make_diagnostic(
-        self.diags.missing_description, 'Docstring missing synopsis', self.extent, highlight=False
-      ).add_note(f"Expected '{cursor.name} - a very useful description'")
-      docstring.add_error_from_diagnostic(diag)
+      docstring.add_error_from_diagnostic(
+        docstring.make_diagnostic(
+          self.diags.missing_description, 'Docstring missing synopsis', self.extent, highlight=False
+        ).add_note(
+          f"Expected '{cursor.name} - a very useful description'"
+        )
+      )
     return
 
   def _check_macro_synopsis(self, linter, cursor, docstring, explicit_synopsis):

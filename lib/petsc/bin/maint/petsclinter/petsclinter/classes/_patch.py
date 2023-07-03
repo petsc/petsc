@@ -84,13 +84,13 @@ class Patch:
     for weak_list in self.weak_data:
       elist = weak_list[0]()
       if elist is not None:
-        idx = elist[3].index(self.id)
+        idx = elist[2].index(self.id)
         if idx < 0:
           reason = '-1 is the default value' if idx == -1 else 'unknown negative idx value'
           raise RuntimeError(f'bad weakref id {idx} for patch, {reason}')
-        del elist[1][idx] # delete the error message
-        del elist[2][idx] # delete the patch indicator
-        del elist[3][idx] # mark the fact we have deleted ourselves
+        del elist[0][idx] # delete the error message
+        del elist[1][idx] # delete the patch indicator
+        del elist[2][idx] # mark the fact we have deleted ourselves
     return
 
   def attach(self, *args):

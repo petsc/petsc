@@ -1,571 +1,628 @@
 <--- FIXED --->
 --------------------------------------------------------------------------------------------
-ERROR 0: ./src/sys/tests/linter/testValidPointers.c:6:25
-'a' of type 'void *'
+[31m[1m./src/sys/tests/linter/testValidPointers.c:6:3: error:[0m Incorrect use of PetscValidCharPointer(), use PetscValidPointer() instead [-fincompatible-function]:
   4: {
   5:   /* incorrect */
-> 6:   PetscValidCharPointer(a, 2);
-                             ^
+> 6:   [33m[1mPetscValidCharPointer(a, 2)[0m;
+       [33m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
   7:   PetscValidIntPointer(b, 3);
   8:   PetscValidBoolPointer(c, 4);
 
-Incorrect use of PetscValidCharPointer(), use PetscValidPointer() instead [-fincompatible-function]
-
-ERROR 1: ./src/sys/tests/linter/testValidPointers.c:6:28
-'2' of type 'int'
+./src/sys/tests/linter/testValidPointers.c:6:25 Note: Due to 'a' of type 'void *'
   4: {
   5:   /* incorrect */
-> 6:   PetscValidCharPointer(a, 2);
-                                ^
+> 6:   PetscValidCharPointer([33m[1ma[0m, 2);
+                             [33m[1m^[0m
   7:   PetscValidIntPointer(b, 3);
   8:   PetscValidBoolPointer(c, 4);
 
-Argument number doesn't match for 'a'. Expected '1', found '2' [-fmatching-arg-num]
+[31m[1m./src/sys/tests/linter/testValidPointers.c:6:28: error:[0m Argument number doesn't match for 'a'. Expected '1', found '2' [-fmatching-arg-num]:
+  4: {
+  5:   /* incorrect */
+> 6:   PetscValidCharPointer(a, [33m[1m2[0m);
+                                [33m[1m^[0m
+  7:   PetscValidIntPointer(b, 3);
+  8:   PetscValidBoolPointer(c, 4);
 
 ./src/sys/tests/linter/testValidPointers.c:3:34 Note: 'a' is traceable to argument #1 'a' in enclosing function here:
   1: #include <petsc/private/petscimpl.h>
   2: 
-> 3: PetscErrorCode testValidPointers(void *a, char *b, PetscInt *c, PetscMPIInt *d, PetscInt *e, PetscBool *f, PetscScalar *g, PetscReal *h)
-                                      ^^^^^^^
+> 3: PetscErrorCode testValidPointers([33m[1mvoid *a[0m, char *b, PetscInt *c, PetscMPIInt *d, PetscInt *e, PetscBool *f, PetscScalar *g, PetscReal *h)
+                                      [33m[1m^^^^^^^[0m
   4: {
   5:   /* incorrect */
-
-ERROR 2: ./src/sys/tests/linter/testValidPointers.c:7:24
-'b' of type 'char *'
+[31m[1m./src/sys/tests/linter/testValidPointers.c:7:3: error:[0m Incorrect use of PetscValidIntPointer(), use PetscValidCharPointer() instead [-fincompatible-function]:
   5: /* incorrect */
   6: PetscValidCharPointer(a, 2);
-> 7: PetscValidIntPointer(b, 3);
-                          ^
+> 7: [33m[1mPetscValidIntPointer(b, 3)[0m;
+     [33m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
   8: PetscValidBoolPointer(c, 4);
   9: PetscValidRealPointer(d, 5);
 
-Incorrect use of PetscValidIntPointer(), use PetscValidCharPointer() instead [-fincompatible-function]
-
-ERROR 3: ./src/sys/tests/linter/testValidPointers.c:7:27
-'3' of type 'int'
+./src/sys/tests/linter/testValidPointers.c:7:24 Note: Due to 'b' of type 'char *'
   5: /* incorrect */
   6: PetscValidCharPointer(a, 2);
-> 7: PetscValidIntPointer(b, 3);
-                             ^
+> 7: PetscValidIntPointer([33m[1mb[0m, 3);
+                          [33m[1m^[0m
   8: PetscValidBoolPointer(c, 4);
   9: PetscValidRealPointer(d, 5);
 
-Argument number doesn't match for 'b'. Expected '2', found '3' [-fmatching-arg-num]
+[31m[1m./src/sys/tests/linter/testValidPointers.c:7:27: error:[0m Argument number doesn't match for 'b'. Expected '2', found '3' [-fmatching-arg-num]:
+  5: /* incorrect */
+  6: PetscValidCharPointer(a, 2);
+> 7: PetscValidIntPointer(b, [33m[1m3[0m);
+                             [33m[1m^[0m
+  8: PetscValidBoolPointer(c, 4);
+  9: PetscValidRealPointer(d, 5);
 
 ./src/sys/tests/linter/testValidPointers.c:3:43 Note: 'b' is traceable to argument #2 'b' in enclosing function here:
   1: #include <petsc/private/petscimpl.h>
   2: 
-> 3: PetscErrorCode testValidPointers(void *a, char *b, PetscInt *c, PetscMPIInt *d, PetscInt *e, PetscBool *f, PetscScalar *g, PetscReal *h)
-                                               ^^^^^^^
+> 3: PetscErrorCode testValidPointers(void *a, [33m[1mchar *b[0m, PetscInt *c, PetscMPIInt *d, PetscInt *e, PetscBool *f, PetscScalar *g, PetscReal *h)
+                                               [33m[1m^^^^^^^[0m
   4: {
   5:   /* incorrect */
-
-ERROR 4: ./src/sys/tests/linter/testValidPointers.c:8:25
-'c' of type 'PetscInt *' (a.k.a. 'int *')
+[31m[1m./src/sys/tests/linter/testValidPointers.c:8:3: error:[0m Incorrect use of PetscValidBoolPointer(), use PetscValidIntPointer() instead [-fincompatible-function]:
   6 : PetscValidCharPointer(a, 2);
   7 : PetscValidIntPointer(b, 3);
-> 8 : PetscValidBoolPointer(c, 4);
-                            ^
+> 8 : [33m[1mPetscValidBoolPointer(c, 4)[0m;
+      [33m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
   9 : PetscValidRealPointer(d, 5);
   10: PetscValidScalarPointer(e, 6);
 
-Incorrect use of PetscValidBoolPointer(), use PetscValidIntPointer() instead [-fincompatible-function]
-
-ERROR 5: ./src/sys/tests/linter/testValidPointers.c:8:28
-'4' of type 'int'
+./src/sys/tests/linter/testValidPointers.c:8:25 Note: Due to 'c' of type 'PetscInt *' (a.k.a. 'int *')
   6 : PetscValidCharPointer(a, 2);
   7 : PetscValidIntPointer(b, 3);
-> 8 : PetscValidBoolPointer(c, 4);
-                               ^
+> 8 : PetscValidBoolPointer([33m[1mc[0m, 4);
+                            [33m[1m^[0m
   9 : PetscValidRealPointer(d, 5);
   10: PetscValidScalarPointer(e, 6);
 
-Argument number doesn't match for 'c'. Expected '3', found '4' [-fmatching-arg-num]
+[31m[1m./src/sys/tests/linter/testValidPointers.c:8:28: error:[0m Argument number doesn't match for 'c'. Expected '3', found '4' [-fmatching-arg-num]:
+  6 : PetscValidCharPointer(a, 2);
+  7 : PetscValidIntPointer(b, 3);
+> 8 : PetscValidBoolPointer(c, [33m[1m4[0m);
+                               [33m[1m^[0m
+  9 : PetscValidRealPointer(d, 5);
+  10: PetscValidScalarPointer(e, 6);
 
 ./src/sys/tests/linter/testValidPointers.c:3:52 Note: 'c' is traceable to argument #3 'c' in enclosing function here:
   1: #include <petsc/private/petscimpl.h>
   2: 
-> 3: PetscErrorCode testValidPointers(void *a, char *b, PetscInt *c, PetscMPIInt *d, PetscInt *e, PetscBool *f, PetscScalar *g, PetscReal *h)
-                                                        ^^^^^^^^^^^
+> 3: PetscErrorCode testValidPointers(void *a, char *b, [33m[1mPetscInt *c[0m, PetscMPIInt *d, PetscInt *e, PetscBool *f, PetscScalar *g, PetscReal *h)
+                                                        [33m[1m^^^^^^^^^^^[0m
   4: {
   5:   /* incorrect */
-
-ERROR 6: ./src/sys/tests/linter/testValidPointers.c:9:25
-'d' of type 'PetscMPIInt *' (a.k.a. 'int *')
+[31m[1m./src/sys/tests/linter/testValidPointers.c:9:3: error:[0m Incorrect use of PetscValidRealPointer(), use PetscValidIntPointer() instead [-fincompatible-function]:
   7 : PetscValidIntPointer(b, 3);
   8 : PetscValidBoolPointer(c, 4);
-> 9 : PetscValidRealPointer(d, 5);
-                            ^
+> 9 : [33m[1mPetscValidRealPointer(d, 5)[0m;
+      [33m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
   10: PetscValidScalarPointer(e, 6);
   11: PetscValidIntPointer(f, 7);
 
-Incorrect use of PetscValidRealPointer(), use PetscValidIntPointer() instead [-fincompatible-function]
-
-ERROR 7: ./src/sys/tests/linter/testValidPointers.c:9:28
-'5' of type 'int'
+./src/sys/tests/linter/testValidPointers.c:9:25 Note: Due to 'd' of type 'PetscMPIInt *' (a.k.a. 'int *')
   7 : PetscValidIntPointer(b, 3);
   8 : PetscValidBoolPointer(c, 4);
-> 9 : PetscValidRealPointer(d, 5);
-                               ^
+> 9 : PetscValidRealPointer([33m[1md[0m, 5);
+                            [33m[1m^[0m
   10: PetscValidScalarPointer(e, 6);
   11: PetscValidIntPointer(f, 7);
 
-Argument number doesn't match for 'd'. Expected '4', found '5' [-fmatching-arg-num]
+[31m[1m./src/sys/tests/linter/testValidPointers.c:9:28: error:[0m Argument number doesn't match for 'd'. Expected '4', found '5' [-fmatching-arg-num]:
+  7 : PetscValidIntPointer(b, 3);
+  8 : PetscValidBoolPointer(c, 4);
+> 9 : PetscValidRealPointer(d, [33m[1m5[0m);
+                               [33m[1m^[0m
+  10: PetscValidScalarPointer(e, 6);
+  11: PetscValidIntPointer(f, 7);
 
 ./src/sys/tests/linter/testValidPointers.c:3:65 Note: 'd' is traceable to argument #4 'd' in enclosing function here:
   1: #include <petsc/private/petscimpl.h>
   2: 
-> 3: PetscErrorCode testValidPointers(void *a, char *b, PetscInt *c, PetscMPIInt *d, PetscInt *e, PetscBool *f, PetscScalar *g, PetscReal *h)
-                                                                     ^^^^^^^^^^^^^^
+> 3: PetscErrorCode testValidPointers(void *a, char *b, PetscInt *c, [33m[1mPetscMPIInt *d[0m, PetscInt *e, PetscBool *f, PetscScalar *g, PetscReal *h)
+                                                                     [33m[1m^^^^^^^^^^^^^^[0m
   4: {
   5:   /* incorrect */
-
-ERROR 8: ./src/sys/tests/linter/testValidPointers.c:10:27
-'e' of type 'PetscInt *' (a.k.a. 'int *')
+[31m[1m./src/sys/tests/linter/testValidPointers.c:10:3: error:[0m Incorrect use of PetscValidScalarPointer(), use PetscValidIntPointer() instead [-fincompatible-function]:
   8 : PetscValidBoolPointer(c, 4);
   9 : PetscValidRealPointer(d, 5);
-> 10: PetscValidScalarPointer(e, 6);
-                              ^
+> 10: [33m[1mPetscValidScalarPointer(e, 6)[0m;
+      [33m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
   11: PetscValidIntPointer(f, 7);
   12: PetscValidRealPointer(g, 8);
 
-Incorrect use of PetscValidScalarPointer(), use PetscValidIntPointer() instead [-fincompatible-function]
-
-ERROR 9: ./src/sys/tests/linter/testValidPointers.c:10:30
-'6' of type 'int'
+./src/sys/tests/linter/testValidPointers.c:10:27 Note: Due to 'e' of type 'PetscInt *' (a.k.a. 'int *')
   8 : PetscValidBoolPointer(c, 4);
   9 : PetscValidRealPointer(d, 5);
-> 10: PetscValidScalarPointer(e, 6);
-                                 ^
+> 10: PetscValidScalarPointer([33m[1me[0m, 6);
+                              [33m[1m^[0m
   11: PetscValidIntPointer(f, 7);
   12: PetscValidRealPointer(g, 8);
 
-Argument number doesn't match for 'e'. Expected '5', found '6' [-fmatching-arg-num]
+[31m[1m./src/sys/tests/linter/testValidPointers.c:10:30: error:[0m Argument number doesn't match for 'e'. Expected '5', found '6' [-fmatching-arg-num]:
+  8 : PetscValidBoolPointer(c, 4);
+  9 : PetscValidRealPointer(d, 5);
+> 10: PetscValidScalarPointer(e, [33m[1m6[0m);
+                                 [33m[1m^[0m
+  11: PetscValidIntPointer(f, 7);
+  12: PetscValidRealPointer(g, 8);
 
 ./src/sys/tests/linter/testValidPointers.c:3:81 Note: 'e' is traceable to argument #5 'e' in enclosing function here:
   1: #include <petsc/private/petscimpl.h>
   2: 
-> 3: PetscErrorCode testValidPointers(void *a, char *b, PetscInt *c, PetscMPIInt *d, PetscInt *e, PetscBool *f, PetscScalar *g, PetscReal *h)
-                                                                                     ^^^^^^^^^^^
+> 3: PetscErrorCode testValidPointers(void *a, char *b, PetscInt *c, PetscMPIInt *d, [33m[1mPetscInt *e[0m, PetscBool *f, PetscScalar *g, PetscReal *h)
+                                                                                     [33m[1m^^^^^^^^^^^[0m
   4: {
   5:   /* incorrect */
-
-ERROR 10: ./src/sys/tests/linter/testValidPointers.c:11:24
-'f' of type 'PetscBool *'
+[31m[1m./src/sys/tests/linter/testValidPointers.c:11:3: error:[0m Incorrect use of PetscValidIntPointer(), use PetscValidBoolPointer() instead [-fincompatible-function]:
   9 : PetscValidRealPointer(d, 5);
   10: PetscValidScalarPointer(e, 6);
-> 11: PetscValidIntPointer(f, 7);
-                           ^
+> 11: [33m[1mPetscValidIntPointer(f, 7)[0m;
+      [33m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
   12: PetscValidRealPointer(g, 8);
   13: PetscValidScalarPointer(h, 9);
 
-Incorrect use of PetscValidIntPointer(), use PetscValidBoolPointer() instead [-fincompatible-function]
-
-ERROR 11: ./src/sys/tests/linter/testValidPointers.c:11:27
-'7' of type 'int'
+./src/sys/tests/linter/testValidPointers.c:11:24 Note: Due to 'f' of type 'PetscBool *'
   9 : PetscValidRealPointer(d, 5);
   10: PetscValidScalarPointer(e, 6);
-> 11: PetscValidIntPointer(f, 7);
-                              ^
+> 11: PetscValidIntPointer([33m[1mf[0m, 7);
+                           [33m[1m^[0m
   12: PetscValidRealPointer(g, 8);
   13: PetscValidScalarPointer(h, 9);
 
-Argument number doesn't match for 'f'. Expected '6', found '7' [-fmatching-arg-num]
+[31m[1m./src/sys/tests/linter/testValidPointers.c:11:27: error:[0m Argument number doesn't match for 'f'. Expected '6', found '7' [-fmatching-arg-num]:
+  9 : PetscValidRealPointer(d, 5);
+  10: PetscValidScalarPointer(e, 6);
+> 11: PetscValidIntPointer(f, [33m[1m7[0m);
+                              [33m[1m^[0m
+  12: PetscValidRealPointer(g, 8);
+  13: PetscValidScalarPointer(h, 9);
 
 ./src/sys/tests/linter/testValidPointers.c:3:94 Note: 'f' is traceable to argument #6 'f' in enclosing function here:
   1: #include <petsc/private/petscimpl.h>
   2: 
-> 3: PetscErrorCode testValidPointers(void *a, char *b, PetscInt *c, PetscMPIInt *d, PetscInt *e, PetscBool *f, PetscScalar *g, PetscReal *h)
-                                                                                                  ^^^^^^^^^^^^
+> 3: PetscErrorCode testValidPointers(void *a, char *b, PetscInt *c, PetscMPIInt *d, PetscInt *e, [33m[1mPetscBool *f[0m, PetscScalar *g, PetscReal *h)
+                                                                                                  [33m[1m^^^^^^^^^^^^[0m
   4: {
   5:   /* incorrect */
-
-ERROR 12: ./src/sys/tests/linter/testValidPointers.c:12:25
-'g' of type 'PetscScalar *' (a.k.a. 'double *')
+[31m[1m./src/sys/tests/linter/testValidPointers.c:12:3: error:[0m Incorrect use of PetscValidRealPointer(), use PetscValidScalarPointer() instead [-fincompatible-function]:
   10: PetscValidScalarPointer(e, 6);
   11: PetscValidIntPointer(f, 7);
-> 12: PetscValidRealPointer(g, 8);
-                            ^
+> 12: [33m[1mPetscValidRealPointer(g, 8)[0m;
+      [33m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
   13: PetscValidScalarPointer(h, 9);
   14: 
 
-Incorrect use of PetscValidRealPointer(), use PetscValidScalarPointer() instead [-fincompatible-function]
-
-ERROR 13: ./src/sys/tests/linter/testValidPointers.c:12:28
-'8' of type 'int'
+./src/sys/tests/linter/testValidPointers.c:12:25 Note: Due to 'g' of type 'PetscScalar *' (a.k.a. 'double *')
   10: PetscValidScalarPointer(e, 6);
   11: PetscValidIntPointer(f, 7);
-> 12: PetscValidRealPointer(g, 8);
-                               ^
+> 12: PetscValidRealPointer([33m[1mg[0m, 8);
+                            [33m[1m^[0m
   13: PetscValidScalarPointer(h, 9);
   14: 
 
-Argument number doesn't match for 'g'. Expected '7', found '8' [-fmatching-arg-num]
+[31m[1m./src/sys/tests/linter/testValidPointers.c:12:28: error:[0m Argument number doesn't match for 'g'. Expected '7', found '8' [-fmatching-arg-num]:
+  10: PetscValidScalarPointer(e, 6);
+  11: PetscValidIntPointer(f, 7);
+> 12: PetscValidRealPointer(g, [33m[1m8[0m);
+                               [33m[1m^[0m
+  13: PetscValidScalarPointer(h, 9);
+  14: 
 
 ./src/sys/tests/linter/testValidPointers.c:3:108 Note: 'g' is traceable to argument #7 'g' in enclosing function here:
   1: #include <petsc/private/petscimpl.h>
   2: 
-> 3: PetscErrorCode testValidPointers(void *a, char *b, PetscInt *c, PetscMPIInt *d, PetscInt *e, PetscBool *f, PetscScalar *g, PetscReal *h)
-                                                                                                                ^^^^^^^^^^^^^^
+> 3: PetscErrorCode testValidPointers(void *a, char *b, PetscInt *c, PetscMPIInt *d, PetscInt *e, PetscBool *f, [33m[1mPetscScalar *g[0m, PetscReal *h)
+                                                                                                                [33m[1m^^^^^^^^^^^^^^[0m
   4: {
   5:   /* incorrect */
-
-ERROR 14: ./src/sys/tests/linter/testValidPointers.c:13:27
-'h' of type 'PetscReal *' (a.k.a. 'double *')
+[31m[1m./src/sys/tests/linter/testValidPointers.c:13:3: error:[0m Incorrect use of PetscValidScalarPointer(), use PetscValidRealPointer() instead [-fincompatible-function]:
   11: PetscValidIntPointer(f, 7);
   12: PetscValidRealPointer(g, 8);
-> 13: PetscValidScalarPointer(h, 9);
-                              ^
+> 13: [33m[1mPetscValidScalarPointer(h, 9)[0m;
+      [33m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
   14: 
   15: /* correct */
 
-Incorrect use of PetscValidScalarPointer(), use PetscValidRealPointer() instead [-fincompatible-function]
-
-ERROR 15: ./src/sys/tests/linter/testValidPointers.c:13:30
-'9' of type 'int'
+./src/sys/tests/linter/testValidPointers.c:13:27 Note: Due to 'h' of type 'PetscReal *' (a.k.a. 'double *')
   11: PetscValidIntPointer(f, 7);
   12: PetscValidRealPointer(g, 8);
-> 13: PetscValidScalarPointer(h, 9);
-                                 ^
+> 13: PetscValidScalarPointer([33m[1mh[0m, 9);
+                              [33m[1m^[0m
   14: 
   15: /* correct */
 
-Argument number doesn't match for 'h'. Expected '8', found '9' [-fmatching-arg-num]
+[31m[1m./src/sys/tests/linter/testValidPointers.c:13:30: error:[0m Argument number doesn't match for 'h'. Expected '8', found '9' [-fmatching-arg-num]:
+  11: PetscValidIntPointer(f, 7);
+  12: PetscValidRealPointer(g, 8);
+> 13: PetscValidScalarPointer(h, [33m[1m9[0m);
+                                 [33m[1m^[0m
+  14: 
+  15: /* correct */
 
 ./src/sys/tests/linter/testValidPointers.c:3:124 Note: 'h' is traceable to argument #8 'h' in enclosing function here:
   1: #include <petsc/private/petscimpl.h>
   2: 
-> 3: PetscErrorCode testValidPointers(void *a, char *b, PetscInt *c, PetscMPIInt *d, PetscInt *e, PetscBool *f, PetscScalar *g, PetscReal *h)
-                                                                                                                                ^^^^^^^^^^^^
+> 3: PetscErrorCode testValidPointers(void *a, char *b, PetscInt *c, PetscMPIInt *d, PetscInt *e, PetscBool *f, PetscScalar *g, [33m[1mPetscReal *h[0m)
+                                                                                                                                [33m[1m^^^^^^^^^^^^[0m
   4: {
   5:   /* incorrect */
-
-ERROR 16: ./src/sys/tests/linter/testValidPointers.c:30:25
-'a' of type 'void *'
+[31m[1m./src/sys/tests/linter/testValidPointers.c:30:3: error:[0m Incorrect use of PetscValidCharPointer(), use PetscValidPointer() instead [-fincompatible-function]:
   28: {
   29:   /* incorrect */
-> 30:   PetscValidCharPointer(a, 2);
-                              ^
+> 30:   [33m[1mPetscValidCharPointer(a, 2)[0m;
+        [33m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
   31:   PetscValidPointer(b, 3);
   32:   PetscValidPointer(c, 4);
 
-Incorrect use of PetscValidCharPointer(), use PetscValidPointer() instead [-fincompatible-function]
-
-ERROR 17: ./src/sys/tests/linter/testValidPointers.c:30:28
-'2' of type 'int'
+./src/sys/tests/linter/testValidPointers.c:30:25 Note: Due to 'a' of type 'void *'
   28: {
   29:   /* incorrect */
-> 30:   PetscValidCharPointer(a, 2);
-                                 ^
+> 30:   PetscValidCharPointer([33m[1ma[0m, 2);
+                              [33m[1m^[0m
   31:   PetscValidPointer(b, 3);
   32:   PetscValidPointer(c, 4);
 
-Argument number doesn't match for 'a'. Expected '1', found '2' [-fmatching-arg-num]
+[31m[1m./src/sys/tests/linter/testValidPointers.c:30:28: error:[0m Argument number doesn't match for 'a'. Expected '1', found '2' [-fmatching-arg-num]:
+  28: {
+  29:   /* incorrect */
+> 30:   PetscValidCharPointer(a, [33m[1m2[0m);
+                                 [33m[1m^[0m
+  31:   PetscValidPointer(b, 3);
+  32:   PetscValidPointer(c, 4);
 
 ./src/sys/tests/linter/testValidPointers.c:27:25 Note: 'a' is traceable to argument #1 'a' in enclosing function here:
   25: }
   26: 
-> 27: void testValidPointers2(void *a, char *b, PetscInt *c, PetscMPIInt *d, PetscInt *e, PetscBool *f, PetscScalar *g, PetscReal *h)
-                              ^^^^^^^
+> 27: void testValidPointers2([33m[1mvoid *a[0m, char *b, PetscInt *c, PetscMPIInt *d, PetscInt *e, PetscBool *f, PetscScalar *g, PetscReal *h)
+                              [33m[1m^^^^^^^[0m
   28: {
   29:   /* incorrect */
-
-ERROR 18: ./src/sys/tests/linter/testValidPointers.c:31:21
-'b' of type 'char *'
+[31m[1m./src/sys/tests/linter/testValidPointers.c:31:3: error:[0m Incorrect use of PetscValidPointer(), use PetscValidCharPointer() instead [-fincompatible-function]:
   29: /* incorrect */
   30: PetscValidCharPointer(a, 2);
-> 31: PetscValidPointer(b, 3);
-                        ^
+> 31: [33m[1mPetscValidPointer(b, 3)[0m;
+      [33m[1m^^^^^^^^^^^^^^^^^^^^^^^[0m
   32: PetscValidPointer(c, 4);
   33: PetscValidPointer(d, 5);
 
-Incorrect use of PetscValidPointer(), use PetscValidCharPointer() instead [-fincompatible-function]
-
-ERROR 19: ./src/sys/tests/linter/testValidPointers.c:31:24
-'3' of type 'int'
+./src/sys/tests/linter/testValidPointers.c:31:21 Note: Due to 'b' of type 'char *'
   29: /* incorrect */
   30: PetscValidCharPointer(a, 2);
-> 31: PetscValidPointer(b, 3);
-                           ^
+> 31: PetscValidPointer([33m[1mb[0m, 3);
+                        [33m[1m^[0m
   32: PetscValidPointer(c, 4);
   33: PetscValidPointer(d, 5);
 
-Argument number doesn't match for 'b'. Expected '2', found '3' [-fmatching-arg-num]
+[31m[1m./src/sys/tests/linter/testValidPointers.c:31:24: error:[0m Argument number doesn't match for 'b'. Expected '2', found '3' [-fmatching-arg-num]:
+  29: /* incorrect */
+  30: PetscValidCharPointer(a, 2);
+> 31: PetscValidPointer(b, [33m[1m3[0m);
+                           [33m[1m^[0m
+  32: PetscValidPointer(c, 4);
+  33: PetscValidPointer(d, 5);
 
 ./src/sys/tests/linter/testValidPointers.c:27:34 Note: 'b' is traceable to argument #2 'b' in enclosing function here:
   25: }
   26: 
-> 27: void testValidPointers2(void *a, char *b, PetscInt *c, PetscMPIInt *d, PetscInt *e, PetscBool *f, PetscScalar *g, PetscReal *h)
-                                       ^^^^^^^
+> 27: void testValidPointers2(void *a, [33m[1mchar *b[0m, PetscInt *c, PetscMPIInt *d, PetscInt *e, PetscBool *f, PetscScalar *g, PetscReal *h)
+                                       [33m[1m^^^^^^^[0m
   28: {
   29:   /* incorrect */
-
-ERROR 20: ./src/sys/tests/linter/testValidPointers.c:32:21
-'c' of type 'PetscInt *' (a.k.a. 'int *')
+[31m[1m./src/sys/tests/linter/testValidPointers.c:32:3: error:[0m Incorrect use of PetscValidPointer(), use PetscValidIntPointer() instead [-fincompatible-function]:
   30: PetscValidCharPointer(a, 2);
   31: PetscValidPointer(b, 3);
-> 32: PetscValidPointer(c, 4);
-                        ^
+> 32: [33m[1mPetscValidPointer(c, 4)[0m;
+      [33m[1m^^^^^^^^^^^^^^^^^^^^^^^[0m
   33: PetscValidPointer(d, 5);
   34: PetscValidPointer(e, 6);
 
-Incorrect use of PetscValidPointer(), use PetscValidIntPointer() instead [-fincompatible-function]
-
-ERROR 21: ./src/sys/tests/linter/testValidPointers.c:32:24
-'4' of type 'int'
+./src/sys/tests/linter/testValidPointers.c:32:21 Note: Due to 'c' of type 'PetscInt *' (a.k.a. 'int *')
   30: PetscValidCharPointer(a, 2);
   31: PetscValidPointer(b, 3);
-> 32: PetscValidPointer(c, 4);
-                           ^
+> 32: PetscValidPointer([33m[1mc[0m, 4);
+                        [33m[1m^[0m
   33: PetscValidPointer(d, 5);
   34: PetscValidPointer(e, 6);
 
-Argument number doesn't match for 'c'. Expected '3', found '4' [-fmatching-arg-num]
+[31m[1m./src/sys/tests/linter/testValidPointers.c:32:24: error:[0m Argument number doesn't match for 'c'. Expected '3', found '4' [-fmatching-arg-num]:
+  30: PetscValidCharPointer(a, 2);
+  31: PetscValidPointer(b, 3);
+> 32: PetscValidPointer(c, [33m[1m4[0m);
+                           [33m[1m^[0m
+  33: PetscValidPointer(d, 5);
+  34: PetscValidPointer(e, 6);
 
 ./src/sys/tests/linter/testValidPointers.c:27:43 Note: 'c' is traceable to argument #3 'c' in enclosing function here:
   25: }
   26: 
-> 27: void testValidPointers2(void *a, char *b, PetscInt *c, PetscMPIInt *d, PetscInt *e, PetscBool *f, PetscScalar *g, PetscReal *h)
-                                                ^^^^^^^^^^^
+> 27: void testValidPointers2(void *a, char *b, [33m[1mPetscInt *c[0m, PetscMPIInt *d, PetscInt *e, PetscBool *f, PetscScalar *g, PetscReal *h)
+                                                [33m[1m^^^^^^^^^^^[0m
   28: {
   29:   /* incorrect */
-
-ERROR 22: ./src/sys/tests/linter/testValidPointers.c:33:21
-'d' of type 'PetscMPIInt *' (a.k.a. 'int *')
+[31m[1m./src/sys/tests/linter/testValidPointers.c:33:3: error:[0m Incorrect use of PetscValidPointer(), use PetscValidIntPointer() instead [-fincompatible-function]:
   31: PetscValidPointer(b, 3);
   32: PetscValidPointer(c, 4);
-> 33: PetscValidPointer(d, 5);
-                        ^
+> 33: [33m[1mPetscValidPointer(d, 5)[0m;
+      [33m[1m^^^^^^^^^^^^^^^^^^^^^^^[0m
   34: PetscValidPointer(e, 6);
   35: PetscValidPointer(f, 7);
 
-Incorrect use of PetscValidPointer(), use PetscValidIntPointer() instead [-fincompatible-function]
-
-ERROR 23: ./src/sys/tests/linter/testValidPointers.c:33:24
-'5' of type 'int'
+./src/sys/tests/linter/testValidPointers.c:33:21 Note: Due to 'd' of type 'PetscMPIInt *' (a.k.a. 'int *')
   31: PetscValidPointer(b, 3);
   32: PetscValidPointer(c, 4);
-> 33: PetscValidPointer(d, 5);
-                           ^
+> 33: PetscValidPointer([33m[1md[0m, 5);
+                        [33m[1m^[0m
   34: PetscValidPointer(e, 6);
   35: PetscValidPointer(f, 7);
 
-Argument number doesn't match for 'd'. Expected '4', found '5' [-fmatching-arg-num]
+[31m[1m./src/sys/tests/linter/testValidPointers.c:33:24: error:[0m Argument number doesn't match for 'd'. Expected '4', found '5' [-fmatching-arg-num]:
+  31: PetscValidPointer(b, 3);
+  32: PetscValidPointer(c, 4);
+> 33: PetscValidPointer(d, [33m[1m5[0m);
+                           [33m[1m^[0m
+  34: PetscValidPointer(e, 6);
+  35: PetscValidPointer(f, 7);
 
 ./src/sys/tests/linter/testValidPointers.c:27:56 Note: 'd' is traceable to argument #4 'd' in enclosing function here:
   25: }
   26: 
-> 27: void testValidPointers2(void *a, char *b, PetscInt *c, PetscMPIInt *d, PetscInt *e, PetscBool *f, PetscScalar *g, PetscReal *h)
-                                                             ^^^^^^^^^^^^^^
+> 27: void testValidPointers2(void *a, char *b, PetscInt *c, [33m[1mPetscMPIInt *d[0m, PetscInt *e, PetscBool *f, PetscScalar *g, PetscReal *h)
+                                                             [33m[1m^^^^^^^^^^^^^^[0m
   28: {
   29:   /* incorrect */
-
-ERROR 24: ./src/sys/tests/linter/testValidPointers.c:34:21
-'e' of type 'PetscInt *' (a.k.a. 'int *')
+[31m[1m./src/sys/tests/linter/testValidPointers.c:34:3: error:[0m Incorrect use of PetscValidPointer(), use PetscValidIntPointer() instead [-fincompatible-function]:
   32: PetscValidPointer(c, 4);
   33: PetscValidPointer(d, 5);
-> 34: PetscValidPointer(e, 6);
-                        ^
+> 34: [33m[1mPetscValidPointer(e, 6)[0m;
+      [33m[1m^^^^^^^^^^^^^^^^^^^^^^^[0m
   35: PetscValidPointer(f, 7);
   36: PetscValidPointer(g, 8);
 
-Incorrect use of PetscValidPointer(), use PetscValidIntPointer() instead [-fincompatible-function]
-
-ERROR 25: ./src/sys/tests/linter/testValidPointers.c:34:24
-'6' of type 'int'
+./src/sys/tests/linter/testValidPointers.c:34:21 Note: Due to 'e' of type 'PetscInt *' (a.k.a. 'int *')
   32: PetscValidPointer(c, 4);
   33: PetscValidPointer(d, 5);
-> 34: PetscValidPointer(e, 6);
-                           ^
+> 34: PetscValidPointer([33m[1me[0m, 6);
+                        [33m[1m^[0m
   35: PetscValidPointer(f, 7);
   36: PetscValidPointer(g, 8);
 
-Argument number doesn't match for 'e'. Expected '5', found '6' [-fmatching-arg-num]
+[31m[1m./src/sys/tests/linter/testValidPointers.c:34:24: error:[0m Argument number doesn't match for 'e'. Expected '5', found '6' [-fmatching-arg-num]:
+  32: PetscValidPointer(c, 4);
+  33: PetscValidPointer(d, 5);
+> 34: PetscValidPointer(e, [33m[1m6[0m);
+                           [33m[1m^[0m
+  35: PetscValidPointer(f, 7);
+  36: PetscValidPointer(g, 8);
 
 ./src/sys/tests/linter/testValidPointers.c:27:72 Note: 'e' is traceable to argument #5 'e' in enclosing function here:
   25: }
   26: 
-> 27: void testValidPointers2(void *a, char *b, PetscInt *c, PetscMPIInt *d, PetscInt *e, PetscBool *f, PetscScalar *g, PetscReal *h)
-                                                                             ^^^^^^^^^^^
+> 27: void testValidPointers2(void *a, char *b, PetscInt *c, PetscMPIInt *d, [33m[1mPetscInt *e[0m, PetscBool *f, PetscScalar *g, PetscReal *h)
+                                                                             [33m[1m^^^^^^^^^^^[0m
   28: {
   29:   /* incorrect */
-
-ERROR 26: ./src/sys/tests/linter/testValidPointers.c:35:21
-'f' of type 'PetscBool *'
+[31m[1m./src/sys/tests/linter/testValidPointers.c:35:3: error:[0m Incorrect use of PetscValidPointer(), use PetscValidBoolPointer() instead [-fincompatible-function]:
   33: PetscValidPointer(d, 5);
   34: PetscValidPointer(e, 6);
-> 35: PetscValidPointer(f, 7);
-                        ^
+> 35: [33m[1mPetscValidPointer(f, 7)[0m;
+      [33m[1m^^^^^^^^^^^^^^^^^^^^^^^[0m
   36: PetscValidPointer(g, 8);
   37: PetscValidPointer(h, 9);
 
-Incorrect use of PetscValidPointer(), use PetscValidBoolPointer() instead [-fincompatible-function]
-
-ERROR 27: ./src/sys/tests/linter/testValidPointers.c:35:24
-'7' of type 'int'
+./src/sys/tests/linter/testValidPointers.c:35:21 Note: Due to 'f' of type 'PetscBool *'
   33: PetscValidPointer(d, 5);
   34: PetscValidPointer(e, 6);
-> 35: PetscValidPointer(f, 7);
-                           ^
+> 35: PetscValidPointer([33m[1mf[0m, 7);
+                        [33m[1m^[0m
   36: PetscValidPointer(g, 8);
   37: PetscValidPointer(h, 9);
 
-Argument number doesn't match for 'f'. Expected '6', found '7' [-fmatching-arg-num]
+[31m[1m./src/sys/tests/linter/testValidPointers.c:35:24: error:[0m Argument number doesn't match for 'f'. Expected '6', found '7' [-fmatching-arg-num]:
+  33: PetscValidPointer(d, 5);
+  34: PetscValidPointer(e, 6);
+> 35: PetscValidPointer(f, [33m[1m7[0m);
+                           [33m[1m^[0m
+  36: PetscValidPointer(g, 8);
+  37: PetscValidPointer(h, 9);
 
 ./src/sys/tests/linter/testValidPointers.c:27:85 Note: 'f' is traceable to argument #6 'f' in enclosing function here:
   25: }
   26: 
-> 27: void testValidPointers2(void *a, char *b, PetscInt *c, PetscMPIInt *d, PetscInt *e, PetscBool *f, PetscScalar *g, PetscReal *h)
-                                                                                          ^^^^^^^^^^^^
+> 27: void testValidPointers2(void *a, char *b, PetscInt *c, PetscMPIInt *d, PetscInt *e, [33m[1mPetscBool *f[0m, PetscScalar *g, PetscReal *h)
+                                                                                          [33m[1m^^^^^^^^^^^^[0m
   28: {
   29:   /* incorrect */
-
-ERROR 28: ./src/sys/tests/linter/testValidPointers.c:36:21
-'g' of type 'PetscScalar *' (a.k.a. 'double *')
+[31m[1m./src/sys/tests/linter/testValidPointers.c:36:3: error:[0m Incorrect use of PetscValidPointer(), use PetscValidScalarPointer() instead [-fincompatible-function]:
   34: PetscValidPointer(e, 6);
   35: PetscValidPointer(f, 7);
-> 36: PetscValidPointer(g, 8);
-                        ^
+> 36: [33m[1mPetscValidPointer(g, 8)[0m;
+      [33m[1m^^^^^^^^^^^^^^^^^^^^^^^[0m
   37: PetscValidPointer(h, 9);
   38: 
 
-Incorrect use of PetscValidPointer(), use PetscValidScalarPointer() instead [-fincompatible-function]
-
-ERROR 29: ./src/sys/tests/linter/testValidPointers.c:36:24
-'8' of type 'int'
+./src/sys/tests/linter/testValidPointers.c:36:21 Note: Due to 'g' of type 'PetscScalar *' (a.k.a. 'double *')
   34: PetscValidPointer(e, 6);
   35: PetscValidPointer(f, 7);
-> 36: PetscValidPointer(g, 8);
-                           ^
+> 36: PetscValidPointer([33m[1mg[0m, 8);
+                        [33m[1m^[0m
   37: PetscValidPointer(h, 9);
   38: 
 
-Argument number doesn't match for 'g'. Expected '7', found '8' [-fmatching-arg-num]
+[31m[1m./src/sys/tests/linter/testValidPointers.c:36:24: error:[0m Argument number doesn't match for 'g'. Expected '7', found '8' [-fmatching-arg-num]:
+  34: PetscValidPointer(e, 6);
+  35: PetscValidPointer(f, 7);
+> 36: PetscValidPointer(g, [33m[1m8[0m);
+                           [33m[1m^[0m
+  37: PetscValidPointer(h, 9);
+  38: 
 
 ./src/sys/tests/linter/testValidPointers.c:27:99 Note: 'g' is traceable to argument #7 'g' in enclosing function here:
   25: }
   26: 
-> 27: void testValidPointers2(void *a, char *b, PetscInt *c, PetscMPIInt *d, PetscInt *e, PetscBool *f, PetscScalar *g, PetscReal *h)
-                                                                                                        ^^^^^^^^^^^^^^
+> 27: void testValidPointers2(void *a, char *b, PetscInt *c, PetscMPIInt *d, PetscInt *e, PetscBool *f, [33m[1mPetscScalar *g[0m, PetscReal *h)
+                                                                                                        [33m[1m^^^^^^^^^^^^^^[0m
   28: {
   29:   /* incorrect */
-
-ERROR 30: ./src/sys/tests/linter/testValidPointers.c:37:21
-'h' of type 'PetscReal *' (a.k.a. 'double *')
+[31m[1m./src/sys/tests/linter/testValidPointers.c:37:3: error:[0m Incorrect use of PetscValidPointer(), use PetscValidRealPointer() instead [-fincompatible-function]:
   35: PetscValidPointer(f, 7);
   36: PetscValidPointer(g, 8);
-> 37: PetscValidPointer(h, 9);
-                        ^
+> 37: [33m[1mPetscValidPointer(h, 9)[0m;
+      [33m[1m^^^^^^^^^^^^^^^^^^^^^^^[0m
   38: 
   39: /* correct */
 
-Incorrect use of PetscValidPointer(), use PetscValidRealPointer() instead [-fincompatible-function]
-
-ERROR 31: ./src/sys/tests/linter/testValidPointers.c:37:24
-'9' of type 'int'
+./src/sys/tests/linter/testValidPointers.c:37:21 Note: Due to 'h' of type 'PetscReal *' (a.k.a. 'double *')
   35: PetscValidPointer(f, 7);
   36: PetscValidPointer(g, 8);
-> 37: PetscValidPointer(h, 9);
-                           ^
+> 37: PetscValidPointer([33m[1mh[0m, 9);
+                        [33m[1m^[0m
   38: 
   39: /* correct */
 
-Argument number doesn't match for 'h'. Expected '8', found '9' [-fmatching-arg-num]
+[31m[1m./src/sys/tests/linter/testValidPointers.c:37:24: error:[0m Argument number doesn't match for 'h'. Expected '8', found '9' [-fmatching-arg-num]:
+  35: PetscValidPointer(f, 7);
+  36: PetscValidPointer(g, 8);
+> 37: PetscValidPointer(h, [33m[1m9[0m);
+                           [33m[1m^[0m
+  38: 
+  39: /* correct */
 
 ./src/sys/tests/linter/testValidPointers.c:27:115 Note: 'h' is traceable to argument #8 'h' in enclosing function here:
   25: }
   26: 
-> 27: void testValidPointers2(void *a, char *b, PetscInt *c, PetscMPIInt *d, PetscInt *e, PetscBool *f, PetscScalar *g, PetscReal *h)
-                                                                                                                        ^^^^^^^^^^^^
+> 27: void testValidPointers2(void *a, char *b, PetscInt *c, PetscMPIInt *d, PetscInt *e, PetscBool *f, PetscScalar *g, [33m[1mPetscReal *h[0m)
+                                                                                                                        [33m[1m^^^^^^^^^^^^[0m
   28: {
   29:   /* incorrect */
-
-ERROR 32: ./src/sys/tests/linter/testValidPointers.c:54:25
-'a' of type 'void **'
+[31m[1m./src/sys/tests/linter/testValidPointers.c:54:3: error:[0m Incorrect use of PetscValidCharPointer(), use PetscValidPointer() instead [-fincompatible-function]:
   52: {
   53:   /* incorrect */
-> 54:   PetscValidCharPointer(a, 1);
-                              ^
+> 54:   [33m[1mPetscValidCharPointer(a, 1)[0m;
+        [33m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
   55:   PetscValidCharPointer(b, 2);
   56:   PetscValidIntPointer(c, 3);
 
-Incorrect use of PetscValidCharPointer(), use PetscValidPointer() instead [-fincompatible-function]
+./src/sys/tests/linter/testValidPointers.c:54:25 Note: Due to 'a' of type 'void **'
+  52: {
+  53:   /* incorrect */
+> 54:   PetscValidCharPointer([33m[1ma[0m, 1);
+                              [33m[1m^[0m
+  55:   PetscValidCharPointer(b, 2);
+  56:   PetscValidIntPointer(c, 3);
 
-ERROR 33: ./src/sys/tests/linter/testValidPointers.c:55:25
-'b' of type 'char **'
+[31m[1m./src/sys/tests/linter/testValidPointers.c:55:3: error:[0m Incorrect use of PetscValidCharPointer(), use PetscValidPointer() instead [-fincompatible-function]:
   53: /* incorrect */
   54: PetscValidCharPointer(a, 1);
-> 55: PetscValidCharPointer(b, 2);
-                            ^
+> 55: [33m[1mPetscValidCharPointer(b, 2)[0m;
+      [33m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
   56: PetscValidIntPointer(c, 3);
   57: PetscValidIntPointer(d, 4);
 
-Incorrect use of PetscValidCharPointer(), use PetscValidPointer() instead [-fincompatible-function]
+./src/sys/tests/linter/testValidPointers.c:55:25 Note: Due to 'b' of type 'char **'
+  53: /* incorrect */
+  54: PetscValidCharPointer(a, 1);
+> 55: PetscValidCharPointer([33m[1mb[0m, 2);
+                            [33m[1m^[0m
+  56: PetscValidIntPointer(c, 3);
+  57: PetscValidIntPointer(d, 4);
 
-ERROR 34: ./src/sys/tests/linter/testValidPointers.c:56:24
-'c' of type 'PetscInt **' (a.k.a. 'int **')
+[31m[1m./src/sys/tests/linter/testValidPointers.c:56:3: error:[0m Incorrect use of PetscValidIntPointer(), use PetscValidPointer() instead [-fincompatible-function]:
   54: PetscValidCharPointer(a, 1);
   55: PetscValidCharPointer(b, 2);
-> 56: PetscValidIntPointer(c, 3);
-                           ^
+> 56: [33m[1mPetscValidIntPointer(c, 3)[0m;
+      [33m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
   57: PetscValidIntPointer(d, 4);
   58: PetscValidIntPointer(e, 5);
 
-Incorrect use of PetscValidIntPointer(), use PetscValidPointer() instead [-fincompatible-function]
+./src/sys/tests/linter/testValidPointers.c:56:24 Note: Due to 'c' of type 'PetscInt **' (a.k.a. 'int **')
+  54: PetscValidCharPointer(a, 1);
+  55: PetscValidCharPointer(b, 2);
+> 56: PetscValidIntPointer([33m[1mc[0m, 3);
+                           [33m[1m^[0m
+  57: PetscValidIntPointer(d, 4);
+  58: PetscValidIntPointer(e, 5);
 
-ERROR 35: ./src/sys/tests/linter/testValidPointers.c:57:24
-'d' of type 'PetscMPIInt **' (a.k.a. 'int **')
+[31m[1m./src/sys/tests/linter/testValidPointers.c:57:3: error:[0m Incorrect use of PetscValidIntPointer(), use PetscValidPointer() instead [-fincompatible-function]:
   55: PetscValidCharPointer(b, 2);
   56: PetscValidIntPointer(c, 3);
-> 57: PetscValidIntPointer(d, 4);
-                           ^
+> 57: [33m[1mPetscValidIntPointer(d, 4)[0m;
+      [33m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
   58: PetscValidIntPointer(e, 5);
   59: PetscValidBoolPointer(f, 6);
 
-Incorrect use of PetscValidIntPointer(), use PetscValidPointer() instead [-fincompatible-function]
+./src/sys/tests/linter/testValidPointers.c:57:24 Note: Due to 'd' of type 'PetscMPIInt **' (a.k.a. 'int **')
+  55: PetscValidCharPointer(b, 2);
+  56: PetscValidIntPointer(c, 3);
+> 57: PetscValidIntPointer([33m[1md[0m, 4);
+                           [33m[1m^[0m
+  58: PetscValidIntPointer(e, 5);
+  59: PetscValidBoolPointer(f, 6);
 
-ERROR 36: ./src/sys/tests/linter/testValidPointers.c:58:24
-'e' of type 'PetscInt **' (a.k.a. 'int **')
+[31m[1m./src/sys/tests/linter/testValidPointers.c:58:3: error:[0m Incorrect use of PetscValidIntPointer(), use PetscValidPointer() instead [-fincompatible-function]:
   56: PetscValidIntPointer(c, 3);
   57: PetscValidIntPointer(d, 4);
-> 58: PetscValidIntPointer(e, 5);
-                           ^
+> 58: [33m[1mPetscValidIntPointer(e, 5)[0m;
+      [33m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
   59: PetscValidBoolPointer(f, 6);
   60: PetscValidScalarPointer(g, 7);
 
-Incorrect use of PetscValidIntPointer(), use PetscValidPointer() instead [-fincompatible-function]
+./src/sys/tests/linter/testValidPointers.c:58:24 Note: Due to 'e' of type 'PetscInt **' (a.k.a. 'int **')
+  56: PetscValidIntPointer(c, 3);
+  57: PetscValidIntPointer(d, 4);
+> 58: PetscValidIntPointer([33m[1me[0m, 5);
+                           [33m[1m^[0m
+  59: PetscValidBoolPointer(f, 6);
+  60: PetscValidScalarPointer(g, 7);
 
-ERROR 37: ./src/sys/tests/linter/testValidPointers.c:59:25
-'f' of type 'PetscBool **'
+[31m[1m./src/sys/tests/linter/testValidPointers.c:59:3: error:[0m Incorrect use of PetscValidBoolPointer(), use PetscValidPointer() instead [-fincompatible-function]:
   57: PetscValidIntPointer(d, 4);
   58: PetscValidIntPointer(e, 5);
-> 59: PetscValidBoolPointer(f, 6);
-                            ^
+> 59: [33m[1mPetscValidBoolPointer(f, 6)[0m;
+      [33m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
   60: PetscValidScalarPointer(g, 7);
   61: PetscValidRealPointer(h, 8);
 
-Incorrect use of PetscValidBoolPointer(), use PetscValidPointer() instead [-fincompatible-function]
+./src/sys/tests/linter/testValidPointers.c:59:25 Note: Due to 'f' of type 'PetscBool **'
+  57: PetscValidIntPointer(d, 4);
+  58: PetscValidIntPointer(e, 5);
+> 59: PetscValidBoolPointer([33m[1mf[0m, 6);
+                            [33m[1m^[0m
+  60: PetscValidScalarPointer(g, 7);
+  61: PetscValidRealPointer(h, 8);
 
-ERROR 38: ./src/sys/tests/linter/testValidPointers.c:60:27
-'g' of type 'PetscScalar **' (a.k.a. 'double **')
+[31m[1m./src/sys/tests/linter/testValidPointers.c:60:3: error:[0m Incorrect use of PetscValidScalarPointer(), use PetscValidPointer() instead [-fincompatible-function]:
   58: PetscValidIntPointer(e, 5);
   59: PetscValidBoolPointer(f, 6);
-> 60: PetscValidScalarPointer(g, 7);
-                              ^
+> 60: [33m[1mPetscValidScalarPointer(g, 7)[0m;
+      [33m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
   61: PetscValidRealPointer(h, 8);
   62: 
 
-Incorrect use of PetscValidScalarPointer(), use PetscValidPointer() instead [-fincompatible-function]
+./src/sys/tests/linter/testValidPointers.c:60:27 Note: Due to 'g' of type 'PetscScalar **' (a.k.a. 'double **')
+  58: PetscValidIntPointer(e, 5);
+  59: PetscValidBoolPointer(f, 6);
+> 60: PetscValidScalarPointer([33m[1mg[0m, 7);
+                              [33m[1m^[0m
+  61: PetscValidRealPointer(h, 8);
+  62: 
 
-ERROR 39: ./src/sys/tests/linter/testValidPointers.c:61:25
-'h' of type 'PetscReal **' (a.k.a. 'double **')
+[31m[1m./src/sys/tests/linter/testValidPointers.c:61:3: error:[0m Incorrect use of PetscValidRealPointer(), use PetscValidPointer() instead [-fincompatible-function]:
   59: PetscValidBoolPointer(f, 6);
   60: PetscValidScalarPointer(g, 7);
-> 61: PetscValidRealPointer(h, 8);
-                            ^
+> 61: [33m[1mPetscValidRealPointer(h, 8)[0m;
+      [33m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
   62: 
   63: /* correct */
 
-Incorrect use of PetscValidRealPointer(), use PetscValidPointer() instead [-fincompatible-function]
+./src/sys/tests/linter/testValidPointers.c:61:25 Note: Due to 'h' of type 'PetscReal **' (a.k.a. 'double **')
+  59: PetscValidBoolPointer(f, 6);
+  60: PetscValidScalarPointer(g, 7);
+> 61: PetscValidRealPointer([33m[1mh[0m, 8);
+                            [33m[1m^[0m
+  62: 
+  63: /* correct */
+
 --------------------------------------------------------------------------------------------
 <--- LEFT --->

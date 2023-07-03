@@ -26,11 +26,14 @@ def add_function_fix_to_bad_source(linter, obj, func_cursor, valid_func_name):
     c for c in func_cursor.get_children() if c.type.get_pointee().kind == clx.TypeKind.FUNCTIONPROTO
   ]
   assert len(call) == 1
-  mess = f'Incorrect use of {func_cursor.displayname}(), use {valid_func_name}() instead'
-  diag = add_function_fix_to_bad_source.diags.incompatible_function
-  linter.add_error_from_cursor(
-    obj, Diagnostic(diag, mess, obj.extent.start, patch=Patch.from_cursor(call[0], valid_func_name))
+  mess = f'Incorrect use of {func_cursor.displayname}(), use {valid_func_name}() instead:\n{Cursor.get_formatted_source_from_cursor(func_cursor, num_context=2)}'
+  diag = Diagnostic(
+    add_function_fix_to_bad_source.diags.incompatible_function, mess, func_cursor.extent.start,
+    patch=Patch.from_cursor(call[0], valid_func_name)
+  ).add_note(
+    f'Due to {obj.get_formatted_blurb()}', location=obj.extent.start
   )
+  linter.add_error_from_cursor(obj, diag)
   return
 
 def convert_to_correct_PetscValidLogicalCollectiveXXX(linter, obj, obj_type, func_cursor=None, **kwargs):
@@ -150,8 +153,8 @@ def check_MPIInt_is_not_PetscInt(linter, obj, *args, **kwargs):
 )
 def check_is_PetscBool(linter, obj, *args, func_cursor=None, **kwargs):
   if ('PetscBool' not in obj.derivedtypename) and ('bool' not in obj.typename):
-    func_name = func_cursor.displayName
-    mess      = f'Incorrect use of {func_name}(), {func_name}() should only be used for PetscBool or bool'
+    func_name = func_cursor.displayname
+    mess      = f'Incorrect use of {func_name}(), {func_name}() should only be used for PetscBool or bool:{Cursor.get_formatted_source_from_cursor(func_cursor, num_context=2)}'
     linter.add_error_from_cursor(
       obj, Diagnostic(check_is_PetscBool.diags.incompatible_function, mess, obj.extent.start)
     )
@@ -189,7 +192,7 @@ def check_is_petsc_object(linter, obj):
     warning  = False
     diag     = Diagnostic(
       check_is_petsc_object.diags.incompatible_type_petscobject,
-      f'Invalid type \'{typename}\', expected a PetscObject (or derived class):\n{obj_decl.get_formatted_location_string()}\n{obj_decl.formatted(nbefore=1, nafter=2)}',
+      f'Invalid type \'{typename}\', expected a PetscObject (or derived class):\n{obj_decl.formatted(nbefore=1, nafter=2)}',
       obj_decl.extent.start
     )
     if typename.startswith('_p_'):
@@ -222,10 +225,12 @@ def check_matching_classid(linter, obj, obj_classid):
   expected = classid_map[obj.typename]
   name     = obj_classid.name
   if name != expected:
-    mess     = f"Classid doesn't match. Expected '{expected}' found '{name}'"
+    mess     = f"Classid doesn't match. Expected '{expected}' found '{name}':\n{obj_classid.formatted(num_context=2)}"
     diagname = check_matching_classid.diags.incompatible_classid
     diag     = Diagnostic(
-      diagname, mess, obj.extent.start, patch=Patch.from_cursor(obj_classid, expected)
+      diagname, mess, obj_classid.extent.start, patch=Patch.from_cursor(obj_classid, expected)
+    ).add_note(
+      f'For {obj.get_formatted_blurb()}', location=obj.extent.start
     )
     linter.add_error_from_cursor(obj, diag)
   return
@@ -434,7 +439,7 @@ def check_matching_arg_num(linter, obj, idx, parent_args):
   if idx_num != exp_idx:
     diag = Diagnostic(
       diag_name,
-      f"Argument number doesn't match for '{obj.name}'. Expected '{exp_idx}', found '{idx_num}'",
+      f"Argument number doesn't match for '{obj.name}'. Expected '{exp_idx}', found '{idx_num}':\n{idx.formatted(num_context=2)}",
       idx.extent.start, patch=Patch.from_cursor(idx, exp_idx)
     ).add_note(
       f'\'{obj.name}\' is traceable to argument #{exp_idx} \'{expected.name}\' in enclosing function here:\n{expected.formatted(nboth=2)}',

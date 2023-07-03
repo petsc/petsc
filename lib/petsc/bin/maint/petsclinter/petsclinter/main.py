@@ -31,7 +31,7 @@ def main(
     patch_dir=None, apply_patches=False,
     extra_compiler_flags=None, extra_header_includes=None,
     test_output_dir=None, replace_tests=False,
-    werror=False,
+    werror=False
 ):
   """
   entry point for linter

@@ -17,6 +17,8 @@ from ._cursor  import Cursor
 from ._src_pos import SourceRange
 from ._patch   import Patch
 
+from .. import util
+
 class WeakList(list):
   """
   Adaptor class to make builtin lists weakly referenceable
@@ -327,7 +329,6 @@ class Linter:
     """
     return tuple(Cursor(a, i) for i, a in enumerate(func_cursor.get_arguments(), start=1))
 
-
   def clear(self):
     """
     Resets the linter error, warning, and patch buffers.
@@ -402,15 +403,16 @@ class Linter:
     errors    = self.errors[filename]
     cursor_id = cursor.hash
     if cursor_id not in errors:
-      header = f'\nERROR {len(errors)}: {str(cursor)}\n'
-      errors[cursor_id] = WeakList([header, [], [], []])
+      errors[cursor_id] = WeakList([[], [], []])
 
     patch            = diagnostic.patch
     have_patch       = patch is not None
     cursor_id_errors = errors[cursor_id]
-    cursor_id_errors[1].append(diagnostic.format_message())
-    cursor_id_errors[2].append(have_patch)
-    cursor_id_errors[3].append(patch.id if have_patch else -1)
+    cursor_id_errors[0].append(
+      f'{util.color.bright_red()}{diagnostic.location}: error:{util.color.reset()} {diagnostic.format_message()}'
+    )
+    cursor_id_errors[1].append(have_patch)
+    cursor_id_errors[2].append(patch.id if have_patch else -1)
 
     if not have_patch:
       return # bail early
@@ -458,7 +460,7 @@ class Linter:
     for files in reversed(self.errors):
       errors = self.errors[files]
       last   = errors[next(reversed(errors))]
-      pl.sync_print(last[0], last[1][-1])
+      pl.sync_print(last[0][-1])
       break
     return
 
@@ -481,7 +483,7 @@ class Linter:
         return
     except IndexError:
       pass
-    self.warnings.append((filename, f'\nWARNING {len(self.warnings)}: {warn_msg}'))
+    self.warnings.append((filename, f'{util.color.bright_yellow()}{filename}: warning:{util.color.reset()} {warn_msg}'))
     return
 
   def add_warning_from_cursor(self, cursor, diag):
@@ -496,7 +498,7 @@ class Linter:
       return
 
     cursor   = Cursor.cast(cursor)
-    warn_str = f'\nWARNING {len(self.warnings)}: {str(cursor)}\n{diag.format_message()}'
+    warn_str = f'{util.color.bright_yellow()}{diag.location}: warning:{util.color.reset()} {str(cursor)}\n{diag.format_message()}'
     self.warnings.append((cursor.get_file(), warn_str))
     return
 
@@ -507,23 +509,23 @@ class Linter:
     def maybe_add_to_global_list(global_list, local_list, path):
       if local_list:
         global_list.append((
-          path, '{prefix}\n{}\n{prefix}'.format('\n'.join(local_list)[1:], prefix=self.err_prefix)
+          path, '{prefix}\n{}\n{prefix}'.format('\n'.join(local_list), prefix=self.err_prefix)
         ))
       return
 
-    def maybe_add_to_local_list(local_list, thing, mask, header):
+    def maybe_add_to_local_list(local_list, thing, mask):
       string = '\n\n'.join(itertools.compress(thing, mask))
       if string:
-        local_list.append(f'{header}{string}')
+        local_list.append(string)
       return
 
 
     all_unresolved, all_resolved = [], []
     for path, errors in self.errors.items():
       unresolved, resolved = [], []
-      for header, errs, mask, _ in errors.values():
-        maybe_add_to_local_list(resolved, errs, mask, header)
-        maybe_add_to_local_list(unresolved, errs, [not m for m in mask], header)
+      for errs, mask, _ in errors.values():
+        maybe_add_to_local_list(resolved, errs, mask)
+        maybe_add_to_local_list(unresolved, errs, [not m for m in mask])
       maybe_add_to_global_list(all_unresolved, unresolved, path)
       maybe_add_to_global_list(all_resolved, resolved, path)
     return all_unresolved, all_resolved
