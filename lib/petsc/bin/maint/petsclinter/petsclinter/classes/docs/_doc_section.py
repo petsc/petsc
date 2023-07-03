@@ -523,11 +523,9 @@ class FunctionParameterList(ParameterList):
 
     args_left = [name for seen, name in zip(arg_seen, arg_names) if not seen]
     if not_found:
-      diag         = self.diags.parameter_documentation
-      base_message = "Extra docstring parameter '{}' not found in symbol parameter list:\n{}"
+      param_doc_diag = self.diags.parameter_documentation
       for i, (arg, loc) in enumerate(not_found):
-        patch   = None
-        message = base_message.format(arg, loc.formatted(num_context=2))
+        patch = None
         try:
           if (len(args_left) == 1) and (i == len(not_found) - 1):
             # if we only have 1 arg left and 1 wasn't found, chances are they are meant to
@@ -540,13 +538,27 @@ class FunctionParameterList(ParameterList):
           else:
             arg_match = difflib.get_close_matches(arg, args_left, n=1)[0]
         except IndexError:
-          pass
+          # the difflib call failed
+          note_loc = docstring.cursor.extent.start
+          note     = docstring.make_error_message(
+            'Parameter list defined here', crange=docstring.cursor
+          )
         else:
           match_cursor = [c for c in arg_cursors if c.name == arg_match][0]
-          message      = f'{message}\n\nmaybe you meant {match_cursor.get_formatted_blurb()}'
+          note_loc     = match_cursor.extent.start
+          note         = docstring.make_error_message(
+            f'Maybe you meant {match_cursor.get_formatted_blurb()}'
+          )
           args_left.remove(arg_match)
           assert mark_name_as_seen(arg_match) != -1, f'{arg_match=} was not found in {arg_names=}'
-        docstring.add_error_from_diagnostic(Diagnostic(diag, message, loc.start, patch=patch))
+        docstring.add_error_from_diagnostic(
+          docstring.make_diagnostic(
+            param_doc_diag, f"Extra docstring parameter \'{arg}\' not found in symbol parameter list",
+            loc, patch=patch
+          ).add_note(
+            note, location=note_loc
+          )
+        )
 
     undoc_param_diag = self.diags.parameter_documentation
     for arg in args_left:
