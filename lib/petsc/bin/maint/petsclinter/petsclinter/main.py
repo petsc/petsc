@@ -111,23 +111,7 @@ def main(
     petsc_dir, petsc_arch, extra_compiler_flags=extra_compiler_flags, verbose=verbose
   )
 
-  class PrecompiledHeader:
-    __slots__ = ('pch',)
-
-    def __init__(self, *args, **kwargs):
-      self.pch = pl.util.build_precompiled_header(*args, **kwargs)
-      return
-
-    def __enter__(self):
-      return self
-
-    def __exit__(self, *args, **kwargs):
-      if verbose:
-        pl.sync_print('Deleting precompiled header', self.pch)
-        self.pch.unlink()
-      return
-
-  with PrecompiledHeader(
+  with pl.util.PrecompiledHeader.from_flags(
       petsc_dir, compiler_flags, extra_header_includes=extra_header_includes, verbose=verbose
   ):
     warnings, errors_left, errors_fixed, patches = pl.WorkerPool(

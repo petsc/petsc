@@ -158,111 +158,129 @@ def build_compiler_flags(petsc_dir, petsc_arch, extra_compiler_flags=None, verbo
     pl.sync_print('\n'.join(['Compile flags:', *compiler_flags]))
   return compiler_flags
 
-def build_precompiled_header(petsc_dir, compiler_flags, extra_header_includes=None, verbose=False, pch_clang_options=None):
-  """
-  create a precompiled header from petsc.h, and all of the private headers, this not only saves a lot
-  of time, but is critical to finding struct definitions. Header contents are not parsed during the
-  actual linting, since this balloons the parsing time as libclang provides no builtin auto
-  header-precompilation like the normal compiler does.
+class PrecompiledHeader:
+  __slots__ = ('verbose', 'pch')
 
-  Including petsc.h first should define almost everything we need so no side effects from including
-  headers in the wrong order below.
-  """
-  if not isinstance(petsc_dir, pl.Path):
-    petsc_dir = pl.Path(petsc_dir).resolve()
+  def __init__(self, pch, verbose=False):
+    self.pch     = pch
+    self.verbose = verbose
+    return
 
-  if pch_clang_options is None:
-    pch_clang_options = pl.util.base_pch_clang_options
+  def __enter__(self):
+    return self
 
-  if extra_header_includes is None:
-    extra_header_includes = []
+  def __exit__(self, *args, **kwargs):
+    if self.verbose:
+      pl.sync_print('Deleting precompiled header', self.pch)
+      self.pch.unlink()
+    return
 
-  index              = clx.Index.create()
-  precompiled_header = petsc_dir/'include'/'petsc_ast_precompile.pch'
-  mega_header_lines  = [
-    # Kokkos needs to go first since it mucks with complex
-    ('petscvec_kokkos.hpp', '#include <petscvec_kokkos.hpp>'),
-    ('petsc.h',             '#include <petsc.h>')
-  ]
-  private_dir_name = petsc_dir/'include'/'petsc'/'private'
-  mega_header_name = 'mega_header.hpp'
+  @classmethod
+  def from_flags(cls, petsc_dir, compiler_flags, extra_header_includes=None, verbose=False, pch_clang_options=None):
+    """
+    create a precompiled header from petsc.h, and all of the private headers, this not only saves a lot
+    of time, but is critical to finding struct definitions. Header contents are not parsed during the
+    actual linting, since this balloons the parsing time as libclang provides no builtin auto
+    header-precompilation like the normal compiler does.
 
-  # build a megaheader from every header in private first
-  for header in private_dir_name.iterdir():
-    if header.suffix in ('.h', '.hpp'):
-      header_name = header.name
-      mega_header_lines.append((header_name, f'#include <petsc/private/{header_name}>'))
+    Including petsc.h first should define almost everything we need so no side effects from including
+    headers in the wrong order below.
+    """
+    if not isinstance(petsc_dir, pl.Path):
+      petsc_dir = pl.Path(petsc_dir).resolve()
 
-  # loop until we get a completely clean compilation, any problematic headers are discarded
-  while True:
-    mega_header = '\n'.join(hfi for _,hfi in mega_header_lines)+'\n'  # extra newline for last line
-    tu = index.parse(
-      mega_header_name,
-      args=compiler_flags, unsaved_files=[(mega_header_name, mega_header)], options=pch_clang_options
-    )
-    diags = {}
-    for diag in tu.diagnostics:
-      try:
-        filename = diag.location.file.name
-      except AttributeError:
-        # file is None
-        continue
-      basename, filename = os.path.split(filename)
-      if filename not in diags:
-        # save the problematic header name as well as its path (a surprise tool that will
-        # help us later)
-        diags[filename] = (basename,diag)
-    for dirname, diag in tuple(diags.values()):
-      # the reason this is done twice is because as usual libclang hides
-      # everything in children. Suppose you have a primary header A (which might be
-      # include/petsc/private/headerA.h), header B and header C. Header B and C are in
-      # unknown locations and all we know is that Header A includes B which includes C.
-      #
-      # Now suppose header C is missing, meaning that Header A needs to be removed.
-      # libclang isn't gonna tell you that without some elbow grease since that would be
-      # far too easy. Instead it raises the error about header B, so we need to link it
-      # back to header A.
-      if dirname != private_dir_name:
-        # problematic header is NOT in include/petsc/private, so we have a header B on our
-        # hands
-        for child in diag.children:
-          # child of header B here is header A not header C
-          try:
-            filename = child.location.file.name
-          except AttributeError:
-            # file is None
-            continue
-          # filter out our fake header
-          if filename != mega_header_name:
-            # this will be include/petsc/private, headerA.h
-            basename, filename = os.path.split(filename)
-            if filename not in diags:
-              diags[filename] = (basename, diag)
-    if diags:
-      diagerrs = '\n'+'\n'.join(str(d) for _, d in diags.values())
+    if pch_clang_options is None:
+      pch_clang_options = pl.util.base_pch_clang_options
+
+    if extra_header_includes is None:
+      extra_header_includes = []
+
+    index              = clx.Index.create()
+    precompiled_header = petsc_dir/'include'/'petsc_ast_precompile.pch'
+    mega_header_lines  = [
+      # Kokkos needs to go first since it mucks with complex
+      ('petscvec_kokkos.hpp', '#include <petscvec_kokkos.hpp>'),
+      ('petsc.h',             '#include <petsc.h>')
+    ]
+    private_dir_name = petsc_dir/'include'/'petsc'/'private'
+    mega_header_name = 'mega_header.hpp'
+
+    # build a megaheader from every header in private first
+    for header in private_dir_name.iterdir():
+      if header.suffix in ('.h', '.hpp'):
+        header_name = header.name
+        mega_header_lines.append((header_name, f'#include <petsc/private/{header_name}>'))
+
+    # loop until we get a completely clean compilation, any problematic headers are discarded
+    while True:
+      mega_header = '\n'.join(hfi for _,hfi in mega_header_lines)+'\n'  # extra newline for last line
+      tu = index.parse(
+        mega_header_name,
+        args=compiler_flags, unsaved_files=[(mega_header_name, mega_header)], options=pch_clang_options
+      )
+      diags = {}
+      for diag in tu.diagnostics:
+        try:
+          filename = diag.location.file.name
+        except AttributeError:
+          # file is None
+          continue
+        basename, filename = os.path.split(filename)
+        if filename not in diags:
+          # save the problematic header name as well as its path (a surprise tool that will
+          # help us later)
+          diags[filename] = (basename,diag)
+      for dirname, diag in tuple(diags.values()):
+        # the reason this is done twice is because as usual libclang hides
+        # everything in children. Suppose you have a primary header A (which might be
+        # include/petsc/private/headerA.h), header B and header C. Header B and C are in
+        # unknown locations and all we know is that Header A includes B which includes C.
+        #
+        # Now suppose header C is missing, meaning that Header A needs to be removed.
+        # libclang isn't gonna tell you that without some elbow grease since that would be
+        # far too easy. Instead it raises the error about header B, so we need to link it
+        # back to header A.
+        if dirname != private_dir_name:
+          # problematic header is NOT in include/petsc/private, so we have a header B on our
+          # hands
+          for child in diag.children:
+            # child of header B here is header A not header C
+            try:
+              filename = child.location.file.name
+            except AttributeError:
+              # file is None
+              continue
+            # filter out our fake header
+            if filename != mega_header_name:
+              # this will be include/petsc/private, headerA.h
+              basename, filename = os.path.split(filename)
+              if filename not in diags:
+                diags[filename] = (basename, diag)
+      if diags:
+        diagerrs = '\n'+'\n'.join(str(d) for _, d in diags.values())
+        if verbose:
+          pl.sync_print('Included header has errors, removing', diagerrs)
+        mega_header_lines = [(hdr, hfi) for hdr, hfi in mega_header_lines if hdr not in diags]
+      else:
+        break
+    if extra_header_includes:
+      # now include the other headers but this time immediately crash on errors, let the
+      # user figure out their own busted header files
+      mega_header += '\n'.join(extra_header_includes)
       if verbose:
-        pl.sync_print('Included header has errors, removing', diagerrs)
-      mega_header_lines = [(hdr, hfi) for hdr, hfi in mega_header_lines if hdr not in diags]
-    else:
-      break
-  if extra_header_includes:
-    # now include the other headers but this time immediately crash on errors, let the
-    # user figure out their own busted header files
-    mega_header += '\n'.join(extra_header_includes)
-    if verbose:
+        pl.sync_print(f'Mega header:\n{mega_header}')
+      tu = index.parse(
+        mega_header_name,
+        args=compiler_flags, unsaved_files=[(mega_header_name, mega_header)], options=pch_clang_options
+      )
+      if tu.diagnostics:
+        pl.sync_print('\n'.join(map(str, tu.diagnostics)))
+        raise clx.LibclangError('\n\nWarnings or errors generated when creating the precompiled header. This usually means that the provided libclang setup is faulty. If you used the auto-detection mechanism to find libclang then perhaps try specifying the location directly.')
+    elif verbose:
       pl.sync_print(f'Mega header:\n{mega_header}')
-    tu = index.parse(
-      mega_header_name,
-      args=compiler_flags, unsaved_files=[(mega_header_name, mega_header)], options=pch_clang_options
-    )
-    if tu.diagnostics:
-      pl.sync_print('\n'.join(map(str, tu.diagnostics)))
-      raise clx.LibclangError('\n\nWarnings or errors generated when creating the precompiled header. This usually means that the provided libclang setup is faulty. If you used the auto-detection mechanism to find libclang then perhaps try specifying the location directly.')
-  elif verbose:
-    pl.sync_print(f'Mega header:\n{mega_header}')
-  precompiled_header.unlink(missing_ok=True)
-  tu.save(precompiled_header)
-  compiler_flags.extend(['-include-pch', str(precompiled_header)])
-  if verbose:
-    pl.sync_print('Saving precompiled header', precompiled_header)
-  return precompiled_header
+    precompiled_header.unlink(missing_ok=True)
+    tu.save(precompiled_header)
+    compiler_flags.extend(['-include-pch', str(precompiled_header)])
+    if verbose:
+      pl.sync_print('Saving precompiled header', precompiled_header)
+    return cls(precompiled_header, verbose=verbose)
