@@ -99,7 +99,10 @@ def FixDir(petscdir,petscarch,parentdir,dir,verbose):
       cnames.append(f)
     elif ext == '.h90':
       hnames.append(f)
-  if cnames == [] and hnames == []: return
+  if cnames == [] and hnames == []:
+    for filename in [f for f in os.listdir(parentdir) if re.match(r'f90module[0-9]+.f90', f)]:
+      os.remove(os.path.join(parentdir, filename))
+    return
   
   mfile=os.path.abspath(os.path.join(parentdir,'makefile'))
   try:
