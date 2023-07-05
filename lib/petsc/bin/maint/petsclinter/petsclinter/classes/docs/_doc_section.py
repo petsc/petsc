@@ -458,6 +458,9 @@ class FunctionParameterList(ParameterList):
     if self._check_no_args_documented(linter, docstring, arg_cursors):
       return
 
+    if not self:
+      return
+
     def get_recursive_cursor_list(cursor_list):
       new_cursor_list = []
       PARM_DECL_KIND  = clx.CursorKind.PARM_DECL
@@ -473,9 +476,10 @@ class FunctionParameterList(ParameterList):
           )
       return new_cursor_list
 
+    num_groups  = max(self.items.keys(), default=0)
     arg_cursors = get_recursive_cursor_list(arg_cursors)
     arg_names   = [a.name for a in arg_cursors if a.name]
-    arg_seen    = [False] * len(arg_names)
+    arg_seen    = [0] * len(arg_names)
     not_found   = []
 
     def mark_name_as_seen(name):
@@ -487,18 +491,20 @@ class FunctionParameterList(ParameterList):
           idx = arg_names.index(name, idx)
         except ValueError:
           return -1
-        if not arg_seen[idx]:
-          # argument exists and has not been found yet
+        count = arg_seen[idx]
+        if count == 0 or count <= num_groups:
+          # count = 0 -> argument exists and has not been found yet
+          # count <= num_groups -> argument is possibly in-out and is defined in multiple
+          # groups
           break
         # argument exists but has already been claimed
         idx += 1
-      arg_seen[idx] = True
+      arg_seen[idx] += 1
       return idx
 
     solitary_param_diag = self.diags.solitary_parameter
     for _, group in self.items.items():
-      indices = []
-      remove  = set()
+      remove = set()
       for i, (loc, descr_item, _) in enumerate(group):
         arg, sep = descr_item.arg, descr_item.sep
         if sep == ',' or ',' in arg:
@@ -526,7 +532,6 @@ class FunctionParameterList(ParameterList):
             not_found.append((sub, docstring.make_source_range(sub, descr_item.text, loc.start.line)))
             remove.add(i)
           else:
-            indices.append(idx)
             DescribableItem.cast(descr_item, sep='-').check(docstring, self, loc, expected_sep='-')
 
       self.check_aligned_descriptions(docstring, [g for i, g in enumerate(group) if i not in remove])
@@ -574,16 +579,17 @@ class FunctionParameterList(ParameterList):
     for arg in args_left:
       idx = mark_name_as_seen(arg)
       assert idx != -1, f'{arg=} was not found in {arg_names=}'
-      diag = docstring.make_diagnostic(
-        undoc_param_diag, f'Undocumented parameter \'{arg}\' not found in parameter section',
-        self.extent, highlight=False
-      ).add_note(
-        docstring.make_error_message(
-          f'Parameter \'{arg}\' defined here', arg_cursors[idx], num_context=1
-        ),
-        location=arg_cursors[idx].extent.start
+      docstring.add_error_from_diagnostic(
+        docstring.make_diagnostic(
+          undoc_param_diag, f'Undocumented parameter \'{arg}\' not found in parameter section',
+          self.extent, highlight=False
+        ).add_note(
+          docstring.make_error_message(
+            f'Parameter \'{arg}\' defined here', arg_cursors[idx], num_context=1
+          ),
+          location=arg_cursors[idx].extent.start
+        )
       )
-      docstring.add_error_from_diagnostic(diag)
     return
 
   def check(self, linter, cursor, docstring):

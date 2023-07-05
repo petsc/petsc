@@ -341,4 +341,32 @@
 -  Level: dpcrtd (since 3.18.5)
 +  Level: deprecated (since 3.18.5)
  
- .seealso: `testDeprecated()`
+ .seealso: [](ch_matrices), `testDeprecated()`
+@@ -477,5 +477,5 @@
+   Input Parameter:
+ + foo - the input description for an in-out param
+-+ baz - asdasdasd
++. baz - asdasdasd
+ - foo              - a duplicate description
+ 
+@@ -478,5 +478,5 @@
+ + foo - the input description for an in-out param
+ + baz - asdasdasd
+-- foo              - a duplicate description
++- foo - a duplicate description
+ 
+   Output Parameters:
+@@ -481,5 +481,5 @@
+ 
+   Output Parameters:
+-. bop = asdas
+++ bop = asdas
+ - foo    - the output description for an in-out param
+ - foo - a duplicate description2
+@@ -482,5 +482,5 @@
+   Output Parameters:
+ . bop = asdas
+-- foo    - the output description for an in-out param
++. foo    - the output description for an in-out param
+ - foo - a duplicate description2
+ 

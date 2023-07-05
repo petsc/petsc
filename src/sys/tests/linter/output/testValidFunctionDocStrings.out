@@ -736,7 +736,39 @@ Unknown Level subheading 'dpcrtd', assuming you meant 'deprecated' [-fdoc-inline
 > 444:   Level: dpcrtd (since 3.18.5)
                 ^^^^^^
   445: 
-  446: .seealso: `testDeprecated()`
+  446: .seealso: [](ch_matrices), `testDeprecated()`
+
+[31m[1mERROR 18: ./src/sys/tests/linter/testValidFunctionDocStrings.c:476:1:[0m Multi parameter list entry must start with '.' [-fdoc-param-list-prefix]:
+  474:   Input Parameter:
+  475: + foo - the input description for an in-out param
+> 476: + baz - asdasdasd
+       ^
+  477: - foo              - a duplicate description
+  478: 
+
+First multi parameter list entry must start with '+' [-fdoc-param-list-prefix]:
+  478: 
+  479:   Output Parameters:
+> 480: . bop = asdas
+       ^
+  481: - foo    - the output description for an in-out param
+  482: - foo - a duplicate description2
+
+Multi parameter list entry must start with '.' [-fdoc-param-list-prefix]:
+  479:   Output Parameters:
+  480: . bop = asdas
+> 481: - foo    - the output description for an in-out param
+       ^
+  482: - foo - a duplicate description2
+  483: 
+
+Description 'a duplicate description' must be aligned to 1 space from longest (valid) argument 'foo' [-fdoc-param-list-alignment]:
+  475: + foo - the input description for an in-out param
+  476: + baz - asdasdasd
+> 477: - foo              - a duplicate description
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  478: 
+  479:   Output Parameters:
 --------------------------------------------------------------------------------------------
 <--- LEFT --->
 --------------------------------------------------------------------------------------------
@@ -1321,4 +1353,76 @@ Extra docstring parameter 'foo_parm3' not found in symbol parameter list [-fdoc-
          ^^^^^^^^^
   398: 
   399:   Calling sequence of `bar`:
+
+./src/sys/tests/linter/testValidFunctionDocStrings.c:419:1 Note: Parameter list defined here:
+  417: .seealso: `testPredeclarationCursorIgnored()`
+  418: */
+> 419: PetscErrorCode testFunctionPointerArguments(int (*foo)(int, double, float), int (*bar)(int bar_parm1, double bar_parm2, float bar_parm3), void (*baz)(int (*bop)(void), void (*blitz)(void (*)(void)), int baz_parm1, double baz_parm2, float baz_parm3))
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  420: {
+  421:   return 0;
+
+[31m[1mERROR 18: ./src/sys/tests/linter/testValidFunctionDocStrings.c:476:1:[0m Extra docstring parameter 'baz' not found in symbol parameter list [-fdoc-param-list-func-parameter-documentation]:
+  474:   Input Parameter:
+  475: + foo - the input description for an in-out param
+> 476: + baz - asdasdasd
+         ^^^
+  477: - foo              - a duplicate description
+  478: 
+
+./src/sys/tests/linter/testValidFunctionDocStrings.c:488:1 Note: Parameter list defined here:
+  486: .seealso: `testWellFormedFunctionDocString()`
+  487: */
+> 488: PetscErrorCode testInvalidInOutParams(int *foo)
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  489: {
+  490:   return PETSC_SUCCESS;
+
+Extra docstring parameter 'bop' not found in symbol parameter list [-fdoc-param-list-func-parameter-documentation]:
+  478: 
+  479:   Output Parameters:
+> 480: . bop = asdas
+         ^^^
+  481: - foo    - the output description for an in-out param
+  482: - foo - a duplicate description2
+
+./src/sys/tests/linter/testValidFunctionDocStrings.c:488:1 Note: Parameter list defined here:
+  486: .seealso: `testWellFormedFunctionDocString()`
+  487: */
+> 488: PetscErrorCode testInvalidInOutParams(int *foo)
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  489: {
+  490:   return PETSC_SUCCESS;
+
+Extra docstring parameter 'foo' not found in symbol parameter list [-fdoc-param-list-func-parameter-documentation]:
+  479:   Output Parameters:
+  480: . bop = asdas
+> 481: - foo    - the output description for an in-out param
+         ^^^
+  482: - foo - a duplicate description2
+  483: 
+
+./src/sys/tests/linter/testValidFunctionDocStrings.c:488:1 Note: Parameter list defined here:
+  486: .seealso: `testWellFormedFunctionDocString()`
+  487: */
+> 488: PetscErrorCode testInvalidInOutParams(int *foo)
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  489: {
+  490:   return PETSC_SUCCESS;
+
+Extra docstring parameter 'foo' not found in symbol parameter list [-fdoc-param-list-func-parameter-documentation]:
+  480: . bop = asdas
+  481: - foo    - the output description for an in-out param
+> 482: - foo - a duplicate description2
+         ^^^
+  483: 
+  484:   Level: beginner
+
+./src/sys/tests/linter/testValidFunctionDocStrings.c:488:1 Note: Parameter list defined here:
+  486: .seealso: `testWellFormedFunctionDocString()`
+  487: */
+> 488: PetscErrorCode testInvalidInOutParams(int *foo)
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  489: {
+  490:   return PETSC_SUCCESS;
 --------------------------------------------------------------------------------------------

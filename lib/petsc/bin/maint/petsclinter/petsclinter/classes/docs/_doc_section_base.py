@@ -389,7 +389,7 @@ class ParameterList(SectionBase):
     align_diag  = self.diags.alignment
     group_args  = [item.arg for _, item, _ in group]
     lens        = list(map(len, group_args))
-    max_arg_len = max(lens) if lens else 0
+    max_arg_len = max(lens, default=0)
     assert max_arg_len >= 0, f'Negative maximum argument length {max_arg_len}'
     longest_arg = group_args[lens.index(max_arg_len)] if lens else 'NO ARGS'
 
