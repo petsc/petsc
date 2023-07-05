@@ -27,18 +27,18 @@ activated at runtime. The profiling options include the following:
 -  ``-log_view  [:filename]`` - Prints an ASCII version of performance data at
    program’s conclusion. These statistics are comprehensive and concise
    and require little overhead; thus, ``-log_view`` is intended as the
-   primary means of monitoring the performance of PETSc codes.
+   primary means of monitoring the performance of PETSc codes.  See :any:`sec_ploginfo`
 
 -  ``-info [infofile]`` - Prints verbose information about code to
    stdout or an optional file. This option provides details about
    algorithms, data structures, etc. Since the overhead of printing such
    output slows a code, this option should not be used when evaluating a
-   program’s performance.
+   program’s performance. See :any:`sec_PetscInfo`
 
 -  ``-log_trace [logfile]`` - Traces the beginning and ending of all
    PETSc events. This option, which can be used in conjunction with
    ``-info``, is useful to see where a program is hanging without
-   running in the debugger.
+   running in the debugger. See ``PetscLogTraceBegin()``.
 
 As discussed in :any:`sec_mpelogs`, additional profiling
 can be done with MPE.
@@ -524,9 +524,9 @@ and
    PetscLogEventActivateClass(VEC_CLASSID);
    PetscLogEventActivateClass(SNES_CLASSID);
 
-.. _sec_PetscLoginfo:
+.. _sec_PetscInfo:
 
-Interpreting ``-log_info`` Output: Informative Messages
+Interpreting ``-info`` Output: Informative Messages
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Users can activate the printing of verbose information about algorithms,
@@ -536,21 +536,6 @@ throughout the PETSc libraries, can aid the user in understanding
 algorithms and tuning program performance. For example, as discussed in
 :any:`sec_matsparse`, ``-info`` activates the printing of
 information about memory allocation during matrix assembly.
-
-Application programmers can employ this logging as well, by using the
-routine
-
-.. code-block::
-
-   PetscInfo(void* obj,char *message,...)
-
-where ``obj`` is the PETSc object associated most closely with the
-logging statement, ``message``. For example, in the line search Newton
-methods, we use a statement such as
-
-.. code-block::
-
-   PetscInfo(snes,"Cubic step, lambda %g\n",lambda);
 
 One can selectively turn off informative messages about any of the basic
 PETSc objects (e.g., ``Mat``, ``SNES``) with the command
@@ -568,9 +553,35 @@ etc. Messages can be reactivated with the command
 
 Such deactivation can be useful when one wishes to view information
 about higher-level PETSc libraries (e.g., ``TS`` and ``SNES``) without
-seeing all lower level data as well (e.g., ``Mat``). One can deactivate
-events at runtime for matrix and linear solver libraries via
-``-info [no_mat, no_ksp]``.
+seeing all lower level data as well (e.g., ``Mat``).
+
+One can turn on or off logging for particular classes at runtime
+
+.. code-block:: console
+
+   -info [filename][:[~]<list,of,classnames>[:[~]self]]
+
+The ``list,of,classnames`` is a list, separated by commas with no spaces, of classes one wishes to view the information on. For
+example ``vec,ksp``. Information on all other classes will not be displayed. The ~ indicates to not display the list of classes but rather to display all other classes.
+
+``self`` indicates to display information on objects that are associated with ``PETSC_COMM_SELF`` while ``~self`` indicates to display information only for parallel objects.
+
+See ``PetscInfo()`` for links to all the info operations that are available.
+
+Application programmers can log their own messages, as well, by using the
+routine
+
+.. code-block::
+
+   PetscInfo(void* obj,char *message,...)
+
+where ``obj`` is the PETSc object associated most closely with the
+logging statement, ``message``. For example, in the line search Newton
+methods, we use a statement such as
+
+.. code-block::
+
+   PetscInfo(snes,"Cubic step, lambda %g\n",lambda);
 
 Time
 ~~~~
