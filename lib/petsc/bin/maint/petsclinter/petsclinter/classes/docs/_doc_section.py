@@ -417,35 +417,45 @@ class FunctionParameterList(ParameterList):
         docstring.add_error_from_diagnostic(diag)
     return
 
+  def _check_no_args_documented(self, linter, docstring, arg_cursors):
+    """
+    Return True (and log the appropriate error) if no arguments were documented, False otherwise
+    """
+    if arg_cursors and not self:
+      # none of the function arguments are documented
+      docstring.add_error_from_diagnostic(
+        docstring.make_diagnostic(
+          self.diags.parameter_documentation,
+          f'Symbol parameters are all undocumented {Diagnostic.FLAG_SUBST}',
+          docstring.extent, highlight=False
+        ).add_note(
+          docstring.make_error_message(
+            'Parameters defined here',
+            SourceRange.from_locations(arg_cursors[0].extent.start, arg_cursors[-1].extent.end)
+          ),
+          location=arg_cursors[0].extent.start
+        )
+      )
+      return True
+
+    if not arg_cursors and self and len(self.items.values()):
+      # function has no arguments, so check there are no parameter docstrings, if so, we can
+      # delete them
+      docstring.add_error_from_source_range(
+        self.diags.parameter_documentation,
+        f"Found parameter docstring(s) but '{docstring.cursor.displayname}' has no parameters",
+        self.extent,
+        highlight=False, patch=Patch(self.extent, '')
+      )
+      return True
+
+    return False
+
   def _check_valid_param_list_from_cursor(self, linter, docstring, arg_cursors):
     """
     Ensure that the parameter list matches the documented values, and that their order is correct
     """
-    if arg_cursors and not self:
-      # none of the function arguments are documented
-      diag = docstring.make_diagnostic(
-        self.diags.parameter_documentation,
-        f'Symbol parameters are all undocumented {Diagnostic.FLAG_SUBST}',
-        docstring.extent, highlight=False
-      ).add_note(
-        docstring.make_error_message(
-          'Parameters defined here',
-          SourceRange.from_locations(arg_cursors[0].extent.start, arg_cursors[-1].extent.end)
-        ),
-        location=arg_cursors[0].extent.start
-      )
-      docstring.add_error_from_diagnostic(diag)
-      return
-
-    if not arg_cursors:
-      # function has no arguments, so check there are no parameter docstrings, if so, we can
-      # delete them
-      if self and len(self.items.values()):
-        mess = f"Found parameter docstring(s) but '{docstring.cursor.displayname}' has no parameters"
-        docstring.add_error_from_source_range(
-          self.diags.parameter_documentation, mess, self.extent,
-          highlight=False, patch=Patch(self.extent, '')
-        )
+    if self._check_no_args_documented(linter, docstring, arg_cursors):
       return
 
     def get_recursive_cursor_list(cursor_list):
