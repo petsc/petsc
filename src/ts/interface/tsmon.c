@@ -186,7 +186,7 @@ PetscErrorCode TSMonitorCancel(TS ts)
   This is not called directly by users, rather one calls `TSMonitorSet()`, with this function as an argument, to cause the monitor
   to be used during the `TS` integration.
 
-.seealso: [](ch_ts), `TSMonitorSet()`, `TSDMSwarmMonitorMoments()`, `TSMonitorExtreme()`, `TSMonitorDrawSolution()`,
+.seealso: [](ch_ts), `TSMonitorSet()`, `TSDMSwarmMonitorMoments()`, `TSMonitorWallClockTime()`, `TSMonitorExtreme()`, `TSMonitorDrawSolution()`,
           `TSMonitorDrawSolutionPhase()`, `TSMonitorDrawSolutionFunction()`, `TSMonitorDrawError()`, `TSMonitorSolution()`, `TSMonitorSolutionVTK()`,
           `TSMonitorLGSolution()`, `TSMonitorLGError()`, `TSMonitorSPSwarmSolution()`, `TSMonitorError()`, `TSMonitorEnvelope()`
 @*/
@@ -223,6 +223,95 @@ PetscErrorCode TSMonitorDefault(TS ts, PetscInt step, PetscReal ptime, Vec v, Pe
     }
   }
   PetscCall(PetscViewerPopFormat(viewer));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+typedef struct {
+  PetscLogDouble time_start;
+  PetscLogDouble time_last;
+  PetscInt       snes_its;
+  PetscInt       ksp_its;
+} *TSMonitorWallClockTimeContext;
+
+/*@C
+  TSMonitorWallClockTimeSetUp - Setup routine passed to `TSMonitorSetFromOptions()` when using `-ts_monitor_wall_clock_time`
+
+  Input Parameters:
++ ts - the `TS` context
+- vf - the viewer and format
+
+  Level: intermediate
+
+  Note:
+  This is not called directly by users, rather one calls `TSMonitorSetFromOptions()`, with `TSMonitorWallClockTime()` and this function as arguments, to cause the monitor
+  to be used during the `TS` integration.
+
+.seealso: [](ch_ts), `TSMonitorSet()`
+@*/
+PetscErrorCode TSMonitorWallClockTimeSetUp(TS ts, PetscViewerAndFormat *vf)
+{
+  TSMonitorWallClockTimeContext speed;
+
+  PetscFunctionBegin;
+  PetscCall(PetscNew(&speed));
+  speed->time_start = PETSC_DECIDE;
+  vf->data_destroy  = PetscCtxDestroyDefault;
+  vf->data          = speed;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@C
+  TSMonitorWallClockTime - Monitor wall-clock time, KSP iterations, and SNES iterations per step.
+
+  Input Parameters:
++ ts    - the `TS` context
+. step  - iteration number (after the final time step the monitor routine may be called with a step of -1, this indicates the solution has been interpolated to this time)
+. ptime - current time
+. v     - current solution
+- vf    - the viewer and format
+
+  Options Database Key:
+. -ts_monitor_wall_clock_time - Monitor wall-clock time, KSP iterations, and SNES iterations per step.
+
+  Level: intermediate
+
+  Note:
+  This is not called directly by users, rather one calls `TSMonitorSetFromOptions()`, with this function and `TSMonitorWallClockTimeSetUp()` as arguments, to cause the monitor
+  to be used during the `TS` integration.
+
+.seealso: [](ch_ts), `TSMonitorSet()`, `TSMonitorDefault()`, `TSMonitorExtreme()`, `TSMonitorDrawSolution()`,
+          `TSMonitorDrawSolutionPhase()`, `TSMonitorDrawSolutionFunction()`, `TSMonitorDrawError()`, `TSMonitorSolution()`, `TSMonitorSolutionVTK()`,
+          `TSMonitorLGSolution()`, `TSMonitorLGError()`, `TSMonitorSPSwarmSolution()`, `TSMonitorError()`, `TSMonitorEnvelope()`, `TSDMSwarmMonitorMoments()`
+@*/
+PetscErrorCode TSMonitorWallClockTime(TS ts, PetscInt step, PetscReal ptime, Vec v, PetscViewerAndFormat *vf)
+{
+  PetscViewer                   viewer = vf->viewer;
+  TSMonitorWallClockTimeContext speed  = (TSMonitorWallClockTimeContext)vf->data;
+  PetscBool                     iascii;
+  PetscLogDouble                now;
+  PetscInt                      snes_its, ksp_its;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 5);
+  PetscCall(PetscTime(&now));
+  if (speed->time_start == PETSC_DECIDE) {
+    speed->time_start = now;
+    speed->time_last  = now;
+  }
+  PetscCall(TSGetSNESIterations(ts, &snes_its));
+  PetscCall(TSGetKSPIterations(ts, &ksp_its));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
+  PetscCall(PetscViewerPushFormat(viewer, vf->format));
+  if (iascii) {
+    PetscCall(PetscViewerASCIIAddTab(viewer, ((PetscObject)ts)->tablevel));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "%" PetscInt_FMT " TS dt %g time %g%s elapsed %.6f of %.6f snes %" PetscInt_FMT " ksp %" PetscInt_FMT "\n", step, (double)ts->time_step, (double)ptime, ts->steprollback ? " (r)" : "", now - speed->time_last,
+                                     now - speed->time_start, snes_its - speed->snes_its, ksp_its - speed->ksp_its));
+    PetscCall(PetscViewerASCIISubtractTab(viewer, ((PetscObject)ts)->tablevel));
+  }
+  PetscCall(PetscViewerPopFormat(viewer));
+  speed->time_last = now;
+  speed->snes_its  = snes_its;
+  speed->ksp_its   = ksp_its;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
