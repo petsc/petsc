@@ -115,7 +115,7 @@ int main(int argc, char **argv)
   if (use_monitor) {
     /* create graphics windows */
     PetscCall(PetscViewerDrawOpen(PETSC_COMM_WORLD, 0, "u_lambda - state variables and Lagrange multipliers", -1, -1, -1, -1, &user.u_lambda_viewer));
-    PetscCall(PetscViewerDrawOpen(PETSC_COMM_WORLD, 0, "fu_lambda - derivate w.r.t. state variables and Lagrange multipliers", -1, -1, -1, -1, &user.fu_lambda_viewer));
+    PetscCall(PetscViewerDrawOpen(PETSC_COMM_WORLD, 0, "fu_lambda - derivative w.r.t. state variables and Lagrange multipliers", -1, -1, -1, -1, &user.fu_lambda_viewer));
     PetscCall(SNESMonitorSet(snes, Monitor, 0, 0));
   }
 

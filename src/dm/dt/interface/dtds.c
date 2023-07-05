@@ -1267,6 +1267,50 @@ PetscErrorCode PetscDSSetJetDegree(PetscDS ds, PetscInt f, PetscInt k)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@C
+  PetscDSGetObjective - Get the pointwise objective function for a given test field
+
+  Not Collective
+
+  Input Parameters:
++ ds - The `PetscDS`
+- f  - The test field number
+
+  Output Parameters:
+. obj - integrand for the test function term
+
+  Calling sequence of `obj`:
+.vb
+  void f0(PetscInt dim, PetscInt Nf, PetscInt NfAux,
+          const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
+          const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
+          PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar obj[])
+.ve
++ dim - the spatial dimension
+. Nf - the number of fields
+. uOff - the offset into u[] and u_t[] for each field
+. uOff_x - the offset into u_x[] for each field
+. u - each field evaluated at the current point
+. u_t - the time derivative of each field evaluated at the current point
+. u_x - the gradient of each field evaluated at the current point
+. aOff - the offset into a[] and a_t[] for each auxiliary field
+. aOff_x - the offset into a_x[] for each auxiliary field
+. a - each auxiliary field evaluated at the current point
+. a_t - the time derivative of each auxiliary field evaluated at the current point
+. a_x - the gradient of auxiliary each field evaluated at the current point
+. t - current time
+. x - coordinates of the current point
+. numConstants - number of constant parameters
+. constants - constant parameters
+- obj - output values at the current point
+
+  Level: intermediate
+
+  Note:
+  We are using a first order FEM model for the weak form:  \int_\Omega \phi obj(u, u_t, \nabla u, x, t)
+
+.seealso: `PetscDS`, `PetscDSSetObjective()`, `PetscDSGetResidual()`
+@*/
 PetscErrorCode PetscDSGetObjective(PetscDS ds, PetscInt f, void (**obj)(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar obj[]))
 {
   PetscPointFunc *tmp;
@@ -1281,6 +1325,48 @@ PetscErrorCode PetscDSGetObjective(PetscDS ds, PetscInt f, void (**obj)(PetscInt
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@C
+  PetscDSSetObjective - Set the pointwise objective function for a given test field
+
+  Not Collective
+
+  Input Parameters:
++ ds  - The `PetscDS`
+. f   - The test field number
+- obj - integrand for the test function term
+
+  Calling sequence of `obj`:
+.vb
+  void f0(PetscInt dim, PetscInt Nf, PetscInt NfAux,
+          const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
+          const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
+          PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar obj[])
+.ve
++ dim - the spatial dimension
+. Nf - the number of fields
+. uOff - the offset into u[] and u_t[] for each field
+. uOff_x - the offset into u_x[] for each field
+. u - each field evaluated at the current point
+. u_t - the time derivative of each field evaluated at the current point
+. u_x - the gradient of each field evaluated at the current point
+. aOff - the offset into a[] and a_t[] for each auxiliary field
+. aOff_x - the offset into a_x[] for each auxiliary field
+. a - each auxiliary field evaluated at the current point
+. a_t - the time derivative of each auxiliary field evaluated at the current point
+. a_x - the gradient of auxiliary each field evaluated at the current point
+. t - current time
+. x - coordinates of the current point
+. numConstants - number of constant parameters
+. constants - constant parameters
+- obj - output values at the current point
+
+  Level: intermediate
+
+  Note:
+  We are using a first order FEM model for the weak form:  \int_\Omega \phi obj(u, u_t, \nabla u, x, t)
+
+.seealso: `PetscDS`, `PetscDSGetObjective()`, `PetscDSSetResidual()`
+@*/
 PetscErrorCode PetscDSSetObjective(PetscDS ds, PetscInt f, void (*obj)(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar obj[]))
 {
   PetscFunctionBegin;
@@ -1309,7 +1395,7 @@ PetscErrorCode PetscDSSetObjective(PetscDS ds, PetscInt f, void (*obj)(PetscInt 
   void f0(PetscInt dim, PetscInt Nf, PetscInt NfAux,
           const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
           const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-          PetscReal t, const PetscReal x[], PetscScalar f0[])
+          PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
 .ve
 + dim - the spatial dimension
 . Nf - the number of fields

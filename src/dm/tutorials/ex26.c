@@ -37,7 +37,7 @@ int main(int argc, char **argv)
     h          = gsl_sf_hermite(n - 1, (double)zeros[s]);
     weights[s] = scale / (h * h);
   }
-  /* zeros and weights verfied up to n = 5 with http://mathworld.wolfram.com/Hermite-GaussQuadrature.html */
+  /* zeros and weights verified up to n = 5 with http://mathworld.wolfram.com/Hermite-GaussQuadrature.html */
 
   for (moment = 0; moment < momentummax; moment++) {
     /* http://www.wouterdenhaan.com/numerical/integrationslides.pdf */
