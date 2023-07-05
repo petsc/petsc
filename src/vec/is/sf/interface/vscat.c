@@ -733,9 +733,9 @@ PetscErrorCode VecScatterCreate(Vec x, IS ix, Vec y, IS iy, VecScatter *newsf)
   PetscCall(VecGetSize(y, &ylen));
   PetscCheck(ixsize == iysize, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Scatter sizes of ix and iy don't match locally ix=%" PetscInt_FMT " iy=%" PetscInt_FMT, ixsize, iysize);
   PetscCall(ISGetMinMax(ix, &min, &max));
-  PetscCheck(min >= 0 && max < xlen, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Scatter indices in ix are out of range");
+  PetscCheck(min >= 0 && max < xlen, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Scatter indices in ix are out of range: found [%" PetscInt_FMT ",%" PetscInt_FMT "), expected in [0,%" PetscInt_FMT ")", min, max, xlen);
   PetscCall(ISGetMinMax(iy, &min, &max));
-  PetscCheck(min >= 0 && max < ylen, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Scatter indices in iy are out of range");
+  PetscCheck(min >= 0 && max < ylen, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Scatter indices in iy are out of range: found [%" PetscInt_FMT ",%" PetscInt_FMT "), expected in [0,%" PetscInt_FMT ")", min, max, ylen);
 
   /* Extract info about ix, iy for further test */
   PetscCall(ISGetTypeID_Private(ix, &ixid));

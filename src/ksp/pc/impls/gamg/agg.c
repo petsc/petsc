@@ -592,6 +592,12 @@ static PetscErrorCode PCGAMGProlongator_AGG(PC pc, Mat Amat, Mat Gmat, PetscCoar
   PetscCall(MatSetSizes(Prol, nloc * bs, nLocalSelected * col_bs, PETSC_DETERMINE, PETSC_DETERMINE));
   PetscCall(MatSetBlockSizes(Prol, bs, col_bs));
   PetscCall(MatSetType(Prol, mtype));
+#if PetscDefined(HAVE_DEVICE)
+  PetscBool flg;
+  PetscCall(MatBoundToCPU(Amat, &flg));
+  PetscCall(MatBindToCPU(Prol, flg));
+  if (flg) PetscCall(MatSetBindingPropagates(Prol, PETSC_TRUE));
+#endif
   PetscCall(MatSeqAIJSetPreallocation(Prol, col_bs, NULL));
   PetscCall(MatMPIAIJSetPreallocation(Prol, col_bs, NULL, col_bs, NULL));
 

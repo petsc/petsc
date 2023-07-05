@@ -815,6 +815,19 @@ PetscErrorCode MatProductSymbolic(Mat mat)
     PetscCheck(!missing, PetscObjectComm((PetscObject)mat), PETSC_ERR_PLIB, "Unspecified symbolic phase for product %s. Call MatProductSetFromOptions() first", errstr);
     PetscCheck(mat->product, PetscObjectComm((PetscObject)mat), PETSC_ERR_PLIB, "Missing struct after symbolic phase for product %s", errstr);
   }
+
+#if defined(PETSC_HAVE_DEVICE)
+  Mat       A = mat->product->A;
+  Mat       B = mat->product->B;
+  Mat       C = mat->product->C;
+  PetscBool bindingpropagates;
+  bindingpropagates = (PetscBool)((A->boundtocpu && A->bindingpropagates) || (B->boundtocpu && B->bindingpropagates));
+  if (C) bindingpropagates = (PetscBool)(bindingpropagates || (C->boundtocpu && C->bindingpropagates));
+  if (bindingpropagates) {
+    PetscCall(MatBindToCPU(mat, PETSC_TRUE));
+    PetscCall(MatSetBindingPropagates(mat, PETSC_TRUE));
+  }
+#endif
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

@@ -74,4 +74,12 @@ int main(int argc, char **argv)
       nsize: 2
       args: -b_mat_type mpidensecuda
       output_file: output/ex34.out
+
+   test:
+      suffix: 1_hip
+      requires: hip
+      nsize: 2
+      args: -b_mat_type mpidensehip
+      output_file: output/ex34.out
+
 TEST*/

@@ -20,11 +20,9 @@ typedef struct {
   /* MatSetOption_ support */
   PetscBool donotstash;
 
-  /* COO */
-  Mat                  cooMat;        /* An agent matrix which does the MatSetValuesCOO() job for IJMatrix */
-  HYPRE_Int           *diagJ, *offdJ; /* Allocated by hypre, but we take the ownership away, so we need to free them on our own */
-  PetscInt            *diag;          /* Diagonal pointers (i.e., SeqAIJ->diag[]) on device, allocated by hypre_TAlloc(). */
-  HYPRE_MemoryLocation memType;
+  /* An agent matrix which does the MatSetValuesCOO() job for IJMatrix */
+  Mat       cooMat;
+  PetscBool cooMatAttached;
 } Mat_HYPRE;
 
 #endif
