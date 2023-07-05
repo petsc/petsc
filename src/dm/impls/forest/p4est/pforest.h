@@ -1,6 +1,7 @@
 #pragma once
 
 #include <petscds.h>
+#include <petscfe.h>
 #include <petsc/private/dmimpl.h>
 #include <petsc/private/dmforestimpl.h>
 #include <petsc/private/dmpleximpl.h>
@@ -4307,6 +4308,20 @@ static PetscErrorCode DMConvert_pforest_plex(DM dm, DMType newtype, DM *plex)
       PetscCall(DMSetCoordinateSection(dm, cDim, coordsSec));
       PetscCall(DMGetCoordinatesLocal(newPlex, &coords));
       PetscCall(DMSetCoordinatesLocal(dm, coords));
+      PetscCall(DMGetCoordinateDM(newPlex, &cdm));
+      if (cdm) {
+        PetscFE fe;
+  #if !defined(P4_TO_P8)
+        DMPolytopeType celltype = DM_POLYTOPE_QUADRILATERAL;
+  #else
+        DMPolytopeType celltype = DM_POLYTOPE_HEXAHEDRON;
+  #endif
+
+        PetscCall(PetscFECreateLagrangeByCell(PETSC_COMM_SELF, dim, dim, celltype, 1, PETSC_DEFAULT, &fe));
+        PetscCall(DMSetField(cdm, 0, NULL, (PetscObject)fe));
+        PetscCall(PetscFEDestroy(&fe));
+        PetscCall(DMCreateDS(cdm));
+      }
       PetscCall(DMGetCellCoordinateDM(newPlex, &cdm));
       if (cdm) PetscCall(DMSetCellCoordinateDM(dm, cdm));
       PetscCall(DMGetCellCoordinateSection(newPlex, &coordsSec));
