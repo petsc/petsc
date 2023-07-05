@@ -61,6 +61,7 @@ int main(int argc, char **argv)
 /*TEST
 
   test:
+    requires: p4est
     suffix: 0
 
 TEST*/
