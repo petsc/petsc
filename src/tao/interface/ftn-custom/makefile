@@ -1,5 +1,5 @@
 -include ../../../../petscdir.mk
-#requirespackage 	'PETSC_HAVE_FORTRAN'
+#requirespackage 	'PETSC_USE_FORTRAN_BINDINGS'
 
 LIBBASE = libpetsctao
 
