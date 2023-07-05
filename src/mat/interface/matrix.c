@@ -2668,7 +2668,7 @@ PetscErrorCode MatMultTranspose(Mat mat, Vec x, Vec y)
 
    Input Parameters:
 +  mat - the matrix
--  x   - the vector to be multilplied
+-  x   - the vector to be multiplied
 
    Output Parameter:
 .  y - the result
