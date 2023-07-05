@@ -160,7 +160,7 @@ class Configure(config.package.Package):
       if fcbindings:
         g.write('FORT = '+fc+'\n')
         g.write('FFLAGS = '+fcflags+'\n')
-        g.write('F90LAGS = '+fcflags+'\n')
+        g.write('F90FLAGS = '+fcflags+'\n')
       if gputarget:
         g.write('GPU_TARGET = '+gputarget+'\n')
       if self.cuda.found and hasattr(self.cuda,'cudaArch') and self.cuda.cudaArch:
