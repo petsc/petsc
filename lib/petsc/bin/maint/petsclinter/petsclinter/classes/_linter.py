@@ -380,7 +380,7 @@ class Linter:
           parent              = Cursor.cast(parent)
           func_map[func.spelling](self, func, parent)
           processed_funcs[parent.name].append((func, scope))
-      except pl.KnownUnhandleableCursorError as kuce:
+      except pl.KnownUnhandleableCursorError:
         # ignored
         pass
       except pl.ParsingError as pe:

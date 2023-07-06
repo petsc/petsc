@@ -546,3 +546,52 @@ PetscErrorCode testFunctionParmsSameNameInOut(int *tao, double res, PetscErrorCo
 {
   return PETSC_SUCCESS;
 }
+
+// PetscClangLinter pragma disable: -fdoc.*
+/*@C Lorem ipsum dolor sit amet
+  someOtherFunctionName - Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
+  eiusmod tempor incididunt ut labore et dolore magna aliqua. Excepteur sint occaecat cupidatat
+  non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Sed ut
+  perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium,
+  totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae
+  vitae dicta sunt explicabo.
+
+  Not Collective, Synchronous
+
+   Input Parameters:
++ viewer - a PetscViewer
+
+  Output Parameter:
+- y          - a pointer
++ cnd           - a boolean
+. z - a nonexistent parameter
+
+  level: Lorem ipsum dolor sit amet
+
+  Level:
+  Beginner
+
+  Developer Notes:
+  Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut
+  labore et dolore magna aliqua. Excepteur sint occaecat cupidatat non proident, sunt in culpa
+  qui officia deserunt mollit anim id est laborum as follows:
+
+  Notes Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor
+  incididunt ut labore et dolore magna aliqua. Excepteur sint occaecat cupidatat non proident,
+  sunt in culpa qui officia deserunt mollit anim id est laborum example.
+
+  Fortran Notes:
+  Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut
+  labore et dolore magna aliqua. Excepteur sint occaecat cupidatat non proident, sunt in culpa
+  qui officia deserunt mollit anim id est laborum instance:
+
+  References: Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+
+.seealso:                                                  testNonExistentFunction(), testNonExistentType,
+testIllFormedFunctionDocString(), `testNonExistentFunction()`, testIllFormedMinimalDocString()
+@*/
+
+PetscErrorCode testBadDocStringIgnoreAll()
+{
+  return PETSC_SUCCESS;
+}

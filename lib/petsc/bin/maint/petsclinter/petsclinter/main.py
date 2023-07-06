@@ -281,8 +281,9 @@ def __build_arg_parser(parent_parsers=None):
   )
 
   all_diagnostics = set()
+  flag_prefix     = pl.DiagnosticManager.flagprefix
   for diag, helpstr in sorted(pl.DiagnosticManager.registered().items()):
-    diag_flag = f'-f{diag}'
+    diag_flag = f'{flag_prefix}{diag}'
     add_bool_argument(
       group_diag, diag_flag, nargs='?', const=True, default=True, action=CheckFilter, help=helpstr
     )
@@ -294,16 +295,17 @@ def parse_command_line_args(argv=None, **kwargs):
   import re
 
   def expand_argv_globs(in_argv, diagnostics):
-    argv  = []
-    skip  = False
-    nargv = len(in_argv)
+    argv        = []
+    skip        = False
+    nargv       = len(in_argv)
+    flag_prefix = pl.DiagnosticManager.flagprefix
 
     # always skip first entry of argv
     for i, argi in enumerate(in_argv[1:], start=1):
       if skip:
         skip = False
         continue
-      if argi.startswith('-f') and '*' in argi:
+      if argi.startswith(flag_prefix) and '*' in argi:
         if i + 1 >= len(in_argv):
           parser.error(f'Glob argument {argi} must be followed by explicit value!')
 
