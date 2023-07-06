@@ -117,6 +117,7 @@ ompi-cuda:
     TEST_SEARCH: snes_tutorials-ex19_cuda%
     ENABLE_CHECK: 1
     MAKE_CXXFLAGS: -Werror
+    MAKE_CUDAFLAGS: -Xcompiler -Wall -Xcompiler -Werror
 
 mpich-cxx-py3:
   extends: .stage-1
