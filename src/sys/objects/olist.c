@@ -156,7 +156,7 @@ PetscErrorCode PetscObjectListDestroy(PetscObjectList *ifl)
 }
 
 /*@C
-    PetscObjectListFind - givn a name, find the matching object in a list
+    PetscObjectListFind - given a name, find the matching object in a list
 
     Input Parameters:
 +   fl   - pointer to list
