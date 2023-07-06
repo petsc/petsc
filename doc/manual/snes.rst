@@ -233,8 +233,9 @@ examples.
 Sometimes a nonlinear solver may produce a step that is not within the domain
 of a given function, for example one with a negative pressure. When this occurs
 one can call ``SNESSetFunctionDomainError()`` or ``SNESSetJacobianDomainError()``
-to indicate to `SNES` the step is not valid. See :any:`sec_vi` for how to
-provide SNES with bounds on the variables to solve (differential) variational inequalities
+to indicate to `SNES` the step is not valid. One must also use ``SNESGetConvergedReason()``
+and check the reason to confirm if the solver succeeded. See :any:`sec_vi` for how to
+provide ``SNES`` with bounds on the variables to solve (differential) variational inequalities
 and how to control properties of the line step computed.
 
 .. _sec_nlsolvers:

@@ -1306,7 +1306,7 @@ solution or state to your routines.
 
 If it occurs for DAEs, it is important to insure the algebraic constraints are well
 satisfied, which can prevent "breakdown" later. Thus, one can try using a tight tolerance
-for ``SNES``, using a direct solver when possible, and reducing the timestep (or
+for ``SNES``, using a direct linear solver (``PCType`` of ``PCLU``) when possible, and reducing the timestep (or
 tightening ``TS`` tolerances for adaptive time stepping).
 
 Can PETSc work with Hermitian matrices?
