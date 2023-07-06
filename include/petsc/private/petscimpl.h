@@ -421,12 +421,12 @@ PETSC_EXTERN PetscBool PetscCheckPointer(const void *, PetscDataType);
     #define PetscValidPointer_Internal(ptr, arg, ptype, ptrtype) \
       do { \
         PetscCheck(ptr, PETSC_COMM_SELF, PETSC_ERR_ARG_NULL, "Null Pointer: Parameter # %d", arg); \
-        PetscCheck(PetscCheckPointer(ptr, ptype), PETSC_COMM_SELF, PETSC_ERR_ARG_BADPTR, "Invalid Pointer to " PetscStringize(ptrtype) ": Argument '" PetscStringize(ptr) "' (parameter # %d)", arg); \
+        PetscCheck(PetscCheckPointer(ptr, ptype), PETSC_COMM_SELF, PETSC_ERR_ARG_BADPTR, "Invalid Pointer to %s: Argument '" PetscStringize(ptr) "' (parameter # %d)", ptrtype, arg); \
       } while (0)
 
     #define PetscValidHeaderSpecific(h, ck, arg) \
       do { \
-        PetscValidPointer_Internal(h, arg, PETSC_OBJECT, PetscObject); \
+        PetscValidPointer_Internal(h, arg, PETSC_OBJECT, "PetscObject"); \
         if (((PetscObject)(h))->classid != ck) { \
           PetscCheck(((PetscObject)(h))->classid != PETSCFREEDHEADER, PETSC_COMM_SELF, PETSC_ERR_ARG_CORRUPT, "Object already free: Parameter # %d", arg); \
           SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Wrong type of object: Parameter # %d", arg); \
@@ -435,20 +435,134 @@ PETSC_EXTERN PetscBool PetscCheckPointer(const void *, PetscDataType);
 
     #define PetscValidHeader(h, arg) \
       do { \
-        PetscValidPointer_Internal(h, arg, PETSC_OBJECT, PetscObject); \
+        PetscValidPointer_Internal(h, arg, PETSC_OBJECT, "PetscObject"); \
         PetscCheck(((PetscObject)(h))->classid != PETSCFREEDHEADER, PETSC_COMM_SELF, PETSC_ERR_ARG_CORRUPT, "Object already free: Parameter # %d", arg); \
         PetscCheck(((PetscObject)(h))->classid >= PETSC_SMALLEST_CLASSID && ((PetscObject)(h))->classid <= PETSC_LARGEST_CLASSID, PETSC_COMM_SELF, PETSC_ERR_ARG_CORRUPT, "Invalid type of object: Parameter # %d", arg); \
       } while (0)
 
-    #define PetscValidPointer(h, arg)       PetscValidPointer_Internal(h, arg, PETSC_CHAR, memory)
-    #define PetscValidCharPointer(h, arg)   PetscValidPointer_Internal(h, arg, PETSC_CHAR, char)
-    #define PetscValidIntPointer(h, arg)    PetscValidPointer_Internal(h, arg, PETSC_INT, PetscInt)
-    #define PetscValidInt64Pointer(h, arg)  PetscValidPointer_Internal(h, arg, PETSC_INT64, PetscInt)
-    #define PetscValidCountPointer(h, arg)  PetscValidPointer_Internal(h, arg, PETSC_COUNT, PetscCount)
-    #define PetscValidBoolPointer(h, arg)   PetscValidPointer_Internal(h, arg, PETSC_BOOL, PetscBool)
-    #define PetscValidScalarPointer(h, arg) PetscValidPointer_Internal(h, arg, PETSC_SCALAR, PetscScalar)
-    #define PetscValidRealPointer(h, arg)   PetscValidPointer_Internal(h, arg, PETSC_REAL, PetscReal)
+    #define PetscValidPointer(h, arg)       PetscValidPointer_Internal(h, arg, PETSC_CHAR, "memory")
+    #define PetscValidCharPointer(h, arg)   PetscValidPointer_Internal(h, arg, PETSC_CHAR, "char")
+    #define PetscValidIntPointer(h, arg)    PetscValidPointer_Internal(h, arg, PETSC_INT, "PetscInt")
+    #define PetscValidInt64Pointer(h, arg)  PetscValidPointer_Internal(h, arg, PETSC_INT64, "PetscInt")
+    #define PetscValidCountPointer(h, arg)  PetscValidPointer_Internal(h, arg, PETSC_COUNT, "PetscCount")
+    #define PetscValidBoolPointer(h, arg)   PetscValidPointer_Internal(h, arg, PETSC_BOOL, "PetscBool")
+    #define PetscValidScalarPointer(h, arg) PetscValidPointer_Internal(h, arg, PETSC_SCALAR, "PetscScalar")
+    #define PetscValidRealPointer(h, arg)   PetscValidPointer_Internal(h, arg, PETSC_REAL, "PetscReal")
+    #if defined(__cplusplus)
+namespace Petsc
+{
 
+namespace util
+{
+
+template <typename T>
+struct PetscValidPointerImpl {
+  PETSC_NODISCARD static constexpr PetscDataType type() noexcept { return PETSC_CHAR; }
+  PETSC_NODISCARD static constexpr const char   *string() noexcept { return "memory"; }
+};
+
+      #define PETSC_VALID_POINTER_IMPL_SPECIALIZATION(T, PETSC_TYPE) \
+        template <> \
+        struct PetscValidPointerImpl<T *> { \
+          PETSC_NODISCARD static constexpr PetscDataType type() noexcept \
+          { \
+            return PETSC_TYPE; \
+          } \
+          PETSC_NODISCARD static constexpr const char *string() noexcept \
+          { \
+            return PetscStringize(T); \
+          } \
+        }; \
+        template <> \
+        struct PetscValidPointerImpl<const T *> : PetscValidPointerImpl<T *> { }; \
+        template <> \
+        struct PetscValidPointerImpl<volatile T *> : PetscValidPointerImpl<T *> { }; \
+        template <> \
+        struct PetscValidPointerImpl<const volatile T *> : PetscValidPointerImpl<T *> { }
+
+// clang-format off
+PETSC_VALID_POINTER_IMPL_SPECIALIZATION(          char,    PETSC_CHAR);
+PETSC_VALID_POINTER_IMPL_SPECIALIZATION(   signed char,    PETSC_CHAR);
+PETSC_VALID_POINTER_IMPL_SPECIALIZATION( unsigned char,    PETSC_CHAR);
+PETSC_VALID_POINTER_IMPL_SPECIALIZATION(         short,   PETSC_SHORT);
+PETSC_VALID_POINTER_IMPL_SPECIALIZATION(unsigned short,   PETSC_SHORT);
+PETSC_VALID_POINTER_IMPL_SPECIALIZATION(     PetscBool,    PETSC_BOOL);
+PETSC_VALID_POINTER_IMPL_SPECIALIZATION(         float,   PETSC_FLOAT);
+PETSC_VALID_POINTER_IMPL_SPECIALIZATION(        double,  PETSC_DOUBLE);
+PETSC_VALID_POINTER_IMPL_SPECIALIZATION(  PetscComplex, PETSC_COMPLEX);
+PETSC_VALID_POINTER_IMPL_SPECIALIZATION(       int32_t,   PETSC_INT32);
+PETSC_VALID_POINTER_IMPL_SPECIALIZATION(      uint32_t,   PETSC_INT32);
+PETSC_VALID_POINTER_IMPL_SPECIALIZATION(       int64_t,   PETSC_INT64);
+PETSC_VALID_POINTER_IMPL_SPECIALIZATION(      uint64_t,   PETSC_INT64);
+// clang-format on
+
+} // namespace util
+
+} // namespace Petsc
+
+      #define PetscValidPointer_PetscDataType(h) ::Petsc::util::PetscValidPointerImpl<decltype(h)>::type()
+      #define PetscValidPointer_String(h)        ::Petsc::util::PetscValidPointerImpl<decltype(h)>::string()
+
+    #elif PETSC_C_VERSION >= 11
+      // clang-format off
+      #define PetscValidPointer_PetscDataType(h) _Generic((h), \
+                 default: PETSC_CHAR    , \
+                  char *: PETSC_CHAR    , \
+            const char *: PETSC_CHAR    , \
+           signed char *: PETSC_CHAR    , \
+     const signed char *: PETSC_CHAR    , \
+         unsigned char *: PETSC_CHAR    , \
+   const unsigned char *: PETSC_CHAR    , \
+                 short *: PETSC_SHORT   , \
+           const short *: PETSC_SHORT   , \
+        unsigned short *: PETSC_SHORT   , \
+  const unsigned short *: PETSC_SHORT   , \
+                 float *: PETSC_FLOAT   , \
+           const float *: PETSC_FLOAT   , \
+                double *: PETSC_DOUBLE  , \
+          const double *: PETSC_DOUBLE  , \
+          PetscComplex *: PETSC_COMPLEX , \
+    const PetscComplex *: PETSC_COMPLEX , \
+               int32_t *: PETSC_INT32   , \
+         const int32_t *: PETSC_INT32   , \
+              uint32_t *: PETSC_INT32   , \
+        const uint32_t *: PETSC_INT32   , \
+               int64_t *: PETSC_INT64   , \
+         const int64_t *: PETSC_INT64   , \
+              uint64_t *: PETSC_INT64   , \
+        const uint64_t *: PETSC_INT64   )
+      #define PetscValidPointer_String(h) _Generic((h), \
+                 default:         "memory", \
+                  char *:           "char", \
+            const char *:           "char", \
+           signed char *:    "signed char", \
+     const signed char *:    "signed char", \
+         unsigned char *:  "unsigned char", \
+   const unsigned char *:  "unsigned char", \
+                 short *:          "short", \
+           const short *:          "short", \
+        unsigned short *: "unsigned short", \
+  const unsigned short *: "unsigned short", \
+                 float *:          "float", \
+           const float *:          "float", \
+                double *:         "double", \
+          const double *:         "double", \
+          PetscComplex *:   "PetscComplex", \
+    const PetscComplex *:   "PetscComplex", \
+               int32_t *:        "int32_t", \
+         const int32_t *:        "int32_t", \
+              uint32_t *:       "uint32_t", \
+        const uint32_t *:       "uint32_t", \
+               int64_t *:        "int64_t", \
+         const int64_t *:        "int64_t", \
+              uint64_t *:       "uint64_t", \
+        const uint64_t *:       "uint64_t")
+      // clang-format on
+    #else
+      #define PetscValidPointer_PetscDataType(h) PETSC_CHAR
+      #define PetscValidPointer_String(h)        "memory"
+    #endif
+    #define _PetscValidPointer(h, arg) PetscValidPointer_Internal(h, arg, PetscValidPointer_PetscDataType(h), PetscValidPointer_String(h))
     #define PetscValidFunction(f, arg) \
       do { \
         PetscCheck((f), PETSC_COMM_SELF, PETSC_ERR_ARG_NULL, "Null Function Pointer: Parameter # %d", arg); \
