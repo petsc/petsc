@@ -489,3 +489,60 @@ PetscErrorCode testInvalidInOutParams(int *foo)
 {
   return PETSC_SUCCESS;
 }
+
+/*@C
+  testFunctionParmsSameName - Sets the residual evaluation routine for least-square applications
+
+  Logically Collective
+
+  Input Parameters:
++ tao  - the `Tao` context
+. res  - the res
+. func - the residual evaluation routine
+- ctx  - [optional] user-defined context for private data for the function evaluation
+         routine (may be `NULL`)
+
+  Calling sequence of `func`:
++ tao - the optimizer
+. x   - input vector
+. f   - function value vector
+- ctx - [optional] user-defined function context
+
+  Level: beginner
+
+.seealso: [](ch_tao), `Tao`, `TaoSetObjective()`, `TaoSetJacobianRoutine()`
+@*/
+PetscErrorCode testFunctionParmsSameName(int tao, double res, PetscErrorCode (*func)(int tao, double x, double f, void *ctx), void *ctx)
+{
+  return PETSC_SUCCESS;
+}
+
+/*@C
+  testFunctionParmsSameNameInOut - Sets the residual evaluation routine for least-square applications
+
+  Logically Collective
+
+  Input Parameters:
++ tao  - the `Tao` context (and in-out parm)
+. res  - the res
+. func - the residual evaluation routine
+- ctx  - [optional] user-defined context for private data for the function evaluation
+         routine (may be `NULL`)
+
+  Calling sequence of `func`:
++ tao - the optimizer
+. x   - input vector
+. f   - function value vector
+- ctx - [optional] user-defined function context
+
+  Output Parameter:
+. tao - the in-output parm
+
+  Level: beginner
+
+.seealso: [](ch_tao), `Tao`, `TaoSetObjective()`, `TaoSetJacobianRoutine()`
+@*/
+PetscErrorCode testFunctionParmsSameNameInOut(int *tao, double res, PetscErrorCode (*func)(int tao, double x, double f, void *ctx), void *ctx)
+{
+  return PETSC_SUCCESS;
+}

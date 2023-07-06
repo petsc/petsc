@@ -486,23 +486,30 @@ class FunctionParameterList(ParameterList):
     not_found   = []
 
     def mark_name_as_seen(name):
-      idx = 0
+      idx  = 0
+      prev = -1
       while 1:
         # in case of multiple arguments of the same name, we need to loop until we
         # find an index that has not yet been found
         try:
           idx = arg_names.index(name, idx)
         except ValueError:
-          return -1
-        count = arg_seen[idx]
-        if count == 0 or count <= num_groups:
-          # count = 0 -> argument exists and has not been found yet
-          # count <= num_groups -> argument is possibly in-out and is defined in multiple
-          # groups
+          idx = prev
           break
+        count = arg_seen[idx]
+        if 0 <= count <= num_groups:
+          # arg_seen[idx] = 0 -> argument exists and has not been found yet
+          # arg_seen[idx] <= num_groups -> argument is possibly in-out and is defined in
+          # multiple groups
+          if count == 0:
+            # first time, use this arg
+            break
+          # save this to come back to
+          prev = idx
         # argument exists but has already been claimed
         idx += 1
-      arg_seen[idx] += 1
+      if idx >= 0:
+        arg_seen[idx] += 1
       return idx
 
     solitary_param_diag = self.diags.solitary_parameter
