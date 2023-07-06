@@ -444,11 +444,21 @@ class FunctionParameterList(ParameterList):
     if not arg_cursors and self and len(self.items.values()):
       # function has no arguments, so check there are no parameter docstrings, if so, we can
       # delete them
-      docstring.add_error_from_source_range(
-        self.diags.parameter_documentation,
-        f"Found parameter docstring(s) but '{docstring.cursor.displayname}' has no parameters",
-        self.extent,
-        highlight=False, patch=Patch(self.extent, '')
+      doc_cursor = docstring.cursor
+      disp_name  = doc_cursor.displayname
+      docstring.add_error_from_diagnostic(
+        docstring.make_diagnostic(
+          self.diags.parameter_documentation,
+          f'Found parameter docstring(s) but \'{disp_name}\' has no parameters',
+          self.extent,
+          highlight=False, patch=Patch(self.extent, '')
+        ).add_note(
+          # can't use the docstring.make_error_message() (with doc_cursor.extent), since
+          # that prints the whole function. Cursor.formatted() has special code to only
+          # print the function line for us, so use that instead
+          f'\'{disp_name}\' defined here:\n{doc_cursor.formatted(num_context=2)}',
+          location=doc_cursor.extent.start
+        )
       )
       return True
 

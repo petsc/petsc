@@ -161,6 +161,14 @@
   91:   References:
   92:   Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
 
+./src/sys/tests/linter/testValidFunctionDocStrings.c:95:1 Note: 'testIllFormedMinimalDocString()' defined here:
+  93:    .seealso: testNonExistentFunction(), testNonExistentType,`testNonExistentFunction()
+  94: */
+> 95: [33m[1mPetscErrorCode testIllFormedMinimalDocString(void)[0m
+      [33m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  96: {
+  97:   return 0;
+
 [31m[1m./src/sys/tests/linter/testValidFunctionDocStrings.c:93:14: error:[0m seealso symbol 'testNonExistentFunction()' not enclosed with '`' [-fdoc-inline-list-seealso-backticks]:
   91:   References:
   92:   Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
@@ -578,6 +586,14 @@
 > 443: 
   444:   Level: dpcrtd (since 3.18.5)
   445: 
+
+./src/sys/tests/linter/testValidFunctionDocStrings.c:448:1 Note: 'testIllFormedDeprecated()' defined here:
+  446: .seealso: [](ch_matrices), `testDeprecated()`, [Matrix Factorization](sec_matfactor)
+  447: */
+> 448: [33m[1mPetscErrorCode testIllFormedDeprecated(void)[0m
+       [33m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  449: {
+  450:   return PETSC_SUCCESS;
 
 [31m[1m./src/sys/tests/linter/testValidFunctionDocStrings.c:444:10: error:[0m Unknown Level subheading 'dpcrtd', assuming you meant 'deprecated' [-fdoc-inline-list-level-spelling]:
   442: - baz - a nonexistent baz

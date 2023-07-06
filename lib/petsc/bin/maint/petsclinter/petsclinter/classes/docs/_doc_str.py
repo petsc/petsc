@@ -315,10 +315,12 @@ class PetscDocString(DocBase):
   def __init__(self, linter, cursor, indent=2):
     if not isinstance(linter, Linter):
       raise ValueError(type(linter))
+    if not isinstance(cursor, Cursor):
+      raise ValueError(type(cursor))
 
     self.sections.set_verbose(linter.verbose)
     self._linter          = linter
-    self.cursor           = Cursor.cast(cursor)
+    self.cursor           = cursor
     self.raw, self.extent = self._get_sanitized_comment_and_range_from_cursor(self.cursor)
     self.indent           = indent
     self.type             = self.Type.UNKNOWN
@@ -385,9 +387,6 @@ class PetscDocString(DocBase):
 
   @classmethod
   def _get_sanitized_comment_and_range_from_cursor(cls, cursor):
-    if not isinstance(cursor, Cursor):
-      raise ValueError(type(cursor))
-
     raw, extent = cursor.get_comment_and_range()
     extent      = SourceRange.cast(extent, tu=cursor.translation_unit)
 
@@ -421,8 +420,7 @@ class PetscDocString(DocBase):
   def make_error_message(message, crange=None, num_context=2, **kwargs):
     if crange is None:
       return message
-    formatted = crange.formatted(num_context=num_context, **kwargs)
-    return f'{message}:\n{formatted}'
+    return f'{message}:\n{crange.formatted(num_context=num_context, **kwargs)}'
 
   def make_source_location(self, lineno, col):
     return SourceLocation.from_position(self.cursor.translation_unit, lineno, col)
@@ -559,7 +557,7 @@ class PetscDocString(DocBase):
           #
           # we should ignore it, and stop processing this docstring altogether since it is
           # not an actual docstring.
-          raise pl.ParsingError
+          raise pl.KnownUnhandleableCursorError
         if begin_sowing[0] == 'C':
           # sometimes people mix up the order, or forget to add the right letter for the
           # type, for example:
