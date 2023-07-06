@@ -51,7 +51,7 @@ FILE                    *PetscInfoFile                                          
 PetscErrorCode PetscInfoEnabled(PetscClassId classid, PetscBool *enabled)
 {
   PetscFunctionBegin;
-  PetscValidBoolPointer(enabled, 2);
+  PetscValidPointer(enabled, 2);
   PetscCheck(classid >= PETSC_SMALLEST_CLASSID, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Classid (current: %d) must be equal to or greater than PETSC_SMALLEST_CLASSID", classid);
   *enabled = (PetscBool)(PetscLogPrintInfo && PetscInfoFlags[classid - PETSC_SMALLEST_CLASSID]);
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -101,8 +101,8 @@ PetscErrorCode PetscInfoSetFile(const char filename[], const char mode[])
     PetscMPIInt rank;
     char        fname[PETSC_MAX_PATH_LEN], tname[11];
 
-    PetscValidCharPointer(filename, 1);
-    PetscValidCharPointer(mode, 2);
+    PetscValidPointer(filename, 1);
+    PetscValidPointer(mode, 2);
     PetscCall(PetscFixFilename(filename, fname));
     PetscCall(PetscStrallocpy(fname, &PetscInfoFilename));
     PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
@@ -217,8 +217,8 @@ PetscErrorCode PetscInfoGetClass(const char *classname, PetscBool *found)
   PetscInt unused;
 
   PetscFunctionBegin;
-  PetscValidCharPointer(classname, 1);
-  PetscValidBoolPointer(found, 2);
+  PetscValidPointer(classname, 1);
+  PetscValidPointer(found, 2);
   PetscCall(PetscEListFind(PetscInfoNumClasses, (const char *const *)PetscInfoClassnames, classname ? classname : "sys", &unused, found));
   PetscInfoClassesLocked = PETSC_TRUE;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -247,10 +247,10 @@ PetscErrorCode PetscInfoGetClass(const char *classname, PetscBool *found)
 PetscErrorCode PetscInfoGetInfo(PetscBool *infoEnabled, PetscBool *classesSet, PetscBool *exclude, PetscBool *locked, PetscInfoCommFlag *commSelfFlag)
 {
   PetscFunctionBegin;
-  if (infoEnabled) PetscValidBoolPointer(infoEnabled, 1);
-  if (classesSet) PetscValidBoolPointer(classesSet, 2);
-  if (exclude) PetscValidBoolPointer(exclude, 3);
-  if (locked) PetscValidBoolPointer(locked, 4);
+  if (infoEnabled) PetscValidPointer(infoEnabled, 1);
+  if (classesSet) PetscValidPointer(classesSet, 2);
+  if (exclude) PetscValidPointer(exclude, 3);
+  if (locked) PetscValidPointer(locked, 4);
   if (commSelfFlag) PetscValidPointer(commSelfFlag, 5);
   if (infoEnabled) *infoEnabled = PetscLogPrintInfo;
   if (classesSet) *classesSet = PetscInfoClassesSet;
@@ -283,7 +283,7 @@ PetscErrorCode PetscInfoProcessClass(const char classname[], PetscInt numClassID
   char      logList[256];
 
   PetscFunctionBegin;
-  PetscValidCharPointer(classname, 1);
+  PetscValidPointer(classname, 1);
   PetscAssert(numClassID > 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Number of classids %" PetscInt_FMT " <= 0", numClassID);
   if (numClassID) PetscValidPointer(classIDs, 3);
   PetscCall(PetscInfoGetInfo(&enabled, NULL, &exclude, NULL, NULL));
@@ -598,7 +598,7 @@ PetscErrorCode PetscInfo_Private(const char func[], PetscObject obj, const char 
     PetscValidHeader(obj, 2);
     classid = obj->classid;
   }
-  PetscValidCharPointer(message, 3);
+  PetscValidPointer(message, 3);
   PetscCall(PetscInfoEnabled(classid, &enabled));
   if (!enabled) PetscFunctionReturn(PETSC_SUCCESS);
   if (obj) {

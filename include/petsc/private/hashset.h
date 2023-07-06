@@ -114,7 +114,7 @@ M*/
   { \
     PetscFunctionBegin; \
     PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidPointer(ht, 1)); \
-    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidIntPointer(n, 2)); \
+    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidPointer(n, 2)); \
     *n = (PetscInt)kh_size(ht); \
     PetscFunctionReturn(PETSC_SUCCESS); \
   } \
@@ -123,7 +123,7 @@ M*/
   { \
     PetscFunctionBegin; \
     PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidPointer(ht, 1)); \
-    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidIntPointer(n, 2)); \
+    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidPointer(n, 2)); \
     *n = (PetscInt)kh_n_buckets(ht); \
     PetscFunctionReturn(PETSC_SUCCESS); \
   } \
@@ -197,7 +197,7 @@ M*/
     PetscInt pos; \
     PetscFunctionBegin; \
     PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidPointer(ht, 1)); \
-    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidIntPointer(off, 2)); \
+    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidPointer(off, 2)); \
     pos = *off; \
     kh_foreach_key(ht, key, array[pos++] = key); \
     *off = pos; \

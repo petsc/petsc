@@ -523,7 +523,7 @@ PetscErrorCode MatPartitioningChacoGetEigenTol(MatPartitioning part, PetscReal *
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part, MAT_PARTITIONING_CLASSID, 1);
-  PetscValidRealPointer(tol, 2);
+  PetscValidPointer(tol, 2);
   PetscUseMethod(part, "MatPartitioningChacoGetEigenTol_C", (MatPartitioning, PetscReal *), (part, tol));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -599,7 +599,7 @@ PetscErrorCode MatPartitioningChacoGetEigenNumber(MatPartitioning part, PetscInt
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part, MAT_PARTITIONING_CLASSID, 1);
-  PetscValidIntPointer(num, 2);
+  PetscValidPointer(num, 2);
   PetscUseMethod(part, "MatPartitioningChacoGetEigenNumber_C", (MatPartitioning, PetscInt *), (part, num));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -322,7 +322,7 @@ PetscErrorCode PetscSpaceGetDimension(PetscSpace sp, PetscInt *dim)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
-  PetscValidIntPointer(dim, 2);
+  PetscValidPointer(dim, 2);
   if (sp->dim == PETSC_DETERMINE) PetscTryTypeMethod(sp, getdimension, &sp->dim);
   *dim = sp->dim;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -346,8 +346,8 @@ PetscErrorCode PetscSpaceGetDegree(PetscSpace sp, PetscInt *minDegree, PetscInt 
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
-  if (minDegree) PetscValidIntPointer(minDegree, 2);
-  if (maxDegree) PetscValidIntPointer(maxDegree, 3);
+  if (minDegree) PetscValidPointer(minDegree, 2);
+  if (maxDegree) PetscValidPointer(maxDegree, 3);
   if (minDegree) *minDegree = sp->degree;
   if (maxDegree) *maxDegree = sp->maxDegree;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -394,7 +394,7 @@ PetscErrorCode PetscSpaceGetNumComponents(PetscSpace sp, PetscInt *Nc)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
-  PetscValidIntPointer(Nc, 2);
+  PetscValidPointer(Nc, 2);
   *Nc = sp->Nc;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -454,7 +454,7 @@ PetscErrorCode PetscSpaceGetNumVariables(PetscSpace sp, PetscInt *n)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
-  PetscValidIntPointer(n, 2);
+  PetscValidPointer(n, 2);
   *n = sp->Nv;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -485,10 +485,10 @@ PetscErrorCode PetscSpaceEvaluate(PetscSpace sp, PetscInt npoints, const PetscRe
   PetscFunctionBegin;
   if (!npoints) PetscFunctionReturn(PETSC_SUCCESS);
   PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
-  if (sp->Nv) PetscValidRealPointer(points, 3);
-  if (B) PetscValidRealPointer(B, 4);
-  if (D) PetscValidRealPointer(D, 5);
-  if (H) PetscValidRealPointer(H, 6);
+  if (sp->Nv) PetscValidPointer(points, 3);
+  if (B) PetscValidPointer(B, 4);
+  if (D) PetscValidPointer(D, 5);
+  if (H) PetscValidPointer(H, 6);
   PetscTryTypeMethod(sp, evaluate, npoints, points, B, D, H);
   PetscFunctionReturn(PETSC_SUCCESS);
 }

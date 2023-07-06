@@ -345,7 +345,7 @@ PetscErrorCode DMLabelAddStrata(DMLabel label, PetscInt numStrata, const PetscIn
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(label, DMLABEL_CLASSID, 1);
-  if (numStrata) PetscValidIntPointer(stratumValues, 3);
+  if (numStrata) PetscValidPointer(stratumValues, 3);
   PetscCheck(!label->readonly, PetscObjectComm((PetscObject)label), PETSC_ERR_ARG_WRONG, "Read-only labels cannot be altered");
   PetscCall(PetscMalloc1(numStrata, &values));
   PetscCall(PetscArraycpy(values, stratumValues, numStrata));
@@ -645,7 +645,7 @@ PetscErrorCode DMLabelCompare(MPI_Comm comm, DMLabel l0, DMLabel l1, PetscBool *
   PetscFunctionBegin;
   PetscValidHeaderSpecific(l0, DMLABEL_CLASSID, 2);
   PetscValidHeaderSpecific(l1, DMLABEL_CLASSID, 3);
-  if (equal) PetscValidBoolPointer(equal, 4);
+  if (equal) PetscValidPointer(equal, 4);
   if (message) PetscValidPointer(message, 5);
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
   PetscCall(PetscObjectGetName((PetscObject)l0, &name0));
@@ -840,11 +840,11 @@ PetscErrorCode DMLabelGetBounds(DMLabel label, PetscInt *pStart, PetscInt *pEnd)
   PetscValidHeaderSpecific(label, DMLABEL_CLASSID, 1);
   if ((label->pStart == -1) && (label->pEnd == -1)) PetscCall(DMLabelComputeIndex(label));
   if (pStart) {
-    PetscValidIntPointer(pStart, 2);
+    PetscValidPointer(pStart, 2);
     *pStart = label->pStart;
   }
   if (pEnd) {
-    PetscValidIntPointer(pEnd, 3);
+    PetscValidPointer(pEnd, 3);
     *pEnd = label->pEnd;
   }
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -872,7 +872,7 @@ PetscErrorCode DMLabelHasValue(DMLabel label, PetscInt value, PetscBool *contain
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(label, DMLABEL_CLASSID, 1);
-  PetscValidBoolPointer(contains, 3);
+  PetscValidPointer(contains, 3);
   PetscCall(DMLabelLookupStratum(label, value, &v));
   *contains = v < 0 ? PETSC_FALSE : PETSC_TRUE;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -901,7 +901,7 @@ PetscErrorCode DMLabelHasPoint(DMLabel label, PetscInt point, PetscBool *contain
 {
   PetscFunctionBeginHot;
   PetscValidHeaderSpecific(label, DMLABEL_CLASSID, 1);
-  PetscValidBoolPointer(contains, 3);
+  PetscValidPointer(contains, 3);
   PetscCall(DMLabelMakeAllValid_Private(label));
   if (PetscDefined(USE_DEBUG)) {
     PetscCheck(label->bt, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Must call DMLabelCreateIndex() before DMLabelHasPoint()");
@@ -932,7 +932,7 @@ PetscErrorCode DMLabelStratumHasPoint(DMLabel label, PetscInt value, PetscInt po
 {
   PetscFunctionBeginHot;
   PetscValidHeaderSpecific(label, DMLABEL_CLASSID, 1);
-  PetscValidBoolPointer(contains, 4);
+  PetscValidPointer(contains, 4);
   if (value == label->defaultValue) {
     PetscInt pointVal;
 
@@ -1036,7 +1036,7 @@ PetscErrorCode DMLabelGetValue(DMLabel label, PetscInt point, PetscInt *value)
 
   PetscFunctionBeginHot;
   PetscValidHeaderSpecific(label, DMLABEL_CLASSID, 1);
-  PetscValidIntPointer(value, 3);
+  PetscValidPointer(value, 3);
   *value = label->defaultValue;
   for (v = 0; v < label->numStrata; ++v) {
     if (label->validIS[v] || label->readonly) {
@@ -1184,7 +1184,7 @@ PetscErrorCode DMLabelGetNumValues(DMLabel label, PetscInt *numValues)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(label, DMLABEL_CLASSID, 1);
-  PetscValidIntPointer(numValues, 2);
+  PetscValidPointer(numValues, 2);
   *numValues = label->numStrata;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1283,7 +1283,7 @@ PetscErrorCode DMLabelGetValueIndex(DMLabel label, PetscInt value, PetscInt *ind
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(label, DMLABEL_CLASSID, 1);
-  PetscValidIntPointer(index, 3);
+  PetscValidPointer(index, 3);
   /* Do not assume they are sorted */
   for (v = 0; v < label->numStrata; ++v)
     if (label->stratumValues[v] == value) break;
@@ -1314,7 +1314,7 @@ PetscErrorCode DMLabelHasStratum(DMLabel label, PetscInt value, PetscBool *exist
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(label, DMLABEL_CLASSID, 1);
-  PetscValidBoolPointer(exists, 3);
+  PetscValidPointer(exists, 3);
   PetscCall(DMLabelLookupStratum(label, value, &v));
   *exists = v < 0 ? PETSC_FALSE : PETSC_TRUE;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -1342,7 +1342,7 @@ PetscErrorCode DMLabelGetStratumSize(DMLabel label, PetscInt value, PetscInt *si
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(label, DMLABEL_CLASSID, 1);
-  PetscValidIntPointer(size, 3);
+  PetscValidPointer(size, 3);
   PetscCall(DMLabelLookupStratum(label, value, &v));
   PetscCall(DMLabelGetStratumSize_Private(label, v, size));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -1373,11 +1373,11 @@ PetscErrorCode DMLabelGetStratumBounds(DMLabel label, PetscInt value, PetscInt *
   PetscFunctionBegin;
   PetscValidHeaderSpecific(label, DMLABEL_CLASSID, 1);
   if (start) {
-    PetscValidIntPointer(start, 3);
+    PetscValidPointer(start, 3);
     *start = -1;
   }
   if (end) {
-    PetscValidIntPointer(end, 4);
+    PetscValidPointer(end, 4);
     *end = -1;
   }
   PetscCall(DMLabelLookupStratum(label, value, &v));
@@ -1582,7 +1582,7 @@ PetscErrorCode DMLabelGetStratumPointIndex(DMLabel label, PetscInt value, PetscI
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(label, DMLABEL_CLASSID, 1);
-  PetscValidIntPointer(index, 4);
+  PetscValidPointer(index, 4);
   *index = -1;
   PetscCall(DMLabelLookupStratum(label, value, &v));
   if (v < 0) PetscFunctionReturn(PETSC_SUCCESS);
@@ -2645,15 +2645,15 @@ PetscErrorCode PetscSectionSymLabelGetStratum(PetscSectionSym sym, PetscInt stra
   PetscCall(PetscObjectGetName((PetscObject)sl->label, &name));
   PetscCheck(i <= sl->numStrata, PetscObjectComm((PetscObject)sym), PETSC_ERR_ARG_OUTOFRANGE, "Stratum %" PetscInt_FMT " not found in label %s", stratum, name);
   if (size) {
-    PetscValidIntPointer(size, 3);
+    PetscValidPointer(size, 3);
     *size = sl->sizes[i];
   }
   if (minOrient) {
-    PetscValidIntPointer(minOrient, 4);
+    PetscValidPointer(minOrient, 4);
     *minOrient = sl->minMaxOrients[i][0];
   }
   if (maxOrient) {
-    PetscValidIntPointer(maxOrient, 5);
+    PetscValidPointer(maxOrient, 5);
     *maxOrient = sl->minMaxOrients[i][1];
   }
   if (perms) {

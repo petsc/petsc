@@ -106,7 +106,7 @@ PetscErrorCode DMPlexTriangleSetOptions(DM dm, const char *opts)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidCharPointer(opts, 2);
+  PetscValidPointer(opts, 2);
   PetscCall(PetscFree(mesh->triangleOpts));
   PetscCall(PetscStrallocpy(opts, &mesh->triangleOpts));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -131,7 +131,7 @@ PetscErrorCode DMPlexTetgenSetOptions(DM dm, const char *opts)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidCharPointer(opts, 2);
+  PetscValidPointer(opts, 2);
   PetscCall(PetscFree(mesh->tetgenOpts));
   PetscCall(PetscStrallocpy(opts, &mesh->tetgenOpts));
   PetscFunctionReturn(PETSC_SUCCESS);

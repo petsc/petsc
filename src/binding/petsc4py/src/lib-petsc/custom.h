@@ -48,8 +48,8 @@ PetscErrorCode PetscLogStageFindId(const char name[], PetscLogStage *stageid)
   PetscBool     match    = PETSC_FALSE;
 
   PetscFunctionBegin;
-  PetscValidCharPointer(name,1);
-  PetscValidIntPointer(stageid,2);
+  PetscValidPointer(name,1);
+  PetscValidPointer(stageid,2);
   *stageid = -1;
   if (!(stageLog=petsc_stageLog)) PetscFunctionReturn(PETSC_SUCCESS); /* logging is off ? */
   for (s = 0; s < stageLog->numStages; s++) {
@@ -68,8 +68,8 @@ PetscErrorCode PetscLogClassFindId(const char name[], PetscClassId *classid)
   PetscBool     match    = PETSC_FALSE;
 
   PetscFunctionBegin;
-  PetscValidCharPointer(name,1);
-  PetscValidIntPointer(classid,2);
+  PetscValidPointer(name,1);
+  PetscValidPointer(classid,2);
   *classid = -1;
   if (!(stageLog=petsc_stageLog)) PetscFunctionReturn(PETSC_SUCCESS); /* logging is off ? */
   for (c = 0; c < stageLog->classLog->numClasses; c++) {
@@ -89,8 +89,8 @@ PetscErrorCode PetscLogEventFindId(const char name[], PetscLogEvent *eventid)
   PetscBool     match    = PETSC_FALSE;
 
   PetscFunctionBegin;
-  PetscValidCharPointer(name,1);
-  PetscValidIntPointer(eventid,2);
+  PetscValidPointer(name,1);
+  PetscValidPointer(eventid,2);
   *eventid = -1;
   if (!(stageLog=petsc_stageLog)) PetscFunctionReturn(PETSC_SUCCESS); /* logging is off ? */
   for (e = 0; e < stageLog->eventLog->numEvents; e++) {
@@ -546,7 +546,7 @@ PetscErrorCode TaoConverged(Tao tao, TaoConvergedReason *reason)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
-  PetscValidBoolPointer(reason,2);
+  PetscValidPointer(reason,2);
   if (tao->ops->convergencetest) {
     PetscUseTypeMethod(tao,convergencetest,tao->cnvP);
   } else {
@@ -595,7 +595,7 @@ PetscErrorCode TaoHasGradientRoutine(Tao tao, PetscBool* flg)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
-  PetscValidBoolPointer(flg,2);
+  PetscValidPointer(flg,2);
   *flg = (PetscBool)(tao->ops->computegradient || tao->ops->computeobjectiveandgradient);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -606,7 +606,7 @@ PetscErrorCode TaoHasHessianRoutine(Tao tao, PetscBool* flg)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
-  PetscValidBoolPointer(flg,2);
+  PetscValidPointer(flg,2);
   *flg = tao->ops->computehessian;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -645,8 +645,8 @@ PetscErrorCode TaoApplyLineSearch(Tao tao, PetscReal* f, PetscReal *s, TaoLineSe
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
-  PetscValidRealPointer(f,2);
-  PetscValidRealPointer(s,3);
+  PetscValidPointer(f,2);
+  PetscValidPointer(s,3);
   PetscCall(TaoLineSearchApply(tao->linesearch,tao->solution,f,tao->gradient,tao->stepdirection,s,lsr));
   PetscCall(TaoAddLineSearchCounts(tao));
   PetscFunctionReturn(PETSC_SUCCESS);

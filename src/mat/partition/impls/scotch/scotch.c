@@ -76,7 +76,7 @@ PetscErrorCode MatPartitioningPTScotchGetImbalance(MatPartitioning part, PetscRe
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part, MAT_PARTITIONING_CLASSID, 1);
-  PetscValidRealPointer(imb, 2);
+  PetscValidPointer(imb, 2);
   PetscUseMethod(part, "MatPartitioningPTScotchGetImbalance_C", (MatPartitioning, PetscReal *), (part, imb));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -94,7 +94,7 @@ PetscErrorCode DMPlexGetAdjacencyUseAnchors(DM dm, PetscBool *useAnchors)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidBoolPointer(useAnchors, 2);
+  PetscValidPointer(useAnchors, 2);
   *useAnchors = mesh->useAnchors;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -283,7 +283,7 @@ PetscErrorCode DMPlexGetAdjacency(DM dm, PetscInt p, PetscInt *adjSize, PetscInt
 
   PetscFunctionBeginHot;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidIntPointer(adjSize, 3);
+  PetscValidPointer(adjSize, 3);
   PetscValidPointer(adj, 4);
   PetscCall(DMGetBasicAdjacency(dm, &useCone, &useClosure));
   PetscCall(DMPlexGetAdjacencyUseAnchors(dm, &useAnchors));
@@ -1431,7 +1431,7 @@ PetscErrorCode DMPlexGetPartitionBalance(DM dm, PetscBool *flg)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidBoolPointer(flg, 2);
+  PetscValidPointer(flg, 2);
   *flg = mesh->partitionBalance;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -2027,7 +2027,7 @@ PetscErrorCode DMPlexGetOverlap(DM dm, PetscInt *overlap)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidIntPointer(overlap, 2);
+  PetscValidPointer(overlap, 2);
   PetscUseMethod(dm, "DMPlexGetOverlap_C", (DM, PetscInt *), (dm, overlap));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -2117,7 +2117,7 @@ PetscErrorCode DMPlexDistributeGetDefault(DM dm, PetscBool *dist)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidBoolPointer(dist, 2);
+  PetscValidPointer(dist, 2);
   PetscUseMethod(dm, "DMPlexDistributeGetDefault_C", (DM, PetscBool *), (dm, dist));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -2270,7 +2270,7 @@ PetscErrorCode DMPlexIsDistributed(DM dm, PetscBool *distributed)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidBoolPointer(distributed, 2);
+  PetscValidPointer(distributed, 2);
   PetscCall(PetscObjectGetComm((PetscObject)dm, &comm));
   PetscCallMPI(MPI_Comm_size(comm, &size));
   if (size == 1) {
@@ -2307,7 +2307,7 @@ PetscErrorCode DMPlexDistributionSetName(DM dm, const char name[])
 
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(dm, DM_CLASSID, 1, DMPLEX);
-  if (name) PetscValidCharPointer(name, 2);
+  if (name) PetscValidPointer(name, 2);
   PetscCall(PetscFree(mesh->distributionName));
   PetscCall(PetscStrallocpy(name, &mesh->distributionName));
   PetscFunctionReturn(PETSC_SUCCESS);

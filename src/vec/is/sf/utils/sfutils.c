@@ -432,7 +432,7 @@ PetscErrorCode PetscSFCreateSectionSF(PetscSF sf, PetscSection rootSection, Pets
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sf, PETSCSF_CLASSID, 1);
   PetscValidPointer(rootSection, 2);
-  /* Cannot check PetscValidIntPointer(remoteOffsets,3) because it can be NULL if sf does not reference any points in leafSection */
+  /* Cannot check PetscValidPointer(remoteOffsets,3) because it can be NULL if sf does not reference any points in leafSection */
   PetscValidPointer(leafSection, 4);
   PetscValidPointer(sectionSF, 5);
   PetscCall(PetscObjectGetComm((PetscObject)sf, &comm));
@@ -699,10 +699,10 @@ PetscErrorCode PetscSFCreateByMatchingIndices(PetscLayout layout, PetscInt numRo
   PetscBool flag;
 
   PetscFunctionBegin;
-  if (rootIndices) PetscValidIntPointer(rootIndices, 3);
-  if (rootLocalIndices) PetscValidIntPointer(rootLocalIndices, 4);
-  if (leafIndices) PetscValidIntPointer(leafIndices, 7);
-  if (leafLocalIndices) PetscValidIntPointer(leafLocalIndices, 8);
+  if (rootIndices) PetscValidPointer(rootIndices, 3);
+  if (rootLocalIndices) PetscValidPointer(rootLocalIndices, 4);
+  if (leafIndices) PetscValidPointer(leafIndices, 7);
+  if (leafLocalIndices) PetscValidPointer(leafLocalIndices, 8);
   if (sfA) PetscValidPointer(sfA, 10);
   PetscValidPointer(sf, 11);
   PetscCheck(numRootIndices >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "numRootIndices (%" PetscInt_FMT ") must be non-negative", numRootIndices);

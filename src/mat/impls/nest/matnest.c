@@ -541,11 +541,11 @@ static PetscErrorCode MatNestFindISRange(Mat A, PetscInt n, const IS list[], IS 
   PetscValidPointer(list, 3);
   PetscValidHeaderSpecific(is, IS_CLASSID, 4);
   if (begin) {
-    PetscValidIntPointer(begin, 5);
+    PetscValidPointer(begin, 5);
     *begin = -1;
   }
   if (end) {
-    PetscValidIntPointer(end, 6);
+    PetscValidPointer(end, 6);
     *end = -1;
   }
   for (i = 0; i < n; i++) {

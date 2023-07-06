@@ -91,19 +91,19 @@ PetscErrorCode DMDAGetNumCells(DM dm, PetscInt *numCellsX, PetscInt *numCellsY, 
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(dm, DM_CLASSID, 1, DMDA);
   if (numCellsX) {
-    PetscValidIntPointer(numCellsX, 2);
+    PetscValidPointer(numCellsX, 2);
     *numCellsX = mx;
   }
   if (numCellsY) {
-    PetscValidIntPointer(numCellsY, 3);
+    PetscValidPointer(numCellsY, 3);
     *numCellsY = my;
   }
   if (numCellsZ) {
-    PetscValidIntPointer(numCellsZ, 4);
+    PetscValidPointer(numCellsZ, 4);
     *numCellsZ = mz;
   }
   if (numCells) {
-    PetscValidIntPointer(numCells, 5);
+    PetscValidPointer(numCells, 5);
     *numCells = nC;
   }
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -130,7 +130,7 @@ PetscErrorCode DMDAGetCellPoint(DM dm, PetscInt i, PetscInt j, PetscInt k, Petsc
 
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(dm, DM_CLASSID, 1, DMDA);
-  PetscValidIntPointer(point, 5);
+  PetscValidPointer(point, 5);
   PetscCall(DMDAGetLocalInfo(dm, &info));
   if (dim > 0) PetscCheck(!(i < info.gxs) && !(i >= info.gxs + info.gxm), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "X index %" PetscInt_FMT " not in [%" PetscInt_FMT ", %" PetscInt_FMT ")", i, info.gxs, info.gxs + info.gxm);
   if (dim > 1) PetscCheck(!(j < info.gys) && !(j >= info.gys + info.gym), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Y index %" PetscInt_FMT " not in [%" PetscInt_FMT ", %" PetscInt_FMT ")", j, info.gys, info.gys + info.gym);
@@ -151,19 +151,19 @@ PetscErrorCode DMDAGetNumVertices(DM dm, PetscInt *numVerticesX, PetscInt *numVe
 
   PetscFunctionBegin;
   if (numVerticesX) {
-    PetscValidIntPointer(numVerticesX, 2);
+    PetscValidPointer(numVerticesX, 2);
     *numVerticesX = nVx;
   }
   if (numVerticesY) {
-    PetscValidIntPointer(numVerticesY, 3);
+    PetscValidPointer(numVerticesY, 3);
     *numVerticesY = nVy;
   }
   if (numVerticesZ) {
-    PetscValidIntPointer(numVerticesZ, 4);
+    PetscValidPointer(numVerticesZ, 4);
     *numVerticesZ = nVz;
   }
   if (numVertices) {
-    PetscValidIntPointer(numVertices, 5);
+    PetscValidPointer(numVertices, 5);
     *numVertices = nV;
   }
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -183,27 +183,27 @@ PetscErrorCode DMDAGetNumFaces(DM dm, PetscInt *numXFacesX, PetscInt *numXFaces,
 
   PetscFunctionBegin;
   if (numXFacesX) {
-    PetscValidIntPointer(numXFacesX, 2);
+    PetscValidPointer(numXFacesX, 2);
     *numXFacesX = nxF;
   }
   if (numXFaces) {
-    PetscValidIntPointer(numXFaces, 3);
+    PetscValidPointer(numXFaces, 3);
     *numXFaces = nXF;
   }
   if (numYFacesY) {
-    PetscValidIntPointer(numYFacesY, 4);
+    PetscValidPointer(numYFacesY, 4);
     *numYFacesY = nyF;
   }
   if (numYFaces) {
-    PetscValidIntPointer(numYFaces, 5);
+    PetscValidPointer(numYFaces, 5);
     *numYFaces = nYF;
   }
   if (numZFacesZ) {
-    PetscValidIntPointer(numZFacesZ, 6);
+    PetscValidPointer(numZFacesZ, 6);
     *numZFacesZ = nzF;
   }
   if (numZFaces) {
-    PetscValidIntPointer(numZFaces, 7);
+    PetscValidPointer(numZFaces, 7);
     *numZFaces = nZF;
   }
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -215,8 +215,8 @@ PetscErrorCode DMDAGetHeightStratum(DM dm, PetscInt height, PetscInt *pStart, Pe
   PetscInt       nC, nV, nXF, nYF, nZF;
 
   PetscFunctionBegin;
-  if (pStart) PetscValidIntPointer(pStart, 3);
-  if (pEnd) PetscValidIntPointer(pEnd, 4);
+  if (pStart) PetscValidPointer(pStart, 3);
+  if (pEnd) PetscValidPointer(pEnd, 4);
   PetscCall(DMDAGetNumCells(dm, NULL, NULL, NULL, &nC));
   PetscCall(DMDAGetNumVertices(dm, NULL, NULL, NULL, &nV));
   PetscCall(DMDAGetNumFaces(dm, NULL, &nXF, NULL, &nYF, NULL, &nZF));
@@ -246,8 +246,8 @@ PetscErrorCode DMDAGetDepthStratum(DM dm, PetscInt depth, PetscInt *pStart, Pets
   PetscInt       nC, nV, nXF, nYF, nZF;
 
   PetscFunctionBegin;
-  if (pStart) PetscValidIntPointer(pStart, 3);
-  if (pEnd) PetscValidIntPointer(pEnd, 4);
+  if (pStart) PetscValidPointer(pStart, 3);
+  if (pEnd) PetscValidPointer(pEnd, 4);
   PetscCall(DMDAGetNumCells(dm, NULL, NULL, NULL, &nC));
   PetscCall(DMDAGetNumVertices(dm, NULL, NULL, NULL, &nV));
   PetscCall(DMDAGetNumFaces(dm, NULL, &nXF, NULL, &nYF, NULL, &nZF));

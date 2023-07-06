@@ -1303,7 +1303,7 @@ PetscErrorCode TSThetaGetTheta(TS ts, PetscReal *theta)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
-  PetscValidRealPointer(theta, 2);
+  PetscValidPointer(theta, 2);
   PetscUseMethod(ts, "TSThetaGetTheta_C", (TS, PetscReal *), (ts, theta));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1351,7 +1351,7 @@ PetscErrorCode TSThetaGetEndpoint(TS ts, PetscBool *endpoint)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
-  PetscValidBoolPointer(endpoint, 2);
+  PetscValidPointer(endpoint, 2);
   PetscUseMethod(ts, "TSThetaGetEndpoint_C", (TS, PetscBool *), (ts, endpoint));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

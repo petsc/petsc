@@ -118,7 +118,7 @@ PetscErrorCode DMPlexSetTransformType(DM dm, DMPlexTransformType type)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(dm, DM_CLASSID, 1, DMPLEX);
-  if (type) PetscValidCharPointer(type, 2);
+  if (type) PetscValidPointer(type, 2);
   PetscCall(PetscFree(mesh->transformType));
   PetscCall(PetscStrallocpy(type, &mesh->transformType));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -188,7 +188,7 @@ PetscErrorCode DMPlexGetRefinementUniform(DM dm, PetscBool *refinementUniform)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(dm, DM_CLASSID, 1, DMPLEX);
-  PetscValidBoolPointer(refinementUniform, 2);
+  PetscValidPointer(refinementUniform, 2);
   *refinementUniform = mesh->refinementUniform;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -233,7 +233,7 @@ PetscErrorCode DMPlexGetRefinementLimit(DM dm, PetscReal *refinementLimit)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidRealPointer(refinementLimit, 2);
+  PetscValidPointer(refinementLimit, 2);
   /* if (mesh->refinementLimit < 0) = getMaxVolume()/2.0; */
   *refinementLimit = mesh->refinementLimit;
   PetscFunctionReturn(PETSC_SUCCESS);

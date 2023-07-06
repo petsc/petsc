@@ -259,8 +259,8 @@
 PetscErrorCode PetscSortedInt(PetscInt n, const PetscInt X[], PetscBool *sorted)
 {
   PetscFunctionBegin;
-  if (n) PetscValidIntPointer(X, 2);
-  PetscValidBoolPointer(sorted, 3);
+  if (n) PetscValidPointer(X, 2);
+  PetscValidPointer(sorted, 3);
   PetscSorted(n, X, *sorted);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -284,8 +284,8 @@ PetscErrorCode PetscSortedInt(PetscInt n, const PetscInt X[], PetscBool *sorted)
 PetscErrorCode PetscSortedInt64(PetscInt n, const PetscInt64 X[], PetscBool *sorted)
 {
   PetscFunctionBegin;
-  if (n) PetscValidInt64Pointer(X, 2);
-  PetscValidBoolPointer(sorted, 3);
+  if (n) PetscValidPointer(X, 2);
+  PetscValidPointer(sorted, 3);
   PetscSorted(n, X, *sorted);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -313,7 +313,7 @@ PetscErrorCode PetscSortInt(PetscInt n, PetscInt X[])
   PetscInt pivot, t1;
 
   PetscFunctionBegin;
-  if (n) PetscValidIntPointer(X, 2);
+  if (n) PetscValidPointer(X, 2);
   QuickSort1(PetscSortInt, X, n, pivot, t1);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -339,7 +339,7 @@ PetscErrorCode PetscSortInt64(PetscInt n, PetscInt64 X[])
   PetscCount pivot, t1;
 
   PetscFunctionBegin;
-  if (n) PetscValidInt64Pointer(X, 2);
+  if (n) PetscValidPointer(X, 2);
   QuickSort1(PetscSortInt64, X, n, pivot, t1);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -365,7 +365,7 @@ PetscErrorCode PetscSortCount(PetscInt n, PetscCount X[])
   PetscCount pivot, t1;
 
   PetscFunctionBegin;
-  if (n) PetscValidCountPointer(X, 2);
+  if (n) PetscValidPointer(X, 2);
   QuickSort1(PetscSortCount, X, n, pivot, t1);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -388,7 +388,7 @@ PetscErrorCode PetscSortReverseInt(PetscInt n, PetscInt X[])
   PetscInt pivot, t1;
 
   PetscFunctionBegin;
-  if (n) PetscValidIntPointer(X, 2);
+  if (n) PetscValidPointer(X, 2);
   QuickSortReverse1(PetscSortReverseInt, X, n, pivot, t1);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -414,7 +414,7 @@ PetscErrorCode PetscSortedRemoveDupsInt(PetscInt *n, PetscInt X[])
   PetscInt i, s = 0, N = *n, b = 0;
 
   PetscFunctionBegin;
-  PetscValidIntPointer(n, 1);
+  PetscValidPointer(n, 1);
   PetscCheckSorted(*n, X);
   for (i = 0; i < N - 1; i++) {
     if (X[b + s + 1] != X[b]) {
@@ -477,7 +477,7 @@ PetscErrorCode PetscSortedCheckDupsInt(PetscInt n, const PetscInt X[], PetscBool
 PetscErrorCode PetscSortRemoveDupsInt(PetscInt *n, PetscInt X[])
 {
   PetscFunctionBegin;
-  PetscValidIntPointer(n, 1);
+  PetscValidPointer(n, 1);
   PetscCall(PetscSortInt(*n, X));
   PetscCall(PetscSortedRemoveDupsInt(n, X));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -505,12 +505,12 @@ PetscErrorCode PetscFindInt(PetscInt key, PetscInt n, const PetscInt X[], PetscI
   PetscInt lo = 0, hi = n;
 
   PetscFunctionBegin;
-  PetscValidIntPointer(loc, 4);
+  PetscValidPointer(loc, 4);
   if (!n) {
     *loc = -1;
     PetscFunctionReturn(PETSC_SUCCESS);
   }
-  PetscValidIntPointer(X, 3);
+  PetscValidPointer(X, 3);
   PetscCheckSorted(n, X);
   while (hi - lo > 1) {
     PetscInt mid = lo + (hi - lo) / 2;
@@ -544,8 +544,8 @@ PetscErrorCode PetscCheckDupsInt(PetscInt n, const PetscInt X[], PetscBool *dups
   PetscBool  missing;
 
   PetscFunctionBegin;
-  if (n) PetscValidIntPointer(X, 2);
-  PetscValidBoolPointer(dups, 3);
+  if (n) PetscValidPointer(X, 2);
+  PetscValidPointer(dups, 3);
   *dups = PETSC_FALSE;
   if (n > 1) {
     PetscCall(PetscHSetICreate(&ht));
@@ -584,12 +584,12 @@ PetscErrorCode PetscFindMPIInt(PetscMPIInt key, PetscInt n, const PetscMPIInt X[
   PetscInt lo = 0, hi = n;
 
   PetscFunctionBegin;
-  PetscValidIntPointer(loc, 4);
+  PetscValidPointer(loc, 4);
   if (!n) {
     *loc = -1;
     PetscFunctionReturn(PETSC_SUCCESS);
   }
-  PetscValidIntPointer(X, 3);
+  PetscValidPointer(X, 3);
   PetscCheckSorted(n, X);
   while (hi - lo > 1) {
     PetscInt mid = lo + (hi - lo) / 2;

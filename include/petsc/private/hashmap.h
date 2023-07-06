@@ -145,7 +145,7 @@ M*/
   { \
     PetscFunctionBegin; \
     PetscValidPointer(ht, 1); \
-    PetscValidIntPointer(n, 2); \
+    PetscValidPointer(n, 2); \
     *n = (PetscInt)kh_size(ht); \
     PetscFunctionReturn(PETSC_SUCCESS); \
   } \
@@ -154,7 +154,7 @@ M*/
   { \
     PetscFunctionBegin; \
     PetscValidPointer(ht, 1); \
-    PetscValidIntPointer(n, 2); \
+    PetscValidPointer(n, 2); \
     *n = (PetscInt)kh_n_buckets(ht); \
     PetscFunctionReturn(PETSC_SUCCESS); \
   } \
@@ -175,7 +175,7 @@ M*/
     khiter_t iter; \
     PetscFunctionBeginHot; \
     PetscValidPointer(ht, 1); \
-    PetscValidIntPointer(val, 3); \
+    PetscValidPointer(val, 3); \
     iter = kh_get(HashT, ht, key); \
     *val = (iter != kh_end(ht)) ? kh_val(ht, iter) : (DefaultValue); \
     PetscFunctionReturn(PETSC_SUCCESS); \
@@ -306,7 +306,7 @@ M*/
     PetscInt pos; \
     PetscFunctionBegin; \
     PetscValidPointer(ht, 1); \
-    PetscValidIntPointer(off, 2); \
+    PetscValidPointer(off, 2); \
     pos = *off; \
     kh_foreach_key(ht, key, array[pos++] = key); \
     *off = pos; \
@@ -319,7 +319,7 @@ M*/
     PetscInt pos; \
     PetscFunctionBegin; \
     PetscValidPointer(ht, 1); \
-    PetscValidIntPointer(off, 2); \
+    PetscValidPointer(off, 2); \
     pos = *off; \
     kh_foreach_value(ht, val, array[pos++] = val); \
     *off = pos; \
@@ -333,7 +333,7 @@ M*/
     PetscInt pos; \
     PetscFunctionBegin; \
     PetscValidPointer(ht, 1); \
-    PetscValidIntPointer(off, 2); \
+    PetscValidPointer(off, 2); \
     pos     = *off; \
     kh_foreach(ht, key, val, { \
       karray[pos]   = key; \

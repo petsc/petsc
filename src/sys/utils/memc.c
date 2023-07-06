@@ -44,7 +44,7 @@ PetscErrorCode PetscMemcmp(const void *str1, const void *str2, size_t len, Petsc
   PetscFunctionBegin;
   PetscValidPointer(str1, 1);
   PetscValidPointer(str2, 2);
-  PetscValidBoolPointer(e, 4);
+  PetscValidPointer(e, 4);
   *e = memcmp((char *)str1, (char *)str2, len) ? PETSC_FALSE : PETSC_TRUE;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

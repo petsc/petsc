@@ -107,7 +107,7 @@ PetscErrorCode DMPlexGetScale(DM dm, PetscUnit unit, PetscReal *scale)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidRealPointer(scale, 3);
+  PetscValidPointer(scale, 3);
   *scale = mesh->scale[unit];
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -2226,7 +2226,7 @@ PetscErrorCode DMPlexComputeIntegralFEM(DM dm, Vec X, PetscScalar *integral, voi
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidHeaderSpecific(X, VEC_CLASSID, 2);
-  PetscValidScalarPointer(integral, 3);
+  PetscValidPointer(integral, 3);
   PetscCall(PetscLogEventBegin(DMPLEX_IntegralFEM, dm, 0, 0, 0));
   PetscCall(DMGetNumFields(dm, &Nf));
   PetscCall(DMPlexGetVTKCellHeight(dm, &cellHeight));
@@ -2465,8 +2465,8 @@ PetscErrorCode DMPlexComputeBdIntegral(DM dm, Vec X, DMLabel label, PetscInt num
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidHeaderSpecific(X, VEC_CLASSID, 2);
   PetscValidPointer(label, 3);
-  if (vals) PetscValidIntPointer(vals, 5);
-  PetscValidScalarPointer(integral, 7);
+  if (vals) PetscValidPointer(vals, 5);
+  PetscValidPointer(integral, 7);
   PetscCall(PetscLogEventBegin(DMPLEX_IntegralFEM, dm, 0, 0, 0));
   PetscCall(DMPlexGetDepthLabel(dm, &depthLabel));
   PetscCall(DMGetDimension(dm, &dim));

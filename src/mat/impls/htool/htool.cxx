@@ -846,8 +846,8 @@ PetscErrorCode MatCreateHtoolFromKernel(MPI_Comm comm, PetscInt m, PetscInt n, P
   PetscFunctionBegin;
   PetscCall(MatCreate(comm, &A));
   PetscValidLogicalCollectiveInt(A, spacedim, 6);
-  PetscValidRealPointer(coords_target, 7);
-  PetscValidRealPointer(coords_source, 8);
+  PetscValidPointer(coords_target, 7);
+  PetscValidPointer(coords_source, 8);
   if (!kernelctx) PetscValidFunction(kernel, 9);
   if (!kernel) PetscValidPointer(kernelctx, 10);
   PetscCall(MatSetSizes(A, m, n, M, N));

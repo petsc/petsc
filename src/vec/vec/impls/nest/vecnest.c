@@ -1067,7 +1067,7 @@ PetscErrorCode VecNestGetSize(Vec X, PetscInt *N)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(X, VEC_CLASSID, 1);
-  PetscValidIntPointer(N, 2);
+  PetscValidPointer(N, 2);
   PetscUseMethod(X, "VecNestGetSize_C", (Vec, PetscInt *), (X, N));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

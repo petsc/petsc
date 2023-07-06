@@ -48,7 +48,7 @@ PetscErrorCode MatCreateFFT(MPI_Comm comm, PetscInt ndim, const PetscInt dim[], 
   Mat_FFT    *fft;
 
   PetscFunctionBegin;
-  PetscValidIntPointer(dim, 3);
+  PetscValidPointer(dim, 3);
   PetscValidPointer(A, 5);
   PetscCheck(ndim >= 1, comm, PETSC_ERR_USER, "ndim %" PetscInt_FMT " must be > 0", ndim);
   PetscCallMPI(MPI_Comm_size(comm, &size));

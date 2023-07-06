@@ -226,7 +226,7 @@ PetscErrorCode DMInterpolationSetDim(DMInterpolationInfo ctx, PetscInt dim)
 PetscErrorCode DMInterpolationGetDim(DMInterpolationInfo ctx, PetscInt *dim)
 {
   PetscFunctionBegin;
-  PetscValidIntPointer(dim, 2);
+  PetscValidPointer(dim, 2);
   *dim = ctx->dim;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -270,7 +270,7 @@ PetscErrorCode DMInterpolationSetDof(DMInterpolationInfo ctx, PetscInt dof)
 PetscErrorCode DMInterpolationGetDof(DMInterpolationInfo ctx, PetscInt *dof)
 {
   PetscFunctionBegin;
-  PetscValidIntPointer(dof, 2);
+  PetscValidPointer(dof, 2);
   *dof = ctx->dof;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1711,7 +1711,7 @@ PetscErrorCode DMSNESCheckDiscretization(SNES snes, DM dm, PetscReal t, Vec u, P
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
   PetscValidHeaderSpecific(dm, DM_CLASSID, 2);
   PetscValidHeaderSpecific(u, VEC_CLASSID, 4);
-  if (error) PetscValidRealPointer(error, 6);
+  if (error) PetscValidPointer(error, 6);
 
   PetscCall(DMComputeExactSolution(dm, t, u, NULL));
   PetscCall(VecViewFromOptions(u, NULL, "-vec_view"));
@@ -1794,7 +1794,7 @@ PetscErrorCode DMSNESCheckResidual(SNES snes, DM dm, Vec u, PetscReal tol, Petsc
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
   PetscValidHeaderSpecific(dm, DM_CLASSID, 2);
   PetscValidHeaderSpecific(u, VEC_CLASSID, 3);
-  if (residual) PetscValidRealPointer(residual, 5);
+  if (residual) PetscValidPointer(residual, 5);
   PetscCall(PetscObjectGetComm((PetscObject)snes, &comm));
   PetscCall(DMComputeExactSolution(dm, 0.0, u, NULL));
   PetscCall(VecDuplicate(u, &r));
@@ -1845,8 +1845,8 @@ PetscErrorCode DMSNESCheckJacobian(SNES snes, DM dm, Vec u, PetscReal tol, Petsc
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
   PetscValidHeaderSpecific(dm, DM_CLASSID, 2);
   PetscValidHeaderSpecific(u, VEC_CLASSID, 3);
-  if (isLinear) PetscValidBoolPointer(isLinear, 5);
-  if (convRate) PetscValidRealPointer(convRate, 6);
+  if (isLinear) PetscValidPointer(isLinear, 5);
+  if (convRate) PetscValidPointer(convRate, 6);
   PetscCall(PetscObjectGetComm((PetscObject)snes, &comm));
   PetscCall(DMComputeExactSolution(dm, 0.0, u, NULL));
   /* Create and view matrices */

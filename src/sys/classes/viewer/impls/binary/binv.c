@@ -311,7 +311,7 @@ PetscErrorCode PetscViewerBinaryGetUseMPIIO(PetscViewer viewer, PetscBool *use)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 1);
-  PetscValidBoolPointer(use, 2);
+  PetscValidPointer(use, 2);
   *use = PETSC_FALSE;
   PetscTryMethod(viewer, "PetscViewerBinaryGetUseMPIIO_C", (PetscViewer, PetscBool *), (viewer, use));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -379,7 +379,7 @@ PetscErrorCode PetscViewerBinaryGetFlowControl(PetscViewer viewer, PetscInt *fc)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 1);
-  PetscValidIntPointer(fc, 2);
+  PetscValidPointer(fc, 2);
   PetscUseMethod(viewer, "PetscViewerBinaryGetFlowControl_C", (PetscViewer, PetscInt *), (viewer, fc));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -526,7 +526,7 @@ PetscErrorCode PetscViewerBinaryGetSkipInfo(PetscViewer viewer, PetscBool *skip)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 1);
-  PetscValidBoolPointer(skip, 2);
+  PetscValidPointer(skip, 2);
   PetscUseMethod(viewer, "PetscViewerBinaryGetSkipInfo_C", (PetscViewer, PetscBool *), (viewer, skip));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -601,7 +601,7 @@ PetscErrorCode PetscViewerBinaryGetSkipOptions(PetscViewer viewer, PetscBool *sk
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 1);
-  PetscValidBoolPointer(skip, 2);
+  PetscValidPointer(skip, 2);
   PetscUseMethod(viewer, "PetscViewerBinaryGetSkipOptions_C", (PetscViewer, PetscBool *), (viewer, skip));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -680,7 +680,7 @@ PetscErrorCode PetscViewerBinaryGetSkipHeader(PetscViewer viewer, PetscBool *ski
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 1);
-  PetscValidBoolPointer(skip, 2);
+  PetscValidPointer(skip, 2);
   PetscUseMethod(viewer, "PetscViewerBinaryGetSkipHeader_C", (PetscViewer, PetscBool *), (viewer, skip));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

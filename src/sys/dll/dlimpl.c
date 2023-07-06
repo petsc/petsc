@@ -52,7 +52,7 @@ PetscErrorCode PetscDLOpen(const char name[], PetscDLMode mode, PetscDLHandle *h
   dlhandle_t       dlhandle;
 
   PetscFunctionBegin;
-  PetscValidCharPointer(name, 1);
+  PetscValidPointer(name, 1);
   PetscValidPointer(handle, 3);
 
   dlflags1 = 0;
@@ -219,7 +219,7 @@ PetscErrorCode PetscDLSym(PetscDLHandle handle, const char symbol[], void **valu
   dlsymbol_t              dlsymbol;
 
   PetscFunctionBegin;
-  PetscValidCharPointer(symbol, 2);
+  PetscValidPointer(symbol, 2);
   PetscValidPointer(value, 3);
 
   dlhandle = (dlhandle_t)0;

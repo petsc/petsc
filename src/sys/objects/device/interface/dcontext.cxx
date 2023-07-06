@@ -213,7 +213,7 @@ PetscErrorCode PetscDeviceContextGetStreamType(PetscDeviceContext dctx, PetscStr
 {
   PetscFunctionBegin;
   PetscCall(PetscDeviceContextGetOptionalNullContext_Internal(&dctx));
-  PetscValidIntPointer(type, 2);
+  PetscValidPointer(type, 2);
   *type = dctx->streamType;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -468,7 +468,7 @@ PetscErrorCode PetscDeviceContextQueryIdle(PetscDeviceContext dctx, PetscBool *i
 {
   PetscFunctionBegin;
   PetscCall(PetscDeviceContextGetOptionalNullContext_Internal(&dctx));
-  PetscValidBoolPointer(idle, 2);
+  PetscValidPointer(idle, 2);
   PetscCall(PetscLogEventBegin(DCONTEXT_QueryIdle, dctx, nullptr, nullptr, nullptr));
   PetscUseTypeMethod(dctx, query, idle);
   PetscCall(PetscLogEventEnd(DCONTEXT_QueryIdle, dctx, nullptr, nullptr, nullptr));
@@ -1053,7 +1053,7 @@ PetscErrorCode PetscDeviceContextViewFromOptions(PetscDeviceContext dctx, PetscO
   PetscFunctionBegin;
   PetscCall(PetscDeviceContextGetOptionalNullContext_Internal(&dctx));
   if (obj) PetscValidHeader(obj, 2);
-  PetscValidCharPointer(name, 3);
+  PetscValidPointer(name, 3);
   PetscCall(PetscObjectViewFromOptions(PetscObjectCast(dctx), obj, name));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

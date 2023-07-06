@@ -306,7 +306,7 @@ PetscErrorCode PetscDeviceGetDeviceId(PetscDevice device, PetscInt *id)
 {
   PetscFunctionBegin;
   PetscValidDevice(device, 1);
-  PetscValidIntPointer(id, 2);
+  PetscValidPointer(id, 2);
   *id = device->deviceId;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

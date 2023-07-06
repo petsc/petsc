@@ -728,7 +728,7 @@ PetscErrorCode KSPMINRESGetUseQLP(KSP ksp, PetscBool *qlp)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
-  PetscValidBoolPointer(qlp, 2);
+  PetscValidPointer(qlp, 2);
   PetscUseMethod(ksp, "KSPMINRESGetUseQLP_C", (KSP, PetscBool *), (ksp, qlp));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

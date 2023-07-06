@@ -566,7 +566,7 @@ PetscErrorCode MatPartitioningGetUseEdgeWeights(MatPartitioning part, PetscBool 
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part, MAT_PARTITIONING_CLASSID, 1);
-  PetscValidBoolPointer(use_edge_weights, 2);
+  PetscValidPointer(use_edge_weights, 2);
   *use_edge_weights = part->use_edge_weights;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -714,7 +714,7 @@ PetscErrorCode MatPartitioningSetType(MatPartitioning part, MatPartitioningType 
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part, MAT_PARTITIONING_CLASSID, 1);
-  PetscValidCharPointer(type, 2);
+  PetscValidPointer(type, 2);
 
   PetscCall(PetscObjectTypeCompare((PetscObject)part, type, &match));
   if (match) PetscFunctionReturn(PETSC_SUCCESS);

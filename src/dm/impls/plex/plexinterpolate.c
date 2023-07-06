@@ -53,7 +53,7 @@ PetscErrorCode DMPlexGetRawFaces_Internal(DM dm, DMPolytopeType ct, const PetscI
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  if (cone) PetscValidIntPointer(cone, 3);
+  if (cone) PetscValidPointer(cone, 3);
   PetscCall(DMPlexGetMaxSizes(dm, &maxConeSize, &maxSupportSize));
   maxSize = PetscMax(maxConeSize, maxSupportSize);
   if (faceTypes) getSize += maxSize;

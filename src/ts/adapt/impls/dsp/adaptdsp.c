@@ -323,7 +323,7 @@ PetscErrorCode TSAdaptDSPSetFilter(TSAdapt adapt, const char *name)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(adapt, TSADAPT_CLASSID, 1);
-  PetscValidCharPointer(name, 2);
+  PetscValidPointer(name, 2);
   PetscTryMethod(adapt, "TSAdaptDSPSetFilter_C", (TSAdapt, const char *), (adapt, name));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -20,7 +20,7 @@ PetscErrorCode VecTaggerGetSubs_AndOr(VecTagger tagger, PetscInt *nsubs, VecTagg
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tagger, VEC_TAGGER_CLASSID, 1);
   if (nsubs) {
-    PetscValidIntPointer(nsubs, 2);
+    PetscValidPointer(nsubs, 2);
     *nsubs = andOr->nsubs;
   }
   if (subs) {

@@ -684,7 +684,7 @@ PetscErrorCode DMSwarmGetMigrateType(DM dm, DMSwarmMigrateType *mtype)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidIntPointer(mtype, 2);
+  PetscValidPointer(mtype, 2);
   *mtype = ((DM_Swarm *)dm->data)->migrate_type;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

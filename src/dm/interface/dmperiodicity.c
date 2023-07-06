@@ -46,9 +46,9 @@ PetscErrorCode DMSetPeriodicity(DM dm, const PetscReal maxCell[], const PetscRea
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  if (maxCell) PetscValidRealPointer(maxCell, 2);
-  if (Lstart) PetscValidRealPointer(Lstart, 3);
-  if (L) PetscValidRealPointer(L, 4);
+  if (maxCell) PetscValidPointer(maxCell, 2);
+  if (Lstart) PetscValidPointer(Lstart, 3);
+  if (L) PetscValidPointer(L, 4);
   PetscCall(DMGetDimension(dm, &dim));
   if (maxCell) {
     if (!dm->maxCell) PetscCall(PetscMalloc1(dim, &dm->maxCell));
@@ -235,7 +235,7 @@ PetscErrorCode DMGetCoordinatesLocalizedLocal(DM dm, PetscBool *areLocalized)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidBoolPointer(areLocalized, 2);
+  PetscValidPointer(areLocalized, 2);
   *areLocalized = dm->coordinates[1].dim < 0 ? PETSC_FALSE : PETSC_TRUE;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -261,7 +261,7 @@ PetscErrorCode DMGetCoordinatesLocalized(DM dm, PetscBool *areLocalized)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidBoolPointer(areLocalized, 2);
+  PetscValidPointer(areLocalized, 2);
   PetscCall(DMGetCoordinatesLocalizedLocal(dm, &localized));
   PetscCall(MPIU_Allreduce(&localized, areLocalized, 1, MPIU_BOOL, MPI_LOR, PetscObjectComm((PetscObject)dm)));
   PetscFunctionReturn(PETSC_SUCCESS);

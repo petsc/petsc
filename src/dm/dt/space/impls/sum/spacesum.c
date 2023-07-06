@@ -20,7 +20,7 @@ PetscErrorCode PetscSpaceSumGetNumSubspaces(PetscSpace sp, PetscInt *numSumSpace
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
-  PetscValidIntPointer(numSumSpaces, 2);
+  PetscValidPointer(numSumSpaces, 2);
   PetscTryMethod(sp, "PetscSpaceSumGetNumSubspaces_C", (PetscSpace, PetscInt *), (sp, numSumSpaces));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

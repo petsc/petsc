@@ -617,7 +617,7 @@ PetscErrorCode ISPairToList(IS xis, IS yis, PetscInt *listlen, IS **islist)
   PetscValidHeaderSpecific(xis, IS_CLASSID, 1);
   PetscValidHeaderSpecific(yis, IS_CLASSID, 2);
   PetscCheckSameComm(xis, 1, yis, 2);
-  PetscValidIntPointer(listlen, 3);
+  PetscValidPointer(listlen, 3);
   PetscValidPointer(islist, 4);
   PetscCall(PetscObjectGetComm((PetscObject)xis, &comm));
   PetscCallMPI(MPI_Comm_rank(comm, &rank));

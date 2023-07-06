@@ -769,7 +769,7 @@ PetscErrorCode DMPlexTransformExtrudeGetLayers(DMPlexTransform tr, PetscInt *lay
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tr, DMPLEXTRANSFORM_CLASSID, 1);
-  PetscValidIntPointer(layers, 2);
+  PetscValidPointer(layers, 2);
   *layers = ex->layers;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -820,7 +820,7 @@ PetscErrorCode DMPlexTransformExtrudeGetThickness(DMPlexTransform tr, PetscReal 
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tr, DMPLEXTRANSFORM_CLASSID, 1);
-  PetscValidRealPointer(thickness, 2);
+  PetscValidPointer(thickness, 2);
   *thickness = ex->thickness;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -881,7 +881,7 @@ PetscErrorCode DMPlexTransformExtrudeGetTensor(DMPlexTransform tr, PetscBool *us
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tr, DMPLEXTRANSFORM_CLASSID, 1);
-  PetscValidBoolPointer(useTensor, 2);
+  PetscValidPointer(useTensor, 2);
   *useTensor = ex->useTensor;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -940,7 +940,7 @@ PetscErrorCode DMPlexTransformExtrudeGetSymmetric(DMPlexTransform tr, PetscBool 
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tr, DMPLEXTRANSFORM_CLASSID, 1);
-  PetscValidBoolPointer(symmetric, 2);
+  PetscValidPointer(symmetric, 2);
   *symmetric = ex->symmetric;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -989,7 +989,7 @@ PetscErrorCode DMPlexTransformExtrudeGetPeriodic(DMPlexTransform tr, PetscBool *
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tr, DMPLEXTRANSFORM_CLASSID, 1);
-  PetscValidBoolPointer(periodic, 2);
+  PetscValidPointer(periodic, 2);
   *periodic = ex->periodic;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

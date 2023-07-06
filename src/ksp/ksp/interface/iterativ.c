@@ -33,7 +33,7 @@ PetscErrorCode KSPGetResidualNorm(KSP ksp, PetscReal *rnorm)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
-  PetscValidRealPointer(rnorm, 2);
+  PetscValidPointer(rnorm, 2);
   *rnorm = ksp->rnorm;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -60,7 +60,7 @@ PetscErrorCode KSPGetIterationNumber(KSP ksp, PetscInt *its)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
-  PetscValidIntPointer(its, 2);
+  PetscValidPointer(its, 2);
   *its = ksp->its;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -88,7 +88,7 @@ PetscErrorCode KSPGetTotalIterations(KSP ksp, PetscInt *its)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
-  PetscValidIntPointer(its, 2);
+  PetscValidPointer(its, 2);
   *its = ksp->totalits;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1319,7 +1319,7 @@ PetscErrorCode KSPGetConvergedNegativeCurvature(KSP ksp, PetscBool *flg)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
-  PetscValidBoolPointer(flg, 2);
+  PetscValidPointer(flg, 2);
   *flg = ksp->converged_neg_curve;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

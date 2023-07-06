@@ -32,7 +32,7 @@ PetscErrorCode PetscObjectStateGet(PetscObject obj, PetscObjectState *state)
 {
   PetscFunctionBegin;
   PetscValidHeader(obj, 1);
-  PetscValidInt64Pointer(state, 2);
+  PetscValidPointer(state, 2);
   *state = obj->state;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -94,7 +94,7 @@ PetscErrorCode PetscObjectComposedDataRegister(PetscInt *id)
   static PetscInt globalcurrentstate = 0;
 
   PetscFunctionBegin;
-  PetscValidIntPointer(id, 1);
+  PetscValidPointer(id, 1);
   *id = globalcurrentstate++;
   if (globalcurrentstate > PetscObjectComposedDataMax) PetscObjectComposedDataMax += 10;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -219,7 +219,7 @@ PetscErrorCode PetscObjectGetId(PetscObject obj, PetscObjectId *id)
 {
   PetscFunctionBegin;
   PetscValidHeader(obj, 1);
-  PetscValidInt64Pointer(id, 2);
+  PetscValidPointer(id, 2);
   *id = obj->id;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -250,7 +250,7 @@ PetscErrorCode PetscObjectCompareId(PetscObject obj, PetscObjectId id, PetscBool
 
   PetscFunctionBegin;
   PetscValidHeader(obj, 1);
-  PetscValidBoolPointer(eq, 3);
+  PetscValidPointer(eq, 3);
   PetscCall(PetscObjectGetId(obj, &oid));
   *eq = (id == oid) ? PETSC_TRUE : PETSC_FALSE;
   PetscFunctionReturn(PETSC_SUCCESS);

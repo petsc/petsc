@@ -32,7 +32,7 @@ PetscErrorCode PetscObjectListRemoveReference(PetscObjectList *fl, const char na
 
   PetscFunctionBegin;
   PetscValidPointer(fl, 1);
-  PetscValidCharPointer(name, 2);
+  PetscValidPointer(name, 2);
   nlist = *fl;
   while (nlist) {
     PetscCall(PetscStrcmp(name, nlist->name, &match));
@@ -207,7 +207,7 @@ PetscErrorCode PetscObjectListReverseFind(PetscObjectList fl, PetscObject obj, c
 {
   PetscFunctionBegin;
   PetscValidPointer(name, 3);
-  if (skipdereference) PetscValidBoolPointer(skipdereference, 4);
+  if (skipdereference) PetscValidPointer(skipdereference, 4);
   *name = NULL;
   while (fl) {
     if (fl->obj == obj) {

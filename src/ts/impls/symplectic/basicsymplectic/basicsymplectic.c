@@ -163,9 +163,9 @@ PetscErrorCode TSBasicSymplecticRegister(TSRosWType name, PetscInt order, PetscI
   BasicSymplecticScheme     scheme;
 
   PetscFunctionBegin;
-  PetscValidCharPointer(name, 1);
-  PetscValidRealPointer(c, 4);
-  PetscValidRealPointer(d, 5);
+  PetscValidPointer(name, 1);
+  PetscValidPointer(c, 4);
+  PetscValidPointer(d, 5);
 
   PetscCall(TSBasicSymplecticInitializePackage());
   PetscCall(PetscNew(&link));

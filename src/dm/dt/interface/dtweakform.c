@@ -544,7 +544,7 @@ PetscErrorCode PetscWeakFormHasJacobian(PetscWeakForm wf, PetscBool *hasJac)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(wf, PETSCWEAKFORM_CLASSID, 1);
-  PetscValidBoolPointer(hasJac, 2);
+  PetscValidPointer(hasJac, 2);
   PetscCall(PetscHMapFormGetSize(wf->form[PETSC_WF_G0], &n0));
   PetscCall(PetscHMapFormGetSize(wf->form[PETSC_WF_G1], &n1));
   PetscCall(PetscHMapFormGetSize(wf->form[PETSC_WF_G2], &n2));
@@ -607,7 +607,7 @@ PetscErrorCode PetscWeakFormHasJacobianPreconditioner(PetscWeakForm wf, PetscBoo
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(wf, PETSCWEAKFORM_CLASSID, 1);
-  PetscValidBoolPointer(hasJacPre, 2);
+  PetscValidPointer(hasJacPre, 2);
   PetscCall(PetscHMapFormGetSize(wf->form[PETSC_WF_GP0], &n0));
   PetscCall(PetscHMapFormGetSize(wf->form[PETSC_WF_GP1], &n1));
   PetscCall(PetscHMapFormGetSize(wf->form[PETSC_WF_GP2], &n2));
@@ -670,7 +670,7 @@ PetscErrorCode PetscWeakFormHasBdJacobian(PetscWeakForm wf, PetscBool *hasJac)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(wf, PETSCWEAKFORM_CLASSID, 1);
-  PetscValidBoolPointer(hasJac, 2);
+  PetscValidPointer(hasJac, 2);
   PetscCall(PetscHMapFormGetSize(wf->form[PETSC_WF_BDG0], &n0));
   PetscCall(PetscHMapFormGetSize(wf->form[PETSC_WF_BDG1], &n1));
   PetscCall(PetscHMapFormGetSize(wf->form[PETSC_WF_BDG2], &n2));
@@ -733,7 +733,7 @@ PetscErrorCode PetscWeakFormHasBdJacobianPreconditioner(PetscWeakForm wf, PetscB
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(wf, PETSCWEAKFORM_CLASSID, 1);
-  PetscValidBoolPointer(hasJacPre, 2);
+  PetscValidPointer(hasJacPre, 2);
   PetscCall(PetscHMapFormGetSize(wf->form[PETSC_WF_BDGP0], &n0));
   PetscCall(PetscHMapFormGetSize(wf->form[PETSC_WF_BDGP1], &n1));
   PetscCall(PetscHMapFormGetSize(wf->form[PETSC_WF_BDGP2], &n2));
@@ -796,7 +796,7 @@ PetscErrorCode PetscWeakFormHasDynamicJacobian(PetscWeakForm wf, PetscBool *hasD
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(wf, PETSCWEAKFORM_CLASSID, 1);
-  PetscValidBoolPointer(hasDynJac, 2);
+  PetscValidPointer(hasDynJac, 2);
   PetscCall(PetscHMapFormGetSize(wf->form[PETSC_WF_GT0], &n0));
   PetscCall(PetscHMapFormGetSize(wf->form[PETSC_WF_GT1], &n1));
   PetscCall(PetscHMapFormGetSize(wf->form[PETSC_WF_GT2], &n2));
@@ -893,7 +893,7 @@ PetscErrorCode PetscWeakFormGetNumFields(PetscWeakForm wf, PetscInt *Nf)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(wf, PETSCWEAKFORM_CLASSID, 1);
-  PetscValidIntPointer(Nf, 2);
+  PetscValidPointer(Nf, 2);
   *Nf = wf->Nf;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

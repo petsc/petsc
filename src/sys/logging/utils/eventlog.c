@@ -353,8 +353,8 @@ PetscErrorCode PetscEventRegLogRegister(PetscEventRegLog eventLog, const char en
   int                e;
 
   PetscFunctionBegin;
-  PetscValidCharPointer(ename, 2);
-  PetscValidIntPointer(event, 4);
+  PetscValidPointer(ename, 2);
+  PetscValidPointer(event, 4);
   /* Should check classid I think */
   e = eventLog->numEvents++;
   if (eventLog->numEvents > eventLog->maxEvents) {
@@ -615,8 +615,8 @@ PetscErrorCode PetscEventRegLogGetEvent(PetscEventRegLog eventLog, const char na
   int       e;
 
   PetscFunctionBegin;
-  PetscValidCharPointer(name, 2);
-  PetscValidIntPointer(event, 3);
+  PetscValidPointer(name, 2);
+  PetscValidPointer(event, 3);
   *event = -1;
   for (e = 0; e < eventLog->numEvents; e++) {
     PetscCall(PetscStrcasecmp(eventLog->eventInfo[e].name, name, &match));
@@ -680,7 +680,7 @@ PetscErrorCode PetscEventPerfLogSetVisible(PetscEventPerfLog eventLog, PetscLogE
 PetscErrorCode PetscEventPerfLogGetVisible(PetscEventPerfLog eventLog, PetscLogEvent event, PetscBool *isVisible)
 {
   PetscFunctionBegin;
-  PetscValidBoolPointer(isVisible, 3);
+  PetscValidPointer(isVisible, 3);
   *isVisible = eventLog->eventInfo[event].visible;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

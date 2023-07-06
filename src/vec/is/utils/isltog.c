@@ -303,7 +303,7 @@ PetscErrorCode ISLocalToGlobalMappingGetSize(ISLocalToGlobalMapping mapping, Pet
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mapping, IS_LTOGM_CLASSID, 1);
-  PetscValidIntPointer(n, 2);
+  PetscValidPointer(n, 2);
   *n = mapping->bs * mapping->n;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -600,7 +600,7 @@ PetscErrorCode ISLocalToGlobalMappingCreate(MPI_Comm comm, PetscInt bs, PetscInt
   PetscInt *in;
 
   PetscFunctionBegin;
-  if (n) PetscValidIntPointer(indices, 4);
+  if (n) PetscValidPointer(indices, 4);
   PetscValidPointer(mapping, 6);
 
   *mapping = NULL;
@@ -1961,7 +1961,7 @@ PetscErrorCode ISLocalToGlobalMappingSetType(ISLocalToGlobalMapping ltog, ISLoca
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ltog, IS_LTOGM_CLASSID, 1);
-  if (type) PetscValidCharPointer(type, 2);
+  if (type) PetscValidPointer(type, 2);
 
   PetscCall(PetscObjectTypeCompare((PetscObject)ltog, type, &match));
   if (match) PetscFunctionReturn(PETSC_SUCCESS);

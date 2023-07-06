@@ -23,7 +23,7 @@ PetscErrorCode PetscDrawString(PetscDraw draw, PetscReal xl, PetscReal yl, int c
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw, PETSC_DRAW_CLASSID, 1);
-  PetscValidCharPointer(text, 5);
+  PetscValidPointer(text, 5);
   PetscUseTypeMethod(draw, string, xl, yl, cl, text);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -53,7 +53,7 @@ PetscErrorCode PetscDrawStringVertical(PetscDraw draw, PetscReal xl, PetscReal y
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw, PETSC_DRAW_CLASSID, 1);
-  PetscValidCharPointer(text, 5);
+  PetscValidPointer(text, 5);
 
   if (draw->ops->stringvertical) PetscUseTypeMethod(draw, stringvertical, xl, yl, cl, text);
   else {
@@ -87,7 +87,7 @@ PetscErrorCode PetscDrawStringCentered(PetscDraw draw, PetscReal xc, PetscReal y
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw, PETSC_DRAW_CLASSID, 1);
-  PetscValidCharPointer(text, 5);
+  PetscValidPointer(text, 5);
 
   PetscCall(PetscDrawStringGetSize(draw, &tw, &th));
   PetscCall(PetscStrlen(text, &len));
@@ -127,7 +127,7 @@ PetscErrorCode PetscDrawStringBoxed(PetscDraw draw, PetscReal sxl, PetscReal syl
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw, PETSC_DRAW_CLASSID, 1);
-  PetscValidCharPointer(text, 6);
+  PetscValidPointer(text, 6);
 
   if (draw->ops->boxedstring) {
     PetscUseTypeMethod(draw, boxedstring, sxl, syl, sc, bc, text, w, h);

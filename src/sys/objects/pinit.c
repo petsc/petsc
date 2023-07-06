@@ -157,7 +157,7 @@ PetscErrorCode PetscInitializeNoArguments(void)
 PetscErrorCode PetscInitialized(PetscBool *isInitialized)
 {
   PetscFunctionBegin;
-  if (PetscInitializeCalled) PetscValidBoolPointer(isInitialized, 1);
+  if (PetscInitializeCalled) PetscValidPointer(isInitialized, 1);
   *isInitialized = PetscInitializeCalled;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -175,7 +175,7 @@ PetscErrorCode PetscInitialized(PetscBool *isInitialized)
 PetscErrorCode PetscFinalized(PetscBool *isFinalized)
 {
   PetscFunctionBegin;
-  if (!PetscFinalizeCalled) PetscValidBoolPointer(isFinalized, 1);
+  if (!PetscFinalizeCalled) PetscValidPointer(isFinalized, 1);
   *isFinalized = PetscFinalizeCalled;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

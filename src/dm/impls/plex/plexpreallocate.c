@@ -702,10 +702,10 @@ PetscErrorCode DMPlexPreallocateOperator(DM dm, PetscInt bs, PetscInt dnz[], Pet
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidHeaderSpecific(A, MAT_CLASSID, 7);
-  if (dnz) PetscValidIntPointer(dnz, 3);
-  if (onz) PetscValidIntPointer(onz, 4);
-  if (dnzu) PetscValidIntPointer(dnzu, 5);
-  if (onzu) PetscValidIntPointer(onzu, 6);
+  if (dnz) PetscValidPointer(dnz, 3);
+  if (onz) PetscValidPointer(onz, 4);
+  if (dnzu) PetscValidPointer(dnzu, 5);
+  if (onzu) PetscValidPointer(onzu, 6);
   PetscCall(DMGetPointSF(dm, &sf));
   PetscCall(DMGetLocalSection(dm, &section));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-dm_view_preallocation", &debug, NULL));

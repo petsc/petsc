@@ -82,7 +82,7 @@ PetscErrorCode VecTaggerSetType(VecTagger tagger, VecTaggerType type)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tagger, VEC_TAGGER_CLASSID, 1);
-  PetscValidCharPointer(type, 2);
+  PetscValidPointer(type, 2);
 
   PetscCall(PetscObjectTypeCompare((PetscObject)tagger, type, &match));
   if (match) PetscFunctionReturn(PETSC_SUCCESS);
@@ -259,7 +259,7 @@ PetscErrorCode VecTaggerGetBlockSize(VecTagger tagger, PetscInt *blocksize)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tagger, VEC_TAGGER_CLASSID, 1);
-  PetscValidIntPointer(blocksize, 2);
+  PetscValidPointer(blocksize, 2);
   *blocksize = tagger->blocksize;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -307,7 +307,7 @@ PetscErrorCode VecTaggerGetInvert(VecTagger tagger, PetscBool *invert)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tagger, VEC_TAGGER_CLASSID, 1);
-  PetscValidBoolPointer(invert, 2);
+  PetscValidPointer(invert, 2);
   *invert = tagger->invert;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -375,7 +375,7 @@ PetscErrorCode VecTaggerComputeBoxes(VecTagger tagger, Vec vec, PetscInt *numBox
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tagger, VEC_TAGGER_CLASSID, 1);
   PetscValidHeaderSpecific(vec, VEC_CLASSID, 2);
-  PetscValidIntPointer(numBoxes, 3);
+  PetscValidPointer(numBoxes, 3);
   PetscValidPointer(boxes, 4);
   PetscCall(VecGetLocalSize(vec, &vls));
   PetscCall(VecTaggerGetBlockSize(tagger, &tbs));

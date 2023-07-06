@@ -531,7 +531,7 @@ PetscErrorCode ISGeneralSetIndices(IS is, PetscInt n, const PetscInt idx[], Pets
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is, IS_CLASSID, 1);
-  if (n) PetscValidIntPointer(idx, 3);
+  if (n) PetscValidPointer(idx, 3);
   PetscCall(ISClearInfoCache(is, PETSC_FALSE));
   PetscUseMethod(is, "ISGeneralSetIndices_C", (IS, PetscInt, const PetscInt[], PetscCopyMode), (is, n, idx, mode));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -544,7 +544,7 @@ PetscErrorCode ISGeneralSetIndices_General(IS is, PetscInt n, const PetscInt idx
 
   PetscFunctionBegin;
   PetscCheck(n >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "length < 0");
-  if (n) PetscValidIntPointer(idx, 3);
+  if (n) PetscValidPointer(idx, 3);
 
   PetscCall(PetscLayoutCreateFromSizes(PetscObjectComm((PetscObject)is), n, PETSC_DECIDE, is->map->bs, &map));
   PetscCall(PetscLayoutDestroy(&is->map));
@@ -601,7 +601,7 @@ PetscErrorCode ISGeneralSetIndicesFromMask(IS is, PetscInt rstart, PetscInt rend
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is, IS_CLASSID, 1);
-  if (rend - rstart) PetscValidBoolPointer(mask, 4);
+  if (rend - rstart) PetscValidPointer(mask, 4);
   PetscCall(ISClearInfoCache(is, PETSC_FALSE));
   PetscUseMethod(is, "ISGeneralSetIndicesFromMask_C", (IS, PetscInt, PetscInt, const PetscBool[]), (is, rstart, rend, mask));
   PetscFunctionReturn(PETSC_SUCCESS);

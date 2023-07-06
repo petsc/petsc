@@ -238,7 +238,7 @@ PetscErrorCode PetscViewerVUGetVecSeen(PetscViewer viewer, PetscBool *vecSeen)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 1);
-  PetscValidBoolPointer(vecSeen, 2);
+  PetscValidPointer(vecSeen, 2);
   *vecSeen = vu->vecSeen;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

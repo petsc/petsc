@@ -118,7 +118,7 @@ PetscErrorCode TSAdaptHistorySetHistory(TSAdapt adapt, PetscInt n, PetscReal his
   PetscFunctionBegin;
   PetscValidHeaderSpecific(adapt, TSADAPT_CLASSID, 1);
   PetscValidLogicalCollectiveInt(adapt, n, 2);
-  PetscValidRealPointer(hist, 3);
+  PetscValidPointer(hist, 3);
   PetscValidLogicalCollectiveBool(adapt, backward, 4);
   PetscCall(PetscObjectTypeCompare((PetscObject)adapt, TSADAPTHISTORY, &flg));
   if (!flg) PetscFunctionReturn(PETSC_SUCCESS);

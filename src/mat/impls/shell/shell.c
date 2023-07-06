@@ -895,8 +895,8 @@ PetscErrorCode MatShellSetMatProductOperation(Mat A, MatProductType ptype, Petsc
   PetscValidLogicalCollectiveEnum(A, ptype, 2);
   PetscCheck(ptype != MATPRODUCT_ABC, PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "Not for product type %s", MatProductTypes[ptype]);
   PetscCheck(numeric, PetscObjectComm((PetscObject)A), PETSC_ERR_USER, "Missing numeric routine, argument 4");
-  PetscValidCharPointer(Btype, 6);
-  if (Ctype) PetscValidCharPointer(Ctype, 7);
+  PetscValidPointer(Btype, 6);
+  if (Ctype) PetscValidPointer(Ctype, 7);
   PetscTryMethod(A, "MatShellSetMatProductOperation_C", (Mat, MatProductType, PetscErrorCode(*)(Mat, Mat, Mat, void **), PetscErrorCode(*)(Mat, Mat, Mat, void *), PetscErrorCode(*)(void *), MatType, MatType), (A, ptype, symbolic, numeric, destroy, Btype, Ctype));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -2095,7 +2095,7 @@ PetscErrorCode MatIsShell(Mat mat, PetscBool *flg)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
-  PetscValidBoolPointer(flg, 2);
+  PetscValidPointer(flg, 2);
   *flg = (PetscBool)(mat->ops->destroy == MatDestroy_Shell);
   PetscFunctionReturn(PETSC_SUCCESS);
 }

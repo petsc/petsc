@@ -11,7 +11,7 @@ inline PetscErrorCode PetscStrFreeAllocpy(const char target[], char **dest) noex
   PetscFunctionBegin;
   PetscValidPointer(dest, 2);
   if (*dest) {
-    PetscValidCharPointer(*dest, 2);
+    PetscValidPointer(*dest, 2);
     PetscCall(PetscFree(*dest));
   }
   PetscCall(PetscStrallocpy(target, dest));

@@ -50,8 +50,8 @@ PetscErrorCode PetscBagRegisterEnum(PetscBag bag, void *addr, const char *const 
   PetscValidPointer(bag, 1);
   PetscValidPointer(addr, 2);
   PetscValidPointer(list, 3);
-  PetscValidCharPointer(name, 5);
-  PetscValidCharPointer(help, 6);
+  PetscValidPointer(name, 5);
+  PetscValidPointer(help, 6);
   nname[0] = '-';
   nname[1] = 0;
   PetscCall(PetscStrlcat(nname, name, PETSC_BAG_NAME_LENGTH));
@@ -105,8 +105,8 @@ PetscErrorCode PetscBagRegisterIntArray(PetscBag bag, void *addr, PetscInt msize
   PetscFunctionBegin;
   PetscValidPointer(bag, 1);
   PetscValidPointer(addr, 2);
-  PetscValidCharPointer(name, 4);
-  PetscValidCharPointer(help, 5);
+  PetscValidPointer(name, 4);
+  PetscValidPointer(help, 5);
   nname[0] = '-';
   nname[1] = 0;
   PetscCall(PetscStrlcat(nname, name, PETSC_BAG_NAME_LENGTH));
@@ -156,8 +156,8 @@ PetscErrorCode PetscBagRegisterRealArray(PetscBag bag, void *addr, PetscInt msiz
   PetscFunctionBegin;
   PetscValidPointer(bag, 1);
   PetscValidPointer(addr, 2);
-  PetscValidCharPointer(name, 4);
-  PetscValidCharPointer(help, 5);
+  PetscValidPointer(name, 4);
+  PetscValidPointer(help, 5);
   nname[0] = '-';
   nname[1] = 0;
   PetscCall(PetscStrlcat(nname, name, PETSC_BAG_NAME_LENGTH));
@@ -206,8 +206,8 @@ PetscErrorCode PetscBagRegisterInt(PetscBag bag, void *addr, PetscInt mdefault, 
   PetscFunctionBegin;
   PetscValidPointer(bag, 1);
   PetscValidPointer(addr, 2);
-  PetscValidCharPointer(name, 4);
-  PetscValidCharPointer(help, 5);
+  PetscValidPointer(name, 4);
+  PetscValidPointer(help, 5);
   nname[0] = '-';
   nname[1] = 0;
   PetscCall(PetscStrlcat(nname, name, PETSC_BAG_NAME_LENGTH));
@@ -300,8 +300,8 @@ PetscErrorCode PetscBagRegisterBoolArray(PetscBag bag, void *addr, PetscInt msiz
   PetscFunctionBegin;
   PetscValidPointer(bag, 1);
   PetscValidPointer(addr, 2);
-  PetscValidCharPointer(name, 4);
-  PetscValidCharPointer(help, 5);
+  PetscValidPointer(name, 4);
+  PetscValidPointer(help, 5);
   nname[0] = '-';
   nname[1] = 0;
   PetscCall(PetscStrlcat(nname, name, PETSC_BAG_NAME_LENGTH));
@@ -354,9 +354,9 @@ PetscErrorCode PetscBagRegisterString(PetscBag bag, void *addr, PetscInt msize, 
   PetscFunctionBegin;
   PetscValidPointer(bag, 1);
   PetscValidPointer(addr, 2);
-  PetscValidCharPointer(mdefault, 4);
-  PetscValidCharPointer(name, 5);
-  PetscValidCharPointer(help, 6);
+  PetscValidPointer(mdefault, 4);
+  PetscValidPointer(name, 5);
+  PetscValidPointer(help, 6);
   nname[0] = '-';
   nname[1] = 0;
   PetscCall(PetscStrlcat(nname, name, PETSC_BAG_NAME_LENGTH));
@@ -402,8 +402,8 @@ PetscErrorCode PetscBagRegisterReal(PetscBag bag, void *addr, PetscReal mdefault
   PetscFunctionBegin;
   PetscValidPointer(bag, 1);
   PetscValidPointer(addr, 2);
-  PetscValidCharPointer(name, 4);
-  PetscValidCharPointer(help, 5);
+  PetscValidPointer(name, 4);
+  PetscValidPointer(help, 5);
   nname[0] = '-';
   nname[1] = 0;
   PetscCall(PetscStrlcat(nname, name, PETSC_BAG_NAME_LENGTH));
@@ -449,8 +449,8 @@ PetscErrorCode PetscBagRegisterScalar(PetscBag bag, void *addr, PetscScalar mdef
   PetscFunctionBegin;
   PetscValidPointer(bag, 1);
   PetscValidPointer(addr, 2);
-  PetscValidCharPointer(name, 4);
-  PetscValidCharPointer(help, 5);
+  PetscValidPointer(name, 4);
+  PetscValidPointer(help, 5);
   nname[0] = '-';
   nname[1] = 0;
   PetscCall(PetscStrlcat(nname, name, PETSC_BAG_NAME_LENGTH));
@@ -496,8 +496,8 @@ PetscErrorCode PetscBagRegisterBool(PetscBag bag, void *addr, PetscBool mdefault
   PetscFunctionBegin;
   PetscValidPointer(bag, 1);
   PetscValidPointer(addr, 2);
-  PetscValidCharPointer(name, 4);
-  PetscValidCharPointer(help, 5);
+  PetscValidPointer(name, 4);
+  PetscValidPointer(help, 5);
   /* the checks here with != PETSC_FALSE and PETSC_TRUE is a special case; here we truly demand that the value be 0 or 1 */
   PetscCheck(mdefault == PETSC_FALSE || mdefault == PETSC_TRUE, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Boolean %s %s must be boolean; integer value %d", name, help, (int)mdefault);
   nname[0] = '-';
@@ -926,8 +926,8 @@ PetscErrorCode PetscBagSetName(PetscBag bag, const char *name, const char *help)
 {
   PetscFunctionBegin;
   PetscValidPointer(bag, 1);
-  PetscValidCharPointer(name, 2);
-  PetscValidCharPointer(help, 3);
+  PetscValidPointer(name, 2);
+  PetscValidPointer(help, 3);
   PetscCall(PetscStrncpy(bag->bagname, name, PETSC_BAG_NAME_LENGTH - 1));
   PetscCall(PetscStrncpy(bag->baghelp, help, PETSC_BAG_HELP_LENGTH - 1));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -1010,7 +1010,7 @@ PetscErrorCode PetscBagSetOptionsPrefix(PetscBag bag, const char pre[])
   PetscFunctionBegin;
   PetscValidPointer(bag, 1);
   if (pre) {
-    PetscValidCharPointer(pre, 2);
+    PetscValidPointer(pre, 2);
     PetscCheck(pre[0] != '-', PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Options prefix should not begin with a hyphen");
     PetscCall(PetscFree(bag->bagprefix));
     PetscCall(PetscStrallocpy(pre, &(bag->bagprefix)));

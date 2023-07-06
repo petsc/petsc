@@ -119,7 +119,7 @@ PetscErrorCode VecStrideNorm(Vec v, PetscInt start, NormType ntype, PetscReal *n
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v, VEC_CLASSID, 1);
   PetscValidLogicalCollectiveEnum(v, ntype, 3);
-  PetscValidRealPointer(nrm, 4);
+  PetscValidPointer(nrm, 4);
   PetscCall(VecGetLocalSize(v, &n));
   PetscCall(VecGetBlockSize(v, &bs));
   PetscCheck(start >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Negative start %" PetscInt_FMT, start);
@@ -183,7 +183,7 @@ PetscErrorCode VecStrideMax(Vec v, PetscInt start, PetscInt *idex, PetscReal *nr
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v, VEC_CLASSID, 1);
-  PetscValidRealPointer(nrm, 4);
+  PetscValidPointer(nrm, 4);
   PetscCall(VecGetLocalSize(v, &n));
   PetscCall(VecGetBlockSize(v, &bs));
   PetscCheck(start >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Negative start %" PetscInt_FMT, start);
@@ -257,7 +257,7 @@ PetscErrorCode VecStrideMin(Vec v, PetscInt start, PetscInt *idex, PetscReal *nr
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v, VEC_CLASSID, 1);
-  PetscValidRealPointer(nrm, 4);
+  PetscValidPointer(nrm, 4);
   PetscCall(VecGetLocalSize(v, &n));
   PetscCall(VecGetBlockSize(v, &bs));
   PetscCheck(start >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Negative start %" PetscInt_FMT, start);
@@ -326,7 +326,7 @@ PetscErrorCode VecStrideSum(Vec v, PetscInt start, PetscScalar *sum)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v, VEC_CLASSID, 1);
-  PetscValidScalarPointer(sum, 3);
+  PetscValidPointer(sum, 3);
   PetscCall(VecGetLocalSize(v, &n));
   PetscCall(VecGetBlockSize(v, &bs));
   PetscCheck(start >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Negative start %" PetscInt_FMT, start);
@@ -365,7 +365,7 @@ PetscErrorCode VecStrideScaleAll(Vec v, const PetscScalar *scales)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v, VEC_CLASSID, 1);
-  PetscValidScalarPointer(scales, 2);
+  PetscValidPointer(scales, 2);
   PetscCall(VecGetLocalSize(v, &n));
   PetscCall(VecGetBlockSize(v, &bs));
   PetscCall(VecGetArray(v, &x));
@@ -415,7 +415,7 @@ PetscErrorCode VecStrideNormAll(Vec v, NormType ntype, PetscReal nrm[])
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v, VEC_CLASSID, 1);
   PetscValidLogicalCollectiveEnum(v, ntype, 2);
-  PetscValidRealPointer(nrm, 3);
+  PetscValidPointer(nrm, 3);
   PetscCall(VecGetLocalSize(v, &n));
   PetscCall(VecGetArrayRead(v, &x));
   PetscCall(PetscObjectGetComm((PetscObject)v, &comm));
@@ -494,7 +494,7 @@ PetscErrorCode VecStrideMaxAll(Vec v, PetscInt idex[], PetscReal nrm[])
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v, VEC_CLASSID, 1);
-  PetscValidRealPointer(nrm, 3);
+  PetscValidPointer(nrm, 3);
   PetscCheck(!idex, PETSC_COMM_SELF, PETSC_ERR_SUP, "No support yet for returning index; send mail to petsc-maint@mcs.anl.gov asking for it");
   PetscCall(VecGetLocalSize(v, &n));
   PetscCall(VecGetArrayRead(v, &x));
@@ -553,7 +553,7 @@ PetscErrorCode VecStrideMinAll(Vec v, PetscInt idex[], PetscReal nrm[])
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v, VEC_CLASSID, 1);
-  PetscValidRealPointer(nrm, 3);
+  PetscValidPointer(nrm, 3);
   PetscCheck(!idex, PETSC_COMM_SELF, PETSC_ERR_SUP, "No support yet for returning index; send mail to petsc-maint@mcs.anl.gov asking for it");
   PetscCall(VecGetLocalSize(v, &n));
   PetscCall(VecGetArrayRead(v, &x));
@@ -610,7 +610,7 @@ PetscErrorCode VecStrideSumAll(Vec v, PetscScalar sums[])
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v, VEC_CLASSID, 1);
-  PetscValidScalarPointer(sums, 2);
+  PetscValidPointer(sums, 2);
   PetscCall(VecGetLocalSize(v, &n));
   PetscCall(VecGetArrayRead(v, &x));
   PetscCall(PetscObjectGetComm((PetscObject)v, &comm));
@@ -1404,8 +1404,8 @@ PetscErrorCode VecDotNorm2(Vec s, Vec t, PetscScalar *dp, PetscReal *nm)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(s, VEC_CLASSID, 1);
   PetscValidHeaderSpecific(t, VEC_CLASSID, 2);
-  PetscValidScalarPointer(dp, 3);
-  PetscValidRealPointer(nm, 4);
+  PetscValidPointer(dp, 3);
+  PetscValidPointer(nm, 4);
   PetscValidType(s, 1);
   PetscValidType(t, 2);
   PetscCheckSameTypeAndComm(s, 1, t, 2);
@@ -1460,7 +1460,7 @@ PetscErrorCode VecSum(Vec v, PetscScalar *sum)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v, VEC_CLASSID, 1);
-  PetscValidScalarPointer(sum, 2);
+  PetscValidPointer(sum, 2);
   if (v->ops->sum) {
     PetscUseTypeMethod(v, sum, &tmp);
   } else {
@@ -1498,7 +1498,7 @@ PetscErrorCode VecMean(Vec v, PetscScalar *mean)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v, VEC_CLASSID, 1);
-  PetscValidScalarPointer(mean, 2);
+  PetscValidPointer(mean, 2);
   PetscCall(VecGetSize(v, &n));
   PetscCall(VecSum(v, mean));
   *mean /= n;
@@ -1612,7 +1612,7 @@ PetscErrorCode VecEqual(Vec vec1, Vec vec2, PetscBool *flg)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(vec1, VEC_CLASSID, 1);
   PetscValidHeaderSpecific(vec2, VEC_CLASSID, 2);
-  PetscValidBoolPointer(flg, 3);
+  PetscValidPointer(flg, 3);
   if (vec1 == vec2) *flg = PETSC_TRUE;
   else {
     PetscCall(VecGetSize(vec1, &N1));
@@ -1662,7 +1662,7 @@ PetscErrorCode VecUniqueEntries(Vec vec, PetscInt *n, PetscScalar **e)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(vec, VEC_CLASSID, 1);
-  PetscValidIntPointer(n, 2);
+  PetscValidPointer(n, 2);
   PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)vec), &size));
   PetscCall(VecGetLocalSize(vec, &m));
   PetscCall(VecGetArrayRead(vec, &v));

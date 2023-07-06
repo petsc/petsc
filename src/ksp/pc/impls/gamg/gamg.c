@@ -1300,7 +1300,7 @@ PetscErrorCode PCGAMGSetThreshold(PC pc, PetscReal v[], PetscInt n)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
-  if (n) PetscValidRealPointer(v, 2);
+  if (n) PetscValidPointer(v, 2);
   PetscTryMethod(pc, "PCGAMGSetThreshold_C", (PC, PetscReal[], PetscInt), (pc, v, n));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1337,7 +1337,7 @@ PetscErrorCode PCGAMGSetRankReductionFactors(PC pc, PetscInt v[], PetscInt n)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
-  if (n) PetscValidIntPointer(v, 2);
+  if (n) PetscValidPointer(v, 2);
   PetscTryMethod(pc, "PCGAMGSetRankReductionFactors_C", (PC, PetscInt[], PetscInt), (pc, v, n));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

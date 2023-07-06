@@ -42,7 +42,7 @@ PetscErrorCode PetscFormatConvertGetSize(const char *format, size_t *size)
   PetscInt i  = 0;
 
   PetscFunctionBegin;
-  PetscValidCharPointer(format, 1);
+  PetscValidPointer(format, 1);
   PetscValidPointer(size, 2);
   while (format[i]) {
     if (format[i] == '%') {

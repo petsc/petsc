@@ -2840,7 +2840,7 @@ static PetscErrorCode PetscDualSpaceLagrangeGetContinuity_Lagrange(PetscDualSpac
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);
-  PetscValidBoolPointer(continuous, 2);
+  PetscValidPointer(continuous, 2);
   *continuous = lag->continuous;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -2874,7 +2874,7 @@ PetscErrorCode PetscDualSpaceLagrangeGetContinuity(PetscDualSpace sp, PetscBool 
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);
-  PetscValidBoolPointer(continuous, 2);
+  PetscValidPointer(continuous, 2);
   PetscTryMethod(sp, "PetscDualSpaceLagrangeGetContinuity_C", (PetscDualSpace, PetscBool *), (sp, continuous));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -3018,7 +3018,7 @@ PetscErrorCode PetscDualSpaceLagrangeGetTensor(PetscDualSpace sp, PetscBool *ten
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);
-  PetscValidBoolPointer(tensor, 2);
+  PetscValidPointer(tensor, 2);
   PetscTryMethod(sp, "PetscDualSpaceLagrangeGetTensor_C", (PetscDualSpace, PetscBool *), (sp, tensor));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -3063,7 +3063,7 @@ PetscErrorCode PetscDualSpaceLagrangeGetTrimmed(PetscDualSpace sp, PetscBool *tr
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);
-  PetscValidBoolPointer(trimmed, 2);
+  PetscValidPointer(trimmed, 2);
   PetscTryMethod(sp, "PetscDualSpaceLagrangeGetTrimmed_C", (PetscDualSpace, PetscBool *), (sp, trimmed));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -3114,8 +3114,8 @@ PetscErrorCode PetscDualSpaceLagrangeGetNodeType(PetscDualSpace sp, PetscDTNodeT
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);
   if (nodeType) PetscValidPointer(nodeType, 2);
-  if (boundary) PetscValidBoolPointer(boundary, 3);
-  if (exponent) PetscValidRealPointer(exponent, 4);
+  if (boundary) PetscValidPointer(boundary, 3);
+  if (exponent) PetscValidPointer(exponent, 4);
   PetscTryMethod(sp, "PetscDualSpaceLagrangeGetNodeType_C", (PetscDualSpace, PetscDTNodeType *, PetscBool *, PetscReal *), (sp, nodeType, boundary, exponent));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -3165,7 +3165,7 @@ PetscErrorCode PetscDualSpaceLagrangeGetUseMoments(PetscDualSpace sp, PetscBool 
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);
-  PetscValidBoolPointer(useMoments, 2);
+  PetscValidPointer(useMoments, 2);
   PetscUseMethod(sp, "PetscDualSpaceLagrangeGetUseMoments_C", (PetscDualSpace, PetscBool *), (sp, useMoments));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -3210,7 +3210,7 @@ PetscErrorCode PetscDualSpaceLagrangeGetMomentOrder(PetscDualSpace sp, PetscInt 
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);
-  PetscValidIntPointer(order, 2);
+  PetscValidPointer(order, 2);
   PetscUseMethod(sp, "PetscDualSpaceLagrangeGetMomentOrder_C", (PetscDualSpace, PetscInt *), (sp, order));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

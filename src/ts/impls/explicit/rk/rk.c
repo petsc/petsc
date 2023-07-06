@@ -448,12 +448,12 @@ PetscErrorCode TSRKRegister(TSRKType name, PetscInt order, PetscInt s, const Pet
   PetscInt      i, j;
 
   PetscFunctionBegin;
-  PetscValidCharPointer(name, 1);
-  PetscValidRealPointer(A, 4);
-  if (b) PetscValidRealPointer(b, 5);
-  if (c) PetscValidRealPointer(c, 6);
-  if (bembed) PetscValidRealPointer(bembed, 7);
-  if (binterp || p > 1) PetscValidRealPointer(binterp, 9);
+  PetscValidPointer(name, 1);
+  PetscValidPointer(A, 4);
+  if (b) PetscValidPointer(b, 5);
+  if (c) PetscValidPointer(c, 6);
+  if (bembed) PetscValidPointer(bembed, 7);
+  if (binterp || p > 1) PetscValidPointer(binterp, 9);
   PetscCheck(s >= 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Expected number of stages s %" PetscInt_FMT " >= 0", s);
 
   PetscCall(TSRKInitializePackage());
@@ -1261,7 +1261,7 @@ PetscErrorCode TSRKGetOrder(TS ts, PetscInt *order)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
-  PetscValidIntPointer(order, 2);
+  PetscValidPointer(order, 2);
   PetscUseMethod(ts, "TSRKGetOrder_C", (TS, PetscInt *), (ts, order));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1286,7 +1286,7 @@ PetscErrorCode TSRKSetType(TS ts, TSRKType rktype)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
-  PetscValidCharPointer(rktype, 2);
+  PetscValidPointer(rktype, 2);
   PetscTryMethod(ts, "TSRKSetType_C", (TS, TSRKType), (ts, rktype));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

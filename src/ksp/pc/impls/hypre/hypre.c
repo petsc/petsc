@@ -2249,7 +2249,7 @@ PetscErrorCode PCHYPRESetType(PC pc, const char name[])
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
-  PetscValidCharPointer(name, 2);
+  PetscValidPointer(name, 2);
   PetscTryMethod(pc, "PCHYPRESetType_C", (PC, const char[]), (pc, name));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

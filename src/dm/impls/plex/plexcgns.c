@@ -24,7 +24,7 @@
 PetscErrorCode DMPlexCreateCGNSFromFile(MPI_Comm comm, const char filename[], PetscBool interpolate, DM *dm)
 {
   PetscFunctionBegin;
-  PetscValidCharPointer(filename, 2);
+  PetscValidPointer(filename, 2);
 #if defined(PETSC_HAVE_CGNS)
   PetscCall(DMPlexCreateCGNSFromFile_Internal(comm, filename, interpolate, dm));
 #else

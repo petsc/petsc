@@ -199,7 +199,7 @@ PetscErrorCode PetscDrawSetTitle(PetscDraw draw, const char title[])
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw, PETSC_DRAW_CLASSID, 1);
-  PetscValidCharPointer(title, 2);
+  PetscValidPointer(title, 2);
   PetscCall(PetscFree(draw->title));
   PetscCall(PetscStrallocpy(title, &draw->title));
   PetscTryTypeMethod(draw, settitle, draw->title);
@@ -227,7 +227,7 @@ PetscErrorCode PetscDrawAppendTitle(PetscDraw draw, const char title[])
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw, PETSC_DRAW_CLASSID, 1);
-  if (title) PetscValidCharPointer(title, 2);
+  if (title) PetscValidPointer(title, 2);
   if (!title || !title[0]) PetscFunctionReturn(PETSC_SUCCESS);
 
   if (draw->title) {

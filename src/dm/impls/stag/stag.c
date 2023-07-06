@@ -673,7 +673,7 @@ static PetscErrorCode DMHasCreateInjection_Stag(DM dm, PetscBool *flg)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidBoolPointer(flg, 2);
+  PetscValidPointer(flg, 2);
   *flg = PETSC_FALSE;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

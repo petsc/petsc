@@ -116,7 +116,7 @@ PetscErrorCode PetscTableGetCount(const PetscTable ta, PetscInt *count)
 {
   PetscFunctionBegin;
   PetscValidPointer(ta, 1);
-  PetscValidIntPointer(count, 2);
+  PetscValidPointer(count, 2);
   *count = ta->count;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -127,7 +127,7 @@ PetscErrorCode PetscTableIsEmpty(const PetscTable ta, PetscInt *flag)
 {
   PetscFunctionBegin;
   PetscValidPointer(ta, 1);
-  PetscValidIntPointer(flag, 2);
+  PetscValidPointer(flag, 2);
   *flag = !(ta->count);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -218,8 +218,8 @@ PetscErrorCode PetscTableGetNext(PetscTable ta, PetscTablePosition *rPosition, P
   PetscFunctionBegin;
   PetscValidPointer(ta, 1);
   PetscValidPointer(rPosition, 2);
-  PetscValidIntPointer(pkey, 3);
-  PetscValidIntPointer(data, 4);
+  PetscValidPointer(pkey, 3);
+  PetscValidPointer(data, 4);
   pos = *rPosition;
   PetscCheck(pos, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Null position");
   *data = *pos;

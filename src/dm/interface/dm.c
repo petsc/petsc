@@ -1161,7 +1161,7 @@ PetscErrorCode DMGetBlockSize(DM dm, PetscInt *bs)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidIntPointer(bs, 2);
+  PetscValidPointer(bs, 2);
   PetscCheck(dm->bs >= 1, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "DM does not have enough information to provide a block size yet");
   *bs = dm->bs;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -1885,7 +1885,7 @@ PetscErrorCode DMCreateFieldIS(DM dm, PetscInt *numFields, char ***fieldNames, I
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   if (numFields) {
-    PetscValidIntPointer(numFields, 2);
+    PetscValidPointer(numFields, 2);
     *numFields = 0;
   }
   if (fieldNames) {
@@ -2009,7 +2009,7 @@ PetscErrorCode DMCreateFieldDecomposition(DM dm, PetscInt *len, char ***namelist
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   if (len) {
-    PetscValidIntPointer(len, 2);
+    PetscValidPointer(len, 2);
     *len = 0;
   }
   if (namelist) {
@@ -2085,7 +2085,7 @@ PetscErrorCode DMCreateSubDM(DM dm, PetscInt numFields, const PetscInt fields[],
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidIntPointer(fields, 3);
+  PetscValidPointer(fields, 3);
   if (is) PetscValidPointer(is, 4);
   if (subdm) PetscValidPointer(subdm, 5);
   PetscUseTypeMethod(dm, createsubdm, numFields, fields, is, subdm);
@@ -2168,7 +2168,7 @@ PetscErrorCode DMCreateDomainDecomposition(DM dm, PetscInt *n, char ***namelist,
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   if (n) {
-    PetscValidIntPointer(n, 2);
+    PetscValidPointer(n, 2);
     *n = 0;
   }
   if (namelist) {
@@ -2583,7 +2583,7 @@ PetscErrorCode DMHasBasisTransform(DM dm, PetscBool *flg)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidBoolPointer(flg, 2);
+  PetscValidPointer(flg, 2);
   PetscCall(DMGetBasisTransformVec_Internal(dm, &tv));
   *flg = tv ? PETSC_TRUE : PETSC_FALSE;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -3540,7 +3540,7 @@ PetscErrorCode DMGetCoarsenLevel(DM dm, PetscInt *level)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidIntPointer(level, 2);
+  PetscValidPointer(level, 2);
   *level = dm->leveldown;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -3749,7 +3749,7 @@ PetscErrorCode DMHasVariableBounds(DM dm, PetscBool *flg)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidBoolPointer(flg, 2);
+  PetscValidPointer(flg, 2);
   *flg = (dm->ops->computevariablebounds) ? PETSC_TRUE : PETSC_FALSE;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -3802,7 +3802,7 @@ PetscErrorCode DMHasColoring(DM dm, PetscBool *flg)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidBoolPointer(flg, 2);
+  PetscValidPointer(flg, 2);
   *flg = (dm->ops->getcoloring) ? PETSC_TRUE : PETSC_FALSE;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -3826,7 +3826,7 @@ PetscErrorCode DMHasCreateRestriction(DM dm, PetscBool *flg)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidBoolPointer(flg, 2);
+  PetscValidPointer(flg, 2);
   *flg = (dm->ops->createrestriction) ? PETSC_TRUE : PETSC_FALSE;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -3850,7 +3850,7 @@ PetscErrorCode DMHasCreateInjection(DM dm, PetscBool *flg)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidBoolPointer(flg, 2);
+  PetscValidPointer(flg, 2);
   if (dm->ops->hascreateinjection) PetscUseTypeMethod(dm, hascreateinjection, flg);
   else *flg = (dm->ops->createinjection) ? PETSC_TRUE : PETSC_FALSE;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -4845,7 +4845,7 @@ PetscErrorCode DMGetNumFields(DM dm, PetscInt *numFields)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidIntPointer(numFields, 2);
+  PetscValidPointer(numFields, 2);
   *numFields = dm->Nf;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -5102,8 +5102,8 @@ PetscErrorCode DMGetAdjacency(DM dm, PetscInt f, PetscBool *useCone, PetscBool *
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  if (useCone) PetscValidBoolPointer(useCone, 3);
-  if (useClosure) PetscValidBoolPointer(useClosure, 4);
+  if (useCone) PetscValidPointer(useCone, 3);
+  if (useClosure) PetscValidPointer(useClosure, 4);
   if (f < 0) {
     if (useCone) *useCone = dm->adjacency[0];
     if (useClosure) *useClosure = dm->adjacency[1];
@@ -5188,8 +5188,8 @@ PetscErrorCode DMGetBasicAdjacency(DM dm, PetscBool *useCone, PetscBool *useClos
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  if (useCone) PetscValidBoolPointer(useCone, 2);
-  if (useClosure) PetscValidBoolPointer(useClosure, 3);
+  if (useCone) PetscValidPointer(useCone, 2);
+  if (useClosure) PetscValidPointer(useClosure, 3);
   PetscCall(DMGetNumFields(dm, &Nf));
   if (!Nf) {
     PetscCall(DMGetAdjacency(dm, PETSC_DEFAULT, useCone, useClosure));
@@ -5360,7 +5360,7 @@ PetscErrorCode DMGetNumDS(DM dm, PetscInt *Nds)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidIntPointer(Nds, 2);
+  PetscValidPointer(Nds, 2);
   *Nds = dm->Nds;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -5695,7 +5695,7 @@ PetscErrorCode DMFindRegionNum(DM dm, PetscDS ds, PetscInt *num)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidHeaderSpecific(ds, PETSCDS_CLASSID, 2);
-  PetscValidIntPointer(num, 3);
+  PetscValidPointer(num, 3);
   PetscCall(DMGetNumDS(dm, &Nds));
   for (n = 0; n < Nds; ++n)
     if (ds == dm->probs[n].ds) break;
@@ -5733,7 +5733,7 @@ PetscErrorCode DMCreateFEDefault(DM dm, PetscInt Nc, const char prefix[], PetscI
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidLogicalCollectiveInt(dm, Nc, 2);
-  if (prefix) PetscValidCharPointer(prefix, 3);
+  if (prefix) PetscValidPointer(prefix, 3);
   PetscValidLogicalCollectiveInt(dm, qorder, 4);
   PetscValidPointer(fem, 5);
   PetscCall(DMGetDimension(dm, &dim));
@@ -6206,7 +6206,7 @@ PetscErrorCode DMGetDimension(DM dm, PetscInt *dim)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidIntPointer(dim, 2);
+  PetscValidPointer(dim, 2);
   *dim = dm->dim;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -6357,11 +6357,11 @@ PetscErrorCode DMGetOutputSequenceNumber(DM dm, PetscInt *num, PetscReal *val)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   if (num) {
-    PetscValidIntPointer(num, 2);
+    PetscValidPointer(num, 2);
     *num = dm->outputSequenceNum;
   }
   if (val) {
-    PetscValidRealPointer(val, 3);
+    PetscValidPointer(val, 3);
     *val = dm->outputSequenceVal;
   }
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -6421,7 +6421,7 @@ PetscErrorCode DMOutputSequenceLoad(DM dm, PetscViewer viewer, const char *name,
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
-  PetscValidRealPointer(val, 5);
+  PetscValidPointer(val, 5);
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERHDF5, &ishdf5));
   if (ishdf5) {
 #if defined(PETSC_HAVE_HDF5)
@@ -6453,7 +6453,7 @@ PetscErrorCode DMGetUseNatural(DM dm, PetscBool *useNatural)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidBoolPointer(useNatural, 2);
+  PetscValidPointer(useNatural, 2);
   *useNatural = dm->useNatural;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -6503,7 +6503,7 @@ PetscErrorCode DMCreateLabel(DM dm, const char name[])
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidCharPointer(name, 2);
+  PetscValidPointer(name, 2);
   PetscCall(DMHasLabel(dm, name, &flg));
   if (!flg) {
     PetscCall(DMLabelCreate(PETSC_COMM_SELF, name, &label));
@@ -6537,7 +6537,7 @@ PetscErrorCode DMCreateLabelAtIndex(DM dm, PetscInt l, const char name[])
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidCharPointer(name, 3);
+  PetscValidPointer(name, 3);
   PetscCall(DMHasLabel(dm, name, &flg));
   if (!flg) {
     PetscCall(DMLabelCreate(PETSC_COMM_SELF, name, &label));
@@ -6589,7 +6589,7 @@ PetscErrorCode DMGetLabelValue(DM dm, const char name[], PetscInt point, PetscIn
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidCharPointer(name, 2);
+  PetscValidPointer(name, 2);
   PetscCall(DMGetLabel(dm, name, &label));
   PetscCheck(label, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "No label named %s was found", name);
   PetscCall(DMLabelGetValue(label, point, value));
@@ -6619,7 +6619,7 @@ PetscErrorCode DMSetLabelValue(DM dm, const char name[], PetscInt point, PetscIn
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidCharPointer(name, 2);
+  PetscValidPointer(name, 2);
   PetscCall(DMGetLabel(dm, name, &label));
   if (!label) {
     PetscCall(DMCreateLabel(dm, name));
@@ -6650,7 +6650,7 @@ PetscErrorCode DMClearLabelValue(DM dm, const char name[], PetscInt point, Petsc
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidCharPointer(name, 2);
+  PetscValidPointer(name, 2);
   PetscCall(DMGetLabel(dm, name, &label));
   if (!label) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(DMLabelClearValue(label, point, value));
@@ -6682,8 +6682,8 @@ PetscErrorCode DMGetLabelSize(DM dm, const char name[], PetscInt *size)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidCharPointer(name, 2);
-  PetscValidIntPointer(size, 3);
+  PetscValidPointer(name, 2);
+  PetscValidPointer(size, 3);
   PetscCall(DMGetLabel(dm, name, &label));
   *size = 0;
   if (!label) PetscFunctionReturn(PETSC_SUCCESS);
@@ -6713,7 +6713,7 @@ PetscErrorCode DMGetLabelIdIS(DM dm, const char name[], IS *ids)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidCharPointer(name, 2);
+  PetscValidPointer(name, 2);
   PetscValidPointer(ids, 3);
   PetscCall(DMGetLabel(dm, name, &label));
   *ids = NULL;
@@ -6749,8 +6749,8 @@ PetscErrorCode DMGetStratumSize(DM dm, const char name[], PetscInt value, PetscI
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidCharPointer(name, 2);
-  PetscValidIntPointer(size, 4);
+  PetscValidPointer(name, 2);
+  PetscValidPointer(size, 4);
   PetscCall(DMGetLabel(dm, name, &label));
   *size = 0;
   if (!label) PetscFunctionReturn(PETSC_SUCCESS);
@@ -6781,7 +6781,7 @@ PetscErrorCode DMGetStratumIS(DM dm, const char name[], PetscInt value, IS *poin
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidCharPointer(name, 2);
+  PetscValidPointer(name, 2);
   PetscValidPointer(points, 4);
   PetscCall(DMGetLabel(dm, name, &label));
   *points = NULL;
@@ -6811,7 +6811,7 @@ PetscErrorCode DMSetStratumIS(DM dm, const char name[], PetscInt value, IS point
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidCharPointer(name, 2);
+  PetscValidPointer(name, 2);
   PetscValidPointer(points, 4);
   PetscCall(DMGetLabel(dm, name, &label));
   if (!label) PetscFunctionReturn(PETSC_SUCCESS);
@@ -6841,7 +6841,7 @@ PetscErrorCode DMClearLabelStratum(DM dm, const char name[], PetscInt value)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidCharPointer(name, 2);
+  PetscValidPointer(name, 2);
   PetscCall(DMGetLabel(dm, name, &label));
   if (!label) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(DMLabelClearStratum(label, value));
@@ -6870,7 +6870,7 @@ PetscErrorCode DMGetNumLabels(DM dm, PetscInt *numLabels)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidIntPointer(numLabels, 2);
+  PetscValidPointer(numLabels, 2);
   while (next) {
     ++n;
     next = next->next;
@@ -6940,8 +6940,8 @@ PetscErrorCode DMHasLabel(DM dm, const char name[], PetscBool *hasLabel)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidCharPointer(name, 2);
-  PetscValidBoolPointer(hasLabel, 3);
+  PetscValidPointer(name, 2);
+  PetscValidPointer(hasLabel, 3);
   *hasLabel = PETSC_FALSE;
   while (next) {
     PetscCall(PetscObjectGetName((PetscObject)next->label, &lname));
@@ -6984,7 +6984,7 @@ PetscErrorCode DMGetLabel(DM dm, const char name[], DMLabel *label)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidCharPointer(name, 2);
+  PetscValidPointer(name, 2);
   PetscValidPointer(label, 3);
   *label = NULL;
   while (next) {
@@ -7146,7 +7146,7 @@ PetscErrorCode DMRemoveLabel(DM dm, const char name[], DMLabel *label)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidCharPointer(name, 2);
+  PetscValidPointer(name, 2);
   if (label) {
     PetscValidPointer(label, 3);
     *label = NULL;
@@ -7238,8 +7238,8 @@ PetscErrorCode DMGetLabelOutput(DM dm, const char name[], PetscBool *output)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidCharPointer(name, 2);
-  PetscValidBoolPointer(output, 3);
+  PetscValidPointer(name, 2);
+  PetscValidPointer(output, 3);
   while (next) {
     PetscBool flg;
 
@@ -7275,7 +7275,7 @@ PetscErrorCode DMSetLabelOutput(DM dm, const char name[], PetscBool output)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidCharPointer(name, 2);
+  PetscValidPointer(name, 2);
   while (next) {
     PetscBool flg;
 
@@ -7406,7 +7406,7 @@ PetscErrorCode DMCompareLabels(DM dm0, DM dm1, PetscBool *equal, char **message)
   PetscValidHeaderSpecific(dm0, DM_CLASSID, 1);
   PetscValidHeaderSpecific(dm1, DM_CLASSID, 2);
   PetscCheckSameComm(dm0, 1, dm1, 2);
-  if (equal) PetscValidBoolPointer(equal, 3);
+  if (equal) PetscValidPointer(equal, 3);
   if (message) PetscValidPointer(message, 4);
   PetscCall(PetscObjectGetComm((PetscObject)dm0, &comm));
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
@@ -7875,7 +7875,7 @@ PetscErrorCode DMIsBoundaryPoint(DM dm, PetscInt point, PetscBool *isBd)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidBoolPointer(isBd, 3);
+  PetscValidPointer(isBd, 3);
   *isBd = PETSC_FALSE;
   PetscCall(DMPopulateBoundary(dm));
   b = dm->boundary;
@@ -9032,8 +9032,8 @@ PetscErrorCode DMGetAuxiliaryLabels(DM dm, DMLabel labels[], PetscInt values[], 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidPointer(labels, 2);
-  PetscValidIntPointer(values, 3);
-  PetscValidIntPointer(parts, 4);
+  PetscValidPointer(values, 3);
+  PetscValidPointer(parts, 4);
   PetscCall(DMGetNumAuxiliaryVec(dm, &n));
   PetscCall(PetscMalloc1(n, &keys));
   PetscCall(PetscHMapAuxGetKeys(dm->auxData, &off, keys));

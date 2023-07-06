@@ -581,8 +581,8 @@ PetscErrorCode VecScatterView(VecScatter sf, PetscViewer viewer)
 PetscErrorCode VecScatterRemap(VecScatter sf, PetscInt tomap[], PetscInt frommap[])
 {
   PetscFunctionBegin;
-  if (tomap) PetscValidIntPointer(tomap, 2);
-  if (frommap) PetscValidIntPointer(frommap, 3);
+  if (tomap) PetscValidPointer(tomap, 2);
+  if (frommap) PetscValidPointer(frommap, 3);
   PetscCall(VecScatterRemap_Internal(sf, tomap, frommap));
   PetscCheck(!frommap, PETSC_COMM_SELF, PETSC_ERR_SUP, "Unable to remap the FROM in scatters yet");
   /* Mark then vector lengths as unknown because we do not know the lengths of the remapped vectors */

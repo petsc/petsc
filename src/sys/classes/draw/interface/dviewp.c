@@ -64,10 +64,10 @@ PetscErrorCode PetscDrawGetViewPort(PetscDraw draw, PetscReal *xl, PetscReal *yl
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw, PETSC_DRAW_CLASSID, 1);
-  PetscValidRealPointer(xl, 2);
-  PetscValidRealPointer(yl, 3);
-  PetscValidRealPointer(xr, 4);
-  PetscValidRealPointer(yr, 5);
+  PetscValidPointer(xl, 2);
+  PetscValidPointer(yl, 3);
+  PetscValidPointer(xr, 4);
+  PetscValidPointer(yr, 5);
   *xl = draw->port_xl;
   *yl = draw->port_yl;
   *xr = draw->port_xr;

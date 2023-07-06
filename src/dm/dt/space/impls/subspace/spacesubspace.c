@@ -452,10 +452,10 @@ PetscErrorCode PetscSpaceCreateSubspace(PetscSpace origSpace, PetscDualSpace dua
   PetscFunctionBegin;
   PetscValidHeaderSpecific(origSpace, PETSCSPACE_CLASSID, 1);
   PetscValidHeaderSpecific(dualSubspace, PETSCDUALSPACE_CLASSID, 2);
-  if (x) PetscValidRealPointer(x, 3);
-  if (Jx) PetscValidRealPointer(Jx, 4);
-  if (u) PetscValidRealPointer(u, 5);
-  if (Ju) PetscValidRealPointer(Ju, 6);
+  if (x) PetscValidPointer(x, 3);
+  if (Jx) PetscValidPointer(Jx, 4);
+  if (u) PetscValidPointer(u, 5);
+  if (Ju) PetscValidPointer(Ju, 6);
   PetscValidPointer(subspace, 8);
   PetscCall(PetscSpaceGetNumComponents(origSpace, &origNc));
   PetscCall(PetscSpaceGetNumVariables(origSpace, &origDim));

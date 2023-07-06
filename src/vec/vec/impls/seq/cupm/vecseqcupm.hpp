@@ -186,7 +186,7 @@ template <device::cupm::DeviceType T>
 inline PetscErrorCode VecCreateSeqCUPMWithArraysAsync(MPI_Comm comm, PetscInt bs, PetscInt n, const PetscScalar cpuarray[], const PetscScalar gpuarray[], Vec *v) noexcept
 {
   PetscFunctionBegin;
-  if (n && cpuarray) PetscValidScalarPointer(cpuarray, 4);
+  if (n && cpuarray) PetscValidPointer(cpuarray, 4);
   PetscValidPointer(v, 6);
   PetscCall(impl::VecSeq_CUPM<T>::CreateSeqCUPMWithBothArrays(comm, bs, n, cpuarray, gpuarray, v));
   PetscFunctionReturn(PETSC_SUCCESS);

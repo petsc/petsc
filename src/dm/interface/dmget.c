@@ -375,8 +375,8 @@ PetscErrorCode DMHasNamedGlobalVector(DM dm, const char *name, PetscBool *exists
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidCharPointer(name, 2);
-  PetscValidBoolPointer(exists, 3);
+  PetscValidPointer(name, 2);
+  PetscValidPointer(exists, 3);
   *exists = PETSC_FALSE;
   for (link = dm->namedglobal; link; link = link->next) {
     PetscBool match;
@@ -414,7 +414,7 @@ PetscErrorCode DMGetNamedGlobalVector(DM dm, const char *name, Vec *X)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidCharPointer(name, 2);
+  PetscValidPointer(name, 2);
   PetscValidPointer(X, 3);
   for (link = dm->namedglobal; link; link = link->next) {
     PetscBool match;
@@ -464,7 +464,7 @@ PetscErrorCode DMRestoreNamedGlobalVector(DM dm, const char *name, Vec *X)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidCharPointer(name, 2);
+  PetscValidPointer(name, 2);
   PetscValidPointer(X, 3);
   PetscValidHeaderSpecific(*X, VEC_CLASSID, 3);
   for (link = dm->namedglobal; link; link = link->next) {
@@ -513,8 +513,8 @@ PetscErrorCode DMHasNamedLocalVector(DM dm, const char *name, PetscBool *exists)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidCharPointer(name, 2);
-  PetscValidBoolPointer(exists, 3);
+  PetscValidPointer(name, 2);
+  PetscValidPointer(exists, 3);
   *exists = PETSC_FALSE;
   for (link = dm->namedlocal; link; link = link->next) {
     PetscBool match;
@@ -552,7 +552,7 @@ PetscErrorCode DMGetNamedLocalVector(DM dm, const char *name, Vec *X)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidCharPointer(name, 2);
+  PetscValidPointer(name, 2);
   PetscValidPointer(X, 3);
   for (link = dm->namedlocal; link; link = link->next) {
     PetscBool match;
@@ -602,7 +602,7 @@ PetscErrorCode DMRestoreNamedLocalVector(DM dm, const char *name, Vec *X)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidCharPointer(name, 2);
+  PetscValidPointer(name, 2);
   PetscValidPointer(X, 3);
   PetscValidHeaderSpecific(*X, VEC_CLASSID, 3);
   for (link = dm->namedlocal; link; link = link->next) {

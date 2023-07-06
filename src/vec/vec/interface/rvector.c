@@ -61,7 +61,7 @@ PetscErrorCode VecMaxPointwiseDivide(Vec x, Vec y, PetscReal *max)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x, VEC_CLASSID, 1);
   PetscValidHeaderSpecific(y, VEC_CLASSID, 2);
-  PetscValidRealPointer(max, 3);
+  PetscValidPointer(max, 3);
   PetscValidType(x, 1);
   PetscValidType(y, 2);
   PetscCheckSameTypeAndComm(x, 1, y, 2);
@@ -108,7 +108,7 @@ PetscErrorCode VecDot(Vec x, Vec y, PetscScalar *val)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x, VEC_CLASSID, 1);
   PetscValidHeaderSpecific(y, VEC_CLASSID, 2);
-  PetscValidScalarPointer(val, 3);
+  PetscValidPointer(val, 3);
   PetscValidType(x, 1);
   PetscValidType(y, 2);
   PetscCheckSameTypeAndComm(x, 1, y, 2);
@@ -203,7 +203,7 @@ PetscErrorCode VecNorm(Vec x, NormType type, PetscReal *val)
   PetscValidType(x, 1);
   VecCheckAssembled(x);
   PetscValidLogicalCollectiveEnum(x, type, 2);
-  PetscValidRealPointer(val, 3);
+  PetscValidPointer(val, 3);
 
   /* Cached data? */
   PetscCall(VecNormAvailable(x, type, &flg, val));
@@ -249,8 +249,8 @@ PetscErrorCode VecNormAvailable(Vec x, NormType type, PetscBool *available, Pets
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x, VEC_CLASSID, 1);
   PetscValidType(x, 1);
-  PetscValidBoolPointer(available, 3);
-  PetscValidRealPointer(val, 4);
+  PetscValidPointer(available, 3);
+  PetscValidPointer(val, 4);
 
   if (type == NORM_1_AND_2) {
     *available = PETSC_FALSE;
@@ -283,7 +283,7 @@ PetscErrorCode VecNormalize(Vec x, PetscReal *val)
   PetscValidHeaderSpecific(x, VEC_CLASSID, 1);
   PetscValidType(x, 1);
   PetscCall(VecSetErrorIfLocked(x, 1));
-  if (val) PetscValidRealPointer(val, 2);
+  if (val) PetscValidPointer(val, 2);
   PetscCall(PetscLogEventBegin(VEC_Normalize, x, 0, 0, 0));
   PetscCall(VecNorm(x, NORM_2, &norm));
   if (norm == 0.0) PetscCall(PetscInfo(x, "Vector of zero norm can not be normalized; Returning only the zero norm\n"));
@@ -324,8 +324,8 @@ PetscErrorCode VecMax(Vec x, PetscInt *p, PetscReal *val)
   PetscValidHeaderSpecific(x, VEC_CLASSID, 1);
   PetscValidType(x, 1);
   VecCheckAssembled(x);
-  if (p) PetscValidIntPointer(p, 2);
-  PetscValidRealPointer(val, 3);
+  if (p) PetscValidPointer(p, 2);
+  PetscValidPointer(val, 3);
   PetscCall(VecLockReadPush(x));
   PetscCall(PetscLogEventBegin(VEC_Max, x, 0, 0, 0));
   PetscUseTypeMethod(x, max, p, val);
@@ -361,8 +361,8 @@ PetscErrorCode VecMin(Vec x, PetscInt *p, PetscReal *val)
   PetscValidHeaderSpecific(x, VEC_CLASSID, 1);
   PetscValidType(x, 1);
   VecCheckAssembled(x);
-  if (p) PetscValidIntPointer(p, 2);
-  PetscValidRealPointer(val, 3);
+  if (p) PetscValidPointer(p, 2);
+  PetscValidPointer(val, 3);
   PetscCall(VecLockReadPush(x));
   PetscCall(PetscLogEventBegin(VEC_Min, x, 0, 0, 0));
   PetscUseTypeMethod(x, min, p, val);
@@ -402,7 +402,7 @@ PetscErrorCode VecTDot(Vec x, Vec y, PetscScalar *val)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x, VEC_CLASSID, 1);
   PetscValidHeaderSpecific(y, VEC_CLASSID, 2);
-  PetscValidScalarPointer(val, 3);
+  PetscValidPointer(val, 3);
   PetscValidType(x, 1);
   PetscValidType(y, 2);
   PetscCheckSameTypeAndComm(x, 1, y, 2);
@@ -850,8 +850,8 @@ PetscErrorCode VecSetValues(Vec x, PetscInt ni, const PetscInt ix[], const Petsc
   PetscFunctionBeginHot;
   PetscValidHeaderSpecific(x, VEC_CLASSID, 1);
   if (!ni) PetscFunctionReturn(PETSC_SUCCESS);
-  PetscValidIntPointer(ix, 3);
-  PetscValidScalarPointer(y, 4);
+  PetscValidPointer(ix, 3);
+  PetscValidPointer(y, 4);
   PetscValidType(x, 1);
 
   PetscCall(PetscLogEventBegin(VEC_SetValues, x, 0, 0, 0));
@@ -897,8 +897,8 @@ PetscErrorCode VecGetValues(Vec x, PetscInt ni, const PetscInt ix[], PetscScalar
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x, VEC_CLASSID, 1);
   if (!ni) PetscFunctionReturn(PETSC_SUCCESS);
-  PetscValidIntPointer(ix, 3);
-  PetscValidScalarPointer(y, 4);
+  PetscValidPointer(ix, 3);
+  PetscValidPointer(y, 4);
   PetscValidType(x, 1);
   VecCheckAssembled(x);
   PetscUseTypeMethod(x, getvalues, ni, ix, y);
@@ -945,8 +945,8 @@ PetscErrorCode VecSetValuesBlocked(Vec x, PetscInt ni, const PetscInt ix[], cons
   PetscFunctionBeginHot;
   PetscValidHeaderSpecific(x, VEC_CLASSID, 1);
   if (!ni) PetscFunctionReturn(PETSC_SUCCESS);
-  PetscValidIntPointer(ix, 3);
-  PetscValidScalarPointer(y, 4);
+  PetscValidPointer(ix, 3);
+  PetscValidPointer(y, 4);
   PetscValidType(x, 1);
 
   PetscCall(PetscLogEventBegin(VEC_SetValues, x, 0, 0, 0));
@@ -993,8 +993,8 @@ PetscErrorCode VecSetValuesLocal(Vec x, PetscInt ni, const PetscInt ix[], const 
   PetscFunctionBeginHot;
   PetscValidHeaderSpecific(x, VEC_CLASSID, 1);
   if (!ni) PetscFunctionReturn(PETSC_SUCCESS);
-  PetscValidIntPointer(ix, 3);
-  PetscValidScalarPointer(y, 4);
+  PetscValidPointer(ix, 3);
+  PetscValidPointer(y, 4);
   PetscValidType(x, 1);
 
   PetscCall(PetscLogEventBegin(VEC_SetValues, x, 0, 0, 0));
@@ -1049,8 +1049,8 @@ PetscErrorCode VecSetValuesBlockedLocal(Vec x, PetscInt ni, const PetscInt ix[],
   PetscFunctionBeginHot;
   PetscValidHeaderSpecific(x, VEC_CLASSID, 1);
   if (!ni) PetscFunctionReturn(PETSC_SUCCESS);
-  PetscValidIntPointer(ix, 3);
-  PetscValidScalarPointer(y, 4);
+  PetscValidPointer(ix, 3);
+  PetscValidPointer(y, 4);
   PetscValidType(x, 1);
   PetscCall(PetscLogEventBegin(VEC_SetValues, x, 0, 0, 0));
   if (x->map->mapping) {
@@ -1083,7 +1083,7 @@ static PetscErrorCode VecMXDot_Private(Vec x, PetscInt nv, const Vec y[], PetscS
     VecCheckAssembled(y[i]);
     PetscCall(VecLockReadPush(y[i]));
   }
-  PetscValidScalarPointer(result, 4);
+  PetscValidPointer(result, 4);
   PetscValidFunction(mxdot, 5);
 
   PetscCall(VecLockReadPush(x));
@@ -1193,7 +1193,7 @@ PetscErrorCode VecMAXPY(Vec y, PetscInt nv, const PetscScalar alpha[], Vec x[])
   if (nv) {
     PetscInt zeros = 0;
 
-    PetscValidScalarPointer(alpha, 3);
+    PetscValidPointer(alpha, 3);
     PetscValidPointer(x, 4);
     for (PetscInt i = 0; i < nv; ++i) {
       PetscValidLogicalCollectiveScalar(y, alpha[i], 3);
@@ -2450,7 +2450,7 @@ PetscErrorCode VecPlaceArray(Vec vec, const PetscScalar array[])
   PetscFunctionBegin;
   PetscValidHeaderSpecific(vec, VEC_CLASSID, 1);
   PetscValidType(vec, 1);
-  if (array) PetscValidScalarPointer(array, 2);
+  if (array) PetscValidPointer(array, 2);
   PetscUseTypeMethod(vec, placearray, array);
   PetscCall(PetscObjectStateIncrease((PetscObject)vec));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -3852,7 +3852,7 @@ PetscErrorCode VecLockGetLocation(Vec x, const char *file[], const char *func[],
   PetscValidHeaderSpecific(x, VEC_CLASSID, 1);
   PetscValidPointer(file, 2);
   PetscValidPointer(func, 3);
-  PetscValidIntPointer(line, 4);
+  PetscValidPointer(line, 4);
   #if !PetscDefined(HAVE_THREADSAFETY)
   {
     const int index = x->lockstack.currentsize - 1;

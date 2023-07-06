@@ -420,7 +420,7 @@ PetscErrorCode PCBJacobiGetTotalBlocks(PC pc, PetscInt *blocks, const PetscInt *
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
-  PetscValidIntPointer(blocks, 2);
+  PetscValidPointer(blocks, 2);
   PetscUseMethod(pc, "PCBJacobiGetTotalBlocks_C", (PC, PetscInt *, const PetscInt *[]), (pc, blocks, lens));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -477,7 +477,7 @@ PetscErrorCode PCBJacobiGetLocalBlocks(PC pc, PetscInt *blocks, const PetscInt *
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
-  PetscValidIntPointer(blocks, 2);
+  PetscValidPointer(blocks, 2);
   PetscUseMethod(pc, "PCBJacobiGetLocalBlocks_C", (PC, PetscInt *, const PetscInt *[]), (pc, blocks, lens));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -242,7 +242,7 @@ PetscErrorCode PetscSectionCompare(PetscSection s1, PetscSection s2, PetscBool *
   PetscFunctionBegin;
   PetscValidHeaderSpecific(s1, PETSC_SECTION_CLASSID, 1);
   PetscValidHeaderSpecific(s2, PETSC_SECTION_CLASSID, 2);
-  PetscValidBoolPointer(congruent, 3);
+  PetscValidPointer(congruent, 3);
   flg = PETSC_FALSE;
 
   PetscCallMPI(MPI_Comm_compare(PetscObjectComm((PetscObject)s1), PetscObjectComm((PetscObject)s2), &mflg));
@@ -335,7 +335,7 @@ PetscErrorCode PetscSectionGetNumFields(PetscSection s, PetscInt *numFields)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
-  PetscValidIntPointer(numFields, 2);
+  PetscValidPointer(numFields, 2);
   *numFields = s->numFields;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -437,7 +437,7 @@ PetscErrorCode PetscSectionSetFieldName(PetscSection s, PetscInt field, const ch
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
-  if (fieldName) PetscValidCharPointer(fieldName, 3);
+  if (fieldName) PetscValidPointer(fieldName, 3);
   PetscSectionCheckValidField(field, s->numFields);
   PetscCall(PetscFree(s->fieldNames[field]));
   PetscCall(PetscStrallocpy(fieldName, (char **)&s->fieldNames[field]));
@@ -505,7 +505,7 @@ PetscErrorCode PetscSectionSetComponentName(PetscSection s, PetscInt field, Pets
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
-  if (compName) PetscValidCharPointer(compName, 4);
+  if (compName) PetscValidPointer(compName, 4);
   PetscSectionCheckValidField(field, s->numFields);
   PetscSectionCheckValidFieldComponent(comp, s->numFieldComponents[field]);
   PetscCall(PetscFree(s->compNames[field][comp]));
@@ -537,7 +537,7 @@ PetscErrorCode PetscSectionGetFieldComponents(PetscSection s, PetscInt field, Pe
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
-  PetscValidIntPointer(numComp, 3);
+  PetscValidPointer(numComp, 3);
   PetscSectionCheckValidField(field, s->numFields);
   *numComp = s->numFieldComponents[field];
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -742,7 +742,7 @@ PetscErrorCode PetscSectionGetPointMajor(PetscSection s, PetscBool *pm)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
-  PetscValidBoolPointer(pm, 2);
+  PetscValidPointer(pm, 2);
   *pm = s->pointMajor;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -806,7 +806,7 @@ PetscErrorCode PetscSectionGetIncludesConstraints(PetscSection s, PetscBool *inc
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
-  PetscValidBoolPointer(includesConstraints, 2);
+  PetscValidPointer(includesConstraints, 2);
   *includesConstraints = s->includesConstraints;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -858,7 +858,7 @@ PetscErrorCode PetscSectionGetDof(PetscSection s, PetscInt point, PetscInt *numD
 {
   PetscFunctionBeginHot;
   PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
-  PetscValidIntPointer(numDof, 3);
+  PetscValidPointer(numDof, 3);
   if (PetscDefined(USE_DEBUG)) PetscCheck(point >= s->pStart && point < s->pEnd, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Section point %" PetscInt_FMT " should be in [%" PetscInt_FMT ", %" PetscInt_FMT ")", point, s->pStart, s->pEnd);
   *numDof = s->atlasDof[point - s->pStart];
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -939,7 +939,7 @@ PetscErrorCode PetscSectionGetFieldDof(PetscSection s, PetscInt point, PetscInt 
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
-  PetscValidIntPointer(numDof, 4);
+  PetscValidPointer(numDof, 4);
   PetscSectionCheckValidField(field, s->numFields);
   PetscCall(PetscSectionGetDof(s->field[field], point, numDof));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -1035,7 +1035,7 @@ PetscErrorCode PetscSectionGetConstraintDof(PetscSection s, PetscInt point, Pets
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
-  PetscValidIntPointer(numDof, 3);
+  PetscValidPointer(numDof, 3);
   if (s->bc) {
     PetscCall(PetscSectionGetDof(s->bc, point, numDof));
   } else *numDof = 0;
@@ -1113,7 +1113,7 @@ PetscErrorCode PetscSectionGetFieldConstraintDof(PetscSection s, PetscInt point,
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
-  PetscValidIntPointer(numDof, 4);
+  PetscValidPointer(numDof, 4);
   PetscSectionCheckValidField(field, s->numFields);
   PetscCall(PetscSectionGetConstraintDof(s->field[field], point, numDof));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -1295,7 +1295,7 @@ PetscErrorCode PetscSectionGetMaxDof(PetscSection s, PetscInt *maxDof)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
-  PetscValidIntPointer(maxDof, 2);
+  PetscValidPointer(maxDof, 2);
   if (s->maxDof == PETSC_MIN_INT) {
     s->maxDof = 0;
     for (p = 0; p < s->pEnd - s->pStart; ++p) s->maxDof = PetscMax(s->maxDof, s->atlasDof[p]);
@@ -1325,7 +1325,7 @@ PetscErrorCode PetscSectionGetStorageSize(PetscSection s, PetscInt *size)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
-  PetscValidIntPointer(size, 2);
+  PetscValidPointer(size, 2);
   for (p = 0; p < s->pEnd - s->pStart; ++p) n += s->atlasDof[p] > 0 ? s->atlasDof[p] : 0;
   *size = n;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -1352,7 +1352,7 @@ PetscErrorCode PetscSectionGetConstrainedStorageSize(PetscSection s, PetscInt *s
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
-  PetscValidIntPointer(size, 2);
+  PetscValidPointer(size, 2);
   for (p = 0; p < s->pEnd - s->pStart; ++p) {
     const PetscInt cdof = s->bc ? s->bc->atlasDof[p] : 0;
     n += s->atlasDof[p] > 0 ? s->atlasDof[p] - cdof : 0;
@@ -1733,7 +1733,7 @@ PetscErrorCode PetscSectionGetOffset(PetscSection s, PetscInt point, PetscInt *o
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
-  PetscValidIntPointer(offset, 3);
+  PetscValidPointer(offset, 3);
   if (PetscDefined(USE_DEBUG)) PetscCheck(!(point < s->pStart) && !(point >= s->pEnd), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Section point %" PetscInt_FMT " should be in [%" PetscInt_FMT ", %" PetscInt_FMT ")", point, s->pStart, s->pEnd);
   *offset = s->atlasOff[point - s->pStart];
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -1791,7 +1791,7 @@ PetscErrorCode PetscSectionGetFieldOffset(PetscSection s, PetscInt point, PetscI
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
-  PetscValidIntPointer(offset, 4);
+  PetscValidPointer(offset, 4);
   PetscSectionCheckValidField(field, s->numFields);
   PetscCall(PetscSectionGetOffset(s->field[field], point, offset));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -1859,7 +1859,7 @@ PetscErrorCode PetscSectionGetFieldPointOffset(PetscSection s, PetscInt point, P
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
-  PetscValidIntPointer(offset, 4);
+  PetscValidPointer(offset, 4);
   PetscSectionCheckValidField(field, s->numFields);
   PetscCall(PetscSectionGetOffset(s, point, &off));
   PetscCall(PetscSectionGetOffset(s->field[field], point, &foff));
@@ -1936,7 +1936,7 @@ PetscErrorCode PetscSectionCreateSubsection(PetscSection s, PetscInt len, const 
   PetscFunctionBegin;
   if (!len) PetscFunctionReturn(PETSC_SUCCESS);
   PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
-  PetscValidIntPointer(fields, 3);
+  PetscValidPointer(fields, 3);
   PetscValidPointer(subs, 4);
   PetscCall(PetscSectionGetNumFields(s, &nF));
   PetscCheck(len <= nF, PetscObjectComm((PetscObject)s), PETSC_ERR_ARG_WRONG, "Number of requested fields %" PetscInt_FMT " greater than number of fields %" PetscInt_FMT, len, nF);
@@ -2628,7 +2628,7 @@ PetscErrorCode PetscSectionHasConstraints(PetscSection s, PetscBool *hasConstrai
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
-  PetscValidBoolPointer(hasConstraints, 2);
+  PetscValidPointer(hasConstraints, 2);
   *hasConstraints = s->bc ? PETSC_TRUE : PETSC_FALSE;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -2753,7 +2753,7 @@ PetscErrorCode PetscSectionSetFieldConstraintIndices(PetscSection s, PetscInt po
     PetscInt nfdof;
 
     PetscCall(PetscSectionGetFieldConstraintDof(s, point, field, &nfdof));
-    if (nfdof) PetscValidIntPointer(indices, 4);
+    if (nfdof) PetscValidPointer(indices, 4);
   }
   PetscSectionCheckValidField(field, s->numFields);
   PetscCall(PetscSectionSetConstraintIndices(s->field[field], point, indices));
@@ -3449,7 +3449,7 @@ PetscErrorCode PetscSectionGetPointSyms(PetscSection section, PetscInt numPoints
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(section, PETSC_SECTION_CLASSID, 1);
-  if (numPoints) PetscValidIntPointer(points, 3);
+  if (numPoints) PetscValidPointer(points, 3);
   if (perms) *perms = NULL;
   if (rots) *rots = NULL;
   sym = section->sym;

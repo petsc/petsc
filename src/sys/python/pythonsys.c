@@ -281,7 +281,7 @@ PetscErrorCode PetscPythonMonitorSet(PetscObject obj, const char url[])
 {
   PetscFunctionBegin;
   PetscValidHeader(obj, 1);
-  PetscValidCharPointer(url, 2);
+  PetscValidPointer(url, 2);
   if (!PetscPythonMonitorSet_C) {
     PetscCall(PetscPythonInitialize(NULL, NULL));
     PetscCheck(PetscPythonMonitorSet_C, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Couldn't initialize Python support for monitors");

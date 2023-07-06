@@ -926,7 +926,7 @@ PetscErrorCode SNESLineSearchSetType(SNESLineSearch linesearch, SNESLineSearchTy
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(linesearch, SNESLINESEARCH_CLASSID, 1);
-  PetscValidCharPointer(type, 2);
+  PetscValidPointer(type, 2);
 
   PetscCall(PetscObjectTypeCompare((PetscObject)linesearch, type, &match));
   if (match) PetscFunctionReturn(PETSC_SUCCESS);
@@ -1026,7 +1026,7 @@ PetscErrorCode SNESLineSearchGetLambda(SNESLineSearch linesearch, PetscReal *lam
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(linesearch, SNESLINESEARCH_CLASSID, 1);
-  PetscValidRealPointer(lambda, 2);
+  PetscValidPointer(lambda, 2);
   *lambda = linesearch->lambda;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1088,27 +1088,27 @@ PetscErrorCode SNESLineSearchGetTolerances(SNESLineSearch linesearch, PetscReal 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(linesearch, SNESLINESEARCH_CLASSID, 1);
   if (steptol) {
-    PetscValidRealPointer(steptol, 2);
+    PetscValidPointer(steptol, 2);
     *steptol = linesearch->steptol;
   }
   if (maxstep) {
-    PetscValidRealPointer(maxstep, 3);
+    PetscValidPointer(maxstep, 3);
     *maxstep = linesearch->maxstep;
   }
   if (rtol) {
-    PetscValidRealPointer(rtol, 4);
+    PetscValidPointer(rtol, 4);
     *rtol = linesearch->rtol;
   }
   if (atol) {
-    PetscValidRealPointer(atol, 5);
+    PetscValidPointer(atol, 5);
     *atol = linesearch->atol;
   }
   if (ltol) {
-    PetscValidRealPointer(ltol, 6);
+    PetscValidPointer(ltol, 6);
     *ltol = linesearch->ltol;
   }
   if (max_its) {
-    PetscValidIntPointer(max_its, 7);
+    PetscValidPointer(max_its, 7);
     *max_its = linesearch->max_its;
   }
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -1199,7 +1199,7 @@ PetscErrorCode SNESLineSearchGetDamping(SNESLineSearch linesearch, PetscReal *da
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(linesearch, SNESLINESEARCH_CLASSID, 1);
-  PetscValidRealPointer(damping, 2);
+  PetscValidPointer(damping, 2);
   *damping = linesearch->damping;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1255,7 +1255,7 @@ PetscErrorCode SNESLineSearchGetOrder(SNESLineSearch linesearch, PetscInt *order
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(linesearch, SNESLINESEARCH_CLASSID, 1);
-  PetscValidIntPointer(order, 2);
+  PetscValidPointer(order, 2);
   *order = linesearch->order;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

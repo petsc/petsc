@@ -131,7 +131,7 @@ PetscErrorCode PetscDLLibraryOpen(MPI_Comm comm, const char path[], PetscDLLibra
   PetscErrorCode (*func)(void) = NULL;
 
   PetscFunctionBegin;
-  PetscValidCharPointer(path, 2);
+  PetscValidPointer(path, 2);
   PetscValidPointer(entry, 3);
 
   *entry = NULL;
@@ -219,8 +219,8 @@ PetscErrorCode PetscDLLibrarySym(MPI_Comm comm, PetscDLLibrary *outlist, const c
 
   PetscFunctionBegin;
   if (outlist) PetscValidPointer(outlist, 2);
-  if (path) PetscValidCharPointer(path, 3);
-  PetscValidCharPointer(insymbol, 4);
+  if (path) PetscValidPointer(path, 3);
+  PetscValidPointer(insymbol, 4);
   PetscValidPointer(value, 5);
 
   if (outlist) list = *outlist;

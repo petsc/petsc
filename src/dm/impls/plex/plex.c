@@ -2786,7 +2786,7 @@ PetscErrorCode DMPlexGetConeSize(DM dm, PetscInt p, PetscInt *size)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidIntPointer(size, 3);
+  PetscValidPointer(size, 3);
   if (mesh->tr) PetscCall(DMPlexTransformGetConeSize(mesh->tr, p, size));
   else PetscCall(PetscSectionGetDof(mesh->coneSection, p, size));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -2967,7 +2967,7 @@ PetscErrorCode DMPlexGetConeRecursive(DM dm, IS points, PetscInt *depth, IS *exp
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidHeaderSpecific(points, IS_CLASSID, 2);
-  if (depth) PetscValidIntPointer(depth, 3);
+  if (depth) PetscValidPointer(depth, 3);
   if (expandedPoints) PetscValidPointer(expandedPoints, 4);
   if (sections) PetscValidPointer(sections, 5);
   PetscCall(ISGetLocalSize(points, &n));
@@ -3086,7 +3086,7 @@ PetscErrorCode DMPlexSetCone(DM dm, PetscInt p, const PetscInt cone[])
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscCall(PetscSectionGetDof(mesh->coneSection, p, &dof));
-  if (dof) PetscValidIntPointer(cone, 3);
+  if (dof) PetscValidPointer(cone, 3);
   PetscCall(PetscSectionGetOffset(mesh->coneSection, p, &off));
   if (PetscDefined(USE_DEBUG)) {
     PetscInt pStart, pEnd;
@@ -3175,7 +3175,7 @@ PetscErrorCode DMPlexSetConeOrientation(DM dm, PetscInt p, const PetscInt coneOr
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscCall(PetscSectionGetDof(mesh->coneSection, p, &dof));
-  if (dof) PetscValidIntPointer(coneOrientation, 3);
+  if (dof) PetscValidPointer(coneOrientation, 3);
   PetscCall(PetscSectionGetOffset(mesh->coneSection, p, &off));
   if (PetscDefined(USE_DEBUG)) {
     PetscCall(PetscSectionGetChart(mesh->coneSection, &pStart, &pEnd));
@@ -3376,7 +3376,7 @@ PetscErrorCode DMPlexGetSupportSize(DM dm, PetscInt p, PetscInt *size)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidIntPointer(size, 3);
+  PetscValidPointer(size, 3);
   PetscCall(PetscSectionGetDof(mesh->supportSection, p, size));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -3468,7 +3468,7 @@ PetscErrorCode DMPlexSetSupport(DM dm, PetscInt p, const PetscInt support[])
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscCall(PetscSectionGetChart(mesh->supportSection, &pStart, &pEnd));
   PetscCall(PetscSectionGetDof(mesh->supportSection, p, &dof));
-  if (dof) PetscValidIntPointer(support, 3);
+  if (dof) PetscValidPointer(support, 3);
   PetscCall(PetscSectionGetOffset(mesh->supportSection, p, &off));
   PetscCheck(!(p < pStart) && !(p >= pEnd), PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Mesh point %" PetscInt_FMT " is not in the valid range [%" PetscInt_FMT ", %" PetscInt_FMT ")", p, pStart, pEnd);
   for (c = 0; c < dof; ++c) {
@@ -3871,7 +3871,7 @@ PetscErrorCode DMPlexGetTransitiveClosure(DM dm, PetscInt p, PetscBool useCone, 
 {
   PetscFunctionBeginHot;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  if (numPoints) PetscValidIntPointer(numPoints, 4);
+  if (numPoints) PetscValidPointer(numPoints, 4);
   if (points) PetscValidPointer(points, 5);
   PetscCall(DMPlexGetTransitiveClosure_Internal(dm, p, 0, useCone, numPoints, points));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -4413,8 +4413,8 @@ PetscErrorCode DMPlexGetJoin(DM dm, PetscInt numPoints, const PetscInt points[],
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidIntPointer(points, 3);
-  PetscValidIntPointer(numCoveredPoints, 4);
+  PetscValidPointer(points, 3);
+  PetscValidPointer(numCoveredPoints, 4);
   PetscValidPointer(coveredPoints, 5);
   PetscCall(PetscSectionGetMaxDof(mesh->supportSection, &maxSupportSize));
   PetscCall(DMGetWorkArray(dm, maxSupportSize, MPIU_INT, &join[0]));
@@ -4473,8 +4473,8 @@ PetscErrorCode DMPlexRestoreJoin(DM dm, PetscInt numPoints, const PetscInt point
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  if (points) PetscValidIntPointer(points, 3);
-  if (numCoveredPoints) PetscValidIntPointer(numCoveredPoints, 4);
+  if (points) PetscValidPointer(points, 3);
+  if (numCoveredPoints) PetscValidPointer(numCoveredPoints, 4);
   PetscValidPointer(coveredPoints, 5);
   PetscCall(DMRestoreWorkArray(dm, 0, MPIU_INT, (void *)coveredPoints));
   if (numCoveredPoints) *numCoveredPoints = 0;
@@ -4511,8 +4511,8 @@ PetscErrorCode DMPlexGetFullJoin(DM dm, PetscInt numPoints, const PetscInt point
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidIntPointer(points, 3);
-  PetscValidIntPointer(numCoveredPoints, 4);
+  PetscValidPointer(points, 3);
+  PetscValidPointer(numCoveredPoints, 4);
   PetscValidPointer(coveredPoints, 5);
 
   PetscCall(DMPlexGetDepth(dm, &depth));
@@ -4612,8 +4612,8 @@ PetscErrorCode DMPlexGetMeet(DM dm, PetscInt numPoints, const PetscInt points[],
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidIntPointer(points, 3);
-  PetscValidIntPointer(numCoveringPoints, 4);
+  PetscValidPointer(points, 3);
+  PetscValidPointer(numCoveringPoints, 4);
   PetscValidPointer(coveringPoints, 5);
   PetscCall(PetscSectionGetMaxDof(mesh->coneSection, &maxConeSize));
   PetscCall(DMGetWorkArray(dm, maxConeSize, MPIU_INT, &meet[0]));
@@ -4672,8 +4672,8 @@ PetscErrorCode DMPlexRestoreMeet(DM dm, PetscInt numPoints, const PetscInt point
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  if (points) PetscValidIntPointer(points, 3);
-  if (numCoveredPoints) PetscValidIntPointer(numCoveredPoints, 4);
+  if (points) PetscValidPointer(points, 3);
+  if (numCoveredPoints) PetscValidPointer(numCoveredPoints, 4);
   PetscValidPointer(coveredPoints, 5);
   PetscCall(DMRestoreWorkArray(dm, 0, MPIU_INT, (void *)coveredPoints));
   if (numCoveredPoints) *numCoveredPoints = 0;
@@ -4710,8 +4710,8 @@ PetscErrorCode DMPlexGetFullMeet(DM dm, PetscInt numPoints, const PetscInt point
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidIntPointer(points, 3);
-  PetscValidIntPointer(numCoveredPoints, 4);
+  PetscValidPointer(points, 3);
+  PetscValidPointer(numCoveredPoints, 4);
   PetscValidPointer(coveredPoints, 5);
 
   PetscCall(DMPlexGetDepth(dm, &height));
@@ -4803,7 +4803,7 @@ PetscErrorCode DMPlexEqual(DM dmA, DM dmB, PetscBool *equal)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dmA, DM_CLASSID, 1);
   PetscValidHeaderSpecific(dmB, DM_CLASSID, 2);
-  PetscValidBoolPointer(equal, 3);
+  PetscValidPointer(equal, 3);
 
   *equal = PETSC_FALSE;
   PetscCall(DMPlexGetDepth(dmA, &depth));
@@ -4866,7 +4866,7 @@ PetscErrorCode DMPlexGetNumFaceVertices(DM dm, PetscInt cellDim, PetscInt numCor
 
   PetscFunctionBegin;
   PetscCall(PetscObjectGetComm((PetscObject)dm, &comm));
-  PetscValidIntPointer(numFaceVertices, 4);
+  PetscValidPointer(numFaceVertices, 4);
   switch (cellDim) {
   case 0:
     *numFaceVertices = 0;
@@ -4982,7 +4982,7 @@ PetscErrorCode DMPlexGetDepth(DM dm, PetscInt *depth)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidIntPointer(depth, 2);
+  PetscValidPointer(depth, 2);
   if (mesh->tr) {
     PetscCall(DMPlexTransformGetDepth(mesh->tr, depth));
   } else {
@@ -5024,11 +5024,11 @@ PetscErrorCode DMPlexGetDepthStratum(DM dm, PetscInt depth, PetscInt *start, Pet
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   if (start) {
-    PetscValidIntPointer(start, 3);
+    PetscValidPointer(start, 3);
     *start = 0;
   }
   if (end) {
-    PetscValidIntPointer(end, 4);
+    PetscValidPointer(end, 4);
     *end = 0;
   }
   PetscCall(DMPlexGetChart(dm, &pStart, &pEnd));
@@ -5078,11 +5078,11 @@ PetscErrorCode DMPlexGetHeightStratum(DM dm, PetscInt height, PetscInt *start, P
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   if (start) {
-    PetscValidIntPointer(start, 3);
+    PetscValidPointer(start, 3);
     *start = 0;
   }
   if (end) {
-    PetscValidIntPointer(end, 4);
+    PetscValidPointer(end, 4);
     *end = 0;
   }
   PetscCall(DMPlexGetChart(dm, &pStart, &pEnd));
@@ -5120,7 +5120,7 @@ PetscErrorCode DMPlexGetPointDepth(DM dm, PetscInt point, PetscInt *depth)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidIntPointer(depth, 3);
+  PetscValidPointer(depth, 3);
   PetscCall(DMLabelGetValue(dm->depthLabel, point, depth));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -5147,7 +5147,7 @@ PetscErrorCode DMPlexGetPointHeight(DM dm, PetscInt point, PetscInt *height)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidIntPointer(height, 3);
+  PetscValidPointer(height, 3);
   PetscCall(DMLabelGetNumValues(dm->depthLabel, &n));
   PetscCall(DMLabelGetValue(dm->depthLabel, point, &pDepth));
   *height = n - 1 - pDepth; /* DAG depth is n-1 */
@@ -6811,7 +6811,7 @@ PetscErrorCode DMPlexVecSetStar(DM dm, PetscSection section, Vec v, PetscInt poi
     PetscCall(DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd));
     PetscCheck(point >= vStart && point < vEnd, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Point %" PetscInt_FMT " must be a vertex in [%" PetscInt_FMT ", %" PetscInt_FMT "]", point, vStart, vEnd);
   }
-  PetscValidScalarPointer(values, 5);
+  PetscValidPointer(values, 5);
 
   PetscCall(DMGetDimension(dm, &dim));
   PetscCall(DMPlexGetSupportSize(dm, point, &Ns));
@@ -7686,9 +7686,9 @@ PetscErrorCode DMPlexGetClosureIndices(DM dm, PetscSection section, PetscSection
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidHeaderSpecific(section, PETSC_SECTION_CLASSID, 2);
   PetscValidHeaderSpecific(idxSection, PETSC_SECTION_CLASSID, 3);
-  if (numIndices) PetscValidIntPointer(numIndices, 6);
+  if (numIndices) PetscValidPointer(numIndices, 6);
   if (indices) PetscValidPointer(indices, 7);
-  if (outOffsets) PetscValidIntPointer(outOffsets, 8);
+  if (outOffsets) PetscValidPointer(outOffsets, 8);
   if (values) PetscValidPointer(values, 9);
   PetscCall(PetscSectionGetNumFields(section, &Nf));
   PetscCheck(Nf <= 31, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Number of fields %" PetscInt_FMT " limited to 31", Nf);
@@ -8323,7 +8323,7 @@ PetscErrorCode DMPlexGetVTKCellHeight(DM dm, PetscInt *cellHeight)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidIntPointer(cellHeight, 2);
+  PetscValidPointer(cellHeight, 2);
   *cellHeight = mesh->vtkCellHeight;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -8373,11 +8373,11 @@ PetscErrorCode DMPlexGetCellTypeStratum(DM dm, DMPolytopeType ct, PetscInt *star
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   if (start) {
-    PetscValidIntPointer(start, 3);
+    PetscValidPointer(start, 3);
     *start = 0;
   }
   if (end) {
-    PetscValidIntPointer(end, 4);
+    PetscValidPointer(end, 4);
     *end = 0;
   }
   PetscCall(DMPlexGetChart(dm, &pStart, &pEnd));
@@ -9793,7 +9793,7 @@ PetscErrorCode DMPlexGetRegularRefinement(DM dm, PetscBool *regular)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidBoolPointer(regular, 2);
+  PetscValidPointer(regular, 2);
   *regular = ((DM_Plex *)dm->data)->regularRefinement;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -11,7 +11,7 @@ static inline PetscErrorCode VecTypeCompareAny_Private(VecType srcType, PetscBoo
   va_list   Argp;
 
   PetscFunctionBegin;
-  PetscValidBoolPointer(match, 2);
+  PetscValidPointer(match, 2);
   *match = PETSC_FALSE;
   va_start(Argp, tgtTypes);
   while (tgtTypes && tgtTypes[0]) {

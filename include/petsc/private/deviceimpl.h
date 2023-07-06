@@ -343,7 +343,7 @@ static inline PetscErrorCode PetscDeviceContextEndTimer_Internal(PetscDeviceCont
   PetscFunctionBegin;
   /* we do error checking here as this routine is an entry-point */
   PetscValidDeviceContext(dctx, 1);
-  PetscValidRealPointer(elapsed, 2);
+  PetscValidPointer(elapsed, 2);
   PetscUseTypeMethod(dctx, endtimer, elapsed);
   PetscFunctionReturn(PETSC_SUCCESS);
 }

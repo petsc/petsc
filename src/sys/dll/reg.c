@@ -229,7 +229,7 @@ static PetscErrorCode PetscHMapFuncInsert_Private(PetscHMapFunc map, const char 
   PetscBool     found;
 
   PetscFunctionBegin;
-  PetscValidCharPointer(name, 2);
+  PetscValidPointer(name, 2);
   if (fnc) PetscValidFunction(fnc, 3);
   PetscCall(PetscHMapFuncFind(map, name, &it, &found));
   if (fnc) {
@@ -293,7 +293,7 @@ PetscErrorCode PetscFunctionListAdd_Private(PetscFunctionList *fl, const char na
 {
   PetscFunctionBegin;
   PetscValidPointer(fl, 1);
-  if (name) PetscValidCharPointer(name, 2);
+  if (name) PetscValidPointer(name, 2);
   if (fptr) PetscValidFunction(fptr, 3);
   PetscCall(PetscFunctionListCreate_Private(0, fl));
   PetscCall(PetscHMapFuncInsert_Private((*fl)->map, name, fptr));
@@ -428,7 +428,7 @@ M*/
 PetscErrorCode PetscFunctionListFind_Private(PetscFunctionList fl, const char name[], PetscVoidFunction *fptr)
 {
   PetscFunctionBegin;
-  PetscValidCharPointer(name, 2);
+  PetscValidPointer(name, 2);
   PetscValidPointer(fptr, 3);
   *fptr = NULL;
   if (fl) PetscCall(PetscHMapFuncGet(fl->map, name, fptr));

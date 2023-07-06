@@ -535,7 +535,7 @@ PetscErrorCode TSDiscGradIsGonzalez(TS ts, PetscBool *gonzalez)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
-  PetscValidBoolPointer(gonzalez, 2);
+  PetscValidPointer(gonzalez, 2);
   PetscUseMethod(ts, "TSDiscGradIsGonzalez_C", (TS, PetscBool *), (ts, gonzalez));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

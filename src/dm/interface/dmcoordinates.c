@@ -198,7 +198,7 @@ PetscErrorCode DMGetCoordinateDim(DM dm, PetscInt *dim)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidIntPointer(dim, 2);
+  PetscValidPointer(dim, 2);
   if (dm->coordinates[0].dim == PETSC_DEFAULT) dm->coordinates[0].dim = dm->dim;
   *dim = dm->coordinates[0].dim;
   PetscFunctionReturn(PETSC_SUCCESS);

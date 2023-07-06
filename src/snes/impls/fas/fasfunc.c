@@ -142,7 +142,7 @@ PetscErrorCode SNESFASGetLevels(SNES snes, PetscInt *levels)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(snes, SNES_CLASSID, 1, SNESFAS);
-  PetscValidIntPointer(levels, 2);
+  PetscValidPointer(levels, 2);
   fas     = (SNES_FAS *)snes->data;
   *levels = fas->levels;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -726,7 +726,7 @@ PetscErrorCode SNESFASCycleIsFine(SNES snes, PetscBool *flg)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(snes, SNES_CLASSID, 1, SNESFAS);
-  PetscValidBoolPointer(flg, 2);
+  PetscValidPointer(flg, 2);
   fas = (SNES_FAS *)snes->data;
   if (fas->level == fas->levels - 1) *flg = PETSC_TRUE;
   else *flg = PETSC_FALSE;

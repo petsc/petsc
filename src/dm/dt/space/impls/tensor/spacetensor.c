@@ -469,7 +469,7 @@ PetscErrorCode PetscSpaceTensorGetNumSubspaces(PetscSpace sp, PetscInt *numTensS
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
-  PetscValidIntPointer(numTensSpaces, 2);
+  PetscValidPointer(numTensSpaces, 2);
   PetscTryMethod(sp, "PetscSpaceTensorGetNumSubspaces_C", (PetscSpace, PetscInt *), (sp, numTensSpaces));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

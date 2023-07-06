@@ -174,7 +174,7 @@ PetscErrorCode PetscSFSetType(PetscSF sf, PetscSFType type)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sf, PETSCSF_CLASSID, 1);
-  PetscValidCharPointer(type, 2);
+  PetscValidPointer(type, 2);
 
   PetscCall(PetscObjectTypeCompare((PetscObject)sf, type, &match));
   if (match) PetscFunctionReturn(PETSC_SUCCESS);
@@ -458,7 +458,7 @@ PetscErrorCode PetscSFSetGraph(PetscSF sf, PetscInt nroots, PetscInt nleaves, Pe
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sf, PETSCSF_CLASSID, 1);
-  if (nleaves > 0 && ilocal) PetscValidIntPointer(ilocal, 4);
+  if (nleaves > 0 && ilocal) PetscValidPointer(ilocal, 4);
   if (nleaves > 0) PetscValidPointer(iremote, 6);
   PetscCheck(nroots >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "nroots %" PetscInt_FMT ", cannot be negative", nroots);
   PetscCheck(nleaves >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "nleaves %" PetscInt_FMT ", cannot be negative", nleaves);
@@ -1292,7 +1292,7 @@ PetscErrorCode PetscSFCreateEmbeddedRootSF(PetscSF sf, PetscInt nselected, const
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sf, PETSCSF_CLASSID, 1);
   PetscSFCheckGraphSet(sf, 1);
-  if (nselected) PetscValidIntPointer(selected, 3);
+  if (nselected) PetscValidPointer(selected, 3);
   PetscValidPointer(esf, 4);
 
   PetscCall(PetscSFSetUp(sf));
@@ -1376,7 +1376,7 @@ PetscErrorCode PetscSFCreateEmbeddedLeafSF(PetscSF sf, PetscInt nselected, const
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sf, PETSCSF_CLASSID, 1);
   PetscSFCheckGraphSet(sf, 1);
-  if (nselected) PetscValidIntPointer(selected, 3);
+  if (nselected) PetscValidPointer(selected, 3);
   PetscValidPointer(newsf, 4);
 
   /* Uniq selected[] and put results in leaves[] */
@@ -1812,8 +1812,8 @@ PetscErrorCode PetscSFComputeMultiRootOriginalNumbering(PetscSF sf, const PetscI
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sf, PETSCSF_CLASSID, 1);
   PetscCall(PetscSFGetGraph(sf, &nroots, NULL, NULL, NULL));
-  if (nroots) PetscValidIntPointer(degree, 2);
-  if (nMultiRoots) PetscValidIntPointer(nMultiRoots, 3);
+  if (nroots) PetscValidPointer(degree, 2);
+  if (nMultiRoots) PetscValidPointer(nMultiRoots, 3);
   PetscValidPointer(multiRootsOrigNumbering, 4);
   PetscCall(PetscSFGetMultiSF(sf, &msf));
   PetscCall(PetscSFGetGraph(msf, &nmroots, NULL, NULL, NULL));
@@ -2408,7 +2408,7 @@ PetscErrorCode PetscSFConcatenate(MPI_Comm comm, PetscInt nsfs, PetscSF sfs[], P
       PetscCheckSameComm(dummy, 1, sfs[i], 3);
     }
     PetscValidLogicalCollectiveEnum(dummy, rootMode, 4);
-    if (leafOffsets) PetscValidIntPointer(leafOffsets, 5);
+    if (leafOffsets) PetscValidPointer(leafOffsets, 5);
     PetscValidPointer(newsf, 6);
     PetscCall(PetscSFDestroy(&dummy));
   }

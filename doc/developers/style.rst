@@ -344,7 +344,7 @@ Usage of PETSc Functions and Macros
        {
          PetscFunctionBegin;
          PetscValidHeaderSpecific(v, VEC_CLASSID, 1);
-         PetscValidScalarPointer(array, 2);
+         PetscValidPointer(array, 2);
          PetscValidLogicalCollectiveInt(v, collectiveInt, 3);
          ...
          PetscFunctionReturn(PETSC_SUCCESS);

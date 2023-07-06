@@ -168,7 +168,7 @@ static inline PetscErrorCode PetscIsRegionPoisoned(const void *ptr, size_t size,
   PetscFunctionBegin;
   // cannot check pointer as may be poisoned
   // PetscValidPointer(ptr, 1);
-  PetscValidBoolPointer(poisoned, 3);
+  PetscValidPointer(poisoned, 3);
   *poisoned = PETSC_BOOL3_FALSE;
   // if ptr is NULL, or if size = 0 then the "region" is not poisoned
   if (ptr && size) {

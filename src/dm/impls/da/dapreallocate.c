@@ -56,7 +56,7 @@ PetscErrorCode DMDAGetPreallocationCenterDimension(DM dm, PetscInt *preallocCent
 
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(dm, DM_CLASSID, 1, DMDA);
-  PetscValidIntPointer(preallocCenterDim, 2);
+  PetscValidPointer(preallocCenterDim, 2);
   *preallocCenterDim = mesh->preallocCenterDim;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

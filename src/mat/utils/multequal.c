@@ -18,7 +18,7 @@ static PetscErrorCode MatMultEqual_Private(Mat A, Mat B, PetscInt n, PetscBool *
   PetscValidHeaderSpecific(B, MAT_CLASSID, 2);
   PetscCheckSameComm(A, 1, B, 2);
   PetscValidLogicalCollectiveInt(A, n, 3);
-  PetscValidBoolPointer(flg, 4);
+  PetscValidPointer(flg, 4);
   PetscValidLogicalCollectiveInt(A, t, 5);
   PetscValidLogicalCollectiveInt(A, add, 6);
   PetscCall(MatGetLocalSize(A, &am, &an));
@@ -127,7 +127,7 @@ static PetscErrorCode MatMatMultEqual_Private(Mat A, Mat B, Mat C, PetscInt n, P
   PetscValidHeaderSpecific(C, MAT_CLASSID, 3);
   PetscCheckSameComm(A, 1, C, 3);
   PetscValidLogicalCollectiveInt(A, n, 4);
-  PetscValidBoolPointer(flg, 5);
+  PetscValidPointer(flg, 5);
   PetscValidLogicalCollectiveBool(A, At, 6);
   PetscValidLogicalCollectiveBool(B, Bt, 7);
   PetscCall(MatGetLocalSize(A, &am, &an));

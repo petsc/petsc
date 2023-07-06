@@ -163,7 +163,7 @@ PetscErrorCode PetscOptionsPopGetViewerOff(void)
 PetscErrorCode PetscOptionsGetViewerOff(PetscBool *flg)
 {
   PetscFunctionBegin;
-  PetscValidBoolPointer(flg, 1);
+  PetscValidPointer(flg, 1);
   *flg = noviewer;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -219,7 +219,7 @@ PetscErrorCode PetscOptionsGetViewer(MPI_Comm comm, PetscOptions options, const 
   PetscBool   flag, hashelp;
 
   PetscFunctionBegin;
-  PetscValidCharPointer(name, 4);
+  PetscValidPointer(name, 4);
 
   if (viewer) *viewer = NULL;
   if (format) *format = PETSC_VIEWER_DEFAULT;
@@ -414,7 +414,7 @@ PetscErrorCode PetscViewerSetType(PetscViewer viewer, PetscViewerType type)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 1);
-  PetscValidCharPointer(type, 2);
+  PetscValidPointer(type, 2);
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, type, &match));
   if (match) PetscFunctionReturn(PETSC_SUCCESS);
 

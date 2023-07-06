@@ -62,7 +62,7 @@ struct _n_TSHistory {
 PetscErrorCode TSHistoryGetNumSteps(TSHistory tsh, PetscInt *n)
 {
   PetscFunctionBegin;
-  PetscValidIntPointer(n, 2);
+  PetscValidPointer(n, 2);
   *n = tsh->n;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -98,7 +98,7 @@ PetscErrorCode TSHistoryGetTime(TSHistory tsh, PetscBool backward, PetscInt step
 {
   PetscFunctionBegin;
   if (!t) PetscFunctionReturn(PETSC_SUCCESS);
-  PetscValidRealPointer(t, 4);
+  PetscValidPointer(t, 4);
   if (!tsh->sorted) {
     PetscCall(PetscSortRealWithArrayInt(tsh->n, tsh->hist, tsh->hist_id));
     tsh->sorted = PETSC_TRUE;
@@ -113,7 +113,7 @@ PetscErrorCode TSHistoryGetTimeStep(TSHistory tsh, PetscBool backward, PetscInt 
 {
   PetscFunctionBegin;
   if (!dt) PetscFunctionReturn(PETSC_SUCCESS);
-  PetscValidRealPointer(dt, 4);
+  PetscValidPointer(dt, 4);
   if (!tsh->sorted) {
     PetscCall(PetscSortRealWithArrayInt(tsh->n, tsh->hist, tsh->hist_id));
     tsh->sorted = PETSC_TRUE;
@@ -127,7 +127,7 @@ PetscErrorCode TSHistoryGetTimeStep(TSHistory tsh, PetscBool backward, PetscInt 
 PetscErrorCode TSHistoryGetLocFromTime(TSHistory tsh, PetscReal time, PetscInt *loc)
 {
   PetscFunctionBegin;
-  PetscValidIntPointer(loc, 3);
+  PetscValidPointer(loc, 3);
   if (!tsh->sorted) {
     PetscCall(PetscSortRealWithArrayInt(tsh->n, tsh->hist, tsh->hist_id));
     tsh->sorted = PETSC_TRUE;
@@ -141,7 +141,7 @@ PetscErrorCode TSHistorySetHistory(TSHistory tsh, PetscInt n, PetscReal hist[], 
   PetscFunctionBegin;
   PetscValidLogicalCollectiveIntComm(tsh->comm, n, 2);
   PetscCheck(n >= 0, tsh->comm, PETSC_ERR_ARG_OUTOFRANGE, "Cannot request a negative size for history storage");
-  if (n) PetscValidRealPointer(hist, 3);
+  if (n) PetscValidPointer(hist, 3);
   PetscCall(PetscFree(tsh->hist));
   PetscCall(PetscFree(tsh->hist_id));
   tsh->n = (size_t)n;

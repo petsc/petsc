@@ -69,7 +69,7 @@ template <device::cupm::DeviceType T>
 inline PetscErrorCode VecCreateMPICUPMWithArrays(MPI_Comm comm, PetscInt bs, PetscInt n, PetscInt N, const PetscScalar cpuarray[], const PetscScalar gpuarray[], Vec *v)
 {
   PetscFunctionBegin;
-  if (n && cpuarray) PetscValidScalarPointer(cpuarray, 5);
+  if (n && cpuarray) PetscValidPointer(cpuarray, 5);
   PetscValidPointer(v, 7);
   PetscCall(impl::VecMPI_CUPM<T>::CreateMPICUPMWithArrays(comm, bs, n, N, cpuarray, gpuarray, v));
   PetscFunctionReturn(PETSC_SUCCESS);

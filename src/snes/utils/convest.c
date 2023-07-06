@@ -192,7 +192,7 @@ PetscErrorCode PetscConvEstComputeError(PetscConvEst ce, PetscInt r, DM dm, Vec 
   PetscValidHeaderSpecific(ce, PETSC_OBJECT_CLASSID, 1);
   if (dm) PetscValidHeaderSpecific(dm, DM_CLASSID, 3);
   PetscValidHeaderSpecific(u, VEC_CLASSID, 4);
-  PetscValidRealPointer(errors, 5);
+  PetscValidPointer(errors, 5);
   PetscUseTypeMethod(ce, computeerror, r, dm, u, errors);
   PetscFunctionReturn(PETSC_SUCCESS);
 }

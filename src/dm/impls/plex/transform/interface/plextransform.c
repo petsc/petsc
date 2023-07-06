@@ -1228,7 +1228,7 @@ PetscErrorCode DMPlexTransformGetConeSize(DMPlexTransform tr, PetscInt q, PetscI
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tr, DMPLEXTRANSFORM_CLASSID, 1);
-  PetscValidIntPointer(coneSize, 3);
+  PetscValidPointer(coneSize, 3);
   PetscCall(DMPlexTransformGetCellType(tr, q, &ctNew));
   *coneSize = DMPolytopeTypeGetConeSize((DMPolytopeType)ctNew);
   PetscFunctionReturn(PETSC_SUCCESS);

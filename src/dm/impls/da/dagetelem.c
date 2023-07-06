@@ -206,9 +206,9 @@ PetscErrorCode DMDAGetElementsCorners(DM da, PetscInt *gx, PetscInt *gy, PetscIn
 
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(da, DM_CLASSID, 1, DMDA);
-  if (gx) PetscValidIntPointer(gx, 2);
-  if (gy) PetscValidIntPointer(gy, 3);
-  if (gz) PetscValidIntPointer(gz, 4);
+  if (gx) PetscValidPointer(gx, 2);
+  if (gy) PetscValidPointer(gy, 3);
+  if (gz) PetscValidPointer(gz, 4);
   PetscCall(PetscObjectTypeCompare((PetscObject)da, DMDA, &isda));
   PetscCheck(isda, PetscObjectComm((PetscObject)da), PETSC_ERR_USER, "Not for DM type %s", ((PetscObject)da)->type_name);
   PetscCall(DMDAGetCorners(da, &xs, &ys, &zs, NULL, NULL, NULL));
@@ -252,9 +252,9 @@ PetscErrorCode DMDAGetElementsSizes(DM da, PetscInt *mx, PetscInt *my, PetscInt 
 
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(da, DM_CLASSID, 1, DMDA);
-  if (mx) PetscValidIntPointer(mx, 2);
-  if (my) PetscValidIntPointer(my, 3);
-  if (mz) PetscValidIntPointer(mz, 4);
+  if (mx) PetscValidPointer(mx, 2);
+  if (my) PetscValidPointer(my, 3);
+  if (mz) PetscValidPointer(mz, 4);
   PetscCall(PetscObjectTypeCompare((PetscObject)da, DMDA, &isda));
   PetscCheck(isda, PetscObjectComm((PetscObject)da), PETSC_ERR_USER, "Not for DM type %s", ((PetscObject)da)->type_name);
   PetscCall(DMDAGetCorners(da, &xs, &ys, &zs, &xe, &ye, &ze));
@@ -387,8 +387,8 @@ PetscErrorCode DMDAGetElements(DM dm, PetscInt *nel, PetscInt *nen, const PetscI
 
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(dm, DM_CLASSID, 1, DMDA);
-  PetscValidIntPointer(nel, 2);
-  PetscValidIntPointer(nen, 3);
+  PetscValidPointer(nel, 2);
+  PetscValidPointer(nen, 3);
   PetscValidPointer(e, 4);
   PetscCall(PetscObjectTypeCompare((PetscObject)dm, DMDA, &isda));
   PetscCheck(isda, PetscObjectComm((PetscObject)dm), PETSC_ERR_USER, "Not for DM type %s", ((PetscObject)dm)->type_name);
@@ -477,8 +477,8 @@ PetscErrorCode DMDARestoreElements(DM dm, PetscInt *nel, PetscInt *nen, const Pe
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(dm, DM_CLASSID, 1, DMDA);
-  PetscValidIntPointer(nel, 2);
-  PetscValidIntPointer(nen, 3);
+  PetscValidPointer(nel, 2);
+  PetscValidPointer(nen, 3);
   PetscValidPointer(e, 4);
   if (nel) *nel = 0;
   if (nen) *nen = -1;

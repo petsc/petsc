@@ -129,7 +129,7 @@ PetscErrorCode MatCreateSeqCUFFT(MPI_Comm comm, PetscInt ndim, const PetscInt di
 
   PetscFunctionBegin;
   PetscCheck(ndim >= 0, PETSC_COMM_SELF, PETSC_ERR_USER, "ndim %" PetscInt_FMT " must be > 0", ndim);
-  if (ndim) PetscValidIntPointer(dim, 3);
+  if (ndim) PetscValidPointer(dim, 3);
   PetscValidPointer(A, 4);
   PetscCall(MatCreate(comm, A));
   for (PetscInt d = 0; d < ndim; ++d) {

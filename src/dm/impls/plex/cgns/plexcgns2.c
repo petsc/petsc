@@ -18,7 +18,7 @@ PetscErrorCode DMPlexCreateCGNSFromFile_Internal(MPI_Comm comm, const char filen
   int         cgid = -1;
 
   PetscFunctionBegin;
-  PetscValidCharPointer(filename, 2);
+  PetscValidPointer(filename, 2);
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
   if (rank == 0) {
     PetscCallCGNS(cg_open(filename, CG_MODE_READ, &cgid));

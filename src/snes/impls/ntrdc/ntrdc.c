@@ -88,7 +88,7 @@ PetscErrorCode SNESNewtonTRDCGetRhoFlag(SNES snes, PetscBool *rho_flag)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
-  PetscValidBoolPointer(rho_flag, 2);
+  PetscValidPointer(rho_flag, 2);
   *rho_flag = tr->rho_satisfied;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

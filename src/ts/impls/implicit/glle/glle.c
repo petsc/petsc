@@ -641,7 +641,7 @@ PetscErrorCode TSGLLESetType(TS ts, TSGLLEType type)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
-  PetscValidCharPointer(type, 2);
+  PetscValidPointer(type, 2);
   PetscTryMethod(ts, "TSGLLESetType_C", (TS, TSGLLEType), (ts, type));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -669,7 +669,7 @@ PetscErrorCode TSGLLESetAcceptType(TS ts, TSGLLEAcceptType type)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
-  PetscValidCharPointer(type, 2);
+  PetscValidPointer(type, 2);
   PetscTryMethod(ts, "TSGLLESetAcceptType_C", (TS, TSGLLEAcceptType), (ts, type));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

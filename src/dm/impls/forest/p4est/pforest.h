@@ -286,7 +286,7 @@ static PetscErrorCode DMFTopologyCreate_pforest(DM dm, DMForestTopology topology
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidCharPointer(name, 2);
+  PetscValidPointer(name, 2);
   PetscValidPointer(topo, 3);
   PetscCall(PetscStrcmp(name, "brick", &isBrick));
   PetscCall(PetscStrcmp(name, "shell", &isShell));

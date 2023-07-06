@@ -81,7 +81,7 @@ static PetscErrorCode PetscParallelSortInt_Bitonic(MPI_Comm comm, PetscInt n, Pe
   PetscInt   *buffer;
 
   PetscFunctionBegin;
-  PetscValidIntPointer(keys, 3);
+  PetscValidPointer(keys, 3);
   PetscCall(PetscCommGetNewTag(comm, &tag));
   PetscCallMPI(MPI_Comm_size(comm, &size));
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
@@ -331,8 +331,8 @@ PetscErrorCode PetscParallelSortInt(PetscLayout mapin, PetscLayout mapout, Petsc
   PetscCheck(result == MPI_IDENT || result == MPI_CONGRUENT, mapin->comm, PETSC_ERR_ARG_NOTSAMECOMM, "layouts are not on the same communicator");
   PetscCall(PetscLayoutSetUp(mapin));
   PetscCall(PetscLayoutSetUp(mapout));
-  if (mapin->n) PetscValidIntPointer(keysin, 3);
-  if (mapout->n) PetscValidIntPointer(keysout, 4);
+  if (mapin->n) PetscValidPointer(keysin, 3);
+  if (mapout->n) PetscValidPointer(keysout, 4);
   PetscCheck(mapin->N == mapout->N, mapin->comm, PETSC_ERR_ARG_SIZ, "Input and output layouts have different global sizes (%" PetscInt_FMT " != %" PetscInt_FMT ")", mapin->N, mapout->N);
   PetscCallMPI(MPI_Comm_size(mapin->comm, &size));
   if (size == 1) {

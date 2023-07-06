@@ -423,7 +423,7 @@ PetscErrorCode PetscObjectsGetObject(const char *name, PetscObject *obj, char **
   PetscBool   flg;
 
   PetscFunctionBegin;
-  PetscValidCharPointer(name, 1);
+  PetscValidPointer(name, 1);
   PetscValidPointer(obj, 2);
   *obj = NULL;
   for (i = 0; i < PetscObjectsMaxCounts; i++) {
@@ -611,7 +611,7 @@ PetscErrorCode PetscObjectGetReference(PetscObject obj, PetscInt *cnt)
 {
   PetscFunctionBegin;
   PetscValidHeader(obj, 1);
-  PetscValidIntPointer(cnt, 2);
+  PetscValidPointer(cnt, 2);
   *cnt = obj->refct;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -692,7 +692,7 @@ PetscErrorCode PetscObjectCompose(PetscObject obj, const char name[], PetscObjec
 {
   PetscFunctionBegin;
   PetscValidHeader(obj, 1);
-  PetscValidCharPointer(name, 2);
+  PetscValidPointer(name, 2);
   if (ptr) PetscValidHeader(ptr, 3);
   PetscCheck(obj != ptr, PetscObjectComm((PetscObject)obj), PETSC_ERR_SUP, "Cannot compose object with itself");
   if (ptr) {
@@ -731,7 +731,7 @@ PetscErrorCode PetscObjectQuery(PetscObject obj, const char name[], PetscObject 
 {
   PetscFunctionBegin;
   PetscValidHeader(obj, 1);
-  PetscValidCharPointer(name, 2);
+  PetscValidPointer(name, 2);
   PetscValidPointer(ptr, 3);
   PetscCall(PetscObjectListFind(obj->olist, name, ptr));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -772,7 +772,7 @@ PetscErrorCode PetscObjectComposeFunction_Private(PetscObject obj, const char na
 {
   PetscFunctionBegin;
   PetscValidHeader(obj, 1);
-  PetscValidCharPointer(name, 2);
+  PetscValidPointer(name, 2);
   PetscCall(PetscFunctionListAdd(&obj->qlist, name, fptr));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -802,7 +802,7 @@ PETSC_EXTERN PetscErrorCode PetscObjectQueryFunction_Private(PetscObject obj, co
 {
   PetscFunctionBegin;
   PetscValidHeader(obj, 1);
-  PetscValidCharPointer(name, 2);
+  PetscValidPointer(name, 2);
   PetscCall(PetscFunctionListFind(obj->qlist, name, fptr));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -424,7 +424,7 @@ PetscErrorCode PetscViewerSocketSetConnection(PetscViewer v, const char machine[
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v, PETSC_VIEWER_CLASSID, 1);
-  if (machine) PetscValidCharPointer(machine, 2);
+  if (machine) PetscValidPointer(machine, 2);
   vmatlab = (PetscViewer_Socket *)v->data;
   /* PetscValidLogicalCollectiveInt(v,port,3); not a PetscInt */
   if (port <= 0) {

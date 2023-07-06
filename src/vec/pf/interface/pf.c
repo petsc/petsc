@@ -191,8 +191,8 @@ PetscErrorCode PFApply(PF pf, PetscInt n, const PetscScalar *x, PetscScalar *y)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pf, PF_CLASSID, 1);
-  PetscValidScalarPointer(x, 3);
-  PetscValidScalarPointer(y, 4);
+  PetscValidPointer(x, 3);
+  PetscValidPointer(y, 4);
   PetscCheck(x != y, PETSC_COMM_SELF, PETSC_ERR_ARG_IDN, "x and y must be different arrays");
 
   PetscCall((*pf->ops->apply)(pf->data, n, x, y));
@@ -358,7 +358,7 @@ PetscErrorCode PFSetType(PF pf, PFType type, void *ctx)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pf, PF_CLASSID, 1);
-  PetscValidCharPointer(type, 2);
+  PetscValidPointer(type, 2);
 
   PetscCall(PetscObjectTypeCompare((PetscObject)pf, type, &match));
   if (match) PetscFunctionReturn(PETSC_SUCCESS);

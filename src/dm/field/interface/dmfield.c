@@ -112,7 +112,7 @@ PetscErrorCode DMFieldSetType(DMField field, DMFieldType type)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(field, DMFIELD_CLASSID, 1);
-  PetscValidCharPointer(type, 2);
+  PetscValidPointer(type, 2);
 
   PetscCall(PetscObjectTypeCompare((PetscObject)field, type, &match));
   if (match) PetscFunctionReturn(PETSC_SUCCESS);
@@ -173,7 +173,7 @@ PetscErrorCode DMFieldGetNumComponents(DMField field, PetscInt *nc)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(field, DMFIELD_CLASSID, 1);
-  PetscValidIntPointer(nc, 2);
+  PetscValidPointer(nc, 2);
   *nc = field->numComponents;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -354,8 +354,8 @@ PetscErrorCode DMFieldGetDegree(DMField field, IS cellIS, PetscInt *minDegree, P
   PetscFunctionBegin;
   PetscValidHeaderSpecific(field, DMFIELD_CLASSID, 1);
   PetscValidHeaderSpecific(cellIS, IS_CLASSID, 2);
-  if (minDegree) PetscValidIntPointer(minDegree, 3);
-  if (maxDegree) PetscValidIntPointer(maxDegree, 4);
+  if (minDegree) PetscValidPointer(minDegree, 3);
+  if (maxDegree) PetscValidPointer(maxDegree, 4);
 
   if (minDegree) *minDegree = -1;
   if (maxDegree) *maxDegree = PETSC_MAX_INT;

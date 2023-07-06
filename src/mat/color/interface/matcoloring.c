@@ -146,7 +146,7 @@ PetscErrorCode MatColoringSetType(MatColoring mc, MatColoringType type)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mc, MAT_COLORING_CLASSID, 1);
-  PetscValidCharPointer(type, 2);
+  PetscValidPointer(type, 2);
   PetscCall(PetscObjectTypeCompare((PetscObject)mc, type, &match));
   if (match) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscFunctionListFind(MatColoringList, type, &r));

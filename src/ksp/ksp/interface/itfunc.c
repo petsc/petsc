@@ -56,8 +56,8 @@ PetscErrorCode KSPComputeExtremeSingularValues(KSP ksp, PetscReal *emax, PetscRe
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
-  PetscValidRealPointer(emax, 2);
-  PetscValidRealPointer(emin, 3);
+  PetscValidPointer(emax, 2);
+  PetscValidPointer(emin, 3);
   PetscCheck(ksp->calc_sings, PetscObjectComm((PetscObject)ksp), PETSC_ERR_ARG_WRONGSTATE, "Singular values not requested before KSPSetUp()");
 
   if (ksp->ops->computeextremesingularvalues) PetscUseTypeMethod(ksp, computeextremesingularvalues, emax, emin);
@@ -116,10 +116,10 @@ PetscErrorCode KSPComputeEigenvalues(KSP ksp, PetscInt n, PetscReal r[], PetscRe
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
-  if (n) PetscValidRealPointer(r, 3);
-  if (n) PetscValidRealPointer(c, 4);
+  if (n) PetscValidPointer(r, 3);
+  if (n) PetscValidPointer(c, 4);
   PetscCheck(n >= 0, PetscObjectComm((PetscObject)ksp), PETSC_ERR_ARG_OUTOFRANGE, "Requested < 0 Eigenvalues");
-  PetscValidIntPointer(neig, 5);
+  PetscValidPointer(neig, 5);
   PetscCheck(ksp->calc_sings, PetscObjectComm((PetscObject)ksp), PETSC_ERR_ARG_WRONGSTATE, "Eigenvalues not requested before KSPSetUp()");
 
   if (n && ksp->ops->computeeigenvalues) PetscUseTypeMethod(ksp, computeeigenvalues, n, r, c, neig);
@@ -273,7 +273,7 @@ PetscErrorCode KSPGetReusePreconditioner(KSP ksp, PetscBool *flag)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
-  PetscValidBoolPointer(flag, 2);
+  PetscValidPointer(flag, 2);
   *flag = PETSC_FALSE;
   if (ksp->pc) PetscCall(PCGetReusePreconditioner(ksp->pc, flag));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -1337,7 +1337,7 @@ PetscErrorCode KSPGetMatSolveBatchSize(KSP ksp, PetscInt *bs)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
-  PetscValidIntPointer(bs, 2);
+  PetscValidPointer(bs, 2);
   *bs = ksp->nmax;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1697,7 +1697,7 @@ PetscErrorCode KSPGetMinimumIterations(KSP ksp, PetscInt *minit)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
-  PetscValidIntPointer(minit, 2);
+  PetscValidPointer(minit, 2);
 
   *minit = ksp->min_it;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -1753,7 +1753,7 @@ PetscErrorCode KSPGetInitialGuessNonzero(KSP ksp, PetscBool *flag)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
-  PetscValidBoolPointer(flag, 2);
+  PetscValidPointer(flag, 2);
   if (ksp->guess_zero) *flag = PETSC_FALSE;
   else *flag = PETSC_TRUE;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -1809,7 +1809,7 @@ PetscErrorCode KSPGetErrorIfNotConverged(KSP ksp, PetscBool *flag)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
-  PetscValidBoolPointer(flag, 2);
+  PetscValidPointer(flag, 2);
   *flag = ksp->errorifnotconverged;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1859,7 +1859,7 @@ PetscErrorCode KSPGetInitialGuessKnoll(KSP ksp, PetscBool *flag)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
-  PetscValidBoolPointer(flag, 2);
+  PetscValidPointer(flag, 2);
   *flag = ksp->guess_knoll;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1895,7 +1895,7 @@ PetscErrorCode KSPGetComputeSingularValues(KSP ksp, PetscBool *flg)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
-  PetscValidBoolPointer(flg, 2);
+  PetscValidPointer(flg, 2);
   *flg = ksp->calc_sings;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1958,7 +1958,7 @@ PetscErrorCode KSPGetComputeEigenvalues(KSP ksp, PetscBool *flg)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
-  PetscValidBoolPointer(flg, 2);
+  PetscValidPointer(flg, 2);
   *flg = ksp->calc_sings;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -2826,7 +2826,7 @@ PetscErrorCode KSPGetDiagonalScale(KSP ksp, PetscBool *scale)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
-  PetscValidBoolPointer(scale, 2);
+  PetscValidPointer(scale, 2);
   *scale = ksp->dscale;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -2882,7 +2882,7 @@ PetscErrorCode KSPGetDiagonalScaleFix(KSP ksp, PetscBool *fix)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
-  PetscValidBoolPointer(fix, 2);
+  PetscValidPointer(fix, 2);
   *fix = ksp->dscalefix;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

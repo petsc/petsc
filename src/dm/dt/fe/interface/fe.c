@@ -393,7 +393,7 @@ PetscErrorCode PetscFEGetSpatialDimension(PetscFE fem, PetscInt *dim)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fem, PETSCFE_CLASSID, 1);
-  PetscValidIntPointer(dim, 2);
+  PetscValidPointer(dim, 2);
   PetscCall(PetscDualSpaceGetDM(fem->dualSpace, &dm));
   PetscCall(DMGetDimension(dm, dim));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -439,7 +439,7 @@ PetscErrorCode PetscFEGetNumComponents(PetscFE fem, PetscInt *comp)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fem, PETSCFE_CLASSID, 1);
-  PetscValidIntPointer(comp, 2);
+  PetscValidPointer(comp, 2);
   *comp = fem->numComponents;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -493,10 +493,10 @@ PetscErrorCode PetscFEGetTileSizes(PetscFE fem, PetscInt *blockSize, PetscInt *n
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fem, PETSCFE_CLASSID, 1);
-  if (blockSize) PetscValidIntPointer(blockSize, 2);
-  if (numBlocks) PetscValidIntPointer(numBlocks, 3);
-  if (batchSize) PetscValidIntPointer(batchSize, 4);
-  if (numBatches) PetscValidIntPointer(numBatches, 5);
+  if (blockSize) PetscValidPointer(blockSize, 2);
+  if (numBlocks) PetscValidPointer(numBlocks, 3);
+  if (batchSize) PetscValidPointer(batchSize, 4);
+  if (numBatches) PetscValidPointer(numBatches, 5);
   if (blockSize) *blockSize = fem->blockSize;
   if (numBlocks) *numBlocks = fem->numBlocks;
   if (batchSize) *batchSize = fem->batchSize;
@@ -951,7 +951,7 @@ PetscErrorCode PetscFECreateTabulation(PetscFE fem, PetscInt nrepl, PetscInt npo
     PetscFunctionReturn(PETSC_SUCCESS);
   }
   PetscValidHeaderSpecific(fem, PETSCFE_CLASSID, 1);
-  PetscValidRealPointer(points, 4);
+  PetscValidPointer(points, 4);
   PetscValidPointer(T, 6);
   PetscCall(PetscFEGetDualSpace(fem, &Q));
   PetscCall(PetscDualSpaceGetDM(Q, &dm));
@@ -1002,7 +1002,7 @@ PetscErrorCode PetscFEComputeTabulation(PetscFE fem, PetscInt npoints, const Pet
   PetscFunctionBeginHot;
   if (!npoints || !fem->dualSpace || K < 0) PetscFunctionReturn(PETSC_SUCCESS);
   PetscValidHeaderSpecific(fem, PETSCFE_CLASSID, 1);
-  PetscValidRealPointer(points, 3);
+  PetscValidPointer(points, 3);
   PetscValidPointer(T, 5);
   if (PetscDefined(USE_DEBUG)) {
     DM             dm;
@@ -1147,7 +1147,7 @@ PetscErrorCode PetscFEGetDimension(PetscFE fem, PetscInt *dim)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fem, PETSCFE_CLASSID, 1);
-  PetscValidIntPointer(dim, 2);
+  PetscValidPointer(dim, 2);
   PetscTryTypeMethod(fem, getdimension, dim);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1896,7 +1896,7 @@ static PetscErrorCode PetscFECreate_Internal(MPI_Comm comm, PetscInt dim, PetscI
   PetscBool       tensor;
 
   PetscFunctionBegin;
-  if (prefix) PetscValidCharPointer(prefix, 5);
+  if (prefix) PetscValidPointer(prefix, 5);
   PetscValidPointer(fem, 9);
   switch (ct) {
   case DM_POLYTOPE_SEGMENT:

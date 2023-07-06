@@ -304,9 +304,9 @@ PetscErrorCode PetscPartitionerPartition(PetscPartitioner part, PetscInt nparts,
   PetscCheck(nparts > 0, PetscObjectComm((PetscObject)part), PETSC_ERR_ARG_OUTOFRANGE, "Number of parts must be positive");
   PetscCheck(numVertices >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Number of vertices must be non-negative");
   if (numVertices && !part->noGraph) {
-    PetscValidIntPointer(start, 4);
-    PetscValidIntPointer(start + numVertices, 4);
-    if (start[numVertices]) PetscValidIntPointer(adjacency, 5);
+    PetscValidPointer(start, 4);
+    PetscValidPointer(start + numVertices, 4);
+    if (start[numVertices]) PetscValidPointer(adjacency, 5);
   }
   if (vertexSection) {
     PetscInt s, e;

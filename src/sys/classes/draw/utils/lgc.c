@@ -197,7 +197,7 @@ PetscErrorCode PetscDrawLGSetColors(PetscDrawLG lg, const int colors[])
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(lg, PETSC_DRAWLG_CLASSID, 1);
-  if (lg->dim) PetscValidIntPointer(colors, 2);
+  if (lg->dim) PetscValidPointer(colors, 2);
 
   PetscCall(PetscFree(lg->colors));
   PetscCall(PetscMalloc1(lg->dim, &lg->colors));
@@ -259,7 +259,7 @@ PetscErrorCode PetscDrawLGGetDimension(PetscDrawLG lg, PetscInt *dim)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(lg, PETSC_DRAWLG_CLASSID, 1);
-  PetscValidIntPointer(dim, 2);
+  PetscValidPointer(dim, 2);
   *dim = lg->dim;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

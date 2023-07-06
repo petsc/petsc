@@ -1629,7 +1629,7 @@ PetscErrorCode PCASMGetLocalSubdomains(PC pc, PetscInt *n, IS *is[], IS *is_loca
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
-  if (n) PetscValidIntPointer(n, 2);
+  if (n) PetscValidPointer(n, 2);
   if (is) PetscValidPointer(is, 3);
   if (is_local) PetscValidPointer(is_local, 4);
   PetscCall(PetscObjectTypeCompare((PetscObject)pc, PCASM, &match));
@@ -1670,7 +1670,7 @@ PetscErrorCode PCASMGetLocalSubmatrices(PC pc, PetscInt *n, Mat *mat[])
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
-  if (n) PetscValidIntPointer(n, 2);
+  if (n) PetscValidPointer(n, 2);
   if (mat) PetscValidPointer(mat, 3);
   PetscCheck(pc->setupcalled, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONGSTATE, "Must call after KSPSetUp() or PCSetUp().");
   PetscCall(PetscObjectTypeCompare((PetscObject)pc, PCASM, &match));
@@ -1743,7 +1743,7 @@ PetscErrorCode PCASMGetDMSubdomains(PC pc, PetscBool *flg)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
-  PetscValidBoolPointer(flg, 2);
+  PetscValidPointer(flg, 2);
   PetscCall(PetscObjectTypeCompare((PetscObject)pc, PCASM, &match));
   if (match) *flg = osm->dm_subdomains;
   else *flg = PETSC_FALSE;

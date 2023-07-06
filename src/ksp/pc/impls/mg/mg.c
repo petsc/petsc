@@ -1251,7 +1251,7 @@ PetscErrorCode PCMGGetLevels(PC pc, PetscInt *levels)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
-  PetscValidIntPointer(levels, 2);
+  PetscValidPointer(levels, 2);
   *levels = 0;
   PetscTryMethod(pc, "PCMGGetLevels_C", (PC, PetscInt *), (pc, levels));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -1284,8 +1284,8 @@ PetscErrorCode PCMGGetGridComplexity(PC pc, PetscReal *gc, PetscReal *oc)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
-  if (gc) PetscValidRealPointer(gc, 2);
-  if (oc) PetscValidRealPointer(oc, 3);
+  if (gc) PetscValidPointer(gc, 2);
+  if (oc) PetscValidPointer(oc, 3);
   if (!pc->setupcalled) {
     if (gc) *gc = 0;
     if (oc) *oc = 0;
@@ -1645,7 +1645,7 @@ PetscErrorCode PCMGGetAdaptInterpolation(PC pc, PetscBool *adapt)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
-  PetscValidBoolPointer(adapt, 2);
+  PetscValidPointer(adapt, 2);
   PetscUseMethod(pc, "PCMGGetAdaptInterpolation_C", (PC, PetscBool *), (pc, adapt));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1693,7 +1693,7 @@ PetscErrorCode PCMGGetAdaptCR(PC pc, PetscBool *cr)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
-  PetscValidBoolPointer(cr, 2);
+  PetscValidPointer(cr, 2);
   PetscUseMethod(pc, "PCMGGetAdaptCR_C", (PC, PetscBool *), (pc, cr));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

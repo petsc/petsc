@@ -208,7 +208,7 @@ PetscErrorCode KSPGuessSetType(KSPGuess guess, KSPGuessType type)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(guess, KSPGUESS_CLASSID, 1);
-  PetscValidCharPointer(type, 2);
+  PetscValidPointer(type, 2);
 
   PetscCall(PetscObjectTypeCompare((PetscObject)guess, type, &match));
   if (match) PetscFunctionReturn(PETSC_SUCCESS);

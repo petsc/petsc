@@ -30,8 +30,8 @@ PetscErrorCode PetscHasExternalPackage(const char pkg[], PetscBool *has)
   size_t cnt;
 
   PetscFunctionBegin;
-  PetscValidCharPointer(pkg, 1);
-  PetscValidBoolPointer(has, 2);
+  PetscValidPointer(pkg, 1);
+  PetscValidPointer(has, 2);
   PetscCall(PetscSNPrintfCount(pkgstr, sizeof(pkgstr), ":%s:", &cnt, pkg));
   PetscCheck(cnt < sizeof(pkgstr), PETSC_COMM_SELF, PETSC_ERR_SUP, "Package name is too long: \"%s\"", pkg);
   PetscCall(PetscStrtolower(pkgstr));

@@ -190,16 +190,16 @@ PetscErrorCode SNESMSRegister(SNESMSType name, PetscInt nstages, PetscInt nregis
   SNESMSTableau     t;
 
   PetscFunctionBegin;
-  PetscValidCharPointer(name, 1);
+  PetscValidPointer(name, 1);
   PetscCheck(nstages >= 1, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Must have at least one stage");
   if (gamma || delta) {
     PetscCheck(nregisters == 3, PETSC_COMM_SELF, PETSC_ERR_SUP, "Only support for methods written in 3-register form");
-    PetscValidRealPointer(gamma, 5);
-    PetscValidRealPointer(delta, 6);
+    PetscValidPointer(gamma, 5);
+    PetscValidPointer(delta, 6);
   } else {
     PetscCheck(nregisters == 1, PETSC_COMM_SELF, PETSC_ERR_SUP, "Only support for methods written in 1-register form");
   }
-  PetscValidRealPointer(betasub, 7);
+  PetscValidPointer(betasub, 7);
 
   PetscCall(SNESMSInitializePackage());
   PetscCall(PetscNew(&link));
@@ -506,7 +506,7 @@ PetscErrorCode SNESMSSetType(SNES snes, SNESMSType mstype)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
-  PetscValidCharPointer(mstype, 2);
+  PetscValidPointer(mstype, 2);
   PetscTryMethod(snes, "SNESMSSetType_C", (SNES, SNESMSType), (snes, mstype));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -548,7 +548,7 @@ PetscErrorCode SNESMSGetDamping(SNES snes, PetscReal *damping)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
-  PetscValidRealPointer(damping, 2);
+  PetscValidPointer(damping, 2);
   PetscUseMethod(snes, "SNESMSGetDamping_C", (SNES, PetscReal *), (snes, damping));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

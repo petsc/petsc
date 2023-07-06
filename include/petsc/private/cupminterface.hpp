@@ -558,11 +558,11 @@ public:
     PetscFunctionBegin;
     if (type) PetscValidPointer(type, 2);
     if (registered) {
-      PetscValidBoolPointer(registered, 3);
+      PetscValidPointer(registered, 3);
       *registered = PETSC_FALSE;
     }
     if (managed) {
-      PetscValidBoolPointer(managed, 4);
+      PetscValidPointer(managed, 4);
       *managed = PETSC_FALSE;
     }
     // Do not check error, instead reset it via GetLastError() since before CUDA 11.0, passing

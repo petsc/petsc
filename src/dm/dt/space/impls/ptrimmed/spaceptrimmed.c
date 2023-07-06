@@ -275,7 +275,7 @@ PetscErrorCode PetscSpacePTrimmedGetFormDegree(PetscSpace sp, PetscInt *formDegr
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
-  PetscValidIntPointer(formDegree, 2);
+  PetscValidPointer(formDegree, 2);
   PetscTryMethod(sp, "PetscSpacePTrimmedGetFormDegree_C", (PetscSpace, PetscInt *), (sp, formDegree));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -295,7 +295,7 @@ static PetscErrorCode PetscSpacePTrimmedGetFormDegree_Ptrimmed(PetscSpace sp, Pe
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
-  PetscValidIntPointer(formDegree, 2);
+  PetscValidPointer(formDegree, 2);
   *formDegree = pt->formDegree;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -213,7 +213,7 @@ PetscErrorCode PetscDrawSetType(PetscDraw draw, PetscDrawType type)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw, PETSC_DRAW_CLASSID, 1);
-  PetscValidCharPointer(type, 2);
+  PetscValidPointer(type, 2);
 
   PetscCall(PetscObjectTypeCompare((PetscObject)draw, type, &match));
   if (match) PetscFunctionReturn(PETSC_SUCCESS);

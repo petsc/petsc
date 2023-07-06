@@ -58,7 +58,7 @@ PetscErrorCode PCSetType(PC pc, PCType type)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
-  PetscValidCharPointer(type, 2);
+  PetscValidPointer(type, 2);
 
   PetscCall(PetscObjectTypeCompare((PetscObject)pc, type, &match));
   if (match) PetscFunctionReturn(PETSC_SUCCESS);

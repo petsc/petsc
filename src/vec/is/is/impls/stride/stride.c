@@ -86,8 +86,8 @@ PetscErrorCode ISStrideGetInfo(IS is, PetscInt *first, PetscInt *step)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is, IS_CLASSID, 1);
-  if (first) PetscValidIntPointer(first, 2);
-  if (step) PetscValidIntPointer(step, 3);
+  if (first) PetscValidPointer(first, 2);
+  if (step) PetscValidPointer(step, 3);
   PetscCall(PetscObjectTypeCompare((PetscObject)is, ISSTRIDE, &flg));
   PetscCheck(flg, PetscObjectComm((PetscObject)is), PETSC_ERR_ARG_WRONG, "IS must be of type ISSTRIDE");
 

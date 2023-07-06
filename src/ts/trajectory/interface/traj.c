@@ -87,7 +87,7 @@ PetscErrorCode TSTrajectoryGetNumSteps(TSTrajectory tj, PetscInt *steps)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tj, TSTRAJECTORY_CLASSID, 1);
-  PetscValidIntPointer(steps, 2);
+  PetscValidPointer(steps, 2);
   PetscCall(TSHistoryGetNumSteps(tj->tsh, steps));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -119,7 +119,7 @@ PetscErrorCode TSTrajectoryGet(TSTrajectory tj, TS ts, PetscInt stepnum, PetscRe
   PetscValidHeaderSpecific(tj, TSTRAJECTORY_CLASSID, 1);
   PetscValidHeaderSpecific(ts, TS_CLASSID, 2);
   PetscValidLogicalCollectiveInt(tj, stepnum, 3);
-  PetscValidRealPointer(time, 4);
+  PetscValidPointer(time, 4);
   PetscCheck(tj->setupcalled, PetscObjectComm((PetscObject)tj), PETSC_ERR_ORDER, "TSTrajectorySetUp should be called first");
   PetscCheck(stepnum >= 0, PetscObjectComm((PetscObject)tj), PETSC_ERR_PLIB, "Requesting negative step number");
   if (tj->monitor) {
@@ -162,7 +162,7 @@ PetscErrorCode TSTrajectoryGetVecs(TSTrajectory tj, TS ts, PetscInt stepnum, Pet
   PetscValidHeaderSpecific(tj, TSTRAJECTORY_CLASSID, 1);
   if (ts) PetscValidHeaderSpecific(ts, TS_CLASSID, 2);
   PetscValidLogicalCollectiveInt(tj, stepnum, 3);
-  PetscValidRealPointer(time, 4);
+  PetscValidPointer(time, 4);
   if (U) PetscValidHeaderSpecific(U, VEC_CLASSID, 5);
   if (Udot) PetscValidHeaderSpecific(Udot, VEC_CLASSID, 6);
   if (!U && !Udot) PetscFunctionReturn(PETSC_SUCCESS);
@@ -776,7 +776,7 @@ PetscErrorCode TSTrajectorySetFiletemplate(TSTrajectory tj, const char filetempl
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tj, TSTRAJECTORY_CLASSID, 1);
-  PetscValidCharPointer(filetemplate, 2);
+  PetscValidPointer(filetemplate, 2);
   PetscCheck(!tj->dirfiletemplate, PetscObjectComm((PetscObject)tj), PETSC_ERR_ARG_WRONGSTATE, "Cannot set filetemplate after TSTrajectory has been setup");
 
   PetscCheck(filetemplate[0], PetscObjectComm((PetscObject)tj), PETSC_ERR_USER, "-ts_trajectory_file_template requires a file name template, e.g. filename-%%06" PetscInt_FMT ".bin");
@@ -930,7 +930,7 @@ PetscErrorCode TSTrajectoryGetSolutionOnly(TSTrajectory tj, PetscBool *solution_
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tj, TSTRAJECTORY_CLASSID, 1);
-  PetscValidBoolPointer(solution_only, 2);
+  PetscValidPointer(solution_only, 2);
   *solution_only = tj->solution_only;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
