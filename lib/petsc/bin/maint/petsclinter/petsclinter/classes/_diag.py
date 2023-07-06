@@ -234,6 +234,7 @@ class Diagnostic:
     if self.notes:
       notes_tmp = '\n\n'.join(f'{loc} Note: {note}' for loc, note in self.notes)
       message   = f'{message}\n\n{notes_tmp}'
+    assert not message.endswith('\n')
     return message
 
   def disabled(self):

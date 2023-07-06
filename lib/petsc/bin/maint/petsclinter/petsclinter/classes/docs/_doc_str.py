@@ -420,10 +420,9 @@ class PetscDocString(DocBase):
   @staticmethod
   def make_error_message(message, crange=None, num_context=2, **kwargs):
     if crange is None:
-      crange_text = ''
-    else:
-      crange_text = crange.formatted(num_context=num_context, **kwargs)
-    return f'{message}:\n{crange_text}'
+      return message
+    formatted = crange.formatted(num_context=num_context, **kwargs)
+    return f'{message}:\n{formatted}'
 
   def make_source_location(self, lineno, col):
     return SourceLocation.from_position(self.cursor.translation_unit, lineno, col)

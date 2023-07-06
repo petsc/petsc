@@ -78,8 +78,6 @@
                                                                         [33m[1m^^^^^^^^^^[0m
   78: {
   79:   return 0;
-:
-
 
 [31m[1m./src/sys/tests/linter/testValidFunctionDocStrings.c:52:3: error:[0m Invalid header spelling. Expected 'Level' found 'level' [-fdoc-section-header-spelling]:
   50: . z - a nonexistent parameter
@@ -499,8 +497,6 @@
                                                     [33m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
   361: {
   362:   return 0;
-:
-
 
 [31m[1m./src/sys/tests/linter/testValidFunctionDocStrings.c:355:3: error:[0m Unknown section header 'lvel', assuming you meant 'Level' [-fdoc-section-header-spelling]:
   353: + unrelated - A function arg
@@ -686,8 +682,6 @@
                                                                                                     [33m[1m^^^^^^^^^^^^^^[0m
   78: {
   79:   return 0;
-:
-
 
 [31m[1m./src/sys/tests/linter/testValidFunctionDocStrings.c:62:8: error:[0m Heading must appear alone on a line, any content must be on the next line [-fdoc-section-header-solitary]:
   60: qui officia deserunt mollit anim id est laborum as follows:
@@ -1030,8 +1024,6 @@
                                                                [33m[1m^^^^^^^^^^^^^^^^[0m
   382: {
   383:   return 0;
-:
-
 
 [31m[1m./src/sys/tests/linter/testValidFunctionDocStrings.c:370:1: error:[0m Undocumented parameter 'arg' not found in parameter section [-fdoc-param-list-func-parameter-documentation]:
   368:   testPredeclarationCursorIgnored - the cursor above this will be ignored!

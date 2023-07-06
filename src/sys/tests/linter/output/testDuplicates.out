@@ -15,7 +15,6 @@
                            [33m[1m^[0m
   11: /* ~should~ be removed but won't be */
   12: PetscValidScalarPointer(b, 7);
-
 [31m[1m./src/sys/tests/linter/testDuplicates.c:10:27: error:[0m Argument number doesn't match for 'b'. Expected '2', found '5' [-fmatching-arg-num]:
   8 : PetscValidIntPointer(a, 1);
   9 : /* no remove */

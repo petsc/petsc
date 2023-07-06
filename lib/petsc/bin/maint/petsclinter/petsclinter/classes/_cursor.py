@@ -314,7 +314,7 @@ class Cursor:
     kwargs.setdefault('nboth', 2)
     cursor   = cls.cast(cursor)
     aka_mess = '' if cursor.typename == cursor.derivedtypename else f' (a.k.a. \'{cursor.typename}\')'
-    return f'\'{cursor.name}\' of type \'{cursor.derivedtypename}\'{aka_mess}\n{cursor.formatted(**kwargs)}\n'
+    return f'\'{cursor.name}\' of type \'{cursor.derivedtypename}\'{aka_mess}\n{cursor.formatted(**kwargs)}'
 
   def get_formatted_blurb(self, **kwargs):
     return self.get_formatted_blurb_from_cursor(self, **kwargs)
