@@ -241,6 +241,7 @@ def __build_arg_parser(parent_parsers=None):
   group_general = parser.add_argument_group(title='General options')
   group_general.add_argument('--version', action='version', version=f'%(prog)s {pl.version_str()}')
   add_bool_argument(group_general, '-v', '--verbose', nargs='?', const=True, default=False, help='verbose progress printed to screen')
+  add_bool_argument(group_general, '--pm', nargs='?', const=True, default=False, help='launch an IPython post_mortem() on any raised exceptions (implies -j/--jobs 1)')
   add_bool_argument(group_general, '--werror', nargs='?', const=True, default=False, help='treat all warnings as errors')
   group_general.add_argument('-j', '--jobs', type=int, const=-1, default=-1, nargs='?', help='number of multiprocessing jobs, -1 means number of processors on machine', dest='workers')
   group_general.add_argument('-p', '--patch-dir', help='directory to store patches in if they are generated, defaults to SRC_DIR/../petscLintPatches', dest='patch_dir')
@@ -354,7 +355,22 @@ def namespace_main(args):
 
 def command_line_main():
   args, _ = parse_command_line_args()
-  return namespace_main(args)
+  have_pm = args.pm
+  if have_pm:
+    if args.verbose:
+      pl.sync_print('Running with --pm flag, setting number of workers to 1')
+    args.workers = 1
+    try:
+      import ipdb as py_db # LINT IGNORE
+    except ModuleNotFoundError:
+      import pdb as py_db # LINT IGNORE
+
+  try:
+    return namespace_main(args)
+  except:
+    if have_pm:
+      py_db.post_mortem()
+    raise
 
 if __name__ == '__main__':
   sys.exit(command_line_main())
