@@ -238,6 +238,16 @@ def __build_arg_parser(parent_parsers=None):
     parents=parent_parsers
   )
 
+  group_general = parser.add_argument_group(title='General options')
+  group_general.add_argument('--version', action='version', version=f'%(prog)s {pl.version_str()}')
+  add_bool_argument(group_general, '-v', '--verbose', nargs='?', const=True, default=False, help='verbose progress printed to screen')
+  add_bool_argument(group_general, '--werror', nargs='?', const=True, default=False, help='treat all warnings as errors')
+  group_general.add_argument('-j', '--jobs', type=int, const=-1, default=-1, nargs='?', help='number of multiprocessing jobs, -1 means number of processors on machine', dest='workers')
+  group_general.add_argument('-p', '--patch-dir', help='directory to store patches in if they are generated, defaults to SRC_DIR/../petscLintPatches', dest='patch_dir')
+  add_bool_argument(group_general, '-a', '--apply-patches', nargs='?', const=True, default=False, help='automatically apply patches that are saved to file', dest='apply_patches')
+  group_general.add_argument('--CXXFLAGS', nargs='+', default=[], help='extra flags to pass to CXX compiler', dest='extra_compiler_flags')
+  group_general.add_argument('--INCLUDEFLAGS', nargs='+', default=[], help='extra include flags to pass to CXX compiler', dest='extra_header_includes')
+
   group_libclang = parser.add_argument_group(title='libClang location settings')
   add_bool_argument(group_libclang, '--clang-compat-check', nargs='?', const=True, default=True, help='enable clang compatibility check')
   group          = group_libclang.add_mutually_exclusive_group(required=False)
@@ -248,20 +258,14 @@ def __build_arg_parser(parent_parsers=None):
   group_petsc.add_argument('--PETSC_DIR', default=petsc_dir, help='if this option is unused defaults to environment variable $PETSC_DIR', dest='petsc_dir')
   group_petsc.add_argument('--PETSC_ARCH', default=petsc_arch, help='if this option is unused defaults to environment variable $PETSC_ARCH', dest='petsc_arch')
 
-  parser.add_argument('src_path', default=default_src_dir, help='path to files or directory containing source (e.g. $SLEPC_DIR/src)', nargs='*')
-  add_bool_argument(parser, '-v', '--verbose', nargs='?', const=True, default=False, help='verbose progress printed to screen')
+  group_test = parser.add_argument_group(title='Testing settings')
+  group_test.add_argument('--test', metavar='path', nargs='?', const='__at_src__', help='test the linter for correctness. Optionally provide a directory containing the files against which to compare patches, defaults to SRC_DIR/output if no argument is given. The files of correct patches must be in the format [path_from_src_dir_to_testFileName].out', dest='test_output_dir')
+  add_bool_argument(group_test, '--replace', nargs='?', const=True, default=False, help='replace output files in test directory with patches generated', dest='replace_tests')
 
+  group_diag = parser.add_argument_group(title='Diagnostics settings')
   check_function_map_keys = list(pl.checks._register.check_function_map.keys())
   filter_func_choices     = ', '.join(check_function_map_keys)
-  parser.add_argument('--functions', nargs='+', choices=check_function_map_keys, metavar='FUNCTIONNAME', help='filter to display errors only related to list of provided function names, default is all functions. Choose from available function names: '+filter_func_choices, dest='check_function_filter')
-  foo = parser.add_argument('-j', '--jobs', type=int, const=-1, default=-1, nargs='?', help='number of multiprocessing jobs, -1 means number of processors on machine', dest='workers')
-  parser.add_argument('-p', '--patch-dir', help='directory to store patches in if they are generated, defaults to SRC_DIR/../petscLintPatches', dest='patch_dir')
-  add_bool_argument(parser, '-a', '--apply-patches', nargs='?', const=True, default=False, help='automatically apply patches that are saved to file', dest='apply_patches')
-  parser.add_argument('--CXXFLAGS', nargs='+', default=[], help='extra flags to pass to CXX compiler', dest='extra_compiler_flags')
-  parser.add_argument('--INCLUDEFLAGS', nargs='+', default=[], help='extra include flags to pass to CXX compiler', dest='extra_header_includes')
-  parser.add_argument('--test', metavar='path', nargs='?', const='__at_src__', help='test the linter for correctness. Optionally provide a directory containing the files against which to compare patches, defaults to SRC_DIR/output if no argument is given. The files of correct patches must be in the format [path_from_src_dir_to_testFileName].out', dest='test_output_dir')
-  add_bool_argument(parser, '--replace', nargs='?', const=True, default=False, help='replace output files in test directory with patches generated', dest='replace_tests')
-  add_bool_argument(parser, '--werror', nargs='?', const=True, default=False, help='treat all warnings as errors')
+  group_diag.add_argument('--functions', nargs='+', choices=check_function_map_keys, metavar='FUNCTIONNAME', help='filter to display errors only related to list of provided function names, default is all functions. Choose from available function names: '+filter_func_choices, dest='check_function_filter')
 
   class CheckFilter(argparse.Action):
     def __call__(self, parser, namespace, values, *args, **kwargs):
@@ -274,7 +278,6 @@ def __build_arg_parser(parent_parsers=None):
       setattr(namespace, flag, values)
       return
 
-  group_diag = parser.add_argument_group(title='diagnostics')
   add_bool_argument(
     group_diag, '-fdiagnostics-all', nargs='?', const=True, default=True, action=CheckFilter,
     help='enable all diagnostics'
@@ -289,6 +292,7 @@ def __build_arg_parser(parent_parsers=None):
     )
     all_diagnostics.add(diag_flag)
 
+  parser.add_argument('src_path', default=default_src_dir, help='path to files or directory containing source (e.g. $SLEPC_DIR/src)', nargs='*')
   return parser, all_diagnostics
 
 def parse_command_line_args(argv=None, **kwargs):

@@ -7,6 +7,7 @@ import sys
 
 __MIN_PYTHON_VERSION__ = (3, 6, 0)
 __version__            = (1, 0, 0)
+__version_str__        = '.'.join(map(str, __version__))
 
 class RedundantMinVersionCheckError(Exception):
   """
@@ -23,3 +24,9 @@ def py_version_lt(major, minor, sub_minor=0):
       f'There is no need to include this version check!'
     )
   return sys.version_info < version
+
+def version_tuple():
+  return __version__
+
+def version_str():
+  return __version_str__

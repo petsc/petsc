@@ -8,10 +8,12 @@ import sys
 # synchronized print function, should be used everywhere
 sync_print = print
 
-from . import __version__
+from .__version__ import __MIN_PYTHON_VERSION__, version_tuple, version_str
 
 if sys.version_info < __version__.__MIN_PYTHON_VERSION__:
   raise ImportError('Need python ' + str(__version__.__MIN_PYTHON_VERSION__) + '+')
+
+del __MIN_PYTHON_VERSION__
 
 try:
   import clang.cindex
@@ -80,3 +82,4 @@ __all__ = __build__all__(__name__)
 del __lazy_import
 del __build__all__
 del __import_submodules
+del sys
