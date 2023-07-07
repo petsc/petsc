@@ -171,6 +171,7 @@ PetscErrorCode PetscObjectComposedDataIncreaseRealstar(PetscObject obj)
 
 PetscErrorCode PetscObjectComposedDataIncreaseScalar(PetscObject obj)
 {
+#if PetscDefined(USE_COMPLEX)
   PetscScalar      *ar = obj->scalarcomposeddata, *new_ar;
   PetscObjectState *ir = obj->scalarcomposedstate, *new_ir;
   PetscInt          n  = obj->scalar_idmax, new_n;
@@ -185,10 +186,14 @@ PetscErrorCode PetscObjectComposedDataIncreaseScalar(PetscObject obj)
   obj->scalarcomposeddata  = new_ar;
   obj->scalarcomposedstate = new_ir;
   PetscFunctionReturn(PETSC_SUCCESS);
+#else
+  return PetscObjectComposedDataIncreaseReal(obj);
+#endif
 }
 
 PetscErrorCode PetscObjectComposedDataIncreaseScalarstar(PetscObject obj)
 {
+#if PetscDefined(USE_COMPLEX)
   PetscScalar     **ar = obj->scalarstarcomposeddata, **new_ar;
   PetscObjectState *ir = obj->scalarstarcomposedstate, *new_ir;
   PetscInt          n  = obj->scalarstar_idmax, new_n;
@@ -203,6 +208,9 @@ PetscErrorCode PetscObjectComposedDataIncreaseScalarstar(PetscObject obj)
   obj->scalarstarcomposeddata  = new_ar;
   obj->scalarstarcomposedstate = new_ir;
   PetscFunctionReturn(PETSC_SUCCESS);
+#else
+  return PetscObjectComposedDataIncreaseRealstar(obj);
+#endif
 }
 
 /*@
