@@ -452,6 +452,12 @@ M*/
   (but is not required to) be emitted if the value is discarded. It is safe to use this in both
   C and C++ source files.
 
+  In this context "captured" means assigning the return value of a function to a named
+  variable or casting it to `void`. Between the two, assigning to a named variable is the most
+  portable way of silencing any warnings, since `PETSC_NODISCARD` may expand to GCC's
+  `__attribute__((warn_unused_result))` which will still emit warnings when casting results to
+  `void`.
+
   Example Usage:
 .vb
   class Foo
@@ -467,11 +473,17 @@ M*/
     return n <= 1 ? 1 : (n * factorial(n - 1));
   }
 
-  auto x = factorial(10); // OK, capturing return value
   factorial(10);          // Warning: ignoring return value of function declared 'nodiscard'
+  auto x = factorial(10); // OK, capturing return value
+  (void)factorial(10);    // Maybe OK, casting to void
+  auto y = factorial(10); // OK, capturing in y (and casting y to void to silence
+  (void)y;                // set-but-not-used warnings)
 
-  auto f = Foo(x); // OK, capturing constructed object
   Foo(x);          // Warning: Ignoring temporary created by a constructor declared 'nodiscard'
+  auto f = Foo(x); // OK, capturing constructed object
+  (void)Foo(x);    // Maybe OK, casting to void
+  auto g = Foo(x); // OK, capturing in g (and casting g to void to silence set-but-not-used
+  (void)g;         // warnings)
 .ve
 
 .seealso: `PETSC_NULLPTR`, `PETSC_CONSTEXPR_14`
