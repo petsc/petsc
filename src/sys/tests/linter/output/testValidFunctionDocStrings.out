@@ -134,6 +134,20 @@
                                                                      [33m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
   75: @*/
   76: 
+
+[31m[1m./src/sys/tests/linter/testValidFunctionDocStrings.c:74:35: error:[0m Seealso entry '`testNonExistentFunction()`' is duplicate [-fdoc-inline-list-seealso-duplicate]:
+  72: 
+  73: .seealso:                                                  testNonExistentFunction(), testNonExistentType,
+> 74: testIllFormedFunctionDocString(), [33m[1m`testNonExistentFunction()`[0m, testIllFormedMinimalDocString()
+                                        [33m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  75: @*/
+  76: 
+
+./src/sys/tests/linter/testValidFunctionDocStrings.c:73:60 Note: first instance found here:
+  72: 
+> 73: .seealso:                                                  [33m[1mtestNonExistentFunction()[0m, testNonExistentType,
+                                                                 [33m[1m^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  74: testIllFormedFunctionDocString(), `testNonExistentFunction()`, testIllFormedMinimalDocString()
 [31m[1m./src/sys/tests/linter/testValidFunctionDocStrings.c:93:1: error:[0m Invalid indentation (3), all regular (non-empty, non-parameter, non-seealso) text must be indented to 2 columns [-fdoc-indentation]:
   91:   References:
   92:   Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
@@ -192,6 +206,20 @@
                                                                   [33m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
   94: */
   95: PetscErrorCode testIllFormedMinimalDocString(void)
+
+[31m[1m./src/sys/tests/linter/testValidFunctionDocStrings.c:93:61: error:[0m Seealso entry '`testNonExistentFunction()' is duplicate [-fdoc-inline-list-seealso-duplicate]:
+  91:   References:
+  92:   Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+> 93:    .seealso: testNonExistentFunction(), testNonExistentType,[33m[1m`testNonExistentFunction()[0m
+                                                                  [33m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  94: */
+  95: PetscErrorCode testIllFormedMinimalDocString(void)
+
+./src/sys/tests/linter/testValidFunctionDocStrings.c:93:14 Note: first instance found here:
+  92:   Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+> 93:    .seealso: [33m[1mtestNonExistentFunction()[0m, testNonExistentType,`testNonExistentFunction()
+                   [33m[1m^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  94: */
 [31m[1m./src/sys/tests/linter/testValidFunctionDocStrings.c:114:1: error:[0m Missing empty line between sections, must have one before this section [-fdoc-section-spacing]:
   112: - -option_a     - foo
   113: - -option_b [filename][:[~]<foo,bar,baz>[:[~]bop]] - descr

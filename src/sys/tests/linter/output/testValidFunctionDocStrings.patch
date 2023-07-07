@@ -66,7 +66,7 @@
  
  .seealso:                                                  testNonExistentFunction(), testNonExistentType,
 -testIllFormedFunctionDocString(), `testNonExistentFunction()`, testIllFormedMinimalDocString()
-+`testNonExistentFunction()`, `testIllFormedMinimalDocString()`
++`testIllFormedMinimalDocString()`
  @*/
  
 @@ -77,5 +77,4 @@
@@ -90,7 +90,7 @@
    Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
 -   .seealso: testNonExistentFunction(), testNonExistentType,`testNonExistentFunction()
 +
-+  .seealso: `testNonExistentFunction()`, `testNonExistentType`,`testNonExistentFunction()`
++  .seealso: `testNonExistentFunction()`, `testNonExistentType`
  */
  PetscErrorCode testIllFormedMinimalDocString(void)
 @@ -102,5 +102,5 @@

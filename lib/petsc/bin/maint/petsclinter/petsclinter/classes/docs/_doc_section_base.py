@@ -193,7 +193,6 @@ class SectionBase(DocBase):
     return self._lines
 
   def consume(self, data):
-    data = list(data)
     if data:
       self.lines().extend(data)
       self.raw    = '\n'.join(s for _, s, _ in self.lines())

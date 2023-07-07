@@ -146,7 +146,7 @@ class Synopsis(SectionBase):
         return
 
     inspector = Inspector(ds.cursor)
-    super().setup(ds,*args, inspect_line=inspector, **kwargs)
+    super().setup(ds, *args, inspect_line=inspector, **kwargs)
 
     if inspector.is_enum:
       def check_enum_starts_with_dollar(self, ds, items):
@@ -271,7 +271,7 @@ class Synopsis(SectionBase):
       # the name was not in the header, so the docstring is wrong
       mess = f"Macro docstring explicit synopsis appears to have incorrect include line. Could not locate '{fn_name}()' in '{header_name}'. Are you sure that's where it lives?"
       diag = self.diags.macro_explicit_synopsis_valid_header
-      docstring.add_error_from_source_range(diag,mess,header_loc)
+      docstring.add_error_from_source_range(diag, mess, header_loc)
       return False
 
     cursor_spelling = cursor.spelling
@@ -811,7 +811,7 @@ class Level(InlineList):
         # create a range starting at newline of previous line going until the first
         # non-space character on the next line
         delrange = SourceRange.from_positions(
-          cursor.translation_unit,prevloc.end.line,-1,loc.start.line,len(line)-len(line.lstrip())
+          cursor.translation_unit, prevloc.end.line, -1, loc.start.line, len(line) - len(line.lstrip())
         )
         # given '  Level:\n  blabla'
         #                ^^^
@@ -905,13 +905,12 @@ class SeeAlso(InlineList):
     def enclosed_by(string, begin_char, end_char):
       return string.startswith(begin_char) and string.endswith(end_char)
 
-    btick = self.special_chars
-    assert btick == '`'
+    chars = self.special_chars
     for loc, text in item_remain:
-      if not enclosed_by(text, btick, btick) and not re.search(r'\[.*\]\(\w+\)', text):
+      if not enclosed_by(text, chars, chars) and not re.search(r'\[.*\]\(\w+\)', text):
         docstring.add_error_from_source_range(
-          self.diags.backticks, f"seealso symbol '{text}' not enclosed with '{btick}'",
-          loc, patch=Patch(loc, f'{btick}{text.replace(btick, "")}{btick}')
+          self.diags.backticks, f"seealso symbol '{text}' not enclosed with '{chars}'",
+          loc, patch=Patch(loc, f'{chars}{text.replace(chars, "")}{chars}')
         )
     return
 
@@ -922,12 +921,13 @@ class SeeAlso(InlineList):
     seen     = {}
     dup_diag = self.diags.duplicate
     for loc, text in item_remain:
-      if text not in seen:
-        seen[text] = (loc, text)
+      text_no_special = text.replace(self.special_chars, '')
+      if text_no_special not in seen:
+        seen[text_no_special] = loc
         continue
 
-      assert text
-      first_seen = seen[text][0]
+      assert text_no_special
+      first_seen = seen[text_no_special]
       diag       = docstring.make_diagnostic(
         dup_diag, f"Seealso entry '{text}' is duplicate", loc,
         patch=self.__make_deletion_patch(loc, text, loc == last_loc)
