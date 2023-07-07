@@ -257,7 +257,7 @@ class Cursor:
 
       hidden_visibility = {'hidden', 'protected'}
       for child in cursor.get_children():
-        if child.kind == clx.CursorKind.VISIBILITY_ATTR and child.spelling in hidden_visibility:
+        if child.kind.is_attribute() and child.spelling in hidden_visibility:
           # is PETSC_INTERN
           return True, SourceRange(child.extent).raw(tight=True), child
       return False, None, None
@@ -339,7 +339,7 @@ class Cursor:
     cx_callback, found_cursors = make_cxcursor_and_range_callback(cursor)
     get_clang_function(
       'clang_findReferencesInFile', [clx.Cursor, clx.File, PetscCXCursorAndRangeVisitor]
-    )(cursor.clang_cursor(), cls.get_clang_file_from_cursor(cursor), cx_callback)
+    )(cls.get_clang_cursor_from_cursor(cursor), cls.get_clang_file_from_cursor(cursor), cx_callback)
     return found_cursors
 
   def find_cursor_references(self):
@@ -347,14 +347,8 @@ class Cursor:
 
   @classmethod
   def get_comment_and_range_from_cursor(cls, cursor):
-    if isinstance(cursor, cls):
-      clang_cursor = cursor.clang_cursor()
-    elif isinstance(cursor, clx.Cursor):
-      clang_cursor = cursor
-    else:
-      raise ValueError(type(cursor))
     cursor_range = get_clang_function('clang_Cursor_getCommentRange', [clx.Cursor], clx.SourceRange)(
-      clang_cursor
+      cls.get_clang_cursor_from_cursor(cursor)
     )
     return cursor.raw_comment, cursor_range
 
@@ -381,9 +375,13 @@ class Cursor:
   @classmethod
   def is_variadic_function_from_cursor(cls, cursor):
     def check():
-      if cursor.kind == clx.CursorKind.FUNCTION_DECL:
-        return cursor.displayname.split(',')[-1].replace(')', '').split()[0] == '...'
-      return False
+      try:
+        return cursor.type.is_function_variadic()
+      except AssertionError:
+        return False
+      # if cursor.kind == clx.CursorKind.FUNCTION_DECL:
+      #   return cursor.displayname.split(',')[-1].replace(')', '').split()[0] == '...'
+      # return False
 
     if isinstance(cursor, cls):
       return cursor._get_cached('variadic_function', check)
@@ -394,27 +392,46 @@ class Cursor:
 
   @classmethod
   def get_declaration_from_cursor(cls, cursor):
-    tu                         = cursor.translation_unit
-    cx_callback, found_cursors = make_cxcursor_and_range_callback(cursor)
-    get_clang_function(
-      'clang_findIncludesInFile', [clx.TranslationUnit, clx.File, PetscCXCursorAndRangeVisitor]
-    )(tu, cursor.location.file, cx_callback)
-    if not found_cursors:
-      # do this the hard way, manually search the entire TU for the declaration
-      usr = cursor.get_usr()
-      for child in tu.cursor.walk_preorder():
-        # don't add ourselves to the list
-        if child.get_usr() == usr and child.location != cursor.location:
-          child = cls.cast(child)
-          child._cache['__extent_final'] = True
-          found_cursors.append(child)
+    # cx_callback, found_cursors = make_cxcursor_and_range_callback(cursor)
+    # get_clang_function(
+    #   'clang_findIncludesInFile', [clx.TranslationUnit, clx.File, PetscCXCursorAndRangeVisitor]
+    # )(tu, cursor_file, cx_callback)
+    # if not found_cursors:
+    if cursor.type.kind in clx_function_type_kinds:
+      cursor_file = cls.get_clang_file_from_cursor(cursor)
+      canon       = cursor.canonical
+      if canon.location.file != cursor_file:
+        return Cursor.cast(canon)
+      for child in cursor.get_children():
+        if child.kind.is_attribute() and child.location.file != cursor_file:
+          refs = cls.find_cursor_references_from_cursor(child)
+          if refs:
+            assert len(refs) == 1, 'Don\'t know how to handle >1 ref!'
+            return Cursor.cast(refs[0])
+    # do this the hard way, manually search the entire TU for the declaration
+    usr        = cursor.get_usr()
+    cursor_loc = cursor.location
+    for child in cursor.translation_unit.cursor.walk_preorder():
+      # don't add ourselves to the list
+      if child.get_usr() == usr and child.location != cursor_loc:
+        child = cls.cast(child)
+        child._cache['__extent_final'] = True
+        found_cursors.append(child)
     return found_cursors
 
   def get_declaration(self):
     return self.get_declaration_from_cursor(self)
 
+  @classmethod
+  def get_clang_cursor_from_cursor(cls, cursor):
+    if isinstance(cursor, cls):
+      return cursor.__cursor
+    if isinstance(cursor, clx.Cursor):
+      return cursor
+    raise ValueError(type(cursor))
+
   def clang_cursor(self):
     """
     return the internal clang cursor
     """
-    return self.__cursor
+    return self.get_clang_cursor_from_cursor(self)

@@ -192,7 +192,7 @@ class Synopsis(SectionBase):
     """
     if not (len(explicit_synopsis) or docstring.Modifier.FLOATING in docstring.type_mod):
       # we are missing the synopsis section entirely
-      with open(cursor.location.file.name) as fh:
+      with open(cursor.get_file()) as fh:
         lines = [l.strip() for l in fh if l.lstrip().startswith('#') and 'include' in l and '/*' in l]
       lines = [l.group(2).strip() for l in filter(None, map(self.__sowing_include_finder.match, lines))]
 
@@ -245,6 +245,9 @@ class Synopsis(SectionBase):
       print('Dont know how to handle no header name yet')
       print(80*'=')
       return False # don't know how to handle this
+
+    # TODO cursor.get_declaration() now appears it might work!
+    # decl = cursor.get_declaration()
 
     # OK found it, now find the actual file. Clang unfortunately cannot help us here since
     # it does not pick up header that are in the precompiled header (which chances are,
