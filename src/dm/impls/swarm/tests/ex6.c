@@ -774,6 +774,7 @@ static PetscErrorCode InitializeSolveAndSwarm(TS ts, PetscBool useInitial)
     PetscCall(DMSwarmInitializeCoordinates(sw));
     PetscCall(DMSwarmInitializeVelocitiesFromOptions(sw, v0));
     PetscCall(DMSwarmMigrate(sw, PETSC_TRUE));
+    PetscCall(TSReset(ts));
     PetscCall(CreateSolution(ts));
     PetscCall(SetProblem(ts));
   }
