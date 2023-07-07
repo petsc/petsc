@@ -595,3 +595,24 @@ PetscErrorCode testBadDocStringIgnoreAll()
 {
   return PETSC_SUCCESS;
 }
+
+// A dummy comment
+/* another dummy comment */
+/*@C
+  testIgnoringSpuriousComments - Insert point coordinates (defined over the reference cell)
+  within each cell
+
+  Level: beginner
+
+  Notes:
+  This verbatim section contains nested comments, but that's OK!
+.vb
+  // a nested comment
+.ve
+
+.seealso: `testBadDocString()`
+@*/
+PetscErrorCode testIgnoringSpuriousComments()
+{
+  return PETSC_SUCCESS;
+}

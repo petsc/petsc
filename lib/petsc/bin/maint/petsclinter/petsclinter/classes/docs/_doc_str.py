@@ -61,6 +61,9 @@ _suspicious_expression_regex = re.compile(
 
 _pragma_regex = re.compile(r'.*PetscClangLinter\s+pragma\s+(\w+):\s*(.*)')
 
+# Regex to match /* */ patterns
+_c_comment_regex = re.compile(r'\/\*(\*(?!\/)|[^*])*\*\/')
+
 class SectionNotFoundError(pl.BaseError):
   """
   Exception thrown when a section is searched for, not found, and strict mode was enabled
@@ -399,19 +402,24 @@ class PetscDocString(DocBase):
     if not cls._is_valid_docstring(cursor, raw, extent):
       raise pl.KnownUnhandleableCursorError('Not a docstring')
 
-    rawlines = raw.splitlines()
-    comments = [i for i, line in enumerate(rawlines) if line.lstrip().startswith(('/*', '//'))]
-    if len(comments) > 1:
+    last_match = None
+    for re_match in _c_comment_regex.finditer(raw):
+      last_match = re_match
+
+    start = last_match.start()
+    if start:
       # this handles the following case:
       #
       # /* a dummy comment that is attributed to the symbol */
       # /*
       #   the real docstring comment, note no empty line between this and the previous!
+      #   // also handles internal comments
+      #   /* of both kinds */
       # */
       # <the symbol>
-      offset = comments[-1]
-      raw    = '\n'.join(rawlines[offset:])
-      extent = extent.resized(lbegin=offset, cbegin=None, cend=None)
+      assert start > 0
+      extent = extent.resized(lbegin=raw.count('\n', 0, start), cbegin=None, cend=None)
+      raw    = raw[start:]
     return raw, extent
 
   def get_pragmas(self):
