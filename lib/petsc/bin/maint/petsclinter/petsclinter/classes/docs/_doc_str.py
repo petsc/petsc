@@ -770,7 +770,7 @@ class PetscDocString(DocBase):
       self.add_error_from_source_range(diag, mess, self.make_source_range(name, line, lineno))
     return heading
 
-  def _check_section_header_that_probably_should_not_be_one(self, heading, line, lineno):
+  def _check_section_header_that_probably_should_not_be_one(self, heading, line, stripped, lineno):
     """
     check that a section header that ends with ':' is not really a header
     """
@@ -785,7 +785,7 @@ class PetscDocString(DocBase):
       if section_guess == '__UNKNOWN_SECTION__':
         assert not line.endswith(r'\:')
         eloc = self.make_source_range(':', line, lineno, offset=line.rfind(':'))
-        mess = f'Sowing treats all lines ending with \':\' as header, are you sure \'{textwrap.shorten(line.strip(), width=35)}\' qualifies? Use \'\:\' to escape the colon if not'
+        mess = f'Sowing treats all lines ending with \':\' as header, are you sure \'{textwrap.shorten(stripped, width=35)}\' qualifies? Use \'\:\' to escape the colon if not'
         self.add_error_from_source_range(self.diags.section_header_fishy_header, mess, eloc)
     return heading
 
@@ -799,7 +799,6 @@ class PetscDocString(DocBase):
     self._check_valid_docstring_spacing()
 
     raw_data     = []
-    heading_data = []
     section      = self.sections.synopsis
     check_indent = section.check_indent_allowed()
     is_heading   = self._get_is_heading(section)
@@ -837,7 +836,7 @@ class PetscDocString(DocBase):
             is_heading   = self._get_is_heading(section)
         else:
           heading_verdict = self._check_section_header_that_probably_should_not_be_one(
-            heading_verdict, line, lineno
+            heading_verdict, line, stripped, lineno
           )
       else:
         # verbatim blocks are never headings
@@ -848,7 +847,7 @@ class PetscDocString(DocBase):
         # reset the dollar verbatim
         in_verbatim = 0
 
-    raw_data = section.consume(raw_data)
+    section.consume(raw_data)
     for sec in self.sections:
       sec.setup(self)
     return self
