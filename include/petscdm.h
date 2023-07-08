@@ -65,6 +65,8 @@ PETSC_EXTERN PetscErrorCode DMGetGlobalVector(DM, Vec *);
 PETSC_EXTERN PetscErrorCode DMRestoreGlobalVector(DM, Vec *);
 PETSC_EXTERN PetscErrorCode DMClearGlobalVectors(DM);
 PETSC_EXTERN PetscErrorCode DMClearLocalVectors(DM);
+PETSC_EXTERN PetscErrorCode DMClearNamedGlobalVectors(DM);
+PETSC_EXTERN PetscErrorCode DMClearNamedLocalVectors(DM);
 PETSC_EXTERN PetscErrorCode DMHasNamedGlobalVector(DM, const char *, PetscBool *);
 PETSC_EXTERN PetscErrorCode DMGetNamedGlobalVector(DM, const char *, Vec *);
 PETSC_EXTERN PetscErrorCode DMRestoreNamedGlobalVector(DM, const char *, Vec *);

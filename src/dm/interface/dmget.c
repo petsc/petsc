@@ -293,6 +293,66 @@ alldone:
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@
+   DMClearNamedGlobalVectors - Destroys all the named global vectors that have been stashed in this `DM`
+
+   Collective
+
+   Input Parameter:
+.  dm - the `DM`
+
+   Level: developer
+
+.seealso: `DM`, `DMGetNamedGlobalVector()`, `DMGetNamedLocalVector()`, `DMClearNamedLocalVectors()`
+@*/
+PetscErrorCode DMClearNamedGlobalVectors(DM dm)
+{
+  DMNamedVecLink nnext;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  nnext           = dm->namedglobal;
+  dm->namedglobal = NULL;
+  for (DMNamedVecLink nlink = nnext; nlink; nlink = nnext) { /* Destroy the named vectors */
+    nnext = nlink->next;
+    PetscCheck(nlink->status == DMVEC_STATUS_IN, ((PetscObject)dm)->comm, PETSC_ERR_ARG_WRONGSTATE, "DM still has global Vec named '%s' checked out", nlink->name);
+    PetscCall(PetscFree(nlink->name));
+    PetscCall(VecDestroy(&nlink->X));
+    PetscCall(PetscFree(nlink));
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+   DMClearNamedLocalVectors - Destroys all the named local vectors that have been stashed in this `DM`
+
+   Collective
+
+   Input Parameter:
+.  dm - the `DM`
+
+   Level: developer
+
+.seealso: `DM`, `DMGetNamedGlobalVector()`, `DMGetNamedLocalVector()`, `DMClearNamedGlobalVectors()`
+@*/
+PetscErrorCode DMClearNamedLocalVectors(DM dm)
+{
+  DMNamedVecLink nnext;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  nnext          = dm->namedlocal;
+  dm->namedlocal = NULL;
+  for (DMNamedVecLink nlink = nnext; nlink; nlink = nnext) { /* Destroy the named vectors */
+    nnext = nlink->next;
+    PetscCheck(nlink->status == DMVEC_STATUS_IN, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "DM still has local Vec named '%s' checked out", nlink->name);
+    PetscCall(PetscFree(nlink->name));
+    PetscCall(VecDestroy(&nlink->X));
+    PetscCall(PetscFree(nlink));
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 /*@C
    DMHasNamedGlobalVector - check for a named, persistent global vector
 

@@ -632,8 +632,7 @@ PetscErrorCode DMDestroyCoordinates_Private(DMCoordinates *c)
 @*/
 PetscErrorCode DMDestroy(DM *dm)
 {
-  PetscInt       cnt;
-  DMNamedVecLink nlink, nnext;
+  PetscInt cnt;
 
   PetscFunctionBegin;
   if (!*dm) PetscFunctionReturn(PETSC_SUCCESS);
@@ -651,25 +650,8 @@ PetscErrorCode DMDestroy(DM *dm)
 
   PetscCall(DMClearGlobalVectors(*dm));
   PetscCall(DMClearLocalVectors(*dm));
-
-  nnext              = (*dm)->namedglobal;
-  (*dm)->namedglobal = NULL;
-  for (nlink = nnext; nlink; nlink = nnext) { /* Destroy the named vectors */
-    nnext = nlink->next;
-    PetscCheck(nlink->status == DMVEC_STATUS_IN, ((PetscObject)*dm)->comm, PETSC_ERR_ARG_WRONGSTATE, "DM still has Vec named '%s' checked out", nlink->name);
-    PetscCall(PetscFree(nlink->name));
-    PetscCall(VecDestroy(&nlink->X));
-    PetscCall(PetscFree(nlink));
-  }
-  nnext             = (*dm)->namedlocal;
-  (*dm)->namedlocal = NULL;
-  for (nlink = nnext; nlink; nlink = nnext) { /* Destroy the named local vectors */
-    nnext = nlink->next;
-    PetscCheck(nlink->status == DMVEC_STATUS_IN, ((PetscObject)*dm)->comm, PETSC_ERR_ARG_WRONGSTATE, "DM still has Vec named '%s' checked out", nlink->name);
-    PetscCall(PetscFree(nlink->name));
-    PetscCall(VecDestroy(&nlink->X));
-    PetscCall(PetscFree(nlink));
-  }
+  PetscCall(DMClearNamedGlobalVectors(*dm));
+  PetscCall(DMClearNamedLocalVectors(*dm));
 
   /* Destroy the list of hooks */
   {
