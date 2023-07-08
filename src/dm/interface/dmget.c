@@ -232,14 +232,14 @@ PetscErrorCode DMClearLocalVectors(DM dm)
   for (i = 0; i < DM_MAX_WORK_VECTORS; i++) {
     Vec g;
 
-    PetscCheck(!dm->localout[i], PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONGSTATE, "Clearing DM of local vectors that has a local vector obtained with DMGetLocalVector()");
+    PetscCheck(!dm->localout[i], PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Clearing DM of local vectors that has a local vector obtained with DMGetLocalVector()");
     g              = dm->localin[i];
     dm->localin[i] = NULL;
     if (g) {
       DM vdm;
 
       PetscCall(VecGetDM(g, &vdm));
-      PetscCheck(!vdm, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONGSTATE, "Clearing local vector that has a DM attached");
+      PetscCheck(!vdm, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Clearing local vector that has a DM attached");
     }
     PetscCall(VecDestroy(&g));
   }
