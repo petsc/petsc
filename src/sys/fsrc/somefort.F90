@@ -25,7 +25,7 @@
       PetscInt unit
       PetscErrorCode ierr
       write(unit=unit, fmt="(A)", advance='no') str
-
+      ierr = 0
       return
       end
 #if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
