@@ -5,13 +5,6 @@
 */
 #include <petsc/private/petscimpl.h>
 
-struct _n_PetscObjectList {
-  char            name[256];
-  PetscBool       skipdereference; /* when the PetscObjectList is destroyed do not call PetscObjectDereference() on this object */
-  PetscObject     obj;
-  PetscObjectList next;
-};
-
 /*@C
   PetscObjectListRemoveReference - Calls `PetscObjectDereference()` on an object in the list immediately but keeps a pointer to the object in the list.
 

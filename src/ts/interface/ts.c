@@ -2705,6 +2705,7 @@ PetscErrorCode TSDestroy(TS *ts)
   PetscCall(TSReset(*ts));
   PetscCall(TSAdjointReset(*ts));
   if ((*ts)->forward_solve) PetscCall(TSForwardReset(*ts));
+  PetscCall(TSResizeReset(*ts));
 
   /* if memory was published with SAWs then destroy it */
   PetscCall(PetscObjectSAWsViewOff((PetscObject)*ts));
@@ -3703,6 +3704,256 @@ PetscErrorCode TSComputeExactError(TS ts, Vec u, Vec e)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@C
+  TSSetResize - Sets the resize callbacks.
+
+  Logically Collective
+
+  Input Parameters:
++ ts   - The `TS` context obtained from `TSCreate()`
+. setup - The setup function
+- transfer - The transfer function
+
+  Calling sequence of `setup`:
+$   PetscErrorCode setup(TS ts, PetscInt step, PetscReal time, Vec state, PetscBool *resize, void *ctx)
++   ts - the TS context
+.   step - the current step
+.   time - the current time
+.   state - the current vector of state
+.   resize - (output parameter) `PETSC_TRUE` if need resizing, `PETSC_FALSE` otherwise
+-   ctx - user defined context
+
+  Calling sequence of `transfer`:
+$   PetscErrorCode transfer(TS ts, PetscInt nv, Vec vecsin[], Vec vecsout[], void *ctx)
++   ts - the TS context
+.   nv - the number of vectors to be transferred
+.   vecsin - array of vectors to be transferred
+.   vecsout - array of transferred vectors
+-   ctx - user defined context
+
+  Notes:
+  The `setup` function is called inside `TSSolve()` after `TSPostStep()` at the end of each time step
+  to determine if the problem size has changed.
+  If it is the case, the solver will collect the needed vectors that need to be
+  transferred from the old to the new sizes using `transfer`. These vectors will include the current
+  solution vector, and other vectors needed by the specific solver used.
+  For example, `TSBDF` uses previous solutions vectors to solve for the next time step.
+  Other application specific objects associated with the solver, i.e. Jacobian matrices and `DM`,
+  will be automatically reset if the sizes are changed and they must be specified again by the user
+  inside the `transfer` function.
+  The input and output arrays passed to `transfer` are allocated by PETSc.
+  Vectors in `vecsout` must be created by the user.
+  Ownership of vectors in `vecsout` is transferred to PETSc.
+
+  Level: advanced
+
+.seealso: [](ch_ts), `TS`, `TSSetDM()`, `TSSetIJacobian()`, `TSSetRHSJacobian()`
+@*/
+PetscErrorCode TSSetResize(TS ts, PetscErrorCode (*setup)(TS, PetscInt, PetscReal, Vec, PetscBool *, void *), PetscErrorCode (*transfer)(TS, PetscInt, Vec[], Vec[], void *), void *ctx)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
+  ts->resizesetup    = setup;
+  ts->resizetransfer = transfer;
+  ts->resizectx      = ctx;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@C
+  TSResizeRegisterOrRetrieve - Register or import vectors transferred with `TSResize()`.
+
+  Collective
+
+  Input Parameters:
++ ts   - The `TS` context obtained from `TSCreate()`
+- flg - If `PETSC_TRUE` each TS implementation (e.g. `TSBDF`) will register vectors to be transferred, if `PETSC_FALSE` vectors will be imported from transferred vectors.
+
+  Level: developer
+
+  Note:
+  `TSResizeRegisterOrRetrieve()` is declared PETSC_INTERN since it is
+   used within time stepping implementations,
+   so most users would not generally call this routine themselves.
+
+.seealso: [](ch_ts), `TS`, `TSSetResize()`
+@*/
+PetscErrorCode TSResizeRegisterOrRetrieve(TS ts, PetscBool flg)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
+  PetscTryTypeMethod(ts, resizeregister, flg);
+  /* PetscTryTypeMethod(adapt, resizeregister, flg); */
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+PetscErrorCode TSResizeReset(TS ts)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
+  PetscCall(PetscObjectListDestroy(&ts->resizetransferobjs));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode TSResizeTransferVecs(TS ts, PetscInt cnt, Vec vecsin[], Vec vecsout[])
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
+  PetscValidLogicalCollectiveInt(ts, cnt, 2);
+  for (PetscInt i = 0; i < cnt; i++) PetscCall(VecLockReadPush(vecsin[i]));
+  if (ts->resizetransfer) {
+    PetscCall(PetscInfo(ts, "Transferring %" PetscInt_FMT " vectors\n", cnt));
+    PetscCallBack("TS callback resize transfer", (*ts->resizetransfer)(ts, cnt, vecsin, vecsout, ts->resizectx));
+  }
+  for (PetscInt i = 0; i < cnt; i++) PetscCall(VecLockReadPop(vecsin[i]));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@C
+  TSResizeRegisterVec - Register a vector to be transferred with `TSResize()`.
+
+  Collective
+
+  Input Parameters:
++ ts   - The `TS` context obtained from `TSCreate()`
+. name - A string identifiying the vector
+- vec - The vector
+
+  Level: developer
+
+  Note:
+  `TSResizeRegisterVec()` is typically used within time stepping implementations,
+  so most users would not generally call this routine themselves.
+
+.seealso: [](ch_ts), `TS`, `TSSetResize()`, `TSResize()`, `TSResizeRetrieveVec()`
+@*/
+PetscErrorCode TSResizeRegisterVec(TS ts, const char *name, Vec vec)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
+  PetscValidCharPointer(name, 2);
+  if (vec) PetscValidHeaderSpecific(vec, VEC_CLASSID, 3);
+  PetscCall(PetscObjectListAdd(&ts->resizetransferobjs, name, (PetscObject)vec));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@C
+  TSResizeRetrieveVec - Retrieve a vector registered with `TSResizeRegisterVec()`.
+
+  Collective
+
+  Input Parameters:
++ ts   - The `TS` context obtained from `TSCreate()`
+. name - A string identifiying the vector
+- vec - The vector
+
+  Level: developer
+
+  Note:
+  `TSResizeRetrieveVec()` is typically used within time stepping implementations,
+  so most users would not generally call this routine themselves.
+
+.seealso: [](ch_ts), `TS`, `TSSetResize()`, `TSResize()`, `TSResizeRegisterVec()`
+@*/
+PetscErrorCode TSResizeRetrieveVec(TS ts, const char *name, Vec *vec)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
+  PetscValidCharPointer(name, 2);
+  PetscValidPointer(vec, 3);
+  PetscCall(PetscObjectListFind(ts->resizetransferobjs, name, (PetscObject *)vec));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode TSResizeGetVecArray(TS ts, PetscInt *nv, const char **names[], Vec *vecs[])
+{
+  PetscInt        cnt;
+  PetscObjectList tmp;
+  Vec            *vecsin  = NULL;
+  const char    **namesin = NULL;
+
+  PetscFunctionBegin;
+  for (tmp = ts->resizetransferobjs, cnt = 0; tmp; tmp = tmp->next)
+    if (tmp->obj && tmp->obj->classid == VEC_CLASSID) cnt++;
+  if (names) PetscCall(PetscMalloc1(cnt, &vecsin));
+  if (vecs) PetscCall(PetscMalloc1(cnt, &namesin));
+  for (tmp = ts->resizetransferobjs, cnt = 0; tmp; tmp = tmp->next) {
+    if (tmp->obj && tmp->obj->classid == VEC_CLASSID) {
+      if (vecs) vecsin[cnt] = (Vec)tmp->obj;
+      if (names) namesin[cnt] = tmp->name;
+      cnt++;
+    }
+  }
+  if (nv) *nv = cnt;
+  if (names) *names = namesin;
+  if (vecs) *vecs = vecsin;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  TSResize - Runs the user-defined transfer functions provided with `TSSetResize()`
+
+  Collective
+
+  Input Parameter:
+. ts   - The `TS` context obtained from `TSCreate()`
+
+  Level: developer
+
+  Note:
+  `TSResize()` is typically used within time stepping implementations,
+  so most users would not generally call this routine themselves.
+
+.seealso: [](ch_ts), `TS`, `TSSetResize()`
+@*/
+PetscErrorCode TSResize(TS ts)
+{
+  PetscInt     nv      = 0;
+  const char **names   = NULL;
+  Vec         *vecsin  = NULL;
+  const char  *solname = "ts:vec_sol";
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
+  if (ts->resizesetup) {
+    PetscBool flg = PETSC_FALSE;
+
+    PetscCall(VecLockReadPush(ts->vec_sol));
+    PetscCallBack("TS callback resize setup", (*ts->resizesetup)(ts, ts->steps, ts->ptime, ts->vec_sol, &flg, ts->resizectx));
+    PetscCall(VecLockReadPop(ts->vec_sol));
+    if (flg) {
+      PetscCall(TSResizeRegisterVec(ts, solname, ts->vec_sol));
+      PetscCall(TSResizeRegisterOrRetrieve(ts, PETSC_TRUE)); /* specific impls register their own objects */
+    }
+  }
+
+  PetscCall(TSResizeGetVecArray(ts, &nv, &names, &vecsin));
+  if (nv) {
+    Vec *vecsout, vecsol;
+
+    /* Reset internal objects */
+    PetscCall(TSReset(ts));
+
+    /* Transfer needed vectors (users can call SetJacobian, SetDM here) */
+    PetscCall(PetscCalloc1(nv, &vecsout));
+    PetscCall(TSResizeTransferVecs(ts, nv, vecsin, vecsout));
+    for (PetscInt i = 0; i < nv; i++) {
+      PetscCall(TSResizeRegisterVec(ts, names[i], vecsout[i]));
+      PetscCall(VecDestroy(&vecsout[i]));
+    }
+    PetscCall(PetscFree(vecsout));
+    PetscCall(TSResizeRegisterOrRetrieve(ts, PETSC_FALSE)); /* specific impls import the transferred objects */
+
+    PetscCall(TSResizeRetrieveVec(ts, solname, &vecsol));
+    if (vecsol) PetscCall(TSSetSolution(ts, vecsol));
+    PetscAssert(ts->vec_sol, PetscObjectComm((PetscObject)ts), PETSC_ERR_ARG_NULL, "Missing TS solution");
+  }
+
+  PetscCall(PetscFree(names));
+  PetscCall(PetscFree(vecsin));
+  PetscCall(TSResizeReset(ts));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 /*@
   TSSolve - Steps the requested number of timesteps.
 
@@ -3857,6 +4108,7 @@ PetscErrorCode TSSolve(TS ts, Vec u)
       if (!ts->steprollback) {
         PetscCall(TSTrajectorySet(ts->trajectory, ts, ts->steps, ts->ptime, ts->vec_sol));
         PetscCall(TSPostStep(ts));
+        PetscCall(TSResize(ts));
       }
     }
     PetscCall(TSMonitor(ts, ts->steps, ts->ptime, ts->vec_sol));

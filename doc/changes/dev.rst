@@ -96,6 +96,7 @@ Changes: Development
 .. rubric:: TS:
 
 - Remove ``TSErrorWeightedNormInfinity()``, ``TSErrorWeightedNorm2()``, ``TSErrorWeightedENormInfinity()``, ``TSErrorWeightedENorm2()`` since the same functionality can be obtained with ``VecErrorWeightedNorms()``
+- Add support for time-dependent solvers with varying solution size using ``TSSetResize()``
 
 .. rubric:: TAO:
 
