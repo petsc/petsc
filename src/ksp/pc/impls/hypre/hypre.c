@@ -2210,41 +2210,42 @@ PetscErrorCode PCMGGalerkinGetMatProductAlgorithm(PC pc, const char *name[])
      PCHYPRE - Allows you to use the matrix element based preconditioners in the LLNL package hypre as PETSc `PC`
 
    Options Database Keys:
-+   -pc_hypre_type - One of euclid, pilut, parasails, boomeramg, ams, ads
++   -pc_hypre_type - One of `euclid`, `pilut`, `parasails`, `boomeramg`, `ams`, or `ads`
 .   -pc_hypre_boomeramg_nodal_coarsen <n> - where n is from 1 to 6 (see `HYPRE_BOOMERAMGSetNodal()`)
 .   -pc_hypre_boomeramg_vec_interp_variant <v> - where v is from 1 to 3 (see `HYPRE_BoomerAMGSetInterpVecVariant()`)
--   Many others, run with -pc_type hypre -pc_hypre_type XXX -help to see options for the XXX preconditioner
+-   Many others, run with `-pc_type hypre` `-pc_hypre_type XXX` `-help` to see options for the XXX preconditioner
 
    Level: intermediate
 
    Notes:
-    Apart from pc_hypre_type (for which there is `PCHYPRESetType()`),
+    Apart from `-pc_hypre_type` (for which there is `PCHYPRESetType()`),
           the many hypre options can ONLY be set via the options database (e.g. the command line
           or with `PetscOptionsSetValue()`, there are no functions to set them)
 
-          The options -pc_hypre_boomeramg_max_iter and -pc_hypre_boomeramg_tol refer to the number of iterations
-          (V-cycles) and tolerance that boomeramg does EACH time it is called. So for example, if
-          -pc_hypre_boomeramg_max_iter is set to 2 then 2-V-cycles are being used to define the preconditioner
-          (-pc_hypre_boomeramg_tol should be set to 0.0 - the default - to strictly use a fixed number of
-          iterations per hypre call). -ksp_max_it and -ksp_rtol STILL determine the total number of iterations
-          and tolerance for the Krylov solver. For example, if -pc_hypre_boomeramg_max_iter is 2 and -ksp_max_it is 10
-          then AT MOST twenty V-cycles of boomeramg will be called.
+          The options `-pc_hypre_boomeramg_max_iter` and `-pc_hypre_boomeramg_tol` refer to the number of iterations
+          (V-cycles) and tolerance that boomerAMG does EACH time it is called. So for example, if
+          `-pc_hypre_boomeramg_max_iter` is set to 2 then 2-V-cycles are being used to define the preconditioner
+          (`-pc_hypre_boomeramg_tol` should be set to 0.0 - the default - to strictly use a fixed number of
+          iterations per hypre call). `-ksp_max_it` and `-ksp_rtol` STILL determine the total number of iterations
+          and tolerance for the Krylov solver. For example, if `-pc_hypre_boomeramg_max_iter` is 2 and `-ksp_max_it` is 10
+          then AT MOST twenty V-cycles of boomeramg will be used.
 
-           Note that the option -pc_hypre_boomeramg_relax_type_all defaults to symmetric relaxation
+           Note that the option `-pc_hypre_boomeramg_relax_type_all` defaults to symmetric relaxation
            (symmetric-SOR/Jacobi), which is required for Krylov solvers like CG that expect symmetry.
-           Otherwise, you may want to use -pc_hypre_boomeramg_relax_type_all SOR/Jacobi.
-          If you wish to use BoomerAMG WITHOUT a Krylov method use -ksp_type richardson NOT -ksp_type preonly
-          and use -ksp_max_it to control the number of V-cycles.
-          (see the PETSc FAQ.html at the PETSc website under the Documentation tab).
+           Otherwise, you may want to use `-pc_hypre_boomeramg_relax_type_all SOR/Jacobi`.
 
           `MatSetNearNullSpace()` - if you provide a near null space to your matrix it is ignored by hypre UNLESS you also use
-          the following two options: ``-pc_hypre_boomeramg_nodal_coarsen <n> -pc_hypre_boomeramg_vec_interp_variant <v>``
+          the following two options: `-pc_hypre_boomeramg_nodal_coarsen <n> -pc_hypre_boomeramg_vec_interp_variant <v>`
 
           See `PCPFMG`, `PCSMG`, and `PCSYSPFMG` for access to hypre's other (nonalgebraic) multigrid solvers
 
-          For `PCHYPRE` type of ams or ads auxiliary data must be provided to the preconditioner with `PCHYPRESetDiscreteGradient()`,
+          For `PCHYPRE` type of `ams` or `ads` auxiliary data must be provided to the preconditioner with `PCHYPRESetDiscreteGradient()`,
           `PCHYPRESetDiscreteCurl()`, `PCHYPRESetInterpolations()`, `PCHYPRESetAlphaPoissonMatrix()`, `PCHYPRESetBetaPoissonMatrix()`, `PCHYPRESetEdgeConstantVectors()`,
           `PCHYPREAMSSetInteriorNodes()`
+
+  Sometimes people want to try algebraic multigrid as a "standalone" solver, that is not accelerating it with a Krylov method. Though we generally do not recommend this
+  since it is usually slower, one should use a `KSPType` of `KSPRICHARDSON`
+  (or equivalently `-ksp_type richardson`) to achieve this. Using `KSPPREONLY` will not work since it only applies a single cycle of multigrid.
 
    PETSc provides its own geometric and algebraic multigrid solvers `PCMG` and `PCGAMG`, also see `PCHMG` which is useful for certain multicomponent problems
 
