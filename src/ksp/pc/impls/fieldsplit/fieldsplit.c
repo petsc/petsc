@@ -795,6 +795,7 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
     PetscInt    rstart, rend;
     char        lscname[256];
     PetscObject LSC_L;
+    PetscBool   set, flg;
 
     PetscCheck(nsplit == 2, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_INCOMP, "To use Schur complement preconditioner you must have exactly 2 fields");
 
@@ -806,6 +807,7 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
 
     /* When extracting off-diagonal submatrices, we take complements from this range */
     PetscCall(MatGetOwnershipRangeColumn(pc->mat, &rstart, &rend));
+    PetscCall(PetscObjectTypeCompareAny(jac->offdiag_use_amat ? (PetscObject)pc->mat : (PetscObject)pc->pmat, &flg, MATSEQSBAIJ, MATMPISBAIJ, ""));
 
     if (jac->schur) {
       KSP      kspA = jac->head->ksp, kspInner = NULL, kspUpper = jac->kspupper;
@@ -826,14 +828,20 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
         PetscCall(MatCreateSubMatrix(pc->pmat, ilink->is, ccis, scall, &jac->B));
       }
       PetscCall(ISDestroy(&ccis));
-      ilink = ilink->next;
-      PetscCall(ISComplement(ilink->is_col, rstart, rend, &ccis));
-      if (jac->offdiag_use_amat) {
-        PetscCall(MatCreateSubMatrix(pc->mat, ilink->is, ccis, scall, &jac->C));
+      if (!flg) {
+        ilink = ilink->next;
+        PetscCall(ISComplement(ilink->is_col, rstart, rend, &ccis));
+        if (jac->offdiag_use_amat) {
+          PetscCall(MatCreateSubMatrix(pc->mat, ilink->is, ccis, scall, &jac->C));
+        } else {
+          PetscCall(MatCreateSubMatrix(pc->pmat, ilink->is, ccis, scall, &jac->C));
+        }
+        PetscCall(ISDestroy(&ccis));
       } else {
-        PetscCall(MatCreateSubMatrix(pc->pmat, ilink->is, ccis, scall, &jac->C));
+        PetscCall(MatIsHermitianKnown(jac->offdiag_use_amat ? pc->mat : pc->pmat, &set, &flg));
+        if (set && flg) PetscCall(MatCreateHermitianTranspose(jac->B, &jac->C));
+        else PetscCall(MatCreateTranspose(jac->B, &jac->C));
       }
-      PetscCall(ISDestroy(&ccis));
       PetscCall(MatSchurComplementUpdateSubMatrices(jac->schur, jac->mat[0], jac->pmat[0], jac->B, jac->C, jac->mat[1]));
       if (jac->schurpre == PC_FIELDSPLIT_SCHUR_PRE_SELFP) {
         PetscCall(MatDestroy(&jac->schurp));
@@ -847,7 +855,6 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
       char         schurprefix[256], schurmatprefix[256];
       char         schurtestoption[256];
       MatNullSpace sp;
-      PetscBool    flg;
       KSP          kspt;
 
       /* extract the A01 and A10 matrices */
@@ -860,14 +867,19 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
       }
       PetscCall(ISDestroy(&ccis));
       ilink = ilink->next;
-      PetscCall(ISComplement(ilink->is_col, rstart, rend, &ccis));
-      if (jac->offdiag_use_amat) {
-        PetscCall(MatCreateSubMatrix(pc->mat, ilink->is, ccis, MAT_INITIAL_MATRIX, &jac->C));
+      if (!flg) {
+        PetscCall(ISComplement(ilink->is_col, rstart, rend, &ccis));
+        if (jac->offdiag_use_amat) {
+          PetscCall(MatCreateSubMatrix(pc->mat, ilink->is, ccis, MAT_INITIAL_MATRIX, &jac->C));
+        } else {
+          PetscCall(MatCreateSubMatrix(pc->pmat, ilink->is, ccis, MAT_INITIAL_MATRIX, &jac->C));
+        }
+        PetscCall(ISDestroy(&ccis));
       } else {
-        PetscCall(MatCreateSubMatrix(pc->pmat, ilink->is, ccis, MAT_INITIAL_MATRIX, &jac->C));
+        PetscCall(MatIsHermitianKnown(jac->offdiag_use_amat ? pc->mat : pc->pmat, &set, &flg));
+        if (set && flg) PetscCall(MatCreateHermitianTranspose(jac->B, &jac->C));
+        else PetscCall(MatCreateTranspose(jac->B, &jac->C));
       }
-      PetscCall(ISDestroy(&ccis));
-
       /* Use mat[0] (diagonal block of Amat) preconditioned by pmat[0] to define Schur complement */
       PetscCall(MatCreate(((PetscObject)jac->mat[0])->comm, &jac->schur));
       PetscCall(MatSetType(jac->schur, MATSCHURCOMPLEMENT));
