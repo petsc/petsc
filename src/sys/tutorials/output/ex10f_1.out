@@ -1,8 +1,6 @@
 #PETSc Option Table entries:
--options_left no # (source: command line)
 -options_view # (source: command line)
 #End of PETSc Option Table entries
 #PETSc Option Table entries:
--options_left no # (source: command line)
 -options_view # (source: command line)
 #End of PETSc Option Table entries

@@ -32,6 +32,6 @@ int main(int argc, char **argv)
    test:
      requires: !defined(PETSCTEST_VALGRIND)
      args: -petsc_ci_portable_error_output -error_output_stdout
-     filter: grep -E -v "(options_left|memory block|leaked context|not freed before MPI_Finalize|Could be the program crashed)"
+     filter: grep -E -v "(memory block|leaked context|not freed before MPI_Finalize|Could be the program crashed)"
 
 TEST*/

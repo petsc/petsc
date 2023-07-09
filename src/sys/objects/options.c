@@ -908,26 +908,7 @@ PetscErrorCode PetscOptionsInsert(PetscOptions options, int *argc, char ***args,
 
 /* These options are not printed with PetscOptionsView() or PetscOptionsMonitor() when PetscCIEnabled is on */
 /* TODO: get the list from the test harness, do not have it hardwired here. Maybe from gmakegentest.py */
-static const char *PetscCIOptions[] = {
-  "malloc_debug",
-  "malloc_dump",
-  "malloc_test",
-  "malloc",
-  "nox",
-  "nox_warning",
-  "display",
-  "saws_port_auto_select",
-  "saws_port_auto_select_silent",
-  "vecscatter_mpi1",
-  "check_pointer_intensity",
-  "cuda_initialize",
-  "error_output_stdout",
-  "use_gpu_aware_mpi",
-  "checkfunctionlist",
-  "fp_trap",
-  "petsc_ci",
-  "petsc_ci_portable_error_output",
-};
+static const char *PetscCIOptions[] = {"malloc_debug", "malloc_dump", "malloc_test", "malloc", "nox", "nox_warning", "display", "saws_port_auto_select", "saws_port_auto_select_silent", "vecscatter_mpi1", "check_pointer_intensity", "cuda_initialize", "error_output_stdout", "use_gpu_aware_mpi", "checkfunctionlist", "fp_trap", "petsc_ci", "petsc_ci_portable_error_output", "options_left"};
 
 static PetscBool PetscCIOption(const char *name)
 {
