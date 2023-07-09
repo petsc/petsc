@@ -87,6 +87,13 @@ allfortranstubs:
 	-@${PYTHON} lib/petsc/bin/maint/generatefortranstubs.py -merge  ${VERBOSE}
 	-@${RM} -rf ${PETSC_ARCH}/include/petsc/finclude/ftn-auto/*-tmpdir
 
+#copy of allfortranstubs with PETSC_ARCH=''
+allfortranstubstarball:
+	-@${RM} -rf include/petsc/finclude/ftn-auto/*-tmpdir
+	@PETSC_ARCH='' ${PYTHON} lib/petsc/bin/maint/generatefortranstubs.py ${BFORT}  ${VERBOSE}
+	-@PETSC_ARCH='' ${PYTHON} lib/petsc/bin/maint/generatefortranstubs.py -merge  ${VERBOSE}
+	-@${RM} -rf include/petsc/finclude/ftn-auto/*-tmpdir
+
 deleteshared:
 	@for LIBNAME in ${SHLIBS}; \
 	do \
@@ -103,7 +110,10 @@ deleteshared:
 	fi
 
 deletefortranstubs:
-	-@find . -type d -name ftn-auto | xargs rm -rf
+	-@find src -type d -name ftn-auto* | xargs rm -rf
+	-@if [ -x ${PETSC_ARCH} ]; then \
+          find ${PETSC_ARCH}/src -type d -name ftn-auto* | xargs rm -rf ;\
+        fi
 
 reconfigure: allclean
 	@unset MAKEFLAGS && ${PYTHON} ${PETSC_ARCH}/lib/petsc/conf/reconfigure-${PETSC_ARCH}.py

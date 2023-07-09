@@ -149,9 +149,9 @@ and run configure again\n')
           sys.path.insert(0, os.path.abspath(os.path.join('lib','petsc','bin','maint')))
           import generatefortranstubs
           del sys.path[0]
-          generatefortranstubs.main(self.petscdir.dir, self.bfort, self.petscdir.dir,0)
+          generatefortranstubs.main(self.petscdir.dir, self.arch,self.bfort, os.path.join(self.petscdir.dir,'src'),0)
           if self.fortran.fortranIsF90:
-            generatefortranstubs.processf90interfaces(self.petscdir.dir,0)
+            generatefortranstubs.processf90interfaces(self.petscdir.dir,self.arch,0)
           self.framework.actions.addArgument('PETSc', 'File creation', 'Generated Fortran stubs')
         except RuntimeError as e:
           raise RuntimeError('*******Error generating Fortran stubs: '+str(e)+'*******\n')
