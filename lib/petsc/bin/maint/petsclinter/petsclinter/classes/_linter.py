@@ -64,19 +64,11 @@ class Scope:
   - scope B, C, D < scope A
   - scope B != scope C != scope D
   """
-  __slots__ = 'gen', 'children'
+  __slots__ = ('children',)
 
-  def __init__(self, super_scope=None):
-    if super_scope:
-      assert isinstance(super_scope, Scope)
-      self.gen    = super_scope.gen + 1
-    else:
-      self.gen    = 0
+  def __init__(self):
     self.children = []
     return
-
-  def __str__(self):
-    return f'gen {self.gen} id {id(self)}'
 
   def __lt__(self, other):
     assert isinstance(other, Scope)
@@ -95,10 +87,9 @@ class Scope:
     return (self > other) or (self == other)
 
   def __eq__(self, other):
-    if other is not None:
-      assert isinstance(other, Scope)
-      return id(self) == id(other)
-    return False
+    if not isinstance(other, Scope):
+      return NotImplemented
+    return id(self) == id(other)
 
   def __ne__(self, other):
     return not self == other
@@ -107,7 +98,7 @@ class Scope:
     """
     spawn sub-scope
     """
-    child = Scope(self)
+    child = Scope()
     self.children.append(child)
     return child
 
@@ -122,14 +113,15 @@ class Scope:
         return True
     return False
 
-  def is_child_of(self,other):
+  def is_child_of(self, other):
     """
     self is child of other, or other is parent of self
     """
     return other.is_parent_of(self)
 
 class Addline:
-  __slots__ = ('offset',)
+  __slots__    = ('offset',)
+  diff_line_re = re.compile(r'^@@ -([0-9,]+) \+([0-9,]+) @@')
 
   def __init__(self, offset):
     self.offset = offset
@@ -169,9 +161,8 @@ class Linter:
   def __str__(self):
     flag_str   = f'Compiler Flags: {self.flags}'
     clang_str  = f'Clang Options:  {self.clang_opts}'
-    lock_str   = f'Lock:           {self.lock is not None}'
     show_str   = f'Verbose:        {self.verbose}'
-    print_list = [flag_str, clang_str, lock_str, show_str]
+    print_list = [flag_str, clang_str, show_str]
     error_str  = self.get_all_errors()
     if error_str:
       print_list.append(error_str)
@@ -231,30 +222,33 @@ class Linter:
     function definitions in the AST, making it impossible to map a macro invocation to
     its 'parent' function.
     """
+    UNEXPOSED_DECL = clx.CursorKind.UNEXPOSED_DECL
+    SWITCH_STMT    = clx.CursorKind.SWITCH_STMT
+    CASE_STMT      = clx.CursorKind.CASE_STMT
+    COMPOUND_STMT  = clx.CursorKind.COMPOUND_STMT
+    CALL_EXPR      = clx.CursorKind.CALL_EXPR
+
     def walk_scope_switch(parent, scope):
       """
       Special treatment for switch-case since the AST setup for it is mind-boggingly stupid.
       The first node after a case statement is listed as the cases *child* whereas every other
       node (including the break!!) is the cases *sibling*
       """
-      CASE_KIND     = clx.CursorKind.CASE_STMT
-      COMPOUND_KIND = clx.CursorKind.COMPOUND_STMT
-      CALL_KIND     = clx.CursorKind.CALL_EXPR
       # in case we get here from a scope decrease within a case
       case_scope = scope
       for child in parent.get_children():
         child_kind = child.kind
-        if child_kind == CASE_KIND:
+        if child_kind == CASE_STMT:
           # create a new scope every time we encounter a case, this is now for all intents
           # and purposes the 'scope' going forward. We don't overwrite the original scope
           # since we still need each case scope to be the previous scopes sibling
           case_scope = scope.sub()
           yield from walk_scope(child, scope=case_scope)
-        elif child_kind == CALL_KIND:
+        elif child_kind == CALL_EXPR:
           if child.spelling in function_names:
             yield (child, possible_parent, case_scope)
             # Cursors that indicate change of logical scope
-        elif child_kind == COMPOUND_KIND:
+        elif child_kind == COMPOUND_STMT:
           yield from walk_scope_switch(child, case_scope.sub())
 
     def walk_scope(parent, scope=None):
@@ -265,21 +259,18 @@ class Linter:
       if scope is None:
         scope = Scope()
 
-      SWITCH_KIND   = clx.CursorKind.SWITCH_STMT
-      COMPOUND_KIND = clx.CursorKind.COMPOUND_STMT
-      CALL_KIND     = clx.CursorKind.CALL_EXPR
       for child in parent.get_children():
         child_kind = child.kind
-        if child_kind == SWITCH_KIND:
+        if child_kind == SWITCH_STMT:
           # switch-case statements require special treatment, we skip to the compound
           # statement
-          switch_children = [c for c in child.get_children() if c.kind == COMPOUND_KIND]
+          switch_children = [c for c in child.get_children() if c.kind == COMPOUND_STMT]
           assert len(switch_children) == 1, "Switch statement has multiple '{' operators?"
           yield from walk_scope_switch(switch_children[0], scope.sub())
-        elif child_kind == CALL_KIND:
+        elif child_kind == CALL_EXPR:
           if child.spelling in function_names:
             yield (child, possible_parent, scope)
-        elif child_kind == COMPOUND_KIND:
+        elif child_kind == COMPOUND_STMT:
           # scope has decreased
           yield from walk_scope(child, scope=scope.sub())
         else:
@@ -289,7 +280,7 @@ class Linter:
     # normal lintable cursor kinds, the type of cursors we directly want to deal with
     lintable_kinds          = pl.util.clx_func_call_cursor_kinds | {clx.CursorKind.ENUM_DECL}
     # "extended" lintable kinds.
-    extended_lintable_kinds = lintable_kinds | {clx.CursorKind.UNEXPOSED_DECL}
+    extended_lintable_kinds = lintable_kinds | {UNEXPOSED_DECL}
 
     cursor   = tu.cursor
     filename = tu.spelling
@@ -308,7 +299,7 @@ class Linter:
       # trip up the "lintable kinds" detection since the top-level cursor points to a
       # macro (i.e. unexposed decl). In this case we need to check the cursors 1 level
       # down for any lintable kinds.
-      if parent_kind == clx.CursorKind.UNEXPOSED_DECL:
+      if parent_kind == UNEXPOSED_DECL:
         for sub_cursor in possible_parent.get_children():
           if sub_cursor.is_definition() and sub_cursor.kind in lintable_kinds:
             possible_parent = sub_cursor
@@ -338,7 +329,7 @@ class Linter:
     self.warnings = []
     # This can actually just be a straight list, since each linter object only ever
     # handles a single file, but use dict nonetheless
-    self.patches  = {}
+    self.patches  = collections.defaultdict(list)
     return
 
   def parse(self, filename):
@@ -407,55 +398,21 @@ class Linter:
     errors    = self.errors[filename]
     cursor_id = cursor.hash
     if cursor_id not in errors:
-      errors[cursor_id] = WeakList([[], [], []])
+      errors[cursor_id] = WeakList()
 
     patch            = diagnostic.patch
     have_patch       = patch is not None
     cursor_id_errors = errors[cursor_id]
-    cursor_id_errors[0].append(
-      f'{util.color.bright_red()}{diagnostic.location}: error:{util.color.reset()} {diagnostic.format_message()}'
-    )
-    cursor_id_errors[1].append(have_patch)
-    cursor_id_errors[2].append(patch.id if have_patch else -1)
+    cursor_id_errors.append((
+      f'{util.color.bright_red()}{diagnostic.location}: error:{util.color.reset()} {diagnostic.format_message()}',
+      have_patch,
+      patch.id if have_patch else -1
+    ))
 
-    if not have_patch:
-      return # bail early
-
-    patch.attach(weakref.ref(cursor_id_errors))
-    patches = self.patches
-
-    if filename not in patches:
-      patches[filename] = []
-    # check if this is a compound error, i.e. an additional error on the same line
-    # in which case we need to combine with previous patch
-    patches[filename].append(patch)
+    if patch:
+      patch.attach(weakref.ref(cursor_id_errors))
+      self.patches[filename].append(patch)
     return
-    # OLD IMPLEMENTATION
-    # patch_list = patches[filename]
-
-    # def merge_patches(patch):
-    #   patch_extent       = patch.extent
-    #   patch_extent_start = patch_extent.start.line
-    #   for i, previous_patch in enumerate(patch_list):
-    #     prev_patch_extent = previous_patch.extent
-    #     if patch_extent_start == prev_patch_extent.start.line or patch_extent.overlaps(
-    #         prev_patch_extent
-    #     ):
-    #       # this should now be the previous patch on the same line
-    #       merged_patch = previous_patch.merge(patch)
-    #       assert patch_list[i] == previous_patch
-    #       del patch_list[i]
-    #       return True, merged_patch
-    #   return False, patch
-
-
-    # while 1:
-    #   merged, patch = merge_patches(patch)
-    #   if not merged:
-    #     break
-
-    # patch_list.append(patch) # didn't find any overlap, just append
-    # return
 
   def view_last_error(self):
     """
@@ -517,21 +474,17 @@ class Linter:
         ))
       return
 
-    def maybe_add_to_local_list(local_list, thing, mask):
-      string = '\n\n'.join(itertools.compress(thing, mask))
-      if string:
-        local_list.append(string)
-      return
-
-
     all_unresolved, all_resolved = [], []
     for path, errors in self.errors.items():
-      unresolved, resolved = [], []
-      for errs, mask, _ in errors.values():
-        maybe_add_to_local_list(resolved, errs, mask)
-        maybe_add_to_local_list(unresolved, errs, [not m for m in mask])
-      maybe_add_to_global_list(all_unresolved, unresolved, path)
-      maybe_add_to_global_list(all_resolved, resolved, path)
+      extracted = (
+        [], # unresolved
+        []  # resolved
+      )
+      for err_list in errors.values():
+        for err, have_patch, _ in err_list:
+          extracted[have_patch].append(err)
+      maybe_add_to_global_list(all_unresolved, extracted[0], path)
+      maybe_add_to_global_list(all_resolved, extracted[1], path)
     return all_unresolved, all_resolved
 
   def get_all_warnings(self, join_to_string=False):
@@ -550,12 +503,10 @@ class Linter:
     """
     Given a set of patches, collapse all patches and return the minimal set of diffs required
     """
-    diff_line_re = re.compile(r'^@@ -([0-9,]+) \+([0-9,]+) @@')
-
     def combine(filename, patches):
       fstr  = str(filename)
       diffs = []
-      for patch in sorted(patches, key=lambda x: x.extent.start.line):
+      for patch in patches:
         rn  = datetime.datetime.now().ctime()
         tmp = list(
           difflib.unified_diff(
@@ -563,7 +514,7 @@ class Linter:
             fromfile=fstr, tofile=fstr, fromfiledate=rn, tofiledate=rn, n=patch.ctxlines
           )
         )
-        tmp[2] = diff_line_re.sub(Addline(patch.extent.start.line), tmp[2])
+        tmp[2] = Addline.diff_line_re.sub(Addline(patch.extent.start.line), tmp[2])
         # only the first diff should get the file heading
         diffs.append(tmp[2:] if diffs else tmp)
       diffs = ''.join(itertools.chain.from_iterable(diffs))
@@ -584,8 +535,7 @@ class Linter:
           return True, merged_patch
       return False, patch
 
-
-    for _, patch_list in self.patches.items():
+    for patch_list in self.patches.values():
       # merge overlapping patches together before we collapse the actual patches
       # themselves
       new_list = []
