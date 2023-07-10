@@ -106,9 +106,11 @@ typedef struct _p_PetscObject {
   PetscInt          real_idmax, realstar_idmax;
   PetscObjectState *realcomposedstate, *realstarcomposedstate;
   PetscReal        *realcomposeddata, **realstarcomposeddata;
+#if PetscDefined(USE_COMPLEX)
   PetscInt          scalar_idmax, scalarstar_idmax;
   PetscObjectState *scalarcomposedstate, *scalarstarcomposedstate;
   PetscScalar      *scalarcomposeddata, **scalarstarcomposeddata;
+#endif
   void (**fortran_func_pointers)(void);             /* used by Fortran interface functions to stash user provided Fortran functions */
   PetscFortranCallbackId num_fortran_func_pointers; /* number of Fortran function pointers allocated */
   PetscFortranCallback  *fortrancallback[PETSC_FORTRAN_CALLBACK_MAXTYPE];

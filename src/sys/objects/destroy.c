@@ -5,27 +5,27 @@
 #include <petsc/private/petscimpl.h> /*I   "petscsys.h"    I*/
 #include <petscviewer.h>
 
-PetscErrorCode PetscComposedQuantitiesDestroy(PetscObject obj)
+static PetscErrorCode DestroyComposedData(void ***composed_star, PetscObjectState **state_star, PetscInt *count_star, void **composed, PetscObjectState **state)
 {
-  PetscInt i;
+  void **tmp_star = *composed_star;
 
   PetscFunctionBegin;
+  for (PetscInt i = 0, imax = *count_star; i < imax; ++i) PetscCall(PetscFree(tmp_star[i]));
+  PetscCall(PetscFree2(*composed_star, *state_star));
+  PetscCall(PetscFree2(*composed, *state));
+  *count_star = 0;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+PetscErrorCode PetscComposedQuantitiesDestroy(PetscObject obj)
+{
+  PetscFunctionBegin;
   PetscValidHeader(obj, 1);
-  if (obj->intstar_idmax > 0) {
-    for (i = 0; i < obj->intstar_idmax; i++) PetscCall(PetscFree(obj->intstarcomposeddata[i]));
-    PetscCall(PetscFree2(obj->intstarcomposeddata, obj->intstarcomposedstate));
-  }
-  if (obj->realstar_idmax > 0) {
-    for (i = 0; i < obj->realstar_idmax; i++) PetscCall(PetscFree(obj->realstarcomposeddata[i]));
-    PetscCall(PetscFree2(obj->realstarcomposeddata, obj->realstarcomposedstate));
-  }
-  if (obj->scalarstar_idmax > 0) {
-    for (i = 0; i < obj->scalarstar_idmax; i++) PetscCall(PetscFree(obj->scalarstarcomposeddata[i]));
-    PetscCall(PetscFree2(obj->scalarstarcomposeddata, obj->scalarstarcomposedstate));
-  }
-  PetscCall(PetscFree2(obj->intcomposeddata, obj->intcomposedstate));
-  PetscCall(PetscFree2(obj->realcomposeddata, obj->realcomposedstate));
-  PetscCall(PetscFree2(obj->scalarcomposeddata, obj->scalarcomposedstate));
+  PetscCall(DestroyComposedData((void ***)&obj->intstarcomposeddata, &obj->intstarcomposedstate, &obj->intstar_idmax, (void **)&obj->intcomposeddata, &obj->intcomposedstate));
+  PetscCall(DestroyComposedData((void ***)&obj->realstarcomposeddata, &obj->realstarcomposedstate, &obj->realstar_idmax, (void **)&obj->realcomposeddata, &obj->realcomposedstate));
+#if PetscDefined(USE_COMPLEX)
+  PetscCall(DestroyComposedData((void ***)&obj->scalarstarcomposeddata, &obj->scalarstarcomposedstate, &obj->scalarstar_idmax, (void **)&obj->scalarcomposeddata, &obj->scalarcomposedstate));
+#endif
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
