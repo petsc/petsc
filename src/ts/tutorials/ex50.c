@@ -552,11 +552,11 @@ PetscErrorCode RHSMatrixAdvectiongllDM(TS ts, PetscReal t, Vec X, Mat A, Mat BB,
     test:
       suffix: 3
       requires: !single
-      args: -ts_view  -ts_type beuler -gll_mf -pc_type none -ts_max_steps 5 -ts_monitor_error
+      args: -ts_view -ts_type beuler -gll_mf -pc_type none -ts_max_steps 5 -ts_monitor_error
 
     test:
       suffix: 4
       requires: !single
-      args: -ts_view  -ts_type beuler  -pc_type none -ts_max_steps 5 -ts_monitor_error
+      args: -ts_view -ts_type beuler -pc_type none -ts_max_steps 5 -ts_monitor_error
 
 TEST*/
