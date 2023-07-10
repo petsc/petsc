@@ -12,6 +12,7 @@ Information for PETSc developers and those interested in contributing.
    communication
    contributing/index
    mrmanagement
+   development
    style
    buildsystem
    testing

@@ -1,4 +1,3 @@
-
 /*
   This file defines a "solve the problem redundantly on each subgroup of processor" preconditioner.
 */
@@ -88,7 +87,7 @@ static PetscErrorCode PCSetUp_Redundant(PC pc)
     subcomm = PetscSubcommChild(red->psubcomm);
 
     if (red->useparallelmat) {
-      /* grab the parallel matrix and put it into processors of a subcomminicator */
+      /* grab the parallel matrix and put it into the processes of a subcommunicator */
       PetscCall(MatCreateRedundantMatrix(pc->pmat, red->psubcomm->n, subcomm, MAT_INITIAL_MATRIX, &red->pmats));
 
       PetscCallMPI(MPI_Comm_size(subcomm, &size));
@@ -159,7 +158,7 @@ static PetscErrorCode PCSetUp_Redundant(PC pc)
   } else { /* pc->setupcalled */
     if (red->useparallelmat) {
       MatReuse reuse;
-      /* grab the parallel matrix and put it into processors of a subcomminicator */
+      /* grab the parallel matrix and put it into the processes of a subcommunicator */
       /*--------------------------------------------------------------------------*/
       if (pc->flag == DIFFERENT_NONZERO_PATTERN) {
         /* destroy old matrices */
