@@ -92,6 +92,35 @@ class BaseTestTAO(object):
         tao.solve()
         self.assertAlmostEqual(abs(x[0]**2 + x[1] - 2.0), 0.0, places=4)
 
+    def testBNCG(self):
+        if self.tao.getComm().Get_size() > 1:
+            return
+        tao = self.tao
+
+        x = PETSc.Vec().create(tao.getComm())
+        x.setType('standard')
+        x.setSizes(2)
+        xl = PETSc.Vec().create(tao.getComm())
+        xl.setType('standard')
+        xl.setSizes(2)
+        xl.set(0.0)
+        xu = PETSc.Vec().create(tao.getComm())
+        xu.setType('standard')
+        xu.setSizes(2)
+        xu.set(2.0)
+        tao.setVariableBounds((xl,xu))
+        tao.setObjective(Objective())
+        tao.setGradient(Gradient(),None)
+        tao.setSolution(x)
+        tao.setType(PETSc.TAO.Type.BNCG)
+        tao.setTolerances(gatol=1.e-4)
+        ls = tao.getLineSearch()
+        ls.setType(PETSc.TAOLineSearch.Type.UNIT)
+        tao.setFromOptions()
+        tao.solve()
+        self.assertAlmostEqual(x[0], 2.0, places=4)
+        self.assertAlmostEqual(x[1], 2.0, places=4)
+
 # --------------------------------------------------------------------
 
 class TestTAOSelf(BaseTestTAO, unittest.TestCase):

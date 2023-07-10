@@ -19,6 +19,8 @@ PetscErrorCode TaoBRGNSetL1SmoothEpsilon(PETSC_UNUSED Tao tao,PETSC_UNUSED Petsc
 PetscErrorCode TaoBRGNSetDictionaryMatrix(PETSC_UNUSED Tao tao,PETSC_UNUSED Mat D) {PetscTaoError;}
 PetscErrorCode TaoBRGNGetDampingVector(PETSC_UNUSED Tao tao,PETSC_UNUSED Vec *d) {PetscTaoError;}
 
+PetscErrorCode TaoBNCGSetType(PETSC_UNUSED Tao tao, PETSC_UNUSED TaoBNCGType type) {PetscTaoError;}
+PetscErrorCode TaoBNCGGetType(PETSC_UNUSED Tao tao, PETSC_UNUSED TaoBNCGType *type) {PetscTaoError;}
 #undef PetscTaoError
 
 #endif/*PETSC_USE_COMPLEX*/

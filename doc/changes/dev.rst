@@ -93,7 +93,8 @@ Changes: Development
 
 .. rubric:: TAO:
 
-- Add ``TaoADMMGetRegularizerCoefficient``
+- Add ``TaoADMMGetRegularizerCoefficient()``
+- Add ``TAOBNCG``, ``TaoBNCGGetType()`` and ``TaoBNCGSetType()``
 
 .. rubric:: DM/DA:
 

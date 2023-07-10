@@ -69,6 +69,21 @@ class TAOConvergedReason:
     DIVERGED_TR_REDUCTION = TAO_DIVERGED_TR_REDUCTION #
     DIVERGED_USER         = TAO_DIVERGED_USER         # user defined
 
+class TAOBNCGType:
+    """TAO Bound Constrained Conjugate Gradient (BNCG) Update Type."""
+    GD         = TAO_BNCG_GD
+    PCGD       = TAO_BNCG_PCGD
+    HS         = TAO_BNCG_HS
+    FR         = TAO_BNCG_FR
+    PRP        = TAO_BNCG_PRP
+    PRP_PLUS   = TAO_BNCG_PRP_PLUS
+    DY         = TAO_BNCG_DY
+    HZ         = TAO_BNCG_HZ
+    DK         = TAO_BNCG_DK
+    KD         = TAO_BNCG_KD
+    SSML_BFGS  = TAO_BNCG_SSML_BFGS
+    SSML_DFP   = TAO_BNCG_SSML_DFP
+    SSML_BRDN  = TAO_BNCG_SSML_BRDN
 # --------------------------------------------------------------------
 
 cdef class TAO(Object):
@@ -84,6 +99,7 @@ cdef class TAO(Object):
 
     Type = TAOType
     ConvergedReason = TAOConvergedReason
+    BNCGType = TAOBNCGType
     # FIXME backward compatibility
     Reason = TAOConvergedReason
 
@@ -610,8 +626,6 @@ cdef class TAO(Object):
         self.set_attr("__jacobian__", context)
         CHKERR( TaoSetJacobianRoutine(self.tao, Jmat, Pmat, TAO_Jacobian, <void*>context) )
 
-    #
-
     def setStateDesignIS(self, IS state=None, IS design=None) -> None:
         """Set the index sets indicating state and design variables.
 
@@ -671,7 +685,6 @@ cdef class TAO(Object):
         CHKERR( TaoSetJacobianDesignRoutine(self.tao, Jmat,
                                             TAO_JacobianDesign, <void*>context) )
 
-
     def setEqualityConstraints(self, equality_constraints, Vec c,
                                args: tuple[Any, ...] | None = None, kargs: dict[str, Any] | None = None) -> None:
         """Set equality constraints callback.
@@ -689,7 +702,6 @@ cdef class TAO(Object):
         self.set_attr("__equality_constraints__", context)
         CHKERR( TaoSetEqualityConstraintsRoutine(self.tao, c.vec,
                                                  TAO_EqualityConstraints, <void*>context) )
-
 
     def setJacobianEquality(self, jacobian_equality, Mat J=None, Mat P=None,
                             args: tuple[Any, ...] | None = None, kargs: dict[str, Any] | None = None) -> None:
@@ -937,8 +949,6 @@ cdef class TAO(Object):
         CHKERR( TaoComputeJacobian(self.tao, x.vec, jmat, pmat) )
 
     # --------------
-
-    #
 
     def setTolerances(self, gatol: float = None, grtol: float = None, gttol: float = None) -> None:
         """Set the tolerance parameters used in the solver convergence tests.
@@ -1380,6 +1390,33 @@ cdef class TAO(Object):
         PetscINCREF(xl.obj); PetscINCREF(xu.obj)
         return (xl, xu)
 
+    def setBNCGType(self, cg_type: BNCGType) -> None:
+        """Set the type of the BNCG solver.
+
+        Collective.
+
+        See Also
+        --------
+        getBNCGType, petsc.TaoBNCGSetType
+
+        """
+        cdef PetscTAOBNCGType ctype = cg_type
+        CHKERR( TaoBNCGSetType(self.tao, ctype) )
+
+    def getBNCGType(self) -> BNCGType:
+        """Return the type of the BNCG solver.
+
+        Not collective.
+
+        See Also
+        --------
+        setBNCGType, petsc.TaoBNCGGetType
+
+        """
+        cdef PetscTAOBNCGType cg_type = TAO_BNCG_SSML_BFGS
+        CHKERR( TaoBNCGGetType(self.tao, &cg_type) )
+        return cg_type
+
     def setIterationNumber(self, its: int) -> None:
         """Set the current iteration number.
 
@@ -1694,6 +1731,21 @@ cdef class TAO(Object):
         CHKERR( TaoPythonGetType(self.tao, &cval) )
         return bytes2str(cval)
 
+    def getLineSearch(self) -> TAOLineSearch:
+        """Return the TAO Line Search object.
+
+        Not collective.
+
+        See Also
+        -------
+        petsc.TaoGetLineSearch
+
+        """
+        cdef TAOLineSearch ls = TAOLineSearch()
+        CHKERR( TaoGetLineSearch(self.tao, &ls.taols) )
+        PetscINCREF(ls.obj)
+        return ls
+
     # --- backward compatibility ---
 
     setInitial = setSolution
@@ -1816,5 +1868,296 @@ cdef class TAO(Object):
 
 del TAOType
 del TAOConvergedReason
+del TAOBNCGType
 
 # --------------------------------------------------------------------
+
+class TAOLineSearchType:
+    """TAO Line Search Types."""
+    UNIT        = S_(TAOLINESEARCHUNIT)
+    ARMIJO      = S_(TAOLINESEARCHARMIJO)
+    MORETHUENTE = S_(TAOLINESEARCHMT)
+    IPM         = S_(TAOLINESEARCHIPM)
+    OWARMIJO    = S_(TAOLINESEARCHOWARMIJO)
+    GPCG        = S_(TAOLINESEARCHGPCG)
+
+class TAOLineSearchConvergedReason:
+    """TAO Line Search Termination Reasons."""
+    # iterating
+    CONTINUE_SEARCH       = TAOLINESEARCH_CONTINUE_ITERATING
+    # failed
+    FAILED_INFORNAN       = TAOLINESEARCH_FAILED_INFORNAN      # inf or NaN in user function
+    FAILED_BADPARAMETER   = TAOLINESEARCH_FAILED_BADPARAMETER  # negative value set as parameter
+    FAILED_ASCENT         = TAOLINESEARCH_FAILED_ASCENT        # search direction is not a descent direction
+    # succeeded
+    SUCCESS               = TAOLINESEARCH_SUCCESS              # found step length
+    SUCCESS_USER          = TAOLINESEARCH_SUCCESS_USER         # user-defined success criteria reached
+    # halted
+    HALTED_OTHER          = TAOLINESEARCH_HALTED_OTHER         # stopped search with unknown reason
+    HALTED_MAXFCN         = TAOLINESEARCH_HALTED_MAXFCN        # maximum function evaluations reached
+    HALTED_UPPERBOUND     = TAOLINESEARCH_HALTED_UPPERBOUND    # stopped at upper bound
+    HALTED_LOWERBOUND     = TAOLINESEARCH_HALTED_LOWERBOUND    # stopped at lower bound
+    HALTED_RTOL           = TAOLINESEARCH_HALTED_RTOL          # range of uncertainty is below tolerance
+    HALTED_USER           = TAOLINESEARCH_HALTED_USER          # user-defined halt criteria reached
+
+# --------------------------------------------------------------------
+
+cdef class TAOLineSearch(Object):
+    """TAO Line Search."""
+
+    Type   = TAOLineSearchType
+    Reason = TAOLineSearchConvergedReason
+
+    def __cinit__(self):
+         self.obj = <PetscObject*> &self.taols
+         self.taols = NULL
+
+    def view(self, Viewer viewer=None) -> None:
+        """View the linesearch object.
+
+        Collective.
+
+        Parameters
+        ----------
+        viewer
+            A `Viewer` instance or `None` for the default viewer.
+
+        See Also
+        --------
+        petsc.TaoLineSearchView
+
+        """
+        cdef PetscViewer vwr = NULL
+        if viewer is not None: vwr = viewer.vwr
+        CHKERR( TaoLineSearchView(self.taols, vwr) )
+
+    def destroy(self) -> Self:
+        """Destroy the linesearch object.
+
+        Collective.
+
+        See Also
+        --------
+        petsc.TaoLineSearchDestroy
+
+        """
+        CHKERR( TaoLineSearchDestroy(&self.taols) )
+        return self
+
+    def create(self, comm=None) -> Self:
+        """Create a TAO linesearch.
+
+        Collective.
+
+        Parameters
+        ----------
+        comm
+            MPI communicator, defaults to `Sys.getDefaultComm`.
+
+        See Also
+        --------
+        Sys.getDefaultComm, petsc.TaoLineSearchCreate
+
+        """
+        cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
+        cdef PetscTAOLineSearch newtaols = NULL
+        CHKERR( TaoLineSearchCreate(ccomm, &newtaols) )
+        PetscCLEAR(self.obj); self.taols = newtaols
+        return self
+
+    def setType(self, ls_type: Type | str) -> None:
+        """Set the type of the linesearch.
+
+        Logically collective.
+
+        Parameters
+        ----------
+        ls_type
+            The type of the solver.
+
+        See Also
+        --------
+        getType, petsc.TaoLineSearchSetType
+
+        """
+        cdef PetscTAOLineSearchType ctype = NULL
+        ls_type = str2bytes(ls_type, &ctype)
+        CHKERR( TaoLineSearchSetType(self.taols, ctype) )
+
+    def getType(self) -> str:
+        """Return the type of the linesearch.
+
+        Not collective.
+
+        See Also
+        --------
+        setType, petsc.TaoLineSearchGetType
+
+        """
+        cdef PetscTAOLineSearchType ctype = NULL
+        CHKERR( TaoLineSearchGetType(self.taols, &ctype) )
+        return bytes2str(ctype)
+
+    def setFromOptions(self) -> None:
+        """Configure the linesearch from the options database.
+
+        Collective.
+
+        See Also
+        --------
+        petsc_options, petsc.TaoLineSearchSetFromOptions
+
+        """
+        CHKERR( TaoLineSearchSetFromOptions(self.taols) )
+
+    def setUp(self) -> None:
+        """Set up the internal data structures for using the linesearch.
+
+        Collective.
+
+        See Also
+        --------
+        petsc.TaoLineSearchSetUp
+
+        """
+        CHKERR( TaoLineSearchSetUp(self.taols) )
+
+    def setOptionsPrefix(self, prefix) -> None:
+        """Set the prefix used for searching for options in the database.
+
+        Logically collective.
+
+        See Also
+        --------
+        petsc_options, petsc.TaoLineSearchSetOptionsPrefix
+
+        """
+        cdef const char *cprefix = NULL
+        prefix = str2bytes(prefix, &cprefix)
+        CHKERR( TaoLineSearchSetOptionsPrefix(self.taols, cprefix) )
+
+    def getOptionsPrefix(self) -> str:
+        """Return the prefix used for searching for options in the database.
+
+        Not collective.
+
+        See Also
+        --------
+        petsc_options, setOptionsPrefix, petsc.TaoLineSearchGetOptionsPrefix
+
+        """
+        cdef const char *prefix = NULL
+        CHKERR( TaoLineSearchGetOptionsPrefix(self.taols, &prefix) )
+        return bytes2str(prefix)
+
+    def setObjective(self, objective : TAOLSObjectiveFunction, args: tuple[Any, ...] | None = None, kargs: dict[str, Any] | None = None) -> None:
+        """Set the objective function evaluation callback.
+
+        Logically collective.
+
+        Parameters
+        ----------
+        objective
+            The objective function callback.
+        args
+            Positional arguments for the callback.
+        kargs
+            Keyword arguments for the callback.
+
+        See Also
+        --------
+        setGradient, setObjectiveGradient
+        petsc.TaoLineSearchSetObjectiveRoutine
+
+        """
+        CHKERR( TaoLineSearchSetObjectiveRoutine(self.taols, TAOLS_Objective, NULL) )
+        if args is None: args = ()
+        if kargs is None: kargs = {}
+        self.set_attr("__objective__", (objective, args, kargs))
+
+    def setGradient(self, gradient: TAOLSGradientFunction, args: tuple[Any, ...] | None = None, kargs: dict[str, Any] | None = None) -> None:
+        """Set the gradient evaluation callback.
+
+        Logically collective.
+
+        Parameters
+        ----------
+        gradient
+            The gradient callback.
+        g
+            The vector to store the gradient.
+        args
+            Positional arguments for the callback.
+        kargs
+            Keyword arguments for the callback.
+
+        See Also
+        --------
+        setObjective, setObjectiveGradient, setHessian
+        petsc.TaoLineSearchSetGradientRoutine
+
+        """
+        CHKERR( TaoLineSearchSetGradientRoutine(self.taols, TAOLS_Gradient, NULL) )
+        if args is None: args = ()
+        if kargs is None: kargs = {}
+        self.set_attr("__gradient__", (gradient, args, kargs))
+
+    def setObjectiveGradient(self, objgrad: TAOLSObjectiveGradientFunction, args: tuple[Any, ...] | None = None, kargs: dict[str, Any] | None = None) -> None:
+        """Set the objective function and gradient evaluation callback.
+
+        Logically collective.
+
+        Parameters
+        ----------
+        objgrad
+            The objective function and gradient callback.
+        g
+            The vector to store the gradient.
+        args
+            Positional arguments for the callback.
+        kargs
+            Keyword arguments for the callback.
+
+        See Also
+        --------
+        setObjective, setGradient, setHessian, getObjectiveAndGradient
+        petsc.TaoLineSearchSetObjectiveAndGradientRoutine
+
+        """
+        CHKERR( TaoLineSearchSetObjectiveAndGradientRoutine(self.taols, TAOLS_ObjGrad, NULL) )
+        if args is None: args = ()
+        if kargs is None: kargs = {}
+        self.set_attr("__objgrad__", (objgrad, args, kargs))
+
+    def useTAORoutine(self, TAO tao) -> None:
+        """Use the objective and gradient evaluation routines from the given Tao object.
+
+        Logically collective.
+
+        See Also
+        --------
+        petsc.TaoLineSearchUseTaoRoutines
+
+        """
+        CHKERR( TaoLineSearchUseTaoRoutines(self.taols, tao.tao) )
+
+    def apply(self, Vec x, Vec g, Vec s) -> tuple[float, float, str]:
+        """Performs a line-search in a given step direction.
+
+        Collective.
+
+        See Also
+        --------
+        petsc.TaoLineSearchApply
+
+        """
+        cdef PetscReal f = 0
+        cdef PetscReal steplen = 0
+        cdef PetscTAOLineSearchConvergedReason reason = TAOLINESEARCH_CONTINUE_ITERATING
+        CHKERR( TaoLineSearchApply(self.taols,x.vec,&f,g.vec,s.vec,&steplen,&reason))
+        return (toReal(f), toReal(steplen), reason)
+
+# --------------------------------------------------------------------
+
+del TAOLineSearchType
+del TAOLineSearchConvergedReason

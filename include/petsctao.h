@@ -142,6 +142,45 @@ typedef enum {
 } TaoALMMType;
 PETSC_EXTERN const char *const TaoALMMTypes[];
 
+/*E
+     TaoBNCGType - Determine the conjugate gradient update formula used in the TAOBNCG algorithm.
+
+$  TAO_BNCG_GD         - basic gradient descent, no CG update
+$  TAO_BNCG_PCGD       - preconditioned/scaled gradient descent
+$  TAO_BNCG_HS         - Hestenes-Stiefel
+$  TAO_BNCG_FR         - Fletcher-Reeves
+$  TAO_BNCG_PRP        - Polak-Ribiere-Polyak (PRP)
+$  TAO_BNCG_PRP_PLUS   - Polak-Ribiere-Polyak "plus" (PRP+)
+$  TAO_BNCG_DY         - Dai-Yuan
+$  TAO_BNCG_HZ         - Hager-Zhang (CG_DESCENT 5.3)
+$  TAO_BNCG_DK         - Dai-Kou (2013)
+$  TAO_BNCG_KD         - Kou-Dai (2015)
+$  TAO_BNCG_SSML_BFGS  - Self-Scaling Memoryless BFGS (Perry-Shanno)
+$  TAO_BNCG_SSML_DFP   - Self-Scaling Memoryless DFP
+$  TAO_BNCG_SSML_BRDN  - Self-Scaling Memoryless (Symmetric) Broyden
+
+  Level: advanced
+
+.seealso: `Tao`, `TAOBNCG`, `TaoBNCGSetType()`, `TaoBNCGGetType()`
+E*/
+
+typedef enum {
+  TAO_BNCG_GD,
+  TAO_BNCG_PCGD,
+  TAO_BNCG_HS,
+  TAO_BNCG_FR,
+  TAO_BNCG_PRP,
+  TAO_BNCG_PRP_PLUS,
+  TAO_BNCG_DY,
+  TAO_BNCG_HZ,
+  TAO_BNCG_DK,
+  TAO_BNCG_KD,
+  TAO_BNCG_SSML_BFGS,
+  TAO_BNCG_SSML_DFP,
+  TAO_BNCG_SSML_BRDN
+} TaoBNCGType;
+PETSC_EXTERN const char *const TaoBNCGTypes[];
+
 /*J
         TaoType - String with the name of a `Tao` method
 
@@ -473,6 +512,8 @@ PETSC_EXTERN PetscErrorCode TaoBRGNSetRegularizerWeight(Tao, PetscReal);
 PETSC_EXTERN PetscErrorCode TaoBRGNSetL1SmoothEpsilon(Tao, PetscReal);
 PETSC_EXTERN PetscErrorCode TaoBRGNSetDictionaryMatrix(Tao, Mat);
 PETSC_EXTERN PetscErrorCode TaoBRGNGetDampingVector(Tao, Vec *);
+PETSC_EXTERN PetscErrorCode TaoBNCGSetType(Tao, TaoBNCGType);
+PETSC_EXTERN PetscErrorCode TaoBNCGGetType(Tao, TaoBNCGType *);
 
 PETSC_EXTERN PetscErrorCode TaoADMMGetMisfitSubsolver(Tao, Tao *);
 PETSC_EXTERN PetscErrorCode TaoADMMGetRegularizationSubsolver(Tao, Tao *);

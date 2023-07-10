@@ -94,6 +94,9 @@ cdef TAOResidualFunction
 cdef TAOJacobianResidualFunction
 cdef TAOVariableBoundsFunction
 cdef TAOConstraintsFunction
+cdef TAOLSObjectiveFunction
+cdef TAOLSGradientFunction
+cdef TAOLSObjectiveGradientFunction
 
 # --- MPI ---
 
