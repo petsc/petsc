@@ -1028,6 +1028,20 @@
        [33m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
   420: {
   421:   return 0;
+
+./src/sys/tests/linter/testValidFunctionDocStrings.c:395:3 Note: If you are trying to document a function-pointer parameter, then you must name the function pointer arguments in source and introduce a new section 'Calling Sequence of `<name of function pointer arg>'. For example:
+
+/*@C
+  ...
+  Input Parameter:
+. func_ptr - A function pointer
+
+  Calling Sequence of `func_ptr`:
++ foo - a very useful description >-----------------------x Note named parameters!
+- bar - a very useful description >-----------------------|-----------x
+  ...                                                     |           |
+@*/                                                      vvv         vvv
+PetscErrorCode MyFunction(PetscErrorCode (*func_ptr)(int foo, double bar))
 [31m[1m./src/sys/tests/linter/testValidFunctionDocStrings.c:396:3: error:[0m Extra docstring parameter 'foo_parm2' not found in symbol parameter list [-fdoc-param-list-func-parameter-documentation]:
   394:   Calling sequence of `foo`:
   395: + foo_parm1 - an int
@@ -1043,6 +1057,20 @@
        [33m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
   420: {
   421:   return 0;
+
+./src/sys/tests/linter/testValidFunctionDocStrings.c:396:3 Note: If you are trying to document a function-pointer parameter, then you must name the function pointer arguments in source and introduce a new section 'Calling Sequence of `<name of function pointer arg>'. For example:
+
+/*@C
+  ...
+  Input Parameter:
+. func_ptr - A function pointer
+
+  Calling Sequence of `func_ptr`:
++ foo - a very useful description >-----------------------x Note named parameters!
+- bar - a very useful description >-----------------------|-----------x
+  ...                                                     |           |
+@*/                                                      vvv         vvv
+PetscErrorCode MyFunction(PetscErrorCode (*func_ptr)(int foo, double bar))
 [31m[1m./src/sys/tests/linter/testValidFunctionDocStrings.c:397:3: error:[0m Extra docstring parameter 'foo_parm3' not found in symbol parameter list [-fdoc-param-list-func-parameter-documentation]:
   395: + foo_parm1 - an int
   396: . foo_parm2 - a double
@@ -1058,6 +1086,20 @@
        [33m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
   420: {
   421:   return 0;
+
+./src/sys/tests/linter/testValidFunctionDocStrings.c:397:3 Note: If you are trying to document a function-pointer parameter, then you must name the function pointer arguments in source and introduce a new section 'Calling Sequence of `<name of function pointer arg>'. For example:
+
+/*@C
+  ...
+  Input Parameter:
+. func_ptr - A function pointer
+
+  Calling Sequence of `func_ptr`:
++ foo - a very useful description >-----------------------x Note named parameters!
+- bar - a very useful description >-----------------------|-----------x
+  ...                                                     |           |
+@*/                                                      vvv         vvv
+PetscErrorCode MyFunction(PetscErrorCode (*func_ptr)(int foo, double bar))
 [31m[1m./src/sys/tests/linter/testValidFunctionDocStrings.c:476:3: error:[0m Extra docstring parameter 'baz' not found in symbol parameter list [-fdoc-param-list-func-parameter-documentation]:
   474:   Input Parameter:
   475: + foo - the input description for an in-out param
