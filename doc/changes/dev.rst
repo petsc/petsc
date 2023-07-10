@@ -25,6 +25,7 @@ Changes: Development
 - Change arguments 4 and 5 of ``PetscViewerBinaryReadAll()`` and ``PetscViewerBinaryWriteAll()`` to ``PetscInt64``
 - Add ``PetscIsCloseAtTolScalar()``
 - Remove ``PetscTellMyCell()`` and related runtime option
+- Remove ``PetscTextBelt()`` and related runtime option
 
 .. rubric:: Event Logging:
 

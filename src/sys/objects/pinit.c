@@ -1409,29 +1409,6 @@ PetscErrorCode PetscFinalize(void)
   }
   PetscCall(PetscSegBufferDestroy(&PetscCitationsList));
 
-#if defined(PETSC_HAVE_SSL) && defined(PETSC_USE_SOCKET_VIEWER)
-  /* TextBelt is run for testing purposes only, please do not use this feature often */
-  {
-    PetscInt nmax = 2;
-    char   **buffs;
-    PetscCall(PetscMalloc1(2, &buffs));
-    PetscCall(PetscOptionsGetStringArray(NULL, NULL, "-textbelt", buffs, &nmax, &flg1));
-    if (flg1) {
-      PetscCheck(nmax, PETSC_COMM_WORLD, PETSC_ERR_USER, "-textbelt requires either the phone number or number,\"message\"");
-      if (nmax == 1) {
-        size_t len = 128;
-        PetscCall(PetscMalloc1(len, &buffs[1]));
-        PetscCall(PetscGetProgramName(buffs[1], 32));
-        PetscCall(PetscStrlcat(buffs[1], " has completed", len));
-      }
-      PetscCall(PetscTextBelt(PETSC_COMM_WORLD, buffs[0], buffs[1], NULL));
-      PetscCall(PetscFree(buffs[0]));
-      PetscCall(PetscFree(buffs[1]));
-    }
-    PetscCall(PetscFree(buffs));
-  }
-#endif
-
 #if defined(PETSC_SERIALIZE_FUNCTIONS)
   PetscCall(PetscFPTDestroy());
 #endif
