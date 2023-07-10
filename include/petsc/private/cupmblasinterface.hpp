@@ -474,11 +474,11 @@ struct BlasInterface : BlasInterfaceImpl<T> {
   using CUPMBlasPointerModeGuard = typename ::Petsc::device::cupm::impl::BlasInterface<T>::CUPMBlasPointerModeGuard
 
 #if PetscDefined(HAVE_CUDA)
-extern template struct BlasInterface<DeviceType::CUDA>;
+extern template struct PETSC_SINGLE_LIBRARY_VISIBILITY_INTERNAL BlasInterface<DeviceType::CUDA>;
 #endif
 
 #if PetscDefined(HAVE_HIP)
-extern template struct BlasInterface<DeviceType::HIP>;
+extern template struct PETSC_SINGLE_LIBRARY_VISIBILITY_INTERNAL BlasInterface<DeviceType::HIP>;
 #endif
 
 } // namespace impl
