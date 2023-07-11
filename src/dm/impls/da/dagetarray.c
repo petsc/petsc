@@ -15,7 +15,7 @@ M*/
 
    Input Parameters:
 +  da - the distributed array
--  vec - the vector, either a vector the same size as one obtained with `DMCreateGlobalVector()` or `DMCreateLocalVector()`
+-  vec - a vector the same size as one obtained with `DMCreateGlobalVector()` or `DMCreateLocalVector()`
 
    Output Parameter:
 .  array - the array
@@ -27,19 +27,21 @@ M*/
 
     In C, the indexing is "backwards" from what expects: array[k][j][i] NOT array[i][j][k]!
 
-    If vec is a local vector (obtained with DMCreateLocalVector() etc) then the ghost point locations are accessible. If it is
-    a global vector then the ghost points are not accessible. Of course with the local vector you will have had to do the
-
+    If `vec` is a local vector (obtained with DMCreateLocalVector() etc) then the ghost point locations are accessible. If it is
+    a global vector then the ghost points are not accessible. Of course, with a local vector you will have had to do the
     appropriate `DMGlobalToLocalBegin()` and `DMGlobalToLocalEnd()` to have correct values in the ghost locations.
+
+    The accessible indices are `array[zs:zs+zm-1][ys:ys+ym-1][xs:xs+xm-1]` where the values are obtained from
+   `DMDAGetCorners()` for a global vector or `DMDAGetGhostCorners()` for a local vector.
 
   Fortran Notes:
   Use `DMDAVecGetArrayF90()` and pass for the array type `PetscScalar`,pointer :: array(:,...,:) of the appropriate
   dimension. For a `DMDA` created with a dof of 1 use the dimension of the `DMDA`, for a `DMDA` created with a dof greater than 1 use one more than the
   dimension of the `DMDA`.
 
-  The order of the indices is array(xs:xs+xm-1,ys:ys+ym-1,zs:zs+zm-1) (when dof is 1) otherwise
-  array(0:dof-1,xs:xs+xm-1,ys:ys+ym-1,zs:zs+zm-1) where the values are obtained from
-  `DMDAGetCorners()` for a global array or `DMDAGetGhostCorners()` for a local array.
+  The order of the indices is `array(xs:xs+xm-1,ys:ys+ym-1,zs:zs+zm-1)` (when dof is 1) otherwise
+  `array(0:dof-1,xs:xs+xm-1,ys:ys+ym-1,zs:zs+zm-1)` where the values are obtained from
+  `DMDAGetCorners()` for a global vector or `DMDAGetGhostCorners()` for a local vector.
 
 .seealso: `DM`, `DMDA`, `DMDAGetGhostCorners()`, `DMDAGetCorners()`, `VecGetArray()`, `VecRestoreArray()`, `DMDAVecRestoreArray()`, `DMDAVecRestoreArrayDOF()`
           `DMDAVecGetArrayDOF()`, `DMDAVecGetArrayWrite()`, `DMDAVecRestoreArrayWrite()`, `DMDAVecGetArrayRead()`, `DMDAVecRestoreArrayRead()`,
@@ -91,14 +93,13 @@ M*/
 
    Input Parameters:
 +  da - the distributed array
-.  vec - the vector, either a vector the same size as one obtained with
-         `DMCreateGlobalVector()` or `DMCreateLocalVector()`
--  array - the array, non-NULL pointer is zeroed
+.  vec - a vector the same size as one obtained with `DMCreateGlobalVector()` or `DMCreateLocalVector()`
+-  array - the `array` pointer is zeroed
 
   Level: intermediate
 
   Fortran Note:
-  From Fortran use `DMDAVecRestoreArayF90()`
+  Use `DMDAVecRestoreArayF90()`
 
 .seealso: `DM`, `DMDA`, `DMDAGetGhostCorners()`, `DMDAGetCorners()`, `DMDAVecRestoreArayF90()`, `VecGetArray()`, `VecRestoreArray()`, `DMDAVecGetArray()`,
           `DMDAVecGetArrayWrite()`, `DMDAVecRestoreArrayWrite()`, `DMDAVecGetArrayRead()`, `DMDAVecRestoreArrayRead()`,
@@ -151,7 +152,7 @@ M*/
 
    Input Parameters:
 +  da - the distributed array
--  vec - the vector, either a vector the same size as one obtained with `DMCreateGlobalVector()` or `DMCreateLocalVector()`
+-  vec - a vector the same size as one obtained with `DMCreateGlobalVector()` or `DMCreateLocalVector()`
 
    Output Parameter:
 .  array - the array
@@ -163,18 +164,21 @@ M*/
 
     In C, the indexing is "backwards" from what expects: array[k][j][i] NOT array[i][j][k]!
 
-    If vec is a local vector (obtained with `DMCreateLocalVector()` etc) then the ghost point locations are accessible. If it is
+    if `vec` is a local vector (obtained with `DMCreateLocalVector()` etc) then the ghost point locations are accessible. If it is
     a global vector then the ghost points are not accessible. Of course with the local vector you will have had to do the
     appropriate `DMGlobalToLocalBegin()` and `DMGlobalToLocalEnd()` to have correct values in the ghost locations.
+
+     The accessible indices are `array[zs:zs+zm-1][ys:ys+ym-1][xs:xs+xm-1]` where the values are obtained from
+   `DMDAGetCorners()` for a global vector or `DMDAGetGhostCorners()` for a local vector.
 
    Fortran Notes:
    From Fortran use `DMDAVecGetArrayWriteF90()` and pass for the array type PetscScalar,pointer :: array(:,...,:) of the appropriate
    dimension. For a `DMDA` created with a dof of 1 use the dimension of the `DMDA`, for a `DMDA` created with a dof greater than 1 use one more than the
    dimension of the `DMDA`.
 
-   The order of the indices is array(xs:xs+xm-1,ys:ys+ym-1,zs:zs+zm-1) (when dof is 1) otherwise
-   array(0:dof-1,xs:xs+xm-1,ys:ys+ym-1,zs:zs+zm-1) where the values are obtained from
-   `DMDAGetCorners()` for a global array or `DMDAGetGhostCorners()` for a local array.
+   The order of the indices is `array(xs:xs+xm-1,ys:ys+ym-1,zs:zs+zm-1)` (when dof is 1) otherwise
+   `array(0:dof-1,xs:xs+xm-1,ys:ys+ym-1,zs:zs+zm-1)` where the values are obtained from
+   `DMDAGetCorners()` for a global vector or `DMDAGetGhostCorners()` for a local vector.
 
   Developer Note:
   This has code duplication with `DMDAVecGetArray()` and `DMDAVecGetArrayRead()`
@@ -232,9 +236,8 @@ M*/
 
    Input Parameters:
 +  da - the distributed array
-.  vec - the vector, either a vector the same size as one obtained with
-         `DMCreateGlobalVector()` or `DMCreateLocalVector()`
--  array - the array, non-NULL pointer is zeroed
+.  vec - a vector the same size as one obtained with `DMCreateGlobalVector()` or `DMCreateLocalVector()`
+-  array - the `array` pointer is zeroed
 
   Level: intermediate
 
@@ -289,27 +292,29 @@ PetscErrorCode DMDAVecRestoreArrayWrite(DM da, Vec vec, void *array)
 
    Input Parameters:
 +  da - the distributed array
--  vec - the vector, either a vector the same size as one obtained with
-         `DMCreateGlobalVector()` or `DMCreateLocalVector()`
+-  vec - a vector the same size as one obtained with `DMCreateGlobalVector()` or `DMCreateLocalVector()`
 
    Output Parameter:
-.  array - the array
+.  array - the `array` pointer is zeroed
 
   Level: intermediate
 
    Notes:
     Call `DMDAVecRestoreArrayDOF()` once you have finished accessing the vector entries.
 
-    In C, the indexing is "backwards" from what expects: array[k][j][i][DOF] NOT array[i][j][k][DOF]!
+    In C, the indexing is "backwards" from what expects: array[k][j][i][DOF] NOT array[i][j][k][DOF]
+
+    The accessible indices are `array[zs:zs+zm-1][ys:ys+ym-1][xs:xs+xm-1][0:ndof-1]` where the values are obtained from
+   `DMDAGetCorners()` for a global vector or `DMDAGetGhostCorners()` for a local vector.
 
    Fortran Notes:
     Use `DMDAVecGetArrayF90()` and pass for the array type PetscScalar,pointer :: array(:,...,:) of the appropriate
    dimension. For a `DMDA` created with a dof of 1 use the dimension of the `DMDA`, for a `DMDA` created with a dof greater than 1 use one more than the
    dimension of the `DMDA`.
 
-   The order of the indices is array(xs:xs+xm-1,ys:ys+ym-1,zs:zs+zm-1) (when dof is 1) otherwise
-   array(0:dof-1,xs:xs+xm-1,ys:ys+ym-1,zs:zs+zm-1) where the values are obtained from
-   `DMDAGetCorners()` for a global array or `DMDAGetGhostCorners()` for a local array.
+   The order of the indices is `array(xs:xs+xm-1,ys:ys+ym-1,zs:zs+zm-1)` (when ndof is 1) otherwise
+   `array(0:dof-1,xs:xs+xm-1,ys:ys+ym-1,zs:zs+zm-1)` where the values are obtained from
+   `DMDAGetCorners()` for a global vector or `DMDAGetGhostCorners()` for a local vector.
 
 .seealso: `DM`, `DMDA`, `DMDAGetGhostCorners()`, `DMDAGetCorners()`, `VecGetArray()`, `VecRestoreArray()`, `DMDAVecRestoreArray()`, `DMDAVecGetArray()`, `DMDAVecRestoreArrayDOF()`,
           `DMDAVecGetArrayWrite()`, `DMDAVecRestoreArrayWrite()`, `DMDAVecGetArrayRead()`, `DMDAVecRestoreArrayRead()`, `DMDAVecGetArrayDOFRead()`
@@ -351,9 +356,8 @@ PetscErrorCode DMDAVecGetArrayDOF(DM da, Vec vec, void *array)
 
    Input Parameters:
 +  da - the distributed array
-.  vec - the vector, either a vector the same size as one obtained with
-         `DMCreateGlobalVector()` or `DMCreateLocalVector()`
--  array - the array
+.  vec - vector the same size as one obtained with `DMCreateGlobalVector()` or `DMCreateLocalVector()`
+-  array - the `array` point is zeroed
 
   Level: intermediate
 
@@ -407,7 +411,7 @@ M*/
 
    Input Parameters:
 +  da - the distributed array
--  vec - the vector, either a vector the same size as one obtained with `DMCreateGlobalVector()` or `DMCreateLocalVector()`
+-  vec - a vector the same size as one obtained with `DMCreateGlobalVector()` or `DMCreateLocalVector()`
 
    Output Parameter:
 .  array - the array
@@ -419,18 +423,21 @@ M*/
 
     In C, the indexing is "backwards" from what expects: array[k][j][i] NOT array[i][j][k]!
 
-    If vec is a local vector (obtained with `DMCreateLocalVector()` etc) then the ghost point locations are accessible. If it is
+    If `vec` is a local vector (obtained with `DMCreateLocalVector()` etc) then the ghost point locations are accessible. If it is
     a global vector then the ghost points are not accessible. Of course with the local vector you will have had to do the
     appropriate `DMGlobalToLocalBegin()` and `DMGlobalToLocalEnd()` to have correct values in the ghost locations.
+
+    The accessible indices are `array[zs:zs+zm-1][ys:ys+ym-1][xs:xs+xm-1]` where the values are obtained from
+    `DMDAGetCorners()` for a global vector or `DMDAGetGhostCorners()` for a local vector.
 
   Fortran Notes:
   Use `DMDAVecGetArrayReadF90()` and pass for the array type `PetscScalar`,pointer :: array(:,...,:) of the appropriate
   dimension. For a `DMDA` created with a dof of 1 use the dimension of the `DMDA`, for a `DMDA` created with a dof greater than 1 use one more than the
   dimension of the `DMDA`.
 
-  The order of the indices is array(xs:xs+xm-1,ys:ys+ym-1,zs:zs+zm-1) (when dof is 1) otherwise
-  array(0:dof-1,xs:xs+xm-1,ys:ys+ym-1,zs:zs+zm-1) where the values are obtained from
-  `DMDAGetCorners()` for a global array or `DMDAGetGhostCorners()` for a local array.
+  The order of the indices is `array(xs:xs+xm-1,ys:ys+ym-1,zs:zs+zm-1)` (when dof is 1) otherwise
+  `array(0:dof-1,xs:xs+xm-1,ys:ys+ym-1,zs:zs+zm-1)` where the values are obtained from
+  `DMDAGetCorners()` for a global vector or `DMDAGetGhostCorners()` for a local vector.
 
 .seealso: `DM`, `DMDA`, `DMDAVecGetArrayReadF90()`, `DMDAGetGhostCorners()`, `DMDAGetCorners()`, `VecGetArray()`, `VecRestoreArray()`, `DMDAVecRestoreArrayRead()`, `DMDAVecRestoreArrayDOF()`
           `DMDAVecGetArrayDOF()`, `DMDAVecGetArray()`, `DMDAVecRestoreArray()`, `DMDAVecGetArrayRead()`, `DMDAVecRestoreArrayRead()`,
@@ -482,9 +489,8 @@ M*/
 
    Input Parameters:
 +  da - the distributed array
-.  vec - the vector, either a vector the same size as one obtained with
-         `DMCreateGlobalVector()` or `DMCreateLocalVector()`
--  array - the array, non-NULL pointer is zeroed
+.  vec - vector the same size as one obtained with `DMCreateGlobalVector()` or `DMCreateLocalVector()`
+-  array - the `array` pointer is zeroed
 
   Level: intermediate
 
@@ -536,8 +542,7 @@ PetscErrorCode DMDAVecRestoreArrayRead(DM da, Vec vec, void *array)
 
    Input Parameters:
 +  da - the distributed array
--  vec - the vector, either a vector the same size as one obtained with
-         `DMCreateGlobalVector()` or `DMCreateLocalVector()`
+-  vec - a vector the same size as one obtained with `DMCreateGlobalVector()` or `DMCreateLocalVector()`
 
    Output Parameter:
 .  array - the array
@@ -549,14 +554,17 @@ PetscErrorCode DMDAVecRestoreArrayRead(DM da, Vec vec, void *array)
 
    In C, the indexing is "backwards" from what expects: array[k][j][i][DOF] NOT array[i][j][k][DOF]!
 
+   The accessible indices are `array[zs:zs+zm-1][ys:ys+ym-1][xs:xs+xm-1]` where the values are obtained from
+   `DMDAGetCorners()` for a global vector or `DMDAGetGhostCorners()` for a local vector.
+
    Fortran Note:
    Use  `DMDAVecGetArrayReadF90()` and pass for the array type PetscScalar,pointer :: array(:,...,:) of the appropriate
    dimension. For a `DMDA` created with a dof of 1 use the dimension of the `DMDA`, for a `DMDA` created with a dof greater than 1 use one more than the
    dimension of the `DMDA`.
 
-   The order of the indices is array(xs:xs+xm-1,ys:ys+ym-1,zs:zs+zm-1) (when dof is 1) otherwise
-   array(0:dof-1,xs:xs+xm-1,ys:ys+ym-1,zs:zs+zm-1) where the values are obtained from
-   `DMDAGetCorners()` for a global array or `DMDAGetGhostCorners()` for a local array.
+   The order of the indices is `array(xs:xs+xm-1,ys:ys+ym-1,zs:zs+zm-1)` (when dof is 1) otherwise
+   `array(0:dof-1,xs:xs+xm-1,ys:ys+ym-1,zs:zs+zm-1)` where the values are obtained from
+   `DMDAGetCorners()` for a global vector or `DMDAGetGhostCorners()` for a local vector.
 
 .seealso: `DM`, `DMDA`, `DMDAGetGhostCorners()`, `DMDAGetCorners()`, `VecGetArray()`, `VecRestoreArray()`, `DMDAVecRestoreArray()`, `DMDAVecGetArray()`, `DMDAVecGetArrayDOF()`,
           `DMDAVecGetArrayWrite()`, `DMDAVecRestoreArrayWrite()`, `DMDAVecGetArrayRead()`, `DMDAVecRestoreArrayRead()`
@@ -598,9 +606,8 @@ PetscErrorCode DMDAVecGetArrayDOFRead(DM da, Vec vec, void *array)
 
    Input Parameters:
 +  da - the distributed array
-.  vec - the vector, either a vector the same size as one obtained with
-         `DMCreateGlobalVector()` or `DMCreateLocalVector()`
--  array - the array
+.  vec - a vector the same size as one obtained with `DMCreateGlobalVector()` or `DMCreateLocalVector()`
+-  array - the `array` pointer is zeroed
 
   Level: intermediate
 
@@ -648,8 +655,7 @@ PetscErrorCode DMDAVecRestoreArrayDOFRead(DM da, Vec vec, void *array)
 
    Input Parameters:
 +  da - the distributed array
--  vec - the vector, either a vector the same size as one obtained with
-         `DMCreateGlobalVector()` or `DMCreateLocalVector()`
+-  vec - a vector the same size as one obtained with `DMCreateGlobalVector()` or `DMCreateLocalVector()`
 
    Output Parameter:
 .  array - the array
@@ -661,14 +667,17 @@ PetscErrorCode DMDAVecRestoreArrayDOFRead(DM da, Vec vec, void *array)
 
     In C, the indexing is "backwards" from what expects: array[k][j][i][DOF] NOT array[i][j][k][DOF]!
 
+   The accessible indices are `array[zs:zs+zm-1][ys:ys+ym-1][xs:xs+xm-1][0:dof-1]` where the values are obtained from
+   `DMDAGetCorners()` for a global vector or `DMDAGetGhostCorners()` for a local vector.
+
    Fortran Note:
    Use  `DMDAVecGetArrayWriteF90()` and pass for the array type PetscScalar,pointer :: array(:,...,:) of the appropriate
    dimension. For a `DMDA` created with a dof of 1 use the dimension of the `DMDA`, for a `DMDA` created with a dof greater than 1 use one more than the
    dimension of the `DMDA`.
 
-   The order of the indices is array(xs:xs+xm-1,ys:ys+ym-1,zs:zs+zm-1) (when dof is 1) otherwise
-   array(0:dof-1,xs:xs+xm-1,ys:ys+ym-1,zs:zs+zm-1) where the values are obtained from
-   `DMDAGetCorners()` for a global array or `DMDAGetGhostCorners()` for a local array.
+   The order of the indices is `array(xs:xs+xm-1,ys:ys+ym-1,zs:zs+zm-1)` (when dof is 1) otherwise
+   `array(0:dof-1,xs:xs+xm-1,ys:ys+ym-1,zs:zs+zm-1)` where the values are obtained from
+   `DMDAGetCorners()` for a global vector or `DMDAGetGhostCorners()` for a local vector.
 
 .seealso: `DM`, `DMDA`, `DMDAGetGhostCorners()`, `DMDAGetCorners()`, `DMDAVecRestoreArrayWriteF90()`, `VecGetArray()`, `VecRestoreArray()`, `DMDAVecRestoreArray()`, `DMDAVecGetArray()`, `DMDAVecGetArrayDOF()`,
           `DMDAVecGetArrayWrite()`, `DMDAVecRestoreArrayWrite()`, `DMDAVecGetArrayWrite()`, `DMDAVecRestoreArrayWrite()`
@@ -710,9 +719,8 @@ PetscErrorCode DMDAVecGetArrayDOFWrite(DM da, Vec vec, void *array)
 
    Input Parameters:
 +  da - the distributed array
-.  vec - the vector, either a vector the same size as one obtained with
-         `DMCreateGlobalVector()` or `DMCreateLocalVector()`
--  array - the array
+.  vec - a vector the same size as one obtained with `DMCreateGlobalVector()` or `DMCreateLocalVector()`
+-  array - the `array` pointer is zeroed
 
   Level: intermediate
 
