@@ -30,6 +30,7 @@ configure_options = [
   '--download-concurrencykit=1',
   '--download-revolve=1',
   '--with-strict-petscerrorcode',
+  '--with-fortran-bindings-inplace',
   ]
 
 if __name__ == '__main__':

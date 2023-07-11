@@ -88,7 +88,7 @@ allfortranstubs:
 	-@${RM} -rf ${PETSC_ARCH}/include/petsc/finclude/ftn-auto/*-tmpdir
 
 #copy of allfortranstubs with PETSC_ARCH=''
-allfortranstubstarball:
+allfortranstubsinplace:
 	-@${RM} -rf include/petsc/finclude/ftn-auto/*-tmpdir
 	@PETSC_ARCH='' ${PYTHON} lib/petsc/bin/maint/generatefortranstubs.py ${BFORT}  ${VERBOSE}
 	-@PETSC_ARCH='' ${PYTHON} lib/petsc/bin/maint/generatefortranstubs.py -merge  ${VERBOSE}
