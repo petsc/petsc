@@ -1338,7 +1338,6 @@ PETSC_INTERN PetscErrorCode PetscLogFinalize(void);
 .  -mpidump - Calls PetscMPIDump()
 .  -malloc_dump <optional filename> - Calls `PetscMallocDump()`, displays all memory allocated that has not been freed
 .  -memory_view - Prints total memory usage
-.  -malloc_info - Prints total memory usage (deprecated, use -memory_view)
 -  -malloc_view <optional filename> - Prints list of all memory allocated and in what functions
 
    Level: beginner

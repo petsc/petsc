@@ -27,6 +27,7 @@ Changes: Development
 - Remove ``PetscTellMyCell()`` and related runtime option
 - Remove ``PetscTextBelt()`` and related runtime option
 - Remove deprecated ``-malloc [no]`` startup option
+- Remove deprecated ``-malloc_info`` startup option
 
 .. rubric:: Event Logging:
 
