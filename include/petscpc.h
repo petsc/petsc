@@ -47,7 +47,7 @@ PETSC_EXTERN PetscErrorCode PCSetUp(PC);
 
 PETSC_EXTERN PetscErrorCode PCSetFailedReason(PC, PCFailedReason);
 PETSC_EXTERN PetscErrorCode PCGetFailedReason(PC, PCFailedReason *);
-PETSC_DEPRECATED_FUNCTION("Use PCGetFailedReason() (since version 3.11)") static inline PetscErrorCode PCGetSetUpFailedReason(PC pc, PCFailedReason *reason)
+PETSC_DEPRECATED_FUNCTION(3, 11, 0, "PCGetFailedReason()", ) static inline PetscErrorCode PCGetSetUpFailedReason(PC pc, PCFailedReason *reason)
 {
   return PCGetFailedReason(pc, reason);
 }
@@ -97,7 +97,7 @@ PETSC_EXTERN PetscErrorCode PCAppendOptionsPrefix(PC, const char[]);
 PETSC_EXTERN PetscErrorCode PCGetOptionsPrefix(PC, const char *[]);
 
 PETSC_EXTERN PetscErrorCode PCComputeOperator(PC, MatType, Mat *);
-PETSC_DEPRECATED_FUNCTION("Use PCComputeOperator() (since version 3.12)") static inline PetscErrorCode PCComputeExplicitOperator(PC A, Mat *B)
+PETSC_DEPRECATED_FUNCTION(3, 12, 0, "PCComputeOperator()", ) static inline PetscErrorCode PCComputeExplicitOperator(PC A, Mat *B)
 {
   return PCComputeOperator(A, PETSC_NULLPTR, B);
 }
@@ -170,15 +170,15 @@ PETSC_EXTERN PetscErrorCode PCFactorSetShiftAmount(PC, PetscReal);
 PETSC_EXTERN PetscErrorCode PCFactorSetMatSolverType(PC, MatSolverType);
 PETSC_EXTERN PetscErrorCode PCFactorGetMatSolverType(PC, MatSolverType *);
 PETSC_EXTERN PetscErrorCode PCFactorSetUpMatSolverType(PC);
-PETSC_DEPRECATED_FUNCTION("Use PCFactorSetMatSolverType() (since version 3.9)") static inline PetscErrorCode PCFactorSetMatSolverPackage(PC pc, MatSolverType stype)
+PETSC_DEPRECATED_FUNCTION(3, 9, 0, "PCFactorSetMatSolverType()", ) static inline PetscErrorCode PCFactorSetMatSolverPackage(PC pc, MatSolverType stype)
 {
   return PCFactorSetMatSolverType(pc, stype);
 }
-PETSC_DEPRECATED_FUNCTION("Use PCFactorGetMatSolverType() (since version 3.9)") static inline PetscErrorCode PCFactorGetMatSolverPackage(PC pc, MatSolverType *stype)
+PETSC_DEPRECATED_FUNCTION(3, 9, 0, "PCFactorGetMatSolverType()", ) static inline PetscErrorCode PCFactorGetMatSolverPackage(PC pc, MatSolverType *stype)
 {
   return PCFactorGetMatSolverType(pc, stype);
 }
-PETSC_DEPRECATED_FUNCTION("Use PCFactorSetUpMatSolverType() (since version 3.9)") static inline PetscErrorCode PCFactorSetUpMatSolverPackage(PC pc)
+PETSC_DEPRECATED_FUNCTION(3, 9, 0, "PCFactorSetUpMatSolverType()", ) static inline PetscErrorCode PCFactorSetUpMatSolverPackage(PC pc)
 {
   return PCFactorSetUpMatSolverType(pc);
 }
@@ -282,7 +282,7 @@ PETSC_EXTERN PetscErrorCode PCFieldSplitGetDiagUseAmat(PC, PetscBool *);
 PETSC_EXTERN PetscErrorCode PCFieldSplitSetOffDiagUseAmat(PC, PetscBool);
 PETSC_EXTERN PetscErrorCode PCFieldSplitGetOffDiagUseAmat(PC, PetscBool *);
 
-PETSC_EXTERN                PETSC_DEPRECATED_FUNCTION("Use PCFieldSplitSetSchurPre() (since version 3.5)") PetscErrorCode PCFieldSplitSchurPrecondition(PC, PCFieldSplitSchurPreType, Mat);
+PETSC_EXTERN PETSC_DEPRECATED_FUNCTION(3, 5, 0, "PCFieldSplitSetSchurPre()", ) PetscErrorCode PCFieldSplitSchurPrecondition(PC, PCFieldSplitSchurPreType, Mat);
 PETSC_EXTERN PetscErrorCode PCFieldSplitSetSchurPre(PC, PCFieldSplitSchurPreType, Mat);
 PETSC_EXTERN PetscErrorCode PCFieldSplitGetSchurPre(PC, PCFieldSplitSchurPreType *, Mat *);
 PETSC_EXTERN PetscErrorCode PCFieldSplitSetSchurFactType(PC, PCFieldSplitSchurFactType);
@@ -380,7 +380,7 @@ PETSC_EXTERN PetscErrorCode PCMGSetDistinctSmoothUp(PC);
 PETSC_EXTERN PetscErrorCode PCMGSetNumberSmooth(PC, PetscInt);
 PETSC_EXTERN PetscErrorCode PCMGSetCycleType(PC, PCMGCycleType);
 PETSC_EXTERN PetscErrorCode PCMGSetCycleTypeOnLevel(PC, PetscInt, PCMGCycleType);
-PETSC_DEPRECATED_FUNCTION("Use PCMGSetCycleTypeOnLevel() (since version 3.5)") static inline PetscErrorCode PCMGSetCyclesOnLevel(PC pc, PetscInt l, PetscInt t)
+PETSC_DEPRECATED_FUNCTION(3, 5, 0, "PCMGSetCycleTypeOnLevel()", ) static inline PetscErrorCode PCMGSetCyclesOnLevel(PC pc, PetscInt l, PetscInt t)
 {
   return PCMGSetCycleTypeOnLevel(pc, l, (PCMGCycleType)t);
 }

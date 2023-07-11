@@ -207,7 +207,7 @@ PETSC_EXTERN PetscBool PETSC_RUNNING_ON_VALGRIND;
 .seealso: `PETSC_DECIDE`, `PETSC_DEFAULT`, `PETSC_DETERMINE`
 M*/
 #define PETSC_IGNORE PETSC_NULLPTR
-#define PETSC_NULL   PETSC_DEPRECATED_MACRO("GCC warning \"PETSC_NULL is deprecated, use PETSC_NULLPTR instead (since version 3.19)\"") PETSC_NULLPTR
+#define PETSC_NULL   PETSC_DEPRECATED_MACRO(3, 19, 0, "PETSC_NULLPTR", ) PETSC_NULLPTR
 
 /*MC
     PETSC_DECIDE - standard way of passing in integer or floating point parameter
@@ -839,7 +839,7 @@ M*/
 M*/
 #define PetscNew(b) PetscCalloc1(1, (b))
 
-#define PetscNewLog(o, b) PETSC_DEPRECATED_MACRO("GCC warning \"PetscNewLog is deprecated, use PetscNew() instead (since version 3.18)\"") PetscNew((b))
+#define PetscNewLog(o, b) PETSC_DEPRECATED_MACRO(3, 18, 0, "PetscNew()", ) PetscNew((b))
 
 /*MC
    PetscFree - Frees memory
@@ -2239,7 +2239,6 @@ static inline PetscErrorCode PetscCitationsRegister(const char cit[], PetscBool 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PETSC_EXTERN                PETSC_DEPRECATED_FUNCTION("Google has discontinued its URL shortener service") PetscErrorCode PetscURLShorten(const char[], char[], size_t c);
 PETSC_EXTERN PetscErrorCode PetscGoogleDriveAuthorize(MPI_Comm, char[], char[], size_t);
 PETSC_EXTERN PetscErrorCode PetscGoogleDriveRefresh(MPI_Comm, const char[], char[], size_t);
 PETSC_EXTERN PetscErrorCode PetscGoogleDriveUpload(MPI_Comm, const char[], const char[]);
@@ -2340,6 +2339,6 @@ PETSC_EXTERN PetscErrorCode PCMPIServerBegin(void);
 PETSC_EXTERN PetscErrorCode PCMPIServerEnd(void);
 PETSC_EXTERN PetscErrorCode PCMPICommsDestroy(void);
 
-#define PETSC_HAVE_FORTRAN PETSC_DEPRECATED_MACRO("GCC warning \"PETSC_HAVE_FORTRAN is deprecated, use PETSC_USE_FORTRAN_BINDINGS instead (since version 3.20)\"") PETSC_USE_FORTRAN_BINDINGS
+#define PETSC_HAVE_FORTRAN PETSC_DEPRECATED_MACRO(3, 20, 0, "PETSC_USE_FORTRAN_BINDINGS", ) PETSC_USE_FORTRAN_BINDINGS
 
 #endif

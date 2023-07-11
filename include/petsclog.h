@@ -17,15 +17,15 @@ PETSC_EXTERN PetscErrorCode PetscInfo_Private(const char[], PetscObject, const c
   #define PetscInfo(A, ...) PETSC_SUCCESS
 #endif
 
-#define PetscInfo1(...) PETSC_DEPRECATED_MACRO("GCC warning \"Use PetscInfo() (since version 3.17)\"") PetscInfo(__VA_ARGS__)
-#define PetscInfo2(...) PETSC_DEPRECATED_MACRO("GCC warning \"Use PetscInfo() (since version 3.17)\"") PetscInfo(__VA_ARGS__)
-#define PetscInfo3(...) PETSC_DEPRECATED_MACRO("GCC warning \"Use PetscInfo() (since version 3.17)\"") PetscInfo(__VA_ARGS__)
-#define PetscInfo4(...) PETSC_DEPRECATED_MACRO("GCC warning \"Use PetscInfo() (since version 3.17)\"") PetscInfo(__VA_ARGS__)
-#define PetscInfo5(...) PETSC_DEPRECATED_MACRO("GCC warning \"Use PetscInfo() (since version 3.17)\"") PetscInfo(__VA_ARGS__)
-#define PetscInfo6(...) PETSC_DEPRECATED_MACRO("GCC warning \"Use PetscInfo() (since version 3.17)\"") PetscInfo(__VA_ARGS__)
-#define PetscInfo7(...) PETSC_DEPRECATED_MACRO("GCC warning \"Use PetscInfo() (since version 3.17)\"") PetscInfo(__VA_ARGS__)
-#define PetscInfo8(...) PETSC_DEPRECATED_MACRO("GCC warning \"Use PetscInfo() (since version 3.17)\"") PetscInfo(__VA_ARGS__)
-#define PetscInfo9(...) PETSC_DEPRECATED_MACRO("GCC warning \"Use PetscInfo() (since version 3.17)\"") PetscInfo(__VA_ARGS__)
+#define PetscInfo1(...) PETSC_DEPRECATED_MACRO(3, 17, 0, "PetscInfo()", ) PetscInfo(__VA_ARGS__)
+#define PetscInfo2(...) PETSC_DEPRECATED_MACRO(3, 17, 0, "PetscInfo()", ) PetscInfo(__VA_ARGS__)
+#define PetscInfo3(...) PETSC_DEPRECATED_MACRO(3, 17, 0, "PetscInfo()", ) PetscInfo(__VA_ARGS__)
+#define PetscInfo4(...) PETSC_DEPRECATED_MACRO(3, 17, 0, "PetscInfo()", ) PetscInfo(__VA_ARGS__)
+#define PetscInfo5(...) PETSC_DEPRECATED_MACRO(3, 17, 0, "PetscInfo()", ) PetscInfo(__VA_ARGS__)
+#define PetscInfo6(...) PETSC_DEPRECATED_MACRO(3, 17, 0, "PetscInfo()", ) PetscInfo(__VA_ARGS__)
+#define PetscInfo7(...) PETSC_DEPRECATED_MACRO(3, 17, 0, "PetscInfo()", ) PetscInfo(__VA_ARGS__)
+#define PetscInfo8(...) PETSC_DEPRECATED_MACRO(3, 17, 0, "PetscInfo()", ) PetscInfo(__VA_ARGS__)
+#define PetscInfo9(...) PETSC_DEPRECATED_MACRO(3, 17, 0, "PetscInfo()", ) PetscInfo(__VA_ARGS__)
 
 /*E
   PetscInfoCommFlag - Describes the method by which to filter information displayed by `PetscInfo()` by communicator size
@@ -241,14 +241,14 @@ struct _n_PetscStageLog {
   PetscClassRegLog classLog;  /* The registered classes */
 };
 
-PETSC_DEPRECATED_FUNCTION("PetscLogObjectParent() is deprecated (since version 3.18)") static inline PetscErrorCode PetscLogObjectParent(PetscObject o, PetscObject p)
+PETSC_DEPRECATED_FUNCTION(3, 18, 0, "PetscLogObjectParent()", ) static inline PetscErrorCode PetscLogObjectParent(PetscObject o, PetscObject p)
 {
   (void)o;
   (void)p;
   return PETSC_SUCCESS;
 }
 
-PETSC_DEPRECATED_FUNCTION("PetscLogObjectMemory() is deprecated (since version 3.18)") static inline PetscErrorCode PetscLogObjectMemory(PetscObject o, PetscLogDouble m)
+PETSC_DEPRECATED_FUNCTION(3, 18, 0, "PetscLogObjectMemory()", ) static inline PetscErrorCode PetscLogObjectMemory(PetscObject o, PetscLogDouble m)
 {
   (void)o;
   (void)m;

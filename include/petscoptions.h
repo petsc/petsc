@@ -354,7 +354,7 @@ PetscErrorCode PetscOptionsDeprecatedNoObject(T...);
       if (PetscOptionsObject->printhelp && PetscOptionsObject->count == 1 && !PetscOptionsObject->alreadyprinted) PetscCall((*PetscHelpPrintf)(PetscOptionsObject->comm, "  %s\n", head)); \
     } while (0)
 
-  #define PetscOptionsHead(...) PETSC_DEPRECATED_MACRO("GCC warning \"Use PetscOptionsHeadBegin() (since version 3.18)\"") PetscOptionsHeadBegin(__VA_ARGS__)
+  #define PetscOptionsHead(...) PETSC_DEPRECATED_MACRO(3, 18, 0, "PetscOptionsHeadBegin()", ) PetscOptionsHeadBegin(__VA_ARGS__)
 
   /*MC
      PetscOptionsHeadEnd - Ends a section of options begun with `PetscOptionsHeadBegin()`
@@ -391,7 +391,7 @@ M*/
       if (PetscOptionsObject->count != 1) PetscFunctionReturn(PETSC_SUCCESS); \
     } while (0)
 
-  #define PetscOptionsTail(...) PETSC_DEPRECATED_MACRO("GCC warning \"Use PetscOptionsHeadEnd() (since version 3.18)\"") PetscOptionsHeadEnd(__VA_ARGS__)
+  #define PetscOptionsTail(...) PETSC_DEPRECATED_MACRO(3, 18, 0, "PetscOptionsHeadEnd()", ) PetscOptionsHeadEnd(__VA_ARGS__)
 
   #define PetscOptionsEnum(a, b, c, d, e, f, g)        PetscOptionsEnum_Private(PetscOptionsObject, a, b, c, d, e, f, g)
   #define PetscOptionsInt(a, b, c, d, e, f)            PetscOptionsInt_Private(PetscOptionsObject, a, b, c, d, e, f, PETSC_MIN_INT, PETSC_MAX_INT)

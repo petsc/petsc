@@ -13,15 +13,15 @@
 
 /* SUBMANSEC = Sys */
 
-#define SETERRQ1(...) PETSC_DEPRECATED_MACRO("GCC warning \"Use SETERRQ() (since version 3.17)\"") SETERRQ(__VA_ARGS__)
-#define SETERRQ2(...) PETSC_DEPRECATED_MACRO("GCC warning \"Use SETERRQ() (since version 3.17)\"") SETERRQ(__VA_ARGS__)
-#define SETERRQ3(...) PETSC_DEPRECATED_MACRO("GCC warning \"Use SETERRQ() (since version 3.17)\"") SETERRQ(__VA_ARGS__)
-#define SETERRQ4(...) PETSC_DEPRECATED_MACRO("GCC warning \"Use SETERRQ() (since version 3.17)\"") SETERRQ(__VA_ARGS__)
-#define SETERRQ5(...) PETSC_DEPRECATED_MACRO("GCC warning \"Use SETERRQ() (since version 3.17)\"") SETERRQ(__VA_ARGS__)
-#define SETERRQ6(...) PETSC_DEPRECATED_MACRO("GCC warning \"Use SETERRQ() (since version 3.17)\"") SETERRQ(__VA_ARGS__)
-#define SETERRQ7(...) PETSC_DEPRECATED_MACRO("GCC warning \"Use SETERRQ() (since version 3.17)\"") SETERRQ(__VA_ARGS__)
-#define SETERRQ8(...) PETSC_DEPRECATED_MACRO("GCC warning \"Use SETERRQ() (since version 3.17)\"") SETERRQ(__VA_ARGS__)
-#define SETERRQ9(...) PETSC_DEPRECATED_MACRO("GCC warning \"Use SETERRQ() (since version 3.17)\"") SETERRQ(__VA_ARGS__)
+#define SETERRQ1(...) PETSC_DEPRECATED_MACRO(3, 17, 0, "SETERRQ", ) SETERRQ(__VA_ARGS__)
+#define SETERRQ2(...) PETSC_DEPRECATED_MACRO(3, 17, 0, "SETERRQ", ) SETERRQ(__VA_ARGS__)
+#define SETERRQ3(...) PETSC_DEPRECATED_MACRO(3, 17, 0, "SETERRQ", ) SETERRQ(__VA_ARGS__)
+#define SETERRQ4(...) PETSC_DEPRECATED_MACRO(3, 17, 0, "SETERRQ", ) SETERRQ(__VA_ARGS__)
+#define SETERRQ5(...) PETSC_DEPRECATED_MACRO(3, 17, 0, "SETERRQ", ) SETERRQ(__VA_ARGS__)
+#define SETERRQ6(...) PETSC_DEPRECATED_MACRO(3, 17, 0, "SETERRQ", ) SETERRQ(__VA_ARGS__)
+#define SETERRQ7(...) PETSC_DEPRECATED_MACRO(3, 17, 0, "SETERRQ", ) SETERRQ(__VA_ARGS__)
+#define SETERRQ8(...) PETSC_DEPRECATED_MACRO(3, 17, 0, "SETERRQ", ) SETERRQ(__VA_ARGS__)
+#define SETERRQ9(...) PETSC_DEPRECATED_MACRO(3, 17, 0, "SETERRQ", ) SETERRQ(__VA_ARGS__)
 
 /*MC
    SETERRQ - Macro to be called when an error has been detected,
@@ -1137,7 +1137,7 @@ PETSC_EXTERN PetscErrorCode PetscPushSignalHandler(PetscErrorCode (*)(int, void 
 PETSC_EXTERN PetscErrorCode PetscPopSignalHandler(void);
 PETSC_EXTERN PetscErrorCode PetscCheckPointerSetIntensity(PetscInt);
 PETSC_EXTERN void           PetscSignalSegvCheckPointerOrMpi(void);
-PETSC_DEPRECATED_FUNCTION("Use PetscSignalSegvCheckPointerOrMpi() (since version 3.13)") static inline void PetscSignalSegvCheckPointer(void)
+PETSC_DEPRECATED_FUNCTION(3, 13, 0, "PetscSignalSegvCheckPointerOrMpi()", ) static inline void PetscSignalSegvCheckPointer(void)
 {
   PetscSignalSegvCheckPointerOrMpi();
 }
