@@ -827,6 +827,9 @@ class PetscDocString(DocBase):
       if in_verbatim == 0:
         heading_verdict = self._check_section_header_typo(is_heading(stripped), line, lineno)
         if heading_verdict > 0:
+          # we may switch headings, we should check indentation
+          if not check_indent:
+            self._check_valid_indentation(lineno, line, stripped)
           self._check_valid_section_spacing(raw_data[-1][1] if raw_data else None, lineno)
           new_section = self.sections.find(stripped.split(':', maxsplit=1)[0].strip().casefold())
           if new_section != section:

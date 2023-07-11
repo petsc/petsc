@@ -370,3 +370,17 @@
 +. foo    - the output description for an in-out param
  - foo - a duplicate description2
  
+@@ -628,5 +628,5 @@
+ . foo - a foo
+ 
+-    OutputParameter:
++  Output Parameter:
+     +     bar         -    a bar
+ 
+@@ -629,5 +629,5 @@
+ 
+     OutputParameter:
+-    +     bar         -    a bar
+++ bar - a bar
+ 
+   Level: intermediate

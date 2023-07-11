@@ -616,3 +616,22 @@ PetscErrorCode testIgnoringSpuriousComments()
 {
   return PETSC_SUCCESS;
 }
+
+/*@C
+  testCheckingSectionIndentationAfterSwitch - the second section heading should be properly
+  re-indented
+
+  Input Parameter:
+. foo - a foo
+
+    OutputParameter:
+    +     bar         -    a bar
+
+  Level: intermediate
+
+.seealso: `testBadDocString()`
+@*/
+PetscErrorCode testCheckingSectionIndentationAfterSwitch(int foo, double *bar)
+{
+  return PETSC_SUCCESS;
+}
