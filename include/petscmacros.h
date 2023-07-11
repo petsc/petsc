@@ -1255,4 +1255,21 @@ M*/
   #define PetscPragmaSIMD
 #endif
 
+#include <petsc/private/petscadvancedmacros.h>
+
+#define PetscConcat6_(a, b, c, d, e, f) a##b##c##d##e##f
+#define PetscConcat6(a, b, c, d, e, f)  PetscConcat6_(a, b, c, d, e, f)
+
+#define PETSC_DEPRECATED_IDENTIFIER_(__PETSC_DEPRECATION_MACRO__, __SILENCE_MACRO__, major, minor, subminor, replacement, ...) \
+  PetscIfPetscDefined(__SILENCE_MACRO__, PetscExpandToNothing, \
+                      __PETSC_DEPRECATION_MACRO__)(PetscStringize(Use replacement (since version major.minor.subminor) instead. Silence this warning (and all others for this version) by defining PetscConcat_(PETSC_, __SILENCE_MACRO__). __VA_ARGS__))
+
+#define PETSC_DEPRECATED_IDENTIFIER(__PETSC_DEPRECATION_MACRO__, major, minor, subminor, ...) \
+  PETSC_DEPRECATED_IDENTIFIER_(__PETSC_DEPRECATION_MACRO__, PetscConcat6(SILENCE_DEPRECATION_WARNINGS_, major, _, minor, _, subminor), major, minor, subminor, __VA_ARGS__)
+
+#define PETSC_DEPRECATED_FUNCTION(major, minor, subminor, name, replacement, ...) PETSC_DEPRECATED_IDENTIFIER(PETSC_DEPRECATED_FUNCTION_BASE, major, minor, subminor, name, replacement, __VA_ARGS__)
+#define PETSC_DEPRECATED_TYPEDEF(major, minor, subminor, name, replacement, ...)  PETSC_DEPRECATED_IDENTIFIER(PETSC_DEPRECATED_TYPEDEF_BASE, major, minor, subminor, name, replacement, __VA_ARGS__)
+#define PETSC_DEPRECATED_ENUM(major, minor, subminor, name, replacement, ...)     PETSC_DEPRECATED_IDENTIFIER(PETSC_DEPRECATED_ENUM_BASE, major, minor, subminor, name, replacement, __VA_ARGS__)
+#define PETSC_DEPRECATED_MACRO(major, minor, subminor, name, replacement, ...)    PETSC_DEPRECATED_IDENTIFIER(PETSC_DEPRECATED_MACRO_BASE, major, minor, subminor, name, replacement, __VA_ARGS__)
+
 #endif /* PETSC_PREPROCESSOR_MACROS_H */

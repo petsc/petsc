@@ -646,13 +646,13 @@ prepend-path PATH "%s"
 
       If none of the combos work, defines MACRO_BASE(why) as empty
       '''
-      full_macro_name = macro_base + '(why)'
+      full_macro_name = macro_base + '(string_literal_why)'
       for prefix in ('__attribute__', '__attribute','__declspec'):
         if prefix == '__declspec':
           # declspec does not have an extra set of brackets around the arguments
-          attr_bodies = ('deprecated(why)', 'deprecated')
+          attr_bodies = ('deprecated(string_literal_why)', 'deprecated')
         else:
-          attr_bodies = ('(deprecated(why))', '(deprecated)')
+          attr_bodies = ('(deprecated(string_literal_why))', '(deprecated)')
 
         for attr_body in attr_bodies:
           attr_def = '{}({})'.format(prefix, attr_body)
@@ -675,16 +675,17 @@ prepend-path PATH "%s"
     lang = self.languages.clanguage
     with self.Language(lang):
       is_intel = self.setCompilers.isIntel(self.getCompiler(lang=lang), self.log)
-      checkDeprecated('DEPRECATED_FUNCTION', '{} int myfunc(void) {{ return 1; }}', is_intel)
-      checkDeprecated('DEPRECATED_TYPEDEF', 'typedef int my_int {};', is_intel)
-      checkDeprecated('DEPRECATED_ENUM', 'enum E {{ oldval {}, newval }};', is_intel)
+      checkDeprecated('DEPRECATED_FUNCTION_BASE', '{} int myfunc(void) {{ return 1; }}', is_intel)
+      checkDeprecated('DEPRECATED_TYPEDEF_BASE', 'typedef int my_int {};', is_intel)
+      checkDeprecated('DEPRECATED_ENUM_BASE', 'enum E {{ oldval {}, newval }};', is_intel)
       # I was unable to make a CPP macro that takes the old and new values as separate
       # arguments and builds the message needed by _Pragma hence the deprecation message is
       # handled as it is
       if self.checkCompile('#define TEST _Pragma("GCC warning \"Testing _Pragma\"") value'):
-        self.addDefine('DEPRECATED_MACRO(why)', '_Pragma(why)')
+        self.addDefine('DEPRECATED_MACRO_BASE_(why)', '_Pragma(#why)')
+        self.addDefine('DEPRECATED_MACRO_BASE(string_literal_why)', self.substPrefix + '_DEPRECATED_MACRO_BASE_(GCC warning string_literal_why)')
       else:
-        self.addDefine('DEPRECATED_MACRO(why)', ' ')
+        self.addDefine('DEPRECATED_MACRO_BASE(why)', ' ')
 
   def configureAlign(self):
     '''Check if __attribute(aligned) is supported'''
