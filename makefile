@@ -81,18 +81,14 @@ matlabbin:
             echo "========================================="; \
         fi
 
-allfortranstubs:
-	-@${RM} -rf ${PETSC_ARCH}/include/petsc/finclude/ftn-auto/*-tmpdir
+allfortranstubs: deletefortranstubs
 	@${PYTHON} lib/petsc/bin/maint/generatefortranstubs.py ${BFORT}  ${VERBOSE}
 	-@${PYTHON} lib/petsc/bin/maint/generatefortranstubs.py -merge  ${VERBOSE}
-	-@${RM} -rf ${PETSC_ARCH}/include/petsc/finclude/ftn-auto/*-tmpdir
 
 #copy of allfortranstubs with PETSC_ARCH=''
-allfortranstubsinplace:
-	-@${RM} -rf include/petsc/finclude/ftn-auto/*-tmpdir
+allfortranstubsinplace: deletefortranstubs
 	@PETSC_ARCH='' ${PYTHON} lib/petsc/bin/maint/generatefortranstubs.py ${BFORT}  ${VERBOSE}
 	-@PETSC_ARCH='' ${PYTHON} lib/petsc/bin/maint/generatefortranstubs.py -merge  ${VERBOSE}
-	-@${RM} -rf include/petsc/finclude/ftn-auto/*-tmpdir
 
 deleteshared:
 	@for LIBNAME in ${SHLIBS}; \
