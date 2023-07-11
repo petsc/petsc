@@ -1027,14 +1027,14 @@ PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ctx)
    test:
       suffix: superlu_dist_2s
       nsize: 2
-      requires: superlu_dist double !complex
+      requires: superlu_dist defined(PETSC_HAVE_SUPERLU_DIST_SINGLE)
       args: -da_grid_x 20 -da_grid_y 20 -pc_type lu -pc_factor_mat_solver_type superlu_dist -pc_precision single
       output_file: output/ex19_superlu.out
 
    test:
       suffix: superlu_dist_3ds
       nsize: 4
-      requires: superlu_dist !defined(PETSCTEST_VALGRIND)  double !complex
+      requires: superlu_dist !defined(PETSCTEST_VALGRIND) defined(PETSC_HAVE_SUPERLU_DIST_SINGLE)
       filter: grep -v iam | grep -v openMP
       args: -da_grid_x 20 -da_grid_y 20 -pc_type lu -pc_factor_mat_solver_type superlu_dist -mat_superlu_dist_3d -mat_superlu_dist_d 2 -snes_view -snes_monitor -ksp_monitor -pc_precision single
 
