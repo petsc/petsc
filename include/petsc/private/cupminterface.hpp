@@ -510,6 +510,13 @@ struct InterfaceImpl<DeviceType::HIP> : InterfaceBase<DeviceType::HIP> {
   using ::Petsc::device::cupm::impl::InterfaceImpl<T>::cupmMemset2DAsync; \
   using ::Petsc::device::cupm::impl::InterfaceImpl<T>::cupmLaunchHostFunc
 
+#if PetscHasAttribute(always_inline)
+  // https://gcc.gnu.org/bugzilla//show_bug.cgi?id=109464
+  #define PETSC_GCC_LINKER_UNDEFINED_REFERENCE_BUG_WORKAROUND __attribute__((always_inline))
+#else
+  #define PETSC_GCC_LINKER_UNDEFINED_REFERENCE_BUG_WORKAROUND
+#endif
+
 // The actual interface class
 template <DeviceType T>
 struct Interface : InterfaceImpl<T> {
@@ -522,7 +529,7 @@ public:
   using cupmReal_t   = util::conditional_t<PetscDefined(USE_REAL_SINGLE), float, double>;
   using cupmScalar_t = util::conditional_t<PetscDefined(USE_COMPLEX), cupmComplex_t, cupmReal_t>;
 
-  PETSC_NODISCARD static constexpr cupmScalar_t cupmScalarCast(PetscScalar s) noexcept
+  PETSC_NODISCARD PETSC_GCC_LINKER_UNDEFINED_REFERENCE_BUG_WORKAROUND static constexpr cupmScalar_t cupmScalarCast(PetscScalar s) noexcept
   {
 #if PetscDefined(USE_COMPLEX)
     return cupmComplex_t{PetscRealPart(s), PetscImaginaryPart(s)};
@@ -531,13 +538,13 @@ public:
 #endif
   }
 
-  PETSC_NODISCARD static constexpr const cupmScalar_t *cupmScalarPtrCast(const PetscScalar *s) noexcept { return reinterpret_cast<const cupmScalar_t *>(s); }
+  PETSC_NODISCARD PETSC_GCC_LINKER_UNDEFINED_REFERENCE_BUG_WORKAROUND static constexpr const cupmScalar_t *cupmScalarPtrCast(const PetscScalar *s) noexcept { return reinterpret_cast<const cupmScalar_t *>(s); }
 
-  PETSC_NODISCARD static constexpr cupmScalar_t *cupmScalarPtrCast(PetscScalar *s) noexcept { return reinterpret_cast<cupmScalar_t *>(s); }
+  PETSC_NODISCARD PETSC_GCC_LINKER_UNDEFINED_REFERENCE_BUG_WORKAROUND static constexpr cupmScalar_t *cupmScalarPtrCast(PetscScalar *s) noexcept { return reinterpret_cast<cupmScalar_t *>(s); }
 
-  PETSC_NODISCARD static constexpr const cupmReal_t *cupmRealPtrCast(const PetscReal *s) noexcept { return reinterpret_cast<const cupmReal_t *>(s); }
+  PETSC_NODISCARD PETSC_GCC_LINKER_UNDEFINED_REFERENCE_BUG_WORKAROUND static constexpr const cupmReal_t *cupmRealPtrCast(const PetscReal *s) noexcept { return reinterpret_cast<const cupmReal_t *>(s); }
 
-  PETSC_NODISCARD static constexpr cupmReal_t *cupmRealPtrCast(PetscReal *s) noexcept { return reinterpret_cast<cupmReal_t *>(s); }
+  PETSC_NODISCARD PETSC_GCC_LINKER_UNDEFINED_REFERENCE_BUG_WORKAROUND static constexpr cupmReal_t *cupmRealPtrCast(PetscReal *s) noexcept { return reinterpret_cast<cupmReal_t *>(s); }
 
 #if !defined(PETSC_PKG_CUDA_VERSION_GE)
   #define PETSC_PKG_CUDA_VERSION_GE(...) 0
@@ -893,6 +900,8 @@ private:
   }
 };
 
+#undef PETSC_GCC_LINKER_UNDEFINED_REFERENCE_BUG_WORKAROUND
+
 #define PETSC_CUPM_INHERIT_INTERFACE_TYPEDEFS_USING(T) \
   PETSC_CUPM_IMPL_CLASS_HEADER(T); \
   using cupmReal_t   = typename ::Petsc::device::cupm::impl::Interface<T>::cupmReal_t; \
@@ -917,6 +926,14 @@ private:
   using ::Petsc::device::cupm::impl::Interface<T>::cupmLaunchKernel; \
   using ::Petsc::device::cupm::impl::Interface<T>::PetscCUPMLaunchKernel1D; \
   using ::Petsc::device::cupm::impl::Interface<T>::PetscDeviceCopyModeToCUPMMemcpyKind
+
+#if PetscDefined(HAVE_CUDA)
+extern template struct PETSC_SINGLE_LIBRARY_VISIBILITY_INTERNAL Interface<DeviceType::CUDA>;
+#endif
+
+#if PetscDefined(HAVE_HIP)
+extern template struct PETSC_SINGLE_LIBRARY_VISIBILITY_INTERNAL Interface<DeviceType::HIP>;
+#endif
 
 } // namespace impl
 
