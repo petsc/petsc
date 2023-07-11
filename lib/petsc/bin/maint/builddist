@@ -116,7 +116,7 @@ make latexpdf SPHINXOPTS="-j 6" && cp _build/latex/manual.pdf ../docs/manual/
 
 # Build fortranstubs
 cd $PETSC_DIR/
-  make allfortranstubstarball
+  make allfortranstubsinplace
 
 # build petsc4py tarball (docs are no longer built here)
 cd $PETSC_DIR/src/binding/petsc4py
