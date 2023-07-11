@@ -32,7 +32,7 @@ PETSC_PRAGMA_DIAGNOSTIC_IGNORED_BEGIN("-Wdeprecated-declarations")
 
    Level: intermediate
 
-.seealso: `PetscURLShorten()`, `PetscGoogleDriveAuthorize()`, `PetscGoogleDriveUpload()`
+.seealso: `PetscGoogleDriveAuthorize()`, `PetscGoogleDriveUpload()`
 @*/
 PetscErrorCode PetscGoogleDriveRefresh(MPI_Comm comm, const char refresh_token[], char access_token[], size_t tokensize)
 {
@@ -115,7 +115,7 @@ PetscErrorCode PetscGoogleDriveRefresh(MPI_Comm comm, const char refresh_token[]
 
    Level: intermediate
 
-.seealso: `PetscURLShorten()`, `PetscGoogleDriveAuthorize()`, `PetscGoogleDriveRefresh()`
+.seealso: `PetscGoogleDriveAuthorize()`, `PetscGoogleDriveRefresh()`
 @*/
 PetscErrorCode PetscGoogleDriveUpload(MPI_Comm comm, const char access_token[], const char filename[])
 {
@@ -205,7 +205,7 @@ PetscErrorCode PetscGoogleDriveUpload(MPI_Comm comm, const char access_token[], 
    You can run src/sys/webclient/tutorials/googleobtainrefreshtoken to get a refresh token and then in the future pass it to
    PETSc programs with `-google_refresh_token XXX`
 
-.seealso: `PetscGoogleDriveRefresh()`, `PetscGoogleDriveUpload()`, `PetscURLShorten()`
+.seealso: `PetscGoogleDriveRefresh()`, `PetscGoogleDriveUpload()`
 @*/
 PetscErrorCode PetscGoogleDriveAuthorize(MPI_Comm comm, char access_token[], char refresh_token[], size_t tokensize)
 {
@@ -257,46 +257,5 @@ PetscErrorCode PetscGoogleDriveAuthorize(MPI_Comm comm, char access_token[], cha
     PetscCall(PetscPrintf(comm, "programs with the option -google_refresh_token %s\n", refresh_token));
     PetscCall(PetscPrintf(comm, "to access Google Drive automatically\n"));
   }
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-/*@C
-     PetscURLShorten - Uses Google's service to get a short url for a long url
-
-    Input Parameters:
-+    url - long URL you want shortened
--    lenshorturl - length of buffer to contain short URL
-
-    Output Parameter:
-.    shorturl - the shortened URL
-
-   Level: intermediate
-
-   Note:
-   Google no longer provides this service so this routine will no longer function
-
-.seealso: `PetscGoogleDriveRefresh()`, `PetscGoogleDriveUpload()`, `PetscGoogleDriveAuthorize()`
-@*/
-PetscErrorCode PetscURLShorten(const char url[], char shorturl[], size_t lenshorturl)
-{
-  SSL_CTX  *ctx;
-  SSL      *ssl;
-  int       sock;
-  char      buff[1024], body[512], post[1024];
-  PetscBool found;
-
-  PetscFunctionBegin;
-  PetscCall(PetscSSLInitializeContext(&ctx));
-  PetscCall(PetscHTTPSConnect("www.googleapis.com", 443, ctx, &sock, &ssl));
-  PetscCall(PetscStrncpy(body, "{", sizeof(body)));
-  PetscCall(PetscPushJSONValue(body, "longUrl", url, sizeof(body) - 2));
-  PetscCall(PetscStrlcat(body, "}", sizeof(body)));
-  PetscCall(PetscSNPrintf(post, sizeof(post), "www.googleapis.com/urlshortener/v1/url?key=%s", PETSC_GOOGLE_API_KEY));
-  PetscCall(PetscHTTPSRequest("POST", post, NULL, "application/json", body, ssl, buff, sizeof(buff)));
-  PetscCall(PetscSSLDestroyContext(ctx));
-  close(sock);
-
-  PetscCall(PetscPullJSONValue(buff, "id", shorturl, lenshorturl, &found));
-  PetscCheck(found, PETSC_COMM_SELF, PETSC_ERR_LIB, "Google drive did not return short URL");
   PetscFunctionReturn(PETSC_SUCCESS);
 }

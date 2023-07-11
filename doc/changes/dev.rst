@@ -29,6 +29,7 @@ Changes: Development
 - Remove deprecated ``-malloc [no]`` startup option
 - Remove deprecated ``-malloc_info`` startup option
 - Remove deprecated ``-log_summary`` option
+- Remove ``PetscURLShorten()``, it has not worked since 2019
 
 .. rubric:: Event Logging:
 
