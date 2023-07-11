@@ -294,7 +294,6 @@ PETSC_INTERN PetscErrorCode PetscOptionsCheckInitial_Private(const char help[])
     PetscCall(PetscOptionsHasName(NULL, NULL, "-malloc_view", &mlog));
     if (mlog) mdebug = PETSC_TRUE;
     /* the next line is deprecated */
-    PetscCall(PetscOptionsGetBool(NULL, NULL, "-malloc", &mdebug, NULL));
     PetscCall(PetscOptionsGetBool(NULL, NULL, "-malloc_dump", &mdebug, NULL));
     PetscCall(PetscOptionsGetBool(NULL, NULL, "-log_view_memory", &mdebug, NULL));
     if (mdebug) PetscCall(PetscMallocSetDebug(eachcall, initializenan));
@@ -587,8 +586,6 @@ PETSC_INTERN PetscErrorCode PetscOptionsCheckInitial_Private(const char help[])
     PetscCall((*PetscHelpPrintf)(comm, " -fp_trap: stop on floating point exceptions\n"));
     PetscCall((*PetscHelpPrintf)(comm, "           note on IBM RS6000 this slows run greatly\n"));
     PetscCall((*PetscHelpPrintf)(comm, " -malloc_dump <optional filename>: dump list of unfreed memory at conclusion\n"));
-    PetscCall((*PetscHelpPrintf)(comm, " -malloc: use PETSc error checking malloc (deprecated, use -malloc_debug)\n"));
-    PetscCall((*PetscHelpPrintf)(comm, " -malloc no: don't use PETSc error checking malloc (deprecated, use -malloc_debug no)\n"));
     PetscCall((*PetscHelpPrintf)(comm, " -malloc_info: prints total memory usage (deprecated, use -memory_view)\n"));
     PetscCall((*PetscHelpPrintf)(comm, " -malloc_view <optional filename>: keeps log of all memory allocations, displays in PetscFinalize()\n"));
     PetscCall((*PetscHelpPrintf)(comm, " -malloc_debug <true or false>: enables or disables extended checking for memory corruption\n"));

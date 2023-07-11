@@ -26,6 +26,7 @@ Changes: Development
 - Add ``PetscIsCloseAtTolScalar()``
 - Remove ``PetscTellMyCell()`` and related runtime option
 - Remove ``PetscTextBelt()`` and related runtime option
+- Remove deprecated ``-malloc [no]`` startup option
 
 .. rubric:: Event Logging:
 

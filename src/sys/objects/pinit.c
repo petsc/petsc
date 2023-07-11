@@ -1149,8 +1149,6 @@ PETSC_INTERN PetscErrorCode PetscInitialize_Common(const char *prog, const char 
 .  -debugger_pause [sleeptime] (in seconds) - Pauses debugger
 .  -stop_for_debugger - Print message on how to attach debugger manually to
                         process and wait (-debugger_pause) seconds for attachment
-.  -malloc - Indicates use of PETSc error-checking malloc (on by default for debug version of libraries) (deprecated, use -malloc_debug)
-.  -malloc no - Indicates not to use error-checking malloc (deprecated, use -malloc_debug no)
 .  -malloc_debug - check for memory corruption at EVERY malloc or free, see `PetscMallocSetDebug()`
 .  -malloc_dump - prints a list of all unfreed memory at the end of the run
 .  -malloc_test - like -malloc_dump -malloc_debug, but only active for debugging builds, ignored in optimized build. May want to set in PETSC_OPTIONS environmental variable
