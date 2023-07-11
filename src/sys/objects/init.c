@@ -513,7 +513,6 @@ PETSC_INTERN PetscErrorCode PetscOptionsCheckInitial_Private(const char help[])
 
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-log_sync", &PetscLogSyncOn, NULL));
 
-  PetscBool flg3 = PETSC_FALSE;
   #if defined(PETSC_HAVE_MPE)
   flg1 = PETSC_FALSE;
   PetscCall(PetscOptionsHasName(NULL, NULL, "-log_mpe", &flg1));
@@ -521,9 +520,7 @@ PETSC_INTERN PetscErrorCode PetscOptionsCheckInitial_Private(const char help[])
   #endif
   flg1 = PETSC_FALSE;
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-log_all", &flg1, NULL));
-  PetscCall(PetscOptionsHasName(NULL, NULL, "-log_summary", &flg3));
   if (flg1) PetscCall(PetscLogAllBegin());
-  else if (flg3) PetscCall(PetscLogDefaultBegin());
 
   PetscCall(PetscOptionsGetString(NULL, NULL, "-log_trace", mname, sizeof(mname), &flg1));
   if (flg1) {

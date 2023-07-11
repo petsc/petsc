@@ -28,6 +28,7 @@ Changes: Development
 - Remove ``PetscTextBelt()`` and related runtime option
 - Remove deprecated ``-malloc [no]`` startup option
 - Remove deprecated ``-malloc_info`` startup option
+- Remove deprecated ``-log_summary`` option
 
 .. rubric:: Event Logging:
 

@@ -1008,8 +1008,7 @@ PETSC_INTERN PetscErrorCode PetscInitialize_Common(const char *prog, const char 
 
 #if PetscDefined(HAVE_VIENNACL)
   flg = PETSC_FALSE;
-  PetscCall(PetscOptionsHasName(NULL, NULL, "-log_summary", &flg));
-  if (!flg) PetscCall(PetscOptionsHasName(NULL, NULL, "-log_view", &flg));
+  PetscCall(PetscOptionsHasName(NULL, NULL, "-log_view", &flg));
   if (!flg) PetscCall(PetscOptionsGetBool(NULL, NULL, "-viennacl_synchronize", &flg, NULL));
   PetscViennaCLSynchronize = flg;
   PetscCall(PetscViennaCLInit());
@@ -1184,8 +1183,6 @@ PETSC_INTERN PetscErrorCode PetscInitialize_Common(const char *prog, const char 
 .  -log_view [:filename:format] - Prints summary of flop and timing information to screen or file, see `PetscLogView()`.
 .  -log_view_memory - Includes in the summary from -log_view the memory used in each event, see `PetscLogView()`.
 .  -log_view_gpu_time - Includes in the summary from -log_view the time used in each GPU kernel, see `PetscLogView().
-.  -log_summary [filename] - (Deprecated, use -log_view) Prints summary of flop and timing information to screen. If the filename is specified the
-        summary is written to the file.  See PetscLogView().
 .  -log_exclude: <vec,mat,pc,ksp,snes> - excludes subset of object classes from logging
 .  -log_all [filename] - Logs extensive profiling information  See `PetscLogDump()`.
 .  -log [filename] - Logs basic profiline information  See `PetscLogDump()`.
@@ -1460,23 +1457,6 @@ PetscErrorCode PetscFinalize(void)
   PetscCall(PetscOptionsPushGetViewerOff(PETSC_FALSE));
   PetscCall(PetscLogViewFromOptions());
   PetscCall(PetscOptionsPopGetViewerOff());
-
-  mname[0] = 0;
-  PetscCall(PetscOptionsGetString(NULL, NULL, "-log_summary", mname, sizeof(mname), &flg1));
-  if (flg1) {
-    PetscViewer viewer;
-    PetscCall((*PetscHelpPrintf)(PETSC_COMM_WORLD, "\n\n WARNING:   -log_summary is being deprecated; switch to -log_view\n\n\n"));
-    if (mname[0]) {
-      PetscCall(PetscViewerASCIIOpen(PETSC_COMM_WORLD, mname, &viewer));
-      PetscCall(PetscLogView(viewer));
-      PetscCall(PetscViewerDestroy(&viewer));
-    } else {
-      viewer = PETSC_VIEWER_STDOUT_WORLD;
-      PetscCall(PetscViewerPushFormat(viewer, PETSC_VIEWER_DEFAULT));
-      PetscCall(PetscLogView(viewer));
-      PetscCall(PetscViewerPopFormat(viewer));
-    }
-  }
 
   /*
      Free any objects created by the last block of code.
