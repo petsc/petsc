@@ -24,6 +24,7 @@ class Configure(config.package.CMakePackage):
 
   def setupDependencies(self, framework):
     config.package.CMakePackage.setupDependencies(self, framework)
+    self.scalartypes    = framework.require('PETSc.options.scalarTypes',self)
     self.blasLapack     = framework.require('config.packages.BlasLapack',self)
     self.parmetis       = framework.require('config.packages.parmetis',self)
     self.mpi            = framework.require('config.packages.MPI',self)
@@ -102,5 +103,8 @@ Suggest using --download-superlu_dist')
       if not self.checkCompile('#include "superlu_ddefs.h"','#if defined(_LONGINT)\n#error "longint is defined"\n#endif\n'):
         raise RuntimeError('PETSc is being configured without using --with-64-bit-indices but SuperLU_DIST library is built for 64-bit integers.\n\
 Suggest using --download-superlu_dist')
+
+    if self.executeTest(self.libraries.check,[self.lib, ['psgssvx']],{'otherLibs' : self.dlib}) and self.checkCompile('#include "superlu_sdefs.h"','') and self.scalartypes.scalartype == 'real' and self.scalartypes.precision == 'double':
+       self.addDefine('HAVE_SUPERLU_DIST_SINGLE',1)
     self.compilers.CPPFLAGS = oldFlags
     self.popLanguage()
