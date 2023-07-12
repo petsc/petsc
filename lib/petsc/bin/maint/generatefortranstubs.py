@@ -277,13 +277,45 @@ def main(petscdir,petscarch,bfort,dir,verbose):
 #
 if __name__ ==  '__main__':
   import sys
-  if len(sys.argv) < 2: sys.exit('Must give the BFORT program or -merge as the first argument')
-  petscdir = os.environ['PETSC_DIR']
-  if 'PETSC_ARCH' in os.environ:  petscarch = os.environ['PETSC_ARCH']
-  else: petscarch = ''
-  if len(sys.argv) > 2: verbose = 1
-  else: verbose = 0
-  if not sys.argv[1].startswith('-'):
-    main(petscdir,petscarch,sys.argv[1],os.path.join(petscdir,'src'),verbose)
+  import argparse
+
+  def str2bool(v):
+    if isinstance(v, bool):
+      return v
+    if not isinstance(v, str):
+      raise argparse.ArgumentTypeError(type(v))
+    v = v.casefold()
+    if v in {'yes', 'true', 't', 'y', '1'}:
+      return True
+    if v in {'no', 'false', 'f', 'n', '0', ''}:
+      return False
+    raise argparse.ArgumentTypeError('Boolean value expected, got ' + v)
+
+  def not_empty(v):
+    if not v:
+      raise argparse.ArgumentTypeError('option cannot be empty string')
+    return v
+
+  parser = argparse.ArgumentParser(
+    description='generate PETSc FORTRAN stubs', formatter_class=argparse.ArgumentDefaultsHelpFormatter
+  )
+
+  parser.add_argument('--petsc-dir', metavar='path', required=True, type=not_empty, help='PETSc root directory')
+  parser.add_argument('--petsc-arch', metavar='string', required=True, help='PETSc arch name')
+  parser.add_argument('--verbose', metavar='bool', nargs='?', const=True, default=False, type=str2bool, help='verbose program output')
+  parser.add_argument('--bfort', metavar='bfort_prog', nargs=1, help='path to bfort program')
+  parser.add_argument('--mode', choices=('generate', 'merge'), default='generate', help='merge fortran 90 interfaces definitions')
+  args = parser.parse_args()
+
+  if args.mode == 'merge':
+    ret = processf90interfaces(args.petsc_dir, args.petsc_arch, args.verbose)
   else:
-    processf90interfaces(petscdir,petscarch,verbose)
+    if not args.bfort:
+      parser.error('--mode=generate requires --bfort!')
+    assert isinstance(args.bfort, (list, tuple))
+    bfort_exec = args.bfort[0]
+    assert isinstance(bfort_exec, str)
+    ret = main(
+      args.petsc_dir, args.petsc_arch, bfort_exec, os.path.join(args.petsc_dir, 'src'), args.verbose
+    )
+  sys.exit(ret)
