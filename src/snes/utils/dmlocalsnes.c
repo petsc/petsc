@@ -194,9 +194,7 @@ PetscErrorCode DMSNESSetFunctionLocal(DM dm, PetscErrorCode (*func)(DM, Vec, Vec
 }
 
 /*@C
-  DMSNESSetBoundaryLocal - set a local boundary value function. This function is called with local vector
-  containing the local vector information PLUS ghost point information. It should insert values into the local
-  vector that do not come from the global vector, such as essential boundary condition data.
+  DMSNESSetBoundaryLocal - set a function to insert, for example, essential boundary conditions into a ghosted solution vector
 
   Logically Collective
 
@@ -205,11 +203,17 @@ PetscErrorCode DMSNESSetFunctionLocal(DM dm, PetscErrorCode (*func)(DM, Vec, Vec
 . func - local boundary value evaluation
 - ctx  - optional context for local boundary value evaluation
 
+  Calling sequence of `func`:
+$  PetscErrorCode func(DM dm, Vec X, void *ctx)
++ dm  - the `DM` context
+. X   - ghosted solution vector, approriate locations (such as essential boundary condition nodes) should be filled
+- ctx - a user provided context
+
   Level: advanced
 
 .seealso: `DMSNESSetFunctionLocal()`, `DMDASNESSetJacobianLocal()`
 @*/
-PetscErrorCode DMSNESSetBoundaryLocal(DM dm, PetscErrorCode (*func)(DM, Vec, void *), void *ctx)
+PetscErrorCode DMSNESSetBoundaryLocal(DM dm, PetscErrorCode (*func)(DM dm, Vec X, void *ctx), void *ctx)
 {
   DMSNES        sdm;
   DMSNES_Local *dmlocalsnes;
@@ -235,11 +239,19 @@ PetscErrorCode DMSNESSetBoundaryLocal(DM dm, PetscErrorCode (*func)(DM, Vec, voi
 . func - local Jacobian evaluation
 - ctx  - optional context for local Jacobian evaluation
 
+  Calling sequence of `func`:
+$  PetscErrorCode func(DM dm, Vec X, void *ctx)
++ dm  - the `DM` context
+. X   - current solution vector (ghosted or not?)
+. J   - the Jacobian
+. Jp  - approximate Jacobian used to compute the preconditioner, often `J`
+- ctx - a user provided context
+
   Level: advanced
 
 .seealso: `DMSNESSetJacobian()`, `DMDASNESSetJacobian()`, `DMDACreate1d()`, `DMDACreate2d()`, `DMDACreate3d()`
 @*/
-PetscErrorCode DMSNESSetJacobianLocal(DM dm, PetscErrorCode (*func)(DM, Vec, Mat, Mat, void *), void *ctx)
+PetscErrorCode DMSNESSetJacobianLocal(DM dm, PetscErrorCode (*func)(DM dm, Vec X, Mat J, Mat Jp, void *ctx), void *ctx)
 {
   DMSNES        sdm;
   DMSNES_Local *dmlocalsnes;

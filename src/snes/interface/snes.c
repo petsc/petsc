@@ -1863,11 +1863,7 @@ PetscErrorCode SNESSetFunction(SNES snes, Vec r, PetscErrorCode (*f)(SNES, Vec, 
 }
 
 /*@C
-  SNESSetInitialFunction - Sets the function vector to be used as the
-  initial function value at the initialization of the method.  In some
-  instances, the user has precomputed the function before calling
-  `SNESSolve()`.  This function allows one to avoid a redundant call
-  to `SNESComputeFunction()` in that case.
+  SNESSetInitialFunction - Set an already computed function evaluation at the initial guess to be reused by `SNESSolve()`.
 
   Logically Collective
 
@@ -2118,10 +2114,10 @@ PetscErrorCode SNESGetFunctionType(SNES snes, SNESFunctionType *type)
             smoother evaluation routine (may be `NULL`)
 
   Calling sequence of `f`:
-$  PetscErrorCode f(SNES snes, Vec X, Vec B, void *ctx)
+$ PetscErrorCode f(SNES snes, Vec X, Vec B, void *ctx);
 + snes - the `SNES` context
-.  X - the current solution
-.  B - the right hand side vector (which may be `NULL`)
+. X    - the current solution
+. B    - the right hand side vector (which may be `NULL`)
 - ctx  - a user provided context
 
   Level: intermediate
@@ -2132,7 +2128,7 @@ $  PetscErrorCode f(SNES snes, Vec X, Vec B, void *ctx)
 
 .seealso: [](ch_snes), `SNESGetNGS()`, `SNESNCG`, `SNESGetFunction()`, `SNESComputeNGS()`
 @*/
-PetscErrorCode SNESSetNGS(SNES snes, PetscErrorCode (*f)(SNES, Vec, Vec, void *), void *ctx)
+PetscErrorCode SNESSetNGS(SNES snes, PetscErrorCode (*f)(SNES snes, Vec X, Vec B, void *ctx), void *ctx)
 {
   DM dm;
 
@@ -2308,14 +2304,14 @@ PetscErrorCode SNESGetPicard(SNES snes, Vec *r, PetscErrorCode (**f)(SNES, Vec, 
   Calling sequence of `func`:
 $    PetscErrorCode func(SNES snes, Vec x, void *ctx);
 + snes - the `SNES` solver
-.  x - vector to put initial guess
+. x    - vector to put initial guess
 - ctx  - optional user-defined function context
 
   Level: intermediate
 
 .seealso: [](ch_snes), `SNES`, `SNESSolve()`, `SNESGetFunction()`, `SNESComputeFunction()`, `SNESSetJacobian()`
 @*/
-PetscErrorCode SNESSetComputeInitialGuess(SNES snes, PetscErrorCode (*func)(SNES, Vec, void *), void *ctx)
+PetscErrorCode SNESSetComputeInitialGuess(SNES snes, PetscErrorCode (*func)(SNES snes, Vec x, void *ctx), void *ctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
@@ -4321,7 +4317,7 @@ $ PetscErrorCode func(SNES snes, PetscInt step);
 .seealso: [](ch_snes), `SNES`, `SNESSolve()`, `SNESSetJacobian()`, `SNESLineSearchSetPreCheck()`, `SNESLineSearchSetPostCheck()`, `SNESNewtonTRSetPreCheck()`, `SNESNewtonTRSetPostCheck()`,
          `SNESMonitorSet()`, `SNESSetDivergenceTest()`
 @*/
-PetscErrorCode SNESSetUpdate(SNES snes, PetscErrorCode (*func)(SNES, PetscInt))
+PetscErrorCode SNESSetUpdate(SNES snes, PetscErrorCode (*func)(SNES snes, PetscInt step))
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);

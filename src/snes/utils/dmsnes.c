@@ -359,21 +359,29 @@ PetscErrorCode DMSNESUnsetFunctionContext_Internal(DM dm)
   Logically Collective
 
   Input Parameters:
-+ dm - `DM` to be used with `SNES`
-- f  - residual evaluation function; see `SNESFunction` for details
++ dm   - `DM` to be used with `SNES`
+. func - residual evaluation function; see `SNESFunction` for details
+- ctx  - optional function context
+
+  Calling sequence of `func`:
+$ PetscErrorCode func(SNES snes, Vec x, Vec f, void *ctx);
++ snes - the solver object
+. x    - the input vector
+. f    - the output vector
+- ctx  - the optional function context
 
   Level: advanced
 
 .seealso: `DMSNESSetContext()`, `SNESSetFunction()`, `DMSNESSetJacobian()`, `SNESFunction`, `DMSNESSetFunction()`
 @*/
-PetscErrorCode DMSNESSetMFFunction(DM dm, PetscErrorCode (*f)(SNES, Vec, Vec, void *), void *ctx)
+PetscErrorCode DMSNESSetMFFunction(DM dm, PetscErrorCode (*func)(SNES snes, Vec x, Vec f, void *ctx), void *ctx)
 {
   DMSNES sdm;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  if (f || ctx) PetscCall(DMGetDMSNESWrite(dm, &sdm));
-  if (f) sdm->ops->computemffunction = f;
+  if (func || ctx) PetscCall(DMGetDMSNESWrite(dm, &sdm));
+  if (func) sdm->ops->computemffunction = func;
   if (ctx) sdm->mffunctionctx = ctx;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

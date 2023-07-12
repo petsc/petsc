@@ -701,8 +701,7 @@ PetscErrorCode SNESMonitorDefaultField(SNES snes, PetscInt its, PetscReal fgnorm
 }
 
 /*@C
-  SNESConvergedDefault - Default onvergence test of the solvers for
-  systems of nonlinear equations.
+  SNESConvergedDefault - Default convergence test `SNESSolve()`.
 
   Collective
 
@@ -715,24 +714,7 @@ PetscErrorCode SNESMonitorDefaultField(SNES snes, PetscInt its, PetscReal fgnorm
 - dummy - unused context
 
   Output Parameter:
-+ reason - one of
-.vb
-   SNES_CONVERGED_FNORM_ABS       - (fnorm < abstol),
-   SNES_CONVERGED_SNORM_RELATIVE  - (snorm < stol*xnorm),
-   SNES_CONVERGED_FNORM_RELATIVE  - (fnorm < rtol*fnorm0),
-   SNES_DIVERGED_FUNCTION_COUNT   - (nfct > maxf),
-   SNES_DIVERGED_FNORM_NAN        - (fnorm == NaN),
-   SNES_CONVERGED_ITERATING       - (otherwise),
-   SNES_DIVERGED_DTOL             - (fnorm > divtol*snes->fnorm0)
-.ve
-
-  where
-.    maxf - maximum number of function evaluations,  set with `SNESSetTolerances()`
-.    nfct - number of function evaluations,
-.    abstol - absolute function norm tolerance, set with `SNESSetTolerances()`
-.    rtol - relative function norm tolerance, set with `SNESSetTolerances()`
-.    divtol - divergence tolerance, set with `SNESSetDivergenceTolerance()`
--    fnorm0 - 2-norm of the function at the initial solution (initial guess; zeroth iteration)
+. reason - converged reason, see `KSPConvergedReason`
 
   Options Database Keys:
 + -snes_convergence_test default      - see `SNESSetFromOptions()`
@@ -744,7 +726,7 @@ PetscErrorCode SNESMonitorDefaultField(SNES snes, PetscInt its, PetscReal fgnorm
 . -snes_max_fail <max_fail>           - maximum number of line search failures allowed before stopping, default is none
 - -snes_max_linear_solve_fail         - number of linear solver failures before `SNESSolve()` stops
 
-  Level: intermediate
+  Level: developer
 
 .seealso: [](ch_snes), `SNES`, `SNESSolve()`, `SNESSetConvergenceTest()`, `SNESConvergedSkip()`, `SNESSetTolerances()`, `SNESSetDivergenceTolerance()`,
           `SNESConvergedReason`
