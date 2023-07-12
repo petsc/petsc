@@ -44,7 +44,7 @@ int main(int argc, char **argv)
 
    testset:
      args: -options_left false
-     filter:  grep -E -v "(options_left|options_monitor)"
+     filter:  grep -E -v "(options_monitor)"
      localrunfiles: petsc.yml
 
      test:
@@ -96,7 +96,6 @@ int main(int argc, char **argv)
      test:
         suffix: 3_env
         env: PETSC_OPTIONS_YAML='"name: value"'
-        filter: grep -E -v -e "(options_left)"
         args: -monitor
 
      test:

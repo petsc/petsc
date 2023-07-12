@@ -22,6 +22,5 @@ int main(int argc, char **argv)
 
    test:
      localrunfiles: optionsfile
-     filter: grep -E -v "(options_left)"
 
 TEST*/
