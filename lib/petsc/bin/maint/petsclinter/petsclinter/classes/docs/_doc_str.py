@@ -55,8 +55,9 @@ _suspicious_patterns = set(
     (
       r'follows', r'following.*', r'example', r'instance', r'one\sof.*', r'available.*include',
       r'supports.*approaches.*', r'see.*user.*manual', r'y\.\ssaad,\siterative\smethods.*philadelphia',
-      r'default', r'in\s.*\scase.*', r'use\sthe.*', r'for\s+example', r'note\sthat', r'example[,;-]\s',
-      r'.*etc\.', r'references\s+(to|a|so)\s+', r'(the|an|the|a)\s+options\s+database\s+(for|to)?'
+      r'default', r'in\s.*\scase.*', r'use\sthe.*', r'for\s+example', r'note\s+(also|that)?',
+      r'example[,;-]\s', r'.*etc\.', r'references\s+(to|a|so)\s+',
+      r'(the|an|the|a)\s+options\s+database\s+(for|to)?'
     )
   )
 )

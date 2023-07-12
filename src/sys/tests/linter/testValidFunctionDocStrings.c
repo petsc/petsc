@@ -682,3 +682,16 @@ PetscErrorCode testLeftFlushSeeAlsoFalsePositive()
 {
   return PETSC_SUCCESS;
 }
+
+/*@C
+  testNoteFalsePositive - this is note a notes heading, note
+  that there
+
+  Level: beginner
+
+.seealso: `Foo`
+@*/
+PetscErrorCode testNoteFalsePositive()
+{
+  return PETSC_SUCCESS;
+}
