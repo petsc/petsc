@@ -630,6 +630,13 @@
        [33m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
   629:     example this is not a heading
   630: 
+[31m[1m./src/sys/tests/linter/testValidFunctionDocStrings.c:678:9: error:[0m seealso values must be (1) space away from colon not (0) [-fdoc-inline-list-formatting]:
+  676:   Level: beginner
+  677: 
+> 678: .seealso[33m[1m:[0m`thisShouldOnlyBeShiftedOverByOneSpace()`,
+               [33m[1m^[0m
+  679: `andThisShouldBeLeftAlone()`
+  680: @*/
 --------------------------------------------------------------------------------------------
 <--- LEFT --->
 --------------------------------------------------------------------------------------------

@@ -701,13 +701,13 @@ class PetscDocString(DocBase):
       self.add_error_from_source_range(diag, mess, eloc, highlight=False, patch=Patch(floc, ''))
     return
 
-  def _check_valid_indentation(self, lineno, line, lstripped):
+  def _check_valid_indentation(self, lineno, line, left_stripped):
     """
     If the line is regular (not empty, or a parameter list), check that line is indented correctly
     """
     linelen = len(line)
     if linelen:
-      indent       = linelen - len(lstripped)
+      indent       = linelen - len(left_stripped)
       expected_ind = 0 if line.startswith(('.', '+', '-', '$')) else self.indent
       if indent != expected_ind:
         diag = self.diags.indentation
@@ -799,7 +799,8 @@ class PetscDocString(DocBase):
     in_verbatim = 0
     prev_line   = ''
     for lineno, line in enumerate(self.raw.splitlines(), start=self.extent.start.line):
-      stripped = line.strip()
+      left_stripped = line.lstrip()
+      stripped      = left_stripped.rstrip()
       if stripped.startswith('/*') or stripped.endswith('*/'):
         continue
 
@@ -815,7 +816,7 @@ class PetscDocString(DocBase):
         # inline verbatim don't modify check flag but dont check indentation either
         in_verbatim = 2
       elif check_indent:
-        self._check_valid_indentation(lineno, line, stripped)
+        self._check_valid_indentation(lineno, line, left_stripped)
 
       if in_verbatim == 0:
         heading_verdict = self.sections.is_heading(prev_line, stripped)
@@ -823,7 +824,7 @@ class PetscDocString(DocBase):
         if heading_verdict > 0:
           # we may switch headings, we should check indentation
           if not check_indent:
-            self._check_valid_indentation(lineno, line, stripped)
+            self._check_valid_indentation(lineno, line, left_stripped)
           self._check_valid_section_spacing(raw_data[-1][1] if raw_data else None, lineno)
           new_section = self.sections.find(stripped.split(':', maxsplit=1)[0].strip().casefold())
           if new_section != section:

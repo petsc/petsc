@@ -669,3 +669,16 @@ PetscErrorCode testOptionsDatabaseFalsePositive()
 {
   return PETSC_SUCCESS;
 }
+
+/*@C
+  testLeftFlushSeeAlsoFalsePositive - this should only indent the seealso once
+
+  Level: beginner
+
+.seealso:`thisShouldOnlyBeShiftedOverByOneSpace()`,
+`andThisShouldBeLeftAlone()`
+@*/
+PetscErrorCode testLeftFlushSeeAlsoFalsePositive()
+{
+  return PETSC_SUCCESS;
+}

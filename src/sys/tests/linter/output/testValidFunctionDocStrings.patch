@@ -384,3 +384,10 @@
 ++ bar - a bar for
      example this is not a heading
  
+@@ -679,5 +679,5 @@
+   Level: beginner
+ 
+-.seealso:`thisShouldOnlyBeShiftedOverByOneSpace()`,
++.seealso: `thisShouldOnlyBeShiftedOverByOneSpace()`,
+ `andThisShouldBeLeftAlone()`
+ @*/
