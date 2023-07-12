@@ -6,17 +6,17 @@
 #include <petsc/private/kspimpl.h>
 
 /*
-   PCGAMGGetDataWithGhosts - Get array of local + ghost data with local data
-    hacks into Mat MPIAIJ so this must have size > 1
+  PCGAMGGetDataWithGhosts - Get array of local + ghost data with local data
+  hacks into Mat MPIAIJ so this must have size > 1
 
-   Input Parameter:
-   . Gmat - MPIAIJ matrix for scatters
-   . data_sz - number of data terms per node (# cols in output)
-   . data_in[nloc*data_sz] - column oriented local data
+  Input Parameter:
++ Gmat    - MPIAIJ matrix for scatters
+. data_sz - number of data terms per node (# cols in output)
+   - data_in[nloc*data_sz] - column oriented local data
 
-   Output Parameter:
-   . a_stride - number of rows of output (locals+ghosts)
-   . a_data_out[stride*data_sz] - output data with ghosts
+  Output Parameter:
++ a_stride - number of rows of output (locals+ghosts)
+   - a_data_out[stride*data_sz] - output data with ghosts
 
 */
 PetscErrorCode PCGAMGGetDataWithGhosts(Mat Gmat, PetscInt data_sz, PetscReal data_in[], PetscInt *a_stride, PetscReal **a_data_out)

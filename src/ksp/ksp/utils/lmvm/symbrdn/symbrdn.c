@@ -606,17 +606,16 @@ PetscErrorCode MatCreate_LMVMSymBrdn(Mat B)
 /*------------------------------------------------------------*/
 
 /*@
-   MatLMVMSymBroydenSetDelta - Sets the starting value for the diagonal scaling vector computed
-   in the SymBrdn approximations (also works for BFGS and DFP).
+  MatLMVMSymBroydenSetDelta - Sets the starting value for the diagonal scaling vector computed
+  in the SymBrdn approximations (also works for BFGS and DFP).
 
-   Input Parameters:
-+  B - LMVM matrix
--  delta - initial value for diagonal scaling
+  Input Parameters:
++ B     - LMVM matrix
+- delta - initial value for diagonal scaling
 
-   Level: intermediate
+  Level: intermediate
 
 @*/
-
 PetscErrorCode MatLMVMSymBroydenSetDelta(Mat B, PetscScalar delta)
 {
   Mat_LMVM    *lmvm = (Mat_LMVM *)B->data;
@@ -638,18 +637,18 @@ PetscErrorCode MatLMVMSymBroydenSetDelta(Mat B, PetscScalar delta)
 /*------------------------------------------------------------*/
 
 /*@
-    MatLMVMSymBroydenSetScaleType - Sets the scale type for symmetric Broyden-type updates.
+  MatLMVMSymBroydenSetScaleType - Sets the scale type for symmetric Broyden-type updates.
 
-    Input Parameters:
+  Input Parameters:
 +   snes - the iterative context
 -   rtype - restart type
 
-    Options Database Key:
-.   -mat_lmvm_scale_type <none,scalar,diagonal> - set the scaling type
+  Options Database Key:
+. -mat_lmvm_scale_type <none,scalar,diagonal> - set the scaling type
 
-    Level: intermediate
+  Level: intermediate
 
-    MatLMVMSymBrdnScaleTypes:
+  MatLMVMSymBrdnScaleTypes:
 +   MAT_LMVM_SYMBROYDEN_SCALE_NONE - initial Hessian is the identity matrix
 .   MAT_LMVM_SYMBROYDEN_SCALE_SCALAR - use the Shanno scalar as the initial Hessian
 -   MAT_LMVM_SYMBROYDEN_SCALE_DIAGONAL - use a diagonalized BFGS update as the initial Hessian
@@ -670,40 +669,40 @@ PetscErrorCode MatLMVMSymBroydenSetScaleType(Mat B, MatLMVMSymBroydenScaleType s
 /*------------------------------------------------------------*/
 
 /*@
-   MatCreateLMVMSymBroyden - Creates a limited-memory Symmetric Broyden-type matrix used
-   for approximating Jacobians. L-SymBrdn is a convex combination of L-DFP and
-   L-BFGS such that SymBrdn = (1 - phi)*BFGS + phi*DFP. The combination factor
-   phi is restricted to the range [0, 1], where the L-SymBrdn matrix is guaranteed
-   to be symmetric positive-definite.
+  MatCreateLMVMSymBroyden - Creates a limited-memory Symmetric Broyden-type matrix used
+  for approximating Jacobians. L-SymBrdn is a convex combination of L-DFP and
+  L-BFGS such that SymBrdn = (1 - phi)*BFGS + phi*DFP. The combination factor
+  phi is restricted to the range [0, 1], where the L-SymBrdn matrix is guaranteed
+  to be symmetric positive-definite.
 
-   To use the L-SymBrdn matrix with other vector types, the matrix must be
-   created using MatCreate() and MatSetType(), followed by MatLMVMAllocate().
-   This ensures that the internal storage and work vectors are duplicated from the
-   correct type of vector.
+  To use the L-SymBrdn matrix with other vector types, the matrix must be
+  created using MatCreate() and MatSetType(), followed by MatLMVMAllocate().
+  This ensures that the internal storage and work vectors are duplicated from the
+  correct type of vector.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  comm - MPI communicator, set to PETSC_COMM_SELF
-.  n - number of local rows for storage vectors
--  N - global size of the storage vectors
+  Input Parameters:
++ comm - MPI communicator, set to PETSC_COMM_SELF
+. n    - number of local rows for storage vectors
+- N    - global size of the storage vectors
 
-   Output Parameter:
-.  B - the matrix
+  Output Parameter:
+. B - the matrix
 
    It is recommended that one use the MatCreate(), MatSetType() and/or MatSetFromOptions()
    paradigm instead of this routine directly.
 
-   Options Database Keys:
-+   -mat_lmvm_phi - (developer) convex ratio between BFGS and DFP components of the update
-.   -mat_lmvm_scale_type - (developer) type of scaling applied to J0 (none, scalar, diagonal)
-.   -mat_lmvm_theta - (developer) convex ratio between BFGS and DFP components of the diagonal J0 scaling
-.   -mat_lmvm_rho - (developer) update limiter for the J0 scaling
-.   -mat_lmvm_alpha - (developer) coefficient factor for the quadratic subproblem in J0 scaling
-.   -mat_lmvm_beta - (developer) exponential factor for the diagonal J0 scaling
--   -mat_lmvm_sigma_hist - (developer) number of past updates to use in J0 scaling
+  Options Database Keys:
++ -mat_lmvm_phi        - (developer) convex ratio between BFGS and DFP components of the update
+. -mat_lmvm_scale_type - (developer) type of scaling applied to J0 (none, scalar, diagonal)
+. -mat_lmvm_theta      - (developer) convex ratio between BFGS and DFP components of the diagonal J0 scaling
+. -mat_lmvm_rho        - (developer) update limiter for the J0 scaling
+. -mat_lmvm_alpha      - (developer) coefficient factor for the quadratic subproblem in J0 scaling
+. -mat_lmvm_beta       - (developer) exponential factor for the diagonal J0 scaling
+- -mat_lmvm_sigma_hist - (developer) number of past updates to use in J0 scaling
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: [](ch_ksp), `MatCreate()`, `MATLMVM`, `MATLMVMSYMBROYDEN`, `MatCreateLMVMDFP()`, `MatCreateLMVMSR1()`,
           `MatCreateLMVMBFGS()`, `MatCreateLMVMBrdn()`, `MatCreateLMVMBadBrdn()`

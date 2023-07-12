@@ -294,12 +294,12 @@ PetscErrorCode KSPLGMRESCycle(PetscInt *itcount, KSP ksp)
 }
 
 /*
-    KSPSolve_LGMRES - This routine applies the LGMRES method.
+  KSPSolve_LGMRES - This routine applies the LGMRES method.
 
-   Input Parameter:
-.     ksp - the Krylov space object that was set to use lgmres
+  Input Parameter:
+. ksp - the Krylov space object that was set to use lgmres
 
-   Output Parameter:
+  Output Parameter:
 .     outits - number of iterations used
 
 */
@@ -581,17 +581,17 @@ static PetscErrorCode KSPLGMRESGetNewVectors(KSP ksp, PetscInt it)
 }
 
 /*
-   KSPBuildSolution_LGMRES
+  KSPBuildSolution_LGMRES
 
-     Input Parameter:
-.     ksp - the Krylov space object
-.     ptr-
+  Input Parameter:
++ ksp - the Krylov space object
+- ptr - the ptr
 
-   Output Parameter:
-.     result - the solution
+  Output Parameter:
+. result - the solution
 
-   Note: this calls KSPLGMRESBuildSoln - the same function that KSPLGMRESCycle
-   calls directly.
+  Note: this calls KSPLGMRESBuildSoln - the same function that KSPLGMRESCycle
+  calls directly.
 
 */
 PetscErrorCode KSPBuildSolution_LGMRES(KSP ksp, Vec ptr, Vec *result)

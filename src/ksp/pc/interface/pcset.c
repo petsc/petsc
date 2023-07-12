@@ -13,16 +13,16 @@ PetscBool PCRegisterAllCalled = PETSC_FALSE;
 PetscFunctionList PCList = NULL;
 
 /*@C
-   PCSetType - Builds PC for a particular preconditioner type
+  PCSetType - Builds PC for a particular preconditioner type
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  pc - the preconditioner context.
--  type - a known method
+  Input Parameters:
++ pc   - the preconditioner context.
+- type - a known method
 
-   Options Database Key:
-.  -pc_type <type> - Sets PC type
+  Options Database Key:
+. -pc_type <type> - Sets PC type
 
    Use -help for a list of available methods (for instance,
    jacobi or bjacobi)
@@ -45,7 +45,7 @@ PetscFunctionList PCList = NULL;
 
   Level: intermediate
 
-  Developer Note: PCRegister() is used to add preconditioner types to PCList from which they
+  Developer Notes: PCRegister() is used to add preconditioner types to PCList from which they
   are accessed by PCSetType().
 
 .seealso: `KSPSetType()`, `PCType`, `PCRegister()`, `PCCreate()`, `KSPGetPC()`
@@ -85,18 +85,18 @@ PetscErrorCode PCSetType(PC pc, PCType type)
 }
 
 /*@C
-   PCGetType - Gets the PC method type and name (as a string) from the PC
-   context.
+  PCGetType - Gets the PC method type and name (as a string) from the PC
+  context.
 
-   Not Collective
+  Not Collective
 
-   Input Parameter:
-.  pc - the preconditioner context
+  Input Parameter:
+. pc - the preconditioner context
 
-   Output Parameter:
-.  type - name of preconditioner method
+  Output Parameter:
+. type - name of preconditioner method
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `PCSetType()`
 
@@ -113,19 +113,19 @@ PetscErrorCode PCGetType(PC pc, PCType *type)
 extern PetscErrorCode PCGetDefaultType_Private(PC, const char *[]);
 
 /*@
-   PCSetFromOptions - Sets PC options from the options database.
-   This routine must be called before PCSetUp() if the user is to be
-   allowed to set the preconditioner method.
+  PCSetFromOptions - Sets PC options from the options database.
+  This routine must be called before PCSetUp() if the user is to be
+  allowed to set the preconditioner method.
 
-   Collective
+  Collective
 
-   Input Parameter:
-.  pc - the preconditioner context
+  Input Parameter:
+. pc - the preconditioner context
 
-   Options Database Key:
-.   -pc_use_amat true,false - see PCSetUseAmat()
+  Options Database Key:
+. -pc_use_amat true,false - see PCSetUseAmat()
 
-   Level: developer
+  Level: developer
 
 .seealso: `PCSetUseAmat()`
 
@@ -170,19 +170,19 @@ skipoptions:
 }
 
 /*@
-   PCSetDM - Sets the DM that may be used by some preconditioners
+  PCSetDM - Sets the DM that may be used by some preconditioners
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  pc - the preconditioner context
--  dm - the dm, can be NULL
+  Input Parameters:
++ pc - the preconditioner context
+- dm - the dm, can be NULL
 
-   Level: intermediate
+  Level: intermediate
 
-   Developer Note:
-    The routines KSP/SNES/TSSetDM() require the dm to be non-NULL, but this one can be NULL since all it does is
-    replace the current DM
+  Developer Notes:
+  The routines KSP/SNES/TSSetDM() require the dm to be non-NULL, but this one can be NULL since all it does is
+  replace the current DM
 
 .seealso: `PCGetDM()`, `KSPSetDM()`, `KSPGetDM()`
 @*/
@@ -197,17 +197,17 @@ PetscErrorCode PCSetDM(PC pc, DM dm)
 }
 
 /*@
-   PCGetDM - Gets the DM that may be used by some preconditioners
+  PCGetDM - Gets the DM that may be used by some preconditioners
 
-   Not Collective
+  Not Collective
 
-   Input Parameter:
+  Input Parameter:
 . pc - the preconditioner context
 
-   Output Parameter:
-.  dm - the dm
+  Output Parameter:
+. dm - the dm
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `PCSetDM()`, `KSPSetDM()`, `KSPGetDM()`
 @*/
@@ -220,15 +220,15 @@ PetscErrorCode PCGetDM(PC pc, DM *dm)
 }
 
 /*@
-   PCSetApplicationContext - Sets the optional user-defined context for the linear solver.
+  PCSetApplicationContext - Sets the optional user-defined context for the linear solver.
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  pc - the PC context
--  usrP - optional user context
+  Input Parameters:
++ pc   - the PC context
+- usrP - optional user context
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `PCGetApplicationContext()`
 @*/
@@ -241,17 +241,17 @@ PetscErrorCode PCSetApplicationContext(PC pc, void *usrP)
 }
 
 /*@
-   PCGetApplicationContext - Gets the user-defined context for the linear solver.
+  PCGetApplicationContext - Gets the user-defined context for the linear solver.
 
-   Not Collective
+  Not Collective
 
-   Input Parameter:
-.  pc - PC context
+  Input Parameter:
+. pc - PC context
 
-   Output Parameter:
-.  usrP - user context
+  Output Parameter:
+. usrP - user context
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `PCSetApplicationContext()`
 @*/

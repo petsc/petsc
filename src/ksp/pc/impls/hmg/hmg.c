@@ -275,18 +275,18 @@ static PetscErrorCode PCHMGSetReuseInterpolation_HMG(PC pc, PetscBool reuse)
 }
 
 /*@
-   PCHMGSetReuseInterpolation - Reuse the interpolation matrices in `PCHMG` after changing the matrices numerical values
+  PCHMGSetReuseInterpolation - Reuse the interpolation matrices in `PCHMG` after changing the matrices numerical values
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  pc - the `PCHMG` context
--  reuse - `PETSC_TRUE` indicates that `PCHMG` will reuse the interpolations
+  Input Parameters:
++ pc    - the `PCHMG` context
+- reuse - `PETSC_TRUE` indicates that `PCHMG` will reuse the interpolations
 
-   Options Database Key:
-.  -pc_hmg_reuse_interpolation <true | false> - Whether or not to reuse the interpolations. If true, it potentially save the compute time.
+  Options Database Key:
+. -pc_hmg_reuse_interpolation <true | false> - Whether or not to reuse the interpolations. If true, it potentially save the compute time.
 
-   Level: beginner
+  Level: beginner
 
 .seealso: `PCHMG`, `PCGAMG`, `PCHMGSetUseSubspaceCoarsening()`, `PCHMGSetCoarseningComponent()`, `PCHMGSetInnerPCType()`
 @*/
@@ -309,18 +309,18 @@ static PetscErrorCode PCHMGSetUseSubspaceCoarsening_HMG(PC pc, PetscBool subspac
 }
 
 /*@
-   PCHMGSetUseSubspaceCoarsening - Use subspace coarsening in `PCHMG`
+  PCHMGSetUseSubspaceCoarsening - Use subspace coarsening in `PCHMG`
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  pc - the `PCHMG` context
--  reuse - `PETSC_TRUE` indicates that `PCHMG` will use the subspace coarsening
+  Input Parameters:
++ pc       - the `PCHMG` context
+- subspace - `PETSC_TRUE` indicates that `PCHMG` will use the subspace coarsening
 
-   Options Database Key:
-.  -pc_hmg_use_subspace_coarsening  <true | false> - Whether or not to use subspace coarsening (that is, coarsen a submatrix).
+  Options Database Key:
+. -pc_hmg_use_subspace_coarsening  <true | false> - Whether or not to use subspace coarsening (that is, coarsen a submatrix).
 
-   Level: beginner
+  Level: beginner
 
 .seealso: `PCHMG`, `PCHMGSetReuseInterpolation()`, `PCHMGSetCoarseningComponent()`, `PCHMGSetInnerPCType()`
 @*/
@@ -343,18 +343,18 @@ static PetscErrorCode PCHMGSetInnerPCType_HMG(PC pc, PCType type)
 }
 
 /*@C
-   PCHMGSetInnerPCType - Set an inner `PC` type
+  PCHMGSetInnerPCType - Set an inner `PC` type
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  pc - the `PCHMG` context
--  type - `PCHYPRE` or `PCGAMG` coarsening algorithm
+  Input Parameters:
++ pc   - the `PCHMG` context
+- type - `PCHYPRE` or `PCGAMG` coarsening algorithm
 
-   Options Database Key:
-.  -hmg_inner_pc_type <hypre, gamg> - What method is used to coarsen matrix
+  Options Database Key:
+. -hmg_inner_pc_type <hypre, gamg> - What method is used to coarsen matrix
 
-   Level: beginner
+  Level: beginner
 
 .seealso: `PCHMG`, `PCType`, `PCHMGSetReuseInterpolation()`, `PCHMGSetUseSubspaceCoarsening()`, `PCHMGSetCoarseningComponent()`
 @*/
@@ -377,18 +377,18 @@ static PetscErrorCode PCHMGSetCoarseningComponent_HMG(PC pc, PetscInt component)
 }
 
 /*@
-   PCHMGSetCoarseningComponent - Set which component of the PDE is used for the subspace-based coarsening algorithm
+  PCHMGSetCoarseningComponent - Set which component of the PDE is used for the subspace-based coarsening algorithm
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  pc - the `PCHMG` context
--  component - which component `PC` will coarsen
+  Input Parameters:
++ pc        - the `PCHMG` context
+- component - which component `PC` will coarsen
 
-   Options Database Key:
-.  -pc_hmg_coarsening_component <i> - Which component is chosen for the subspace-based coarsening algorithm
+  Options Database Key:
+. -pc_hmg_coarsening_component <i> - Which component is chosen for the subspace-based coarsening algorithm
 
-   Level: beginner
+  Level: beginner
 
 .seealso: `PCHMG`, `PCType`, `PCGAMG`, `PCHMGSetReuseInterpolation()`, `PCHMGSetUseSubspaceCoarsening()`, `PCHMGSetInnerPCType()`
 @*/
@@ -411,18 +411,18 @@ static PetscErrorCode PCHMGUseMatMAIJ_HMG(PC pc, PetscBool usematmaij)
 }
 
 /*@
-   PCHMGUseMatMAIJ - Set a flag that indicates if or not to use `MATMAIJ` for the interpolation matrices for saving memory
+  PCHMGUseMatMAIJ - Set a flag that indicates if or not to use `MATMAIJ` for the interpolation matrices for saving memory
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  pc - the `PCHMG` context
--  usematmaij - `PETSC_TRUE` (default) to use `MATMAIJ` for interpolations.
+  Input Parameters:
++ pc         - the `PCHMG` context
+- usematmaij - `PETSC_TRUE` (default) to use `MATMAIJ` for interpolations.
 
-   Options Database Key:
-.  -pc_hmg_use_matmaij - <true | false >
+  Options Database Key:
+. -pc_hmg_use_matmaij - <true | false >
 
-   Level: beginner
+  Level: beginner
 
 .seealso: `PCHMG`, `PCType`, `PCGAMG`
 @*/

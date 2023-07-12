@@ -311,16 +311,16 @@ static PetscErrorCode KSPView_FCG(KSP ksp, PetscViewer viewer)
   Logically Collective
 
   Input Parameters:
-+  ksp - the Krylov space context
--  mmax - the maximum number of previous directions to orthogonalize against
++ ksp  - the Krylov space context
+- mmax - the maximum number of previous directions to orthogonalize against
 
   Options Database Key:
-.   -ksp_fcg_mmax <N>  - maximum number of search directions
+. -ksp_fcg_mmax <N> - maximum number of search directions
 
   Level: intermediate
 
   Note:
-   mmax + 1 directions are stored (mmax previous ones along with a current one)
+  mmax + 1 directions are stored (mmax previous ones along with a current one)
   and whether all are used in each iteration also depends on the truncation strategy
   (see KSPFCGSetTruncationType())
 
@@ -340,22 +340,21 @@ PetscErrorCode KSPFCGSetMmax(KSP ksp, PetscInt mmax)
 /*@
   KSPFCGGetMmax - get the maximum number of previous directions `KSPFCG` will store
 
-   Not Collective
+  Not Collective
 
-   Input Parameter:
-.  ksp - the Krylov space context
+  Input Parameter:
+. ksp - the Krylov space context
 
-   Output Parameter:
-.  mmax - the maximum number of previous directions allowed for orthogonalization
+  Output Parameter:
+. mmax - the maximum number of previous directions allowed for orthogonalization
 
-   Level: intermediate
+  Level: intermediate
 
   Note:
   FCG stores mmax+1 directions at most (mmax previous ones, and one current one)
 
 .seealso: [](ch_ksp), `KSPFCG`, `KSPFCGGetTruncationType()`, `KSPFCGGetNprealloc()`, `KSPFCGSetMmax()`
 @*/
-
 PetscErrorCode KSPFCGGetMmax(KSP ksp, PetscInt *mmax)
 {
   KSP_FCG *fcg = (KSP_FCG *)ksp->data;
@@ -372,8 +371,8 @@ PetscErrorCode KSPFCGGetMmax(KSP ksp, PetscInt *mmax)
   Logically Collective
 
   Input Parameters:
-+  ksp - the Krylov space context
--  nprealloc - the number of vectors to preallocate
++ ksp       - the Krylov space context
+- nprealloc - the number of vectors to preallocate
 
   Options Database Key:
 . -ksp_fcg_nprealloc <N> - number of directions to preallocate
@@ -397,15 +396,15 @@ PetscErrorCode KSPFCGSetNprealloc(KSP ksp, PetscInt nprealloc)
 /*@
   KSPFCGGetNprealloc - get the number of directions preallocate by `KSPFCG`
 
-   Not Collective
+  Not Collective
 
-   Input Parameter:
-.  ksp - the Krylov space context
+  Input Parameter:
+. ksp - the Krylov space context
 
-   Output Parameter:
-.  nprealloc - the number of directions preallocated
+  Output Parameter:
+. nprealloc - the number of directions preallocated
 
-   Level: advanced
+  Level: advanced
 
 .seealso: [](ch_ksp), `KSPFCG`, `KSPFCGGetTruncationType()`, `KSPFCGSetNprealloc()`, `KSPFCGSetMmax()`, `KSPFCGGetMmax()`
 @*/
@@ -425,8 +424,8 @@ PetscErrorCode KSPFCGGetNprealloc(KSP ksp, PetscInt *nprealloc)
   Logically Collective
 
   Input Parameters:
-+  ksp - the Krylov space context
--  truncstrat - the choice of strategy
++ ksp        - the Krylov space context
+- truncstrat - the choice of strategy
 .vb
   KSP_FCD_TRUNC_TYPE_STANDARD uses all (up to mmax) stored directions
   KSP_FCD_TRUNC_TYPE_NOTAY uses the last max(1,mod(i,mmax)) stored directions at iteration i=0,1,..
@@ -453,15 +452,15 @@ PetscErrorCode KSPFCGSetTruncationType(KSP ksp, KSPFCDTruncationType truncstrat)
 /*@
   KSPFCGGetTruncationType - get the truncation strategy employed by `KSPFCG`
 
-   Not Collective
+  Not Collective
 
-   Input Parameter:
-.  ksp - the Krylov space context
+  Input Parameter:
+. ksp - the Krylov space context
 
-   Output Parameter:
-.  truncstrat - the strategy type
+  Output Parameter:
+. truncstrat - the strategy type
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: [](ch_ksp), `KSPFCG`, `KSPFCGSetTruncationType`, `KSPFCDTruncationType`, `KSPFCGSetTruncationType()`
 @*/

@@ -14,18 +14,18 @@ typedef struct {
 } PC_GAMG_AGG;
 
 /*@
-   PCGAMGSetNSmooths - Set number of smoothing steps (1 is typical) used for multigrid on all the levels
+  PCGAMGSetNSmooths - Set number of smoothing steps (1 is typical) used for multigrid on all the levels
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  pc - the preconditioner context
--  n - the number of smooths
+  Input Parameters:
++ pc - the preconditioner context
+- n  - the number of smooths
 
-   Options Database Key:
-.  -pc_gamg_agg_nsmooths <nsmooth, default=1> - number of smoothing steps to use with smooth aggregation
+  Options Database Key:
+. -pc_gamg_agg_nsmooths <nsmooth, default=1> - number of smoothing steps to use with smooth aggregation
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `PCMG`, `PCGAMG`
 @*/
@@ -50,18 +50,18 @@ static PetscErrorCode PCGAMGSetNSmooths_AGG(PC pc, PetscInt n)
 }
 
 /*@
-   PCGAMGSetAggressiveLevels -  Use aggressive coarsening on first n levels
+  PCGAMGSetAggressiveLevels -  Use aggressive coarsening on first n levels
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  pc - the preconditioner context
--  n - 0, 1 or more
+  Input Parameters:
++ pc - the preconditioner context
+- n  - 0, 1 or more
 
-   Options Database Key:
-.  -pc_gamg_aggressive_coarsening <n,default = 1> - Number of levels to square the graph on before aggregating it
+  Options Database Key:
+. -pc_gamg_aggressive_coarsening <n,default = 1> - Number of levels to square the graph on before aggregating it
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `PCGAMG`, `PCGAMGSetThreshold()`
 @*/

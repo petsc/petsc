@@ -120,7 +120,7 @@ static PetscErrorCode PCDestroy_Mat(PC pc)
   Logically collective
 
   Input Parameters:
-+ pc - An instance of `PCMAT`
++ pc    - An instance of `PCMAT`
 - matop - The selected `MatOperation`
 
   Level: intermediate

@@ -1467,23 +1467,23 @@ static PetscErrorCode PCHYPRESetDiscreteGradient_HYPRE(PC pc, Mat G)
 }
 
 /*@
-   PCHYPRESetDiscreteGradient - Set discrete gradient matrix for `PCHYPRE` type of ams or ads
+  PCHYPRESetDiscreteGradient - Set discrete gradient matrix for `PCHYPRE` type of ams or ads
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  pc - the preconditioning context
--  G - the discrete gradient
+  Input Parameters:
++ pc - the preconditioning context
+- G  - the discrete gradient
 
-   Level: intermediate
+  Level: intermediate
 
-   Notes:
-    G should have as many rows as the number of edges and as many columns as the number of vertices in the mesh
+  Notes:
+  G should have as many rows as the number of edges and as many columns as the number of vertices in the mesh
 
-    Each row of G has 2 nonzeros, with column indexes being the global indexes of edge's endpoints: matrix entries are +1 and -1 depending on edge orientation
+  Each row of G has 2 nonzeros, with column indexes being the global indexes of edge's endpoints: matrix entries are +1 and -1 depending on edge orientation
 
-   Developer Note:
-   This automatically converts the matrix to `MATHYPRE` if it is not already of that type
+  Developer Notes:
+  This automatically converts the matrix to `MATHYPRE` if it is not already of that type
 
 .seealso: `PCHYPRE`, `PCHYPRESetDiscreteCurl()`
 @*/
@@ -1516,25 +1516,25 @@ static PetscErrorCode PCHYPRESetDiscreteCurl_HYPRE(PC pc, Mat C)
 }
 
 /*@
-   PCHYPRESetDiscreteCurl - Set discrete curl matrx for `PCHYPRE` type of ads
+  PCHYPRESetDiscreteCurl - Set discrete curl matrx for `PCHYPRE` type of ads
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  pc - the preconditioning context
--  C - the discrete curl
+  Input Parameters:
++ pc - the preconditioning context
+- C  - the discrete curl
 
-   Level: intermediate
+  Level: intermediate
 
-   Notes:
-    C should have as many rows as the number of faces and as many columns as the number of edges in the mesh
+  Notes:
+  C should have as many rows as the number of faces and as many columns as the number of edges in the mesh
 
-    Each row of G has as many nonzeros as the number of edges of a face, with column indexes being the global indexes of the corresponding edge: matrix entries are +1 and -1 depending on edge orientation with respect to the face orientation
+  Each row of G has as many nonzeros as the number of edges of a face, with column indexes being the global indexes of the corresponding edge: matrix entries are +1 and -1 depending on edge orientation with respect to the face orientation
 
-   Developer Note:
-   This automatically converts the matrix to `MATHYPRE` if it is not already of that type
+  Developer Notes:
+  This automatically converts the matrix to `MATHYPRE` if it is not already of that type
 
-   If this is only for  `PCHYPRE` type of ads it should be called `PCHYPREADSSetDiscreteCurl()`
+  If this is only for  `PCHYPRE` type of ads it should be called `PCHYPREADSSetDiscreteCurl()`
 
 .seealso: `PCHYPRE`, `PCHYPRESetDiscreteGradient()`
 @*/
@@ -1612,27 +1612,27 @@ static PetscErrorCode PCHYPRESetInterpolations_HYPRE(PC pc, PetscInt dim, Mat RT
 }
 
 /*@
-   PCHYPRESetInterpolations - Set interpolation matrices for `PCHYPRE` type of ams or ads
+  PCHYPRESetInterpolations - Set interpolation matrices for `PCHYPRE` type of ams or ads
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  pc - the preconditioning context
-.  dim - the dimension of the problem, only used in AMS
-.  RT_PiFull - Raviart-Thomas interpolation matrix
-.  RT_Pi - x/y/z component of Raviart-Thomas interpolation matrix
-.  ND_PiFull - Nedelec interpolation matrix
--  ND_Pi - x/y/z component of Nedelec interpolation matrix
+  Input Parameters:
++ pc        - the preconditioning context
+. dim       - the dimension of the problem, only used in AMS
+. RT_PiFull - Raviart-Thomas interpolation matrix
+. RT_Pi     - x/y/z component of Raviart-Thomas interpolation matrix
+. ND_PiFull - Nedelec interpolation matrix
+- ND_Pi     - x/y/z component of Nedelec interpolation matrix
 
-   Level: intermediate
+  Level: intermediate
 
-   Notes:
-    For AMS, only Nedelec interpolation matrices are needed, the Raviart-Thomas interpolation matrices can be set to NULL.
+  Notes:
+  For AMS, only Nedelec interpolation matrices are needed, the Raviart-Thomas interpolation matrices can be set to NULL.
 
-    For ADS, both type of interpolation matrices are needed.
+  For ADS, both type of interpolation matrices are needed.
 
-   Developer Note:
-   This automatically converts the matrix to `MATHYPRE` if it is not already of that type
+  Developer Notes:
+  This automatically converts the matrix to `MATHYPRE` if it is not already of that type
 
 .seealso: `PCHYPRE`
 @*/
@@ -1711,23 +1711,23 @@ static PetscErrorCode PCHYPRESetPoissonMatrix_HYPRE(PC pc, Mat A, PetscBool isal
 }
 
 /*@
-   PCHYPRESetAlphaPoissonMatrix - Set vector Poisson matrix for `PCHYPRE` of type ams
+  PCHYPRESetAlphaPoissonMatrix - Set vector Poisson matrix for `PCHYPRE` of type ams
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  pc - the preconditioning context
--  A - the matrix
+  Input Parameters:
++ pc - the preconditioning context
+- A  - the matrix
 
-   Level: intermediate
+  Level: intermediate
 
-   Note:
-    A should be obtained by discretizing the vector valued Poisson problem with linear finite elements
+  Note:
+  A should be obtained by discretizing the vector valued Poisson problem with linear finite elements
 
-   Developer Note:
-   This automatically converts the matrix to `MATHYPRE` if it is not already of that type
+  Developer Notes:
+  This automatically converts the matrix to `MATHYPRE` if it is not already of that type
 
-   If this is only for  `PCHYPRE` type of ams it should be called `PCHYPREAMSSetAlphaPoissonMatrix()`
+  If this is only for  `PCHYPRE` type of ams it should be called `PCHYPREAMSSetAlphaPoissonMatrix()`
 
 .seealso: `PCHYPRE`, `PCHYPRESetDiscreteGradient()`, `PCHYPRESetDiscreteCurl()`, `PCHYPRESetBetaPoissonMatrix()`
 @*/
@@ -1742,23 +1742,23 @@ PetscErrorCode PCHYPRESetAlphaPoissonMatrix(PC pc, Mat A)
 }
 
 /*@
-   PCHYPRESetBetaPoissonMatrix - Set Poisson matrix for `PCHYPRE` of type ams
+  PCHYPRESetBetaPoissonMatrix - Set Poisson matrix for `PCHYPRE` of type ams
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  pc - the preconditioning context
--  A - the matrix, or NULL to turn it off
+  Input Parameters:
++ pc - the preconditioning context
+- A  - the matrix, or NULL to turn it off
 
-   Level: intermediate
+  Level: intermediate
 
-   Note:
-   A should be obtained by discretizing the Poisson problem with linear finite elements.
+  Note:
+  A should be obtained by discretizing the Poisson problem with linear finite elements.
 
-   Developer Note:
-   This automatically converts the matrix to `MATHYPRE` if it is not already of that type
+  Developer Notes:
+  This automatically converts the matrix to `MATHYPRE` if it is not already of that type
 
-   If this is only for  `PCHYPRE` type of ams it should be called `PCHYPREAMSPCHYPRESetBetaPoissonMatrix()`
+  If this is only for  `PCHYPRE` type of ams it should be called `PCHYPREAMSPCHYPRESetBetaPoissonMatrix()`
 
 .seealso: `PCHYPRE`, `PCHYPRESetDiscreteGradient()`, `PCHYPRESetDiscreteCurl()`, `PCHYPRESetAlphaPoissonMatrix()`
 @*/
@@ -1797,20 +1797,20 @@ static PetscErrorCode PCHYPRESetEdgeConstantVectors_HYPRE(PC pc, Vec ozz, Vec zo
 }
 
 /*@
-   PCHYPRESetEdgeConstantVectors - Set the representation of the constant vector fields in the edge element basis for `PCHYPRE` of type ams
+  PCHYPRESetEdgeConstantVectors - Set the representation of the constant vector fields in the edge element basis for `PCHYPRE` of type ams
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  pc - the preconditioning context
-.  ozz - vector representing (1,0,0) (or (1,0) in 2D)
-.  zoz - vector representing (0,1,0) (or (0,1) in 2D)
--  zzo - vector representing (0,0,1) (use NULL in 2D)
+  Input Parameters:
++ pc  - the preconditioning context
+. ozz - vector representing (1,0,0) (or (1,0) in 2D)
+. zoz - vector representing (0,1,0) (or (0,1) in 2D)
+- zzo - vector representing (0,0,1) (use NULL in 2D)
 
-   Level: intermediate
+  Level: intermediate
 
-   Developer Note:
-   If this is only for  `PCHYPRE` type of ams it should be called `PCHYPREAMSSetEdgeConstantVectors()`
+  Developer Notes:
+  If this is only for  `PCHYPRE` type of ams it should be called `PCHYPREAMSSetEdgeConstantVectors()`
 
 .seealso: `PCHYPRE`, `PCHYPRESetDiscreteGradient()`, `PCHYPRESetDiscreteCurl()`, `PCHYPRESetAlphaPoissonMatrix()`
 @*/
@@ -1843,19 +1843,19 @@ static PetscErrorCode PCHYPREAMSSetInteriorNodes_HYPRE(PC pc, Vec interior)
 /*@
   PCHYPREAMSSetInteriorNodes - Set the list of interior nodes to a zero-conductivity region for `PCHYPRE` of type ams
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  pc - the preconditioning context
--  interior - vector. node is interior if its entry in the array is 1.0.
+  Input Parameters:
++ pc       - the preconditioning context
+- interior - vector. node is interior if its entry in the array is 1.0.
 
-   Level: intermediate
+  Level: intermediate
 
-   Note:
-   This calls `HYPRE_AMSSetInteriorNodes()`
+  Note:
+  This calls `HYPRE_AMSSetInteriorNodes()`
 
-   Developer Note:
-   If this is only for  `PCHYPRE` type of ams it should be called `PCHYPREAMSSetInteriorNodes()`
+  Developer Notes:
+  If this is only for  `PCHYPRE` type of ams it should be called `PCHYPREAMSSetInteriorNodes()`
 
 .seealso: `PCHYPRE`, `PCHYPRESetDiscreteGradient()`, `PCHYPRESetDiscreteCurl()`, `PCHYPRESetAlphaPoissonMatrix()`
 @*/
@@ -2232,16 +2232,16 @@ PetscErrorCode PCSetFromOptions_HYPRE(PC pc, PetscOptionItems *PetscOptionsObjec
 }
 
 /*@C
-     PCHYPRESetType - Sets which hypre preconditioner you wish to use
+  PCHYPRESetType - Sets which hypre preconditioner you wish to use
 
-   Input Parameters:
-+     pc - the preconditioner context
--     name - either  euclid, pilut, parasails, boomeramg, ams, ads
+  Input Parameters:
++ pc   - the preconditioner context
+- name - either  euclid, pilut, parasails, boomeramg, ams, ads
 
-   Options Database Key:
-   -pc_hypre_type - One of euclid, pilut, parasails, boomeramg, ams, ads
+  Options Database Key:
+. pc_hypre_type - One of euclid, pilut, parasails, boomeramg, ams, ads
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `PCCreate()`, `PCSetType()`, `PCType`, `PC`, `PCHYPRE`
 @*/
@@ -2255,15 +2255,15 @@ PetscErrorCode PCHYPRESetType(PC pc, const char name[])
 }
 
 /*@C
-     PCHYPREGetType - Gets which hypre preconditioner you are using
+  PCHYPREGetType - Gets which hypre preconditioner you are using
 
-   Input Parameter:
-.     pc - the preconditioner context
+  Input Parameter:
+. pc - the preconditioner context
 
-   Output Parameter:
-.     name - either  euclid, pilut, parasails, boomeramg, ams, ads
+  Output Parameter:
+. name - either  euclid, pilut, parasails, boomeramg, ams, ads
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `PCCreate()`, `PCHYPRESetType()`, `PCType`, `PC`, `PCHYPRE`
 @*/
@@ -2277,21 +2277,21 @@ PetscErrorCode PCHYPREGetType(PC pc, const char *name[])
 }
 
 /*@C
-   PCMGGalerkinSetMatProductAlgorithm - Set type of SpGEMM for hypre to use on GPUs
+  PCMGGalerkinSetMatProductAlgorithm - Set type of SpGEMM for hypre to use on GPUs
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  pc - the hypre context
--  type - one of 'cusparse', 'hypre'
+  Input Parameters:
++ pc   - the hypre context
+- name - one of 'cusparse', 'hypre'
 
-   Options Database Key:
-.  -pc_mg_galerkin_mat_product_algorithm <cusparse,hypre> - Type of SpGEMM to use in hypre
+  Options Database Key:
+. -pc_mg_galerkin_mat_product_algorithm <cusparse,hypre> - Type of SpGEMM to use in hypre
 
-   Level: intermediate
+  Level: intermediate
 
-   Developer Note:
-   How the name starts with `PCMG`, should it not be `PCHYPREBoomerAMG`?
+  Developer Notes:
+  How the name starts with `PCMG`, should it not be `PCHYPREBoomerAMG`?
 
 .seealso: `PCHYPRE`, `PCMGGalerkinGetMatProductAlgorithm()`
 @*/
@@ -2304,17 +2304,17 @@ PetscErrorCode PCMGGalerkinSetMatProductAlgorithm(PC pc, const char name[])
 }
 
 /*@C
-   PCMGGalerkinGetMatProductAlgorithm - Get type of SpGEMM for hypre to use on GPUs
+  PCMGGalerkinGetMatProductAlgorithm - Get type of SpGEMM for hypre to use on GPUs
 
-   Not Collective
+  Not Collective
 
-   Input Parameter:
-.  pc - the multigrid context
+  Input Parameter:
+. pc - the multigrid context
 
-   Output Parameter:
-.  name - one of 'cusparse', 'hypre'
+  Output Parameter:
+. name - one of 'cusparse', 'hypre'
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `PCHYPRE`, ``PCMGGalerkinSetMatProductAlgorithm()`
 @*/

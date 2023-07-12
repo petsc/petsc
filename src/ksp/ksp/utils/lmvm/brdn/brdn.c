@@ -270,30 +270,30 @@ PetscErrorCode MatCreate_LMVMBrdn(Mat B)
 /*------------------------------------------------------------*/
 
 /*@
-   MatCreateLMVMBroyden - Creates a limited-memory "good" Broyden-type approximation
-   matrix used for a Jacobian. L-Brdn is not guaranteed to be symmetric or
-   positive-definite.
+  MatCreateLMVMBroyden - Creates a limited-memory "good" Broyden-type approximation
+  matrix used for a Jacobian. L-Brdn is not guaranteed to be symmetric or
+  positive-definite.
 
-   To use the L-Brdn matrix with other vector types, the matrix must be
-   created using `MatCreate()` and `MatSetType()`, followed by `MatLMVMAllocate()`.
-   This ensures that the internal storage and work vectors are duplicated from the
-   correct type of vector.
+  To use the L-Brdn matrix with other vector types, the matrix must be
+  created using `MatCreate()` and `MatSetType()`, followed by `MatLMVMAllocate()`.
+  This ensures that the internal storage and work vectors are duplicated from the
+  correct type of vector.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  comm - MPI communicator
-.  n - number of local rows for storage vectors
--  N - global size of the storage vectors
+  Input Parameters:
++ comm - MPI communicator
+. n    - number of local rows for storage vectors
+- N    - global size of the storage vectors
 
-   Output Parameter:
-.  B - the matrix
+  Output Parameter:
+. B - the matrix
 
-   Level: intermediate
+  Level: intermediate
 
-   Note:
-   It is recommended that one use the `MatCreate()`, `MatSetType()` and/or `MatSetFromOptions()`
-   paradigm instead of this routine directly.
+  Note:
+  It is recommended that one use the `MatCreate()`, `MatSetType()` and/or `MatSetFromOptions()`
+  paradigm instead of this routine directly.
 
 .seealso: [](ch_ksp), `MatCreate()`, `MATLMVM`, `MATLMVMBRDN`, `MatCreateLMVMDFP()`, `MatCreateLMVMSR1()`,
           `MatCreateLMVMBFGS()`, `MatCreateLMVMBadBrdn()`, `MatCreateLMVMSymBrdn()`

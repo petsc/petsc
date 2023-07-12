@@ -521,47 +521,47 @@ PetscErrorCode MatCreate_LMVMDiagBrdn(Mat B)
 /*------------------------------------------------------------*/
 
 /*@
-   MatCreateLMVMDiagBroyden - DiagBrdn creates a symmetric Broyden-type diagonal matrix used
-   for approximating Hessians. It consists of a convex combination of DFP and BFGS
-   diagonal approximation schemes, such that DiagBrdn = (1-theta)*BFGS + theta*DFP.
-   To preserve symmetric positive-definiteness, we restrict theta to be in [0, 1].
-   We also ensure positive definiteness by taking the `VecAbs()` of the final vector.
+  MatCreateLMVMDiagBroyden - DiagBrdn creates a symmetric Broyden-type diagonal matrix used
+  for approximating Hessians. It consists of a convex combination of DFP and BFGS
+  diagonal approximation schemes, such that DiagBrdn = (1-theta)*BFGS + theta*DFP.
+  To preserve symmetric positive-definiteness, we restrict theta to be in [0, 1].
+  We also ensure positive definiteness by taking the `VecAbs()` of the final vector.
 
-   There are two ways of approximating the diagonal: using the forward (B) update
-   schemes for BFGS and DFP and then taking the inverse, or directly working with
-   the inverse (H) update schemes for the BFGS and DFP updates, derived using the
-   Sherman-Morrison-Woodbury formula. We have implemented both, controlled by a
-   parameter below.
+  There are two ways of approximating the diagonal: using the forward (B) update
+  schemes for BFGS and DFP and then taking the inverse, or directly working with
+  the inverse (H) update schemes for the BFGS and DFP updates, derived using the
+  Sherman-Morrison-Woodbury formula. We have implemented both, controlled by a
+  parameter below.
 
-   In order to use the DiagBrdn matrix with other vector types, i.e. doing matrix-vector products
-   and matrix solves, the matrix must first be created using `MatCreate()` and `MatSetType()`,
-   followed by `MatLMVMAllocate()`. Then it will be available for updating
-   (via `MatLMVMUpdate()`) in one's favored solver implementation.
+  In order to use the DiagBrdn matrix with other vector types, i.e. doing matrix-vector products
+  and matrix solves, the matrix must first be created using `MatCreate()` and `MatSetType()`,
+  followed by `MatLMVMAllocate()`. Then it will be available for updating
+  (via `MatLMVMUpdate()`) in one's favored solver implementation.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  comm - MPI communicator
-.  n - number of local rows for storage vectors
--  N - global size of the storage vectors
+  Input Parameters:
++ comm - MPI communicator
+. n    - number of local rows for storage vectors
+- N    - global size of the storage vectors
 
-   Output Parameter:
-.  B - the matrix
+  Output Parameter:
+. B - the matrix
 
-   Options Database Keys:
-+   -mat_lmvm_theta - (developer) convex ratio between BFGS and DFP components of the diagonal J0 scaling
-.   -mat_lmvm_rho - (developer) update limiter for the J0 scaling
-.   -mat_lmvm_alpha - (developer) coefficient factor for the quadratic subproblem in J0 scaling
-.   -mat_lmvm_beta - (developer) exponential factor for the diagonal J0 scaling
-.   -mat_lmvm_sigma_hist - (developer) number of past updates to use in J0 scaling.
-.   -mat_lmvm_tol - (developer) tolerance for bounding the denominator of the rescaling away from 0.
--   -mat_lmvm_forward - (developer) whether or not to use the forward or backward Broyden update to the diagonal
+  Options Database Keys:
++ -mat_lmvm_theta      - (developer) convex ratio between BFGS and DFP components of the diagonal J0 scaling
+. -mat_lmvm_rho        - (developer) update limiter for the J0 scaling
+. -mat_lmvm_alpha      - (developer) coefficient factor for the quadratic subproblem in J0 scaling
+. -mat_lmvm_beta       - (developer) exponential factor for the diagonal J0 scaling
+. -mat_lmvm_sigma_hist - (developer) number of past updates to use in J0 scaling.
+. -mat_lmvm_tol        - (developer) tolerance for bounding the denominator of the rescaling away from 0.
+- -mat_lmvm_forward    - (developer) whether or not to use the forward or backward Broyden update to the diagonal
 
-   Level: intermediate
+  Level: intermediate
 
-   Note:
-   It is recommended that one use the `MatCreate()`, `MatSetType()` and/or `MatSetFromOptions()`
-   paradigm instead of this routine directly.
+  Note:
+  It is recommended that one use the `MatCreate()`, `MatSetType()` and/or `MatSetFromOptions()`
+  paradigm instead of this routine directly.
 
 .seealso: [](ch_ksp), `MatCreate()`, `MATLMVM`, `MATLMVMDIAGBRDN`, `MatCreateLMVMDFP()`, `MatCreateLMVMSR1()`,
           `MatCreateLMVMBFGS()`, `MatCreateLMVMBrdn()`, `MatCreateLMVMSymBrdn()`

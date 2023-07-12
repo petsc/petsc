@@ -359,26 +359,26 @@ static PetscErrorCode PCMPIDestroy(PC pc)
 }
 
 /*@C
-     PCMPIServerBegin - starts a server that runs on the rank != 0 MPI processes waiting to process requests for
-     parallel `KSP` solves and management of parallel `KSP` objects.
+  PCMPIServerBegin - starts a server that runs on the rank != 0 MPI processes waiting to process requests for
+  parallel `KSP` solves and management of parallel `KSP` objects.
 
-     Logically Collective on all MPI ranks except 0
+  Logically Collective on all MPI ranks except 0
 
-   Options Database Keys:
-+   -mpi_linear_solver_server - causes the PETSc program to start in MPI linear solver server mode where only the first MPI rank runs user code
--   -mpi_linear_solver_server_view - displays information about the linear systems solved by the MPI linear solver server
+  Options Database Keys:
++ -mpi_linear_solver_server      - causes the PETSc program to start in MPI linear solver server mode where only the first MPI rank runs user code
+- -mpi_linear_solver_server_view - displays information about the linear systems solved by the MPI linear solver server
 
-     Level: developer
+  Level: developer
 
-     Note:
-      This is normally started automatically in `PetscInitialize()` when the option is provided
+  Note:
+  This is normally started automatically in `PetscInitialize()` when the option is provided
 
-     Developer Notes:
-       When called on rank zero this sets `PETSC_COMM_WORLD` to `PETSC_COMM_SELF` to allow a main program
-       written with `PETSC_COMM_WORLD` to run correctly on the single rank while all the ranks
-       (that would normally be sharing `PETSC_COMM_WORLD`) to run the solver server.
+  Developer Notes:
+  When called on rank zero this sets `PETSC_COMM_WORLD` to `PETSC_COMM_SELF` to allow a main program
+  written with `PETSC_COMM_WORLD` to run correctly on the single rank while all the ranks
+  (that would normally be sharing `PETSC_COMM_WORLD`) to run the solver server.
 
-       Can this be integrated into the `PetscDevice` abstraction that is currently being developed?
+  Can this be integrated into the `PetscDevice` abstraction that is currently being developed?
 
 .seealso: `PCMPIServerEnd()`, `PCMPI`
 @*/
@@ -439,15 +439,15 @@ PetscErrorCode PCMPIServerBegin(void)
 }
 
 /*@C
-     PCMPIServerEnd - ends a server that runs on the rank != 0 MPI processes waiting to process requests for
-     parallel KSP solves and management of parallel `KSP` objects.
+  PCMPIServerEnd - ends a server that runs on the rank != 0 MPI processes waiting to process requests for
+  parallel KSP solves and management of parallel `KSP` objects.
 
-     Logically Collective on all MPI ranks except 0
+  Logically Collective on all MPI ranks except 0
 
-     Level: developer
+  Level: developer
 
-     Note:
-      This is normally ended automatically in `PetscFinalize()` when the option is provided
+  Note:
+  This is normally ended automatically in `PetscFinalize()` when the option is provided
 
 .seealso: `PCMPIServerBegin()`, `PCMPI`
 @*/

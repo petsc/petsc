@@ -206,33 +206,33 @@ static PetscErrorCode KSPGCRSetModifyPC_GCR(KSP ksp, KSPGCRModifyPCFunction func
 }
 
 /*@C
- KSPGCRSetModifyPC - Sets the routine used by `KSPGCR` to modify the preconditioner for each iteration
+  KSPGCRSetModifyPC - Sets the routine used by `KSPGCR` to modify the preconditioner for each iteration
 
- Logically Collective
+  Logically Collective
 
- Input Parameters:
- +  ksp      - iterative context obtained from KSPCreate()
- .  function - user defined function to modify the preconditioner
+  Input Parameters:
++ ksp      - iterative context obtained from KSPCreate()
+. function - user defined function to modify the preconditioner
  .  ctx      - user provided context for the modify preconditioner function
- -  destroy  - the function to use to destroy the user provided application context.
+- destroy  - the function to use to destroy the user provided application context.
 
- Calling Sequence of `function`:
+  Calling sequence:
 $  PetscErrorCode function(KSP ksp, PetscInt n, PetscReal rnorm, void *ctx)
-+  ksp   - iterative context
++ ksp  - iterative context
 .  n     - the total number of GCR iterations that have occurred
 .  rnorm - 2-norm residual value
--  ctx   - the user provided application context
+- data - the user provided application context
 
- Calling Sequence of `destroy`:
+  Calling sequence:
 $ PetscErrorCode destroy(void *ctx)
 
- Level: intermediate
+  Level: intermediate
 
- Note:
- The default modifypc routine is `KSPGCRModifyPCNoChange()`
+  Note:
+  The default modifypc routine is `KSPGCRModifyPCNoChange()`
 
- Developer Note:
- The API should make uniform for all flexible types, [](sec_flexibleksp), and not have separate function calls for each type.
+  Developer Notes:
+  The API should make uniform for all flexible types, [](sec_flexibleksp), and not have separate function calls for each type.
 
 .seealso: [](ch_ksp), `KSP`, `KSPGCR`, `KSPGCRModifyPCNoChange()`, [](sec_flexibleksp)
  @*/
@@ -264,24 +264,24 @@ static PetscErrorCode KSPGCRGetRestart_GCR(KSP ksp, PetscInt *restart)
 }
 
 /*@
-   KSPGCRSetRestart - Sets number of iterations at which `KSPGCR` restarts.
+  KSPGCRSetRestart - Sets number of iterations at which `KSPGCR` restarts.
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  ksp - the Krylov space context
--  restart - integer restart value
+  Input Parameters:
++ ksp     - the Krylov space context
+- restart - integer restart value
 
-   Options Database Key:
-.   -ksp_gcr_restart <restart> - the number of stored vectors to orthogonalize against
+  Options Database Key:
+. -ksp_gcr_restart <restart> - the number of stored vectors to orthogonalize against
 
-   Level: intermediate
+  Level: intermediate
 
-   Note:
-   The default value is 30.
+  Note:
+  The default value is 30.
 
-   Developer Note:
-   The API could be made uniform for all `KSP` methods have have a restart.
+  Developer Notes:
+  The API could be made uniform for all `KSP` methods have have a restart.
 
 .seealso: [](ch_ksp), `KSPGCR`, `KSPSetTolerances()`, `KSPGCRGetRestart()`, `KSPGMRESSetRestart()`
 @*/
@@ -293,17 +293,17 @@ PetscErrorCode KSPGCRSetRestart(KSP ksp, PetscInt restart)
 }
 
 /*@
-   KSPGCRGetRestart - Gets number of iterations at which `KSPGCR` restarts.
+  KSPGCRGetRestart - Gets number of iterations at which `KSPGCR` restarts.
 
-   Not Collective
+  Not Collective
 
-   Input Parameter:
-.  ksp - the Krylov space context
+  Input Parameter:
+. ksp - the Krylov space context
 
-   Output Parameter:
-.   restart - integer restart value
+  Output Parameter:
+. restart - integer restart value
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: [](ch_ksp), `KSPGCR`, `KSPSetTolerances()`, `KSPGCRSetRestart()`, `KSPGMRESGetRestart()`
 @*/

@@ -11,19 +11,19 @@ static PetscErrorCode PCISSetUseStiffnessScaling_IS(PC pc, PetscBool use)
 }
 
 /*@
-   PCISSetUseStiffnessScaling - Tells `PCIS` to construct partition of unity using
-                              the local matrices' diagonal entries
+  PCISSetUseStiffnessScaling - Tells `PCIS` to construct partition of unity using
+  the local matrices' diagonal entries
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  pc - the preconditioning context
--  use - whether or not it should use matrix diagonal to build partition of unity.
+  Input Parameters:
++ pc  - the preconditioning context
+- use - whether or not it should use matrix diagonal to build partition of unity.
 
-   Level: intermediate
+  Level: intermediate
 
-   Developer Note:
-   There is no manual page for `PCIS` nor some of its methods
+  Developer Notes:
+  There is no manual page for `PCIS` nor some of its methods
 
 .seealso: `PCIS`, `PCBDDC`
 @*/
@@ -60,21 +60,21 @@ static PetscErrorCode PCISSetSubdomainDiagonalScaling_IS(PC pc, Vec scaling_fact
 }
 
 /*@
-   PCISSetSubdomainDiagonalScaling - Set diagonal scaling for `PCIS`.
+  PCISSetSubdomainDiagonalScaling - Set diagonal scaling for `PCIS`.
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  pc - the preconditioning context
--  scaling_factors - scaling factors for the subdomain
+  Input Parameters:
++ pc              - the preconditioning context
+- scaling_factors - scaling factors for the subdomain
 
-   Level: intermediate
+  Level: intermediate
 
-   Note:
-   Intended for use with jumping coefficients cases.
+  Note:
+  Intended for use with jumping coefficients cases.
 
-   Developer Note:
-   There is no manual page for `PCIS` nor some of its methods
+  Developer Notes:
+  There is no manual page for `PCIS` nor some of its methods
 
 .seealso: `PCIS`, `PCBDDC`
 @*/
@@ -98,21 +98,21 @@ static PetscErrorCode PCISSetSubdomainScalingFactor_IS(PC pc, PetscScalar scal)
 }
 
 /*@
- PCISSetSubdomainScalingFactor - Set scaling factor for `PCIS`.
+  PCISSetSubdomainScalingFactor - Set scaling factor for `PCIS`.
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  pc - the preconditioning context
--  scal - scaling factor for the subdomain
+  Input Parameters:
++ pc   - the preconditioning context
+- scal - scaling factor for the subdomain
 
-   Level: intermediate
+  Level: intermediate
 
-   Note:
-   Intended for use with the jumping coefficients cases.
+  Note:
+  Intended for use with the jumping coefficients cases.
 
-   Developer Note:
-   There is no manual page for `PCIS` nor some of its methods
+  Developer Notes:
+  There is no manual page for `PCIS` nor some of its methods
 
 .seealso: `PCIS`, `PCBDDC`
 @*/
@@ -494,21 +494,21 @@ PetscErrorCode PCISApplySchur(PC pc, Vec v, Vec vec1_B, Vec vec2_B, Vec vec1_D, 
 }
 
 /*
-   PCISScatterArrayNToVecB - Scatters interface node values from a big array (of all local nodes, interior or interface,
-   including ghosts) into an interface vector, when in SCATTER_FORWARD mode, or vice-versa, when in SCATTER_REVERSE
-   mode.
+  PCISScatterArrayNToVecB - Scatters interface node values from a big array (of all local nodes, interior or interface,
+  including ghosts) into an interface vector, when in SCATTER_FORWARD mode, or vice-versa, when in SCATTER_REVERSE
+  mode.
 
-   Input parameters:
-.  pc - preconditioner context
-.  array_N - [when in SCATTER_FORWARD mode] Array to be scattered into the vector
-.  v_B - [when in SCATTER_REVERSE mode] Vector to be scattered into the array
+  Input Parameters:
++ pc      - preconditioner context
+. array_N - [when in SCATTER_FORWARD mode] Array to be scattered into the vector
+- v_B     - [when in SCATTER_REVERSE mode] Vector to be scattered into the array
 
-   Output parameter:
-.  array_N - [when in SCATTER_REVERSE mode] Array to receive the scattered vector
-.  v_B - [when in SCATTER_FORWARD mode] Vector to receive the scattered array
+  Output Parameter:
++ array_N - [when in SCATTER_REVERSE mode] Array to receive the scattered vector
+- v_B     - [when in SCATTER_FORWARD mode] Vector to receive the scattered array
 
-   Note:
-   The entries in the array that do not correspond to interface nodes remain unaltered.
+  Note:
+  The entries in the array that do not correspond to interface nodes remain unaltered.
 */
 PetscErrorCode PCISScatterArrayNToVecB(PetscScalar *array_N, Vec v_B, InsertMode imode, ScatterMode smode, PC pc)
 {

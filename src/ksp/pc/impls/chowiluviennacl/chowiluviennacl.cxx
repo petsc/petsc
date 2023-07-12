@@ -148,16 +148,15 @@ static PetscErrorCode PCSetFromOptions_CHOWILUVIENNACL(PC pc, PetscOptionItems *
 }
 
 /*MC
-     PCCHOWILUViennaCL  - A smoothed agglomeration algorithm that can be used via the CUDA, OpenCL, and OpenMP backends of ViennaCL
+  PCCHOWILUViennaCL  - A smoothed agglomeration algorithm that can be used via the CUDA, OpenCL, and OpenMP backends of ViennaCL
 
-   Level: advanced
+  Level: advanced
 
-   Developer Note:
-   This does not appear to be wired up with `PCRegisterType()`
+  Developer Notes:
+  This does not appear to be wired up with `PCRegisterType()`
 
 .seealso: `PCCreate()`, `PCSetType()`, `PCType`, `PC`
 M*/
-
 PETSC_EXTERN PetscErrorCode PCCreate_CHOWILUVIENNACL(PC pc)
 {
   PC_CHOWILUVIENNACL *ilu;

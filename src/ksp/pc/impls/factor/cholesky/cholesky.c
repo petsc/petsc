@@ -230,20 +230,20 @@ static PetscErrorCode PCApplyTranspose_Cholesky(PC pc, Vec x, Vec y)
 }
 
 /*@
-   PCFactorSetReuseOrdering - When similar matrices are factored, this
-   causes the ordering computed in the first factor to be used for all
-   following factors.
+  PCFactorSetReuseOrdering - When similar matrices are factored, this
+  causes the ordering computed in the first factor to be used for all
+  following factors.
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  pc - the preconditioner context
--  flag - `PETSC_TRUE` to reuse else `PETSC_FALSE`
+  Input Parameters:
++ pc   - the preconditioner context
+- flag - `PETSC_TRUE` to reuse else `PETSC_FALSE`
 
-   Options Database Key:
-.  -pc_factor_reuse_ordering - Activate `PCFactorSetReuseOrdering()`
+  Options Database Key:
+. -pc_factor_reuse_ordering - Activate `PCFactorSetReuseOrdering()`
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `PCLU`, `PCCHOLESKY`, `PCFactorSetReuseFill()`
 @*/

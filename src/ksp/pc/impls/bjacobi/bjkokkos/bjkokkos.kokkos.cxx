@@ -1091,22 +1091,22 @@ static PetscErrorCode PCBJKOKKOSSetKSP_BJKOKKOS(PC pc, KSP ksp)
 }
 
 /*@C
-   PCBJKOKKOSSetKSP - Sets the `KSP` context for `PCBJKOKKOS`
+  PCBJKOKKOSSetKSP - Sets the `KSP` context for `PCBJKOKKOS`
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  pc - the `PCBJKOKKOS` preconditioner context
--  ksp - the `KSP` solver
+  Input Parameters:
++ pc  - the `PCBJKOKKOS` preconditioner context
+- ksp - the `KSP` solver
 
-   Level: advanced
+  Level: advanced
 
-   Notes:
-   The `PC` and the `KSP` must have the same communicator
+  Notes:
+  The `PC` and the `KSP` must have the same communicator
 
-   If the `PC` is not `PCBJKOKKOS` this function returns without doing anything
+  If the `PC` is not `PCBJKOKKOS` this function returns without doing anything
 
-,seealso: `PCBJKOKKOSGetKSP()`, `PCBJKOKKOS`
+  .seealso: `PCBJKOKKOSGetKSP()`, `PCBJKOKKOS`
 @*/
 PetscErrorCode PCBJKOKKOSSetKSP(PC pc, KSP ksp)
 {
@@ -1129,22 +1129,22 @@ static PetscErrorCode PCBJKOKKOSGetKSP_BJKOKKOS(PC pc, KSP *ksp)
 }
 
 /*@C
-   PCBJKOKKOSGetKSP - Gets the `KSP` context for the `PCBJKOKKOS` preconditioner
+  PCBJKOKKOSGetKSP - Gets the `KSP` context for the `PCBJKOKKOS` preconditioner
 
-   Not Collective but `KSP` returned is parallel if `PC` was parallel
+  Not Collective but `KSP` returned is parallel if `PC` was parallel
 
-   Input Parameter:
-.  pc - the preconditioner context
+  Input Parameter:
+. pc - the preconditioner context
 
-   Output Parameter:
-.  ksp - the `KSP` solver
+  Output Parameter:
+. ksp - the `KSP` solver
 
-   Level: advanced
+  Level: advanced
 
-   Notes:
-   You must call `KSPSetUp()` before calling `PCBJKOKKOSGetKSP()`.
+  Notes:
+  You must call `KSPSetUp()` before calling `PCBJKOKKOSGetKSP()`.
 
-   If the `PC` is not a `PCBJKOKKOS` object it raises an error
+  If the `PC` is not a `PCBJKOKKOS` object it raises an error
 
 .seealso: `PCBJKOKKOS`, `PCBJKOKKOSSetKSP()`
 @*/

@@ -73,23 +73,23 @@ static PetscErrorCode KSPFETIDPSetPressureOperator_FETIDP(KSP ksp, Mat P)
 }
 
 /*@
- KSPFETIDPSetPressureOperator - Sets the operator used to set up the pressure preconditioner for the saddle point `KSPFETIDP` solver,
+  KSPFETIDPSetPressureOperator - Sets the operator used to set up the pressure preconditioner for the saddle point `KSPFETIDP` solver,
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  ksp - the `KSPFETIDP` solver
--  P - the linear operator to be preconditioned, usually the mass matrix.
+  Input Parameters:
++ ksp - the `KSPFETIDP` solver
+- P   - the linear operator to be preconditioned, usually the mass matrix.
 
-   Level: advanced
+  Level: advanced
 
-   Notes:
-    The operator can be either passed in a) monolithic global ordering, b) pressure-only global ordering
-          or c) interface pressure ordering (if `-ksp_fetidp_pressure_all false`).
-          In cases b) and c), the pressure ordering of dofs needs to satisfy
-             pid_1 < pid_2  iff  gid_1 < gid_2
-          where pid_1 and pid_2 are two different pressure dof numbers and gid_1 and gid_2 the corresponding
-          id in the monolithic global ordering.
+  Notes:
+  The operator can be either passed in a) monolithic global ordering, b) pressure-only global ordering
+  or c) interface pressure ordering (if `-ksp_fetidp_pressure_all false`).
+  In cases b) and c), the pressure ordering of dofs needs to satisfy
+  pid_1 < pid_2  iff  gid_1 < gid_2
+  where pid_1 and pid_2 are two different pressure dof numbers and gid_1 and gid_2 the corresponding
+  id in the monolithic global ordering.
 
 .seealso: [](ch_ksp), `KSPFETIDP`, `MATIS`, `PCBDDC`, `KSPFETIDPGetInnerBDDC()`, `KSPFETIDPGetInnerKSP()`, `KSPSetOperators()`
 @*/
@@ -112,13 +112,13 @@ static PetscErrorCode KSPFETIDPGetInnerKSP_FETIDP(KSP ksp, KSP *innerksp)
 }
 
 /*@
- KSPFETIDPGetInnerKSP - Gets the `KSP` object for the Lagrange multipliers from inside a `KSPFETIDP`
+  KSPFETIDPGetInnerKSP - Gets the `KSP` object for the Lagrange multipliers from inside a `KSPFETIDP`
 
-   Input Parameters:
-+  ksp - the `KSPFETIDP`
--  innerksp - the `KSP` for the multipliers
+  Input Parameters:
++ ksp      - the `KSPFETIDP`
+- innerksp - the `KSP` for the multipliers
 
-   Level: advanced
+  Level: advanced
 
 .seealso: [](ch_ksp), `KSPFETIDP`, `MATIS`, `PCBDDC`, `KSPFETIDPSetInnerBDDC()`, `KSPFETIDPGetInnerBDDC()`
 @*/
@@ -143,11 +143,11 @@ static PetscErrorCode KSPFETIDPGetInnerBDDC_FETIDP(KSP ksp, PC *pc)
 /*@
   KSPFETIDPGetInnerBDDC - Gets the `PCBDDC` preconditioner used to set up the `KSPFETIDP` matrix for the Lagrange multipliers
 
-   Input Parameters:
-+  ksp - the `KSPFETIDP` Krylov solver
--  pc - the `PCBDDC` preconditioner
+  Input Parameters:
++ ksp - the `KSPFETIDP` Krylov solver
+- pc  - the `PCBDDC` preconditioner
 
-   Level: advanced
+  Level: advanced
 
 .seealso: [](ch_ksp), `MATIS`, `PCBDDC`, `KSPFETIDPSetInnerBDDC()`, `KSPFETIDPGetInnerKSP()`
 @*/
@@ -175,16 +175,16 @@ static PetscErrorCode KSPFETIDPSetInnerBDDC_FETIDP(KSP ksp, PC pc)
 /*@
   KSPFETIDPSetInnerBDDC - Provides the `PCBDDC` preconditioner used to set up the `KSPFETIDP` matrix for the Lagrange multipliers
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  ksp - the `KSPFETIDP` Krylov solver
--  pc - the `PCBDDC` preconditioner
+  Input Parameters:
++ ksp - the `KSPFETIDP` Krylov solver
+- pc  - the `PCBDDC` preconditioner
 
-   Level: advanced
+  Level: advanced
 
-   Note:
-   A `PC` is automatically created for the `KSPFETIDP` and can be accessed to change options with  `KSPFETIDPGetInnerBDDC()` hence this routine is rarely needed
+  Note:
+  A `PC` is automatically created for the `KSPFETIDP` and can be accessed to change options with  `KSPFETIDPGetInnerBDDC()` hence this routine is rarely needed
 
 .seealso: [](ch_ksp), `MATIS`, `PCBDDC`, `KSPFETIDPGetInnerBDDC()`, `KSPFETIDPGetInnerKSP()`
 @*/

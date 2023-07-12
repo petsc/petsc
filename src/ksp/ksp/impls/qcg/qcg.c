@@ -4,18 +4,18 @@
 static PetscErrorCode KSPQCGQuadraticRoots(Vec, Vec, PetscReal, PetscReal *, PetscReal *);
 
 /*@
-    KSPQCGSetTrustRegionRadius - Sets the radius of the trust region for `KSPQCG`
+  KSPQCGSetTrustRegionRadius - Sets the radius of the trust region for `KSPQCG`
 
-    Logically Collective
+  Logically Collective
 
-    Input Parameters:
-+   ksp   - the iterative context
--   delta - the trust region radius (Infinity is the default)
+  Input Parameters:
++ ksp   - the iterative context
+- delta - the trust region radius (Infinity is the default)
 
-    Options Database Key:
-.   -ksp_qcg_trustregionradius <delta> - trust region radius
+  Options Database Key:
+. -ksp_qcg_trustregionradius <delta> - trust region radius
 
-    Level: advanced
+  Level: advanced
 
 @*/
 PetscErrorCode KSPQCGSetTrustRegionRadius(KSP ksp, PetscReal delta)
@@ -28,18 +28,18 @@ PetscErrorCode KSPQCGSetTrustRegionRadius(KSP ksp, PetscReal delta)
 }
 
 /*@
-    KSPQCGGetTrialStepNorm - Gets the norm of a trial step vector in `KSPQCG`.  The WCG step may be
-    constrained, so this is not necessarily the length of the ultimate step taken in `KSPQCG`.
+  KSPQCGGetTrialStepNorm - Gets the norm of a trial step vector in `KSPQCG`.  The WCG step may be
+  constrained, so this is not necessarily the length of the ultimate step taken in `KSPQCG`.
 
-    Not Collective
+  Not Collective
 
-    Input Parameter:
-.   ksp - the iterative context
+  Input Parameter:
+. ksp - the iterative context
 
-    Output Parameter:
-.   tsnorm - the norm
+  Output Parameter:
+. tsnorm - the norm
 
-    Level: advanced
+  Level: advanced
 @*/
 PetscErrorCode KSPQCGGetTrialStepNorm(KSP ksp, PetscReal *tsnorm)
 {
@@ -50,30 +50,30 @@ PetscErrorCode KSPQCGGetTrialStepNorm(KSP ksp, PetscReal *tsnorm)
 }
 
 /*@
-    KSPQCGGetQuadratic - Gets the value of the quadratic function, evaluated at the new iterate:
+  KSPQCGGetQuadratic - Gets the value of the quadratic function, evaluated at the new iterate:
 
-       q(s) = g^T * s + 0.5 * s^T * H * s
+  q(s) = g^T * s + 0.5 * s^T * H * s
 
-    which satisfies the Euclidean Norm trust region constraint
+  which satisfies the Euclidean Norm trust region constraint
 
-       || D * s || <= delta,
+  || D * s || <= delta,
 
-    where
+  where
 
-     delta is the trust region radius,
-     g is the gradient vector, and
-     H is Hessian matrix,
-     D is a scaling matrix.
+  delta is the trust region radius,
+  g is the gradient vector, and
+  H is Hessian matrix,
+  D is a scaling matrix.
 
-    Collective
+  Collective
 
-    Input Parameter:
-.   ksp - the iterative context
+  Input Parameter:
+. ksp - the iterative context
 
-    Output Parameter:
-.   quadratic - the quadratic function evaluated at the new iterate
+  Output Parameter:
+. quadratic - the quadratic function evaluated at the new iterate
 
-    Level: advanced
+  Level: advanced
 
 .seealso: [](ch_ksp), `KSPQCG`
 @*/

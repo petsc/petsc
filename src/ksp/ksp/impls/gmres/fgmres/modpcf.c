@@ -2,35 +2,35 @@
 #include <petsc/private/kspimpl.h> /*I "petscksp.h" I*/
 
 /*@C
-   KSPFGMRESSetModifyPC - Sets the routine used by `KSPFGMRES` to modify the preconditioner. [](sec_flexibleksp)
+  KSPFGMRESSetModifyPC - Sets the routine used by `KSPFGMRES` to modify the preconditioner. [](sec_flexibleksp)
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  ksp - iterative context obtained from `KSPCreate()`
-.  fcn - modifypc function
-.  ctx - optional context
--  d - optional context destroy routine
+  Input Parameters:
++ ksp - iterative context obtained from `KSPCreate()`
+. fcn - modifypc function
+. ctx - optional context
+- d   - optional context destroy routine
 
-   Calling Sequence of `function`:
+  Calling sequence:
 $    PetscErrorCode fcn(KSP ksp, PetscInt total_its, PetscInt loc_its, PetscReal res_norm, void *ctx);
-+    ksp - the ksp context being used.
++ ksp - the ksp context being used.
 .    total_its     - the total number of FGMRES iterations that have occurred.
 .    loc_its       - the number of FGMRES iterations since last restart.
 .    res_norm      - the current residual norm.
--    ctx           - optional context variable
+- ctx - optional context variable
 
-   Calling Sequence of `d`:
+  Calling sequence:
 $ PetscErrorCode d(void *ctx)
 
-   Options Database Keys:
-+   -ksp_fgmres_modifypcnochange - do not change the `PC`
--   -ksp_fgmres_modifypcksp - changes the inner KSP solver tolerances
+  Options Database Keys:
++ -ksp_fgmres_modifypcnochange - do not change the `PC`
+- -ksp_fgmres_modifypcksp      - changes the inner KSP solver tolerances
 
-   Level: intermediate
+  Level: intermediate
 
-   Note:
-   Several modifypc routines are predefined, including  `KSPFGMRESModifyPCNoChange()`, and  `KSPFGMRESModifyPCKSP()`
+  Note:
+  Several modifypc routines are predefined, including  `KSPFGMRESModifyPCNoChange()`, and  `KSPFGMRESModifyPCKSP()`
 
 .seealso: [](ch_ksp), [](sec_flexibleksp), `KSPFGMRES`, `KSPFGMRESModifyPCNoChange()`, `KSPFGMRESModifyPCKSP()`
 @*/
@@ -46,14 +46,14 @@ PetscErrorCode KSPFGMRESSetModifyPC(KSP ksp, PetscErrorCode (*fcn)(KSP, PetscInt
   KSPFGMRESModifyPCNoChange - this is the default used by `KSPFMGMRES` - it doesn't change the preconditioner. [](sec_flexibleksp)
 
   Input Parameters:
-+    ksp - the ksp context being used.
-.    total_its     - the total number of `KSPFGMRES` iterations that have occurred.
-.    loc_its       - the number of `KSPFGMRES` iterations since last restart.
++ ksp       - the ksp context being used.
+. total_its - the total number of `KSPFGMRES` iterations that have occurred.
+. loc_its   - the number of `KSPFGMRES` iterations since last restart.
                     a restart (so number of Krylov directions to be computed)
-.    res_norm      - the current residual norm.
--    dummy         - context variable, unused in this routine
+. res_norm  - the current residual norm.
+- dummy     - context variable, unused in this routine
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: [](ch_ksp), [](sec_flexibleksp), `KSPFGMRES`, `KSPFGMRESSetModifyPC()`, `KSPFGMRESModifyPCKSP()`
 @*/
@@ -64,19 +64,19 @@ PetscErrorCode KSPFGMRESModifyPCNoChange(KSP ksp, PetscInt total_its, PetscInt l
 }
 
 /*@
-     KSPFGMRESModifyPCKSP - modifies the attributes of the `KSPFGMRES` preconditioner. [](sec_flexibleksp). It serves as an example (not as something useful in practice)
+  KSPFGMRESModifyPCKSP - modifies the attributes of the `KSPFGMRES` preconditioner. [](sec_flexibleksp). It serves as an example (not as something useful in practice)
 
   Input Parameters:
-+    ksp - the ksp context being used.
-.    total_its     - the total number of `KSPFGMRES` iterations that have occurred.
-.    loc_its       - the number of `KSPFGMRES` iterations since last restart.
-.    res_norm      - the current residual norm.
--    dummy         - context, not used here
++ ksp       - the ksp context being used.
+. total_its - the total number of `KSPFGMRES` iterations that have occurred.
+. loc_its   - the number of `KSPFGMRES` iterations since last restart.
+. res_norm  - the current residual norm.
+- dummy     - context, not used here
 
-   Level: intermediate
+  Level: intermediate
 
-   Note:
-    You can use this as a template for writing a custom monification callback
+  Note:
+  You can use this as a template for writing a custom monification callback
 
 .seealso: [](ch_ksp), [](sec_flexibleksp), `KSPFGMRES`, `KSPFGMRESSetModifyPC()`, `KSPFGMRESModifyPCKSP()`
 @*/

@@ -529,13 +529,14 @@ PetscErrorCode PCGAMGCreateGraph_GEO(PC pc, Mat Amat, Mat *a_Gmat)
 }
 
 /*
-   PCGAMGCoarsen_GEO
+  PCGAMGCoarsen_GEO
 
   Input Parameter:
-   . a_pc - this
-   . a_Gmat - graph
++ a_pc   - this
+- a_Gmat - graph
+
   Output Parameter:
-   . a_llist_parent - linked list from selected indices for data locality only
+. a_llist_parent - linked list from selected indices for data locality only
 */
 PetscErrorCode PCGAMGCoarsen_GEO(PC a_pc, Mat *a_Gmat, PetscCoarsenData **a_llist_parent)
 {
@@ -612,16 +613,17 @@ PetscErrorCode PCGAMGCoarsen_GEO(PC a_pc, Mat *a_Gmat, PetscCoarsenData **a_llis
 }
 
 /*
- PCGAMGProlongator_GEO
+  PCGAMGProlongator_GEO
 
- Input Parameter:
- . pc - this
- . Amat - matrix on this fine level
+  Input Parameter:
++ pc        - this
+. Amat      - matrix on this fine level
  . Graph - used to get ghost data for nodes in
- . selected_1 - [nselected]
- . agg_lists - [nselected]
- Output Parameter:
- . a_P_out - prolongation operator to the next level
+. Gmat      - [nselected]
+- agg_lists - [nselected]
+
+  Output Parameter:
+. a_P_out - prolongation operator to the next level
  */
 PetscErrorCode PCGAMGProlongator_GEO(PC pc, Mat Amat, Mat Gmat, PetscCoarsenData *agg_lists, Mat *a_P_out)
 {

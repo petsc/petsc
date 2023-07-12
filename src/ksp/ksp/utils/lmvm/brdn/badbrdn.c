@@ -276,38 +276,38 @@ PetscErrorCode MatCreate_LMVMBadBrdn(Mat B)
 /*------------------------------------------------------------*/
 
 /*@
-   MatCreateLMVMBadBroyden - Creates a limited-memory modified (aka "bad") Broyden-type
-   approximation matrix used for a Jacobian. L-BadBrdn is not guaranteed to be
-   symmetric or positive-definite.
+  MatCreateLMVMBadBroyden - Creates a limited-memory modified (aka "bad") Broyden-type
+  approximation matrix used for a Jacobian. L-BadBrdn is not guaranteed to be
+  symmetric or positive-definite.
 
-   To use the L-BadBrdn matrix with other vector types, the matrix must be
-   created using `MatCreate()` and `MatSetType()`, followed by `MatLMVMAllocate()`.
-   This ensures that the internal storage and work vectors are duplicated from the
-   correct type of vector.
+  To use the L-BadBrdn matrix with other vector types, the matrix must be
+  created using `MatCreate()` and `MatSetType()`, followed by `MatLMVMAllocate()`.
+  This ensures that the internal storage and work vectors are duplicated from the
+  correct type of vector.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  comm - MPI communicator
-.  n - number of local rows for storage vectors
--  N - global size of the storage vectors
+  Input Parameters:
++ comm - MPI communicator
+. n    - number of local rows for storage vectors
+- N    - global size of the storage vectors
 
-   Output Parameter:
-.  B - the matrix
+  Output Parameter:
+. B - the matrix
 
-   Options Database Keys:
-+   -mat_lmvm_scale_type - (developer) type of scaling applied to J0 (none, scalar, diagonal)
-.   -mat_lmvm_theta - (developer) convex ratio between BFGS and DFP components of the diagonal J0 scaling
-.   -mat_lmvm_rho - (developer) update limiter for the J0 scaling
-.   -mat_lmvm_alpha - (developer) coefficient factor for the quadratic subproblem in J0 scaling
-.   -mat_lmvm_beta - (developer) exponential factor for the diagonal J0 scaling
--   -mat_lmvm_sigma_hist - (developer) number of past updates to use in J0 scaling
+  Options Database Keys:
++ -mat_lmvm_scale_type - (developer) type of scaling applied to J0 (none, scalar, diagonal)
+. -mat_lmvm_theta      - (developer) convex ratio between BFGS and DFP components of the diagonal J0 scaling
+. -mat_lmvm_rho        - (developer) update limiter for the J0 scaling
+. -mat_lmvm_alpha      - (developer) coefficient factor for the quadratic subproblem in J0 scaling
+. -mat_lmvm_beta       - (developer) exponential factor for the diagonal J0 scaling
+- -mat_lmvm_sigma_hist - (developer) number of past updates to use in J0 scaling
 
-   Level: intermediate
+  Level: intermediate
 
-   Note:
-   It is recommended that one use the `MatCreate()`, `MatSetType()` and/or `MatSetFromOptions()`
-   paradigm instead of this routine directly.
+  Note:
+  It is recommended that one use the `MatCreate()`, `MatSetType()` and/or `MatSetFromOptions()`
+  paradigm instead of this routine directly.
 
 .seealso: [](ch_ksp), `MatCreate()`, `MATLMVM`, `MATLMVMBADBRDN`, `MatCreateLMVMDFP()`, `MatCreateLMVMSR1()`,
           `MatCreateLMVMBFGS()`, `MatCreateLMVMBrdn()`, `MatCreateLMVMSymBrdn()`

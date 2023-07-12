@@ -121,7 +121,7 @@ PetscErrorCode KSPRegisterAll(void)
 }
 
 /*@C
-  KSPMonitoRegisterAll - Registers all of the Krylov subspace monitors in the `KSP` package.
+  KSPMonitorRegisterAll - Registers all of the Krylov subspace monitors in the `KSP` package.
 
   Not Collective
 

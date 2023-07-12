@@ -329,34 +329,34 @@ static PetscErrorCode PCBJacobiGetLocalBlocks_BJacobi(PC pc, PetscInt *blocks, c
 }
 
 /*@C
-   PCBJacobiGetSubKSP - Gets the local `KSP` contexts for all blocks on
-   this processor.
+  PCBJacobiGetSubKSP - Gets the local `KSP` contexts for all blocks on
+  this processor.
 
-   Not Collective
+  Not Collective
 
-   Input Parameter:
-.  pc - the preconditioner context
+  Input Parameter:
+. pc - the preconditioner context
 
-   Output Parameters:
-+  n_local - the number of blocks on this processor, or NULL
-.  first_local - the global number of the first block on this processor, or NULL
--  ksp - the array of KSP contexts
+  Output Parameters:
++ n_local     - the number of blocks on this processor, or NULL
+. first_local - the global number of the first block on this processor, or NULL
+- ksp         - the array of KSP contexts
 
-   Notes:
-   After `PCBJacobiGetSubKSP()` the array of `KSP` contexts is not to be freed.
+  Notes:
+  After `PCBJacobiGetSubKSP()` the array of `KSP` contexts is not to be freed.
 
-   Currently for some matrix implementations only 1 block per processor
-   is supported.
+  Currently for some matrix implementations only 1 block per processor
+  is supported.
 
-   You must call `KSPSetUp()` or `PCSetUp()` before calling `PCBJacobiGetSubKSP()`.
+  You must call `KSPSetUp()` or `PCSetUp()` before calling `PCBJacobiGetSubKSP()`.
 
-   Fortran Usage:
-   You must pass in a `KSP` array that is large enough to contain all the local `KSP`s.
+  Fortran Notes:
+  You must pass in a `KSP` array that is large enough to contain all the local `KSP`s.
 
-   You can call `PCBJacobiGetSubKSP`(pc,nlocal,firstlocal,`PETSC_NULL_KSP`,ierr) to determine how large the
-   `KSP` array must be.
+  You can call `PCBJacobiGetSubKSP`(pc,nlocal,firstlocal,`PETSC_NULL_KSP`,ierr) to determine how large the
+  `KSP` array must be.
 
-   Level: advanced
+  Level: advanced
 
 .seealso: `PCBJACOBI`, `PCASM`, `PCASMGetSubKSP()`
 @*/
@@ -369,24 +369,24 @@ PetscErrorCode PCBJacobiGetSubKSP(PC pc, PetscInt *n_local, PetscInt *first_loca
 }
 
 /*@
-   PCBJacobiSetTotalBlocks - Sets the global number of blocks for the block
-   Jacobi preconditioner.
+  PCBJacobiSetTotalBlocks - Sets the global number of blocks for the block
+  Jacobi preconditioner.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  pc - the preconditioner context
-.  blocks - the number of blocks
--  lens - [optional] integer array containing the size of each block
+  Input Parameters:
++ pc     - the preconditioner context
+. blocks - the number of blocks
+- lens   - [optional] integer array containing the size of each block
 
-   Options Database Key:
-.  -pc_bjacobi_blocks <blocks> - Sets the number of global blocks
+  Options Database Key:
+. -pc_bjacobi_blocks <blocks> - Sets the number of global blocks
 
-   Note:
-   Currently only a limited number of blocking configurations are supported.
-   All processors sharing the `PC` must call this routine with the same data.
+  Note:
+  Currently only a limited number of blocking configurations are supported.
+  All processors sharing the `PC` must call this routine with the same data.
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `PCBJACOBI`, `PCSetUseAmat()`, `PCBJacobiSetLocalBlocks()`
 @*/
@@ -400,19 +400,19 @@ PetscErrorCode PCBJacobiSetTotalBlocks(PC pc, PetscInt blocks, const PetscInt le
 }
 
 /*@C
-   PCBJacobiGetTotalBlocks - Gets the global number of blocks for the block
-   Jacobi, `PCBJACOBI`, preconditioner.
+  PCBJacobiGetTotalBlocks - Gets the global number of blocks for the block
+  Jacobi, `PCBJACOBI`, preconditioner.
 
-   Not Collective
+  Not Collective
 
-   Input Parameter:
-.  pc - the preconditioner context
+  Input Parameter:
+. pc - the preconditioner context
 
-   Output parameters:
-+  blocks - the number of blocks
--  lens - integer array containing the size of each block
+  Output Parameters:
++ blocks - the number of blocks
+- lens   - integer array containing the size of each block
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `PCBJACOBI`, `PCSetUseAmat()`, `PCBJacobiGetLocalBlocks()`
 @*/
@@ -426,23 +426,23 @@ PetscErrorCode PCBJacobiGetTotalBlocks(PC pc, PetscInt *blocks, const PetscInt *
 }
 
 /*@
-   PCBJacobiSetLocalBlocks - Sets the local number of blocks for the block
-   Jacobi, `PCBJACOBI`,  preconditioner.
+  PCBJacobiSetLocalBlocks - Sets the local number of blocks for the block
+  Jacobi, `PCBJACOBI`,  preconditioner.
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  pc - the preconditioner context
-.  blocks - the number of blocks
--  lens - [optional] integer array containing size of each block
+  Input Parameters:
++ pc     - the preconditioner context
+. blocks - the number of blocks
+- lens   - [optional] integer array containing size of each block
 
-   Options Database Key:
-.  -pc_bjacobi_local_blocks <blocks> - Sets the number of local blocks
+  Options Database Key:
+. -pc_bjacobi_local_blocks <blocks> - Sets the number of local blocks
 
-   Note:
-   Currently only a limited number of blocking configurations are supported.
+  Note:
+  Currently only a limited number of blocking configurations are supported.
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `PCBJACOBI`, `PCSetUseAmat()`, `PCBJacobiSetTotalBlocks()`
 @*/
@@ -456,20 +456,20 @@ PetscErrorCode PCBJacobiSetLocalBlocks(PC pc, PetscInt blocks, const PetscInt le
 }
 
 /*@C
-   PCBJacobiGetLocalBlocks - Gets the local number of blocks for the block
-   Jacobi, `PCBJACOBI`, preconditioner.
+  PCBJacobiGetLocalBlocks - Gets the local number of blocks for the block
+  Jacobi, `PCBJACOBI`, preconditioner.
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  pc - the preconditioner context
-.  blocks - the number of blocks
--  lens - [optional] integer array containing size of each block
+  Input Parameters:
++ pc     - the preconditioner context
+. blocks - the number of blocks
+- lens   - [optional] integer array containing size of each block
 
-   Note:
-   Currently only a limited number of blocking configurations are supported.
+  Note:
+  Currently only a limited number of blocking configurations are supported.
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `PCBJACOBI`, `PCSetUseAmat()`, `PCBJacobiGetTotalBlocks()`
 @*/
