@@ -218,7 +218,7 @@ struct _MatOps {
   PetscErrorCode (*dummy)(Mat);
   /*150*/
   PetscErrorCode (*transposesymbolic)(Mat, Mat *);
-  PetscErrorCode (*eliminatezeros)(Mat);
+  PetscErrorCode (*eliminatezeros)(Mat, PetscBool);
 };
 /*
     If you add MatOps entries above also add them to the MATOP enum

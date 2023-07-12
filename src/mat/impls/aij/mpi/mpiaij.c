@@ -2700,13 +2700,13 @@ PetscErrorCode MatInvertVariableBlockDiagonal_MPIAIJ(Mat A, PetscInt nblocks, co
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatEliminateZeros_MPIAIJ(Mat A)
+static PetscErrorCode MatEliminateZeros_MPIAIJ(Mat A, PetscBool keep)
 {
   Mat_MPIAIJ *a = (Mat_MPIAIJ *)A->data;
 
   PetscFunctionBegin;
-  PetscCall(MatEliminateZeros(a->A));
-  PetscCall(MatEliminateZeros(a->B));
+  PetscCall(MatEliminateZeros_SeqAIJ(a->A, keep));        // possibly keep zero diagonal coefficients
+  PetscCall(MatEliminateZeros_SeqAIJ(a->B, PETSC_FALSE)); // never keep zero diagonal coefficients
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

@@ -5365,7 +5365,7 @@ PetscErrorCode MatSetSeqMat_SeqAIJ(Mat C, IS rowemb, IS colemb, MatStructure pat
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatEliminateZeros_SeqAIJ(Mat A)
+PetscErrorCode MatEliminateZeros_SeqAIJ(Mat A, PetscBool keep)
 {
   Mat_SeqAIJ *a  = (Mat_SeqAIJ *)A->data;
   MatScalar  *aa = a->a;
@@ -5378,7 +5378,7 @@ PetscErrorCode MatEliminateZeros_SeqAIJ(Mat A)
   for (i = 1; i <= m; i++) {
     /* move each nonzero entry back by the amount of zero slots (fshift) before it*/
     for (k = ai[i - 1]; k < ai[i]; k++) {
-      if (aa[k] == 0 && aj[k] != i - 1) fshift++;
+      if (aa[k] == 0 && (aj[k] != i - 1 || !keep)) fshift++;
       else {
         if (aa[k] == 0 && aj[k] == i - 1) PetscCall(PetscInfo(A, "Keep the diagonal zero at row %" PetscInt_FMT "\n", i - 1));
         aa[k - fshift] = aa[k];

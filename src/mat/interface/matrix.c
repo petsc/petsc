@@ -11190,8 +11190,9 @@ PetscErrorCode MatCreateGraph(Mat A, PetscBool sym, PetscBool scale, PetscReal f
 
   Collective
 
-  Input Parameter:
-. A - the matrix
+  Input Parameters:
++ A    - the matrix
+- keep - if for a given row of `A`, the diagonal coefficient is zero, indicates whether it should be left in the structure or eliminated as well
 
   Level: intermediate
 
@@ -11201,10 +11202,10 @@ PetscErrorCode MatCreateGraph(Mat A, PetscBool sym, PetscBool scale, PetscReal f
 
 .seealso: [](ch_matrices), `Mat`, `MatCreate()`, `MatCreateGraph()`, `MatChop()`
 @*/
-PetscErrorCode MatEliminateZeros(Mat A)
+PetscErrorCode MatEliminateZeros(Mat A, PetscBool keep)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
-  PetscUseTypeMethod(A, eliminatezeros);
+  PetscUseTypeMethod(A, eliminatezeros, keep);
   PetscFunctionReturn(PETSC_SUCCESS);
 }

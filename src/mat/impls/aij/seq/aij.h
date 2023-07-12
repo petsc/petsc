@@ -426,7 +426,7 @@ PETSC_INTERN PetscErrorCode MatCreateMPIMatConcatenateSeqMat_SeqAIJ(MPI_Comm, Ma
 PETSC_INTERN PetscErrorCode MatCreateMPIMatConcatenateSeqMat_MPIAIJ(MPI_Comm, Mat, PetscInt, MatReuse, Mat *);
 
 PETSC_INTERN PetscErrorCode MatSetSeqMat_SeqAIJ(Mat, IS, IS, MatStructure, Mat);
-PETSC_INTERN PetscErrorCode MatEliminateZeros_SeqAIJ(Mat A);
+PETSC_INTERN PetscErrorCode MatEliminateZeros_SeqAIJ(Mat, PetscBool);
 PETSC_INTERN PetscErrorCode MatDestroySubMatrix_Private(Mat_SubSppt *);
 PETSC_INTERN PetscErrorCode MatDestroySubMatrix_SeqAIJ(Mat);
 PETSC_INTERN PetscErrorCode MatDestroySubMatrix_Dummy(Mat);
