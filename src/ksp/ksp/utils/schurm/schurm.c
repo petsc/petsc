@@ -486,7 +486,7 @@ PetscErrorCode MatSchurComplementComputeExplicitOperator(Mat A, Mat *S)
   PetscCall(MatDuplicate(Bd, MAT_DO_NOT_COPY_VALUES, &AinvBd));
   PetscCall(KSPMatSolve(ksp, Bd, AinvBd));
   PetscCall(MatDestroy(&Bd));
-  PetscCall(MatChop(AinvBd, PETSC_SMALL));
+  PetscCall(MatFilter(AinvBd, PETSC_SMALL, PETSC_FALSE, PETSC_FALSE));
   if (D) {
     PetscCall(MatGetLocalSize(D, &m, &n));
     PetscCall(MatGetSize(D, &M, &N));

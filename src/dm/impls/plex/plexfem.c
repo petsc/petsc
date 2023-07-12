@@ -2736,7 +2736,7 @@ PetscErrorCode DMPlexComputeInterpolatorNested(DM dmc, DM dmf, PetscBool isRefin
   PetscCall(MatAssemblyEnd(In, MAT_FINAL_ASSEMBLY));
   if (mesh->printFEM > 1) {
     PetscCall(PetscPrintf(PetscObjectComm((PetscObject)In), "%s:\n", name));
-    PetscCall(MatChop(In, 1.0e-10));
+    PetscCall(MatFilter(In, 1.0e-10, PETSC_FALSE, PETSC_FALSE));
     PetscCall(MatView(In, NULL));
   }
   PetscCall(PetscLogEventEnd(DMPLEX_InterpolatorFEM, dmc, dmf, 0, 0));

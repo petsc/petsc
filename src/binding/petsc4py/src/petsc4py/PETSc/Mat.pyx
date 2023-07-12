@@ -3941,11 +3941,11 @@ cdef class Mat(Object):
 
         See Also
         --------
-        petsc.MatChop
+        petsc.MatFilter
 
         """
         cdef PetscReal rval = asReal(tol)
-        CHKERR( MatChop(self.mat, rval) )
+        CHKERR( MatFilter(self.mat, rval, PETSC_FALSE, PETSC_FALSE) )
 
     def setRandom(self, Random random=None) -> None:
         """Set random values in the matrix.

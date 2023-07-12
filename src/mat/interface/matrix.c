@@ -11200,7 +11200,7 @@ PetscErrorCode MatCreateGraph(Mat A, PetscBool sym, PetscBool scale, PetscReal f
   The entries in the sparse matrix data structure are shifted to fill in the unneeded locations in the data. Thus the end
   of the arrays in the data structure are unneeded.
 
-.seealso: [](ch_matrices), `Mat`, `MatCreate()`, `MatCreateGraph()`, `MatChop()`
+.seealso: [](ch_matrices), `Mat`, `MatCreate()`, `MatCreateGraph()`, `MatFilter()`
 @*/
 PetscErrorCode MatEliminateZeros(Mat A, PetscBool keep)
 {

@@ -78,6 +78,7 @@ Changes: Development
 - Add a Boolean parameter to ``MatEliminateZeros()`` to force the removal of zero diagonal coefficients
 - Expose ``MatComputeVariableBlockEnvelope()`` in public headers
 - Add ``MatEliminateZeros()`` implementations for ``MatBAIJ`` and ``MatSBAIJ``
+- Deprecate ``MatChop()`` in favor of ``MatFilter()``, with two additional Boolean parameters to compress the underlying storage and keep or discard near-zero diagonal coefficients
 
 .. rubric:: MatCoarsen:
 

@@ -1,4 +1,3 @@
-
 #include <petsc/private/matimpl.h> /*I   "petscmat.h"  I*/
 
 static PetscErrorCode MatTransposeAXPY_Private(Mat Y, PetscScalar a, Mat X, MatStructure str, Mat T)
@@ -441,17 +440,19 @@ PetscErrorCode MatComputeOperatorTranspose(Mat inmat, MatType mattype, Mat *mat)
 }
 
 /*@
-  MatChop - Set all values in the matrix less than or equal to the tolerance to zero
+  MatFilter - Set all values in the matrix with an absolute value less than or equal to the tolerance to zero, and optionally compress the underlying storage
 
   Input Parameters:
-+ A   - The matrix
-- tol - The zero tolerance
++ A        - The matrix
+. tol      - The zero tolerance
+. compress - Whether the storage from the input matrix `A` should be compressed once values less than or equal to `tol` are set to zero
+- keep     - If `compress` is true and for a given row of `A`, the diagonal coefficient is less than or equal to `tol`, indicates whether it should be left in the structure or eliminated as well
 
   Level: intermediate
 
-.seealso: [](ch_matrices), `Mat`, `MatCreate()`, `MatZeroEntries()`
+.seealso: [](ch_matrices), `Mat`, `MatCreate()`, `MatZeroEntries()`, `MatRemoveZeros()`
  @*/
-PetscErrorCode MatChop(Mat A, PetscReal tol)
+PetscErrorCode MatFilter(Mat A, PetscReal tol, PetscBool compress, PetscBool keep)
 {
   Mat          a;
   PetscScalar *newVals;
@@ -512,6 +513,13 @@ PetscErrorCode MatChop(Mat A, PetscReal tol)
     PetscCall(MatRestoreRowUpperTriangular(A));
     PetscCall(PetscFree2(newCols, newVals));
     PetscCall(MatSetOption(A, MAT_NO_OFF_PROC_ENTRIES, flg)); /* reset option to its user-defined value */
+  }
+  if (compress && A->ops->eliminatezeros) {
+    Mat B;
+
+    PetscCall(MatEliminateZeros(A, keep));
+    PetscCall(MatDuplicate(A, MAT_COPY_VALUES, &B));
+    PetscCall(MatHeaderReplace(A, &B));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }

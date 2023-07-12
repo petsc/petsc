@@ -7742,101 +7742,6 @@ static inline PetscErrorCode MatCollapseRows(Mat Amat, PetscInt start, PetscInt 
 }
 
 /*
-   This will eventually be folded into MatCreateGraph_AIJ() for optimal performance
-*/
-static PetscErrorCode MatFilter_AIJ(Mat Gmat, PetscReal vfilter, Mat *filteredG)
-{
-  PetscInt           Istart, Iend, ncols, nnz0, nnz1, NN, MM, nloc;
-  Mat                tGmat;
-  MPI_Comm           comm;
-  const PetscScalar *vals;
-  const PetscInt    *idx;
-  PetscInt          *d_nnz, *o_nnz, kk, *garray = NULL, *AJ, maxcols = 0;
-  MatScalar         *AA; // this is checked in graph
-  PetscBool          isseqaij;
-  Mat                a, b, c;
-  MatType            jtype;
-
-  PetscFunctionBegin;
-  PetscCall(PetscObjectGetComm((PetscObject)Gmat, &comm));
-  PetscCall(PetscObjectBaseTypeCompare((PetscObject)Gmat, MATSEQAIJ, &isseqaij));
-  PetscCall(MatGetType(Gmat, &jtype));
-  PetscCall(MatCreate(comm, &tGmat));
-  PetscCall(MatSetType(tGmat, jtype));
-
-  /* TODO GPU: this can be called when filter = 0 -> Probably provide MatAIJThresholdCompress that compresses the entries below a threshold?
-               Also, if the matrix is symmetric, can we skip this
-               operation? It can be very expensive on large matrices. */
-
-  // global sizes
-  PetscCall(MatGetSize(Gmat, &MM, &NN));
-  PetscCall(MatGetOwnershipRange(Gmat, &Istart, &Iend));
-  nloc = Iend - Istart;
-  PetscCall(PetscMalloc2(nloc, &d_nnz, nloc, &o_nnz));
-  if (isseqaij) {
-    a = Gmat;
-    b = NULL;
-  } else {
-    Mat_MPIAIJ *d = (Mat_MPIAIJ *)Gmat->data;
-    a             = d->A;
-    b             = d->B;
-    garray        = d->garray;
-  }
-  /* Determine upper bound on non-zeros needed in new filtered matrix */
-  for (PetscInt row = 0; row < nloc; row++) {
-    PetscCall(MatGetRow(a, row, &ncols, NULL, NULL));
-    d_nnz[row] = ncols;
-    if (ncols > maxcols) maxcols = ncols;
-    PetscCall(MatRestoreRow(a, row, &ncols, NULL, NULL));
-  }
-  if (b) {
-    for (PetscInt row = 0; row < nloc; row++) {
-      PetscCall(MatGetRow(b, row, &ncols, NULL, NULL));
-      o_nnz[row] = ncols;
-      if (ncols > maxcols) maxcols = ncols;
-      PetscCall(MatRestoreRow(b, row, &ncols, NULL, NULL));
-    }
-  }
-  PetscCall(MatSetSizes(tGmat, nloc, nloc, MM, MM));
-  PetscCall(MatSetBlockSizes(tGmat, 1, 1));
-  PetscCall(MatSeqAIJSetPreallocation(tGmat, 0, d_nnz));
-  PetscCall(MatMPIAIJSetPreallocation(tGmat, 0, d_nnz, 0, o_nnz));
-  PetscCall(MatSetOption(tGmat, MAT_NO_OFF_PROC_ENTRIES, PETSC_TRUE));
-  PetscCall(PetscFree2(d_nnz, o_nnz));
-  //
-  PetscCall(PetscMalloc2(maxcols, &AA, maxcols, &AJ));
-  nnz0 = nnz1 = 0;
-  for (c = a, kk = 0; c && kk < 2; c = b, kk++) {
-    for (PetscInt row = 0, grow = Istart, ncol_row, jj; row < nloc; row++, grow++) {
-      PetscCall(MatGetRow(c, row, &ncols, &idx, &vals));
-      for (ncol_row = jj = 0; jj < ncols; jj++, nnz0++) {
-        PetscScalar sv = PetscAbs(PetscRealPart(vals[jj]));
-        if (PetscRealPart(sv) > vfilter) {
-          nnz1++;
-          PetscInt cid = idx[jj] + Istart; //diag
-          if (c != a) cid = garray[idx[jj]];
-          AA[ncol_row] = vals[jj];
-          AJ[ncol_row] = cid;
-          ncol_row++;
-        }
-      }
-      PetscCall(MatRestoreRow(c, row, &ncols, &idx, &vals));
-      PetscCall(MatSetValues(tGmat, 1, &grow, ncol_row, AJ, AA, INSERT_VALUES));
-    }
-  }
-  PetscCall(PetscFree2(AA, AJ));
-  PetscCall(MatAssemblyBegin(tGmat, MAT_FINAL_ASSEMBLY));
-  PetscCall(MatAssemblyEnd(tGmat, MAT_FINAL_ASSEMBLY));
-  PetscCall(MatPropagateSymmetryOptions(Gmat, tGmat)); /* Normal Mat options are not relevant ? */
-
-  PetscCall(PetscInfo(tGmat, "\t %g%% nnz after filtering, with threshold %g, %g nnz ave. (N=%" PetscInt_FMT ", max row size %d)\n", (!nnz0) ? 1. : 100. * (double)nnz1 / (double)nnz0, (double)vfilter, (!nloc) ? 1. : (double)nnz0 / (double)nloc, MM, (int)maxcols));
-
-  *filteredG = tGmat;
-  PetscCall(MatViewFromOptions(tGmat, NULL, "-mat_filter_graph_view"));
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-/*
  MatCreateGraph_Simple_AIJ - create simple scalar matrix (graph) from potentially blocked matrix
 
  Input Parameter:
@@ -8088,11 +7993,8 @@ PETSC_INTERN PetscErrorCode MatCreateGraph_Simple_AIJ(Mat Amat, PetscBool symmet
   PetscCall(MatViewFromOptions(Gmat, NULL, "-mat_graph_view"));
 
   if (filter >= 0) {
-    Mat Fmat = NULL; /* some silly compiler needs this */
-
-    PetscCall(MatFilter_AIJ(Gmat, filter, &Fmat));
-    PetscCall(MatDestroy(&Gmat));
-    Gmat = Fmat;
+    PetscCall(MatFilter(Gmat, filter, PETSC_TRUE, PETSC_TRUE));
+    PetscCall(MatViewFromOptions(Gmat, NULL, "-mat_filter_graph_view"));
   }
   *a_Gmat = Gmat;
   PetscFunctionReturn(PETSC_SUCCESS);

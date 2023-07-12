@@ -14,7 +14,7 @@
 
   Level: intermediate
 
-.seealso: `MatChop()`, `MatGetGraph()`
+.seealso: `MatFilter()`, `MatGetGraph()`
  @*/
 PetscErrorCode MatCreateLaplacian(Mat A, PetscReal tol, PetscBool weighted, Mat *L)
 {
