@@ -107,7 +107,7 @@ deleteshared:
 
 deletefortranstubs:
 	-@find src -type d -name ftn-auto* | xargs rm -rf
-	-@if [ -x ${PETSC_ARCH} ]; then \
+	-@if [ -n "${PETSC_ARCH}" ] && [ -d ${PETSC_ARCH} ] && [ -d ${PETSC_ARCH}/src ]; then \
           find ${PETSC_ARCH}/src -type d -name ftn-auto* | xargs rm -rf ;\
         fi
 
