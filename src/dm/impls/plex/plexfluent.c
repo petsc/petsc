@@ -13,7 +13,7 @@
 - interpolate - Create faces and edges in the mesh
 
   Output Parameter:
-. dm  - The `DM` object representing the mesh
+. dm - The `DM` object representing the mesh
 
   Level: beginner
 
@@ -225,12 +225,12 @@ static PetscErrorCode DMPlexCreateFluent_ReadSection(PetscViewer viewer, FluentS
   Collective
 
   Input Parameters:
-+ comm  - The MPI communicator
-. viewer - The `PetscViewer` associated with a Fluent mesh file
++ comm        - The MPI communicator
+. viewer      - The `PetscViewer` associated with a Fluent mesh file
 - interpolate - Create faces and edges in the mesh
 
   Output Parameter:
-. dm  - The `DM` object representing the mesh
+. dm - The `DM` object representing the mesh
 
   Note:
   http://aerojet.engr.ucdavis.edu/fluenthelp/html/ug/node1490.htm

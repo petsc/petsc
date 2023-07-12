@@ -39,10 +39,11 @@ static PetscErrorCode DMMoab_GetWriteOptions_Private(PetscInt fsetid, PetscInt n
   Collective
 
   Input Parameters:
-+ dm     - the discretization manager object containing solution in MOAB tags.
-.  filename - the name of the output file: e.g., poisson.h5m
--  usrwriteopts - the parallel write options needed for serializing a MOAB mesh database. Can be NULL.
-   Reference (Parallel Mesh Initialization: http://ftp.mcs.anl.gov/pub/fathom/moab-docs/contents.html#fivetwo)
++ dm           - the discretization manager object containing solution in MOAB tags.
+. filename     - the name of the output file: e.g., poisson.h5m
+- usrwriteopts - the parallel write options needed for serializing a MOAB mesh database. Can be NULL.
+
+  Reference (Parallel Mesh Initialization: http://ftp.mcs.anl.gov/pub/fathom/moab-docs/contents.html#fivetwo)
 
   Level: intermediate
 

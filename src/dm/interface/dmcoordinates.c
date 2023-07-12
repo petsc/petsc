@@ -71,7 +71,7 @@ static PetscErrorCode DMSubDomainHook_Coordinates(DM dm, DM subdm, void *ctx)
   Level: intermediate
 
 .seealso: `DM`, `DMSetCoordinateDM()`, `DMSetCoordinates()`, `DMSetCoordinatesLocal()`, `DMGetCoordinates()`, `DMGetCoordinatesLocal()`, `DMGSetCellCoordinateDM()`,
-          `DMGSetCellCoordinateDM()`
+
 @*/
 PetscErrorCode DMGetCoordinateDM(DM dm, DM *cdm)
 {
@@ -98,7 +98,7 @@ PetscErrorCode DMGetCoordinateDM(DM dm, DM *cdm)
   Logically Collective
 
   Input Parameters:
-+ dm - the `DM`
++ dm  - the `DM`
 - cdm - coordinate `DM`
 
   Level: intermediate
@@ -151,7 +151,7 @@ PetscErrorCode DMGetCellCoordinateDM(DM dm, DM *cdm)
   Logically Collective
 
   Input Parameters:
-+ dm - the `DM`
++ dm  - the `DM`
 - cdm - cellwise coordinate `DM`
 
   Level: intermediate
@@ -440,7 +440,7 @@ PetscErrorCode DMGetCoordinates(DM dm, Vec *c)
 
   Input Parameters:
 + dm - the `DM`
-- c - coordinate vector
+- c  - coordinate vector
 
   Level: intermediate
 
@@ -511,7 +511,7 @@ PetscErrorCode DMGetCellCoordinates(DM dm, Vec *c)
 
   Input Parameters:
 + dm - the `DM`
-- c - cellwise coordinate vector
+- c  - cellwise coordinate vector
 
   Level: intermediate
 
@@ -634,11 +634,11 @@ PetscErrorCode DMGetCoordinatesLocalNoncollective(DM dm, Vec *c)
 
   Input Parameters:
 + dm - the `DM`
-- p - the `IS` of points whose coordinates will be returned
+- p  - the `IS` of points whose coordinates will be returned
 
   Output Parameters:
 + pCoordSection - the `PetscSection` describing the layout of pCoord, i.e. each point corresponds to one point in p, and DOFs correspond to coordinates
-- pCoord - the `Vec` with coordinates of points in p
+- pCoord        - the `Vec` with coordinates of points in p
 
   Level: advanced
 
@@ -695,9 +695,9 @@ PetscErrorCode DMGetCoordinatesLocalTuple(DM dm, IS p, PetscSection *pCoordSecti
 
   Not Collective
 
-   Input Parameters:
-+  dm - the `DM`
--  c - coordinate vector
+  Input Parameters:
++ dm - the `DM`
+- c  - coordinate vector
 
   Level: intermediate
 
@@ -810,9 +810,9 @@ PetscErrorCode DMGetCellCoordinatesLocalNoncollective(DM dm, Vec *c)
 
   Not Collective
 
-   Input Parameters:
-+  dm - the `DM`
--  c - cellwise coordinate vector
+  Input Parameters:
++ dm - the `DM`
+- c  - cellwise coordinate vector
 
   Level: intermediate
 
@@ -973,8 +973,8 @@ static void evaluate_coordinates(PetscInt dim, PetscInt Nf, PetscInt NfAux, cons
   DMProjectCoordinates - Project coordinates to a different space
 
   Input Parameters:
-+ dm      - The `DM` object
-- disc    - The new coordinate discretization or NULL to ensure a coordinate discretization exists
++ dm   - The `DM` object
+- disc - The new coordinate discretization or NULL to ensure a coordinate discretization exists
 
   Level: intermediate
 
@@ -985,7 +985,7 @@ static void evaluate_coordinates(PetscInt dim, PetscInt Nf, PetscInt NfAux, cons
   This function takes the current mesh coordinates, which are discretized using some `PetscFE` space, and projects this function into a new `PetscFE` space.
   The coordinate projection is done on the continuous coordinates, and if possible, the discontinuous coordinates are also updated.
 
-  Developer Note:
+  Developer Notes:
   With more effort, we could directly project the discontinuous coordinates also.
 
 .seealso: `DM`, `PetscFE`, `DMGetCoordinateField()`
@@ -1089,11 +1089,11 @@ PetscErrorCode DMProjectCoordinates(DM dm, PetscFE disc)
   Collective
 
   Input Parameters:
-+ dm - The `DM`
++ dm    - The `DM`
 - ltype - The type of point location, e.g. `DM_POINTLOCATION_NONE` or `DM_POINTLOCATION_NEAREST`
 
   Input/Output Parameters:
-+ v - The `Vec` of points, on output contains the nearest mesh points to the given points if `DM_POINTLOCATION_NEAREST` is used
++ v      - The `Vec` of points, on output contains the nearest mesh points to the given points if `DM_POINTLOCATION_NEAREST` is used
 - cellSF - Points to either `NULL`, or a `PetscSF` with guesses for which cells contain each point;
            on output, the `PetscSF` containing the ranks and local indices of the containing points
 

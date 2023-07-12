@@ -480,8 +480,8 @@ static PetscErrorCode DMPlexCreatePartitionerGraph_ViaMat(DM dm, PetscInt height
   Collective
 
   Input Parameters:
-+ dm      - The mesh `DM`
-- height  - Height of the strata from which to construct the graph
++ dm     - The mesh `DM`
+- height - Height of the strata from which to construct the graph
 
   Output Parameters:
 + numVertices     - Number of vertices in the graph
@@ -526,7 +526,7 @@ PetscErrorCode DMPlexCreatePartitionerGraph(DM dm, PetscInt height, PetscInt *nu
   Collective
 
   Input Parameters:
-+ dm - The `DMPLEX`
++ dm         - The `DMPLEX`
 - cellHeight - The height of mesh points to treat as cells (default should be 0)
 
   Output Parameters:
@@ -725,13 +725,13 @@ PetscErrorCode DMPlexCreateNeighborCSR(DM dm, PetscInt cellHeight, PetscInt *num
   Collective
 
   Input Parameters:
-+ part    - The `PetscPartitioner`
++ part          - The `PetscPartitioner`
 . targetSection - The `PetscSection` describing the absolute weight of each partition (can be `NULL`)
-- dm      - The mesh `DM`
+- dm            - The mesh `DM`
 
   Output Parameters:
-+ partSection     - The `PetscSection` giving the division of points by partition
-- partition       - The list of points by partition
++ partSection - The `PetscSection` giving the division of points by partition
+- partition   - The list of points by partition
 
   Level: developer
 
@@ -904,7 +904,7 @@ PetscErrorCode DMPlexGetPartitioner(DM dm, PetscPartitioner *part)
   logically Collective
 
   Input Parameters:
-+ dm - The `DM`
++ dm   - The `DM`
 - part - The partitioner
 
   Level: developer
@@ -1071,8 +1071,8 @@ PetscErrorCode DMPlexClosurePoints_Private(DM dm, PetscInt numPoints, const Pets
   DMPlexPartitionLabelClosure - Add the closure of all points to the partition label
 
   Input Parameters:
-+ dm     - The `DM`
-- label  - `DMLabel` assigning ranks to remote roots
++ dm    - The `DM`
+- label - `DMLabel` assigning ranks to remote roots
 
   Level: developer
 
@@ -1108,8 +1108,8 @@ PetscErrorCode DMPlexPartitionLabelClosure(DM dm, DMLabel label)
   DMPlexPartitionLabelAdjacency - Add one level of adjacent points to the partition label
 
   Input Parameters:
-+ dm     - The `DM`
-- label  - `DMLabel` assigning ranks to remote roots
++ dm    - The `DM`
+- label - `DMLabel` assigning ranks to remote roots
 
   Level: developer
 
@@ -1150,8 +1150,8 @@ PetscErrorCode DMPlexPartitionLabelAdjacency(DM dm, DMLabel label)
   DMPlexPartitionLabelPropagate - Propagate points in a partition label over the point `PetscSF`
 
   Input Parameters:
-+ dm     - The `DM`
-- label  - `DMLabel` assigning ranks to remote roots
++ dm    - The `DM`
+- label - `DMLabel` assigning ranks to remote roots
 
   Level: developer
 
@@ -1363,7 +1363,7 @@ PetscErrorCode DMPlexPartitionLabelInvert(DM dm, DMLabel rootLabel, PetscSF proc
 - label - `DMLabel` assigning ranks to remote roots
 
   Output Parameter:
-. sf    - The star forest communication context encapsulating the defined mapping
+. sf - The star forest communication context encapsulating the defined mapping
 
   Level: developer
 
@@ -1619,20 +1619,20 @@ static PetscErrorCode DMPlexViewDistribution(MPI_Comm comm, PetscInt n, PetscInt
 /*@
   DMPlexRebalanceSharedPoints - Redistribute points in the plex that are shared in order to achieve better balancing. This routine updates the `PointSF` of the `DM` inplace.
 
-  Input parameters:
-+ dm               - The `DMPLEX` object.
-. entityDepth      - depth of the entity to balance (0 -> balance vertices).
-. useInitialGuess  - whether to use the current distribution as initial guess (only used by ParMETIS).
-- parallel         - whether to use ParMETIS and do the partition in parallel or whether to gather the graph onto a single process and use METIS.
+  Input Parameters:
++ dm              - The `DMPLEX` object.
+. entityDepth     - depth of the entity to balance (0 -> balance vertices).
+. useInitialGuess - whether to use the current distribution as initial guess (only used by ParMETIS).
+- parallel        - whether to use ParMETIS and do the partition in parallel or whether to gather the graph onto a single process and use METIS.
 
-  Output parameter:
-. success          - whether the graph partitioning was successful or not, optional. Unsuccessful simply means no change to the partitioning
+  Output Parameter:
+. success - whether the graph partitioning was successful or not, optional. Unsuccessful simply means no change to the partitioning
 
   Options Database Keys:
-+  -dm_plex_rebalance_shared_points_parmetis - Use ParMetis instead of Metis for the partitioner
-.  -dm_plex_rebalance_shared_points_use_initial_guess - Use current partition to bootstrap ParMetis partition
-.  -dm_plex_rebalance_shared_points_use_mat_partitioning - Use the MatPartitioning object to perform the partition, the prefix for those operations is -dm_plex_rebalance_shared_points_
--  -dm_plex_rebalance_shared_points_monitor - Monitor the shared points rebalance process
++ -dm_plex_rebalance_shared_points_parmetis             - Use ParMetis instead of Metis for the partitioner
+. -dm_plex_rebalance_shared_points_use_initial_guess    - Use current partition to bootstrap ParMetis partition
+. -dm_plex_rebalance_shared_points_use_mat_partitioning - Use the MatPartitioning object to perform the partition, the prefix for those operations is -dm_plex_rebalance_shared_points_
+- -dm_plex_rebalance_shared_points_monitor              - Monitor the shared points rebalance process
 
   Level: intermediate
 

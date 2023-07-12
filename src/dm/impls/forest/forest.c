@@ -44,7 +44,7 @@ static PetscErrorCode DMForestPackageInitialize(void)
 
   Not Collective
 
-  Input parameter:
+  Input Parameter:
 . name - the name of the type
 
   Level: advanced
@@ -69,10 +69,10 @@ PetscErrorCode DMForestRegisterType(DMType name)
 
   Not Collective
 
-  Input parameter:
+  Input Parameter:
 . dm - the DM object
 
-  Output parameter:
+  Output Parameter:
 . isForest - whether dm is a subtype of DMFOREST
 
   Level: intermediate
@@ -106,7 +106,7 @@ PetscErrorCode DMIsForest(DM dm, PetscBool *isForest)
   Collective
 
   Input Parameters:
-+ dm - the source `DM` object
++ dm   - the source `DM` object
 - comm - the communicator for the new `DM` (this communicator is currently ignored, but is present so that `DMForestTemplate()` can be used within `DMCoarsen()`)
 
   Output Parameter:
@@ -210,8 +210,8 @@ static PetscErrorCode DMDestroy_Forest(DM dm)
 
   Logically collectiv
 
-  Input parameters:
-+ dm - the forest
+  Input Parameters:
++ dm       - the forest
 - topology - the topology of the forest
 
   Level: intermediate
@@ -235,10 +235,10 @@ PetscErrorCode DMForestSetTopology(DM dm, DMForestTopology topology)
 
   Not Collective
 
-  Input parameter:
+  Input Parameter:
 . dm - the forest
 
-  Output parameter:
+  Output Parameter:
 . topology - the topology of the forest (e.g., 'cube', 'shell')
 
   Level: intermediate
@@ -264,13 +264,13 @@ PetscErrorCode DMForestGetTopology(DM dm, DMForestTopology *topology)
   Logically Collective
 
   Input Parameters:
-+ dm - the forest
++ dm   - the forest
 - base - the base `DM` of the forest
 
   Level: intermediate
 
   Note:
-    Currently the base `DM` must be a `DMPLEX`
+  Currently the base `DM` must be a `DMPLEX`
 
 .seealso: `DM`, `DMFOREST`, `DMForestGetBaseDM()`
 @*/
@@ -313,7 +313,7 @@ PetscErrorCode DMForestSetBaseDM(DM dm, DM base)
 . base - the base DM of the forest
 
   Notes:
-    After DMSetUp(), the base DM will be redundantly distributed across MPI processes
+  After DMSetUp(), the base DM will be redundantly distributed across MPI processes
 
   Level: intermediate
 
@@ -361,7 +361,7 @@ PetscErrorCode DMForestGetBaseCoordinateMapping(DM dm, PetscErrorCode (**func)(D
   Logically Collective
 
   Input Parameters:
-+ dm - the new forest, which will be constructed from adapt
++ dm    - the new forest, which will be constructed from adapt
 - adapt - the old forest
 
   Level: intermediate
@@ -463,7 +463,7 @@ PetscErrorCode DMForestGetAdaptivityForest(DM dm, DM *adapt)
   Logically Collective
 
   Input Parameters:
-+ dm - the forest
++ dm      - the forest
 - purpose - the adaptivity purpose
 
   Level: advanced
@@ -497,7 +497,8 @@ PetscErrorCode DMForestSetAdaptivityPurpose(DM dm, DMAdaptFlag purpose)
   `DMForestSetAdaptivityForest()`) for the purpose of refinement (`DM_ADAPT_REFINE`), coarsening (`DM_ADAPT_COARSEN`),
   coarsening only the last level (`DM_ADAPT_COARSEN_LAST`) or undefined (`DM_ADAPT_DETERMINE`).
   This only matters for the purposes of reference counting: during `DMDestroy()`, cyclic
-  references can be found between `DM`s only if the cyclic reference is due to a fine/coarse relationship (see
+
+  References Can Be Found Between `Dm`S Only If The Cyclic Reference Is Due To A Fine/Coarse Relationship (See
   `DMSetFineDM()`/`DMSetCoarseDM()`).  If the purpose is not refinement or coarsening, and the user does not maintain a
   reference to the post-adaptation forest (i.e., the one created by `DMForestTemplate()`), then this can cause a memory
   leak.  This method is used by subtypes of `DMFOREST` when automatically constructing mesh hierarchies.
@@ -531,7 +532,7 @@ PetscErrorCode DMForestGetAdaptivityPurpose(DM dm, DMAdaptFlag *purpose)
   Logically Collective
 
   Input Parameters:
-+ dm - the forest
++ dm     - the forest
 - adjDim - default 0 (i.e., vertices determine adjacency)
 
   Level: intermediate
@@ -560,7 +561,7 @@ PetscErrorCode DMForestSetAdjacencyDimension(DM dm, PetscInt adjDim)
   Logically Collective
 
   Input Parameters:
-+ dm - the forest
++ dm       - the forest
 - adjCodim - default is the dimension of the forest (see `DMGetDimension()`), since this is the codimension of vertices
 
   Level: intermediate
@@ -642,7 +643,7 @@ PetscErrorCode DMForestGetAdjacencyCodimension(DM dm, PetscInt *adjCodim)
   Logically Collective
 
   Input Parameters:
-+ dm - the forest
++ dm      - the forest
 - overlap - default 0
 
   Level: intermediate
@@ -696,7 +697,7 @@ PetscErrorCode DMForestGetPartitionOverlap(DM dm, PetscInt *overlap)
   Logically Collective
 
   Input Parameters:
-+ dm - the forest
++ dm            - the forest
 - minRefinement - default `PETSC_DEFAULT` (interpreted by the subtype of `DMFOREST`)
 
   Level: intermediate
@@ -749,8 +750,8 @@ PetscErrorCode DMForestGetMinimumRefinement(DM dm, PetscInt *minRefinement)
   Logically Collective
 
   Input Parameters:
-+ dm - the forest
-- initefinement - default `PETSC_DEFAULT` (interpreted by the subtype of `DMFOREST`)
++ dm             - the forest
+- initRefinement - default `PETSC_DEFAULT` (interpreted by the subtype of `DMFOREST`)
 
   Level: intermediate
 
@@ -802,7 +803,7 @@ PetscErrorCode DMForestGetInitialRefinement(DM dm, PetscInt *initRefinement)
   Logically Collective
 
   Input Parameters:
-+ dm - the forest
++ dm            - the forest
 - maxRefinement - default `PETSC_DEFAULT` (interpreted by the subtype of `DMFOREST`)
 
   Level: intermediate
@@ -854,7 +855,7 @@ PetscErrorCode DMForestGetMaximumRefinement(DM dm, PetscInt *maxRefinement)
   Logically Collective
 
   Input Parameters:
-+ dm - the forest
++ dm            - the forest
 - adaptStrategy - default `DMFORESTADAPTALL`
 
   Level: advanced
@@ -878,7 +879,7 @@ PetscErrorCode DMForestSetAdaptivityStrategy(DM dm, DMForestAdaptivityStrategy a
 }
 
 /*@C
-  DMForestSetAdaptivityStrategy - Get the strategy for combining adaptivity labels from multiple processes.
+  DMForestGetAdaptivityStrategy - Get the strategy for combining adaptivity labels from multiple processes.
 
   Not Collective
 
@@ -949,7 +950,7 @@ PetscErrorCode DMForestGetAdaptivitySuccess(DM dm, PetscBool *success)
   Logically Collective
 
   Input Parameters:
-+ dm - the post-adaptation forest
++ dm        - the post-adaptation forest
 - computeSF - default `PETSC_TRUE`
 
   Level: advanced
@@ -1038,11 +1039,11 @@ PetscErrorCode DMForestGetComputeAdaptivitySF(DM dm, PetscBool *computeSF)
   Not Collective
 
   Input Parameter:
-.  dm - the post-adaptation forest
+. dm - the post-adaptation forest
 
   Output Parameters:
-+  preCoarseToFine - pre-adaptation coarse cells to post-adaptation fine cells: BCast goes from pre- to post-
--  coarseToPreFine - post-adaptation coarse cells to pre-adaptation fine cells: BCast goes from post- to pre-
++ preCoarseToFine - pre-adaptation coarse cells to post-adaptation fine cells: BCast goes from pre- to post-
+- coarseToPreFine - post-adaptation coarse cells to pre-adaptation fine cells: BCast goes from post- to pre-
 
   Level: advanced
 
@@ -1069,7 +1070,7 @@ PetscErrorCode DMForestGetAdaptivitySF(DM dm, PetscSF *preCoarseToFine, PetscSF 
   Logically Collective
 
   Input Parameters:
-+ dm - the forest
++ dm    - the forest
 - grade - the grading factor
 
   Level: advanced
@@ -1125,8 +1126,8 @@ PetscErrorCode DMForestGetGradeFactor(DM dm, PetscInt *grade)
   Logically Collective
 
   Input Parameters:
-+ dm - the forest
-- weightsFactors - default 1.
++ dm            - the forest
+- weightsFactor - default 1.
 
   Level: advanced
 
@@ -1156,7 +1157,7 @@ PetscErrorCode DMForestSetCellWeightFactor(DM dm, PetscReal weightsFactor)
 . dm - the forest
 
   Output Parameter:
-. weightsFactors - default 1.
+. weightsFactor - default 1.
 
   Level: advanced
 
@@ -1183,7 +1184,7 @@ PetscErrorCode DMForestGetCellWeightFactor(DM dm, PetscReal *weightsFactor)
 
   Output Parameters:
 + cStart - the first cell on this process
-- cEnd - one after the final cell on this process
+- cEnd   - one after the final cell on this process
 
   Level: intermediate
 
@@ -1239,8 +1240,8 @@ PetscErrorCode DMForestGetCellSF(DM dm, PetscSF *cellSF)
   Logically Collective
 
   Input Parameters:
-- dm - the forest
-+ adaptLabel - the label in the pre-adaptation forest
++ dm         - the forest
+- adaptLabel - the label in the pre-adaptation forest
 
   Level: intermediate
 
@@ -1294,8 +1295,8 @@ PetscErrorCode DMForestGetAdaptivityLabel(DM dm, DMLabel *adaptLabel)
   Logically Collective
 
   Input Parameters:
-+ dm - the forest
-. weights - the array of weights (see `DMForestSetWeightCapacity()`) for all cells, or `NULL` to indicate each cell has weight 1.
++ dm       - the forest
+. weights  - the array of weights (see `DMForestSetWeightCapacity()`) for all cells, or `NULL` to indicate each cell has weight 1.
 - copyMode - how weights should reference weights
 
   Level: advanced
@@ -1358,8 +1359,8 @@ PetscErrorCode DMForestGetCellWeights(DM dm, PetscReal **weights)
 
   Logically Collective
 
-  Input parameters:
-+ dm - the forest
+  Input Parameters:
++ dm       - the forest
 - capacity - this process's capacity
 
   Level: advanced
@@ -1386,10 +1387,10 @@ PetscErrorCode DMForestSetWeightCapacity(DM dm, PetscReal capacity)
 
   Not Collective
 
-  Input parameter:
+  Input Parameter:
 . dm - the forest
 
-  Output parameter:
+  Output Parameter:
 . capacity - this process's capacity
 
   Level: advanced

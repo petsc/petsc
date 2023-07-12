@@ -1,24 +1,24 @@
 #include <petsc/private/dmpleximpl.h> /*I      "petscdmplex.h"   I*/
 
 /*@
-   DMPlexGetPointLocal - get location of point data in local `Vec`
+  DMPlexGetPointLocal - get location of point data in local `Vec`
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  dm - `DM` defining the topological space
--  point - topological point
+  Input Parameters:
++ dm    - `DM` defining the topological space
+- point - topological point
 
-   Output Parameters:
-+  start - start of point data
--  end - end of point data
+  Output Parameters:
++ start - start of point data
+- end   - end of point data
 
-   Level: intermediate
+  Level: intermediate
 
-   Note:
-   This is a half open interval [start, end)
+  Note:
+  This is a half open interval [start, end)
 
-.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexGetPointLocalField()`, `DMGetLocalSection()`, `PetscSectionGetOffset()`, `PetscSectionGetDof()`, `DMPlexPointLocalRead()`, `DMPlexPointLocalRead()`, `DMPlexPointLocalRef()`
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexGetPointLocalField()`, `DMGetLocalSection()`, `PetscSectionGetOffset()`, `PetscSectionGetDof()`, `DMPlexPointLocalRead()`, `DMPlexPointLocalRef()`
 @*/
 PetscErrorCode DMPlexGetPointLocal(DM dm, PetscInt point, PetscInt *start, PetscInt *end)
 {
@@ -35,22 +35,23 @@ PetscErrorCode DMPlexGetPointLocal(DM dm, PetscInt point, PetscInt *start, Petsc
 }
 
 /*@
-   DMPlexPointLocalRead - return read access to a point in local array
+  DMPlexPointLocalRead - return read access to a point in local array
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  dm - `DM` defining topological space
-.  point - topological point
--  array - array to index into
+  Input Parameters:
++ dm    - `DM` defining topological space
+. point - topological point
+- array - array to index into
 
-   Output Parameter:
-.  ptr - address of read reference to point data, type generic so user can place in structure
+  Output Parameter:
+. ptr - address of read reference to point data, type generic so user can place in structure
 
-   Level: intermediate
+  Level: intermediate
 
-   Note:
-   A common usage when data sizes are known statically:
+  Note:
+
+  A common usage when data sizes are known statically:
 .vb
   const struct { PetscScalar foo,bar,baz; } *ptr;
   DMPlexPointLocalRead(dm,point,array,&ptr);
@@ -73,22 +74,23 @@ PetscErrorCode DMPlexPointLocalRead(DM dm, PetscInt point, const PetscScalar *ar
 }
 
 /*@
-   DMPlexPointLocalRef - return read/write access to a point in local array
+  DMPlexPointLocalRef - return read/write access to a point in local array
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  dm - `DM` defining topological space
-.  point - topological point
--  array - array to index into
+  Input Parameters:
++ dm    - `DM` defining topological space
+. point - topological point
+- array - array to index into
 
-   Output Parameter:
-.  ptr - address of reference to point data, type generic so user can place in structure
+  Output Parameter:
+. ptr - address of reference to point data, type generic so user can place in structure
 
-   Level: intermediate
+  Level: intermediate
 
-   Note:
-   A common usage when data sizes are known statically:
+  Note:
+
+  A common usage when data sizes are known statically:
 .vb
   struct { PetscScalar foo,bar,baz; } *ptr;
   DMPlexPointLocalRef(dm,point,array,&ptr);
@@ -116,20 +118,20 @@ PetscErrorCode DMPlexPointLocalRef(DM dm, PetscInt point, PetscScalar *array, vo
   Not Collective
 
   Input Parameters:
-+ dm - `DM` defining the topological space
++ dm    - `DM` defining the topological space
 . point - topological point
 - field - the field number
 
   Output Parameters:
 + start - start of point data
-- end - end of point data
+- end   - end of point data
 
   Level: intermediate
 
   Note:
   This is a half open interval [start, end)
 
-.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexGetPointLocal()`, `DMGetLocalSection()`, `PetscSectionGetOffset()`, `PetscSectionGetDof()`, `DMPlexPointLocalRead()`, `DMPlexPointLocalRead()`, `DMPlexPointLocalRef()`
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexGetPointLocal()`, `DMGetLocalSection()`, `PetscSectionGetOffset()`, `PetscSectionGetDof()`, `DMPlexPointLocalRead()`, `DMPlexPointLocalRef()`
 @*/
 PetscErrorCode DMPlexGetPointLocalField(DM dm, PetscInt point, PetscInt field, PetscInt *start, PetscInt *end)
 {
@@ -146,20 +148,20 @@ PetscErrorCode DMPlexGetPointLocalField(DM dm, PetscInt point, PetscInt field, P
 }
 
 /*@
-   DMPlexPointLocalFieldRead - return read access to a field on a point in local array
+  DMPlexPointLocalFieldRead - return read access to a field on a point in local array
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  dm - `DM` defining topological space
-.  point - topological point
-.  field - field number
--  array - array to index into
+  Input Parameters:
++ dm    - `DM` defining topological space
+. point - topological point
+. field - field number
+- array - array to index into
 
-   Output Parameter:
-.  ptr - address of read reference to point data, type generic so user can place in structure
+  Output Parameter:
+. ptr - address of read reference to point data, type generic so user can place in structure
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMGetLocalSection()`, `PetscSectionGetOffset()`, `PetscSectionGetDof()`, `DMPlexGetPointLocal()`, `DMPlexPointGlobalRef()`
 @*/
@@ -177,20 +179,20 @@ PetscErrorCode DMPlexPointLocalFieldRead(DM dm, PetscInt point, PetscInt field, 
 }
 
 /*@
-   DMPlexPointLocalFieldRef - return read/write access to a field on a point in local array
+  DMPlexPointLocalFieldRef - return read/write access to a field on a point in local array
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  dm - `DM` defining topological space
-.  point - topological point
-.  field - field number
--  array - array to index into
+  Input Parameters:
++ dm    - `DM` defining topological space
+. point - topological point
+. field - field number
+- array - array to index into
 
-   Output Parameter:
-.  ptr - address of reference to point data, type generic so user can place in structure
+  Output Parameter:
+. ptr - address of reference to point data, type generic so user can place in structure
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMGetLocalSection()`, `PetscSectionGetOffset()`, `PetscSectionGetDof()`, `DMPlexGetPointLocal()`, `DMPlexPointGlobalRef()`
 @*/
@@ -213,19 +215,19 @@ PetscErrorCode DMPlexPointLocalFieldRef(DM dm, PetscInt point, PetscInt field, P
   Not Collective
 
   Input Parameters:
-+ dm - `DM` defining the topological space
++ dm    - `DM` defining the topological space
 - point - topological point
 
   Output Parameters:
 + start - start of point data; returns -(globalStart+1) if point is not owned
-- end - end of point data; returns -(globalEnd+1) if point is not owned
+- end   - end of point data; returns -(globalEnd+1) if point is not owned
 
   Level: intermediate
 
   Note:
   This is a half open interval [start, end)
 
-.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexGetPointGlobalField()`, `DMGetLocalSection()`, `PetscSectionGetOffset()`, `PetscSectionGetDof()`, `DMPlexPointGlobalRead()`, `DMPlexGetPointLocal()`, `DMPlexPointGlobalRead()`, `DMPlexPointGlobalRef()`
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexGetPointGlobalField()`, `DMGetLocalSection()`, `PetscSectionGetOffset()`, `PetscSectionGetDof()`, `DMPlexPointGlobalRead()`, `DMPlexGetPointLocal()`, `DMPlexPointGlobalRef()`
 @*/
 PetscErrorCode DMPlexGetPointGlobal(DM dm, PetscInt point, PetscInt *start, PetscInt *end)
 {
@@ -242,22 +244,23 @@ PetscErrorCode DMPlexGetPointGlobal(DM dm, PetscInt point, PetscInt *start, Pets
 }
 
 /*@
-   DMPlexPointGlobalRead - return read access to a point in global array
+  DMPlexPointGlobalRead - return read access to a point in global array
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  dm - `DM` defining topological space
-.  point - topological point
--  array - array to index into
+  Input Parameters:
++ dm    - `DM` defining topological space
+. point - topological point
+- array - array to index into
 
-   Output Parameter:
-.  ptr - address of read reference to point data, type generic so user can place in structure; returns NULL if global point is not owned
+  Output Parameter:
+. ptr - address of read reference to point data, type generic so user can place in structure; returns NULL if global point is not owned
 
-   Level: intermediate
+  Level: intermediate
 
-   Note:
-   A common usage when data sizes are known statically:
+  Note:
+
+  A common usage when data sizes are known statically:
 .vb
   const struct { PetscScalar foo,bar,baz; } *ptr;
   DMPlexPointGlobalRead(dm,point,array,&ptr);
@@ -280,22 +283,23 @@ PetscErrorCode DMPlexPointGlobalRead(DM dm, PetscInt point, const PetscScalar *a
 }
 
 /*@
-   DMPlexPointGlobalRef - return read/write access to a point in global array
+  DMPlexPointGlobalRef - return read/write access to a point in global array
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  dm - `DM` defining topological space
-.  point - topological point
--  array - array to index into
+  Input Parameters:
++ dm    - `DM` defining topological space
+. point - topological point
+- array - array to index into
 
-   Output Parameter:
-.  ptr - address of reference to point data, type generic so user can place in structure; returns NULL if global point is not owned
+  Output Parameter:
+. ptr - address of reference to point data, type generic so user can place in structure; returns NULL if global point is not owned
 
-   Level: intermediate
+  Level: intermediate
 
-   Note:
-   A common usage when data sizes are known statically:
+  Note:
+
+  A common usage when data sizes are known statically:
 .vb
   struct { PetscScalar foo,bar,baz; } *ptr;
   DMPlexPointGlobalRef(dm,point,array,&ptr);
@@ -323,20 +327,20 @@ PetscErrorCode DMPlexPointGlobalRef(DM dm, PetscInt point, PetscScalar *array, v
   Not Collective
 
   Input Parameters:
-+ dm - `DM` defining the topological space
++ dm    - `DM` defining the topological space
 . point - topological point
 - field - the field number
 
   Output Parameters:
 + start - start of point data; returns -(globalStart+1) if point is not owned
-- end - end of point data; returns -(globalEnd+1) if point is not owned
+- end   - end of point data; returns -(globalEnd+1) if point is not owned
 
   Level: intermediate
 
   Note:
   This is a half open interval [start, end)
 
-.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexGetPointGlobal()`, `DMGetLocalSection()`, `PetscSectionGetOffset()`, `PetscSectionGetDof()`, `DMPlexPointGlobalRead()`, `DMPlexGetPointLocal()`, `DMPlexPointGlobalRead()`, `DMPlexPointGlobalRef()`
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexGetPointGlobal()`, `DMGetLocalSection()`, `PetscSectionGetOffset()`, `PetscSectionGetDof()`, `DMPlexPointGlobalRead()`, `DMPlexGetPointLocal()`, `DMPlexPointGlobalRef()`
 @*/
 PetscErrorCode DMPlexGetPointGlobalField(DM dm, PetscInt point, PetscInt field, PetscInt *start, PetscInt *end)
 {
@@ -353,20 +357,20 @@ PetscErrorCode DMPlexGetPointGlobalField(DM dm, PetscInt point, PetscInt field, 
 }
 
 /*@
-   DMPlexPointGlobalFieldRead - return read access to a field on a point in global array
+  DMPlexPointGlobalFieldRead - return read access to a field on a point in global array
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  dm - `DM` defining topological space
-.  point - topological point
-.  field - field number
--  array - array to index into
+  Input Parameters:
++ dm    - `DM` defining topological space
+. point - topological point
+. field - field number
+- array - array to index into
 
-   Output Parameter:
-.  ptr - address of read reference to point data, type generic so user can place in structure; returns NULL if global point is not owned
+  Output Parameter:
+. ptr - address of read reference to point data, type generic so user can place in structure; returns NULL if global point is not owned
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMGetLocalSection()`, `PetscSectionGetOffset()`, `PetscSectionGetDof()`, `DMPlexGetPointGlobal()`, `DMPlexPointLocalRead()`, `DMPlexPointGlobalRef()`
 @*/
@@ -384,20 +388,20 @@ PetscErrorCode DMPlexPointGlobalFieldRead(DM dm, PetscInt point, PetscInt field,
 }
 
 /*@
-   DMPlexPointGlobalFieldRef - return read/write access to a field on a point in global array
+  DMPlexPointGlobalFieldRef - return read/write access to a field on a point in global array
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  dm - `DM` defining topological space
-.  point - topological point
-.  field - field number
--  array - array to index into
+  Input Parameters:
++ dm    - `DM` defining topological space
+. point - topological point
+. field - field number
+- array - array to index into
 
-   Output Parameter:
-.  ptr - address of reference to point data, type generic so user can place in structure; returns NULL if global point is not owned
+  Output Parameter:
+. ptr - address of reference to point data, type generic so user can place in structure; returns NULL if global point is not owned
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMGetLocalSection()`, `PetscSectionGetOffset()`, `PetscSectionGetDof()`, `DMPlexGetPointGlobal()`, `DMPlexPointLocalRef()`, `DMPlexPointGlobalRead()`
 @*/

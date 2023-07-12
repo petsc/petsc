@@ -33,25 +33,25 @@ static PetscErrorCode DMGetPoints_Private(DM dm, DMLabel domainLabel, PetscInt l
   Not collective
 
   Input Parameters:
-+  dm - The `DMPLEX` object
-.  domain_label - label for `DMPLEX` domain, or NULL for whole domain
-.  label_value - Stratum value
-.  height - Height of target cells in `DMPLEX` topology
--  dm_field - Index of `DMPLEX` field
++ dm           - The `DMPLEX` object
+. domain_label - label for `DMPLEX` domain, or NULL for whole domain
+. label_value  - Stratum value
+. height       - Height of target cells in `DMPLEX` topology
+- dm_field     - Index of `DMPLEX` field
 
   Output Parameters:
-+  num_cells - Number of local cells
-.  cell_size - Size of each cell, given by cell_size * num_comp = num_dof
-.  num_comp - Number of components per dof
-.  l_size - Size of local vector
--  offsets - Allocated offsets array for cells
++ num_cells - Number of local cells
+. cell_size - Size of each cell, given by cell_size * num_comp = num_dof
+. num_comp  - Number of components per dof
+. l_size    - Size of local vector
+- offsets   - Allocated offsets array for cells
 
   Level: developer
 
   Notes:
   Allocate and populate array of shape [num_cells, cell_size] defining offsets for each value (cell, node) for local vector of the `DMPLEX` field. All offsets are in the range [0, l_size - 1].
 
-   Caller is responsible for freeing the offsets array using `PetscFree()`.
+  Caller is responsible for freeing the offsets array using `PetscFree()`.
 
 .seealso: [](ch_unstructured), `DMPlexGetLocalOffsetsSupport()`, `DM`, `DMPLEX`, `DMLabel`, `DMPlexGetClosureIndices()`, `DMPlexSetClosurePermutationTensor()`, `DMPlexGetCeedRestriction()`
 @*/
@@ -169,23 +169,23 @@ PetscErrorCode DMPlexGetLocalOffsets(DM dm, DMLabel domain_label, PetscInt label
   Not collective
 
   Input Parameters:
-+  dm - The `DMPLEX` object
-.  domain_label - label for `DMPLEX` domain, or NULL for whole domain
--  label_value - Stratum value
++ dm           - The `DMPLEX` object
+. domain_label - label for `DMPLEX` domain, or NULL for whole domain
+- label_value  - Stratum value
 
   Output Parameters:
-+  num_faces - Number of local, non-boundary faces
-.  num_comp - Number of components per dof
-.  l_size - Size of local vector
-.  offsetsNeg - Allocated offsets array for cells on the inward normal side of each face
--  offsetsPos - Allocated offsets array for cells on the outward normal side of each face
++ num_faces  - Number of local, non-boundary faces
+. num_comp   - Number of components per dof
+. l_size     - Size of local vector
+. offsetsNeg - Allocated offsets array for cells on the inward normal side of each face
+- offsetsPos - Allocated offsets array for cells on the outward normal side of each face
 
   Level: developer
 
   Notes:
   Allocate and populate array of shape [num_cells, num_comp] defining offsets for each cell for local vector of the `DMPLEX` field. All offsets are in the range [0, l_size - 1].
 
-   Caller is responsible for freeing the offsets array using `PetscFree()`.
+  Caller is responsible for freeing the offsets array using `PetscFree()`.
 
 .seealso: [](ch_unstructured), `DMPlexGetLocalOffsets()`, `DM`, `DMPLEX`, `DMLabel`, `DMPlexGetClosureIndices()`, `DMPlexSetClosurePermutationTensor()`, `DMPlexGetCeedRestriction()`
 @*/

@@ -157,7 +157,7 @@ static PetscErrorCode PetscSFComputeMultiRootOriginalNumberingByRank_Private(Pet
 
   For the complete list of DMPlexCheck* functions, see `DMSetFromOptions()`.
 
-  Developer Note:
+  Developer Notes:
   Interface cones are expanded into vertices and then their coordinates are compared.
 
 .seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexGetCone()`, `DMPlexGetConeSize()`, `DMGetPointSF()`, `DMGetCoordinates()`, `DMSetFromOptions()`

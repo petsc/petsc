@@ -6,15 +6,15 @@
 #include <petsc/private/dmdaimpl.h> /*I  "petscdmda.h"   I*/
 
 /*@
-    DMDASetUniformCoordinates - Sets a `DMDA` coordinates to be a uniform grid
+  DMDASetUniformCoordinates - Sets a `DMDA` coordinates to be a uniform grid
 
   Collective
 
   Input Parameters:
-+  da - the distributed array object
-.  xmin,xmax - extremes in the x direction
-.  ymin,ymax - extremes in the y direction (value ignored for 1 dimensional problems)
--  zmin,zmax - extremes in the z direction (value ignored for 1 or 2 dimensional problems)
++ da        - the distributed array object
+. xmin,xmax - extremes in the x direction
+. ymin,ymax - extremes in the y direction (value ignored for 1 dimensional problems)
+- zmin,zmax - extremes in the z direction (value ignored for 1 or 2 dimensional problems)
 
   Level: beginner
 

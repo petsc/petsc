@@ -2,17 +2,17 @@
 #include <petsc/private/dmpleximpl.h> /*I   "petscdmplex.h"   I*/
 
 /*@C
-  DMPlexCreateCGNS - Create a `DMPLEX` mesh from a CGNS file.
+  DMPlexCreateCGNSFromFile - Create a `DMPLEX` mesh from a CGNS file.
 
   Collective
 
   Input Parameters:
-+ comm  - The MPI communicator
-. filename - The name of the CGNS file
++ comm        - The MPI communicator
+. filename    - The name of the CGNS file
 - interpolate - Create faces and edges in the mesh
 
   Output Parameter:
-. dm  - The `DM` object representing the mesh
+. dm - The `DM` object representing the mesh
 
   Level: beginner
 
@@ -39,12 +39,12 @@ PetscErrorCode DMPlexCreateCGNSFromFile(MPI_Comm comm, const char filename[], Pe
   Collective
 
   Input Parameters:
-+ comm  - The MPI communicator
-. cgid - The CG id associated with a file and obtained using cg_open
++ comm        - The MPI communicator
+. cgid        - The CG id associated with a file and obtained using cg_open
 - interpolate - Create faces and edges in the mesh
 
   Output Parameter:
-. dm  - The `DM` object representing the mesh
+. dm - The `DM` object representing the mesh
 
   Level: beginner
 

@@ -401,15 +401,15 @@ static PetscErrorCode DMPlexCreateSectionBCIndices(DM dm, PetscSection section)
   Not Collective
 
   Input Parameters:
-+ dm        - The `DMPLEX` object
-. label     - The label indicating the mesh support of each field, or NULL for the whole mesh
-. numComp   - An array of size numFields that holds the number of components for each field
-. numDof    - An array of size numFields*(dim+1) which holds the number of dof for each field on a mesh piece of dimension d
-. numBC     - The number of boundary conditions
-. bcField   - An array of size numBC giving the field number for each boundary condition
-. bcComps   - [Optional] An array of size numBC giving an `IS` holding the field components to which each boundary condition applies
-. bcPoints  - An array of size numBC giving an `IS` holding the `DMPLEX` points to which each boundary condition applies
-- perm      - Optional permutation of the chart, or NULL
++ dm       - The `DMPLEX` object
+. label    - The label indicating the mesh support of each field, or NULL for the whole mesh
+. numComp  - An array of size numFields that holds the number of components for each field
+. numDof   - An array of size numFields*(dim+1) which holds the number of dof for each field on a mesh piece of dimension d
+. numBC    - The number of boundary conditions
+. bcField  - An array of size numBC giving the field number for each boundary condition
+. bcComps  - [Optional] An array of size numBC giving an `IS` holding the field components to which each boundary condition applies
+. bcPoints - An array of size numBC giving an `IS` holding the `DMPLEX` points to which each boundary condition applies
+- perm     - Optional permutation of the chart, or NULL
 
   Output Parameter:
 . section - The `PetscSection` object
@@ -422,7 +422,7 @@ static PetscErrorCode DMPlexCreateSectionBCIndices(DM dm, PetscSection section)
 
   The chart permutation is the same one set using `PetscSectionSetPermutation()`
 
-  Developer Note:
+  Developer Notes:
   This is used by `DMCreateLocalSection()`?
 
 .seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexCreate()`, `PetscSectionCreate()`, `PetscSectionSetPermutation()`

@@ -96,7 +96,7 @@ PetscErrorCode DMCreateLocalVector_Section_Private(DM dm, Vec *vec)
 - fields    - The field numbers of the selected fields
 
   Output Parameters:
-+ is - The global indices for the subproblem
++ is    - The global indices for the subproblem
 - subdm - The `DM` for the subproblem, which must already have be cloned from `dm`
 
   Level: intermediate
@@ -309,7 +309,7 @@ PetscErrorCode DMCreateSectionSubDM(DM dm, PetscInt numFields, const PetscInt fi
 - len - The number of `DM`s
 
   Output Parameters:
-+ is - The global indices for the subproblem, or `NULL`
++ is      - The global indices for the subproblem, or `NULL`
 - superdm - The `DM` for the superproblem, which must already have be cloned
 
   Level: intermediate

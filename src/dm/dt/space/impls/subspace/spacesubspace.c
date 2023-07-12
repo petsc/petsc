@@ -424,21 +424,21 @@ static PetscErrorCode PetscSpaceInitialize_Subspace(PetscSpace sp)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 /*@
-    PetscSpaceCreateSubspace - creates a subspace from a an `origSpace` and its dual `dualSubspace`
+  PetscSpaceCreateSubspace - creates a subspace from a an `origSpace` and its dual `dualSubspace`
 
-    Input Parameters:
-+   origSpace - the original `PetscSpace`
-.   dualSubspace - no idea
-.   x - no idea
-.   Jx - no idea
-.   u - no idea
-.   Ju - no idea
--   copymode - whether to copy, borrow, or own some of the input arrays I guess
+  Input Parameters:
++ origSpace    - the original `PetscSpace`
+. dualSubspace - no idea
+. x            - no idea
+. Jx           - no idea
+. u            - no idea
+. Ju           - no idea
+- copymode     - whether to copy, borrow, or own some of the input arrays I guess
 
-    Output Parameter:
-.   subspace - the subspace
+  Output Parameter:
+. subspace - the subspace
 
-    Level: advanced
+  Level: advanced
 
 .seealso: `PetscSpace`, `PetscDualSpace`, `PetscCopyMode`, `PetscSpaceType`
 @*/

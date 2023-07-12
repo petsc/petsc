@@ -20,10 +20,10 @@ static PetscErrorCode PetscPartitionerMatPartitioningGetMatPartitioning_MatParti
   Not Collective
 
   Input Parameter:
-. part     - The PetscPartitioner
+. part - The PetscPartitioner
 
   Output Parameter:
-. mp       - The MatPartitioning
+. mp - The MatPartitioning
 
   Level: developer
 

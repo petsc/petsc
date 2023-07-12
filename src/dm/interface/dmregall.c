@@ -31,9 +31,6 @@ PETSC_EXTERN PetscErrorCode DMCreate_Stag(DM);
 
   Not Collective
 
-  Input parameter:
-. path - The dynamic library path
-
   Level: advanced
 
 .seealso: `DMRegister()`, `DMRegisterDestroy()`
@@ -81,9 +78,6 @@ PETSC_EXTERN PetscErrorCode PetscSpaceCreate_WXY(PetscSpace);
 
   Not Collective
 
-  Input parameter:
-. path - The dynamic library path
-
   Level: advanced
 
 .seealso: `PetscSpaceRegister()`, `PetscSpaceRegisterDestroy()`
@@ -114,9 +108,6 @@ PETSC_EXTERN PetscErrorCode PetscDualSpaceCreate_Refined(PetscDualSpace);
 
   Not Collective
 
-  Input parameter:
-. path - The dynamic library path
-
   Level: advanced
 
 .seealso: `PetscDualSpaceRegister()`, `PetscDualSpaceRegisterDestroy()`
@@ -145,9 +136,6 @@ PETSC_EXTERN PetscErrorCode PetscFECreate_OpenCL(PetscFE);
   PetscFERegisterAll - Registers all of the PetscFE components in the PetscFE package.
 
   Not Collective
-
-  Input parameter:
-. path - The dynamic library path
 
   Level: advanced
 
@@ -182,9 +170,6 @@ PETSC_EXTERN PetscErrorCode PetscLimiterCreate_MC(PetscLimiter);
 
   Not Collective
 
-  Input parameter:
-. path - The dynamic library path
-
   Level: advanced
 
 .seealso: `PetscLimiterRegister()`, `PetscLimiterRegisterDestroy()`
@@ -214,9 +199,6 @@ PETSC_EXTERN PetscErrorCode PetscFVCreate_LeastSquares(PetscFV);
 
   Not Collective
 
-  Input parameter:
-. path - The dynamic library path
-
   Level: advanced
 
 .seealso: `PetscFVRegister()`, `PetscFVRegisterDestroy()`
@@ -239,9 +221,6 @@ PETSC_EXTERN PetscErrorCode PetscDSCreate_Basic(PetscDS);
   PetscDSRegisterAll - Registers all of the PetscDS components in the PetscDS package.
 
   Not Collective
-
-  Input parameter:
-. path - The dynamic library path
 
   Level: advanced
 

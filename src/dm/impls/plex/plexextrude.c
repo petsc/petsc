@@ -29,10 +29,10 @@
 
   Notes:
   Extrusion is implemented as a `DMPlexTransform`, so that new mesh points are produced from old mesh points. In the example below,
-we begin with an edge (v0, v3). It is extruded for two layers. The original vertex v0 produces two edges, e1 and e2, and three vertices,
-v0, v2, and v2. Similarly, vertex v3 produces e3, e4, v3, v4, and v5. The original edge produces itself, e5 and e6, as well as face1 and
-face2. The new mesh points are given the same labels as the original points which produced them. Thus, if v0 had a label value 1, then so
-would v1, v2, e1 and e2.
+  we begin with an edge (v0, v3). It is extruded for two layers. The original vertex v0 produces two edges, e1 and e2, and three vertices,
+  v0, v2, and v2. Similarly, vertex v3 produces e3, e4, v3, v4, and v5. The original edge produces itself, e5 and e6, as well as face1 and
+  face2. The new mesh points are given the same labels as the original points which produced them. Thus, if v0 had a label value 1, then so
+  would v1, v2, e1 and e2.
 
 .vb
   v2----- e6    -----v5

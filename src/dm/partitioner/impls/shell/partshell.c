@@ -157,7 +157,7 @@ PETSC_EXTERN PetscErrorCode PetscPartitionerCreate_Shell(PetscPartitioner part)
   Level: developer
 
   Note:
-    It is safe to free the sizes and points arrays after use in this routine.
+  It is safe to free the sizes and points arrays after use in this routine.
 
 .seealso `DMPlexDistribute()`, `PetscPartitionerCreate()`
 @*/
@@ -212,7 +212,7 @@ PetscErrorCode PetscPartitionerShellSetRandom(PetscPartitioner part, PetscBool r
   Collective
 
   Input Parameter:
-. part   - The `PetscPartitioner`
+. part - The `PetscPartitioner`
 
   Output Parameter:
 . random - The flag to use a random partition

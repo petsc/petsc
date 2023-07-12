@@ -265,7 +265,7 @@ PetscErrorCode PetscSpacePTrimmedSetFormDegree(PetscSpace sp, PetscInt formDegre
 . sp - the function space object
 
   Output Parameter:
-. formDegee - the form degree
+. formDegree - the form degree
 
   Level: intermediate
 

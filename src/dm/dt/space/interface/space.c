@@ -12,10 +12,10 @@ PetscBool         PetscSpaceRegisterAllCalled = PETSC_FALSE;
   Not Collective
 
   Input Parameters:
-+ name        - The name of a new user-defined creation routine
-- create_func - The creation routine for the implementation type
++ sname    - The name of a new user-defined creation routine
+- function - The creation routine for the implementation type
 
-  Sample usage:
+  Example Usage:
 .vb
     PetscSpaceRegister("my_space", MyPetscSpaceCreate);
 .ve
@@ -25,7 +25,7 @@ PetscBool         PetscSpaceRegisterAllCalled = PETSC_FALSE;
     PetscSpaceCreate(MPI_Comm, PetscSpace *);
     PetscSpaceSetType(PetscSpace, "my_space");
 .ve
-   or at runtime via the option
+  or at runtime via the option
 .vb
     -petscspace_type my_space
 .ve
@@ -90,7 +90,7 @@ PetscErrorCode PetscSpaceSetType(PetscSpace sp, PetscSpaceType name)
   Not Collective
 
   Input Parameter:
-. sp  - The `PetscSpace`
+. sp - The `PetscSpace`
 
   Output Parameter:
 . name - The `PetscSpace` type name
@@ -110,16 +110,16 @@ PetscErrorCode PetscSpaceGetType(PetscSpace sp, PetscSpaceType *name)
 }
 
 /*@C
-   PetscSpaceViewFromOptions - View a `PetscSpace` based on values in the options database
+  PetscSpaceViewFromOptions - View a `PetscSpace` based on values in the options database
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  A - the `PetscSpace` object
-.  obj - Optional object that provides the options name prefix
--  name - command line option name
+  Input Parameters:
++ A    - the `PetscSpace` object
+. obj  - Optional object that provides the options name prefix
+- name - command line option name
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `PetscSpace`, `PetscSpaceView()`, `PetscObjectViewFromOptions()`, `PetscSpaceCreate()`
 @*/
@@ -172,8 +172,8 @@ PetscErrorCode PetscSpaceView(PetscSpace sp, PetscViewer v)
 . sp - the `PetscSpace` object to set options for
 
   Options Database Keys:
-+ -petscspace_degree <deg> - the approximation order of the space
-. -petscspace_variables <n> - the number of different variables, e.g. x and y
++ -petscspace_degree <deg>   - the approximation order of the space
+. -petscspace_variables <n>  - the number of different variables, e.g. x and y
 - -petscspace_components <c> - the number of components, say d for a vector field
 
   Level: intermediate
@@ -316,7 +316,7 @@ PetscErrorCode PetscSpaceCreate(MPI_Comm comm, PetscSpace *sp)
 
   Level: intermediate
 
-.seealso: `PetscSpace`, `PetscSpaceGetDegree()`, `PetscSpaceCreate()`, `PetscSpace`
+.seealso: `PetscSpace`, `PetscSpaceGetDegree()`, `PetscSpaceCreate()`
 @*/
 PetscErrorCode PetscSpaceGetDimension(PetscSpace sp, PetscInt *dim)
 {
@@ -340,7 +340,7 @@ PetscErrorCode PetscSpaceGetDimension(PetscSpace sp, PetscInt *dim)
 
   Level: intermediate
 
-.seealso: `PetscSpace`, `PetscSpaceSetDegree()`, `PetscSpaceGetDimension()`, `PetscSpaceCreate()`, `PetscSpace`
+.seealso: `PetscSpace`, `PetscSpaceSetDegree()`, `PetscSpaceGetDimension()`, `PetscSpaceCreate()`
 @*/
 PetscErrorCode PetscSpaceGetDegree(PetscSpace sp, PetscInt *minDegree, PetscInt *maxDegree)
 {
@@ -357,13 +357,13 @@ PetscErrorCode PetscSpaceGetDegree(PetscSpace sp, PetscInt *minDegree, PetscInt 
   PetscSpaceSetDegree - Set the degree of approximation for this space.
 
   Input Parameters:
-+ sp - The `PetscSpace`
-. degree - The degree of the largest polynomial space contained in the space
++ sp        - The `PetscSpace`
+. degree    - The degree of the largest polynomial space contained in the space
 - maxDegree - The degree of the largest polynomial space containing the space.  One of degree and maxDegree can be `PETSC_DETERMINE`.
 
   Level: intermediate
 
-.seealso: `PetscSpace`, `PetscSpaceGetDegree()`, `PetscSpaceCreate()`, `PetscSpace`
+.seealso: `PetscSpace`, `PetscSpaceGetDegree()`, `PetscSpaceCreate()`
 @*/
 PetscErrorCode PetscSpaceSetDegree(PetscSpace sp, PetscInt degree, PetscInt maxDegree)
 {
@@ -388,7 +388,7 @@ PetscErrorCode PetscSpaceSetDegree(PetscSpace sp, PetscInt degree, PetscInt maxD
   Note:
   A vector space, for example, will have d components, where d is the spatial dimension
 
-.seealso: `PetscSpace`, `PetscSpaceSetNumComponents()`, `PetscSpaceGetNumVariables()`, `PetscSpaceGetDimension()`, `PetscSpaceCreate()`, `PetscSpace`
+.seealso: `PetscSpace`, `PetscSpaceSetNumComponents()`, `PetscSpaceGetNumVariables()`, `PetscSpaceGetDimension()`, `PetscSpaceCreate()`
 @*/
 PetscErrorCode PetscSpaceGetNumComponents(PetscSpace sp, PetscInt *Nc)
 {
@@ -404,11 +404,11 @@ PetscErrorCode PetscSpaceGetNumComponents(PetscSpace sp, PetscInt *Nc)
 
   Input Parameters:
 + sp - The `PetscSpace`
-- order - The number of components
+- Nc - The number of components
 
   Level: intermediate
 
-.seealso: `PetscSpace`, `PetscSpaceGetNumComponents()`, `PetscSpaceSetNumVariables()`, `PetscSpaceCreate()`, `PetscSpace`
+.seealso: `PetscSpace`, `PetscSpaceGetNumComponents()`, `PetscSpaceSetNumVariables()`, `PetscSpaceCreate()`
 @*/
 PetscErrorCode PetscSpaceSetNumComponents(PetscSpace sp, PetscInt Nc)
 {
@@ -423,11 +423,11 @@ PetscErrorCode PetscSpaceSetNumComponents(PetscSpace sp, PetscInt Nc)
 
   Input Parameters:
 + sp - The `PetscSpace`
-- n - The number of variables, e.g. x, y, z...
+- n  - The number of variables, e.g. x, y, z...
 
   Level: intermediate
 
-.seealso: `PetscSpace`, `PetscSpaceGetNumVariables()`, `PetscSpaceSetNumComponents()`, `PetscSpaceCreate()`, `PetscSpace`
+.seealso: `PetscSpace`, `PetscSpaceGetNumVariables()`, `PetscSpaceSetNumComponents()`, `PetscSpaceCreate()`
 @*/
 PetscErrorCode PetscSpaceSetNumVariables(PetscSpace sp, PetscInt n)
 {
@@ -444,11 +444,11 @@ PetscErrorCode PetscSpaceSetNumVariables(PetscSpace sp, PetscInt n)
 . sp - The `PetscSpace`
 
   Output Parameter:
-. Nc - The number of variables, e.g. x, y, z...
+. n - The number of variables, e.g. x, y, z...
 
   Level: intermediate
 
-.seealso: `PetscSpace`, `PetscSpaceSetNumVariables()`, `PetscSpaceGetNumComponents()`, `PetscSpaceGetDimension()`, `PetscSpaceCreate()`, `PetscSpace`
+.seealso: `PetscSpace`, `PetscSpaceSetNumVariables()`, `PetscSpaceGetNumComponents()`, `PetscSpaceGetDimension()`, `PetscSpaceCreate()`
 @*/
 PetscErrorCode PetscSpaceGetNumVariables(PetscSpace sp, PetscInt *n)
 {
@@ -499,7 +499,7 @@ PetscErrorCode PetscSpaceEvaluate(PetscSpace sp, PetscInt npoints, const PetscRe
   Not Collective
 
   Input Parameters:
-+ sp - the `PetscSpace` object
++ sp     - the `PetscSpace` object
 - height - the height of the mesh point for which the subspace is desired
 
   Output Parameter:

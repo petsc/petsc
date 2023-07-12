@@ -7,7 +7,7 @@
   Not Collective
 
   Input Parameters:
-+ dm - the` DMPRODUCT`
++ dm   - the` DMPRODUCT`
 - slot - which dimension slot, in the range 0 to dim-1
 
   Output Parameter:
@@ -36,8 +36,8 @@ PETSC_EXTERN PetscErrorCode DMProductGetDM(DM dm, PetscInt slot, DM *subdm)
   Not Collective
 
   Input Parameters:
-+ dm - the `DMPRODUCT`
-. slot - which dimension slot, in the range 0 to dim-1
++ dm    - the `DMPRODUCT`
+. slot  - which dimension slot, in the range 0 to dim-1
 - subdm - the sub-`DM`
 
   Level: advanced
@@ -68,9 +68,9 @@ PETSC_EXTERN PetscErrorCode DMProductSetDM(DM dm, PetscInt slot, DM subdm)
   Not Collective
 
   Input Parameters:
-+ dm - the `DMPRODUCT`
++ dm   - the `DMPRODUCT`
 . slot - which dimension slot, in the range 0 to dim-1
-- idx - the dimension index of the sub-`DM`
+- idx  - the dimension index of the sub-`DM`
 
   Level: advanced
 

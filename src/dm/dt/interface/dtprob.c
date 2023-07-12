@@ -167,7 +167,7 @@ PetscErrorCode PetscCDFGaussian1D(const PetscReal x[], const PetscReal scale[], 
   Not Collective
 
   Input Parameters:
-+ p - A uniform variable on [0, 1]
++ p     - A uniform variable on [0, 1]
 - dummy - ignored
 
   Output Parameter:
@@ -211,7 +211,7 @@ PetscErrorCode PetscPDFSampleGaussian1D(const PetscReal p[], const PetscReal dum
   Not Collective
 
   Input Parameters:
-+ x - Coordinate in [-\infty, \infty]^2
++ x     - Coordinate in [-\infty, \infty]^2
 - dummy - ignored
 
   Output Parameter:
@@ -233,7 +233,7 @@ PetscErrorCode PetscPDFGaussian2D(const PetscReal x[], const PetscReal dummy[], 
   Not Collective
 
   Input Parameters:
-+ p - A uniform variable on [0, 1]^2
++ p     - A uniform variable on [0, 1]^2
 - dummy - ignored
 
   Output Parameter:
@@ -259,7 +259,7 @@ PetscErrorCode PetscPDFSampleGaussian2D(const PetscReal p[], const PetscReal dum
   Not Collective
 
   Input Parameters:
-+ x - Coordinate in [-\infty, \infty]^3
++ x     - Coordinate in [-\infty, \infty]^3
 - dummy - ignored
 
   Output Parameter:
@@ -281,7 +281,7 @@ PetscErrorCode PetscPDFGaussian3D(const PetscReal x[], const PetscReal dummy[], 
   Not Collective
 
   Input Parameters:
-+ p - A uniform variable on [0, 1]^3
++ p     - A uniform variable on [0, 1]^3
 - dummy - ignored
 
   Output Parameter:
@@ -289,7 +289,7 @@ PetscErrorCode PetscPDFGaussian3D(const PetscReal x[], const PetscReal dummy[], 
 
   Level: beginner
 
-  Reference:
+  References:
   https://en.wikipedia.org/wiki/Box%E2%80%93Muller_transform
 
 .seealso: `PetscPDFGaussian3D()`, `PetscPDFMaxwellBoltzmann3D()`
@@ -504,8 +504,8 @@ PetscErrorCode PetscPDFSampleConstant3D(const PetscReal p[], const PetscReal dum
 - name   - The option name for the probility distribution type
 
   Output Parameters:
-+ pdf - The PDF of this type
-. cdf - The CDF of this type
++ pdf     - The PDF of this type
+. cdf     - The CDF of this type
 - sampler - The PDF sampler of this type
 
   Level: intermediate

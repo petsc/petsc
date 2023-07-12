@@ -1518,7 +1518,7 @@ PetscErrorCode DMPlexInflateToGeomModel(DM dm)
 - filename - The name of the EGADS, IGES, or STEP file
 
   Output Parameter:
-. dm       - The `DM` object representing the mesh
+. dm - The `DM` object representing the mesh
 
   Level: beginner
 

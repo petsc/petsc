@@ -2861,7 +2861,7 @@ static PetscErrorCode PetscDualSpaceLagrangeSetContinuity_Lagrange(PetscDualSpac
   Not Collective
 
   Input Parameter:
-. sp         - the `PetscDualSpace`
+. sp - the `PetscDualSpace`
 
   Output Parameter:
 . continuous - flag for element continuity
@@ -3029,7 +3029,7 @@ PetscErrorCode PetscDualSpaceLagrangeGetTensor(PetscDualSpace sp, PetscBool *ten
   Not Collective
 
   Input Parameters:
-+ sp - The `PetscDualSpace`
++ sp     - The `PetscDualSpace`
 - tensor - Whether the dual space has tensor layout (vs. simplicial)
 
   Level: intermediate
@@ -3074,7 +3074,7 @@ PetscErrorCode PetscDualSpaceLagrangeGetTrimmed(PetscDualSpace sp, PetscBool *tr
   Not Collective
 
   Input Parameters:
-+ sp - The `PetscDualSpace`
++ sp      - The `PetscDualSpace`
 - trimmed - Whether the dual space represents to dual basis of a trimmed polynomial space (e.g. Raviart-Thomas and higher order / other form degree variants)
 
   Level: intermediate
@@ -3127,7 +3127,7 @@ PetscErrorCode PetscDualSpaceLagrangeGetNodeType(PetscDualSpace sp, PetscDTNodeT
   Logically Collective
 
   Input Parameters:
-+ sp - The `PetscDualSpace`
++ sp       - The `PetscDualSpace`
 . nodeType - The type of nodes
 . boundary - Whether the node type is one that includes endpoints (if nodeType is `PETSCDTNODES_GAUSSJACOBI`, nodes that
              include the boundary are Gauss-Lobatto-Jacobi nodes)
@@ -3176,7 +3176,7 @@ PetscErrorCode PetscDualSpaceLagrangeGetUseMoments(PetscDualSpace sp, PetscBool 
   Logically Collective
 
   Input Parameters:
-+ sp - The `PetscDualSpace`
++ sp         - The `PetscDualSpace`
 - useMoments - The flag for moment functionals
 
   Level: advanced
@@ -3221,7 +3221,7 @@ PetscErrorCode PetscDualSpaceLagrangeGetMomentOrder(PetscDualSpace sp, PetscInt 
   Logically Collective
 
   Input Parameters:
-+ sp - The `PetscDualSpace`
++ sp    - The `PetscDualSpace`
 - order - The order for moment integration
 
   Level: advanced

@@ -118,8 +118,8 @@ PetscErrorCode DMPlexGetScale(DM dm, PetscUnit unit, PetscReal *scale)
   Not Collective
 
   Input Parameters:
-+ dm   - the `DM`
-. unit - The SI unit
++ dm    - the `DM`
+. unit  - The SI unit
 - scale - The value used to scale all quantities with this unit
 
   Level: advanced
@@ -167,7 +167,7 @@ static PetscErrorCode DMPlexProjectRigidBody_Private(PetscInt dim, PetscReal t, 
   Collective
 
   Input Parameters:
-+ dm - the `DM`
++ dm    - the `DM`
 - field - The field number for the rigid body space, or 0 for the default
 
   Output Parameter:
@@ -319,7 +319,7 @@ PetscErrorCode DMPlexCreateRigidBodies(DM dm, PetscInt nb, DMLabel label, const 
   basis functions using its cells dual space basis, but all other basis functions with the dual space basis of a face.
 
   Input Parameters:
-+ dm - the `DMPLEX` object
++ dm     - the `DMPLEX` object
 - height - the maximum projection height >= 0
 
   Level: advanced
@@ -717,7 +717,7 @@ PetscErrorCode DMPlexLocalToGlobalBasis(DM dm, Vec lv)
 
 /*@
   DMPlexCreateBasisRotation - Create an internal transformation from the global basis, used to specify boundary conditions
-    and global solutions, to a local basis, appropriate for discretization integrals and assembly.
+  and global solutions, to a local basis, appropriate for discretization integrals and assembly.
 
   Input Parameters:
 + dm    - The `DM`
@@ -775,7 +775,7 @@ PetscErrorCode DMPlexCreateBasisRotation(DM dm, PetscReal alpha, PetscReal beta,
 - ctx    - An optional user context for bcFunc
 
   Output Parameter:
-. locX   - A local vector to receives the boundary values
+. locX - A local vector to receives the boundary values
 
   Level: developer
 
@@ -814,7 +814,7 @@ PetscErrorCode DMPlexInsertBoundaryValuesEssential(DM dm, PetscReal time, PetscI
 - ctx    - An optional user context for bcFunc
 
   Output Parameter:
-. locX   - A local vector to receives the boundary values
+. locX - A local vector to receives the boundary values
 
   Level: developer
 
@@ -855,7 +855,7 @@ PetscErrorCode DMPlexInsertBoundaryValuesEssentialField(DM dm, PetscReal time, V
 - ctx    - An optional user context for `func`
 
   Output Parameter:
-. locX   - A local vector to receive the boundary values
+. locX - A local vector to receive the boundary values
 
   Level: developer
 
@@ -881,22 +881,22 @@ PetscErrorCode DMPlexInsertBoundaryValuesEssentialBdField(DM dm, PetscReal time,
   DMPlexInsertBoundaryValuesRiemann - Insert boundary values into a local vector
 
   Input Parameters:
-+ dm     - The `DM`, with a `PetscDS` that matches the problem being constrained
-. time   - The time
++ dm           - The `DM`, with a `PetscDS` that matches the problem being constrained
+. time         - The time
 . faceGeometry - A vector with the FVM face geometry information
 . cellGeometry - A vector with the FVM cell geometry information
 . Grad         - A vector with the FVM cell gradient information
-. field  - The field to constrain
-. Nc     - The number of constrained field components, or 0 for all components
-. comps  - An array of constrained component numbers, or `NULL` for all components
-. label  - The `DMLabel` defining constrained points
-. numids - The number of `DMLabel` ids for constrained points
-. ids    - An array of ids for constrained points
-. func   - A pointwise function giving boundary values
-- ctx    - An optional user context for bcFunc
+. field        - The field to constrain
+. Nc           - The number of constrained field components, or 0 for all components
+. comps        - An array of constrained component numbers, or `NULL` for all components
+. label        - The `DMLabel` defining constrained points
+. numids       - The number of `DMLabel` ids for constrained points
+. ids          - An array of ids for constrained points
+. func         - A pointwise function giving boundary values
+- ctx          - An optional user context for bcFunc
 
   Output Parameter:
-. locX   - A local vector to receives the boundary values
+. locX - A local vector to receives the boundary values
 
   Level: developer
 
@@ -1129,12 +1129,12 @@ PetscErrorCode DMPlexInsertTimeDerivativeBoundaryValues_Plex(DM dm, PetscBool in
   Not Collective
 
   Input Parameters:
-+ dm - The `DM`
++ dm              - The `DM`
 . insertEssential - Should I insert essential (e.g. Dirichlet) or inessential (e.g. Neumann) boundary conditions
-. time - The time
-. faceGeomFVM - Face geometry data for FV discretizations
-. cellGeomFVM - Cell geometry data for FV discretizations
-- gradFVM - Gradient reconstruction data for FV discretizations
+. time            - The time
+. faceGeomFVM     - Face geometry data for FV discretizations
+. cellGeomFVM     - Cell geometry data for FV discretizations
+- gradFVM         - Gradient reconstruction data for FV discretizations
 
   Output Parameter:
 . locX - Solution updated with boundary values
@@ -1159,12 +1159,12 @@ PetscErrorCode DMPlexInsertBoundaryValues(DM dm, PetscBool insertEssential, Vec 
   DMPlexInsertTimeDerivativeBoundaryValues - Puts coefficients which represent boundary values of the time derivative into the local solution vector
 
   Input Parameters:
-+ dm - The `DM`
++ dm              - The `DM`
 . insertEssential - Should I insert essential (e.g. Dirichlet) or inessential (e.g. Neumann) boundary conditions
-. time - The time
-. faceGeomFVM - Face geometry data for FV discretizations
-. cellGeomFVM - Cell geometry data for FV discretizations
-- gradFVM - Gradient reconstruction data for FV discretizations
+. time            - The time
+. faceGeomFVM     - Face geometry data for FV discretizations
+. cellGeomFVM     - Cell geometry data for FV discretizations
+- gradFVM         - Gradient reconstruction data for FV discretizations
 
   Output Parameter:
 . locX_t - Solution updated with boundary values
@@ -1200,7 +1200,7 @@ PetscErrorCode DMComputeL2Diff_Plex(DM dm, PetscReal time, PetscErrorCode (**fun
 }
 
 /*@C
-  DMComputeL2DiffLocal - This function computes the L_2 difference between a function u and an FEM interpolant solution u_h.
+  DMPlexComputeL2DiffLocal - This function computes the L_2 difference between a function u and an FEM interpolant solution u_h.
 
   Collective
 
@@ -1746,8 +1746,8 @@ PetscErrorCode DMPlexComputeL2DiffVec(DM dm, PetscReal time, PetscErrorCode (**f
   Collective
 
   Input Parameters:
-+ dm - The `DM`
-- locX  - The coefficient vector u_h
++ dm   - The `DM`
+- locX - The coefficient vector u_h
 
   Output Parameter:
 . locC - A `Vec` which holds the Clement interpolant of the function
@@ -1878,8 +1878,8 @@ PetscErrorCode DMPlexComputeClementInterpolant(DM dm, Vec locX, Vec locC)
   Collective
 
   Input Parameters:
-+ dm - The `DM`
-- locX  - The coefficient vector u_h
++ dm   - The `DM`
+- locX - The coefficient vector u_h
 
   Output Parameter:
 . locC - A `Vec` which holds the Clement interpolant of the gradient
@@ -2206,8 +2206,8 @@ static PetscErrorCode DMPlexComputeIntegral_Internal(DM dm, Vec X, PetscInt cSta
   DMPlexComputeIntegralFEM - Form the integral over the domain from the global input X using pointwise functions specified by the user
 
   Input Parameters:
-+ dm - The mesh
-. X  - Global input vector
++ dm   - The mesh
+. X    - Global input vector
 - user - The user context
 
   Output Parameter:
@@ -2256,12 +2256,12 @@ PetscErrorCode DMPlexComputeIntegralFEM(DM dm, Vec X, PetscScalar *integral, voi
   DMPlexComputeCellwiseIntegralFEM - Form the vector of cellwise integrals F from the global input X using pointwise functions specified by the user
 
   Input Parameters:
-+ dm - The mesh
-. X  - Global input vector
++ dm   - The mesh
+. X    - Global input vector
 - user - The user context
 
   Output Parameter:
-. integral - Cellwise integrals for each field
+. F - Cellwise integrals for each field
 
   Level: developer
 
@@ -2434,7 +2434,7 @@ static PetscErrorCode DMPlexComputeBdIntegral_Internal(DM dm, Vec locX, IS point
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@
+/*@C
   DMPlexComputeBdIntegral - Form the integral over the specified boundary from the global input X using pointwise functions specified by the user
 
   Input Parameters:
@@ -2514,13 +2514,13 @@ PetscErrorCode DMPlexComputeBdIntegral(DM dm, Vec X, DMLabel label, PetscInt num
   DMPlexComputeInterpolatorNested - Form the local portion of the interpolation matrix I from the coarse `DM` to a uniformly refined `DM`.
 
   Input Parameters:
-+ dmc  - The coarse mesh
-. dmf  - The fine mesh
++ dmc       - The coarse mesh
+. dmf       - The fine mesh
 . isRefined - Flag indicating regular refinement, rather than the same topology
-- user - The user context
+- user      - The user context
 
   Output Parameter:
-. In  - The interpolation matrix
+. In - The interpolation matrix
 
   Level: developer
 
@@ -2757,7 +2757,7 @@ PetscErrorCode DMPlexComputeMassMatrixNested(DM dmc, DM dmf, Mat mass, void *use
 - user - The user context
 
   Output Parameter:
-. In  - The interpolation matrix
+. In - The interpolation matrix
 
   Level: developer
 
@@ -2929,7 +2929,7 @@ PetscErrorCode DMPlexComputeInterpolatorGeneral(DM dmc, DM dmf, Mat In, void *us
 - user - The user context
 
   Output Parameter:
-. mass  - The mass matrix
+. mass - The mass matrix
 
   Level: developer
 
@@ -3160,11 +3160,11 @@ PetscErrorCode DMPlexComputeMassMatrixGeneral(DM dmc, DM dmf, Mat mass, void *us
 
   Input Parameters:
 + dmc  - The coarse mesh
-- dmf  - The fine mesh
+. dmf  - The fine mesh
 - user - The user context
 
   Output Parameter:
-. sc   - The mapping
+. sc - The mapping
 
   Level: developer
 
@@ -3660,19 +3660,19 @@ static PetscErrorCode DMPlexRestoreHybridFields(DM dm, DM dmX[], PetscDS dsX[], 
   DMPlexGetFaceFields - Retrieve the field values values for a chunk of faces
 
   Input Parameters:
-+ dm     - The `DM`
-. fStart - The first face to include
-. fEnd   - The first face to exclude
-. locX   - A local vector with the solution fields
-. locX_t - A local vector with solution field time derivatives, or NULL
++ dm           - The `DM`
+. fStart       - The first face to include
+. fEnd         - The first face to exclude
+. locX         - A local vector with the solution fields
+. locX_t       - A local vector with solution field time derivatives, or NULL
 . faceGeometry - A local vector with face geometry
 . cellGeometry - A local vector with cell geometry
-- locaGrad - A local vector with field gradients, or NULL
+- locGrad      - A local vector with field gradients, or NULL
 
   Output Parameters:
 + Nface - The number of faces with field values
-. uL - The field values at the left side of the face
-- uR - The field values at the right side of the face
+. uL    - The field values at the left side of the face
+- uR    - The field values at the right side of the face
 
   Level: developer
 
@@ -3824,19 +3824,19 @@ PetscErrorCode DMPlexGetFaceFields(DM dm, PetscInt fStart, PetscInt fEnd, Vec lo
   DMPlexRestoreFaceFields - Restore the field values values for a chunk of faces
 
   Input Parameters:
-+ dm     - The `DM`
-. fStart - The first face to include
-. fEnd   - The first face to exclude
-. locX   - A local vector with the solution fields
-. locX_t - A local vector with solution field time derivatives, or NULL
++ dm           - The `DM`
+. fStart       - The first face to include
+. fEnd         - The first face to exclude
+. locX         - A local vector with the solution fields
+. locX_t       - A local vector with solution field time derivatives, or NULL
 . faceGeometry - A local vector with face geometry
 . cellGeometry - A local vector with cell geometry
-- locaGrad - A local vector with field gradients, or NULL
+- locGrad      - A local vector with field gradients, or NULL
 
   Output Parameters:
 + Nface - The number of faces with field values
-. uL - The field values at the left side of the face
-- uR - The field values at the right side of the face
+. uL    - The field values at the left side of the face
+- uR    - The field values at the right side of the face
 
   Level: developer
 
@@ -3854,9 +3854,9 @@ PetscErrorCode DMPlexRestoreFaceFields(DM dm, PetscInt fStart, PetscInt fEnd, Ve
   DMPlexGetFaceGeometry - Retrieve the geometric values for a chunk of faces
 
   Input Parameters:
-+ dm     - The `DM`
-. fStart - The first face to include
-. fEnd   - The first face to exclude
++ dm           - The `DM`
+. fStart       - The first face to include
+. fEnd         - The first face to exclude
 . faceGeometry - A local vector with face geometry
 - cellGeometry - A local vector with cell geometry
 
@@ -3924,9 +3924,9 @@ PetscErrorCode DMPlexGetFaceGeometry(DM dm, PetscInt fStart, PetscInt fEnd, Vec 
   DMPlexRestoreFaceGeometry - Restore the field values values for a chunk of faces
 
   Input Parameters:
-+ dm     - The `DM`
-. fStart - The first face to include
-. fEnd   - The first face to exclude
++ dm           - The `DM`
+. fStart       - The first face to include
+. fEnd         - The first face to exclude
 . faceGeometry - A local vector with face geometry
 - cellGeometry - A local vector with cell geometry
 
@@ -4427,8 +4427,8 @@ static PetscErrorCode DMConvertPlex_Internal(DM dm, DM *plex, PetscBool copy)
 . dm - The `DM`
 
   Output Parameters:
-+ facegeom - The values precomputed from face geometry
-. cellgeom - The values precomputed from cell geometry
++ facegeom  - The values precomputed from face geometry
+. cellgeom  - The values precomputed from cell geometry
 - minRadius - The minimum radius over the mesh of an inscribed sphere in a cell
 
   Level: developer

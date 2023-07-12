@@ -77,7 +77,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_Patch(DM dm)
 . comm - The communicator for the DMPatch object
 
   Output Parameter:
-. mesh  - The DMPatch object
+. mesh - The DMPatch object
 
   Notes:
 

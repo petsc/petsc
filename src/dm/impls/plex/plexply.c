@@ -9,7 +9,7 @@
 - interpolate - Create faces and edges in the mesh
 
   Output Parameter:
-. dm  - The DM object representing the mesh
+. dm - The DM object representing the mesh
 
   Note: https://en.wikipedia.org/wiki/PLY_(file_format)
 

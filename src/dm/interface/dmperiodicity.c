@@ -6,7 +6,7 @@
   DMGetPeriodicity - Get the description of mesh periodicity
 
   Input Parameter:
-. dm      - The `DM` object
+. dm - The `DM` object
 
   Output Parameters:
 + maxCell - Over distances greater than this, we can assume a point has crossed over to another sheet, when trying to localize cell coordinates
@@ -79,8 +79,8 @@ PetscErrorCode DMSetPeriodicity(DM dm, const PetscReal maxCell[], const PetscRea
   DMLocalizeCoordinate - If a mesh is periodic (a torus with lengths L_i, some of which can be infinite), project the coordinate onto [0, L_i) in each dimension.
 
   Input Parameters:
-+ dm     - The `DM`
-. in     - The input coordinate point (dim numbers)
++ dm       - The `DM`
+. in       - The input coordinate point (dim numbers)
 - endpoint - Include the endpoint L_i
 
   Output Parameter:

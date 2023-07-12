@@ -102,9 +102,9 @@ inline PetscErrorCode DMatrix_Invert_4x4_Internal(PetscReal *inmat, PetscReal *o
 .  PetscReal jxw[npts] -       the jacobian determinant * quadrature weight necessary for assembling discrete contributions
 .  PetscReal phi[npts] -       the bases evaluated at the specified quadrature points
 .  PetscReal dphidx[npts] -    the derivative of the bases wrt X-direction evaluated at the specified quadrature points
-.  jacobian -                  jacobian
-.  ijacobian -                 ijacobian
--  volume -                    volume
+. jacobian  - jacobian
+. ijacobian - ijacobian
+- volume    - volume
 
   Level: advanced
 
@@ -213,9 +213,9 @@ PetscErrorCode Compute_Lagrange_Basis_1D_Internal(const PetscInt nverts, const P
 .  PetscReal phi[npts] -       the bases evaluated at the specified quadrature points
 .  PetscReal dphidx[npts] -    the derivative of the bases wrt X-direction evaluated at the specified quadrature points
 .  PetscReal dphidy[npts] -    the derivative of the bases wrt Y-direction evaluated at the specified quadrature points
-.  jacobian -                  jacobian
-.  ijacobian -                 ijacobian
--  volume -                    volume
+. jacobian  - jacobian
+. ijacobian - ijacobian
+- volume    - volume
 
   Level: advanced
 
@@ -370,9 +370,9 @@ PetscErrorCode Compute_Lagrange_Basis_2D_Internal(const PetscInt nverts, const P
 .  PetscReal dphidx[npts] -    the derivative of the bases wrt X-direction evaluated at the specified quadrature points
 .  PetscReal dphidy[npts] -    the derivative of the bases wrt Y-direction evaluated at the specified quadrature points
 .  PetscReal dphidz[npts] -    the derivative of the bases wrt Z-direction evaluated at the specified quadrature points
-.  jacobian -                  jacobian
-.  ijacobian -                 ijacobian
--  volume -                    volume
+. jacobian  - jacobian
+. ijacobian - ijacobian
+- volume    - volume
 
   Level: advanced
 

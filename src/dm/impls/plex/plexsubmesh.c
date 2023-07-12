@@ -103,7 +103,7 @@ static PetscErrorCode DMPlexMarkBoundaryFaces_Internal(DM dm, PetscInt val, Pets
   Not Collective
 
   Input Parameters:
-+ dm - The original `DM`
++ dm  - The original `DM`
 - val - The marker value, or `PETSC_DETERMINE` to use some value in the closure (or 1 if none are found)
 
   Output Parameter:
@@ -211,7 +211,7 @@ static PetscErrorCode DMPlexLabelComplete_Internal(DM dm, DMLabel label, PetscBo
   DMPlexLabelComplete - Starting with a label marking points on a surface, we add the transitive closure to the surface
 
   Input Parameters:
-+ dm - The `DM`
++ dm    - The `DM`
 - label - A `DMLabel` marking the surface points
 
   Output Parameter:
@@ -232,7 +232,7 @@ PetscErrorCode DMPlexLabelComplete(DM dm, DMLabel label)
   DMPlexLabelAddCells - Starting with a label marking points on a surface, we add a cell for each point
 
   Input Parameters:
-+ dm - The `DM`
++ dm    - The `DM`
 - label - A `DMLabel` marking the surface points
 
   Output Parameter:
@@ -303,7 +303,7 @@ PetscErrorCode DMPlexLabelAddCells(DM dm, DMLabel label)
   DMPlexLabelAddFaceCells - Starting with a label marking faces on a surface, we add a cell for each face
 
   Input Parameters:
-+ dm - The `DM`
++ dm    - The `DM`
 - label - A `DMLabel` marking the surface points
 
   Output Parameter:
@@ -364,7 +364,7 @@ PetscErrorCode DMPlexLabelAddFaceCells(DM dm, DMLabel label)
   DMPlexLabelClearCells - Remove cells from a label
 
   Input Parameters:
-+ dm - The `DM`
++ dm    - The `DM`
 - label - A `DMLabel` marking surface points and their adjacent cells
 
   Output Parameter:
@@ -963,12 +963,12 @@ static PetscErrorCode DMPlexConstructGhostCells_Internal(DM dm, DMLabel label, P
   Collective
 
   Input Parameters:
-+ dm - The original `DM`
++ dm        - The original `DM`
 - labelName - The label specifying the boundary faces, or "Face Sets" if this is `NULL`
 
   Output Parameters:
 + numGhostCells - The number of ghost cells added to the `DM`
-- dmGhosted - The new `DM`
+- dmGhosted     - The new `DM`
 
   Level: developer
 
@@ -1859,12 +1859,12 @@ static PetscErrorCode DMPlexConstructCohesiveCells_Internal(DM dm, DMLabel label
   Collective
 
   Input Parameters:
-+ dm - The original `DM`
++ dm    - The original `DM`
 - label - The `DMLabel` specifying the boundary faces (this could be auto-generated)
 
   Output Parameters:
 + splitLabel - The `DMLabel` containing the split points, or `NULL` if no output is desired
-- dmSplit - The new `DM`
+- dmSplit    - The new `DM`
 
   Level: developer
 
@@ -2273,16 +2273,16 @@ PetscErrorCode DMPlexCheckValidSubmesh_Private(DM dm, DMLabel label, DM subdm)
   Collective
 
   Input Parameters:
-+ dm - The original `DM`
-. label - The label specifying the interface vertices
++ dm      - The original `DM`
+. label   - The label specifying the interface vertices
 . bdlabel - The optional label specifying the interface boundary vertices
 - bdvalue - Value of optional label specifying the interface boundary vertices
 
   Output Parameters:
 + hybridLabel - The label fully marking the interface, or `NULL` if no output is desired
-. splitLabel - The label containing the split points, or `NULL` if no output is desired
+. splitLabel  - The label containing the split points, or `NULL` if no output is desired
 . dmInterface - The new interface `DM`, or `NULL`
-- dmHybrid - The new `DM` with cohesive cells
+- dmHybrid    - The new `DM` with cohesive cells
 
   Level: developer
 
@@ -3597,10 +3597,10 @@ static PetscErrorCode DMPlexCreateSubmesh_Interpolated(DM dm, DMLabel vertexLabe
   DMPlexCreateSubmesh - Extract a hypersurface from the mesh using vertices defined by a label
 
   Input Parameters:
-+ dm           - The original mesh
-. vertexLabel  - The `DMLabel` marking points contained in the surface
-. value        - The label value to use
-- markedFaces  - `PETSC_TRUE` if surface faces are marked in addition to vertices, `PETSC_FALSE` if only vertices are marked
++ dm          - The original mesh
+. vertexLabel - The `DMLabel` marking points contained in the surface
+. value       - The label value to use
+- markedFaces - `PETSC_TRUE` if surface faces are marked in addition to vertices, `PETSC_FALSE` if only vertices are marked
 
   Output Parameter:
 . subdm - The surface mesh
@@ -3860,7 +3860,7 @@ static PetscErrorCode DMPlexCreateCohesiveSubmesh_Interpolated(DM dm, const char
 + dm          - The original mesh
 . hasLagrange - The mesh has Lagrange unknowns in the cohesive cells
 . label       - A label name, or `NULL`
-- value  - A label value
+- value       - A label value
 
   Output Parameter:
 . subdm - The surface mesh
@@ -4029,7 +4029,7 @@ PetscErrorCode DMPlexGetSubpointMap(DM dm, DMLabel *subpointMap)
   DMPlexSetSubpointMap - Sets the `DMLabel` with point dimension as values
 
   Input Parameters:
-+ dm - The submesh `DM`
++ dm          - The submesh `DM`
 - subpointMap - The `DMLabel` of all the points from the original mesh in this submesh
 
   Level: developer
@@ -4211,7 +4211,7 @@ end:
 - pB    - A point of `dmB`
 
   Output Parameter:
-. pA    - The corresponding point of `dmA`
+. pA - The corresponding point of `dmA`
 
   Level: intermediate
 

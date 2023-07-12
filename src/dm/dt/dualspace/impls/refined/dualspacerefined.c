@@ -6,17 +6,17 @@ typedef struct {
 } PetscDualSpace_Refined;
 
 /*@
-   PetscDualSpaceRefinedSetCellSpaces - Set the dual spaces for the closures of each of the cells
-   in the multicell `DM` of a `PetscDualSpace`
+  PetscDualSpaceRefinedSetCellSpaces - Set the dual spaces for the closures of each of the cells
+  in the multicell `DM` of a `PetscDualSpace`
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  sp - a `PetscDualSpace`
--  cellSpaces - one `PetscDualSpace` for each of the cells.  The reference count of each cell space will be incremented,
+  Input Parameters:
++ sp         - a `PetscDualSpace`
+- cellSpaces - one `PetscDualSpace` for each of the cells.  The reference count of each cell space will be incremented,
                 so the user is still responsible for these spaces afterwards
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `PETSCDUALSPACEREFINED`, `PetscDualSpace`, `PetscFERefine()`
 @*/

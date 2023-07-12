@@ -317,20 +317,20 @@ PetscErrorCode private_ISView_Swarm_XDMF(IS is, PetscViewer viewer)
 }
 
 /*@C
-   DMSwarmViewFieldsXDMF - Write a selection of DMSwarm fields to an XDMF3 file
+  DMSwarmViewFieldsXDMF - Write a selection of DMSwarm fields to an XDMF3 file
 
-   Collective
+  Collective
 
-   Input parameters:
-+  dm - the `DMSWARM`
-.  filename - the file name of the XDMF file (must have the extension .xmf)
-.  nfields - the number of fields to write into the XDMF file
--  field_name_list - array of length nfields containing the textual name of fields to write
+  Input Parameters:
++ dm              - the `DMSWARM`
+. filename        - the file name of the XDMF file (must have the extension .xmf)
+. nfields         - the number of fields to write into the XDMF file
+- field_name_list - array of length nfields containing the textual name of fields to write
 
-   Level: beginner
+  Level: beginner
 
-   Note:
-   Only fields registered with data type `PETSC_DOUBLE` or `PETSC_INT` can be written into the file
+  Note:
+  Only fields registered with data type `PETSC_DOUBLE` or `PETSC_INT` can be written into the file
 
 .seealso: `DM`, `DMSWARM`, `DMSwarmViewXDMF()`
 @*/
@@ -374,21 +374,21 @@ PETSC_EXTERN PetscErrorCode DMSwarmViewFieldsXDMF(DM dm, const char filename[], 
 }
 
 /*@C
-   DMSwarmViewXDMF - Write `DMSWARM` fields to an XDMF3 file
+  DMSwarmViewXDMF - Write `DMSWARM` fields to an XDMF3 file
 
-   Collective
+  Collective
 
-   Input parameters:
-+  dm - the `DMSWARM`
--  filename - the file name of the XDMF file (must have the extension .xmf)
+  Input Parameters:
++ dm       - the `DMSWARM`
+- filename - the file name of the XDMF file (must have the extension .xmf)
 
-   Level: beginner
+  Level: beginner
 
-   Note:
-     Only fields user registered with data type `PETSC_DOUBLE` or `PETSC_INT` will be written into the file
+  Note:
+  Only fields user registered with data type `PETSC_DOUBLE` or `PETSC_INT` will be written into the file
 
-   Developer Note:
-     This should be removed and replaced with the standard use of `PetscViewer`
+  Developer Notes:
+  This should be removed and replaced with the standard use of `PetscViewer`
 
 .seealso: `DM`, `DMSWARM`, `DMSwarmViewFieldsXDMF()`
 @*/

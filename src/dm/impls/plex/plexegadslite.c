@@ -628,7 +628,7 @@ static PetscErrorCode DMPlexEGADSLitePrintModel_Internal(ego model)
 - filename - The name of the EGADSLite file
 
   Output Parameter:
-. dm       - The DM object representing the mesh
+. dm - The DM object representing the mesh
 
   Level: beginner
 

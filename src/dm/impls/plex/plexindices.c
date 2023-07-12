@@ -6,7 +6,7 @@
   Not Collective
 
   Input Parameters:
-+ dm - The `DM`
++ dm      - The `DM`
 - section - The section describing the layout in the local vector, or NULL to use the default section
 
   Level: intermediate

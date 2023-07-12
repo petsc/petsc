@@ -9,9 +9,9 @@
   Not Collective (provided `DMGetCoordinatesLocalSetUp()` has been already called)
 
   Input Parameters:
-+ dm - The `DMPLEX` object
++ dm          - The `DMPLEX` object
 . coordinates - The `Vec` of coordinates of the sought points
-- eps - The tolerance or `PETSC_DEFAULT`
+- eps         - The tolerance or `PETSC_DEFAULT`
 
   Output Parameter:
 . points - The `IS` of found DAG points or -1
@@ -682,8 +682,8 @@ PetscErrorCode PetscGridHashSetGrid(PetscGridHash box, const PetscInt n[], const
 - points    - The input point coordinates
 
   Output Parameters:
-+ dboxes    - An array of numPoints*dim integers expressing the enclosing box as (i_0, i_1, ..., i_dim)
-- boxes     - An array of numPoints integers expressing the enclosing box as single number, or NULL
++ dboxes - An array of numPoints*dim integers expressing the enclosing box as (i_0, i_1, ..., i_dim)
+- boxes  - An array of numPoints integers expressing the enclosing box as single number, or NULL
 
   Level: developer
 
@@ -718,9 +718,9 @@ PetscErrorCode PetscGridHashGetEnclosingBox(PetscGridHash box, PetscInt numPoint
 }
 
 /*
- PetscGridHashGetEnclosingBoxQuery - Find the grid boxes containing each input point
+  PetscGridHashGetEnclosingBoxQuery - Find the grid boxes containing each input point
 
- Not Collective
+  Not Collective
 
   Input Parameters:
 + box         - The grid hash object
@@ -1429,7 +1429,7 @@ PetscErrorCode DMPlexComputeProjection3Dto1D(PetscScalar coords[], PetscReal R[]
 
 /*@
   DMPlexComputeProjection3Dto2D - Rewrite coordinates of 3 or more coplanar 3D points to a common 2D basis for the
-    plane.  The normal is defined by positive orientation of the first 3 points.
+  plane.  The normal is defined by positive orientation of the first 3 points.
 
   Not Collective
 
@@ -2795,9 +2795,9 @@ static PetscErrorCode DMPlexComputeGeometryFVM_3D_Internal(DM dm, PetscInt dim, 
 - cell - the cell
 
   Output Parameters:
-+ volume   - the cell volume
++ vol      - the cell volume
 . centroid - the cell centroid
-- normal - the cell normal, if appropriate
+- normal   - the cell normal, if appropriate
 
   Level: advanced
 
@@ -3013,7 +3013,7 @@ PetscErrorCode DMPlexGetMinRadius(DM dm, PetscReal *minradius)
   Logically Collective
 
   Input Parameters:
-+ dm - the `DMPLEX`
++ dm        - the `DMPLEX`
 - minradius - the minimum cell radius
 
   Level: developer
@@ -3206,8 +3206,8 @@ static PetscErrorCode BuildGradientReconstruction_Internal_Tree(DM dm, PetscFV f
   Collective
 
   Input Parameters:
-+ dm  - The `DMPLEX`
-. fvm - The `PetscFV`
++ dm           - The `DMPLEX`
+. fvm          - The `PetscFV`
 - cellGeometry - The face geometry from `DMPlexComputeCellGeometryFVM()`
 
   Input/Output Parameter:
@@ -3263,13 +3263,13 @@ PetscErrorCode DMPlexComputeGradientFVM(DM dm, PetscFV fvm, Vec faceGeometry, Ve
   Collective
 
   Input Parameters:
-+ dm  - The `DM`
-- fv  - The `PetscFV`
++ dm - The `DM`
+- fv - The `PetscFV`
 
   Output Parameters:
-+ cellGeometry - The cell geometry
-. faceGeometry - The face geometry
-- gradDM       - The gradient matrices
++ cellgeom - The cell geometry
+. facegeom - The face geometry
+- gradDM   - The gradient matrices
 
   Level: developer
 
@@ -3664,7 +3664,7 @@ static PetscErrorCode DMPlexReferenceToCoordinates_FE(DM dm, PetscFE fe, PetscIn
 - realCoords - (numPoints x coordinate dimension) array of coordinates (see `DMGetCoordinateDim()`)
 
   Output Parameter:
-. refCoords  - (`numPoints` x `dimension`) array of reference coordinates (see `DMGetDimension()`)
+. refCoords - (`numPoints` x `dimension`) array of reference coordinates (see `DMGetDimension()`)
 
   Level: intermediate
 
@@ -3735,17 +3735,17 @@ PetscErrorCode DMPlexCoordinatesToReference(DM dm, PetscInt cell, PetscInt numPo
   Not Collective
 
   Input Parameters:
-+ dm         - The mesh, with coordinate maps defined either by a PetscDS for the coordinate `DM` (see `DMGetCoordinateDM()`) or
++ dm        - The mesh, with coordinate maps defined either by a PetscDS for the coordinate `DM` (see `DMGetCoordinateDM()`) or
                implicitly by the coordinates of the corner vertices of the cell: as an affine map for simplicial elements, or
                as a multilinear map for tensor-product elements
-. cell       - the cell whose map is used.
-. numPoints  - the number of points to locate
-- refCoords  - (numPoints x dimension) array of reference coordinates (see `DMGetDimension()`)
+. cell      - the cell whose map is used.
+. numPoints - the number of points to locate
+- refCoords - (numPoints x dimension) array of reference coordinates (see `DMGetDimension()`)
 
   Output Parameter:
 . realCoords - (numPoints x coordinate dimension) array of coordinates (see `DMGetCoordinateDim()`)
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `DMPLEX`, `DMPlexCoordinatesToReference()`
 @*/
@@ -3813,11 +3813,11 @@ PetscErrorCode DMPlexReferenceToCoordinates(DM dm, PetscInt cell, PetscInt numPo
   Not Collective
 
   Input Parameters:
-+ dm      - The `DM`
-. time    - The time
-- func    - The function transforming current coordinates to new coordaintes
++ dm   - The `DM`
+. time - The time
+- func - The function transforming current coordinates to new coordaintes
 
-   Calling sequence of `func`:
+  Calling sequence of `func`:
 .vb
    void func(PetscInt dim, PetscInt Nf, PetscInt NfAux,
              const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],

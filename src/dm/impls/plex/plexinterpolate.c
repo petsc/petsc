@@ -1110,8 +1110,8 @@ static PetscErrorCode DMPlexAddSharedFace_Private(DM dm, PetscSection candidateS
 
   Level: developer
 
-   Note:
-   Debugging for this process can be turned on with the options: `-dm_interp_pre_view` `-petscsf_interp_pre_view` `-petscsection_interp_candidate_view` `-petscsection_interp_candidate_remote_view` `-petscsection_interp_claim_view` `-petscsf_interp_pre_view` `-dmplex_interp_debug`
+  Note:
+  Debugging for this process can be turned on with the options: `-dm_interp_pre_view` `-petscsf_interp_pre_view` `-petscsection_interp_candidate_view` `-petscsection_interp_candidate_remote_view` `-petscsection_interp_claim_view` `-petscsf_interp_pre_view` `-dmplex_interp_debug`
 
 .seealso: `DMPLEX`, `DMPlexInterpolate()`, `DMPlexUninterpolate()`
 @*/
@@ -1461,10 +1461,10 @@ PetscErrorCode DMPlexInterpolatePointSF(DM dm, PetscSF pointSF)
   Level: intermediate
 
   Note:
-    Labels and coordinates are copied.
+  Labels and coordinates are copied.
 
-  Developer Note:
-    It sets plex->interpolated = `DMPLEX_INTERPOLATED_FULL`.
+  Developer Notes:
+  It sets plex->interpolated = `DMPLEX_INTERPOLATED_FULL`.
 
 .seealso: `DMPLEX`, `DMPlexUninterpolate()`, `DMPlexCreateFromCellListPetsc()`, `DMPlexCopyCoordinates()`
 @*/
@@ -1686,9 +1686,9 @@ PetscErrorCode DMPlexCopyCoordinates(DM dmA, DM dmB)
   Level: intermediate
 
   Note:
-    It does not copy over the coordinates.
+  It does not copy over the coordinates.
 
-  Developer Note:
+  Developer Notes:
   Sets plex->interpolated = `DMPLEX_INTERPOLATED_NONE`.
 
 .seealso: `DMPLEX`, `DMPlexInterpolate()`, `DMPlexCreateFromCellListPetsc()`, `DMPlexCopyCoordinates()`
@@ -1849,7 +1849,7 @@ finish:
   Not Collective
 
   Input Parameter:
-. dm      - The `DMPLEX` object
+. dm - The `DMPLEX` object
 
   Output Parameter:
 . interpolated - Flag whether the `DM` is interpolated
@@ -1902,7 +1902,7 @@ PetscErrorCode DMPlexIsInterpolated(DM dm, DMPlexInterpolatedFlag *interpolated)
   Collective
 
   Input Parameter:
-. dm      - The `DMPLEX` object
+. dm - The `DMPLEX` object
 
   Output Parameter:
 . interpolated - Flag whether the `DM` is interpolated

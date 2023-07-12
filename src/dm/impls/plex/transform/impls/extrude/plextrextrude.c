@@ -754,7 +754,7 @@ PETSC_EXTERN PetscErrorCode DMPlexTransformCreate_Extrude(DMPlexTransform tr)
   Not Collective
 
   Input Parameter:
-. tr  - The `DMPlexTransform`
+. tr - The `DMPlexTransform`
 
   Output Parameter:
 . layers - The number of layers
@@ -780,7 +780,7 @@ PetscErrorCode DMPlexTransformExtrudeGetLayers(DMPlexTransform tr, PetscInt *lay
   Not Collective
 
   Input Parameters:
-+ tr  - The `DMPlexTransform`
++ tr     - The `DMPlexTransform`
 - layers - The number of layers
 
   Level: intermediate
@@ -805,7 +805,7 @@ PetscErrorCode DMPlexTransformExtrudeSetLayers(DMPlexTransform tr, PetscInt laye
   Not Collective
 
   Input Parameter:
-. tr  - The `DMPlexTransform`
+. tr - The `DMPlexTransform`
 
   Output Parameter:
 . thickness - The total thickness of the layers
@@ -831,7 +831,7 @@ PetscErrorCode DMPlexTransformExtrudeGetThickness(DMPlexTransform tr, PetscReal 
   Not Collective
 
   Input Parameters:
-+ tr  - The `DMPlexTransform`
++ tr        - The `DMPlexTransform`
 - thickness - The total thickness of the layers
 
   Level: intermediate
@@ -855,7 +855,7 @@ PetscErrorCode DMPlexTransformExtrudeSetThickness(DMPlexTransform tr, PetscReal 
   Not Collective
 
   Input Parameter:
-. tr  - The `DMPlexTransform`
+. tr - The `DMPlexTransform`
 
   Output Parameter:
 . useTensor - The flag to use tensor cells
@@ -892,7 +892,7 @@ PetscErrorCode DMPlexTransformExtrudeGetTensor(DMPlexTransform tr, PetscBool *us
   Not Collective
 
   Input Parameters:
-+ tr  - The `DMPlexTransform`
++ tr        - The `DMPlexTransform`
 - useTensor - The flag for tensor cells
 
   Note:
@@ -925,7 +925,7 @@ PetscErrorCode DMPlexTransformExtrudeSetTensor(DMPlexTransform tr, PetscBool use
   Not Collective
 
   Input Parameter:
-. tr  - The `DMPlexTransform`
+. tr - The `DMPlexTransform`
 
   Output Parameter:
 . symmetric - The flag to extrude symmetrically
@@ -951,7 +951,7 @@ PetscErrorCode DMPlexTransformExtrudeGetSymmetric(DMPlexTransform tr, PetscBool 
   Not Collective
 
   Input Parameters:
-+ tr  - The `DMPlexTransform`
++ tr        - The `DMPlexTransform`
 - symmetric - The flag to extrude symmetrically
 
   Level: intermediate
@@ -974,7 +974,7 @@ PetscErrorCode DMPlexTransformExtrudeSetSymmetric(DMPlexTransform tr, PetscBool 
   Not Collective
 
   Input Parameter:
-. tr  - The `DMPlexTransform`
+. tr - The `DMPlexTransform`
 
   Output Parameter:
 . periodic - The flag to extrude periodically
@@ -1000,7 +1000,7 @@ PetscErrorCode DMPlexTransformExtrudeGetPeriodic(DMPlexTransform tr, PetscBool *
   Not Collective
 
   Input Parameters:
-+ tr  - The `DMPlexTransform`
++ tr       - The `DMPlexTransform`
 - periodic - The flag to extrude periodically
 
   Level: intermediate
@@ -1023,7 +1023,7 @@ PetscErrorCode DMPlexTransformExtrudeSetPeriodic(DMPlexTransform tr, PetscBool p
   Not Collective
 
   Input Parameter:
-. tr  - The `DMPlexTransform`
+. tr - The `DMPlexTransform`
 
   Output Parameter:
 . normal - The extrusion direction
@@ -1081,7 +1081,7 @@ PetscErrorCode DMPlexTransformExtrudeSetNormal(DMPlexTransform tr, const PetscRe
   Not Collective
 
   Input Parameters:
-+ tr     - The `DMPlexTransform`
++ tr         - The `DMPlexTransform`
 - normalFunc - A function determining the extrusion direction
 
   Calling sequence of `normalFunc`:
@@ -1113,9 +1113,9 @@ PetscErrorCode DMPlexTransformExtrudeSetNormalFunction(DMPlexTransform tr, Petsc
   Not Collective
 
   Input Parameters:
-+ tr  - The `DMPlexTransform`
-. Nth - The number of thicknesses
-- thickness - The array of thicknesses
++ tr          - The `DMPlexTransform`
+. Nth         - The number of thicknesses
+- thicknesses - The array of thicknesses
 
   Level: intermediate
 

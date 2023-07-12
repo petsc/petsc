@@ -13,9 +13,9 @@ const char *const DMStagStencilLocations[] = {"NONE", "BACK_DOWN_LEFT", "BACK_DO
   Collective
 
   Input Parameters:
-+ dm - the `DMStag` object
++ dm        - the `DMStag` object
 . n_stencil - the number of stencils provided
-- stencils - an array of `DMStagStencil` objects (`i`, `j`, and `k` are ignored)
+- stencils  - an array of `DMStagStencil` objects (`i`, `j`, and `k` are ignored)
 
   Output Parameter:
 . is - the global IS
@@ -126,7 +126,7 @@ PetscErrorCode DMStagCreateISFromStencils(DM dm, PetscInt n_stencil, DMStagStenc
   Not Collective
 
   Input Parameters:
-+ dm - the `DMSTAG` object
++ dm  - the `DMSTAG` object
 - loc - grid point (see `DMStagStencilLocation`)
 
   Output Parameter:
@@ -289,11 +289,11 @@ PETSC_INTERN PetscErrorCode DMStagStencilLocationCanonicalize(DMStagStencilLocat
   Not Collective
 
   Input Parameters:
-+ dm - the `DMSTAG` object
-. mat - the matrix
-. nRow - number of rows
++ dm     - the `DMSTAG` object
+. mat    - the matrix
+. nRow   - number of rows
 . posRow - grid locations (including components) of rows
-. nCol - number of columns
+. nCol   - number of columns
 - posCol - grid locations (including components) of columns
 
   Output Parameter:
@@ -326,14 +326,14 @@ PetscErrorCode DMStagMatGetValuesStencil(DM dm, Mat mat, PetscInt nRow, const DM
   Not Collective
 
   Input Parameters:
-+ dm - the `DMSTAG` object
-. mat - the matrix
-. nRow - number of rows
-. posRow - grid locations (including components) of rows
-. nCol - number of columns
-. posCol - grid locations (including components) of columns
-. val - logically two-dimensional array of values
-- insertmode - `INSERT_VALUES` or `ADD_VALUES`
++ dm         - the `DMSTAG` object
+. mat        - the matrix
+. nRow       - number of rows
+. posRow     - grid locations (including components) of rows
+. nCol       - number of columns
+. posCol     - grid locations (including components) of columns
+. val        - logically two-dimensional array of values
+- insertMode - `INSERT_VALUES` or `ADD_VALUES`
 
   Notes:
   See notes for `MatSetValuesStencil()`
@@ -363,9 +363,9 @@ PetscErrorCode DMStagMatSetValuesStencil(DM dm, Mat mat, PetscInt nRow, const DM
   Not Collective
 
   Input Parameters:
-+ dm - the `DMSTAG` object
++ dm  - the `DMSTAG` object
 . dim - the dimension of the `DMSTAG` object
-. n - the number of `DMStagStencil` objects
+. n   - the number of `DMStagStencil` objects
 - pos - an array of `n` `DMStagStencil` objects
 
   Output Parameter:
@@ -427,9 +427,9 @@ PetscErrorCode DMStagStencilToIndexLocal(DM dm, PetscInt dim, PetscInt n, const 
   Not Collective
 
   Input Parameters:
-+ dm - the `DMSTAG` object
++ dm  - the `DMSTAG` object
 . vec - the vector object
-. n - the number of values to obtain
+. n   - the number of values to obtain
 - pos - locations to obtain values from (as an array of `DMStagStencil` values)
 
   Output Parameter:
@@ -473,11 +473,11 @@ PetscErrorCode DMStagVecGetValuesStencil(DM dm, Vec vec, PetscInt n, const DMSta
   Not Collective
 
   Input Parameters:
-+ dm - the `DMSTAG` object
-. vec - the `Vec`
-. n - the number of values to set
-. pos - the locations to set values, as an array of `DMStagStencil` structs
-. val - the values to set
++ dm         - the `DMSTAG` object
+. vec        - the `Vec`
+. n          - the number of values to set
+. pos        - the locations to set values, as an array of `DMStagStencil` structs
+. val        - the values to set
 - insertMode - `INSERT_VALUES` or `ADD_VALUES`
 
   Notes:

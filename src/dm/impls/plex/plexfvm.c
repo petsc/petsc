@@ -148,7 +148,7 @@ PetscErrorCode DMPlexReconstructGradients_Internal(DM dm, PetscFV fvm, PetscInt 
   DMPlexReconstructGradientsFVM - reconstruct the gradient of a vector using a finite volume method.
 
   Input Parameters:
-+ dm - the mesh
++ dm   - the mesh
 - locX - the local representation of the vector
 
   Output Parameter:
