@@ -674,7 +674,6 @@ PetscErrorCode PetscBinarySynchronizedRead(MPI_Comm comm, int fd, void *data, Pe
 
   Because byte-swapping may be done on the values in data it cannot be declared const
 
-  WARNING:
   This is NOT like `PetscSynchronizedFPrintf()`! This routine ignores calls on all but MPI rank 0,
   while `PetscSynchronizedFPrintf()` has all MPI processes print their strings in order.
 
@@ -695,7 +694,8 @@ PetscErrorCode PetscBinarySynchronizedWrite(MPI_Comm comm, int fd, const void *p
   PetscBinarySynchronizedSeek - Moves the file pointer on a PETSc binary file.
 
   Input Parameters:
-+ fd     - the file
++ comm   - the communicator to read with
+. fd     - the file
 . whence - see `PetscBinarySeekType` for possible values
 - off    - number of bytes to move. Use `PETSC_BINARY_INT_SIZE`, `PETSC_BINARY_SCALAR_SIZE`,
             etc. in your calculation rather than `sizeof()` to compute byte lengths.

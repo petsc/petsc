@@ -213,14 +213,14 @@ PetscErrorCode PetscStageLogRegister(PetscStageLog stageLog, const char sname[],
   Options Database Key:
 . -log_view - Activates logging
 
-  Usage:
+  Example Usage:
   If the option -log_view is used to run the program containing the
   following code, then 2 sets of summary data will be printed during
   `PetscFinalize()`.
 .vb
-      PetscInitialize(int *argc,char ***args,0,0);
+      PetscInitialize(...);
       [stage 0 of code]
-      PetscStageLogPush(stageLog,1);
+      PetscStageLogPush(stageLog, 1);
       [stage 1 of code]
       PetscStageLogPop(stageLog);
       PetscBarrier(...);
@@ -228,7 +228,7 @@ PetscErrorCode PetscStageLogRegister(PetscStageLog stageLog, const char sname[],
       PetscFinalize();
 .ve
 
-  Note;
+  Note:
   Use `PetscLogStageRegister()` to register a stage. All previous stages are
   accumulating time and flops, but events will only be logged in this stage.
 
@@ -281,8 +281,8 @@ PetscErrorCode PetscStageLogPush(PetscStageLog stageLog, int stage)
   Input Parameter:
 . stageLog - The `PetscStageLog`
 
-  Usage:
-  If the option -log_view is used to run the program containing the
+  Example Usage:
+  If the option `-log_view` is used to run the program containing the
   following code, then 2 sets of summary data will be printed during
   PetscFinalize().
 .vb

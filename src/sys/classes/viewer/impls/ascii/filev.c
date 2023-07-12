@@ -523,10 +523,12 @@ extern void petscfortranprinttounit_(PetscInt *, const char *, PetscErrorCode *,
 
   #define PETSCDEFAULTBUFFERSIZE 8 * 1024
 
+// PetscClangLinter pragma disable: -fdoc-synopsis-macro-explicit-synopsis-valid-header
 /*@M
   PetscViewerASCIISetFileUnit - sets the `PETSCASCIIVIEWER` to write to a Fortan IO unit
 
-  Fortran Notes:
+  Synopsis:
+  #include <petscviewer.h>
   void PetscViewerASCIISetFileUnit(PetscViewer lab, PetscInt unit, PetscErrorCode ierr)
 
   Input Parameters:
@@ -535,6 +537,8 @@ extern void petscfortranprinttounit_(PetscInt *, const char *, PetscErrorCode *,
 
   Output Parameter:
 . ierr - the error code
+
+  Level: intermediate
 
   Note:
   `PetscViewerDestroy()` does not close the unit for this `PetscViewer`
@@ -555,10 +559,12 @@ PETSC_EXTERN void petscviewerasciisetfileunit_(PetscViewer *lab, PetscInt *unit,
   vascii->fileunit = *unit;
 }
 
+// PetscClangLinter pragma disable: -fdoc-synopsis-macro-explicit-synopsis-valid-header
 /*@M
   PetscViewerASCIIOpenWithFileUnit - opens a `PETSCASCIIVIEWER` to write to a Fortan IO unit
 
-  Fortran Notes:
+  Synopsis:
+  #include <petscviewer.h>
   void PetscViewerASCIIOpenWithFileUnit(MPI_Comm comm, PetscInt unit, PetscViewer viewer, PetscErrorCode ierr)
 
   Input Parameters:
@@ -568,6 +574,8 @@ PETSC_EXTERN void petscviewerasciisetfileunit_(PetscViewer *lab, PetscInt *unit,
   Output Parameters:
 + lab  - the viewer
 - ierr - the error code
+
+  Level: intermediate
 
   Note:
   `PetscViewerDestroy()` does not close the unit for this `PetscViewer`

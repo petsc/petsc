@@ -9,6 +9,7 @@
   Input Parameters:
 + comm - communicator over which error occurred
 . line - the line number of the error (indicated by __LINE__)
+. fun  - the function name
 . file - the file in which the error was detected (indicated by __FILE__)
 . mess - an error text string, usually just printed to the screen
 . n    - the generic error number

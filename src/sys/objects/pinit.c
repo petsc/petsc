@@ -83,6 +83,12 @@ PetscSpinlock PetscCommSpinLock;
 
   Collective
 
+  Input Parameters:
++ argc     - number of args
+. args     - array of command line arguments
+. filename - optional name of the program file, pass `NULL` to ignore
+- help     - optional help, pass `NULL` to ignore
+
   Level: advanced
 
   Notes:
@@ -90,7 +96,8 @@ PetscSpinlock PetscCommSpinLock;
   indicate that it did NOT start MPI so that the PetscFinalize() does not end MPI, thus allowing PetscInitialize() to
   be called multiple times from Julia without the problem of trying to initialize MPI more than once.
 
-  Developer Notes: Turns off PETSc signal handling to allow Julia to manage signals
+  Developer Notes:
+  Turns off PETSc signal handling to allow Julia to manage signals
 
 .seealso: `PetscInitialize()`, `PetscInitializeFortran()`, `PetscInitializeNoArguments()`
 */
@@ -140,6 +147,9 @@ PetscErrorCode PetscInitializeNoArguments(void)
 /*@
   PetscInitialized - Determine whether PETSc is initialized.
 
+  Output Parameter:
+. isInitialized - `PETSC_TRUE` if PETSc is initialized, `PETSC_FALSE` otherwise
+
   Level: beginner
 
 .seealso: `PetscInitialize()`, `PetscInitializeNoArguments()`, `PetscInitializeFortran()`
@@ -154,6 +164,9 @@ PetscErrorCode PetscInitialized(PetscBool *isInitialized)
 
 /*@
   PetscFinalized - Determine whether `PetscFinalize()` has been called yet
+
+  Output Parameter:
+. isFinalized - `PETSC_TRUE` if PETSc is finalized, `PETSC_FALSE` otherwise
 
   Level: developer
 
@@ -1112,6 +1125,8 @@ PETSC_INTERN PetscErrorCode PetscInitialize_Common(const char *prog, const char 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+// "Unknown section 'Environmental Variables'"
+// PetscClangLinter pragma disable: -fdoc-section-header-unknown
 /*@C
   PetscInitialize - Initializes the PETSc database and MPI.
   `PetscInitialize()` calls MPI_Init() if that has yet to be called,

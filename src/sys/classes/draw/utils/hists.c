@@ -404,8 +404,9 @@ PetscErrorCode PetscDrawHGSave(PetscDrawHG hg)
 
   Not Collective
 
-  Input Parameter:
-. hist - The histogram context
+  Input Parameters:
++ hist   - The histogram context
+- viewer - The viewer to view it with
 
   Level: beginner
 

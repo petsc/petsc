@@ -414,6 +414,7 @@ PetscErrorCode PetscDeviceDeallocate_Private(PetscDeviceContext dctx, void *PETS
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+// PetscClangLinter pragma disable: -fdoc-section-header-unknown
 /*@C
   PetscDeviceMemcpy - Copy memory in a device-aware manner
 
@@ -485,6 +486,7 @@ PetscErrorCode PetscDeviceMemcpy(PetscDeviceContext dctx, void *PETSC_RESTRICT d
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+// PetscClangLinter pragma disable: -fdoc-section-header-unknown
 /*@C
   PetscDeviceMemset - Memset device-aware memory
 

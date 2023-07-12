@@ -14,6 +14,7 @@
 
   Level: intermediate
 
+.seealso: `PetscDrawBOP()`, `PetscDrawEOP()`
 @*/
 PetscErrorCode PetscDrawClear(PetscDraw draw)
 {

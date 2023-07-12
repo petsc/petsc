@@ -16,6 +16,9 @@ PetscMPIInt Petsc_Viewer_Stdout_keyval = MPI_KEYVAL_INVALID;
   Input Parameter:
 . comm - the MPI communicator to share the `PetscViewer`
 
+  Output Parameter:
+. viewer - the viewer
+
   Level: beginner
 
   Note:
@@ -91,6 +94,9 @@ PetscMPIInt Petsc_Viewer_Stderr_keyval = MPI_KEYVAL_INVALID;
 
   Input Parameter:
 . comm - the MPI communicator to share the `PetscViewer`
+
+  Output Parameter:
+. viewer - the viewer
 
   Level: beginner
 

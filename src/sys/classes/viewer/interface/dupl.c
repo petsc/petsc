@@ -7,8 +7,9 @@
 
   Collective
 
-  Input Parameter:
-. viewer - the `PetscViewer` to be reproduced
+  Input Parameters:
++ viewer - the `PetscViewer` to be reproduced
+- comm   - the sub communicator to use
 
   Output Parameter:
 . outviewer - new `PetscViewer`
@@ -59,6 +60,7 @@ PetscErrorCode PetscViewerGetSubViewer(PetscViewer viewer, MPI_Comm comm, PetscV
 
   Input Parameters:
 + viewer    - the `PetscViewer` that was reproduced
+. comm      - the sub communicator
 - outviewer - the subviewer to be returned
 
   Level: advanced

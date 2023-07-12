@@ -82,7 +82,7 @@ PetscErrorCode PetscRandomGetSeed(PetscRandom r, unsigned long *seed)
 
   Level: intermediate
 
-  Usage:
+  Example Usage:
 .vb
       PetscRandomSetSeed(r,a positive integer);
       PetscRandomSeed(r);
@@ -361,7 +361,7 @@ PetscErrorCode PetscRandomCreate(MPI_Comm comm, PetscRandom *r)
 
   Level: intermediate
 
-  Usage:
+  Example Usage:
 .vb
       PetscRandomSetSeed(r,a positive integer);
       PetscRandomSeed(r);

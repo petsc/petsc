@@ -22,10 +22,10 @@ PetscErrorCode PetscGetUserName(char name[], size_t nlen)
   Not Collective
 
   Input Parameter:
-    nlen - length of name
+. nlen - length of name
 
   Output Parameter:
-. name - contains user name.  Must be long enough to hold the name
+. name - contains user name. Must be long enough to hold the name
 
   Level: developer
 

@@ -272,9 +272,9 @@ static PetscErrorCode PetscFunctionListCreate_Private(PetscInt size, PetscFuncti
   Not Collective
 
   Input Parameters:
-+  flist - pointer to function list object
++ fl   - pointer to function list object
 . name - string to identify routine
--  fptr - function pointer
+- fptr - function pointer
 
   Level: developer
 
@@ -289,14 +289,14 @@ static PetscErrorCode PetscFunctionListCreate_Private(PetscInt size, PetscFuncti
 .seealso: `PetscFunctionListDestroy()`, `SNESRegister()`, `KSPRegister()`,`PetscFunctionListDuplicate()`
           `PCRegister()`, `TSRegister()`, `PetscFunctionList`, `PetscObjectComposeFunction()`
 M*/
-PetscErrorCode PetscFunctionListAdd_Private(PetscFunctionList *fl, const char name[], PetscVoidFunction fnc)
+PetscErrorCode PetscFunctionListAdd_Private(PetscFunctionList *fl, const char name[], PetscVoidFunction fptr)
 {
   PetscFunctionBegin;
   PetscValidPointer(fl, 1);
   if (name) PetscValidCharPointer(name, 2);
-  if (fnc) PetscValidFunction(fnc, 3);
+  if (fptr) PetscValidFunction(fptr, 3);
   PetscCall(PetscFunctionListCreate_Private(0, fl));
-  PetscCall(PetscHMapFuncInsert_Private((*fl)->map, name, fnc));
+  PetscCall(PetscHMapFuncInsert_Private((*fl)->map, name, fptr));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -382,16 +382,16 @@ PetscErrorCode PetscFunctionListPrintAll(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*MC
-  PetscFunctionListNonEmpty - Print composed names for non `NULL` function pointers
+/*@C
+  PetscFunctionListPrintNonEmpty - Print composed names for non `NULL` function pointers
 
   Input Parameter:
-.   flist   - pointer to list
+. fl - the function list
 
   Level: developer
 
 .seealso: `PetscFunctionListAdd()`, `PetscFunctionList`, `PetscObjectQueryFunction()`
-M*/
+@*/
 PetscErrorCode PetscFunctionListPrintNonEmpty(PetscFunctionList fl)
 {
   PetscFunctionBegin;
@@ -415,23 +415,23 @@ PetscErrorCode PetscFunctionListPrintNonEmpty(PetscFunctionList fl)
   PetscErrorCode PetscFunctionListFind(PetscFunctionList flist,const char name[],void (**fptr)(void))
 
   Input Parameters:
-+   flist   - pointer to list
++ fl   - the function list
 - name - name registered for the function
 
   Output Parameter:
-.   fptr - the function pointer if name was found, else `NULL`
+. fptr - the function pointer if name was found, else `NULL`
 
   Level: developer
 
 .seealso: `PetscFunctionListAdd()`, `PetscFunctionList`, `PetscObjectQueryFunction()`, `PetscFunctionListDuplicate()`
 M*/
-PetscErrorCode PetscFunctionListFind_Private(PetscFunctionList fl, const char name[], PetscVoidFunction *r)
+PetscErrorCode PetscFunctionListFind_Private(PetscFunctionList fl, const char name[], PetscVoidFunction *fptr)
 {
   PetscFunctionBegin;
   PetscValidCharPointer(name, 2);
-  PetscValidPointer(r, 3);
-  *r = NULL;
-  if (fl) PetscCall(PetscHMapFuncGet(fl->map, name, r));
+  PetscValidPointer(fptr, 3);
+  *fptr = NULL;
+  if (fl) PetscCall(PetscHMapFuncGet(fl->map, name, fptr));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

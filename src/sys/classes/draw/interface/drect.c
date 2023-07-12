@@ -6,12 +6,14 @@
   Not Collective
 
   Input Parameters:
-+ draw - a `PetscDraw`
-. xmin - region to draw indicator function
-. xmax - region to draw indicator function
-. ymin - region to draw indicator function
-. ymax - region to draw indicator function
--  f - the indicator function
++ draw      - a `PetscDraw`
+. xmin      - region to draw indicator function
+. xmax      - region to draw indicator function
+. ymin      - region to draw indicator function
+. ymax      - region to draw indicator function
+. c         - the color of the region
+. indicator - the indicator function
+- ctx       - the context to pass to the indicator function
 
   Level: developer
 

@@ -126,6 +126,9 @@ static PetscErrorCode PetscCheckDebugger_Private(const char defaultDbg[], const 
 
   Not Collective
 
+  Input Parameter:
+. string - the name of the debugger, for example "gdb"
+
   Level: developer
 
 .seealso: `PetscSetDebugger()`, `PetscSetDefaultDebugger()`, `PetscAttachDebugger()`
@@ -465,9 +468,10 @@ PetscErrorCode PetscAttachDebugger(void)
   Input Parameters:
 + comm - communicator over which error occurred
 . line - the line number of the error (indicated by `__LINE__`)
+. fun  - the function name
 . file - the file in which the error was detected (indicated by `__FILE__`)
-.  message - an error text string, usually just printed to the screen
-.  number - the generic error number
+. mess - an error text string, usually just printed to the screen
+. num  - the generic error number
 . p    - `PETSC_ERROR_INITIAL` if error just detected, otherwise `PETSC_ERROR_REPEAT`
 - ctx  - error handler context
 
@@ -502,6 +506,11 @@ $     SETERRQ(PETSC_COMM_SELF, number, p, message)
 PetscErrorCode PetscAttachDebuggerErrorHandler(MPI_Comm comm, int line, const char *fun, const char *file, PetscErrorCode num, PetscErrorType p, const char *mess, void *ctx)
 {
   PetscErrorCode ierr;
+
+  (void)comm;
+  (void)num;
+  (void)p;
+  (void)ctx;
   if (!mess) mess = " ";
 
   if (fun) ierr = (*PetscErrorPrintf)("%s() at %s:%d %s\n", fun, file, line, mess);

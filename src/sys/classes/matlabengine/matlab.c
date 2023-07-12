@@ -360,7 +360,8 @@ PetscMatlabEngine PETSC_MATLAB_ENGINE_(MPI_Comm comm)
 
   Input Parameters:
 + mengine - the MATLAB engine
-. m,n     - the dimensions of the array
+. m       - the x dimension of the array
+. n       - the y dimension of the array
 . array   - the array (represented in one dimension)
 - name    - the name of the array
 
@@ -396,7 +397,8 @@ PetscErrorCode PetscMatlabEnginePutArray(PetscMatlabEngine mengine, int m, int n
 
   Input Parameters:
 + mengine - the MATLAB engine
-. m,n     - the dimensions of the array
+. m       - the x dimension of the array
+. n       - the y dimension of the array
 . array   - the array (represented in one dimension)
 - name    - the name of the array
 

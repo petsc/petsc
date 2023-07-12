@@ -173,14 +173,7 @@ PetscErrorCode PetscViewerAndFormatDestroy(PetscViewerAndFormat **vf)
 . viewer - the `PetscViewer`
 
   Output Parameter:
-+ type - `PetscViewerType`
-
-   Available Types Include:
-.  `PETSCVIEWERSOCKET` - Socket `PetscViewer`
-.  `PETSCVIEWERASCII` - ASCII `PetscViewer`
-.  `PETSCVIEWERBINARY` - binary file `PetscViewer`
-.  `PETSCVIEWERSTRING` - string `PetscViewer`
--  `PETSCVIEWERDRAW` - drawing `PetscViewer`
+. type - `PetscViewerType`
 
   Level: intermediate
 

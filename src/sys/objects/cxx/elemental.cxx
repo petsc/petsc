@@ -38,6 +38,9 @@ PetscErrorCode PetscElementalInitializePackage(void)
 
   Not Collective
 
+  Output Parameter:
+. isInitialized - `PETSC_TRUE` if elemental is initialized, `PETSC_FALSE` otherwise
+
   Level: developer
 
   Note:

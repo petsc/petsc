@@ -109,8 +109,9 @@ PetscErrorCode PetscDrawStringCentered(PetscDraw draw, PetscReal xc, PetscReal y
 . bc   - the color of the bounding box
 - text - the text to draw
 
-  Output Parameter:
-. w,h - width and height of resulting box (optional)
+  Output Parameters:
++ w - the width of the resulting box (optional)
+- h - the height of resulting box (optional)
 
   Level: beginner
 

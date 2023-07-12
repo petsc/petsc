@@ -11,7 +11,7 @@ typedef struct {
 /*@C
   PetscViewerMatlabPutArray - Puts an array into the `PETSCVIEWERMATLAB` viewer.
 
-  Not Collective: only processor zero saves `array`
+  Not Collective, only processor zero saves `array`
 
   Input Parameters:
 + mfile - the viewer

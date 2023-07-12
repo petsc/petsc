@@ -41,10 +41,7 @@ PetscErrorCode PetscObjectGetNewTag(PetscObject obj, PetscMPIInt *tag)
 }
 
 /*@
-  PetscCommGetNewTag - Gets a unique new tag from a PETSc communicator. All
-  processors that share the communicator MUST call this routine EXACTLY the same
-  number of times.  This tag should only be used with the current objects
-  communicator; do NOT use it with any other MPI communicator.
+  PetscCommGetNewTag - Gets a unique new tag from a PETSc communicator
 
   Collective
 
@@ -55,6 +52,11 @@ PetscErrorCode PetscObjectGetNewTag(PetscObject obj, PetscMPIInt *tag)
 . tag - the new tag
 
   Level: developer
+
+  Notes:
+  All processors that share the communicator MUST call this routine EXACTLY the same number of
+  times. This tag should only be used with the current objects communicator; do NOT use it
+  with any other MPI communicator.
 
 .seealso: `PetscObjectGetNewTag()`, `PetscCommDuplicate()`
 @*/
@@ -191,7 +193,7 @@ PetscErrorCode PetscCommRestoreComm(MPI_Comm comm_in, MPI_Comm *comm_out)
   a PETSc creation routine it will attach a private communicator for use in the objects communications.
   The internal `MPI_Comm` is used to perform all the MPI calls for PETSc, the outer `MPI_Comm` is a user
 
-  Level `Mpi_Comm` That May Be Performing Communication For The User Or Other Library And So Is Not Used By Petsc.
+  `MPI_Comm` That May Be Performing Communication For The User Or Other Library And So Is Not Used By Petsc.
 
 .seealso: `PetscObjectGetNewTag()`, `PetscCommGetNewTag()`, `PetscCommDestroy()`
 @*/
@@ -354,6 +356,7 @@ PetscErrorCode PetscCommDestroy(MPI_Comm *comm)
   Note:
   This is needed when PETSc is used with certain languages that do garbage collection to manage object life cycles.
 
+.seealso: `PetscCommDuplicate()`, `PetscObjectDestroy()`
 @*/
 PetscErrorCode PetscObjectsListGetGlobalNumbering(MPI_Comm comm, PetscInt len, PetscObject *objlist, PetscInt *count, PetscInt *numbering)
 {

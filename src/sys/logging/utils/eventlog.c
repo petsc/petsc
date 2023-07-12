@@ -321,7 +321,7 @@ PetscErrorCode PetscLogEventEndMPE(PetscLogEvent event, int t, PetscObject o1, P
   Output Parameter:
 . event - The event
 
-  Example of Usage:
+  Example Usage:
 .vb
       int USER_EVENT;
       PetscLogDouble user_event_flops;
@@ -404,7 +404,7 @@ PetscErrorCode PetscEventRegLogRegister(PetscEventRegLog eventLog, const char en
 + eventLog - The `PetscEventPerfLog`
 - event    - The event
 
-  Usage:
+  Example Usage:
 .vb
       PetscEventPerfLogDeactivate(log, VEC_SetValues);
         [code where you do not want to log VecSetValues()]
@@ -438,7 +438,7 @@ PetscErrorCode PetscEventPerfLogActivate(PetscEventPerfLog eventLog, PetscLogEve
 + eventLog - The `PetscEventPerfLog`
 - event    - The event
 
-  Usage:
+  Example Usage:
 .vb
       PetscEventPerfLogDeactivate(log, VEC_SetValues);
         [code where you do not want to log VecSetValues()]
@@ -472,7 +472,7 @@ PetscErrorCode PetscEventPerfLogDeactivate(PetscEventPerfLog eventLog, PetscLogE
 + eventLog - The `PetscEventPerfLog`
 - event    - The event
 
-  Usage:
+  Example Usage:
 .vb
       PetscEventPerfLogDeactivatePush(log, VEC_SetValues);
         [code where you do not want to log VecSetValues()]
@@ -506,7 +506,7 @@ PetscErrorCode PetscEventPerfLogDeactivatePush(PetscEventPerfLog eventLog, Petsc
 + eventLog - The `PetscEventPerfLog`
 - event    - The event
 
-  Usage:
+  Example Usage:
 .vb
       PetscEventPerfLogDeactivatePush(log, VEC_SetValues);
         [code where you do not want to log VecSetValues()]

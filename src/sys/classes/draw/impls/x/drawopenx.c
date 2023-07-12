@@ -12,13 +12,12 @@
 
   Input Parameters:
 + comm    - the communicator that will share X-window
-. display - the X display on which to open,or null for the local machine
-. title   - the title to put in the title bar,or null for no title
-. x,y     - the screen coordinates of the upper left corner of window
-          may use `PETSC_DECIDE` for these two arguments, then PETSc places the
-          window
-- w, h    - the screen width and height in pixels,  or `PETSC_DRAW_HALF_SIZE`, `PETSC_DRAW_FULL_SIZE`,
-          or `PETSC_DRAW_THIRD_SIZE` or `PETSC_DRAW_QUARTER_SIZE`
+. display - the X display on which to open, or `NULL` for the local machine
+. title   - the title to put in the title bar, or `NULL` for no title
+. x       - the x screen coordinates of the upper left corner of window (or `PETSC_DECIDE`)
+. y       - the y screen coordinates of the upper left corner of window (or `PETSC_DECIDE`)
+. w       - the screen width in pixels of (or `PETSC_DRAW_HALF_SIZE`, `PETSC_DRAW_FULL_SIZE`, or `PETSC_DRAW_THIRD_SIZE` or `PETSC_DRAW_QUARTER_SIZE`)
+- h       - the screen height in pixels of (or `PETSC_DRAW_HALF_SIZE`, `PETSC_DRAW_FULL_SIZE`, or `PETSC_DRAW_THIRD_SIZE` or `PETSC_DRAW_QUARTER_SIZE`)
 
   Output Parameter:
 . draw - the drawing context.
@@ -44,11 +43,13 @@
 
   Level: beginner
 
-  Note:
+  Notes:
+  If `x` and `y` are both `PETSC_DECIDE` then PETSc places the window automatically.
+
   When finished with the drawing context, it should be destroyed
   with `PetscDrawDestroy()`.
 
-  Note for Fortran Programmers:
+  Fortran Notes:
   Whenever indicating null character data in a Fortran code,
   `PETSC_NULL_CHARACTER` must be employed; using NULL is not
   correct for character data!  Thus, `PETSC_NULL_CHARACTER` can be

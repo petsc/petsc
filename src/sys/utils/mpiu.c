@@ -136,8 +136,9 @@ PetscErrorCode PetscSequentialPhaseEnd(MPI_Comm comm, int ng)
 
   Collective
 
-  Input Parameter:
-. minMaxVal - An array with the local min and max
+  Input Parameters:
++ comm      - The MPI communicator to reduce with
+- minMaxVal - An array with the local min and max
 
   Output Parameter:
 . minMaxValGlobal - An array with the global min and max
@@ -165,8 +166,9 @@ PetscErrorCode PetscGlobalMinMaxInt(MPI_Comm comm, const PetscInt minMaxVal[2], 
 
   Collective
 
-  Input Parameter:
-. minMaxVal - An array with the local min and max
+  Input Parameters:
++ comm      - The MPI communicator to reduce with
+- minMaxVal - An array with the local min and max
 
   Output Parameter:
 . minMaxValGlobal - An array with the global min and max

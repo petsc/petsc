@@ -310,8 +310,7 @@ PetscErrorCode PetscDLSym(PetscDLHandle handle, const char symbol[], void **valu
   Not Collective
 
   Input Parameters:
-+ handle - obtained with `PetscDLOpen()` or `NULL`
-- func - pointer to the function, `NULL` if not found
+. func - pointer to the function, `NULL` if not found
 
   Output Parameter:
 . name - name of symbol, or `NULL` if name lookup is not supported.

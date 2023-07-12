@@ -30,6 +30,7 @@ PETSC_EXTERN int gettimeofday(struct timeval *, struct timezone *);
   error handlers may report the date without generating possible
   additional system errors during the call to get the date.
 
+.seealso: `PetscGetHostName()`
 @*/
 PetscErrorCode PetscGetDate(char date[], size_t len)
 {

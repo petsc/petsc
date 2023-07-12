@@ -179,8 +179,6 @@ void Petsc_MPI_DebuggerOnError(MPI_Comm *comm, PetscMPIInt *flag, ...)
 
   Collective on `PETSC_COMM_WORLD`
 
-  Options Database Keys are the same as for `PetscFinalize()`
-
   Level: advanced
 
   Note:
@@ -210,15 +208,19 @@ PetscErrorCode (*PetscExternalHelpFunction)(MPI_Comm)    = NULL;
 
 /*@C
   PetscSetHelpVersionFunctions - Sets functions that print help and version information
-  before the PETSc help and version information is printed. Must call BEFORE `PetscInitialize()`.
-  This routine enables a "higher-level" package that uses PETSc to print its messages first and control
-  how the PETSc help messages are printed.
+  before the PETSc help and version information is printed.
 
   Input Parameters:
 + help    - the help function (may be `NULL`)
 - version - the version function (may be `NULL`)
 
   Level: developer
+
+  Notes:
+  Must call BEFORE `PetscInitialize()`.
+
+  This routine enables a "higher-level" package that uses PETSc to print its messages first and
+  control how the PETSc help messages are printed.
 
 .seealso: `PetscInitialize()`
 @*/

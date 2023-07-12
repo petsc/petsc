@@ -177,13 +177,15 @@ PetscErrorCode PetscDrawSPDestroy(PetscDrawSP *sp)
   Not Collective
 
   Input Parameters:
-+ sp   - the scatter plot data structure
-- x, y - two arrays of length dim containing the new x and y coordinate values for each of the point curves. Here  dim is the number of point curves passed to PetscDrawSPCreate()
++ sp - the scatter plot data structure
+. x  - the x coordinate values (of length dim) for the points of the curve
+- y  - the y coordinate values (of length dim) for the points of the curve
 
   Level: intermediate
 
   Note:
-  The new points will not be displayed until a call to `PetscDrawSPDraw()` is made
+  Here dim is the number of point curves passed to `PetscDrawSPCreate()`. The new points will
+  not be displayed until a call to `PetscDrawSPDraw()` is made.
 
 .seealso: `PetscDrawSPAddPoints()`, `PetscDrawSP`, `PetscDrawSPCreate()`, `PetscDrawSPReset()`, `PetscDrawSPDraw()`, `PetscDrawSPAddPointColorized()`
 @*/

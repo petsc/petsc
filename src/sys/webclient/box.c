@@ -69,36 +69,36 @@ static PetscErrorCode PetscBoxStartWebServer_Private(void)
   #endif
 
 /*@C
-     PetscBoxAuthorize - Get authorization and refresh token for accessing Box drive from PETSc
+  PetscBoxAuthorize - Get authorization and refresh token for accessing Box drive from PETSc
 
-   Not Collective, only the first rank in `MPI_Comm` does anything
+  Not Collective, only the first rank in `MPI_Comm` does anything
 
-   Input Parameters:
-+  comm - the MPI communicator
--  tokensize - size of the token arrays
+  Input Parameters:
++ comm      - the MPI communicator
+- tokensize - size of the token arrays
 
-   Output Parameters:
-+  access_token - can be used with `PetscBoxUpload()` for this one session
--  refresh_token - can be used for ever to obtain new access_tokens with `PetscBoxRefresh()`, guard this like a password
-                   it gives access to your Box Drive
+  Output Parameters:
++ access_token  - can be used with `PetscBoxUpload()` for this one session
+- refresh_token - can be used for ever to obtain new access_tokens with `PetscBoxRefresh()`,
+                  guard this like a password  it gives access to your Box Drive
 
-   Level: intermediate
+  Level: intermediate
 
-   Notes:
-    This call requires `stdout` and `stdin` access from process 0 on the MPI communicator
+  Notes:
+  This call requires `stdout` and `stdin` access from process 0 on the MPI communicator
 
-   You can run src/sys/webclient/tutorials/boxobtainrefreshtoken to get a refresh token and then in the future pass it to
-   PETSc programs with `-box_refresh_token XXX`
+  You can run src/sys/webclient/tutorials/boxobtainrefreshtoken to get a refresh token and then
+  in the future pass it to PETSc programs with `-box_refresh_token XXX`
 
-   This requires PETSc be installed using `--with-saws` or `--download-saws`
+  This requires PETSc be installed using `--with-saws` or `--download-saws`
 
-   Requires the user have created a self-signed ssl certificate with
+  Requires the user have created a self-signed ssl certificate with
 .vb
-    saws/CA.pl  -newcert  (using the passphrase of password)
-    cat newkey.pem newcert.pem > sslclient.pem
+  saws/CA.pl  -newcert  (using the passphrase of password)
+  cat newkey.pem newcert.pem > sslclient.pem
 .ve
-    and put the resulting file in either the current directory (with the application) or in the home directory. This seems kind of
-    silly but it was all I could figure out.
+  and put the resulting file in either the current directory (with the application) or in the
+  home directory. This seems kind of silly but it was all I could figure out.
 
 .seealso: `PetscBoxRefresh()`, `PetscBoxUpload()`
 @*/
@@ -242,7 +242,7 @@ PetscErrorCode PetscBoxRefresh(MPI_Comm comm, const char refresh_token[], char a
   Options Database Key:
 . -box_refresh_token XXX - the token value
 
-  Usage Patterns:
+  Example Usage:
 .vb
     With PETSc option -box_refresh_token XXX given
     PetscBoxUpload(comm,NULL,filename);        will upload file with no user interaction

@@ -1277,10 +1277,11 @@ PetscErrorCode PetscViewerHDF5ReadAttribute(PetscViewer viewer, const char paren
   Collective
 
   Input Parameters:
-+ viewer   - The `PETSCVIEWERHDF5` viewer
-. obj      - The object whose name is used to lookup the parent dataset, relative to the current group.
-. name     - The attribute name
-- datatype - The attribute type
++ viewer       - The `PETSCVIEWERHDF5` viewer
+. obj          - The object whose name is used to lookup the parent dataset, relative to the current group.
+. name         - The attribute name
+. datatype     - The attribute type
+- defaultValue - The default attribute value
 
   Output Parameter:
 . value - The attribute value

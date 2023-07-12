@@ -50,6 +50,7 @@ PetscErrorCode PetscGetHomeDirectory(char dir[], size_t maxlen)
 
   Level: developer
 
+.seealso: `PetscFOpen()`
 @*/
 PetscErrorCode PetscFixFilename(const char filein[], char fileout[])
 {

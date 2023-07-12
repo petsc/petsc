@@ -117,9 +117,10 @@ PetscErrorCode PetscDrawAxisSetColors(PetscDrawAxis axis, int ac, int tc, int cc
   Logically Collective
 
   Input Parameters:
-+ axis          - the axis
-. top           - the label at the top of the image
-- xlabel,ylabel - the labes for the x and y axis
++ axis   - the axis
+. top    - the label at the top of the image
+. xlabel - the x axis label
+- ylabel - the y axis label
 
   Level: advanced
 
@@ -149,9 +150,11 @@ PetscErrorCode PetscDrawAxisSetLabels(PetscDrawAxis axis, const char top[], cons
   Logically Collective
 
   Input Parameters:
-+ axis      - the axis
-. xmin,xmax - limits in x
-- ymin,ymax - limits in y
++ axis - the axis
+. xmin - the lower x limit
+. xmax - the upper x limit
+. ymin - the lower y limit
+- ymax - the upper y limit
 
   Options Database Key:
 . -drawaxis_hold - hold the initial set of axis limits for future plotting
@@ -179,9 +182,11 @@ PetscErrorCode PetscDrawAxisSetLimits(PetscDrawAxis axis, PetscReal xmin, PetscR
   Not Collective
 
   Input Parameters:
-+ axis      - the axis
-. xmin,xmax - limits in x
-- ymin,ymax - limits in y
++ axis - the axis
+. xmin - the lower x limit
+. xmax - the upper x limit
+. ymin - the lower y limit
+- ymax - the upper y limit
 
   Level: advanced
 

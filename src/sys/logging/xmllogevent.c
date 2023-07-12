@@ -112,7 +112,7 @@ PETSC_INTERN PetscErrorCode PetscLogView_Flamegraph(PetscViewer);
   Options Database Keys:
 . -log_view :filename.xml:ascii_xml - Prints an XML summary of flop and timing information to the file
 
-  Usage:
+  Example Usage:
 .vb
       PetscInitialize(...);
       PetscLogNestedBegin();
@@ -411,7 +411,7 @@ static PetscErrorCode PetscLogEventEndNested(NestedEventId nstEvent, int t, Pets
   Options Database Keys:
 . -log_view :filename.xml:ascii_xml - Prints an XML summary of flop and timing information to the file
 
-  Usage:
+  Example Usage:
 .vb
       PetscInitialize(...);
       PetscLogNestedBegin();

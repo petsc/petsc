@@ -26,6 +26,7 @@ static EH eh = NULL;
 + comm - communicator over which error occurred
 . line - the line number of the error (indicated by __LINE__)
 . file - the file in which the error was detected (indicated by __FILE__)
+. fun  - the function name
 . mess - an error text string, usually just printed to the screen
 . n    - the generic error number
 . p    - specific error number
@@ -85,16 +86,16 @@ PetscErrorCode PetscEmacsClientErrorHandler(MPI_Comm comm, int line, const char 
   Input Parameters:
 + handler - error handler routine
 - ctx     - optional handler context that contains information needed by the handler (for
-         example file pointers for error messages etc.)
+            example file pointers for error messages etc.)
 
   Calling sequence of `handler`:
-$  PetscErrorCode handler(MPI_Comm comm, int line, char *func, char *file, PetscErrorCode n, int p, char *mess, void *ctx);
 + comm - communicator over which error occurred
-.  line - the line number of the error (indicated by __LINE__)
-.  file - the file in which the error was detected (indicated by __FILE__)
-.  n - the generic error number (see list defined in include/petscerror.h)
-.  p - `PETSC_ERROR_INITIAL` if error just detected, otherwise `PETSC_ERROR_REPEAT`
-.  mess - an error text string, usually just printed to the screen
+. line - the line number of the error (indicated by __LINE__)
+. file - the file in which the error was detected (indicated by __FILE__)
+. fun  - the function name
+. n    - the generic error number (see list defined in include/petscerror.h)
+. p    - `PETSC_ERROR_INITIAL` if error just detected, otherwise `PETSC_ERROR_REPEAT`
+. mess - an error text string, usually just printed to the screen
 - ctx  - the error handler context
 
   Options Database Keys:
@@ -112,7 +113,7 @@ $  PetscErrorCode handler(MPI_Comm comm, int line, char *func, char *file, Petsc
 
 .seealso: `PetscPopErrorHandler()`, `PetscAttachDebuggerErrorHandler()`, `PetscAbortErrorHandler()`, `PetscTraceBackErrorHandler()`, `PetscPushSignalHandler()`
 @*/
-PetscErrorCode PetscPushErrorHandler(PetscErrorCode (*handler)(MPI_Comm comm, int, const char *, const char *, PetscErrorCode, PetscErrorType, const char *, void *), void *ctx)
+PetscErrorCode PetscPushErrorHandler(PetscErrorCode (*handler)(MPI_Comm comm, int line, const char *fun, const char *file, PetscErrorCode n, PetscErrorType p, const char *mess, void *ctx), void *ctx)
 {
   EH neweh;
 
@@ -156,6 +157,7 @@ PetscErrorCode PetscPopErrorHandler(void)
   Input Parameters:
 + comm - communicator over which error occurred
 . line - the line number of the error (indicated by __LINE__)
+. fun  - the function name
 . file - the file in which the error was detected (indicated by __FILE__)
 . mess - an error text string, usually just printed to the screen
 . n    - the generic error number
@@ -179,6 +181,13 @@ $     SETERRQ(comm, number, mess)
  @*/
 PetscErrorCode PetscReturnErrorHandler(MPI_Comm comm, int line, const char *fun, const char *file, PetscErrorCode n, PetscErrorType p, const char *mess, void *ctx)
 {
+  (void)comm;
+  (void)line;
+  (void)fun;
+  (void)file;
+  (void)p;
+  (void)mess;
+  (void)ctx;
   return n;
 }
 
@@ -936,6 +945,7 @@ PETSC_EXTERN const char *PetscHIPSolverGetErrorName(hipsolverStatus_t status)
   Note:
   Does not return an error code or do error handling because it may be called from inside an error handler
 
+.seealso: `PetscErrorCode` `PetscErrorMessage()`
 @*/
 void PetscMPIErrorString(PetscMPIInt err, char *string)
 {

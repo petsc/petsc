@@ -522,8 +522,9 @@ PetscErrorCode PetscDrawLGSave(PetscDrawLG lg)
 
   Collective
 
-  Input Parameter:
-. lg - the line graph context
+  Input Parameters:
++ lg     - the line graph context
+- viewer - the viewer to view it with
 
   Level: beginner
 

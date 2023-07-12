@@ -505,6 +505,7 @@ PetscErrorCode PetscStrInList(const char str[], const char list[], char sep, Pet
 
   Level: developer
 
+.seealso: `PetscGetArchType()`
 @*/
 PetscErrorCode PetscGetPetscDir(const char *dir[])
 {
@@ -535,6 +536,7 @@ PetscErrorCode PetscGetPetscDir(const char *dir[])
   `PETSC_LIB_DIR` uses the environmental variable if it exists. `PETSC_ARCH` and `PETSC_DIR` use what
   PETSc was built with and do not use environmental variables.
 
+.seealso: `PetscStrcmp()`
 @*/
 PetscErrorCode PetscStrreplace(MPI_Comm comm, const char aa[], char b[], size_t len)
 {
@@ -638,7 +640,7 @@ PetscErrorCode PetscStrreplace(MPI_Comm comm, const char aa[], char b[], size_t 
 
   Level: intermediate
 
-.seealso: `PetscStrcmp`
+.seealso: `PetscStrcmp()`
 @*/
 PetscErrorCode PetscStrcmpAny(const char src[], PetscBool *match, const char cmp[], ...)
 {

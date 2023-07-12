@@ -28,6 +28,9 @@ PetscErrorCode PetscOptionsHelpPrintedDestroy(PetscOptionsHelpPrinted *hp)
   PetscOptionsHelpPrintedCreate - Creates an object used to manage tracking which help messages have
   been printed so they will not be printed again.
 
+  Output Parameter:
+. hp - the created object
+
   Not Collective
 
   Level: developer
@@ -107,7 +110,7 @@ static PetscInt  inoviewers = 0;
   Calling `XXXViewFromOptions` in an inner loop can be expensive.  This can appear, for example, when using
   many small subsolves.  Call this function to control viewer creation in `PetscOptionsGetViewer()`, thus removing the expensive `XXXViewFromOptions` calls.
 
-  Developer Notes;
+  Developer Notes:
   Instead of using this approach, the calls to `PetscOptionsGetViewer()` can be moved into `XXXSetFromOptions()`
 
 .seealso: [](sec_viewers), `PetscOptionsGetViewer()`, `PetscOptionsPopGetViewerOff()`

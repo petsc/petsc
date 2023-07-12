@@ -233,13 +233,14 @@ PetscErrorCode PetscObjectGetId(PetscObject obj, PetscObjectId *id)
 + obj - object
 - id  - integer ID
 
-  Output Parameter;
+  Output Parameter:
 . eq - the ids are equal
 
   Level: developer
 
   Note:
-  The object ID may be different on different processes, but object IDs are never reused so local equality implies global equality.
+  The object ID may be different on different processes, but object IDs are never reused so
+  local equality implies global equality.
 
 .seealso: `PetscObjectStateGet()`, `PetscObjectGetId()`
 @*/

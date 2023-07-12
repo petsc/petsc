@@ -93,7 +93,7 @@ PetscErrorCode PetscGoogleDriveRefresh(MPI_Comm comm, const char refresh_token[]
   Options Database Key:
 . -google_refresh_token XXX - pass the access token for the operation
 
-  Usage Patterns:
+  Example Usage:
 .vb
     With PETSc option -google_refresh_token  XXX given
     PetscGoogleDriveUpload(comm,NULL,filename);        will upload file with no user interaction

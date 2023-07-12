@@ -63,6 +63,7 @@ void SYByteSwapScalar(PetscScalar *buff, int n)
     return PETSC_ERR_SYS; \
   }
 
+// PetscClangLinter pragma disable: -fdoc*
 /*
   PetscBinaryRead - Reads from a socket, called from MATLAB
 
@@ -111,6 +112,7 @@ PetscErrorCode PetscBinaryRead(int fd, void *p, int n, int *dummy, PetscDataType
   return 0;
 }
 
+// PetscClangLinter pragma disable: -fdoc.*
 /*
     PetscBinaryWrite - Writes to a socket, called from MATLAB
 

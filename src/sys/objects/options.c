@@ -278,6 +278,8 @@ PetscErrorCode PetscOptionsDestroyDefault(void)
 . valid - `PETSC_TRUE` if a valid key
 
   Level: intermediate
+
+.seealso: `PetscOptionsCreate()`, `PetscOptionsInsert()`
 @*/
 PetscErrorCode PetscOptionsValidKey(const char key[], PetscBool *valid)
 {
@@ -2018,16 +2020,21 @@ PetscErrorCode PetscOptionsLeftGet(PetscOptions options, PetscInt *N, char **nam
 
   Input Parameters:
 + options - options database, use `NULL` for default global database
+. N       - count of options not used
 . names   - names of options not used
 - values  - values of options not used
 
   Level: advanced
+
+  Notes:
+  The user should pass the same pointer to `N` as they did when calling `PetscOptionsLeftGet()`
 
 .seealso: `PetscOptionsAllUsed()`, `PetscOptionsLeft()`, `PetscOptionsLeftGet()`
 @*/
 PetscErrorCode PetscOptionsLeftRestore(PetscOptions options, PetscInt *N, char **names[], char **values[])
 {
   PetscFunctionBegin;
+  (void)options;
   if (N) PetscValidIntPointer(N, 2);
   if (names) PetscValidPointer(names, 3);
   if (values) PetscValidPointer(values, 4);
@@ -2094,27 +2101,24 @@ PetscErrorCode PetscOptionsMonitorDefault(const char name[], const char value[],
 
   Input Parameters:
 + monitor        - pointer to function (if this is `NULL`, it turns off monitoring
-. mctx           - [optional] context for private data for the
-             monitor routine (use `NULL` if no context is desired)
-- monitordestroy - [optional] routine that frees monitor context
-          (may be `NULL`)
+. mctx           - [optional] context for private data for the monitor routine (use `NULL` if
+                   no context is desired)
+- monitordestroy - [optional] routine that frees monitor context (may be `NULL`)
 
-  Calling sequence:
-$   PetscErrorCode monitor(const char name[], const char value[], void *mctx)
-+ name  - option name string
-. value - option value string
+  Calling sequence of `monitor`:
++ name   - option name string
+. value  - option value string
 . source - option source
-- mctx  - optional monitoring context, as set by `PetscOptionsMonitorSet()`
+- mctx   - optional monitoring context, as set by `PetscOptionsMonitorSet()`
 
-  Calling Sequence of `monitordestroy`:
-$  PetscErrorCode monitordestroy(void *cctx)
-
-  Options Database Key:
-   See `PetscInitialize()` for options related to option database monitoring.
+  Calling sequence of `monitordestroy`:
+. mctx - [optional] pointer to context to destroy with
 
   Level: intermediate
 
   Notes:
+  See `PetscInitialize()` for options related to option database monitoring.
+
   The default is to do nothing.  To print the name and value of options
   being inserted into the database, use `PetscOptionsMonitorDefault()` as the monitoring routine,
   with a null monitoring context.
@@ -2125,7 +2129,7 @@ $  PetscErrorCode monitordestroy(void *cctx)
 
 .seealso: `PetscOptionsMonitorDefault()`, `PetscInitialize()`
 @*/
-PetscErrorCode PetscOptionsMonitorSet(PetscErrorCode (*monitor)(const char name[], const char value[], PetscOptionSource, void *), void *mctx, PetscErrorCode (*monitordestroy)(void **))
+PetscErrorCode PetscOptionsMonitorSet(PetscErrorCode (*monitor)(const char name[], const char value[], PetscOptionSource source, void *mctx), void *mctx, PetscErrorCode (*monitordestroy)(void **mctx))
 {
   PetscOptions options = defaultoptions;
 
@@ -2634,7 +2638,7 @@ PetscErrorCode PetscOptionsGetReal(PetscOptions options, const char pre[], const
 
   Level: beginner
 
-  Usage:
+  Example Usage:
   A complex number 2+3i must be specified with NO spaces
 
   Note:
@@ -2734,17 +2738,6 @@ PetscErrorCode PetscOptionsGetString(PetscOptions options, const char pre[], con
     else PetscCall(PetscArrayzero(string, len));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-char *PetscOptionsGetStringMatlab(PetscOptions options, const char pre[], const char name[])
-{
-  const char *value;
-  PetscBool   flag;
-
-  PetscFunctionBegin;
-  if (PetscOptionsFindPair(options, pre, name, &value, &flag)) PetscFunctionReturn(NULL);
-  if (flag) PetscFunctionReturn((char *)value);
-  PetscFunctionReturn(NULL);
 }
 
 /*@C

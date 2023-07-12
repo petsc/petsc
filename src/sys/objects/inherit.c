@@ -782,7 +782,7 @@ PetscErrorCode PetscObjectComposeFunction_Private(PetscObject obj, const char na
 
   Synopsis:
   #include <petscsys.h>
-  PetscErrorCode PetscObjectQueryFunction(PetscObject obj,const char name[],void (**fptr)(void))
+  PetscErrorCode PetscObjectQueryFunction(PetscObject obj, const char name[], void (**fptr)(void))
 
   Logically Collective
 
@@ -792,18 +792,18 @@ PetscErrorCode PetscObjectComposeFunction_Private(PetscObject obj, const char na
 - name - name associated with the child function
 
   Output Parameter:
-.  fptr - function pointer
+. fptr - function pointer
 
   Level: advanced
 
 .seealso: `PetscObjectComposeFunction()`, `PetscFunctionListFind()`, `PetscObjectCompose()`, `PetscObjectQuery()`, `PetscObject`
 M*/
-PETSC_EXTERN PetscErrorCode PetscObjectQueryFunction_Private(PetscObject obj, const char name[], void (**ptr)(void))
+PETSC_EXTERN PetscErrorCode PetscObjectQueryFunction_Private(PetscObject obj, const char name[], void (**fptr)(void))
 {
   PetscFunctionBegin;
   PetscValidHeader(obj, 1);
   PetscValidCharPointer(name, 2);
-  PetscCall(PetscFunctionListFind(obj->qlist, name, ptr));
+  PetscCall(PetscFunctionListFind(obj->qlist, name, fptr));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -938,10 +938,7 @@ PetscErrorCode PetscContainerSetUserDestroy(PetscContainer obj, PetscErrorCode (
 PetscClassId PETSC_CONTAINER_CLASSID;
 
 /*@C
-  PetscContainerCreate - Creates a PETSc object that has room to hold
-  a single pointer. This allows one to attach any type of data (accessible
-  through a pointer) with the `PetscObjectCompose()` function to a `PetscObject`.
-  The data item itself is attached by a call to `PetscContainerSetPointer()`.
+  PetscContainerCreate - Creates a PETSc object that has room to hold a single pointer.
 
   Collective
 
@@ -952,6 +949,11 @@ PetscClassId PETSC_CONTAINER_CLASSID;
 . container - the container created
 
   Level: advanced
+
+  Notes:
+  This allows one to attach any type of data (accessible through a pointer) with the
+  `PetscObjectCompose()` function to a `PetscObject`. The data item itself is attached by a
+  call to `PetscContainerSetPointer()`.
 
 .seealso: `PetscContainerDestroy()`, `PetscContainerSetPointer()`, `PetscContainerGetPointer()`, `PetscObjectCompose()`, `PetscObjectQuery()`,
           `PetscContainerSetUserDestroy()`, `PetscObject`

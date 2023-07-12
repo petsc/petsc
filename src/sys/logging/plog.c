@@ -352,7 +352,7 @@ PetscErrorCode PetscLogIsActive(PetscBool *isActive)
 . -log_view [viewertype:filename:viewerformat] - Prints summary of flop and timing information to the
                   screen (for code configured with --with-log=1 (which is the default))
 
-  Usage:
+  Example Usage:
 .vb
       PetscInitialize(...);
       PetscLogDefaultBegin();
@@ -385,7 +385,7 @@ PetscErrorCode PetscLogDefaultBegin(void)
   Options Database Key:
 . -log_all - Prints extensive log information
 
-  Usage:
+  Example Usage:
 .vb
      PetscInitialize(...);
      PetscLogAllBegin();
@@ -537,7 +537,7 @@ PetscErrorCode PetscLogStageRegister(const char sname[], PetscLogStage *stage)
   Input Parameter:
 . stage - The stage on which to log
 
-  Usage:
+  Example Usage:
   If the option -log_view is used to run the program containing the
   following code, then 2 sets of summary data will be printed during
   PetscFinalize().
@@ -577,7 +577,7 @@ PetscErrorCode PetscLogStagePush(PetscLogStage stage)
 
   Not Collective
 
-  Usage:
+  Example Usage:
   If the option -log_view is used to run the program containing the
   following code, then 2 sets of summary data will be printed during
   PetscFinalize().
@@ -752,7 +752,7 @@ PetscErrorCode PetscLogStageGetId(const char name[], PetscLogStage *stage)
   Output Parameter:
 . event - The event id for use with `PetscLogEventBegin()` and `PetscLogEventEnd()`.
 
-  Example of Usage:
+  Example Usage:
 .vb
       PetscLogEvent USER_EVENT;
       PetscClassId classid;
@@ -900,7 +900,7 @@ PetscErrorCode PetscLogEventExcludeClass(PetscClassId classid)
   Input Parameter:
 . event - The event id
 
-  Usage:
+  Example Usage:
 .vb
       PetscLogEventDeactivate(VEC_SetValues);
         [code where you do not want to log VecSetValues()]
@@ -936,7 +936,7 @@ PetscErrorCode PetscLogEventActivate(PetscLogEvent event)
   Input Parameter:
 . event - The event id
 
-  Usage:
+  Example Usage:
 .vb
       PetscLogEventDeactivate(VEC_SetValues);
         [code where you do not want to log VecSetValues()]
@@ -972,7 +972,7 @@ PetscErrorCode PetscLogEventDeactivate(PetscLogEvent event)
   Input Parameter:
 . event - The event id
 
-  Usage:
+  Example Usage:
 .vb
       PetscLogEventDeactivatePush(VEC_SetValues);
         [code where you do not want to log VecSetValues()]
@@ -1008,7 +1008,7 @@ PetscErrorCode PetscLogEventDeactivatePush(PetscLogEvent event)
   Input Parameter:
 . event - The event id
 
-  Usage:
+  Example Usage:
 .vb
       PetscLogEventDeactivatePush(VEC_SetValues);
         [code where you do not want to log VecSetValues()]
@@ -1115,103 +1115,106 @@ PetscErrorCode PetscLogEventDeactivateClass(PetscClassId classid)
 }
 
 /*MC
-   PetscLogEventSync - Synchronizes the beginning of a user event.
+  PetscLogEventSync - Synchronizes the beginning of a user event.
 
-   Synopsis:
-   #include <petsclog.h>
-   PetscErrorCode PetscLogEventSync(int e,MPI_Comm comm)
+  Synopsis:
+  #include <petsclog.h>
+  PetscErrorCode PetscLogEventSync(int e, MPI_Comm comm)
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  e - integer associated with the event obtained from PetscLogEventRegister()
--  comm - an MPI communicator
+  Input Parameters:
++ e    - integer associated with the event obtained from PetscLogEventRegister()
+- comm - an MPI communicator
 
-   Usage:
+  Example Usage:
 .vb
-     PetscLogEvent USER_EVENT;
-     PetscLogEventRegister("User event",0,&USER_EVENT);
-     PetscLogEventSync(USER_EVENT,PETSC_COMM_WORLD);
-     PetscLogEventBegin(USER_EVENT,0,0,0,0);
-        [code segment to monitor]
-     PetscLogEventEnd(USER_EVENT,0,0,0,0);
+  PetscLogEvent USER_EVENT;
+
+  PetscLogEventRegister("User event", 0, &USER_EVENT);
+  PetscLogEventSync(USER_EVENT, PETSC_COMM_WORLD);
+  PetscLogEventBegin(USER_EVENT, 0, 0, 0, 0);
+  [code segment to monitor]
+  PetscLogEventEnd(USER_EVENT, 0, 0, 0 , 0);
 .ve
 
-   Level: developer
+  Level: developer
 
-   Note:
-   This routine should be called only if there is not a
-   `PetscObject` available to pass to `PetscLogEventBegin()`.
+  Note:
+  This routine should be called only if there is not a `PetscObject` available to pass to
+  `PetscLogEventBegin()`.
 
 .seealso: [](ch_profiling), `PetscLogEventRegister()`, `PetscLogEventBegin()`, `PetscLogEventEnd()`
 M*/
 
 /*MC
-   PetscLogEventBegin - Logs the beginning of a user event.
+  PetscLogEventBegin - Logs the beginning of a user event.
 
-   Synopsis:
-   #include <petsclog.h>
-   PetscErrorCode PetscLogEventBegin(int e,PetscObject o1,PetscObject o2,PetscObject o3,PetscObject o4)
+  Synopsis:
+  #include <petsclog.h>
+  PetscErrorCode PetscLogEventBegin(int e, PetscObject o1, PetscObject o2, PetscObject o3, PetscObject o4)
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  e - integer associated with the event obtained from PetscLogEventRegister()
--  o1,o2,o3,o4 - objects associated with the event, or 0
+  Input Parameters:
++ e - integer associated with the event obtained from PetscLogEventRegister()
+- o1,o2,o3,o4 - objects associated with the event, or 0
 
-   Fortran Synopsis:
-   void PetscLogEventBegin(int e,PetscErrorCode ierr)
+  Fortran Synopsis:
+  void PetscLogEventBegin(int e, PetscErrorCode ierr)
 
-   Usage:
+  Example Usage:
 .vb
-     PetscLogEvent USER_EVENT;
-     PetscLogDouble user_event_flops;
-     PetscLogEventRegister("User event",0,&USER_EVENT);
-     PetscLogEventBegin(USER_EVENT,0,0,0,0);
-        [code segment to monitor]
-        PetscLogFlops(user_event_flops);
-     PetscLogEventEnd(USER_EVENT,0,0,0,0);
+  PetscLogEvent USER_EVENT;
+
+  PetscLogDouble user_event_flops;
+  PetscLogEventRegister("User event",0, &USER_EVENT);
+  PetscLogEventBegin(USER_EVENT, 0, 0, 0, 0);
+  [code segment to monitor]
+  PetscLogFlops(user_event_flops);
+  PetscLogEventEnd(USER_EVENT, 0, 0, 0, 0);
 .ve
 
-   Level: intermediate
+  Level: intermediate
 
-   Developer Note:
-     `PetscLogEventBegin()` and `PetscLogEventBegin()` return error codes instead of explicitly handling the
-     errors that occur in the macro directly because other packages that use this macros have used them in their
-     own functions or methods that do not return error codes and it would be disruptive to change the current
-     behavior.
+  Developer Note:
+  `PetscLogEventBegin()` and `PetscLogEventBegin()` return error codes instead of explicitly
+  handling the errors that occur in the macro directly because other packages that use this
+  macros have used them in their own functions or methods that do not return error codes and it
+  would be disruptive to change the current behavior.
 
 .seealso: [](ch_profiling), `PetscLogEventRegister()`, `PetscLogEventEnd()`, `PetscLogFlops()`
 M*/
 
 /*MC
-   PetscLogEventEnd - Log the end of a user event.
+  PetscLogEventEnd - Log the end of a user event.
 
-   Synopsis:
-   #include <petsclog.h>
-   PetscErrorCode PetscLogEventEnd(int e,PetscObject o1,PetscObject o2,PetscObject o3,PetscObject o4)
+  Synopsis:
+  #include <petsclog.h>
+  PetscErrorCode PetscLogEventEnd(int e, PetscObject o1, PetscObject o2, PetscObject o3, PetscObject o4)
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  e - integer associated with the event obtained with PetscLogEventRegister()
--  o1,o2,o3,o4 - objects associated with the event, or 0
+  Input Parameters:
++ e - integer associated with the event obtained with PetscLogEventRegister()
+- o1,o2,o3,o4 - objects associated with the event, or 0
 
-   Fortran Synopsis:
-   void PetscLogEventEnd(int e,PetscErrorCode ierr)
+  Fortran Synopsis:
+  void PetscLogEventEnd(int e, PetscErrorCode ierr)
 
-   Usage:
+  Example Usage:
 .vb
-     PetscLogEvent USER_EVENT;
-     PetscLogDouble user_event_flops;
-     PetscLogEventRegister("User event",0,&USER_EVENT,);
-     PetscLogEventBegin(USER_EVENT,0,0,0,0);
-        [code segment to monitor]
-        PetscLogFlops(user_event_flops);
-     PetscLogEventEnd(USER_EVENT,0,0,0,0);
+  PetscLogEvent USER_EVENT;
+
+  PetscLogDouble user_event_flops;
+  PetscLogEventRegister("User event", 0, &USER_EVENT);
+  PetscLogEventBegin(USER_EVENT, 0, 0, 0, 0);
+  [code segment to monitor]
+  PetscLogFlops(user_event_flops);
+  PetscLogEventEnd(USER_EVENT, 0, 0, 0, 0);
 .ve
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: [](ch_profiling), `PetscLogEventRegister()`, `PetscLogEventBegin()`, `PetscLogFlops()`
 M*/
@@ -1300,13 +1303,13 @@ PetscErrorCode PetscLogEventResume_Internal(PetscLogEvent event)
   Input Parameter:
 . sname - an optional file name
 
-  Usage:
+  Example Usage:
 .vb
-     PetscInitialize(...);
-     PetscLogDefaultBegin(); or PetscLogAllBegin();
-     ... code ...
-     PetscLogDump(filename);
-     PetscFinalize();
+  PetscInitialize(...);
+  PetscLogDefaultBegin(); or PetscLogAllBegin();
+  ... code ...
+  PetscLogDump(filename);
+  PetscFinalize();
 .ve
 
   Level: advanced
@@ -1384,7 +1387,7 @@ PetscErrorCode PetscLogDump(const char sname[])
   PetscLogView_Detailed - Each process prints the times for its own events
 
 */
-PetscErrorCode PetscLogView_Detailed(PetscViewer viewer)
+static PetscErrorCode PetscLogView_Detailed(PetscViewer viewer)
 {
   PetscStageLog       stageLog;
   PetscEventPerfInfo *eventInfo = NULL, *stageInfo = NULL;
@@ -1465,7 +1468,7 @@ PetscErrorCode PetscLogView_Detailed(PetscViewer viewer)
 /*
   PetscLogView_CSV - Each process prints the times for its own events in Comma-Separated Value Format
 */
-PetscErrorCode PetscLogView_CSV(PetscViewer viewer)
+static PetscErrorCode PetscLogView_CSV(PetscViewer viewer)
 {
   PetscStageLog       stageLog;
   PetscEventPerfInfo *eventInfo = NULL;
@@ -1579,6 +1582,8 @@ static PetscErrorCode PetscLogViewWarnNoGpuAwareMpi(MPI_Comm comm, FILE *fd)
   PetscCall(PetscFPrintf(comm, fd, "      ##########################################################\n\n\n"));
   PetscFunctionReturn(PETSC_SUCCESS);
   #else
+  (void)comm;
+  (void)fd;
   return PETSC_SUCCESS;
   #endif
 }
@@ -1586,7 +1591,6 @@ static PetscErrorCode PetscLogViewWarnNoGpuAwareMpi(MPI_Comm comm, FILE *fd)
 static PetscErrorCode PetscLogViewWarnGpuTime(MPI_Comm comm, FILE *fd)
 {
   #if defined(PETSC_HAVE_DEVICE)
-
   PetscFunctionBegin;
   if (!PetscLogGpuTimeFlag || petsc_gflops == 0) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscFPrintf(comm, fd, "\n\n"));
@@ -1603,11 +1607,13 @@ static PetscErrorCode PetscLogViewWarnGpuTime(MPI_Comm comm, FILE *fd)
   PetscCall(PetscFPrintf(comm, fd, "      ##########################################################\n\n\n"));
   PetscFunctionReturn(PETSC_SUCCESS);
   #else
+  (void)comm;
+  (void)fd;
   return PETSC_SUCCESS;
   #endif
 }
 
-PetscErrorCode PetscLogView_Default(PetscViewer viewer)
+static PetscErrorCode PetscLogView_Default(PetscViewer viewer)
 {
   FILE               *fd;
   PetscLogDouble      zero = 0.0;
@@ -2293,7 +2299,7 @@ PetscErrorCode PetscLogViewFromOptions(void)
   Not Collective
 
   Output Parameter:
-   flops - number of floating point operations
+. flops - number of floating point operations
 
   Level: intermediate
 
@@ -2327,128 +2333,129 @@ PetscErrorCode PetscLogObjectState(PetscObject obj, const char format[], ...)
 }
 
 /*MC
-   PetscLogFlops - Adds floating point operations to the global counter.
+  PetscLogFlops - Adds floating point operations to the global counter.
 
-   Synopsis:
-   #include <petsclog.h>
-   PetscErrorCode PetscLogFlops(PetscLogDouble f)
+  Synopsis:
+  #include <petsclog.h>
+  PetscErrorCode PetscLogFlops(PetscLogDouble f)
 
-   Not Collective
+  Not Collective
 
-   Input Parameter:
-.  f - flop counter
+  Input Parameter:
+. f - flop counter
 
-   Usage:
+  Example Usage:
 .vb
-     PetscLogEvent USER_EVENT;
-     PetscLogEventRegister("User event",0,&USER_EVENT);
-     PetscLogEventBegin(USER_EVENT,0,0,0,0);
-        [code segment to monitor]
-        PetscLogFlops(user_flops)
-     PetscLogEventEnd(USER_EVENT,0,0,0,0);
+  PetscLogEvent USER_EVENT;
+
+  PetscLogEventRegister("User event", 0, &USER_EVENT);
+  PetscLogEventBegin(USER_EVENT, 0, 0, 0, 0);
+  [code segment to monitor]
+  PetscLogFlops(user_flops)
+  PetscLogEventEnd(USER_EVENT, 0, 0, 0, 0);
 .ve
 
-   Level: intermediate
+  Level: intermediate
 
-   Note:
-   A global counter logs all PETSc flop counts.  The user can use
-   PetscLogFlops() to increment this counter to include flops for the
-   application code.
+  Note:
+   A global counter logs all PETSc flop counts. The user can use PetscLogFlops() to increment
+   this counter to include flops for the application code.
 
 .seealso: [](ch_profiling), `PetscLogGPUFlops()`, `PetscLogEventRegister()`, `PetscLogEventBegin()`, `PetscLogEventEnd()`, `PetscGetFlops()`
 M*/
 
 /*MC
-   PetscPreLoadBegin - Begin a segment of code that may be preloaded (run twice)
-    to get accurate timings
+  PetscPreLoadBegin - Begin a segment of code that may be preloaded (run twice) to get accurate
+  timings
 
-   Synopsis:
-   #include <petsclog.h>
-   void PetscPreLoadBegin(PetscBool  flag,char *name);
+  Synopsis:
+  #include <petsclog.h>
+  void PetscPreLoadBegin(PetscBool flag, char *name);
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+   flag - `PETSC_TRUE` to run twice, `PETSC_FALSE` to run once, may be overridden
-           with command line option -preload true or -preload false
--   name - name of first stage (lines of code timed separately with `-log_view`) to
-           be preloaded
+  Input Parameters:
++ flag - `PETSC_TRUE` to run twice, `PETSC_FALSE` to run once, may be overridden with command
+         line option `-preload true|false`
+- name - name of first stage (lines of code timed separately with `-log_view`) to be preloaded
 
-   Usage:
+  Example Usage:
 .vb
-     PetscPreLoadBegin(PETSC_TRUE,"first stage);
-       lines of code
-       PetscPreLoadStage("second stage");
-       lines of code
-     PetscPreLoadEnd();
+  PetscPreLoadBegin(PETSC_TRUE, "first stage");
+  // lines of code
+  PetscPreLoadStage("second stage");
+  // lines of code
+  PetscPreLoadEnd();
 .ve
 
-   Level: intermediate
+  Level: intermediate
 
-   Note:
-    Only works in C/C++, not Fortran
+  Note:
+  Only works in C/C++, not Fortran
 
-     Flags available within the macro.
-+    PetscPreLoadingUsed - true if we are or have done preloading
-.    PetscPreLoadingOn - true if it is CURRENTLY doing preload
-.    PetscPreLoadIt - 0 for the first computation (with preloading turned off it is only 0) 1 for the second
--    PetscPreLoadMax - number of times it will do the computation, only one when preloading is turned on
-     The first two variables are available throughout the program, the second two only between the `PetscPreLoadBegin()`
-     and `PetscPreLoadEnd()`
+  Flags available within the macro\:
++ PetscPreLoadingUsed - `PETSC_TRUE` if we are or have done preloading
+. PetscPreLoadingOn   - `PETSC_TRUE` if it is CURRENTLY doing preload
+. PetscPreLoadIt      - `0` for the first computation (with preloading turned off it is only
+                        `0`) `1`  for the second
+- PetscPreLoadMax     - number of times it will do the computation, only one when preloading is
+                        turned on
+
+  The first two variables are available throughout the program, the second two only between the
+  `PetscPreLoadBegin()` and `PetscPreLoadEnd()`
 
 .seealso: [](ch_profiling), `PetscLogEventRegister()`, `PetscLogEventBegin()`, `PetscLogEventEnd()`, `PetscPreLoadEnd()`, `PetscPreLoadStage()`
 M*/
 
 /*MC
-   PetscPreLoadEnd - End a segment of code that may be preloaded (run twice)
-    to get accurate timings
+  PetscPreLoadEnd - End a segment of code that may be preloaded (run twice) to get accurate
+  timings
 
-   Synopsis:
-   #include <petsclog.h>
-   void PetscPreLoadEnd(void);
+  Synopsis:
+  #include <petsclog.h>
+  void PetscPreLoadEnd(void);
 
-   Not Collective
+  Not Collective
 
-   Usage:
+  Example Usage:
 .vb
-     PetscPreLoadBegin(PETSC_TRUE,"first stage);
-       lines of code
-       PetscPreLoadStage("second stage");
-       lines of code
-     PetscPreLoadEnd();
+  PetscPreLoadBegin(PETSC_TRUE, "first stage");
+  // lines of code
+  PetscPreLoadStage("second stage");
+  // lines of code
+  PetscPreLoadEnd();
 .ve
 
-   Level: intermediate
+  Level: intermediate
 
-   Note:
-    Only works in C/C++ not fortran
+  Note:
+  Only works in C/C++ not fortran
 
 .seealso: [](ch_profiling), `PetscLogEventRegister()`, `PetscLogEventBegin()`, `PetscLogEventEnd()`, `PetscPreLoadBegin()`, `PetscPreLoadStage()`
 M*/
 
 /*MC
-   PetscPreLoadStage - Start a new segment of code to be timed separately.
-    to get accurate timings
+  PetscPreLoadStage - Start a new segment of code to be timed separately to get accurate timings
 
-   Synopsis:
-   #include <petsclog.h>
-   void PetscPreLoadStage(char *name);
+  Synopsis:
+  #include <petsclog.h>
+  void PetscPreLoadStage(char *name);
 
-   Not Collective
+  Not Collective
 
-   Usage:
+  Example Usage:
 .vb
-     PetscPreLoadBegin(PETSC_TRUE,"first stage);
-       lines of code
-       PetscPreLoadStage("second stage");
-       lines of code
-     PetscPreLoadEnd();
+  PetscPreLoadBegin(PETSC_TRUE,"first stage");
+  // lines of code
+  PetscPreLoadStage("second stage");
+  // lines of code
+  PetscPreLoadEnd();
 .ve
 
-   Level: intermediate
+  Level: intermediate
 
-   Note:
-    Only works in C/C++ not fortran
+  Note:
+  Only works in C/C++ not fortran
 
 .seealso: [](ch_profiling), `PetscLogEventRegister()`, `PetscLogEventBegin()`, `PetscLogEventEnd()`, `PetscPreLoadBegin()`, `PetscPreLoadEnd()`
 M*/
@@ -2469,19 +2476,20 @@ static PetscErrorCode PetscLogGpuTime_Off(void)
 }
 
 /*@C
-     PetscLogGpuTime - turn on the logging of GPU time for GPU kernels
+  PetscLogGpuTime - turn on the logging of GPU time for GPU kernels
 
   Options Database Key:
-.   -log_view_gpu_time - provide the GPU times in the -log_view output
+. -log_view_gpu_time - provide the GPU times in the `-log_view` output
 
-   Level: advanced
+  Level: advanced
 
   Notes:
-    Turning on the timing of the
-    GPU kernels can slow down the entire computation and should only be used when studying the performance
-    of operations on GPU such as vector operations and matrix-vector operations.
+  Turning on the timing of the GPU kernels can slow down the entire computation and should only
+  be used when studying the performance of operations on GPU such as vector operations and
+  matrix-vector operations.
 
-    This routine should only be called once near the beginning of the program. Once it is started it cannot be turned off.
+  This routine should only be called once near the beginning of the program. Once it is started
+  it cannot be turned off.
 
 .seealso: [](ch_profiling), `PetscLogView()`, `PetscLogGpuFlops()`, `PetscLogGpuTimeEnd()`, `PetscLogGpuTimeBegin()`
 @*/
@@ -2498,24 +2506,31 @@ PetscErrorCode PetscLogGpuTime(void)
   Level: intermediate
 
   Notes:
-    When CUDA or HIP is enabled, the timer is run on the GPU, it is a separate logging of time devoted to GPU computations (excluding kernel launch times).
+  When CUDA or HIP is enabled, the timer is run on the GPU, it is a separate logging of time
+  devoted to GPU computations (excluding kernel launch times).
 
-    When CUDA or HIP is not available, the timer is run on the CPU, it is a separate logging of time devoted to GPU computations (including kernel launch times).
+  When CUDA or HIP is not available, the timer is run on the CPU, it is a separate logging of
+  time devoted to GPU computations (including kernel launch times).
 
-    There is no need to call WaitForCUDA() or WaitForHIP() between `PetscLogGpuTimeBegin()` and `PetscLogGpuTimeEnd()`
+  There is no need to call WaitForCUDA() or WaitForHIP() between `PetscLogGpuTimeBegin()` and
+  `PetscLogGpuTimeEnd()`
 
-    This timer should NOT include times for data transfers between the GPU and CPU, nor setup actions such as allocating space.
+  This timer should NOT include times for data transfers between the GPU and CPU, nor setup
+  actions such as allocating space.
 
-    The regular logging captures the time for data transfers and any CPU activities during the event
-
-    It is used to compute the flop rate on the GPU as it is actively engaged in running a kernel.
+  The regular logging captures the time for data transfers and any CPU activities during the
+  event. It is used to compute the flop rate on the GPU as it is actively engaged in running a
+  kernel.
 
   Developer Notes:
-    The GPU event timer captures the execution time of all the kernels launched in the default stream by the CPU between `PetscLogGpuTimeBegin()` and `PetsLogGpuTimeEnd()`.
+  The GPU event timer captures the execution time of all the kernels launched in the default
+  stream by the CPU between `PetscLogGpuTimeBegin()` and `PetsLogGpuTimeEnd()`.
 
-    `PetscLogGpuTimeBegin()` and `PetsLogGpuTimeEnd()` insert the begin and end events into the default stream (stream 0). The device will record a time stamp for the
-    event when it reaches that event in the stream. The function xxxEventSynchronize() is called in `PetsLogGpuTimeEnd()` to block CPU execution,
-    but not continued GPU execution, until the timer event is recorded.
+  `PetscLogGpuTimeBegin()` and `PetsLogGpuTimeEnd()` insert the begin and end events into the
+  default stream (stream 0). The device will record a time stamp for the event when it reaches
+  that event in the stream. The function xxxEventSynchronize() is called in
+  `PetsLogGpuTimeEnd()` to block CPU execution, but not continued GPU execution, until the
+  timer event is recorded.
 
 .seealso: [](ch_profiling), `PetscLogView()`, `PetscLogGpuFlops()`, `PetscLogGpuTimeEnd()`, `PetscLogGpuTime()`
 @*/
@@ -2614,20 +2629,20 @@ PETSC_INTERN PetscErrorCode PetscLogEventBeginMPE(PetscLogEvent, int, PetscObjec
 PETSC_INTERN PetscErrorCode PetscLogEventEndMPE(PetscLogEvent, int, PetscObject, PetscObject, PetscObject, PetscObject);
 
 /*@C
-   PetscLogMPEBegin - Turns on MPE logging of events. This creates large log files
-   and slows the program down.
+  PetscLogMPEBegin - Turns on MPE logging of events. This creates large log files and slows the
+  program down.
 
-   Collective over `PETSC_COMM_WORLD`
+  Collective over `PETSC_COMM_WORLD`
 
-   Options Database Key:
+  Options Database Key:
 . -log_mpe - Prints extensive log information
 
-   Level: advanced
+  Level: advanced
 
-   Note:
-   A related routine is `PetscLogDefaultBegin()` (with the options key -log_view), which is
-   intended for production runs since it logs only flop rates and object
-   creation (and should not significantly slow the programs).
+  Note:
+  A related routine is `PetscLogDefaultBegin()` (with the options key `-log_view`), which is
+  intended for production runs since it logs only flop rates and object creation (and should
+  not significantly slow the programs).
 
 .seealso: [](ch_profiling), `PetscLogDump()`, `PetscLogDefaultBegin()`, `PetscLogAllBegin()`, `PetscLogEventActivate()`,
           `PetscLogEventDeactivate()`
@@ -2649,11 +2664,14 @@ PetscErrorCode PetscLogMPEBegin(void)
 }
 
 /*@C
-   PetscLogMPEDump - Dumps the MPE logging info to file for later use with Jumpshot.
+  PetscLogMPEDump - Dumps the MPE logging info to file for later use with Jumpshot.
 
-   Collective over `PETSC_COMM_WORLD`
+  Input Parameter:
+. sname - The filename to dump to
 
-   Level: advanced
+  Collective over `PETSC_COMM_WORLD`
+
+  Level: advanced
 
 .seealso: [](ch_profiling), `PetscLogDump()`, `PetscLogAllBegin()`, `PetscLogMPEBegin()`
 @*/

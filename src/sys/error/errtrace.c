@@ -14,6 +14,7 @@
   Input Parameters:
 + comm - communicator over which error occurred
 . line - the line number of the error (indicated by __LINE__)
+. fun  - the function name
 . file - the file in which the error was detected (indicated by __FILE__)
 . mess - an error text string, usually just printed to the screen
 . n    - the generic error number
@@ -29,6 +30,13 @@
  @*/
 PetscErrorCode PetscIgnoreErrorHandler(MPI_Comm comm, int line, const char *fun, const char *file, PetscErrorCode n, PetscErrorType p, const char *mess, void *ctx)
 {
+  (void)comm;
+  (void)line;
+  (void)fun;
+  (void)file;
+  (void)p;
+  (void)mess;
+  (void)ctx;
   return n;
 }
 
@@ -141,6 +149,7 @@ PETSC_EXTERN PetscErrorCode PetscOptionsViewError(void);
   Input Parameters:
 + comm - communicator over which error occurred
 . line - the line number of the error (indicated by __LINE__)
+. fun  - the function name
 . file - the file in which the error was detected (indicated by __FILE__)
 . mess - an error text string, usually just printed to the screen
 . n    - the generic error number
@@ -168,6 +177,7 @@ PetscErrorCode PetscTraceBackErrorHandler(MPI_Comm comm, int line, const char *f
   PetscBool      flg1 = PETSC_FALSE, flg2 = PETSC_FALSE, flg3 = PETSC_FALSE;
   PetscMPIInt    rank = 0;
 
+  (void)ctx;
   if (comm != PETSC_COMM_SELF) MPI_Comm_rank(comm, &rank);
 
   if (rank == 0 && (!PetscCIEnabledPortableErrorOutput || PetscGlobalRank == 0)) {

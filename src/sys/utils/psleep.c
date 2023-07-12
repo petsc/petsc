@@ -21,8 +21,9 @@
   Level: intermediate
 
   Note:
-  If s is negative waits for keyboard input
+  If `s` is negative waits for keyboard input
 
+.seealso: `PetscTime()`
 @*/
 PetscErrorCode PetscSleep(PetscReal s)
 {

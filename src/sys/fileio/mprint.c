@@ -76,23 +76,25 @@ PetscErrorCode PetscFormatConvertGetSize(const char *format, size_t *size)
 }
 
 /*@C
-  PetscFormatConvert - converts %g to [|%g|] so that `PetscVSNPrintf()` can ensure all %g formatted numbers have a decimal point when printed. The
-  decimal point is then used by the `petscdiff` script so that differences in floating point number output is ignored in the test harness.
+  PetscFormatConvert - converts %g to [|%g|] so that `PetscVSNPrintf()` can ensure all %g formatted numbers have a decimal point when printed.
 
   No Fortran Support
 
-  Input Parameters:
-+ format - the PETSc format string
--   size - the length of newformat, you can use `PetscFormatConvertGetSize()` to compute the needed size
+  Input Parameter:
+. format - the PETSc format string
 
   Output Parameter:
-. newformat - the new format
+. newformat - the formatted string
 
   Level: developer
 
   Note:
-  Deprecated usage also converts the `%D` to `%d` for 32-bit PETSc indices and to `%lld` for 64-bit PETSc indices. This feature is no
-  longer used in PETSc code instead use %" PetscInt_FMT " in the format string
+  The decimal point is then used by the `petscdiff` script so that differences in floating
+  point number output is ignored in the test harness.
+
+  Deprecated usage also converts the `%D` to `%d` for 32-bit PETSc indices and to `%lld` for
+  64-bit PETSc indices. This feature is no longer used in PETSc code instead use %"
+  PetscInt_FMT " in the format string.
 
 .seealso: `PetscFormatConvertGetSize()`, `PetscVSNPrintf()`, `PetscVFPrintf()`
 @*/
@@ -153,7 +155,8 @@ PetscErrorCode PetscFormatConvert(const char *format, char *newformat)
   Input Parameters:
 + str    - location to put result
 . len    - the length of `str`
-- format - the PETSc format string
+. format - the PETSc format string
+- Argp   - the variable argument list to format
 
   Output Parameter:
 . fullLength - the amount of space in `str` actually used.
@@ -293,6 +296,18 @@ PetscErrorCode PetscFFlush(FILE *fd)
   PetscVFPrintfDefault -  All PETSc standard out and error messages are sent through this function; so, in theory, this can
   can be replaced with something that does not simply write to a file.
 
+  Input Parameters:
++ fd     - the file descriptor to write to
+. format - the format string to write with
+- Argp   - the variable argument list of items to format and write
+
+  Level: developer
+
+  Note:
+  For error messages this may be called by any MPI process, for regular standard out it is
+  called only by MPI rank 0 of a given communicator
+
+  Example Usage:
   To use, write your own function for example,
 .vb
    PetscErrorCode mypetscvfprintf(FILE *fd, const char format[], va_list Argp)
@@ -312,12 +327,6 @@ PetscErrorCode PetscFFlush(FILE *fd)
    }
 .ve
   then before the call to `PetscInitialize()` do the assignment `PetscVFPrintf = mypetscvfprintf`;
-
-  Level: developer
-
-  Note:
-  For error messages this may be called by any MPI process, for regular standard out it is
-  called only by MPI rank 0 of a given communicator
 
   Developer Notes:
   This could be called by an error handler, if that happens then a recursion of the error handler may occur
@@ -368,8 +377,7 @@ PetscErrorCode PetscVFPrintfDefault(FILE *fd, const char *format, va_list Argp)
 
   Input Parameters:
 + len    - the length of `str`
-. format - the usual `printf()` format string
--   ... - any arguments that are to be printed, each much have an appropriate symbol in the format argument
+- format - the usual `printf()` format string
 
   Output Parameter:
 . str - the resulting string
@@ -400,7 +408,7 @@ PetscErrorCode PetscSNPrintf(char *str, size_t len, const char format[], ...)
   Input Parameters:
 + len    - the length of `str`
 . format - the usual `printf()` format string
--   ... - any arguments that are to be printed, each much have an appropriate symbol in the format argument
+- ...    - args to format
 
   Output Parameters:
 + str       - the resulting string
@@ -728,29 +736,6 @@ PetscErrorCode PetscSynchronizedFGets(MPI_Comm comm, FILE *fp, size_t len, char 
     }
   }
   PetscCallMPI(MPI_Bcast(string, len, MPI_BYTE, 0, comm));
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-/*@C
-  PetscFormatStrip - Takes a PETSc format string and removes all numerical modifiers to `%` operations
-
-  Input Parameter:
-. format - the PETSc format string
-
-  Level: developer
-@*/
-PetscErrorCode PetscFormatStrip(char *format)
-{
-  size_t loc1 = 0, loc2 = 0;
-
-  PetscFunctionBegin;
-  while (format[loc2]) {
-    if (format[loc2] == '%') {
-      format[loc1++] = format[loc2++];
-      while (format[loc2] && ((format[loc2] >= '0' && format[loc2] <= '9') || format[loc2] == '.')) loc2++;
-    }
-    format[loc1++] = format[loc2++];
-  }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

@@ -106,41 +106,6 @@ static PetscErrorCode PetscOptionItemCreate_Private(PetscOptionItems *PetscOptio
 }
 
 /*
-    PetscScanString -  Gets user input via stdin from process and broadcasts to all processes
-
-    Collective
-
-   Input Parameters:
-+     commm - communicator for the broadcast, must be PETSC_COMM_WORLD
-.     n - length of the string, must be the same on all processes
--     str - location to store input
-
-    Bugs:
-.   Assumes process 0 of the given communicator has access to stdin
-
-*/
-static PetscErrorCode PetscScanString(MPI_Comm comm, size_t n, char str[])
-{
-  PetscMPIInt rank, nm;
-
-  PetscFunctionBegin;
-  PetscCallMPI(MPI_Comm_rank(comm, &rank));
-  if (rank == 0) {
-    char   c = (char)getchar();
-    size_t i = 0;
-
-    while (c != '\n' && i < n - 1) {
-      str[i++] = c;
-      c        = (char)getchar();
-    }
-    str[i] = '\0';
-  }
-  PetscCall(PetscMPIIntCast(n, &nm));
-  PetscCallMPI(MPI_Bcast(str, nm, MPI_CHAR, 0, comm));
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-/*
     This is needed because certain strings may be freed by SAWs, hence we cannot use PetscStrallocpy()
 */
 static PetscErrorCode PetscStrdup(const char s[], char *t[])
@@ -157,199 +122,6 @@ static PetscErrorCode PetscStrdup(const char s[], char *t[])
     PetscCall(PetscArraycpy(tmp, s, len + 1));
   }
   *t = tmp;
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-/*
-  PetscOptionsGetFromTextInput - Presents all the PETSc Options processed by the program so the user may change them at runtime
-
-  Notes:
-  this isn't really practical, it is just to demonstrate the principle
-
-  A carriage return indicates no change from the default; but this like -ksp_monitor <stdout>  the default is actually not stdout the default
-  is to do nothing so to get it to use stdout you need to type stdout. This is kind of bug?
-
-  Bugs:
-+    All processes must traverse through the exact same set of option queries due to the call to PetscScanString()
-.    Internal strings have arbitrary length and string copies are not checked that they fit into string space
--    Only works for PetscInt == int, PetscReal == double etc
-
-  Developer Notes:
-  Normally the GUI that presents the options the user and retrieves the values would be running in a different
-  address space and communicating with the PETSc program
-
-*/
-PetscErrorCode PetscOptionsGetFromTextInput(PetscOptionItems *PetscOptionsObject)
-{
-  PetscOptionItem next = PetscOptionsObject->next;
-  char            str[512];
-  PetscBool       bid;
-  PetscReal       ir, *valr;
-  PetscInt       *vald;
-  size_t          i;
-
-  PetscFunctionBegin;
-  PetscCall((*PetscPrintf)(PETSC_COMM_WORLD, "%s --------------------\n", PetscOptionsObject->title));
-  while (next) {
-    switch (next->type) {
-    case OPTION_HEAD:
-      break;
-    case OPTION_INT_ARRAY:
-      PetscCall(PetscPrintf(PETSC_COMM_WORLD, "-%s%s: <", PetscOptionsObject->prefix ? PetscOptionsObject->prefix : "", next->option + 1));
-      vald = (PetscInt *)next->data;
-      for (i = 0; i < next->arraylength; i++) {
-        PetscCall(PetscPrintf(PETSC_COMM_WORLD, "%" PetscInt_FMT, vald[i]));
-        if (i < next->arraylength - 1) PetscCall(PetscPrintf(PETSC_COMM_WORLD, ","));
-      }
-      PetscCall(PetscPrintf(PETSC_COMM_WORLD, ">: %s (%s) ", next->text, next->man));
-      PetscCall(PetscScanString(PETSC_COMM_WORLD, 512, str));
-      if (str[0]) {
-        PetscToken token;
-        PetscInt   n = 0, nmax = next->arraylength, *dvalue = (PetscInt *)next->data, start, end;
-        size_t     len;
-        char      *value;
-        PetscBool  foundrange;
-
-        next->set = PETSC_TRUE;
-        value     = str;
-        PetscCall(PetscTokenCreate(value, ',', &token));
-        PetscCall(PetscTokenFind(token, &value));
-        while (n < nmax) {
-          if (!value) break;
-
-          /* look for form  d-D where d and D are integers */
-          foundrange = PETSC_FALSE;
-          PetscCall(PetscStrlen(value, &len));
-          if (value[0] == '-') i = 2;
-          else i = 1;
-          for (; i < len; i++) {
-            if (value[i] == '-') {
-              PetscCheck(i != len - 1, PETSC_COMM_SELF, PETSC_ERR_USER, "Error in %" PetscInt_FMT "-th array entry %s", n, value);
-              value[i] = 0;
-              PetscCall(PetscOptionsStringToInt(value, &start));
-              PetscCall(PetscOptionsStringToInt(value + i + 1, &end));
-              PetscCheck(end > start, PETSC_COMM_SELF, PETSC_ERR_USER, "Error in %" PetscInt_FMT "-th array entry, %s-%s cannot have decreasing list", n, value, value + i + 1);
-              PetscCheck(n + end - start - 1 < nmax, PETSC_COMM_SELF, PETSC_ERR_USER, "Error in %" PetscInt_FMT "-th array entry, not enough space in left in array (%" PetscInt_FMT ") to contain entire range from %" PetscInt_FMT " to %" PetscInt_FMT, n, nmax - n, start, end);
-              for (; start < end; start++) {
-                *dvalue = start;
-                dvalue++;
-                n++;
-              }
-              foundrange = PETSC_TRUE;
-              break;
-            }
-          }
-          if (!foundrange) {
-            PetscCall(PetscOptionsStringToInt(value, dvalue));
-            dvalue++;
-            n++;
-          }
-          PetscCall(PetscTokenFind(token, &value));
-        }
-        PetscCall(PetscTokenDestroy(&token));
-      }
-      break;
-    case OPTION_REAL_ARRAY:
-      PetscCall(PetscPrintf(PETSC_COMM_WORLD, "-%s%s: <", PetscOptionsObject->prefix ? PetscOptionsObject->prefix : "", next->option + 1));
-      valr = (PetscReal *)next->data;
-      for (i = 0; i < next->arraylength; i++) {
-        PetscCall(PetscPrintf(PETSC_COMM_WORLD, "%g", (double)valr[i]));
-        if (i < next->arraylength - 1) PetscCall(PetscPrintf(PETSC_COMM_WORLD, ","));
-      }
-      PetscCall(PetscPrintf(PETSC_COMM_WORLD, ">: %s (%s) ", next->text, next->man));
-      PetscCall(PetscScanString(PETSC_COMM_WORLD, 512, str));
-      if (str[0]) {
-        PetscToken token;
-        PetscInt   n = 0, nmax = next->arraylength;
-        PetscReal *dvalue = (PetscReal *)next->data;
-        char      *value;
-
-        next->set = PETSC_TRUE;
-        value     = str;
-        PetscCall(PetscTokenCreate(value, ',', &token));
-        PetscCall(PetscTokenFind(token, &value));
-        while (n < nmax) {
-          if (!value) break;
-          PetscCall(PetscOptionsStringToReal(value, dvalue));
-          dvalue++;
-          n++;
-          PetscCall(PetscTokenFind(token, &value));
-        }
-        PetscCall(PetscTokenDestroy(&token));
-      }
-      break;
-    case OPTION_INT:
-      PetscCall(PetscPrintf(PETSC_COMM_WORLD, "-%s%s: <%d>: %s (%s) ", PetscOptionsObject->prefix ? PetscOptionsObject->prefix : "", next->option + 1, *(int *)next->data, next->text, next->man));
-      PetscCall(PetscScanString(PETSC_COMM_WORLD, 512, str));
-      if (str[0]) {
-#if defined(PETSC_SIZEOF_LONG_LONG)
-        long long lid;
-        sscanf(str, "%lld", &lid);
-        PetscCheck(lid <= PETSC_MAX_INT && lid >= PETSC_MIN_INT, PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Argument: -%s%s %lld", PetscOptionsObject->prefix ? PetscOptionsObject->prefix : "", next->option + 1, lid);
-#else
-        long lid;
-        sscanf(str, "%ld", &lid);
-        PetscCheck(lid <= PETSC_MAX_INT && lid >= PETSC_MIN_INT, PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Argument: -%s%s %ld", PetscOptionsObject->prefix ? PetscOptionsObject->prefix : "", next->option + 1, lid);
-#endif
-
-        next->set                 = PETSC_TRUE;
-        *((PetscInt *)next->data) = (PetscInt)lid;
-      }
-      break;
-    case OPTION_REAL:
-      PetscCall(PetscPrintf(PETSC_COMM_WORLD, "-%s%s: <%g>: %s (%s) ", PetscOptionsObject->prefix ? PetscOptionsObject->prefix : "", next->option + 1, *(double *)next->data, next->text, next->man));
-      PetscCall(PetscScanString(PETSC_COMM_WORLD, 512, str));
-      if (str[0]) {
-#if defined(PETSC_USE_REAL_SINGLE)
-        sscanf(str, "%e", &ir);
-#elif defined(PETSC_USE_REAL___FP16)
-        float irtemp;
-        sscanf(str, "%e", &irtemp);
-        ir = irtemp;
-#elif defined(PETSC_USE_REAL_DOUBLE)
-        sscanf(str, "%le", &ir);
-#elif defined(PETSC_USE_REAL___FLOAT128)
-        ir = strtoflt128(str, 0);
-#else
-        SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "Unknown scalar type");
-#endif
-        next->set                  = PETSC_TRUE;
-        *((PetscReal *)next->data) = ir;
-      }
-      break;
-    case OPTION_BOOL:
-      PetscCall(PetscPrintf(PETSC_COMM_WORLD, "-%s%s: <%s>: %s (%s) ", PetscOptionsObject->prefix ? PetscOptionsObject->prefix : "", next->option + 1, *(PetscBool *)next->data ? "true" : "false", next->text, next->man));
-      PetscCall(PetscScanString(PETSC_COMM_WORLD, 512, str));
-      if (str[0]) {
-        PetscCall(PetscOptionsStringToBool(str, &bid));
-        next->set                  = PETSC_TRUE;
-        *((PetscBool *)next->data) = bid;
-      }
-      break;
-    case OPTION_STRING:
-      PetscCall(PetscPrintf(PETSC_COMM_WORLD, "-%s%s: <%s>: %s (%s) ", PetscOptionsObject->prefix ? PetscOptionsObject->prefix : "", next->option + 1, (char *)next->data, next->text, next->man));
-      PetscCall(PetscScanString(PETSC_COMM_WORLD, 512, str));
-      if (str[0]) {
-        next->set = PETSC_TRUE;
-        /* must use system malloc since SAWs may free this */
-        PetscCall(PetscStrdup(str, (char **)&next->data));
-      }
-      break;
-    case OPTION_FLIST:
-      PetscCall(PetscFunctionListPrintTypes(PETSC_COMM_WORLD, stdout, PetscOptionsObject->prefix, next->option, next->text, next->man, next->flist, (char *)next->data, (char *)next->data));
-      PetscCall(PetscScanString(PETSC_COMM_WORLD, 512, str));
-      if (str[0]) {
-        PetscOptionsObject->changedmethod = PETSC_TRUE;
-        next->set                         = PETSC_TRUE;
-        /* must use system malloc since SAWs may free this */
-        PetscCall(PetscStrdup(str, (char **)&next->data));
-      }
-      break;
-    default:
-      break;
-    }
-    next = next->next;
-  }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -500,6 +272,234 @@ PetscErrorCode PetscOptionsSAWsInput(PetscOptionItems *PetscOptionsObject)
   PetscCallSAWs(SAWs_Delete, ("/PETSc/Options"));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
+#else
+/*
+    PetscScanString -  Gets user input via stdin from process and broadcasts to all processes
+
+    Collective
+
+   Input Parameters:
++     commm - communicator for the broadcast, must be PETSC_COMM_WORLD
+.     n - length of the string, must be the same on all processes
+-     str - location to store input
+
+    Bugs:
+.   Assumes process 0 of the given communicator has access to stdin
+
+*/
+static PetscErrorCode PetscScanString(MPI_Comm comm, size_t n, char str[])
+{
+  PetscMPIInt rank, nm;
+
+  PetscFunctionBegin;
+  PetscCallMPI(MPI_Comm_rank(comm, &rank));
+  if (rank == 0) {
+    char   c = (char)getchar();
+    size_t i = 0;
+
+    while (c != '\n' && i < n - 1) {
+      str[i++] = c;
+      c        = (char)getchar();
+    }
+    str[i] = '\0';
+  }
+  PetscCall(PetscMPIIntCast(n, &nm));
+  PetscCallMPI(MPI_Bcast(str, nm, MPI_CHAR, 0, comm));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*
+  PetscOptionsGetFromTextInput - Presents all the PETSc Options processed by the program so the user may change them at runtime
+
+  Notes:
+  this isn't really practical, it is just to demonstrate the principle
+
+  A carriage return indicates no change from the default; but this like -ksp_monitor <stdout>  the default is actually not stdout the default
+  is to do nothing so to get it to use stdout you need to type stdout. This is kind of bug?
+
+  Bugs:
++    All processes must traverse through the exact same set of option queries due to the call to PetscScanString()
+.    Internal strings have arbitrary length and string copies are not checked that they fit into string space
+-    Only works for PetscInt == int, PetscReal == double etc
+
+  Developer Notes:
+  Normally the GUI that presents the options the user and retrieves the values would be running in a different
+  address space and communicating with the PETSc program
+
+*/
+static PetscErrorCode PetscOptionsGetFromTextInput(PetscOptionItems *PetscOptionsObject)
+{
+  PetscOptionItem next = PetscOptionsObject->next;
+  char            str[512];
+  PetscBool       bid;
+  PetscReal       ir, *valr;
+  PetscInt       *vald;
+  size_t          i;
+
+  PetscFunctionBegin;
+  PetscCall((*PetscPrintf)(PETSC_COMM_WORLD, "%s --------------------\n", PetscOptionsObject->title));
+  while (next) {
+    switch (next->type) {
+    case OPTION_HEAD:
+      break;
+    case OPTION_INT_ARRAY:
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD, "-%s%s: <", PetscOptionsObject->prefix ? PetscOptionsObject->prefix : "", next->option + 1));
+      vald = (PetscInt *)next->data;
+      for (i = 0; i < next->arraylength; i++) {
+        PetscCall(PetscPrintf(PETSC_COMM_WORLD, "%" PetscInt_FMT, vald[i]));
+        if (i < next->arraylength - 1) PetscCall(PetscPrintf(PETSC_COMM_WORLD, ","));
+      }
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD, ">: %s (%s) ", next->text, next->man));
+      PetscCall(PetscScanString(PETSC_COMM_WORLD, 512, str));
+      if (str[0]) {
+        PetscToken token;
+        PetscInt   n = 0, nmax = next->arraylength, *dvalue = (PetscInt *)next->data, start, end;
+        size_t     len;
+        char      *value;
+        PetscBool  foundrange;
+
+        next->set = PETSC_TRUE;
+        value     = str;
+        PetscCall(PetscTokenCreate(value, ',', &token));
+        PetscCall(PetscTokenFind(token, &value));
+        while (n < nmax) {
+          if (!value) break;
+
+          /* look for form  d-D where d and D are integers */
+          foundrange = PETSC_FALSE;
+          PetscCall(PetscStrlen(value, &len));
+          if (value[0] == '-') i = 2;
+          else i = 1;
+          for (; i < len; i++) {
+            if (value[i] == '-') {
+              PetscCheck(i != len - 1, PETSC_COMM_SELF, PETSC_ERR_USER, "Error in %" PetscInt_FMT "-th array entry %s", n, value);
+              value[i] = 0;
+              PetscCall(PetscOptionsStringToInt(value, &start));
+              PetscCall(PetscOptionsStringToInt(value + i + 1, &end));
+              PetscCheck(end > start, PETSC_COMM_SELF, PETSC_ERR_USER, "Error in %" PetscInt_FMT "-th array entry, %s-%s cannot have decreasing list", n, value, value + i + 1);
+              PetscCheck(n + end - start - 1 < nmax, PETSC_COMM_SELF, PETSC_ERR_USER, "Error in %" PetscInt_FMT "-th array entry, not enough space in left in array (%" PetscInt_FMT ") to contain entire range from %" PetscInt_FMT " to %" PetscInt_FMT, n, nmax - n, start, end);
+              for (; start < end; start++) {
+                *dvalue = start;
+                dvalue++;
+                n++;
+              }
+              foundrange = PETSC_TRUE;
+              break;
+            }
+          }
+          if (!foundrange) {
+            PetscCall(PetscOptionsStringToInt(value, dvalue));
+            dvalue++;
+            n++;
+          }
+          PetscCall(PetscTokenFind(token, &value));
+        }
+        PetscCall(PetscTokenDestroy(&token));
+      }
+      break;
+    case OPTION_REAL_ARRAY:
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD, "-%s%s: <", PetscOptionsObject->prefix ? PetscOptionsObject->prefix : "", next->option + 1));
+      valr = (PetscReal *)next->data;
+      for (i = 0; i < next->arraylength; i++) {
+        PetscCall(PetscPrintf(PETSC_COMM_WORLD, "%g", (double)valr[i]));
+        if (i < next->arraylength - 1) PetscCall(PetscPrintf(PETSC_COMM_WORLD, ","));
+      }
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD, ">: %s (%s) ", next->text, next->man));
+      PetscCall(PetscScanString(PETSC_COMM_WORLD, 512, str));
+      if (str[0]) {
+        PetscToken token;
+        PetscInt   n = 0, nmax = next->arraylength;
+        PetscReal *dvalue = (PetscReal *)next->data;
+        char      *value;
+
+        next->set = PETSC_TRUE;
+        value     = str;
+        PetscCall(PetscTokenCreate(value, ',', &token));
+        PetscCall(PetscTokenFind(token, &value));
+        while (n < nmax) {
+          if (!value) break;
+          PetscCall(PetscOptionsStringToReal(value, dvalue));
+          dvalue++;
+          n++;
+          PetscCall(PetscTokenFind(token, &value));
+        }
+        PetscCall(PetscTokenDestroy(&token));
+      }
+      break;
+    case OPTION_INT:
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD, "-%s%s: <%d>: %s (%s) ", PetscOptionsObject->prefix ? PetscOptionsObject->prefix : "", next->option + 1, *(int *)next->data, next->text, next->man));
+      PetscCall(PetscScanString(PETSC_COMM_WORLD, 512, str));
+      if (str[0]) {
+  #if defined(PETSC_SIZEOF_LONG_LONG)
+        long long lid;
+        sscanf(str, "%lld", &lid);
+        PetscCheck(lid <= PETSC_MAX_INT && lid >= PETSC_MIN_INT, PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Argument: -%s%s %lld", PetscOptionsObject->prefix ? PetscOptionsObject->prefix : "", next->option + 1, lid);
+  #else
+        long lid;
+        sscanf(str, "%ld", &lid);
+        PetscCheck(lid <= PETSC_MAX_INT && lid >= PETSC_MIN_INT, PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Argument: -%s%s %ld", PetscOptionsObject->prefix ? PetscOptionsObject->prefix : "", next->option + 1, lid);
+  #endif
+
+        next->set                 = PETSC_TRUE;
+        *((PetscInt *)next->data) = (PetscInt)lid;
+      }
+      break;
+    case OPTION_REAL:
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD, "-%s%s: <%g>: %s (%s) ", PetscOptionsObject->prefix ? PetscOptionsObject->prefix : "", next->option + 1, *(double *)next->data, next->text, next->man));
+      PetscCall(PetscScanString(PETSC_COMM_WORLD, 512, str));
+      if (str[0]) {
+  #if defined(PETSC_USE_REAL_SINGLE)
+        sscanf(str, "%e", &ir);
+  #elif defined(PETSC_USE_REAL___FP16)
+        float irtemp;
+        sscanf(str, "%e", &irtemp);
+        ir = irtemp;
+  #elif defined(PETSC_USE_REAL_DOUBLE)
+        sscanf(str, "%le", &ir);
+  #elif defined(PETSC_USE_REAL___FLOAT128)
+        ir = strtoflt128(str, 0);
+  #else
+        SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "Unknown scalar type");
+  #endif
+        next->set                  = PETSC_TRUE;
+        *((PetscReal *)next->data) = ir;
+      }
+      break;
+    case OPTION_BOOL:
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD, "-%s%s: <%s>: %s (%s) ", PetscOptionsObject->prefix ? PetscOptionsObject->prefix : "", next->option + 1, *(PetscBool *)next->data ? "true" : "false", next->text, next->man));
+      PetscCall(PetscScanString(PETSC_COMM_WORLD, 512, str));
+      if (str[0]) {
+        PetscCall(PetscOptionsStringToBool(str, &bid));
+        next->set                  = PETSC_TRUE;
+        *((PetscBool *)next->data) = bid;
+      }
+      break;
+    case OPTION_STRING:
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD, "-%s%s: <%s>: %s (%s) ", PetscOptionsObject->prefix ? PetscOptionsObject->prefix : "", next->option + 1, (char *)next->data, next->text, next->man));
+      PetscCall(PetscScanString(PETSC_COMM_WORLD, 512, str));
+      if (str[0]) {
+        next->set = PETSC_TRUE;
+        /* must use system malloc since SAWs may free this */
+        PetscCall(PetscStrdup(str, (char **)&next->data));
+      }
+      break;
+    case OPTION_FLIST:
+      PetscCall(PetscFunctionListPrintTypes(PETSC_COMM_WORLD, stdout, PetscOptionsObject->prefix, next->option, next->text, next->man, next->flist, (char *)next->data, (char *)next->data));
+      PetscCall(PetscScanString(PETSC_COMM_WORLD, 512, str));
+      if (str[0]) {
+        PetscOptionsObject->changedmethod = PETSC_TRUE;
+        next->set                         = PETSC_TRUE;
+        /* must use system malloc since SAWs may free this */
+        PetscCall(PetscStrdup(str, (char **)&next->data));
+      }
+      break;
+    default:
+      break;
+    }
+    next = next->next;
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
 #endif
 
 PetscErrorCode PetscOptionsEnd_Private(PetscOptionItems *PetscOptionsObject)
@@ -644,8 +644,8 @@ static PetscErrorCode GetListLength(const char *const *list, PetscInt *len)
   PetscOptionsEnum - Gets the enum value for a particular option in the database.
 
   Synopsis:
-  #include "petscsys.h"
-  PetscErrorCode  PetscOptionsEnum(const char opt[],const char text[],const char man[],const char *const *list,PetscEnum currentvalue,PetscEnum *value,PetscBool  *set)
+  #include <petscoptions.h>
+  PetscErrorCode PetscOptionsEnum(const char opt[], const char text[], const char man[], const char *const *list, PetscEnum currentvalue, PetscEnum *value, PetscBool *set)
 
   Logically Collective on the communicator passed in `PetscOptionsBegin()`
 
@@ -710,8 +710,8 @@ PetscErrorCode PetscOptionsEnum_Private(PetscOptionItems *PetscOptionsObject, co
   option in the database.
 
   Synopsis:
-  #include "petscsys.h"
-  PetscErrorCode  PetscOptionsEnumArray(const char opt[],const char text[],const char man[],const char *const *list,PetscEnum value[],PetscInt *n,PetscBool  *set)
+  #include <petscoptions.h>
+  PetscErrorCode PetscOptionsEnumArray(const char opt[], const char text[], const char man[], const char *const *list, PetscEnum value[], PetscInt *n, PetscBool *set)
 
   Logically Collective on the communicator passed in `PetscOptionsBegin()`
 
@@ -774,8 +774,8 @@ PetscErrorCode PetscOptionsEnumArray_Private(PetscOptionItems *PetscOptionsObjec
    PetscOptionsBoundedInt - Gets an integer value greater than or equal a given bound for a particular option in the database.
 
    Synopsis:
-   #include "petscsys.h"
-   PetscErrorCode  PetscOptionsBoundedInt(const char opt[],const char text[],const char man[],PetscInt currentvalue,PetscInt *value,PetscBool *flg,PetscInt bound)
+   #include <petscoptions.h>
+   PetscErrorCode  PetscOptionsBoundedInt(const char opt[], const char text[], const char man[], PetscInt currentvalue, PetscInt *value, PetscBool *flg, PetscInt bound)
 
    Logically Collective on the communicator passed in `PetscOptionsBegin()`
 
@@ -822,8 +822,8 @@ M*/
    PetscOptionsRangeInt - Gets an integer value within a range of values for a particular option in the database.
 
    Synopsis:
-   #include "petscsys.h"
-   PetscErrorCode  PetscOptionsRangeInt(const char opt[],const char text[],const char man[],PetscInt currentvalue,PetscInt *value,PetscBool *flg,PetscInt lb,PetscInt ub)
+   #include <petscoptions.h>
+   PetscErrorCode PetscOptionsRangeInt(const char opt[], const char text[], const char man[], PetscInt currentvalue, PetscInt *value, PetscBool *flg, PetscInt lb, PetscInt ub)
 
    Logically Collective on the communicator passed in `PetscOptionsBegin()`
 
@@ -868,8 +868,8 @@ M*/
   PetscOptionsInt - Gets the integer value for a particular option in the database.
 
   Synopsis:
-  #include "petscsys.h"
-  PetscErrorCode  PetscOptionsInt(const char opt[],const char text[],const char man[],PetscInt currentvalue,PetscInt *value,PetscBool *flg))
+  #include <petscoptions.h>
+  PetscErrorCode PetscOptionsInt(const char opt[], const char text[], const char man[], PetscInt currentvalue, PetscInt *value, PetscBool *set)
 
   Logically Collective on the communicator passed in `PetscOptionsBegin()`
 
@@ -887,7 +887,7 @@ M*/
 
   Output Parameters:
 + value - the integer value to return
--  flg - `PETSC_TRUE` if found, else `PETSC_FALSE`
+- set   - `PETSC_TRUE` if found, else `PETSC_FALSE`
 
   Level: beginner
 
@@ -943,8 +943,8 @@ PetscErrorCode PetscOptionsInt_Private(PetscOptionItems *PetscOptionsObject, con
   PetscOptionsString - Gets the string value for a particular option in the database.
 
   Synopsis:
-  #include "petscsys.h"
-  PetscErrorCode  PetscOptionsString(const char opt[],const char text[],const char man[],const char currentvalue[],char value[],size_t len,PetscBool  *set)
+  #include <petscoptions.h>
+  PetscErrorCode PetscOptionsString(const char opt[], const char text[], const char man[], const char currentvalue[], char value[], size_t len, PetscBool *set)
 
   Logically Collective on the communicator passed in `PetscOptionsBegin()`
 
@@ -957,7 +957,7 @@ PetscErrorCode PetscOptionsInt_Private(PetscOptionItems *PetscOptionsObject, con
 
   Output Parameters:
 + value - the value to return
--  flg - `PETSC_TRUE` if found, else `PETSC_FALSE`
+- set   - `PETSC_TRUE` if found, else `PETSC_FALSE`
 
   Level: beginner
 
@@ -1005,8 +1005,8 @@ PetscErrorCode PetscOptionsString_Private(PetscOptionItems *PetscOptionsObject, 
   PetscOptionsReal - Gets the `PetscReal` value for a particular option in the database.
 
   Synopsis:
-  #include "petscsys.h"
-  PetscErrorCode  PetscOptionsReal(const char opt[],const char text[],const char man[],PetscReal currentvalue,PetscReal *value,PetscBool  *set)
+  #include <petscoptions.h>
+  PetscErrorCode PetscOptionsReal(const char opt[], const char text[], const char man[], PetscReal currentvalue, PetscReal *value, PetscBool *set)
 
   Logically Collective on the communicator passed in `PetscOptionsBegin()`
 
@@ -1024,7 +1024,7 @@ PetscErrorCode PetscOptionsString_Private(PetscOptionItems *PetscOptionsObject, 
 
   Output Parameters:
 + value - the value to return
--  flg - `PETSC_TRUE` if found, else `PETSC_FALSE`
+- set   - `PETSC_TRUE` if found, else `PETSC_FALSE`
 
   Level: beginner
 
@@ -1073,8 +1073,8 @@ PetscErrorCode PetscOptionsReal_Private(PetscOptionItems *PetscOptionsObject, co
   PetscOptionsScalar - Gets the `PetscScalar` value for a particular option in the database.
 
   Synopsis:
-  #include "petscsys.h"
-  PetscErrorCode PetscOptionsScalar(const char opt[],const char text[],const char man[],PetscScalar currentvalue,PetscScalar *value,PetscBool  *set)
+  #include <petscoptions.h>
+  PetscErrorCode PetscOptionsScalar(const char opt[], const char text[], const char man[], PetscScalar currentvalue, PetscScalar *value, PetscBool *set)
 
   Logically Collective on the communicator passed in `PetscOptionsBegin()`
 
@@ -1092,7 +1092,7 @@ PetscErrorCode PetscOptionsReal_Private(PetscOptionItems *PetscOptionsObject, co
 
   Output Parameters:
 + value - the value to return
--  flg - `PETSC_TRUE` if found, else `PETSC_FALSE`
+- set   - `PETSC_TRUE` if found, else `PETSC_FALSE`
 
   Level: beginner
 
@@ -1128,8 +1128,8 @@ PetscErrorCode PetscOptionsScalar_Private(PetscOptionItems *PetscOptionsObject, 
   its value is set to false.
 
   Synopsis:
-  #include "petscsys.h"
-  PetscErrorCode PetscOptionsName(const char opt[],const char text[],const char man[],PetscBool  *flg)
+  #include <petscoptions.h>
+  PetscErrorCode PetscOptionsName(const char opt[], const char text[], const char man[], PetscBool *flg)
 
   Logically Collective on the communicator passed in `PetscOptionsBegin()`
 
@@ -1178,14 +1178,14 @@ PetscErrorCode PetscOptionsName_Private(PetscOptionItems *PetscOptionsObject, co
   PetscOptionsFList - Puts a list of option values that a single one may be selected from
 
   Synopsis:
-  #include "petscsys.h"
-  PetscErrorCode  PetscOptionsFList(const char opt[],const char ltext[],const char man[],PetscFunctionList list,const char currentvalue[],char value[],size_t len,PetscBool  *set)
+  #include <petscoptions.h>
+  PetscErrorCode PetscOptionsFList(const char opt[], const char ltext[], const char man[], PetscFunctionList list, const char currentvalue[], char value[], size_t len, PetscBool *set)
 
   Logically Collective on the communicator passed in `PetscOptionsBegin()`
 
   Input Parameters:
 + opt          - option name
-.  text - short string that describes the option
+. ltext        - short string that describes the option
 . man          - manual page with additional information on option
 . list         - the possible choices
 . currentvalue - the current value; caller is responsible for setting this value correctly. Normally this is done with
@@ -1255,8 +1255,8 @@ PetscErrorCode PetscOptionsFList_Private(PetscOptionItems *PetscOptionsObject, c
   PetscOptionsEList - Puts a list of option values that a single one may be selected from
 
   Synopsis:
-  #include "petscsys.h"
-  PetscErrorCode  PetscOptionsEList(const char opt[],const char ltext[],const char man[],const char *const *list,PetscInt ntext,const char currentvalue[],PetscInt *value,PetscBool  *set)
+  #include <petscoptions.h>
+  PetscErrorCode PetscOptionsEList(const char opt[], const char ltext[], const char man[], const char *const *list, PetscInt ntext, const char currentvalue[], PetscInt *value, PetscBool *set)
 
   Logically Collective on the communicator passed in `PetscOptionsBegin()`
 
@@ -1331,8 +1331,8 @@ PetscErrorCode PetscOptionsEList_Private(PetscOptionItems *PetscOptionsObject, c
   which at most a single value can be true.
 
   Synopsis:
-  #include "petscsys.h"
-  PetscErrorCode PetscOptionsBoolGroupBegin(const char opt[],const char text[],const char man[],PetscBool  *flg)
+  #include <petscoptions.h>
+  PetscErrorCode PetscOptionsBoolGroupBegin(const char opt[], const char text[], const char man[], PetscBool *flg)
 
   Logically Collective on the communicator passed in `PetscOptionsBegin()`
 
@@ -1389,8 +1389,8 @@ PetscErrorCode PetscOptionsBoolGroupBegin_Private(PetscOptionItems *PetscOptions
   which at most a single value can be true.
 
   Synopsis:
-  #include "petscsys.h"
-  PetscErrorCode PetscOptionsBoolGroup(const char opt[],const char text[],const char man[],PetscBool  *flg)
+  #include <petscoptions.h>
+  PetscErrorCode PetscOptionsBoolGroup(const char opt[], const char text[], const char man[], PetscBool *flg)
 
   Logically Collective on the communicator passed in `PetscOptionsBegin()`
 
@@ -1442,8 +1442,8 @@ PetscErrorCode PetscOptionsBoolGroup_Private(PetscOptionItems *PetscOptionsObjec
   which at most a single value can be true.
 
   Synopsis:
-  #include "petscsys.h"
-  PetscErrorCode PetscOptionsBoolGroupEnd(const char opt[],const char text[],const char man[],PetscBool  *flg)
+  #include <petscoptions.h>
+  PetscErrorCode PetscOptionsBoolGroupEnd(const char opt[], const char text[], const char man[], PetscBool  *flg)
 
   Logically Collective on the communicator passed in `PetscOptionsBegin()`
 
@@ -1494,8 +1494,8 @@ PetscErrorCode PetscOptionsBoolGroupEnd_Private(PetscOptionItems *PetscOptionsOb
   PetscOptionsBool - Determines if a particular option is in the database with a true or false
 
   Synopsis:
-  #include "petscsys.h"
-  PetscErrorCode PetscOptionsBool(const char opt[],const char text[],const char man[],PetscBool currentvalue,PetscBool  *flg,PetscBool  *set)
+  #include <petscoptions.h>
+  PetscErrorCode PetscOptionsBool(const char opt[], const char text[], const char man[], PetscBool currentvalue, PetscBool *flg, PetscBool *set)
 
   Logically Collective on the communicator passed in `PetscOptionsBegin()`
 
@@ -1506,7 +1506,7 @@ PetscErrorCode PetscOptionsBoolGroupEnd_Private(PetscOptionItems *PetscOptionsOb
 - currentvalue - the current value
 
   Output Parameters:
-+  flg -` PETSC_TRUE` or `PETSC_FALSE`
++ flg - `PETSC_TRUE` or `PETSC_FALSE`
 - set - `PETSC_TRUE` if found, else `PETSC_FALSE`
 
   Level: beginner
@@ -1564,8 +1564,8 @@ PetscErrorCode PetscOptionsBool_Private(PetscOptionItems *PetscOptionsObject, co
   no intervening spaces.
 
   Synopsis:
-  #include "petscsys.h"
-  PetscErrorCode PetscOptionsRealArray(const char opt[],const char text[],const char man[],PetscReal value[],PetscInt *n,PetscBool  *set)
+  #include <petscoptions.h>
+  PetscErrorCode PetscOptionsRealArray(const char opt[], const char text[], const char man[], PetscReal value[], PetscInt *n, PetscBool *set)
 
   Logically Collective on the communicator passed in `PetscOptionsBegin()`
 
@@ -1631,8 +1631,8 @@ PetscErrorCode PetscOptionsRealArray_Private(PetscOptionItems *PetscOptionsObjec
   no intervening spaces.
 
   Synopsis:
-  #include "petscsys.h"
-  PetscErrorCode PetscOptionsScalarArray(const char opt[],const char text[],const char man[],PetscScalar value[],PetscInt *n,PetscBool  *set)
+  #include <petscoptions.h>
+  PetscErrorCode PetscOptionsScalarArray(const char opt[], const char text[], const char man[], PetscScalar value[], PetscInt *n, PetscBool *set)
 
   Logically Collective on the communicator passed in `PetscOptionsBegin()`
 
@@ -1697,8 +1697,8 @@ PetscErrorCode PetscOptionsScalarArray_Private(PetscOptionItems *PetscOptionsObj
   option in the database.
 
   Synopsis:
-  #include "petscsys.h"
-  PetscErrorCode PetscOptionsIntArray(const char opt[],const char text[],const char man[],PetscInt value[],PetscInt *n,PetscBool  *set)
+  #include <petscoptions.h>
+  PetscErrorCode PetscOptionsIntArray(const char opt[], const char text[], const char man[], PetscInt value[], PetscInt *n, PetscBool *set)
 
   Logically Collective on the communicator passed in `PetscOptionsBegin()`
 
@@ -1772,8 +1772,8 @@ PetscErrorCode PetscOptionsIntArray_Private(PetscOptionItems *PetscOptionsObject
   no intervening spaces.
 
   Synopsis:
-  #include "petscsys.h"
-  PetscErrorCode PetscOptionsStringArray(const char opt[],const char text[],const char man[],char *value[],PetscInt *nmax,PetscBool  *set)
+  #include <petscoptions.h>
+  PetscErrorCode PetscOptionsStringArray(const char opt[], const char text[], const char man[], char *value[], PetscInt *nmax, PetscBool  *set)
 
   Logically Collective on the communicator passed in `PetscOptionsBegin()`; No Fortran Support
 
@@ -1835,8 +1835,8 @@ PetscErrorCode PetscOptionsStringArray_Private(PetscOptionItems *PetscOptionsObj
   no intervening spaces.
 
   Synopsis:
-  #include "petscsys.h"
-  PetscErrorCode PetscOptionsBoolArray(const char opt[],const char text[],const char man[],PetscBool value[],PetscInt *n,PetscBool *set)
+  #include <petscoptions.h>
+  PetscErrorCode PetscOptionsBoolArray(const char opt[], const char text[], const char man[], PetscBool value[], PetscInt *n, PetscBool *set)
 
   Logically Collective on the communicator passed in `PetscOptionsBegin()`
 
@@ -1902,8 +1902,8 @@ PetscErrorCode PetscOptionsBoolArray_Private(PetscOptionItems *PetscOptionsObjec
   PetscOptionsViewer - Gets a viewer appropriate for the type indicated by the user
 
   Synopsis:
-  #include "petscsys.h"
-  PetscErrorCode PetscOptionsViewer(const char opt[],const char text[],const char man[],PetscViewer *viewer,PetscViewerFormat *format,PetscBool *set)
+  #include <petscviewer.h>
+  PetscErrorCode PetscOptionsViewer(const char opt[], const char text[], const char man[], PetscViewer *viewer, PetscViewerFormat *format, PetscBool *set)
 
   Logically Collective on the communicator passed in `PetscOptionsBegin()`
 

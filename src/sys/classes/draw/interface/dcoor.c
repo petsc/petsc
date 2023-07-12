@@ -11,9 +11,11 @@
   Not Collective
 
   Input Parameters:
-+ draw        - the drawing object
-- xl,yl,xr,yr - the coordinates of the lower left corner and upper
-                 right corner of the drawing region.
++ draw - the drawing object
+. xl   - the lower left x coordinate
+. yl   - the lower left y coordinate
+. xr   - the upper right x coordinate
+- yr   - the upper right y coordinate
 
   Level: advanced
 

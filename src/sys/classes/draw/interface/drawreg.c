@@ -290,8 +290,8 @@ PetscErrorCode PetscDrawGetType(PetscDraw draw, PetscDrawType *type)
   Not Collective
 
   Input Parameters:
-+  name_solver - name of a new user-defined graphics class
--  routine_create - routine to create method context
++ sname    - name of a new user-defined graphics class
+- function - routine to create method context
 
   Level: developer
 

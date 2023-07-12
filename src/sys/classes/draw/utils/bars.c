@@ -61,7 +61,7 @@ PetscErrorCode PetscDrawBarCreate(PetscDraw draw, PetscDrawBar *bar)
 }
 
 /*@C
-  PetscDrawBarSetData
+  PetscDrawBarSetData - Set the data for a bar graph
 
   Logically Collective
 
@@ -368,6 +368,9 @@ PetscErrorCode PetscDrawBarGetDraw(PetscDrawBar bar, PetscDraw *draw)
   PetscDrawBarSetFromOptions - Sets options related to the display of the `PetscDrawBar`
 
   Collective over bar
+
+  Input Parameter:
+. bar - the bar graph context
 
   Options Database Key:
 . -bar_sort - sort the entries before drawing the bar graph

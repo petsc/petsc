@@ -525,19 +525,14 @@ PETSC_INTERN FILE *petsc_history;
   PetscInfo - Logs informative data
 
   Synopsis:
-  #include <petscsys.h>
-  PetscErrorCode PetscInfo(PetscObject obj, const char message[])
-  PetscErrorCode PetscInfo(PetscObject obj, const char formatmessage[],arg1)
-  PetscErrorCode PetscInfo(PetscObject obj, const char formatmessage[],arg1,arg2)
-  ...
+  #include <petsclog.h>
+  PetscErrorCode PetscInfo(PetscObject obj, const char message[], ...)
 
   Collective
 
   Input Parameters:
 + obj     - object most closely associated with the logging statement or `NULL`
-. message - logging message
-.   formatmessage - logging message using standard "printf" format
--   arg1, arg2, ... - arguments of the format
+- message - logging message using standard "printf" format
 
   Options Database Key:
 . -info [filename][:[~]<list,of,classnames>[:[~]self]] - specify which informative messages are printed

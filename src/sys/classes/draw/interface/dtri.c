@@ -114,7 +114,8 @@ static PetscErrorCode PetscDrawTensorContour_Zoom(PetscDraw win, void *dctx)
 
   Input Parameters:
 + draw - the draw context
-. m,n  - the global number of mesh points in the x and y directions
+. m    - the number of local mesh points in the x direction
+. n    - the number of local mesh points in the y direction
 . xi   - the locations of the global mesh points in the horizontal direction (optional, use `NULL` to indicate uniform spacing on [0,1])
 . yi   - the locations of the global mesh points in the vertical direction (optional, use `NULL` to indicate uniform spacing on [0,1])
 - v    - the values
@@ -197,7 +198,8 @@ PetscErrorCode PetscDrawTensorContour(PetscDraw draw, int m, int n, const PetscR
 
   Input Parameters:
 + draw - the draw context
-. m,n  - the number of local mesh points in the x and y direction
+. m    - the number of local mesh points in the x direction
+. n    - the number of local mesh points in the y direction
 . x    - the horizontal locations of the local mesh points
 . y    - the vertical locations of the local mesh points
 . min  - the minimum value in the entire contour

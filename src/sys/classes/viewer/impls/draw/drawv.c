@@ -346,9 +346,8 @@ PetscErrorCode PetscViewerDrawGetTitle(PetscViewer v, const char *title[])
 }
 
 /*@C
-  PetscViewerDrawOpen - Opens a `PetscDraw` window for use as a `PetscViewer` with type `PETSCVIEWERDRAW`. If you want to
-  do graphics in this window, you must call `PetscViewerDrawGetDraw()` and
-  perform the graphics on the `PetscDraw` object.
+  PetscViewerDrawOpen - Opens a `PetscDraw` window for use as a `PetscViewer` with type
+  `PETSCVIEWERDRAW`.
 
   Collective
 
@@ -364,10 +363,6 @@ PetscErrorCode PetscViewerDrawGetTitle(PetscViewer v, const char *title[])
   Output Parameter:
 . viewer - the `PetscViewer`
 
-  Format Options:
-+ `PETSC_VIEWER_DRAW_BASIC` - displays with basic format
-- `PETSC_VIEWER_DRAW_LG`    - displays using a line graph
-
   Options Database Keys:
 + -draw_type          - use x or null
 . -nox                - Disables all x-windows output
@@ -378,6 +373,14 @@ PetscErrorCode PetscViewerDrawGetTitle(PetscViewer v, const char *title[])
      (0 is default, -1 implies until user input).
 
   Level: beginner
+
+  Notes:
+  If you want to do graphics in this window, you must call `PetscViewerDrawGetDraw()` and
+  perform the graphics on the `PetscDraw` object.
+
+  Format options include\:
++ `PETSC_VIEWER_DRAW_BASIC` - displays with basic format
+- `PETSC_VIEWER_DRAW_LG`    - displays using a line graph
 
   Fortran Notes:
   Whenever indicating null character data in a Fortran code,

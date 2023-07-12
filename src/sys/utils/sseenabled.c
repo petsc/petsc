@@ -122,6 +122,8 @@ static PetscBool petsc_sse_enabled_global     = PETSC_FALSE;
 
   Note:
   `NULL` can be specified for `lflag` or `gflag` if either of these values are not desired.
+
+.seealso: [](ch_profiling)
 @*/
 PetscErrorCode PetscSSEIsEnabled(MPI_Comm comm, PetscBool *lflag, PetscBool *gflag)
 {

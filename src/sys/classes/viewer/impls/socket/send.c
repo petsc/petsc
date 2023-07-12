@@ -168,7 +168,7 @@ PetscErrorCode PetscOpenSocket(const char hostname[], int portnum, int *t)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*
    PetscSocketEstablish - starts a listener on a socket
 
    Input Parameter:
@@ -180,8 +180,8 @@ PetscErrorCode PetscOpenSocket(const char hostname[], int portnum, int *t)
     Level: advanced
 
 .seealso: `PetscSocketListen()`, `PetscOpenSocket()`
-@*/
-PETSC_INTERN PetscErrorCode PetscSocketEstablish(int portnum, int *ss)
+*/
+static PetscErrorCode PetscSocketEstablish(int portnum, int *ss)
 {
   static size_t      MAXHOSTNAME = 100;
   char               myname[MAXHOSTNAME + 1];
@@ -225,7 +225,7 @@ PETSC_INTERN PetscErrorCode PetscSocketEstablish(int portnum, int *ss)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*
    PetscSocketListen - Listens at a socket created with `PetscSocketEstablish()`
 
    Input Parameter:
@@ -237,8 +237,8 @@ PETSC_INTERN PetscErrorCode PetscSocketEstablish(int portnum, int *ss)
     Level: advanced
 
 .seealso: `PetscSocketEstablish()`
-@*/
-PETSC_INTERN PetscErrorCode PetscSocketListen(int listenport, int *t)
+*/
+static PetscErrorCode PetscSocketListen(int listenport, int *t)
 {
   struct sockaddr_in isa;
 #if defined(PETSC_HAVE_ACCEPT_SIZE_T)
@@ -254,6 +254,8 @@ PETSC_INTERN PetscErrorCode PetscSocketListen(int listenport, int *t)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+// "Unknown section 'Environmental Variables'"
+// PetscClangLinter pragma disable: -fdoc-section-header-unknown
 /*@C
   PetscViewerSocketOpen - Opens a connection to a MATLAB or other socket based server.
 
@@ -445,7 +447,8 @@ PetscErrorCode PetscViewerSocketSetConnection(PetscViewer v, const char machine[
   if (rank == 0) {
     PetscCall(PetscStrcmp(mach, "server", &tflg));
     if (tflg) {
-      int listenport;
+      int listenport = 0;
+
       PetscCall(PetscInfo(v, "Waiting for connection from socket process on port %d\n", port));
       PetscCall(PetscSocketEstablish(port, &listenport));
       PetscCall(PetscSocketListen(listenport, &vmatlab->port));

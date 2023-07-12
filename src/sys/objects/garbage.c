@@ -171,7 +171,7 @@ PetscErrorCode GarbageKeyAllReduceIntersect_Private(MPI_Comm comm, PetscInt64 *s
   Objects that appear in this dictionary on all MPI processes can be destroyed
   by calling `PetscGarbageCleanup()`.
 
-  This is done as follows:
+  This is done as follows\:
   1.  Keys of the garbage dictionary, which correspond to the creation
   indices of the objects stashed, are sorted.
   2.  A collective intersection of dictionary keys is performed by all
