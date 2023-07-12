@@ -4,7 +4,8 @@
 */
 #include <petscsys.h> /*I   "petscsys.h"    I*/
 
-const char *const PetscDataTypes[] = {"UNKNOWN", "DOUBLE", "COMPLEX", "LONG", "SHORT", "FLOAT", "CHAR", "LOGICAL", "ENUM", "BOOL", "LONGDOUBLE", "OBJECT", "FUNCTION", "STRING", "FP16", "STRUCT", "INT", "INT64", "PetscDataType", "PETSC_", NULL};
+const char *const PetscDataTypes[] = {"UNKNOWN",  "DOUBLE", "COMPLEX", "LONG",   "SHORT", "FLOAT", "CHAR",  "BIT_LOGICAL", "ENUM",          "BOOL",   "__FLOAT128", "OBJECT",
+                                      "FUNCTION", "STRING", "__FP16",  "STRUCT", "INT",   "INT64", "COUNT", "INT32",       "PetscDataType", "PETSC_", NULL};
 
 /*@C
   PetscDataTypeToMPIDataType - Converts the `PetscDataType` name of a datatype to its `MPI_Datatype`
