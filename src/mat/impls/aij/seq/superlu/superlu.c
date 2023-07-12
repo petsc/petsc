@@ -486,18 +486,18 @@ static PetscErrorCode MatSuperluSetILUDropTol_SuperLU(Mat F, PetscReal dtol)
 /*@
   MatSuperluSetILUDropTol - Set SuperLU ILU drop tolerance
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  F - the factored matrix obtained by calling `MatGetFactor()`
--  dtol - drop tolerance
+  Input Parameters:
++ F    - the factored matrix obtained by calling `MatGetFactor()`
+- dtol - drop tolerance
 
   Options Database Key:
-.   -mat_superlu_ilu_droptol <dtol> - the drop tolerance
+. -mat_superlu_ilu_droptol <dtol> - the drop tolerance
 
-   Level: beginner
+  Level: beginner
 
-   References:
+  References:
 .  * - SuperLU Users' Guide
 
 .seealso: [](ch_matrices), `Mat`, `MatGetFactor()`, `MATSOLVERSUPERLU`

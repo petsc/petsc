@@ -861,19 +861,19 @@ PetscErrorCode MatMkl_PardisoSetCntl_MKL_PARDISO(Mat F, PetscInt icntl, PetscInt
 /*@
   MatMkl_PardisoSetCntl - Set Mkl_Pardiso parameters
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  F - the factored matrix obtained by calling `MatGetFactor()`
-.  icntl - index of Mkl_Pardiso parameter
--  ival - value of Mkl_Pardiso parameter
+  Input Parameters:
++ F     - the factored matrix obtained by calling `MatGetFactor()`
+. icntl - index of Mkl_Pardiso parameter
+- ival  - value of Mkl_Pardiso parameter
 
   Options Database Key:
-.   -mat_mkl_pardiso_<icntl> <ival> - change the option numbered icntl to the value ival
+. -mat_mkl_pardiso_<icntl> <ival> - change the option numbered icntl to the value ival
 
-   Level: beginner
+  Level: beginner
 
-   References:
+  References:
 .  * - Mkl_Pardiso Users' Guide
 
 .seealso: [](ch_matrices), `Mat`, `MATSOLVERMKL_PARDISO`, `MatGetFactor()`

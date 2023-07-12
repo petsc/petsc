@@ -161,7 +161,7 @@ static PetscErrorCode MatDiagonalGetDiagonal_Diagonal(Mat A, Vec *diag)
   MatDiagonalRestoreDiagonal - Restore the diagonal of a `MATDIAGONAL`
 
   Input Parameters:
-+ A - the `MATDIAGONAL`
++ A    - the `MATDIAGONAL`
 - diag - the `Vec` obtained from `MatDiagonalGetDiagonal()`
 
   Level: developer
@@ -209,7 +209,7 @@ static PetscErrorCode MatDiagonalRestoreDiagonal_Diagonal(Mat A, Vec *diag)
   Level: developer
 
   Note:
-   The user must call
+  The user must call
   `MatDiagonalRestoreInverseDiagonal()` before using the matrix again.
 
   If a matrix is created only to call `MatSolve()` (which happens for `MATLMVMDIAGBROYDEN`),
@@ -244,7 +244,7 @@ static PetscErrorCode MatDiagonalGetInverseDiagonal_Diagonal(Mat A, Vec *inv_dia
   MatDiagonalRestoreInverseDiagonal - Restore the inverse diagonal of a `MATDIAGONAL`
 
   Input Parameters:
-+ A - the `MATDIAGONAL`
++ A        - the `MATDIAGONAL`
 - inv_diag - the `Vec` obtained from `MatDiagonalGetInverseDiagonal()`
 
   Level: developer
@@ -455,23 +455,23 @@ PetscErrorCode MatGetInfo_Diagonal(Mat A, MatInfoType flag, MatInfo *info)
 }
 
 /*@
-   MatCreateDiagonal - Creates a matrix defined by a given vector along its diagonal.
+  MatCreateDiagonal - Creates a matrix defined by a given vector along its diagonal.
 
-   Collective
+  Collective
 
-   Input Parameter:
-.  diag - vector for the diagonal
+  Input Parameter:
+. diag - vector for the diagonal
 
-   Output Parameter:
-.  J - the diagonal matrix
+  Output Parameter:
+. J - the diagonal matrix
 
-   Level: advanced
+  Level: advanced
 
-   Notes:
-    Only supports square matrices with the same number of local rows and columns.
+  Notes:
+  Only supports square matrices with the same number of local rows and columns.
 
-    The input vector `diag` will be referenced internally: any changes to `diag`
-    will affect the matrix `J`.
+  The input vector `diag` will be referenced internally: any changes to `diag`
+  will affect the matrix `J`.
 
 .seealso: [](ch_matrices), `Mat`, `MatDestroy()`, `MATCONSTANTDIAGONAL`, `MatScale()`, `MatShift()`, `MatMult()`, `MatGetDiagonal()`, `MatSolve()`
           `MatDiagonalRestoreInverseDiagonal()`, `MatDiagonalGetDiagonal()`, `MatDiagonalRestoreDiagonal()`, `MatDiagonalGetInverseDiagonal()`

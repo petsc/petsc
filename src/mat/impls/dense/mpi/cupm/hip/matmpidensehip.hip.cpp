@@ -190,7 +190,7 @@ PetscErrorCode MatDenseHIPGetArrayWrite(Mat A, PetscScalar **a)
   Not Collective
 
   Input Parameters:
-+ A     - the matrix
++ A - the matrix
 - a - the GPU array in column major order
 
   Level: developer
@@ -242,7 +242,7 @@ PetscErrorCode MatDenseHIPGetArrayRead(Mat A, const PetscScalar **a)
   Not Collective
 
   Input Parameters:
-+ A     - the matrix
++ A - the matrix
 - a - the GPU array in column major order
 
   Level: developer
@@ -300,7 +300,7 @@ PetscErrorCode MatDenseHIPGetArray(Mat A, PetscScalar **a)
   Level: developer
 
   Input Parameters:
-+ A     - the matrix
++ A - the matrix
 - a - the GPU array in column major order
 
 .seealso: `MATDENSEHIP`, `MatDenseHIPGetArray()`, `MatDenseHIPRestoreArrayWrite()`,

@@ -164,28 +164,28 @@ static PetscErrorCode MatDestroy_LocalRef(Mat B)
 }
 
 /*@
-   MatCreateLocalRef - Gets a logical reference to a local submatrix, for use in assembly, that is to set values into the matrix
+  MatCreateLocalRef - Gets a logical reference to a local submatrix, for use in assembly, that is to set values into the matrix
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  A - full matrix, generally parallel
-.  isrow - Local index set for the rows
--  iscol - Local index set for the columns
+  Input Parameters:
++ A     - full matrix, generally parallel
+. isrow - Local index set for the rows
+- iscol - Local index set for the columns
 
-   Output Parameter:
+  Output Parameter:
 . newmat - new serial `Mat`
 
-   Level: developer
+  Level: developer
 
-   Notes:
-   Most will use `MatGetLocalSubMatrix()` which returns a real matrix corresponding to the local
-   block if it available, such as with matrix formats that store these blocks separately.
+  Notes:
+  Most will use `MatGetLocalSubMatrix()` which returns a real matrix corresponding to the local
+  block if it available, such as with matrix formats that store these blocks separately.
 
-   The new matrix forwards `MatSetValuesLocal()` and `MatSetValuesBlockedLocal()` to the global system.
-   In general, it does not define `MatMult()` or any other functions.  Local submatrices can be nested.
+  The new matrix forwards `MatSetValuesLocal()` and `MatSetValuesBlockedLocal()` to the global system.
+  In general, it does not define `MatMult()` or any other functions.  Local submatrices can be nested.
 
-.seealso: [](ch_matrices), `Mat`, MATSUBMATRIX`, `MatCreateSubMatrixVirtual()`, `MatSetValuesLocal()`, `MatSetValuesBlockedLocal()`, `MatGetLocalSubMatrix()`, `MatCreateSubMatrix()`
+.seealso: [](ch_matrices), `Mat`, `MATSUBMATRIX`, `MatCreateSubMatrixVirtual()`, `MatSetValuesLocal()`, `MatSetValuesBlockedLocal()`, `MatGetLocalSubMatrix()`, `MatCreateSubMatrix()`
 @*/
 PetscErrorCode MatCreateLocalRef(Mat A, IS isrow, IS iscol, Mat *newmat)
 {

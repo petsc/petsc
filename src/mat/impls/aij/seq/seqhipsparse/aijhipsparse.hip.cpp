@@ -124,20 +124,20 @@ PETSC_INTERN PetscErrorCode MatHIPSPARSESetFormat_SeqAIJHIPSPARSE(Mat A, MatHIPS
 }
 
 /*@
-   MatHIPSPARSESetFormat - Sets the storage format of `MATSEQHIPSPARSE` matrices for a particular
-   operation. Only the `MatMult()` operation can use different GPU storage formats
+  MatHIPSPARSESetFormat - Sets the storage format of `MATSEQHIPSPARSE` matrices for a particular
+  operation. Only the `MatMult()` operation can use different GPU storage formats
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  A - Matrix of type `MATSEQAIJHIPSPARSE`
-.  op - `MatHIPSPARSEFormatOperation`. `MATSEQAIJHIPSPARSE` matrices support `MAT_HIPSPARSE_MULT` and `MAT_HIPSPARSE_ALL`.
+  Input Parameters:
++ A      - Matrix of type `MATSEQAIJHIPSPARSE`
+. op     - `MatHIPSPARSEFormatOperation`. `MATSEQAIJHIPSPARSE` matrices support `MAT_HIPSPARSE_MULT` and `MAT_HIPSPARSE_ALL`.
          `MATMPIAIJHIPSPARSE` matrices support `MAT_HIPSPARSE_MULT_DIAG`, `MAT_HIPSPARSE_MULT_OFFDIAG`, and `MAT_HIPSPARSE_ALL`.
--  format - `MatHIPSPARSEStorageFormat` (one of `MAT_HIPSPARSE_CSR`, `MAT_HIPSPARSE_ELL`, `MAT_HIPSPARSE_HYB`.)
+- format - `MatHIPSPARSEStorageFormat` (one of `MAT_HIPSPARSE_CSR`, `MAT_HIPSPARSE_ELL`, `MAT_HIPSPARSE_HYB`.)
 
-   Level: intermediate
+  Level: intermediate
 
-.seealso: [](ch_matrices), `Mat`, `Mat`, `MATSEQAIJHIPSPARSE`, `MatHIPSPARSEStorageFormat`, `MatHIPSPARSEFormatOperation`
+.seealso: [](ch_matrices), `Mat`, `MATSEQAIJHIPSPARSE`, `MatHIPSPARSEStorageFormat`, `MatHIPSPARSEFormatOperation`
 @*/
 PetscErrorCode MatHIPSPARSESetFormat(Mat A, MatHIPSPARSEFormatOperation op, MatHIPSPARSEStorageFormat format)
 {
@@ -157,18 +157,18 @@ PETSC_INTERN PetscErrorCode MatHIPSPARSESetUseCPUSolve_SeqAIJHIPSPARSE(Mat A, Pe
 }
 
 /*@
-   MatHIPSPARSESetUseCPUSolve - Sets use CPU `MatSolve()`.
+  MatHIPSPARSESetUseCPUSolve - Sets use CPU `MatSolve()`.
 
-   Input Parameters:
-+  A - Matrix of type `MATSEQAIJHIPSPARSE`
--  use_cpu - set flag for using the built-in CPU `MatSolve()`
+  Input Parameters:
++ A       - Matrix of type `MATSEQAIJHIPSPARSE`
+- use_cpu - set flag for using the built-in CPU `MatSolve()`
 
-   Level: intermediate
+  Level: intermediate
 
-   Notes:
-   The hipSparse LU solver currently computes the factors with the built-in CPU method
-   and moves the factors to the GPU for the solve. We have observed better performance keeping the data on the CPU and computing the solve there.
-   This method to specifies if the solve is done on the CPU or GPU (GPU is the default).
+  Notes:
+  The hipSparse LU solver currently computes the factors with the built-in CPU method
+  and moves the factors to the GPU for the solve. We have observed better performance keeping the data on the CPU and computing the solve there.
+  This method to specifies if the solve is done on the CPU or GPU (GPU is the default).
 
 .seealso: [](ch_matrices), `Mat`, `MatSolve()`, `MATSEQAIJHIPSPARSE`, `MatHIPSPARSEStorageFormat`, `MatHIPSPARSEFormatOperation`
 @*/
@@ -3176,37 +3176,37 @@ static PetscErrorCode MatAssemblyEnd_SeqAIJHIPSPARSE(Mat A, MatAssemblyType mode
 }
 
 /*@
-   MatCreateSeqAIJHIPSPARSE - Creates a sparse matrix in `MATAIJHIPSPARSE` (compressed row) format.
-   This matrix will ultimately pushed down to AMD GPUs and use the HIPSPARSE library for calculations.
+  MatCreateSeqAIJHIPSPARSE - Creates a sparse matrix in `MATAIJHIPSPARSE` (compressed row) format.
+  This matrix will ultimately pushed down to AMD GPUs and use the HIPSPARSE library for calculations.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  comm - MPI communicator, set to `PETSC_COMM_SELF`
-.  m - number of rows
-.  n - number of columns
-.  nz - number of nonzeros per row (same for all rows), ignored if `nnz` is set
--  nnz - array containing the number of nonzeros in the various rows (possibly different for each row) or `NULL`
+  Input Parameters:
++ comm - MPI communicator, set to `PETSC_COMM_SELF`
+. m    - number of rows
+. n    - number of columns
+. nz   - number of nonzeros per row (same for all rows), ignored if `nnz` is set
+- nnz  - array containing the number of nonzeros in the various rows (possibly different for each row) or `NULL`
 
-   Output Parameter:
-.  A - the matrix
+  Output Parameter:
+. A - the matrix
 
-   Level: intermediate
+  Level: intermediate
 
-   Notes:
-   It is recommended that one use the `MatCreate()`, `MatSetType()` and/or `MatSetFromOptions()`,
-   `MatXXXXSetPreallocation()` paradgm instead of this routine directly.
-   [MatXXXXSetPreallocation() is, for example, `MatSeqAIJSetPreallocation`]
+  Notes:
+  It is recommended that one use the `MatCreate()`, `MatSetType()` and/or `MatSetFromOptions()`,
+  `MatXXXXSetPreallocation()` paradgm instead of this routine directly.
+  [MatXXXXSetPreallocation() is, for example, `MatSeqAIJSetPreallocation`]
 
-   The AIJ format (compressed row storage), is fully compatible with standard Fortran
-   storage.  That is, the stored row and column indices can begin at
-   either one (as in Fortran) or zero.
+  The AIJ format (compressed row storage), is fully compatible with standard Fortran
+  storage.  That is, the stored row and column indices can begin at
+  either one (as in Fortran) or zero.
 
-   Specify the preallocated storage with either `nz` or `nnz` (not both).
-   Set `nz` = `PETSC_DEFAULT` and `nnz` = `NULL` for PETSc to control dynamic memory
-   allocation.
+  Specify the preallocated storage with either `nz` or `nnz` (not both).
+  Set `nz` = `PETSC_DEFAULT` and `nnz` = `NULL` for PETSc to control dynamic memory
+  allocation.
 
-.seealso: [](ch_matrices), `Mat`, `MatCreate()`, `MatCreateAIJ()`, `MatSetValues()`, `MatSeqAIJSetColumnIndices()`, `MatCreateSeqAIJWithArrays()`, `MatCreateAIJ()`, `MATSEQAIJHIPSPARSE`, `MATAIJHIPSPARSE`
+.seealso: [](ch_matrices), `Mat`, `MatCreate()`, `MatCreateAIJ()`, `MatSetValues()`, `MatSeqAIJSetColumnIndices()`, `MatCreateSeqAIJWithArrays()`, `MATSEQAIJHIPSPARSE`, `MATAIJHIPSPARSE`
 @*/
 PetscErrorCode MatCreateSeqAIJHIPSPARSE(MPI_Comm comm, PetscInt m, PetscInt n, PetscInt nz, const PetscInt nnz[], Mat *A)
 {
@@ -3805,22 +3805,22 @@ PetscErrorCode MatSetValuesCOO_SeqAIJHIPSPARSE(Mat A, const PetscScalar v[], Ins
 }
 
 /*@C
-    MatSeqAIJHIPSPARSEGetIJ - returns the device row storage `i` and `j` indices for `MATSEQAIJHIPSPARSE` matrices.
+  MatSeqAIJHIPSPARSEGetIJ - returns the device row storage `i` and `j` indices for `MATSEQAIJHIPSPARSE` matrices.
 
-    Not Collective
+  Not Collective
 
-    Input Parameters:
-+   A - the matrix
--   compressed - `PETSC_TRUE` or `PETSC_FALSE` indicating the matrix data structure should be always returned in compressed form
+  Input Parameters:
++ A          - the matrix
+- compressed - `PETSC_TRUE` or `PETSC_FALSE` indicating the matrix data structure should be always returned in compressed form
 
-    Output Parameters:
-+   i - the CSR row pointers
--   j - the CSR column indices
+  Output Parameters:
++ i - the CSR row pointers
+- j - the CSR column indices
 
-    Level: developer
+  Level: developer
 
-    Note:
-      When compressed is true, the CSR structure does not contain empty rows
+  Note:
+  When compressed is true, the CSR structure does not contain empty rows
 
 .seealso: [](ch_matrices), `Mat`, `MatSeqAIJHIPSPARSERestoreIJ()`, `MatSeqAIJHIPSPARSEGetArrayRead()`
 @*/
@@ -3853,17 +3853,17 @@ PetscErrorCode MatSeqAIJHIPSPARSEGetIJ(Mat A, PetscBool compressed, const int **
 }
 
 /*@C
-    MatSeqAIJHIPSPARSERestoreIJ - restore the device row storage `i` and `j` indices obtained with `MatSeqAIJHIPSPARSEGetIJ()`
+  MatSeqAIJHIPSPARSERestoreIJ - restore the device row storage `i` and `j` indices obtained with `MatSeqAIJHIPSPARSEGetIJ()`
 
-    Not Collective
+  Not Collective
 
-    Input Parameters:
-+   A - the matrix
-.   compressed - `PETSC_TRUE` or `PETSC_FALSE` indicating the matrix data structure should be always returned in compressed form
-.   i - the CSR row pointers
--   j - the CSR column indices
+  Input Parameters:
++ A          - the matrix
+. compressed - `PETSC_TRUE` or `PETSC_FALSE` indicating the matrix data structure should be always returned in compressed form
+. i          - the CSR row pointers
+- j          - the CSR column indices
 
-    Level: developer
+  Level: developer
 
 .seealso: [](ch_matrices), `Mat`, `MatSeqAIJHIPSPARSEGetIJ()`
 @*/
@@ -3878,20 +3878,20 @@ PetscErrorCode MatSeqAIJHIPSPARSERestoreIJ(Mat A, PetscBool compressed, const in
 }
 
 /*@C
-   MatSeqAIJHIPSPARSEGetArrayRead - gives read-only access to the array where the device data for a `MATSEQAIJHIPSPARSE` matrix is stored
+  MatSeqAIJHIPSPARSEGetArrayRead - gives read-only access to the array where the device data for a `MATSEQAIJHIPSPARSE` matrix is stored
 
-   Not Collective
+  Not Collective
 
-   Input Parameter:
-.   A - a `MATSEQAIJHIPSPARSE` matrix
+  Input Parameter:
+. A - a `MATSEQAIJHIPSPARSE` matrix
 
-   Output Parameter:
-.   a - pointer to the device data
+  Output Parameter:
+. a - pointer to the device data
 
-   Level: developer
+  Level: developer
 
-   Note:
-   May trigger host-device copies if the up-to-date matrix data is on host
+  Note:
+  May trigger host-device copies if the up-to-date matrix data is on host
 
 .seealso: [](ch_matrices), `Mat`, `MatSeqAIJHIPSPARSEGetArray()`, `MatSeqAIJHIPSPARSEGetArrayWrite()`, `MatSeqAIJHIPSPARSERestoreArrayRead()`
 @*/
@@ -3914,15 +3914,15 @@ PetscErrorCode MatSeqAIJHIPSPARSEGetArrayRead(Mat A, const PetscScalar **a)
 }
 
 /*@C
-   MatSeqAIJHIPSPARSERestoreArrayRead - restore the read-only access array obtained from `MatSeqAIJHIPSPARSEGetArrayRead()`
+  MatSeqAIJHIPSPARSERestoreArrayRead - restore the read-only access array obtained from `MatSeqAIJHIPSPARSEGetArrayRead()`
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+   A - a `MATSEQAIJHIPSPARSE` matrix
--   a - pointer to the device data
+  Input Parameters:
++ A - a `MATSEQAIJHIPSPARSE` matrix
+- a - pointer to the device data
 
-   Level: developer
+  Level: developer
 
 .seealso: [](ch_matrices), `Mat`, `MatSeqAIJHIPSPARSEGetArrayRead()`
 @*/
@@ -3937,20 +3937,20 @@ PetscErrorCode MatSeqAIJHIPSPARSERestoreArrayRead(Mat A, const PetscScalar **a)
 }
 
 /*@C
-   MatSeqAIJHIPSPARSEGetArray - gives read-write access to the array where the device data for a `MATSEQAIJHIPSPARSE` matrix is stored
+  MatSeqAIJHIPSPARSEGetArray - gives read-write access to the array where the device data for a `MATSEQAIJHIPSPARSE` matrix is stored
 
-   Not Collective
+  Not Collective
 
-   Input Parameter:
-.   A - a `MATSEQAIJHIPSPARSE` matrix
+  Input Parameter:
+. A - a `MATSEQAIJHIPSPARSE` matrix
 
-   Output Parameter:
-.   a - pointer to the device data
+  Output Parameter:
+. a - pointer to the device data
 
-   Level: developer
+  Level: developer
 
-   Note:
-   May trigger host-device copies if up-to-date matrix data is on host
+  Note:
+  May trigger host-device copies if up-to-date matrix data is on host
 
 .seealso: [](ch_matrices), `Mat`, `MatSeqAIJHIPSPARSEGetArrayRead()`, `MatSeqAIJHIPSPARSEGetArrayWrite()`, `MatSeqAIJHIPSPARSERestoreArray()`
 @*/
@@ -3974,15 +3974,15 @@ PetscErrorCode MatSeqAIJHIPSPARSEGetArray(Mat A, PetscScalar **a)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 /*@C
-   MatSeqAIJHIPSPARSERestoreArray - restore the read-write access array obtained from `MatSeqAIJHIPSPARSEGetArray()`
+  MatSeqAIJHIPSPARSERestoreArray - restore the read-write access array obtained from `MatSeqAIJHIPSPARSEGetArray()`
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+   A - a `MATSEQAIJHIPSPARSE` matrix
--   a - pointer to the device data
+  Input Parameters:
++ A - a `MATSEQAIJHIPSPARSE` matrix
+- a - pointer to the device data
 
-   Level: developer
+  Level: developer
 
 .seealso: [](ch_matrices), `Mat`, `MatSeqAIJHIPSPARSEGetArray()`
 @*/
@@ -3999,20 +3999,20 @@ PetscErrorCode MatSeqAIJHIPSPARSERestoreArray(Mat A, PetscScalar **a)
 }
 
 /*@C
-   MatSeqAIJHIPSPARSEGetArrayWrite - gives write access to the array where the device data for a `MATSEQAIJHIPSPARSE` matrix is stored
+  MatSeqAIJHIPSPARSEGetArrayWrite - gives write access to the array where the device data for a `MATSEQAIJHIPSPARSE` matrix is stored
 
-   Not Collective
+  Not Collective
 
-   Input Parameter:
-.   A - a `MATSEQAIJHIPSPARSE` matrix
+  Input Parameter:
+. A - a `MATSEQAIJHIPSPARSE` matrix
 
-   Output Parameter:
-.   a - pointer to the device data
+  Output Parameter:
+. a - pointer to the device data
 
-   Level: developer
+  Level: developer
 
-   Note:
-   Does not trigger host-device copies and flags data validity on the GPU
+  Note:
+  Does not trigger host-device copies and flags data validity on the GPU
 
 .seealso: [](ch_matrices), `Mat`, `MatSeqAIJHIPSPARSEGetArray()`, `MatSeqAIJHIPSPARSEGetArrayRead()`, `MatSeqAIJHIPSPARSERestoreArrayWrite()`
 @*/
@@ -4036,15 +4036,15 @@ PetscErrorCode MatSeqAIJHIPSPARSEGetArrayWrite(Mat A, PetscScalar **a)
 }
 
 /*@C
-   MatSeqAIJHIPSPARSERestoreArrayWrite - restore the write-only access array obtained from `MatSeqAIJHIPSPARSEGetArrayWrite()`
+  MatSeqAIJHIPSPARSERestoreArrayWrite - restore the write-only access array obtained from `MatSeqAIJHIPSPARSEGetArrayWrite()`
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+   A - a `MATSEQAIJHIPSPARSE` matrix
--   a - pointer to the device data
+  Input Parameters:
++ A - a `MATSEQAIJHIPSPARSE` matrix
+- a - pointer to the device data
 
-   Level: developer
+  Level: developer
 
 .seealso: [](ch_matrices), `Mat`, `MatSeqAIJHIPSPARSEGetArrayWrite()`
 @*/

@@ -15,22 +15,22 @@ typedef struct {
 } MatPartitioning_PTScotch;
 
 /*@
-   MatPartitioningPTScotchSetImbalance - Sets the value of the load imbalance
-   ratio to be used during strategy selection.
+  MatPartitioningPTScotchSetImbalance - Sets the value of the load imbalance
+  ratio to be used during strategy selection.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  part - the partitioning context
--  imb  - the load imbalance ratio
+  Input Parameters:
++ part - the partitioning context
+- imb  - the load imbalance ratio
 
-   Options Database Key:
-.  -mat_partitioning_ptscotch_imbalance <imb> - set load imbalance ratio
+  Options Database Key:
+. -mat_partitioning_ptscotch_imbalance <imb> - set load imbalance ratio
 
-   Note:
-   Must be in the range [0,1]. The default value is 0.01.
+  Note:
+  Must be in the range [0,1]. The default value is 0.01.
 
-   Level: advanced
+  Level: advanced
 
 .seealso: `MATPARTITIONINGSCOTCH`, `MatPartitioningPTScotchSetStrategy()`, `MatPartitioningPTScotchGetImbalance()`
 @*/
@@ -57,18 +57,18 @@ PetscErrorCode MatPartitioningPTScotchSetImbalance_PTScotch(MatPartitioning part
 }
 
 /*@
-   MatPartitioningPTScotchGetImbalance - Gets the value of the load imbalance
-   ratio used during strategy selection.
+  MatPartitioningPTScotchGetImbalance - Gets the value of the load imbalance
+  ratio used during strategy selection.
 
-   Not Collective
+  Not Collective
 
-   Input Parameter:
-.  part - the partitioning context
+  Input Parameter:
+. part - the partitioning context
 
-   Output Parameter:
-.  imb  - the load imbalance ratio
+  Output Parameter:
+. imb - the load imbalance ratio
 
-   Level: advanced
+  Level: advanced
 
 .seealso: `MATPARTITIONINGSCOTCH`, `MatPartitioningPTScotchSetImbalance()`
 @*/
@@ -91,13 +91,13 @@ PetscErrorCode MatPartitioningPTScotchGetImbalance_PTScotch(MatPartitioning part
 }
 
 /*@
-   MatPartitioningPTScotchSetStrategy - Sets the strategy to be used in PTScotch.
+  MatPartitioningPTScotchSetStrategy - Sets the strategy to be used in PTScotch.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  part - the partitioning context
--  strategy - the strategy, one of
+  Input Parameters:
++ part     - the partitioning context
+- strategy - the strategy, one of
 .vb
      MP_PTSCOTCH_DEFAULT     - Default behavior
      MP_PTSCOTCH_QUALITY     - Prioritize quality over speed
@@ -107,13 +107,13 @@ PetscErrorCode MatPartitioningPTScotchGetImbalance_PTScotch(MatPartitioning part
      MP_PTSCOTCH_SCALABILITY - Favor scalability as much as possible
 .ve
 
-   Options Database Key:
-.  -mat_partitioning_ptscotch_strategy [quality,speed,balance,safety,scalability] - strategy
+  Options Database Key:
+. -mat_partitioning_ptscotch_strategy [quality,speed,balance,safety,scalability] - strategy
 
-   Level: advanced
+  Level: advanced
 
-   Note:
-   The default is `MP_SCOTCH_QUALITY`. See the PTScotch documentation for more information.
+  Note:
+  The default is `MP_SCOTCH_QUALITY`. See the PTScotch documentation for more information.
 
 .seealso: `MATPARTITIONINGSCOTCH`, `MatPartitioningPTScotchSetImbalance()`, `MatPartitioningPTScotchGetStrategy()`
 @*/
@@ -155,17 +155,17 @@ PetscErrorCode MatPartitioningPTScotchSetStrategy_PTScotch(MatPartitioning part,
 }
 
 /*@
-   MatPartitioningPTScotchGetStrategy - Gets the strategy used in PTScotch.
+  MatPartitioningPTScotchGetStrategy - Gets the strategy used in PTScotch.
 
-   Not Collective
+  Not Collective
 
-   Input Parameter:
-.  part - the partitioning context
+  Input Parameter:
+. part - the partitioning context
 
-   Output Parameter:
-.  strategy - the strategy
+  Output Parameter:
+. strategy - the strategy
 
-   Level: advanced
+  Level: advanced
 
 .seealso: `MATPARTITIONINGSCOTCH`, `MatPartitioningPTScotchSetStrategy()`
 @*/

@@ -2200,62 +2200,62 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPISBAIJ(Mat B)
 M*/
 
 /*@C
-   MatMPISBAIJSetPreallocation - For good matrix assembly performance
-   the user should preallocate the matrix storage by setting the parameters
-   d_nz (or d_nnz) and o_nz (or o_nnz).  By setting these parameters accurately,
-   performance can be increased by more than a factor of 50.
+  MatMPISBAIJSetPreallocation - For good matrix assembly performance
+  the user should preallocate the matrix storage by setting the parameters
+  d_nz (or d_nnz) and o_nz (or o_nnz).  By setting these parameters accurately,
+  performance can be increased by more than a factor of 50.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  B - the matrix
-.  bs   - size of block, the blocks are ALWAYS square. One can use MatSetBlockSizes() to set a different row and column blocksize but the row
+  Input Parameters:
++ B     - the matrix
+. bs    - size of block, the blocks are ALWAYS square. One can use MatSetBlockSizes() to set a different row and column blocksize but the row
           blocksize always defines the size of the blocks. The column blocksize sets the blocksize of the vectors obtained with MatCreateVecs()
-.  d_nz  - number of block nonzeros per block row in diagonal portion of local
+. d_nz  - number of block nonzeros per block row in diagonal portion of local
            submatrix  (same for all local rows)
-.  d_nnz - array containing the number of block nonzeros in the various block rows
+. d_nnz - array containing the number of block nonzeros in the various block rows
            in the upper triangular and diagonal part of the in diagonal portion of the local
            (possibly different for each block row) or `NULL`.  If you plan to factor the matrix you must leave room
            for the diagonal entry and set a value even if it is zero.
-.  o_nz  - number of block nonzeros per block row in the off-diagonal portion of local
+. o_nz  - number of block nonzeros per block row in the off-diagonal portion of local
            submatrix (same for all local rows).
--  o_nnz - array containing the number of nonzeros in the various block rows of the
+- o_nnz - array containing the number of nonzeros in the various block rows of the
            off-diagonal portion of the local submatrix that is right of the diagonal
            (possibly different for each block row) or `NULL`.
 
-   Options Database Keys:
-+   -mat_no_unroll - uses code that does not unroll the loops in the
+  Options Database Keys:
++ -mat_no_unroll  - uses code that does not unroll the loops in the
                      block calculations (much slower)
--   -mat_block_size - size of the blocks to use
+- -mat_block_size - size of the blocks to use
 
-   Level: intermediate
+  Level: intermediate
 
-   Notes:
+  Notes:
 
-   If `PETSC_DECIDE` or `PETSC_DETERMINE` is used for a particular argument on one processor
-   than it must be used on all processors that share the object for that argument.
+  If `PETSC_DECIDE` or `PETSC_DETERMINE` is used for a particular argument on one processor
+  than it must be used on all processors that share the object for that argument.
 
-   If the *_nnz parameter is given then the *_nz parameter is ignored
+  If the *_nnz parameter is given then the *_nz parameter is ignored
 
-   Storage Information:
-   For a square global matrix we define each processor's diagonal portion
-   to be its local rows and the corresponding columns (a square submatrix);
-   each processor's off-diagonal portion encompasses the remainder of the
-   local matrix (a rectangular submatrix).
+  Storage Information:
+  For a square global matrix we define each processor's diagonal portion
+  to be its local rows and the corresponding columns (a square submatrix);
+  each processor's off-diagonal portion encompasses the remainder of the
+  local matrix (a rectangular submatrix).
 
-   The user can specify preallocated storage for the diagonal part of
-   the local submatrix with either `d_nz` or `d_nnz` (not both).  Set
-   `d_nz` = `PETSC_DEFAULT` and `d_nnz` = `NULL` for PETSc to control dynamic
-   memory allocation.  Likewise, specify preallocated storage for the
-   off-diagonal part of the local submatrix with `o_nz` or `o_nnz` (not both).
+  The user can specify preallocated storage for the diagonal part of
+  the local submatrix with either `d_nz` or `d_nnz` (not both).  Set
+  `d_nz` = `PETSC_DEFAULT` and `d_nnz` = `NULL` for PETSc to control dynamic
+  memory allocation.  Likewise, specify preallocated storage for the
+  off-diagonal part of the local submatrix with `o_nz` or `o_nnz` (not both).
 
-   You can call `MatGetInfo()` to get information on how effective the preallocation was;
-   for example the fields mallocs,nz_allocated,nz_used,nz_unneeded;
-   You can also run with the option `-info` and look for messages with the string
-   malloc in them to see if additional memory allocation was needed.
+  You can call `MatGetInfo()` to get information on how effective the preallocation was;
+  for example the fields mallocs,nz_allocated,nz_used,nz_unneeded;
+  You can also run with the option `-info` and look for messages with the string
+  malloc in them to see if additional memory allocation was needed.
 
-   Consider a processor that owns rows 3, 4 and 5 of a parallel matrix. In
-   the figure below we depict these three local rows and all columns (0-11).
+  Consider a processor that owns rows 3, 4 and 5 of a parallel matrix. In
+  the figure below we depict these three local rows and all columns (0-11).
 
 .vb
            0 1 2 3 4 5 6 7 8 9 10 11
@@ -2266,17 +2266,17 @@ M*/
           --------------------------
 .ve
 
-   Thus, any entries in the d locations are stored in the d (diagonal)
-   submatrix, and any entries in the o locations are stored in the
-   o (off-diagonal) submatrix.  Note that the d matrix is stored in
-   `MATSEQSBAIJ` format and the o submatrix in `MATSEQBAIJ` format.
+  Thus, any entries in the d locations are stored in the d (diagonal)
+  submatrix, and any entries in the o locations are stored in the
+  o (off-diagonal) submatrix.  Note that the d matrix is stored in
+  `MATSEQSBAIJ` format and the o submatrix in `MATSEQBAIJ` format.
 
-   Now `d_nz` should indicate the number of block nonzeros per row in the upper triangular
-   plus the diagonal part of the d matrix,
-   and `o_nz` should indicate the number of block nonzeros per row in the o matrix
+  Now `d_nz` should indicate the number of block nonzeros per row in the upper triangular
+  plus the diagonal part of the d matrix,
+  and `o_nz` should indicate the number of block nonzeros per row in the o matrix
 
-   In general, for PDE problems in which most nonzeros are near the diagonal,
-   one expects `d_nz` >> `o_nz`.
+  In general, for PDE problems in which most nonzeros are near the diagonal,
+  one expects `d_nz` >> `o_nz`.
 
 .seealso: [](ch_matrices), `Mat`, `MATMPISBAIJ`, `MATSBAIJ`, `MatCreate()`, `MatCreateSeqSBAIJ()`, `MatSetValues()`, `MatCreateBAIJ()`, `PetscSplitOwnership()`
 @*/
@@ -2291,80 +2291,80 @@ PetscErrorCode MatMPISBAIJSetPreallocation(Mat B, PetscInt bs, PetscInt d_nz, co
 }
 
 /*@C
-   MatCreateSBAIJ - Creates a sparse parallel matrix in symmetric block AIJ format, `MATSBAIJ`,
-   (block compressed row).  For good matrix assembly performance
-   the user should preallocate the matrix storage by setting the parameters
-   `d_nz` (or `d_nnz`) and `o_nz` (or `o_nnz`).
+  MatCreateSBAIJ - Creates a sparse parallel matrix in symmetric block AIJ format, `MATSBAIJ`,
+  (block compressed row).  For good matrix assembly performance
+  the user should preallocate the matrix storage by setting the parameters
+  `d_nz` (or `d_nnz`) and `o_nz` (or `o_nnz`).
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  comm - MPI communicator
-.  bs   - size of block, the blocks are ALWAYS square. One can use `MatSetBlockSizes()` to set a different row and column blocksize but the row
+  Input Parameters:
++ comm  - MPI communicator
+. bs    - size of block, the blocks are ALWAYS square. One can use `MatSetBlockSizes()` to set a different row and column blocksize but the row
           blocksize always defines the size of the blocks. The column blocksize sets the blocksize of the vectors obtained with `MatCreateVecs()`
-.  m - number of local rows (or `PETSC_DECIDE` to have calculated if `M` is given)
+. m     - number of local rows (or `PETSC_DECIDE` to have calculated if `M` is given)
            This value should be the same as the local size used in creating the
            y vector for the matrix-vector product y = Ax.
-.  n - number of local columns (or `PETSC_DECIDE` to have calculated if `N` is given)
+. n     - number of local columns (or `PETSC_DECIDE` to have calculated if `N` is given)
            This value should be the same as the local size used in creating the
            x vector for the matrix-vector product y = Ax.
-.  M - number of global rows (or `PETSC_DETERMINE` to have calculated if `m` is given)
-.  N - number of global columns (or `PETSC_DETERMINE` to have calculated if `n` is given)
-.  d_nz  - number of block nonzeros per block row in diagonal portion of local
+. M     - number of global rows (or `PETSC_DETERMINE` to have calculated if `m` is given)
+. N     - number of global columns (or `PETSC_DETERMINE` to have calculated if `n` is given)
+. d_nz  - number of block nonzeros per block row in diagonal portion of local
            submatrix (same for all local rows)
-.  d_nnz - array containing the number of block nonzeros in the various block rows
+. d_nnz - array containing the number of block nonzeros in the various block rows
            in the upper triangular portion of the in diagonal portion of the local
            (possibly different for each block block row) or `NULL`.
            If you plan to factor the matrix you must leave room for the diagonal entry and
            set its value even if it is zero.
-.  o_nz  - number of block nonzeros per block row in the off-diagonal portion of local
+. o_nz  - number of block nonzeros per block row in the off-diagonal portion of local
            submatrix (same for all local rows).
--  o_nnz - array containing the number of nonzeros in the various block rows of the
+- o_nnz - array containing the number of nonzeros in the various block rows of the
            off-diagonal portion of the local submatrix (possibly different for
            each block row) or `NULL`.
 
-   Output Parameter:
-.  A - the matrix
+  Output Parameter:
+. A - the matrix
 
-   Options Database Keys:
-+   -mat_no_unroll - uses code that does not unroll the loops in the
+  Options Database Keys:
++ -mat_no_unroll  - uses code that does not unroll the loops in the
                      block calculations (much slower)
-.   -mat_block_size - size of the blocks to use
--   -mat_mpi - use the parallel matrix data structures even on one processor
+. -mat_block_size - size of the blocks to use
+- -mat_mpi        - use the parallel matrix data structures even on one processor
                (defaults to using SeqBAIJ format on one processor)
 
-   Level: intermediate
+  Level: intermediate
 
-   Notes:
-   It is recommended that one use the `MatCreate()`, `MatSetType()` and/or `MatSetFromOptions()`,
-   MatXXXXSetPreallocation() paradigm instead of this routine directly.
-   [MatXXXXSetPreallocation() is, for example, `MatSeqAIJSetPreallocation()`]
+  Notes:
+  It is recommended that one use the `MatCreate()`, `MatSetType()` and/or `MatSetFromOptions()`,
+  MatXXXXSetPreallocation() paradigm instead of this routine directly.
+  [MatXXXXSetPreallocation() is, for example, `MatSeqAIJSetPreallocation()`]
 
-   The number of rows and columns must be divisible by blocksize.
-   This matrix type does not support complex Hermitian operation.
+  The number of rows and columns must be divisible by blocksize.
+  This matrix type does not support complex Hermitian operation.
 
-   The user MUST specify either the local or global matrix dimensions
-   (possibly both).
+  The user MUST specify either the local or global matrix dimensions
+  (possibly both).
 
-   If `PETSC_DECIDE` or `PETSC_DETERMINE` is used for a particular argument on one processor
-   than it must be used on all processors that share the object for that argument.
+  If `PETSC_DECIDE` or `PETSC_DETERMINE` is used for a particular argument on one processor
+  than it must be used on all processors that share the object for that argument.
 
-   If the *_nnz parameter is given then the *_nz parameter is ignored
+  If the *_nnz parameter is given then the *_nz parameter is ignored
 
-   Storage Information:
-   For a square global matrix we define each processor's diagonal portion
-   to be its local rows and the corresponding columns (a square submatrix);
-   each processor's off-diagonal portion encompasses the remainder of the
-   local matrix (a rectangular submatrix).
+  Storage Information:
+  For a square global matrix we define each processor's diagonal portion
+  to be its local rows and the corresponding columns (a square submatrix);
+  each processor's off-diagonal portion encompasses the remainder of the
+  local matrix (a rectangular submatrix).
 
-   The user can specify preallocated storage for the diagonal part of
-   the local submatrix with either `d_nz` or `d_nnz` (not both). Set
-   `d_nz` = `PETSC_DEFAULT` and `d_nnz` = `NULL` for PETSc to control dynamic
-   memory allocation. Likewise, specify preallocated storage for the
-   off-diagonal part of the local submatrix with `o_nz` or `o_nnz` (not both).
+  The user can specify preallocated storage for the diagonal part of
+  the local submatrix with either `d_nz` or `d_nnz` (not both). Set
+  `d_nz` = `PETSC_DEFAULT` and `d_nnz` = `NULL` for PETSc to control dynamic
+  memory allocation. Likewise, specify preallocated storage for the
+  off-diagonal part of the local submatrix with `o_nz` or `o_nnz` (not both).
 
-   Consider a processor that owns rows 3, 4 and 5 of a parallel matrix. In
-   the figure below we depict these three local rows and all columns (0-11).
+  Consider a processor that owns rows 3, 4 and 5 of a parallel matrix. In
+  the figure below we depict these three local rows and all columns (0-11).
 
 .vb
            0 1 2 3 4 5 6 7 8 9 10 11
@@ -2375,20 +2375,19 @@ PetscErrorCode MatMPISBAIJSetPreallocation(Mat B, PetscInt bs, PetscInt d_nz, co
           --------------------------
 .ve
 
-   Thus, any entries in the d locations are stored in the d (diagonal)
-   submatrix, and any entries in the o locations are stored in the
-   o (off-diagonal) submatrix. Note that the d matrix is stored in
-   `MATSEQSBAIJ` format and the o submatrix in `MATSEQBAIJ` format.
+  Thus, any entries in the d locations are stored in the d (diagonal)
+  submatrix, and any entries in the o locations are stored in the
+  o (off-diagonal) submatrix. Note that the d matrix is stored in
+  `MATSEQSBAIJ` format and the o submatrix in `MATSEQBAIJ` format.
 
-   Now `d_nz` should indicate the number of block nonzeros per row in the upper triangular
-   plus the diagonal part of the d matrix,
-   and `o_nz` should indicate the number of block nonzeros per row in the o matrix.
-   In general, for PDE problems in which most nonzeros are near the diagonal,
-   one expects `d_nz` >> `o_nz`.
+  Now `d_nz` should indicate the number of block nonzeros per row in the upper triangular
+  plus the diagonal part of the d matrix,
+  and `o_nz` should indicate the number of block nonzeros per row in the o matrix.
+  In general, for PDE problems in which most nonzeros are near the diagonal,
+  one expects `d_nz` >> `o_nz`.
 
 .seealso: [](ch_matrices), `Mat`, `MATSBAIJ`, `MatCreate()`, `MatCreateSeqSBAIJ()`, `MatSetValues()`, `MatCreateBAIJ()`
 @*/
-
 PetscErrorCode MatCreateSBAIJ(MPI_Comm comm, PetscInt bs, PetscInt m, PetscInt n, PetscInt M, PetscInt N, PetscInt d_nz, const PetscInt d_nnz[], PetscInt o_nz, const PetscInt o_nnz[], Mat *A)
 {
   PetscMPIInt size;
@@ -2729,35 +2728,35 @@ PetscErrorCode MatSOR_MPISBAIJ(Mat matin, Vec bb, PetscReal omega, MatSORType fl
 }
 
 /*@
-     MatCreateMPISBAIJWithArrays - creates a `MATMPISBAIJ` matrix using arrays that contain in standard
-         CSR format the local rows.
+  MatCreateMPISBAIJWithArrays - creates a `MATMPISBAIJ` matrix using arrays that contain in standard
+  CSR format the local rows.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  comm - MPI communicator
-.  bs - the block size, only a block size of 1 is supported
-.  m - number of local rows (Cannot be `PETSC_DECIDE`)
-.  n - This value should be the same as the local size used in creating the
+  Input Parameters:
++ comm - MPI communicator
+. bs   - the block size, only a block size of 1 is supported
+. m    - number of local rows (Cannot be `PETSC_DECIDE`)
+. n    - This value should be the same as the local size used in creating the
        x vector for the matrix-vector product y = Ax. (or `PETSC_DECIDE` to have
        calculated if `N` is given) For square matrices `n` is almost always `m`.
-.  M - number of global rows (or `PETSC_DETERMINE` to have calculated if `m` is given)
-.  N - number of global columns (or `PETSC_DETERMINE` to have calculated if `n` is given)
-.   i - row indices; that is i[0] = 0, i[row] = i[row-1] + number of block elements in that row block row of the matrix
-.   j - column indices
--   a - matrix values
+. M    - number of global rows (or `PETSC_DETERMINE` to have calculated if `m` is given)
+. N    - number of global columns (or `PETSC_DETERMINE` to have calculated if `n` is given)
+. i    - row indices; that is i[0] = 0, i[row] = i[row-1] + number of block elements in that row block row of the matrix
+. j    - column indices
+- a    - matrix values
 
-   Output Parameter:
-.   mat - the matrix
+  Output Parameter:
+. mat - the matrix
 
-   Level: intermediate
+  Level: intermediate
 
-   Notes:
-       The `i`, `j`, and `a` arrays ARE copied by this routine into the internal format used by PETSc;
-     thus you CANNOT change the matrix entries by changing the values of `a` after you have
-     called this routine. Use `MatCreateMPIAIJWithSplitArrays()` to avoid needing to copy the arrays.
+  Notes:
+  The `i`, `j`, and `a` arrays ARE copied by this routine into the internal format used by PETSc;
+  thus you CANNOT change the matrix entries by changing the values of `a` after you have
+  called this routine. Use `MatCreateMPIAIJWithSplitArrays()` to avoid needing to copy the arrays.
 
-       The `i` and `j` indices are 0 based, and `i` indices are indices corresponding to the local `j` array.
+  The `i` and `j` indices are 0 based, and `i` indices are indices corresponding to the local `j` array.
 
 .seealso: [](ch_matrices), `Mat`, `MATMPISBAIJ`, `MatCreate()`, `MatCreateSeqAIJ()`, `MatSetValues()`, `MatMPIAIJSetPreallocation()`, `MatMPIAIJSetPreallocationCSR()`,
           `MPIAIJ`, `MatCreateAIJ()`, `MatCreateMPIAIJWithSplitArrays()`
@@ -2775,24 +2774,24 @@ PetscErrorCode MatCreateMPISBAIJWithArrays(MPI_Comm comm, PetscInt bs, PetscInt 
 }
 
 /*@C
-   MatMPISBAIJSetPreallocationCSR - Creates a sparse parallel matrix in `MATMPISBAIJ` format using the given nonzero structure and (optional) numerical values
+  MatMPISBAIJSetPreallocationCSR - Creates a sparse parallel matrix in `MATMPISBAIJ` format using the given nonzero structure and (optional) numerical values
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  B - the matrix
-.  bs - the block size
-.  i - the indices into `j` for the start of each local row (starts with zero)
-.  j - the column indices for each local row (starts with zero) these must be sorted for each row
--  v - optional values in the matrix
+  Input Parameters:
++ B  - the matrix
+. bs - the block size
+. i  - the indices into `j` for the start of each local row (starts with zero)
+. j  - the column indices for each local row (starts with zero) these must be sorted for each row
+- v  - optional values in the matrix
 
-   Level: advanced
+  Level: advanced
 
-   Notes:
-   Though this routine has Preallocation() in the name it also sets the exact nonzero locations of the matrix entries
-   and usually the numerical values as well
+  Notes:
+  Though this routine has Preallocation() in the name it also sets the exact nonzero locations of the matrix entries
+  and usually the numerical values as well
 
-   Any entries below the diagonal are ignored
+  Any entries below the diagonal are ignored
 
 .seealso: [](ch_matrices), `Mat`, `MATMPISBAIJ`, `MatCreate()`, `MatCreateSeqAIJ()`, `MatSetValues()`, `MatMPIBAIJSetPreallocation()`, `MatCreateAIJ()`, `MPIAIJ`
 @*/

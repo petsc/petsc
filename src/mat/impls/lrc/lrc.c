@@ -152,25 +152,25 @@ static PetscErrorCode MatLRCSetMats_LRC(Mat N, Mat A, Mat U, Vec c, Mat V)
 }
 
 /*@
-   MatLRCGetMats - Returns the constituents of an LRC matrix
+  MatLRCGetMats - Returns the constituents of an LRC matrix
 
-   Not collective
+  Not collective
 
-   Input Parameter:
-.  N - matrix of type `MATLRC`
+  Input Parameter:
+. N - matrix of type `MATLRC`
 
-   Output Parameters:
-+  A - the (sparse) matrix
-.  U - first dense rectangular (tall and skinny) matrix
-.  c - a sequential vector containing the diagonal of C
--  V - second dense rectangular (tall and skinny) matrix
+  Output Parameters:
++ A - the (sparse) matrix
+. U - first dense rectangular (tall and skinny) matrix
+. c - a sequential vector containing the diagonal of C
+- V - second dense rectangular (tall and skinny) matrix
 
-   Level: intermediate
+  Level: intermediate
 
-   Notes:
-   The returned matrices should not be destroyed by the caller.
+  Notes:
+  The returned matrices should not be destroyed by the caller.
 
-   `U`, `c`, `V` may be `NULL` if not needed
+  `U`, `c`, `V` may be `NULL` if not needed
 
 .seealso: [](ch_matrices), `MatLRCSetMats()`, `Mat`, `MATLRC`, `MatCreateLRC()`
 @*/
@@ -182,21 +182,21 @@ PetscErrorCode MatLRCGetMats(Mat N, Mat *A, Mat *U, Vec *c, Mat *V)
 }
 
 /*@
-   MatLRCSetMats - Sets the constituents of an LRC matrix
+  MatLRCSetMats - Sets the constituents of an LRC matrix
 
-   Logically collective
+  Logically collective
 
-   Input Parameters:
-+  N - matrix of type `MATLRC`
-.  A - the (sparse) matrix
-.  U - first dense rectangular (tall and skinny) matrix
-.  c - a sequential vector containing the diagonal of C
--  V - second dense rectangular (tall and skinny) matrix
+  Input Parameters:
++ N - matrix of type `MATLRC`
+. A - the (sparse) matrix
+. U - first dense rectangular (tall and skinny) matrix
+. c - a sequential vector containing the diagonal of C
+- V - second dense rectangular (tall and skinny) matrix
 
-   Level: intermediate
+  Level: intermediate
 
-   Note:
-   If `V` is `NULL`, then it is assumed to be identical to `U`.
+  Note:
+  If `V` is `NULL`, then it is assumed to be identical to `U`.
 
 .seealso: [](ch_matrices), `MatLRCGetMats()`, `Mat`, `MATLRC`, `MatCreateLRC()`
 @*/
@@ -338,36 +338,36 @@ PETSC_EXTERN PetscErrorCode MatCreate_LRC(Mat N)
 M*/
 
 /*@
-   MatCreateLRC - Creates a new matrix object that behaves like A + U*C*V' of type `MATLRC`
+  MatCreateLRC - Creates a new matrix object that behaves like A + U*C*V' of type `MATLRC`
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  A    - the (sparse) matrix (can be `NULL`)
-.  U    - dense rectangular (tall and skinny) matrix
-.  V    - dense rectangular (tall and skinny) matrix
--  c    - a vector containing the diagonal of C (can be `NULL`)
+  Input Parameters:
++ A - the (sparse) matrix (can be `NULL`)
+. U - dense rectangular (tall and skinny) matrix
+. V - dense rectangular (tall and skinny) matrix
+- c - a vector containing the diagonal of C (can be `NULL`)
 
-   Output Parameter:
-.  N    - the matrix that represents A + U*C*V'
+  Output Parameter:
+. N - the matrix that represents A + U*C*V'
 
-   Level: intermediate
+  Level: intermediate
 
-   Notes:
-   The matrix A + U*C*V' is not formed! Rather the new matrix
-   object performs the matrix-vector product `MatMult()`, by first multiplying by
-   A and then adding the other term.
+  Notes:
+  The matrix A + U*C*V' is not formed! Rather the new matrix
+  object performs the matrix-vector product `MatMult()`, by first multiplying by
+  A and then adding the other term.
 
-   `C` is a diagonal matrix (represented as a vector) of order k,
-   where k is the number of columns of both `U` and `V`.
+  `C` is a diagonal matrix (represented as a vector) of order k,
+  where k is the number of columns of both `U` and `V`.
 
-   If `A` is `NULL` then the new object behaves like a low-rank matrix U*C*V'.
+  If `A` is `NULL` then the new object behaves like a low-rank matrix U*C*V'.
 
-   Use `V`=`U` (or `V`=`NULL`) for a symmetric low-rank correction, A + U*C*U'.
+  Use `V`=`U` (or `V`=`NULL`) for a symmetric low-rank correction, A + U*C*U'.
 
-   If `c` is `NULL` then the low-rank correction is just U*V'.
-   If a sequential `c` vector is used for a parallel matrix,
-   PETSc assumes that the values of the vector are consistently set across processors.
+  If `c` is `NULL` then the low-rank correction is just U*V'.
+  If a sequential `c` vector is used for a parallel matrix,
+  PETSc assumes that the values of the vector are consistently set across processors.
 
 .seealso: [](ch_matrices), `Mat`, `MATLRC`, `MatLRCGetMats()`
 @*/

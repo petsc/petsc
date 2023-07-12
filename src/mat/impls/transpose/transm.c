@@ -251,17 +251,17 @@ PetscErrorCode MatTransposeGetMat_Transpose(Mat A, Mat *M)
 }
 
 /*@
-      MatTransposeGetMat - Gets the `Mat` object stored inside a `MATTRANSPOSEVIRTUAL`
+  MatTransposeGetMat - Gets the `Mat` object stored inside a `MATTRANSPOSEVIRTUAL`
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameter:
-.   A  - the `MATTRANSPOSEVIRTUAL` matrix
+  Input Parameter:
+. A - the `MATTRANSPOSEVIRTUAL` matrix
 
-   Output Parameter:
-.   M - the matrix object stored inside `A`
+  Output Parameter:
+. M - the matrix object stored inside `A`
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: [](ch_matrices), `Mat`, `MATTRANSPOSEVIRTUAL`, `MatCreateTranspose()`
 @*/
@@ -285,22 +285,22 @@ PetscErrorCode MatTransposeGetMat(Mat A, Mat *M)
 M*/
 
 /*@
-      MatCreateTranspose - Creates a new matrix `MATTRANSPOSEVIRTUAL` object that behaves like A'
+  MatCreateTranspose - Creates a new matrix `MATTRANSPOSEVIRTUAL` object that behaves like A'
 
-   Collective
+  Collective
 
-   Input Parameter:
-.   A  - the (possibly rectangular) matrix
+  Input Parameter:
+. A - the (possibly rectangular) matrix
 
-   Output Parameter:
-.   N - the matrix that represents A'
+  Output Parameter:
+. N - the matrix that represents A'
 
-   Level: intermediate
+  Level: intermediate
 
-   Note:
-    The transpose A' is NOT actually formed! Rather the new matrix
-          object performs the matrix-vector product by using the `MatMultTranspose()` on
-          the original matrix
+  Note:
+  The transpose A' is NOT actually formed! Rather the new matrix
+  object performs the matrix-vector product by using the `MatMultTranspose()` on
+  the original matrix
 
 .seealso: [](ch_matrices), `Mat`, `MATTRANSPOSEVIRTUAL`, `MatCreateNormal()`, `MatMult()`, `MatMultTranspose()`, `MatCreate()`,
           `MATNORMALHERMITIAN`

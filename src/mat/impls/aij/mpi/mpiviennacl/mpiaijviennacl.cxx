@@ -64,51 +64,51 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJViennaCL(Mat A)
 }
 
 /*@C
-   MatCreateAIJViennaCL - Creates a sparse matrix in `MATAIJ` (compressed row) format
-   (the default parallel PETSc format).  This matrix will ultimately be pushed down
-   to GPUs and use the ViennaCL library for calculations.
+  MatCreateAIJViennaCL - Creates a sparse matrix in `MATAIJ` (compressed row) format
+  (the default parallel PETSc format).  This matrix will ultimately be pushed down
+  to GPUs and use the ViennaCL library for calculations.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  comm - MPI communicator, set to `PETSC_COMM_SELF`
-.  m - number of rows, or `PETSC_DECIDE` if `M` is provided
-.  n - number of columns, or `PETSC_DECIDE` if `N` is provided
-.  M - number of global rows in the matrix, or `PETSC_DETERMINE` if `m` is provided
-.  N - number of global columns in the matrix, or `PETSC_DETERMINE` if `n` is provided
-.  d_nz  - number of nonzeros per row in DIAGONAL portion of local submatrix
+  Input Parameters:
++ comm  - MPI communicator, set to `PETSC_COMM_SELF`
+. m     - number of rows, or `PETSC_DECIDE` if `M` is provided
+. n     - number of columns, or `PETSC_DECIDE` if `N` is provided
+. M     - number of global rows in the matrix, or `PETSC_DETERMINE` if `m` is provided
+. N     - number of global columns in the matrix, or `PETSC_DETERMINE` if `n` is provided
+. d_nz  - number of nonzeros per row in DIAGONAL portion of local submatrix
            (same value is used for all local rows)
-.  d_nnz - array containing the number of nonzeros in the various rows of the
+. d_nnz - array containing the number of nonzeros in the various rows of the
            DIAGONAL portion of the local submatrix (possibly different for each row)
            or `NULL`, if `d_nz` is used to specify the nonzero structure.
            The size of this array is equal to the number of local rows, i.e `m`.
            For matrices you plan to factor you must leave room for the diagonal entry and
            put in the entry even if it is zero.
-.  o_nz  - number of nonzeros per row in the OFF-DIAGONAL portion of local
+. o_nz  - number of nonzeros per row in the OFF-DIAGONAL portion of local
            submatrix (same value is used for all local rows).
--  o_nnz - array containing the number of nonzeros in the various rows of the
+- o_nnz - array containing the number of nonzeros in the various rows of the
            OFF-DIAGONAL portion of the local submatrix (possibly different for
            each row) or `NULL`, if `o_nz` is used to specify the nonzero
            structure. The size of this array is equal to the number
            of local rows, i.e `m`.
 
-   Output Parameter:
-.  A - the matrix
+  Output Parameter:
+. A - the matrix
 
-   Level: intermediate
+  Level: intermediate
 
-   Notes:
-   It is recommended that one use the `MatCreate()`, `MatSetType()` and/or `MatSetFromOptions()`,
-   MatXXXXSetPreallocation() paradigm instead of this routine directly.
-   [MatXXXXSetPreallocation() is, for example, `MatSeqAIJSetPreallocation()`]
+  Notes:
+  It is recommended that one use the `MatCreate()`, `MatSetType()` and/or `MatSetFromOptions()`,
+  MatXXXXSetPreallocation() paradigm instead of this routine directly.
+  [MatXXXXSetPreallocation() is, for example, `MatSeqAIJSetPreallocation()`]
 
-   The AIJ format, also called
-   compressed row storage), is fully compatible with standard Fortran
-   storage.  That is, the stored row and column indices can begin at
-   either one (as in Fortran) or zero.
+  The AIJ format, also called
+  compressed row storage), is fully compatible with standard Fortran
+  storage.  That is, the stored row and column indices can begin at
+  either one (as in Fortran) or zero.
 
 .seealso: `Mat`, `MatCreate()`, `MatCreateAIJ()`, `MatCreateAIJCUSPARSE()`, `MatSetValues()`, `MatSeqAIJSetColumnIndices()`, `MatCreateSeqAIJWithArrays()`,
-          `MatCreateAIJ()`, `MATMPIAIJVIENNACL`, `MATAIJVIENNACL`
+          `MATMPIAIJVIENNACL`, `MATAIJVIENNACL`
 @*/
 PetscErrorCode MatCreateAIJViennaCL(MPI_Comm comm, PetscInt m, PetscInt n, PetscInt M, PetscInt N, PetscInt d_nz, const PetscInt d_nnz[], PetscInt o_nz, const PetscInt o_nnz[], Mat *A)
 {

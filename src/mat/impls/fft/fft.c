@@ -17,26 +17,26 @@ PetscErrorCode MatDestroy_FFT(Mat A)
 }
 
 /*@C
-      MatCreateFFT - Creates a matrix object that provides FFT via an external package
+  MatCreateFFT - Creates a matrix object that provides FFT via an external package
 
-   Collective
+  Collective
 
-   Input Parameters:
-+   comm - MPI communicator
-.   ndim - the ndim-dimensional transform
-.   dim - array of size ndim, dim[i] contains the vector length in the i-dimension
--   type - package type, e.g., `MATFFTW` or `MATSEQCUFFT`
+  Input Parameters:
++ comm    - MPI communicator
+. ndim    - the ndim-dimensional transform
+. dim     - array of size ndim, dim[i] contains the vector length in the i-dimension
+- mattype - package type, e.g., `MATFFTW` or `MATSEQCUFFT`
 
-   Output Parameter:
-.   A  - the matrix
+  Output Parameter:
+. A - the matrix
 
-   Options Database Key:
-.   -mat_fft_type - set FFT type fft or seqcufft
+  Options Database Key:
+. -mat_fft_type - set FFT type fft or seqcufft
 
-   Level: intermediate
+  Level: intermediate
 
-   Note:
-   This serves as a base class for all FFT marix classes, currently `MATFFTW` or `MATSEQCUFFT`
+  Note:
+  This serves as a base class for all FFT marix classes, currently `MATFFTW` or `MATSEQCUFFT`
 
 .seealso: [](ch_matrices), `Mat`, `MATFFTW`, `MATSEQCUFFT`, `MatCreateVecsFFTW()`
 @*/

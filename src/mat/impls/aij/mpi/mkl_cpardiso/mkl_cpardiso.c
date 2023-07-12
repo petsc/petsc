@@ -748,23 +748,23 @@ PetscErrorCode MatMkl_CPardisoSetCntl_MKL_CPARDISO(Mat F, PetscInt icntl, PetscI
 /*@
   MatMkl_CPardisoSetCntl - Set Mkl_Pardiso parameters
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  F - the factored matrix obtained by calling `MatGetFactor()`
-.  icntl - index of Mkl_Pardiso parameter
--  ival - value of Mkl_Pardiso parameter
+  Input Parameters:
++ F     - the factored matrix obtained by calling `MatGetFactor()`
+. icntl - index of Mkl_Pardiso parameter
+- ival  - value of Mkl_Pardiso parameter
 
   Options Database Key:
-.   -mat_mkl_cpardiso_<icntl> <ival> - set the option numbered icntl to ival
+. -mat_mkl_cpardiso_<icntl> <ival> - set the option numbered icntl to ival
 
-   Level: Intermediate
+  Level: intermediate
 
-   Note:
-    This routine cannot be used if you are solving the linear system with `TS`, `SNES`, or `KSP`, only if you directly call `MatGetFactor()` so use the options
-          database approach when working with `TS`, `SNES`, or `KSP`. See `MATSOLVERMKL_CPARDISO` for the options
+  Note:
+  This routine cannot be used if you are solving the linear system with `TS`, `SNES`, or `KSP`, only if you directly call `MatGetFactor()` so use the options
+  database approach when working with `TS`, `SNES`, or `KSP`. See `MATSOLVERMKL_CPARDISO` for the options
 
-   References:
+  References:
 .  * - Mkl_Pardiso Users' Guide
 
 .seealso: [](ch_matrices), `Mat`, `MatGetFactor()`, `MATMPIAIJ`, `MATSOLVERMKL_CPARDISO`

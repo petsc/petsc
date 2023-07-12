@@ -203,17 +203,17 @@ PetscErrorCode MatHermitianTransposeGetMat_HT(Mat N, Mat *M)
 }
 
 /*@
-      MatHermitianTransposeGetMat - Gets the `Mat` object stored inside a `MATHERMITIANTRANSPOSEVIRTUAL`
+  MatHermitianTransposeGetMat - Gets the `Mat` object stored inside a `MATHERMITIANTRANSPOSEVIRTUAL`
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameter:
-.   A  - the `MATHERMITIANTRANSPOSEVIRTUAL` matrix
+  Input Parameter:
+. A - the `MATHERMITIANTRANSPOSEVIRTUAL` matrix
 
-   Output Parameter:
-.   M - the matrix object stored inside A
+  Output Parameter:
+. M - the matrix object stored inside A
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: [](ch_matrices), `Mat`, `MATHERMITIANTRANSPOSEVIRTUAL`, `MatCreateHermitianTranspose()`
 @*/
@@ -272,22 +272,22 @@ PetscErrorCode MatConvert_HT(Mat A, MatType newtype, MatReuse reuse, Mat *newmat
 M*/
 
 /*@
-      MatCreateHermitianTranspose - Creates a new matrix object of `MatType` `MATHERMITIANTRANSPOSEVIRTUAL` that behaves like A'*
+  MatCreateHermitianTranspose - Creates a new matrix object of `MatType` `MATHERMITIANTRANSPOSEVIRTUAL` that behaves like A'*
 
-   Collective
+  Collective
 
-   Input Parameter:
-.   A  - the (possibly rectangular) matrix
+  Input Parameter:
+. A - the (possibly rectangular) matrix
 
-   Output Parameter:
-.   N - the matrix that represents A'*
+  Output Parameter:
+. N - the matrix that represents A'*
 
-   Level: intermediate
+  Level: intermediate
 
-   Note:
-    The Hermitian transpose A' is NOT actually formed! Rather the new matrix
-          object performs the matrix-vector product, `MatMult()`, by using the `MatMultHermitianTranspose()` on
-          the original matrix
+  Note:
+  The Hermitian transpose A' is NOT actually formed! Rather the new matrix
+  object performs the matrix-vector product, `MatMult()`, by using the `MatMultHermitianTranspose()` on
+  the original matrix
 
 .seealso: [](ch_matrices), `Mat`, `MatCreateNormal()`, `MatMult()`, `MatMultHermitianTranspose()`, `MatCreate()`,
           `MATTRANSPOSEVIRTUAL`, `MatCreateTranspose()`, `MatHermitianTransposeGetMat()`, `MATNORMAL`, `MATNORMALHERMITIAN`

@@ -204,19 +204,19 @@ static PetscErrorCode MatMatMultEqual_Private(Mat A, Mat B, Mat C, PetscInt n, P
 }
 
 /*@
-   MatMultEqual - Compares matrix-vector products of two matrices.
+  MatMultEqual - Compares matrix-vector products of two matrices.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  A - the first matrix
-.  B - the second matrix
--  n - number of random vectors to be tested
+  Input Parameters:
++ A - the first matrix
+. B - the second matrix
+- n - number of random vectors to be tested
 
-   Output Parameter:
-.  flg - `PETSC_TRUE` if the products are equal; `PETSC_FALSE` otherwise.
+  Output Parameter:
+. flg - `PETSC_TRUE` if the products are equal; `PETSC_FALSE` otherwise.
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `Mat`, `MatMultAddEqual()`, `MatMultTransposeEqual()`, `MatMultTransposeAddEqual()`, `MatIsLinear()`
 @*/
@@ -228,19 +228,19 @@ PetscErrorCode MatMultEqual(Mat A, Mat B, PetscInt n, PetscBool *flg)
 }
 
 /*@
-   MatMultAddEqual - Compares matrix-vector product plus vector add of two matrices.
+  MatMultAddEqual - Compares matrix-vector product plus vector add of two matrices.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  A - the first matrix
-.  B - the second matrix
--  n - number of random vectors to be tested
+  Input Parameters:
++ A - the first matrix
+. B - the second matrix
+- n - number of random vectors to be tested
 
-   Output Parameter:
-.  flg - `PETSC_TRUE` if the products are equal; `PETSC_FALSE` otherwise.
+  Output Parameter:
+. flg - `PETSC_TRUE` if the products are equal; `PETSC_FALSE` otherwise.
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `Mat`, `MatMultEqual()`, `MatMultTransposeEqual()`, `MatMultTransposeAddEqual()`
 @*/
@@ -253,19 +253,19 @@ PetscErrorCode MatMultAddEqual(Mat A, Mat B, PetscInt n, PetscBool *flg)
 }
 
 /*@
-   MatMultTransposeEqual - Compares matrix-vector products of two matrices.
+  MatMultTransposeEqual - Compares matrix-vector products of two matrices.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  A - the first matrix
-.  B - the second matrix
--  n - number of random vectors to be tested
+  Input Parameters:
++ A - the first matrix
+. B - the second matrix
+- n - number of random vectors to be tested
 
-   Output Parameter:
-.  flg - `PETSC_TRUE` if the products are equal; `PETSC_FALSE` otherwise.
+  Output Parameter:
+. flg - `PETSC_TRUE` if the products are equal; `PETSC_FALSE` otherwise.
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `Mat`, `MatMultEqual()`, `MatMultAddEqual()`, `MatMultTransposeAddEqual()`
 @*/
@@ -277,19 +277,19 @@ PetscErrorCode MatMultTransposeEqual(Mat A, Mat B, PetscInt n, PetscBool *flg)
 }
 
 /*@
-   MatMultTransposeAddEqual - Compares matrix-vector products of two matrices.
+  MatMultTransposeAddEqual - Compares matrix-vector products of two matrices.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  A - the first matrix
-.  B - the second matrix
--  n - number of random vectors to be tested
+  Input Parameters:
++ A - the first matrix
+. B - the second matrix
+- n - number of random vectors to be tested
 
-   Output Parameter:
-.  flg - `PETSC_TRUE` if the products are equal; `PETSC_FALSE` otherwise.
+  Output Parameter:
+. flg - `PETSC_TRUE` if the products are equal; `PETSC_FALSE` otherwise.
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `Mat`, `MatMultEqual()`, `MatMultAddEqual()`, `MatMultTransposeEqual()`
 @*/
@@ -302,19 +302,19 @@ PetscErrorCode MatMultTransposeAddEqual(Mat A, Mat B, PetscInt n, PetscBool *flg
 }
 
 /*@
-   MatMultHermitianTransposeEqual - Compares matrix-vector products of two matrices.
+  MatMultHermitianTransposeEqual - Compares matrix-vector products of two matrices.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  A - the first matrix
-.  B - the second matrix
--  n - number of random vectors to be tested
+  Input Parameters:
++ A - the first matrix
+. B - the second matrix
+- n - number of random vectors to be tested
 
-   Output Parameter:
-.  flg - `PETSC_TRUE` if the products are equal; `PETSC_FALSE` otherwise.
+  Output Parameter:
+. flg - `PETSC_TRUE` if the products are equal; `PETSC_FALSE` otherwise.
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `Mat`, `MatMatMultAddEqual()`, `MatMultEqual()`, `MatMultAddEqual()`, `MatMultTransposeEqual()`
 @*/
@@ -326,19 +326,19 @@ PetscErrorCode MatMultHermitianTransposeEqual(Mat A, Mat B, PetscInt n, PetscBoo
 }
 
 /*@
-   MatMultHermitianTransposeAddEqual - Compares matrix-vector products of two matrices.
+  MatMultHermitianTransposeAddEqual - Compares matrix-vector products of two matrices.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  A - the first matrix
-.  B - the second matrix
--  n - number of random vectors to be tested
+  Input Parameters:
++ A - the first matrix
+. B - the second matrix
+- n - number of random vectors to be tested
 
-   Output Parameter:
-.  flg - `PETSC_TRUE` if the products are equal; `PETSC_FALSE` otherwise.
+  Output Parameter:
+. flg - `PETSC_TRUE` if the products are equal; `PETSC_FALSE` otherwise.
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `Mat`, `MatMatMultAddEqual()`, `MatMultEqual()`, `MatMultAddEqual()`, `MatMultTransposeEqual()`
 @*/
@@ -351,20 +351,20 @@ PetscErrorCode MatMultHermitianTransposeAddEqual(Mat A, Mat B, PetscInt n, Petsc
 }
 
 /*@
-   MatMatMultEqual - Test A*B*x = C*x for n random vector x
+  MatMatMultEqual - Test A*B*x = C*x for n random vector x
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  A - the first matrix
-.  B - the second matrix
-.  C - the third matrix
--  n - number of random vectors to be tested
+  Input Parameters:
++ A - the first matrix
+. B - the second matrix
+. C - the third matrix
+- n - number of random vectors to be tested
 
-   Output Parameter:
-.  flg - `PETSC_TRUE` if the products are equal; `PETSC_FALSE` otherwise.
+  Output Parameter:
+. flg - `PETSC_TRUE` if the products are equal; `PETSC_FALSE` otherwise.
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `Mat`, `MatMatMultAddEqual()`, `MatMultEqual()`, `MatMultAddEqual()`, `MatMultTransposeEqual()`
 @*/
@@ -376,20 +376,20 @@ PetscErrorCode MatMatMultEqual(Mat A, Mat B, Mat C, PetscInt n, PetscBool *flg)
 }
 
 /*@
-   MatTransposeMatMultEqual - Test A^T*B*x = C*x for n random vector x
+  MatTransposeMatMultEqual - Test A^T*B*x = C*x for n random vector x
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  A - the first matrix
-.  B - the second matrix
-.  C - the third matrix
--  n - number of random vectors to be tested
+  Input Parameters:
++ A - the first matrix
+. B - the second matrix
+. C - the third matrix
+- n - number of random vectors to be tested
 
-   Output Parameter:
-.  flg - `PETSC_TRUE` if the products are equal; `PETSC_FALSE` otherwise.
+  Output Parameter:
+. flg - `PETSC_TRUE` if the products are equal; `PETSC_FALSE` otherwise.
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `Mat`, `MatMatMultAddEqual()`, `MatMultEqual()`, `MatMultAddEqual()`, `MatMultTransposeEqual()`
 @*/
@@ -401,20 +401,20 @@ PetscErrorCode MatTransposeMatMultEqual(Mat A, Mat B, Mat C, PetscInt n, PetscBo
 }
 
 /*@
-   MatMatTransposeMultEqual - Test A*B^T*x = C*x for n random vector x
+  MatMatTransposeMultEqual - Test A*B^T*x = C*x for n random vector x
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  A - the first matrix
-.  B - the second matrix
-.  C - the third matrix
--  n - number of random vectors to be tested
+  Input Parameters:
++ A - the first matrix
+. B - the second matrix
+. C - the third matrix
+- n - number of random vectors to be tested
 
-   Output Parameter:
-.  flg - `PETSC_TRUE` if the products are equal; `PETSC_FALSE` otherwise.
+  Output Parameter:
+. flg - `PETSC_TRUE` if the products are equal; `PETSC_FALSE` otherwise.
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `Mat`, `MatMatMultAddEqual()`, `MatMultEqual()`, `MatMultAddEqual()`, `MatMultTransposeEqual()`
 @*/
@@ -501,20 +501,20 @@ static PetscErrorCode MatProjMultEqual_Private(Mat A, Mat B, Mat C, PetscInt n, 
 }
 
 /*@
-   MatPtAPMultEqual - Compares matrix-vector products of C = Bt*A*B
+  MatPtAPMultEqual - Compares matrix-vector products of C = Bt*A*B
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  A - the first matrix
-.  B - the second matrix
-.  C - the third matrix
--  n - number of random vectors to be tested
+  Input Parameters:
++ A - the first matrix
+. B - the second matrix
+. C - the third matrix
+- n - number of random vectors to be tested
 
-   Output Parameter:
-.  flg - `PETSC_TRUE` if the products are equal; `PETSC_FALSE` otherwise.
+  Output Parameter:
+. flg - `PETSC_TRUE` if the products are equal; `PETSC_FALSE` otherwise.
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `Mat`, `MatMatMultAddEqual()`, `MatMultEqual()`, `MatMultAddEqual()`, `MatMultTransposeEqual()`
 @*/
@@ -526,20 +526,20 @@ PetscErrorCode MatPtAPMultEqual(Mat A, Mat B, Mat C, PetscInt n, PetscBool *flg)
 }
 
 /*@
-   MatRARtMultEqual - Compares matrix-vector products of C = B*A*B^t
+  MatRARtMultEqual - Compares matrix-vector products of C = B*A*B^t
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  A - the first matrix
-.  B - the second matrix
-.  C - the third matrix
--  n - number of random vectors to be tested
+  Input Parameters:
++ A - the first matrix
+. B - the second matrix
+. C - the third matrix
+- n - number of random vectors to be tested
 
-   Output Parameter:
-.  flg - `PETSC_TRUE` if the products are equal; `PETSC_FALSE` otherwise.
+  Output Parameter:
+. flg - `PETSC_TRUE` if the products are equal; `PETSC_FALSE` otherwise.
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `Mat`, `MatMatMultAddEqual()`, `MatMultEqual()`, `MatMultAddEqual()`, `MatMultTransposeEqual()`
 @*/
@@ -551,18 +551,18 @@ PetscErrorCode MatRARtMultEqual(Mat A, Mat B, Mat C, PetscInt n, PetscBool *flg)
 }
 
 /*@
-   MatIsLinear - Check if a shell matrix `A` is a linear operator.
+  MatIsLinear - Check if a shell matrix `A` is a linear operator.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  A - the shell matrix
--  n - number of random vectors to be tested
+  Input Parameters:
++ A - the shell matrix
+- n - number of random vectors to be tested
 
-   Output Parameter:
-.  flg - `PETSC_TRUE` if the shell matrix is linear; `PETSC_FALSE` otherwise.
+  Output Parameter:
+. flg - `PETSC_TRUE` if the shell matrix is linear; `PETSC_FALSE` otherwise.
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `Mat`, `MatMatMultAddEqual()`, `MatMultEqual()`, `MatMultAddEqual()`, `MatMultTransposeEqual()`
 @*/

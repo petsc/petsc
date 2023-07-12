@@ -255,37 +255,37 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJSELL(Mat A, MatType type, Ma
 }
 
 /*@C
-   MatCreateSeqAIJSELL - Creates a sparse matrix of type `MATSEQAIJSELL`.
-   This type inherits from AIJ and is largely identical, but keeps a "shadow"
-   copy of the matrix in `MATSEQSELL` format, which is used when this format
-   may be more suitable for a requested operation. Currently, `MATSEQSELL` format
-   is used for `MatMult()`, `MatMultTranspose()`, `MatMultAdd()`, `MatMultTransposeAdd()`,
-   and `MatSOR()` operations.
+  MatCreateSeqAIJSELL - Creates a sparse matrix of type `MATSEQAIJSELL`.
+  This type inherits from AIJ and is largely identical, but keeps a "shadow"
+  copy of the matrix in `MATSEQSELL` format, which is used when this format
+  may be more suitable for a requested operation. Currently, `MATSEQSELL` format
+  is used for `MatMult()`, `MatMultTranspose()`, `MatMultAdd()`, `MatMultTransposeAdd()`,
+  and `MatSOR()` operations.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  comm - MPI communicator, set to `PETSC_COMM_SELF`
-.  m - number of rows
-.  n - number of columns
-.  nz - number of nonzeros per row (same for all rows)
--  nnz - array containing the number of nonzeros in the various rows
+  Input Parameters:
++ comm - MPI communicator, set to `PETSC_COMM_SELF`
+. m    - number of rows
+. n    - number of columns
+. nz   - number of nonzeros per row (same for all rows)
+- nnz  - array containing the number of nonzeros in the various rows
          (possibly different for each row) or `NULL`
 
-   Output Parameter:
-.  A - the matrix
+  Output Parameter:
+. A - the matrix
 
-   Options Database Keys:
-.  -mat_aijsell_eager_shadow - Construct shadow matrix upon matrix assembly; default is to take a "lazy" approach,
+  Options Database Keys:
+. -mat_aijsell_eager_shadow - Construct shadow matrix upon matrix assembly; default is to take a "lazy" approach,
                                performing this step the first time the matrix is applied
 
-   Level: intermediate
+  Level: intermediate
 
-   Notes:
-   If `nnz` is given then `nz` is ignored
+  Notes:
+  If `nnz` is given then `nz` is ignored
 
-   Because `MATSEQAIJSELL` is a subtype of `MATSEQAIJ`, the option `-mat_seqaij_type seqaijsell` can be used to make
-   sequential `MATSEQAIJ` matrices default to being instances of `MATSEQAIJSELL`.
+  Because `MATSEQAIJSELL` is a subtype of `MATSEQAIJ`, the option `-mat_seqaij_type seqaijsell` can be used to make
+  sequential `MATSEQAIJ` matrices default to being instances of `MATSEQAIJSELL`.
 
 .seealso: [](ch_matrices), `Mat`, `MatCreate()`, `MatCreateMPIAIJSELL()`, `MatSetValues()`
 @*/

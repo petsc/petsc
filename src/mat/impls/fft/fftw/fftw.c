@@ -392,21 +392,21 @@ static PetscErrorCode VecDuplicate_FFTW_bout(Vec bout, Vec *bout_new)
 #endif
 
 /*@
-   MatCreateVecsFFTW - Get vector(s) compatible with the matrix, i.e. with the
-     parallel layout determined by `MATFFTW`
+  MatCreateVecsFFTW - Get vector(s) compatible with the matrix, i.e. with the
+  parallel layout determined by `MATFFTW`
 
-   Collective
+  Collective
 
-   Input Parameter:
-.   A - the matrix
+  Input Parameter:
+. A - the matrix
 
-   Output Parameters:
-+   x - (optional) input vector of forward FFTW
-.   y - (optional) output vector of forward FFTW
--   z - (optional) output vector of backward FFTW
+  Output Parameters:
++ x - (optional) input vector of forward FFTW
+. y - (optional) output vector of forward FFTW
+- z - (optional) output vector of backward FFTW
 
-   Options Database Key:
-.  -mat_fftw_plannerflags - set FFTW planner flags
+  Options Database Key:
+. -mat_fftw_plannerflags - set FFTW planner flags
 
   Level: advanced
 
@@ -426,7 +426,7 @@ static PetscErrorCode VecDuplicate_FFTW_bout(Vec bout, Vec *bout_new)
   figures out how much space is needed, i.e. it figures out the data+scratch space for
   each processor and returns that.
 
-  Developer Note:
+  Developer Notes:
   How come `MatCreateVecs()` doesn't produce the correctly padded vectors automatically?
 
 .seealso: [](ch_matrices), `Mat`, `MATFFTW`, `MatCreateFFT()`, `MatCreateVecs()`
@@ -678,23 +678,23 @@ PetscErrorCode MatCreateVecsFFTW_FFTW(Mat A, Vec *fin, Vec *fout, Vec *bout)
 }
 
 /*@
-   VecScatterPetscToFFTW - Copies a PETSc vector to the vector that goes into `MATFFTW` calls.
+  VecScatterPetscToFFTW - Copies a PETSc vector to the vector that goes into `MATFFTW` calls.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  A - FFTW matrix
--  x - the PETSc vector
+  Input Parameters:
++ A - FFTW matrix
+- x - the PETSc vector
 
-   Output Parameter:
-.  y - the FFTW vector
+  Output Parameter:
+. y - the FFTW vector
 
-   Level: intermediate
+  Level: intermediate
 
-   Note:
-   For real parallel FFT, FFTW requires insertion of extra space at the end of last dimension. This required even when
-   one is not doing in-place transform. The last dimension size must be changed to 2*(dim[last]/2+1) to accommodate these extra
-   zeros. This routine does that job by scattering operation.
+  Note:
+  For real parallel FFT, FFTW requires insertion of extra space at the end of last dimension. This required even when
+  one is not doing in-place transform. The last dimension size must be changed to 2*(dim[last]/2+1) to accommodate these extra
+  zeros. This routine does that job by scattering operation.
 
 .seealso: [](ch_matrices), `Mat`, `MATFFTW`, `VecScatterFFTWToPetsc()`, `MatCreateVecsFFTW()`
 @*/
@@ -913,22 +913,22 @@ PetscErrorCode VecScatterPetscToFFTW_FFTW(Mat A, Vec x, Vec y)
 }
 
 /*@
-   VecScatterFFTWToPetsc - Converts `MATFFTW` output vector to a PETSc vector.
+  VecScatterFFTWToPetsc - Converts `MATFFTW` output vector to a PETSc vector.
 
-   Collective
+  Collective
 
-    Input Parameters:
-+   A - `MATFFTW` matrix
--   x - FFTW vector
+  Input Parameters:
++ A - `MATFFTW` matrix
+- x - FFTW vector
 
-   Output Parameter:
-.  y - PETSc vector
+  Output Parameter:
+. y - PETSc vector
 
-   Level: intermediate
+  Level: intermediate
 
-   Note:
-   While doing real transform the FFTW output of backward DFT contains extra zeros at the end of last dimension.
-   `VecScatterFFTWToPetsc()` removes those extra zeros.
+  Note:
+  While doing real transform the FFTW output of backward DFT contains extra zeros at the end of last dimension.
+  `VecScatterFFTWToPetsc()` removes those extra zeros.
 
 .seealso: [](ch_matrices), `Mat`, `VecScatterPetscToFFTW()`, `MATFFTW`, `MatCreateVecsFFTW()`
 @*/

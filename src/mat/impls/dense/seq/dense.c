@@ -2099,17 +2099,17 @@ PetscErrorCode MatDenseRestoreArray_SeqDense(Mat A, PetscScalar **array)
 }
 
 /*@
-   MatDenseGetLDA - gets the leading dimension of the array returned from `MatDenseGetArray()`
+  MatDenseGetLDA - gets the leading dimension of the array returned from `MatDenseGetArray()`
 
-   Not Collective
+  Not Collective
 
-   Input Parameter:
-.  mat - a `MATDENSE` or `MATDENSECUDA` matrix
+  Input Parameter:
+. A - a `MATDENSE` or `MATDENSECUDA` matrix
 
-   Output Parameter:
-.   lda - the leading dimension
+  Output Parameter:
+. lda - the leading dimension
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: [](ch_matrices), `Mat`, `MATDENSE`, `MATDENSECUDA`, `MatDenseGetArray()`, `MatDenseRestoreArray()`, `MatDenseGetArrayRead()`, `MatDenseRestoreArrayRead()`, `MatDenseSetLDA()`
 @*/
@@ -2124,15 +2124,15 @@ PetscErrorCode MatDenseGetLDA(Mat A, PetscInt *lda)
 }
 
 /*@
-   MatDenseSetLDA - Sets the leading dimension of the array used by the `MATDENSE` matrix
+  MatDenseSetLDA - Sets the leading dimension of the array used by the `MATDENSE` matrix
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  mat - a `MATDENSE` or `MATDENSECUDA` matrix
--  lda - the leading dimension
+  Input Parameters:
++ A   - a `MATDENSE` or `MATDENSECUDA` matrix
+- lda - the leading dimension
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: [](ch_matrices), `Mat`, `MATDENSE`, `MATDENSECUDA`, `MatDenseGetArray()`, `MatDenseRestoreArray()`, `MatDenseGetArrayRead()`, `MatDenseRestoreArrayRead()`, `MatDenseGetLDA()`
 @*/
@@ -2145,20 +2145,20 @@ PetscErrorCode MatDenseSetLDA(Mat A, PetscInt lda)
 }
 
 /*@C
-   MatDenseGetArray - gives read-write access to the array where the data for a `MATDENSE` matrix is stored
+  MatDenseGetArray - gives read-write access to the array where the data for a `MATDENSE` matrix is stored
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameter:
-.  mat - a dense matrix
+  Input Parameter:
+. A - a dense matrix
 
-   Output Parameter:
-.   array - pointer to the data
+  Output Parameter:
+. array - pointer to the data
 
-   Level: intermediate
+  Level: intermediate
 
-   Fortran Note:
-   `MatDenseGetArray()` Fortran binding is deprecated (since PETSc 3.19), use `MatDenseGetArrayF90()`
+  Fortran Notes:
+  `MatDenseGetArray()` Fortran binding is deprecated (since PETSc 3.19), use `MatDenseGetArrayF90()`
 
 .seealso: [](ch_matrices), `Mat`, `MATDENSE`, `MatDenseRestoreArray()`, `MatDenseGetArrayRead()`, `MatDenseRestoreArrayRead()`, `MatDenseGetArrayWrite()`, `MatDenseRestoreArrayWrite()`
 @*/
@@ -2172,18 +2172,18 @@ PetscErrorCode MatDenseGetArray(Mat A, PetscScalar **array)
 }
 
 /*@C
-   MatDenseRestoreArray - returns access to the array where the data for a `MATDENSE` matrix is stored obtained by `MatDenseGetArray()`
+  MatDenseRestoreArray - returns access to the array where the data for a `MATDENSE` matrix is stored obtained by `MatDenseGetArray()`
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  mat - a dense matrix
--  array - pointer to the data (may be `NULL`)
+  Input Parameters:
++ A     - a dense matrix
+- array - pointer to the data (may be `NULL`)
 
-   Level: intermediate
+  Level: intermediate
 
-   Fortran Note:
-   `MatDenseRestoreArray()` Fortran binding is deprecated (since PETSc 3.19), use `MatDenseRestoreArrayF90()`
+  Fortran Notes:
+  `MatDenseRestoreArray()` Fortran binding is deprecated (since PETSc 3.19), use `MatDenseRestoreArrayF90()`
 
 .seealso: [](ch_matrices), `Mat`, `MATDENSE`, `MatDenseGetArray()`, `MatDenseGetArrayRead()`, `MatDenseRestoreArrayRead()`, `MatDenseGetArrayWrite()`, `MatDenseRestoreArrayWrite()`
 @*/
@@ -2203,15 +2203,15 @@ PetscErrorCode MatDenseRestoreArray(Mat A, PetscScalar **array)
 /*@C
   MatDenseGetArrayRead - gives read-only access to the array where the data for a `MATDENSE`  matrix is stored
 
-   Not Collective; No Fortran Support
+  Not Collective; No Fortran Support
 
-   Input Parameter:
-.  mat - a dense matrix
+  Input Parameter:
+. A - a dense matrix
 
-   Output Parameter:
-.   array - pointer to the data
+  Output Parameter:
+. array - pointer to the data
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: [](ch_matrices), `Mat`, `MATDENSE`, `MatDenseRestoreArrayRead()`, `MatDenseGetArray()`, `MatDenseRestoreArray()`, `MatDenseGetArrayWrite()`, `MatDenseRestoreArrayWrite()`
 @*/
@@ -2225,15 +2225,15 @@ PetscErrorCode MatDenseGetArrayRead(Mat A, const PetscScalar **array)
 }
 
 /*@C
-   MatDenseRestoreArrayRead - returns access to the array where the data for a `MATDENSE` matrix is stored obtained by `MatDenseGetArrayRead()`
+  MatDenseRestoreArrayRead - returns access to the array where the data for a `MATDENSE` matrix is stored obtained by `MatDenseGetArrayRead()`
 
-   Not Collective; No Fortran Support
+  Not Collective; No Fortran Support
 
-   Input Parameters:
-+  mat - a dense matrix
--  array - pointer to the data (may be `NULL`)
+  Input Parameters:
++ A     - a dense matrix
+- array - pointer to the data (may be `NULL`)
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: [](ch_matrices), `Mat`, `MATDENSE`, `MatDenseGetArrayRead()`, `MatDenseGetArray()`, `MatDenseRestoreArray()`, `MatDenseGetArrayWrite()`, `MatDenseRestoreArrayWrite()`
 @*/
@@ -2247,17 +2247,17 @@ PetscErrorCode MatDenseRestoreArrayRead(Mat A, const PetscScalar **array)
 }
 
 /*@C
-   MatDenseGetArrayWrite - gives write-only access to the array where the data for a `MATDENSE` matrix is stored
+  MatDenseGetArrayWrite - gives write-only access to the array where the data for a `MATDENSE` matrix is stored
 
-   Not Collective; No Fortran Support
+  Not Collective; No Fortran Support
 
-   Input Parameter:
-.  mat - a dense matrix
+  Input Parameter:
+. A - a dense matrix
 
-   Output Parameter:
-.   array - pointer to the data
+  Output Parameter:
+. array - pointer to the data
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: [](ch_matrices), `Mat`, `MATDENSE`, `MatDenseRestoreArrayWrite()`, `MatDenseGetArray()`, `MatDenseRestoreArray()`, `MatDenseGetArrayRead()`, `MatDenseRestoreArrayRead()`
 @*/
@@ -2271,15 +2271,15 @@ PetscErrorCode MatDenseGetArrayWrite(Mat A, PetscScalar **array)
 }
 
 /*@C
-   MatDenseRestoreArrayWrite - returns access to the array where the data for a `MATDENSE` matrix is stored obtained by `MatDenseGetArrayWrite()`
+  MatDenseRestoreArrayWrite - returns access to the array where the data for a `MATDENSE` matrix is stored obtained by `MatDenseGetArrayWrite()`
 
-   Not Collective; No Fortran Support
+  Not Collective; No Fortran Support
 
-   Input Parameters:
-+  mat - a dense matrix
--  array - pointer to the data (may be `NULL`)
+  Input Parameters:
++ A     - a dense matrix
+- array - pointer to the data (may be `NULL`)
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: [](ch_matrices), `Mat`, `MATDENSE`, `MatDenseGetArrayWrite()`, `MatDenseGetArray()`, `MatDenseRestoreArray()`, `MatDenseGetArrayRead()`, `MatDenseRestoreArrayRead()`
 @*/
@@ -2297,22 +2297,22 @@ PetscErrorCode MatDenseRestoreArrayWrite(Mat A, PetscScalar **array)
 }
 
 /*@C
-   MatDenseGetArrayAndMemType - gives read-write access to the array where the data for a `MATDENSE` matrix is stored
+  MatDenseGetArrayAndMemType - gives read-write access to the array where the data for a `MATDENSE` matrix is stored
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameter:
-.  mat - a dense matrix
+  Input Parameter:
+. A - a dense matrix
 
-   Output Parameters:
-+  array - pointer to the data
--  mtype - memory type of the returned pointer
+  Output Parameters:
++ array - pointer to the data
+- mtype - memory type of the returned pointer
 
-   Level: intermediate
+  Level: intermediate
 
-   Notes:
-   If the matrix is of a device type such as `MATDENSECUDA`, `MATDENSEHIP`, etc.,
-   an array on device is always returned and is guaranteed to contain the matrix's latest data.
+  Notes:
+  If the matrix is of a device type such as `MATDENSECUDA`, `MATDENSEHIP`, etc.,
+  an array on device is always returned and is guaranteed to contain the matrix's latest data.
 
 .seealso: [](ch_matrices), `Mat`, `MATDENSE`, `MatDenseRestoreArrayAndMemType()`, `MatDenseGetArrayReadAndMemType()`, `MatDenseGetArrayWriteAndMemType()`, `MatDenseGetArrayRead()`,
    `MatDenseRestoreArrayRead()`, `MatDenseGetArrayWrite()`, `MatDenseRestoreArrayWrite()`, `MatSeqAIJGetCSRAndMemType()`
@@ -2344,15 +2344,15 @@ PetscErrorCode MatDenseGetArrayAndMemType(Mat A, PetscScalar **array, PetscMemTy
 }
 
 /*@C
-   MatDenseRestoreArrayAndMemType - returns access to the array that is obtained by `MatDenseGetArrayAndMemType()`
+  MatDenseRestoreArrayAndMemType - returns access to the array that is obtained by `MatDenseGetArrayAndMemType()`
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  mat - a dense matrix
--  array - pointer to the data
+  Input Parameters:
++ A     - a dense matrix
+- array - pointer to the data
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: [](ch_matrices), `Mat`, `MATDENSE`, `MatDenseGetArrayAndMemType()`, `MatDenseGetArray()`, `MatDenseGetArrayRead()`, `MatDenseRestoreArrayRead()`, `MatDenseGetArrayWrite()`, `MatDenseRestoreArrayWrite()`
 @*/
@@ -2382,22 +2382,22 @@ PetscErrorCode MatDenseRestoreArrayAndMemType(Mat A, PetscScalar **array)
 }
 
 /*@C
-   MatDenseGetArrayReadAndMemType - gives read-only access to the array where the data for a `MATDENSE` matrix is stored
+  MatDenseGetArrayReadAndMemType - gives read-only access to the array where the data for a `MATDENSE` matrix is stored
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameter:
-.  mat - a dense matrix
+  Input Parameter:
+. A - a dense matrix
 
-   Output Parameters:
-+  array - pointer to the data
--  mtype - memory type of the returned pointer
+  Output Parameters:
++ array - pointer to the data
+- mtype - memory type of the returned pointer
 
-   Level: intermediate
+  Level: intermediate
 
-   Notes:
-   If the matrix is of a device type such as `MATDENSECUDA`, `MATDENSEHIP`, etc.,
-   an array on device is always returned and is guaranteed to contain the matrix's latest data.
+  Notes:
+  If the matrix is of a device type such as `MATDENSECUDA`, `MATDENSEHIP`, etc.,
+  an array on device is always returned and is guaranteed to contain the matrix's latest data.
 
 .seealso: [](ch_matrices), `Mat`, `MATDENSE`, `MatDenseRestoreArrayReadAndMemType()`, `MatDenseGetArrayWriteAndMemType()`,
    `MatDenseGetArrayRead()`, `MatDenseRestoreArrayRead()`, `MatDenseGetArrayWrite()`, `MatDenseRestoreArrayWrite()`, `MatSeqAIJGetCSRAndMemType()`
@@ -2428,15 +2428,15 @@ PetscErrorCode MatDenseGetArrayReadAndMemType(Mat A, const PetscScalar **array, 
 }
 
 /*@C
-   MatDenseRestoreArrayReadAndMemType - returns access to the array that is obtained by `MatDenseGetArrayReadAndMemType()`
+  MatDenseRestoreArrayReadAndMemType - returns access to the array that is obtained by `MatDenseGetArrayReadAndMemType()`
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  mat - a dense matrix
--  array - pointer to the data
+  Input Parameters:
++ A     - a dense matrix
+- array - pointer to the data
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: [](ch_matrices), `Mat`, `MATDENSE`, `MatDenseGetArrayReadAndMemType()`, `MatDenseGetArray()`, `MatDenseGetArrayRead()`, `MatDenseRestoreArrayRead()`, `MatDenseGetArrayWrite()`, `MatDenseRestoreArrayWrite()`
 @*/
@@ -2465,22 +2465,22 @@ PetscErrorCode MatDenseRestoreArrayReadAndMemType(Mat A, const PetscScalar **arr
 }
 
 /*@C
-   MatDenseGetArrayWriteAndMemType - gives write-only access to the array where the data for a `MATDENSE` matrix is stored
+  MatDenseGetArrayWriteAndMemType - gives write-only access to the array where the data for a `MATDENSE` matrix is stored
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameter:
-.  mat - a dense matrix
+  Input Parameter:
+. A - a dense matrix
 
-   Output Parameters:
-+  array - pointer to the data
--  mtype - memory type of the returned pointer
+  Output Parameters:
++ array - pointer to the data
+- mtype - memory type of the returned pointer
 
-   Level: intermediate
+  Level: intermediate
 
-   Notes:
-   If the matrix is of a device type such as `MATDENSECUDA`, `MATDENSEHIP`, etc.,
-   an array on device is always returned and is guaranteed to contain the matrix's latest data.
+  Notes:
+  If the matrix is of a device type such as `MATDENSECUDA`, `MATDENSEHIP`, etc.,
+  an array on device is always returned and is guaranteed to contain the matrix's latest data.
 
 .seealso: [](ch_matrices), `Mat`, `MATDENSE`, `MatDenseRestoreArrayWriteAndMemType()`, `MatDenseGetArrayReadAndMemType()`, `MatDenseGetArrayRead()`,
   `MatDenseRestoreArrayRead()`, `MatDenseGetArrayWrite()`, `MatDenseRestoreArrayWrite()`, `MatSeqAIJGetCSRAndMemType()`
@@ -2511,15 +2511,15 @@ PetscErrorCode MatDenseGetArrayWriteAndMemType(Mat A, PetscScalar **array, Petsc
 }
 
 /*@C
-   MatDenseRestoreArrayWriteAndMemType - returns access to the array that is obtained by `MatDenseGetArrayReadAndMemType()`
+  MatDenseRestoreArrayWriteAndMemType - returns access to the array that is obtained by `MatDenseGetArrayReadAndMemType()`
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  mat - a dense matrix
--  array - pointer to the data
+  Input Parameters:
++ A     - a dense matrix
+- array - pointer to the data
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: [](ch_matrices), `Mat`, `MATDENSE`, `MatDenseGetArrayWriteAndMemType()`, `MatDenseGetArray()`, `MatDenseGetArrayRead()`, `MatDenseRestoreArrayRead()`, `MatDenseGetArrayWrite()`, `MatDenseRestoreArrayWrite()`
 @*/
@@ -3241,28 +3241,28 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqDense,
                                        NULL};
 
 /*@C
-   MatCreateSeqDense - Creates a `MATSEQDENSE` that
-   is stored in column major order (the usual Fortran manner). Many
-   of the matrix operations use the BLAS and LAPACK routines.
+  MatCreateSeqDense - Creates a `MATSEQDENSE` that
+  is stored in column major order (the usual Fortran manner). Many
+  of the matrix operations use the BLAS and LAPACK routines.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  comm - MPI communicator, set to `PETSC_COMM_SELF`
-.  m - number of rows
-.  n - number of columns
--  data - optional location of matrix data in column major order.  Use `NULL` for PETSc
+  Input Parameters:
++ comm - MPI communicator, set to `PETSC_COMM_SELF`
+. m    - number of rows
+. n    - number of columns
+- data - optional location of matrix data in column major order.  Use `NULL` for PETSc
    to control all matrix memory allocation.
 
-   Output Parameter:
-.  A - the matrix
+  Output Parameter:
+. A - the matrix
 
-   Level: intermediate
+  Level: intermediate
 
-   Note:
-   The data input variable is intended primarily for Fortran programmers
-   who wish to allocate their own matrix memory space.  Most users should
-   set `data` = `NULL`.
+  Note:
+  The data input variable is intended primarily for Fortran programmers
+  who wish to allocate their own matrix memory space.  Most users should
+  set `data` = `NULL`.
 
 .seealso: [](ch_matrices), `Mat`, `MATSEQDENSE`, `MatCreate()`, `MatCreateDense()`, `MatSetValues()`
 @*/
@@ -3277,20 +3277,20 @@ PetscErrorCode MatCreateSeqDense(MPI_Comm comm, PetscInt m, PetscInt n, PetscSca
 }
 
 /*@C
-   MatSeqDenseSetPreallocation - Sets the array used for storing the matrix elements of a `MATSEQDENSE` matrix
+  MatSeqDenseSetPreallocation - Sets the array used for storing the matrix elements of a `MATSEQDENSE` matrix
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  B - the matrix
--  data - the array (or `NULL`)
+  Input Parameters:
++ B    - the matrix
+- data - the array (or `NULL`)
 
-   Level: intermediate
+  Level: intermediate
 
-   Note:
-   The data input variable is intended primarily for Fortran programmers
-   who wish to allocate their own matrix memory space.  Most users should
-   need not call this routine.
+  Note:
+  The data input variable is intended primarily for Fortran programmers
+  who wish to allocate their own matrix memory space.  Most users should
+  need not call this routine.
 
 .seealso: [](ch_matrices), `Mat`, `MATSEQDENSE`, `MatCreate()`, `MatCreateDense()`, `MatSetValues()`, `MatDenseSetLDA()`
 @*/
@@ -3638,21 +3638,21 @@ PetscErrorCode MatCreate_SeqDense(Mat B)
 }
 
 /*@C
-   MatDenseGetColumn - gives access to a column of a dense matrix. This is only the local part of the column. You MUST call `MatDenseRestoreColumn()` to avoid memory bleeding.
+  MatDenseGetColumn - gives access to a column of a dense matrix. This is only the local part of the column. You MUST call `MatDenseRestoreColumn()` to avoid memory bleeding.
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  mat - a `MATSEQDENSE` or `MATMPIDENSE` matrix
--  col - column index
+  Input Parameters:
++ A   - a `MATSEQDENSE` or `MATMPIDENSE` matrix
+- col - column index
 
-   Output Parameter:
-.  vals - pointer to the data
+  Output Parameter:
+. vals - pointer to the data
 
-   Level: intermediate
+  Level: intermediate
 
-   Note:
-   Use `MatDenseGetColumnVec()` to get access to a column of a `MATDENSE` treated as a `Vec`
+  Note:
+  Use `MatDenseGetColumnVec()` to get access to a column of a `MATDENSE` treated as a `Vec`
 
 .seealso: [](ch_matrices), `Mat`, `MATDENSE`, `MatDenseRestoreColumn()`, `MatDenseGetColumnVec()`
 @*/
@@ -3667,15 +3667,15 @@ PetscErrorCode MatDenseGetColumn(Mat A, PetscInt col, PetscScalar **vals)
 }
 
 /*@C
-   MatDenseRestoreColumn - returns access to a column of a `MATDENSE` matrix which is returned by `MatDenseGetColumn()`.
+  MatDenseRestoreColumn - returns access to a column of a `MATDENSE` matrix which is returned by `MatDenseGetColumn()`.
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  mat - a `MATSEQDENSE` or `MATMPIDENSE` matrix
--  vals - pointer to the data (may be `NULL`)
+  Input Parameters:
++ A    - a `MATSEQDENSE` or `MATMPIDENSE` matrix
+- vals - pointer to the data (may be `NULL`)
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: [](ch_matrices), `Mat`, `MATDENSE`, `MatDenseGetColumn()`
 @*/
@@ -3689,23 +3689,23 @@ PetscErrorCode MatDenseRestoreColumn(Mat A, PetscScalar **vals)
 }
 
 /*@
-   MatDenseGetColumnVec - Gives read-write access to a column of a `MATDENSE` matrix, represented as a `Vec`.
+  MatDenseGetColumnVec - Gives read-write access to a column of a `MATDENSE` matrix, represented as a `Vec`.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  mat - the `Mat` object
--  col - the column index
+  Input Parameters:
++ A   - the `Mat` object
+- col - the column index
 
-   Output Parameter:
-.  v - the vector
+  Output Parameter:
+. v - the vector
 
-   Level: intermediate
+  Level: intermediate
 
-   Notes:
-     The vector is owned by PETSc. Users need to call `MatDenseRestoreColumnVec()` when the vector is no longer needed.
+  Notes:
+  The vector is owned by PETSc. Users need to call `MatDenseRestoreColumnVec()` when the vector is no longer needed.
 
-     Use `MatDenseGetColumnVecRead()` to obtain read-only access or `MatDenseGetColumnVecWrite()` for write-only access.
+  Use `MatDenseGetColumnVecRead()` to obtain read-only access or `MatDenseGetColumnVecWrite()` for write-only access.
 
 .seealso: [](ch_matrices), `Mat`, `MATDENSE`, `MATDENSECUDA`, `MATDENSEHIP`, `MatDenseGetColumnVecRead()`, `MatDenseGetColumnVecWrite()`, `MatDenseRestoreColumnVec()`, `MatDenseRestoreColumnVecRead()`, `MatDenseRestoreColumnVecWrite()`, `MatDenseGetColumn()`
 @*/
@@ -3723,16 +3723,16 @@ PetscErrorCode MatDenseGetColumnVec(Mat A, PetscInt col, Vec *v)
 }
 
 /*@
-   MatDenseRestoreColumnVec - Returns access to a column of a dense matrix obtained from MatDenseGetColumnVec().
+  MatDenseRestoreColumnVec - Returns access to a column of a dense matrix obtained from MatDenseGetColumnVec().
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  mat - the Mat object
-.  col - the column index
--  v - the Vec object (may be `NULL`)
+  Input Parameters:
++ A   - the Mat object
+. col - the column index
+- v   - the Vec object (may be `NULL`)
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: [](ch_matrices), `Mat`, `MATDENSE`, `MATDENSECUDA`, `MATDENSEHIP`, `MatDenseGetColumnVec()`, `MatDenseGetColumnVecRead()`, `MatDenseGetColumnVecWrite()`, `MatDenseRestoreColumnVecRead()`, `MatDenseRestoreColumnVecWrite()`
 @*/
@@ -3749,25 +3749,25 @@ PetscErrorCode MatDenseRestoreColumnVec(Mat A, PetscInt col, Vec *v)
 }
 
 /*@
-   MatDenseGetColumnVecRead - Gives read-only access to a column of a dense matrix, represented as a Vec.
+  MatDenseGetColumnVecRead - Gives read-only access to a column of a dense matrix, represented as a Vec.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  mat - the `Mat` object
--  col - the column index
+  Input Parameters:
++ A   - the `Mat` object
+- col - the column index
 
-   Output Parameter:
-.  v - the vector
+  Output Parameter:
+. v - the vector
 
-   Level: intermediate
+  Level: intermediate
 
-   Notes:
-     The vector is owned by PETSc and users cannot modify it.
+  Notes:
+  The vector is owned by PETSc and users cannot modify it.
 
-     Users need to call `MatDenseRestoreColumnVecRead()` when the vector is no longer needed.
+  Users need to call `MatDenseRestoreColumnVecRead()` when the vector is no longer needed.
 
-     Use `MatDenseGetColumnVec()` to obtain read-write access or `MatDenseGetColumnVecWrite()` for write-only access.
+  Use `MatDenseGetColumnVec()` to obtain read-write access or `MatDenseGetColumnVecWrite()` for write-only access.
 
 .seealso: [](ch_matrices), `Mat`, `MATDENSE`, `MATDENSECUDA`, `MATDENSEHIP`, `MatDenseGetColumnVec()`, `MatDenseGetColumnVecWrite()`, `MatDenseRestoreColumnVec()`, `MatDenseRestoreColumnVecRead()`, `MatDenseRestoreColumnVecWrite()`
 @*/
@@ -3785,16 +3785,16 @@ PetscErrorCode MatDenseGetColumnVecRead(Mat A, PetscInt col, Vec *v)
 }
 
 /*@
-   MatDenseRestoreColumnVecRead - Returns access to a column of a dense matrix obtained from MatDenseGetColumnVecRead().
+  MatDenseRestoreColumnVecRead - Returns access to a column of a dense matrix obtained from MatDenseGetColumnVecRead().
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  mat - the `Mat` object
-.  col - the column index
--  v - the Vec object (may be `NULL`)
+  Input Parameters:
++ A   - the `Mat` object
+. col - the column index
+- v   - the Vec object (may be `NULL`)
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: [](ch_matrices), `Mat`, `MATDENSE`, `MATDENSECUDA`, `MATDENSEHIP`, `MatDenseGetColumnVec()`, `MatDenseGetColumnVecRead()`, `MatDenseGetColumnVecWrite()`, `MatDenseRestoreColumnVec()`, `MatDenseRestoreColumnVecWrite()`
 @*/
@@ -3811,23 +3811,23 @@ PetscErrorCode MatDenseRestoreColumnVecRead(Mat A, PetscInt col, Vec *v)
 }
 
 /*@
-   MatDenseGetColumnVecWrite - Gives write-only access to a column of a dense matrix, represented as a Vec.
+  MatDenseGetColumnVecWrite - Gives write-only access to a column of a dense matrix, represented as a Vec.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  mat - the `Mat` object
--  col - the column index
+  Input Parameters:
++ A   - the `Mat` object
+- col - the column index
 
-   Output Parameter:
-.  v - the vector
+  Output Parameter:
+. v - the vector
 
-   Level: intermediate
+  Level: intermediate
 
-   Notes:
-     The vector is owned by PETSc. Users need to call `MatDenseRestoreColumnVecWrite()` when the vector is no longer needed.
+  Notes:
+  The vector is owned by PETSc. Users need to call `MatDenseRestoreColumnVecWrite()` when the vector is no longer needed.
 
-     Use `MatDenseGetColumnVec()` to obtain read-write access or `MatDenseGetColumnVecRead()` for read-only access.
+  Use `MatDenseGetColumnVec()` to obtain read-write access or `MatDenseGetColumnVecRead()` for read-only access.
 
 .seealso: [](ch_matrices), `Mat`, `MATDENSE`, `MATDENSECUDA`, `MATDENSEHIP`, `MatDenseGetColumnVec()`, `MatDenseGetColumnVecRead()`, `MatDenseRestoreColumnVec()`, `MatDenseRestoreColumnVecRead()`, `MatDenseRestoreColumnVecWrite()`
 @*/
@@ -3845,16 +3845,16 @@ PetscErrorCode MatDenseGetColumnVecWrite(Mat A, PetscInt col, Vec *v)
 }
 
 /*@
-   MatDenseRestoreColumnVecWrite - Returns access to a column of a dense matrix obtained from MatDenseGetColumnVecWrite().
+  MatDenseRestoreColumnVecWrite - Returns access to a column of a dense matrix obtained from MatDenseGetColumnVecWrite().
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  mat - the `Mat` object
-.  col - the column index
--  v - the `Vec` object (may be `NULL`)
+  Input Parameters:
++ A   - the `Mat` object
+. col - the column index
+- v   - the `Vec` object (may be `NULL`)
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: [](ch_matrices), `Mat`, `MATDENSE`, `MATDENSECUDA`, `MATDENSEHIP`, `MatDenseGetColumnVec()`, `MatDenseGetColumnVecRead()`, `MatDenseGetColumnVecWrite()`, `MatDenseRestoreColumnVec()`, `MatDenseRestoreColumnVecRead()`
 @*/
@@ -3871,26 +3871,26 @@ PetscErrorCode MatDenseRestoreColumnVecWrite(Mat A, PetscInt col, Vec *v)
 }
 
 /*@
-   MatDenseGetSubMatrix - Gives access to a block of rows and columns of a dense matrix, represented as a Mat.
+  MatDenseGetSubMatrix - Gives access to a block of rows and columns of a dense matrix, represented as a Mat.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  mat - the Mat object
-.  rbegin - the first global row index in the block (if `PETSC_DECIDE`, is 0)
-.  rend - the global row index past the last one in the block (if `PETSC_DECIDE`, is `M`)
-.  cbegin - the first global column index in the block (if `PETSC_DECIDE`, is 0)
--  cend - the global column index past the last one in the block (if `PETSC_DECIDE`, is `N`)
+  Input Parameters:
++ A      - the Mat object
+. rbegin - the first global row index in the block (if `PETSC_DECIDE`, is 0)
+. rend   - the global row index past the last one in the block (if `PETSC_DECIDE`, is `M`)
+. cbegin - the first global column index in the block (if `PETSC_DECIDE`, is 0)
+- cend   - the global column index past the last one in the block (if `PETSC_DECIDE`, is `N`)
 
-   Output Parameter:
-.  v - the matrix
+  Output Parameter:
+. v - the matrix
 
-   Level: intermediate
+  Level: intermediate
 
-   Notes:
-     The matrix is owned by PETSc. Users need to call `MatDenseRestoreSubMatrix()` when the matrix is no longer needed.
+  Notes:
+  The matrix is owned by PETSc. Users need to call `MatDenseRestoreSubMatrix()` when the matrix is no longer needed.
 
-     The output matrix is not redistributed by PETSc, so depending on the values of `rbegin` and `rend`, some processes may have no local rows.
+  The output matrix is not redistributed by PETSc, so depending on the values of `rbegin` and `rend`, some processes may have no local rows.
 
 .seealso: [](ch_matrices), `Mat`, `MATDENSE`, `MATDENSECUDA`, `MATDENSEHIP`, `MatDenseGetColumnVec()`, `MatDenseRestoreColumnVec()`, `MatDenseRestoreSubMatrix()`
 @*/
@@ -3918,15 +3918,15 @@ PetscErrorCode MatDenseGetSubMatrix(Mat A, PetscInt rbegin, PetscInt rend, Petsc
 }
 
 /*@
-   MatDenseRestoreSubMatrix - Returns access to a block of columns of a dense matrix obtained from MatDenseGetSubMatrix().
+  MatDenseRestoreSubMatrix - Returns access to a block of columns of a dense matrix obtained from MatDenseGetSubMatrix().
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  mat - the `Mat` object
--  v - the `Mat` object (may be `NULL`)
+  Input Parameters:
++ A - the `Mat` object
+- v - the `Mat` object (may be `NULL`)
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: [](ch_matrices), `Mat`, `MATDENSE`, `MATDENSECUDA`, `MATDENSEHIP`, `MatDenseGetColumnVec()`, `MatDenseRestoreColumnVec()`, `MatDenseGetSubMatrix()`
 @*/

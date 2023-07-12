@@ -137,19 +137,19 @@ PetscErrorCode MatMFFDDSSetUmin_DS(Mat mat, PetscReal umin)
 }
 
 /*@
-    MatMFFDDSSetUmin - Sets the "umin" parameter used by the
-    PETSc routine for computing the differencing parameter, h, which is used
-    for matrix-free Jacobian-vector products for a `MATMFFD` matrix.
+  MatMFFDDSSetUmin - Sets the "umin" parameter used by the
+  PETSc routine for computing the differencing parameter, h, which is used
+  for matrix-free Jacobian-vector products for a `MATMFFD` matrix.
 
-   Input Parameters:
-+  A - the `MATMFFD` matrix
--  umin - the parameter
+  Input Parameters:
++ A    - the `MATMFFD` matrix
+- umin - the parameter
 
-   Level: advanced
+  Level: advanced
 
-   Note:
-   See the manual page for `MatCreateSNESMF()` for a complete description of the
-   algorithm used to compute h.
+  Note:
+  See the manual page for `MatCreateSNESMF()` for a complete description of the
+  algorithm used to compute h.
 
 .seealso: `MATMFFD`, `MatMFFDSetFunctionError()`, `MatCreateSNESMF()`
 @*/

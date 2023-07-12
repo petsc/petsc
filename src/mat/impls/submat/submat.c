@@ -164,22 +164,22 @@ static PetscErrorCode MatDestroy_SubMatrix(Mat N)
 }
 
 /*@
-   MatCreateSubMatrixVirtual - Creates a virtual matrix `MATSUBMATRIX` that acts as a submatrix
+  MatCreateSubMatrixVirtual - Creates a virtual matrix `MATSUBMATRIX` that acts as a submatrix
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  A - matrix that we will extract a submatrix of
-.  isrow - rows to be present in the submatrix
--  iscol - columns to be present in the submatrix
+  Input Parameters:
++ A     - matrix that we will extract a submatrix of
+. isrow - rows to be present in the submatrix
+- iscol - columns to be present in the submatrix
 
-   Output Parameter:
-.  newmat - new matrix
+  Output Parameter:
+. newmat - new matrix
 
-   Level: developer
+  Level: developer
 
-   Note:
-   Most will use `MatCreateSubMatrix()` which provides a more efficient representation if it is available.
+  Note:
+  Most will use `MatCreateSubMatrix()` which provides a more efficient representation if it is available.
 
 .seealso: [](ch_matrices), `Mat`, `MATSUBMATRIX`, `MATLOCALREF`, `MatCreateLocalRef()`, `MatCreateSubMatrix()`, `MatSubMatrixVirtualUpdate()`
 @*/
@@ -258,20 +258,20 @@ PetscErrorCode MatCreateSubMatrixVirtual(Mat A, IS isrow, IS iscol, Mat *newmat)
 M*/
 
 /*@
-   MatSubMatrixVirtualUpdate - Updates a `MATSUBMATRIX` virtual submatrix
+  MatSubMatrixVirtualUpdate - Updates a `MATSUBMATRIX` virtual submatrix
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  N - submatrix to update
-.  A - full matrix in the submatrix
-.  isrow - rows in the update (same as the first time the submatrix was created)
--  iscol - columns in the update (same as the first time the submatrix was created)
+  Input Parameters:
++ N     - submatrix to update
+. A     - full matrix in the submatrix
+. isrow - rows in the update (same as the first time the submatrix was created)
+- iscol - columns in the update (same as the first time the submatrix was created)
 
-   Level: developer
+  Level: developer
 
-   Note:
-   Most will use `MatCreateSubMatrix()` which provides a more efficient representation if it is available.
+  Note:
+  Most will use `MatCreateSubMatrix()` which provides a more efficient representation if it is available.
 
 .seealso: [](ch_matrices), `Mat`, `MATSUBMATRIX`, `MatCreateSubMatrixVirtual()`
 @*/

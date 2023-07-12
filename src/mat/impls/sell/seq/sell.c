@@ -43,36 +43,36 @@ static const char citation[] = "@inproceedings{ZhangELLPACK2018,\n"
 #endif /* PETSC_HAVE_IMMINTRIN_H */
 
 /*@C
- MatSeqSELLSetPreallocation - For good matrix assembly performance
- the user should preallocate the matrix storage by setting the parameter `nz`
- (or the array `nnz`).
+  MatSeqSELLSetPreallocation - For good matrix assembly performance
+  the user should preallocate the matrix storage by setting the parameter `nz`
+  (or the array `nnz`).
 
- Collective
+  Collective
 
- Input Parameters:
-+  B - The `MATSEQSELL` matrix
-.  rlenmax - number of nonzeros per row (same for all rows), ignored if `rlen` is provided
--  rlen - array containing the number of nonzeros in the various rows (possibly different for each row) or `NULL`
+  Input Parameters:
++ B       - The `MATSEQSELL` matrix
+. rlenmax - number of nonzeros per row (same for all rows), ignored if `rlen` is provided
+- rlen    - array containing the number of nonzeros in the various rows (possibly different for each row) or `NULL`
 
- Level: intermediate
+  Level: intermediate
 
- Notes:
- Specify the preallocated storage with either `rlenmax` or `rlen` (not both).
- Set `rlenmax` = `PETSC_DEFAULT` and `rlen` = `NULL` for PETSc to control dynamic memory
- allocation.
+  Notes:
+  Specify the preallocated storage with either `rlenmax` or `rlen` (not both).
+  Set `rlenmax` = `PETSC_DEFAULT` and `rlen` = `NULL` for PETSc to control dynamic memory
+  allocation.
 
- You can call `MatGetInfo()` to get information on how effective the preallocation was;
- for example the fields mallocs,nz_allocated,nz_used,nz_unneeded;
- You can also run with the option `-info` and look for messages with the string
- malloc in them to see if additional memory allocation was needed.
+  You can call `MatGetInfo()` to get information on how effective the preallocation was;
+  for example the fields mallocs,nz_allocated,nz_used,nz_unneeded;
+  You can also run with the option `-info` and look for messages with the string
+  malloc in them to see if additional memory allocation was needed.
 
- Developer Note:
- Use `rlenmax` of `MAT_SKIP_ALLOCATION` to not allocate any space for the matrix
- entries or columns indices.
+  Developer Notes:
+  Use `rlenmax` of `MAT_SKIP_ALLOCATION` to not allocate any space for the matrix
+  entries or columns indices.
 
- The maximum number of nonzeos in any row should be as accurate as possible.
- If it is underestimated, you will get bad performance due to reallocation
- (`MatSeqXSELLReallocateSELL()`).
+  The maximum number of nonzeos in any row should be as accurate as possible.
+  If it is underestimated, you will get bad performance due to reallocation
+  (`MatSeqXSELLReallocateSELL()`).
 
 .seealso: `Mat`, `MATSEQSELL`, `MATSELL`, `MatCreate()`, `MatCreateSELL()`, `MatSetValues()`, `MatGetInfo()`
  @*/
@@ -2070,8 +2070,8 @@ PetscErrorCode MatSeqSELLSetSliceHeight_SeqSELL(Mat A, PetscInt sliceheight)
   Not Collective
 
   Input Parameters:
-+  A - a `MATSEQSELL` matrix
--  array - pointer to the data
++ A     - a `MATSEQSELL` matrix
+- array - pointer to the data
 
   Level: intermediate
 
@@ -2090,10 +2090,10 @@ PetscErrorCode MatSeqSELLRestoreArray(Mat A, PetscScalar **array)
   Not Collective
 
   Input Parameter:
-.  A - a MATSEQSELL matrix
+. A - a MATSEQSELL matrix
 
   Output Parameter:
-.  ratio - ratio of number of padded zeros to number of allocated elements
+. ratio - ratio of number of padded zeros to number of allocated elements
 
   Level: intermediate
 @*/
@@ -2110,12 +2110,12 @@ PetscErrorCode MatSeqSELLGetFillRatio(Mat A, PetscReal *ratio)
   Not Collective
 
   Input Parameter:
-.  A - a MATSEQSELL matrix
+. A - a MATSEQSELL matrix
 
   Output Parameter:
-.  slicewidth - maximum slice width
+. slicewidth - maximum slice width
 
- Level: intermediate
+  Level: intermediate
 @*/
 PetscErrorCode MatSeqSELLGetMaxSliceWidth(Mat A, PetscInt *slicewidth)
 {
@@ -2130,10 +2130,10 @@ PetscErrorCode MatSeqSELLGetMaxSliceWidth(Mat A, PetscInt *slicewidth)
   Not Collective
 
   Input Parameter:
-.  A - a MATSEQSELL matrix
+. A - a MATSEQSELL matrix
 
   Output Parameter:
-.  slicewidth - average slice width
+. slicewidth - average slice width
 
   Level: intermediate
 @*/
@@ -2150,8 +2150,8 @@ PetscErrorCode MatSeqSELLGetAvgSliceWidth(Mat A, PetscReal *slicewidth)
   Not Collective
 
   Input Parameters:
-+  A - a MATSEQSELL matrix
--  sliceheight - slice height
++ A           - a MATSEQSELL matrix
+- sliceheight - slice height
 
   Notes:
   You cannot change the slice height once it have been set.
@@ -2173,10 +2173,10 @@ PetscErrorCode MatSeqSELLSetSliceHeight(Mat A, PetscInt sliceheight)
   Not Collective
 
   Input Parameter:
-.  A - a MATSEQSELL matrix
+. A - a MATSEQSELL matrix
 
   Output Parameter:
-.  variance - variance of the slice size
+. variance - variance of the slice size
 
   Level: intermediate
 @*/
@@ -2414,32 +2414,32 @@ M*/
 M*/
 
 /*@C
-       MatCreateSeqSELL - Creates a sparse matrix in `MATSEQSELL` format.
+  MatCreateSeqSELL - Creates a sparse matrix in `MATSEQSELL` format.
 
- Collective
+  Collective
 
- Input Parameters:
-+  comm - MPI communicator, set to `PETSC_COMM_SELF`
-.  m - number of rows
-.  n - number of columns
-.  rlenmax - maximum number of nonzeros in a row, ignored if `rlen` is provided
--  rlen - array containing the number of nonzeros in the various rows (possibly different for each row) or NULL
+  Input Parameters:
++ comm    - MPI communicator, set to `PETSC_COMM_SELF`
+. m       - number of rows
+. n       - number of columns
+. rlenmax - maximum number of nonzeros in a row, ignored if `rlen` is provided
+- rlen    - array containing the number of nonzeros in the various rows (possibly different for each row) or NULL
 
- Output Parameter:
-.  A - the matrix
+  Output Parameter:
+. A - the matrix
 
- Level: intermediate
+  Level: intermediate
 
- Notes:
- It is recommended that one use the `MatCreate()`, `MatSetType()` and/or `MatSetFromOptions()`,
- MatXXXXSetPreallocation() paradigm instead of this routine directly.
- [MatXXXXSetPreallocation() is, for example, `MatSeqSELLSetPreallocation()`]
+  Notes:
+  It is recommended that one use the `MatCreate()`, `MatSetType()` and/or `MatSetFromOptions()`,
+  MatXXXXSetPreallocation() paradigm instead of this routine directly.
+  [MatXXXXSetPreallocation() is, for example, `MatSeqSELLSetPreallocation()`]
 
- Specify the preallocated storage with either `rlenmax` or `rlen` (not both).
- Set `rlenmax` = `PETSC_DEFAULT` and `rlen` = `NULL` for PETSc to control dynamic memory
- allocation.
+  Specify the preallocated storage with either `rlenmax` or `rlen` (not both).
+  Set `rlenmax` = `PETSC_DEFAULT` and `rlen` = `NULL` for PETSc to control dynamic memory
+  allocation.
 
-.seealso: `Mat`, `MATSEQSELL`, `MatCreate()`, `MatCreateSELL()`, `MatSetValues()`, `MatSeqSELLSetPreallocation()`, `MATSELL`, `MATSEQSELL`, `MATMPISELL`
+.seealso: `Mat`, `MATSEQSELL`, `MatCreate()`, `MatCreateSELL()`, `MatSetValues()`, `MatSeqSELLSetPreallocation()`, `MATSELL`, `MATMPISELL`
  @*/
 PetscErrorCode MatCreateSeqSELL(MPI_Comm comm, PetscInt m, PetscInt n, PetscInt rlenmax, const PetscInt rlen[], Mat *A)
 {

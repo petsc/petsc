@@ -514,22 +514,21 @@ PetscErrorCode MatSetValues_SeqAIJ_SortedFullNoPreallocation(Mat A, PetscInt m, 
 }
 
 /*@
-    MatSeqAIJSetTotalPreallocation - Sets an upper bound on the total number of expected nonzeros in the matrix.
+  MatSeqAIJSetTotalPreallocation - Sets an upper bound on the total number of expected nonzeros in the matrix.
 
   Input Parameters:
-+  A - the `MATSEQAIJ` matrix
--  nztotal - bound on the number of nonzeros
++ A       - the `MATSEQAIJ` matrix
+- nztotal - bound on the number of nonzeros
 
   Level: advanced
 
   Notes:
-    This can be called if you will be provided the matrix row by row (from row zero) with sorted column indices for each row.
-    Simply call `MatSetValues()` after this call to provide the matrix entries in the usual manner. This matrix may be used
-    as always with multiple matrix assemblies.
+  This can be called if you will be provided the matrix row by row (from row zero) with sorted column indices for each row.
+  Simply call `MatSetValues()` after this call to provide the matrix entries in the usual manner. This matrix may be used
+  as always with multiple matrix assemblies.
 
 .seealso: [](ch_matrices), `Mat`, `MatSetOption()`, `MAT_SORTED_FULL`, `MatSetValues()`, `MatSeqAIJSetPreallocation()`
 @*/
-
 PetscErrorCode MatSeqAIJSetTotalPreallocation(Mat A, PetscInt nztotal)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ *)A->data;
@@ -3686,26 +3685,26 @@ PetscErrorCode MatSeqAIJCompactOutExtraColumns_SeqAIJ(Mat mat, ISLocalToGlobalMa
 }
 
 /*@
-    MatSeqAIJSetColumnIndices - Set the column indices for all the rows
-       in the matrix.
+  MatSeqAIJSetColumnIndices - Set the column indices for all the rows
+  in the matrix.
 
   Input Parameters:
-+  mat - the `MATSEQAIJ` matrix
--  indices - the column indices
++ mat     - the `MATSEQAIJ` matrix
+- indices - the column indices
 
   Level: advanced
 
   Notes:
-    This can be called if you have precomputed the nonzero structure of the
+  This can be called if you have precomputed the nonzero structure of the
   matrix and want to provide it to the matrix object to improve the performance
   of the `MatSetValues()` operation.
 
-    You MUST have set the correct numbers of nonzeros per row in the call to
+  You MUST have set the correct numbers of nonzeros per row in the call to
   `MatCreateSeqAIJ()`, and the columns indices MUST be sorted.
 
-    MUST be called before any calls to `MatSetValues()`
+  MUST be called before any calls to `MatSetValues()`
 
-    The indices should start with zero, not one.
+  The indices should start with zero, not one.
 
 .seealso: [](ch_matrices), `Mat`, `MATSEQAIJ`
 @*/
@@ -3735,13 +3734,13 @@ PetscErrorCode MatStoreValues_SeqAIJ(Mat mat)
 }
 
 /*@
-    MatStoreValues - Stashes a copy of the matrix values; this allows reusing of the linear part of a Jacobian, while recomputing only the
-    nonlinear portion.
+  MatStoreValues - Stashes a copy of the matrix values; this allows reusing of the linear part of a Jacobian, while recomputing only the
+  nonlinear portion.
 
-   Logically Collect
+  Logically Collect
 
   Input Parameter:
-.  mat - the matrix (currently only `MATAIJ` matrices support this option)
+. mat - the matrix (currently only `MATAIJ` matrices support this option)
 
   Level: advanced
 
@@ -3773,14 +3772,14 @@ PetscErrorCode MatStoreValues_SeqAIJ(Mat mat)
 .ve
 
   Notes:
-    Matrix must already be assembled before calling this routine
-    Must set the matrix option `MatSetOption`(mat,`MAT_NEW_NONZERO_LOCATIONS`,`PETSC_FALSE`); before
-    calling this routine.
+  Matrix must already be assembled before calling this routine
+  Must set the matrix option `MatSetOption`(mat,`MAT_NEW_NONZERO_LOCATIONS`,`PETSC_FALSE`); before
+  calling this routine.
 
-    When this is called multiple times it overwrites the previous set of stored values
-    and does not allocated additional space.
+  When this is called multiple times it overwrites the previous set of stored values
+  and does not allocated additional space.
 
-.seealso: [](ch_matrices), `Mat`, `Mat`, `MatRetrieveValues()`
+.seealso: [](ch_matrices), `Mat`, `MatRetrieveValues()`
 @*/
 PetscErrorCode MatStoreValues(Mat mat)
 {
@@ -3806,12 +3805,12 @@ PetscErrorCode MatRetrieveValues_SeqAIJ(Mat mat)
 }
 
 /*@
-    MatRetrieveValues - Retrieves the copy of the matrix values that was stored with `MatStoreValues()`
+  MatRetrieveValues - Retrieves the copy of the matrix values that was stored with `MatStoreValues()`
 
-   Logically Collect
+  Logically Collect
 
   Input Parameter:
-.  mat - the matrix (currently only `MATAIJ` matrices support this option)
+. mat - the matrix (currently only `MATAIJ` matrices support this option)
 
   Level: advanced
 
@@ -3828,46 +3827,46 @@ PetscErrorCode MatRetrieveValues(Mat mat)
 }
 
 /*@C
-   MatCreateSeqAIJ - Creates a sparse matrix in `MATSEQAIJ` (compressed row) format
-   (the default parallel PETSc format).  For good matrix assembly performance
-   the user should preallocate the matrix storage by setting the parameter `nz`
-   (or the array `nnz`).
+  MatCreateSeqAIJ - Creates a sparse matrix in `MATSEQAIJ` (compressed row) format
+  (the default parallel PETSc format).  For good matrix assembly performance
+  the user should preallocate the matrix storage by setting the parameter `nz`
+  (or the array `nnz`).
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  comm - MPI communicator, set to `PETSC_COMM_SELF`
-.  m - number of rows
-.  n - number of columns
-.  nz - number of nonzeros per row (same for all rows)
--  nnz - array containing the number of nonzeros in the various rows
+  Input Parameters:
++ comm - MPI communicator, set to `PETSC_COMM_SELF`
+. m    - number of rows
+. n    - number of columns
+. nz   - number of nonzeros per row (same for all rows)
+- nnz  - array containing the number of nonzeros in the various rows
          (possibly different for each row) or NULL
 
-   Output Parameter:
-.  A - the matrix
+  Output Parameter:
+. A - the matrix
 
-   Options Database Keys:
-+  -mat_no_inode  - Do not use inodes
--  -mat_inode_limit <limit> - Sets inode limit (max limit=5)
+  Options Database Keys:
++ -mat_no_inode            - Do not use inodes
+- -mat_inode_limit <limit> - Sets inode limit (max limit=5)
 
-   Level: intermediate
+  Level: intermediate
 
-   Notes:
-   If `nnz` is given then `nz` is ignored
+  Notes:
+  If `nnz` is given then `nz` is ignored
 
-   The `MATSEQAIJ` format, also called
-   compressed row storage, is fully compatible with standard Fortran
-   storage.  That is, the stored row and column indices can begin at
-   either one (as in Fortran) or zero.
+  The `MATSEQAIJ` format, also called
+  compressed row storage, is fully compatible with standard Fortran
+  storage.  That is, the stored row and column indices can begin at
+  either one (as in Fortran) or zero.
 
-   Specify the preallocated storage with either `nz` or `nnz` (not both).
-   Set `nz` = `PETSC_DEFAULT` and `nnz` = `NULL` for PETSc to control dynamic memory
-   allocation.
+  Specify the preallocated storage with either `nz` or `nnz` (not both).
+  Set `nz` = `PETSC_DEFAULT` and `nnz` = `NULL` for PETSc to control dynamic memory
+  allocation.
 
-   By default, this format uses inodes (identical nodes) when possible, to
-   improve numerical efficiency of matrix-vector products and solves. We
-   search for consecutive rows with the same nonzero structure, thereby
-   reusing matrix information to achieve increased efficiency.
+  By default, this format uses inodes (identical nodes) when possible, to
+  improve numerical efficiency of matrix-vector products and solves. We
+  search for consecutive rows with the same nonzero structure, thereby
+  reusing matrix information to achieve increased efficiency.
 
 .seealso: [](ch_matrices), `Mat`, [Sparse Matrix Creation](sec_matsparse), `MatCreate()`, `MatCreateAIJ()`, `MatSetValues()`, `MatSeqAIJSetColumnIndices()`, `MatCreateSeqAIJWithArrays()`
 @*/
@@ -3882,50 +3881,50 @@ PetscErrorCode MatCreateSeqAIJ(MPI_Comm comm, PetscInt m, PetscInt n, PetscInt n
 }
 
 /*@C
-   MatSeqAIJSetPreallocation - For good matrix assembly performance
-   the user should preallocate the matrix storage by setting the parameter nz
-   (or the array nnz).  By setting these parameters accurately, performance
-   during matrix assembly can be increased by more than a factor of 50.
+  MatSeqAIJSetPreallocation - For good matrix assembly performance
+  the user should preallocate the matrix storage by setting the parameter nz
+  (or the array nnz).  By setting these parameters accurately, performance
+  during matrix assembly can be increased by more than a factor of 50.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  B - The matrix
-.  nz - number of nonzeros per row (same for all rows)
--  nnz - array containing the number of nonzeros in the various rows
+  Input Parameters:
++ B   - The matrix
+. nz  - number of nonzeros per row (same for all rows)
+- nnz - array containing the number of nonzeros in the various rows
          (possibly different for each row) or NULL
 
-   Options Database Keys:
-+  -mat_no_inode  - Do not use inodes
--  -mat_inode_limit <limit> - Sets inode limit (max limit=5)
+  Options Database Keys:
++ -mat_no_inode            - Do not use inodes
+- -mat_inode_limit <limit> - Sets inode limit (max limit=5)
 
-   Level: intermediate
+  Level: intermediate
 
-   Notes:
-     If `nnz` is given then `nz` is ignored
+  Notes:
+  If `nnz` is given then `nz` is ignored
 
-    The `MATSEQAIJ` format also called
-   compressed row storage, is fully compatible with standard Fortran
-   storage.  That is, the stored row and column indices can begin at
-   either one (as in Fortran) or zero.  See the users' manual for details.
+  The `MATSEQAIJ` format also called
+  compressed row storage, is fully compatible with standard Fortran
+  storage.  That is, the stored row and column indices can begin at
+  either one (as in Fortran) or zero.  See the users' manual for details.
 
-   Specify the preallocated storage with either `nz` or `nnz` (not both).
-   Set nz = `PETSC_DEFAULT` and `nnz` = `NULL` for PETSc to control dynamic memory
-   allocation.
+  Specify the preallocated storage with either `nz` or `nnz` (not both).
+  Set nz = `PETSC_DEFAULT` and `nnz` = `NULL` for PETSc to control dynamic memory
+  allocation.
 
-   You can call `MatGetInfo()` to get information on how effective the preallocation was;
-   for example the fields mallocs,nz_allocated,nz_used,nz_unneeded;
-   You can also run with the option -info and look for messages with the string
-   malloc in them to see if additional memory allocation was needed.
+  You can call `MatGetInfo()` to get information on how effective the preallocation was;
+  for example the fields mallocs,nz_allocated,nz_used,nz_unneeded;
+  You can also run with the option -info and look for messages with the string
+  malloc in them to see if additional memory allocation was needed.
 
-   Developer Notes:
-   Use nz of `MAT_SKIP_ALLOCATION` to not allocate any space for the matrix
-   entries or columns indices
+  Developer Notes:
+  Use nz of `MAT_SKIP_ALLOCATION` to not allocate any space for the matrix
+  entries or columns indices
 
-   By default, this format uses inodes (identical nodes) when possible, to
-   improve numerical efficiency of matrix-vector products and solves. We
-   search for consecutive rows with the same nonzero structure, thereby
-   reusing matrix information to achieve increased efficiency.
+  By default, this format uses inodes (identical nodes) when possible, to
+  improve numerical efficiency of matrix-vector products and solves. We
+  search for consecutive rows with the same nonzero structure, thereby
+  reusing matrix information to achieve increased efficiency.
 
 .seealso: [](ch_matrices), `Mat`, `MatCreate()`, `MatCreateAIJ()`, `MatSetValues()`, `MatSeqAIJSetColumnIndices()`, `MatCreateSeqAIJWithArrays()`, `MatGetInfo()`,
           `MatSeqAIJSetTotalPreallocation()`
@@ -4071,29 +4070,29 @@ PetscErrorCode MatResetPreallocation_SeqAIJ(Mat A)
 }
 
 /*@
-   MatSeqAIJSetPreallocationCSR - Allocates memory for a sparse sequential matrix in `MATSEQAIJ` format.
+  MatSeqAIJSetPreallocationCSR - Allocates memory for a sparse sequential matrix in `MATSEQAIJ` format.
 
-   Input Parameters:
-+  B - the matrix
-.  i - the indices into j for the start of each row (starts with zero)
-.  j - the column indices for each row (starts with zero) these must be sorted for each row
--  v - optional values in the matrix
+  Input Parameters:
++ B - the matrix
+. i - the indices into j for the start of each row (starts with zero)
+. j - the column indices for each row (starts with zero) these must be sorted for each row
+- v - optional values in the matrix
 
-   Level: developer
+  Level: developer
 
-   Notes:
-      The `i`,`j`,`v` values are COPIED with this routine; to avoid the copy use `MatCreateSeqAIJWithArrays()`
+  Notes:
+  The `i`,`j`,`v` values are COPIED with this routine; to avoid the copy use `MatCreateSeqAIJWithArrays()`
 
-      This routine may be called multiple times with different nonzero patterns (or the same nonzero pattern). The nonzero
-      structure will be the union of all the previous nonzero structures.
+  This routine may be called multiple times with different nonzero patterns (or the same nonzero pattern). The nonzero
+  structure will be the union of all the previous nonzero structures.
 
-    Developer Notes:
-      An optimization could be added to the implementation where it checks if the `i`, and `j` are identical to the current `i` and `j` and
-      then just copies the `v` values directly with `PetscMemcpy()`.
+  Developer Notes:
+  An optimization could be added to the implementation where it checks if the `i`, and `j` are identical to the current `i` and `j` and
+  then just copies the `v` values directly with `PetscMemcpy()`.
 
-      This routine could also take a `PetscCopyMode` argument to allow sharing the values instead of always copying them.
+  This routine could also take a `PetscCopyMode` argument to allow sharing the values instead of always copying them.
 
-.seealso: [](ch_matrices), `Mat`, `MatCreate()`, `MatCreateSeqAIJ()`, `MatSetValues()`, `MatSeqAIJSetPreallocation()`, `MatCreateSeqAIJ()`, `MATSEQAIJ`, `MatResetPreallocation()`
+.seealso: [](ch_matrices), `Mat`, `MatCreate()`, `MatCreateSeqAIJ()`, `MatSetValues()`, `MatSeqAIJSetPreallocation()`, `MATSEQAIJ`, `MatResetPreallocation()`
 @*/
 PetscErrorCode MatSeqAIJSetPreallocationCSR(Mat B, const PetscInt i[], const PetscInt j[], const PetscScalar v[])
 {
@@ -4137,20 +4136,20 @@ PetscErrorCode MatSeqAIJSetPreallocationCSR_SeqAIJ(Mat B, const PetscInt Ii[], c
 }
 
 /*@
-   MatSeqAIJKron - Computes `C`, the Kronecker product of `A` and `B`.
+  MatSeqAIJKron - Computes `C`, the Kronecker product of `A` and `B`.
 
-   Input Parameters:
-+  A - left-hand side matrix
-.  B - right-hand side matrix
--  reuse - either `MAT_INITIAL_MATRIX` or `MAT_REUSE_MATRIX`
+  Input Parameters:
++ A     - left-hand side matrix
+. B     - right-hand side matrix
+- reuse - either `MAT_INITIAL_MATRIX` or `MAT_REUSE_MATRIX`
 
-   Output Parameter:
-.  C - Kronecker product of `A` and `B`
+  Output Parameter:
+. C - Kronecker product of `A` and `B`
 
-   Level: intermediate
+  Level: intermediate
 
-   Note:
-      `MAT_REUSE_MATRIX` can only be used when the nonzero structure of the product matrix has not changed from that last call to `MatSeqAIJKron()`.
+  Note:
+  `MAT_REUSE_MATRIX` can only be used when the nonzero structure of the product matrix has not changed from that last call to `MatSeqAIJKron()`.
 
 .seealso: [](ch_matrices), `Mat`, `MatCreateSeqAIJ()`, `MATSEQAIJ`, `MATKAIJ`, `MatReuse`
 @*/
@@ -4370,20 +4369,20 @@ PETSC_INTERN PetscErrorCode MatConvert_XAIJ_IS(Mat, MatType, MatReuse, Mat *);
 PETSC_INTERN PetscErrorCode MatProductSetFromOptions_IS_XAIJ(Mat);
 
 /*@C
-   MatSeqAIJGetArray - gives read/write access to the array where the data for a `MATSEQAIJ` matrix is stored
+  MatSeqAIJGetArray - gives read/write access to the array where the data for a `MATSEQAIJ` matrix is stored
 
-   Not Collective
+  Not Collective
 
-   Input Parameter:
-.  mat - a `MATSEQAIJ` matrix
+  Input Parameter:
+. A - a `MATSEQAIJ` matrix
 
-   Output Parameter:
-.   array - pointer to the data
+  Output Parameter:
+. array - pointer to the data
 
-   Level: intermediate
+  Level: intermediate
 
-   Fortran Note:
-   `MatSeqAIJGetArray()` Fortran binding is deprecated (since PETSc 3.19), use `MatSeqAIJGetArrayF90()`
+  Fortran Notes:
+  `MatSeqAIJGetArray()` Fortran binding is deprecated (since PETSc 3.19), use `MatSeqAIJGetArrayF90()`
 
 .seealso: [](ch_matrices), `Mat`, `MatSeqAIJRestoreArray()`, `MatSeqAIJGetArrayF90()`
 @*/
@@ -4401,18 +4400,18 @@ PetscErrorCode MatSeqAIJGetArray(Mat A, PetscScalar **array)
 }
 
 /*@C
-   MatSeqAIJRestoreArray - returns access to the array where the data for a `MATSEQAIJ` matrix is stored obtained by `MatSeqAIJGetArray()`
+  MatSeqAIJRestoreArray - returns access to the array where the data for a `MATSEQAIJ` matrix is stored obtained by `MatSeqAIJGetArray()`
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  mat - a `MATSEQAIJ` matrix
--  array - pointer to the data
+  Input Parameters:
++ A     - a `MATSEQAIJ` matrix
+- array - pointer to the data
 
-   Level: intermediate
+  Level: intermediate
 
-   Fortran Note:
-   `MatSeqAIJRestoreArray()` Fortran binding is deprecated (since PETSc 3.19), use `MatSeqAIJRestoreArrayF90()`
+  Fortran Notes:
+  `MatSeqAIJRestoreArray()` Fortran binding is deprecated (since PETSc 3.19), use `MatSeqAIJRestoreArrayF90()`
 
 .seealso: [](ch_matrices), `Mat`, `MatSeqAIJGetArray()`, `MatSeqAIJRestoreArrayF90()`
 @*/
@@ -4432,17 +4431,17 @@ PetscErrorCode MatSeqAIJRestoreArray(Mat A, PetscScalar **array)
 }
 
 /*@C
-   MatSeqAIJGetArrayRead - gives read-only access to the array where the data for a `MATSEQAIJ` matrix is stored
+  MatSeqAIJGetArrayRead - gives read-only access to the array where the data for a `MATSEQAIJ` matrix is stored
 
-   Not Collective; No Fortran Support
+  Not Collective; No Fortran Support
 
-   Input Parameter:
-.  mat - a `MATSEQAIJ` matrix
+  Input Parameter:
+. A - a `MATSEQAIJ` matrix
 
-   Output Parameter:
-.   array - pointer to the data
+  Output Parameter:
+. array - pointer to the data
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: [](ch_matrices), `Mat`, `MatSeqAIJGetArray()`, `MatSeqAIJRestoreArrayRead()`
 @*/
@@ -4460,17 +4459,17 @@ PetscErrorCode MatSeqAIJGetArrayRead(Mat A, const PetscScalar **array)
 }
 
 /*@C
-   MatSeqAIJRestoreArrayRead - restore the read-only access array obtained from `MatSeqAIJGetArrayRead()`
+  MatSeqAIJRestoreArrayRead - restore the read-only access array obtained from `MatSeqAIJGetArrayRead()`
 
-   Not Collective; No Fortran Support
+  Not Collective; No Fortran Support
 
-   Input Parameter:
-.  mat - a `MATSEQAIJ` matrix
+  Input Parameter:
+. A - a `MATSEQAIJ` matrix
 
-   Output Parameter:
-.   array - pointer to the data
+  Output Parameter:
+. array - pointer to the data
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: [](ch_matrices), `Mat`, `MatSeqAIJGetArray()`, `MatSeqAIJGetArrayRead()`
 @*/
@@ -4488,17 +4487,17 @@ PetscErrorCode MatSeqAIJRestoreArrayRead(Mat A, const PetscScalar **array)
 }
 
 /*@C
-   MatSeqAIJGetArrayWrite - gives write-only access to the array where the data for a `MATSEQAIJ` matrix is stored
+  MatSeqAIJGetArrayWrite - gives write-only access to the array where the data for a `MATSEQAIJ` matrix is stored
 
-   Not Collective; No Fortran Support
+  Not Collective; No Fortran Support
 
-   Input Parameter:
-.  mat - a `MATSEQAIJ` matrix
+  Input Parameter:
+. A - a `MATSEQAIJ` matrix
 
-   Output Parameter:
-.   array - pointer to the data
+  Output Parameter:
+. array - pointer to the data
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: [](ch_matrices), `Mat`, `MatSeqAIJGetArray()`, `MatSeqAIJRestoreArrayRead()`
 @*/
@@ -4518,17 +4517,17 @@ PetscErrorCode MatSeqAIJGetArrayWrite(Mat A, PetscScalar **array)
 }
 
 /*@C
-   MatSeqAIJRestoreArrayWrite - restore the read-only access array obtained from MatSeqAIJGetArrayRead
+  MatSeqAIJRestoreArrayWrite - restore the read-only access array obtained from MatSeqAIJGetArrayRead
 
-   Not Collective; No Fortran Support
+  Not Collective; No Fortran Support
 
-   Input Parameter:
-.  mat - a MATSEQAIJ matrix
+  Input Parameter:
+. A - a MATSEQAIJ matrix
 
-   Output Parameter:
-.   array - pointer to the data
+  Output Parameter:
+. array - pointer to the data
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: [](ch_matrices), `Mat`, `MatSeqAIJGetArray()`, `MatSeqAIJGetArrayRead()`
 @*/
@@ -4546,27 +4545,27 @@ PetscErrorCode MatSeqAIJRestoreArrayWrite(Mat A, PetscScalar **array)
 }
 
 /*@C
-   MatSeqAIJGetCSRAndMemType - Get the CSR arrays and the memory type of the `MATSEQAIJ` matrix
+  MatSeqAIJGetCSRAndMemType - Get the CSR arrays and the memory type of the `MATSEQAIJ` matrix
 
-   Not Collective; No Fortran Support
+  Not Collective; No Fortran Support
 
-   Input Parameter:
-.  mat - a matrix of type `MATSEQAIJ` or its subclasses
+  Input Parameter:
+. mat - a matrix of type `MATSEQAIJ` or its subclasses
 
-   Output Parameters:
-+  i - row map array of the matrix
-.  j - column index array of the matrix
-.  a - data array of the matrix
--  memtype - memory type of the arrays
+  Output Parameters:
++ i     - row map array of the matrix
+. j     - column index array of the matrix
+. a     - data array of the matrix
+- mtype - memory type of the arrays
 
-   Level: Developer
+  Level: developer
 
   Notes:
-   Any of the output parameters can be `NULL`, in which case the corresponding value is not returned.
-   If mat is a device matrix, the arrays are on the device. Otherwise, they are on the host.
+  Any of the output parameters can be `NULL`, in which case the corresponding value is not returned.
+  If mat is a device matrix, the arrays are on the device. Otherwise, they are on the host.
 
-   One can call this routine on a preallocated but not assembled matrix to just get the memory of the CSR underneath the matrix.
-   If the matrix is assembled, the data array `a` is guaranteed to have the latest values of the matrix.
+  One can call this routine on a preallocated but not assembled matrix to just get the memory of the CSR underneath the matrix.
+  If the matrix is assembled, the data array `a` is guaranteed to have the latest values of the matrix.
 
 .seealso: [](ch_matrices), `Mat`, `MatSeqAIJGetArray()`, `MatSeqAIJGetArrayRead()`
 @*/
@@ -4588,17 +4587,17 @@ PetscErrorCode MatSeqAIJGetCSRAndMemType(Mat mat, const PetscInt **i, const Pets
 }
 
 /*@C
-   MatSeqAIJGetMaxRowNonzeros - returns the maximum number of nonzeros in any row
+  MatSeqAIJGetMaxRowNonzeros - returns the maximum number of nonzeros in any row
 
-   Not Collective
+  Not Collective
 
-   Input Parameter:
-.  mat - a `MATSEQAIJ` matrix
+  Input Parameter:
+. A - a `MATSEQAIJ` matrix
 
-   Output Parameter:
-.   nz - the maximum number of nonzeros in any row
+  Output Parameter:
+. nz - the maximum number of nonzeros in any row
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: [](ch_matrices), `Mat`, `MatSeqAIJRestoreArray()`, `MatSeqAIJGetArrayF90()`
 @*/
@@ -5126,35 +5125,35 @@ PetscErrorCode MatEqual_SeqAIJ(Mat A, Mat B, PetscBool *flg)
 }
 
 /*@
-     MatCreateSeqAIJWithArrays - Creates an sequential `MATSEQAIJ` matrix using matrix elements (in CSR format)
-              provided by the user.
+  MatCreateSeqAIJWithArrays - Creates an sequential `MATSEQAIJ` matrix using matrix elements (in CSR format)
+  provided by the user.
 
-      Collective
+  Collective
 
-   Input Parameters:
-+   comm - must be an MPI communicator of size 1
-.   m - number of rows
-.   n - number of columns
-.   i - row indices; that is i[0] = 0, i[row] = i[row-1] + number of elements in that row of the matrix
-.   j - column indices
--   a - matrix values
+  Input Parameters:
++ comm - must be an MPI communicator of size 1
+. m    - number of rows
+. n    - number of columns
+. i    - row indices; that is i[0] = 0, i[row] = i[row-1] + number of elements in that row of the matrix
+. j    - column indices
+- a    - matrix values
 
-   Output Parameter:
-.   mat - the matrix
+  Output Parameter:
+. mat - the matrix
 
-   Level: intermediate
+  Level: intermediate
 
-   Notes:
-       The `i`, `j`, and `a` arrays are not copied by this routine, the user must free these arrays
-    once the matrix is destroyed and not before
+  Notes:
+  The `i`, `j`, and `a` arrays are not copied by this routine, the user must free these arrays
+  once the matrix is destroyed and not before
 
-       You cannot set new nonzero locations into this matrix, that will generate an error.
+  You cannot set new nonzero locations into this matrix, that will generate an error.
 
-       The `i` and `j` indices are 0 based
+  The `i` and `j` indices are 0 based
 
-       The format which is used for the sparse matrix input, is equivalent to a
-    row-major ordering.. i.e for the following matrix, the input data expected is
-    as shown
+  The format which is used for the sparse matrix input, is equivalent to a
+  row-major ordering.. i.e for the following matrix, the input data expected is
+  as shown
 .vb
         1 0 0
         2 0 3
@@ -5215,28 +5214,28 @@ PetscErrorCode MatCreateSeqAIJWithArrays(MPI_Comm comm, PetscInt m, PetscInt n, 
 }
 
 /*@
-     MatCreateSeqAIJFromTriple - Creates an sequential `MATSEQAIJ` matrix using matrix elements (in COO format)
-              provided by the user.
+  MatCreateSeqAIJFromTriple - Creates an sequential `MATSEQAIJ` matrix using matrix elements (in COO format)
+  provided by the user.
 
-      Collective
+  Collective
 
-   Input Parameters:
-+   comm - must be an MPI communicator of size 1
-.   m   - number of rows
-.   n   - number of columns
-.   i   - row indices
-.   j   - column indices
-.   a   - matrix values
-.   nz  - number of nonzeros
--   idx - if the `i` and `j` indices start with 1 use `PETSC_TRUE` otherwise use `PETSC_FALSE`
+  Input Parameters:
++ comm - must be an MPI communicator of size 1
+. m    - number of rows
+. n    - number of columns
+. i    - row indices
+. j    - column indices
+. a    - matrix values
+. nz   - number of nonzeros
+- idx  - if the `i` and `j` indices start with 1 use `PETSC_TRUE` otherwise use `PETSC_FALSE`
 
-   Output Parameter:
-.   mat - the matrix
+  Output Parameter:
+. mat - the matrix
 
-   Level: intermediate
+  Level: intermediate
 
-   Example:
-       For the following matrix, the input data expected is as shown (using 0 based indexing)
+  Example:
+  For the following matrix, the input data expected is as shown (using 0 based indexing)
 .vb
         1 0 0
         2 0 3
@@ -5246,9 +5245,10 @@ PetscErrorCode MatCreateSeqAIJWithArrays(MPI_Comm comm, PetscInt m, PetscInt n, 
         j =  {0,0,2,0,1,2}
         v =  {1,2,3,4,5,6}
 .ve
+
   Note:
-    Instead of using this function, users should also consider `MatSetPreallocationCOO()` and `MatSetValuesCOO()`, which allow repeated or remote entries,
-    and are particularly useful in iterative applications.
+  Instead of using this function, users should also consider `MatSetPreallocationCOO()` and `MatSetValuesCOO()`, which allow repeated or remote entries,
+  and are particularly useful in iterative applications.
 
 .seealso: [](ch_matrices), `Mat`, `MatCreate()`, `MatCreateAIJ()`, `MatCreateSeqAIJ()`, `MatCreateSeqAIJWithArrays()`, `MatMPIAIJSetPreallocationCSR()`, `MatSetValuesCOO()`, `MatSetPreallocationCOO()`
 @*/
@@ -5409,20 +5409,20 @@ PetscErrorCode MatEliminateZeros_SeqAIJ(Mat A)
 PetscFunctionList MatSeqAIJList = NULL;
 
 /*@C
-   MatSeqAIJSetType - Converts a `MATSEQAIJ` matrix to a subtype
+  MatSeqAIJSetType - Converts a `MATSEQAIJ` matrix to a subtype
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  mat      - the matrix object
--  matype   - matrix type
+  Input Parameters:
++ mat    - the matrix object
+- matype - matrix type
 
-   Options Database Key:
-.  -mat_seqaij_type  <method> - for example seqaijcrl
+  Options Database Key:
+. -mat_seqaij_type  <method> - for example seqaijcrl
 
   Level: intermediate
 
-.seealso: [](ch_matrices), `Mat`, `PCSetType()`, `VecSetType()`, `MatCreate()`, `MatType`, `Mat`
+.seealso: [](ch_matrices), `Mat`, `PCSetType()`, `VecSetType()`, `MatCreate()`, `MatType`
 @*/
 PetscErrorCode MatSeqAIJSetType(Mat mat, MatType matype)
 {
@@ -5443,18 +5443,18 @@ PetscErrorCode MatSeqAIJSetType(Mat mat, MatType matype)
 /*@C
   MatSeqAIJRegister -  - Adds a new sub-matrix type for sequential `MATSEQAIJ` matrices
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  name - name of a new user-defined matrix type, for example `MATSEQAIJCRL`
--  function - routine to convert to subtype
+  Input Parameters:
++ sname    - name of a new user-defined matrix type, for example `MATSEQAIJCRL`
+- function - routine to convert to subtype
 
-   Level: advanced
+  Level: advanced
 
-   Notes:
-   `MatSeqAIJRegister()` may be called multiple times to add several user-defined solvers.
+  Notes:
+  `MatSeqAIJRegister()` may be called multiple times to add several user-defined solvers.
 
-   Then, your matrix can be chosen with the procedural interface at runtime via the option
+  Then, your matrix can be chosen with the procedural interface at runtime via the option
 $     -mat_seqaij_type my_mat
 
 .seealso: [](ch_matrices), `Mat`, `MatSeqAIJRegisterAll()`

@@ -294,17 +294,17 @@ PetscErrorCode MatNormalGetMat_Normal(Mat A, Mat *M)
 }
 
 /*@
-      MatNormalGetMat - Gets the `Mat` object stored inside a `MATNORMAL`
+  MatNormalGetMat - Gets the `Mat` object stored inside a `MATNORMAL`
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameter:
-.   A  - the `MATNORMAL` matrix
+  Input Parameter:
+. A - the `MATNORMAL` matrix
 
-   Output Parameter:
-.   M - the matrix object stored inside `A`
+  Output Parameter:
+. M - the matrix object stored inside `A`
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: [](ch_matrices), `Mat`, `MATNORMAL`, `MATNORMALHERMITIAN`, `MatCreateNormal()`
 @*/
@@ -477,22 +477,22 @@ PetscErrorCode MatProductSetFromOptions_Normal_Dense(Mat C)
 M*/
 
 /*@
-      MatCreateNormal - Creates a new `MATNORMAL` matrix object that behaves like A'*A.
+  MatCreateNormal - Creates a new `MATNORMAL` matrix object that behaves like A'*A.
 
-   Collective
+  Collective
 
-   Input Parameter:
-.   A  - the (possibly rectangular) matrix
+  Input Parameter:
+. A - the (possibly rectangular) matrix
 
-   Output Parameter:
-.   N - the matrix that represents A'*A
+  Output Parameter:
+. N - the matrix that represents A'*A
 
-   Level: intermediate
+  Level: intermediate
 
-   Notes:
-    The product A'*A is NOT actually formed! Rather the new matrix
-          object performs the matrix-vector product, `MatMult()`, by first multiplying by
-          A and then A'
+  Notes:
+  The product A'*A is NOT actually formed! Rather the new matrix
+  object performs the matrix-vector product, `MatMult()`, by first multiplying by
+  A and then A'
 
 .seealso: [](ch_matrices), `Mat`, `MATNORMAL`, `MatMult()`, `MatNormalGetMat()`, `MATNORMALHERMITIAN`, `MatCreateNormalHermitian()`
 @*/
