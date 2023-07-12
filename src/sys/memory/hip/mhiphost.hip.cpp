@@ -23,16 +23,16 @@ static PetscErrorCode (*PetscReallocOld)(size_t, int, const char[], const char[]
 static PetscErrorCode (*PetscFreeOld)(void *, int, const char[], const char[]);
 
 /*@C
-   PetscMallocSetHIPHost - Set `PetscMalloc()` to use `HIPHostMalloc()`
-     Switch the current malloc and free routines to the HIP malloc and free routines
+  PetscMallocSetHIPHost - Set `PetscMalloc()` to use `HIPHostMalloc()`
+  Switch the current malloc and free routines to the HIP malloc and free routines
 
-   Not Collective
+  Not Collective
 
-   Level: developer
+  Level: developer
 
-   Note:
-     This provides a way to use the HIP malloc and free routines temporarily. One
-     can switch back to the previous choice by calling `PetscMallocResetHIPHost()`.
+  Note:
+  This provides a way to use the HIP malloc and free routines temporarily. One
+  can switch back to the previous choice by calling `PetscMallocResetHIPHost()`.
 
 .seealso: `PetscMallocSetCUDAHost()`, `PetscMallocResetHIPHost()`
 @*/
@@ -50,11 +50,11 @@ PETSC_EXTERN PetscErrorCode PetscMallocSetHIPHost(void)
 }
 
 /*@C
-   PetscMallocResetHIPHost - Reset the changes made by `PetscMallocSetHIPHost()`
+  PetscMallocResetHIPHost - Reset the changes made by `PetscMallocSetHIPHost()`
 
-   Not Collective
+  Not Collective
 
-   Level: developer
+  Level: developer
 
 .seealso: `PetscMallocSetHIPHost()`
 @*/

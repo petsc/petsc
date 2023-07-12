@@ -174,17 +174,17 @@ void Petsc_MPI_DebuggerOnError(MPI_Comm *comm, PetscMPIInt *flag, ...)
 }
 
 /*@C
-   PetscEnd - Calls `PetscFinalize()` and then ends the program. This is useful if one
-     wishes a clean exit somewhere deep in the program.
+  PetscEnd - Calls `PetscFinalize()` and then ends the program. This is useful if one
+  wishes a clean exit somewhere deep in the program.
 
-   Collective on `PETSC_COMM_WORLD`
+  Collective on `PETSC_COMM_WORLD`
 
-   Options Database Keys are the same as for `PetscFinalize()`
+  Options Database Keys are the same as for `PetscFinalize()`
 
-   Level: advanced
+  Level: advanced
 
-   Note:
-   See `PetscInitialize()` for more general runtime options.
+  Note:
+  See `PetscInitialize()` for more general runtime options.
 
 .seealso: `PetscInitialize()`, `PetscOptionsView()`, `PetscMallocDump()`, `PetscMPIDump()`, `PetscFinalize()`
 @*/
@@ -209,16 +209,16 @@ PetscErrorCode (*PetscExternalHelpFunction)(MPI_Comm)    = NULL;
 #endif
 
 /*@C
-   PetscSetHelpVersionFunctions - Sets functions that print help and version information
-   before the PETSc help and version information is printed. Must call BEFORE `PetscInitialize()`.
-   This routine enables a "higher-level" package that uses PETSc to print its messages first and control
-   how the PETSc help messages are printed.
+  PetscSetHelpVersionFunctions - Sets functions that print help and version information
+  before the PETSc help and version information is printed. Must call BEFORE `PetscInitialize()`.
+  This routine enables a "higher-level" package that uses PETSc to print its messages first and control
+  how the PETSc help messages are printed.
 
-   Input Parameters:
-+  help - the help function (may be `NULL`)
--  version - the version function (may be `NULL`)
+  Input Parameters:
++ help    - the help function (may be `NULL`)
+- version - the version function (may be `NULL`)
 
-   Level: developer
+  Level: developer
 
 .seealso: `PetscInitialize()`
 @*/

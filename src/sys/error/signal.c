@@ -54,18 +54,18 @@ static void PetscSignalHandler_Private(int sig)
 }
 
 /*@
-   PetscSignalHandlerDefault - Default signal handler.
+  PetscSignalHandlerDefault - Default signal handler.
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  sig - signal value
--  ptr - unused pointer
+  Input Parameters:
++ sig - signal value
+- ptr - unused pointer
 
-   Level: advanced
+  Level: advanced
 
-   Developer Note:
-   This does not call `PetscError()`, handles the entire error process directly
+  Developer Notes:
+  This does not call `PetscError()`, handles the entire error process directly
 
 .seealso: `PetscPushSignalHandler()`
 @*/
@@ -179,14 +179,14 @@ PetscErrorCode PetscSignalHandlerDefault(int sig, void *ptr)
 #endif
 
 /*@C
-   PetscPushSignalHandler - Catches the usual fatal errors and
-   calls a user-provided routine.
+  PetscPushSignalHandler - Catches the usual fatal errors and
+  calls a user-provided routine.
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  routine - routine to call when a signal is received
--  ctx - optional context needed by the routine
+  Input Parameters:
++ routine - routine to call when a signal is received
+- ctx     - optional context needed by the routine
 
   Level: developer
 
@@ -334,11 +334,11 @@ PetscErrorCode PetscPushSignalHandler(PetscErrorCode (*routine)(int, void *), vo
 }
 
 /*@
-   PetscPopSignalHandler - Removes the most last signal handler that was pushed.
-       If no signal handlers are left on the stack it will remove the PETSc signal handler.
-       (That is PETSc will no longer catch signals).
+  PetscPopSignalHandler - Removes the most last signal handler that was pushed.
+  If no signal handlers are left on the stack it will remove the PETSc signal handler.
+  (That is PETSc will no longer catch signals).
 
-   Not Collective
+  Not Collective
 
   Level: developer
 

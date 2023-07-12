@@ -576,20 +576,20 @@ PETSC_EXTERN PetscErrorCode PetscDrawCreate_Image(PetscDraw draw)
 }
 
 /*@C
-   PetscDrawOpenImage - Opens an image for use with the `PetscDraw` routines.
+  PetscDrawOpenImage - Opens an image for use with the `PetscDraw` routines.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  comm - the communicator that will share image
-.  filename - optional name of the file where the image will be stored
-.  w - the image width in pixels
--  h - the image height in pixels
+  Input Parameters:
++ comm     - the communicator that will share image
+. filename - optional name of the file where the image will be stored
+. w        - the image width in pixels
+- h        - the image height in pixels
 
-   Output Parameter:
-.  draw - the drawing context.
+  Output Parameter:
+. draw - the drawing context.
 
-   Level: beginner
+  Level: beginner
 
 .seealso: `PetscDraw`, `PETSC_DRAW_IMAGE`, `PETSC_DRAW_X`, `PetscDrawSetSave()`, `PetscDrawSetFromOptions()`, `PetscDrawCreate()`, `PetscDrawDestroy()`
 @*/

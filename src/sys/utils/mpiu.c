@@ -45,28 +45,28 @@ PETSC_INTERN PetscErrorCode PetscSequentialPhaseEnd_Private(MPI_Comm comm, int n
 PetscMPIInt Petsc_Seq_keyval = MPI_KEYVAL_INVALID;
 
 /*@
-   PetscSequentialPhaseBegin - Begins a sequential section of code.
+  PetscSequentialPhaseBegin - Begins a sequential section of code.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  comm - Communicator to sequentialize over
--  ng   - Number in processor group.  This many processes are allowed to execute
+  Input Parameters:
++ comm - Communicator to sequentialize over
+- ng   - Number in processor group.  This many processes are allowed to execute
    at the same time (usually 1)
 
-   Level: intermediate
+  Level: intermediate
 
-   Notes:
-   `PetscSequentialPhaseBegin()` and `PetscSequentialPhaseEnd()` provide a
-   way to force a section of code to be executed by the processes in
-   rank order.  Typically, this is done with
+  Notes:
+  `PetscSequentialPhaseBegin()` and `PetscSequentialPhaseEnd()` provide a
+  way to force a section of code to be executed by the processes in
+  rank order.  Typically, this is done with
 .vb
       PetscSequentialPhaseBegin(comm, 1);
       <code to be executed sequentially>
       PetscSequentialPhaseEnd(comm, 1);
 .ve
 
-   You should use `PetscSynchronizedPrintf()` to ensure output between MPI ranks is properly order and not these routines.
+  You should use `PetscSynchronizedPrintf()` to ensure output between MPI ranks is properly order and not these routines.
 
 .seealso: `PetscSequentialPhaseEnd()`, `PetscSynchronizedPrintf()`
 @*/
@@ -94,19 +94,19 @@ PetscErrorCode PetscSequentialPhaseBegin(MPI_Comm comm, int ng)
 }
 
 /*@
-   PetscSequentialPhaseEnd - Ends a sequential section of code.
+  PetscSequentialPhaseEnd - Ends a sequential section of code.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  comm - Communicator to sequentialize.
--  ng   - Number in processor group.  This many processes are allowed to execute
+  Input Parameters:
++ comm - Communicator to sequentialize.
+- ng   - Number in processor group.  This many processes are allowed to execute
    at the same time (usually 1)
 
-   Level: intermediate
+  Level: intermediate
 
-   Note:
-   See `PetscSequentialPhaseBegin()` for more details.
+  Note:
+  See `PetscSequentialPhaseBegin()` for more details.
 
 .seealso: `PetscSequentialPhaseBegin()`
 @*/

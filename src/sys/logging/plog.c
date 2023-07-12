@@ -309,7 +309,7 @@ PETSC_INTERN PetscErrorCode PetscLogFinalize(void)
 
   Level: developer
 
-  Developer Note:
+  Developer Notes:
   The default loggers are `PetscLogEventBeginDefault()` and `PetscLogEventEndDefault()`.
 
 .seealso: [](ch_profiling), `PetscLogDump()`, `PetscLogDefaultBegin()`, `PetscLogAllBegin()`, `PetscLogTraceBegin()`, `PetscLogEventBeginDefault()`, `PetscLogEventEndDefault()`
@@ -459,6 +459,7 @@ PetscErrorCode PetscLogTraceBegin(FILE *file)
   Note:
   Logging of actions continues to consume more memory as the program
   runs. Long running programs should consider turning this feature off.
+
 .seealso: [](ch_profiling), `PetscLogStagePush()`, `PetscLogStagePop()`
 @*/
 PetscErrorCode PetscLogActions(PetscBool flag)
@@ -640,7 +641,7 @@ PetscErrorCode PetscLogStageSetActive(PetscLogStage stage, PetscBool isActive)
   Not Collective
 
   Input Parameter:
-. stage    - The stage
+. stage - The stage
 
   Output Parameter:
 . isActive - The activity flag, `PETSC_TRUE` for logging, else `PETSC_FALSE` (defaults to `PETSC_TRUE`)
@@ -670,7 +671,7 @@ PetscErrorCode PetscLogStageGetActive(PetscLogStage stage, PetscBool *isActive)
 
   Level: intermediate
 
-  Developer Note:
+  Developer Notes:
   What does visible mean, needs to be documented.
 
 .seealso: [](ch_profiling), `PetscLogStageRegister()`, `PetscLogStagePush()`, `PetscLogStagePop()`, `PetscLogView()`
@@ -691,7 +692,7 @@ PetscErrorCode PetscLogStageSetVisible(PetscLogStage stage, PetscBool isVisible)
   Not Collective
 
   Input Parameter:
-. stage     - The stage
+. stage - The stage
 
   Output Parameter:
 . isVisible - The visibility flag, `PETSC_TRUE` to print, else `PETSC_FALSE` (defaults to `PETSC_TRUE`)
@@ -716,7 +717,7 @@ PetscErrorCode PetscLogStageGetVisible(PetscLogStage stage, PetscBool *isVisible
   Not Collective
 
   Input Parameter:
-. name  - The stage name
+. name - The stage name
 
   Output Parameter:
 . stage - The stage, , or -1 if no stage with that name exists
@@ -743,7 +744,7 @@ PetscErrorCode PetscLogStageGetId(const char name[], PetscLogStage *stage)
   Not Collective
 
   Input Parameters:
-+ name   - The name associated with the event
++ name    - The name associated with the event
 - classid - The classid associated to the class for this event, obtain either with
            `PetscClassIdRegister()` or use a predefined one such as `KSP_CLASSID`, `SNES_CLASSID`, the predefined ones
            are only available in C code
@@ -815,7 +816,7 @@ PetscErrorCode PetscLogEventRegister(const char name[], PetscClassId classid, Pe
   Not Collective
 
   Input Parameters:
-+ event - The event id
++ event      - The event id
 - collective - Boolean flag indicating whether a particular event is collective
 
   Level: developer
@@ -1221,7 +1222,7 @@ M*/
   Not Collective
 
   Input Parameter:
-. name  - The event name
+. name - The event name
 
   Output Parameter:
 . event - The event, or -1 if no event with that name exists
@@ -1297,7 +1298,7 @@ PetscErrorCode PetscLogEventResume_Internal(PetscLogEvent event)
   Collective on `PETSC_COMM_WORLD`
 
   Input Parameter:
-. name - an optional file name
+. sname - an optional file name
 
   Usage:
 .vb
@@ -2182,17 +2183,17 @@ PetscErrorCode PetscLogView_Default(PetscViewer viewer)
   Collective over MPI_Comm
 
   Input Parameter:
-.  viewer - an ASCII viewer
+. viewer - an ASCII viewer
 
   Options Database Keys:
-+  -log_view [:filename] - Prints summary of log information
-.  -log_view :filename.py:ascii_info_detail - Saves logging information from each process as a Python file
-.  -log_view :filename.xml:ascii_xml - Saves a summary of the logging information in a nested format (see below for how to view it)
-.  -log_view :filename.txt:ascii_flamegraph - Saves logging information in a format suitable for visualising as a Flame Graph (see below for how to view it)
-.  -log_view_memory - Also display memory usage in each event
-.  -log_view_gpu_time - Also display time in each event for GPU kernels (Note this may slow the computation)
-.  -log_all - Saves a file Log.rank for each MPI rank with details of each step of the computation
--  -log_trace [filename] - Displays a trace of what each process is doing
++ -log_view [:filename]                    - Prints summary of log information
+. -log_view :filename.py:ascii_info_detail - Saves logging information from each process as a Python file
+. -log_view :filename.xml:ascii_xml        - Saves a summary of the logging information in a nested format (see below for how to view it)
+. -log_view :filename.txt:ascii_flamegraph - Saves logging information in a format suitable for visualising as a Flame Graph (see below for how to view it)
+. -log_view_memory                         - Also display memory usage in each event
+. -log_view_gpu_time                       - Also display time in each event for GPU kernels (Note this may slow the computation)
+. -log_all                                 - Saves a file Log.rank for each MPI rank with details of each step of the computation
+- -log_trace [filename]                    - Displays a trace of what each process is doing
 
   Level: beginner
 
@@ -2286,22 +2287,22 @@ PetscErrorCode PetscLogViewFromOptions(void)
 
 /*----------------------------------------------- Counter Functions -------------------------------------------------*/
 /*@C
-   PetscGetFlops - Returns the number of flops used on this processor
-   since the program began.
+  PetscGetFlops - Returns the number of flops used on this processor
+  since the program began.
 
-   Not Collective
+  Not Collective
 
-   Output Parameter:
+  Output Parameter:
    flops - number of floating point operations
 
-   Level: intermediate
+  Level: intermediate
 
-   Notes:
-   A global counter logs all PETSc flop counts.  The user can use
-   `PetscLogFlops()` to increment this counter to include flops for the
-   application code.
+  Notes:
+  A global counter logs all PETSc flop counts.  The user can use
+  `PetscLogFlops()` to increment this counter to include flops for the
+  application code.
 
-   A separate counter `PetscLogGPUFlops()` logs the flops that occur on any GPU associated with this MPI rank
+  A separate counter `PetscLogGPUFlops()` logs the flops that occur on any GPU associated with this MPI rank
 
 .seealso: [](ch_profiling), `PetscLogGPUFlops()`, `PetscTime()`, `PetscLogFlops()`
 @*/
@@ -2578,7 +2579,7 @@ PetscClassId PETSC_OBJECT_CLASSID  = 0;
   Not Collective
 
   Input Parameter:
-. name   - The class name
+. name - The class name
 
   Output Parameter:
 . oclass - The class id or classid

@@ -2,24 +2,24 @@
 #include <petsc/private/drawimpl.h> /*I "petscdraw.h" I*/
 
 /*@
-   PetscDrawSetViewPort - Sets the portion of the window (page) to which draw
-   routines will write.
+  PetscDrawSetViewPort - Sets the portion of the window (page) to which draw
+  routines will write.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  xl - the horizontal coordinate of the lower left corner of the subwindow.
-.  yl - the vertical coordinate of the lower left corner of the subwindow.
-.  xr - the horizontal coordinate of the upper right corner of the subwindow.
-.  yr - the vertical coordinate of the upper right corner of the subwindow.
--  draw - the drawing context
+  Input Parameters:
++ xl   - the horizontal coordinate of the lower left corner of the subwindow.
+. yl   - the vertical coordinate of the lower left corner of the subwindow.
+. xr   - the horizontal coordinate of the upper right corner of the subwindow.
+. yr   - the vertical coordinate of the upper right corner of the subwindow.
+- draw - the drawing context
 
-   Level: advanced
+  Level: advanced
 
-   Notes:
-   These numbers must always be between 0.0 and 1.0.
+  Notes:
+  These numbers must always be between 0.0 and 1.0.
 
-   Lower left corner is (0,0).
+  Lower left corner is (0,0).
 
 .seealso: `PetscDrawGetViewPort()`, `PetscDraw`, `PetscDrawSplitViewPort()`, `PetscDrawViewPortsCreate()`
 @*/
@@ -37,26 +37,26 @@ PetscErrorCode PetscDrawSetViewPort(PetscDraw draw, PetscReal xl, PetscReal yl, 
 }
 
 /*@
-   PetscDrawGetViewPort - Gets the portion of the window (page) to which draw
-   routines will write.
+  PetscDrawGetViewPort - Gets the portion of the window (page) to which draw
+  routines will write.
 
-   Collective
+  Collective
 
-   Input Parameter:
-.  draw - the drawing context
+  Input Parameter:
+. draw - the drawing context
 
-   Output Parameters:
-+  xl - the horizontal coordinate of the lower left corner of the subwindow.
-.  yl - the vertical coordinate of the lower left corner of the subwindow.
-.  xr - the horizontal coordinate of the upper right corner of the subwindow.
--  yr - the vertical coordinate of the upper right corner of the subwindow.
+  Output Parameters:
++ xl - the horizontal coordinate of the lower left corner of the subwindow.
+. yl - the vertical coordinate of the lower left corner of the subwindow.
+. xr - the horizontal coordinate of the upper right corner of the subwindow.
+- yr - the vertical coordinate of the upper right corner of the subwindow.
 
-   Level: advanced
+  Level: advanced
 
-   Notes:
-   These numbers must always be between 0.0 and 1.0.
+  Notes:
+  These numbers must always be between 0.0 and 1.0.
 
-   Lower left corner is (0,0).
+  Lower left corner is (0,0).
 
 .seealso: `PetscDraw`, `PetscDrawSplitViewPort()`, `PetscDrawSetViewPort()`
 @*/
@@ -76,15 +76,15 @@ PetscErrorCode PetscDrawGetViewPort(PetscDraw draw, PetscReal *xl, PetscReal *yl
 }
 
 /*@
-   PetscDrawSplitViewPort - Splits a window shared by several processes into smaller
-   view ports. One for each process.
+  PetscDrawSplitViewPort - Splits a window shared by several processes into smaller
+  view ports. One for each process.
 
-   Collective
+  Collective
 
-   Input Parameter:
-.  draw - the drawing context
+  Input Parameter:
+. draw - the drawing context
 
-   Level: advanced
+  Level: advanced
 
 .seealso: `PetscDrawDivideViewPort()`, `PetscDrawSetViewPort()`
 @*/
@@ -129,21 +129,21 @@ PetscErrorCode PetscDrawSplitViewPort(PetscDraw draw)
 }
 
 /*@C
-   PetscDrawViewPortsCreate - Splits a window into smaller view ports. Each processor shares all the viewports.
+  PetscDrawViewPortsCreate - Splits a window into smaller view ports. Each processor shares all the viewports.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  draw - the drawing context
--  nports - the number of ports
+  Input Parameters:
++ draw   - the drawing context
+- nports - the number of ports
 
-   Output Parameter:
-.  ports - a `PetscDrawViewPorts` context (C structure)
+  Output Parameter:
+. newports - a `PetscDrawViewPorts` context (C structure)
 
-   Options Database Key:
-.  -draw_ports - display multiple fields in the same window with PetscDrawPorts() instead of in separate windows
+  Options Database Key:
+. -draw_ports - display multiple fields in the same window with PetscDrawPorts() instead of in separate windows
 
-   Level: advanced
+  Level: advanced
 
 .seealso: `PetscDrawSplitViewPort()`, `PetscDrawSetViewPort()`, `PetscDrawViewPortsSet()`, `PetscDrawViewPortsDestroy()`
 @*/
@@ -210,21 +210,21 @@ PetscErrorCode PetscDrawViewPortsCreate(PetscDraw draw, PetscInt nports, PetscDr
 }
 
 /*@C
-   PetscDrawViewPortsCreateRect - Splits a window into smaller
-       view ports. Each processor shares all the viewports. The number
-       of views in the x- and y-directions is specified.
+  PetscDrawViewPortsCreateRect - Splits a window into smaller
+  view ports. Each processor shares all the viewports. The number
+  of views in the x- and y-directions is specified.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  draw - the drawing context
-.  nx - the number of x divisions
--  ny - the number of y divisions
+  Input Parameters:
++ draw - the drawing context
+. nx   - the number of x divisions
+- ny   - the number of y divisions
 
-   Output Parameter:
-.  ports - a `PetscDrawViewPorts` context (C structure)
+  Output Parameter:
+. newports - a `PetscDrawViewPorts` context (C structure)
 
-   Level: advanced
+  Level: advanced
 
 .seealso: `PetscDrawSplitViewPort()`, `PetscDrawSetViewPort()`, `PetscDrawViewPortsSet()`, `PetscDrawViewPortsDestroy()`, `PetscDrawViewPorts`
 @*/
@@ -294,14 +294,14 @@ PetscErrorCode PetscDrawViewPortsCreateRect(PetscDraw draw, PetscInt nx, PetscIn
 }
 
 /*@C
-   PetscDrawViewPortsDestroy - frees a `PetscDrawViewPorts` object
+  PetscDrawViewPortsDestroy - frees a `PetscDrawViewPorts` object
 
-   Collective on the PetscDraw inside ports
+  Collective on the PetscDraw inside ports
 
-   Input Parameter:
-.  ports - the `PetscDrawViewPorts` object
+  Input Parameter:
+. ports - the `PetscDrawViewPorts` object
 
-   Level: advanced
+  Level: advanced
 
 .seealso: `PetscDrawViewPorts`, `PetscDrawSplitViewPort()`, `PetscDrawSetViewPort()`, `PetscDrawViewPortsSet()`, `PetscDrawViewPortsCreate()`
 @*/
@@ -319,15 +319,15 @@ PetscErrorCode PetscDrawViewPortsDestroy(PetscDrawViewPorts *ports)
 }
 
 /*@C
-   PetscDrawViewPortsSet - sets a draw object to use a particular subport
+  PetscDrawViewPortsSet - sets a draw object to use a particular subport
 
-   Logically Collective on the `PetscDraw` inside ports
+  Logically Collective on the `PetscDraw` inside ports
 
-   Input Parameters:
-+  ports - the `PetscDrawViewPorts` object
--  port - the port number, from 0 to nports-1
+  Input Parameters:
++ ports - the `PetscDrawViewPorts` object
+- port  - the port number, from 0 to nports-1
 
-   Level: advanced
+  Level: advanced
 
 .seealso: `PetscDrawViewPorts`, `PetscDrawSplitViewPort()`, `PetscDrawSetViewPort()`, `PetscDrawViewPortsDestroy()`, `PetscDrawViewPortsCreate()`
 @*/

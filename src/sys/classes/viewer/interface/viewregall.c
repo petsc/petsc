@@ -24,7 +24,7 @@ PetscBool PetscViewerRegisterAllCalled;
 
   Not Collective
 
-   Level: developer
+  Level: developer
 
 .seealso: [](sec_viewers), `PetscViewer`
 @*/

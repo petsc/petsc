@@ -25,12 +25,12 @@ PetscErrorCode PetscOptionsHelpPrintedDestroy(PetscOptionsHelpPrinted *hp)
 }
 
 /*@C
-      PetscOptionsHelpPrintedCreate - Creates an object used to manage tracking which help messages have
-         been printed so they will not be printed again.
+  PetscOptionsHelpPrintedCreate - Creates an object used to manage tracking which help messages have
+  been printed so they will not be printed again.
 
-     Not Collective
+  Not Collective
 
-    Level: developer
+  Level: developer
 
 .seealso: `PetscOptionsHelpPrintedCheck()`, `PetscOptionsHelpPrintChecked()`
 @*/
@@ -44,19 +44,19 @@ PetscErrorCode PetscOptionsHelpPrintedCreate(PetscOptionsHelpPrinted *hp)
 }
 
 /*@C
-      PetscOptionsHelpPrintedCheck - Checks if a particular pre, name pair has previous been entered (meaning the help message was printed)
+  PetscOptionsHelpPrintedCheck - Checks if a particular pre, name pair has previous been entered (meaning the help message was printed)
 
-     Not Collective
+  Not Collective
 
-    Input Parameters:
-+     hp - the object used to manage tracking what help messages have been printed
-.     pre - the prefix part of the string, many be `NULL`
--     name - the string to look for (cannot be `NULL`)
+  Input Parameters:
++ hp   - the object used to manage tracking what help messages have been printed
+. pre  - the prefix part of the string, many be `NULL`
+- name - the string to look for (cannot be `NULL`)
 
-    Output Parameter:
-.     found - `PETSC_TRUE` if the string was already set
+  Output Parameter:
+. found - `PETSC_TRUE` if the string was already set
 
-    Level: intermediate
+  Level: intermediate
 
 .seealso: `PetscOptionsHelpPrintedCreate()`
 @*/
@@ -104,8 +104,8 @@ static PetscInt  inoviewers = 0;
   Level: developer
 
   Note:
-    Calling `XXXViewFromOptions` in an inner loop can be expensive.  This can appear, for example, when using
-   many small subsolves.  Call this function to control viewer creation in `PetscOptionsGetViewer()`, thus removing the expensive `XXXViewFromOptions` calls.
+  Calling `XXXViewFromOptions` in an inner loop can be expensive.  This can appear, for example, when using
+  many small subsolves.  Call this function to control viewer creation in `PetscOptionsGetViewer()`, thus removing the expensive `XXXViewFromOptions` calls.
 
   Developer Notes;
   Instead of using this approach, the calls to `PetscOptionsGetViewer()` can be moved into `XXXSetFromOptions()`
@@ -166,44 +166,44 @@ PetscErrorCode PetscOptionsGetViewerOff(PetscBool *flg)
 }
 
 /*@C
-   PetscOptionsGetViewer - Gets a viewer appropriate for the type indicated by the user
+  PetscOptionsGetViewer - Gets a viewer appropriate for the type indicated by the user
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  comm - the communicator to own the viewer
-.  options - options database, use `NULL` for default global database
-.  pre - the string to prepend to the name or `NULL`
--  name - the option one is seeking
+  Input Parameters:
++ comm    - the communicator to own the viewer
+. options - options database, use `NULL` for default global database
+. pre     - the string to prepend to the name or `NULL`
+- name    - the option one is seeking
 
-   Output Parameters:
-+  viewer - the viewer, pass `NULL` if not needed
-.  format - the `PetscViewerFormat` requested by the user, pass `NULL` if not needed
--  set - `PETSC_TRUE` if found, else `PETSC_FALSE`
+  Output Parameters:
++ viewer - the viewer, pass `NULL` if not needed
+. format - the `PetscViewerFormat` requested by the user, pass `NULL` if not needed
+- set    - `PETSC_TRUE` if found, else `PETSC_FALSE`
 
-   Level: intermediate
+  Level: intermediate
 
-   Notes:
-    If no value is provided ascii:stdout is used
+  Notes:
+  If no value is provided ascii:stdout is used
 +       ascii[:[filename][:[format][:append]]]  -  defaults to stdout - format can be one of ascii_info, ascii_info_detail, or ascii_matlab,
-                                                  for example ascii::ascii_info prints just the information about the object not all details
-                                                  unless :append is given filename opens in write mode, overwriting what was already there
+  for example ascii::ascii_info prints just the information about the object not all details
+  unless :append is given filename opens in write mode, overwriting what was already there
 .       binary[:[filename][:[format][:append]]] -  defaults to the file binaryoutput
 .       draw[:drawtype[:filename]]              -  for example, draw:tikz, draw:tikz:figure.tex  or draw:x
 .       socket[:port]                           -  defaults to the standard output port
 -       saws[:communicatorname]                 -   publishes object to the Scientific Application Webserver (SAWs)
 
-   Use `PetscViewerDestroy()` after using the viewer, otherwise a memory leak will occur
+  Use `PetscViewerDestroy()` after using the viewer, otherwise a memory leak will occur
 
-   You can control whether calls to this function create a viewer (or return early with *set of `PETSC_FALSE`) with
-   `PetscOptionsPushGetViewerOff()`.  This is useful if calling many small subsolves, in which case XXXViewFromOptions can take
-   an appreciable fraction of the runtime.
+  You can control whether calls to this function create a viewer (or return early with *set of `PETSC_FALSE`) with
+  `PetscOptionsPushGetViewerOff()`.  This is useful if calling many small subsolves, in which case XXXViewFromOptions can take
+  an appreciable fraction of the runtime.
 
-   If PETSc is configured with `--with-viewfromoptions=0` this function always returns with *set of `PETSC_FALSE`
+  If PETSc is configured with `--with-viewfromoptions=0` this function always returns with *set of `PETSC_FALSE`
 
 .seealso: [](sec_viewers), `PetscOptionsGetReal()`, `PetscOptionsHasName()`, `PetscOptionsGetString()`,
           `PetscOptionsGetIntArray()`, `PetscOptionsGetRealArray()`, `PetscOptionsBool()`
-          `PetscOptionsInt()`, `PetscOptionsString()`, `PetscOptionsReal()`, `PetscOptionsBool()`,
+          `PetscOptionsInt()`, `PetscOptionsString()`, `PetscOptionsReal()`,
           `PetscOptionsName()`, `PetscOptionsBegin()`, `PetscOptionsEnd()`, `PetscOptionsHeadBegin()`,
           `PetscOptionsStringArray()`, `PetscOptionsRealArray()`, `PetscOptionsScalar()`,
           `PetscOptionsBoolGroupBegin()`, `PetscOptionsBoolGroup()`, `PetscOptionsBoolGroupEnd()`,
@@ -357,18 +357,18 @@ PetscErrorCode PetscOptionsGetViewer(MPI_Comm comm, PetscOptions options, const 
 }
 
 /*@
-   PetscViewerCreate - Creates a viewing context. A `PetscViewer` represents a file, a graphical window, a Unix socket or a variety of other ways
-   of viewing a PETSc object
+  PetscViewerCreate - Creates a viewing context. A `PetscViewer` represents a file, a graphical window, a Unix socket or a variety of other ways
+  of viewing a PETSc object
 
-   Collective
+  Collective
 
-   Input Parameter:
-.  comm - MPI communicator
+  Input Parameter:
+. comm - MPI communicator
 
-   Output Parameter:
-.  inviewer - location to put the `PetscViewer` context
+  Output Parameter:
+. inviewer - location to put the `PetscViewer` context
 
-   Level: advanced
+  Level: advanced
 
 .seealso: [](sec_viewers), `PetscViewer`, `PetscViewerDestroy()`, `PetscViewerSetType()`, `PetscViewerType`
 @*/
@@ -386,21 +386,21 @@ PetscErrorCode PetscViewerCreate(MPI_Comm comm, PetscViewer *inviewer)
 }
 
 /*@C
-   PetscViewerSetType - Builds `PetscViewer` for a particular implementation.
+  PetscViewerSetType - Builds `PetscViewer` for a particular implementation.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  viewer      - the `PetscViewer` context obtained with `PetscViewerCreate()`
--  type        - for example, `PETSCVIEWERASCII`
+  Input Parameters:
++ viewer - the `PetscViewer` context obtained with `PetscViewerCreate()`
+- type   - for example, `PETSCVIEWERASCII`
 
-   Options Database Key:
-.  -viewer_type  <type> - Sets the type; use -help for a list of available methods (for instance, ascii)
+  Options Database Key:
+. -viewer_type  <type> - Sets the type; use -help for a list of available methods (for instance, ascii)
 
-   Level: advanced
+  Level: advanced
 
-   Note:
-   See `PetscViewerType` for possible values
+  Note:
+  See `PetscViewerType` for possible values
 
 .seealso: [](sec_viewers), `PetscViewer`, `PetscViewerCreate()`, `PetscViewerGetType()`, `PetscViewerType`, `PetscViewerPushFormat()`
 @*/
@@ -431,27 +431,27 @@ PetscErrorCode PetscViewerSetType(PetscViewer viewer, PetscViewerType type)
 }
 
 /*@C
-   PetscViewerRegister - Adds a viewer to those available for use with `PetscViewerSetType()`
+  PetscViewerRegister - Adds a viewer to those available for use with `PetscViewerSetType()`
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  sname - name of a new user-defined viewer
--  function - routine to create method context
+  Input Parameters:
++ sname    - name of a new user-defined viewer
+- function - routine to create method context
 
-   Level: developer
+  Level: developer
 
-   Note:
-   `PetscViewerRegister()` may be called multiple times to add several user-defined viewers.
+  Note:
+  `PetscViewerRegister()` may be called multiple times to add several user-defined viewers.
 
-   Sample usage:
+  Example Usage:
 .vb
    PetscViewerRegister("my_viewer_type", MyViewerCreate);
 .ve
 
-   Then, your solver can be chosen with the procedural interface via
+  Then, your solver can be chosen with the procedural interface via
 $     PetscViewerSetType(viewer, "my_viewer_type")
-   or at runtime via the option
+  or at runtime via the option
 $     -viewer_type my_viewer_type
 
 .seealso: [](sec_viewers), `PetscViewerRegisterAll()`
@@ -465,17 +465,17 @@ PetscErrorCode PetscViewerRegister(const char *sname, PetscErrorCode (*function)
 }
 
 /*@C
-   PetscViewerSetFromOptions - Sets various options for a viewer based on values in the options database.
+  PetscViewerSetFromOptions - Sets various options for a viewer based on values in the options database.
 
-   Collective
+  Collective
 
-   Input Parameter:
-.     viewer - the viewer context
+  Input Parameter:
+. viewer - the viewer context
 
-   Level: intermediate
+  Level: intermediate
 
-   Note:
-    Must be called after `PetscViewerCreate()` but before the `PetscViewer` is used.
+  Note:
+  Must be called after `PetscViewerCreate()` but before the `PetscViewer` is used.
 
 .seealso: [](sec_viewers), `PetscViewer`, `PetscViewerCreate()`, `PetscViewerSetType()`, `PetscViewerType`
 @*/

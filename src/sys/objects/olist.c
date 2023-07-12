@@ -13,24 +13,24 @@ struct _n_PetscObjectList {
 };
 
 /*@C
-     PetscObjectListRemoveReference - Calls `PetscObjectDereference()` on an object in the list immediately but keeps a pointer to the object in the list.
+  PetscObjectListRemoveReference - Calls `PetscObjectDereference()` on an object in the list immediately but keeps a pointer to the object in the list.
 
-    Input Parameters:
-+     fl - the object list
--     name - the name to use for the object
+  Input Parameters:
++ fl   - the object list
+- name - the name to use for the object
 
-    Level: developer
+  Level: developer
 
-    Notes:
-    Use `PetscObjectListAdd`(`PetscObjectList`,const char name[],NULL) to truly remove the object from the list
+  Notes:
+  Use `PetscObjectListAdd`(`PetscObjectList`,const char name[],NULL) to truly remove the object from the list
 
-    Use this routine ONLY if you know that the object referenced will remain in existence until the pointing object is destroyed
+  Use this routine ONLY if you know that the object referenced will remain in existence until the pointing object is destroyed
 
-    Developer Note:
-    This is to handle some cases that otherwise would result in having circular references so reference counts never got to zero
+  Developer Notes:
+  This is to handle some cases that otherwise would result in having circular references so reference counts never got to zero
 
-.seealso: `PetscObjectListDestroy()`, `PetscObjectListFind()`, `PetscObjectListDuplicate()`, `PetscObjectListReverseFind()`, `PetscObjectListDuplicate()`,
-          `PetscObject`, `PetscObjectListAdd()`
+.seealso: `PetscObjectListDestroy()`,`PetscObjectListFind()`,`PetscObjectListDuplicate()`,`PetscObjectListReverseFind()`,
+`PetscObject`, `PetscObjectListAdd()`
 @*/
 PetscErrorCode PetscObjectListRemoveReference(PetscObjectList *fl, const char name[])
 {
@@ -54,22 +54,21 @@ PetscErrorCode PetscObjectListRemoveReference(PetscObjectList *fl, const char na
 }
 
 /*@C
-     PetscObjectListAdd - Adds a new object to an `PetscObjectList`
+  PetscObjectListAdd - Adds a new object to an `PetscObjectList`
 
-    Input Parameters:
-+     fl - the object list
-.     name - the name to use for the object
--     obj - the object to attach
+  Input Parameters:
++ fl   - the object list
+. name - the name to use for the object
+- obj  - the object to attach
 
-    Level: developer
+  Level: developer
 
-    Notes:
-    Replaces item if it is already in list. Removes item if you pass in a `NULL` object.
+  Notes:
+  Replaces item if it is already in list. Removes item if you pass in a `NULL` object.
 
-    Use `PetscObjectListFind()` or `PetscObjectListReverseFind()` to get the object back
+  Use `PetscObjectListFind()` or `PetscObjectListReverseFind()` to get the object back
 
-.seealso: `PetscObjectListDestroy()`, `PetscObjectListFind()`, `PetscObjectListDuplicate()`, `PetscObjectListReverseFind()`, `PetscObjectListDuplicate()`,
-          `PetscObject`, `PetscObjectList`
+.seealso: `PetscObjectListDestroy()`,`PetscObjectListFind()`,`PetscObjectListDuplicate()`,`PetscObjectListReverseFind()`, `PetscObject`, `PetscObjectList`
 @*/
 PetscErrorCode PetscObjectListAdd(PetscObjectList *fl, const char name[], PetscObject obj)
 {
@@ -128,15 +127,15 @@ PetscErrorCode PetscObjectListAdd(PetscObjectList *fl, const char name[], PetscO
 }
 
 /*@C
-    PetscObjectListDestroy - Destroy a list of objects
+  PetscObjectListDestroy - Destroy a list of objects
 
-    Input Parameter:
-.   ifl   - pointer to list
+  Input Parameter:
+. ifl - pointer to list
 
-    Level: developer
+  Level: developer
 
 .seealso: `PetscObjectList`, `PetscObject`, `PetscObjectListAdd()`, `PetscObjectListFind()`, `PetscObjectListDuplicate()`,
-          `PetscObjectListReverseFind()`, `PetscObjectListDuplicate()`, `PetscObject`
+          `PetscObjectListReverseFind()`
 @*/
 PetscErrorCode PetscObjectListDestroy(PetscObjectList *ifl)
 {
@@ -156,24 +155,23 @@ PetscErrorCode PetscObjectListDestroy(PetscObjectList *ifl)
 }
 
 /*@C
-    PetscObjectListFind - given a name, find the matching object in a list
+  PetscObjectListFind - given a name, find the matching object in a list
 
-    Input Parameters:
-+   fl   - pointer to list
--   name - name string
+  Input Parameters:
++ fl   - pointer to list
+- name - name string
 
-    Output Parameter:
-.   obj - the PETSc object
+  Output Parameter:
+. obj - the PETSc object
 
-    Level: developer
+  Level: developer
 
-    Notes:
-    The name must have been registered with the `PetscObjectListAdd()` before calling this routine.
+  Notes:
+  The name must have been registered with the `PetscObjectListAdd()` before calling this routine.
 
-    The reference count of the object is not increased
+  The reference count of the object is not increased
 
-.seealso: `PetscObjectListDestroy()`, `PetscObjectListAdd()`, `PetscObjectListDuplicate()`, `PetscObjectListReverseFind()`, `PetscObjectListDuplicate()`,
-          `PetscObjectList`
+.seealso: `PetscObjectListDestroy()`,`PetscObjectListAdd()`,`PetscObjectListDuplicate()`,`PetscObjectListReverseFind()`, `PetscObjectList`
 @*/
 PetscErrorCode PetscObjectListFind(PetscObjectList fl, const char name[], PetscObject *obj)
 {
@@ -193,25 +191,24 @@ PetscErrorCode PetscObjectListFind(PetscObjectList fl, const char name[], PetscO
 }
 
 /*@C
-    PetscObjectListReverseFind - given a object, find the matching name if it exists
+  PetscObjectListReverseFind - given a object, find the matching name if it exists
 
-    Input Parameters:
-+   fl   - pointer to list
--   obj - the PETSc object
+  Input Parameters:
++ fl  - pointer to list
+- obj - the PETSc object
 
-    Output Parameters:
-+  name - name string
--  skipdereference - if the object is in list but does not have the increased reference count for a circular dependency
+  Output Parameters:
++ name            - name string
+- skipdereference - if the object is in list but does not have the increased reference count for a circular dependency
 
-    Level: developer
+  Level: developer
 
-    Notes:
-    The name must have been registered with the `PetscObjectListAdd()` before calling this routine.
+  Notes:
+  The name must have been registered with the `PetscObjectListAdd()` before calling this routine.
 
-    The reference count of the object is not increased
+  The reference count of the object is not increased
 
-.seealso: `PetscObjectListDestroy()`, `PetscObjectListAdd()`, `PetscObjectListDuplicate()`, `PetscObjectListFind()`, `PetscObjectListDuplicate()`,
-          `PetscObjectList`
+.seealso: `PetscObjectListDestroy()`,`PetscObjectListAdd()`,`PetscObjectListDuplicate()`,`PetscObjectListFind()`, `PetscObjectList`
 @*/
 PetscErrorCode PetscObjectListReverseFind(PetscObjectList fl, PetscObject obj, char **name, PetscBool *skipdereference)
 {
@@ -231,18 +228,18 @@ PetscErrorCode PetscObjectListReverseFind(PetscObjectList fl, PetscObject obj, c
 }
 
 /*@C
-    PetscObjectListDuplicate - Creates a new list from a given object list.
+  PetscObjectListDuplicate - Creates a new list from a given object list.
 
-    Input Parameter:
-.   fl   - pointer to list
+  Input Parameter:
+. fl - pointer to list
 
-    Output Parameter:
-.   nl - the new list (should point to `NULL` to start, otherwise appends)
+  Output Parameter:
+. nl - the new list (should point to `NULL` to start, otherwise appends)
 
-    Level: developer
+  Level: developer
 
-.seealso: `PetscObjectListDestroy()`, `PetscObjectListAdd()`, `PetscObjectListReverseFind()`, `PetscObjectListFind()`, `PetscObjectListDuplicate()`,
-          `PetscObjectList`
+.seealso: `PetscObjectListDestroy()`, `PetscObjectListAdd()`, `PetscObjectListReverseFind()`,
+`PetscObjectListFind()`, `PetscObjectListDuplicate()`, `PetscObjectList`
 @*/
 PetscErrorCode PetscObjectListDuplicate(PetscObjectList fl, PetscObjectList *nl)
 {

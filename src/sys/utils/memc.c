@@ -10,25 +10,25 @@
 #include <../src/sys/utils/ftn-kernels/fcopy.h>
 
 /*@
-   PetscMemcmp - Compares two byte streams in memory.
+  PetscMemcmp - Compares two byte streams in memory.
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  str1 - Pointer to the first byte stream
-.  str2 - Pointer to the second byte stream
--  len  - The length of the byte stream
+  Input Parameters:
++ str1 - Pointer to the first byte stream
+. str2 - Pointer to the second byte stream
+- len  - The length of the byte stream
          (both str1 and str2 are assumed to be of length len)
 
-   Output Parameter:
-.   e - `PETSC_TRUE` if equal else `PETSC_FALSE`.
+  Output Parameter:
+. e - `PETSC_TRUE` if equal else `PETSC_FALSE`.
 
-   Level: intermediate
+  Level: intermediate
 
-   Notes:
-   `PetscArraycmp()` is preferred
+  Notes:
+  `PetscArraycmp()` is preferred
 
-   This routine is analogous to `memcmp()` with additional error checking
+  This routine is analogous to `memcmp()` with additional error checking
 
 .seealso: `PetscMemcpy()`, `PetscMemcmp()`, `PetscArrayzero()`, `PetscMemzero()`, `PetscArraycmp()`, `PetscArraycpy()`, `PetscStrallocpy()`,
           `PetscArraymove()`

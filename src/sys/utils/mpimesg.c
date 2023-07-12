@@ -15,7 +15,7 @@
              Optionally `NULL`.
 
   Output Parameter:
-. nrecvs    - number of messages received
+. nrecvs - number of messages received
 
   Level: developer
 
@@ -64,15 +64,15 @@ PetscErrorCode PetscGatherNumberOfMessages(MPI_Comm comm, const PetscMPIInt ifla
   Collective
 
   Input Parameters:
-+ comm      - Communicator
-. nsends    - number of messages that are to be sent.
-. nrecvs    - number of messages being received
-- ilengths  - an array of integers of length sizeof(comm)
++ comm     - Communicator
+. nsends   - number of messages that are to be sent.
+. nrecvs   - number of messages being received
+- ilengths - an array of integers of length sizeof(comm)
               a non zero `ilengths`[i] represent a message to i of length `ilengths`[i]
 
   Output Parameters:
-+ onodes    - list of ranks from which messages are expected
-- olengths  - corresponding message lengths
++ onodes   - list of ranks from which messages are expected
+- olengths - corresponding message lengths
 
   Level: developer
 

@@ -7,23 +7,23 @@
 #endif
 
 /*@C
-   PetscIgnoreErrorHandler - Deprecated, use `PetscReturnErrorHandler()`. Ignores the error, allows program to continue as if error did not occur
+  PetscIgnoreErrorHandler - Deprecated, use `PetscReturnErrorHandler()`. Ignores the error, allows program to continue as if error did not occur
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  comm - communicator over which error occurred
-.  line - the line number of the error (indicated by __LINE__)
-.  file - the file in which the error was detected (indicated by __FILE__)
-.  mess - an error text string, usually just printed to the screen
-.  n - the generic error number
-.  p - specific error number
--  ctx - error handler context
+  Input Parameters:
++ comm - communicator over which error occurred
+. line - the line number of the error (indicated by __LINE__)
+. file - the file in which the error was detected (indicated by __FILE__)
+. mess - an error text string, usually just printed to the screen
+. n    - the generic error number
+. p    - specific error number
+- ctx  - error handler context
 
-   Level: developer
+  Level: developer
 
-   Note:
-   Users do not directly call this routine
+  Note:
+  Users do not directly call this routine
 
 .seealso: `PetscReturnErrorHandler()`
  @*/
@@ -133,30 +133,30 @@ PETSC_EXTERN PetscErrorCode PetscOptionsViewError(void);
 
 /*@C
 
-   PetscTraceBackErrorHandler - Default error handler routine that generates
-   a traceback on error detection.
+  PetscTraceBackErrorHandler - Default error handler routine that generates
+  a traceback on error detection.
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  comm - communicator over which error occurred
-.  line - the line number of the error (indicated by __LINE__)
-.  file - the file in which the error was detected (indicated by __FILE__)
-.  mess - an error text string, usually just printed to the screen
-.  n - the generic error number
-.  p - `PETSC_ERROR_INITIAL` if this is the first call the error handler, otherwise `PETSC_ERROR_REPEAT`
--  ctx - error handler context
+  Input Parameters:
++ comm - communicator over which error occurred
+. line - the line number of the error (indicated by __LINE__)
+. file - the file in which the error was detected (indicated by __FILE__)
+. mess - an error text string, usually just printed to the screen
+. n    - the generic error number
+. p    - `PETSC_ERROR_INITIAL` if this is the first call the error handler, otherwise `PETSC_ERROR_REPEAT`
+- ctx  - error handler context
 
   Options Database Keys:
-+  -error_output_stdout - output the error messages to stdout instead of the default stderr
--  -error_output_none - do not output the error messages
++ -error_output_stdout - output the error messages to stdout instead of the default stderr
+- -error_output_none   - do not output the error messages
 
-   Notes:
-   Users do not directly call this routine
+  Notes:
+  Users do not directly call this routine
 
-   Use `PetscPushErrorHandler()` to set the desired error handler.
+  Use `PetscPushErrorHandler()` to set the desired error handler.
 
-   Level: developer
+  Level: developer
 
 .seealso: `PetscError()`, `PetscPushErrorHandler()`, `PetscPopErrorHandler()`, `PetscAttachDebuggerErrorHandler()`,
           `PetscAbortErrorHandler()`, `PetscMPIAbortErrorHandler()`, `PetscReturnErrorHandler()`, `PetscEmacsClientErrorHandler()`

@@ -78,19 +78,19 @@ PetscSpinlock PetscViewerASCIISpinLockStderr;
 PetscSpinlock PetscCommSpinLock;
 #endif
 
-/*
-      PetscInitializeNoPointers - Calls PetscInitialize() from C/C++ without the pointers to argc and args
+/*@C
+  PetscInitializeNoPointers - Calls PetscInitialize() from C/C++ without the pointers to argc and args
 
-   Collective
+  Collective
 
-   Level: advanced
+  Level: advanced
 
-    Notes:
-    this is called only by the PETSc Julia interface. Even though it might start MPI it sets the flag to
-     indicate that it did NOT start MPI so that the PetscFinalize() does not end MPI, thus allowing PetscInitialize() to
-     be called multiple times from Julia without the problem of trying to initialize MPI more than once.
+  Notes:
+  this is called only by the PETSc Julia interface. Even though it might start MPI it sets the flag to
+  indicate that it did NOT start MPI so that the PetscFinalize() does not end MPI, thus allowing PetscInitialize() to
+  be called multiple times from Julia without the problem of trying to initialize MPI more than once.
 
-     Developer Note: Turns off PETSc signal handling to allow Julia to manage signals
+  Developer Notes: Turns off PETSc signal handling to allow Julia to manage signals
 
 .seealso: `PetscInitialize()`, `PetscInitializeFortran()`, `PetscInitializeNoArguments()`
 */
@@ -118,12 +118,12 @@ PetscErrorCode PetscGetPETSC_COMM_SELF(MPI_Comm *comm)
 }
 
 /*@C
-      PetscInitializeNoArguments - Calls `PetscInitialize()` from C/C++ without
-        the command line arguments.
+  PetscInitializeNoArguments - Calls `PetscInitialize()` from C/C++ without
+  the command line arguments.
 
-   Collective
+  Collective
 
-   Level: advanced
+  Level: advanced
 
 .seealso: `PetscInitialize()`, `PetscInitializeFortran()`
 @*/
@@ -138,9 +138,9 @@ PetscErrorCode PetscInitializeNoArguments(void)
 }
 
 /*@
-      PetscInitialized - Determine whether PETSc is initialized.
+  PetscInitialized - Determine whether PETSc is initialized.
 
-   Level: beginner
+  Level: beginner
 
 .seealso: `PetscInitialize()`, `PetscInitializeNoArguments()`, `PetscInitializeFortran()`
 @*/
@@ -153,9 +153,9 @@ PetscErrorCode PetscInitialized(PetscBool *isInitialized)
 }
 
 /*@
-      PetscFinalized - Determine whether `PetscFinalize()` has been called yet
+  PetscFinalized - Determine whether `PetscFinalize()` has been called yet
 
-   Level: developer
+  Level: developer
 
 .seealso: `PetscInitialize()`, `PetscInitializeNoArguments()`, `PetscInitializeFortran()`
 @*/
@@ -472,17 +472,17 @@ PetscErrorCode PetscSetProgramName(const char name[])
 }
 
 /*@C
-    PetscGetProgramName - Gets the name of the running program.
+  PetscGetProgramName - Gets the name of the running program.
 
-    Not Collective
+  Not Collective
 
-    Input Parameter:
-.   len - length of the string name
+  Input Parameter:
+. len - length of the string name
 
-    Output Parameter:
-.   name - the name of the running program, provide a string of length `PETSC_MAX_PATH_LEN`
+  Output Parameter:
+. name - the name of the running program, provide a string of length `PETSC_MAX_PATH_LEN`
 
-   Level: advanced
+  Level: advanced
 
 .seealso: `PetscFinalize()`, `PetscInitializeFortran()`, `PetscGetArguments()`, `PetscInitialize()`
 @*/
@@ -494,22 +494,22 @@ PetscErrorCode PetscGetProgramName(char name[], size_t len)
 }
 
 /*@C
-   PetscGetArgs - Allows you to access the raw command line arguments anywhere
-     after PetscInitialize() is called but before `PetscFinalize()`.
+  PetscGetArgs - Allows you to access the raw command line arguments anywhere
+  after PetscInitialize() is called but before `PetscFinalize()`.
 
-   Not Collective
+  Not Collective
 
-   Output Parameters:
-+  argc - count of number of command line arguments
--  args - the command line arguments
+  Output Parameters:
++ argc - count of number of command line arguments
+- args - the command line arguments
 
-   Level: intermediate
+  Level: intermediate
 
-   Notes:
-      This is usually used to pass the command line arguments into other libraries
-   that are called internally deep in PETSc or the application.
+  Notes:
+  This is usually used to pass the command line arguments into other libraries
+  that are called internally deep in PETSc or the application.
 
-      The first argument contains the program name as is normal for C arguments.
+  The first argument contains the program name as is normal for C arguments.
 
 .seealso: `PetscFinalize()`, `PetscInitializeFortran()`, `PetscGetArguments()`, `PetscInitialize()`
 @*/
@@ -523,18 +523,18 @@ PetscErrorCode PetscGetArgs(int *argc, char ***args)
 }
 
 /*@C
-   PetscGetArguments - Allows you to access the  command line arguments anywhere
-     after `PetscInitialize()` is called but before `PetscFinalize()`.
+  PetscGetArguments - Allows you to access the  command line arguments anywhere
+  after `PetscInitialize()` is called but before `PetscFinalize()`.
 
-   Not Collective
+  Not Collective
 
-   Output Parameter:
-.  args - the command line arguments
+  Output Parameter:
+. args - the command line arguments
 
-   Level: intermediate
+  Level: intermediate
 
-   Note:
-      This does NOT start with the program name and IS `NULL` terminated (final arg is void)
+  Note:
+  This does NOT start with the program name and IS `NULL` terminated (final arg is void)
 
 .seealso: `PetscFinalize()`, `PetscInitializeFortran()`, `PetscGetArgs()`, `PetscFreeArguments()`, `PetscInitialize()`
 @*/
@@ -555,14 +555,14 @@ PetscErrorCode PetscGetArguments(char ***args)
 }
 
 /*@C
-   PetscFreeArguments - Frees the memory obtained with `PetscGetArguments()`
+  PetscFreeArguments - Frees the memory obtained with `PetscGetArguments()`
 
-   Not Collective
+  Not Collective
 
-   Output Parameter:
-.  args - the command line arguments
+  Output Parameter:
+. args - the command line arguments
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `PetscFinalize()`, `PetscInitializeFortran()`, `PetscGetArgs()`, `PetscGetArguments()`
 @*/
@@ -1113,21 +1113,21 @@ PETSC_INTERN PetscErrorCode PetscInitialize_Common(const char *prog, const char 
 }
 
 /*@C
-   PetscInitialize - Initializes the PETSc database and MPI.
-   `PetscInitialize()` calls MPI_Init() if that has yet to be called,
-   so this routine should always be called near the beginning of
-   your program -- usually the very first line!
+  PetscInitialize - Initializes the PETSc database and MPI.
+  `PetscInitialize()` calls MPI_Init() if that has yet to be called,
+  so this routine should always be called near the beginning of
+  your program -- usually the very first line!
 
-   Collective on `MPI_COMM_WORLD` or `PETSC_COMM_WORLD` if it has been set
+  Collective on `MPI_COMM_WORLD` or `PETSC_COMM_WORLD` if it has been set
 
-   Input Parameters:
-+  argc - count of number of command line arguments
-.  args - the command line arguments
-.  file - [optional] PETSc database file, append ":yaml" to filename to specify YAML options format.
+  Input Parameters:
++ argc - count of number of command line arguments
+. args - the command line arguments
+. file - [optional] PETSc database file, append ":yaml" to filename to specify YAML options format.
           Use NULL or empty string to not check for code specific file.
           Also checks ~/.petscrc, .petscrc and petscrc.
           Use -skip_petscrc in the code specific file (or command line) to skip ~/.petscrc, .petscrc and petscrc files.
--  help - [optional] Help message to print, use NULL for no message
+- help - [optional] Help message to print, use NULL for no message
 
    If you wish PETSc code to run ONLY on a subcommunicator of `MPI_COMM_WORLD`, create that
    communicator first and assign it to `PETSC_COMM_WORLD` BEFORE calling `PetscInitialize()`. Thus if you are running a
@@ -1135,37 +1135,36 @@ PETSC_INTERN PetscErrorCode PetscInitialize_Common(const char *prog, const char 
    then do this. If ALL processes in the job are using `PetscInitialize()` and `PetscFinalize()` then you don't need to do this, even
    if different subcommunicators of the job are doing different things with PETSc.
 
-   Options Database Keys:
-+  -help [intro] - prints help method for each option; if intro is given the program stops after printing the introductory help message
-.  -start_in_debugger [noxterm,dbx,xdb,gdb,...] - Starts program in debugger
-.  -on_error_attach_debugger [noxterm,dbx,xdb,gdb,...] - Starts debugger when error detected
-.  -on_error_emacs <machinename> - causes emacsclient to jump to error file
-.  -on_error_abort - calls `abort()` when error detected (no traceback)
-.  -on_error_mpiabort - calls `MPI_abort()` when error detected
-.  -error_output_stdout - prints PETSc error messages to stdout instead of the default stderr
-.  -error_output_none - does not print the error messages (but handles errors in the same way as if this was not called)
-.  -debugger_ranks [rank1,rank2,...] - Indicates ranks to start in debugger
-.  -debugger_pause [sleeptime] (in seconds) - Pauses debugger
-.  -stop_for_debugger - Print message on how to attach debugger manually to
+  Options Database Keys:
++ -help [intro]                                       - prints help method for each option; if intro is given the program stops after printing the introductory help message
+. -start_in_debugger [noxterm,dbx,xdb,gdb,...]        - Starts program in debugger
+. -on_error_attach_debugger [noxterm,dbx,xdb,gdb,...] - Starts debugger when error detected
+. -on_error_emacs <machinename>                       - causes emacsclient to jump to error file
+. -on_error_abort                                     - calls `abort()` when error detected (no traceback)
+. -on_error_mpiabort                                  - calls `MPI_abort()` when error detected
+. -error_output_stdout                                - prints PETSc error messages to stdout instead of the default stderr
+. -error_output_none                                  - does not print the error messages (but handles errors in the same way as if this was not called)
+. -debugger_ranks [rank1,rank2,...]                   - Indicates ranks to start in debugger
+. -debugger_pause [sleeptime] (in seconds)            - Pauses debugger
+. -stop_for_debugger                                  - Print message on how to attach debugger manually to
                         process and wait (-debugger_pause) seconds for attachment
-.  -malloc_debug - check for memory corruption at EVERY malloc or free, see `PetscMallocSetDebug()`
-.  -malloc_dump - prints a list of all unfreed memory at the end of the run
-.  -malloc_test - like -malloc_dump -malloc_debug, but only active for debugging builds, ignored in optimized build. May want to set in PETSC_OPTIONS environmental variable
-.  -malloc_view - show a list of all allocated memory during `PetscFinalize()`
-.  -malloc_view_threshold <t> - only list memory allocations of size greater than t with -malloc_view
-.  -malloc_requested_size - malloc logging will record the requested size rather than size after alignment
-.  -fp_trap - Stops on floating point exceptions
-.  -no_signal_handler - Indicates not to trap error signals
-.  -shared_tmp - indicates /tmp directory is shared by all processors
-.  -not_shared_tmp - each processor has own /tmp
-.  -tmp - alternative name of /tmp directory
-.  -get_total_flops - returns total flops done by all processors
--  -memory_view - Print memory usage at end of run
+. -malloc_dump                                        - prints a list of all unfreed memory at the end of the run
+. -malloc_test                                        - like -malloc_dump -malloc_debug, but only active for debugging builds, ignored in optimized build. May want to set in PETSC_OPTIONS environmental variable
+. -malloc_view                                        - show a list of all allocated memory during `PetscFinalize()`
+. -malloc_view_threshold <t>                          - only list memory allocations of size greater than t with -malloc_view
+. -malloc_requested_size                              - malloc logging will record the requested size rather than size after alignment
+. -fp_trap                                            - Stops on floating point exceptions
+. -no_signal_handler                                  - Indicates not to trap error signals
+. -shared_tmp                                         - indicates /tmp directory is shared by all processors
+. -not_shared_tmp                                     - each processor has own /tmp
+. -tmp                                                - alternative name of /tmp directory
+. -get_total_flops                                    - returns total flops done by all processors
+- -memory_view                                        - Print memory usage at end of run
 
-   Options Database Keys for Option Database:
-+  -skip_petscrc - skip the default option files ~/.petscrc, .petscrc, petscrc
-.  -options_monitor - monitor all set options to standard output for the whole program run
--  -options_monitor_cancel - cancel options monitoring hard-wired using `PetscOptionsMonitorSet()`
+  Options Database Keys for Option Database:
++ -skip_petscrc           - skip the default option files ~/.petscrc, .petscrc, petscrc
+. -options_monitor        - monitor all set options to standard output for the whole program run
+- -options_monitor_cancel - cancel options monitoring hard-wired using `PetscOptionsMonitorSet()`
 
    Options -options_monitor_{all,cancel} are
    position-independent and apply to all options set since the PETSc start.
@@ -1173,34 +1172,34 @@ PETSC_INTERN PetscErrorCode PetscInitialize_Common(const char *prog, const char 
 
    See `PetscOptionsMonitorSet()` to do monitoring programmatically.
 
-   Options Database Keys for Profiling:
+  Options Database Keys for Profiling:
    See Users-Manual: ch_profiling for details.
-+  -info [filename][:[~]<list,of,classnames>[:[~]self]] - Prints verbose information. See `PetscInfo()`.
-.  -log_sync - Enable barrier synchronization for all events. This option is useful to debug imbalance within each event,
++ -info [filename][:[~]<list,of,classnames>[:[~]self]] - Prints verbose information. See `PetscInfo()`.
+. -log_sync                                            - Enable barrier synchronization for all events. This option is useful to debug imbalance within each event,
         however it slows things down and gives a distorted view of the overall runtime.
-.  -log_trace [filename] - Print traces of all PETSc calls to the screen (useful to determine where a program
+. -log_trace [filename]                                - Print traces of all PETSc calls to the screen (useful to determine where a program
         hangs without running in the debugger).  See `PetscLogTraceBegin()`.
-.  -log_view [:filename:format] - Prints summary of flop and timing information to screen or file, see `PetscLogView()`.
-.  -log_view_memory - Includes in the summary from -log_view the memory used in each event, see `PetscLogView()`.
-.  -log_view_gpu_time - Includes in the summary from -log_view the time used in each GPU kernel, see `PetscLogView().
-.  -log_exclude: <vec,mat,pc,ksp,snes> - excludes subset of object classes from logging
-.  -log_all [filename] - Logs extensive profiling information  See `PetscLogDump()`.
-.  -log [filename] - Logs basic profiline information  See `PetscLogDump()`.
-.  -log_mpe [filename] - Creates a logfile viewable by the utility Jumpshot (in MPICH distribution)
-.  -viewfromoptions on,off - Enable or disable `XXXSetFromOptions()` calls, for applications with many small solves turn this off
--  -check_pointer_intensity 0,1,2 - if pointers are checked for validity (debug version only), using 0 will result in faster code
+. -log_view [:filename:format]                         - Prints summary of flop and timing information to screen or file, see `PetscLogView()`.
+. -log_view_memory                                     - Includes in the summary from -log_view the memory used in each event, see `PetscLogView()`.
+. -log_view_gpu_time                                   - Includes in the summary from -log_view the time used in each GPU kernel, see `PetscLogView().
+. -log_exclude: <vec,mat,pc,ksp,snes>                  - excludes subset of object classes from logging
+. -log_all [filename]                                  - Logs extensive profiling information  See `PetscLogDump()`.
+. -log [filename]                                      - Logs basic profiline information  See `PetscLogDump()`.
+. -log_mpe [filename]                                  - Creates a logfile viewable by the utility Jumpshot (in MPICH distribution)
+. -viewfromoptions on,off                              - Enable or disable `XXXSetFromOptions()` calls, for applications with many small solves turn this off
+- -check_pointer_intensity 0,1,2                       - if pointers are checked for validity (debug version only), using 0 will result in faster code
 
     Only one of -log_trace, -log_view, -log_all, -log, or -log_mpe may be used at a time
 
-   Options Database Keys for SAWs:
-+  -saws_port <portnumber> - port number to publish SAWs data, default is 8080
-.  -saws_port_auto_select - have SAWs select a new unique port number where it publishes the data, the URL is printed to the screen
+  Options Database Keys for SAWs:
++ -saws_port <portnumber>        - port number to publish SAWs data, default is 8080
+. -saws_port_auto_select         - have SAWs select a new unique port number where it publishes the data, the URL is printed to the screen
                             this is useful when you are running many jobs that utilize SAWs at the same time
-.  -saws_log <filename> - save a log of all SAWs communication
-.  -saws_https <certificate file> - have SAWs use HTTPS instead of HTTP
--  -saws_root <directory> - allow SAWs to have access to the given directory to search for requested resources and files
+. -saws_log <filename>           - save a log of all SAWs communication
+. -saws_https <certificate file> - have SAWs use HTTPS instead of HTTP
+- -saws_root <directory>         - allow SAWs to have access to the given directory to search for requested resources and files
 
-   Environmental Variables:
+  Environmental Variables:
 +   `PETSC_TMP` - alternative tmp directory
 .   `PETSC_SHARED_TMP` - tmp is shared by all processes
 .   `PETSC_NOT_SHARED_TMP` - each process has its own private tmp
@@ -1209,25 +1208,25 @@ PETSC_INTERN PetscErrorCode PetscInitialize_Common(const char *prog, const char 
 .   `PETSC_VIEWER_SOCKET_PORT` - socket number to use for socket viewer
 -   `PETSC_VIEWER_SOCKET_MACHINE` - machine to use for socket viewer to connect to
 
-   Level: beginner
+  Level: beginner
 
-   Note:
-   If for some reason you must call `MPI_Init()` separately, call
-   it before `PetscInitialize()`.
+  Note:
+  If for some reason you must call `MPI_Init()` separately, call
+  it before `PetscInitialize()`.
 
-   Fortran Notes:
-   In Fortran this routine can be called with
+  Fortran Notes:
+  In Fortran this routine can be called with
 .vb
        call PetscInitialize(ierr)
        call PetscInitialize(file,ierr) or
        call PetscInitialize(file,help,ierr)
 .ve
 
-   If your main program is C but you call Fortran code that also uses PETSc you need to call `PetscInitializeFortran()` soon after
-   calling `PetscInitialize()`.
+  If your main program is C but you call Fortran code that also uses PETSc you need to call `PetscInitializeFortran()` soon after
+  calling `PetscInitialize()`.
 
-   Options Database Key for Developers:
-.  -checkfunctionlist - automatically checks that function lists associated with objects are correctly cleaned up. Produces messages of the form:
+  Options Database Key for Developers:
+. -checkfunctionlist - automatically checks that function lists associated with objects are correctly cleaned up. Produces messages of the form:
     "function name: MatInodeGetInodeSizes_C" if they are not cleaned up. This flag is always set for the test harness (in framework.py)
 
 .seealso: `PetscFinalize()`, `PetscInitializeFortran()`, `PetscGetArgs()`, `PetscInitializeNoArguments()`, `PetscLogGpuTime()`
@@ -1322,25 +1321,25 @@ PETSC_INTERN PetscErrorCode PetscLogFinalize(void);
 #endif
 
 /*@C
-   PetscFinalize - Checks for options to be called at the conclusion
-   of the program. `MPI_Finalize()` is called only if the user had not
-   called `MPI_Init()` before calling `PetscInitialize()`.
+  PetscFinalize - Checks for options to be called at the conclusion
+  of the program. `MPI_Finalize()` is called only if the user had not
+  called `MPI_Init()` before calling `PetscInitialize()`.
 
-   Collective on `PETSC_COMM_WORLD`
+  Collective on `PETSC_COMM_WORLD`
 
-   Options Database Keys:
-+  -options_view - Calls `PetscOptionsView()`
-.  -options_left - Prints unused options that remain in the database
-.  -objects_dump [all] - Prints list of objects allocated by the user that have not been freed, the option all cause all outstanding objects to be listed
-.  -mpidump - Calls PetscMPIDump()
-.  -malloc_dump <optional filename> - Calls `PetscMallocDump()`, displays all memory allocated that has not been freed
-.  -memory_view - Prints total memory usage
--  -malloc_view <optional filename> - Prints list of all memory allocated and in what functions
+  Options Database Keys:
++ -options_view                    - Calls `PetscOptionsView()`
+. -options_left                    - Prints unused options that remain in the database
+. -objects_dump [all]              - Prints list of objects allocated by the user that have not been freed, the option all cause all outstanding objects to be listed
+. -mpidump                         - Calls PetscMPIDump()
+. -malloc_dump <optional filename> - Calls `PetscMallocDump()`, displays all memory allocated that has not been freed
+. -memory_view                     - Prints total memory usage
+- -malloc_view <optional filename> - Prints list of all memory allocated and in what functions
 
-   Level: beginner
+  Level: beginner
 
-   Note:
-   See `PetscInitialize()` for other runtime options.
+  Note:
+  See `PetscInitialize()` for other runtime options.
 
 .seealso: `PetscInitialize()`, `PetscOptionsView()`, `PetscMallocDump()`, `PetscMPIDump()`, `PetscEnd()`
 @*/

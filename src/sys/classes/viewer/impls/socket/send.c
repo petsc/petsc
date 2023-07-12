@@ -79,21 +79,21 @@ static PetscErrorCode PetscViewerDestroy_Socket(PetscViewer viewer)
 }
 
 /*@C
-    PetscSocketOpen - handles connected to an open port where someone is waiting.
+  PetscOpenSocket - handles connected to an open port where someone is waiting.
 
-    Input Parameters:
-+    url - for example www.mcs.anl.gov
--    portnum - for example 80
+  Input Parameters:
++ hostname - for example www.mcs.anl.gov
+- portnum  - for example 80
 
-    Output Parameter:
-.    t - the socket number
+  Output Parameter:
+. t - the socket number
 
-    Notes:
-    Use close() to close the socket connection
+  Notes:
+  Use close() to close the socket connection
 
-    Use read() or `PetscHTTPRequest()` to read from the socket
+  Use read() or `PetscHTTPRequest()` to read from the socket
 
-    Level: advanced
+  Level: advanced
 
 .seealso: `PetscSocketListen()`, `PetscSocketEstablish()`, `PetscHTTPRequest()`, `PetscHTTPSConnect()`
 @*/
@@ -255,55 +255,55 @@ PETSC_INTERN PetscErrorCode PetscSocketListen(int listenport, int *t)
 }
 
 /*@C
-   PetscViewerSocketOpen - Opens a connection to a MATLAB or other socket based server.
+  PetscViewerSocketOpen - Opens a connection to a MATLAB or other socket based server.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  comm - the MPI communicator
-.  machine - the machine the server is running on, use `NULL` for the local machine, use "server" to passively wait for
+  Input Parameters:
++ comm    - the MPI communicator
+. machine - the machine the server is running on, use `NULL` for the local machine, use "server" to passively wait for
              a connection from elsewhere
--  port - the port to connect to, use `PETSC_DEFAULT` for the default
+- port    - the port to connect to, use `PETSC_DEFAULT` for the default
 
-   Output Parameter:
-.  lab - a context to use when communicating with the server
+  Output Parameter:
+. lab - a context to use when communicating with the server
 
-   Options Database Keys:
+  Options Database Keys:
    For use with  `PETSC_VIEWER_SOCKET_WORLD`, `PETSC_VIEWER_SOCKET_SELF`,
    `PETSC_VIEWER_SOCKET_()` or if
     `NULL` is passed for machine or PETSC_DEFAULT is passed for port
-+    -viewer_socket_machine <machine> - the machine where the socket is available
--    -viewer_socket_port <port> - the socket to conntect to
++ -viewer_socket_machine <machine> - the machine where the socket is available
+- -viewer_socket_port <port>       - the socket to conntect to
 
-   Environmental variables:
+  Environmental variables:
 +   `PETSC_VIEWER_SOCKET_MACHINE` - machine name
 -   `PETSC_VIEWER_SOCKET_PORT` - portnumber
 
-   Level: intermediate
+  Level: intermediate
 
-   Notes:
-   Most users should employ the following commands to access the
-   MATLAB `PetscViewer`
+  Notes:
+  Most users should employ the following commands to access the
+  MATLAB `PetscViewer`
 .vb
 
     PetscViewerSocketOpen(MPI_Comm comm, char *machine,int port,PetscViewer &viewer)
     MatView(Mat matrix,PetscViewer viewer)
 .ve
-                or
+  or
 .vb
     PetscViewerSocketOpen(MPI_Comm comm,char *machine,int port,PetscViewer &viewer)
     VecView(Vec vector,PetscViewer viewer)
 .ve
 
-     Currently the only socket client available is MATLAB, PETSc must be configured with --with-matlab for this client. See
-     src/dm/tests/ex12.c and ex12.m for an example of usage.
+  Currently the only socket client available is MATLAB, PETSc must be configured with --with-matlab for this client. See
+  src/dm/tests/ex12.c and ex12.m for an example of usage.
 
-    The socket viewer is in some sense a subclass of the binary viewer, to read and write to the socket
-    use `PetscViewerBinaryRead()`, `PetscViewerBinaryWrite()`, `PetscViewerBinarWriteStringArray()`, `PetscViewerBinaryGetDescriptor()`.
+  The socket viewer is in some sense a subclass of the binary viewer, to read and write to the socket
+  use `PetscViewerBinaryRead()`, `PetscViewerBinaryWrite()`, `PetscViewerBinarWriteStringArray()`, `PetscViewerBinaryGetDescriptor()`.
 
-     Use this for communicating with an interactive MATLAB session, see `PETSC_VIEWER_MATLAB_()` for writing output to a
-     .mat file. Use `PetscMatlabEngineCreate()` or `PETSC_MATLAB_ENGINE_()`, `PETSC_MATLAB_ENGINE_SELF`, or `PETSC_MATLAB_ENGINE_WORLD`
-     for communicating with a MATLAB Engine
+  Use this for communicating with an interactive MATLAB session, see `PETSC_VIEWER_MATLAB_()` for writing output to a
+  .mat file. Use `PetscMatlabEngineCreate()` or `PETSC_MATLAB_ENGINE_()`, `PETSC_MATLAB_ENGINE_SELF`, or `PETSC_MATLAB_ENGINE_WORLD`
+  for communicating with a MATLAB Engine
 
 .seealso: [](sec_viewers), `PETSCVIEWERBINARY`, `PETSCVIEWERSOCKET`, `MatView()`, `VecView()`, `PetscViewerDestroy()`, `PetscViewerCreate()`, `PetscViewerSetType()`,
           `PetscViewerSocketSetConnection()`, `PETSC_VIEWER_SOCKET_`, `PETSC_VIEWER_SOCKET_WORLD`,
@@ -398,18 +398,18 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_Socket(PetscViewer v)
 }
 
 /*@C
-      PetscViewerSocketSetConnection - Sets the machine and port that a PETSc socket
-             viewer is to use
+  PetscViewerSocketSetConnection - Sets the machine and port that a PETSc socket
+  viewer is to use
 
   Logically Collective
 
   Input Parameters:
-+   v - viewer to connect
-.   machine - host to connect to, use `NULL` for the local machine,use "server" to passively wait for
++ v       - viewer to connect
+. machine - host to connect to, use `NULL` for the local machine,use "server" to passively wait for
              a connection from elsewhere
--   port - the port on the machine one is connecting to, use `PETSC_DEFAULT` for default
+- port    - the port on the machine one is connecting to, use `PETSC_DEFAULT` for default
 
-    Level: advanced
+  Level: advanced
 
 .seealso: [](sec_viewers), `PETSCVIEWERMATLAB`, `PETSCVIEWERSOCKET`, `PetscViewerSocketOpen()`
 @*/

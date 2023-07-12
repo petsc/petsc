@@ -491,10 +491,10 @@ PetscErrorCode PetscDeviceMemcpy(PetscDeviceContext dctx, void *PETSC_RESTRICT d
   Not Collective, Asynchronous, Auto-dependency aware
 
   Input Parameters:
-+ dctx  - The `PetscDeviceContext` used to memset the memory
-. ptr   - The pointer to the memory
-. v     - The value to set
-- n     - The amount (in bytes) to set
++ dctx - The `PetscDeviceContext` used to memset the memory
+. ptr  - The pointer to the memory
+. v    - The value to set
+- n    - The amount (in bytes) to set
 
   Level: intermediate
 

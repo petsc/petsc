@@ -5,18 +5,18 @@
 #endif
 
 /*@C
-   PetscGetFullPath - Given a filename, returns the fully qualified file name.
+  PetscGetFullPath - Given a filename, returns the fully qualified file name.
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  path     - pathname to qualify
--  flen     - size of `fullpath`
+  Input Parameters:
++ path - pathname to qualify
+- flen - size of `fullpath`
 
-   Output Parameter:
-.  fullpath - buffer to hold the full pathname
+  Output Parameter:
+. fullpath - buffer to hold the full pathname
 
-   Level: developer
+  Level: developer
 
 .seealso: `PetscGetRelativePath()`
 @*/

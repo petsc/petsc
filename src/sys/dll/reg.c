@@ -262,29 +262,29 @@ static PetscErrorCode PetscFunctionListCreate_Private(PetscInt size, PetscFuncti
 }
 
 /*MC
-   PetscFunctionListAdd - Given a routine and a string id, saves that routine in the
-   specified registry.
+  PetscFunctionListAdd - Given a routine and a string id, saves that routine in the
+  specified registry.
 
-   Synopsis:
-   #include <petscsys.h>
-   PetscErrorCode PetscFunctionListAdd(PetscFunctionList *flist,const char name[],void (*fptr)(void))
+  Synopsis:
+  #include <petscsys.h>
+  PetscErrorCode PetscFunctionListAdd(PetscFunctionList *flist,const char name[],void (*fptr)(void))
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
+  Input Parameters:
 +  flist - pointer to function list object
-.  name - string to identify routine
+. name - string to identify routine
 -  fptr - function pointer
 
-    Level: developer
+  Level: developer
 
-   Notes:
-   To remove a registered routine, pass in a `NULL` `fptr`.
+  Notes:
+  To remove a registered routine, pass in a `NULL` `fptr`.
 
-   Users who wish to register new classes for use by a particular PETSc
-   component (e.g., `SNES`) should generally call the registration routine
-   for that particular component (e.g., `SNESRegister()`) instead of
-   calling `PetscFunctionListAdd()` directly.
+  Users who wish to register new classes for use by a particular PETSc
+  component (e.g., `SNES`) should generally call the registration routine
+  for that particular component (e.g., `SNESRegister()`) instead of
+  calling `PetscFunctionListAdd()` directly.
 
 .seealso: `PetscFunctionListDestroy()`, `SNESRegister()`, `KSPRegister()`,`PetscFunctionListDuplicate()`
           `PCRegister()`, `TSRegister()`, `PetscFunctionList`, `PetscObjectComposeFunction()`
@@ -301,12 +301,12 @@ PetscErrorCode PetscFunctionListAdd_Private(PetscFunctionList *fl, const char na
 }
 
 /*@
-    PetscFunctionListDestroy - Destroys a list of registered routines.
+  PetscFunctionListDestroy - Destroys a list of registered routines.
 
-    Input Parameter:
-.   fl  - pointer to list
+  Input Parameter:
+. fl - pointer to list
 
-    Level: developer
+  Level: developer
 
 .seealso: `PetscFunctionListAdd()`, `PetscFunctionList`, `PetscFunctionListClear()`
 @*/
@@ -383,12 +383,12 @@ PetscErrorCode PetscFunctionListPrintAll(void)
 }
 
 /*MC
-    PetscFunctionListNonEmpty - Print composed names for non `NULL` function pointers
+  PetscFunctionListNonEmpty - Print composed names for non `NULL` function pointers
 
-    Input Parameter:
+  Input Parameter:
 .   flist   - pointer to list
 
-    Level: developer
+  Level: developer
 
 .seealso: `PetscFunctionListAdd()`, `PetscFunctionList`, `PetscObjectQueryFunction()`
 M*/
@@ -408,20 +408,20 @@ PetscErrorCode PetscFunctionListPrintNonEmpty(PetscFunctionList fl)
 }
 
 /*MC
-    PetscFunctionListFind - Find function registered under given name
+  PetscFunctionListFind - Find function registered under given name
 
-    Synopsis:
-    #include <petscsys.h>
-    PetscErrorCode PetscFunctionListFind(PetscFunctionList flist,const char name[],void (**fptr)(void))
+  Synopsis:
+  #include <petscsys.h>
+  PetscErrorCode PetscFunctionListFind(PetscFunctionList flist,const char name[],void (**fptr)(void))
 
-    Input Parameters:
+  Input Parameters:
 +   flist   - pointer to list
--   name - name registered for the function
+- name - name registered for the function
 
-    Output Parameter:
+  Output Parameter:
 .   fptr - the function pointer if name was found, else `NULL`
 
-    Level: developer
+  Level: developer
 
 .seealso: `PetscFunctionListAdd()`, `PetscFunctionList`, `PetscObjectQueryFunction()`, `PetscFunctionListDuplicate()`
 M*/
@@ -436,15 +436,15 @@ PetscErrorCode PetscFunctionListFind_Private(PetscFunctionList fl, const char na
 }
 
 /*@
-   PetscFunctionListView - prints out contents of a `PetscFunctionList`
+  PetscFunctionListView - prints out contents of a `PetscFunctionList`
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  list - the list of functions
--  viewer - the `PetscViewer` used to view the `PetscFunctionList`
+  Input Parameters:
++ list   - the list of functions
+- viewer - the `PetscViewer` used to view the `PetscFunctionList`
 
-   Level: developer
+  Level: developer
 
 .seealso: `PetscFunctionListAdd()`, `PetscFunctionListPrintTypes()`, `PetscFunctionList`
 @*/
@@ -480,23 +480,23 @@ PetscErrorCode PetscFunctionListView(PetscFunctionList list, PetscViewer viewer)
 }
 
 /*@C
-   PetscFunctionListGet - Gets an array the contains the entries in `PetscFunctionList`, this is used
-         by help etc.
+  PetscFunctionListGet - Gets an array the contains the entries in `PetscFunctionList`, this is used
+  by help etc.
 
-   Not Collective
+  Not Collective
 
-   Input Parameter:
-.  list   - list of types
+  Input Parameter:
+. list - list of types
 
-   Output Parameters:
-+  array - array of names
--  n - length of `array`
+  Output Parameters:
++ array - array of names
+- n     - length of `array`
 
-   Level: developer
+  Level: developer
 
-   Note:
-       This allocates the array so that must be freed. BUT the individual entries are
-    not copied so should not be freed.
+  Note:
+  This allocates the array so that must be freed. BUT the individual entries are
+  not copied so should not be freed.
 
 .seealso: `PetscFunctionListAdd()`, `PetscFunctionList`
 @*/
@@ -520,22 +520,22 @@ PetscErrorCode PetscFunctionListGet(PetscFunctionList list, const char ***array,
 }
 
 /*@C
-   PetscFunctionListPrintTypes - Prints the methods available in a list of functions
+  PetscFunctionListPrintTypes - Prints the methods available in a list of functions
 
-   Collective over MPI_Comm
+  Collective over MPI_Comm
 
-   Input Parameters:
-+  comm   - the communicator (usually `MPI_COMM_WORLD`)
-.  fd     - file to print to, usually `stdout`
-.  prefix - prefix to prepend to name (optional)
-.  name   - option string (for example, `-ksp_type`)
-.  text - short description of the object (for example, "Krylov solvers")
-.  man - name of manual page that discusses the object (for example, `KSPCreate`)
-.  list   - list of types
-.  def - default (current) value
--  newv - new value
+  Input Parameters:
++ comm   - the communicator (usually `MPI_COMM_WORLD`)
+. fd     - file to print to, usually `stdout`
+. prefix - prefix to prepend to name (optional)
+. name   - option string (for example, `-ksp_type`)
+. text   - short description of the object (for example, "Krylov solvers")
+. man    - name of manual page that discusses the object (for example, `KSPCreate`)
+. list   - list of types
+. def    - default (current) value
+- newv   - new value
 
-   Level: developer
+  Level: developer
 
 .seealso: `PetscFunctionListAdd()`, `PetscFunctionList`
 @*/
@@ -555,15 +555,15 @@ PetscErrorCode PetscFunctionListPrintTypes(MPI_Comm comm, FILE *fd, const char p
 }
 
 /*@
-    PetscFunctionListDuplicate - Creates a new list from a given function list `PetscFunctionList`.
+  PetscFunctionListDuplicate - Creates a new list from a given function list `PetscFunctionList`.
 
-    Input Parameter:
-.   fl   - pointer to list
+  Input Parameter:
+. fl - pointer to list
 
-    Output Parameter:
-.   nl - the new list (should point to `NULL` to start, otherwise appends)
+  Output Parameter:
+. nl - the new list (should point to `NULL` to start, otherwise appends)
 
-    Level: developer
+  Level: developer
 
 .seealso: `PetscFunctionList`, `PetscFunctionListAdd()`, `PetscFlistDestroy()`
 @*/

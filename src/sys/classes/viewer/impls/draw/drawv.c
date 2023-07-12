@@ -36,19 +36,19 @@ static PetscErrorCode PetscViewerFlush_Draw(PetscViewer v)
 }
 
 /*@C
-    PetscViewerDrawGetDraw - Returns `PetscDraw` object from `PETSCVIEWERDRAW` `PetscViewer` object.
-    This `PetscDraw` object may then be used to perform graphics using `PetscDraw` commands.
+  PetscViewerDrawGetDraw - Returns `PetscDraw` object from `PETSCVIEWERDRAW` `PetscViewer` object.
+  This `PetscDraw` object may then be used to perform graphics using `PetscDraw` commands.
 
-    Collective
+  Collective
 
-    Input Parameters:
-+   viewer - the `PetscViewer` (created with `PetscViewerDrawOpen()` of type `PETSCVIEWERDRAW`)
--   windownumber - indicates which subwindow (usually 0) to obtain
+  Input Parameters:
++ viewer       - the `PetscViewer` (created with `PetscViewerDrawOpen()` of type `PETSCVIEWERDRAW`)
+- windownumber - indicates which subwindow (usually 0) to obtain
 
-    Output Parameter:
-.   draw - the draw object
+  Output Parameter:
+. draw - the draw object
 
-    Level: intermediate
+  Level: intermediate
 
 .seealso: [](sec_viewers), `PETSCVIEWERDRAW`, `PetscViewerDrawGetLG()`, `PetscViewerDrawGetAxis()`, `PetscViewerDrawOpen()`
 @*/
@@ -101,18 +101,18 @@ PetscErrorCode PetscViewerDrawGetDraw(PetscViewer viewer, PetscInt windownumber,
 }
 
 /*@C
-    PetscViewerDrawBaseAdd - add to the base integer that is added to the `windownumber` passed to `PetscViewerDrawGetDraw()`
+  PetscViewerDrawBaseAdd - add to the base integer that is added to the `windownumber` passed to `PetscViewerDrawGetDraw()`
 
-    Logically Collective
+  Logically Collective
 
-    Input Parameters:
-+  viewer - the `PetscViewer` (created with `PetscViewerDrawOpen()`)
--   windownumber - how much to add to the base
+  Input Parameters:
++ viewer       - the `PetscViewer` (created with `PetscViewerDrawOpen()`)
+- windownumber - how much to add to the base
 
-    Level: developer
+  Level: developer
 
-    Note:
-    A `PETSCVIEWERDRAW` may have multiple `PetscDraw` subwindows, this increases the number of the subwindow that is returned with `PetscViewerDrawGetDraw()`
+  Note:
+  A `PETSCVIEWERDRAW` may have multiple `PetscDraw` subwindows, this increases the number of the subwindow that is returned with `PetscViewerDrawGetDraw()`
 
 .seealso: [](sec_viewers), `PetscViewerDrawGetLG()`, `PetscViewerDrawGetAxis()`, `PetscViewerDrawOpen()`, `PetscViewerDrawGetDraw()`, `PetscViewerDrawBaseSet()`
 @*/
@@ -134,18 +134,18 @@ PetscErrorCode PetscViewerDrawBaseAdd(PetscViewer viewer, PetscInt windownumber)
 }
 
 /*@C
-    PetscViewerDrawBaseSet - sets the base integer that is added to the `windownumber` passed to `PetscViewerDrawGetDraw()`
+  PetscViewerDrawBaseSet - sets the base integer that is added to the `windownumber` passed to `PetscViewerDrawGetDraw()`
 
-    Logically Collective
+  Logically Collective
 
-    Input Parameters:
-+   viewer - the `PetscViewer` (created with `PetscViewerDrawOpen()`)
--   windownumber - value to set the base
+  Input Parameters:
++ viewer       - the `PetscViewer` (created with `PetscViewerDrawOpen()`)
+- windownumber - value to set the base
 
-    Level: developer
+  Level: developer
 
-    Note:
-    A `PETSCVIEWERDRAW` may have multiple `PetscDraw` subwindows, this increases the number of the subwindow that is returned with `PetscViewerDrawGetDraw()`
+  Note:
+  A `PETSCVIEWERDRAW` may have multiple `PetscDraw` subwindows, this increases the number of the subwindow that is returned with `PetscViewerDrawGetDraw()`
 
 .seealso: [](sec_viewers), `PetscViewerDrawGetLG()`, `PetscViewerDrawGetAxis()`, `PetscViewerDrawOpen()`, `PetscViewerDrawGetDraw()`, `PetscViewerDrawBaseAdd()`
 @*/
@@ -167,22 +167,22 @@ PetscErrorCode PetscViewerDrawBaseSet(PetscViewer viewer, PetscInt windownumber)
 }
 
 /*@C
-    PetscViewerDrawGetDrawLG - Returns a `PetscDrawLG` object from `PetscViewer` object of type `PETSCVIEWERDRAW`.
-    This `PetscDrawLG` object may then be used to perform graphics using `PetscDrawLG` commands.
+  PetscViewerDrawGetDrawLG - Returns a `PetscDrawLG` object from `PetscViewer` object of type `PETSCVIEWERDRAW`.
+  This `PetscDrawLG` object may then be used to perform graphics using `PetscDrawLG` commands.
 
-    Collective
+  Collective
 
-    Input Parameters:
-+   viewer - the `PetscViewer` (created with `PetscViewerDrawOpen()`)
--   windownumber - indicates which subwindow (usually 0)
+  Input Parameters:
++ viewer       - the `PetscViewer` (created with `PetscViewerDrawOpen()`)
+- windownumber - indicates which subwindow (usually 0)
 
-    Output Parameter:
-.   draw - the draw line graph object
+  Output Parameter:
+. drawlg - the draw line graph object
 
-    Level: intermediate
+  Level: intermediate
 
-    Note:
-    A `PETSCVIEWERDRAW` may have multiple `PetscDraw` subwindows
+  Note:
+  A `PETSCVIEWERDRAW` may have multiple `PetscDraw` subwindows
 
 .seealso: [](sec_viewers), `PetscDrawLG`, `PetscViewerDrawGetDraw()`, `PetscViewerDrawGetAxis()`, `PetscViewerDrawOpen()`
 @*/
@@ -210,22 +210,22 @@ PetscErrorCode PetscViewerDrawGetDrawLG(PetscViewer viewer, PetscInt windownumbe
 }
 
 /*@C
-    PetscViewerDrawGetDrawAxis - Returns a `PetscDrawAxis` object from a `PetscViewer` object of type `PETSCVIEWERDRAW`.
-    This `PetscDrawAxis` object may then be used to perform graphics using `PetscDrawAxis` commands.
+  PetscViewerDrawGetDrawAxis - Returns a `PetscDrawAxis` object from a `PetscViewer` object of type `PETSCVIEWERDRAW`.
+  This `PetscDrawAxis` object may then be used to perform graphics using `PetscDrawAxis` commands.
 
-    Collective
+  Collective
 
-    Input Parameters:
-+   viewer - the `PetscViewer` (created with `PetscViewerDrawOpen()`)
--   windownumber - indicates which subwindow (usually 0)
+  Input Parameters:
++ viewer       - the `PetscViewer` (created with `PetscViewerDrawOpen()`)
+- windownumber - indicates which subwindow (usually 0)
 
-    Output Parameter:
-.   drawaxis - the draw axis object
+  Output Parameter:
+. drawaxis - the draw axis object
 
-    Level: advanced
+  Level: advanced
 
-    Note:
-    A `PETSCVIEWERDRAW` may have multiple `PetscDraw` subwindows
+  Note:
+  A `PETSCVIEWERDRAW` may have multiple `PetscDraw` subwindows
 
 .seealso: [](sec_viewers), `PetscViewerDrawGetDraw()`, `PetscViewerDrawGetLG()`, `PetscViewerDrawOpen()`
 @*/
@@ -346,44 +346,44 @@ PetscErrorCode PetscViewerDrawGetTitle(PetscViewer v, const char *title[])
 }
 
 /*@C
-   PetscViewerDrawOpen - Opens a `PetscDraw` window for use as a `PetscViewer` with type `PETSCVIEWERDRAW`. If you want to
-   do graphics in this window, you must call `PetscViewerDrawGetDraw()` and
-   perform the graphics on the `PetscDraw` object.
+  PetscViewerDrawOpen - Opens a `PetscDraw` window for use as a `PetscViewer` with type `PETSCVIEWERDRAW`. If you want to
+  do graphics in this window, you must call `PetscViewerDrawGetDraw()` and
+  perform the graphics on the `PetscDraw` object.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  comm - communicator that will share window
-.  display - the X display on which to open, or `NULL` for the local machine
-.  title - the title to put in the title bar, or `NULL` for no title
-.  x - horizontal screen coordinate of the upper left corner of window, or use `PETSC_DECIDE`
-.  y - vertical screen coordinate of the upper left corner of window, or use `PETSC_DECIDE`
-.  w - window width in pixels, or may use `PETSC_DECIDE` or `PETSC_DRAW_FULL_SIZE`, `PETSC_DRAW_HALF_SIZE`,`PETSC_DRAW_THIRD_SIZE`, `PETSC_DRAW_QUARTER_SIZE`
--  h - window height in pixels, or may use `PETSC_DECIDE` or `PETSC_DRAW_FULL_SIZE`, `PETSC_DRAW_HALF_SIZE`,`PETSC_DRAW_THIRD_SIZE`, `PETSC_DRAW_QUARTER_SIZE`
+  Input Parameters:
++ comm    - communicator that will share window
+. display - the X display on which to open, or `NULL` for the local machine
+. title   - the title to put in the title bar, or `NULL` for no title
+. x       - horizontal screen coordinate of the upper left corner of window, or use `PETSC_DECIDE`
+. y       - vertical screen coordinate of the upper left corner of window, or use `PETSC_DECIDE`
+. w       - window width in pixels, or may use `PETSC_DECIDE` or `PETSC_DRAW_FULL_SIZE`, `PETSC_DRAW_HALF_SIZE`,`PETSC_DRAW_THIRD_SIZE`, `PETSC_DRAW_QUARTER_SIZE`
+- h       - window height in pixels, or may use `PETSC_DECIDE` or `PETSC_DRAW_FULL_SIZE`, `PETSC_DRAW_HALF_SIZE`,`PETSC_DRAW_THIRD_SIZE`, `PETSC_DRAW_QUARTER_SIZE`
 
-   Output Parameter:
+  Output Parameter:
 . viewer - the `PetscViewer`
 
-   Format Options:
-+  `PETSC_VIEWER_DRAW_BASIC` - displays with basic format
--  `PETSC_VIEWER_DRAW_LG`    - displays using a line graph
+  Format Options:
++ `PETSC_VIEWER_DRAW_BASIC` - displays with basic format
+- `PETSC_VIEWER_DRAW_LG`    - displays using a line graph
 
-   Options Database Keys:
-+  -draw_type - use x or null
-.  -nox - Disables all x-windows output
-.  -display <name> - Specifies name of machine for the X display
-.  -geometry <x,y,w,h> - allows setting the window location and size
--  -draw_pause <pause> - Sets time (in seconds) that the
+  Options Database Keys:
++ -draw_type          - use x or null
+. -nox                - Disables all x-windows output
+. -display <name>     - Specifies name of machine for the X display
+. -geometry <x,y,w,h> - allows setting the window location and size
+- -draw_pause <pause> - Sets time (in seconds) that the
      program pauses after PetscDrawPause() has been called
      (0 is default, -1 implies until user input).
 
-   Level: beginner
+  Level: beginner
 
-   Fortran Note:
-   Whenever indicating null character data in a Fortran code,
-   `PETSC_NULL_CHARACTER` must be employed; using NULL is not
-   correct for character data!  Thus, `PETSC_NULL_CHARACTER` can be
-   used for the display and title input parameters.
+  Fortran Notes:
+  Whenever indicating null character data in a Fortran code,
+  `PETSC_NULL_CHARACTER` must be employed; using NULL is not
+  correct for character data!  Thus, `PETSC_NULL_CHARACTER` can be
+  used for the display and title input parameters.
 
 .seealso: [](sec_viewers), `PETSCVIEWERDRAW`, `PetscDrawCreate()`, `PetscViewerDestroy()`, `PetscViewerDrawGetDraw()`, `PetscViewerCreate()`, `PETSC_VIEWER_DRAW_`,
           `PETSC_VIEWER_DRAW_WORLD`, `PETSC_VIEWER_DRAW_SELF`
@@ -550,14 +550,14 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_Draw(PetscViewer viewer)
 }
 
 /*@
-    PetscViewerDrawClear - Clears a `PetscDraw` graphic associated with a `PetscViewer`.
+  PetscViewerDrawClear - Clears a `PetscDraw` graphic associated with a `PetscViewer`.
 
-    Not Collective
+  Not Collective
 
-    Input Parameter:
-.  viewer - the `PetscViewer`
+  Input Parameter:
+. viewer - the `PetscViewer`
 
-    Level: intermediate
+  Level: intermediate
 
 .seealso: [](sec_viewers), `PETSCVIEWERDRAW`, `PetscViewerDrawOpen()`, `PetscViewerDrawGetDraw()`,
 @*/
@@ -580,17 +580,17 @@ PetscErrorCode PetscViewerDrawClear(PetscViewer viewer)
 }
 
 /*@
-    PetscViewerDrawGetPause - Gets the pause value (how long to pause before an image is changed)  in the `PETSCVIEWERDRAW` `PetscViewer`
+  PetscViewerDrawGetPause - Gets the pause value (how long to pause before an image is changed)  in the `PETSCVIEWERDRAW` `PetscViewer`
 
-    Not Collective
+  Not Collective
 
-    Input Parameter:
-.  viewer - the `PetscViewer`
+  Input Parameter:
+. viewer - the `PetscViewer`
 
-    Output Parameter:
-.  pause - the pause value
+  Output Parameter:
+. pause - the pause value
 
-    Level: intermediate
+  Level: intermediate
 
 .seealso: [](sec_viewers), `PETSCVIEWERDRAW`, `PetscViewerDrawOpen()`, `PetscViewerDrawGetDraw()`,
 @*/
@@ -623,15 +623,15 @@ PetscErrorCode PetscViewerDrawGetPause(PetscViewer viewer, PetscReal *pause)
 }
 
 /*@
-    PetscViewerDrawSetPause - Sets a pause for each `PetscDraw` in the `PETSCVIEWERDRAW` `PetscViewer`
+  PetscViewerDrawSetPause - Sets a pause for each `PetscDraw` in the `PETSCVIEWERDRAW` `PetscViewer`
 
-    Not Collective
+  Not Collective
 
-    Input Parameters:
-+  viewer - the `PetscViewer`
--  pause - the pause value
+  Input Parameters:
++ viewer - the `PetscViewer`
+- pause  - the pause value
 
-    Level: intermediate
+  Level: intermediate
 
 .seealso: [](sec_viewers), `PETSCVIEWERDRAW`, `PetscViewerDrawOpen()`, `PetscViewerDrawGetDraw()`,
 @*/
@@ -655,15 +655,15 @@ PetscErrorCode PetscViewerDrawSetPause(PetscViewer viewer, PetscReal pause)
 }
 
 /*@
-    PetscViewerDrawSetHold - Holds previous image when drawing new image in a `PETSCVIEWERDRAW`
+  PetscViewerDrawSetHold - Holds previous image when drawing new image in a `PETSCVIEWERDRAW`
 
-    Not Collective
+  Not Collective
 
-    Input Parameters:
-+  viewer - the `PetscViewer`
--  hold - `PETSC_TRUE` indicates to hold the previous image
+  Input Parameters:
++ viewer - the `PetscViewer`
+- hold   - `PETSC_TRUE` indicates to hold the previous image
 
-    Level: intermediate
+  Level: intermediate
 
 .seealso: [](sec_viewers), `PETSCVIEWERDRAW`, `PetscViewerDrawOpen()`, `PetscViewerDrawGetDraw()`,
 @*/
@@ -683,17 +683,17 @@ PetscErrorCode PetscViewerDrawSetHold(PetscViewer viewer, PetscBool hold)
 }
 
 /*@
-    PetscViewerDrawGetHold - Checks if the `PETSCVIEWERDRAW` `PetscViewer` holds previous image when drawing new image
+  PetscViewerDrawGetHold - Checks if the `PETSCVIEWERDRAW` `PetscViewer` holds previous image when drawing new image
 
-    Not Collective
+  Not Collective
 
-    Input Parameter:
-.  viewer - the `PetscViewer`
+  Input Parameter:
+. viewer - the `PetscViewer`
 
-    Output Parameter:
-.  hold - indicates to hold or not
+  Output Parameter:
+. hold - indicates to hold or not
 
-    Level: intermediate
+  Level: intermediate
 
 .seealso: [](sec_viewers), `PETSCVIEWERDRAW`, `PetscViewerDrawOpen()`, `PetscViewerDrawGetDraw()`,
 @*/
@@ -790,24 +790,24 @@ PetscViewer PETSC_VIEWER_DRAW_(MPI_Comm comm)
 }
 
 /*@
-    PetscViewerDrawSetBounds - sets the upper and lower bounds to be used in plotting in a `PETSCVIEWERDRAW` `PetscViewer`
+  PetscViewerDrawSetBounds - sets the upper and lower bounds to be used in plotting in a `PETSCVIEWERDRAW` `PetscViewer`
 
-    Collective
+  Collective
 
-    Input Parameters:
-+   viewer - the Petsc`Viewer` (created with `PetscViewerDrawOpen()`)
-.   nbounds - number of plots that can be made with this viewer, for example the dof passed to `DMDACreate()`
--   bounds - the actual bounds, the size of this is 2*`nbounds`, the values are stored in the order min F_0, max F_0, min F_1, max F_1, .....
+  Input Parameters:
++ viewer  - the Petsc`Viewer` (created with `PetscViewerDrawOpen()`)
+. nbounds - number of plots that can be made with this viewer, for example the dof passed to `DMDACreate()`
+- bounds  - the actual bounds, the size of this is 2*`nbounds`, the values are stored in the order min F_0, max F_0, min F_1, max F_1, .....
 
-    Options Database Key:
-.   -draw_bounds  minF0,maxF0,minF1,maxF1 - the lower left and upper right bounds
+  Options Database Key:
+. -draw_bounds  minF0,maxF0,minF1,maxF1 - the lower left and upper right bounds
 
-    Level: intermediate
+  Level: intermediate
 
-    Note:
-    this determines the colors used in 2d contour plots generated with VecView() for `DMDA` in 2d. Any values in the vector below or above the
-      bounds are moved to the bound value before plotting. In this way the color index from color to physical value remains the same for all plots generated with
-      this viewer. Otherwise the color to physical value meaning changes with each new image if this is not set.
+  Note:
+  this determines the colors used in 2d contour plots generated with VecView() for `DMDA` in 2d. Any values in the vector below or above the
+  bounds are moved to the bound value before plotting. In this way the color index from color to physical value remains the same for all plots generated with
+  this viewer. Otherwise the color to physical value meaning changes with each new image if this is not set.
 
 .seealso: [](sec_viewers), `PETSCVIEWERDRAW`, `PetscViewerDrawGetLG()`, `PetscViewerDrawGetAxis()`, `PetscViewerDrawOpen()`
 @*/
@@ -830,18 +830,18 @@ PetscErrorCode PetscViewerDrawSetBounds(PetscViewer viewer, PetscInt nbounds, co
 }
 
 /*@C
-    PetscViewerDrawGetBounds - gets the upper and lower bounds to be used in plotting set with `PetscViewerDrawSetBounds()`
+  PetscViewerDrawGetBounds - gets the upper and lower bounds to be used in plotting set with `PetscViewerDrawSetBounds()`
 
-    Collective
+  Collective
 
-    Input Parameter:
-.   viewer - the `PetscViewer` (created with `PetscViewerDrawOpen()`)
+  Input Parameter:
+. viewer - the `PetscViewer` (created with `PetscViewerDrawOpen()`)
 
-    Output Parameters:
-+   nbounds - number of plots that can be made with this viewer, for example the dof passed to `DMDACreate()`
--   bounds - the actual bounds, the size of this is 2*`nbounds`, the values are stored in the order min F_0, max F_0, min F_1, max F_1, .....
+  Output Parameters:
++ nbounds - number of plots that can be made with this viewer, for example the dof passed to `DMDACreate()`
+- bounds  - the actual bounds, the size of this is 2*`nbounds`, the values are stored in the order min F_0, max F_0, min F_1, max F_1, .....
 
-    Level: intermediate
+  Level: intermediate
 
 .seealso: [](sec_viewers), `PETSCVIEWERDRAW`, `PetscViewerDrawGetLG()`, `PetscViewerDrawGetAxis()`, `PetscViewerDrawOpen()`, `PetscViewerDrawSetBounds()`
 @*/

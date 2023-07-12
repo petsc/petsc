@@ -7,17 +7,17 @@
 const char *const PetscDataTypes[] = {"UNKNOWN", "DOUBLE", "COMPLEX", "LONG", "SHORT", "FLOAT", "CHAR", "LOGICAL", "ENUM", "BOOL", "LONGDOUBLE", "OBJECT", "FUNCTION", "STRING", "FP16", "STRUCT", "INT", "INT64", "PetscDataType", "PETSC_", NULL};
 
 /*@C
-     PetscDataTypeToMPIDataType - Converts the `PetscDataType` name of a datatype to its `MPI_Datatype`
+  PetscDataTypeToMPIDataType - Converts the `PetscDataType` name of a datatype to its `MPI_Datatype`
 
-   Not Collective
+  Not Collective
 
-    Input Parameter:
-.     ptype - the PETSc datatype name (for example `PETSC_DOUBLE`)
+  Input Parameter:
+. ptype - the PETSc datatype name (for example `PETSC_DOUBLE`)
 
-    Output Parameter:
-.     mtype - the MPI datatype (for example `MPI_DOUBLE`, ...)
+  Output Parameter:
+. mtype - the MPI datatype (for example `MPI_DOUBLE`, ...)
 
-    Level: advanced
+  Level: advanced
 
 .seealso: `PetscDataType`, `PetscMPIDataTypeToPetscDataType()`
 @*/
@@ -54,17 +54,17 @@ PetscErrorCode PetscDataTypeToMPIDataType(PetscDataType ptype, MPI_Datatype *mty
 }
 
 /*@C
-     PetscMPIDataTypeToPetscDataType - Finds the `PetscDataType` name of a datatype from its `MPI_Datatype`
+  PetscMPIDataTypeToPetscDataType - Finds the `PetscDataType` name of a datatype from its `MPI_Datatype`
 
-   Not Collective
+  Not Collective
 
-    Input Parameter:
-.     mtype - the MPI datatype (for example `MPI_DOUBLE`, ...)
+  Input Parameter:
+. mtype - the MPI datatype (for example `MPI_DOUBLE`, ...)
 
-    Output Parameter:
-.     ptype - the PETSc datatype name (for example `PETSC_DOUBLE`)
+  Output Parameter:
+. ptype - the PETSc datatype name (for example `PETSC_DOUBLE`)
 
-    Level: advanced
+  Level: advanced
 
 .seealso: `PetscDataType`, `PetscMPIDataTypeToPetscDataType()`
 @*/
@@ -127,17 +127,17 @@ typedef enum {
 } PetscDataTypeSize;
 
 /*@C
-     PetscDataTypeGetSize - Gets the size (in bytes) of a PETSc datatype
+  PetscDataTypeGetSize - Gets the size (in bytes) of a PETSc datatype
 
-   Not Collective
+  Not Collective
 
-    Input Parameter:
-.     ptype - the PETSc datatype name (for example `PETSC_DOUBLE`)
+  Input Parameter:
+. ptype - the PETSc datatype name (for example `PETSC_DOUBLE`)
 
-    Output Parameter:
-.     size - the size in bytes (for example the size of `PETSC_DOUBLE` is 8)
+  Output Parameter:
+. size - the size in bytes (for example the size of `PETSC_DOUBLE` is 8)
 
-    Level: advanced
+  Level: advanced
 
 .seealso: `PetscDataType`, `PetscDataTypeToMPIDataType()`
 @*/
@@ -167,18 +167,18 @@ PetscErrorCode PetscDataTypeGetSize(PetscDataType ptype, size_t *size)
 }
 
 /*@C
-     PetscDataTypeFromString - Gets the enum value of a PETSc datatype represented as a string
+  PetscDataTypeFromString - Gets the enum value of a PETSc datatype represented as a string
 
-   Not Collective
+  Not Collective
 
-    Input Parameter:
-.     name - the PETSc datatype name (for example, "double" or "real")
+  Input Parameter:
+. name - the PETSc datatype name (for example, "double" or "real")
 
-    Output Parameters:
-+    ptype - the enum value, only valid if found is `PETSC_TRUE`
--    found - the string matches one of the data types
+  Output Parameters:
++ ptype - the enum value, only valid if found is `PETSC_TRUE`
+- found - the string matches one of the data types
 
-    Level: advanced
+  Level: advanced
 
 .seealso: `PetscDataType`, `PetscDataTypeToMPIDataType()`, `PetscDataTypeGetSize()`
 @*/

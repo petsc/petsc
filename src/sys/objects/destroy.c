@@ -30,16 +30,16 @@ PetscErrorCode PetscComposedQuantitiesDestroy(PetscObject obj)
 }
 
 /*@
-   PetscObjectDestroy - Destroys any `PetscObject`, regardless of the type.
+  PetscObjectDestroy - Destroys any `PetscObject`, regardless of the type.
 
-   Collective
+  Collective
 
-   Input Parameter:
-.  obj - any PETSc object, for example a `Vec`, `Mat` or `KSP`.
+  Input Parameter:
+. obj - any PETSc object, for example a `Vec`, `Mat` or `KSP`.
          This must be cast with a (`PetscObject`*), for example,
          `PetscObjectDestroy`((`PetscObject`*)&mat);
 
-   Level: beginner
+  Level: beginner
 
 .seealso: `PetscObject`
 @*/
@@ -54,17 +54,17 @@ PetscErrorCode PetscObjectDestroy(PetscObject *obj)
 }
 
 /*@C
-   PetscObjectView - Views any `PetscObject`, regardless of the type.
+  PetscObjectView - Views any `PetscObject`, regardless of the type.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  obj - any PETSc object, for example a `Vec`, `Mat` or `KSP`.
+  Input Parameters:
++ obj    - any PETSc object, for example a `Vec`, `Mat` or `KSP`.
          This must be cast with a (`PetscObject`), for example,
          `PetscObjectView`((`PetscObject`)mat,viewer);
--  viewer - any PETSc viewer
+- viewer - any PETSc viewer
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `PetscObject`, `PetscObjectViewFromOptions()`
 @*/
@@ -86,16 +86,16 @@ PetscErrorCode PetscObjectView(PetscObject obj, PetscViewer viewer)
   Collective
 
   Input Parameters:
-+ obj   - the object
-. bobj  - optional other object that provides prefix (if `NULL` then the prefix in `obj` is used)
++ obj        - the object
+. bobj       - optional other object that provides prefix (if `NULL` then the prefix in `obj` is used)
 - optionname - option string that is used to activate viewing
 
   Options Database Key:
-.  -optionname_view [viewertype]:... - option name and values. In actual usage this would be something like `-mat_coarse_view`
+. -optionname_view [viewertype]:... - option name and values. In actual usage this would be something like `-mat_coarse_view`
 
   Level: developer
 
- Notes:
+  Notes:
 .vb
     If no value is provided ascii:stdout is used
        ascii[:[filename][:[format][:append]]]    defaults to stdout - format can be one of ascii_info, ascii_info_detail, or ascii_matlab,
@@ -138,20 +138,20 @@ PetscErrorCode PetscObjectViewFromOptions(PetscObject obj, PetscObject bobj, con
 }
 
 /*@C
-   PetscObjectTypeCompare - Determines whether a PETSc object is of a particular type.
+  PetscObjectTypeCompare - Determines whether a PETSc object is of a particular type.
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  obj - any PETSc object, for example a `Vec`, `Mat` or `KSP`.
+  Input Parameters:
++ obj       - any PETSc object, for example a `Vec`, `Mat` or `KSP`.
          This must be cast with a (`PetscObject`), for example,
          `PetscObjectTypeCompare`((`PetscObject`)mat);
--  type_name - string containing a type name
+- type_name - string containing a type name
 
-   Output Parameter:
-.  same - `PETSC_TRUE` if the type of `obj` and `type_name` are the same or both `NULL`, else `PETSC_FALSE`
+  Output Parameter:
+. same - `PETSC_TRUE` if the type of `obj` and `type_name` are the same or both `NULL`, else `PETSC_FALSE`
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `PetscObject`, `VecGetType()`, `KSPGetType()`, `PCGetType()`, `SNESGetType()`, `PetscObjectBaseTypeCompare()`, `PetscObjectTypeCompareAny()`, `PetscObjectBaseTypeCompareAny()`, `PetscObjectObjectTypeCompare()`
 @*/
@@ -172,18 +172,18 @@ PetscErrorCode PetscObjectTypeCompare(PetscObject obj, const char type_name[], P
 }
 
 /*@C
-   PetscObjectObjectTypeCompare - Determines whether two PETSc objects are of the same type
+  PetscObjectObjectTypeCompare - Determines whether two PETSc objects are of the same type
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  obj1 - any PETSc object, for example a `Vec`, `Mat` or `KSP`.
--  obj2 - another PETSc object
+  Input Parameters:
++ obj1 - any PETSc object, for example a `Vec`, `Mat` or `KSP`.
+- obj2 - another PETSc object
 
-   Output Parameter:
-.  same - `PETSC_TRUE` if they are the same or both unset, else `PETSC_FALSE`
+  Output Parameter:
+. same - `PETSC_TRUE` if they are the same or both unset, else `PETSC_FALSE`
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `PetscObjectTypeCompare()`, `VecGetType()`, `KSPGetType()`, `PCGetType()`, `SNESGetType()`, `PetscObjectBaseTypeCompare()`, `PetscObjectTypeCompareAny()`, `PetscObjectBaseTypeCompareAny()`
 
@@ -199,18 +199,18 @@ PetscErrorCode PetscObjectObjectTypeCompare(PetscObject obj1, PetscObject obj2, 
 }
 
 /*@C
-   PetscObjectBaseTypeCompare - Determines whether a `PetscObject` is of a given base type. For example the base type of `MATSEQAIJPERM` is `MATSEQAIJ`
+  PetscObjectBaseTypeCompare - Determines whether a `PetscObject` is of a given base type. For example the base type of `MATSEQAIJPERM` is `MATSEQAIJ`
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  mat - the matrix
--  type_name - string containing a type name
+  Input Parameters:
++ obj       - the matrix
+- type_name - string containing a type name
 
-   Output Parameter:
-.  same - `PETSC_TRUE` if the object is of the same base type identified by `type_name` or both `NULL`, `PETSC_FALSE` otherwise
+  Output Parameter:
+. same - `PETSC_TRUE` if the object is of the same base type identified by `type_name` or both `NULL`, `PETSC_FALSE` otherwise
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `PetscObject`, `PetscObjectTypeCompare()`, `PetscObjectTypeCompareAny()`, `PetscObjectBaseTypeCompareAny()`
 @*/
@@ -231,19 +231,19 @@ PetscErrorCode PetscObjectBaseTypeCompare(PetscObject obj, const char type_name[
 }
 
 /*@C
-   PetscObjectTypeCompareAny - Determines whether a PETSc object is of any of a list of types.
+  PetscObjectTypeCompareAny - Determines whether a PETSc object is of any of a list of types.
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  obj - any PETSc object, for example a `Vec`, `Mat` or `KSP`.
+  Input Parameters:
++ obj       - any PETSc object, for example a `Vec`, `Mat` or `KSP`.
          This must be cast with a (`PetscObject`), for example, `PetscObjectTypeCompareAny`((`PetscObject`)mat,...);
--  type_name - array of strings containing type names, pass the empty string "" to terminate the list
+- type_name - array of strings containing type names, pass the empty string "" to terminate the list
 
-   Output Parameter:
-.  match - `PETSC_TRUE` if the type of `obj` matches any in the list, else `PETSC_FALSE`
+  Output Parameter:
+. match - `PETSC_TRUE` if the type of `obj` matches any in the list, else `PETSC_FALSE`
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `VecGetType()`, `KSPGetType()`, `PCGetType()`, `SNESGetType()`, `PetscObjectTypeCompare()`, `PetscObjectBaseTypeCompare()`
 @*/
@@ -270,19 +270,19 @@ PetscErrorCode PetscObjectTypeCompareAny(PetscObject obj, PetscBool *match, cons
 }
 
 /*@C
-   PetscObjectBaseTypeCompareAny - Determines whether a PETSc object has the base type of any of a list of types.
+  PetscObjectBaseTypeCompareAny - Determines whether a PETSc object has the base type of any of a list of types.
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  obj - any PETSc object, for example a `Vec`, `Mat` or `KSP`.
+  Input Parameters:
++ obj       - any PETSc object, for example a `Vec`, `Mat` or `KSP`.
          This must be cast with a (`PetscObject`), for example, `PetscObjectBaseTypeCompareAny`((`PetscObject`)mat,...);
--  type_name - array of strings containing type names, pass the empty string "" to terminate the list
+- type_name - array of strings containing type names, pass the empty string "" to terminate the list
 
-   Output Parameter:
-.  match - `PETSC_TRUE` if the type of `obj` matches any in the list, else `PETSC_FALSE`
+  Output Parameter:
+. match - `PETSC_TRUE` if the type of `obj` matches any in the list, else `PETSC_FALSE`
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `VecGetType()`, `KSPGetType()`, `PCGetType()`, `SNESGetType()`, `PetscObjectTypeCompare()`, `PetscObjectBaseTypeCompare()`, `PetscObjectTypeCompareAny()`
 @*/
@@ -312,21 +312,21 @@ static int         PetscObjectRegisterDestroy_Count = 0;
 static PetscObject PetscObjectRegisterDestroy_Objects[MAXREGDESOBJS];
 
 /*@C
-   PetscObjectRegisterDestroy - Registers a PETSc object to be destroyed when
-     `PetscFinalize()` is called.
+  PetscObjectRegisterDestroy - Registers a PETSc object to be destroyed when
+  `PetscFinalize()` is called.
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameter:
-.  obj - any PETSc object, for example a `Vec`, `Mat` or `KSP`.
+  Input Parameter:
+. obj - any PETSc object, for example a `Vec`, `Mat` or `KSP`.
          This must be cast with a (`PetscObject`), for example,
          `PetscObjectRegisterDestroy`((`PetscObject`)mat);
 
-   Level: developer
+  Level: developer
 
-   Note:
-      This is used by, for example, `PETSC_VIEWER_XXX_()` routines to free the viewer
-    when PETSc ends.
+  Note:
+  This is used by, for example, `PETSC_VIEWER_XXX_()` routines to free the viewer
+  when PETSc ends.
 
 .seealso: `PetscObjectRegisterDestroyAll()`
 @*/
@@ -340,12 +340,12 @@ PetscErrorCode PetscObjectRegisterDestroy(PetscObject obj)
 }
 
 /*@C
-   PetscObjectRegisterDestroyAll - Frees all the PETSc objects that have been registered
-     with `PetscObjectRegisterDestroy()`. Called by `PetscFinalize()`
+  PetscObjectRegisterDestroyAll - Frees all the PETSc objects that have been registered
+  with `PetscObjectRegisterDestroy()`. Called by `PetscFinalize()`
 
-   Logically Collective on the individual `PetscObject`s that are being processed
+  Logically Collective on the individual `PetscObject`s that are being processed
 
-   Level: developer
+  Level: developer
 
 .seealso: `PetscObjectRegisterDestroy()`
 @*/
@@ -362,16 +362,16 @@ static int PetscRegisterFinalize_Count = 0;
 static PetscErrorCode (*PetscRegisterFinalize_Functions[MAXREGFIN])(void);
 
 /*@C
-   PetscRegisterFinalize - Registers a function that is to be called in `PetscFinalize()`
+  PetscRegisterFinalize - Registers a function that is to be called in `PetscFinalize()`
 
-   Not Collective
+  Not Collective
 
-   Input Parameter:
-.  PetscErrorCode (*fun)(void) - function to be called
+  Input Parameter:
+. f - function to be called
 
-   Level: developer
+  Level: developer
 
-   Notes:
+  Notes:
   This is used by, for example, `DMInitializePackage()` to have `DMFinalizePackage()` called
 
   Use `PetscObjectRegisterDestroy()` to register the destruction of an object in `PetscFinalize()`
@@ -390,11 +390,11 @@ PetscErrorCode PetscRegisterFinalize(PetscErrorCode (*f)(void))
 }
 
 /*@C
-   PetscRegisterFinalizeAll - Runs all the finalize functions set with `PetscRegisterFinalize()`
+  PetscRegisterFinalizeAll - Runs all the finalize functions set with `PetscRegisterFinalize()`
 
-   Not Collective unless registered functions are collective
+  Not Collective unless registered functions are collective
 
-   Level: developer
+  Level: developer
 
 .seealso: `PetscRegisterFinalize()`, `PetscObjectRegisterDestroyAll()`
 @*/

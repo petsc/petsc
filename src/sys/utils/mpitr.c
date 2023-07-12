@@ -9,18 +9,18 @@
 #if defined(PETSC_USE_LOG) && !defined(PETSC_HAVE_MPIUNI)
 
 /*@C
-   PetscMPIDump - Dumps a listing of incomplete MPI operations, such as sends that
-   have never been received, etc.
+  PetscMPIDump - Dumps a listing of incomplete MPI operations, such as sends that
+  have never been received, etc.
 
-   Collective on `PETSC_COMM_WORLD`
+  Collective on `PETSC_COMM_WORLD`
 
-   Input Parameter:
-.  fp - file pointer.  If fp is `NULL`, `stdout` is assumed.
+  Input Parameter:
+. fd - file pointer.  If fp is `NULL`, `stdout` is assumed.
 
-   Options Database Key:
-.  -mpidump - Dumps MPI incompleteness during call to PetscFinalize()
+  Options Database Key:
+. -mpidump - Dumps MPI incompleteness during call to PetscFinalize()
 
-    Level: developer
+  Level: developer
 
 .seealso: `PetscMallocDump()`
  @*/

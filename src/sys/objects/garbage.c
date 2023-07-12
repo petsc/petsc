@@ -18,31 +18,31 @@ static PetscErrorCode GarbageGetHMap_Private(MPI_Comm comm, PetscGarbage *garbag
 }
 
 /*@C
-    PetscObjectDelayedDestroy - Adds an object to a data structure for
-    later destruction.
+  PetscObjectDelayedDestroy - Adds an object to a data structure for
+  later destruction.
 
-    Not Collective
+  Not Collective
 
-    Input Parameter:
-.   obj - object to be destroyed
+  Input Parameter:
+. obj - object to be destroyed
 
-    Level: developer
+  Level: developer
 
-    Notes:
-    Analogue to `PetscObjectDestroy()` for use in managed languages.
+  Notes:
+  Analogue to `PetscObjectDestroy()` for use in managed languages.
 
-    A PETSc object is given a creation index at initialisation based on
-    the communicator it was created on and the order in which it is
-    created. When this function is passed a PETSc object, a pointer to
-    the object is stashed on a garbage dictionary (`PetscHMapObj`) which is
-    keyed by its creation index.
+  A PETSc object is given a creation index at initialisation based on
+  the communicator it was created on and the order in which it is
+  created. When this function is passed a PETSc object, a pointer to
+  the object is stashed on a garbage dictionary (`PetscHMapObj`) which is
+  keyed by its creation index.
 
-    Objects stashed on this garbage dictionary can later be destroyed
-    with a call to `PetscGarbageCleanup()`.
+  Objects stashed on this garbage dictionary can later be destroyed
+  with a call to `PetscGarbageCleanup()`.
 
-    This function is intended for use with managed languages such as
-    Python or Julia, which may not destroy objects in a deterministic
-    order.
+  This function is intended for use with managed languages such as
+  Python or Julia, which may not destroy objects in a deterministic
+  order.
 
 .seealso: `PetscGarbageCleanup()`, `PetscObjectDestroy()`
 @*/
@@ -154,38 +154,38 @@ PetscErrorCode GarbageKeyAllReduceIntersect_Private(MPI_Comm comm, PetscInt64 *s
 }
 
 /*@C
-    PetscGarbageCleanup - Destroys objects placed in the garbage by
-    `PetscObjectDelayedDestroy()`.
+  PetscGarbageCleanup - Destroys objects placed in the garbage by
+  `PetscObjectDelayedDestroy()`.
 
-    Collective
+  Collective
 
-    Input Parameter:
-.   comm      - MPI communicator over which to perform collective cleanup
+  Input Parameter:
+. comm - MPI communicator over which to perform collective cleanup
 
-    Level: developer
+  Level: developer
 
-    Notes:
-    Implements a collective garbage collection.
-    A per- MPI communicator garbage dictionary is created to store
-    references to objects destroyed using `PetscObjectDelayedDestroy()`.
-    Objects that appear in this dictionary on all MPI processes can be destroyed
-    by calling `PetscGarbageCleanup()`.
+  Notes:
+  Implements a collective garbage collection.
+  A per- MPI communicator garbage dictionary is created to store
+  references to objects destroyed using `PetscObjectDelayedDestroy()`.
+  Objects that appear in this dictionary on all MPI processes can be destroyed
+  by calling `PetscGarbageCleanup()`.
 
-    This is done as follows:
-    1.  Keys of the garbage dictionary, which correspond to the creation
-        indices of the objects stashed, are sorted.
-    2.  A collective intersection of dictionary keys is performed by all
-        ranks in the communicator.
-    3.  The intersection is broadcast back to all ranks in the
-        communicator.
-    4.  The objects on the dictionary are collectively destroyed in
-        creation index order using a call to PetscObjectDestroy().
+  This is done as follows:
+  1.  Keys of the garbage dictionary, which correspond to the creation
+  indices of the objects stashed, are sorted.
+  2.  A collective intersection of dictionary keys is performed by all
+  ranks in the communicator.
+  3.  The intersection is broadcast back to all ranks in the
+  communicator.
+  4.  The objects on the dictionary are collectively destroyed in
+  creation index order using a call to PetscObjectDestroy().
 
-    This function is intended for use with managed languages such as
-    Python or Julia, which may not destroy objects in a deterministic
-    order.
+  This function is intended for use with managed languages such as
+  Python or Julia, which may not destroy objects in a deterministic
+  order.
 
-.seealso: PetscObjectDelayedDestroy()
+.seealso: `PetscObjectDelayedDestroy()`
 @*/
 PetscErrorCode PetscGarbageCleanup(MPI_Comm comm)
 {

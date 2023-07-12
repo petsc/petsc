@@ -175,18 +175,18 @@ PETSC_EXTERN PetscErrorCode PetscDrawCreate_Null(PetscDraw draw)
 }
 
 /*@
-   PetscDrawOpenNull - Opens a null drawing context. All draw commands to
-   it are ignored.
+  PetscDrawOpenNull - Opens a null drawing context. All draw commands to
+  it are ignored.
 
-   Input Parameter:
-.  comm - MPI communicator
+  Input Parameter:
+. comm - MPI communicator
 
-   Output Parameter:
-.  draw - the drawing context
+  Output Parameter:
+. win - the drawing context
 
-   Level: advanced
+  Level: advanced
 
-.seealso: `PetscDraw`, `PetscDrawIsNull()`, `PETSC_DRAW_NULL`, `PetscDrawOpenX()`, `PetscDrawIsNull()`
+.seealso: `PetscDraw`, `PetscDrawIsNull()`, `PETSC_DRAW_NULL`, `PetscDrawOpenX()`
 @*/
 PetscErrorCode PetscDrawOpenNull(MPI_Comm comm, PetscDraw *win)
 {
@@ -197,17 +197,17 @@ PetscErrorCode PetscDrawOpenNull(MPI_Comm comm, PetscDraw *win)
 }
 
 /*@
-   PetscDrawIsNull - Returns `PETSC_TRUE` if draw is a null draw object.
+  PetscDrawIsNull - Returns `PETSC_TRUE` if draw is a null draw object.
 
-   Not Collective
+  Not Collective
 
-   Input Parameter:
-.  draw - the draw context
+  Input Parameter:
+. draw - the draw context
 
-   Output Parameter:
-.  yes - `PETSC_TRUE` if it is a null draw object; otherwise `PETSC_FALSE`
+  Output Parameter:
+. yes - `PETSC_TRUE` if it is a null draw object; otherwise `PETSC_FALSE`
 
-   Level: advanced
+  Level: advanced
 
 .seealso: `PetscDraw`, `PETSC_DRAW_NULL`, `PetscDrawOpenX()`, `PetscDrawIsNull()`
 @*/

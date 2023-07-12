@@ -3,18 +3,18 @@
 #include <petsc/private/petscimpl.h>
 
 /*@
-   PetscElementalInitializePackage - Initialize Elemental package
+  PetscElementalInitializePackage - Initialize Elemental package
 
-   Collective on `MPI_COMM_WORLD`, not `PETSC_COMM_WORLD`
+  Collective on `MPI_COMM_WORLD`, not `PETSC_COMM_WORLD`
 
-   Level: developer
+  Level: developer
 
-   Note:
-   Can be called outside of `PetscInitialize()` and `PetscFinalize()`.
-   If called outside of these functions, it is the user's responsibility
-   to make sure that `PETSC_COMM_WORLD` is either unset (default value is `MPI_COMM_NULL`),
-   or that it is not `MPI_UNEQUAL` to `MPI_COMM_WORLD`.
-   Users who do not have a custom `PETSC_COMM_WORLD` do not have to call this function.
+  Note:
+  Can be called outside of `PetscInitialize()` and `PetscFinalize()`.
+  If called outside of these functions, it is the user's responsibility
+  to make sure that `PETSC_COMM_WORLD` is either unset (default value is `MPI_COMM_NULL`),
+  or that it is not `MPI_UNEQUAL` to `MPI_COMM_WORLD`.
+  Users who do not have a custom `PETSC_COMM_WORLD` do not have to call this function.
 
 .seealso: `MATELEMENTAL`, `PetscElementalFinalizePackage()`
 @*/
@@ -34,14 +34,14 @@ PetscErrorCode PetscElementalInitializePackage(void)
 }
 
 /*@
-   PetscElementalInitialized - Determine whether Elemental is initialized
+  PetscElementalInitialized - Determine whether Elemental is initialized
 
-   Not Collective
+  Not Collective
 
-   Level: developer
+  Level: developer
 
-   Note:
-   Can be called outside of `PetscInitialize()` and `PetscFinalize()`.
+  Note:
+  Can be called outside of `PetscInitialize()` and `PetscFinalize()`.
 
 .seealso: `MATELEMENTAL`, `PetscElementalInitializePackage()`
 @*/
@@ -52,15 +52,15 @@ PetscErrorCode PetscElementalInitialized(PetscBool *isInitialized)
 }
 
 /*@
-   PetscElementalFinalizePackage - Finalize Elemental package
+  PetscElementalFinalizePackage - Finalize Elemental package
 
-   Collective on `MPI_COMM_WORLD`, not `PETSC_COMM_WORLD`
+  Collective on `MPI_COMM_WORLD`, not `PETSC_COMM_WORLD`
 
-   Level: developer
+  Level: developer
 
-   Note:
-   Can be called outside of `PetscInitialize()` and `PetscFinalize()`.
-   Users who do not call `PetscElementalInitializePackage()` do not have to call this function.
+  Note:
+  Can be called outside of `PetscInitialize()` and `PetscFinalize()`.
+  Users who do not call `PetscElementalInitializePackage()` do not have to call this function.
 
 .seealso: `MATELEMENTAL`, `PetscElementalInitializePackage()`
 @*/

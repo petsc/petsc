@@ -141,21 +141,21 @@ static PetscErrorCode PetscGetFileStat(const char fname[], uid_t *fileUid, gid_t
 }
 
 /*@C
-   PetscTestFile - checks for the existence of a file
+  PetscTestFile - checks for the existence of a file
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  fname - the filename
--  mode - either 'r', 'w', 'x' or '\0'
+  Input Parameters:
++ fname - the filename
+- mode  - either 'r', 'w', 'x' or '\0'
 
-   Output Parameter:
-.  flg - the file exists and satisfies the mode
+  Output Parameter:
+. flg - the file exists and satisfies the mode
 
-   Level: intermediate
+  Level: intermediate
 
-   Note:
-   If mode is '\0', no permissions checks are performed
+  Note:
+  If mode is '\0', no permissions checks are performed
 
 .seealso: `PetscTestDirectory()`, `PetscLs()`
 @*/
@@ -184,18 +184,18 @@ PetscErrorCode PetscTestFile(const char fname[], char mode, PetscBool *flg)
 }
 
 /*@C
-   PetscTestDirectory - checks for the existence of a directory
+  PetscTestDirectory - checks for the existence of a directory
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  dirname - the directory name
--  mode - either 'r', 'w', or 'x'
+  Input Parameters:
++ dirname - the directory name
+- mode    - either 'r', 'w', or 'x'
 
-   Output Parameter:
-.  flg - the directory exists and satisfies the mode
+  Output Parameter:
+. flg - the directory exists and satisfies the mode
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `PetscTestFile()`, `PetscLs()`, `PetscRMTree()`
 @*/
@@ -221,20 +221,20 @@ PetscErrorCode PetscTestDirectory(const char dirname[], char mode, PetscBool *fl
 }
 
 /*@C
-   PetscLs - produce a listing of the files in a directory
+  PetscLs - produce a listing of the files in a directory
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  comm - the MPI communicator
-.  dirname - the directory name
--  tlen - the length of the buffer `found`
+  Input Parameters:
++ comm    - the MPI communicator
+. dirname - the directory name
+- tlen    - the length of the buffer `found`
 
-   Output Parameters:
-+  found - listing of files
--  flg - the directory exists
+  Output Parameters:
++ found - listing of files
+- flg   - the directory exists
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `PetscTestFile()`, `PetscRMTree()`, `PetscTestDirectory()`
 @*/

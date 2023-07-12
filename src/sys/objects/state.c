@@ -5,26 +5,26 @@
 #include <petsc/private/petscimpl.h> /*I   "petscsys.h"    I*/
 
 /*@C
-   PetscObjectStateGet - Gets the state of any `PetscObject`,
-   regardless of the type.
+  PetscObjectStateGet - Gets the state of any `PetscObject`,
+  regardless of the type.
 
-   Not Collective
+  Not Collective
 
-   Input Parameter:
-.  obj - any PETSc object, for example a `Vec`, `Mat` or `KSP`. This must be
+  Input Parameter:
+. obj - any PETSc object, for example a `Vec`, `Mat` or `KSP`. This must be
          cast with a (`PetscObject`), for example,
          `PetscObjectStateGet`((`PetscObject`)mat,&state);
 
-   Output Parameter:
-.  state - the object state
+  Output Parameter:
+. state - the object state
 
-   Level: advanced
+  Level: advanced
 
-   Note:
-   Object state is an integer which gets increased every time
-   the object is changed. By saving and later querying the object state
-   one can determine whether information about the object is still current.
-   Currently, state is maintained for `Vec` and `Mat` objects.
+  Note:
+  Object state is an integer which gets increased every time
+  the object is changed. By saving and later querying the object state
+  one can determine whether information about the object is still current.
+  Currently, state is maintained for `Vec` and `Mat` objects.
 
 .seealso: `PetscObjectStateIncrease()`, `PetscObjectStateSet()`
 @*/
@@ -38,24 +38,24 @@ PetscErrorCode PetscObjectStateGet(PetscObject obj, PetscObjectState *state)
 }
 
 /*@C
-   PetscObjectStateSet - Sets the state of any `PetscObject`,
-   regardless of the type.
+  PetscObjectStateSet - Sets the state of any `PetscObject`,
+  regardless of the type.
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  obj - any PETSc object, for example a `Vec`, `Mat` or `KSP`. This must be
+  Input Parameters:
++ obj   - any PETSc object, for example a `Vec`, `Mat` or `KSP`. This must be
          cast with a (`PetscObject`), for example,
          `PetscObjectStateSet`((`PetscObject`)mat,state);
--  state - the object state
+- state - the object state
 
-   Level: advanced
+  Level: advanced
 
-   Note:
-    This function should be used with extreme caution. There is
-   essentially only one use for it: if the user calls `Mat`(`Vec`)GetRow(Array),
-   which increases the state, but does not alter the data, then this
-   routine can be used to reset the state.  Such a reset must be collective.
+  Note:
+  This function should be used with extreme caution. There is
+  essentially only one use for it: if the user calls `Mat`(`Vec`)GetRow(Array),
+  which increases the state, but does not alter the data, then this
+  routine can be used to reset the state.  Such a reset must be collective.
 
 .seealso: `PetscObjectStateGet()`, `PetscObjectStateIncrease()`
 @*/
@@ -70,24 +70,24 @@ PetscErrorCode PetscObjectStateSet(PetscObject obj, PetscObjectState state)
 PetscInt PetscObjectComposedDataMax = 10;
 
 /*@C
-   PetscObjectComposedDataRegister - Get an available id for composing data with a `PetscObject`
+  PetscObjectComposedDataRegister - Get an available id for composing data with a `PetscObject`
 
-   Not Collective
+  Not Collective
 
-   Output parameter:
-.  id - an identifier under which data can be stored
+  Output Parameter:
+. id - an identifier under which data can be stored
 
-   Level: developer
+  Level: developer
 
-   Notes:
-   You must keep this value (for example in a global variable) in order to attach the data to an object or access in an object.
+  Notes:
+  You must keep this value (for example in a global variable) in order to attach the data to an object or access in an object.
 
-   `PetscObjectCompose()` and  `PetscObjectQuery()` provide a way to attach any data to an object
+  `PetscObjectCompose()` and  `PetscObjectQuery()` provide a way to attach any data to an object
 
 .seealso: `PetscObjectComposedDataSetInt()`, `PetscObjectComposedDataSetReal()`, `PetscObjectComposedDataGetReal()`, `PetscObjectComposedDataSetIntstar()`,
-          `PetscObjectComposedDataSetIntstar()`, `PetscObjectComposedDataGetInt()`, `PetscObject`,
+          `PetscObjectComposedDataGetInt()`, `PetscObject`,
           `PetscObjectCompose()`, `PetscObjectQuery()`, `PetscObjectComposedDataSetRealstar()`, `PetscObjectComposedDataGetScalarstar()`,
-          `PetscObjectComposedDataSetScalarstar()`, `PetscObjectComposedDataSetScalarstar()`
+          `PetscObjectComposedDataSetScalarstar()`
 @*/
 PetscErrorCode PetscObjectComposedDataRegister(PetscInt *id)
 {
@@ -198,20 +198,20 @@ PetscErrorCode PetscObjectComposedDataIncreaseScalarstar(PetscObject obj)
 }
 
 /*@
-   PetscObjectGetId - get a unique object ID for the `PetscObject`
+  PetscObjectGetId - get a unique object ID for the `PetscObject`
 
-   Not Collective
+  Not Collective
 
-   Input Parameter:
-.  obj - object
+  Input Parameter:
+. obj - object
 
-   Output Parameter:
-.  id - integer ID
+  Output Parameter:
+. id - integer ID
 
-   Level: developer
+  Level: developer
 
-   Note:
-   The object ID may be different on different processes, but object IDs are never reused so local equality implies global equality.
+  Note:
+  The object ID may be different on different processes, but object IDs are never reused so local equality implies global equality.
 
 .seealso: `PetscObjectStateGet()`, `PetscObjectCompareId()`
 @*/
@@ -225,21 +225,21 @@ PetscErrorCode PetscObjectGetId(PetscObject obj, PetscObjectId *id)
 }
 
 /*@
-   PetscObjectCompareId - compares the objects ID with a given id
+  PetscObjectCompareId - compares the objects ID with a given id
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  obj - object
--  id - integer ID
+  Input Parameters:
++ obj - object
+- id  - integer ID
 
-   Output Parameter;
-.  eq - the ids are equal
+  Output Parameter;
+. eq - the ids are equal
 
-   Level: developer
+  Level: developer
 
-   Note:
-   The object ID may be different on different processes, but object IDs are never reused so local equality implies global equality.
+  Note:
+  The object ID may be different on different processes, but object IDs are never reused so local equality implies global equality.
 
 .seealso: `PetscObjectStateGet()`, `PetscObjectGetId()`
 @*/

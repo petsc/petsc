@@ -70,33 +70,33 @@ static size_t       PetscLogMallocTraceThreshold = 0;
 static PetscViewer  PetscLogMallocTraceViewer    = NULL;
 
 /*@C
-   PetscMallocValidate - Test the memory for corruption.  This can be called at any time between `PetscInitialize()` and `PetscFinalize()`
+  PetscMallocValidate - Test the memory for corruption.  This can be called at any time between `PetscInitialize()` and `PetscFinalize()`
 
-   Input Parameters:
-+  line - line number where call originated.
-.  function - name of function calling
--  file - file where function is
+  Input Parameters:
++ line     - line number where call originated.
+. function - name of function calling
+- file     - file where function is
 
-   Return value:
-   The number of errors detected.
+  Return value:
+  The number of errors detected.
 
-   Options Database Keys:.
-+  -malloc_test - turns this feature on when PETSc was not configured with `--with-debugging=0`
--  -malloc_debug - turns this feature on anytime
+  Options Database Keys:.
++ -malloc_test  - turns this feature on when PETSc was not configured with `--with-debugging=0`
+- -malloc_debug - turns this feature on anytime
 
-   Level: advanced
+  Level: advanced
 
-   Notes:
-   You should generally use `CHKMEMQ` as a short cut for calling this routine.
+  Notes:
+  You should generally use `CHKMEMQ` as a short cut for calling this routine.
 
-   Error messages are written to `stdout`.
+  Error messages are written to `stdout`.
 
-   This is only run if `PetscMallocSetDebug()` has been called which is set by `-malloc_test` (if debugging is turned on) or `-malloc_debug` (any time)
+  This is only run if `PetscMallocSetDebug()` has been called which is set by `-malloc_test` (if debugging is turned on) or `-malloc_debug` (any time)
 
-   No output is generated if there are no problems detected.
+  No output is generated if there are no problems detected.
 
-   Fortran Note:
-    The Fortran calling sequence is simply `PetscMallocValidate(ierr)`
+  Fortran Notes:
+  The Fortran calling sequence is simply `PetscMallocValidate(ierr)`
 
 .seealso: `CHKMEMQ`, `PetscMalloc()`, `PetscFree()`, `PetscMallocSetDebug()`
 @*/
@@ -443,20 +443,20 @@ PetscErrorCode PetscTrReallocDefault(size_t len, int lineno, const char function
 }
 
 /*@C
-    PetscMemoryView - Shows the amount of memory currently being used in a communicator.
+  PetscMemoryView - Shows the amount of memory currently being used in a communicator.
 
-    Collective
+  Collective
 
-    Input Parameters:
-+    viewer - the viewer to output the information on
--    message - string printed before values
+  Input Parameters:
++ viewer  - the viewer to output the information on
+- message - string printed before values
 
-    Options Database Keys:
-+    -malloc_debug - have PETSc track how much memory it has allocated
-.    -log_view_memory - print memory usage per event when `-log_view` is used
--    -memory_view - during `PetscFinalize()` have this routine called
+  Options Database Keys:
++ -malloc_debug    - have PETSc track how much memory it has allocated
+. -log_view_memory - print memory usage per event when `-log_view` is used
+- -memory_view     - during `PetscFinalize()` have this routine called
 
-    Level: intermediate
+  Level: intermediate
 
 .seealso: `PetscMallocDump()`, `PetscMemoryGetCurrentUsage()`, `PetscMemorySetGetMaximumUsage()`, `PetscMallocView()`, `PetscMalloc()`, `PetscFree()`
  @*/
@@ -526,17 +526,17 @@ PetscErrorCode PetscMemoryView(PetscViewer viewer, const char message[])
 }
 
 /*@
-    PetscMallocGetCurrentUsage - gets the current amount of memory used that was allocated with `PetscMalloc()`
+  PetscMallocGetCurrentUsage - gets the current amount of memory used that was allocated with `PetscMalloc()`
 
-    Not Collective
+  Not Collective
 
-    Output Parameter:
-.   space - number of bytes currently allocated
+  Output Parameter:
+. space - number of bytes currently allocated
 
-    Level: intermediate
+  Level: intermediate
 
-    Note:
-    This only works if `-memory_view` or `-log_view_memory` have been used
+  Note:
+  This only works if `-memory_view` or `-log_view_memory` have been used
 
 .seealso: `PetscMallocDump()`, `PetscMallocGetMaximumUsage()`, `PetscMemoryGetCurrentUsage()`, `PetscMalloc()`, `PetscFree()`,
           `PetscMemoryGetMaximumUsage()`
@@ -549,18 +549,18 @@ PetscErrorCode PetscMallocGetCurrentUsage(PetscLogDouble *space)
 }
 
 /*@
-    PetscMallocGetMaximumUsage - gets the maximum amount of memory used that was obtained with `PetscMalloc()` at any time
-        during this run, the high water mark.
+  PetscMallocGetMaximumUsage - gets the maximum amount of memory used that was obtained with `PetscMalloc()` at any time
+  during this run, the high water mark.
 
-    Not Collective
+  Not Collective
 
-    Output Parameter:
-.   space - maximum number of bytes ever allocated at one time
+  Output Parameter:
+. space - maximum number of bytes ever allocated at one time
 
-    Level: intermediate
+  Level: intermediate
 
-    Note:
-    This only works if `PetscMemorySetGetMaximumUsage()`, `-memory_view`, or `-log_view_memory` have been used
+  Note:
+  This only works if `PetscMemorySetGetMaximumUsage()`, `-memory_view`, or `-log_view_memory` have been used
 
 .seealso: `PetscMallocDump()`, `PetscMallocView()`, `PetscMemoryGetCurrentUsage()`, `PetscMalloc()`, `PetscFree()`,
           `PetscMallocPushMaximumUsage()`
@@ -573,17 +573,17 @@ PetscErrorCode PetscMallocGetMaximumUsage(PetscLogDouble *space)
 }
 
 /*@
-    PetscMallocPushMaximumUsage - Adds another event to collect the maximum memory usage over an event
+  PetscMallocPushMaximumUsage - Adds another event to collect the maximum memory usage over an event
 
-    Not Collective
+  Not Collective
 
-    Input Parameter:
-.   event - an event id; this is just for error checking
+  Input Parameter:
+. event - an event id; this is just for error checking
 
-    Level: developer
+  Level: developer
 
-    Note:
-    This only does anything if `PetscMemorySetGetMaximumUsage()`, `-memory_view`, or `-log_view_memory` have been used
+  Note:
+  This only does anything if `PetscMemorySetGetMaximumUsage()`, `-memory_view`, or `-log_view_memory` have been used
 
 .seealso: `PetscMallocDump()`, `PetscMallocView()`, `PetscMallocGetMaximumUsage()`, `PetscMemoryGetCurrentUsage()`, `PetscMalloc()`, `PetscFree()`,
           `PetscMallocPopMaximumUsage()`
@@ -598,20 +598,20 @@ PetscErrorCode PetscMallocPushMaximumUsage(int event)
 }
 
 /*@
-    PetscMallocPopMaximumUsage - collect the maximum memory usage over an event
+  PetscMallocPopMaximumUsage - collect the maximum memory usage over an event
 
-    Not Collective
+  Not Collective
 
-    Input Parameter:
-.   event - an event id; this is just for error checking
+  Input Parameter:
+. event - an event id; this is just for error checking
 
-    Output Parameter:
-.   mu - maximum amount of memory malloced during this event; high water mark relative to the beginning of the event
+  Output Parameter:
+. mu - maximum amount of memory malloced during this event; high water mark relative to the beginning of the event
 
-    Level: developer
+  Level: developer
 
-    Note:
-    This only does anything if `PetscMemorySetGetMaximumUsage()`, `-memory_view`, or `-log_view_memory` have been used
+  Note:
+  This only does anything if `PetscMemorySetGetMaximumUsage()`, `-memory_view`, or `-log_view_memory` have been used
 
 .seealso: `PetscMallocDump()`, `PetscMallocView()`, `PetscMallocGetMaximumUsage()`, `PetscMemoryGetCurrentUsage()`, `PetscMalloc()`, `PetscFree()`,
           `PetscMallocPushMaximumUsage()`
@@ -627,20 +627,20 @@ PetscErrorCode PetscMallocPopMaximumUsage(int event, PetscLogDouble *mu)
 }
 
 /*@C
-   PetscMallocGetStack - returns a pointer to the stack for the location in the program a call to `PetscMalloc()` was used to obtain that memory
+  PetscMallocGetStack - returns a pointer to the stack for the location in the program a call to `PetscMalloc()` was used to obtain that memory
 
-   Not Collective
+  Not Collective
 
-   Input Parameter:
-.    ptr - the memory location
+  Input Parameter:
+. ptr - the memory location
 
-   Output Parameter:
-.    stack - the stack indicating where the program allocated this memory
+  Output Parameter:
+. stack - the stack indicating where the program allocated this memory
 
-   Level: intermediate
+  Level: intermediate
 
-    Note:
-    This only does anything if `-malloc_debug` (or `-malloc_test` if PETSc was configured with debugging) has been used
+  Note:
+  This only does anything if `-malloc_debug` (or `-malloc_test` if PETSc was configured with debugging) has been used
 
 .seealso: `PetscMallocGetCurrentUsage()`, `PetscMallocView()`, `PetscMalloc()`, `PetscFree()`
 @*/
@@ -660,35 +660,35 @@ PetscErrorCode PetscMallocGetStack(void *ptr, PetscStack **stack)
 }
 
 /*@C
-   PetscMallocDump - Dumps the currently allocated memory blocks to a file. The information
-   printed is: size of space (in bytes), address of space, id of space,
-   file in which space was allocated, and line number at which it was
-   allocated.
+  PetscMallocDump - Dumps the currently allocated memory blocks to a file. The information
+  printed is: size of space (in bytes), address of space, id of space,
+  file in which space was allocated, and line number at which it was
+  allocated.
 
-   Not Collective
+  Not Collective
 
-   Input Parameter:
-.  fp  - file pointer.  If `fp` is `NULL`, `stdout` is assumed.
+  Input Parameter:
+. fp - file pointer.  If `fp` is `NULL`, `stdout` is assumed.
 
-   Options Database Key:
-.  -malloc_dump <optional filename> - Print summary of unfreed memory during call to `PetscFinalize()`, writing to filename if given
+  Options Database Key:
+. -malloc_dump <optional filename> - Print summary of unfreed memory during call to `PetscFinalize()`, writing to filename if given
 
-   Level: intermediate
+  Level: intermediate
 
-   Notes:
-     Uses `MPI_COMM_WORLD` to display rank, because this may be called in `PetscFinalize()` after `PETSC_COMM_WORLD` has been freed.
+  Notes:
+  Uses `MPI_COMM_WORLD` to display rank, because this may be called in `PetscFinalize()` after `PETSC_COMM_WORLD` has been freed.
 
-     When called in `PetscFinalize()` dumps only the allocations that have not been properly freed
+  When called in `PetscFinalize()` dumps only the allocations that have not been properly freed
 
-     `PetscMallocView()` prints a list of all memory ever allocated
+  `PetscMallocView()` prints a list of all memory ever allocated
 
-    This only does anything if `-malloc_debug` (or `-malloc_test` if PETSc was configured with debugging) has been used
+  This only does anything if `-malloc_debug` (or `-malloc_test` if PETSc was configured with debugging) has been used
 
-   Fortran Note:
-   The calling sequence is `PetscMallocDump`(PetscErrorCode ierr). A `fp` parameter is not supported.
+  Fortran Notes:
+  The calling sequence is `PetscMallocDump`(PetscErrorCode ierr). A `fp` parameter is not supported.
 
-   Developer Note:
-   This should be absorbed into `PetscMallocView()`
+  Developer Notes:
+  This should be absorbed into `PetscMallocView()`
 
 .seealso: `PetscMallocGetCurrentUsage()`, `PetscMallocView()`, `PetscMallocViewSet()`, `PetscMallocValidate()`, `PetscMalloc()`, `PetscFree()`
 @*/
@@ -726,25 +726,25 @@ PetscErrorCode PetscMallocDump(FILE *fp)
 }
 
 /*@
-    PetscMallocViewSet - Activates logging of all calls to `PetscMalloc()` with a minimum size to view
+  PetscMallocViewSet - Activates logging of all calls to `PetscMalloc()` with a minimum size to view
 
-    Not Collective
+  Not Collective
 
-    Input Parameter:
-.   logmin - minimum allocation size to log, or `PETSC_DEFAULT` to log all memory allocations
+  Input Parameter:
+. logmin - minimum allocation size to log, or `PETSC_DEFAULT` to log all memory allocations
 
-    Options Database Keys:
-+  -malloc_view <optional filename> - Activates `PetscMallocView()` in `PetscFinalize()`
-.  -malloc_view_threshold <min> - Sets a minimum size if `-malloc_view` is used
--  -log_view_memory - view the memory usage also with the -log_view option
+  Options Database Keys:
++ -malloc_view <optional filename> - Activates `PetscMallocView()` in `PetscFinalize()`
+. -malloc_view_threshold <min>     - Sets a minimum size if `-malloc_view` is used
+- -log_view_memory                 - view the memory usage also with the -log_view option
 
-    Level: advanced
+  Level: advanced
 
-    Note:
-    Must be called after `PetscMallocSetDebug()`
+  Note:
+  Must be called after `PetscMallocSetDebug()`
 
-    Developer Note:
-    Uses `MPI_COMM_WORLD` to determine rank because PETSc communicators may not be available
+  Developer Notes:
+  Uses `MPI_COMM_WORLD` to determine rank because PETSc communicators may not be available
 
 .seealso: `PetscMallocViewGet()`, `PetscMallocDump()`, `PetscMallocView()`, `PetscMallocTraceSet()`, `PetscMallocValidate()`, `PetscMalloc()`, `PetscFree()`
 @*/
@@ -759,17 +759,17 @@ PetscErrorCode PetscMallocViewSet(PetscLogDouble logmin)
 }
 
 /*@
-    PetscMallocViewGet - Determine whether calls to `PetscMalloc()` are being logged
+  PetscMallocViewGet - Determine whether calls to `PetscMalloc()` are being logged
 
-    Not Collective
+  Not Collective
 
-    Output Parameter
-.   logging - `PETSC_TRUE` if logging is active
+  Output Parameter
+. logging - `PETSC_TRUE` if logging is active
 
-    Options Database Key:
-.  -malloc_view <optional filename> - Activates `PetscMallocView()`
+  Options Database Key:
+. -malloc_view <optional filename> - Activates `PetscMallocView()`
 
-    Level: advanced
+  Level: advanced
 
 .seealso: `PetscMallocViewSet()`, `PetscMallocDump()`, `PetscMallocView()`, `PetscMallocTraceGet()`, `PetscMalloc()`, `PetscFree()`
 @*/
@@ -841,25 +841,25 @@ PetscErrorCode PetscMallocTraceGet(PetscBool *logging)
 }
 
 /*@C
-    PetscMallocView - Saves the log of all calls to `PetscMalloc()`; also calls `PetscMemoryGetMaximumUsage()`
+  PetscMallocView - Saves the log of all calls to `PetscMalloc()`; also calls `PetscMemoryGetMaximumUsage()`
 
-    Not Collective
+  Not Collective
 
-    Input Parameter:
-.   fp - file pointer; or `NULL`
+  Input Parameter:
+. fp - file pointer; or `NULL`
 
-    Options Database Key:
-.  -malloc_view <optional filename> - Activates `PetscMallocView()` in `PetscFinalize()`
+  Options Database Key:
+. -malloc_view <optional filename> - Activates `PetscMallocView()` in `PetscFinalize()`
 
-    Level: advanced
+  Level: advanced
 
-   Notes:
-     `PetscMallocDump()` dumps only the currently unfreed memory, this dumps all memory ever allocated
+  Notes:
+  `PetscMallocDump()` dumps only the currently unfreed memory, this dumps all memory ever allocated
 
-     `PetscMemoryView()` gives a brief summary of current memory usage
+  `PetscMemoryView()` gives a brief summary of current memory usage
 
-   Fortran Notes:
-   The calling sequence in Fortran is `PetscMallocView`(integer ierr)
+  Fortran Notes:
+  The calling sequence in Fortran is `PetscMallocView`(integer ierr)
 
 .seealso: `PetscMallocGetCurrentUsage()`, `PetscMallocDump()`, `PetscMallocViewSet()`, `PetscMemoryView()`, `PetscMalloc()`, `PetscFree()`
 @*/
@@ -927,25 +927,24 @@ PetscErrorCode PetscMallocView(FILE *fp)
 }
 
 /*@
-    PetscMallocSetDebug - Set's PETSc memory debugging
+  PetscMallocSetDebug - Set's PETSc memory debugging
 
-    Not Collective
+  Not Collective
 
-    Input Parameters:
-+   eachcall - checks the entire heap of allocated memory for issues on each call to `PetscMalloc()` and `PetscFree()`, slow
--   initializenan - initializes all memory with `NaN` to catch use of uninitialized floating point arrays
+  Input Parameters:
++ eachcall      - checks the entire heap of allocated memory for issues on each call to `PetscMalloc()` and `PetscFree()`, slow
+- initializenan - initializes all memory with `NaN` to catch use of uninitialized floating point arrays
 
-    Options Database Keys:
-+   -malloc_debug <true or false> - turns on or off debugging
-.   -malloc_test - turns on all debugging if PETSc was configured with debugging including `-malloc_dump`, otherwise ignored
-.   -malloc_view_threshold t - log only allocations larger than t
-  .   -malloc_dump <filename> - print a list of all memory that has not been freed, in `PetscFinalize()`
--   -malloc_log - (deprecated) same as `-malloc_view`
+  Options Database Keys:
++ -malloc_debug <true or false> - turns on or off debugging
+. -malloc_test                  - turns on all debugging if PETSc was configured with debugging including `-malloc_dump`, otherwise ignored
+. -malloc_view_threshold t      - log only allocations larger than t
+. -malloc_dump <filename>       - print a list of all memory that has not been freed, in `PetscFinalize()`
 
-   Level: developer
+  Level: developer
 
-    Note:
-    This is called in `PetscInitialize()` and should not be called elsewhere
+  Note:
+  This is called in `PetscInitialize()` and should not be called elsewhere
 
 .seealso: `CHKMEMQ`, `PetscMallocValidate()`, `PetscMallocGetDebug()`, `PetscMalloc()`, `PetscFree()`
 @*/
@@ -968,19 +967,19 @@ PetscErrorCode PetscMallocSetDebug(PetscBool eachcall, PetscBool initializenan)
 }
 
 /*@
-    PetscMallocGetDebug - Indicates what PETSc memory debugging it is doing.
+  PetscMallocGetDebug - Indicates what PETSc memory debugging it is doing.
 
-    Not Collective
+  Not Collective
 
-    Output Parameters:
-+    basic - doing basic debugging
-.    eachcall - checks the entire memory heap at each `PetscMalloc()`/`PetscFree()`
--    initializenan - initializes memory with `NaN`
+  Output Parameters:
++ basic         - doing basic debugging
+. eachcall      - checks the entire memory heap at each `PetscMalloc()`/`PetscFree()`
+- initializenan - initializes memory with `NaN`
 
-   Level: intermediate
+  Level: intermediate
 
-   Note:
-     By default, the debug configuration of PETSc always does some debugging unless you run with `-malloc_debug no`
+  Note:
+  By default, the debug configuration of PETSc always does some debugging unless you run with `-malloc_debug no`
 
 .seealso: `CHKMEMQ`, `PetscMallocValidate()`, `PetscMallocSetDebug()`, `PetscMalloc()`, `PetscFree()`
 @*/

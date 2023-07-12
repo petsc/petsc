@@ -312,15 +312,15 @@ PetscErrorCode PetscViewerMathematicaSetLinkMode(PetscViewer v, LinkMode mode)
 - mode    - [optional] The connection mode, or NULL
 
   Output Parameter:
-. viewer  - The Mathematica viewer
+. v - The Mathematica viewer
 
-   Options Database Keys:
-+    -viewer_math_linkhost <machine> - The host machine for the kernel
-.    -viewer_math_linkname <name>    - The full link name for the connection
-.    -viewer_math_linkport <port>    - The port for the connection
-.    -viewer_math_mode <mode>        - The mode, e.g. Launch, Connect
-.    -viewer_math_type <type>        - The plot type, e.g. Triangulation, Vector
--    -viewer_math_graphics <output>  - The output type, e.g. Motif, PS, PSFile
+  Options Database Keys:
++ -viewer_math_linkhost <machine> - The host machine for the kernel
+. -viewer_math_linkname <name>    - The full link name for the connection
+. -viewer_math_linkport <port>    - The port for the connection
+. -viewer_math_mode <mode>        - The mode, e.g. Launch, Connect
+. -viewer_math_type <type>        - The plot type, e.g. Triangulation, Vector
+- -viewer_math_graphics <output>  - The output type, e.g. Motif, PS, PSFile
 
   Level: intermediate
 
@@ -408,7 +408,7 @@ PetscErrorCode PetscViewerMathematicaSkipPackets(PetscViewer viewer, int type)
 . viewer - The Mathematica viewer
 
   Output Parameter:
-. name   - The name for new objects created in Mathematica
+. name - The name for new objects created in Mathematica
 
   Level: intermediate
 
@@ -474,7 +474,7 @@ PetscErrorCode PetscViewerMathematicaClearName(PetscViewer viewer)
 . viewer - The Mathematica viewer
 
   Output Parameter:
-. v      - The vector
+. v - The vector
 
   Level: intermediate
 

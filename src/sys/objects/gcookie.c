@@ -5,19 +5,19 @@
 #include <petsc/private/petscimpl.h> /*I   "petscsys.h"    I*/
 
 /*@
-   PetscObjectGetClassId - Gets the classid for any `PetscObject`
+  PetscObjectGetClassId - Gets the classid for any `PetscObject`
 
-   Not Collective
+  Not Collective
 
-   Input Parameter:
-.  obj - any PETSc object, for example a `Vec`, `Mat` or `KSP`.
+  Input Parameter:
+. obj - any PETSc object, for example a `Vec`, `Mat` or `KSP`.
          Thus must be cast with a (`PetscObject`), for example,
          `PetscObjectGetClassId`((`PetscObject`)mat,&classid);
 
-   Output Parameter:
-.  classid - the classid
+  Output Parameter:
+. classid - the classid
 
-   Level: developer
+  Level: developer
 
 .seealso: `PetscObject`, `PetscClassId`, `PetscObjectGetClassName()`, `PetscObjectGetType()`
 @*/
@@ -31,19 +31,19 @@ PetscErrorCode PetscObjectGetClassId(PetscObject obj, PetscClassId *classid)
 }
 
 /*@C
-   PetscObjectGetClassName - Gets the class name for any `PetscObject`
+  PetscObjectGetClassName - Gets the class name for any `PetscObject`
 
-   Not Collective
+  Not Collective
 
-   Input Parameter:
-.  obj - any PETSc object, for example a `Vec`, `Mat` or `KSP`.
+  Input Parameter:
+. obj - any PETSc object, for example a `Vec`, `Mat` or `KSP`.
          Thus must be cast with a (`PetscObject`), for example,
          `PetscObjectGetClassName`((`PetscObject`)mat,&classname);
 
-   Output Parameter:
-.  classname - the class name, for example "Vec"
+  Output Parameter:
+. classname - the class name, for example "Vec"
 
-   Level: developer
+  Level: developer
 
 .seealso: `PetscObject`, `PetscClassId`, `PetscObjectGetType()`, `PetscObjectGetClassId()`
 @*/

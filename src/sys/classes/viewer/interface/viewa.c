@@ -4,20 +4,20 @@
 const char *const PetscViewerFormats[] = {"DEFAULT", "ASCII_MATLAB", "ASCII_MATHEMATICA", "ASCII_IMPL", "ASCII_INFO", "ASCII_INFO_DETAIL", "ASCII_COMMON", "ASCII_SYMMODU", "ASCII_INDEX", "ASCII_DENSE", "ASCII_MATRIXMARKET", "ASCII_VTK", "ASCII_VTK_CELL", "ASCII_VTK_COORDS", "ASCII_PCICE", "ASCII_PYTHON", "ASCII_FACTOR_INFO", "ASCII_LATEX", "ASCII_XML", "ASCII_FLAMEGRAPH", "ASCII_GLVIS", "ASCII_CSV", "DRAW_BASIC", "DRAW_LG", "DRAW_LG_XRANGE", "DRAW_CONTOUR", "DRAW_PORTS", "VTK_VTS", "VTK_VTR", "VTK_VTU", "BINARY_MATLAB", "NATIVE", "HDF5_PETSC", "HDF5_VIZ", "HDF5_XDMF", "HDF5_MAT", "NOFORMAT", "LOAD_BALANCE", "FAILED", "ALL", "PetscViewerFormat", "PETSC_VIEWER_", NULL};
 
 /*@C
-   PetscViewerSetFormat - Sets the format for a `PetscViewer`.
+  PetscViewerSetFormat - Sets the format for a `PetscViewer`.
 
-   Logically Collective
+  Logically Collective
 
-   This routine is deprecated, you should use `PetscViewerPushFormat()`/`PetscViewerPopFormat()`
+  This routine is deprecated, you should use `PetscViewerPushFormat()`/`PetscViewerPopFormat()`
 
-   Input Parameters:
-+  viewer - the `PetscViewer`
--  format - the format
+  Input Parameters:
++ viewer - the `PetscViewer`
+- format - the format
 
-   Level: deprecated
+  Level: deprecated
 
-   Note:
-   See `PetscViewerFormat` for available values
+  Note:
+  See `PetscViewerFormat` for available values
 
 .seealso: [](sec_viewers), `PetscViewerGetFormat()`, `PetscViewerASCIIOpen()`, `PetscViewerBinaryOpen()`, `MatView()`, `VecView()`, `PetscViewerType`,
           `PetscViewerPushFormat()`, `PetscViewerPopFormat()`, `PetscViewerDrawOpen()`, `PetscViewerSocketOpen()`
@@ -33,18 +33,18 @@ PetscErrorCode PetscViewerSetFormat(PetscViewer viewer, PetscViewerFormat format
 }
 
 /*@C
-   PetscViewerPushFormat - Sets the format for a `PetscViewer`.
+  PetscViewerPushFormat - Sets the format for a `PetscViewer`.
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  viewer - the `PetscViewer`
--  format - the format
+  Input Parameters:
++ viewer - the `PetscViewer`
+- format - the format
 
-   Level: intermediate
+  Level: intermediate
 
-   Note:
-   See `PetscViewerFormat` for available values
+  Note:
+  See `PetscViewerFormat` for available values
 
 .seealso: [](sec_viewers), `PetscViewer`, `PetscViewerFormat`, `PetscViewerASCIIOpen()`, `PetscViewerBinaryOpen()`, `MatView()`, `VecView()`,
           `PetscViewerSetFormat()`, `PetscViewerPopFormat()`
@@ -62,14 +62,14 @@ PetscErrorCode PetscViewerPushFormat(PetscViewer viewer, PetscViewerFormat forma
 }
 
 /*@C
-   PetscViewerPopFormat - Resets the format for a `PetscViewer` to the value it had before the previous call to `PetscViewerPushFormat()`
+  PetscViewerPopFormat - Resets the format for a `PetscViewer` to the value it had before the previous call to `PetscViewerPushFormat()`
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameter:
-.  viewer - the `PetscViewer`
+  Input Parameter:
+. viewer - the `PetscViewer`
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: [](sec_viewers), `PetscViewer`, `PetscViewerFormat`, `PetscViewerASCIIOpen()`, `PetscViewerBinaryOpen()`, `MatView()`, `VecView()`,
           `PetscViewerSetFormat()`, `PetscViewerPushFormat()`
@@ -85,20 +85,20 @@ PetscErrorCode PetscViewerPopFormat(PetscViewer viewer)
 }
 
 /*@C
-   PetscViewerGetFormat - Gets the current format for `PetscViewer`.
+  PetscViewerGetFormat - Gets the current format for `PetscViewer`.
 
-   Not Collective
+  Not Collective
 
-   Input Parameter:
-.  viewer - the `PetscViewer`
+  Input Parameter:
+. viewer - the `PetscViewer`
 
-   Output Parameter:
-.  format - the format
+  Output Parameter:
+. format - the format
 
-   Level: intermediate
+  Level: intermediate
 
-   Note:
-   See `PetscViewerFormat` for available values
+  Note:
+  See `PetscViewerFormat` for available values
 
 .seealso: [](sec_viewers), `PetscViewer`, `PetscViewerASCIIOpen()`, `PetscViewerBinaryOpen()`, `MatView()`, `VecView()`, `PetscViewerType`,
           `PetscViewerPushFormat()`, `PetscViewerPopFormat()`, `PetscViewerDrawOpen()`, `PetscViewerSocketOpen()`

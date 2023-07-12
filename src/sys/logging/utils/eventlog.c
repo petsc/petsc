@@ -195,7 +195,7 @@ PetscErrorCode PetscEventPerfInfoClear(PetscEventPerfInfo *eventInfo)
 . eventInfo - The input `PetscEventPerfInfo`
 
   Output Parameter:
-. outInfo   - The output `PetscEventPerfInfo`
+. outInfo - The output `PetscEventPerfInfo`
 
   Level: developer
 
@@ -222,7 +222,7 @@ PetscErrorCode PetscEventPerfInfoCopy(const PetscEventPerfInfo *eventInfo, Petsc
 . eventInfo - The input `PetscEventPerfInfo`
 
   Output Parameter:
-. outInfo   - The output `PetscEventPerfInfo`
+. outInfo - The output `PetscEventPerfInfo`
 
   Level: developer
 
@@ -316,10 +316,10 @@ PetscErrorCode PetscLogEventEndMPE(PetscLogEvent event, int t, PetscObject o1, P
   Input Parameters:
 + eventLog - The `PetscEventLog`
 . ename    - The name associated with the event
-- classid   - The classid associated to the class for this event
+- classid  - The classid associated to the class for this event
 
   Output Parameter:
-. event    - The event
+. event - The event
 
   Example of Usage:
 .vb
@@ -404,7 +404,7 @@ PetscErrorCode PetscEventRegLogRegister(PetscEventRegLog eventLog, const char en
 + eventLog - The `PetscEventPerfLog`
 - event    - The event
 
-   Usage:
+  Usage:
 .vb
       PetscEventPerfLogDeactivate(log, VEC_SetValues);
         [code where you do not want to log VecSetValues()]
@@ -438,7 +438,7 @@ PetscErrorCode PetscEventPerfLogActivate(PetscEventPerfLog eventLog, PetscLogEve
 + eventLog - The `PetscEventPerfLog`
 - event    - The event
 
-   Usage:
+  Usage:
 .vb
       PetscEventPerfLogDeactivate(log, VEC_SetValues);
         [code where you do not want to log VecSetValues()]
@@ -446,7 +446,7 @@ PetscErrorCode PetscEventPerfLogActivate(PetscEventPerfLog eventLog, PetscLogEve
         [code where you do want to log VecSetValues()]
 .ve
 
-   Level: developer
+  Level: developer
 
   Notes:
   The event may be either a pre-defined PETSc event (found in
@@ -472,7 +472,7 @@ PetscErrorCode PetscEventPerfLogDeactivate(PetscEventPerfLog eventLog, PetscLogE
 + eventLog - The `PetscEventPerfLog`
 - event    - The event
 
-   Usage:
+  Usage:
 .vb
       PetscEventPerfLogDeactivatePush(log, VEC_SetValues);
         [code where you do not want to log VecSetValues()]
@@ -506,7 +506,7 @@ PetscErrorCode PetscEventPerfLogDeactivatePush(PetscEventPerfLog eventLog, Petsc
 + eventLog - The `PetscEventPerfLog`
 - event    - The event
 
-   Usage:
+  Usage:
 .vb
       PetscEventPerfLogDeactivatePush(log, VEC_SetValues);
         [code where you do not want to log VecSetValues()]
@@ -539,7 +539,7 @@ PetscErrorCode PetscEventPerfLogDeactivatePop(PetscEventPerfLog eventLog, PetscL
   Input Parameters:
 + eventLog    - The `PetscEventPerfLog`
 . eventRegLog - The `PetscEventRegLog`
-- classid      - The class id, for example `MAT_CLASSID`, `SNES_CLASSID`
+- classid     - The class id, for example `MAT_CLASSID`, `SNES_CLASSID`
 
   Level: developer
 
@@ -568,7 +568,7 @@ PetscErrorCode PetscEventPerfLogActivateClass(PetscEventPerfLog eventLog, PetscE
   Input Parameters:
 + eventLog    - The `PetscEventPerfLog`
 . eventRegLog - The `PetscEventRegLog`
-- classid - The class id, for example `MAT_CLASSID`, `SNES_CLASSID`
+- classid     - The class id, for example `MAT_CLASSID`, `SNES_CLASSID`
 
   Level: developer
 
@@ -600,7 +600,7 @@ PetscErrorCode PetscEventPerfLogDeactivateClass(PetscEventPerfLog eventLog, Pets
 - name     - The stage name
 
   Output Parameter:
-. event    - The event id, or -1 if not found
+. event - The event id, or -1 if not found
 
   Level: developer
 
@@ -661,8 +661,8 @@ PetscErrorCode PetscEventPerfLogSetVisible(PetscEventPerfLog eventLog, PetscLogE
   Not Collective
 
   Input Parameters:
-+ eventLog  - The `PetscEventPerfLog`
-- event     - The event id to log
++ eventLog - The `PetscEventPerfLog`
+- event    - The event id to log
 
   Output Parameter:
 . isVisible - The visibility flag, `PETSC_TRUE` for printing, otherwise `PETSC_FALSE` (default is `PETSC_TRUE`)
@@ -695,7 +695,7 @@ PetscErrorCode PetscEventPerfLogGetVisible(PetscEventPerfLog eventLog, PetscLogE
   Output Parameter:
 . info - This structure is filled with the performance information
 
-  Level: Intermediate
+  Level: intermediate
 
   Note:
   This is a low level routine used by the logging functions in PETSc

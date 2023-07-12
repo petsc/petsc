@@ -153,21 +153,21 @@ PetscErrorCode PetscBoxAuthorize(MPI_Comm comm, char access_token[], char refres
 #endif
 
 /*@C
-     PetscBoxRefresh - Get a new authorization token for accessing Box drive from PETSc from a refresh token
+  PetscBoxRefresh - Get a new authorization token for accessing Box drive from PETSc from a refresh token
 
-   Not Collective, only the first process in the `MPI_Comm` does anything
+  Not Collective, only the first process in the `MPI_Comm` does anything
 
-   Input Parameters:
-+   comm - MPI communicator
-.   refresh token - obtained with `PetscBoxAuthorize()`, if `NULL` PETSc will first look for one in the options data
+  Input Parameters:
++ comm          - MPI communicator
+. refresh_token - obtained with `PetscBoxAuthorize()`, if `NULL` PETSc will first look for one in the options data
                     if not found it will call `PetscBoxAuthorize()`
--   tokensize - size of the output string access_token
+- tokensize     - size of the output string access_token
 
-   Output Parameters:
-+   access_token - token that can be passed to `PetscBoxUpload()`
--   new_refresh_token - the old refresh token is no longer valid, not this is different than Google where the same refresh_token is used forever
+  Output Parameters:
++ access_token      - token that can be passed to `PetscBoxUpload()`
+- new_refresh_token - the old refresh token is no longer valid, not this is different than Google where the same refresh_token is used forever
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `PetscBoxAuthorize()`, `PetscBoxUpload()`
 @*/
@@ -228,19 +228,19 @@ PetscErrorCode PetscBoxRefresh(MPI_Comm comm, const char refresh_token[], char a
 #include <sys/stat.h>
 
 /*@C
-     PetscBoxUpload - Loads a file to the Box Drive
+  PetscBoxUpload - Loads a file to the Box Drive
 
-     This routine has not yet been written; it is just copied from Google Drive
+  This routine has not yet been written; it is just copied from Google Drive
 
-     Not collective, only the first process in the `MPI_Comm` uploads the file
+  Not collective, only the first process in the `MPI_Comm` uploads the file
 
   Input Parameters:
-+   comm - MPI communicator
-.   access_token - obtained with `PetscBoxRefresh()`, pass `NULL` to have PETSc generate one
--   filename - file to upload; if you upload multiple times it will have different names each time on Box Drive
++ comm         - MPI communicator
+. access_token - obtained with `PetscBoxRefresh()`, pass `NULL` to have PETSc generate one
+- filename     - file to upload; if you upload multiple times it will have different names each time on Box Drive
 
   Options Database Key:
-.  -box_refresh_token XXX - the token value
+. -box_refresh_token XXX - the token value
 
   Usage Patterns:
 .vb
@@ -262,7 +262,7 @@ PetscErrorCode PetscBoxRefresh(MPI_Comm comm, const char refresh_token[], char a
     PetscBoxUpload(comm,access_token,filename);
 .ve
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `PetscBoxAuthorize()`, `PetscBoxRefresh()`
 @*/
