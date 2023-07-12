@@ -636,3 +636,19 @@ PetscErrorCode testCheckingSectionIndentationAfterSwitch(int foo, double *bar)
 {
   return PETSC_SUCCESS;
 }
+
+/*@C
+  testReferencesFalsePositive - this should not pick up a references section
+
+  Level: beginner
+
+  Notes:
+  A per- MPI communicator garbage dictionary is created to store
+  references to objects destroyed using `PetscObjectDelayedDestroy()`.
+
+.seealso: `testBadDocString()`
+@*/
+PetscErrorCode testReferencesFalsePositive()
+{
+  return PETSC_SUCCESS;
+}
