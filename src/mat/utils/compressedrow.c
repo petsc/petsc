@@ -59,6 +59,7 @@ PETSC_EXTERN PetscErrorCode MatCheckCompressedRow(Mat A, PetscInt nrows, Mat_Com
       cpi[row + 1] = ai[i + 1]; /* compressed row pointer */
       ridx[row++]  = i;         /* compressed row local index */
     }
+    while (row < nrows) ridx[row++] = -1; // pad array
     compressedrow->nrows  = nrows;
     compressedrow->i      = cpi;
     compressedrow->rindex = ridx;

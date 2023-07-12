@@ -122,8 +122,8 @@ static PetscErrorCode MatCoarsenApply_MISK_private(IS perm, const PetscInt misk,
     /* set index into cmpressed row 'lid_cprowID' */
     if (matB) {
       for (ix = 0; ix < matB->compressedrow.nrows; ix++) {
-        lid              = matB->compressedrow.rindex[ix];
-        lid_cprowID[lid] = ix;
+        lid = matB->compressedrow.rindex[ix];
+        if (lid >= 0) lid_cprowID[lid] = ix;
       }
     }
     /* MIS */
