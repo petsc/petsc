@@ -13,11 +13,11 @@ PETSC_EXTERN PetscErrorCode PFCreate_Matlab(PF, void *);
 #endif
 
 /*@C
-   PFRegisterAll - Registers all of the preconditioners in the PF package.
+  PFRegisterAll - Registers all of the preconditioners in the PF package.
 
-   Not Collective
+  Not Collective
 
-   Level: advanced
+  Level: advanced
 
 .seealso: `PFRegister()`, `PFRegisterDestroy()`
 @*/

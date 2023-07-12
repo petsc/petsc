@@ -12,7 +12,7 @@
 
   Output Parameters:
 + nsubs - the number of sub `VecTagger`s
-- subs - the sub `VecTagger`s
+- subs  - the sub `VecTagger`s
 
   Level: advanced
 
@@ -32,8 +32,8 @@ PetscErrorCode VecTaggerAndGetSubs(VecTagger tagger, PetscInt *nsubs, VecTagger 
 
   Input Parameters:
 + tagger - the `VecTagger` context
-. nsubs - the number of sub `VecTagger`s
-- subs - the sub `VecTagger`s
+. nsubs  - the number of sub `VecTagger`s
+- subs   - the sub `VecTagger`s
 
   Level: advanced
 

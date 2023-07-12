@@ -111,8 +111,8 @@ PetscErrorCode PetscSectionVecView(PetscSection s, Vec v, PetscViewer viewer)
   Not Collective
 
   Input Parameters:
-+ v - the `Vec`
-. s - the organizing `PetscSection`
++ v     - the `Vec`
+. s     - the organizing `PetscSection`
 - point - the point
 
   Output Parameter:
@@ -142,15 +142,15 @@ PetscErrorCode VecGetValuesSection(Vec v, PetscSection s, PetscInt point, PetscS
   Not Collective
 
   Input Parameters:
-+ v - the `Vec`
-. s - the organizing `PetscSection`
-. point - the point
++ v      - the `Vec`
+. s      - the organizing `PetscSection`
+. point  - the point
 . values - the array of input values
-- mode - the insertion mode, either `ADD_VALUES` or `INSERT_VALUES`
+- mode   - the insertion mode, either `ADD_VALUES` or `INSERT_VALUES`
 
   Level: developer
 
-  Fortran Note:
+  Fortran Notes:
   This is similar to `MatSetValuesStencil()`. The binding is
 $   VecSetValuesSectionF90(vec, section, point, values, mode, ierr)
 
@@ -305,7 +305,7 @@ PetscErrorCode PetscSectionRestoreField_Internal(PetscSection section, PetscSect
 - type - one of `NORM_1`, `NORM_2`, `NORM_INFINITY`.
 
   Output Parameter:
-. val  - the array of norms
+. val - the array of norms
 
   Level: intermediate
 

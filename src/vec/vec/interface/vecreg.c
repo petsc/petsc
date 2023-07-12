@@ -174,7 +174,7 @@ newvec:
   Not Collective
 
   Input Parameter:
-. vec  - The vector
+. vec - The vector
 
   Output Parameter:
 . type - The `VecType` of the vector
@@ -226,13 +226,13 @@ PetscErrorCode VecGetRootType_Private(Vec vec, VecType *vtype)
   Not Collective
 
   Input Parameters:
-+ sname        - The name of a new user-defined creation routine
++ sname    - The name of a new user-defined creation routine
 - function - The creation routine
 
   Notes:
   `VecRegister()` may be called multiple times to add several user-defined vectors
 
-  Sample usage:
+  Example Usage:
 .vb
     VecRegister("my_vec",MyVectorCreate);
 .ve
@@ -242,7 +242,7 @@ PetscErrorCode VecGetRootType_Private(Vec vec, VecType *vtype)
     VecCreate(MPI_Comm, Vec *);
     VecSetType(Vec,"my_vector_name");
 .ve
-   or at runtime via the option
+  or at runtime via the option
 .vb
     -vec_type my_vector_name
 .ve

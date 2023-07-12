@@ -78,7 +78,7 @@ PetscErrorCode PetscSectionCreate(MPI_Comm comm, PetscSection *s)
 
   Level: intermediate
 
-  Developer Note:
+  Developer Notes:
   What exactly does shallow mean in this context?
 
 .seealso: [PetscSection](sec_petscsection), `PetscSection`, `PetscSectionCreate()`, `PetscSectionDestroy()`
@@ -169,7 +169,7 @@ PetscErrorCode PetscSectionCopy(PetscSection section, PetscSection newSection)
 
   Level: beginner
 
-  Developer Note:
+  Developer Notes:
   With standard PETSc terminology this should be called `PetscSectionDuplicate()`
 
 .seealso: [PetscSection](sec_petscsection), `PetscSection`, `PetscSectionCreate()`, `PetscSectionDestroy()`, `PetscSectionCopy()`
@@ -190,7 +190,7 @@ PetscErrorCode PetscSectionClone(PetscSection section, PetscSection *newSection)
   Collective
 
   Input Parameter:
-. section - the `PetscSection`
+. s - the `PetscSection`
 
   Options Database Key:
 . -petscsection_point_major - `PETSC_TRUE` for point-major order
@@ -346,7 +346,7 @@ PetscErrorCode PetscSectionGetNumFields(PetscSection s, PetscInt *numFields)
   Not Collective
 
   Input Parameters:
-+ s - the `PetscSection`
++ s         - the `PetscSection`
 - numFields - the number of fields
 
   Level: intermediate
@@ -422,8 +422,8 @@ PetscErrorCode PetscSectionGetFieldName(PetscSection s, PetscInt field, const ch
   Not Collective
 
   Input Parameters:
-+ s     - the `PetscSection`
-. field - the field number
++ s         - the `PetscSection`
+. field     - the field number
 - fieldName - the field name
 
   Level: intermediate
@@ -462,7 +462,7 @@ PetscErrorCode PetscSectionSetFieldName(PetscSection s, PetscInt field, const ch
   Note:
   Will error if the field or component number do not exist
 
-  Developer Note:
+  Developer Notes:
   The function name should have Field in it since they are field components.
 
 .seealso: [PetscSection](sec_petscsection), `PetscSection`, `PetscSectionGetFieldName()`, `PetscSectionSetNumFields()`, `PetscSectionGetNumFields()`,
@@ -485,9 +485,9 @@ PetscErrorCode PetscSectionGetComponentName(PetscSection s, PetscInt field, Pets
   Not Collective
 
   Input Parameters:
-+ s     - the `PetscSection`
-. field - the field number
-. comp  - the component number
++ s        - the `PetscSection`
+. field    - the field number
+. comp     - the component number
 - compName - the component name
 
   Level: advanced
@@ -495,7 +495,7 @@ PetscErrorCode PetscSectionGetComponentName(PetscSection s, PetscInt field, Pets
   Note:
   Will error if the field or component number do not exist
 
-  Developer Note:
+  Developer Notes:
   The function name should have Field in it since they are field components.
 
 .seealso: [PetscSection](sec_petscsection), `PetscSection`, `PetscSectionGetComponentName()`, `PetscSectionSetNumFields()`, `PetscSectionGetNumFields()`,
@@ -519,7 +519,7 @@ PetscErrorCode PetscSectionSetComponentName(PetscSection s, PetscInt field, Pets
   Not Collective
 
   Input Parameters:
-+ s - the `PetscSection`
++ s     - the `PetscSection`
 - field - the field number
 
   Output Parameter:
@@ -527,7 +527,7 @@ PetscErrorCode PetscSectionSetComponentName(PetscSection s, PetscInt field, Pets
 
   Level: advanced
 
-  Developer Note:
+  Developer Notes:
   This function is misnamed. There is a Num in `PetscSectionGetNumFields()` but not in this name
 
 .seealso: [PetscSection](sec_petscsection), `PetscSection`, `PetscSectionSetFieldComponents()`, `PetscSectionGetNumFields()`,
@@ -549,8 +549,8 @@ PetscErrorCode PetscSectionGetFieldComponents(PetscSection s, PetscInt field, Pe
   Not Collective
 
   Input Parameters:
-+ s - the `PetscSection`
-. field - the field number
++ s       - the `PetscSection`
+. field   - the field number
 - numComp - the number of field components
 
   Level: advanced
@@ -563,7 +563,7 @@ PetscErrorCode PetscSectionGetFieldComponents(PetscSection s, PetscInt field, Pe
 
   The value set with this function are not needed or used in `PetscSectionSetUp()`.
 
-  Developer Note:
+  Developer Notes:
   This function is misnamed. There is a Num in `PetscSectionSetNumFields()` but not in this name
 
 .seealso: [PetscSection](sec_petscsection), `PetscSection`, `PetscSectionGetFieldComponents()`, `PetscSectionSetComponentName()`,
@@ -604,7 +604,7 @@ PetscErrorCode PetscSectionSetFieldComponents(PetscSection s, PetscInt field, Pe
 
   Output Parameters:
 + pStart - the first point
-- pEnd - one past the last point
+- pEnd   - one past the last point
 
   Level: intermediate
 
@@ -625,9 +625,9 @@ PetscErrorCode PetscSectionGetChart(PetscSection s, PetscInt *pStart, PetscInt *
   Not Collective
 
   Input Parameters:
-+ s - the `PetscSection`
++ s      - the `PetscSection`
 . pStart - the first point
-- pEnd - one past the last point
+- pEnd   - one past the last point
 
   Level: intermediate
 
@@ -693,7 +693,7 @@ PetscErrorCode PetscSectionGetPermutation(PetscSection s, IS *perm)
   Not Collective
 
   Input Parameters:
-+ s - the `PetscSection`
++ s    - the `PetscSection`
 - perm - the permutation of points
 
   Level: intermediate
@@ -736,7 +736,7 @@ PetscErrorCode PetscSectionSetPermutation(PetscSection s, IS perm)
 
   Level: intermediate
 
-.seealso: [PetscSection](sec_petscsection), `PetscSection`, PetscSectionSetPointMajor()`
+.seealso: [PetscSection](sec_petscsection), `PetscSection`, `PetscSectionSetPointMajor()`
 @*/
 PetscErrorCode PetscSectionGetPointMajor(PetscSection s, PetscBool *pm)
 {
@@ -817,7 +817,7 @@ PetscErrorCode PetscSectionGetIncludesConstraints(PetscSection s, PetscBool *inc
   Not Collective
 
   Input Parameters:
-+ s  - the `PetscSection`
++ s                   - the `PetscSection`
 - includesConstraints - the flag indicating if constrained dofs are to be included when computing offsets
 
   Level: intermediate
@@ -839,7 +839,7 @@ PetscErrorCode PetscSectionSetIncludesConstraints(PetscSection s, PetscBool incl
   Not Collective
 
   Input Parameters:
-+ s - the `PetscSection`
++ s     - the `PetscSection`
 - point - the point
 
   Output Parameter:
@@ -870,8 +870,8 @@ PetscErrorCode PetscSectionGetDof(PetscSection s, PetscInt point, PetscInt *numD
   Not Collective
 
   Input Parameters:
-+ s - the `PetscSection`
-. point - the point
++ s      - the `PetscSection`
+. point  - the point
 - numDof - the number of dof
 
   Level: intermediate
@@ -897,8 +897,8 @@ PetscErrorCode PetscSectionSetDof(PetscSection s, PetscInt point, PetscInt numDo
   Not Collective
 
   Input Parameters:
-+ s - the `PetscSection`
-. point - the point
++ s      - the `PetscSection`
+. point  - the point
 - numDof - the number of additional dof
 
   Level: intermediate
@@ -924,7 +924,7 @@ PetscErrorCode PetscSectionAddDof(PetscSection s, PetscInt point, PetscInt numDo
   Not Collective
 
   Input Parameters:
-+ s - the `PetscSection`
++ s     - the `PetscSection`
 . point - the point
 - field - the field
 
@@ -951,9 +951,9 @@ PetscErrorCode PetscSectionGetFieldDof(PetscSection s, PetscInt point, PetscInt 
   Not Collective
 
   Input Parameters:
-+ s - the `PetscSection`
-. point - the point
-. field - the field
++ s      - the `PetscSection`
+. point  - the point
+. field  - the field
 - numDof - the number of dof
 
   Level: intermediate
@@ -986,9 +986,9 @@ PetscErrorCode PetscSectionSetFieldDof(PetscSection s, PetscInt point, PetscInt 
   Not Collective
 
   Input Parameters:
-+ s - the `PetscSection`
-. point - the point
-. field - the field
++ s      - the `PetscSection`
+. point  - the point
+. field  - the field
 - numDof - the number of dof
 
   Level: intermediate
@@ -1021,7 +1021,7 @@ PetscErrorCode PetscSectionAddFieldDof(PetscSection s, PetscInt point, PetscInt 
   Not Collective
 
   Input Parameters:
-+ s - the `PetscSection`
++ s     - the `PetscSection`
 - point - the point
 
   Output Parameter:
@@ -1048,8 +1048,8 @@ PetscErrorCode PetscSectionGetConstraintDof(PetscSection s, PetscInt point, Pets
   Not Collective
 
   Input Parameters:
-+ s - the `PetscSection`
-. point - the point
++ s      - the `PetscSection`
+. point  - the point
 - numDof - the number of dof which are fixed by constraints
 
   Level: intermediate
@@ -1073,8 +1073,8 @@ PetscErrorCode PetscSectionSetConstraintDof(PetscSection s, PetscInt point, Pets
   Not Collective
 
   Input Parameters:
-+ s - the `PetscSection`
-. point - the point
++ s      - the `PetscSection`
+. point  - the point
 - numDof - the number of additional dof which are fixed by constraints
 
   Level: intermediate
@@ -1098,7 +1098,7 @@ PetscErrorCode PetscSectionAddConstraintDof(PetscSection s, PetscInt point, Pets
   Not Collective
 
   Input Parameters:
-+ s - the `PetscSection`
++ s     - the `PetscSection`
 . point - the point
 - field - the field
 
@@ -1125,9 +1125,9 @@ PetscErrorCode PetscSectionGetFieldConstraintDof(PetscSection s, PetscInt point,
   Not Collective
 
   Input Parameters:
-+ s - the `PetscSection`
-. point - the point
-. field - the field
++ s      - the `PetscSection`
+. point  - the point
+. field  - the field
 - numDof - the number of dof which are fixed by constraints
 
   Level: intermediate
@@ -1149,9 +1149,9 @@ PetscErrorCode PetscSectionSetFieldConstraintDof(PetscSection s, PetscInt point,
   Not Collective
 
   Input Parameters:
-+ s - the `PetscSection`
-. point - the point
-. field - the field
++ s      - the `PetscSection`
+. point  - the point
+. field  - the field
 - numDof - the number of additional dof which are fixed by constraints
 
   Level: intermediate
@@ -1366,10 +1366,10 @@ PetscErrorCode PetscSectionGetConstrainedStorageSize(PetscSection s, PetscInt *s
   a local (sequential) `PetscSection` on each MPI process and a `PetscSF` describing the section point overlap.
 
   Input Parameters:
-+ s - The `PetscSection` for the local field layout
-. sf - The `PetscSF` describing parallel layout of the section points (leaves are unowned local points)
++ s                  - The `PetscSection` for the local field layout
+. sf                 - The `PetscSF` describing parallel layout of the section points (leaves are unowned local points)
 . includeConstraints - By default this is `PETSC_FALSE`, meaning that the global field vector will not possess constrained dofs
-- localOffsets - If `PETSC_TRUE`, use local rather than global offsets for the points
+- localOffsets       - If `PETSC_TRUE`, use local rather than global offsets for the points
 
   Output Parameter:
 . gsection - The `PetscSection` for the global field layout
@@ -1500,11 +1500,11 @@ PetscErrorCode PetscSectionCreateGlobalSection(PetscSection s, PetscSF sf, Petsc
   a local (sequential) `PetscSection` on each MPI process and an `PetscSF` describing the section point overlap.
 
   Input Parameters:
-+ s - The `PetscSection` for the local field layout
-. sf - The `PetscSF` describing parallel layout of the section points
++ s                  - The `PetscSection` for the local field layout
+. sf                 - The `PetscSF` describing parallel layout of the section points
 . includeConstraints - By default this is `PETSC_FALSE`, meaning that the global vector will not possess constrained dofs
-. numExcludes - The number of exclusion ranges, this must have the same value on all MPI processes
-- excludes - An array [start_0, end_0, start_1, end_1, ...] where there are `numExcludes` pairs and must have the same values on all MPI processes
+. numExcludes        - The number of exclusion ranges, this must have the same value on all MPI processes
+- excludes           - An array [start_0, end_0, start_1, end_1, ...] where there are `numExcludes` pairs and must have the same values on all MPI processes
 
   Output Parameter:
 . gsection - The `PetscSection` for the global field layout
@@ -1519,7 +1519,7 @@ PetscErrorCode PetscSectionCreateGlobalSection(PetscSection s, PetscSF sf, Petsc
 
   This routine augments `PetscSectionCreateGlobalSection()` by allowing one to exclude certain ranges in the chart of the `PetscSection`
 
-  Developer Note:
+  Developer Notes:
   This is a terrible function name
 
 .seealso: [PetscSection](sec_petscsection), `PetscSection`, `PetscSectionCreate()`, `PetscSectionCreateGlobalSectionCensored()`
@@ -1632,7 +1632,7 @@ PetscErrorCode PetscSectionCreateGlobalSectionCensored(PetscSection s, PetscSF s
      The local size of the `PetscLayout` is 2 since 2 points have a non-zero number of dof
 .ve
 
-  Developer Note:
+  Developer Notes:
   I find the names of these two functions extremely non-informative
 
 .seealso: [PetscSection](sec_petscsection), `PetscSection`, `PetscSectionGetValueLayout()`, `PetscSectionCreate()`
@@ -1712,7 +1712,7 @@ PetscErrorCode PetscSectionGetValueLayout(MPI_Comm comm, PetscSection s, PetscLa
   Not Collective
 
   Input Parameters:
-+ s - the `PetscSection`
++ s     - the `PetscSection`
 - point - the point
 
   Output Parameter:
@@ -1745,8 +1745,8 @@ PetscErrorCode PetscSectionGetOffset(PetscSection s, PetscInt point, PetscInt *o
   Not Collective
 
   Input Parameters:
-+ s - the `PetscSection`
-. point - the point
++ s      - the `PetscSection`
+. point  - the point
 - offset - the offset
 
   Level: developer
@@ -1771,7 +1771,7 @@ PetscErrorCode PetscSectionSetOffset(PetscSection s, PetscInt point, PetscInt of
   Not Collective
 
   Input Parameters:
-+ s - the `PetscSection`
++ s     - the `PetscSection`
 . point - the point
 - field - the field
 
@@ -1803,9 +1803,9 @@ PetscErrorCode PetscSectionGetFieldOffset(PetscSection s, PetscInt point, PetscI
   Not Collective
 
   Input Parameters:
-+ s - the `PetscSection`
-. point - the point
-. field - the field
++ s      - the `PetscSection`
+. point  - the point
+. field  - the field
 - offset - the offset
 
   Level: developer
@@ -1831,7 +1831,7 @@ PetscErrorCode PetscSectionSetFieldOffset(PetscSection s, PetscInt point, PetscI
   Not Collective
 
   Input Parameters:
-+ s - the `PetscSection`
++ s     - the `PetscSection`
 . point - the point
 - field - the field
 
@@ -1918,7 +1918,7 @@ PetscErrorCode PetscSectionGetOffsetRange(PetscSection s, PetscInt *start, Petsc
 - fields - the subfield numbers
 
   Output Parameter:
-. subs   - the subsection
+. subs - the subsection
 
   Level: advanced
 
@@ -2011,8 +2011,8 @@ PetscErrorCode PetscSectionCreateSubsection(PetscSection s, PetscInt len, const 
   Collective
 
   Input Parameters:
-+ s     - the input sections
-- len   - the number of input sections
++ s   - the input sections
+- len - the number of input sections
 
   Output Parameter:
 . supers - the supersection
@@ -2022,7 +2022,7 @@ PetscErrorCode PetscSectionCreateSubsection(PetscSection s, PetscInt len, const 
   Notes:
   The section offsets now refer to a new, larger vector.
 
-  Developer Note:
+  Developer Notes:
   Needs to explain how the sections are composed
 
 .seealso: [PetscSection](sec_petscsection), `PetscSection`, `PetscSectionCreateSubsection()`, `PetscSectionCreate()`
@@ -2233,7 +2233,7 @@ PetscErrorCode PetscSectionCreateSubplexSection_Internal(PetscSection s, IS subp
 
   Compare this with `PetscSectionCreateSubdomainSection()` that does not map the points numbers to start at zero but leaves them as before
 
-  Developer Note:
+  Developer Notes:
   The use of the term Submesh is confusing and needs clarification, it is not specific to meshes. It appears to be just a subset of the chart of the original `PetscSection`
 
 .seealso: [PetscSection](sec_petscsection), `PetscSection`, `PetscSectionCreateSubdomainSection()`, `PetscSectionCreateSubsection()`, `DMPlexGetSubpointMap()`, `PetscSectionCreate()`
@@ -2310,19 +2310,19 @@ static PetscErrorCode PetscSectionView_ASCII(PetscSection s, PetscViewer viewer)
 }
 
 /*@C
-   PetscSectionViewFromOptions - View the `PetscSection` based on values in the options database
+  PetscSectionViewFromOptions - View the `PetscSection` based on values in the options database
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  A - the `PetscSection` object to view
-.  obj - Optional object that provides the options prefix used for the options
--  name - command line option
+  Input Parameters:
++ A    - the `PetscSection` object to view
+. obj  - Optional object that provides the options prefix used for the options
+- name - command line option
 
-   Level: intermediate
+  Level: intermediate
 
-   Note:
-   See `PetscObjectViewFromOptions()` for available values of `PetscViewer` and `PetscViewerFormat`
+  Note:
+  See `PetscObjectViewFromOptions()` for available values of `PetscViewer` and `PetscViewerFormat`
 
 .seealso: [PetscSection](sec_petscsection), `PetscSection`, `PetscSectionView`, `PetscObjectViewFromOptions()`, `PetscSectionCreate()`, `PetscSectionView()`
 @*/
@@ -2340,8 +2340,8 @@ PetscErrorCode PetscSectionViewFromOptions(PetscSection A, PetscObject obj, cons
   Collective
 
   Input Parameters:
-+ s - the `PetscSection` object to view
-- v - the viewer
++ s      - the `PetscSection` object to view
+- viewer - the viewer
 
   Level: beginner
 
@@ -2393,8 +2393,8 @@ PetscErrorCode PetscSectionView(PetscSection s, PetscViewer viewer)
   Collective
 
   Input Parameters:
-+ s - the `PetscSection` object to load
-- v - the viewer
++ s      - the `PetscSection` object to load
+- viewer - the viewer
 
   Level: beginner
 
@@ -2647,7 +2647,7 @@ PetscErrorCode PetscSectionHasConstraints(PetscSection s, PetscBool *hasConstrai
 
   Level: intermediate
 
-  Fortran Note:
+  Fortran Notes:
   Use `PetscSectionGetConstraintIndicesF90()` and `PetscSectionRestoreConstraintIndicesF90()`
 
 .seealso: [PetscSection](sec_petscsection), `PetscSectionSetConstraintIndices()`, `PetscSectionGetConstraintDof()`, `PetscSection`
@@ -2668,13 +2668,13 @@ PetscErrorCode PetscSectionGetConstraintIndices(PetscSection s, PetscInt point, 
   Not Collective
 
   Input Parameters:
-+ s     - The `PetscSection`
-. point - The point
++ s       - The `PetscSection`
+. point   - The point
 - indices - The constrained dofs
 
   Level: intermediate
 
-  Fortran Note:
+  Fortran Notes:
   Use `PetscSectionSetConstraintIndicesF90()`
 
 .seealso: [PetscSection](sec_petscsection), `PetscSectionGetConstraintIndices()`, `PetscSectionGetConstraintDof()`, `PetscSection`
@@ -2701,7 +2701,7 @@ PetscErrorCode PetscSectionSetConstraintIndices(PetscSection s, PetscInt point, 
 
   Input Parameters:
 + s     - The `PetscSection`
-. field  - The field number
+. field - The field number
 - point - The point
 
   Output Parameter:
@@ -2712,7 +2712,7 @@ PetscErrorCode PetscSectionSetConstraintIndices(PetscSection s, PetscInt point, 
   Note:
   The indices array, which is provided by the caller, must have capacity to hold the number of constrained dofs, e.g., as returned by `PetscSectionGetConstraintDof()`.
 
-  Fortran Note:
+  Fortran Notes:
   Use `PetscSectionGetFieldConstraintIndicesF90()` and `PetscSectionRestoreFieldConstraintIndicesF90()`
 
 .seealso: [PetscSection](sec_petscsection), `PetscSectionSetFieldConstraintIndices()`, `PetscSectionGetConstraintIndices()`, `PetscSectionGetConstraintDof()`, `PetscSection`
@@ -2740,7 +2740,7 @@ PetscErrorCode PetscSectionGetFieldConstraintIndices(PetscSection s, PetscInt po
 
   Level: intermediate
 
-  Fortran Note:
+  Fortran Notes:
   Use `PetscSectionSetFieldConstraintIndicesF90()`
 
 .seealso: [PetscSection](sec_petscsection), `PetscSectionSetConstraintIndices()`, `PetscSectionGetFieldConstraintIndices()`, `PetscSectionGetConstraintDof()`, `PetscSection`
@@ -2766,8 +2766,8 @@ PetscErrorCode PetscSectionSetFieldConstraintIndices(PetscSection s, PetscInt po
   Collective
 
   Input Parameters:
-+ section - The `PetscSection` object
-- perm - The point permutation, old point p becomes new point perm[p]
++ section     - The `PetscSection` object
+- permutation - The point permutation, old point p becomes new point perm[p]
 
   Output Parameter:
 . sectionNew - The permuted `PetscSection`
@@ -2865,7 +2865,7 @@ PetscErrorCode PetscSectionPermute(PetscSection section, IS permutation, PetscSe
   Note:
   This function creates an internal map from each point to its closure. We compress out closure points with no dofs in this section.
 
-  Developer Note:
+  Developer Notes:
   The information provided here is completely opaque
 
 .seealso: [PetscSection](sec_petscsection), `PetscSection`, `PetscSectionGetClosureIndex()`, `DMPlexCreateClosureIndex()`
@@ -2893,8 +2893,8 @@ PetscErrorCode PetscSectionSetClosureIndex(PetscSection section, PetscObject obj
   Collective
 
   Input Parameters:
-+ section   - The `PetscSection`
-- obj       - A `PetscObject` which serves as the key for this index
++ section - The `PetscSection`
+- obj     - A `PetscObject` which serves as the key for this index
 
   Output Parameters:
 + clSection - `PetscSection` giving the size of the closure of each point
@@ -3007,10 +3007,10 @@ PetscErrorCode PetscSectionGetClosurePermutation_Internal(PetscSection section, 
   Not Collective
 
   Input Parameters:
-+ section   - The `PetscSection`
-. obj       - A `PetscObject` which serves as the key for this index (usually a DM)
-. depth     - Depth stratum on which to obtain closure permutation
-- clSize    - Closure size to be permuted (e.g., may vary with element topology and degree)
++ section - The `PetscSection`
+. obj     - A `PetscObject` which serves as the key for this index (usually a DM)
+. depth   - Depth stratum on which to obtain closure permutation
+- clSize  - Closure size to be permuted (e.g., may vary with element topology and degree)
 
   Output Parameter:
 . perm - The dof closure permutation
@@ -3052,10 +3052,10 @@ PetscErrorCode PetscSectionGetClosureInversePermutation_Internal(PetscSection se
   Not Collective
 
   Input Parameters:
-+ section   - The `PetscSection`
-. obj       - A `PetscObject` which serves as the key for this index (usually a `DM`)
-. depth     - Depth stratum on which to obtain closure permutation
-- clSize    - Closure size to be permuted (e.g., may vary with element topology and degree)
++ section - The `PetscSection`
+. obj     - A `PetscObject` which serves as the key for this index (usually a `DM`)
+. depth   - Depth stratum on which to obtain closure permutation
+- clSize  - Closure size to be permuted (e.g., may vary with element topology and degree)
 
   Output Parameter:
 . perm - The dof closure permutation
@@ -3085,7 +3085,7 @@ PetscErrorCode PetscSectionGetClosureInversePermutation(PetscSection section, Pe
 - field - The field number
 
   Output Parameter:
-. subs  - The `PetscSection` for the given field, note the chart of `subs` is not set
+. subs - The `PetscSection` for the given field, note the chart of `subs` is not set
 
   Level: intermediate
 
@@ -3170,7 +3170,7 @@ PetscErrorCode PetscSectionSymSetType(PetscSectionSym sym, PetscSectionSymType m
   Not Collective
 
   Input Parameter:
-. sym  - The section symmetry
+. sym - The section symmetry
 
   Output Parameter:
 . type - The index set type name
@@ -3194,7 +3194,7 @@ PetscErrorCode PetscSectionSymGetType(PetscSectionSym sym, PetscSectionSymType *
   Not Collective
 
   Input Parameters:
-+ sname        - The name of a new user-defined creation routine
++ sname    - The name of a new user-defined creation routine
 - function - The creation routine itself
 
   Level: developer
@@ -3213,14 +3213,14 @@ PetscErrorCode PetscSectionSymRegister(const char sname[], PetscErrorCode (*func
 }
 
 /*@
-   PetscSectionSymDestroy - Destroys a section symmetry.
+  PetscSectionSymDestroy - Destroys a section symmetry.
 
-   Collective
+  Collective
 
-   Input Parameter:
-.  sym - the section symmetry
+  Input Parameter:
+. sym - the section symmetry
 
-   Level: developer
+  Level: developer
 
 .seealso: [PetscSection](sec_petscsection), `PetscSectionSym`, `PetscSectionSymCreate()`, `PetscSectionSymDestroy()`
 @*/
@@ -3250,17 +3250,17 @@ PetscErrorCode PetscSectionSymDestroy(PetscSectionSym *sym)
 }
 
 /*@C
-   PetscSectionSymView - Displays a section symmetry
+  PetscSectionSymView - Displays a section symmetry
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  sym - the index set
--  viewer - viewer used to display the set, for example `PETSC_VIEWER_STDOUT_SELF`.
+  Input Parameters:
++ sym    - the index set
+- viewer - viewer used to display the set, for example `PETSC_VIEWER_STDOUT_SELF`.
 
-   Level: developer
+  Level: developer
 
-.seealso:  `PetscSectionSym`, `PetscViewer`, `PetscViewerASCIIOpen()`
+.seealso: `PetscSectionSym`, `PetscViewer`, `PetscViewerASCIIOpen()`
 @*/
 PetscErrorCode PetscSectionSymView(PetscSectionSym sym, PetscViewer viewer)
 {
@@ -3281,7 +3281,7 @@ PetscErrorCode PetscSectionSymView(PetscSectionSym sym, PetscViewer viewer)
 
   Input Parameters:
 + section - the section describing data layout
-- sym - the symmetry describing the affect of orientation on the access of the data
+- sym     - the symmetry describing the affect of orientation on the access of the data
 
   Level: developer
 
@@ -3331,8 +3331,8 @@ PetscErrorCode PetscSectionGetSym(PetscSection section, PetscSectionSym *sym)
 
   Input Parameters:
 + section - the section describing data layout
-. field - the field number
-- sym - the symmetry describing the affect of orientation on the access of the data
+. field   - the field number
+- sym     - the symmetry describing the affect of orientation on the access of the data
 
   Level: developer
 
@@ -3354,7 +3354,7 @@ PetscErrorCode PetscSectionSetFieldSym(PetscSection section, PetscInt field, Pet
 
   Input Parameters:
 + section - the section describing data layout
-- field - the field number
+- field   - the field number
 
   Output Parameter:
 . sym - the symmetry describing the affect of orientation on the access of the data
@@ -3378,15 +3378,15 @@ PetscErrorCode PetscSectionGetFieldSym(PetscSection section, PetscInt field, Pet
   Not Collective
 
   Input Parameters:
-+ section - the section
++ section   - the section
 . numPoints - the number of points
-- points - an array of size 2 * `numPoints`, containing a list of (point, orientation) pairs. (An orientation is an
+- points    - an array of size 2 * `numPoints`, containing a list of (point, orientation) pairs. (An orientation is an
     arbitrary integer: its interpretation is up to sym.  Orientations are used by `DM`: for their interpretation in that
     context, see `DMPlexGetConeOrientation()`).
 
   Output Parameters:
 + perms - The permutations for the given orientations (or `NULL` if there is no symmetry or the permutation is the identity).
-- rots - The field rotations symmetries for the given orientations (or `NULL` if there is no symmetry or the rotations are all
+- rots  - The field rotations symmetries for the given orientations (or `NULL` if there is no symmetry or the rotations are all
     identity).
 
   Example of usage, gathering dofs into a local array (lArray) from a section array (sArray):
@@ -3486,13 +3486,13 @@ PetscErrorCode PetscSectionGetPointSyms(PetscSection section, PetscInt numPoints
   Not Collective
 
   Input Parameters:
-+ section - the section
++ section   - the section
 . numPoints - the number of points
-- points - an array of size 2 * `numPoints`, containing a list of (point, orientation) pairs. (An orientation is an
+. points    - an array of size 2 * `numPoints`, containing a list of (point, orientation) pairs. (An orientation is an
     arbitrary integer: its interpretation is up to sym.  Orientations are used by `DM`: for their interpretation in that
     context, see `DMPlexGetConeOrientation()`).
-. perms - The permutations for the given orientations: set to `NULL` at conclusion
-- rots - The field rotations symmetries for the given orientations: set to `NULL` at conclusion
+. perms     - The permutations for the given orientations: set to `NULL` at conclusion
+- rots      - The field rotations symmetries for the given orientations: set to `NULL` at conclusion
 
   Level: developer
 
@@ -3529,16 +3529,16 @@ PetscErrorCode PetscSectionRestorePointSyms(PetscSection section, PetscInt numPo
   Not Collective
 
   Input Parameters:
-+ section - the section
-. field - the field of the section
++ section   - the section
+. field     - the field of the section
 . numPoints - the number of points
-- points - an array of size 2 * `numPoints`, containing a list of (point, orientation) pairs. (An orientation is an
+- points    - an array of size 2 * `numPoints`, containing a list of (point, orientation) pairs. (An orientation is an
     arbitrary integer: its interpretation is up to sym.  Orientations are used by `DM`: for their interpretation in that
     context, see `DMPlexGetConeOrientation()`).
 
   Output Parameters:
 + perms - The permutations for the given orientations (or `NULL` if there is no symmetry or the permutation is the identity).
-- rots - The field rotations symmetries for the given orientations (or `NULL` if there is no symmetry or the rotations are all
+- rots  - The field rotations symmetries for the given orientations (or `NULL` if there is no symmetry or the rotations are all
     identity).
 
   Level: developer
@@ -3565,14 +3565,14 @@ PetscErrorCode PetscSectionGetFieldPointSyms(PetscSection section, PetscInt fiel
   Not Collective
 
   Input Parameters:
-+ section - the section
-. field - the field number
++ section   - the section
+. field     - the field number
 . numPoints - the number of points
-- points - an array of size 2 * `numPoints`, containing a list of (point, orientation) pairs. (An orientation is an
+. points    - an array of size 2 * `numPoints`, containing a list of (point, orientation) pairs. (An orientation is an
     arbitrary integer: its interpretation is up to sym.  Orientations are used by `DM`: for their interpretation in that
     context, see `DMPlexGetConeOrientation()`).
-. perms - The permutations for the given orientations: set to NULL at conclusion
-- rots - The field rotations symmetries for the given orientations: set to NULL at conclusion
+. perms     - The permutations for the given orientations: set to NULL at conclusion
+- rots      - The field rotations symmetries for the given orientations: set to NULL at conclusion
 
   Level: developer
 
@@ -3617,7 +3617,7 @@ PetscErrorCode PetscSectionSymCopy(PetscSectionSym sym, PetscSectionSym nsym)
   Collective
 
   Input Parameters:
-+ sym - the `PetscSectionSym`
++ sym         - the `PetscSectionSym`
 - migrationSF - the distribution map from roots to leaves
 
   Output Parameter:
@@ -3703,13 +3703,13 @@ PetscErrorCode PetscSectionSetUseFieldOffsets(PetscSection s, PetscBool flg)
 
   Input Parameters:
 + origSection - the `PetscSection` describing the layout of the array
-. dataType - `MPI_Datatype` describing the data type of the array (currently only `MPIU_INT`, `MPIU_SCALAR`, `MPIU_REAL`)
-. origArray - the array; its size must be equal to the storage size of `origSection`
-- points - `IS` with points to extract; its indices must lie in the chart of `origSection`
+. dataType    - `MPI_Datatype` describing the data type of the array (currently only `MPIU_INT`, `MPIU_SCALAR`, `MPIU_REAL`)
+. origArray   - the array; its size must be equal to the storage size of `origSection`
+- points      - `IS` with points to extract; its indices must lie in the chart of `origSection`
 
   Output Parameters:
 + newSection - the new `PetscSection` describing the layout of the new array (with points renumbered 0,1,... but preserving numbers of DOFs)
-- newArray - the array of the extracted DOFs; its size is the storage size of `newSection`
+- newArray   - the array of the extracted DOFs; its size is the storage size of `newSection`
 
   Level: developer
 

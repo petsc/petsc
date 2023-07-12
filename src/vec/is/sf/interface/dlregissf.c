@@ -20,11 +20,11 @@ PetscLogEvent PETSCSF_Pack;
 PetscLogEvent PETSCSF_Unpack;
 
 /*@C
-   PetscSFInitializePackage - Initialize `PetscSF` package
+  PetscSFInitializePackage - Initialize `PetscSF` package
 
-   Logically Collective
+  Logically Collective
 
-   Level: developer
+  Level: developer
 
 .seealso: `PetscSF`, `PetscSFFinalizePackage()`
 @*/
@@ -74,11 +74,11 @@ PetscErrorCode PetscSFInitializePackage(void)
 }
 
 /*@C
-   PetscSFFinalizePackage - Finalize `PetscSF` package, it is called from `PetscFinalize()`
+  PetscSFFinalizePackage - Finalize `PetscSF` package, it is called from `PetscFinalize()`
 
-   Logically Collective
+  Logically Collective
 
-   Level: developer
+  Level: developer
 
 .seealso: `PetscSF`, `PetscSFInitializePackage()`
 @*/

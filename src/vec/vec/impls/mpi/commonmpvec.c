@@ -28,28 +28,28 @@ static PetscErrorCode VecGhostStateSync_Private(Vec g, Vec l)
 }
 
 /*@
-    VecGhostGetLocalForm - Obtains the local ghosted representation of
-    a parallel vector (obtained with `VecCreateGhost()`, `VecCreateGhostWithArray()` or `VecCreateSeq()`).
+  VecGhostGetLocalForm - Obtains the local ghosted representation of
+  a parallel vector (obtained with `VecCreateGhost()`, `VecCreateGhostWithArray()` or `VecCreateSeq()`).
 
-    Logically Collective
+  Logically Collective
 
-    Input Parameter:
-.   g - the global vector
+  Input Parameter:
+. g - the global vector
 
-    Output Parameter:
-.   l - the local (ghosted) representation,`NULL` if `g` is not ghosted
+  Output Parameter:
+. l - the local (ghosted) representation,`NULL` if `g` is not ghosted
 
-    Level: advanced
+  Level: advanced
 
-    Notes:
-    This routine does not actually update the ghost values, but rather it
-    returns a sequential vector that includes the locations for the ghost
-    values and their current values. The returned vector and the original
-    vector passed in share the same array that contains the actual vector data.
+  Notes:
+  This routine does not actually update the ghost values, but rather it
+  returns a sequential vector that includes the locations for the ghost
+  values and their current values. The returned vector and the original
+  vector passed in share the same array that contains the actual vector data.
 
-    To update the ghost values from the locations on the other processes one must call
-    `VecGhostUpdateBegin()` and `VecGhostUpdateEnd()` before accessing the ghost values. Thus normal
-    usage is
+  To update the ghost values from the locations on the other processes one must call
+  `VecGhostUpdateBegin()` and `VecGhostUpdateEnd()` before accessing the ghost values. Thus normal
+  usage is
 .vb
      VecGhostUpdateBegin(x,INSERT_VALUES,SCATTER_FORWARD);
      VecGhostUpdateEnd(x,INSERT_VALUES,SCATTER_FORWARD);
@@ -60,8 +60,8 @@ static PetscErrorCode VecGhostStateSync_Private(Vec g, Vec l)
      VecGhostRestoreLocalForm(x,&xlocal);
 .ve
 
-    One should call `VecGhostRestoreLocalForm()` or `VecDestroy()` once one is
-    finished using the object.
+  One should call `VecGhostRestoreLocalForm()` or `VecDestroy()` once one is
+  finished using the object.
 
 .seealso: [](ch_vectors), `Vec`, `VecType`, `VecCreateGhost()`, `VecGhostRestoreLocalForm()`, `VecCreateGhostWithArray()`
 @*/
@@ -91,18 +91,18 @@ PetscErrorCode VecGhostGetLocalForm(Vec g, Vec *l)
 }
 
 /*@
-    VecGhostIsLocalForm - Checks if a given vector is the local form of a global vector
+  VecGhostIsLocalForm - Checks if a given vector is the local form of a global vector
 
-    Not Collective
+  Not Collective
 
-    Input Parameters:
-+   g - the global vector
--   l - the local vector
+  Input Parameters:
++ g - the global vector
+- l - the local vector
 
-    Output Parameter:
-.   flg - `PETSC_TRUE` if `l` is the local form
+  Output Parameter:
+. flg - `PETSC_TRUE` if `l` is the local form
 
-    Level: advanced
+  Level: advanced
 
 .seealso: [](ch_vectors), `Vec`, `VecType`, `VecCreateGhost()`, `VecGhostRestoreLocalForm()`, `VecCreateGhostWithArray()`, `VecGhostGetLocalForm()`
 @*/
@@ -127,21 +127,21 @@ PetscErrorCode VecGhostIsLocalForm(Vec g, Vec l, PetscBool *flg)
 }
 
 /*@
-    VecGhostRestoreLocalForm - Restores the local ghosted representation of
-    a parallel vector obtained with `VecGhostGetLocalForm()`.
+  VecGhostRestoreLocalForm - Restores the local ghosted representation of
+  a parallel vector obtained with `VecGhostGetLocalForm()`.
 
-    Logically Collective
+  Logically Collective
 
-    Input Parameters:
-+   g - the global vector
--   l - the local (ghosted) representation
+  Input Parameters:
++ g - the global vector
+- l - the local (ghosted) representation
 
-    Level: advanced
+  Level: advanced
 
-    Note:
-    This routine does not actually update the ghost values, but rather it
-    returns a sequential vector that includes the locations for the ghost values
-    and their current values.
+  Note:
+  This routine does not actually update the ghost values, but rather it
+  returns a sequential vector that includes the locations for the ghost values
+  and their current values.
 
 .seealso: [](ch_vectors), `Vec`, `VecType`, `VecCreateGhost()`, `VecGhostGetLocalForm()`, `VecCreateGhostWithArray()`
 @*/
@@ -156,33 +156,33 @@ PetscErrorCode VecGhostRestoreLocalForm(Vec g, Vec *l)
 }
 
 /*@
-   VecGhostUpdateBegin - Begins the vector scatter to update the vector from
-   local representation to global or global representation to local.
+  VecGhostUpdateBegin - Begins the vector scatter to update the vector from
+  local representation to global or global representation to local.
 
-   Neighbor-wise Collective
+  Neighbor-wise Collective
 
-   Input Parameters:
-+  g - the vector (obtained with `VecCreateGhost()` or `VecDuplicate()`)
-.  insertmode - one of `ADD_VALUES`, `MAX_VALUES`, `MIN_VALUES` or `INSERT_VALUES`
--  scattermode - one of `SCATTER_FORWARD` or `SCATTER_REVERSE`
+  Input Parameters:
++ g           - the vector (obtained with `VecCreateGhost()` or `VecDuplicate()`)
+. insertmode  - one of `ADD_VALUES`, `MAX_VALUES`, `MIN_VALUES` or `INSERT_VALUES`
+- scattermode - one of `SCATTER_FORWARD` or `SCATTER_REVERSE`
 
-   Level: advanced
+  Level: advanced
 
-   Notes:
-   Use the following to update the ghost regions with correct values from the owning process
+  Notes:
+  Use the following to update the ghost regions with correct values from the owning process
 .vb
        VecGhostUpdateBegin(v,INSERT_VALUES,SCATTER_FORWARD);
        VecGhostUpdateEnd(v,INSERT_VALUES,SCATTER_FORWARD);
 .ve
 
-   Use the following to accumulate the ghost region values onto the owning processors
+  Use the following to accumulate the ghost region values onto the owning processors
 .vb
        VecGhostUpdateBegin(v,ADD_VALUES,SCATTER_REVERSE);
        VecGhostUpdateEnd(v,ADD_VALUES,SCATTER_REVERSE);
 .ve
 
-   To accumulate the ghost region values onto the owning processors and then update
-   the ghost regions correctly, call the latter followed by the former, i.e.,
+  To accumulate the ghost region values onto the owning processors and then update
+  the ghost regions correctly, call the latter followed by the former, i.e.,
 .vb
        VecGhostUpdateBegin(v,ADD_VALUES,SCATTER_REVERSE);
        VecGhostUpdateEnd(v,ADD_VALUES,SCATTER_REVERSE);
@@ -218,33 +218,33 @@ PetscErrorCode VecGhostUpdateBegin(Vec g, InsertMode insertmode, ScatterMode sca
 }
 
 /*@
-   VecGhostUpdateEnd - End the vector scatter to update the vector from
-   local representation to global or global representation to local.
+  VecGhostUpdateEnd - End the vector scatter to update the vector from
+  local representation to global or global representation to local.
 
-   Neighbor-wise Collective
+  Neighbor-wise Collective
 
-   Input Parameters:
-+  g - the vector (obtained with `VecCreateGhost()` or `VecDuplicate()`)
-.  insertmode - one of `ADD_VALUES`, `MAX_VALUES`, `MIN_VALUES` or `INSERT_VALUES`
--  scattermode - one of `SCATTER_FORWARD` or `SCATTER_REVERSE`
+  Input Parameters:
++ g           - the vector (obtained with `VecCreateGhost()` or `VecDuplicate()`)
+. insertmode  - one of `ADD_VALUES`, `MAX_VALUES`, `MIN_VALUES` or `INSERT_VALUES`
+- scattermode - one of `SCATTER_FORWARD` or `SCATTER_REVERSE`
 
-   Level: advanced
+  Level: advanced
 
-   Notes:
-   Use the following to update the ghost regions with correct values from the owning process
+  Notes:
+  Use the following to update the ghost regions with correct values from the owning process
 .vb
        VecGhostUpdateBegin(v,INSERT_VALUES,SCATTER_FORWARD);
        VecGhostUpdateEnd(v,INSERT_VALUES,SCATTER_FORWARD);
 .ve
 
-   Use the following to accumulate the ghost region values onto the owning processors
+  Use the following to accumulate the ghost region values onto the owning processors
 .vb
        VecGhostUpdateBegin(v,ADD_VALUES,SCATTER_REVERSE);
        VecGhostUpdateEnd(v,ADD_VALUES,SCATTER_REVERSE);
 .ve
 
-   To accumulate the ghost region values onto the owning processors and then update
-   the ghost regions correctly, call the later followed by the former, i.e.,
+  To accumulate the ghost region values onto the owning processors and then update
+  the ghost regions correctly, call the later followed by the former, i.e.,
 .vb
        VecGhostUpdateBegin(v,ADD_VALUES,SCATTER_REVERSE);
        VecGhostUpdateEnd(v,ADD_VALUES,SCATTER_REVERSE);

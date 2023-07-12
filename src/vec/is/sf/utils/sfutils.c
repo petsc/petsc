@@ -2,28 +2,28 @@
 #include <petsc/private/sectionimpl.h>
 
 /*@
-   PetscSFSetGraphLayout - Set a parallel star forest via global indices and a `PetscLayout`
+  PetscSFSetGraphLayout - Set a parallel star forest via global indices and a `PetscLayout`
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  sf - star forest
-.  layout - `PetscLayout` defining the global space for roots
-.  nleaves - number of leaf vertices on the current process, each of these references a root on any process
-.  ilocal - locations of leaves in leafdata buffers, pass NULL for contiguous storage
-.  localmode - copy mode for ilocal
--  gremote - root vertices in global numbering corresponding to leaves in ilocal
+  Input Parameters:
++ sf        - star forest
+. layout    - `PetscLayout` defining the global space for roots
+. nleaves   - number of leaf vertices on the current process, each of these references a root on any process
+. ilocal    - locations of leaves in leafdata buffers, pass NULL for contiguous storage
+. localmode - copy mode for ilocal
+- gremote   - root vertices in global numbering corresponding to leaves in ilocal
 
-   Level: intermediate
+  Level: intermediate
 
-   Note:
-   Global indices must lie in [0, N) where N is the global size of layout.
-   Leaf indices in ilocal get sorted; this means the user-provided array gets sorted if localmode is `PETSC_OWN_POINTER`.
+  Note:
+  Global indices must lie in [0, N) where N is the global size of layout.
+  Leaf indices in ilocal get sorted; this means the user-provided array gets sorted if localmode is `PETSC_OWN_POINTER`.
 
-   Developer Note:
-   Local indices which are the identity permutation in the range [0,nleaves) are discarded as they
-   encode contiguous storage. In such case, if localmode is `PETSC_OWN_POINTER`, the memory is deallocated as it is not
-   needed
+  Developer Notes:
+  Local indices which are the identity permutation in the range [0,nleaves) are discarded as they
+  encode contiguous storage. In such case, if localmode is `PETSC_OWN_POINTER`, the memory is deallocated as it is not
+  needed
 
 .seealso: `PetscSF`, `PetscSFGetGraphLayout()`, `PetscSFCreate()`, `PetscSFView()`, `PetscSFSetGraph()`, `PetscSFGetGraph()`
 @*/
@@ -57,25 +57,25 @@ PetscErrorCode PetscSFSetGraphLayout(PetscSF sf, PetscLayout layout, PetscInt nl
 }
 
 /*@C
-   PetscSFGetGraphLayout - Get the global indices and `PetscLayout` that describe this star forest
+  PetscSFGetGraphLayout - Get the global indices and `PetscLayout` that describe this star forest
 
-   Collective
+  Collective
 
-   Input Parameter:
-.  sf - star forest
+  Input Parameter:
+. sf - star forest
 
-   Output Parameters:
-+  layout - `PetscLayout` defining the global space for roots
-.  nleaves - number of leaf vertices on the current process, each of these references a root on any process
-.  ilocal - locations of leaves in leafdata buffers, or NULL for contiguous storage
--  gremote - root vertices in global numbering corresponding to leaves in ilocal
+  Output Parameters:
++ layout  - `PetscLayout` defining the global space for roots
+. nleaves - number of leaf vertices on the current process, each of these references a root on any process
+. ilocal  - locations of leaves in leafdata buffers, or NULL for contiguous storage
+- gremote - root vertices in global numbering corresponding to leaves in ilocal
 
-   Level: intermediate
+  Level: intermediate
 
-   Notes:
-   The outputs are such that passing them as inputs to `PetscSFSetGraphLayout()` would lead to the same star forest.
-   The outputs layout and gremote are freshly created each time this function is called,
-   so they need to be freed by user and cannot be qualified as const.
+  Notes:
+  The outputs are such that passing them as inputs to `PetscSFSetGraphLayout()` would lead to the same star forest.
+  The outputs layout and gremote are freshly created each time this function is called,
+  so they need to be freed by user and cannot be qualified as const.
 
 .seealso: `PetscSF`, `PetscSFSetGraphLayout()`, `PetscSFCreate()`, `PetscSFView()`, `PetscSFSetGraph()`, `PetscSFGetGraph()`
 @*/
@@ -108,8 +108,8 @@ PetscErrorCode PetscSFGetGraphLayout(PetscSF sf, PetscLayout *layout, PetscInt *
   PetscSFSetGraphSection - Sets the `PetscSF` graph encoding the parallel dof overlap based upon the `PetscSection` describing the data layout.
 
   Input Parameters:
-+ sf - The `PetscSF`
-. localSection - `PetscSection` describing the local data layout
++ sf            - The `PetscSF`
+. localSection  - `PetscSection` describing the local data layout
 - globalSection - `PetscSection` describing the global data layout
 
   Level: developer
@@ -205,12 +205,12 @@ PetscErrorCode PetscSFSetGraphSection(PetscSF sf, PetscSection localSection, Pet
   Collective
 
   Input Parameters:
-+ sf - The `PetscSF`
++ sf          - The `PetscSF`
 - rootSection - Section defined on root space
 
   Output Parameters:
 + remoteOffsets - root offsets in leaf storage, or NULL
-- leafSection - Section defined on the leaf space
+- leafSection   - Section defined on the leaf space
 
   Level: advanced
 
@@ -400,10 +400,10 @@ PetscErrorCode PetscSFCreateRemoteOffsets(PetscSF sf, PetscSection rootSection, 
   Collective
 
   Input Parameters:
-+ sf - The `PetscSF`
-. rootSection - Data layout of remote points for outgoing data (this is usually the serial section)
++ sf            - The `PetscSF`
+. rootSection   - Data layout of remote points for outgoing data (this is usually the serial section)
 . remoteOffsets - Offsets for point data on remote processes (these are offsets from the root section), or NULL
-- leafSection - Data layout of local points for incoming data  (this is the distributed section)
+- leafSection   - Data layout of local points for incoming data  (this is the distributed section)
 
   Output Parameter:
 . sectionSF - The new `PetscSF`
@@ -416,7 +416,7 @@ PetscErrorCode PetscSFCreateRemoteOffsets(PetscSF sf, PetscSection rootSection, 
   Fortran Notes:
   In Fortran, use PetscSFCreateSectionSFF90()
 
-.seealso:  `PetscSF`, `PetscSFCreate()`
+.seealso: `PetscSF`, `PetscSFCreate()`
 @*/
 PetscErrorCode PetscSFCreateSectionSF(PetscSF sf, PetscSection rootSection, PetscInt remoteOffsets[], PetscSection leafSection, PetscSF *sectionSF)
 {
@@ -479,18 +479,18 @@ PetscErrorCode PetscSFCreateSectionSF(PetscSF sf, PetscSection rootSection, Pets
 }
 
 /*@C
-   PetscSFCreateFromLayouts - Creates a parallel star forest mapping two `PetscLayout` objects
+  PetscSFCreateFromLayouts - Creates a parallel star forest mapping two `PetscLayout` objects
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  rmap - `PetscLayout` defining the global root space
--  lmap - `PetscLayout` defining the global leaf space
+  Input Parameters:
++ rmap - `PetscLayout` defining the global root space
+- lmap - `PetscLayout` defining the global leaf space
 
-   Output Parameter:
-.  sf - The parallel star forest
+  Output Parameter:
+. sf - The parallel star forest
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `PetscSF`, `PetscSFCreate()`, `PetscLayoutCreate()`, `PetscSFSetGraphLayout()`
 @*/
@@ -592,19 +592,19 @@ PetscErrorCode PetscLayoutMapLocal(PetscLayout map, PetscInt N, const PetscInt i
   Collective
 
   Input Parameters:
-+ layout - `PetscLayout` defining the global index space and the rank that brokers each index
-. numRootIndices - size of rootIndices
-. rootIndices - `PetscInt` array of global indices of which this process requests ownership
++ layout           - `PetscLayout` defining the global index space and the rank that brokers each index
+. numRootIndices   - size of rootIndices
+. rootIndices      - `PetscInt` array of global indices of which this process requests ownership
 . rootLocalIndices - root local index permutation (NULL if no permutation)
-. rootLocalOffset - offset to be added to root local indices
-. numLeafIndices - size of leafIndices
-. leafIndices - `PetscInt` array of global indices with which this process requires data associated
+. rootLocalOffset  - offset to be added to root local indices
+. numLeafIndices   - size of leafIndices
+. leafIndices      - `PetscInt` array of global indices with which this process requires data associated
 . leafLocalIndices - leaf local index permutation (NULL if no permutation)
-- leafLocalOffset - offset to be added to leaf local indices
+- leafLocalOffset  - offset to be added to leaf local indices
 
   Output Parameters:
 + sfA - star forest representing the communication pattern from the layout space to the leaf space (NULL if not needed)
-- sf - star forest representing the communication pattern from the root space to the leaf space
+- sf  - star forest representing the communication pattern from the root space to the leaf space
 
   Level: advanced
 
@@ -680,7 +680,7 @@ would build the following PetscSF
   If (leafIndices, leafLocalIndices, leafLocalOffset) == (rootIndices, rootLocalIndices, rootLocalOffset), the output
   star forest is almost identity, so will only include non-trivial part of the map.
 
-  Developer Note:
+  Developer Notes:
   Current approach of a process of the highest rank gaining the ownership may cause load imbalance; consider using
   hash(rank, root_local_index) as the bid for the ownership determination.
 
@@ -792,16 +792,16 @@ PetscErrorCode PetscSFCreateByMatchingIndices(PetscLayout layout, PetscInt numRo
 
   Collective
 
-  Input Arguments:
+  Input Parameters:
 + sfa - default `PetscSF`
 - sfb - additional edges to add/replace edges in sfa
 
-  Output Arguments:
+  Output Parameter:
 . merged - new `PetscSF` with combined edges
 
   Level: intermediate
 
-.seealse: `PetscSFCompose()`
+.seealso: `PetscSFCompose()`
 @*/
 PetscErrorCode PetscSFMerge(PetscSF sfa, PetscSF sfb, PetscSF *merged)
 {

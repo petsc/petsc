@@ -447,26 +447,26 @@ PETSC_EXTERN PetscErrorCode AOCreate_MemoryScalable(AO ao)
 }
 
 /*@C
-   AOCreateMemoryScalable - Creates a memory scalable application ordering using two integer arrays.
+  AOCreateMemoryScalable - Creates a memory scalable application ordering using two integer arrays.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  comm - MPI communicator that is to share the `AO`
-.  napp - size of integer arrays
-.  myapp - integer array that defines an ordering
--  mypetsc - integer array that defines another ordering (may be NULL to
+  Input Parameters:
++ comm    - MPI communicator that is to share the `AO`
+. napp    - size of integer arrays
+. myapp   - integer array that defines an ordering
+- mypetsc - integer array that defines another ordering (may be NULL to
              indicate the natural ordering, that is 0,1,2,3,...)
 
-   Output Parameter:
-.  aoout - the new application ordering
+  Output Parameter:
+. aoout - the new application ordering
 
-   Level: beginner
+  Level: beginner
 
-    Note:
-    The arrays myapp and mypetsc must contain the all the integers 0 to napp-1 with no duplicates; that is there cannot be any "holes"
-    in the indices. Use `AOCreateMapping()` or `AOCreateMappingIS()` if you wish to have "holes" in the indices.
-    Comparing with `AOCreateBasic()`, this routine trades memory with message communication.
+  Note:
+  The arrays myapp and mypetsc must contain the all the integers 0 to napp-1 with no duplicates; that is there cannot be any "holes"
+  in the indices. Use `AOCreateMapping()` or `AOCreateMappingIS()` if you wish to have "holes" in the indices.
+  Comparing with `AOCreateBasic()`, this routine trades memory with message communication.
 
 .seealso: [](sec_ao), [](sec_scatter), `AO`, `AOCreateMemoryScalableIS()`, `AODestroy()`, `AOPetscToApplication()`, `AOApplicationToPetsc()`
 @*/
@@ -489,25 +489,25 @@ PetscErrorCode AOCreateMemoryScalable(MPI_Comm comm, PetscInt napp, const PetscI
 }
 
 /*@C
-   AOCreateMemoryScalableIS - Creates a memory scalable application ordering using two index sets.
+  AOCreateMemoryScalableIS - Creates a memory scalable application ordering using two index sets.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  isapp - index set that defines an ordering
--  ispetsc - index set that defines another ordering (may be NULL to use the
+  Input Parameters:
++ isapp   - index set that defines an ordering
+- ispetsc - index set that defines another ordering (may be NULL to use the
              natural ordering)
 
-   Output Parameter:
-.  aoout - the new application ordering
+  Output Parameter:
+. aoout - the new application ordering
 
-   Level: beginner
+  Level: beginner
 
-    Notes:
-    The index sets isapp and ispetsc must contain the all the integers 0 to napp-1 (where napp is the length of the index sets) with no duplicates;
-    that is there cannot be any "holes".
+  Notes:
+  The index sets isapp and ispetsc must contain the all the integers 0 to napp-1 (where napp is the length of the index sets) with no duplicates;
+  that is there cannot be any "holes".
 
-    Comparing with `AOCreateBasicIS()`, this routine trades memory with message communication.
+  Comparing with `AOCreateBasicIS()`, this routine trades memory with message communication.
 
 .seealso: [](sec_ao), [](sec_scatter), `AO`, `AOCreateBasicIS()`, `AOCreateMemoryScalable()`, `AODestroy()`
 @*/

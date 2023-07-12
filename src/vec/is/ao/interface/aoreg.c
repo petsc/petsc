@@ -10,7 +10,7 @@ PetscBool         AORegisterAllCalled = PETSC_FALSE;
   Collective
 
   Input Parameters:
-+ ao    - The `AO` object
++ ao     - The `AO` object
 - method - The name of the AO type
 
   Options Database Key:
@@ -51,7 +51,7 @@ PetscErrorCode AOSetType(AO ao, AOType method)
   Not Collective
 
   Input Parameter:
-. ao  - The vector
+. ao - The vector
 
   Output Parameter:
 . type - The `AO` type name
@@ -75,11 +75,11 @@ PetscErrorCode AOGetType(AO ao, AOType *type)
 /*@C
   AORegister - Register  an application ordering method
 
-    Not Collective
+  Not Collective
 
-   Input Parameters:
-+   sname - the name (`AOType`) of the `AO` scheme
--   function - the create routine for the application ordering method
+  Input Parameters:
++ sname    - the name (`AOType`) of the `AO` scheme
+- function - the create routine for the application ordering method
 
   Level: advanced
 

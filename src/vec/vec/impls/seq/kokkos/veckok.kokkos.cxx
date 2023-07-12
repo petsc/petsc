@@ -1462,29 +1462,29 @@ PetscErrorCode VecCreate_SeqKokkos(Vec v)
 }
 
 /*@C
-   VecCreateSeqKokkosWithArray - Creates a Kokkos sequential array-style vector,
-   where the user provides the array space to store the vector values. The array
-   provided must be a device array.
+  VecCreateSeqKokkosWithArray - Creates a Kokkos sequential array-style vector,
+  where the user provides the array space to store the vector values. The array
+  provided must be a device array.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  comm - the communicator, should be PETSC_COMM_SELF
-.  bs - the block size
-.  n - the vector length
--  array - device memory where the vector elements are to be stored.
+  Input Parameters:
++ comm   - the communicator, should be PETSC_COMM_SELF
+. bs     - the block size
+. n      - the vector length
+- darray - device memory where the vector elements are to be stored.
 
-   Output Parameter:
-.  v - the vector
+  Output Parameter:
+. v - the vector
 
-   Notes:
-   Use VecDuplicate() or VecDuplicateVecs() to form additional vectors of the
-   same type as an existing vector.
+  Notes:
+  Use VecDuplicate() or VecDuplicateVecs() to form additional vectors of the
+  same type as an existing vector.
 
-   PETSc does NOT free the array when the vector is destroyed via VecDestroy().
-   The user should not free the array until the vector is destroyed.
+  PETSc does NOT free the array when the vector is destroyed via VecDestroy().
+  The user should not free the array until the vector is destroyed.
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `VecCreateMPICUDAWithArray()`, `VecCreate()`, `VecDuplicate()`, `VecDuplicateVecs()`,
           `VecCreateGhost()`, `VecCreateSeq()`, `VecCreateSeqWithArray()`,
@@ -1596,22 +1596,22 @@ PetscErrorCode VecCreateSeqKokkosWithArrays_Private(MPI_Comm comm, PetscInt bs, 
 
 /* TODO: ftn-auto generates veckok.kokkosf.c */
 /*@C
- VecCreateSeqKokkos - Creates a standard, sequential array-style vector.
+  VecCreateSeqKokkos - Creates a standard, sequential array-style vector.
 
- Collective
+  Collective
 
- Input Parameter:
- +  comm - the communicator, should be PETSC_COMM_SELF
- -  n - the vector length
+  Input Parameters:
++ comm - the communicator, should be `PETSC_COMM_SELF`
+- n    - the vector length
 
- Output Parameter:
- .  v - the vector
+  Output Parameter:
+. v - the vector
 
- Notes:
- Use VecDuplicate() or VecDuplicateVecs() to form additional vectors of the
- same type as an existing vector.
+  Notes:
+  Use VecDuplicate() or VecDuplicateVecs() to form additional vectors of the
+  same type as an existing vector.
 
- Level: intermediate
+  Level: intermediate
 
 .seealso: `VecCreateMPI()`, `VecCreate()`, `VecDuplicate()`, `VecDuplicateVecs()`, `VecCreateGhost()`
  @*/

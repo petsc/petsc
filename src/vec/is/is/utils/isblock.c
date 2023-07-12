@@ -4,19 +4,19 @@
 #include <petsc/private/hashmapi.h>
 
 /*@
-   ISCompressIndicesGeneral - convert the indices of an array of `IS` into an array of `ISGENERAL` of block indices
+  ISCompressIndicesGeneral - convert the indices of an array of `IS` into an array of `ISGENERAL` of block indices
 
-   Input Parameters:
-+    n - maximum possible length of the index set
-.    nkeys - expected number of keys when using `PETSC_USE_CTABLE`
-.    bs - the size of block
-.    imax - the number of index sets
--    is_in - the non-blocked array of index sets
+  Input Parameters:
++ n     - maximum possible length of the index set
+. nkeys - expected number of keys when using `PETSC_USE_CTABLE`
+. bs    - the size of block
+. imax  - the number of index sets
+- is_in - the non-blocked array of index sets
 
-   Output Parameter:
-.    is_out - the blocked new index set, as `ISGENERAL`, not as `ISBLOCK`
+  Output Parameter:
+. is_out - the blocked new index set, as `ISGENERAL`, not as `ISBLOCK`
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: [](sec_scatter), `IS`, `ISGENERAL`, `ISExpandIndicesGeneral()`
 @*/
@@ -107,19 +107,19 @@ PetscErrorCode ISCompressIndicesGeneral(PetscInt n, PetscInt nkeys, PetscInt bs,
 }
 
 /*@C
-   ISExpandIndicesGeneral - convert the indices of an array `IS` into non-block indices in an array of `ISGENERAL`
+  ISExpandIndicesGeneral - convert the indices of an array `IS` into non-block indices in an array of `ISGENERAL`
 
-   Input Parameters:
-+    n - the length of the index set (not being used)
-.    nkeys - expected number of keys when `PETSC_USE_CTABLE` is used
-.    bs - the size of block
-.    imax - the number of index sets
--    is_in - the blocked array of index sets
+  Input Parameters:
++ n     - the length of the index set (not being used)
+. nkeys - expected number of keys when `PETSC_USE_CTABLE` is used
+. bs    - the size of block
+. imax  - the number of index sets
+- is_in - the blocked array of index sets
 
-   Output Parameter:
-.    is_out - the non-blocked new index set, as `ISGENERAL`
+  Output Parameter:
+. is_out - the non-blocked new index set, as `ISGENERAL`
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: [](sec_scatter), `IS`, `ISGENERAL`, `ISCompressIndicesGeneral()`
 @*/

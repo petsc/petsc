@@ -261,25 +261,25 @@ PETSC_EXTERN PetscErrorCode AOCreate_Basic(AO ao)
 }
 
 /*@C
-   AOCreateBasic - Creates a basic application ordering using two integer arrays.
+  AOCreateBasic - Creates a basic application ordering using two integer arrays.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  comm - MPI communicator that is to share `AO`
-.  napp - size of integer arrays
-.  myapp - integer array that defines an ordering
--  mypetsc - integer array that defines another ordering (may be NULL to
+  Input Parameters:
++ comm    - MPI communicator that is to share `AO`
+. napp    - size of integer arrays
+. myapp   - integer array that defines an ordering
+- mypetsc - integer array that defines another ordering (may be NULL to
              indicate the natural ordering, that is 0,1,2,3,...)
 
-   Output Parameter:
-.  aoout - the new application ordering
+  Output Parameter:
+. aoout - the new application ordering
 
-   Level: beginner
+  Level: beginner
 
-   Note:
-   The arrays myapp and mypetsc must contain the all the integers 0 to napp-1 with no duplicates; that is there cannot be any "holes"
-   in the indices. Use `AOCreateMapping()` or `AOCreateMappingIS()` if you wish to have "holes" in the indices.
+  Note:
+  The arrays myapp and mypetsc must contain the all the integers 0 to napp-1 with no duplicates; that is there cannot be any "holes"
+  in the indices. Use `AOCreateMapping()` or `AOCreateMappingIS()` if you wish to have "holes" in the indices.
 
 .seealso: [](sec_ao), [](sec_scatter), `AO`, `AOCreateBasicIS()`, `AODestroy()`, `AOPetscToApplication()`, `AOApplicationToPetsc()`
 @*/
@@ -302,23 +302,23 @@ PetscErrorCode AOCreateBasic(MPI_Comm comm, PetscInt napp, const PetscInt myapp[
 }
 
 /*@C
-   AOCreateBasicIS - Creates a basic application ordering using two `IS` index sets.
+  AOCreateBasicIS - Creates a basic application ordering using two `IS` index sets.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  isapp - index set that defines an ordering
--  ispetsc - index set that defines another ordering (may be NULL to use the
+  Input Parameters:
++ isapp   - index set that defines an ordering
+- ispetsc - index set that defines another ordering (may be NULL to use the
              natural ordering)
 
-   Output Parameter:
-.  aoout - the new application ordering
+  Output Parameter:
+. aoout - the new application ordering
 
-   Level: beginner
+  Level: beginner
 
-    Note:
-    The index sets isapp and ispetsc must contain the all the integers 0 to napp-1 (where napp is the length of the index sets) with no duplicates;
-    that is there cannot be any "holes"
+  Note:
+  The index sets isapp and ispetsc must contain the all the integers 0 to napp-1 (where napp is the length of the index sets) with no duplicates;
+  that is there cannot be any "holes"
 
 .seealso: [](sec_ao), [](sec_scatter), `IS`, `AO`, `AOCreateBasic()`, `AODestroy()`
 @*/

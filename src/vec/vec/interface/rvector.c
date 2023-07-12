@@ -36,21 +36,21 @@ PetscErrorCode VecValidValues_Internal(Vec vec, PetscInt argnum, PetscBool begin
 #endif
 
 /*@
-   VecMaxPointwiseDivide - Computes the maximum of the componentwise division `max = max_i abs(x[i]/y[i])`.
+  VecMaxPointwiseDivide - Computes the maximum of the componentwise division `max = max_i abs(x[i]/y[i])`.
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  x - the numerators
--  y - the denominators
+  Input Parameters:
++ x - the numerators
+- y - the denominators
 
-   Output Parameter:
-.  max - the result
+  Output Parameter:
+. max - the result
 
-   Level: advanced
+  Level: advanced
 
-   Notes:
-   `x` and `y` may be the same vector
+  Notes:
+  `x` and `y` may be the same vector
 
   if a particular `y[i]` is zero, it is treated as 1 in the above formula
 
@@ -77,36 +77,36 @@ PetscErrorCode VecMaxPointwiseDivide(Vec x, Vec y, PetscReal *max)
 }
 
 /*@
-   VecDot - Computes the vector dot product.
+  VecDot - Computes the vector dot product.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  x - first vector
--  y - second vector
+  Input Parameters:
++ x - first vector
+- y - second vector
 
-   Output Parameter:
-.  val - the dot product
+  Output Parameter:
+. val - the dot product
 
-   Performance Issues:
+  Performance Issues:
 .vb
     per-processor memory bandwidth
     interprocessor latency
     work load imbalance that causes certain processes to arrive much earlier than others
 .ve
 
-   Level: intermediate
+  Level: intermediate
 
-   Notes for Users of Complex Numbers:
-   For complex vectors, `VecDot()` computes
+  Notes for Users of Complex Numbers:
+  For complex vectors, `VecDot()` computes
 $     val = (x,y) = y^H x,
-   where y^H denotes the conjugate transpose of y. Note that this corresponds to the usual "mathematicians" complex
-   inner product where the SECOND argument gets the complex conjugate. Since the `BLASdot()` complex conjugates the first
-   first argument we call the `BLASdot()` with the arguments reversed.
+  where y^H denotes the conjugate transpose of y. Note that this corresponds to the usual "mathematicians" complex
+  inner product where the SECOND argument gets the complex conjugate. Since the `BLASdot()` complex conjugates the first
+  first argument we call the `BLASdot()` with the arguments reversed.
 
-   Use `VecTDot()` for the indefinite form
+  Use `VecTDot()` for the indefinite form
 $     val = (x,y) = y^T x,
-   where y^T denotes the transpose of y.
+  where y^T denotes the transpose of y.
 
 .seealso: [](ch_vectors), `Vec`, `VecMDot()`, `VecTDot()`, `VecNorm()`, `VecDotBegin()`, `VecDotEnd()`, `VecDotRealPart()`
 @*/
@@ -134,36 +134,36 @@ PetscErrorCode VecDot(Vec x, Vec y, PetscScalar *val)
 }
 
 /*@
-   VecDotRealPart - Computes the real part of the vector dot product.
+  VecDotRealPart - Computes the real part of the vector dot product.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  x - first vector
--  y - second vector
+  Input Parameters:
++ x - first vector
+- y - second vector
 
-   Output Parameter:
-.  val - the real part of the dot product;
+  Output Parameter:
+. val - the real part of the dot product;
 
-   Level: intermediate
+  Level: intermediate
 
-   Performance Issues:
+  Performance Issues:
 .vb
     per-processor memory bandwidth
     interprocessor latency
     work load imbalance that causes certain processes to arrive much earlier than others
 .ve
 
-   Notes for Users of Complex Numbers:
-     See `VecDot()` for more details on the definition of the dot product for complex numbers
+  Notes for Users of Complex Numbers:
+  See `VecDot()` for more details on the definition of the dot product for complex numbers
 
-     For real numbers this returns the same value as `VecDot()`
+  For real numbers this returns the same value as `VecDot()`
 
-     For complex numbers in C^n (that is a vector of n components with a complex number for each component) this is equal to the usual real dot product on the
-     the space R^{2n} (that is a vector of 2n components with the real or imaginary part of the complex numbers for components)
+  For complex numbers in C^n (that is a vector of n components with a complex number for each component) this is equal to the usual real dot product on the
+  the space R^{2n} (that is a vector of 2n components with the real or imaginary part of the complex numbers for components)
 
-   Developer Note:
-    This is not currently optimized to compute only the real part of the dot product.
+  Developer Notes:
+  This is not currently optimized to compute only the real part of the dot product.
 
 .seealso: [](ch_vectors), `Vec`, `VecMDot()`, `VecTDot()`, `VecNorm()`, `VecDotBegin()`, `VecDotEnd()`, `VecDot()`, `VecDotNorm2()`
 @*/
@@ -178,37 +178,37 @@ PetscErrorCode VecDotRealPart(Vec x, Vec y, PetscReal *val)
 }
 
 /*@
-   VecNorm  - Computes the vector norm.
+  VecNorm  - Computes the vector norm.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  x - the vector
--  type - the type of the norm requested
+  Input Parameters:
++ x    - the vector
+- type - the type of the norm requested
 
-   Output Parameter:
-.  val - the norm
+  Output Parameter:
+. val - the norm
 
-   Values of NormType:
+  Values of NormType:
 +     `NORM_1` - sum_i |x[i]|
 .     `NORM_2` - sqrt(sum_i |x[i]|^2)
 .     `NORM_INFINITY` - max_i |x[i]|
 -     `NORM_1_AND_2` - computes efficiently both  `NORM_1` and `NORM_2` and stores them each in an output array
 
-    Level: intermediate
+  Level: intermediate
 
-   Notes:
-      For complex numbers `NORM_1` will return the traditional 1 norm of the 2 norm of the complex numbers; that is the 1
-      norm of the absolute values of the complex entries. In PETSc 3.6 and earlier releases it returned the 1 norm of
-      the 1 norm of the complex entries (what is returned by the BLAS routine asum()). Both are valid norms but most
-      people expect the former.
+  Notes:
+  For complex numbers `NORM_1` will return the traditional 1 norm of the 2 norm of the complex numbers; that is the 1
+  norm of the absolute values of the complex entries. In PETSc 3.6 and earlier releases it returned the 1 norm of
+  the 1 norm of the complex entries (what is returned by the BLAS routine asum()). Both are valid norms but most
+  people expect the former.
 
-      This routine stashes the computed norm value, repeated calls before the vector entries are changed are then rapid since the
-      precomputed value is immediately available. Certain vector operations such as `VecSet()` store the norms so the value is
-      immediately available and does not need to be explicitly computed. `VecScale()` updates any stashed norm values, thus calls after `VecScale()`
-      do not need to explicitly recompute the norm.
+  This routine stashes the computed norm value, repeated calls before the vector entries are changed are then rapid since the
+  precomputed value is immediately available. Certain vector operations such as `VecSet()` store the norms so the value is
+  immediately available and does not need to be explicitly computed. `VecScale()` updates any stashed norm values, thus calls after `VecScale()`
+  do not need to explicitly recompute the norm.
 
-   Performance Issues:
+  Performance Issues:
 +    per-processor memory bandwidth - limits the speed of the computation of local portion of the norm
 .    interprocessor latency - limits the accumulation of the result across ranks, .i.e. MPI_Allreduce() time
 .    number of ranks - the time for the result will grow with the log base 2 of the number of ranks sharing the vector
@@ -243,33 +243,33 @@ PetscErrorCode VecNorm(Vec x, NormType type, PetscReal *val)
 }
 
 /*@
-   VecNormAvailable  - Returns the vector norm if it is already known. That is, it has been previously computed and cached in the vector
+  VecNormAvailable  - Returns the vector norm if it is already known. That is, it has been previously computed and cached in the vector
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  x - the vector
--  type - one of `NORM_1` (sum_i |x[i]|), `NORM_2` sqrt(sum_i (x[i])^2), `NORM_INFINITY` max_i |x[i]|.  Also available
+  Input Parameters:
++ x    - the vector
+- type - one of `NORM_1` (sum_i |x[i]|), `NORM_2` sqrt(sum_i (x[i])^2), `NORM_INFINITY` max_i |x[i]|.  Also available
           `NORM_1_AND_2`, which computes both norms and stores them
           in a two element array.
 
-   Output Parameters:
-+  available - `PETSC_TRUE` if the val returned is valid
--  val - the norm
+  Output Parameters:
++ available - `PETSC_TRUE` if the val returned is valid
+- val       - the norm
 
-   Level: intermediate
+  Level: intermediate
 
-   Performance Issues:
+  Performance Issues:
 .vb
     per-processor memory bandwidth
     interprocessor latency
     work load imbalance that causes certain processes to arrive much earlier than others
 .ve
 
-   Developer Note:
-   `PETSC_HAVE_SLOW_BLAS_NORM2` will cause a C (loop unrolled) version of the norm to be used, rather
-   than the BLAS. This should probably only be used when one is using the FORTRAN BLAS routines
-   (as opposed to vendor provided) because the FORTRAN BLAS `NRM2()` routine is very slow.
+  Developer Notes:
+  `PETSC_HAVE_SLOW_BLAS_NORM2` will cause a C (loop unrolled) version of the norm to be used, rather
+  than the BLAS. This should probably only be used when one is using the FORTRAN BLAS routines
+  (as opposed to vendor provided) because the FORTRAN BLAS `NRM2()` routine is very slow.
 
 .seealso: [](ch_vectors), `Vec`, `VecDot()`, `VecTDot()`, `VecNorm()`, `VecDotBegin()`, `VecDotEnd()`,
           `VecNormBegin()`, `VecNormEnd()`
@@ -291,17 +291,17 @@ PetscErrorCode VecNormAvailable(Vec x, NormType type, PetscBool *available, Pets
 }
 
 /*@
-   VecNormalize - Normalizes a vector by its 2-norm.
+  VecNormalize - Normalizes a vector by its 2-norm.
 
-   Collective
+  Collective
 
-   Input Parameter:
-.  x - the vector
+  Input Parameter:
+. x - the vector
 
-   Output Parameter:
-.  val - the vector norm before normalization. May be `NULL` if the value is not needed.
+  Output Parameter:
+. val - the vector norm before normalization. May be `NULL` if the value is not needed.
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: [](ch_vectors), `Vec`, `VecNorm()`, `NORM_2`, `NormType`
 @*/
@@ -328,23 +328,23 @@ PetscErrorCode VecNormalize(Vec x, PetscReal *val)
 }
 
 /*@C
-   VecMax - Determines the vector component with maximum real part and its location.
+  VecMax - Determines the vector component with maximum real part and its location.
 
-   Collective
+  Collective
 
-   Input Parameter:
-.  x - the vector
+  Input Parameter:
+. x - the vector
 
-   Output Parameters:
-+  p - the index of `val` (pass `NULL` if you don't want this) in the vector
--  val - the maximum component
+  Output Parameters:
++ p   - the index of `val` (pass `NULL` if you don't want this) in the vector
+- val - the maximum component
 
-   Level: intermediate
+  Level: intermediate
 
- Notes:
-   Returns the value `PETSC_MIN_REAL` and negative `p` if the vector is of length 0.
+  Notes:
+  Returns the value `PETSC_MIN_REAL` and negative `p` if the vector is of length 0.
 
-   Returns the smallest index with the maximum value
+  Returns the smallest index with the maximum value
 
 .seealso: [](ch_vectors), `Vec`, `VecNorm()`, `VecMin()`
 @*/
@@ -365,23 +365,23 @@ PetscErrorCode VecMax(Vec x, PetscInt *p, PetscReal *val)
 }
 
 /*@C
-   VecMin - Determines the vector component with minimum real part and its location.
+  VecMin - Determines the vector component with minimum real part and its location.
 
-   Collective
+  Collective
 
-   Input Parameter:
-.  x - the vector
+  Input Parameter:
+. x - the vector
 
-   Output Parameters:
-+  p - the index of `val` (pass `NULL` if you don't want this location) in the vector
--  val - the minimum component
+  Output Parameters:
++ p   - the index of `val` (pass `NULL` if you don't want this location) in the vector
+- val - the minimum component
 
-   Level: intermediate
+  Level: intermediate
 
-   Notes:
-   Returns the value `PETSC_MAX_REAL` and negative `p` if the vector is of length 0.
+  Notes:
+  Returns the value `PETSC_MAX_REAL` and negative `p` if the vector is of length 0.
 
-   This returns the smallest index with the minimum value
+  This returns the smallest index with the minimum value
 
 .seealso: [](ch_vectors), `Vec`, `VecMax()`
 @*/
@@ -402,28 +402,28 @@ PetscErrorCode VecMin(Vec x, PetscInt *p, PetscReal *val)
 }
 
 /*@
-   VecTDot - Computes an indefinite vector dot product. That is, this
-   routine does NOT use the complex conjugate.
+  VecTDot - Computes an indefinite vector dot product. That is, this
+  routine does NOT use the complex conjugate.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  x - first vector
--  y - second vector
+  Input Parameters:
++ x - first vector
+- y - second vector
 
-   Output Parameter:
-.  val - the dot product
+  Output Parameter:
+. val - the dot product
 
-   Level: intermediate
+  Level: intermediate
 
-   Notes for Users of Complex Numbers:
-   For complex vectors, `VecTDot()` computes the indefinite form
+  Notes for Users of Complex Numbers:
+  For complex vectors, `VecTDot()` computes the indefinite form
 $     val = (x,y) = y^T x,
-   where y^T denotes the transpose of y.
+  where y^T denotes the transpose of y.
 
-   Use `VecDot()` for the inner product
+  Use `VecDot()` for the inner product
 $     val = (x,y) = y^H x,
-   where y^H denotes the conjugate transpose of y.
+  where y^H denotes the conjugate transpose of y.
 
 .seealso: [](ch_vectors), `Vec`, `VecDot()`, `VecMTDot()`
 @*/
@@ -451,18 +451,18 @@ PetscErrorCode VecTDot(Vec x, Vec y, PetscScalar *val)
 }
 
 /*@
-   VecScale - Scales a vector.
+  VecScale - Scales a vector.
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  x - the vector
--  alpha - the scalar
+  Input Parameters:
++ x     - the vector
+- alpha - the scalar
 
-   Level: intermediate
+  Level: intermediate
 
- Note:
-   For a vector with n components, `VecScale()` computes  x[i] = alpha * x[i], for i=1,...,n.
+  Note:
+  For a vector with n components, `VecScale()` computes  x[i] = alpha * x[i], for i=1,...,n.
 
 .seealso: [](ch_vectors), `Vec`, `VecSet()`
 @*/
@@ -496,26 +496,26 @@ PetscErrorCode VecScale(Vec x, PetscScalar alpha)
 }
 
 /*@
-   VecSet - Sets all components of a vector to a single scalar value.
+  VecSet - Sets all components of a vector to a single scalar value.
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  x  - the vector
--  alpha - the scalar
+  Input Parameters:
++ x     - the vector
+- alpha - the scalar
 
-   Level: beginner
+  Level: beginner
 
-   Notes:
-   For a vector of dimension n, `VecSet()` sets x[i] = alpha, for i=1,...,n,
-   so that all vector entries then equal the identical
-   scalar value, `alpha`.  Use the more general routine
-   `VecSetValues()` to set different vector entries.
+  Notes:
+  For a vector of dimension n, `VecSet()` sets x[i] = alpha, for i=1,...,n,
+  so that all vector entries then equal the identical
+  scalar value, `alpha`.  Use the more general routine
+  `VecSetValues()` to set different vector entries.
 
-   You CANNOT call this after you have called `VecSetValues()` but before you call
-   `VecAssemblyBegin()`
+  You CANNOT call this after you have called `VecSetValues()` but before you call
+  `VecAssemblyBegin()`
 
-   If `alpha` is zero and the norm of the vector is known to be zero then this skips the unneeded zeroing process
+  If `alpha` is zero and the norm of the vector is known to be zero then this skips the unneeded zeroing process
 
 .seealso: [](ch_vectors), `Vec`, `VecSetValues()`, `VecSetValuesBlocked()`, `VecSetRandom()`
 @*/
@@ -565,22 +565,22 @@ PetscErrorCode VecSet(Vec x, PetscScalar alpha)
 }
 
 /*@
-   VecAXPY - Computes `y = alpha x + y`.
+  VecAXPY - Computes `y = alpha x + y`.
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  alpha - the scalar
-.  x - vector scale by `alpha`
--  y - vector accumulated into
+  Input Parameters:
++ alpha - the scalar
+. x     - vector scale by `alpha`
+- y     - vector accumulated into
 
-   Output Parameter:
-.  y - output vector
+  Output Parameter:
+. y - output vector
 
-   Level: intermediate
+  Level: intermediate
 
-   Notes:
-    This routine is optimized for alpha of 0.0, otherwise it calls the BLAS routine
+  Notes:
+  This routine is optimized for alpha of 0.0, otherwise it calls the BLAS routine
 .vb
     VecAXPY(y,alpha,x)                   y = alpha x           +      y
     VecAYPX(y,beta,x)                    y =       x           + beta y
@@ -620,22 +620,22 @@ PetscErrorCode VecAXPY(Vec y, PetscScalar alpha, Vec x)
 }
 
 /*@
-   VecAYPX - Computes `y = x + beta y`.
+  VecAYPX - Computes `y = x + beta y`.
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  beta - the scalar
-.  x - the unscaled vector
--  y - the vector to be scaled
+  Input Parameters:
++ beta - the scalar
+. x    - the unscaled vector
+- y    - the vector to be scaled
 
-   Output Parameter:
-.  y - output vector
+  Output Parameter:
+. y - output vector
 
-   Level: intermediate
+  Level: intermediate
 
-   Developer Note:
-    The implementation is optimized for `beta` of -1.0, 0.0, and 1.0
+  Developer Notes:
+  The implementation is optimized for `beta` of -1.0, 0.0, and 1.0
 
 .seealso: [](ch_vectors), `Vec`, `VecMAXPY()`, `VecWAXPY()`, `VecAXPY()`, `VecAXPBYPCZ()`, `VecAXPBY()`
 @*/
@@ -670,23 +670,23 @@ PetscErrorCode VecAYPX(Vec y, PetscScalar beta, Vec x)
 }
 
 /*@
-   VecAXPBY - Computes `y = alpha x + beta y`.
+  VecAXPBY - Computes `y = alpha x + beta y`.
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  alpha - first scalar
-.  beta - second scalar
-.  x - the first scaled vector
--  y - the second scaled vector
+  Input Parameters:
++ alpha - first scalar
+. beta  - second scalar
+. x     - the first scaled vector
+- y     - the second scaled vector
 
-   Output Parameter:
-.  y - output vector
+  Output Parameter:
+. y - output vector
 
-   Level: intermediate
+  Level: intermediate
 
-   Developer Note:
-   The implementation is optimized for `alpha` and/or `beta` values of 0.0 and 1.0
+  Developer Notes:
+  The implementation is optimized for `alpha` and/or `beta` values of 0.0 and 1.0
 
 .seealso: [](ch_vectors), `Vec`, `VecAYPX()`, `VecMAXPY()`, `VecWAXPY()`, `VecAXPY()`, `VecAXPBYPCZ()`
 @*/
@@ -720,28 +720,28 @@ PetscErrorCode VecAXPBY(Vec y, PetscScalar alpha, PetscScalar beta, Vec x)
 }
 
 /*@
-   VecAXPBYPCZ - Computes `z = alpha x + beta y + gamma z`
+  VecAXPBYPCZ - Computes `z = alpha x + beta y + gamma z`
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  alpha - first scalar
-.  beta - second scalar
-.  gamma - third scalar
-.  x  - first vector
-.  y  - second vector
--  z  - third vector
+  Input Parameters:
++ alpha - first scalar
+. beta  - second scalar
+. gamma - third scalar
+. x     - first vector
+. y     - second vector
+- z     - third vector
 
-   Output Parameter:
-.  z - output vector
+  Output Parameter:
+. z - output vector
 
-   Level: intermediate
+  Level: intermediate
 
-   Note:
-   `x`, `y` and `z` must be different vectors
+  Note:
+  `x`, `y` and `z` must be different vectors
 
-   Developer Note:
-    The implementation is optimized for `alpha` of 1.0 and `gamma` of 1.0 or 0.0
+  Developer Notes:
+  The implementation is optimized for `alpha` of 1.0 and `gamma` of 1.0 or 0.0
 
 .seealso: [](ch_vectors), `Vec`, `VecAYPX()`, `VecMAXPY()`, `VecWAXPY()`, `VecAXPY()`, `VecAXPBY()`
 @*/
@@ -781,25 +781,25 @@ PetscErrorCode VecAXPBYPCZ(Vec z, PetscScalar alpha, PetscScalar beta, PetscScal
 }
 
 /*@
-   VecWAXPY - Computes `w = alpha x + y`.
+  VecWAXPY - Computes `w = alpha x + y`.
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  alpha - the scalar
-.  x  - first vector, multiplied by `alpha`
--  y  - second vector
+  Input Parameters:
++ alpha - the scalar
+. x     - first vector, multiplied by `alpha`
+- y     - second vector
 
-   Output Parameter:
-.  w - the result
+  Output Parameter:
+. w - the result
 
-   Level: intermediate
+  Level: intermediate
 
-   Note:
-    `w` cannot be either `x` or `y`, but `x` and `y` can be the same
+  Note:
+  `w` cannot be either `x` or `y`, but `x` and `y` can be the same
 
-   Developer Note:
-    The implementation is optimized for alpha of -1.0, 0.0, and 1.0
+  Developer Notes:
+  The implementation is optimized for alpha of -1.0, 0.0, and 1.0
 
 .seealso: [](ch_vectors), `Vec`, `VecAXPY()`, `VecAYPX()`, `VecAXPBY()`, `VecMAXPY()`, `VecAXPBYPCZ()`
 @*/
@@ -839,38 +839,38 @@ PetscErrorCode VecWAXPY(Vec w, PetscScalar alpha, Vec x, Vec y)
 }
 
 /*@C
-   VecSetValues - Inserts or adds values into certain locations of a vector.
+  VecSetValues - Inserts or adds values into certain locations of a vector.
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  x - vector to insert in
-.  ni - number of elements to add
-.  ix - indices where to add
-.  y - array of values
--  iora - either `INSERT_VALUES` to replace the current values or `ADD_VALUES` to add values to any existing entries
+  Input Parameters:
++ x    - vector to insert in
+. ni   - number of elements to add
+. ix   - indices where to add
+. y    - array of values
+- iora - either `INSERT_VALUES` to replace the current values or `ADD_VALUES` to add values to any existing entries
 
-   Level: beginner
+  Level: beginner
 
-   Notes:
+  Notes:
 .vb
    `VecSetValues()` sets x[ix[i]] = y[i], for i=0,...,ni-1.
 .ve
 
-   Calls to `VecSetValues()` with the `INSERT_VALUES` and `ADD_VALUES`
-   options cannot be mixed without intervening calls to the assembly
-   routines.
+  Calls to `VecSetValues()` with the `INSERT_VALUES` and `ADD_VALUES`
+  options cannot be mixed without intervening calls to the assembly
+  routines.
 
-   These values may be cached, so `VecAssemblyBegin()` and `VecAssemblyEnd()`
-   MUST be called after all calls to `VecSetValues()` have been completed.
+  These values may be cached, so `VecAssemblyBegin()` and `VecAssemblyEnd()`
+  MUST be called after all calls to `VecSetValues()` have been completed.
 
-   VecSetValues() uses 0-based indices in Fortran as well as in C.
+  VecSetValues() uses 0-based indices in Fortran as well as in C.
 
-   If you call `VecSetOption`(x, `VEC_IGNORE_NEGATIVE_INDICES`,`PETSC_TRUE`),
-   negative indices may be passed in ix. These rows are
-   simply ignored. This allows easily inserting element load matrices
-   with homogeneous Dirchlet boundary conditions that you don't want represented
-   in the vector.
+  If you call `VecSetOption`(x, `VEC_IGNORE_NEGATIVE_INDICES`,`PETSC_TRUE`),
+  negative indices may be passed in ix. These rows are
+  simply ignored. This allows easily inserting element load matrices
+  with homogeneous Dirchlet boundary conditions that you don't want represented
+  in the vector.
 
 .seealso: [](ch_vectors), `Vec`, `VecAssemblyBegin()`, `VecAssemblyEnd()`, `VecSetValuesLocal()`,
           `VecSetValue()`, `VecSetValuesBlocked()`, `InsertMode`, `INSERT_VALUES`, `ADD_VALUES`, `VecGetValues()`
@@ -892,33 +892,33 @@ PetscErrorCode VecSetValues(Vec x, PetscInt ni, const PetscInt ix[], const Petsc
 }
 
 /*@C
-   VecGetValues - Gets values from certain locations of a vector. Currently
-          can only get values on the same processor on which they are owned
+  VecGetValues - Gets values from certain locations of a vector. Currently
+  can only get values on the same processor on which they are owned
 
-    Not Collective
+  Not Collective
 
-   Input Parameters:
-+  x - vector to get values from
-.  ni - number of elements to get
--  ix - indices where to get them from (in global 1d numbering)
+  Input Parameters:
++ x  - vector to get values from
+. ni - number of elements to get
+- ix - indices where to get them from (in global 1d numbering)
 
-   Output Parameter:
-.   y - array of values
+  Output Parameter:
+. y - array of values
 
-   Level: beginner
+  Level: beginner
 
-   Notes:
-   The user provides the allocated array y; it is NOT allocated in this routine
+  Notes:
+  The user provides the allocated array y; it is NOT allocated in this routine
 
-   `VecGetValues()` gets y[i] = x[ix[i]], for i=0,...,ni-1.
+  `VecGetValues()` gets y[i] = x[ix[i]], for i=0,...,ni-1.
 
-   `VecAssemblyBegin()` and `VecAssemblyEnd()`  MUST be called before calling this if `VecSetValues()` or related routine has been called
+  `VecAssemblyBegin()` and `VecAssemblyEnd()`  MUST be called before calling this if `VecSetValues()` or related routine has been called
 
-   VecGetValues() uses 0-based indices in Fortran as well as in C.
+  VecGetValues() uses 0-based indices in Fortran as well as in C.
 
-   If you call `VecSetOption`(x, `VEC_IGNORE_NEGATIVE_INDICES`,`PETSC_TRUE`),
-   negative indices may be passed in ix. These rows are
-   simply ignored.
+  If you call `VecSetOption`(x, `VEC_IGNORE_NEGATIVE_INDICES`,`PETSC_TRUE`),
+  negative indices may be passed in ix. These rows are
+  simply ignored.
 
 .seealso: [](ch_vectors), `Vec`, `VecAssemblyBegin()`, `VecAssemblyEnd()`, `VecSetValues()`
 @*/
@@ -936,36 +936,36 @@ PetscErrorCode VecGetValues(Vec x, PetscInt ni, const PetscInt ix[], PetscScalar
 }
 
 /*@C
-   VecSetValuesBlocked - Inserts or adds blocks of values into certain locations of a vector.
+  VecSetValuesBlocked - Inserts or adds blocks of values into certain locations of a vector.
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  x - vector to insert in
-.  ni - number of blocks to add
-.  ix - indices where to add in block count, rather than element count
-.  y - array of values
--  iora - either `INSERT_VALUES` replaces existing entries with new values, `ADD_VALUES`, adds values to any existing entries
+  Input Parameters:
++ x    - vector to insert in
+. ni   - number of blocks to add
+. ix   - indices where to add in block count, rather than element count
+. y    - array of values
+- iora - either `INSERT_VALUES` replaces existing entries with new values, `ADD_VALUES`, adds values to any existing entries
 
-   Level: intermediate
+  Level: intermediate
 
-   Notes:
-   `VecSetValuesBlocked()` sets x[bs*ix[i]+j] = y[bs*i+j],
-   for j=0,...,bs-1, for i=0,...,ni-1. where bs was set with VecSetBlockSize().
+  Notes:
+  `VecSetValuesBlocked()` sets x[bs*ix[i]+j] = y[bs*i+j],
+  for j=0,...,bs-1, for i=0,...,ni-1. where bs was set with VecSetBlockSize().
 
-   Calls to `VecSetValuesBlocked()` with the `INSERT_VALUES` and `ADD_VALUES`
-   options cannot be mixed without intervening calls to the assembly
-   routines.
+  Calls to `VecSetValuesBlocked()` with the `INSERT_VALUES` and `ADD_VALUES`
+  options cannot be mixed without intervening calls to the assembly
+  routines.
 
-   These values may be cached, so `VecAssemblyBegin()` and `VecAssemblyEnd()`
-   MUST be called after all calls to `VecSetValuesBlocked()` have been completed.
+  These values may be cached, so `VecAssemblyBegin()` and `VecAssemblyEnd()`
+  MUST be called after all calls to `VecSetValuesBlocked()` have been completed.
 
-   `VecSetValuesBlocked()` uses 0-based indices in Fortran as well as in C.
+  `VecSetValuesBlocked()` uses 0-based indices in Fortran as well as in C.
 
-   Negative indices may be passed in ix, these rows are
-   simply ignored. This allows easily inserting element load matrices
-   with homogeneous Dirchlet boundary conditions that you don't want represented
-   in the vector.
+  Negative indices may be passed in ix, these rows are
+  simply ignored. This allows easily inserting element load matrices
+  with homogeneous Dirchlet boundary conditions that you don't want represented
+  in the vector.
 
 .seealso: [](ch_vectors), `Vec`, `VecAssemblyBegin()`, `VecAssemblyEnd()`, `VecSetValuesBlockedLocal()`,
           `VecSetValues()`
@@ -987,31 +987,31 @@ PetscErrorCode VecSetValuesBlocked(Vec x, PetscInt ni, const PetscInt ix[], cons
 }
 
 /*@C
-   VecSetValuesLocal - Inserts or adds values into certain locations of a vector,
-   using a local ordering of the nodes.
+  VecSetValuesLocal - Inserts or adds values into certain locations of a vector,
+  using a local ordering of the nodes.
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  x - vector to insert in
-.  ni - number of elements to add
-.  ix - indices where to add
-.  y - array of values
--  iora - either `INSERT_VALUES` replaces existing entries with new values, `ADD_VALUES` adds values to any existing entries
+  Input Parameters:
++ x    - vector to insert in
+. ni   - number of elements to add
+. ix   - indices where to add
+. y    - array of values
+- iora - either `INSERT_VALUES` replaces existing entries with new values, `ADD_VALUES` adds values to any existing entries
 
-   Level: intermediate
+  Level: intermediate
 
-   Notes:
-   `VecSetValuesLocal()` sets x[ix[i]] = y[i], for i=0,...,ni-1.
+  Notes:
+  `VecSetValuesLocal()` sets x[ix[i]] = y[i], for i=0,...,ni-1.
 
-   Calls to `VecSetValues()` with the `INSERT_VALUES` and `ADD_VALUES`
-   options cannot be mixed without intervening calls to the assembly
-   routines.
+  Calls to `VecSetValues()` with the `INSERT_VALUES` and `ADD_VALUES`
+  options cannot be mixed without intervening calls to the assembly
+  routines.
 
-   These values may be cached, so `VecAssemblyBegin()` and `VecAssemblyEnd()`
-   MUST be called after all calls to `VecSetValuesLocal()` have been completed.
+  These values may be cached, so `VecAssemblyBegin()` and `VecAssemblyEnd()`
+  MUST be called after all calls to `VecSetValuesLocal()` have been completed.
 
-   `VecSetValuesLocal()` uses 0-based indices in Fortran as well as in C.
+  `VecSetValuesLocal()` uses 0-based indices in Fortran as well as in C.
 
 .seealso: [](ch_vectors), `Vec`, `VecAssemblyBegin()`, `VecAssemblyEnd()`, `VecSetValues()`, `VecSetLocalToGlobalMapping()`,
           `VecSetValuesBlockedLocal()`
@@ -1042,32 +1042,32 @@ PetscErrorCode VecSetValuesLocal(Vec x, PetscInt ni, const PetscInt ix[], const 
 }
 
 /*@
-   VecSetValuesBlockedLocal - Inserts or adds values into certain locations of a vector,
-   using a local ordering of the nodes.
+  VecSetValuesBlockedLocal - Inserts or adds values into certain locations of a vector,
+  using a local ordering of the nodes.
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  x - vector to insert in
-.  ni - number of blocks to add
-.  ix - indices where to add in block count, not element count
-.  y - array of values
--  iora - either `INSERT_VALUES` replaces existing entries with new values, `ADD_VALUES` adds values to any existing entries
+  Input Parameters:
++ x    - vector to insert in
+. ni   - number of blocks to add
+. ix   - indices where to add in block count, not element count
+. y    - array of values
+- iora - either `INSERT_VALUES` replaces existing entries with new values, `ADD_VALUES` adds values to any existing entries
 
-   Level: intermediate
+  Level: intermediate
 
-   Notes:
-   `VecSetValuesBlockedLocal()` sets x[bs*ix[i]+j] = y[bs*i+j],
-   for j=0,..bs-1, for i=0,...,ni-1, where bs has been set with `VecSetBlockSize()`.
+  Notes:
+  `VecSetValuesBlockedLocal()` sets x[bs*ix[i]+j] = y[bs*i+j],
+  for j=0,..bs-1, for i=0,...,ni-1, where bs has been set with `VecSetBlockSize()`.
 
-   Calls to `VecSetValuesBlockedLocal()` with the `INSERT_VALUES` and `ADD_VALUES`
-   options cannot be mixed without intervening calls to the assembly
-   routines.
+  Calls to `VecSetValuesBlockedLocal()` with the `INSERT_VALUES` and `ADD_VALUES`
+  options cannot be mixed without intervening calls to the assembly
+  routines.
 
-   These values may be cached, so `VecAssemblyBegin()` and `VecAssemblyEnd()`
-   MUST be called after all calls to `VecSetValuesBlockedLocal()` have been completed.
+  These values may be cached, so `VecAssemblyBegin()` and `VecAssemblyEnd()`
+  MUST be called after all calls to `VecSetValuesBlockedLocal()` have been completed.
 
-   `VecSetValuesBlockedLocal()` uses 0-based indices in Fortran as well as in C.
+  `VecSetValuesBlockedLocal()` uses 0-based indices in Fortran as well as in C.
 
 .seealso: [](ch_vectors), `Vec`, `VecAssemblyBegin()`, `VecAssemblyEnd()`, `VecSetValues()`, `VecSetValuesBlocked()`,
           `VecSetLocalToGlobalMapping()`
@@ -1126,29 +1126,29 @@ static PetscErrorCode VecMXDot_Private(Vec x, PetscInt nv, const Vec y[], PetscS
 }
 
 /*@
-   VecMTDot - Computes indefinite vector multiple dot products.
-   That is, it does NOT use the complex conjugate.
+  VecMTDot - Computes indefinite vector multiple dot products.
+  That is, it does NOT use the complex conjugate.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  x - one vector
-.  nv - number of vectors
--  y - array of vectors.  Note that vectors are pointers
+  Input Parameters:
++ x  - one vector
+. nv - number of vectors
+- y  - array of vectors.  Note that vectors are pointers
 
-   Output Parameter:
-.  val - array of the dot products
+  Output Parameter:
+. val - array of the dot products
 
-   Level: intermediate
+  Level: intermediate
 
-   Notes for Users of Complex Numbers:
-   For complex vectors, `VecMTDot()` computes the indefinite form
+  Notes for Users of Complex Numbers:
+  For complex vectors, `VecMTDot()` computes the indefinite form
 $      val = (x,y) = y^T x,
-   where y^T denotes the transpose of y.
+  where y^T denotes the transpose of y.
 
-   Use `VecMDot()` for the inner product
+  Use `VecMDot()` for the inner product
 $      val = (x,y) = y^H x,
-   where y^H denotes the conjugate transpose of y.
+  where y^H denotes the conjugate transpose of y.
 
 .seealso: [](ch_vectors), `Vec`, `VecMDot()`, `VecTDot()`
 @*/
@@ -1161,28 +1161,28 @@ PetscErrorCode VecMTDot(Vec x, PetscInt nv, const Vec y[], PetscScalar val[])
 }
 
 /*@
-   VecMDot - Computes multiple vector dot products.
+  VecMDot - Computes multiple vector dot products.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  x - one vector
-.  nv - number of vectors
--  y - array of vectors.
+  Input Parameters:
++ x  - one vector
+. nv - number of vectors
+- y  - array of vectors.
 
-   Output Parameter:
-.  val - array of the dot products (does not allocate the array)
+  Output Parameter:
+. val - array of the dot products (does not allocate the array)
 
-   Level: intermediate
+  Level: intermediate
 
-   Notes for Users of Complex Numbers:
-   For complex vectors, `VecMDot()` computes
+  Notes for Users of Complex Numbers:
+  For complex vectors, `VecMDot()` computes
 $     val = (x,y) = y^H x,
-   where y^H denotes the conjugate transpose of y.
+  where y^H denotes the conjugate transpose of y.
 
-   Use `VecMTDot()` for the indefinite form
+  Use `VecMTDot()` for the indefinite form
 $     val = (x,y) = y^T x,
-   where y^T denotes the transpose of y.
+  where y^T denotes the transpose of y.
 
 .seealso: [](ch_vectors), `Vec`, `VecMTDot()`, `VecDot()`
 @*/
@@ -1195,20 +1195,20 @@ PetscErrorCode VecMDot(Vec x, PetscInt nv, const Vec y[], PetscScalar val[])
 }
 
 /*@
-   VecMAXPY - Computes `y = y + sum alpha[i] x[i]`
+  VecMAXPY - Computes `y = y + sum alpha[i] x[i]`
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  nv - number of scalars and x-vectors
-.  alpha - array of scalars
-.  y - one vector
--  x - array of vectors
+  Input Parameters:
++ nv    - number of scalars and x-vectors
+. alpha - array of scalars
+. y     - one vector
+- x     - array of vectors
 
-   Level: intermediate
+  Level: intermediate
 
-   Note:
-    `y` cannot be any of the `x` vectors
+  Note:
+  `y` cannot be any of the `x` vectors
 
 .seealso: [](ch_vectors), `Vec`, `VecAYPX()`, `VecWAXPY()`, `VecAXPY()`, `VecAXPBYPCZ()`, `VecAXPBY()`
 @*/
@@ -1250,31 +1250,31 @@ PetscErrorCode VecMAXPY(Vec y, PetscInt nv, const PetscScalar alpha[], Vec x[])
 }
 
 /*@
-   VecConcatenate - Creates a new vector that is a vertical concatenation of all the given array of vectors
-                    in the order they appear in the array. The concatenated vector resides on the same
-                    communicator and is the same type as the source vectors.
+  VecConcatenate - Creates a new vector that is a vertical concatenation of all the given array of vectors
+  in the order they appear in the array. The concatenated vector resides on the same
+  communicator and is the same type as the source vectors.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  nx   - number of vectors to be concatenated
--  X    - array containing the vectors to be concatenated in the order of concatenation
+  Input Parameters:
++ nx - number of vectors to be concatenated
+- X  - array containing the vectors to be concatenated in the order of concatenation
 
-   Output Parameters:
-+  Y    - concatenated vector
--  x_is - array of index sets corresponding to the concatenated components of `Y` (pass `NULL` if not needed)
+  Output Parameters:
++ Y    - concatenated vector
+- x_is - array of index sets corresponding to the concatenated components of `Y` (pass `NULL` if not needed)
 
-   Level: advanced
+  Level: advanced
 
-   Notes:
-   Concatenation is similar to the functionality of a `VECNEST` object; they both represent combination of
-   different vector spaces. However, concatenated vectors do not store any information about their
-   sub-vectors and own their own data. Consequently, this function provides index sets to enable the
-   manipulation of data in the concatenated vector that corresponds to the original components at creation.
+  Notes:
+  Concatenation is similar to the functionality of a `VECNEST` object; they both represent combination of
+  different vector spaces. However, concatenated vectors do not store any information about their
+  sub-vectors and own their own data. Consequently, this function provides index sets to enable the
+  manipulation of data in the concatenated vector that corresponds to the original components at creation.
 
-   This is a useful tool for outer loop algorithms, particularly constrained optimizers, where the solver
-   has to operate on combined vector spaces and cannot utilize `VECNEST` objects due to incompatibility with
-   bound projections.
+  This is a useful tool for outer loop algorithms, particularly constrained optimizers, where the solver
+  has to operate on combined vector spaces and cannot utilize `VECNEST` objects due to incompatibility with
+  bound projections.
 
 .seealso: [](ch_vectors), `Vec`, `VECNEST`, `VECSCATTER`, `VecScatterCreate()`
 @*/
@@ -1404,27 +1404,27 @@ PetscErrorCode VecGetSubVectorThroughVecScatter_Private(Vec X, IS is, PetscInt b
 }
 
 /*@
-   VecGetSubVector - Gets a vector representing part of another vector
+  VecGetSubVector - Gets a vector representing part of another vector
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  X - vector from which to extract a subvector
--  is - index set representing portion of `X` to extract
+  Input Parameters:
++ X  - vector from which to extract a subvector
+- is - index set representing portion of `X` to extract
 
-   Output Parameter:
-.  Y - subvector corresponding to `is`
+  Output Parameter:
+. Y - subvector corresponding to `is`
 
-   Level: advanced
+  Level: advanced
 
-   Notes:
-   The subvector `Y` should be returned with `VecRestoreSubVector()`.
-   `X` and must be defined on the same communicator
+  Notes:
+  The subvector `Y` should be returned with `VecRestoreSubVector()`.
+  `X` and must be defined on the same communicator
 
-   This function may return a subvector without making a copy, therefore it is not safe to use the original vector while
-   modifying the subvector.  Other non-overlapping subvectors can still be obtained from X using this function.
+  This function may return a subvector without making a copy, therefore it is not safe to use the original vector while
+  modifying the subvector.  Other non-overlapping subvectors can still be obtained from X using this function.
 
-   The resulting subvector inherits the block size from `is` if greater than one. Otherwise, the block size is guessed from the block size of the original `X`.
+  The resulting subvector inherits the block size from `is` if greater than one. Otherwise, the block size is guessed from the block size of the original `X`.
 
 .seealso: [](ch_vectors), `Vec`, `IS`, `VECNEST`, `MatCreateSubMatrix()`
 @*/
@@ -1531,16 +1531,16 @@ PetscErrorCode VecGetSubVector(Vec X, IS is, Vec *Y)
 }
 
 /*@
-   VecRestoreSubVector - Restores a subvector extracted using `VecGetSubVector()`
+  VecRestoreSubVector - Restores a subvector extracted using `VecGetSubVector()`
 
-   Collective
+  Collective
 
-   Input Parameters:
-+ X - vector from which subvector was obtained
+  Input Parameters:
++ X  - vector from which subvector was obtained
 . is - index set representing the subset of `X`
-- Y - subvector being restored
+- Y  - subvector being restored
 
-   Level: advanced
+  Level: advanced
 
 .seealso: [](ch_vectors), `Vec`, `IS`, `VecGetSubVector()`
 @*/
@@ -1640,18 +1640,18 @@ PetscErrorCode VecRestoreSubVector(Vec X, IS is, Vec *Y)
 }
 
 /*@
-   VecCreateLocalVector - Creates a vector object suitable for use with `VecGetLocalVector()` and friends. You must call `VecDestroy()` when the
-   vector is no longer needed.
+  VecCreateLocalVector - Creates a vector object suitable for use with `VecGetLocalVector()` and friends. You must call `VecDestroy()` when the
+  vector is no longer needed.
 
-   Not Collective.
+  Not Collective.
 
-   Input parameter:
-.  v - The vector for which the local vector is desired.
+  Input Parameter:
+. v - The vector for which the local vector is desired.
 
-   Output parameter:
-.  w - Upon exit this contains the local vector.
+  Output Parameter:
+. w - Upon exit this contains the local vector.
 
-   Level: beginner
+  Level: beginner
 
 .seealso: [](ch_vectors), `Vec`, `VecGetLocalVectorRead()`, `VecRestoreLocalVectorRead()`, `VecGetLocalVector()`, `VecRestoreLocalVector()`
 @*/
@@ -1681,35 +1681,35 @@ PetscErrorCode VecCreateLocalVector(Vec v, Vec *w)
 }
 
 /*@
-   VecGetLocalVectorRead - Maps the local portion of a vector into a
-   vector.
+  VecGetLocalVectorRead - Maps the local portion of a vector into a
+  vector.
 
-   Not Collective.
+  Not Collective.
 
-   Input parameter:
-.  v - The vector for which the local vector is desired.
+  Input Parameter:
+. v - The vector for which the local vector is desired.
 
-   Output parameter:
-.  w - Upon exit this contains the local vector.
+  Output Parameter:
+. w - Upon exit this contains the local vector.
 
-   Level: beginner
+  Level: beginner
 
-   Notes:
-   You must call `VecRestoreLocalVectorRead()` when the local
-   vector is no longer needed.
+  Notes:
+  You must call `VecRestoreLocalVectorRead()` when the local
+  vector is no longer needed.
 
-   This function is similar to `VecGetArrayRead()` which maps the local
-   portion into a raw pointer.  `VecGetLocalVectorRead()` is usually
-   almost as efficient as `VecGetArrayRead()` but in certain circumstances
-   `VecGetLocalVectorRead()` can be much more efficient than
-   `VecGetArrayRead()`.  This is because the construction of a contiguous
-   array representing the vector data required by `VecGetArrayRead()` can
-   be an expensive operation for certain vector types.  For example, for
-   GPU vectors `VecGetArrayRead()` requires that the data between device
-   and host is synchronized.
+  This function is similar to `VecGetArrayRead()` which maps the local
+  portion into a raw pointer.  `VecGetLocalVectorRead()` is usually
+  almost as efficient as `VecGetArrayRead()` but in certain circumstances
+  `VecGetLocalVectorRead()` can be much more efficient than
+  `VecGetArrayRead()`.  This is because the construction of a contiguous
+  array representing the vector data required by `VecGetArrayRead()` can
+  be an expensive operation for certain vector types.  For example, for
+  GPU vectors `VecGetArrayRead()` requires that the data between device
+  and host is synchronized.
 
-   Unlike `VecGetLocalVector()`, this routine is not collective and
-   preserves cached information.
+  Unlike `VecGetLocalVector()`, this routine is not collective and
+  preserves cached information.
 
 .seealso: [](ch_vectors), `Vec`, `VecCreateLocalVector()`, `VecRestoreLocalVectorRead()`, `VecGetLocalVector()`, `VecGetArrayRead()`, `VecGetArray()`
 @*/
@@ -1734,16 +1734,16 @@ PetscErrorCode VecGetLocalVectorRead(Vec v, Vec w)
 }
 
 /*@
-   VecRestoreLocalVectorRead - Unmaps the local portion of a vector
-   previously mapped into a vector using `VecGetLocalVectorRead()`.
+  VecRestoreLocalVectorRead - Unmaps the local portion of a vector
+  previously mapped into a vector using `VecGetLocalVectorRead()`.
 
-   Not Collective.
+  Not Collective.
 
-   Input parameter:
-+  v - The local portion of this vector was previously mapped into `w` using `VecGetLocalVectorRead()`.
--  w - The vector into which the local portion of `v` was mapped.
+  Input Parameters:
++ v - The local portion of this vector was previously mapped into `w` using `VecGetLocalVectorRead()`.
+- w - The vector into which the local portion of `v` was mapped.
 
-   Level: beginner
+  Level: beginner
 
 .seealso: [](ch_vectors), `Vec`, `VecCreateLocalVector()`, `VecGetLocalVectorRead()`, `VecGetLocalVector()`, `VecGetArrayRead()`, `VecGetArray()`
 @*/
@@ -1768,32 +1768,32 @@ PetscErrorCode VecRestoreLocalVectorRead(Vec v, Vec w)
 }
 
 /*@
-   VecGetLocalVector - Maps the local portion of a vector into a
-   vector.
+  VecGetLocalVector - Maps the local portion of a vector into a
+  vector.
 
-   Collective
+  Collective
 
-   Input parameter:
-.  v - The vector for which the local vector is desired.
+  Input Parameter:
+. v - The vector for which the local vector is desired.
 
-   Output parameter:
-.  w - Upon exit this contains the local vector.
+  Output Parameter:
+. w - Upon exit this contains the local vector.
 
-   Level: beginner
+  Level: beginner
 
-   Notes:
-   You must call `VecRestoreLocalVector()` when the local
-   vector is no longer needed.
+  Notes:
+  You must call `VecRestoreLocalVector()` when the local
+  vector is no longer needed.
 
-   This function is similar to `VecGetArray()` which maps the local
-   portion into a raw pointer.  `VecGetLocalVector()` is usually about as
-   efficient as `VecGetArray()` but in certain circumstances
-   `VecGetLocalVector()` can be much more efficient than `VecGetArray()`.
-   This is because the construction of a contiguous array representing
-   the vector data required by `VecGetArray()` can be an expensive
-   operation for certain vector types.  For example, for GPU vectors
-   `VecGetArray()` requires that the data between device and host is
-   synchronized.
+  This function is similar to `VecGetArray()` which maps the local
+  portion into a raw pointer.  `VecGetLocalVector()` is usually about as
+  efficient as `VecGetArray()` but in certain circumstances
+  `VecGetLocalVector()` can be much more efficient than `VecGetArray()`.
+  This is because the construction of a contiguous array representing
+  the vector data required by `VecGetArray()` can be an expensive
+  operation for certain vector types.  For example, for GPU vectors
+  `VecGetArray()` requires that the data between device and host is
+  synchronized.
 
 .seealso: [](ch_vectors), `Vec`, `VecCreateLocalVector()`, `VecRestoreLocalVector()`, `VecGetLocalVectorRead()`, `VecGetArrayRead()`, `VecGetArray()`
 @*/
@@ -1816,16 +1816,16 @@ PetscErrorCode VecGetLocalVector(Vec v, Vec w)
 }
 
 /*@
-   VecRestoreLocalVector - Unmaps the local portion of a vector
-   previously mapped into a vector using `VecGetLocalVector()`.
+  VecRestoreLocalVector - Unmaps the local portion of a vector
+  previously mapped into a vector using `VecGetLocalVector()`.
 
-   Logically Collective.
+  Logically Collective.
 
-   Input parameter:
-+  v - The local portion of this vector was previously mapped into `w` using `VecGetLocalVector()`.
--  w - The vector into which the local portion of `v` was mapped.
+  Input Parameters:
++ v - The local portion of this vector was previously mapped into `w` using `VecGetLocalVector()`.
+- w - The vector into which the local portion of `v` was mapped.
 
-   Level: beginner
+  Level: beginner
 
 .seealso: [](ch_vectors), `Vec`, `VecCreateLocalVector()`, `VecGetLocalVector()`, `VecGetLocalVectorRead()`, `VecRestoreLocalVectorRead()`, `LocalVectorRead()`, `VecGetArrayRead()`, `VecGetArray()`
 @*/
@@ -1848,26 +1848,26 @@ PetscErrorCode VecRestoreLocalVector(Vec v, Vec w)
 }
 
 /*@C
-   VecGetArray - Returns a pointer to a contiguous array that contains this
-   processor's portion of the vector data. For the standard PETSc
-   vectors, `VecGetArray()` returns a pointer to the local data array and
-   does not use any copies. If the underlying vector data is not stored
-   in a contiguous array this routine will copy the data to a contiguous
-   array and return a pointer to that. You MUST call `VecRestoreArray()`
-   when you no longer need access to the array.
+  VecGetArray - Returns a pointer to a contiguous array that contains this
+  processor's portion of the vector data. For the standard PETSc
+  vectors, `VecGetArray()` returns a pointer to the local data array and
+  does not use any copies. If the underlying vector data is not stored
+  in a contiguous array this routine will copy the data to a contiguous
+  array and return a pointer to that. You MUST call `VecRestoreArray()`
+  when you no longer need access to the array.
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameter:
-.  x - the vector
+  Input Parameter:
+. x - the vector
 
-   Output Parameter:
-.  a - location to put pointer to the array
+  Output Parameter:
+. a - location to put pointer to the array
 
-   Level: beginner
+  Level: beginner
 
-   Fortran Note:
-   `VecGetArray()` Fortran binding is deprecated (since PETSc 3.19), use `VecGetArrayF90()`
+  Fortran Notes:
+  `VecGetArray()` Fortran binding is deprecated (since PETSc 3.19), use `VecGetArrayF90()`
 
 .seealso: [](ch_vectors), `Vec`, `VecRestoreArray()`, `VecGetArrayRead()`, `VecGetArrays()`, `VecGetArrayF90()`, `VecGetArrayReadF90()`, `VecPlaceArray()`, `VecGetArray2d()`,
           `VecGetArrayPair()`, `VecRestoreArrayPair()`, `VecGetArrayWrite()`, `VecRestoreArrayWrite()`
@@ -1886,18 +1886,18 @@ PetscErrorCode VecGetArray(Vec x, PetscScalar **a)
 }
 
 /*@C
-   VecRestoreArray - Restores a vector after `VecGetArray()` has been called and the array is no longer needed
+  VecRestoreArray - Restores a vector after `VecGetArray()` has been called and the array is no longer needed
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  x - the vector
--  a - location of pointer to array obtained from `VecGetArray()`
+  Input Parameters:
++ x - the vector
+- a - location of pointer to array obtained from `VecGetArray()`
 
-   Level: beginner
+  Level: beginner
 
-   Fortran Note:
-   `VecRestoreArray()` Fortran binding is deprecated (since PETSc 3.19), use `VecRestoreArrayF90()`
+  Fortran Notes:
+  `VecRestoreArray()` Fortran binding is deprecated (since PETSc 3.19), use `VecRestoreArrayF90()`
 
 .seealso: [](ch_vectors), `Vec`, `VecGetArray()`, `VecRestoreArrayRead()`, `VecRestoreArrays()`, `VecRestoreArrayF90()`, `VecRestoreArrayReadF90()`, `VecPlaceArray()`, `VecRestoreArray2d()`,
           `VecGetArrayPair()`, `VecRestoreArrayPair()`
@@ -1915,29 +1915,29 @@ PetscErrorCode VecRestoreArray(Vec x, PetscScalar **a)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 /*@C
-   VecGetArrayRead - Get read-only pointer to contiguous array containing this processor's portion of the vector data.
+  VecGetArrayRead - Get read-only pointer to contiguous array containing this processor's portion of the vector data.
 
-   Not Collective
+  Not Collective
 
-   Input Parameter:
-.  x - the vector
+  Input Parameter:
+. x - the vector
 
-   Output Parameter:
-.  a - the array
+  Output Parameter:
+. a - the array
 
-   Level: beginner
+  Level: beginner
 
-   Notes:
-   The array must be returned using a matching call to `VecRestoreArrayRead()`.
+  Notes:
+  The array must be returned using a matching call to `VecRestoreArrayRead()`.
 
-   Unlike `VecGetArray()`, preserves cached information like vector norms.
+  Unlike `VecGetArray()`, preserves cached information like vector norms.
 
-   Standard PETSc vectors use contiguous storage so that this routine does not perform a copy.  Other vector
-   implementations may require a copy, but such implementations should cache the contiguous representation so that
-   only one copy is performed when this routine is called multiple times in sequence.
+  Standard PETSc vectors use contiguous storage so that this routine does not perform a copy.  Other vector
+  implementations may require a copy, but such implementations should cache the contiguous representation so that
+  only one copy is performed when this routine is called multiple times in sequence.
 
-   Fortran Note:
-   `VecGetArrayRead()` Fortran binding is deprecated (since PETSc 3.19), use `VecGetArrayReadF90()`
+  Fortran Notes:
+  `VecGetArrayRead()` Fortran binding is deprecated (since PETSc 3.19), use `VecGetArrayReadF90()`
 
 .seealso: [](ch_vectors), `Vec`, `VecGetArrayReadF90()`, `VecGetArray()`, `VecRestoreArray()`, `VecGetArrayPair()`, `VecRestoreArrayPair()`
 @*/
@@ -1965,18 +1965,18 @@ PetscErrorCode VecGetArrayRead(Vec x, const PetscScalar **a)
 }
 
 /*@C
-   VecRestoreArrayRead - Restore array obtained with `VecGetArrayRead()`
+  VecRestoreArrayRead - Restore array obtained with `VecGetArrayRead()`
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
+  Input Parameters:
 +  vec - the vector
 -  array - the array
 
-   Level: beginner
+  Level: beginner
 
-   Fortran Note:
-   `VecRestoreArrayRead()` Fortran binding is deprecated (since PETSc 3.19), use `VecRestoreArrayReadF90()`
+  Fortran Notes:
+  `VecRestoreArrayRead()` Fortran binding is deprecated (since PETSc 3.19), use `VecRestoreArrayReadF90()`
 
 .seealso: [](ch_vectors), `Vec`, `VecRestoreArrayReadF90()`, `VecGetArray()`, `VecRestoreArray()`, `VecGetArrayPair()`, `VecRestoreArrayPair()`
 @*/
@@ -2003,28 +2003,28 @@ PetscErrorCode VecRestoreArrayRead(Vec x, const PetscScalar **a)
 }
 
 /*@C
-   VecGetArrayWrite - Returns a pointer to a contiguous array that WILL contain this
-   processor's portion of the vector data. The values in this array are NOT valid, the caller of this
-   routine is responsible for putting values into the array; any values it does not set will be invalid
+  VecGetArrayWrite - Returns a pointer to a contiguous array that WILL contain this
+  processor's portion of the vector data. The values in this array are NOT valid, the caller of this
+  routine is responsible for putting values into the array; any values it does not set will be invalid
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameter:
-.  x - the vector
+  Input Parameter:
+. x - the vector
 
-   Output Parameter:
-.  a - location to put pointer to the array
+  Output Parameter:
+. a - location to put pointer to the array
 
-   Level: intermediate
+  Level: intermediate
 
-   Note:
-   The array must be returned using a matching call to `VecRestoreArrayRead()`.
+  Note:
+  The array must be returned using a matching call to `VecRestoreArrayRead()`.
 
-   For vectors associated with GPUs, the host and device vectors are not synchronized before giving access. If you need correct
-   values in the array use `VecGetArray()`
+  For vectors associated with GPUs, the host and device vectors are not synchronized before giving access. If you need correct
+  values in the array use `VecGetArray()`
 
-   Fortran Note:
-   `VecGetArrayWrite()` Fortran binding is deprecated (since PETSc 3.19), use `VecGetArrayWriteF90()`
+  Fortran Notes:
+  `VecGetArrayWrite()` Fortran binding is deprecated (since PETSc 3.19), use `VecGetArrayWriteF90()`
 
 .seealso: [](ch_vectors), `Vec`, `VecGetArrayWriteF90()`, `VecRestoreArray()`, `VecGetArrayRead()`, `VecGetArrays()`, `VecGetArrayF90()`, `VecGetArrayReadF90()`, `VecPlaceArray()`, `VecGetArray2d()`,
           `VecGetArrayPair()`, `VecRestoreArrayPair()`, `VecGetArray()`, `VecRestoreArrayWrite()`
@@ -2044,18 +2044,18 @@ PetscErrorCode VecGetArrayWrite(Vec x, PetscScalar **a)
 }
 
 /*@C
-   VecRestoreArrayWrite - Restores a vector after `VecGetArrayWrite()` has been called.
+  VecRestoreArrayWrite - Restores a vector after `VecGetArrayWrite()` has been called.
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  x - the vector
--  a - location of pointer to array obtained from `VecGetArray()`
+  Input Parameters:
++ x - the vector
+- a - location of pointer to array obtained from `VecGetArray()`
 
-   Level: beginner
+  Level: beginner
 
-   Fortran Note:
-   `VecRestoreArrayWrite()` Fortran binding is deprecated (since PETSc 3.19), use `VecRestoreArrayWriteF90()`
+  Fortran Notes:
+  `VecRestoreArrayWrite()` Fortran binding is deprecated (since PETSc 3.19), use `VecRestoreArrayWriteF90()`
 
 .seealso: [](ch_vectors), `Vec`, `VecRestoreArrayWriteF90()`, `VecGetArray()`, `VecRestoreArrayRead()`, `VecRestoreArrays()`, `VecRestoreArrayF90()`, `VecRestoreArrayReadF90()`, `VecPlaceArray()`, `VecRestoreArray2d()`,
           `VecGetArrayPair()`, `VecRestoreArrayPair()`, `VecGetArrayWrite()`
@@ -2076,22 +2076,22 @@ PetscErrorCode VecRestoreArrayWrite(Vec x, PetscScalar **a)
 }
 
 /*@C
-   VecGetArrays - Returns a pointer to the arrays in a set of vectors
-   that were created by a call to `VecDuplicateVecs()`.
+  VecGetArrays - Returns a pointer to the arrays in a set of vectors
+  that were created by a call to `VecDuplicateVecs()`.
 
-   Logically Collective; No Fortran Support
+  Logically Collective; No Fortran Support
 
-   Input Parameters:
-+  x - the vectors
--  n - the number of vectors
+  Input Parameters:
++ x - the vectors
+- n - the number of vectors
 
-   Output Parameter:
-.  a - location to put pointer to the array
+  Output Parameter:
+. a - location to put pointer to the array
 
-   Level: intermediate
+  Level: intermediate
 
-   Note:
-   You MUST call `VecRestoreArrays()` when you no longer need access to the arrays.
+  Note:
+  You MUST call `VecRestoreArrays()` when you no longer need access to the arrays.
 
 .seealso: [](ch_vectors), `Vec`, `VecGetArray()`, `VecRestoreArrays()`
 @*/
@@ -2112,23 +2112,23 @@ PetscErrorCode VecGetArrays(const Vec x[], PetscInt n, PetscScalar **a[])
 }
 
 /*@C
-   VecRestoreArrays - Restores a group of vectors after `VecGetArrays()`
-   has been called.
+  VecRestoreArrays - Restores a group of vectors after `VecGetArrays()`
+  has been called.
 
-   Logically Collective; No Fortran Support
+  Logically Collective; No Fortran Support
 
-   Input Parameters:
-+  x - the vector
-.  n - the number of vectors
--  a - location of pointer to arrays obtained from `VecGetArrays()`
+  Input Parameters:
++ x - the vector
+. n - the number of vectors
+- a - location of pointer to arrays obtained from `VecGetArrays()`
 
-   Notes:
-   For regular PETSc vectors this routine does not involve any copies. For
-   any special vectors that do not store local vector data in a contiguous
-   array, this routine will copy the data back into the underlying
-   vector data structure from the arrays obtained with `VecGetArrays()`.
+  Notes:
+  For regular PETSc vectors this routine does not involve any copies. For
+  any special vectors that do not store local vector data in a contiguous
+  array, this routine will copy the data back into the underlying
+  vector data structure from the arrays obtained with `VecGetArrays()`.
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: [](ch_vectors), `Vec`, `VecGetArrays()`, `VecRestoreArray()`
 @*/
@@ -2148,26 +2148,26 @@ PetscErrorCode VecRestoreArrays(const Vec x[], PetscInt n, PetscScalar **a[])
 }
 
 /*@C
-   VecGetArrayAndMemType - Like `VecGetArray()`, but if this is a standard device vector (e.g., `VECCUDA`), the returned pointer will be a device
-   pointer to the device memory that contains this processor's portion of the vector data. Device data is guaranteed to have the latest value.
-   Otherwise, when this is a host vector (e.g., `VECMPI`), this routine functions the same as `VecGetArray()` and returns a host pointer.
+  VecGetArrayAndMemType - Like `VecGetArray()`, but if this is a standard device vector (e.g., `VECCUDA`), the returned pointer will be a device
+  pointer to the device memory that contains this processor's portion of the vector data. Device data is guaranteed to have the latest value.
+  Otherwise, when this is a host vector (e.g., `VECMPI`), this routine functions the same as `VecGetArray()` and returns a host pointer.
 
-   For `VECKOKKOS`, if Kokkos is configured without device (e.g., use serial or openmp), per this function, the vector works like `VECSEQ`/`VECMPI`;
-   otherwise, it works like `VECCUDA` or `VECHIP` etc.
+  For `VECKOKKOS`, if Kokkos is configured without device (e.g., use serial or openmp), per this function, the vector works like `VECSEQ`/`VECMPI`;
+  otherwise, it works like `VECCUDA` or `VECHIP` etc.
 
-   Logically Collective; No Fortran Support
+  Logically Collective; No Fortran Support
 
-   Input Parameter:
-.  x - the vector
+  Input Parameter:
+. x - the vector
 
-   Output Parameters:
-+  a - location to put pointer to the array
--  mtype - memory type of the array
+  Output Parameters:
++ a     - location to put pointer to the array
+- mtype - memory type of the array
 
-   Level: beginner
+  Level: beginner
 
-   Note:
-   Use `VecRestoreArrayAndMemType()` when the array access is no longer needed
+  Note:
+  Use `VecRestoreArrayAndMemType()` when the array access is no longer needed
 
 .seealso: [](ch_vectors), `Vec`, `VecRestoreArrayAndMemType()`, `VecGetArrayReadAndMemType()`, `VecGetArrayWriteAndMemType()`, `VecRestoreArray()`, `VecGetArrayRead()`, `VecGetArrays()`, `VecGetArrayF90()`, `VecGetArrayReadF90()`,
           `VecPlaceArray()`, `VecGetArray2d()`, `VecGetArrayPair()`, `VecRestoreArrayPair()`, `VecGetArrayWrite()`, `VecRestoreArrayWrite()`
@@ -2192,15 +2192,15 @@ PetscErrorCode VecGetArrayAndMemType(Vec x, PetscScalar **a, PetscMemType *mtype
 }
 
 /*@C
-   VecRestoreArrayAndMemType - Restores a vector after `VecGetArrayAndMemType()` has been called.
+  VecRestoreArrayAndMemType - Restores a vector after `VecGetArrayAndMemType()` has been called.
 
-   Logically Collective; No Fortran Support
+  Logically Collective; No Fortran Support
 
-   Input Parameters:
-+  x - the vector
--  a - location of pointer to array obtained from `VecGetArrayAndMemType()`
+  Input Parameters:
++ x - the vector
+- a - location of pointer to array obtained from `VecGetArrayAndMemType()`
 
-   Level: beginner
+  Level: beginner
 
 .seealso: [](ch_vectors), `Vec`, `VecGetArrayAndMemType()`, `VecGetArray()`, `VecRestoreArrayRead()`, `VecRestoreArrays()`, `VecRestoreArrayF90()`, `VecRestoreArrayReadF90()`,
           `VecPlaceArray()`, `VecRestoreArray2d()`, `VecGetArrayPair()`, `VecRestoreArrayPair()`
@@ -2224,24 +2224,24 @@ PetscErrorCode VecRestoreArrayAndMemType(Vec x, PetscScalar **a)
 }
 
 /*@C
-   VecGetArrayReadAndMemType - Like `VecGetArrayRead()`, but if the input vector is a device vector, it will return a read-only device pointer.
-   The returned pointer is guaranteed to point to up-to-date data. For host vectors, it functions as `VecGetArrayRead()`.
+  VecGetArrayReadAndMemType - Like `VecGetArrayRead()`, but if the input vector is a device vector, it will return a read-only device pointer.
+  The returned pointer is guaranteed to point to up-to-date data. For host vectors, it functions as `VecGetArrayRead()`.
 
-   Not Collective; No Fortran Support
+  Not Collective; No Fortran Support
 
-   Input Parameter:
-.  x - the vector
+  Input Parameter:
+. x - the vector
 
-   Output Parameters:
-+  a - the array
--  mtype - memory type of the array
+  Output Parameters:
++ a     - the array
+- mtype - memory type of the array
 
-   Level: beginner
+  Level: beginner
 
-   Notes:
-   The array must be returned using a matching call to `VecRestoreArrayReadAndMemType()`.
+  Notes:
+  The array must be returned using a matching call to `VecRestoreArrayReadAndMemType()`.
 
-.seealso: [](ch_vectors), `Vec`, `VecRestoreArrayReadAndMemType()`, `VecGetArrayAndMemType()`, `VecGetArrayWriteAndMemType()`, `VecGetArray()`, `VecRestoreArray()`, `VecGetArrayPair()`, `VecRestoreArrayPair()`, `VecGetArrayAndMemType()`
+.seealso: [](ch_vectors), `Vec`, `VecRestoreArrayReadAndMemType()`, `VecGetArrayAndMemType()`, `VecGetArrayWriteAndMemType()`, `VecGetArray()`, `VecRestoreArray()`, `VecGetArrayPair()`, `VecRestoreArrayPair()`
 @*/
 PetscErrorCode VecGetArrayReadAndMemType(Vec x, const PetscScalar **a, PetscMemType *mtype)
 {
@@ -2269,15 +2269,15 @@ PetscErrorCode VecGetArrayReadAndMemType(Vec x, const PetscScalar **a, PetscMemT
 }
 
 /*@C
-   VecRestoreArrayReadAndMemType - Restore array obtained with `VecGetArrayReadAndMemType()`
+  VecRestoreArrayReadAndMemType - Restore array obtained with `VecGetArrayReadAndMemType()`
 
-   Not Collective; No Fortran Support
+  Not Collective; No Fortran Support
 
-   Input Parameters:
+  Input Parameters:
 +  vec - the vector
 -  array - the array
 
-   Level: beginner
+  Level: beginner
 
 .seealso: [](ch_vectors), `Vec`, `VecGetArrayReadAndMemType()`, `VecRestoreArrayAndMemType()`, `VecRestoreArrayWriteAndMemType()`, `VecGetArray()`, `VecRestoreArray()`, `VecGetArrayPair()`, `VecRestoreArrayPair()`
 @*/
@@ -2299,22 +2299,22 @@ PetscErrorCode VecRestoreArrayReadAndMemType(Vec x, const PetscScalar **a)
 }
 
 /*@C
-   VecGetArrayWriteAndMemType - Like `VecGetArrayWrite()`, but if this is a device vector it will always return
-    a device pointer to the device memory that contains this processor's portion of the vector data.
+  VecGetArrayWriteAndMemType - Like `VecGetArrayWrite()`, but if this is a device vector it will always return
+  a device pointer to the device memory that contains this processor's portion of the vector data.
 
-   Not Collective; No Fortran Support
+  Not Collective; No Fortran Support
 
-   Input Parameter:
-.  x - the vector
+  Input Parameter:
+. x - the vector
 
-   Output Parameters:
-+  a - the array
--  mtype - memory type of the array
+  Output Parameters:
++ a     - the array
+- mtype - memory type of the array
 
-   Level: beginner
+  Level: beginner
 
-   Note:
-   The array must be returned using a matching call to `VecRestoreArrayWriteAndMemType()`, where it will label the device memory as most recent.
+  Note:
+  The array must be returned using a matching call to `VecRestoreArrayWriteAndMemType()`, where it will label the device memory as most recent.
 
 .seealso: [](ch_vectors), `Vec`, `VecRestoreArrayWriteAndMemType()`, `VecGetArrayReadAndMemType()`, `VecGetArrayAndMemType()`, `VecGetArray()`, `VecRestoreArray()`, `VecGetArrayPair()`, `VecRestoreArrayPair()`,
 @*/
@@ -2340,15 +2340,15 @@ PetscErrorCode VecGetArrayWriteAndMemType(Vec x, PetscScalar **a, PetscMemType *
 }
 
 /*@C
-   VecRestoreArrayWriteAndMemType - Restore array obtained with `VecGetArrayWriteAndMemType()`
+  VecRestoreArrayWriteAndMemType - Restore array obtained with `VecGetArrayWriteAndMemType()`
 
-   Not Collective; No Fortran Support
+  Not Collective; No Fortran Support
 
-   Input Parameters:
+  Input Parameters:
 +  vec - the vector
 -  array - the array
 
-   Level: beginner
+  Level: beginner
 
 .seealso: [](ch_vectors), `Vec`, `VecGetArrayWriteAndMemType()`, `VecRestoreArrayAndMemType()`, `VecGetArray()`, `VecRestoreArray()`, `VecGetArrayPair()`, `VecRestoreArrayPair()`
 @*/
@@ -2373,27 +2373,27 @@ PetscErrorCode VecRestoreArrayWriteAndMemType(Vec x, PetscScalar **a)
 }
 
 /*@
-   VecPlaceArray - Allows one to replace the array in a vector with an
-   array provided by the user. This is useful to avoid copying an array
-   into a vector.
+  VecPlaceArray - Allows one to replace the array in a vector with an
+  array provided by the user. This is useful to avoid copying an array
+  into a vector.
 
-   Not Collective; No Fortran Support
+  Not Collective; No Fortran Support
 
-   Input Parameters:
-+  vec - the vector
--  array - the array
+  Input Parameters:
++ vec   - the vector
+- array - the array
 
-   Level: developer
+  Level: developer
 
-   Notes:
-   Use `VecReplaceArray()` instead to permanently replace the array
+  Notes:
+  Use `VecReplaceArray()` instead to permanently replace the array
 
-   You can return to the original array with a call to `VecResetArray()`. `vec` does not take
-   ownership of `array` in any way.
+  You can return to the original array with a call to `VecResetArray()`. `vec` does not take
+  ownership of `array` in any way.
 
-   The user must free `array` themselves but be careful not to
-   do so before the vector has either been destroyed, had its original array restored with
-   `VecResetArray()` or permanently replaced with `VecReplaceArray()`.
+  The user must free `array` themselves but be careful not to
+  do so before the vector has either been destroyed, had its original array restored with
+  `VecResetArray()` or permanently replaced with `VecReplaceArray()`.
 
 .seealso: [](ch_vectors), `Vec`, `VecGetArray()`, `VecRestoreArray()`, `VecReplaceArray()`, `VecResetArray()`
 @*/
@@ -2409,24 +2409,24 @@ PetscErrorCode VecPlaceArray(Vec vec, const PetscScalar array[])
 }
 
 /*@C
-   VecReplaceArray - Allows one to replace the array in a vector with an
-   array provided by the user. This is useful to avoid copying an array
-   into a vector.
+  VecReplaceArray - Allows one to replace the array in a vector with an
+  array provided by the user. This is useful to avoid copying an array
+  into a vector.
 
-   Not Collective; No Fortran Support
+  Not Collective; No Fortran Support
 
-   Input Parameters:
-+  vec - the vector
--  array - the array
+  Input Parameters:
++ vec   - the vector
+- array - the array
 
-   Level: developer
+  Level: developer
 
-   Notes:
-   This permanently replaces the array and frees the memory associated
-   with the old array. Use `VecPlaceArray()` to temporarily replace the array.
+  Notes:
+  This permanently replaces the array and frees the memory associated
+  with the old array. Use `VecPlaceArray()` to temporarily replace the array.
 
-   The memory passed in MUST be obtained with `PetscMalloc()` and CANNOT be
-   freed by the user. It will be freed when the vector is destroyed.
+  The memory passed in MUST be obtained with `PetscMalloc()` and CANNOT be
+  freed by the user. It will be freed when the vector is destroyed.
 
 .seealso: [](ch_vectors), `Vec`, `VecGetArray()`, `VecRestoreArray()`, `VecPlaceArray()`, `VecResetArray()`
 @*/
@@ -2643,31 +2643,31 @@ M*/
 M*/
 
 /*@C
-   VecGetArray2d - Returns a pointer to a 2d contiguous array that contains this
-   processor's portion of the vector data.  You MUST call `VecRestoreArray2d()`
-   when you no longer need access to the array.
+  VecGetArray2d - Returns a pointer to a 2d contiguous array that contains this
+  processor's portion of the vector data.  You MUST call `VecRestoreArray2d()`
+  when you no longer need access to the array.
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  x - the vector
-.  m - first dimension of two dimensional array
-.  n - second dimension of two dimensional array
-.  mstart - first index you will use in first coordinate direction (often 0)
--  nstart - first index in the second coordinate direction (often 0)
+  Input Parameters:
++ x      - the vector
+. m      - first dimension of two dimensional array
+. n      - second dimension of two dimensional array
+. mstart - first index you will use in first coordinate direction (often 0)
+- nstart - first index in the second coordinate direction (often 0)
 
-   Output Parameter:
-.  a - location to put pointer to the array
+  Output Parameter:
+. a - location to put pointer to the array
 
-   Level: developer
+  Level: developer
 
   Notes:
-   For a vector obtained from `DMCreateLocalVector()` `mstart` and `nstart` are likely
-   obtained from the corner indices obtained from `DMDAGetGhostCorners()` while for
-   `DMCreateGlobalVector()` they are the corner indices from `DMDAGetCorners()`. In both cases
-   the arguments from `DMDAGet[Ghost]Corners()` are reversed in the call to `VecGetArray2d()`.
+  For a vector obtained from `DMCreateLocalVector()` `mstart` and `nstart` are likely
+  obtained from the corner indices obtained from `DMDAGetGhostCorners()` while for
+  `DMCreateGlobalVector()` they are the corner indices from `DMDAGetCorners()`. In both cases
+  the arguments from `DMDAGet[Ghost]Corners()` are reversed in the call to `VecGetArray2d()`.
 
-   For standard PETSc vectors this is an inexpensive call; it does not copy the vector values.
+  For standard PETSc vectors this is an inexpensive call; it does not copy the vector values.
 
 .seealso: [](ch_vectors), `Vec`, `VecGetArray()`, `VecRestoreArray()`, `VecGetArrays()`, `VecGetArrayF90()`, `VecPlaceArray()`,
           `VecRestoreArray2d()`, `DMDAVecGetArray()`, `DMDAVecRestoreArray()`, `VecGetArray3d()`, `VecRestoreArray3d()`,
@@ -2693,31 +2693,31 @@ PetscErrorCode VecGetArray2d(Vec x, PetscInt m, PetscInt n, PetscInt mstart, Pet
 }
 
 /*@C
-   VecGetArray2dWrite - Returns a pointer to a 2d contiguous array that will contain this
-   processor's portion of the vector data.  You MUST call `VecRestoreArray2dWrite()`
-   when you no longer need access to the array.
+  VecGetArray2dWrite - Returns a pointer to a 2d contiguous array that will contain this
+  processor's portion of the vector data.  You MUST call `VecRestoreArray2dWrite()`
+  when you no longer need access to the array.
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  x - the vector
-.  m - first dimension of two dimensional array
-.  n - second dimension of two dimensional array
-.  mstart - first index you will use in first coordinate direction (often 0)
--  nstart - first index in the second coordinate direction (often 0)
+  Input Parameters:
++ x      - the vector
+. m      - first dimension of two dimensional array
+. n      - second dimension of two dimensional array
+. mstart - first index you will use in first coordinate direction (often 0)
+- nstart - first index in the second coordinate direction (often 0)
 
-   Output Parameter:
-.  a - location to put pointer to the array
+  Output Parameter:
+. a - location to put pointer to the array
 
-   Level: developer
+  Level: developer
 
   Notes:
-   For a vector obtained from `DMCreateLocalVector()` `mstart` and `nstart` are likely
-   obtained from the corner indices obtained from `DMDAGetGhostCorners()` while for
-   `DMCreateGlobalVector()` they are the corner indices from `DMDAGetCorners()`. In both cases
-   the arguments from `DMDAGet[Ghost]Corners()` are reversed in the call to `VecGetArray2d()`.
+  For a vector obtained from `DMCreateLocalVector()` `mstart` and `nstart` are likely
+  obtained from the corner indices obtained from `DMDAGetGhostCorners()` while for
+  `DMCreateGlobalVector()` they are the corner indices from `DMDAGetCorners()`. In both cases
+  the arguments from `DMDAGet[Ghost]Corners()` are reversed in the call to `VecGetArray2d()`.
 
-   For standard PETSc vectors this is an inexpensive call; it does not copy the vector values.
+  For standard PETSc vectors this is an inexpensive call; it does not copy the vector values.
 
 .seealso: [](ch_vectors), `Vec`, `VecGetArray()`, `VecRestoreArray()`, `VecGetArrays()`, `VecGetArrayF90()`, `VecPlaceArray()`,
           `VecRestoreArray2d()`, `DMDAVecGetArray()`, `DMDAVecRestoreArray()`, `VecGetArray3d()`, `VecRestoreArray3d()`,
@@ -2743,27 +2743,27 @@ PetscErrorCode VecGetArray2dWrite(Vec x, PetscInt m, PetscInt n, PetscInt mstart
 }
 
 /*@C
-   VecRestoreArray2d - Restores a vector after `VecGetArray2d()` has been called.
+  VecRestoreArray2d - Restores a vector after `VecGetArray2d()` has been called.
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  x - the vector
-.  m - first dimension of two dimensional array
-.  n - second dimension of the two dimensional array
-.  mstart - first index you will use in first coordinate direction (often 0)
-.  nstart - first index in the second coordinate direction (often 0)
--  a - location of pointer to array obtained from `VecGetArray2d()`
+  Input Parameters:
++ x      - the vector
+. m      - first dimension of two dimensional array
+. n      - second dimension of the two dimensional array
+. mstart - first index you will use in first coordinate direction (often 0)
+. nstart - first index in the second coordinate direction (often 0)
+- a      - location of pointer to array obtained from `VecGetArray2d()`
 
-   Level: developer
+  Level: developer
 
-   Notes:
-   For regular PETSc vectors this routine does not involve any copies. For
-   any special vectors that do not store local vector data in a contiguous
-   array, this routine will copy the data back into the underlying
-   vector data structure from the array obtained with `VecGetArray()`.
+  Notes:
+  For regular PETSc vectors this routine does not involve any copies. For
+  any special vectors that do not store local vector data in a contiguous
+  array, this routine will copy the data back into the underlying
+  vector data structure from the array obtained with `VecGetArray()`.
 
-   This routine actually zeros out the `a` pointer.
+  This routine actually zeros out the `a` pointer.
 
 .seealso: [](ch_vectors), `Vec`, `VecGetArray()`, `VecRestoreArray()`, `VecRestoreArrays()`, `VecRestoreArrayF90()`, `VecPlaceArray()`,
           `VecGetArray2d()`, `VecGetArray3d()`, `VecRestoreArray3d()`, `DMDAVecGetArray()`, `DMDAVecRestoreArray()`
@@ -2785,27 +2785,27 @@ PetscErrorCode VecRestoreArray2d(Vec x, PetscInt m, PetscInt n, PetscInt mstart,
 }
 
 /*@C
-   VecRestoreArray2dWrite - Restores a vector after `VecGetArray2dWrite()` has been called.
+  VecRestoreArray2dWrite - Restores a vector after `VecGetArray2dWrite()` has been called.
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  x - the vector
-.  m - first dimension of two dimensional array
-.  n - second dimension of the two dimensional array
-.  mstart - first index you will use in first coordinate direction (often 0)
-.  nstart - first index in the second coordinate direction (often 0)
--  a - location of pointer to array obtained from `VecGetArray2d()`
+  Input Parameters:
++ x      - the vector
+. m      - first dimension of two dimensional array
+. n      - second dimension of the two dimensional array
+. mstart - first index you will use in first coordinate direction (often 0)
+. nstart - first index in the second coordinate direction (often 0)
+- a      - location of pointer to array obtained from `VecGetArray2d()`
 
-   Level: developer
+  Level: developer
 
-   Notes:
-   For regular PETSc vectors this routine does not involve any copies. For
-   any special vectors that do not store local vector data in a contiguous
-   array, this routine will copy the data back into the underlying
-   vector data structure from the array obtained with `VecGetArray()`.
+  Notes:
+  For regular PETSc vectors this routine does not involve any copies. For
+  any special vectors that do not store local vector data in a contiguous
+  array, this routine will copy the data back into the underlying
+  vector data structure from the array obtained with `VecGetArray()`.
 
-   This routine actually zeros out the `a` pointer.
+  This routine actually zeros out the `a` pointer.
 
 .seealso: [](ch_vectors), `Vec`, `VecGetArray()`, `VecRestoreArray()`, `VecRestoreArrays()`, `VecRestoreArrayF90()`, `VecPlaceArray()`,
           `VecGetArray2d()`, `VecGetArray3d()`, `VecRestoreArray3d()`, `DMDAVecGetArray()`, `DMDAVecRestoreArray()`
@@ -2826,28 +2826,28 @@ PetscErrorCode VecRestoreArray2dWrite(Vec x, PetscInt m, PetscInt n, PetscInt ms
 }
 
 /*@C
-   VecGetArray1d - Returns a pointer to a 1d contiguous array that contains this
-   processor's portion of the vector data.  You MUST call `VecRestoreArray1d()`
-   when you no longer need access to the array.
+  VecGetArray1d - Returns a pointer to a 1d contiguous array that contains this
+  processor's portion of the vector data.  You MUST call `VecRestoreArray1d()`
+  when you no longer need access to the array.
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  x - the vector
-.  m - first dimension of two dimensional array
--  mstart - first index you will use in first coordinate direction (often 0)
+  Input Parameters:
++ x      - the vector
+. m      - first dimension of two dimensional array
+- mstart - first index you will use in first coordinate direction (often 0)
 
-   Output Parameter:
-.  a - location to put pointer to the array
+  Output Parameter:
+. a - location to put pointer to the array
 
-   Level: developer
+  Level: developer
 
   Notes:
-   For a vector obtained from `DMCreateLocalVector()` `mstart` is likely
-   obtained from the corner indices obtained from `DMDAGetGhostCorners()` while for
-   `DMCreateGlobalVector()` they are the corner indices from `DMDAGetCorners()`.
+  For a vector obtained from `DMCreateLocalVector()` `mstart` is likely
+  obtained from the corner indices obtained from `DMDAGetGhostCorners()` while for
+  `DMCreateGlobalVector()` they are the corner indices from `DMDAGetCorners()`.
 
-   For standard PETSc vectors this is an inexpensive call; it does not copy the vector values.
+  For standard PETSc vectors this is an inexpensive call; it does not copy the vector values.
 
 .seealso: [](ch_vectors), `Vec`, `VecGetArray()`, `VecRestoreArray()`, `VecGetArrays()`, `VecGetArrayF90()`, `VecPlaceArray()`,
           `VecRestoreArray2d()`, `DMDAVecGetArray()`, `DMDAVecRestoreArray()`, `VecGetArray3d()`, `VecRestoreArray3d()`,
@@ -2869,28 +2869,28 @@ PetscErrorCode VecGetArray1d(Vec x, PetscInt m, PetscInt mstart, PetscScalar *a[
 }
 
 /*@C
-   VecGetArray1dWrite - Returns a pointer to a 1d contiguous array that will contain this
-   processor's portion of the vector data.  You MUST call `VecRestoreArray1dWrite()`
-   when you no longer need access to the array.
+  VecGetArray1dWrite - Returns a pointer to a 1d contiguous array that will contain this
+  processor's portion of the vector data.  You MUST call `VecRestoreArray1dWrite()`
+  when you no longer need access to the array.
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  x - the vector
-.  m - first dimension of two dimensional array
--  mstart - first index you will use in first coordinate direction (often 0)
+  Input Parameters:
++ x      - the vector
+. m      - first dimension of two dimensional array
+- mstart - first index you will use in first coordinate direction (often 0)
 
-   Output Parameter:
-.  a - location to put pointer to the array
+  Output Parameter:
+. a - location to put pointer to the array
 
-   Level: developer
+  Level: developer
 
   Notes:
-   For a vector obtained from `DMCreateLocalVector()` `mstart` is likely
-   obtained from the corner indices obtained from `DMDAGetGhostCorners()` while for
-   `DMCreateGlobalVector()` they are the corner indices from `DMDAGetCorners()`.
+  For a vector obtained from `DMCreateLocalVector()` `mstart` is likely
+  obtained from the corner indices obtained from `DMDAGetGhostCorners()` while for
+  `DMCreateGlobalVector()` they are the corner indices from `DMDAGetCorners()`.
 
-   For standard PETSc vectors this is an inexpensive call; it does not copy the vector values.
+  For standard PETSc vectors this is an inexpensive call; it does not copy the vector values.
 
 .seealso: [](ch_vectors), `Vec`, `VecGetArray()`, `VecRestoreArray()`, `VecGetArrays()`, `VecGetArrayF90()`, `VecPlaceArray()`,
           `VecRestoreArray2d()`, `DMDAVecGetArray()`, `DMDAVecRestoreArray()`, `VecGetArray3d()`, `VecRestoreArray3d()`,
@@ -2912,25 +2912,25 @@ PetscErrorCode VecGetArray1dWrite(Vec x, PetscInt m, PetscInt mstart, PetscScala
 }
 
 /*@C
-   VecRestoreArray1d - Restores a vector after `VecGetArray1d()` has been called.
+  VecRestoreArray1d - Restores a vector after `VecGetArray1d()` has been called.
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  x - the vector
-.  m - first dimension of two dimensional array
-.  mstart - first index you will use in first coordinate direction (often 0)
--  a - location of pointer to array obtained from `VecGetArray1d()`
+  Input Parameters:
++ x      - the vector
+. m      - first dimension of two dimensional array
+. mstart - first index you will use in first coordinate direction (often 0)
+- a      - location of pointer to array obtained from `VecGetArray1d()`
 
-   Level: developer
+  Level: developer
 
-   Notes:
-   For regular PETSc vectors this routine does not involve any copies. For
-   any special vectors that do not store local vector data in a contiguous
-   array, this routine will copy the data back into the underlying
-   vector data structure from the array obtained with `VecGetArray1d()`.
+  Notes:
+  For regular PETSc vectors this routine does not involve any copies. For
+  any special vectors that do not store local vector data in a contiguous
+  array, this routine will copy the data back into the underlying
+  vector data structure from the array obtained with `VecGetArray1d()`.
 
-   This routine actually zeros out the `a` pointer.
+  This routine actually zeros out the `a` pointer.
 
 .seealso: [](ch_vectors), `Vec`, `VecGetArray()`, `VecRestoreArray()`, `VecRestoreArrays()`, `VecRestoreArrayF90()`, `VecPlaceArray()`,
           `VecGetArray2d()`, `VecGetArray3d()`, `VecRestoreArray3d()`, `DMDAVecGetArray()`, `DMDAVecRestoreArray()`
@@ -2947,25 +2947,25 @@ PetscErrorCode VecRestoreArray1d(Vec x, PetscInt m, PetscInt mstart, PetscScalar
 }
 
 /*@C
-   VecRestoreArray1dWrite - Restores a vector after `VecGetArray1dWrite()` has been called.
+  VecRestoreArray1dWrite - Restores a vector after `VecGetArray1dWrite()` has been called.
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  x - the vector
-.  m - first dimension of two dimensional array
-.  mstart - first index you will use in first coordinate direction (often 0)
--  a - location of pointer to array obtained from `VecGetArray1d()`
+  Input Parameters:
++ x      - the vector
+. m      - first dimension of two dimensional array
+. mstart - first index you will use in first coordinate direction (often 0)
+- a      - location of pointer to array obtained from `VecGetArray1d()`
 
-   Level: developer
+  Level: developer
 
-   Notes:
-   For regular PETSc vectors this routine does not involve any copies. For
-   any special vectors that do not store local vector data in a contiguous
-   array, this routine will copy the data back into the underlying
-   vector data structure from the array obtained with `VecGetArray1d()`.
+  Notes:
+  For regular PETSc vectors this routine does not involve any copies. For
+  any special vectors that do not store local vector data in a contiguous
+  array, this routine will copy the data back into the underlying
+  vector data structure from the array obtained with `VecGetArray1d()`.
 
-   This routine actually zeros out the `a` pointer.
+  This routine actually zeros out the `a` pointer.
 
 .seealso: [](ch_vectors), `Vec`, `VecGetArray()`, `VecRestoreArray()`, `VecRestoreArrays()`, `VecRestoreArrayF90()`, `VecPlaceArray()`,
           `VecGetArray2d()`, `VecGetArray3d()`, `VecRestoreArray3d()`, `DMDAVecGetArray()`, `DMDAVecRestoreArray()`
@@ -2982,33 +2982,33 @@ PetscErrorCode VecRestoreArray1dWrite(Vec x, PetscInt m, PetscInt mstart, PetscS
 }
 
 /*@C
-   VecGetArray3d - Returns a pointer to a 3d contiguous array that contains this
-   processor's portion of the vector data.  You MUST call `VecRestoreArray3d()`
-   when you no longer need access to the array.
+  VecGetArray3d - Returns a pointer to a 3d contiguous array that contains this
+  processor's portion of the vector data.  You MUST call `VecRestoreArray3d()`
+  when you no longer need access to the array.
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  x - the vector
-.  m - first dimension of three dimensional array
-.  n - second dimension of three dimensional array
-.  p - third dimension of three dimensional array
-.  mstart - first index you will use in first coordinate direction (often 0)
-.  nstart - first index in the second coordinate direction (often 0)
--  pstart - first index in the third coordinate direction (often 0)
+  Input Parameters:
++ x      - the vector
+. m      - first dimension of three dimensional array
+. n      - second dimension of three dimensional array
+. p      - third dimension of three dimensional array
+. mstart - first index you will use in first coordinate direction (often 0)
+. nstart - first index in the second coordinate direction (often 0)
+- pstart - first index in the third coordinate direction (often 0)
 
-   Output Parameter:
-.  a - location to put pointer to the array
+  Output Parameter:
+. a - location to put pointer to the array
 
-   Level: developer
+  Level: developer
 
   Notes:
-   For a vector obtained from `DMCreateLocalVector()` `mstart`, `nstart`, and `pstart` are likely
-   obtained from the corner indices obtained from `DMDAGetGhostCorners()` while for
-   `DMCreateGlobalVector()` they are the corner indices from `DMDAGetCorners()`. In both cases
-   the arguments from `DMDAGet[Ghost]Corners()` are reversed in the call to `VecGetArray3d()`.
+  For a vector obtained from `DMCreateLocalVector()` `mstart`, `nstart`, and `pstart` are likely
+  obtained from the corner indices obtained from `DMDAGetGhostCorners()` while for
+  `DMCreateGlobalVector()` they are the corner indices from `DMDAGetCorners()`. In both cases
+  the arguments from `DMDAGet[Ghost]Corners()` are reversed in the call to `VecGetArray3d()`.
 
-   For standard PETSc vectors this is an inexpensive call; it does not copy the vector values.
+  For standard PETSc vectors this is an inexpensive call; it does not copy the vector values.
 
 .seealso: [](ch_vectors), `Vec`, `VecGetArray()`, `VecRestoreArray()`, `VecGetArrays()`, `VecGetArrayF90()`, `VecPlaceArray()`,
           `VecRestoreArray2d()`, `DMDAVecGetarray()`, `DMDAVecRestoreArray()`, `VecGetArray3d()`, `VecRestoreArray3d()`,
@@ -3037,33 +3037,33 @@ PetscErrorCode VecGetArray3d(Vec x, PetscInt m, PetscInt n, PetscInt p, PetscInt
 }
 
 /*@C
-   VecGetArray3dWrite - Returns a pointer to a 3d contiguous array that will contain this
-   processor's portion of the vector data.  You MUST call `VecRestoreArray3dWrite()`
-   when you no longer need access to the array.
+  VecGetArray3dWrite - Returns a pointer to a 3d contiguous array that will contain this
+  processor's portion of the vector data.  You MUST call `VecRestoreArray3dWrite()`
+  when you no longer need access to the array.
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  x - the vector
-.  m - first dimension of three dimensional array
-.  n - second dimension of three dimensional array
-.  p - third dimension of three dimensional array
-.  mstart - first index you will use in first coordinate direction (often 0)
-.  nstart - first index in the second coordinate direction (often 0)
--  pstart - first index in the third coordinate direction (often 0)
+  Input Parameters:
++ x      - the vector
+. m      - first dimension of three dimensional array
+. n      - second dimension of three dimensional array
+. p      - third dimension of three dimensional array
+. mstart - first index you will use in first coordinate direction (often 0)
+. nstart - first index in the second coordinate direction (often 0)
+- pstart - first index in the third coordinate direction (often 0)
 
-   Output Parameter:
-.  a - location to put pointer to the array
+  Output Parameter:
+. a - location to put pointer to the array
 
-   Level: developer
+  Level: developer
 
   Notes:
-   For a vector obtained from `DMCreateLocalVector()` `mstart`, `nstart`, and `pstart` are likely
-   obtained from the corner indices obtained from `DMDAGetGhostCorners()` while for
-   `DMCreateGlobalVector()` they are the corner indices from `DMDAGetCorners()`. In both cases
-   the arguments from `DMDAGet[Ghost]Corners()` are reversed in the call to `VecGetArray3d()`.
+  For a vector obtained from `DMCreateLocalVector()` `mstart`, `nstart`, and `pstart` are likely
+  obtained from the corner indices obtained from `DMDAGetGhostCorners()` while for
+  `DMCreateGlobalVector()` they are the corner indices from `DMDAGetCorners()`. In both cases
+  the arguments from `DMDAGet[Ghost]Corners()` are reversed in the call to `VecGetArray3d()`.
 
-   For standard PETSc vectors this is an inexpensive call; it does not copy the vector values.
+  For standard PETSc vectors this is an inexpensive call; it does not copy the vector values.
 
 .seealso: [](ch_vectors), `Vec`, `VecGetArray()`, `VecRestoreArray()`, `VecGetArrays()`, `VecGetArrayF90()`, `VecPlaceArray()`,
           `VecRestoreArray2d()`, `DMDAVecGetarray()`, `DMDAVecRestoreArray()`, `VecGetArray3d()`, `VecRestoreArray3d()`,
@@ -3093,29 +3093,29 @@ PetscErrorCode VecGetArray3dWrite(Vec x, PetscInt m, PetscInt n, PetscInt p, Pet
 }
 
 /*@C
-   VecRestoreArray3d - Restores a vector after `VecGetArray3d()` has been called.
+  VecRestoreArray3d - Restores a vector after `VecGetArray3d()` has been called.
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  x - the vector
-.  m - first dimension of three dimensional array
-.  n - second dimension of the three dimensional array
-.  p - third dimension of the three dimensional array
-.  mstart - first index you will use in first coordinate direction (often 0)
-.  nstart - first index in the second coordinate direction (often 0)
-.  pstart - first index in the third coordinate direction (often 0)
--  a - location of pointer to array obtained from VecGetArray3d()
+  Input Parameters:
++ x      - the vector
+. m      - first dimension of three dimensional array
+. n      - second dimension of the three dimensional array
+. p      - third dimension of the three dimensional array
+. mstart - first index you will use in first coordinate direction (often 0)
+. nstart - first index in the second coordinate direction (often 0)
+. pstart - first index in the third coordinate direction (often 0)
+- a      - location of pointer to array obtained from VecGetArray3d()
 
-   Level: developer
+  Level: developer
 
-   Notes:
-   For regular PETSc vectors this routine does not involve any copies. For
-   any special vectors that do not store local vector data in a contiguous
-   array, this routine will copy the data back into the underlying
-   vector data structure from the array obtained with `VecGetArray()`.
+  Notes:
+  For regular PETSc vectors this routine does not involve any copies. For
+  any special vectors that do not store local vector data in a contiguous
+  array, this routine will copy the data back into the underlying
+  vector data structure from the array obtained with `VecGetArray()`.
 
-   This routine actually zeros out the `a` pointer.
+  This routine actually zeros out the `a` pointer.
 
 .seealso: [](ch_vectors), `Vec`, `VecGetArray()`, `VecRestoreArray()`, `VecRestoreArrays()`, `VecRestoreArrayF90()`, `VecPlaceArray()`,
           `VecGetArray2d()`, `VecGetArray3d()`, `VecRestoreArray3d()`, `DMDAVecGetArray()`, `DMDAVecRestoreArray()`
@@ -3137,29 +3137,29 @@ PetscErrorCode VecRestoreArray3d(Vec x, PetscInt m, PetscInt n, PetscInt p, Pets
 }
 
 /*@C
-   VecRestoreArray3dWrite - Restores a vector after `VecGetArray3dWrite()` has been called.
+  VecRestoreArray3dWrite - Restores a vector after `VecGetArray3dWrite()` has been called.
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  x - the vector
-.  m - first dimension of three dimensional array
-.  n - second dimension of the three dimensional array
-.  p - third dimension of the three dimensional array
-.  mstart - first index you will use in first coordinate direction (often 0)
-.  nstart - first index in the second coordinate direction (often 0)
-.  pstart - first index in the third coordinate direction (often 0)
--  a - location of pointer to array obtained from VecGetArray3d()
+  Input Parameters:
++ x      - the vector
+. m      - first dimension of three dimensional array
+. n      - second dimension of the three dimensional array
+. p      - third dimension of the three dimensional array
+. mstart - first index you will use in first coordinate direction (often 0)
+. nstart - first index in the second coordinate direction (often 0)
+. pstart - first index in the third coordinate direction (often 0)
+- a      - location of pointer to array obtained from VecGetArray3d()
 
-   Level: developer
+  Level: developer
 
-   Notes:
-   For regular PETSc vectors this routine does not involve any copies. For
-   any special vectors that do not store local vector data in a contiguous
-   array, this routine will copy the data back into the underlying
-   vector data structure from the array obtained with `VecGetArray()`.
+  Notes:
+  For regular PETSc vectors this routine does not involve any copies. For
+  any special vectors that do not store local vector data in a contiguous
+  array, this routine will copy the data back into the underlying
+  vector data structure from the array obtained with `VecGetArray()`.
 
-   This routine actually zeros out the `a` pointer.
+  This routine actually zeros out the `a` pointer.
 
 .seealso: [](ch_vectors), `Vec`, `VecGetArray()`, `VecRestoreArray()`, `VecRestoreArrays()`, `VecRestoreArrayF90()`, `VecPlaceArray()`,
           `VecGetArray2d()`, `VecGetArray3d()`, `VecRestoreArray3d()`, `DMDAVecGetArray()`, `DMDAVecRestoreArray()`
@@ -3181,35 +3181,35 @@ PetscErrorCode VecRestoreArray3dWrite(Vec x, PetscInt m, PetscInt n, PetscInt p,
 }
 
 /*@C
-   VecGetArray4d - Returns a pointer to a 4d contiguous array that contains this
-   processor's portion of the vector data.  You MUST call `VecRestoreArray4d()`
-   when you no longer need access to the array.
+  VecGetArray4d - Returns a pointer to a 4d contiguous array that contains this
+  processor's portion of the vector data.  You MUST call `VecRestoreArray4d()`
+  when you no longer need access to the array.
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  x - the vector
-.  m - first dimension of four dimensional array
-.  n - second dimension of four dimensional array
-.  p - third dimension of four dimensional array
-.  q - fourth dimension of four dimensional array
-.  mstart - first index you will use in first coordinate direction (often 0)
-.  nstart - first index in the second coordinate direction (often 0)
-.  pstart - first index in the third coordinate direction (often 0)
--  qstart - first index in the fourth coordinate direction (often 0)
+  Input Parameters:
++ x      - the vector
+. m      - first dimension of four dimensional array
+. n      - second dimension of four dimensional array
+. p      - third dimension of four dimensional array
+. q      - fourth dimension of four dimensional array
+. mstart - first index you will use in first coordinate direction (often 0)
+. nstart - first index in the second coordinate direction (often 0)
+. pstart - first index in the third coordinate direction (often 0)
+- qstart - first index in the fourth coordinate direction (often 0)
 
-   Output Parameter:
-.  a - location to put pointer to the array
+  Output Parameter:
+. a - location to put pointer to the array
 
-   Level: developer
+  Level: developer
 
   Notes:
-   For a vector obtained from `DMCreateLocalVector()` `mstart`, `nstart`, and `pstart` are likely
-   obtained from the corner indices obtained from `DMDAGetGhostCorners()` while for
-   `DMCreateGlobalVector()` they are the corner indices from `DMDAGetCorners()`. In both cases
-   the arguments from `DMDAGet[Ghost]Corners()` are reversed in the call to `VecGetArray3d()`.
+  For a vector obtained from `DMCreateLocalVector()` `mstart`, `nstart`, and `pstart` are likely
+  obtained from the corner indices obtained from `DMDAGetGhostCorners()` while for
+  `DMCreateGlobalVector()` they are the corner indices from `DMDAGetCorners()`. In both cases
+  the arguments from `DMDAGet[Ghost]Corners()` are reversed in the call to `VecGetArray3d()`.
 
-   For standard PETSc vectors this is an inexpensive call; it does not copy the vector values.
+  For standard PETSc vectors this is an inexpensive call; it does not copy the vector values.
 
 .seealso: [](ch_vectors), `Vec`, `VecGetArray()`, `VecRestoreArray()`, `VecGetArrays()`, `VecGetArrayF90()`, `VecPlaceArray()`,
           `VecRestoreArray2d()`, `DMDAVecGetarray()`, `DMDAVecRestoreArray()`, `VecGetArray3d()`, `VecRestoreArray3d()`,
@@ -3242,35 +3242,35 @@ PetscErrorCode VecGetArray4d(Vec x, PetscInt m, PetscInt n, PetscInt p, PetscInt
 }
 
 /*@C
-   VecGetArray4dWrite - Returns a pointer to a 4d contiguous array that will contain this
-   processor's portion of the vector data.  You MUST call `VecRestoreArray4dWrite()`
-   when you no longer need access to the array.
+  VecGetArray4dWrite - Returns a pointer to a 4d contiguous array that will contain this
+  processor's portion of the vector data.  You MUST call `VecRestoreArray4dWrite()`
+  when you no longer need access to the array.
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  x - the vector
-.  m - first dimension of four dimensional array
-.  n - second dimension of four dimensional array
-.  p - third dimension of four dimensional array
-.  q - fourth dimension of four dimensional array
-.  mstart - first index you will use in first coordinate direction (often 0)
-.  nstart - first index in the second coordinate direction (often 0)
-.  pstart - first index in the third coordinate direction (often 0)
--  qstart - first index in the fourth coordinate direction (often 0)
+  Input Parameters:
++ x      - the vector
+. m      - first dimension of four dimensional array
+. n      - second dimension of four dimensional array
+. p      - third dimension of four dimensional array
+. q      - fourth dimension of four dimensional array
+. mstart - first index you will use in first coordinate direction (often 0)
+. nstart - first index in the second coordinate direction (often 0)
+. pstart - first index in the third coordinate direction (often 0)
+- qstart - first index in the fourth coordinate direction (often 0)
 
-   Output Parameter:
-.  a - location to put pointer to the array
+  Output Parameter:
+. a - location to put pointer to the array
 
-   Level: developer
+  Level: developer
 
   Notes:
-   For a vector obtained from `DMCreateLocalVector()` `mstart`, `nstart`, and `pstart` are likely
-   obtained from the corner indices obtained from `DMDAGetGhostCorners()` while for
-   `DMCreateGlobalVector()` they are the corner indices from `DMDAGetCorners()`. In both cases
-   the arguments from `DMDAGet[Ghost]Corners()` are reversed in the call to `VecGetArray3d()`.
+  For a vector obtained from `DMCreateLocalVector()` `mstart`, `nstart`, and `pstart` are likely
+  obtained from the corner indices obtained from `DMDAGetGhostCorners()` while for
+  `DMCreateGlobalVector()` they are the corner indices from `DMDAGetCorners()`. In both cases
+  the arguments from `DMDAGet[Ghost]Corners()` are reversed in the call to `VecGetArray3d()`.
 
-   For standard PETSc vectors this is an inexpensive call; it does not copy the vector values.
+  For standard PETSc vectors this is an inexpensive call; it does not copy the vector values.
 
 .seealso: [](ch_vectors), `Vec`, `VecGetArray()`, `VecRestoreArray()`, `VecGetArrays()`, `VecGetArrayF90()`, `VecPlaceArray()`,
           `VecRestoreArray2d()`, `DMDAVecGetarray()`, `DMDAVecRestoreArray()`, `VecGetArray3d()`, `VecRestoreArray3d()`,
@@ -3303,31 +3303,31 @@ PetscErrorCode VecGetArray4dWrite(Vec x, PetscInt m, PetscInt n, PetscInt p, Pet
 }
 
 /*@C
-   VecRestoreArray4d - Restores a vector after `VecGetArray4d()` has been called.
+  VecRestoreArray4d - Restores a vector after `VecGetArray4d()` has been called.
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  x - the vector
-.  m - first dimension of four dimensional array
-.  n - second dimension of the four dimensional array
-.  p - third dimension of the four dimensional array
-.  q - fourth dimension of the four dimensional array
-.  mstart - first index you will use in first coordinate direction (often 0)
-.  nstart - first index in the second coordinate direction (often 0)
-.  pstart - first index in the third coordinate direction (often 0)
-.  qstart - first index in the fourth coordinate direction (often 0)
--  a - location of pointer to array obtained from VecGetArray4d()
+  Input Parameters:
++ x      - the vector
+. m      - first dimension of four dimensional array
+. n      - second dimension of the four dimensional array
+. p      - third dimension of the four dimensional array
+. q      - fourth dimension of the four dimensional array
+. mstart - first index you will use in first coordinate direction (often 0)
+. nstart - first index in the second coordinate direction (often 0)
+. pstart - first index in the third coordinate direction (often 0)
+. qstart - first index in the fourth coordinate direction (often 0)
+- a      - location of pointer to array obtained from VecGetArray4d()
 
-   Level: developer
+  Level: developer
 
-   Notes:
-   For regular PETSc vectors this routine does not involve any copies. For
-   any special vectors that do not store local vector data in a contiguous
-   array, this routine will copy the data back into the underlying
-   vector data structure from the array obtained with `VecGetArray()`.
+  Notes:
+  For regular PETSc vectors this routine does not involve any copies. For
+  any special vectors that do not store local vector data in a contiguous
+  array, this routine will copy the data back into the underlying
+  vector data structure from the array obtained with `VecGetArray()`.
 
-   This routine actually zeros out the `a` pointer.
+  This routine actually zeros out the `a` pointer.
 
 .seealso: [](ch_vectors), `Vec`, `VecGetArray()`, `VecRestoreArray()`, `VecRestoreArrays()`, `VecRestoreArrayF90()`, `VecPlaceArray()`,
           `VecGetArray2d()`, `VecGetArray3d()`, `VecRestoreArray3d()`, `DMDAVecGetArray()`, `DMDAVecRestoreArray()`
@@ -3349,31 +3349,31 @@ PetscErrorCode VecRestoreArray4d(Vec x, PetscInt m, PetscInt n, PetscInt p, Pets
 }
 
 /*@C
-   VecRestoreArray4dWrite - Restores a vector after `VecGetArray4dWrite()` has been called.
+  VecRestoreArray4dWrite - Restores a vector after `VecGetArray4dWrite()` has been called.
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  x - the vector
-.  m - first dimension of four dimensional array
-.  n - second dimension of the four dimensional array
-.  p - third dimension of the four dimensional array
-.  q - fourth dimension of the four dimensional array
-.  mstart - first index you will use in first coordinate direction (often 0)
-.  nstart - first index in the second coordinate direction (often 0)
-.  pstart - first index in the third coordinate direction (often 0)
-.  qstart - first index in the fourth coordinate direction (often 0)
--  a - location of pointer to array obtained from `VecGetArray4d()`
+  Input Parameters:
++ x      - the vector
+. m      - first dimension of four dimensional array
+. n      - second dimension of the four dimensional array
+. p      - third dimension of the four dimensional array
+. q      - fourth dimension of the four dimensional array
+. mstart - first index you will use in first coordinate direction (often 0)
+. nstart - first index in the second coordinate direction (often 0)
+. pstart - first index in the third coordinate direction (often 0)
+. qstart - first index in the fourth coordinate direction (often 0)
+- a      - location of pointer to array obtained from `VecGetArray4d()`
 
-   Level: developer
+  Level: developer
 
-   Notes:
-   For regular PETSc vectors this routine does not involve any copies. For
-   any special vectors that do not store local vector data in a contiguous
-   array, this routine will copy the data back into the underlying
-   vector data structure from the array obtained with `VecGetArray()`.
+  Notes:
+  For regular PETSc vectors this routine does not involve any copies. For
+  any special vectors that do not store local vector data in a contiguous
+  array, this routine will copy the data back into the underlying
+  vector data structure from the array obtained with `VecGetArray()`.
 
-   This routine actually zeros out the `a` pointer.
+  This routine actually zeros out the `a` pointer.
 
 .seealso: [](ch_vectors), `Vec`, `VecGetArray()`, `VecRestoreArray()`, `VecRestoreArrays()`, `VecRestoreArrayF90()`, `VecPlaceArray()`,
           `VecGetArray2d()`, `VecGetArray3d()`, `VecRestoreArray3d()`, `DMDAVecGetArray()`, `DMDAVecRestoreArray()`
@@ -3395,31 +3395,31 @@ PetscErrorCode VecRestoreArray4dWrite(Vec x, PetscInt m, PetscInt n, PetscInt p,
 }
 
 /*@C
-   VecGetArray2dRead - Returns a pointer to a 2d contiguous array that contains this
-   processor's portion of the vector data.  You MUST call `VecRestoreArray2dRead()`
-   when you no longer need access to the array.
+  VecGetArray2dRead - Returns a pointer to a 2d contiguous array that contains this
+  processor's portion of the vector data.  You MUST call `VecRestoreArray2dRead()`
+  when you no longer need access to the array.
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  x - the vector
-.  m - first dimension of two dimensional array
-.  n - second dimension of two dimensional array
-.  mstart - first index you will use in first coordinate direction (often 0)
--  nstart - first index in the second coordinate direction (often 0)
+  Input Parameters:
++ x      - the vector
+. m      - first dimension of two dimensional array
+. n      - second dimension of two dimensional array
+. mstart - first index you will use in first coordinate direction (often 0)
+- nstart - first index in the second coordinate direction (often 0)
 
-   Output Parameter:
-.  a - location to put pointer to the array
+  Output Parameter:
+. a - location to put pointer to the array
 
-   Level: developer
+  Level: developer
 
   Notes:
-   For a vector obtained from `DMCreateLocalVector()` `mstart` and `nstart` are likely
-   obtained from the corner indices obtained from `DMDAGetGhostCorners()` while for
-   `DMCreateGlobalVector()` they are the corner indices from `DMDAGetCorners()`. In both cases
-   the arguments from `DMDAGet[Ghost]Corners()` are reversed in the call to `VecGetArray2d()`.
+  For a vector obtained from `DMCreateLocalVector()` `mstart` and `nstart` are likely
+  obtained from the corner indices obtained from `DMDAGetGhostCorners()` while for
+  `DMCreateGlobalVector()` they are the corner indices from `DMDAGetCorners()`. In both cases
+  the arguments from `DMDAGet[Ghost]Corners()` are reversed in the call to `VecGetArray2d()`.
 
-   For standard PETSc vectors this is an inexpensive call; it does not copy the vector values.
+  For standard PETSc vectors this is an inexpensive call; it does not copy the vector values.
 
 .seealso: [](ch_vectors), `Vec`, `VecGetArray()`, `VecRestoreArray()`, `VecGetArrays()`, `VecGetArrayF90()`, `VecPlaceArray()`,
           `VecRestoreArray2d()`, `DMDAVecGetArray()`, `DMDAVecRestoreArray()`, `VecGetArray3d()`, `VecRestoreArray3d()`,
@@ -3445,27 +3445,27 @@ PetscErrorCode VecGetArray2dRead(Vec x, PetscInt m, PetscInt n, PetscInt mstart,
 }
 
 /*@C
-   VecRestoreArray2dRead - Restores a vector after `VecGetArray2dRead()` has been called.
+  VecRestoreArray2dRead - Restores a vector after `VecGetArray2dRead()` has been called.
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  x - the vector
-.  m - first dimension of two dimensional array
-.  n - second dimension of the two dimensional array
-.  mstart - first index you will use in first coordinate direction (often 0)
-.  nstart - first index in the second coordinate direction (often 0)
--  a - location of pointer to array obtained from VecGetArray2d()
+  Input Parameters:
++ x      - the vector
+. m      - first dimension of two dimensional array
+. n      - second dimension of the two dimensional array
+. mstart - first index you will use in first coordinate direction (often 0)
+. nstart - first index in the second coordinate direction (often 0)
+- a      - location of pointer to array obtained from VecGetArray2d()
 
-   Level: developer
+  Level: developer
 
-   Notes:
-   For regular PETSc vectors this routine does not involve any copies. For
-   any special vectors that do not store local vector data in a contiguous
-   array, this routine will copy the data back into the underlying
-   vector data structure from the array obtained with `VecGetArray()`.
+  Notes:
+  For regular PETSc vectors this routine does not involve any copies. For
+  any special vectors that do not store local vector data in a contiguous
+  array, this routine will copy the data back into the underlying
+  vector data structure from the array obtained with `VecGetArray()`.
 
-   This routine actually zeros out the `a` pointer.
+  This routine actually zeros out the `a` pointer.
 
 .seealso: [](ch_vectors), `Vec`, `VecGetArray()`, `VecRestoreArray()`, `VecRestoreArrays()`, `VecRestoreArrayF90()`, `VecPlaceArray()`,
           `VecGetArray2d()`, `VecGetArray3d()`, `VecRestoreArray3d()`, `DMDAVecGetArray()`, `DMDAVecRestoreArray()`
@@ -3487,28 +3487,28 @@ PetscErrorCode VecRestoreArray2dRead(Vec x, PetscInt m, PetscInt n, PetscInt mst
 }
 
 /*@C
-   VecGetArray1dRead - Returns a pointer to a 1d contiguous array that contains this
-   processor's portion of the vector data.  You MUST call `VecRestoreArray1dRead()`
-   when you no longer need access to the array.
+  VecGetArray1dRead - Returns a pointer to a 1d contiguous array that contains this
+  processor's portion of the vector data.  You MUST call `VecRestoreArray1dRead()`
+  when you no longer need access to the array.
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  x - the vector
-.  m - first dimension of two dimensional array
--  mstart - first index you will use in first coordinate direction (often 0)
+  Input Parameters:
++ x      - the vector
+. m      - first dimension of two dimensional array
+- mstart - first index you will use in first coordinate direction (often 0)
 
-   Output Parameter:
-.  a - location to put pointer to the array
+  Output Parameter:
+. a - location to put pointer to the array
 
-   Level: developer
+  Level: developer
 
   Notes:
-   For a vector obtained from `DMCreateLocalVector()` `mstart` is likely
-   obtained from the corner indices obtained from `DMDAGetGhostCorners()` while for
-   `DMCreateGlobalVector()` they are the corner indices from `DMDAGetCorners()`.
+  For a vector obtained from `DMCreateLocalVector()` `mstart` is likely
+  obtained from the corner indices obtained from `DMDAGetGhostCorners()` while for
+  `DMCreateGlobalVector()` they are the corner indices from `DMDAGetCorners()`.
 
-   For standard PETSc vectors this is an inexpensive call; it does not copy the vector values.
+  For standard PETSc vectors this is an inexpensive call; it does not copy the vector values.
 
 .seealso: [](ch_vectors), `Vec`, `VecGetArray()`, `VecRestoreArray()`, `VecGetArrays()`, `VecGetArrayF90()`, `VecPlaceArray()`,
           `VecRestoreArray2d()`, `DMDAVecGetArray()`, `DMDAVecRestoreArray()`, `VecGetArray3d()`, `VecRestoreArray3d()`,
@@ -3530,25 +3530,25 @@ PetscErrorCode VecGetArray1dRead(Vec x, PetscInt m, PetscInt mstart, PetscScalar
 }
 
 /*@C
-   VecRestoreArray1dRead - Restores a vector after `VecGetArray1dRead()` has been called.
+  VecRestoreArray1dRead - Restores a vector after `VecGetArray1dRead()` has been called.
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  x - the vector
-.  m - first dimension of two dimensional array
-.  mstart - first index you will use in first coordinate direction (often 0)
--  a - location of pointer to array obtained from `VecGetArray1dRead()`
+  Input Parameters:
++ x      - the vector
+. m      - first dimension of two dimensional array
+. mstart - first index you will use in first coordinate direction (often 0)
+- a      - location of pointer to array obtained from `VecGetArray1dRead()`
 
-   Level: developer
+  Level: developer
 
-   Notes:
-   For regular PETSc vectors this routine does not involve any copies. For
-   any special vectors that do not store local vector data in a contiguous
-   array, this routine will copy the data back into the underlying
-   vector data structure from the array obtained with `VecGetArray1dRead()`.
+  Notes:
+  For regular PETSc vectors this routine does not involve any copies. For
+  any special vectors that do not store local vector data in a contiguous
+  array, this routine will copy the data back into the underlying
+  vector data structure from the array obtained with `VecGetArray1dRead()`.
 
-   This routine actually zeros out the `a` pointer.
+  This routine actually zeros out the `a` pointer.
 
 .seealso: [](ch_vectors), `Vec`, `VecGetArray()`, `VecRestoreArray()`, `VecRestoreArrays()`, `VecRestoreArrayF90()`, `VecPlaceArray()`,
           `VecGetArray2d()`, `VecGetArray3d()`, `VecRestoreArray3d()`, `DMDAVecGetArray()`, `DMDAVecRestoreArray()`
@@ -3565,33 +3565,33 @@ PetscErrorCode VecRestoreArray1dRead(Vec x, PetscInt m, PetscInt mstart, PetscSc
 }
 
 /*@C
-   VecGetArray3dRead - Returns a pointer to a 3d contiguous array that contains this
-   processor's portion of the vector data.  You MUST call `VecRestoreArray3dRead()`
-   when you no longer need access to the array.
+  VecGetArray3dRead - Returns a pointer to a 3d contiguous array that contains this
+  processor's portion of the vector data.  You MUST call `VecRestoreArray3dRead()`
+  when you no longer need access to the array.
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  x - the vector
-.  m - first dimension of three dimensional array
-.  n - second dimension of three dimensional array
-.  p - third dimension of three dimensional array
-.  mstart - first index you will use in first coordinate direction (often 0)
-.  nstart - first index in the second coordinate direction (often 0)
--  pstart - first index in the third coordinate direction (often 0)
+  Input Parameters:
++ x      - the vector
+. m      - first dimension of three dimensional array
+. n      - second dimension of three dimensional array
+. p      - third dimension of three dimensional array
+. mstart - first index you will use in first coordinate direction (often 0)
+. nstart - first index in the second coordinate direction (often 0)
+- pstart - first index in the third coordinate direction (often 0)
 
-   Output Parameter:
-.  a - location to put pointer to the array
+  Output Parameter:
+. a - location to put pointer to the array
 
-   Level: developer
+  Level: developer
 
   Notes:
-   For a vector obtained from `DMCreateLocalVector()` `mstart`, `nstart`, and `pstart` are likely
-   obtained from the corner indices obtained from `DMDAGetGhostCorners()` while for
-   `DMCreateGlobalVector()` they are the corner indices from `DMDAGetCorners()`. In both cases
-   the arguments from `DMDAGet[Ghost]Corners()` are reversed in the call to `VecGetArray3dRead()`.
+  For a vector obtained from `DMCreateLocalVector()` `mstart`, `nstart`, and `pstart` are likely
+  obtained from the corner indices obtained from `DMDAGetGhostCorners()` while for
+  `DMCreateGlobalVector()` they are the corner indices from `DMDAGetCorners()`. In both cases
+  the arguments from `DMDAGet[Ghost]Corners()` are reversed in the call to `VecGetArray3dRead()`.
 
-   For standard PETSc vectors this is an inexpensive call; it does not copy the vector values.
+  For standard PETSc vectors this is an inexpensive call; it does not copy the vector values.
 
 .seealso: [](ch_vectors), `Vec`, `VecGetArray()`, `VecRestoreArray()`, `VecGetArrays()`, `VecGetArrayF90()`, `VecPlaceArray()`,
           `VecRestoreArray2d()`, `DMDAVecGetarray()`, `DMDAVecRestoreArray()`, `VecGetArray3d()`, `VecRestoreArray3d()`,
@@ -3621,29 +3621,29 @@ PetscErrorCode VecGetArray3dRead(Vec x, PetscInt m, PetscInt n, PetscInt p, Pets
 }
 
 /*@C
-   VecRestoreArray3dRead - Restores a vector after `VecGetArray3dRead()` has been called.
+  VecRestoreArray3dRead - Restores a vector after `VecGetArray3dRead()` has been called.
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  x - the vector
-.  m - first dimension of three dimensional array
-.  n - second dimension of the three dimensional array
-.  p - third dimension of the three dimensional array
-.  mstart - first index you will use in first coordinate direction (often 0)
-.  nstart - first index in the second coordinate direction (often 0)
-.  pstart - first index in the third coordinate direction (often 0)
--  a - location of pointer to array obtained from `VecGetArray3dRead()`
+  Input Parameters:
++ x      - the vector
+. m      - first dimension of three dimensional array
+. n      - second dimension of the three dimensional array
+. p      - third dimension of the three dimensional array
+. mstart - first index you will use in first coordinate direction (often 0)
+. nstart - first index in the second coordinate direction (often 0)
+. pstart - first index in the third coordinate direction (often 0)
+- a      - location of pointer to array obtained from `VecGetArray3dRead()`
 
-   Level: developer
+  Level: developer
 
-   Notes:
-   For regular PETSc vectors this routine does not involve any copies. For
-   any special vectors that do not store local vector data in a contiguous
-   array, this routine will copy the data back into the underlying
-   vector data structure from the array obtained with `VecGetArray()`.
+  Notes:
+  For regular PETSc vectors this routine does not involve any copies. For
+  any special vectors that do not store local vector data in a contiguous
+  array, this routine will copy the data back into the underlying
+  vector data structure from the array obtained with `VecGetArray()`.
 
-   This routine actually zeros out the `a` pointer.
+  This routine actually zeros out the `a` pointer.
 
 .seealso: [](ch_vectors), `Vec`, `VecGetArray()`, `VecRestoreArray()`, `VecRestoreArrays()`, `VecRestoreArrayF90()`, `VecPlaceArray()`,
           `VecGetArray2d()`, `VecGetArray3d()`, `VecRestoreArray3d()`, `DMDAVecGetArray()`, `DMDAVecRestoreArray()`
@@ -3665,35 +3665,35 @@ PetscErrorCode VecRestoreArray3dRead(Vec x, PetscInt m, PetscInt n, PetscInt p, 
 }
 
 /*@C
-   VecGetArray4dRead - Returns a pointer to a 4d contiguous array that contains this
-   processor's portion of the vector data.  You MUST call `VecRestoreArray4dRead()`
-   when you no longer need access to the array.
+  VecGetArray4dRead - Returns a pointer to a 4d contiguous array that contains this
+  processor's portion of the vector data.  You MUST call `VecRestoreArray4dRead()`
+  when you no longer need access to the array.
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  x - the vector
-.  m - first dimension of four dimensional array
-.  n - second dimension of four dimensional array
-.  p - third dimension of four dimensional array
-.  q - fourth dimension of four dimensional array
-.  mstart - first index you will use in first coordinate direction (often 0)
-.  nstart - first index in the second coordinate direction (often 0)
-.  pstart - first index in the third coordinate direction (often 0)
--  qstart - first index in the fourth coordinate direction (often 0)
+  Input Parameters:
++ x      - the vector
+. m      - first dimension of four dimensional array
+. n      - second dimension of four dimensional array
+. p      - third dimension of four dimensional array
+. q      - fourth dimension of four dimensional array
+. mstart - first index you will use in first coordinate direction (often 0)
+. nstart - first index in the second coordinate direction (often 0)
+. pstart - first index in the third coordinate direction (often 0)
+- qstart - first index in the fourth coordinate direction (often 0)
 
-   Output Parameter:
-.  a - location to put pointer to the array
+  Output Parameter:
+. a - location to put pointer to the array
 
-   Level: beginner
+  Level: beginner
 
   Notes:
-   For a vector obtained from `DMCreateLocalVector()` `mstart`, `nstart`, and `pstart` are likely
-   obtained from the corner indices obtained from `DMDAGetGhostCorners()` while for
-   `DMCreateGlobalVector()` they are the corner indices from `DMDAGetCorners()`. In both cases
-   the arguments from `DMDAGet[Ghost]Corners()` are reversed in the call to `VecGetArray3d()`.
+  For a vector obtained from `DMCreateLocalVector()` `mstart`, `nstart`, and `pstart` are likely
+  obtained from the corner indices obtained from `DMDAGetGhostCorners()` while for
+  `DMCreateGlobalVector()` they are the corner indices from `DMDAGetCorners()`. In both cases
+  the arguments from `DMDAGet[Ghost]Corners()` are reversed in the call to `VecGetArray3d()`.
 
-   For standard PETSc vectors this is an inexpensive call; it does not copy the vector values.
+  For standard PETSc vectors this is an inexpensive call; it does not copy the vector values.
 
 .seealso: [](ch_vectors), `Vec`, `VecGetArray()`, `VecRestoreArray()`, `VecGetArrays()`, `VecGetArrayF90()`, `VecPlaceArray()`,
           `VecRestoreArray2d()`, `DMDAVecGetarray()`, `DMDAVecRestoreArray()`, `VecGetArray3d()`, `VecRestoreArray3d()`,
@@ -3727,31 +3727,31 @@ PetscErrorCode VecGetArray4dRead(Vec x, PetscInt m, PetscInt n, PetscInt p, Pets
 }
 
 /*@C
-   VecRestoreArray4dRead - Restores a vector after `VecGetArray4d()` has been called.
+  VecRestoreArray4dRead - Restores a vector after `VecGetArray4d()` has been called.
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  x - the vector
-.  m - first dimension of four dimensional array
-.  n - second dimension of the four dimensional array
-.  p - third dimension of the four dimensional array
-.  q - fourth dimension of the four dimensional array
-.  mstart - first index you will use in first coordinate direction (often 0)
-.  nstart - first index in the second coordinate direction (often 0)
-.  pstart - first index in the third coordinate direction (often 0)
-.  qstart - first index in the fourth coordinate direction (often 0)
--  a - location of pointer to array obtained from `VecGetArray4dRead()`
+  Input Parameters:
++ x      - the vector
+. m      - first dimension of four dimensional array
+. n      - second dimension of the four dimensional array
+. p      - third dimension of the four dimensional array
+. q      - fourth dimension of the four dimensional array
+. mstart - first index you will use in first coordinate direction (often 0)
+. nstart - first index in the second coordinate direction (often 0)
+. pstart - first index in the third coordinate direction (often 0)
+. qstart - first index in the fourth coordinate direction (often 0)
+- a      - location of pointer to array obtained from `VecGetArray4dRead()`
 
-   Level: beginner
+  Level: beginner
 
-   Notes:
-   For regular PETSc vectors this routine does not involve any copies. For
-   any special vectors that do not store local vector data in a contiguous
-   array, this routine will copy the data back into the underlying
-   vector data structure from the array obtained with `VecGetArray()`.
+  Notes:
+  For regular PETSc vectors this routine does not involve any copies. For
+  any special vectors that do not store local vector data in a contiguous
+  array, this routine will copy the data back into the underlying
+  vector data structure from the array obtained with `VecGetArray()`.
 
-   This routine actually zeros out the `a` pointer.
+  This routine actually zeros out the `a` pointer.
 
 .seealso: [](ch_vectors), `Vec`, `VecGetArray()`, `VecRestoreArray()`, `VecRestoreArrays()`, `VecRestoreArrayF90()`, `VecPlaceArray()`,
           `VecGetArray2d()`, `VecGetArray3d()`, `VecRestoreArray3d()`, `DMDAVecGetArray()`, `DMDAVecRestoreArray()`
@@ -3775,18 +3775,18 @@ PetscErrorCode VecRestoreArray4dRead(Vec x, PetscInt m, PetscInt n, PetscInt p, 
 #if defined(PETSC_USE_DEBUG)
 
 /*@
-   VecLockGet  - Gets the current lock status of a vector
+  VecLockGet  - Gets the current lock status of a vector
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameter:
-.  x - the vector
+  Input Parameter:
+. x - the vector
 
-   Output Parameter:
-.  state - greater than zero indicates the vector is locked for read; less then zero indicates the vector is
+  Output Parameter:
+. state - greater than zero indicates the vector is locked for read; less then zero indicates the vector is
            locked for write; equal to zero means the vector is unlocked, that is, it is free to read or write.
 
-   Level: advanced
+  Level: advanced
 
 .seealso: [](ch_vectors), `Vec`, `VecRestoreArray()`, `VecGetArrayRead()`, `VecLockReadPush()`, `VecLockReadPop()`
 @*/
@@ -3823,20 +3823,20 @@ PetscErrorCode VecLockGetLocation(Vec x, const char *file[], const char *func[],
 }
 
 /*@
-   VecLockReadPush  - Pushes a read-only lock on a vector to prevent it from being written to
+  VecLockReadPush  - Pushes a read-only lock on a vector to prevent it from being written to
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameter:
-.  x - the vector
+  Input Parameter:
+. x - the vector
 
-   Level: intermediate
+  Level: intermediate
 
-   Notes:
-    If this is set then calls to `VecGetArray()` or `VecSetValues()` or any other routines that change the vectors values will generate an error.
+  Notes:
+  If this is set then calls to `VecGetArray()` or `VecSetValues()` or any other routines that change the vectors values will generate an error.
 
-    The call can be nested, i.e., called multiple times on the same vector, but each `VecLockReadPush()` has to have one matching
-    `VecLockReadPop()`, which removes the latest read-only lock.
+  The call can be nested, i.e., called multiple times on the same vector, but each `VecLockReadPush()` has to have one matching
+  `VecLockReadPop()`, which removes the latest read-only lock.
 
 .seealso: [](ch_vectors), `Vec`, `VecRestoreArray()`, `VecGetArrayRead()`, `VecLockReadPop()`, `VecLockGet()`
 @*/
@@ -3869,14 +3869,14 @@ PetscErrorCode VecLockReadPush(Vec x)
 }
 
 /*@
-   VecLockReadPop  - Pops a read-only lock from a vector
+  VecLockReadPop  - Pops a read-only lock from a vector
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameter:
-.  x - the vector
+  Input Parameter:
+. x - the vector
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: [](ch_vectors), `Vec`, `VecRestoreArray()`, `VecGetArrayRead()`, `VecLockReadPush()`, `VecLockGet()`
 @*/
@@ -3896,21 +3896,21 @@ PetscErrorCode VecLockReadPop(Vec x)
 }
 
 /*@C
-   VecLockWriteSet  - Lock or unlock a vector for exclusive read/write access
+  VecLockWriteSet  - Lock or unlock a vector for exclusive read/write access
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  x   - the vector
--  flg - `PETSC_TRUE` to lock the vector for exclusive read/write access; `PETSC_FALSE` to unlock it.
+  Input Parameters:
++ x   - the vector
+- flg - `PETSC_TRUE` to lock the vector for exclusive read/write access; `PETSC_FALSE` to unlock it.
 
-   Level: intermediate
+  Level: intermediate
 
-   Notes:
-    The function is useful in split-phase computations, which usually have a begin phase and an end phase.
-    One can call `VecLockWriteSet`(x,`PETSC_TRUE`) in the begin phase to lock a vector for exclusive
-    access, and call `VecLockWriteSet`(x,`PETSC_FALSE`) in the end phase to unlock the vector from exclusive
-    access. In this way, one is ensured no other operations can access the vector in between. The code may like
+  Notes:
+  The function is useful in split-phase computations, which usually have a begin phase and an end phase.
+  One can call `VecLockWriteSet`(x,`PETSC_TRUE`) in the begin phase to lock a vector for exclusive
+  access, and call `VecLockWriteSet`(x,`PETSC_FALSE`) in the end phase to unlock the vector from exclusive
+  access. In this way, one is ensured no other operations can access the vector in between. The code may like
 
 .vb
        VecGetArray(x,&xdata); // begin phase
@@ -3922,8 +3922,8 @@ PetscErrorCode VecLockReadPop(Vec x)
        VecLockWriteSet(v,PETSC_FALSE);
 .ve
 
-    The call can not be nested on the same vector, in other words, one can not call `VecLockWriteSet`(x,`PETSC_TRUE`)
-    again before calling `VecLockWriteSet`(v,`PETSC_FALSE`).
+  The call can not be nested on the same vector, in other words, one can not call `VecLockWriteSet`(x,`PETSC_TRUE`)
+  again before calling `VecLockWriteSet`(v,`PETSC_FALSE`).
 
 .seealso: [](ch_vectors), `Vec`, `VecRestoreArray()`, `VecGetArrayRead()`, `VecLockReadPush()`, `VecLockReadPop()`, `VecLockGet()`
 @*/
@@ -3943,9 +3943,9 @@ PetscErrorCode VecLockWriteSet(Vec x, PetscBool flg)
 }
 
 /*@
-   VecLockPush  - Pushes a read-only lock on a vector to prevent it from being written to
+  VecLockPush  - Pushes a read-only lock on a vector to prevent it from being written to
 
-   Level: deprecated
+  Level: deprecated
 
 .seealso: [](ch_vectors), `Vec`, `VecLockReadPush()`
 @*/
@@ -3957,9 +3957,9 @@ PetscErrorCode VecLockPush(Vec x)
 }
 
 /*@
-   VecLockPop  - Pops a read-only lock from a vector
+  VecLockPop  - Pops a read-only lock from a vector
 
-   Level: deprecated
+  Level: deprecated
 
 .seealso: [](ch_vectors), `Vec`, `VecLockReadPop()`
 @*/

@@ -290,32 +290,32 @@ PetscErrorCode VecCreate_MPIKokkos(Vec v)
 }
 
 /*@C
-   VecCreateMPIKokkosWithArray - Creates a parallel, array-style vector,
-   where the user provides the GPU array space to store the vector values.
+  VecCreateMPIKokkosWithArray - Creates a parallel, array-style vector,
+  where the user provides the GPU array space to store the vector values.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  comm  - the MPI communicator to use
-.  bs    - block size, same meaning as VecSetBlockSize()
-.  n     - local vector length, cannot be PETSC_DECIDE
-.  N     - global vector length (or PETSC_DECIDE to have calculated)
--  array - the user provided GPU array to store the vector values
+  Input Parameters:
++ comm   - the MPI communicator to use
+. bs     - block size, same meaning as VecSetBlockSize()
+. n      - local vector length, cannot be PETSC_DECIDE
+. N      - global vector length (or PETSC_DECIDE to have calculated)
+- darray - the user provided GPU array to store the vector values
 
-   Output Parameter:
-.  vv - the vector
+  Output Parameter:
+. v - the vector
 
-   Notes:
-   Use VecDuplicate() or VecDuplicateVecs() to form additional vectors of the
-   same type as an existing vector.
+  Notes:
+  Use VecDuplicate() or VecDuplicateVecs() to form additional vectors of the
+  same type as an existing vector.
 
-   If the user-provided array is NULL, then VecKokkosPlaceArray() can be used
-   at a later stage to SET the array for storing the vector values.
+  If the user-provided array is NULL, then VecKokkosPlaceArray() can be used
+  at a later stage to SET the array for storing the vector values.
 
-   PETSc does NOT free the array when the vector is destroyed via VecDestroy().
-   The user should not free the array until the vector is destroyed.
+  PETSc does NOT free the array when the vector is destroyed via VecDestroy().
+  The user should not free the array until the vector is destroyed.
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `VecCreateSeqKokkosWithArray()`, `VecCreateMPIWithArray()`, `VecCreateSeqWithArray()`,
           `VecCreate()`, `VecDuplicate()`, `VecDuplicateVecs()`, `VecCreateGhost()`,

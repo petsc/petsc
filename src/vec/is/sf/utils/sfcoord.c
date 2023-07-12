@@ -38,11 +38,11 @@ static PetscBool InBoundingBox_Internal(PetscInt dim, const PetscReal *x, const 
   Collective
 
   Input Parameters:
-+ sf - PetscSF to set graph on
-. nroots - number of root coordinates
-. nleaves - number of leaf coordinates
-. dim - spatial dimension of coordinates
-. tol - positive tolerance for matching
++ sf         - PetscSF to set graph on
+. nroots     - number of root coordinates
+. nleaves    - number of leaf coordinates
+. dim        - spatial dimension of coordinates
+. tol        - positive tolerance for matching
 . rootcoords - array of root coordinates in which root i component d is [i*dim+d]
 - leafcoords - array of root coordinates in which leaf i component d is [i*dim+d]
 

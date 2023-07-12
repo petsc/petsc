@@ -258,32 +258,32 @@ PETSC_EXTERN PetscErrorCode VecCreate_ViennaCL(Vec v)
 }
 
 /*@C
-   VecCreateMPIViennaCLWithArray - Creates a parallel, array-style vector,
-   where the user provides the viennacl vector to store the vector values.
+  VecCreateMPIViennaCLWithArray - Creates a parallel, array-style vector,
+  where the user provides the viennacl vector to store the vector values.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  comm  - the MPI communicator to use
-.  bs    - block size, same meaning as VecSetBlockSize()
-.  n     - local vector length, cannot be PETSC_DECIDE
-.  N     - global vector length (or PETSC_DECIDE to have calculated)
--  array - the user provided GPU array to store the vector values
+  Input Parameters:
++ comm  - the MPI communicator to use
+. bs    - block size, same meaning as VecSetBlockSize()
+. n     - local vector length, cannot be PETSC_DECIDE
+. N     - global vector length (or PETSC_DECIDE to have calculated)
+- array - the user provided GPU array to store the vector values
 
-   Output Parameter:
-.  vv - the vector
+  Output Parameter:
+. vv - the vector
 
-   Notes:
-   Use VecDuplicate() or VecDuplicateVecs() to form additional vectors of the
-   same type as an existing vector.
+  Notes:
+  Use VecDuplicate() or VecDuplicateVecs() to form additional vectors of the
+  same type as an existing vector.
 
-   If the user-provided array is NULL, then VecViennaCLPlaceArray() can be used
-   at a later stage to SET the array for storing the vector values.
+  If the user-provided array is NULL, then VecViennaCLPlaceArray() can be used
+  at a later stage to SET the array for storing the vector values.
 
-   PETSc does NOT free the array when the vector is destroyed via VecDestroy().
-   The user should not free the array until the vector is destroyed.
+  PETSc does NOT free the array when the vector is destroyed via VecDestroy().
+  The user should not free the array until the vector is destroyed.
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `VecCreateSeqViennaCLWithArray()`, `VecCreateMPIWithArray()`, `VecCreateSeqWithArray()`,
           `VecCreate()`, `VecCreateMPI()`, `VecCreateGhostWithArray()`, `VecViennaCLPlaceArray()`
@@ -302,34 +302,34 @@ PetscErrorCode VecCreateMPIViennaCLWithArray(MPI_Comm comm, PetscInt bs, PetscIn
 }
 
 /*@C
-   VecCreateMPIViennaCLWithArrays - Creates a parallel, array-style vector,
-   where the user provides the ViennaCL vector to store the vector values.
+  VecCreateMPIViennaCLWithArrays - Creates a parallel, array-style vector,
+  where the user provides the ViennaCL vector to store the vector values.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  comm  - the MPI communicator to use
-.  bs    - block size, same meaning as VecSetBlockSize()
-.  n     - local vector length, cannot be PETSC_DECIDE
-.  N     - global vector length (or PETSC_DECIDE to have calculated)
--  cpuarray - the user provided CPU array to store the vector values
--  viennaclvec - ViennaCL vector where the Vec entries are to be stored on the device.
+  Input Parameters:
++ comm        - the MPI communicator to use
+. bs          - block size, same meaning as VecSetBlockSize()
+. n           - local vector length, cannot be PETSC_DECIDE
+. N           - global vector length (or PETSC_DECIDE to have calculated)
+. cpuarray    - the user provided CPU array to store the vector values
+- viennaclvec - ViennaCL vector where the Vec entries are to be stored on the device.
 
-   Output Parameter:
-.  vv - the vector
+  Output Parameter:
+. vv - the vector
 
-   Notes:
-   If both cpuarray and viennaclvec are provided, the caller must ensure that
-   the provided arrays have identical values.
+  Notes:
+  If both cpuarray and viennaclvec are provided, the caller must ensure that
+  the provided arrays have identical values.
 
-   Use VecDuplicate() or VecDuplicateVecs() to form additional vectors of the
-   same type as an existing vector.
+  Use VecDuplicate() or VecDuplicateVecs() to form additional vectors of the
+  same type as an existing vector.
 
-   PETSc does NOT free the provided arrays when the vector is destroyed via
-   VecDestroy(). The user should not free the array until the vector is
-   destroyed.
+  PETSc does NOT free the provided arrays when the vector is destroyed via
+  VecDestroy(). The user should not free the array until the vector is
+  destroyed.
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `VecCreateSeqViennaCLWithArrays()`, `VecCreateMPIWithArray()`
           `VecCreate()`, `VecDuplicate()`, `VecDuplicateVecs()`, `VecCreateGhost()`,

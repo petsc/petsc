@@ -387,29 +387,30 @@ static struct _ISOps myops = {ISGetIndices_Block, ISRestoreIndices_Block, ISInve
                               ISSortedLocal_Block, NULL, ISUniqueLocal_Block, NULL, ISPermutationLocal_Block, NULL, ISIntervalLocal_Block, NULL};
 
 /*@
-   ISBlockSetIndices - Set integers representing blocks of indices in an index set of `ISType` `ISBLOCK`
+  ISBlockSetIndices - Set integers representing blocks of indices in an index set of `ISType` `ISBLOCK`
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  is - the index set
-.  bs - number of elements in each block
-.   n - the length of the index set (the number of blocks)
-.  idx - the list of integers, one for each block, the integers contain the index of the first index of each block divided by the block size
--  mode - see `PetscCopyMode`, only `PETSC_COPY_VALUES` and `PETSC_OWN_POINTER` are supported
+  Input Parameters:
++ is   - the index set
+. bs   - number of elements in each block
+. n    - the length of the index set (the number of blocks)
+. idx  - the list of integers, one for each block, the integers contain the index of the first index of each block divided by the block size
+- mode - see `PetscCopyMode`, only `PETSC_COPY_VALUES` and `PETSC_OWN_POINTER` are supported
 
-   Level: beginner
+  Level: beginner
 
-   Notes:
-   When the communicator is not `MPI_COMM_SELF`, the operations on the
-   index sets, IS, are NOT conceptually the same as `MPI_Group` operations.
-   The index sets are then distributed sets of indices and thus certain operations
-   on them are collective.
+  Notes:
+  When the communicator is not `MPI_COMM_SELF`, the operations on the
+  index sets, IS, are NOT conceptually the same as `MPI_Group` operations.
+  The index sets are then distributed sets of indices and thus certain operations
+  on them are collective.
 
-   The convenience routine `ISCreateBlock()` allows one to create the `IS` and provide the blocks in a single function call.
-   Example:
-   If you wish to index the values {0,1,4,5}, then use
-   a block size of 2 and idx of {0,2}.
+  The convenience routine `ISCreateBlock()` allows one to create the `IS` and provide the blocks in a single function call.
+
+  Example:
+  If you wish to index the values {0,1,4,5}, then use
+  a block size of 2 and idx of {0,2}.
 
 .seealso: [](sec_scatter), `IS`, `ISCreateStride()`, `ISCreateGeneral()`, `ISAllGather()`, `ISCreateBlock()`, `ISBLOCK`, `ISGeneralSetIndices()`
 @*/
@@ -465,34 +466,34 @@ static PetscErrorCode ISBlockSetIndices_Block(IS is, PetscInt bs, PetscInt n, co
 }
 
 /*@
-   ISCreateBlock - Creates a data structure for an index set containing
-   a list of integers. Each integer represents a fixed block size set of indices.
+  ISCreateBlock - Creates a data structure for an index set containing
+  a list of integers. Each integer represents a fixed block size set of indices.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  comm - the MPI communicator
-.  bs - number of elements in each block
-.  n - the length of the index set (the number of blocks)
-.  idx - the list of integers, one for each block, the integers contain the index of the first entry of each block divided by the block size
--  mode - see `PetscCopyMode`, only `PETSC_COPY_VALUES` and `PETSC_OWN_POINTER` are supported in this routine
+  Input Parameters:
++ comm - the MPI communicator
+. bs   - number of elements in each block
+. n    - the length of the index set (the number of blocks)
+. idx  - the list of integers, one for each block, the integers contain the index of the first entry of each block divided by the block size
+- mode - see `PetscCopyMode`, only `PETSC_COPY_VALUES` and `PETSC_OWN_POINTER` are supported in this routine
 
-   Output Parameter:
-.  is - the new index set
+  Output Parameter:
+. is - the new index set
 
-   Level: beginner
+  Level: beginner
 
-   Notes:
-   When the communicator is not `MPI_COMM_SELF`, the operations on the
-   index sets, `IS`, are NOT conceptually the same as `MPI_Group` operations.
-   The index sets are then distributed sets of indices and thus certain operations
-   on them are collective.
+  Notes:
+  When the communicator is not `MPI_COMM_SELF`, the operations on the
+  index sets, `IS`, are NOT conceptually the same as `MPI_Group` operations.
+  The index sets are then distributed sets of indices and thus certain operations
+  on them are collective.
 
-   The routine `ISBlockSetIndices()` can be used to provide the indices to a preexisting block `IS`
+  The routine `ISBlockSetIndices()` can be used to provide the indices to a preexisting block `IS`
 
-   Example:
-   If you wish to index the values {0,1,6,7}, then use
-   a block size of 2 and idx of {0,3}.
+  Example:
+  If you wish to index the values {0,1,6,7}, then use
+  a block size of 2 and idx of {0,3}.
 
 .seealso: [](sec_scatter), `IS`, `ISCreateStride()`, `ISCreateGeneral()`, `ISAllGather()`, `ISBlockSetIndices()`, `ISBLOCK`, `ISGENERAL`
 @*/
@@ -526,20 +527,20 @@ static PetscErrorCode ISBlockRestoreIndices_Block(IS is, const PetscInt *idx[])
 }
 
 /*@C
-   ISBlockGetIndices - Gets the indices associated with each block in an `ISBLOCK`
+  ISBlockGetIndices - Gets the indices associated with each block in an `ISBLOCK`
 
-   Not Collective
+  Not Collective
 
-   Input Parameter:
-.  is - the index set
+  Input Parameter:
+. is - the index set
 
-   Output Parameter:
-.  idx - the integer indices, one for each block and count of block not indices
+  Output Parameter:
+. idx - the integer indices, one for each block and count of block not indices
 
-   Level: intermediate
+  Level: intermediate
 
-   Note:
-   Call `ISBlockRestoreIndices()` when you no longer need access to the indices
+  Note:
+  Call `ISBlockRestoreIndices()` when you no longer need access to the indices
 
 .seealso: [](sec_scatter), `IS`, `ISBLOCK`, `ISGetIndices()`, `ISBlockRestoreIndices()`, `ISBlockSetIndices()`, `ISCreateBlock()`
 @*/
@@ -551,17 +552,17 @@ PetscErrorCode ISBlockGetIndices(IS is, const PetscInt *idx[])
 }
 
 /*@C
-   ISBlockRestoreIndices - Restores the indices associated with each block  in an `ISBLOCK` obtained with `ISBlockGetIndices()`
+  ISBlockRestoreIndices - Restores the indices associated with each block  in an `ISBLOCK` obtained with `ISBlockGetIndices()`
 
-   Not Collective
+  Not Collective
 
-   Input Parameter:
-.  is - the index set
+  Input Parameter:
+. is - the index set
 
-   Output Parameter:
-.  idx - the integer indices
+  Output Parameter:
+. idx - the integer indices
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: [](sec_scatter), `IS`, `ISBLOCK`, `ISRestoreIndices()`, `ISBlockGetIndices()`
 @*/
@@ -573,17 +574,17 @@ PetscErrorCode ISBlockRestoreIndices(IS is, const PetscInt *idx[])
 }
 
 /*@
-   ISBlockGetLocalSize - Returns the local number of blocks in the index set of `ISType` `ISBLOCK`
+  ISBlockGetLocalSize - Returns the local number of blocks in the index set of `ISType` `ISBLOCK`
 
-   Not Collective
+  Not Collective
 
-   Input Parameter:
-.  is - the index set
+  Input Parameter:
+. is - the index set
 
-   Output Parameter:
-.  size - the local number of blocks
+  Output Parameter:
+. size - the local number of blocks
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: [](sec_scatter), `IS`, `ISGetBlockSize()`, `ISBlockGetSize()`, `ISGetSize()`, `ISCreateBlock()`, `ISBLOCK`
 @*/
@@ -606,17 +607,17 @@ static PetscErrorCode ISBlockGetLocalSize_Block(IS is, PetscInt *size)
 }
 
 /*@
-   ISBlockGetSize - Returns the global number of blocks in parallel in the index set of `ISType` `ISBLOCK`
+  ISBlockGetSize - Returns the global number of blocks in parallel in the index set of `ISType` `ISBLOCK`
 
-   Not Collective
+  Not Collective
 
-   Input Parameter:
-.  is - the index set
+  Input Parameter:
+. is - the index set
 
-   Output Parameter:
-.  size - the global number of blocks
+  Output Parameter:
+. size - the global number of blocks
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: [](sec_scatter), `IS`, `ISGetBlockSize()`, `ISBlockGetLocalSize()`, `ISGetSize()`, `ISCreateBlock()`, `ISBLOCK`
 @*/
