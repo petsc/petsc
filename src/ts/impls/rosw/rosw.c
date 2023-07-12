@@ -584,11 +584,11 @@ PetscErrorCode TSRosWRegisterAll(void)
 }
 
 /*@C
-   TSRosWRegisterDestroy - Frees the list of schemes that were registered by `TSRosWRegister()`.
+  TSRosWRegisterDestroy - Frees the list of schemes that were registered by `TSRosWRegister()`.
 
-   Not Collective
+  Not Collective
 
-   Level: advanced
+  Level: advanced
 
 .seealso: [](ch_ts), `TSRosWRegister()`, `TSRosWRegisterAll()`
 @*/
@@ -646,25 +646,25 @@ PetscErrorCode TSRosWFinalizePackage(void)
 }
 
 /*@C
-   TSRosWRegister - register a `TSROSW`, Rosenbrock W scheme by providing the entries in the Butcher tableau and optionally embedded approximations and interpolation
+  TSRosWRegister - register a `TSROSW`, Rosenbrock W scheme by providing the entries in the Butcher tableau and optionally embedded approximations and interpolation
 
-   Not Collective, but the same schemes should be registered on all processes on which they will be used
+  Not Collective, but the same schemes should be registered on all processes on which they will be used
 
-   Input Parameters:
-+  name - identifier for method
-.  order - approximation order of method
-.  s - number of stages, this is the dimension of the matrices below
-.  A - Table of propagated stage coefficients (dimension s*s, row-major), strictly lower triangular
-.  Gamma - Table of coefficients in implicit stage equations (dimension s*s, row-major), lower triangular with nonzero diagonal
-.  b - Step completion table (dimension s)
-.  bembed - Step completion table for a scheme of order one less (dimension s, NULL if no embedded scheme is available)
-.  pinterp - Order of the interpolation scheme, equal to the number of columns of binterpt
--  binterpt - Coefficients of the interpolation formula (dimension s*pinterp)
+  Input Parameters:
++ name     - identifier for method
+. order    - approximation order of method
+. s        - number of stages, this is the dimension of the matrices below
+. A        - Table of propagated stage coefficients (dimension s*s, row-major), strictly lower triangular
+. Gamma    - Table of coefficients in implicit stage equations (dimension s*s, row-major), lower triangular with nonzero diagonal
+. b        - Step completion table (dimension s)
+. bembed   - Step completion table for a scheme of order one less (dimension s, NULL if no embedded scheme is available)
+. pinterp  - Order of the interpolation scheme, equal to the number of columns of binterpt
+- binterpt - Coefficients of the interpolation formula (dimension s*pinterp)
 
-   Level: advanced
+  Level: advanced
 
-   Note:
-   Several Rosenbrock W methods are provided, this function is only needed to create new methods.
+  Note:
+  Several Rosenbrock W methods are provided, this function is only needed to create new methods.
 
 .seealso: [](ch_ts), `TSROSW`
 @*/
@@ -778,24 +778,24 @@ PetscErrorCode TSRosWRegister(TSRosWType name, PetscInt order, PetscInt s, const
 }
 
 /*@C
-   TSRosWRegisterRos4 - register a fourth order Rosenbrock scheme by providing parameter choices
+  TSRosWRegisterRos4 - register a fourth order Rosenbrock scheme by providing parameter choices
 
-   Not Collective, but the same schemes should be registered on all processes on which they will be used
+  Not Collective, but the same schemes should be registered on all processes on which they will be used
 
-   Input Parameters:
-+  name - identifier for method
-.  gamma - leading coefficient (diagonal entry)
-.  a2 - design parameter, see Table 7.2 of Hairer&Wanner
-.  a3 - design parameter or PETSC_DEFAULT to satisfy one of the order five conditions (Eq 7.22)
-.  b3 - design parameter, see Table 7.2 of Hairer&Wanner
--  e4 - design parameter for embedded method, see coefficient E4 in ros4.f code from Hairer
+  Input Parameters:
++ name  - identifier for method
+. gamma - leading coefficient (diagonal entry)
+. a2    - design parameter, see Table 7.2 of Hairer&Wanner
+. a3    - design parameter or PETSC_DEFAULT to satisfy one of the order five conditions (Eq 7.22)
+. b3    - design parameter, see Table 7.2 of Hairer&Wanner
+- e4    - design parameter for embedded method, see coefficient E4 in ros4.f code from Hairer
 
-   Level: developer
+  Level: developer
 
-   Notes:
-   This routine encodes the design of fourth order Rosenbrock methods as described in Hairer and Wanner volume 2.
-   It is used here to implement several methods from the book and can be used to experiment with new methods.
-   It was written this way instead of by copying coefficients in order to provide better than double precision satisfaction of the order conditions.
+  Notes:
+  This routine encodes the design of fourth order Rosenbrock methods as described in Hairer and Wanner volume 2.
+  It is used here to implement several methods from the book and can be used to experiment with new methods.
+  It was written this way instead of by copying coefficients in order to provide better than double precision satisfaction of the order conditions.
 
 .seealso: [](ch_ts), `TSRosW`, `TSRosWRegister()`
 @*/
@@ -1449,8 +1449,8 @@ static PetscErrorCode TSLoad_RosW(TS ts, PetscViewer viewer)
   Logically Collective
 
   Input Parameters:
-+  ts - timestepping context
--  roswtype - type of Rosenbrock-W scheme
++ ts       - timestepping context
+- roswtype - type of Rosenbrock-W scheme
 
   Level: beginner
 
@@ -1471,10 +1471,10 @@ PetscErrorCode TSRosWSetType(TS ts, TSRosWType roswtype)
   Logically Collective
 
   Input Parameter:
-.  ts - timestepping context
+. ts - timestepping context
 
   Output Parameter:
-.  rostype - type of Rosenbrock-W scheme
+. rostype - type of Rosenbrock-W scheme
 
   Level: intermediate
 
@@ -1494,8 +1494,8 @@ PetscErrorCode TSRosWGetType(TS ts, TSRosWType *rostype)
   Logically Collective
 
   Input Parameters:
-+  ts - timestepping context
--  flg - `PETSC_TRUE` to recompute the Jacobian at each stage
++ ts  - timestepping context
+- flg - `PETSC_TRUE` to recompute the Jacobian at each stage
 
   Level: intermediate
 

@@ -1272,10 +1272,10 @@ PETSC_EXTERN PetscErrorCode TSCreate_Theta(TS ts)
   Not Collective
 
   Input Parameter:
-.  ts - timestepping context
+. ts - timestepping context
 
   Output Parameter:
-.  theta - stage abscissa
+. theta - stage abscissa
 
   Level: advanced
 
@@ -1299,11 +1299,11 @@ PetscErrorCode TSThetaGetTheta(TS ts, PetscReal *theta)
   Not Collective
 
   Input Parameters:
-+  ts - timestepping context
--  theta - stage abscissa
++ ts    - timestepping context
+- theta - stage abscissa
 
   Options Database Key:
-.  -ts_theta_theta <theta> - set theta
+. -ts_theta_theta <theta> - set theta
 
   Level: intermediate
 
@@ -1323,10 +1323,10 @@ PetscErrorCode TSThetaSetTheta(TS ts, PetscReal theta)
   Not Collective
 
   Input Parameter:
-.  ts - timestepping context
+. ts - timestepping context
 
   Output Parameter:
-.  endpoint - `PETSC_TRUE` when using the endpoint variant
+. endpoint - `PETSC_TRUE` when using the endpoint variant
 
   Level: advanced
 
@@ -1347,11 +1347,11 @@ PetscErrorCode TSThetaGetEndpoint(TS ts, PetscBool *endpoint)
   Not Collective
 
   Input Parameters:
-+  ts - timestepping context
--  flg - `PETSC_TRUE` to use the endpoint variant
++ ts  - timestepping context
+- flg - `PETSC_TRUE` to use the endpoint variant
 
   Options Database Key:
-.  -ts_theta_endpoint <flg> - use the endpoint variant
+. -ts_theta_endpoint <flg> - use the endpoint variant
 
   Level: intermediate
 

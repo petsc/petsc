@@ -490,7 +490,7 @@ PetscErrorCode TSDiscGradGetFormulation(TS ts, PetscErrorCode (**Sfunc)(TS, Pets
 . Sfunc - constructor for the S matrix from the formulation
 . Ffunc - functional F from the formulation
 . Gfunc - constructor for the gradient of F from the formulation
-- ctx - optional context for the functions
+- ctx   - optional context for the functions
 
   Calling sequence of `Sfunc`:
 $ PetscErrorCode Sfunc(TS ts, PetscReal time, Vec u, Mat S, void *ctx)
@@ -501,7 +501,7 @@ $ PetscErrorCode Ffunc(TS ts, PetscReal time, Vec u, PetscScalar *F, void *ctx)
   Calling sequence of `Gfunc`:
 $ PetscErrorCode Gfunc(TS ts, PetscReal time, Vec u, Vec G, void *ctx)
 
-  Level: Intermediate
+  Level: intermediate
 
 .seealso: [](ch_ts), `TSDISCGRAD`, `TSDiscGradGetFormulation()`
 @*/
@@ -522,14 +522,14 @@ PetscErrorCode TSDiscGradSetFormulation(TS ts, PetscErrorCode (*Sfunc)(TS, Petsc
   Not Collective
 
   Input Parameter:
-.  ts - timestepping context
+. ts - timestepping context
 
   Output Parameter:
-.  gonzalez - `PETSC_TRUE` when using the Gonzalez term
+. gonzalez - `PETSC_TRUE` when using the Gonzalez term
 
-  Level: Advanced
+  Level: advanced
 
-.seealso: [](ch_ts), `TSDISCGRAD`, `TSDiscGradUseGonzalez()`, `TSDISCGRAD`
+.seealso: [](ch_ts), `TSDISCGRAD`, `TSDiscGradUseGonzalez()`
 @*/
 PetscErrorCode TSDiscGradIsGonzalez(TS ts, PetscBool *gonzalez)
 {
@@ -547,13 +547,13 @@ PetscErrorCode TSDiscGradIsGonzalez(TS ts, PetscBool *gonzalez)
   Not Collective
 
   Input Parameters:
-+ ts - timestepping context
++ ts  - timestepping context
 - flg - `PETSC_TRUE` to use the Gonzalez term
 
   Options Database Key:
 . -ts_discgrad_gonzalez <flg> - use the Gonzalez term for the discrete gradient formulation
 
-  Level: Intermediate
+  Level: intermediate
 
 .seealso: [](ch_ts), `TSDISCGRAD`
 @*/

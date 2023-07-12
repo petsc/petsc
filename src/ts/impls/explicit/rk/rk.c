@@ -358,11 +358,11 @@ PetscErrorCode TSRKRegisterAll(void)
 }
 
 /*@C
-   TSRKRegisterDestroy - Frees the list of schemes that were registered by `TSRKRegister()`.
+  TSRKRegisterDestroy - Frees the list of schemes that were registered by `TSRKRegister()`.
 
-   Not Collective
+  Not Collective
 
-   Level: advanced
+  Level: advanced
 
 .seealso: [](ch_ts), `TSRK`, `TSRKRegister()`, `TSRKRegisterAll()`
 @*/
@@ -419,25 +419,25 @@ PetscErrorCode TSRKFinalizePackage(void)
 }
 
 /*@C
-   TSRKRegister - register an `TSRK` scheme by providing the entries in the Butcher tableau and optionally embedded approximations and interpolation
+  TSRKRegister - register an `TSRK` scheme by providing the entries in the Butcher tableau and optionally embedded approximations and interpolation
 
-   Not Collective, but the same schemes should be registered on all processes on which they will be used
+  Not Collective, but the same schemes should be registered on all processes on which they will be used
 
-   Input Parameters:
-+  name - identifier for method
-.  order - approximation order of method
-.  s - number of stages, this is the dimension of the matrices below
-.  A - stage coefficients (dimension s*s, row-major)
-.  b - step completion table (dimension s; NULL to use last row of A)
-.  c - abscissa (dimension s; NULL to use row sums of A)
-.  bembed - completion table for embedded method (dimension s; NULL if not available)
-.  p - Order of the interpolation scheme, equal to the number of columns of binterp
--  binterp - Coefficients of the interpolation formula (dimension s*p; NULL to reuse b with p=1)
+  Input Parameters:
++ name    - identifier for method
+. order   - approximation order of method
+. s       - number of stages, this is the dimension of the matrices below
+. A       - stage coefficients (dimension s*s, row-major)
+. b       - step completion table (dimension s; NULL to use last row of A)
+. c       - abscissa (dimension s; NULL to use row sums of A)
+. bembed  - completion table for embedded method (dimension s; NULL if not available)
+. p       - Order of the interpolation scheme, equal to the number of columns of binterp
+- binterp - Coefficients of the interpolation formula (dimension s*p; NULL to reuse b with p=1)
 
-   Level: advanced
+  Level: advanced
 
-   Note:
-   Several `TSRK` methods are provided, this function is only needed to create new methods.
+  Note:
+  Several `TSRK` methods are provided, this function is only needed to create new methods.
 
 .seealso: [](ch_ts), `TSRK`
 @*/
@@ -512,24 +512,24 @@ PetscErrorCode TSRKGetTableau_RK(TS ts, PetscInt *s, const PetscReal **A, const 
 }
 
 /*@C
-   TSRKGetTableau - Get info on the `TSRK` tableau
+  TSRKGetTableau - Get info on the `TSRK` tableau
 
-   Not Collective
+  Not Collective
 
-   Input Parameter:
-.  ts - timestepping context
+  Input Parameter:
+. ts - timestepping context
 
-   Output Parameters:
-+  s - number of stages, this is the dimension of the matrices below
-.  A - stage coefficients (dimension s*s, row-major)
-.  b - step completion table (dimension s)
-.  c - abscissa (dimension s)
-.  bembed - completion table for embedded method (dimension s; NULL if not available)
-.  p - Order of the interpolation scheme, equal to the number of columns of binterp
-.  binterp - Coefficients of the interpolation formula (dimension s*p)
--  FSAL - whether or not the scheme has the First Same As Last property
+  Output Parameters:
++ s       - number of stages, this is the dimension of the matrices below
+. A       - stage coefficients (dimension s*s, row-major)
+. b       - step completion table (dimension s)
+. c       - abscissa (dimension s)
+. bembed  - completion table for embedded method (dimension s; NULL if not available)
+. p       - Order of the interpolation scheme, equal to the number of columns of binterp
+. binterp - Coefficients of the interpolation formula (dimension s*p)
+- FSAL    - whether or not the scheme has the First Same As Last property
 
-   Level: developer
+  Level: developer
 
 .seealso: [](ch_ts), `TSRK`, `TSRKRegister()`, `TSRKSetType()`
 @*/
@@ -1246,10 +1246,10 @@ static PetscErrorCode TSLoad_RK(TS ts, PetscViewer viewer)
   Not Collective
 
   Input Parameter:
-.  ts - timestepping context
+. ts - timestepping context
 
   Output Parameter:
-.  order - order of `TSRK` scheme
+. order - order of `TSRK` scheme
 
   Level: intermediate
 
@@ -1270,11 +1270,11 @@ PetscErrorCode TSRKGetOrder(TS ts, PetscInt *order)
   Logically Collective
 
   Input Parameters:
-+  ts - timestepping context
--  rktype - type of `TSRK` scheme
++ ts     - timestepping context
+- rktype - type of `TSRK` scheme
 
   Options Database Key:
-.   -ts_rk_type - <1fe,2a,3,3bs,4,5f,5dp,5bs>
+. -ts_rk_type - <1fe,2a,3,3bs,4,5f,5dp,5bs>
 
   Level: intermediate
 
@@ -1295,10 +1295,10 @@ PetscErrorCode TSRKSetType(TS ts, TSRKType rktype)
   Not Collective
 
   Input Parameter:
-.  ts - timestepping context
+. ts - timestepping context
 
   Output Parameter:
-.  rktype - type of `TSRK`-scheme
+. rktype - type of `TSRK`-scheme
 
   Level: intermediate
 
@@ -1425,11 +1425,11 @@ static PetscErrorCode SNESTSFormJacobian_RK(SNES snes, Vec x, Mat A, Mat B, TS t
   Logically Collective
 
   Input Parameters:
-+  ts - timestepping context
--  use_multirate - `PETSC_TRUE` enables the multirate `TSRK` method, sets the basic method to be RK2A and sets the ratio between slow stepsize and fast stepsize to be 2
++ ts            - timestepping context
+- use_multirate - `PETSC_TRUE` enables the multirate `TSRK` method, sets the basic method to be RK2A and sets the ratio between slow stepsize and fast stepsize to be 2
 
   Options Database Key:
-.   -ts_rk_multirate - <true,false>
+. -ts_rk_multirate - <true,false>
 
   Level: intermediate
 
@@ -1451,10 +1451,10 @@ PetscErrorCode TSRKSetMultirate(TS ts, PetscBool use_multirate)
   Not Collective
 
   Input Parameter:
-.  ts - timestepping context
+. ts - timestepping context
 
   Output Parameter:
-.  use_multirate - `PETSC_TRUE` if the multirate RK method is enabled, `PETSC_FALSE` otherwise
+. use_multirate - `PETSC_TRUE` if the multirate RK method is enabled, `PETSC_FALSE` otherwise
 
   Level: intermediate
 

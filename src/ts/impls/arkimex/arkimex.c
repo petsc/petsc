@@ -413,11 +413,11 @@ PetscErrorCode TSARKIMEXRegisterAll(void)
 }
 
 /*@C
-   TSARKIMEXRegisterDestroy - Frees the list of schemes that were registered by `TSARKIMEXRegister()`.
+  TSARKIMEXRegisterDestroy - Frees the list of schemes that were registered by `TSARKIMEXRegister()`.
 
-   Not Collective
+  Not Collective
 
-   Level: advanced
+  Level: advanced
 
 .seealso: [](ch_ts), `TSARKIMEX`, `TSARKIMEXRegister()`, `TSARKIMEXRegisterAll()`
 @*/
@@ -474,30 +474,30 @@ PetscErrorCode TSARKIMEXFinalizePackage(void)
 }
 
 /*@C
-   TSARKIMEXRegister - register a `TSARKIMEX` scheme by providing the entries in the Butcher tableau and optionally embedded approximations and interpolation
+  TSARKIMEXRegister - register a `TSARKIMEX` scheme by providing the entries in the Butcher tableau and optionally embedded approximations and interpolation
 
-   Not Collective, but the same schemes should be registered on all processes on which they will be used
+  Not Collective, but the same schemes should be registered on all processes on which they will be used
 
-   Input Parameters:
-+  name - identifier for method
-.  order - approximation order of method
-.  s - number of stages, this is the dimension of the matrices below
-.  At - Butcher table of stage coefficients for stiff part (dimension s*s, row-major)
-.  bt - Butcher table for completing the stiff part of the step (dimension s; NULL to use the last row of At)
-.  ct - Abscissa of each stiff stage (dimension s, NULL to use row sums of At)
-.  A - Non-stiff stage coefficients (dimension s*s, row-major)
-.  b - Non-stiff step completion table (dimension s; NULL to use last row of At)
-.  c - Non-stiff abscissa (dimension s; NULL to use row sums of A)
-.  bembedt - Stiff part of completion table for embedded method (dimension s; NULL if not available)
-.  bembed - Non-stiff part of completion table for embedded method (dimension s; NULL to use bembedt if provided)
-.  pinterp - Order of the interpolation scheme, equal to the number of columns of binterpt and binterp
-.  binterpt - Coefficients of the interpolation formula for the stiff part (dimension s*pinterp)
--  binterp - Coefficients of the interpolation formula for the non-stiff part (dimension s*pinterp; NULL to reuse binterpt)
+  Input Parameters:
++ name     - identifier for method
+. order    - approximation order of method
+. s        - number of stages, this is the dimension of the matrices below
+. At       - Butcher table of stage coefficients for stiff part (dimension s*s, row-major)
+. bt       - Butcher table for completing the stiff part of the step (dimension s; NULL to use the last row of At)
+. ct       - Abscissa of each stiff stage (dimension s, NULL to use row sums of At)
+. A        - Non-stiff stage coefficients (dimension s*s, row-major)
+. b        - Non-stiff step completion table (dimension s; NULL to use last row of At)
+. c        - Non-stiff abscissa (dimension s; NULL to use row sums of A)
+. bembedt  - Stiff part of completion table for embedded method (dimension s; NULL if not available)
+. bembed   - Non-stiff part of completion table for embedded method (dimension s; NULL to use bembedt if provided)
+. pinterp  - Order of the interpolation scheme, equal to the number of columns of binterpt and binterp
+. binterpt - Coefficients of the interpolation formula for the stiff part (dimension s*pinterp)
+- binterp  - Coefficients of the interpolation formula for the non-stiff part (dimension s*pinterp; NULL to reuse binterpt)
 
-   Level: advanced
+  Level: advanced
 
-   Note:
-   Several `TSARKIMEX` methods are provided, this function is only needed to create new methods.
+  Note:
+  Several `TSARKIMEX` methods are provided, this function is only needed to create new methods.
 
 .seealso: [](ch_ts), `TSARKIMEX`, `TSType`, `TS`
 @*/
@@ -1377,11 +1377,11 @@ static PetscErrorCode TSLoad_ARKIMEX(TS ts, PetscViewer viewer)
   Logically Collective
 
   Input Parameters:
-+  ts - timestepping context
--  arktype - type of `TSARKIMEX` scheme
++ ts      - timestepping context
+- arktype - type of `TSARKIMEX` scheme
 
   Options Database Key:
-.  -ts_arkimex_type <1bee,a2,l2,ars122,2c,2d,2e,prssp2,3,bpr3,ars443,4,5> - set `TSARKIMEX` scheme type
+. -ts_arkimex_type <1bee,a2,l2,ars122,2c,2d,2e,prssp2,3,bpr3,ars443,4,5> - set `TSARKIMEX` scheme type
 
   Level: intermediate
 
@@ -1403,14 +1403,14 @@ PetscErrorCode TSARKIMEXSetType(TS ts, TSARKIMEXType arktype)
   Logically Collective
 
   Input Parameter:
-.  ts - timestepping context
+. ts - timestepping context
 
   Output Parameter:
-.  arktype - type of `TSARKIMEX` scheme
+. arktype - type of `TSARKIMEX` scheme
 
   Level: intermediate
 
-.seealso: [](ch_ts), `TSARKIMEX`c, `TSARKIMEXGetType()`
+.seealso: [](ch_ts), `TSARKIMEXc`, `TSARKIMEXGetType()`
 @*/
 PetscErrorCode TSARKIMEXGetType(TS ts, TSARKIMEXType *arktype)
 {
@@ -1426,8 +1426,8 @@ PetscErrorCode TSARKIMEXGetType(TS ts, TSARKIMEXType *arktype)
   Logically Collective
 
   Input Parameters:
-+  ts - timestepping context
--  flg - `PETSC_TRUE` for fully implicit
++ ts  - timestepping context
+- flg - `PETSC_TRUE` for fully implicit
 
   Level: intermediate
 
@@ -1448,10 +1448,10 @@ PetscErrorCode TSARKIMEXSetFullyImplicit(TS ts, PetscBool flg)
   Logically Collective
 
   Input Parameter:
-.  ts - timestepping context
+. ts - timestepping context
 
   Output Parameter:
-.  flg - `PETSC_TRUE` for fully implicit
+. flg - `PETSC_TRUE` for fully implicit
 
   Level: intermediate
 

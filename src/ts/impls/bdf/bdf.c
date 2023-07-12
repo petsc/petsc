@@ -531,11 +531,11 @@ PETSC_EXTERN PetscErrorCode TSCreate_BDF(TS ts)
   Logically Collective
 
   Input Parameters:
-+  ts - timestepping context
--  order - order of the method
++ ts    - timestepping context
+- order - order of the method
 
   Options Database Key:
-.  -ts_bdf_order <order> - select the order
+. -ts_bdf_order <order> - select the order
 
   Level: intermediate
 
@@ -556,10 +556,10 @@ PetscErrorCode TSBDFSetOrder(TS ts, PetscInt order)
   Not Collective
 
   Input Parameter:
-.  ts - timestepping context
+. ts - timestepping context
 
   Output Parameter:
-.  order - order of the method
+. order - order of the method
 
   Level: intermediate
 

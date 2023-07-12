@@ -28,9 +28,6 @@ PETSC_EXTERN PetscErrorCode TSCreate_IRK(TS);
 
   Not Collective
 
-  Input parameter:
-. path - The dynamic library path
-
   Level: advanced
 
 .seealso: [](ch_ts), `TS`, `TSCreate()`, `TSRegister()`, `TSRegisterDestroy()`

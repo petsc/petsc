@@ -82,24 +82,24 @@ PetscErrorCode TSMonitorLGCtxNetworkCreate(TS ts, const char host[], const char 
 }
 
 /*
-   TSMonitorLGCtxNetworkSolution - Monitors progress of the `TS` solvers for a `DMNETWORK` solution with one window for each vertex and each edge
+  TSMonitorLGCtxNetworkSolution - Monitors progress of the `TS` solvers for a `DMNETWORK` solution with one window for each vertex and each edge
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  ts - the `TS` context
-.  step - current time-step
-.  ptime - current time
-.  u - current solution
--  dctx - the `TSMonitorLGCtxNetwork` object that contains all the options for the monitoring, this is created with `TSMonitorLGCtxCreateNetwork()`
+  Input Parameters:
++ ts    - the `TS` context
+. step  - current time-step
+. ptime - current time
+. u     - current solution
+- dctx  - the `TSMonitorLGCtxNetwork` object that contains all the options for the monitoring, this is created with `TSMonitorLGCtxCreateNetwork()`
 
-   Options Database Key:
-.   -ts_monitor_lg_solution_variables
+  Options Database Key:
+. -ts_monitor_lg_solution_variables - monitor solution variables
 
-   Level: intermediate
+  Level: intermediate
 
-   Note:
-    Each process in a parallel run displays its component solutions in a separate window
+  Note:
+  Each process in a parallel run displays its component solutions in a separate window
 
 */
 PetscErrorCode TSMonitorLGCtxNetworkSolution(TS ts, PetscInt step, PetscReal ptime, Vec u, void *dctx)

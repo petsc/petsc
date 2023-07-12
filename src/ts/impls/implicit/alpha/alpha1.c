@@ -477,23 +477,24 @@ PETSC_EXTERN PetscErrorCode TSCreate_Alpha(TS ts)
 
 /*@
   TSAlphaSetRadius - sets the desired spectral radius of the method for `TSALPHA`
-                     (i.e. high-frequency numerical damping)
+  (i.e. high-frequency numerical damping)
 
   Logically Collective
 
   The algorithmic parameters \alpha_m and \alpha_f of the
   generalized-\alpha method can be computed in terms of a specified
   spectral radius \rho in [0,1] for infinite time step in order to
+
   control high-frequency numerical damping:
-    \alpha_m = 0.5*(3-\rho)/(1+\rho)
-    \alpha_f = 1/(1+\rho)
+  \alpha_m = 0.5*(3-\rho)/(1+\rho)
+  \alpha_f = 1/(1+\rho)
 
   Input Parameters:
-+  ts - timestepping context
--  radius - the desired spectral radius
++ ts     - timestepping context
+- radius - the desired spectral radius
 
   Options Database Key:
-.  -ts_alpha_radius <radius> - set alpha radius
+. -ts_alpha_radius <radius> - set alpha radius
 
   Level: intermediate
 
@@ -515,24 +516,24 @@ PetscErrorCode TSAlphaSetRadius(TS ts, PetscReal radius)
   Logically Collective
 
   Second-order accuracy can be obtained so long as:
-    \gamma = 0.5 + alpha_m - alpha_f
+  \gamma = 0.5 + alpha_m - alpha_f
 
   Unconditional stability requires:
-    \alpha_m >= \alpha_f >= 0.5
+  \alpha_m >= \alpha_f >= 0.5
 
   Backward Euler method is recovered with:
-    \alpha_m = \alpha_f = gamma = 1
+  \alpha_m = \alpha_f = gamma = 1
 
   Input Parameters:
-+  ts - timestepping context
-.  alpha_m - algorithmic parameter
-.  alpha_f - algorithmic parameter
--  gamma   - algorithmic parameter
++ ts      - timestepping context
+. alpha_m - algorithmic parameter
+. alpha_f - algorithmic parameter
+- gamma   - algorithmic parameter
 
-   Options Database Keys:
-+  -ts_alpha_alpha_m <alpha_m> - set alpha_m
-.  -ts_alpha_alpha_f <alpha_f> - set alpha_f
--  -ts_alpha_gamma   <gamma> - set gamma
+  Options Database Keys:
++ -ts_alpha_alpha_m <alpha_m> - set alpha_m
+. -ts_alpha_alpha_f <alpha_f> - set alpha_f
+- -ts_alpha_gamma   <gamma>   - set gamma
 
   Level: advanced
 
@@ -562,12 +563,12 @@ PetscErrorCode TSAlphaSetParams(TS ts, PetscReal alpha_m, PetscReal alpha_f, Pet
   Not Collective
 
   Input Parameter:
-.  ts - timestepping context
+. ts - timestepping context
 
   Output Parameters:
-+  alpha_m - algorithmic parameter
-.  alpha_f - algorithmic parameter
--  gamma   - algorithmic parameter
++ alpha_m - algorithmic parameter
+. alpha_f - algorithmic parameter
+- gamma   - algorithmic parameter
 
   Level: advanced
 

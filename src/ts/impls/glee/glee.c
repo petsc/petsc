@@ -282,11 +282,11 @@ PetscErrorCode TSGLEERegisterAll(void)
 }
 
 /*@C
-   TSGLEERegisterDestroy - Frees the list of schemes that were registered by `TSGLEERegister()`.
+  TSGLEERegisterDestroy - Frees the list of schemes that were registered by `TSGLEERegister()`.
 
-   Not Collective
+  Not Collective
 
-   Level: advanced
+  Level: advanced
 
 .seealso: [](ch_ts), `TSGLEERegister()`, `TSGLEERegisterAll()`
 @*/
@@ -347,33 +347,33 @@ PetscErrorCode TSGLEEFinalizePackage(void)
 }
 
 /*@C
-   TSGLEERegister - register a new `TSGLEE` scheme by providing the entries in the Butcher tableau
+  TSGLEERegister - register a new `TSGLEE` scheme by providing the entries in the Butcher tableau
 
-   Not Collective, but the same schemes should be registered on all processes on which they will be used
+  Not Collective, but the same schemes should be registered on all processes on which they will be used
 
-   Input Parameters:
-+  name   - identifier for method
-.  order  - order of method
-.  s - number of stages
-.  r - number of steps
-.  gamma - LTE ratio
-.  A - stage coefficients (dimension s*s, row-major)
-.  B - step completion coefficients (dimension r*s, row-major)
-.  U - method coefficients (dimension s*r, row-major)
-.  V - method coefficients (dimension r*r, row-major)
-.  S - starting coefficients
-.  F - finishing coefficients
-.  c - abscissa (dimension s; NULL to use row sums of A)
-.  Fembed - step completion coefficients for embedded method
-.  Ferror - error computation coefficients
-.  Serror - error initialization coefficients
-.  pinterp - order of interpolation (0 if unavailable)
--  binterp - array of interpolation coefficients (NULL if unavailable)
+  Input Parameters:
++ name    - identifier for method
+. order   - order of method
+. s       - number of stages
+. r       - number of steps
+. gamma   - LTE ratio
+. A       - stage coefficients (dimension s*s, row-major)
+. B       - step completion coefficients (dimension r*s, row-major)
+. U       - method coefficients (dimension s*r, row-major)
+. V       - method coefficients (dimension r*r, row-major)
+. S       - starting coefficients
+. F       - finishing coefficients
+. c       - abscissa (dimension s; NULL to use row sums of A)
+. Fembed  - step completion coefficients for embedded method
+. Ferror  - error computation coefficients
+. Serror  - error initialization coefficients
+. pinterp - order of interpolation (0 if unavailable)
+- binterp - array of interpolation coefficients (NULL if unavailable)
 
-   Level: advanced
+  Level: advanced
 
-   Note:
-   Several `TSGLEE` methods are provided, this function is only needed to create new methods.
+  Note:
+  Several `TSGLEE` methods are provided, this function is only needed to create new methods.
 
 .seealso: [](ch_ts), `TSGLEE`
 @*/
@@ -839,8 +839,8 @@ static PetscErrorCode TSLoad_GLEE(TS ts, PetscViewer viewer)
   Logically Collective
 
   Input Parameters:
-+  ts - timestepping context
--  gleetype - type of `TSGLEE` scheme
++ ts       - timestepping context
+- gleetype - type of `TSGLEE` scheme
 
   Level: intermediate
 
@@ -861,10 +861,10 @@ PetscErrorCode TSGLEESetType(TS ts, TSGLEEType gleetype)
   Logically Collective
 
   Input Parameter:
-.  ts - timestepping context
+. ts - timestepping context
 
   Output Parameter:
-.  gleetype - type of `TSGLEE` scheme
+. gleetype - type of `TSGLEE` scheme
 
   Level: intermediate
 

@@ -183,8 +183,8 @@ static PetscErrorCode TSComputeIJacobian_DMLocal(TS ts, PetscReal time, Vec X, V
 
 /*@C
   DMTSSetBoundaryLocal - set the function for essential boundary data for a local implicit function evaluation.
-    It should set the essential boundary data for the local portion of the solution X, as well its time derivative X_t (if it is not NULL).
-    Vectors are initialized to zero before this function, so it is only needed for non homogeneous data.
+  It should set the essential boundary data for the local portion of the solution X, as well its time derivative X_t (if it is not NULL).
+  Vectors are initialized to zero before this function, so it is only needed for non homogeneous data.
 
   Logically Collective
 
@@ -220,13 +220,13 @@ PetscErrorCode DMTSSetBoundaryLocal(DM dm, PetscErrorCode (*func)(DM, PetscReal,
 
 /*@C
   DMTSGetIFunctionLocal - get the local implicit function evaluation function. This function is called with local vector
-      containing the local vector information PLUS ghost point information. It should compute a result for all local
-      elements and `DM` will automatically accumulate the overlapping values.
+  containing the local vector information PLUS ghost point information. It should compute a result for all local
+  elements and `DM` will automatically accumulate the overlapping values.
 
   Logically Collective
 
   Input Parameter:
-. dm   - `DM` to associate callback with
+. dm - `DM` to associate callback with
 
   Output Parameters:
 + func - local function evaluation
@@ -261,8 +261,8 @@ PetscErrorCode DMTSGetIFunctionLocal(DM dm, PetscErrorCode (**func)(DM, PetscRea
 
 /*@C
   DMTSSetIFunctionLocal - set a local implicit function evaluation function. This function is called with local vector
-      containing the local vector information PLUS ghost point information. It should compute a result for all local
-      elements and `DM` will automatically accumulate the overlapping values.
+  containing the local vector information PLUS ghost point information. It should compute a result for all local
+  elements and `DM` will automatically accumulate the overlapping values.
 
   Logically Collective
 
@@ -305,7 +305,7 @@ PetscErrorCode DMTSSetIFunctionLocal(DM dm, PetscErrorCode (*func)(DM, PetscReal
 
   Output Parameters:
 + func - local Jacobian evaluation
-- ctx - optional context for local Jacobian evaluation
+- ctx  - optional context for local Jacobian evaluation
 
   Level: beginner
 
@@ -340,9 +340,9 @@ PetscErrorCode DMTSGetIJacobianLocal(DM dm, PetscErrorCode (**func)(DM, PetscRea
   Logically Collective
 
   Input Parameters:
-+ dm - `DM` to associate callback with
++ dm   - `DM` to associate callback with
 . func - local Jacobian evaluation
-- ctx - optional context for local Jacobian evaluation
+- ctx  - optional context for local Jacobian evaluation
 
   Level: beginner
 
@@ -367,13 +367,13 @@ PetscErrorCode DMTSSetIJacobianLocal(DM dm, PetscErrorCode (*func)(DM, PetscReal
 
 /*@C
   DMTSGetRHSFunctionLocal - get a local rhs function evaluation function. This function is called with local vector
-      containing the local vector information PLUS ghost point information. It should compute a result for all local
-      elements and `DM` will automatically accumulate the overlapping values.
+  containing the local vector information PLUS ghost point information. It should compute a result for all local
+  elements and `DM` will automatically accumulate the overlapping values.
 
   Logically Collective
 
   Input Parameter:
-. dm   - `DM` to associate callback with
+. dm - `DM` to associate callback with
 
   Output Parameters:
 + func - local function evaluation
@@ -408,8 +408,8 @@ PetscErrorCode DMTSGetRHSFunctionLocal(DM dm, PetscErrorCode (**func)(DM, PetscR
 
 /*@C
   DMTSSetRHSFunctionLocal - set a local rhs function evaluation function. This function is called with local vector
-      containing the local vector information PLUS ghost point information. It should compute a result for all local
-      elements and `DM` will automatically accumulate the overlapping values.
+  containing the local vector information PLUS ghost point information. It should compute a result for all local
+  elements and `DM` will automatically accumulate the overlapping values.
 
   Logically Collective
 
@@ -445,7 +445,7 @@ PetscErrorCode DMTSSetRHSFunctionLocal(DM dm, PetscErrorCode (*func)(DM, PetscRe
   Collective
 
   Input Parameter:
-. dm   - `DM` providing the mass matrix
+. dm - `DM` providing the mass matrix
 
   Level: developer
 
@@ -480,7 +480,7 @@ PetscErrorCode DMTSCreateRHSMassMatrix(DM dm)
   Collective
 
   Input Parameter:
-. dm   - `DM` providing the mass matrix
+. dm - `DM` providing the mass matrix
 
   Level: developer
 
@@ -511,11 +511,11 @@ PetscErrorCode DMTSCreateRHSMassMatrixLumped(DM dm)
   Logically Collective
 
   Input Parameter:
-. dm   - `DM` providing the mass matrix
+. dm - `DM` providing the mass matrix
 
   Level: developer
 
-.seealso: [](ch_ts), `DM`, `DMTSCreateRHSMassMatrixLumped()`, `DMCreateMassMatrix()`, `DMCreateMassMatrix()`, `DMTS`
+.seealso: [](ch_ts), `DM`, `DMTSCreateRHSMassMatrixLumped()`, `DMCreateMassMatrix()`, `DMTS`
 @*/
 PetscErrorCode DMTSDestroyRHSMassMatrix(DM dm)
 {
