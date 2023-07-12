@@ -1,17 +1,17 @@
 #include <../src/snes/impls/fas/fasimpls.h> /*I  "petscsnes.h"  I*/
 
 /*@
-   SNESFASGetGalerkin - Gets if the coarse problems are formed by projection to the fine problem
+  SNESFASGetGalerkin - Gets if the coarse problems are formed by projection to the fine problem
 
-   Not Collective but the result would be the same on all MPI ranks
+  Not Collective but the result would be the same on all MPI ranks
 
-   Input Parameter:
-.  snes - the `SNESFAS` nonlinear solver context
+  Input Parameter:
+. snes - the `SNESFAS` nonlinear solver context
 
-   Output parameter:
-.  flg - `PETSC_TRUE` if the coarse problem is formed by projection
+  Output Parameter:
+. flg - `PETSC_TRUE` if the coarse problem is formed by projection
 
-   Level: advanced
+  Level: advanced
 
 .seealso: `SNESFAS`, `SNESFASSetLevels()`, `SNESFASSetGalerkin()`
 @*/
@@ -27,15 +27,15 @@ PetscErrorCode SNESFASGetGalerkin(SNES snes, PetscBool *flg)
 }
 
 /*@
-   SNESFASSetGalerkin - Sets coarse problems as formed by projection to the fine problem
+  SNESFASSetGalerkin - Sets coarse problems as formed by projection to the fine problem
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  snes - the `SNESFAS` nonlinear solver context
--  flg - `PETSC_TRUE` to use the projection process
+  Input Parameters:
++ snes - the `SNESFAS` nonlinear solver context
+- flg  - `PETSC_TRUE` to use the projection process
 
-   Level: advanced
+  Level: advanced
 
 .seealso: `SNESFAS`, `SNESFASSetLevels()`, `SNESFASGetGalerkin()`
 @*/
@@ -52,22 +52,22 @@ PetscErrorCode SNESFASSetGalerkin(SNES snes, PetscBool flg)
 }
 
 /*@C
-   SNESFASGalerkinFunctionDefault - Computes the Galerkin FAS function
+  SNESFASGalerkinFunctionDefault - Computes the Galerkin FAS function
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  snes - the `SNESFAS` nonlinear solver context
-.  X - input vector
--  ctx - the application context
+  Input Parameters:
++ snes - the `SNESFAS` nonlinear solver context
+. X    - input vector
+- ctx  - the application context
 
-   Output Parameter:
-.  F - output vector
+  Output Parameter:
+. F - output vector
 
-   Level: developer
+  Level: developer
 
-   Note:
-   The Galerkin FAS function evaluation is defined as
+  Note:
+  The Galerkin FAS function evaluation is defined as
 $  F^l(x^l) = I^l_0 F^0(P^0_l x^l)
 
 .seealso: `SNESFAS`, `SNESFASGetGalerkin()`, `SNESFASSetGalerkin()`

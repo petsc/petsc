@@ -89,7 +89,7 @@ PetscErrorCode PetscConvEstView(PetscConvEst ce, PetscViewer viewer)
   Not Collective
 
   Input Parameter:
-. ce     - The `PetscConvEst` object
+. ce - The `PetscConvEst` object
 
   Output Parameter:
 . solver - The solver
@@ -206,7 +206,7 @@ PetscErrorCode PetscConvEstComputeError(PetscConvEst ce, PetscInt r, DM dm, Vec 
 + ce - The `PetscConvEst` object
 - r  - The refinement level
 
-  Options database keys:
+  Options Database Keys:
 . -convest_monitor - Activate the monitor
 
   Level: intermediate
@@ -436,14 +436,14 @@ static PetscErrorCode PetscConvEstGetConvRateSNES_Private(PetscConvEst ce, Petsc
   Not Collective
 
   Input Parameter:
-. ce   - The `PetscConvEst` object
+. ce - The `PetscConvEst` object
 
   Output Parameter:
 . alpha - The convergence rate for each field
 
   Options Database Keys:
 + -snes_convergence_estimate - Execute convergence estimation inside `SNESSolve()` and print out the rate
-- -ts_convergence_estimate - Execute convergence estimation inside `TSSolve()` and print out the rate
+- -ts_convergence_estimate   - Execute convergence estimation inside `TSSolve()` and print out the rate
 
   Level: intermediate
 
@@ -472,17 +472,17 @@ PetscErrorCode PetscConvEstGetConvRate(PetscConvEst ce, PetscReal alpha[])
 /*@
   PetscConvEstRateView - Displays the convergence rate to a viewer
 
-   Collective
+  Collective
 
-   Parameter:
-+  snes - iterative context obtained from `SNESCreate()`
-.  alpha - the convergence rate for each field
--  viewer - the viewer to display the reason
+  Input Parameters:
++ ce     - iterative context obtained from `SNESCreate()`
+. alpha  - the convergence rate for each field
+- viewer - the viewer to display the reason
 
-   Options Database Key:
-.  -snes_convergence_estimate - print the convergence rate
+  Options Database Key:
+. -snes_convergence_estimate - print the convergence rate
 
-   Level: developer
+  Level: developer
 
 .seealso: `PetscConvEst`, `PetscConvEstGetRate()`
 @*/
@@ -518,7 +518,7 @@ PetscErrorCode PetscConvEstRateView(PetscConvEst ce, const PetscReal alpha[], Pe
 . comm - The communicator for the `PetscConvEst` object
 
   Output Parameter:
-. ce   - The `PetscConvEst` object
+. ce - The `PetscConvEst` object
 
   Level: beginner
 

@@ -9,11 +9,11 @@ PETSC_EXTERN PetscErrorCode SNESLineSearchCreate_Shell(SNESLineSearch);
 PETSC_EXTERN PetscErrorCode SNESLineSearchCreate_NCGLinear(SNESLineSearch);
 
 /*@C
-   SNESLineSearchRegisterAll - Registers all of the nonlinear solver methods in the `SNESLineSearch` package.
+  SNESLineSearchRegisterAll - Registers all of the nonlinear solver methods in the `SNESLineSearch` package.
 
-   Not Collective
+  Not Collective
 
-   Level: advanced
+  Level: advanced
 
 .seealso: `SNESLineSearchRegister()`, `SNESLineSearchRegisterDestroy()`
 @*/

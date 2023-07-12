@@ -407,17 +407,17 @@ static PetscErrorCode SNESFASUpSmooth_Private(SNES snes, Vec B, Vec X, Vec F, Pe
 }
 
 /*@
-   SNESFASCreateCoarseVec - create `Vec` corresponding to a state vector on one level coarser than current level
+  SNESFASCreateCoarseVec - create `Vec` corresponding to a state vector on one level coarser than current level
 
-   Collective
+  Collective
 
-   Input Parameter:
-.  snes - `SNESFAS` object
+  Input Parameter:
+. snes - `SNESFAS` object
 
-   Output Parameter:
-.  Xcoarse - vector on level one coarser than snes
+  Output Parameter:
+. Xcoarse - vector on level one coarser than snes
 
-   Level: developer
+  Level: developer
 
 .seealso: `SNESFASSetRestriction()`, `SNESFASRestrict()`
 @*/
@@ -438,18 +438,18 @@ PetscErrorCode SNESFASCreateCoarseVec(SNES snes, Vec *Xcoarse)
 }
 
 /*@
-   SNESFASRestrict - restrict a `Vec` to the next coarser level
+  SNESFASRestrict - restrict a `Vec` to the next coarser level
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  fine - `SNES` from which to restrict
--  Xfine - vector to restrict
+  Input Parameters:
++ fine  - `SNES` from which to restrict
+- Xfine - vector to restrict
 
-   Output Parameter:
-.  Xcoarse - result of restriction
+  Output Parameter:
+. Xcoarse - result of restriction
 
-   Level: developer
+  Level: developer
 
 .seealso: `SNES`, `SNESFAS`, `SNESFASSetRestriction()`, `SNESFASSetInjection()`
 @*/

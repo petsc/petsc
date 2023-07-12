@@ -1,24 +1,24 @@
 #include <../src/snes/impls/gs/gsimpl.h> /*I "petscsnes.h"  I*/
 
 /*@
-   SNESNGSSetTolerances - Sets various parameters used in convergence tests for nonlinear Gauss-Seidel `SNESNCG`
+  SNESNGSSetTolerances - Sets various parameters used in convergence tests for nonlinear Gauss-Seidel `SNESNCG`
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  snes - the `SNES` context
-.  abstol - absolute convergence tolerance
-.  rtol - relative convergence tolerance
-.  stol -  convergence tolerance in terms of the norm of the change in the solution between steps,  || delta x || < stol*|| x ||
--  maxit - maximum number of iterations
+  Input Parameters:
++ snes   - the `SNES` context
+. abstol - absolute convergence tolerance
+. rtol   - relative convergence tolerance
+. stol   - convergence tolerance in terms of the norm of the change in the solution between steps,  || delta x || < stol*|| x ||
+- maxit  - maximum number of iterations
 
-   Options Database Keys:
-+    -snes_ngs_atol <abstol> - Sets abstol
-.    -snes_ngs_rtol <rtol> - Sets rtol
-.    -snes_ngs_stol <stol> - Sets stol
--    -snes_max_it <maxit> - Sets maxit
+  Options Database Keys:
++ -snes_ngs_atol <abstol> - Sets abstol
+. -snes_ngs_rtol <rtol>   - Sets rtol
+. -snes_ngs_stol <stol>   - Sets stol
+- -snes_max_it <maxit>    - Sets maxit
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `SNESNCG`, `SNESSetTrustRegionTolerance()`
 @*/
@@ -49,22 +49,22 @@ PetscErrorCode SNESNGSSetTolerances(SNES snes, PetscReal abstol, PetscReal rtol,
 }
 
 /*@
-   SNESNGSGetTolerances - Gets various parameters used in convergence tests for nonlinear Gauss-Seidel `SNESNCG`
+  SNESNGSGetTolerances - Gets various parameters used in convergence tests for nonlinear Gauss-Seidel `SNESNCG`
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  snes - the `SNES` context
-.  atol - absolute convergence tolerance
-.  rtol - relative convergence tolerance
-.  stol -  convergence tolerance in terms of the norm
+  Input Parameters:
++ snes  - the `SNES` context
+. atol  - absolute convergence tolerance
+. rtol  - relative convergence tolerance
+. stol  - convergence tolerance in terms of the norm
            of the change in the solution between steps
--  maxit - maximum number of iterations
+- maxit - maximum number of iterations
 
-   Level: intermediate
+  Level: intermediate
 
-   Note:
-   The user can specify NULL for any parameter that is not needed.
+  Note:
+  The user can specify NULL for any parameter that is not needed.
 
 .seealso: `SNESNCG`, `SNESSetTolerances()`
 @*/
@@ -82,20 +82,19 @@ PetscErrorCode SNESNGSGetTolerances(SNES snes, PetscReal *atol, PetscReal *rtol,
 }
 
 /*@
-   SNESNGSSetSweeps - Sets the number of sweeps of nonlinear GS to use in `SNESNCG`
+  SNESNGSSetSweeps - Sets the number of sweeps of nonlinear GS to use in `SNESNCG`
 
-   Input Parameters:
-+  snes   - the `SNES` context
--  sweeps  - the number of sweeps of nonlinear GS to perform.
+  Input Parameters:
++ snes   - the `SNES` context
+- sweeps - the number of sweeps of nonlinear GS to perform.
 
   Options Database Key:
-.   -snes_ngs_sweeps <n> - Number of sweeps of nonlinear GS to apply
+. -snes_ngs_sweeps <n> - Number of sweeps of nonlinear GS to apply
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `SNESNCG`, `SNESSetNGS()`, `SNESGetNGS()`, `SNESSetNPC()`, `SNESNGSGetSweeps()`
 @*/
-
 PetscErrorCode SNESNGSSetSweeps(SNES snes, PetscInt sweeps)
 {
   SNES_NGS *gs = (SNES_NGS *)snes->data;
@@ -107,15 +106,15 @@ PetscErrorCode SNESNGSSetSweeps(SNES snes, PetscInt sweeps)
 }
 
 /*@
-   SNESNGSGetSweeps - Gets the number of sweeps nonlinear GS will use in `SNESNCG`
+  SNESNGSGetSweeps - Gets the number of sweeps nonlinear GS will use in `SNESNCG`
 
-   Input Parameter:
-.  snes   - the `SNES` context
+  Input Parameter:
+. snes - the `SNES` context
 
-   Output Parameter:
-.  sweeps  - the number of sweeps of nonlinear GS to perform.
+  Output Parameter:
+. sweeps - the number of sweeps of nonlinear GS to perform.
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `SNESNCG`, `SNESSetNGS()`, `SNESGetNGS()`, `SNESSetNPC()`, `SNESNGSSetSweeps()`
 @*/

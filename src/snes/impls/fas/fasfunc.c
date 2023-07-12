@@ -1,15 +1,15 @@
 #include <../src/snes/impls/fas/fasimpls.h> /*I  "petscsnes.h"  I*/
 
 /*@
-    SNESFASSetType - Sets the update and correction type used for FAS.
+  SNESFASSetType - Sets the update and correction type used for FAS.
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  snes  - FAS context
--  fastype  - `SNES_FAS_ADDITIVE`, `SNES_FAS_MULTIPLICATIVE`, `SNES_FAS_FULL`, or `SNES_FAS_KASKADE`
+  Input Parameters:
++ snes    - FAS context
+- fastype - `SNES_FAS_ADDITIVE`, `SNES_FAS_MULTIPLICATIVE`, `SNES_FAS_FULL`, or `SNES_FAS_KASKADE`
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `SNESFAS`, `PCMGSetType()`, `SNESFASGetType()`
 @*/
@@ -27,17 +27,17 @@ PetscErrorCode SNESFASSetType(SNES snes, SNESFASType fastype)
 }
 
 /*@
-   SNESFASGetType - Gets the update and correction type used for FAS.
+  SNESFASGetType - Gets the update and correction type used for FAS.
 
   Logically Collective
 
-   Input Parameter:
-.  snes - `SNESFAS` context
+  Input Parameter:
+. snes - `SNESFAS` context
 
-   Output Parameter:
-.  fastype - `SNES_FAS_ADDITIVE` or `SNES_FAS_MULTIPLICATIVE`
+  Output Parameter:
+. fastype - `SNES_FAS_ADDITIVE` or `SNES_FAS_MULTIPLICATIVE`
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `SNESFAS`, `PCMGSetType()`, `SNESFASSetType()`
 @*/
@@ -54,19 +54,19 @@ PetscErrorCode SNESFASGetType(SNES snes, SNESFASType *fastype)
 }
 
 /*@C
-   SNESFASSetLevels - Sets the number of levels to use with `SNESFAS`.
-   Must be called before any other FAS routine.
+  SNESFASSetLevels - Sets the number of levels to use with `SNESFAS`.
+  Must be called before any other FAS routine.
 
-   Input Parameters:
-+  snes   - the snes context
-.  levels - the number of levels
--  comms  - optional communicators for each level; this is to allow solving the coarser
+  Input Parameters:
++ snes   - the snes context
+. levels - the number of levels
+- comms  - optional communicators for each level; this is to allow solving the coarser
             problems on smaller sets of processors.
 
-   Level: intermediate
+  Level: intermediate
 
-   Note:
-   If the number of levels is one then the multigrid uses the `-fas_levels` prefix
+  Note:
+  If the number of levels is one then the multigrid uses the `-fas_levels` prefix
   for setting the level options rather than the `-fas_coarse` prefix.
 
 .seealso: `SNESFAS`, `SNESFASGetLevels()`
@@ -124,15 +124,15 @@ PetscErrorCode SNESFASSetLevels(SNES snes, PetscInt levels, MPI_Comm *comms)
 }
 
 /*@
-   SNESFASGetLevels - Gets the number of levels in a `SNESFAS`, including fine and coarse grids
+  SNESFASGetLevels - Gets the number of levels in a `SNESFAS`, including fine and coarse grids
 
-   Input Parameter:
-.  snes - the `SNES` nonlinear solver context
+  Input Parameter:
+. snes - the `SNES` nonlinear solver context
 
-   Output parameter:
-.  levels - the number of levels
+  Output Parameter:
+. levels - the number of levels
 
-   Level: advanced
+  Level: advanced
 
 .seealso: `SNESFAS`, `SNESFASSetLevels()`, `PCMGGetLevels()`
 @*/
@@ -149,17 +149,18 @@ PetscErrorCode SNESFASGetLevels(SNES snes, PetscInt *levels)
 }
 
 /*@
-   SNESFASGetCycleSNES - Gets the `SNES` corresponding to a particular
-   level of the `SNESFAS` hierarchy.
+  SNESFASGetCycleSNES - Gets the `SNES` corresponding to a particular
 
-   Input Parameters:
-+  snes    - the `SNES` nonlinear multigrid context
--  level   - the level to get
+  Level Of The `Snesfas` Hierarchy.
 
-   Output Parameter:
-.  lsnes   - the `SNES` for the requested level
+  Input Parameters:
++ snes  - the `SNES` nonlinear multigrid context
+- level - the level to get
 
-   Level: advanced
+  Output Parameter:
+. lsnes - the `SNES` for the requested level
+
+  Level: advanced
 
 .seealso: `SNESFAS`, `SNESFASSetLevels()`, `SNESFASGetLevels()`
 @*/
@@ -185,19 +186,19 @@ PetscErrorCode SNESFASGetCycleSNES(SNES snes, PetscInt level, SNES *lsnes)
 }
 
 /*@
-   SNESFASSetNumberSmoothUp - Sets the number of post-smoothing steps to
-   use on all levels.
+  SNESFASSetNumberSmoothUp - Sets the number of post-smoothing steps to
+  use on all levels.
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  snes - the `SNES` nonlinear multigrid context
--  n    - the number of smoothing steps
+  Input Parameters:
++ snes - the `SNES` nonlinear multigrid context
+- n    - the number of smoothing steps
 
-   Options Database Key:
-.  -snes_fas_smoothup <n> - Sets number of pre-smoothing steps
+  Options Database Key:
+. -snes_fas_smoothup <n> - Sets number of pre-smoothing steps
 
-   Level: advanced
+  Level: advanced
 
 .seealso: `SNESFAS`, `SNESFASSetNumberSmoothDown()`
 @*/
@@ -216,19 +217,19 @@ PetscErrorCode SNESFASSetNumberSmoothUp(SNES snes, PetscInt n)
 }
 
 /*@
-   SNESFASSetNumberSmoothDown - Sets the number of pre-smoothing steps to
-   use on all levels.
+  SNESFASSetNumberSmoothDown - Sets the number of pre-smoothing steps to
+  use on all levels.
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  snes - the `SNESFAS` nonlinear multigrid context
--  n    - the number of smoothing steps
+  Input Parameters:
++ snes - the `SNESFAS` nonlinear multigrid context
+- n    - the number of smoothing steps
 
-   Options Database Key:
-.  -snes_fas_smoothdown <n> - Sets number of pre-smoothing steps
+  Options Database Key:
+. -snes_fas_smoothdown <n> - Sets number of pre-smoothing steps
 
-   Level: advanced
+  Level: advanced
 
 .seealso: `SNESFAS`, `SNESFASSetNumberSmoothUp()`
 @*/
@@ -248,21 +249,21 @@ PetscErrorCode SNESFASSetNumberSmoothDown(SNES snes, PetscInt n)
 }
 
 /*@
-   SNESFASSetContinuation - Sets the `SNESFAS` cycle to default to exact Newton solves on the upsweep
+  SNESFASSetContinuation - Sets the `SNESFAS` cycle to default to exact Newton solves on the upsweep
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  snes - the `SNESFAS` nonlinear multigrid context
--  n    - the number of smoothing steps
+  Input Parameters:
++ snes         - the `SNESFAS` nonlinear multigrid context
+- continuation - the number of smoothing steps
 
-   Options Database Key:
-.  -snes_fas_continuation - sets continuation to true
+  Options Database Key:
+. -snes_fas_continuation - sets continuation to true
 
-   Level: advanced
+  Level: advanced
 
-   Note:
-    This sets the prefix on the upsweep smoothers to -fas_continuation
+  Note:
+  This sets the prefix on the upsweep smoothers to -fas_continuation
 
 .seealso: `SNESFAS`, `SNESFASSetNumberSmoothUp()`
 @*/
@@ -288,19 +289,19 @@ PetscErrorCode SNESFASSetContinuation(SNES snes, PetscBool continuation)
 }
 
 /*@
-   SNESFASSetCycles - Sets the number of FAS multigrid cycles to use each time a grid is visited.  Use `SNESFASSetCyclesOnLevel()` for more
-   complicated cycling.
+  SNESFASSetCycles - Sets the number of FAS multigrid cycles to use each time a grid is visited.  Use `SNESFASSetCyclesOnLevel()` for more
+  complicated cycling.
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  snes   - the `SNESFAS` nonlinear multigrid context
--  cycles - the number of cycles -- 1 for V-cycle, 2 for W-cycle
+  Input Parameters:
++ snes   - the `SNESFAS` nonlinear multigrid context
+- cycles - the number of cycles -- 1 for V-cycle, 2 for W-cycle
 
-   Options Database Key:
-.  -snes_fas_cycles <1,2> - 1 for V-cycle, 2 for W-cycle
+  Options Database Key:
+. -snes_fas_cycles <1,2> - 1 for V-cycle, 2 for W-cycle
 
-   Level: advanced
+  Level: advanced
 
 .seealso: `SNES`, `SNESFAS`, `SNESFASSetCyclesOnLevel()`
 @*/
@@ -320,16 +321,16 @@ PetscErrorCode SNESFASSetCycles(SNES snes, PetscInt cycles)
 }
 
 /*@
-   SNESFASSetMonitor - Sets the method-specific cycle monitoring
+  SNESFASSetMonitor - Sets the method-specific cycle monitoring
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  snes   - the `SNESFAS` context
-.  vf     - viewer and format structure (may be `NULL` if flg is `PETSC_FALSE`)
--  flg    - monitor or not
+  Input Parameters:
++ snes - the `SNESFAS` context
+. vf   - viewer and format structure (may be `NULL` if flg is `PETSC_FALSE`)
+- flg  - monitor or not
 
-   Level: advanced
+  Level: advanced
 
 .seealso: `SNESFAS`, `SNESSetMonitor()`, `SNESFASSetCyclesOnLevel()`
 @*/
@@ -364,15 +365,15 @@ PetscErrorCode SNESFASSetMonitor(SNES snes, PetscViewerAndFormat *vf, PetscBool 
 }
 
 /*@
-   SNESFASSetLog - Sets or unsets time logging for various `SNESFAS` stages on all levels
+  SNESFASSetLog - Sets or unsets time logging for various `SNESFAS` stages on all levels
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  snes   - the `SNESFAS` context
--  flg    - monitor or not
+  Input Parameters:
++ snes - the `SNESFAS` context
+- flg  - monitor or not
 
-   Level: advanced
+  Level: advanced
 
 .seealso: `SNESFAS`, `SNESFASSetMonitor()`
 @*/
@@ -456,16 +457,16 @@ PetscErrorCode SNESFASCycleCreateSmoother_Private(SNES snes, SNES *smooth)
 /* ------------- Functions called on a particular level ----------------- */
 
 /*@
-   SNESFASCycleSetCycles - Sets the number of cycles on a particular level.
+  SNESFASCycleSetCycles - Sets the number of cycles on a particular level.
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  snes   - the `SNESFAS` nonlinear multigrid context
+  Input Parameters:
++ snes   - the `SNESFAS` nonlinear multigrid context
 .  level  - the level to set the number of cycles on
--  cycles - the number of cycles -- 1 for V-cycle, 2 for W-cycle
+- cycles - the number of cycles -- 1 for V-cycle, 2 for W-cycle
 
-   Level: advanced
+  Level: advanced
 
 .seealso: `SNESFAS`, `SNESFASSetCycles()`
 @*/
@@ -482,17 +483,17 @@ PetscErrorCode SNESFASCycleSetCycles(SNES snes, PetscInt cycles)
 }
 
 /*@
-   SNESFASCycleGetSmoother - Gets the smoother on a particular cycle level.
+  SNESFASCycleGetSmoother - Gets the smoother on a particular cycle level.
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameter:
-.  snes   - the `SNESFAS` nonlinear multigrid context
+  Input Parameter:
+. snes - the `SNESFAS` nonlinear multigrid context
 
-   Output Parameter:
-.  smooth - the smoother
+  Output Parameter:
+. smooth - the smoother
 
-   Level: advanced
+  Level: advanced
 
 .seealso: `SNESFAS`, `SNESFASCycleGetSmootherUp()`, `SNESFASCycleGetSmootherDown()`
 @*/
@@ -508,21 +509,21 @@ PetscErrorCode SNESFASCycleGetSmoother(SNES snes, SNES *smooth)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 /*@
-   SNESFASCycleGetSmootherUp - Gets the up smoother on a particular cycle level.
+  SNESFASCycleGetSmootherUp - Gets the up smoother on a particular cycle level.
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameter:
-.  snes   - the `SNESFAS` nonlinear multigrid context
+  Input Parameter:
+. snes - the `SNESFAS` nonlinear multigrid context
 
-   Output Parameter:
-.  smoothu - the smoother
+  Output Parameter:
+. smoothu - the smoother
 
-   Note:
-   Returns the downsmoother if no up smoother is available.  This enables transparent
-   default behavior in the process of the solve.
+  Note:
+  Returns the downsmoother if no up smoother is available.  This enables transparent
+  default behavior in the process of the solve.
 
-   Level: advanced
+  Level: advanced
 
 .seealso: `SNESFAS`, `SNESFASCycleGetSmoother()`, `SNESFASCycleGetSmootherDown()`
 @*/
@@ -540,17 +541,17 @@ PetscErrorCode SNESFASCycleGetSmootherUp(SNES snes, SNES *smoothu)
 }
 
 /*@
-   SNESFASCycleGetSmootherDown - Gets the down smoother on a particular cycle level.
+  SNESFASCycleGetSmootherDown - Gets the down smoother on a particular cycle level.
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameter:
-.  snes   - `SNESFAS`, the nonlinear multigrid context
+  Input Parameter:
+. snes - `SNESFAS`, the nonlinear multigrid context
 
-   Output Parameter:
-.  smoothd - the smoother
+  Output Parameter:
+. smoothd - the smoother
 
-   Level: advanced
+  Level: advanced
 
 .seealso: `SNESFAS`, `SNESFASCycleGetSmootherUp()`, `SNESFASCycleGetSmoother()`
 @*/
@@ -567,20 +568,20 @@ PetscErrorCode SNESFASCycleGetSmootherDown(SNES snes, SNES *smoothd)
 }
 
 /*@
-   SNESFASCycleGetCorrection - Gets the coarse correction FAS context for this level
+  SNESFASCycleGetCorrection - Gets the coarse correction FAS context for this level
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameter:
-.  snes   - the `SNESFAS` nonlinear multigrid context
+  Input Parameter:
+. snes - the `SNESFAS` nonlinear multigrid context
 
-   Output Parameter:
-.  correction - the coarse correction solve on this level
+  Output Parameter:
+. correction - the coarse correction solve on this level
 
-   Note:
-   Returns NULL on the coarsest level.
+  Note:
+  Returns NULL on the coarsest level.
 
-   Level: advanced
+  Level: advanced
 
 .seealso: `SNESFAS` `SNESFASCycleGetSmootherUp()`, `SNESFASCycleGetSmoother()`
 @*/
@@ -597,17 +598,17 @@ PetscErrorCode SNESFASCycleGetCorrection(SNES snes, SNES *correction)
 }
 
 /*@
-   SNESFASCycleGetInterpolation - Gets the interpolation on this level
+  SNESFASCycleGetInterpolation - Gets the interpolation on this level
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameter:
-.  snes   - the `SNESFAS` nonlinear multigrid context
+  Input Parameter:
+. snes - the `SNESFAS` nonlinear multigrid context
 
-   Output Parameter:
-.  mat    - the interpolation operator on this level
+  Output Parameter:
+. mat - the interpolation operator on this level
 
-   Level: advanced
+  Level: advanced
 
 .seealso: `SNESFAS`, `SNESFASCycleGetSmootherUp()`, `SNESFASCycleGetSmoother()`
 @*/
@@ -624,17 +625,17 @@ PetscErrorCode SNESFASCycleGetInterpolation(SNES snes, Mat *mat)
 }
 
 /*@
-   SNESFASCycleGetRestriction - Gets the restriction on this level
+  SNESFASCycleGetRestriction - Gets the restriction on this level
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameter:
-.  snes   - the `SNESFAS` nonlinear multigrid context
+  Input Parameter:
+. snes - the `SNESFAS` nonlinear multigrid context
 
-   Output Parameter:
-.  mat    - the restriction operator on this level
+  Output Parameter:
+. mat - the restriction operator on this level
 
-   Level: advanced
+  Level: advanced
 
 .seealso: `SNESFAS`, `SNESFASGetRestriction()`, `SNESFASCycleGetInterpolation()`
 @*/
@@ -651,17 +652,17 @@ PetscErrorCode SNESFASCycleGetRestriction(SNES snes, Mat *mat)
 }
 
 /*@
-   SNESFASCycleGetInjection - Gets the injection on this level
+  SNESFASCycleGetInjection - Gets the injection on this level
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameter:
-.  snes   - the `SNESFAS` nonlinear multigrid context
+  Input Parameter:
+. snes - the `SNESFAS` nonlinear multigrid context
 
-   Output Parameter:
-.  mat    - the restriction operator on this level
+  Output Parameter:
+. mat - the restriction operator on this level
 
-   Level: advanced
+  Level: advanced
 
 .seealso: `SNESFAS`, `SNESFASGetInjection()`, `SNESFASCycleGetRestriction()`
 @*/
@@ -678,17 +679,17 @@ PetscErrorCode SNESFASCycleGetInjection(SNES snes, Mat *mat)
 }
 
 /*@
-   SNESFASCycleGetRScale - Gets the injection on this level
+  SNESFASCycleGetRScale - Gets the injection on this level
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameter:
-.  snes   - the  `SNESFAS` nonlinear multigrid context
+  Input Parameter:
+. snes - the  `SNESFAS` nonlinear multigrid context
 
-   Output Parameter:
-.  mat    - the restriction operator on this level
+  Output Parameter:
+. vec - the restriction operator on this level
 
-   Level: advanced
+  Level: advanced
 
 .seealso: `SNESFAS`, `SNESFASCycleGetRestriction()`, `SNESFASGetRScale()`
 @*/
@@ -705,17 +706,17 @@ PetscErrorCode SNESFASCycleGetRScale(SNES snes, Vec *vec)
 }
 
 /*@
-   SNESFASCycleIsFine - Determines if a given cycle is the fine level.
+  SNESFASCycleIsFine - Determines if a given cycle is the fine level.
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameter:
-.  snes   - the `SNESFAS` `SNES` context
+  Input Parameter:
+. snes - the `SNESFAS` `SNES` context
 
-   Output Parameter:
-.  flg - indicates if this is the fine level or not
+  Output Parameter:
+. flg - indicates if this is the fine level or not
 
-   Level: advanced
+  Level: advanced
 
 .seealso: `SNESFAS`, `SNESFASSetLevels()`
 @*/
@@ -735,22 +736,22 @@ PetscErrorCode SNESFASCycleIsFine(SNES snes, PetscBool *flg)
 /*  functions called on the finest level that return level-specific information  */
 
 /*@
-   SNESFASSetInterpolation - Sets the `Mat` to be used to apply the
-   interpolation from l-1 to the lth level
+  SNESFASSetInterpolation - Sets the `Mat` to be used to apply the
+  interpolation from l-1 to the lth level
 
-   Input Parameters:
-+  snes      - the `SNESFAS` nonlinear multigrid context
-.  mat       - the interpolation operator
--  level     - the level (0 is coarsest) to supply [do not supply 0]
+  Input Parameters:
++ snes  - the `SNESFAS` nonlinear multigrid context
+. mat   - the interpolation operator
+- level - the level (0 is coarsest) to supply [do not supply 0]
 
-   Level: advanced
+  Level: advanced
 
-   Notes:
-          Usually this is the same matrix used also to set the restriction
-    for the same level.
+  Notes:
+  Usually this is the same matrix used also to set the restriction
+  for the same level.
 
-          One can pass in the interpolation matrix or its transpose; PETSc figures
-    out from the matrix size which one it is.
+  One can pass in the interpolation matrix or its transpose; PETSc figures
+  out from the matrix size which one it is.
 
 .seealso: `SNESFAS`, `SNESFASSetInjection()`, `SNESFASSetRestriction()`, `SNESFASSetRScale()`
 @*/
@@ -771,17 +772,17 @@ PetscErrorCode SNESFASSetInterpolation(SNES snes, PetscInt level, Mat mat)
 }
 
 /*@
-   SNESFASGetInterpolation - Gets the matrix used to calculate the
-   interpolation from l-1 to the lth level
+  SNESFASGetInterpolation - Gets the matrix used to calculate the
+  interpolation from l-1 to the lth level
 
-   Input Parameters:
-+  snes      - the `SNESFAS` nonlinear multigrid context
--  level     - the level (0 is coarsest) to supply [do not supply 0]
+  Input Parameters:
++ snes  - the `SNESFAS` nonlinear multigrid context
+- level - the level (0 is coarsest) to supply [do not supply 0]
 
-   Output Parameter:
-.  mat       - the interpolation operator
+  Output Parameter:
+. mat - the interpolation operator
 
-   Level: advanced
+  Level: advanced
 
 .seealso: `SNESFAS`, `SNESFASSetInterpolation()`, `SNESFASGetInjection()`, `SNESFASGetRestriction()`, `SNESFASGetRScale()`
 @*/
@@ -800,25 +801,25 @@ PetscErrorCode SNESFASGetInterpolation(SNES snes, PetscInt level, Mat *mat)
 }
 
 /*@
-   SNESFASSetRestriction - Sets the matrix to be used to restrict the defect
-   from level l to l-1.
+  SNESFASSetRestriction - Sets the matrix to be used to restrict the defect
+  from level l to l-1.
 
-   Input Parameters:
-+  snes  - the `SNESFAS` nonlinear multigrid context
-.  mat   - the restriction matrix
--  level - the level (0 is coarsest) to supply [Do not supply 0]
+  Input Parameters:
++ snes  - the `SNESFAS` nonlinear multigrid context
+. mat   - the restriction matrix
+- level - the level (0 is coarsest) to supply [Do not supply 0]
 
-   Level: advanced
+  Level: advanced
 
-   Notes:
-          Usually this is the same matrix used also to set the interpolation
-    for the same level.
+  Notes:
+  Usually this is the same matrix used also to set the interpolation
+  for the same level.
 
-          One can pass in the interpolation matrix or its transpose; PETSc figures
-    out from the matrix size which one it is.
+  One can pass in the interpolation matrix or its transpose; PETSc figures
+  out from the matrix size which one it is.
 
-         If you do not set this, the transpose of the Mat set with SNESFASSetInterpolation()
-    is used.
+  If you do not set this, the transpose of the Mat set with SNESFASSetInterpolation()
+  is used.
 
 .seealso: `SNESFAS`, `SNESFASSetInterpolation()`, `SNESFASSetInjection()`
 @*/
@@ -839,17 +840,17 @@ PetscErrorCode SNESFASSetRestriction(SNES snes, PetscInt level, Mat mat)
 }
 
 /*@
-   SNESFASGetRestriction - Gets the matrix used to calculate the
-   restriction from l to the l-1th level
+  SNESFASGetRestriction - Gets the matrix used to calculate the
+  restriction from l to the l-1th level
 
-   Input Parameters:
-+  snes      - the `SNESFAS` nonlinear multigrid context
--  level     - the level (0 is coarsest) to supply [do not supply 0]
+  Input Parameters:
++ snes  - the `SNESFAS` nonlinear multigrid context
+- level - the level (0 is coarsest) to supply [do not supply 0]
 
-   Output Parameter:
-.  mat       - the interpolation operator
+  Output Parameter:
+. mat - the interpolation operator
 
-   Level: advanced
+  Level: advanced
 
 .seealso: `SNESFAS`, `SNESFASSetRestriction()`, `SNESFASGetInjection()`, `SNESFASGetInterpolation()`, `SNESFASGetRScale()`
 @*/
@@ -868,19 +869,19 @@ PetscErrorCode SNESFASGetRestriction(SNES snes, PetscInt level, Mat *mat)
 }
 
 /*@
-   SNESFASSetInjection - Sets the function to be used to inject the solution
-   from level l to l-1.
+  SNESFASSetInjection - Sets the function to be used to inject the solution
+  from level l to l-1.
 
-   Input Parameters:
- +  snes  - the `SNESFAS` nonlinear multigrid context
-.  mat   - the restriction matrix
--  level - the level (0 is coarsest) to supply [Do not supply 0]
+  Input Parameters:
++ snes  - the `SNESFAS` nonlinear multigrid context
+. mat   - the restriction matrix
+- level - the level (0 is coarsest) to supply [Do not supply 0]
 
-   Level: advanced
+  Level: advanced
 
-   Note:
-         If you do not set this, the restriction and rscale is used to
-   project the solution instead.
+  Note:
+  If you do not set this, the restriction and rscale is used to
+  project the solution instead.
 
 .seealso: `SNESFAS`, `SNESFASSetInterpolation()`, `SNESFASSetRestriction()`
 @*/
@@ -902,17 +903,17 @@ PetscErrorCode SNESFASSetInjection(SNES snes, PetscInt level, Mat mat)
 }
 
 /*@
-   SNESFASGetInjection - Gets the matrix used to calculate the
-   injection from l-1 to the lth level
+  SNESFASGetInjection - Gets the matrix used to calculate the
+  injection from l-1 to the lth level
 
-   Input Parameters:
-+  snes      - the `SNESFAS` nonlinear multigrid context
--  level     - the level (0 is coarsest) to supply [do not supply 0]
+  Input Parameters:
++ snes  - the `SNESFAS` nonlinear multigrid context
+- level - the level (0 is coarsest) to supply [do not supply 0]
 
-   Output Parameter:
-.  mat       - the injection operator
+  Output Parameter:
+. mat - the injection operator
 
-   Level: advanced
+  Level: advanced
 
 .seealso: `SNESFAS`, `SNESFASSetInjection()`, `SNESFASGetRestriction()`, `SNESFASGetInterpolation()`, `SNESFASGetRScale()`
 @*/
@@ -931,18 +932,18 @@ PetscErrorCode SNESFASGetInjection(SNES snes, PetscInt level, Mat *mat)
 }
 
 /*@
-   SNESFASSetRScale - Sets the scaling factor of the restriction
-   operator from level l to l-1.
+  SNESFASSetRScale - Sets the scaling factor of the restriction
+  operator from level l to l-1.
 
-   Input Parameters:
-+  snes   - the `SNESFAS` nonlinear multigrid context
-.  rscale - the restriction scaling
--  level  - the level (0 is coarsest) to supply [Do not supply 0]
+  Input Parameters:
++ snes   - the `SNESFAS` nonlinear multigrid context
+. rscale - the restriction scaling
+- level  - the level (0 is coarsest) to supply [Do not supply 0]
 
-   Level: advanced
+  Level: advanced
 
-   Note:
-   This is only used in the case that the injection is not set.
+  Note:
+  This is only used in the case that the injection is not set.
 
 .seealso: `SNESFAS`, `SNESFASSetInjection()`, `SNESFASSetRestriction()`
 @*/
@@ -963,16 +964,16 @@ PetscErrorCode SNESFASSetRScale(SNES snes, PetscInt level, Vec rscale)
 }
 
 /*@
-   SNESFASGetSmoother - Gets the default smoother on a level.
+  SNESFASGetSmoother - Gets the default smoother on a level.
 
-   Input Parameters:
-+  snes   - the `SNESFAS` nonlinear multigrid context
--  level  - the level (0 is coarsest) to supply
+  Input Parameters:
++ snes  - the `SNESFAS` nonlinear multigrid context
+- level - the level (0 is coarsest) to supply
 
-   Output Parameter:
+  Output Parameter:
    smooth  - the smoother
 
-   Level: advanced
+  Level: advanced
 
 .seealso: `SNESFAS`, `SNESFASSetInjection()`, `SNESFASSetRestriction()`
 @*/
@@ -992,16 +993,16 @@ PetscErrorCode SNESFASGetSmoother(SNES snes, PetscInt level, SNES *smooth)
 }
 
 /*@
-   SNESFASGetSmootherDown - Gets the downsmoother on a level.
+  SNESFASGetSmootherDown - Gets the downsmoother on a level.
 
-   Input Parameters:
-+  snes   - the `SNESFAS` nonlinear multigrid context
--  level  - the level (0 is coarsest) to supply
+  Input Parameters:
++ snes  - the `SNESFAS` nonlinear multigrid context
+- level - the level (0 is coarsest) to supply
 
-   Output Parameter:
+  Output Parameter:
    smooth  - the smoother
 
-   Level: advanced
+  Level: advanced
 
 .seealso: `SNESFAS`, `SNESFASSetInjection()`, `SNESFASSetRestriction()`
 @*/
@@ -1023,16 +1024,16 @@ PetscErrorCode SNESFASGetSmootherDown(SNES snes, PetscInt level, SNES *smooth)
 }
 
 /*@
-   SNESFASGetSmootherUp - Gets the upsmoother on a level.
+  SNESFASGetSmootherUp - Gets the upsmoother on a level.
 
-   Input Parameters:
-+  snes   - the `SNESFAS` nonlinear multigrid context
--  level  - the level (0 is coarsest)
+  Input Parameters:
++ snes  - the `SNESFAS` nonlinear multigrid context
+- level - the level (0 is coarsest)
 
-   Output Parameter:
+  Output Parameter:
    smooth  - the smoother
 
-   Level: advanced
+  Level: advanced
 
 .seealso: `SNESFAS`, `SNESFASSetInjection()`, `SNESFASSetRestriction()`
 @*/
@@ -1083,18 +1084,18 @@ PetscErrorCode SNESFASGetCoarseSolve(SNES snes, SNES *coarse)
 }
 
 /*@
-   SNESFASFullSetDownSweep - Smooth during the initial downsweep for `SNESFAS`
+  SNESFASFullSetDownSweep - Smooth during the initial downsweep for `SNESFAS`
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  snes - the `SNESFAS` nonlinear multigrid context
--  swp - whether to downsweep or not
+  Input Parameters:
++ snes - the `SNESFAS` nonlinear multigrid context
+- swp  - whether to downsweep or not
 
-   Options Database Key:
-.  -snes_fas_full_downsweep - Sets number of pre-smoothing steps
+  Options Database Key:
+. -snes_fas_full_downsweep - Sets number of pre-smoothing steps
 
-   Level: advanced
+  Level: advanced
 
 .seealso: `SNESFAS`, `SNESFASSetNumberSmoothUp()`
 @*/
@@ -1111,22 +1112,22 @@ PetscErrorCode SNESFASFullSetDownSweep(SNES snes, PetscBool swp)
 }
 
 /*@
-   SNESFASFullSetTotal - Use total residual restriction and total interpolation on the initial down and up sweep of full FAS cycles
+  SNESFASFullSetTotal - Use total residual restriction and total interpolation on the initial down and up sweep of full FAS cycles
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  snes - the `SNESFAS`  nonlinear multigrid context
--  total - whether to use total restriction / interpolatiaon or not (the alternative is defect restriction and correction interpolation)
+  Input Parameters:
++ snes  - the `SNESFAS`  nonlinear multigrid context
+- total - whether to use total restriction / interpolatiaon or not (the alternative is defect restriction and correction interpolation)
 
-   Options Database Key:
-.  -snes_fas_full_total - Use total restriction and interpolation on the initial down and up sweeps for the full FAS cycle
+  Options Database Key:
+. -snes_fas_full_total - Use total restriction and interpolation on the initial down and up sweeps for the full FAS cycle
 
-   Level: advanced
+  Level: advanced
 
-   Note:
-   This option is only significant if the interpolation of a coarse correction (`MatInterpolate()`) is significantly different from total
-   solution interpolation (`DMInterpolateSolution()`).
+  Note:
+  This option is only significant if the interpolation of a coarse correction (`MatInterpolate()`) is significantly different from total
+  solution interpolation (`DMInterpolateSolution()`).
 
 .seealso: `SNESFAS`, `SNESFASSetNumberSmoothUp()`, `DMInterpolateSolution()`
 @*/
@@ -1143,17 +1144,17 @@ PetscErrorCode SNESFASFullSetTotal(SNES snes, PetscBool total)
 }
 
 /*@
-   SNESFASFullGetTotal - Use total residual restriction and total interpolation on the initial down and up sweep of full FAS cycles
+  SNESFASFullGetTotal - Use total residual restriction and total interpolation on the initial down and up sweep of full FAS cycles
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameter:
-.  snes - the `SNESFAS` nonlinear multigrid context
+  Input Parameter:
+. snes - the `SNESFAS` nonlinear multigrid context
 
-   Output:
-.  total - whether to use total restriction / interpolatiaon or not (the alternative is defect restriction and correction interpolation)
+  Output:
+. total - whether to use total restriction / interpolatiaon or not (the alternative is defect restriction and correction interpolation)
 
-   Level: advanced
+  Level: advanced
 
 .seealso: `SNESFAS`, `SNESFASSetNumberSmoothUp()`, `DMInterpolateSolution()`, `SNESFullSetTotal()`
 @*/

@@ -376,21 +376,21 @@ static PetscErrorCode SNESView_QN(SNES snes, PetscViewer viewer)
 }
 
 /*@
-    SNESQNSetRestartType - Sets the restart type for `SNESQN`.
+  SNESQNSetRestartType - Sets the restart type for `SNESQN`.
 
-    Logically Collective
+  Logically Collective
 
-    Input Parameters:
-+   snes - the iterative context
--   rtype - restart type
+  Input Parameters:
++ snes  - the iterative context
+- rtype - restart type
 
-    Options Database Keys:
-+   -snes_qn_restart_type <powell,periodic,none> - set the restart type
--   -snes_qn_m <m> - sets the number of stored updates and the restart period for periodic
+  Options Database Keys:
++ -snes_qn_restart_type <powell,periodic,none> - set the restart type
+- -snes_qn_m <m>                               - sets the number of stored updates and the restart period for periodic
 
-    Level: intermediate
+  Level: intermediate
 
-    `SNESQNRestartType`s:
+  `SNESQNRestartType`s:
 +   `SNES_QN_RESTART_NONE` - never restart
 .   `SNES_QN_RESTART_POWELL` - restart based upon descent criteria
 -   `SNES_QN_RESTART_PERIODIC` - restart after a fixed number of iterations
@@ -406,29 +406,28 @@ PetscErrorCode SNESQNSetRestartType(SNES snes, SNESQNRestartType rtype)
 }
 
 /*@
-    SNESQNSetScaleType - Sets the scaling type for the inner inverse Jacobian in `SNESQN`.
+  SNESQNSetScaleType - Sets the scaling type for the inner inverse Jacobian in `SNESQN`.
 
-    Logically Collective
+  Logically Collective
 
-    Input Parameters:
-+   snes - the nonlinear solver context
--   stype - scale type
+  Input Parameters:
++ snes  - the nonlinear solver context
+- stype - scale type
 
-    Options Database Key:
-.   -snes_qn_scale_type <diagonal,none,scalar,jacobian> - Scaling type
+  Options Database Key:
+. -snes_qn_scale_type <diagonal,none,scalar,jacobian> - Scaling type
 
-    Level: intermediate
+  Level: intermediate
 
-    `SNESQNScaleType`s:
+  `SNESQNScaleType`s:
 +   `SNES_QN_SCALE_NONE` - don't scale the problem
 .   `SNES_QN_SCALE_SCALAR` - use Shanno scaling
 .   `SNES_QN_SCALE_DIAGONAL` - scale with a diagonalized BFGS formula (see Gilbert and Lemarechal 1989), available
 -   `SNES_QN_SCALE_JACOBIAN` - scale by solving a linear system coming from the Jacobian you provided with SNESSetJacobian() computed at the first iteration
-                             of QN and at ever restart.
+  of QN and at ever restart.
 
 .seealso: `SNES`, `SNESQN`, `SNESLineSearch`, `SNESQNScaleType`, `SNESSetJacobian()`
 @*/
-
 PetscErrorCode SNESQNSetScaleType(SNES snes, SNESQNScaleType stype)
 {
   PetscFunctionBegin;
@@ -457,27 +456,26 @@ PetscErrorCode SNESQNSetRestartType_QN(SNES snes, SNESQNRestartType rtype)
 }
 
 /*@
-    SNESQNSetType - Sets the quasi-Newton variant to be used in `SNESQN`.
+  SNESQNSetType - Sets the quasi-Newton variant to be used in `SNESQN`.
 
-    Logically Collective
+  Logically Collective
 
-    Input Parameters:
-+   snes - the iterative context
--   qtype - variant type
+  Input Parameters:
++ snes  - the iterative context
+- qtype - variant type
 
-    Options Database Key:
-.   -snes_qn_type <lbfgs,broyden,badbroyden> - quasi-Newton type
+  Options Database Key:
+. -snes_qn_type <lbfgs,broyden,badbroyden> - quasi-Newton type
 
-    Level: beginner
+  Level: beginner
 
-    `SNESQNType`s:
+  `SNESQNType`s:
 +   `SNES_QN_LBFGS` - LBFGS variant
 .   `SNES_QN_BROYDEN` - Broyden variant
 -   `SNES_QN_BADBROYDEN` - Bad Broyden variant
 
 .seealso: `SNESQN`, `SNES_QN_LBFGS`, `SNES_QN_BROYDEN`, `SNES_QN_BADBROYDEN`, `SNESQNType`, `TAOLMVM`, `TAOBLMVM`
 @*/
-
 PetscErrorCode SNESQNSetType(SNES snes, SNESQNType qtype)
 {
   PetscFunctionBegin;

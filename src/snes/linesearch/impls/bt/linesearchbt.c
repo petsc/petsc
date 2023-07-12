@@ -6,13 +6,13 @@ typedef struct {
 } SNESLineSearch_BT;
 
 /*@
-   SNESLineSearchBTSetAlpha - Sets the descent parameter, alpha, in the `SNESLINESEARCHBT` variant.
+  SNESLineSearchBTSetAlpha - Sets the descent parameter, alpha, in the `SNESLINESEARCHBT` variant.
 
-   Input Parameters:
-+  linesearch - linesearch context
--  alpha - The descent parameter
+  Input Parameters:
++ linesearch - linesearch context
+- alpha      - The descent parameter
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `SNESLineSearch`, `SNESLineSearchSetLambda()`, `SNESLineSearchGetTolerances()`, `SNESLINESEARCHBT`, `SNESLineSearchBTGetAlpha()`
 @*/
@@ -27,15 +27,15 @@ PetscErrorCode SNESLineSearchBTSetAlpha(SNESLineSearch linesearch, PetscReal alp
 }
 
 /*@
-   SNESLineSearchBTGetAlpha - Gets the descent parameter, alpha, in the `SNESLINESEARCHBT` variant.
+  SNESLineSearchBTGetAlpha - Gets the descent parameter, alpha, in the `SNESLINESEARCHBT` variant.
 
-   Input Parameter:
-.  linesearch - linesearch context
+  Input Parameter:
+. linesearch - linesearch context
 
-   Output Parameter:
-.  alpha - The descent parameter
+  Output Parameter:
+. alpha - The descent parameter
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `SNESLineSearchGetLambda()`, `SNESLineSearchGetTolerances()` `SNESLINESEARCHBT`, `SNESLineSearchBTGetAlpha()`
 @*/

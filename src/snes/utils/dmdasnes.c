@@ -202,24 +202,24 @@ PETSC_EXTERN PetscErrorCode SNESComputeJacobian_DMDA(SNES snes, Vec X, Mat A, Ma
 }
 
 /*@C
-   DMDASNESSetFunctionLocal - set a local residual evaluation function for use with `DMDA`
+  DMDASNESSetFunctionLocal - set a local residual evaluation function for use with `DMDA`
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  dm - `DM` to associate callback with
-.  imode - `INSERT_VALUES` if local function computes owned part, `ADD_VALUES` if it contributes to ghosted part
-.  func - local residual evaluation
--  ctx - optional context for local residual evaluation
+  Input Parameters:
++ dm    - `DM` to associate callback with
+. imode - `INSERT_VALUES` if local function computes owned part, `ADD_VALUES` if it contributes to ghosted part
+. func  - local residual evaluation
+- ctx   - optional context for local residual evaluation
 
-   Calling sequence of `func`:
+  Calling sequence of `func`:
 $   PetscErrorCode func(DMDALocalInfo *info, void *x, void *f, void *ctx)
 +  info - `DMDALocalInfo` defining the subdomain to evaluate the residual on
 .  x - dimensional pointer to state at which to evaluate residual (e.g. PetscScalar *x or **x or ***x)
 .  f - dimensional pointer to residual, write the residual here (e.g. PetscScalar *f or **f or ***f)
--  ctx - optional context passed above
+- ctx - optional context passed above
 
-   Level: beginner
+  Level: beginner
 
 .seealso: `DMDA`, `DMDASNESSetJacobianLocal()`, `DMSNESSetFunction()`, `DMDACreate1d()`, `DMDACreate2d()`, `DMDACreate3d()`
 @*/
@@ -245,24 +245,24 @@ PetscErrorCode DMDASNESSetFunctionLocal(DM dm, InsertMode imode, PetscErrorCode 
 }
 
 /*@C
-   DMDASNESSetFunctionLocalVec - set a local residual evaluation function that operates on a local vector for `DMDA`
+  DMDASNESSetFunctionLocalVec - set a local residual evaluation function that operates on a local vector for `DMDA`
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  dm - `DM` to associate callback with
-.  imode - `INSERT_VALUES` if local function computes owned part, `ADD_VALUES` if it contributes to ghosted part
-.  func - local residual evaluation
--  ctx - optional context for local residual evaluation
+  Input Parameters:
++ dm    - `DM` to associate callback with
+. imode - `INSERT_VALUES` if local function computes owned part, `ADD_VALUES` if it contributes to ghosted part
+. func  - local residual evaluation
+- ctx   - optional context for local residual evaluation
 
-   Calling sequence of `func`:
+  Calling sequence of `func`:
 $   PetscErrorCode func(DMDALocalInfo *info, Vec x, Vec f, void *ctx),
 +  info - `DMDALocalInfo` defining the subdomain to evaluate the residual on
 .  x - state vector at which to evaluate residual
 .  f - residual vector
--  ctx - optional context passed above
+- ctx - optional context passed above
 
-   Level: beginner
+  Level: beginner
 
 .seealso: `DMDA`, `DMDASNESSetFunctionLocal()`, `DMDASNESSetJacobianLocalVec()`, `DMSNESSetFunction()`, `DMDACreate1d()`, `DMDACreate2d()`, `DMDACreate3d()`
 @*/
@@ -288,24 +288,24 @@ PetscErrorCode DMDASNESSetFunctionLocalVec(DM dm, InsertMode imode, PetscErrorCo
 }
 
 /*@C
-   DMDASNESSetJacobianLocal - set a local Jacobian evaluation function for use with `DMDA`
+  DMDASNESSetJacobianLocal - set a local Jacobian evaluation function for use with `DMDA`
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  dm - `DM` to associate callback with
-.  func - local Jacobian evaluation
--  ctx - optional context for local Jacobian evaluation
+  Input Parameters:
++ dm   - `DM` to associate callback with
+. func - local Jacobian evaluation
+- ctx  - optional context for local Jacobian evaluation
 
-   Calling sequence of `func`:
+  Calling sequence of `func`:
 $  PetscErrorCode func(DMDALocalInfo *info, void *x, Mat J, Mat M, void *ctx),
 +  info - `DMDALocalInfo` defining the subdomain to evaluate the Jacobian at
 .  x - dimensional pointer to state at which to evaluate Jacobian (e.g. PetscScalar *x or **x or ***x)
 .  J - Mat object for the Jacobian
 .  M - Mat object for the Jacobian preconditioner matrix, often `J`
--  ctx - optional context passed above
+- ctx - optional context passed above
 
-   Level: beginner
+  Level: beginner
 
 .seealso: `DMDA`, `DMDASNESSetFunctionLocal()`, `DMSNESSetJacobian()`, `DMDACreate1d()`, `DMDACreate2d()`, `DMDACreate3d()`
 @*/
@@ -327,24 +327,24 @@ PetscErrorCode DMDASNESSetJacobianLocal(DM dm, PetscErrorCode (*func)(DMDALocalI
 }
 
 /*@C
-   DMDASNESSetJacobianLocalVec - set a local Jacobian evaluation function that operates on a local vector with `DMDA`
+  DMDASNESSetJacobianLocalVec - set a local Jacobian evaluation function that operates on a local vector with `DMDA`
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  dm - `DM` to associate callback with
-.  func - local Jacobian evaluation
--  ctx - optional context for local Jacobian evaluation
+  Input Parameters:
++ dm   - `DM` to associate callback with
+. func - local Jacobian evaluation
+- ctx  - optional context for local Jacobian evaluation
 
-   Calling sequence of `func`:
+  Calling sequence of `func`:
 $  PetscErrorCode (*func)(DMDALocalInfo *info, Vec x, Mat J, Mat M, void *ctx),
 +  info - `DMDALocalInfo` defining the subdomain to evaluate the Jacobian at
 .  x - state vector at which to evaluate Jacobian
 .  J - Mat object for the Jacobian
 .  M - Mat object for the Jacobian preconditioner matrix, often `J`
--  ctx - optional context passed above
+- ctx - optional context passed above
 
-   Level: beginner
+  Level: beginner
 
 .seealso: `DMDA`, `DMDASNESSetJacobianLocal()`, `DMDASNESSetFunctionLocalVec()`, `DMSNESSetJacobian()`, `DMDACreate1d()`, `DMDACreate2d()`, `DMDACreate3d()`
 @*/
@@ -366,23 +366,23 @@ PetscErrorCode DMDASNESSetJacobianLocalVec(DM dm, PetscErrorCode (*func)(DMDALoc
 }
 
 /*@C
-   DMDASNESSetObjectiveLocal - set a local residual evaluation function to used with a `DMDA`
+  DMDASNESSetObjectiveLocal - set a local residual evaluation function to used with a `DMDA`
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  dm - `DM` to associate callback with
-.  func - local objective evaluation
--  ctx - optional context for local residual evaluation
+  Input Parameters:
++ dm   - `DM` to associate callback with
+. func - local objective evaluation
+- ctx  - optional context for local residual evaluation
 
-   Calling sequence of `func`:
+  Calling sequence of `func`:
 $  PetscErrorCode func(DMDALocalInfo *info, void *x, PetscReal obj, void *ctx);
 +  info - defines the subdomain to evaluate the residual on
 .  x - dimensional pointer to state at which to evaluate residual
 .  ob - eventual objective value
--  ctx - optional context passed above
+- ctx - optional context passed above
 
-   Level: beginner
+  Level: beginner
 
 .seealso: `DMDA`, `DMSNESSetFunction()`, `DMDASNESSetJacobianLocal()`, `DMDACreate1d()`, `DMDACreate2d()`, `DMDACreate3d()`
 @*/
@@ -404,23 +404,23 @@ PetscErrorCode DMDASNESSetObjectiveLocal(DM dm, DMDASNESObjective func, void *ct
 }
 
 /*@C
-   DMDASNESSetObjectiveLocal - set a local residual evaluation function that operates on a local vector with `DMDA`
+  DMDASNESSetObjectiveLocalVec - set a local residual evaluation function that operates on a local vector with `DMDA`
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  dm - `DM` to associate callback with
-.  func - local objective evaluation
--  ctx - optional context for local residual evaluation
+  Input Parameters:
++ dm   - `DM` to associate callback with
+. func - local objective evaluation
+- ctx  - optional context for local residual evaluation
 
-   Calling sequence of `func`:
+  Calling sequence of `func`:
 $  PetscErrorCode func(DMDALocalInfo *info, Vec x, PetscReal *ob, void *ctx);
 +  info - defines the subdomain to evaluate the residual on
 .  x - state vector at which to evaluate residual
 .  ob - eventual objective value
--  ctx - optional context passed above
+- ctx - optional context passed above
 
-   Level: beginner
+  Level: beginner
 
 .seealso: `DMDA`, `DMDASNESSetObjectiveLocal()`, `DMSNESSetFunction()`, `DMDASNESSetJacobianLocalVec()`, `DMDACreate1d()`, `DMDACreate2d()`, `DMDACreate3d()`
 @*/
@@ -514,28 +514,28 @@ static PetscErrorCode SNESComputePicardJacobian_DMDA(SNES snes, Vec X, Mat A, Ma
 }
 
 /*@C
-   DMDASNESSetPicardLocal - set a local right hand side and matrix evaluation function for Picard iteration with `DMDA`
+  DMDASNESSetPicardLocal - set a local right hand side and matrix evaluation function for Picard iteration with `DMDA`
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  dm - `DM` to associate callback with
-.  imode - `INSERT_VALUES` if local function computes owned part, `ADD_VALUES` if it contributes to ghosted part
-.  func - local residual evaluation
--  ctx - optional context for local residual evaluation
+  Input Parameters:
++ dm    - `DM` to associate callback with
+. imode - `INSERT_VALUES` if local function computes owned part, `ADD_VALUES` if it contributes to ghosted part
+. func  - local residual evaluation
+- ctx   - optional context for local residual evaluation
 
-   Calling sequence of `func`:
+  Calling sequence of `func`:
 $  PetscErrorCode func(DMDALocalInfo *info, void *x, void *f, void *ctx);
 +  info - defines the subdomain to evaluate the residual on
 .  x - dimensional pointer to state at which to evaluate residual
-.  f - dimensional pointer to residual, write the residual here
--  ctx - optional context passed above
+. jac - dimensional pointer to residual, write the residual here
+- ctx - optional context passed above
 
-   Level: beginner
+  Level: beginner
 
-   Note:
-    The user must use `SNESSetFunction`(snes,`NULL`,`SNESPicardComputeFunction`,&user));
-    in their code before calling this routine.
+  Note:
+  The user must use `SNESSetFunction`(snes,`NULL`,`SNESPicardComputeFunction`,&user));
+  in their code before calling this routine.
 
 .seealso: `DMDA`, `DMSNESSetFunction()`, `DMDASNESSetJacobian()`, `DMDACreate1d()`, `DMDACreate2d()`, `DMDACreate3d()`
 @*/

@@ -7,21 +7,21 @@ typedef struct {
 } SNESLineSearch_Shell;
 
 /*@C
-   SNESLineSearchShellSetUserFunc - Sets the user function for the `SNESLINESEARCHSHELL` implementation.
+  SNESLineSearchShellSetUserFunc - Sets the user function for the `SNESLINESEARCHSHELL` implementation.
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  linesearch - `SNESLineSearch` context
-.  func - function implementing the linesearch shell.
--  ctx - context for func
+  Input Parameters:
++ linesearch - `SNESLineSearch` context
+. func       - function implementing the linesearch shell.
+- ctx        - context for func
 
-   Calling sequence of `func`:
+  Calling sequence of `func`:
 $  PetscErrorCode func(SNESLinesearch, void *ctx)
-+  linesearch - the linesearch instance
--  ctx - the above mentioned context
++ linesearch - the linesearch instance
+- ctx        - the above mentioned context
 
-   Usage:
+  Usage:
 .vb
   PetscErrorCode shellfunc(SNESLineSearch linesearch,void * ctx)
   {
@@ -45,7 +45,7 @@ $  PetscErrorCode func(SNESLinesearch, void *ctx)
   PetscCall(SNESLineSearchShellSetUserFunc(linesearch, shellfunc, NULL));
 .ve
 
-   Level: advanced
+  Level: advanced
 
 .seealso: `SNESLineSearchShellGetUserFunc()`, `SNESLINESEARCHSHELL`, `SNESLineSearchType`, `SNESLineSearch`
 @*/
@@ -65,18 +65,18 @@ PetscErrorCode SNESLineSearchShellSetUserFunc(SNESLineSearch linesearch, SNESLin
 }
 
 /*@C
-   SNESLineSearchShellGetUserFunc - Gets the user function and context for the  `SNESLINESEARCHSHELL`
+  SNESLineSearchShellGetUserFunc - Gets the user function and context for the  `SNESLINESEARCHSHELL`
 
-   Not Collective
+  Not Collective
 
-   Input Parameter:
-.   linesearch - the line search object
+  Input Parameter:
+. linesearch - the line search object
 
-   Output Parameters:
-+    func  - the user function; can be NULL if you do not want it
--    ctx   - the user function context; can be NULL if you do not want it
+  Output Parameters:
++ func - the user function; can be NULL if you do not want it
+- ctx  - the user function context; can be NULL if you do not want it
 
-   Level: advanced
+  Level: advanced
 
 .seealso: `SNESLineSearchShellSetUserFunc()`, `SNESLINESEARCHSHELL`, `SNESLineSearchType`, `SNESLineSearch`
 @*/

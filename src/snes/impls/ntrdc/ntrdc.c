@@ -75,7 +75,7 @@ static PetscErrorCode SNESTRDC_Converged_Private(SNES snes, PetscInt it, PetscRe
 . snes - the nonlinear solver object
 
   Output Parameter:
-. rho_flag: `PETSC_TRUE` if the solution update is in the trust-region; otherwise, `PETSC_FALSE`
+. rho_flag - `PETSC_FALSE`
 
   Level: developer
 
@@ -94,20 +94,20 @@ PetscErrorCode SNESNewtonTRDCGetRhoFlag(SNES snes, PetscBool *rho_flag)
 }
 
 /*@C
-   SNESNewtonTRDCSetPreCheck - Sets a user function that is called before the search step has been determined.
-       Allows the user a chance to change or override the trust region decision.
+  SNESNewtonTRDCSetPreCheck - Sets a user function that is called before the search step has been determined.
+  Allows the user a chance to change or override the trust region decision.
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  snes - the nonlinear solver object
-.  func - [optional] function evaluation routine, for the calling sequence see `SNESNewtonTRDCPreCheck()`
--  ctx  - [optional] user-defined context for private data for the function evaluation routine (may be `NULL`)
+  Input Parameters:
++ snes - the nonlinear solver object
+. func - [optional] function evaluation routine, for the calling sequence see `SNESNewtonTRDCPreCheck()`
+- ctx  - [optional] user-defined context for private data for the function evaluation routine (may be `NULL`)
 
-   Level: intermediate
+  Level: intermediate
 
-   Note:
-   This function is called BEFORE the function evaluation within the `SNESNEWTONTRDC` solver.
+  Note:
+  This function is called BEFORE the function evaluation within the `SNESNEWTONTRDC` solver.
 
 .seealso: `SNESNEWTONTRDC`, `SNESNewtonTRDCPreCheck()`, `SNESNewtonTRDCGetPreCheck()`, `SNESNewtonTRDCSetPostCheck()`, `SNESNewtonTRDCGetPostCheck()`,
           `SNESNewtonTRDCGetRhoFlag()`
@@ -124,18 +124,18 @@ PetscErrorCode SNESNewtonTRDCSetPreCheck(SNES snes, PetscErrorCode (*func)(SNES,
 }
 
 /*@C
-   SNESNewtonTRDCGetPreCheck - Gets the pre-check function
+  SNESNewtonTRDCGetPreCheck - Gets the pre-check function
 
-   Not Collective
+  Not Collective
 
-   Input Parameter:
-.  snes - the nonlinear solver context
+  Input Parameter:
+. snes - the nonlinear solver context
 
-   Output Parameters:
-+  func - [optional] function evaluation routine, for the calling sequence see `SNESNewtonTRDCPreCheck()`
--  ctx  - [optional] user-defined context for private data for the function evaluation routine (may be `NULL`)
+  Output Parameters:
++ func - [optional] function evaluation routine, for the calling sequence see `SNESNewtonTRDCPreCheck()`
+- ctx  - [optional] user-defined context for private data for the function evaluation routine (may be `NULL`)
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `SNESNEWTONTRDC`, `SNESNewtonTRDCSetPreCheck()`, `SNESNewtonTRDCPreCheck()`
 @*/
@@ -151,21 +151,21 @@ PetscErrorCode SNESNewtonTRDCGetPreCheck(SNES snes, PetscErrorCode (**func)(SNES
 }
 
 /*@C
-   SNESNewtonTRDCSetPostCheck - Sets a user function that is called after the search step has been determined but before the next
-       function evaluation. Allows the user a chance to change or override the decision of the line search routine
+  SNESNewtonTRDCSetPostCheck - Sets a user function that is called after the search step has been determined but before the next
+  function evaluation. Allows the user a chance to change or override the decision of the line search routine
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  snes - the nonlinear solver object
-.  func - [optional] function evaluation routine, for the calling sequence see `SNESNewtonTRDCPostCheck()`
--  ctx  - [optional] user-defined context for private data for the function evaluation routine (may be `NULL`)
+  Input Parameters:
++ snes - the nonlinear solver object
+. func - [optional] function evaluation routine, for the calling sequence see `SNESNewtonTRDCPostCheck()`
+- ctx  - [optional] user-defined context for private data for the function evaluation routine (may be `NULL`)
 
-   Level: intermediate
+  Level: intermediate
 
-   Note:
-   This function is called BEFORE the function evaluation within the `SNESNEWTONTRDC` solver while the function set in
-   `SNESLineSearchSetPostCheck()` is called AFTER the function evaluation.
+  Note:
+  This function is called BEFORE the function evaluation within the `SNESNEWTONTRDC` solver while the function set in
+  `SNESLineSearchSetPostCheck()` is called AFTER the function evaluation.
 
 .seealso: `SNESNEWTONTRDC`, `SNESNewtonTRDCPostCheck()`, `SNESNewtonTRDCGetPostCheck()`, `SNESNewtonTRDCSetPreCheck()`, `SNESNewtonTRDCGetPreCheck()`
 @*/
@@ -181,18 +181,18 @@ PetscErrorCode SNESNewtonTRDCSetPostCheck(SNES snes, PetscErrorCode (*func)(SNES
 }
 
 /*@C
-   SNESNewtonTRDCGetPostCheck - Gets the post-check function
+  SNESNewtonTRDCGetPostCheck - Gets the post-check function
 
-   Not Collective
+  Not Collective
 
-   Input Parameter:
-.  snes - the nonlinear solver context
+  Input Parameter:
+. snes - the nonlinear solver context
 
-   Output Parameters:
-+  func - [optional] function evaluation routine, for the calling sequence see `SNESNewtonTRDCPostCheck()`
--  ctx  - [optional] user-defined context for private data for the function evaluation routine (may be `NULL`)
+  Output Parameters:
++ func - [optional] function evaluation routine, for the calling sequence see `SNESNewtonTRDCPostCheck()`
+- ctx  - [optional] user-defined context for private data for the function evaluation routine (may be `NULL`)
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `SNESNEWTONTRDC`, `SNESNewtonTRDCSetPostCheck()`, `SNESNewtonTRDCPostCheck()`
 @*/
