@@ -6685,7 +6685,7 @@ PetscErrorCode MatGetLocalSize(Mat mat, PetscInt *m, PetscInt *n)
 
 /*@C
    MatGetOwnershipRangeColumn - Returns the range of matrix columns associated with rows of a vector one multiplies this matrix by that are owned by
-   this processor. (The columns of the "diagonal block" for most sparse matrix formats). See :any:`<sec_matlayout>` for details on matrix layouts.
+   this processor. (The columns of the "diagonal block" for most sparse matrix formats). See [Matrix Layouts](sec_matlayout) for details on matrix layouts.
 
    Not Collective, unless matrix has not been allocated, then collective
 
@@ -6716,7 +6716,7 @@ PetscErrorCode MatGetOwnershipRangeColumn(Mat mat, PetscInt *m, PetscInt *n)
 /*@C
    MatGetOwnershipRange - For matrices that own values by row, excludes `MATELEMENTAL` and `MATSCALAPACK`, returns the range of matrix rows owned by
    this MPI rank. For all matrices  it returns the range of matrix rows associated with rows of a vector that would contain the result of a matrix
-   vector product with this matrix. See :any:`<sec_matlayout>` for details on matrix layouts
+   vector product with this matrix. See [Matrix Layouts](sec_matlayout) for details on matrix layouts
 
    Not Collective
 
@@ -6753,7 +6753,7 @@ PetscErrorCode MatGetOwnershipRange(Mat mat, PetscInt *m, PetscInt *n)
 /*@C
    MatGetOwnershipRanges - For matrices that own values by row, excludes `MATELEMENTAL` and `MATSCALAPACK`, returns the range of matrix rows owned by
    each process. For all matrices  it returns the ranges of matrix rows associated with rows of a vector that would contain the result of a matrix
-   vector product with this matrix. See :any:`<sec_matlayout>` for details on matrix layouts
+   vector product with this matrix. See [Matrix Layouts](sec_matlayout) for details on matrix layouts
 
    Not Collective, unless matrix has not been allocated
 
@@ -6779,7 +6779,7 @@ PetscErrorCode MatGetOwnershipRanges(Mat mat, const PetscInt **ranges)
 
 /*@C
    MatGetOwnershipRangesColumn - Returns the ranges of matrix columns associated with rows of a vector one multiplies this vector by that are owned by
-   each processor. (The columns of the "diagonal blocks", for most sparse matrix formats). See :any:`<sec_matlayout>` for details on matrix layouts.
+   each processor. (The columns of the "diagonal blocks", for most sparse matrix formats). See [Matrix Layouts](sec_matlayout) for details on matrix layouts.
 
    Not Collective, unless matrix has not been allocated
 
@@ -6806,7 +6806,7 @@ PetscErrorCode MatGetOwnershipRangesColumn(Mat mat, const PetscInt **ranges)
 /*@C
    MatGetOwnershipIS - Get row and column ownership of a matrices' values as index sets. For most matrices, excluding `MATELEMENTAL` and `MATSCALAPACK`, this
    corresponds to values returned by `MatGetOwnershipRange()`, `MatGetOwnershipRangeColumn()`. For `MATELEMENTAL` and `MATSCALAPACK` the ownership
-   is more complicated. See :any:`<sec_matlayout>` for details on matrix layouts.
+   is more complicated. See [Matrix Layouts](sec_matlayout) for details on matrix layouts.
 
    Not Collective
 
@@ -10217,7 +10217,7 @@ PetscErrorCode MatMatMatMult(Mat A, Mat B, Mat C, MatReuse scall, PetscReal fill
 
    `PetscSubcommCreate()` can be used to manage the creation of the subcomm but need not be.
 
-.seealso: [](ch_matrices), `Mat`, `MatDestroy()`, `PetscSubcommCreate()`, `PetscSubComm`
+.seealso: [](ch_matrices), `Mat`, `MatDestroy()`, `PetscSubcommCreate()`, `PetscSubcomm`
 @*/
 PetscErrorCode MatCreateRedundantMatrix(Mat mat, PetscInt nsubcomm, MPI_Comm subcomm, MatReuse reuse, Mat *matredundant)
 {
