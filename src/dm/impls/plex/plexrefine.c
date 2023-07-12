@@ -322,6 +322,7 @@ PetscErrorCode DMRefine_Plex(DM dm, MPI_Comm comm, DM *rdm)
     PetscCall(PetscObjectViewFromOptions((PetscObject)tr, NULL, "-dm_plex_transform_view"));
     PetscCall(DMPlexTransformApply(tr, dm, rdm));
     PetscCall(DMPlexSetRegularRefinement(*rdm, PETSC_TRUE));
+    PetscCall(DMSetMatType((*rdm), dm->mattype));
     PetscCall(DMCopyDisc(dm, *rdm));
     PetscCall(DMGetCoordinateDM(dm, &cdm));
     PetscCall(DMGetCoordinateDM(*rdm, &rcdm));
@@ -363,6 +364,7 @@ PetscErrorCode DMRefineHierarchy_Plex(DM dm, PetscInt nlevels, DM rdm[])
       PetscCall(DMPlexTransformApply(tr, cdm, &rdm[r]));
       PetscCall(DMSetCoarsenLevel(rdm[r], cdm->leveldown));
       PetscCall(DMSetRefineLevel(rdm[r], cdm->levelup + 1));
+      PetscCall(DMSetMatType(rdm[r], dm->mattype));
       PetscCall(DMCopyDisc(cdm, rdm[r]));
       PetscCall(DMGetCoordinateDM(dm, &codm));
       PetscCall(DMGetCoordinateDM(rdm[r], &rcodm));
