@@ -652,3 +652,20 @@ PetscErrorCode testReferencesFalsePositive()
 {
   return PETSC_SUCCESS;
 }
+
+/*@C
+  testOptionsDatabaseFalsePositive - this should not pick up an
+  options database section
+
+  Level: beginner
+
+  Notes:
+  A per- MPI communicator garbage dictionary is created to store an
+  options database to objects destroyed using `PetscObjectDelayedDestroy()`.
+
+.seealso: `testBadDocString()`
+@*/
+PetscErrorCode testOptionsDatabaseFalsePositive()
+{
+  return PETSC_SUCCESS;
+}
