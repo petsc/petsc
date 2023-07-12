@@ -3,6 +3,7 @@
 #include <petscdevice.h>
 #include <../src/ksp/pc/impls/vpbjacobi/vpbjacobi.h>
 #include <../src/mat/impls/aij/seq/kokkos/aijkok.hpp> // for MatInvertVariableBlockDiagonal_SeqAIJKokkos
+#include <../src/mat/impls/aij/mpi/mpiaij.h>          // for Mat_MPIAIJ
 #include <KokkosBlas2_gemv.hpp>
 
 /* A class that manages helper arrays assisting parallel PCApply() with Kokkos */
@@ -146,6 +147,8 @@ PETSC_INTERN PetscErrorCode PCSetUp_VPBJacobi_Kokkos(PC pc)
   PC_VPBJacobi_Kokkos *pckok = static_cast<PC_VPBJacobi_Kokkos *>(jac->spptr);
   PetscInt             i, nlocal, nblocks, nsize = 0;
   const PetscInt      *bsizes;
+  PetscBool            ismpi;
+  Mat                  A;
 
   PetscFunctionBegin;
   PetscCall(MatGetVariableBlockSizes(pc->pmat, &nblocks, &bsizes));
@@ -180,7 +183,9 @@ PETSC_INTERN PetscErrorCode PCSetUp_VPBJacobi_Kokkos(PC pc)
   const auto &bs     = pckok->bs_dual.view_device();
   const auto &bs2    = pckok->bs2_dual.view_device();
   const auto &blkMap = pckok->blkMap_dual.view_device();
-  PetscCall(MatInvertVariableBlockDiagonal_SeqAIJKokkos(pc->pmat, bs, bs2, blkMap, pckok->work, pckok->diag));
+  PetscCall(PetscObjectBaseTypeCompare((PetscObject)pc->pmat, MATMPIAIJ, &ismpi));
+  A = ismpi ? static_cast<Mat_MPIAIJ *>((pc->pmat)->data)->A : pc->pmat;
+  PetscCall(MatInvertVariableBlockDiagonal_SeqAIJKokkos(A, bs, bs2, blkMap, pckok->work, pckok->diag));
   pc->ops->apply          = PCApplyOrTranspose_VPBJacobi_Kokkos<PETSC_FALSE>;
   pc->ops->applytranspose = PCApplyOrTranspose_VPBJacobi_Kokkos<PETSC_TRUE>;
   pc->ops->destroy        = PCDestroy_VPBJacobi_Kokkos;
