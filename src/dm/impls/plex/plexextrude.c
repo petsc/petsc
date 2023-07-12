@@ -103,6 +103,7 @@ PetscErrorCode DMExtrude_Plex(DM dm, PetscInt layers, DM *edm)
 {
   PetscFunctionBegin;
   PetscCall(DMPlexExtrude(dm, layers, PETSC_DETERMINE, PETSC_TRUE, PETSC_FALSE, PETSC_FALSE, NULL, NULL, edm));
+  PetscCall(DMSetMatType((*edm), dm->mattype));
   PetscCall(DMViewFromOptions(*edm, NULL, "-check_extrude"));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
