@@ -111,6 +111,11 @@ def main(
     petsc_dir, petsc_arch, extra_compiler_flags=extra_compiler_flags, verbose=verbose
   )
 
+  if len(src_path) == 1 and src_path[0].is_file():
+    if verbose:
+      pl.sync_print(f'Only processing a single file ({src_path[0]}), setting number of workers to 1')
+    workers = 1
+
   with pl.util.PrecompiledHeader.from_flags(
       petsc_dir, compiler_flags, extra_header_includes=extra_header_includes, verbose=verbose
   ):
