@@ -49,15 +49,20 @@ class DocStringTypeModifier(enum.Flag):
 
 # expressions that usually end in an unescpaped colon causing the resulting sentence to be
 # considered a title
-_suspicious_expression_regex = re.compile(
-  r'|'.join(
-    f'{expr}:$' for expr in {
-      r'follows', r'following.*', r'example', r'instance', r'one of.*', r'available.*include',
-      r'supports.*approaches.*', r'see.*user.*manual', r'y. saad, iterative methods.*philadelphia',
-      r'default', r'in .* case.*', r'use the.*'
-    }
+_suspicious_patterns = set(
+  map(
+    str.casefold,
+    (
+      r'follows', r'following.*', r'example', r'instance', r'one\sof.*', r'available.*include',
+      r'supports.*approaches.*', r'see.*user.*manual', r'y\.\ssaad,\siterative\smethods.*philadelphia',
+      r'default', r'in\s.*\scase.*', r'use\sthe.*', r'for\s+example', r'note\sthat', r'example[,;-]\s',
+      'r.*etc\.'
+    )
   )
 )
+_suspicious_colon_regex = re.compile(r'|'.join(f'{expr}:$' for expr in _suspicious_patterns))
+_suspicious_plain_regex = re.compile(r'|'.join(_suspicious_patterns - {'example'}), flags=re.MULTILINE)
+del _suspicious_patterns
 
 _pragma_regex = re.compile(r'.*PetscClangLinter\s+pragma\s+(\w+):\s*(.*)')
 
@@ -103,7 +108,6 @@ class Sections:
 
   def __contains__(self, section):
     return self.registered(section)
-
 
   def _reset_cache(self):
     self._cachekey  = tuple(self._sections.keys())
@@ -222,16 +226,7 @@ class Sections:
   def keywords(self, sections=False):
     return self.__unpack_attr_list('keywords', sections)
 
-  def is_heading(self, item):
-    if isinstance(item, tuple):
-      assert len(item) == 2
-      assert isinstance(item[0], SourceRange) and isinstance(item[1], str)
-      text = item[1]
-    elif isinstance(item, str):
-      text = item
-    else:
-      raise NotImplementedError(type(item))
-
+  def is_heading(self, prev_line, line):
     def handle_header_with_colon(text):
       if text.endswith('\:'):
         return Verdict.NOT_HEADING
@@ -244,7 +239,7 @@ class Sections:
         if any(map(text.__contains__, (' - ', '=', '(', ')', '%', '$', '@', '#', '!', '^', '&', '+'))):
           return Verdict.IS_HEADING_BUT_PROBABLY_SHOULDNT_BE
 
-        if _suspicious_expression_regex.search(textlo) is None:
+        if _suspicious_colon_regex.search(textlo) is None:
           return Verdict.IS_HEADING
         return Verdict.IS_HEADING_BUT_PROBABLY_SHOULDNT_BE
 
@@ -254,20 +249,25 @@ class Sections:
         return Verdict.NOT_HEADING
       return Verdict.IS_HEADING if guessed else Verdict.NOT_HEADING
 
-    def handle_header_without_colon(text):
-      try:
-        next(filter(text.casefold().startswith, map(str.casefold, self.titles())))
-      except StopIteration:
+    def handle_header_without_colon(prev_line, line):
+      linelo  = line.casefold()
+      results = list(filter(linelo.startswith, map(str.casefold, self.titles())))
+      if not results:
         return Verdict.NOT_HEADING
+      if _suspicious_plain_regex.search(' '.join((prev_line.casefold(), linelo))):
+        # suspicious regex detected, err on the side of caution and say this line is not a
+        # heading
+        return Verdict.NOT_HEADING
+      # not suspicious, still not 100% though
       return Verdict.MAYBE_HEADING
 
-
-    text = text.strip()
-    if not text or text.startswith(('+ ', '. ', '- ', '$', '.vb', '.ve')):
+    prev_line = prev_line.strip()
+    line      = line.strip()
+    if not line or line.startswith(('+', '. ', '-', '$', '.vb', '.ve')):
       return Verdict.NOT_HEADING
-    if ':' in text:
-      return handle_header_with_colon(text)
-    return handle_header_without_colon(text)
+    if ':' in line:
+      return handle_header_with_colon(line)
+    return handle_header_without_colon(prev_line, line)
 
   def guess_heading(self, line, strict=False, **kwargs):
     strp = line.split(':', maxsplit=1)[0].strip()
@@ -446,14 +446,6 @@ class PetscDocString(DocBase):
           )
         )
     return dict(pragmas)
-
-  @classmethod
-  def is_heading(cls, *args, **kwargs):
-    return cls.sections.is_heading(*args, **kwargs)
-
-  @classmethod
-  def _get_is_heading(cls, section):
-    return getattr(section, 'is_heading', cls.sections.is_heading)
 
   @staticmethod
   def make_error_message(message, crange=None, num_context=2, **kwargs):
@@ -750,11 +742,11 @@ class PetscDocString(DocBase):
       )
     return
 
-  def _check_section_header_typo(self, heading, line, lineno):
+  def _check_section_header_typo(self, verdict, line, lineno):
     """
     Check that a section header that looks like a section header is actually one
     """
-    if heading == Verdict.MAYBE_HEADING:
+    if verdict == Verdict.MAYBE_HEADING:
       try:
         name, matched = self.guess_heading(line, strict=True)
       except GuessHeadingFailError as ghfe:
@@ -766,9 +758,10 @@ class PetscDocString(DocBase):
         mess = f'Line seems to be a section header but doesn\'t directly end with with \':\', did you mean \'{matched}\'?'
       else:
         mess = f'Line seems to be a section header but missing \':\', did you mean \'{matched}:\'?'
-      diag = self.diags.section_header_maybe_header
-      self.add_error_from_source_range(diag, mess, self.make_source_range(name, line, lineno))
-    return heading
+      self.add_error_from_source_range(
+        self.diags.section_header_maybe_header, mess, self.make_source_range(name, line, lineno)
+      )
+    return verdict
 
   def _check_section_header_that_probably_should_not_be_one(self, heading, line, stripped, lineno):
     """
@@ -801,10 +794,10 @@ class PetscDocString(DocBase):
     raw_data     = []
     section      = self.sections.synopsis
     check_indent = section.check_indent_allowed()
-    is_heading   = self._get_is_heading(section)
     # if True we are in a verbatim block. We should not try to detect any kind of
     # headers until we reach the end of the verbatim block
     in_verbatim = 0
+    prev_line   = ''
     for lineno, line in enumerate(self.raw.splitlines(), start=self.extent.start.line):
       stripped = line.strip()
       if stripped.startswith('/*') or stripped.endswith('*/'):
@@ -825,7 +818,8 @@ class PetscDocString(DocBase):
         self._check_valid_indentation(lineno, line, stripped)
 
       if in_verbatim == 0:
-        heading_verdict = self._check_section_header_typo(is_heading(stripped), line, lineno)
+        heading_verdict = self.sections.is_heading(prev_line, stripped)
+        heading_verdict = self._check_section_header_typo(heading_verdict, line, lineno)
         if heading_verdict > 0:
           # we may switch headings, we should check indentation
           if not check_indent:
@@ -836,7 +830,6 @@ class PetscDocString(DocBase):
             raw_data     = section.consume(raw_data)
             section      = new_section
             check_indent = section.check_indent_allowed()
-            is_heading   = self._get_is_heading(section)
         else:
           heading_verdict = self._check_section_header_that_probably_should_not_be_one(
             heading_verdict, line, stripped, lineno
@@ -849,6 +842,7 @@ class PetscDocString(DocBase):
       if in_verbatim == 2:
         # reset the dollar verbatim
         in_verbatim = 0
+      prev_line = stripped
 
     section.consume(raw_data)
     for sec in self.sections:

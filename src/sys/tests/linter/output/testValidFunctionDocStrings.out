@@ -607,29 +607,29 @@
   626: 
 > 627: [33m[1m    [0mOutputParameter:
        [33m[1m^^^^[0m
-  628:     +     bar         -    a bar
-  629: 
+  628:     +     bar         -    a bar for
+  629:     example this is not a heading
 [31m[1m./src/sys/tests/linter/testValidFunctionDocStrings.c:627:5: error:[0m Unknown section header 'OutputParameter', assuming you meant 'Output Parameter' [-fdoc-section-header-spelling]:
   625: . foo - a foo
   626: 
 > 627:     [33m[1mOutputParameter[0m:
            [33m[1m^^^^^^^^^^^^^^^[0m
-  628:     +     bar         -    a bar
-  629: 
+  628:     +     bar         -    a bar for
+  629:     example this is not a heading
 [31m[1m./src/sys/tests/linter/testValidFunctionDocStrings.c:628:5: error:[0m Solitary parameter list entry must start with '.' [-fdoc-param-list-prefix]:
   626: 
-  627:   OutputParameter:
-> 628:   [33m[1m+[0m     bar         -    a bar
-         [33m[1m^[0m
-  629: 
-  630: Level: intermediate
+  627: OutputParameter:
+> 628: [33m[1m+[0m     bar         -    a bar for
+       [33m[1m^[0m
+  629: example this is not a heading
+  630: 
 [31m[1m./src/sys/tests/linter/testValidFunctionDocStrings.c:628:1: error:[0m Prefix '+' must be indented to column (1) [-fdoc-param-list-alignment]:
   626: 
   627:     OutputParameter:
-> 628: [33m[1m    +     bar         -    a bar[0m
-       [33m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
-  629: 
-  630:   Level: intermediate
+> 628: [33m[1m    +     bar         -    a bar for[0m
+       [33m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  629:     example this is not a heading
+  630: 
 --------------------------------------------------------------------------------------------
 <--- LEFT --->
 --------------------------------------------------------------------------------------------

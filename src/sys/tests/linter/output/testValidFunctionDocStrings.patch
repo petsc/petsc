@@ -375,12 +375,12 @@
  
 -    OutputParameter:
 +  Output Parameter:
-     +     bar         -    a bar
- 
+     +     bar         -    a bar for
+     example this is not a heading
 @@ -629,5 +629,5 @@
  
      OutputParameter:
--    +     bar         -    a bar
-++ bar - a bar
+-    +     bar         -    a bar for
+++ bar - a bar for
+     example this is not a heading
  
-   Level: intermediate

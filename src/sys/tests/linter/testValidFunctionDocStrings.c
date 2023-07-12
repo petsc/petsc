@@ -625,7 +625,8 @@ PetscErrorCode testIgnoringSpuriousComments()
 . foo - a foo
 
     OutputParameter:
-    +     bar         -    a bar
+    +     bar         -    a bar for
+    example this is not a heading
 
   Level: intermediate
 
