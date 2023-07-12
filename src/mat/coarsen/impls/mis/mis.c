@@ -85,8 +85,8 @@ PetscErrorCode MatCoarsenApply_MIS_private(IS perm, Mat Gmat, PetscBool strict_a
   /* set index into cmpressed row 'lid_cprowID' */
   if (matB) {
     for (ix = 0; ix < matB->compressedrow.nrows; ix++) {
-      lid              = matB->compressedrow.rindex[ix];
-      lid_cprowID[lid] = ix;
+      lid = matB->compressedrow.rindex[ix];
+      if (lid >= 0) lid_cprowID[lid] = ix;
     }
   }
   /* MIS */
