@@ -14,12 +14,13 @@ if __name__ == '__main__':
 import petsclinter as pl
 import enum
 
+@enum.unique
 class ReturnCode(enum.IntFlag):
   SUCCESS           = 0
-  ERROR_WERROR      = 1
-  ERROR_ERROR_FIXED = 2
-  ERROR_ERROR_LEFT  = 4
-  ERROR_ERROR_TEST  = 8
+  ERROR_WERROR      = enum.auto()
+  ERROR_ERROR_FIXED = enum.auto()
+  ERROR_ERROR_LEFT  = enum.auto()
+  ERROR_ERROR_TEST  = enum.auto()
 
 def main(
     petsc_dir, petsc_arch,
@@ -84,6 +85,10 @@ def main(
     if not isinstance(src_path, (list, tuple)):
       raise RuntimeError(f'Source path must be a :ist or Tuple, not {type(src_path)}')
     src_path = [pl.Path(s).resolve() for s in src_path]
+
+  for p in src_path:
+    if not p.exists():
+      raise RuntimeError(f'Path {p} does not exist!')
 
   patch_dir = petsc_dir / 'petscLintPatches' if patch_dir is None else pl.Path(patch_dir).resolve()
   if patch_dir.exists() and not patch_dir.is_dir():
