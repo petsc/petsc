@@ -143,6 +143,7 @@ typedef const char *PetscLogHandlerType;
 #define PETSC_LOG_HANDLER_TRACE     "trace"
 #define PETSC_LOG_HANDLER_MPE       "mpe"
 #define PETSC_LOG_HANDLER_PERFSTUBS "perfstubs"
+#define PETSC_LOG_HANDLER_LEGACY    "legacy"
 
 typedef struct _n_PetscLogRegistry *PetscLogRegistry;
 

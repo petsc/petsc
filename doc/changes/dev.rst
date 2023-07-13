@@ -43,6 +43,8 @@ Changes: Development
 - Add ``PetscLogHandlerCreateTrace()``
 - Add ``PETSC_LOG_HANDLER_MPE`` implementation of ``PetscLogHandler``
 - Add ``PETSC_LOG_HANDLER_PERFSTUBS`` implementation of ``PetscLogHandler``
+- Add ``PETSC_LOG_HANDLER_LEGACY`` implementation of ``PetscLogHandler``
+- Add ``PetscLogHandlerCreateLegacy()``
 
 .. rubric:: PetscViewer:
 
