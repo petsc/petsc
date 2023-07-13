@@ -55,7 +55,7 @@ The routine
    MatCreateRedundantMatrix(Mat A,PetscInt nsubcomm,MPI_Comm subcomm,MatReuse reuse,Mat *matredundant);
 
 where ``nsubcomm`` copies of the entire matrix are stored, one on each ``subcomm``. The routine ``PetscSubcommCreate()`` and its
-``PetscSubComm`` object may, but need not be, used to construct the ``subcomm``.
+``PetscSubcomm`` object may, but need not be, used to construct the ``subcomm``.
 
 The routine
 

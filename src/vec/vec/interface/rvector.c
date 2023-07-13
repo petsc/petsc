@@ -2662,7 +2662,7 @@ M*/
    Level: developer
 
   Notes:
-   For a vector obtained from `DMCreateLocalVector()` mstart and nstart are likely
+   For a vector obtained from `DMCreateLocalVector()` `mstart` and `nstart` are likely
    obtained from the corner indices obtained from `DMDAGetGhostCorners()` while for
    `DMCreateGlobalVector()` they are the corner indices from `DMDAGetCorners()`. In both cases
    the arguments from `DMDAGet[Ghost]Corners()` are reversed in the call to `VecGetArray2d()`.
@@ -2712,7 +2712,7 @@ PetscErrorCode VecGetArray2d(Vec x, PetscInt m, PetscInt n, PetscInt mstart, Pet
    Level: developer
 
   Notes:
-   For a vector obtained from `DMCreateLocalVector()` mstart and nstart are likely
+   For a vector obtained from `DMCreateLocalVector()` `mstart` and `nstart` are likely
    obtained from the corner indices obtained from `DMDAGetGhostCorners()` while for
    `DMCreateGlobalVector()` they are the corner indices from `DMDAGetCorners()`. In both cases
    the arguments from `DMDAGet[Ghost]Corners()` are reversed in the call to `VecGetArray2d()`.
@@ -2763,7 +2763,7 @@ PetscErrorCode VecGetArray2dWrite(Vec x, PetscInt m, PetscInt n, PetscInt mstart
    array, this routine will copy the data back into the underlying
    vector data structure from the array obtained with `VecGetArray()`.
 
-   This routine actually zeros out the a pointer.
+   This routine actually zeros out the `a` pointer.
 
 .seealso: [](ch_vectors), `Vec`, `VecGetArray()`, `VecRestoreArray()`, `VecRestoreArrays()`, `VecRestoreArrayF90()`, `VecPlaceArray()`,
           `VecGetArray2d()`, `VecGetArray3d()`, `VecRestoreArray3d()`, `DMDAVecGetArray()`, `DMDAVecRestoreArray()`
@@ -2780,6 +2780,7 @@ PetscErrorCode VecRestoreArray2d(Vec x, PetscInt m, PetscInt n, PetscInt mstart,
   dummy = (void *)(*a + mstart);
   PetscCall(PetscFree(dummy));
   PetscCall(VecRestoreArray(x, NULL));
+  *a = NULL;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -2842,7 +2843,7 @@ PetscErrorCode VecRestoreArray2dWrite(Vec x, PetscInt m, PetscInt n, PetscInt ms
    Level: developer
 
   Notes:
-   For a vector obtained from `DMCreateLocalVector()` mstart are likely
+   For a vector obtained from `DMCreateLocalVector()` `mstart` is likely
    obtained from the corner indices obtained from `DMDAGetGhostCorners()` while for
    `DMCreateGlobalVector()` they are the corner indices from `DMDAGetCorners()`.
 
@@ -2885,7 +2886,7 @@ PetscErrorCode VecGetArray1d(Vec x, PetscInt m, PetscInt mstart, PetscScalar *a[
    Level: developer
 
   Notes:
-   For a vector obtained from `DMCreateLocalVector()` mstart are likely
+   For a vector obtained from `DMCreateLocalVector()` `mstart` is likely
    obtained from the corner indices obtained from `DMDAGetGhostCorners()` while for
    `DMCreateGlobalVector()` they are the corner indices from `DMDAGetCorners()`.
 
@@ -2929,7 +2930,7 @@ PetscErrorCode VecGetArray1dWrite(Vec x, PetscInt m, PetscInt mstart, PetscScala
    array, this routine will copy the data back into the underlying
    vector data structure from the array obtained with `VecGetArray1d()`.
 
-   This routine actually zeros out the a pointer.
+   This routine actually zeros out the `a` pointer.
 
 .seealso: [](ch_vectors), `Vec`, `VecGetArray()`, `VecRestoreArray()`, `VecRestoreArrays()`, `VecRestoreArrayF90()`, `VecPlaceArray()`,
           `VecGetArray2d()`, `VecGetArray3d()`, `VecRestoreArray3d()`, `DMDAVecGetArray()`, `DMDAVecRestoreArray()`
@@ -2941,6 +2942,7 @@ PetscErrorCode VecRestoreArray1d(Vec x, PetscInt m, PetscInt mstart, PetscScalar
   PetscValidHeaderSpecific(x, VEC_CLASSID, 1);
   PetscValidType(x, 1);
   PetscCall(VecRestoreArray(x, NULL));
+  *a = NULL;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -2963,7 +2965,7 @@ PetscErrorCode VecRestoreArray1d(Vec x, PetscInt m, PetscInt mstart, PetscScalar
    array, this routine will copy the data back into the underlying
    vector data structure from the array obtained with `VecGetArray1d()`.
 
-   This routine actually zeros out the a pointer.
+   This routine actually zeros out the `a` pointer.
 
 .seealso: [](ch_vectors), `Vec`, `VecGetArray()`, `VecRestoreArray()`, `VecRestoreArrays()`, `VecRestoreArrayF90()`, `VecPlaceArray()`,
           `VecGetArray2d()`, `VecGetArray3d()`, `VecRestoreArray3d()`, `DMDAVecGetArray()`, `DMDAVecRestoreArray()`
@@ -2975,6 +2977,7 @@ PetscErrorCode VecRestoreArray1dWrite(Vec x, PetscInt m, PetscInt mstart, PetscS
   PetscValidHeaderSpecific(x, VEC_CLASSID, 1);
   PetscValidType(x, 1);
   PetscCall(VecRestoreArrayWrite(x, NULL));
+  *a = NULL;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -3000,7 +3003,7 @@ PetscErrorCode VecRestoreArray1dWrite(Vec x, PetscInt m, PetscInt mstart, PetscS
    Level: developer
 
   Notes:
-   For a vector obtained from `DMCreateLocalVector()` mstart, nstart, and pstart are likely
+   For a vector obtained from `DMCreateLocalVector()` `mstart`, `nstart`, and `pstart` are likely
    obtained from the corner indices obtained from `DMDAGetGhostCorners()` while for
    `DMCreateGlobalVector()` they are the corner indices from `DMDAGetCorners()`. In both cases
    the arguments from `DMDAGet[Ghost]Corners()` are reversed in the call to `VecGetArray3d()`.
@@ -3055,7 +3058,7 @@ PetscErrorCode VecGetArray3d(Vec x, PetscInt m, PetscInt n, PetscInt p, PetscInt
    Level: developer
 
   Notes:
-   For a vector obtained from `DMCreateLocalVector()` mstart, nstart, and pstart are likely
+   For a vector obtained from `DMCreateLocalVector()` `mstart`, `nstart`, and `pstart` are likely
    obtained from the corner indices obtained from `DMDAGetGhostCorners()` while for
    `DMCreateGlobalVector()` they are the corner indices from `DMDAGetCorners()`. In both cases
    the arguments from `DMDAGet[Ghost]Corners()` are reversed in the call to `VecGetArray3d()`.
@@ -3112,7 +3115,7 @@ PetscErrorCode VecGetArray3dWrite(Vec x, PetscInt m, PetscInt n, PetscInt p, Pet
    array, this routine will copy the data back into the underlying
    vector data structure from the array obtained with `VecGetArray()`.
 
-   This routine actually zeros out the a pointer.
+   This routine actually zeros out the `a` pointer.
 
 .seealso: [](ch_vectors), `Vec`, `VecGetArray()`, `VecRestoreArray()`, `VecRestoreArrays()`, `VecRestoreArrayF90()`, `VecPlaceArray()`,
           `VecGetArray2d()`, `VecGetArray3d()`, `VecRestoreArray3d()`, `DMDAVecGetArray()`, `DMDAVecRestoreArray()`
@@ -3129,6 +3132,7 @@ PetscErrorCode VecRestoreArray3d(Vec x, PetscInt m, PetscInt n, PetscInt p, Pets
   dummy = (void *)(*a + mstart);
   PetscCall(PetscFree(dummy));
   PetscCall(VecRestoreArray(x, NULL));
+  *a = NULL;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -3155,7 +3159,7 @@ PetscErrorCode VecRestoreArray3d(Vec x, PetscInt m, PetscInt n, PetscInt p, Pets
    array, this routine will copy the data back into the underlying
    vector data structure from the array obtained with `VecGetArray()`.
 
-   This routine actually zeros out the a pointer.
+   This routine actually zeros out the `a` pointer.
 
 .seealso: [](ch_vectors), `Vec`, `VecGetArray()`, `VecRestoreArray()`, `VecRestoreArrays()`, `VecRestoreArrayF90()`, `VecPlaceArray()`,
           `VecGetArray2d()`, `VecGetArray3d()`, `VecRestoreArray3d()`, `DMDAVecGetArray()`, `DMDAVecRestoreArray()`
@@ -3172,6 +3176,7 @@ PetscErrorCode VecRestoreArray3dWrite(Vec x, PetscInt m, PetscInt n, PetscInt p,
   dummy = (void *)(*a + mstart);
   PetscCall(PetscFree(dummy));
   PetscCall(VecRestoreArrayWrite(x, NULL));
+  *a = NULL;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -3196,10 +3201,10 @@ PetscErrorCode VecRestoreArray3dWrite(Vec x, PetscInt m, PetscInt n, PetscInt p,
    Output Parameter:
 .  a - location to put pointer to the array
 
-   Level: beginner
+   Level: developer
 
   Notes:
-   For a vector obtained from `DMCreateLocalVector()` mstart, nstart, and pstart are likely
+   For a vector obtained from `DMCreateLocalVector()` `mstart`, `nstart`, and `pstart` are likely
    obtained from the corner indices obtained from `DMDAGetGhostCorners()` while for
    `DMCreateGlobalVector()` they are the corner indices from `DMDAGetCorners()`. In both cases
    the arguments from `DMDAGet[Ghost]Corners()` are reversed in the call to `VecGetArray3d()`.
@@ -3257,10 +3262,10 @@ PetscErrorCode VecGetArray4d(Vec x, PetscInt m, PetscInt n, PetscInt p, PetscInt
    Output Parameter:
 .  a - location to put pointer to the array
 
-   Level: beginner
+   Level: developer
 
   Notes:
-   For a vector obtained from `DMCreateLocalVector()` mstart, nstart, and pstart are likely
+   For a vector obtained from `DMCreateLocalVector()` `mstart`, `nstart`, and `pstart` are likely
    obtained from the corner indices obtained from `DMDAGetGhostCorners()` while for
    `DMCreateGlobalVector()` they are the corner indices from `DMDAGetCorners()`. In both cases
    the arguments from `DMDAGet[Ghost]Corners()` are reversed in the call to `VecGetArray3d()`.
@@ -3314,7 +3319,7 @@ PetscErrorCode VecGetArray4dWrite(Vec x, PetscInt m, PetscInt n, PetscInt p, Pet
 .  qstart - first index in the fourth coordinate direction (often 0)
 -  a - location of pointer to array obtained from VecGetArray4d()
 
-   Level: beginner
+   Level: developer
 
    Notes:
    For regular PETSc vectors this routine does not involve any copies. For
@@ -3322,7 +3327,7 @@ PetscErrorCode VecGetArray4dWrite(Vec x, PetscInt m, PetscInt n, PetscInt p, Pet
    array, this routine will copy the data back into the underlying
    vector data structure from the array obtained with `VecGetArray()`.
 
-   This routine actually zeros out the a pointer.
+   This routine actually zeros out the `a` pointer.
 
 .seealso: [](ch_vectors), `Vec`, `VecGetArray()`, `VecRestoreArray()`, `VecRestoreArrays()`, `VecRestoreArrayF90()`, `VecPlaceArray()`,
           `VecGetArray2d()`, `VecGetArray3d()`, `VecRestoreArray3d()`, `DMDAVecGetArray()`, `DMDAVecRestoreArray()`
@@ -3339,6 +3344,7 @@ PetscErrorCode VecRestoreArray4d(Vec x, PetscInt m, PetscInt n, PetscInt p, Pets
   dummy = (void *)(*a + mstart);
   PetscCall(PetscFree(dummy));
   PetscCall(VecRestoreArray(x, NULL));
+  *a = NULL;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -3359,7 +3365,7 @@ PetscErrorCode VecRestoreArray4d(Vec x, PetscInt m, PetscInt n, PetscInt p, Pets
 .  qstart - first index in the fourth coordinate direction (often 0)
 -  a - location of pointer to array obtained from `VecGetArray4d()`
 
-   Level: beginner
+   Level: developer
 
    Notes:
    For regular PETSc vectors this routine does not involve any copies. For
@@ -3367,7 +3373,7 @@ PetscErrorCode VecRestoreArray4d(Vec x, PetscInt m, PetscInt n, PetscInt p, Pets
    array, this routine will copy the data back into the underlying
    vector data structure from the array obtained with `VecGetArray()`.
 
-   This routine actually zeros out the a pointer.
+   This routine actually zeros out the `a` pointer.
 
 .seealso: [](ch_vectors), `Vec`, `VecGetArray()`, `VecRestoreArray()`, `VecRestoreArrays()`, `VecRestoreArrayF90()`, `VecPlaceArray()`,
           `VecGetArray2d()`, `VecGetArray3d()`, `VecRestoreArray3d()`, `DMDAVecGetArray()`, `DMDAVecRestoreArray()`
@@ -3384,6 +3390,7 @@ PetscErrorCode VecRestoreArray4dWrite(Vec x, PetscInt m, PetscInt n, PetscInt p,
   dummy = (void *)(*a + mstart);
   PetscCall(PetscFree(dummy));
   PetscCall(VecRestoreArrayWrite(x, NULL));
+  *a = NULL;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -3407,7 +3414,7 @@ PetscErrorCode VecRestoreArray4dWrite(Vec x, PetscInt m, PetscInt n, PetscInt p,
    Level: developer
 
   Notes:
-   For a vector obtained from `DMCreateLocalVector()` mstart and nstart are likely
+   For a vector obtained from `DMCreateLocalVector()` `mstart` and `nstart` are likely
    obtained from the corner indices obtained from `DMDAGetGhostCorners()` while for
    `DMCreateGlobalVector()` they are the corner indices from `DMDAGetCorners()`. In both cases
    the arguments from `DMDAGet[Ghost]Corners()` are reversed in the call to `VecGetArray2d()`.
@@ -3458,7 +3465,7 @@ PetscErrorCode VecGetArray2dRead(Vec x, PetscInt m, PetscInt n, PetscInt mstart,
    array, this routine will copy the data back into the underlying
    vector data structure from the array obtained with `VecGetArray()`.
 
-   This routine actually zeros out the a pointer.
+   This routine actually zeros out the `a` pointer.
 
 .seealso: [](ch_vectors), `Vec`, `VecGetArray()`, `VecRestoreArray()`, `VecRestoreArrays()`, `VecRestoreArrayF90()`, `VecPlaceArray()`,
           `VecGetArray2d()`, `VecGetArray3d()`, `VecRestoreArray3d()`, `DMDAVecGetArray()`, `DMDAVecRestoreArray()`
@@ -3475,6 +3482,7 @@ PetscErrorCode VecRestoreArray2dRead(Vec x, PetscInt m, PetscInt n, PetscInt mst
   dummy = (void *)(*a + mstart);
   PetscCall(PetscFree(dummy));
   PetscCall(VecRestoreArrayRead(x, NULL));
+  *a = NULL;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -3496,7 +3504,7 @@ PetscErrorCode VecRestoreArray2dRead(Vec x, PetscInt m, PetscInt n, PetscInt mst
    Level: developer
 
   Notes:
-   For a vector obtained from `DMCreateLocalVector()` mstart are likely
+   For a vector obtained from `DMCreateLocalVector()` `mstart` is likely
    obtained from the corner indices obtained from `DMDAGetGhostCorners()` while for
    `DMCreateGlobalVector()` they are the corner indices from `DMDAGetCorners()`.
 
@@ -3540,7 +3548,7 @@ PetscErrorCode VecGetArray1dRead(Vec x, PetscInt m, PetscInt mstart, PetscScalar
    array, this routine will copy the data back into the underlying
    vector data structure from the array obtained with `VecGetArray1dRead()`.
 
-   This routine actually zeros out the a pointer.
+   This routine actually zeros out the `a` pointer.
 
 .seealso: [](ch_vectors), `Vec`, `VecGetArray()`, `VecRestoreArray()`, `VecRestoreArrays()`, `VecRestoreArrayF90()`, `VecPlaceArray()`,
           `VecGetArray2d()`, `VecGetArray3d()`, `VecRestoreArray3d()`, `DMDAVecGetArray()`, `DMDAVecRestoreArray()`
@@ -3552,6 +3560,7 @@ PetscErrorCode VecRestoreArray1dRead(Vec x, PetscInt m, PetscInt mstart, PetscSc
   PetscValidHeaderSpecific(x, VEC_CLASSID, 1);
   PetscValidType(x, 1);
   PetscCall(VecRestoreArrayRead(x, NULL));
+  *a = NULL;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -3577,7 +3586,7 @@ PetscErrorCode VecRestoreArray1dRead(Vec x, PetscInt m, PetscInt mstart, PetscSc
    Level: developer
 
   Notes:
-   For a vector obtained from `DMCreateLocalVector()` mstart, nstart, and pstart are likely
+   For a vector obtained from `DMCreateLocalVector()` `mstart`, `nstart`, and `pstart` are likely
    obtained from the corner indices obtained from `DMDAGetGhostCorners()` while for
    `DMCreateGlobalVector()` they are the corner indices from `DMDAGetCorners()`. In both cases
    the arguments from `DMDAGet[Ghost]Corners()` are reversed in the call to `VecGetArray3dRead()`.
@@ -3634,7 +3643,7 @@ PetscErrorCode VecGetArray3dRead(Vec x, PetscInt m, PetscInt n, PetscInt p, Pets
    array, this routine will copy the data back into the underlying
    vector data structure from the array obtained with `VecGetArray()`.
 
-   This routine actually zeros out the a pointer.
+   This routine actually zeros out the `a` pointer.
 
 .seealso: [](ch_vectors), `Vec`, `VecGetArray()`, `VecRestoreArray()`, `VecRestoreArrays()`, `VecRestoreArrayF90()`, `VecPlaceArray()`,
           `VecGetArray2d()`, `VecGetArray3d()`, `VecRestoreArray3d()`, `DMDAVecGetArray()`, `DMDAVecRestoreArray()`
@@ -3651,6 +3660,7 @@ PetscErrorCode VecRestoreArray3dRead(Vec x, PetscInt m, PetscInt n, PetscInt p, 
   dummy = (void *)(*a + mstart);
   PetscCall(PetscFree(dummy));
   PetscCall(VecRestoreArrayRead(x, NULL));
+  *a = NULL;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -3678,7 +3688,7 @@ PetscErrorCode VecRestoreArray3dRead(Vec x, PetscInt m, PetscInt n, PetscInt p, 
    Level: beginner
 
   Notes:
-   For a vector obtained from `DMCreateLocalVector()` mstart, nstart, and pstart are likely
+   For a vector obtained from `DMCreateLocalVector()` `mstart`, `nstart`, and `pstart` are likely
    obtained from the corner indices obtained from `DMDAGetGhostCorners()` while for
    `DMCreateGlobalVector()` they are the corner indices from `DMDAGetCorners()`. In both cases
    the arguments from `DMDAGet[Ghost]Corners()` are reversed in the call to `VecGetArray3d()`.
@@ -3741,7 +3751,7 @@ PetscErrorCode VecGetArray4dRead(Vec x, PetscInt m, PetscInt n, PetscInt p, Pets
    array, this routine will copy the data back into the underlying
    vector data structure from the array obtained with `VecGetArray()`.
 
-   This routine actually zeros out the a pointer.
+   This routine actually zeros out the `a` pointer.
 
 .seealso: [](ch_vectors), `Vec`, `VecGetArray()`, `VecRestoreArray()`, `VecRestoreArrays()`, `VecRestoreArrayF90()`, `VecPlaceArray()`,
           `VecGetArray2d()`, `VecGetArray3d()`, `VecRestoreArray3d()`, `DMDAVecGetArray()`, `DMDAVecRestoreArray()`
@@ -3758,6 +3768,7 @@ PetscErrorCode VecRestoreArray4dRead(Vec x, PetscInt m, PetscInt n, PetscInt p, 
   dummy = (void *)(*a + mstart);
   PetscCall(PetscFree(dummy));
   PetscCall(VecRestoreArrayRead(x, NULL));
+  *a = NULL;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

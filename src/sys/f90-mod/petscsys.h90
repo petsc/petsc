@@ -186,25 +186,25 @@
       end subroutine
 
       subroutine PetscSubcommView(a,b,z)
-       import tPetscSubComm,tPetscViewer
+       import tPetscSubcomm,tPetscViewer
        PetscSubcomm a ! PetscSubcomm
        PetscViewer b ! PetscViewer
        PetscErrorCode z
       end subroutine
       subroutine PetscSubcommGetParent(a,b,z)
-       import tPetscSubComm
+       import tPetscSubcomm
        PetscSubcomm a ! PetscSubcomm
        MPI_Comm b ! MPI_Comm
        PetscErrorCode z
        end subroutine
       subroutine PetscSubcommGetContiguousParent(a,b,z)
-       import tPetscSubComm
+       import tPetscSubcomm
        PetscSubcomm a ! PetscSubcomm
        MPI_Comm b ! MPI_Comm
        PetscErrorCode z
        end subroutine
       subroutine PetscSubcommGetChild(a,b,z)
-       import tPetscSubComm
+       import tPetscSubcomm
        PetscSubcomm a ! PetscSubcomm
        MPI_Comm b ! MPI_Comm
        PetscErrorCode z

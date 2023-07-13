@@ -1032,9 +1032,9 @@ Local to global mappings
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
 When working with a global representation of a vector
-(usually on a vector obtained with ``DMCreateGlobalVecgtor()``) and a local
+(usually on a vector obtained with ``DMCreateGlobalVector()``) and a local
 representation of the same vector that includes ghost points required
-for local computation (obtained with ``DMCreateLocalVecgtor()``). PETSc provides routines to help map indices from
+for local computation (obtained with ``DMCreateLocalVector()``). PETSc provides routines to help map indices from
 a local numbering scheme to the PETSc global numbering scheme. This is
 done via the following routines
 
