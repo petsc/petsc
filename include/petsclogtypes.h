@@ -68,4 +68,81 @@ typedef int PetscLogEvent;
 M*/
 typedef int PetscLogStage;
 
+/*MC
+    PetscLogClass - id used to identify classes for logging purposes only.  It
+    is not equal to its `PetscClassId`, which is the identifier used for other
+    purposes.
+
+    Level: developer
+
+.seealso: [](ch_profiling), `PetscLogStateClassRegister()`
+M*/
+typedef int PetscLogClass;
+
+typedef struct _n_PetscLogRegistry *PetscLogRegistry;
+
+/*S
+   PetscLogState - Interface for the shared state information used by log handlers.  It holds
+   a registry of events (`PetscLogStateEventRegister()`), stages (`PetscLogStateStageRegister()`), and
+   classes (`PetscLogStateClassRegister()`).  It keeps track of when the user has activated
+   events (`PetscLogStateEventSetActive()`) and stages (`PetscLogStateStageSetActive()`).  It
+   also keeps a stack of running stages (`PetscLogStateStagePush()`, `PetscLogStateStagePop()`).
+
+   Level: developer
+
+   Note:
+   The struct defining `PetscLogState` is in a public header so that `PetscLogEventBegin()`,
+   `PetscLogEventEnd()`, `PetscLogObjectCreate()`, and `PetscLogObjectDestroy()` can be defined
+   as macros rather than function calls, but users are discouraged from directly accessing
+   the struct's fields, which are subject to change.
+
+.seealso: [](ch_profiling), `PetscLogStateCreate()`, `PetscLogStateDestroy()`
+S*/
+typedef struct _n_PetscLogState *PetscLogState;
+struct _n_PetscLogState {
+  PetscLogRegistry registry;
+  PetscBT          active;
+  PetscIntStack    stage_stack;
+  int              current_stage;
+  int              bt_num_stages;
+  int              bt_num_events;
+  int              refct;
+};
+
+/*S
+  PetscLogEventInfo - A registry entry about a logging event for `PetscLogState`.
+
+  Level: developer
+
+.seealso: [](ch_profiling), `PetscLogEvent`, `PetscLogState`, `PetscLogStateEventGetInfo()`
+S*/
+typedef struct {
+  char        *name;       /* The name of this event */
+  PetscClassId classid;    /* The class the event is associated with */
+  PetscBool    collective; /* Flag this event as collective */
+} PetscLogEventInfo;
+
+/*S
+  PetscLogClassInfo - A registry entry about a class for `PetscLogState`.
+
+  Level: developer
+
+.seealso: [](ch_profiling), `PetscLogClass`, `PetscLogState`, `PetscLogStateStageGetInfo()`
+S*/
+typedef struct {
+  char        *name;    /* The class name */
+  PetscClassId classid; /* The integer identifying this class */
+} PetscLogClassInfo;
+
+/*S
+  PetscLogStageInfo - A registry entry about a class for `PetscLogState`.
+
+  Level: developer
+
+.seealso: [](ch_profiling), `PetscLogStage`, `PetscLogState`, `PetscLogStateClassGetInfo()`
+S*/
+typedef struct _PetscLogStageInfo {
+  char *name; /* The stage name */
+} PetscLogStageInfo;
+
 #endif

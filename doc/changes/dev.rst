@@ -35,6 +35,8 @@ Changes: Development
 
 .. rubric:: Event Logging:
 
+- Add ``PetscLogState`` interface for describing profiling events and stages
+
 .. rubric:: PetscViewer:
 
 - Add ``PetscViewerASCIIOpenWithFileUnit()`` and ``PetscViewerASCIISetFileUnit()``

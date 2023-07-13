@@ -6,6 +6,7 @@
 
 #include <petscsys.h>
 #include <petsctime.h>
+#include <petscbt.h>
 #include <petsclogtypes.h>
 
 /* SUBMANSEC = Profiling */
@@ -75,6 +76,41 @@ PETSC_EXTERN PetscErrorCode PetscIntStackPush(PetscIntStack, int);
 PETSC_EXTERN PetscErrorCode PetscIntStackPop(PetscIntStack, int *);
 PETSC_EXTERN PetscErrorCode PetscIntStackTop(PetscIntStack, int *);
 PETSC_EXTERN PetscErrorCode PetscIntStackEmpty(PetscIntStack, PetscBool *);
+
+PETSC_EXTERN PetscErrorCode PetscLogStateCreate(PetscLogState *);
+PETSC_EXTERN PetscErrorCode PetscLogStateDestroy(PetscLogState *);
+PETSC_EXTERN PetscErrorCode PetscLogStateGetRegistry(PetscLogState, PetscLogRegistry *);
+
+PETSC_EXTERN PetscErrorCode PetscLogStateClassRegister(PetscLogState, const char[], PetscClassId, PetscLogStage *);
+PETSC_EXTERN PetscErrorCode PetscLogStateClassSetActive(PetscLogState, PetscLogStage, PetscClassId, PetscBool);
+PETSC_EXTERN PetscErrorCode PetscLogStateClassSetActiveAll(PetscLogState, PetscClassId, PetscBool);
+
+PETSC_EXTERN PetscErrorCode PetscLogStateStageRegister(PetscLogState, const char[], PetscLogStage *);
+PETSC_EXTERN PetscErrorCode PetscLogStateStagePush(PetscLogState, PetscLogStage);
+PETSC_EXTERN PetscErrorCode PetscLogStateStagePop(PetscLogState);
+PETSC_EXTERN PetscErrorCode PetscLogStateStageSetActive(PetscLogState, PetscLogStage, PetscBool);
+PETSC_EXTERN PetscErrorCode PetscLogStateStageGetActive(PetscLogState, PetscLogStage, PetscBool *);
+PETSC_EXTERN PetscErrorCode PetscLogStateGetCurrentStage(PetscLogState, PetscLogStage *);
+
+PETSC_EXTERN PetscErrorCode PetscLogStateEventRegister(PetscLogState, const char[], PetscClassId, PetscLogEvent *);
+PETSC_EXTERN PetscErrorCode PetscLogStateEventSetCollective(PetscLogState, PetscLogEvent, PetscBool);
+PETSC_EXTERN PetscErrorCode PetscLogStateEventSetActive(PetscLogState, PetscLogStage, PetscLogEvent, PetscBool);
+PETSC_EXTERN PetscErrorCode PetscLogStateEventSetActiveAll(PetscLogState, PetscLogEvent, PetscBool);
+PETSC_EXTERN PetscErrorCode PetscLogStateEventGetActive(PetscLogState, PetscLogStage, PetscLogEvent, PetscBool *);
+
+PETSC_EXTERN PetscErrorCode PetscLogStateGetEventFromName(PetscLogState, const char[], PetscLogEvent *);
+PETSC_EXTERN PetscErrorCode PetscLogStateGetStageFromName(PetscLogState, const char[], PetscLogStage *);
+PETSC_EXTERN PetscErrorCode PetscLogStateGetClassFromName(PetscLogState, const char[], PetscLogClass *);
+PETSC_EXTERN PetscErrorCode PetscLogStateGetClassFromClassId(PetscLogState, PetscClassId, PetscLogClass *);
+PETSC_EXTERN PetscErrorCode PetscLogStateGetNumEvents(PetscLogState, PetscInt *);
+PETSC_EXTERN PetscErrorCode PetscLogStateGetNumStages(PetscLogState, PetscInt *);
+PETSC_EXTERN PetscErrorCode PetscLogStateGetNumClasses(PetscLogState, PetscInt *);
+PETSC_EXTERN PetscErrorCode PetscLogStateEventGetInfo(PetscLogState, PetscLogEvent, PetscLogEventInfo *);
+PETSC_EXTERN PetscErrorCode PetscLogStateStageGetInfo(PetscLogState, PetscLogStage, PetscLogStageInfo *);
+PETSC_EXTERN PetscErrorCode PetscLogStateClassGetInfo(PetscLogState, PetscLogClass, PetscLogClassInfo *);
+
+/* All events are inactive if an invalid stage is set, like if there have been more stage pops than stage pushes */
+#define PetscLogStateStageEventIsActive(state, stage, event) ((stage >= 0) && PetscBTLookup((state)->active, (stage)) && PetscBTLookup((state)->active, (stage) + (event + 1) * (state)->bt_num_stages))
 
 /* Handle multithreading */
 #if defined(PETSC_HAVE_THREADSAFETY)

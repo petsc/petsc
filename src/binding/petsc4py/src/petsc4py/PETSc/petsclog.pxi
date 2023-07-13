@@ -33,7 +33,7 @@ cdef extern from * nogil:
     PetscErrorCode PetscLogStageGetVisible(PetscLogStage,PetscBool*)
     PetscErrorCode PetscLogStageGetId(char[],PetscLogStage*)
 
-    ctypedef int PetscLogClass "PetscClassId"
+    ctypedef int PetscLogClass
     PetscErrorCode PetscLogClassRegister"PetscClassIdRegister"(char[],PetscLogClass*)
     PetscErrorCode PetscLogClassActivate"PetscLogEventActivateClass"(PetscLogClass)
     PetscErrorCode PetscLogClassDeactivate"PetscLogEventDeactivateClass"(PetscLogClass)
