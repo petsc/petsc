@@ -14,6 +14,9 @@ PETSC_INTERN PetscErrorCode PetscLogHandlerCreate_Trace(PetscLogHandler);
 #if PetscDefined(HAVE_MPE)
 PETSC_INTERN PetscErrorCode PetscLogHandlerCreate_MPE(PetscLogHandler);
 #endif
+#if PetscDefined(HAVE_TAU_PERFSTUBS)
+PETSC_INTERN PetscErrorCode PetscLogHandlerCreate_Perfstubs(PetscLogHandler);
+#endif
 
 static PetscErrorCode PetscLogHandlerRegisterAll(void)
 {
@@ -25,6 +28,9 @@ static PetscErrorCode PetscLogHandlerRegisterAll(void)
   PetscCall(PetscLogHandlerRegister(PETSC_LOG_HANDLER_TRACE, PetscLogHandlerCreate_Trace));
 #if PetscDefined(HAVE_MPE)
   PetscCall(PetscLogHandlerRegister(PETSC_LOG_HANDLER_MPE, PetscLogHandlerCreate_MPE));
+#endif
+#if PetscDefined(HAVE_TAU_PERFSTUBS)
+  PetscCall(PetscLogHandlerRegister(PETSC_LOG_HANDLER_PERFSTUBS, PetscLogHandlerCreate_Perfstubs));
 #endif
   PetscFunctionReturn(PETSC_SUCCESS);
 }
