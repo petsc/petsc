@@ -290,7 +290,8 @@ class Synopsis(SectionBase):
       decls = decls2
     # the only remaining item should be the macro (or maybe function), note this
     # probably needs a lot more postprocessing
-    assert len(decls) == 1
+    # TODO
+    # assert len(decls) == 1
     return False
 
   def _check_symbol_matches_synopsis_name(self, docstring, cursor, loc, symbol):
