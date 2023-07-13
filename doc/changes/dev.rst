@@ -38,6 +38,7 @@ Changes: Development
 - Add ``PetscLogState`` interface for describing profiling events and stages
 - Add ``PetscLogHandler`` interface that interprets the profiling events of a ``PetscLogState``
 - Add ``PETSC_LOG_HANDLER_DEFAULT`` implementation of ``PetscLogHandler``
+- Add ``PETSC_LOG_HANDLER_NESTED`` implementation of ``PetscLogHandler``
 
 .. rubric:: PetscViewer:
 

@@ -9,6 +9,7 @@ PetscBool         PetscLogHandlerRegisterAllCalled  = PETSC_FALSE;
 PetscBool         PetscLogHandlerPackageInitialized = PETSC_FALSE;
 
 PETSC_INTERN PetscErrorCode PetscLogHandlerCreate_Default(PetscLogHandler);
+PETSC_INTERN PetscErrorCode PetscLogHandlerCreate_Nested(PetscLogHandler);
 
 static PetscErrorCode PetscLogHandlerRegisterAll(void)
 {
@@ -16,6 +17,7 @@ static PetscErrorCode PetscLogHandlerRegisterAll(void)
   if (PetscLogHandlerRegisterAllCalled) PetscFunctionReturn(PETSC_SUCCESS);
   PetscLogHandlerRegisterAllCalled = PETSC_TRUE;
   PetscCall(PetscLogHandlerRegister(PETSC_LOG_HANDLER_DEFAULT, PetscLogHandlerCreate_Default));
+  PetscCall(PetscLogHandlerRegister(PETSC_LOG_HANDLER_NESTED, PetscLogHandlerCreate_Nested));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
