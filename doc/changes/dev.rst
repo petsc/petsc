@@ -75,6 +75,7 @@ Changes: Development
 - Add CUDA/HIP implementation for ``MatGetDiagonal()``
 - Add a Boolean parameter to ``MatEliminateZeros()`` to force the removal of zero diagonal coefficients
 - Expose ``MatComputeVariableBlockEnvelope()`` in public headers
+- Add ``MatEliminateZeros()`` implementations for ``MatBAIJ`` and ``MatSBAIJ``
 
 .. rubric:: MatCoarsen:
 

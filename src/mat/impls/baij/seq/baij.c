@@ -2928,6 +2928,53 @@ PetscErrorCode MatShift_SeqBAIJ(Mat Y, PetscScalar a)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+PetscErrorCode MatEliminateZeros_SeqBAIJ(Mat A, PetscBool keep)
+{
+  Mat_SeqBAIJ *a      = (Mat_SeqBAIJ *)A->data;
+  PetscInt     fshift = 0, fshift_prev = 0, i, *ai = a->i, *aj = a->j, *imax = a->imax, j, k;
+  PetscInt     m = A->rmap->N, *ailen = a->ilen;
+  PetscInt     mbs = a->mbs, bs2 = a->bs2, rmax = 0;
+  MatScalar   *aa = a->a, *ap;
+  PetscBool    zero;
+
+  PetscFunctionBegin;
+  PetscCheck(A->assembled, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Cannot eliminate zeros for unassembled matrix");
+  if (m) rmax = ailen[0];
+  for (i = 1; i <= mbs; i++) {
+    for (k = ai[i - 1]; k < ai[i]; k++) {
+      zero = PETSC_TRUE;
+      ap   = aa + bs2 * k;
+      for (j = 0; j < bs2 && zero; j++) {
+        if (ap[j] != 0.0) zero = PETSC_FALSE;
+      }
+      if (zero && (aj[k] != i - 1 || !keep)) fshift++;
+      else {
+        if (zero && aj[k] == i - 1) PetscCall(PetscInfo(A, "Keep the diagonal block at row %" PetscInt_FMT "\n", i - 1));
+        aj[k - fshift] = aj[k];
+        PetscCall(PetscArraymove(ap - bs2 * fshift, ap, bs2));
+      }
+    }
+    ai[i - 1] -= fshift_prev;
+    fshift_prev  = fshift;
+    ailen[i - 1] = imax[i - 1] = ai[i] - fshift - ai[i - 1];
+    a->nonzerorowcnt += ((ai[i] - fshift - ai[i - 1]) > 0);
+    rmax = PetscMax(rmax, ailen[i - 1]);
+  }
+  if (fshift) {
+    if (mbs) {
+      ai[mbs] -= fshift;
+      a->nz = ai[mbs];
+    }
+    PetscCall(PetscInfo(A, "Matrix size: %" PetscInt_FMT " X %" PetscInt_FMT "; zeros eliminated: %" PetscInt_FMT "; nonzeros left: %" PetscInt_FMT "\n", m, A->cmap->n, fshift, a->nz));
+    A->nonzerostate++;
+    A->info.nz_unneeded += (PetscReal)fshift;
+    a->rmax = rmax;
+    PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 static struct _MatOps MatOps_Values = {MatSetValues_SeqBAIJ,
                                        MatGetRow_SeqBAIJ,
                                        MatRestoreRow_SeqBAIJ,
@@ -3079,7 +3126,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqBAIJ,
                                        NULL,
                                        NULL,
                                        /*150*/ NULL,
-                                       NULL};
+                                       MatEliminateZeros_SeqBAIJ};
 
 static PetscErrorCode MatStoreValues_SeqBAIJ(Mat mat)
 {

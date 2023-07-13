@@ -275,6 +275,8 @@ PETSC_INTERN PetscErrorCode MatZeroRows_SeqBAIJ(Mat, PetscInt, const PetscInt[],
 PETSC_INTERN PetscErrorCode MatDestroySubMatrix_SeqBAIJ(Mat);
 PETSC_INTERN PetscErrorCode MatDestroySubMatrices_SeqBAIJ(PetscInt, Mat *[]);
 
+PETSC_INTERN PetscErrorCode MatEliminateZeros_SeqBAIJ(Mat, PetscBool);
+
 /*
   PetscKernel_A_gets_A_times_B_2: A = A * B with size bs=2
 
