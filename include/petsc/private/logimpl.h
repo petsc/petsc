@@ -83,13 +83,6 @@ PETSC_INTERN PetscHMapEvent eventInfoMap_th;
 
 #ifdef PETSC_USE_LOG
 
-PETSC_EXTERN PetscErrorCode PetscIntStackCreate(PetscIntStack *);
-PETSC_EXTERN PetscErrorCode PetscIntStackDestroy(PetscIntStack);
-PETSC_EXTERN PetscErrorCode PetscIntStackPush(PetscIntStack, int);
-PETSC_EXTERN PetscErrorCode PetscIntStackPop(PetscIntStack, int *);
-PETSC_EXTERN PetscErrorCode PetscIntStackTop(PetscIntStack, int *);
-PETSC_EXTERN PetscErrorCode PetscIntStackEmpty(PetscIntStack, PetscBool *);
-
 /* Creation and destruction functions */
 PETSC_EXTERN PetscErrorCode PetscEventRegLogCreate(PetscEventRegLog *);
 PETSC_EXTERN PetscErrorCode PetscEventRegLogDestroy(PetscEventRegLog);

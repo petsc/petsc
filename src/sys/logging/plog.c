@@ -1293,6 +1293,48 @@ PetscErrorCode PetscLogEventResume_Internal(PetscLogEvent event)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*------------------------------------------------ Class Functions --------------------------------------------------*/
+
+/*MC
+   PetscLogObjectCreate - Log the creation of a `PetscObject`
+
+   Synopsis:
+   #include <petsclog.h>
+   PetscErrorCode PetscLogObjectCreate(PetscObject h)
+
+   Not Collective
+
+   Input Parameters:
+.  h - A `PetscObject`
+
+   Level: developer
+
+   Developer Note:
+     Called internally by PETSc when creating objects: users do not need to call this directly.
+
+.seealso: [](ch_profiling), `PetscLogObjectDestroy()`
+M*/
+
+/*MC
+   PetscLogObjectDestroy - Logs the destruction of a `PetscObject`
+
+   Synopsis:
+   #include <petsclog.h>
+   PetscErrorCode PetscLogObjectDestroy(PetscObject h)
+
+   Not Collective
+
+   Input Parameters:
+.  h - A `PetscObject`
+
+   Level: developer
+
+   Developer Note:
+     Called internally by PETSc when destroying objects: users do not need to call this directly.
+
+.seealso: [](ch_profiling), `PetscLogObjectCreate()`
+M*/
+
 /*------------------------------------------------ Output Functions -------------------------------------------------*/
 /*@C
   PetscLogDump - Dumps logs of objects to a file. This file is intended to
@@ -2319,6 +2361,20 @@ PetscErrorCode PetscGetFlops(PetscLogDouble *flops)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@C
+  PetscLogObjectState - Record information about an object with the default log handler
+
+  Not Collective
+
+  Input Parameters:
++ obj    - the `PetscObject`
+. format - a printf-style format string
+- ...    - printf arguments to format
+
+  Level: developer
+
+.seealso: [](ch_profiling), `PetscLogObjectCreate()`, `PetscLogObjectDestroy()`
+@*/
 PetscErrorCode PetscLogObjectState(PetscObject obj, const char format[], ...)
 {
   size_t  fullLength;

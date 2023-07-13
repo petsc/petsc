@@ -6,6 +6,7 @@
 
 */
 #include <petsc/private/logimpl.h> /*I    "petscsys.h"   I*/
+#if PetscDefined(USE_LOG)
 
 PetscStageLog petsc_stageLog = NULL;
 
@@ -571,3 +572,5 @@ PetscErrorCode PetscStageLogCreate(PetscStageLog *stageLog)
   *stageLog = l;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
+
+#endif

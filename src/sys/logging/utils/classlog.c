@@ -6,6 +6,7 @@
 
 */
 #include <petsc/private/logimpl.h> /*I    "petscsys.h"   I*/
+#if PetscDefined(USE_LOG)
 
 /*@C
   PetscClassRegLogCreate - This creates a `PetscClassRegLog` object.
@@ -411,3 +412,5 @@ PetscErrorCode PetscLogObjDestroyDefault(PetscObject obj)
   PetscCall(PetscSpinlockUnlock(&PetscLogSpinLock));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
+
+#endif
