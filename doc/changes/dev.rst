@@ -45,6 +45,14 @@ Changes: Development
 - Add ``PETSC_LOG_HANDLER_PERFSTUBS`` implementation of ``PetscLogHandler``
 - Add ``PETSC_LOG_HANDLER_LEGACY`` implementation of ``PetscLogHandler``
 - Add ``PetscLogHandlerCreateLegacy()``
+- Add ``PetscLogPerfstubsBegin()`` for log handling with PerfStubs/TAU
+- Add ``PetscLogLegacyCallbacksBegin()`` to transition old log handler callbacks to the ``PetscLogHandler``-based approach
+- Add ``PetscLogHandlerStart()`` to connect a ``PetscLogHandler`` to PETSc's global logging events
+- Add ``PetscLogStageGetName()``
+- Add ``PetscLogEventGetName()``
+- Add ``PetscLogEventsPause()`` and ``PetscLogEventsResume()`` to isolate a logging event from unrelated in-process events
+- Add ``PetscLogClassGetClassId()``
+- Add ``PetscLogClassIdGetName()``
 
 .. rubric:: PetscViewer:
 
