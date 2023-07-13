@@ -411,6 +411,8 @@ PetscErrorCode DMShellSetGlobalVector(DM dm, Vec X)
   PetscCall(PetscObjectReference((PetscObject)X));
   PetscCall(VecDestroy(&shell->Xglobal));
   shell->Xglobal = X;
+  PetscCall(DMClearGlobalVectors(dm));
+  PetscCall(DMClearNamedGlobalVectors(dm));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -501,6 +503,8 @@ PetscErrorCode DMShellSetLocalVector(DM dm, Vec X)
   PetscCall(PetscObjectReference((PetscObject)X));
   PetscCall(VecDestroy(&shell->Xlocal));
   shell->Xlocal = X;
+  PetscCall(DMClearLocalVectors(dm));
+  PetscCall(DMClearNamedLocalVectors(dm));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
