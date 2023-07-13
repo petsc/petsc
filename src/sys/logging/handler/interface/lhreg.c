@@ -11,6 +11,9 @@ PetscBool         PetscLogHandlerPackageInitialized = PETSC_FALSE;
 PETSC_INTERN PetscErrorCode PetscLogHandlerCreate_Default(PetscLogHandler);
 PETSC_INTERN PetscErrorCode PetscLogHandlerCreate_Nested(PetscLogHandler);
 PETSC_INTERN PetscErrorCode PetscLogHandlerCreate_Trace(PetscLogHandler);
+#if PetscDefined(HAVE_MPE)
+PETSC_INTERN PetscErrorCode PetscLogHandlerCreate_MPE(PetscLogHandler);
+#endif
 
 static PetscErrorCode PetscLogHandlerRegisterAll(void)
 {
@@ -20,6 +23,9 @@ static PetscErrorCode PetscLogHandlerRegisterAll(void)
   PetscCall(PetscLogHandlerRegister(PETSC_LOG_HANDLER_DEFAULT, PetscLogHandlerCreate_Default));
   PetscCall(PetscLogHandlerRegister(PETSC_LOG_HANDLER_NESTED, PetscLogHandlerCreate_Nested));
   PetscCall(PetscLogHandlerRegister(PETSC_LOG_HANDLER_TRACE, PetscLogHandlerCreate_Trace));
+#if PetscDefined(HAVE_MPE)
+  PetscCall(PetscLogHandlerRegister(PETSC_LOG_HANDLER_MPE, PetscLogHandlerCreate_MPE));
+#endif
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
