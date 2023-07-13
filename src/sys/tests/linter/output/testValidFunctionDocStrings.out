@@ -954,24 +954,6 @@
                                                                     [33m[1m^[0m
   246: 
   247: Level: beginner
-[31m[1m./src/sys/tests/linter/testValidFunctionDocStrings.c:278:1: error:[0m Undocumented parameter 'unknown' not found in parameter section [-fdoc-param-list-func-parameter-documentation]:
-  276:   Collective
-  277: 
-> 278:   Input Parameters:
-> 279: + foo - a foo
-> 280: - bar - a bar
-> 281: 
-> 282:   Output Parameter:
-> 283: . baz -                 a baz
-> 284: 
-  285:   Level: beginner
-  286: 
-
-./src/sys/tests/linter/testValidFunctionDocStrings.c:289:45 Note: Parameter 'unknown' defined here:
-  288: M@*/
-> 289: PetscErrorCode testExplicitSynopsis_Private([33m[1mPetscScalar unknown[0m, PetscInt foo, PetscReal bar, void *baz)
-                                                   [33m[1m^^^^^^^^^^^^^^^^^^^[0m
-  290: {
 [31m[1m./src/sys/tests/linter/testValidFunctionDocStrings.c:302:1: error:[0m Docstring missing synopsis [-fdoc-synopsis-missing-description]:
   300: 
   301: /*C testBadDocStringMissingChar - asdadsasd

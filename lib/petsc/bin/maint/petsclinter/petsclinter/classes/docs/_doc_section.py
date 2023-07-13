@@ -644,6 +644,11 @@ class FunctionParameterList(ParameterList):
     for arg in args_left:
       idx = visitor.mark_as_seen(arg)
       assert idx >= 0
+      if docstring.Modifier.MACRO in docstring.type_mod:
+        # TODO
+        # Blindly assume that macro docstrings are OK for now. Ultimately this function
+        # should check against a parsed synopsis instead of the actual function arguments.
+        continue
       docstring.add_error_from_diagnostic(
         docstring.make_diagnostic(
           self.diags.parameter_documentation,
