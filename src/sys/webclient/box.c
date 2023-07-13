@@ -100,7 +100,7 @@ static PetscErrorCode PetscBoxStartWebServer_Private(void)
     and put the resulting file in either the current directory (with the application) or in the home directory. This seems kind of
     silly but it was all I could figure out.
 
-.seealso: `PetscBoxRefresh()`, `PetscBoxUpload()`, `PetscURLShorten()`
+.seealso: `PetscBoxRefresh()`, `PetscBoxUpload()`
 @*/
 PetscErrorCode PetscBoxAuthorize(MPI_Comm comm, char access_token[], char refresh_token[], size_t tokensize)
 {
@@ -169,7 +169,7 @@ PetscErrorCode PetscBoxAuthorize(MPI_Comm comm, char access_token[], char refres
 
    Level: intermediate
 
-.seealso: `PetscURLShorten()`, `PetscBoxAuthorize()`, `PetscBoxUpload()`
+.seealso: `PetscBoxAuthorize()`, `PetscBoxUpload()`
 @*/
 PetscErrorCode PetscBoxRefresh(MPI_Comm comm, const char refresh_token[], char access_token[], char new_refresh_token[], size_t tokensize)
 {
@@ -264,7 +264,7 @@ PetscErrorCode PetscBoxRefresh(MPI_Comm comm, const char refresh_token[], char a
 
    Level: intermediate
 
-.seealso: `PetscURLShorten()`, `PetscBoxAuthorize()`, `PetscBoxRefresh()`
+.seealso: `PetscBoxAuthorize()`, `PetscBoxRefresh()`
 @*/
 PetscErrorCode PetscBoxUpload(MPI_Comm comm, const char access_token[], const char filename[])
 {

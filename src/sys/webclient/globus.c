@@ -93,7 +93,7 @@ PETSC_UNUSED static PetscErrorCode base64_decode(const unsigned char *data, unsi
 
    You can run src/sys/webclient/tutorials/globusobtainaccesstoken to get an access token
 
-.seealso: `PetscGoogleDriveRefresh()`, `PetscGoogleDriveUpload()`, `PetscURLShorten()`, `PetscGlobusUpload()`
+.seealso: `PetscGoogleDriveRefresh()`, `PetscGoogleDriveUpload()`, `PetscGlobusUpload()`
 @*/
 PetscErrorCode PetscGlobusAuthorize(MPI_Comm comm, char access_token[], size_t tokensize)
 {
@@ -156,7 +156,7 @@ PetscErrorCode PetscGlobusAuthorize(MPI_Comm comm, char access_token[], size_t t
 
    Level: intermediate
 
-.seealso: `PetscGoogleDriveRefresh()`, `PetscGoogleDriveUpload()`, `PetscURLShorten()`, `PetscGlobusUpload()`, `PetscGlobusAuthorize()`
+.seealso: `PetscGoogleDriveRefresh()`, `PetscGoogleDriveUpload()`, `PetscGlobusUpload()`, `PetscGlobusAuthorize()`
 @*/
 PetscErrorCode PetscGlobusGetTransfers(MPI_Comm comm, const char access_token[], char buff[], size_t buffsize)
 {
@@ -205,7 +205,7 @@ PetscErrorCode PetscGlobusGetTransfers(MPI_Comm comm, const char access_token[],
 
    Level: intermediate
 
-.seealso: `PetscURLShorten()`, `PetscGoogleDriveAuthorize()`, `PetscGoogleDriveRefresh()`, `PetscGlobusAuthorize()`
+.seealso: `PetscGoogleDriveAuthorize()`, `PetscGoogleDriveRefresh()`, `PetscGlobusAuthorize()`
 @*/
 PetscErrorCode PetscGlobusUpload(MPI_Comm comm, const char access_token[], const char filename[])
 {

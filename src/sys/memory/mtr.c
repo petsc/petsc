@@ -940,7 +940,6 @@ PetscErrorCode PetscMallocView(FILE *fp)
 .   -malloc_test - turns on all debugging if PETSc was configured with debugging including `-malloc_dump`, otherwise ignored
 .   -malloc_view_threshold t - log only allocations larger than t
   .   -malloc_dump <filename> - print a list of all memory that has not been freed, in `PetscFinalize()`
-.   -malloc no - (deprecated) same as `-malloc_debug no`
 -   -malloc_log - (deprecated) same as `-malloc_view`
 
    Level: developer

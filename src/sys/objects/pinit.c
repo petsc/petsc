@@ -1008,8 +1008,7 @@ PETSC_INTERN PetscErrorCode PetscInitialize_Common(const char *prog, const char 
 
 #if PetscDefined(HAVE_VIENNACL)
   flg = PETSC_FALSE;
-  PetscCall(PetscOptionsHasName(NULL, NULL, "-log_summary", &flg));
-  if (!flg) PetscCall(PetscOptionsHasName(NULL, NULL, "-log_view", &flg));
+  PetscCall(PetscOptionsHasName(NULL, NULL, "-log_view", &flg));
   if (!flg) PetscCall(PetscOptionsGetBool(NULL, NULL, "-viennacl_synchronize", &flg, NULL));
   PetscViennaCLSynchronize = flg;
   PetscCall(PetscViennaCLInit());
@@ -1149,8 +1148,6 @@ PETSC_INTERN PetscErrorCode PetscInitialize_Common(const char *prog, const char 
 .  -debugger_pause [sleeptime] (in seconds) - Pauses debugger
 .  -stop_for_debugger - Print message on how to attach debugger manually to
                         process and wait (-debugger_pause) seconds for attachment
-.  -malloc - Indicates use of PETSc error-checking malloc (on by default for debug version of libraries) (deprecated, use -malloc_debug)
-.  -malloc no - Indicates not to use error-checking malloc (deprecated, use -malloc_debug no)
 .  -malloc_debug - check for memory corruption at EVERY malloc or free, see `PetscMallocSetDebug()`
 .  -malloc_dump - prints a list of all unfreed memory at the end of the run
 .  -malloc_test - like -malloc_dump -malloc_debug, but only active for debugging builds, ignored in optimized build. May want to set in PETSC_OPTIONS environmental variable
@@ -1186,8 +1183,6 @@ PETSC_INTERN PetscErrorCode PetscInitialize_Common(const char *prog, const char 
 .  -log_view [:filename:format] - Prints summary of flop and timing information to screen or file, see `PetscLogView()`.
 .  -log_view_memory - Includes in the summary from -log_view the memory used in each event, see `PetscLogView()`.
 .  -log_view_gpu_time - Includes in the summary from -log_view the time used in each GPU kernel, see `PetscLogView().
-.  -log_summary [filename] - (Deprecated, use -log_view) Prints summary of flop and timing information to screen. If the filename is specified the
-        summary is written to the file.  See PetscLogView().
 .  -log_exclude: <vec,mat,pc,ksp,snes> - excludes subset of object classes from logging
 .  -log_all [filename] - Logs extensive profiling information  See `PetscLogDump()`.
 .  -log [filename] - Logs basic profiline information  See `PetscLogDump()`.
@@ -1340,7 +1335,6 @@ PETSC_INTERN PetscErrorCode PetscLogFinalize(void);
 .  -mpidump - Calls PetscMPIDump()
 .  -malloc_dump <optional filename> - Calls `PetscMallocDump()`, displays all memory allocated that has not been freed
 .  -memory_view - Prints total memory usage
-.  -malloc_info - Prints total memory usage (deprecated, use -memory_view)
 -  -malloc_view <optional filename> - Prints list of all memory allocated and in what functions
 
    Level: beginner
@@ -1409,48 +1403,6 @@ PetscErrorCode PetscFinalize(void)
   }
   PetscCall(PetscSegBufferDestroy(&PetscCitationsList));
 
-#if defined(PETSC_HAVE_SSL) && defined(PETSC_USE_SOCKET_VIEWER)
-  /* TextBelt is run for testing purposes only, please do not use this feature often */
-  {
-    PetscInt nmax = 2;
-    char   **buffs;
-    PetscCall(PetscMalloc1(2, &buffs));
-    PetscCall(PetscOptionsGetStringArray(NULL, NULL, "-textbelt", buffs, &nmax, &flg1));
-    if (flg1) {
-      PetscCheck(nmax, PETSC_COMM_WORLD, PETSC_ERR_USER, "-textbelt requires either the phone number or number,\"message\"");
-      if (nmax == 1) {
-        size_t len = 128;
-        PetscCall(PetscMalloc1(len, &buffs[1]));
-        PetscCall(PetscGetProgramName(buffs[1], 32));
-        PetscCall(PetscStrlcat(buffs[1], " has completed", len));
-      }
-      PetscCall(PetscTextBelt(PETSC_COMM_WORLD, buffs[0], buffs[1], NULL));
-      PetscCall(PetscFree(buffs[0]));
-      PetscCall(PetscFree(buffs[1]));
-    }
-    PetscCall(PetscFree(buffs));
-  }
-  {
-    PetscInt nmax = 2;
-    char   **buffs;
-    PetscCall(PetscMalloc1(2, &buffs));
-    PetscCall(PetscOptionsGetStringArray(NULL, NULL, "-tellmycell", buffs, &nmax, &flg1));
-    if (flg1) {
-      PetscCheck(nmax, PETSC_COMM_WORLD, PETSC_ERR_USER, "-tellmycell requires either the phone number or number,\"message\"");
-      if (nmax == 1) {
-        size_t len = 128;
-        PetscCall(PetscMalloc1(len, &buffs[1]));
-        PetscCall(PetscGetProgramName(buffs[1], 32));
-        PetscCall(PetscStrlcat(buffs[1], " has completed", len));
-      }
-      PetscCall(PetscTellMyCell(PETSC_COMM_WORLD, buffs[0], buffs[1], NULL));
-      PetscCall(PetscFree(buffs[0]));
-      PetscCall(PetscFree(buffs[1]));
-    }
-    PetscCall(PetscFree(buffs));
-  }
-#endif
-
 #if defined(PETSC_SERIALIZE_FUNCTIONS)
   PetscCall(PetscFPTDestroy());
 #endif
@@ -1505,23 +1457,6 @@ PetscErrorCode PetscFinalize(void)
   PetscCall(PetscOptionsPushGetViewerOff(PETSC_FALSE));
   PetscCall(PetscLogViewFromOptions());
   PetscCall(PetscOptionsPopGetViewerOff());
-
-  mname[0] = 0;
-  PetscCall(PetscOptionsGetString(NULL, NULL, "-log_summary", mname, sizeof(mname), &flg1));
-  if (flg1) {
-    PetscViewer viewer;
-    PetscCall((*PetscHelpPrintf)(PETSC_COMM_WORLD, "\n\n WARNING:   -log_summary is being deprecated; switch to -log_view\n\n\n"));
-    if (mname[0]) {
-      PetscCall(PetscViewerASCIIOpen(PETSC_COMM_WORLD, mname, &viewer));
-      PetscCall(PetscLogView(viewer));
-      PetscCall(PetscViewerDestroy(&viewer));
-    } else {
-      viewer = PETSC_VIEWER_STDOUT_WORLD;
-      PetscCall(PetscViewerPushFormat(viewer, PETSC_VIEWER_DEFAULT));
-      PetscCall(PetscLogView(viewer));
-      PetscCall(PetscViewerPopFormat(viewer));
-    }
-  }
 
   /*
      Free any objects created by the last block of code.

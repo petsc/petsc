@@ -24,6 +24,12 @@ Changes: Development
 - Add ``PetscStrcmpAny()`` to compare against multiple non-empty strings
 - Change arguments 4 and 5 of ``PetscViewerBinaryReadAll()`` and ``PetscViewerBinaryWriteAll()`` to ``PetscInt64``
 - Add ``PetscIsCloseAtTolScalar()``
+- Remove ``PetscTellMyCell()`` and related runtime option
+- Remove ``PetscTextBelt()`` and related runtime option
+- Remove deprecated ``-malloc [no]`` startup option
+- Remove deprecated ``-malloc_info`` startup option
+- Remove deprecated ``-log_summary`` option
+- Remove ``PetscURLShorten()``, it has not worked since 2019
 
 .. rubric:: Event Logging:
 
