@@ -166,6 +166,13 @@ With this background, these keywords are as follows.
    -  The copying is done by the test generator and not by creating
       makefile dependencies.
 
+-  **temporaries**: (*Optional*; *Default:* ``""``)
+
+   -  Some tests produce temporary files that are read by the filter
+      to compare to expected results.
+      Files in this (space-delimited) list will cleared before
+      the test is run to ensure that stale temporary files are not read.
+
 -  **requires**: (*Optional*; *Default:* ``""``)
 
    -  This is a space-delimited list of run requirements (not build

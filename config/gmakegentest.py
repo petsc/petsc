@@ -444,6 +444,11 @@ class generateExamples(Petsc):
     cmdLines=""
 
     # MPI is the default -- but we have a few odd commands
+    if subst['temporaries']:
+      if '*' in subst['temporaries']:
+        raise RuntimeError('{}/{}: list of temporary files to remove may not include wildcards'.format(subst['srcdir'], subst['execname']))
+      cmd=cmdindnt+self._substVars(subst,example_template.preclean)
+      cmdLines+=cmd+"\n"
     if not subst['command']:
       cmd=cmdindnt+self._substVars(subst,example_template.mpitest)
     else:

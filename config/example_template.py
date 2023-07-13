@@ -42,6 +42,7 @@ mpiexec="${mpiexec} ${mpiexec_flags}"
 
 footer='petsc_testend "@TESTROOT@" '
 
+preclean='@RM@ @TEMPORARIES@'
 todoline='petsc_report_tapoutput "" "${label}" "TODO @TODOCOMMENT@"'
 skipline='petsc_report_tapoutput "" "${label}" "SKIP @SKIPCOMMENT@"'
 mpitest='petsc_testrun "${mpiexec} -n ${insize} ${mpiexec_tail} ${exec} ${args} @SUBARGS@" @REDIRECT_FILE@ ${testname}.err "${label}@LABEL_SUFFIX@" @ERROR@'
