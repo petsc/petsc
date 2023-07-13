@@ -1917,12 +1917,6 @@ static inline PetscErrorCode PetscIntSumError(PetscInt a, PetscInt b, PetscInt *
   #undef hz
 #endif
 
-#include <limits.h>
-
-/* The number of bits in a byte */
-
-#define PETSC_BITS_PER_BYTE CHAR_BIT
-
 #if defined(PETSC_HAVE_SYS_TYPES_H)
   #include <sys/types.h>
 #endif

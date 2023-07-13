@@ -13,7 +13,7 @@
 
 /* SUBMANSEC = Sys */
 
-#include <limits.h> // INT_MIN, INT_MAX
+#include <limits.h> // INT_MIN, INT_MAX, CHAR_BIT
 
 #if defined(__clang__) || (PETSC_CPP_VERSION >= 17)
   // clang allows both [[nodiscard]] and __attribute__((warn_unused_result)) on type
@@ -1042,4 +1042,35 @@ S*/
 typedef struct _n_PetscSegBuffer *PetscSegBuffer;
 
 typedef struct _n_PetscOptionsHelpPrinted *PetscOptionsHelpPrinted;
+
+/*S
+     PetscBT - PETSc bitarrays, efficient storage of arrays of boolean values
+
+     Level: advanced
+
+     Notes:
+     The following routines do not have their own manual pages
+
+.vb
+     PetscBTCreate(m,&bt)         - creates a bit array with enough room to hold m values
+     PetscBTDestroy(&bt)          - destroys the bit array
+     PetscBTMemzero(m,bt)         - zeros the entire bit array (sets all values to false)
+     PetscBTSet(bt,index)         - sets a particular entry as true
+     PetscBTClear(bt,index)       - sets a particular entry as false
+     PetscBTLookup(bt,index)      - returns the value
+     PetscBTLookupSet(bt,index)   - returns the value and then sets it true
+     PetscBTLookupClear(bt,index) - returns the value and then sets it false
+     PetscBTLength(m)             - returns number of bytes in array with m bits
+     PetscBTView(m,bt,viewer)     - prints all the entries in a bit array
+.ve
+
+    PETSc does not check error flags on `PetscBTLookup()`, `PetcBTLookupSet()`, `PetscBTLength()` because error checking
+    would cost hundreds more cycles then the operation.
+
+S*/
+typedef char *PetscBT;
+
+/* The number of bits in a byte */
+#define PETSC_BITS_PER_BYTE CHAR_BIT
+
 #endif
