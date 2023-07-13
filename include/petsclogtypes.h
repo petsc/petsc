@@ -140,6 +140,7 @@ typedef const char *PetscLogHandlerType;
 
 #define PETSC_LOG_HANDLER_DEFAULT   "default"
 #define PETSC_LOG_HANDLER_NESTED    "nested"
+#define PETSC_LOG_HANDLER_TRACE     "trace"
 
 typedef struct _n_PetscLogRegistry *PetscLogRegistry;
 
