@@ -2260,7 +2260,7 @@ PetscErrorCode MatAssemblyEnd_SeqBAIJ(Mat A, MatAssemblyType mode)
   PetscReal    ratio = 0.6;
 
   PetscFunctionBegin;
-  if (mode == MAT_FLUSH_ASSEMBLY) PetscFunctionReturn(PETSC_SUCCESS);
+  if (mode == MAT_FLUSH_ASSEMBLY || (A->was_assembled && A->ass_nonzerostate == A->nonzerostate)) PetscFunctionReturn(PETSC_SUCCESS);
 
   if (m) rmax = ailen[0];
   for (i = 1; i < mbs; i++) {
