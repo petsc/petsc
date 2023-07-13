@@ -277,8 +277,8 @@ PETSC_EXTERN PetscErrorCode TSGetRHSJacobianP(TS, Mat *, PetscErrorCode (**)(TS,
 PETSC_EXTERN PetscErrorCode TSComputeRHSJacobianP(TS, PetscReal, Vec, Mat);
 PETSC_EXTERN PetscErrorCode TSSetIJacobianP(TS, Mat, PetscErrorCode (*)(TS, PetscReal, Vec, Vec, PetscReal, Mat, void *), void *);
 PETSC_EXTERN PetscErrorCode TSComputeIJacobianP(TS, PetscReal, Vec, Vec, PetscReal, Mat, PetscBool);
-PETSC_EXTERN                PETSC_DEPRECATED_FUNCTION("Use TSGetQuadratureTS then TSComputeRHSJacobianP") PetscErrorCode TSComputeDRDPFunction(TS, PetscReal, Vec, Vec *);
-PETSC_EXTERN                PETSC_DEPRECATED_FUNCTION("Use TSGetQuadratureTS then TSComputeRHSJacobian") PetscErrorCode TSComputeDRDUFunction(TS, PetscReal, Vec, Vec *);
+PETSC_EXTERN PETSC_DEPRECATED_FUNCTION(3, 5, 0, "TSGetQuadratureTS() then TSComputeRHSJacobianP()", ) PetscErrorCode TSComputeDRDPFunction(TS, PetscReal, Vec, Vec *);
+PETSC_EXTERN PETSC_DEPRECATED_FUNCTION(3, 5, 0, "TSGetQuadratureTS() then TSComputeRHSJacobian()", ) PetscErrorCode TSComputeDRDUFunction(TS, PetscReal, Vec, Vec *);
 PETSC_EXTERN PetscErrorCode TSSetIHessianProduct(TS, Vec *, PetscErrorCode (*)(TS, PetscReal, Vec, Vec *, Vec, Vec *, void *), Vec *, PetscErrorCode (*)(TS, PetscReal, Vec, Vec *, Vec, Vec *, void *), Vec *, PetscErrorCode (*)(TS, PetscReal, Vec, Vec *, Vec, Vec *, void *), Vec *, PetscErrorCode (*)(TS, PetscReal, Vec, Vec *, Vec, Vec *, void *), void *);
 PETSC_EXTERN PetscErrorCode TSComputeIHessianProductFunctionUU(TS, PetscReal, Vec, Vec *, Vec, Vec *);
 PETSC_EXTERN PetscErrorCode TSComputeIHessianProductFunctionUP(TS, PetscReal, Vec, Vec *, Vec, Vec *);
@@ -352,7 +352,7 @@ PETSC_EXTERN PetscErrorCode TSGetTrajectory(TS, TSTrajectory *);
 
 PETSC_EXTERN PetscErrorCode TSSetCostGradients(TS, PetscInt, Vec *, Vec *);
 PETSC_EXTERN PetscErrorCode TSGetCostGradients(TS, PetscInt *, Vec **, Vec **);
-PETSC_EXTERN PETSC_DEPRECATED_FUNCTION("Use TSCreateQuadratureTS() then set up the sub-TS (since version 3.12)") PetscErrorCode TSSetCostIntegrand(TS, PetscInt, Vec, PetscErrorCode (*)(TS, PetscReal, Vec, Vec, void *), PetscErrorCode (*)(TS, PetscReal, Vec, Vec *, void *), PetscErrorCode (*)(TS, PetscReal, Vec, Vec *, void *), PetscBool, void *);
+PETSC_EXTERN PETSC_DEPRECATED_FUNCTION(3, 12, 0, "TSCreateQuadratureTS() and TSForwardSetSensitivities()", ) PetscErrorCode TSSetCostIntegrand(TS, PetscInt, Vec, PetscErrorCode (*)(TS, PetscReal, Vec, Vec, void *), PetscErrorCode (*)(TS, PetscReal, Vec, Vec *, void *), PetscErrorCode (*)(TS, PetscReal, Vec, Vec *, void *), PetscBool, void *);
 PETSC_EXTERN PetscErrorCode TSGetCostIntegral(TS, Vec *);
 PETSC_EXTERN PetscErrorCode TSComputeCostIntegrand(TS, PetscReal, Vec, Vec);
 PETSC_EXTERN PetscErrorCode TSCreateQuadratureTS(TS, PetscBool, TS *);
@@ -364,10 +364,10 @@ PETSC_EXTERN PetscErrorCode TSAdjointMonitorSet(TS, PetscErrorCode (*)(TS, Petsc
 PETSC_EXTERN PetscErrorCode TSAdjointMonitorCancel(TS);
 PETSC_EXTERN PetscErrorCode TSAdjointMonitorSetFromOptions(TS, const char[], const char[], const char[], PetscErrorCode (*)(TS, PetscInt, PetscReal, Vec, PetscInt, Vec *, Vec *, PetscViewerAndFormat *), PetscErrorCode (*)(TS, PetscViewerAndFormat *));
 
-PETSC_EXTERN                PETSC_DEPRECATED_FUNCTION("Use TSSetRHSJacobianP()") PetscErrorCode TSAdjointSetRHSJacobian(TS, Mat, PetscErrorCode (*)(TS, PetscReal, Vec, Mat, void *), void *);
-PETSC_EXTERN                PETSC_DEPRECATED_FUNCTION("Use TSComputeRHSJacobianP()") PetscErrorCode TSAdjointComputeRHSJacobian(TS, PetscReal, Vec, Mat);
-PETSC_EXTERN                PETSC_DEPRECATED_FUNCTION("Use TSGetQuadratureTS then TSComputeRHSJacobianP") PetscErrorCode TSAdjointComputeDRDPFunction(TS, PetscReal, Vec, Vec *);
-PETSC_EXTERN                PETSC_DEPRECATED_FUNCTION("Use TSGetQuadratureTS then TSComputeRHSJacobian") PetscErrorCode TSAdjointComputeDRDYFunction(TS, PetscReal, Vec, Vec *);
+PETSC_EXTERN PETSC_DEPRECATED_FUNCTION(3, 5, 0, "TSSetRHSJacobianP()", ) PetscErrorCode TSAdjointSetRHSJacobian(TS, Mat, PetscErrorCode (*)(TS, PetscReal, Vec, Mat, void *), void *);
+PETSC_EXTERN PETSC_DEPRECATED_FUNCTION(3, 5, 0, "TSComputeRHSJacobianP()", ) PetscErrorCode TSAdjointComputeRHSJacobian(TS, PetscReal, Vec, Mat);
+PETSC_EXTERN PETSC_DEPRECATED_FUNCTION(3, 5, 0, "TSGetQuadratureTS()", ) PetscErrorCode TSAdjointComputeDRDPFunction(TS, PetscReal, Vec, Vec *);
+PETSC_EXTERN PETSC_DEPRECATED_FUNCTION(3, 5, 0, "TSGetQuadratureTS()", ) PetscErrorCode TSAdjointComputeDRDYFunction(TS, PetscReal, Vec, Vec *);
 PETSC_EXTERN PetscErrorCode TSAdjointSolve(TS);
 PETSC_EXTERN PetscErrorCode TSAdjointSetSteps(TS, PetscInt);
 
@@ -380,8 +380,8 @@ PETSC_EXTERN PetscErrorCode TSAdjointResetForward(TS);
 
 PETSC_EXTERN PetscErrorCode TSForwardSetSensitivities(TS, PetscInt, Mat);
 PETSC_EXTERN PetscErrorCode TSForwardGetSensitivities(TS, PetscInt *, Mat *);
-PETSC_EXTERN                PETSC_DEPRECATED_FUNCTION("Use TSCreateQuadratureTS() and TSForwardSetSensitivities() (since version 3.12)") PetscErrorCode TSForwardSetIntegralGradients(TS, PetscInt, Vec *);
-PETSC_EXTERN                PETSC_DEPRECATED_FUNCTION("Use TSForwardGetSensitivities()") PetscErrorCode TSForwardGetIntegralGradients(TS, PetscInt *, Vec **);
+PETSC_EXTERN PETSC_DEPRECATED_FUNCTION(3, 12, 0, "TSCreateQuadratureTS()", ) PetscErrorCode TSForwardSetIntegralGradients(TS, PetscInt, Vec *);
+PETSC_EXTERN PETSC_DEPRECATED_FUNCTION(3, 12, 0, "TSForwardGetSensitivities()", ) PetscErrorCode TSForwardGetIntegralGradients(TS, PetscInt *, Vec **);
 PETSC_EXTERN PetscErrorCode TSForwardSetUp(TS);
 PETSC_EXTERN PetscErrorCode TSForwardReset(TS);
 PETSC_EXTERN PetscErrorCode TSForwardCostIntegral(TS);
@@ -399,11 +399,11 @@ PETSC_EXTERN PetscErrorCode TSSetTimeSpan(TS, PetscInt, PetscReal *);
 PETSC_EXTERN PetscErrorCode TSGetTimeSpan(TS, PetscInt *, const PetscReal **);
 PETSC_EXTERN PetscErrorCode TSGetTimeSpanSolutions(TS, PetscInt *, Vec **);
 
-PETSC_EXTERN PETSC_DEPRECATED_FUNCTION("Use TSSetTime[Step]() (since version 3.8)") PetscErrorCode TSSetInitialTimeStep(TS, PetscReal, PetscReal);
-PETSC_EXTERN PETSC_DEPRECATED_FUNCTION("Use TSSetMax{Steps|Time}() (since version 3.8)") PetscErrorCode TSSetDuration(TS, PetscInt, PetscReal);
-PETSC_EXTERN PETSC_DEPRECATED_FUNCTION("Use TSGetMax{Steps|Time}() (since version 3.8)") PetscErrorCode TSGetDuration(TS, PetscInt *, PetscReal *);
-PETSC_EXTERN PETSC_DEPRECATED_FUNCTION("Use TSGetStepNumber() (since version 3.8)") PetscErrorCode TSGetTimeStepNumber(TS, PetscInt *);
-PETSC_EXTERN PETSC_DEPRECATED_FUNCTION("Use TSGetStepNumber() (since version 3.8)") PetscErrorCode TSGetTotalSteps(TS, PetscInt *);
+PETSC_EXTERN PETSC_DEPRECATED_FUNCTION(3, 8, 0, "TSSetTime()", ) PetscErrorCode TSSetInitialTimeStep(TS, PetscReal, PetscReal);
+PETSC_EXTERN PETSC_DEPRECATED_FUNCTION(3, 8, 0, "TSSetMax()", ) PetscErrorCode TSSetDuration(TS, PetscInt, PetscReal);
+PETSC_EXTERN PETSC_DEPRECATED_FUNCTION(3, 8, 0, "TSGetMax()", ) PetscErrorCode TSGetDuration(TS, PetscInt *, PetscReal *);
+PETSC_EXTERN PETSC_DEPRECATED_FUNCTION(3, 8, 0, "TSGetStepNumber()", ) PetscErrorCode TSGetTimeStepNumber(TS, PetscInt *);
+PETSC_EXTERN PETSC_DEPRECATED_FUNCTION(3, 8, 0, "TSGetStepNumber()", ) PetscErrorCode TSGetTotalSteps(TS, PetscInt *);
 
 PETSC_EXTERN PetscErrorCode TSMonitorDefault(TS, PetscInt, PetscReal, Vec, PetscViewerAndFormat *);
 PETSC_EXTERN PetscErrorCode TSMonitorExtreme(TS, PetscInt, PetscReal, Vec, PetscViewerAndFormat *);

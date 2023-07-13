@@ -265,6 +265,12 @@ typedef PETSC_UINTPTR_T PetscFortranAddr;
 
 /* Disable deprecation warnings while building Fortran wrappers */
 #undef PETSC_DEPRECATED_FUNCTION
-#define PETSC_DEPRECATED_FUNCTION(arg)
+#define PETSC_DEPRECATED_FUNCTION(...)
+#undef PETSC_DEPRECATED_ENUM
+#define PETSC_DEPRECATED_ENUM(...)
+#undef PETSC_DEPRECATED_TYPEDEF
+#define PETSC_DEPRECATED_TYPEDEF(...)
+#undef PETSC_DEPRECATED_MACRO
+#define PETSC_DEPRECATED_MACRO(...)
 
 #endif

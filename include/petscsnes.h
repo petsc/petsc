@@ -97,11 +97,11 @@ PETSC_EXTERN PetscErrorCode SNESConvergedReasonView(SNES, PetscViewer);
 PETSC_EXTERN PetscErrorCode SNESConvergedReasonViewFromOptions(SNES);
 PETSC_EXTERN PetscErrorCode SNESConvergedReasonViewCancel(SNES);
 
-PETSC_DEPRECATED_FUNCTION("Use SNESConvergedReasonView() (since version 3.14)") static inline PetscErrorCode SNESReasonView(SNES snes, PetscViewer v)
+PETSC_DEPRECATED_FUNCTION(3, 14, 0, "SNESConvergedReasonView()", ) static inline PetscErrorCode SNESReasonView(SNES snes, PetscViewer v)
 {
   return SNESConvergedReasonView(snes, v);
 }
-PETSC_DEPRECATED_FUNCTION("Use SNESConvergedReasonViewFromOptions() (since version 3.14)") static inline PetscErrorCode SNESReasonViewFromOptions(SNES snes)
+PETSC_DEPRECATED_FUNCTION(3, 14, 0, "SNESConvergedReasonViewFromOptions()", ) static inline PetscErrorCode SNESReasonViewFromOptions(SNES snes)
 {
   return SNESConvergedReasonViewFromOptions(snes);
 }
@@ -229,7 +229,7 @@ PETSC_EXTERN PetscErrorCode SNESSetJacobianDomainError(SNES);
 PETSC_EXTERN PetscErrorCode SNESSetCheckJacobianDomainError(SNES, PetscBool);
 PETSC_EXTERN PetscErrorCode SNESGetCheckJacobianDomainError(SNES, PetscBool *);
 
-#define SNES_CONVERGED_TR_DELTA_DEPRECATED SNES_CONVERGED_TR_DELTA PETSC_DEPRECATED_ENUM("Use SNES_DIVERGED_TR_DELTA (since version 3.12)")
+#define SNES_CONVERGED_TR_DELTA_DEPRECATED SNES_CONVERGED_TR_DELTA PETSC_DEPRECATED_ENUM(3, 12, 0, "SNES_DIVERGED_TR_DELTA", )
 /*E
     SNESConvergedReason - reason a `SNESSolve()` was determined to have converged or diverged
 
@@ -402,7 +402,7 @@ PETSC_EXTERN PetscErrorCode SNESGetConvergedReason(SNES, SNESConvergedReason *);
 PETSC_EXTERN PetscErrorCode SNESGetConvergedReasonString(SNES, const char **);
 PETSC_EXTERN PetscErrorCode SNESSetConvergedReason(SNES, SNESConvergedReason);
 
-PETSC_DEPRECATED_FUNCTION("Use SNESConvergedSkip() (since version 3.5)") static inline void SNESSkipConverged(void)
+PETSC_DEPRECATED_FUNCTION(3, 5, 0, "SNESConvergedSkip()", ) static inline void SNESSkipConverged(void)
 { /* never called */
 }
 #define SNESSkipConverged (SNESSkipConverged, SNESConvergedSkip)
@@ -761,11 +761,11 @@ PETSC_EXTERN PetscErrorCode SNESSetLineSearch(SNES, SNESLineSearch);
 PETSC_EXTERN PetscErrorCode SNESGetLineSearch(SNES, SNESLineSearch *);
 PETSC_EXTERN PetscErrorCode SNESRestrictHookAdd(SNES, PetscErrorCode (*)(SNES, SNES, void *), void *);
 
-PETSC_DEPRECATED_FUNCTION("Use SNESGetLineSearch() (since version 3.4)") static inline PetscErrorCode SNESGetSNESLineSearch(SNES snes, SNESLineSearch *ls)
+PETSC_DEPRECATED_FUNCTION(3, 4, 0, "SNESGetLineSearch()", ) static inline PetscErrorCode SNESGetSNESLineSearch(SNES snes, SNESLineSearch *ls)
 {
   return SNESGetLineSearch(snes, ls);
 }
-PETSC_DEPRECATED_FUNCTION("Use SNESSetLineSearch() (since version 3.4)") static inline PetscErrorCode SNESSetSNESLineSearch(SNES snes, SNESLineSearch ls)
+PETSC_DEPRECATED_FUNCTION(3, 4, 0, "SNESSetLineSearch()", ) static inline PetscErrorCode SNESSetSNESLineSearch(SNES snes, SNESLineSearch ls)
 {
   return SNESSetLineSearch(snes, ls);
 }

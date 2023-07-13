@@ -548,7 +548,7 @@ PETSC_EXTERN PetscErrorCode VecMTDotEnd(Vec, PetscInt, const Vec[], PetscScalar[
 PETSC_EXTERN PetscErrorCode PetscCommSplitReductionBegin(MPI_Comm);
 
 PETSC_EXTERN PetscErrorCode VecBindToCPU(Vec, PetscBool);
-PETSC_DEPRECATED_FUNCTION("Use VecBindToCPU (since v3.13)") static inline PetscErrorCode VecPinToCPU(Vec v, PetscBool flg)
+PETSC_DEPRECATED_FUNCTION(3, 13, 0, "VecBindToCPU()", ) static inline PetscErrorCode VecPinToCPU(Vec v, PetscBool flg)
 {
   return VecBindToCPU(v, flg);
 }
@@ -657,9 +657,9 @@ static inline PetscErrorCode VecSetErrorIfLocked(Vec x, PetscInt arg)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 /* The three are deprecated */
-PETSC_EXTERN PETSC_DEPRECATED_FUNCTION("Use VecLockReadPush() (since version 3.11)") PetscErrorCode VecLockPush(Vec);
-PETSC_EXTERN PETSC_DEPRECATED_FUNCTION("Use VecLockReadPop() (since version 3.11)") PetscErrorCode VecLockPop(Vec);
-  #define VecLocked(x, arg) VecSetErrorIfLocked(x, arg) PETSC_DEPRECATED_MACRO("GCC warning \"Use VecSetErrorIfLocked() (since version 3.11)\"")
+PETSC_EXTERN PETSC_DEPRECATED_FUNCTION(3, 11, 0, "VecLockReadPush()", ) PetscErrorCode VecLockPush(Vec);
+PETSC_EXTERN PETSC_DEPRECATED_FUNCTION(3, 11, 0, "VecLockReadPop()", ) PetscErrorCode VecLockPop(Vec);
+  #define VecLocked(x, arg) VecSetErrorIfLocked(x, arg) PETSC_DEPRECATED_MACRO(3, 11, 0, "VecSetErrorIfLocked()", )
 #else
   #define VecLockReadPush(x)          PETSC_SUCCESS
   #define VecLockReadPop(x)           PETSC_SUCCESS
