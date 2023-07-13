@@ -21,11 +21,11 @@ static PetscErrorCode MatTransposeAXPY_Private(Mat Y, PetscScalar a, Mat X, MatS
   } else {
     PetscCall(MatHermitianTransposeGetMat(T, &A));
     if (T == X) {
-      PetscCall(PetscInfo(NULL, "Explicitly Hermitian transposing X of type MATHERITIANTRANSPOSEVIRTUAL to perform MatAXPY()\n"));
+      PetscCall(PetscInfo(NULL, "Explicitly Hermitian transposing X of type MATHERMITIANTRANSPOSEVIRTUAL to perform MatAXPY()\n"));
       PetscCall(MatHermitianTranspose(A, MAT_INITIAL_MATRIX, &F));
       A = Y;
     } else {
-      PetscCall(PetscInfo(NULL, "Hermitian transposing X because Y of type MATHERITIANTRANSPOSEVIRTUAL to perform MatAXPY()\n"));
+      PetscCall(PetscInfo(NULL, "Hermitian transposing X because Y of type MATHERMITIANTRANSPOSEVIRTUAL to perform MatAXPY()\n"));
       PetscCall(MatHermitianTranspose(X, MAT_INITIAL_MATRIX, &F));
     }
   }

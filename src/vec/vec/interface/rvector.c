@@ -869,7 +869,7 @@ PetscErrorCode VecWAXPY(Vec w, PetscScalar alpha, Vec x, Vec y)
   If you call `VecSetOption`(x, `VEC_IGNORE_NEGATIVE_INDICES`,`PETSC_TRUE`),
   negative indices may be passed in ix. These rows are
   simply ignored. This allows easily inserting element load matrices
-  with homogeneous Dirchlet boundary conditions that you don't want represented
+  with homogeneous Dirichlet boundary conditions that you don't want represented
   in the vector.
 
 .seealso: [](ch_vectors), `Vec`, `VecAssemblyBegin()`, `VecAssemblyEnd()`, `VecSetValuesLocal()`,
@@ -964,7 +964,7 @@ PetscErrorCode VecGetValues(Vec x, PetscInt ni, const PetscInt ix[], PetscScalar
 
   Negative indices may be passed in ix, these rows are
   simply ignored. This allows easily inserting element load matrices
-  with homogeneous Dirchlet boundary conditions that you don't want represented
+  with homogeneous Dirichlet boundary conditions that you don't want represented
   in the vector.
 
 .seealso: [](ch_vectors), `Vec`, `VecAssemblyBegin()`, `VecAssemblyEnd()`, `VecSetValuesBlockedLocal()`,

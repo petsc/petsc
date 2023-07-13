@@ -896,7 +896,7 @@ PETSC_INTERN PetscErrorCode DMStagPopulateRestriction1d_a_b_Private(DM dmc, DM d
       rowc.loc = DMSTAG_LEFT;
       PetscCall(DMStagStencilToIndexLocal(dmc, dim, 1, &rowc, &ir));
       PetscCall(DMStagStencilToIndexLocal(dmf, dim, 1, &colf, &ic));
-      weight = (exf == Nexf || exf == 0) ? 0.75 : 0.5; /* Assume a Neuman-type condition */
+      weight = (exf == Nexf || exf == 0) ? 0.75 : 0.5; /* Assume a Neumann-type condition */
       PetscCall(MatSetValuesLocal(A, 1, &ir, 1, &ic, &weight, INSERT_VALUES));
     } else {
       DMStagStencil     colf, rowc[2];
