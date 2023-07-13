@@ -255,6 +255,7 @@ PetscErrorCode Monitor(SNES snes, PetscInt its, PetscReal fnorm, void *dummy)
 
    # uses AIJ matrix to define diagonal matrix for Jacobian preconditioning
    test:
+      requires: !single
       suffix: 3
       args: -variant -pc_type jacobi -snes_view -ksp_monitor
 

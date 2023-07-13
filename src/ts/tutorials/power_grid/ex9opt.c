@@ -454,7 +454,7 @@ PetscErrorCode FormGradient(Tao tao, Vec P, Vec G, void *ctx0)
 /*TEST
 
    build:
-      requires: !complex
+      requires: !complex !single
 
    test:
       args: -viewer_binary_skip_info -ts_adapt_type none -tao_monitor -tao_gatol 0.0 -tao_grtol 1.e-3 -tao_converged_reason

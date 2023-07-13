@@ -191,6 +191,7 @@ int main(int argc, char **args)
     test:
       suffix: 2_kokkos
       nsize: 2
+      args: -vec_mdot_use_gemv {{0 1}} -vec_maxpy_use_gemv {{0 1}}
       args: -pc_type jacobi -ksp_monitor_short -m 5 -ksp_gmres_cgs_refinement_type refine_always -mat_type aijkokkos -vec_type kokkos
       output_file: output/ex3_2.out
       requires: kokkos_kernels
