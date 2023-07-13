@@ -138,6 +138,8 @@ typedef struct _p_PetscLogHandler *PetscLogHandler;
 J*/
 typedef const char *PetscLogHandlerType;
 
+#define PETSC_LOG_HANDLER_DEFAULT   "default"
+
 typedef struct _n_PetscLogRegistry *PetscLogRegistry;
 
 /*S

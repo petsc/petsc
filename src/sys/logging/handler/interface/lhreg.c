@@ -8,11 +8,14 @@ PetscFunctionList PetscLogHandlerList               = NULL;
 PetscBool         PetscLogHandlerRegisterAllCalled  = PETSC_FALSE;
 PetscBool         PetscLogHandlerPackageInitialized = PETSC_FALSE;
 
+PETSC_INTERN PetscErrorCode PetscLogHandlerCreate_Default(PetscLogHandler);
+
 static PetscErrorCode PetscLogHandlerRegisterAll(void)
 {
   PetscFunctionBegin;
   if (PetscLogHandlerRegisterAllCalled) PetscFunctionReturn(PETSC_SUCCESS);
   PetscLogHandlerRegisterAllCalled = PETSC_TRUE;
+  PetscCall(PetscLogHandlerRegister(PETSC_LOG_HANDLER_DEFAULT, PetscLogHandlerCreate_Default));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
