@@ -5392,17 +5392,19 @@ PetscErrorCode MatEliminateZeros_SeqAIJ(Mat A)
     a->nonzerorowcnt += ((ai[i] - fshift - ai[i - 1]) > 0);
     rmax = PetscMax(rmax, ailen[i - 1]);
   }
-  if (m) {
-    ai[m] -= fshift;
-    a->nz = ai[m];
+  if (fshift) {
+    if (m) {
+      ai[m] -= fshift;
+      a->nz = ai[m];
+    }
+    PetscCall(PetscInfo(A, "Matrix size: %" PetscInt_FMT " X %" PetscInt_FMT "; zeros eliminated: %" PetscInt_FMT "; nonzeros left: %" PetscInt_FMT "\n", m, A->cmap->n, fshift, a->nz));
+    A->nonzerostate++;
+    A->info.nz_unneeded += (PetscReal)fshift;
+    a->rmax = rmax;
+    if (a->inode.use && a->inode.checked) PetscCall(MatSeqAIJCheckInode(A));
+    PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
   }
-  PetscCall(PetscInfo(A, "Matrix size: %" PetscInt_FMT " X %" PetscInt_FMT "; zeros eliminated: %" PetscInt_FMT "; nonzeros left: %" PetscInt_FMT "\n", m, A->cmap->n, fshift, a->nz));
-  A->nonzerostate -= fshift;
-  A->info.nz_unneeded += (PetscReal)fshift;
-  a->rmax = rmax;
-  if (a->inode.use && a->inode.checked) PetscCall(MatSeqAIJCheckInode(A));
-  PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
-  PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
