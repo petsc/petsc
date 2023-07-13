@@ -81,13 +81,13 @@ int main(int argc, char **argv)
 /*TEST
    test:
      nsize: 2
-     args:   -matptap_via allatonce
+     args: -matptap_via allatonce
      output_file: output/ex90_1.out
 
    test:
      nsize: 2
      suffix: merged
-     args:   -matptap_via allatonce_merged
+     args: -matptap_via allatonce_merged
      output_file: output/ex90_1.out
 
 TEST*/

@@ -585,7 +585,7 @@ PetscErrorCode RHSfunction(TS ts, PetscReal t, Vec globalin, Vec globalout, void
 
     test:
       suffix: 2
-      args:   -useAlhs
+      args: -useAlhs
       output_file: output/ex3.out
       TODO: Broken because SNESComputeJacobianDefault is incompatible with TSComputeIJacobianConstant
 

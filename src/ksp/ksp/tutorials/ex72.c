@@ -521,7 +521,7 @@ int main(int argc, char **args)
       suffix: 9
       requires: datafilespath double !defined(PETSC_USE_64BIT_INDICES)
       args: -f0 ${DATAFILESPATH}/matrices/medium
-      args: -viewer_binary_skip_info  -matload_block_size {{1 2 3 4 5 6 7}separate output} -ksp_max_it 100 -ksp_gmres_cgs_refinement_type refine_always -ksp_rtol 1.0e-15 -ksp_monitor_short
+      args: -viewer_binary_skip_info -matload_block_size {{1 2 3 4 5 6 7}separate output} -ksp_max_it 100 -ksp_gmres_cgs_refinement_type refine_always -ksp_rtol 1.0e-15 -ksp_monitor_short
       test:
          suffix: a
          args: -mat_type seqbaij

@@ -224,7 +224,7 @@ PetscErrorCode PostEvent(TS ts, PetscInt nevents, PetscInt event_list[], PetscRe
 
     test:
       suffix: ssp
-      args:   -ts_type ssp
+      args: -ts_type ssp
       output_file: output/ex1.out
 
     test:
