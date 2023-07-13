@@ -109,6 +109,26 @@ PETSC_EXTERN PetscErrorCode PetscLogStateEventGetInfo(PetscLogState, PetscLogEve
 PETSC_EXTERN PetscErrorCode PetscLogStateStageGetInfo(PetscLogState, PetscLogStage, PetscLogStageInfo *);
 PETSC_EXTERN PetscErrorCode PetscLogStateClassGetInfo(PetscLogState, PetscLogClass, PetscLogClassInfo *);
 
+PETSC_EXTERN PetscClassId PETSCLOGHANDLER_CLASSID;
+
+PETSC_EXTERN PetscFunctionList PetscLogHandlerList;
+
+PETSC_EXTERN PetscErrorCode PetscLogHandlerRegister(const char[], PetscErrorCode (*)(PetscLogHandler));
+PETSC_EXTERN PetscErrorCode PetscLogHandlerCreate(MPI_Comm, PetscLogHandler *);
+PETSC_EXTERN PetscErrorCode PetscLogHandlerSetType(PetscLogHandler, PetscLogHandlerType);
+PETSC_EXTERN PetscErrorCode PetscLogHandlerGetType(PetscLogHandler, PetscLogHandlerType *);
+PETSC_EXTERN PetscErrorCode PetscLogHandlerDestroy(PetscLogHandler *);
+PETSC_EXTERN PetscErrorCode PetscLogHandlerSetState(PetscLogHandler, PetscLogState);
+PETSC_EXTERN PetscErrorCode PetscLogHandlerGetState(PetscLogHandler, PetscLogState *);
+PETSC_EXTERN PetscErrorCode PetscLogHandlerEventBegin(PetscLogHandler, PetscLogEvent, PetscObject, PetscObject, PetscObject, PetscObject);
+PETSC_EXTERN PetscErrorCode PetscLogHandlerEventEnd(PetscLogHandler, PetscLogEvent, PetscObject, PetscObject, PetscObject, PetscObject);
+PETSC_EXTERN PetscErrorCode PetscLogHandlerEventSync(PetscLogHandler, PetscLogEvent, MPI_Comm);
+PETSC_EXTERN PetscErrorCode PetscLogHandlerObjectCreate(PetscLogHandler, PetscObject);
+PETSC_EXTERN PetscErrorCode PetscLogHandlerObjectDestroy(PetscLogHandler, PetscObject);
+PETSC_EXTERN PetscErrorCode PetscLogHandlerStagePush(PetscLogHandler, PetscLogStage);
+PETSC_EXTERN PetscErrorCode PetscLogHandlerStagePop(PetscLogHandler, PetscLogStage);
+PETSC_EXTERN PetscErrorCode PetscLogHandlerView(PetscLogHandler, PetscViewer);
+
 /* All events are inactive if an invalid stage is set, like if there have been more stage pops than stage pushes */
 #define PetscLogStateStageEventIsActive(state, stage, event) ((stage >= 0) && PetscBTLookup((state)->active, (stage)) && PetscBTLookup((state)->active, (stage) + (event + 1) * (state)->bt_num_stages))
 

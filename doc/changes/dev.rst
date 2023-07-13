@@ -36,6 +36,7 @@ Changes: Development
 .. rubric:: Event Logging:
 
 - Add ``PetscLogState`` interface for describing profiling events and stages
+- Add ``PetscLogHandler`` interface that interprets the profiling events of a ``PetscLogState``
 
 .. rubric:: PetscViewer:
 

@@ -79,10 +79,69 @@ typedef int PetscLogStage;
 M*/
 typedef int PetscLogClass;
 
+/*S
+  PetscLogHandler - Interface for performance logging.  A log handler receives a `PetscLogState` that has
+  information about the events (`PetscLogEvent`) and stages (`PetscLogStage`) in the logging environment.
+
+  Example Usage:
+.vb
+#include <petscsys.h>
+
+int main() {
+  UserCtx             ctx;
+  PetscLogHandlerType handler_type;
+
+  PetscInitialize(...);
+  // ... fill in ctx
+  PetscLogHandlerCreate(PETSC_COMM_WORLD, &handler);
+  PetscLogHandlerSetType(handler, handler_type);
+  PetscLogHandlerStart(handler); // connect your handler to global logging state
+  // ... run code to be profiled
+  PetscLogHandlerStop(handler); // disconnect your handler from the global logging state
+  PetscLogHandlerView(handler, PETSC_VIEWER_STDOUT_WORLD); // view the results
+  PetscLogHandlerDestroy(&handler);
+  PetscFinalize();
+}
+.ve
+
+  Level: developer
+
+.seealso: [](ch_profiling),
+          `PetscLogHandlerCreate()`,
+          `PetscLogHandlerStart()`, `PetscLogHandlerStop()`,
+          `PetscLogHandlerSetType()`, `PetscLogHandlerGetType()`,
+          `PetscLogHandlerSetState()`, `PetscLogHandlerGetState()`,
+          `PetscLogHandlerEventBegin()`, `PetscLogHandlerEventEnd()`,
+          `PetscLogHandlerEventSync()`,
+          `PetscLogHandlerObjectCreate()`, `PetscLogHandlerObjectDestroy()`,
+          `PetscLogHandlerStagePush()`, `PetscLogHandlerStagePop()`,
+          `PetscLogHandlerView()`,
+          `PetscLogHandlerDestroy()`,
+S*/
+typedef struct _p_PetscLogHandler *PetscLogHandler;
+
+/*J
+  PetscLogHandlerType - String with the name of a `PetscLogHandler` type
+
+  Level: Developer
+
+  Note:
+  Implementations included with PETSc include\:
++ `PETSC_LOG_HANDLER_DEFAULT` (`PetscLogDefaultBegin()`)        - formats data for PETSc's default summary (`PetscLogView()`) and data-dump (`PetscLogDump()`) formats.
+. `PETSC_LOG_HANDLER_NESTED` (`PetscLogNestedBegin()`)          - formats data for XML or flamegraph output
+. `PETSC_LOG_HANDLER_TRACE` (`PetscLogTraceBegin()`)            - traces profiling events in an output stream
+. `PETSC_LOG_HANDLER_MPE` (`PetscLogMPEBegin()`)                - outputs parallel performance visualization using MPE
+. `PETSC_LOG_HANDLER_PERFSTUBS` (`PetscLogPerfstubsBegin()`)    - outputs instrumentation data for PerfStubs/TAU
+- `PETSC_LOG_HANDLER_LEGACY` (`PetscLogLegacyCallbacksBegin()`) - adapts legacy callbacks to the `PetscLogHandler` interface
+
+.seealso: [](ch_profiling), `PetscLogHandler`, `PetscLogHandlerSetType()`, `PetscLogHandlerGetType()`
+J*/
+typedef const char *PetscLogHandlerType;
+
 typedef struct _n_PetscLogRegistry *PetscLogRegistry;
 
 /*S
-   PetscLogState - Interface for the shared state information used by log handlers.  It holds
+   PetscLogState - Interface for the shared state information used by `PetscLogHandler`s.  It holds
    a registry of events (`PetscLogStateEventRegister()`), stages (`PetscLogStateStageRegister()`), and
    classes (`PetscLogStateClassRegister()`).  It keeps track of when the user has activated
    events (`PetscLogStateEventSetActive()`) and stages (`PetscLogStateStageSetActive()`).  It
