@@ -254,6 +254,12 @@ void* ps_timer_create_(const char *timer_name) {
     #endif
 }
 
+void ps_timer_destroy_(void *objects) {
+    #ifndef PERFSTUBS_OFF
+    free(objects);
+    #endif
+}
+
 void ps_timer_create_fortran_(void ** object, const char *timer_name) {
     #ifndef PERFSTUBS_OFF
     *object = ps_timer_create_(timer_name);

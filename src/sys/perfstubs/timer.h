@@ -56,6 +56,7 @@ void  ps_register_thread_(void);
 void  ps_dump_data_(void);
 void* ps_timer_create_(const char *timer_name);
 void  ps_timer_create_fortran_(void ** object, const char *timer_name);
+void  ps_timer_destroy_(void *);
 void  ps_timer_start_(const void *timer);
 void  ps_timer_start_fortran_(const void **timer);
 void  ps_timer_stop_(const void *timer);
