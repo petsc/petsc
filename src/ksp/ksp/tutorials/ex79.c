@@ -36,6 +36,11 @@ int main(int argc, char **args)
     PetscCall(MatDestroy(&B));
   }
   PetscCall(MatShift(A, 10.0));
+#if defined(HYPRE_USING_HIP)
+  PetscCall(MatConvert(A, MATAIJHIPSPARSE, MAT_INPLACE_MATRIX, &A));
+#elif defined(HYPRE_USING_CUDA)
+  PetscCall(MatConvert(A, MATAIJCUSPARSE, MAT_INPLACE_MATRIX, &A));
+#endif
   PetscCall(MatCreateDense(PETSC_COMM_WORLD, m, PETSC_DECIDE, PETSC_DECIDE, m, NULL, &B));
   PetscCall(MatCreateDense(PETSC_COMM_WORLD, m, PETSC_DECIDE, PETSC_DECIDE, m, NULL, &X));
   PetscCall(MatSetRandom(B, NULL));
