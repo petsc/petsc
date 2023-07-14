@@ -358,7 +358,15 @@ into the current directory, then opening the logfile in your browser.
 
 The flame graph output can be generated with the option ``-log_view :[logfile]:ascii_flamegraph``.
 It can then be visualised with either `FlameGraph <https://github.com/brendangregg/FlameGraph>`_
-or `speedscope <https://www.speedscope.app>`_.
+or `speedscope <https://www.speedscope.app>`_.  A flamegraph can be visualized directly from
+stdout using, for example,
+`ImageMagick's display utility <https://imagemagick.org/script/display.php>`:
+
+.. code-block::
+
+   cd $PETSC_DIR/src/sys/tests
+   make ex30
+   mpiexec -n 2 ./ex30 -log_view ::ascii_flamegraph | flamegraph | display
 
 Note that user-defined stages (see :any:`sec_profstages`) will be ignored when
 using this nested format.
@@ -711,7 +719,7 @@ Next, run your program with TAU. For instance, to profile `ex56`,
 
   cd $PETSC_DIR/src/snes/tutorials
   make ex56
-  mpirun -n 4 tau_exec -T mpi ./ex56 <args>
+  mpirun -n 4 tau_exec -T mpi ./ex56 -log_perfstubs <args>
 
 This should produce four ``profile.*`` files with profile data that can be
 viewed with ``paraprof/pprof``:
