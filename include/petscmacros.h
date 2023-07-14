@@ -1279,6 +1279,7 @@ static inline constexpr std::size_t PETSC_STATIC_ARRAY_LENGTH(const T &) noexcep
 #define PETSC_DEPRECATED_IDENTIFIER(__PETSC_DEPRECATION_MACRO__, major, minor, subminor, ...) \
   PETSC_DEPRECATED_IDENTIFIER_(__PETSC_DEPRECATION_MACRO__, PetscConcat6(SILENCE_DEPRECATION_WARNINGS_, major, _, minor, _, subminor), major, minor, subminor, __VA_ARGS__)
 
+#define PETSC_DEPRECATED_OBJECT(major, minor, subminor, replacement, ...)   PETSC_DEPRECATED_IDENTIFIER(PETSC_DEPRECATED_OBJECT_BASE, major, minor, subminor, replacement, __VA_ARGS__)
 #define PETSC_DEPRECATED_FUNCTION(major, minor, subminor, replacement, ...) PETSC_DEPRECATED_IDENTIFIER(PETSC_DEPRECATED_FUNCTION_BASE, major, minor, subminor, replacement, __VA_ARGS__)
 #define PETSC_DEPRECATED_TYPEDEF(major, minor, subminor, replacement, ...)  PETSC_DEPRECATED_IDENTIFIER(PETSC_DEPRECATED_TYPEDEF_BASE, major, minor, subminor, replacement, __VA_ARGS__)
 #define PETSC_DEPRECATED_ENUM(major, minor, subminor, replacement, ...)     PETSC_DEPRECATED_IDENTIFIER(PETSC_DEPRECATED_ENUM_BASE, major, minor, subminor, replacement, __VA_ARGS__)
