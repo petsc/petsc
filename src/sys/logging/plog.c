@@ -2003,17 +2003,18 @@ PetscErrorCode PetscLogView(PetscViewer viewer)
 @*/
 PetscErrorCode PetscLogViewFromOptions(void)
 {
-  PetscViewer       viewer;
+  PetscInt          n_max = PETSC_LOG_VIEW_FROM_OPTIONS_MAX;
+  PetscViewer       viewers[PETSC_LOG_VIEW_FROM_OPTIONS_MAX];
+  PetscViewerFormat formats[PETSC_LOG_VIEW_FROM_OPTIONS_MAX];
   PetscBool         flg;
-  PetscViewerFormat format;
 
   PetscFunctionBegin;
-  PetscCall(PetscOptionsGetViewer(PETSC_COMM_WORLD, NULL, NULL, "-log_view", &viewer, &format, &flg));
-  if (flg) {
-    PetscCall(PetscViewerPushFormat(viewer, format));
-    PetscCall(PetscLogView(viewer));
-    PetscCall(PetscViewerPopFormat(viewer));
-    PetscCall(PetscViewerDestroy(&viewer));
+  PetscCall(PetscOptionsGetViewers(PETSC_COMM_WORLD, NULL, NULL, "-log_view", &n_max, viewers, formats, &flg));
+  for (PetscInt i = 0; i < n_max; i++) {
+    PetscCall(PetscViewerPushFormat(viewers[i], formats[i]));
+    PetscCall(PetscLogView(viewers[i]));
+    PetscCall(PetscViewerPopFormat(viewers[i]));
+    PetscCall(PetscViewerDestroy(&(viewers[i])));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }

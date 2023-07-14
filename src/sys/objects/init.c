@@ -6,6 +6,7 @@
   what malloc is being used until it has already processed the input.
 */
 #include <petsc/private/petscimpl.h> /*I  "petscsys.h"   I*/
+#include <petsc/private/logimpl.h>
 
 #if defined(PETSC_HAVE_UNISTD_H)
   #include <unistd.h>
@@ -487,8 +488,8 @@ PETSC_INTERN PetscErrorCode PetscOptionsCheckInitial_Private(const char help[])
   if (flag) PetscCall(PetscCheckPointerSetIntensity(intensity));
   if (PetscDefined(USE_LOG)) {
     char              mname[PETSC_MAX_PATH_LEN];
-    PetscViewerFormat format;
-    PetscBool         flg4 = PETSC_FALSE;
+    PetscInt          n_max = PETSC_LOG_VIEW_FROM_OPTIONS_MAX;
+    PetscViewerFormat format[PETSC_LOG_VIEW_FROM_OPTIONS_MAX];
 
     mname[0] = 0;
     PetscCall(PetscOptionsGetString(NULL, NULL, "-history", mname, sizeof(mname), &flg1));
@@ -530,18 +531,25 @@ PETSC_INTERN PetscErrorCode PetscOptionsCheckInitial_Private(const char help[])
       PetscCall(PetscLogTraceBegin(file));
     }
 
-    PetscCall(PetscOptionsGetViewer(comm, NULL, NULL, "-log_view", NULL, &format, &flg4));
-    if (flg4) {
-      if (format == PETSC_VIEWER_ASCII_XML || format == PETSC_VIEWER_ASCII_FLAMEGRAPH) {
-        PetscCall(PetscLogNestedBegin());
-      } else {
-        PetscCall(PetscLogDefaultBegin());
+    PetscCall(PetscOptionsGetViewers(comm, NULL, NULL, "-log_view", &n_max, NULL, format, NULL));
+    if (n_max > 0) {
+      PetscBool any_nested  = PETSC_FALSE;
+      PetscBool any_default = PETSC_FALSE;
+
+      for (PetscInt i = 0; i < n_max; i++) {
+        if (format[i] == PETSC_VIEWER_ASCII_XML || format[i] == PETSC_VIEWER_ASCII_FLAMEGRAPH) {
+          any_nested = PETSC_TRUE;
+        } else {
+          any_default = PETSC_TRUE;
+        }
       }
-    }
-    if (flg4 && (format == PETSC_VIEWER_ASCII_XML || format == PETSC_VIEWER_ASCII_FLAMEGRAPH)) {
-      PetscReal threshold = PetscRealConstant(0.01);
-      PetscCall(PetscOptionsGetReal(NULL, NULL, "-log_threshold", &threshold, &flg1));
-      if (flg1) PetscCall(PetscLogSetThreshold((PetscLogDouble)threshold, NULL));
+      if (any_default) { PetscCall(PetscLogDefaultBegin()); }
+      if (any_nested) {
+        PetscCall(PetscLogNestedBegin());
+        PetscReal threshold = PetscRealConstant(0.01);
+        PetscCall(PetscOptionsGetReal(NULL, NULL, "-log_threshold", &threshold, &flg1));
+        if (flg1) PetscCall(PetscLogSetThreshold((PetscLogDouble)threshold, NULL));
+      }
     }
   }
 

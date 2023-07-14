@@ -432,30 +432,30 @@ PetscErrorCode PetscOptionsGetViewer(MPI_Comm comm, PetscOptions options, const 
 }
 
 /*@C
-   PetscOptionsGetViewers - Get multiple viewers from a comma-separated list in the options database
+  PetscOptionsGetViewers - Get multiple viewers from a comma-separated list in the options database
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  comm    - the communicator to own the viewer
-.  options - options database, use `NULL` for default global database
-.  pre     - the string to prepend to the name or `NULL`
-.  name    - the option one is seeking
--  n_max   - on input: the maximum number of viewers; on output: the number of viewers in the comma-separated list
+  Input Parameters:
++ comm    - the communicator to own the viewer
+. options - options database, use `NULL` for default global database
+. pre     - the string to prepend to the name or `NULL`
+. name    - the option one is seeking
+- n_max   - on input: the maximum number of viewers; on output: the number of viewers in the comma-separated list
 
-   Output Parameters:
-+  viewers - an array to hold at least `n_max` `PetscViewer`s, or `NULL` if not needed; on output: if not `NULL`, the
+  Output Parameters:
++ viewers - an array to hold at least `n_max` `PetscViewer`s, or `NULL` if not needed; on output: if not `NULL`, the
              first `n_max` entries are initialized `PetscViewer`s
-.  formats - an array to hold at least `n_max` `PetscViewerFormat`s, or `NULL` if not needed; on output: if not
+. formats - an array to hold at least `n_max` `PetscViewerFormat`s, or `NULL` if not needed; on output: if not
              `NULL`, the first `n_max` entries are valid `PetscViewewFormat`s
--  set     - `PETSC_TRUE` if found, else `PETSC_FALSE`
+- set     - `PETSC_TRUE` if found, else `PETSC_FALSE`
 
-   Level: intermediate
+  Level: intermediate
 
-   Note:
-   See `PetscOptionsGetViewer()` for how the format strings for the viewers are interpreted.  Use `PetscViewerDestroy()` on each viewer, otherwise a memory leak will occur.
+  Note:
+  See `PetscOptionsGetViewer()` for how the format strings for the viewers are interpreted.  Use `PetscViewerDestroy()` on each viewer, otherwise a memory leak will occur.
 
-   If PETSc is configured with `--with-viewfromoptions=0` this function always returns with `n_max` of 0 and `set` of `PETSC_FALSE`
+  If PETSc is configured with `--with-viewfromoptions=0` this function always returns with `n_max` of 0 and `set` of `PETSC_FALSE`
 
 .seealso: [](sec_viewers), `PetscOptionsGetViewer()`
 @*/

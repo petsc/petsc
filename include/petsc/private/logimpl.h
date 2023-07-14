@@ -204,4 +204,6 @@ PETSC_INTERN PetscInt PetscLogGetTid(void);
 #endif
 
 PETSC_EXTERN PetscBool PetscLogGpuTimeFlag;
+
+#define PETSC_LOG_VIEW_FROM_OPTIONS_MAX 4
 #endif /* PETSC_LOGIMPL_H */

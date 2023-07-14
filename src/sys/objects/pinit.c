@@ -1190,7 +1190,7 @@ PETSC_INTERN PetscErrorCode PetscInitialize_Common(const char *prog, const char 
         however it slows things down and gives a distorted view of the overall runtime.
 . -log_trace [filename]                                - Print traces of all PETSc calls to the screen (useful to determine where a program
         hangs without running in the debugger).  See `PetscLogTraceBegin()`.
-. -log_view [:filename:format]                         - Prints summary of flop and timing information to screen or file, see `PetscLogView()`.
+. -log_view [:filename:format][,[:filename:format]...] - Prints summary of flop and timing information to screen or file, see `PetscLogView()` (up to 4 viewers)
 . -log_view_memory                                     - Includes in the summary from -log_view the memory used in each event, see `PetscLogView()`.
 . -log_view_gpu_time                                   - Includes in the summary from -log_view the time used in each GPU kernel, see `PetscLogView().
 . -log_exclude: <vec,mat,pc,ksp,snes>                  - excludes subset of object classes from logging
@@ -1201,12 +1201,10 @@ PETSC_INTERN PetscErrorCode PetscInitialize_Common(const char *prog, const char 
 . -viewfromoptions on,off                              - Enable or disable `XXXSetFromOptions()` calls, for applications with many small solves turn this off
 - -check_pointer_intensity 0,1,2                       - if pointers are checked for validity (debug version only), using 0 will result in faster code
 
-    Only one of -log_trace, -log_view, -log_all, -log, or -log_mpe may be used at a time
-
   Options Database Keys for SAWs:
 + -saws_port <portnumber>        - port number to publish SAWs data, default is 8080
 . -saws_port_auto_select         - have SAWs select a new unique port number where it publishes the data, the URL is printed to the screen
-                            this is useful when you are running many jobs that utilize SAWs at the same time
+                                   this is useful when you are running many jobs that utilize SAWs at the same time
 . -saws_log <filename>           - save a log of all SAWs communication
 . -saws_https <certificate file> - have SAWs use HTTPS instead of HTTP
 - -saws_root <directory>         - allow SAWs to have access to the given directory to search for requested resources and files
