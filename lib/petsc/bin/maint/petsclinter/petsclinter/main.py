@@ -200,10 +200,19 @@ def main(
       assert ret != ReturnCode.SUCCESS
   return int(ret)
 
-def __build_arg_parser(parent_parsers=None):
+
+__ADVANCED_HELP_FLAG__ = '--help-hidden'
+
+def __build_arg_parser(parent_parsers=None, advanced_help=False):
   import argparse
 
-  def add_bool_argument(prsr, *args, **kwargs):
+  def add_advanced_argument(prsr, *args, help=None, **kwargs):
+    def help_str(descr):
+      return descr if advanced_help else argparse.SUPPRESS
+
+    return prsr.add_argument(*args, help=help_str(help), **kwargs)
+
+  def add_bool_argument(prsr, *args, advanced=False, **kwargs):
     def str2bool(v):
       if isinstance(v, bool):
         return v
@@ -214,7 +223,14 @@ def __build_arg_parser(parent_parsers=None):
         return False
       raise argparse.ArgumentTypeError(f'Boolean value expected, got \'{v}\'')
 
-    return prsr.add_argument(*args, **kwargs, metavar='bool', type=str2bool)
+    kwargs.setdefault('nargs', '?')
+    kwargs.setdefault('const', True)
+    kwargs.setdefault('default', False)
+    kwargs.setdefault('metavar', 'bool')
+    kwargs['type'] = str2bool
+    if advanced:
+      return add_advanced_argument(prsr, *args, **kwargs)
+    return prsr.add_argument(*args, **kwargs)
 
   if parent_parsers is None:
     parent_parsers = []
@@ -238,19 +254,25 @@ def __build_arg_parser(parent_parsers=None):
     parents=parent_parsers
   )
 
+  # don't use an argument group for this so it appears directly next to default --help
+  # description!
+  add_bool_argument(
+    parser, __ADVANCED_HELP_FLAG__, help='show more help output (e.g. the various check flags)'
+  )
+
   group_general = parser.add_argument_group(title='General options')
   group_general.add_argument('--version', action='version', version=f'%(prog)s {pl.version_str()}')
-  add_bool_argument(group_general, '-v', '--verbose', nargs='?', const=True, default=False, help='verbose progress printed to screen')
-  add_bool_argument(group_general, '--pm', nargs='?', const=True, default=False, help='launch an IPython post_mortem() on any raised exceptions (implies -j/--jobs 1)')
-  add_bool_argument(group_general, '--werror', nargs='?', const=True, default=False, help='treat all warnings as errors')
+  add_bool_argument(group_general, '-v', '--verbose', help='verbose progress printed to screen')
+  add_bool_argument(group_general, '--pm', help='launch an IPython post_mortem() on any raised exceptions (implies -j/--jobs 1)')
+  add_bool_argument(group_general, '--werror', help='treat all warnings as errors')
   group_general.add_argument('-j', '--jobs', type=int, const=-1, default=-1, nargs='?', help='number of multiprocessing jobs, -1 means number of processors on machine', dest='workers')
   group_general.add_argument('-p', '--patch-dir', help='directory to store patches in if they are generated, defaults to SRC_DIR/../petscLintPatches', dest='patch_dir')
-  add_bool_argument(group_general, '-a', '--apply-patches', nargs='?', const=True, default=False, help='automatically apply patches that are saved to file', dest='apply_patches')
+  add_bool_argument(group_general, '-a', '--apply-patches', help='automatically apply patches that are saved to file', dest='apply_patches')
   group_general.add_argument('--CXXFLAGS', nargs='+', default=[], help='extra flags to pass to CXX compiler', dest='extra_compiler_flags')
   group_general.add_argument('--INCLUDEFLAGS', nargs='+', default=[], help='extra include flags to pass to CXX compiler', dest='extra_header_includes')
 
   group_libclang = parser.add_argument_group(title='libClang location settings')
-  add_bool_argument(group_libclang, '--clang-compat-check', nargs='?', const=True, default=True, help='enable clang compatibility check')
+  add_bool_argument(group_libclang, '--clang-compat-check', default=True, help='enable clang compatibility check')
   group          = group_libclang.add_mutually_exclusive_group(required=False)
   group.add_argument('--clang_dir', metavar='path', type=pl.Path, nargs='?', default=clang_dir, help='directory containing libclang.[so|dylib|dll], if not given attempts to automatically detect it via llvm-config', dest='clang_dir')
   group.add_argument('--clang_lib', metavar='path', type=pl.Path, nargs='?', help='direct location of libclang.[so|dylib|dll], overrides clang directory if set', dest='clang_lib')
@@ -261,12 +283,12 @@ def __build_arg_parser(parent_parsers=None):
 
   group_test = parser.add_argument_group(title='Testing settings')
   group_test.add_argument('--test', metavar='path', nargs='?', const='__at_src__', help='test the linter for correctness. Optionally provide a directory containing the files against which to compare patches, defaults to SRC_DIR/output if no argument is given. The files of correct patches must be in the format [path_from_src_dir_to_testFileName].out', dest='test_output_dir')
-  add_bool_argument(group_test, '--replace', nargs='?', const=True, default=False, help='replace output files in test directory with patches generated', dest='replace_tests')
+  add_bool_argument(group_test, '--replace', help='replace output files in test directory with patches generated', dest='replace_tests')
 
   group_diag = parser.add_argument_group(title='Diagnostics settings')
   check_function_map_keys = list(pl.checks._register.check_function_map.keys())
   filter_func_choices     = ', '.join(check_function_map_keys)
-  group_diag.add_argument('--functions', nargs='+', choices=check_function_map_keys, metavar='FUNCTIONNAME', help='filter to display errors only related to list of provided function names, default is all functions. Choose from available function names: '+filter_func_choices, dest='check_function_filter')
+  add_advanced_argument(group_diag, '--functions', nargs='+', choices=check_function_map_keys, metavar='FUNCTIONNAME', help='filter to display errors only related to list of provided function names, default is all functions. Choose from available function names: '+filter_func_choices, dest='check_function_filter')
 
   class CheckFilter(argparse.Action):
     def __call__(self, parser, namespace, values, *args, **kwargs):
@@ -280,7 +302,7 @@ def __build_arg_parser(parent_parsers=None):
       return
 
   add_bool_argument(
-    group_diag, '-fdiagnostics-all', nargs='?', const=True, default=True, action=CheckFilter,
+    group_diag, '-fdiagnostics-all', default=True, action=CheckFilter, advanced=True,
     help='enable all diagnostics'
   )
 
@@ -289,7 +311,7 @@ def __build_arg_parser(parent_parsers=None):
   for diag, helpstr in sorted(pl.DiagnosticManager.registered().items()):
     diag_flag = f'{flag_prefix}{diag}'
     add_bool_argument(
-      group_diag, diag_flag, nargs='?', const=True, default=True, action=CheckFilter, help=helpstr
+      group_diag, diag_flag, default=True, action=CheckFilter, advanced=True, help=helpstr
     )
     all_diagnostics.add(diag_flag)
 
@@ -326,8 +348,13 @@ def parse_command_line_args(argv=None, **kwargs):
   if argv is None:
     argv = sys.argv
 
+  kwargs.setdefault('advanced_help', __ADVANCED_HELP_FLAG__ in argv)
   parser, all_diagnostics = __build_arg_parser(**kwargs)
   args                    = parser.parse_args(args=expand_argv_globs(argv, tuple(all_diagnostics)))
+
+  if getattr(args, __ADVANCED_HELP_FLAG__.replace('-', '_').lstrip('_')):
+    parser.print_help()
+    parser.exit(0)
 
   if args.petsc_dir is None:
     raise RuntimeError('Could not determine PETSC_DIR from environment, please set via options')
