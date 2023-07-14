@@ -904,21 +904,6 @@
        [33m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
   200: {
   201:   return 0;
-[31m[1m./src/sys/tests/linter/testValidFunctionDocStrings.c:193:3: error:[0m Extra docstring parameter '...' not found in symbol parameter list [-fdoc-param-list-func-parameter-documentation]:
-  191: - a,b - some params
-  192: + nonExistentParam - this param does not exist
-> 193: . [33m[1m...[0m - variadic arguments
-         [33m[1m^^^[0m
-  194: 
-  195:   Level dev
-
-./src/sys/tests/linter/testValidFunctionDocStrings.c:199:1 Note: Parameter list defined here:
-  197: .see also: testStaticFunction()
-  198: @*/
-> 199: [33m[1mPetscErrorCode testParameterGrouping(PetscInt a, PetscInt b, ...)[0m
-       [33m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
-  200: {
-  201:   return 0;
 [31m[1m./src/sys/tests/linter/testValidFunctionDocStrings.c:195:9: error:[0m Unknown Level subheading 'dev', expected one of beginner, intermediate, advanced, developer, or deprecated [-fdoc-inline-list-level-spelling]:
   193: . ... - variadic arguments
   194: 
