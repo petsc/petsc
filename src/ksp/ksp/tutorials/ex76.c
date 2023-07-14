@@ -17,10 +17,6 @@ int main(int argc, char **args)
   char            dir[PETSC_MAX_PATH_LEN], name[PETSC_MAX_PATH_LEN], type[256];
   PetscBool3      share = PETSC_BOOL3_UNKNOWN;
   PetscBool       flg, set;
-#if defined(PETSC_USE_LOG)
-  PetscLogEvent event;
-#endif
-  PetscEventPerfInfo info1, info2;
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &args, NULL, help));
@@ -180,6 +176,9 @@ int main(int argc, char **args)
   if (flg) PetscCall(PCHPDDMGetSTShareSubKSP(pc, &flg));
 #endif
   if (flg && PetscDefined(USE_LOG)) {
+    PetscLogEvent      event;
+    PetscEventPerfInfo info1, info2;
+
     PetscCall(PetscLogEventRegister("MatLUFactorSym", PC_CLASSID, &event));
     PetscCall(PetscLogEventGetPerfInfo(PETSC_DETERMINE, event, &info1));
     PetscCall(PetscLogEventRegister("MatLUFactorNum", PC_CLASSID, &event));

@@ -504,9 +504,7 @@ PetscErrorCode MatDestroy_MPISELL(Mat mat)
   Mat_MPISELL *sell = (Mat_MPISELL *)mat->data;
 
   PetscFunctionBegin;
-#if defined(PETSC_USE_LOG)
   PetscCall(PetscLogObjectState((PetscObject)mat, "Rows=%" PetscInt_FMT ", Cols=%" PetscInt_FMT, mat->rmap->N, mat->cmap->N));
-#endif
   PetscCall(MatStashDestroy_Private(&mat->stash));
   PetscCall(VecDestroy(&sell->diag));
   PetscCall(MatDestroy(&sell->A));

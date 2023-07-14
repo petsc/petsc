@@ -263,20 +263,18 @@ PetscErrorCode FormOperator(DM networkdm, Mat A, Vec b)
 
 int main(int argc, char **argv)
 {
-  PetscInt    i, nbranch = 0, eStart, eEnd, vStart, vEnd;
-  PetscInt    seed = 0, nnode = 0;
-  PetscMPIInt size, rank;
-  DM          networkdm;
-  Vec         x, b;
-  Mat         A;
-  KSP         ksp;
-  PetscInt   *edgelist = NULL;
-  PetscInt    componentkey[2];
-  Node       *node;
-  Branch     *branch;
-#if defined(PETSC_USE_LOG)
+  PetscInt      i, nbranch = 0, eStart, eEnd, vStart, vEnd;
+  PetscInt      seed = 0, nnode = 0;
+  PetscMPIInt   size, rank;
+  DM            networkdm;
+  Vec           x, b;
+  Mat           A;
+  KSP           ksp;
+  PetscInt     *edgelist = NULL;
+  PetscInt      componentkey[2];
+  Node         *node;
+  Branch       *branch;
   PetscLogStage stage[3];
-#endif
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));

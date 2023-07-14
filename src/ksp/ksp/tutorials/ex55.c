@@ -9,20 +9,18 @@ Load of 1.0 in x direction on all nodes (not a true uniform load).\n\
 
 int main(int argc, char **args)
 {
-  Mat         Amat;
-  PetscInt    i, m, M, its, Istart, Iend, j, Ii, ix, ne = 4;
-  PetscReal   x, y, h;
-  Vec         xx, bb;
-  KSP         ksp;
-  PetscReal   soft_alpha = 1.e-3;
-  MPI_Comm    comm;
-  PetscBool   use_coords = PETSC_FALSE;
-  PetscMPIInt npe, mype;
-  PetscScalar DD[8][8], DD2[8][8];
-#if defined(PETSC_USE_LOG)
+  Mat           Amat;
+  PetscInt      i, m, M, its, Istart, Iend, j, Ii, ix, ne = 4;
+  PetscReal     x, y, h;
+  Vec           xx, bb;
+  KSP           ksp;
+  PetscReal     soft_alpha = 1.e-3;
+  MPI_Comm      comm;
+  PetscBool     use_coords = PETSC_FALSE;
+  PetscMPIInt   npe, mype;
+  PetscScalar   DD[8][8], DD2[8][8];
   PetscLogStage stage[2];
-#endif
-  PetscScalar DD1[8][8] = {
+  PetscScalar   DD1[8][8] = {
     {5.333333333333333E-01,  2.0000E-01,             -3.333333333333333E-01, 0.0000E+00,             -2.666666666666667E-01, -2.0000E-01,            6.666666666666667E-02,  0.0000E-00            },
     {2.0000E-01,             5.333333333333333E-01,  0.0000E-00,             6.666666666666667E-02,  -2.0000E-01,            -2.666666666666667E-01, 0.0000E-00,             -3.333333333333333E-01},
     {-3.333333333333333E-01, 0.0000E-00,             5.333333333333333E-01,  -2.0000E-01,            6.666666666666667E-02,  0.0000E-00,             -2.666666666666667E-01, 2.0000E-01            },
@@ -215,25 +213,17 @@ int main(int argc, char **args)
   }
 
   /* solve */
-#if defined(PETSC_USE_LOG)
   PetscCall(PetscLogStageRegister("Setup", &stage[0]));
   PetscCall(PetscLogStageRegister("Solve", &stage[1]));
   PetscCall(PetscLogStagePush(stage[0]));
-#endif
   PetscCall(KSPSetUp(ksp));
-#if defined(PETSC_USE_LOG)
   PetscCall(PetscLogStagePop());
-#endif
 
   PetscCall(VecSet(xx, .0));
 
-#if defined(PETSC_USE_LOG)
   PetscCall(PetscLogStagePush(stage[1]));
-#endif
   PetscCall(KSPSolve(ksp, bb, xx));
-#if defined(PETSC_USE_LOG)
   PetscCall(PetscLogStagePop());
-#endif
 
   PetscCall(KSPGetIterationNumber(ksp, &its));
 

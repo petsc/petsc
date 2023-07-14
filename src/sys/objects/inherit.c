@@ -4,18 +4,14 @@
 #include <petsc/private/petscimpl.h> /*I   "petscsys.h"    I*/
 #include <petscviewer.h>
 
-#if defined(PETSC_USE_LOG)
 PETSC_INTERN PetscObject *PetscObjects;
 PETSC_INTERN PetscInt     PetscObjectsCounts;
 PETSC_INTERN PetscInt     PetscObjectsMaxCounts;
 PETSC_INTERN PetscBool    PetscObjectsLog;
-#endif
 
-#if defined(PETSC_USE_LOG)
 PetscObject *PetscObjects       = NULL;
 PetscInt     PetscObjectsCounts = 0, PetscObjectsMaxCounts = 0;
 PetscBool    PetscObjectsLog = PETSC_FALSE;
-#endif
 
 PetscObjectId PetscObjectNewId_Internal(void)
 {
@@ -53,9 +49,8 @@ PetscErrorCode PetscHeaderCreate_Private(PetscObject h, PetscClassId classid, co
   h->cidx = (*cidx)++;
   PetscCallMPI(MPI_Comm_set_attr(h->comm, Petsc_CreationIdx_keyval, cidx));
 
-#if defined(PETSC_USE_LOG)
   /* Keep a record of object created */
-  if (PetscObjectsLog) {
+  if (PetscDefined(USE_LOG) && PetscObjectsLog) {
     PetscObject *newPetscObjects;
     PetscInt     newPetscObjectsMaxCounts;
 
@@ -77,7 +72,6 @@ PetscErrorCode PetscHeaderCreate_Private(PetscObject h, PetscClassId classid, co
     PetscObjects[PetscObjectsMaxCounts] = h;
     PetscObjectsMaxCounts               = newPetscObjectsMaxCounts;
   }
-#endif
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -146,8 +140,7 @@ PetscErrorCode PetscHeaderDestroy_Private(PetscObject obj, PetscBool clear_for_r
     PetscCall(PetscCommDestroy(&obj->comm));
     obj->classid = PETSCFREEDHEADER;
 
-#if PetscDefined(USE_LOG)
-    if (PetscObjectsLog) {
+    if (PetscDefined(USE_LOG) && PetscObjectsLog) {
       /* Record object removal from list of all objects */
       for (PetscInt i = 0; i < PetscObjectsMaxCounts; ++i) {
         if (PetscObjects[i] == obj) {
@@ -161,7 +154,6 @@ PetscErrorCode PetscHeaderDestroy_Private(PetscObject obj, PetscBool clear_for_r
         PetscObjectsMaxCounts = 0;
       }
     }
-#endif
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }

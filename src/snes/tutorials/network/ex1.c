@@ -466,9 +466,7 @@ int main(int argc, char **argv)
   PetscBool           ghost, viewJ = PETSC_FALSE, viewX = PETSC_FALSE, test = PETSC_FALSE, distribute = PETSC_TRUE, flg, printCoord = PETSC_FALSE, viewCSV = PETSC_FALSE, monitorIt = PETSC_FALSE;
   UserCtx             user;
   SNESConvergedReason reason;
-#if defined(PETSC_USE_LOG)
-  PetscLogStage stage[4];
-#endif
+  PetscLogStage       stage[4];
 
   /* Power subnetwork */
   UserCtx_Power *appctx_power                    = &user.appctx_power;

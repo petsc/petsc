@@ -17,17 +17,15 @@ Compare this to ex2 which solves the same problem without a DM.\n\n";
 
 int main(int argc, char **argv)
 {
-  DM          da;      /* distributed array */
-  Vec         x, b, u; /* approx solution, RHS, exact solution */
-  Mat         A;       /* linear system matrix */
-  KSP         ksp;     /* linear solver context */
-  PetscRandom rctx;    /* random number generator context */
-  PetscReal   norm;    /* norm of solution error */
-  PetscInt    i, j, its;
-  PetscBool   flg = PETSC_FALSE;
-#if defined(PETSC_USE_LOG)
+  DM            da;      /* distributed array */
+  Vec           x, b, u; /* approx solution, RHS, exact solution */
+  Mat           A;       /* linear system matrix */
+  KSP           ksp;     /* linear solver context */
+  PetscRandom   rctx;    /* random number generator context */
+  PetscReal     norm;    /* norm of solution error */
+  PetscInt      i, j, its;
+  PetscBool     flg = PETSC_FALSE;
   PetscLogStage stage;
-#endif
   DMDALocalInfo info;
 
   PetscFunctionBeginUser;

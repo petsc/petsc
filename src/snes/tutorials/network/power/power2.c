@@ -432,15 +432,13 @@ PetscErrorCode SetInitialValues(DM networkdm, Vec X, void *appctx)
 
 int main(int argc, char **argv)
 {
-  char          pfdata_file[PETSC_MAX_PATH_LEN] = "case9.m";
-  PFDATA       *pfdata1, *pfdata2;
-  PetscInt      numEdges1 = 0, numEdges2 = 0;
-  PetscInt     *edgelist1 = NULL, *edgelist2 = NULL, componentkey[4];
-  DM            networkdm;
-  UserCtx_Power User;
-#if defined(PETSC_USE_LOG)
-  PetscLogStage stage1, stage2;
-#endif
+  char            pfdata_file[PETSC_MAX_PATH_LEN] = "case9.m";
+  PFDATA         *pfdata1, *pfdata2;
+  PetscInt        numEdges1 = 0, numEdges2 = 0;
+  PetscInt       *edgelist1 = NULL, *edgelist2 = NULL, componentkey[4];
+  DM              networkdm;
+  UserCtx_Power   User;
+  PetscLogStage   stage1, stage2;
   PetscMPIInt     rank;
   PetscInt        nsubnet = 2, nv, ne, i, j, genj, loadj;
   const PetscInt *vtx, *edges;

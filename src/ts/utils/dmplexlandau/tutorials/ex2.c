@@ -619,18 +619,16 @@ static PetscErrorCode ProcessREOptions(REctx *rectx, const LandauCtx *ctx, DM dm
 
 int main(int argc, char **argv)
 {
-  DM          pack;
-  Vec         X;
-  PetscInt    dim = 2, nDMs;
-  TS          ts;
-  Mat         J;
-  PetscDS     prob;
-  LandauCtx  *ctx;
-  REctx      *rectx;
-  PetscMPIInt rank;
-#if defined(PETSC_USE_LOG)
+  DM            pack;
+  Vec           X;
+  PetscInt      dim = 2, nDMs;
+  TS            ts;
+  Mat           J;
+  PetscDS       prob;
+  LandauCtx    *ctx;
+  REctx        *rectx;
+  PetscMPIInt   rank;
   PetscLogStage stage;
-#endif
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));

@@ -252,6 +252,8 @@ PETSC_INTERN PetscHMapEvent eventInfoMap_th;
   #define PETSC_INTERN_TLS
 #endif
 
+PETSC_EXTERN PetscBool PetscLogGpuTimeFlag;
+
 #ifdef PETSC_USE_LOG
 
 /* Creation and destruction functions */
@@ -328,14 +330,12 @@ PETSC_INTERN PetscErrorCode PetscLogGetCurrentEvent_Internal(PetscLogEvent *);
 PETSC_INTERN PetscErrorCode PetscLogEventPause_Internal(PetscLogEvent);
 PETSC_INTERN PetscErrorCode PetscLogEventResume_Internal(PetscLogEvent);
 
-  #if defined(PETSC_HAVE_DEVICE)
-PETSC_EXTERN PetscBool PetscLogGpuTimeFlag;
-  #endif
 #else /* PETSC_USE_LOG */
   #define PetscLogGetCurrentEvent_Internal(event) ((*(event) = PETSC_DECIDE), PETSC_SUCCESS)
   #define PetscLogEventPause_Internal(event)      PETSC_SUCCESS
   #define PetscLogEventResume_Internal(event)     PETSC_SUCCESS
 #endif /* PETSC_USE_LOG */
+
 static inline PetscErrorCode PetscLogPauseCurrentEvent_Internal(PetscLogEvent *event)
 {
   PetscFunctionBegin;

@@ -10,14 +10,12 @@ int global_index(PetscInt i, PetscInt j, PetscInt k, PetscInt m, PetscInt n)
 
 int main(int argc, char **argv)
 {
-  Mat         A, B, C, PtAP, PtAP_copy, PtAP_squared;
-  PetscInt    i, M, N, Istart, Iend, n = 7, j, J, Ii, m = 8, k, o = 1;
-  PetscScalar v;
-  PetscBool   equal = PETSC_FALSE, mat_view = PETSC_FALSE;
-  char        stencil[PETSC_MAX_PATH_LEN];
-#if defined(PETSC_USE_LOG)
+  Mat           A, B, C, PtAP, PtAP_copy, PtAP_squared;
+  PetscInt      i, M, N, Istart, Iend, n = 7, j, J, Ii, m = 8, k, o = 1;
+  PetscScalar   v;
+  PetscBool     equal = PETSC_FALSE, mat_view = PETSC_FALSE;
+  char          stencil[PETSC_MAX_PATH_LEN];
   PetscLogStage fullMatMatMultStage;
-#endif
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));

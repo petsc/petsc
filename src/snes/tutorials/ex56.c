@@ -191,20 +191,18 @@ PetscErrorCode zero(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt 
 
 int main(int argc, char **args)
 {
-  Mat         Amat;
-  SNES        snes;
-  KSP         ksp;
-  MPI_Comm    comm;
-  PetscMPIInt rank;
-#if defined(PETSC_USE_LOG)
+  Mat           Amat;
+  SNES          snes;
+  KSP           ksp;
+  MPI_Comm      comm;
+  PetscMPIInt   rank;
   PetscLogStage stage[17];
-#endif
-  PetscBool test_nonzero_cols = PETSC_FALSE, use_nearnullspace = PETSC_TRUE, attach_nearnullspace = PETSC_FALSE;
-  Vec       xx, bb;
-  PetscInt  iter, i, N, dim = 3, max_conv_its, sizes[7], run_type = 1, Ncomp = dim;
-  DM        dm;
-  PetscBool flg;
-  PetscReal Lx, mdisp[10], err[10];
+  PetscBool     test_nonzero_cols = PETSC_FALSE, use_nearnullspace = PETSC_TRUE, attach_nearnullspace = PETSC_FALSE;
+  Vec           xx, bb;
+  PetscInt      iter, i, N, dim = 3, max_conv_its, sizes[7], run_type = 1, Ncomp = dim;
+  DM            dm;
+  PetscBool     flg;
+  PetscReal     Lx, mdisp[10], err[10];
   PetscFunctionBeginUser;
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &args, (char *)0, help));

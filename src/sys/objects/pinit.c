@@ -739,9 +739,7 @@ hipStream_t PetscDefaultHipStream = NULL;
 #if PetscDefined(HAVE_DLFCN_H)
   #include <dlfcn.h>
 #endif
-#if PetscDefined(USE_LOG)
 PETSC_INTERN PetscErrorCode PetscLogInitialize(void);
-#endif
 #if PetscDefined(HAVE_VIENNACL)
 PETSC_EXTERN PetscErrorCode PetscViennaCLInit(void);
 PetscBool                   PetscViennaCLSynchronize = PETSC_FALSE;
@@ -1003,9 +1001,7 @@ PETSC_INTERN PetscErrorCode PetscInitialize_Common(const char *prog, const char 
     This is the last thing we do before returning to the user code to prevent having the
     logging numbers contaminated by any startup time associated with MPI
   */
-#if defined(PETSC_USE_LOG)
   PetscCall(PetscLogInitialize());
-#endif
 
   /*
    Initialize PetscDevice and PetscDeviceContext
@@ -1201,6 +1197,7 @@ PETSC_INTERN PetscErrorCode PetscInitialize_Common(const char *prog, const char 
 . -log_all [filename]                                  - Logs extensive profiling information  See `PetscLogDump()`.
 . -log [filename]                                      - Logs basic profiline information  See `PetscLogDump()`.
 . -log_mpe [filename]                                  - Creates a logfile viewable by the utility Jumpshot (in MPICH distribution)
+. -log_perfstubs                                       - Starts a log handler with the perfstubs interface (which is used by TAU)
 . -viewfromoptions on,off                              - Enable or disable `XXXSetFromOptions()` calls, for applications with many small solves turn this off
 - -check_pointer_intensity 0,1,2                       - if pointers are checked for validity (debug version only), using 0 will result in faster code
 
@@ -1287,12 +1284,10 @@ PetscErrorCode PetscInitialize(int *argc, char ***args, const char file[], const
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-#if PetscDefined(USE_LOG)
 PETSC_INTERN PetscObject *PetscObjects;
 PETSC_INTERN PetscInt     PetscObjectsCounts;
 PETSC_INTERN PetscInt     PetscObjectsMaxCounts;
 PETSC_INTERN PetscBool    PetscObjectsLog;
-#endif
 
 /*
     Frees all the MPI types and operations that PETSc may have created
@@ -1331,9 +1326,7 @@ PetscErrorCode PetscFreeMPIResources(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-#if PetscDefined(USE_LOG)
 PETSC_INTERN PetscErrorCode PetscLogFinalize(void);
-#endif
 
 /*@C
   PetscFinalize - Checks for options to be called at the conclusion
@@ -1364,9 +1357,7 @@ PetscErrorCode PetscFinalize(void)
   PetscInt    nopt;
   PetscBool   flg1 = PETSC_FALSE, flg2 = PETSC_FALSE, flg3 = PETSC_FALSE;
   PetscBool   flg;
-#if defined(PETSC_USE_LOG)
-  char mname[PETSC_MAX_PATH_LEN];
-#endif
+  char        mname[PETSC_MAX_PATH_LEN];
 
   PetscFunctionBegin;
   PetscCheck(PetscInitializeCalled, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "PetscInitialize() must be called before PetscFinalize()");
@@ -1441,47 +1432,42 @@ PetscErrorCode PetscFinalize(void)
   if (flg2) PetscCall(PetscMemoryView(PETSC_VIEWER_STDOUT_WORLD, "Summary of Memory Usage in PETSc\n"));
 #endif
 
-#if defined(PETSC_USE_LOG)
-  flg1 = PETSC_FALSE;
-  PetscCall(PetscOptionsGetBool(NULL, NULL, "-get_total_flops", &flg1, NULL));
-  if (flg1) {
-    PetscLogDouble flops = 0;
-    PetscCallMPI(MPI_Reduce(&petsc_TotalFlops, &flops, 1, MPI_DOUBLE, MPI_SUM, 0, PETSC_COMM_WORLD));
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Total flops over all processors %g\n", flops));
+  if (PetscDefined(USE_LOG)) {
+    flg1 = PETSC_FALSE;
+    PetscCall(PetscOptionsGetBool(NULL, NULL, "-get_total_flops", &flg1, NULL));
+    if (flg1) {
+      PetscLogDouble flops = 0;
+      PetscCallMPI(MPI_Reduce(&petsc_TotalFlops, &flops, 1, MPI_DOUBLE, MPI_SUM, 0, PETSC_COMM_WORLD));
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Total flops over all processors %g\n", flops));
+    }
   }
-#endif
 
-#if defined(PETSC_USE_LOG)
-  #if defined(PETSC_HAVE_MPE)
-  mname[0] = 0;
-  PetscCall(PetscOptionsGetString(NULL, NULL, "-log_mpe", mname, sizeof(mname), &flg1));
-  if (flg1) {
-    if (mname[0]) PetscCall(PetscLogMPEDump(mname));
-    else PetscCall(PetscLogMPEDump(0));
+  if (PetscDefined(USE_LOG) && PetscDefined(HAVE_MPE)) {
+    mname[0] = 0;
+    PetscCall(PetscOptionsGetString(NULL, NULL, "-log_mpe", mname, sizeof(mname), &flg1));
+    if (flg1) PetscCall(PetscLogMPEDump(mname[0] ? mname : NULL));
   }
-  #endif
-#endif
 
   /*
      Free all objects registered with PetscObjectRegisterDestroy() such as PETSC_VIEWER_XXX_().
   */
   PetscCall(PetscObjectRegisterDestroyAll());
 
-#if defined(PETSC_USE_LOG)
-  PetscCall(PetscOptionsPushGetViewerOff(PETSC_FALSE));
-  PetscCall(PetscLogViewFromOptions());
-  PetscCall(PetscOptionsPopGetViewerOff());
+  if (PetscDefined(USE_LOG)) {
+    PetscCall(PetscOptionsPushGetViewerOff(PETSC_FALSE));
+    PetscCall(PetscLogViewFromOptions());
+    PetscCall(PetscOptionsPopGetViewerOff());
 
-  /*
-     Free any objects created by the last block of code.
-  */
-  PetscCall(PetscObjectRegisterDestroyAll());
+    /*
+       Free any objects created by the last block of code.
+       */
+    PetscCall(PetscObjectRegisterDestroyAll());
 
-  mname[0] = 0;
-  PetscCall(PetscOptionsGetString(NULL, NULL, "-log_all", mname, sizeof(mname), &flg1));
-  PetscCall(PetscOptionsGetString(NULL, NULL, "-log", mname, sizeof(mname), &flg2));
-  if (flg1 || flg2) PetscCall(PetscLogDump(mname));
-#endif
+    mname[0] = 0;
+    PetscCall(PetscOptionsGetString(NULL, NULL, "-log_all", mname, sizeof(mname), &flg1));
+    PetscCall(PetscOptionsGetString(NULL, NULL, "-log", mname, sizeof(mname), &flg2));
+    if (flg1 || flg2) PetscCall(PetscLogDump(mname));
+  }
 
   flg1 = PETSC_FALSE;
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-no_signal_handler", &flg1, NULL));
@@ -1541,11 +1527,10 @@ PetscErrorCode PetscFinalize(void)
   }
 #endif
 
-#if defined(PETSC_USE_LOG)
   /*
        List all objects the user may have forgot to free
   */
-  if (PetscObjectsLog) {
+  if (PetscDefined(USE_LOG) && PetscObjectsLog) {
     PetscCall(PetscOptionsHasName(NULL, NULL, "-objects_dump", &flg1));
     if (flg1) {
       MPI_Comm local_comm;
@@ -1559,22 +1544,17 @@ PetscErrorCode PetscFinalize(void)
       PetscCallMPI(MPI_Comm_free(&local_comm));
     }
   }
-#endif
 
-#if defined(PETSC_USE_LOG)
   PetscObjectsCounts    = 0;
   PetscObjectsMaxCounts = 0;
   PetscCall(PetscFree(PetscObjects));
-#endif
 
   /*
      Destroy any packages that registered a finalize
   */
   PetscCall(PetscRegisterFinalizeAll());
 
-#if defined(PETSC_USE_LOG)
   PetscCall(PetscLogFinalize());
-#endif
 
   /*
      Print PetscFunctionLists that have not been properly freed

@@ -246,9 +246,7 @@ int main(int argc, char **argv)
   Vec            lambda[1];
   PetscBool      forwardonly = PETSC_FALSE, implicitform = PETSC_TRUE, mf = PETSC_FALSE;
   PetscLogDouble v1, v2;
-#if defined(PETSC_USE_LOG)
-  PetscLogStage stage;
-#endif
+  PetscLogStage  stage;
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));

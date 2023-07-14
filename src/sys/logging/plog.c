@@ -18,13 +18,7 @@
   #include <../src/sys/perfstubs/timer.h>
 #endif
 
-PetscLogEvent PETSC_LARGEST_EVENT = PETSC_EVENT;
-
-#if defined(PETSC_USE_LOG)
-  #include <petscmachineinfo.h>
-  #include <petscconfiginfo.h>
-
-  #if defined(PETSC_HAVE_THREADSAFETY)
+#if defined(PETSC_HAVE_THREADSAFETY)
 
 PetscInt           petsc_log_gid = -1; /* Global threadId counter */
 PETSC_TLS PetscInt petsc_log_tid = -1; /* Local threadId */
@@ -33,34 +27,19 @@ PETSC_TLS PetscInt petsc_log_tid = -1; /* Local threadId */
 PetscSpinlock  PetscLogSpinLock;
 PetscHMapEvent eventInfoMap_th = NULL;
 
-  #endif
+PetscInt PetscLogGetTid(void)
+{
+  if (petsc_log_tid < 0) {
+    PetscCall(PetscSpinlockLock(&PetscLogSpinLock));
+    petsc_log_tid = ++petsc_log_gid;
+    PetscCall(PetscSpinlockUnlock(&PetscLogSpinLock));
+  }
+  return petsc_log_tid;
+}
 
-/* used in the MPI_XXX() count macros in petsclog.h */
+#endif
 
-/* Action and object logging variables */
-Action   *petsc_actions    = NULL;
-Object   *petsc_objects    = NULL;
-PetscBool petsc_logActions = PETSC_FALSE;
-PetscBool petsc_logObjects = PETSC_FALSE;
-int       petsc_numActions = 0, petsc_maxActions = 100;
-int       petsc_numObjects = 0, petsc_maxObjects = 100;
-int       petsc_numObjectsDestroyed = 0;
-
-  #include <../src/sys/logging/handler/impls/default/logdefault.h>
-
-  #define PETSC_LOG_HANDLER_HOT_BLANK \
-    { \
-      NULL, NULL, NULL, NULL, NULL, NULL \
-    }
-  #define PETSC_LOG_HANDLERS_BLANK \
-    { \
-      PETSC_LOG_HANDLER_HOT_BLANK, PETSC_LOG_HANDLER_HOT_BLANK, PETSC_LOG_HANDLER_HOT_BLANK, PETSC_LOG_HANDLER_HOT_BLANK \
-    }
-
-PetscLogHandlerHot PetscLogHandlers[PETSC_LOG_HANDLER_MAX] = PETSC_LOG_HANDLERS_BLANK;
-
-  #undef PETSC_LOG_HANDLERS_BLANK
-  #undef PETSC_LOG_HANDLERS_HOT_BLANK
+PetscLogEvent PETSC_LARGEST_EVENT = PETSC_EVENT;
 
 /* Global counters */
 PetscLogDouble petsc_BaseTime        = 0.0;
@@ -99,7 +78,6 @@ PETSC_TLS PetscLogDouble petsc_allreduce_ct_th    = 0.0;
 PETSC_TLS PetscLogDouble petsc_gather_ct_th       = 0.0;
 PETSC_TLS PetscLogDouble petsc_scatter_ct_th      = 0.0;
 
-  #if defined(PETSC_HAVE_DEVICE)
 PetscLogDouble petsc_ctog_ct        = 0.0; /* The total number of CPU to GPU copies */
 PetscLogDouble petsc_gtoc_ct        = 0.0; /* The total number of GPU to CPU copies */
 PetscLogDouble petsc_ctog_sz        = 0.0; /* The total size of CPU to GPU copies */
@@ -121,7 +99,44 @@ PETSC_TLS PetscLogDouble petsc_ctog_sz_scalar_th = 0.0;
 PETSC_TLS PetscLogDouble petsc_gtoc_sz_scalar_th = 0.0;
 PETSC_TLS PetscLogDouble petsc_gflops_th         = 0.0;
 PETSC_TLS PetscLogDouble petsc_gtime_th          = 0.0;
-  #endif
+
+PetscBool PetscLogMemory = PETSC_FALSE;
+PetscBool PetscLogSyncOn = PETSC_FALSE;
+
+PetscBool PetscLogGpuTimeFlag = PETSC_FALSE;
+
+PetscLogState petsc_log_state = NULL;
+
+#define PETSC_LOG_HANDLER_HOT_BLANK \
+  { \
+    NULL, NULL, NULL, NULL, NULL, NULL \
+  }
+
+PetscLogHandlerHot PetscLogHandlers[PETSC_LOG_HANDLER_MAX] = {
+  PETSC_LOG_HANDLER_HOT_BLANK,
+  PETSC_LOG_HANDLER_HOT_BLANK,
+  PETSC_LOG_HANDLER_HOT_BLANK,
+  PETSC_LOG_HANDLER_HOT_BLANK,
+};
+
+#undef PETSC_LOG_HANDLERS_HOT_BLANK
+
+#if defined(PETSC_USE_LOG)
+  #include <petscmachineinfo.h>
+  #include <petscconfiginfo.h>
+
+/* used in the MPI_XXX() count macros in petsclog.h */
+
+/* Action and object logging variables */
+Action   *petsc_actions    = NULL;
+Object   *petsc_objects    = NULL;
+PetscBool petsc_logActions = PETSC_FALSE;
+PetscBool petsc_logObjects = PETSC_FALSE;
+int       petsc_numActions = 0, petsc_maxActions = 100;
+int       petsc_numObjects = 0, petsc_maxObjects = 100;
+int       petsc_numObjectsDestroyed = 0;
+
+  #include <../src/sys/logging/handler/impls/default/logdefault.h>
 
   #if defined(PETSC_HAVE_THREADSAFETY)
 PetscErrorCode PetscAddLogDouble(PetscLogDouble *tot, PetscLogDouble *tot_th, PetscLogDouble tmp)
@@ -144,19 +159,7 @@ PetscErrorCode PetscAddLogDoubleCnt(PetscLogDouble *cnt, PetscLogDouble *tot, Pe
   return PETSC_SUCCESS;
 }
 
-PetscInt PetscLogGetTid(void)
-{
-  if (petsc_log_tid < 0) {
-    PetscCall(PetscSpinlockLock(&PetscLogSpinLock));
-    petsc_log_tid = ++petsc_log_gid;
-    PetscCall(PetscSpinlockUnlock(&PetscLogSpinLock));
-  }
-  return petsc_log_tid;
-}
-
   #endif
-
-PetscLogState petsc_log_state = NULL;
 
 static PetscErrorCode PetscLogTryGetHandler(PetscLogHandlerType type, PetscLogHandler *handler)
 {
@@ -210,167 +213,6 @@ PetscErrorCode (*PetscLogPHC)(PetscObject)                                      
 PetscErrorCode (*PetscLogPHD)(PetscObject)                                                            = NULL;
 PetscErrorCode (*PetscLogPLB)(PetscLogEvent, int, PetscObject, PetscObject, PetscObject, PetscObject) = NULL;
 PetscErrorCode (*PetscLogPLE)(PetscLogEvent, int, PetscObject, PetscObject, PetscObject, PetscObject) = NULL;
-
-/* Tracing event logging variables */
-FILE            *petsc_tracefile          = NULL;
-int              petsc_tracelevel         = 0;
-const char      *petsc_traceblanks        = "                                                                                                    ";
-char             petsc_tracespace[128]    = " ";
-PetscLogDouble   petsc_tracetime          = 0.0;
-static PetscBool PetscLogInitializeCalled = PETSC_FALSE;
-
-static PetscIntStack current_log_event_stack = NULL;
-
-PETSC_INTERN PetscErrorCode PetscLogInitialize(void)
-{
-  int       stage;
-  PetscBool opt;
-
-  PetscFunctionBegin;
-  if (PetscLogInitializeCalled) PetscFunctionReturn(PETSC_SUCCESS);
-  PetscLogInitializeCalled = PETSC_TRUE;
-
-  PetscCall(PetscIntStackCreate(&current_log_event_stack));
-  PetscCall(PetscOptionsHasName(NULL, NULL, "-log_exclude_actions", &opt));
-  if (opt) petsc_logActions = PETSC_FALSE;
-  PetscCall(PetscOptionsHasName(NULL, NULL, "-log_exclude_objects", &opt));
-  if (opt) petsc_logObjects = PETSC_FALSE;
-  if (petsc_logActions) PetscCall(PetscMalloc1(petsc_maxActions, &petsc_actions));
-  if (petsc_logObjects) PetscCall(PetscMalloc1(petsc_maxObjects, &petsc_objects));
-  PetscLogPHC = PetscLogObjCreateDefault;
-  PetscLogPHD = PetscLogObjDestroyDefault;
-  /* Setup default logging structures */
-  PetscCall(PetscLogStateCreate(&petsc_log_state));
-  for (PetscInt i = 0; i < PETSC_LOG_HANDLER_MAX; i++) {
-    if (PetscLogHandlers[i].handler) PetscCall(PetscLogHandlerSetState(PetscLogHandlers[i].handler, petsc_log_state));
-  }
-  PetscCall(PetscLogStateStageRegister(petsc_log_state, "Main Stage", &stage));
-  PetscCall(PetscStageLogCreate(&petsc_stageLog));
-  PetscCall(PetscStageLogRegister(petsc_stageLog, "Main Stage", &stage));
-
-  PetscCall(PetscSpinlockCreate(&PetscLogSpinLock));
-  #if defined(PETSC_HAVE_THREADSAFETY)
-  petsc_log_tid = 0;
-  petsc_log_gid = 0;
-  PetscCall(PetscHMapEventCreate(&eventInfoMap_th));
-  #endif
-
-  /* All processors sync here for more consistent logging */
-  PetscCallMPI(MPI_Barrier(PETSC_COMM_WORLD));
-  PetscCall(PetscTime(&petsc_BaseTime));
-  PetscCall(PetscLogStagePush(stage));
-  #if defined(PETSC_HAVE_TAU_PERFSTUBS)
-  PetscStackCallExternalVoid("ps_initialize_", ps_initialize_());
-  #endif
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-PETSC_INTERN PetscErrorCode PetscLogFinalize(void)
-{
-  PetscStageLog stageLog;
-
-  PetscFunctionBegin;
-  for (int i = 0; i < PETSC_LOG_HANDLER_MAX; i++) PetscCall(PetscLogHandlerDestroy(&PetscLogHandlers[i].handler));
-  PetscCall(PetscArrayzero(PetscLogHandlers, PETSC_LOG_HANDLER_MAX));
-  PetscCall(PetscLogStateDestroy(&petsc_log_state));
-  #if defined(PETSC_HAVE_THREADSAFETY)
-  if (eventInfoMap_th) {
-    PetscEventPerfInfo **array;
-    PetscInt             n, off = 0;
-
-    PetscCall(PetscHMapEventGetSize(eventInfoMap_th, &n));
-    PetscCall(PetscMalloc1(n, &array));
-    PetscCall(PetscHMapEventGetVals(eventInfoMap_th, &off, array));
-    for (PetscInt i = 0; i < n; i++) PetscCall(PetscFree(array[i]));
-    PetscCall(PetscFree(array));
-    PetscCall(PetscHMapEventDestroy(&eventInfoMap_th));
-  }
-  #endif
-  PetscCall(PetscFree(petsc_actions));
-  PetscCall(PetscFree(petsc_objects));
-  PetscCall(PetscLogNestedEnd());
-  PetscCall(PetscLogSet(NULL, NULL));
-
-  /* Resetting phase */
-  PetscCall(PetscLogGetStageLog(&stageLog));
-  PetscCall(PetscStageLogDestroy(stageLog));
-  PetscCall(PetscIntStackDestroy(current_log_event_stack));
-  current_log_event_stack = NULL;
-
-  petsc_TotalFlops          = 0.0;
-  petsc_numActions          = 0;
-  petsc_numObjects          = 0;
-  petsc_numObjectsDestroyed = 0;
-  petsc_maxActions          = 100;
-  petsc_maxObjects          = 100;
-  petsc_actions             = NULL;
-  petsc_objects             = NULL;
-  petsc_logActions          = PETSC_FALSE;
-  petsc_logObjects          = PETSC_FALSE;
-  petsc_BaseTime            = 0.0;
-  petsc_TotalFlops          = 0.0;
-  petsc_send_ct             = 0.0;
-  petsc_recv_ct             = 0.0;
-  petsc_send_len            = 0.0;
-  petsc_recv_len            = 0.0;
-  petsc_isend_ct            = 0.0;
-  petsc_irecv_ct            = 0.0;
-  petsc_isend_len           = 0.0;
-  petsc_irecv_len           = 0.0;
-  petsc_wait_ct             = 0.0;
-  petsc_wait_any_ct         = 0.0;
-  petsc_wait_all_ct         = 0.0;
-  petsc_sum_of_waits_ct     = 0.0;
-  petsc_allreduce_ct        = 0.0;
-  petsc_gather_ct           = 0.0;
-  petsc_scatter_ct          = 0.0;
-  petsc_TotalFlops_th       = 0.0;
-  petsc_send_ct_th          = 0.0;
-  petsc_recv_ct_th          = 0.0;
-  petsc_send_len_th         = 0.0;
-  petsc_recv_len_th         = 0.0;
-  petsc_isend_ct_th         = 0.0;
-  petsc_irecv_ct_th         = 0.0;
-  petsc_isend_len_th        = 0.0;
-  petsc_irecv_len_th        = 0.0;
-  petsc_wait_ct_th          = 0.0;
-  petsc_wait_any_ct_th      = 0.0;
-  petsc_wait_all_ct_th      = 0.0;
-  petsc_sum_of_waits_ct_th  = 0.0;
-  petsc_allreduce_ct_th     = 0.0;
-  petsc_gather_ct_th        = 0.0;
-  petsc_scatter_ct_th       = 0.0;
-
-  #if defined(PETSC_HAVE_DEVICE)
-  petsc_ctog_ct    = 0.0;
-  petsc_gtoc_ct    = 0.0;
-  petsc_ctog_sz    = 0.0;
-  petsc_gtoc_sz    = 0.0;
-  petsc_gflops     = 0.0;
-  petsc_gtime      = 0.0;
-  petsc_ctog_ct_th = 0.0;
-  petsc_gtoc_ct_th = 0.0;
-  petsc_ctog_sz_th = 0.0;
-  petsc_gtoc_sz_th = 0.0;
-  petsc_gflops_th  = 0.0;
-  petsc_gtime_th   = 0.0;
-  #endif
-
-  PETSC_LARGEST_EVENT      = PETSC_EVENT;
-  PetscLogPHC              = NULL;
-  PetscLogPHD              = NULL;
-  petsc_tracefile          = NULL;
-  petsc_tracelevel         = 0;
-  petsc_traceblanks        = "                                                                                                    ";
-  petsc_tracespace[0]      = ' ';
-  petsc_tracespace[1]      = 0;
-  petsc_tracetime          = 0.0;
-  PETSC_LARGEST_CLASSID    = PETSC_SMALLEST_CLASSID;
-  PETSC_OBJECT_CLASSID     = 0;
-  petsc_stageLog           = NULL;
-  PetscLogInitializeCalled = PETSC_FALSE;
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
 
 static PetscErrorCode PetscLogHandlerCopyToHot(PetscLogHandler h, PetscLogHandlerHot *hot)
 {
@@ -722,6 +564,56 @@ PetscErrorCode PetscLogLegacyCallbacksBegin(PetscErrorCode (*PetscLogPLB)(PetscL
   PetscCall(PetscLogHandlerCreateLegacy(PETSC_COMM_WORLD, PetscLogPLB, PetscLogPLE, PetscLogPHC, PetscLogPHD, &handler));
   PetscCall(PetscLogHandlerStart(handler));
   PetscCall(PetscLogHandlerDestroy(&handler));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+  #if defined(PETSC_HAVE_MPE)
+    #include <mpe.h>
+
+PETSC_INTERN PetscErrorCode PetscLogHandlerCreate_MPE(MPI_Comm, PetscLogHandler *);
+
+static PetscBool PetscBeganMPE = PETSC_FALSE;
+
+PETSC_INTERN PetscErrorCode PetscLogEventBeginMPE(PetscLogEvent, int, PetscObject, PetscObject, PetscObject, PetscObject);
+PETSC_INTERN PetscErrorCode PetscLogEventEndMPE(PetscLogEvent, int, PetscObject, PetscObject, PetscObject, PetscObject);
+  #endif
+
+/*@C
+  PetscLogMPEBegin - Turns on MPE logging of events. This creates large log files and slows the
+  program down.
+
+  Collective over `PETSC_COMM_WORLD`
+
+  Options Database Key:
+. -log_mpe - Prints extensive log information
+
+  Level: advanced
+
+  Note:
+  A related routine is `PetscLogDefaultBegin()` (with the options key `-log_view`), which is
+  intended for production runs since it logs only flop rates and object creation (and should
+  not significantly slow the programs).
+
+.seealso: [](ch_profiling), `PetscLogDump()`, `PetscLogDefaultBegin()`, `PetscLogAllBegin()`, `PetscLogEventActivate()`,
+          `PetscLogEventDeactivate()`
+@*/
+PetscErrorCode PetscLogMPEBegin(void)
+{
+  PetscFunctionBegin;
+  #if defined(PETSC_HAVE_MPE)
+  /* Do MPE initialization */
+  if (!MPE_Initialized_logging()) { /* This function exists in mpich 1.1.2 and higher */
+    PetscCall(PetscInfo(0, "Initializing MPE.\n"));
+    PetscCall(MPE_Init_log());
+
+    PetscBeganMPE = PETSC_TRUE;
+  } else {
+    PetscCall(PetscInfo(0, "MPE already initialized. Not attempting to reinitialize.\n"));
+  }
+  PetscCall(PetscLogSet(PetscLogEventBeginMPE, PetscLogEventEndMPE));
+  #else
+  SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP_SYS, "PETSc was configured without MPE support, reconfigure with --with-mpe or --download-mpe");
+  #endif
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -2101,6 +1993,7 @@ static PetscErrorCode PetscLogViewWarnNoGpuAwareMpi(MPI_Comm comm, FILE *fd)
 static PetscErrorCode PetscLogViewWarnGpuTime(MPI_Comm comm, FILE *fd)
 {
   #if defined(PETSC_HAVE_DEVICE)
+
   PetscFunctionBegin;
   if (!PetscLogGpuTimeFlag || petsc_gflops == 0) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscFPrintf(comm, fd, "\n\n"));
@@ -2987,8 +2880,6 @@ M*/
   #if PetscDefined(HAVE_DEVICE)
     #include <petsc/private/deviceimpl.h>
 
-PetscBool PetscLogGpuTimeFlag = PETSC_FALSE;
-
 /*
    This cannot be called by users between PetscInitialize() and PetscFinalize() at any random location in the code
    because it will result in timing results that cannot be interpreted.
@@ -3099,18 +2990,178 @@ PetscErrorCode PetscLogGpuTimeEnd(void)
 
   #endif /* end of PETSC_HAVE_DEVICE */
 
-#else /* end of -DPETSC_USE_LOG section */
-
-PetscErrorCode PetscLogObjectState(PetscObject obj, const char format[], ...)
-{
-  PetscFunctionBegin;
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
 #endif /* PETSC_USE_LOG*/
 
 PetscClassId PETSC_LARGEST_CLASSID = PETSC_SMALLEST_CLASSID;
 PetscClassId PETSC_OBJECT_CLASSID  = 0;
+
+/* Logging functions */
+PetscErrorCode (*PetscLogPHC)(PetscObject)                                                            = NULL;
+PetscErrorCode (*PetscLogPHD)(PetscObject)                                                            = NULL;
+PetscErrorCode (*PetscLogPLB)(PetscLogEvent, int, PetscObject, PetscObject, PetscObject, PetscObject) = NULL;
+PetscErrorCode (*PetscLogPLE)(PetscLogEvent, int, PetscObject, PetscObject, PetscObject, PetscObject) = NULL;
+
+/* Tracing event logging variables */
+FILE            *petsc_tracefile          = NULL;
+int              petsc_tracelevel         = 0;
+const char      *petsc_traceblanks        = "                                                                                                    ";
+char             petsc_tracespace[128]    = " ";
+PetscLogDouble   petsc_tracetime          = 0.0;
+static PetscBool PetscLogInitializeCalled = PETSC_FALSE;
+
+static PetscIntStack current_log_event_stack = NULL;
+
+PETSC_INTERN PetscErrorCode PetscLogInitialize(void)
+{
+  int       stage;
+  PetscBool opt;
+
+  PetscFunctionBegin;
+  if (PetscLogInitializeCalled) PetscFunctionReturn(PETSC_SUCCESS);
+  PetscLogInitializeCalled = PETSC_TRUE;
+  if (PetscDefined(USE_LOG)) {
+    PetscCall(PetscIntStackCreate(&current_log_event_stack));
+    PetscCall(PetscOptionsHasName(NULL, NULL, "-log_exclude_actions", &opt));
+    if (opt) petsc_logActions = PETSC_FALSE;
+    PetscCall(PetscOptionsHasName(NULL, NULL, "-log_exclude_objects", &opt));
+    if (opt) petsc_logObjects = PETSC_FALSE;
+    if (petsc_logActions) PetscCall(PetscMalloc1(petsc_maxActions, &petsc_actions));
+    if (petsc_logObjects) PetscCall(PetscMalloc1(petsc_maxObjects, &petsc_objects));
+    PetscLogPHC = PetscLogObjCreateDefault;
+    PetscLogPHD = PetscLogObjDestroyDefault;
+    /* Setup default logging structures */
+    PetscCall(PetscLogStateCreate(&petsc_log_state));
+    for (PetscInt i = 0; i < PETSC_LOG_HANDLER_MAX; i++) {
+      if (PetscLogHandlers[i].handler) PetscCall(PetscLogHandlerSetState(PetscLogHandlers[i].handler, petsc_log_state));
+    }
+    PetscCall(PetscLogStateStageRegister(petsc_log_state, "Main Stage", &stage));
+    PetscCall(PetscStageLogCreate(&petsc_stageLog));
+    PetscCall(PetscStageLogRegister(petsc_stageLog, "Main Stage", &stage));
+
+    PetscCall(PetscSpinlockCreate(&PetscLogSpinLock));
+#if defined(PETSC_HAVE_THREADSAFETY)
+    petsc_log_tid = 0;
+    petsc_log_gid = 0;
+    PetscCall(PetscHMapEventCreate(&eventInfoMap_th));
+#endif
+
+    /* All processors sync here for more consistent logging */
+    PetscCallMPI(MPI_Barrier(PETSC_COMM_WORLD));
+    PetscCall(PetscTime(&petsc_BaseTime));
+    PetscCall(PetscLogStagePush(stage));
+  #if defined(PETSC_HAVE_TAU_PERFSTUBS)
+    PetscStackCallExternalVoid("ps_initialize_", ps_initialize_());
+  #endif
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+PETSC_INTERN PetscErrorCode PetscLogFinalize(void)
+{
+  PetscStageLog stageLog;
+
+  PetscFunctionBegin;
+  if (PetscDefined(USE_LOG)) {
+    for (int i = 0; i < PETSC_LOG_HANDLER_MAX; i++) PetscCall(PetscLogHandlerDestroy(&PetscLogHandlers[i].handler));
+    PetscCall(PetscArrayzero(PetscLogHandlers, PETSC_LOG_HANDLER_MAX));
+    PetscCall(PetscLogStateDestroy(&petsc_log_state));
+  #if defined(PETSC_HAVE_THREADSAFETY)
+    if (eventInfoMap_th) {
+      PetscEventPerfInfo **array;
+      PetscInt             n, off = 0;
+
+      PetscCall(PetscHMapEventGetSize(eventInfoMap_th, &n));
+      PetscCall(PetscMalloc1(n, &array));
+      PetscCall(PetscHMapEventGetVals(eventInfoMap_th, &off, array));
+      for (PetscInt i = 0; i < n; i++) PetscCall(PetscFree(array[i]));
+      PetscCall(PetscFree(array));
+      PetscCall(PetscHMapEventDestroy(&eventInfoMap_th));
+    }
+  #endif
+    PetscCall(PetscFree(petsc_actions));
+    PetscCall(PetscFree(petsc_objects));
+    PetscCall(PetscLogNestedEnd());
+    PetscCall(PetscLogSet(NULL, NULL));
+
+    /* Resetting phase */
+    PetscCall(PetscLogGetStageLog(&stageLog));
+    PetscCall(PetscStageLogDestroy(stageLog));
+    PetscCall(PetscIntStackDestroy(current_log_event_stack));
+    current_log_event_stack = NULL;
+
+    petsc_TotalFlops          = 0.0;
+    petsc_numActions          = 0;
+    petsc_numObjects          = 0;
+    petsc_numObjectsDestroyed = 0;
+    petsc_maxActions          = 100;
+    petsc_maxObjects          = 100;
+    petsc_actions             = NULL;
+    petsc_objects             = NULL;
+    petsc_logActions          = PETSC_FALSE;
+    petsc_logObjects          = PETSC_FALSE;
+    petsc_BaseTime            = 0.0;
+    petsc_TotalFlops          = 0.0;
+    petsc_send_ct             = 0.0;
+    petsc_recv_ct             = 0.0;
+    petsc_send_len            = 0.0;
+    petsc_recv_len            = 0.0;
+    petsc_isend_ct            = 0.0;
+    petsc_irecv_ct            = 0.0;
+    petsc_isend_len           = 0.0;
+    petsc_irecv_len           = 0.0;
+    petsc_wait_ct             = 0.0;
+    petsc_wait_any_ct         = 0.0;
+    petsc_wait_all_ct         = 0.0;
+    petsc_sum_of_waits_ct     = 0.0;
+    petsc_allreduce_ct        = 0.0;
+    petsc_gather_ct           = 0.0;
+    petsc_scatter_ct          = 0.0;
+    petsc_TotalFlops_th       = 0.0;
+    petsc_send_ct_th          = 0.0;
+    petsc_recv_ct_th          = 0.0;
+    petsc_send_len_th         = 0.0;
+    petsc_recv_len_th         = 0.0;
+    petsc_isend_ct_th         = 0.0;
+    petsc_irecv_ct_th         = 0.0;
+    petsc_isend_len_th        = 0.0;
+    petsc_irecv_len_th        = 0.0;
+    petsc_wait_ct_th          = 0.0;
+    petsc_wait_any_ct_th      = 0.0;
+    petsc_wait_all_ct_th      = 0.0;
+    petsc_sum_of_waits_ct_th  = 0.0;
+    petsc_allreduce_ct_th     = 0.0;
+    petsc_gather_ct_th        = 0.0;
+    petsc_scatter_ct_th       = 0.0;
+
+    petsc_ctog_ct    = 0.0;
+    petsc_gtoc_ct    = 0.0;
+    petsc_ctog_sz    = 0.0;
+    petsc_gtoc_sz    = 0.0;
+    petsc_gflops     = 0.0;
+    petsc_gtime      = 0.0;
+    petsc_ctog_ct_th = 0.0;
+    petsc_gtoc_ct_th = 0.0;
+    petsc_ctog_sz_th = 0.0;
+    petsc_gtoc_sz_th = 0.0;
+    petsc_gflops_th  = 0.0;
+    petsc_gtime_th   = 0.0;
+
+    PETSC_LARGEST_EVENT      = PETSC_EVENT;
+    PetscLogPHC              = NULL;
+    PetscLogPHD              = NULL;
+    petsc_tracefile          = NULL;
+    petsc_tracelevel         = 0;
+    petsc_traceblanks        = "                                                                                                    ";
+    petsc_tracespace[0]      = ' ';
+    petsc_tracespace[1]      = 0;
+    petsc_tracetime          = 0.0;
+    petsc_stageLog           = NULL;
+  }
+  PETSC_LARGEST_CLASSID    = PETSC_SMALLEST_CLASSID;
+  PETSC_OBJECT_CLASSID     = 0;
+  PetscLogInitializeCalled = PETSC_FALSE;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
 
 /*@C
   PetscClassIdRegister - Registers a new class name for objects and logging operations in an application code.
@@ -3146,46 +3197,6 @@ PetscErrorCode PetscClassIdRegister(const char name[], PetscClassId *oclass)
 
 #if defined(PETSC_USE_LOG) && defined(PETSC_HAVE_MPE)
   #include <mpe.h>
-
-PetscBool PetscBeganMPE = PETSC_FALSE;
-
-PETSC_INTERN PetscErrorCode PetscLogEventBeginMPE(PetscLogEvent, int, PetscObject, PetscObject, PetscObject, PetscObject);
-PETSC_INTERN PetscErrorCode PetscLogEventEndMPE(PetscLogEvent, int, PetscObject, PetscObject, PetscObject, PetscObject);
-
-/*@C
-  PetscLogMPEBegin - Turns on MPE logging of events. This creates large log files and slows the
-  program down.
-
-  Collective over `PETSC_COMM_WORLD`
-
-  Options Database Key:
-. -log_mpe - Prints extensive log information
-
-  Level: advanced
-
-  Note:
-  A related routine is `PetscLogDefaultBegin()` (with the options key `-log_view`), which is
-  intended for production runs since it logs only flop rates and object creation (and should
-  not significantly slow the programs).
-
-.seealso: [](ch_profiling), `PetscLogDump()`, `PetscLogDefaultBegin()`, `PetscLogAllBegin()`, `PetscLogEventActivate()`,
-          `PetscLogEventDeactivate()`
-@*/
-PetscErrorCode PetscLogMPEBegin(void)
-{
-  PetscFunctionBegin;
-  /* Do MPE initialization */
-  if (!MPE_Initialized_logging()) { /* This function exists in mpich 1.1.2 and higher */
-    PetscCall(PetscInfo(0, "Initializing MPE.\n"));
-    PetscCall(MPE_Init_log());
-
-    PetscBeganMPE = PETSC_TRUE;
-  } else {
-    PetscCall(PetscInfo(0, "MPE already initialized. Not attempting to reinitialize.\n"));
-  }
-  PetscCall(PetscLogSet(PetscLogEventBeginMPE, PetscLogEventEndMPE));
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
 
 /*@C
   PetscLogMPEDump - Dumps the MPE logging info to file for later use with Jumpshot.
