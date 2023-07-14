@@ -121,7 +121,7 @@ class Configure(config.package.GNUPackage):
       self.pushLanguage('CUDA')
       cucc = self.getCompiler()
       devflags += ' '.join(('','-expt-extended-lambda',stdflag,'-x','cu',''))
-      devflags += self.getCompilerFlags() + ' ' + self.setCompilers.CUDAPPFLAGS + ' ' + self.mpi.includepaths+ ' ' + self.headers.toString(self.dinclude)
+      devflags += self.updatePackageCUDAFlags(self.getCompilerFlags()) + ' ' + self.setCompilers.CUDAPPFLAGS + ' ' + self.mpi.includepaths+ ' ' + self.headers.toString(self.dinclude)
       self.popLanguage()
     elif self.openmp.found:
       args.append('--with-openmp')
