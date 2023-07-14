@@ -422,7 +422,7 @@ allgtags:
 # ********* Rules for building "classic" documentation; uses rules also in lib/petsc/conf/rules.doc **************************************************
 
 docs:
-	cd doc; ${OMAKE_SELF} sphinxhtml
+	cd doc; time ${OMAKE_SELF} sphinxhtml
 
 chk_in_petscdir:
 	@if [ ! -f include/petscversion.h ]; then \
@@ -447,76 +447,25 @@ chk_c2html:
 # the ACTION=manualpages cannot run in parallel because they all write to the same manualpages.cit file
 hloc=include/petsc/private
 allmanpages: chk_loc deletemanualpages
-	-echo " /* SUBMANSEC = PetscH */ " > ${hloc}/generated_khash.h
-	-sed -e 's?<T>?I?g' -e 's?<t>?i?g' -e 's?<KeyType>?PetscInt?g' ${hloc}/hashset.txt >> ${hloc}/generated_khash.h
-	-sed -e 's?<T>?IJ?g' -e 's?<t>?ij?g' -e 's?<KeyType>?struct {PetscInt i, j;}?g' ${hloc}/hashset.txt >> ${hloc}/generated_khash.h
-	-sed -e 's?<T>?I?g' -e 's?<t>?i?g' -e 's?<KeyType>?PetscInt?g'  -e 's?<ValType>?PetscInt?g' ${hloc}/hashmap.txt >> ${hloc}/generated_khash.h
-	-sed -e 's?<T>?IJ?g' -e 's?<t>?ij?g' -e 's?<KeyType>?struct {PetscInt i, j;}?g' -e 's?<ValType>?PetscInt?g' ${hloc}/hashmap.txt >> ${hloc}/generated_khash.h
-	-sed -e 's?<T>?IJ?g' -e 's?<t>?ij?g' -e 's?<KeyType>?struct {PetscInt i, j;}?g' -e 's?<ValType>?PetscScalar?g' ${hloc}/hashmap.txt >> ${hloc}/generated_khash.h
-	-sed -e 's?<T>?IV?g' -e 's?<t>?iv?g' -e 's?<KeyType>?PetscInt?g'  -e 's?<ValType>?PetscScalar?g' ${hloc}/hashmap.txt >> ${hloc}/generated_khash.h
-	-sed -e 's?<T>?Obj?g' -e 's?<t>?obj?g' -e 's?<KeyType>?PetscInt64?g'  -e 's?<ValType>?PetscObject?g' ${hloc}/hashmap.txt >> ${hloc}/generated_khash.h
-	-${RM} ${PETSC_DIR}/${PETSC_ARCH}/manualpages.err
+	-@echo " /* SUBMANSEC = PetscH */ " > ${hloc}/generated_khash.h
+	-@sed -e 's?<T>?I?g' -e 's?<t>?i?g' -e 's?<KeyType>?PetscInt?g' ${hloc}/hashset.txt >> ${hloc}/generated_khash.h
+	-@sed -e 's?<T>?IJ?g' -e 's?<t>?ij?g' -e 's?<KeyType>?struct {PetscInt i, j;}?g' ${hloc}/hashset.txt >> ${hloc}/generated_khash.h
+	-@sed -e 's?<T>?I?g' -e 's?<t>?i?g' -e 's?<KeyType>?PetscInt?g'  -e 's?<ValType>?PetscInt?g' ${hloc}/hashmap.txt >> ${hloc}/generated_khash.h
+	-@sed -e 's?<T>?IJ?g' -e 's?<t>?ij?g' -e 's?<KeyType>?struct {PetscInt i, j;}?g' -e 's?<ValType>?PetscInt?g' ${hloc}/hashmap.txt >> ${hloc}/generated_khash.h
+	-@sed -e 's?<T>?IJ?g' -e 's?<t>?ij?g' -e 's?<KeyType>?struct {PetscInt i, j;}?g' -e 's?<ValType>?PetscScalar?g' ${hloc}/hashmap.txt >> ${hloc}/generated_khash.h
+	-@sed -e 's?<T>?IV?g' -e 's?<t>?iv?g' -e 's?<KeyType>?PetscInt?g'  -e 's?<ValType>?PetscScalar?g' ${hloc}/hashmap.txt >> ${hloc}/generated_khash.h
+	-@sed -e 's?<T>?Obj?g' -e 's?<t>?obj?g' -e 's?<KeyType>?PetscInt64?g'  -e 's?<ValType>?PetscObject?g' ${hloc}/hashmap.txt >> ${hloc}/generated_khash.h
+	-@${RM} ${PETSC_DIR}/${PETSC_ARCH}/manualpages.err
 	-${OMAKE_SELF} ACTION=manualpages tree_src LOC=${LOC}
 	-@sed -e s%man+../%man+manualpages/% ${LOC}/manualpages/manualpages.cit > ${LOC}/manualpages/htmlmap
 	-@cat ${PETSC_DIR}/doc/classic/mpi.www.index >> ${LOC}/manualpages/htmlmap
-	cat ${PETSC_DIR}/${PETSC_ARCH}/manualpages.err
-	a=`cat ${PETSC_DIR}/${PETSC_ARCH}/manualpages.err | wc -l`; test ! $$a -gt 0
-
-allmanexamples: chk_loc allmanpages
-	-${OMAKE_SELF} ACTION=manexamples tree LOC=${LOC}
+	@cat ${PETSC_DIR}/${PETSC_ARCH}/manualpages.err
+	@a=`cat ${PETSC_DIR}/${PETSC_ARCH}/manualpages.err | wc -l`; test ! $$a -gt 0
 
 #
-#    Goes through all manual pages adding links to implementations of the method
-# or class, at the end of the file.
+#  This code needs to be rewritten in Python to reduce by a factor of 100 the time it takes to run
 #
-# To find functions implementing methods, we use git grep to look for
-# well-formed PETSc functions
-# - with names containing a single underscore
-# - in files of appropriate types (.cu .c .cxx .h),
-# - in paths including "/impls/",
-# - excluding any line with a semicolon (to avoid matching prototypes), and
-# - excluding any line including "_Private",
-# storing potential matches in implsFuncAll.txt.
-#
-# For each man page we then grep in this file for the item's name followed by
-# a single underscore and process the resulting implsFunc.txt to generate HTML.
-#
-# To find class implementations, we populate implsClassAll.txt with candidates
-# - of the form "struct _p_itemName {",  and
-# - not containing a semicolon
-# and then grep for particular values of itemName, generating implsClass.txt,
-# which is processed to generate HTML.
-#
-# Note: PETSC_DOC_OUT_ROOT_PLACEHOLDER must match the term used elsewhere in doc/
-manimplementations:
-	-@git grep "struct\s\+_[pn]_[^\s]\+.*{" -- *.cpp *.cu *.c *.h *.cxx | grep -v -e ";" -e "/tests/" -e "/tutorials/" > implsClassAll.txt ; \
-  git grep -n "^\(static \)\?\(PETSC_EXTERN \)\?\(PETSC_INTERN \)\?\(extern \)\?PetscErrorCode \+[^_ ]\+_[^_ ]\+(" -- '*/impls/*.c' '*/impls/*.cpp' '*/impls/*.cu' '*/impls/*.cxx' '*/impls/*.h' | grep -v -e ";" -e "_[Pp]rivate" > implsFuncAll.txt ; \
-  for i in ${LOC}/manualpages/*/*.md foo; do \
-       if [ "$$i" != "foo" ] ; then \
-          itemName=`basename $$i .md`;\
-          grep "\s$${itemName}_" implsFuncAll.txt > implsFunc.txt ; \
-          grep "_p_$${itemName}\b" implsClassAll.txt > implsClass.txt ; \
-          if [ -s implsFunc.txt ] || [ -s implsClass.txt ] ; then \
-            printf "\n## Implementations\n\n" >> $$i; \
-          fi ; \
-          if [ -s implsFunc.txt ] ; then \
-            sed "s?\(.*\.[ch]x*u*\).*\($${itemName}.*\)(.*)?<A HREF=\"PETSC_DOC_OUT_ROOT_PLACEHOLDER/\1.html#\2\">\2 in \1</A><BR>?" implsFunc.txt >> $$i ; \
-          fi ; \
-          if [ -s implsClass.txt ] ; then \
-            sed "s?\(.*\.[ch]x*u*\):.*struct.*\(_p_$${itemName}\).*{?<A HREF=\"PETSC_DOC_OUT_ROOT_PLACEHOLDER/\1.html#\2\">\2 in \1</A><BR>?" implsClass.txt >> $$i ; \
-          fi ; \
-          ${RM} implsFunc.txt implsClass.txt; \
-       fi ; \
-  done ; \
-  ${RM} implsClassAll.txt implsFuncAll.txt
-
-# Build all classic docs except html sources
-alldoc_pre: chk_loc allmanpages allmanexamples
-	-${OMAKE_SELF} LOC=${LOC} manimplementations
-	-${PYTHON} lib/petsc/bin/maint/wwwindex.py ${PETSC_DIR} ${LOC}
-
-# Run after alldoc_pre to build html sources
-alldoc_post: chk_loc  chk_c2html
+c2html: chk_loc  chk_c2html
 	-@if command -v parallel &> /dev/null; then \
            ls include/makefile src/*/makefile | xargs dirname | parallel -j ${MAKE_TEST_NP} --load ${MAKE_LOAD} 'cd {}; ${OMAKE_SELF} HTMLMAP=${HTMLMAP} LOC=${LOC} PETSC_DIR=${PETSC_DIR} ACTION=html tree' ; \
          else \

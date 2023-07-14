@@ -39,15 +39,14 @@ def printindex(outfilename, headfilename, levels, titles, tables):
           fd.write(headbuf)
           fd.write('\n')
           all_names = []
-          fd.write('\n## Manual Pages by Level\n')
           for i, level in enumerate(levels):
                 title = titles[i]
                 if not tables[i]:
                       if level != 'none' and level != 'deprecated':
-                          fd.write('\n### No %s routines\n' % level)
+                          fd.write('\n## No %s routines\n' % level)
                       continue
 
-                fd.write('\n### %s\n' % title)
+                fd.write('\n## %s\n' % title)
                 fd.write('```{hlist}\n')
                 fd.write("---\n")
                 fd.write("columns: %d\n" % HLIST_COLUMNS)
@@ -96,7 +95,7 @@ def printsingleindex(outfilename, alphabet_dict):
 # Read in the filename contents, and search for the formatted
 # String 'Level:' and return the level info.
 # Also adds the BOLD HTML format to Level field
-def modifylevel(filename,secname):
+def modifylevel(filename,secname,edit_branch):
       with open(filename, "r") as fd:
           buf = fd.read()
 
@@ -105,13 +104,6 @@ def modifylevel(filename,secname):
       if m:
         loc_html = m.group(1)
         if loc_html:
-          git_ref = subprocess.check_output(['git', 'rev-parse', 'HEAD']).rstrip()
-          try:
-              git_ref_release = subprocess.check_output(['git', 'rev-parse', 'origin/release']).rstrip()
-              edit_branch = 'release' if git_ref == git_ref_release else 'main'
-          except subprocess.CalledProcessError:
-              print("WARNING: checking branch for man page edit links failed")
-              edit_branch = 'main'
           pattern = re.compile(r"<A.*>(.*)</A>")
           loc = re.match(pattern, loc_html)
           if loc:
@@ -152,8 +144,9 @@ def modifylevel(filename,secname):
 
 # Go through each manpage file, present in dirname,
 # and create and return a table for it, wrt levels specified.
-def createtable(dirname,levels,secname):
-      mdfiles = [os.path.join(dirname,f) for f in os.listdir(dirname) if f.endswith('.md')]
+def createtable(dirname,levels,secname,editbranch):
+      listdir =  os.listdir(dirname)
+      mdfiles = [os.path.join(dirname,f) for f in listdir if f.endswith('.md')]
       mdfiles.sort()
       if mdfiles == []:
             print('Cannot create table for empty directory:',dirname)
@@ -163,7 +156,7 @@ def createtable(dirname,levels,secname):
       for level in levels: table.append([])
 
       for filename in mdfiles:
-            level = modifylevel(filename,secname)
+            level = modifylevel(filename,secname,editbranch)
             if level.lower() in levels:
                   table[levels.index(level.lower())].append(filename)
             else:
@@ -181,8 +174,7 @@ def addtolist(dirname,singlelist):
             print('Error! Empty directory:',dirname)
             return None
 
-      for filename in mdfiles:
-            singlelist.append(filename)
+      singlelist.extend(mdfiles)
 
       return singlelist
 
@@ -216,18 +208,9 @@ def getallmandirs(dirs):
       return mandirs
 
 
-def main():
-      arg_len = len(sys.argv)
-
-      if arg_len < 3:
-            print('Error! Insufficient arguments.')
-            print('Usage:', sys.argv[0], 'PETSC_DIR','LOC')
-            exit()
-
-      PETSC_DIR = sys.argv[1]
-      LOC       = sys.argv[2]
-      HEADERDIR = (sys.argv[3] if arg_len > 3 else 'doc/classic/manualpages-sec')
-      dirs      = (glob.glob(LOC + '/manualpages/*') if arg_len < 5 else [sys.argv[4]])
+def main(PETSC_DIR,LOC):
+      HEADERDIR = 'doc/classic/manualpages-sec'
+      dirs      = glob.glob(LOC + '/manualpages/*')
       mandirs   = getallmandirs(dirs)
 
       levels = ['beginner','intermediate','advanced','developer','deprecated','none']
@@ -239,11 +222,19 @@ def main():
                 'None: Not yet cataloged']
 
       singlelist = []
+      git_ref = subprocess.check_output(['git', 'rev-parse', 'HEAD']).rstrip()
+      try:
+        git_ref_release = subprocess.check_output(['git', 'rev-parse', 'origin/release']).rstrip()
+        edit_branch = 'release' if git_ref == git_ref_release else 'main'
+      except subprocess.CalledProcessError:
+        print("WARNING: checking branch for man page edit links failed")
+        edit_branch = 'main'
+
       for dirname in mandirs:
             outfilename  = dirname + '/index.md'
             dname,secname  = posixpath.split(dirname)
             headfilename = PETSC_DIR + '/' + HEADERDIR + '/header_' + secname
-            table        = createtable(dirname,levels,secname)
+            table        = createtable(dirname,levels,secname,edit_branch)
             if not table: continue
             singlelist   = addtolist(dirname,singlelist)
             printindex(outfilename,headfilename,levels,titles,table)
@@ -252,6 +243,5 @@ def main():
       outfilename   = LOC + '/manualpages/singleindex.md'
       printsingleindex (outfilename,alphabet_dict)
 
-
 if __name__ == '__main__':
-      main()
+      main(os.path.abspath(os.environ['PETSC_DIR']),os.path.abspath(os.environ['LOC']))

@@ -3,7 +3,6 @@
 from typing import Any, Dict
 import re
 import os
-import subprocess
 import types
 
 from docutils import nodes
