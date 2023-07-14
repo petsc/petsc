@@ -669,7 +669,7 @@ PETSC_EXTERN PetscErrorCode PetscLogObjectState(PetscObject, const char[], ...) 
       if (PetscPreLoadIt > 0) PetscCall(PetscLogStageGetId(name, &_stageNum)); \
       else PetscCall(PetscLogStageRegister(name, &_stageNum)); \
       PetscCall(PetscLogStageSetActive(_stageNum, (PetscBool)(!PetscPreLoadMax || PetscPreLoadIt))); \
-      PetscCall(PetscLogStagePush(_stageNum));
+      PetscCall(PetscLogStagePush(_stageNum))
 
 #define PetscPreLoadEnd() \
   PetscCall(PetscLogStagePop()); \

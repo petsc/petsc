@@ -119,7 +119,7 @@ PetscErrorCode PCBDDCComputeNedelecChangeEdge(Mat lG, IS edge, IS extrow, IS ext
     PetscCall(MatCreateSubMatrix(lG, edge, corners, MAT_INITIAL_MATRIX, &GEc));
     PetscCall(MatTransposeMatMult(GEc, *GKins, MAT_INITIAL_MATRIX, 1.0, &GEd));
     PetscCall(MatDenseGetArrayRead(GEd, &vals));
-    /* v    = PetscAbsScalar(vals[0]) */;
+    /* v       = PetscAbsScalar(vals[0]); */
     v        = 1.;
     cvals[0] = vals[0] / v;
     cvals[1] = vals[1] / v;

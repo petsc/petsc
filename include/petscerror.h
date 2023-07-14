@@ -1394,7 +1394,7 @@ M*/
     do { \
       PetscStackUpdateLine; \
       PetscStackPushNoCheck(funct, 0, PETSC_TRUE); \
-    } while (0);
+    } while (0)
 
   /*MC
    PetscStackPopNoCheck - Pops a function name from the PETSc default stack that tracks where the running program is

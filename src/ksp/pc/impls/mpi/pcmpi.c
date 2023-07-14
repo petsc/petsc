@@ -320,7 +320,6 @@ static PetscErrorCode PCMPISolve(PC pc, Vec B, Vec X)
 
     PCMPISolveCounts[size - 1]++;
     PetscCall(MatGetSize(pc->pmat, &N, NULL));
-    ;
     PCMPISizes[size - 1] += N;
     PetscCall(VecGetArrayRead(B, &sb));
   }

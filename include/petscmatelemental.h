@@ -13,8 +13,9 @@
     #pragma clang diagnostic ignored "-Wextra-semi"
   #elif defined(__GNUC__) || defined(__GNUG__)
     #pragma GCC diagnostic push
-    #pragma GCC diagnostic ignored "-Wunused-but-set-variable"
     #pragma GCC diagnostic ignored "-Wunused-parameter"
+    #pragma GCC diagnostic ignored "-Wunused-but-set-variable"
+    #pragma GCC diagnostic ignored "-Wextra-semi"
   #endif
   #include <El.hpp>
   #if defined(__clang__)

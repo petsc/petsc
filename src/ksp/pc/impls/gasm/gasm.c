@@ -1552,7 +1552,7 @@ PetscErrorCode PCGASMDestroySubdomains(PetscInt n, IS **iis, IS **ois)
 }
 
 #define PCGASMLocalSubdomainBounds2D(M, N, xleft, ylow, xright, yhigh, first, last, xleft_loc, ylow_loc, xright_loc, yhigh_loc, n) \
-  { \
+  do { \
     PetscInt first_row = first / M, last_row = last / M + 1; \
     /*                                                                                                    \
      Compute ylow_loc and yhigh_loc so that (ylow_loc,xleft) and (yhigh_loc,xright) are the corners       \
@@ -1577,7 +1577,7 @@ PetscErrorCode PCGASMDestroySubdomains(PetscInt n, IS **iis, IS **ois)
       *n += PetscMin(PetscMax(*xright_loc - xleft, 0), width); \
       *n -= PetscMin(PetscMax(*xleft_loc - xleft, 0), width); \
     } \
-  }
+  } while (0)
 
 /*@C
   PCGASMCreateSubdomains2D - Creates the index sets for the `PCGASM` overlapping Schwarz

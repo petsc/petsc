@@ -832,7 +832,7 @@ PetscErrorCode spbas_power(spbas_matrix in_matrix, PetscInt power, spbas_matrix 
       }
     }
     retval.nnz += nnz;
-  };
+  }
   PetscCall(PetscFree(iwork));
   *result = retval;
   PetscFunctionReturn(PETSC_SUCCESS);

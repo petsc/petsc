@@ -528,7 +528,7 @@ static inline PetscErrorCode VecSetValueLocal(Vec v, PetscInt i, PetscScalar va,
 
 .seealso: [](ch_vectors), `Vec`, `VecSetValues()`, `VecAssemblyBegin()`, `VecAssemblyEnd()`, `MatAssemblyBegin()`, `MatAssemblyEnd()`
 M*/
-#define VecCheckAssembled(v) PetscCheck(v->stash.insertmode == NOT_SET_VALUES, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Not for unassembled vector, did you call VecAssemblyBegin()/VecAssemblyEnd()?");
+#define VecCheckAssembled(v) PetscCheck(v->stash.insertmode == NOT_SET_VALUES, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Not for unassembled vector, did you call VecAssemblyBegin()/VecAssemblyEnd()?")
 
 PETSC_EXTERN PetscErrorCode VecSetValuesBlockedLocal(Vec, PetscInt, const PetscInt[], const PetscScalar[], InsertMode);
 PETSC_EXTERN PetscErrorCode VecGetLocalToGlobalMapping(Vec, ISLocalToGlobalMapping *);

@@ -30,12 +30,12 @@ PetscErrorCode PetscDrawInterpolatedTriangle_X(PetscDraw_X *win, int x1, int y_1
 
   /* Sort the vertices */
 #define SWAP(a, b) \
-  { \
+  do { \
     int _a; \
     _a = a; \
     a  = b; \
     b  = _a; \
-  }
+  } while (0)
   if (y_1 > y2) {
     SWAP(y_1, y2);
     SWAP(t1, t2);

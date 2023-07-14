@@ -198,9 +198,9 @@ static PetscErrorCode PetscDSView_Ascii(PetscDS ds, PetscViewer viewer)
       PetscCall(PetscViewerASCIIPrintf(viewer, "\n"));
       PetscCall(PetscViewerASCIIUseTabs(viewer, PETSC_TRUE));
 #if defined(__clang__)
-      PETSC_PRAGMA_DIAGNOSTIC_IGNORED_BEGIN("-Wformat-pedantic");
+      PETSC_PRAGMA_DIAGNOSTIC_IGNORED_BEGIN("-Wformat-pedantic")
 #elif defined(__GNUC__) || defined(__GNUG__)
-      PETSC_PRAGMA_DIAGNOSTIC_IGNORED_BEGIN("-Wformat");
+      PETSC_PRAGMA_DIAGNOSTIC_IGNORED_BEGIN("-Wformat")
 #endif
       if (b->func) {
         PetscCall(PetscDLAddr(b->func, &name));
@@ -214,7 +214,7 @@ static PetscErrorCode PetscDSView_Ascii(PetscDS ds, PetscViewer viewer)
         else PetscCall(PetscViewerASCIIPrintf(viewer, "  func_t: %p\n", b->func_t));
         PetscCall(PetscFree(name));
       }
-      PETSC_PRAGMA_DIAGNOSTIC_IGNORED_END();
+      PETSC_PRAGMA_DIAGNOSTIC_IGNORED_END()
       PetscCall(PetscWeakFormView(b->wf, viewer));
       PetscCall(PetscViewerASCIIPopTab(viewer));
     }

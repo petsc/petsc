@@ -820,7 +820,7 @@ PETSC_EXTERN void matsetoptionsprefix_(Mat *mat, char *prefix, PetscErrorCode *i
 
 PETSC_EXTERN void matnullspaceremove_(MatNullSpace *sp, Vec *vec, PetscErrorCode *ierr)
 {
-  CHKFORTRANNULLOBJECT(*sp)
+  CHKFORTRANNULLOBJECT(*sp);
   *ierr = MatNullSpaceRemove(*sp, *vec);
 }
 
