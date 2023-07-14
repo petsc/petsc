@@ -509,6 +509,7 @@ PETSC_EXTERN PetscErrorCode MatInvertBlockDiagonal(Mat, const PetscScalar **);
 PETSC_EXTERN PetscErrorCode MatInvertVariableBlockDiagonal(Mat, PetscInt, const PetscInt *, PetscScalar *);
 PETSC_EXTERN PetscErrorCode MatInvertBlockDiagonalMat(Mat, Mat);
 PETSC_EXTERN PetscErrorCode MatInvertVariableBlockEnvelope(Mat, MatReuse, Mat *);
+PETSC_EXTERN PetscErrorCode MatComputeVariableBlockEnvelope(Mat);
 
 PETSC_EXTERN PetscErrorCode MatSetValues(Mat, PetscInt, const PetscInt[], PetscInt, const PetscInt[], const PetscScalar[], InsertMode);
 PETSC_EXTERN PetscErrorCode MatSetValuesIS(Mat, IS, IS, const PetscScalar[], InsertMode);

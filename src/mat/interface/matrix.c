@@ -7475,23 +7475,25 @@ static PetscErrorCode EnvelopeDataDestroy(EnvelopeData *edata)
   return PETSC_SUCCESS;
 }
 
-/*
-   MatComputeVariableBlockEnvelope - Given a matrix whose nonzeros are in blocks along the diagonal this computes and stores
-         the sizes of these blocks in the matrix. An individual block may lie over several processes.
+/*@
+  MatComputeVariableBlockEnvelope - Given a matrix whose nonzeros are in blocks along the diagonal this computes and stores
+  the sizes of these blocks in the matrix. An individual block may lie over several processes.
 
-   Collective
+  Collective
 
-   Input Parameter:
-.  mat - the matrix
+  Input Parameter:
+. mat - the matrix
 
-   Notes:
-     There can be zeros within the blocks
+  Level: intermediate
 
-     The blocks can overlap between processes, including laying on more than two processes
+  Notes:
+  There can be zeros within the blocks
+
+  The blocks can overlap between processes, including laying on more than two processes
 
 .seealso: [](ch_matrices), `Mat`, `MatInvertVariableBlockEnvelope()`, `MatSetVariableBlockSizes()`
-*/
-static PetscErrorCode MatComputeVariableBlockEnvelope(Mat mat)
+@*/
+PetscErrorCode MatComputeVariableBlockEnvelope(Mat mat)
 {
   PetscInt           n, *sizes, *starts, i = 0, env = 0, tbs = 0, lblocks = 0, rstart, II, ln = 0, cnt = 0, cstart, cend;
   PetscInt          *diag, *odiag, sc;
