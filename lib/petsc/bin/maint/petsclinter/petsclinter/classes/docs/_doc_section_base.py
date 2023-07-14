@@ -129,6 +129,7 @@ class DocBase:
   ('section-barren', 'Verify there are no sections containing a title and nothing else'),
   ('section-header-solitary', 'Verify that qualifying section headers are alone on their line'),
   ('section-header-spelling', 'Verify section headers are correctly spelled'),
+  ('section-header-unknown', 'Verify that section header is known'),
 )
 class SectionBase(DocBase):
   """
@@ -282,7 +283,10 @@ class SectionBase(DocBase):
         matchname = difflib.get_close_matches(correct, self.titles, n=1)[0]
       except IndexError:
         linter.add_warning_from_cursor(
-          docstring.cursor, Diagnostic(diag, f'Unknown section \'{heading}\'', self.extent.start)
+          docstring.cursor,
+          Diagnostic(
+            self.diags.section_header_unknown, f'Unknown section \'{heading}\'', self.extent.start
+          )
         )
       else:
         docstring.add_error_from_source_range(
