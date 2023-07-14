@@ -844,7 +844,6 @@ char assert_aligned[(sizeof(struct mystruct)==16)*2-1];
     if not self.libraries.add('Gdi32.lib','CreateCompatibleDC',prototype='#include <windows.h>',call='CreateCompatibleDC(0);'):
       self.libraries.add('gdi32','CreateCompatibleDC',prototype='#include <windows.h>',call='CreateCompatibleDC(0);')
 
-    self.types.check('int32_t', 'int')
     if not self.checkCompile('#include <sys/types.h>\n','uid_t u;\n(void)u'):
       self.addTypedef('int', 'uid_t')
       self.addTypedef('int', 'gid_t')
