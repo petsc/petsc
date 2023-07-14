@@ -455,7 +455,7 @@ PetscErrorCode MatChop(Mat A, PetscReal tol)
 {
   Mat          a;
   PetscScalar *newVals;
-  PetscInt    *newCols, rStart, rEnd, numRows, maxRows, r, colMax = 0;
+  PetscInt    *newCols, rStart, rEnd, maxRows, r, colMax = 0;
   PetscBool    flg;
 
   PetscFunctionBegin;
@@ -470,7 +470,14 @@ PetscErrorCode MatChop(Mat A, PetscReal tol)
     }
     PetscCall(MatDenseRestoreArray(a, &newVals));
   } else {
-    PetscCall(MatGetOwnershipRange(A, &rStart, &rEnd));
+    const PetscInt *ranges;
+    PetscMPIInt     rank, size;
+
+    PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)A), &rank));
+    PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)A), &size));
+    PetscCall(MatGetOwnershipRanges(A, &ranges));
+    rStart = ranges[rank];
+    rEnd   = ranges[rank + 1];
     PetscCall(MatGetRowUpperTriangular(A));
     for (r = rStart; r < rEnd; ++r) {
       PetscInt ncols;
@@ -479,25 +486,23 @@ PetscErrorCode MatChop(Mat A, PetscReal tol)
       colMax = PetscMax(colMax, ncols);
       PetscCall(MatRestoreRow(A, r, &ncols, NULL, NULL));
     }
-    numRows = rEnd - rStart;
-    PetscCall(MPIU_Allreduce(&numRows, &maxRows, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)A)));
-    PetscCall(PetscMalloc2(colMax, &newCols, colMax, &newVals));
+    maxRows = 0;
+    for (r = 0; r < size; ++r) maxRows = PetscMax(maxRows, ranges[r + 1] - ranges[r]);
+    PetscCall(PetscCalloc2(colMax, &newCols, colMax, &newVals));
     PetscCall(MatGetOption(A, MAT_NO_OFF_PROC_ENTRIES, &flg)); /* cache user-defined value */
     PetscCall(MatSetOption(A, MAT_NO_OFF_PROC_ENTRIES, PETSC_TRUE));
     /* short-circuit code in MatAssemblyBegin() and MatAssemblyEnd()             */
     /* that are potentially called many times depending on the distribution of A */
     for (r = rStart; r < rStart + maxRows; ++r) {
-      const PetscScalar *vals;
-      const PetscInt    *cols;
-      PetscInt           ncols, newcols, c;
-
       if (r < rEnd) {
+        const PetscScalar *vals;
+        const PetscInt    *cols;
+        PetscInt           ncols, newcols = 0, c;
+
         PetscCall(MatGetRow(A, r, &ncols, &cols, &vals));
         for (c = 0; c < ncols; ++c) {
-          newCols[c] = cols[c];
-          newVals[c] = PetscAbsScalar(vals[c]) < tol ? 0.0 : vals[c];
+          if (PetscUnlikely(PetscAbsScalar(vals[c]) < tol)) newCols[newcols++] = cols[c];
         }
-        newcols = ncols;
         PetscCall(MatRestoreRow(A, r, &ncols, &cols, &vals));
         PetscCall(MatSetValues(A, 1, &r, newcols, newCols, newVals, INSERT_VALUES));
       }
