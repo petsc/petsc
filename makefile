@@ -81,18 +81,14 @@ matlabbin:
             echo "========================================="; \
         fi
 
-allfortranstubs:
-	-@${RM} -rf ${PETSC_ARCH}/include/petsc/finclude/ftn-auto/*-tmpdir
-	@${PYTHON} lib/petsc/bin/maint/generatefortranstubs.py ${BFORT}  ${VERBOSE}
-	-@${PYTHON} lib/petsc/bin/maint/generatefortranstubs.py -merge  ${VERBOSE}
-	-@${RM} -rf ${PETSC_ARCH}/include/petsc/finclude/ftn-auto/*-tmpdir
+allfortranstubs: deletefortranstubs
+	@${PYTHON} lib/petsc/bin/maint/generatefortranstubs.py --petsc-dir=${PETSC_DIR} --petsc-arch=${PETSC_ARCH} --bfort=${BFORT} --mode=generate --verbose=${V}
+	-@${PYTHON} lib/petsc/bin/maint/generatefortranstubs.py --petsc-dir=${PETSC_DIR} --petsc-arch=${PETSC_ARCH} --mode=merge --verbose=${V}
 
 #copy of allfortranstubs with PETSC_ARCH=''
-allfortranstubsinplace:
-	-@${RM} -rf include/petsc/finclude/ftn-auto/*-tmpdir
-	@PETSC_ARCH='' ${PYTHON} lib/petsc/bin/maint/generatefortranstubs.py ${BFORT}  ${VERBOSE}
-	-@PETSC_ARCH='' ${PYTHON} lib/petsc/bin/maint/generatefortranstubs.py -merge  ${VERBOSE}
-	-@${RM} -rf include/petsc/finclude/ftn-auto/*-tmpdir
+allfortranstubsinplace: deletefortranstubs
+	@${PYTHON} lib/petsc/bin/maint/generatefortranstubs.py --petsc-dir=${PETSC_DIR} --petsc-arch='' --bfort=${BFORT} --mode=generate --verbose=${V}
+	-@${PYTHON} lib/petsc/bin/maint/generatefortranstubs.py --petsc-dir=${PETSC_DIR} --petsc-arch='' --mode=merge --verbose=${V}
 
 deleteshared:
 	@for LIBNAME in ${SHLIBS}; \
@@ -111,7 +107,7 @@ deleteshared:
 
 deletefortranstubs:
 	-@find src -type d -name ftn-auto* | xargs rm -rf
-	-@if [ -x ${PETSC_ARCH} ]; then \
+	-@if [ -n "${PETSC_ARCH}" ] && [ -d ${PETSC_ARCH} ] && [ -d ${PETSC_ARCH}/src ]; then \
           find ${PETSC_ARCH}/src -type d -name ftn-auto* | xargs rm -rf ;\
         fi
 
