@@ -82,7 +82,7 @@ class Configure(config.package.GNUPackage):
       self.logPrint('In --with-batch mode with outstanding batch tests to be made; hence skipping sowing for this configure')
       return
 
-    if (self.petscclone.isClone and hasattr(self.compilers, 'FC') and self.framework.argDB['with-fortran-bindings']) or ('download-sowing' in self.framework.clArgDB and self.argDB['download-sowing']):
+    if (self.petscclone.isClone and hasattr(self.compilers, 'FC') and self.framework.argDB['with-fortran-bindings']) or ('download-sowing' in self.framework.clArgDB and self.argDB['download-sowing']) or ('with-sowing' in self.framework.clArgDB and self.argDB['with-sowing']):
       self.logPrint('PETSc clone, checking for Sowing \n')
       self.getExecutable('pdflatex', getFullPath = 1)
 
