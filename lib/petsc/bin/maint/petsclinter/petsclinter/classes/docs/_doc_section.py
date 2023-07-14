@@ -373,7 +373,7 @@ class FunctionParameterList(ParameterList):
 
   def __init__(self, *args, **kwargs):
     kwargs.setdefault('titles', ('Input Parameter', 'Output Parameter', 'Calling sequence'))
-    kwargs.setdefault('keywords', ('Input', 'Output'))
+    kwargs.setdefault('keywords', ('Input', 'Output', 'Calling sequence of'))
     super().__init__(*args, **kwargs)
     return
 
