@@ -127,7 +127,7 @@ RUN_TEST = ${OMAKE_SELF} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} DIFF=${
 
 check_install: check
 check:
-	-@echo "Running check examples to verify correct installation"
+	-@echo "Running PETSc check examples to verify correct installation"
 	-@echo "Using PETSC_DIR=${PETSC_DIR} and PETSC_ARCH=${PETSC_ARCH}"
 	@if [ "${PETSC_WITH_BATCH}" != "" ]; then \
            echo "Running with batch filesystem, cannot run make check"; \
@@ -221,7 +221,7 @@ check_build:
 	+@if [ "${SLEPC}" = "yes" ]; then \
            ${OMAKE_SELF} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} slepc-check; \
          fi;
-	-@echo "Completed PETSc test examples"
+	-@echo "Completed PETSc check examples"
 
 # ********* Rules for make install *******************************************************************************************************************
 
