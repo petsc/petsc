@@ -21,7 +21,7 @@ int main(int argc, char **argv)
   n = 2;
   N = 2 * size;
 
-  PetscCall(VecCreateMPI(PETSC_COMM_WORLD, n, N, &x));
+  PetscCall(VecCreateFromOptions(PETSC_COMM_WORLD, NULL, 1, n, N, &x));
   PetscCall(VecDuplicate(x, &y));
 
   /* Specify indices to send from the next process in the ring */

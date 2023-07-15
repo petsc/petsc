@@ -3,9 +3,6 @@
 !   use of a user-provided preconditioner.  Input parameters include:
 !      -user_defined_pc : Activate a user-defined preconditioner
 !
-!
-
-!
 !     -------------------------------------------------------------------------
 !
 !     Module contains diag needed by shell preconditioner
@@ -138,7 +135,7 @@
 !     and VecCreate() are used with the same communicator.
 !   - Note: We form 1 vector from scratch and then duplicate as needed.
 
-      PetscCallA(VecCreateMPI(PETSC_COMM_WORLD,PETSC_DECIDE,m*n,u,ierr))
+      PetscCallA(VecCreateFromOptions(PETSC_COMM_WORLD,PETSC_NULL_CHARACTER,i1,PETSC_DECIDE,m*n,u,ierr))
       PetscCallA(VecDuplicate(u,b,ierr))
       PetscCallA(VecDuplicate(b,x,ierr))
 

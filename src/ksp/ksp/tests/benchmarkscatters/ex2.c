@@ -34,16 +34,14 @@ int main(int argc, char **args)
   PetscCall(PetscSynchronizedFlush(PETSC_COMM_WORLD, stdout));
   PetscCall(PetscCommDestroy(&comm));
 
-  PetscCall(VecCreateMPI(PETSC_COMM_WORLD, 2, PETSC_DETERMINE, &x));
-  PetscCall(VecSetBlockSize(x, 2));
+  PetscCall(VecCreateFromOptions(PETSC_COMM_WORLD, NULL, 2, 2, PETSC_DETERMINE, &x));
   PetscCall(VecSetValue(x, 2 * rank, (PetscScalar)(2 * rank + 10), INSERT_VALUES));
   PetscCall(VecSetValue(x, 2 * rank + 1, (PetscScalar)(2 * rank + 1 + 10), INSERT_VALUES));
   PetscCall(VecAssemblyBegin(x));
   PetscCall(VecAssemblyEnd(x));
   PetscCall(VecView(x, PETSC_VIEWER_STDOUT_WORLD));
 
-  PetscCall(VecCreateSeq(PETSC_COMM_SELF, 6, &y));
-  PetscCall(VecSetBlockSize(y, 2));
+  PetscCall(VecCreateFromOptions(PETSC_COMM_SELF, NULL, 2, 6, &y));
   PetscCall(ISCreateStride(PETSC_COMM_SELF, 6, 0, 1, &isstride));
   PetscCall(ISCreateBlock(PETSC_COMM_SELF, 2, 3, indices, PETSC_COPY_VALUES, &isblock));
   PetscCall(VecScatterCreate(x, isblock, y, isstride, &vscat));

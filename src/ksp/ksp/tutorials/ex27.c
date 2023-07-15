@@ -134,7 +134,7 @@ int main(int argc, char **args)
     PetscInt M, N;
     PetscCall(MatGetLocalSize(A, &m, &n));
     PetscCall(MatGetSize(A, &M, &N));
-    PetscCall(MatCreateAIJ(PETSC_COMM_WORLD, m, PETSC_DECIDE, M, N / 1.5, 1, NULL, 1, NULL, &P));
+    PetscCall(MatCreateFromOptions(PETSC_COMM_WORLD, NULL, 1, m, PETSC_DECIDE, M, N / 1.5, &P));
     PetscCall(MatGetOwnershipRangeColumn(P, &m, &n));
     for (; m < n; ++m) PetscCall(MatSetValue(P, m, m, 1.0, INSERT_VALUES));
     PetscCall(MatAssemblyBegin(P, MAT_FINAL_ASSEMBLY));

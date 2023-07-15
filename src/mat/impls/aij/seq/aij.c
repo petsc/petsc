@@ -3850,6 +3850,8 @@ PetscErrorCode MatRetrieveValues(Mat mat)
   Level: intermediate
 
   Notes:
+  It is recommend to use `MatCreateFromOptions()` instead of this routine
+
   If `nnz` is given then `nz` is ignored
 
   The `MATSEQAIJ` format, also called

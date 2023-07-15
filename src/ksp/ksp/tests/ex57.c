@@ -22,7 +22,7 @@ int main(int argc, char **argv)
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, (char *)0, NULL));
 
-  PetscCall(MatCreateAIJ(PETSC_COMM_WORLD, 5, 5, PETSC_DETERMINE, PETSC_DETERMINE, 3, NULL, 0, NULL, &subA[0]));
+  PetscCall(MatCreateFromOptions(PETSC_COMM_WORLD, NULL, 1, 5, 5, PETSC_DETERMINE, PETSC_DETERMINE, &subA[0]));
   PetscCall(MatGetOwnershipRange(subA[0], &mstart, &mend));
   for (row = mstart; row < mend; ++row) {
     val = 1.0;
@@ -32,7 +32,7 @@ int main(int argc, char **argv)
   PetscCall(MatAssemblyBegin(subA[0], MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(subA[0], MAT_FINAL_ASSEMBLY));
 
-  PetscCall(MatCreateAIJ(PETSC_COMM_WORLD, 5, 3, PETSC_DETERMINE, PETSC_DETERMINE, 1, NULL, 1, NULL, &subA[1]));
+  PetscCall(MatCreateFromOptions(PETSC_COMM_WORLD, NULL, 1, 5, 3, PETSC_DETERMINE, PETSC_DETERMINE, &subA[1]));
   PetscCall(MatGetOwnershipRange(subA[1], &mstart, &mend));
   for (row = mstart; row < mend; ++row) {
     col = 1;
@@ -42,7 +42,7 @@ int main(int argc, char **argv)
   PetscCall(MatAssemblyBegin(subA[1], MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(subA[1], MAT_FINAL_ASSEMBLY));
 
-  PetscCall(MatCreateAIJ(PETSC_COMM_WORLD, 5, 4, PETSC_DETERMINE, PETSC_DETERMINE, 1, NULL, 1, NULL, &subA[2]));
+  PetscCall(MatCreateFromOptions(PETSC_COMM_WORLD, NULL, 1, 5, 4, PETSC_DETERMINE, PETSC_DETERMINE, &subA[2]));
   PetscCall(MatGetOwnershipRange(subA[2], &mstart, &mend));
   for (row = mstart; row < mend; ++row) {
     col = 1;
@@ -52,7 +52,7 @@ int main(int argc, char **argv)
   PetscCall(MatAssemblyBegin(subA[2], MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(subA[2], MAT_FINAL_ASSEMBLY));
 
-  PetscCall(MatCreateAIJ(PETSC_COMM_WORLD, 3, 5, PETSC_DETERMINE, PETSC_DETERMINE, 1, NULL, 1, NULL, &subA[3]));
+  PetscCall(MatCreateFromOptions(PETSC_COMM_WORLD, NULL, 1, 3, 5, PETSC_DETERMINE, PETSC_DETERMINE, &subA[3]));
   PetscCall(MatGetOwnershipRange(subA[3], &mstart, &mend));
   for (row = mstart; row < mend; ++row) {
     col = row;
@@ -62,7 +62,7 @@ int main(int argc, char **argv)
   PetscCall(MatAssemblyBegin(subA[3], MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(subA[3], MAT_FINAL_ASSEMBLY));
 
-  PetscCall(MatCreateAIJ(PETSC_COMM_WORLD, 3, 3, PETSC_DETERMINE, PETSC_DETERMINE, 1, NULL, 1, NULL, &subA[4]));
+  PetscCall(MatCreateFromOptions(PETSC_COMM_WORLD, NULL, 1, 3, 3, PETSC_DETERMINE, PETSC_DETERMINE, &subA[4]));
   PetscCall(MatGetOwnershipRange(subA[4], &mstart, &mend));
   for (row = mstart; row < mend; ++row) {
     col = row;
@@ -72,7 +72,7 @@ int main(int argc, char **argv)
   PetscCall(MatAssemblyBegin(subA[4], MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(subA[4], MAT_FINAL_ASSEMBLY));
 
-  PetscCall(MatCreateAIJ(PETSC_COMM_WORLD, 3, 4, PETSC_DETERMINE, PETSC_DETERMINE, 1, NULL, 1, NULL, &subA[5]));
+  PetscCall(MatCreateFromOptions(PETSC_COMM_WORLD, NULL, 1, 3, 4, PETSC_DETERMINE, PETSC_DETERMINE, &subA[5]));
   PetscCall(MatGetOwnershipRange(subA[5], &mstart, &mend));
   for (row = mstart; row < mend; ++row) {
     col = row;
@@ -82,7 +82,7 @@ int main(int argc, char **argv)
   PetscCall(MatAssemblyBegin(subA[5], MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(subA[5], MAT_FINAL_ASSEMBLY));
 
-  PetscCall(MatCreateAIJ(PETSC_COMM_WORLD, 4, 5, PETSC_DETERMINE, PETSC_DETERMINE, 1, NULL, 1, NULL, &subA[6]));
+  PetscCall(MatCreateFromOptions(PETSC_COMM_WORLD, NULL, 1, 4, 5, PETSC_DETERMINE, PETSC_DETERMINE, &subA[6]));
   PetscCall(MatGetOwnershipRange(subA[6], &mstart, &mend));
   for (row = mstart; row < mend; ++row) {
     col = 2;
@@ -92,7 +92,7 @@ int main(int argc, char **argv)
   PetscCall(MatAssemblyBegin(subA[6], MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(subA[6], MAT_FINAL_ASSEMBLY));
 
-  PetscCall(MatCreateAIJ(PETSC_COMM_WORLD, 4, 3, PETSC_DETERMINE, PETSC_DETERMINE, 1, NULL, 1, NULL, &subA[7]));
+  PetscCall(MatCreateFromOptions(PETSC_COMM_WORLD, NULL, 1, 4, 3, PETSC_DETERMINE, PETSC_DETERMINE, &subA[7]));
   PetscCall(MatGetOwnershipRange(subA[7], &mstart, &mend));
   for (row = mstart; row < mend; ++row) {
     col = 1;
@@ -102,7 +102,7 @@ int main(int argc, char **argv)
   PetscCall(MatAssemblyBegin(subA[7], MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(subA[7], MAT_FINAL_ASSEMBLY));
 
-  PetscCall(MatCreateAIJ(PETSC_COMM_WORLD, 4, 4, PETSC_DETERMINE, PETSC_DETERMINE, 1, NULL, 1, NULL, &subA[8]));
+  PetscCall(MatCreateFromOptions(PETSC_COMM_WORLD, NULL, 1, 4, 4, PETSC_DETERMINE, PETSC_DETERMINE, &subA[8]));
   PetscCall(MatGetOwnershipRange(subA[8], &mstart, &mend));
   for (row = mstart; row < mend; ++row) {
     col = row;
@@ -114,19 +114,13 @@ int main(int argc, char **argv)
 
   PetscCall(MatCreateNest(PETSC_COMM_WORLD, 3, NULL, 3, NULL, subA, &A));
   PetscCall(MatNestGetISs(A, isg, NULL));
-  PetscCall(VecCreate(PETSC_COMM_WORLD, &subb[0]));
-  PetscCall(VecSetSizes(subb[0], 5, PETSC_DECIDE));
-  PetscCall(VecSetFromOptions(subb[0]));
+  PetscCall(VecCreateFromOptions(PETSC_COMM_WORLD, NULL, 1, 5, PETSC_DECIDE, &subb[0]));
   PetscCall(VecSet(subb[0], 1.0));
 
-  PetscCall(VecCreate(PETSC_COMM_WORLD, &subb[1]));
-  PetscCall(VecSetSizes(subb[1], 3, PETSC_DECIDE));
-  PetscCall(VecSetFromOptions(subb[1]));
+  PetscCall(VecCreateFromOptions(PETSC_COMM_WORLD, NULL, 1, 3, PETSC_DECIDE, &subb[1]));
   PetscCall(VecSet(subb[1], 2.0));
 
-  PetscCall(VecCreate(PETSC_COMM_WORLD, &subb[2]));
-  PetscCall(VecSetSizes(subb[2], 4, PETSC_DECIDE));
-  PetscCall(VecSetFromOptions(subb[2]));
+  PetscCall(VecCreateFromOptions(PETSC_COMM_WORLD, NULL, 1, 4, PETSC_DECIDE, &subb[2]));
   PetscCall(VecSet(subb[2], 3.0));
 
   PetscCall(VecCreateNest(PETSC_COMM_WORLD, 3, NULL, subb, &b));

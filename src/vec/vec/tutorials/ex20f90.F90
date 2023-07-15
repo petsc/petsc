@@ -1,7 +1,3 @@
-!
-!
-!
-! -----------------------------------------------------------------------
 
       program main
 
@@ -58,11 +54,6 @@
 !  or sequential) is determined at runtime.  Also, the parallel
 !  partitioning of the vector is determined by PETSc at runtime.
 !
-!  Routines for creating particular vector types directly are:
-!     VecCreateSeq() - uniprocessor vector
-!     VecCreateMPI() - distributed vector, where the user can
-!                      determine the parallel partitioning
-
       PetscCallA(VecCreate(PETSC_COMM_WORLD,x,ierr))
       PetscCallA(VecSetSizes(x,PETSC_DECIDE,n,ierr))
       PetscCallA(VecSetFromOptions(x,ierr))

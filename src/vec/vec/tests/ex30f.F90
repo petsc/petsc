@@ -8,7 +8,7 @@
       implicit none
 
       PetscErrorCode ierr
-      PetscInt  nlocal, n, row
+      PetscInt  nlocal, n, row, i1
       PetscInt  nlocal2,n2,eight
       PetscMPIInt rank, size
       PetscInt from(10), to(10)
@@ -29,8 +29,9 @@
 
       nlocal2 = 2*nlocal
       n2      = 2*n
-      PetscCallA(VecCreateMPI(PETSC_COMM_WORLD,nlocal2,n2,v1,ierr))
-      PetscCallA(VecCreateMPI(PETSC_COMM_WORLD,nlocal,n,v2,ierr))
+      i1      = 1
+      PetscCallA(VecCreateFromOptions(PETSC_COMM_WORLD,PETSC_NULL_CHARACTER,i1,nlocal2,n2,v1,ierr))
+      PetscCallA(VecCreateFromOptions(PETSC_COMM_WORLD,PETSC_NULL_CHARACTER,i1,nlocal,n,v2,ierr))
       PetscCallA(VecCreateSeq(PETSC_COMM_SELF,n,v3,ierr))
 
       num=2.0

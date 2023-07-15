@@ -12,8 +12,7 @@ DMField Object: field 1 MPI process
     0.397778     0.0730366     
     0.103866     0.25078     
 Vec Object: Test Points 1 MPI process
-  type: mpi
-Process [0]
+  type: seq
 0.984052
 0.738516
 0.401147

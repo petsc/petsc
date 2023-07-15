@@ -1146,7 +1146,7 @@ static PetscErrorCode DMPlexGetExpandedBoundary_Private(DM dm, PortableBoundary 
       PetscCall(ISDestroy(&is0));
     }
   } else {
-    PetscCall(VecCreateSeq(PETSC_COMM_SELF, 0, &bnd0->coordinates));
+    PetscCall(VecCreateFromOptions(PETSC_COMM_SELF, NULL, 1, 0, 0, &bnd0->coordinates));
   }
 
   {
@@ -1159,16 +1159,16 @@ static PetscErrorCode DMPlexGetExpandedBoundary_Private(DM dm, PortableBoundary 
     PetscCall(VecGetLocalSize(bnd0->coordinates, &n));
     PetscCallMPI(MPI_Bcast(&n, 1, MPIU_INT, rootrank, comm));
     if (rank == rootrank) {
-      PetscCall(VecCreateMPI(comm, n, n, &tmp));
+      PetscCall(VecCreateFromOptions(comm, NULL, 1, n, n, &tmp));
     } else {
-      PetscCall(VecCreateMPI(comm, 0, n, &tmp));
+      PetscCall(VecCreateFromOptions(comm, NULL, 1, 0, n, &tmp));
     }
     PetscCall(VecCopy(bnd0->coordinates, tmp));
     PetscCall(VecDestroy(&bnd0->coordinates));
     bnd0->coordinates = tmp;
 
     /* replicate coordinates from root rank to all ranks */
-    PetscCall(VecCreateMPI(comm, n, n * size, &bnd->coordinates));
+    PetscCall(VecCreateFromOptions(comm, NULL, 1, n, n * size, &bnd->coordinates));
     PetscCall(ISCreateStride(comm, n, 0, 1, &xis));
     PetscCall(VecScatterCreate(bnd0->coordinates, xis, bnd->coordinates, NULL, &sc));
     PetscCall(VecScatterBegin(sc, bnd0->coordinates, bnd->coordinates, INSERT_VALUES, SCATTER_FORWARD));

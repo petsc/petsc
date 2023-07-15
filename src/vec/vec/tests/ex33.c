@@ -17,7 +17,7 @@ int main(int argc, char **argv)
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
 
   /* create two vectors */
-  PetscCall(VecCreateMPI(PETSC_COMM_WORLD, PETSC_DECIDE, size * n, &x));
+  PetscCall(VecCreateFromOptions(PETSC_COMM_WORLD, NULL, 1, PETSC_DECIDE, size * n, &x));
 
   /* each processor inserts its values */
 

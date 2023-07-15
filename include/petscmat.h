@@ -349,6 +349,7 @@ typedef enum {
 PETSC_EXTERN PetscErrorCode MatInitializePackage(void);
 
 PETSC_EXTERN PetscErrorCode MatCreate(MPI_Comm, Mat *);
+PETSC_EXTERN PetscErrorCode MatCreateFromOptions(MPI_Comm, const char *, PetscInt, PetscInt, PetscInt, PetscInt, PetscInt, Mat *);
 PETSC_EXTERN PetscErrorCode MatSetSizes(Mat, PetscInt, PetscInt, PetscInt, PetscInt);
 PETSC_EXTERN PetscErrorCode MatSetType(Mat, MatType);
 PETSC_EXTERN PetscErrorCode MatGetVecType(Mat, VecType *);

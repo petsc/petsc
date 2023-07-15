@@ -97,6 +97,7 @@ Changes: Development
 - Add CUDA/HIP implementations for ``VecAbs()``, ``VecSqrt()``, ``VecExp()``, ``VecLog()``, ``VecPointwiseMax()``, ``VecPointwiseMaxAbs()``, and ``VecPointwiseMin()``
 - Add ``VecMAXPBY()``
 - Deprecate ``VecChop()`` in favor of ``VecFilter()``
+- Add ``VecCreateFromOptions()``
 
 .. rubric:: PetscSection:
 
@@ -123,6 +124,7 @@ Changes: Development
 - Expose ``MatComputeVariableBlockEnvelope()`` in public headers
 - Add ``MatEliminateZeros()`` implementations for ``MatBAIJ`` and ``MatSBAIJ``
 - Deprecate ``MatChop()`` in favor of ``MatFilter()``, with two additional Boolean parameters to compress the underlying storage and keep or discard near-zero diagonal coefficients
+- Add ``MatCreateFromOptions()``
 
 .. rubric:: MatCoarsen:
 
