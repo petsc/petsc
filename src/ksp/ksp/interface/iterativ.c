@@ -10,22 +10,22 @@
 #include <petscdraw.h>
 
 /*@
-   KSPGetResidualNorm - Gets the last (possibly approximate and/or preconditioned) residual norm that has been computed.
+  KSPGetResidualNorm - Gets the last (possibly approximate and/or preconditioned) residual norm that has been computed.
 
-   Not Collective
+  Not Collective
 
-   Input Parameter:
-.  ksp - the iterative context
+  Input Parameter:
+. ksp - the iterative context
 
-   Output Parameter:
-.  rnorm - residual norm
+  Output Parameter:
+. rnorm - residual norm
 
-   Level: intermediate
+  Level: intermediate
 
-   Note:
-   For some methods, such as `KSPGMRES`, the norm is not computed directly from the residual.
+  Note:
+  For some methods, such as `KSPGMRES`, the norm is not computed directly from the residual.
 
-   The type of norm used by the method can be controlled with `KSPSetNormType()`
+  The type of norm used by the method can be controlled with `KSPSetNormType()`
 
 .seealso: [](ch_ksp), `KSP`, `KSPSetNormType()`, `KSPBuildResidual()`, `KSPNormType`
 @*/
@@ -39,22 +39,22 @@ PetscErrorCode KSPGetResidualNorm(KSP ksp, PetscReal *rnorm)
 }
 
 /*@
-   KSPGetIterationNumber - Gets the current iteration number; if the `KSPSolve()` is complete, returns the number of iterations used.
+  KSPGetIterationNumber - Gets the current iteration number; if the `KSPSolve()` is complete, returns the number of iterations used.
 
-   Not Collective
+  Not Collective
 
-   Input Parameter:
-.  ksp - the iterative context
+  Input Parameter:
+. ksp - the iterative context
 
-   Output Parameter:
-.  its - number of iterations
+  Output Parameter:
+. its - number of iterations
 
-   Level: intermediate
+  Level: intermediate
 
-   Note:
-   During the ith iteration this returns i-1
+  Note:
+  During the ith iteration this returns i-1
 
-.seealso: [](ch_ksp), `KSP`, `KSPGetResidualNorm()`, `KSPBuildResidual()`, `KSPGetResidualNorm()`, `KSPGetTotalIterations()`
+.seealso: [](ch_ksp), `KSP`, `KSPGetResidualNorm()`, `KSPBuildResidual()`, `KSPGetTotalIterations()`
 @*/
 PetscErrorCode KSPGetIterationNumber(KSP ksp, PetscInt *its)
 {
@@ -66,21 +66,21 @@ PetscErrorCode KSPGetIterationNumber(KSP ksp, PetscInt *its)
 }
 
 /*@
-   KSPGetTotalIterations - Gets the total number of iterations this `KSP` object has performed since was created, counted over all linear solves
+  KSPGetTotalIterations - Gets the total number of iterations this `KSP` object has performed since was created, counted over all linear solves
 
-   Not Collective
+  Not Collective
 
-   Input Parameter:
-.  ksp - the iterative context
+  Input Parameter:
+. ksp - the iterative context
 
-   Output Parameter:
-.  its - total number of iterations
+  Output Parameter:
+. its - total number of iterations
 
-   Level: intermediate
+  Level: intermediate
 
-   Note:
-    Use `KSPGetIterationNumber()` to get the count for the most recent solve only
-   If this is called within a `KSPSolve()` (such as in a `KSPMonitor` routine) then it does not include iterations within that current solve
+  Note:
+  Use `KSPGetIterationNumber()` to get the count for the most recent solve only
+  If this is called within a `KSPSolve()` (such as in a `KSPMonitor` routine) then it does not include iterations within that current solve
 
 .seealso: [](ch_ksp), `KSP`, `KSPBuildResidual()`, `KSPGetResidualNorm()`, `KSPGetIterationNumber()`
 @*/
@@ -120,7 +120,7 @@ PetscErrorCode KSPGetTotalIterations(KSP ksp, PetscInt *its)
 .seealso: [](ch_ksp), `KSP`, `KSPMonitorSet()`, `KSPMonitorTrueResidual()`, `KSPMonitorResidualDraw()`, `KSPMonitorResidualDrawLG()`,
           `KSPMonitorResidualRange()`, `KSPMonitorTrueResidualDraw()`, `KSPMonitorTrueResidualDrawLG()`, `KSPMonitorTrueResidualMax()`,
           `KSPMonitorSingularValue()`, `KSPMonitorSolutionDrawLG()`, `KSPMonitorSolutionDraw()`, `KSPMonitorSolution()`,
-          `KSPMonitorErrorDrawLG()`, `KSPMonitorErrorDraw()`, KSPMonitorError()`
+          `KSPMonitorErrorDrawLG()`, `KSPMonitorErrorDraw()`, `KSPMonitorError()`
 @*/
 PetscErrorCode KSPMonitorResidual(KSP ksp, PetscInt n, PetscReal rnorm, PetscViewerAndFormat *vf)
 {
@@ -244,7 +244,7 @@ PetscErrorCode KSPMonitorResidualDrawLG(KSP ksp, PetscInt n, PetscReal rnorm, Pe
 - ctx    - An optional user context
 
   Output Parameter:
-. vf    - The viewer context
+. vf - The viewer context
 
   Level: intermediate
 
@@ -528,7 +528,7 @@ PetscErrorCode KSPMonitorTrueResidualDrawLG(KSP ksp, PetscInt n, PetscReal rnorm
 - ctx    - An optional user context
 
   Output Parameter:
-. vf    - The viewer context
+. vf - The viewer context
 
   Level: intermediate
 
@@ -782,11 +782,11 @@ PetscErrorCode KSPMonitorErrorDrawLG(KSP ksp, PetscInt n, PetscReal rnorm, Petsc
 - ctx    - An optional user context
 
   Output Parameter:
-. vf    - The viewer context
+. vf - The viewer context
 
   Level: intermediate
 
-.seealso: [](ch_ksp), `PETSCVIEWERDRAW`, `KSP`, `KSPMonitorSet()`, `KSPMonitorTrueResidual()`, `KSPMonitorErrorDrawLG()`, `KSPMonitorErrorDrawLG()`
+.seealso: [](ch_ksp), `PETSCVIEWERDRAW`, `KSP`, `KSPMonitorSet()`, `KSPMonitorTrueResidual()`, `KSPMonitorErrorDrawLG()`
 @*/
 PetscErrorCode KSPMonitorErrorDrawLGCreate(PetscViewer viewer, PetscViewerFormat format, void *ctx, PetscViewerAndFormat **vf)
 {
@@ -925,7 +925,7 @@ PetscErrorCode KSPMonitorSolutionDraw(KSP ksp, PetscInt n, PetscReal rnorm, Pets
   This is not called directly by users, rather one calls `KSPMonitorSet()`, with this function as an argument, to cause the monitor
   to be used during the `KSP` solve.
 
-   Call `KSPMonitorSolutionDrawLGCreate()` to create the context needed with this monitor
+  Call `KSPMonitorSolutionDrawLGCreate()` to create the context needed with this monitor
 
 .seealso: [](ch_ksp), `KSP`, `KSPMonitorSet()`, `KSPMonitorTrueResidual()`, `KSPMonitorSolutionDrawLGCreate()`
 @*/
@@ -969,7 +969,7 @@ PetscErrorCode KSPMonitorSolutionDrawLG(KSP ksp, PetscInt n, PetscReal rnorm, Pe
 - ctx    - An optional user context
 
   Output Parameter:
-. vf    - The viewer context
+. vf - The viewer context
 
   Level: intermediate
 
@@ -1054,7 +1054,7 @@ PetscErrorCode KSPMonitorSingularValue(KSP ksp, PetscInt n, PetscReal rnorm, Pet
 - ctx    - An optional user context
 
   Output Parameter:
-. vf    - The viewer context
+. vf - The viewer context
 
   Level: intermediate
 
@@ -1072,22 +1072,22 @@ PetscErrorCode KSPMonitorSingularValueCreate(PetscViewer viewer, PetscViewerForm
 }
 
 /*@C
-   KSPMonitorDynamicToleranceCreate - Creates the context used by `KSPMonitorDynamicTolerance()`
+  KSPMonitorDynamicToleranceCreate - Creates the context used by `KSPMonitorDynamicTolerance()`
 
-   Logically Collective
+  Logically Collective
 
-   Output Parameter:
-.  ctx - a void pointer
+  Output Parameter:
+. ctx - a void pointer
 
-   Options Database Key:
-.   -sub_ksp_dynamic_tolerance <coef> - coefficient of dynamic tolerance for inner solver, default is 1.0
+  Options Database Key:
+. -sub_ksp_dynamic_tolerance <coef> - coefficient of dynamic tolerance for inner solver, default is 1.0
 
-   Level: advanced
+  Level: advanced
 
-   Note:
-   Use before calling `KSPMonitorSet()` with `KSPMonitorDynamicTolerance()`
+  Note:
+  Use before calling `KSPMonitorSet()` with `KSPMonitorDynamicTolerance()`
 
-   The default coefficient for the tolerance can be changed with `KSPMonitorDynamicToleranceSetCoefficient()`
+  The default coefficient for the tolerance can be changed with `KSPMonitorDynamicToleranceSetCoefficient()`
 
 .seealso: [](sec_flexibleksp), `KSP`, `KSPMonitorDynamicTolerance()`, `KSPMonitorDynamicToleranceDestroy()`, `KSPMonitorDynamicToleranceSetCoefficient()`
 @*/
@@ -1104,21 +1104,21 @@ PetscErrorCode KSPMonitorDynamicToleranceCreate(void *ctx)
 }
 
 /*@C
-   KSPMonitorDynamicToleranceSetCoefficient - Sets the coefficient in the context used by `KSPMonitorDynamicTolerance()`
+  KSPMonitorDynamicToleranceSetCoefficient - Sets the coefficient in the context used by `KSPMonitorDynamicTolerance()`
 
-   Logically Collective
+  Logically Collective
 
-   Output Parameters:
-+  ctx - the context for `KSPMonitorDynamicTolerance()`
--  coeff - the coefficient, default is 1.0
+  Output Parameters:
++ ctx   - the context for `KSPMonitorDynamicTolerance()`
+- coeff - the coefficient, default is 1.0
 
-   Options Database Key:
-.   -sub_ksp_dynamic_tolerance <coef> - coefficient of dynamic tolerance for inner solver, default is 1.0
+  Options Database Key:
+. -sub_ksp_dynamic_tolerance <coef> - coefficient of dynamic tolerance for inner solver, default is 1.0
 
-   Level: advanced
+  Level: advanced
 
-   Note:
-   Use before calling `KSPMonitorSet()` and after `KSPMonitorDynamicToleranceCreate()`
+  Note:
+  Use before calling `KSPMonitorSet()` and after `KSPMonitorDynamicToleranceCreate()`
 
 .seealso: [](sec_flexibleksp), `KSP`, `KSPMonitorDynamicTolerance()`, `KSPMonitorDynamicToleranceDestroy()`, `KSPMonitorDynamicToleranceCreate()`
 @*/
@@ -1132,34 +1132,34 @@ PetscErrorCode KSPMonitorDynamicToleranceSetCoefficient(void *ctx, PetscReal coe
 }
 
 /*@C
-   KSPMonitorDynamicTolerance - A monitor that changes the inner tolerance of nested preconditioners in every outer iteration in an adaptive way.
+  KSPMonitorDynamicTolerance - A monitor that changes the inner tolerance of nested preconditioners in every outer iteration in an adaptive way.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  ksp   - iterative context
+  Input Parameters:
++ ksp   - iterative context
 .  n     - iteration number (not used)
-.  fnorm - the current residual norm
+. fnorm - the current residual norm
 -  ctx   - context used by monitor
 
-   Options Database Key:
-.   -sub_ksp_dynamic_tolerance <coef> - coefficient of dynamic tolerance for inner solver, default is 1.0
+  Options Database Key:
+. -sub_ksp_dynamic_tolerance <coef> - coefficient of dynamic tolerance for inner solver, default is 1.0
 
-   Level: advanced
+  Level: advanced
 
-   Notes:
-   Applies for `PCKSP`, `PCBJACOBI`, and `PCDEFLATION` preconditioners
+  Notes:
+  Applies for `PCKSP`, `PCBJACOBI`, and `PCDEFLATION` preconditioners
 
-   This may be useful for a flexible preconditioned Krylov method, such as `KSPFGMRES`, [](sec_flexibleksp) to
-   control the accuracy of the inner solves needed to guarantee convergence of the outer iterations.
+  This may be useful for a flexible preconditioned Krylov method, such as `KSPFGMRES`, [](sec_flexibleksp) to
+  control the accuracy of the inner solves needed to guarantee convergence of the outer iterations.
 
-   This is not called directly by users, rather one calls `KSPMonitorSet()`, with this function as an argument, to cause the monitor
-   to be used during the `KSP` solve.
+  This is not called directly by users, rather one calls `KSPMonitorSet()`, with this function as an argument, to cause the monitor
+  to be used during the `KSP` solve.
 
-   Use `KSPMonitorDynamicToleranceCreate()` and `KSPMonitorDynamicToleranceSetCoefficient()` to create the context needed by this
-   monitor function.
+  Use `KSPMonitorDynamicToleranceCreate()` and `KSPMonitorDynamicToleranceSetCoefficient()` to create the context needed by this
+  monitor function.
 
-   Pass the context and `KSPMonitorDynamicToleranceDestroy()` to `KSPMonitorSet()`
+  Pass the context and `KSPMonitorDynamicToleranceDestroy()` to `KSPMonitorSet()`
 
 .seealso: [](sec_flexibleksp), `KSP`, `KSPMonitorDynamicToleranceCreate()`, `KSPMonitorDynamicToleranceDestroy()`, `KSPMonitorDynamicToleranceSetCoefficient()`
 @*/
@@ -1216,15 +1216,15 @@ PetscErrorCode KSPMonitorDynamicTolerance(KSP ksp, PetscInt its, PetscReal fnorm
 }
 
 /*@C
-     KSPMonitorDynamicToleranceDestroy - Destroy the monitor context used in `KSPMonitorDynamicTolerance()`
+  KSPMonitorDynamicToleranceDestroy - Destroy the monitor context used in `KSPMonitorDynamicTolerance()`
 
-   Input Parameter:
-.   ctx - the monitor context
+  Input Parameter:
+. ctx - the monitor context
 
-   Level: advanced
+  Level: advanced
 
-   Note:
-   This is not called directly but is passed to `KSPMonitorSet()` along with `KSPMonitorDynamicTolerance()`
+  Note:
+  This is not called directly but is passed to `KSPMonitorSet()` along with `KSPMonitorDynamicTolerance()`
 
 .seealso: `KSP`, `KSPMonitorDynamicTolerance()`, `KSPMonitorSet()`, `KSPMonitorDynamicToleranceCreate()`
 @*/
@@ -1236,28 +1236,28 @@ PetscErrorCode KSPMonitorDynamicToleranceDestroy(void **ctx)
 }
 
 /*@C
-   KSPConvergedSkip - Convergence test that do not return as converged
-   until the maximum number of iterations is reached.
+  KSPConvergedSkip - Convergence test that do not return as converged
+  until the maximum number of iterations is reached.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  ksp   - iterative context
-.  n     - iteration number
-.  rnorm - 2-norm residual value (may be estimated)
--  dummy - unused convergence context
+  Input Parameters:
++ ksp   - iterative context
+. n     - iteration number
+. rnorm - 2-norm residual value (may be estimated)
+- dummy - unused convergence context
 
-   Output Parameter:
-.  reason - `KSP_CONVERGED_ITERATING`, `KSP_CONVERGED_ITS`
+  Output Parameter:
+. reason - `KSP_CONVERGED_ITERATING`, `KSP_CONVERGED_ITS`
 
-   Level: advanced
+  Level: advanced
 
-   Notes:
-   This should be used as the convergence test with the option
-   `KSPSetNormType`(ksp,`KSP_NORM_NONE`), since norms of the residual are
-   not computed. Convergence is then declared after the maximum number
-   of iterations have been reached. Useful when one is using `KSPCG` or
-   `KSPBCGS`. [](sec_flexibleksp)
+  Notes:
+  This should be used as the convergence test with the option
+  `KSPSetNormType`(ksp,`KSP_NORM_NONE`), since norms of the residual are
+  not computed. Convergence is then declared after the maximum number
+  of iterations have been reached. Useful when one is using `KSPCG` or
+  `KSPBCGS`. [](sec_flexibleksp)
 
 .seealso: [](ch_ksp), `KSP`, `KSPCG`, `KSPBCGS`, `KSPSetConvergenceTest()`, `KSPSetTolerances()`, `KSPSetNormType()`, [](sec_flexibleksp),
           `KSPConvergedReason`
@@ -1273,21 +1273,21 @@ PetscErrorCode KSPConvergedSkip(KSP ksp, PetscInt n, PetscReal rnorm, KSPConverg
 }
 
 /*@
-   KSPSetConvergedNegativeCurvature - Allows to declare convergence and return `KSP_CONVERGED_NEG_CURVE` when negative curvature is detected
+  KSPSetConvergedNegativeCurvature - Allows to declare convergence and return `KSP_CONVERGED_NEG_CURVE` when negative curvature is detected
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  ksp   - iterative context
--  flg   - the Boolean value
+  Input Parameters:
++ ksp - iterative context
+- flg - the Boolean value
 
-   Options Database Key:
-.   -ksp_converged_neg_curve <bool> - Declare convergence if negative curvature is detected
+  Options Database Key:
+. -ksp_converged_neg_curve <bool> - Declare convergence if negative curvature is detected
 
-   Level: advanced
+  Level: advanced
 
-   Notes:
-   This is currently used only by a subset of the Krylov solvers, namely `KSPCG`, `KSPSTCG`, `KSPQCG`, `KSPGLTR`, `KSPNASH`, and `KSPMINRES`.
+  Notes:
+  This is currently used only by a subset of the Krylov solvers, namely `KSPCG`, `KSPSTCG`, `KSPQCG`, `KSPGLTR`, `KSPNASH`, and `KSPMINRES`.
 
 .seealso: [](ch_ksp), `KSP`, `KSPConvergedReason`, `KSPGetConvergedNegativeCurvature()`
 @*/
@@ -1301,17 +1301,17 @@ PetscErrorCode KSPSetConvergedNegativeCurvature(KSP ksp, PetscBool flg)
 }
 
 /*@
-   KSPGetConvergedNegativeCurvature - Get the flag to declare convergence if negative curvature is detected
+  KSPGetConvergedNegativeCurvature - Get the flag to declare convergence if negative curvature is detected
 
-   Collective
+  Collective
 
-   Input Parameter:
-.  ksp   - iterative context
+  Input Parameter:
+. ksp - iterative context
 
-   Output Parameter:
-.  flg   - the Boolean value
+  Output Parameter:
+. flg - the Boolean value
 
-   Level: advanced
+  Level: advanced
 
 .seealso: [](ch_ksp), `KSP`, `KSPConvergedReason`, `KSPSetConvergedNegativeCurvature()`
 @*/
@@ -1325,14 +1325,14 @@ PetscErrorCode KSPGetConvergedNegativeCurvature(KSP ksp, PetscBool *flg)
 }
 
 /*@C
-   KSPConvergedDefaultCreate - Creates and initializes the context used by the `KSPConvergedDefault()` function
+  KSPConvergedDefaultCreate - Creates and initializes the context used by the `KSPConvergedDefault()` function
 
-   Not Collective
+  Not Collective
 
-   Output Parameter:
-.  ctx - convergence context
+  Output Parameter:
+. ctx - convergence context
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: [](ch_ksp), `KSP`, `KSPConvergedDefault()`, `KSPConvergedDefaultDestroy()`, `KSPSetConvergenceTest()`, `KSPSetTolerances()`,
           `KSPConvergedSkip()`, `KSPConvergedReason`, `KSPGetConvergedReason()`, `KSPConvergedDefaultSetUIRNorm()`, `KSPConvergedDefaultSetUMIRNorm()`,
@@ -1349,29 +1349,29 @@ PetscErrorCode KSPConvergedDefaultCreate(void **ctx)
 }
 
 /*@
-   KSPConvergedDefaultSetUIRNorm - makes the default convergence test use || B*(b - A*(initial guess))||
-      instead of || B*b ||. In the case of right preconditioner or if `KSPSetNormType`(ksp,`KSP_NORM_UNPRECONDITIONED`)
-      is used there is no B in the above formula. UIRNorm is short for Use Initial Residual Norm.
+  KSPConvergedDefaultSetUIRNorm - makes the default convergence test use || B*(b - A*(initial guess))||
+  instead of || B*b ||. In the case of right preconditioner or if `KSPSetNormType`(ksp,`KSP_NORM_UNPRECONDITIONED`)
+  is used there is no B in the above formula. UIRNorm is short for Use Initial Residual Norm.
 
-   Collective
+  Collective
 
-   Input Parameters:
-.  ksp   - iterative context
+  Input Parameters:
+. ksp - iterative context
 
-   Options Database Key:
-.   -ksp_converged_use_initial_residual_norm <bool> - Use initial residual norm for computing relative convergence
+  Options Database Key:
+. -ksp_converged_use_initial_residual_norm <bool> - Use initial residual norm for computing relative convergence
 
-   Level: intermediate
+  Level: intermediate
 
-   Notes:
-   Use `KSPSetTolerances()` to alter the defaults for rtol, abstol, dtol.
+  Notes:
+  Use `KSPSetTolerances()` to alter the defaults for rtol, abstol, dtol.
 
-   The precise values of reason are macros such as `KSP_CONVERGED_RTOL`, which
-   are defined in petscksp.h.
+  The precise values of reason are macros such as `KSP_CONVERGED_RTOL`, which
+  are defined in petscksp.h.
 
-   If the convergence test is not `KSPConvergedDefault()` then this is ignored.
+  If the convergence test is not `KSPConvergedDefault()` then this is ignored.
 
-   If right preconditioning is being used then B does not appear in the above formula.
+  If right preconditioning is being used then B does not appear in the above formula.
 
 .seealso: [](ch_ksp), `KSP`, `KSPSetConvergenceTest()`, `KSPSetTolerances()`, `KSPConvergedSkip()`, `KSPConvergedReason`, `KSPGetConvergedReason()`, `KSPConvergedDefaultSetUMIRNorm()`, `KSPConvergedDefaultSetConvergedMaxits()`
 @*/
@@ -1388,19 +1388,19 @@ PetscErrorCode KSPConvergedDefaultSetUIRNorm(KSP ksp)
 }
 
 /*@
-   KSPConvergedDefaultSetUMIRNorm - makes the default convergence test use min(|| B*(b - A*(initial guess))||,|| B*b ||)
-      In the case of right preconditioner or if `KSPSetNormType`(ksp,`KSP_NORM_UNPRECONDITIONED`)
-      is used there is no B in the above formula. UMIRNorm is short for Use Minimum Initial Residual Norm.
+  KSPConvergedDefaultSetUMIRNorm - makes the default convergence test use min(|| B*(b - A*(initial guess))||,|| B*b ||)
+  In the case of right preconditioner or if `KSPSetNormType`(ksp,`KSP_NORM_UNPRECONDITIONED`)
+  is used there is no B in the above formula. UMIRNorm is short for Use Minimum Initial Residual Norm.
 
-   Collective
+  Collective
 
-   Input Parameters:
-.  ksp   - iterative context
+  Input Parameters:
+. ksp - iterative context
 
-   Options Database Key:
-.   -ksp_converged_use_min_initial_residual_norm <bool> - Use minimum of initial residual norm and b for computing relative convergence
+  Options Database Key:
+. -ksp_converged_use_min_initial_residual_norm <bool> - Use minimum of initial residual norm and b for computing relative convergence
 
-   Level: intermediate
+  Level: intermediate
 
    Use `KSPSetTolerances()` to alter the defaults for rtol, abstol, dtol.
 
@@ -1422,21 +1422,21 @@ PetscErrorCode KSPConvergedDefaultSetUMIRNorm(KSP ksp)
 }
 
 /*@
-   KSPConvergedDefaultSetConvergedMaxits - allows the default convergence test to declare convergence and return `KSP_CONVERGED_ITS` if the maximum number of iterations is reached
+  KSPConvergedDefaultSetConvergedMaxits - allows the default convergence test to declare convergence and return `KSP_CONVERGED_ITS` if the maximum number of iterations is reached
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  ksp - iterative context
--  flg - boolean flag
+  Input Parameters:
++ ksp - iterative context
+- flg - boolean flag
 
-   Options Database Key:
-.   -ksp_converged_maxits <bool> - Declare convergence if the maximum number of iterations is reached
+  Options Database Key:
+. -ksp_converged_maxits <bool> - Declare convergence if the maximum number of iterations is reached
 
-   Level: intermediate
+  Level: intermediate
 
-   Note:
-   The precise values of reason available in `KSPConvergedReason`
+  Note:
+  The precise values of reason available in `KSPConvergedReason`
 
 .seealso: [](ch_ksp), `KSP`, `KSPSetConvergenceTest()`, `KSPSetTolerances()`, `KSPConvergedSkip()`, `KSPConvergedReason`, `KSPGetConvergedReason()`, `KSPConvergedDefaultSetUMIRNorm()`, `KSPConvergedDefaultSetUIRNorm()`
 @*/
@@ -1453,59 +1453,59 @@ PetscErrorCode KSPConvergedDefaultSetConvergedMaxits(KSP ksp, PetscBool flg)
 }
 
 /*@C
-   KSPConvergedDefault - Default code to determine convergence of the linear iterative solvers
+  KSPConvergedDefault - Default code to determine convergence of the linear iterative solvers
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  ksp   - iterative context
-.  n     - iteration number
-.  rnorm - residual norm (may be estimated, depending on the method may be the preconditioned residual norm)
--  ctx - convergence context which must be created by `KSPConvergedDefaultCreate()`
+  Input Parameters:
++ ksp   - iterative context
+. n     - iteration number
+. rnorm - residual norm (may be estimated, depending on the method may be the preconditioned residual norm)
+- ctx   - convergence context which must be created by `KSPConvergedDefaultCreate()`
 
-   Output Parameter:
-.  reason - the convergence reason; it is positive if the iteration has converged,
+  Output Parameter:
+. reason - the convergence reason; it is positive if the iteration has converged,
             negative if the iteration has diverged, and `KSP_CONVERGED_ITERATING` otherwise
 
-   Options Database Keys:
-+   -ksp_max_it - maximum number of linear iterations
-.   -ksp_min_it - minimum number of linear iterations, defaults to 0
-.   -ksp_rtol rtol - relative tolerance used in default determination of convergence, i.e. if residual norm decreases by this factor than convergence is declared
-.   -ksp_atol abstol - absolute tolerance used in default convergence test, i.e. if residual norm is less than this then convergence is declared
-.   -ksp_divtol tol - if residual norm increases by this factor than divergence is declared
-.   -ksp_converged_use_initial_residual_norm - see `KSPConvergedDefaultSetUIRNorm()`
-.   -ksp_converged_use_min_initial_residual_norm - see `KSPConvergedDefaultSetUMIRNorm()`
--   -ksp_converged_maxits - see `KSPConvergedDefaultSetConvergedMaxits()`
+  Options Database Keys:
++ -ksp_max_it                                  - maximum number of linear iterations
+. -ksp_min_it                                  - minimum number of linear iterations, defaults to 0
+. -ksp_rtol rtol                               - relative tolerance used in default determination of convergence, i.e. if residual norm decreases by this factor than convergence is declared
+. -ksp_atol abstol                             - absolute tolerance used in default convergence test, i.e. if residual norm is less than this then convergence is declared
+. -ksp_divtol tol                              - if residual norm increases by this factor than divergence is declared
+. -ksp_converged_use_initial_residual_norm     - see `KSPConvergedDefaultSetUIRNorm()`
+. -ksp_converged_use_min_initial_residual_norm - see `KSPConvergedDefaultSetUMIRNorm()`
+- -ksp_converged_maxits                        - see `KSPConvergedDefaultSetConvergedMaxits()`
 
-   Level: advanced
+  Level: advanced
 
-   Notes:
-   `KSPConvergedDefault()` reaches convergence when   rnorm < MAX (rtol * rnorm_0, abstol);
-   Divergence is detected if rnorm > dtol * rnorm_0, or when failures are detected throughout the iteration.
-   By default, reaching the maximum number of iterations is considered divergence (i.e. KSP_DIVERGED_ITS).
-   In order to have PETSc declaring convergence in such a case (i.e. `KSP_CONVERGED_ITS`), users can use `KSPConvergedDefaultSetConvergedMaxits()`
+  Notes:
+  `KSPConvergedDefault()` reaches convergence when   rnorm < MAX (rtol * rnorm_0, abstol);
+  Divergence is detected if rnorm > dtol * rnorm_0, or when failures are detected throughout the iteration.
+  By default, reaching the maximum number of iterations is considered divergence (i.e. KSP_DIVERGED_ITS).
+  In order to have PETSc declaring convergence in such a case (i.e. `KSP_CONVERGED_ITS`), users can use `KSPConvergedDefaultSetConvergedMaxits()`
 
-   where:
+  where:
 +     rtol - relative tolerance,
 .     abstol - absolute tolerance.
 .     dtol - divergence tolerance,
 -     rnorm_0 - the two norm of the right hand side (or the preconditioned norm, depending on what was set with
-          `KSPSetNormType()`. When initial guess is non-zero you
-          can call `KSPConvergedDefaultSetUIRNorm()` to use the norm of (b - A*(initial guess))
-          as the starting point for relative norm convergence testing, that is as rnorm_0.
-          Call `KSPConvergedDefaultSetUMIRNorm()` to use the minimum of the norm of (b - A*(initial guess)) and the norm of b as the starting point.
+  `KSPSetNormType()`. When initial guess is non-zero you
+  can call `KSPConvergedDefaultSetUIRNorm()` to use the norm of (b - A*(initial guess))
+  as the starting point for relative norm convergence testing, that is as rnorm_0.
+  Call `KSPConvergedDefaultSetUMIRNorm()` to use the minimum of the norm of (b - A*(initial guess)) and the norm of b as the starting point.
 
-   Use `KSPSetTolerances()` to alter the defaults for rtol, abstol, dtol.
+  Use `KSPSetTolerances()` to alter the defaults for rtol, abstol, dtol.
 
-   Use `KSPSetNormType()` (or -ksp_norm_type <none,preconditioned,unpreconditioned,natural>) to change the norm used for computing rnorm
+  Use `KSPSetNormType()` (or -ksp_norm_type <none,preconditioned,unpreconditioned,natural>) to change the norm used for computing rnorm
 
-   The precise values of reason are available in `KSPConvergedReason`
+  The precise values of reason are available in `KSPConvergedReason`
 
-   This routine is used by `KSP` by default so the user generally never needs call it directly.
+  This routine is used by `KSP` by default so the user generally never needs call it directly.
 
-   Use `KSPSetConvergenceTest()` to provide your own test instead of using this one.
+  Use `KSPSetConvergenceTest()` to provide your own test instead of using this one.
 
-   Call `KSPSetConvergenceTest()` with the ctx, as created above and the destruction function `KSPConvergedDefaultDestroy()`
+  Call `KSPSetConvergenceTest()` with the ctx, as created above and the destruction function `KSPConvergedDefaultDestroy()`
 
 .seealso: [](ch_ksp), `KSP`, `KSPSetConvergenceTest()`, `KSPSetTolerances()`, `KSPConvergedSkip()`, `KSPConvergedReason`, `KSPGetConvergedReason()`, `KSPSetMinimumIterations()`,
           `KSPConvergedDefaultSetUIRNorm()`, `KSPConvergedDefaultSetUMIRNorm()`, `KSPConvergedDefaultSetConvergedMaxits()`, `KSPConvergedDefaultCreate()`, `KSPConvergedDefaultDestroy()`
@@ -1604,17 +1604,17 @@ PetscErrorCode KSPConvergedDefault(KSP ksp, PetscInt n, PetscReal rnorm, KSPConv
 }
 
 /*@C
-   KSPConvergedDefaultDestroy - Frees the space used by the `KSPConvergedDefault()` function context
+  KSPConvergedDefaultDestroy - Frees the space used by the `KSPConvergedDefault()` function context
 
-   Not Collective
+  Not Collective
 
-   Input Parameter:
-.  ctx - convergence context
+  Input Parameter:
+. ctx - convergence context
 
-   Level: intermediate
+  Level: intermediate
 
-   Note:
-   Pass this function name into `KSPSetConvergenceTest()` along with the context obtained with `KSPConvergedDefaultCreate()` and `KSPConvergedDefault()`
+  Note:
+  Pass this function name into `KSPSetConvergenceTest()` along with the context obtained with `KSPConvergedDefaultCreate()` and `KSPConvergedDefault()`
 
 .seealso: [](ch_ksp), `KSP`, `KSPConvergedDefault()`, `KSPConvergedDefaultCreate()`, `KSPSetConvergenceTest()`, `KSPSetTolerances()`, `KSPConvergedSkip()`,
           `KSPConvergedReason`, `KSPGetConvergedReason()`, `KSPConvergedDefaultSetUIRNorm()`, `KSPConvergedDefaultSetUMIRNorm()`
@@ -1630,21 +1630,21 @@ PetscErrorCode KSPConvergedDefaultDestroy(void *ctx)
 }
 
 /*
-   KSPBuildSolutionDefault - Default code to create/move the solution.
+  KSPBuildSolutionDefault - Default code to create/move the solution.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  ksp - iterative context
--  v   - pointer to the user's vector
+  Input Parameters:
++ ksp - iterative context
+- v   - pointer to the user's vector
 
-   Output Parameter:
-.  V - pointer to a vector containing the solution
+  Output Parameter:
+. V - pointer to a vector containing the solution
 
-   Level: advanced
+  Level: advanced
 
-   Developers Note:
-   This is PETSC_EXTERN because it may be used by user written plugin `KSPType` implementations
+  Developer Notes:
+  This is PETSC_EXTERN because it may be used by user written plugin `KSPType` implementations
 
 .seealso: [](ch_ksp), `KSP`, `KSPGetSolution()`, `KSPBuildResidualDefault()`
 */
@@ -1684,22 +1684,22 @@ PetscErrorCode KSPBuildSolutionDefault(KSP ksp, Vec v, Vec *V)
 }
 
 /*
-   KSPBuildResidualDefault - Default code to compute the residual.
+  KSPBuildResidualDefault - Default code to compute the residual.
 
-   Collecive on ksp
+  Collecive on ksp
 
-   Input Parameters:
-.  ksp - iterative context
-.  t   - pointer to temporary vector
-.  v   - pointer to user vector
+  Input Parameters:
++ ksp - iterative context
+. t   - pointer to temporary vector
+- v   - pointer to user vector
 
-   Output Parameter:
-.  V - pointer to a vector containing the residual
+  Output Parameter:
+. V - pointer to a vector containing the residual
 
-   Level: advanced
+  Level: advanced
 
-   Developers Note:
-   This is PETSC_EXTERN because it may be used by user written plugin `KSPType` implementations
+  Developer Notes:
+  This is PETSC_EXTERN because it may be used by user written plugin `KSPType` implementations
 
 .seealso: [](ch_ksp), `KSP`, `KSPBuildSolutionDefault()`
 */
@@ -1723,25 +1723,25 @@ PetscErrorCode KSPBuildResidualDefault(KSP ksp, Vec t, Vec v, Vec *V)
   Collective
 
   Input Parameters:
-+ ksp  - iterative context
-. rightn  - number of right work vectors
-- leftn   - number of left work vectors to allocate
++ ksp    - iterative context
+. rightn - number of right work vectors
+- leftn  - number of left work vectors to allocate
 
   Output Parameters:
-+  right - the array of vectors created
--  left - the array of left vectors
++ right - the array of vectors created
+- left  - the array of left vectors
 
-   Level: advanced
+  Level: advanced
 
-   Notes:
-   The right vector has as many elements as the matrix has columns. The left
-     vector has as many elements as the matrix has rows.
+  Notes:
+  The right vector has as many elements as the matrix has columns. The left
+  vector has as many elements as the matrix has rows.
 
-   The vectors are new vectors that are not owned by the `KSP`, they should be destroyed with calls to `VecDestroyVecs()` when no longer needed.
+  The vectors are new vectors that are not owned by the `KSP`, they should be destroyed with calls to `VecDestroyVecs()` when no longer needed.
 
-   Developers Note:
-   First tries to duplicate the rhs and solution vectors of the `KSP`, if they do not exist tries to get them from the matrix, if
-   that does not exist tries to get them from the `DM` (if it is provided).
+  Developer Notes:
+  First tries to duplicate the rhs and solution vectors of the `KSP`, if they do not exist tries to get them from the matrix, if
+  that does not exist tries to get them from the `DM` (if it is provided).
 
 .seealso: [](ch_ksp), `MatCreateVecs()`, `VecDestroyVecs()`, `KSPSetWorkVecs()`
 @*/
@@ -1827,12 +1827,12 @@ PetscErrorCode KSPCreateVecs(KSP ksp, PetscInt rightn, Vec **right, PetscInt lef
   Collective
 
   Input Parameters:
-+ ksp  - iterative context
-- nw   - number of work vectors to allocate
++ ksp - iterative context
+- nw  - number of work vectors to allocate
 
   Level: developer
 
-  Developers Note:
+  Developer Notes:
   This is PETSC_EXTERN because it may be used by user written plugin `KSPType` implementations
 
 .seealso: [](ch_ksp), `KSP`, `KSPCreateVecs()`
@@ -1852,8 +1852,8 @@ PetscErrorCode KSPSetWorkVecs(KSP ksp, PetscInt nw)
   Input Parameter:
 . ksp - the iterative context
 
-   Developers Note:
-   This is PETSC_EXTERN because it may be used by user written plugin `KSPType` implementations
+  Developer Notes:
+  This is PETSC_EXTERN because it may be used by user written plugin `KSPType` implementations
 
 */
 PetscErrorCode KSPDestroyDefault(KSP ksp)
@@ -1865,25 +1865,25 @@ PetscErrorCode KSPDestroyDefault(KSP ksp)
 }
 
 /*@
-   KSPGetConvergedReason - Gets the reason the `KSP` iteration was stopped.
+  KSPGetConvergedReason - Gets the reason the `KSP` iteration was stopped.
 
-   Not Collective
+  Not Collective
 
-   Input Parameter:
-.  ksp - the `KSP` context
+  Input Parameter:
+. ksp - the `KSP` context
 
-   Output Parameter:
-.  reason - negative value indicates diverged, positive value converged, see `KSPConvergedReason` for the possible values
+  Output Parameter:
+. reason - negative value indicates diverged, positive value converged, see `KSPConvergedReason` for the possible values
 
-   Options Database Key:
-.   -ksp_converged_reason - prints the reason to standard out
+  Options Database Key:
+. -ksp_converged_reason - prints the reason to standard out
 
-   Level: intermediate
+  Level: intermediate
 
-   Notes:
-    If this routine is called before or doing the `KSPSolve()` the value of `KSP_CONVERGED_ITERATING` is returned
+  Notes:
+  If this routine is called before or doing the `KSPSolve()` the value of `KSP_CONVERGED_ITERATING` is returned
 
-.seealso: [](ch_ksp), `KSPConvergedReason`, `KSP`, `KSPSetConvergenceTest()`, `KSPConvergedDefault()`, `KSPSetTolerances()`, `KSPConvergedReason`,
+.seealso: [](ch_ksp), `KSPConvergedReason`, `KSP`, `KSPSetConvergenceTest()`, `KSPConvergedDefault()`, `KSPSetTolerances()`,
           `KSPConvergedReasonView()`
 @*/
 PetscErrorCode KSPGetConvergedReason(KSP ksp, KSPConvergedReason *reason)
@@ -1896,17 +1896,17 @@ PetscErrorCode KSPGetConvergedReason(KSP ksp, KSPConvergedReason *reason)
 }
 
 /*@C
-   KSPGetConvergedReasonString - Return a human readable string for a `KSPConvergedReason`
+  KSPGetConvergedReasonString - Return a human readable string for a `KSPConvergedReason`
 
-   Not Collective
+  Not Collective
 
-   Input Parameter:
-.  ksp - the `KSP` context
+  Input Parameter:
+. ksp - the `KSP` context
 
-   Output Parameter:
-.  strreason - a human readable string that describes ksp converged reason
+  Output Parameter:
+. strreason - a human readable string that describes ksp converged reason
 
-   Level: beginner
+  Level: beginner
 
 .seealso: [](ch_ksp), `KSP`, `KSPGetConvergedReason()`
 @*/
@@ -1921,24 +1921,24 @@ PetscErrorCode KSPGetConvergedReasonString(KSP ksp, const char **strreason)
 
 #include <petsc/private/dmimpl.h>
 /*@
-   KSPSetDM - Sets the `DM` that may be used by some preconditioners
+  KSPSetDM - Sets the `DM` that may be used by some preconditioners
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  ksp - the `KSP`
--  dm - the `DM`, cannot be `NULL` to remove a previously set `DM`
+  Input Parameters:
++ ksp - the `KSP`
+- dm  - the `DM`, cannot be `NULL` to remove a previously set `DM`
 
-   Level: intermediate
+  Level: intermediate
 
-   Notes:
-   If this is used then the `KSP` will attempt to use the `DM` to create the matrix and use the routine set with
-   `DMKSPSetComputeOperators()`. Use `KSPSetDMActive`(ksp,`PETSC_FALSE`) to instead use the matrix you've provided with
-   `KSPSetOperators()`.
+  Notes:
+  If this is used then the `KSP` will attempt to use the `DM` to create the matrix and use the routine set with
+  `DMKSPSetComputeOperators()`. Use `KSPSetDMActive`(ksp,`PETSC_FALSE`) to instead use the matrix you've provided with
+  `KSPSetOperators()`.
 
-   A `DM` can only be used for solving one problem at a time because information about the problem is stored on the `DM`,
-   even when not using interfaces like `DMKSPSetComputeOperators()`.  Use `DMClone()` to get a distinct `DM` when solving
-   different problems using the same function space.
+  A `DM` can only be used for solving one problem at a time because information about the problem is stored on the `DM`,
+  even when not using interfaces like `DMKSPSetComputeOperators()`.  Use `DMClone()` to get a distinct `DM` when solving
+  different problems using the same function space.
 
 .seealso: [](ch_ksp), `KSP`, `DM`, `KSPGetDM()`, `KSPSetDMActive()`, `KSPSetComputeOperators()`, `KSPSetComputeRHS()`, `KSPSetComputeInitialGuess()`, `DMKSPSetComputeOperators()`, `DMKSPSetComputeRHS()`, `DMKSPSetComputeInitialGuess()`
 @*/
@@ -1968,18 +1968,18 @@ PetscErrorCode KSPSetDM(KSP ksp, DM dm)
 }
 
 /*@
-   KSPSetDMActive - Indicates the `DM` should be used to generate the linear system matrix and right hand side vector
+  KSPSetDMActive - Indicates the `DM` should be used to generate the linear system matrix and right hand side vector
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  ksp - the `KSP`
--  flg - use the `DM`
+  Input Parameters:
++ ksp - the `KSP`
+- flg - use the `DM`
 
-   Level: intermediate
+  Level: intermediate
 
-   Note:
-   By default `KSPSetDM()` sets the `DM` as active, call `KSPSetDMActive`(ksp,`PETSC_FALSE`); after `KSPSetDM`(ksp,dm) to not have the `KSP` object use the `DM` to generate the matrices.
+  Note:
+  By default `KSPSetDM()` sets the `DM` as active, call `KSPSetDMActive`(ksp,`PETSC_FALSE`); after `KSPSetDM`(ksp,dm) to not have the `KSP` object use the `DM` to generate the matrices.
 
 .seealso: [](ch_ksp), `KSP`, `DM`, `KSPGetDM()`, `KSPSetDM()`, `SNESSetDM()`, `KSPSetComputeOperators()`, `KSPSetComputeRHS()`, `KSPSetComputeInitialGuess()`
 @*/
@@ -1993,17 +1993,17 @@ PetscErrorCode KSPSetDMActive(KSP ksp, PetscBool flg)
 }
 
 /*@
-   KSPGetDM - Gets the `DM` that may be used by some preconditioners
+  KSPGetDM - Gets the `DM` that may be used by some preconditioners
 
-   Not Collective
+  Not Collective
 
-   Input Parameter:
+  Input Parameter:
 . ksp - the `KSP`
 
-   Output Parameter:
-.  dm - the `DM`
+  Output Parameter:
+. dm - the `DM`
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: [](ch_ksp), `KSP`, `DM`, `KSPSetDM()`, `KSPSetDMActive()`
 @*/
@@ -2020,24 +2020,24 @@ PetscErrorCode KSPGetDM(KSP ksp, DM *dm)
 }
 
 /*@
-   KSPSetApplicationContext - Sets the optional user-defined context for the linear solver.
+  KSPSetApplicationContext - Sets the optional user-defined context for the linear solver.
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  ksp - the `KSP` context
--  usrP - optional user context
+  Input Parameters:
++ ksp  - the `KSP` context
+- usrP - optional user context
 
-   Level: intermediate
+  Level: intermediate
 
-   Notes:
-   The user context is a way for users to attach any information to the `KSP` that they may need later when interacting with the `KSP`
+  Notes:
+  The user context is a way for users to attach any information to the `KSP` that they may need later when interacting with the `KSP`
 
-   Use `KSPGetApplicationContext()` to get access to the context at a later time.
+  Use `KSPGetApplicationContext()` to get access to the context at a later time.
 
-   Fortran Note:
-   To use this from Fortran you must write a Fortran interface definition for this
-   function that tells Fortran the Fortran derived data type that you are passing in as the ctx argument.
+  Fortran Notes:
+  To use this from Fortran you must write a Fortran interface definition for this
+  function that tells Fortran the Fortran derived data type that you are passing in as the ctx argument.
 
 .seealso: [](ch_ksp), `KSP`, `KSPGetApplicationContext()`
 @*/
@@ -2054,21 +2054,21 @@ PetscErrorCode KSPSetApplicationContext(KSP ksp, void *usrP)
 }
 
 /*@
-   KSPGetApplicationContext - Gets the user-defined context for the linear solver set with `KSPSetApplicationContext()`
+  KSPGetApplicationContext - Gets the user-defined context for the linear solver set with `KSPSetApplicationContext()`
 
-   Not Collective
+  Not Collective
 
-   Input Parameter:
-.  ksp - `KSP` context
+  Input Parameter:
+. ksp - `KSP` context
 
-   Output Parameter:
-.  usrP - user context
+  Output Parameter:
+. usrP - user context
 
-   Level: intermediate
+  Level: intermediate
 
-   Fortran Notes:
-   To use this from Fortran you must write a Fortran interface definition for this
-   function that tells Fortran the Fortran derived data type that you are passing in as the ctx argument.
+  Fortran Notes:
+  To use this from Fortran you must write a Fortran interface definition for this
+  function that tells Fortran the Fortran derived data type that you are passing in as the ctx argument.
 
 .seealso: [](ch_ksp), `KSP`, `KSPSetApplicationContext()`
 @*/
@@ -2083,29 +2083,29 @@ PetscErrorCode KSPGetApplicationContext(KSP ksp, void *usrP)
 #include <petsc/private/pcimpl.h>
 
 /*@
-   KSPCheckSolve - Checks if the `PCSetUp()` or `KSPSolve()` failed and set the error flag for the outer `PC`. A `KSP_DIVERGED_ITS` is
-         not considered a failure in this context
+  KSPCheckSolve - Checks if the `PCSetUp()` or `KSPSolve()` failed and set the error flag for the outer `PC`. A `KSP_DIVERGED_ITS` is
+  not considered a failure in this context
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  ksp - the linear solver `KSP` context.
-.  pc - the preconditioner context
--  vec - a vector that will be initialized with Inf to indicate lack of convergence
+  Input Parameters:
++ ksp - the linear solver `KSP` context.
+. pc  - the preconditioner context
+- vec - a vector that will be initialized with Inf to indicate lack of convergence
 
-   Level: developer
+  Level: developer
 
-   Note:
-   This is called within `PCApply()` implementations to check if an error has been detected on any particular MPI ranks. By initializing the vector
-   with Inf the next call to `KSPCheckNorm()` or `KSPCheckDot()` will provide the same information to all the MPI ranks that an error occurred on
-   at least one of the ranks.
+  Note:
+  This is called within `PCApply()` implementations to check if an error has been detected on any particular MPI ranks. By initializing the vector
+  with Inf the next call to `KSPCheckNorm()` or `KSPCheckDot()` will provide the same information to all the MPI ranks that an error occurred on
+  at least one of the ranks.
 
-   This may be called by a subset of the processes in the `PC`.
+  This may be called by a subset of the processes in the `PC`.
 
-   Developer Note:
-   This is used to manage returning with appropriate information from preconditioners whose inner `KSP` solvers have failed in some way
+  Developer Notes:
+  This is used to manage returning with appropriate information from preconditioners whose inner `KSP` solvers have failed in some way
 
-.seealso: [](ch_ksp), `KSP`, `KSPCreate()`, `KSPSetType()`, `KSP`, `KSPCheckNorm()`, `KSPCheckDot()`
+.seealso: [](ch_ksp), `KSP`, `KSPCreate()`, `KSPSetType()`, `KSPCheckNorm()`, `KSPCheckDot()`
 @*/
 PetscErrorCode KSPCheckSolve(KSP ksp, PC pc, Vec vec)
 {

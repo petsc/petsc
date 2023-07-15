@@ -373,17 +373,17 @@ static PetscErrorCode KSPPGMRESUpdateHessenberg(KSP ksp, PetscInt it, PetscBool 
 }
 
 /*
-   KSPBuildSolution_PGMRES
+  KSPBuildSolution_PGMRES
 
-     Input Parameter:
-.     ksp - the Krylov space object
-.     ptr-
+  Input Parameter:
++ ksp - the Krylov space object
+- ptr - the ptr
 
-   Output Parameter:
-.     result - the solution
+  Output Parameter:
+. result - the solution
 
-   Note: this calls KSPPGMRESBuildSoln - the same function that KSPPGMRESCycle
-   calls directly.
+  Note: this calls KSPPGMRESBuildSoln - the same function that KSPPGMRESCycle
+  calls directly.
 
 */
 PetscErrorCode KSPBuildSolution_PGMRES(KSP ksp, Vec ptr, Vec *result)

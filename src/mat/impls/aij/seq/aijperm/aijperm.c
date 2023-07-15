@@ -644,27 +644,27 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJPERM(Mat A, MatType type, Ma
 }
 
 /*@C
-   MatCreateSeqAIJPERM - Creates a sparse matrix of type `MATSEQAIJPERM`.
-   This type inherits from `MATSEQAIJ`, but calculates some additional permutation
-   information that is used to allow better vectorization of some
-   operations.  At the cost of increased storage, the `MATSEQAIJ` formatted
-   matrix can be copied to a format in which pieces of the matrix are
-   stored in ELLPACK format, allowing the vectorized matrix multiply
-   routine to use stride-1 memory accesses.
+  MatCreateSeqAIJPERM - Creates a sparse matrix of type `MATSEQAIJPERM`.
+  This type inherits from `MATSEQAIJ`, but calculates some additional permutation
+  information that is used to allow better vectorization of some
+  operations.  At the cost of increased storage, the `MATSEQAIJ` formatted
+  matrix can be copied to a format in which pieces of the matrix are
+  stored in ELLPACK format, allowing the vectorized matrix multiply
+  routine to use stride-1 memory accesses.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  comm - MPI communicator, set to `PETSC_COMM_SELF`
-.  m - number of rows
-.  n - number of columns
-.  nz - number of nonzeros per row (same for all rows), ignored if `nnz` is given
--  nnz - array containing the number of nonzeros in the various rows (possibly different for each row) or `NULL`
+  Input Parameters:
++ comm - MPI communicator, set to `PETSC_COMM_SELF`
+. m    - number of rows
+. n    - number of columns
+. nz   - number of nonzeros per row (same for all rows), ignored if `nnz` is given
+- nnz  - array containing the number of nonzeros in the various rows (possibly different for each row) or `NULL`
 
-   Output Parameter:
-.  A - the matrix
+  Output Parameter:
+. A - the matrix
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: [](ch_matrices), `Mat`, `MatCreate()`, `MatCreateMPIAIJPERM()`, `MatSetValues()`
 @*/

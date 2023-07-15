@@ -4,29 +4,29 @@
 #include <petscbt.h>
 
 /*@
-   ISDifference - Computes the difference between two index sets.
+  ISDifference - Computes the difference between two index sets.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  is1 - first index, to have items removed from it
--  is2 - index values to be removed
+  Input Parameters:
++ is1 - first index, to have items removed from it
+- is2 - index values to be removed
 
-   Output Parameter:
-.  isout - is1 - is2
+  Output Parameter:
+. isout - is1 - is2
 
-   Level: intermediate
+  Level: intermediate
 
-   Notes:
-   Negative values are removed from the lists. `is2` may have values
-   that are not in `is1`.
+  Notes:
+  Negative values are removed from the lists. `is2` may have values
+  that are not in `is1`.
 
-   This computation requires O(imax-imin) memory and O(imax-imin)
-   work, where imin and imax are the bounds on the indices in is1.
+  This computation requires O(imax-imin) memory and O(imax-imin)
+  work, where imin and imax are the bounds on the indices in is1.
 
-   If `is2` is `NULL`, the result is the same as for an empty `IS`, i.e., a duplicate of `is1`.
+  If `is2` is `NULL`, the result is the same as for an empty `IS`, i.e., a duplicate of `is1`.
 
-   The difference is computed separately on each MPI rank
+  The difference is computed separately on each MPI rank
 
 .seealso: [](sec_scatter), `IS`, `ISDestroy()`, `ISView()`, `ISSum()`, `ISExpand()`
 @*/
@@ -96,25 +96,25 @@ PetscErrorCode ISDifference(IS is1, IS is2, IS *isout)
 }
 
 /*@
-   ISSum - Computes the sum (union) of two index sets.
+  ISSum - Computes the sum (union) of two index sets.
 
-   Only sequential version (at the moment)
+  Only sequential version (at the moment)
 
-   Input Parameters:
-+  is1 - index set to be extended
--  is2 - index values to be added
+  Input Parameters:
++ is1 - index set to be extended
+- is2 - index values to be added
 
-   Output Parameter:
-.   is3 - the sum; this can not be `is1` or `is2`
+  Output Parameter:
+. is3 - the sum; this can not be `is1` or `is2`
 
-   Level: intermediate
+  Level: intermediate
 
-   Notes:
-   If n1 and n2 are the sizes of the sets, this takes O(n1+n2) time;
+  Notes:
+  If n1 and n2 are the sizes of the sets, this takes O(n1+n2) time;
 
-   Both index sets need to be sorted on input.
+  Both index sets need to be sorted on input.
 
-   The sum is computed separately on each MPI rank
+  The sum is computed separately on each MPI rank
 
 .seealso: [](sec_scatter), `IS`, `ISDestroy()`, `ISView()`, `ISDifference()`, `ISExpand()`
 @*/
@@ -245,28 +245,28 @@ PetscErrorCode ISSum(IS is1, IS is2, IS *is3)
 }
 
 /*@
-   ISExpand - Computes the union of two index sets, by concatenating 2 lists and
-   removing duplicates.
+  ISExpand - Computes the union of two index sets, by concatenating 2 lists and
+  removing duplicates.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  is1 - first index set
--  is2 - index values to be added
+  Input Parameters:
++ is1 - first index set
+- is2 - index values to be added
 
-   Output Parameter:
-.  isout - `is1` + `is2` The index set `is2` is appended to `is1` removing duplicates
+  Output Parameter:
+. isout - `is1` + `is2` The index set `is2` is appended to `is1` removing duplicates
 
-   Level: intermediate
+  Level: intermediate
 
-   Notes:
-   Negative values are removed from the lists. This requires O(imax-imin)
-   memory and O(imax-imin) work, where imin and imax are the bounds on the
-   indices in `is1` and `is2`.
+  Notes:
+  Negative values are removed from the lists. This requires O(imax-imin)
+  memory and O(imax-imin) work, where imin and imax are the bounds on the
+  indices in `is1` and `is2`.
 
-   `is1` and `is2` do not need to be sorted.
+  `is1` and `is2` do not need to be sorted.
 
-   The operations are performed separately on each MPI rank
+  The operations are performed separately on each MPI rank
 
 .seealso: [](sec_scatter), `IS`, `ISDestroy()`, `ISView()`, `ISDifference()`, `ISSum()`, `ISIntersect()`
 @*/
@@ -337,26 +337,26 @@ PetscErrorCode ISExpand(IS is1, IS is2, IS *isout)
 }
 
 /*@
-   ISIntersect - Computes the intersection of two index sets, by sorting and comparing.
+  ISIntersect - Computes the intersection of two index sets, by sorting and comparing.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  is1 - first index set
--  is2 - second index set
+  Input Parameters:
++ is1 - first index set
+- is2 - second index set
 
-   Output Parameter:
-.  isout - the sorted intersection of `is1` and `is2`
+  Output Parameter:
+. isout - the sorted intersection of `is1` and `is2`
 
-   Level: intermediate
+  Level: intermediate
 
-   Notes:
-   Negative values are removed from the lists. This requires O(min(is1,is2))
-   memory and O(max(is1,is2)log(max(is1,is2))) work
+  Notes:
+  Negative values are removed from the lists. This requires O(min(is1,is2))
+  memory and O(max(is1,is2)log(max(is1,is2))) work
 
-   `is1` and `is2` do not need to be sorted.
+  `is1` and `is2` do not need to be sorted.
 
-   The operations are performed separately on each MPI rank
+  The operations are performed separately on each MPI rank
 
 .seealso: [](sec_scatter), `IS`, `ISDestroy()`, `ISView()`, `ISDifference()`, `ISSum()`, `ISExpand()`, `ISConcatenate()`
 @*/
@@ -454,22 +454,22 @@ PetscErrorCode ISIntersect_Caching_Internal(IS is1, IS is2, IS *isect)
 }
 
 /*@
-   ISConcatenate - Forms a new `IS` by locally concatenating the indices from an `IS` list without reordering.
+  ISConcatenate - Forms a new `IS` by locally concatenating the indices from an `IS` list without reordering.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  comm    - communicator of the concatenated `IS`.
-.  len     - size of islist array (nonnegative)
--  islist  - array of index sets
+  Input Parameters:
++ comm   - communicator of the concatenated `IS`.
+. len    - size of islist array (nonnegative)
+- islist - array of index sets
 
-   Output Parameter:
-.  isout   - The concatenated index set; empty, if `len` == 0.
+  Output Parameter:
+. isout - The concatenated index set; empty, if `len` == 0.
 
-   Level: intermediate
+  Level: intermediate
 
-   Notes:
-    The semantics of calling this on comm imply that the comms of the members of `islist` also contain this rank.
+  Notes:
+  The semantics of calling this on comm imply that the comms of the members of `islist` also contain this rank.
 
 .seealso: [](sec_scatter), `IS`, `ISDifference()`, `ISSum()`, `ISExpand()`, `ISIntersect()`
 @*/
@@ -514,20 +514,20 @@ PetscErrorCode ISConcatenate(MPI_Comm comm, PetscInt len, const IS islist[], IS 
 }
 
 /*@
-   ISListToPair  - Convert an `IS` list to a pair of `IS` of equal length defining an equivalent integer multimap.
-                   Each `IS` on the input list is assigned an integer j so that all of the indices of that `IS` are
-                   mapped to j.
+  ISListToPair  - Convert an `IS` list to a pair of `IS` of equal length defining an equivalent integer multimap.
+  Each `IS` on the input list is assigned an integer j so that all of the indices of that `IS` are
+  mapped to j.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  comm    -  `MPI_Comm`
-.  listlen -  `IS` list length
--  islist  -  `IS` list
+  Input Parameters:
++ comm    - `MPI_Comm`
+. listlen - `IS` list length
+- islist  - `IS` list
 
-   Output Parameters:
-+  xis -  domain `IS`
--  yis -  range  `IS`
+  Output Parameters:
++ xis - domain `IS`
+- yis - range  `IS`
 
   Level: developer
 
@@ -578,22 +578,22 @@ PetscErrorCode ISListToPair(MPI_Comm comm, PetscInt listlen, IS islist[], IS *xi
 }
 
 /*@
-   ISPairToList - Convert an `IS` pair encoding an integer map to a list of `IS`.
-                  Each `IS` on the output list contains the preimage for each index on the second input `IS`.
-                  The `IS` on the output list are constructed on the subcommunicators of the input `IS` pair.
-                  Each subcommunicator corresponds to the preimage of some index j -- this subcomm contains
-                  exactly the ranks that assign some indices i to j.  This is essentially the inverse of
-                  `ISListToPair()`.
+  ISPairToList - Convert an `IS` pair encoding an integer map to a list of `IS`.
+  Each `IS` on the output list contains the preimage for each index on the second input `IS`.
+  The `IS` on the output list are constructed on the subcommunicators of the input `IS` pair.
+  Each subcommunicator corresponds to the preimage of some index j -- this subcomm contains
+  exactly the ranks that assign some indices i to j.  This is essentially the inverse of
+  `ISListToPair()`.
 
   Collective
 
   Input Parameters:
-+ xis -  domain `IS`
-- yis -  range `IS`
++ xis - domain `IS`
+- yis - range `IS`
 
   Output Parameters:
-+ listlen -  length of `islist`
-- islist  -  list of `IS`s breaking up indis by color
++ listlen - length of `islist`
+- islist  - list of `IS`s breaking up indis by color
 
   Level: developer
 
@@ -706,19 +706,19 @@ PetscErrorCode ISPairToList(IS xis, IS yis, PetscInt *listlen, IS **islist)
 }
 
 /*@
-   ISEmbed - Embed `IS` `a` into `IS` `b` by finding the locations in `b` that have the same indices as in `a`.
-             If `c` is the `IS` of these locations, we have `a = b*c`, regarded as a composition of the
-             corresponding `ISLocalToGlobalMapping`.
+  ISEmbed - Embed `IS` `a` into `IS` `b` by finding the locations in `b` that have the same indices as in `a`.
+  If `c` is the `IS` of these locations, we have `a = b*c`, regarded as a composition of the
+  corresponding `ISLocalToGlobalMapping`.
 
   Not Collective
 
   Input Parameters:
-+ a    -  `IS` to embed
-. b    -  `IS` to embed into
-- drop -  flag indicating whether to drop indices of `a` that are not in `b`.
++ a    - `IS` to embed
+. b    - `IS` to embed into
+- drop - flag indicating whether to drop indices of `a` that are not in `b`.
 
   Output Parameter:
-. c    -  local embedding indices
+. c - local embedding indices
 
   Level: developer
 
@@ -766,11 +766,11 @@ PetscErrorCode ISEmbed(IS a, IS b, PetscBool drop, IS *c)
   Not Collective
 
   Input Parameters:
-+ f      -  `IS` to sort
-- always -  build the permutation even when `f`'s indices are nondecreasing.
++ f      - `IS` to sort
+- always - build the permutation even when `f`'s indices are nondecreasing.
 
   Output Parameter:
-. h    -  permutation or `NULL`, if `f` is nondecreasing and `always` == `PETSC_FALSE`.
+. h - permutation or `NULL`, if `f` is nondecreasing and `always` == `PETSC_FALSE`.
 
   Level: advanced
 

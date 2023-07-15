@@ -283,8 +283,8 @@ PetscErrorCode EXOGetVarIndex_Internal(int exoid, ex_entity_type obj_type, const
   Collective
 
   Input Parameters:
-+ dm  - The dm to be written
-. viewer - an exodusII viewer
++ dm     - The dm to be written
+- viewer - an exodusII viewer
 
   Level: beginner
 
@@ -1252,10 +1252,10 @@ PetscErrorCode VecLoadPlex_ExodusII_Zonal_Internal(Vec v, int exoid, int step, i
   Logically Collective
 
   Input Parameter:
-.  viewer - the `PetscViewer`
+. viewer - the `PetscViewer`
 
   Output Parameter:
-.  exoid - The ExodusII file id
+. exoid - The ExodusII file id
 
   Level: intermediate
 
@@ -1270,17 +1270,17 @@ PetscErrorCode PetscViewerExodusIIGetId(PetscViewer viewer, int *exoid)
 }
 
 /*@
-   PetscViewerExodusIISetOrder - Set the elements order in the exodusII file.
+  PetscViewerExodusIISetOrder - Set the elements order in the exodusII file.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  viewer - the `PETSCVIEWEREXODUSII` viewer
--  order - elements order
+  Input Parameters:
++ viewer - the `PETSCVIEWEREXODUSII` viewer
+- order  - elements order
 
-   Output Parameter:
+  Output Parameter:
 
-   Level: beginner
+  Level: beginner
 
 .seealso: `PETSCVIEWEREXODUSII`, `PetscViewer`, `PetscViewerExodusIIGetId()`, `PetscViewerExodusIIGetOrder()`, `PetscViewerExodusIISetOrder()`
 @*/
@@ -1293,17 +1293,17 @@ PetscErrorCode PetscViewerExodusIISetOrder(PetscViewer viewer, PetscInt order)
 }
 
 /*@
-   PetscViewerExodusIIGetOrder - Get the elements order in the exodusII file.
+  PetscViewerExodusIIGetOrder - Get the elements order in the exodusII file.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  viewer - the `PETSCVIEWEREXODUSII` viewer
--  order - elements order
+  Input Parameters:
++ viewer - the `PETSCVIEWEREXODUSII` viewer
+- order  - elements order
 
-   Output Parameter:
+  Output Parameter:
 
-   Level: beginner
+  Level: beginner
 
 .seealso: `PETSCVIEWEREXODUSII`, `PetscViewer`, `PetscViewerExodusIIGetId()`, `PetscViewerExodusIIGetOrder()`, `PetscViewerExodusIISetOrder()`
 @*/
@@ -1316,27 +1316,27 @@ PetscErrorCode PetscViewerExodusIIGetOrder(PetscViewer viewer, PetscInt *order)
 }
 
 /*@C
-   PetscViewerExodusIIOpen - Opens a file for ExodusII input/output.
+  PetscViewerExodusIIOpen - Opens a file for ExodusII input/output.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  comm - MPI communicator
-.  name - name of file
--  type - type of file
+  Input Parameters:
++ comm - MPI communicator
+. name - name of file
+- type - type of file
 .vb
     FILE_MODE_WRITE - create new file for binary output
     FILE_MODE_READ - open existing file for binary input
     FILE_MODE_APPEND - open existing file for binary output
 .ve
 
-   Output Parameter:
-.  exo - `PETSCVIEWEREXODUSII` `PetscViewer` for Exodus II input/output to use with the specified file
+  Output Parameter:
+. exo - `PETSCVIEWEREXODUSII` `PetscViewer` for Exodus II input/output to use with the specified file
 
-   Level: beginner
+  Level: beginner
 
 .seealso: `PETSCVIEWEREXODUSII`, `PetscViewer`, `PetscViewerPushFormat()`, `PetscViewerDestroy()`,
-          `DMLoad()`, `PetscFileMode`, `PetscViewer`, `PetscViewerSetType()`, `PetscViewerFileSetMode()`, `PetscViewerFileSetName()`
+          `DMLoad()`, `PetscFileMode`, `PetscViewerSetType()`, `PetscViewerFileSetMode()`, `PetscViewerFileSetName()`
 @*/
 PetscErrorCode PetscViewerExodusIIOpen(MPI_Comm comm, const char name[], PetscFileMode type, PetscViewer *exo)
 {
@@ -1355,12 +1355,12 @@ PetscErrorCode PetscViewerExodusIIOpen(MPI_Comm comm, const char name[], PetscFi
   Collective
 
   Input Parameters:
-+ comm  - The MPI communicator
-. filename - The name of the ExodusII file
++ comm        - The MPI communicator
+. filename    - The name of the ExodusII file
 - interpolate - Create faces and edges in the mesh
 
   Output Parameter:
-. dm  - The `DM` object representing the mesh
+. dm - The `DM` object representing the mesh
 
   Level: beginner
 
@@ -1474,16 +1474,16 @@ done:
   Collective
 
   Input Parameters:
-+ comm  - The MPI communicator
-. exoid - The ExodusII id associated with a exodus file and obtained using ex_open
++ comm        - The MPI communicator
+. exoid       - The ExodusII id associated with a exodus file and obtained using ex_open
 - interpolate - Create faces and edges in the mesh
 
   Output Parameter:
-. dm  - The `DM` object representing the mesh
+. dm - The `DM` object representing the mesh
 
   Level: beginner
 
-.seealso: [](ch_unstructured), `DM`, `PETSCVIEWEREXODUSII`, `DMPLEX`, `DMPLEX`, `DMCreate()`
+.seealso: [](ch_unstructured), `DM`, `PETSCVIEWEREXODUSII`, `DMPLEX`, `DMCreate()`
 @*/
 PetscErrorCode DMPlexCreateExodus(MPI_Comm comm, PetscInt exoid, PetscBool interpolate, DM *dm)
 {

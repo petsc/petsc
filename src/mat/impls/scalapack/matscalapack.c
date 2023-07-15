@@ -1637,20 +1637,20 @@ static PetscErrorCode MatScaLAPACKSetBlockSizes_ScaLAPACK(Mat A, PetscInt mb, Pe
 }
 
 /*@
-   MatScaLAPACKSetBlockSizes - Sets the block sizes to be used for the distribution of
-   the `MATSCALAPACK` matrix
+  MatScaLAPACKSetBlockSizes - Sets the block sizes to be used for the distribution of
+  the `MATSCALAPACK` matrix
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  A  - a `MATSCALAPACK` matrix
-.  mb - the row block size
--  nb - the column block size
+  Input Parameters:
++ A  - a `MATSCALAPACK` matrix
+. mb - the row block size
+- nb - the column block size
 
-   Level: intermediate
+  Level: intermediate
 
-   Note:
-   This block size has a different meaning from the block size associated with `MatSetBlockSize()` used for sparse matrices
+  Note:
+  This block size has a different meaning from the block size associated with `MatSetBlockSize()` used for sparse matrices
 
 .seealso: [](ch_matrices), `Mat`, `MATSCALAPACK`, `MatCreateScaLAPACK()`, `MatScaLAPACKGetBlockSizes()`
 @*/
@@ -1675,22 +1675,22 @@ static PetscErrorCode MatScaLAPACKGetBlockSizes_ScaLAPACK(Mat A, PetscInt *mb, P
 }
 
 /*@
-   MatScaLAPACKGetBlockSizes - Gets the block sizes used in the distribution of
-   the `MATSCALAPACK` matrix
+  MatScaLAPACKGetBlockSizes - Gets the block sizes used in the distribution of
+  the `MATSCALAPACK` matrix
 
-   Not Collective
+  Not Collective
 
-   Input Parameter:
-.  A  - a `MATSCALAPACK` matrix
+  Input Parameter:
+. A - a `MATSCALAPACK` matrix
 
-   Output Parameters:
-+  mb - the row block size
--  nb - the column block size
+  Output Parameters:
++ mb - the row block size
+- nb - the column block size
 
-   Level: intermediate
+  Level: intermediate
 
-   Note:
-   This block size has a different meaning from the block size associated with `MatSetBlockSize()` used for sparse matrices
+  Note:
+  This block size has a different meaning from the block size associated with `MatSetBlockSize()` used for sparse matrices
 
 .seealso: [](ch_matrices), `Mat`, `MATSCALAPACK`, `MatCreateScaLAPACK()`, `MatScaLAPACKSetBlockSizes()`
 @*/
@@ -1813,39 +1813,39 @@ PETSC_EXTERN PetscErrorCode MatCreate_ScaLAPACK(Mat A)
 }
 
 /*@C
-   MatCreateScaLAPACK - Creates a dense parallel matrix in ScaLAPACK format
-   (2D block cyclic distribution) for a `MATSCALAPACK` matrix
+  MatCreateScaLAPACK - Creates a dense parallel matrix in ScaLAPACK format
+  (2D block cyclic distribution) for a `MATSCALAPACK` matrix
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  comm - MPI communicator
-.  mb   - row block size (or `PETSC_DECIDE` to have it set)
-.  nb   - column block size (or `PETSC_DECIDE` to have it set)
-.  M    - number of global rows
-.  N    - number of global columns
-.  rsrc - coordinate of process that owns the first row of the distributed matrix
--  csrc - coordinate of process that owns the first column of the distributed matrix
+  Input Parameters:
++ comm - MPI communicator
+. mb   - row block size (or `PETSC_DECIDE` to have it set)
+. nb   - column block size (or `PETSC_DECIDE` to have it set)
+. M    - number of global rows
+. N    - number of global columns
+. rsrc - coordinate of process that owns the first row of the distributed matrix
+- csrc - coordinate of process that owns the first column of the distributed matrix
 
-   Output Parameter:
-.  A - the matrix
+  Output Parameter:
+. A - the matrix
 
-   Options Database Key:
-.  -mat_scalapack_block_sizes - size of the blocks to use (one or two integers separated by comma)
+  Options Database Key:
+. -mat_scalapack_block_sizes - size of the blocks to use (one or two integers separated by comma)
 
-   Level: intermediate
+  Level: intermediate
 
-   Notes:
-   If `PETSC_DECIDE` is used for the block sizes, then an appropriate value is chosen
+  Notes:
+  If `PETSC_DECIDE` is used for the block sizes, then an appropriate value is chosen
 
-   It is recommended that one use the `MatCreate()`, `MatSetType()` and/or `MatSetFromOptions()`,
-   MatXXXXSetPreallocation() paradigm instead of this routine directly.
-   [MatXXXXSetPreallocation() is, for example, `MatSeqAIJSetPreallocation()`]
+  It is recommended that one use the `MatCreate()`, `MatSetType()` and/or `MatSetFromOptions()`,
+  MatXXXXSetPreallocation() paradigm instead of this routine directly.
+  [MatXXXXSetPreallocation() is, for example, `MatSeqAIJSetPreallocation()`]
 
-   Storate is completely managed by ScaLAPACK, so this requires PETSc to be
-   configured with ScaLAPACK. In particular, PETSc's local sizes lose
-   significance and are thus ignored. The block sizes refer to the values
-   used for the distributed matrix, not the same meaning as in `MATBAIJ`.
+  Storate is completely managed by ScaLAPACK, so this requires PETSc to be
+  configured with ScaLAPACK. In particular, PETSc's local sizes lose
+  significance and are thus ignored. The block sizes refer to the values
+  used for the distributed matrix, not the same meaning as in `MATBAIJ`.
 
 .seealso: [](ch_matrices), `Mat`, `MATSCALAPACK`, `MATDENSE`, `MATELEMENTAL`, `MatCreate()`, `MatCreateDense()`, `MatSetValues()`
 @*/

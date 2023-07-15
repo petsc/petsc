@@ -255,29 +255,29 @@ PetscErrorCode MatGetInfo_ConstantDiagonal(Mat A, MatInfoType flag, MatInfo *inf
 }
 
 /*@
-   MatCreateConstantDiagonal - Creates a matrix with a uniform value along the diagonal
+  MatCreateConstantDiagonal - Creates a matrix with a uniform value along the diagonal
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  comm - MPI communicator
-.  m - number of local rows (or `PETSC_DECIDE` to have calculated if `M` is given)
+  Input Parameters:
++ comm - MPI communicator
+. m    - number of local rows (or `PETSC_DECIDE` to have calculated if `M` is given)
            This value should be the same as the local size used in creating the
            y vector for the matrix-vector product y = Ax.
-.  n - This value should be the same as the local size used in creating the
+. n    - This value should be the same as the local size used in creating the
        x vector for the matrix-vector product y = Ax. (or `PETSC_DECIDE` to have
        calculated if `N` is given) For square matrices n is almost always `m`.
-.  M - number of global rows (or `PETSC_DETERMINE` to have calculated if m is given)
-.  N - number of global columns (or `PETSC_DETERMINE` to have calculated if n is given)
--  diag - the diagonal value
+. M    - number of global rows (or `PETSC_DETERMINE` to have calculated if m is given)
+. N    - number of global columns (or `PETSC_DETERMINE` to have calculated if n is given)
+- diag - the diagonal value
 
-   Output Parameter:
-.  J - the diagonal matrix
+  Output Parameter:
+. J - the diagonal matrix
 
-   Level: advanced
+  Level: advanced
 
-   Notes:
-    Only supports square matrices with the same number of local rows and columns
+  Notes:
+  Only supports square matrices with the same number of local rows and columns
 
 .seealso: [](ch_matrices), `Mat`, `MatDestroy()`, `MATCONSTANTDIAGONAL`, `MatScale()`, `MatShift()`, `MatMult()`, `MatGetDiagonal()`, `MatGetFactor()`, `MatSolve()`
 @*/

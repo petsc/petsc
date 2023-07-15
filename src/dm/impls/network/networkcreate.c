@@ -448,7 +448,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_Network(DM dm)
 . comm - The communicator for the DMNetwork object
 
   Output Parameter:
-. network  - The DMNetwork object
+. network - The DMNetwork object
 
   Level: beginner
 

@@ -79,24 +79,24 @@ PETSC_INTERN PetscErrorCode MatGetOrdering_RowLength(Mat mat, MatOrderingType ty
 }
 
 /*@C
-   MatOrderingRegister - Adds a new sparse matrix ordering to the matrix package.
+  MatOrderingRegister - Adds a new sparse matrix ordering to the matrix package.
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  sname - name of ordering (for example `MATORDERINGND`)
--  function - function pointer that creates the ordering
+  Input Parameters:
++ sname    - name of ordering (for example `MATORDERINGND`)
+- function - function pointer that creates the ordering
 
-   Level: developer
+  Level: developer
 
-   Sample usage:
+  Example Usage:
 .vb
    MatOrderingRegister("my_order", MyOrder);
 .ve
 
-   Then, your partitioner can be chosen with the procedural interface via
+  Then, your partitioner can be chosen with the procedural interface via
 $     MatOrderingSetType(part, "my_order)
-   or at runtime via the option
+  or at runtime via the option
 $     -pc_factor_mat_ordering_type my_order
 
 .seealso: `MatOrderingRegisterAll()`, `MatGetOrdering()`
@@ -111,14 +111,14 @@ PetscErrorCode MatOrderingRegister(const char sname[], PetscErrorCode (*function
 
 #include <../src/mat/impls/aij/mpi/mpiaij.h>
 /*@C
-   MatGetOrdering - Gets a reordering for a matrix to reduce fill or to
-   improve numerical stability of LU factorization.
+  MatGetOrdering - Gets a reordering for a matrix to reduce fill or to
+  improve numerical stability of LU factorization.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  mat - the matrix
--  type - type of reordering, one of the following
+  Input Parameters:
++ mat  - the matrix
+- type - type of reordering, one of the following
 .vb
       MATORDERINGNATURAL_OR_ND - Nested dissection unless matrix is SBAIJ then it is natural
       MATORDERINGNATURAL - Natural
@@ -129,29 +129,29 @@ PetscErrorCode MatOrderingRegister(const char sname[], PetscErrorCode (*function
       MATORDERINGEXTERNAL - Use an ordering internal to the factorzation package and do not compute or use PETSc's
 .ve
 
-   Output Parameters:
-+  rperm - row permutation indices
--  cperm - column permutation indices
+  Output Parameters:
++ rperm - row permutation indices
+- cperm - column permutation indices
 
-   Options Database Key:
-+ -mat_view_ordering draw - plots matrix nonzero structure in new ordering
+  Options Database Key:
++ -mat_view_ordering draw                      - plots matrix nonzero structure in new ordering
 - -pc_factor_mat_ordering_type <nd,natural,..> - ordering to use with `PC`s based on factorization, `MATLU`, `MATILU`, MATCHOLESKY`, `MATICC`
 
-   Level: intermediate
+  Level: intermediate
 
-   Notes:
-      This DOES NOT actually reorder the matrix; it merely returns two index sets
-   that define a reordering. This is usually not used directly, rather use the
-   options `PCFactorSetMatOrderingType()`
+  Notes:
+  This DOES NOT actually reorder the matrix; it merely returns two index sets
+  that define a reordering. This is usually not used directly, rather use the
+  options `PCFactorSetMatOrderingType()`
 
-   The user can define additional orderings; see `MatOrderingRegister()`.
+  The user can define additional orderings; see `MatOrderingRegister()`.
 
-   These are generally only implemented for sequential sparse matrices.
+  These are generally only implemented for sequential sparse matrices.
 
-   Some external packages that PETSc can use for direct factorization such as SuperLU_DIST do not accept orderings provided by
-   this call.
+  Some external packages that PETSc can use for direct factorization such as SuperLU_DIST do not accept orderings provided by
+  this call.
 
-   If `MATORDERINGEXTERNAL` is used then PETSc does not compute an ordering and utilizes one built into the factorization package
+  If `MATORDERINGEXTERNAL` is used then PETSc does not compute an ordering and utilizes one built into the factorization package
 
 .seealso: `MatOrderingRegister()`, `PCFactorSetMatOrderingType()`, `MatColoring`, `MatColoringCreate()`, `MatOrderingType`, `Mat`
 @*/

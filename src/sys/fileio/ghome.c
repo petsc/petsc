@@ -5,22 +5,22 @@
 #include <petscsys.h>
 
 /*@C
-   PetscGetHomeDirectory - Returns the name of the user's home directory
+  PetscGetHomeDirectory - Returns the name of the user's home directory
 
-   Not Collective
+  Not Collective
 
-   Input Parameter:
-.  maxlen - maximum length allowed
+  Input Parameter:
+. maxlen - maximum length allowed
 
-   Output Parameter:
-.  dir - contains the home directory. Must be long enough to hold the name.
+  Output Parameter:
+. dir - contains the home directory. Must be long enough to hold the name.
 
-   Level: developer
+  Level: developer
 
-   Notes:
-   If PETSc cannot determine the home directory it makes `dir` an empty string
+  Notes:
+  If PETSc cannot determine the home directory it makes `dir` an empty string
 
-   On Microsoft Windows machines the environmental variable `HOME` specifies the home directory.
+  On Microsoft Windows machines the environmental variable `HOME` specifies the home directory.
 
 .seealso: `PetscGetTmp()`, `PetscSharedTmp()`, `PetscGetWorkingDirectory()`
 @*/
@@ -37,19 +37,20 @@ PetscErrorCode PetscGetHomeDirectory(char dir[], size_t maxlen)
 }
 
 /*@C
-    PetscFixFilename - Fixes a file name so that it is correct for both Unix and
-    Microsoft Windows by using the correct / or \ to separate directories.
+  PetscFixFilename - Fixes a file name so that it is correct for both Unix and
+  Microsoft Windows by using the correct / or \ to separate directories.
 
-   Not Collective
+  Not Collective
 
-   Input Parameter:
-.  filein - name of file to be fixed
+  Input Parameter:
+. filein - name of file to be fixed
 
-   Output Parameter:
-.  fileout - the fixed name. Should long enough to hold the filename.
+  Output Parameter:
+. fileout - the fixed name. Should long enough to hold the filename.
 
-   Level: developer
+  Level: developer
 
+.seealso: `PetscFOpen()`
 @*/
 PetscErrorCode PetscFixFilename(const char filein[], char fileout[])
 {

@@ -31,13 +31,13 @@ struct _n_PetscViewerGLVis {
 typedef struct _n_PetscViewerGLVis *PetscViewerGLVis;
 
 /*@
-     PetscViewerGLVisSetPrecision - Set the number of digits for floating point values to be displayed
+  PetscViewerGLVisSetPrecision - Set the number of digits for floating point values to be displayed
 
   Not Collective
 
   Input Parameters:
-+  viewer - the `PetscViewer` of type `PETSCVIEWERGLVIS`
--  prec   - the number of digits required
++ viewer - the `PetscViewer` of type `PETSCVIEWERGLVIS`
+- prec   - the number of digits required
 
   Level: beginner
 
@@ -67,13 +67,13 @@ static PetscErrorCode PetscViewerGLVisSetPrecision_GLVis(PetscViewer viewer, Pet
 }
 
 /*@
-     PetscViewerGLVisSetSnapId - Set the snapshot id. Only relevant when the `PetscViewerGLVisType` is `PETSC_VIEWER_GLVIS_DUMP`
+  PetscViewerGLVisSetSnapId - Set the snapshot id. Only relevant when the `PetscViewerGLVisType` is `PETSC_VIEWER_GLVIS_DUMP`
 
   Logically Collective
 
   Input Parameters:
-+  viewer - the `PetscViewer` of type `PETSCVIEWERGLVIS`
--  id     - the current snapshot id in a time-dependent simulation
++ viewer - the `PetscViewer` of type `PETSCVIEWERGLVIS`
+- id     - the current snapshot id in a time-dependent simulation
 
   Level: beginner
 
@@ -98,24 +98,24 @@ static PetscErrorCode PetscViewerGLVisSetSnapId_GLVis(PetscViewer viewer, PetscI
 }
 
 /*@C
-     PetscViewerGLVisSetFields - Sets the required information to visualize different fields from a vector.
+  PetscViewerGLVisSetFields - Sets the required information to visualize different fields from a vector.
 
   Logically Collective
 
   Input Parameters:
-+  viewer     - the `PetscViewer` of type `PETSCVIEWERGLVIS`
-.  nf         - number of fields to be visualized
-.  fec_type   - the type of finite element to be used to visualize the data (see FiniteElementCollection::Name() in MFEM)
-.  dim        - array of space dimension for field vectors (used to initialize the scene)
-.  g2lfields  - User routine to compute the local field vectors to be visualized; PetscObject is used in place of Vec on the prototype
-.  Vfield     - array of work vectors, one for each field
-.  ctx        - User context to store the relevant data to apply g2lfields
--  destroyctx - Destroy function for userctx
++ viewer     - the `PetscViewer` of type `PETSCVIEWERGLVIS`
+. nf         - number of fields to be visualized
+. fec_type   - the type of finite element to be used to visualize the data (see FiniteElementCollection::Name() in MFEM)
+. dim        - array of space dimension for field vectors (used to initialize the scene)
+. g2l        - User routine to compute the local field vectors to be visualized; PetscObject is used in place of Vec on the prototype
+. Vfield     - array of work vectors, one for each field
+. ctx        - User context to store the relevant data to apply g2lfields
+- destroyctx - Destroy function for userctx
 
   Level: intermediate
 
   Notes:
-    `g2lfields` is called on the vector V to be visualized in order to extract the relevant dofs to be put in `Vfield`, as
+  `g2lfields` is called on the vector V to be visualized in order to extract the relevant dofs to be put in `Vfield`, as
 .vb
   g2lfields((PetscObject)V,nfields,(PetscObject*)Vfield[],ctx).
 .ve
@@ -591,21 +591,21 @@ static PetscErrorCode PetscViewerFileSetName_GLVis(PetscViewer viewer, const cha
   Collective; No Fortran Support
 
   Input Parameters:
-+  comm      - the MPI communicator
-.  type      - the viewer type: `PETSC_VIEWER_GLVIS_SOCKET` for real-time visualization or `PETSC_VIEWER_GLVIS_DUMP` for dumping to a file
-.  name      - either the hostname where the GLVis server is running or the base filename for dumping the data for subsequent visualizations
--  port      - socket port where the GLVis server is listening. Not referenced when type is `PETSC_VIEWER_GLVIS_DUMP`
++ comm - the MPI communicator
+. type - the viewer type: `PETSC_VIEWER_GLVIS_SOCKET` for real-time visualization or `PETSC_VIEWER_GLVIS_DUMP` for dumping to a file
+. name - either the hostname where the GLVis server is running or the base filename for dumping the data for subsequent visualizations
+- port - socket port where the GLVis server is listening. Not referenced when type is `PETSC_VIEWER_GLVIS_DUMP`
 
   Output Parameter:
-.  viewer    - the `PetscViewer` object
+. viewer - the `PetscViewer` object
 
   Options Database Keys:
-+  -glvis_precision <precision> - Sets number of digits for floating point values
-.  -glvis_size <width,height> - Sets the window size (in pixels)
-.  -glvis_pause <pause> - Sets time (in seconds) that the program pauses after each visualization
++ -glvis_precision <precision> - Sets number of digits for floating point values
+. -glvis_size <width,height>   - Sets the window size (in pixels)
+. -glvis_pause <pause>         - Sets time (in seconds) that the program pauses after each visualization
        (0 is default, -1 implies every visualization)
-.  -glvis_keys - Additional keys to configure visualization
--  -glvis_exec - Additional commands to configure visualization
+. -glvis_keys                  - Additional keys to configure visualization
+- -glvis_exec                  - Additional commands to configure visualization
 
   Level: beginner
 

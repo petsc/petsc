@@ -1258,35 +1258,35 @@ PetscErrorCode MatDuplicate_MPISELL(Mat matin, MatDuplicateOption cpvalues, Mat 
 }
 
 /*@C
-   MatMPISELLSetPreallocation - Preallocates memory for a `MATMPISELL` sparse parallel matrix in sell format.
-   For good matrix assembly performance the user should preallocate the matrix storage by
-   setting the parameters `d_nz` (or `d_nnz`) and `o_nz` (or `o_nnz`).
+  MatMPISELLSetPreallocation - Preallocates memory for a `MATMPISELL` sparse parallel matrix in sell format.
+  For good matrix assembly performance the user should preallocate the matrix storage by
+  setting the parameters `d_nz` (or `d_nnz`) and `o_nz` (or `o_nnz`).
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  B - the matrix
-.  d_nz  - number of nonzeros per row in DIAGONAL portion of local submatrix
+  Input Parameters:
++ B     - the matrix
+. d_nz  - number of nonzeros per row in DIAGONAL portion of local submatrix
            (same value is used for all local rows)
-.  d_nnz - array containing the number of nonzeros in the various rows of the
+. d_nnz - array containing the number of nonzeros in the various rows of the
            DIAGONAL portion of the local submatrix (possibly different for each row)
            or NULL (`PETSC_NULL_INTEGER` in Fortran), if `d_nz` is used to specify the nonzero structure.
            The size of this array is equal to the number of local rows, i.e 'm'.
            For matrices that will be factored, you must leave room for (and set)
            the diagonal entry even if it is zero.
-.  o_nz  - number of nonzeros per row in the OFF-DIAGONAL portion of local
+. o_nz  - number of nonzeros per row in the OFF-DIAGONAL portion of local
            submatrix (same value is used for all local rows).
--  o_nnz - array containing the number of nonzeros in the various rows of the
+- o_nnz - array containing the number of nonzeros in the various rows of the
            OFF-DIAGONAL portion of the local submatrix (possibly different for
            each row) or NULL (`PETSC_NULL_INTEGER` in Fortran), if `o_nz` is used to specify the nonzero
            structure. The size of this array is equal to the number
            of local rows, i.e 'm'.
 
-   Example usage:
-   Consider the following 8x8 matrix with 34 non-zero values, that is
-   assembled across 3 processors. Lets assume that proc0 owns 3 rows,
-   proc1 owns 3 rows, proc2 owns 2 rows. This division can be shown
-   as follows
+  Example usage:
+  Consider the following 8x8 matrix with 34 non-zero values, that is
+  assembled across 3 processors. Lets assume that proc0 owns 3 rows,
+  proc1 owns 3 rows, proc2 owns 2 rows. This division can be shown
+  as follows
 
 .vb
             1  2  0  |  0  3  0  |  0  4
@@ -1301,7 +1301,7 @@ PetscErrorCode MatDuplicate_MPISELL(Mat matin, MatDuplicateOption cpvalues, Mat 
            30  0  0  | 31 32 33  |  0 34
 .ve
 
-   This can be represented as a collection of submatrices as
+  This can be represented as a collection of submatrices as
 
 .vb
       A B C
@@ -1309,74 +1309,74 @@ PetscErrorCode MatDuplicate_MPISELL(Mat matin, MatDuplicateOption cpvalues, Mat 
       G H I
 .ve
 
-   Where the submatrices A,B,C are owned by proc0, D,E,F are
-   owned by proc1, G,H,I are owned by proc2.
+  Where the submatrices A,B,C are owned by proc0, D,E,F are
+  owned by proc1, G,H,I are owned by proc2.
 
-   The 'm' parameters for proc0,proc1,proc2 are 3,3,2 respectively.
-   The 'n' parameters for proc0,proc1,proc2 are 3,3,2 respectively.
-   The 'M','N' parameters are 8,8, and have the same values on all procs.
+  The 'm' parameters for proc0,proc1,proc2 are 3,3,2 respectively.
+  The 'n' parameters for proc0,proc1,proc2 are 3,3,2 respectively.
+  The 'M','N' parameters are 8,8, and have the same values on all procs.
 
-   The DIAGONAL submatrices corresponding to proc0,proc1,proc2 are
-   submatrices [A], [E], [I] respectively. The OFF-DIAGONAL submatrices
-   corresponding to proc0,proc1,proc2 are [BC], [DF], [GH] respectively.
-   Internally, each processor stores the DIAGONAL part, and the OFF-DIAGONAL
-   part as `MATSEQSELL` matrices. For example, proc1 will store [E] as a `MATSEQSELL`
-   matrix, ans [DF] as another SeqSELL matrix.
+  The DIAGONAL submatrices corresponding to proc0,proc1,proc2 are
+  submatrices [A], [E], [I] respectively. The OFF-DIAGONAL submatrices
+  corresponding to proc0,proc1,proc2 are [BC], [DF], [GH] respectively.
+  Internally, each processor stores the DIAGONAL part, and the OFF-DIAGONAL
+  part as `MATSEQSELL` matrices. For example, proc1 will store [E] as a `MATSEQSELL`
+  matrix, ans [DF] as another SeqSELL matrix.
 
-   When `d_nz`, `o_nz` parameters are specified, `d_nz` storage elements are
-   allocated for every row of the local diagonal submatrix, and o_nz
-   storage locations are allocated for every row of the OFF-DIAGONAL submat.
-   One way to choose `d_nz` and `o_nz` is to use the max nonzerors per local
-   rows for each of the local DIAGONAL, and the OFF-DIAGONAL submatrices.
-   In this case, the values of d_nz,o_nz are
+  When `d_nz`, `o_nz` parameters are specified, `d_nz` storage elements are
+  allocated for every row of the local diagonal submatrix, and o_nz
+  storage locations are allocated for every row of the OFF-DIAGONAL submat.
+  One way to choose `d_nz` and `o_nz` is to use the max nonzerors per local
+  rows for each of the local DIAGONAL, and the OFF-DIAGONAL submatrices.
+  In this case, the values of d_nz,o_nz are
 .vb
      proc0  dnz = 2, o_nz = 2
      proc1  dnz = 3, o_nz = 2
      proc2  dnz = 1, o_nz = 4
 .ve
-   We are allocating m*(d_nz+o_nz) storage locations for every proc. This
-   translates to 3*(2+2)=12 for proc0, 3*(3+2)=15 for proc1, 2*(1+4)=10
-   for proc3. i.e we are using 12+15+10=37 storage locations to store
-   34 values.
+  We are allocating m*(d_nz+o_nz) storage locations for every proc. This
+  translates to 3*(2+2)=12 for proc0, 3*(3+2)=15 for proc1, 2*(1+4)=10
+  for proc3. i.e we are using 12+15+10=37 storage locations to store
+  34 values.
 
-   When `d_nnz`, `o_nnz` parameters are specified, the storage is specified
-   for every row, corresponding to both DIAGONAL and OFF-DIAGONAL submatrices.
-   In the above case the values for d_nnz,o_nnz are
+  When `d_nnz`, `o_nnz` parameters are specified, the storage is specified
+  for every row, corresponding to both DIAGONAL and OFF-DIAGONAL submatrices.
+  In the above case the values for d_nnz,o_nnz are
 .vb
      proc0 d_nnz = [2,2,2] and o_nnz = [2,2,2]
      proc1 d_nnz = [3,3,2] and o_nnz = [2,1,1]
      proc2 d_nnz = [1,1]   and o_nnz = [4,4]
 .ve
-   Here the space allocated is according to nz (or maximum values in the nnz
-   if nnz is provided) for DIAGONAL and OFF-DIAGONAL submatrices, i.e (2+2+3+2)*3+(1+4)*2=37
+  Here the space allocated is according to nz (or maximum values in the nnz
+  if nnz is provided) for DIAGONAL and OFF-DIAGONAL submatrices, i.e (2+2+3+2)*3+(1+4)*2=37
 
-   Level: intermediate
+  Level: intermediate
 
-   Notes:
-   If the *_nnz parameter is given then the *_nz parameter is ignored
+  Notes:
+  If the *_nnz parameter is given then the *_nz parameter is ignored
 
-   The stored row and column indices begin with zero.
+  The stored row and column indices begin with zero.
 
-   The parallel matrix is partitioned such that the first m0 rows belong to
-   process 0, the next m1 rows belong to process 1, the next m2 rows belong
-   to process 2 etc.. where m0,m1,m2... are the input parameter 'm'.
+  The parallel matrix is partitioned such that the first m0 rows belong to
+  process 0, the next m1 rows belong to process 1, the next m2 rows belong
+  to process 2 etc.. where m0,m1,m2... are the input parameter 'm'.
 
-   The DIAGONAL portion of the local submatrix of a processor can be defined
-   as the submatrix which is obtained by extraction the part corresponding to
-   the rows r1-r2 and columns c1-c2 of the global matrix, where r1 is the
-   first row that belongs to the processor, r2 is the last row belonging to
-   the this processor, and c1-c2 is range of indices of the local part of a
-   vector suitable for applying the matrix to.  This is an mxn matrix.  In the
-   common case of a square matrix, the row and column ranges are the same and
-   the DIAGONAL part is also square. The remaining portion of the local
-   submatrix (mxN) constitute the OFF-DIAGONAL portion.
+  The DIAGONAL portion of the local submatrix of a processor can be defined
+  as the submatrix which is obtained by extraction the part corresponding to
+  the rows r1-r2 and columns c1-c2 of the global matrix, where r1 is the
+  first row that belongs to the processor, r2 is the last row belonging to
+  the this processor, and c1-c2 is range of indices of the local part of a
+  vector suitable for applying the matrix to.  This is an mxn matrix.  In the
+  common case of a square matrix, the row and column ranges are the same and
+  the DIAGONAL part is also square. The remaining portion of the local
+  submatrix (mxN) constitute the OFF-DIAGONAL portion.
 
-   If `o_nnz`, `d_nnz` are specified, then `o_nz`, and `d_nz` are ignored.
+  If `o_nnz`, `d_nnz` are specified, then `o_nz`, and `d_nz` are ignored.
 
-   You can call `MatGetInfo()` to get information on how effective the preallocation was;
-   for example the fields mallocs,nz_allocated,nz_used,nz_unneeded;
-   You can also run with the option -info and look for messages with the string
-   malloc in them to see if additional memory allocation was needed.
+  You can call `MatGetInfo()` to get information on how effective the preallocation was;
+  for example the fields mallocs,nz_allocated,nz_used,nz_unneeded;
+  You can also run with the option -info and look for messages with the string
+  malloc in them to see if additional memory allocation was needed.
 
 .seealso: `Mat`, `MatCreate()`, `MatCreateSeqSELL()`, `MatSetValues()`, `MatCreatesell()`,
           `MATMPISELL`, `MatGetInfo()`, `PetscSplitOwnership()`, `MATSELL`
@@ -1403,47 +1403,47 @@ PetscErrorCode MatMPISELLSetPreallocation(Mat B, PetscInt d_nz, const PetscInt d
 M*/
 
 /*@C
-   MatCreateSELL - Creates a sparse parallel matrix in `MATSELL` format.
+  MatCreateSELL - Creates a sparse parallel matrix in `MATSELL` format.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  comm - MPI communicator
-.  m - number of local rows (or `PETSC_DECIDE` to have calculated if M is given)
+  Input Parameters:
++ comm      - MPI communicator
+. m         - number of local rows (or `PETSC_DECIDE` to have calculated if M is given)
            This value should be the same as the local size used in creating the
            y vector for the matrix-vector product y = Ax.
-.  n - This value should be the same as the local size used in creating the
+. n         - This value should be the same as the local size used in creating the
        x vector for the matrix-vector product y = Ax. (or `PETSC_DECIDE` to have
        calculated if `N` is given) For square matrices n is almost always `m`.
-.  M - number of global rows (or `PETSC_DETERMINE` to have calculated if `m` is given)
-.  N - number of global columns (or `PETSC_DETERMINE` to have calculated if `n` is given)
-.  d_rlenmax - max number of nonzeros per row in DIAGONAL portion of local submatrix
+. M         - number of global rows (or `PETSC_DETERMINE` to have calculated if `m` is given)
+. N         - number of global columns (or `PETSC_DETERMINE` to have calculated if `n` is given)
+. d_rlenmax - max number of nonzeros per row in DIAGONAL portion of local submatrix
                (same value is used for all local rows)
-.  d_rlen - array containing the number of nonzeros in the various rows of the
+. d_rlen    - array containing the number of nonzeros in the various rows of the
             DIAGONAL portion of the local submatrix (possibly different for each row)
             or `NULL`, if d_rlenmax is used to specify the nonzero structure.
             The size of this array is equal to the number of local rows, i.e `m`.
-.  o_rlenmax - max number of nonzeros per row in the OFF-DIAGONAL portion of local
+. o_rlenmax - max number of nonzeros per row in the OFF-DIAGONAL portion of local
                submatrix (same value is used for all local rows).
--  o_rlen - array containing the number of nonzeros in the various rows of the
+- o_rlen    - array containing the number of nonzeros in the various rows of the
             OFF-DIAGONAL portion of the local submatrix (possibly different for
             each row) or `NULL`, if `o_rlenmax` is used to specify the nonzero
             structure. The size of this array is equal to the number
             of local rows, i.e `m`.
 
-   Output Parameter:
-.  A - the matrix
+  Output Parameter:
+. A - the matrix
 
-   Options Database Key:
--  -mat_sell_oneindex - Internally use indexing starting at 1
+  Options Database Key:
+. -mat_sell_oneindex - Internally use indexing starting at 1
         rather than 0.  When calling `MatSetValues()`,
         the user still MUST index entries starting at 0!
 
-   Example:
-   Consider the following 8x8 matrix with 34 non-zero values, that is
-   assembled across 3 processors. Lets assume that proc0 owns 3 rows,
-   proc1 owns 3 rows, proc2 owns 2 rows. This division can be shown
-   as follows
+  Example:
+  Consider the following 8x8 matrix with 34 non-zero values, that is
+  assembled across 3 processors. Lets assume that proc0 owns 3 rows,
+  proc1 owns 3 rows, proc2 owns 2 rows. This division can be shown
+  as follows
 
 .vb
             1  2  0  |  0  3  0  |  0  4
@@ -1458,102 +1458,102 @@ M*/
            30  0  0  | 31 32 33  |  0 34
 .ve
 
-   This can be represented as a collection of submatrices as
+  This can be represented as a collection of submatrices as
 .vb
       A B C
       D E F
       G H I
 .ve
 
-   Where the submatrices A,B,C are owned by proc0, D,E,F are
-   owned by proc1, G,H,I are owned by proc2.
+  Where the submatrices A,B,C are owned by proc0, D,E,F are
+  owned by proc1, G,H,I are owned by proc2.
 
-   The 'm' parameters for proc0,proc1,proc2 are 3,3,2 respectively.
-   The 'n' parameters for proc0,proc1,proc2 are 3,3,2 respectively.
-   The 'M','N' parameters are 8,8, and have the same values on all procs.
+  The 'm' parameters for proc0,proc1,proc2 are 3,3,2 respectively.
+  The 'n' parameters for proc0,proc1,proc2 are 3,3,2 respectively.
+  The 'M','N' parameters are 8,8, and have the same values on all procs.
 
-   The DIAGONAL submatrices corresponding to proc0,proc1,proc2 are
-   submatrices [A], [E], [I] respectively. The OFF-DIAGONAL submatrices
-   corresponding to proc0,proc1,proc2 are [BC], [DF], [GH] respectively.
-   Internally, each processor stores the DIAGONAL part, and the OFF-DIAGONAL
-   part as `MATSEQSELL` matrices. For example, proc1 will store [E] as a `MATSEQSELL`
-   matrix, ans [DF] as another `MATSEQSELL` matrix.
+  The DIAGONAL submatrices corresponding to proc0,proc1,proc2 are
+  submatrices [A], [E], [I] respectively. The OFF-DIAGONAL submatrices
+  corresponding to proc0,proc1,proc2 are [BC], [DF], [GH] respectively.
+  Internally, each processor stores the DIAGONAL part, and the OFF-DIAGONAL
+  part as `MATSEQSELL` matrices. For example, proc1 will store [E] as a `MATSEQSELL`
+  matrix, ans [DF] as another `MATSEQSELL` matrix.
 
-   When d_rlenmax, o_rlenmax parameters are specified, d_rlenmax storage elements are
-   allocated for every row of the local diagonal submatrix, and o_rlenmax
-   storage locations are allocated for every row of the OFF-DIAGONAL submat.
-   One way to choose d_rlenmax and o_rlenmax is to use the max nonzerors per local
-   rows for each of the local DIAGONAL, and the OFF-DIAGONAL submatrices.
-   In this case, the values of d_rlenmax,o_rlenmax are
+  When d_rlenmax, o_rlenmax parameters are specified, d_rlenmax storage elements are
+  allocated for every row of the local diagonal submatrix, and o_rlenmax
+  storage locations are allocated for every row of the OFF-DIAGONAL submat.
+  One way to choose d_rlenmax and o_rlenmax is to use the max nonzerors per local
+  rows for each of the local DIAGONAL, and the OFF-DIAGONAL submatrices.
+  In this case, the values of d_rlenmax,o_rlenmax are
 .vb
      proc0 - d_rlenmax = 2, o_rlenmax = 2
      proc1 - d_rlenmax = 3, o_rlenmax = 2
      proc2 - d_rlenmax = 1, o_rlenmax = 4
 .ve
-   We are allocating m*(d_rlenmax+o_rlenmax) storage locations for every proc. This
-   translates to 3*(2+2)=12 for proc0, 3*(3+2)=15 for proc1, 2*(1+4)=10
-   for proc3. i.e we are using 12+15+10=37 storage locations to store
-   34 values.
+  We are allocating m*(d_rlenmax+o_rlenmax) storage locations for every proc. This
+  translates to 3*(2+2)=12 for proc0, 3*(3+2)=15 for proc1, 2*(1+4)=10
+  for proc3. i.e we are using 12+15+10=37 storage locations to store
+  34 values.
 
-   When `d_rlen`, `o_rlen` parameters are specified, the storage is specified
-   for every row, corresponding to both DIAGONAL and OFF-DIAGONAL submatrices.
-   In the above case the values for `d_nnz`, `o_nnz` are
+  When `d_rlen`, `o_rlen` parameters are specified, the storage is specified
+  for every row, corresponding to both DIAGONAL and OFF-DIAGONAL submatrices.
+  In the above case the values for `d_nnz`, `o_nnz` are
 .vb
      proc0 - d_nnz = [2,2,2] and o_nnz = [2,2,2]
      proc1 - d_nnz = [3,3,2] and o_nnz = [2,1,1]
      proc2 - d_nnz = [1,1]   and o_nnz = [4,4]
 .ve
-   Here the space allocated is still 37 though there are 34 nonzeros because
-   the allocation is always done according to rlenmax.
+  Here the space allocated is still 37 though there are 34 nonzeros because
+  the allocation is always done according to rlenmax.
 
-   Level: intermediate
+  Level: intermediate
 
-   Notes:
-   It is recommended that one use the `MatCreate()`, `MatSetType()` and/or `MatSetFromOptions()`,
-   MatXXXXSetPreallocation() paradigm instead of this routine directly.
-   [MatXXXXSetPreallocation() is, for example, `MatSeqSELLSetPreallocation()`]
+  Notes:
+  It is recommended that one use the `MatCreate()`, `MatSetType()` and/or `MatSetFromOptions()`,
+  MatXXXXSetPreallocation() paradigm instead of this routine directly.
+  [MatXXXXSetPreallocation() is, for example, `MatSeqSELLSetPreallocation()`]
 
-   If the *_rlen parameter is given then the *_rlenmax parameter is ignored
+  If the *_rlen parameter is given then the *_rlenmax parameter is ignored
 
-   `m`, `n`, `M`, `N` parameters specify the size of the matrix, and its partitioning across
-   processors, while `d_rlenmax`, `d_rlen`, `o_rlenmax` , `o_rlen` parameters specify the approximate
-   storage requirements for this matrix.
+  `m`, `n`, `M`, `N` parameters specify the size of the matrix, and its partitioning across
+  processors, while `d_rlenmax`, `d_rlen`, `o_rlenmax` , `o_rlen` parameters specify the approximate
+  storage requirements for this matrix.
 
-   If `PETSC_DECIDE` or  `PETSC_DETERMINE` is used for a particular argument on one
-   processor than it must be used on all processors that share the object for
-   that argument.
+  If `PETSC_DECIDE` or  `PETSC_DETERMINE` is used for a particular argument on one
+  processor than it must be used on all processors that share the object for
+  that argument.
 
-   The user MUST specify either the local or global matrix dimensions
-   (possibly both).
+  The user MUST specify either the local or global matrix dimensions
+  (possibly both).
 
-   The parallel matrix is partitioned across processors such that the
-   first m0 rows belong to process 0, the next m1 rows belong to
-   process 1, the next m2 rows belong to process 2 etc.. where
-   m0,m1,m2,.. are the input parameter 'm'. i.e each processor stores
-   values corresponding to [`m` x `N`] submatrix.
+  The parallel matrix is partitioned across processors such that the
+  first m0 rows belong to process 0, the next m1 rows belong to
+  process 1, the next m2 rows belong to process 2 etc.. where
+  m0,m1,m2,.. are the input parameter 'm'. i.e each processor stores
+  values corresponding to [`m` x `N`] submatrix.
 
-   The columns are logically partitioned with the n0 columns belonging
-   to 0th partition, the next n1 columns belonging to the next
-   partition etc.. where n0,n1,n2... are the input parameter `n`.
+  The columns are logically partitioned with the n0 columns belonging
+  to 0th partition, the next n1 columns belonging to the next
+  partition etc.. where n0,n1,n2... are the input parameter `n`.
 
-   The DIAGONAL portion of the local submatrix on any given processor
-   is the submatrix corresponding to the rows and columns `m`, `n`
-   corresponding to the given processor. i.e diagonal matrix on
-   process 0 is [m0 x n0], diagonal matrix on process 1 is [m1 x n1]
-   etc. The remaining portion of the local submatrix [m x (N-n)]
-   constitute the OFF-DIAGONAL portion. The example below better
-   illustrates this concept.
+  The DIAGONAL portion of the local submatrix on any given processor
+  is the submatrix corresponding to the rows and columns `m`, `n`
+  corresponding to the given processor. i.e diagonal matrix on
+  process 0 is [m0 x n0], diagonal matrix on process 1 is [m1 x n1]
+  etc. The remaining portion of the local submatrix [m x (N-n)]
+  constitute the OFF-DIAGONAL portion. The example below better
+  illustrates this concept.
 
-   For a square global matrix we define each processor's diagonal portion
-   to be its local rows and the corresponding columns (a square submatrix);
-   each processor's off-diagonal portion encompasses the remainder of the
-   local matrix (a rectangular submatrix).
+  For a square global matrix we define each processor's diagonal portion
+  to be its local rows and the corresponding columns (a square submatrix);
+  each processor's off-diagonal portion encompasses the remainder of the
+  local matrix (a rectangular submatrix).
 
-   If `o_rlen`, `d_rlen` are specified, then `o_rlenmax`, and `d_rlenmax` are ignored.
+  If `o_rlen`, `d_rlen` are specified, then `o_rlenmax`, and `d_rlenmax` are ignored.
 
-   When calling this routine with a single process communicator, a matrix of
-   type `MATSEQSELL` is returned.  If a matrix of type `MATMPISELL` is desired for this
-   type of communicator, use the construction mechanism
+  When calling this routine with a single process communicator, a matrix of
+  type `MATSEQSELL` is returned.  If a matrix of type `MATMPISELL` is desired for this
+  type of communicator, use the construction mechanism
 .vb
    MatCreate(...,&A);
    MatSetType(A,MATMPISELL);
@@ -1597,20 +1597,20 @@ PetscErrorCode MatMPISELLGetSeqSELL(Mat A, Mat *Ad, Mat *Ao, const PetscInt *col
 }
 
 /*@C
-     MatMPISELLGetLocalMatCondensed - Creates a `MATSEQSELL` matrix from an `MATMPISELL` matrix by taking all its local rows and NON-ZERO columns
+  MatMPISELLGetLocalMatCondensed - Creates a `MATSEQSELL` matrix from an `MATMPISELL` matrix by taking all its local rows and NON-ZERO columns
 
-    Not Collective
+  Not Collective
 
-   Input Parameters:
-+    A - the matrix
-.    scall - either `MAT_INITIAL_MATRIX` or `MAT_REUSE_MATRIX`
-.    row - index sets of rows to extract (or `NULL`)
--    col - index sets of columns to extract (or `NULL`)
+  Input Parameters:
++ A     - the matrix
+. scall - either `MAT_INITIAL_MATRIX` or `MAT_REUSE_MATRIX`
+. row   - index sets of rows to extract (or `NULL`)
+- col   - index sets of columns to extract (or `NULL`)
 
-   Output Parameter:
-.    A_loc - the local sequential matrix generated
+  Output Parameter:
+. A_loc - the local sequential matrix generated
 
-    Level: developer
+  Level: developer
 
 .seealso: `Mat`, `MATSEQSELL`, `MATMPISELL`, `MatGetOwnershipRange()`, `MatMPISELLGetLocalMat()`
 @*/

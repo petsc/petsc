@@ -394,8 +394,8 @@ static PetscErrorCode KSPView_PIPEFCG(KSP ksp, PetscViewer viewer)
   Logically Collective
 
   Input Parameters:
-+  ksp - the Krylov space context
--  mmax - the maximum number of previous directions to orthogonalize against
++ ksp  - the Krylov space context
+- mmax - the maximum number of previous directions to orthogonalize against
 
   Options Database Key:
 . -ksp_pipefcg_mmax <N> - maximum number of previous directions
@@ -403,7 +403,7 @@ static PetscErrorCode KSPView_PIPEFCG(KSP ksp, PetscViewer viewer)
   Level: intermediate
 
   Note:
-   mmax + 1 directions are stored (mmax previous ones along with the current one)
+  mmax + 1 directions are stored (mmax previous ones along with the current one)
   and whether all are used in each iteration also depends on the truncation strategy, see `KSPPIPEFCGSetTruncationType()`
 
 .seealso: [](ch_ksp), `KSPPIPEFCG`, `KSPPIPEFCGSetTruncationType()`, `KSPPIPEFCGSetNprealloc()`
@@ -422,18 +422,18 @@ PetscErrorCode KSPPIPEFCGSetMmax(KSP ksp, PetscInt mmax)
 /*@
   KSPPIPEFCGGetMmax - get the maximum number of previous directions `KSPPIPEFCG` will store
 
-   Not Collective
+  Not Collective
 
-   Input Parameter:
-.  ksp - the Krylov space context
+  Input Parameter:
+. ksp - the Krylov space context
 
-   Output Parameter:
-.  mmax - the maximum number of previous directions allowed for orthogonalization
+  Output Parameter:
+. mmax - the maximum number of previous directions allowed for orthogonalization
 
   Options Database Key:
 . -ksp_pipefcg_mmax <N> - maximum number of previous directions
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: [](ch_ksp), `KSPPIPEFCG`, `KSPPIPEFCGGetTruncationType()`, `KSPPIPEFCGGetNprealloc()`, `KSPPIPEFCGSetMmax()`
 @*/
@@ -453,8 +453,8 @@ PetscErrorCode KSPPIPEFCGGetMmax(KSP ksp, PetscInt *mmax)
   Logically Collective
 
   Input Parameters:
-+  ksp - the Krylov space context
--  nprealloc - the number of vectors to preallocate
++ ksp       - the Krylov space context
+- nprealloc - the number of vectors to preallocate
 
   Options Database Key:
 . -ksp_pipefcg_nprealloc <N> - the number of vectors to preallocate
@@ -477,15 +477,15 @@ PetscErrorCode KSPPIPEFCGSetNprealloc(KSP ksp, PetscInt nprealloc)
 /*@
   KSPPIPEFCGGetNprealloc - get the number of directions to preallocate by `KSPPIPEFCG`
 
-   Not Collective
+  Not Collective
 
-   Input Parameter:
-.  ksp - the Krylov space context
+  Input Parameter:
+. ksp - the Krylov space context
 
-   Output Parameter:
-.  nprealloc - the number of directions preallocated
+  Output Parameter:
+. nprealloc - the number of directions preallocated
 
-   Level: advanced
+  Level: advanced
 
 .seealso: [](ch_ksp), `KSPPIPEFCG`, `KSPPIPEFCGGetTruncationType()`, `KSPPIPEFCGSetNprealloc()`, `KSPPIPEFCGSetMmax()`, `KSPPIPEFCGGetMmax()`
 @*/
@@ -505,15 +505,15 @@ PetscErrorCode KSPPIPEFCGGetNprealloc(KSP ksp, PetscInt *nprealloc)
   Logically Collective
 
   Input Parameters:
-+  ksp - the Krylov space context
--  truncstrat - the choice of strategy
++ ksp        - the Krylov space context
+- truncstrat - the choice of strategy
 .vb
   KSP_FCD_TRUNC_TYPE_STANDARD uses all (up to mmax) stored directions
   KSP_FCD_TRUNC_TYPE_NOTAY uses max(1,mod(i,mmax)) stored directions at iteration i=0,1,..
 .ve
 
   Options Database Key:
-.  -ksp_pipefcg_truncation_type <standard,notay> - which stored search directions to orthogonalize against
+. -ksp_pipefcg_truncation_type <standard,notay> - which stored search directions to orthogonalize against
 
   Level: intermediate
 
@@ -533,18 +533,18 @@ PetscErrorCode KSPPIPEFCGSetTruncationType(KSP ksp, KSPFCDTruncationType truncst
 /*@
   KSPPIPEFCGGetTruncationType - get the truncation strategy employed by `KSPPIPEFCG`
 
-   Not Collective
+  Not Collective
 
-   Input Parameter:
-.  ksp - the Krylov space context
+  Input Parameter:
+. ksp - the Krylov space context
 
-   Output Parameter:
-.  truncstrat - the strategy type
+  Output Parameter:
+. truncstrat - the strategy type
 
   Options Database Key:
 . -ksp_pipefcg_truncation_type <standard,notay> - which stored basis vectors to orthogonalize against
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: [](ch_ksp), `KSPPIPEFCG`, `KSPPIPEFCGSetTruncationType`, `KSPFCDTruncationType`
 @*/

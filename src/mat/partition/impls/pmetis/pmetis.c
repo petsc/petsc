@@ -265,15 +265,15 @@ PetscErrorCode MatPartitioningView_Parmetis(MatPartitioning part, PetscViewer vi
 }
 
 /*@
-     MatPartitioningParmetisSetCoarseSequential - Use the sequential code to
-         do the partitioning of the coarse grid.
+  MatPartitioningParmetisSetCoarseSequential - Use the sequential code to
+  do the partitioning of the coarse grid.
 
   Logically Collective
 
   Input Parameter:
-.  part - the partitioning context
+. part - the partitioning context
 
-   Level: advanced
+  Level: advanced
 
 .seealso: `MATPARTITIONINGPARMETIS`
 @*/
@@ -287,15 +287,15 @@ PetscErrorCode MatPartitioningParmetisSetCoarseSequential(MatPartitioning part)
 }
 
 /*@
-     MatPartitioningParmetisSetRepartition - Repartition
-     current mesh to rebalance computation.
+  MatPartitioningParmetisSetRepartition - Repartition
+  current mesh to rebalance computation.
 
   Logically Collective
 
   Input Parameter:
-.  part - the partitioning context
+. part - the partitioning context
 
-   Level: advanced
+  Level: advanced
 
 .seealso: `MATPARTITIONINGPARMETIS`
 @*/
@@ -317,7 +317,7 @@ PetscErrorCode MatPartitioningParmetisSetRepartition(MatPartitioning part)
   Output Parameter:
 . cut - the edge cut
 
-   Level: advanced
+  Level: advanced
 
 .seealso: `MATPARTITIONINGPARMETIS`
 @*/
@@ -398,30 +398,30 @@ PETSC_EXTERN PetscErrorCode MatPartitioningCreate_Parmetis(MatPartitioning part)
 }
 
 /*@
-     MatMeshToCellGraph -   Uses the ParMETIS package to convert a `Mat` that represents coupling of vertices of a mesh to a `Mat` the represents the graph of the coupling
-                       between cells (the "dual" graph) and is suitable for partitioning with the `MatPartitioning` object. Use this to partition
-                       cells of a mesh.
+  MatMeshToCellGraph -   Uses the ParMETIS package to convert a `Mat` that represents coupling of vertices of a mesh to a `Mat` the represents the graph of the coupling
+  between cells (the "dual" graph) and is suitable for partitioning with the `MatPartitioning` object. Use this to partition
+  cells of a mesh.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+     mesh - the graph that represents the coupling of the vertices of the mesh
--     ncommonnodes - mesh elements that share this number of common nodes are considered neighbors, use 2 for triangles and
+  Input Parameters:
++ mesh         - the graph that represents the coupling of the vertices of the mesh
+- ncommonnodes - mesh elements that share this number of common nodes are considered neighbors, use 2 for triangles and
                      quadrilaterials, 3 for tetrahedrals and 4 for hexahedrals
 
-   Output Parameter:
-.     dual - the dual graph
+  Output Parameter:
+. dual - the dual graph
 
-   Level: advanced
+  Level: advanced
 
-   Notes:
-     Currently requires ParMetis to be installed and uses ParMETIS_V3_Mesh2Dual()
+  Notes:
+  Currently requires ParMetis to be installed and uses ParMETIS_V3_Mesh2Dual()
 
-     Each row of the mesh object represents a single cell in the mesh. For triangles it has 3 entries, quadrilaterials 4 entries,
-         tetrahedrals 4 entries and hexahedrals 8 entries. You can mix triangles and quadrilaterals in the same mesh, but cannot
-         mix  tetrahedrals and hexahedrals
-     The columns of each row of the `Mat` mesh are the global vertex numbers of the vertices of that row's cell.
-     The number of rows in mesh is number of cells, the number of columns is the number of vertices.
+  Each row of the mesh object represents a single cell in the mesh. For triangles it has 3 entries, quadrilaterials 4 entries,
+  tetrahedrals 4 entries and hexahedrals 8 entries. You can mix triangles and quadrilaterals in the same mesh, but cannot
+  mix  tetrahedrals and hexahedrals
+  The columns of each row of the `Mat` mesh are the global vertex numbers of the vertices of that row's cell.
+  The number of rows in mesh is number of cells, the number of columns is the number of vertices.
 
 .seealso: `MatCreateMPIAdj()`, `MatPartitioningCreate()`
 @*/

@@ -316,16 +316,16 @@ static PetscErrorCode PCRedundantSetNumber_Redundant(PC pc, PetscInt nreds)
 }
 
 /*@
-   PCRedundantSetNumber - Sets the number of redundant preconditioner contexts.
+  PCRedundantSetNumber - Sets the number of redundant preconditioner contexts.
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  pc - the preconditioner context
--  nredundant - number of redundant preconditioner contexts; for example if you are using 64 MPI processes and
+  Input Parameters:
++ pc         - the preconditioner context
+- nredundant - number of redundant preconditioner contexts; for example if you are using 64 MPI processes and
                               use an nredundant of 4 there will be 4 parallel solves each on 16 = 64/4 processes.
 
-   Level: advanced
+  Level: advanced
 
 .seealso: `PCREDUNDANT`
 @*/
@@ -355,18 +355,18 @@ static PetscErrorCode PCRedundantSetScatter_Redundant(PC pc, VecScatter in, VecS
 }
 
 /*@
-   PCRedundantSetScatter - Sets the scatter used to copy values into the
-     redundant local solve and the scatter to move them back into the global
-     vector.
+  PCRedundantSetScatter - Sets the scatter used to copy values into the
+  redundant local solve and the scatter to move them back into the global
+  vector.
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  pc - the preconditioner context
-.  in - the scatter to move the values in
--  out - the scatter to move them out
+  Input Parameters:
++ pc  - the preconditioner context
+. in  - the scatter to move the values in
+- out - the scatter to move them out
 
-   Level: advanced
+  Level: advanced
 
 .seealso: `PCREDUNDANT`
 @*/
@@ -426,17 +426,17 @@ static PetscErrorCode PCRedundantGetKSP_Redundant(PC pc, KSP *innerksp)
 }
 
 /*@
-   PCRedundantGetKSP - Gets the less parallel `KSP` created by the redundant `PC`.
+  PCRedundantGetKSP - Gets the less parallel `KSP` created by the redundant `PC`.
 
-   Not Collective
+  Not Collective
 
-   Input Parameter:
-.  pc - the preconditioner context
+  Input Parameter:
+. pc - the preconditioner context
 
-   Output Parameter:
-.  innerksp - the `KSP` on the smaller set of processes
+  Output Parameter:
+. innerksp - the `KSP` on the smaller set of processes
 
-   Level: advanced
+  Level: advanced
 
 .seealso: `PCREDUNDANT`
 @*/
@@ -460,18 +460,18 @@ static PetscErrorCode PCRedundantGetOperators_Redundant(PC pc, Mat *mat, Mat *pm
 }
 
 /*@
-   PCRedundantGetOperators - gets the sequential matrix and preconditioner matrix
+  PCRedundantGetOperators - gets the sequential matrix and preconditioner matrix
 
-   Not Collective
+  Not Collective
 
-   Input Parameter:
-.  pc - the preconditioner context
+  Input Parameter:
+. pc - the preconditioner context
 
-   Output Parameters:
-+  mat - the matrix
--  pmat - the (possibly different) preconditioner matrix
+  Output Parameters:
++ mat  - the matrix
+- pmat - the (possibly different) preconditioner matrix
 
-   Level: advanced
+  Level: advanced
 
 .seealso: `PCREDUNDANT`
 @*/

@@ -75,7 +75,7 @@ PetscErrorCode DMCreateLocalVector_DA(DM da, Vec *g)
 + numCellsX - The number of local cells in the x-direction
 . numCellsY - The number of local cells in the y-direction
 . numCellsZ - The number of local cells in the z-direction
-- numCells - The number of local cells
+- numCells  - The number of local cells
 
   Level: developer
 
@@ -113,7 +113,7 @@ PetscErrorCode DMDAGetNumCells(DM dm, PetscInt *numCellsX, PetscInt *numCellsY, 
   DMDAGetCellPoint - Get the DM point corresponding to the tuple (i, j, k) in the `DMDA`
 
   Input Parameters:
-+ dm - The `DMDA` object
++ dm    - The `DMDA` object
 - i,j,k - The global indices for the cell
 
   Output Parameter:
@@ -406,20 +406,20 @@ PetscErrorCode DMDASetVertexCoordinates(DM dm, PetscReal xl, PetscReal xu, Petsc
 /* ------------------------------------------------------------------- */
 
 /*@C
-     DMDAGetArray - Gets a work array for a `DMDA`
+  DMDAGetArray - Gets a work array for a `DMDA`
 
-    Input Parameters:
-+    da - information about my local patch
--    ghosted - do you want arrays for the ghosted or nonghosted patch
+  Input Parameters:
++ da      - information about my local patch
+- ghosted - do you want arrays for the ghosted or nonghosted patch
 
-    Output Parameter:
-.    vptr - array data structured
+  Output Parameter:
+. vptr - array data structured
 
   Level: advanced
 
   Note:
-   The vector values are NOT initialized and may have garbage in them, so you may need
-   to zero them.
+  The vector values are NOT initialized and may have garbage in them, so you may need
+  to zero them.
 
 .seealso: `DM`, `DMDA`, `DMDARestoreArray()`
 @*/
@@ -529,14 +529,14 @@ done:
 }
 
 /*@C
-     DMDARestoreArray - Restores an array of derivative types for a `DMDA`
+  DMDARestoreArray - Restores an array of derivative types for a `DMDA`
 
-    Input Parameters:
-+    da - information about my local patch
-.    ghosted - do you want arrays for the ghosted or nonghosted patch
--    vptr - array data structured
+  Input Parameters:
++ da      - information about my local patch
+. ghosted - do you want arrays for the ghosted or nonghosted patch
+- vptr    - array data structured
 
-     Level: advanced
+  Level: advanced
 
 .seealso: `DM`, `DMDA`, `DMDAGetArray()`
 @*/

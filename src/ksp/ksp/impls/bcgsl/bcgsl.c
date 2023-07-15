@@ -294,19 +294,19 @@ static PetscErrorCode KSPSolve_BCGSL(KSP ksp)
 }
 
 /*@
-   KSPBCGSLSetXRes - Sets the parameter governing when
-   exact residuals will be used instead of computed residuals.
+  KSPBCGSLSetXRes - Sets the parameter governing when
+  exact residuals will be used instead of computed residuals.
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  ksp - iterative context of type `KSPBCGSL`
--  delta - computed residuals are used alone when delta is not positive
+  Input Parameters:
++ ksp   - iterative context of type `KSPBCGSL`
+- delta - computed residuals are used alone when delta is not positive
 
-   Options Database Key:
-.  -ksp_bcgsl_xres delta - Threshold used to decide when to refresh computed residuals
+  Options Database Key:
+. -ksp_bcgsl_xres delta - Threshold used to decide when to refresh computed residuals
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: [](ch_ksp), `KSPBCGSLSetEll()`, `KSPBCGSLSetPol()`, `KSP`, `KSPCBGSL`, `KSPBCGSLSetUsePseudoinverse()`
 @*/
@@ -329,18 +329,18 @@ PetscErrorCode KSPBCGSLSetXRes(KSP ksp, PetscReal delta)
 }
 
 /*@
-   KSPBCGSLSetUsePseudoinverse - Use pseudoinverse (via SVD) to solve polynomial part of update in `KSPCBGSL` solver
+  KSPBCGSLSetUsePseudoinverse - Use pseudoinverse (via SVD) to solve polynomial part of update in `KSPCBGSL` solver
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  ksp - iterative context of type `KSPCBGSL`
--  use_pinv - set to PETSC_TRUE when using pseudoinverse
+  Input Parameters:
++ ksp      - iterative context of type `KSPCBGSL`
+- use_pinv - set to PETSC_TRUE when using pseudoinverse
 
-   Options Database Key:
-.  -ksp_bcgsl_pinv - use pseudoinverse
+  Options Database Key:
+. -ksp_bcgsl_pinv - use pseudoinverse
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: [](ch_ksp), `KSPBCGSLSetEll()`, `KSP`, `KSPCBGSL`, `KSPBCGSLSetPol()`, `KSPBCGSLSetXRes()`
 @*/
@@ -354,20 +354,20 @@ PetscErrorCode KSPBCGSLSetUsePseudoinverse(KSP ksp, PetscBool use_pinv)
 }
 
 /*@
-   KSPBCGSLSetPol - Sets the type of polynomial part that will
-   be used in the  `KSPCBGSL` solver.
+  KSPBCGSLSetPol - Sets the type of polynomial part that will
+  be used in the  `KSPCBGSL` solver.
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  ksp - iterative context of type `KSPCBGSL`
--  uMROR - set to PETSC_TRUE when the polynomial is a convex combination of an MR and an OR step.
+  Input Parameters:
++ ksp   - iterative context of type `KSPCBGSL`
+- uMROR - set to PETSC_TRUE when the polynomial is a convex combination of an MR and an OR step.
 
-   Options Database Keys:
-+  -ksp_bcgsl_cxpoly - use enhanced polynomial
--  -ksp_bcgsl_mrpoly - use standard polynomial
+  Options Database Keys:
++ -ksp_bcgsl_cxpoly - use enhanced polynomial
+- -ksp_bcgsl_mrpoly - use standard polynomial
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: [](ch_ksp), `KSP`, `KSPBCGSL`, `KSPCreate()`, `KSPSetType()`, `KSPCBGSL`, `KSPBCGSLSetUsePseudoinverse()`, `KSPBCGSLSetEll()`, `KSPBCGSLSetXRes()`
 @*/
@@ -394,23 +394,23 @@ PetscErrorCode KSPBCGSLSetPol(KSP ksp, PetscBool uMROR)
 }
 
 /*@
-   KSPBCGSLSetEll - Sets the number of search directions in `KSPCBGSL` solver
+  KSPBCGSLSetEll - Sets the number of search directions in `KSPCBGSL` solver
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  ksp - iterative context of type `KSPCBGSL`
--  ell - number of search directions
+  Input Parameters:
++ ksp - iterative context of type `KSPCBGSL`
+- ell - number of search directions
 
-   Options Database Key:
-.  -ksp_bcgsl_ell ell - Number of Krylov search directions
+  Options Database Key:
+. -ksp_bcgsl_ell ell - Number of Krylov search directions
 
-   Level: intermediate
+  Level: intermediate
 
-   Notes:
-   For large ell it is common for the polynomial update problem to become singular (due to happy breakdown for smallish
-   test problems, but also for larger problems). Consequently, by default, the system is solved by pseudoinverse, which
-   allows the iteration to complete successfully. See `KSPBCGSLSetUsePseudoinverse()` to switch to a conventional solve.
+  Notes:
+  For large ell it is common for the polynomial update problem to become singular (due to happy breakdown for smallish
+  test problems, but also for larger problems). Consequently, by default, the system is solved by pseudoinverse, which
+  allows the iteration to complete successfully. See `KSPBCGSLSetUsePseudoinverse()` to switch to a conventional solve.
 
 .seealso: [](ch_ksp), `KSPBCGSLSetUsePseudoinverse()`, `KSP`, `KSPBCGSL`, `KSPBCGSLSetPol()`, `KSPBCGSLSetXRes()`
 @*/

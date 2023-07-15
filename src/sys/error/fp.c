@@ -29,23 +29,23 @@ static PetscFPTrap             _trapmode = PETSC_FP_TRAP_OFF; /* Current trappin
 static struct PetscFPTrapLink *_trapstack;                    /* Any pushed states of _trapmode */
 
 /*@
-   PetscFPTrapPush - push a floating point trapping mode, restored using `PetscFPTrapPop()`
+  PetscFPTrapPush - push a floating point trapping mode, restored using `PetscFPTrapPop()`
 
-   Not Collective
+  Not Collective
 
-   Input Parameter:
-.    trap - `PETSC_FP_TRAP_ON` or `PETSC_FP_TRAP_OFF` or any of the values passable to `PetscSetFPTrap()`
+  Input Parameter:
+. trap - `PETSC_FP_TRAP_ON` or `PETSC_FP_TRAP_OFF` or any of the values passable to `PetscSetFPTrap()`
 
-   Level: advanced
+  Level: advanced
 
-   Notes:
-     This only changes the trapping if the new mode is different than the current mode.
+  Notes:
+  This only changes the trapping if the new mode is different than the current mode.
 
-     This routine is called to turn off trapping for certain LAPACK routines that assume that dividing
-     by zero is acceptable. In particular the routine ieeeck().
+  This routine is called to turn off trapping for certain LAPACK routines that assume that dividing
+  by zero is acceptable. In particular the routine ieeeck().
 
-     Most systems by default have all trapping turned off, but certain Fortran compilers have
-     link flags that turn on trapping before the program begins.
+  Most systems by default have all trapping turned off, but certain Fortran compilers have
+  link flags that turn on trapping before the program begins.
 .vb
        gfortran -ffpe-trap=invalid,zero,overflow,underflow,denormal
        ifort -fpe0
@@ -72,11 +72,11 @@ PetscErrorCode PetscFPTrapPush(PetscFPTrap trap)
 }
 
 /*@
-   PetscFPTrapPop - push a floating point trapping mode, to be restored using `PetscFPTrapPop()`
+  PetscFPTrapPop - push a floating point trapping mode, to be restored using `PetscFPTrapPop()`
 
-   Not Collective
+  Not Collective
 
-   Level: advanced
+  Level: advanced
 
 .seealso: `PetscFPTrapPush()`, `PetscSetFPTrap()`, `PetscDetermineInitialFPTrap()`
 @*/

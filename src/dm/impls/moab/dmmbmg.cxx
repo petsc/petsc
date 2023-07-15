@@ -11,11 +11,11 @@
   Collective
 
   Input Parameter:
-. dmb  - The `DMMOAB` object
+. dm - The `DMMOAB` object
 
   Output Parameters:
-+ nlevels   - The number of levels of refinement needed to generate the hierarchy
-- ldegrees  - The degree of refinement at each level in the hierarchy
++ nlevels  - The number of levels of refinement needed to generate the hierarchy
+- ldegrees - The degree of refinement at each level in the hierarchy
 
   Level: beginner
 
@@ -86,11 +86,11 @@ PetscErrorCode DMMoabGenerateHierarchy(DM dm, PetscInt nlevels, PetscInt *ldegre
   Collective
 
   Input Parameter:
-. dm  - The `DMMOAB` object
+. dm - The `DMMOAB` object
 
   Output Parameters:
-+ nlevels   - The number of levels of refinement needed to generate the hierarchy
-- dmf  - The DM objects after successive refinement of the hierarchy
++ nlevels - The number of levels of refinement needed to generate the hierarchy
+- dmf     - The DM objects after successive refinement of the hierarchy
 
   Level: beginner
 
@@ -113,11 +113,11 @@ PETSC_EXTERN PetscErrorCode DMRefineHierarchy_Moab(DM dm, PetscInt nlevels, DM d
   Collective
 
   Input Parameter:
-. dm  - The `DMMOAB` object
+. dm - The `DMMOAB` object
 
   Output Parameters:
-+ nlevels   - The number of levels of refinement needed to generate the hierarchy
-- dmc  - The `DM` objects after successive coarsening of the hierarchy
++ nlevels - The number of levels of refinement needed to generate the hierarchy
+- dmc     - The `DM` objects after successive coarsening of the hierarchy
 
   Level: beginner
 
@@ -143,12 +143,12 @@ PETSC_EXTERN PetscErrorCode DMMoab_Compute_NNZ_From_Connectivity(DM, PetscInt *,
   Collective
 
   Input Parameters:
-+ dm1  - The `DMMOAB` object
-- dm2  - the second, finer `DMMOAB` object
++ dmp - The `DMMOAB` object
+- dmc - the second, finer `DMMOAB` object
 
   Output Parameters:
-+ interpl  - The interpolation operator for transferring data between the levels
-- vec      - The scaling vector (optional)
++ interpl - The interpolation operator for transferring data between the levels
+- vec     - The scaling vector (optional)
 
   Level: developer
 
@@ -499,7 +499,7 @@ static PetscErrorCode DMMoab_UMR_Private(DM dm, MPI_Comm comm, PetscBool refine,
   Collective
 
   Input Parameters:
-+ dm  - The `DMMOAB` object
++ dm   - The `DMMOAB` object
 - comm - the communicator to contain the new DM object (or `MPI_COMM_NULL`)
 
   Output Parameter:
@@ -528,11 +528,11 @@ PETSC_EXTERN PetscErrorCode DMRefine_Moab(DM dm, MPI_Comm comm, DM *dmf)
   Collective
 
   Input Parameters:
-+ dm  - The `DMMOAB` object
++ dm   - The `DMMOAB` object
 - comm - the communicator to contain the new `DM` object (or `MPI_COMM_NULL`)
 
   Output Parameter:
-. dmf - the coarsened `DM`, or `NULL`
+. dmc - the coarsened `DM`, or `NULL`
 
   Level: developer
 

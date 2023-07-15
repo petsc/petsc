@@ -9,17 +9,17 @@
 static const char *DType_Table[64] = {"preconditioned", "unpreconditioned"};
 
 /*@
-    KSPGLTRGetMinEig - Get minimum eigenvalue computed by `KSPGLTR`
+  KSPGLTRGetMinEig - Get minimum eigenvalue computed by `KSPGLTR`
 
-    Collective
+  Collective
 
-    Input Parameter:
-.   ksp   - the iterative context
+  Input Parameter:
+. ksp - the iterative context
 
-    Output Parameter:
-.   e_min - the minimum eigenvalue
+  Output Parameter:
+. e_min - the minimum eigenvalue
 
-    Level: advanced
+  Level: advanced
 
 .seealso: [](ch_ksp), `KSPGLTR`, `KSPGLTRGetLambda()`
 @*/
@@ -32,17 +32,17 @@ PetscErrorCode KSPGLTRGetMinEig(KSP ksp, PetscReal *e_min)
 }
 
 /*@
-    KSPGLTRGetLambda - Get the multiplier on the trust-region constraint when using `KSPGLTR`
-t
-    Not Collective
+  KSPGLTRGetLambda - Get the multiplier on the trust-region constraint when using `KSPGLTR`
+  t
+  Not Collective
 
-    Input Parameter:
-.   ksp    - the iterative context
+  Input Parameter:
+. ksp - the iterative context
 
-    Output Parameter:
-.   lambda - the multiplier
+  Output Parameter:
+. lambda - the multiplier
 
-    Level: advanced
+  Level: advanced
 
 .seealso: [](ch_ksp), `KSPGLTR`, `KSPGLTRGetMinEig()`
 @*/

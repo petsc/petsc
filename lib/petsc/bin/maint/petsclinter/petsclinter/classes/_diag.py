@@ -3,8 +3,10 @@
 # Created: Mon Jun 20 16:50:07 2022 (-0400)
 # @author: Jacob Faibussowitsch
 """
+import copy
 import inspect
 import functools
+import contextlib
 
 from ._patch   import Patch
 from ._src_pos import SourceLocation
@@ -161,7 +163,6 @@ class _DiagnosticsManager:
     self.flagprefix = flagprefix if flagprefix.startswith('-') else '-' + flagprefix
     return
 
-
   def disable(self, flag):
     self.disabled.add(self.check_flag(flag))
     return
@@ -182,6 +183,29 @@ class _DiagnosticsManager:
   def make_command_line_flag(self, flag):
     return f'{self.flagprefix}{self.check_flag(flag)}'
 
+  @contextlib.contextmanager
+  def push_from(self, dict_like):
+    if dict_like:
+      dispatcher   = {
+        'disable' : self.disabled.update
+      }
+      reg          = self.registered().keys()
+      old_disabled = copy.deepcopy(self.disabled)
+      for key, values in dict_like.items():
+        mod_flags = [f for f in reg for matcher in values if matcher.match(f)]
+        try:
+          dispatcher[key](mod_flags)
+        except KeyError as ke:
+          raise RuntimeError(
+            f'Unknown pragma key \'{key}\', expected one of: {list(dispatcher.keys())}'
+          ) from ke
+    try:
+      yield self
+    finally:
+      if dict_like:
+        self.disabled = old_disabled
+
+
 DiagnosticManager = _DiagnosticsManager()
 
 class Diagnostic:
@@ -191,8 +215,6 @@ class Diagnostic:
   def __init__(self, flag, message, location, patch=None, notes=None):
     if notes is None:
       notes = []
-    else:
-      assert isinstance(notes, list)
 
     if patch is not None:
       assert isinstance(patch, Patch)
@@ -234,6 +256,7 @@ class Diagnostic:
     if self.notes:
       notes_tmp = '\n\n'.join(f'{loc} Note: {note}' for loc, note in self.notes)
       message   = f'{message}\n\n{notes_tmp}'
+    assert not message.endswith('\n')
     return message
 
   def disabled(self):

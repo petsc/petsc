@@ -5,6 +5,8 @@
 """
 import functools
 
+from .. import util
+
 def verbose_print(*args, **kwargs):
     """
     filter predicate for show_ast: show all
@@ -139,16 +141,21 @@ def get_formatted_source_from_source_range(source_range, num_before_context=0, n
     symbol_end    = end.column - 1
     begin_offset  = max(symbol_begin, 0)
     len_underline = max(abs(max(symbol_end, 1) - begin_offset), 1)
-    underline     = begin_offset * ' ' + len_underline * '^'
+    underline     = begin_offset * ' ' + util.color.bright_yellow() + len_underline * '^' + util.color.reset()
 
   line_list = []
   raw_lines = read_file_lines_cached(begin.file.name, 'r')[lo_bound - 1:hi_bound]
   for line_file, line in enumerate(raw_lines, start=lo_bound):
     indicator = '>' if (line_begin <= line_file <= line_end) else ' '
     prefix    = f'{indicator} {line_file: <{max_width}}: '
-    line_list.append((prefix, line))
     if highlight and (line_file == line_begin):
-      line_list.append((' ' * len(prefix), underline))
+      line = f'{line[:symbol_begin]}{util.color.bright_yellow()}{line[symbol_begin:symbol_end]}{util.color.reset()}{line[symbol_end:]}'
+      line_list.extend([
+        (prefix, line),
+        (' ' * len(prefix), underline)
+      ])
+    else:
+      line_list.append((prefix, line))
   # Find number of spaces to remove from beginning of line based on lowest.
   # This keeps indentation between lines, but doesn't start the string halfway
   # across the screen

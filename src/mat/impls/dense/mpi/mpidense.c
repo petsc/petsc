@@ -10,16 +10,16 @@
 #include <petscblaslapack.h>
 
 /*@
-      MatDenseGetLocalMatrix - For a `MATMPIDENSE` or `MATSEQDENSE` matrix returns the sequential
-              matrix that represents the operator. For sequential matrices it returns itself.
+  MatDenseGetLocalMatrix - For a `MATMPIDENSE` or `MATSEQDENSE` matrix returns the sequential
+  matrix that represents the operator. For sequential matrices it returns itself.
 
-    Input Parameter:
-.      A - the sequential or MPI `MATDENSE` matrix
+  Input Parameter:
+. A - the sequential or MPI `MATDENSE` matrix
 
-    Output Parameter:
-.      B - the inner matrix
+  Output Parameter:
+. B - the inner matrix
 
-    Level: intermediate
+  Level: intermediate
 
 .seealso: [](ch_matrices), `Mat`, `MATDENSE`, `MATMPIDENSE`, `MATSEQDENSE`
 @*/
@@ -1688,24 +1688,24 @@ PetscErrorCode MatCreate_MPIDense(Mat mat)
 M*/
 
 /*@C
-   MatMPIDenseSetPreallocation - Sets the array used to store the matrix entries
+  MatMPIDenseSetPreallocation - Sets the array used to store the matrix entries
 
-   Collective
+  Collective
 
-   Input Parameters:
-.  B - the matrix
--  data - optional location of matrix data.  Set to `NULL` for PETSc
+  Input Parameters:
++ B    - the matrix
+- data - optional location of matrix data.  Set to `NULL` for PETSc
    to control all matrix memory allocation.
 
-   Level: intermediate
+  Level: intermediate
 
-   Notes:
-   The dense format is fully compatible with standard Fortran
-   storage by columns.
+  Notes:
+  The dense format is fully compatible with standard Fortran
+  storage by columns.
 
-   The data input variable is intended primarily for Fortran programmers
-   who wish to allocate their own matrix memory space.  Most users should
-   set `data` to `NULL`.
+  The data input variable is intended primarily for Fortran programmers
+  who wish to allocate their own matrix memory space.  Most users should
+  set `data` to `NULL`.
 
 .seealso: [](ch_matrices), `Mat`, `MATMPIDENSE`, `MatCreate()`, `MatCreateSeqDense()`, `MatSetValues()`
 @*/
@@ -1718,21 +1718,21 @@ PetscErrorCode MatMPIDenseSetPreallocation(Mat B, PetscScalar *data)
 }
 
 /*@
-   MatDensePlaceArray - Allows one to replace the array in a `MATDENSE` matrix with an
-   array provided by the user. This is useful to avoid copying an array
-   into a matrix
+  MatDensePlaceArray - Allows one to replace the array in a `MATDENSE` matrix with an
+  array provided by the user. This is useful to avoid copying an array
+  into a matrix
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  mat - the matrix
--  array - the array in column major order
+  Input Parameters:
++ mat   - the matrix
+- array - the array in column major order
 
-   Level: developer
+  Level: developer
 
-   Note:
-   You can return to the original array with a call to `MatDenseResetArray()`. The user is responsible for freeing this array; it will not be
-   freed when the matrix is destroyed.
+  Note:
+  You can return to the original array with a call to `MatDenseResetArray()`. The user is responsible for freeing this array; it will not be
+  freed when the matrix is destroyed.
 
 .seealso: [](ch_matrices), `Mat`, `MATDENSE`, `MatDenseGetArray()`, `MatDenseResetArray()`, `VecPlaceArray()`, `VecGetArray()`, `VecRestoreArray()`, `VecReplaceArray()`, `VecResetArray()`,
           `MatDenseReplaceArray()`
@@ -1750,17 +1750,17 @@ PetscErrorCode MatDensePlaceArray(Mat mat, const PetscScalar *array)
 }
 
 /*@
-   MatDenseResetArray - Resets the matrix array to that it previously had before the call to `MatDensePlaceArray()`
+  MatDenseResetArray - Resets the matrix array to that it previously had before the call to `MatDensePlaceArray()`
 
-   Not Collective
+  Not Collective
 
-   Input Parameter:
-.  mat - the matrix
+  Input Parameter:
+. mat - the matrix
 
-   Level: developer
+  Level: developer
 
-   Note:
-   You can only call this after a call to `MatDensePlaceArray()`
+  Note:
+  You can only call this after a call to `MatDensePlaceArray()`
 
 .seealso: [](ch_matrices), `Mat`, `MATDENSE`, `MatDenseGetArray()`, `MatDensePlaceArray()`, `VecPlaceArray()`, `VecGetArray()`, `VecRestoreArray()`, `VecReplaceArray()`, `VecResetArray()`
 @*/
@@ -1774,21 +1774,21 @@ PetscErrorCode MatDenseResetArray(Mat mat)
 }
 
 /*@
-   MatDenseReplaceArray - Allows one to replace the array in a dense matrix with an
-   array provided by the user. This is useful to avoid copying an array
-   into a matrix
+  MatDenseReplaceArray - Allows one to replace the array in a dense matrix with an
+  array provided by the user. This is useful to avoid copying an array
+  into a matrix
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  mat - the matrix
--  array - the array in column major order
+  Input Parameters:
++ mat   - the matrix
+- array - the array in column major order
 
-   Level: developer
+  Level: developer
 
-   Note:
-   The memory passed in MUST be obtained with `PetscMalloc()` and CANNOT be
-   freed by the user. It will be freed when the matrix is destroyed.
+  Note:
+  The memory passed in MUST be obtained with `PetscMalloc()` and CANNOT be
+  freed by the user. It will be freed when the matrix is destroyed.
 
 .seealso: [](ch_matrices), `Mat`, `MatDensePlaceArray()`, `MatDenseGetArray()`, `VecReplaceArray()`
 @*/
@@ -1805,37 +1805,37 @@ PetscErrorCode MatDenseReplaceArray(Mat mat, const PetscScalar *array)
 }
 
 /*@C
-   MatCreateDense - Creates a matrix in `MATDENSE` format.
+  MatCreateDense - Creates a matrix in `MATDENSE` format.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  comm - MPI communicator
-.  m - number of local rows (or `PETSC_DECIDE` to have calculated if `M` is given)
-.  n - number of local columns (or `PETSC_DECIDE` to have calculated if `N` is given)
-.  M - number of global rows (or `PETSC_DECIDE` to have calculated if `m` is given)
-.  N - number of global columns (or `PETSC_DECIDE` to have calculated if `n` is given)
--  data - optional location of matrix data.  Set data to `NULL` (`PETSC_NULL_SCALAR` for Fortran users) for PETSc
+  Input Parameters:
++ comm - MPI communicator
+. m    - number of local rows (or `PETSC_DECIDE` to have calculated if `M` is given)
+. n    - number of local columns (or `PETSC_DECIDE` to have calculated if `N` is given)
+. M    - number of global rows (or `PETSC_DECIDE` to have calculated if `m` is given)
+. N    - number of global columns (or `PETSC_DECIDE` to have calculated if `n` is given)
+- data - optional location of matrix data.  Set data to `NULL` (`PETSC_NULL_SCALAR` for Fortran users) for PETSc
    to control all matrix memory allocation.
 
-   Output Parameter:
-.  A - the matrix
+  Output Parameter:
+. A - the matrix
 
-   Level: intermediate
+  Level: intermediate
 
-   Notes:
-   The dense format is fully compatible with standard Fortran
-   storage by columns.
+  Notes:
+  The dense format is fully compatible with standard Fortran
+  storage by columns.
 
-   Although local portions of the matrix are stored in column-major
-   order, the matrix is partitioned across MPI ranks by row.
+  Although local portions of the matrix are stored in column-major
+  order, the matrix is partitioned across MPI ranks by row.
 
-   The data input variable is intended primarily for Fortran programmers
-   who wish to allocate their own matrix memory space.  Most users should
-   set `data` to `NULL` (`PETSC_NULL_SCALAR` for Fortran users).
+  The data input variable is intended primarily for Fortran programmers
+  who wish to allocate their own matrix memory space.  Most users should
+  set `data` to `NULL` (`PETSC_NULL_SCALAR` for Fortran users).
 
-   The user MUST specify either the local or global matrix dimensions
-   (possibly both).
+  The user MUST specify either the local or global matrix dimensions
+  (possibly both).
 
 .seealso: [](ch_matrices), `Mat`, `MATDENSE`, `MatCreate()`, `MatCreateSeqDense()`, `MatSetValues()`
 @*/

@@ -189,7 +189,7 @@ PetscErrorCode MatDenseCUDAGetArrayWrite(Mat A, PetscScalar **a)
   Not Collective
 
   Input Parameters:
-+ A     - the matrix
++ A - the matrix
 - a - the GPU array in column major order
 
   Level: developer
@@ -241,7 +241,7 @@ PetscErrorCode MatDenseCUDAGetArrayRead(Mat A, const PetscScalar **a)
   Not Collective
 
   Input Parameters:
-+ A     - the matrix
++ A - the matrix
 - a - the GPU array in column major order
 
   Level: developer

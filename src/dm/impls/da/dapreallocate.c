@@ -6,7 +6,7 @@
   DMDASetPreallocationCenterDimension - Determine the topology used to determine adjacency
 
   Input Parameters:
-+ dm - The `DMDA` object
++ dm                - The `DMDA` object
 - preallocCenterDim - The dimension of points which connect adjacent entries
 
   Level: developer

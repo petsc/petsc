@@ -146,7 +146,7 @@ class Synopsis(SectionBase):
         return
 
     inspector = Inspector(ds.cursor)
-    super().setup(ds,*args, inspect_line=inspector, **kwargs)
+    super().setup(ds, *args, inspect_line=inspector, **kwargs)
 
     if inspector.is_enum:
       def check_enum_starts_with_dollar(self, ds, items):
@@ -177,10 +177,13 @@ class Synopsis(SectionBase):
     Ensure that a synopsis is present and properly formatted with Cursor - description
     """
     if symbol is None:
-      diag = docstring.make_diagnostic(
-        self.diags.missing_description, 'Docstring missing synopsis', self.extent, highlight=False
-      ).add_note(f"Expected '{cursor.name} - a very useful description'")
-      docstring.add_error_from_diagnostic(diag)
+      docstring.add_error_from_diagnostic(
+        docstring.make_diagnostic(
+          self.diags.missing_description, 'Docstring missing synopsis', self.extent, highlight=False
+        ).add_note(
+          f"Expected '{cursor.name} - a very useful description'"
+        )
+      )
     return
 
   def _check_macro_synopsis(self, linter, cursor, docstring, explicit_synopsis):
@@ -189,7 +192,7 @@ class Synopsis(SectionBase):
     """
     if not (len(explicit_synopsis) or docstring.Modifier.FLOATING in docstring.type_mod):
       # we are missing the synopsis section entirely
-      with open(cursor.location.file.name) as fh:
+      with open(cursor.get_file()) as fh:
         lines = [l.strip() for l in fh if l.lstrip().startswith('#') and 'include' in l and '/*' in l]
       lines = [l.group(2).strip() for l in filter(None, map(self.__sowing_include_finder.match, lines))]
 
@@ -243,6 +246,9 @@ class Synopsis(SectionBase):
       print(80*'=')
       return False # don't know how to handle this
 
+    # TODO cursor.get_declaration() now appears it might work!
+    # decl = cursor.get_declaration()
+
     # OK found it, now find the actual file. Clang unfortunately cannot help us here since
     # it does not pick up header that are in the precompiled header (which chances are,
     # this one is). So we search for it ourselves
@@ -268,7 +274,7 @@ class Synopsis(SectionBase):
       # the name was not in the header, so the docstring is wrong
       mess = f"Macro docstring explicit synopsis appears to have incorrect include line. Could not locate '{fn_name}()' in '{header_name}'. Are you sure that's where it lives?"
       diag = self.diags.macro_explicit_synopsis_valid_header
-      docstring.add_error_from_source_range(diag,mess,header_loc)
+      docstring.add_error_from_source_range(diag, mess, header_loc)
       return False
 
     cursor_spelling = cursor.spelling
@@ -284,7 +290,8 @@ class Synopsis(SectionBase):
       decls = decls2
     # the only remaining item should be the macro (or maybe function), note this
     # probably needs a lot more postprocessing
-    assert len(decls) == 1
+    # TODO
+    # assert len(decls) == 1
     return False
 
   def _check_symbol_matches_synopsis_name(self, docstring, cursor, loc, symbol):
@@ -366,9 +373,25 @@ class FunctionParameterList(ParameterList):
 
   def __init__(self, *args, **kwargs):
     kwargs.setdefault('titles', ('Input Parameter', 'Output Parameter', 'Calling sequence'))
-    kwargs.setdefault('keywords', ('Input', 'Output'))
+    kwargs.setdefault('keywords', ('Input', 'Output', 'Calling sequence of'))
     super().__init__(*args, **kwargs)
     return
+
+  @staticmethod
+  def _get_deref_pointer_cursor(cursor):
+    canon = cursor.type.get_canonical()
+    it    = 0
+    while canon.kind == clx.TypeKind.POINTER:
+      if it >= 100:
+        import petsclinter as pl
+        # there is no chance that someone has a variable over 100 pointers deep, so
+        # clearly something is wrong
+        cursorview = '\n'.join(pl.classes._util.view_ast_from_cursor(cursor))
+        emess      = f'Ran for {it} iterations (>= 100) trying to get pointer type for\n{cursor.error_view_from_cursor(arg)}\n{cursorview}'
+        raise RuntimError(emess)
+      canon = canon.get_pointee()
+      it   += 1
+    return canon
 
   def _check_fortran_interface(self, docstring, fnargs):
     """
@@ -379,20 +402,7 @@ class FunctionParameterList(ParameterList):
 
     requires_c = []
     for arg in fnargs:
-      canon = arg.type.get_canonical()
-      kind  = canon.kind
-      it    = 0
-      while kind == clx.TypeKind.POINTER:
-        if it >= 100:
-          import petsclinter as pl
-          # there is no chance that someone has a variable over 100 pointers deep, so
-          # clearly something is wrong
-          cursorview = '\n'.join(pl.classes._util.view_ast_from_cursor(arg))
-          emess      = f'Ran for {it} iterations (>= 100) trying to get pointer type for\n{arg.error_view_from_cursor(arg)}\n{cursorview}'
-          raise RuntimError(emess)
-        canon = canon.get_pointee()
-        kind  = canon.kind
-        it   += 1
+      kind = self._get_deref_pointer_cursor(arg).kind
 
       if kind in clx_char_type_kinds:
         requires_c.append((arg, 'char pointer'))
@@ -417,78 +427,59 @@ class FunctionParameterList(ParameterList):
         docstring.add_error_from_diagnostic(diag)
     return
 
-  def _check_valid_param_list_from_cursor(self, linter, docstring, arg_cursors):
+  def _check_no_args_documented(self, linter, docstring, arg_cursors):
     """
-    Ensure that the parameter list matches the documented values, and that their order is correct
+    Return True (and log the appropriate error) if no arguments were documented, False otherwise
     """
     if arg_cursors and not self:
       # none of the function arguments are documented
-      diag = docstring.make_diagnostic(
-        self.diags.parameter_documentation,
-        f'Symbol parameters are all undocumented {Diagnostic.FLAG_SUBST}',
-        docstring.extent, highlight=False
-      ).add_note(
-        docstring.make_error_message(
-          'Parameters defined here',
-          SourceRange.from_locations(arg_cursors[0].extent.start, arg_cursors[-1].extent.end)
-        ),
-        location=arg_cursors[0].extent.start
+      docstring.add_error_from_diagnostic(
+        docstring.make_diagnostic(
+          self.diags.parameter_documentation,
+          f'Symbol parameters are all undocumented {Diagnostic.FLAG_SUBST}',
+          docstring.extent, highlight=False
+        ).add_note(
+          docstring.make_error_message(
+            'Parameters defined here',
+            SourceRange.from_locations(arg_cursors[0].extent.start, arg_cursors[-1].extent.end)
+          ),
+          location=arg_cursors[0].extent.start
+        )
       )
-      docstring.add_error_from_diagnostic(diag)
-      return
+      return True
 
-    if not arg_cursors:
+    if not arg_cursors and self and len(self.items.values()):
       # function has no arguments, so check there are no parameter docstrings, if so, we can
       # delete them
-      if self and len(self.items.values()):
-        mess = f"Found parameter docstring(s) but '{docstring.cursor.displayname}' has no parameters"
-        docstring.add_error_from_source_range(
-          self.diags.parameter_documentation, mess, self.extent,
+      doc_cursor = docstring.cursor
+      disp_name  = doc_cursor.displayname
+      docstring.add_error_from_diagnostic(
+        docstring.make_diagnostic(
+          self.diags.parameter_documentation,
+          f'Found parameter docstring(s) but \'{disp_name}\' has no parameters',
+          self.extent,
           highlight=False, patch=Patch(self.extent, '')
+        ).add_note(
+          # can't use the docstring.make_error_message() (with doc_cursor.extent), since
+          # that prints the whole function. Cursor.formatted() has special code to only
+          # print the function line for us, so use that instead
+          f'\'{disp_name}\' defined here:\n{doc_cursor.formatted(num_context=2)}',
+          location=doc_cursor.extent.start
         )
-      return
+      )
+      return True
 
-    def get_recursive_cursor_list(cursor_list):
-      new_cursor_list = []
-      PARM_DECL_KIND  = clx.CursorKind.PARM_DECL
-      for cursor in map(Cursor.cast, cursor_list):
-        new_cursor_list.append(cursor)
-        # Special handling of functions taking function pointer arguments. In this case we
-        # should recursively descend and pick up the names of all the function parameters
-        #
-        # note the order, by appending cursor first we effectively do a depth-first search
-        if cursor.type.get_pointee().kind == clx.TypeKind.FUNCTIONPROTO:
-          new_cursor_list.extend(
-            get_recursive_cursor_list(c for c in cursor.get_children() if c.kind == PARM_DECL_KIND)
-          )
-      return new_cursor_list
+    return False
 
-    arg_cursors = get_recursive_cursor_list(arg_cursors)
-    arg_names   = [a.name for a in arg_cursors if a.name]
-    arg_seen    = [False] * len(arg_names)
-    not_found   = []
-
-    def mark_name_as_seen(name):
-      idx = 0
-      while 1:
-        # in case of multiple arguments of the same name, we need to loop until we
-        # find an index that has not yet been found
-        try:
-          idx = arg_names.index(name, idx)
-        except ValueError:
-          return -1
-        if not arg_seen[idx]:
-          # argument exists and has not been found yet
-          break
-        # argument exists but has already been claimed
-        idx += 1
-      arg_seen[idx] = True
-      return idx
-
+  def _param_initial_traversal(self, linter, docstring, visitor):
+    """
+    Perform the initial traversal of a parameter list, and return any arguments that were seemingly
+    never found
+    """
+    not_found           = []
     solitary_param_diag = self.diags.solitary_parameter
-    for _, group in self.items.items():
-      indices = []
-      remove  = set()
+    for group in self.items.values():
+      remove = set()
       for i, (loc, descr_item, _) in enumerate(group):
         arg, sep = descr_item.arg, descr_item.sep
         if sep == ',' or ',' in arg:
@@ -510,58 +501,168 @@ class FunctionParameterList(ParameterList):
           sub_args = (arg,)
 
         for sub in sub_args:
-          idx = mark_name_as_seen(sub)
+          idx = visitor.mark_as_seen(sub)
+          if idx == -1 and sub == '...' and docstring.cursor.is_variadic_function():
+            idx = 0 # variadic paramaters don't get a cursor, so can't be picked up
           if idx == -1:
             # argument was not found at all
             not_found.append((sub, docstring.make_source_range(sub, descr_item.text, loc.start.line)))
             remove.add(i)
           else:
-            indices.append(idx)
             DescribableItem.cast(descr_item, sep='-').check(docstring, self, loc, expected_sep='-')
-
       self.check_aligned_descriptions(docstring, [g for i, g in enumerate(group) if i not in remove])
+    return not_found
 
-    args_left = [name for seen, name in zip(arg_seen, arg_names) if not seen]
-    if not_found:
-      diag         = self.diags.parameter_documentation
-      base_message = "Extra docstring parameter '{}' not found in symbol parameter list:\n{}"
-      for i, (arg, loc) in enumerate(not_found):
-        patch   = None
-        message = base_message.format(arg, loc.formatted(num_context=2))
-        try:
-          if (len(args_left) == 1) and (i == len(not_found) - 1):
-            # if we only have 1 arg left and 1 wasn't found, chances are they are meant to
-            # be the same
-            arg_match = args_left[0]
-            if docstring.Modifier.MACRO not in docstring.type_mod:
-              # furthermore, if this is not a macro then we can be certain that this is
-              # indeed an error we can fix
-              patch = Patch(loc, arg_match)
-          else:
-            arg_match = difflib.get_close_matches(arg, args_left, n=1)[0]
-        except IndexError:
-          pass
+  def _check_docstring_param_is_in_symbol_list(self, docstring, arg_cursors, not_found, args_left, visitor):
+    """
+    Check that all documented parameters are actually in the symbol list. This catches things that
+    were documented, but don't actually exist
+    """
+    param_doc_diag   = self.diags.parameter_documentation
+    func_ptr_cursors = None
+    for i, (arg, loc) in enumerate(not_found):
+      patch = None
+      try:
+        if (len(args_left) == 1) and (i == len(not_found) - 1):
+          # if we only have 1 arg left and 1 wasn't found, chances are they are meant to
+          # be the same
+          arg_match = args_left[0]
+          if docstring.Modifier.MACRO not in docstring.type_mod:
+            # furthermore, if this is not a macro then we can be certain that this is
+            # indeed an error we can fix
+            patch = Patch(loc, arg_match)
         else:
-          match_cursor = [c for c in arg_cursors if c.name == arg_match][0]
-          message      = f'{message}\n\nmaybe you meant {match_cursor.get_formatted_blurb()}'
-          args_left.remove(arg_match)
-          assert mark_name_as_seen(arg_match) != -1, f'{arg_match=} was not found in {arg_names=}'
-        docstring.add_error_from_diagnostic(Diagnostic(diag, message, loc.start, patch=patch))
-
-    undoc_param_diag = self.diags.parameter_documentation
-    for arg in args_left:
-      idx = mark_name_as_seen(arg)
-      assert idx != -1, f'{arg=} was not found in {arg_names=}'
+          arg_match = difflib.get_close_matches(arg, args_left, n=1)[0]
+      except IndexError:
+        # the difflib call failed
+        note_loc = docstring.cursor.extent.start
+        note     = docstring.make_error_message('Parameter list defined here', crange=docstring.cursor)
+      else:
+        match_cursor = [c for c in arg_cursors if c.name == arg_match][0]
+        note_loc     = match_cursor.extent.start
+        note         = docstring.make_error_message(
+          f'Maybe you meant {match_cursor.get_formatted_blurb()}'
+        )
+        args_left.remove(arg_match)
+        idx = visitor.mark_as_seen(arg_match)
+        assert idx != -1, f'{arg_match=} was not found in {arg_names=}'
       diag = docstring.make_diagnostic(
-        undoc_param_diag, f'Undocumented parameter \'{arg}\' not found in parameter section',
-        self.extent, highlight=False
+        param_doc_diag, f"Extra docstring parameter \'{arg}\' not found in symbol parameter list",
+        loc, patch=patch
       ).add_note(
-        docstring.make_error_message(
-          f'Parameter \'{arg}\' defined here', arg_cursors[idx], num_context=1
-        ),
-        location=arg_cursors[idx].extent.start
+        note, location=note_loc
       )
+      if func_ptr_cursors is None:
+        # have not checked yet
+        func_ptr_cursors = any(
+          c for c in arg_cursors if self._get_deref_pointer_cursor(c).kind == clx.TypeKind.FUNCTIONPROTO
+        )
+      if func_ptr_cursors:
+        diag.add_note(
+          '\n'.join((
+            'If you are trying to document a function-pointer parameter, then you must name the function pointer arguments in source and introduce a new section \'Calling Sequence of `<name of function pointer arg>\'. For example:',
+            '',
+            '/*@C',
+            '  ...',
+            '  Input Parameter:',
+            '. func_ptr - A function pointer',
+            '',
+            '  Calling Sequence of `func_ptr`:',
+            '+ foo - a very useful description >-----------------------x Note named parameters!',
+            '- bar - a very useful description >-----------------------|-----------x',
+            '  ...                                                     |           |',
+            '@*/                                                      vvv         vvv',
+            'PetscErrorCode MyFunction(PetscErrorCode (*func_ptr)(int foo, double bar))'
+          ))
+        )
       docstring.add_error_from_diagnostic(diag)
+    return args_left
+
+  def _check_valid_param_list_from_cursor(self, linter, docstring, arg_cursors):
+    """
+    Ensure that the parameter list matches the documented values, and that their order is correct
+    """
+    if self._check_no_args_documented(linter, docstring, arg_cursors) or not self:
+      return
+
+    def get_recursive_cursor_list(cursor_list):
+      new_cursor_list = []
+      PARM_DECL_KIND  = clx.CursorKind.PARM_DECL
+      for cursor in map(Cursor.cast, cursor_list):
+        new_cursor_list.append(cursor)
+        # Special handling of functions taking function pointer arguments. In this case we
+        # should recursively descend and pick up the names of all the function parameters
+        #
+        # note the order, by appending cursor first we effectively do a depth-first search
+        if cursor.type.get_pointee().kind == clx.TypeKind.FUNCTIONPROTO:
+          new_cursor_list.extend(
+            get_recursive_cursor_list(c for c in cursor.get_children() if c.kind == PARM_DECL_KIND)
+          )
+      return new_cursor_list
+
+    class Visitor:
+      def __init__(self, num_groups, arg_cursors):
+        self.num_groups = num_groups
+        self.arg_names  = [a.name for a in arg_cursors if a.name]
+        self.arg_seen   = [0] * len(self.arg_names)
+        return
+
+      def mark_as_seen(self, name):
+        idx  = 0
+        prev = -1
+        while 1:
+          # in case of multiple arguments of the same name, we need to loop until we
+          # find an index that has not yet been found
+          try:
+            idx = self.arg_names.index(name, idx)
+          except ValueError:
+            idx = prev
+            break
+          count = self.arg_seen[idx]
+          if 0 <= count <= self.num_groups:
+            # arg_seen[idx] = 0 -> argument exists and has not been found yet
+            # arg_seen[idx] <= num_groups -> argument is possibly in-out and is defined in
+            # multiple groups
+            if count == 0:
+              # first time, use this arg
+              break
+            # save this to come back to
+            prev = idx
+          # argument exists but has already been claimed
+          idx += 1
+        if idx >= 0:
+          self.arg_seen[idx] += 1
+        return idx
+
+    arg_cursors = get_recursive_cursor_list(arg_cursors)
+    visitor     = Visitor(max(self.items.keys(), default=0), arg_cursors)
+    not_found   = self._param_initial_traversal(linter, docstring, visitor)
+    args_left   = self._check_docstring_param_is_in_symbol_list(
+      docstring, arg_cursors, not_found,
+      [name for seen, name in zip(visitor.arg_seen, visitor.arg_names) if not seen],
+      visitor
+    )
+
+    for arg in args_left:
+      idx = visitor.mark_as_seen(arg)
+      assert idx >= 0
+      if docstring.Modifier.MACRO in docstring.type_mod:
+        # TODO
+        # Blindly assume that macro docstrings are OK for now. Ultimately this function
+        # should check against a parsed synopsis instead of the actual function arguments.
+        continue
+      docstring.add_error_from_diagnostic(
+        docstring.make_diagnostic(
+          self.diags.parameter_documentation,
+          f'Undocumented parameter \'{arg}\' not found in parameter section',
+          self.extent, highlight=False
+        ).add_note(
+          docstring.make_error_message(
+            f'Parameter \'{arg}\' defined here', arg_cursors[idx], num_context=1
+          ),
+          location=arg_cursors[idx].extent.start
+        )
+      )
     return
 
   def check(self, linter, cursor, docstring):
@@ -763,7 +864,7 @@ class Level(InlineList):
         # create a range starting at newline of previous line going until the first
         # non-space character on the next line
         delrange = SourceRange.from_positions(
-          cursor.translation_unit,prevloc.end.line,-1,loc.start.line,len(line)-len(line.lstrip())
+          cursor.translation_unit, prevloc.end.line, -1, loc.start.line, len(line) - len(line.lstrip())
         )
         # given '  Level:\n  blabla'
         #                ^^^
@@ -854,16 +955,15 @@ class SeeAlso(InlineList):
     """
     Ensure that every entry in the seealso list is enclosed in backticks
     """
-    def enclosed_by(string, char):
-      return string.startswith(char) and string.endswith(char)
+    def enclosed_by(string, begin_char, end_char):
+      return string.startswith(begin_char) and string.endswith(end_char)
 
-    btick = self.special_chars
-    assert btick == '`'
+    chars = self.special_chars
     for loc, text in item_remain:
-      if not enclosed_by(text, btick):
+      if not enclosed_by(text, chars, chars) and not re.search(r'\[.*\]\(\w+\)', text):
         docstring.add_error_from_source_range(
-          self.diags.backticks, f"seealso symbol '{text}' not enclosed with '{btick}'",
-          loc, patch=Patch(loc, f'{btick}{text.replace(btick, "")}{btick}')
+          self.diags.backticks, f"seealso symbol '{text}' not enclosed with '{chars}'",
+          loc, patch=Patch(loc, f'{chars}{text.replace(chars, "")}{chars}')
         )
     return
 
@@ -874,12 +974,13 @@ class SeeAlso(InlineList):
     seen     = {}
     dup_diag = self.diags.duplicate
     for loc, text in item_remain:
-      if text not in seen:
-        seen[text] = (loc, text)
+      text_no_special = text.replace(self.special_chars, '')
+      if text_no_special not in seen:
+        seen[text_no_special] = loc
         continue
 
-      assert text
-      first_seen = seen[text][0]
+      assert text_no_special
+      first_seen = seen[text_no_special]
       diag       = docstring.make_diagnostic(
         dup_diag, f"Seealso entry '{text}' is duplicate", loc,
         patch=self.__make_deletion_patch(loc, text, loc == last_loc)

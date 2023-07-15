@@ -371,19 +371,19 @@ static PetscErrorCode KSPGuessView_Fischer(KSPGuess guess, PetscViewer viewer)
 }
 
 /*@
-   KSPGuessFischerSetModel - Use the Paul Fischer algorithm or its variants to compute the initial guess
+  KSPGuessFischerSetModel - Use the Paul Fischer algorithm or its variants to compute the initial guess
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  guess - the initial guess context
-.  model - use model 1, model 2, model 3, or any other number to turn it off
--  size  - size of subspace used to generate initial guess
+  Input Parameters:
++ guess - the initial guess context
+. model - use model 1, model 2, model 3, or any other number to turn it off
+- size  - size of subspace used to generate initial guess
 
-    Options Database Key:
-.   -ksp_guess_fischer_model <model,size> - uses the Fischer initial guess generator for repeated linear solves
+  Options Database Key:
+. -ksp_guess_fischer_model <model,size> - uses the Fischer initial guess generator for repeated linear solves
 
-   Level: advanced
+  Level: advanced
 
 .seealso: [](ch_ksp), `KSPGuess`, `KSPGuessCreate()`, `KSPSetUseFischerGuess()`, `KSPSetGuess()`, `KSPGetGuess()`, `KSP`
 @*/

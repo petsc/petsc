@@ -8,10 +8,12 @@ import sys
 # synchronized print function, should be used everywhere
 sync_print = print
 
-from . import __version__
+from .__version__ import __MIN_PYTHON_VERSION__, version_tuple, version_str
 
 if sys.version_info < __version__.__MIN_PYTHON_VERSION__:
   raise ImportError('Need python ' + str(__version__.__MIN_PYTHON_VERSION__) + '+')
+
+del __MIN_PYTHON_VERSION__
 
 try:
   import clang.cindex
@@ -40,9 +42,12 @@ def __import_submodules(package, parent, recursive=True):
   results = {}
   for _, name, is_pkg in pkgutil.walk_packages(package.__path__):
     full_name = package.__name__ + '.' + name
-    results[full_name] = importlib.import_module(full_name)
-    if recursive and is_pkg:
-      results.update(__import_submodules(full_name, parent, recursive=recursive))
+    try:
+      results[full_name] = importlib.import_module(full_name)
+      if recursive and is_pkg:
+        results.update(__import_submodules(full_name, parent, recursive=recursive))
+    except:
+      pass
   return results
 
 def __build__all__(name, **kwargs):
@@ -80,3 +85,4 @@ __all__ = __build__all__(__name__)
 del __lazy_import
 del __build__all__
 del __import_submodules
+del sys

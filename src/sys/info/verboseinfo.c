@@ -30,21 +30,21 @@ PetscBool                PetscLogPrintInfo                                      
 FILE                    *PetscInfoFile                                             = NULL;
 
 /*@
-    PetscInfoEnabled - Checks whether a given `PetscClassid` is allowed to print using `PetscInfo()`
+  PetscInfoEnabled - Checks whether a given `PetscClassid` is allowed to print using `PetscInfo()`
 
-    Not Collective
+  Not Collective
 
-    Input Parameter:
-.   classid - `PetscClassid` retrieved from a `PetscObject` e.g. `VEC_CLASSID`
+  Input Parameter:
+. classid - `PetscClassid` retrieved from a `PetscObject` e.g. `VEC_CLASSID`
 
-    Output Parameter:
-.   enabled - `PetscBool` indicating whether this classid is allowed to print
+  Output Parameter:
+. enabled - `PetscBool` indicating whether this classid is allowed to print
 
-    Level: advanced
+  Level: advanced
 
-    Note:
-    Use `PETSC_SMALLEST_CLASSID` to check if "sys" `PetscInfo()` calls are enabled. When PETSc is configured with debugging
-    support this function checks if classid >= `PETSC_SMALLEST_CLASSID`, otherwise it assumes valid classid.
+  Note:
+  Use `PETSC_SMALLEST_CLASSID` to check if "sys" `PetscInfo()` calls are enabled. When PETSc is configured with debugging
+  support this function checks if classid >= `PETSC_SMALLEST_CLASSID`, otherwise it assumes valid classid.
 
 .seealso: [](sec_PetscInfo), `PetscInfo()`, `PetscInfoAllow()`, `PetscInfoGetInfo()`, `PetscObjectGetClassid()`
 @*/
@@ -58,14 +58,14 @@ PetscErrorCode PetscInfoEnabled(PetscClassId classid, PetscBool *enabled)
 }
 
 /*@
-    PetscInfoAllow - Enables/disables `PetscInfo()` messages
+  PetscInfoAllow - Enables/disables `PetscInfo()` messages
 
-    Not Collective
+  Not Collective
 
-    Input Parameter:
-.   flag - `PETSC_TRUE` or `PETSC_FALSE`
+  Input Parameter:
+. flag - `PETSC_TRUE` or `PETSC_FALSE`
 
-    Level: advanced
+  Level: advanced
 
 .seealso: [](sec_PetscInfo), `PetscInfo()`, `PetscInfoEnabled()`, `PetscInfoGetInfo()`, `PetscInfoSetFromOptions()`
 @*/
@@ -77,18 +77,18 @@ PetscErrorCode PetscInfoAllow(PetscBool flag)
 }
 
 /*@C
-    PetscInfoSetFile - Sets the printing destination for all `PetscInfo()` calls
+  PetscInfoSetFile - Sets the printing destination for all `PetscInfo()` calls
 
-    Not Collective
+  Not Collective
 
-    Input Parameters:
-+   filename - Name of the file where `PetscInfo()` will print to
--   mode - Write mode passed to `PetscFOpen()`
+  Input Parameters:
++ filename - Name of the file where `PetscInfo()` will print to
+- mode     - Write mode passed to `PetscFOpen()`
 
-    Level: advanced
+  Level: advanced
 
-    Note:
-    Use `filename = NULL` to set `PetscInfo()` to write to `PETSC_STDOUT`.
+  Note:
+  Use `filename = NULL` to set `PetscInfo()` to write to `PETSC_STDOUT`.
 
 .seealso: [](sec_PetscInfo), `PetscInfo()`, `PetscInfoGetFile()`, `PetscInfoSetFromOptions()`, `PetscFOpen()`
 @*/
@@ -125,19 +125,19 @@ PetscErrorCode PetscInfoSetFile(const char filename[], const char mode[])
 }
 
 /*@C
-    PetscInfoGetFile - Gets the `filename` and `FILE` pointer of the file where `PetscInfo()` prints to
+  PetscInfoGetFile - Gets the `filename` and `FILE` pointer of the file where `PetscInfo()` prints to
 
-    Not Collective; No Fortran Support
+  Not Collective; No Fortran Support
 
-    Output Parameters:
-+   filename - The name of the output file
--   InfoFile - The `FILE` pointer for the output file
+  Output Parameters:
++ filename - The name of the output file
+- InfoFile - The `FILE` pointer for the output file
 
-    Level: advanced
+  Level: advanced
 
-    Note:
-    This routine allocates and copies the `filename` so that the `filename` survives `PetscInfoDestroy()`. The user is
-    therefore responsible for freeing the allocated `filename` pointer afterwards.
+  Note:
+  This routine allocates and copies the `filename` so that the `filename` survives `PetscInfoDestroy()`. The user is
+  therefore responsible for freeing the allocated `filename` pointer afterwards.
 
 .seealso: [](sec_PetscInfo), `PetscInfo()`, `PetscInfoSetFile()`, `PetscInfoSetFromOptions()`, `PetscInfoDestroy()`
 @*/
@@ -152,27 +152,27 @@ PetscErrorCode PetscInfoGetFile(char **filename, FILE **InfoFile)
 }
 
 /*@C
-    PetscInfoSetClasses - Sets the classes which `PetscInfo()` is filtered for/against
+  PetscInfoSetClasses - Sets the classes which `PetscInfo()` is filtered for/against
 
-    Not Collective; No Fortran Support
+  Not Collective; No Fortran Support
 
-    Input Parameters:
-+   exclude - Whether or not to invert the filter, i.e. if exclude is true, `PetscInfo()` will print from every class that
+  Input Parameters:
++ exclude    - Whether or not to invert the filter, i.e. if exclude is true, `PetscInfo()` will print from every class that
     is NOT one of the classes specified
-.   n - Number of classes to filter for (size of `classnames`)
--   classnames - String array containing the names of classes to filter for, e.g. "vec"
+. n          - Number of classes to filter for (size of `classnames`)
+- classnames - String array containing the names of classes to filter for, e.g. "vec"
 
-    Level: developer
+  Level: developer
 
-    Notes:
-    This function CANNOT be called after `PetscInfoGetClass()` or `PetscInfoProcessClass()` has been called, unless the user calls `PetscInfoDestroy()` first.
+  Notes:
+  This function CANNOT be called after `PetscInfoGetClass()` or `PetscInfoProcessClass()` has been called, unless the user calls `PetscInfoDestroy()` first.
 
-    Names in the `classnames` list should correspond to the names returned by `PetscObjectGetClassName()`.
+  Names in the `classnames` list should correspond to the names returned by `PetscObjectGetClassName()`.
 
-    This function only sets the list of class names.
-    The actual filtering is deferred to `PetscInfoProcessClass()`, except of sys which is processed right away.
-    The reason for this is that we need to set the list of included/excluded classes before their classids are known.
-    Typically the classid is assigned and `PetscInfoProcessClass()` called in <Class>InitializePackage() (e.g. `VecInitializePackage()`).
+  This function only sets the list of class names.
+  The actual filtering is deferred to `PetscInfoProcessClass()`, except of sys which is processed right away.
+  The reason for this is that we need to set the list of included/excluded classes before their classids are known.
+  Typically the classid is assigned and `PetscInfoProcessClass()` called in <Class>InitializePackage() (e.g. `VecInitializePackage()`).
 
 .seealso: [](sec_PetscInfo), `PetscInfo()`, `PetscInfoGetClass()`, `PetscInfoProcessClass()`, `PetscInfoSetFromOptions()`, `PetscStrToArray()`, `PetscObjectGetName()`
 @*/
@@ -195,20 +195,20 @@ PetscErrorCode PetscInfoSetClasses(PetscBool exclude, PetscInt n, const char *co
 }
 
 /*@C
-    PetscInfoGetClass - Indicates whether the provided `classname` is marked as a filter in `PetscInfo()` as set by `PetscInfoSetClasses()`
+  PetscInfoGetClass - Indicates whether the provided `classname` is marked as a filter in `PetscInfo()` as set by `PetscInfoSetClasses()`
 
-    Not Collective
+  Not Collective
 
-    Input Parameter:
-.   classname - Name of the class to search for
+  Input Parameter:
+. classname - Name of the class to search for
 
-    Output Parameter:
-.   found - `PetscBool` indicating whether the classname was found
+  Output Parameter:
+. found - `PetscBool` indicating whether the classname was found
 
-    Level: developer
+  Level: developer
 
-    Note:
-    Use `PetscObjectGetName()` to retrieve an appropriate classname
+  Note:
+  Use `PetscObjectGetName()` to retrieve an appropriate classname
 
 .seealso: [](sec_PetscInfo), `PetscInfo()`, `PetscInfoSetClasses()`, `PetscInfoSetFromOptions()`, `PetscObjectGetName()`
 @*/
@@ -225,22 +225,22 @@ PetscErrorCode PetscInfoGetClass(const char *classname, PetscBool *found)
 }
 
 /*@
-    PetscInfoGetInfo - Returns the current state of several flags for `PetscInfo()`
+  PetscInfoGetInfo - Returns the current state of several flags for `PetscInfo()`
 
-    Not Collective
+  Not Collective
 
-    Output Parameters:
-+   infoEnabled - `PETSC_TRUE` if `PetscInfoAllow`(`PETSC_TRUE`) has been called
-.   classesSet - `PETSC_TRUE` if the list of classes to filter for has been set
-.   exclude - `PETSC_TRUE` if the class filtering for `PetscInfo()` is inverted
-.   locked - `PETSC_TRUE` if the list of classes to filter for has been locked
--   commSelfFlag - Enum indicating whether `PetscInfo()` will print for communicators of size 1, any size != 1, or all
+  Output Parameters:
++ infoEnabled  - `PETSC_TRUE` if `PetscInfoAllow`(`PETSC_TRUE`) has been called
+. classesSet   - `PETSC_TRUE` if the list of classes to filter for has been set
+. exclude      - `PETSC_TRUE` if the class filtering for `PetscInfo()` is inverted
+. locked       - `PETSC_TRUE` if the list of classes to filter for has been locked
+- commSelfFlag - Enum indicating whether `PetscInfo()` will print for communicators of size 1, any size != 1, or all
     communicators
 
-    Level: developer
+  Level: developer
 
-    Note:
-    Initially commSelfFlag = `PETSC_INFO_COMM_ALL`
+  Note:
+  Initially commSelfFlag = `PETSC_INFO_COMM_ALL`
 
 .seealso: [](sec_PetscInfo), `PetscInfo()`, `PetscInfoAllow()`, `PetscInfoSetFilterCommSelf`, `PetscInfoSetFromOptions()`
 @*/
@@ -261,19 +261,19 @@ PetscErrorCode PetscInfoGetInfo(PetscBool *infoEnabled, PetscBool *classesSet, P
 }
 
 /*@C
-    PetscInfoProcessClass - Activates or deactivates a class based on the filtering status of `PetscInfo()`
+  PetscInfoProcessClass - Activates or deactivates a class based on the filtering status of `PetscInfo()`
 
-    Not Collective
+  Not Collective
 
-    Input Parameters:
-+   classname - Name of the class to activate/deactivate `PetscInfo()` for
-.   numClassID - Number of entries in `classIDs`
--   classIDs - Array containing all of the `PetscClassId`s associated with `classname`
+  Input Parameters:
++ classname  - Name of the class to activate/deactivate `PetscInfo()` for
+. numClassID - Number of entries in `classIDs`
+- classIDs   - Array containing all of the `PetscClassId`s associated with `classname`
 
-      Options Database Key:
-.   -info [filename][:[~]<list,of,classnames>[:[~]self]] - specify which informative messages are printed, see `PetscInfo()`.
+  Options Database Key:
+. -info [filename][:[~]<list,of,classnames>[:[~]self]] - specify which informative messages are printed, see `PetscInfo()`.
 
-    Level: developer
+  Level: developer
 
 .seealso: [](sec_PetscInfo), `PetscInfo()`, `PetscInfoActivateClass()`, `PetscInfoDeactivateClass()`, `PetscInfoSetFromOptions()`
 @*/
@@ -316,17 +316,17 @@ PetscErrorCode PetscInfoProcessClass(const char classname[], PetscInt numClassID
 }
 
 /*@
-    PetscInfoSetFilterCommSelf - Sets `PetscInfoCommFlag` enum to determine communicator filtering for `PetscInfo()`
+  PetscInfoSetFilterCommSelf - Sets `PetscInfoCommFlag` enum to determine communicator filtering for `PetscInfo()`
 
-    Not Collective
+  Not Collective
 
-    Input Parameter:
-.   commSelfFlag - Enum value indicating method with which to filter `PetscInfo()` based on the size of the communicator of the object calling `PetscInfo()`
+  Input Parameter:
+. commSelfFlag - Enum value indicating method with which to filter `PetscInfo()` based on the size of the communicator of the object calling `PetscInfo()`
 
-    Options Database Key:
-.   -info [filename][:[~]<list,of,classnames>[:[~]self]] - specify which informative messages are printed, See `PetscInfo()`.
+  Options Database Key:
+. -info [filename][:[~]<list,of,classnames>[:[~]self]] - specify which informative messages are printed, See `PetscInfo()`.
 
-    Level: advanced
+  Level: advanced
 
 .seealso: [](sec_PetscInfo), `PetscInfo()`, `PetscInfoGetInfo()`
 @*/
@@ -338,20 +338,20 @@ PetscErrorCode PetscInfoSetFilterCommSelf(PetscInfoCommFlag commSelfFlag)
 }
 
 /*@
-    PetscInfoSetFromOptions - Configure `PetscInfo()` using command line options, enabling or disabling various calls to `PetscInfo()`
+  PetscInfoSetFromOptions - Configure `PetscInfo()` using command line options, enabling or disabling various calls to `PetscInfo()`
 
-    Not Collective
+  Not Collective
 
-    Input Parameter:
-.   options - Options database, use `NULL` for default global database
+  Input Parameter:
+. options - Options database, use `NULL` for default global database
 
-    Options Database Key:
-.   -info [filename][:[~]<list,of,classnames>[:[~]self]] - specify which informative messages are printed, See `PetscInfo()`.
+  Options Database Key:
+. -info [filename][:[~]<list,of,classnames>[:[~]self]] - specify which informative messages are printed, See `PetscInfo()`.
 
-    Level: advanced
+  Level: advanced
 
-    Note:
-    This function is called automatically during `PetscInitialize()` so users usually do not need to call it themselves.
+  Note:
+  This function is called automatically during `PetscInitialize()` so users usually do not need to call it themselves.
 
 .seealso: [](sec_PetscInfo), `PetscInfo()`, `PetscInfoAllow()`, `PetscInfoSetFile()`, `PetscInfoSetClasses()`, `PetscInfoSetFilterCommSelf()`, `PetscInfoDestroy()`
 @*/
@@ -472,8 +472,8 @@ static PetscErrorCode PetscInfoSetClassActivation_Private(PetscClassId classid, 
   Input Parameter:
 . classid - The object class,  e.g., `MAT_CLASSID`, `SNES_CLASSID`, etc.
 
-    Options Database Key:
-.   -info [filename][:[~]<list,of,classnames>[:[~]self]] - specify which informative messages are printed, See `PetscInfo()`.
+  Options Database Key:
+. -info [filename][:[~]<list,of,classnames>[:[~]self]] - specify which informative messages are printed, See `PetscInfo()`.
 
   Level: developer
 
@@ -497,8 +497,8 @@ PetscErrorCode PetscInfoDeactivateClass(PetscClassId classid)
   Input Parameter:
 . classid - The object class, e.g., `MAT_CLASSID`, `SNES_CLASSID`, etc.
 
-    Options Database Key:
-.   -info [filename][:[~]<list,of,classnames>[:[~]self]] - specify which informative messages are printed, See `PetscInfo()`.
+  Options Database Key:
+. -info [filename][:[~]<list,of,classnames>[:[~]self]] - specify which informative messages are printed, See `PetscInfo()`.
 
   Level: developer
 
@@ -522,43 +522,38 @@ PetscErrorCode PetscInfoActivateClass(PetscClassId classid)
 PETSC_INTERN FILE *petsc_history;
 
 /*MC
-    PetscInfo - Logs informative data
+  PetscInfo - Logs informative data
 
-   Synopsis:
-       #include <petscsys.h>
-       PetscErrorCode PetscInfo(PetscObject obj, const char message[])
-       PetscErrorCode PetscInfo(PetscObject obj, const char formatmessage[],arg1)
-       PetscErrorCode PetscInfo(PetscObject obj, const char formatmessage[],arg1,arg2)
-       ...
+  Synopsis:
+  #include <petsclog.h>
+  PetscErrorCode PetscInfo(PetscObject obj, const char message[], ...)
 
-    Collective
+  Collective
 
-    Input Parameters:
-+   obj - object most closely associated with the logging statement or `NULL`
-.   message - logging message
-.   formatmessage - logging message using standard "printf" format
--   arg1, arg2, ... - arguments of the format
+  Input Parameters:
++ obj     - object most closely associated with the logging statement or `NULL`
+- message - logging message using standard "printf" format
 
-      Options Database Key:
-.   -info [filename][:[~]<list,of,classnames>[:[~]self]] - specify which informative messages are printed
+  Options Database Key:
+. -info [filename][:[~]<list,of,classnames>[:[~]self]] - specify which informative messages are printed
 
-    Level: intermediate
+  Level: intermediate
 
-    Notes:
-    `PetscInfo()` prints only from the first processor in the communicator of `obj`.
-    If `obj` is `NULL`, the `PETSC_COMM_SELF` communicator is used, i.e. every rank of `PETSC_COMM_WORLD` prints the message.
+  Notes:
+  `PetscInfo()` prints only from the first processor in the communicator of `obj`.
+  If `obj` is `NULL`, the `PETSC_COMM_SELF` communicator is used, i.e. every rank of `PETSC_COMM_WORLD` prints the message.
 
-    The optional <list,of,classnames> is a comma separated list of enabled classes, e.g. `vec,mat,ksp`.
-    If this list is not specified, all classes are enabled.
-    Prepending the list with ~ means inverted selection, i.e. all classes except the listed are enabled.
-    A special classname `sys` relates to `PetscInfo()` with `obj` being `NULL`.
+  The optional <list,of,classnames> is a comma separated list of enabled classes, e.g. `vec,mat,ksp`.
+  If this list is not specified, all classes are enabled.
+  Prepending the list with ~ means inverted selection, i.e. all classes except the listed are enabled.
+  A special classname `sys` relates to `PetscInfo()` with `obj` being `NULL`.
 
-    The optional keyword `self` specifies that `PetscInfo()` is enabled only for a communicator size of 1 (e.g. `PETSC_COMM_SELF`).
-    By contrast, ~self means that `PetscInfo()` is enabled only for communicator size > 1 (e.g. `PETSC_COMM_WORLD`), i.e. those `PetscInfo()` calls which print from every rank of `PETSC_COMM_WORLD` are disabled.
+  The optional keyword `self` specifies that `PetscInfo()` is enabled only for a communicator size of 1 (e.g. `PETSC_COMM_SELF`).
+  By contrast, ~self means that `PetscInfo()` is enabled only for communicator size > 1 (e.g. `PETSC_COMM_WORLD`), i.e. those `PetscInfo()` calls which print from every rank of `PETSC_COMM_WORLD` are disabled.
 
-    All classname/self matching is case insensitive. Filename is case sensitive.
+  All classname/self matching is case insensitive. Filename is case sensitive.
 
-    Example of Usage:
+  Example of Usage:
 .vb
      Mat A;
      PetscInt alpha;
@@ -566,14 +561,14 @@ PETSC_INTERN FILE *petsc_history;
      PetscInfo(A,"Matrix uses parameter alpha=%" PetscInt_FMT "\n",alpha);
 .ve
 
-    Options Examples:
-    Each call of the form
+  Examples using Options:
+  Each call of the form
 .vb
      PetscInfo(obj, msg);
      PetscInfo(obj, msg, arg1);
      PetscInfo(obj, msg, arg1, arg2);
 .ve
-    is evaluated as follows.
+  is evaluated as follows.
 .vb
     -info or -info :: prints `msg` to `PETSC_STDOUT`, for any PETSc `obj` regardless class or communicator
     -info :mat:self prints `msg` to `PETSC_STDOUT` only if class of `obj` is `Mat`, and its communicator has size = 1
@@ -581,9 +576,10 @@ PETSC_INTERN FILE *petsc_history;
     -info :sys prints to `PETSC_STDOUT` only if `obj` is `NULL`
     -info :sys:~self deactivates all info messages because `sys` means `obj` = `NULL` which implies `PETSC_COMM_SELF` but `~self` filters out everything on `PETSC_COMM_SELF`.
 .ve
-    Fortran Note:
-    This function does not take the `obj` argument, there is only the `PetscInfo()`
-     version, not `PetscInfo()` etc.
+
+  Fortran Notes:
+  This function does not take the `obj` argument, there is only the `PetscInfo()`
+  version, not `PetscInfo()` etc.
 
 .seealso: [](sec_PetscInfo), `PetscInfoAllow()`, `PetscInfoSetFromOptions()`, `PetscInfoEnabled()`, `PetscInfoSetFile()`, `PetscInfoGetFile()`, `PetscInfoSetClasses()`,
           `PetscInfoGetClass()`, `PetscInfoGetInfo()`, `PetscInfoProcessClass()`, `PetscInfoSetFilterCommSelf()`, `PetscInfoDestroy()`, `PetscInfoDeactivateClass()`,

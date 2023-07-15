@@ -20,7 +20,7 @@
 
   Level: advanced
 
-.seealso: [](ch_matrices), `Mat`, `MatCreateDense()', `MatCreateDenseCUDA()`, `MatCreateDenseHIP()`, `PetscMemType`
+.seealso: [](ch_matrices), `Mat`, `MatCreateDense()'`, `MatCreateDenseCUDA()`, `MatCreateDenseHIP()`, `PetscMemType`
 @*/
 PetscErrorCode MatCreateDenseFromVecType(MPI_Comm comm, VecType vtype, PetscInt m, PetscInt n, PetscInt M, PetscInt N, PetscInt lda, PetscScalar *data, Mat *A)
 {

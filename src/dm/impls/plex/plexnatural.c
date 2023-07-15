@@ -6,8 +6,8 @@
   Logically Collective
 
   Input Parameters:
-+ dm        - The `DM`
-- naturalSF - The `PetscSF`
++ dm          - The `DM`
+- migrationSF - The `PetscSF`
 
   Level: intermediate
 
@@ -30,7 +30,7 @@ PetscErrorCode DMPlexSetMigrationSF(DM dm, PetscSF migrationSF)
   Note Collective
 
   Input Parameter:
-. dm          - The `DM`
+. dm - The `DM`
 
   Output Parameter:
 . migrationSF - The `PetscSF`
@@ -50,8 +50,8 @@ PetscErrorCode DMPlexGetMigrationSF(DM dm, PetscSF *migrationSF)
   DMPlexSetGlobalToNaturalSF - Sets the `PetscSF` for mapping Global `Vec` to the Natural `Vec`
 
   Input Parameters:
-+ dm          - The `DM`
-- naturalSF   - The `PetscSF`
++ dm        - The `DM`
+- naturalSF - The `PetscSF`
 
   Level: intermediate
 
@@ -70,10 +70,10 @@ PetscErrorCode DMPlexSetGlobalToNaturalSF(DM dm, PetscSF naturalSF)
   DMPlexGetGlobalToNaturalSF - Gets the `PetscSF` for mapping Global `Vec` to the Natural `Vec`
 
   Input Parameter:
-. dm          - The `DM`
+. dm - The `DM`
 
   Output Parameter:
-. naturalSF   - The `PetscSF`
+. naturalSF - The `PetscSF`
 
   Level: intermediate
 
@@ -95,7 +95,7 @@ PetscErrorCode DMPlexGetGlobalToNaturalSF(DM dm, PetscSF *naturalSF)
 - sfMigration - The `PetscSF` used to distribute the mesh, or `NULL` if it cannot be computed
 
   Output Parameter:
-. sfNatural   - `PetscSF` for mapping the `Vec` in PETSc ordering to the canonical ordering
+. sfNatural - `PetscSF` for mapping the `Vec` in PETSc ordering to the canonical ordering
 
   Level: intermediate
 

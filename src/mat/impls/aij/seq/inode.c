@@ -4568,24 +4568,24 @@ PetscErrorCode MatInodeAdjustForInodes_SeqAIJ_Inode(Mat A, IS *rperm, IS *cperm)
 }
 
 /*@C
-   MatInodeGetInodeSizes - Returns the inode information of a matrix with inodes
+  MatInodeGetInodeSizes - Returns the inode information of a matrix with inodes
 
-   Not Collective
+  Not Collective
 
-   Input Parameter:
-.  A - the Inode matrix or matrix derived from the Inode class -- e.g., `MATSEQAIJ`
+  Input Parameter:
+. A - the Inode matrix or matrix derived from the Inode class -- e.g., `MATSEQAIJ`
 
-   Output Parameters:
-+  node_count - no of inodes present in the matrix.
-.  sizes      - an array of size `node_count`, with the sizes of each inode.
--  limit      - the max size used to generate the inodes.
+  Output Parameters:
++ node_count - no of inodes present in the matrix.
+. sizes      - an array of size `node_count`, with the sizes of each inode.
+- limit      - the max size used to generate the inodes.
 
-   Level: advanced
+  Level: advanced
 
-   Note:
-   It should be called after the matrix is assembled.
-   The contents of the sizes[] array should not be changed.
-   `NULL` may be passed for information not needed
+  Note:
+  It should be called after the matrix is assembled.
+  The contents of the sizes[] array should not be changed.
+  `NULL` may be passed for information not needed
 
 .seealso: [](ch_matrices), `Mat`, `MatGetInfo()`
 @*/

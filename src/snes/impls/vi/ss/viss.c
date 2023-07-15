@@ -4,14 +4,14 @@
 /*@
   SNESVIComputeMeritFunction - Evaluates the merit function for the mixed complementarity problem.
 
-   Input Parameter:
-.  phi - the `Vec` holding the evaluation of the semismooth function
+  Input Parameter:
+. phi - the `Vec` holding the evaluation of the semismooth function
 
-   Output Parameters:
-+  merit - the merit function 1/2 ||phi||^2
--  phinorm -  the two-norm of the vector, ||phi||
+  Output Parameters:
++ merit   - the merit function 1/2 ||phi||^2
+- phinorm - the two-norm of the vector, ||phi||
 
-   Level: developer
+  Level: developer
 
 .seealso: `SNESVINEWTONSSLS`, `SNESVIComputeFunction()`
 @*/
@@ -36,18 +36,18 @@ static inline PetscScalar DPhi(PetscScalar a, PetscScalar b)
 }
 
 /*@
-   SNESVIComputeFunction - Provides the function that reformulates a system of nonlinear equations in mixed complementarity form to a system of nonlinear
-   equations in semismooth form.
+  SNESVIComputeFunction - Provides the function that reformulates a system of nonlinear equations in mixed complementarity form to a system of nonlinear
+  equations in semismooth form.
 
-   Input Parameters:
-+  snes - the SNES context
-.  X - current iterate
--  functx - user defined function context
+  Input Parameters:
++ snes   - the SNES context
+. X      - current iterate
+- functx - user defined function context
 
-   Output Parameter:
-.  phi - the evaluation of Semismooth function at X
+  Output Parameter:
+. phi - the evaluation of Semismooth function at X
 
-   Level: developer
+  Level: developer
 
 .seealso: `SNESVINEWTONSSLS`, `SNESVIComputeMeritFunction()`
 @*/
@@ -172,18 +172,18 @@ PetscErrorCode SNESVIComputeJacobian(Mat jac, Mat jac_pre, Vec Da, Vec Db)
 }
 
 /*
-   SNESVIComputeMeritFunctionGradient - Computes the gradient of the merit function psi.
+  SNESVIComputeMeritFunctionGradient - Computes the gradient of the merit function psi.
 
-   Input Parameters:
+  Input Parameters:
    phi - semismooth function.
    H   - semismooth jacobian
 
-   Output Parameter:
+  Output Parameter:
    dpsi - merit function gradient
 
-   Note:
+  Note:
   The merit function gradient is computed as follows
-        dpsi = H^T*phi
+  dpsi = H^T*phi
 */
 PetscErrorCode SNESVIComputeMeritFunctionGradient(Mat H, Vec phi, Vec dpsi)
 {
@@ -193,20 +193,20 @@ PetscErrorCode SNESVIComputeMeritFunctionGradient(Mat H, Vec phi, Vec dpsi)
 }
 
 /*
-   SNESSolve_VINEWTONSSLS - Solves the complementarity problem with a semismooth Newton
-   method using a line search.
+  SNESSolve_VINEWTONSSLS - Solves the complementarity problem with a semismooth Newton
+  method using a line search.
 
-   Input Parameter:
-.  snes - the SNES context
+  Input Parameter:
+. snes - the SNES context
 
    Application Interface Routine: SNESSolve()
 
-   Note:
-   This implements essentially a semismooth Newton method with a
-   line search. The default line search does not do any line search
-   but rather takes a full Newton step.
+  Note:
+  This implements essentially a semismooth Newton method with a
+  line search. The default line search does not do any line search
+  but rather takes a full Newton step.
 
-   Developer Note: the code in this file should be slightly modified so that this routine need not exist and the SNESSolve_NEWTONLS() routine is called directly with the appropriate wrapped function and Jacobian evaluations
+  Developer Notes: the code in this file should be slightly modified so that this routine need not exist and the SNESSolve_NEWTONLS() routine is called directly with the appropriate wrapped function and Jacobian evaluations
 
 */
 PetscErrorCode SNESSolve_VINEWTONSSLS(SNES snes)
@@ -356,18 +356,18 @@ PetscErrorCode SNESSolve_VINEWTONSSLS(SNES snes)
 }
 
 /*
-   SNESSetUp_VINEWTONSSLS - Sets up the internal data structures for the later use
-   of the SNES nonlinear solver.
+  SNESSetUp_VINEWTONSSLS - Sets up the internal data structures for the later use
+  of the SNES nonlinear solver.
 
-   Input Parameter:
-.  snes - the SNES context
+  Input Parameter:
+. snes - the SNES context
 
    Application Interface Routine: SNESSetUp()
 
-   Note:
-   For basic use of the SNES solvers, the user need not explicitly call
-   SNESSetUp(), since these actions will automatically occur during
-   the call to SNESSolve().
+  Note:
+  For basic use of the SNES solvers, the user need not explicitly call
+  SNESSetUp(), since these actions will automatically occur during
+  the call to SNESSolve().
  */
 PetscErrorCode SNESSetUp_VINEWTONSSLS(SNES snes)
 {

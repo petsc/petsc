@@ -22,14 +22,14 @@ static PetscErrorCode DMVecCreateTagName_Moab_Private(moab::Interface *mbiface, 
   Collective
 
   Input Parameters:
-+ dm              - The DMMoab object being set
-. tag             - If non-zero, block size will be taken from the tag size
-. range           - If non-empty, Vec corresponds to these entities, otherwise to the entities set on the DMMoab
-. is_global_vec   - If true, this is a local representation of the Vec (including ghosts in parallel), otherwise a truly parallel one
-- destroy_tag     - If true, MOAB tag is destroyed with Vec, otherwise it is left on MOAB
++ dm            - The DMMoab object being set
+. tag           - If non-zero, block size will be taken from the tag size
+. range         - If non-empty, Vec corresponds to these entities, otherwise to the entities set on the DMMoab
+. is_global_vec - If true, this is a local representation of the Vec (including ghosts in parallel), otherwise a truly parallel one
+- destroy_tag   - If true, MOAB tag is destroyed with Vec, otherwise it is left on MOAB
 
   Output Parameter:
-. vec             - The created vector
+. vec - The created vector
 
   Level: beginner
 
@@ -77,7 +77,7 @@ PetscErrorCode DMMoabGetVecTag(Vec vec, moab::Tag *tag)
   DMMoabGetVecRange - Get the MOAB entities associated with this Vec
 
   Input Parameter:
-. vec   - Vec being queried
+. vec - Vec being queried
 
   Output Parameter:
 . range - Entities associated with this Vec. NULL if vec is a native PETSc Vec.
@@ -108,11 +108,11 @@ PetscErrorCode DMMoabGetVecRange(Vec vec, moab::Range *range)
   Collective
 
   Input Parameters:
-+ dm              - The DMMoab object being set
-- vec             - The Vector whose underlying data is requested
++ dm  - The DMMoab object being set
+- vec - The Vector whose underlying data is requested
 
   Output Parameter:
-. array           - The local data array
+. array - The local data array
 
   Level: intermediate
 
@@ -190,9 +190,9 @@ PetscErrorCode DMMoabVecGetArray(DM dm, Vec vec, void *array)
   Collective
 
   Input Parameters:
-+ dm              - The DMMoab object being set
-. vec             - The Vector whose underlying data is requested
-- array           - The local data array
++ dm    - The DMMoab object being set
+. vec   - The Vector whose underlying data is requested
+- array - The local data array
 
   Level: intermediate
 
@@ -269,11 +269,11 @@ PetscErrorCode DMMoabVecRestoreArray(DM dm, Vec vec, void *array)
   Collective
 
   Input Parameters:
-+ dm              - The DMMoab object being set
-- vec             - The Vector whose underlying data is requested
++ dm  - The DMMoab object being set
+- vec - The Vector whose underlying data is requested
 
   Output Parameter:
-. array           - The local data array
+. array - The local data array
 
   Level: intermediate
 
@@ -349,9 +349,9 @@ PetscErrorCode DMMoabVecGetArrayRead(DM dm, Vec vec, void *array)
   Collective
 
   Input Parameters:
-+ dm              - The DMMoab object being set
-. vec             - The Vector whose underlying data is requested
-- array           - The local data array
++ dm    - The DMMoab object being set
+. vec   - The Vector whose underlying data is requested
+- array - The local data array
 
   Level: intermediate
 

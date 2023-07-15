@@ -584,26 +584,25 @@ PetscErrorCode TSSundialsMonitorInternalSteps_Sundials(TS ts, PetscBool s)
 /* -------------------------------------------------------------------------------------------*/
 
 /*@C
-   TSSundialsGetIterations - Gets the number of nonlinear and linear iterations used so far by `TSSUNDIALS`.
+  TSSundialsGetIterations - Gets the number of nonlinear and linear iterations used so far by `TSSUNDIALS`.
 
-   Not Collective
+  Not Collective
 
-   Input Parameter:
-.    ts     - the time-step context
+  Input Parameter:
+. ts - the time-step context
 
-   Output Parameters:
-+   nonlin - number of nonlinear iterations
--   lin    - number of linear iterations
+  Output Parameters:
++ nonlin - number of nonlinear iterations
+- lin    - number of linear iterations
 
-   Level: advanced
+  Level: advanced
 
-   Note:
-    These return the number since the creation of the `TS` object
+  Note:
+  These return the number since the creation of the `TS` object
 
 .seealso: [](ch_ts), `TSSundialsSetType()`, `TSSundialsSetMaxl()`,
           `TSSundialsSetLinearTolerance()`, `TSSundialsSetGramSchmidtType()`, `TSSundialsSetTolerance()`,
-          `TSSundialsGetIterations()`, `TSSundialsSetType()`,
-          `TSSundialsSetLinearTolerance()`, `TSSundialsGetPC()`, `TSSetExactFinalTime()`
+          `TSSundialsGetIterations()`, `TSSundialsGetPC()`, `TSSetExactFinalTime()`
 @*/
 PetscErrorCode TSSundialsGetIterations(TS ts, int *nonlin, int *lin)
 {
@@ -613,20 +612,20 @@ PetscErrorCode TSSundialsGetIterations(TS ts, int *nonlin, int *lin)
 }
 
 /*@
-   TSSundialsSetType - Sets the method that `TSSUNDIALS` will use for integration.
+  TSSundialsSetType - Sets the method that `TSSUNDIALS` will use for integration.
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+    ts     - the time-step context
--    type   - one of  `SUNDIALS_ADAMS` or `SUNDIALS_BDF`
+  Input Parameters:
++ ts   - the time-step context
+- type - one of  `SUNDIALS_ADAMS` or `SUNDIALS_BDF`
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: [](ch_ts), `TSSundialsGetIterations()`, `TSSundialsSetMaxl()`,
           `TSSundialsSetLinearTolerance()`, `TSSundialsSetGramSchmidtType()`, `TSSundialsSetTolerance()`,
-          `TSSundialsGetIterations()`, `TSSundialsSetType()`,
-          `TSSundialsSetLinearTolerance()`, `TSSundialsSetTolerance()`, `TSSundialsGetPC()`,
+          `TSSundialsSetType()`,
+          `TSSundialsGetPC()`,
           `TSSetExactFinalTime()`
 @*/
 PetscErrorCode TSSundialsSetType(TS ts, TSSundialsLmmType type)
@@ -637,21 +636,19 @@ PetscErrorCode TSSundialsSetType(TS ts, TSSundialsLmmType type)
 }
 
 /*@
-   TSSundialsSetMaxord - Sets the maximum order for BDF/Adams method used by `TSSUNDIALS`.
+  TSSundialsSetMaxord - Sets the maximum order for BDF/Adams method used by `TSSUNDIALS`.
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+    ts      - the time-step context
--    maxord  - maximum order of BDF / Adams method
+  Input Parameters:
++ ts     - the time-step context
+- maxord - maximum order of BDF / Adams method
 
-   Level: advanced
+  Level: advanced
 
 .seealso: [](ch_ts), `TSSundialsGetIterations()`, `TSSundialsSetType()`,
           `TSSundialsSetLinearTolerance()`, `TSSundialsSetGramSchmidtType()`, `TSSundialsSetTolerance()`,
-          `TSSundialsGetIterations()`, `TSSundialsSetType()`,
-          `TSSundialsSetLinearTolerance()`, `TSSundialsSetTolerance()`, `TSSundialsGetPC()`,
-          `TSSetExactFinalTime()`
+          `TSSundialsGetPC()`, `TSSetExactFinalTime()`
 @*/
 PetscErrorCode TSSundialsSetMaxord(TS ts, PetscInt maxord)
 {
@@ -662,23 +659,21 @@ PetscErrorCode TSSundialsSetMaxord(TS ts, PetscInt maxord)
 }
 
 /*@
-   TSSundialsSetMaxl - Sets the dimension of the Krylov space used by
-       GMRES in the linear solver in `TSSUNDIALS`. `TSSUNDIALS` DOES NOT use restarted GMRES so
-       this is the maximum number of GMRES steps that will be used.
+  TSSundialsSetMaxl - Sets the dimension of the Krylov space used by
+  GMRES in the linear solver in `TSSUNDIALS`. `TSSUNDIALS` DOES NOT use restarted GMRES so
+  this is the maximum number of GMRES steps that will be used.
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+    ts      - the time-step context
--    maxl - number of direction vectors (the dimension of Krylov subspace).
+  Input Parameters:
++ ts   - the time-step context
+- maxl - number of direction vectors (the dimension of Krylov subspace).
 
-   Level: advanced
+  Level: advanced
 
 .seealso: [](ch_ts), `TSSundialsGetIterations()`, `TSSundialsSetType()`,
           `TSSundialsSetLinearTolerance()`, `TSSundialsSetGramSchmidtType()`, `TSSundialsSetTolerance()`,
-          `TSSundialsGetIterations()`, `TSSundialsSetType()`,
-          `TSSundialsSetLinearTolerance()`, `TSSundialsSetTolerance()`, `TSSundialsGetPC()`,
-          `TSSetExactFinalTime()`
+          `TSSundialsGetPC()`, `TSSetExactFinalTime()`
 @*/
 PetscErrorCode TSSundialsSetMaxl(TS ts, PetscInt maxl)
 {
@@ -689,22 +684,21 @@ PetscErrorCode TSSundialsSetMaxl(TS ts, PetscInt maxl)
 }
 
 /*@
-   TSSundialsSetLinearTolerance - Sets the tolerance used to solve the linear
-       system by `TSSUNDIALS`.
+  TSSundialsSetLinearTolerance - Sets the tolerance used to solve the linear
+  system by `TSSUNDIALS`.
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+    ts     - the time-step context
--    tol    - the factor by which the tolerance on the nonlinear solver is
+  Input Parameters:
++ ts  - the time-step context
+- tol - the factor by which the tolerance on the nonlinear solver is
              multiplied to get the tolerance on the linear solver, .05 by default.
 
-   Level: advanced
+  Level: advanced
 
 .seealso: [](ch_ts), `TSSundialsGetIterations()`, `TSSundialsSetType()`, `TSSundialsSetMaxl()`,
           `TSSundialsSetGramSchmidtType()`, `TSSundialsSetTolerance()`,
-          `TSSundialsGetIterations()`, `TSSundialsSetType()`,
-          `TSSundialsSetLinearTolerance()`, `TSSundialsSetTolerance()`, `TSSundialsGetPC()`,
+          `TSSundialsSetLinearTolerance()`, `TSSundialsGetPC()`,
           `TSSetExactFinalTime()`
 @*/
 PetscErrorCode TSSundialsSetLinearTolerance(TS ts, PetscReal tol)
@@ -716,21 +710,20 @@ PetscErrorCode TSSundialsSetLinearTolerance(TS ts, PetscReal tol)
 }
 
 /*@
-   TSSundialsSetGramSchmidtType - Sets type of orthogonalization used
-        in GMRES method by `TSSUNDIALS` linear solver.
+  TSSundialsSetGramSchmidtType - Sets type of orthogonalization used
+  in GMRES method by `TSSUNDIALS` linear solver.
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+    ts  - the time-step context
--    type - either `SUNDIALS_MODIFIED_GS` or `SUNDIALS_CLASSICAL_GS`
+  Input Parameters:
++ ts   - the time-step context
+- type - either `SUNDIALS_MODIFIED_GS` or `SUNDIALS_CLASSICAL_GS`
 
-   Level: advanced
+  Level: advanced
 
 .seealso: [](ch_ts), `TSSundialsGetIterations()`, `TSSundialsSetType()`, `TSSundialsSetMaxl()`,
           `TSSundialsSetLinearTolerance()`, `TSSundialsSetTolerance()`,
-          `TSSundialsGetIterations()`, `TSSundialsSetType()`,
-          `TSSundialsSetLinearTolerance()`, `TSSundialsSetTolerance()`, `TSSundialsGetPC()`,
+          `TSSundialsGetPC()`,
           `TSSetExactFinalTime()`
 @*/
 PetscErrorCode TSSundialsSetGramSchmidtType(TS ts, TSSundialsGramSchmidtType type)
@@ -741,25 +734,24 @@ PetscErrorCode TSSundialsSetGramSchmidtType(TS ts, TSSundialsGramSchmidtType typ
 }
 
 /*@
-   TSSundialsSetTolerance - Sets the absolute and relative tolerance used by
-                         `TSSUNDIALS` for error control.
+  TSSundialsSetTolerance - Sets the absolute and relative tolerance used by
+  `TSSUNDIALS` for error control.
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+    ts  - the time-step context
-.    aabs - the absolute tolerance
--    rel - the relative tolerance
+  Input Parameters:
++ ts   - the time-step context
+. aabs - the absolute tolerance
+- rel  - the relative tolerance
 
      See the CVODE/SUNDIALS users manual for exact details on these parameters. Essentially
     these regulate the size of the error for a SINGLE timestep.
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: [](ch_ts), `TSSundialsGetIterations()`, `TSSundialsSetType()`, `TSSundialsSetGMRESMaxl()`,
           `TSSundialsSetLinearTolerance()`, `TSSundialsSetGramSchmidtType()`,
-          `TSSundialsGetIterations()`, `TSSundialsSetType()`,
-          `TSSundialsSetLinearTolerance()`, `TSSundialsSetTolerance()`, `TSSundialsGetPC()`,
+          `TSSundialsSetTolerance()`, `TSSundialsGetPC()`,
           `TSSetExactFinalTime()`
 @*/
 PetscErrorCode TSSundialsSetTolerance(TS ts, PetscReal aabs, PetscReal rel)
@@ -770,20 +762,18 @@ PetscErrorCode TSSundialsSetTolerance(TS ts, PetscReal aabs, PetscReal rel)
 }
 
 /*@
-   TSSundialsGetPC - Extract the PC context from a time-step context for `TSSUNDIALS`.
+  TSSundialsGetPC - Extract the PC context from a time-step context for `TSSUNDIALS`.
 
-   Input Parameter:
-.    ts - the time-step context
+  Input Parameter:
+. ts - the time-step context
 
-   Output Parameter:
-.    pc - the preconditioner context
+  Output Parameter:
+. pc - the preconditioner context
 
-   Level: advanced
+  Level: advanced
 
 .seealso: [](ch_ts), `TSSundialsGetIterations()`, `TSSundialsSetType()`, `TSSundialsSetMaxl()`,
-          `TSSundialsSetLinearTolerance()`, `TSSundialsSetGramSchmidtType()`, `TSSundialsSetTolerance()`,
-          `TSSundialsGetIterations()`, `TSSundialsSetType()`,
-          `TSSundialsSetLinearTolerance()`, `TSSundialsSetTolerance()`
+          `TSSundialsSetLinearTolerance()`, `TSSundialsSetGramSchmidtType()`, `TSSundialsSetTolerance()`
 @*/
 PetscErrorCode TSSundialsGetPC(TS ts, PC *pc)
 {
@@ -793,17 +783,17 @@ PetscErrorCode TSSundialsGetPC(TS ts, PC *pc)
 }
 
 /*@
-   TSSundialsSetMinTimeStep - Smallest time step to be chosen by the adaptive controller.
+  TSSundialsSetMinTimeStep - Smallest time step to be chosen by the adaptive controller.
 
-   Input Parameters:
-+   ts - the time-step context
--   mindt - lowest time step if positive, negative to deactivate
+  Input Parameters:
++ ts    - the time-step context
+- mindt - lowest time step if positive, negative to deactivate
 
-   Note:
-   `TSSUNDIALS` will error if it is not possible to keep the estimated truncation error below
-   the tolerance set with `TSSundialsSetTolerance()` without going below this step size.
+  Note:
+  `TSSUNDIALS` will error if it is not possible to keep the estimated truncation error below
+  the tolerance set with `TSSundialsSetTolerance()` without going below this step size.
 
-   Level: beginner
+  Level: beginner
 
 .seealso: [](ch_ts), `TSSundialsSetType()`, `TSSundialsSetTolerance()`,
 @*/
@@ -815,13 +805,13 @@ PetscErrorCode TSSundialsSetMinTimeStep(TS ts, PetscReal mindt)
 }
 
 /*@
-   TSSundialsSetMaxTimeStep - Largest time step to be chosen by the adaptive controller.
+  TSSundialsSetMaxTimeStep - Largest time step to be chosen by the adaptive controller.
 
-   Input Parameters:
-+   ts - the time-step context
--   maxdt - lowest time step if positive, negative to deactivate
+  Input Parameters:
++ ts    - the time-step context
+- maxdt - lowest time step if positive, negative to deactivate
 
-   Level: beginner
+  Level: beginner
 
 .seealso: [](ch_ts), `TSSundialsSetType()`, `TSSundialsSetTolerance()`,
 @*/
@@ -833,18 +823,17 @@ PetscErrorCode TSSundialsSetMaxTimeStep(TS ts, PetscReal maxdt)
 }
 
 /*@
-   TSSundialsMonitorInternalSteps - Monitor `TSSUNDIALS` internal steps (Defaults to false).
+  TSSundialsMonitorInternalSteps - Monitor `TSSUNDIALS` internal steps (Defaults to false).
 
-   Input Parameters:
-+   ts - the time-step context
--   ft - `PETSC_TRUE` if monitor, else `PETSC_FALSE`
+  Input Parameters:
++ ts - the time-step context
+- ft - `PETSC_TRUE` if monitor, else `PETSC_FALSE`
 
-   Level: beginner
+  Level: beginner
 
 .seealso: [](ch_ts), `TSSundialsGetIterations()`, `TSSundialsSetType()`, `TSSundialsSetMaxl()`,
           `TSSundialsSetLinearTolerance()`, `TSSundialsSetGramSchmidtType()`, `TSSundialsSetTolerance()`,
-          `TSSundialsGetIterations()`, `TSSundialsSetType()`,
-          `TSSundialsSetLinearTolerance()`, `TSSundialsSetTolerance()`, `TSSundialsGetPC()`
+          `TSSundialsGetPC()`
 @*/
 PetscErrorCode TSSundialsMonitorInternalSteps(TS ts, PetscBool ft)
 {
@@ -854,15 +843,15 @@ PetscErrorCode TSSundialsMonitorInternalSteps(TS ts, PetscBool ft)
 }
 
 /*@
-   TSSundialsSetUseDense - Set a flag to use a dense linear solver in `TSSUNDIALS` (serial only)
+  TSSundialsSetUseDense - Set a flag to use a dense linear solver in `TSSUNDIALS` (serial only)
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+    ts         - the time-step context
--    use_dense  - `PETSC_TRUE` to use the dense solver
+  Input Parameters:
++ ts        - the time-step context
+- use_dense - `PETSC_TRUE` to use the dense solver
 
-   Level: advanced
+  Level: advanced
 
 .seealso: [](ch_ts), `TSSUNDIALS`
 @*/

@@ -8,7 +8,7 @@
   Not Collective
 
   Input Parameter:
-. dm   - the `DM`
+. dm - the `DM`
 
   Output Parameter:
 . point - The mesh point involved in the current projection
@@ -30,7 +30,7 @@ PetscErrorCode DMPlexGetActivePoint(DM dm, PetscInt *point)
   Not Collective
 
   Input Parameters:
-+ dm   - the `DM`
++ dm    - the `DM`
 - point - The mesh point involved in the current projection
 
   Level: developer
@@ -488,16 +488,16 @@ static PetscErrorCode PetscDualSpaceGetAllPointsUnion(PetscInt Nf, PetscDualSpac
   DMGetFirstLabeledPoint - Find first labeled `point` in `odm` such that the corresponding point in `dm` has the specified `height`. Return `point` and the corresponding `ds`.
 
   Input Parameters:
-+  dm - the `DM`
-.  odm - the enclosing `DM`
-.  label - label for `DM` domain, or `NULL` for whole domain
-.  numIds - the number of `ids`
-.  ids - An array of the label ids in sequence for the domain
--  height - Height of target cells in `DMPLEX` topology
++ dm     - the `DM`
+. odm    - the enclosing `DM`
+. label  - label for `DM` domain, or `NULL` for whole domain
+. numIds - the number of `ids`
+. ids    - An array of the label ids in sequence for the domain
+- height - Height of target cells in `DMPLEX` topology
 
   Output Parameters:
-+  point - the first labeled point
--  ds - the ds corresponding to the first labeled point
++ point - the first labeled point
+- ds    - the ds corresponding to the first labeled point
 
   Level: developer
 

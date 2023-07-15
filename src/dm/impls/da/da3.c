@@ -1435,58 +1435,58 @@ PetscErrorCode DMSetUp_DA_3D(DM da)
 }
 
 /*@C
-   DMDACreate3d - Creates an object that will manage the communication of three-dimensional
-   regular array data that is distributed across some processors.
+  DMDACreate3d - Creates an object that will manage the communication of three-dimensional
+  regular array data that is distributed across some processors.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  comm - MPI communicator
-.  bx,by,bz - type of ghost nodes the array have.
+  Input Parameters:
++ comm         - MPI communicator
+. bx,by,bz     - type of ghost nodes the array have.
          Use one of `DM_BOUNDARY_NONE`, `DM_BOUNDARY_GHOSTED`, `DM_BOUNDARY_PERIODIC`.
-.  stencil_type - Type of stencil (`DMDA_STENCIL_STAR` or `DMDA_STENCIL_BOX`)
-.  M,N,P - global dimension in each direction of the array
-.  m,n,p - corresponding number of processors in each dimension
+. stencil_type - Type of stencil (`DMDA_STENCIL_STAR` or `DMDA_STENCIL_BOX`)
+. M,N,P        - global dimension in each direction of the array
+. m,n,p        - corresponding number of processors in each dimension
            (or `PETSC_DECIDE` to have calculated)
-.  dof - number of degrees of freedom per node
-.  s - stencil width
--  lx, ly, lz - arrays containing the number of nodes in each cell along
+. dof          - number of degrees of freedom per node
+. s            - stencil width
+- lx, ly, lz   - arrays containing the number of nodes in each cell along
           the x, y, and z coordinates, or NULL. If non-null, these
           must be of length as m,n,p and the corresponding
           m,n, or p cannot be PETSC_DECIDE. Sum of the lx[] entries must be M, sum of
           the ly[] must N, sum of the lz[] must be P
 
-   Output Parameter:
-.  da - the resulting distributed array object
+  Output Parameter:
+. da - the resulting distributed array object
 
-   Options Database Keys:
-+  -dm_view - Calls `DMView()` at the conclusion of `DMDACreate3d()`
-.  -da_grid_x <nx> - number of grid points in x direction
-.  -da_grid_y <ny> - number of grid points in y direction
-.  -da_grid_z <nz> - number of grid points in z direction
-.  -da_processors_x <MX> - number of processors in x direction
-.  -da_processors_y <MY> - number of processors in y direction
-.  -da_processors_z <MZ> - number of processors in z direction
-.  -da_refine_x <rx> - refinement ratio in x direction
-.  -da_refine_y <ry> - refinement ratio in y direction
-.  -da_refine_z <rz>- refinement ratio in z directio
--  -da_refine <n> - refine the DMDA n times before creating it
+  Options Database Keys:
++ -dm_view              - Calls `DMView()` at the conclusion of `DMDACreate3d()`
+. -da_grid_x <nx>       - number of grid points in x direction
+. -da_grid_y <ny>       - number of grid points in y direction
+. -da_grid_z <nz>       - number of grid points in z direction
+. -da_processors_x <MX> - number of processors in x direction
+. -da_processors_y <MY> - number of processors in y direction
+. -da_processors_z <MZ> - number of processors in z direction
+. -da_refine_x <rx>     - refinement ratio in x direction
+. -da_refine_y <ry>     - refinement ratio in y direction
+. -da_refine_z <rz>     - refinement ratio in z directio
+- -da_refine <n>        - refine the DMDA n times before creating it
 
-   Level: beginner
+  Level: beginner
 
-   Notes:
-   The stencil type `DMDA_STENCIL_STAR` with width 1 corresponds to the
-   standard 7-pt stencil, while `DMDA_STENCIL_BOX` with width 1 denotes
-   the standard 27-pt stencil.
+  Notes:
+  The stencil type `DMDA_STENCIL_STAR` with width 1 corresponds to the
+  standard 7-pt stencil, while `DMDA_STENCIL_BOX` with width 1 denotes
+  the standard 27-pt stencil.
 
-   The array data itself is NOT stored in the `DMDA`, it is stored in `Vec` objects;
-   The appropriate vector objects can be obtained with calls to `DMCreateGlobalVector()`
-   and `DMCreateLocalVector()` and calls to `VecDuplicate()` if more are needed.
+  The array data itself is NOT stored in the `DMDA`, it is stored in `Vec` objects;
+  The appropriate vector objects can be obtained with calls to `DMCreateGlobalVector()`
+  and `DMCreateLocalVector()` and calls to `VecDuplicate()` if more are needed.
 
-   You must call `DMSetUp()` after this call before using this `DM`.
+  You must call `DMSetUp()` after this call before using this `DM`.
 
-   If you wish to use the options database to change values in the `DMDA` call `DMSetFromOptions()` after this call
-   but before `DMSetUp()`.
+  If you wish to use the options database to change values in the `DMDA` call `DMSetFromOptions()` after this call
+  but before `DMSetUp()`.
 
 .seealso: `DM`, `DMDA`, `DMDestroy()`, `DMView()`, `DMDACreate1d()`, `DMDACreate2d()`, `DMGlobalToLocalBegin()`, `DMDAGetRefinementFactor()`,
           `DMGlobalToLocalEnd()`, `DMLocalToGlobalBegin()`, `DMLocalToLocalBegin()`, `DMLocalToLocalEnd()`, `DMDASetRefinementFactor()`,

@@ -254,7 +254,7 @@ PetscErrorCode PetscSpacePolynomialSetTensor(PetscSpace sp, PetscBool tensor)
   spanned by polynomials whose total degree---summing over all variables---is bounded by the given order).
 
   Input Parameter:
-. sp     - the function space object
+. sp - the function space object
 
   Output Parameter:
 . tensor - `PETSC_TRUE` for a tensor polynomial space, `PETSC_FALSE` for a polynomial space

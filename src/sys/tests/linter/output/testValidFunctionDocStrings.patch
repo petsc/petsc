@@ -66,7 +66,7 @@
  
  .seealso:                                                  testNonExistentFunction(), testNonExistentType,
 -testIllFormedFunctionDocString(), `testNonExistentFunction()`, testIllFormedMinimalDocString()
-+`testNonExistentFunction()`, `testIllFormedMinimalDocString()`
++`testIllFormedMinimalDocString()`
  @*/
  
 @@ -77,5 +77,4 @@
@@ -90,7 +90,7 @@
    Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
 -   .seealso: testNonExistentFunction(), testNonExistentType,`testNonExistentFunction()
 +
-+  .seealso: `testNonExistentFunction()`, `testNonExistentType`,`testNonExistentFunction()`
++  .seealso: `testNonExistentFunction()`, `testNonExistentType`
  */
  PetscErrorCode testIllFormedMinimalDocString(void)
 @@ -102,5 +102,5 @@
@@ -341,4 +341,53 @@
 -  Level: dpcrtd (since 3.18.5)
 +  Level: deprecated (since 3.18.5)
  
- .seealso: `testDeprecated()`
+ .seealso: [](ch_matrices), `testDeprecated()`, [Matrix Factorization](sec_matfactor)
+@@ -477,5 +477,5 @@
+   Input Parameter:
+ + foo - the input description for an in-out param
+-+ baz - asdasdasd
++. baz - asdasdasd
+ - foo              - a duplicate description
+ 
+@@ -478,5 +478,5 @@
+ + foo - the input description for an in-out param
+ + baz - asdasdasd
+-- foo              - a duplicate description
++- foo - a duplicate description
+ 
+   Output Parameters:
+@@ -481,5 +481,5 @@
+ 
+   Output Parameters:
+-. bop = asdas
+++ bop = asdas
+ - foo    - the output description for an in-out param
+ - foo - a duplicate description2
+@@ -482,5 +482,5 @@
+   Output Parameters:
+ . bop = asdas
+-- foo    - the output description for an in-out param
++. foo    - the output description for an in-out param
+ - foo - a duplicate description2
+ 
+@@ -628,5 +628,5 @@
+ . foo - a foo
+ 
+-    OutputParameter:
++  Output Parameter:
+     +     bar         -    a bar for
+     example this is not a heading
+@@ -629,5 +629,5 @@
+ 
+     OutputParameter:
+-    +     bar         -    a bar for
+++ bar - a bar for
+     example this is not a heading
+ 
+@@ -679,5 +679,5 @@
+   Level: beginner
+ 
+-.seealso:`thisShouldOnlyBeShiftedOverByOneSpace()`,
++.seealso: `thisShouldOnlyBeShiftedOverByOneSpace()`,
+ `andThisShouldBeLeftAlone()`
+ @*/

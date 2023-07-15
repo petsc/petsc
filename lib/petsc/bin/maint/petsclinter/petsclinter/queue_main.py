@@ -83,7 +83,7 @@ class LockPrinter:
         print(self._print_prefix, *args, **kwargs)
     return
 
-def queue_main(clang_lib, updated_check_function_map, updated_classid_map, updated_diagnostics_mngr, compiler_flags, clang_options, verbose, werror, error_queue, return_queue, file_queue, lock):
+def queue_main(clang_lib, clang_compat_check, updated_check_function_map, updated_classid_map, updated_diagnostics_mngr, compiler_flags, clang_options, verbose, werror, error_queue, return_queue, file_queue, lock):
   """
   main function for worker processes in the queue, does pretty much the same thing the
   main process would do in their place
@@ -111,7 +111,7 @@ def queue_main(clang_lib, updated_check_function_map, updated_classid_map, updat
     pl.sync_print = LockPrinter(verbose, print_prefix, lock)
     pl.sync_print(printbar, 'Performing setup', printbar)
     # initialize libclang, and create a linter instance
-    pl.util.initialize_libclang(clang_lib=clang_lib)
+    pl.util.initialize_libclang(clang_lib=clang_lib, compat_check=clang_compat_check)
     linter = Linter(compiler_flags, clang_options=clang_options, verbose=verbose, werror=werror)
     pl.sync_print(printbar, 'Entering queue  ', printbar)
 

@@ -2678,19 +2678,19 @@ PetscErrorCode MatMumpsGetIcntl_MUMPS(Mat F, PetscInt icntl, PetscInt *ival)
 /*@
   MatMumpsSetIcntl - Set MUMPS parameter ICNTL()
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  F - the factored matrix obtained by calling `MatGetFactor()` from PETSc-MUMPS interface
-.  icntl - index of MUMPS parameter array ICNTL()
--  ival - value of MUMPS ICNTL(icntl)
+  Input Parameters:
++ F     - the factored matrix obtained by calling `MatGetFactor()` from PETSc-MUMPS interface
+. icntl - index of MUMPS parameter array ICNTL()
+- ival  - value of MUMPS ICNTL(icntl)
 
   Options Database Key:
-.   -mat_mumps_icntl_<icntl> <ival> - change the option numbered icntl to ival
+. -mat_mumps_icntl_<icntl> <ival> - change the option numbered icntl to ival
 
-   Level: beginner
+  Level: beginner
 
-   References:
+  References:
 .  * - MUMPS Users' Guide
 
 .seealso: [](ch_matrices), `Mat`, `MatGetFactor()`, `MatMumpsGetIcntl()`, `MatMumpsSetCntl()`, `MatMumpsGetCntl()`, `MatMumpsGetInfo()`, `MatMumpsGetInfog()`, `MatMumpsGetRinfo()`, `MatMumpsGetRinfog()`
@@ -2710,18 +2710,18 @@ PetscErrorCode MatMumpsSetIcntl(Mat F, PetscInt icntl, PetscInt ival)
 /*@
   MatMumpsGetIcntl - Get MUMPS parameter ICNTL()
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  F - the factored matrix obtained by calling `MatGetFactor()` from PETSc-MUMPS interface
--  icntl - index of MUMPS parameter array ICNTL()
+  Input Parameters:
++ F     - the factored matrix obtained by calling `MatGetFactor()` from PETSc-MUMPS interface
+- icntl - index of MUMPS parameter array ICNTL()
 
   Output Parameter:
-.  ival - value of MUMPS ICNTL(icntl)
+. ival - value of MUMPS ICNTL(icntl)
 
-   Level: beginner
+  Level: beginner
 
-   References:
+  References:
 .  * - MUMPS Users' Guide
 
 .seealso: [](ch_matrices), `Mat`, `MatGetFactor()`, `MatMumpsSetIcntl()`, `MatMumpsSetCntl()`, `MatMumpsGetCntl()`, `MatMumpsGetInfo()`, `MatMumpsGetInfog()`, `MatMumpsGetRinfo()`, `MatMumpsGetRinfog()`
@@ -2776,19 +2776,19 @@ PetscErrorCode MatMumpsGetCntl_MUMPS(Mat F, PetscInt icntl, PetscReal *val)
 /*@
   MatMumpsSetCntl - Set MUMPS parameter CNTL()
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  F - the factored matrix obtained by calling `MatGetFactor()` from PETSc-MUMPS interface
-.  icntl - index of MUMPS parameter array CNTL()
--  val - value of MUMPS CNTL(icntl)
+  Input Parameters:
++ F     - the factored matrix obtained by calling `MatGetFactor()` from PETSc-MUMPS interface
+. icntl - index of MUMPS parameter array CNTL()
+- val   - value of MUMPS CNTL(icntl)
 
   Options Database Key:
-.   -mat_mumps_cntl_<icntl> <val>  - change the option numbered icntl to ival
+. -mat_mumps_cntl_<icntl> <val> - change the option numbered icntl to ival
 
-   Level: beginner
+  Level: beginner
 
-   References:
+  References:
 .  * - MUMPS Users' Guide
 
 .seealso: [](ch_matrices), `Mat`, `MatGetFactor()`, `MatMumpsSetIcntl()`, `MatMumpsGetIcntl()`, `MatMumpsGetCntl()`, `MatMumpsGetInfo()`, `MatMumpsGetInfog()`, `MatMumpsGetRinfo()`, `MatMumpsGetRinfog()`
@@ -2808,18 +2808,18 @@ PetscErrorCode MatMumpsSetCntl(Mat F, PetscInt icntl, PetscReal val)
 /*@
   MatMumpsGetCntl - Get MUMPS parameter CNTL()
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  F - the factored matrix obtained by calling `MatGetFactor()` from PETSc-MUMPS interface
--  icntl - index of MUMPS parameter array CNTL()
+  Input Parameters:
++ F     - the factored matrix obtained by calling `MatGetFactor()` from PETSc-MUMPS interface
+- icntl - index of MUMPS parameter array CNTL()
 
   Output Parameter:
-.  val - value of MUMPS CNTL(icntl)
+. val - value of MUMPS CNTL(icntl)
 
-   Level: beginner
+  Level: beginner
 
-   References:
+  References:
 .  * - MUMPS Users' Guide
 
 .seealso: [](ch_matrices), `Mat`, `MatGetFactor()`, `MatMumpsSetIcntl()`, `MatMumpsGetIcntl()`, `MatMumpsSetCntl()`, `MatMumpsGetInfo()`, `MatMumpsGetInfog()`, `MatMumpsGetRinfo()`, `MatMumpsGetRinfog()`
@@ -2948,17 +2948,17 @@ PetscErrorCode MatMumpsGetInverse_MUMPS(Mat F, Mat spRHS)
 /*@
   MatMumpsGetInverse - Get user-specified set of entries in inverse of `A`
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameter:
-.  F - the factored matrix obtained by calling `MatGetFactor()` from PETSc-MUMPS interface
+  Input Parameter:
+. F - the factored matrix obtained by calling `MatGetFactor()` from PETSc-MUMPS interface
 
   Output Parameter:
 . spRHS - sequential sparse matrix in `MATTRANSPOSEVIRTUAL` format with requested entries of inverse of `A`
 
-   Level: beginner
+  Level: beginner
 
-   References:
+  References:
 .  * - MUMPS Users' Guide
 
 .seealso: [](ch_matrices), `Mat`, `MatGetFactor()`, `MatCreateTranspose()`
@@ -2986,17 +2986,17 @@ PetscErrorCode MatMumpsGetInverseTranspose_MUMPS(Mat F, Mat spRHST)
 /*@
   MatMumpsGetInverseTranspose - Get user-specified set of entries in inverse of matrix `A`^T
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameter:
-.  F - the factored matrix of A obtained by calling `MatGetFactor()` from PETSc-MUMPS interface
+  Input Parameter:
+. F - the factored matrix of A obtained by calling `MatGetFactor()` from PETSc-MUMPS interface
 
   Output Parameter:
 . spRHST - sequential sparse matrix in `MATAIJ` format containing the requested entries of inverse of `A`^T
 
-   Level: beginner
+  Level: beginner
 
-   References:
+  References:
 .  * - MUMPS Users' Guide
 
 .seealso: [](ch_matrices), `Mat`, `MatGetFactor()`, `MatCreateTranspose()`, `MatMumpsGetInverse()`
@@ -3018,18 +3018,18 @@ PetscErrorCode MatMumpsGetInverseTranspose(Mat F, Mat spRHST)
 /*@
   MatMumpsGetInfo - Get MUMPS parameter INFO()
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  F - the factored matrix obtained by calling `MatGetFactor()` from PETSc-MUMPS interface
--  icntl - index of MUMPS parameter array INFO()
+  Input Parameters:
++ F     - the factored matrix obtained by calling `MatGetFactor()` from PETSc-MUMPS interface
+- icntl - index of MUMPS parameter array INFO()
 
   Output Parameter:
-.  ival - value of MUMPS INFO(icntl)
+. ival - value of MUMPS INFO(icntl)
 
-   Level: beginner
+  Level: beginner
 
-   References:
+  References:
 .  * - MUMPS Users' Guide
 
 .seealso: [](ch_matrices), `Mat`, `MatGetFactor()`, `MatMumpsSetIcntl()`, `MatMumpsGetIcntl()`, `MatMumpsSetCntl()`, `MatMumpsGetCntl()`, `MatMumpsGetInfog()`, `MatMumpsGetRinfo()`, `MatMumpsGetRinfog()`
@@ -3047,18 +3047,18 @@ PetscErrorCode MatMumpsGetInfo(Mat F, PetscInt icntl, PetscInt *ival)
 /*@
   MatMumpsGetInfog - Get MUMPS parameter INFOG()
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  F - the factored matrix obtained by calling `MatGetFactor()` from PETSc-MUMPS interface
--  icntl - index of MUMPS parameter array INFOG()
+  Input Parameters:
++ F     - the factored matrix obtained by calling `MatGetFactor()` from PETSc-MUMPS interface
+- icntl - index of MUMPS parameter array INFOG()
 
   Output Parameter:
-.  ival - value of MUMPS INFOG(icntl)
+. ival - value of MUMPS INFOG(icntl)
 
-   Level: beginner
+  Level: beginner
 
-   References:
+  References:
 .  * - MUMPS Users' Guide
 
 .seealso: [](ch_matrices), `Mat`, `MatGetFactor()`, `MatMumpsSetIcntl()`, `MatMumpsGetIcntl()`, `MatMumpsSetCntl()`, `MatMumpsGetCntl()`, `MatMumpsGetInfo()`, `MatMumpsGetRinfo()`, `MatMumpsGetRinfog()`
@@ -3076,18 +3076,18 @@ PetscErrorCode MatMumpsGetInfog(Mat F, PetscInt icntl, PetscInt *ival)
 /*@
   MatMumpsGetRinfo - Get MUMPS parameter RINFO()
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  F - the factored matrix obtained by calling `MatGetFactor()` from PETSc-MUMPS interface
--  icntl - index of MUMPS parameter array RINFO()
+  Input Parameters:
++ F     - the factored matrix obtained by calling `MatGetFactor()` from PETSc-MUMPS interface
+- icntl - index of MUMPS parameter array RINFO()
 
   Output Parameter:
-.  val - value of MUMPS RINFO(icntl)
+. val - value of MUMPS RINFO(icntl)
 
-   Level: beginner
+  Level: beginner
 
-   References:
+  References:
 .  * - MUMPS Users' Guide
 
 .seealso: [](ch_matrices), `Mat`, `MatGetFactor()`, `MatMumpsSetIcntl()`, `MatMumpsGetIcntl()`, `MatMumpsSetCntl()`, `MatMumpsGetCntl()`, `MatMumpsGetInfo()`, `MatMumpsGetInfog()`, `MatMumpsGetRinfog()`
@@ -3105,18 +3105,18 @@ PetscErrorCode MatMumpsGetRinfo(Mat F, PetscInt icntl, PetscReal *val)
 /*@
   MatMumpsGetRinfog - Get MUMPS parameter RINFOG()
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  F - the factored matrix obtained by calling `MatGetFactor()` from PETSc-MUMPS interface
--  icntl - index of MUMPS parameter array RINFOG()
+  Input Parameters:
++ F     - the factored matrix obtained by calling `MatGetFactor()` from PETSc-MUMPS interface
+- icntl - index of MUMPS parameter array RINFOG()
 
   Output Parameter:
-.  val - value of MUMPS RINFOG(icntl)
+. val - value of MUMPS RINFOG(icntl)
 
-   Level: beginner
+  Level: beginner
 
-   References:
+  References:
 .  * - MUMPS Users' Guide
 
 .seealso: [](ch_matrices), `Mat`, `MatGetFactor()`, `MatMumpsSetIcntl()`, `MatMumpsGetIcntl()`, `MatMumpsSetCntl()`, `MatMumpsGetCntl()`, `MatMumpsGetInfo()`, `MatMumpsGetInfog()`, `MatMumpsGetRinfo()`
@@ -3134,19 +3134,19 @@ PetscErrorCode MatMumpsGetRinfog(Mat F, PetscInt icntl, PetscReal *val)
 /*@
   MatMumpsGetNullPivots - Get MUMPS parameter PIVNUL_LIST()
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameter:
-.  F - the factored matrix obtained by calling `MatGetFactor()` from PETSc-MUMPS interface
+  Input Parameter:
+. F - the factored matrix obtained by calling `MatGetFactor()` from PETSc-MUMPS interface
 
   Output Parameters:
-+  size - local size of the array. The size of the array is non-zero only on the host.
--  array - array of rows with null pivot, these rows follow 0-based indexing. The array gets allocated within the function and the user is responsible
++ size  - local size of the array. The size of the array is non-zero only on the host.
+- array - array of rows with null pivot, these rows follow 0-based indexing. The array gets allocated within the function and the user is responsible
            for freeing this array.
 
-   Level: beginner
+  Level: beginner
 
-   References:
+  References:
 .  * - MUMPS Users' Guide
 
 .seealso: [](ch_matrices), `Mat`, `MatGetFactor()`, `MatMumpsSetIcntl()`, `MatMumpsGetIcntl()`, `MatMumpsSetCntl()`, `MatMumpsGetCntl()`, `MatMumpsGetInfo()`, `MatMumpsGetInfog()`, `MatMumpsGetRinfo()`

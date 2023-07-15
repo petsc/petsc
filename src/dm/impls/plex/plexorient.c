@@ -144,7 +144,7 @@ static PetscErrorCode DMPlexCheckFace_Internal(DM dm, PetscInt *faceFIFO, PetscI
 
   Level: advanced
 
-.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMCreate()`, `DMPLEX`
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMCreate()`
 @*/
 PetscErrorCode DMPlexOrient(DM dm)
 {

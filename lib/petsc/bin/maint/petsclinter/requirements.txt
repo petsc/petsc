@@ -1,0 +1,3 @@
+# PETSc clang linter installation requirements
+clang
+colorama

@@ -409,17 +409,17 @@ static PetscErrorCode PCSetFromOptions_Redistribute(PC pc, PetscOptionItems *Pet
 }
 
 /*@
-   PCRedistributeGetKSP - Gets the `KSP` created by the `PCREDISTRIBUTE`
+  PCRedistributeGetKSP - Gets the `KSP` created by the `PCREDISTRIBUTE`
 
-   Not Collective
+  Not Collective
 
-   Input Parameter:
-.  pc - the preconditioner context
+  Input Parameter:
+. pc - the preconditioner context
 
-   Output Parameter:
-.  innerksp - the inner `KSP`
+  Output Parameter:
+. innerksp - the inner `KSP`
 
-   Level: advanced
+  Level: advanced
 
 .seealso: `KSP`, `PCREDISTRIBUTE`
 @*/

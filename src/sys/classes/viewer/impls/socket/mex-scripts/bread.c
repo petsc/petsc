@@ -63,19 +63,20 @@ void SYByteSwapScalar(PetscScalar *buff, int n)
     return PETSC_ERR_SYS; \
   }
 
+// PetscClangLinter pragma disable: -fdoc.*
 /*
-    PetscBinaryRead - Reads from a socket, called from MATLAB
+  PetscBinaryRead - Reads from a socket, called from MATLAB
 
   Input Parameters:
-+   fd - the file
-.   n  - the number of items to read
--   type - the type of items to read (PETSC_INT or PETSC_SCALAR)
++ fd   - the file
+. n    - the number of items to read
+- type - the type of items to read (PETSC_INT or PETSC_SCALAR)
 
   Output Parameter:
-.   p - the buffer
+. p - the buffer
 
   Notes:
-    does byte swapping to work on all machines.
+  does byte swapping to work on all machines.
 */
 PetscErrorCode PetscBinaryRead(int fd, void *p, int n, int *dummy, PetscDataType type)
 {

@@ -6,13 +6,13 @@
   Collective
 
   Input Parameters:
-+  da - the `DMDA`
-.  lower - a matstencil with i, j and k corresponding to the lower corner of the patch
-.  upper - a matstencil with i, j and k corresponding to the upper corner of the patch
--  offproc - indicate whether the returned IS will contain off process indices
++ da      - the `DMDA`
+. lower   - a matstencil with i, j and k corresponding to the lower corner of the patch
+. upper   - a matstencil with i, j and k corresponding to the upper corner of the patch
+- offproc - indicate whether the returned IS will contain off process indices
 
   Output Parameter:
-.  is - the `IS` corresponding to the patch
+. is - the `IS` corresponding to the patch
 
   Level: developer
 

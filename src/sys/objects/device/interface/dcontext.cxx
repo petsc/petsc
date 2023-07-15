@@ -60,6 +60,7 @@ public:
 
 static Petsc::ObjectPool<_p_PetscDeviceContext, PetscDeviceContextConstructor> contextPool;
 
+// PetscClangLinter pragma disable: -fdoc-section-header-unknown
 /*@C
   PetscDeviceContextCreate - Creates a `PetscDeviceContext`
 
@@ -100,6 +101,7 @@ PetscErrorCode PetscDeviceContextCreate(PetscDeviceContext *dctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+// PetscClangLinter pragma disable: -fdoc-section-header-unknown
 /*@C
   PetscDeviceContextDestroy - Frees a `PetscDeviceContext`
 
@@ -361,7 +363,7 @@ PetscErrorCode PetscDeviceContextGetDeviceType(PetscDeviceContext dctx, PetscDev
 
   Level: beginner
 
-  Developer Note:
+  Developer Notes:
   This routine is usually the stage where a `PetscDeviceContext` acquires device-side data
   structures such as streams, events, and (possibly) handles.
 
@@ -398,6 +400,7 @@ static PetscErrorCode PetscDeviceContextDuplicate_Private(PetscDeviceContext dct
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+// PetscClangLinter pragma disable: -fdoc-section-header-unknown
 /*@C
   PetscDeviceContextDuplicate - Duplicates a `PetscDeviceContext` object
 
@@ -473,6 +476,7 @@ PetscErrorCode PetscDeviceContextQueryIdle(PetscDeviceContext dctx, PetscBool *i
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+// PetscClangLinter pragma disable: -fdoc-section-header-unknown
 /*@C
   PetscDeviceContextWaitForContext - Make one context wait for another context to finish
 
@@ -524,6 +528,7 @@ PetscErrorCode PetscDeviceContextWaitForContext(PetscDeviceContext dctxa, PetscD
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+// PetscClangLinter pragma disable: -fdoc-section-header-unknown
 /*@C
   PetscDeviceContextForkWithStreamType - Create a set of dependent child contexts from a parent
   context with a prescribed `PetscStreamType`
@@ -673,16 +678,17 @@ PetscErrorCode PetscDeviceContextFork(PetscDeviceContext dctx, PetscInt n, Petsc
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+// PetscClangLinter pragma disable: -fdoc-section-header-unknown
 /*@C
   PetscDeviceContextJoin - Converge a set of child contexts
 
   Not Collective, Asynchronous
 
   Input Parameters:
-+ dctx         - A `PetscDeviceContext` to converge on
-. n            - The number of sub contexts to converge
-. joinMode     - The type of join to perform
-- dsub         - The sub contexts to converge
++ dctx     - A `PetscDeviceContext` to converge on
+. n        - The number of sub contexts to converge
+. joinMode - The type of join to perform
+- dsub     - The sub contexts to converge
 
   Level: beginner
 
@@ -798,6 +804,7 @@ PetscErrorCode PetscDeviceContextJoin(PetscDeviceContext dctx, PetscInt n, Petsc
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+// PetscClangLinter pragma disable: -fdoc-section-header-unknown
 /*@C
   PetscDeviceContextSynchronize - Block the host until all work queued on a
   `PetscDeviceContext` has finished
@@ -979,7 +986,7 @@ PetscErrorCode PetscDeviceContextSetFromOptions(MPI_Comm comm, PetscDeviceContex
   Collective on `viewer`
 
   Input Parameters:
-+ dctx - The `PetscDeviceContext`
++ dctx   - The `PetscDeviceContext`
 - viewer - The `PetscViewer` to view `dctx` with (may be `NULL`)
 
   Level: beginner

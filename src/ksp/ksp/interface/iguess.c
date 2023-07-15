@@ -3,29 +3,29 @@
 PetscFunctionList KSPGuessList = NULL;
 static PetscBool  KSPGuessRegisterAllCalled;
 
-/*
+/*@C
   KSPGuessRegister -  Adds a method for initial guess computation in Krylov subspace solver package.
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
+  Input Parameters:
 +  name_solver - name of a new user-defined solver
 -  routine_create - routine to create method context
 
-   Notes:
-   KSPGuessRegister() may be called multiple times to add several user-defined solvers.
+  Notes:
+  KSPGuessRegister() may be called multiple times to add several user-defined solvers.
 
-   Sample usage:
+  Example Usage:
 .vb
    KSPGuessRegister("my_initial_guess", MyInitialGuessCreate);
 .ve
 
-   Then, it can be chosen with the procedural interface via
+  Then, it can be chosen with the procedural interface via
 $     KSPSetGuessType(ksp, "my_initial_guess")
-   or at runtime via the option
+  or at runtime via the option
 $     -ksp_guess_type my_initial_guess
 
-   Level: developer
+  Level: developer
 
 .seealso: [](ch_ksp), `KSPGuess`, `KSPGuessRegisterAll()`
 @*/
@@ -57,14 +57,14 @@ PetscErrorCode KSPGuessRegisterAll(void)
 }
 
 /*@
-    KSPGuessSetFromOptions - Sets the options for a `KSPGuess` from the options database
+  KSPGuessSetFromOptions - Sets the options for a `KSPGuess` from the options database
 
-    Collective
+  Collective
 
-    Input Parameter:
-.    guess - `KSPGuess` object
+  Input Parameter:
+. guess - `KSPGuess` object
 
-   Level: developer
+  Level: developer
 
 .seealso: [](ch_ksp), `KSPGuess`, `KSPGetGuess()`, `KSPSetGuessType()`, `KSPGuessType`
 @*/
@@ -77,15 +77,15 @@ PetscErrorCode KSPGuessSetFromOptions(KSPGuess guess)
 }
 
 /*@
-    KSPGuessSetTolerance - Sets the relative tolerance used in either eigenvalue (POD) or singular value (Fischer type 3) calculations.
-    Ignored by the first and second Fischer types.
+  KSPGuessSetTolerance - Sets the relative tolerance used in either eigenvalue (POD) or singular value (Fischer type 3) calculations.
+  Ignored by the first and second Fischer types.
 
-    Collective
+  Collective
 
-    Input Parameter:
-.    guess - `KSPGuess` object
+  Input Parameter:
+. guess - `KSPGuess` object
 
-   Level: developer
+  Level: developer
 
 .seealso: [](ch_ksp), `KSPGuess`, `KSPGuessType`, `KSPGuessSetFromOptions()`
 @*/
@@ -98,14 +98,14 @@ PetscErrorCode KSPGuessSetTolerance(KSPGuess guess, PetscReal tol)
 }
 
 /*@
-   KSPGuessDestroy - Destroys `KSPGuess` context.
+  KSPGuessDestroy - Destroys `KSPGuess` context.
 
-   Collective
+  Collective
 
-   Input Parameter:
-.  guess - initial guess object
+  Input Parameter:
+. guess - initial guess object
 
-   Level: developer
+  Level: developer
 
 .seealso: [](ch_ksp), `KSPGuessCreate()`, `KSPGuess`, `KSPGuessType`
 @*/
@@ -125,13 +125,13 @@ PetscErrorCode KSPGuessDestroy(KSPGuess *guess)
 }
 
 /*@C
-   KSPGuessView - View the `KSPGuess` object
+  KSPGuessView - View the `KSPGuess` object
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  guess  - the initial guess object for the Krylov method
--  viewer - the viewer object
+  Input Parameters:
++ guess - the initial guess object for the Krylov method
+- view  - the viewer object
 
   Level: developer
 
@@ -157,17 +157,17 @@ PetscErrorCode KSPGuessView(KSPGuess guess, PetscViewer view)
 }
 
 /*@
-   KSPGuessCreate - Creates the default `KSPGuess` context.
+  KSPGuessCreate - Creates the default `KSPGuess` context.
 
-   Collective
+  Collective
 
-   Input Parameter:
-.  comm - MPI communicator
+  Input Parameter:
+. comm - MPI communicator
 
-   Output Parameter:
-.  guess - location to put the `KSPGuess` context
+  Output Parameter:
+. guess - location to put the `KSPGuess` context
 
-   Level: developer
+  Level: developer
 
 .seealso: [](ch_ksp), `KSPSolve()`, `KSPGuessDestroy()`, `KSPGuess`, `KSPGuessType`, `KSP`
 @*/
@@ -186,16 +186,16 @@ PetscErrorCode KSPGuessCreate(MPI_Comm comm, KSPGuess *guess)
 }
 
 /*@C
-   KSPGuessSetType - Sets the type of a `KSPGuess`
+  KSPGuessSetType - Sets the type of a `KSPGuess`
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  guess - the initial guess object for the Krylov method
--  type  - a known `KSPGuessType`
+  Input Parameters:
++ guess - the initial guess object for the Krylov method
+- type  - a known `KSPGuessType`
 
-   Options Database Key:
-.  -ksp_guess_type  <method> - Sets the method; use -help for a list of available methods
+  Options Database Key:
+. -ksp_guess_type  <method> - Sets the method; use -help for a list of available methods
 
   Level: developer
 
@@ -225,17 +225,17 @@ PetscErrorCode KSPGuessSetType(KSPGuess guess, KSPGuessType type)
 }
 
 /*@C
-   KSPGuessGetType - Gets the `KSPGuessType` as a string from the `KSPGuess` object.
+  KSPGuessGetType - Gets the `KSPGuessType` as a string from the `KSPGuess` object.
 
-   Not Collective
+  Not Collective
 
-   Input Parameter:
-.  guess - the initial guess context
+  Input Parameter:
+. guess - the initial guess context
 
-   Output Parameter:
-.  name - type of `KSPGuess` method
+  Output Parameter:
+. type - type of `KSPGuess` method
 
-   Level: developer
+  Level: developer
 
 .seealso: [](ch_ksp), `KSPGuess`, `KSPGuessSetType()`
 @*/
@@ -249,16 +249,16 @@ PetscErrorCode KSPGuessGetType(KSPGuess guess, KSPGuessType *type)
 }
 
 /*@
-    KSPGuessUpdate - Updates the guess object with the current solution and rhs vector
+  KSPGuessUpdate - Updates the guess object with the current solution and rhs vector
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  guess - the initial guess context
-.  rhs   - the corresponding rhs
--  sol   - the computed solution
+  Input Parameters:
++ guess - the initial guess context
+. rhs   - the corresponding rhs
+- sol   - the computed solution
 
-   Level: developer
+  Level: developer
 
 .seealso: [](ch_ksp), `KSPGuessCreate()`, `KSPGuess`
 @*/
@@ -273,16 +273,16 @@ PetscErrorCode KSPGuessUpdate(KSPGuess guess, Vec rhs, Vec sol)
 }
 
 /*@
-    KSPGuessFormGuess - Form the initial guess
+  KSPGuessFormGuess - Form the initial guess
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  guess - the initial guess context
-.  rhs   - the current rhs vector
--  sol   - the initial guess vector
+  Input Parameters:
++ guess - the initial guess context
+. rhs   - the current rhs vector
+- sol   - the initial guess vector
 
-   Level: developer
+  Level: developer
 
 .seealso: [](ch_ksp), `KSPGuessCreate()`, `KSPGuess`
 @*/
@@ -297,14 +297,14 @@ PetscErrorCode KSPGuessFormGuess(KSPGuess guess, Vec rhs, Vec sol)
 }
 
 /*@
-    KSPGuessSetUp - Setup the initial guess object
+  KSPGuessSetUp - Setup the initial guess object
 
-   Collective
+  Collective
 
-   Input Parameter:
--  guess - the initial guess context
+  Input Parameter:
+. guess - the initial guess context
 
-   Level: developer
+  Level: developer
 
 .seealso: [](ch_ksp), `KSPGuessCreate()`, `KSPGuess`
 @*/

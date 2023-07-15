@@ -43,16 +43,16 @@ static PetscErrorCode MatSTRUMPACKSetReordering_STRUMPACK(Mat F, MatSTRUMPACKReo
 /*@
   MatSTRUMPACKSetReordering - Set STRUMPACK fill-reducing reordering
 
-   Input Parameters:
-+  F - the factored matrix obtained by calling `MatGetFactor()`
--  reordering - the code to be used to find the fill-reducing reordering, see `MatSTRUMPACKReordering`
+  Input Parameters:
++ F          - the factored matrix obtained by calling `MatGetFactor()`
+- reordering - the code to be used to find the fill-reducing reordering, see `MatSTRUMPACKReordering`
 
   Options Database Key:
-.   -mat_strumpack_reordering <METIS>  - Sparsity reducing matrix reordering, see `MatSTRUMPACKReordering`
+. -mat_strumpack_reordering <METIS> - Sparsity reducing matrix reordering, see `MatSTRUMPACKReordering`
 
-   Level: beginner
+  Level: beginner
 
-   References:
+  References:
 .  * - STRUMPACK manual
 
 .seealso: [](ch_matrices), `Mat`, `MatSTRUMPACKReordering`, `MatGetFactor()`, `MatSTRUMPACKSetColPerm()`, `MatSTRUMPACKSetHSSRelTol()`,
@@ -79,18 +79,18 @@ static PetscErrorCode MatSTRUMPACKSetColPerm_STRUMPACK(Mat F, PetscBool cperm)
 /*@
   MatSTRUMPACKSetColPerm - Set whether STRUMPACK should try to permute the columns of the matrix in order to get a nonzero diagonal
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  F - the factored matrix obtained by calling `MatGetFactor()`
--  cperm - `PETSC_TRUE` to permute (internally) the columns of the matrix
+  Input Parameters:
++ F     - the factored matrix obtained by calling `MatGetFactor()`
+- cperm - `PETSC_TRUE` to permute (internally) the columns of the matrix
 
   Options Database Key:
-.   -mat_strumpack_colperm <cperm> - true to use the permutation
+. -mat_strumpack_colperm <cperm> - true to use the permutation
 
-   Level: beginner
+  Level: beginner
 
-   References:
+  References:
 .  * - STRUMPACK manual
 
 .seealso: [](ch_matrices), `MatSTRUMPACKSetReordering()`, `Mat`, `MatGetFactor()`, `MatSTRUMPACKSetHSSRelTol()`, `MatSTRUMPACKSetHSSAbsTol()`,
@@ -119,16 +119,16 @@ static PetscErrorCode MatSTRUMPACKSetHSSRelTol_STRUMPACK(Mat F, PetscReal rtol)
 
   Logically Collective
 
-   Input Parameters:
-+  F - the factored matrix obtained by calling `MatGetFactor()`
--  rtol - relative compression tolerance
+  Input Parameters:
++ F    - the factored matrix obtained by calling `MatGetFactor()`
+- rtol - relative compression tolerance
 
   Options Database Key:
-.   -mat_strumpack_hss_rel_tol <1e-2>         - Relative compression tolerance (None)
+. -mat_strumpack_hss_rel_tol <1e-2> - Relative compression tolerance (None)
 
-   Level: beginner
+  Level: beginner
 
-   References:
+  References:
 .  * - STRUMPACK manual
 
 .seealso: [](ch_matrices), `Mat`, `MatGetFactor()`, `MatSTRUMPACKSetReordering()`, `MatSTRUMPACKSetColPerm()`, `MatSTRUMPACKSetHSSAbsTol()`,
@@ -155,18 +155,18 @@ static PetscErrorCode MatSTRUMPACKSetHSSAbsTol_STRUMPACK(Mat F, PetscReal atol)
 /*@
   MatSTRUMPACKSetHSSAbsTol - Set STRUMPACK absolute tolerance for HSS compression
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  F - the factored matrix obtained by calling `MatGetFactor()`
--  atol - absolute compression tolerance
+  Input Parameters:
++ F    - the factored matrix obtained by calling `MatGetFactor()`
+- atol - absolute compression tolerance
 
   Options Database Key:
-.   -mat_strumpack_hss_abs_tol <1e-8>         - Absolute compression tolerance (None)
+. -mat_strumpack_hss_abs_tol <1e-8> - Absolute compression tolerance (None)
 
-   Level: beginner
+  Level: beginner
 
-   References:
+  References:
 .  * - STRUMPACK manual
 
 .seealso: [](ch_matrices), `Mat`, `MatGetFactor()`, `MatSTRUMPACKSetReordering()`, `MatSTRUMPACKSetColPerm()`, `MatSTRUMPACKSetHSSRelTol()`,
@@ -193,18 +193,18 @@ static PetscErrorCode MatSTRUMPACKSetHSSMaxRank_STRUMPACK(Mat F, PetscInt hssmax
 /*@
   MatSTRUMPACKSetHSSMaxRank - Set STRUMPACK maximum HSS rank
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  F - the factored matrix obtained by calling `MatGetFactor()`
--  hssmaxrank - maximum rank used in low-rank approximation
+  Input Parameters:
++ F          - the factored matrix obtained by calling `MatGetFactor()`
+- hssmaxrank - maximum rank used in low-rank approximation
 
   Options Database Key:
-.   -mat_strumpack_max_rank - Maximum rank in HSS compression, when using pctype ilu (None)
+. -mat_strumpack_max_rank - Maximum rank in HSS compression, when using pctype ilu (None)
 
-   Level: beginner
+  Level: beginner
 
-   References:
+  References:
 .  * - STRUMPACK manual
 
 .seealso: [](ch_matrices), `Mat`, `MatGetFactor()`, `MatSTRUMPACKSetReordering()`, `MatSTRUMPACKSetColPerm()`, `MatSTRUMPACKSetHSSRelTol()`,
@@ -231,18 +231,18 @@ static PetscErrorCode MatSTRUMPACKSetHSSLeafSize_STRUMPACK(Mat F, PetscInt leaf_
 /*@
   MatSTRUMPACKSetHSSLeafSize - Set STRUMPACK HSS leaf size
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  F - the factored matrix obtained by calling `MatGetFactor()`
--  leaf_size - Size of diagonal blocks in HSS approximation
+  Input Parameters:
++ F         - the factored matrix obtained by calling `MatGetFactor()`
+- leaf_size - Size of diagonal blocks in HSS approximation
 
   Options Database Key:
-.   -mat_strumpack_leaf_size - Size of diagonal blocks in HSS approximation, when using pctype ilu (None)
+. -mat_strumpack_leaf_size - Size of diagonal blocks in HSS approximation, when using pctype ilu (None)
 
-   Level: beginner
+  Level: beginner
 
-   References:
+  References:
 .  * - STRUMPACK manual
 
 .seealso: [](ch_matrices), `Mat`, `MatGetFactor()`, `MatSTRUMPACKSetReordering()`, `MatSTRUMPACKSetColPerm()`, `MatSTRUMPACKSetHSSRelTol()`,
@@ -269,18 +269,18 @@ static PetscErrorCode MatSTRUMPACKSetHSSMinSepSize_STRUMPACK(Mat F, PetscInt hss
 /*@
   MatSTRUMPACKSetHSSMinSepSize - Set STRUMPACK minimum separator size for low-rank approximation
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  F - the factored matrix obtained by calling `MatGetFactor()`
--  hssminsize - minimum dense matrix size for low-rank approximation
+  Input Parameters:
++ F          - the factored matrix obtained by calling `MatGetFactor()`
+- hssminsize - minimum dense matrix size for low-rank approximation
 
   Options Database Key:
-.   -mat_strumpack_hss_min_sep_size <hssminsize> - set the minimum separator size
+. -mat_strumpack_hss_min_sep_size <hssminsize> - set the minimum separator size
 
-   Level: beginner
+  Level: beginner
 
-   References:
+  References:
 .  * - STRUMPACK manual
 
 .seealso: [](ch_matrices), `Mat`, `MatGetFactor()`, `MatSTRUMPACKSetReordering()`, `MatSTRUMPACKSetColPerm()`, `MatSTRUMPACKSetHSSRelTol()`,

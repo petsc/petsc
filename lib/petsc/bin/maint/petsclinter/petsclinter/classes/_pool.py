@@ -128,7 +128,7 @@ class WorkerPool(mp.queues.JoinableQueue):
           raise ValueError(f'Unknown data returned by return_queue {signal}, {data}')
     return
 
-  def setup(self, compiler_flags, clang_lib=None, clang_options=None, werror=False):
+  def setup(self, compiler_flags, clang_lib=None, clang_options=None, clang_compat_check=True, werror=False):
     if clang_lib is None:
       assert clx.conf.loaded, 'Must initialize libClang first'
       clang_lib = clx.conf.get_filename()
@@ -144,8 +144,9 @@ class WorkerPool(mp.queues.JoinableQueue):
         mp.Process(
           target=queue_main,
           args=(
-            clang_lib, check_function_map, classid_map, DiagnosticManager, compiler_flags,
-            clang_options, self.verbose, werror, self.error_queue, self.return_queue, self, self.lock
+            clang_lib, clang_compat_check, check_function_map, classid_map, DiagnosticManager,
+            compiler_flags, clang_options, self.verbose, werror, self.error_queue, self.return_queue,
+            self, self.lock
           ),
           name=f'[{i}]'
         )

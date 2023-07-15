@@ -80,11 +80,11 @@ PetscErrorCode TSBasicSymplecticRegisterAll(void)
 }
 
 /*@C
-   TSBasicSymplecticRegisterDestroy - Frees the list of schemes that were registered by `TSBasicSymplecticRegister()`.
+  TSBasicSymplecticRegisterDestroy - Frees the list of schemes that were registered by `TSBasicSymplecticRegister()`.
 
-   Not Collective
+  Not Collective
 
-   Level: advanced
+  Level: advanced
 
 .seealso: [](ch_ts), `TSBasicSymplecticRegister()`, `TSBasicSymplecticRegisterAll()`, `TSBASICSYMPLECTIC`
 @*/
@@ -139,21 +139,21 @@ PetscErrorCode TSBasicSymplecticFinalizePackage(void)
 }
 
 /*@C
-   TSBasicSymplecticRegister - register a basic symplectic integration scheme by providing the coefficients.
+  TSBasicSymplecticRegister - register a basic symplectic integration scheme by providing the coefficients.
 
-   Not Collective, but the same schemes should be registered on all processes on which they will be used
+  Not Collective, but the same schemes should be registered on all processes on which they will be used
 
-   Input Parameters:
-+  name - identifier for method
-.  order - approximation order of method
-.  s - number of stages, this is the dimension of the matrices below
-.  c - coefficients for updating generalized position (dimension s)
--  d - coefficients for updating generalized momentum (dimension s)
+  Input Parameters:
++ name  - identifier for method
+. order - approximation order of method
+. s     - number of stages, this is the dimension of the matrices below
+. c     - coefficients for updating generalized position (dimension s)
+- d     - coefficients for updating generalized momentum (dimension s)
 
-   Level: advanced
+  Level: advanced
 
-   Notes:
-   Several symplectic methods are provided, this function is only needed to create new methods.
+  Notes:
+  Several symplectic methods are provided, this function is only needed to create new methods.
 
 .seealso: [](ch_ts), `TSBASICSYMPLECTIC`
 @*/
@@ -375,17 +375,17 @@ static PetscErrorCode TSComputeLinearStability_BasicSymplectic(TS ts, PetscReal 
   Logically Collective
 
   Input Parameters:
-+  ts - timestepping context
--  bsymptype - type of the symplectic scheme
++ ts        - timestepping context
+- bsymptype - type of the symplectic scheme
 
   Options Database Key:
-.  -ts_basicsymplectic_type <scheme> - select the scheme
+. -ts_basicsymplectic_type <scheme> - select the scheme
 
   Level: intermediate
 
   Note:
-    The symplectic solver always expects a two-way splitting with the split names being "position" and "momentum". Each split is associated with an `IS` object and a sub-`TS`
-    that is intended to store the user-provided RHS function.
+  The symplectic solver always expects a two-way splitting with the split names being "position" and "momentum". Each split is associated with an `IS` object and a sub-`TS`
+  that is intended to store the user-provided RHS function.
 
 .seealso: [](ch_ts), `TSBASICSYMPLECTIC`, `TSBasicSymplecticType`, `TSBasicSymplecticSetType()`
 @*/
@@ -403,8 +403,8 @@ PetscErrorCode TSBasicSymplecticSetType(TS ts, TSBasicSymplecticType bsymptype)
   Logically Collective
 
   Input Parameters:
-+  ts - timestepping context
--  bsymptype - type of the basic symplectic scheme
++ ts        - timestepping context
+- bsymptype - type of the basic symplectic scheme
 
   Level: intermediate
 

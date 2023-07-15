@@ -112,7 +112,7 @@ PETSC_INTERN PetscErrorCode PetscLogView_Flamegraph(PetscViewer);
   Options Database Keys:
 . -log_view :filename.xml:ascii_xml - Prints an XML summary of flop and timing information to the file
 
-  Usage:
+  Example Usage:
 .vb
       PetscInitialize(...);
       PetscLogNestedBegin();
@@ -397,21 +397,21 @@ static PetscErrorCode PetscLogEventEndNested(NestedEventId nstEvent, int t, Pets
 }
 
 /*@
-   PetscLogSetThreshold - Set the threshold time for logging the events; this is a percentage out of 100, so 1. means any event
-          that takes 1 or more percent of the time.
+  PetscLogSetThreshold - Set the threshold time for logging the events; this is a percentage out of 100, so 1. means any event
+  that takes 1 or more percent of the time.
 
   Logically Collective over `PETSC_COMM_WORLD`
 
   Input Parameter:
-.   newThresh - the threshold to use
+. newThresh - the threshold to use
 
   Output Parameter:
-.   oldThresh - the previously set threshold value
+. oldThresh - the previously set threshold value
 
   Options Database Keys:
 . -log_view :filename.xml:ascii_xml - Prints an XML summary of flop and timing information to the file
 
-  Usage:
+  Example Usage:
 .vb
       PetscInitialize(...);
       PetscLogNestedBegin();

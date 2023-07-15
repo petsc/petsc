@@ -29,13 +29,13 @@ static PetscErrorCode VecCreate_Common_Private(Vec v)
 . comm - The communicator for the vector object
 
   Output Parameter:
-. vec  - The vector object
+. vec - The vector object
 
   Level: beginner
 
   Notes:
-   If you never  call `VecSetType()` or `VecSetFromOptions()` it will generate an
-   error when you try to use the vector.
+  If you never  call `VecSetType()` or `VecSetFromOptions()` it will generate an
+  error when you try to use the vector.
 
 .seealso: [](ch_vectors), `Vec`, `VecSetType()`, `VecSetSizes()`, `VecCreateMPIWithArray()`, `VecCreateMPI()`, `VecDuplicate()`,
           `VecDuplicateVecs()`, `VecCreateGhost()`, `VecCreateSeq()`, `VecPlaceArray()`

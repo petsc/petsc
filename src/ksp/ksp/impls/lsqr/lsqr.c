@@ -254,18 +254,18 @@ PetscErrorCode KSPDestroy_LSQR(KSP ksp)
 }
 
 /*@
-   KSPLSQRSetComputeStandardErrorVec - Compute a vector of standard error estimates during `KSPSolve()` for  `KSPLSQR`.
+  KSPLSQRSetComputeStandardErrorVec - Compute a vector of standard error estimates during `KSPSolve()` for  `KSPLSQR`.
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  ksp   - iterative context
--  flg   - compute the vector of standard estimates or not
+  Input Parameters:
++ ksp - iterative context
+- flg - compute the vector of standard estimates or not
 
-   Level: intermediate
+  Level: intermediate
 
-   Developer Note:
-   Vaclav: I'm not sure whether this vector is useful for anything.
+  Developer Notes:
+  Vaclav: I'm not sure whether this vector is useful for anything.
 
 .seealso: [](ch_ksp), `KSPSolve()`, `KSPLSQR`, `KSPLSQRGetStandardErrorVec()`
 @*/
@@ -279,20 +279,20 @@ PetscErrorCode KSPLSQRSetComputeStandardErrorVec(KSP ksp, PetscBool flg)
 }
 
 /*@
-   KSPLSQRSetExactMatNorm - Compute exact matrix norm instead of iteratively refined estimate.
+  KSPLSQRSetExactMatNorm - Compute exact matrix norm instead of iteratively refined estimate.
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  ksp   - iterative context
--  flg   - compute exact matrix norm or not
+  Input Parameters:
++ ksp - iterative context
+- flg - compute exact matrix norm or not
 
-   Level: intermediate
+  Level: intermediate
 
-   Notes:
-   By default, flg = `PETSC_FALSE`. This is usually preferred to avoid possibly expensive computation of the norm.
-   For flg = `PETSC_TRUE`, we call `MatNorm`(Amat,`NORM_FROBENIUS`,&lsqr->anorm) which will work only for some types of explicitly assembled matrices.
-   This can affect convergence rate as `KSPLSQRConvergedDefault()` assumes different value of ||A|| used in normal equation stopping criterion.
+  Notes:
+  By default, flg = `PETSC_FALSE`. This is usually preferred to avoid possibly expensive computation of the norm.
+  For flg = `PETSC_TRUE`, we call `MatNorm`(Amat,`NORM_FROBENIUS`,&lsqr->anorm) which will work only for some types of explicitly assembled matrices.
+  This can affect convergence rate as `KSPLSQRConvergedDefault()` assumes different value of ||A|| used in normal equation stopping criterion.
 
 .seealso: [](ch_ksp), `KSPSolve()`, `KSPLSQR`, `KSPLSQRGetNorms()`, `KSPLSQRConvergedDefault()`
 @*/
@@ -306,23 +306,23 @@ PetscErrorCode KSPLSQRSetExactMatNorm(KSP ksp, PetscBool flg)
 }
 
 /*@
-   KSPLSQRGetStandardErrorVec - Get vector of standard error estimates.
-   Only available if -ksp_lsqr_set_standard_error was set to true
-   or `KSPLSQRSetComputeStandardErrorVec`(ksp, `PETSC_TRUE`) was called.
-   Otherwise returns NULL.
+  KSPLSQRGetStandardErrorVec - Get vector of standard error estimates.
+  Only available if -ksp_lsqr_set_standard_error was set to true
+  or `KSPLSQRSetComputeStandardErrorVec`(ksp, `PETSC_TRUE`) was called.
+  Otherwise returns NULL.
 
-   Not Collective
+  Not Collective
 
-   Input Parameter:
-.  ksp   - iterative context
+  Input Parameter:
+. ksp - iterative context
 
-   Output Parameter:
-.  se - vector of standard estimates
+  Output Parameter:
+. se - vector of standard estimates
 
-   Level: intermediate
+  Level: intermediate
 
-   Developer Note:
-   Vaclav: I'm not sure whether this vector is useful for anything.
+  Developer Notes:
+  Vaclav: I'm not sure whether this vector is useful for anything.
 
 .seealso: [](ch_ksp), `KSPSolve()`, `KSPLSQR`, `KSPLSQRSetComputeStandardErrorVec()`
 @*/
@@ -336,25 +336,25 @@ PetscErrorCode KSPLSQRGetStandardErrorVec(KSP ksp, Vec *se)
 }
 
 /*@
-   KSPLSQRGetNorms - Get the norm estimates that `KSPLSQR` computes internally during `KSPSolve()`.
+  KSPLSQRGetNorms - Get the norm estimates that `KSPLSQR` computes internally during `KSPSolve()`.
 
-   Not Collective
+  Not Collective
 
-   Input Parameter:
-.  ksp   - iterative context
+  Input Parameter:
+. ksp - iterative context
 
-   Output Parameters:
-+  arnorm - good estimate of norm((A*inv(Pmat))'*r), where r = A*x - b, used in specific stopping criterion
--  anorm - poor estimate of norm(A*inv(Pmat),'fro') used in specific stopping criterion
+  Output Parameters:
++ arnorm - good estimate of norm((A*inv(Pmat))'*r), where r = A*x - b, used in specific stopping criterion
+- anorm  - poor estimate of norm(A*inv(Pmat),'fro') used in specific stopping criterion
 
-   Notes:
-   Output parameters are meaningful only after `KSPSolve()`.
+  Notes:
+  Output parameters are meaningful only after `KSPSolve()`.
 
-   These are the same quantities as normar and norma in MATLAB's `lsqr()`, whose output lsvec is a vector of normar / norma for all iterations.
+  These are the same quantities as normar and norma in MATLAB's `lsqr()`, whose output lsvec is a vector of normar / norma for all iterations.
 
-   If -ksp_lsqr_exact_mat_norm is set or `KSPLSQRSetExactMatNorm`(ksp, `PETSC_TRUE`) called, then anorm is the exact Frobenius norm.
+  If -ksp_lsqr_exact_mat_norm is set or `KSPLSQRSetExactMatNorm`(ksp, `PETSC_TRUE`) called, then anorm is the exact Frobenius norm.
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: [](ch_ksp), `KSPSolve()`, `KSPLSQR`, `KSPLSQRSetExactMatNorm()`
 @*/
@@ -491,7 +491,7 @@ PetscErrorCode KSPLSQRMonitorResidualDrawLG(KSP ksp, PetscInt n, PetscReal rnorm
 - ctx    - An optional user context
 
   Output Parameter:
-. vf    - The viewer context
+. vf - The viewer context
 
   Level: intermediate
 
@@ -546,32 +546,32 @@ PetscErrorCode KSPView_LSQR(KSP ksp, PetscViewer viewer)
 }
 
 /*@C
-   KSPLSQRConvergedDefault - Determines convergence of the `KSPLSQR` Krylov method.
+  KSPLSQRConvergedDefault - Determines convergence of the `KSPLSQR` Krylov method.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  ksp   - iterative context
-.  n     - iteration number
-.  rnorm - 2-norm residual value (may be estimated)
--  ctx - convergence context which must be created by `KSPConvergedDefaultCreate()`
+  Input Parameters:
++ ksp   - iterative context
+. n     - iteration number
+. rnorm - 2-norm residual value (may be estimated)
+- ctx   - convergence context which must be created by `KSPConvergedDefaultCreate()`
 
-   reason is set to:
+  reason is set to:
 +   positive - if the iteration has converged;
 .   negative - if residual norm exceeds divergence threshold;
 -   0 - otherwise.
 
-   Notes:
-   `KSPConvergedDefault()` is called first to check for convergence in A*x=b.
-   If that does not determine convergence then checks convergence for the least squares problem, i.e. in min{|b-A*x|}.
-   Possible convergence for the least squares problem (which is based on the residual of the normal equations) are `KSP_CONVERGED_RTOL_NORMAL` norm
-   and `KSP_CONVERGED_ATOL_NORMAL`.
+  Notes:
+  `KSPConvergedDefault()` is called first to check for convergence in A*x=b.
+  If that does not determine convergence then checks convergence for the least squares problem, i.e. in min{|b-A*x|}.
+  Possible convergence for the least squares problem (which is based on the residual of the normal equations) are `KSP_CONVERGED_RTOL_NORMAL` norm
+  and `KSP_CONVERGED_ATOL_NORMAL`.
 
-   `KSP_CONVERGED_RTOL_NORMAL` is returned if ||A'*r|| < rtol * ||A|| * ||r||.
-   Matrix norm ||A|| is iteratively refined estimate, see `KSPLSQRGetNorms()`.
-   This criterion is now largely compatible with that in MATLAB `lsqr()`.
+  `KSP_CONVERGED_RTOL_NORMAL` is returned if ||A'*r|| < rtol * ||A|| * ||r||.
+  Matrix norm ||A|| is iteratively refined estimate, see `KSPLSQRGetNorms()`.
+  This criterion is now largely compatible with that in MATLAB `lsqr()`.
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: [](ch_ksp), `KSPLSQR`, `KSPSetConvergenceTest()`, `KSPSetTolerances()`, `KSPConvergedSkip()`, `KSPConvergedReason`, `KSPGetConvergedReason()`,
           `KSPConvergedDefaultSetUIRNorm()`, `KSPConvergedDefaultSetUMIRNorm()`, `KSPConvergedDefaultCreate()`, `KSPConvergedDefaultDestroy()`, `KSPConvergedDefault()`, `KSPLSQRGetNorms()`, `KSPLSQRSetExactMatNorm()`

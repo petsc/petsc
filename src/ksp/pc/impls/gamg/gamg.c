@@ -867,22 +867,22 @@ PetscErrorCode PCDestroy_GAMG(PC pc)
 }
 
 /*@
-   PCGAMGSetProcEqLim - Set number of equations to aim for per process on the coarse grids via processor reduction in `PCGAMG`
+  PCGAMGSetProcEqLim - Set number of equations to aim for per process on the coarse grids via processor reduction in `PCGAMG`
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  pc - the preconditioner context
--  n - the number of equations
+  Input Parameters:
++ pc - the preconditioner context
+- n  - the number of equations
 
-   Options Database Key:
-.  -pc_gamg_process_eq_limit <limit> - set the limit
+  Options Database Key:
+. -pc_gamg_process_eq_limit <limit> - set the limit
 
-   Level: intermediate
+  Level: intermediate
 
-   Note:
-   `PCGAMG` will reduce the number of MPI processes used directly on the coarse grids so that there are around <limit> equations on each process
-   that has degrees of freedom
+  Note:
+  `PCGAMG` will reduce the number of MPI processes used directly on the coarse grids so that there are around <limit> equations on each process
+  that has degrees of freedom
 
 .seealso: `PCGAMG`, `PCGAMGSetCoarseEqLim()`, `PCGAMGSetRankReductionFactors()`, `PCGAMGSetRepartition()`
 @*/
@@ -905,22 +905,22 @@ static PetscErrorCode PCGAMGSetProcEqLim_GAMG(PC pc, PetscInt n)
 }
 
 /*@
-   PCGAMGSetCoarseEqLim - Set maximum number of equations on the coarsest grid of `PCGAMG`
+  PCGAMGSetCoarseEqLim - Set maximum number of equations on the coarsest grid of `PCGAMG`
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  pc - the preconditioner context
--  n - maximum number of equations to aim for
+  Input Parameters:
++ pc - the preconditioner context
+- n  - maximum number of equations to aim for
 
-   Options Database Key:
-.  -pc_gamg_coarse_eq_limit <limit> - set the limit
+  Options Database Key:
+. -pc_gamg_coarse_eq_limit <limit> - set the limit
 
-   Level: intermediate
+  Level: intermediate
 
-   Note:
-   For example -pc_gamg_coarse_eq_limit 1000 will stop coarsening once the coarse grid
-   has less than 1000 unknowns.
+  Note:
+  For example -pc_gamg_coarse_eq_limit 1000 will stop coarsening once the coarse grid
+  has less than 1000 unknowns.
 
 .seealso: `PCGAMG`, `PCGAMGSetProcEqLim()`, `PCGAMGSetRankReductionFactors()`, `PCGAMGSetRepartition()`
 @*/
@@ -943,21 +943,21 @@ static PetscErrorCode PCGAMGSetCoarseEqLim_GAMG(PC pc, PetscInt n)
 }
 
 /*@
-   PCGAMGSetRepartition - Repartition the degrees of freedom across the processors on the coarser grids when reducing the number of MPI ranks to use
+  PCGAMGSetRepartition - Repartition the degrees of freedom across the processors on the coarser grids when reducing the number of MPI ranks to use
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  pc - the preconditioner context
--  n - `PETSC_TRUE` or `PETSC_FALSE`
+  Input Parameters:
++ pc - the preconditioner context
+- n  - `PETSC_TRUE` or `PETSC_FALSE`
 
-   Options Database Key:
-.  -pc_gamg_repartition <true,false> - turn on the repartitioning
+  Options Database Key:
+. -pc_gamg_repartition <true,false> - turn on the repartitioning
 
-   Level: intermediate
+  Level: intermediate
 
-   Note:
-   This will generally improve the loading balancing of the work on each level
+  Note:
+  This will generally improve the loading balancing of the work on each level
 
 .seealso: `PCGAMG`, `PCGAMGSetProcEqLim()`, `PCGAMGSetRankReductionFactors()`
 @*/
@@ -980,25 +980,25 @@ static PetscErrorCode PCGAMGSetRepartition_GAMG(PC pc, PetscBool n)
 }
 
 /*@
-   PCGAMGSetUseSAEstEig - Use the eigen estimate from smoothed aggregation for the Chebyshev smoother during the solution process
+  PCGAMGSetUseSAEstEig - Use the eigen estimate from smoothed aggregation for the Chebyshev smoother during the solution process
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  pc - the preconditioner context
--  n - number of its
+  Input Parameters:
++ pc - the preconditioner context
+- n  - number of its
 
-   Options Database Key:
-.  -pc_gamg_use_sa_esteig <true,false> - use the eigen estimate
+  Options Database Key:
+. -pc_gamg_use_sa_esteig <true,false> - use the eigen estimate
 
-   Level: advanced
+  Level: advanced
 
-   Notes:
-   Smoothed aggregation constructs the smoothed prolongator $P = (I - \omega D^{-1} A) T$ where $T$ is the tentative prolongator and $D$ is the diagonal of $A$.
-   Eigenvalue estimates (based on a few `PCCG` or `PCGMRES` iterations) are computed to choose $\omega$ so that this is a stable smoothing operation.
-   If Chebyshev with Jacobi (diagonal) preconditioning is used for smoothing, then the eigenvalue estimates can be reused during the solution process
-   This option is only used when the smoother uses Jacobi, and should be turned off if a different `PCJacobiType` is used.
-   It became default in PETSc 3.17.
+  Notes:
+  Smoothed aggregation constructs the smoothed prolongator $P = (I - \omega D^{-1} A) T$ where $T$ is the tentative prolongator and $D$ is the diagonal of $A$.
+  Eigenvalue estimates (based on a few `PCCG` or `PCGMRES` iterations) are computed to choose $\omega$ so that this is a stable smoothing operation.
+  If Chebyshev with Jacobi (diagonal) preconditioning is used for smoothing, then the eigenvalue estimates can be reused during the solution process
+  This option is only used when the smoother uses Jacobi, and should be turned off if a different `PCJacobiType` is used.
+  It became default in PETSc 3.17.
 
 .seealso: `PCGAMG`, `KSPChebyshevSetEigenvalues()`, `KSPChebyshevEstEigSet()`
 @*/
@@ -1021,19 +1021,19 @@ static PetscErrorCode PCGAMGSetUseSAEstEig_GAMG(PC pc, PetscBool n)
 }
 
 /*@
-   PCGAMGSetEigenvalues - Set WHAT eigenvalues WHY?
+  PCGAMGSetEigenvalues - Set WHAT eigenvalues WHY?
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  pc - the preconditioner context
--  emax - max eigenvalue
-.  emin - min eigenvalue
+  Input Parameters:
++ pc   - the preconditioner context
+. emax - max eigenvalue
+- emin - min eigenvalue
 
-   Options Database Key:
-.  -pc_gamg_eigenvalues <emin,emax> - estimates of the eigenvalues
+  Options Database Key:
+. -pc_gamg_eigenvalues <emin,emax> - estimates of the eigenvalues
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `PCGAMG`, `PCGAMGSetUseSAEstEig()`
 @*/
@@ -1059,22 +1059,22 @@ static PetscErrorCode PCGAMGSetEigenvalues_GAMG(PC pc, PetscReal emax, PetscReal
 }
 
 /*@
-   PCGAMGSetReuseInterpolation - Reuse prolongation when rebuilding a `PCGAMG` algebraic multigrid preconditioner
+  PCGAMGSetReuseInterpolation - Reuse prolongation when rebuilding a `PCGAMG` algebraic multigrid preconditioner
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  pc - the preconditioner context
--  n - `PETSC_TRUE` or `PETSC_FALSE`
+  Input Parameters:
++ pc - the preconditioner context
+- n  - `PETSC_TRUE` or `PETSC_FALSE`
 
-   Options Database Key:
-.  -pc_gamg_reuse_interpolation <true,false> - reuse the previous interpolation
+  Options Database Key:
+. -pc_gamg_reuse_interpolation <true,false> - reuse the previous interpolation
 
-   Level: intermediate
+  Level: intermediate
 
-   Note:
-   May negatively affect the convergence rate of the method on new matrices if the matrix entries change a great deal, but allows
-   rebuilding the preconditioner quicker.
+  Note:
+  May negatively affect the convergence rate of the method on new matrices if the matrix entries change a great deal, but allows
+  rebuilding the preconditioner quicker.
 
 .seealso: `PCGAMG`
 @*/
@@ -1097,19 +1097,19 @@ static PetscErrorCode PCGAMGSetReuseInterpolation_GAMG(PC pc, PetscBool n)
 }
 
 /*@
-   PCGAMGASMSetUseAggs - Have the `PCGAMG` smoother on each level use the aggregates defined by the coarsening process as the subdomains for the additive Schwarz preconditioner
-   used as the smoother
+  PCGAMGASMSetUseAggs - Have the `PCGAMG` smoother on each level use the aggregates defined by the coarsening process as the subdomains for the additive Schwarz preconditioner
+  used as the smoother
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  pc - the preconditioner context
--  flg - `PETSC_TRUE` to use aggregates, `PETSC_FALSE` to not
+  Input Parameters:
++ pc  - the preconditioner context
+- flg - `PETSC_TRUE` to use aggregates, `PETSC_FALSE` to not
 
-   Options Database Key:
-.  -pc_gamg_asm_use_agg <true,false> - use aggregates to define the additive Schwarz subdomains
+  Options Database Key:
+. -pc_gamg_asm_use_agg <true,false> - use aggregates to define the additive Schwarz subdomains
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `PCGAMG`, `PCASM`, `PCSetType`
 @*/
@@ -1132,18 +1132,18 @@ static PetscErrorCode PCGAMGASMSetUseAggs_GAMG(PC pc, PetscBool flg)
 }
 
 /*@
-   PCGAMGSetUseParallelCoarseGridSolve - allow a parallel coarse grid solver
+  PCGAMGSetUseParallelCoarseGridSolve - allow a parallel coarse grid solver
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  pc - the preconditioner context
--  flg - `PETSC_TRUE` to not force coarse grid onto one processor
+  Input Parameters:
++ pc  - the preconditioner context
+- flg - `PETSC_TRUE` to not force coarse grid onto one processor
 
-   Options Database Key:
-.  -pc_gamg_use_parallel_coarse_grid_solver - use a parallel coarse grid direct solver
+  Options Database Key:
+. -pc_gamg_use_parallel_coarse_grid_solver - use a parallel coarse grid direct solver
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `PCGAMG`, `PCGAMGSetCoarseGridLayoutType()`, `PCGAMGSetCpuPinCoarseGrids()`
 @*/
@@ -1166,18 +1166,18 @@ static PetscErrorCode PCGAMGSetUseParallelCoarseGridSolve_GAMG(PC pc, PetscBool 
 }
 
 /*@
-   PCGAMGSetCpuPinCoarseGrids - pin the coarse grids created in `PCGAMG` to run only on the CPU since the problems may be too small to run efficiently on the GPUs
+  PCGAMGSetCpuPinCoarseGrids - pin the coarse grids created in `PCGAMG` to run only on the CPU since the problems may be too small to run efficiently on the GPUs
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  pc - the preconditioner context
--  flg - `PETSC_TRUE` to pin coarse grids to the CPU
+  Input Parameters:
++ pc  - the preconditioner context
+- flg - `PETSC_TRUE` to pin coarse grids to the CPU
 
-   Options Database Key:
-.  -pc_gamg_cpu_pin_coarse_grids - pin the coarse grids to the CPU
+  Options Database Key:
+. -pc_gamg_cpu_pin_coarse_grids - pin the coarse grids to the CPU
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `PCGAMG`, `PCGAMGSetCoarseGridLayoutType()`, `PCGAMGSetUseParallelCoarseGridSolve()`
 @*/
@@ -1200,18 +1200,18 @@ static PetscErrorCode PCGAMGSetCpuPinCoarseGrids_GAMG(PC pc, PetscBool flg)
 }
 
 /*@
-   PCGAMGSetCoarseGridLayoutType - place coarse grids on processors with natural order (compact type)
+  PCGAMGSetCoarseGridLayoutType - place coarse grids on processors with natural order (compact type)
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  pc - the preconditioner context
--  flg - `PCGAMGLayoutType` type, either `PCGAMG_LAYOUT_COMPACT` or `PCGAMG_LAYOUT_SPREAD`
+  Input Parameters:
++ pc  - the preconditioner context
+- flg - `PCGAMGLayoutType` type, either `PCGAMG_LAYOUT_COMPACT` or `PCGAMG_LAYOUT_SPREAD`
 
-   Options Database Key:
-.  -pc_gamg_coarse_grid_layout_type - place the coarse grids with natural ordering
+  Options Database Key:
+. -pc_gamg_coarse_grid_layout_type - place the coarse grids with natural ordering
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `PCGAMG`, `PCGAMGSetUseParallelCoarseGridSolve()`, `PCGAMGSetCpuPinCoarseGrids()`, `PCGAMGLayoutType`, `PCGAMG_LAYOUT_COMPACT`, `PCGAMG_LAYOUT_SPREAD`
 @*/
@@ -1234,21 +1234,21 @@ static PetscErrorCode PCGAMGSetCoarseGridLayoutType_GAMG(PC pc, PCGAMGLayoutType
 }
 
 /*@
-   PCGAMGSetNlevels -  Sets the maximum number of levels `PCGAMG` will use
+  PCGAMGSetNlevels -  Sets the maximum number of levels `PCGAMG` will use
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  pc - the preconditioner
--  n - the maximum number of levels to use
+  Input Parameters:
++ pc - the preconditioner
+- n  - the maximum number of levels to use
 
-   Options Database Key:
-.  -pc_mg_levels <n> - set the maximum number of levels to allow
+  Options Database Key:
+. -pc_mg_levels <n> - set the maximum number of levels to allow
 
-   Level: intermediate
+  Level: intermediate
 
-   Developer Note:
-   Should be called `PCGAMGSetMaximumNumberlevels()` and possible be shared with `PCMG`
+  Developer Notes:
+  Should be called `PCGAMGSetMaximumNumberlevels()` and possible be shared with `PCMG`
 
 .seealso: `PCGAMG`
 @*/
@@ -1271,27 +1271,27 @@ static PetscErrorCode PCGAMGSetNlevels_GAMG(PC pc, PetscInt n)
 }
 
 /*@
-   PCGAMGSetThreshold - Relative threshold to use for dropping edges in aggregation graph
+  PCGAMGSetThreshold - Relative threshold to use for dropping edges in aggregation graph
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  pc - the preconditioner context
-.  v - array of threshold values for finest n levels; 0.0 means keep all nonzero entries in the graph; negative means keep even zero entries in the graph
--  n - number of threshold values provided in array
+  Input Parameters:
++ pc - the preconditioner context
+. v  - array of threshold values for finest n levels; 0.0 means keep all nonzero entries in the graph; negative means keep even zero entries in the graph
+- n  - number of threshold values provided in array
 
-   Options Database Key:
-.  -pc_gamg_threshold <threshold> - the threshold to drop edges
+  Options Database Key:
+. -pc_gamg_threshold <threshold> - the threshold to drop edges
 
-   Level: intermediate
+  Level: intermediate
 
-   Notes:
-    Increasing the threshold decreases the rate of coarsening. Conversely reducing the threshold increases the rate of coarsening (aggressive coarsening) and thereby reduces the complexity of the coarse grids, and generally results in slower solver converge rates. Reducing coarse grid complexity reduced the complexity of Galerkin coarse grid construction considerably.
-    Before coarsening or aggregating the graph, `PCGAMG` removes small values from the graph with this threshold, and thus reducing the coupling in the graph and a different (perhaps better) coarser set of points.
+  Notes:
+  Increasing the threshold decreases the rate of coarsening. Conversely reducing the threshold increases the rate of coarsening (aggressive coarsening) and thereby reduces the complexity of the coarse grids, and generally results in slower solver converge rates. Reducing coarse grid complexity reduced the complexity of Galerkin coarse grid construction considerably.
+  Before coarsening or aggregating the graph, `PCGAMG` removes small values from the graph with this threshold, and thus reducing the coupling in the graph and a different (perhaps better) coarser set of points.
 
-    If `n` is less than the total number of coarsenings (see `PCGAMGSetNlevels()`), then threshold scaling (see `PCGAMGSetThresholdScale()`) is used for each successive coarsening.
-    In this case, `PCGAMGSetThresholdScale()` must be called before `PCGAMGSetThreshold()`.
-    If `n` is greater than the total number of levels, the excess entries in threshold will not be used.
+  If `n` is less than the total number of coarsenings (see `PCGAMGSetNlevels()`), then threshold scaling (see `PCGAMGSetThresholdScale()`) is used for each successive coarsening.
+  In this case, `PCGAMGSetThresholdScale()` must be called before `PCGAMGSetThreshold()`.
+  If `n` is greater than the total number of levels, the excess entries in threshold will not be used.
 
 .seealso: `PCGAMG`, `PCGAMGSetAggressiveLevels()`, `PCGAMGSetThresholdScale()`
 @*/
@@ -1316,19 +1316,19 @@ static PetscErrorCode PCGAMGSetThreshold_GAMG(PC pc, PetscReal v[], PetscInt n)
 }
 
 /*@
-   PCGAMGSetRankReductionFactors - Set a manual schedule for MPI rank reduction on coarse grids
+  PCGAMGSetRankReductionFactors - Set a manual schedule for MPI rank reduction on coarse grids
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  pc - the preconditioner context
-.  v - array of reduction factors. 0 for first value forces a reduction to one process/device on first level in CUDA
--  n - number of values provided in array
+  Input Parameters:
++ pc - the preconditioner context
+. v  - array of reduction factors. 0 for first value forces a reduction to one process/device on first level in CUDA
+- n  - number of values provided in array
 
-   Options Database Key:
-.  -pc_gamg_rank_reduction_factors <factors> - provide the schedule
+  Options Database Key:
+. -pc_gamg_rank_reduction_factors <factors> - provide the schedule
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `PCGAMG`, `PCGAMGSetProcEqLim()`, `PCGAMGSetCoarseEqLim()`
 @*/
@@ -1353,22 +1353,22 @@ static PetscErrorCode PCGAMGSetRankReductionFactors_GAMG(PC pc, PetscInt v[], Pe
 }
 
 /*@
-   PCGAMGSetThresholdScale - Relative threshold reduction at each level
+  PCGAMGSetThresholdScale - Relative threshold reduction at each level
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  pc - the preconditioner context
--  scale - the threshold value reduction, usually < 1.0
+  Input Parameters:
++ pc - the preconditioner context
+- v  - the threshold value reduction, usually < 1.0
 
-   Options Database Key:
-.  -pc_gamg_threshold_scale <v> - set the relative threshold reduction on each level
+  Options Database Key:
+. -pc_gamg_threshold_scale <v> - set the relative threshold reduction on each level
 
-   Level: advanced
+  Level: advanced
 
-   Note:
-   The initial threshold (for an arbitrary number of levels starting from the finest) can be set with `PCGAMGSetThreshold()`.
-   This scaling is used for each subsequent coarsening, but must be called before `PCGAMGSetThreshold()`.
+  Note:
+  The initial threshold (for an arbitrary number of levels starting from the finest) can be set with `PCGAMGSetThreshold()`.
+  This scaling is used for each subsequent coarsening, but must be called before `PCGAMGSetThreshold()`.
 
 .seealso: `PCGAMG`, `PCGAMGSetThreshold()`
 @*/
@@ -1390,18 +1390,18 @@ static PetscErrorCode PCGAMGSetThresholdScale_GAMG(PC pc, PetscReal v)
 }
 
 /*@C
-   PCGAMGSetType - Set the type of algorithm `PCGAMG` should use
+  PCGAMGSetType - Set the type of algorithm `PCGAMG` should use
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  pc - the preconditioner context
--  type - `PCGAMGAGG`, `PCGAMGGEO`, or `PCGAMGCLASSICAL`
+  Input Parameters:
++ pc   - the preconditioner context
+- type - `PCGAMGAGG`, `PCGAMGGEO`, or `PCGAMGCLASSICAL`
 
-   Options Database Key:
-.  -pc_gamg_type <agg,geo,classical> - type of algebraic multigrid to apply - only agg supported
+  Options Database Key:
+. -pc_gamg_type <agg,geo,classical> - type of algebraic multigrid to apply - only agg supported
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `PCGAMGGetType()`, `PCGAMG`, `PCGAMGType`
 @*/
@@ -1414,17 +1414,17 @@ PetscErrorCode PCGAMGSetType(PC pc, PCGAMGType type)
 }
 
 /*@C
-   PCGAMGGetType - Get the type of algorithm `PCGAMG` will use
+  PCGAMGGetType - Get the type of algorithm `PCGAMG` will use
 
-   Collective
+  Collective
 
-   Input Parameter:
-.  pc - the preconditioner context
+  Input Parameter:
+. pc - the preconditioner context
 
-   Output Parameter:
-.  type - the type of algorithm used
+  Output Parameter:
+. type - the type of algorithm used
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `PCGAMG`, `PCGAMGSetType()`, `PCGAMGType`
 @*/
@@ -1665,10 +1665,10 @@ PETSC_EXTERN PetscErrorCode PCCreate_GAMG(PC pc)
 }
 
 /*@C
- PCGAMGInitializePackage - This function initializes everything in the `PCGAMG` package. It is called
-    from `PCInitializePackage()`.
+  PCGAMGInitializePackage - This function initializes everything in the `PCGAMG` package. It is called
+  from `PCInitializePackage()`.
 
- Level: developer
+  Level: developer
 
 .seealso: `PetscInitialize()`
 @*/
@@ -1722,10 +1722,10 @@ PetscErrorCode PCGAMGInitializePackage(void)
 }
 
 /*@C
- PCGAMGFinalizePackage - This function frees everything from the `PCGAMG` package. It is
-    called from `PetscFinalize()` automatically.
+  PCGAMGFinalizePackage - This function frees everything from the `PCGAMG` package. It is
+  called from `PetscFinalize()` automatically.
 
- Level: developer
+  Level: developer
 
 .seealso: `PetscFinalize()`
 @*/
@@ -1738,11 +1738,11 @@ PetscErrorCode PCGAMGFinalizePackage(void)
 }
 
 /*@C
- PCGAMGRegister - Register a `PCGAMG` implementation.
+  PCGAMGRegister - Register a `PCGAMG` implementation.
 
- Input Parameters:
- + type - string that will be used as the name of the `PCGAMG` type.
- - create - function for creating the gamg context.
+  Input Parameters:
++ type   - string that will be used as the name of the `PCGAMG` type.
+- create - function for creating the gamg context.
 
   Level: developer
 
@@ -1757,14 +1757,14 @@ PetscErrorCode PCGAMGRegister(PCGAMGType type, PetscErrorCode (*create)(PC))
 }
 
 /*@C
-    PCGAMGCreateGraph - Creates a graph that is used by the ``PCGAMGType`` in the coarsening process
+  PCGAMGCreateGraph - Creates a graph that is used by the ``PCGAMGType`` in the coarsening process
 
-   Input Parameters:
-+  pc - the `PCGAMG`
--  A - the matrix, for any level
+  Input Parameters:
++ pc - the `PCGAMG`
+- A  - the matrix, for any level
 
-   Output Parameter:
-.  G - the graph
+  Output Parameter:
+. G - the graph
 
   Level: advanced
 

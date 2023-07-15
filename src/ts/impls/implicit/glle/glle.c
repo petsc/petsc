@@ -607,33 +607,33 @@ static PetscErrorCode TSGLLECreate_IRKS(TS ts)
 }
 
 /*@C
-   TSGLLESetType - sets the class of general linear method, `TSGLLE` to use for time-stepping
+  TSGLLESetType - sets the class of general linear method, `TSGLLE` to use for time-stepping
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  ts - the `TS` context
--  type - a method
+  Input Parameters:
++ ts   - the `TS` context
+- type - a method
 
-   Options Database Key:
-.  -ts_gl_type <type> - sets the method, use -help for a list of available method (e.g. irks)
+  Options Database Key:
+. -ts_gl_type <type> - sets the method, use -help for a list of available method (e.g. irks)
 
-   Level: intermediate
+  Level: intermediate
 
-   Notes:
-   See "petsc/include/petscts.h" for available methods (for instance)
+  Notes:
+  See "petsc/include/petscts.h" for available methods (for instance)
 .    TSGLLE_IRKS - Diagonally implicit methods with inherent Runge-Kutta stability (for stiff problems)
 
-   Normally, it is best to use the `TSSetFromOptions()` command and
-   then set the `TSGLLE` type from the options database rather than by using
-   this routine.  Using the options database provides the user with
-   maximum flexibility in evaluating the many different solvers.
-   The `TSGLLESetType()` routine is provided for those situations where it
-   is necessary to set the timestepping solver independently of the
-   command line or options database.  This might be the case, for example,
-   when the choice of solver changes during the execution of the
-   program, and the user's application is taking responsibility for
-   choosing the appropriate method.
+  Normally, it is best to use the `TSSetFromOptions()` command and
+  then set the `TSGLLE` type from the options database rather than by using
+  this routine.  Using the options database provides the user with
+  maximum flexibility in evaluating the many different solvers.
+  The `TSGLLESetType()` routine is provided for those situations where it
+  is necessary to set the timestepping solver independently of the
+  command line or options database.  This might be the case, for example,
+  when the choice of solver changes during the execution of the
+  program, and the user's application is taking responsibility for
+  choosing the appropriate method.
 
 .seealso: [](ch_ts), `TS`, `TSGLLEType`, `TSGLLE`
 @*/
@@ -647,21 +647,21 @@ PetscErrorCode TSGLLESetType(TS ts, TSGLLEType type)
 }
 
 /*@C
-   TSGLLESetAcceptType - sets the acceptance test for `TSGLLE`
+  TSGLLESetAcceptType - sets the acceptance test for `TSGLLE`
 
-   Time integrators that need to control error must have the option to reject a time step based on local error
-   estimates.  This function allows different schemes to be set.
+  Time integrators that need to control error must have the option to reject a time step based on local error
+  estimates.  This function allows different schemes to be set.
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  ts - the `TS` context
--  type - the type
+  Input Parameters:
++ ts   - the `TS` context
+- type - the type
 
-   Options Database Key:
-.  -ts_gl_accept_type <type> - sets the method used to determine whether to accept or reject a step
+  Options Database Key:
+. -ts_gl_accept_type <type> - sets the method used to determine whether to accept or reject a step
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: [](ch_ts), `TS`, `TSGLLE`, `TSGLLEAcceptRegister()`, `TSGLLEAdapt`
 @*/
@@ -675,21 +675,21 @@ PetscErrorCode TSGLLESetAcceptType(TS ts, TSGLLEAcceptType type)
 }
 
 /*@C
-   TSGLLEGetAdapt - gets the `TSGLLEAdapt` object from the `TS`
+  TSGLLEGetAdapt - gets the `TSGLLEAdapt` object from the `TS`
 
-   Not Collective
+  Not Collective
 
-   Input Parameter:
-.  ts - the `TS` context
+  Input Parameter:
+. ts - the `TS` context
 
-   Output Parameter:
-.  adapt - the `TSGLLEAdapt` context
+  Output Parameter:
+. adapt - the `TSGLLEAdapt` context
 
-   Level: advanced
+  Level: advanced
 
-   Note:
-   This allows the user set options on the `TSGLLEAdapt` object.  Usually it is better to do this using the options
-   database, so this function is rarely needed.
+  Note:
+  This allows the user set options on the `TSGLLEAdapt` object.  Usually it is better to do this using the options
+  database, so this function is rarely needed.
 
 .seealso: [](ch_ts), `TS`, `TSGLLE`, `TSGLLEAdapt`, `TSGLLEAdaptRegister()`
 @*/
@@ -1196,27 +1196,27 @@ static PetscErrorCode TSView_GLLE(TS ts, PetscViewer viewer)
 }
 
 /*@C
-   TSGLLERegister -  adds a `TSGLLE` implementation
+  TSGLLERegister -  adds a `TSGLLE` implementation
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  sname - name of user-defined general linear scheme
--  function - routine to create method context
+  Input Parameters:
++ sname    - name of user-defined general linear scheme
+- function - routine to create method context
 
-   Level: advanced
+  Level: advanced
 
-   Note:
-   `TSGLLERegister()` may be called multiple times to add several user-defined families.
+  Note:
+  `TSGLLERegister()` may be called multiple times to add several user-defined families.
 
-   Sample usage:
+  Example Usage:
 .vb
    TSGLLERegister("my_scheme", MySchemeCreate);
 .ve
 
-   Then, your scheme can be chosen with the procedural interface via
+  Then, your scheme can be chosen with the procedural interface via
 $     TSGLLESetType(ts, "my_scheme")
-   or at runtime via the option
+  or at runtime via the option
 $     -ts_gl_type my_scheme
 
 .seealso: [](ch_ts), `TSGLLE`, `TSGLLEType`, `TSGLLERegisterAll()`
@@ -1230,27 +1230,27 @@ PetscErrorCode TSGLLERegister(const char sname[], PetscErrorCode (*function)(TS)
 }
 
 /*@C
-   TSGLLEAcceptRegister -  adds a `TSGLLE` acceptance scheme
+  TSGLLEAcceptRegister -  adds a `TSGLLE` acceptance scheme
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  sname - name of user-defined acceptance scheme
--  function - routine to create method context
+  Input Parameters:
++ sname    - name of user-defined acceptance scheme
+- function - routine to create method context
 
-   Level: advanced
+  Level: advanced
 
-   Note:
-   `TSGLLEAcceptRegister()` may be called multiple times to add several user-defined families.
+  Note:
+  `TSGLLEAcceptRegister()` may be called multiple times to add several user-defined families.
 
-   Sample usage:
+  Example Usage:
 .vb
    TSGLLEAcceptRegister("my_scheme", MySchemeCreate);
 .ve
 
-   Then, your scheme can be chosen with the procedural interface via
+  Then, your scheme can be chosen with the procedural interface via
 $     TSGLLESetAcceptType(ts, "my_scheme")
-   or at runtime via the option
+  or at runtime via the option
 $     -ts_gl_accept_type my_scheme
 
 .seealso: [](ch_ts), `TSGLLE`, `TSGLLEType`, `TSGLLERegisterAll()`, `TSGLLEAcceptFunction`

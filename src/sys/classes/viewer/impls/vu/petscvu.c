@@ -176,7 +176,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_VU(PetscViewer viewer)
 . viewer - The `PetscViewer`
 
   Output Parameter:
-. fd     - The file pointer
+. fd - The file pointer
 
   Level: intermediate
 
@@ -223,7 +223,7 @@ PetscErrorCode PetscViewerVUSetVecSeen(PetscViewer viewer, PetscBool vecSeen)
   Not Collective
 
   Input Parameter:
-. viewer  - The `PETSCVIEWERVU` `PetscViewer`
+. viewer - The `PETSCVIEWERVU` `PetscViewer`
 
   Output Parameter:
 . vecSeen - The flag which indicates whether we have viewed a vector

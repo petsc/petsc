@@ -669,12 +669,12 @@ static PetscErrorCode DMPlexFillMatrix_Static(DM dm, PetscLayout rLayout, PetscI
   Collective
 
   Input Parameters:
-+ dm   - The `DMPLEX`
-. bs   - The matrix blocksize
-. dnz  - An array to hold the number of nonzeros in the diagonal block
-. onz  - An array to hold the number of nonzeros in the off-diagonal block
-. dnzu - An array to hold the number of nonzeros in the upper triangle of the diagonal block
-. onzu - An array to hold the number of nonzeros in the upper triangle of the off-diagonal block
++ dm         - The `DMPLEX`
+. bs         - The matrix blocksize
+. dnz        - An array to hold the number of nonzeros in the diagonal block
+. onz        - An array to hold the number of nonzeros in the off-diagonal block
+. dnzu       - An array to hold the number of nonzeros in the upper triangle of the diagonal block
+. onzu       - An array to hold the number of nonzeros in the upper triangle of the off-diagonal block
 - fillMatrix - If `PETSC_TRUE`, fill the matrix with zeros
 
   Output Parameter:

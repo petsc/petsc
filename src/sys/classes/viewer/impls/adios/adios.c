@@ -118,27 +118,27 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_ADIOS(PetscViewer v)
 }
 
 /*@C
-   PetscViewerADIOSOpen - Opens a file for ADIOS input/output.
+  PetscViewerADIOSOpen - Opens a file for ADIOS input/output.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  comm - MPI communicator
-.  name - name of file
--  type - type of file
+  Input Parameters:
++ comm - MPI communicator
+. name - name of file
+- type - type of file
 .vb
     FILE_MODE_WRITE - create new file for binary output
     FILE_MODE_READ - open existing file for binary input
     FILE_MODE_APPEND - open existing file for binary output
 .ve
 
-   Output Parameter:
-.  adiosv - `PetscViewer` for ADIOS input/output to use with the specified file
+  Output Parameter:
+. adiosv - `PetscViewer` for ADIOS input/output to use with the specified file
 
-   Level: beginner
+  Level: beginner
 
-   Note:
-   This `PetscViewer` should be destroyed with `PetscViewerDestroy()`.
+  Note:
+  This `PetscViewer` should be destroyed with `PetscViewerDestroy()`.
 
 .seealso: `PetscViewerASCIIOpen()`, `PetscViewerPushFormat()`, `PetscViewerDestroy()`, `PetscViewerHDF5Open()`,
           `VecView()`, `MatView()`, `VecLoad()`, `PetscViewerSetType()`, `PetscViewerFileSetMode()`, `PetscViewerFileSetName()`
@@ -163,7 +163,7 @@ PetscErrorCode PetscViewerADIOSOpen(MPI_Comm comm, const char name[], PetscFileM
 . ptype - the PETSc datatype name (for example `PETSC_DOUBLE`)
 
   Output Parameter:
-. mtype - the ADIOS datatype (for example MPI_DOUBLE, ...)
+. htype - the ADIOS datatype (for example MPI_DOUBLE, ...)
 
   Level: advanced
 

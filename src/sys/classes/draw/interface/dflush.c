@@ -4,14 +4,14 @@
 #include <petsc/private/drawimpl.h> /*I "petscdraw.h" I*/
 
 /*@
-   PetscDrawFlush - Flushes graphical output.
+  PetscDrawFlush - Flushes graphical output.
 
-   Collective
+  Collective
 
-   Input Parameter:
-.  draw - the drawing context
+  Input Parameter:
+. draw - the drawing context
 
-   Level: beginner
+  Level: beginner
 
 .seealso: `PetscDraw`, `PetscDrawClear()`
 @*/

@@ -459,11 +459,11 @@ PETSC_EXTERN PetscErrorCode DMCreate_DA(DM da)
 . comm - The communicator for the DMDA object
 
   Output Parameter:
-. da  - The DMDA object
+. da - The DMDA object
 
   Level: advanced
 
-  Developers Note:
+  Developer Notes:
   Since there exists DMDACreate1/2/3d() should this routine even exist?
 
 .seealso: `DMDASetSizes()`, `DMClone()`, `DMDACreate1d()`, `DMDACreate2d()`, `DMDACreate3d()`

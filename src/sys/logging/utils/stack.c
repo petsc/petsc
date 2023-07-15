@@ -110,7 +110,7 @@ PetscErrorCode PetscIntStackPush(PetscIntStack stack, int item)
 . stack - The stack
 
   Output Parameter:
-. item  - The integer popped
+. item - The integer popped
 
   Level: developer
 

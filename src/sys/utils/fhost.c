@@ -21,23 +21,23 @@
 #include <errno.h>
 
 /*@C
-    PetscGetHostName - Returns the name of the host. This attempts to
-    return the entire Internet name. It may not return the same name
-    as `MPI_Get_processor_name()`.
+  PetscGetHostName - Returns the name of the host. This attempts to
+  return the entire Internet name. It may not return the same name
+  as `MPI_Get_processor_name()`.
 
-    Not Collective
+  Not Collective
 
-    Input Parameter:
-.   nlen - length of name
+  Input Parameter:
+. nlen - length of name
 
-    Output Parameter:
-.   name - contains host name.  Must be long enough to hold the name
+  Output Parameter:
+. name - contains host name.  Must be long enough to hold the name
            This is the fully qualified name, including the domain.
 
-    Level: developer
+  Level: developer
 
-   Fortran Note:
-   This routine has the format
+  Fortran Notes:
+  This routine has the format
 .vb
        character*(64) name
        call PetscGetHostName(name,ierr)

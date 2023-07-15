@@ -431,7 +431,7 @@ static PetscErrorCode PetscSpaceEvaluate_Tensor(PetscSpace sp, PetscInt npoints,
   PetscSpaceTensorSetNumSubspaces - Set the number of spaces in the tensor product space
 
   Input Parameters:
-+ sp  - the function space object
++ sp            - the function space object
 - numTensSpaces - the number of spaces
 
   Level: intermediate
@@ -453,14 +453,14 @@ PetscErrorCode PetscSpaceTensorSetNumSubspaces(PetscSpace sp, PetscInt numTensSp
   PetscSpaceTensorGetNumSubspaces - Get the number of spaces in the tensor product space
 
   Input Parameter:
-. sp  - the function space object
+. sp - the function space object
 
   Output Parameter:
 . numTensSpaces - the number of spaces
 
   Level: intermediate
 
- Note:
+  Note:
   The name NumSubspaces is misleading because it is actually getting the number of defining spaces of the tensor product space, not a number of Subspaces of it
 
 .seealso: `PETSCSPACETENSOR`, `PetscSpace`, `PetscSpaceTensorSetNumSubspaces()`, `PetscSpaceSetDegree()`, `PetscSpaceSetNumVariables()`

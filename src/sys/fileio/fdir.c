@@ -141,7 +141,7 @@ PetscErrorCode PetscRMTree(const char dir[])
   PetscRMTree - delete a directory and all of its children
 
   Input Parameter:
-.  dir - the name of the directory
+. dir - the name of the directory
 
   Level: advanced
 

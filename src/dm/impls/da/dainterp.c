@@ -1328,9 +1328,9 @@ PetscErrorCode DMCreateInjection_DA(DM dac, DM daf, Mat *mat)
 }
 
 /*@
-   DMCreateAggregates - Deprecated, see DMDACreateAggregates.
+  DMCreateAggregates - Deprecated, see DMDACreateAggregates.
 
-   Level: intermediate
+  Level: intermediate
 @*/
 PetscErrorCode DMCreateAggregates(DM dac, DM daf, Mat *mat)
 {
@@ -1338,24 +1338,24 @@ PetscErrorCode DMCreateAggregates(DM dac, DM daf, Mat *mat)
 }
 
 /*@
-   DMDACreateAggregates - Gets the aggregates that map between
-   grids associated with two `DMDA`
+  DMDACreateAggregates - Gets the aggregates that map between
+  grids associated with two `DMDA`
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  dmc - the coarse grid `DMDA`
--  dmf - the fine grid `DMDA`
+  Input Parameters:
++ dac - the coarse grid `DMDA`
+- daf - the fine grid `DMDA`
 
-   Output Parameter:
-.  rest - the restriction matrix (transpose of the projection matrix)
+  Output Parameter:
+. rest - the restriction matrix (transpose of the projection matrix)
 
-   Level: intermediate
+  Level: intermediate
 
-   Note:
-   This routine is not used by PETSc.
-   It is not clear what its use case is and it may be removed in a future release.
-   Users should contact petsc-maint@mcs.anl.gov if they plan to use it.
+  Note:
+  This routine is not used by PETSc.
+  It is not clear what its use case is and it may be removed in a future release.
+  Users should contact petsc-maint@mcs.anl.gov if they plan to use it.
 
 .seealso: `DMRefine()`, `DMCreateInjection()`, `DMCreateInterpolation()`
 @*/

@@ -552,15 +552,15 @@ static PetscErrorCode MatHtoolGetHierarchicalMat_Htool(Mat A, const htool::Virtu
 }
 
 /*@C
-     MatHtoolGetHierarchicalMat - Retrieves the opaque pointer to a Htool virtual matrix stored in a `MATHTOOL`.
+  MatHtoolGetHierarchicalMat - Retrieves the opaque pointer to a Htool virtual matrix stored in a `MATHTOOL`.
 
-   Input Parameter:
-.     A - hierarchical matrix
+  Input Parameter:
+. A - hierarchical matrix
 
-   Output Parameter:
-.     hmatrix - opaque pointer to a Htool virtual matrix
+  Output Parameter:
+. hmatrix - opaque pointer to a Htool virtual matrix
 
-   Level: advanced
+  Level: advanced
 
 .seealso: [](ch_matrices), `Mat`, `MATHTOOL`
 @*/
@@ -586,14 +586,14 @@ static PetscErrorCode MatHtoolSetKernel_Htool(Mat A, MatHtoolKernel kernel, void
 }
 
 /*@C
-     MatHtoolSetKernel - Sets the kernel and context used for the assembly of a `MATHTOOL`.
+  MatHtoolSetKernel - Sets the kernel and context used for the assembly of a `MATHTOOL`.
 
-   Input Parameters:
-+     A - hierarchical matrix
-.     kernel - computational kernel (or `NULL`)
--     kernelctx - kernel context (if kernel is `NULL`, the pointer must be of type htool::VirtualGenerator<PetscScalar>*)
+  Input Parameters:
++ A         - hierarchical matrix
+. kernel    - computational kernel (or `NULL`)
+- kernelctx - kernel context (if kernel is `NULL`, the pointer must be of type htool::VirtualGenerator<PetscScalar>*)
 
-   Level: advanced
+  Level: advanced
 
 .seealso: [](ch_matrices), `Mat`, `MATHTOOL`, `MatCreateHtoolFromKernel()`
 @*/
@@ -620,15 +620,15 @@ static PetscErrorCode MatHtoolGetPermutationSource_Htool(Mat A, IS *is)
 }
 
 /*@C
-     MatHtoolGetPermutationSource - Gets the permutation associated to the source cluster for a `MATHTOOL` matrix.
+  MatHtoolGetPermutationSource - Gets the permutation associated to the source cluster for a `MATHTOOL` matrix.
 
-   Input Parameter:
-.     A - hierarchical matrix
+  Input Parameter:
+. A - hierarchical matrix
 
-   Output Parameter:
-.     is - permutation
+  Output Parameter:
+. is - permutation
 
-   Level: advanced
+  Level: advanced
 
 .seealso: [](ch_matrices), `Mat`, `MATHTOOL`, `MatHtoolGetPermutationTarget()`, `MatHtoolUsePermutation()`
 @*/
@@ -654,15 +654,15 @@ static PetscErrorCode MatHtoolGetPermutationTarget_Htool(Mat A, IS *is)
 }
 
 /*@C
-     MatHtoolGetPermutationTarget - Gets the permutation associated to the target cluster for a `MATHTOOL` matrix.
+  MatHtoolGetPermutationTarget - Gets the permutation associated to the target cluster for a `MATHTOOL` matrix.
 
-   Input Parameter:
-.     A - hierarchical matrix
+  Input Parameter:
+. A - hierarchical matrix
 
-   Output Parameter:
-.     is - permutation
+  Output Parameter:
+. is - permutation
 
-   Level: advanced
+  Level: advanced
 
 .seealso: [](ch_matrices), `Mat`, `MATHTOOL`, `MatHtoolGetPermutationSource()`, `MatHtoolUsePermutation()`
 @*/
@@ -685,13 +685,13 @@ static PetscErrorCode MatHtoolUsePermutation_Htool(Mat A, PetscBool use)
 }
 
 /*@C
-     MatHtoolUsePermutation - Sets whether a `MATHTOOL` matrix should permute input (resp. output) vectors following its internal source (resp. target) permutation.
+  MatHtoolUsePermutation - Sets whether a `MATHTOOL` matrix should permute input (resp. output) vectors following its internal source (resp. target) permutation.
 
-   Input Parameters:
-+     A - hierarchical matrix
--     use - Boolean value
+  Input Parameters:
++ A   - hierarchical matrix
+- use - Boolean value
 
-   Level: advanced
+  Level: advanced
 
 .seealso: [](ch_matrices), `Mat`, `MATHTOOL`, `MatHtoolGetPermutationSource()`, `MatHtoolGetPermutationTarget()`
 @*/
@@ -807,34 +807,34 @@ static PetscErrorCode MatTranspose_Htool(Mat A, MatReuse reuse, Mat *B)
 }
 
 /*@C
-     MatCreateHtoolFromKernel - Creates a `MATHTOOL` from a user-supplied kernel.
+  MatCreateHtoolFromKernel - Creates a `MATHTOOL` from a user-supplied kernel.
 
-   Input Parameters:
-+     comm - MPI communicator
-.     m - number of local rows (or `PETSC_DECIDE` to have calculated if `M` is given)
-.     n - number of local columns (or `PETSC_DECIDE` to have calculated if `N` is given)
-.     M - number of global rows (or `PETSC_DETERMINE` to have calculated if `m` is given)
-.     N - number of global columns (or `PETSC_DETERMINE` to have calculated if `n` is given)
-.     spacedim - dimension of the space coordinates
-.     coords_target - coordinates of the target
-.     coords_source - coordinates of the source
-.     kernel - computational kernel (or `NULL`)
--     kernelctx - kernel context (if kernel is `NULL`, the pointer must be of type htool::VirtualGenerator<PetscScalar>*)
+  Input Parameters:
++ comm          - MPI communicator
+. m             - number of local rows (or `PETSC_DECIDE` to have calculated if `M` is given)
+. n             - number of local columns (or `PETSC_DECIDE` to have calculated if `N` is given)
+. M             - number of global rows (or `PETSC_DETERMINE` to have calculated if `m` is given)
+. N             - number of global columns (or `PETSC_DETERMINE` to have calculated if `n` is given)
+. spacedim      - dimension of the space coordinates
+. coords_target - coordinates of the target
+. coords_source - coordinates of the source
+. kernel        - computational kernel (or `NULL`)
+- kernelctx     - kernel context (if kernel is `NULL`, the pointer must be of type htool::VirtualGenerator<PetscScalar>*)
 
-   Output Parameter:
-.     B - matrix
+  Output Parameter:
+. B - matrix
 
-   Options Database Keys:
-+     -mat_htool_min_cluster_size <`PetscInt`> - minimal leaf size in cluster tree
-.     -mat_htool_max_block_size <`PetscInt`> - maximal number of coefficients in a dense block
-.     -mat_htool_epsilon <`PetscReal`> - relative error in Frobenius norm when approximating a block
-.     -mat_htool_eta <`PetscReal`> - admissibility condition tolerance
-.     -mat_htool_min_target_depth <`PetscInt`> - minimal cluster tree depth associated with the rows
-.     -mat_htool_min_source_depth <`PetscInt`> - minimal cluster tree depth associated with the columns
-.     -mat_htool_compressor <sympartialACA, fullACA, SVD> - type of compression
--     -mat_htool_clustering <PCARegular, PCAGeometric, BounbingBox1Regular, BoundingBox1Geometric> - type of clustering
+  Options Database Keys:
++ -mat_htool_min_cluster_size <`PetscInt`>                                                     - minimal leaf size in cluster tree
+. -mat_htool_max_block_size <`PetscInt`>                                                       - maximal number of coefficients in a dense block
+. -mat_htool_epsilon <`PetscReal`>                                                             - relative error in Frobenius norm when approximating a block
+. -mat_htool_eta <`PetscReal`>                                                                 - admissibility condition tolerance
+. -mat_htool_min_target_depth <`PetscInt`>                                                     - minimal cluster tree depth associated with the rows
+. -mat_htool_min_source_depth <`PetscInt`>                                                     - minimal cluster tree depth associated with the columns
+. -mat_htool_compressor <sympartialACA, fullACA, SVD>                                          - type of compression
+- -mat_htool_clustering <PCARegular, PCAGeometric, BounbingBox1Regular, BoundingBox1Geometric> - type of clustering
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: [](ch_matrices), `Mat`, `MatCreate()`, `MATHTOOL`, `PCSetCoordinates()`, `MatHtoolSetKernel()`, `MatHtoolCompressorType`, `MATH2OPUS`, `MatCreateH2OpusFromKernel()`
 @*/

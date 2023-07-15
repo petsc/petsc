@@ -236,17 +236,17 @@ static PetscErrorCode PCSPAISetSp_SPAI(PC pc, PetscInt sp)
   PCSPAISetEpsilon -- Set the tolerance for the `PCSPAI` preconditioner
 
   Input Parameters:
-+ pc - the preconditioner
-- eps - epsilon (default .4)
++ pc       - the preconditioner
+- epsilon1 - epsilon (default .4)
 
   Note:
-    Espilon must be between 0 and 1. It controls the
-                 quality of the approximation of M to the inverse of
-                 A. Higher values of epsilon lead to more work, more
-                 fill, and usually better preconditioners. In many
-                 cases the best choice of epsilon is the one that
-                 divides the total solution time equally between the
-                 preconditioner and the solver.
+  Espilon must be between 0 and 1. It controls the
+  quality of the approximation of M to the inverse of
+  A. Higher values of epsilon lead to more work, more
+  fill, and usually better preconditioners. In many
+  cases the best choice of epsilon is the one that
+  divides the total solution time equally between the
+  preconditioner and the solver.
 
   Level: intermediate
 
@@ -261,19 +261,19 @@ PetscErrorCode PCSPAISetEpsilon(PC pc, PetscReal epsilon1)
 
 /*@
   PCSPAISetNBSteps - set maximum number of improvement steps per row in
-        the `PCSPAI` preconditioner
+  the `PCSPAI` preconditioner
 
   Input Parameters:
-+ pc - the preconditioner
-- n - number of steps (default 5)
++ pc       - the preconditioner
+- nbsteps1 - number of steps (default 5)
 
   Note:
-    `PCSPAI` constructs to approximation to every column of
-                 the exact inverse of A in a series of improvement
-                 steps. The quality of the approximation is determined
-                 by epsilon. If an approximation achieving an accuracy
-                 of epsilon is not obtained after ns steps, SPAI simply
-                 uses the best approximation constructed so far.
+  `PCSPAI` constructs to approximation to every column of
+  the exact inverse of A in a series of improvement
+  steps. The quality of the approximation is determined
+  by epsilon. If an approximation achieving an accuracy
+  of epsilon is not obtained after ns steps, SPAI simply
+  uses the best approximation constructed so far.
 
   Level: intermediate
 
@@ -289,11 +289,11 @@ PetscErrorCode PCSPAISetNBSteps(PC pc, PetscInt nbsteps1)
 /* added 1/7/99 g.h. */
 /*@
   PCSPAISetMax - set the size of various working buffers in
-        the `PCSPAI` preconditioner
+  the `PCSPAI` preconditioner
 
   Input Parameters:
-+ pc - the preconditioner
-- n - size (default is 5000)
++ pc   - the preconditioner
+- max1 - size (default is 5000)
 
   Level: intermediate
 
@@ -308,11 +308,11 @@ PetscErrorCode PCSPAISetMax(PC pc, PetscInt max1)
 
 /*@
   PCSPAISetMaxNew - set maximum number of new nonzero candidates per step
-   in `PCSPAI` preconditioner
+  in `PCSPAI` preconditioner
 
   Input Parameters:
-+ pc - the preconditioner
-- n - maximum number (default 5)
++ pc      - the preconditioner
+- maxnew1 - maximum number (default 5)
 
   Level: intermediate
 
@@ -329,26 +329,26 @@ PetscErrorCode PCSPAISetMaxNew(PC pc, PetscInt maxnew1)
   PCSPAISetBlockSize - set the block size for the `PCSPAI` preconditioner
 
   Input Parameters:
-+ pc - the preconditioner
-- n - block size (default 1)
++ pc          - the preconditioner
+- block_size1 - block size (default 1)
 
   Notes:
-    A block
-                 size of 1 treats A as a matrix of scalar elements. A
-                 block size of s > 1 treats A as a matrix of sxs
-                 blocks. A block size of 0 treats A as a matrix with
-                 variable sized blocks, which are determined by
-                 searching for dense square diagonal blocks in A.
-                 This can be very effective for finite-element
-                 matrices.
+  A block
+  size of 1 treats A as a matrix of scalar elements. A
+  block size of s > 1 treats A as a matrix of sxs
+  blocks. A block size of 0 treats A as a matrix with
+  variable sized blocks, which are determined by
+  searching for dense square diagonal blocks in A.
+  This can be very effective for finite-element
+  matrices.
 
-                 SPAI will convert A to block form, use a block
-                 version of the preconditioner algorithm, and then
-                 convert the result back to scalar form.
+  SPAI will convert A to block form, use a block
+  version of the preconditioner algorithm, and then
+  convert the result back to scalar form.
 
-                 In many cases the a block-size parameter other than 1
-                 can lead to very significant improvement in
-                 performance.
+  In many cases the a block-size parameter other than 1
+  can lead to very significant improvement in
+  performance.
 
   Level: intermediate
 
@@ -365,14 +365,14 @@ PetscErrorCode PCSPAISetBlockSize(PC pc, PetscInt block_size1)
   PCSPAISetCacheSize - specify cache size in the `PCSPAI` preconditioner
 
   Input Parameters:
-+ pc - the preconditioner
-- n -  cache size {0,1,2,3,4,5} (default 5)
++ pc         - the preconditioner
+- cache_size - cache size {0,1,2,3,4,5} (default 5)
 
   Note:
-    `PCSPAI` uses a hash table to cache messages and avoid
-                 redundant communication. If suggest always using
-                 5. This parameter is irrelevant in the serial
-                 version.
+  `PCSPAI` uses a hash table to cache messages and avoid
+  redundant communication. If suggest always using
+  5. This parameter is irrelevant in the serial
+  version.
 
   Level: intermediate
 
@@ -389,11 +389,11 @@ PetscErrorCode PCSPAISetCacheSize(PC pc, PetscInt cache_size)
   PCSPAISetVerbose - verbosity level for the `PCSPAI` preconditioner
 
   Input Parameters:
-+ pc - the preconditioner
-- n - level (default 1)
++ pc      - the preconditioner
+- verbose - level (default 1)
 
   Note:
-    print parameters, timings and matrix statistics
+  print parameters, timings and matrix statistics
 
   Level: intermediate
 
@@ -411,15 +411,15 @@ PetscErrorCode PCSPAISetVerbose(PC pc, PetscInt verbose)
 
   Input Parameters:
 + pc - the preconditioner
-- n - 0 or 1
+- sp - 0 or 1
 
   Note:
-    If A has a symmetric nonzero pattern use -sp 1 to
-                 improve performance by eliminating some communication
-                 in the parallel version. Even if A does not have a
-                 symmetric nonzero pattern -sp 1 may well lead to good
-                 results, but the code will not follow the published
-                 SPAI algorithm exactly.
+  If A has a symmetric nonzero pattern use -sp 1 to
+  improve performance by eliminating some communication
+  in the parallel version. Even if A does not have a
+  symmetric nonzero pattern -sp 1 may well lead to good
+  results, but the code will not follow the published
+  SPAI algorithm exactly.
 
   Level: intermediate
 

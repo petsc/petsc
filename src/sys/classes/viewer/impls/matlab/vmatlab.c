@@ -9,21 +9,21 @@ typedef struct {
 } PetscViewer_Matlab;
 
 /*@C
-    PetscViewerMatlabPutArray - Puts an array into the `PETSCVIEWERMATLAB` viewer.
+  PetscViewerMatlabPutArray - Puts an array into the `PETSCVIEWERMATLAB` viewer.
 
-      Not Collective: only processor zero saves `array`
+  Not Collective, only processor zero saves `array`
 
-    Input Parameters:
-+    mfile - the viewer
-.    m - the first dimensions of `array`
-.    n - the second dimensions of `array`
-.    array - the array (represented in one dimension)
--    name - the MATLAB name of `array`
+  Input Parameters:
++ mfile - the viewer
+. m     - the first dimensions of `array`
+. n     - the second dimensions of `array`
+. array - the array (represented in one dimension)
+- name  - the MATLAB name of `array`
 
-   Level: advanced
+  Level: advanced
 
-    Note:
-    Only writes `array` values on processor 0.
+  Note:
+  Only writes `array` values on processor 0.
 
 .seealso: `PETSCVIEWERMATLAB`, `PetscViewerMatlabGetArray()`
 @*/
@@ -60,21 +60,21 @@ PetscErrorCode PetscViewerMatlabPutVariable(PetscViewer viewer, const char *name
 }
 
 /*@C
-    PetscViewerMatlabGetArray - Gets a variable from a `PETSCVIEWERMATLAB` viewer into an array
+  PetscViewerMatlabGetArray - Gets a variable from a `PETSCVIEWERMATLAB` viewer into an array
 
-    Not Collective; only processor zero reads in the array
+  Not Collective; only processor zero reads in the array
 
-    Input Parameters:
-+    mfile - the MATLAB file viewer
-.    m - the first dimensions of `array`
-.    n - the second dimensions of `array`
-.    array - the array (represented in one dimension)
--    name - the MATLAB name of `array`
+  Input Parameters:
++ mfile - the MATLAB file viewer
+. m     - the first dimensions of `array`
+. n     - the second dimensions of `array`
+. array - the array (represented in one dimension)
+- name  - the MATLAB name of `array`
 
-   Level: advanced
+  Level: advanced
 
-    Note:
-    Only reads in `array` values on processor 0.
+  Note:
+  Only reads in `array` values on processor 0.
 
 .seealso: `PETSCVIEWERMATLAB`, `PetscViewerMatlabPutArray()`
 @*/
@@ -197,34 +197,34 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_Matlab(PetscViewer viewer)
 }
 
 /*@C
-   PetscViewerMatlabOpen - Opens a Matlab .mat file for output
+  PetscViewerMatlabOpen - Opens a Matlab .mat file for output
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  comm - MPI communicator
-.  name - name of file
--  type - type of file
+  Input Parameters:
++ comm - MPI communicator
+. name - name of file
+- type - type of file
 .vb
     FILE_MODE_WRITE - create new file for MATLAB output
     FILE_MODE_READ - open existing file for MATLAB input
     FILE_MODE_WRITE - open existing file for MATLAB output
 .ve
 
-   Output Parameter:
-.  binv - PetscViewer for MATLAB output to use with the specified file
+  Output Parameter:
+. binv - PetscViewer for MATLAB output to use with the specified file
 
-   Level: beginner
+  Level: beginner
 
-   Notes:
-   This `PetscViewer` should be destroyed with `PetscViewerDestroy()`.
+  Notes:
+  This `PetscViewer` should be destroyed with `PetscViewerDestroy()`.
 
-   For writing files it only opens the file on processor 0 in the communicator.
+  For writing files it only opens the file on processor 0 in the communicator.
 
-   This only saves `Vec`s it cannot be used to save `Mat`s. We recommend using the `PETSCVIEWERBINARY` to save objects to be loaded into MATLAB
-   instead of this routine.
+  This only saves `Vec`s it cannot be used to save `Mat`s. We recommend using the `PETSCVIEWERBINARY` to save objects to be loaded into MATLAB
+  instead of this routine.
 
-   PETSc must be configured with the option `--with-matlab` for this functionality
+  PETSc must be configured with the option `--with-matlab` for this functionality
 
 .seealso: `PETSCVIEWERMATLAB`, `PetscViewerASCIIOpen()`, `PetscViewerPushFormat()`, `PetscViewerDestroy()`, `PETSCVIEWERBINARY`, `PetscViewerBinaryOpen()`
           `VecView()`, `MatView()`, `VecLoad()`, `MatLoad()`

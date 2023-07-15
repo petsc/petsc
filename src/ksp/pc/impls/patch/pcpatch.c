@@ -588,7 +588,7 @@ PetscErrorCode PCPatchSetDiscretisationInfoCombined(PC pc, DM dm, PetscInt *node
 
   Calling sequence of `func`:
 $ PetscErrorCode func(PC pc, PetscInt point, Vec x, Vec f, IS cellIS, PetscInt n, const PetscInt* dofsArray, const PetscInt* dofsArrayWithAll, void* ctx)
-+  pc               - The `PC`
++ pc  - The `PC`
 .  point            - The point
 .  x                - The input solution (not used in linear problems)
 .  f                - The patch residual vector
@@ -596,7 +596,7 @@ $ PetscErrorCode func(PC pc, PetscInt point, Vec x, Vec f, IS cellIS, PetscInt n
 .  n                - The size of `dofsArray`
 .  dofsArray        - The dofmap for the dofs to be solved for
 .  dofsArrayWithAll - The dofmap for all dofs on the patch
--  ctx              - The user context
+- ctx - The user context
 
   Level: advanced
 
@@ -628,7 +628,7 @@ PetscErrorCode PCPatchSetComputeFunction(PC pc, PetscErrorCode (*func)(PC, Petsc
 
   Calling sequence of `func`:
 $  PetscErrorCode func(PC pc, PetscInt point, Vec x, Vec f, IS facetIS, PetscInt n, const PetscInt* dofsArray, const PetscInt* dofsArrayWithAll, void* ctx)
-+  pc               - The `PC`
++ pc  - The `PC`
 .  point            - The point
 .  x                - The input solution (not used in linear problems)
 .  f                - The patch residual vector
@@ -636,7 +636,7 @@ $  PetscErrorCode func(PC pc, PetscInt point, Vec x, Vec f, IS facetIS, PetscInt
 .  n                - The size of `dofsArray`
 .  dofsArray        - The dofmap for the dofs to be solved for
 .  dofsArrayWithAll - The dofmap for all dofs on the patch
--  ctx              - The user context
+- ctx - The user context
 
   Level: advanced
 
@@ -668,7 +668,7 @@ PetscErrorCode PCPatchSetComputeFunctionInteriorFacets(PC pc, PetscErrorCode (*f
 
   Calling sequence of `func`:
 $ PetscErrorCode func(PC pc, PetscInt point, Vec x, Mat mat, IS facetIS, PetscInt n, const PetscInt* dofsArray, const PetscInt* dofsArrayWithAll, void* ctx)
-+  pc               - The `PC`
++ pc  - The `PC`
 .  point            - The point
 .  x                - The input solution (not used in linear problems)
 .  mat              - The patch matrix
@@ -676,7 +676,7 @@ $ PetscErrorCode func(PC pc, PetscInt point, Vec x, Mat mat, IS facetIS, PetscIn
 .  n                - The size of `dofsArray`
 .  dofsArray        - The dofmap for the dofs to be solved for
 .  dofsArrayWithAll - The dofmap for all dofs on the patch
--  ctx              - The user context
+- ctx - The user context
 
   Level: advanced
 
@@ -708,7 +708,7 @@ PetscErrorCode PCPatchSetComputeOperator(PC pc, PetscErrorCode (*func)(PC, Petsc
 
   Calling sequence of `func`:
 $  PetscErrorCode func(PC pc, PetscInt point, Vec x, Mat mat, IS facetIS, PetscInt n, const PetscInt* dofsArray, const PetscInt* dofsArrayWithAll, void* ctx)
-+  pc               - The `PC`
++ pc  - The `PC`
 .  point            - The point
 .  x                - The input solution (not used in linear problems)
 .  mat              - The patch matrix
@@ -716,7 +716,7 @@ $  PetscErrorCode func(PC pc, PetscInt point, Vec x, Mat mat, IS facetIS, PetscI
 .  n                - The size of `dofsArray`
 .  dofsArray        - The dofmap for the dofs to be solved for
 .  dofsArrayWithAll - The dofmap for all dofs on the patch
--  ctx              - The user context
+- ctx - The user context
 
   Level: advanced
 

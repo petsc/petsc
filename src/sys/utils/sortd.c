@@ -16,18 +16,18 @@
   }
 
 /*@
-   PetscSortedReal - Determines whether the array of `PetscReal` is sorted.
+  PetscSortedReal - Determines whether the array of `PetscReal` is sorted.
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  n  - number of values
--  X  - array of integers
+  Input Parameters:
++ n - number of values
+- X - array of integers
 
-   Output Parameter:
-.  sorted - flag whether the array is sorted
+  Output Parameter:
+. sorted - flag whether the array is sorted
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `PetscSortReal()`, `PetscSortedInt()`, `PetscSortedMPIInt()`
 @*/
@@ -67,20 +67,20 @@ static PetscErrorCode PetscSortReal_Private(PetscReal *v, PetscInt right)
 }
 
 /*@
-   PetscSortReal - Sorts an array of `PetscReal` in place in increasing order.
+  PetscSortReal - Sorts an array of `PetscReal` in place in increasing order.
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  n  - number of values
--  v  - array of doubles
+  Input Parameters:
++ n - number of values
+- v - array of doubles
 
-   Level: intermediate
+  Level: intermediate
 
-   Note:
-   This function serves as an alternative to `PetscRealSortSemiOrdered()`, and may perform faster especially if the array
-   is completely random. There are exceptions to this and so it is __highly__ recommended that the user benchmark their
-   code to see which routine is fastest.
+  Note:
+  This function serves as an alternative to `PetscRealSortSemiOrdered()`, and may perform faster especially if the array
+  is completely random. There are exceptions to this and so it is __highly__ recommended that the user benchmark their
+  code to see which routine is fastest.
 
 .seealso: `PetscRealSortSemiOrdered()`, `PetscSortInt()`, `PetscSortRealWithPermutation()`, `PetscSortRealWithArrayInt()`
 @*/
@@ -143,17 +143,17 @@ static PetscErrorCode PetscSortRealWithArrayInt_Private(PetscReal *v, PetscInt *
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 /*@
-   PetscSortRealWithArrayInt - Sorts an array of `PetscReal` in place in increasing order;
-       changes a second `PetscInt` array to match the sorted first array.
+  PetscSortRealWithArrayInt - Sorts an array of `PetscReal` in place in increasing order;
+  changes a second `PetscInt` array to match the sorted first array.
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  n  - number of values
-.  i  - array of integers
--  I - second array of integers
+  Input Parameters:
++ n  - number of values
+. Ii - array of integers
+- r  - second array of integers
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `PetscSortReal()`
 @*/
@@ -184,18 +184,18 @@ PetscErrorCode PetscSortRealWithArrayInt(PetscInt n, PetscReal r[], PetscInt Ii[
 /*@
   PetscFindReal - Finds a PetscReal` in a sorted array of `PetscReal`s
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  key - the value to locate
-.  n   - number of values in the array
-.  ii  - array of values
--  eps - tolerance used to compare
+  Input Parameters:
++ key - the value to locate
+. n   - number of values in the array
+. t   - array of values
+- eps - tolerance used to compare
 
-   Output Parameter:
-.  loc - the location if found, otherwise -(slot+1) where slot is the place the value would go
+  Output Parameter:
+. loc - the location if found, otherwise -(slot+1) where slot is the place the value would go
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `PetscSortReal()`, `PetscSortRealWithArrayInt()`
 @*/
@@ -221,18 +221,18 @@ PetscErrorCode PetscFindReal(PetscReal key, PetscInt n, const PetscReal t[], Pet
 }
 
 /*@
-   PetscSortRemoveDupsReal - Sorts an array of `PetscReal` in place in increasing order and removes all duplicate entries
+  PetscSortRemoveDupsReal - Sorts an array of `PetscReal` in place in increasing order and removes all duplicate entries
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  n  - number of values
--  v  - array of doubles
+  Input Parameters:
++ n - number of values
+- v - array of doubles
 
-   Output Parameter:
-.  n - number of non-redundant values
+  Output Parameter:
+. n - number of non-redundant values
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `PetscSortReal()`, `PetscSortRemoveDupsInt()`
 @*/
@@ -253,21 +253,21 @@ PetscErrorCode PetscSortRemoveDupsReal(PetscInt *n, PetscReal v[])
 }
 
 /*@
-   PetscSortSplit - Quick-sort split of an array of `PetscScalar`s in place.
+  PetscSortSplit - Quick-sort split of an array of `PetscScalar`s in place.
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  ncut  - splitig index
--  n     - number of values to sort
+  Input Parameters:
++ ncut - splitig index
+- n    - number of values to sort
 
-   Input/Output Parameters:
-+  a     - array of values, on output the values are permuted such that its elements satisfy:
+  Input/Output Parameters:
++ a   - array of values, on output the values are permuted such that its elements satisfy:
            abs(a[i]) >= abs(a[ncut-1]) for i < ncut and
            abs(a[i]) <= abs(a[ncut-1]) for i >= ncut
--  idx   - index for array a, on output permuted accordingly
+- idx - index for array a, on output permuted accordingly
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `PetscSortInt()`, `PetscSortRealWithPermutation()`
 @*/
@@ -318,21 +318,21 @@ PetscErrorCode PetscSortSplit(PetscInt ncut, PetscInt n, PetscScalar a[], PetscI
 }
 
 /*@
-   PetscSortSplitReal - Quick-sort split of an array of `PetscReal`s in place.
+  PetscSortSplitReal - Quick-sort split of an array of `PetscReal`s in place.
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  ncut  - splitig index
--  n     - number of values to sort
+  Input Parameters:
++ ncut - splitig index
+- n    - number of values to sort
 
-   Input/Output Parameters:
-+  a     - array of values, on output the values are permuted such that its elements satisfy:
+  Input/Output Parameters:
++ a   - array of values, on output the values are permuted such that its elements satisfy:
            abs(a[i]) >= abs(a[ncut-1]) for i < ncut and
            abs(a[i]) <= abs(a[ncut-1]) for i >= ncut
--  idx   - index for array a, on output permuted accordingly
+- idx - index for array a, on output permuted accordingly
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `PetscSortInt()`, `PetscSortRealWithPermutation()`
 @*/

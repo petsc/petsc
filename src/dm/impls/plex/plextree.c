@@ -12,7 +12,7 @@
   Not Collective
 
   Input Parameters:
-+ dm - The `DMPLEX` object
++ dm  - The `DMPLEX` object
 - ref - The reference tree `DMPLEX` object
 
   Level: intermediate
@@ -175,16 +175,16 @@ static PetscErrorCode DMPlexReferenceTreeGetChildSymmetry_Default(DM dm, PetscIn
   DMPlexReferenceTreeGetChildSymmetry - Given a reference tree, transform a childid and orientation from one parent frame to another
 
   Input Parameters:
-+ dm - the reference tree `DMPLEX` object
-. parent - the parent point
++ dm            - the reference tree `DMPLEX` object
+. parent        - the parent point
 . parentOrientA - the reference orientation for describing the parent
-. childOrientA - the reference orientation for describing the child
-. childA - the reference childID for describing the child
+. childOrientA  - the reference orientation for describing the child
+. childA        - the reference childID for describing the child
 - parentOrientB - the new orientation for describing the parent
 
   Output Parameters:
 + childOrientB - if not `NULL`, set to the new orientation for describing the child
-- childB - if not `NULL`, the new childID for describing the child
+- childB       - if not `NULL`, the new childID for describing the child
 
   Level: developer
 
@@ -427,7 +427,7 @@ PetscErrorCode DMPlexCreateReferenceTree_Union(DM K, DM Kref, const char *labelN
 - simplex - Flag for simplex, otherwise use a tensor-product cell
 
   Output Parameter:
-. ref     - the reference tree `DMPLEX` object
+. ref - the reference tree `DMPLEX` object
 
   Level: intermediate
 
@@ -980,11 +980,11 @@ static PetscErrorCode DMPlexSetTree_Internal(DM dm, PetscSection parentSection, 
   Collective
 
   Input Parameters:
-+ dm - the `DMPLEX` object
++ dm            - the `DMPLEX` object
 . parentSection - a section describing the tree: a point has a parent if it has 1 dof in the section; the section
                   offset indexes the parent and childID list; the reference count of parentSection is incremented
-. parents - a list of the point parents; copied, can be destroyed
-- childIDs - identifies the relationship of the child point to the parent point; if there is a reference tree, then
+. parents       - a list of the point parents; copied, can be destroyed
+- childIDs      - identifies the relationship of the child point to the parent point; if there is a reference tree, then
              the child corresponds to the point in the reference tree with index childIDs; copied, can be destroyed
 
   Level: intermediate
@@ -1008,11 +1008,11 @@ PetscErrorCode DMPlexSetTree(DM dm, PetscSection parentSection, PetscInt parents
   Output Parameters:
 + parentSection - a section describing the tree: a point has a parent if it has 1 dof in the section; the section
                   offset indexes the parent and childID list
-. parents - a list of the point parents
-. childIDs - identifies the relationship of the child point to the parent point; if there is a reference tree, then
+. parents       - a list of the point parents
+. childIDs      - identifies the relationship of the child point to the parent point; if there is a reference tree, then
              the child corresponds to the point in the reference tree with index childID
-. childSection - the inverse of the parent section
-- children - a list of the point children
+. childSection  - the inverse of the parent section
+- children      - a list of the point children
 
   Level: intermediate
 
@@ -1036,11 +1036,11 @@ PetscErrorCode DMPlexGetTree(DM dm, PetscSection *parentSection, PetscInt *paren
   DMPlexGetTreeParent - get the parent of a point in the tree describing the point hierarchy (not the DAG)
 
   Input Parameters:
-+ dm - the `DMPLEX` object
++ dm    - the `DMPLEX` object
 - point - the query point
 
   Output Parameters:
-+ parent - if not `NULL`, set to the parent of the point, or the point itself if the point does not have a parent
++ parent  - if not `NULL`, set to the parent of the point, or the point itself if the point does not have a parent
 - childID - if not `NULL`, set to the child ID of the point with respect to its parent, or 0 if the point
             does not have a parent
 
@@ -1078,12 +1078,12 @@ PetscErrorCode DMPlexGetTreeParent(DM dm, PetscInt point, PetscInt *parent, Pets
   DMPlexGetTreeChildren - get the children of a point in the tree describing the point hierarchy (not the DAG)
 
   Input Parameters:
-+ dm - the `DMPLEX` object
++ dm    - the `DMPLEX` object
 - point - the query point
 
   Output Parameters:
 + numChildren - if not `NULL`, set to the number of children
-- children - if not `NULL`, set to a list children, or set to `NULL` if the point has no children
+- children    - if not `NULL`, set to a list children, or set to `NULL` if the point has no children
 
   Level: intermediate
 
@@ -4199,7 +4199,7 @@ static PetscErrorCode DMPlexTransferVecTree_Inject(DM fine, Vec vecFine, DM coar
 
   Input Parameters:
 + dmIn        - The `DMPLEX` mesh for the input vector
-. dmOut        - The second `DMPLEX` mesh
+. dmOut       - The second `DMPLEX` mesh
 . vecIn       - The input vector
 . sfRefine    - A star forest indicating points in the mesh `dmIn` (roots in the star forest) that are parents to points in
                 the mesh `dmOut` (leaves in the star forest), i.e. where `dmOut` is more refined than `dmIn`
@@ -4217,7 +4217,7 @@ static PetscErrorCode DMPlexTransferVecTree_Inject(DM fine, Vec vecFine, DM coar
 - time        - Used if boundary values are time dependent.
 
   Output Parameter:
-. vecOut      - Using interpolation and injection operators calculated on the reference tree, the transferred
+. vecOut - Using interpolation and injection operators calculated on the reference tree, the transferred
                 projection of `vecIn` from `dmIn` to `dmOut`.  Note that any field discretized with a `PetscFV` finite volume
                 method that uses gradient reconstruction will use reconstructed gradients when interpolating from
                 coarse points to fine points.

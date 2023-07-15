@@ -162,7 +162,7 @@ PetscErrorCode PetscSpacePointSetPoints(PetscSpace sp, PetscQuadrature q)
 . sp - The `PetscSpace`
 
   Output Parameter:
-. q  - The `PetscQuadrature` defining the points
+. q - The `PetscQuadrature` defining the points
 
   Level: intermediate
 

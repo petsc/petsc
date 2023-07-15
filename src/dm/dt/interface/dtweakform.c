@@ -82,8 +82,8 @@ static PetscErrorCode PetscChunkBufferEnlargeChunk(PetscChunkBuffer *buffer, Pet
   Not Collective
 
   Input Parameters:
-+ n - number of values
-- X - array of `PetscFormKey`
++ n   - number of values
+- arr - array of `PetscFormKey`
 
   Level: intermediate
 

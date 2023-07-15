@@ -2,23 +2,23 @@
 #include <petsc/private/snesimpl.h> /*I "petscsnes.h"  I*/
 
 /*@
-   SNESApplyNPC - Calls `SNESSolve()` on preconditioner for the `SNES`
+  SNESApplyNPC - Calls `SNESSolve()` on preconditioner for the `SNES`
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  snes - the `SNES` context
-.  x - input vector
--  f - optional; the function evaluation on `x`
+  Input Parameters:
++ snes - the `SNES` context
+. x    - input vector
+- f    - optional; the function evaluation on `x`
 
-   Output Parameter:
-.  y - function vector, as set by `SNESSetFunction()`
+  Output Parameter:
+. y - function vector, as set by `SNESSetFunction()`
 
-   Level: developer
+  Level: developer
 
-   Note:
-   `SNESComputeFunction()` should be called on `x` before `SNESApplyNPC()` is called, as it is
-   with `SNESComuteJacobian()`.
+  Note:
+  `SNESComputeFunction()` should be called on `x` before `SNESApplyNPC()` is called, as it is
+  with `SNESComuteJacobian()`.
 
 .seealso: `SNESGetNPC()`, `SNESSetNPC()`, `SNESComputeFunction()`
 @*/
@@ -59,18 +59,18 @@ PetscErrorCode SNESComputeFunctionDefaultNPC(SNES snes, Vec X, Vec F)
 }
 
 /*@
-   SNESGetNPCFunction - Gets the current function value and its norm from a nonlinear preconditioner after `SNESSolve()` has been called on that `SNES`
+  SNESGetNPCFunction - Gets the current function value and its norm from a nonlinear preconditioner after `SNESSolve()` has been called on that `SNES`
 
-   Collective
+  Collective
 
-   Input Parameter:
-.  snes - the `SNES` context
+  Input Parameter:
+. snes - the `SNES` context
 
-   Output Parameters:
-+  F - function vector
--  fnorm - the norm of `F`
+  Output Parameters:
++ F     - function vector
+- fnorm - the norm of `F`
 
-   Level: developer
+  Level: developer
 
 .seealso: `SNESGetNPC()`, `SNESSetNPC()`, `SNESComputeFunction()`, `SNESApplyNPC()`, `SNESSolve()`
 @*/

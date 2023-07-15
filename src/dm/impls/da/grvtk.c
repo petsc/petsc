@@ -483,23 +483,23 @@ static PetscErrorCode DMDAVTKWriteAll_VTR(DM da, PetscViewer viewer)
 }
 
 /*@C
-   DMDAVTKWriteAll - Write a file containing all the fields that have been provided to the viewer
+  DMDAVTKWriteAll - Write a file containing all the fields that have been provided to the viewer
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  odm - `DMDA` specifying the grid layout, passed as a `PetscObject`
--  viewer - viewer of type `PETSCVIEWERVTK`
+  Input Parameters:
++ odm    - `DMDA` specifying the grid layout, passed as a `PetscObject`
+- viewer - viewer of type `PETSCVIEWERVTK`
 
-   Level: developer
+  Level: developer
 
-   Notes:
-   This function is a callback used by the VTK viewer to actually write the file.
-   The reason for this odd model is that the VTK file format does not provide any way to write one field at a time.
-   Instead, metadata for the entire file needs to be available up-front before you can start writing the file.
+  Notes:
+  This function is a callback used by the VTK viewer to actually write the file.
+  The reason for this odd model is that the VTK file format does not provide any way to write one field at a time.
+  Instead, metadata for the entire file needs to be available up-front before you can start writing the file.
 
-   If any fields have been named (see e.g. DMDASetFieldName()), then individual scalar
-   fields are written. Otherwise, a single multi-dof (vector) field is written.
+  If any fields have been named (see e.g. DMDASetFieldName()), then individual scalar
+  fields are written. Otherwise, a single multi-dof (vector) field is written.
 
 .seealso: `DMDA`, `DM`, `PETSCVIEWERVTK`
 @*/

@@ -23,17 +23,17 @@
 #include <errno.h>
 
 /*@C
-   PetscGetWorkingDirectory - Gets the current working directory.
+  PetscGetWorkingDirectory - Gets the current working directory.
 
-   Not Collective
+  Not Collective
 
-   Input Parameter:
-.  len  - maximum length of `path`
+  Input Parameter:
+. len - maximum length of `path`
 
-   Output Parameter:
-.  path - holds the result value. The string should be long enough to hold the path, for example, `PETSC_MAX_PATH_LEN`
+  Output Parameter:
+. path - holds the result value. The string should be long enough to hold the path, for example, `PETSC_MAX_PATH_LEN`
 
-   Level: developer
+  Level: developer
 
 .seealso: `PetscGetTmp()`, `PetscSharedTmp()`, `PetscSharedWorkingDirectory()`, `PetscGetHomeDirectory()`
 @*/

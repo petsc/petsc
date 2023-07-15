@@ -1381,7 +1381,7 @@ static PetscErrorCode GmshCreateFE(MPI_Comm comm, const char prefix[], PetscBool
 - interpolate - Create faces and edges in the mesh
 
   Output Parameter:
-. dm  - The `DM` object representing the mesh
+. dm - The `DM` object representing the mesh
 
   Level: beginner
 
@@ -1441,12 +1441,12 @@ PetscErrorCode DMPlexCreateGmshFromFile(MPI_Comm comm, const char filename[], Pe
   Collective
 
   Input Parameters:
-+ comm  - The MPI communicator
-. viewer - The `PetscViewer` associated with a Gmsh file
++ comm        - The MPI communicator
+. viewer      - The `PetscViewer` associated with a Gmsh file
 - interpolate - Create faces and edges in the mesh
 
   Output Parameter:
-. dm  - The `DM` object representing the mesh
+. dm - The `DM` object representing the mesh
 
   Options Database Keys:
 + -dm_plex_gmsh_hybrid        - Force triangular prisms to use tensor order

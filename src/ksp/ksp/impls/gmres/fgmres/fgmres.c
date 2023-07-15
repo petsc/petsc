@@ -234,16 +234,15 @@ PetscErrorCode KSPFGMRESCycle(PetscInt *itcount, KSP ksp)
 }
 
 /*
-    KSPSolve_FGMRES - This routine applies the FGMRES method.
+  KSPSolve_FGMRES - This routine applies the FGMRES method.
 
-   Input Parameter:
-.     ksp - the Krylov space object that was set to use fgmres
+  Input Parameter:
+. ksp - the Krylov space object that was set to use fgmres
 
-   Output Parameter:
+  Output Parameter:
 .     outits - number of iterations used
 
 */
-
 PetscErrorCode KSPSolve_FGMRES(KSP ksp)
 {
   PetscInt    cycle_its = 0; /* iterations done in a call to KSPFGMRESCycle */
@@ -480,17 +479,17 @@ static PetscErrorCode KSPFGMRESGetNewVectors(KSP ksp, PetscInt it)
 
 /*
 
-   KSPBuildSolution_FGMRES
+  KSPBuildSolution_FGMRES
 
-     Input Parameter:
-.     ksp - the Krylov space object
-.     ptr-
+  Input Parameter:
++ ksp - the Krylov space object
+- ptr - the vec
 
-   Output Parameter:
-.     result - the solution
+  Output Parameter:
+. result - the solution
 
-   Note: this calls KSPFGMRESBuildSoln - the same function that KSPFGMRESCycle
-   calls directly.
+  Note: this calls KSPFGMRESBuildSoln - the same function that KSPFGMRESCycle
+  calls directly.
 
 */
 PetscErrorCode KSPBuildSolution_FGMRES(KSP ksp, Vec ptr, Vec *result)

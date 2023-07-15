@@ -48,20 +48,20 @@ static PetscErrorCode PetscShmCommDestroyDuppedComms(void)
 #endif
 
 /*@C
-    PetscShmCommGet - Returns a sub-communicator of all ranks that share a common memory
+  PetscShmCommGet - Returns a sub-communicator of all ranks that share a common memory
 
-    Collective.
+  Collective.
 
-    Input Parameter:
-.   globcomm - `MPI_Comm`, which can be a user MPI_Comm or a PETSc inner MPI_Comm
+  Input Parameter:
+. globcomm - `MPI_Comm`, which can be a user MPI_Comm or a PETSc inner MPI_Comm
 
-    Output Parameter:
-.   pshmcomm - the PETSc shared memory communicator object
+  Output Parameter:
+. pshmcomm - the PETSc shared memory communicator object
 
-    Level: developer
+  Level: developer
 
-    Note:
-       When used with MPICH, MPICH must be configured with --download-mpich-device=ch3:nemesis
+  Note:
+  When used with MPICH, MPICH must be configured with --download-mpich-device=ch3:nemesis
 
 .seealso: `PetscShmCommGlobalToLocal()`, `PetscShmCommLocalToGlobal()`, `PetscShmCommGetMpiShmComm()`
 @*/
@@ -127,21 +127,21 @@ PetscErrorCode PetscShmCommGet(MPI_Comm globcomm, PetscShmComm *pshmcomm)
 }
 
 /*@C
-    PetscShmCommGlobalToLocal - Given a global rank returns the local rank in the shared memory communicator
+  PetscShmCommGlobalToLocal - Given a global rank returns the local rank in the shared memory communicator
 
-    Input Parameters:
-+   pshmcomm - the shared memory communicator object
--   grank    - the global rank
+  Input Parameters:
++ pshmcomm - the shared memory communicator object
+- grank    - the global rank
 
-    Output Parameter:
-.   lrank - the local rank, or `MPI_PROC_NULL` if it does not exist
+  Output Parameter:
+. lrank - the local rank, or `MPI_PROC_NULL` if it does not exist
 
-    Level: developer
+  Level: developer
 
-    Developer Notes:
-    Assumes the pshmcomm->globranks[] is sorted
+  Developer Notes:
+  Assumes the pshmcomm->globranks[] is sorted
 
-    It may be better to rewrite this to map multiple global ranks to local in the same function call
+  It may be better to rewrite this to map multiple global ranks to local in the same function call
 
 .seealso: `PetscShmCommGet()`, `PetscShmCommLocalToGlobal()`, `PetscShmCommGetMpiShmComm()`
 @*/
@@ -176,16 +176,16 @@ PetscErrorCode PetscShmCommGlobalToLocal(PetscShmComm pshmcomm, PetscMPIInt gran
 }
 
 /*@C
-    PetscShmCommLocalToGlobal - Given a local rank in the shared memory communicator returns the global rank
+  PetscShmCommLocalToGlobal - Given a local rank in the shared memory communicator returns the global rank
 
-    Input Parameters:
-+   pshmcomm - the shared memory communicator object
--   lrank    - the local rank in the shared memory communicator
+  Input Parameters:
++ pshmcomm - the shared memory communicator object
+- lrank    - the local rank in the shared memory communicator
 
-    Output Parameter:
-.   grank - the global rank in the global communicator where the shared memory communicator is built
+  Output Parameter:
+. grank - the global rank in the global communicator where the shared memory communicator is built
 
-    Level: developer
+  Level: developer
 
 .seealso: `PetscShmCommGlobalToLocal()`, `PetscShmCommGet()`, `PetscShmCommGetMpiShmComm()`
 @*/
@@ -200,15 +200,15 @@ PetscErrorCode PetscShmCommLocalToGlobal(PetscShmComm pshmcomm, PetscMPIInt lran
 }
 
 /*@C
-    PetscShmCommGetMpiShmComm - Returns the MPI communicator that represents all processes with common shared memory
+  PetscShmCommGetMpiShmComm - Returns the MPI communicator that represents all processes with common shared memory
 
-    Input Parameter:
-.   pshmcomm - PetscShmComm object obtained with PetscShmCommGet()
+  Input Parameter:
+. pshmcomm - PetscShmComm object obtained with PetscShmCommGet()
 
-    Output Parameter:
-.   comm     - the MPI communicator
+  Output Parameter:
+. comm - the MPI communicator
 
-    Level: developer
+  Level: developer
 
 .seealso: `PetscShmCommGlobalToLocal()`, `PetscShmCommGet()`, `PetscShmCommLocalToGlobal()`
 @*/

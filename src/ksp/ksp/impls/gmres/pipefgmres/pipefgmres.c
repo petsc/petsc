@@ -522,17 +522,17 @@ static PetscErrorCode KSPPIPEFGMRESUpdateHessenberg(KSP ksp, PetscInt it, PetscB
 }
 
 /*
-   KSPBuildSolution_PIPEFGMRES
+  KSPBuildSolution_PIPEFGMRES
 
-     Input Parameter:
-.     ksp - the Krylov space object
-.     ptr-
+  Input Parameter:
++ ksp - the Krylov space object
+- ptr - the vec
 
-   Output Parameter:
-.     result - the solution
+  Output Parameter:
+. result - the solution
 
-   Note: this calls KSPPIPEFGMRESBuildSoln - the same function that KSPPIPEFGMRESCycle
-   calls directly.
+  Note: this calls KSPPIPEFGMRESBuildSoln - the same function that KSPPIPEFGMRESCycle
+  calls directly.
 
 */
 PetscErrorCode KSPBuildSolution_PIPEFGMRES(KSP ksp, Vec ptr, Vec *result)
@@ -737,11 +737,11 @@ static PetscErrorCode KSPPIPEFGMRESGetNewVectors(KSP ksp, PetscInt it)
   Logically Collective
 
   Input Parameters:
-+  ksp - the Krylov space context
--  shift - the shift
++ ksp   - the Krylov space context
+- shift - the shift
 
   Options Database Key:
-.  -ksp_pipefgmres_shift <shift> - set the shift parameter
+. -ksp_pipefgmres_shift <shift> - set the shift parameter
 
   Level: intermediate
 

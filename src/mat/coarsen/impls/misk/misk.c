@@ -422,18 +422,18 @@ PETSC_EXTERN PetscErrorCode MatCoarsenCreate_MISK(MatCoarsen coarse)
 }
 
 /*@
-   MatCoarsenMISKSetDistance - the distance to be used by MISK
+  MatCoarsenMISKSetDistance - the distance to be used by MISK
 
-   Collective
+  Collective
 
-   Input Parameters:
-+   coarsen - the coarsen
--   k - the distance
+  Input Parameters:
++ crs - the coarsen
+- k   - the distance
 
-   Options Database Key:
-.   -mat_coarsen_misk_distance <k> - distance for MIS
+  Options Database Key:
+. -mat_coarsen_misk_distance <k> - distance for MIS
 
-   Level: advanced
+  Level: advanced
 
 .seealso: `MATCOARSENMISK`, `MatCoarsen`, `MatCoarseSetFromOptions()`, `MatCoarsenSetType()`, `MatCoarsenRegister()`, `MatCoarsenCreate()`,
           `MatCoarsenDestroy()`, `MatCoarsenSetAdjacency()`, `MatCoarsenMISKGetDistance()`
@@ -447,17 +447,17 @@ PetscErrorCode MatCoarsenMISKSetDistance(MatCoarsen crs, PetscInt k)
 }
 
 /*@
-   MatCoarsenMISKGetDistance - gets the distance to be used by MISK
+  MatCoarsenMISKGetDistance - gets the distance to be used by MISK
 
-   Collective
+  Collective
 
-   Input Parameter:
-.   coarsen - the coarsen
+  Input Parameter:
+. crs - the coarsen
 
-   Output Parameter:
-.   k - the distance
+  Output Parameter:
+. k - the distance
 
-   Level: advanced
+  Level: advanced
 
 .seealso: `MATCOARSENMISK`, `MatCoarsen`, `MatCoarseSetFromOptions()`, `MatCoarsenSetType()`, `MatCoarsenRegister()`, `MatCoarsenCreate()`,
           `MatCoarsenDestroy()`, `MatCoarsenSetAdjacency()`, `MatCoarsenMISKGetDistance()`

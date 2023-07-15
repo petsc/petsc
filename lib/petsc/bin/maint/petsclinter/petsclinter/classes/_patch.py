@@ -81,23 +81,31 @@ class Patch:
     """
     drops the error messages corresponding to this patch from the linter
     """
-    for weak_list in self.weak_data:
-      elist = weak_list[0]()
+    del_indices = []
+    self_id     = self.id
+    assert self_id >= 0
+    for i, weak_ref in enumerate(self.weak_data):
+      elist = weak_ref()
+
       if elist is not None:
-        idx = elist[3].index(self.id)
-        if idx < 0:
-          reason = '-1 is the default value' if idx == -1 else 'unknown negative idx value'
-          raise RuntimeError(f'bad weakref id {idx} for patch, {reason}')
-        del elist[1][idx] # delete the error message
-        del elist[2][idx] # delete the patch indicator
-        del elist[3][idx] # mark the fact we have deleted ourselves
+        del_indices.append(i)
+        # I don't know how this list could ever be longer than a single element, but I
+        # guess it does not hurt to handle this case?
+        idx = [eid for eid, (_, _, patch_id) in enumerate(elist) if patch_id == self_id]
+        if not idx:
+          raise RuntimeError('could not locate weakref idx for patch')
+        for i in reversed(idx):
+          del elist[i] # delete our entry in the error message list
+
+    for i in reversed(del_indices):
+      del self.weak_data[i]
     return
 
-  def attach(self, *args):
+  def attach(self, cursor_id_errors):
     """
     attach the list and index into the linter error list corresponding to this patch
     """
-    self.weak_data.append(args)
+    self.weak_data.append(cursor_id_errors)
     return
 
   def is_deletion_superset_of(self, other):
@@ -116,7 +124,6 @@ class Patch:
 
   @staticmethod
   def cull_deltas(deltas):
-    deltas = tuple(deltas)
     return tuple([
       d_i for d_i in deltas if not any(
         d_j.is_deletion_superset_of(d_i) for d_j in deltas if d_j is not d_i

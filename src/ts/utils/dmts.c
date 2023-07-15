@@ -199,15 +199,15 @@ static PetscErrorCode DMSubDomainRestrictHook_DMTS(DM dm, VecScatter gscat, VecS
 }
 
 /*@C
-   DMTSCopy - copies the information in a `DMTS` to another `DMTS`
+  DMTSCopy - copies the information in a `DMTS` to another `DMTS`
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  kdm - Original `DMTS`
--  nkdm - `DMTS` to receive the data, should have been created with `DMTSCreate()`
+  Input Parameters:
++ kdm  - Original `DMTS`
+- nkdm - `DMTS` to receive the data, should have been created with `DMTSCreate()`
 
-   Level: developer
+  Level: developer
 
 .seealso: [](ch_ts), `DMTSCreate()`, `DMTSDestroy()`
 @*/
@@ -254,20 +254,20 @@ PetscErrorCode DMTSCopy(DMTS kdm, DMTS nkdm)
 }
 
 /*@C
-   DMGetDMTS - get read-only private `DMTS` context from a `DM`
+  DMGetDMTS - get read-only private `DMTS` context from a `DM`
 
-   Not Collective
+  Not Collective
 
-   Input Parameter:
-.  dm - `DM` to be used with `TS`
+  Input Parameter:
+. dm - `DM` to be used with `TS`
 
-   Output Parameter:
-.  tsdm - private `DMTS` context
+  Output Parameter:
+. tsdm - private `DMTS` context
 
-   Level: developer
+  Level: developer
 
-   Notes:
-   Use `DMGetDMTSWrite()` if write access is needed. The `DMTSSetXXX()` API should be used wherever possible.
+  Notes:
+  Use `DMGetDMTSWrite()` if write access is needed. The `DMTSSetXXX()` API should be used wherever possible.
 
 .seealso: [](ch_ts), `DMTS`, `DMGetDMTSWrite()`
 @*/
@@ -288,17 +288,17 @@ PetscErrorCode DMGetDMTS(DM dm, DMTS *tsdm)
 }
 
 /*@C
-   DMGetDMTSWrite - get write access to private `DMTS` context from a `DM`
+  DMGetDMTSWrite - get write access to private `DMTS` context from a `DM`
 
-   Not Collective
+  Not Collective
 
-   Input Parameter:
-.  dm - `DM` to be used with `TS`
+  Input Parameter:
+. dm - `DM` to be used with `TS`
 
-   Output Parameter:
-.  tsdm - private `DMTS` context
+  Output Parameter:
+. tsdm - private `DMTS` context
 
-   Level: developer
+  Level: developer
 
 .seealso: [](ch_ts), `DMTS`, `DMGetDMTS()`
 @*/
@@ -324,18 +324,18 @@ PetscErrorCode DMGetDMTSWrite(DM dm, DMTS *tsdm)
 }
 
 /*@C
-   DMCopyDMTS - copies a `DM` context to a new `DM`
+  DMCopyDMTS - copies a `DM` context to a new `DM`
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  dmsrc - `DM` to obtain context from
--  dmdest - `DM` to add context to
+  Input Parameters:
++ dmsrc  - `DM` to obtain context from
+- dmdest - `DM` to add context to
 
-   Level: developer
+  Level: developer
 
-   Note:
-   The context is copied by reference. This function does not ensure that a context exists.
+  Note:
+  The context is copied by reference. This function does not ensure that a context exists.
 
 .seealso: [](ch_ts), `DMTS`, `DMGetDMTS()`, `TSSetDM()`
 @*/
@@ -353,30 +353,30 @@ PetscErrorCode DMCopyDMTS(DM dmsrc, DM dmdest)
 }
 
 /*@C
-   DMTSSetIFunction - set `TS` implicit function evaluation function
+  DMTSSetIFunction - set `TS` implicit function evaluation function
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  dm - `DM` to be used with `TS`
-.  func - function evaluating f(t,u,u_t)
--  ctx - context for residual evaluation
+  Input Parameters:
++ dm   - `DM` to be used with `TS`
+. func - function evaluating f(t,u,u_t)
+- ctx  - context for residual evaluation
 
-   Calling sequence of `func`:
+  Calling sequence of `func`:
 $     PetscErrorCode func(TS ts, PetscReal t, Vec u, Vec u_t, Vec F,void *ctx);
 +  ts  - the `TS` context obtained from `TSCreate()`
 .  t   - time at step/stage being solved
 .  u   - state vector
 .  u_t - time derivative of state vector
 .  F   - function vector
--  ctx - [optional] user-defined context for matrix evaluation routine
+- ctx - [optional] user-defined context for matrix evaluation routine
 
-   Level: advanced
+  Level: advanced
 
-   Note:
-   `TSSetFunction()` is normally used, but it calls this function internally because the user context is actually
-   associated with the `DM`.  This makes the interface consistent regardless of whether the user interacts with a `DM` or
-   not. If DM took a more central role at some later date, this could become the primary method of setting the residual.
+  Note:
+  `TSSetFunction()` is normally used, but it calls this function internally because the user context is actually
+  associated with the `DM`.  This makes the interface consistent regardless of whether the user interacts with a `DM` or
+  not. If DM took a more central role at some later date, this could become the primary method of setting the residual.
 
 .seealso: [](ch_ts), `TS`, `DM`, `DMTSSetContext()`, `TSSetIFunction()`, `DMTSSetJacobian()`
 @*/
@@ -400,15 +400,15 @@ PetscErrorCode DMTSSetIFunction(DM dm, TSIFunction func, void *ctx)
 }
 
 /*@C
-   DMTSSetIFunctionContextDestroy - set `TS` implicit evaluation context destroy function
+  DMTSSetIFunctionContextDestroy - set `TS` implicit evaluation context destroy function
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  dm - `DM` to be used with `TS`
--  f - implicit evaluation context destroy function
+  Input Parameters:
++ dm - `DM` to be used with `TS`
+- f  - implicit evaluation context destroy function
 
-   Level: advanced
+  Level: advanced
 
 .seealso: [](ch_ts), `DM`, `TS`, `DMTSSetIFunction()`, `TSSetIFunction()`
 @*/
@@ -435,22 +435,22 @@ PetscErrorCode DMTSUnsetIFunctionContext_Internal(DM dm)
 }
 
 /*@C
-   DMTSGetIFunction - get `TS` implicit residual evaluation function
+  DMTSGetIFunction - get `TS` implicit residual evaluation function
 
-   Not Collective
+  Not Collective
 
-   Input Parameter:
-.  dm - `DM` to be used with `TS`
+  Input Parameter:
+. dm - `DM` to be used with `TS`
 
-   Output Parameters:
-+  func - function evaluation function, for calling sequence see `TSSetIFunction()`
--  ctx - context for residual evaluation
+  Output Parameters:
++ func - function evaluation function, for calling sequence see `TSSetIFunction()`
+- ctx  - context for residual evaluation
 
-   Level: advanced
+  Level: advanced
 
-   Note:
-   `TSGetFunction()` is normally used, but it calls this function internally because the user context is actually
-   associated with the `DM`.
+  Note:
+  `TSGetFunction()` is normally used, but it calls this function internally because the user context is actually
+  associated with the `DM`.
 
 .seealso: [](ch_ts), `TS`, `DM`, `DMTSSetContext()`, `DMTSSetFunction()`, `TSSetFunction()`
 @*/
@@ -470,16 +470,16 @@ PetscErrorCode DMTSGetIFunction(DM dm, TSIFunction *func, void **ctx)
 }
 
 /*@C
-   DMTSSetI2Function - set `TS` implicit function evaluation function for 2nd order systems
+  DMTSSetI2Function - set `TS` implicit function evaluation function for 2nd order systems
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  dm - `DM` to be used with `TS`
-.  fun - function evaluation routine
--  ctx - context for residual evaluation
+  Input Parameters:
++ dm  - `DM` to be used with `TS`
+. fun - function evaluation routine
+- ctx - context for residual evaluation
 
-   Calling sequence of `fun`:
+  Calling sequence of `fun`:
 $  PetscErrorCode fun(TS ts, PetscReal t, Vec U, Vec U_t, Vec U_tt, Vec F,void *ctx);
 +  ts  - the `TS` context obtained from `TSCreate()`
 .  t    - time at step/stage being solved
@@ -487,13 +487,13 @@ $  PetscErrorCode fun(TS ts, PetscReal t, Vec U, Vec U_t, Vec U_tt, Vec F,void *
 .  U_t  - time derivative of state vector
 .  U_tt - second time derivative of state vector
 .  F    - function vector
--  ctx  - [optional] user-defined context for matrix evaluation routine (may be `NULL`)
+- ctx - [optional] user-defined context for matrix evaluation routine (may be `NULL`)
 
-   Level: advanced
+  Level: advanced
 
-   Note:
-   `TSSetI2Function()` is normally used, but it calls this function internally because the user context is actually
-   associated with the `DM`.
+  Note:
+  `TSSetI2Function()` is normally used, but it calls this function internally because the user context is actually
+  associated with the `DM`.
 
 .seealso: [](ch_ts), `DM`, `TS`, `TSSetI2Function()`
 @*/
@@ -517,19 +517,19 @@ PetscErrorCode DMTSSetI2Function(DM dm, TSI2Function fun, void *ctx)
 }
 
 /*@C
-   DMTSSetI2FunctionContextDestroy - set `TS` implicit evaluation for 2nd order systems context destroy
+  DMTSSetI2FunctionContextDestroy - set `TS` implicit evaluation for 2nd order systems context destroy
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  dm - `DM` to be used with `TS`
--  f - implicit evaluation context destroy function
+  Input Parameters:
++ dm - `DM` to be used with `TS`
+- f  - implicit evaluation context destroy function
 
-   Level: advanced
+  Level: advanced
 
-   Note:
-   `TSSetI2FunctionContextDestroy()` is normally used, but it calls this function internally because the user context is actually
-   associated with the `DM`.
+  Note:
+  `TSSetI2FunctionContextDestroy()` is normally used, but it calls this function internally because the user context is actually
+  associated with the `DM`.
 
 .seealso: [](ch_ts), `TSSetI2FunctionContextDestroy()`, `DMTSSetI2Function()`, `TSSetI2Function()`
 @*/
@@ -556,22 +556,22 @@ PetscErrorCode DMTSUnsetI2FunctionContext_Internal(DM dm)
 }
 
 /*@C
-   DMTSGetI2Function - get `TS` implicit residual evaluation function for 2nd order systems
+  DMTSGetI2Function - get `TS` implicit residual evaluation function for 2nd order systems
 
-   Not Collective
+  Not Collective
 
-   Input Parameter:
-.  dm - `DM` to be used with `TS`
+  Input Parameter:
+. dm - `DM` to be used with `TS`
 
-   Output Parameters:
-+  fun - function evaluation function, for calling sequence see `TSSetI2Function()`
--  ctx - context for residual evaluation
+  Output Parameters:
++ fun - function evaluation function, for calling sequence see `TSSetI2Function()`
+- ctx - context for residual evaluation
 
-   Level: advanced
+  Level: advanced
 
-   Note:
-   `TSGetI2Function()` is normally used, but it calls this function internally because the user context is actually
-   associated with the `DM`.
+  Note:
+  `TSGetI2Function()` is normally used, but it calls this function internally because the user context is actually
+  associated with the `DM`.
 
 .seealso: [](ch_ts), `DM`, `TS`, `DMTSSetI2Function()`, `TSGetI2Function()`
 @*/
@@ -591,16 +591,16 @@ PetscErrorCode DMTSGetI2Function(DM dm, TSI2Function *fun, void **ctx)
 }
 
 /*@C
-   DMTSSetI2Jacobian - set `TS` implicit Jacobian evaluation function for 2nd order systems
+  DMTSSetI2Jacobian - set `TS` implicit Jacobian evaluation function for 2nd order systems
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  dm - `DM` to be used with `TS`
+  Input Parameters:
++ dm  - `DM` to be used with `TS`
 .  fun - Jacobian evaluation routine
--  ctx - context for Jacobian evaluation
+- ctx - context for Jacobian evaluation
 
-   Calling sequence of `jac`:
+  Calling sequence of `jac`:
 $    PetscErrorCode jac(TS ts, PetscReal t, Vec U, Vec U_t, Vec U_tt, PetscReal v, PetscReal a, Mat J, Mat P, void *ctx)
 +  ts  - the `TS` context obtained from `TSCreate()`
 .  t    - time at step/stage being solved
@@ -610,14 +610,14 @@ $    PetscErrorCode jac(TS ts, PetscReal t, Vec U, Vec U_t, Vec U_tt, PetscReal 
 .  v    - shift for U_t
 .  a    - shift for U_tt
 .  J    - Jacobian of G(U) = F(t,U,W+v*U,W'+a*U), equivalent to dF/dU + v*dF/dU_t  + a*dF/dU_tt
-.  P    - preconditioning matrix for J, may be same as `J`
--  ctx  - [optional] user-defined context for matrix evaluation routine
+. jac - preconditioning matrix for J, may be same as `J`
+- ctx - [optional] user-defined context for matrix evaluation routine
 
-   Level: advanced
+  Level: advanced
 
-   Note:
-   `TSSetI2Jacobian()` is normally used, but it calls this function internally because the user context is actually
-   associated with the `DM`.
+  Note:
+  `TSSetI2Jacobian()` is normally used, but it calls this function internally because the user context is actually
+  associated with the `DM`.
 
 .seealso: [](ch_ts), `DM`, `TS`, `TSSetI2Jacobian()`
 @*/
@@ -641,15 +641,15 @@ PetscErrorCode DMTSSetI2Jacobian(DM dm, TSI2Jacobian jac, void *ctx)
 }
 
 /*@C
-   DMTSSetI2JacobianContextDestroy - set `TS` implicit Jacobian evaluation for 2nd order systems context destroy function
+  DMTSSetI2JacobianContextDestroy - set `TS` implicit Jacobian evaluation for 2nd order systems context destroy function
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  dm - `DM` to be used with `TS`
--  f - implicit Jacobian evaluation context destroy function
+  Input Parameters:
++ dm - `DM` to be used with `TS`
+- f  - implicit Jacobian evaluation context destroy function
 
-   Level: advanced
+  Level: advanced
 
 .seealso: [](ch_ts), `DM`, `TS`, `TSSetI2JacobianContextDestroy()`, `DMTSSetI2Jacobian()`, `TSSetI2Jacobian()`
 @*/
@@ -676,22 +676,22 @@ PetscErrorCode DMTSUnsetI2JacobianContext_Internal(DM dm)
 }
 
 /*@C
-   DMTSGetI2Jacobian - get `TS` implicit Jacobian evaluation function for 2nd order systems
+  DMTSGetI2Jacobian - get `TS` implicit Jacobian evaluation function for 2nd order systems
 
-   Not Collective
+  Not Collective
 
-   Input Parameter:
-.  dm - `DM` to be used with `TS`
+  Input Parameter:
+. dm - `DM` to be used with `TS`
 
-   Output Parameters:
-+  jac - Jacobian evaluation function,  for calling sequence see `TSSetI2Jacobian()`
--  ctx - context for Jacobian evaluation
+  Output Parameters:
++ jac - Jacobian evaluation function,  for calling sequence see `TSSetI2Jacobian()`
+- ctx - context for Jacobian evaluation
 
-   Level: advanced
+  Level: advanced
 
-   Note:
-   `TSGetI2Jacobian()` is normally used, but it calls this function internally because the user context is actually
-   associated with the `DM`.
+  Note:
+  `TSGetI2Jacobian()` is normally used, but it calls this function internally because the user context is actually
+  associated with the `DM`.
 
 .seealso: [](ch_ts), `DM`, `TS`, `DMTSSetI2Jacobian()`, `TSGetI2Jacobian()`
 @*/
@@ -711,29 +711,29 @@ PetscErrorCode DMTSGetI2Jacobian(DM dm, TSI2Jacobian *jac, void **ctx)
 }
 
 /*@C
-   DMTSSetRHSFunction - set `TS` explicit residual evaluation function
+  DMTSSetRHSFunction - set `TS` explicit residual evaluation function
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  dm - `DM` to be used with `TS`
-.  func - RHS function evaluation routine
--  ctx - context for residual evaluation
+  Input Parameters:
++ dm   - `DM` to be used with `TS`
+. func - RHS function evaluation routine
+- ctx  - context for residual evaluation
 
-    Calling sequence of `func`:
+  Calling sequence of `func`:
 $   PetscErrorCode func(TS ts, PetscReal t, Vec u, Vec F, void *ctx);
 +   ts - timestep context
 .   t - current timestep
 .   u - input vector
 .   F - function vector
--   ctx - [optional] user-defined function context
+- ctx - [optional] user-defined function context
 
-   Level: advanced
+  Level: advanced
 
-   Note:
-   `TSSetRHSFunction()` is normally used, but it calls this function internally because the user context is actually
-   associated with the `DM`.  This makes the interface consistent regardless of whether the user interacts with a `DM` or
-   not. If `DM` took a more central role at some later date, this could become the primary method of setting the residual.
+  Note:
+  `TSSetRHSFunction()` is normally used, but it calls this function internally because the user context is actually
+  associated with the `DM`.  This makes the interface consistent regardless of whether the user interacts with a `DM` or
+  not. If `DM` took a more central role at some later date, this could become the primary method of setting the residual.
 
 .seealso: [](ch_ts), `DM`, `TS`, `DMTSSetContext()`, `TSSetRHSFunction()`, `DMTSSetJacobian()`
 @*/
@@ -757,23 +757,23 @@ PetscErrorCode DMTSSetRHSFunction(DM dm, TSRHSFunction func, void *ctx)
 }
 
 /*@C
-   DMTSSetRHSFunctionContextDestroy - set `TS` explicit residual evaluation context destroy function
+  DMTSSetRHSFunctionContextDestroy - set `TS` explicit residual evaluation context destroy function
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  dm - `DM` to be used with `TS`
--  f - explicit evaluation context destroy function
+  Input Parameters:
++ dm - `DM` to be used with `TS`
+- f  - explicit evaluation context destroy function
 
-   Level: advanced
+  Level: advanced
 
-   Note:
-   `TSSetRHSFunctionContextDestroy()` is normally used, but it calls this function internally because the user context is actually
-   associated with the `DM`.  This makes the interface consistent regardless of whether the user interacts with a `DM` or
-   not.
+  Note:
+  `TSSetRHSFunctionContextDestroy()` is normally used, but it calls this function internally because the user context is actually
+  associated with the `DM`.  This makes the interface consistent regardless of whether the user interacts with a `DM` or
+  not.
 
-   Developer Note:
-   If `DM` took a more central role at some later date, this could become the primary method of setting the residual.
+  Developer Notes:
+  If `DM` took a more central role at some later date, this could become the primary method of setting the residual.
 
 .seealso: [](ch_ts), `TSSetRHSFunctionContextDestroy()`, `DMTSSetRHSFunction()`, `TSSetRHSFunction()`
 @*/
@@ -801,32 +801,32 @@ PetscErrorCode DMTSUnsetRHSFunctionContext_Internal(DM dm)
 }
 
 /*@C
-   DMTSSetTransientVariable - sets function to transform from state to transient variables
+  DMTSSetTransientVariable - sets function to transform from state to transient variables
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  dm - `DM` to be used with `TS`
-.  tvar - a function that transforms to transient variables
--  ctx - a context for tvar
+  Input Parameters:
++ dm   - `DM` to be used with `TS`
+. tvar - a function that transforms to transient variables
+- ctx  - a context for tvar
 
-    Calling sequence of `tvar`:
+  Calling sequence of `tvar`:
 $   PetscErrorCode tvar(TS ts, Vec p, Vec c, void *ctx);
 +   ts - timestep context
 .   p - input vector (primitive form)
 .   c - output vector, transient variables (conservative form)
--   ctx - [optional] user-defined function context
+- ctx - [optional] user-defined function context
 
-   Level: advanced
+  Level: advanced
 
-   Notes:
-   This is typically used to transform from primitive to conservative variables so that a time integrator (e.g., `TSBDF`)
-   can be conservative.  In this context, primitive variables P are used to model the state (e.g., because they lead to
-   well-conditioned formulations even in limiting cases such as low-Mach or zero porosity).  The transient variable is
-   C(P), specified by calling this function.  An IFunction thus receives arguments (P, Cdot) and the IJacobian must be
-   evaluated via the chain rule, as in
+  Notes:
+  This is typically used to transform from primitive to conservative variables so that a time integrator (e.g., `TSBDF`)
+  can be conservative.  In this context, primitive variables P are used to model the state (e.g., because they lead to
+  well-conditioned formulations even in limiting cases such as low-Mach or zero porosity).  The transient variable is
+  C(P), specified by calling this function.  An IFunction thus receives arguments (P, Cdot) and the IJacobian must be
+  evaluated via the chain rule, as in
 
-     dF/dP + shift * dF/dCdot dC/dP.
+  dF/dP + shift * dF/dCdot dC/dP.
 
 .seealso: [](ch_ts), `TS`, `TSBDF`, `TSSetTransientVariable()`, `DMTSGetTransientVariable()`, `DMTSSetIFunction()`, `DMTSSetIJacobian()`
 @*/
@@ -843,18 +843,18 @@ PetscErrorCode DMTSSetTransientVariable(DM dm, TSTransientVariable tvar, void *c
 }
 
 /*@C
-   DMTSGetTransientVariable - gets function to transform from state to transient variables set with `DMTSSetTransientVariable()`
+  DMTSGetTransientVariable - gets function to transform from state to transient variables set with `DMTSSetTransientVariable()`
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameter:
-.  dm - `DM` to be used with `TS`
+  Input Parameter:
+. dm - `DM` to be used with `TS`
 
-   Output Parameters:
-+  tvar - a function that transforms to transient variables
--  ctx - a context for tvar
+  Output Parameters:
++ tvar - a function that transforms to transient variables
+- ctx  - a context for tvar
 
-   Level: advanced
+  Level: advanced
 
 .seealso: [](ch_ts), `DM`, `DMTSSetTransientVariable()`, `DMTSGetIFunction()`, `DMTSGetIJacobian()`
 @*/
@@ -871,18 +871,18 @@ PetscErrorCode DMTSGetTransientVariable(DM dm, TSTransientVariable *tvar, void *
 }
 
 /*@C
-   DMTSGetSolutionFunction - gets the `TS` solution evaluation function
+  DMTSGetSolutionFunction - gets the `TS` solution evaluation function
 
-   Not Collective
+  Not Collective
 
-   Input Parameter:
-.  dm - `DM` to be used with `TS`
+  Input Parameter:
+. dm - `DM` to be used with `TS`
 
-   Output Parameters:
-+  func - solution function evaluation function, for calling sequence see `TSSetSolution()`
--  ctx - context for solution evaluation
+  Output Parameters:
++ func - solution function evaluation function, for calling sequence see `TSSetSolution()`
+- ctx  - context for solution evaluation
 
-   Level: advanced
+  Level: advanced
 
 .seealso: [](ch_ts), `TS`, `DM`, `DMTSSetContext()`, `TSSetFunction()`, `DMTSSetJacobian()`, `DMTSSetSolutionFunction()`
 @*/
@@ -899,28 +899,28 @@ PetscErrorCode DMTSGetSolutionFunction(DM dm, TSSolutionFunction *func, void **c
 }
 
 /*@C
-   DMTSSetSolutionFunction - set `TS` solution evaluation function
+  DMTSSetSolutionFunction - set `TS` solution evaluation function
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  dm - `DM` to be used with `TS`
-.  func - solution function evaluation routine
--  ctx - context for solution evaluation
+  Input Parameters:
++ dm   - `DM` to be used with `TS`
+. func - solution function evaluation routine
+- ctx  - context for solution evaluation
 
-    Calling sequence of `f`:
+  Calling sequence of `f`:
 $   PetscErrorCode f(TS ts, PetscReal t, Vec u, void *ctx);
 +   ts - timestep context
 .   t - current timestep
 .   u - output vector
--   ctx - [optional] user-defined function context
+- ctx - [optional] user-defined function context
 
-   Level: advanced
+  Level: advanced
 
-   Note:
-   `TSSetSolutionFunction()` is normally used, but it calls this function internally because the user context is actually
-   associated with the `DM`.  This makes the interface consistent regardless of whether the user interacts with a `DM` or
-   not. If `DM` took a more central role at some later date, this could become the primary method of setting the residual.
+  Note:
+  `TSSetSolutionFunction()` is normally used, but it calls this function internally because the user context is actually
+  associated with the `DM`.  This makes the interface consistent regardless of whether the user interacts with a `DM` or
+  not. If `DM` took a more central role at some later date, this could become the primary method of setting the residual.
 
 .seealso: [](ch_ts), `DM`, `TS`, `DMTSSetContext()`, `TSSetFunction()`, `DMTSSetJacobian()`, `DMTSGetSolutionFunction()`
 @*/
@@ -937,28 +937,28 @@ PetscErrorCode DMTSSetSolutionFunction(DM dm, TSSolutionFunction func, void *ctx
 }
 
 /*@C
-   DMTSSetForcingFunction - set `TS` forcing function evaluation function
+  DMTSSetForcingFunction - set `TS` forcing function evaluation function
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  dm - `DM` to be used with `TS`
-.  func - forcing function evaluation routine
--  ctx - context for solution evaluation
+  Input Parameters:
++ dm   - `DM` to be used with `TS`
+. func - forcing function evaluation routine
+- ctx  - context for solution evaluation
 
-    Calling sequence of `func`:
+  Calling sequence of `func`:
 $     PetscErrorCode func (TS ts, PetscReal t, Vec f,void *ctx)
 +   ts - timestep context
 .   t - current timestep
 .   f - output vector
--   ctx - [optional] user-defined function context
+- ctx - [optional] user-defined function context
 
-   Level: advanced
+  Level: advanced
 
-   Note:
-   `TSSetForcingFunction()` is normally used, but it calls this function internally because the user context is actually
-   associated with the `DM`.  This makes the interface consistent regardless of whether the user interacts with a `DM` or
-   not. If `DM` took a more central role at some later date, this could become the primary method of setting the residual.
+  Note:
+  `TSSetForcingFunction()` is normally used, but it calls this function internally because the user context is actually
+  associated with the `DM`.  This makes the interface consistent regardless of whether the user interacts with a `DM` or
+  not. If `DM` took a more central role at some later date, this could become the primary method of setting the residual.
 
 .seealso: [](ch_ts), `DM`, `TS`, `DMTSSetContext()`, `TSSetFunction()`, `DMTSSetJacobian()`, `TSSetForcingFunction()`, `DMTSGetForcingFunction()`
 @*/
@@ -975,23 +975,23 @@ PetscErrorCode DMTSSetForcingFunction(DM dm, TSForcingFunction func, void *ctx)
 }
 
 /*@C
-   DMTSGetForcingFunction - get `TS` forcing function evaluation function
+  DMTSGetForcingFunction - get `TS` forcing function evaluation function
 
-   Not Collective
+  Not Collective
 
-   Input Parameter:
-.   dm - `DM` to be used with `TS`
+  Input Parameter:
+. dm - `DM` to be used with `TS`
 
-   Output Parameters:
-+  f - forcing function evaluation function; see `TSForcingFunction` for details
--  ctx - context for solution evaluation
+  Output Parameters:
++ f   - forcing function evaluation function; see `TSForcingFunction` for details
+- ctx - context for solution evaluation
 
-   Level: advanced
+  Level: advanced
 
-   Note:
-   `TSSetForcingFunction()` is normally used, but it calls this function internally because the user context is actually
-   associated with the `DM`.  This makes the interface consistent regardless of whether the user interacts with a `DM` or
-   not. If `DM` took a more central role at some later date, this could become the primary method of setting the residual.
+  Note:
+  `TSSetForcingFunction()` is normally used, but it calls this function internally because the user context is actually
+  associated with the `DM`.  This makes the interface consistent regardless of whether the user interacts with a `DM` or
+  not. If `DM` took a more central role at some later date, this could become the primary method of setting the residual.
 
 .seealso: [](ch_ts), `TS`, `DM`, `DMTSSetContext()`, `TSSetFunction()`, `DMTSSetJacobian()`, `TSSetForcingFunction()`, `DMTSGetForcingFunction()`
 @*/
@@ -1008,22 +1008,22 @@ PetscErrorCode DMTSGetForcingFunction(DM dm, TSForcingFunction *f, void **ctx)
 }
 
 /*@C
-   DMTSGetRHSFunction - get `TS` explicit residual evaluation function
+  DMTSGetRHSFunction - get `TS` explicit residual evaluation function
 
-   Not Collective
+  Not Collective
 
-   Input Parameter:
-.  dm - `DM` to be used with `TS`
+  Input Parameter:
+. dm - `DM` to be used with `TS`
 
-   Output Parameters:
-+  func - residual evaluation function, for calling sequence see `TSSetRHSFunction()`
--  ctx - context for residual evaluation
+  Output Parameters:
++ func - residual evaluation function, for calling sequence see `TSSetRHSFunction()`
+- ctx  - context for residual evaluation
 
-   Level: advanced
+  Level: advanced
 
-   Note:
-   `TSGetFunction()` is normally used, but it calls this function internally because the user context is actually
-   associated with the DM.
+  Note:
+  `TSGetFunction()` is normally used, but it calls this function internally because the user context is actually
+  associated with the DM.
 
 .seealso: [](ch_ts), `DM`, `TS`, `DMTSSetContext()`, `DMTSSetRHSFunction()`, `TSSetRHSFunction()`
 @*/
@@ -1043,16 +1043,16 @@ PetscErrorCode DMTSGetRHSFunction(DM dm, TSRHSFunction *func, void **ctx)
 }
 
 /*@C
-   DMTSSetIJacobian - set `TS` Jacobian evaluation function
+  DMTSSetIJacobian - set `TS` Jacobian evaluation function
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  dm - `DM` to be used with `TS`
-.  func - Jacobian evaluation routine
--  ctx - context for residual evaluation
+  Input Parameters:
++ dm   - `DM` to be used with `TS`
+. func - Jacobian evaluation routine
+- ctx  - context for residual evaluation
 
-   Calling sequence of `f`:
+  Calling sequence of `f`:
 $    PetscErrorCode f(TS ts, PetscReal t, Vec U, Vec U_t, PetscReal a, Mat Amat, Mat Pmat, void *ctx);
 +  ts  - the `TS` context obtained from `TSCreate()`
 .  t    - time at step/stage being solved
@@ -1061,14 +1061,14 @@ $    PetscErrorCode f(TS ts, PetscReal t, Vec U, Vec U_t, PetscReal a, Mat Amat,
 .  a    - shift
 .  Amat - (approximate) Jacobian of F(t,U,W+a*U), equivalent to dF/dU + a*dF/dU_t
 .  Pmat - matrix used for constructing preconditioner, usually the same as Amat
--  ctx  - [optional] user-defined context for matrix evaluation routine
+- ctx - [optional] user-defined context for matrix evaluation routine
 
-   Level: advanced
+  Level: advanced
 
-   Note:
-   `TSSetJacobian()` is normally used, but it calls this function internally because the user context is actually
-   associated with the `DM`.  This makes the interface consistent regardless of whether the user interacts with a `DM` or
-   not. If `DM` took a more central role at some later date, this could become the primary method of setting the Jacobian.
+  Note:
+  `TSSetJacobian()` is normally used, but it calls this function internally because the user context is actually
+  associated with the `DM`.  This makes the interface consistent regardless of whether the user interacts with a `DM` or
+  not. If `DM` took a more central role at some later date, this could become the primary method of setting the Jacobian.
 
 .seealso: [](ch_ts), `TS`, `DM`, `DMTSSetContext()`, `TSSetRHSFunction()`, `DMTSGetJacobian()`, `TSSetIJacobian()`, `TSSetIFunction()`
 @*/
@@ -1092,23 +1092,23 @@ PetscErrorCode DMTSSetIJacobian(DM dm, TSIJacobian func, void *ctx)
 }
 
 /*@C
-   DMTSSetIJacobianContextDestroy - set `TS` Jacobian evaluation context destroy function
+  DMTSSetIJacobianContextDestroy - set `TS` Jacobian evaluation context destroy function
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  dm - `DM` to be used with `TS`
--  f - Jacobian evaluation context destroy function
+  Input Parameters:
++ dm - `DM` to be used with `TS`
+- f  - Jacobian evaluation context destroy function
 
-   Level: advanced
+  Level: advanced
 
-   Note:
-   `TSSetIJacobianContextDestroy()` is normally used, but it calls this function internally because the user context is actually
-   associated with the `DM`.  This makes the interface consistent regardless of whether the user interacts with a `DM` or
-   not.
+  Note:
+  `TSSetIJacobianContextDestroy()` is normally used, but it calls this function internally because the user context is actually
+  associated with the `DM`.  This makes the interface consistent regardless of whether the user interacts with a `DM` or
+  not.
 
-   Developer Note:
-   If `DM` took a more central role at some later date, this could become the primary method of setting the Jacobian.
+  Developer Notes:
+  If `DM` took a more central role at some later date, this could become the primary method of setting the Jacobian.
 
 .seealso: [](ch_ts), `TSSetIJacobianContextDestroy()`, `TSSetI2JacobianContextDestroy()`, `DMTSSetIJacobian()`, `TSSetIJacobian()`
 @*/
@@ -1135,23 +1135,23 @@ PetscErrorCode DMTSUnsetIJacobianContext_Internal(DM dm)
 }
 
 /*@C
-   DMTSGetIJacobian - get `TS` Jacobian evaluation function
+  DMTSGetIJacobian - get `TS` Jacobian evaluation function
 
-   Not Collective
+  Not Collective
 
-   Input Parameter:
-.  dm - `DM` to be used with `TS`
+  Input Parameter:
+. dm - `DM` to be used with `TS`
 
-   Output Parameters:
-+  func - Jacobian evaluation function, for calling sequence see `TSSetIJacobian()`
--  ctx - context for residual evaluation
+  Output Parameters:
++ func - Jacobian evaluation function, for calling sequence see `TSSetIJacobian()`
+- ctx  - context for residual evaluation
 
-   Level: advanced
+  Level: advanced
 
-   Note:
-   `TSGetJacobian()` is normally used, but it calls this function internally because the user context is actually
-   associated with the `DM`.  This makes the interface consistent regardless of whether the user interacts with a `DM` or
-   not. If `DM` took a more central role at some later date, this could become the primary method of setting the Jacobian.
+  Note:
+  `TSGetJacobian()` is normally used, but it calls this function internally because the user context is actually
+  associated with the `DM`.  This makes the interface consistent regardless of whether the user interacts with a `DM` or
+  not. If `DM` took a more central role at some later date, this could become the primary method of setting the Jacobian.
 
 .seealso: [](ch_ts), `DM`, `TS`, `DMTSSetContext()`, `TSSetFunction()`, `DMTSSetJacobian()`
 @*/
@@ -1171,33 +1171,33 @@ PetscErrorCode DMTSGetIJacobian(DM dm, TSIJacobian *func, void **ctx)
 }
 
 /*@C
-   DMTSSetRHSJacobian - set `TS` Jacobian evaluation function
+  DMTSSetRHSJacobian - set `TS` Jacobian evaluation function
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  dm - `DM` to be used with `TS`
-.  func - Jacobian evaluation routine
--  ctx - context for residual evaluation
+  Input Parameters:
++ dm   - `DM` to be used with `TS`
+. func - Jacobian evaluation routine
+- ctx  - context for residual evaluation
 
-   Calling sequence of `func`:
+  Calling sequence of `func`:
 $     PetscErrorCode func(TS ts, PetscReal t, Vec u, Mat A, Mat B, void *ctx);
 +  ts  - the `TS` context obtained from `TSCreate()`
 .  t - current timestep
 .  u - input vector
 .  Amat - (approximate) Jacobian matrix
 .  Pmat - matrix from which preconditioner is to be constructed (usually the same as Amat)
--  ctx - [optional] user-defined context for matrix evaluation routine
+- ctx - [optional] user-defined context for matrix evaluation routine
 
-   Level: advanced
+  Level: advanced
 
-   Note:
-   `TSSetJacobian()` is normally used, but it calls this function internally because the user context is actually
-   associated with the `DM`.  This makes the interface consistent regardless of whether the user interacts with a `DM` or
-   not.
+  Note:
+  `TSSetJacobian()` is normally used, but it calls this function internally because the user context is actually
+  associated with the `DM`.  This makes the interface consistent regardless of whether the user interacts with a `DM` or
+  not.
 
-   Developer Note:
-   If `DM` took a more central role at some later date, this could become the primary method of setting the Jacobian.
+  Developer Notes:
+  If `DM` took a more central role at some later date, this could become the primary method of setting the Jacobian.
 
 .seealso: [](ch_ts), `DMTSSetContext()`, `TSSetFunction()`, `DMTSGetJacobian()`, `TSSetRHSJacobian()`
 @*/
@@ -1221,18 +1221,18 @@ PetscErrorCode DMTSSetRHSJacobian(DM dm, TSRHSJacobian func, void *ctx)
 }
 
 /*@C
-   DMTSSetRHSJacobianContextDestroy - set `TS` Jacobian evaluation context destroy function
+  DMTSSetRHSJacobianContextDestroy - set `TS` Jacobian evaluation context destroy function
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  dm - `DM` to be used with `TS`
--  f - Jacobian evaluation context destroy function
+  Input Parameters:
++ dm - `DM` to be used with `TS`
+- f  - Jacobian evaluation context destroy function
 
-   Level: advanced
+  Level: advanced
 
-   Note:
-   The user usually calls `TSSetRHSJacobianContextDestroy()` which calls this routine
+  Note:
+  The user usually calls `TSSetRHSJacobianContextDestroy()` which calls this routine
 
 .seealso: [](ch_ts), `TS`, `TSSetRHSJacobianContextDestroy()`, `DMTSSetRHSJacobian()`, `TSSetRHSJacobian()`
 @*/
@@ -1259,23 +1259,23 @@ PetscErrorCode DMTSUnsetRHSJacobianContext_Internal(DM dm)
 }
 
 /*@C
-   DMTSGetRHSJacobian - get `TS` Jacobian evaluation function
+  DMTSGetRHSJacobian - get `TS` Jacobian evaluation function
 
-   Not Collective
+  Not Collective
 
-   Input Parameter:
-.  dm - `DM` to be used with `TS`
+  Input Parameter:
+. dm - `DM` to be used with `TS`
 
-   Output Parameters:
-+  func - Jacobian evaluation function, for calling sequence see `TSSetRHSJacobian()`
--  ctx - context for residual evaluation
+  Output Parameters:
++ func - Jacobian evaluation function, for calling sequence see `TSSetRHSJacobian()`
+- ctx  - context for residual evaluation
 
-   Level: advanced
+  Level: advanced
 
-   Note:
-   `TSGetJacobian()` is normally used, but it calls this function internally because the user context is actually
-   associated with the `DM`.  This makes the interface consistent regardless of whether the user interacts with a `DM` or
-   not. If `DM` took a more central role at some later date, this could become the primary method of setting the Jacobian.
+  Note:
+  `TSGetJacobian()` is normally used, but it calls this function internally because the user context is actually
+  associated with the `DM`.  This makes the interface consistent regardless of whether the user interacts with a `DM` or
+  not. If `DM` took a more central role at some later date, this could become the primary method of setting the Jacobian.
 
 .seealso: [](ch_ts), `DM`, `TS`, `DMTSSetContext()`, `TSSetRHSFunction()`, `DMTSSetRHSJacobian()`, `TSSetRHSJacobian()`
 @*/
@@ -1295,16 +1295,16 @@ PetscErrorCode DMTSGetRHSJacobian(DM dm, TSRHSJacobian *func, void **ctx)
 }
 
 /*@C
-   DMTSSetIFunctionSerialize - sets functions used to view and load a IFunction context
+  DMTSSetIFunctionSerialize - sets functions used to view and load a IFunction context
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  dm - `DM` to be used with `TS`
-.  view - viewer function
--  load - loading function
+  Input Parameters:
++ dm   - `DM` to be used with `TS`
+. view - viewer function
+- load - loading function
 
-   Level: advanced
+  Level: advanced
 
 .seealso: [](ch_ts), `DM`, `TS`, `DMTSSetContext()`, `TSSetFunction()`, `DMTSSetJacobian()`
 @*/
@@ -1321,16 +1321,16 @@ PetscErrorCode DMTSSetIFunctionSerialize(DM dm, PetscErrorCode (*view)(void *, P
 }
 
 /*@C
-   DMTSSetIJacobianSerialize - sets functions used to view and load a IJacobian context
+  DMTSSetIJacobianSerialize - sets functions used to view and load a IJacobian context
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  dm - `DM` to be used with `TS`
-.  view - viewer function
--  load - loading function
+  Input Parameters:
++ dm   - `DM` to be used with `TS`
+. view - viewer function
+- load - loading function
 
-   Level: advanced
+  Level: advanced
 
 .seealso: [](ch_ts), `DM`, `TS`, `DMTSSetContext()`, `TSSetFunction()`, `DMTSSetJacobian()`
 @*/

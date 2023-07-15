@@ -72,19 +72,19 @@ PetscErrorCode PetscPartitionerGetType(PetscPartitioner part, PetscPartitionerTy
 }
 
 /*@C
-   PetscPartitionerViewFromOptions - View a `PetscPartitioner` object based on options in the options database
+  PetscPartitionerViewFromOptions - View a `PetscPartitioner` object based on options in the options database
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  A - the `PetscPartitioner` object
-.  obj - Optional `PetscObject` that provides the options prefix
--  name - command line option
+  Input Parameters:
++ A    - the `PetscPartitioner` object
+. obj  - Optional `PetscObject` that provides the options prefix
+- name - command line option
 
-   Level: intermediate
+  Level: intermediate
 
-   Note:
-   See `PetscObjectViewFromOptions()` for the various forms of viewers that may be used
+  Note:
+  See `PetscObjectViewFromOptions()` for the various forms of viewers that may be used
 
 .seealso: `PetscPartitionerView()`, `PetscObjectViewFromOptions()`
 @*/
@@ -161,9 +161,9 @@ static PetscErrorCode PetscPartitionerGetDefaultType(MPI_Comm comm, const char *
 . part - the `PetscPartitioner` object to set options for
 
   Options Database Keys:
-+  -petscpartitioner_type <type> - Sets the `PetscPartitioner` type; use -help for a list of available types
-.  -petscpartitioner_use_vertex_weights - Uses weights associated with the graph vertices
--  -petscpartitioner_view_graph - View the graph each time PetscPartitionerPartition is called. Viewer can be customized, see `PetscOptionsGetViewer()`
++ -petscpartitioner_type <type>        - Sets the `PetscPartitioner` type; use -help for a list of available types
+. -petscpartitioner_use_vertex_weights - Uses weights associated with the graph vertices
+- -petscpartitioner_view_graph         - View the graph each time PetscPartitionerPartition is called. Viewer can be customized, see `PetscOptionsGetViewer()`
 
   Level: developer
 
@@ -272,27 +272,27 @@ PetscErrorCode PetscPartitionerDestroy(PetscPartitioner *part)
   Collective
 
   Input Parameters:
-+ part    - The `PetscPartitioner`
-. nparts  - Number of partitions
-. numVertices - Number of vertices in the local part of the graph
-. start - row pointers for the local part of the graph (CSR style)
-. adjacency - adjacency list (CSR style)
++ part          - The `PetscPartitioner`
+. nparts        - Number of partitions
+. numVertices   - Number of vertices in the local part of the graph
+. start         - row pointers for the local part of the graph (CSR style)
+. adjacency     - adjacency list (CSR style)
 . vertexSection - PetscSection describing the absolute weight of each local vertex (can be NULL)
 - targetSection - PetscSection describing the absolute weight of each partition (can be NULL)
 
   Output Parameters:
-+ partSection     - The `PetscSection` giving the division of points by partition
-- partition       - The list of points by partition
++ partSection - The `PetscSection` giving the division of points by partition
+- partition   - The list of points by partition
 
   Options Databasen Keys:
-+ -petscpartitioner_view - View the partitioner information
++ -petscpartitioner_view       - View the partitioner information
 - -petscpartitioner_view_graph - View the graph we are partitioning
 
   Level: developer
 
   Notes:
-    The chart of the vertexSection (if present) must contain [0,numVertices), with the number of dofs in the section specifying the absolute weight for each vertex.
-    The chart of the targetSection (if present) must contain [0,nparts), with the number of dofs in the section specifying the absolute weight for each partition. This information must be the same across processes, PETSc does not check it.
+  The chart of the vertexSection (if present) must contain [0,numVertices), with the number of dofs in the section specifying the absolute weight for each vertex.
+  The chart of the targetSection (if present) must contain [0,nparts), with the number of dofs in the section specifying the absolute weight for each partition. This information must be the same across processes, PETSc does not check it.
 
 .seealso `PetscPartitionerCreate()`, `PetscPartitionerSetType()`, `PetscSectionCreate()`, `PetscSectionSetChart()`, `PetscSectionSetDof()`
 @*/

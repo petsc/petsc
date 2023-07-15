@@ -121,9 +121,9 @@ PetscErrorCode PetscDualSpaceSimpleSetDimension(PetscDualSpace sp, PetscInt dim)
   Not Collective
 
   Input Parameters:
-+ sp  - the `PetscDualSpace`
++ sp   - the `PetscDualSpace`
 . func - the basis index
-- q - the basis functional
+- q    - the basis functional
 
   Level: intermediate
 

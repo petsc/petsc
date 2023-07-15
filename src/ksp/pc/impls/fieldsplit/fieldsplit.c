@@ -1747,17 +1747,17 @@ static PetscErrorCode PCFieldSplitGetSubKSP_FieldSplit(PC pc, PetscInt *n, KSP *
 }
 
 /*@C
-    PCFieldSplitRestrictIS - Restricts the fieldsplit `IS`s to be within a given `IS`.
+  PCFieldSplitRestrictIS - Restricts the fieldsplit `IS`s to be within a given `IS`.
 
-    Input Parameters:
-+   pc  - the preconditioner context
--   is - the index set that defines the indices to which the fieldsplit is to be restricted
+  Input Parameters:
++ pc  - the preconditioner context
+- isy - the index set that defines the indices to which the fieldsplit is to be restricted
 
-    Level: advanced
+  Level: advanced
 
-    Developer Note:
-    It seems the resulting `IS`s will not cover the entire space, so
-    how can they define a convergent preconditioner? Needs explaining.
+  Developer Notes:
+  It seems the resulting `IS`s will not cover the entire space, so
+  how can they define a convergent preconditioner? Needs explaining.
 
 .seealso: [](sec_block_matrices), `PCFIELDSPLIT`, `PCFieldSplitSetFields()`, `PCFieldSplitSetIS()`
 @*/
@@ -1877,37 +1877,37 @@ static PetscErrorCode PCFieldSplitSetIS_FieldSplit(PC pc, const char splitname[]
 }
 
 /*@C
-    PCFieldSplitSetFields - Sets the fields that define one particular split in `PCFIELDSPLIT`
+  PCFieldSplitSetFields - Sets the fields that define one particular split in `PCFIELDSPLIT`
 
-    Logically Collective
+  Logically Collective
 
-    Input Parameters:
-+   pc  - the preconditioner context
-.   splitname - name of this split, if `NULL` the number of the split is used
-.   n - the number of fields in this split
-.   fields - the fields in this split
--   fields_col - generally the same as fields, if it does not match fields then the matrix block that is solved for this set of fields comes from an off-diagonal block
+  Input Parameters:
++ pc         - the preconditioner context
+. splitname  - name of this split, if `NULL` the number of the split is used
+. n          - the number of fields in this split
+. fields     - the fields in this split
+- fields_col - generally the same as fields, if it does not match fields then the matrix block that is solved for this set of fields comes from an off-diagonal block
                  of the matrix and fields_col provides the column indices for that block
 
-    Level: intermediate
+  Level: intermediate
 
-    Notes:
-    Use `PCFieldSplitSetIS()` to set a  general set of indices as a split.
+  Notes:
+  Use `PCFieldSplitSetIS()` to set a  general set of indices as a split.
 
-     `PCFieldSplitSetFields()` is for defining fields as strided blocks. For example, if the block
-     size is three then one can define a split as 0, or 1 or 2 or 0,1 or 0,2 or 1,2 which mean
-     0xx3xx6xx9xx12 ... x1xx4xx7xx ... xx2xx5xx8xx.. 01x34x67x... 0x1x3x5x7.. x12x45x78x....
-     where the numbered entries indicate what is in the split.
+  `PCFieldSplitSetFields()` is for defining fields as strided blocks. For example, if the block
+  size is three then one can define a split as 0, or 1 or 2 or 0,1 or 0,2 or 1,2 which mean
+  0xx3xx6xx9xx12 ... x1xx4xx7xx ... xx2xx5xx8xx.. 01x34x67x... 0x1x3x5x7.. x12x45x78x....
+  where the numbered entries indicate what is in the split.
 
-     This function is called once per split (it creates a new split each time).  Solve options
-     for this split will be available under the prefix `-fieldsplit_SPLITNAME_`.
+  This function is called once per split (it creates a new split each time).  Solve options
+  for this split will be available under the prefix `-fieldsplit_SPLITNAME_`.
 
-   `PCFieldSplitSetIS()` does not support having a fields_col different from fields
+  `PCFieldSplitSetIS()` does not support having a fields_col different from fields
 
-   Developer Note:
-   This routine does not actually create the `IS` representing the split, that is delayed
-   until `PCSetUp_FieldSplit()`, because information about the vector/matrix layouts may not be
-   available when this routine is called.
+  Developer Notes:
+  This routine does not actually create the `IS` representing the split, that is delayed
+  until `PCSetUp_FieldSplit()`, because information about the vector/matrix layouts may not be
+  available when this routine is called.
 
 .seealso: [](sec_block_matrices), `PC`, `PCFieldSplitGetSubKSP()`, `PCFIELDSPLIT`, `PCFieldSplitSetBlockSize()`, `PCFieldSplitSetIS()`, `PCFieldSplitRestrictIS()`
 @*/
@@ -1923,19 +1923,19 @@ PetscErrorCode PCFieldSplitSetFields(PC pc, const char splitname[], PetscInt n, 
 }
 
 /*@
-    PCFieldSplitSetDiagUseAmat - set flag indicating whether to extract diagonal blocks from Amat (rather than Pmat) to build
-    the sub-matrices associated with each split. Where `KSPSetOperators`(ksp,Amat,Pmat)) was used to supply the operators.
+  PCFieldSplitSetDiagUseAmat - set flag indicating whether to extract diagonal blocks from Amat (rather than Pmat) to build
+  the sub-matrices associated with each split. Where `KSPSetOperators`(ksp,Amat,Pmat)) was used to supply the operators.
 
-    Logically Collective
+  Logically Collective
 
-    Input Parameters:
-+   pc  - the preconditioner object
--   flg - boolean flag indicating whether or not to use Amat to extract the diagonal blocks from
+  Input Parameters:
++ pc  - the preconditioner object
+- flg - boolean flag indicating whether or not to use Amat to extract the diagonal blocks from
 
-    Options Database Key:
-.   -pc_fieldsplit_diag_use_amat - use the Amat to provide the diagonal blocks
+  Options Database Key:
+. -pc_fieldsplit_diag_use_amat - use the Amat to provide the diagonal blocks
 
-    Level: intermediate
+  Level: intermediate
 
 .seealso: [](sec_block_matrices), `PC`, `PCSetOperators()`, `KSPSetOperators()`, `PCFieldSplitGetDiagUseAmat()`, `PCFieldSplitSetOffDiagUseAmat()`, `PCFIELDSPLIT`
 @*/
@@ -1953,18 +1953,18 @@ PetscErrorCode PCFieldSplitSetDiagUseAmat(PC pc, PetscBool flg)
 }
 
 /*@
-    PCFieldSplitGetDiagUseAmat - get the flag indicating whether to extract diagonal blocks from Amat (rather than Pmat) to build
-    the sub-matrices associated with each split.  Where `KSPSetOperators`(ksp,Amat,Pmat)) was used to supply the operators.
+  PCFieldSplitGetDiagUseAmat - get the flag indicating whether to extract diagonal blocks from Amat (rather than Pmat) to build
+  the sub-matrices associated with each split.  Where `KSPSetOperators`(ksp,Amat,Pmat)) was used to supply the operators.
 
-    Logically Collective
+  Logically Collective
 
-    Input Parameter:
-.   pc  - the preconditioner object
+  Input Parameter:
+. pc - the preconditioner object
 
-    Output Parameter:
-.   flg - boolean flag indicating whether or not to use Amat to extract the diagonal blocks from
+  Output Parameter:
+. flg - boolean flag indicating whether or not to use Amat to extract the diagonal blocks from
 
-    Level: intermediate
+  Level: intermediate
 
 .seealso: [](sec_block_matrices), `PC`, `PCSetOperators()`, `KSPSetOperators()`, `PCFieldSplitSetDiagUseAmat()`, `PCFieldSplitGetOffDiagUseAmat()`, `PCFIELDSPLIT`
 @*/
@@ -1983,19 +1983,19 @@ PetscErrorCode PCFieldSplitGetDiagUseAmat(PC pc, PetscBool *flg)
 }
 
 /*@
-    PCFieldSplitSetOffDiagUseAmat - set flag indicating whether to extract off-diagonal blocks from Amat (rather than Pmat) to build
-    the sub-matrices associated with each split.  Where `KSPSetOperators`(ksp,Amat,Pmat)) was used to supply the operators.
+  PCFieldSplitSetOffDiagUseAmat - set flag indicating whether to extract off-diagonal blocks from Amat (rather than Pmat) to build
+  the sub-matrices associated with each split.  Where `KSPSetOperators`(ksp,Amat,Pmat)) was used to supply the operators.
 
-    Logically Collective
+  Logically Collective
 
-    Input Parameters:
-+   pc  - the preconditioner object
--   flg - boolean flag indicating whether or not to use Amat to extract the off-diagonal blocks from
+  Input Parameters:
++ pc  - the preconditioner object
+- flg - boolean flag indicating whether or not to use Amat to extract the off-diagonal blocks from
 
-    Options Database Key:
-.     -pc_fieldsplit_off_diag_use_amat <bool> - use the Amat to extract the off-diagonal blocks
+  Options Database Key:
+. -pc_fieldsplit_off_diag_use_amat <bool> - use the Amat to extract the off-diagonal blocks
 
-    Level: intermediate
+  Level: intermediate
 
 .seealso: [](sec_block_matrices), `PC`, `PCSetOperators()`, `KSPSetOperators()`, `PCFieldSplitGetOffDiagUseAmat()`, `PCFieldSplitSetDiagUseAmat()`, `PCFIELDSPLIT`
 @*/
@@ -2013,18 +2013,18 @@ PetscErrorCode PCFieldSplitSetOffDiagUseAmat(PC pc, PetscBool flg)
 }
 
 /*@
-    PCFieldSplitGetOffDiagUseAmat - get the flag indicating whether to extract off-diagonal blocks from Amat (rather than Pmat) to build
-    the sub-matrices associated with each split.  Where `KSPSetOperators`(ksp,Amat,Pmat)) was used to supply the operators.
+  PCFieldSplitGetOffDiagUseAmat - get the flag indicating whether to extract off-diagonal blocks from Amat (rather than Pmat) to build
+  the sub-matrices associated with each split.  Where `KSPSetOperators`(ksp,Amat,Pmat)) was used to supply the operators.
 
-    Logically Collective
+  Logically Collective
 
-    Input Parameter:
-.   pc  - the preconditioner object
+  Input Parameter:
+. pc - the preconditioner object
 
-    Output Parameter:
-.   flg - boolean flag indicating whether or not to use Amat to extract the off-diagonal blocks from
+  Output Parameter:
+. flg - boolean flag indicating whether or not to use Amat to extract the off-diagonal blocks from
 
-    Level: intermediate
+  Level: intermediate
 
 .seealso: [](sec_block_matrices), `PC`, `PCSetOperators()`, `KSPSetOperators()`, `PCFieldSplitSetOffDiagUseAmat()`, `PCFieldSplitGetDiagUseAmat()`, `PCFIELDSPLIT`
 @*/
@@ -2043,22 +2043,22 @@ PetscErrorCode PCFieldSplitGetOffDiagUseAmat(PC pc, PetscBool *flg)
 }
 
 /*@C
-    PCFieldSplitSetIS - Sets the exact elements for a split in a `PCFIELDSPLIT`
+  PCFieldSplitSetIS - Sets the exact elements for a split in a `PCFIELDSPLIT`
 
-    Logically Collective
+  Logically Collective
 
-    Input Parameters:
-+   pc  - the preconditioner context
-.   splitname - name of this split, if `NULL` the number of the split is used
--   is - the index set that defines the elements in this split
+  Input Parameters:
++ pc        - the preconditioner context
+. splitname - name of this split, if `NULL` the number of the split is used
+- is        - the index set that defines the elements in this split
 
-    Level: intermediate
+  Level: intermediate
 
-    Notes:
-    Use `PCFieldSplitSetFields()`, for splits defined by strided types.
+  Notes:
+  Use `PCFieldSplitSetFields()`, for splits defined by strided types.
 
-    This function is called once per split (it creates a new split each time).  Solve options
-    for this split will be available under the prefix -fieldsplit_SPLITNAME_.
+  This function is called once per split (it creates a new split each time).  Solve options
+  for this split will be available under the prefix -fieldsplit_SPLITNAME_.
 
 .seealso: [](sec_block_matrices), `PC`, `PCFieldSplitGetSubKSP()`, `PCFIELDSPLIT`, `PCFieldSplitSetBlockSize()`
 @*/
@@ -2073,20 +2073,20 @@ PetscErrorCode PCFieldSplitSetIS(PC pc, const char splitname[], IS is)
 }
 
 /*@C
-    PCFieldSplitGetIS - Retrieves the elements for a split as an `IS`
+  PCFieldSplitGetIS - Retrieves the elements for a split as an `IS`
 
-    Logically Collective
+  Logically Collective
 
-    Input Parameters:
-+   pc  - the preconditioner context
--   splitname - name of this split
+  Input Parameters:
++ pc        - the preconditioner context
+- splitname - name of this split
 
-    Output Parameter:
--   is - the index set that defines the elements in this split, or `NULL` if the split is not found
+  Output Parameter:
+. is - the index set that defines the elements in this split, or `NULL` if the split is not found
 
-    Level: intermediate
+  Level: intermediate
 
-.seealso:  [](sec_block_matrices), `PC`, `PCFieldSplitGetSubKSP()`, `PCFIELDSPLIT`, `PCFieldSplitSetIS()`
+.seealso: [](sec_block_matrices), `PC`, `PCFieldSplitGetSubKSP()`, `PCFIELDSPLIT`, `PCFieldSplitSetIS()`
 @*/
 PetscErrorCode PCFieldSplitGetIS(PC pc, const char splitname[], IS *is)
 {
@@ -2113,20 +2113,20 @@ PetscErrorCode PCFieldSplitGetIS(PC pc, const char splitname[], IS *is)
 }
 
 /*@C
-    PCFieldSplitGetISByIndex - Retrieves the elements for a given split as an `IS`
+  PCFieldSplitGetISByIndex - Retrieves the elements for a given split as an `IS`
 
-    Logically Collective
+  Logically Collective
 
-    Input Parameters:
-+   pc  - the preconditioner context
--   index - index of this split
+  Input Parameters:
++ pc    - the preconditioner context
+- index - index of this split
 
-    Output Parameter:
--   is - the index set that defines the elements in this split
+  Output Parameter:
+. is - the index set that defines the elements in this split
 
-    Level: intermediate
+  Level: intermediate
 
-.seealso:  [](sec_block_matrices), `PC`, `PCFieldSplitGetSubKSP()`, `PCFIELDSPLIT`, `PCFieldSplitGetIS()`, `PCFieldSplitSetIS()`
+.seealso: [](sec_block_matrices), `PC`, `PCFieldSplitGetSubKSP()`, `PCFIELDSPLIT`, `PCFieldSplitGetIS()`, `PCFieldSplitSetIS()`
 @*/
 PetscErrorCode PCFieldSplitGetISByIndex(PC pc, PetscInt index, IS *is)
 {
@@ -2150,16 +2150,16 @@ PetscErrorCode PCFieldSplitGetISByIndex(PC pc, PetscInt index, IS *is)
 }
 
 /*@
-    PCFieldSplitSetBlockSize - Sets the block size for defining where fields start in the
-      fieldsplit preconditioner when calling `PCFieldSplitSetIS()`. If not set the matrix block size is used.
+  PCFieldSplitSetBlockSize - Sets the block size for defining where fields start in the
+  fieldsplit preconditioner when calling `PCFieldSplitSetIS()`. If not set the matrix block size is used.
 
-    Logically Collective
+  Logically Collective
 
-    Input Parameters:
-+   pc  - the preconditioner context
--   bs - the block size
+  Input Parameters:
++ pc - the preconditioner context
+- bs - the block size
 
-    Level: intermediate
+  Level: intermediate
 
 .seealso: [](sec_block_matrices), `PC`, `PCFieldSplitGetSubKSP()`, `PCFIELDSPLIT`, `PCFieldSplitSetFields()`, `PCFieldSplitSetIS()`
 @*/
@@ -2173,43 +2173,43 @@ PetscErrorCode PCFieldSplitSetBlockSize(PC pc, PetscInt bs)
 }
 
 /*@C
-   PCFieldSplitGetSubKSP - Gets the `KSP` contexts for all splits
+  PCFieldSplitGetSubKSP - Gets the `KSP` contexts for all splits
 
-   Collective
+  Collective
 
-   Input Parameter:
-.  pc - the preconditioner context
+  Input Parameter:
+. pc - the preconditioner context
 
-   Output Parameters:
-+  n - the number of splits
--  subksp - the array of `KSP` contexts
+  Output Parameters:
++ n      - the number of splits
+- subksp - the array of `KSP` contexts
 
-   Level: advanced
+  Level: advanced
 
-   Notes:
-   After `PCFieldSplitGetSubKSP()` the array of `KSP`s is to be freed by the user with `PetscFree()`
-   (not the `KSP`, just the array that contains them).
+  Notes:
+  After `PCFieldSplitGetSubKSP()` the array of `KSP`s is to be freed by the user with `PetscFree()`
+  (not the `KSP`, just the array that contains them).
 
-   You must call `PCSetUp()` before calling `PCFieldSplitGetSubKSP()`.
+  You must call `PCSetUp()` before calling `PCFieldSplitGetSubKSP()`.
 
-   If the fieldsplit is of type `PC_COMPOSITE_SCHUR`, it returns the `KSP` object used inside the
-   Schur complement and the `KSP` object used to iterate over the Schur complement.
-   To access all the `KSP` objects used in `PC_COMPOSITE_SCHUR`, use `PCFieldSplitSchurGetSubKSP()`.
+  If the fieldsplit is of type `PC_COMPOSITE_SCHUR`, it returns the `KSP` object used inside the
+  Schur complement and the `KSP` object used to iterate over the Schur complement.
+  To access all the `KSP` objects used in `PC_COMPOSITE_SCHUR`, use `PCFieldSplitSchurGetSubKSP()`.
 
-   If the fieldsplit is of type `PC_COMPOSITE_GKB`, it returns the `KSP` object used to solve the
-   inner linear system defined by the matrix H in each loop.
+  If the fieldsplit is of type `PC_COMPOSITE_GKB`, it returns the `KSP` object used to solve the
+  inner linear system defined by the matrix H in each loop.
 
-   Fortran Usage:
-   You must pass in a `KSP` array that is large enough to contain all the `KSP`s.
-   You can call `PCFieldSplitGetSubKSP`(pc,n,`PETSC_NULL_KSP`,ierr) to determine how large the
-   `KSP` array must be.
+  Fortran Notes:
+  You must pass in a `KSP` array that is large enough to contain all the `KSP`s.
+  You can call `PCFieldSplitGetSubKSP`(pc,n,`PETSC_NULL_KSP`,ierr) to determine how large the
+  `KSP` array must be.
 
-   Developer Note:
-   There should be a `PCFieldSplitRestoreSubKSP()` instead of requiring the user to call `PetscFree()`
+  Developer Notes:
+  There should be a `PCFieldSplitRestoreSubKSP()` instead of requiring the user to call `PetscFree()`
 
-   The Fortran interface should be modernized to return directly the array of values.
+  The Fortran interface should be modernized to return directly the array of values.
 
-.seealso:  [](sec_block_matrices), `PC`, `PCFIELDSPLIT`, `PCFieldSplitSetFields()`, `PCFieldSplitSetIS()`, `PCFieldSplitSchurGetSubKSP()`
+.seealso: [](sec_block_matrices), `PC`, `PCFIELDSPLIT`, `PCFieldSplitSetFields()`, `PCFieldSplitSetIS()`, `PCFieldSplitSchurGetSubKSP()`
 @*/
 PetscErrorCode PCFieldSplitGetSubKSP(PC pc, PetscInt *n, KSP *subksp[])
 {
@@ -2221,43 +2221,43 @@ PetscErrorCode PCFieldSplitGetSubKSP(PC pc, PetscInt *n, KSP *subksp[])
 }
 
 /*@C
-   PCFieldSplitSchurGetSubKSP - Gets the `KSP` contexts used inside the Schur complement based `PCFIELDSPLIT`
+  PCFieldSplitSchurGetSubKSP - Gets the `KSP` contexts used inside the Schur complement based `PCFIELDSPLIT`
 
-   Collective
+  Collective
 
-   Input Parameter:
-.  pc - the preconditioner context
+  Input Parameter:
+. pc - the preconditioner context
 
-   Output Parameters:
-+  n - the number of splits
--  subksp - the array of `KSP` contexts
+  Output Parameters:
++ n      - the number of splits
+- subksp - the array of `KSP` contexts
 
-   Level: advanced
+  Level: advanced
 
-   Notes:
-   After `PCFieldSplitSchurGetSubKSP()` the array of `KSP`s is to be freed by the user with `PetscFree()`
-   (not the `KSP` just the array that contains them).
+  Notes:
+  After `PCFieldSplitSchurGetSubKSP()` the array of `KSP`s is to be freed by the user with `PetscFree()`
+  (not the `KSP` just the array that contains them).
 
-   You must call `PCSetUp()` before calling `PCFieldSplitSchurGetSubKSP()`.
+  You must call `PCSetUp()` before calling `PCFieldSplitSchurGetSubKSP()`.
 
-   If the fieldsplit type is of type `PC_COMPOSITE_SCHUR`, it returns (in order)
+  If the fieldsplit type is of type `PC_COMPOSITE_SCHUR`, it returns (in order)
 +  1  - the `KSP` used for the (1,1) block
 .  2  - the `KSP` used for the Schur complement (not the one used for the interior Schur solver)
 -  3  - the `KSP` used for the (1,1) block in the upper triangular factor (if different from that of the (1,1) block).
 
-   It returns a null array if the fieldsplit is not of type `PC_COMPOSITE_SCHUR`; in this case, you should use `PCFieldSplitGetSubKSP()`.
+  It returns a null array if the fieldsplit is not of type `PC_COMPOSITE_SCHUR`; in this case, you should use `PCFieldSplitGetSubKSP()`.
 
-   Fortran Note:
-   You must pass in a `KSP` array that is large enough to contain all the local `KSP`s.
-   You can call `PCFieldSplitSchurGetSubKSP`(pc,n,`PETSC_NULL_KSP`,ierr) to determine how large the
-   `KSP` array must be.
+  Fortran Notes:
+  You must pass in a `KSP` array that is large enough to contain all the local `KSP`s.
+  You can call `PCFieldSplitSchurGetSubKSP`(pc,n,`PETSC_NULL_KSP`,ierr) to determine how large the
+  `KSP` array must be.
 
-   Developer Notes:
-   There should be a `PCFieldSplitRestoreSubKSP()` instead of requiring the user to call `PetscFree()`
+  Developer Notes:
+  There should be a `PCFieldSplitRestoreSubKSP()` instead of requiring the user to call `PetscFree()`
 
-   Should the functionality of `PCFieldSplitSchurGetSubKSP()` and `PCFieldSplitGetSubKSP()` be merged?
+  Should the functionality of `PCFieldSplitSchurGetSubKSP()` and `PCFieldSplitGetSubKSP()` be merged?
 
-   The Fortran interface should be modernized to return directly the array of values.
+  The Fortran interface should be modernized to return directly the array of values.
 
 .seealso: [](sec_block_matrices), `PC`, `PCFIELDSPLIT`, `PCFieldSplitSetFields()`, `PCFieldSplitSetIS()`, `PCFieldSplitGetSubKSP()`
 @*/
@@ -2271,47 +2271,47 @@ PetscErrorCode PCFieldSplitSchurGetSubKSP(PC pc, PetscInt *n, KSP *subksp[])
 }
 
 /*@
-    PCFieldSplitSetSchurPre -  Indicates from what operator the preconditioner is constructucted for the Schur complement.
-      The default is the A11 matrix.
+  PCFieldSplitSetSchurPre -  Indicates from what operator the preconditioner is constructucted for the Schur complement.
+  The default is the A11 matrix.
 
-    Collective
+  Collective
 
-    Input Parameters:
-+   pc      - the preconditioner context
-.   ptype   - which matrix to use for preconditioning the Schur complement: `PC_FIELDSPLIT_SCHUR_PRE_A11` (default),
+  Input Parameters:
++ pc    - the preconditioner context
+. ptype - which matrix to use for preconditioning the Schur complement: `PC_FIELDSPLIT_SCHUR_PRE_A11` (default),
               `PC_FIELDSPLIT_SCHUR_PRE_SELF`, `PC_FIELDSPLIT_SCHUR_PRE_USER`,
               `PC_FIELDSPLIT_SCHUR_PRE_SELFP`, and `PC_FIELDSPLIT_SCHUR_PRE_FULL`
--   pre - matrix to use for preconditioning, or `NULL`
+- pre   - matrix to use for preconditioning, or `NULL`
 
-    Options Database Keys:
-+    -pc_fieldsplit_schur_precondition <self,selfp,user,a11,full> - default is a11. See notes for meaning of various arguments
--    -fieldsplit_1_pc_type <pctype> - the preconditioner algorithm that is used to construct the preconditioner from the operator
+  Options Database Keys:
++ -pc_fieldsplit_schur_precondition <self,selfp,user,a11,full> - default is a11. See notes for meaning of various arguments
+- -fieldsplit_1_pc_type <pctype>                               - the preconditioner algorithm that is used to construct the preconditioner from the operator
 
-     Level: intermediate
+  Level: intermediate
 
-    Notes:
-    If ptype is
+  Notes:
+  If ptype is
 +     a11 - the preconditioner for the Schur complement is generated from the block diagonal part of the preconditioner
-     matrix associated with the Schur complement (i.e. A11), not the Schur complement matrix
+  matrix associated with the Schur complement (i.e. A11), not the Schur complement matrix
 .     self - the preconditioner for the Schur complement is generated from the symbolic representation of the Schur complement matrix:
-          The only preconditioner that currently works with this symbolic representation matrix object is the `PCLSC`
-          preconditioner
+  The only preconditioner that currently works with this symbolic representation matrix object is the `PCLSC`
+  preconditioner
 .     user - the preconditioner for the Schur complement is generated from the user provided matrix (pre argument
-          to this function).
+  to this function).
 .     selfp - the preconditioning for the Schur complement is generated from an explicitly-assembled approximation Sp = A11 - A10 inv(diag(A00)) A01
-          This is only a good preconditioner when diag(A00) is a good preconditioner for A00. Optionally, A00 can be
-          lumped before extracting the diagonal using the additional option -fieldsplit_1_mat_schur_complement_ainv_type lump
+  This is only a good preconditioner when diag(A00) is a good preconditioner for A00. Optionally, A00 can be
+  lumped before extracting the diagonal using the additional option -fieldsplit_1_mat_schur_complement_ainv_type lump
 -     full - the preconditioner for the Schur complement is generated from the exact Schur complement matrix representation
-      computed internally by `PCFIELDSPLIT` (this is expensive)
-      useful mostly as a test that the Schur complement approach can work for your problem
+  computed internally by `PCFIELDSPLIT` (this is expensive)
+  useful mostly as a test that the Schur complement approach can work for your problem
 
-     When solving a saddle point problem, where the A11 block is identically zero, using a11 as the ptype only makes sense
-    with the additional option -fieldsplit_1_pc_type none. Usually for saddle point problems one would use a ptype of self and
-    -fieldsplit_1_pc_type lsc which uses the least squares commutator to compute a preconditioner for the Schur complement.
+  When solving a saddle point problem, where the A11 block is identically zero, using a11 as the ptype only makes sense
+  with the additional option -fieldsplit_1_pc_type none. Usually for saddle point problems one would use a ptype of self and
+  -fieldsplit_1_pc_type lsc which uses the least squares commutator to compute a preconditioner for the Schur complement.
 
 .seealso: [](sec_block_matrices), `PC`, `PCFieldSplitGetSchurPre()`, `PCFieldSplitGetSubKSP()`, `PCFIELDSPLIT`, `PCFieldSplitSetFields()`, `PCFieldSplitSchurPreType`,
           `MatSchurComplementSetAinvType()`, `PCLSC`,
-          `PCFieldSplitSchurPreType`
+
 @*/
 PetscErrorCode PCFieldSplitSetSchurPre(PC pc, PCFieldSplitSchurPreType ptype, Mat pre)
 {
@@ -2327,22 +2327,22 @@ PetscErrorCode PCFieldSplitSchurPrecondition(PC pc, PCFieldSplitSchurPreType pty
 } /* Deprecated name */
 
 /*@
-    PCFieldSplitGetSchurPre - For Schur complement fieldsplit, determine how the Schur complement will be
-    preconditioned.  See `PCFieldSplitSetSchurPre()` for details.
+  PCFieldSplitGetSchurPre - For Schur complement fieldsplit, determine how the Schur complement will be
+  preconditioned.  See `PCFieldSplitSetSchurPre()` for details.
 
-    Logically Collective
+  Logically Collective
 
-    Input Parameter:
-.   pc      - the preconditioner context
+  Input Parameter:
+. pc - the preconditioner context
 
-    Output Parameters:
-+   ptype   - which matrix to use for preconditioning the Schur complement: `PC_FIELDSPLIT_SCHUR_PRE_A11`, `PC_FIELDSPLIT_SCHUR_PRE_SELF`, `PC_FIELDSPLIT_PRE_USER`
--   pre - matrix to use for preconditioning (with `PC_FIELDSPLIT_PRE_USER`), or NULL
+  Output Parameters:
++ ptype - which matrix to use for preconditioning the Schur complement: `PC_FIELDSPLIT_SCHUR_PRE_A11`, `PC_FIELDSPLIT_SCHUR_PRE_SELF`, `PC_FIELDSPLIT_PRE_USER`
+- pre   - matrix to use for preconditioning (with `PC_FIELDSPLIT_PRE_USER`), or NULL
 
-    Level: intermediate
+  Level: intermediate
 
 .seealso: [](sec_block_matrices), `PC`, `PCFieldSplitSetSchurPre()`, `PCFieldSplitGetSubKSP()`, `PCFIELDSPLIT`, `PCFieldSplitSetFields()`, `PCFieldSplitSchurPreType`, `PCLSC`,
-          `PCFieldSplitSchurPreType`
+
 @*/
 PetscErrorCode PCFieldSplitGetSchurPre(PC pc, PCFieldSplitSchurPreType *ptype, Mat *pre)
 {
@@ -2353,20 +2353,20 @@ PetscErrorCode PCFieldSplitGetSchurPre(PC pc, PCFieldSplitSchurPreType *ptype, M
 }
 
 /*@
-    PCFieldSplitSchurGetS -  extract the `MATSCHURCOMPLEMENT` object used by this `PCFIELDSPLIT` in case it needs to be configured separately
+  PCFieldSplitSchurGetS -  extract the `MATSCHURCOMPLEMENT` object used by this `PCFIELDSPLIT` in case it needs to be configured separately
 
-    Not Collective
+  Not Collective
 
-    Input Parameter:
-.   pc      - the preconditioner context
+  Input Parameter:
+. pc - the preconditioner context
 
-    Output Parameter:
-.   S       - the Schur complement matrix
+  Output Parameter:
+. S - the Schur complement matrix
 
-    Level: advanced
+  Level: advanced
 
-    Note:
-    This matrix should not be destroyed using `MatDestroy()`; rather, use `PCFieldSplitSchurRestoreS()`.
+  Note:
+  This matrix should not be destroyed using `MatDestroy()`; rather, use `PCFieldSplitSchurRestoreS()`.
 
 .seealso: [](sec_block_matrices), `PC`, `PCFieldSplitGetSubKSP()`, `PCFIELDSPLIT`, `PCFieldSplitSchurPreType`, `PCFieldSplitSetSchurPre()`, `MATSCHURCOMPLEMENT`, `PCFieldSplitSchurRestoreS()`,
           `MatCreateSchurComplement()`, `MatSchurComplementGetKSP()`, `MatSchurComplementComputeExplicitOperator()`, `MatGetSchurComplement()`
@@ -2389,15 +2389,15 @@ PetscErrorCode PCFieldSplitSchurGetS(PC pc, Mat *S)
 }
 
 /*@
-    PCFieldSplitSchurRestoreS -  returns the `MATSCHURCOMPLEMENT` matrix used by this `PC`
+  PCFieldSplitSchurRestoreS -  returns the `MATSCHURCOMPLEMENT` matrix used by this `PC`
 
-    Not Collective
+  Not Collective
 
-    Input Parameters:
-+   pc      - the preconditioner context
--   S       - the Schur complement matrix
+  Input Parameters:
++ pc - the preconditioner context
+- S  - the Schur complement matrix
 
-    Level: advanced
+  Level: advanced
 
 .seealso: [](sec_block_matrices), `PC`, `PCFieldSplitGetSubKSP()`, `PCFIELDSPLIT`, `PCFieldSplitSchurPreType`, `PCFieldSplitSetSchurPre()`, `MatSchurComplement`, `PCFieldSplitSchurGetS()`
 @*/
@@ -2443,21 +2443,21 @@ static PetscErrorCode PCFieldSplitGetSchurPre_FieldSplit(PC pc, PCFieldSplitSchu
 }
 
 /*@
-    PCFieldSplitSetSchurFactType -  sets which blocks of the approximate block factorization to retain in the preconditioner
+  PCFieldSplitSetSchurFactType -  sets which blocks of the approximate block factorization to retain in the preconditioner
 
-    Collective
+  Collective
 
-    Input Parameters:
-+   pc  - the preconditioner context
--   ftype - which blocks of factorization to retain, `PC_FIELDSPLIT_SCHUR_FACT_FULL` is default
+  Input Parameters:
++ pc    - the preconditioner context
+- ftype - which blocks of factorization to retain, `PC_FIELDSPLIT_SCHUR_FACT_FULL` is default
 
-    Options Database Key:
-.     -pc_fieldsplit_schur_fact_type <diag,lower,upper,full> - default is full
+  Options Database Key:
+. -pc_fieldsplit_schur_fact_type <diag,lower,upper,full> - default is full
 
-    Level: intermediate
+  Level: intermediate
 
-    Notes:
-    The FULL factorization is
+  Notes:
+  The FULL factorization is
 
 .vb
    (A   B)  = (1       0) (A   0) (1  Ainv*B)  = L D U
@@ -2474,14 +2474,14 @@ static PetscErrorCode PCFieldSplitGetSchurPre_FieldSplit(PC pc, PCFieldSplitSchu
       *) With DIAG, the preconditioned operator has three distinct nonzero eigenvalues and minimal polynomial of degree at most 4, so `KSPGMRES` converges in at most 4 iterations.
 .ve
 
-    If the iteration count is very low, consider using `KSPFGMRES` or `KSPGCR` which can use one less preconditioner
-    application in this case. Note that the preconditioned operator may be highly non-normal, so such fast convergence may not be observed in practice.
+  If the iteration count is very low, consider using `KSPFGMRES` or `KSPGCR` which can use one less preconditioner
+  application in this case. Note that the preconditioned operator may be highly non-normal, so such fast convergence may not be observed in practice.
 
-    For symmetric problems in which A is positive definite and S is negative definite, DIAG can be used with `KSPMINRES`.
+  For symmetric problems in which A is positive definite and S is negative definite, DIAG can be used with `KSPMINRES`.
 
-    A flexible method like `KSPFGMRES` or `KSPGCR` must be used if the fieldsplit preconditioner is nonlinear (e.g. a few iterations of a Krylov method is used to solve with A or S).
+  A flexible method like `KSPFGMRES` or `KSPGCR` must be used if the fieldsplit preconditioner is nonlinear (e.g. a few iterations of a Krylov method is used to solve with A or S).
 
-    References:
+  References:
 +   * - Murphy, Golub, and Wathen, A note on preconditioning indefinite linear systems, SIAM J. Sci. Comput., 21 (2000).
 -   * - Ipsen, A note on preconditioning nonsymmetric matrices, SIAM J. Sci. Comput., 23 (2001).
 
@@ -2505,18 +2505,18 @@ static PetscErrorCode PCFieldSplitSetSchurFactType_FieldSplit(PC pc, PCFieldSpli
 }
 
 /*@
-    PCFieldSplitSetSchurScale -  Controls the sign flip of S for `PC_FIELDSPLIT_SCHUR_FACT_DIAG`.
+  PCFieldSplitSetSchurScale -  Controls the sign flip of S for `PC_FIELDSPLIT_SCHUR_FACT_DIAG`.
 
-    Collective
+  Collective
 
-    Input Parameters:
-+   pc    - the preconditioner context
--   scale - scaling factor for the Schur complement
+  Input Parameters:
++ pc    - the preconditioner context
+- scale - scaling factor for the Schur complement
 
-    Options Database Key:
-.   -pc_fieldsplit_schur_scale - default is -1.0
+  Options Database Key:
+. -pc_fieldsplit_schur_scale - default is -1.0
 
-    Level: intermediate
+  Level: intermediate
 
 .seealso: [](sec_block_matrices), `PC`, `PCFIELDSPLIT`, `PCFieldSplitSetFields()`, `PCFieldSplitSchurFactType`, `PCFieldSplitSetSchurScale()`, `PCFieldSplitSetSchurFactType()`
 @*/
@@ -2539,20 +2539,20 @@ static PetscErrorCode PCFieldSplitSetSchurScale_FieldSplit(PC pc, PetscScalar sc
 }
 
 /*@C
-   PCFieldSplitGetSchurBlocks - Gets all matrix blocks for the Schur complement
+  PCFieldSplitGetSchurBlocks - Gets all matrix blocks for the Schur complement
 
-   Collective
+  Collective
 
-   Input Parameter:
-.  pc - the preconditioner context
+  Input Parameter:
+. pc - the preconditioner context
 
-   Output Parameters:
-+  A00 - the (0,0) block
-.  A01 - the (0,1) block
-.  A10 - the (1,0) block
--  A11 - the (1,1) block
+  Output Parameters:
++ A00 - the (0,0) block
+. A01 - the (0,1) block
+. A10 - the (1,0) block
+- A11 - the (1,1) block
 
-   Level: advanced
+  Level: advanced
 
 .seealso: [](sec_block_matrices), `PC`, `PCFIELDSPLIT`, `MatSchurComplementGetSubMatrices()`, `MatSchurComplementSetSubMatrices()`
 @*/
@@ -2571,26 +2571,26 @@ PetscErrorCode PCFieldSplitGetSchurBlocks(PC pc, Mat *A00, Mat *A01, Mat *A10, M
 }
 
 /*@
-    PCFieldSplitSetGKBTol -  Sets the solver tolerance for the generalized Golub-Kahan bidiagonalization preconditioner in `PCFIELDSPLIT`
+  PCFieldSplitSetGKBTol -  Sets the solver tolerance for the generalized Golub-Kahan bidiagonalization preconditioner in `PCFIELDSPLIT`
 
-    Collective
+  Collective
 
-    Input Parameters:
-+   pc        - the preconditioner context
--   tolerance - the solver tolerance
+  Input Parameters:
++ pc        - the preconditioner context
+- tolerance - the solver tolerance
 
-    Options Database Key:
-.   -pc_fieldsplit_gkb_tol - default is 1e-5
+  Options Database Key:
+. -pc_fieldsplit_gkb_tol - default is 1e-5
 
-    Level: intermediate
+  Level: intermediate
 
-    Note:
-    The generalized GKB algorithm uses a lower bound estimate of the error in energy norm as stopping criterion.
-    It stops once the lower bound estimate undershoots the required solver tolerance. Although the actual error might be bigger than
-    this estimate, the stopping criterion is satisfactory in practical cases [A13].
+  Note:
+  The generalized GKB algorithm uses a lower bound estimate of the error in energy norm as stopping criterion.
+  It stops once the lower bound estimate undershoots the required solver tolerance. Although the actual error might be bigger than
+  this estimate, the stopping criterion is satisfactory in practical cases [A13].
 
-    References:
-    [Ar13] Generalized Golub-Kahan bidiagonalization and stopping criteria, SIAM J. Matrix Anal. Appl., Vol. 34, No. 2, pp. 571-592, 2013.
+  References:
+  [Ar13] Generalized Golub-Kahan bidiagonalization and stopping criteria, SIAM J. Matrix Anal. Appl., Vol. 34, No. 2, pp. 571-592, 2013.
 
 .seealso: [](sec_block_matrices), `PC`, `PCFIELDSPLIT`, `PCFieldSplitSetGKBDelay()`, `PCFieldSplitSetGKBNu()`, `PCFieldSplitSetGKBMaxit()`
 @*/
@@ -2613,18 +2613,18 @@ static PetscErrorCode PCFieldSplitSetGKBTol_FieldSplit(PC pc, PetscReal toleranc
 }
 
 /*@
-    PCFieldSplitSetGKBMaxit -  Sets the maximum number of iterations for the generalized Golub-Kahan bidiagonalization preconditioner in `PCFIELDSPLIT`
+  PCFieldSplitSetGKBMaxit -  Sets the maximum number of iterations for the generalized Golub-Kahan bidiagonalization preconditioner in `PCFIELDSPLIT`
 
-    Collective
+  Collective
 
-    Input Parameters:
-+   pc     - the preconditioner context
--   maxit  - the maximum number of iterations
+  Input Parameters:
++ pc    - the preconditioner context
+- maxit - the maximum number of iterations
 
-    Options Database Key:
-.   -pc_fieldsplit_gkb_maxit - default is 100
+  Options Database Key:
+. -pc_fieldsplit_gkb_maxit - default is 100
 
-    Level: intermediate
+  Level: intermediate
 
 .seealso: [](sec_block_matrices), `PC`, `PCFIELDSPLIT`, `PCFieldSplitSetGKBDelay()`, `PCFieldSplitSetGKBTol()`, `PCFieldSplitSetGKBNu()`
 @*/
@@ -2647,27 +2647,27 @@ static PetscErrorCode PCFieldSplitSetGKBMaxit_FieldSplit(PC pc, PetscInt maxit)
 }
 
 /*@
-    PCFieldSplitSetGKBDelay -  Sets the delay in the lower bound error estimate in the generalized Golub-Kahan bidiagonalization in `PCFIELDSPLIT`
-    preconditioner.
+  PCFieldSplitSetGKBDelay -  Sets the delay in the lower bound error estimate in the generalized Golub-Kahan bidiagonalization in `PCFIELDSPLIT`
+  preconditioner.
 
-    Collective
+  Collective
 
-    Input Parameters:
-+   pc     - the preconditioner context
--   delay  - the delay window in the lower bound estimate
+  Input Parameters:
++ pc    - the preconditioner context
+- delay - the delay window in the lower bound estimate
 
-    Options Database Key:
-.   -pc_fieldsplit_gkb_delay - default is 5
+  Options Database Key:
+. -pc_fieldsplit_gkb_delay - default is 5
 
-    Level: intermediate
+  Level: intermediate
 
-    Note:
-    The algorithm uses a lower bound estimate of the error in energy norm as stopping criterion. The lower bound of the error ||u-u^k||_H
-    is expressed as a truncated sum. The error at iteration k can only be measured at iteration (k + delay), and thus the algorithm needs
-    at least (delay + 1) iterations to stop. For more details on the generalized Golub-Kahan bidiagonalization method and its lower bound stopping criterion, please refer to
+  Note:
+  The algorithm uses a lower bound estimate of the error in energy norm as stopping criterion. The lower bound of the error ||u-u^k||_H
+  is expressed as a truncated sum. The error at iteration k can only be measured at iteration (k + delay), and thus the algorithm needs
+  at least (delay + 1) iterations to stop. For more details on the generalized Golub-Kahan bidiagonalization method and its lower bound stopping criterion, please refer to
 
-    References:
-    [Ar13] Generalized Golub-Kahan bidiagonalization and stopping criteria, SIAM J. Matrix Anal. Appl., Vol. 34, No. 2, pp. 571-592, 2013.
+  References:
+  [Ar13] Generalized Golub-Kahan bidiagonalization and stopping criteria, SIAM J. Matrix Anal. Appl., Vol. 34, No. 2, pp. 571-592, 2013.
 
 .seealso: [](sec_block_matrices), `PC`, `PCFIELDSPLIT`, `PCFieldSplitSetGKBNu()`, `PCFieldSplitSetGKBTol()`, `PCFieldSplitSetGKBMaxit()`
 @*/
@@ -2690,29 +2690,29 @@ static PetscErrorCode PCFieldSplitSetGKBDelay_FieldSplit(PC pc, PetscInt delay)
 }
 
 /*@
-    PCFieldSplitSetGKBNu -  Sets the scalar value nu >= 0 in the transformation H = A00 + nu*A01*A01' of the (1,1) block in the Golub-Kahan bidiagonalization preconditioner
-    in `PCFIELDSPLIT`
+  PCFieldSplitSetGKBNu -  Sets the scalar value nu >= 0 in the transformation H = A00 + nu*A01*A01' of the (1,1) block in the Golub-Kahan bidiagonalization preconditioner
+  in `PCFIELDSPLIT`
 
-    Collective
+  Collective
 
-    Input Parameters:
-+   pc     - the preconditioner context
--   nu     - the shift parameter
+  Input Parameters:
++ pc - the preconditioner context
+- nu - the shift parameter
 
-    Options Database Key:
-.   -pc_fieldsplit_gkb_nu - default is 1
+  Options Database Key:
+. -pc_fieldsplit_gkb_nu - default is 1
 
-    Level: intermediate
+  Level: intermediate
 
-    Notes:
-    This shift is in general done to obtain better convergence properties for the outer loop of the algorithm. This is often achieved by choosing nu sufficiently big. However,
-    if nu is chosen too big, the matrix H might be badly conditioned and the solution of the linear system Hx = b in the inner loop becomes difficult. It is therefore
-    necessary to find a good balance in between the convergence of the inner and outer loop.
+  Notes:
+  This shift is in general done to obtain better convergence properties for the outer loop of the algorithm. This is often achieved by choosing nu sufficiently big. However,
+  if nu is chosen too big, the matrix H might be badly conditioned and the solution of the linear system Hx = b in the inner loop becomes difficult. It is therefore
+  necessary to find a good balance in between the convergence of the inner and outer loop.
 
-    For nu = 0, no shift is done. In this case A00 has to be positive definite. The matrix N in [Ar13] is then chosen as identity.
+  For nu = 0, no shift is done. In this case A00 has to be positive definite. The matrix N in [Ar13] is then chosen as identity.
 
-    References:
-    [Ar13] Generalized Golub-Kahan bidiagonalization and stopping criteria, SIAM J. Matrix Anal. Appl., Vol. 34, No. 2, pp. 571-592, 2013.
+  References:
+  [Ar13] Generalized Golub-Kahan bidiagonalization and stopping criteria, SIAM J. Matrix Anal. Appl., Vol. 34, No. 2, pp. 571-592, 2013.
 
 .seealso: [](sec_block_matrices), `PC`, `PCFIELDSPLIT`, `PCFieldSplitSetGKBDelay()`, `PCFieldSplitSetGKBTol()`, `PCFieldSplitSetGKBMaxit()`
 @*/
@@ -2825,18 +2825,18 @@ static PetscErrorCode PCSetCoordinates_FieldSplit(PC pc, PetscInt dim, PetscInt 
 }
 
 /*@
-   PCFieldSplitSetType - Sets the type, `PCCompositeType`, of a `PCFIELDSPLIT`
+  PCFieldSplitSetType - Sets the type, `PCCompositeType`, of a `PCFIELDSPLIT`
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  pc - the preconditioner context
--  type - `PC_COMPOSITE_ADDITIVE`, `PC_COMPOSITE_MULTIPLICATIVE` (default), `PC_COMPOSITE_SYMMETRIC_MULTIPLICATIVE`, `PC_COMPOSITE_SPECIAL`, `PC_COMPOSITE_SCHUR`
+  Input Parameters:
++ pc   - the preconditioner context
+- type - `PC_COMPOSITE_ADDITIVE`, `PC_COMPOSITE_MULTIPLICATIVE` (default), `PC_COMPOSITE_SYMMETRIC_MULTIPLICATIVE`, `PC_COMPOSITE_SPECIAL`, `PC_COMPOSITE_SCHUR`
 
-   Options Database Key:
-.  -pc_fieldsplit_type <type: one of multiplicative, additive, symmetric_multiplicative, special, schur> - Sets fieldsplit preconditioner type
+  Options Database Key:
+. -pc_fieldsplit_type <type: one of multiplicative, additive, symmetric_multiplicative, special, schur> - Sets fieldsplit preconditioner type
 
-   Level: Intermediate
+  Level: intermediate
 
 .seealso: [](sec_block_matrices), `PC`, `PCFIELDSPLIT`, `PCCompositeType`, `PCCompositeGetType()`, `PC_COMPOSITE_ADDITIVE`, `PC_COMPOSITE_MULTIPLICATIVE`,
           `PC_COMPOSITE_SYMMETRIC_MULTIPLICATIVE`, `PC_COMPOSITE_SPECIAL`, `PC_COMPOSITE_SCHUR`
@@ -2860,7 +2860,7 @@ PetscErrorCode PCFieldSplitSetType(PC pc, PCCompositeType type)
   Output Parameter:
 . type - `PC_COMPOSITE_ADDITIVE`, `PC_COMPOSITE_MULTIPLICATIVE` (default), `PC_COMPOSITE_SYMMETRIC_MULTIPLICATIVE`, `PC_COMPOSITE_SPECIAL`, `PC_COMPOSITE_SCHUR`
 
-  Level: Intermediate
+  Level: intermediate
 
 .seealso: [](sec_block_matrices), `PC`, `PCCompositeSetType()`, `PCFIELDSPLIT`, `PCCompositeType`, `PC_COMPOSITE_ADDITIVE`, `PC_COMPOSITE_MULTIPLICATIVE`,
           `PC_COMPOSITE_SYMMETRIC_MULTIPLICATIVE`, `PC_COMPOSITE_SPECIAL`, `PC_COMPOSITE_SCHUR`
@@ -2877,18 +2877,18 @@ PetscErrorCode PCFieldSplitGetType(PC pc, PCCompositeType *type)
 }
 
 /*@
-   PCFieldSplitSetDMSplits - Flags whether `DMCreateFieldDecomposition()` should be used to define the splits in a `PCFIELDSPLIT`, whenever possible.
+  PCFieldSplitSetDMSplits - Flags whether `DMCreateFieldDecomposition()` should be used to define the splits in a `PCFIELDSPLIT`, whenever possible.
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  pc   - the preconditioner context
--  flg  - boolean indicating whether to use field splits defined by the `DM`
+  Input Parameters:
++ pc  - the preconditioner context
+- flg - boolean indicating whether to use field splits defined by the `DM`
 
-   Options Database Key:
-.  -pc_fieldsplit_dm_splits <bool> - use the field splits defined by the `DM`
+  Options Database Key:
+. -pc_fieldsplit_dm_splits <bool> - use the field splits defined by the `DM`
 
-   Level: Intermediate
+  Level: intermediate
 
 .seealso: [](sec_block_matrices), `PC`, `PCFIELDSPLIT`, `PCFieldSplitGetDMSplits()`, `PCFieldSplitSetFields()`, `PCFieldsplitSetIS()`
 @*/
@@ -2906,17 +2906,17 @@ PetscErrorCode PCFieldSplitSetDMSplits(PC pc, PetscBool flg)
 }
 
 /*@
-   PCFieldSplitGetDMSplits - Returns flag indicating whether `DMCreateFieldDecomposition()` should be used to define the splits in a `PCFIELDSPLIT`, whenever possible.
+  PCFieldSplitGetDMSplits - Returns flag indicating whether `DMCreateFieldDecomposition()` should be used to define the splits in a `PCFIELDSPLIT`, whenever possible.
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameter:
-.  pc   - the preconditioner context
+  Input Parameter:
+. pc - the preconditioner context
 
-   Output Parameter:
-.  flg  - boolean indicating whether to use field splits defined by the `DM`
+  Output Parameter:
+. flg - boolean indicating whether to use field splits defined by the `DM`
 
-   Level: Intermediate
+  Level: intermediate
 
 .seealso: [](sec_block_matrices), `PC`, `PCFIELDSPLIT`, `PCFieldSplitSetDMSplits()`, `PCFieldSplitSetFields()`, `PCFieldsplitSetIS()`
 @*/
@@ -2936,17 +2936,17 @@ PetscErrorCode PCFieldSplitGetDMSplits(PC pc, PetscBool *flg)
 }
 
 /*@
-   PCFieldSplitGetDetectSaddlePoint - Returns flag indicating whether `PCFIELDSPLIT` will attempt to automatically determine fields based on zero diagonal entries.
+  PCFieldSplitGetDetectSaddlePoint - Returns flag indicating whether `PCFIELDSPLIT` will attempt to automatically determine fields based on zero diagonal entries.
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameter:
-.  pc   - the preconditioner context
+  Input Parameter:
+. pc - the preconditioner context
 
-   Output Parameter:
-.  flg  - boolean indicating whether to detect fields or not
+  Output Parameter:
+. flg - boolean indicating whether to detect fields or not
 
-   Level: Intermediate
+  Level: intermediate
 
 .seealso: [](sec_block_matrices), `PC`, `PCFIELDSPLIT`, `PCFieldSplitSetDetectSaddlePoint()`
 @*/
@@ -2960,23 +2960,23 @@ PetscErrorCode PCFieldSplitGetDetectSaddlePoint(PC pc, PetscBool *flg)
 }
 
 /*@
-   PCFieldSplitSetDetectSaddlePoint - Sets flag indicating whether `PCFIELDSPLIT` will attempt to automatically determine fields based on zero diagonal entries.
+  PCFieldSplitSetDetectSaddlePoint - Sets flag indicating whether `PCFIELDSPLIT` will attempt to automatically determine fields based on zero diagonal entries.
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameter:
-.  pc   - the preconditioner context
+  Input Parameter:
+. pc - the preconditioner context
 
-   Output Parameter:
-.  flg  - boolean indicating whether to detect fields or not
+  Output Parameter:
+. flg - boolean indicating whether to detect fields or not
 
-   Options Database Key:
-.  -pc_fieldsplit_detect_saddle_point <bool> - detect and use the saddle point
+  Options Database Key:
+. -pc_fieldsplit_detect_saddle_point <bool> - detect and use the saddle point
 
-   Level: Intermediate
+  Level: intermediate
 
- Note:
-   Also sets the split type to `PC_COMPOSITE_SCHUR` (see `PCFieldSplitSetType()`) and the Schur preconditioner type to `PC_FIELDSPLIT_SCHUR_PRE_SELF` (see `PCFieldSplitSetSchurPre()`).
+  Note:
+  Also sets the split type to `PC_COMPOSITE_SCHUR` (see `PCFieldSplitSetType()`) and the Schur preconditioner type to `PC_FIELDSPLIT_SCHUR_PRE_SELF` (see `PCFieldSplitSetSchurPre()`).
 
 .seealso: [](sec_block_matrices), `PC`, `PCFIELDSPLIT`, `PCFieldSplitGetDetectSaddlePoint()`, `PCFieldSplitSetType()`, `PCFieldSplitSetSchurPre()`, `PC_FIELDSPLIT_SCHUR_PRE_SELF`
 @*/

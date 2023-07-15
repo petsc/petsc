@@ -293,7 +293,7 @@ static PetscErrorCode PetscParallelSortInt_Samplesort(PetscLayout mapin, PetscLa
   Collective
 
   Input Parameters:
-+ mapin - `PetscLayout` describing the distribution of the input keys
++ mapin  - `PetscLayout` describing the distribution of the input keys
 . mapout - `PetscLayout` describing the desired distribution of the output keys
 - keysin - the pre-sorted array of integers
 
@@ -303,6 +303,7 @@ static PetscErrorCode PetscParallelSortInt_Samplesort(PetscLayout mapin, PetscLa
   Level: developer
 
   Notes:
+
   This implements a distributed samplesort, which, with local array sizes n_in and n_out, global size N, and global number of processes P, does:
 .vb
   - sorts locally

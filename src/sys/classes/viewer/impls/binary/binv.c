@@ -165,20 +165,20 @@ static PetscErrorCode PetscViewerRestoreSubViewer_Binary(PetscViewer viewer, MPI
 
 #if defined(PETSC_HAVE_MPIIO)
 /*@C
-    PetscViewerBinaryGetMPIIOOffset - Gets the current global offset that should be passed to `MPI_File_set_view()` or `MPI_File_{write|read}_at[_all]()`
+  PetscViewerBinaryGetMPIIOOffset - Gets the current global offset that should be passed to `MPI_File_set_view()` or `MPI_File_{write|read}_at[_all]()`
 
-    Not Collective; No Fortran Support
+  Not Collective; No Fortran Support
 
-    Input Parameter:
-.   viewer - `PetscViewer` context, obtained from `PetscViewerBinaryOpen()`
+  Input Parameter:
+. viewer - `PetscViewer` context, obtained from `PetscViewerBinaryOpen()`
 
-    Output Parameter:
-.   off - the current global offset
+  Output Parameter:
+. off - the current global offset
 
-    Level: advanced
+  Level: advanced
 
-    Note:
-    Use `PetscViewerBinaryAddMPIIOOffset()` to increase this value after you have written a view.
+  Note:
+  Use `PetscViewerBinaryAddMPIIOOffset()` to increase this value after you have written a view.
 
 .seealso: [](sec_viewers), `PETSCVIEWERBINARY`, `PetscViewerBinaryOpen()`, `PetscViewerBinaryGetInfoPointer()`, `PetscViewerBinaryGetUseMPIIO()`, `PetscViewerBinarySetUseMPIIO()`, `PetscViewerBinaryAddMPIIOOffset()`
 @*/
@@ -195,18 +195,18 @@ PetscErrorCode PetscViewerBinaryGetMPIIOOffset(PetscViewer viewer, MPI_Offset *o
 }
 
 /*@C
-    PetscViewerBinaryAddMPIIOOffset - Adds to the current global offset
+  PetscViewerBinaryAddMPIIOOffset - Adds to the current global offset
 
-    Logically Collective; No Fortran Support
+  Logically Collective; No Fortran Support
 
-    Input Parameters:
-+   viewer - `PetscViewer` context, obtained from `PetscViewerBinaryOpen()`
--   off - the addition to the global offset
+  Input Parameters:
++ viewer - `PetscViewer` context, obtained from `PetscViewerBinaryOpen()`
+- off    - the addition to the global offset
 
-    Level: advanced
+  Level: advanced
 
-    Note:
-    Use `PetscViewerBinaryGetMPIIOOffset()` to get the value that you should pass to `MPI_File_set_view()` or `MPI_File_{write|read}_at[_all]()`
+  Note:
+  Use `PetscViewerBinaryGetMPIIOOffset()` to get the value that you should pass to `MPI_File_set_view()` or `MPI_File_{write|read}_at[_all]()`
 
 .seealso: [](sec_viewers), `PETSCVIEWERBINARY`, `PetscViewerBinaryOpen()`, `PetscViewerBinaryGetInfoPointer()`, `PetscViewerBinaryGetUseMPIIO()`, `PetscViewerBinarySetUseMPIIO()`, `PetscViewerBinaryGetMPIIOOffset()`
 @*/
@@ -223,17 +223,17 @@ PetscErrorCode PetscViewerBinaryAddMPIIOOffset(PetscViewer viewer, MPI_Offset of
 }
 
 /*@C
-    PetscViewerBinaryGetMPIIODescriptor - Extracts the MPI IO file descriptor from a `PetscViewer`.
+  PetscViewerBinaryGetMPIIODescriptor - Extracts the MPI IO file descriptor from a `PetscViewer`.
 
-    Not Collective; No Fortran Support
+  Not Collective; No Fortran Support
 
-    Input Parameter:
-.   viewer - `PetscViewer` context, obtained from `PetscViewerBinaryOpen()`
+  Input Parameter:
+. viewer - `PetscViewer` context, obtained from `PetscViewerBinaryOpen()`
 
-    Output Parameter:
-.   fdes - file descriptor
+  Output Parameter:
+. fdes - file descriptor
 
-    Level: advanced
+  Level: advanced
 
 .seealso: [](sec_viewers), `PETSCVIEWERBINARY`, `PetscViewerBinaryOpen()`, `PetscViewerBinaryGetInfoPointer()`, `PetscViewerBinaryGetUseMPIIO()`, `PetscViewerBinarySetUseMPIIO()`, `PetscViewerBinaryGetMPIIOOffset()`
 @*/
@@ -252,19 +252,19 @@ PetscErrorCode PetscViewerBinaryGetMPIIODescriptor(PetscViewer viewer, MPI_File 
 #endif
 
 /*@
-    PetscViewerBinarySetUseMPIIO - Sets a binary viewer to use MPI-IO for reading/writing. Must be called
-        before `PetscViewerFileSetName()`
+  PetscViewerBinarySetUseMPIIO - Sets a binary viewer to use MPI-IO for reading/writing. Must be called
+  before `PetscViewerFileSetName()`
 
-    Logically Collective
+  Logically Collective
 
-    Input Parameters:
-+   viewer - the `PetscViewer`; must be a `PETSCVIEWERBINARY`
--   use - `PETSC_TRUE` means MPI-IO will be used
+  Input Parameters:
++ viewer - the `PetscViewer`; must be a `PETSCVIEWERBINARY`
+- use    - `PETSC_TRUE` means MPI-IO will be used
 
-    Options Database Key:
-.    -viewer_binary_mpiio - <true or false> flag for using MPI-IO
+  Options Database Key:
+. -viewer_binary_mpiio - <true or false> flag for using MPI-IO
 
-    Level: advanced
+  Level: advanced
 
 .seealso: [](sec_viewers), `PETSCVIEWERBINARY`, `PetscViewerFileSetMode()`, `PetscViewerCreate()`, `PetscViewerSetType()`, `PetscViewerBinaryOpen()`,
           `PetscViewerBinaryGetUseMPIIO()`
@@ -290,20 +290,20 @@ static PetscErrorCode PetscViewerBinarySetUseMPIIO_Binary(PetscViewer viewer, Pe
 #endif
 
 /*@
-    PetscViewerBinaryGetUseMPIIO - Returns `PETSC_TRUE` if the binary viewer uses MPI-IO.
+  PetscViewerBinaryGetUseMPIIO - Returns `PETSC_TRUE` if the binary viewer uses MPI-IO.
 
-    Not Collective
+  Not Collective
 
-    Input Parameter:
-.   viewer - `PetscViewer` context, obtained from `PetscViewerBinaryOpen()`; must be a `PETSCVIEWERBINARY`
+  Input Parameter:
+. viewer - `PetscViewer` context, obtained from `PetscViewerBinaryOpen()`; must be a `PETSCVIEWERBINARY`
 
-    Output Parameter:
-.   use - `PETSC_TRUE` if MPI-IO is being used
+  Output Parameter:
+. use - `PETSC_TRUE` if MPI-IO is being used
 
-    Level: advanced
+  Level: advanced
 
-    Note:
-    If MPI-IO is not available, this function will always return `PETSC_FALSE`
+  Note:
+  If MPI-IO is not available, this function will always return `PETSC_FALSE`
 
 .seealso: [](sec_viewers), `PETSCVIEWERBINARY`, `PetscViewerBinaryOpen()`, `PetscViewerBinaryGetInfoPointer()`, `PetscViewerBinarySetUseMPIIO()`, `PetscViewerBinaryGetMPIIOOffset()`
 @*/
@@ -329,15 +329,15 @@ static PetscErrorCode PetscViewerBinaryGetUseMPIIO_Binary(PetscViewer viewer, Pe
 #endif
 
 /*@
-    PetscViewerBinarySetFlowControl - Sets how many messages are allowed to be outstanding at the same time during parallel IO reads/writes
+  PetscViewerBinarySetFlowControl - Sets how many messages are allowed to be outstanding at the same time during parallel IO reads/writes
 
-    Not Collective
+  Not Collective
 
-    Input Parameters:
-+   viewer - `PetscViewer` context, obtained from `PetscViewerBinaryOpen()`
--   fc - the number of messages, defaults to 256 if this function was not called
+  Input Parameters:
++ viewer - `PetscViewer` context, obtained from `PetscViewerBinaryOpen()`
+- fc     - the number of messages, defaults to 256 if this function was not called
 
-    Level: advanced
+  Level: advanced
 
 .seealso: [](sec_viewers), `PETSCVIEWERBINARY`, `PetscViewerBinaryOpen()`, `PetscViewerBinaryGetInfoPointer()`, `PetscViewerBinaryGetFlowControl()`
 @*/
@@ -361,17 +361,17 @@ static PetscErrorCode PetscViewerBinarySetFlowControl_Binary(PetscViewer viewer,
 }
 
 /*@
-    PetscViewerBinaryGetFlowControl - Returns how many messages are allowed to be outstanding at the same time during parallel IO reads/writes
+  PetscViewerBinaryGetFlowControl - Returns how many messages are allowed to be outstanding at the same time during parallel IO reads/writes
 
-    Not Collective
+  Not Collective
 
-    Input Parameter:
-.   viewer - `PetscViewer` context, obtained from `PetscViewerBinaryOpen()`
+  Input Parameter:
+. viewer - `PetscViewer` context, obtained from `PetscViewerBinaryOpen()`
 
-    Output Parameter:
-.   fc - the number of messages
+  Output Parameter:
+. fc - the number of messages
 
-    Level: advanced
+  Level: advanced
 
 .seealso: [](sec_viewers), `PETSCVIEWERBINARY`, `PetscViewerBinaryOpen()`, `PetscViewerBinaryGetInfoPointer()`, `PetscViewerBinarySetFlowControl()`
 @*/
@@ -394,23 +394,23 @@ PETSC_INTERN PetscErrorCode PetscViewerBinaryGetFlowControl_Binary(PetscViewer v
 }
 
 /*@C
-    PetscViewerBinaryGetDescriptor - Extracts the file descriptor from a `PetscViewer` of `PetscViewerType` `PETSCVIEWERBINARY`.
+  PetscViewerBinaryGetDescriptor - Extracts the file descriptor from a `PetscViewer` of `PetscViewerType` `PETSCVIEWERBINARY`.
 
-    Collective because it may trigger a `PetscViewerSetUp()` call; No Fortran Support
+  Collective because it may trigger a `PetscViewerSetUp()` call; No Fortran Support
 
-    Input Parameter:
-.   viewer - `PetscViewer` context, obtained from `PetscViewerBinaryOpen()`
+  Input Parameter:
+. viewer - `PetscViewer` context, obtained from `PetscViewerBinaryOpen()`
 
-    Output Parameter:
-.   fdes - file descriptor
+  Output Parameter:
+. fdes - file descriptor
 
-    Level: advanced
+  Level: advanced
 
-    Note:
-      For writable binary `PetscViewer`s, the descriptor will only be valid for the
-    first processor in the communicator that shares the `PetscViewer`. For readable
-    files it will only be valid on processes that have the file. If MPI rank 0 does not
-    have the file it generates an error even if another MPI process does have the file.
+  Note:
+  For writable binary `PetscViewer`s, the descriptor will only be valid for the
+  first processor in the communicator that shares the `PetscViewer`. For readable
+  files it will only be valid on processes that have the file. If MPI rank 0 does not
+  have the file it generates an error even if another MPI process does have the file.
 
 .seealso: [](sec_viewers), `PETSCVIEWERBINARY`, `PetscViewerBinaryOpen()`, `PetscViewerBinaryGetInfoPointer()`
 @*/
@@ -428,27 +428,27 @@ PetscErrorCode PetscViewerBinaryGetDescriptor(PetscViewer viewer, int *fdes)
 }
 
 /*@
-    PetscViewerBinarySkipInfo - Binary file will not have `.info` file created with it
+  PetscViewerBinarySkipInfo - Binary file will not have `.info` file created with it
 
-    Not Collective
+  Not Collective
 
-    Input Parameter:
-.   viewer - `PetscViewer` context, obtained from `PetscViewerCreate()`
+  Input Parameter:
+. viewer - `PetscViewer` context, obtained from `PetscViewerCreate()`
 
-    Options Database Key:
-.   -viewer_binary_skip_info - true indicates do not generate `.info` file
+  Options Database Key:
+. -viewer_binary_skip_info - true indicates do not generate `.info` file
 
-    Level: advanced
+  Level: advanced
 
-    Notes:
-    This must be called after `PetscViewerSetType()`. If you use `PetscViewerBinaryOpen()` then
-    you can only skip the info file with the `-viewer_binary_skip_info` flag. To use the function you must open the
-    viewer with `PetscViewerCreate()`, `PetscViewerSetType()`, `PetscViewerBinarySkipInfo()`.
+  Notes:
+  This must be called after `PetscViewerSetType()`. If you use `PetscViewerBinaryOpen()` then
+  you can only skip the info file with the `-viewer_binary_skip_info` flag. To use the function you must open the
+  viewer with `PetscViewerCreate()`, `PetscViewerSetType()`, `PetscViewerBinarySkipInfo()`.
 
-    The `.info` files contains meta information about the data in the binary file, for example the block size if it was
-    set for a vector or matrix.
+  The `.info` files contains meta information about the data in the binary file, for example the block size if it was
+  set for a vector or matrix.
 
-    This routine is deprecated, use `PetscViewerBinarySetSkipInfo()`
+  This routine is deprecated, use `PetscViewerBinarySetSkipInfo()`
 
 .seealso: [](sec_viewers), `PETSCVIEWERBINARY`, `PetscViewerBinaryOpen()`, `PetscViewerBinaryGetDescriptor()`, `PetscViewerBinarySetSkipOptions()`,
           `PetscViewerBinaryGetSkipOptions()`, `PetscViewerBinaryGetSkipInfo()`
@@ -461,26 +461,26 @@ PetscErrorCode PetscViewerBinarySkipInfo(PetscViewer viewer)
 }
 
 /*@
-    PetscViewerBinarySetSkipInfo - Binary file will not have `.info` file created with it
+  PetscViewerBinarySetSkipInfo - Binary file will not have `.info` file created with it
 
-    Not Collective
+  Not Collective
 
-    Input Parameters:
-+   viewer - PetscViewer context, obtained from `PetscViewerCreate()`
--   skip - `PETSC_TRUE` implies the `.info` file will not be generated
+  Input Parameters:
++ viewer - PetscViewer context, obtained from `PetscViewerCreate()`
+- skip   - `PETSC_TRUE` implies the `.info` file will not be generated
 
-    Options Database Key:
-.   -viewer_binary_skip_info - true indicates do not generate `.info` file
+  Options Database Key:
+. -viewer_binary_skip_info - true indicates do not generate `.info` file
 
-    Level: advanced
+  Level: advanced
 
-    Notes:
-    This must be called after `PetscViewerSetType()`. If you use `PetscViewerBinaryOpen()` then
-    you can only skip the info file with the `-viewer_binary_skip_info` flag. To use the function you must open the
-    viewer with `PetscViewerCreate()`, `PetscViewerSetType()`, `PetscViewerBinarySkipInfo()`.
+  Notes:
+  This must be called after `PetscViewerSetType()`. If you use `PetscViewerBinaryOpen()` then
+  you can only skip the info file with the `-viewer_binary_skip_info` flag. To use the function you must open the
+  viewer with `PetscViewerCreate()`, `PetscViewerSetType()`, `PetscViewerBinarySkipInfo()`.
 
-    The `.info` file contains meta information about the data in the binary file, for example the block size if it was
-    set for a vector or matrix.
+  The `.info` file contains meta information about the data in the binary file, for example the block size if it was
+  set for a vector or matrix.
 
 .seealso: [](sec_viewers), `PETSCVIEWERBINARY`, `PetscViewerBinaryOpen()`, `PetscViewerBinaryGetDescriptor()`, `PetscViewerBinarySetSkipOptions()`,
           `PetscViewerBinaryGetSkipOptions()`, `PetscViewerBinaryGetSkipInfo()`, `PetscViewerBinaryGetInfoPointer()`
@@ -504,20 +504,20 @@ static PetscErrorCode PetscViewerBinarySetSkipInfo_Binary(PetscViewer viewer, Pe
 }
 
 /*@
-    PetscViewerBinaryGetSkipInfo - check if viewer wrote a `.info` file
+  PetscViewerBinaryGetSkipInfo - check if viewer wrote a `.info` file
 
-    Not Collective
+  Not Collective
 
-    Input Parameter:
-.   viewer - `PetscViewer` context, obtained from `PetscViewerBinaryOpen()`
+  Input Parameter:
+. viewer - `PetscViewer` context, obtained from `PetscViewerBinaryOpen()`
 
-    Output Parameter:
-.   skip - `PETSC_TRUE` implies the `.info` file was not generated
+  Output Parameter:
+. skip - `PETSC_TRUE` implies the `.info` file was not generated
 
-    Level: advanced
+  Level: advanced
 
-    Note:
-    This must be called after `PetscViewerSetType()`
+  Note:
+  This must be called after `PetscViewerSetType()`
 
 .seealso: [](sec_viewers), `PETSCVIEWERBINARY`, `PetscViewerBinaryOpen()`, `PetscViewerBinaryGetDescriptor()`,
           `PetscViewerBinarySetSkipOptions()`, `PetscViewerBinarySetSkipInfo()`, `PetscViewerBinaryGetInfoPointer()`
@@ -541,21 +541,21 @@ static PetscErrorCode PetscViewerBinaryGetSkipInfo_Binary(PetscViewer viewer, Pe
 }
 
 /*@
-    PetscViewerBinarySetSkipOptions - do not use values in the PETSc options database when loading objects
+  PetscViewerBinarySetSkipOptions - do not use values in the PETSc options database when loading objects
 
-    Not Collective
+  Not Collective
 
-    Input Parameters:
-+   viewer - `PetscViewer` context, obtained from `PetscViewerBinaryOpen()`
--   skip - `PETSC_TRUE` means do not use the options from the options database
+  Input Parameters:
++ viewer - `PetscViewer` context, obtained from `PetscViewerBinaryOpen()`
+- skip   - `PETSC_TRUE` means do not use the options from the options database
 
-    Options Database Key:
-.   -viewer_binary_skip_options <true or false> - true means do not use the options from the options database
+  Options Database Key:
+. -viewer_binary_skip_options <true or false> - true means do not use the options from the options database
 
-    Level: advanced
+  Level: advanced
 
-    Note:
-    This must be called after `PetscViewerSetType()`
+  Note:
+  This must be called after `PetscViewerSetType()`
 
 .seealso: [](sec_viewers), `PETSCVIEWERBINARY`, `PetscViewerBinaryOpen()`, `PetscViewerBinaryGetDescriptor()`, `PetscViewerBinarySkipInfo()`,
           `PetscViewerBinaryGetSkipOptions()`
@@ -579,20 +579,20 @@ static PetscErrorCode PetscViewerBinarySetSkipOptions_Binary(PetscViewer viewer,
 }
 
 /*@
-    PetscViewerBinaryGetSkipOptions - checks if viewer uses the PETSc options database when loading objects
+  PetscViewerBinaryGetSkipOptions - checks if viewer uses the PETSc options database when loading objects
 
-    Not Collective
+  Not Collective
 
-    Input Parameter:
-.   viewer - `PetscViewer` context, obtained from `PetscViewerBinaryOpen()`
+  Input Parameter:
+. viewer - `PetscViewer` context, obtained from `PetscViewerBinaryOpen()`
 
-    Output Parameter:
-.   skip - `PETSC_TRUE` means do not use
+  Output Parameter:
+. skip - `PETSC_TRUE` means do not use
 
-    Level: advanced
+  Level: advanced
 
-    Note:
-    This must be called after `PetscViewerSetType()`
+  Note:
+  This must be called after `PetscViewerSetType()`
 
 .seealso: [](sec_viewers), `PETSCVIEWERBINARY`, `PetscViewerBinaryOpen()`, `PetscViewerBinaryGetDescriptor()`, `PetscViewerBinarySkipInfo()`,
           `PetscViewerBinarySetSkipOptions()`
@@ -616,23 +616,23 @@ static PetscErrorCode PetscViewerBinaryGetSkipOptions_Binary(PetscViewer viewer,
 }
 
 /*@
-    PetscViewerBinarySetSkipHeader - do not write a header with size information on output, just raw data
+  PetscViewerBinarySetSkipHeader - do not write a header with size information on output, just raw data
 
-    Not Collective
+  Not Collective
 
-    Input Parameters:
-+   viewer - `PetscViewer` context, obtained from `PetscViewerBinaryOpen()`
--   skip - `PETSC_TRUE` means do not write header
+  Input Parameters:
++ viewer - `PetscViewer` context, obtained from `PetscViewerBinaryOpen()`
+- skip   - `PETSC_TRUE` means do not write header
 
-    Options Database Key:
-.   -viewer_binary_skip_header <true or false> - true means do not write header
+  Options Database Key:
+. -viewer_binary_skip_header <true or false> - true means do not write header
 
-    Level: advanced
+  Level: advanced
 
-    Notes:
-      This must be called after `PetscViewerSetType()`
+  Notes:
+  This must be called after `PetscViewerSetType()`
 
-    If this option is selected, the output file cannot be read with the `XXXLoad()` such as `VecLoad()`
+  If this option is selected, the output file cannot be read with the `XXXLoad()` such as `VecLoad()`
 
 .seealso: [](sec_viewers), `PETSCVIEWERBINARY`, `PetscViewerBinaryOpen()`, `PetscViewerBinaryGetDescriptor()`, `PetscViewerBinarySkipInfo()`,
           `PetscViewerBinaryGetSkipHeader()`
@@ -656,22 +656,22 @@ static PetscErrorCode PetscViewerBinarySetSkipHeader_Binary(PetscViewer viewer, 
 }
 
 /*@
-    PetscViewerBinaryGetSkipHeader - checks whether to write a header with size information on output, or just raw data
+  PetscViewerBinaryGetSkipHeader - checks whether to write a header with size information on output, or just raw data
 
-    Not Collective
+  Not Collective
 
-    Input Parameter:
-.   viewer - `PetscViewer` context, obtained from `PetscViewerBinaryOpen()`
+  Input Parameter:
+. viewer - `PetscViewer` context, obtained from `PetscViewerBinaryOpen()`
 
-    Output Parameter:
-.   skip - `PETSC_TRUE` means do not write header
+  Output Parameter:
+. skip - `PETSC_TRUE` means do not write header
 
-    Level: advanced
+  Level: advanced
 
-    Notes:
-    This must be called after PetscViewerSetType()
+  Notes:
+  This must be called after PetscViewerSetType()
 
-    Returns `PETSC_FALSE` for `PETSCSOCKETVIEWER`, you cannot skip the header for it.
+  Returns `PETSC_FALSE` for `PETSCSOCKETVIEWER`, you cannot skip the header for it.
 
 .seealso: [](sec_viewers), `PETSCVIEWERBINARY`, `PetscViewerBinaryOpen()`, `PetscViewerBinaryGetDescriptor()`, `PetscViewerBinarySkipInfo()`,
           `PetscViewerBinarySetSkipHeader()`
@@ -695,22 +695,22 @@ static PetscErrorCode PetscViewerBinaryGetSkipHeader_Binary(PetscViewer viewer, 
 }
 
 /*@C
-    PetscViewerBinaryGetInfoPointer - Extracts the file pointer for the ASCII
-          `.info` file associated with a binary file.
+  PetscViewerBinaryGetInfoPointer - Extracts the file pointer for the ASCII
+  `.info` file associated with a binary file.
 
-    Not Collective; No Fortran Support
+  Not Collective; No Fortran Support
 
-    Input Parameter:
-.   viewer - `PetscViewer` context, obtained from `PetscViewerBinaryOpen()`
+  Input Parameter:
+. viewer - `PetscViewer` context, obtained from `PetscViewerBinaryOpen()`
 
-    Output Parameter:
-.   file - file pointer  Always returns `NULL` if not a binary viewer
+  Output Parameter:
+. file - file pointer  Always returns `NULL` if not a binary viewer
 
-    Level: advanced
+  Level: advanced
 
-    Note:
-      For writable binary `PetscViewer`s, the file pointer will only be valid for the
-    first processor in the MPI communicator that shares the `PetscViewer`.
+  Note:
+  For writable binary `PetscViewer`s, the file pointer will only be valid for the
+  first processor in the MPI communicator that shares the `PetscViewer`.
 
 .seealso: [](sec_viewers), `PETSCVIEWERBINARY`, `PetscViewerBinaryOpen()`, `PetscViewerBinaryGetDescriptor()`, `PetscViewerBinaryGetSkipInfo()`,
           `PetscViewerBinarySetSkipInfo()`
@@ -831,40 +831,40 @@ static PetscErrorCode PetscViewerDestroy_Binary(PetscViewer v)
 }
 
 /*@C
-   PetscViewerBinaryOpen - Opens a file for binary input/output.
+  PetscViewerBinaryOpen - Opens a file for binary input/output.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  comm - MPI communicator
-.  name - name of file
--  mode - open mode of file
+  Input Parameters:
++ comm - MPI communicator
+. name - name of file
+- mode - open mode of file
 .vb
     FILE_MODE_WRITE - create new file for binary output
     FILE_MODE_READ - open existing file for binary input
     FILE_MODE_APPEND - open existing file for binary output
 .ve
 
-   Output Parameter:
-.  viewer - PetscViewer for binary input/output to use with the specified file
+  Output Parameter:
+. viewer - PetscViewer for binary input/output to use with the specified file
 
-    Options Database Keys:
-+    -viewer_binary_filename <name> - name of file to use
-.    -viewer_binary_skip_info - true to skip opening an info file
-.    -viewer_binary_skip_options - true to not use options database while creating viewer
-.    -viewer_binary_skip_header - true to skip output object headers to the file
--    -viewer_binary_mpiio - true to use MPI-IO for input and output to the file (more scalable for large problems)
+  Options Database Keys:
++ -viewer_binary_filename <name> - name of file to use
+. -viewer_binary_skip_info       - true to skip opening an info file
+. -viewer_binary_skip_options    - true to not use options database while creating viewer
+. -viewer_binary_skip_header     - true to skip output object headers to the file
+- -viewer_binary_mpiio           - true to use MPI-IO for input and output to the file (more scalable for large problems)
 
-   Level: beginner
+  Level: beginner
 
-   Note:
-   This `PetscViewer` should be destroyed with `PetscViewerDestroy()`.
+  Note:
+  This `PetscViewer` should be destroyed with `PetscViewerDestroy()`.
 
-    For reading files, the filename may begin with ftp:// or http:// and/or
-    end with .gz; in this case file is brought over and uncompressed.
+  For reading files, the filename may begin with ftp:// or http:// and/or
+  end with .gz; in this case file is brought over and uncompressed.
 
-    For creating files, if the file name ends with .gz it is automatically
-    compressed when closed.
+  For creating files, if the file name ends with .gz it is automatically
+  compressed when closed.
 
 .seealso: [](sec_viewers), `PETSCVIEWERBINARY`, `PetscViewerASCIIOpen()`, `PetscViewerPushFormat()`, `PetscViewerDestroy()`,
           `VecView()`, `MatView()`, `VecLoad()`, `MatLoad()`, `PetscViewerBinaryGetDescriptor()`,
@@ -915,20 +915,20 @@ static PetscErrorCode PetscViewerBinaryWriteReadMPIIO(PetscViewer viewer, void *
 #endif
 
 /*@C
-   PetscViewerBinaryRead - Reads from a binary file, all processors get the same result
+  PetscViewerBinaryRead - Reads from a binary file, all processors get the same result
 
-   Collective; No Fortran Support
+  Collective; No Fortran Support
 
-   Input Parameters:
-+  viewer - the `PETSCVIEWERBINARY` viewer
-.  num - number of items of data to read
--  dtype - type of data to read
+  Input Parameters:
++ viewer - the `PETSCVIEWERBINARY` viewer
+. num    - number of items of data to read
+- dtype  - type of data to read
 
-   Output Parameters:
-+  data - location of the read data, treated as an array of the type indicated by `dtype`
--  count - number of items of data actually read, or `NULL`.
+  Output Parameters:
++ data  - location of the read data, treated as an array of the type indicated by `dtype`
+- count - number of items of data actually read, or `NULL`.
 
-   Level: beginner
+  Level: beginner
 
 .seealso: [](sec_viewers), `PETSCVIEWERBINARY`, `PetscViewerASCIIOpen()`, `PetscViewerPushFormat()`, `PetscViewerDestroy()`,
           `VecView()`, `MatView()`, `VecLoad()`, `MatLoad()`, `PetscViewerBinaryGetDescriptor()`,
@@ -956,17 +956,17 @@ PetscErrorCode PetscViewerBinaryRead(PetscViewer viewer, void *data, PetscInt nu
 }
 
 /*@C
-   PetscViewerBinaryWrite - writes to a binary file, only from the first MPI rank
+  PetscViewerBinaryWrite - writes to a binary file, only from the first MPI rank
 
-   Collective; No Fortran Support
+  Collective; No Fortran Support
 
-   Input Parameters:
-+  viewer - the `PETSCVIEWERBINARY` viewer
-.  data - location of data, treated as an array of the type indicated by `dtype`
-.  count - number of items of data to write
--  dtype - type of data to write
+  Input Parameters:
++ viewer - the `PETSCVIEWERBINARY` viewer
+. data   - location of data, treated as an array of the type indicated by `dtype`
+. count  - number of items of data to write
+- dtype  - type of data to write
 
-   Level: beginner
+  Level: beginner
 
 .seealso: [](sec_viewers), `PETSCVIEWERBINARY`, `PetscViewerASCIIOpen()`, `PetscViewerPushFormat()`, `PetscViewerDestroy()`,
           `VecView()`, `MatView()`, `VecLoad()`, `MatLoad()`, `PetscViewerBinaryGetDescriptor()`, `PetscDataType`
@@ -1094,21 +1094,21 @@ static PetscErrorCode PetscViewerBinaryWriteReadAll(PetscViewer viewer, PetscBoo
 }
 
 /*@C
-   PetscViewerBinaryReadAll - reads from a binary file from all MPI processes, each rank receives its own portion of the data
+  PetscViewerBinaryReadAll - reads from a binary file from all MPI processes, each rank receives its own portion of the data
 
-   Collective; No Fortran Support
+  Collective; No Fortran Support
 
-   Input Parameters:
-+  viewer - the `PETSCVIEWERBINARY` viewer
-.  count - local number of items of data to read
-.  start - local start, can be `PETSC_DETERMINE`
-.  total - global number of items of data to read, can be `PETSC_DETERMINE`
--  dtype - type of data to read
+  Input Parameters:
++ viewer - the `PETSCVIEWERBINARY` viewer
+. count  - local number of items of data to read
+. start  - local start, can be `PETSC_DETERMINE`
+. total  - global number of items of data to read, can be `PETSC_DETERMINE`
+- dtype  - type of data to read
 
-   Output Parameter:
-.  data - location of data, treated as an array of type indicated by `dtype`
+  Output Parameter:
+. data - location of data, treated as an array of type indicated by `dtype`
 
-   Level: advanced
+  Level: advanced
 
 .seealso: [](sec_viewers), `PETSCVIEWERBINARY`, `PetscViewerBinaryOpen()`, `PetscViewerBinarySetUseMPIIO()`, `PetscViewerBinaryRead()`, `PetscViewerBinaryWriteAll()`
 @*/
@@ -1120,19 +1120,19 @@ PetscErrorCode PetscViewerBinaryReadAll(PetscViewer viewer, void *data, PetscInt
 }
 
 /*@C
-   PetscViewerBinaryWriteAll - writes to a binary file from all MPI processes, each rank writes its own portion of the data
+  PetscViewerBinaryWriteAll - writes to a binary file from all MPI processes, each rank writes its own portion of the data
 
-   Collective; No Fortran Support
+  Collective; No Fortran Support
 
-   Input Parameters:
-+  viewer - the `PETSCVIEWERBINARY` viewer
-.  data - location of data
-.  count - local number of items of data to write, treated as an array of type indicated by `dtype`
-.  start - local start, can be `PETSC_DETERMINE`
-.  total - global number of items of data to write, can be `PETSC_DETERMINE`
--  dtype - type of data to write
+  Input Parameters:
++ viewer - the `PETSCVIEWERBINARY` viewer
+. data   - location of data
+. count  - local number of items of data to write, treated as an array of type indicated by `dtype`
+. start  - local start, can be `PETSC_DETERMINE`
+. total  - global number of items of data to write, can be `PETSC_DETERMINE`
+- dtype  - type of data to write
 
-   Level: advanced
+  Level: advanced
 
 .seealso: [](sec_viewers), `PETSCVIEWERBINARY`, `PetscViewerBinaryOpen()`, `PetscViewerBinarySetUseMPIIO()`, `PetscViewerBinaryWriteAll()`, `PetscViewerBinaryReadAll()`
 @*/
@@ -1144,18 +1144,18 @@ PetscErrorCode PetscViewerBinaryWriteAll(PetscViewer viewer, const void *data, P
 }
 
 /*@C
-   PetscViewerBinaryWriteStringArray - writes to a binary file, only from the first MPI rank, an array of strings
+  PetscViewerBinaryWriteStringArray - writes to a binary file, only from the first MPI rank, an array of strings
 
-   Collective; No Fortran Support
+  Collective; No Fortran Support
 
-   Input Parameters:
-+  viewer - the `PETSCVIEWERBINARY` viewer
--  data - location of the array of strings
+  Input Parameters:
++ viewer - the `PETSCVIEWERBINARY` viewer
+- data   - location of the array of strings
 
-   Level: intermediate
+  Level: intermediate
 
-    Note:
-    The array of strings must be `NULL` terminated
+  Note:
+  The array of strings must be `NULL` terminated
 
 .seealso: [](sec_viewers), `PETSCVIEWERBINARY`, `PetscViewerASCIIOpen()`, `PetscViewerPushFormat()`, `PetscViewerDestroy()`,
           `VecView()`, `MatView()`, `VecLoad()`, `MatLoad()`, `PetscViewerBinaryGetDescriptor()`,
@@ -1185,20 +1185,20 @@ PetscErrorCode PetscViewerBinaryWriteStringArray(PetscViewer viewer, const char 
 }
 
 /*@C
-   PetscViewerBinaryReadStringArray - reads a binary file an array of strings to all MPI processes
+  PetscViewerBinaryReadStringArray - reads a binary file an array of strings to all MPI processes
 
-   Collective; No Fortran Support
+  Collective; No Fortran Support
 
-   Input Parameter:
-.  viewer - the `PETSCVIEWERBINARY` viewer
+  Input Parameter:
+. viewer - the `PETSCVIEWERBINARY` viewer
 
-   Output Parameter:
-.  data - location of the array of strings
+  Output Parameter:
+. data - location of the array of strings
 
-   Level: intermediate
+  Level: intermediate
 
-    Note:
-    The array of strings must `NULL` terminated
+  Note:
+  The array of strings must `NULL` terminated
 
 .seealso: [](sec_viewers), `PETSCVIEWERBINARY`, `PetscViewerASCIIOpen()`, `PetscViewerPushFormat()`, `PetscViewerDestroy()`,
           `VecView()`, `MatView()`, `VecLoad()`, `MatLoad()`, `PetscViewerBinaryGetDescriptor()`,
@@ -1225,13 +1225,13 @@ PetscErrorCode PetscViewerBinaryReadStringArray(PetscViewer viewer, char ***data
 }
 
 /*@C
-     PetscViewerFileSetMode - Sets the open mode of file
+  PetscViewerFileSetMode - Sets the open mode of file
 
-    Logically Collective
+  Logically Collective
 
   Input Parameters:
-+  viewer - the `PetscViewer`; must be a a `PETSCVIEWERBINARY`, `PETSCVIEWERMATLAB`, `PETSCVIEWERHDF5`, or `PETSCVIEWERASCII`  `PetscViewer`
--  mode - open mode of file
++ viewer - the `PetscViewer`; must be a a `PETSCVIEWERBINARY`, `PETSCVIEWERMATLAB`, `PETSCVIEWERHDF5`, or `PETSCVIEWERASCII`  `PetscViewer`
+- mode   - open mode of file
 .vb
     FILE_MODE_WRITE - create new file for output
     FILE_MODE_READ - open existing file for input
@@ -1264,15 +1264,15 @@ static PetscErrorCode PetscViewerFileSetMode_Binary(PetscViewer viewer, PetscFil
 }
 
 /*@C
-     PetscViewerFileGetMode - Gets the open mode of a file associated with a `PetscViewer`
+  PetscViewerFileGetMode - Gets the open mode of a file associated with a `PetscViewer`
 
-    Not Collective
+  Not Collective
 
   Input Parameter:
-.  viewer - the `PetscViewer`; must be a `PETSCVIEWERBINARY`, `PETSCVIEWERMATLAB`, `PETSCVIEWERHDF5`, or `PETSCVIEWERASCII`  `PetscViewer`
+. viewer - the `PetscViewer`; must be a `PETSCVIEWERBINARY`, `PETSCVIEWERMATLAB`, `PETSCVIEWERHDF5`, or `PETSCVIEWERASCII`  `PetscViewer`
 
   Output Parameter:
-.  mode - open mode of file
+. mode - open mode of file
 .vb
     FILE_MODE_WRITE - create new file for binary output
     FILE_MODE_READ - open existing file for binary input

@@ -2,20 +2,20 @@
 #include <petsc/private/petscimpl.h> /*I    "petscsys.h"   I*/
 
 /*@C
-   PetscObjectGetName - Gets a string name associated with a PETSc object.
+  PetscObjectGetName - Gets a string name associated with a PETSc object.
 
-   Not Collective unless object has not been named yet
+  Not Collective unless object has not been named yet
 
-   Input Parameters:
-+  obj - the Petsc variable
+  Input Parameters:
++ obj  - the Petsc variable
          Thus must be cast with a (`PetscObject`), for example,
          `PetscObjectGetName`((`PetscObject`)mat,&name);
--  name - the name associated with obj
+- name - the name associated with obj
 
-   Note:
-    Calls `PetscObjectName()` if a name has not yet been provided to the object.
+  Note:
+  Calls `PetscObjectName()` if a name has not yet been provided to the object.
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `PetscObjectSetName()`, `PetscObjectName()`, `PetscObject`, `PetscObjectGetId()`
 @*/

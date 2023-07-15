@@ -105,7 +105,7 @@ PetscErrorCode DMPlexCreateCoarsePointIS(DM dm, IS *fpointIS)
   DMPlexSetTransformType - Set the transform type for uniform refinement
 
   Input Parameters:
-+ dm - The `DM`
++ dm   - The `DM`
 - type - The transform type for uniform refinement
 
   Level: developer
@@ -152,7 +152,7 @@ PetscErrorCode DMPlexGetTransformType(DM dm, DMPlexTransformType *type)
   DMPlexSetRefinementUniform - Set the flag for uniform refinement
 
   Input Parameters:
-+ dm - The `DM`
++ dm                - The `DM`
 - refinementUniform - The flag for uniform refinement
 
   Level: developer
@@ -197,7 +197,7 @@ PetscErrorCode DMPlexGetRefinementUniform(DM dm, PetscBool *refinementUniform)
   DMPlexSetRefinementLimit - Set the maximum cell volume for refinement
 
   Input Parameters:
-+ dm - The `DM`
++ dm              - The `DM`
 - refinementLimit - The maximum cell volume in the refined mesh
 
   Level: developer
@@ -239,11 +239,11 @@ PetscErrorCode DMPlexGetRefinementLimit(DM dm, PetscReal *refinementLimit)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@
+/*@C
   DMPlexSetRefinementFunction - Set the function giving the maximum cell volume for refinement
 
   Input Parameters:
-+ dm - The `DM`
++ dm             - The `DM`
 - refinementFunc - Function giving the maximum cell volume in the refined mesh
 
   Calling Sequence of `refinementFunc`:
@@ -265,7 +265,7 @@ PetscErrorCode DMPlexSetRefinementFunction(DM dm, PetscErrorCode (*refinementFun
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@
+/*@C
   DMPlexGetRefinementFunction - Get the function giving the maximum cell volume for refinement
 
   Input Parameter:

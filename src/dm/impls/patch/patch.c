@@ -24,7 +24,7 @@ Solver loop to update \tau:
   Collective
 
   Input Parameters:
-+ dm - the `DM`
++ dm    - the `DM`
 . lower - the lower left corner of the requested patch
 . upper - the upper right corner of the requested patch
 - commz - the new communicator for the patch, `MPI_COMM_NULL` indicates that the given rank will not own a patch

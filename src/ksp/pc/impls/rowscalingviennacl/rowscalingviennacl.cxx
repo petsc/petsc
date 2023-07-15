@@ -148,16 +148,15 @@ static PetscErrorCode PCSetFromOptions_ROWSCALINGVIENNACL(PC pc, PetscOptionItem
 }
 
 /*MC
-     PCRowScalingViennaCL  - A diagonal preconditioner (scaling rows of matrices by their norm) that can be used via the CUDA, OpenCL, and OpenMP backends of ViennaCL
+  PCRowScalingViennaCL  - A diagonal preconditioner (scaling rows of matrices by their norm) that can be used via the CUDA, OpenCL, and OpenMP backends of ViennaCL
 
-   Level: advanced
+  Level: advanced
 
-   Developer Note:
-   This `PCType` does not appear to be registered
+  Developer Notes:
+  This `PCType` does not appear to be registered
 
 .seealso: `PCCreate()`, `PCSetType()`, `PCType`, `PC`
 M*/
-
 PETSC_EXTERN PetscErrorCode PCCreate_ROWSCALINGVIENNACL(PC pc)
 {
   PC_ROWSCALINGVIENNACL *rowscaling;

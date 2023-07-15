@@ -4,7 +4,7 @@
   PetscSpaceSumGetNumSubspaces - Get the number of spaces in the sum space
 
   Input Parameter:
-. sp  - the function space object
+. sp - the function space object
 
   Output Parameter:
 . numSumSpaces - the number of spaces
@@ -29,7 +29,7 @@ PetscErrorCode PetscSpaceSumGetNumSubspaces(PetscSpace sp, PetscInt *numSumSpace
   PetscSpaceSumSetNumSubspaces - Set the number of spaces in the sum space
 
   Input Parameters:
-+ sp  - the function space object
++ sp           - the function space object
 - numSumSpaces - the number of spaces
 
   Level: intermediate
@@ -48,14 +48,14 @@ PetscErrorCode PetscSpaceSumSetNumSubspaces(PetscSpace sp, PetscInt numSumSpaces
 }
 
 /*@
- PetscSpaceSumGetConcatenate - Get the concatenate flag for this space.
- A concatenated sum space will have number of components equal to the sum of the number of components of all subspaces. A non-concatenated,
- or direct sum space will have the same number of components as its subspaces.
+  PetscSpaceSumGetConcatenate - Get the concatenate flag for this space.
+  A concatenated sum space will have number of components equal to the sum of the number of components of all subspaces. A non-concatenated,
+  or direct sum space will have the same number of components as its subspaces.
 
- Input Parameter:
+  Input Parameter:
 . sp - the function space object
 
- Output Parameter:
+  Output Parameter:
 . concatenate - flag indicating whether subspaces are concatenated.
 
   Level: intermediate
@@ -75,8 +75,8 @@ PetscErrorCode PetscSpaceSumGetConcatenate(PetscSpace sp, PetscBool *concatenate
   A concatenated sum space will have number of components equal to the sum of the number of components of all subspaces. A non-concatenated,
   or direct sum space will have the same number of components as its subspaces .
 
- Input Parameters:
-+ sp - the function space object
+  Input Parameters:
++ sp          - the function space object
 - concatenate - are subspaces concatenated components (true) or direct summands (false)
 
   Level: intermediate

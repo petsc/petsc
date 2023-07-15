@@ -21,7 +21,7 @@
   DMPlexRefineRegularGetAffineFaceTransforms - Gets the affine map from the reference face cell to each face in the given cell
 
   Input Parameters:
-+ cr - The `DMPlexTransform` object
++ tr - The `DMPlexTransform` object
 - ct - The cell type
 
   Output Parameters:
@@ -40,7 +40,7 @@
     invj (x_cell - v0) = x_face
 .ve
 
-.seealso: `DMPLEX`, `DM`, DMPlexTransform`, `DMPolytopeType`, `DMPlexCellRefinerGetAffineTransforms()`
+.seealso: `DMPLEX`, `DM`, `DMPlexTransform`, `DMPolytopeType`, `DMPlexCellRefinerGetAffineTransforms()`
 @*/
 PetscErrorCode DMPlexRefineRegularGetAffineFaceTransforms(DMPlexTransform tr, DMPolytopeType ct, PetscInt *Nf, PetscReal *v0[], PetscReal *J[], PetscReal *invJ[], PetscReal *detJ[])
 {
@@ -114,7 +114,7 @@ PetscErrorCode DMPlexRefineRegularGetAffineFaceTransforms(DMPlexTransform tr, DM
   DMPlexRefineRegularGetAffineTransforms - Gets the affine map from the reference cell to each subcell
 
   Input Parameters:
-+ cr - The `DMPlexTransform` object
++ tr - The `DMPlexTransform` object
 - ct - The cell type
 
   Output Parameters:
@@ -125,7 +125,7 @@ PetscErrorCode DMPlexRefineRegularGetAffineFaceTransforms(DMPlexTransform tr, DM
 
   Level: developer
 
-.seealso: `DMPLEX`, `DM`, DMPlexTransform`, `DMPolytopeType`, `DMPlexRefineRegularGetAffineFaceTransforms()`, `DMPLEXREFINEREGULAR`
+.seealso: `DMPLEX`, `DM`, `DMPlexTransform`, `DMPolytopeType`, `DMPlexRefineRegularGetAffineFaceTransforms()`, `DMPLEXREFINEREGULAR`
 @*/
 PetscErrorCode DMPlexRefineRegularGetAffineTransforms(DMPlexTransform tr, DMPolytopeType ct, PetscInt *Nc, PetscReal *v0[], PetscReal *J[], PetscReal *invJ[])
 {

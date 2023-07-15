@@ -14,14 +14,14 @@ typedef struct {
 } PC_LMVM;
 
 /*@
-   PCLMVMSetMatLMVM - Replaces the `MATLMVM` matrix inside the preconditioner with
-   the one provided by the user.
+  PCLMVMSetMatLMVM - Replaces the `MATLMVM` matrix inside the preconditioner with
+  the one provided by the user.
 
-   Input Parameters:
-+  pc - An `PCLMVM` preconditioner
--  B  - An  LMVM-type matrix (`MATLMVM`, `MATLDFP`, `MATLBFGS`, `MATLSR1`, `MATLBRDN`, `MATLMBRDN`, `MATLSBRDN`)
+  Input Parameters:
++ pc - An `PCLMVM` preconditioner
+- B  - An  LMVM-type matrix (`MATLMVM`, `MATLDFP`, `MATLBFGS`, `MATLSR1`, `MATLBRDN`, `MATLMBRDN`, `MATLSBRDN`)
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `PCLMVM`, `MATLDFP`, `MATLBFGS`, `MATLSR1`, `MATLBRDN`, `MATLMBRDN`, `MATLSBRDN`, `PCLMVMGetMatLMVM()`
 @*/
@@ -44,15 +44,15 @@ PetscErrorCode PCLMVMSetMatLMVM(PC pc, Mat B)
 }
 
 /*@
-   PCLMVMGetMatLMVM - Returns a pointer to the underlying `MATLMVM` matrix.
+  PCLMVMGetMatLMVM - Returns a pointer to the underlying `MATLMVM` matrix.
 
-   Input Parameter:
-.  pc - An `PCLMVM` preconditioner
+  Input Parameter:
+. pc - An `PCLMVM` preconditioner
 
-   Output Parameter:
-.  B - matrix inside the preconditioner, one of type `MATLMVM`, `MATLDFP`, `MATLBFGS`, `MATLSR1`, `MATLBRDN`, `MATLMBRDN`, `MATLSBRDN`
+  Output Parameter:
+. B - matrix inside the preconditioner, one of type `MATLMVM`, `MATLDFP`, `MATLBFGS`, `MATLSR1`, `MATLBRDN`, `MATLMBRDN`, `MATLSBRDN`
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `PCLMVM`, `MATLMVM`, `MATLDFP`, `MATLBFGS`, `MATLSR1`, `MATLBRDN`, `MATLMBRDN`, `MATLSBRDN`, `PCLMVMSetMatLMVM()`
 @*/
@@ -70,16 +70,16 @@ PetscErrorCode PCLMVMGetMatLMVM(PC pc, Mat *B)
 }
 
 /*@
-   PCLMVMSetIS - Sets the index sets that reduce the `PC` application.
+  PCLMVMSetIS - Sets the index sets that reduce the `PC` application.
 
-   Input Parameters:
-+  pc - An `PCLMVM` preconditioner
--  inactive - Index set defining the variables removed from the problem
+  Input Parameters:
++ pc       - An `PCLMVM` preconditioner
+- inactive - Index set defining the variables removed from the problem
 
-   Level: intermediate
+  Level: intermediate
 
-   Developer Note:
-   Need to explain the purpose of this `IS`
+  Developer Notes:
+  Need to explain the purpose of this `IS`
 
 .seealso: `PCLMVM`, `MatLMVMUpdate()`
 @*/
@@ -100,12 +100,12 @@ PetscErrorCode PCLMVMSetIS(PC pc, IS inactive)
 }
 
 /*@
-   PCLMVMClearIS - Removes the inactive variable index set from a `PCLMVM`
+  PCLMVMClearIS - Removes the inactive variable index set from a `PCLMVM`
 
-   Input Parameter:
-.  pc - An `PCLMVM` preconditioner
+  Input Parameter:
+. pc - An `PCLMVM` preconditioner
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `PCLMVM`, `MatLMVMUpdate()`
 @*/

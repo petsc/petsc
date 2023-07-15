@@ -45,13 +45,13 @@ static PetscErrorCode DMPlexCreateOrderingClosure_Static(DM dm, PetscInt numPoin
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@
+/*@C
   DMPlexGetOrdering - Calculate a reordering of the mesh
 
   Collective
 
   Input Parameters:
-+ dm - The DMPlex object
++ dm    - The DMPlex object
 . otype - type of reordering, see `MatOrderingType`
 - label - [Optional] Label used to segregate ordering into sets, or `NULL`
 
@@ -231,7 +231,7 @@ static PetscErrorCode DMPlexRemapCoordinates_Private(IS perm, PetscSection cs, V
   Collective
 
   Input Parameters:
-+ dm - The `DMPLEX` object
++ dm   - The `DMPLEX` object
 - perm - The point permutation, `perm`[old point number] = new point number
 
   Output Parameter:
@@ -381,8 +381,8 @@ PetscErrorCode DMPlexReorderSetDefault_Plex(DM dm, DMPlexReorderDefaultFlag reor
   Logically Collective
 
   Input Parameters:
-+ dm        - The `DM`
-- reorder   - Flag for reordering
++ dm      - The `DM`
+- reorder - Flag for reordering
 
   Level: intermediate
 
@@ -411,7 +411,7 @@ PetscErrorCode DMPlexReorderGetDefault_Plex(DM dm, DMPlexReorderDefaultFlag *reo
   Not Collective
 
   Input Parameter:
-. dm      - The `DM`
+. dm - The `DM`
 
   Output Parameter:
 . reorder - Flag for reordering

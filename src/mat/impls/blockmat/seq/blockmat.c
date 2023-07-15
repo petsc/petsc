@@ -824,28 +824,28 @@ static struct _MatOps MatOps_Values = {MatSetValues_BlockMat,
                                        NULL};
 
 /*@C
-   MatBlockMatSetPreallocation - For good matrix assembly performance
-   the user should preallocate the matrix storage by setting the parameter nz
-   (or the array nnz).  By setting these parameters accurately, performance
-   during matrix assembly can be increased by more than a factor of 50.
+  MatBlockMatSetPreallocation - For good matrix assembly performance
+  the user should preallocate the matrix storage by setting the parameter nz
+  (or the array nnz).  By setting these parameters accurately, performance
+  during matrix assembly can be increased by more than a factor of 50.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  B - The matrix
-.  bs - size of each block in matrix
-.  nz - number of nonzeros per block row (same for all rows)
--  nnz - array containing the number of nonzeros in the various block rows
+  Input Parameters:
++ B   - The matrix
+. bs  - size of each block in matrix
+. nz  - number of nonzeros per block row (same for all rows)
+- nnz - array containing the number of nonzeros in the various block rows
          (possibly different for each row) or `NULL`
 
-   Level: intermediate
+  Level: intermediate
 
-   Notes:
-     If `nnz` is given then `nz` is ignored
+  Notes:
+  If `nnz` is given then `nz` is ignored
 
-   Specify the preallocated storage with either `nz` or `nnz` (not both).
-   Set `nz` = `PETSC_DEFAULT` and `nnz` = `NULL` for PETSc to control dynamic memory
-   allocation.
+  Specify the preallocated storage with either `nz` or `nnz` (not both).
+  Set `nz` = `PETSC_DEFAULT` and `nnz` = `NULL` for PETSc to control dynamic memory
+  allocation.
 
 .seealso: [](ch_matrices), `Mat`, `MatCreate()`, `MatCreateBlockMat()`, `MatSetValues()`
 @*/
@@ -936,31 +936,31 @@ PETSC_EXTERN PetscErrorCode MatCreate_BlockMat(Mat A)
 }
 
 /*@C
-   MatCreateBlockMat - Creates a new matrix in which each block contains a uniform-size sequential `Mat` object
+  MatCreateBlockMat - Creates a new matrix in which each block contains a uniform-size sequential `Mat` object
 
   Collective
 
-   Input Parameters:
-+  comm - MPI communicator
-.  m - number of rows
-.  n  - number of columns
-.  bs - size of each submatrix
-.  nz  - expected maximum number of nonzero blocks in row (use `PETSC_DEFAULT` if not known)
--  nnz - expected number of nonzers per block row if known (use `NULL` otherwise)
+  Input Parameters:
++ comm - MPI communicator
+. m    - number of rows
+. n    - number of columns
+. bs   - size of each submatrix
+. nz   - expected maximum number of nonzero blocks in row (use `PETSC_DEFAULT` if not known)
+- nnz  - expected number of nonzers per block row if known (use `NULL` otherwise)
 
-   Output Parameter:
-.  A - the matrix
+  Output Parameter:
+. A - the matrix
 
-   Level: intermediate
+  Level: intermediate
 
-   Notes:
-    Matrices of this type are nominally-sparse matrices in which each "entry" is a `Mat` object.  Each `Mat` must
-   have the same size and be sequential.  The local and global sizes must be compatible with this decomposition.
+  Notes:
+  Matrices of this type are nominally-sparse matrices in which each "entry" is a `Mat` object.  Each `Mat` must
+  have the same size and be sequential.  The local and global sizes must be compatible with this decomposition.
 
-   For matrices containing parallel submatrices and variable block sizes, see `MATNEST`.
+  For matrices containing parallel submatrices and variable block sizes, see `MATNEST`.
 
-   Developer Note:
-   I don't like the name, it is not `MATNESTMAT`
+  Developer Notes:
+  I don't like the name, it is not `MATNESTMAT`
 
 .seealso: [](ch_matrices), `Mat`, `MATBLOCKMAT`, `MatCreateNest()`
 @*/

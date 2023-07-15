@@ -660,18 +660,18 @@ static PetscErrorCode KSPSetFromOptions_MINRES(KSP ksp, PetscOptionItems *PetscO
 }
 
 /*@
-    KSPMINRESSetUseQLP - Use the QLP variant of the algorithm.
+  KSPMINRESSetUseQLP - Use the QLP variant of the algorithm.
 
-    Logically Collective
+  Logically Collective
 
-    Input Parameters:
-+   ksp - the iterative context
--   qlp - a Boolean indicating if the QLP variant should be used
+  Input Parameters:
++ ksp - the iterative context
+- qlp - a Boolean indicating if the QLP variant should be used
 
-    Level: beginner
+  Level: beginner
 
-    Note:
-    By default, the QLP variant is not used.
+  Note:
+  By default, the QLP variant is not used.
 
 .seealso: [](ch_ksp), `KSP`, `KSPMINRES`, `KSPMINRESGetUseQLP()`
 @*/
@@ -685,18 +685,18 @@ PetscErrorCode KSPMINRESSetUseQLP(KSP ksp, PetscBool qlp)
 }
 
 /*@
-    KSPMINRESSetRadius - Set the maximum solution norm allowed.
+  KSPMINRESSetRadius - Set the maximum solution norm allowed.
 
-    Logically Collective
+  Logically Collective
 
-    Input Parameters:
-+   ksp - the iterative context
--   radius - the value
+  Input Parameters:
++ ksp    - the iterative context
+- radius - the value
 
-    Level: beginner
+  Level: beginner
 
-    Options Database Key:
-.   -ksp_minres_radius <real> - maximum allowed solution norm
+  Options Database Key:
+. -ksp_minres_radius <real> - maximum allowed solution norm
 
 .seealso: [](ch_ksp), `KSP`, `KSPMINRES`, `KSPMINRESSetUseQLP()`
 @*/
@@ -710,17 +710,17 @@ PetscErrorCode KSPMINRESSetRadius(KSP ksp, PetscReal radius)
 }
 
 /*@
-    KSPMINRESGetUseQLP - Get the flag for the QLP variant.
+  KSPMINRESGetUseQLP - Get the flag for the QLP variant.
 
-    Logically Collective
+  Logically Collective
 
-    Input Parameter:
-.   ksp - the iterative context
+  Input Parameter:
+. ksp - the iterative context
 
-    Output Parameter:
-.   qlp - a Boolean indicating if the QLP variant is used
+  Output Parameter:
+. qlp - a Boolean indicating if the QLP variant is used
 
-    Level: beginner
+  Level: beginner
 
 .seealso: [](ch_ksp), `KSP`, `KSPMINRES`, `KSPMINRESSetUseQLP()`
 @*/

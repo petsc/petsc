@@ -153,20 +153,20 @@ static PetscErrorCode PCKSPSetKSP_KSP(PC pc, KSP ksp)
 }
 
 /*@
-   PCKSPSetKSP - Sets the `KSP` context for a `PCKSP`.
+  PCKSPSetKSP - Sets the `KSP` context for a `PCKSP`.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  pc - the preconditioner context
--  ksp - the `KSP` solver
+  Input Parameters:
++ pc  - the preconditioner context
+- ksp - the `KSP` solver
 
-   Level: advanced
+  Level: advanced
 
-   Notes:
-   The `PC` and the `KSP` must have the same communicator
+  Notes:
+  The `PC` and the `KSP` must have the same communicator
 
-   This would rarely be used, the standard usage is to call `PCKSPGetKSP()` and then change options on that `KSP`
+  This would rarely be used, the standard usage is to call `PCKSPGetKSP()` and then change options on that `KSP`
 
 .seealso: `PCKSP`, `PCKSPGetKSP()`
 @*/
@@ -191,20 +191,20 @@ static PetscErrorCode PCKSPGetKSP_KSP(PC pc, KSP *ksp)
 }
 
 /*@
-   PCKSPGetKSP - Gets the `KSP` context for a `PCKSP`.
+  PCKSPGetKSP - Gets the `KSP` context for a `PCKSP`.
 
-   Not Collective but ksp returned is parallel if pc was parallel
+  Not Collective but ksp returned is parallel if pc was parallel
 
-   Input Parameter:
-.  pc - the preconditioner context
+  Input Parameter:
+. pc - the preconditioner context
 
-   Output Parameter:
-.  ksp - the `KSP` solver
+  Output Parameter:
+. ksp - the `KSP` solver
 
-   Note:
-   If the `PC` is not a `PCKSP` object it raises an error
+  Note:
+  If the `PC` is not a `PCKSP` object it raises an error
 
-   Level: advanced
+  Level: advanced
 
 .seealso: `PCKSP`, `PCKSPSetKSP()`
 @*/

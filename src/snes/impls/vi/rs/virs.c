@@ -4,16 +4,16 @@
 #include <petsc/private/vecimpl.h>
 
 /*@
-   SNESVIGetInactiveSet - Gets the global indices for the inactive set variables (these correspond to the degrees of freedom the linear
-     system is solved on)
+  SNESVIGetInactiveSet - Gets the global indices for the inactive set variables (these correspond to the degrees of freedom the linear
+  system is solved on)
 
-   Input parameter:
-.  snes - the `SNES` context
+  Input Parameter:
+. snes - the `SNES` context
 
-   Output parameter:
-.  inact - inactive set index set
+  Output Parameter:
+. inact - inactive set index set
 
-   Level: advanced
+  Level: advanced
 
 .seealso: `SNESVINEWTONRSLS`
 @*/
@@ -182,16 +182,16 @@ PetscErrorCode DMDestroy_SNESVI(DM_SNESVI *dmsnesvi)
 }
 
 /*@
-     DMSetVI - Marks a DM as associated with a VI problem. This causes the interpolation/restriction operators to
-               be restricted to only those variables NOT associated with active constraints.
+  DMSetVI - Marks a DM as associated with a VI problem. This causes the interpolation/restriction operators to
+  be restricted to only those variables NOT associated with active constraints.
 
-    Logically Collective
+  Logically Collective
 
-    Input Parameters:
-+   dm - the `DM` object
--   inactive - an `IS` indicating which points are currently not active
+  Input Parameters:
++ dm       - the `DM` object
+- inactive - an `IS` indicating which points are currently not active
 
-    Level: intermediate
+  Level: intermediate
 
 .seealso: `SNESVINEWTONRSLS`, `SNESVIGetInactiveSet()`
 @*/
@@ -588,20 +588,20 @@ PetscErrorCode SNESSolve_VINEWTONRSLS(SNES snes)
 }
 
 /*@C
-   SNESVISetRedundancyCheck - Provide a function to check for any redundancy in the VI active set
+  SNESVISetRedundancyCheck - Provide a function to check for any redundancy in the VI active set
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  snes - the `SNESVINEWTONRSLS` context
-.  func - the function to check of redundancies
--  ctx - optional context used by the function
+  Input Parameters:
++ snes - the `SNESVINEWTONRSLS` context
+. func - the function to check of redundancies
+- ctx  - optional context used by the function
 
-   Level: advanced
+  Level: advanced
 
-   Note:
-   Sometimes the inactive set will result in a non-singular sub-Jacobian problem that needs to be solved, this allows the user,
-   when they know more about their specific problem to provide a function that removes the redundancy that results in the singular linear system
+  Note:
+  Sometimes the inactive set will result in a non-singular sub-Jacobian problem that needs to be solved, this allows the user,
+  when they know more about their specific problem to provide a function that removes the redundancy that results in the singular linear system
 
 .seealso: `SNESVINEWTONRSLS`, `SNESVIGetInactiveSet()`, `DMSetVI()`
  @*/
@@ -676,18 +676,18 @@ PetscErrorCode SNESVISetRedundancyCheckMatlab(SNES snes, const char *func, mxArr
 #endif
 
 /*
-   SNESSetUp_VINEWTONRSLS - Sets up the internal data structures for the later use
-   of the SNESVI nonlinear solver.
+  SNESSetUp_VINEWTONRSLS - Sets up the internal data structures for the later use
+  of the SNESVI nonlinear solver.
 
-   Input Parameter:
-.  snes - the SNES context
+  Input Parameter:
+. snes - the SNES context
 
    Application Interface Routine: SNESSetUp()
 
-   Note:
-   For basic use of the SNES solvers, the user need not explicitly call
-   SNESSetUp(), since these actions will automatically occur during
-   the call to SNESSolve().
+  Note:
+  For basic use of the SNES solvers, the user need not explicitly call
+  SNESSetUp(), since these actions will automatically occur during
+  the call to SNESSolve().
  */
 PetscErrorCode SNESSetUp_VINEWTONRSLS(SNES snes)
 {

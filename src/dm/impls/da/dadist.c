@@ -42,26 +42,26 @@ PetscErrorCode DMCreateGlobalVector_DA(DM da, Vec *g)
 }
 
 /*@
-   DMDACreateNaturalVector - Creates a parallel PETSc vector that
-   will hold vector values in the natural numbering, rather than in
-   the PETSc parallel numbering associated with the `DMDA`.
+  DMDACreateNaturalVector - Creates a parallel PETSc vector that
+  will hold vector values in the natural numbering, rather than in
+  the PETSc parallel numbering associated with the `DMDA`.
 
-   Collective
+  Collective
 
-   Input Parameter:
-.  da - the distributed array
+  Input Parameter:
+. da - the distributed array
 
-   Output Parameter:
-.  g - the distributed global vector
+  Output Parameter:
+. g - the distributed global vector
 
-   Level: developer
+  Level: developer
 
-   Notes:
-   The output parameter, g, is a regular PETSc vector that should be destroyed
-   with a call to `VecDestroy()` when usage is finished.
+  Notes:
+  The output parameter, g, is a regular PETSc vector that should be destroyed
+  with a call to `VecDestroy()` when usage is finished.
 
-   The number of local entries in the vector on each process is the same
-   as in a vector created with `DMCreateGlobalVector()`.
+  The number of local entries in the vector on each process is the same
+  as in a vector created with `DMCreateGlobalVector()`.
 
 .seealso: `DM`, `DMDA`, `DMCreateLocalVector()`, `VecDuplicate()`, `VecDuplicateVecs()`,
           `DMDACreate1d()`, `DMDACreate2d()`, `DMDACreate3d()`, `DMGlobalToLocalBegin()`,

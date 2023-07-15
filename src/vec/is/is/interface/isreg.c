@@ -5,23 +5,23 @@ PetscFunctionList ISList              = NULL;
 PetscBool         ISRegisterAllCalled = PETSC_FALSE;
 
 /*@
-   ISCreate - Creates an index set object. `IS` are objects used to do efficient indexing into other data structures such as `Vec` and `Mat`
+  ISCreate - Creates an index set object. `IS` are objects used to do efficient indexing into other data structures such as `Vec` and `Mat`
 
-   Collective
+  Collective
 
-   Input Parameter:
-.  comm - the MPI communicator
+  Input Parameter:
+. comm - the MPI communicator
 
-   Output Parameter:
-.  is - the new index set
+  Output Parameter:
+. is - the new index set
 
-   Level: beginner
+  Level: beginner
 
-   Notes:
-   When the communicator is not `MPI_COMM_SELF`, the operations on `is` are NOT
-   conceptually the same as `MPI_Group` operations. The `IS` are then
-   distributed sets of indices and thus certain operations on them are
-   collective.
+  Notes:
+  When the communicator is not `MPI_COMM_SELF`, the operations on `is` are NOT
+  conceptually the same as `MPI_Group` operations. The `IS` are then
+  distributed sets of indices and thus certain operations on them are
+  collective.
 
 .seealso: [](sec_scatter), `IS`, `ISType()`, `ISSetType()`, `ISCreateGeneral()`, `ISCreateStride()`, `ISCreateBlock()`, `ISAllGather()`
 @*/
@@ -42,7 +42,7 @@ PetscErrorCode ISCreate(MPI_Comm comm, IS *is)
   Collective
 
   Input Parameters:
-+ is    - The index set object
++ is     - The index set object
 - method - The name of the index set type
 
   Options Database Key:
@@ -86,7 +86,7 @@ PetscErrorCode ISSetType(IS is, ISType method)
   Not Collective
 
   Input Parameter:
-. is  - The index set
+. is - The index set
 
   Output Parameter:
 . type - The index set type name
@@ -113,10 +113,10 @@ PetscErrorCode ISGetType(IS is, ISType *type)
   Not Collective
 
   Input Parameters:
-+ sname        - The name of a new user-defined creation routine
++ sname    - The name of a new user-defined creation routine
 - function - The creation routine itself
 
-  Sample usage:
+  Example Usage:
 .vb
     ISRegister("my_is_name",  MyISCreate);
 .ve
@@ -126,7 +126,7 @@ PetscErrorCode ISGetType(IS is, ISType *type)
     ISCreate(MPI_Comm, IS *);
     ISSetType(IS,"my_is_name");
 .ve
-   or at runtime via the option
+  or at runtime via the option
 .vb
     -is_type my_is_name
 .ve

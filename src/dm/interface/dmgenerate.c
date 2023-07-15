@@ -69,29 +69,29 @@ PetscErrorCode DMGenerateRegisterAll(void)
 /*@C
   DMGenerateRegister -  Adds a grid generator to `DM`
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  sname - name of a new user-defined grid generator
-.  fnc - generator function
-.  rfnc - refinement function
-.  alfnc - adapt by label function
--  dim - dimension of boundary of domain
+  Input Parameters:
++ sname - name of a new user-defined grid generator
+. fnc   - generator function
+. rfnc  - refinement function
+. alfnc - adapt by label function
+- dim   - dimension of boundary of domain
 
-   Sample usage:
+  Example Usage:
 .vb
    DMGenerateRegister("my_generator", MyGeneratorCreate, MyGeneratorRefiner, MyGeneratorAdaptor, dim);
 .ve
 
-   Then, your generator can be chosen with the procedural interface via
+  Then, your generator can be chosen with the procedural interface via
 $     DMGenerate(dm, "my_generator",...)
-   or at runtime via the option
+  or at runtime via the option
 $     -dm_generator my_generator
 
-   Level: advanced
+  Level: advanced
 
-   Note:
-   `DMGenerateRegister()` may be called multiple times to add several user-defined generators
+  Note:
+  `DMGenerateRegister()` may be called multiple times to add several user-defined generators
 
 .seealso: `DM`, `DMGenerateRegisterAll()`, `DMPlexGenerate()`, `DMGenerateRegisterDestroy()`
 @*/
@@ -137,16 +137,16 @@ PetscErrorCode DMGenerateRegisterDestroy(void)
 
 /*@C
   DMAdaptLabel - Adapt a `DM` based on a `DMLabel` with values interpreted as coarsening and refining flags.  Specific implementations of `DM` maybe have
-                 specialized flags, but all implementations should accept flag values `DM_ADAPT_DETERMINE`, `DM_ADAPT_KEEP`, `DM_ADAPT_REFINE`, and,
-                 `DM_ADAPT_COARSEN`.
+  specialized flags, but all implementations should accept flag values `DM_ADAPT_DETERMINE`, `DM_ADAPT_KEEP`, `DM_ADAPT_REFINE`, and,
+  `DM_ADAPT_COARSEN`.
 
   Collective
 
-  Input parameters:
-+ dm - the pre-adaptation `DM` object
+  Input Parameters:
++ dm    - the pre-adaptation `DM` object
 - label - label with the flags
 
-  Output parameters:
+  Output Parameters:
 . dmAdapt - the adapted `DM` object: may be `NULL` if an adapted `DM` could not be produced.
 
   Level: intermediate
@@ -196,13 +196,13 @@ PetscErrorCode DMAdaptLabel(DM dm, DMLabel label, DM *dmAdapt)
   DMAdaptMetric - Generates a mesh adapted to the specified metric field.
 
   Input Parameters:
-+ dm - The DM object
-. metric - The metric to which the mesh is adapted, defined vertex-wise.
++ dm      - The DM object
+. metric  - The metric to which the mesh is adapted, defined vertex-wise.
 . bdLabel - Label for boundary tags, which will be preserved in the output mesh. bdLabel should be NULL if there is no such label, and should be different from "_boundary_".
 - rgLabel - Label for cell tags, which will be preserved in the output mesh. rgLabel should be NULL if there is no such label, and should be different from "_regions_".
 
   Output Parameter:
-. dmAdapt  - Pointer to the DM object containing the adapted mesh
+. dmAdapt - Pointer to the DM object containing the adapted mesh
 
   Note: The label in the adapted mesh will be registered under the name of the input DMLabel object
 

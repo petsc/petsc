@@ -53,7 +53,7 @@ static PetscErrorCode DMPlexCreateCellTypeOrder_Internal(PetscInt dim, PetscInt 
 + name        - The name of a new user-defined creation routine
 - create_func - The creation routine
 
-  Sample usage:
+  Example Usage:
 .vb
   DMPlexTransformRegister("my_transform", MyTransformCreate);
 .ve
@@ -142,7 +142,7 @@ PetscErrorCode DMPlexTransformRegisterDestroy(void)
 . comm - The communicator for the transform object
 
   Output Parameter:
-. dm - The transform object
+. tr - The transform object
 
   Level: beginner
 
@@ -207,7 +207,7 @@ PetscErrorCode DMPlexTransformSetType(DMPlexTransform tr, DMPlexTransformType me
   Not Collective
 
   Input Parameter:
-. tr  - The `DMPlexTransform`
+. tr - The `DMPlexTransform`
 
   Output Parameter:
 . type - The `DMPlexTransformType` name
@@ -311,8 +311,8 @@ PetscErrorCode DMPlexTransformView(DMPlexTransform tr, PetscViewer v)
 . tr - the `DMPlexTransform` object to set options for
 
   Options Database Keys:
-+ -dm_plex_transform_type - Set the transform type, e.g. refine_regular
-. -dm_plex_transform_label_match_strata - Only label points of the same stratum as the producing point
++ -dm_plex_transform_type                    - Set the transform type, e.g. refine_regular
+. -dm_plex_transform_label_match_strata      - Only label points of the same stratum as the producing point
 - -dm_plex_transform_label_replica_inc <inc> - Increment for the label value to be multiplied by the replica number, so that the new label value is oldValue + r * inc
 
   Level: intermediate
@@ -791,7 +791,7 @@ PetscErrorCode DMPlexTransformGetDepthStratum(DMPlexTransform tr, PetscInt depth
 - r     - The replica number of the new point, meaning it is the rth point of type `ctNew` produced from `p`
 
   Output Parameter:
-. pNew  - The new point number
+. pNew - The new point number
 
   Level: developer
 
@@ -841,8 +841,8 @@ PetscErrorCode DMPlexTransformGetTargetPoint(DMPlexTransform tr, DMPolytopeType 
   Not Collective
 
   Input Parameters:
-+ tr    - The `DMPlexTransform`
-- pNew  - The new point number
++ tr   - The `DMPlexTransform`
+- pNew - The new point number
 
   Output Parameters:
 + ct    - The type of the original point which produces the new point
@@ -984,7 +984,7 @@ PetscErrorCode DMPlexTransformGetSourcePoint(DMPlexTransform tr, PetscInt pNew, 
    the cell cone point number at each level from which it is subdivided
    the replica number r of the subdivision.
 .ve
-The orientation is with respect to the canonical cone orientation. For example, the prescription for edge division is
+  The orientation is with respect to the canonical cone orientation. For example, the prescription for edge division is
 .vb
    Nt     = 2
    target = {DM_POLYTOPE_POINT, DM_POLYTOPE_SEGMENT}
@@ -1554,7 +1554,7 @@ PetscErrorCode DMPlexTransformGetCellVertices(DMPlexTransform tr, DMPolytopeType
 
   Level: developer
 
-.seealso:  `DMPLEX`, `DMPlexTransform`, `DMPolytopeType`, `DMPlexTransformGetCellVertices()`
+.seealso: `DMPLEX`, `DMPlexTransform`, `DMPolytopeType`, `DMPlexTransformGetCellVertices()`
 @*/
 PetscErrorCode DMPlexTransformGetSubcellVertices(DMPlexTransform tr, DMPolytopeType ct, DMPolytopeType rct, PetscInt r, PetscInt *subVerts[])
 {
@@ -1585,21 +1585,21 @@ PetscErrorCode DMPlexTransformMapCoordinatesBarycenter_Internal(DMPlexTransform 
   Not collective
 
   Input Parameters:
-+ tr   - The `DMPlexTransform`
-. pct  - The cell type of the parent, from whom the new cell is being produced
-. ct   - The type being produced
-. p    - The original point
-. r    - The replica number requested for the produced cell type
-. Nv   - Number of vertices in the closure of the parent cell
-. dE   - Spatial dimension
-- in   - array of size Nv*dE, holding coordinates of the vertices in the closure of the parent cell
++ tr  - The `DMPlexTransform`
+. pct - The cell type of the parent, from whom the new cell is being produced
+. ct  - The type being produced
+. p   - The original point
+. r   - The replica number requested for the produced cell type
+. Nv  - Number of vertices in the closure of the parent cell
+. dE  - Spatial dimension
+- in  - array of size Nv*dE, holding coordinates of the vertices in the closure of the parent cell
 
   Output Parameter:
 . out - The coordinates of the new vertices
 
   Level: intermediate
 
-.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexTransform`, `DMPolytopeType`, `DMPlexTransform`, `DMPlexTransformApply()`
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexTransform`, `DMPolytopeType`, `DMPlexTransformApply()`
 @*/
 PetscErrorCode DMPlexTransformMapCoordinates(DMPlexTransform tr, DMPolytopeType pct, DMPolytopeType ct, PetscInt p, PetscInt r, PetscInt Nv, PetscInt dE, const PetscScalar in[], PetscScalar out[])
 {

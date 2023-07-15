@@ -1081,40 +1081,40 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJMKL(Mat A, MatType type, Mat
 }
 
 /*@C
-   MatCreateSeqAIJMKL - Creates a sparse matrix of type `MATSEQAIJMKL`.
+  MatCreateSeqAIJMKL - Creates a sparse matrix of type `MATSEQAIJMKL`.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  comm - MPI communicator, set to `PETSC_COMM_SELF`
-.  m - number of rows
-.  n - number of columns
-.  nz - number of nonzeros per row (same for all rows)
--  nnz - array containing the number of nonzeros in the various rows
+  Input Parameters:
++ comm - MPI communicator, set to `PETSC_COMM_SELF`
+. m    - number of rows
+. n    - number of columns
+. nz   - number of nonzeros per row (same for all rows)
+- nnz  - array containing the number of nonzeros in the various rows
          (possibly different for each row) or `NULL`
 
-   Output Parameter:
-.  A - the matrix
+  Output Parameter:
+. A - the matrix
 
-   Options Database Keys:
-+  -mat_aijmkl_no_spmv2 - disable use of the SpMV2 inspector-executor routines
--  -mat_aijmkl_eager_inspection - perform MKL "inspection" phase upon matrix assembly; default is to do "lazy" inspection,
+  Options Database Keys:
++ -mat_aijmkl_no_spmv2         - disable use of the SpMV2 inspector-executor routines
+- -mat_aijmkl_eager_inspection - perform MKL "inspection" phase upon matrix assembly; default is to do "lazy" inspection,
                                   performing this step the first time the matrix is applied
 
-   Level: intermediate
+  Level: intermediate
 
-   Notes:
-   If `nnz` is given then `nz` is ignored
+  Notes:
+  If `nnz` is given then `nz` is ignored
 
-   This type inherits from `MATSEQAIJ` and is largely identical, but uses sparse BLAS
-   routines from Intel MKL whenever possible.
+  This type inherits from `MATSEQAIJ` and is largely identical, but uses sparse BLAS
+  routines from Intel MKL whenever possible.
 
   If the installed version of MKL supports the "SpMV2" sparse
-   inspector-executor routines, then those are used by default.
+  inspector-executor routines, then those are used by default.
 
   `MatMult()`, `MatMultAdd()`, `MatMultTranspose()`, `MatMultTransposeAdd()`, `MatMatMult()`, `MatTransposeMatMult()`, and `MatPtAP()`
-   (for symmetric A) operations are currently supported.
-   MKL version 18, update 2 or later is required for `MatPtAP()`, `MatPtAPNumeric()` and `MatMatMultNumeric()`.
+  (for symmetric A) operations are currently supported.
+  MKL version 18, update 2 or later is required for `MatPtAP()`, `MatPtAPNumeric()` and `MatMatMultNumeric()`.
 
 .seealso: [](ch_matrices), `Mat`, `MatCreate()`, `MatCreateMPIAIJMKL()`, `MatSetValues()`
 @*/

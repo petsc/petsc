@@ -145,23 +145,23 @@ PetscErrorCode MatMFFDWPSetComputeNormU_P(Mat mat, PetscBool flag)
 }
 
 /*@
-    MatMFFDWPSetComputeNormU - Sets whether it computes the ||U|| used by the Walker-Pernice
-             PETSc routine for computing h. With any Krylov solver this need only
-             be computed during the first iteration and kept for later.
+  MatMFFDWPSetComputeNormU - Sets whether it computes the ||U|| used by the Walker-Pernice
+  PETSc routine for computing h. With any Krylov solver this need only
+  be computed during the first iteration and kept for later.
 
   Input Parameters:
-+   A - the `MATMFFD` matrix
--   flag - `PETSC_TRUE` causes it to compute ||U||, `PETSC_FALSE` uses the previous value
++ A    - the `MATMFFD` matrix
+- flag - `PETSC_TRUE` causes it to compute ||U||, `PETSC_FALSE` uses the previous value
 
   Options Database Key:
-.   -mat_mffd_compute_normu <true,false> - true by default, false can save calculations but you
+. -mat_mffd_compute_normu <true,false> - true by default, false can save calculations but you
               must be sure that ||U|| has not changed in the mean time.
 
   Level: advanced
 
   Note:
-   See the manual page for `MATMFFD_WP` for a complete description of the
-   algorithm used to compute h.
+  See the manual page for `MATMFFD_WP` for a complete description of the
+  algorithm used to compute h.
 
 .seealso: `MATMFFD_WP`, `MATMFFD`, `MatMFFDSetFunctionError()`, `MatCreateSNESMF()`
 @*/

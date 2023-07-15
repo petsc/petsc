@@ -17,23 +17,23 @@
 M*/
 
 /*@C
-   PetscViewerVTKAddField - Add a field to the viewer
+  PetscViewerVTKAddField - Add a field to the viewer
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  viewer - `PETSCVIEWERVTK`
-.  dm - `DM` on which `Vec` lives
-.  PetscViewerVTKWriteFunction - function to write this `Vec`
-.  fieldnum - which field of the `DM` to write (`PETSC_DEFAULT` if the while vector should be written)
-.  fieldtype - Either `PETSC_VTK_POINT_FIELD` or `PETSC_VTK_CELL_FIELD`
-.  checkdm - whether to check for identical dm arguments as fields are added
--  vec - `Vec` from which to write
+  Input Parameters:
++ viewer                      - `PETSCVIEWERVTK`
+. dm                          - `DM` on which `Vec` lives
+. PetscViewerVTKWriteFunction - function to write this `Vec`
+. fieldnum                    - which field of the `DM` to write (`PETSC_DEFAULT` if the while vector should be written)
+. fieldtype                   - Either `PETSC_VTK_POINT_FIELD` or `PETSC_VTK_CELL_FIELD`
+. checkdm                     - whether to check for identical dm arguments as fields are added
+- vec                         - `Vec` from which to write
 
-   Level: developer
+  Level: developer
 
-   Note:
-   This routine keeps exclusive ownership of the `Vec`. The caller should not use or destroy the `Vec` after calling it.
+  Note:
+  This routine keeps exclusive ownership of the `Vec`. The caller should not use or destroy the `Vec` after calling it.
 
 .seealso: [](sec_viewers), `PETSCVIEWERVTK`, `PetscViewerVTKOpen()`, `DMDAVTKWriteAll()`, `PetscViewerVTKWriteFunction`, `PetscViewerVTKGetDM()`
 @*/
@@ -48,15 +48,15 @@ PetscErrorCode PetscViewerVTKAddField(PetscViewer viewer, PetscObject dm, PetscE
 }
 
 /*@C
-   PetscViewerVTKGetDM - get the `DM` associated with the `PETSCVIEWERVTK` viewer
+  PetscViewerVTKGetDM - get the `DM` associated with the `PETSCVIEWERVTK` viewer
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  viewer - `PETSCVIEWERVTK` viewer
--  dm - `DM` associated with the viewer (as a `PetscObject`)
+  Input Parameters:
++ viewer - `PETSCVIEWERVTK` viewer
+- dm     - `DM` associated with the viewer (as a `PetscObject`)
 
-   Level: developer
+  Level: developer
 
 .seealso: [](sec_viewers), `PETSCVIEWERVTK`, `PetscViewerVTKOpen()`, `DMDAVTKWriteAll()`, `PetscViewerVTKWriteFunction`, `PetscViewerVTKAddField()`
 @*/
@@ -233,24 +233,24 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_VTK(PetscViewer v)
 }
 
 /*@C
-   PetscViewerVTKOpen - Opens a `PETSCVIEWERVTK` viewer file.
+  PetscViewerVTKOpen - Opens a `PETSCVIEWERVTK` viewer file.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  comm - MPI communicator
-.  name - name of file
--  type - type of file
+  Input Parameters:
++ comm - MPI communicator
+. name - name of file
+- type - type of file
 .vb
     FILE_MODE_WRITE - create new file for binary output
     FILE_MODE_READ - open existing file for binary input (not currently supported)
     FILE_MODE_APPEND - open existing file for binary output (not currently supported)
 .ve
 
-   Output Parameter:
-.  vtk - `PetscViewer` for VTK input/output to use with the specified file
+  Output Parameter:
+. vtk - `PetscViewer` for VTK input/output to use with the specified file
 
-   Level: beginner
+  Level: beginner
 
 .seealso: [](sec_viewers), `PETSCVIEWERVTK`, `PetscViewerASCIIOpen()`, `PetscViewerPushFormat()`, `PetscViewerDestroy()`,
           `VecView()`, `MatView()`, `VecLoad()`, `MatLoad()`,
@@ -267,21 +267,21 @@ PetscErrorCode PetscViewerVTKOpen(MPI_Comm comm, const char name[], PetscFileMod
 }
 
 /*@C
-   PetscViewerVTKFWrite - write binary data preceded by 32-bit int length (in bytes), does not do byte swapping.
+  PetscViewerVTKFWrite - write binary data preceded by 32-bit int length (in bytes), does not do byte swapping.
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  viewer - logically collective viewer, data written from rank 0
-.  fp - file pointer valid on rank 0
-.  data - data pointer valid on rank 0
-.  n - number of data items
--  dtype - data type
+  Input Parameters:
++ viewer - logically collective viewer, data written from rank 0
+. fp     - file pointer valid on rank 0
+. data   - data pointer valid on rank 0
+. n      - number of data items
+- dtype  - data type
 
-   Level: developer
+  Level: developer
 
-   Note:
-    If `PetscScalar` is `__float128` then the binary files are written in double precision
+  Note:
+  If `PetscScalar` is `__float128` then the binary files are written in double precision
 
 .seealso: [](sec_viewers), `PETSCVIEWERVTK`, `DMDAVTKWriteAll()`, `DMPlexVTKWriteAll()`, `PetscViewerPushFormat()`, `PetscViewerVTKOpen()`, `PetscBinaryWrite()`
 @*/

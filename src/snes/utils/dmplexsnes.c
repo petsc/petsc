@@ -66,34 +66,34 @@ static PetscErrorCode SNESCorrectDiscretePressure_Private(SNES snes, PetscInt pf
 }
 
 /*@C
-   SNESConvergedCorrectPressure - Convergence test that adds a vector in the nullspace to make the continuum integral of the pressure field equal to zero.
-   This is normally used only to evaluate convergence rates for the pressure accurately. The convergence test itself just mimics `SNESConvergedDefault()`.
+  SNESConvergedCorrectPressure - Convergence test that adds a vector in the nullspace to make the continuum integral of the pressure field equal to zero.
+  This is normally used only to evaluate convergence rates for the pressure accurately. The convergence test itself just mimics `SNESConvergedDefault()`.
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  snes - the `SNES` context
-.  it - the iteration (0 indicates before any Newton steps)
-.  xnorm - 2-norm of current iterate
-.  snorm - 2-norm of current step
-.  fnorm - 2-norm of function at current iterate
--  ctx   - Optional user context
+  Input Parameters:
++ snes  - the `SNES` context
+. it    - the iteration (0 indicates before any Newton steps)
+. xnorm - 2-norm of current iterate
+. gnorm - 2-norm of current step
+. f     - 2-norm of function at current iterate
+- ctx   - Optional user context
 
-   Output Parameter:
-.  reason  - `SNES_CONVERGED_ITERATING`, `SNES_CONVERGED_ITS`, or `SNES_DIVERGED_FNORM_NAN`
+  Output Parameter:
+. reason - `SNES_CONVERGED_ITERATING`, `SNES_CONVERGED_ITS`, or `SNES_DIVERGED_FNORM_NAN`
 
-   Options Database Key:
-.  -snes_convergence_test correct_pressure - see `SNESSetFromOptions()`
+  Options Database Key:
+. -snes_convergence_test correct_pressure - see `SNESSetFromOptions()`
 
-   Level: advanced
+  Level: advanced
 
-   Notes:
-   In order to use this convergence test, you must set up several PETSc structures. First fields must be added to the `DM`, and a `PetscDS`
-   must be created with discretizations of those fields. We currently assume that the pressure field has index 1.
-   The pressure field must have a nullspace, likely created using the `DMSetNullSpaceConstructor()` interface.
-   Last we must be able to integrate the pressure over the domain, so the `DM` attached to the SNES `must` be a `DMPLEX` at this time.
+  Notes:
+  In order to use this convergence test, you must set up several PETSc structures. First fields must be added to the `DM`, and a `PetscDS`
+  must be created with discretizations of those fields. We currently assume that the pressure field has index 1.
+  The pressure field must have a nullspace, likely created using the `DMSetNullSpaceConstructor()` interface.
+  Last we must be able to integrate the pressure over the domain, so the `DM` attached to the SNES `must` be a `DMPLEX` at this time.
 
-.seealso: `SNES`, `DM`, `SNESConvergedDefault()`, `SNESSetConvergenceTest()`, `DMSetNullSpaceConstructor()`, `DMSetNullSpaceConstructor()`
+.seealso: `SNES`, `DM`, `SNESConvergedDefault()`, `SNESSetConvergenceTest()`, `DMSetNullSpaceConstructor()`
 @*/
 PetscErrorCode SNESConvergedCorrectPressure(SNES snes, PetscInt it, PetscReal xnorm, PetscReal gnorm, PetscReal f, SNESConvergedReason *reason, void *ctx)
 {
@@ -265,7 +265,7 @@ PetscErrorCode DMInterpolationSetDof(DMInterpolationInfo ctx, PetscInt dof)
 
   Level: intermediate
 
-.seealso: DMInterpolationInfo, `DMInterpolationSetDof()`, `DMInterpolationEvaluate()`, `DMInterpolationAddPoints()`
+.seealso: `DMInterpolationInfo`, `DMInterpolationSetDof()`, `DMInterpolationEvaluate()`, `DMInterpolationAddPoints()`
 @*/
 PetscErrorCode DMInterpolationGetDof(DMInterpolationInfo ctx, PetscInt *dof)
 {
@@ -310,14 +310,14 @@ PetscErrorCode DMInterpolationAddPoints(DMInterpolationInfo ctx, PetscInt n, Pet
   Collective
 
   Input Parameters:
-+ ctx - the context
-. dm  - the `DM` for the function space used for interpolation
-. redundantPoints - If `PETSC_TRUE`, all processes are passing in the same array of points. Otherwise, points need to be communicated among processes.
++ ctx                 - the context
+. dm                  - the `DM` for the function space used for interpolation
+. redundantPoints     - If `PETSC_TRUE`, all processes are passing in the same array of points. Otherwise, points need to be communicated among processes.
 - ignoreOutsideDomain - If `PETSC_TRUE`, ignore points outside the domain, otherwise return an error
 
   Level: intermediate
 
-.seealso: DMInterpolationInfo, `DMInterpolationEvaluate()`, `DMInterpolationAddPoints()`, `DMInterpolationCreate()`
+.seealso: `DMInterpolationInfo`, `DMInterpolationEvaluate()`, `DMInterpolationAddPoints()`, `DMInterpolationCreate()`
 @*/
 PetscErrorCode DMInterpolationSetUp(DMInterpolationInfo ctx, DM dm, PetscBool redundantPoints, PetscBool ignoreOutsideDomain)
 {
@@ -440,7 +440,7 @@ PetscErrorCode DMInterpolationSetUp(DMInterpolationInfo ctx, DM dm, PetscBool re
 . ctx - the context
 
   Output Parameter:
-. coordinates  - the coordinates of interpolation points
+. coordinates - the coordinates of interpolation points
 
   Level: intermediate
 
@@ -468,7 +468,7 @@ PetscErrorCode DMInterpolationGetCoordinates(DMInterpolationInfo ctx, Vec *coord
 . ctx - the context
 
   Output Parameter:
-. v  - a vector capable of holding the interpolated field values
+. v - a vector capable of holding the interpolated field values
 
   Level: intermediate
 
@@ -496,7 +496,7 @@ PetscErrorCode DMInterpolationGetVector(DMInterpolationInfo ctx, Vec *v)
 
   Input Parameters:
 + ctx - the context
-- v  - a vector capable of holding the interpolated field values
+- v   - a vector capable of holding the interpolated field values
 
   Level: intermediate
 
@@ -1018,7 +1018,7 @@ static inline PetscErrorCode DMInterpolate_Hex_Private(DMInterpolationInfo ctx, 
 - x   - The local vector containing the field to be interpolated
 
   Output Parameter:
-. v   - The vector containing the interpolated values
+. v - The vector containing the interpolated values
 
   Level: beginner
 
@@ -1161,7 +1161,7 @@ PetscErrorCode DMInterpolationDestroy(DMInterpolationInfo *ctx)
 + snes   - the `SNES` context
 . its    - iteration number
 . fgnorm - 2-norm of residual
-- vf  - `PetscViewerAndFormat` of `PetscViewerType` `PETSCVIEWERASCII`
+- vf     - `PetscViewerAndFormat` of `PetscViewerType` `PETSCVIEWERASCII`
 
   Level: intermediate
 
@@ -1231,12 +1231,12 @@ PetscErrorCode DMPlexGetAllCells_Internal(DM plex, IS *cellIS)
   DMPlexSNESComputeResidualFEM - Sums the local residual into vector F from the local input X using pointwise functions specified by the user
 
   Input Parameters:
-+ dm - The mesh
-. X  - Local solution
++ dm   - The mesh
+. X    - Local solution
 - user - The user context
 
   Output Parameter:
-. F  - Local output vector
+. F - Local output vector
 
   Level: developer
 
@@ -1353,11 +1353,11 @@ PetscErrorCode DMSNESComputeResidual(DM dm, Vec X, Vec F, void *user)
   DMPlexSNESComputeBoundaryFEM - Form the boundary values for the local input X
 
   Input Parameters:
-+ dm - The mesh
++ dm   - The mesh
 - user - The user context
 
   Output Parameter:
-. X  - Local solution
+. X - Local solution
 
   Level: developer
 
@@ -1384,7 +1384,7 @@ PetscErrorCode DMPlexSNESComputeBoundaryFEM(DM dm, Vec X, void *user)
 - user - The user context
 
   Output Parameter:
-. F    - local output vector
+. F - local output vector
 
   Level: developer
 
@@ -1463,8 +1463,8 @@ PetscErrorCode DMSNESComputeJacobianAction(DM dm, Vec X, Vec Y, Vec F, void *use
   DMPlexSNESComputeJacobianFEM - Form the local portion of the Jacobian matrix `Jac` at the local solution `X` using pointwise functions specified by the user.
 
   Input Parameters:
-+ dm - The `DM`
-. X  - Local input vector
++ dm   - The `DM`
+. X    - Local input vector
 - user - The user context
 
   Output Parameters:
@@ -1564,7 +1564,7 @@ static PetscErrorCode DMSNESJacobianMF_Mult_Private(Mat A, Vec Y, Vec Z)
 - user - A user context, or `NULL`
 
   Output Parameter:
-. J    - The `Mat`
+. J - The `Mat`
 
   Level: advanced
 
@@ -1660,7 +1660,7 @@ static PetscErrorCode MatComputeNeumannOverlap_Plex(Mat J, PetscReal t, Vec X, V
   DMPlexSetSNESLocalFEM - Use `DMPLEX`'s internal FEM routines to compute `SNES` boundary values, residual, and Jacobian.
 
   Input Parameters:
-+ dm - The `DM` object
++ dm          - The `DM` object
 . boundaryctx - the user context that will be passed to pointwise evaluation of boundary values (see `PetscDSAddBoundary()`)
 . residualctx - the user context that will be passed to pointwise evaluation of finite element residual computations (see `PetscDSSetResidual()`)
 - jacobianctx - the user context that will be passed to pointwise evaluation of finite element Jacobian construction (see `PetscDSSetJacobian()`)
@@ -1697,7 +1697,7 @@ PetscErrorCode DMPlexSetSNESLocalFEM(DM dm, void *boundaryctx, void *residualctx
   Note:
   The user must call `PetscDSSetExactSolution()` beforehand
 
-.seealso: `PetscDSSetExactSolution()`, `DNSNESCheckFromOptions()`, `DMSNESCheckResidual()`, `DMSNESCheckJacobian()`, `PetscDSSetExactSolution()`
+.seealso: `PetscDSSetExactSolution()`, `DNSNESCheckFromOptions()`, `DMSNESCheckResidual()`, `DMSNESCheckJacobian()`
 @*/
 PetscErrorCode DMSNESCheckDiscretization(SNES snes, DM dm, PetscReal t, Vec u, PetscReal tol, PetscReal error[])
 {

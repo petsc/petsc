@@ -368,11 +368,11 @@ PetscErrorCode TSMPRKRegisterAll(void)
 }
 
 /*@C
-   TSMPRKRegisterDestroy - Frees the list of schemes that were registered by `TSMPRKRegister()`.
+  TSMPRKRegisterDestroy - Frees the list of schemes that were registered by `TSMPRKRegister()`.
 
-   Not Collective
+  Not Collective
 
-   Level: advanced
+  Level: advanced
 
 .seealso: [](ch_ts), `TSMPRK`, `TSMPRKRegister()`, `TSMPRKRegisterAll()`
 @*/
@@ -432,27 +432,27 @@ PetscErrorCode TSMPRKFinalizePackage(void)
 }
 
 /*@C
-   TSMPRKRegister - register a `TSMPRK` scheme by providing the entries in the Butcher tableau
+  TSMPRKRegister - register a `TSMPRK` scheme by providing the entries in the Butcher tableau
 
-   Not Collective, but the same schemes should be registered on all processes on which they will be used
+  Not Collective, but the same schemes should be registered on all processes on which they will be used
 
-   Input Parameters:
-+  name - identifier for method
-.  order - approximation order of method
-.  sbase  - number of stages in the base methods
-.  ratio1 - stepsize ratio at 1st level (e.g. slow/medium)
-.  ratio2 - stepsize ratio at 2nd level (e.g. medium/fast)
-.  Af - stage coefficients for fast components(dimension s*s, row-major)
-.  bf - step completion table for fast components(dimension s)
-.  cf - abscissa for fast components(dimension s)
+  Input Parameters:
++ name   - identifier for method
+. order  - approximation order of method
+. sbase  - number of stages in the base methods
+. ratio1 - stepsize ratio at 1st level (e.g. slow/medium)
+. ratio2 - stepsize ratio at 2nd level (e.g. medium/fast)
+. Af     - stage coefficients for fast components(dimension s*s, row-major)
+. bf     - step completion table for fast components(dimension s)
+. cf     - abscissa for fast components(dimension s)
 .  As - stage coefficients for slow components(dimension s*s, row-major)
 .  bs - step completion table for slow components(dimension s)
 -  cs - abscissa for slow components(dimension s)
 
-   Level: advanced
+  Level: advanced
 
-   Note:
-   Several `TSMPRK` methods are provided, this function is only needed to create new methods.
+  Note:
+  Several `TSMPRK` methods are provided, this function is only needed to create new methods.
 
 .seealso: [](ch_ts), `TSMPRK`
 @*/
@@ -1141,11 +1141,11 @@ static PetscErrorCode TSLoad_MPRK(TS ts, PetscViewer viewer)
   Not Collective
 
   Input Parameters:
-+  ts - timestepping context
--  mprktype - type of `TSMPRK` scheme
++ ts       - timestepping context
+- mprktype - type of `TSMPRK` scheme
 
   Options Database Key:
-.   -ts_mprk_type - <pm2,p2,p3> - select the specific scheme
+. -ts_mprk_type - <pm2,p2,p3> - select the specific scheme
 
   Level: intermediate
 
@@ -1166,10 +1166,10 @@ PetscErrorCode TSMPRKSetType(TS ts, TSMPRKType mprktype)
   Not Collective
 
   Input Parameter:
-.  ts - timestepping context
+. ts - timestepping context
 
   Output Parameter:
-.  mprktype - type of `TSMPRK` scheme
+. mprktype - type of `TSMPRK` scheme
 
   Level: intermediate
 

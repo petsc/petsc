@@ -2,35 +2,34 @@
 #include <petscdm.h>
 
 /*@C
-   SNESVISetComputeVariableBounds - Sets a function that is called to compute the bounds on variable for
-   (differential) variable inequalities.
+  SNESVISetComputeVariableBounds - Sets a function that is called to compute the bounds on variable for
+  (differential) variable inequalities.
 
-   Input parameter:
-+  snes - the `SNES` context
--  compute - function that computes the bounds
+  Input Parameters:
++ snes    - the `SNES` context
+- compute - function that computes the bounds
 
-Calling Sequence of `compute`:
- $ PetscErrorCode compute(SNES snes, Vec lower, Vec higher)
-+ snes - the `SNES` context
-. lower - vector to hold lower bounds
+  Calling sequence of `compute`:
++ snes   - the `SNES` context
+. lower  - vector to hold lower bounds
 - higher - vector to hold upper bounds
 
-   Level: advanced
+  Level: advanced
 
-   Notes:
-   Problems with bound constraints can be solved with the reduced space, `SNESVINEWTONRSLS`, and semi-smooth `SNESVINEWTONSSLS` solvers.
+  Notes:
+  Problems with bound constraints can be solved with the reduced space, `SNESVINEWTONRSLS`, and semi-smooth `SNESVINEWTONSSLS` solvers.
 
-   For entries with no bounds you can set `PETSC_NINFINITY` or `PETSC_INFINITY`
+  For entries with no bounds you can set `PETSC_NINFINITY` or `PETSC_INFINITY`
 
-   You may use `SNESVISetVariableBounds()` to provide the bounds once if they will never change
+  You may use `SNESVISetVariableBounds()` to provide the bounds once if they will never change
 
-   If you have associated a `DM` with the `SNES` and provided a function to the `DM` via `DMSetVariableBounds()` that will be used automatically
-   to provide the bounds and you need not use this function.
+  If you have associated a `DM` with the `SNES` and provided a function to the `DM` via `DMSetVariableBounds()` that will be used automatically
+  to provide the bounds and you need not use this function.
 
 .seealso: [](sec_vi), `SNES`, `SNESVISetVariableBounds()`, `DMSetVariableBounds()`, `SNESSetFunctionDomainError()`, `SNESSetJacobianDomainError()`, `SNESVINEWTONRSLS`, `SNESVINEWTONSSLS`,
-          'SNESSetType()`
+          `'SNESSetType()`
 @*/
-PetscErrorCode SNESVISetComputeVariableBounds(SNES snes, PetscErrorCode (*compute)(SNES, Vec, Vec))
+PetscErrorCode SNESVISetComputeVariableBounds(SNES snes, PetscErrorCode (*compute)(SNES snes, Vec lower, Vec higher))
 {
   PetscErrorCode (*f)(SNES, PetscErrorCode (*)(SNES, Vec, Vec));
 
@@ -252,15 +251,15 @@ PetscErrorCode SNESVIProjectOntoBounds(SNES snes, Vec X)
 }
 
 /*
-   SNESVIGetActiveSetIndices - Gets the global indices for the active set variables
+  SNESVIGetActiveSetIS - Gets the global indices for the active set variables
 
-   Input parameter:
-.  snes - the SNES context
-.  X    - the snes solution vector
-.  F    - the nonlinear function vector
+  Input Parameter:
++ snes - the SNES context
+. X    - the snes solution vector
+- F    - the nonlinear function vector
 
-   Output parameter:
-.  ISact - active set index set
+  Output Parameter:
+. ISact - active set index set
  */
 PetscErrorCode SNESVIGetActiveSetIS(SNES snes, Vec X, Vec F, IS *ISact)
 {
@@ -420,28 +419,28 @@ PetscErrorCode SNESDestroy_VI(SNES snes)
 }
 
 /*@
-   SNESVISetVariableBounds - Sets the lower and upper bounds for the solution vector. xl <= x <= xu. This allows solving
-   (differential) variable inequalities.
+  SNESVISetVariableBounds - Sets the lower and upper bounds for the solution vector. xl <= x <= xu. This allows solving
+  (differential) variable inequalities.
 
-   Input Parameters:
-+  snes - the `SNES` context.
-.  xl   - lower bound.
--  xu   - upper bound.
+  Input Parameters:
++ snes - the `SNES` context.
+. xl   - lower bound.
+- xu   - upper bound.
 
-   Level: advanced
+  Level: advanced
 
-   Notes:
-   If this routine is not called then the lower and upper bounds are set to
-   `PETSC_NINFINITY` and `PETSC_INFINITY` respectively during `SNESSetUp()`.
+  Notes:
+  If this routine is not called then the lower and upper bounds are set to
+  `PETSC_NINFINITY` and `PETSC_INFINITY` respectively during `SNESSetUp()`.
 
-   Problems with bound constraints can be solved with the reduced space, `SNESVINEWTONRSLS`, and semi-smooth `SNESVINEWTONSSLS` solvers.
+  Problems with bound constraints can be solved with the reduced space, `SNESVINEWTONRSLS`, and semi-smooth `SNESVINEWTONSSLS` solvers.
 
-   For particular components that have no bounds you can use `PETSC_NINFINITY` or `PETSC_INFINITY`
+  For particular components that have no bounds you can use `PETSC_NINFINITY` or `PETSC_INFINITY`
 
-   `SNESVISetComputeVariableBounds()` can be used to provide a function that computes the bounds. This should be used if you are using, for example, grid
-   sequencing and need bounds set for a variety of vectors
+  `SNESVISetComputeVariableBounds()` can be used to provide a function that computes the bounds. This should be used if you are using, for example, grid
+  sequencing and need bounds set for a variety of vectors
 
-.seealso: [](sec_vi), `SNES`, `SNESVIGetVariableBounds()`, `SNESVISetComputeVariableBounds()`, `SNESSetFunctionDomainError()`, `SNESSetJacobianDomainError()`, `SNESVINEWTONRSLS`, `SNESVINEWTONSSLS`, 'SNESSetType()`
+.seealso: [](sec_vi), `SNES`, `SNESVIGetVariableBounds()`, `SNESVISetComputeVariableBounds()`, `SNESSetFunctionDomainError()`, `SNESSetJacobianDomainError()`, `SNESVINEWTONRSLS`, `SNESVINEWTONSSLS`, `'SNESSetType()`
 @*/
 PetscErrorCode SNESVISetVariableBounds(SNES snes, Vec xl, Vec xu)
 {
@@ -492,20 +491,20 @@ PetscErrorCode SNESVISetVariableBounds_VI(SNES snes, Vec xl, Vec xu)
 }
 
 /*@
-   SNESVIGetVariableBounds - Gets the lower and upper bounds for the solution vector. xl <= x <= xu. This allows solving
-   (differential) variable inequalities.
+  SNESVIGetVariableBounds - Gets the lower and upper bounds for the solution vector. xl <= x <= xu. This allows solving
+  (differential) variable inequalities.
 
-   Input Parameters:
-+  snes - the `SNES` context.
-.  xl   - lower bound (may be `NULL`)
--  xu   - upper bound (may be `NULL`)
+  Input Parameters:
++ snes - the `SNES` context.
+. xl   - lower bound (may be `NULL`)
+- xu   - upper bound (may be `NULL`)
 
-   Level: advanced
+  Level: advanced
 
-   Notes:
-   These vectors are owned by the `SNESVI` and should not be destroyed by the caller
+  Notes:
+  These vectors are owned by the `SNESVI` and should not be destroyed by the caller
 
-.seealso: [](sec_vi), `SNES`, `SNESVISetVariableBounds()`, `SNESVISetComputeVariableBounds()`, `SNESSetFunctionDomainError()`, `SNESSetJacobianDomainError()`, SNESVINEWTONRSLS, SNESVINEWTONSSLS, 'SNESSetType()`
+.seealso: [](sec_vi), `SNES`, `SNESVISetVariableBounds()`, `SNESVISetComputeVariableBounds()`, `SNESSetFunctionDomainError()`, `SNESSetJacobianDomainError()`, `SNESVINEWTONRSLS`, `SNESVINEWTONSSLS`, `'SNESSetType()`
 @*/
 PetscErrorCode SNESVIGetVariableBounds(SNES snes, Vec *xl, Vec *xu)
 {

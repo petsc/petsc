@@ -806,26 +806,27 @@ static PetscErrorCode maxwellian(PetscInt dim, PetscReal time, const PetscReal x
 }
 
 /*@
- DMPlexLandauAddMaxwellians - Add a Maxwellian distribution to a state
+  DMPlexLandauAddMaxwellians - Add a Maxwellian distribution to a state
 
- Collective
+  Collective
 
- Input Parameters:
- .   dm - The mesh (local)
- +   time - Current time
- -   temps - Temperatures of each species (global)
- .   ns - Number density of each species (global)
- -   grid - index into current grid - just used for offset into temp and ns
- .   b_id - batch index
- -   n_batch - number of batches
- +   actx - Landau context
+  Input Parameters:
++ dm      - The mesh (local)
+. time    - Current time
+. temps   - Temperatures of each species (global)
+. ns      - Number density of each species (global)
+. grid    - index into current grid - just used for offset into temp and ns
+. b_id    - batch index
+. n_batch - number of batches
+- actx    - Landau context
 
- Output Parameter:
- .   X  - The state (local to this grid)
+  Output Parameter:
+. X - The state (local to this grid)
 
- Level: beginner
+  Level: beginner
 
  .keywords: mesh
+
 .seealso: `DMPlexLandauCreateVelocitySpace()`
  @*/
 PetscErrorCode DMPlexLandauAddMaxwellians(DM dm, Vec X, PetscReal time, PetscReal temps[], PetscReal ns[], PetscInt grid, PetscInt b_id, PetscInt n_batch, void *actx)
@@ -1916,23 +1917,24 @@ static PetscErrorCode LandauCreateJacobianMatrix(MPI_Comm comm, Vec X, IS grid_b
 
 PetscErrorCode DMPlexLandauCreateMassMatrix(DM pack, Mat *Amat);
 /*@C
- DMPlexLandauCreateVelocitySpace - Create a DMPlex velocity space mesh
+  DMPlexLandauCreateVelocitySpace - Create a DMPlex velocity space mesh
 
- Collective
+  Collective
 
- Input Parameters:
- +   comm  - The MPI communicator
- .   dim - velocity space dimension (2 for axisymmetric, 3 for full 3X + 3V solver)
- -   prefix - prefix for options (not tested)
+  Input Parameters:
++ comm   - The MPI communicator
+. dim    - velocity space dimension (2 for axisymmetric, 3 for full 3X + 3V solver)
+- prefix - prefix for options (not tested)
 
- Output Parameter:
- .   pack  - The DM object representing the mesh
- +   X - A vector (user destroys)
- -   J - Optional matrix (object destroys)
+  Output Parameters:
++ pack - The DM object representing the mesh
+. X    - A vector (user destroys)
+- J    - Optional matrix (object destroys)
 
- Level: beginner
+  Level: beginner
 
  .keywords: mesh
+
 .seealso: `DMPlexCreate()`, `DMPlexLandauDestroyVelocitySpace()`
  @*/
 PetscErrorCode DMPlexLandauCreateVelocitySpace(MPI_Comm comm, PetscInt dim, const char prefix[], Vec *X, Mat *J, DM *pack)
@@ -2081,22 +2083,23 @@ PetscErrorCode DMPlexLandauCreateVelocitySpace(MPI_Comm comm, PetscInt dim, cons
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@
- DMPlexLandauAccess - Access to the distribution function with user callback
+/*@C
+  DMPlexLandauAccess - Access to the distribution function with user callback
 
- Collective
+  Collective
 
- Input Parameters:
- .   pack - the DMComposite
- +   func - call back function
- .   user_ctx - user context
+  Input Parameters:
++ pack     - the DMComposite
+. func     - call back function
+- user_ctx - user context
 
- Input/Output Parameter:
- .   X - Vector to data to
+  Input/Output Parameter:
+. X - Vector to data to
 
- Level: advanced
+  Level: advanced
 
  .keywords: mesh
+
 .seealso: `DMPlexLandauCreateVelocitySpace()`
  @*/
 PetscErrorCode DMPlexLandauAccess(DM pack, Vec X, PetscErrorCode (*func)(DM, Vec, PetscInt, PetscInt, PetscInt, void *), void *user_ctx)
@@ -2139,16 +2142,17 @@ PetscErrorCode DMPlexLandauAccess(DM pack, Vec X, PetscErrorCode (*func)(DM, Vec
 }
 
 /*@
- DMPlexLandauDestroyVelocitySpace - Destroy a DMPlex velocity space mesh
+  DMPlexLandauDestroyVelocitySpace - Destroy a DMPlex velocity space mesh
 
- Collective
+  Collective
 
- Input/Output Parameters:
- .   dm - the dm to destroy
+  Input/Output Parameters:
+. dm - the dm to destroy
 
- Level: beginner
+  Level: beginner
 
  .keywords: mesh
+
 .seealso: `DMPlexLandauCreateVelocitySpace()`
  @*/
 PetscErrorCode DMPlexLandauDestroyVelocitySpace(DM *dm)
@@ -2263,17 +2267,18 @@ static void f0_s_rv2(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt u
 }
 
 /*@
- DMPlexLandauPrintNorms - collects moments and prints them
+  DMPlexLandauPrintNorms - collects moments and prints them
 
- Collective
+  Collective
 
- Input Parameters:
- +   X  - the state
- -   stepi - current step to print
+  Input Parameters:
++ X     - the state
+- stepi - current step to print
 
- Level: beginner
+  Level: beginner
 
  .keywords: mesh
+
 .seealso: `DMPlexLandauCreateVelocitySpace()`
  @*/
 PetscErrorCode DMPlexLandauPrintNorms(Vec X, PetscInt stepi)
@@ -2426,20 +2431,21 @@ PetscErrorCode DMPlexLandauPrintNorms(Vec X, PetscInt stepi)
 }
 
 /*@
- DMPlexLandauCreateMassMatrix - Create mass matrix for Landau in Plex space (not field major order of Jacobian)
+  DMPlexLandauCreateMassMatrix - Create mass matrix for Landau in Plex space (not field major order of Jacobian)
   - puts mass matrix into ctx->M
 
- Collective
+  Collective
 
- Input Parameter:
-. pack     - the DM object. Puts matrix in Landau context M field
+  Input Parameter:
+. pack - the DM object. Puts matrix in Landau context M field
 
- Output Parameter:
+  Output Parameter:
 . Amat - The mass matrix (optional), mass matrix is added to the DM context
 
- Level: beginner
+  Level: beginner
 
  .keywords: mesh
+
 .seealso: `DMPlexLandauCreateVelocitySpace()`
  @*/
 PetscErrorCode DMPlexLandauCreateMassMatrix(DM pack, Mat *Amat)
@@ -2542,23 +2548,24 @@ PetscErrorCode DMPlexLandauCreateMassMatrix(DM pack, Mat *Amat)
 }
 
 /*@
- DMPlexLandauIFunction - TS residual calculation, confusingly this computes the Jacobian w/o mass
+  DMPlexLandauIFunction - TS residual calculation, confusingly this computes the Jacobian w/o mass
 
- Collective
+  Collective
 
- Input Parameters:
-+   TS  - The time stepping context
-.   time_dummy - current time (not used)
-.   X - Current state
-.   X_t - Time derivative of current state
--   actx - Landau context
+  Input Parameters:
++ ts         - The time stepping context
+. time_dummy - current time (not used)
+. X          - Current state
+. X_t        - Time derivative of current state
+- actx       - Landau context
 
- Output Parameter:
-.   F  - The residual
+  Output Parameter:
+. F - The residual
 
- Level: beginner
+  Level: beginner
 
  .keywords: mesh
+
 .seealso: `DMPlexLandauCreateVelocitySpace()`, `DMPlexLandauIJacobian()`
  @*/
 PetscErrorCode DMPlexLandauIFunction(TS ts, PetscReal time_dummy, Vec X, Vec X_t, Vec F, void *actx)
@@ -2613,25 +2620,26 @@ PetscErrorCode DMPlexLandauIFunction(TS ts, PetscReal time_dummy, Vec X, Vec X_t
 }
 
 /*@
- DMPlexLandauIJacobian - TS Jacobian construction, confusingly this adds mass
+  DMPlexLandauIJacobian - TS Jacobian construction, confusingly this adds mass
 
- Collective
+  Collective
 
- Input Parameters:
-+   TS  - The time stepping context
-.   time_dummy - current time (not used)
-.   X - Current state
-.   U_tdummy - Time derivative of current state (not used)
-.   shift - shift for du/dt term
--   actx - Landau context
+  Input Parameters:
++ ts         - The time stepping context
+. time_dummy - current time (not used)
+. X          - Current state
+. U_tdummy   - Time derivative of current state (not used)
+. shift      - shift for du/dt term
+- actx       - Landau context
 
- Output Parameters:
-+   Amat  - Jacobian
--   Pmat  - same as Amat
+  Output Parameters:
++ Amat - Jacobian
+- Pmat - same as Amat
 
- Level: beginner
+  Level: beginner
 
  .keywords: mesh
+
 .seealso: `DMPlexLandauCreateVelocitySpace()`, `DMPlexLandauIFunction()`
  @*/
 PetscErrorCode DMPlexLandauIJacobian(TS ts, PetscReal time_dummy, Vec X, Vec U_tdummy, PetscReal shift, Mat Amat, Mat Pmat, void *actx)

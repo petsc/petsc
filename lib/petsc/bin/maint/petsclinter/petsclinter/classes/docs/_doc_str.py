@@ -11,6 +11,10 @@ import collections
 import clang.cindex as clx
 import petsclinter  as pl
 
+from ...__version__ import py_version_lt
+
+from .. import _util
+
 from .._diag    import DiagnosticManager, Diagnostic
 from .._linter  import Linter
 from .._cursor  import Cursor
@@ -45,15 +49,26 @@ class DocStringTypeModifier(enum.Flag):
 
 # expressions that usually end in an unescpaped colon causing the resulting sentence to be
 # considered a title
-_suspicious_expression_regex = re.compile(
-  r'|'.join(
-    f'{expr}:$' for expr in {
-      r'follows', r'following.*', r'example', r'instance', r'one of.*', r'available.*include',
-      r'supports.*approaches.*', r'see.*user.*manual', r'y. saad, iterative methods.*philadelphia',
-      r'default', r'in .* case.*', r'use the.*'
-    }
+_suspicious_patterns = set(
+  map(
+    str.casefold,
+    (
+      r'follows', r'following.*', r'example', r'instance', r'one\sof.*', r'available.*include',
+      r'supports.*approaches.*', r'see.*user.*manual', r'y\.\ssaad,\siterative\smethods.*philadelphia',
+      r'default', r'in\s.*\scase.*', r'use\sthe.*', r'for\s+example', r'note\s+(also|that)?',
+      r'example[,;-]\s', r'.*etc\.', r'references\s+(to|a|so)\s+',
+      r'(the|an|the|a)\s+options\s+database\s+(for|to)?'
+    )
   )
 )
+_suspicious_colon_regex = re.compile(r'|'.join(f'{expr}:$' for expr in _suspicious_patterns))
+_suspicious_plain_regex = re.compile(r'|'.join(_suspicious_patterns - {'example'}), flags=re.MULTILINE)
+del _suspicious_patterns
+
+_pragma_regex = re.compile(r'.*PetscClangLinter\s+pragma\s+(\w+):\s*(.*)')
+
+# Regex to match /* */ patterns
+_c_comment_regex = re.compile(r'\/\*(\*(?!\/)|[^*])*\*\/')
 
 class SectionNotFoundError(pl.BaseError):
   """
@@ -94,7 +109,6 @@ class Sections:
 
   def __contains__(self, section):
     return self.registered(section)
-
 
   def _reset_cache(self):
     self._cachekey  = tuple(self._sections.keys())
@@ -213,16 +227,7 @@ class Sections:
   def keywords(self, sections=False):
     return self.__unpack_attr_list('keywords', sections)
 
-  def is_heading(self, item):
-    if isinstance(item, tuple):
-      assert len(item) == 2
-      assert isinstance(item[0], SourceRange) and isinstance(item[1], str)
-      text = item[1]
-    elif isinstance(item, str):
-      text = item
-    else:
-      raise NotImplementedError(type(item))
-
+  def is_heading(self, prev_line, line):
     def handle_header_with_colon(text):
       if text.endswith('\:'):
         return Verdict.NOT_HEADING
@@ -235,7 +240,7 @@ class Sections:
         if any(map(text.__contains__, (' - ', '=', '(', ')', '%', '$', '@', '#', '!', '^', '&', '+'))):
           return Verdict.IS_HEADING_BUT_PROBABLY_SHOULDNT_BE
 
-        if _suspicious_expression_regex.search(textlo) is None:
+        if _suspicious_colon_regex.search(textlo) is None:
           return Verdict.IS_HEADING
         return Verdict.IS_HEADING_BUT_PROBABLY_SHOULDNT_BE
 
@@ -245,20 +250,25 @@ class Sections:
         return Verdict.NOT_HEADING
       return Verdict.IS_HEADING if guessed else Verdict.NOT_HEADING
 
-    def handle_header_without_colon(text):
-      try:
-        next(filter(text.casefold().startswith, map(str.casefold, self.titles())))
-      except StopIteration:
+    def handle_header_without_colon(prev_line, line):
+      linelo  = line.casefold()
+      results = list(filter(linelo.startswith, map(str.casefold, self.titles())))
+      if not results:
         return Verdict.NOT_HEADING
+      if _suspicious_plain_regex.search(' '.join((prev_line.casefold(), linelo))):
+        # suspicious regex detected, err on the side of caution and say this line is not a
+        # heading
+        return Verdict.NOT_HEADING
+      # not suspicious, still not 100% though
       return Verdict.MAYBE_HEADING
 
-
-    text = text.strip()
-    if not text or text.startswith(('+ ', '. ', '- ', '$', '.vb', '.ve')):
+    prev_line = prev_line.strip()
+    line      = line.strip()
+    if not line or line.startswith(('+', '. ', '-', '$', '.vb', '.ve')):
       return Verdict.NOT_HEADING
-    if ':' in text:
-      return handle_header_with_colon(text)
-    return handle_header_without_colon(text)
+    if ':' in line:
+      return handle_header_with_colon(line)
+    return handle_header_without_colon(prev_line, line)
 
   def guess_heading(self, line, strict=False, **kwargs):
     strp = line.split(':', maxsplit=1)[0].strip()
@@ -315,10 +325,12 @@ class PetscDocString(DocBase):
   def __init__(self, linter, cursor, indent=2):
     if not isinstance(linter, Linter):
       raise ValueError(type(linter))
+    if not isinstance(cursor, Cursor):
+      raise ValueError(type(cursor))
 
     self.sections.set_verbose(linter.verbose)
     self._linter          = linter
-    self.cursor           = Cursor.cast(cursor)
+    self.cursor           = cursor
     self.raw, self.extent = self._get_sanitized_comment_and_range_from_cursor(self.cursor)
     self.indent           = indent
     self.type             = self.Type.UNKNOWN
@@ -385,45 +397,62 @@ class PetscDocString(DocBase):
 
   @classmethod
   def _get_sanitized_comment_and_range_from_cursor(cls, cursor):
-    if not isinstance(cursor, Cursor):
-      raise ValueError(type(cursor))
-
     raw, extent = cursor.get_comment_and_range()
     extent      = SourceRange.cast(extent, tu=cursor.translation_unit)
 
     if not cls._is_valid_docstring(cursor, raw, extent):
-      raise pl.ParsingError('Not a docstring')
+      raise pl.KnownUnhandleableCursorError('Not a docstring')
 
-    rawlines = raw.splitlines()
-    comments = [i for i, line in enumerate(rawlines) if line.lstrip().startswith('/*')]
-    if len(comments) > 1:
+    last_match = None
+    for re_match in _c_comment_regex.finditer(raw):
+      last_match = re_match
+
+    start = last_match.start()
+    if start:
       # this handles the following case:
       #
       # /* a dummy comment that is attributed to the symbol */
       # /*
       #   the real docstring comment, note no empty line between this and the previous!
+      #   // also handles internal comments
+      #   /* of both kinds */
       # */
       # <the symbol>
-      offset = comments[-1]
-      raw    = '\n'.join(rawlines[offset:])
-      extent = extent.resized(lbegin=offset, cbegin=None, cend=None)
+      assert start > 0
+      extent = extent.resized(lbegin=raw.count('\n', 0, start), cbegin=None, cend=None)
+      raw    = raw[start:]
     return raw, extent
 
-  @classmethod
-  def is_heading(cls, *args, **kwargs):
-    return cls.sections.is_heading(*args, **kwargs)
+  def get_pragmas(self):
+    def str_remove_prefix(string, prefix):
+      if py_version_lt(3, 9):
+        if string.startswith(prefix):
+          return string[len(prefix):]
+        return string
+      return string.removeprefix(prefix)
 
-  @classmethod
-  def _get_is_heading(cls, section):
-    return getattr(section, 'is_heading', cls.sections.is_heading)
+    pragmas     = collections.defaultdict(set)
+    start       = self.extent.start
+    flag_prefix = DiagnosticManager.flagprefix
+    for line in reversed(_util.read_file_lines_cached(start.file.name, 'r')[:start.line - 1]):
+      line = line.rstrip()
+      if line.endswith(('}', ';', ')', '>', '"')):
+        break
+      re_match = _pragma_regex.match(line)
+      if re_match:
+        pragmas[re_match.group(1)].update(
+          map(
+            re.compile,
+            filter(None, map(str.strip, str_remove_prefix(re_match.group(2), flag_prefix).split(',')))
+          )
+        )
+    return dict(pragmas)
 
   @staticmethod
   def make_error_message(message, crange=None, num_context=2, **kwargs):
     if crange is None:
-      crange_text = ''
-    else:
-      crange_text = crange.formatted(num_context=num_context, **kwargs)
-    return f'{message}:\n{crange_text}'
+      return message
+    return f'{message}:\n{crange.formatted(num_context=num_context, **kwargs)}'
 
   def make_source_location(self, lineno, col):
     return SourceLocation.from_position(self.cursor.translation_unit, lineno, col)
@@ -464,7 +493,7 @@ class PetscDocString(DocBase):
     """
     return self.add_error_from_diagnostic(self.make_diagnostic(diag_flag, msg, src_range, **kwargs))
 
-  def clear(self):
+  def reset(self):
     for section in self.sections:
       section.clear()
     self._attr = self._default_attributes()
@@ -489,7 +518,9 @@ class PetscDocString(DocBase):
         if is_floating:
            # don't really know how to handle this for now
           self.type_mod |= self.Modifier.FLOATING
-          raise pl.ParsingError('DON\'T KNOW HOW TO PROPERLY HANDLE FLOATING DOCSTRINGS')
+          raise pl.KnownUnhandleableCursorError(
+            'DON\'T KNOW HOW TO PROPERLY HANDLE FLOATING DOCSTRINGS'
+          )
         break
     return
 
@@ -509,17 +540,20 @@ class PetscDocString(DocBase):
     )
     if pointless:
       begin_sowing_range = self._attr['sowing_char_range']
+      linkage_extent     = SourceRange.cast(linkage_cursor.extent)
       diag               = self.make_diagnostic(
         self.diags.internal_linkage,
-        f'A sowing docstring for a symbol with internal linkage is pointless {Diagnostic.FLAG_SUBST}!',
-        self.extent, highlight=False
+        'A sowing docstring for a symbol with internal linkage is pointless', self.extent,
+        highlight=False
       ).add_note(
-        f'\'{cursor.displayname}\' is declared \'{linked_cursor_name}\' at {Cursor.cast(linkage_cursor)}',
-        location=linkage_cursor.extent.start
+        self.make_error_message(
+          f'\'{cursor.displayname}\' is declared \'{linked_cursor_name}\' here', linkage_extent
+        ),
+        location=linkage_extent.start
       ).add_note(
         'If this docstring is meant as developer-only documentation, remove the sowing chars from the docstring declaration. The linter will then ignore this docstring.'
       ).add_note(
-        f'Sowing chars declared here:\n{begin_sowing_range.formatted(num_context=2)}',
+        self.make_error_message('Sowing chars declared here', begin_sowing_range),
         location=begin_sowing_range.start
       )
       self.add_error_from_diagnostic(diag)
@@ -557,7 +591,7 @@ class PetscDocString(DocBase):
           #
           # we should ignore it, and stop processing this docstring altogether since it is
           # not an actual docstring.
-          raise pl.ParsingError
+          raise pl.KnownUnhandleableCursorError
         if begin_sowing[0] == 'C':
           # sometimes people mix up the order, or forget to add the right letter for the
           # type, for example:
@@ -668,13 +702,13 @@ class PetscDocString(DocBase):
       self.add_error_from_source_range(diag, mess, eloc, highlight=False, patch=Patch(floc, ''))
     return
 
-  def _check_valid_indentation(self, lineno, line, lstripped):
+  def _check_valid_indentation(self, lineno, line, left_stripped):
     """
     If the line is regular (not empty, or a parameter list), check that line is indented correctly
     """
     linelen = len(line)
     if linelen:
-      indent       = linelen - len(lstripped)
+      indent       = linelen - len(left_stripped)
       expected_ind = 0 if line.startswith(('.', '+', '-', '$')) else self.indent
       if indent != expected_ind:
         diag = self.diags.indentation
@@ -709,11 +743,11 @@ class PetscDocString(DocBase):
       )
     return
 
-  def _check_section_header_typo(self, heading, line, lineno):
+  def _check_section_header_typo(self, verdict, line, lineno):
     """
     Check that a section header that looks like a section header is actually one
     """
-    if heading == Verdict.MAYBE_HEADING:
+    if verdict == Verdict.MAYBE_HEADING:
       try:
         name, matched = self.guess_heading(line, strict=True)
       except GuessHeadingFailError as ghfe:
@@ -725,11 +759,12 @@ class PetscDocString(DocBase):
         mess = f'Line seems to be a section header but doesn\'t directly end with with \':\', did you mean \'{matched}\'?'
       else:
         mess = f'Line seems to be a section header but missing \':\', did you mean \'{matched}:\'?'
-      diag = self.diags.section_header_maybe_header
-      self.add_error_from_source_range(diag, mess, self.make_source_range(name, line, lineno))
-    return heading
+      self.add_error_from_source_range(
+        self.diags.section_header_maybe_header, mess, self.make_source_range(name, line, lineno)
+      )
+    return verdict
 
-  def _check_section_header_that_probably_should_not_be_one(self, heading, line, lineno):
+  def _check_section_header_that_probably_should_not_be_one(self, heading, line, stripped, lineno):
     """
     check that a section header that ends with ':' is not really a header
     """
@@ -744,28 +779,29 @@ class PetscDocString(DocBase):
       if section_guess == '__UNKNOWN_SECTION__':
         assert not line.endswith(r'\:')
         eloc = self.make_source_range(':', line, lineno, offset=line.rfind(':'))
-        mess = f'Sowing treats all lines ending with \':\' as header, are you sure \'{textwrap.shorten(line.strip(), width=35)}\' qualifies? Use \'\:\' to escape the colon if not'
+        mess = f'Sowing treats all lines ending with \':\' as header, are you sure \'{textwrap.shorten(stripped, width=35)}\' qualifies? Use \'\:\' to escape the colon if not'
         self.add_error_from_source_range(self.diags.section_header_fishy_header, mess, eloc)
     return heading
 
   def parse(self):
-    self.clear()
+    self.reset()
     self._check_valid_sowing_chars()
     self._check_floating()
     if not self._check_valid_cursor_linkage():
-      raise pl.ParsingError # no point in continuing analysis, the docstring should not exist!
+      # no point in continuing analysis, the docstring should not exist!
+      raise pl.KnownUnhandleableCursorError
     self._check_valid_docstring_spacing()
 
     raw_data     = []
-    heading_data = []
     section      = self.sections.synopsis
     check_indent = section.check_indent_allowed()
-    is_heading   = self._get_is_heading(section)
     # if True we are in a verbatim block. We should not try to detect any kind of
     # headers until we reach the end of the verbatim block
     in_verbatim = 0
+    prev_line   = ''
     for lineno, line in enumerate(self.raw.splitlines(), start=self.extent.start.line):
-      stripped = line.strip()
+      left_stripped = line.lstrip()
+      stripped      = left_stripped.rstrip()
       if stripped.startswith('/*') or stripped.endswith('*/'):
         continue
 
@@ -781,21 +817,24 @@ class PetscDocString(DocBase):
         # inline verbatim don't modify check flag but dont check indentation either
         in_verbatim = 2
       elif check_indent:
-        self._check_valid_indentation(lineno, line, stripped)
+        self._check_valid_indentation(lineno, line, left_stripped)
 
       if in_verbatim == 0:
-        heading_verdict = self._check_section_header_typo(is_heading(stripped), line, lineno)
+        heading_verdict = self.sections.is_heading(prev_line, stripped)
+        heading_verdict = self._check_section_header_typo(heading_verdict, line, lineno)
         if heading_verdict > 0:
+          # we may switch headings, we should check indentation
+          if not check_indent:
+            self._check_valid_indentation(lineno, line, left_stripped)
           self._check_valid_section_spacing(raw_data[-1][1] if raw_data else None, lineno)
           new_section = self.sections.find(stripped.split(':', maxsplit=1)[0].strip().casefold())
           if new_section != section:
             raw_data     = section.consume(raw_data)
             section      = new_section
             check_indent = section.check_indent_allowed()
-            is_heading   = self._get_is_heading(section)
         else:
           heading_verdict = self._check_section_header_that_probably_should_not_be_one(
-            heading_verdict, line, lineno
+            heading_verdict, line, stripped, lineno
           )
       else:
         # verbatim blocks are never headings
@@ -805,8 +844,9 @@ class PetscDocString(DocBase):
       if in_verbatim == 2:
         # reset the dollar verbatim
         in_verbatim = 0
+      prev_line = stripped
 
-    raw_data = section.consume(raw_data)
+    section.consume(raw_data)
     for sec in self.sections:
       sec.setup(self)
     return self

@@ -211,7 +211,7 @@ PetscErrorCode PetscClassPerfLogEnsureSize(PetscClassPerfLog classLog, int size)
 - cname    - The name associated with the class
 
   Output Parameter:
-.  classid   - The classid
+. classid - The classid
 
   Level: developer
 
@@ -252,7 +252,7 @@ PetscErrorCode PetscClassRegLogRegister(PetscClassRegLog classLog, const char cn
 - classid  - The cookie
 
   Output Parameter:
-. oclass   - The class id
+. oclass - The class id
 
   Level: developer
 

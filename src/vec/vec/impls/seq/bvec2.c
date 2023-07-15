@@ -876,31 +876,31 @@ PetscErrorCode VecCreate_Seq_Private(Vec v, const PetscScalar array[])
 }
 
 /*@C
-   VecCreateSeqWithArray - Creates a standard,sequential array-style vector,
-   where the user provides the array space to store the vector values.
+  VecCreateSeqWithArray - Creates a standard,sequential array-style vector,
+  where the user provides the array space to store the vector values.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  comm - the communicator, should be `PETSC_COMM_SELF`
-.  bs - the block size
-.  n - the vector length
--  array - memory where the vector elements are to be stored.
+  Input Parameters:
++ comm  - the communicator, should be `PETSC_COMM_SELF`
+. bs    - the block size
+. n     - the vector length
+- array - memory where the vector elements are to be stored.
 
-   Output Parameter:
-.  V - the vector
+  Output Parameter:
+. V - the vector
 
-   Level: intermediate
+  Level: intermediate
 
-   Notes:
-   Use `VecDuplicate()` or `VecDuplicateVecs(`) to form additional vectors of the
-   same type as an existing vector.
+  Notes:
+  Use `VecDuplicate()` or `VecDuplicateVecs(`) to form additional vectors of the
+  same type as an existing vector.
 
-   If the user-provided array is` NULL`, then `VecPlaceArray()` can be used
-   at a later stage to SET the array for storing the vector values.
+  If the user-provided array is` NULL`, then `VecPlaceArray()` can be used
+  at a later stage to SET the array for storing the vector values.
 
-   PETSc does NOT free the array when the vector is destroyed via `VecDestroy()`.
-   The user should not free the array until the vector is destroyed.
+  PETSc does NOT free the array when the vector is destroyed via `VecDestroy()`.
+  The user should not free the array until the vector is destroyed.
 
 .seealso: `VecCreateMPIWithArray()`, `VecCreate()`, `VecDuplicate()`, `VecDuplicateVecs()`,
           `VecCreateGhost()`, `VecCreateSeq()`, `VecPlaceArray()`

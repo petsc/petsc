@@ -149,32 +149,32 @@ PetscErrorCode SNESMatrixFreeMult2_Private(Mat mat, Vec a, Vec y)
 }
 
 /*@C
-   MatCreateSNESMFMore - Creates a matrix-free matrix
-   context for use with a `SNES` solver that uses the More method to compute an optimal h based on the noise of the function.  This matrix can be used as
-   the Jacobian argument for the routine `SNESSetJacobian()`.
+  MatCreateSNESMFMore - Creates a matrix-free matrix
+  context for use with a `SNES` solver that uses the More method to compute an optimal h based on the noise of the function.  This matrix can be used as
+  the Jacobian argument for the routine `SNESSetJacobian()`.
 
-   Input Parameters:
-+  snes - the `SNES` context
--  x - vector where `SNES` solution is to be stored.
+  Input Parameters:
++ snes - the `SNES` context
+- x    - vector where `SNES` solution is to be stored.
 
-   Output Parameter:
-.  J - the matrix-free matrix
+  Output Parameter:
+. J - the matrix-free matrix
 
-   Options Database Keys:
-+  -snes_mf_err <error_rel> - see `MatCreateSNESMF()`
-.  -snes_mf_umin <umin> - see `MatCreateSNESMF()`
-.  -snes_mf_compute_err - compute the square root or relative error in function
-.  -snes_mf_freq_err <freq> - set the frequency to recompute the parameters
--  -snes_mf_jorge - use the method of Jorge More
+  Options Database Keys:
++ -snes_mf_err <error_rel> - see `MatCreateSNESMF()`
+. -snes_mf_umin <umin>     - see `MatCreateSNESMF()`
+. -snes_mf_compute_err     - compute the square root or relative error in function
+. -snes_mf_freq_err <freq> - set the frequency to recompute the parameters
+- -snes_mf_jorge           - use the method of Jorge More
 
-   Level: advanced
+  Level: advanced
 
-   Notes:
-   This is an experimental approach, use `MatCreateSNESMF()`.
+  Notes:
+  This is an experimental approach, use `MatCreateSNESMF()`.
 
-   The matrix-free matrix context merely contains the function pointers
-   and work space for performing finite difference approximations of
-   Jacobian-vector products, J(u)*a, via
+  The matrix-free matrix context merely contains the function pointers
+  and work space for performing finite difference approximations of
+  Jacobian-vector products, J(u)*a, via
 
 .vb
        J(u)*a = [J(u+h*a) - J(u)]/h,
@@ -189,10 +189,10 @@ PetscErrorCode SNESMatrixFreeMult2_Private(Mat mat, Vec a, Vec y)
           -snes_mf_jorge
 .ve
 
-   The user can set these parameters via `MatMFFDSetFunctionError()`.
+  The user can set these parameters via `MatMFFDSetFunctionError()`.
 
-   The user should call `MatDestroy()` when finished with the matrix-free
-   matrix context.
+  The user should call `MatDestroy()` when finished with the matrix-free
+  matrix context.
 
 .seealso: `SNESCreateMF()`, `MatCreateMFFD()`, `MatDestroy()`, `MatMFFDSetFunctionError()`
 @*/
@@ -262,27 +262,27 @@ PetscErrorCode MatCreateSNESMFMore(SNES snes, Vec x, Mat *J)
 }
 
 /*@C
-   MatSNESMFMoreSetParameters - Sets the parameters for the approximation of
-   matrix-vector products using finite differences, see  `MatCreateSNESMFMore()`
+  MatSNESMFMoreSetParameters - Sets the parameters for the approximation of
+  matrix-vector products using finite differences, see  `MatCreateSNESMFMore()`
 
-   Input Parameters:
-+  mat - the matrix
-.  error_rel - relative error (should be set to the square root of the relative error in the function evaluations)
-.  umin - minimum allowable u-value
--  h - differencing parameter
+  Input Parameters:
++ mat   - the matrix
+. error - relative error (should be set to the square root of the relative error in the function evaluations)
+. umin  - minimum allowable u-value
+- h     - differencing parameter
 
-   Options Database Keys:
-+  -snes_mf_err <error_rel> - see `MatCreateSNESMF()`
-.  -snes_mf_umin <umin> - see `MatCreateSNESMF()`
-.  -snes_mf_compute_err - compute the square root or relative error in function
-.  -snes_mf_freq_err <freq> - set the frequency to recompute the parameters
--  -snes_mf_jorge - use the method of Jorge More
+  Options Database Keys:
++ -snes_mf_err <error_rel> - see `MatCreateSNESMF()`
+. -snes_mf_umin <umin>     - see `MatCreateSNESMF()`
+. -snes_mf_compute_err     - compute the square root or relative error in function
+. -snes_mf_freq_err <freq> - set the frequency to recompute the parameters
+- -snes_mf_jorge           - use the method of Jorge More
 
-   Level: advanced
+  Level: advanced
 
-   Note:
-   If the user sets the parameter h directly, then this value will be used
-   instead of the default computation as discussed in `MatCreateSNESMFMore()`
+  Note:
+  If the user sets the parameter h directly, then this value will be used
+  instead of the default computation as discussed in `MatCreateSNESMFMore()`
 
 .seealso: `MatCreateSNESMF()`, `MatCreateSNESMFMore()`
 @*/

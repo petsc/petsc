@@ -1888,18 +1888,18 @@ PETSC_UNUSED static PetscErrorCode TSTrajectorySetUseDRAM(TSTrajectory tj, Petsc
 }
 
 /*@C
-   TSTrajectoryMemorySetType - sets the software that is used to generate the checkpointing schedule.
+  TSTrajectoryMemorySetType - sets the software that is used to generate the checkpointing schedule.
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  tj - the `TSTrajectory` context
--  tj_memory_type - Revolve or CAMS
+  Input Parameters:
++ tj             - the `TSTrajectory` context
+- tj_memory_type - Revolve or CAMS
 
-   Options Database Key:
-.  -ts_trajectory_memory_type <tj_memory_type> - petsc, revolve, cams
+  Options Database Key:
+. -ts_trajectory_memory_type <tj_memory_type> - petsc, revolve, cams
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: [](ch_ts), `TSTrajectory`, `TSTrajectorySetMaxUnitsRAM()`, `TSTrajectoryMemoryType`
 @*/
@@ -1916,10 +1916,10 @@ PetscErrorCode TSTrajectoryMemorySetType(TSTrajectory tj, TSTrajectoryMemoryType
   Logically Collective
 
   Input Parameter:
-.  tj - tstrajectory context
+. tj - tstrajectory context
 
   Output Parameter:
-.  max_cps_ram - maximum number of checkpoints in RAM
+. max_cps_ram - maximum number of checkpoints in RAM
 
   Level: intermediate
 
@@ -1938,10 +1938,10 @@ PetscErrorCode TSTrajectorySetMaxCpsRAM(TSTrajectory tj, PetscInt max_cps_ram)
   Logically Collective
 
   Input Parameter:
-.  tj - tstrajectory context
+. tj - tstrajectory context
 
   Output Parameter:
-.  max_cps_disk - maximum number of checkpoints on disk
+. max_cps_disk - maximum number of checkpoints on disk
 
   Level: intermediate
 
@@ -1960,10 +1960,10 @@ PetscErrorCode TSTrajectorySetMaxCpsDisk(TSTrajectory tj, PetscInt max_cps_disk)
   Logically Collective
 
   Input Parameter:
-.  tj - tstrajectory context
+. tj - tstrajectory context
 
   Output Parameter:
-.  max_units_ram - maximum number of checkpointing units in RAM
+. max_units_ram - maximum number of checkpointing units in RAM
 
   Level: intermediate
 
@@ -1982,10 +1982,10 @@ PetscErrorCode TSTrajectorySetMaxUnitsRAM(TSTrajectory tj, PetscInt max_units_ra
   Logically Collective
 
   Input Parameter:
-.  tj - tstrajectory context
+. tj - tstrajectory context
 
   Output Parameter:
-.  max_units_disk - maximum number of checkpointing units on disk
+. max_units_disk - maximum number of checkpointing units on disk
 
   Level: intermediate
 

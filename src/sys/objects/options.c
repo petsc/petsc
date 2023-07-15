@@ -131,22 +131,22 @@ static PetscErrorCode PetscOptionsMonitor(PetscOptions options, const char name[
 }
 
 /*@
-   PetscOptionsCreate - Creates an empty options database.
+  PetscOptionsCreate - Creates an empty options database.
 
-   Logically Collective
+  Logically Collective
 
-   Output Parameter:
-.  options - Options database object
+  Output Parameter:
+. options - Options database object
 
-   Level: advanced
+  Level: advanced
 
-   Note:
-   Though PETSc has a concept of multiple options database the current code uses a single default `PetscOptions` object
+  Note:
+  Though PETSc has a concept of multiple options database the current code uses a single default `PetscOptions` object
 
-   Developer Notes:
-   We may want eventually to pass a `MPI_Comm` to determine the ownership of the object
+  Developer Notes:
+  We may want eventually to pass a `MPI_Comm` to determine the ownership of the object
 
-   This object never got developed after being introduced, it is not clear that supporting multiple `PetscOptions` objects is useful
+  This object never got developed after being introduced, it is not clear that supporting multiple `PetscOptions` objects is useful
 
 .seealso: `PetscOptionsDestroy()`, `PetscOptionsPush()`, `PetscOptionsPop()`, `PetscOptionsInsert()`, `PetscOptionsSetValue()`
 @*/
@@ -160,16 +160,16 @@ PetscErrorCode PetscOptionsCreate(PetscOptions *options)
 }
 
 /*@
-    PetscOptionsDestroy - Destroys an option database.
+  PetscOptionsDestroy - Destroys an option database.
 
-    Logically Collective on whatever communicator was associated with the call to `PetscOptionsCreate()`
+  Logically Collective on whatever communicator was associated with the call to `PetscOptionsCreate()`
 
   Input Parameter:
-.  options - the `PetscOptions` object
+. options - the `PetscOptions` object
 
-   Level: advanced
+  Level: advanced
 
-.seealso: `PetscOptionsInsert()`, `PetscOptionsPush()`, `PetscOptionsPop()`, `PetscOptionsInsert()`, `PetscOptionsSetValue()`
+.seealso: `PetscOptionsInsert()`, `PetscOptionsPush()`, `PetscOptionsPop()`, `PetscOptionsSetValue()`
 @*/
 PetscErrorCode PetscOptionsDestroy(PetscOptions *options)
 {
@@ -195,15 +195,15 @@ PetscErrorCode PetscOptionsCreateDefault(void)
 }
 
 /*@
-      PetscOptionsPush - Push a new `PetscOptions` object as the default provider of options
-                         Allows using different parts of a code to use different options databases
+  PetscOptionsPush - Push a new `PetscOptions` object as the default provider of options
+  Allows using different parts of a code to use different options databases
 
   Logically Collective
 
   Input Parameter:
-.   opt - the options obtained with `PetscOptionsCreate()`
+. opt - the options obtained with `PetscOptionsCreate()`
 
-   Level: advanced
+  Level: advanced
 
   Notes:
   Use `PetscOptionsPop()` to return to the previous default options database
@@ -213,7 +213,7 @@ PetscErrorCode PetscOptionsCreateDefault(void)
   not the code may fail in complicated ways because the same parallel solvers may incorrectly use different options
   on different ranks.
 
-  Developer Note:
+  Developer Notes:
   Though this functionality has been provided it has never been used in PETSc and might be removed.
 
 .seealso: `PetscOptionsPop()`, `PetscOptionsCreate()`, `PetscOptionsInsert()`, `PetscOptionsSetValue()`, `PetscOptionsLeft()`
@@ -228,11 +228,11 @@ PetscErrorCode PetscOptionsPush(PetscOptions opt)
 }
 
 /*@
-      PetscOptionsPop - Pop the most recent `PetscOptionsPush()` to return to the previous default options
+  PetscOptionsPop - Pop the most recent `PetscOptionsPush()` to return to the previous default options
 
-      Logically Collective on whatever communicator was associated with the call to `PetscOptionsCreate()`
+  Logically Collective on whatever communicator was associated with the call to `PetscOptionsCreate()`
 
-   Level: advanced
+  Level: advanced
 
 .seealso: `PetscOptionsPop()`, `PetscOptionsCreate()`, `PetscOptionsInsert()`, `PetscOptionsSetValue()`, `PetscOptionsLeft()`
 @*/
@@ -267,17 +267,19 @@ PetscErrorCode PetscOptionsDestroyDefault(void)
 }
 
 /*@C
-   PetscOptionsValidKey - PETSc Options database keys must begin with one or two dashes (-) followed by a letter.
+  PetscOptionsValidKey - PETSc Options database keys must begin with one or two dashes (-) followed by a letter.
 
-   Not Collective
+  Not Collective
 
-   Input Parameter:
-.  key - string to check if valid
+  Input Parameter:
+. key - string to check if valid
 
-   Output Parameter:
-.  valid - `PETSC_TRUE` if a valid key
+  Output Parameter:
+. valid - `PETSC_TRUE` if a valid key
 
-   Level: intermediate
+  Level: intermediate
+
+.seealso: `PetscOptionsCreate()`, `PetscOptionsInsert()`
 @*/
 PetscErrorCode PetscOptionsValidKey(const char key[], PetscBool *valid)
 {
@@ -352,15 +354,15 @@ static PetscErrorCode PetscOptionsInsertString_Private(PetscOptions options, con
 }
 
 /*@C
-   PetscOptionsInsertString - Inserts options into the database from a string
+  PetscOptionsInsertString - Inserts options into the database from a string
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  options - options object
--  in_str - string that contains options separated by blanks
+  Input Parameters:
++ options - options object
+- in_str  - string that contains options separated by blanks
 
-   Level: intermediate
+  Level: intermediate
 
   The collectivity of this routine is complex; only the MPI processes that call this routine will
   have the affect of these options. If some processes that create objects call this routine and others do
@@ -593,29 +595,29 @@ static PetscErrorCode PetscOptionsInsertFilePetsc(MPI_Comm comm, PetscOptions op
 }
 
 /*@C
-     PetscOptionsInsertFile - Inserts options into the database from a file.
+  PetscOptionsInsertFile - Inserts options into the database from a file.
 
-     Collective
+  Collective
 
   Input Parameters:
-+   comm - the processes that will share the options (usually `PETSC_COMM_WORLD`)
-.   options - options database, use `NULL` for default global database
-.   file - name of file,
++ comm    - the processes that will share the options (usually `PETSC_COMM_WORLD`)
+. options - options database, use `NULL` for default global database
+. file    - name of file,
            ".yml" and ".yaml" filename extensions are inserted as YAML options,
            append ":yaml" to filename to force YAML options.
--   require - if `PETSC_TRUE` will generate an error if the file does not exist
+- require - if `PETSC_TRUE` will generate an error if the file does not exist
 
   Level: developer
 
   Notes:
-   Use  # for lines that are comments and which should be ignored.
-   Usually, instead of using this command, one should list the file name in the call to `PetscInitialize()`, this insures that certain options
-   such as `-log_view` or `-malloc_debug` are processed properly. This routine only sets options into the options database that will be processed by later
-   calls to `XXXSetFromOptions()`, it should not be used for options listed under PetscInitialize().
-   The collectivity of this routine is complex; only the MPI processes in comm will
-   have the effect of these options. If some processes that create objects call this routine and others do
-   not the code may fail in complicated ways because the same parallel solvers may incorrectly use different options
-   on different ranks.
+  Use  # for lines that are comments and which should be ignored.
+  Usually, instead of using this command, one should list the file name in the call to `PetscInitialize()`, this insures that certain options
+  such as `-log_view` or `-malloc_debug` are processed properly. This routine only sets options into the options database that will be processed by later
+  calls to `XXXSetFromOptions()`, it should not be used for options listed under PetscInitialize().
+  The collectivity of this routine is complex; only the MPI processes in comm will
+  have the effect of these options. If some processes that create objects call this routine and others do
+  not the code may fail in complicated ways because the same parallel solvers may incorrectly use different options
+  on different ranks.
 
 .seealso: `PetscOptionsSetValue()`, `PetscOptionsView()`, `PetscOptionsHasName()`, `PetscOptionsGetInt()`,
           `PetscOptionsGetReal()`, `PetscOptionsGetString()`, `PetscOptionsGetIntArray()`, `PetscOptionsBool()`,
@@ -640,16 +642,16 @@ PetscErrorCode PetscOptionsInsertFile(MPI_Comm comm, PetscOptions options, const
 }
 
 /*@C
-   PetscOptionsInsertArgs - Inserts options into the database from a array of strings
+  PetscOptionsInsertArgs - Inserts options into the database from a array of strings
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  options - options object
-.  argc - the array length
--  args - the string array
+  Input Parameters:
++ options - options object
+. argc    - the array length
+- args    - the string array
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `PetscOptions`, `PetscOptionsInsertString()`, `PetscOptionsInsertFile()`
 @*/
@@ -799,32 +801,32 @@ static inline PetscErrorCode PetscOptionsSkipPrecedent(PetscOptions options, con
 }
 
 /*@C
-   PetscOptionsInsert - Inserts into the options database from the command line,
-                        the environmental variable and a file.
+  PetscOptionsInsert - Inserts into the options database from the command line,
+  the environmental variable and a file.
 
-   Collective on `PETSC_COMM_WORLD`
+  Collective on `PETSC_COMM_WORLD`
 
-   Input Parameters:
-+  options - options database or `NULL` for the default global database
-.  argc - count of number of command line arguments
-.  args - the command line arguments
--  file - [optional] PETSc database file, append ":yaml" to filename to specify YAML options format.
+  Input Parameters:
++ options - options database or `NULL` for the default global database
+. argc    - count of number of command line arguments
+. args    - the command line arguments
+- file    - [optional] PETSc database file, append ":yaml" to filename to specify YAML options format.
           Use `NULL` or empty string to not check for code specific file.
           Also checks ~/.petscrc, .petscrc and petscrc.
           Use -skip_petscrc in the code specific file (or command line) to skip ~/.petscrc, .petscrc and petscrc files.
 
-   Options Database Keys:
-+   -options_file <filename> - read options from a file
--   -options_file_yaml <filename> - read options from a YAML file
+  Options Database Keys:
++ -options_file <filename>      - read options from a file
+- -options_file_yaml <filename> - read options from a YAML file
 
-   Level: advanced
+  Level: advanced
 
-   Notes:
-   Since `PetscOptionsInsert()` is automatically called by `PetscInitialize()`,
-   the user does not typically need to call this routine. `PetscOptionsInsert()`
-   can be called several times, adding additional entries into the database.
+  Notes:
+  Since `PetscOptionsInsert()` is automatically called by `PetscInitialize()`,
+  the user does not typically need to call this routine. `PetscOptionsInsert()`
+  can be called several times, adding additional entries into the database.
 
-   See `PetscInitialize()` for options related to option database monitoring.
+  See `PetscInitialize()` for options related to option database monitoring.
 
 .seealso: `PetscOptionsDestroy()`, `PetscOptionsView()`, `PetscOptionsInsertString()`, `PetscOptionsInsertFile()`,
           `PetscInitialize()`
@@ -921,23 +923,23 @@ static PetscBool PetscCIOption(const char *name)
 }
 
 /*@C
-   PetscOptionsView - Prints the options that have been loaded. This is
-   useful for debugging purposes.
+  PetscOptionsView - Prints the options that have been loaded. This is
+  useful for debugging purposes.
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  options - options database, use `NULL` for default global database
--  viewer - must be an `PETSCVIEWERASCII` viewer
+  Input Parameters:
++ options - options database, use `NULL` for default global database
+- viewer  - must be an `PETSCVIEWERASCII` viewer
 
-   Options Database Key:
-.  -options_view - Activates `PetscOptionsView()` within `PetscFinalize()`
+  Options Database Key:
+. -options_view - Activates `PetscOptionsView()` within `PetscFinalize()`
 
-   Level: advanced
+  Level: advanced
 
-   Note:
-   Only the MPI rank 0 of the `MPI_Comm` used to create view prints the option values. Other processes
-   may have different values but they are not printed.
+  Note:
+  Only the MPI rank 0 of the `MPI_Comm` used to create view prints the option values. Other processes
+  may have different values but they are not printed.
 
 .seealso: `PetscOptionsAllUsed()`
 @*/
@@ -1030,31 +1032,31 @@ PETSC_EXTERN PetscErrorCode PetscOptionsViewError(void)
 }
 
 /*@C
-   PetscOptionsPrefixPush - Designate a prefix to be used by all options insertions to follow.
+  PetscOptionsPrefixPush - Designate a prefix to be used by all options insertions to follow.
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  options - options database, or `NULL` for the default global database
--  prefix - The string to append to the existing prefix
+  Input Parameters:
++ options - options database, or `NULL` for the default global database
+- prefix  - The string to append to the existing prefix
 
-   Options Database Keys:
-+   -prefix_push <some_prefix_> - push the given prefix
--   -prefix_pop - pop the last prefix
+  Options Database Keys:
++ -prefix_push <some_prefix_> - push the given prefix
+- -prefix_pop                 - pop the last prefix
 
-   Level: advanced
+  Level: advanced
 
-   Notes:
-   It is common to use this in conjunction with `-options_file` as in
+  Notes:
+  It is common to use this in conjunction with `-options_file` as in
 
 $ -prefix_push system1_ -options_file system1rc -prefix_pop -prefix_push system2_ -options_file system2rc -prefix_pop
 
-   where the files no longer require all options to be prefixed with `-system2_`.
+  where the files no longer require all options to be prefixed with `-system2_`.
 
-   The collectivity of this routine is complex; only the MPI processes that call this routine will
-   have the affect of these options. If some processes that create objects call this routine and others do
-   not the code may fail in complicated ways because the same parallel solvers may incorrectly use different options
-   on different ranks.
+  The collectivity of this routine is complex; only the MPI processes that call this routine will
+  have the affect of these options. If some processes that create objects call this routine and others do
+  not the code may fail in complicated ways because the same parallel solvers may incorrectly use different options
+  on different ranks.
 
 .seealso: `PetscOptionsPrefixPop()`, `PetscOptionsPush()`, `PetscOptionsPop()`, `PetscOptionsCreate()`, `PetscOptionsSetValue()`
 @*/
@@ -1083,14 +1085,14 @@ PetscErrorCode PetscOptionsPrefixPush(PetscOptions options, const char prefix[])
 }
 
 /*@C
-   PetscOptionsPrefixPop - Remove the latest options prefix, see `PetscOptionsPrefixPush()` for details
+  PetscOptionsPrefixPop - Remove the latest options prefix, see `PetscOptionsPrefixPush()` for details
 
-   Logically Collective on the `MPI_Comm` used when called `PetscOptionsPrefixPush()`
+  Logically Collective on the `MPI_Comm` used when called `PetscOptionsPrefixPush()`
 
   Input Parameter:
-.  options - options database, or `NULL` for the default global database
+. options - options database, or `NULL` for the default global database
 
-   Level: advanced
+  Level: advanced
 
 .seealso: `PetscOptionsPrefixPush()`, `PetscOptionsPush()`, `PetscOptionsPop()`, `PetscOptionsCreate()`, `PetscOptionsSetValue()`
 @*/
@@ -1108,20 +1110,20 @@ PetscErrorCode PetscOptionsPrefixPop(PetscOptions options)
 }
 
 /*@C
-    PetscOptionsClear - Removes all options form the database leaving it empty.
+  PetscOptionsClear - Removes all options form the database leaving it empty.
 
-    Logically Collective
+  Logically Collective
 
   Input Parameter:
-.  options - options database, use `NULL` for the default global database
+. options - options database, use `NULL` for the default global database
 
-   Level: developer
+  Level: developer
 
-   Note:
-   The collectivity of this routine is complex; only the MPI processes that call this routine will
-   have the affect of these options. If some processes that create objects call this routine and others do
-   not the code may fail in complicated ways because the same parallel solvers may incorrectly use different options
-   on different ranks.
+  Note:
+  The collectivity of this routine is complex; only the MPI processes that call this routine will
+  have the affect of these options. If some processes that create objects call this routine and others do
+  not the code may fail in complicated ways because the same parallel solvers may incorrectly use different options
+  on different ranks.
 
 .seealso: `PetscOptionsInsert()`
 @*/
@@ -1170,22 +1172,22 @@ PetscErrorCode PetscOptionsClear(PetscOptions options)
 }
 
 /*@C
-   PetscOptionsSetAlias - Makes a key and alias for another key
+  PetscOptionsSetAlias - Makes a key and alias for another key
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  options - options database, or `NULL` for default global database
-.  newname - the alias
--  oldname - the name that alias will refer to
+  Input Parameters:
++ options - options database, or `NULL` for default global database
+. newname - the alias
+- oldname - the name that alias will refer to
 
-   Level: advanced
+  Level: advanced
 
-   Note:
-   The collectivity of this routine is complex; only the MPI processes that call this routine will
-   have the affect of these options. If some processes that create objects call this routine and others do
-   not the code may fail in complicated ways because the same parallel solvers may incorrectly use different options
-   on different ranks.
+  Note:
+  The collectivity of this routine is complex; only the MPI processes that call this routine will
+  have the affect of these options. If some processes that create objects call this routine and others do
+  not the code may fail in complicated ways because the same parallel solvers may incorrectly use different options
+  on different ranks.
 
 .seealso: `PetscOptionsGetInt()`, `PetscOptionsGetReal()`, `OptionsHasName()`,
           `PetscOptionsGetString()`, `PetscOptionsGetIntArray()`, `PetscOptionsGetRealArray()`, `PetscOptionsBool()`,
@@ -1236,28 +1238,28 @@ PetscErrorCode PetscOptionsSetAlias(PetscOptions options, const char newname[], 
 }
 
 /*@C
-   PetscOptionsSetValue - Sets an option name-value pair in the options
-   database, overriding whatever is already present.
+  PetscOptionsSetValue - Sets an option name-value pair in the options
+  database, overriding whatever is already present.
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  options - options database, use `NULL` for the default global database
-.  name - name of option, this SHOULD have the - prepended
--  value - the option value (not used for all options, so can be `NULL`)
+  Input Parameters:
++ options - options database, use `NULL` for the default global database
+. name    - name of option, this SHOULD have the - prepended
+- value   - the option value (not used for all options, so can be `NULL`)
 
-   Level: intermediate
+  Level: intermediate
 
-   Note:
-   This function can be called BEFORE `PetscInitialize()`
+  Note:
+  This function can be called BEFORE `PetscInitialize()`
 
-   The collectivity of this routine is complex; only the MPI processes that call this routine will
-   have the affect of these options. If some processes that create objects call this routine and others do
-   not the code may fail in complicated ways because the same parallel solvers may incorrectly use different options
-   on different ranks.
+  The collectivity of this routine is complex; only the MPI processes that call this routine will
+  have the affect of these options. If some processes that create objects call this routine and others do
+  not the code may fail in complicated ways because the same parallel solvers may incorrectly use different options
+  on different ranks.
 
-   Developers Note:
-   Uses malloc() directly because PETSc may not be initialized yet.
+  Developer Notes:
+  Uses malloc() directly because PETSc may not be initialized yet.
 
 .seealso: `PetscOptionsInsert()`, `PetscOptionsClearValue()`
 @*/
@@ -1393,22 +1395,22 @@ setvalue:
 }
 
 /*@C
-   PetscOptionsClearValue - Clears an option name-value pair in the options
-   database, overriding whatever is already present.
+  PetscOptionsClearValue - Clears an option name-value pair in the options
+  database, overriding whatever is already present.
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  options - options database, use `NULL` for the default global database
--  name - name of option, this SHOULD have the - prepended
+  Input Parameters:
++ options - options database, use `NULL` for the default global database
+- name    - name of option, this SHOULD have the - prepended
 
-   Level: intermediate
+  Level: intermediate
 
-   Note:
-   The collectivity of this routine is complex; only the MPI processes that call this routine will
-   have the affect of these options. If some processes that create objects call this routine and others do
-   not the code may fail in complicated ways because the same parallel solvers may incorrectly use different options
-   on different ranks.
+  Note:
+  The collectivity of this routine is complex; only the MPI processes that call this routine will
+  have the affect of these options. If some processes that create objects call this routine and others do
+  not the code may fail in complicated ways because the same parallel solvers may incorrectly use different options
+  on different ranks.
 
 .seealso: `PetscOptionsInsert()`
 @*/
@@ -1460,23 +1462,23 @@ PetscErrorCode PetscOptionsClearValue(PetscOptions options, const char name[])
 }
 
 /*@C
-   PetscOptionsFindPair - Gets an option name-value pair from the options database.
+  PetscOptionsFindPair - Gets an option name-value pair from the options database.
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  options - options database, use `NULL` for the default global database
-.  pre - the string to prepend to the name or `NULL`, this SHOULD NOT have the "-" prepended
--  name - name of option, this SHOULD have the "-" prepended
+  Input Parameters:
++ options - options database, use `NULL` for the default global database
+. pre     - the string to prepend to the name or `NULL`, this SHOULD NOT have the "-" prepended
+- name    - name of option, this SHOULD have the "-" prepended
 
-   Output Parameters:
-+  value - the option value (optional, not used for all options)
--  set - whether the option is set (optional)
+  Output Parameters:
++ value - the option value (optional, not used for all options)
+- set   - whether the option is set (optional)
 
-   Level: developer
+  Level: developer
 
-   Note:
-   Each process may find different values or no value depending on how options were inserted into the database
+  Note:
+  Each process may find different values or no value depending on how options were inserted into the database
 
 .seealso: `PetscOptionsSetValue()`, `PetscOptionsClearValue()`
 @*/
@@ -1674,17 +1676,17 @@ PETSC_EXTERN PetscErrorCode PetscOptionsFindPairPrefix_Private(PetscOptions opti
 }
 
 /*@C
-   PetscOptionsReject - Generates an error if a certain option is given.
+  PetscOptionsReject - Generates an error if a certain option is given.
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  options - options database, use `NULL` for default global database
-.  pre - the option prefix (may be `NULL`)
-.  name - the option name one is seeking
--  mess - error message (may be `NULL`)
+  Input Parameters:
++ options - options database, use `NULL` for default global database
+. pre     - the option prefix (may be `NULL`)
+. name    - the option name one is seeking
+- mess    - error message (may be `NULL`)
 
-   Level: advanced
+  Level: advanced
 
 .seealso: `PetscOptionsGetInt()`, `PetscOptionsGetReal()`, `OptionsHasName()`,
           `PetscOptionsGetString()`, `PetscOptionsGetIntArray()`, `PetscOptionsGetRealArray()`, `PetscOptionsBool()`,
@@ -1707,17 +1709,17 @@ PetscErrorCode PetscOptionsReject(PetscOptions options, const char pre[], const 
 }
 
 /*@C
-   PetscOptionsHasHelp - Determines whether the "-help" option is in the database.
+  PetscOptionsHasHelp - Determines whether the "-help" option is in the database.
 
-   Not Collective
+  Not Collective
 
-   Input Parameter:
-.  options - options database, use `NULL` for default global database
+  Input Parameter:
+. options - options database, use `NULL` for default global database
 
-   Output Parameter:
-.  set - `PETSC_TRUE` if found else `PETSC_FALSE`.
+  Output Parameter:
+. set - `PETSC_TRUE` if found else `PETSC_FALSE`.
 
-   Level: advanced
+  Level: advanced
 
 .seealso: `PetscOptionsHasName()`
 @*/
@@ -1740,23 +1742,23 @@ PetscErrorCode PetscOptionsHasHelpIntro_Internal(PetscOptions options, PetscBool
 }
 
 /*@C
-   PetscOptionsHasName - Determines whether a certain option is given in the database. This returns true whether the option is a number, string or Boolean, even
-                      if its value is set to false.
+  PetscOptionsHasName - Determines whether a certain option is given in the database. This returns true whether the option is a number, string or Boolean, even
+  if its value is set to false.
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  options - options database, use `NULL` for default global database
-.  pre - string to prepend to the name or `NULL`
--  name - the option one is seeking
+  Input Parameters:
++ options - options database, use `NULL` for default global database
+. pre     - string to prepend to the name or `NULL`
+- name    - the option one is seeking
 
-   Output Parameter:
-.  set - `PETSC_TRUE` if found else `PETSC_FALSE`.
+  Output Parameter:
+. set - `PETSC_TRUE` if found else `PETSC_FALSE`.
 
-   Level: beginner
+  Level: beginner
 
-   Note:
-   In many cases you probably want to use `PetscOptionsGetBool()` instead of calling this, to allowing toggling values.
+  Note:
+  In many cases you probably want to use `PetscOptionsGetBool()` instead of calling this, to allowing toggling values.
 
 .seealso: `PetscOptionsGetInt()`, `PetscOptionsGetReal()`,
           `PetscOptionsGetString()`, `PetscOptionsGetIntArray()`, `PetscOptionsGetRealArray()`, `PetscOptionsBool()`,
@@ -1777,22 +1779,22 @@ PetscErrorCode PetscOptionsHasName(PetscOptions options, const char pre[], const
 }
 
 /*@C
-   PetscOptionsGetAll - Lists all the options the program was run with in a single string.
+  PetscOptionsGetAll - Lists all the options the program was run with in a single string.
 
-   Not Collective
+  Not Collective
 
-   Input Parameter:
-.  options - the options database, use `NULL` for the default global database
+  Input Parameter:
+. options - the options database, use `NULL` for the default global database
 
-   Output Parameter:
-.  copts - pointer where string pointer is stored
+  Output Parameter:
+. copts - pointer where string pointer is stored
 
-   Level: advanced
+  Level: advanced
 
-   Notes:
-    The array and each entry in the array should be freed with `PetscFree()`
+  Notes:
+  The array and each entry in the array should be freed with `PetscFree()`
 
-    Each process may have different values depending on how the options were inserted into the database
+  Each process may have different values depending on how the options were inserted into the database
 
 .seealso: `PetscOptionsAllUsed()`, `PetscOptionsView()`, `PetscOptionsPush()`, `PetscOptionsPop()`
 @*/
@@ -1830,22 +1832,22 @@ PetscErrorCode PetscOptionsGetAll(PetscOptions options, char *copts[])
 }
 
 /*@C
-   PetscOptionsUsed - Indicates if PETSc has used a particular option set in the database
+  PetscOptionsUsed - Indicates if PETSc has used a particular option set in the database
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  options - options database, use `NULL` for default global database
--  name - string name of option
+  Input Parameters:
++ options - options database, use `NULL` for default global database
+- name    - string name of option
 
-   Output Parameter:
-.  used - `PETSC_TRUE` if the option was used, otherwise false, including if option was not found in options database
+  Output Parameter:
+. used - `PETSC_TRUE` if the option was used, otherwise false, including if option was not found in options database
 
-   Level: advanced
+  Level: advanced
 
-   Note:
-   The value returned may be different on each process and depends on which options have been processed
-   on the given process
+  Note:
+  The value returned may be different on each process and depends on which options have been processed
+  on the given process
 
 .seealso: `PetscOptionsView()`, `PetscOptionsLeft()`, `PetscOptionsAllUsed()`
 @*/
@@ -1869,22 +1871,22 @@ PetscErrorCode PetscOptionsUsed(PetscOptions options, const char *name, PetscBoo
 }
 
 /*@
-   PetscOptionsAllUsed - Returns a count of the number of options in the
-   database that have never been selected.
+  PetscOptionsAllUsed - Returns a count of the number of options in the
+  database that have never been selected.
 
-   Not Collective
+  Not Collective
 
-   Input Parameter:
-.  options - options database, use `NULL` for default global database
+  Input Parameter:
+. options - options database, use `NULL` for default global database
 
-   Output Parameter:
-.  N - count of options not used
+  Output Parameter:
+. N - count of options not used
 
-   Level: advanced
+  Level: advanced
 
-   Note:
-   The value returned may be different on each process and depends on which options have been processed
-   on the given process
+  Note:
+  The value returned may be different on each process and depends on which options have been processed
+  on the given process
 
 .seealso: `PetscOptionsView()`
 @*/
@@ -1903,25 +1905,25 @@ PetscErrorCode PetscOptionsAllUsed(PetscOptions options, PetscInt *N)
 }
 
 /*@
-   PetscOptionsLeft - Prints to screen any options that were set and never used.
+  PetscOptionsLeft - Prints to screen any options that were set and never used.
 
-   Not Collective
+  Not Collective
 
-   Input Parameter:
-.  options - options database; use `NULL` for default global database
+  Input Parameter:
+. options - options database; use `NULL` for default global database
 
-   Options Database Key:
-.  -options_left - activates `PetscOptionsAllUsed()` within `PetscFinalize()`
+  Options Database Key:
+. -options_left - activates `PetscOptionsAllUsed()` within `PetscFinalize()`
 
-   Level: advanced
+  Level: advanced
 
-   Notes:
-      This is rarely used directly, it is called by `PetscFinalize()` in debug more or if -options_left
-      is passed otherwise to help users determine possible mistakes in their usage of options. This
-      only prints values on process zero of `PETSC_COMM_WORLD`.
+  Notes:
+  This is rarely used directly, it is called by `PetscFinalize()` in debug more or if -options_left
+  is passed otherwise to help users determine possible mistakes in their usage of options. This
+  only prints values on process zero of `PETSC_COMM_WORLD`.
 
-      Other processes depending the objects
-      used may have different options that are left unused.
+  Other processes depending the objects
+  used may have different options that are left unused.
 
 .seealso: `PetscOptionsAllUsed()`
 @*/
@@ -1955,25 +1957,25 @@ PetscErrorCode PetscOptionsLeft(PetscOptions options)
 }
 
 /*@C
-   PetscOptionsLeftGet - Returns all options that were set and never used.
+  PetscOptionsLeftGet - Returns all options that were set and never used.
 
-   Not Collective
+  Not Collective
 
-   Input Parameter:
-.  options - options database, use `NULL` for default global database
+  Input Parameter:
+. options - options database, use `NULL` for default global database
 
-   Output Parameters:
-+  N - count of options not used
-.  names - names of options not used
--  values - values of options not used
+  Output Parameters:
++ N      - count of options not used
+. names  - names of options not used
+- values - values of options not used
 
-   Level: advanced
+  Level: advanced
 
-   Notes:
-   Users should call `PetscOptionsLeftRestore()` to free the memory allocated in this routine
+  Notes:
+  Users should call `PetscOptionsLeftRestore()` to free the memory allocated in this routine
 
-   The value returned may be different on each process and depends on which options have been processed
-   on the given process
+  The value returned may be different on each process and depends on which options have been processed
+  on the given process
 
 .seealso: `PetscOptionsAllUsed()`, `PetscOptionsLeft()`
 @*/
@@ -2012,22 +2014,27 @@ PetscErrorCode PetscOptionsLeftGet(PetscOptions options, PetscInt *N, char **nam
 }
 
 /*@C
-   PetscOptionsLeftRestore - Free memory for the unused PETSc options obtained using `PetscOptionsLeftGet()`.
+  PetscOptionsLeftRestore - Free memory for the unused PETSc options obtained using `PetscOptionsLeftGet()`.
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  options - options database, use `NULL` for default global database
-.  names - names of options not used
--  values - values of options not used
+  Input Parameters:
++ options - options database, use `NULL` for default global database
+. N       - count of options not used
+. names   - names of options not used
+- values  - values of options not used
 
-   Level: advanced
+  Level: advanced
+
+  Notes:
+  The user should pass the same pointer to `N` as they did when calling `PetscOptionsLeftGet()`
 
 .seealso: `PetscOptionsAllUsed()`, `PetscOptionsLeft()`, `PetscOptionsLeftGet()`
 @*/
 PetscErrorCode PetscOptionsLeftRestore(PetscOptions options, PetscInt *N, char **names[], char **values[])
 {
   PetscFunctionBegin;
+  (void)options;
   if (N) PetscValidIntPointer(N, 2);
   if (names) PetscValidPointer(names, 3);
   if (values) PetscValidPointer(values, 4);
@@ -2038,24 +2045,24 @@ PetscErrorCode PetscOptionsLeftRestore(PetscOptions options, PetscInt *N, char *
 }
 
 /*@C
-   PetscOptionsMonitorDefault - Print all options set value events using the supplied `PetscViewer`.
+  PetscOptionsMonitorDefault - Print all options set value events using the supplied `PetscViewer`.
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  name  - option name string
-.  value - option value string
-.  source - The source for the option
--  ctx - a `PETSCVIEWERASCII` or `NULL`
+  Input Parameters:
++ name   - option name string
+. value  - option value string
+. source - The source for the option
+- ctx    - a `PETSCVIEWERASCII` or `NULL`
 
-   Level: intermediate
+  Level: intermediate
 
-   Notes:
-     If ctx is `NULL`, `PetscPrintf()` is used.
-     The first MPI rank in the `PetscViewer` viewer actually prints the values, other
-     processes may have different values set
+  Notes:
+  If ctx is `NULL`, `PetscPrintf()` is used.
+  The first MPI rank in the `PetscViewer` viewer actually prints the values, other
+  processes may have different values set
 
-     If `PetscCIEnabled` then do not print the test harness options
+  If `PetscCIEnabled` then do not print the test harness options
 
 .seealso: `PetscOptionsMonitorSet()`
 @*/
@@ -2087,45 +2094,42 @@ PetscErrorCode PetscOptionsMonitorDefault(const char name[], const char value[],
 }
 
 /*@C
-   PetscOptionsMonitorSet - Sets an ADDITIONAL function to be called at every method that
-   modified the PETSc options database.
+  PetscOptionsMonitorSet - Sets an ADDITIONAL function to be called at every method that
+  modified the PETSc options database.
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  monitor - pointer to function (if this is `NULL`, it turns off monitoring
-.  mctx    - [optional] context for private data for the
-             monitor routine (use `NULL` if no context is desired)
--  monitordestroy - [optional] routine that frees monitor context
-          (may be `NULL`)
+  Input Parameters:
++ monitor        - pointer to function (if this is `NULL`, it turns off monitoring
+. mctx           - [optional] context for private data for the monitor routine (use `NULL` if
+                   no context is desired)
+- monitordestroy - [optional] routine that frees monitor context (may be `NULL`)
 
-   Calling Sequence of `monitor`:
-$   PetscErrorCode monitor(const char name[], const char value[], void *mctx)
-+  name - option name string
-.  value - option value string
+  Calling sequence of `monitor`:
++ name   - option name string
+. value  - option value string
 . source - option source
--  mctx  - optional monitoring context, as set by `PetscOptionsMonitorSet()`
+- mctx   - optional monitoring context, as set by `PetscOptionsMonitorSet()`
 
-   Calling Sequence of `monitordestroy`:
-$  PetscErrorCode monitordestroy(void *cctx)
+  Calling sequence of `monitordestroy`:
+. mctx - [optional] pointer to context to destroy with
 
-   Options Database Key:
-   See `PetscInitialize()` for options related to option database monitoring.
+  Level: intermediate
 
-   Level: intermediate
+  Notes:
+  See `PetscInitialize()` for options related to option database monitoring.
 
-   Notes:
-   The default is to do nothing.  To print the name and value of options
-   being inserted into the database, use `PetscOptionsMonitorDefault()` as the monitoring routine,
-   with a null monitoring context.
+  The default is to do nothing.  To print the name and value of options
+  being inserted into the database, use `PetscOptionsMonitorDefault()` as the monitoring routine,
+  with a null monitoring context.
 
-   Several different monitoring routines may be set by calling
-   `PetscOptionsMonitorSet()` multiple times; all will be called in the
-   order in which they were set.
+  Several different monitoring routines may be set by calling
+  `PetscOptionsMonitorSet()` multiple times; all will be called in the
+  order in which they were set.
 
 .seealso: `PetscOptionsMonitorDefault()`, `PetscInitialize()`
 @*/
-PetscErrorCode PetscOptionsMonitorSet(PetscErrorCode (*monitor)(const char name[], const char value[], PetscOptionSource, void *), void *mctx, PetscErrorCode (*monitordestroy)(void **))
+PetscErrorCode PetscOptionsMonitorSet(PetscErrorCode (*monitor)(const char name[], const char value[], PetscOptionSource source, void *mctx), void *mctx, PetscErrorCode (*monitordestroy)(void **mctx))
 {
   PetscOptions options = defaultoptions;
 
@@ -2349,31 +2353,31 @@ PetscErrorCode PetscOptionsStringToScalar(const char name[], PetscScalar *a)
 }
 
 /*@C
-   PetscOptionsGetBool - Gets the Logical (true or false) value for a particular
-            option in the database.
+  PetscOptionsGetBool - Gets the Logical (true or false) value for a particular
+  option in the database.
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  options - options database, use `NULL` for default global database
-.  pre - the string to prepend to the name or `NULL`
--  name - the option one is seeking
+  Input Parameters:
++ options - options database, use `NULL` for default global database
+. pre     - the string to prepend to the name or `NULL`
+- name    - the option one is seeking
 
-   Output Parameters:
-+  ivalue - the logical value to return
--  set - `PETSC_TRUE`  if found, else `PETSC_FALSE`
+  Output Parameters:
++ ivalue - the logical value to return
+- set    - `PETSC_TRUE`  if found, else `PETSC_FALSE`
 
-   Level: beginner
+  Level: beginner
 
-   Notes:
-       TRUE, true, YES, yes, nostring, and 1 all translate to `PETSC_TRUE`
-       FALSE, false, NO, no, and 0 all translate to `PETSC_FALSE`
+  Notes:
+  TRUE, true, YES, yes, nostring, and 1 all translate to `PETSC_TRUE`
+  FALSE, false, NO, no, and 0 all translate to `PETSC_FALSE`
 
-      If the option is given, but no value is provided, then ivalue and set are both given the value `PETSC_TRUE`. That is -requested_bool
-     is equivalent to -requested_bool true
+  If the option is given, but no value is provided, then ivalue and set are both given the value `PETSC_TRUE`. That is -requested_bool
+  is equivalent to -requested_bool true
 
-       If the user does not supply the option at all ivalue is NOT changed. Thus
-     you should ALWAYS initialize the ivalue if you access it without first checking if the set flag is true.
+  If the user does not supply the option at all ivalue is NOT changed. Thus
+  you should ALWAYS initialize the ivalue if you access it without first checking if the set flag is true.
 
 .seealso: `PetscOptionsGetReal()`, `PetscOptionsHasName()`, `PetscOptionsGetString()`,
           `PetscOptionsGetIntArray()`, `PetscOptionsGetRealArray()`, `PetscOptionsGetInt()`, `PetscOptionsBool()`,
@@ -2402,28 +2406,28 @@ PetscErrorCode PetscOptionsGetBool(PetscOptions options, const char pre[], const
 }
 
 /*@C
-   PetscOptionsGetEList - Puts a list of option values that a single one may be selected from
+  PetscOptionsGetEList - Puts a list of option values that a single one may be selected from
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  options - options database, use `NULL` for default global database
-.  pre - the string to prepend to the name or `NULL`
-.  opt - option name
-.  list - the possible choices (one of these must be selected, anything else is invalid)
--  ntext - number of choices
+  Input Parameters:
++ options - options database, use `NULL` for default global database
+. pre     - the string to prepend to the name or `NULL`
+. opt     - option name
+. list    - the possible choices (one of these must be selected, anything else is invalid)
+- ntext   - number of choices
 
-   Output Parameters:
-+  value - the index of the value to return (defaults to zero if the option name is given but no choice is listed)
--  set - `PETSC_TRUE` if found, else `PETSC_FALSE`
+  Output Parameters:
++ value - the index of the value to return (defaults to zero if the option name is given but no choice is listed)
+- set   - `PETSC_TRUE` if found, else `PETSC_FALSE`
 
-   Level: intermediate
+  Level: intermediate
 
-   Notes:
-    If the user does not supply the option value is NOT changed. Thus
-     you should ALWAYS initialize the ivalue if you access it without first checking if the set flag is true.
+  Notes:
+  If the user does not supply the option value is NOT changed. Thus
+  you should ALWAYS initialize the ivalue if you access it without first checking if the set flag is true.
 
-   See `PetscOptionsFList()` for when the choices are given in a `PetscFunctionList`
+  See `PetscOptionsFList()` for when the choices are given in a `PetscFunctionList`
 
 .seealso: `PetscOptionsGetInt()`, `PetscOptionsGetReal()`,
           `PetscOptionsHasName()`, `PetscOptionsGetIntArray()`, `PetscOptionsGetRealArray()`, `PetscOptionsBool()`,
@@ -2470,31 +2474,31 @@ PetscErrorCode PetscOptionsGetEList(PetscOptions options, const char pre[], cons
 }
 
 /*@C
-   PetscOptionsGetEnum - Gets the enum value for a particular option in the database.
+  PetscOptionsGetEnum - Gets the enum value for a particular option in the database.
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  options - options database, use `NULL` for default global database
-.  pre - option prefix or `NULL`
-.  opt - option name
--  list - array containing the list of choices, followed by the enum name, followed by the enum prefix, followed by a null
+  Input Parameters:
++ options - options database, use `NULL` for default global database
+. pre     - option prefix or `NULL`
+. opt     - option name
+- list    - array containing the list of choices, followed by the enum name, followed by the enum prefix, followed by a null
 
-   Output Parameters:
-+  value - the  value to return
--  set - `PETSC_TRUE` if found, else `PETSC_FALSE`
+  Output Parameters:
++ value - the  value to return
+- set   - `PETSC_TRUE` if found, else `PETSC_FALSE`
 
-   Level: beginner
+  Level: beginner
 
-   Notes:
-    If the user does not supply the option value is NOT changed. Thus
-     you should ALWAYS initialize the ivalue if you access it without first checking if the set flag is true.
+  Notes:
+  If the user does not supply the option value is NOT changed. Thus
+  you should ALWAYS initialize the ivalue if you access it without first checking if the set flag is true.
 
-          List is usually something like `PCASMTypes` or some other predefined list of enum names
+  List is usually something like `PCASMTypes` or some other predefined list of enum names
 
 .seealso: `PetscOptionsGetReal()`, `PetscOptionsHasName()`, `PetscOptionsGetString()`, `PetscOptionsGetInt()`,
           `PetscOptionsGetIntArray()`, `PetscOptionsGetRealArray()`, `PetscOptionsBool()`
-          `PetscOptionsInt()`, `PetscOptionsString()`, `PetscOptionsReal()`, `PetscOptionsBool()`,
+          `PetscOptionsInt()`, `PetscOptionsString()`, `PetscOptionsReal()`,
           `PetscOptionsName()`, `PetscOptionsBegin()`, `PetscOptionsEnd()`, `PetscOptionsHeadBegin()`,
           `PetscOptionsStringArray()`, `PetscOptionsRealArray()`, `PetscOptionsScalar()`,
           `PetscOptionsBoolGroupBegin()`, `PetscOptionsBoolGroup()`, `PetscOptionsBoolGroupEnd()`,
@@ -2518,28 +2522,28 @@ PetscErrorCode PetscOptionsGetEnum(PetscOptions options, const char pre[], const
 }
 
 /*@C
-   PetscOptionsGetInt - Gets the integer value for a particular option in the database.
+  PetscOptionsGetInt - Gets the integer value for a particular option in the database.
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  options - options database, use `NULL` for default global database
-.  pre - the string to prepend to the name or `NULL`
--  name - the option one is seeking
+  Input Parameters:
++ options - options database, use `NULL` for default global database
+. pre     - the string to prepend to the name or `NULL`
+- name    - the option one is seeking
 
-   Output Parameters:
-+  ivalue - the integer value to return
--  set - `PETSC_TRUE` if found, else `PETSC_FALSE`
+  Output Parameters:
++ ivalue - the integer value to return
+- set    - `PETSC_TRUE` if found, else `PETSC_FALSE`
 
-   Level: beginner
+  Level: beginner
 
-   Notes:
-   If the user does not supply the option ivalue is NOT changed. Thus
-   you should ALWAYS initialize the ivalue if you access it without first checking if the set flag is true.
+  Notes:
+  If the user does not supply the option ivalue is NOT changed. Thus
+  you should ALWAYS initialize the ivalue if you access it without first checking if the set flag is true.
 
 .seealso: `PetscOptionsGetReal()`, `PetscOptionsHasName()`, `PetscOptionsGetString()`,
           `PetscOptionsGetIntArray()`, `PetscOptionsGetRealArray()`, `PetscOptionsBool()`
-          `PetscOptionsInt()`, `PetscOptionsString()`, `PetscOptionsReal()`, `PetscOptionsBool()`,
+          `PetscOptionsInt()`, `PetscOptionsString()`, `PetscOptionsReal()`,
           `PetscOptionsName()`, `PetscOptionsBegin()`, `PetscOptionsEnd()`, `PetscOptionsHeadBegin()`,
           `PetscOptionsStringArray()`, `PetscOptionsRealArray()`, `PetscOptionsScalar()`,
           `PetscOptionsBoolGroupBegin()`, `PetscOptionsBoolGroup()`, `PetscOptionsBoolGroupEnd()`,
@@ -2568,25 +2572,25 @@ PetscErrorCode PetscOptionsGetInt(PetscOptions options, const char pre[], const 
 }
 
 /*@C
-   PetscOptionsGetReal - Gets the double precision value for a particular
-   option in the database.
+  PetscOptionsGetReal - Gets the double precision value for a particular
+  option in the database.
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  options - options database, use `NULL` for default global database
-.  pre - string to prepend to each name or `NULL`
--  name - the option one is seeking
+  Input Parameters:
++ options - options database, use `NULL` for default global database
+. pre     - string to prepend to each name or `NULL`
+- name    - the option one is seeking
 
-   Output Parameters:
-+  dvalue - the double value to return
--  set - `PETSC_TRUE` if found, `PETSC_FALSE` if not found
+  Output Parameters:
++ dvalue - the double value to return
+- set    - `PETSC_TRUE` if found, `PETSC_FALSE` if not found
 
-   Level: beginner
+  Level: beginner
 
-   Note:
-    If the user does not supply the option dvalue is NOT changed. Thus
-     you should ALWAYS initialize the ivalue if you access it without first checking if the set flag is true.
+  Note:
+  If the user does not supply the option dvalue is NOT changed. Thus
+  you should ALWAYS initialize the ivalue if you access it without first checking if the set flag is true.
 
 .seealso: `PetscOptionsGetInt()`, `PetscOptionsHasName()`,
           `PetscOptionsGetString()`, `PetscOptionsGetIntArray()`, `PetscOptionsGetRealArray()`, `PetscOptionsBool()`,
@@ -2618,28 +2622,28 @@ PetscErrorCode PetscOptionsGetReal(PetscOptions options, const char pre[], const
 }
 
 /*@C
-   PetscOptionsGetScalar - Gets the scalar value for a particular
-   option in the database.
+  PetscOptionsGetScalar - Gets the scalar value for a particular
+  option in the database.
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  options - options database, use `NULL` for default global database
-.  pre - string to prepend to each name or `NULL`
--  name - the option one is seeking
+  Input Parameters:
++ options - options database, use `NULL` for default global database
+. pre     - string to prepend to each name or `NULL`
+- name    - the option one is seeking
 
-   Output Parameters:
-+  dvalue - the double value to return
--  set - `PETSC_TRUE` if found, else `PETSC_FALSE`
+  Output Parameters:
++ dvalue - the double value to return
+- set    - `PETSC_TRUE` if found, else `PETSC_FALSE`
 
-   Level: beginner
+  Level: beginner
 
-   Usage:
-   A complex number 2+3i must be specified with NO spaces
+  Example Usage:
+  A complex number 2+3i must be specified with NO spaces
 
-   Note:
-    If the user does not supply the option dvalue is NOT changed. Thus
-     you should ALWAYS initialize the ivalue if you access it without first checking if the set flag is true.
+  Note:
+  If the user does not supply the option dvalue is NOT changed. Thus
+  you should ALWAYS initialize the ivalue if you access it without first checking if the set flag is true.
 
 .seealso: `PetscOptionsGetInt()`, `PetscOptionsHasName()`,
           `PetscOptionsGetString()`, `PetscOptionsGetIntArray()`, `PetscOptionsGetRealArray()`, `PetscOptionsBool()`,
@@ -2675,34 +2679,34 @@ PetscErrorCode PetscOptionsGetScalar(PetscOptions options, const char pre[], con
 }
 
 /*@C
-   PetscOptionsGetString - Gets the string value for a particular option in
-   the database.
+  PetscOptionsGetString - Gets the string value for a particular option in
+  the database.
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  options - options database, use `NULL` for default global database
-.  pre - string to prepend to name or `NULL`
-.  name - the option one is seeking
--  len - maximum length of the string including null termination
+  Input Parameters:
++ options - options database, use `NULL` for default global database
+. pre     - string to prepend to name or `NULL`
+. name    - the option one is seeking
+- len     - maximum length of the string including null termination
 
-   Output Parameters:
-+  string - location to copy string
--  set - `PETSC_TRUE` if found, else `PETSC_FALSE`
+  Output Parameters:
++ string - location to copy string
+- set    - `PETSC_TRUE` if found, else `PETSC_FALSE`
 
-   Level: beginner
+  Level: beginner
 
-   Note:
-    if the option is given but no string is provided then an empty string is returned and set is given the value of `PETSC_TRUE`
+  Note:
+  if the option is given but no string is provided then an empty string is returned and set is given the value of `PETSC_TRUE`
 
-           If the user does not use the option then the string is not changed. Thus
-           you should ALWAYS initialize the string if you access it without first checking if the set flag is true.
+  If the user does not use the option then the string is not changed. Thus
+  you should ALWAYS initialize the string if you access it without first checking if the set flag is true.
 
-      Even if the user provided no string (for example -optionname -someotheroption) the flag is set to PETSC_TRUE (and the string is fulled with nulls).
+  Even if the user provided no string (for example -optionname -someotheroption) the flag is set to PETSC_TRUE (and the string is fulled with nulls).
 
-   Fortran Note:
-   The Fortran interface is slightly different from the C/C++
-   interface (len is not used).  Sample usage in Fortran follows
+  Fortran Notes:
+  The Fortran interface is slightly different from the C/C++
+  interface (len is not used).  Sample usage in Fortran follows
 .vb
       character *20    string
       PetscErrorCode   ierr
@@ -2736,17 +2740,6 @@ PetscErrorCode PetscOptionsGetString(PetscOptions options, const char pre[], con
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-char *PetscOptionsGetStringMatlab(PetscOptions options, const char pre[], const char name[])
-{
-  const char *value;
-  PetscBool   flag;
-
-  PetscFunctionBegin;
-  if (PetscOptionsFindPair(options, pre, name, &value, &flag)) PetscFunctionReturn(NULL);
-  if (flag) PetscFunctionReturn((char *)value);
-  PetscFunctionReturn(NULL);
-}
-
 /*@C
   PetscOptionsGetBoolArray - Gets an array of Logical (true or false) values for a particular
   option in the database.  The values must be separated with commas with no intervening spaces.
@@ -2755,13 +2748,13 @@ char *PetscOptionsGetStringMatlab(PetscOptions options, const char pre[], const 
 
   Input Parameters:
 + options - options database, use `NULL` for default global database
-. pre - string to prepend to each name or `NULL`
-- name - the option one is seeking
+. pre     - string to prepend to each name or `NULL`
+- name    - the option one is seeking
 
   Output Parameters:
 + dvalue - the integer values to return
-. nmax - On input maximum number of values to retrieve, on output the actual number of values retrieved
-- set - `PETSC_TRUE` if found, else `PETSC_FALSE`
+. nmax   - On input maximum number of values to retrieve, on output the actual number of values retrieved
+- set    - `PETSC_TRUE` if found, else `PETSC_FALSE`
 
   Level: beginner
 
@@ -2815,14 +2808,14 @@ PetscErrorCode PetscOptionsGetBoolArray(PetscOptions options, const char pre[], 
 
   Input Parameters:
 + options - options database, use `NULL` for default global database
-. pre - option prefix or `NULL`
-. name - option name
-- list - array containing the list of choices, followed by the enum name, followed by the enum prefix, followed by a null
+. pre     - option prefix or `NULL`
+. name    - option name
+- list    - array containing the list of choices, followed by the enum name, followed by the enum prefix, followed by a null
 
   Output Parameters:
 + ivalue - the  enum values to return
-. nmax - On input maximum number of values to retrieve, on output the actual number of values retrieved
-- set - `PETSC_TRUE` if found, else `PETSC_FALSE`
+. nmax   - On input maximum number of values to retrieve, on output the actual number of values retrieved
+- set    - `PETSC_TRUE` if found, else `PETSC_FALSE`
 
   Level: beginner
 
@@ -2835,7 +2828,7 @@ PetscErrorCode PetscOptionsGetBoolArray(PetscOptions options, const char pre[], 
 
 .seealso: `PetscOptionsGetReal()`, `PetscOptionsHasName()`, `PetscOptionsGetString()`, `PetscOptionsGetInt()`,
           `PetscOptionsGetEnum()`, `PetscOptionsGetIntArray()`, `PetscOptionsGetRealArray()`, `PetscOptionsBool()`
-          `PetscOptionsInt()`, `PetscOptionsString()`, `PetscOptionsReal()`, `PetscOptionsBool()`, `PetscOptionsName()`,
+          `PetscOptionsInt()`, `PetscOptionsString()`, `PetscOptionsReal()`, `PetscOptionsName()`,
           `PetscOptionsBegin()`, `PetscOptionsEnd()`, `PetscOptionsHeadBegin()`, `PetscOptionsStringArray()`, `PetscOptionsRealArray()`,
           `PetscOptionsScalar()`, `PetscOptionsBoolGroupBegin()`, `PetscOptionsBoolGroup()`, `PetscOptionsBoolGroupEnd()`,
           `PetscOptionsFList()`, `PetscOptionsEList()`, `PetscOptionsGetEList()`, `PetscOptionsEnum()`
@@ -2882,13 +2875,13 @@ PetscErrorCode PetscOptionsGetEnumArray(PetscOptions options, const char pre[], 
 
   Input Parameters:
 + options - options database, use `NULL` for default global database
-. pre - string to prepend to each name or `NULL`
-- name - the option one is seeking
+. pre     - string to prepend to each name or `NULL`
+- name    - the option one is seeking
 
   Output Parameters:
 + ivalue - the integer values to return
-. nmax - On input maximum number of values to retrieve, on output the actual number of values retrieved
-- set - `PETSC_TRUE` if found, else `PETSC_FALSE`
+. nmax   - On input maximum number of values to retrieve, on output the actual number of values retrieved
+- set    - `PETSC_TRUE` if found, else `PETSC_FALSE`
 
   Level: beginner
 
@@ -2987,13 +2980,13 @@ PetscErrorCode PetscOptionsGetIntArray(PetscOptions options, const char pre[], c
 
   Input Parameters:
 + options - options database, use `NULL` for default global database
-. pre - string to prepend to each name or `NULL`
-- name - the option one is seeking
+. pre     - string to prepend to each name or `NULL`
+- name    - the option one is seeking
 
   Output Parameters:
 + dvalue - the double values to return
-. nmax - On input maximum number of values to retrieve, on output the actual number of values retrieved
-- set - `PETSC_TRUE` if found, else `PETSC_FALSE`
+. nmax   - On input maximum number of values to retrieve, on output the actual number of values retrieved
+- set    - `PETSC_TRUE` if found, else `PETSC_FALSE`
 
   Level: beginner
 
@@ -3044,13 +3037,13 @@ PetscErrorCode PetscOptionsGetRealArray(PetscOptions options, const char pre[], 
 
   Input Parameters:
 + options - options database, use `NULL` for default global database
-. pre - string to prepend to each name or `NULL`
-- name - the option one is seeking
+. pre     - string to prepend to each name or `NULL`
+- name    - the option one is seeking
 
   Output Parameters:
 + dvalue - the scalar values to return
-. nmax - On input maximum number of values to retrieve, on output the actual number of values retrieved
-- set - `PETSC_TRUE` if found, else `PETSC_FALSE`
+. nmax   - On input maximum number of values to retrieve, on output the actual number of values retrieved
+- set    - `PETSC_TRUE` if found, else `PETSC_FALSE`
 
   Level: beginner
 
@@ -3101,13 +3094,13 @@ PetscErrorCode PetscOptionsGetScalarArray(PetscOptions options, const char pre[]
 
   Input Parameters:
 + options - options database, use `NULL` for default global database
-. pre - string to prepend to name or `NULL`
-- name - the option one is seeking
+. pre     - string to prepend to name or `NULL`
+- name    - the option one is seeking
 
   Output Parameters:
 + strings - location to copy strings
-. nmax - On input maximum number of strings, on output the actual number of strings found
-- set - `PETSC_TRUE` if found, else `PETSC_FALSE`
+. nmax    - On input maximum number of strings, on output the actual number of strings found
+- set     - `PETSC_TRUE` if found, else `PETSC_FALSE`
 
   Level: beginner
 
@@ -3160,40 +3153,40 @@ PetscErrorCode PetscOptionsGetStringArray(PetscOptions options, const char pre[]
 }
 
 /*@C
-   PetscOptionsDeprecated - mark an option as deprecated, optionally replacing it with `newname`
+  PetscOptionsDeprecated_Private - mark an option as deprecated, optionally replacing it with `newname`
 
-   Prints a deprecation warning, unless an option is supplied to suppress.
+  Prints a deprecation warning, unless an option is supplied to suppress.
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  pre - string to prepend to name or `NULL`
-.  oldname - the old, deprecated option
-.  newname - the new option, or `NULL` if option is purely removed
-.  version - a string describing the version of first deprecation, e.g. "3.9"
--  info - additional information string, or `NULL`.
+  Input Parameters:
++ PetscOptionsObject - string to prepend to name or `NULL`
+. oldname            - the old, deprecated option
+. newname            - the new option, or `NULL` if option is purely removed
+. version            - a string describing the version of first deprecation, e.g. "3.9"
+- info               - additional information string, or `NULL`.
 
-   Options Database Key:
+  Options Database Key:
 . -options_suppress_deprecated_warnings - do not print deprecation warnings
 
-   Level: developer
+  Level: developer
 
-   Notes:
-   If `newname` is provided then the options database will automatically check the database for `oldname`.
+  Notes:
+  If `newname` is provided then the options database will automatically check the database for `oldname`.
 
-   The old call `PetscOptionsXXX`(`oldname`) should be removed from the source code when both (1) the call to `PetscOptionsDeprecated()` occurs before the
-   new call to `PetscOptionsXXX`(`newname`) and (2) the argument handling of the new call to `PetscOptionsXXX`(`newname`) is identical to the previous call.
-   See `PTScotch_PartGraph_Seq()` for an example of when (1) fails and `SNESTestJacobian()` where an example of (2) fails.
+  The old call `PetscOptionsXXX`(`oldname`) should be removed from the source code when both (1) the call to `PetscOptionsDeprecated()` occurs before the
+  new call to `PetscOptionsXXX`(`newname`) and (2) the argument handling of the new call to `PetscOptionsXXX`(`newname`) is identical to the previous call.
+  See `PTScotch_PartGraph_Seq()` for an example of when (1) fails and `SNESTestJacobian()` where an example of (2) fails.
 
-   Must be called between `PetscOptionsBegin()` (or `PetscObjectOptionsBegin()`) and `PetscOptionsEnd()`.
-   Only the process of rank zero that owns the `PetscOptionsItems` are argument (managed by `PetscOptionsBegin()` or
-   `PetscObjectOptionsBegin()` prints the information
-   If newname is provided, the old option is replaced. Otherwise, it remains
-   in the options database.
-   If an option is not replaced, the info argument should be used to advise the user
-   on how to proceed.
-   There is a limit on the length of the warning printed, so very long strings
-   provided as info may be truncated.
+  Must be called between `PetscOptionsBegin()` (or `PetscObjectOptionsBegin()`) and `PetscOptionsEnd()`.
+  Only the process of rank zero that owns the `PetscOptionsItems` are argument (managed by `PetscOptionsBegin()` or
+  `PetscObjectOptionsBegin()` prints the information
+  If newname is provided, the old option is replaced. Otherwise, it remains
+  in the options database.
+  If an option is not replaced, the info argument should be used to advise the user
+  on how to proceed.
+  There is a limit on the length of the warning printed, so very long strings
+  provided as info may be truncated.
 
 .seealso: `PetscOptionsBegin()`, `PetscOptionsEnd()`, `PetscOptionsScalar()`, `PetscOptionsBool()`, `PetscOptionsString()`, `PetscOptionsSetValue()`
 @*/

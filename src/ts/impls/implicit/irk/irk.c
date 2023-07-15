@@ -45,22 +45,22 @@ typedef struct {
 } TS_IRK;
 
 /*@C
-   TSIRKTableauCreate - create the tableau for `TSIRK` and provide the entries
+  TSIRKTableauCreate - create the tableau for `TSIRK` and provide the entries
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  ts - timestepping context
-.  nstages - number of stages, this is the dimension of the matrices below
-.  A - stage coefficients (dimension nstages*nstages, row-major)
-.  b - step completion table (dimension nstages)
-.  c - abscissa (dimension nstages)
-.  binterp - coefficients of the interpolation formula (dimension nstages)
-.  A_inv - inverse of A (dimension nstages*nstages, row-major)
-.  A_inv_rowsum - row sum of the inverse of A (dimension nstages)
--  I_s - identity matrix (dimension nstages*nstages)
+  Input Parameters:
++ ts           - timestepping context
+. nstages      - number of stages, this is the dimension of the matrices below
+. A            - stage coefficients (dimension nstages*nstages, row-major)
+. b            - step completion table (dimension nstages)
+. c            - abscissa (dimension nstages)
+. binterp      - coefficients of the interpolation formula (dimension nstages)
+. A_inv        - inverse of A (dimension nstages*nstages, row-major)
+. A_inv_rowsum - row sum of the inverse of A (dimension nstages)
+- I_s          - identity matrix (dimension nstages*nstages)
 
-   Level: advanced
+  Level: advanced
 
 .seealso: [](ch_ts), `TSIRK`, `TSIRKRegister()`
 @*/
@@ -157,27 +157,27 @@ static PetscErrorCode TSIRKCreate_Gauss(TS ts)
 }
 
 /*@C
-   TSIRKRegister -  adds a `TSIRK` implementation
+  TSIRKRegister -  adds a `TSIRK` implementation
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  sname - name of user-defined IRK scheme
--  function - function to create method context
+  Input Parameters:
++ sname    - name of user-defined IRK scheme
+- function - function to create method context
 
-   Level: advanced
+  Level: advanced
 
-   Note:
-   `TSIRKRegister()` may be called multiple times to add several user-defined families.
+  Note:
+  `TSIRKRegister()` may be called multiple times to add several user-defined families.
 
-   Sample usage:
+  Example Usage:
 .vb
    TSIRKRegister("my_scheme", MySchemeCreate);
 .ve
 
-   Then, your scheme can be chosen with the procedural interface via
+  Then, your scheme can be chosen with the procedural interface via
 $     TSIRKSetType(ts, "my_scheme")
-   or at runtime via the option
+  or at runtime via the option
 $     -ts_irk_type my_scheme
 
 .seealso: [](ch_ts), `TSIRK`, `TSIRKRegisterAll()`
@@ -210,11 +210,11 @@ PetscErrorCode TSIRKRegisterAll(void)
 }
 
 /*@C
-   TSIRKRegisterDestroy - Frees the list of schemes that were registered by `TSIRKRegister()`.
+  TSIRKRegisterDestroy - Frees the list of schemes that were registered by `TSIRKRegister()`.
 
-   Not Collective
+  Not Collective
 
-   Level: advanced
+  Level: advanced
 
 .seealso: [](ch_ts), `TSIRK`, `TSIRKRegister()`, `TSIRKRegisterAll()`
 @*/
@@ -667,11 +667,11 @@ static PetscErrorCode TSLoad_IRK(TS ts, PetscViewer viewer)
   Logically Collective
 
   Input Parameters:
-+  ts - timestepping context
--  irktype - type of `TSIRK` scheme
++ ts      - timestepping context
+- irktype - type of `TSIRK` scheme
 
   Options Database Key:
-.  -ts_irk_type <gauss> - set irk type
+. -ts_irk_type <gauss> - set irk type
 
   Level: intermediate
 
@@ -692,10 +692,10 @@ PetscErrorCode TSIRKSetType(TS ts, TSIRKType irktype)
   Logically Collective
 
   Input Parameter:
-.  ts - timestepping context
+. ts - timestepping context
 
   Output Parameter:
-.  irktype - type of `TSIRK` IMEX scheme
+. irktype - type of `TSIRK` IMEX scheme
 
   Level: intermediate
 
@@ -715,11 +715,11 @@ PetscErrorCode TSIRKGetType(TS ts, TSIRKType *irktype)
   Logically Collective
 
   Input Parameters:
-+  ts - timestepping context
--  nstages - number of stages of `TSIRK` scheme
++ ts      - timestepping context
+- nstages - number of stages of `TSIRK` scheme
 
   Options Database Key:
-.  -ts_irk_nstages <int> - set number of stages
+. -ts_irk_nstages <int> - set number of stages
 
   Level: intermediate
 
@@ -739,8 +739,8 @@ PetscErrorCode TSIRKSetNumStages(TS ts, PetscInt nstages)
   Logically Collective
 
   Input Parameters:
-+  ts - timestepping context
--  nstages - number of stages of `TSIRK` scheme
++ ts      - timestepping context
+- nstages - number of stages of `TSIRK` scheme
 
   Level: intermediate
 

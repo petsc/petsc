@@ -23,7 +23,7 @@ PetscErrorCode PetscDrawFinalizePackage(void)
 }
 
 /*@C
-  PetscInitializeDrawPackage - This function initializes everything in the `PetscDraw` package. It is called
+  PetscDrawInitializePackage - This function initializes everything in the `PetscDraw` package. It is called
   from PetscDLLibraryRegister_petsc() when using dynamic libraries, and on the call to `PetscInitialize()`
   when using shared or static libraries.
 
@@ -79,16 +79,16 @@ PetscErrorCode PetscDrawInitializePackage(void)
 }
 
 /*@
-   PetscDrawResizeWindow - Allows one to resize a window from a program.
+  PetscDrawResizeWindow - Allows one to resize a window from a program.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  draw - the window
-.  w - the new width of the window
--  h - the new height of the window
+  Input Parameters:
++ draw - the window
+. w    - the new width of the window
+- h    - the new height of the window
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `PetscDraw`, `PetscDrawCheckResizedWindow()`
 @*/
@@ -103,18 +103,18 @@ PetscErrorCode PetscDrawResizeWindow(PetscDraw draw, int w, int h)
 }
 
 /*@
-   PetscDrawGetWindowSize - Gets the size of the window.
+  PetscDrawGetWindowSize - Gets the size of the window.
 
-   Not Collective
+  Not Collective
 
-   Input Parameter:
-.  draw - the window
+  Input Parameter:
+. draw - the window
 
-   Output Parameters:
-+  w - the window width
--  h - the window height
+  Output Parameters:
++ w - the window width
+- h - the window height
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `PetscDraw`, `PetscDrawResizeWindow()`, `PetscDrawCheckResizedWindow()`
 @*/
@@ -130,14 +130,14 @@ PetscErrorCode PetscDrawGetWindowSize(PetscDraw draw, int *w, int *h)
 }
 
 /*@
-   PetscDrawCheckResizedWindow - Checks if the user has resized the window.
+  PetscDrawCheckResizedWindow - Checks if the user has resized the window.
 
-   Collective
+  Collective
 
-   Input Parameter:
-.  draw - the window
+  Input Parameter:
+. draw - the window
 
-   Level: advanced
+  Level: advanced
 
 .seealso: `PetscDraw`, `PetscDrawResizeWindow()`
 @*/
@@ -150,17 +150,17 @@ PetscErrorCode PetscDrawCheckResizedWindow(PetscDraw draw)
 }
 
 /*@C
-   PetscDrawGetTitle - Gets pointer to title of a `PetscDraw` context.
+  PetscDrawGetTitle - Gets pointer to title of a `PetscDraw` context.
 
-   Not Collective
+  Not Collective
 
-   Input Parameter:
-.  draw - the graphics context
+  Input Parameter:
+. draw - the graphics context
 
-   Output Parameter:
-.  title - the title
+  Output Parameter:
+. title - the title
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `PetscDraw`, `PetscDrawSetTitle()`
 @*/
@@ -174,24 +174,24 @@ PetscErrorCode PetscDrawGetTitle(PetscDraw draw, const char *title[])
 }
 
 /*@C
-   PetscDrawSetTitle - Sets the title of a `PetscDraw` context.
+  PetscDrawSetTitle - Sets the title of a `PetscDraw` context.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  draw - the graphics context
--  title - the title
+  Input Parameters:
++ draw  - the graphics context
+- title - the title
 
-   Level: intermediate
+  Level: intermediate
 
-   Notes:
-   The title is positioned in the windowing system title bar for the window. Hence it will not be saved with -draw_save
-   in the image.
+  Notes:
+  The title is positioned in the windowing system title bar for the window. Hence it will not be saved with -draw_save
+  in the image.
 
-   A copy of the string is made, so you may destroy the
-   title string after calling this routine.
+  A copy of the string is made, so you may destroy the
+  title string after calling this routine.
 
-   You can use `PetscDrawAxisSetLabels()` to indicate a title within the window
+  You can use `PetscDrawAxisSetLabels()` to indicate a title within the window
 
 .seealso: `PetscDraw`, `PetscDrawGetTitle()`, `PetscDrawAppendTitle()`
 @*/
@@ -207,19 +207,19 @@ PetscErrorCode PetscDrawSetTitle(PetscDraw draw, const char title[])
 }
 
 /*@C
-   PetscDrawAppendTitle - Appends to the title of a `PetscDraw` context.
+  PetscDrawAppendTitle - Appends to the title of a `PetscDraw` context.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  draw - the graphics context
--  title - the title
+  Input Parameters:
++ draw  - the graphics context
+- title - the title
 
-   Level: advanced
+  Level: advanced
 
-   Note:
-   A copy of the string is made, so you may destroy the
-   title string after calling this routine.
+  Note:
+  A copy of the string is made, so you may destroy the
+  title string after calling this routine.
 
 .seealso: `PetscDraw`, `PetscDrawSetTitle()`, `PetscDrawGetTitle()`
 @*/
@@ -259,14 +259,14 @@ static PetscErrorCode PetscDrawDestroy_Private(PetscDraw draw)
 }
 
 /*@
-   PetscDrawDestroy - Deletes a draw context.
+  PetscDrawDestroy - Deletes a draw context.
 
-   Collective
+  Collective
 
-   Input Parameter:
-.  draw - the drawing context
+  Input Parameter:
+. draw - the drawing context
 
-   Level: beginner
+  Level: beginner
 
 .seealso: `PetscDraw`, `PetscDrawCreate()`
 @*/
@@ -300,17 +300,17 @@ PetscErrorCode PetscDrawDestroy(PetscDraw *draw)
 }
 
 /*@
-   PetscDrawGetPopup - Creates a popup window associated with a `PetscDraw` window.
+  PetscDrawGetPopup - Creates a popup window associated with a `PetscDraw` window.
 
-   Collective
+  Collective
 
-   Input Parameter:
-.  draw - the original window
+  Input Parameter:
+. draw - the original window
 
-   Output Parameter:
-.  popup - the new popup window
+  Output Parameter:
+. popup - the new popup window
 
-   Level: advanced
+  Level: advanced
 
 .seealso: `PetscDraw`, `PetscDrawScalePopup()`, `PetscDrawCreate()`
 @*/
@@ -336,7 +336,7 @@ PetscErrorCode PetscDrawGetPopup(PetscDraw draw, PetscDraw *popup)
   PetscDrawSetDisplay - Sets the display where a `PetscDraw` object will be displayed
 
   Input Parameters:
-+ draw - the drawing context
++ draw    - the drawing context
 - display - the X windows display
 
   Level: advanced
@@ -352,14 +352,14 @@ PetscErrorCode PetscDrawSetDisplay(PetscDraw draw, const char display[])
 }
 
 /*@
-   PetscDrawSetDoubleBuffer - Sets a window to be double buffered.
+  PetscDrawSetDoubleBuffer - Sets a window to be double buffered.
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameter:
-.  draw - the drawing context
+  Input Parameter:
+. draw - the drawing context
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `PetscDraw`, `PetscDrawOpenX()`, `PetscDrawCreate()`
 @*/
@@ -372,18 +372,18 @@ PetscErrorCode PetscDrawSetDoubleBuffer(PetscDraw draw)
 }
 
 /*@C
-   PetscDrawGetSingleton - Gain access to a `PetscDraw` object as if it were owned
-        by the one process.
+  PetscDrawGetSingleton - Gain access to a `PetscDraw` object as if it were owned
+  by the one process.
 
-   Collective
+  Collective
 
-   Input Parameter:
-.  draw - the original window
+  Input Parameter:
+. draw - the original window
 
-   Output Parameter:
-.  sdraw - the singleton window
+  Output Parameter:
+. sdraw - the singleton window
 
-   Level: advanced
+  Level: advanced
 
 .seealso: `PetscDraw`, `PetscDrawRestoreSingleton()`, `PetscViewerGetSingleton()`, `PetscViewerRestoreSingleton()`
 @*/
@@ -408,16 +408,16 @@ PetscErrorCode PetscDrawGetSingleton(PetscDraw draw, PetscDraw *sdraw)
 }
 
 /*@C
-   PetscDrawRestoreSingleton - Remove access to a `PetscDraw` object obtained with `PetscDrawGetSingleton()`
-        by the one process.
+  PetscDrawRestoreSingleton - Remove access to a `PetscDraw` object obtained with `PetscDrawGetSingleton()`
+  by the one process.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  draw - the original window
--  sdraw - the singleton window
+  Input Parameters:
++ draw  - the original window
+- sdraw - the singleton window
 
-   Level: advanced
+  Level: advanced
 
 .seealso: `PetscDraw`, `PetscDrawGetSingleton()`, `PetscViewerGetSingleton()`, `PetscViewerRestoreSingleton()`
 @*/
@@ -444,7 +444,7 @@ PetscErrorCode PetscDrawRestoreSingleton(PetscDraw draw, PetscDraw *sdraw)
   PetscDrawSetVisible - Sets if the drawing surface (the 'window') is visible on its display.
 
   Input Parameters:
-+ draw - the drawing window
++ draw    - the drawing window
 - visible - if the surface should be visible
 
   Level: intermediate

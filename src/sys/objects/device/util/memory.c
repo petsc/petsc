@@ -19,7 +19,7 @@
 
   Level: intermediate
 
-.seelso: `PetscMemType`, `PetscDeviceMalloc()`, `PetscDeviceCalloc()`, `PetscDeviceFree()`,
+.seealso: `PetscMemType`, `PetscDeviceMalloc()`, `PetscDeviceCalloc()`, `PetscDeviceFree()`,
 `PetscDeviceArrayCopy()`, `PetscDeviceArrayZero()`
 @*/
 PetscErrorCode PetscGetMemType(const void *ptr, PetscMemType *type)

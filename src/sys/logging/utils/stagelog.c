@@ -19,8 +19,8 @@ PetscStageLog petsc_stageLog = NULL;
 
   Level: developer
 
-  Developer Note:
-    Inline since called for EACH `PetscEventLogBeginDefault()` and `PetscEventLogEndDefault()`
+  Developer Notes:
+  Inline since called for EACH `PetscEventLogBeginDefault()` and `PetscEventLogEndDefault()`
 
 .seealso: `PetscStageLogCreate()`
 @*/
@@ -45,15 +45,15 @@ PetscErrorCode PetscLogGetStageLog(PetscStageLog *stageLog)
 . stageLog - The `PetscStageLog`
 
   Output Parameter:
-. stage    - The current stage
+. stage - The current stage
 
   Note:
   If no stage is currently active, stage is set to -1.
 
   Level: developer
 
-  Developer Note:
-    Inline since called for EACH `PetscEventLogBeginDefault()` and `PetscEventLogEndDefault()`
+  Developer Notes:
+  Inline since called for EACH `PetscEventLogBeginDefault()` and `PetscEventLogEndDefault()`
 
 .seealso: `PetscStageLogPush()`, `PetscStageLogPop()`, `PetscLogGetStageLog()`
 @*/
@@ -86,8 +86,8 @@ PetscErrorCode PetscStageLogGetCurrent(PetscStageLog stageLog, int *stage)
 
   Level: developer
 
-  Developer Note:
-    Inline since called for EACH `PetscEventLogBeginDefault()` and `PetscEventLogEndDefault()`
+  Developer Notes:
+  Inline since called for EACH `PetscEventLogBeginDefault()` and `PetscEventLogEndDefault()`
 
 .seealso: `PetscStageLogPush()`, `PetscStageLogPop()`, `PetscLogGetStageLog()`
 @*/
@@ -158,7 +158,7 @@ PetscErrorCode PetscStageLogDestroy(PetscStageLog stageLog)
 - sname    - the name to associate with that stage
 
   Output Parameter:
-. stage    - The stage index
+. stage - The stage index
 
   Level: developer
 
@@ -207,20 +207,20 @@ PetscErrorCode PetscStageLogRegister(PetscStageLog stageLog, const char sname[],
   Not Collective
 
   Input Parameters:
-+ stageLog   - The `PetscStageLog`
-- stage - The stage to log
++ stageLog - The `PetscStageLog`
+- stage    - The stage to log
 
   Options Database Key:
 . -log_view - Activates logging
 
-  Usage:
+  Example Usage:
   If the option -log_view is used to run the program containing the
   following code, then 2 sets of summary data will be printed during
   `PetscFinalize()`.
 .vb
-      PetscInitialize(int *argc,char ***args,0,0);
+      PetscInitialize(...);
       [stage 0 of code]
-      PetscStageLogPush(stageLog,1);
+      PetscStageLogPush(stageLog, 1);
       [stage 1 of code]
       PetscStageLogPop(stageLog);
       PetscBarrier(...);
@@ -228,7 +228,7 @@ PetscErrorCode PetscStageLogRegister(PetscStageLog stageLog, const char sname[],
       PetscFinalize();
 .ve
 
-  Note;
+  Note:
   Use `PetscLogStageRegister()` to register a stage. All previous stages are
   accumulating time and flops, but events will only be logged in this stage.
 
@@ -281,8 +281,8 @@ PetscErrorCode PetscStageLogPush(PetscStageLog stageLog, int stage)
   Input Parameter:
 . stageLog - The `PetscStageLog`
 
-  Usage:
-  If the option -log_view is used to run the program containing the
+  Example Usage:
+  If the option `-log_view` is used to run the program containing the
   following code, then 2 sets of summary data will be printed during
   PetscFinalize().
 .vb
@@ -483,8 +483,8 @@ PetscErrorCode PetscStageLogSetVisible(PetscStageLog stageLog, int stage, PetscB
   Not Collective
 
   Input Parameters:
-+ stageLog  - The `PetscStageLog`
-- stage     - The stage to log
++ stageLog - The `PetscStageLog`
+- stage    - The stage to log
 
   Output Parameter:
 . isVisible - The visibility flag, `PETSC_TRUE` for printing, otherwise `PETSC_FALSE` (default is `PETSC_TRUE`)
@@ -515,7 +515,7 @@ PetscErrorCode PetscStageLogGetVisible(PetscStageLog stageLog, int stage, PetscB
 - name     - The stage name
 
   Output Parameter:
-. stage    - The stage id, or -1 if it does not exist
+. stage - The stage id, or -1 if it does not exist
 
   Level: developer
 

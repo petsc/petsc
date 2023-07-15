@@ -902,7 +902,7 @@ PetscErrorCode DMPlexCreateBoxMesh_Tensor_SFC_Internal(DM dm, PetscInt dim, cons
   Logically Collective
 
   Input Parameters:
-+ dm - The `DMPLEX` on which to set periodicity
++ dm      - The `DMPLEX` on which to set periodicity
 - face_sf - `PetscSF` in which roots are (owned) donor faces and leaves are faces that must be matched to a (possibly remote) donor face.
 
   Level: advanced
@@ -960,9 +960,9 @@ PetscErrorCode DMPlexGetIsoperiodicFaceSF(DM dm, PetscSF *face_sf)
 
   Logically Collective
 
-  Input Arguments:
+  Input Parameters:
 + dm - `DMPLEX` that has been configured with `DMPlexSetIsoperiodicFaceSF()`
-- t - 4x4 affine transformation basis.
+- t  - 4x4 affine transformation basis.
 
   Level: advanced
 
@@ -974,7 +974,7 @@ PetscErrorCode DMPlexGetIsoperiodicFaceSF(DM dm, PetscSF *face_sf)
 
   Although the interface accepts a general affine transform, only affine translation is supported at present.
 
-  Developer Note:
+  Developer Notes:
   This interface should be replaced by making BasisTransform public, expanding it to support affine representations, and
   adding GPU implementations to apply the G2L/L2G transforms.
 

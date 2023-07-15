@@ -129,6 +129,7 @@ class DocBase:
   ('section-barren', 'Verify there are no sections containing a title and nothing else'),
   ('section-header-solitary', 'Verify that qualifying section headers are alone on their line'),
   ('section-header-spelling', 'Verify section headers are correctly spelled'),
+  ('section-header-unknown', 'Verify that section header is known'),
 )
 class SectionBase(DocBase):
   """
@@ -193,7 +194,6 @@ class SectionBase(DocBase):
     return self._lines
 
   def consume(self, data):
-    data = list(data)
     if data:
       self.lines().extend(data)
       self.raw    = '\n'.join(s for _, s, _ in self.lines())
@@ -283,7 +283,10 @@ class SectionBase(DocBase):
         matchname = difflib.get_close_matches(correct, self.titles, n=1)[0]
       except IndexError:
         linter.add_warning_from_cursor(
-          docstring.cursor, Diagnostic(diag, f'Unknown section \'{heading}\'', self.extent.start)
+          docstring.cursor,
+          Diagnostic(
+            self.diags.section_header_unknown, f'Unknown section \'{heading}\'', self.extent.start
+          )
         )
       else:
         docstring.add_error_from_source_range(
@@ -389,8 +392,7 @@ class ParameterList(SectionBase):
     align_diag  = self.diags.alignment
     group_args  = [item.arg for _, item, _ in group]
     lens        = list(map(len, group_args))
-    max_arg_len = max(lens) if lens else 0
-    assert max_arg_len >= 0, f'Negative maximum argument length {max_arg_len}'
+    max_arg_len = max(lens, default=0)
     longest_arg = group_args[lens.index(max_arg_len)] if lens else 'NO ARGS'
 
     for loc, item, _ in group:
@@ -398,7 +400,7 @@ class ParameterList(SectionBase):
       arg   = item.arg
       descr = item.description
       text  = item.text
-      fixed = '{} {:{width}} - {}'.format(pre, arg, descr, width=max_arg_len)
+      fixed = f'{pre} {arg:{max_arg_len}} - {descr}'
       try:
         diff_index = next(
           i for i, (a1, a2) in enumerate(itertools.zip_longest(text, fixed)) if a1 != a2
@@ -455,8 +457,7 @@ class ParameterList(SectionBase):
   def _check_prefixes(self, docstring):
     for key, opts in sorted(self.items.items()):
       lopts = len(opts)
-      if lopts < 1:
-        raise RuntimeError(f'number of options {lopts} < 1, key: {key}, items: {items}')
+      assert lopts >= 1, f'number of options {lopts} < 1, key: {key}, items: {items}'
 
       if lopts == 1:
         # only 1 option, should start with '.'

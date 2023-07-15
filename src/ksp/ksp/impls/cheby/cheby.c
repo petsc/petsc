@@ -135,29 +135,29 @@ static PetscErrorCode KSPChebyshevGetKind_Chebyshev(KSP ksp, KSPChebyshevKind *k
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 /*@
-   KSPChebyshevSetEigenvalues - Sets estimates for the extreme eigenvalues
-   of the preconditioned problem.
+  KSPChebyshevSetEigenvalues - Sets estimates for the extreme eigenvalues
+  of the preconditioned problem.
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  ksp - the Krylov space context
+  Input Parameters:
++ ksp  - the Krylov space context
    emax - the eigenvalue maximum estimate
--  emin - the eigenvalue minimum estimate
+- emin - the eigenvalue minimum estimate
 
   Options Database Key:
-.  -ksp_chebyshev_eigenvalues emin,emax - extreme eigenvalues
+. -ksp_chebyshev_eigenvalues emin,emax - extreme eigenvalues
 
-   Notes:
-   Call `KSPChebyshevEstEigSet()` or use the option -ksp_chebyshev_esteig a,b,c,d to have the KSP
-   estimate the eigenvalues and use these estimated values automatically.
+  Notes:
+  Call `KSPChebyshevEstEigSet()` or use the option -ksp_chebyshev_esteig a,b,c,d to have the KSP
+  estimate the eigenvalues and use these estimated values automatically.
 
-   When `KSPCHEBYSHEV` is used as a smoother, one often wants to target a portion of the spectrum rather than the entire
-   spectrum. This function takes the range of target eigenvalues for Chebyshev, which will often slightly over-estimate
-   the largest eigenvalue of the actual operator (for safety) and greatly overestimate the smallest eigenvalue to
-   improve the smoothing properties of Chebyshev iteration on the higher frequencies in the spectrum.
+  When `KSPCHEBYSHEV` is used as a smoother, one often wants to target a portion of the spectrum rather than the entire
+  spectrum. This function takes the range of target eigenvalues for Chebyshev, which will often slightly over-estimate
+  the largest eigenvalue of the actual operator (for safety) and greatly overestimate the smallest eigenvalue to
+  improve the smoothing properties of Chebyshev iteration on the higher frequencies in the spectrum.
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: [](ch_ksp), `KSPCHEBYSHEV`, `KSPChebyshevEstEigSet()`,
 @*/
@@ -172,36 +172,36 @@ PetscErrorCode KSPChebyshevSetEigenvalues(KSP ksp, PetscReal emax, PetscReal emi
 }
 
 /*@
-   KSPChebyshevEstEigSet - Automatically estimate the eigenvalues to use for Chebyshev
+  KSPChebyshevEstEigSet - Automatically estimate the eigenvalues to use for Chebyshev
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  ksp - the Krylov space context
-.  a - multiple of min eigenvalue estimate to use for min Chebyshev bound (or PETSC_DECIDE)
-.  b - multiple of max eigenvalue estimate to use for min Chebyshev bound (or PETSC_DECIDE)
-.  c - multiple of min eigenvalue estimate to use for max Chebyshev bound (or PETSC_DECIDE)
--  d - multiple of max eigenvalue estimate to use for max Chebyshev bound (or PETSC_DECIDE)
+  Input Parameters:
++ ksp - the Krylov space context
+. a   - multiple of min eigenvalue estimate to use for min Chebyshev bound (or PETSC_DECIDE)
+. b   - multiple of max eigenvalue estimate to use for min Chebyshev bound (or PETSC_DECIDE)
+. c   - multiple of min eigenvalue estimate to use for max Chebyshev bound (or PETSC_DECIDE)
+- d   - multiple of max eigenvalue estimate to use for max Chebyshev bound (or PETSC_DECIDE)
 
   Options Database Key:
-.  -ksp_chebyshev_esteig a,b,c,d - estimate eigenvalues using a Krylov method, then use this transform for Chebyshev eigenvalue bounds
+. -ksp_chebyshev_esteig a,b,c,d - estimate eigenvalues using a Krylov method, then use this transform for Chebyshev eigenvalue bounds
 
-   Notes:
-   The Chebyshev bounds are set using
+  Notes:
+  The Chebyshev bounds are set using
 .vb
    minbound = a*minest + b*maxest
    maxbound = c*minest + d*maxest
 .ve
-   The default configuration targets the upper part of the spectrum for use as a multigrid smoother, so only the maximum eigenvalue estimate is used.
-   The minimum eigenvalue estimate obtained by Krylov iteration is typically not accurate until the method has converged.
+  The default configuration targets the upper part of the spectrum for use as a multigrid smoother, so only the maximum eigenvalue estimate is used.
+  The minimum eigenvalue estimate obtained by Krylov iteration is typically not accurate until the method has converged.
 
-   If 0.0 is passed for all transform arguments (a,b,c,d), eigenvalue estimation is disabled.
+  If 0.0 is passed for all transform arguments (a,b,c,d), eigenvalue estimation is disabled.
 
-   The default transform is (0,0.1; 0,1.1) which targets the "upper" part of the spectrum, as desirable for use with multigrid.
+  The default transform is (0,0.1; 0,1.1) which targets the "upper" part of the spectrum, as desirable for use with multigrid.
 
-   The eigenvalues are estimated using the Lanczo (`KSPCG`) or Arnoldi (`KSPGMRES`) process using a noisy right hand side vector.
+  The eigenvalues are estimated using the Lanczo (`KSPCG`) or Arnoldi (`KSPGMRES`) process using a noisy right hand side vector.
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: [](ch_ksp), `KSPCHEBYSHEV`, `KSPChebyshevEstEigSet()`, `KSPChebyshevEstEigSetUseNoisy()`, `KSPChebyshevEstEigGetKSP()`
 @*/
@@ -218,19 +218,19 @@ PetscErrorCode KSPChebyshevEstEigSet(KSP ksp, PetscReal a, PetscReal b, PetscRea
 }
 
 /*@
-   KSPChebyshevEstEigSetUseNoisy - use a noisy right hand side in order to do the estimate instead of the given right hand side
+  KSPChebyshevEstEigSetUseNoisy - use a noisy right hand side in order to do the estimate instead of the given right hand side
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  ksp - linear solver context
--  use - `PETSC_TRUE` to use noisy
+  Input Parameters:
++ ksp - linear solver context
+- use - `PETSC_TRUE` to use noisy
 
-   Options Database Key:
-.  -ksp_chebyshev_esteig_noisy <true,false> - Use noisy right hand side for estimate
+  Options Database Key:
+. -ksp_chebyshev_esteig_noisy <true,false> - Use noisy right hand side for estimate
 
-   Note:
-    This allegedly works better for multigrid smoothers
+  Note:
+  This allegedly works better for multigrid smoothers
 
   Level: intermediate
 

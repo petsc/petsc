@@ -50,8 +50,8 @@ static PetscErrorCode DMGlobalToLocalSolve_project1(PetscInt dim, PetscReal time
 
   Input Parameters:
 + dm - The `DM` object
-. x - The local vector
-- y - The global vector: the input value of globalVec is used as an initial guess
+. x  - The local vector
+- y  - The global vector: the input value of globalVec is used as an initial guess
 
   Output Parameter:
 . y - The least-squares solution
@@ -156,16 +156,16 @@ PetscErrorCode DMGlobalToLocalSolve(DM dm, Vec x, Vec y)
   Collective
 
   Input Parameters:
-+ dm      - The `DM`
-. time    - The time
-. U       - The input field vector
-. funcs   - The functions to evaluate, one per field
-- mode    - The insertion mode for values
++ dm    - The `DM`
+. time  - The time
+. U     - The input field vector
+. funcs - The functions to evaluate, one per field
+- mode  - The insertion mode for values
 
   Output Parameter:
-. X       - The output vector
+. X - The output vector
 
-   Calling sequence of `func`:
+  Calling sequence of `func`:
 .vb
    void funcs(PetscInt dim, PetscInt Nf, PetscInt NfAux,
               const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],

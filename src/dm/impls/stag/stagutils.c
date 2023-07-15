@@ -164,7 +164,7 @@ PetscErrorCode DMStagGetProductCoordinateArraysRead(DM dm, void *arrX, void *arr
   Not Collective
 
   Input Parameters:
-+ dm - the `DMSTAG` object
++ dm  - the `DMSTAG` object
 - loc - the grid location
 
   Output Parameter:
@@ -237,12 +237,12 @@ PETSC_EXTERN PetscErrorCode DMStagGetProductCoordinateLocationSlot(DM dm, DMStag
 . dm - the `DMSTAG` object
 
   Output Parameters:
-+ x     - starting element index in first direction
-. y     - starting element index in second direction
-. z     - starting element index in third direction
-. m     - element width in first direction
-. n     - element width in second direction
-. p     - element width in third direction
++ x       - starting element index in first direction
+. y       - starting element index in second direction
+. z       - starting element index in third direction
+. m       - element width in first direction
+. n       - element width in second direction
+. p       - element width in third direction
 . nExtrax - number of extra partial elements in first direction
 . nExtray - number of extra partial elements in second direction
 - nExtraz - number of extra partial elements in third direction
@@ -418,9 +418,9 @@ PetscErrorCode DMStagGetIsFirstRank(DM dm, PetscBool *isFirstRank0, PetscBool *i
 . dm - the `DMSTAG` object
 
   Output Parameters:
-+ isFirstRank0 - whether this rank is last in the x direction
-. isFirstRank1 - whether this rank is last in the y direction
-- isFirstRank2 - whether this rank is last in the z direction
++ isLastRank0 - whether this rank is last in the x direction
+. isLastRank1 - whether this rank is last in the y direction
+- isLastRank2 - whether this rank is last in the z direction
 
   Level: intermediate
 
@@ -486,7 +486,7 @@ PetscErrorCode DMStagGetLocalSizes(DM dm, PetscInt *m, PetscInt *n, PetscInt *p)
 . nRanks1 - number of ranks in the y direction in the grid decomposition
 - nRanks2 - number of ranks in the z direction in the grid decomposition
 
- Level: intermediate
+  Level: intermediate
 
 .seealso: [](ch_stag), `DMSTAG`, `DMStagGetGlobalSizes()`, `DMStagGetLocalSize()`, `DMStagSetNumRanks()`, `DMDAGetInfo()`
 @*/
@@ -649,12 +649,12 @@ PetscErrorCode DMStagGetStencilWidth(DM dm, PetscInt *stencilWidth)
   Not Collective
 
   Input Parameter:
-.     dm - the `DMSTAG` object
+. dm - the `DMSTAG` object
 
   Output Parameters:
-+     lx - ownership along x direction (optional)
-.     ly - ownership along y direction (optional)
--     lz - ownership along z direction (optional)
++ lx - ownership along x direction (optional)
+. ly - ownership along y direction (optional)
+- lz - ownership along z direction (optional)
 
   Level: intermediate
 
@@ -686,7 +686,7 @@ PetscErrorCode DMStagGetOwnershipRanges(DM dm, const PetscInt *lx[], const Petsc
   Collective
 
   Input Parameters:
-+ dm - the `DMSTAG` object
++ dm   - the `DMSTAG` object
 . dof0 - number of dof on the first stratum in the new `DMSTAG`
 . dof1 - number of dof on the second stratum in the new `DMSTAG`
 . dof2 - number of dof on the third stratum in the new `DMSTAG`
@@ -722,9 +722,9 @@ PetscErrorCode DMStagCreateCompatibleDMStag(DM dm, PetscInt dof0, PetscInt dof1,
   Not Collective
 
   Input Parameters:
-+ dm - the `DMSTAG` object
++ dm  - the `DMSTAG` object
 . loc - location relative to an element
-- c - component
+- c   - component
 
   Output Parameter:
 . slot - index to use
@@ -760,9 +760,9 @@ PetscErrorCode DMStagGetLocationSlot(DM dm, DMStagStencilLocation loc, PetscInt 
   Collective
 
   Input Parameters:
-+ dm - the source `DMSTAG` object
-. vec - the source vector, compatible with `dm`
-. dmTo - the compatible destination `DMSTAG` object
++ dm    - the source `DMSTAG` object
+. vec   - the source vector, compatible with `dm`
+. dmTo  - the compatible destination `DMSTAG` object
 - vecTo - the destination vector, compatible with `dmTo`
 
   Level: advanced
@@ -985,17 +985,17 @@ static PetscErrorCode DMStagRestoreProductCoordinateArrays_Private(DM dm, void *
   ```
   PetscCall(DMGetCoordinateDM(dm,&cdm));
   for (d=0; d<3; ++d) {
-    DM  subdm;
-    Vec coor,coor_local;
+  DM  subdm;
+  Vec coor,coor_local;
 
-    PetscCall(DMProductGetDM(cdm,d,&subdm));
-    PetscCall(DMGetCoordinates(subdm,&coor));
-    PetscCall(DMGetCoordinatesLocal(subdm,&coor_local));
-    PetscCall(DMLocalToGlobal(subdm,coor_local,INSERT_VALUES,coor));
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Coordinates dim %" PetscInt_FMT ":\n",d));
-    PetscCall(VecView(coor,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(DMProductGetDM(cdm,d,&subdm));
+  PetscCall(DMGetCoordinates(subdm,&coor));
+  PetscCall(DMGetCoordinatesLocal(subdm,&coor_local));
+  PetscCall(DMLocalToGlobal(subdm,coor_local,INSERT_VALUES,coor));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Coordinates dim %" PetscInt_FMT ":\n",d));
+  PetscCall(VecView(coor,PETSC_VIEWER_STDOUT_WORLD));
   }
-   ```
+  ```
 
 .seealso: [](ch_stag), `DMSTAG`, `DMStagGetProductCoordinateArrays()`, `DMStagGetProductCoordinateArraysRead()`
 @*/
@@ -1012,7 +1012,7 @@ PetscErrorCode DMStagRestoreProductCoordinateArrays(DM dm, void *arrX, void *arr
   Logically Collective
 
   Input Parameters:
-+ dm - the `DMSTAG` object
++ dm   - the `DMSTAG` object
 . arrX - local 1D coordinate arrays for x direction
 . arrY - local 1D coordinate arrays for y direction
 - arrZ - local 1D coordinate arrays for z direction
@@ -1034,10 +1034,10 @@ PetscErrorCode DMStagRestoreProductCoordinateArraysRead(DM dm, void *arrX, void 
   Logically Collective; boundaryType0, boundaryType1, and boundaryType2 must contain common values
 
   Input Parameters:
-+ dm - the `DMSTAG` object
-. boundaryTypeX - boundary type for x direction
-. boundaryTypeY - boundary type for y direction, not set for one dimensional problems
-- boundaryTypeZ - boundary type for z direction, not set for one and two dimensional problems
++ dm            - the `DMSTAG` object
+. boundaryType2 - boundary type for x direction
+. boundaryType1 - boundary type for y direction, not set for one dimensional problems
+- boundaryType0 - boundary type for z direction, not set for one and two dimensional problems
 
   Level: advanced
 
@@ -1070,7 +1070,7 @@ PetscErrorCode DMStagSetBoundaryTypes(DM dm, DMBoundaryType boundaryType0, DMBou
   Logically Collective; `dmtype` must contain common value
 
   Input Parameters:
-+ dm - the `DMSTAG` object
++ dm     - the `DMSTAG` object
 - dmtype - DMtype for coordinates, either `DMSTAG` or `DMPRODUCT`
 
   Level: advanced
@@ -1094,7 +1094,7 @@ PetscErrorCode DMStagSetCoordinateDMType(DM dm, DMType dmtype)
   Logically Collective; `dof0`, `dof1`, `dof2`, and `dof3` must contain common values
 
   Input Parameters:
-+ dm - the `DMSTAG` object
++ dm   - the `DMSTAG` object
 . dof0 - the number of points per 0-cell (vertex/node)
 . dof1 - the number of points per 1-cell (element in 1D, edge in 2D and 3D)
 . dof2 - the number of points per 2-cell (element in 2D, face in 3D)
@@ -1137,7 +1137,7 @@ PetscErrorCode DMStagSetDOF(DM dm, PetscInt dof0, PetscInt dof1, PetscInt dof2, 
   Logically Collective; `nRanks0`, `nRanks1`, and `nRanks2` must contain common values
 
   Input Parameters:
-+ dm - the `DMSTAG` object
++ dm      - the `DMSTAG` object
 . nRanks0 - number of ranks in the x direction
 . nRanks1 - number of ranks in the y direction
 - nRanks2 - number of ranks in the z direction
@@ -1176,7 +1176,7 @@ PetscErrorCode DMStagSetNumRanks(DM dm, PetscInt nRanks0, PetscInt nRanks1, Pets
   Logically Collective; `stencilType` must contain common value
 
   Input Parameters:
-+ dm - the `DMSTAG` object
++ dm          - the `DMSTAG` object
 - stencilType - the elementwise ghost stencil type: `DMSTAG_STENCIL_BOX`, `DMSTAG_STENCIL_STAR`, or `DMSTAG_STENCIL_NONE`
 
   Level: beginner
@@ -1201,7 +1201,7 @@ PetscErrorCode DMStagSetStencilType(DM dm, DMStagStencilType stencilType)
   Logically Collective; `stencilWidth` must contain common value
 
   Input Parameters:
-+ dm - the `DMSTAG` object
++ dm           - the `DMSTAG` object
 - stencilWidth - stencil/halo/ghost width in elements
 
   Level: beginner
@@ -1307,7 +1307,7 @@ PetscErrorCode DMStagSetOwnershipRanges(DM dm, PetscInt const *lx, PetscInt cons
   Collective
 
   Input Parameters:
-+ dm - the `DMSTAG` object
++ dm   - the `DMSTAG` object
 . xmin - minimum global coordinate value in the x direction
 . xmax - maximum global coordinate values in the x direction
 . ymin - minimum global coordinate value in the y direction
@@ -1356,7 +1356,7 @@ PetscErrorCode DMStagSetUniformCoordinates(DM dm, PetscReal xmin, PetscReal xmax
   Collective
 
   Input Parameters:
-+ dm - the `DMSTAG` object
++ dm   - the `DMSTAG` object
 . xmin - minimum global coordinate value in the x direction
 . xmax - maximum global coordinate values in the x direction
 . ymin - minimum global coordinate value in the y direction
@@ -1415,7 +1415,7 @@ PetscErrorCode DMStagSetUniformCoordinatesExplicit(DM dm, PetscReal xmin, PetscR
   Collective
 
   Input Parameters:
-+ dm - the `DMSTAG` object
++ dm   - the `DMSTAG` object
 . xmin - minimum global coordinate value in the x direction
 . xmax - maximum global coordinate values in the x direction
 . ymin - minimum global coordinate value in the y direction
@@ -1514,7 +1514,7 @@ PetscErrorCode DMStagSetUniformCoordinatesProduct(DM dm, PetscReal xmin, PetscRe
   Logically Collective
 
   Input Parameters:
-+ dm - the `DMSTAG` object
++ dm  - the `DMSTAG` object
 - vec - the `Vec` object
 
   Output Parameter:
@@ -1581,7 +1581,7 @@ PetscErrorCode DMStagVecGetArray(DM dm, Vec vec, void *array)
   See the man page for `DMStagVecGetArray()` for more information.
 
   Input Parameters:
-+ dm - the `DMSTAG` object
++ dm  - the `DMSTAG` object
 - vec - the `Vec` object
 
   Output Parameter:
@@ -1628,7 +1628,7 @@ PetscErrorCode DMStagVecGetArrayRead(DM dm, Vec vec, void *array)
   Logically Collective
 
   Input Parameters:
-+ dm - the `DMSTAG` object
++ dm  - the `DMSTAG` object
 - vec - the `Vec` object
 
   Output Parameter:
@@ -1672,7 +1672,7 @@ PetscErrorCode DMStagVecRestoreArray(DM dm, Vec vec, void *array)
   Logically Collective
 
   Input Parameters:
-+ dm - the `DMSTAG` object
++ dm  - the `DMSTAG` object
 - vec - the Vec object
 
   Output Parameter:

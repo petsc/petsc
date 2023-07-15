@@ -151,24 +151,24 @@ PetscErrorCode MatPartitioningView_Party(MatPartitioning part, PetscViewer viewe
 }
 
 /*@C
-   MatPartitioningPartySetGlobal - Set global method for Party partitioner.
+  MatPartitioningPartySetGlobal - Set global method for Party partitioner.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  part - the partitioning context
--  method - a string representing the method
+  Input Parameters:
++ part   - the partitioning context
+- global - a string representing the method
 
-   Options Database Key:
-.  -mat_partitioning_party_global <method> - the global method
+  Options Database Key:
+. -mat_partitioning_party_global <method> - the global method
 
-   Level: advanced
+  Level: advanced
 
-   Note:
-   The method may be one of `MP_PARTY_OPT`, `MP_PARTY_LIN`, `MP_PARTY_SCA`,
-   `MP_PARTY_RAN`, `MP_PARTY_GBF`, `MP_PARTY_GCF`, `MP_PARTY_BUB` or `MP_PARTY_DEF`, or
-   alternatively a string describing the method. Two or more methods can be
-   combined like "gbf,gcf". Check the Party Library Users Manual for details.
+  Note:
+  The method may be one of `MP_PARTY_OPT`, `MP_PARTY_LIN`, `MP_PARTY_SCA`,
+  `MP_PARTY_RAN`, `MP_PARTY_GBF`, `MP_PARTY_GCF`, `MP_PARTY_BUB` or `MP_PARTY_DEF`, or
+  alternatively a string describing the method. Two or more methods can be
+  combined like "gbf,gcf". Check the Party Library Users Manual for details.
 
 .seealso: `MATPARTITIONINGPARTY`, `MatPartitioningPartySetLocal()`
 @*/
@@ -190,22 +190,22 @@ PetscErrorCode MatPartitioningPartySetGlobal_Party(MatPartitioning part, const c
 }
 
 /*@C
-   MatPartitioningPartySetLocal - Set local method used by the Party partitioner.
+  MatPartitioningPartySetLocal - Set local method used by the Party partitioner.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  part - the partitioning context
--  method - a string representing the method
+  Input Parameters:
++ part  - the partitioning context
+- local - a string representing the method
 
-   Options Database Key:
-.  -mat_partitioning_party_local <method> - the local method
+  Options Database Key:
+. -mat_partitioning_party_local <method> - the local method
 
-   Level: advanced
+  Level: advanced
 
-   Note:
-   The method may be one of `MP_PARTY_HELPFUL_SETS`, `MP_PARTY_KERNIGHAN_LIN`, or
-   `MP_PARTY_NONE`. Check the Party Library Users Manual for details.
+  Note:
+  The method may be one of `MP_PARTY_HELPFUL_SETS`, `MP_PARTY_KERNIGHAN_LIN`, or
+  `MP_PARTY_NONE`. Check the Party Library Users Manual for details.
 
 .seealso: `MATPARTITIONINGPARTY`, `MatPartitioningPartySetGlobal()`
 @*/
@@ -228,19 +228,19 @@ PetscErrorCode MatPartitioningPartySetLocal_Party(MatPartitioning part, const ch
 }
 
 /*@
-   MatPartitioningPartySetCoarseLevel - Set the coarse level parameter for the
-   Party partitioner.
+  MatPartitioningPartySetCoarseLevel - Set the coarse level parameter for the
+  Party partitioner.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  part - the partitioning context
--  level - the coarse level in range [0.0,1.0]
+  Input Parameters:
++ part  - the partitioning context
+- level - the coarse level in range [0.0,1.0]
 
-   Options Database Key:
-.  -mat_partitioning_party_coarse <l> - Coarse level
+  Options Database Key:
+. -mat_partitioning_party_coarse <l> - Coarse level
 
-   Level: advanced
+  Level: advanced
 
 .seealso: `MATPARTITIONINGPARTY`
 @*/
@@ -265,21 +265,21 @@ PetscErrorCode MatPartitioningPartySetCoarseLevel_Party(MatPartitioning part, Pe
 }
 
 /*@
-   MatPartitioningPartySetMatchOptimization - Activate matching optimization for
-   graph reduction.
+  MatPartitioningPartySetMatchOptimization - Activate matching optimization for
+  graph reduction.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  part - the partitioning context
--  opt - boolean flag
+  Input Parameters:
++ part - the partitioning context
+- opt  - boolean flag
 
-   Options Database Key:
-.  -mat_partitioning_party_match_optimization - Matching optimization on/off
+  Options Database Key:
+. -mat_partitioning_party_match_optimization - Matching optimization on/off
 
-   Level: advanced
+  Level: advanced
 
-.seealso:  `MATPARTITIONINGPARTY`
+.seealso: `MATPARTITIONINGPARTY`
 @*/
 PetscErrorCode MatPartitioningPartySetMatchOptimization(MatPartitioning part, PetscBool opt)
 {
@@ -300,20 +300,20 @@ PetscErrorCode MatPartitioningPartySetMatchOptimization_Party(MatPartitioning pa
 }
 
 /*@
-   MatPartitioningPartySetBipart - Activate or deactivate recursive bisection in the Party partitioner
+  MatPartitioningPartySetBipart - Activate or deactivate recursive bisection in the Party partitioner
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  part - the partitioning context
--  bp - boolean flag
+  Input Parameters:
++ part - the partitioning context
+- bp   - boolean flag
 
-   Options Database Key:
--  -mat_partitioning_party_bipart - Bipartitioning option on/off
+  Options Database Key:
+. -mat_partitioning_party_bipart - Bipartitioning option on/off
 
-   Level: advanced
+  Level: advanced
 
-.seealso:  `MATPARTITIONINGPARTY`
+.seealso: `MATPARTITIONINGPARTY`
 @*/
 PetscErrorCode MatPartitioningPartySetBipart(MatPartitioning part, PetscBool bp)
 {

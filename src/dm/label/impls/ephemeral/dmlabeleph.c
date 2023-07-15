@@ -235,7 +235,7 @@ PetscErrorCode DMLabelEphemeralGetLabel(DMLabel label, DMLabel *olabel)
   Not Collective
 
   Input Parameters:
-+ label - the `DMLabel`
++ label  - the `DMLabel`
 - olabel - the base label for this ephemeral label
 
   Level: intermediate

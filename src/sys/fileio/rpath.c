@@ -16,19 +16,19 @@
 #endif
 
 /*@C
-   PetscGetRelativePath - Given a filename, returns the relative path (removes
-   all directory specifiers).
+  PetscGetRelativePath - Given a filename, returns the relative path (removes
+  all directory specifiers).
 
-   Not Collective; No Fortran Support
+  Not Collective; No Fortran Support
 
-   Input Parameters:
-+  fullpath  - full pathname
--  flen     - size of `path`
+  Input Parameters:
++ fullpath - full pathname
+- flen     - size of `path`
 
   Output Parameter:
-.  path      - buffer that holds relative pathname
+. path - buffer that holds relative pathname
 
-   Level: developer
+  Level: developer
 
 .seealso: `PetscGetFullPath()`
 @*/
