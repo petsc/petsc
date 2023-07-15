@@ -179,18 +179,20 @@ static PetscErrorCode PCHPDDMSetAuxiliaryMat_HPDDM(PC pc, IS is, Mat A, PetscErr
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-// PetscClangLinter pragma disable: -fdoc-param-list-func-fortran-interface
-/*@
+/*@C
   PCHPDDMSetAuxiliaryMat - Sets the auxiliary matrix used by `PCHPDDM` for the concurrent GenEO problems at the finest level. As an example, in a finite element context with nonoverlapping subdomains plus (overlapping) ghost elements, this could be the unassembled (Neumann) local overlapping operator. As opposed to the assembled (Dirichlet) local overlapping operator obtained by summing neighborhood contributions at the interface of ghost elements.
 
   Input Parameters:
 + pc        - preconditioner context
 . is        - index set of the local auxiliary, e.g., Neumann, matrix
 . A         - auxiliary sequential matrix
-. setup     - function for generating the auxiliary matrix
-- setup_ctx - context for setup
+. setup     - function for generating the auxiliary matrix, may be `NULL`
+- setup_ctx - context for setup, may be `NULL`
 
   Level: intermediate
+
+  Fortran Notes:
+  Only `PETSC_NULL_FUNCTION` is supported for `setup` and `setup_ctx` is never accessed
 
 .seealso: `PCHPDDM`, `PCCreate()`, `PCSetType()`, `PCType`, `PC`, `PCHPDDMSetRHSMat()`, `MATIS`
 @*/
@@ -200,10 +202,6 @@ PetscErrorCode PCHPDDMSetAuxiliaryMat(PC pc, IS is, Mat A, PetscErrorCode (*setu
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   if (is) PetscValidHeaderSpecific(is, IS_CLASSID, 2);
   if (A) PetscValidHeaderSpecific(A, MAT_CLASSID, 3);
-#if PetscDefined(USE_FORTRAN_BINDINGS)
-  if (reinterpret_cast<void *>(setup) == reinterpret_cast<void *>(PETSC_NULL_FUNCTION_Fortran)) setup = nullptr;
-  if (setup_ctx == PETSC_NULL_INTEGER_Fortran) setup_ctx = nullptr;
-#endif
   PetscTryMethod(pc, "PCHPDDMSetAuxiliaryMat_C", (PC, IS, Mat, PetscErrorCode(*)(Mat, PetscReal, Vec, Vec, PetscReal, IS, void *), void *), (pc, is, A, setup, setup_ctx));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
