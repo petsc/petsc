@@ -424,7 +424,7 @@ int main(int argc, char **argv)
     }
     if (user.showSolution) {
       PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Solution\n"));
-      PetscCall(VecChop(u, 3.0e-9));
+      PetscCall(VecFilter(u, 3.0e-9));
       PetscCall(VecView(u, PETSC_VIEWER_STDOUT_WORLD));
     }
   } else {
@@ -439,7 +439,7 @@ int main(int argc, char **argv)
     /* Check residual */
     PetscCall(SNESComputeFunction(snes, u, r));
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Initial Residual\n"));
-    PetscCall(VecChop(r, 1.0e-10));
+    PetscCall(VecFilter(r, 1.0e-10));
     PetscCall(VecView(r, PETSC_VIEWER_STDOUT_WORLD));
     PetscCall(VecNorm(r, NORM_2, &res));
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, "L_2 Residual: %g\n", (double)res));
@@ -458,7 +458,7 @@ int main(int argc, char **argv)
       PetscCall(VecAXPY(r, 1.0, b));
       PetscCall(VecDestroy(&b));
       PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Au - b = Au + F(0)\n"));
-      PetscCall(VecChop(r, 1.0e-10));
+      PetscCall(VecFilter(r, 1.0e-10));
       PetscCall(VecView(r, PETSC_VIEWER_STDOUT_WORLD));
       PetscCall(VecNorm(r, NORM_2, &res));
       PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Linear L_2 Residual: %g\n", (double)res));

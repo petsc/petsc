@@ -1806,7 +1806,7 @@ PetscErrorCode DMSNESCheckResidual(SNES snes, DM dm, Vec u, PetscReal tol, Petsc
     *residual = res;
   } else {
     PetscCall(PetscPrintf(comm, "L_2 Residual: %g\n", (double)res));
-    PetscCall(VecChop(r, 1.0e-10));
+    PetscCall(VecFilter(r, 1.0e-10));
     PetscCall(PetscObjectSetName((PetscObject)r, "Initial Residual"));
     PetscCall(PetscObjectSetOptionsPrefix((PetscObject)r, "res_"));
     PetscCall(VecViewFromOptions(r, NULL, "-vec_view"));

@@ -796,7 +796,11 @@ PETSC_EXTERN PetscErrorCode VecCreateNest(MPI_Comm, PetscInt, IS *, Vec *, Vec *
 PETSC_EXTERN PetscErrorCode VecNestGetSize(Vec, PetscInt *);
 
 PETSC_EXTERN PetscErrorCode PetscOptionsGetVec(PetscOptions, const char[], const char[], Vec, PetscBool *);
-PETSC_EXTERN PetscErrorCode VecChop(Vec, PetscReal);
+PETSC_EXTERN PetscErrorCode VecFilter(Vec, PetscReal);
+PETSC_DEPRECATED_FUNCTION(3, 20, 0, "VecFilter()", ) static inline PetscErrorCode VecChop(Vec v, PetscReal tol)
+{
+  return VecFilter(v, tol);
+}
 
 PETSC_EXTERN PetscErrorCode VecGetLayout(Vec, PetscLayout *);
 PETSC_EXTERN PetscErrorCode VecSetLayout(Vec, PetscLayout);

@@ -4160,7 +4160,7 @@ PetscErrorCode DMPrintLocalVec(DM dm, const char name[], PetscReal tol, Vec X)
   PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)dm), &size));
   PetscCall(VecDuplicate(X, &x));
   PetscCall(VecCopy(X, x));
-  PetscCall(VecChop(x, tol));
+  PetscCall(VecFilter(x, tol));
   PetscCall(PetscPrintf(PetscObjectComm((PetscObject)dm), "%s:\n", name));
   if (size > 1) {
     PetscCall(VecGetLocalSize(x, &localSize));

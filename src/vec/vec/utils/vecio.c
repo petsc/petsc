@@ -229,20 +229,20 @@ PetscErrorCode VecLoad_Default(Vec newvec, PetscViewer viewer)
 }
 
 /*@
-  VecChop - Set all values in the vector with an absolute value less than the tolerance to zero
+  VecFilter - Set all values in the vector with an absolute value less than or equal to the tolerance to zero
 
   Input Parameters:
 + v   - The vector
 - tol - The zero tolerance
 
   Output Parameter:
-. v - The chopped vector
+. v - The filtered vector
 
   Level: intermediate
 
-.seealso: `VecCreate()`, `VecSet()`
+.seealso: `VecCreate()`, `VecSet()`, `MatFilter()`
 @*/
-PetscErrorCode VecChop(Vec v, PetscReal tol)
+PetscErrorCode VecFilter(Vec v, PetscReal tol)
 {
   PetscScalar *a;
   PetscInt     n, i;
