@@ -65,7 +65,7 @@ Changes: Development
 - Remove ``MATSOLVERSPARSEELEMENTAL`` since it is no longer functional
 - Add MATSELLCUDA. It supports fast ``MatMult()``, ``MatMultTranspose()`` and ``MatMultAdd()`` on GPUs
 - Add support for ``MAT_FACTOR_LU`` and ``MAT_FACTOR_CHOLESKY`` with ``MATSOLVERMUMPS`` for ``MATNEST``
-- ``MatGetFactor()`` can now return ``NULL`` for some combinations of matrices and solvers types. This is to support those combinations that can only be inspected at runtime (i.e. MatNest with AIJ blocks vs MatNest with SHELL blocks).
+- ``MatGetFactor()`` can now return ``NULL`` for some combinations of matrices and solvers types. This is to support those combinations that can only be inspected at runtime (i.e. MatNest with AIJ blocks vs MatNest with SHELL blocks)
 - Remove ``MatSetValuesDevice()``, ``MatCUSPARSEGetDeviceMatWrite()``, ``MatKokkosGetDeviceMatWrite``
 - Add ``MatDenseCUDASetPreallocation()`` and ``MatDenseHIPSetPreallocation()``
 - Add support for KOKKOS in ``MATH2OPUS``
@@ -92,9 +92,9 @@ Changes: Development
 
 .. rubric:: SNES:
 
-- Add a convenient, developer-level ``SNESConverged()`` function that runs the convergence test and updates the internal converged reason.
-- Swap the order of monitor and convergence test. Now monitors are always called after a convergence test.
-- Deprecate option ``-snes_ms_norms``. Use ``-snes_norm_schedule always``.
+- Add a convenient, developer-level ``SNESConverged()`` function that runs the convergence test and updates the internal converged reason
+- Swap the order of monitor and convergence test. Now monitors are always called after a convergence test
+- Deprecate option ``-snes_ms_norms`` in favor of ``-snes_norm_schedule always``
 
 .. rubric:: SNESLineSearch:
 
