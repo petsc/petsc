@@ -515,11 +515,15 @@ PetscErrorCode MatFilter(Mat A, PetscReal tol, PetscBool compress, PetscBool kee
     PetscCall(MatSetOption(A, MAT_NO_OFF_PROC_ENTRIES, flg)); /* reset option to its user-defined value */
   }
   if (compress && A->ops->eliminatezeros) {
-    Mat B;
+    Mat       B;
+    PetscBool flg;
 
-    PetscCall(MatEliminateZeros(A, keep));
-    PetscCall(MatDuplicate(A, MAT_COPY_VALUES, &B));
-    PetscCall(MatHeaderReplace(A, &B));
+    PetscCall(PetscObjectTypeCompareAny((PetscObject)A, &flg, MATSEQAIJHIPSPARSE, MATMPIAIJHIPSPARSE, ""));
+    if (!flg) {
+      PetscCall(MatEliminateZeros(A, keep));
+      PetscCall(MatDuplicate(A, MAT_COPY_VALUES, &B));
+      PetscCall(MatHeaderReplace(A, &B));
+    }
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
