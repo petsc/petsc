@@ -813,11 +813,11 @@ linux-xsdk-dbg:
 
 linux-analyzer:
   extends:
-    - .stage-3
+    - .stage-1
     - .linux_test
     - .coverage-disable
   tags:
-    - gce-u22-stage2
+    - gce-u22-stage1
   script:
     - printf "PATH:$PATH\n"
     - printf "PYTHONPATH:$PYTHONPATH\n"
@@ -1132,7 +1132,7 @@ analyze-pipeline:
 # Base job for a documentation build (runs in venv to allow installing additional packages without root)
 #
 .docs:
-  stage: stage-3
+  stage: stage-2
   tags:
     - linux-docs
   before_script:
