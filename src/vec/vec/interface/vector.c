@@ -946,6 +946,7 @@ PetscErrorCode VecGetOwnershipRanges(Vec x, const PetscInt *ranges[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+// PetscClangLinter pragma disable: -fdoc-section-header-unknown
 /*@
   VecSetOption - Sets an option for controlling a vector's behavior.
 

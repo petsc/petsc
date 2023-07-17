@@ -827,8 +827,8 @@ linux-analyzer:
     - cat ./config/examples/${TEST_ARCH}.py
     - ./config/examples/${TEST_ARCH}.py
     - make LINTER_OPTIONS="${LINTER_OPTIONS}" test-lint
-    - make LINTER_OPTIONS="${LINTER_OPTIONS} ./src/sys" lint
-    - make LINTER_OPTIONS="${LINTER_OPTIONS} -fdoc-* no -fdoc-indentation 1 -fdoc-param-list-func-fortran-interface 1 -fdoc-inline-list-seealso-* 1 -fdoc-section-header-spelling 1 -fdoc-inline-list-formatting 1 -fdoc-section-barren 1 -fdoc-section-header-spelling 1 ./src/vec ./src/mat ./src/dm ./src/ksp ./src/snes ./src/ts ./src/tao" lint
+    - make LINTER_OPTIONS="${LINTER_OPTIONS} ./src/sys ./src/vec" lint
+    - make LINTER_OPTIONS="${LINTER_OPTIONS} -fdoc-* no -fdoc-indentation 1 -fdoc-param-list-func-fortran-interface 1 -fdoc-inline-list-seealso-* 1 -fdoc-section-header-spelling 1 -fdoc-inline-list-formatting 1 -fdoc-section-barren 1 -fdoc-section-header-spelling 1 ./src/mat ./src/dm ./src/ksp ./src/snes ./src/ts ./src/tao" lint
   variables:
     TEST_ARCH: arch-ci-linux-analyzer
     LINTER_OPTIONS: "--PETSC_ARCH=${TEST_ARCH} --clang_lib=`llvm-config-14 --libdir`/libclang.so.1 --verbose 1 --werror 1"

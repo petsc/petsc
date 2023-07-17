@@ -326,8 +326,7 @@ PetscErrorCode AOCreateMapping(MPI_Comm comm, PetscInt napp, const PetscInt myap
   AOCreateMappingIS - Creates an application mapping using two index sets.
 
   Input Parameters:
-+ comm    - MPI communicator that is to share `AO`
-. isapp   - index set that defines an ordering
++ isapp   - index set that defines an ordering
 - ispetsc - index set that defines another ordering, maybe NULL for identity `IS`
 
   Output Parameter:
@@ -339,7 +338,7 @@ PetscErrorCode AOCreateMapping(MPI_Comm comm, PetscInt napp, const PetscInt myap
   Level: beginner
 
   Note:
-  The index sets isapp and ispetsc need NOT contain the all the integers 0 to N-1, that is there CAN be "holes"  in the indices.
+  The index sets `isapp` and `ispetsc` need NOT contain the all the integers 0 to N-1, that is there CAN be "holes"  in the indices.
   Use `AOCreateBasic()` or `AOCreateBasicIS()` if they do not have holes for better performance.
 
 .seealso: [](sec_ao), [](sec_scatter), `AOCreateBasic()`, `AOCreateMapping()`, `AODestroy()`

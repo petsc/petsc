@@ -338,11 +338,7 @@ PetscErrorCode VecWhichBetweenOrEqual(Vec VecLow, Vec V, Vec VecHigh, IS *S)
 }
 
 /*@
-  VecWhichInactive - Creates an index set containing the indices
-  where one of the following holds:
-  a) VecLow(i)  < V(i) < VecHigh(i)
-  b) VecLow(i)  = V(i) and D(i) <= 0 (< 0 when Strong is true)
-  c) VecHigh(i) = V(i) and D(i) >= 0 (> 0 when Strong is true)
+  VecWhichInactive - Creates an `IS` based on a set of vectors
 
   Collective
 
@@ -357,6 +353,14 @@ PetscErrorCode VecWhichBetweenOrEqual(Vec VecLow, Vec V, Vec VecHigh, IS *S)
 . S - The index set containing the indices i where the bound is inactive
 
   Level: advanced
+
+  Notes:
+  Creates an index set containing the indices where one of the following holds\:
+.vb
+  - VecLow(i)  < V(i) < VecHigh(i)
+  - VecLow(i)  = V(i) and D(i) <= 0 (< 0 when Strong is true)
+  - VecHigh(i) = V(i) and D(i) >= 0 (> 0 when Strong is true)
+.ve
 
 .seealso: `Vec`
 @*/

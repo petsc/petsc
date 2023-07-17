@@ -579,11 +579,6 @@ PetscErrorCode ISListToPair(MPI_Comm comm, PetscInt listlen, IS islist[], IS *xi
 
 /*@
   ISPairToList - Convert an `IS` pair encoding an integer map to a list of `IS`.
-  Each `IS` on the output list contains the preimage for each index on the second input `IS`.
-  The `IS` on the output list are constructed on the subcommunicators of the input `IS` pair.
-  Each subcommunicator corresponds to the preimage of some index j -- this subcomm contains
-  exactly the ranks that assign some indices i to j.  This is essentially the inverse of
-  `ISListToPair()`.
 
   Collective
 
@@ -598,6 +593,12 @@ PetscErrorCode ISListToPair(MPI_Comm comm, PetscInt listlen, IS islist[], IS *xi
   Level: developer
 
   Notes:
+  Each `IS` on the output list contains the preimage for each index on the second input
+  `IS`. The `IS` on the output list are constructed on the subcommunicators of the input `IS`
+  pair. Each subcommunicator corresponds to the preimage of some index j -- this subcomm
+  contains exactly the MPI processes that assign some indices i to j.  This is essentially the inverse
+  of `ISListToPair()`.
+
   `xis` and `yis` must be of the same length and have congruent communicators.
 
   The resulting `IS` have subcommunicators in a "deadlock-free" order (see `ISListToPair()`).

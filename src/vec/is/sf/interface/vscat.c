@@ -627,10 +627,10 @@ PetscErrorCode VecScatterSetFromOptions(VecScatter sf)
   Collective
 
   Input Parameters:
-+  xin - a vector that defines the shape (parallel data layout of the vector)
-         of vectors from which we scatter
-.  yin - a vector that defines the shape (parallel data layout of the vector)
-         of vectors to which we scatter
++ x  - a vector that defines the shape (parallel data layout of the vector) of vectors from
+       which we scatter
+. y  - a vector that defines the shape (parallel data layout of the vector) of vectors to which
+       we scatter
 . ix - the indices of xin to scatter (if `NULL` scatters all values)
 - iy - the indices of yin to hold results (if `NULL` fills entire vector `yin` in order)
 
@@ -1114,17 +1114,17 @@ functionend:
 
   Level: intermediate
 
-  Usage:
+  Example Usage:
 .vb
-        VecScatterCreateToAll(vin,&ctx,&vout);
+  VecScatterCreateToAll(vin, &ctx, &vout);
 
-        // scatter as many times as you need
-        VecScatterBegin(ctx,vin,vout,INSERT_VALUES,SCATTER_FORWARD);
-        VecScatterEnd(ctx,vin,vout,INSERT_VALUES,SCATTER_FORWARD);
+  // scatter as many times as you need
+  VecScatterBegin(ctx, vin, vout, INSERT_VALUES, SCATTER_FORWARD);
+  VecScatterEnd(ctx, vin, vout, INSERT_VALUES, SCATTER_FORWARD);
 
-        // destroy scatter context and local vector when no longer needed
-        VecScatterDestroy(&ctx);
-        VecDestroy(&vout);
+  // destroy scatter context and local vector when no longer needed
+  VecScatterDestroy(&ctx);
+  VecDestroy(&vout);
 .ve
 
   Notes:
@@ -1187,17 +1187,17 @@ PetscErrorCode VecScatterCreateToAll(Vec vin, VecScatter *ctx, Vec *vout)
 
   Level: intermediate
 
-  Usage:
+  Example Usage:
 .vb
-        VecScatterCreateToZero(vin,&ctx,&vout);
+  VecScatterCreateToZero(vin, &ctx, &vout);
 
-        // scatter as many times as you need
-        VecScatterBegin(ctx,vin,vout,INSERT_VALUES,SCATTER_FORWARD);
-        VecScatterEnd(ctx,vin,vout,INSERT_VALUES,SCATTER_FORWARD);
+  // scatter as many times as you need
+  VecScatterBegin(ctx, vin, vout, INSERT_VALUES, SCATTER_FORWARD);
+  VecScatterEnd(ctx, vin, vout, INSERT_VALUES, SCATTER_FORWARD);
 
-        // destroy scatter context and local vector when no longer needed
-        VecScatterDestroy(&ctx);
-        VecDestroy(&vout);
+  // destroy scatter context and local vector when no longer needed
+  VecScatterDestroy(&ctx);
+  VecDestroy(&vout);
 .ve
 
   Notes:
