@@ -675,20 +675,6 @@ PetscErrorCode SNESVISetRedundancyCheckMatlab(SNES snes, const char *func, mxArr
 
 #endif
 
-/*
-  SNESSetUp_VINEWTONRSLS - Sets up the internal data structures for the later use
-  of the SNESVI nonlinear solver.
-
-  Input Parameter:
-. snes - the SNES context
-
-   Application Interface Routine: SNESSetUp()
-
-  Note:
-  For basic use of the SNES solvers, the user need not explicitly call
-  SNESSetUp(), since these actions will automatically occur during
-  the call to SNESSolve().
- */
 PetscErrorCode SNESSetUp_VINEWTONRSLS(SNES snes)
 {
   SNES_VINEWTONRSLS *vi = (SNES_VINEWTONRSLS *)snes->data;

@@ -149,9 +149,7 @@ PetscErrorCode SNESFASGetLevels(SNES snes, PetscInt *levels)
 }
 
 /*@
-  SNESFASGetCycleSNES - Gets the `SNES` corresponding to a particular
-
-  Level Of The `Snesfas` Hierarchy.
+  SNESFASGetCycleSNES - Gets the `SNES` corresponding to a particular level of the `SNESFAS` hierarchy
 
   Input Parameters:
 + snes  - the `SNES` nonlinear multigrid context
@@ -457,13 +455,12 @@ PetscErrorCode SNESFASCycleCreateSmoother_Private(SNES snes, SNES *smooth)
 /* ------------- Functions called on a particular level ----------------- */
 
 /*@
-  SNESFASCycleSetCycles - Sets the number of cycles on a particular level.
+  SNESFASCycleSetCycles - Sets the number of cycles for all levels in a `SNESFAS`
 
   Logically Collective
 
   Input Parameters:
 + snes   - the `SNESFAS` nonlinear multigrid context
-.  level  - the level to set the number of cycles on
 - cycles - the number of cycles -- 1 for V-cycle, 2 for W-cycle
 
   Level: advanced
@@ -495,7 +492,10 @@ PetscErrorCode SNESFASCycleSetCycles(SNES snes, PetscInt cycles)
 
   Level: advanced
 
-.seealso: `SNESFAS`, `SNESFASCycleGetSmootherUp()`, `SNESFASCycleGetSmootherDown()`
+  Note:
+  The `snes` should be obtained with `SNESFASGetCycleSNES()`
+
+.seealso: `SNESFAS`, `SNESFASCycleGetSmootherUp()`, `SNESFASCycleGetSmootherDown()`, `SNESFASGetCycleSNES()`
 @*/
 PetscErrorCode SNESFASCycleGetSmoother(SNES snes, SNES *smooth)
 {
@@ -519,13 +519,15 @@ PetscErrorCode SNESFASCycleGetSmoother(SNES snes, SNES *smooth)
   Output Parameter:
 . smoothu - the smoother
 
+  Level: advanced
+
   Note:
   Returns the downsmoother if no up smoother is available.  This enables transparent
   default behavior in the process of the solve.
 
-  Level: advanced
+  The `snes` should be obtained with `SNESFASGetCycleSNES()`
 
-.seealso: `SNESFAS`, `SNESFASCycleGetSmoother()`, `SNESFASCycleGetSmootherDown()`
+.seealso: `SNESFAS`, `SNESFASCycleGetSmoother()`, `SNESFASCycleGetSmootherDown()`, `SNESFASGetCycleSNES()`
 @*/
 PetscErrorCode SNESFASCycleGetSmootherUp(SNES snes, SNES *smoothu)
 {
@@ -553,7 +555,10 @@ PetscErrorCode SNESFASCycleGetSmootherUp(SNES snes, SNES *smoothu)
 
   Level: advanced
 
-.seealso: `SNESFAS`, `SNESFASCycleGetSmootherUp()`, `SNESFASCycleGetSmoother()`
+  Note:
+  The `snes` should be obtained with `SNESFASGetCycleSNES()`
+
+.seealso: `SNESFAS`, `SNESFASCycleGetSmootherUp()`, `SNESFASCycleGetSmoother()`, `SNESFASGetCycleSNES()`
 @*/
 PetscErrorCode SNESFASCycleGetSmootherDown(SNES snes, SNES *smoothd)
 {
@@ -971,7 +976,7 @@ PetscErrorCode SNESFASSetRScale(SNES snes, PetscInt level, Vec rscale)
 - level - the level (0 is coarsest) to supply
 
   Output Parameter:
-   smooth  - the smoother
+. smooth - the smoother
 
   Level: advanced
 
@@ -1000,7 +1005,7 @@ PetscErrorCode SNESFASGetSmoother(SNES snes, PetscInt level, SNES *smooth)
 - level - the level (0 is coarsest) to supply
 
   Output Parameter:
-   smooth  - the smoother
+. smooth - the smoother
 
   Level: advanced
 
@@ -1031,7 +1036,7 @@ PetscErrorCode SNESFASGetSmootherDown(SNES snes, PetscInt level, SNES *smooth)
 - level - the level (0 is coarsest)
 
   Output Parameter:
-   smooth  - the smoother
+. smooth - the smoother
 
   Level: advanced
 
@@ -1151,7 +1156,7 @@ PetscErrorCode SNESFASFullSetTotal(SNES snes, PetscBool total)
   Input Parameter:
 . snes - the `SNESFAS` nonlinear multigrid context
 
-  Output:
+  Output Parameter:
 . total - whether to use total restriction / interpolatiaon or not (the alternative is defect restriction and correction interpolation)
 
   Level: advanced

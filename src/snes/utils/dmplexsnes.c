@@ -66,8 +66,8 @@ static PetscErrorCode SNESCorrectDiscretePressure_Private(SNES snes, PetscInt pf
 }
 
 /*@C
-  SNESConvergedCorrectPressure - Convergence test that adds a vector in the nullspace to make the continuum integral of the pressure field equal to zero.
-  This is normally used only to evaluate convergence rates for the pressure accurately. The convergence test itself just mimics `SNESConvergedDefault()`.
+  SNESConvergedCorrectPressure - The regular `SNES` convergence test that, up on convergence, adds a vector in the nullspace
+  to make the continuum integral of the pressure field equal to zero.
 
   Logically Collective
 
@@ -92,6 +92,10 @@ static PetscErrorCode SNESCorrectDiscretePressure_Private(SNES snes, PetscInt pf
   must be created with discretizations of those fields. We currently assume that the pressure field has index 1.
   The pressure field must have a nullspace, likely created using the `DMSetNullSpaceConstructor()` interface.
   Last we must be able to integrate the pressure over the domain, so the `DM` attached to the SNES `must` be a `DMPLEX` at this time.
+
+  Developer Note:
+  This is a total misuse of the `SNES` convergence test handling system. It should be removed. Perhaps a `SNESSetPostSolve()` could
+  be constructed to handle this process.
 
 .seealso: `SNES`, `DM`, `SNESConvergedDefault()`, `SNESSetConvergenceTest()`, `DMSetNullSpaceConstructor()`
 @*/

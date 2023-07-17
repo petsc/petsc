@@ -159,19 +159,12 @@ PetscErrorCode SNESNCGComputeYtJtF_Private(SNES snes, Vec X, Vec F, Vec Y, Vec W
 
   Input Parameters:
 + snes  - the iterative context
-- btype - update type
+- btype - update type, see `SNESNCGType`
 
   Options Database Key:
 . -snes_ncg_type <prp,fr,hs,dy,cd> - strategy for selecting algorithm for computing beta
 
   Level: intermediate
-
-  `SNESNCGType`s:
-+   `SNES_NCG_FR` - Fletcher-Reeves update
-.   `SNES_NCG_PRP` - Polak-Ribiere-Polyak update
-.   `SNES_NCG_HS` - Hestenes-Steifel update
-.   `SNES_NCG_DY` - Dai-Yuan update
--   `SNES_NCG_CD` - Conjugate Descent update
 
   Notes:
   `SNES_NCG_PRP` is the default, and the only one that tolerates generalized search directions.
@@ -182,7 +175,7 @@ PetscErrorCode SNESNCGComputeYtJtF_Private(SNES snes, Vec X, Vec F, Vec Y, Vec W
   Developer Notes:
   There should be a `SNESNCGSetType()`
 
-.seealso: `SNESNCGType`, `SNES_NCG_FR`, `SNES_NCG_PRP`, `SNES_NCG_HS`, `SNES_NCG_DY`, `SNES_NCG_CD`
+.seealso: `SNESNCG`, `SNESNCGType`, `SNES_NCG_FR`, `SNES_NCG_PRP`, `SNES_NCG_HS`, `SNES_NCG_DY`, `SNES_NCG_CD`
 @*/
 PetscErrorCode SNESNCGSetType(SNES snes, SNESNCGType btype)
 {

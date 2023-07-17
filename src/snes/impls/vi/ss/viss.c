@@ -171,6 +171,7 @@ PetscErrorCode SNESVIComputeJacobian(Mat jac, Mat jac_pre, Vec Da, Vec Db)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+// PetscClangLinter pragma disable: -fdoc-sowing-chars
 /*
   SNESVIComputeMeritFunctionGradient - Computes the gradient of the merit function psi.
 
@@ -185,30 +186,13 @@ PetscErrorCode SNESVIComputeJacobian(Mat jac, Mat jac_pre, Vec Da, Vec Db)
   The merit function gradient is computed as follows
   dpsi = H^T*phi
 */
-PetscErrorCode SNESVIComputeMeritFunctionGradient(Mat H, Vec phi, Vec dpsi)
+static PetscErrorCode SNESVIComputeMeritFunctionGradient(Mat H, Vec phi, Vec dpsi)
 {
   PetscFunctionBegin;
   PetscCall(MatMultTranspose(H, phi, dpsi));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*
-  SNESSolve_VINEWTONSSLS - Solves the complementarity problem with a semismooth Newton
-  method using a line search.
-
-  Input Parameter:
-. snes - the SNES context
-
-   Application Interface Routine: SNESSolve()
-
-  Note:
-  This implements essentially a semismooth Newton method with a
-  line search. The default line search does not do any line search
-  but rather takes a full Newton step.
-
-  Developer Notes: the code in this file should be slightly modified so that this routine need not exist and the SNESSolve_NEWTONLS() routine is called directly with the appropriate wrapped function and Jacobian evaluations
-
-*/
 PetscErrorCode SNESSolve_VINEWTONSSLS(SNES snes)
 {
   SNES_VINEWTONSSLS   *vi = (SNES_VINEWTONSSLS *)snes->data;
@@ -355,20 +339,6 @@ PetscErrorCode SNESSolve_VINEWTONSSLS(SNES snes)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*
-  SNESSetUp_VINEWTONSSLS - Sets up the internal data structures for the later use
-  of the SNES nonlinear solver.
-
-  Input Parameter:
-. snes - the SNES context
-
-   Application Interface Routine: SNESSetUp()
-
-  Note:
-  For basic use of the SNES solvers, the user need not explicitly call
-  SNESSetUp(), since these actions will automatically occur during
-  the call to SNESSolve().
- */
 PetscErrorCode SNESSetUp_VINEWTONSSLS(SNES snes)
 {
   SNES_VINEWTONSSLS *vi = (SNES_VINEWTONSSLS *)snes->data;
@@ -399,14 +369,6 @@ PetscErrorCode SNESReset_VINEWTONSSLS(SNES snes)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*
-   SNESSetFromOptions_VINEWTONSSLS - Sets various parameters for the SNESVI method.
-
-   Input Parameter:
-.  snes - the SNES context
-
-   Application Interface Routine: SNESSetFromOptions()
-*/
 static PetscErrorCode SNESSetFromOptions_VINEWTONSSLS(SNES snes, PetscOptionItems *PetscOptionsObject)
 {
   PetscFunctionBegin;

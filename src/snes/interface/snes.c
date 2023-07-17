@@ -892,12 +892,11 @@ PetscErrorCode SNESEWSetFromOptions_Private(SNESKSPEW *kctx, PetscBool print_api
 
   Options Database Keys:
 + -snes_type <type>                                                            - newtonls, newtontr, ngmres, ncg, nrichardson, qn, vi, fas, `SNESType` for complete list
-. -snes_stol                                                                   - convergence tolerance in terms of the norm
-                of the change in the solution between steps
+. -snes_stol <stol>                                                            - convergence tolerance in terms of the norm of the change in the solution between steps
 . -snes_atol <abstol>                                                          - absolute tolerance of residual norm
 . -snes_rtol <rtol>                                                            - relative decrease in tolerance norm from initial
 . -snes_divergence_tolerance <divtol>                                          - if the residual goes above divtol*rnorm0, exit with divergence
-. -snes_force_iteration <force>                                                - force SNESSolve() to take at least one iteration
+. -snes_force_iteration <force>                                                - force `SNESSolve()` to take at least one iteration
 . -snes_max_it <max_it>                                                        - maximum number of iterations
 . -snes_max_funcs <max_funcs>                                                  - maximum number of function evaluations
 . -snes_max_fail <max_fail>                                                    - maximum number of line search failures allowed before stopping, default is none
@@ -907,9 +906,7 @@ PetscErrorCode SNESEWSetFromOptions_Private(SNESKSPEW *kctx, PetscBool print_api
 . -snes_lag_jacobian <lag>                                                     - how often Jacobian is rebuilt (use -1 to never rebuild)
 . -snes_lag_jacobian_persists <true,false>                                     - retains the -snes_lag_jacobian information across multiple SNESSolve()
 . -snes_tr_tol <trtol>                                                         - trust region tolerance
-. -snes_convergence_test                                                       - <default,skip,correct_pressure> convergence test in nonlinear solver.
-                               default `SNESConvergedDefault()`. skip `SNESConvergedSkip()` means continue iterating until max_it or some other criterion is reached, saving expense
-                               of convergence test. correct_pressure S`NESConvergedCorrectPressure()` has special handling of a pressure null space.
+. -snes_convergence_test <default,skip,correct_pressure>                       - convergence test in nonlinear solver. default `SNESConvergedDefault()`. skip `SNESConvergedSkip()` means continue iterating until max_it or some other criterion is reached, saving expense of convergence test. correct_pressure `SNESConvergedCorrectPressure()` has special handling of a pressure null space.
 . -snes_monitor [ascii][:filename][:viewer format]                             - prints residual norm at each iteration. if no filename given prints to stdout
 . -snes_monitor_solution [ascii binary draw][:filename][:viewer format]        - plots solution at each iteration
 . -snes_monitor_residual [ascii binary draw][:filename][:viewer format]        - plots residual (not its norm) at each iteration
@@ -919,9 +916,9 @@ PetscErrorCode SNESEWSetFromOptions_Private(SNESKSPEW *kctx, PetscBool print_api
 . -snes_monitor_pause_final                                                    - Pauses all monitor drawing after the solver ends
 . -snes_fd                                                                     - use finite differences to compute Jacobian; very slow, only for testing
 . -snes_fd_color                                                               - use finite differences with coloring to compute Jacobian
-. -snes_mf_ksp_monitor                                                         - if using matrix-free multiply then print h at each KSP iteration
+. -snes_mf_ksp_monitor                                                         - if using matrix-free multiply then print h at each `KSP` iteration
 . -snes_converged_reason                                                       - print the reason for convergence/divergence after each solve
-. -npc_snes_type <type>                                                        - the SNES type to use as a nonlinear preconditioner
+. -npc_snes_type <type>                                                        - the `SNES` type to use as a nonlinear preconditioner
 . -snes_test_jacobian <optional threshold>                                     - compare the user provided Jacobian with one computed via finite differences to check for errors.  If a threshold is given, display only those entries whose difference is greater than the threshold.
 - -snes_test_jacobian_view                                                     - display the user provided Jacobian, the finite difference Jacobian and the difference between them to help users detect the location of errors in the user provided Jacobian.
 

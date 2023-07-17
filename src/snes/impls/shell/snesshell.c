@@ -6,26 +6,23 @@ typedef struct {
 } SNES_Shell;
 
 /*@C
-  SNESShellSetSolve - Sets routine to apply as solver
+  SNESShellSetSolve - Sets routine to apply as solver to a `SNESSHELL` `SNES` object
 
   Logically Collective
 
   Input Parameters:
-+ snes - the `SNES` nonlinear solver context
--  apply - the application-provided solver routine
++ snes  - the `SNES` nonlinear solver context
+- solve - the application-provided solver routine
 
   Calling sequence of `apply`:
-.vb
-   PetscErrorCode apply(SNES snes, Vec xout)
-.ve
-+ snes  - the preconditioner, get the application context with `SNESShellGetContext()` provided with `SNESShelletContext()`
-- solve - solution vector
++ snes - the preconditioner, get the application context with `SNESShellGetContext()` provided with `SNESShelletContext()`
+- xout - solution vector
 
   Level: advanced
 
 .seealso: `SNESSHELL`, `SNESShellSetContext()`, `SNESShellGetContext()`
 @*/
-PetscErrorCode SNESShellSetSolve(SNES snes, PetscErrorCode (*solve)(SNES, Vec))
+PetscErrorCode SNESShellSetSolve(SNES snes, PetscErrorCode (*solve)(SNES snes, Vec xout))
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);

@@ -6,6 +6,7 @@ typedef struct {
   void                  *ctx;
 } SNESLineSearch_Shell;
 
+// PetscClangLinter pragma disable: -fdoc-param-list-func-parameter-documentation
 /*@C
   SNESLineSearchShellSetUserFunc - Sets the user function for the `SNESLINESEARCHSHELL` implementation.
 
@@ -17,11 +18,11 @@ typedef struct {
 - ctx        - context for func
 
   Calling sequence of `func`:
-$  PetscErrorCode func(SNESLinesearch, void *ctx)
-+ linesearch - the linesearch instance
-- ctx        - the above mentioned context
+$  PetscErrorCode func(SNESLinesearch ls, void *ctx)
++ ls  - the linesearch instance
+- ctx - the above mentioned context
 
-  Usage:
+  Usage\:
 .vb
   PetscErrorCode shellfunc(SNESLineSearch linesearch,void * ctx)
   {
@@ -31,14 +32,12 @@ $  PetscErrorCode func(SNESLinesearch, void *ctx)
      PetscCall(SNESLineSearchGetSNES(linesearch,&snes));
      PetscCall(SNESLineSearchSetReason(linesearch,SNES_LINESEARCH_SUCCEEDED));
      PetscCall(SNESLineSearchGetVecs(linesearch,&X,&F,&Y,&W,&G));
-     .. determine lambda using W and G as work vecs..
+     // determine lambda using W and G as work vecs..
      PetscCall(VecAXPY(X,-lambda,Y));
      PetscCall(SNESComputeFunction(snes,X,F));
      PetscCall(SNESLineSearchComputeNorms(linesearch));
      PetscFunctionReturn(PETSC_SUCCESS);
   }
-
-  ...
 
   PetscCall(SNESGetLineSearch(snes, &linesearch));
   PetscCall(SNESLineSearchSetType(linesearch, SNESLINESEARCHSHELL));

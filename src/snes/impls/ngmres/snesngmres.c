@@ -382,16 +382,11 @@ PetscErrorCode SNESNGMRESGetRestartFmRise_NGMRES(SNES snes, PetscBool *flg)
 
   Input Parameters:
 + snes  - the iterative context
-- rtype - restart type
+- rtype - restart type, see `SNESNGMRESRestartType`
 
   Options Database Keys:
 + -snes_ngmres_restart_type<difference,periodic,none> - set the restart type
 - -snes_ngmres_restart[30]                            - sets the number of iterations before restart for periodic
-
-  `SNESNGMRESRestartType`s:
-+   `SNES_NGMRES_RESTART_NONE` - never restart
-.   `SNES_NGMRES_RESTART_DIFFERENCE` - restart based upon difference criteria
--   `SNES_NGMRES_RESTART_PERIODIC` - restart after a fixed number of iterations
 
   Level: intermediate
 
@@ -413,22 +408,17 @@ PetscErrorCode SNESNGMRESSetRestartType(SNES snes, SNESNGMRESRestartType rtype)
 
   Input Parameters:
 + snes  - the iterative context
-- stype - selection type
+- stype - selection type, see `SNESNGMRESSelectType`
 
   Options Database Key:
 . -snes_ngmres_select_type<difference,none,linesearch> - select type
 
   Level: intermediate
 
-  `SNESNGMRESSelectType`s:
-+   `SNES_NGMRES_SELECT_NONE` - choose the combined solution all the time
-.   `SNES_NGMRES_SELECT_DIFFERENCE` - choose based upon the selection criteria
--   `SNES_NGMRES_SELECT_LINESEARCH` - choose based upon line search combination
-
   Note:
   The default line search used is the `SNESLINESEARCHL2` line search and it requires two additional function evaluations.
 
-.seealso: `SNESNGMRESSelectType()`, `SNES_NGMRES_SELECT_NONE`, `SNES_NGMRES_SELECT_DIFFERENCE`, `SNES_NGMRES_SELECT_LINESEARCH`
+.seealso: `SNESNGMRESSelectType`, `SNES_NGMRES_SELECT_NONE`, `SNES_NGMRES_SELECT_DIFFERENCE`, `SNES_NGMRES_SELECT_LINESEARCH`
 @*/
 PetscErrorCode SNESNGMRESSetSelectType(SNES snes, SNESNGMRESSelectType stype)
 {
@@ -489,7 +479,7 @@ PetscErrorCode SNESNGMRESSetRestartType_NGMRES(SNES snes, SNESNGMRESRestartType 
    SIAM Review, 57(4), 2015
 
 .seealso: `SNESCreate()`, `SNES`, `SNESSetType()`, `SNESType`, `SNESANDERSON`, `SNESNGMRESSetSelectType()`, `SNESNGMRESSetRestartType()`,
-          `SNESNGMRESSetRestartFmRise()`
+          `SNESNGMRESSetRestartFmRise()`, `SNESNGMRESSelectType`, ``SNESNGMRESRestartType`
 M*/
 
 PETSC_EXTERN PetscErrorCode SNESCreate_NGMRES(SNES snes)

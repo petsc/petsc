@@ -902,15 +902,7 @@ PetscErrorCode SNESLineSearchGetType(SNESLineSearch linesearch, SNESLineSearchTy
 
   Input Parameters:
 + linesearch - linesearch context
-- type       - The type of line search to be used
-
-  Available Types:
-+  `SNESLINESEARCHBASIC` - (or equivalently `SNESLINESEARCHNONE`) Simple damping line search, defaults to using the full Newton step
-.  `SNESLINESEARCHBT` - Backtracking line search over the L2 norm of the function
-.  `SNESLINESEARCHL2` - Secant line search over the L2 norm of the function
-.  `SNESLINESEARCHCP` - Critical point secant line search assuming F(x) = grad G(x) for some unknown G(x)
-.  `SNESLINESEARCHNLEQERR` - Affine-covariant error-oriented linesearch
--  `SNESLINESEARCHSHELL` - User provided `SNESLineSearch` implementation
+- type       - The type of line search to be used, see `SNESLineSearchType`
 
   Options Database Key:
 . -snes_linesearch_type <type> - basic (or equivalently none), bt, l2, cp, nleqerr, shell
@@ -976,9 +968,6 @@ PetscErrorCode SNESLineSearchSetSNES(SNESLineSearch linesearch, SNES snes)
 
 /*@
   SNESLineSearchGetSNES - Gets the `SNES` instance associated with the line search.
-  Having an associated `SNES` is necessary because most line search implementations must be able to
-  evaluate the function using `SNESComputeFunction()` for the associated `SNES`.  This routine
-  is used in the line search implementations when one must get this associated `SNES` instance.
 
   Not Collective
 
@@ -1057,10 +1046,7 @@ PetscErrorCode SNESLineSearchSetLambda(SNESLineSearch linesearch, PetscReal lamb
 }
 
 /*@
-  SNESLineSearchGetTolerances - Gets the tolerances for the linesearch.  These include
-  tolerances for the relative and absolute change in the function norm, the change
-  in lambda for iterative line searches, the minimum steplength, the maximum steplength,
-  and the maximum number of iterations the line search procedure may take.
+  SNESLineSearchGetTolerances - Gets the tolerances for the linesearch.
 
   Not Collective
 
@@ -1115,10 +1101,7 @@ PetscErrorCode SNESLineSearchGetTolerances(SNESLineSearch linesearch, PetscReal 
 }
 
 /*@
-  SNESLineSearchSetTolerances -  Gets the tolerances for the linesearch.  These include
-  tolerances for the relative and absolute change in the function norm, the change
-  in lambda for iterative line searches, the minimum steplength, the maximum steplength,
-  and the maximum number of iterations the line search procedure may take.
+  SNESLineSearchSetTolerances -  Sets the tolerances for the linesearch.
 
   Collective
 
@@ -1242,11 +1225,6 @@ PetscErrorCode SNESLineSearchSetDamping(SNESLineSearch linesearch, PetscReal dam
   Output Parameter:
 . order - The order
 
-  Possible Values for order:
-+  1 or `SNES_LINESEARCH_ORDER_LINEAR` - linear order
-.  2 or `SNES_LINESEARCH_ORDER_QUADRATIC` - quadratic order
--  3 or `SNES_LINESEARCH_ORDER_CUBIC` - cubic order
-
   Level: intermediate
 
 .seealso: `SNESLineSearch`, `SNESLineSearchSetOrder()`
@@ -1265,19 +1243,17 @@ PetscErrorCode SNESLineSearchGetOrder(SNESLineSearch linesearch, PetscInt *order
 
   Input Parameters:
 + linesearch - linesearch context
-- order      - The damping parameter
+- order      - The order
 
   Level: intermediate
 
-  Possible Values for order:
+  Values for `order`\:
 +  1 or `SNES_LINESEARCH_ORDER_LINEAR` - linear order
 .  2 or `SNES_LINESEARCH_ORDER_QUADRATIC` - quadratic order
 -  3 or `SNES_LINESEARCH_ORDER_CUBIC` - cubic order
 
-  Notes:
-  Variable orders are supported by the following line searches:
-+  bt - cubic and quadratic
--  cp - linear and quadratic
+  Note:
+  These orders are supported by `SNESLINESEARCHBT` and `SNESLINESEARCHCP`
 
 .seealso: `SNESLineSearch`, `SNESLineSearchGetOrder()`, `SNESLineSearchSetDamping()`
 @*/
@@ -1627,35 +1603,32 @@ PetscErrorCode SNESLineSearchSetReason(SNESLineSearch linesearch, SNESLineSearch
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+// PetscClangLinter pragma disable: -fdoc-param-list-func-parameter-documentation
 /*@C
   SNESLineSearchSetVIFunctions - Sets VI-specific functions for line search computation.
 
   Logically Collective
 
   Input Parameters:
-+  snes - nonlinear context obtained from `SNESCreate()`
++ linesearch  - the linesearch object
 . projectfunc - function for projecting the function to the bounds
 - normfunc    - function for computing the norm of an active set
 
   Calling sequence of `projectfunc`:
-.vb
-   PetscErrorCode projectfunc(SNES snes, Vec X)
-.ve
+$   PetscErrorCode projectfunc(SNES snes, Vec X)
 +   snes - nonlinear context
 -   X - current solution, store the projected solution here
 
   Calling sequence of `normfunc`:
-.vb
-   PetscErrorCode normfunc(SNES snes, Vec X, Vec F, PetscScalar *fnorm)
-.ve
+$   PetscErrorCode normfunc(SNES snes, Vec X, Vec F, PetscScalar *fnorm)
 +   snes - nonlinear context
 .   X - current solution
 .   F - current residual
-- linesearch - VI-specific norm of the function
+-   fnorm - the computed norm
 
   Level: advanced
 
-  Note:
+  Notes:
   The VI solvers require projection of the solution to the feasible set.  `projectfunc` should implement this.
 
   The VI solvers require special evaluation of the function norm such that the norm is only calculated
@@ -1697,13 +1670,20 @@ PetscErrorCode SNESLineSearchGetVIFunctions(SNESLineSearch linesearch, SNESLineS
 }
 
 /*@C
-  SNESLineSearchRegister - register a line search method
+  SNESLineSearchRegister - register a line search type
+
+  Input Parameters:
++ sname    - name of the line search
+- function - the creation function for that type
+
+  Calling sequence of `function`:
+. ls - the linesearch context
 
   Level: advanced
 
 .seealso: `SNESLineSearch`, `SNESLineSearchType`, `SNESLineSearchSetType()`
 @*/
-PetscErrorCode SNESLineSearchRegister(const char sname[], PetscErrorCode (*function)(SNESLineSearch))
+PetscErrorCode SNESLineSearchRegister(const char sname[], PetscErrorCode (*function)(SNESLineSearch ls))
 {
   PetscFunctionBegin;
   PetscCall(SNESInitializePackage());
