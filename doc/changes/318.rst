@@ -191,7 +191,7 @@ exec-name``.
 - Add PC type of mpi which can be used in conjunction with -mpi_linear_solver_server to use MPI parallelism to solve a system created on a single MPI rank
 - Add ``PCHYPREAMSSetInteriorNodes()`` to set interior nodes for HYPRE AMS
 - Add ``PCAMGX``, a PC interface for NVIDIA's AMGx AMG solver
-- Remove ``PCGAMGSetSymGraph()`` and ``-pc_gamg_sym_graph``. The user should now indicate symmetry and structural symmetry using  ``MatSetOptions()`` and GAMG will symmetrize the graph if a symmetric options is not set
+- Remove ``PCGAMGSetSymGraph()`` and ``-pc_gamg_sym_graph``. The user should now indicate symmetry and structural symmetry using  ``MatSetOption()`` and GAMG will symmetrize the graph if a symmetric options is not set
 - Change ``-pc_gamg_reuse_interpolation`` default from false to true.
 
 .. rubric:: KSP:

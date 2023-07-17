@@ -267,7 +267,7 @@ Quick summary of usage with CUDA:
 
 - The ``MatType`` ``MATSEQAIJCUSPARSE``, ``MATMPIAIJCUSPARSE``, or ``MATAIJCUSPARSE``
   maybe used with ``MatSetType()`` or ``-mat_type seqaijcusparse``, ``mpiaijcusparse``, or
-  ``aijcusparse`` when ``MatSetOptions()`` is used.
+  ``aijcusparse`` when ``MatSetFromOptions()`` is used.
 
 - If you are creating the vectors and matrices with a ``DM``, you can use ``-dm_vec_type
   cuda`` and ``-dm_mat_type aijcusparse``.
@@ -280,7 +280,7 @@ Quick summary of usage with OpenCL (provided by the ViennaCL library):
 
 - The ``MatType`` ``MATSEQAIJVIENNACL``, ``MATMPIAIJVIENNACL``, or ``MATAIJVIENNACL``
   maybe used with ``MatSetType()`` or ``-mat_type seqaijviennacl``, ``mpiaijviennacl``, or
-  ``aijviennacl`` when ``MatSetOptions()`` is used.
+  ``aijviennacl`` when ``MatSetFromOptions()`` is used.
 
 - If you are creating the vectors and matrices with a ``DM``, you can use ``-dm_vec_type
   viennacl`` and ``-dm_mat_type aijviennacl``.
