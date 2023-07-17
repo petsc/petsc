@@ -890,27 +890,29 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ_RowMerge(Mat A, Mat B, PetscReal
           Input:  inputj   inputi  inputcol  bn
           Output: outputj  outputi_nnz                       */
 #define MatMatMultSymbolic_RowMergeMacro(ANNZ) \
-  window_min  = bn; \
-  outputi_nnz = 0; \
-  for (k = 0; k < ANNZ; ++k) { \
-    brow_ptr[k] = inputj + inputi[inputcol[k]]; \
-    brow_end[k] = inputj + inputi[inputcol[k] + 1]; \
-    window[k]   = (brow_ptr[k] != brow_end[k]) ? *brow_ptr[k] : bn; \
-    window_min  = PetscMin(window[k], window_min); \
-  } \
-  while (window_min < bn) { \
-    outputj[outputi_nnz++] = window_min; \
-    /* advance front and compute new minimum */ \
-    old_window_min = window_min; \
-    window_min     = bn; \
+  do { \
+    window_min  = bn; \
+    outputi_nnz = 0; \
     for (k = 0; k < ANNZ; ++k) { \
-      if (window[k] == old_window_min) { \
-        brow_ptr[k]++; \
-        window[k] = (brow_ptr[k] != brow_end[k]) ? *brow_ptr[k] : bn; \
-      } \
-      window_min = PetscMin(window[k], window_min); \
+      brow_ptr[k] = inputj + inputi[inputcol[k]]; \
+      brow_end[k] = inputj + inputi[inputcol[k] + 1]; \
+      window[k]   = (brow_ptr[k] != brow_end[k]) ? *brow_ptr[k] : bn; \
+      window_min  = PetscMin(window[k], window_min); \
     } \
-  }
+    while (window_min < bn) { \
+      outputj[outputi_nnz++] = window_min; \
+      /* advance front and compute new minimum */ \
+      old_window_min = window_min; \
+      window_min     = bn; \
+      for (k = 0; k < ANNZ; ++k) { \
+        if (window[k] == old_window_min) { \
+          brow_ptr[k]++; \
+          window[k] = (brow_ptr[k] != brow_end[k]) ? *brow_ptr[k] : bn; \
+        } \
+        window_min = PetscMin(window[k], window_min); \
+      } \
+    } \
+  } while (0)
 
       /************** L E V E L  1 ***************/
       /* Merge up to 8 rows of B to L1 work array*/

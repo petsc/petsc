@@ -2216,7 +2216,7 @@ static PetscErrorCode VecErrorWeightedNorms_Basic(Vec U, Vec Y, Vec E, NormType 
 
   PetscFunctionBegin;
 #define SkipSmallValue(a, b, tol) \
-  if (PetscAbsScalar(a) < tol || PetscAbsScalar(b) < tol) continue;
+  if (PetscAbsScalar(a) < tol || PetscAbsScalar(b) < tol) continue
 
   PetscCall(VecGetLocalSize(U, &n));
   PetscCall(VecGetArrayRead(U, &u));

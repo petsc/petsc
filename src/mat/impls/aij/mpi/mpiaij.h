@@ -188,7 +188,7 @@ PETSC_INTERN PetscErrorCode MatResetPreallocationCOO_MPIAIJ(Mat);
 
 /* compute apa = A[i,:]*P = Ad[i,:]*P_loc + Ao*[i,:]*P_oth using sparse axpy */
 #define AProw_scalable(i, ad, ao, p_loc, p_oth, api, apj, apa) \
-  { \
+  do { \
     PetscInt     _anz, _pnz, _j, _k, *_ai, *_aj, _row, *_pi, *_pj, _nextp, *_apJ; \
     PetscScalar *_aa, _valtmp, *_pa; \
     _apJ = apj + api[i]; \
@@ -236,10 +236,10 @@ PETSC_INTERN PetscErrorCode MatResetPreallocationCOO_MPIAIJ(Mat);
         (void)PetscLogFlops(2.0 * _pnz); \
       } \
     } \
-  }
+  } while (0)
 
 #define AProw_nonscalable(i, ad, ao, p_loc, p_oth, apa) \
-  { \
+  do { \
     PetscInt     _anz, _pnz, _j, _k, *_ai, *_aj, _row, *_pi, *_pj; \
     PetscScalar *_aa, _valtmp, *_pa; \
     /* diagonal portion of A */ \
@@ -276,6 +276,6 @@ PETSC_INTERN PetscErrorCode MatResetPreallocationCOO_MPIAIJ(Mat);
         (void)PetscLogFlops(2.0 * _pnz); \
       } \
     } \
-  }
+  } while (0)
 
 #endif

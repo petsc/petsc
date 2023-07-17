@@ -3682,7 +3682,7 @@ PetscErrorCode PetscSectionSetUseFieldOffsets(PetscSection s, PetscBool flg)
 }
 
 #define PetscSectionExpandPoints_Loop(TYPE) \
-  { \
+  do { \
     PetscInt i, n, o0, o1, size; \
     TYPE    *a0 = (TYPE *)origArray, *a1; \
     PetscCall(PetscSectionGetStorageSize(s, &size)); \
@@ -3694,7 +3694,7 @@ PetscErrorCode PetscSectionSetUseFieldOffsets(PetscSection s, PetscBool flg)
       PetscCall(PetscMemcpy(&a1[o1], &a0[o0], n *unitsize)); \
     } \
     *newArray = (void *)a1; \
-  }
+  } while (0)
 
 /*@
   PetscSectionExtractDofsFromArray - Extracts elements of an array corresponding to DOFs of specified points.

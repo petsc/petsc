@@ -7,12 +7,12 @@
 #include <petsc/private/matimpl.h> /*I  "petscmat.h"  I*/
 
 #define SWAP(a, b) \
-  { \
+  do { \
     PetscInt _t; \
     _t = a; \
     a  = b; \
     b  = _t; \
-  }
+  } while (0)
 
 /*@
   MatReorderForNonzeroDiagonal - Changes matrix ordering to remove

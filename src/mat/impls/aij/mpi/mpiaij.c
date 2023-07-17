@@ -381,7 +381,7 @@ PetscErrorCode MatCreateColmap_MPIAIJ_Private(Mat mat)
 }
 
 #define MatSetValues_SeqAIJ_A_Private(row, col, value, addv, orow, ocol) \
-  { \
+  do { \
     if (col <= lastcol1) low1 = 0; \
     else high1 = nrow1; \
     lastcol1 = col; \
@@ -424,10 +424,10 @@ PetscErrorCode MatCreateColmap_MPIAIJ_Private(Mat mat)
     A->nonzerostate++; \
   a_noinsert:; \
     ailen[row] = nrow1; \
-  }
+  } while (0)
 
 #define MatSetValues_SeqAIJ_B_Private(row, col, value, addv, orow, ocol) \
-  { \
+  do { \
     if (col <= lastcol2) low2 = 0; \
     else high2 = nrow2; \
     lastcol2 = col; \
@@ -469,7 +469,7 @@ PetscErrorCode MatCreateColmap_MPIAIJ_Private(Mat mat)
     B->nonzerostate++; \
   b_noinsert:; \
     bilen[row] = nrow2; \
-  }
+  } while (0)
 
 PetscErrorCode MatSetValuesRow_MPIAIJ(Mat A, PetscInt row, const PetscScalar v[])
 {

@@ -273,7 +273,7 @@ static PetscErrorCode PetscPartitionerPartition_PTScotch(PetscPartitioner part, 
             cnt++;
           }
         }
-      };
+      }
       if (nvtxs) PetscCall(PTScotch_PartGraph_MPI(strat, imbal, vtxdist, xadj, adjncy, vwgt, adjwgt, nparts, tpwgts, assignment, pcomm));
       if (hasempty) PetscCallMPI(MPI_Comm_free(&pcomm));
     }

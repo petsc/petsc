@@ -249,15 +249,15 @@ PetscErrorCode MatHasPreallocationAIJ(Mat A,PetscBool *aij,PetscBool *baij,Petsc
   *aij = *baij = *sbaij = *is = PETSC_FALSE;
   if (!f) PetscCall(PetscObjectQueryFunction((PetscObject)A,"MatMPIAIJSetPreallocation_C",&f));
   if (!f) PetscCall(PetscObjectQueryFunction((PetscObject)A,"MatSeqAIJSetPreallocation_C",&f));
-  if (f)  {*aij = PETSC_TRUE; goto done;};
+  if (f)  {*aij = PETSC_TRUE; goto done;}
   if (!f) PetscCall(PetscObjectQueryFunction((PetscObject)A,"MatMPIBAIJSetPreallocation_C",&f));
   if (!f) PetscCall(PetscObjectQueryFunction((PetscObject)A,"MatSeqBAIJSetPreallocation_C",&f));
-  if (f)  {*baij = PETSC_TRUE; goto done;};
+  if (f)  {*baij = PETSC_TRUE; goto done;}
   if (!f) PetscCall(PetscObjectQueryFunction((PetscObject)A,"MatMPISBAIJSetPreallocation_C",&f));
   if (!f) PetscCall(PetscObjectQueryFunction((PetscObject)A,"MatSeqSBAIJSetPreallocation_C",&f));
-  if (f)  {*sbaij = PETSC_TRUE; goto done;};
+  if (f)  {*sbaij = PETSC_TRUE; goto done;}
   if (!f) PetscCall(PetscObjectQueryFunction((PetscObject)A,"MatISSetPreallocation_C",&f));
-  if (f)  {*is = PETSC_TRUE; goto done;};
+  if (f)  {*is = PETSC_TRUE; goto done;}
  done:
   PetscFunctionReturn(PETSC_SUCCESS);
 }

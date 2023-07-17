@@ -49,11 +49,12 @@ static inline PetscErrorCode PetscHYPREFinalize_Private(void)
   return PETSC_SUCCESS;
 }
   #define PetscHYPREInitialize() \
-    if (!HYPRE_Initialized()) { \
-      PetscCallExternal(HYPRE_Initialize, ); \
-      PetscCall(PetscRegisterFinalize(PetscHYPREFinalize_Private)); \
-    } \
-    (void)0
+    do { \
+      if (!HYPRE_Initialized()) { \
+        PetscCallExternal(HYPRE_Initialize, ); \
+        PetscCall(PetscRegisterFinalize(PetscHYPREFinalize_Private)); \
+      } \
+    } while (0)
 #else
   #define PetscHYPREInitialize() (void)0
 #endif

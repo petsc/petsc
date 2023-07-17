@@ -1023,12 +1023,12 @@ static PetscErrorCode PetscWeakFormViewTable_Ascii(PetscWeakForm wf, PetscViewer
           PetscCall(PetscViewerASCIIPrintf(viewer, "%s", fname));
         } else if (showPointer) {
 #if defined(__clang__)
-          PETSC_PRAGMA_DIAGNOSTIC_IGNORED_BEGIN("-Wformat-pedantic");
+          PETSC_PRAGMA_DIAGNOSTIC_IGNORED_BEGIN("-Wformat-pedantic")
 #elif defined(__GNUC__) || defined(__GNUG__)
-          PETSC_PRAGMA_DIAGNOSTIC_IGNORED_BEGIN("-Wformat");
+          PETSC_PRAGMA_DIAGNOSTIC_IGNORED_BEGIN("-Wformat")
 #endif
           PetscCall(PetscViewerASCIIPrintf(viewer, "%p", funcs[f]));
-          PETSC_PRAGMA_DIAGNOSTIC_IGNORED_END();
+          PETSC_PRAGMA_DIAGNOSTIC_IGNORED_END()
         }
         PetscCall(PetscFree(fname));
       }

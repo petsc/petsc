@@ -3,11 +3,11 @@
 /* Bas van't Hof contributed the preconditioned aspects Feb 10, 2010 */
 
 #define SWAP(a, b, c) \
-  { \
+  do { \
     c = a; \
     a = b; \
     b = c; \
-  }
+  } while (0)
 
 #include <petsc/private/kspimpl.h> /*I "petscksp.h" I*/
 #include <petscdraw.h>

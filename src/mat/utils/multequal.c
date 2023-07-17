@@ -137,12 +137,12 @@ static PetscErrorCode MatMatMultEqual_Private(Mat A, Mat B, Mat C, PetscInt n, P
     PetscInt tt = an;
     an          = am;
     am          = tt;
-  };
+  }
   if (Bt) {
     PetscInt tt = bn;
     bn          = bm;
     bm          = tt;
-  };
+  }
   PetscCheck(an == bm && am == cm && bn == cn, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Mat A, B, C local dim %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT, am, an, bm, bn, cm, cn);
 
 #if defined(PETSC_USE_INFO)

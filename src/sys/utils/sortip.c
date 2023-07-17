@@ -9,11 +9,11 @@
 #include <petscsys.h> /*I  "petscsys.h"  I*/
 
 #define SWAP(a, b, t) \
-  { \
+  do { \
     t = a; \
     a = b; \
     b = t; \
-  }
+  } while (0)
 
 static PetscErrorCode PetscSortIntWithPermutation_Private(const PetscInt v[], PetscInt vdx[], PetscInt right)
 {

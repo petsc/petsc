@@ -660,3 +660,7 @@ PetscErrorCode PetscDeviceContextMarkIntentFromID(PetscDeviceContext dctx, Petsc
   PetscCall(PetscLogEventEnd(DCONTEXT_Mark, dctx, nullptr, nullptr, nullptr));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
+
+#if defined(__clang__)
+PETSC_PRAGMA_DIAGNOSTIC_IGNORED_END()
+#endif

@@ -447,9 +447,9 @@ static PetscErrorCode MatProductSetFromOptions_Private(Mat mat)
     }
     PetscCall(PetscStrlcat(mtypes, "_C", sizeof(mtypes)));
 #if defined(__clang__)
-    PETSC_PRAGMA_DIAGNOSTIC_IGNORED_BEGIN("-Wformat-pedantic");
+    PETSC_PRAGMA_DIAGNOSTIC_IGNORED_BEGIN("-Wformat-pedantic")
 #elif defined(__GNUC__) || defined(__GNUG__)
-    PETSC_PRAGMA_DIAGNOSTIC_IGNORED_BEGIN("-Wformat");
+    PETSC_PRAGMA_DIAGNOSTIC_IGNORED_BEGIN("-Wformat")
 #endif
     PetscCall(PetscObjectQueryFunction((PetscObject)A, mtypes, &f));
     PetscCall(PetscInfo(mat, "  querying %s from A? %p\n", mtypes, f));
@@ -480,7 +480,7 @@ static PetscErrorCode MatProductSetFromOptions_Private(Mat mat)
     }
     if (f) PetscCall((*f)(mat));
   }
-  PETSC_PRAGMA_DIAGNOSTIC_IGNORED_END();
+  PETSC_PRAGMA_DIAGNOSTIC_IGNORED_END()
   /* We may have found f but it did not succeed */
   if (!mat->ops->productsymbolic) {
     /* we can still compute the product if B is of type dense */
