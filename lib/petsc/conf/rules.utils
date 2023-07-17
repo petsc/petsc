@@ -75,12 +75,12 @@ vermin:
 	@vermin --violations -t=3.4- ${VERMIN_OPTIONS} ${PETSC_DIR}/config
 
 lint:
-	${PYTHON} ${PETSC_DIR}/lib/petsc/bin/maint/petsclinter --verbose=${V} --apply-patches=${REPLACE} $(LINTER_OPTIONS)
+	${PYTHON} ${PETSC_DIR}/lib/petsc/bin/maint/petsclinter --verbose=${V} --apply-patches=${REPLACE} $(LINTER_OPTIONS) ${DIRECTORY}
 
 help-lint:
 	@${PYTHON} ${PETSC_DIR}/lib/petsc/bin/maint/petsclinter --help
 	-@echo "Basic usage:"
-	-@echo "   make lint      <options>"
+	-@echo "   make lint      <options> [DIRECTORY=directory]"
 	-@echo "   make test-lint <options> <test only options>"
 	-@echo
 	-@echo "Options:"
