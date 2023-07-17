@@ -170,12 +170,6 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJCRL(Mat A, MatType type, Mat
 
 /*@C
   MatCreateSeqAIJCRL - Creates a sparse matrix of type `MATSEQAIJCRL`.
-  This type inherits from `MATSEQAIJ`, but stores some additional
-  information that is used to allow better vectorization of
-  the matrix-vector product. At the cost of increased storage, the `MATSEQAIJ` formatted
-  matrix can be copied to a format in which pieces of the matrix are
-  stored in ELLPACK format, allowing the vectorized matrix multiply
-  routine to use stride-1 memory accesses.
 
   Collective
 
@@ -191,6 +185,13 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJCRL(Mat A, MatType type, Mat
 . A - the matrix
 
   Level: intermediate
+
+  Notes:
+  This type inherits from `MATSEQAIJ`, but stores some additional information that is used to
+  allow better vectorization of the matrix-vector product. At the cost of increased storage,
+  the `MATSEQAIJ` formatted matrix can be copied to a format in which pieces of the matrix are
+  stored in ELLPACK format, allowing the vectorized matrix multiply routine to use stride-1
+  memory accesses.
 
 .seealso: [](ch_matrices), `Mat`, `MatCreate()`, `MatCreateMPIAIJPERM()`, `MatSetValues()`
 @*/

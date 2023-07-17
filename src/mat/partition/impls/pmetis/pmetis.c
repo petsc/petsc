@@ -398,9 +398,7 @@ PETSC_EXTERN PetscErrorCode MatPartitioningCreate_Parmetis(MatPartitioning part)
 }
 
 /*@
-  MatMeshToCellGraph -   Uses the ParMETIS package to convert a `Mat` that represents coupling of vertices of a mesh to a `Mat` the represents the graph of the coupling
-  between cells (the "dual" graph) and is suitable for partitioning with the `MatPartitioning` object. Use this to partition
-  cells of a mesh.
+  MatMeshToCellGraph - Convert a mesh to a cell graph.
 
   Collective
 
@@ -415,6 +413,11 @@ PETSC_EXTERN PetscErrorCode MatPartitioningCreate_Parmetis(MatPartitioning part)
   Level: advanced
 
   Notes:
+  Uses the ParMETIS package to convert a `Mat` that represents coupling of vertices of a mesh
+  to a `Mat` the represents the graph of the coupling between cells (the "dual" graph) and is
+  suitable for partitioning with the `MatPartitioning` object. Use this to partition cells of a
+  mesh.
+
   Currently requires ParMetis to be installed and uses ParMETIS_V3_Mesh2Dual()
 
   Each row of the mesh object represents a single cell in the mesh. For triangles it has 3 entries, quadrilaterials 4 entries,

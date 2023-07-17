@@ -3744,7 +3744,7 @@ PetscErrorCode MatStoreValues_SeqAIJ(Mat mat)
 
   Level: advanced
 
-  Usage:
+  Example Usage:
 .vb
     Using SNES
     Create Jacobian matrix
@@ -3752,7 +3752,7 @@ PetscErrorCode MatStoreValues_SeqAIJ(Mat mat)
     Apply boundary conditions to matrix, at this time matrix must have
       final nonzero structure (i.e. setting the nonlinear terms and applying
       boundary conditions again will not change the nonzero structure
-    MatSetOption(mat,MAT_NEW_NONZERO_LOCATIONS,PETSC_FALSE);
+    MatSetOption(mat, MAT_NEW_NONZERO_LOCATIONS, PETSC_FALSE);
     MatStoreValues(mat);
     Call SNESSetJacobian() with matrix
     In your Jacobian routine
@@ -3761,7 +3761,7 @@ PetscErrorCode MatStoreValues_SeqAIJ(Mat mat)
 
     Without `SNESSolve()`, i.e. when you handle nonlinear solve yourself:
     // build linear portion of Jacobian
-    MatSetOption(mat,MAT_NEW_NONZERO_LOCATIONS,PETSC_FALSE);
+    MatSetOption(mat, MAT_NEW_NONZERO_LOCATIONS, PETSC_FALSE);
     MatStoreValues(mat);
     loop over nonlinear iterations
        MatRetrieveValues(mat);

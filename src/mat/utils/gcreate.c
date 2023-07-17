@@ -31,11 +31,7 @@ PETSC_INTERN PetscErrorCode MatShift_Basic(Mat Y, PetscScalar a)
 /*@
   MatCreate - Creates a matrix where the type is determined
   from either a call to `MatSetType()` or from the options database
-  with a call to `MatSetFromOptions()`. The default matrix type is
-  `MATAIJ`, using the routines `MatCreateSeqAIJ()` or `MatCreateAIJ()`
-  if you do not set a type in the options database. If you never
-  call `MatSetType()` or `MatSetFromOptions()` it will generate an
-  error when you try to use the matrix.
+  with a call to `MatSetFromOptions()`.
 
   Collective
 
@@ -57,6 +53,12 @@ PETSC_INTERN PetscErrorCode MatShift_Basic(Mat Y, PetscScalar a)
    for additional format-specific options.
 
   Level: beginner
+
+  Notes:
+  The default matrix type is `MATAIJ`, using the routines `MatCreateSeqAIJ()` or
+  `MatCreateAIJ()` if you do not set a type in the options database. If you never call
+  `MatSetType()` or `MatSetFromOptions()` it will generate an error when you try to use the
+  matrix.
 
 .seealso: [](ch_matrices), `Mat`, `MatCreateSeqAIJ()`, `MatCreateAIJ()`,
           `MatCreateSeqDense()`, `MatCreateDense()`,
@@ -175,10 +177,7 @@ PetscErrorCode MatSetSizes(Mat A, PetscInt m, PetscInt n, PetscInt M, PetscInt N
 
 /*@
   MatSetFromOptions - Creates a matrix where the type is determined
-  from the options database. Generates a parallel MPI matrix if the
-  communicator has more than one processor.  The default matrix type is
-  `MATAIJ`, using the routines `MatCreateSeqAIJ()` and `MatCreateAIJ()` if
-  you do not select a type in the options database.
+  from the options database.
 
   Collective
 
@@ -197,6 +196,11 @@ PetscErrorCode MatSetSizes(Mat A, PetscInt m, PetscInt n, PetscInt M, PetscInt N
    for additional format-specific options.
 
   Level: beginner
+
+  Notes:
+  Generates a parallel MPI matrix if the communicator has more than one processor.  The default
+  matrix type is `MATAIJ`, using the routines `MatCreateSeqAIJ()` and `MatCreateAIJ()` if you
+  do not select a type in the options database.
 
 .seealso: [](ch_matrices), `Mat`, `MatCreateSeqAIJ()`, `MatCreateAIJ()`,
           `MatCreateSeqDense()`, `MatCreateDense()`,

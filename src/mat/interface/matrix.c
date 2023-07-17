@@ -493,6 +493,7 @@ PetscErrorCode MatMissingDiagonal(Mat mat, PetscBool *missing, PetscInt *dd)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+// PetscClangLinter pragma disable: -fdoc-section-header-unknown
 /*@C
   MatGetRow - Gets a row of a matrix.  You MUST call `MatRestoreRow()`
   for each row that you get to ensure that your application does
@@ -1417,6 +1418,7 @@ PetscErrorCode MatDestroy(Mat *A)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+// PetscClangLinter pragma disable: -fdoc-section-header-unknown
 /*@C
   MatSetValues - Inserts or adds a block of values into a matrix.
   These values may be cached, so `MatAssemblyBegin()` and `MatAssemblyEnd()`
@@ -1502,6 +1504,7 @@ PetscErrorCode MatSetValues(Mat mat, PetscInt m, const PetscInt idxm[], PetscInt
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+// PetscClangLinter pragma disable: -fdoc-section-header-unknown
 /*@C
   MatSetValuesIS - Inserts or adds a block of values into a matrix using an `IS` to indicate the rows and columns
   These values may be cached, so `MatAssemblyBegin()` and `MatAssemblyEnd()`
@@ -1647,6 +1650,7 @@ PetscErrorCode MatSetValuesRow(Mat mat, PetscInt row, const PetscScalar v[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+// PetscClangLinter pragma disable: -fdoc-section-header-unknown
 /*@
   MatSetValuesStencil - Inserts or adds a block of values into a matrix.
   Using structured grid indexing
@@ -4102,6 +4106,7 @@ PetscErrorCode MatSolveTransposeAdd(Mat mat, Vec b, Vec y, Vec x)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+// PetscClangLinter pragma disable: -fdoc-section-header-unknown
 /*@
   MatSOR - Computes relaxation (SOR, Gauss-Seidel) sweeps.
 
@@ -5169,7 +5174,7 @@ PetscErrorCode MatGetRowSum(Mat mat, Vec v)
 . mat - the matrix to provide the transpose
 
   Output Parameter:
-. mat - the matrix to contain the transpose; it MUST have the nonzero structure of the transpose of A or the code will crash or generate incorrect results
+. B - the matrix to contain the transpose; it MUST have the nonzero structure of the transpose of A or the code will crash or generate incorrect results
 
   Level: advanced
 
@@ -5791,6 +5796,7 @@ PetscErrorCode MatAssemblyEnd(Mat mat, MatAssemblyType type)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+// PetscClangLinter pragma disable: -fdoc-section-header-unknown
 /*@
   MatSetOption - Sets a parameter option for a matrix. Some options
   may be specific to certain storage formats.  Some options
@@ -6704,8 +6710,8 @@ PetscErrorCode MatGetLocalSize(Mat mat, PetscInt *m, PetscInt *n)
 }
 
 /*@C
-  MatGetOwnershipRangeColumn - Returns the range of matrix columns associated with rows of a vector one multiplies this matrix by that are owned by
-  this processor. (The columns of the "diagonal block" for most sparse matrix formats). See [Matrix Layouts](sec_matlayout) for details on matrix layouts.
+  MatGetOwnershipRangeColumn - Returns the range of matrix columns associated with rows of a
+  vector one multiplies this matrix by that are owned by this processor.
 
   Not Collective, unless matrix has not been allocated, then collective
 
@@ -6717,6 +6723,10 @@ PetscErrorCode MatGetLocalSize(Mat mat, PetscInt *m, PetscInt *n)
 - n - one more than the global index of the last local column, use `NULL` to not obtain this value
 
   Level: developer
+
+  Notes:
+  Retursns the columns of the "diagonal block" for most sparse matrix formats. See [Matrix
+  Layouts](sec_matlayout) for details on matrix layouts.
 
 .seealso: [](ch_matrices), `Mat`, `MatGetOwnershipRange()`, `MatGetOwnershipRanges()`, `MatGetOwnershipRangesColumn()`, `PetscLayout`
 @*/
@@ -6735,8 +6745,7 @@ PetscErrorCode MatGetOwnershipRangeColumn(Mat mat, PetscInt *m, PetscInt *n)
 
 /*@C
   MatGetOwnershipRange - For matrices that own values by row, excludes `MATELEMENTAL` and `MATSCALAPACK`, returns the range of matrix rows owned by
-  this MPI process. For all matrices  it returns the range of matrix rows associated with rows of a vector that would contain the result of a matrix
-  vector product with this matrix. See [Matrix Layouts](sec_matlayout) for details on matrix layouts
+  this MPI process.
 
   Not Collective
 
@@ -6750,9 +6759,9 @@ PetscErrorCode MatGetOwnershipRangeColumn(Mat mat, PetscInt *m, PetscInt *n)
   Level: beginner
 
   Note:
-  This function requires that the matrix be preallocated. If you have not preallocated, consider using
-  `PetscSplitOwnership`(`MPI_Comm` comm, `PetscInt` *n, `PetscInt` *N)
-  and then `MPI_Scan()` to calculate prefix sums of the local sizes.
+  For all matrices  it returns the range of matrix rows associated with rows of a vector that
+  would contain the result of a matrix vector product with this matrix. See [Matrix
+  Layouts](sec_matlayout) for details on matrix layouts.
 
 .seealso: [](ch_matrices), `Mat`, `MatGetOwnershipRanges()`, `MatGetOwnershipRangeColumn()`, `MatGetOwnershipRangesColumn()`, `PetscSplitOwnership()`, `PetscSplitOwnershipBlock()`,
           `PetscLayout`
@@ -6771,9 +6780,8 @@ PetscErrorCode MatGetOwnershipRange(Mat mat, PetscInt *m, PetscInt *n)
 }
 
 /*@C
-  MatGetOwnershipRanges - For matrices that own values by row, excludes `MATELEMENTAL` and `MATSCALAPACK`, returns the range of matrix rows owned by
-  each process. For all matrices  it returns the ranges of matrix rows associated with rows of a vector that would contain the result of a matrix
-  vector product with this matrix. See [Matrix Layouts](sec_matlayout) for details on matrix layouts
+  MatGetOwnershipRanges - For matrices that own values by row, excludes `MATELEMENTAL` and
+  `MATSCALAPACK`, returns the range of matrix rows owned by each process.
 
   Not Collective, unless matrix has not been allocated
 
@@ -6784,6 +6792,11 @@ PetscErrorCode MatGetOwnershipRange(Mat mat, PetscInt *m, PetscInt *n)
 . ranges - start of each processors portion plus one more than the total length at the end
 
   Level: beginner
+
+  Notes:
+  For all matrices  it returns the ranges of matrix rows associated with rows of a vector that
+  would contain the result of a matrix vector product with this matrix. See [Matrix
+  Layouts](sec_matlayout) for details on matrix layouts.
 
 .seealso: [](ch_matrices), `Mat`, `MatGetOwnershipRange()`, `MatGetOwnershipRangeColumn()`, `MatGetOwnershipRangesColumn()`, `PetscLayout`
 @*/
@@ -6798,8 +6811,8 @@ PetscErrorCode MatGetOwnershipRanges(Mat mat, const PetscInt **ranges)
 }
 
 /*@C
-  MatGetOwnershipRangesColumn - Returns the ranges of matrix columns associated with rows of a vector one multiplies this vector by that are owned by
-  each processor. (The columns of the "diagonal blocks", for most sparse matrix formats). See [Matrix Layouts](sec_matlayout) for details on matrix layouts.
+  MatGetOwnershipRangesColumn - Returns the ranges of matrix columns associated with rows of a
+  vector one multiplies this vector by that are owned by each processor.
 
   Not Collective, unless matrix has not been allocated
 
@@ -6810,6 +6823,10 @@ PetscErrorCode MatGetOwnershipRanges(Mat mat, const PetscInt **ranges)
 . ranges - start of each processors portion plus one more then the total length at the end
 
   Level: beginner
+
+  Notes:
+  Returns the columns of the "diagonal blocks", for most sparse matrix formats. See [Matrix
+  Layouts](sec_matlayout) for details on matrix layouts.
 
 .seealso: [](ch_matrices), `Mat`, `MatGetOwnershipRange()`, `MatGetOwnershipRangeColumn()`, `MatGetOwnershipRanges()`
 @*/
@@ -6824,9 +6841,7 @@ PetscErrorCode MatGetOwnershipRangesColumn(Mat mat, const PetscInt **ranges)
 }
 
 /*@C
-  MatGetOwnershipIS - Get row and column ownership of a matrices' values as index sets. For most matrices, excluding `MATELEMENTAL` and `MATSCALAPACK`, this
-  corresponds to values returned by `MatGetOwnershipRange()`, `MatGetOwnershipRangeColumn()`. For `MATELEMENTAL` and `MATSCALAPACK` the ownership
-  is more complicated. See [Matrix Layouts](sec_matlayout) for details on matrix layouts.
+  MatGetOwnershipIS - Get row and column ownership of a matrices' values as index sets.
 
   Not Collective
 
@@ -6838,6 +6853,12 @@ PetscErrorCode MatGetOwnershipRangesColumn(Mat mat, const PetscInt **ranges)
 - cols - columns in which this process owns elements, use `NULL` to not obtain this value
 
   Level: intermediate
+
+  Notes:
+  For most matrices, excluding `MATELEMENTAL` and `MATSCALAPACK`, this corresponds to values
+  returned by `MatGetOwnershipRange()`, `MatGetOwnershipRangeColumn()`. For `MATELEMENTAL` and
+  `MATSCALAPACK` the ownership is more complicated. See [Matrix Layouts](sec_matlayout) for
+  details on matrix layouts.
 
 .seealso: [](ch_matrices), `Mat`, `MatGetOwnershipRange()`, `MatGetOwnershipRangeColumn()`, `MatSetValues()`, ``MATELEMENTAL``, ``MATSCALAPACK``
 @*/
@@ -8101,7 +8122,8 @@ PetscErrorCode MatRestoreColumnIJ(Mat mat, PetscInt shift, PetscBool symmetric, 
 }
 
 /*@C
-  MatColoringPatch -Used inside matrix coloring routines that use `MatGetRowIJ()` and/or `MatGetColumnIJ()`.
+  MatColoringPatch - Used inside matrix coloring routines that use `MatGetRowIJ()` and/or
+  `MatGetColumnIJ()`.
 
   Collective
 
@@ -10970,7 +10992,7 @@ PetscErrorCode MatGalerkin(Mat restrct, Mat dA, Mat interpolate, MatReuse reuse,
 
   Level: developer
 
-  Usage:
+  Example Usage:
 .vb
   extern PetscErrorCode usermult(Mat, Vec, Vec);
 
@@ -11022,10 +11044,11 @@ PetscErrorCode MatSetOperation(Mat mat, MatOperation op, void (*f)(void))
 
   Level: developer
 
-  Usage:
+  Example Usage:
 .vb
-      PetscErrorCode (*usermult)(Mat, Vec, Vec);
-      MatGetOperation(A, MATOP_MULT, (void (**)(void))&usermult);
+  PetscErrorCode (*usermult)(Mat, Vec, Vec);
+
+  MatGetOperation(A, MATOP_MULT, (void (**)(void))&usermult);
 .ve
 
   Notes:

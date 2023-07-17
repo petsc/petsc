@@ -256,11 +256,6 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJSELL(Mat A, MatType type, Ma
 
 /*@C
   MatCreateSeqAIJSELL - Creates a sparse matrix of type `MATSEQAIJSELL`.
-  This type inherits from AIJ and is largely identical, but keeps a "shadow"
-  copy of the matrix in `MATSEQSELL` format, which is used when this format
-  may be more suitable for a requested operation. Currently, `MATSEQSELL` format
-  is used for `MatMult()`, `MatMultTranspose()`, `MatMultAdd()`, `MatMultTransposeAdd()`,
-  and `MatSOR()` operations.
 
   Collective
 
@@ -282,6 +277,11 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJSELL(Mat A, MatType type, Ma
   Level: intermediate
 
   Notes:
+  This type inherits from AIJ and is largely identical, but keeps a "shadow" copy of the matrix
+  in `MATSEQSELL` format, which is used when this format may be more suitable for a requested
+  operation. Currently, `MATSEQSELL` format is used for `MatMult()`, `MatMultTranspose()`,
+  `MatMultAdd()`, `MatMultTransposeAdd()`, and `MatSOR()` operations.
+
   If `nnz` is given then `nz` is ignored
 
   Because `MATSEQAIJSELL` is a subtype of `MATSEQAIJ`, the option `-mat_seqaij_type seqaijsell` can be used to make

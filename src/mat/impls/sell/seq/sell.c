@@ -2096,6 +2096,8 @@ PetscErrorCode MatSeqSELLRestoreArray(Mat A, PetscScalar **array)
 . ratio - ratio of number of padded zeros to number of allocated elements
 
   Level: intermediate
+
+.seealso: `MATSEQSELL`, `MatSeqSELLGetAvgSliceWidth()`
 @*/
 PetscErrorCode MatSeqSELLGetFillRatio(Mat A, PetscReal *ratio)
 {
@@ -2116,6 +2118,8 @@ PetscErrorCode MatSeqSELLGetFillRatio(Mat A, PetscReal *ratio)
 . slicewidth - maximum slice width
 
   Level: intermediate
+
+.seealso: `MATSEQSELL`, `MatSeqSELLGetAvgSliceWidth()`
 @*/
 PetscErrorCode MatSeqSELLGetMaxSliceWidth(Mat A, PetscInt *slicewidth)
 {
@@ -2136,6 +2140,8 @@ PetscErrorCode MatSeqSELLGetMaxSliceWidth(Mat A, PetscInt *slicewidth)
 . slicewidth - average slice width
 
   Level: intermediate
+
+.seealso: `MATSEQSELL`, `MatSeqSELLGetMaxSliceWidth()`
 @*/
 PetscErrorCode MatSeqSELLGetAvgSliceWidth(Mat A, PetscReal *slicewidth)
 {
@@ -2159,6 +2165,8 @@ PetscErrorCode MatSeqSELLGetAvgSliceWidth(Mat A, PetscReal *slicewidth)
   The slice height must be set before MatSetUp() or MatXXXSetPreallocation() is called.
 
   Level: intermediate
+
+.seealso: `MATSEQSELL`, `MatSeqSELLGetVarSliceSize()`
 @*/
 PetscErrorCode MatSeqSELLSetSliceHeight(Mat A, PetscInt sliceheight)
 {
@@ -2179,6 +2187,8 @@ PetscErrorCode MatSeqSELLSetSliceHeight(Mat A, PetscInt sliceheight)
 . variance - variance of the slice size
 
   Level: intermediate
+
+.seealso: `MATSEQSELL`, `MatSeqSELLSetSliceHeight()`
 @*/
 PetscErrorCode MatSeqSELLGetVarSliceSize(Mat A, PetscReal *variance)
 {

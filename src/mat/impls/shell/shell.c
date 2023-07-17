@@ -857,20 +857,23 @@ set:
 
   Level: advanced
 
-  Usage:
+  Example Usage:
 .vb
-      extern PetscErrorCode usersymbolic(Mat,Mat,Mat,void**);
-      extern PetscErrorCode usernumeric(Mat,Mat,Mat,void*);
-      extern PetscErrorCode userdestroy(void*);
-      MatCreateShell(comm,m,n,M,N,ctx,&A);
-      MatShellSetMatProductOperation(A,MATPRODUCT_AB,usersymbolic,usernumeric,userdestroy,MATSEQAIJ,MATDENSE);
-      [ create B of type SEQAIJ etc..]
-      MatProductCreate(A,B,NULL,&C);
-      MatProductSetType(C,MATPRODUCT_AB);
-      MatProductSetFromOptions(C);
-      MatProductSymbolic(C); -> actually runs the user defined symbolic operation
-      MatProductNumeric(C); -> actually runs the user defined numeric operation
-      [ use C = A*B ]
+  extern PetscErrorCode usersymbolic(Mat, Mat, Mat, void**);
+  extern PetscErrorCode usernumeric(Mat, Mat, Mat, void*);
+  extern PetscErrorCode userdestroy(void*);
+
+  MatCreateShell(comm, m, n, M, N, ctx, &A);
+  MatShellSetMatProductOperation(
+    A, MATPRODUCT_AB, usersymbolic, usernumeric, userdestroy,MATSEQAIJ, MATDENSE
+  );
+  // create B of type SEQAIJ etc..
+  MatProductCreate(A, B, PETSC_NULLPTR, &C);
+  MatProductSetType(C, MATPRODUCT_AB);
+  MatProductSetFromOptions(C);
+  MatProductSymbolic(C); // actually runs the user defined symbolic operation
+  MatProductNumeric(C); // actually runs the user defined numeric operation
+  // use C = A * B
 .ve
 
   Notes:
@@ -1665,13 +1668,14 @@ PETSC_EXTERN PetscErrorCode MatCreate_Shell(Mat A)
 
   Level: advanced
 
-  Usage:
+  Example Usage:
 .vb
-    extern PetscErrorCode mult(Mat,Vec,Vec);
-    MatCreateShell(comm,m,n,M,N,ctx,&mat);
-    MatShellSetOperation(mat,MATOP_MULT,(void(*)(void))mult);
-    [ Use matrix for operations that have been set ]
-    MatDestroy(mat);
+  extern PetscErrorCode mult(Mat, Vec, Vec);
+
+  MatCreateShell(comm, m, n, M, N, ctx, &mat);
+  MatShellSetOperation(mat, MATOP_MULT, (void(*)(void))mult);
+  // Use matrix for operations that have been set
+  MatDestroy(mat);
 .ve
 
   Notes:
@@ -1986,11 +1990,12 @@ PetscErrorCode MatShellTestMultTranspose(Mat mat, PetscErrorCode (*f)(void *, Ve
 
   Level: advanced
 
-  Usage:
+  Example Usage:
 .vb
-      extern PetscErrorCode usermult(Mat,Vec,Vec);
-      MatCreateShell(comm,m,n,M,N,ctx,&A);
-      MatShellSetOperation(A,MATOP_MULT,(void(*)(void))usermult);
+  extern PetscErrorCode usermult(Mat, Vec, Vec);
+
+  MatCreateShell(comm, m, n, M, N, ctx, &A);
+  MatShellSetOperation(A, MATOP_MULT, (void(*)(void))usermult);
 .ve
 
   Notes:
