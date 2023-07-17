@@ -316,7 +316,7 @@ PetscErrorCode MatMultTransposeAddEqual(Mat A, Mat B, PetscInt n, PetscBool *flg
 
   Level: intermediate
 
-.seealso: `Mat`, `MatMatMultAddEqual()`, `MatMultEqual()`, `MatMultAddEqual()`, `MatMultTransposeEqual()`
+.seealso: `Mat`, `MatMatMultEqual()`, `MatMultEqual()`, `MatMultAddEqual()`, `MatMultTransposeEqual()`
 @*/
 PetscErrorCode MatMultHermitianTransposeEqual(Mat A, Mat B, PetscInt n, PetscBool *flg)
 {
@@ -340,7 +340,7 @@ PetscErrorCode MatMultHermitianTransposeEqual(Mat A, Mat B, PetscInt n, PetscBoo
 
   Level: intermediate
 
-.seealso: `Mat`, `MatMatMultAddEqual()`, `MatMultEqual()`, `MatMultAddEqual()`, `MatMultTransposeEqual()`
+.seealso: `Mat`, `MatMatMultEqual()`, `MatMultEqual()`, `MatMultAddEqual()`, `MatMultTransposeEqual()`
 @*/
 PetscErrorCode MatMultHermitianTransposeAddEqual(Mat A, Mat B, PetscInt n, PetscBool *flg)
 {
@@ -366,7 +366,7 @@ PetscErrorCode MatMultHermitianTransposeAddEqual(Mat A, Mat B, PetscInt n, Petsc
 
   Level: intermediate
 
-.seealso: `Mat`, `MatMatMultAddEqual()`, `MatMultEqual()`, `MatMultAddEqual()`, `MatMultTransposeEqual()`
+.seealso: `Mat`, `MatMultEqual()`, `MatMultAddEqual()`, `MatMultTransposeEqual()`
 @*/
 PetscErrorCode MatMatMultEqual(Mat A, Mat B, Mat C, PetscInt n, PetscBool *flg)
 {
@@ -391,7 +391,7 @@ PetscErrorCode MatMatMultEqual(Mat A, Mat B, Mat C, PetscInt n, PetscBool *flg)
 
   Level: intermediate
 
-.seealso: `Mat`, `MatMatMultAddEqual()`, `MatMultEqual()`, `MatMultAddEqual()`, `MatMultTransposeEqual()`
+.seealso: `Mat`, `MatMatMultEqual()`, `MatMultEqual()`, `MatMultAddEqual()`, `MatMultTransposeEqual()`
 @*/
 PetscErrorCode MatTransposeMatMultEqual(Mat A, Mat B, Mat C, PetscInt n, PetscBool *flg)
 {
@@ -416,7 +416,7 @@ PetscErrorCode MatTransposeMatMultEqual(Mat A, Mat B, Mat C, PetscInt n, PetscBo
 
   Level: intermediate
 
-.seealso: `Mat`, `MatMatMultAddEqual()`, `MatMultEqual()`, `MatMultAddEqual()`, `MatMultTransposeEqual()`
+.seealso: `Mat`, `MatMatMultEqual()`, `MatMultEqual()`, `MatMultAddEqual()`, `MatMultTransposeEqual()`
 @*/
 PetscErrorCode MatMatTransposeMultEqual(Mat A, Mat B, Mat C, PetscInt n, PetscBool *flg)
 {
@@ -516,7 +516,7 @@ static PetscErrorCode MatProjMultEqual_Private(Mat A, Mat B, Mat C, PetscInt n, 
 
   Level: intermediate
 
-.seealso: `Mat`, `MatMatMultAddEqual()`, `MatMultEqual()`, `MatMultAddEqual()`, `MatMultTransposeEqual()`
+.seealso: `Mat`, `MatMatMultEqual()`, `MatMultEqual()`, `MatMultAddEqual()`, `MatMultTransposeEqual()`
 @*/
 PetscErrorCode MatPtAPMultEqual(Mat A, Mat B, Mat C, PetscInt n, PetscBool *flg)
 {
@@ -541,7 +541,7 @@ PetscErrorCode MatPtAPMultEqual(Mat A, Mat B, Mat C, PetscInt n, PetscBool *flg)
 
   Level: intermediate
 
-.seealso: `Mat`, `MatMatMultAddEqual()`, `MatMultEqual()`, `MatMultAddEqual()`, `MatMultTransposeEqual()`
+.seealso: `Mat`, `MatMatMultEqual()`, `MatMultEqual()`, `MatMultAddEqual()`, `MatMultTransposeEqual()`
 @*/
 PetscErrorCode MatRARtMultEqual(Mat A, Mat B, Mat C, PetscInt n, PetscBool *flg)
 {
@@ -564,7 +564,7 @@ PetscErrorCode MatRARtMultEqual(Mat A, Mat B, Mat C, PetscInt n, PetscBool *flg)
 
   Level: intermediate
 
-.seealso: `Mat`, `MatMatMultAddEqual()`, `MatMultEqual()`, `MatMultAddEqual()`, `MatMultTransposeEqual()`
+.seealso: `Mat`, `MatMatMultEqual()`, `MatMultEqual()`, `MatMultAddEqual()`, `MatMultTransposeEqual()`
 @*/
 PetscErrorCode MatIsLinear(Mat A, PetscInt n, PetscBool *flg)
 {

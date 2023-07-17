@@ -1447,7 +1447,7 @@ PetscErrorCode MatDestroy(Mat *A)
 
   Negative indices may be passed in `idxm` and `idxn`, these rows and columns are
   simply ignored. This allows easily inserting element stiffness matrices
-  with homogeneous Dirchlet boundary conditions that you don't want represented
+  with homogeneous Dirichlet boundary conditions that you don't want represented
   in the matrix.
 
   Efficiency Alert:
@@ -1530,7 +1530,7 @@ PetscErrorCode MatSetValues(Mat mat, PetscInt m, const PetscInt idxm[], PetscInt
 
   Negative indices may be passed in `ism` and `isn`, these rows and columns are
   simply ignored. This allows easily inserting element stiffness matrices
-  with homogeneous Dirchlet boundary conditions that you don't want represented
+  with homogeneous Dirichlet boundary conditions that you don't want represented
   in the matrix.
 
   Efficiency Alert:
@@ -1806,7 +1806,7 @@ PetscErrorCode MatSetValuesStencil(Mat mat, PetscInt m, const MatStencil idxm[],
 
   Negative indices may be passed in idxm and idxn, these rows and columns are
   simply ignored. This allows easily inserting element stiffness matrices
-  with homogeneous Dirchlet boundary conditions that you don't want represented
+  with homogeneous Dirichlet boundary conditions that you don't want represented
   in the matrix.
 
   Inspired by the structured grid interface to the HYPRE package
@@ -1958,7 +1958,7 @@ PetscErrorCode MatSetStencil(Mat mat, PetscInt dim, const PetscInt dims[], const
 
   Negative indices may be passed in `idxm` and `idxn`, these rows and columns are
   simply ignored. This allows easily inserting element stiffness matrices
-  with homogeneous Dirchlet boundary conditions that you don't want represented
+  with homogeneous Dirichlet boundary conditions that you don't want represented
   in the matrix.
 
   Each time an entry is set within a sparse matrix via `MatSetValues()`,
@@ -7492,7 +7492,7 @@ static PetscErrorCode MatComputeVariableBlockEnvelope(Mat mat)
   PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
   PetscCall(MatIsSymmetricKnown(mat, &set, &flag));
   if (!set || !flag) {
-    /* TOO: only needs nonzero structure of transpose */
+    /* TODO: only needs nonzero structure of transpose */
     PetscCall(MatTranspose(mat, MAT_INITIAL_MATRIX, &AA));
     PetscCall(MatAXPY(AA, 1.0, mat, DIFFERENT_NONZERO_PATTERN));
   }
