@@ -68,6 +68,7 @@ static PetscErrorCode PetscLogHandlerDestroy_Trace(PetscLogHandler h)
 /*MC
   PETSC_LOG_HANDLER_TRACE - PETSC_LOG_HANDLER_TRACE = "trace" -  A
   `PetscLogHandler` that collects data for PETSc's tracing log viewer.
+  A log handler of this type is created and started by `PetscLogTraceBegin()`.
 
   Level: developer
 

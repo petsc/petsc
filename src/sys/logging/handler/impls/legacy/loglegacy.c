@@ -46,7 +46,8 @@ static PetscErrorCode PetcLogHandlerDestroy_Legacy(PetscLogHandler handler)
 /*MC
   PETSC_LOG_HANDLER_LEGACY - PETSC_LOG_HANDLER_LEGACY = "legacy" -  A
   `PetscLogHandler` that can be constructed from the callbacks used in
-  `PetscLogSet()`.
+  `PetscLogSet()`.  A log handler of this type is created and started by
+  `PetscLogLegacyCallbacksBegin()`.
 
   Level: developer
 

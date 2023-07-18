@@ -92,9 +92,7 @@ private:
 
     PetscFunctionBegin;
     if (!handle) {
-      PetscLogEvent event;
-
-      PetscCall(PetscLogPauseCurrentEvent_Internal(&event));
+      PetscCall(PetscLogEventsPause());
       PetscCall(PetscLogEventBegin(CUPMBLAS_HANDLE_CREATE(), 0, 0, 0, 0));
       for (auto i = 0; i < 3; ++i) {
         const auto cberr = cupmBlasCreate(handle.ptr_to());
@@ -107,7 +105,7 @@ private:
         PetscCheck(cberr == CUPMBLAS_STATUS_SUCCESS, PETSC_COMM_SELF, PETSC_ERR_GPU_RESOURCE, "Unable to initialize %s", cupmBlasName());
       }
       PetscCall(PetscLogEventEnd(CUPMBLAS_HANDLE_CREATE(), 0, 0, 0, 0));
-      PetscCall(PetscLogEventResume_Internal(event));
+      PetscCall(PetscLogEventsResume());
     }
     PetscCallCUPMBLAS(cupmBlasSetStream(handle, dci->stream.get_stream()));
     dci->blas = handle;
@@ -121,9 +119,7 @@ private:
 
     PetscFunctionBegin;
     if (!handle) {
-      PetscLogEvent event;
-
-      PetscCall(PetscLogPauseCurrentEvent_Internal(&event));
+      PetscCall(PetscLogEventsPause());
       PetscCall(PetscLogEventBegin(CUPMSOLVER_HANDLE_CREATE(), 0, 0, 0, 0));
       for (auto i = 0; i < 3; ++i) {
         const auto cerr = cupmSolverCreate(&handle);
@@ -136,7 +132,7 @@ private:
         PetscCheck(cerr == CUPMSOLVER_STATUS_SUCCESS, PETSC_COMM_SELF, PETSC_ERR_GPU_RESOURCE, "Unable to initialize %s", cupmSolverName());
       }
       PetscCall(PetscLogEventEnd(CUPMSOLVER_HANDLE_CREATE(), 0, 0, 0, 0));
-      PetscCall(PetscLogEventResume_Internal(event));
+      PetscCall(PetscLogEventsResume());
     }
     PetscCallCUPMSOLVER(cupmSolverSetStream(handle, dci->stream.get_stream()));
     dci->solver = handle;

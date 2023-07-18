@@ -82,6 +82,10 @@ typedef int PetscLogClass;
 /*S
   PetscLogHandler - Interface for performance logging.  A log handler receives a `PetscLogState` that has
   information about the events (`PetscLogEvent`) and stages (`PetscLogStage`) in the logging environment.
+  When a handler is connected to PETSc's global logging stream (`PetscLogHandlerStart()`), it receives
+  updates about events (`PetscLogEventBegin()` / `PetscLogEventEnd()`), stages (`PetscLogStagePush()` /
+  `PetscLogStagePop()`), and objects (`PetscLogObjectCreate()` / `PetscLogObjectDestroy()`).  After
+  collecting information the logger can summarize its data with `PetscLogHandlerView()`.
 
   Example Usage:
 .vb
@@ -153,6 +157,10 @@ typedef struct _n_PetscLogRegistry *PetscLogRegistry;
    classes (`PetscLogStateClassRegister()`).  It keeps track of when the user has activated
    events (`PetscLogStateEventSetActive()`) and stages (`PetscLogStateStageSetActive()`).  It
    also keeps a stack of running stages (`PetscLogStateStagePush()`, `PetscLogStateStagePop()`).
+
+   Most users will not need to reference a `PetscLogState` directly: global logging routines
+   like `PetscLogEventRegister()`  and `PetscLogStagePush()` implicitly manipulate PETSc's global
+   logging state, `PetscLogGetState()`.
 
    Level: developer
 

@@ -20,8 +20,7 @@ int main(int argc, char **args)
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &args, NULL, help));
-  PetscCall(PetscLogIsActive(&flg));
-  if (!flg) PetscCall(PetscLogDefaultBegin());
+  PetscCall(PetscLogDefaultBegin());
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
   PetscCheck(size == 4, PETSC_COMM_WORLD, PETSC_ERR_USER, "This example requires 4 processes");
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-rhs", &N, NULL));

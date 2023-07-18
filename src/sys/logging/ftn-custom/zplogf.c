@@ -87,7 +87,7 @@ PETSC_EXTERN void petscclassidregister_(char *string, PetscClassId *e, PetscErro
 PETSC_EXTERN void petsclogallbegin_(PetscErrorCode *ierr)
 {
 #if defined(PETSC_USE_LOG)
-  *ierr = PetscLogAllBegin();
+  *ierr = PetscLogDefaultBegin();
 #endif
 }
 

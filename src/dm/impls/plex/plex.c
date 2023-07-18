@@ -10237,9 +10237,12 @@ PetscErrorCode DMCreateSubDomainDM_Plex(DM dm, DMLabel label, PetscInt value, IS
 @*/
 PetscErrorCode DMPlexMonitorThroughput(DM dm, void *dummy)
 {
+  PetscLogHandler default_handler;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  if (PetscDefined(USE_LOG)) {
+  PetscCall(PetscLogGetDefaultHandler(&default_handler));
+  if (default_handler) {
     PetscLogEvent      event;
     PetscEventPerfInfo eventInfo;
     PetscReal          cellRate, flopRate;
@@ -10250,13 +10253,13 @@ PetscErrorCode DMPlexMonitorThroughput(DM dm, void *dummy)
     PetscCall(DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd));
     PetscCall(DMGetNumFields(dm, &Nf));
     PetscCall(PetscLogEventGetId("DMPlexResidualFE", &event));
-    PetscCall(PetscLogEventGetPerfInfo(-1, event, &eventInfo));
+    PetscCall(PetscLogEventGetPerfInfo(PETSC_DEFAULT, event, &eventInfo));
     N        = (cEnd - cStart) * Nf * eventInfo.count;
     flopRate = eventInfo.flops / eventInfo.time;
     cellRate = N / eventInfo.time;
     PetscCall(PetscPrintf(PetscObjectComm((PetscObject)dm), "DM (%s) FE Residual Integration: %" PetscInt_FMT " integrals %d reps\n  Cell rate: %.2g/s flop rate: %.2g MF/s\n", name ? name : "unknown", N, eventInfo.count, (double)cellRate, (double)(flopRate / 1.e6)));
   } else {
-    SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Plex Throughput Monitor is not supported if logging is turned off. Reconfigure using --with-log.");
+    SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Plex Throughput Monitor is not supported if logging is turned off or the default log handler is not running. Reconfigure using --with-log and run with -log_view.");
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }

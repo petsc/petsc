@@ -80,7 +80,10 @@ PetscErrorCode PetscLogHandlerDestroy(PetscLogHandler *handler)
 
   Level: developer
 
-.seealso: [](ch_profiling), `PetscLogHandler`, `PetscLogState`
+  Note:
+  Most users well not need to set a state explicitly: the global logging state (`PetscLogGetState()`) is set when calling `PetscLogHandlerStart()`
+
+.seealso: [](ch_profiling), `PetscLogHandler`, `PetscLogState`, `PetscLogEventBegin()`, `PetscLogHandlerStart()`
 @*/
 PetscErrorCode PetscLogHandlerSetState(PetscLogHandler h, PetscLogState state)
 {
@@ -108,7 +111,10 @@ PetscErrorCode PetscLogHandlerSetState(PetscLogHandler h, PetscLogState state)
 
   Level: developer
 
-.seealso: [](ch_profiling), `PetscLogHandler`, `PetscLogState`
+  Note:
+  For a log handler started with `PetscLogHandlerStart()`, this will be the PETSc global logging state (`PetscLogGetState()`)
+
+.seealso: [](ch_profiling), `PetscLogHandler`, `PetscLogState`, `PetscLogEventBegin()`, `PetscLogHandlerStart()`
 @*/
 PetscErrorCode PetscLogHandlerGetState(PetscLogHandler h, PetscLogState *state)
 {
@@ -134,7 +140,10 @@ PetscErrorCode PetscLogHandlerGetState(PetscLogHandler h, PetscLogState *state)
 
   Level: developer
 
-.seealso: [](ch_profiling), `PetscLogHandler`, `PetscLogHandlerEventEnd()`, `PetscLogHandlerEventSync()`
+  Note:
+  Most users will use `PetscLogEventBegin()`, which will call this function for all handlers registered with `PetscLogHandlerStart()`
+
+.seealso: [](ch_profiling), `PetscLogHandler`, `PetscLogEventBegin()`, `PetscLogEventEnd()`, `PetscLogEventSync()`, `PetscLogHandlerEventEnd()`, `PetscLogHandlerEventSync()`
 @*/
 PetscErrorCode PetscLogHandlerEventBegin(PetscLogHandler h, PetscLogEvent e, PetscObject o1, PetscObject o2, PetscObject o3, PetscObject o4)
 {
@@ -159,7 +168,10 @@ PetscErrorCode PetscLogHandlerEventBegin(PetscLogHandler h, PetscLogEvent e, Pet
 
   Level: developer
 
-.seealso: [](ch_profiling), `PetscLogHandler`, `PetscLogHandlerEventBegin()`, `PetscLogHandlerEventSync()`
+  Note:
+  Most users will use `PetscLogEventEnd()`, which will call this function for all handlers registered with `PetscLogHandlerStart()`
+
+.seealso: [](ch_profiling), `PetscLogHandler`, `PetscLogEventBegin()`, `PetscLogEventEnd()`, `PetscLogEventSync()`, `PetscLogHandlerEventBegin()`, `PetscLogHandlerEventSync()`
 @*/
 PetscErrorCode PetscLogHandlerEventEnd(PetscLogHandler h, PetscLogEvent e, PetscObject o1, PetscObject o2, PetscObject o3, PetscObject o4)
 {
@@ -181,7 +193,10 @@ PetscErrorCode PetscLogHandlerEventEnd(PetscLogHandler h, PetscLogEvent e, Petsc
 
   Level: developer
 
-.seealso: [](ch_profiling), `PetscLogHandler`, `PetscLogHandlerEventBegin()`, `PetscLogHandlerEventEnd()`
+  Note:
+  Most users will use `PetscLogEventSync()`, which will call this function for all handlers registered with `PetscLogHandlerStart()`
+
+.seealso: [](ch_profiling), `PetscLogHandler`, `PetscLogEventBegin()`, `PetscLogEventEnd()`, `PetscLogEventSync()`, `PetscLogHandlerEventBegin()`, `PetscLogHandlerEventEnd()`
 @*/
 PetscErrorCode PetscLogHandlerEventSync(PetscLogHandler h, PetscLogEvent e, MPI_Comm comm)
 {
@@ -215,7 +230,10 @@ PetscErrorCode PetscLogHandlerEventSync(PetscLogHandler h, PetscLogEvent e, MPI_
 
   Level: developer
 
-.seealso: [](ch_profiling), `PetscLogHandler`, `PetscLogHandlerObjectDestroy()`
+  Notes:
+  Most users will use `PetscLogObjectCreate()`, which will call this function for all handlers registered with `PetscLogHandlerStart()`.
+
+.seealso: [](ch_profiling), `PetscLogHandler`, `PetscLogObjectCreate()`, `PetscLogObjectDestroy()`, `PetscLogHandlerObjectDestroy()`
 @*/
 PetscErrorCode PetscLogHandlerObjectCreate(PetscLogHandler h, PetscObject obj)
 {
@@ -236,7 +254,10 @@ PetscErrorCode PetscLogHandlerObjectCreate(PetscLogHandler h, PetscObject obj)
 
   Level: developer
 
-.seealso: [](ch_profiling), `PetscLogHandler`, `PetscLogHandlerObjectCreate()`
+  Notes:
+  Most users will use `PetscLogObjectDestroy()`, which will call this function for all handlers registered with `PetscLogHandlerStart()`.
+
+.seealso: [](ch_profiling), `PetscLogHandler`, `PetscLogObjectCreate()`, `PetscLogObjectDestroy()`, `PetscLogHandlerObjectCreate()`
 @*/
 PetscErrorCode PetscLogHandlerObjectDestroy(PetscLogHandler h, PetscObject obj)
 {
@@ -258,10 +279,12 @@ PetscErrorCode PetscLogHandlerObjectDestroy(PetscLogHandler h, PetscObject obj)
   Level: developer
 
   Notes:
+  Most users will use `PetscLogStagePush()`, which will call this function for all handlers registered with `PetscLogHandlerStart()`.
+
   This function is called right before the stage is pushed for the handler's `PetscLogState`, so `PetscLogStateGetCurrentStage()`
   can be used to see what the previous stage was.
 
-.seealso: [](ch_profiling), `PetscLogHandler`, `PetscLogHandlerStagePop()`
+.seealso: [](ch_profiling), `PetscLogHandler`, `PetscLogStagePush()`, `PetscLogStagePop()`, `PetscLogHandlerStagePop()`
 @*/
 PetscErrorCode PetscLogHandlerStagePush(PetscLogHandler h, PetscLogStage stage)
 {
@@ -283,10 +306,12 @@ PetscErrorCode PetscLogHandlerStagePush(PetscLogHandler h, PetscLogStage stage)
   Level: developer
 
   Notes:
+  Most users will use `PetscLogStagePop()`, which will call this function for all handlers registered with `PetscLogHandlerStart()`.
+
   This function is called right after the stage is popped for the handler's `PetscLogState`, so `PetscLogStateGetCurrentStage()`
   can be used to see what the next stage will be.
 
-.seealso: [](ch_profiling), `PetscLogHandler`, `PetscLogHandlerStagePush()`
+.seealso: [](ch_profiling), `PetscLogHandler`, `PetscLogStagePush()`, `PetscLogStagePop()`, `PetscLogHandlerStagePush()`
 @*/
 PetscErrorCode PetscLogHandlerStagePop(PetscLogHandler h, PetscLogStage stage)
 {

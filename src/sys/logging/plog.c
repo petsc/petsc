@@ -7,6 +7,9 @@
       These routines use a private API that is not used elsewhere in PETSc and is not
       accessible to users. The private API is defined in logimpl.h and the utils directory.
 
+      ***
+
+      This file, and only this file, is for functions that interact with the global logging state
 */
 #include <petsc/private/logimpl.h> /*I    "petscsys.h"   I*/
 #include <petsc/private/loghandlerimpl.h>
@@ -14,9 +17,6 @@
 #include <petscviewer.h>
 #include <petscdevice.h>
 #include <petsc/private/deviceimpl.h>
-#if defined(PETSC_HAVE_TAU_PERFSTUBS)
-  #include <../src/sys/perfstubs/timer.h>
-#endif
 
 #if defined(PETSC_HAVE_THREADSAFETY)
 
@@ -24,8 +24,7 @@ PetscInt           petsc_log_gid = -1; /* Global threadId counter */
 PETSC_TLS PetscInt petsc_log_tid = -1; /* Local threadId */
 
 /* shared variables */
-PetscSpinlock  PetscLogSpinLock;
-PetscHMapEvent eventInfoMap_th = NULL;
+PetscSpinlock PetscLogSpinLock;
 
 PetscInt PetscLogGetTid(void)
 {
@@ -38,8 +37,6 @@ PetscInt PetscLogGetTid(void)
 }
 
 #endif
-
-PetscLogEvent PETSC_LARGEST_EVENT = PETSC_EVENT;
 
 /* Global counters */
 PetscLogDouble petsc_BaseTime        = 0.0;
@@ -122,20 +119,6 @@ PetscLogHandlerHot PetscLogHandlers[PETSC_LOG_HANDLER_MAX] = {
 #undef PETSC_LOG_HANDLERS_HOT_BLANK
 
 #if defined(PETSC_USE_LOG)
-  #include <petscmachineinfo.h>
-  #include <petscconfiginfo.h>
-
-/* used in the MPI_XXX() count macros in petsclog.h */
-
-/* Action and object logging variables */
-Action   *petsc_actions    = NULL;
-Object   *petsc_objects    = NULL;
-PetscBool petsc_logActions = PETSC_FALSE;
-PetscBool petsc_logObjects = PETSC_FALSE;
-int       petsc_numActions = 0, petsc_maxActions = 100;
-int       petsc_numObjects = 0, petsc_maxObjects = 100;
-int       petsc_numObjectsDestroyed = 0;
-
   #include <../src/sys/logging/handler/impls/default/logdefault.h>
 
   #if defined(PETSC_HAVE_THREADSAFETY)
@@ -182,6 +165,45 @@ static PetscErrorCode PetscLogTryGetHandler(PetscLogHandlerType type, PetscLogHa
 }
 
 /*@
+  PetscLogGetDefaultHandler - Get the default log handler if it is running.
+
+  Not collective
+
+  Output Parameter:
+. handler - the default `PetscLogHandler`, or `NULL` if it is not running.
+
+  Level: developer
+
+  Notes:
+  The default handler is started with `PetscLogDefaultBegin()`,
+  if the options flags `-log_all` or `-log_view` is given without arguments,
+  or for `-log_view :output:format` if `format` is not `ascii_xml` or `ascii_flamegraph`.
+
+  These logging functions only affect the default log handler\:
+  `PetscLogActions()`, `PetscLogObjects()`, `PetscLogStageSetVisible()`,
+  `PetscLogDeactivatePush()`, `PetscLogDeactivatePop()`, `PetscLogEventGetPerfInfo()`,
+  `PetscLogEventSetDof()`, `PetscLogEventSetError()`, `PetscLogEventsPause()`,
+  `PetscLogEventsResume()`, `PetscLogDump()`, `PetscLogObjectState()`.
+
+.seealso: [](ch_profiling)
+@*/
+PetscErrorCode PetscLogGetDefaultHandler(PetscLogHandler *handler)
+{
+  PetscFunctionBegin;
+  PetscCall(PetscLogTryGetHandler(PETSC_LOG_HANDLER_DEFAULT, handler));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode PetscLogGetHandler(PetscLogHandlerType type, PetscLogHandler *handler)
+{
+  PetscFunctionBegin;
+  PetscAssertPointer(handler, 2);
+  PetscCall(PetscLogTryGetHandler(type, handler));
+  PetscCheck(handler != NULL, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "A PetscLogHandler of type %s has not been started.", type);
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
   PetscLogGetState - Get the `PetscLogState` for PETSc's global logging, used
   by all default log handlers (`PetscLogDefaultBegin()`,
   `PetscLogNestedBegin()`, `PetscLogTraceBegin()`, `PetscLogMPEBegin()`,
@@ -190,7 +212,9 @@ static PetscErrorCode PetscLogTryGetHandler(PetscLogHandlerType type, PetscLogHa
   Collective on `PETSC_COMM_WORLD`
 
   Output Parameter:
-. state - The `PetscLogState` changed by registrations (such as `PetscLogEventRegister()`) and actions (such as `PetscLogEventBegin()` or `PetscLogStagePush()`)
+. state - The `PetscLogState` changed by registrations (such as
+          `PetscLogEventRegister()`) and actions (such as `PetscLogEventBegin()` or
+          `PetscLogStagePush()`), or NULL if logging is not active
 
   Level: developer
 
@@ -200,19 +224,9 @@ PetscErrorCode PetscLogGetState(PetscLogState *state)
 {
   PetscFunctionBegin;
   PetscAssertPointer(state, 1);
-  if (!petsc_log_state) {
-    fprintf(stderr, "PETSC ERROR: Logging has not been enabled.\nYou might have forgotten to call PetscInitialize().\n");
-    PETSCABORT(MPI_COMM_WORLD, PETSC_ERR_SUP);
-  }
   *state = petsc_log_state;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-
-/* Logging functions */
-PetscErrorCode (*PetscLogPHC)(PetscObject)                                                            = NULL;
-PetscErrorCode (*PetscLogPHD)(PetscObject)                                                            = NULL;
-PetscErrorCode (*PetscLogPLB)(PetscLogEvent, int, PetscObject, PetscObject, PetscObject, PetscObject) = NULL;
-PetscErrorCode (*PetscLogPLE)(PetscLogEvent, int, PetscObject, PetscObject, PetscObject, PetscObject) = NULL;
 
 static PetscErrorCode PetscLogHandlerCopyToHot(PetscLogHandler h, PetscLogHandlerHot *hot)
 {
@@ -351,29 +365,6 @@ PetscErrorCode PetscLogHandlerStop(PetscLogHandler h)
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-/*@C
-  PetscLogSet - Sets the logging functions called at the beginning and ending of every event.
-
-  Not Collective
-
-  Input Parameters:
-+ b - The function called at beginning of event
-- e - The function called at end of event
-
-  Level: developer
-
-  Developer Notes:
-  The default loggers are `PetscLogEventBeginDefault()` and `PetscLogEventEndDefault()`.
-
-.seealso: [](ch_profiling), `PetscLogDump()`, `PetscLogDefaultBegin()`, `PetscLogAllBegin()`, `PetscLogTraceBegin()`, `PetscLogEventBeginDefault()`, `PetscLogEventEndDefault()`
-@*/
-PetscErrorCode PetscLogSet(PetscErrorCode (*b)(PetscLogEvent, int, PetscObject, PetscObject, PetscObject, PetscObject), PetscErrorCode (*e)(PetscLogEvent, int, PetscObject, PetscObject, PetscObject, PetscObject))
-{
-  PetscFunctionBegin;
-  PetscLogPLB = b;
-  PetscLogPLE = e;
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
 
 /*@C
   PetscLogIsActive - Check if logging is currently in progress.
@@ -385,12 +376,50 @@ PetscErrorCode PetscLogSet(PetscErrorCode (*b)(PetscLogEvent, int, PetscObject, 
 
   Level: beginner
 
-.seealso: [](ch_profiling), `PetscLogDefaultBegin()`, `PetscLogAllBegin()`, `PetscLogSet()`
+.seealso: [](ch_profiling), `PetscLogDefaultBegin()`
 @*/
 PetscErrorCode PetscLogIsActive(PetscBool *isActive)
 {
   PetscFunctionBegin;
-  *isActive = (PetscLogPLB && PetscLogPLE) ? PETSC_TRUE : PETSC_FALSE;
+  *isActive = PETSC_FALSE;
+  if (petsc_log_state) {
+    for (PetscInt i = 0; i < PETSC_LOG_HANDLER_MAX; i++) {
+      if (PetscLogHandlers[i].handler) {
+        *isActive = PETSC_TRUE;
+        PetscFunctionReturn(PETSC_SUCCESS);
+      }
+    }
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+PETSC_UNUSED static PetscErrorCode PetscLogEventBeginIsActive(PetscBool *isActive)
+{
+  PetscFunctionBegin;
+  *isActive = PETSC_FALSE;
+  if (petsc_log_state) {
+    for (PetscInt i = 0; i < PETSC_LOG_HANDLER_MAX; i++) {
+      if (PetscLogHandlers[i].eventBegin) {
+        *isActive = PETSC_TRUE;
+        PetscFunctionReturn(PETSC_SUCCESS);
+      }
+    }
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+PETSC_UNUSED static PetscErrorCode PetscLogEventEndIsActive(PetscBool *isActive)
+{
+  PetscFunctionBegin;
+  *isActive = PETSC_FALSE;
+  if (petsc_log_state) {
+    for (PetscInt i = 0; i < PETSC_LOG_HANDLER_MAX; i++) {
+      if (PetscLogHandlers[i].eventEnd) {
+        *isActive = PETSC_TRUE;
+        PetscFunctionReturn(PETSC_SUCCESS);
+      }
+    }
+  }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -409,7 +438,7 @@ static PetscErrorCode PetscLogTypeBegin(PetscLogHandlerType type)
 }
 
 /*@C
-  PetscLogDefaultBegin - Turns on logging of objects and events using the default logging functions `PetscLogEventBeginDefault()` and `PetscLogEventEndDefault()`. This logs flop
+  PetscLogDefaultBegin - Turns on logging of objects and events using the default log handler. This logs flop
   rates and object creation and should not slow programs down too much.
   This routine may be called more than once.
 
@@ -434,51 +463,17 @@ static PetscErrorCode PetscLogTypeBegin(PetscLogHandlerType type)
   `PetscLogView()` or `PetscLogDump()` actually cause the printing of
   the logging information.
 
-.seealso: [](ch_profiling), `PetscLogDump()`, `PetscLogAllBegin()`, `PetscLogView()`, `PetscLogTraceBegin()`
+.seealso: [](ch_profiling), `PetscLogDump()`, `PetscLogView()`, `PetscLogTraceBegin()`
 @*/
 PetscErrorCode PetscLogDefaultBegin(void)
 {
   PetscFunctionBegin;
-  PetscCall(PetscLogSet(PetscLogEventBeginDefault, PetscLogEventEndDefault));
+  PetscCall(PetscLogTypeBegin(PETSC_LOG_HANDLER_DEFAULT));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
-  PetscLogAllBegin - Turns on extensive logging of objects and events. Logs
-  all events. This creates large log files and slows the program down.
-
-  Logically Collective on `PETSC_COMM_WORLD`
-
-  Options Database Key:
-. -log_all - Prints extensive log information
-
-  Example Usage:
-.vb
-     PetscInitialize(...);
-     PetscLogAllBegin();
-     ... code ...
-     PetscLogDump(filename);
-     PetscFinalize();
-.ve
-
-  Level: advanced
-
-  Note:
-  A related routine is `PetscLogDefaultBegin()` (with the options key -log_view), which is
-  intended for production runs since it logs only flop rates and object
-  creation (and shouldn't significantly slow the programs).
-
-.seealso: [](ch_profiling), `PetscLogDump()`, `PetscLogDefaultBegin()`, `PetscLogTraceBegin()`
-@*/
-PetscErrorCode PetscLogAllBegin(void)
-{
-  PetscFunctionBegin;
-  PetscCall(PetscLogSet(PetscLogEventBeginComplete, PetscLogEventEndComplete));
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-/*@C
-  PetscLogTraceBegin - Activates trace logging.  Every time a PETSc event
+  PetscLogTraceBegin - Begins trace logging.  Every time a PETSc event
   begins or ends, the event name is printed.
 
   Logically Collective on `PETSC_COMM_WORLD`
@@ -487,7 +482,7 @@ PetscErrorCode PetscLogAllBegin(void)
 . file - The file to print trace in (e.g. stdout)
 
   Options Database Key:
-. -log_trace [filename] - Activates `PetscLogTraceBegin()`
+. -log_trace [filename] - Begins `PetscLogTraceBegin()`
 
   Level: intermediate
 
@@ -499,14 +494,48 @@ PetscErrorCode PetscLogAllBegin(void)
   to determine where a program is hanging without running in the
   debugger.  Can be used in conjunction with the -info option.
 
-.seealso: [](ch_profiling), `PetscLogDump()`, `PetscLogAllBegin()`, `PetscLogView()`, `PetscLogDefaultBegin()`
+.seealso: [](ch_profiling), `PetscLogDump()`, `PetscLogView()`, `PetscLogDefaultBegin()`
 @*/
 PetscErrorCode PetscLogTraceBegin(FILE *file)
 {
+  PetscLogHandler handler;
   PetscFunctionBegin;
-  petsc_tracefile = file;
+  PetscCall(PetscLogTryGetHandler(PETSC_LOG_HANDLER_TRACE, &handler));
+  if (handler) PetscFunctionReturn(PETSC_SUCCESS);
+  PetscCall(PetscLogHandlerCreateTrace(PETSC_COMM_WORLD, file, &handler));
+  PetscCall(PetscLogHandlerStart(handler));
+  PetscCall(PetscLogHandlerDestroy(&handler));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
 
-  PetscCall(PetscLogSet(PetscLogEventBeginTrace, PetscLogEventEndTrace));
+PETSC_INTERN PetscErrorCode PetscLogHandlerCreate_Nested(MPI_Comm, PetscLogHandler *);
+
+/*@C
+  PetscLogNestedBegin - Turns on nested logging of objects and events. This logs flop
+  rates and object creation and should not slow programs down too much.
+
+  Logically Collective over `PETSC_COMM_WORLD`
+
+  Options Database Keys:
+. -log_view :filename.xml:ascii_xml - Prints an XML summary of flop and timing information to the file
+
+  Example Usage:
+.vb
+      PetscInitialize(...);
+      PetscLogNestedBegin();
+       ... code ...
+      PetscLogView(viewer);
+      PetscFinalize();
+.ve
+
+  Level: advanced
+
+.seealso: `PetscLogDump()`, `PetscLogView()`, `PetscLogTraceBegin()`, `PetscLogDefaultBegin()`
+@*/
+PetscErrorCode PetscLogNestedBegin(void)
+{
+  PetscFunctionBegin;
+  PetscCall(PetscLogTypeBegin(PETSC_LOG_HANDLER_NESTED));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -569,13 +598,7 @@ PetscErrorCode PetscLogLegacyCallbacksBegin(PetscErrorCode (*PetscLogPLB)(PetscL
 
   #if defined(PETSC_HAVE_MPE)
     #include <mpe.h>
-
-PETSC_INTERN PetscErrorCode PetscLogHandlerCreate_MPE(MPI_Comm, PetscLogHandler *);
-
 static PetscBool PetscBeganMPE = PETSC_FALSE;
-
-PETSC_INTERN PetscErrorCode PetscLogEventBeginMPE(PetscLogEvent, int, PetscObject, PetscObject, PetscObject, PetscObject);
-PETSC_INTERN PetscErrorCode PetscLogEventEndMPE(PetscLogEvent, int, PetscObject, PetscObject, PetscObject, PetscObject);
   #endif
 
 /*@C
@@ -594,7 +617,7 @@ PETSC_INTERN PetscErrorCode PetscLogEventEndMPE(PetscLogEvent, int, PetscObject,
   intended for production runs since it logs only flop rates and object creation (and should
   not significantly slow the programs).
 
-.seealso: [](ch_profiling), `PetscLogDump()`, `PetscLogDefaultBegin()`, `PetscLogAllBegin()`, `PetscLogEventActivate()`,
+.seealso: [](ch_profiling), `PetscLogDump()`, `PetscLogDefaultBegin()`, `PetscLogEventActivate()`,
           `PetscLogEventDeactivate()`
 @*/
 PetscErrorCode PetscLogMPEBegin(void)
@@ -610,7 +633,7 @@ PetscErrorCode PetscLogMPEBegin(void)
   } else {
     PetscCall(PetscInfo(0, "MPE already initialized. Not attempting to reinitialize.\n"));
   }
-  PetscCall(PetscLogSet(PetscLogEventBeginMPE, PetscLogEventEndMPE));
+  PetscCall(PetscLogTypeBegin(PETSC_LOG_HANDLER_MPE));
   #else
   SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP_SYS, "PETSc was configured without MPE support, reconfigure with --with-mpe or --download-mpe");
   #endif
@@ -645,7 +668,7 @@ PetscErrorCode PetscLogPerfstubsBegin(void)
 }
 
 /*@
-  PetscLogActions - Determines whether actions are logged for the graphical viewer.
+  PetscLogActions - Determines whether actions are logged for the default log handler.
 
   Not Collective
 
@@ -653,7 +676,8 @@ PetscErrorCode PetscLogPerfstubsBegin(void)
 . flag - `PETSC_TRUE` if actions are to be logged
 
   Options Database Key:
-. -log_exclude_actions - Turns off actions logging
++ -log_exclude_actions - (deprecated) Does nothing
+- -log_include_actions - Turn on action logging
 
   Level: intermediate
 
@@ -661,12 +685,15 @@ PetscErrorCode PetscLogPerfstubsBegin(void)
   Logging of actions continues to consume more memory as the program
   runs. Long running programs should consider turning this feature off.
 
-.seealso: [](ch_profiling), `PetscLogStagePush()`, `PetscLogStagePop()`
+.seealso: [](ch_profiling), `PetscLogStagePush()`, `PetscLogStagePop()`, `PetscLogGetDefaultHandler()`
 @*/
 PetscErrorCode PetscLogActions(PetscBool flag)
 {
+  PetscLogHandler handler;
+
   PetscFunctionBegin;
-  petsc_logActions = flag;
+  PetscCall(PetscLogTryGetHandler(PETSC_LOG_HANDLER_DEFAULT, &handler));
+  if (handler) PetscCall(PetscLogHandlerDefaultSetLogActions(handler, flag));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -679,7 +706,8 @@ PetscErrorCode PetscLogActions(PetscBool flag)
 . flag - `PETSC_TRUE` if objects are to be logged
 
   Options Database Key:
-. -log_exclude_objects - Turns off objects logging
++ -log_exclude_objects - (deprecated) Does nothing
+- -log_include_objects - Turns on object logging
 
   Level: intermediate
 
@@ -687,12 +715,15 @@ PetscErrorCode PetscLogActions(PetscBool flag)
   Logging of objects continues to consume more memory as the program
   runs. Long running programs should consider turning this feature off.
 
-.seealso: [](ch_profiling), `PetscLogStagePush()`, `PetscLogStagePop()`
+.seealso: [](ch_profiling), `PetscLogStagePush()`, `PetscLogStagePop()`, `PetscLogGetDefaultHandler()`
 @*/
 PetscErrorCode PetscLogObjects(PetscBool flag)
 {
+  PetscLogHandler handler;
+
   PetscFunctionBegin;
-  petsc_logObjects = flag;
+  PetscCall(PetscLogTryGetHandler(PETSC_LOG_HANDLER_DEFAULT, &handler));
+  if (handler) PetscCall(PetscLogHandlerDefaultSetLogObjects(handler, flag));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -706,7 +737,7 @@ PetscErrorCode PetscLogObjects(PetscBool flag)
 . sname - The name to associate with that stage
 
   Output Parameter:
-. stage - The stage number
+. stage - The stage number or -1 if logging is not active (`PetscLogIsActive()`).
 
   Level: intermediate
 
@@ -714,19 +745,12 @@ PetscErrorCode PetscLogObjects(PetscBool flag)
 @*/
 PetscErrorCode PetscLogStageRegister(const char sname[], PetscLogStage *stage)
 {
-  PetscStageLog stageLog;
-  PetscLogEvent event;
+  PetscLogState state;
 
   PetscFunctionBegin;
-  PetscCall(PetscLogGetStageLog(&stageLog));
-  PetscCall(PetscStageLogRegister(stageLog, sname, stage));
-  /* Copy events already changed in the main stage, this sucks */
-  PetscCall(PetscEventPerfLogEnsureSize(stageLog->stageInfo[*stage].eventLog, stageLog->eventLog->numEvents));
-  for (event = 0; event < stageLog->eventLog->numEvents; event++) PetscCall(PetscEventPerfInfoCopy(&stageLog->stageInfo[0].eventLog->eventInfo[event], &stageLog->stageInfo[*stage].eventLog->eventInfo[event]));
-  PetscCall(PetscClassPerfLogEnsureSize(stageLog->stageInfo[*stage].classLog, stageLog->classLog->numClasses));
-  #if defined(PETSC_HAVE_TAU_PERFSTUBS)
-  if (perfstubs_initialized == PERFSTUBS_SUCCESS) PetscStackCallExternalVoid("ps_timer_create_", stageLog->stageInfo[*stage].timer = ps_timer_create_(sname));
-  #endif
+  *stage = -1;
+  PetscCall(PetscLogGetState(&state));
+  if (state) PetscCall(PetscLogStateStageRegister(state, sname, stage));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -762,14 +786,16 @@ PetscErrorCode PetscLogStageRegister(const char sname[], PetscLogStage *stage)
 @*/
 PetscErrorCode PetscLogStagePush(PetscLogStage stage)
 {
-  PetscStageLog stageLog;
+  PetscLogState state;
 
   PetscFunctionBegin;
-  PetscCall(PetscLogGetStageLog(&stageLog));
-  PetscCall(PetscStageLogPush(stageLog, stage));
-  #if defined(PETSC_HAVE_TAU_PERFSTUBS)
-  if (perfstubs_initialized == PERFSTUBS_SUCCESS && stageLog->stageInfo[stage].timer != NULL) PetscStackCallExternalVoid("ps_timer_start_", ps_timer_start_(stageLog->stageInfo[stage].timer));
-  #endif
+  PetscCall(PetscLogGetState(&state));
+  if (!state) PetscFunctionReturn(PETSC_SUCCESS);
+  for (int i = 0; i < PETSC_LOG_HANDLER_MAX; i++) {
+    PetscLogHandler h = PetscLogHandlers[i].handler;
+    if (h) PetscCall(PetscLogHandlerStagePush(h, stage));
+  }
+  PetscCall(PetscLogStateStagePush(state, stage));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -799,14 +825,18 @@ PetscErrorCode PetscLogStagePush(PetscLogStage stage)
 @*/
 PetscErrorCode PetscLogStagePop(void)
 {
-  PetscStageLog stageLog;
+  PetscLogState state;
+  PetscLogStage current_stage;
 
   PetscFunctionBegin;
-  PetscCall(PetscLogGetStageLog(&stageLog));
-  #if defined(PETSC_HAVE_TAU_PERFSTUBS)
-  if (perfstubs_initialized == PERFSTUBS_SUCCESS && stageLog->stageInfo[stageLog->curStage].timer != NULL) PetscStackCallExternalVoid("ps_timer_stop_", ps_timer_stop_(stageLog->stageInfo[stageLog->curStage].timer));
-  #endif
-  PetscCall(PetscStageLogPop(stageLog));
+  PetscCall(PetscLogGetState(&state));
+  if (!state) PetscFunctionReturn(PETSC_SUCCESS);
+  current_stage = state->current_stage;
+  PetscCall(PetscLogStateStagePop(state));
+  for (int i = 0; i < PETSC_LOG_HANDLER_MAX; i++) {
+    PetscLogHandler h = PetscLogHandlers[i].handler;
+    if (h) PetscCall(PetscLogHandlerStagePop(h, current_stage));
+  }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -828,11 +858,11 @@ PetscErrorCode PetscLogStagePop(void)
 @*/
 PetscErrorCode PetscLogStageSetActive(PetscLogStage stage, PetscBool isActive)
 {
-  PetscStageLog stageLog;
+  PetscLogState state;
 
   PetscFunctionBegin;
-  PetscCall(PetscLogGetStageLog(&stageLog));
-  PetscCall(PetscStageLogSetActive(stageLog, stage, isActive));
+  PetscCall(PetscLogGetState(&state));
+  if (state) PetscCall(PetscLogStateStageSetActive(state, stage, isActive));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -853,11 +883,12 @@ PetscErrorCode PetscLogStageSetActive(PetscLogStage stage, PetscBool isActive)
 @*/
 PetscErrorCode PetscLogStageGetActive(PetscLogStage stage, PetscBool *isActive)
 {
-  PetscStageLog stageLog;
+  PetscLogState state;
 
   PetscFunctionBegin;
-  PetscCall(PetscLogGetStageLog(&stageLog));
-  PetscCall(PetscStageLogGetActive(stageLog, stage, isActive));
+  *isActive = PETSC_FALSE;
+  PetscCall(PetscLogGetState(&state));
+  if (state) PetscCall(PetscLogStateStageGetActive(state, stage, isActive));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -873,17 +904,18 @@ PetscErrorCode PetscLogStageGetActive(PetscLogStage stage, PetscBool *isActive)
   Level: intermediate
 
   Developer Notes:
-  What does visible mean, needs to be documented.
+  Visibility only affects the default log handler in `PetscLogView()`: stages that are
+  set to invisible are suppressed from output.
 
-.seealso: [](ch_profiling), `PetscLogStageRegister()`, `PetscLogStagePush()`, `PetscLogStagePop()`, `PetscLogView()`
+.seealso: [](ch_profiling), `PetscLogStageGetVisible()`, `PetscLogStageRegister()`, `PetscLogStagePush()`, `PetscLogStagePop()`, `PetscLogView()`, `PetscLogGetDefaultHandler()`
 @*/
 PetscErrorCode PetscLogStageSetVisible(PetscLogStage stage, PetscBool isVisible)
 {
-  PetscStageLog stageLog;
+  PetscLogHandler handler;
 
   PetscFunctionBegin;
-  PetscCall(PetscLogGetStageLog(&stageLog));
-  PetscCall(PetscStageLogSetVisible(stageLog, stage, isVisible));
+  PetscCall(PetscLogTryGetHandler(PETSC_LOG_HANDLER_DEFAULT, &handler));
+  if (handler) { PetscCall(PetscLogHandlerDefaultStageSetVisible(handler, stage, isVisible)); }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -900,15 +932,16 @@ PetscErrorCode PetscLogStageSetVisible(PetscLogStage stage, PetscBool isVisible)
 
   Level: intermediate
 
-.seealso: [](ch_profiling), `PetscLogStageRegister()`, `PetscLogStagePush()`, `PetscLogStagePop()`, `PetscLogView()`
+.seealso: [](ch_profiling), `PetscLogStageSetVisible()`, `PetscLogStageRegister()`, `PetscLogStagePush()`, `PetscLogStagePop()`, `PetscLogView()`, `PetscLogGetDefaultHandler()`
 @*/
 PetscErrorCode PetscLogStageGetVisible(PetscLogStage stage, PetscBool *isVisible)
 {
-  PetscStageLog stageLog;
+  PetscLogHandler handler;
 
   PetscFunctionBegin;
-  PetscCall(PetscLogGetStageLog(&stageLog));
-  PetscCall(PetscStageLogGetVisible(stageLog, stage, isVisible));
+  *isVisible = PETSC_FALSE;
+  PetscCall(PetscLogTryGetHandler(PETSC_LOG_HANDLER_DEFAULT, &handler));
+  if (handler) { PetscCall(PetscLogHandlerDefaultStageGetVisible(handler, stage, isVisible)); }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -929,11 +962,12 @@ PetscErrorCode PetscLogStageGetVisible(PetscLogStage stage, PetscBool *isVisible
 @*/
 PetscErrorCode PetscLogStageGetId(const char name[], PetscLogStage *stage)
 {
-  PetscStageLog stageLog;
+  PetscLogState state;
 
   PetscFunctionBegin;
-  PetscCall(PetscLogGetStageLog(&stageLog));
-  PetscCall(PetscStageLogGetStage(stageLog, name, stage));
+  *stage = -1;
+  PetscCall(PetscLogGetState(&state));
+  if (state) PetscCall(PetscLogStateGetStageFromName(state, name, stage));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -958,7 +992,9 @@ PetscErrorCode PetscLogStageGetName(PetscLogStage stage, const char **name)
   PetscLogState     state;
 
   PetscFunctionBegin;
+  *name = NULL;
   PetscCall(PetscLogGetState(&state));
+  if (!state) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscLogStateStageGetInfo(state, stage, &stage_info));
   *name = stage_info.name;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -1022,19 +1058,12 @@ PetscErrorCode PetscLogStageGetName(PetscLogStage stage, const char **name)
 @*/
 PetscErrorCode PetscLogEventRegister(const char name[], PetscClassId classid, PetscLogEvent *event)
 {
-  PetscStageLog stageLog;
-  int           stage;
+  PetscLogState state;
 
   PetscFunctionBegin;
-  *event = PETSC_DECIDE;
-  PetscCall(PetscLogGetStageLog(&stageLog));
-  PetscCall(PetscEventRegLogGetEvent(stageLog->eventLog, name, event));
-  if (*event > 0) PetscFunctionReturn(PETSC_SUCCESS);
-  PetscCall(PetscEventRegLogRegister(stageLog->eventLog, name, classid, event));
-  for (stage = 0; stage < stageLog->numStages; stage++) {
-    PetscCall(PetscEventPerfLogEnsureSize(stageLog->stageInfo[stage].eventLog, stageLog->eventLog->numEvents));
-    PetscCall(PetscClassPerfLogEnsureSize(stageLog->stageInfo[stage].classLog, stageLog->classLog->numClasses));
-  }
+  *event = -1;
+  PetscCall(PetscLogGetState(&state));
+  if (state) PetscCall(PetscLogStateEventRegister(state, name, classid, event));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1060,14 +1089,34 @@ PetscErrorCode PetscLogEventRegister(const char name[], PetscClassId classid, Pe
 @*/
 PetscErrorCode PetscLogEventSetCollective(PetscLogEvent event, PetscBool collective)
 {
-  PetscStageLog    stageLog;
-  PetscEventRegLog eventRegLog;
+  PetscLogState state;
 
   PetscFunctionBegin;
-  PetscCall(PetscLogGetStageLog(&stageLog));
-  PetscCall(PetscStageLogGetEventRegLog(stageLog, &eventRegLog));
-  PetscCheck(event >= 0 && event <= eventRegLog->numEvents, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid event id");
-  eventRegLog->eventInfo[event].collective = collective;
+  PetscCall(PetscLogGetState(&state));
+  if (state) PetscCall(PetscLogStateEventSetCollective(state, event, collective));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*
+  PetscLogClassSetActiveAll - Activate or inactivate logging for all events associated with a PETSc object class in every stage.
+
+  Not Collective
+
+  Input Parameters:
++ classid - The object class, for example `MAT_CLASSID`, `SNES_CLASSID`, etc.
+- isActive - if `PETSC_FALSE`, events associated with this class will not be send to log handlers.
+
+  Level: developer
+
+.seealso: [](ch_profiling), `PetscLogEventActivate()`, `PetscLogEventActivateAll()`, `PetscLogStageSetActive()`, `PetscLogEventActivateClass()`
+*/
+static PetscErrorCode PetscLogClassSetActiveAll(PetscClassId classid, PetscBool isActive)
+{
+  PetscLogState state;
+
+  PetscFunctionBegin;
+  PetscCall(PetscLogGetState(&state));
+  if (state) PetscCall(PetscLogStateClassSetActiveAll(state, classid, isActive));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1085,12 +1134,8 @@ PetscErrorCode PetscLogEventSetCollective(PetscLogEvent event, PetscBool collect
 @*/
 PetscErrorCode PetscLogEventIncludeClass(PetscClassId classid)
 {
-  PetscStageLog stageLog;
-  int           stage;
-
   PetscFunctionBegin;
-  PetscCall(PetscLogGetStageLog(&stageLog));
-  for (stage = 0; stage < stageLog->numStages; stage++) PetscCall(PetscEventPerfLogActivateClass(stageLog->stageInfo[stage].eventLog, stageLog->eventLog, classid));
+  PetscCall(PetscLogClassSetActiveAll(classid, PETSC_TRUE));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1111,12 +1156,44 @@ PetscErrorCode PetscLogEventIncludeClass(PetscClassId classid)
 @*/
 PetscErrorCode PetscLogEventExcludeClass(PetscClassId classid)
 {
-  PetscStageLog stageLog;
-  int           stage;
+  PetscFunctionBegin;
+  PetscCall(PetscLogClassSetActiveAll(classid, PETSC_FALSE));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*
+  PetscLogEventSetActive - Activate or inactivate logging for an event in a given stage
+
+  Not Collective
+
+  Input Parameters:
++ stage - A registered `PetscLogStage` (or `PETSC_DEFAULT` for the current stage)
+. event - A `PetscLogEvent`
+- isActive - If `PETSC_FALSE`, activity from this event (`PetscLogEventBegin()`, `PetscLogEventEnd()`, `PetscLogEventSync()`) will not be sent to log handlers during this stage
+
+  Usage:
+.vb
+      PetscLogEventSetActive(VEC_SetValues, PETSC_FALSE);
+        [code where you do not want to log VecSetValues()]
+      PetscLogEventSetActive(VEC_SetValues, PETSC_TRUE);
+        [code where you do want to log VecSetValues()]
+.ve
+
+  Level: advanced
+
+  Note:
+  The event may be either a pre-defined PETSc event (found in include/petsclog.h)
+  or an event number obtained with `PetscLogEventRegister()`.
+
+.seealso: [](ch_profiling), `PetscLogEventDeactivatePush()`, `PetscLogEventDeactivatePop()`
+*/
+static PetscErrorCode PetscLogEventSetActive(PetscLogStage stage, PetscLogEvent event, PetscBool isActive)
+{
+  PetscLogState state;
 
   PetscFunctionBegin;
-  PetscCall(PetscLogGetStageLog(&stageLog));
-  for (stage = 0; stage < stageLog->numStages; stage++) PetscCall(PetscEventPerfLogDeactivateClass(stageLog->stageInfo[stage].eventLog, stageLog->eventLog, classid));
+  PetscCall(PetscLogGetState(&state));
+  if (state) PetscCall(PetscLogStateEventSetActive(state, stage, event, isActive));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1142,17 +1219,12 @@ PetscErrorCode PetscLogEventExcludeClass(PetscClassId classid)
   The event may be either a pre-defined PETSc event (found in include/petsclog.h)
   or an event number obtained with `PetscLogEventRegister()`.
 
-.seealso: [](ch_profiling), `PlogEventDeactivate()`, `PlogEventDeactivatePush()`, `PetscLogEventDeactivatePop()`
+.seealso: [](ch_profiling), `PetscLogEventDeactivate()`, `PetscLogEventDeactivatePush()`, `PetscLogEventDeactivatePop()`
 @*/
 PetscErrorCode PetscLogEventActivate(PetscLogEvent event)
 {
-  PetscStageLog stageLog;
-  int           stage;
-
   PetscFunctionBegin;
-  PetscCall(PetscLogGetStageLog(&stageLog));
-  PetscCall(PetscStageLogGetCurrent(stageLog, &stage));
-  PetscCall(PetscEventPerfLogActivate(stageLog->stageInfo[stage].eventLog, event));
+  PetscCall(PetscLogEventSetActive(PETSC_DEFAULT, event, PETSC_TRUE));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1182,13 +1254,8 @@ PetscErrorCode PetscLogEventActivate(PetscLogEvent event)
 @*/
 PetscErrorCode PetscLogEventDeactivate(PetscLogEvent event)
 {
-  PetscStageLog stageLog;
-  int           stage;
-
   PetscFunctionBegin;
-  PetscCall(PetscLogGetStageLog(&stageLog));
-  PetscCall(PetscStageLogGetCurrent(stageLog, &stage));
-  PetscCall(PetscEventPerfLogDeactivate(stageLog->stageInfo[stage].eventLog, event));
+  PetscCall(PetscLogEventSetActive(PETSC_DEFAULT, event, PETSC_FALSE));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1214,17 +1281,17 @@ PetscErrorCode PetscLogEventDeactivate(PetscLogEvent event)
   The event may be either a pre-defined PETSc event (found in
   include/petsclog.h) or an event number obtained with `PetscLogEventRegister()`).
 
-.seealso: [](ch_profiling), `PetscLogEventActivate()`, `PetscLogEventDeactivatePop()`, `PetscLogEventDeactivate()`
+  PETSc's default log handler (`PetscLogDefaultBegin()`) respects this function because it can make the output of `PetscLogView()` easier to interpret, but other handlers (such as the nested handler, `PetscLogNestedBegin()`) ignore it because surpressing events is not helpful in their output formats.
+
+.seealso: [](ch_profiling), `PetscLogEventActivate()`, `PetscLogEVentDeactivate()`, `PetscLogEventDeactivatePop()`
 @*/
 PetscErrorCode PetscLogEventDeactivatePush(PetscLogEvent event)
 {
-  PetscStageLog stageLog;
-  int           stage;
+  PetscLogHandler handler;
 
   PetscFunctionBegin;
-  PetscCall(PetscLogGetStageLog(&stageLog));
-  PetscCall(PetscStageLogGetCurrent(stageLog, &stage));
-  PetscCall(PetscEventPerfLogDeactivatePush(stageLog->stageInfo[stage].eventLog, event));
+  PetscCall(PetscLogTryGetHandler(PETSC_LOG_HANDLER_DEFAULT, &handler));
+  if (handler) { PetscCall(PetscLogHandlerDefaultDeactivatePush(handler, PETSC_DEFAULT, event)); }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1254,13 +1321,11 @@ PetscErrorCode PetscLogEventDeactivatePush(PetscLogEvent event)
 @*/
 PetscErrorCode PetscLogEventDeactivatePop(PetscLogEvent event)
 {
-  PetscStageLog stageLog;
-  int           stage;
+  PetscLogHandler handler;
 
   PetscFunctionBegin;
-  PetscCall(PetscLogGetStageLog(&stageLog));
-  PetscCall(PetscStageLogGetCurrent(stageLog, &stage));
-  PetscCall(PetscEventPerfLogDeactivatePop(stageLog->stageInfo[stage].eventLog, event));
+  PetscCall(PetscLogTryGetHandler(PETSC_LOG_HANDLER_DEFAULT, &handler));
+  if (handler) { PetscCall(PetscLogHandlerDefaultDeactivatePop(handler, PETSC_DEFAULT, event)); }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1275,22 +1340,39 @@ PetscErrorCode PetscLogEventDeactivatePop(PetscLogEvent event)
 
   Level: advanced
 
-.seealso: [](ch_profiling), `PlogEventActivate()`, `PlogEventDeactivate()`
+.seealso: [](ch_profiling), `PetscLogEventActivate()`, `PetscLogEventDeactivate()`
 @*/
 PetscErrorCode PetscLogEventSetActiveAll(PetscLogEvent event, PetscBool isActive)
 {
-  PetscStageLog stageLog;
-  int           stage;
+  PetscLogState state;
 
   PetscFunctionBegin;
-  PetscCall(PetscLogGetStageLog(&stageLog));
-  for (stage = 0; stage < stageLog->numStages; stage++) {
-    if (isActive) {
-      PetscCall(PetscEventPerfLogActivate(stageLog->stageInfo[stage].eventLog, event));
-    } else {
-      PetscCall(PetscEventPerfLogDeactivate(stageLog->stageInfo[stage].eventLog, event));
-    }
-  }
+  PetscCall(PetscLogGetState(&state));
+  if (state) PetscCall(PetscLogStateEventSetActiveAll(state, event, isActive));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*
+  PetscLogClassSetActive - Activates event logging for a PETSc object class for the current stage
+
+  Not Collective
+
+  Input Parameters:
++ stage - A registered `PetscLogStage` (or `PETSC_DEFAULT` for the current stage)
+. classid - The event class, for example `MAT_CLASSID`, `SNES_CLASSID`, etc.
+- isActive - If `PETSC_FALSE`, events associated with this class are not sent to log handlers.
+
+  Level: developer
+
+.seealso: [](ch_profiling), `PetscLogEventIncludeClass()`, `PetscLogEventActivate()`, `PetscLogEventActivateAll()`, `PetscLogStageSetActive()`
+*/
+static PetscErrorCode PetscLogClassSetActive(PetscLogStage stage, PetscClassId classid, PetscBool isActive)
+{
+  PetscLogState state;
+
+  PetscFunctionBegin;
+  PetscCall(PetscLogGetState(&state));
+  if (state) PetscCall(PetscLogStateClassSetActive(state, stage, classid, isActive));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1308,13 +1390,8 @@ PetscErrorCode PetscLogEventSetActiveAll(PetscLogEvent event, PetscBool isActive
 @*/
 PetscErrorCode PetscLogEventActivateClass(PetscClassId classid)
 {
-  PetscStageLog stageLog;
-  int           stage;
-
   PetscFunctionBegin;
-  PetscCall(PetscLogGetStageLog(&stageLog));
-  PetscCall(PetscStageLogGetCurrent(stageLog, &stage));
-  PetscCall(PetscEventPerfLogActivateClass(stageLog->stageInfo[stage].eventLog, stageLog->eventLog, classid));
+  PetscCall(PetscLogClassSetActive(PETSC_DEFAULT, classid, PETSC_TRUE));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1332,13 +1409,8 @@ PetscErrorCode PetscLogEventActivateClass(PetscClassId classid)
 @*/
 PetscErrorCode PetscLogEventDeactivateClass(PetscClassId classid)
 {
-  PetscStageLog stageLog;
-  int           stage;
-
   PetscFunctionBegin;
-  PetscCall(PetscLogGetStageLog(&stageLog));
-  PetscCall(PetscStageLogGetCurrent(stageLog, &stage));
-  PetscCall(PetscEventPerfLogDeactivateClass(stageLog->stageInfo[stage].eventLog, stageLog->eventLog, classid));
+  PetscCall(PetscLogClassSetActive(PETSC_DEFAULT, classid, PETSC_FALSE));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1347,12 +1419,12 @@ PetscErrorCode PetscLogEventDeactivateClass(PetscClassId classid)
 
   Synopsis:
   #include <petsclog.h>
-  PetscErrorCode PetscLogEventSync(int e, MPI_Comm comm)
+  PetscErrorCode PetscLogEventSync(PetscLogEvent e, MPI_Comm comm)
 
   Collective
 
   Input Parameters:
-+ e    - integer associated with the event obtained from PetscLogEventRegister()
++ e    - `PetscLogEvent` obtained from `PetscLogEventRegister()`
 - comm - an MPI communicator
 
   Example Usage:
@@ -1380,13 +1452,16 @@ M*/
 
   Synopsis:
   #include <petsclog.h>
-  PetscErrorCode PetscLogEventBegin(int e, PetscObject o1, PetscObject o2, PetscObject o3, PetscObject o4)
+  PetscErrorCode PetscLogEventBegin(PetscLogEvent e, PetscObject o1, PetscObject o2, PetscObject o3, PetscObject o4)
 
   Not Collective
 
   Input Parameters:
-+ e - integer associated with the event obtained from PetscLogEventRegister()
-- o1,o2,o3,o4 - objects associated with the event, or 0
++ e  - `PetscLogEvent` obtained from `PetscLogEventRegister()`
+. o1 - object assocated with the event, or NULL
+. o2 - object assocated with the event, or NULL
+. o3 - object assocated with the event, or NULL
+- o4 - object assocated with the event, or NULL
 
   Fortran Synopsis:
   void PetscLogEventBegin(int e, PetscErrorCode ierr)
@@ -1419,13 +1494,16 @@ M*/
 
   Synopsis:
   #include <petsclog.h>
-  PetscErrorCode PetscLogEventEnd(int e, PetscObject o1, PetscObject o2, PetscObject o3, PetscObject o4)
+  PetscErrorCode PetscLogEventEnd(PetscLogEvent e, PetscObject o1, PetscObject o2, PetscObject o3, PetscObject o4)
 
   Not Collective
 
   Input Parameters:
-+ e - integer associated with the event obtained with PetscLogEventRegister()
-- o1,o2,o3,o4 - objects associated with the event, or 0
++ e  - `PetscLogEvent` obtained from `PetscLogEventRegister()`
+. o1 - object assocated with the event, or NULL
+. o2 - object assocated with the event, or NULL
+. o3 - object assocated with the event, or NULL
+- o4 - object assocated with the event, or NULL
 
   Fortran Synopsis:
   void PetscLogEventEnd(int e, PetscErrorCode ierr)
@@ -1448,6 +1526,109 @@ M*/
 M*/
 
 /*@C
+  PetscLogEventGetPerfInfo - Return the performance information about the given event in the given stage
+
+  Input Parameters:
++ stage - The stage number or `PETSC_DETERMINE` for the current stage
+- event - The event number
+
+  Output Parameter:
+. info - This structure is filled with the performance information
+
+  Level: intermediate
+
+  Note:
+  This is a low level routine used by the logging functions in PETSc
+
+.seealso: [](ch_profiling), `PetscLogEventRegister()`, `PetscLogEventBegin()`, `PetscLogEventEnd()`, `PetscLogGetDefaultHandler()`
+@*/
+PetscErrorCode PetscLogEventGetPerfInfo(PetscLogStage stage, PetscLogEvent event, PetscEventPerfInfo *info)
+{
+  PetscLogHandler     handler;
+  PetscEventPerfInfo *event_info;
+
+  PetscFunctionBegin;
+  PetscAssertPointer(info, 3);
+  PetscCall(PetscLogGetHandler(PETSC_LOG_HANDLER_DEFAULT, &handler));
+  PetscCall(PetscLogHandlerDefaultGetEventPerfInfo(handler, stage, event, &event_info));
+  *info = *event_info;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@C
+  PetscLogEventSetDof - Set the nth number of degrees of freedom of a numerical problem associated with this event
+
+  Not Collective
+
+  Input Parameters:
++ event - The event id to log
+. n     - The dof index, in [0, 8)
+- dof   - The number of dofs
+
+  Options Database Key:
+. -log_view - Activates log summary
+
+  Level: developer
+
+  Note:
+  This is to enable logging of convergence
+
+.seealso: `PetscLogEventSetError()`, `PetscLogEventRegister()`, `PetscLogGetDefaultHandler()`
+@*/
+PetscErrorCode PetscLogEventSetDof(PetscLogEvent event, PetscInt n, PetscLogDouble dof)
+{
+  PetscLogHandler     handler;
+  PetscEventPerfInfo *event_info;
+
+  PetscFunctionBegin;
+  PetscCheck(!(n < 0) && !(n > 7), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Error index %" PetscInt_FMT " is not in [0, 8)", n);
+  PetscCall(PetscLogTryGetHandler(PETSC_LOG_HANDLER_DEFAULT, &handler));
+  if (handler) {
+    PetscCall(PetscLogHandlerDefaultGetEventPerfInfo(handler, PETSC_DEFAULT, event, &event_info));
+    event_info->dof[n] = dof;
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@C
+  PetscLogEventSetError - Set the nth error associated with a numerical problem associated with this event
+
+  Not Collective
+
+  Input Parameters:
++ event - The event id to log
+. n     - The error index, in [0, 8)
+- error - The error
+
+  Options Database Key:
+. -log_view - Activates log summary
+
+  Level: developer
+
+  Notes:
+  This is to enable logging of convergence, and enable users to interpret the errors as they wish. For example,
+  as different norms, or as errors for different fields
+
+  This is a low level routine used by the logging functions in PETSc
+
+.seealso: `PetscLogEventSetDof()`, `PetscLogEventRegister()`, `PetscLogGetDefaultHandler()`
+@*/
+PetscErrorCode PetscLogEventSetError(PetscLogEvent event, PetscInt n, PetscLogDouble error)
+{
+  PetscLogHandler     handler;
+  PetscEventPerfInfo *event_info;
+
+  PetscFunctionBegin;
+  PetscCheck(!(n < 0) && !(n > 7), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Error index %" PetscInt_FMT " is not in [0, 8)", n);
+  PetscCall(PetscLogTryGetHandler(PETSC_LOG_HANDLER_DEFAULT, &handler));
+  if (handler) {
+    PetscCall(PetscLogHandlerDefaultGetEventPerfInfo(handler, PETSC_DEFAULT, event, &event_info));
+    event_info->errors[n] = error;
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@C
   PetscLogEventGetId - Returns the event id when given the event name.
 
   Not Collective
@@ -1464,11 +1645,12 @@ M*/
 @*/
 PetscErrorCode PetscLogEventGetId(const char name[], PetscLogEvent *event)
 {
-  PetscStageLog stageLog;
+  PetscLogState state;
 
   PetscFunctionBegin;
-  PetscCall(PetscLogGetStageLog(&stageLog));
-  PetscCall(PetscEventRegLogGetEvent(stageLog->eventLog, name, event));
+  *event = -1;
+  PetscCall(PetscLogGetState(&state));
+  if (state) PetscCall(PetscLogStateGetEventFromName(state, name, event));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1481,7 +1663,7 @@ PetscErrorCode PetscLogEventGetId(const char name[], PetscLogEvent *event)
 . event - The event
 
   Output Parameter:
-. name  - The event name
+. name - The event name
 
   Level: intermediate
 
@@ -1493,7 +1675,9 @@ PetscErrorCode PetscLogEventGetName(PetscLogEvent event, const char **name)
   PetscLogState     state;
 
   PetscFunctionBegin;
+  *name = NULL;
   PetscCall(PetscLogGetState(&state));
+  if (!state) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscLogStateEventGetInfo(state, event, &event_info));
   *name = event_info.name;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -1511,7 +1695,7 @@ PetscErrorCode PetscLogEventGetName(PetscLogEvent event, const char **name)
 
   Other log handlers (such as the nested handler, `PetscLogNestedBegin()`) will ignore this function.
 
-.seealso: [](ch_profiling), `PetscLogEventDeactivatePush()`, `PetscLogEventDeactivatePop()`, `PetscLogEventsResume()`
+.seealso: [](ch_profiling), `PetscLogEventDeactivatePush()`, `PetscLogEventDeactivatePop()`, `PetscLogEventsResume()`, `PetscLogGetDefaultHandler()`
 @*/
 PetscErrorCode PetscLogEventsPause(void)
 {
@@ -1530,7 +1714,7 @@ PetscErrorCode PetscLogEventsPause(void)
 
   Level: advanced
 
-.seealso: [](ch_profiling), `PetscLogEventDeactivatePush()`, `PetscLogEventDeactivatePop()`, `PetscLogEventsPause()`
+.seealso: [](ch_profiling), `PetscLogEventDeactivatePush()`, `PetscLogEventDeactivatePop()`, `PetscLogEventsPause()`, `PetscLogGetDefaultHandler()`
 @*/
 PetscErrorCode PetscLogEventsResume(void)
 {
@@ -1539,55 +1723,6 @@ PetscErrorCode PetscLogEventsResume(void)
   PetscFunctionBegin;
   PetscCall(PetscLogTryGetHandler(PETSC_LOG_HANDLER_DEFAULT, &handler));
   if (handler) PetscCall(PetscLogHandlerDefaultEventsResume(handler));
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-PetscErrorCode PetscLogPushCurrentEvent_Internal(PetscLogEvent event)
-{
-  PetscFunctionBegin;
-  if (!PetscDefined(HAVE_THREADSAFETY)) PetscCall(PetscIntStackPush(current_log_event_stack, event));
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-PetscErrorCode PetscLogPopCurrentEvent_Internal(void)
-{
-  PetscFunctionBegin;
-  if (!PetscDefined(HAVE_THREADSAFETY)) PetscCall(PetscIntStackPop(current_log_event_stack, NULL));
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-PetscErrorCode PetscLogGetCurrentEvent_Internal(PetscLogEvent *event)
-{
-  PetscBool empty;
-
-  PetscFunctionBegin;
-  PetscAssertPointer(event, 1);
-  *event = PETSC_DECIDE;
-  PetscCall(PetscIntStackEmpty(current_log_event_stack, &empty));
-  if (!empty) PetscCall(PetscIntStackTop(current_log_event_stack, event));
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-PetscErrorCode PetscLogEventPause_Internal(PetscLogEvent event)
-{
-  PetscFunctionBegin;
-  if (event != PETSC_DECIDE) PetscCall(PetscLogEventEnd(event, NULL, NULL, NULL, NULL));
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-PetscErrorCode PetscLogEventResume_Internal(PetscLogEvent event)
-{
-  PetscStageLog     stageLog;
-  PetscEventPerfLog eventLog;
-  int               stage;
-
-  PetscFunctionBegin;
-  if (event == PETSC_DECIDE) PetscFunctionReturn(PETSC_SUCCESS);
-  PetscCall(PetscLogEventBegin(event, NULL, NULL, NULL, NULL));
-  PetscCall(PetscLogGetStageLog(&stageLog));
-  PetscCall(PetscStageLogGetCurrent(stageLog, &stage));
-  PetscCall(PetscStageLogGetEventPerfLog(stageLog, stage, &eventLog));
-  eventLog->eventInfo[event].count--;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1609,8 +1744,9 @@ PetscErrorCode PetscLogEventResume_Internal(PetscLogEvent event)
 
    Developer Note:
      Called internally by PETSc when creating objects: users do not need to call this directly.
+     Notification of the object creation is sent to each `PetscLogHandler` that is running.
 
-.seealso: [](ch_profiling), `PetscLogObjectDestroy()`
+.seealso: [](ch_profiling), `PetscLogHandler`, `PetscLogObjectDestroy()`
 M*/
 
 /*MC
@@ -1629,8 +1765,9 @@ M*/
 
    Developer Note:
      Called internally by PETSc when destroying objects: users do not need to call this directly.
+     Notification of the object creation is sent to each `PetscLogHandler` that is running.
 
-.seealso: [](ch_profiling), `PetscLogObjectCreate()`
+.seealso: [](ch_profiling), `PetscLogHandler`, `PetscLogObjectCreate()`
 M*/
 
 /*@C
@@ -1655,7 +1792,9 @@ PetscErrorCode PetscLogClassGetClassId(const char name[], PetscClassId *classid)
   PetscLogState     state;
 
   PetscFunctionBegin;
+  *classid = -1;
   PetscCall(PetscLogGetState(&state));
+  if (!state) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscLogStateGetClassFromName(state, name, &log_class));
   if (log_class < 0) {
     *classid = -1;
@@ -1708,8 +1847,8 @@ PetscErrorCode PetscLogClassIdGetName(PetscClassId classid, const char **name)
   Example Usage:
 .vb
   PetscInitialize(...);
-  PetscLogDefaultBegin(); or PetscLogAllBegin();
-  ... code ...
+  PetscLogDefaultBegin();
+  // ... code ...
   PetscLogDump(filename);
   PetscFinalize();
 .ve
@@ -1720,869 +1859,50 @@ PetscErrorCode PetscLogClassIdGetName(PetscClassId classid, const char **name)
   The default file name is Log.<rank> where <rank> is the MPI process rank. If no name is specified,
   this file will be used.
 
-.seealso: [](ch_profiling), `PetscLogDefaultBegin()`, `PetscLogAllBegin()`, `PetscLogView()`
+.seealso: [](ch_profiling), `PetscLogDefaultBegin()`, `PetscLogView()`, `PetscLogGetDefaultHandler()`
 @*/
 PetscErrorCode PetscLogDump(const char sname[])
 {
-  PetscStageLog       stageLog;
-  PetscEventPerfInfo *eventInfo;
-  FILE               *fd;
-  char                file[PETSC_MAX_PATH_LEN], fname[PETSC_MAX_PATH_LEN];
-  PetscLogDouble      flops, _TotalTime;
-  PetscMPIInt         rank;
-  int                 action, object, curStage;
-  PetscLogEvent       event;
+  PetscLogHandler handler;
 
   PetscFunctionBegin;
-  /* Calculate the total elapsed time */
-  PetscCall(PetscTime(&_TotalTime));
-  _TotalTime -= petsc_BaseTime;
-  /* Open log file */
-  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
-  PetscCall(PetscSNPrintf(file, PETSC_STATIC_ARRAY_LENGTH(file), "%s.%d", sname && sname[0] ? sname : "Log", rank));
-  PetscCall(PetscFixFilename(file, fname));
-  PetscCall(PetscFOpen(PETSC_COMM_WORLD, fname, "w", &fd));
-  PetscCheck(!(rank == 0) || !(!fd), PETSC_COMM_SELF, PETSC_ERR_FILE_OPEN, "Cannot open file: %s", fname);
-  /* Output totals */
-  PetscCall(PetscFPrintf(PETSC_COMM_WORLD, fd, "Total Flop %14e %16.8e\n", petsc_TotalFlops, _TotalTime));
-  PetscCall(PetscFPrintf(PETSC_COMM_WORLD, fd, "Clock Resolution %g\n", 0.0));
-  /* Output actions */
-  if (petsc_logActions) {
-    PetscCall(PetscFPrintf(PETSC_COMM_WORLD, fd, "Actions accomplished %d\n", petsc_numActions));
-    for (action = 0; action < petsc_numActions; action++) {
-      PetscCall(PetscFPrintf(PETSC_COMM_WORLD, fd, "%g %d %d %d %d %d %d %g %g %g\n", petsc_actions[action].time, petsc_actions[action].action, (int)petsc_actions[action].event, (int)petsc_actions[action].classid, petsc_actions[action].id1,
-                             petsc_actions[action].id2, petsc_actions[action].id3, petsc_actions[action].flops, petsc_actions[action].mem, petsc_actions[action].maxmem));
+  PetscCall(PetscLogGetHandler(PETSC_LOG_HANDLER_DEFAULT, &handler));
+  PetscCall(PetscLogHandlerDump_Default(handler, sname));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@C
+  PetscLogMPEDump - Dumps the MPE logging info to file for later use with Jumpshot.
+
+  Collective over `PETSC_COMM_WORLD`
+
+  Input Parameter:
+. sname - filename for the MPE logfile
+
+  Level: advanced
+
+.seealso: [](ch_profiling), `PetscLogDump()`, `PetscLogMPEBegin()`
+@*/
+PetscErrorCode PetscLogMPEDump(const char sname[])
+{
+  PetscFunctionBegin;
+  #if defined(PETSC_HAVE_MPE)
+  if (PetscBeganMPE) {
+    char name[PETSC_MAX_PATH_LEN];
+
+    PetscCall(PetscInfo(0, "Finalizing MPE.\n"));
+    if (sname) {
+      PetscCall(PetscStrncpy(name, sname, sizeof(name)));
+    } else {
+      PetscCall(PetscGetProgramName(name, sizeof(name)));
     }
-  }
-  /* Output objects */
-  if (petsc_logObjects) {
-    PetscCall(PetscFPrintf(PETSC_COMM_WORLD, fd, "Objects created %d destroyed %d\n", petsc_numObjects, petsc_numObjectsDestroyed));
-    for (object = 0; object < petsc_numObjects; object++) {
-      PetscCall(PetscFPrintf(PETSC_COMM_WORLD, fd, "Parent ID: %d Memory: %d\n", petsc_objects[object].parent, (int)petsc_objects[object].mem));
-      if (!petsc_objects[object].name[0]) {
-        PetscCall(PetscFPrintf(PETSC_COMM_WORLD, fd, "No Name\n"));
-      } else {
-        PetscCall(PetscFPrintf(PETSC_COMM_WORLD, fd, "Name: %s\n", petsc_objects[object].name));
-      }
-      if (petsc_objects[object].info[0] != 0) {
-        PetscCall(PetscFPrintf(PETSC_COMM_WORLD, fd, "No Info\n"));
-      } else {
-        PetscCall(PetscFPrintf(PETSC_COMM_WORLD, fd, "Info: %s\n", petsc_objects[object].info));
-      }
-    }
-  }
-  /* Output events */
-  PetscCall(PetscFPrintf(PETSC_COMM_WORLD, fd, "Event log:\n"));
-  PetscCall(PetscLogGetStageLog(&stageLog));
-  PetscCall(PetscIntStackTop(stageLog->stack, &curStage));
-  eventInfo = stageLog->stageInfo[curStage].eventLog->eventInfo;
-  for (event = 0; event < stageLog->stageInfo[curStage].eventLog->numEvents; event++) {
-    if (eventInfo[event].time != 0.0) flops = eventInfo[event].flops / eventInfo[event].time;
-    else flops = 0.0;
-    PetscCall(PetscFPrintf(PETSC_COMM_WORLD, fd, "%d %16d %16g %16g %16g\n", event, eventInfo[event].count, eventInfo[event].flops, eventInfo[event].time, flops));
-  }
-  PetscCall(PetscFClose(PETSC_COMM_WORLD, fd));
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-/*
-  PetscLogView_Detailed - Each process prints the times for its own events
-
-*/
-static PetscErrorCode PetscLogView_Detailed(PetscViewer viewer)
-{
-  PetscStageLog       stageLog;
-  PetscEventPerfInfo *eventInfo = NULL, *stageInfo = NULL;
-  PetscLogDouble      locTotalTime, numRed, maxMem;
-  int                 numStages, numEvents, stage, event;
-  MPI_Comm            comm = PetscObjectComm((PetscObject)viewer);
-  PetscMPIInt         rank, size;
-
-  PetscFunctionBegin;
-  PetscCallMPI(MPI_Comm_size(comm, &size));
-  PetscCallMPI(MPI_Comm_rank(comm, &rank));
-  /* Must preserve reduction count before we go on */
-  numRed = petsc_allreduce_ct + petsc_gather_ct + petsc_scatter_ct;
-  /* Get the total elapsed time */
-  PetscCall(PetscTime(&locTotalTime));
-  locTotalTime -= petsc_BaseTime;
-  PetscCall(PetscViewerASCIIPrintf(viewer, "size = %d\n", size));
-  PetscCall(PetscViewerASCIIPrintf(viewer, "LocalTimes = {}\n"));
-  PetscCall(PetscViewerASCIIPrintf(viewer, "LocalMessages = {}\n"));
-  PetscCall(PetscViewerASCIIPrintf(viewer, "LocalMessageLens = {}\n"));
-  PetscCall(PetscViewerASCIIPrintf(viewer, "LocalReductions = {}\n"));
-  PetscCall(PetscViewerASCIIPrintf(viewer, "LocalFlop = {}\n"));
-  PetscCall(PetscViewerASCIIPrintf(viewer, "LocalObjects = {}\n"));
-  PetscCall(PetscViewerASCIIPrintf(viewer, "LocalMemory = {}\n"));
-  PetscCall(PetscLogGetStageLog(&stageLog));
-  PetscCallMPI(MPI_Allreduce(&stageLog->numStages, &numStages, 1, MPI_INT, MPI_MAX, comm));
-  PetscCall(PetscViewerASCIIPrintf(viewer, "Stages = {}\n"));
-  for (stage = 0; stage < numStages; stage++) {
-    PetscCall(PetscViewerASCIIPrintf(viewer, "Stages[\"%s\"] = {}\n", stageLog->stageInfo[stage].name));
-    PetscCall(PetscViewerASCIIPrintf(viewer, "Stages[\"%s\"][\"summary\"] = {}\n", stageLog->stageInfo[stage].name));
-    PetscCallMPI(MPI_Allreduce(&stageLog->stageInfo[stage].eventLog->numEvents, &numEvents, 1, MPI_INT, MPI_MAX, comm));
-    for (event = 0; event < numEvents; event++) PetscCall(PetscViewerASCIIPrintf(viewer, "Stages[\"%s\"][\"%s\"] = {}\n", stageLog->stageInfo[stage].name, stageLog->eventLog->eventInfo[event].name));
-  }
-  PetscCall(PetscMallocGetMaximumUsage(&maxMem));
-  PetscCall(PetscViewerASCIIPushSynchronized(viewer));
-  PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "LocalTimes[%d] = %g\n", rank, locTotalTime));
-  PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "LocalMessages[%d] = %g\n", rank, (petsc_irecv_ct + petsc_isend_ct + petsc_recv_ct + petsc_send_ct)));
-  PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "LocalMessageLens[%d] = %g\n", rank, (petsc_irecv_len + petsc_isend_len + petsc_recv_len + petsc_send_len)));
-  PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "LocalReductions[%d] = %g\n", rank, numRed));
-  PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "LocalFlop[%d] = %g\n", rank, petsc_TotalFlops));
-  PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "LocalObjects[%d] = %d\n", rank, petsc_numObjects));
-  PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "LocalMemory[%d] = %g\n", rank, maxMem));
-  PetscCall(PetscViewerFlush(viewer));
-  for (stage = 0; stage < numStages; stage++) {
-    stageInfo = &stageLog->stageInfo[stage].perfInfo;
-    PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "Stages[\"%s\"][\"summary\"][%d] = {\"time\" : %g, \"numMessages\" : %g, \"messageLength\" : %g, \"numReductions\" : %g, \"flop\" : %g}\n", stageLog->stageInfo[stage].name, rank, stageInfo->time,
-                                                 stageInfo->numMessages, stageInfo->messageLength, stageInfo->numReductions, stageInfo->flops));
-    PetscCallMPI(MPI_Allreduce(&stageLog->stageInfo[stage].eventLog->numEvents, &numEvents, 1, MPI_INT, MPI_MAX, comm));
-    for (event = 0; event < numEvents; event++) {
-      eventInfo = &stageLog->stageInfo[stage].eventLog->eventInfo[event];
-      PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "Stages[\"%s\"][\"%s\"][%d] = {\"count\" : %d, \"time\" : %g, \"syncTime\" : %g, \"numMessages\" : %g, \"messageLength\" : %g, \"numReductions\" : %g, \"flop\" : %g",
-                                                   stageLog->stageInfo[stage].name, stageLog->eventLog->eventInfo[event].name, rank, eventInfo->count, eventInfo->time, eventInfo->syncTime, eventInfo->numMessages, eventInfo->messageLength, eventInfo->numReductions,
-                                                   eventInfo->flops));
-      if (eventInfo->dof[0] >= 0.) {
-        PetscInt d, e;
-
-        PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, ", \"dof\" : ["));
-        for (d = 0; d < 8; ++d) {
-          if (d > 0) PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, ", "));
-          PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "%g", eventInfo->dof[d]));
-        }
-        PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "]"));
-        PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, ", \"error\" : ["));
-        for (e = 0; e < 8; ++e) {
-          if (e > 0) PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, ", "));
-          PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "%g", eventInfo->errors[e]));
-        }
-        PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "]"));
-      }
-      PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "}\n"));
-    }
-  }
-  PetscCall(PetscViewerFlush(viewer));
-  PetscCall(PetscViewerASCIIPopSynchronized(viewer));
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-/*
-  PetscLogView_CSV - Each process prints the times for its own events in Comma-Separated Value Format
-*/
-static PetscErrorCode PetscLogView_CSV(PetscViewer viewer)
-{
-  PetscStageLog       stageLog;
-  PetscEventPerfInfo *eventInfo = NULL;
-  PetscLogDouble      locTotalTime, maxMem;
-  int                 numStages, numEvents, stage, event;
-  MPI_Comm            comm = PetscObjectComm((PetscObject)viewer);
-  PetscMPIInt         rank, size;
-
-  PetscFunctionBegin;
-  PetscCallMPI(MPI_Comm_size(comm, &size));
-  PetscCallMPI(MPI_Comm_rank(comm, &rank));
-  /* Must preserve reduction count before we go on */
-  /* Get the total elapsed time */
-  PetscCall(PetscTime(&locTotalTime));
-  locTotalTime -= petsc_BaseTime;
-  PetscCall(PetscLogGetStageLog(&stageLog));
-  PetscCallMPI(MPI_Allreduce(&stageLog->numStages, &numStages, 1, MPI_INT, MPI_MAX, comm));
-  PetscCall(PetscMallocGetMaximumUsage(&maxMem));
-  PetscCall(PetscViewerASCIIPushSynchronized(viewer));
-  PetscCall(PetscViewerASCIIPrintf(viewer, "Stage Name,Event Name,Rank,Count,Time,Num Messages,Message Length,Num Reductions,FLOP,dof0,dof1,dof2,dof3,dof4,dof5,dof6,dof7,e0,e1,e2,e3,e4,e5,e6,e7,%d\n", size));
-  PetscCall(PetscViewerFlush(viewer));
-  for (stage = 0; stage < numStages; stage++) {
-    PetscEventPerfInfo *stageInfo = &stageLog->stageInfo[stage].perfInfo;
-
-    PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "%s,summary,%d,1,%g,%g,%g,%g,%g\n", stageLog->stageInfo[stage].name, rank, stageInfo->time, stageInfo->numMessages, stageInfo->messageLength, stageInfo->numReductions, stageInfo->flops));
-    PetscCallMPI(MPI_Allreduce(&stageLog->stageInfo[stage].eventLog->numEvents, &numEvents, 1, MPI_INT, MPI_MAX, comm));
-    for (event = 0; event < numEvents; event++) {
-      eventInfo = &stageLog->stageInfo[stage].eventLog->eventInfo[event];
-      PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "%s,%s,%d,%d,%g,%g,%g,%g,%g", stageLog->stageInfo[stage].name, stageLog->eventLog->eventInfo[event].name, rank, eventInfo->count, eventInfo->time, eventInfo->numMessages, eventInfo->messageLength,
-                                                   eventInfo->numReductions, eventInfo->flops));
-      if (eventInfo->dof[0] >= 0.) {
-        PetscInt d, e;
-
-        for (d = 0; d < 8; ++d) PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, ",%g", eventInfo->dof[d]));
-        for (e = 0; e < 8; ++e) PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, ",%g", eventInfo->errors[e]));
-      }
-      PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "\n"));
-    }
-  }
-  PetscCall(PetscViewerFlush(viewer));
-  PetscCall(PetscViewerASCIIPopSynchronized(viewer));
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-static PetscErrorCode PetscLogViewWarnSync(MPI_Comm comm, FILE *fd)
-{
-  PetscFunctionBegin;
-  if (!PetscLogSyncOn) PetscFunctionReturn(PETSC_SUCCESS);
-  PetscCall(PetscFPrintf(comm, fd, "\n\n"));
-  PetscCall(PetscFPrintf(comm, fd, "      ##########################################################\n"));
-  PetscCall(PetscFPrintf(comm, fd, "      #                                                        #\n"));
-  PetscCall(PetscFPrintf(comm, fd, "      #                       WARNING!!!                       #\n"));
-  PetscCall(PetscFPrintf(comm, fd, "      #                                                        #\n"));
-  PetscCall(PetscFPrintf(comm, fd, "      #   This program was run with logging synchronization.   #\n"));
-  PetscCall(PetscFPrintf(comm, fd, "      #   This option provides more meaningful imbalance       #\n"));
-  PetscCall(PetscFPrintf(comm, fd, "      #   figures at the expense of slowing things down and    #\n"));
-  PetscCall(PetscFPrintf(comm, fd, "      #   providing a distorted view of the overall runtime.   #\n"));
-  PetscCall(PetscFPrintf(comm, fd, "      #                                                        #\n"));
-  PetscCall(PetscFPrintf(comm, fd, "      ##########################################################\n\n\n"));
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-static PetscErrorCode PetscLogViewWarnDebugging(MPI_Comm comm, FILE *fd)
-{
-  PetscFunctionBegin;
-  if (PetscDefined(USE_DEBUG)) {
-    PetscCall(PetscFPrintf(comm, fd, "\n\n"));
-    PetscCall(PetscFPrintf(comm, fd, "      ##########################################################\n"));
-    PetscCall(PetscFPrintf(comm, fd, "      #                                                        #\n"));
-    PetscCall(PetscFPrintf(comm, fd, "      #                       WARNING!!!                       #\n"));
-    PetscCall(PetscFPrintf(comm, fd, "      #                                                        #\n"));
-    PetscCall(PetscFPrintf(comm, fd, "      #   This code was compiled with a debugging option.      #\n"));
-    PetscCall(PetscFPrintf(comm, fd, "      #   To get timing results run ./configure                #\n"));
-    PetscCall(PetscFPrintf(comm, fd, "      #   using --with-debugging=no, the performance will      #\n"));
-    PetscCall(PetscFPrintf(comm, fd, "      #   be generally two or three times faster.              #\n"));
-    PetscCall(PetscFPrintf(comm, fd, "      #                                                        #\n"));
-    PetscCall(PetscFPrintf(comm, fd, "      ##########################################################\n\n\n"));
-  }
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-static PetscErrorCode PetscLogViewWarnNoGpuAwareMpi(MPI_Comm comm, FILE *fd)
-{
-  #if defined(PETSC_HAVE_DEVICE)
-  PetscMPIInt size;
-  PetscBool   deviceInitialized = PETSC_FALSE;
-
-  PetscFunctionBegin;
-  PetscCallMPI(MPI_Comm_size(comm, &size));
-  for (int i = PETSC_DEVICE_HOST + 1; i < PETSC_DEVICE_MAX; ++i) {
-    const PetscDeviceType dtype = PetscDeviceTypeCast(i);
-    if (PetscDeviceInitialized(dtype)) { /* a non-host device was initialized */
-      deviceInitialized = PETSC_TRUE;
-      break;
-    }
-  }
-  /* the last condition says petsc is configured with device but it is a pure CPU run, so don't print misleading warnings */
-  if (use_gpu_aware_mpi || size == 1 || !deviceInitialized) PetscFunctionReturn(PETSC_SUCCESS);
-  PetscCall(PetscFPrintf(comm, fd, "\n\n"));
-  PetscCall(PetscFPrintf(comm, fd, "      ##########################################################\n"));
-  PetscCall(PetscFPrintf(comm, fd, "      #                                                        #\n"));
-  PetscCall(PetscFPrintf(comm, fd, "      #                       WARNING!!!                       #\n"));
-  PetscCall(PetscFPrintf(comm, fd, "      #                                                        #\n"));
-  PetscCall(PetscFPrintf(comm, fd, "      #   This code was compiled with GPU support and you've   #\n"));
-  PetscCall(PetscFPrintf(comm, fd, "      #   created PETSc/GPU objects, but you intentionally     #\n"));
-  PetscCall(PetscFPrintf(comm, fd, "      #   used -use_gpu_aware_mpi 0, requiring PETSc to copy   #\n"));
-  PetscCall(PetscFPrintf(comm, fd, "      #   additional data between the GPU and CPU. To obtain   #\n"));
-  PetscCall(PetscFPrintf(comm, fd, "      #   meaningful timing results on multi-rank runs, use    #\n"));
-  PetscCall(PetscFPrintf(comm, fd, "      #   GPU-aware MPI instead.                               #\n"));
-  PetscCall(PetscFPrintf(comm, fd, "      #                                                        #\n"));
-  PetscCall(PetscFPrintf(comm, fd, "      ##########################################################\n\n\n"));
-  PetscFunctionReturn(PETSC_SUCCESS);
-  #else
-  (void)comm;
-  (void)fd;
-  return PETSC_SUCCESS;
-  #endif
-}
-
-static PetscErrorCode PetscLogViewWarnGpuTime(MPI_Comm comm, FILE *fd)
-{
-  #if defined(PETSC_HAVE_DEVICE)
-
-  PetscFunctionBegin;
-  if (!PetscLogGpuTimeFlag || petsc_gflops == 0) PetscFunctionReturn(PETSC_SUCCESS);
-  PetscCall(PetscFPrintf(comm, fd, "\n\n"));
-  PetscCall(PetscFPrintf(comm, fd, "      ##########################################################\n"));
-  PetscCall(PetscFPrintf(comm, fd, "      #                                                        #\n"));
-  PetscCall(PetscFPrintf(comm, fd, "      #                       WARNING!!!                       #\n"));
-  PetscCall(PetscFPrintf(comm, fd, "      #                                                        #\n"));
-  PetscCall(PetscFPrintf(comm, fd, "      #   This code was run with -log_view_gpu_time            #\n"));
-  PetscCall(PetscFPrintf(comm, fd, "      #   This provides accurate timing within the GPU kernels #\n"));
-  PetscCall(PetscFPrintf(comm, fd, "      #   but can slow down the entire computation by a        #\n"));
-  PetscCall(PetscFPrintf(comm, fd, "      #   measurable amount. For fastest runs we recommend     #\n"));
-  PetscCall(PetscFPrintf(comm, fd, "      #   not using this option.                               #\n"));
-  PetscCall(PetscFPrintf(comm, fd, "      #                                                        #\n"));
-  PetscCall(PetscFPrintf(comm, fd, "      ##########################################################\n\n\n"));
-  PetscFunctionReturn(PETSC_SUCCESS);
-  #else
-  (void)comm;
-  (void)fd;
-  return PETSC_SUCCESS;
-  #endif
-}
-
-static PetscErrorCode PetscLogView_Default(PetscViewer viewer)
-{
-  FILE               *fd;
-  PetscLogDouble      zero = 0.0;
-  PetscStageLog       stageLog;
-  PetscStageInfo     *stageInfo = NULL;
-  PetscEventPerfInfo *eventInfo = NULL;
-  PetscClassPerfInfo *classInfo;
-  char                arch[128], hostname[128], username[128], pname[PETSC_MAX_PATH_LEN], date[128];
-  const char         *name;
-  PetscLogDouble      locTotalTime, TotalTime, TotalFlops;
-  PetscLogDouble      numMessages, messageLength, avgMessLen, numReductions;
-  PetscLogDouble      stageTime, flops, flopr, mem, mess, messLen, red;
-  PetscLogDouble      fracTime, fracFlops, fracMessages, fracLength, fracReductions, fracMess, fracMessLen, fracRed;
-  PetscLogDouble      fracStageTime, fracStageFlops, fracStageMess, fracStageMessLen, fracStageRed;
-  PetscLogDouble      min, max, tot, ratio, avg, x, y;
-  PetscLogDouble      minf, maxf, totf, ratf, mint, maxt, tott, ratt, ratC, totm, totml, totr, mal, malmax, emalmax;
-  #if defined(PETSC_HAVE_DEVICE)
-  PetscLogEvent  KSP_Solve, SNES_Solve, TS_Step, TAO_Solve; /* These need to be fixed to be some events registered with certain objects */
-  PetscLogDouble cct, gct, csz, gsz, gmaxt, gflops, gflopr, fracgflops;
-  #endif
-  PetscMPIInt   minC, maxC;
-  PetscMPIInt   size, rank;
-  PetscBool    *localStageUsed, *stageUsed;
-  PetscBool    *localStageVisible, *stageVisible;
-  int           numStages, localNumEvents, numEvents;
-  int           stage, oclass;
-  PetscLogEvent event;
-  char          version[256];
-  MPI_Comm      comm;
-  #if defined(PETSC_HAVE_DEVICE)
-  PetscLogEvent eventid;
-  PetscInt64    nas = 0x7FF0000000000002;
-  #endif
-
-  PetscFunctionBegin;
-  PetscCall(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
-  PetscCall(PetscObjectGetComm((PetscObject)viewer, &comm));
-  PetscCall(PetscViewerASCIIGetPointer(viewer, &fd));
-  PetscCallMPI(MPI_Comm_size(comm, &size));
-  PetscCallMPI(MPI_Comm_rank(comm, &rank));
-  /* Get the total elapsed time */
-  PetscCall(PetscTime(&locTotalTime));
-  locTotalTime -= petsc_BaseTime;
-
-  PetscCall(PetscFPrintf(comm, fd, "****************************************************************************************************************************************************************\n"));
-  PetscCall(PetscFPrintf(comm, fd, "***                                WIDEN YOUR WINDOW TO 160 CHARACTERS.  Use 'enscript -r -fCourier9' to print this document                                 ***\n"));
-  PetscCall(PetscFPrintf(comm, fd, "****************************************************************************************************************************************************************\n"));
-  PetscCall(PetscFPrintf(comm, fd, "\n------------------------------------------------------------------ PETSc Performance Summary: ------------------------------------------------------------------\n\n"));
-  PetscCall(PetscLogViewWarnSync(comm, fd));
-  PetscCall(PetscLogViewWarnDebugging(comm, fd));
-  PetscCall(PetscLogViewWarnNoGpuAwareMpi(comm, fd));
-  PetscCall(PetscLogViewWarnGpuTime(comm, fd));
-  PetscCall(PetscGetArchType(arch, sizeof(arch)));
-  PetscCall(PetscGetHostName(hostname, sizeof(hostname)));
-  PetscCall(PetscGetUserName(username, sizeof(username)));
-  PetscCall(PetscGetProgramName(pname, sizeof(pname)));
-  PetscCall(PetscGetDate(date, sizeof(date)));
-  PetscCall(PetscGetVersion(version, sizeof(version)));
-  if (size == 1) {
-    PetscCall(PetscFPrintf(comm, fd, "%s on a %s named %s with %d processor, by %s %s\n", pname, arch, hostname, size, username, date));
+    PetscCall(MPE_Finish_log(name));
   } else {
-    PetscCall(PetscFPrintf(comm, fd, "%s on a %s named %s with %d processors, by %s %s\n", pname, arch, hostname, size, username, date));
+    PetscCall(PetscInfo(0, "Not finalizing MPE (not started by PETSc).\n"));
   }
-  #if defined(PETSC_HAVE_OPENMP)
-  PetscCall(PetscFPrintf(comm, fd, "Using %" PetscInt_FMT " OpenMP threads\n", PetscNumOMPThreads));
-  #endif
-  PetscCall(PetscFPrintf(comm, fd, "Using %s\n", version));
-
-  /* Must preserve reduction count before we go on */
-  red = petsc_allreduce_ct + petsc_gather_ct + petsc_scatter_ct;
-
-  /* Calculate summary information */
-  PetscCall(PetscFPrintf(comm, fd, "\n                         Max       Max/Min     Avg       Total\n"));
-  /*   Time */
-  PetscCall(MPIU_Allreduce(&locTotalTime, &min, 1, MPIU_PETSCLOGDOUBLE, MPI_MIN, comm));
-  PetscCall(MPIU_Allreduce(&locTotalTime, &max, 1, MPIU_PETSCLOGDOUBLE, MPI_MAX, comm));
-  PetscCall(MPIU_Allreduce(&locTotalTime, &tot, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
-  avg = tot / ((PetscLogDouble)size);
-  if (min != 0.0) ratio = max / min;
-  else ratio = 0.0;
-  PetscCall(PetscFPrintf(comm, fd, "Time (sec):           %5.3e   %7.3f   %5.3e\n", max, ratio, avg));
-  TotalTime = tot;
-  /*   Objects */
-  avg = (PetscLogDouble)petsc_numObjects;
-  PetscCall(MPIU_Allreduce(&avg, &min, 1, MPIU_PETSCLOGDOUBLE, MPI_MIN, comm));
-  PetscCall(MPIU_Allreduce(&avg, &max, 1, MPIU_PETSCLOGDOUBLE, MPI_MAX, comm));
-  PetscCall(MPIU_Allreduce(&avg, &tot, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
-  avg = tot / ((PetscLogDouble)size);
-  if (min != 0.0) ratio = max / min;
-  else ratio = 0.0;
-  PetscCall(PetscFPrintf(comm, fd, "Objects:              %5.3e   %7.3f   %5.3e\n", max, ratio, avg));
-  /*   Flops */
-  PetscCall(MPIU_Allreduce(&petsc_TotalFlops, &min, 1, MPIU_PETSCLOGDOUBLE, MPI_MIN, comm));
-  PetscCall(MPIU_Allreduce(&petsc_TotalFlops, &max, 1, MPIU_PETSCLOGDOUBLE, MPI_MAX, comm));
-  PetscCall(MPIU_Allreduce(&petsc_TotalFlops, &tot, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
-  avg = tot / ((PetscLogDouble)size);
-  if (min != 0.0) ratio = max / min;
-  else ratio = 0.0;
-  PetscCall(PetscFPrintf(comm, fd, "Flops:                %5.3e   %7.3f   %5.3e  %5.3e\n", max, ratio, avg, tot));
-  TotalFlops = tot;
-  /*   Flops/sec -- Must talk to Barry here */
-  if (locTotalTime != 0.0) flops = petsc_TotalFlops / locTotalTime;
-  else flops = 0.0;
-  PetscCall(MPIU_Allreduce(&flops, &min, 1, MPIU_PETSCLOGDOUBLE, MPI_MIN, comm));
-  PetscCall(MPIU_Allreduce(&flops, &max, 1, MPIU_PETSCLOGDOUBLE, MPI_MAX, comm));
-  PetscCall(MPIU_Allreduce(&flops, &tot, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
-  avg = tot / ((PetscLogDouble)size);
-  if (min != 0.0) ratio = max / min;
-  else ratio = 0.0;
-  PetscCall(PetscFPrintf(comm, fd, "Flops/sec:            %5.3e   %7.3f   %5.3e  %5.3e\n", max, ratio, avg, tot));
-  /*   Memory */
-  PetscCall(PetscMallocGetMaximumUsage(&mem));
-  if (mem > 0.0) {
-    PetscCall(MPIU_Allreduce(&mem, &min, 1, MPIU_PETSCLOGDOUBLE, MPI_MIN, comm));
-    PetscCall(MPIU_Allreduce(&mem, &max, 1, MPIU_PETSCLOGDOUBLE, MPI_MAX, comm));
-    PetscCall(MPIU_Allreduce(&mem, &tot, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
-    avg = tot / ((PetscLogDouble)size);
-    if (min != 0.0) ratio = max / min;
-    else ratio = 0.0;
-    PetscCall(PetscFPrintf(comm, fd, "Memory (bytes):       %5.3e   %7.3f   %5.3e  %5.3e\n", max, ratio, avg, tot));
-  }
-  /*   Messages */
-  mess = 0.5 * (petsc_irecv_ct + petsc_isend_ct + petsc_recv_ct + petsc_send_ct);
-  PetscCall(MPIU_Allreduce(&mess, &min, 1, MPIU_PETSCLOGDOUBLE, MPI_MIN, comm));
-  PetscCall(MPIU_Allreduce(&mess, &max, 1, MPIU_PETSCLOGDOUBLE, MPI_MAX, comm));
-  PetscCall(MPIU_Allreduce(&mess, &tot, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
-  avg = tot / ((PetscLogDouble)size);
-  if (min != 0.0) ratio = max / min;
-  else ratio = 0.0;
-  PetscCall(PetscFPrintf(comm, fd, "MPI Msg Count:        %5.3e   %7.3f   %5.3e  %5.3e\n", max, ratio, avg, tot));
-  numMessages = tot;
-  /*   Message Lengths */
-  mess = 0.5 * (petsc_irecv_len + petsc_isend_len + petsc_recv_len + petsc_send_len);
-  PetscCall(MPIU_Allreduce(&mess, &min, 1, MPIU_PETSCLOGDOUBLE, MPI_MIN, comm));
-  PetscCall(MPIU_Allreduce(&mess, &max, 1, MPIU_PETSCLOGDOUBLE, MPI_MAX, comm));
-  PetscCall(MPIU_Allreduce(&mess, &tot, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
-  if (numMessages != 0) avg = tot / numMessages;
-  else avg = 0.0;
-  if (min != 0.0) ratio = max / min;
-  else ratio = 0.0;
-  PetscCall(PetscFPrintf(comm, fd, "MPI Msg Len (bytes):  %5.3e   %7.3f   %5.3e  %5.3e\n", max, ratio, avg, tot));
-  messageLength = tot;
-  /*   Reductions */
-  PetscCall(MPIU_Allreduce(&red, &min, 1, MPIU_PETSCLOGDOUBLE, MPI_MIN, comm));
-  PetscCall(MPIU_Allreduce(&red, &max, 1, MPIU_PETSCLOGDOUBLE, MPI_MAX, comm));
-  PetscCall(MPIU_Allreduce(&red, &tot, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
-  if (min != 0.0) ratio = max / min;
-  else ratio = 0.0;
-  PetscCall(PetscFPrintf(comm, fd, "MPI Reductions:       %5.3e   %7.3f\n", max, ratio));
-  numReductions = red; /* wrong because uses count from process zero */
-  PetscCall(PetscFPrintf(comm, fd, "\nFlop counting convention: 1 flop = 1 real number operation of type (multiply/divide/add/subtract)\n"));
-  PetscCall(PetscFPrintf(comm, fd, "                            e.g., VecAXPY() for real vectors of length N --> 2N flops\n"));
-  PetscCall(PetscFPrintf(comm, fd, "                            and VecAXPY() for complex vectors of length N --> 8N flops\n"));
-
-  /* Get total number of stages --
-       Currently, a single processor can register more stages than another, but stages must all be registered in order.
-       We can removed this requirement if necessary by having a global stage numbering and indirection on the stage ID.
-       This seems best accomplished by assoicating a communicator with each stage.
-  */
-  PetscCall(PetscLogGetStageLog(&stageLog));
-  PetscCallMPI(MPI_Allreduce(&stageLog->numStages, &numStages, 1, MPI_INT, MPI_MAX, comm));
-  PetscCall(PetscMalloc1(numStages, &localStageUsed));
-  PetscCall(PetscMalloc1(numStages, &stageUsed));
-  PetscCall(PetscMalloc1(numStages, &localStageVisible));
-  PetscCall(PetscMalloc1(numStages, &stageVisible));
-  if (numStages > 0) {
-    stageInfo = stageLog->stageInfo;
-    for (stage = 0; stage < numStages; stage++) {
-      if (stage < stageLog->numStages) {
-        localStageUsed[stage]    = stageInfo[stage].used;
-        localStageVisible[stage] = stageInfo[stage].perfInfo.visible;
-      } else {
-        localStageUsed[stage]    = PETSC_FALSE;
-        localStageVisible[stage] = PETSC_TRUE;
-      }
-    }
-    PetscCall(MPIU_Allreduce(localStageUsed, stageUsed, numStages, MPIU_BOOL, MPI_LOR, comm));
-    PetscCall(MPIU_Allreduce(localStageVisible, stageVisible, numStages, MPIU_BOOL, MPI_LAND, comm));
-    for (stage = 0; stage < numStages; stage++) {
-      if (stageUsed[stage]) {
-        PetscCall(PetscFPrintf(comm, fd, "\nSummary of Stages:   ----- Time ------  ----- Flop ------  --- Messages ---  -- Message Lengths --  -- Reductions --\n"));
-        PetscCall(PetscFPrintf(comm, fd, "                        Avg     %%Total     Avg     %%Total    Count   %%Total     Avg         %%Total    Count   %%Total\n"));
-        break;
-      }
-    }
-    for (stage = 0; stage < numStages; stage++) {
-      if (!stageUsed[stage]) continue;
-      /* CANNOT use MPI_Allreduce() since it might fail the line number check */
-      if (localStageUsed[stage]) {
-        PetscCall(MPIU_Allreduce(&stageInfo[stage].perfInfo.time, &stageTime, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
-        PetscCall(MPIU_Allreduce(&stageInfo[stage].perfInfo.flops, &flops, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
-        PetscCall(MPIU_Allreduce(&stageInfo[stage].perfInfo.numMessages, &mess, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
-        PetscCall(MPIU_Allreduce(&stageInfo[stage].perfInfo.messageLength, &messLen, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
-        PetscCall(MPIU_Allreduce(&stageInfo[stage].perfInfo.numReductions, &red, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
-        name = stageInfo[stage].name;
-      } else {
-        PetscCall(MPIU_Allreduce(&zero, &stageTime, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
-        PetscCall(MPIU_Allreduce(&zero, &flops, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
-        PetscCall(MPIU_Allreduce(&zero, &mess, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
-        PetscCall(MPIU_Allreduce(&zero, &messLen, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
-        PetscCall(MPIU_Allreduce(&zero, &red, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
-        name = "";
-      }
-      mess *= 0.5;
-      messLen *= 0.5;
-      red /= size;
-      if (TotalTime != 0.0) fracTime = stageTime / TotalTime;
-      else fracTime = 0.0;
-      if (TotalFlops != 0.0) fracFlops = flops / TotalFlops;
-      else fracFlops = 0.0;
-      /* Talk to Barry if (stageTime     != 0.0) flops          = (size*flops)/stageTime; else flops          = 0.0; */
-      if (numMessages != 0.0) fracMessages = mess / numMessages;
-      else fracMessages = 0.0;
-      if (mess != 0.0) avgMessLen = messLen / mess;
-      else avgMessLen = 0.0;
-      if (messageLength != 0.0) fracLength = messLen / messageLength;
-      else fracLength = 0.0;
-      if (numReductions != 0.0) fracReductions = red / numReductions;
-      else fracReductions = 0.0;
-      PetscCall(PetscFPrintf(comm, fd, "%2d: %15s: %6.4e %5.1f%%  %6.4e %5.1f%%  %5.3e %5.1f%%  %5.3e      %5.1f%%  %5.3e %5.1f%%\n", stage, name, stageTime / size, 100.0 * fracTime, flops, 100.0 * fracFlops, mess, 100.0 * fracMessages, avgMessLen, 100.0 * fracLength, red, 100.0 * fracReductions));
-    }
-  }
-
-  PetscCall(PetscFPrintf(comm, fd, "\n------------------------------------------------------------------------------------------------------------------------\n"));
-  PetscCall(PetscFPrintf(comm, fd, "See the 'Profiling' chapter of the users' manual for details on interpreting output.\n"));
-  PetscCall(PetscFPrintf(comm, fd, "Phase summary info:\n"));
-  PetscCall(PetscFPrintf(comm, fd, "   Count: number of times phase was executed\n"));
-  PetscCall(PetscFPrintf(comm, fd, "   Time and Flop: Max - maximum over all processors\n"));
-  PetscCall(PetscFPrintf(comm, fd, "                  Ratio - ratio of maximum to minimum over all processors\n"));
-  PetscCall(PetscFPrintf(comm, fd, "   Mess: number of messages sent\n"));
-  PetscCall(PetscFPrintf(comm, fd, "   AvgLen: average message length (bytes)\n"));
-  PetscCall(PetscFPrintf(comm, fd, "   Reduct: number of global reductions\n"));
-  PetscCall(PetscFPrintf(comm, fd, "   Global: entire computation\n"));
-  PetscCall(PetscFPrintf(comm, fd, "   Stage: stages of a computation. Set stages with PetscLogStagePush() and PetscLogStagePop().\n"));
-  PetscCall(PetscFPrintf(comm, fd, "      %%T - percent time in this phase         %%F - percent flop in this phase\n"));
-  PetscCall(PetscFPrintf(comm, fd, "      %%M - percent messages in this phase     %%L - percent message lengths in this phase\n"));
-  PetscCall(PetscFPrintf(comm, fd, "      %%R - percent reductions in this phase\n"));
-  PetscCall(PetscFPrintf(comm, fd, "   Total Mflop/s: 10e-6 * (sum of flop over all processors)/(max time over all processors)\n"));
-  if (PetscLogMemory) {
-    PetscCall(PetscFPrintf(comm, fd, "   Memory usage is summed over all MPI processes, it is given in mega-bytes\n"));
-    PetscCall(PetscFPrintf(comm, fd, "   Malloc Mbytes: Memory allocated and kept during event (sum over all calls to event). May be negative\n"));
-    PetscCall(PetscFPrintf(comm, fd, "   EMalloc Mbytes: extra memory allocated during event and then freed (maximum over all calls to events). Never negative\n"));
-    PetscCall(PetscFPrintf(comm, fd, "   MMalloc Mbytes: Increase in high water mark of allocated memory (sum over all calls to event). Never negative\n"));
-    PetscCall(PetscFPrintf(comm, fd, "   RMI Mbytes: Increase in resident memory (sum over all calls to event)\n"));
-  }
-  #if defined(PETSC_HAVE_DEVICE)
-  PetscCall(PetscFPrintf(comm, fd, "   GPU Mflop/s: 10e-6 * (sum of flop on GPU over all processors)/(max GPU time over all processors)\n"));
-  PetscCall(PetscFPrintf(comm, fd, "   CpuToGpu Count: total number of CPU to GPU copies per processor\n"));
-  PetscCall(PetscFPrintf(comm, fd, "   CpuToGpu Size (Mbytes): 10e-6 * (total size of CPU to GPU copies per processor)\n"));
-  PetscCall(PetscFPrintf(comm, fd, "   GpuToCpu Count: total number of GPU to CPU copies per processor\n"));
-  PetscCall(PetscFPrintf(comm, fd, "   GpuToCpu Size (Mbytes): 10e-6 * (total size of GPU to CPU copies per processor)\n"));
-  PetscCall(PetscFPrintf(comm, fd, "   GPU %%F: percent flops on GPU in this event\n"));
-  #endif
-  PetscCall(PetscFPrintf(comm, fd, "------------------------------------------------------------------------------------------------------------------------\n"));
-
-  PetscCall(PetscLogViewWarnDebugging(comm, fd));
-
-  /* Report events */
-  PetscCall(PetscFPrintf(comm, fd, "Event                Count      Time (sec)     Flop                              --- Global ---  --- Stage ----  Total"));
-  if (PetscLogMemory) PetscCall(PetscFPrintf(comm, fd, "  Malloc EMalloc MMalloc RMI"));
-  #if defined(PETSC_HAVE_DEVICE)
-  PetscCall(PetscFPrintf(comm, fd, "   GPU    - CpuToGpu -   - GpuToCpu - GPU"));
-  #endif
-  PetscCall(PetscFPrintf(comm, fd, "\n"));
-  PetscCall(PetscFPrintf(comm, fd, "                   Max Ratio  Max     Ratio   Max  Ratio  Mess   AvgLen  Reduct  %%T %%F %%M %%L %%R  %%T %%F %%M %%L %%R Mflop/s"));
-  if (PetscLogMemory) PetscCall(PetscFPrintf(comm, fd, " Mbytes Mbytes Mbytes Mbytes"));
-  #if defined(PETSC_HAVE_DEVICE)
-  PetscCall(PetscFPrintf(comm, fd, " Mflop/s Count   Size   Count   Size  %%F"));
-  #endif
-  PetscCall(PetscFPrintf(comm, fd, "\n"));
-  PetscCall(PetscFPrintf(comm, fd, "------------------------------------------------------------------------------------------------------------------------"));
-  if (PetscLogMemory) PetscCall(PetscFPrintf(comm, fd, "-----------------------------"));
-  #if defined(PETSC_HAVE_DEVICE)
-  PetscCall(PetscFPrintf(comm, fd, "---------------------------------------"));
-  #endif
-  PetscCall(PetscFPrintf(comm, fd, "\n"));
-
-  #if defined(PETSC_HAVE_DEVICE)
-  /* this indirect way of accessing these values is needed when PETSc is build with multiple libraries since the symbols are not in libpetscsys */
-  PetscCall(PetscEventRegLogGetEvent(stageLog->eventLog, "TAOSolve", &TAO_Solve));
-  PetscCall(PetscEventRegLogGetEvent(stageLog->eventLog, "TSStep", &TS_Step));
-  PetscCall(PetscEventRegLogGetEvent(stageLog->eventLog, "SNESSolve", &SNES_Solve));
-  PetscCall(PetscEventRegLogGetEvent(stageLog->eventLog, "KSPSolve", &KSP_Solve));
-  #endif
-
-  /* Problem: The stage name will not show up unless the stage executed on proc 1 */
-  for (stage = 0; stage < numStages; stage++) {
-    if (!stageVisible[stage]) continue;
-    /* CANNOT use MPI_Allreduce() since it might fail the line number check */
-    if (localStageUsed[stage]) {
-      PetscCall(PetscFPrintf(comm, fd, "\n--- Event Stage %d: %s\n\n", stage, stageInfo[stage].name));
-      PetscCall(MPIU_Allreduce(&stageInfo[stage].perfInfo.time, &stageTime, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
-      PetscCall(MPIU_Allreduce(&stageInfo[stage].perfInfo.flops, &flops, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
-      PetscCall(MPIU_Allreduce(&stageInfo[stage].perfInfo.numMessages, &mess, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
-      PetscCall(MPIU_Allreduce(&stageInfo[stage].perfInfo.messageLength, &messLen, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
-      PetscCall(MPIU_Allreduce(&stageInfo[stage].perfInfo.numReductions, &red, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
-    } else {
-      PetscCall(PetscFPrintf(comm, fd, "\n--- Event Stage %d: Unknown\n\n", stage));
-      PetscCall(MPIU_Allreduce(&zero, &stageTime, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
-      PetscCall(MPIU_Allreduce(&zero, &flops, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
-      PetscCall(MPIU_Allreduce(&zero, &mess, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
-      PetscCall(MPIU_Allreduce(&zero, &messLen, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
-      PetscCall(MPIU_Allreduce(&zero, &red, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
-    }
-    mess *= 0.5;
-    messLen *= 0.5;
-    red /= size;
-
-    /* Get total number of events in this stage --
-       Currently, a single processor can register more events than another, but events must all be registered in order,
-       just like stages. We can removed this requirement if necessary by having a global event numbering and indirection
-       on the event ID. This seems best accomplished by associating a communicator with each stage.
-
-       Problem: If the event did not happen on proc 1, its name will not be available.
-       Problem: Event visibility is not implemented
-    */
-    if (localStageUsed[stage]) {
-      eventInfo      = stageLog->stageInfo[stage].eventLog->eventInfo;
-      localNumEvents = stageLog->stageInfo[stage].eventLog->numEvents;
-    } else localNumEvents = 0;
-    PetscCallMPI(MPI_Allreduce(&localNumEvents, &numEvents, 1, MPI_INT, MPI_MAX, comm));
-    for (event = 0; event < numEvents; event++) {
-      /* CANNOT use MPI_Allreduce() since it might fail the line number check */
-      if (localStageUsed[stage] && (event < stageLog->stageInfo[stage].eventLog->numEvents) && (eventInfo[event].depth == 0)) {
-        if ((eventInfo[event].count > 0) && (eventInfo[event].time > 0.0)) flopr = eventInfo[event].flops;
-        else flopr = 0.0;
-        PetscCall(MPIU_Allreduce(&flopr, &minf, 1, MPIU_PETSCLOGDOUBLE, MPI_MIN, comm));
-        PetscCall(MPIU_Allreduce(&flopr, &maxf, 1, MPIU_PETSCLOGDOUBLE, MPI_MAX, comm));
-        PetscCall(MPIU_Allreduce(&eventInfo[event].flops, &totf, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
-        PetscCall(MPIU_Allreduce(&eventInfo[event].time, &mint, 1, MPIU_PETSCLOGDOUBLE, MPI_MIN, comm));
-        PetscCall(MPIU_Allreduce(&eventInfo[event].time, &maxt, 1, MPIU_PETSCLOGDOUBLE, MPI_MAX, comm));
-        PetscCall(MPIU_Allreduce(&eventInfo[event].time, &tott, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
-        PetscCall(MPIU_Allreduce(&eventInfo[event].numMessages, &totm, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
-        PetscCall(MPIU_Allreduce(&eventInfo[event].messageLength, &totml, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
-        PetscCall(MPIU_Allreduce(&eventInfo[event].numReductions, &totr, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
-        PetscCallMPI(MPI_Allreduce(&eventInfo[event].count, &minC, 1, MPI_INT, MPI_MIN, comm));
-        PetscCallMPI(MPI_Allreduce(&eventInfo[event].count, &maxC, 1, MPI_INT, MPI_MAX, comm));
-        if (PetscLogMemory) {
-          PetscCall(MPIU_Allreduce(&eventInfo[event].memIncrease, &mem, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
-          PetscCall(MPIU_Allreduce(&eventInfo[event].mallocSpace, &mal, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
-          PetscCall(MPIU_Allreduce(&eventInfo[event].mallocIncrease, &malmax, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
-          PetscCall(MPIU_Allreduce(&eventInfo[event].mallocIncreaseEvent, &emalmax, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
-        }
-  #if defined(PETSC_HAVE_DEVICE)
-        PetscCall(MPIU_Allreduce(&eventInfo[event].CpuToGpuCount, &cct, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
-        PetscCall(MPIU_Allreduce(&eventInfo[event].GpuToCpuCount, &gct, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
-        PetscCall(MPIU_Allreduce(&eventInfo[event].CpuToGpuSize, &csz, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
-        PetscCall(MPIU_Allreduce(&eventInfo[event].GpuToCpuSize, &gsz, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
-        PetscCall(MPIU_Allreduce(&eventInfo[event].GpuFlops, &gflops, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
-        PetscCall(MPIU_Allreduce(&eventInfo[event].GpuTime, &gmaxt, 1, MPIU_PETSCLOGDOUBLE, MPI_MAX, comm));
-  #endif
-        name = stageLog->eventLog->eventInfo[event].name;
-      } else {
-        int ierr = 0;
-
-        flopr = 0.0;
-        PetscCall(MPIU_Allreduce(&flopr, &minf, 1, MPIU_PETSCLOGDOUBLE, MPI_MIN, comm));
-        PetscCall(MPIU_Allreduce(&flopr, &maxf, 1, MPIU_PETSCLOGDOUBLE, MPI_MAX, comm));
-        PetscCall(MPIU_Allreduce(&zero, &totf, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
-        PetscCall(MPIU_Allreduce(&zero, &mint, 1, MPIU_PETSCLOGDOUBLE, MPI_MIN, comm));
-        PetscCall(MPIU_Allreduce(&zero, &maxt, 1, MPIU_PETSCLOGDOUBLE, MPI_MAX, comm));
-        PetscCall(MPIU_Allreduce(&zero, &tott, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
-        PetscCall(MPIU_Allreduce(&zero, &totm, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
-        PetscCall(MPIU_Allreduce(&zero, &totml, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
-        PetscCall(MPIU_Allreduce(&zero, &totr, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
-        PetscCallMPI(MPI_Allreduce(&ierr, &minC, 1, MPI_INT, MPI_MIN, comm));
-        PetscCallMPI(MPI_Allreduce(&ierr, &maxC, 1, MPI_INT, MPI_MAX, comm));
-        if (PetscLogMemory) {
-          PetscCall(MPIU_Allreduce(&zero, &mem, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
-          PetscCall(MPIU_Allreduce(&zero, &mal, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
-          PetscCall(MPIU_Allreduce(&zero, &malmax, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
-          PetscCall(MPIU_Allreduce(&zero, &emalmax, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
-        }
-  #if defined(PETSC_HAVE_DEVICE)
-        PetscCall(MPIU_Allreduce(&zero, &cct, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
-        PetscCall(MPIU_Allreduce(&zero, &gct, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
-        PetscCall(MPIU_Allreduce(&zero, &csz, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
-        PetscCall(MPIU_Allreduce(&zero, &gsz, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
-        PetscCall(MPIU_Allreduce(&zero, &gflops, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
-        PetscCall(MPIU_Allreduce(&zero, &gmaxt, 1, MPIU_PETSCLOGDOUBLE, MPI_MAX, comm));
-  #endif
-        name = "";
-      }
-      if (mint < 0.0) {
-        PetscCall(PetscFPrintf(comm, fd, "WARNING!!! Minimum time %g over all processors for %s is negative! This happens\n on some machines whose times cannot handle too rapid calls.!\n artificially changing minimum to zero.\n", mint, name));
-        mint = 0;
-      }
-      PetscCheck(minf >= 0.0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Minimum flop %g over all processors for %s is negative! Not possible!", minf, name);
-  /* Put NaN into the time for all events that may not be time accurately since they may happen asynchronously on the GPU */
-  #if defined(PETSC_HAVE_DEVICE)
-      if (!PetscLogGpuTimeFlag && petsc_gflops > 0) {
-        memcpy(&gmaxt, &nas, sizeof(PetscLogDouble));
-        PetscCall(PetscEventRegLogGetEvent(stageLog->eventLog, name, &eventid));
-        if (eventid != SNES_Solve && eventid != KSP_Solve && eventid != TS_Step && eventid != TAO_Solve) {
-          memcpy(&mint, &nas, sizeof(PetscLogDouble));
-          memcpy(&maxt, &nas, sizeof(PetscLogDouble));
-        }
-      }
-  #endif
-      totm *= 0.5;
-      totml *= 0.5;
-      totr /= size;
-
-      if (maxC != 0) {
-        if (minC != 0) ratC = ((PetscLogDouble)maxC) / minC;
-        else ratC = 0.0;
-        if (mint != 0.0) ratt = maxt / mint;
-        else ratt = 0.0;
-        if (minf != 0.0) ratf = maxf / minf;
-        else ratf = 0.0;
-        if (TotalTime != 0.0) fracTime = tott / TotalTime;
-        else fracTime = 0.0;
-        if (TotalFlops != 0.0) fracFlops = totf / TotalFlops;
-        else fracFlops = 0.0;
-        if (stageTime != 0.0) fracStageTime = tott / stageTime;
-        else fracStageTime = 0.0;
-        if (flops != 0.0) fracStageFlops = totf / flops;
-        else fracStageFlops = 0.0;
-        if (numMessages != 0.0) fracMess = totm / numMessages;
-        else fracMess = 0.0;
-        if (messageLength != 0.0) fracMessLen = totml / messageLength;
-        else fracMessLen = 0.0;
-        if (numReductions != 0.0) fracRed = totr / numReductions;
-        else fracRed = 0.0;
-        if (mess != 0.0) fracStageMess = totm / mess;
-        else fracStageMess = 0.0;
-        if (messLen != 0.0) fracStageMessLen = totml / messLen;
-        else fracStageMessLen = 0.0;
-        if (red != 0.0) fracStageRed = totr / red;
-        else fracStageRed = 0.0;
-        if (totm != 0.0) totml /= totm;
-        else totml = 0.0;
-        if (maxt != 0.0) flopr = totf / maxt;
-        else flopr = 0.0;
-        if (fracStageTime > 1.0 || fracStageFlops > 1.0 || fracStageMess > 1.0 || fracStageMessLen > 1.0 || fracStageRed > 1.0)
-          PetscCall(PetscFPrintf(comm, fd, "%-16s %7d %3.1f %5.4e %3.1f %3.2e %3.1f %2.1e %2.1e %2.1e %2.0f %2.0f %2.0f %2.0f %2.0f Multiple stages %5.0f", name, maxC, ratC, maxt, ratt, maxf, ratf, totm, totml, totr, 100.0 * fracTime, 100.0 * fracFlops, 100.0 * fracMess, 100.0 * fracMessLen, 100.0 * fracRed, PetscAbs(flopr) / 1.0e6));
-        else
-          PetscCall(PetscFPrintf(comm, fd, "%-16s %7d %3.1f %5.4e %3.1f %3.2e %3.1f %2.1e %2.1e %2.1e %2.0f %2.0f %2.0f %2.0f %2.0f %3.0f %2.0f %2.0f %2.0f %2.0f %5.0f", name, maxC, ratC, maxt, ratt, maxf, ratf, totm, totml, totr, 100.0 * fracTime, 100.0 * fracFlops, 100.0 * fracMess, 100.0 * fracMessLen, 100.0 * fracRed, 100.0 * fracStageTime, 100.0 * fracStageFlops, 100.0 * fracStageMess, 100.0 * fracStageMessLen, 100.0 * fracStageRed, PetscAbs(flopr) / 1.0e6));
-        if (PetscLogMemory) PetscCall(PetscFPrintf(comm, fd, " %5.0f   %5.0f   %5.0f   %5.0f", mal / 1.0e6, emalmax / 1.0e6, malmax / 1.0e6, mem / 1.0e6));
-  #if defined(PETSC_HAVE_DEVICE)
-        if (totf != 0.0) fracgflops = gflops / totf;
-        else fracgflops = 0.0;
-        if (gmaxt != 0.0) gflopr = gflops / gmaxt;
-        else gflopr = 0.0;
-        PetscCall(PetscFPrintf(comm, fd, "   %5.0f   %4.0f %3.2e %4.0f %3.2e % 2.0f", PetscAbs(gflopr) / 1.0e6, cct / size, csz / (1.0e6 * size), gct / size, gsz / (1.0e6 * size), 100.0 * fracgflops));
-  #endif
-        PetscCall(PetscFPrintf(comm, fd, "\n"));
-      }
-    }
-  }
-
-  /* Memory usage and object creation */
-  PetscCall(PetscFPrintf(comm, fd, "------------------------------------------------------------------------------------------------------------------------"));
-  if (PetscLogMemory) PetscCall(PetscFPrintf(comm, fd, "-----------------------------"));
-  #if defined(PETSC_HAVE_DEVICE)
-  PetscCall(PetscFPrintf(comm, fd, "---------------------------------------"));
-  #endif
-  PetscCall(PetscFPrintf(comm, fd, "\n"));
-  PetscCall(PetscFPrintf(comm, fd, "\n"));
-
-  /* Right now, only stages on the first processor are reported here, meaning only objects associated with
-     the global communicator, or MPI_COMM_SELF for proc 1. We really should report global stats and then
-     stats for stages local to processor sets.
-  */
-  /* We should figure out the longest object name here (now 20 characters) */
-  PetscCall(PetscFPrintf(comm, fd, "Object Type          Creations   Destructions. Reports information only for process 0.\n"));
-  for (stage = 0; stage < numStages; stage++) {
-    if (localStageUsed[stage]) {
-      classInfo = stageLog->stageInfo[stage].classLog->classInfo;
-      PetscCall(PetscFPrintf(comm, fd, "\n--- Event Stage %d: %s\n\n", stage, stageInfo[stage].name));
-      for (oclass = 0; oclass < stageLog->stageInfo[stage].classLog->numClasses; oclass++) {
-        if ((classInfo[oclass].creations > 0) || (classInfo[oclass].destructions > 0)) {
-          PetscCall(PetscFPrintf(comm, fd, "%20s %5d          %5d\n", stageLog->classLog->classInfo[oclass].name, classInfo[oclass].creations, classInfo[oclass].destructions));
-        }
-      }
-    } else {
-      if (!localStageVisible[stage]) continue;
-      PetscCall(PetscFPrintf(comm, fd, "\n--- Event Stage %d: Unknown\n\n", stage));
-    }
-  }
-
-  PetscCall(PetscFree(localStageUsed));
-  PetscCall(PetscFree(stageUsed));
-  PetscCall(PetscFree(localStageVisible));
-  PetscCall(PetscFree(stageVisible));
-
-  /* Information unrelated to this particular run */
-  PetscCall(PetscFPrintf(comm, fd, "========================================================================================================================\n"));
-  PetscCall(PetscTime(&y));
-  PetscCall(PetscTime(&x));
-  PetscCall(PetscTime(&y));
-  PetscCall(PetscTime(&y));
-  PetscCall(PetscTime(&y));
-  PetscCall(PetscTime(&y));
-  PetscCall(PetscTime(&y));
-  PetscCall(PetscTime(&y));
-  PetscCall(PetscTime(&y));
-  PetscCall(PetscTime(&y));
-  PetscCall(PetscTime(&y));
-  PetscCall(PetscTime(&y));
-  PetscCall(PetscFPrintf(comm, fd, "Average time to get PetscTime(): %g\n", (y - x) / 10.0));
-  /* MPI information */
-  if (size > 1) {
-    MPI_Status  status;
-    PetscMPIInt tag;
-    MPI_Comm    newcomm;
-
-    PetscCallMPI(MPI_Barrier(comm));
-    PetscCall(PetscTime(&x));
-    PetscCallMPI(MPI_Barrier(comm));
-    PetscCallMPI(MPI_Barrier(comm));
-    PetscCallMPI(MPI_Barrier(comm));
-    PetscCallMPI(MPI_Barrier(comm));
-    PetscCallMPI(MPI_Barrier(comm));
-    PetscCall(PetscTime(&y));
-    PetscCall(PetscFPrintf(comm, fd, "Average time for MPI_Barrier(): %g\n", (y - x) / 5.0));
-    PetscCall(PetscCommDuplicate(comm, &newcomm, &tag));
-    PetscCallMPI(MPI_Barrier(comm));
-    if (rank) {
-      PetscCallMPI(MPI_Recv(NULL, 0, MPI_INT, rank - 1, tag, newcomm, &status));
-      PetscCallMPI(MPI_Send(NULL, 0, MPI_INT, (rank + 1) % size, tag, newcomm));
-    } else {
-      PetscCall(PetscTime(&x));
-      PetscCallMPI(MPI_Send(NULL, 0, MPI_INT, 1, tag, newcomm));
-      PetscCallMPI(MPI_Recv(NULL, 0, MPI_INT, size - 1, tag, newcomm, &status));
-      PetscCall(PetscTime(&y));
-      PetscCall(PetscFPrintf(comm, fd, "Average time for zero size MPI_Send(): %g\n", (y - x) / size));
-    }
-    PetscCall(PetscCommDestroy(&newcomm));
-  }
-  PetscCall(PetscOptionsView(NULL, viewer));
-
-  /* Machine and compile information */
-  #if defined(PETSC_USE_FORTRAN_KERNELS)
-  PetscCall(PetscFPrintf(comm, fd, "Compiled with FORTRAN kernels\n"));
   #else
-  PetscCall(PetscFPrintf(comm, fd, "Compiled without FORTRAN kernels\n"));
+  SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP_SYS, "PETSc was configured without MPE support, reconfigure with --with-mpe or --download-mpe");
   #endif
-  #if defined(PETSC_USE_64BIT_INDICES)
-  PetscCall(PetscFPrintf(comm, fd, "Compiled with 64-bit PetscInt\n"));
-  #elif defined(PETSC_USE___FLOAT128)
-  PetscCall(PetscFPrintf(comm, fd, "Compiled with 32-bit PetscInt\n"));
-  #endif
-  #if defined(PETSC_USE_REAL_SINGLE)
-  PetscCall(PetscFPrintf(comm, fd, "Compiled with single precision PetscScalar and PetscReal\n"));
-  #elif defined(PETSC_USE___FLOAT128)
-  PetscCall(PetscFPrintf(comm, fd, "Compiled with 128 bit precision PetscScalar and PetscReal\n"));
-  #endif
-  #if defined(PETSC_USE_REAL_MAT_SINGLE)
-  PetscCall(PetscFPrintf(comm, fd, "Compiled with single precision matrices\n"));
-  #else
-  PetscCall(PetscFPrintf(comm, fd, "Compiled with full precision matrices (default)\n"));
-  #endif
-  PetscCall(PetscFPrintf(comm, fd, "sizeof(short) %d sizeof(int) %d sizeof(long) %d sizeof(void*) %d sizeof(PetscScalar) %d sizeof(PetscInt) %d\n", (int)sizeof(short), (int)sizeof(int), (int)sizeof(long), (int)sizeof(void *), (int)sizeof(PetscScalar), (int)sizeof(PetscInt)));
-
-  PetscCall(PetscFPrintf(comm, fd, "Configure options: %s", petscconfigureoptions));
-  PetscCall(PetscFPrintf(comm, fd, "%s", petscmachineinfo));
-  PetscCall(PetscFPrintf(comm, fd, "%s", petsccompilerinfo));
-  PetscCall(PetscFPrintf(comm, fd, "%s", petsccompilerflagsinfo));
-  PetscCall(PetscFPrintf(comm, fd, "%s", petsclinkerinfo));
-
-  /* Cleanup */
-  PetscCall(PetscFPrintf(comm, fd, "\n"));
-  PetscCall(PetscLogViewWarnNoGpuAwareMpi(comm, fd));
-  PetscCall(PetscLogViewWarnDebugging(comm, fd));
-  PetscCall(PetscFPTrapPop());
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -2636,35 +1956,39 @@ PetscErrorCode PetscLogView(PetscViewer viewer)
 {
   PetscBool         isascii;
   PetscViewerFormat format;
-  int               stage, lastStage;
-  PetscStageLog     stageLog;
+  int               stage;
+  PetscLogState     state;
+  PetscIntStack     temp_stack;
+  PetscLogHandler   handler;
+  PetscBool         is_empty;
 
   PetscFunctionBegin;
-  PetscCheck(PetscLogPLB, PETSC_COMM_SELF, PETSC_ERR_SUP, "Must use -log_view or PetscLogDefaultBegin() before calling this routine");
+  PetscCall(PetscLogGetState(&state));
   /* Pop off any stages the user forgot to remove */
-  lastStage = 0;
-  PetscCall(PetscLogGetStageLog(&stageLog));
-  PetscCall(PetscStageLogGetCurrent(stageLog, &stage));
+  PetscCall(PetscIntStackCreate(&temp_stack));
+  PetscCall(PetscLogStateGetCurrentStage(state, &stage));
   while (stage >= 0) {
-    lastStage = stage;
-    PetscCall(PetscStageLogPop(stageLog));
-    PetscCall(PetscStageLogGetCurrent(stageLog, &stage));
+    PetscCall(PetscLogStagePop());
+    PetscCall(PetscIntStackPush(temp_stack, stage));
+    PetscCall(PetscLogStateGetCurrentStage(state, &stage));
   }
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
   PetscCheck(isascii, PetscObjectComm((PetscObject)viewer), PETSC_ERR_SUP, "Currently can only view logging to ASCII");
   PetscCall(PetscViewerGetFormat(viewer, &format));
-  if (format == PETSC_VIEWER_DEFAULT || format == PETSC_VIEWER_ASCII_INFO) {
-    PetscCall(PetscLogView_Default(viewer));
-  } else if (format == PETSC_VIEWER_ASCII_INFO_DETAIL) {
-    PetscCall(PetscLogView_Detailed(viewer));
-  } else if (format == PETSC_VIEWER_ASCII_CSV) {
-    PetscCall(PetscLogView_CSV(viewer));
-  } else if (format == PETSC_VIEWER_ASCII_XML) {
-    PetscCall(PetscLogView_Nested(viewer));
-  } else if (format == PETSC_VIEWER_ASCII_FLAMEGRAPH) {
-    PetscCall(PetscLogView_Flamegraph(viewer));
+  if (format == PETSC_VIEWER_ASCII_XML || format == PETSC_VIEWER_ASCII_FLAMEGRAPH) {
+    PetscCall(PetscLogGetHandler(PETSC_LOG_HANDLER_NESTED, &handler));
+    PetscCall(PetscLogHandlerView(handler, viewer));
+  } else {
+    PetscCall(PetscLogGetHandler(PETSC_LOG_HANDLER_DEFAULT, &handler));
+    PetscCall(PetscLogHandlerView(handler, viewer));
   }
-  PetscCall(PetscStageLogPush(stageLog, lastStage));
+  PetscCall(PetscIntStackEmpty(temp_stack, &is_empty));
+  while (!is_empty) {
+    PetscCall(PetscIntStackPop(temp_stack, &stage));
+    PetscCall(PetscLogStagePush(stage));
+    PetscCall(PetscIntStackEmpty(temp_stack, &is_empty));
+  }
+  PetscCall(PetscIntStackDestroy(temp_stack));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -2691,6 +2015,51 @@ PetscErrorCode PetscLogViewFromOptions(void)
     PetscCall(PetscViewerPopFormat(viewer));
     PetscCall(PetscViewerDestroy(&viewer));
   }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+PETSC_INTERN PetscErrorCode PetscLogHandlerNestedSetThreshold(PetscLogHandler, PetscLogDouble, PetscLogDouble *);
+
+/*@
+  PetscLogSetThreshold - Set the threshold time for logging the events; this is a percentage out of 100, so 1. means any event
+  that takes 1 or more percent of the time.
+
+  Logically Collective over `PETSC_COMM_WORLD`
+
+  Input Parameter:
+. newThresh - the threshold to use
+
+  Output Parameter:
+. oldThresh - the previously set threshold value
+
+  Options Database Keys:
+. -log_view :filename.xml:ascii_xml - Prints an XML summary of flop and timing information to the file
+
+  Example Usage:
+.vb
+  PetscInitialize(...);
+  PetscLogNestedBegin();
+  PetscLogSetThreshold(0.1,&oldthresh);
+  // ... code ...
+  PetscLogView(viewer);
+  PetscFinalize();
+.ve
+
+  Level: advanced
+
+  Note:
+  This threshold is only used by the nested log handler
+
+.seealso: `PetscLogDump()`, `PetscLogView()`, `PetscLogTraceBegin()`, `PetscLogDefaultBegin()`,
+          `PetscLogNestedBegin()`
+@*/
+PetscErrorCode PetscLogSetThreshold(PetscLogDouble newThresh, PetscLogDouble *oldThresh)
+{
+  PetscLogHandler handler;
+
+  PetscFunctionBegin;
+  PetscCall(PetscLogTryGetHandler(PETSC_LOG_HANDLER_NESTED, &handler));
+  PetscCall(PetscLogHandlerNestedSetThreshold(handler, newThresh, oldThresh));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -2734,18 +2103,20 @@ PetscErrorCode PetscGetFlops(PetscLogDouble *flops)
 
   Level: developer
 
-.seealso: [](ch_profiling), `PetscLogObjectCreate()`, `PetscLogObjectDestroy()`
+.seealso: [](ch_profiling), `PetscLogObjectCreate()`, `PetscLogObjectDestroy()`, `PetscLogGetDefaultHandler()`
 @*/
 PetscErrorCode PetscLogObjectState(PetscObject obj, const char format[], ...)
 {
-  size_t  fullLength;
-  va_list Argp;
+  PetscLogHandler handler;
+  va_list         Argp;
 
   PetscFunctionBegin;
-  if (!petsc_logObjects) PetscFunctionReturn(PETSC_SUCCESS);
-  va_start(Argp, format);
-  PetscCall(PetscVSNPrintf(petsc_objects[obj->id].info, 64, format, &fullLength, Argp));
-  va_end(Argp);
+  PetscCall(PetscLogTryGetHandler(PETSC_LOG_HANDLER_DEFAULT, &handler));
+  if (handler) {
+    va_start(Argp, format);
+    PetscCall(PetscLogHandlerDefaultLogObjectState(handler, obj, format, Argp));
+    va_end(Argp);
+  }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -2951,8 +2322,11 @@ PetscErrorCode PetscLogGpuTime(void)
 @*/
 PetscErrorCode PetscLogGpuTimeBegin(void)
 {
+  PetscBool isActive;
+
   PetscFunctionBegin;
-  if (!PetscLogPLB || !PetscLogGpuTimeFlag) PetscFunctionReturn(PETSC_SUCCESS);
+  PetscCall(PetscLogEventBeginIsActive(&isActive));
+  if (!isActive || !PetscLogGpuTimeFlag) PetscFunctionReturn(PETSC_SUCCESS);
   if (PetscDefined(HAVE_DEVICE)) {
     PetscDeviceContext dctx;
 
@@ -2973,8 +2347,11 @@ PetscErrorCode PetscLogGpuTimeBegin(void)
 @*/
 PetscErrorCode PetscLogGpuTimeEnd(void)
 {
+  PetscBool isActive;
+
   PetscFunctionBegin;
-  if (!PetscLogPLE || !PetscLogGpuTimeFlag) PetscFunctionReturn(PETSC_SUCCESS);
+  PetscCall(PetscLogEventEndIsActive(&isActive));
+  if (!isActive || !PetscLogGpuTimeFlag) PetscFunctionReturn(PETSC_SUCCESS);
   if (PetscDefined(HAVE_DEVICE)) {
     PetscDeviceContext dctx;
     PetscLogDouble     elapsed;
@@ -2990,148 +2367,117 @@ PetscErrorCode PetscLogGpuTimeEnd(void)
 
   #endif /* end of PETSC_HAVE_DEVICE */
 
+/* -- Utility functions for logging from fortran -- */
+
+PETSC_EXTERN PetscErrorCode PetscASend(int count, int datatype)
+{
+  PetscFunctionBegin;
+  PetscCall(PetscAddLogDouble(&petsc_send_ct, &petsc_send_ct_th, 1));
+  #if !defined(MPIUNI_H) && !defined(PETSC_HAVE_BROKEN_RECURSIVE_MACRO)
+  PetscCall(PetscMPITypeSize(count, MPI_Type_f2c((MPI_Fint)datatype), &petsc_send_len, &petsc_send_len_th));
+  #endif
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+PETSC_EXTERN PetscErrorCode PetscARecv(int count, int datatype)
+{
+  PetscFunctionBegin;
+  PetscCall(PetscAddLogDouble(&petsc_recv_ct, &petsc_recv_ct_th, 1));
+  #if !defined(MPIUNI_H) && !defined(PETSC_HAVE_BROKEN_RECURSIVE_MACRO)
+  PetscCall(PetscMPITypeSize(count, MPI_Type_f2c((MPI_Fint)datatype), &petsc_recv_len, &petsc_recv_len_th));
+  #endif
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+PETSC_EXTERN PetscErrorCode PetscAReduce(void)
+{
+  PetscFunctionBegin;
+  PetscCall(PetscAddLogDouble(&petsc_allreduce_ct, &petsc_allreduce_ct_th, 1));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 #endif /* PETSC_USE_LOG*/
 
 PetscClassId PETSC_LARGEST_CLASSID = PETSC_SMALLEST_CLASSID;
 PetscClassId PETSC_OBJECT_CLASSID  = 0;
 
-/* Logging functions */
-PetscErrorCode (*PetscLogPHC)(PetscObject)                                                            = NULL;
-PetscErrorCode (*PetscLogPHD)(PetscObject)                                                            = NULL;
-PetscErrorCode (*PetscLogPLB)(PetscLogEvent, int, PetscObject, PetscObject, PetscObject, PetscObject) = NULL;
-PetscErrorCode (*PetscLogPLE)(PetscLogEvent, int, PetscObject, PetscObject, PetscObject, PetscObject) = NULL;
-
-/* Tracing event logging variables */
-FILE            *petsc_tracefile          = NULL;
-int              petsc_tracelevel         = 0;
-const char      *petsc_traceblanks        = "                                                                                                    ";
-char             petsc_tracespace[128]    = " ";
-PetscLogDouble   petsc_tracetime          = 0.0;
 static PetscBool PetscLogInitializeCalled = PETSC_FALSE;
-
-static PetscIntStack current_log_event_stack = NULL;
 
 PETSC_INTERN PetscErrorCode PetscLogInitialize(void)
 {
-  int       stage;
-  PetscBool opt;
+  int stage;
 
   PetscFunctionBegin;
   if (PetscLogInitializeCalled) PetscFunctionReturn(PETSC_SUCCESS);
   PetscLogInitializeCalled = PETSC_TRUE;
   if (PetscDefined(USE_LOG)) {
-    PetscCall(PetscIntStackCreate(&current_log_event_stack));
-    PetscCall(PetscOptionsHasName(NULL, NULL, "-log_exclude_actions", &opt));
-    if (opt) petsc_logActions = PETSC_FALSE;
-    PetscCall(PetscOptionsHasName(NULL, NULL, "-log_exclude_objects", &opt));
-    if (opt) petsc_logObjects = PETSC_FALSE;
-    if (petsc_logActions) PetscCall(PetscMalloc1(petsc_maxActions, &petsc_actions));
-    if (petsc_logObjects) PetscCall(PetscMalloc1(petsc_maxObjects, &petsc_objects));
-    PetscLogPHC = PetscLogObjCreateDefault;
-    PetscLogPHD = PetscLogObjDestroyDefault;
     /* Setup default logging structures */
     PetscCall(PetscLogStateCreate(&petsc_log_state));
     for (PetscInt i = 0; i < PETSC_LOG_HANDLER_MAX; i++) {
       if (PetscLogHandlers[i].handler) PetscCall(PetscLogHandlerSetState(PetscLogHandlers[i].handler, petsc_log_state));
     }
     PetscCall(PetscLogStateStageRegister(petsc_log_state, "Main Stage", &stage));
-    PetscCall(PetscStageLogCreate(&petsc_stageLog));
-    PetscCall(PetscStageLogRegister(petsc_stageLog, "Main Stage", &stage));
-
     PetscCall(PetscSpinlockCreate(&PetscLogSpinLock));
 #if defined(PETSC_HAVE_THREADSAFETY)
     petsc_log_tid = 0;
     petsc_log_gid = 0;
-    PetscCall(PetscHMapEventCreate(&eventInfoMap_th));
 #endif
 
     /* All processors sync here for more consistent logging */
     PetscCallMPI(MPI_Barrier(PETSC_COMM_WORLD));
     PetscCall(PetscTime(&petsc_BaseTime));
     PetscCall(PetscLogStagePush(stage));
-  #if defined(PETSC_HAVE_TAU_PERFSTUBS)
-    PetscStackCallExternalVoid("ps_initialize_", ps_initialize_());
-  #endif
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_INTERN PetscErrorCode PetscLogFinalize(void)
 {
-  PetscStageLog stageLog;
-
   PetscFunctionBegin;
   if (PetscDefined(USE_LOG)) {
+    /* Resetting phase */
+    // pop remaining stages
+    if (petsc_log_state) {
+      while (petsc_log_state->current_stage >= 0) { PetscCall(PetscLogStagePop()); }
+    }
     for (int i = 0; i < PETSC_LOG_HANDLER_MAX; i++) PetscCall(PetscLogHandlerDestroy(&PetscLogHandlers[i].handler));
     PetscCall(PetscArrayzero(PetscLogHandlers, PETSC_LOG_HANDLER_MAX));
     PetscCall(PetscLogStateDestroy(&petsc_log_state));
-  #if defined(PETSC_HAVE_THREADSAFETY)
-    if (eventInfoMap_th) {
-      PetscEventPerfInfo **array;
-      PetscInt             n, off = 0;
 
-      PetscCall(PetscHMapEventGetSize(eventInfoMap_th, &n));
-      PetscCall(PetscMalloc1(n, &array));
-      PetscCall(PetscHMapEventGetVals(eventInfoMap_th, &off, array));
-      for (PetscInt i = 0; i < n; i++) PetscCall(PetscFree(array[i]));
-      PetscCall(PetscFree(array));
-      PetscCall(PetscHMapEventDestroy(&eventInfoMap_th));
-    }
-  #endif
-    PetscCall(PetscFree(petsc_actions));
-    PetscCall(PetscFree(petsc_objects));
-    PetscCall(PetscLogNestedEnd());
-    PetscCall(PetscLogSet(NULL, NULL));
-
-    /* Resetting phase */
-    PetscCall(PetscLogGetStageLog(&stageLog));
-    PetscCall(PetscStageLogDestroy(stageLog));
-    PetscCall(PetscIntStackDestroy(current_log_event_stack));
-    current_log_event_stack = NULL;
-
-    petsc_TotalFlops          = 0.0;
-    petsc_numActions          = 0;
-    petsc_numObjects          = 0;
-    petsc_numObjectsDestroyed = 0;
-    petsc_maxActions          = 100;
-    petsc_maxObjects          = 100;
-    petsc_actions             = NULL;
-    petsc_objects             = NULL;
-    petsc_logActions          = PETSC_FALSE;
-    petsc_logObjects          = PETSC_FALSE;
-    petsc_BaseTime            = 0.0;
-    petsc_TotalFlops          = 0.0;
-    petsc_send_ct             = 0.0;
-    petsc_recv_ct             = 0.0;
-    petsc_send_len            = 0.0;
-    petsc_recv_len            = 0.0;
-    petsc_isend_ct            = 0.0;
-    petsc_irecv_ct            = 0.0;
-    petsc_isend_len           = 0.0;
-    petsc_irecv_len           = 0.0;
-    petsc_wait_ct             = 0.0;
-    petsc_wait_any_ct         = 0.0;
-    petsc_wait_all_ct         = 0.0;
-    petsc_sum_of_waits_ct     = 0.0;
-    petsc_allreduce_ct        = 0.0;
-    petsc_gather_ct           = 0.0;
-    petsc_scatter_ct          = 0.0;
-    petsc_TotalFlops_th       = 0.0;
-    petsc_send_ct_th          = 0.0;
-    petsc_recv_ct_th          = 0.0;
-    petsc_send_len_th         = 0.0;
-    petsc_recv_len_th         = 0.0;
-    petsc_isend_ct_th         = 0.0;
-    petsc_irecv_ct_th         = 0.0;
-    petsc_isend_len_th        = 0.0;
-    petsc_irecv_len_th        = 0.0;
-    petsc_wait_ct_th          = 0.0;
-    petsc_wait_any_ct_th      = 0.0;
-    petsc_wait_all_ct_th      = 0.0;
-    petsc_sum_of_waits_ct_th  = 0.0;
-    petsc_allreduce_ct_th     = 0.0;
-    petsc_gather_ct_th        = 0.0;
-    petsc_scatter_ct_th       = 0.0;
+    petsc_TotalFlops         = 0.0;
+    petsc_BaseTime           = 0.0;
+    petsc_TotalFlops         = 0.0;
+    petsc_send_ct            = 0.0;
+    petsc_recv_ct            = 0.0;
+    petsc_send_len           = 0.0;
+    petsc_recv_len           = 0.0;
+    petsc_isend_ct           = 0.0;
+    petsc_irecv_ct           = 0.0;
+    petsc_isend_len          = 0.0;
+    petsc_irecv_len          = 0.0;
+    petsc_wait_ct            = 0.0;
+    petsc_wait_any_ct        = 0.0;
+    petsc_wait_all_ct        = 0.0;
+    petsc_sum_of_waits_ct    = 0.0;
+    petsc_allreduce_ct       = 0.0;
+    petsc_gather_ct          = 0.0;
+    petsc_scatter_ct         = 0.0;
+    petsc_TotalFlops_th      = 0.0;
+    petsc_send_ct_th         = 0.0;
+    petsc_recv_ct_th         = 0.0;
+    petsc_send_len_th        = 0.0;
+    petsc_recv_len_th        = 0.0;
+    petsc_isend_ct_th        = 0.0;
+    petsc_irecv_ct_th        = 0.0;
+    petsc_isend_len_th       = 0.0;
+    petsc_irecv_len_th       = 0.0;
+    petsc_wait_ct_th         = 0.0;
+    petsc_wait_any_ct_th     = 0.0;
+    petsc_wait_all_ct_th     = 0.0;
+    petsc_sum_of_waits_ct_th = 0.0;
+    petsc_allreduce_ct_th    = 0.0;
+    petsc_gather_ct_th       = 0.0;
+    petsc_scatter_ct_th      = 0.0;
 
     petsc_ctog_ct    = 0.0;
     petsc_gtoc_ct    = 0.0;
@@ -3145,17 +2491,6 @@ PETSC_INTERN PetscErrorCode PetscLogFinalize(void)
     petsc_gtoc_sz_th = 0.0;
     petsc_gflops_th  = 0.0;
     petsc_gtime_th   = 0.0;
-
-    PETSC_LARGEST_EVENT      = PETSC_EVENT;
-    PetscLogPHC              = NULL;
-    PetscLogPHD              = NULL;
-    petsc_tracefile          = NULL;
-    petsc_tracelevel         = 0;
-    petsc_traceblanks        = "                                                                                                    ";
-    petsc_tracespace[0]      = ' ';
-    petsc_tracespace[1]      = 0;
-    petsc_tracetime          = 0.0;
-    petsc_stageLog           = NULL;
   }
   PETSC_LARGEST_CLASSID    = PETSC_SMALLEST_CLASSID;
   PETSC_OBJECT_CLASSID     = 0;
@@ -3180,82 +2515,16 @@ PETSC_INTERN PetscErrorCode PetscLogFinalize(void)
 @*/
 PetscErrorCode PetscClassIdRegister(const char name[], PetscClassId *oclass)
 {
-#if defined(PETSC_USE_LOG)
-  PetscStageLog stageLog;
-  PetscInt      stage;
-#endif
-
   PetscFunctionBegin;
   *oclass = ++PETSC_LARGEST_CLASSID;
 #if defined(PETSC_USE_LOG)
-  PetscCall(PetscLogGetStageLog(&stageLog));
-  PetscCall(PetscClassRegLogRegister(stageLog->classLog, name, *oclass));
-  for (stage = 0; stage < stageLog->numStages; stage++) PetscCall(PetscClassPerfLogEnsureSize(stageLog->stageInfo[stage].classLog, stageLog->classLog->numClasses));
+  {
+    PetscLogState state;
+    PetscLogClass logclass;
+
+    PetscCall(PetscLogGetState(&state));
+    if (state) PetscCall(PetscLogStateClassRegister(state, name, *oclass, &logclass));
+  }
 #endif
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-
-#if defined(PETSC_USE_LOG) && defined(PETSC_HAVE_MPE)
-  #include <mpe.h>
-
-/*@C
-  PetscLogMPEDump - Dumps the MPE logging info to file for later use with Jumpshot.
-
-  Input Parameter:
-. sname - The filename to dump to
-
-  Collective over `PETSC_COMM_WORLD`
-
-  Level: advanced
-
-.seealso: [](ch_profiling), `PetscLogDump()`, `PetscLogAllBegin()`, `PetscLogMPEBegin()`
-@*/
-PetscErrorCode PetscLogMPEDump(const char sname[])
-{
-  char name[PETSC_MAX_PATH_LEN];
-
-  PetscFunctionBegin;
-  if (PetscBeganMPE) {
-    PetscCall(PetscInfo(0, "Finalizing MPE.\n"));
-    if (sname) {
-      PetscCall(PetscStrncpy(name, sname, sizeof(name)));
-    } else {
-      PetscCall(PetscGetProgramName(name, sizeof(name)));
-    }
-    PetscCall(MPE_Finish_log(name));
-  } else {
-    PetscCall(PetscInfo(0, "Not finalizing MPE (not started by PETSc).\n"));
-  }
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-  #define PETSC_RGB_COLORS_MAX 39
-static const char *PetscLogMPERGBColors[PETSC_RGB_COLORS_MAX] = {"OliveDrab:      ", "BlueViolet:     ", "CadetBlue:      ", "CornflowerBlue: ", "DarkGoldenrod:  ", "DarkGreen:      ", "DarkKhaki:      ", "DarkOliveGreen: ",
-                                                                 "DarkOrange:     ", "DarkOrchid:     ", "DarkSeaGreen:   ", "DarkSlateGray:  ", "DarkTurquoise:  ", "DeepPink:       ", "DarkKhaki:      ", "DimGray:        ",
-                                                                 "DodgerBlue:     ", "GreenYellow:    ", "HotPink:        ", "IndianRed:      ", "LavenderBlush:  ", "LawnGreen:      ", "LemonChiffon:   ", "LightCoral:     ",
-                                                                 "LightCyan:      ", "LightPink:      ", "LightSalmon:    ", "LightSlateGray: ", "LightYellow:    ", "LimeGreen:      ", "MediumPurple:   ", "MediumSeaGreen: ",
-                                                                 "MediumSlateBlue:", "MidnightBlue:   ", "MintCream:      ", "MistyRose:      ", "NavajoWhite:    ", "NavyBlue:       ", "OliveDrab:      "};
-
-/*@C
-  PetscLogMPEGetRGBColor - This routine returns a rgb color useable with `PetscLogEventRegister()`
-
-  Not collective. Maybe it should be?
-
-  Output Parameter:
-. str - character string representing the color
-
-  Level: developer
-
-.seealso: [](ch_profiling), `PetscLogEventRegister()`
-@*/
-PetscErrorCode PetscLogMPEGetRGBColor(const char *str[])
-{
-  static int idx = 0;
-
-  PetscFunctionBegin;
-  *str = PetscLogMPERGBColors[idx];
-  idx  = (idx + 1) % PETSC_RGB_COLORS_MAX;
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-#endif /* PETSC_USE_LOG && PETSC_HAVE_MPE */

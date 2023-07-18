@@ -9,7 +9,6 @@ cdef extern from * nogil:
         PetscLogDouble numReductions
 
     PetscErrorCode PetscLogDefaultBegin()
-    PetscErrorCode PetscLogAllBegin()
     PetscErrorCode PetscLogView(PetscViewer)
     PetscErrorCode PetscLogIsActive(PetscBool*)
 
@@ -33,7 +32,7 @@ cdef extern from * nogil:
     PetscErrorCode PetscLogStageGetVisible(PetscLogStage,PetscBool*)
     PetscErrorCode PetscLogStageGetId(char[],PetscLogStage*)
 
-    ctypedef int PetscLogClass
+    ctypedef int PetscLogClass "PetscClassId"
     PetscErrorCode PetscLogClassRegister"PetscClassIdRegister"(char[],PetscLogClass*)
     PetscErrorCode PetscLogClassActivate"PetscLogEventActivateClass"(PetscLogClass)
     PetscErrorCode PetscLogClassDeactivate"PetscLogEventDeactivateClass"(PetscLogClass)

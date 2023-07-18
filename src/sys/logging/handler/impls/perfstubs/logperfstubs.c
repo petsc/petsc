@@ -157,7 +157,8 @@ static PetscErrorCode PetscLogHandlerStagePop_Perfstubs(PetscLogHandler handler,
 /*MC
   PETSC_LOG_HANDLER_PERFSTUBS - PETSC_LOG_HANDLER_PERFSTUBS = "perfstubs" -  A
   `PetscLogHandler` that collects data for the PerfStubs/TAU instrumentation
-  library.
+  library.  A log handler of this type is created and started by
+  `PetscLogPerfstubsBegin()`.
 
   Level: developer
 

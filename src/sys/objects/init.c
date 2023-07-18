@@ -514,7 +514,8 @@ PETSC_INTERN PetscErrorCode PetscOptionsCheckInitial_Private(const char help[])
     }
     flg1 = PETSC_FALSE;
     PetscCall(PetscOptionsGetBool(NULL, NULL, "-log_all", &flg1, NULL));
-    if (flg1) PetscCall(PetscLogAllBegin());
+    PetscCall(PetscOptionsGetBool(NULL, NULL, "-log", &flg2, NULL));
+    if (flg1 || flg2) PetscCall(PetscLogDefaultBegin());
 
     PetscCall(PetscOptionsGetString(NULL, NULL, "-log_trace", mname, sizeof(mname), &flg1));
     if (flg1) {

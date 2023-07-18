@@ -352,7 +352,8 @@ static PetscErrorCode PetscLogHandlerView_Nested(PetscLogHandler handler, PetscV
 
 /*MC
   PETSC_LOG_HANDLER_NESTED - PETSC_LOG_NESTED = "nested" -  A `PetscLogHandler` that collects data for PETSc's
-  XML and flamegraph profiling log viewers.
+  XML and flamegraph profiling log viewers.  A log handler of this type is created and started by
+  by `PetscLogNestedBegin()`.
 
   Level: developer
 

@@ -327,7 +327,7 @@ PetscErrorCode PetscLogStateStageSetActive(PetscLogState state, PetscLogStage st
   Note:
   This is called for the global state (`PetscLogGetState()`) in `PetscLogStageGetActive()`.
 
-.seealso: [](ch_profiling), `PetscLogState`, `PetscLogStageSetActive()`
+.seealso: [](ch_profiling), `PetscLogState`, `PetscLogStageSetActive()`, `PetscLogHandler`, `PetscLogHandlerStart()`, `PetscLogHandlerEventBegin()`, `PetscLogHandlerEventEnd()`
 @*/
 PetscErrorCode PetscLogStateStageGetActive(PetscLogState state, PetscLogStage stage, PetscBool *isActive)
 {
@@ -481,7 +481,7 @@ PetscErrorCode PetscLogStateClassSetActiveAll(PetscLogState state, PetscClassId 
   This is called for the global state (`PetscLogGetState()`) in `PetscLogEventGetActive()`, where it has significance
   for what information is sent to log handlers.
 
-.seealso: [](ch_profiling), `PetscLogState`, `PetscLogEventGetActive()`, `PetscLogStateGetCurrentStage()`
+.seealso: [](ch_profiling), `PetscLogState`, `PetscLogEventGetActive()`, `PetscLogStateGetCurrentStage()`, `PetscLogHandler()`
 @*/
 PetscErrorCode PetscLogStateEventGetActive(PetscLogState state, PetscLogStage stage, PetscLogEvent event, PetscBool *isActive)
 {
@@ -698,7 +698,7 @@ PetscErrorCode PetscLogStateStageGetInfo(PetscLogState state, PetscLogStage stag
 }
 
 /*@
-  PetscLogStateClassRegister - Register a class with a `PetscLogState`.
+  PetscLogStateClassRegister - Register a class to with a `PetscLogState` used by `PetscLogHandler`s.
 
   Logically collective on `PETSC_COMM_WORLD`
 

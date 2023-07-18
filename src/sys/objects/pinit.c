@@ -1194,8 +1194,8 @@ PETSC_INTERN PetscErrorCode PetscInitialize_Common(const char *prog, const char 
 . -log_view_memory                                     - Includes in the summary from -log_view the memory used in each event, see `PetscLogView()`.
 . -log_view_gpu_time                                   - Includes in the summary from -log_view the time used in each GPU kernel, see `PetscLogView().
 . -log_exclude: <vec,mat,pc,ksp,snes>                  - excludes subset of object classes from logging
-. -log_all [filename]                                  - Logs extensive profiling information  See `PetscLogDump()`.
-. -log [filename]                                      - Logs basic profiline information  See `PetscLogDump()`.
+. -log [filename]                                      - Logs profiling information in a dump file, see `PetscLogDump()`.
+. -log_all [filename]                                  - Same as `-log`.
 . -log_mpe [filename]                                  - Creates a logfile viewable by the utility Jumpshot (in MPICH distribution)
 . -log_perfstubs                                       - Starts a log handler with the perfstubs interface (which is used by TAU)
 . -viewfromoptions on,off                              - Enable or disable `XXXSetFromOptions()` calls, for applications with many small solves turn this off
