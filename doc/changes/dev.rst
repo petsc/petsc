@@ -51,6 +51,7 @@ Changes: Development
 
 - Add ``VecErrorWeightedNorms()`` to unify weighted local truncation error norms used in ``TS``
 - Add CUDA/HIP implementations for ``VecAbs()``, ``VecSqrt()``, ``VecExp()``, ``VecLog()``, ``VecPointwiseMax()``, ``VecPointwiseMaxAbs()``, and ``VecPointwiseMin()``
+- Add ``VecMAXPBY()``
 
 .. rubric:: PetscSection:
 

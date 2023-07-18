@@ -341,8 +341,7 @@ static PetscErrorCode KSPFGMRESBuildSoln(PetscScalar *nrs, Vec vguess, Vec vdest
 
   /* Accumulate the correction to the soln of the preconditioned prob. in
      VEC_TEMP - note that we use the preconditioned vectors  */
-  PetscCall(VecSet(VEC_TEMP, 0.0)); /* set VEC_TEMP components to 0 */
-  PetscCall(VecMAXPY(VEC_TEMP, it + 1, nrs, &PREVEC(0)));
+  PetscCall(VecMAXPBY(VEC_TEMP, it + 1, nrs, 0, &PREVEC(0)));
 
   /* put updated solution into vdest.*/
   if (vdest != vguess) {

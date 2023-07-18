@@ -433,8 +433,7 @@ static PetscErrorCode KSPAGMRESBuildSoln(KSP ksp, PetscInt it)
   PetscCallBLAS("LAPACKtrtrs", LAPACKtrtrs_("U", "N", "N", &KspSize, &nrhs, agmres->hh_origin, &ldH, agmres->nrs, &N, &info));
   PetscCheck(!info, PetscObjectComm((PetscObject)ksp), PETSC_ERR_LIB, "Error in LAPACK routine XTRTRS INFO=%" PetscBLASInt_FMT, info);
   /* Accumulate the correction to the solution of the preconditioned problem in VEC_TMP */
-  PetscCall(VecZeroEntries(VEC_TMP));
-  PetscCall(VecMAXPY(VEC_TMP, max_k, agmres->nrs, &VEC_V(0)));
+  PetscCall(VecMAXPBY(VEC_TMP, max_k, agmres->nrs, 0, &VEC_V(0)));
   if (!agmres->DeflPrecond) PetscCall(VecMAXPY(VEC_TMP, r, &agmres->nrs[max_k], agmres->U));
 
   if ((ksp->pc_side == PC_RIGHT) && agmres->r && agmres->DeflPrecond) {
