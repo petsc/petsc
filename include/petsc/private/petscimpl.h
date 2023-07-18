@@ -470,65 +470,41 @@ PETSC_VALID_POINTER_IMPL_SPECIALIZATION(PetscComplex, PETSC_COMPLEX);
 
     #elif PETSC_C_VERSION >= 11
       // clang-format off
-      #define PetscAssertPointer_PetscDataType_WithoutPetscComplex(h) _Generic((h), \
-                       default: PETSC_CHAR  , \
-                        char *: PETSC_CHAR  , \
-                  const char *: PETSC_CHAR  , \
-                 signed char *: PETSC_CHAR  , \
-           const signed char *: PETSC_CHAR  , \
-               unsigned char *: PETSC_CHAR  , \
-         const unsigned char *: PETSC_CHAR  , \
-                       short *: PETSC_SHORT , \
-                 const short *: PETSC_SHORT , \
-              unsigned short *: PETSC_SHORT , \
-        const unsigned short *: PETSC_SHORT , \
-                       float *: PETSC_FLOAT , \
-                 const float *: PETSC_FLOAT , \
-                      double *: PETSC_DOUBLE, \
-                const double *: PETSC_DOUBLE, \
-                     int32_t *: PETSC_INT32 , \
-               const int32_t *: PETSC_INT32 , \
-                    uint32_t *: PETSC_INT32 , \
-              const uint32_t *: PETSC_INT32 , \
-                     int64_t *: PETSC_INT64 , \
-               const int64_t *: PETSC_INT64 , \
-                    uint64_t *: PETSC_INT64 , \
-              const uint64_t *: PETSC_INT64 )
-      #define PetscAssertPointer_String_WithoutPetscComplex(h) _Generic((h), \
-                       default:         "memory", \
-                        char *:           "char", \
-                  const char *:           "char", \
-                 signed char *:    "signed char", \
-           const signed char *:    "signed char", \
-               unsigned char *:  "unsigned char", \
-         const unsigned char *:  "unsigned char", \
-                       short *:          "short", \
-                 const short *:          "short", \
-              unsigned short *: "unsigned short", \
-        const unsigned short *: "unsigned short", \
-                       float *:          "float", \
-                 const float *:          "float", \
-                      double *:         "double", \
-                const double *:         "double", \
-                     int32_t *:        "int32_t", \
-               const int32_t *:        "int32_t", \
-                    uint32_t *:       "uint32_t", \
-              const uint32_t *:       "uint32_t", \
-                     int64_t *:        "int64_t", \
-               const int64_t *:        "int64_t", \
-                    uint64_t *:       "uint64_t", \
-              const uint64_t *:       "uint64_t")
+      #define PetscAssertPointer_PetscDataType_WithoutPetscComplex(h) _Generic((*(h)), \
+               default: PETSC_CHAR  , \
+                  char: PETSC_CHAR  , \
+           signed char: PETSC_CHAR  , \
+         unsigned char: PETSC_CHAR  , \
+                 short: PETSC_SHORT , \
+        unsigned short: PETSC_SHORT , \
+                 float: PETSC_FLOAT , \
+                double: PETSC_DOUBLE, \
+               int32_t: PETSC_INT32 , \
+              uint32_t: PETSC_INT32 , \
+               int64_t: PETSC_INT64 , \
+              uint64_t: PETSC_INT64)
+      #define PetscAssertPointer_String_WithoutPetscComplex(h) _Generic((*(h)), \
+               default:         "memory", \
+                  char:           "char", \
+           signed char:    "signed char", \
+         unsigned char:  "unsigned char", \
+                 short:          "short", \
+        unsigned short: "unsigned short", \
+                 float:          "float", \
+                double:         "double", \
+               int32_t:        "int32_t", \
+              uint32_t:       "uint32_t", \
+               int64_t:        "int64_t", \
+              uint64_t:       "uint64_t")
       // clang-format on
       #if !defined(PETSC_SKIP_COMPLEX)
         // clang-format off
-        #define PetscAssertPointer_PetscDataType(h) _Generic((h), \
-                     default: PetscAssertPointer_PetscDataType_WithoutPetscComplex(h), \
-                PetscComplex *: PETSC_COMPLEX, \
-          const PetscComplex *: PETSC_COMPLEX)
-        #define PetscAssertPointer_String(h) _Generic((h), \
-                     default: PetscAssertPointer_String_WithoutPetscComplex(h), \
-                PetscComplex *: "PetscComplex", \
-          const PetscComplex *: "PetscComplex")
+        #define PetscAssertPointer_PetscDataType(h) _Generic((*(h)), \
+               default: PetscAssertPointer_PetscDataType_WithoutPetscComplex(h), \
+          PetscComplex: PETSC_COMPLEX)
+        #define PetscAssertPointer_String(h) _Generic((*(h)), \
+               default: PetscAssertPointer_String_WithoutPetscComplex(h), \
+          PetscComplex: "PetscComplex")
         // clang-format on
       #else
         #define PetscAssertPointer_PetscDataType(h) PetscAssertPointer_PetscDataType_WithoutPetscComplex(h)
