@@ -3792,10 +3792,12 @@ PetscErrorCode MatSetValuesCOO_SeqAIJHIPSPARSE(Mat A, const PetscScalar v[], Ins
   if (imode == INSERT_VALUES) PetscCall(MatSeqAIJHIPSPARSEGetArrayWrite(A, &Aa));
   else PetscCall(MatSeqAIJHIPSPARSEGetArray(A, &Aa));
 
+  PetscCall(PetscLogGpuTimeBegin());
   if (Annz) {
     hipLaunchKernelGGL(HIP_KERNEL_NAME(MatAddCOOValues), dim3((Annz + 255) / 256), dim3(256), 0, PetscDefaultHipStream, v1, Annz, coo->jmap, coo->perm, imode, Aa);
     PetscCallHIP(hipPeekAtLastError());
   }
+  PetscCall(PetscLogGpuTimeEnd());
 
   if (imode == INSERT_VALUES) PetscCall(MatSeqAIJHIPSPARSERestoreArrayWrite(A, &Aa));
   else PetscCall(MatSeqAIJHIPSPARSERestoreArray(A, &Aa));

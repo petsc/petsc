@@ -206,6 +206,7 @@ static PetscErrorCode MatSetValuesCOO_MPIAIJHIPSPARSE(Mat mat, const PetscScalar
     PetscCall(MatSeqAIJHIPSPARSEGetArray(B, &Ba));
   }
 
+  PetscCall(PetscLogGpuTimeBegin());
   /* Pack entries to be sent to remote */
   if (coo->sendlen) {
     hipLaunchKernelGGL(HIP_KERNEL_NAME(MatPackCOOValues), dim3((coo->sendlen + 255) / 256), dim3(256), 0, PetscDefaultHipStream, v1, coo->sendlen, Cperm1, vsend);
@@ -226,6 +227,7 @@ static PetscErrorCode MatSetValuesCOO_MPIAIJHIPSPARSE(Mat mat, const PetscScalar
     hipLaunchKernelGGL(HIP_KERNEL_NAME(MatAddRemoteCOOValues), dim3((Annz2 + Bnnz2 + 255) / 256), dim3(256), 0, PetscDefaultHipStream, v2, Annz2, Aimap2, Ajmap2, Aperm2, Aa, Bnnz2, Bimap2, Bjmap2, Bperm2, Ba);
     PetscCallHIP(hipPeekAtLastError());
   }
+  PetscCall(PetscLogGpuTimeEnd());
 
   if (imode == INSERT_VALUES) {
     PetscCall(MatSeqAIJHIPSPARSERestoreArrayWrite(A, &Aa));

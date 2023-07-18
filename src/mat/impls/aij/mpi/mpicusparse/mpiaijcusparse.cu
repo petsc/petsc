@@ -206,6 +206,7 @@ static PetscErrorCode MatSetValuesCOO_MPIAIJCUSPARSE(Mat mat, const PetscScalar 
     PetscCall(MatSeqAIJCUSPARSEGetArray(B, &Ba));
   }
 
+  PetscCall(PetscLogGpuTimeBegin());
   /* Pack entries to be sent to remote */
   if (coo->sendlen) {
     MatPackCOOValues<<<(coo->sendlen + 255) / 256, 256>>>(v1, coo->sendlen, Cperm1, vsend);
@@ -226,6 +227,7 @@ static PetscErrorCode MatSetValuesCOO_MPIAIJCUSPARSE(Mat mat, const PetscScalar 
     MatAddRemoteCOOValues<<<(Annz2 + Bnnz2 + 255) / 256, 256>>>(v2, Annz2, Aimap2, Ajmap2, Aperm2, Aa, Bnnz2, Bimap2, Bjmap2, Bperm2, Ba);
     PetscCallCUDA(cudaPeekAtLastError());
   }
+  PetscCall(PetscLogGpuTimeEnd());
 
   if (imode == INSERT_VALUES) {
     PetscCall(MatSeqAIJCUSPARSERestoreArrayWrite(A, &Aa));
