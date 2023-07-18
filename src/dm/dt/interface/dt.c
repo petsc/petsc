@@ -1918,7 +1918,8 @@ PetscErrorCode PetscDTGaussTensorQuadrature(PetscInt dim, PetscInt Nc, PetscInt 
     PetscCall(PetscFree(w));
     PetscCall(PetscMalloc1(1, &x));
     PetscCall(PetscMalloc1(Nc, &w));
-    x[0] = 0.0;
+    totpoints = 1;
+    x[0]      = 0.0;
     for (PetscInt c = 0; c < Nc; ++c) w[c] = 1.0;
     break;
   case 1:
