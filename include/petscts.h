@@ -598,8 +598,6 @@ PETSC_EXTERN PetscErrorCode DMDATSSetRHSJacobianLocal(DM, PetscErrorCode (*)(DMD
 PETSC_EXTERN PetscErrorCode DMDATSSetIFunctionLocal(DM, InsertMode, PetscErrorCode (*)(DMDALocalInfo *, PetscReal, void *, void *, void *, void *), void *);
 PETSC_EXTERN PetscErrorCode DMDATSSetIJacobianLocal(DM, PetscErrorCode (*)(DMDALocalInfo *, PetscReal, void *, void *, PetscReal, Mat, Mat, void *), void *);
 
-PETSC_EXTERN PetscErrorCode DMPlexTSGetGeometryFVM(DM, Vec *, Vec *, PetscReal *);
-
 typedef struct _n_TSMonitorLGCtx *TSMonitorLGCtx;
 typedef struct {
   Vec            ray;
@@ -913,7 +911,6 @@ J*/
 typedef const char *TSIRKType;
 #define TSIRKGAUSS "gauss"
 
-PETSC_EXTERN PetscErrorCode TSIRKGetOrder(TS, PetscInt *);
 PETSC_EXTERN PetscErrorCode TSIRKGetType(TS, TSIRKType *);
 PETSC_EXTERN PetscErrorCode TSIRKSetType(TS, TSIRKType);
 PETSC_EXTERN PetscErrorCode TSIRKGetNumStages(TS, PetscInt *);
@@ -1077,7 +1074,6 @@ PETSC_EXTERN PetscErrorCode    TSSundialsSetGramSchmidtType(TS, TSSundialsGramSc
 PETSC_EXTERN PetscErrorCode    TSSundialsSetGMRESRestart(TS, PetscInt);
 PETSC_EXTERN PetscErrorCode    TSSundialsSetLinearTolerance(TS, PetscReal);
 PETSC_EXTERN PetscErrorCode    TSSundialsMonitorInternalSteps(TS, PetscBool);
-PETSC_EXTERN PetscErrorCode    TSSundialsGetParameters(TS, PetscInt *, long *[], double *[]);
 PETSC_EXTERN PetscErrorCode    TSSundialsSetMaxl(TS, PetscInt);
 PETSC_EXTERN PetscErrorCode    TSSundialsSetMaxord(TS, PetscInt);
 PETSC_EXTERN PetscErrorCode    TSSundialsSetUseDense(TS, PetscBool);

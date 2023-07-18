@@ -106,7 +106,6 @@ cdef extern from * nogil:
     PetscErrorCode DMPlexCreateExodusFromFile(MPI_Comm,const char[],PetscBool,PetscDM*)
     PetscErrorCode DMPlexCreateGmsh(MPI_Comm,PetscViewer,PetscBool,PetscDM*)
 
-    #int DMPlexCreateConeSection(PetscDM,PetscSection*)
     #int DMPlexInvertCell(PetscInt,PetscInt,int[])
     #int DMPlexCheckSymmetry(PetscDM)
     #int DMPlexCheckSkeleton(PetscDM,PetscBool,PetscInt)
@@ -229,4 +228,3 @@ cdef extern from * nogil:
     PetscErrorCode DMPlexTransformSetDM(PetscDMPlexTransform, PetscDM);
     PetscErrorCode DMPlexTransformSetUp(PetscDMPlexTransform);
     PetscErrorCode DMPlexTransformView(PetscDMPlexTransform tr, PetscViewer v);
-    

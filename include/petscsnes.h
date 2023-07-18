@@ -709,7 +709,6 @@ PETSC_EXTERN PetscErrorCode SNESLineSearchMonitor(SNESLineSearch);
 PETSC_EXTERN PetscErrorCode SNESLineSearchMonitorSet(SNESLineSearch, PetscErrorCode (*)(SNESLineSearch, void *), void *, PetscErrorCode (*)(void **));
 PETSC_EXTERN PetscErrorCode SNESLineSearchMonitorSetFromOptions(SNESLineSearch, const char[], const char[], const char[], PetscErrorCode (*)(SNESLineSearch, PetscViewerAndFormat *), PetscErrorCode (*)(SNESLineSearch, PetscViewerAndFormat *));
 PETSC_EXTERN PetscErrorCode SNESLineSearchMonitorCancel(SNESLineSearch);
-PETSC_EXTERN PetscErrorCode SNESLineSearchMonitorUpdate(SNESLineSearch, PetscViewerAndFormat *);
 PETSC_EXTERN PetscErrorCode SNESLineSearchSetDefaultMonitor(SNESLineSearch, PetscViewer);
 PETSC_EXTERN PetscErrorCode SNESLineSearchGetDefaultMonitor(SNESLineSearch, PetscViewer *);
 PETSC_EXTERN PetscErrorCode SNESLineSearchMonitorSolutionUpdate(SNESLineSearch, PetscViewerAndFormat *);
@@ -759,7 +758,6 @@ PETSC_EXTERN PetscErrorCode SNESSetNPCSide(SNES, PCSide);
 PETSC_EXTERN PetscErrorCode SNESGetNPCSide(SNES, PCSide *);
 PETSC_EXTERN PetscErrorCode SNESSetLineSearch(SNES, SNESLineSearch);
 PETSC_EXTERN PetscErrorCode SNESGetLineSearch(SNES, SNESLineSearch *);
-PETSC_EXTERN PetscErrorCode SNESRestrictHookAdd(SNES, PetscErrorCode (*)(SNES, SNES, void *), void *);
 
 PETSC_DEPRECATED_FUNCTION(3, 4, 0, "SNESGetLineSearch()", ) static inline PetscErrorCode SNESGetSNESLineSearch(SNES snes, SNESLineSearch *ls)
 {

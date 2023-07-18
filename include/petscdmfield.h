@@ -42,7 +42,6 @@ PETSC_EXTERN PetscErrorCode DMFieldView(DMField, PetscViewer);
 
 PETSC_EXTERN PetscErrorCode DMFieldGetDM(DMField, DM *);
 PETSC_EXTERN PetscErrorCode DMFieldGetNumComponents(DMField, PetscInt *);
-PETSC_EXTERN PetscErrorCode DMFieldGetContinuity(DMField, DMFieldContinuity *);
 
 PETSC_EXTERN PetscErrorCode DMFieldEvaluate(DMField, Vec, PetscDataType, void *, void *, void *);
 PETSC_EXTERN PetscErrorCode DMFieldEvaluateFE(DMField, IS, PetscQuadrature, PetscDataType, void *, void *, void *);

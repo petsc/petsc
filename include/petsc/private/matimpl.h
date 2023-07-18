@@ -226,8 +226,6 @@ struct _MatOps {
 */
 
 #include <petscsys.h>
-PETSC_EXTERN PetscErrorCode MatRegisterOp(MPI_Comm, const char[], PetscVoidFunction, const char[], PetscInt, ...);
-PETSC_EXTERN PetscErrorCode MatQueryOp(MPI_Comm, PetscVoidFunction *, const char[], PetscInt, ...);
 
 typedef struct _p_MatRootName *MatRootName;
 struct _p_MatRootName {
