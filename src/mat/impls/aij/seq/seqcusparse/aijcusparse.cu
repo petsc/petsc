@@ -4355,10 +4355,12 @@ PetscErrorCode MatSetValuesCOO_SeqAIJCUSPARSE(Mat A, const PetscScalar v[], Inse
   if (imode == INSERT_VALUES) PetscCall(MatSeqAIJCUSPARSEGetArrayWrite(A, &Aa));
   else PetscCall(MatSeqAIJCUSPARSEGetArray(A, &Aa));
 
+  PetscCall(PetscLogGpuTimeBegin());
   if (Annz) {
     MatAddCOOValues<<<(Annz + 255) / 256, 256>>>(v1, Annz, coo->jmap, coo->perm, imode, Aa);
     PetscCallCUDA(cudaPeekAtLastError());
   }
+  PetscCall(PetscLogGpuTimeEnd());
 
   if (imode == INSERT_VALUES) PetscCall(MatSeqAIJCUSPARSERestoreArrayWrite(A, &Aa));
   else PetscCall(MatSeqAIJCUSPARSERestoreArray(A, &Aa));

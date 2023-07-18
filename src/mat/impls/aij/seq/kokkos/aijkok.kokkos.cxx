@@ -1268,12 +1268,14 @@ static PetscErrorCode MatSetValuesCOO_SeqAIJKokkos(Mat A, const PetscScalar v[],
   if (imode == INSERT_VALUES) PetscCall(MatSeqAIJGetKokkosViewWrite(A, &Aa)); /* write matrix values */
   else PetscCall(MatSeqAIJGetKokkosView(A, &Aa));                             /* read & write matrix values */
 
+  PetscCall(PetscLogGpuTimeBegin());
   Kokkos::parallel_for(
     Annz, KOKKOS_LAMBDA(const PetscCount i) {
       PetscScalar sum = 0.0;
       for (PetscCount k = jmap(i); k < jmap(i + 1); k++) sum += kv(perm(k));
       Aa(i) = (imode == INSERT_VALUES ? 0.0 : Aa(i)) + sum;
     });
+  PetscCall(PetscLogGpuTimeEnd());
 
   if (imode == INSERT_VALUES) PetscCall(MatSeqAIJRestoreKokkosViewWrite(A, &Aa));
   else PetscCall(MatSeqAIJRestoreKokkosView(A, &Aa));

@@ -1655,6 +1655,7 @@ static PetscErrorCode MatSetValuesCOO_MPIAIJKokkos(Mat mat, const PetscScalar v[
     PetscCall(MatSeqAIJGetKokkosView(B, &Ba));
   }
 
+  PetscCall(PetscLogGpuTimeBegin());
   /* Pack entries to be sent to remote */
   Kokkos::parallel_for(
     vsend.extent(0), KOKKOS_LAMBDA(const PetscCount i) { vsend(i) = v1(Cperm1(i)); });
@@ -1686,6 +1687,7 @@ static PetscErrorCode MatSetValuesCOO_MPIAIJKokkos(Mat mat, const PetscScalar v[
         for (PetscCount k = Bjmap2(i); k < Bjmap2(i + 1); k++) Ba(Bimap2(i)) += v2(Bperm2(k));
       }
     });
+  PetscCall(PetscLogGpuTimeEnd());
 
   if (imode == INSERT_VALUES) {
     PetscCall(MatSeqAIJRestoreKokkosViewWrite(A, &Aa)); /* Increase A & B's state etc. */
