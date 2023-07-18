@@ -276,7 +276,7 @@ static PetscErrorCode MatView_MFFD(Mat J, PetscViewer viewer)
 /*
    MatAssemblyEnd_MFFD - Resets the ctx->ncurrenth to zero. This
    allows the user to indicate the beginning of a new linear solve by calling
-   MatAssemblyXXX() on the matrix free matrix. This then allows the
+   MatAssemblyXXX() on the matrix-free matrix. This then allows the
    MatCreateMFFD_WP() to properly compute ||U|| only the first time
    in the linear solver rather than every time.
 
@@ -376,7 +376,7 @@ static PetscErrorCode MatMult_MFFD(Mat mat, Vec a, Vec y)
 }
 
 /*
-  MatGetDiagonal_MFFD - Gets the diagonal for a matrix free matrix
+  MatGetDiagonal_MFFD - Gets the diagonal for a matrix-free matrix
 
         y ~= (F(u + ha) - F(u))/h,
   where F = nonlinear function, as set by SNESSetFunction()
@@ -567,7 +567,7 @@ PetscErrorCode MatMFFDSetHHistory_MFFD(Mat J, PetscScalar history[], PetscInt nh
 }
 
 /*MC
-  MATMFFD - "mffd" - A matrix free matrix type.
+  MATMFFD - "mffd" - A matrix-free matrix type.
 
   Level: advanced
 
@@ -732,12 +732,12 @@ PetscErrorCode MatMFFDGetH(Mat mat, PetscScalar *h)
 }
 
 /*@C
-  MatMFFDSetFunction - Sets the function used in applying the matrix free `MATMFFD` matrix.
+  MatMFFDSetFunction - Sets the function used in applying the matrix-free `MATMFFD` matrix.
 
   Logically Collective
 
   Input Parameters:
-+ mat     - the matrix free matrix `MATMFFD` created via `MatCreateSNESMF()` or `MatCreateMFFD()`
++ mat     - the matrix-free matrix `MATMFFD` created via `MatCreateSNESMF()` or `MatCreateMFFD()`
 . func    - the function to use
 - funcctx - optional function context passed to function
 
@@ -749,7 +749,7 @@ PetscErrorCode MatMFFDGetH(Mat mat, PetscScalar *h)
   Level: advanced
 
   Notes:
-  If you use this you MUST call `MatAssemblyBegin()` and `MatAssemblyEnd()` on the matrix free
+  If you use this you MUST call `MatAssemblyBegin()` and `MatAssemblyEnd()` on the matrix-free
   matrix inside your compute Jacobian routine
 
   If this is not set then it will use the function set with `SNESSetFunction()` if `MatCreateSNESMF()` was used.
@@ -771,13 +771,13 @@ PetscErrorCode MatMFFDSetFunction(Mat mat, PetscErrorCode (*func)(void *funcctx,
   Logically Collective
 
   Input Parameters:
-+ mat   - the matrix free matrix `MATMFFD`
++ mat   - the matrix-free matrix `MATMFFD`
 - funci - the function to use
 
   Level: advanced
 
   Notes:
-  If you use this you MUST call `MatAssemblyBegin()` and `MatAssemblyEnd()` on the matrix free
+  If you use this you MUST call `MatAssemblyBegin()` and `MatAssemblyEnd()` on the matrix-free
   matrix inside your compute Jacobian routine.
 
   This function is necessary to compute the diagonal of the matrix.
@@ -799,13 +799,13 @@ PetscErrorCode MatMFFDSetFunctioni(Mat mat, PetscErrorCode (*funci)(void *, Pets
   Logically Collective
 
   Input Parameters:
-+ mat  - the `MATMFFD` matrix free matrix
++ mat  - the `MATMFFD` matrix-free matrix
 - func - the function to use
 
   Level: advanced
 
   Notes:
-  If you use this you MUST call `MatAssemblyBegin()` and `MatAssemblyEnd()` on the matrix free
+  If you use this you MUST call `MatAssemblyBegin()` and `MatAssemblyEnd()` on the matrix-free
   matrix inside your compute Jacobian routine.
 
   This function is necessary to compute the diagonal of the matrix, used for example with `PCJACOBI`
@@ -827,7 +827,7 @@ PetscErrorCode MatMFFDSetFunctioniBase(Mat mat, PetscErrorCode (*func)(void *, V
   Logically Collective
 
   Input Parameters:
-+ mat    - the `MATMFFD` matrix free matrix
++ mat    - the `MATMFFD` matrix-free matrix
 - period - 1 for every time, 2 for every second etc
 
   Options Database Key:
@@ -853,7 +853,7 @@ PetscErrorCode MatMFFDSetPeriod(Mat mat, PetscInt period)
   Logically Collective
 
   Input Parameters:
-+ mat   - the `MATMFFD` matrix free matrix
++ mat   - the `MATMFFD` matrix-free matrix
 - error - relative error (should be set to the square root of the relative error in the function evaluations)
 
   Options Database Key:

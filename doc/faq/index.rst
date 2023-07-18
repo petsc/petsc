@@ -962,7 +962,7 @@ and in the :ref:`users manual <ch_snes>`:
 .. note::
 
    These are often (but does not need to be) used in combination with
-   ``-snes_mf_operator`` which applies the fresh Jacobian matrix free for every
+   ``-snes_mf_operator`` which applies the fresh Jacobian matrix-free for every
    matrix-vector product. Otherwise the out-of-date matrix vector product, computed with
    the lagged Jacobian will be used.
 

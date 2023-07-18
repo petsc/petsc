@@ -1614,7 +1614,7 @@ static PetscErrorCode MatShellGetOperation_Shell(Mat mat, MatOperation op, void 
 }
 
 /*MC
-   MATSHELL - MATSHELL = "shell" - A matrix type to be used to define your own matrix type -- perhaps matrix free.
+   MATSHELL - MATSHELL = "shell" - A matrix type to be used to define your own matrix type -- perhaps matrix-free.
 
   Level: advanced
 
@@ -1893,13 +1893,13 @@ PetscErrorCode MatShellTestMult(Mat mat, PetscErrorCode (*f)(void *, Vec, Vec), 
   if (Diffnorm / Dmfnorm > 10 * PETSC_SQRT_MACHINE_EPSILON) {
     flag = PETSC_FALSE;
     if (v) {
-      PetscCall(PetscPrintf(PetscObjectComm((PetscObject)mat), "MATSHELL and matrix free multiple appear to produce different results.\n Norm Ratio %g Difference results followed by finite difference one\n", (double)(Diffnorm / Dmfnorm)));
+      PetscCall(PetscPrintf(PetscObjectComm((PetscObject)mat), "MATSHELL and matrix-free multiple appear to produce different results.\n Norm Ratio %g Difference results followed by finite difference one\n", (double)(Diffnorm / Dmfnorm)));
       PetscCall(MatViewFromOptions(Ddiff, (PetscObject)mat, "-mat_shell_test_mult_view"));
       PetscCall(MatViewFromOptions(Dmf, (PetscObject)mat, "-mat_shell_test_mult_view"));
       PetscCall(MatViewFromOptions(Dmat, (PetscObject)mat, "-mat_shell_test_mult_view"));
     }
   } else if (v) {
-    PetscCall(PetscPrintf(PetscObjectComm((PetscObject)mat), "MATSHELL and matrix free multiple appear to produce the same results\n"));
+    PetscCall(PetscPrintf(PetscObjectComm((PetscObject)mat), "MATSHELL and matrix-free multiple appear to produce the same results\n"));
   }
   if (flg) *flg = flag;
   PetscCall(MatDestroy(&Ddiff));
@@ -1959,13 +1959,13 @@ PetscErrorCode MatShellTestMultTranspose(Mat mat, PetscErrorCode (*f)(void *, Ve
   if (Diffnorm / Dmfnorm > 10 * PETSC_SQRT_MACHINE_EPSILON) {
     flag = PETSC_FALSE;
     if (v) {
-      PetscCall(PetscPrintf(PetscObjectComm((PetscObject)mat), "MATSHELL and matrix free multiple appear to produce different results.\n Norm Ratio %g Difference results followed by finite difference one\n", (double)(Diffnorm / Dmfnorm)));
+      PetscCall(PetscPrintf(PetscObjectComm((PetscObject)mat), "MATSHELL and matrix-free multiple appear to produce different results.\n Norm Ratio %g Difference results followed by finite difference one\n", (double)(Diffnorm / Dmfnorm)));
       PetscCall(MatViewFromOptions(Ddiff, (PetscObject)mat, "-mat_shell_test_mult_transpose_view"));
       PetscCall(MatViewFromOptions(Dmf, (PetscObject)mat, "-mat_shell_test_mult_transpose_view"));
       PetscCall(MatViewFromOptions(Dmat, (PetscObject)mat, "-mat_shell_test_mult_transpose_view"));
     }
   } else if (v) {
-    PetscCall(PetscPrintf(PetscObjectComm((PetscObject)mat), "MATSHELL transpose and matrix free multiple appear to produce the same results\n"));
+    PetscCall(PetscPrintf(PetscObjectComm((PetscObject)mat), "MATSHELL transpose and matrix-free multiple appear to produce the same results\n"));
   }
   if (flg) *flg = flag;
   PetscCall(MatDestroy(&mf));

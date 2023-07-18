@@ -4,7 +4,7 @@
       use petscksp
       implicit none
 !
-!      Solves a linear system matrix free
+!      Solves a linear system matrix-free
 !
 
       Mat         A

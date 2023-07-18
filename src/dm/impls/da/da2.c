@@ -144,7 +144,7 @@ static PetscErrorCode DMView_DA_2d(DM da, PetscViewer viewer)
 
 #if defined(new)
 /*
-  DMDAGetDiagonal_MFFD - Gets the diagonal for a matrix free matrix where local
+  DMDAGetDiagonal_MFFD - Gets the diagonal for a matrix-free matrix where local
     function lives on a DMDA
 
         y ~= (F(u + ha) - F(u))/h,

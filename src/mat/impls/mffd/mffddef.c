@@ -106,7 +106,7 @@ static PetscErrorCode MatMFFDSetFromOptions_DS(MatMFFD ctx, PetscOptionItems *Pe
   MatMFFD_DS *hctx = (MatMFFD_DS *)ctx->hctx;
 
   PetscFunctionBegin;
-  PetscOptionsHeadBegin(PetscOptionsObject, "Finite difference matrix free parameters");
+  PetscOptionsHeadBegin(PetscOptionsObject, "Finite difference matrix-free parameters");
   PetscCall(PetscOptionsReal("-mat_mffd_umin", "umin", "MatMFFDDSSetUmin", hctx->umin, &hctx->umin, NULL));
   PetscOptionsHeadEnd();
   PetscFunctionReturn(PETSC_SUCCESS);

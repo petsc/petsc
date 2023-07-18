@@ -599,7 +599,7 @@ static PetscErrorCode SNESSetUpMatrixFree_Private(SNES snes, PetscBool hasOperat
 #endif
   }
 
-  /* attach any user provided null space that was on Amat to the newly created matrix free matrix */
+  /* attach any user provided null space that was on Amat to the newly created matrix-free matrix */
   if (snes->jacobian) {
     PetscCall(MatGetNullSpace(snes->jacobian, &nullsp));
     if (nullsp) PetscCall(MatSetNullSpace(J, nullsp));
@@ -612,7 +612,7 @@ static PetscErrorCode SNESSetUpMatrixFree_Private(SNES snes, PetscBool hasOperat
     PetscCall(SNESSetJacobian(snes, J, NULL, NULL, NULL));
   } else {
     /* This version replaces both the user-provided Jacobian and the user-
-     provided preconditioner Jacobian with the default matrix free version. */
+     provided preconditioner Jacobian with the default matrix-free version. */
     if (snes->npcside == PC_LEFT && snes->npc) {
       if (!snes->jacobian) PetscCall(SNESSetJacobian(snes, J, NULL, NULL, NULL));
     } else {
@@ -940,7 +940,7 @@ PetscErrorCode SNESEWSetFromOptions_Private(SNESKSPEW *kctx, PetscBool print_api
   Notes:
   To see all options, run your program with the -help option or consult the users manual
 
-  `SNES` supports three approaches for computing (approximate) Jacobians: user provided via `SNESSetJacobian()`, matrix free, and computing explicitly with
+  `SNES` supports three approaches for computing (approximate) Jacobians: user provided via `SNESSetJacobian()`, matrix-free, and computing explicitly with
   finite differences and coloring using `MatFDColoring`. It is also possible to use automatic differentiation and the `MatFDColoring` object.
 
 .seealso: [](ch_snes), `SNESType`, `SNESSetOptionsPrefix()`, `SNESResetFromOptions()`, `SNES`, `SNESCreate()`
@@ -1263,7 +1263,7 @@ PetscErrorCode SNESGetApplicationContext(SNES snes, void *usrP)
 }
 
 /*@
-  SNESSetUseMatrixFree - indicates that `SNES` should use matrix free finite difference matrix vector products to apply the Jacobian.
+  SNESSetUseMatrixFree - indicates that `SNES` should use matrix-free finite difference matrix vector products to apply the Jacobian.
 
   Logically Collective
 
@@ -1274,7 +1274,7 @@ PetscErrorCode SNESGetApplicationContext(SNES snes, void *usrP)
    this option no matrix element based preconditioners can be used in the linear solve since the matrix won't be explicitly available
 
   Options Database Keys:
-+ -snes_mf_operator - use matrix free only for the mat operator
++ -snes_mf_operator - use matrix-free only for the mat operator
 . -snes_mf          - use matrix-free for both the mat and pmat operator
 . -snes_fd_color    - compute the Jacobian via coloring and finite differences.
 - -snes_fd          - compute the Jacobian via finite differences (slow)
@@ -2722,7 +2722,7 @@ PetscErrorCode SNESComputeJacobian(SNES snes, Vec X, Mat A, Mat B)
   PetscCall(SNESGetDM(snes, &dm));
   PetscCall(DMGetDMSNES(dm, &sdm));
 
-  /* make sure that MatAssemblyBegin/End() is called on A matrix if it is matrix free */
+  /* make sure that MatAssemblyBegin/End() is called on A matrix if it is matrix-free */
   if (snes->lagjacobian == -2) {
     snes->lagjacobian = -1;
 

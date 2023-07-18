@@ -38,8 +38,8 @@ static PetscErrorCode SNESComputeMFFunctionCtx(SNES snes, Vec x, Vec f, void *ct
 . -mat_fd_coloring_err <err>   - Sets <err> (square root of relative error in the function)
 . -mat_fd_coloring_umin <umin> - Sets umin, the minimum allowable u-value magnitude
 . -mat_fd_type                 - Either wp or ds (see `MATMFFD_WP` or `MATMFFD_DS`)
-. -snes_mf_operator            - Use matrix free application of Jacobian
-- -snes_mf                     - Use matrix free Jacobian with no explicit Jacobian representation
+. -snes_mf_operator            - Use matrix-free application of Jacobian
+- -snes_mf                     - Use matrix-free Jacobian with no explicit Jacobian representation
 
   Notes:
   If the coloring is not provided through the context, this will first try to get the
