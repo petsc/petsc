@@ -718,14 +718,12 @@ static PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
   PetscFE   fe, feAux = NULL;
   PetscBool simplex;
   PetscInt  dim;
-  MPI_Comm  comm;
 
   PetscFunctionBeginUser;
   PetscCall(DMGetDimension(dm, &dim));
   PetscCall(DMConvert(dm, DMPLEX, &plex));
   PetscCall(DMPlexIsSimplex(plex, &simplex));
   PetscCall(DMDestroy(&plex));
-  PetscCall(PetscObjectGetComm((PetscObject)dm, &comm));
   PetscCall(PetscFECreateDefault(PETSC_COMM_SELF, dim, 1, simplex, NULL, -1, &fe));
   PetscCall(PetscObjectSetName((PetscObject)fe, "potential"));
   if (user->variableCoefficient == COEFF_FIELD || user->variableCoefficient == COEFF_CHECKERBOARD_0) {
