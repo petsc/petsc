@@ -25,8 +25,10 @@ const char *solutionTypes[NUM_SOLUTION_TYPES + 1] = {"quadratic_linear", "quadra
 typedef struct {
   SolutionType solType; /* Type of exact solution */
   /* Solver setup */
-  PetscBool expTS;  /* Flag for explicit timestepping */
-  PetscBool lumped; /* Lump the mass matrix */
+  PetscBool expTS;        /* Flag for explicit timestepping */
+  PetscBool lumped;       /* Lump the mass matrix */
+  PetscInt  remesh_every; /* Remesh every number of steps */
+  DM        remesh_dm;    /* New DM after remeshing */
 } AppCtx;
 
 /*
@@ -200,15 +202,18 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscInt sol;
 
   PetscFunctionBeginUser;
-  options->solType = SOL_QUADRATIC_LINEAR;
-  options->expTS   = PETSC_FALSE;
-  options->lumped  = PETSC_TRUE;
+  options->solType      = SOL_QUADRATIC_LINEAR;
+  options->expTS        = PETSC_FALSE;
+  options->lumped       = PETSC_TRUE;
+  options->remesh_every = 0;
 
   PetscOptionsBegin(comm, "", "Heat Equation Options", "DMPLEX");
+  sol = options->solType;
   PetscCall(PetscOptionsEList("-sol_type", "Type of exact solution", "ex45.c", solutionTypes, NUM_SOLUTION_TYPES, solutionTypes[options->solType], &sol, NULL));
   options->solType = (SolutionType)sol;
   PetscCall(PetscOptionsBool("-explicit", "Use explicit timestepping", "ex45.c", options->expTS, &options->expTS, NULL));
   PetscCall(PetscOptionsBool("-lumped", "Lump the mass matrix", "ex45.c", options->lumped, &options->lumped, NULL));
+  PetscCall(PetscOptionsInt("-remesh_every", "Remesh every number of steps", "ex45.c", options->remesh_every, &options->remesh_every, NULL));
   PetscOptionsEnd();
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -219,6 +224,23 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, AppCtx *ctx)
   PetscCall(DMCreate(comm, dm));
   PetscCall(DMSetType(*dm, DMPLEX));
   PetscCall(DMSetFromOptions(*dm));
+  {
+    char      convType[256];
+    PetscBool flg;
+    PetscOptionsBegin(comm, "", "Mesh conversion options", "DMPLEX");
+    PetscCall(PetscOptionsFList("-dm_plex_convert_type", "Convert DMPlex to another format", __FILE__, DMList, DMPLEX, convType, 256, &flg));
+    PetscOptionsEnd();
+    if (flg) {
+      DM dmConv;
+      PetscCall(DMConvert(*dm, convType, &dmConv));
+      if (dmConv) {
+        PetscCall(DMDestroy(dm));
+        *dm = dmConv;
+        PetscCall(DMSetFromOptions(*dm));
+        PetscCall(DMSetUp(*dm));
+      }
+    }
+  }
   PetscCall(DMViewFromOptions(*dm, NULL, "-dm_view"));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -268,17 +290,17 @@ static PetscErrorCode SetupProblem(DM dm, AppCtx *ctx)
 
 static PetscErrorCode SetupDiscretization(DM dm, AppCtx *ctx)
 {
-  DM             cdm = dm;
-  PetscFE        fe;
-  DMPolytopeType ct;
-  PetscInt       dim, cStart;
+  DM        plex, cdm = dm;
+  PetscFE   fe;
+  PetscBool simplex;
+  PetscInt  dim;
 
   PetscFunctionBeginUser;
   PetscCall(DMGetDimension(dm, &dim));
-  PetscCall(DMPlexGetHeightStratum(dm, 0, &cStart, NULL));
-  PetscCall(DMPlexGetCellType(dm, cStart, &ct));
-  /* Create finite element */
-  PetscCall(PetscFECreateByCell(PETSC_COMM_SELF, dim, 1, ct, "temp_", -1, &fe));
+  PetscCall(DMConvert(dm, DMPLEX, &plex));
+  PetscCall(DMPlexIsSimplex(plex, &simplex));
+  PetscCall(DMDestroy(&plex));
+  PetscCall(PetscFECreateDefault(PETSC_COMM_SELF, dim, 1, simplex, "temp_", -1, &fe));
   PetscCall(PetscObjectSetName((PetscObject)fe, "temperature"));
   /* Set discretization and boundary conditions for each mesh */
   PetscCall(DMSetField(dm, 0, NULL, (PetscObject)fe));
@@ -298,6 +320,83 @@ static PetscErrorCode SetupDiscretization(DM dm, AppCtx *ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+#include <petsc/private/dmpleximpl.h>
+static PetscErrorCode Remesh(DM dm, Vec U, DM *newdm)
+{
+  PetscFunctionBeginUser;
+  PetscCall(DMViewFromOptions(dm, NULL, "-remesh_dmin_view"));
+  *newdm = NULL;
+
+  PetscInt  dim;
+  DM        plex;
+  PetscBool simplex;
+  PetscCall(DMGetDimension(dm, &dim));
+  PetscCall(DMConvert(dm, DMPLEX, &plex));
+  PetscCall(DMPlexIsSimplex(plex, &simplex));
+  PetscCall(DMDestroy(&plex));
+
+  DM      dmGrad;
+  PetscFE fe;
+  PetscCall(DMClone(dm, &dmGrad));
+  PetscCall(PetscFECreateDefault(PETSC_COMM_SELF, dim, dim, simplex, "grad_", -1, &fe));
+  PetscCall(DMSetField(dmGrad, 0, NULL, (PetscObject)fe));
+  PetscCall(PetscFEDestroy(&fe));
+  PetscCall(DMCreateDS(dmGrad));
+
+  Vec locU, locG;
+  PetscCall(DMGetLocalVector(dm, &locU));
+  PetscCall(DMGetLocalVector(dmGrad, &locG));
+  PetscCall(DMGlobalToLocal(dm, U, INSERT_VALUES, locU));
+  PetscCall(VecViewFromOptions(locU, NULL, "-remesh_input_view"));
+  PetscCall(DMPlexComputeGradientClementInterpolant(dm, locU, locG));
+  PetscCall(VecViewFromOptions(locG, NULL, "-remesh_grad_view"));
+
+  const PetscScalar *g;
+  PetscScalar       *u;
+  PetscInt           n;
+  PetscCall(VecGetLocalSize(locU, &n));
+  PetscCall(VecGetArrayWrite(locU, &u));
+  PetscCall(VecGetArrayRead(locG, &g));
+  for (PetscInt i = 0; i < n; i++) {
+    PetscReal norm = 0.0;
+    for (PetscInt d = 0; d < dim; d++) norm += PetscSqr(PetscRealPart(g[dim * i + d]));
+    u[i] = PetscSqrtReal(norm);
+  }
+  PetscCall(VecRestoreArrayRead(locG, &g));
+  PetscCall(VecRestoreArrayWrite(locU, &u));
+
+  DM  dmM;
+  Vec metric;
+  PetscCall(DMClone(dm, &dmM));
+  PetscCall(DMPlexMetricCreateIsotropic(dmM, 0, locU, &metric));
+  PetscCall(DMDestroy(&dmM));
+  PetscCall(DMRestoreLocalVector(dm, &locU));
+  PetscCall(DMRestoreLocalVector(dmGrad, &locG));
+  PetscCall(DMDestroy(&dmGrad));
+
+  // TODO remove?
+  PetscScalar scale = 10.0;
+  PetscCall(PetscOptionsGetScalar(NULL, NULL, "-metric_scale", &scale, NULL));
+  PetscCall(VecScale(metric, scale));
+  PetscCall(VecViewFromOptions(metric, NULL, "-metric_view"));
+
+  DMLabel label = NULL;
+  PetscCall(DMGetLabel(dm, "marker", &label));
+  PetscCall(DMAdaptMetric(dm, metric, label, NULL, newdm));
+  PetscCall(VecDestroy(&metric));
+
+  PetscCall(DMViewFromOptions(*newdm, NULL, "-remesh_dmout_view"));
+
+  AppCtx *ctx;
+  PetscCall(DMGetApplicationContext(dm, &ctx));
+  PetscCall(DMSetApplicationContext(*newdm, ctx));
+  PetscCall(SetupDiscretization(*newdm, ctx));
+
+  // TODO
+  ((DM_Plex *)(*newdm)->data)->useHashLocation = ((DM_Plex *)dm->data)->useHashLocation;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 static PetscErrorCode SetInitialConditions(TS ts, Vec u)
 {
   DM        dm;
@@ -307,6 +406,42 @@ static PetscErrorCode SetInitialConditions(TS ts, Vec u)
   PetscCall(TSGetDM(ts, &dm));
   PetscCall(TSGetTime(ts, &t));
   PetscCall(DMComputeExactSolution(dm, t, u, NULL));
+  PetscCall(VecSetOptionsPrefix(u, NULL));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode TransferSetUp(TS ts, PetscInt step, PetscReal time, Vec U, PetscBool *remesh, void *tctx)
+{
+  AppCtx *ctx = (AppCtx *)tctx;
+
+  PetscFunctionBeginUser;
+  *remesh = PETSC_FALSE;
+  if (ctx->remesh_every > 0 && step && step % ctx->remesh_every == 0) {
+    DM dm;
+
+    *remesh = PETSC_TRUE;
+    PetscCall(TSGetDM(ts, &dm));
+    PetscCall(Remesh(dm, U, &ctx->remesh_dm));
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode TransferVecs(TS ts, PetscInt nv, Vec vin[], Vec vout[], void *tctx)
+{
+  AppCtx *ctx = (AppCtx *)tctx;
+  DM      dm;
+  Mat     Interp;
+
+  PetscFunctionBeginUser;
+  PetscCall(TSGetDM(ts, &dm));
+  PetscCall(DMCreateInterpolation(dm, ctx->remesh_dm, &Interp, NULL));
+  for (PetscInt i = 0; i < nv; i++) {
+    PetscCall(DMCreateGlobalVector(ctx->remesh_dm, &vout[i]));
+    PetscCall(MatMult(Interp, vin[i], vout[i]));
+  }
+  PetscCall(MatDestroy(&Interp));
+  PetscCall(TSSetDM(ts, ctx->remesh_dm));
+  PetscCall(DMDestroy(&ctx->remesh_dm));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -335,19 +470,27 @@ int main(int argc, char **argv)
     PetscCall(DMTSSetIFunctionLocal(dm, DMPlexTSComputeIFunctionFEM, &ctx));
     PetscCall(DMTSSetIJacobianLocal(dm, DMPlexTSComputeIJacobianFEM, &ctx));
   }
+  PetscCall(TSSetMaxTime(ts, 1.0));
   PetscCall(TSSetExactFinalTime(ts, TS_EXACTFINALTIME_MATCHSTEP));
   PetscCall(TSSetFromOptions(ts));
   PetscCall(TSSetComputeInitialCondition(ts, SetInitialConditions));
+  PetscCall(TSSetResize(ts, TransferSetUp, TransferVecs, &ctx));
 
   PetscCall(DMCreateGlobalVector(dm, &u));
   PetscCall(DMTSCheckFromOptions(ts, u));
   PetscCall(SetInitialConditions(ts, u));
   PetscCall(PetscObjectSetName((PetscObject)u, "temperature"));
-  PetscCall(TSSolve(ts, u));
+
+  PetscCall(TSSetSolution(ts, u));
+  PetscCall(VecViewFromOptions(u, NULL, "-u0_view"));
+  PetscCall(VecDestroy(&u));
+  PetscCall(TSSolve(ts, NULL));
+
+  PetscCall(TSGetSolution(ts, &u));
+  PetscCall(VecViewFromOptions(u, NULL, "-uf_view"));
   PetscCall(DMTSCheckFromOptions(ts, u));
   if (ctx.expTS) PetscCall(DMTSDestroyRHSMassMatrix(dm));
 
-  PetscCall(VecDestroy(&u));
   PetscCall(TSDestroy(&ts));
   PetscCall(DMDestroy(&dm));
   PetscCall(PetscFinalize());
@@ -531,5 +674,10 @@ int main(int argc, char **argv)
           -dm_plex_boundary_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/sphere_example.egadslite -dm_plex_boundary_label marker \
           -temp_petscspace_degree 2 -dmts_check .0001 \
           -ts_type beuler -ts_max_steps 5 -ts_dt 0.1 -snes_error_if_not_converged -pc_type lu
+
+  test:
+    suffix: remesh
+    requires: triangle mmg
+    args: -sol_type quadratic_trig -dm_refine 2 -temp_petscspace_degree 1 -ts_type beuler -ts_dt 0.01 -snes_error_if_not_converged -pc_type lu -grad_petscspace_degree 1 -dm_adaptor mmg -dm_plex_hash_location -remesh_every 5
 
 TEST*/
