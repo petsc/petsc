@@ -92,7 +92,6 @@ PetscErrorCode PetscHeaderDestroy_Private(PetscObject obj, PetscBool clear_for_r
 {
   PetscFunctionBegin;
   PetscValidHeader(obj, 1);
-  PetscCall(PetscLogObjectDestroy(obj));
   PetscCall(PetscComposedQuantitiesDestroy(obj));
   if (PetscMemoryCollectMaximumUsage) {
     PetscLogDouble usage;
