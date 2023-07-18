@@ -135,6 +135,8 @@ static PetscErrorCode PetscConvEstGetConvRateTS_Spatial_Private(PetscConvEst ce,
   PetscCall(DMGetRefineLevel(ce->idm, &oldlevel));
   PetscCall(PetscMalloc1((Nr + 1), &dm));
   PetscCall(TSGetSolution(ts, &uInitial));
+  PetscCall(PetscObjectReference((PetscObject)uInitial));
+
   /* Loop over meshes */
   dm[0] = ce->idm;
   for (r = 0; r <= Nr; ++r) {
@@ -275,6 +277,7 @@ static PetscErrorCode PetscConvEstGetConvRateTS_Spatial_Private(PetscConvEst ce,
   PetscCall(TSSetFromOptions(ts));
   PetscCall(TSSetSolution(ts, uInitial));
   PetscCall(PetscConvEstComputeInitialGuess(ce, 0, NULL, uInitial));
+  PetscCall(VecDestroy(&uInitial));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
