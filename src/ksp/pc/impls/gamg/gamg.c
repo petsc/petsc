@@ -39,6 +39,7 @@ PetscErrorCode PCReset_GAMG(PC pc)
   }
   pc_gamg->emin = 0;
   pc_gamg->emax = 0;
+  PetscCall(PCReset_MG(pc));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
