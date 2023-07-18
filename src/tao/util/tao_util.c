@@ -32,7 +32,7 @@ $        phi(a,b) := sqrt(a*a + b*b) - a - b
   and is used reformulate a complementarity problem as a semismooth
   system of equations.
 
-  The result of this function is done by cases:
+  The result of this function is done by cases\:
 +  l[i] == -infinity, u[i] == infinity  -- fb[i] = -f[i]
 .  l[i] == -infinity, u[i] finite       -- fb[i] = phi(u[i]-x[i], -f[i])
 .  l[i] finite,       u[i] == infinity  -- fb[i] = phi(x[i]-l[i],  f[i])
@@ -133,7 +133,7 @@ $        phi(a,b) := sqrt(a*a + b*b + 2*mu*mu) - a - b
   and is used reformulate a complementarity problem as a semismooth
   system of equations.
 
-  The result of this function is done by cases:
+  The result of this function is done by cases\:
 +  l[i] == -infinity, u[i] == infinity  -- fb[i] = -f[i] - 2*mu*x[i]
 .  l[i] == -infinity, u[i] finite       -- fb[i] = phi(u[i]-x[i], -f[i], mu)
 .  l[i] finite,       u[i] == infinity  -- fb[i] = phi(x[i]-l[i],  f[i], mu)
@@ -224,13 +224,13 @@ static inline PetscReal fischsnorm(PetscReal a, PetscReal b, PetscReal c)
   Collective
 
   Input Parameters:
-+ jac - the jacobian of f at X
++ jac - the jacobian of `f` at `X`
 . X   - current point
-. Con - constraints function evaluated at X
+. Con - constraints function evaluated at `X`
 . XL  - lower bounds
 . XU  - upper bounds
-.  t1 - work vector
--  t2 - work vector
+. T1  - work vector
+- T2  - work vector
 
   Output Parameters:
 + Da - diagonal perturbation component of the result

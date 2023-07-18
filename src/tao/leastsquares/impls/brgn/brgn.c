@@ -551,18 +551,17 @@ PetscErrorCode TaoBRGNSetDictionaryMatrix(Tao tao, Mat dict)
 - ctx  - user context for the regularizer
 
   Calling sequence:
-$  PetscErrorCode func(Tao tao, Vec u, PetscReal val, Vec g, void *ctx)
 + tao - the `Tao` context
-.  u - the location at which to compute the objective and gradient
-.  val - location to store objective function value
-.  g - location to store gradient
+. u   - the location at which to compute the objective and gradient
+. val - location to store objective function value
+. g   - location to store gradient
 - ctx - user context for the regularizer Hessian
 
   Level: advanced
 
 .seealso: `Tao`, `Mat`, `TAOBRGN`
 @*/
-PetscErrorCode TaoBRGNSetRegularizerObjectiveAndGradientRoutine(Tao tao, PetscErrorCode (*func)(Tao, Vec, PetscReal *, Vec, void *), void *ctx)
+PetscErrorCode TaoBRGNSetRegularizerObjectiveAndGradientRoutine(Tao tao, PetscErrorCode (*func)(Tao tao, Vec u, PetscReal *val, Vec g, void *ctx), void *ctx)
 {
   TAO_BRGN *gn = (TAO_BRGN *)tao->data;
 
@@ -584,9 +583,8 @@ PetscErrorCode TaoBRGNSetRegularizerObjectiveAndGradientRoutine(Tao tao, PetscEr
 - ctx  - user context for the regularizer Hessian
 
   Calling sequence:
-$  PetscErrorCode func(Tao tao, Vec u, Mat H, void *ctx)
 + tao  - the `Tao` context
-.  u - the location at which to compute the Hessian
+. u    - the location at which to compute the Hessian
 . Hreg - user-created matrix for the Hessian of the regularization term
 - ctx  - user context for the regularizer Hessian
 
@@ -594,7 +592,7 @@ $  PetscErrorCode func(Tao tao, Vec u, Mat H, void *ctx)
 
 .seealso: `Tao`, `Mat`, `TAOBRGN`
 @*/
-PetscErrorCode TaoBRGNSetRegularizerHessianRoutine(Tao tao, Mat Hreg, PetscErrorCode (*func)(Tao, Vec, Mat, void *), void *ctx)
+PetscErrorCode TaoBRGNSetRegularizerHessianRoutine(Tao tao, Mat Hreg, PetscErrorCode (*func)(Tao tao, Vec u, Mat Hreg, void *ctx), void *ctx)
 {
   TAO_BRGN *gn = (TAO_BRGN *)tao->data;
 

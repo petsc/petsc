@@ -602,11 +602,10 @@ PetscErrorCode TaoLineSearchIsUsingTaoRoutines(TaoLineSearch ls, PetscBool *flg)
 - ctx  - the (optional) user-defined context for private data
 
   Calling sequence of `func`:
-$ PetscErrorCode func(TaoLinesearch ls, Vec x, PetscReal *f, void *ctx);
-+ ls - the line search context
-. x  - input vector
-. f - function value
-- ctx (optional) user-defined context
++ ls  - the line search context
+. x   - input vector
+. f   - function value
+- ctx - (optional) user-defined context
 
   Level: advanced
 
@@ -622,7 +621,7 @@ $ PetscErrorCode func(TaoLinesearch ls, Vec x, PetscReal *f, void *ctx);
 
 .seealso: [](ch_tao), `Tao`, `TaoLineSearch`, `TaoLineSearchCreate()`, `TaoLineSearchSetGradientRoutine()`, `TaoLineSearchSetObjectiveAndGradientRoutine()`, `TaoLineSearchUseTaoRoutines()`
 @*/
-PetscErrorCode TaoLineSearchSetObjectiveRoutine(TaoLineSearch ls, PetscErrorCode (*func)(TaoLineSearch ls, Vec x, PetscReal *, void *), void *ctx)
+PetscErrorCode TaoLineSearchSetObjectiveRoutine(TaoLineSearch ls, PetscErrorCode (*func)(TaoLineSearch ls, Vec x, PetscReal *f, void *ctx), void *ctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ls, TAOLINESEARCH_CLASSID, 1);
@@ -644,11 +643,10 @@ PetscErrorCode TaoLineSearchSetObjectiveRoutine(TaoLineSearch ls, PetscErrorCode
 - ctx  - the (optional) user-defined context for private data
 
   Calling sequence of `func`:
-$ PetscErrorCode func(TaoLinesearch ls, Vec x, Vec g, void *ctx);
-+ ls - the linesearch object
-. x  - input vector
-. g  - gradient vector
-- ctx (optional) user-defined context
++ ls  - the linesearch object
+. x   - input vector
+. g   - gradient vector
+- ctx - (optional) user-defined context
 
   Level: beginner
 
@@ -664,7 +662,7 @@ $ PetscErrorCode func(TaoLinesearch ls, Vec x, Vec g, void *ctx);
 
 .seealso: [](ch_tao), `Tao`, `TaoLineSearch`, `TaoLineSearchCreate()`, `TaoLineSearchSetObjectiveRoutine()`, `TaoLineSearchSetObjectiveAndGradientRoutine()`, `TaoLineSearchUseTaoRoutines()`
 @*/
-PetscErrorCode TaoLineSearchSetGradientRoutine(TaoLineSearch ls, PetscErrorCode (*func)(TaoLineSearch ls, Vec x, Vec g, void *), void *ctx)
+PetscErrorCode TaoLineSearchSetGradientRoutine(TaoLineSearch ls, PetscErrorCode (*func)(TaoLineSearch ls, Vec x, Vec g, void *ctx), void *ctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ls, TAOLINESEARCH_CLASSID, 1);
@@ -685,12 +683,11 @@ PetscErrorCode TaoLineSearchSetGradientRoutine(TaoLineSearch ls, PetscErrorCode 
 - ctx  - the (optional) user-defined context for private data
 
   Calling sequence of `func`:
-$ PetscErrorCode func(TaoLinesearch ls, Vec x, PetscReal *f, Vec g, void *ctx);
-+ ls - the linesearch object
-. x  - input vector
-. f - function value
-. g  - gradient vector
-- ctx (optional) user-defined context
++ ls  - the linesearch object
+. x   - input vector
+. f   - function value
+. g   - gradient vector
+- ctx - (optional) user-defined context
 
   Level: beginner
 
@@ -705,7 +702,7 @@ $ PetscErrorCode func(TaoLinesearch ls, Vec x, PetscReal *f, Vec g, void *ctx);
 
 .seealso: [](ch_tao), `Tao`, `TaoLineSearch`, `TaoLineSearchCreate()`, `TaoLineSearchSetObjectiveRoutine()`, `TaoLineSearchSetGradientRoutine()`, `TaoLineSearchUseTaoRoutines()`
 @*/
-PetscErrorCode TaoLineSearchSetObjectiveAndGradientRoutine(TaoLineSearch ls, PetscErrorCode (*func)(TaoLineSearch ls, Vec x, PetscReal *, Vec g, void *), void *ctx)
+PetscErrorCode TaoLineSearchSetObjectiveAndGradientRoutine(TaoLineSearch ls, PetscErrorCode (*func)(TaoLineSearch ls, Vec x, PetscReal *f, Vec g, void *ctx), void *ctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ls, TAOLINESEARCH_CLASSID, 1);
@@ -718,9 +715,6 @@ PetscErrorCode TaoLineSearchSetObjectiveAndGradientRoutine(TaoLineSearch ls, Pet
 /*@C
   TaoLineSearchSetObjectiveAndGTSRoutine - Sets the objective and
   (gradient'*stepdirection) evaluation routine for the line search.
-  Sometimes it is more efficient to compute the inner product of the gradient
-  and the step direction than it is to compute the gradient, and this is all
-  the line search typically needs of the gradient.
 
   Logically Collective
 
@@ -730,17 +724,20 @@ PetscErrorCode TaoLineSearchSetObjectiveAndGradientRoutine(TaoLineSearch ls, Pet
 - ctx  - the (optional) user-defined context for private data
 
   Calling sequence of `func`:
-$ PetscErrorCode func(TaoLinesearch ls, Vec x, PetscReal *f, PetscReal *gts, void *ctx);
-+ ls - the linesearch context
-. x  - input vector
-. s  - step direction
-. f - function value
++ ls  - the linesearch context
+. x   - input vector
+. s   - step direction
+. f   - function value
 . gts - inner product of gradient and step direction vectors
-- ctx (optional) user-defined context
+- ctx - (optional) user-defined context
 
   Level: advanced
 
   Notes:
+  Sometimes it is more efficient to compute the inner product of the gradient and the step
+  direction than it is to compute the gradient, and this is all the line search typically needs
+  of the gradient.
+
   The gradient will still need to be computed at the end of the line
   search, so you will still need to set a line search gradient evaluation
   routine
@@ -755,7 +752,7 @@ $ PetscErrorCode func(TaoLinesearch ls, Vec x, PetscReal *f, PetscReal *gts, voi
 
 .seealso: [](ch_tao), `Tao`, `TaoLineSearch`, `TaoLineSearchCreate()`, `TaoLineSearchSetObjective()`, `TaoLineSearchSetGradient()`, `TaoLineSearchUseTaoRoutines()`
 @*/
-PetscErrorCode TaoLineSearchSetObjectiveAndGTSRoutine(TaoLineSearch ls, PetscErrorCode (*func)(TaoLineSearch ls, Vec x, Vec s, PetscReal *, PetscReal *, void *), void *ctx)
+PetscErrorCode TaoLineSearchSetObjectiveAndGTSRoutine(TaoLineSearch ls, PetscErrorCode (*func)(TaoLineSearch ls, Vec x, Vec s, PetscReal *f, PetscReal *gts, void *ctx), void *ctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ls, TAOLINESEARCH_CLASSID, 1);
