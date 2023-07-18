@@ -110,7 +110,7 @@ static PetscErrorCode DMRestrictHook_TSBDF(DM fine, Mat restrct, Vec rscale, Mat
 static PetscErrorCode TSBDF_Advance(TS ts, PetscReal t, Vec X)
 {
   TS_BDF  *bdf = (TS_BDF *)ts->data;
-  PetscInt i, n = (PetscInt)(sizeof(bdf->work) / sizeof(Vec));
+  PetscInt i, n = PETSC_STATIC_ARRAY_LENGTH(bdf->work);
   Vec      tail = bdf->work[n - 1], tvtail = bdf->tvwork[n - 1];
 
   PetscFunctionBegin;
@@ -406,7 +406,7 @@ static PetscErrorCode SNESTSFormJacobian_BDF(SNES snes, Vec X, Mat J, Mat P, TS 
 static PetscErrorCode TSReset_BDF(TS ts)
 {
   TS_BDF *bdf = (TS_BDF *)ts->data;
-  size_t  i, n = sizeof(bdf->work) / sizeof(Vec);
+  size_t  i, n = PETSC_STATIC_ARRAY_LENGTH(bdf->work);
 
   PetscFunctionBegin;
   for (i = 0; i < n; i++) {
@@ -433,7 +433,7 @@ static PetscErrorCode TSDestroy_BDF(TS ts)
 static PetscErrorCode TSSetUp_BDF(TS ts)
 {
   TS_BDF   *bdf = (TS_BDF *)ts->data;
-  size_t    n   = sizeof(bdf->work) / sizeof(Vec);
+  size_t    n   = PETSC_STATIC_ARRAY_LENGTH(bdf->work);
   PetscReal low, high, two = 2;
   PetscInt  cnt = 0;
 

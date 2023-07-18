@@ -77,7 +77,6 @@ PetscErrorCode PetscLogView_VecScatter(PetscViewer viewer)
   const int           stage = 2;
   int                 event, events[] = {VEC_ScatterBegin, VEC_ScatterEnd};
   PetscMPIInt         rank, size;
-  PetscInt            i;
   char                arch[128], hostname[128], username[128], pname[PETSC_MAX_PATH_LEN], date[128], version[256];
 
   PetscFunctionBegin;
@@ -114,7 +113,7 @@ PetscErrorCode PetscLogView_VecScatter(PetscViewer viewer)
   PetscCall(MPIU_Allreduce(&eventInfo[KSP_Solve].time, &ksptime, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, PETSC_COMM_WORLD));
   ksptime = ksptime / size;
 
-  for (i = 0; i < (int)(sizeof(events) / sizeof(int)); i++) {
+  for (size_t i = 0; i < PETSC_STATIC_ARRAY_LENGTH(events); i++) {
     event          = events[i];
     stats[COUNT]   = eventInfo[event].count;
     stats[TIME]    = eventInfo[event].time;

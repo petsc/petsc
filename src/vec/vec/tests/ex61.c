@@ -19,9 +19,9 @@ int main(int argc, char **args)
     PetscInt  *i;
     PetscCount n;
   } coo[3] = {
-    {i0, sizeof(i0) / sizeof(PetscInt)},
-    {i1, sizeof(i1) / sizeof(PetscInt)},
-    {i2, sizeof(i2) / sizeof(PetscInt)}
+    {i0, PETSC_STATIC_ARRAY_LENGTH(i0)},
+    {i1, PETSC_STATIC_ARRAY_LENGTH(i1)},
+    {i2, PETSC_STATIC_ARRAY_LENGTH(i2)}
   };
 
   PetscFunctionBeginUser;

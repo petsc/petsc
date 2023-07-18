@@ -1154,7 +1154,7 @@ static PetscErrorCode solve_stokes_2d_coupled(PetscInt mx, PetscInt my)
   PetscCall(DMDAGetInfo(da_Stokes, 0, 0, 0, 0, &cpu_x, &cpu_y, 0, 0, 0, 0, 0, 0, 0));
   PetscCall(DMDAGetElementOwnershipRanges2d(da_Stokes, &lx, &ly));
 
-  prop_dof           = (int)(sizeof(GaussPointCoefficients) / sizeof(PetscScalar)); /* gauss point setup */
+  prop_dof           = (PetscInt)(sizeof(GaussPointCoefficients) / sizeof(PetscScalar)); /* gauss point setup */
   prop_stencil_width = 0;
   PetscCall(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DMDA_STENCIL_BOX, mx, my, cpu_x, cpu_y, prop_dof, prop_stencil_width, lx, ly, &da_prop));
   PetscCall(DMSetFromOptions(da_prop));
