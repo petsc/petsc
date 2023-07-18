@@ -218,11 +218,11 @@ PetscErrorCode ISRenumber(IS subset, IS subset_mult, PetscInt *N, IS *subset_n)
 . subis - the new sub index set
 
   Example usage:
-  We have an index set (is) living on 3 processes with the following values:
+  We have an index set `is` living on 3 processes with the following values\:
   | 4 9 0 | 2 6 7 | 10 11 1|
-  and another index set (comps) used to indicate which components of is  we want to take,
+  and another index set `comps` used to indicate which components of is  we want to take,
   | 7 5  | 1 2 | 0 4|
-  The output index set (subis) should look like:
+  The output index set `subis` should look like\:
   | 11 7 | 9 0 | 4 6|
 
   Level: intermediate
@@ -414,6 +414,7 @@ static PetscErrorCode ISSetInfo_Internal(IS is, ISInfo info, ISInfoType type, IS
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+// PetscClangLinter pragma disable: -fdoc-section-header-unknown
 /*@
   ISSetInfo - Set known information about an index set.
 
@@ -428,12 +429,12 @@ static PetscErrorCode ISSetInfo_Internal(IS is, ISInfo info, ISInfoType type, IS
                If the user sets a property as permanently known, it will bypass computation of that property
 - flg       - set the described property as true (`PETSC_TRUE`) or false (`PETSC_FALSE`)
 
-  Info Describing IS Structure:
-+    `IS_SORTED` - the [local part of the] index set is sorted in ascending order
-.    `IS_UNIQUE` - each entry in the [local part of the] index set is unique
-.    `IS_PERMUTATION` - the [local part of the] index set is a permutation of the integers {0, 1, ..., N-1}, where N is the size of the [local part of the] index set
-.    `IS_INTERVAL` - the [local part of the] index set is equal to a contiguous range of integers {f, f + 1, ..., f + N-1}
--    `IS_IDENTITY` - the [local part of the] index set is equal to the integers {0, 1, ..., N-1}
+  Values of `info` Describing `IS` Structure:
++ `IS_SORTED`      - the [local part of the] index set is sorted in ascending order
+. `IS_UNIQUE`      - each entry in the [local part of the] index set is unique
+. `IS_PERMUTATION` - the [local part of the] index set is a permutation of the integers {0, 1, ..., N-1}, where N is the size of the [local part of the] index set
+. `IS_INTERVAL`    - the [local part of the] index set is equal to a contiguous range of integers {f, f + 1, ..., f + N-1}
+- `IS_IDENTITY`    - the [local part of the] index set is equal to the integers {0, 1, ..., N-1}
 
   Level: advanced
 

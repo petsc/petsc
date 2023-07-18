@@ -102,13 +102,14 @@ PETSC_EXTERN void MPIAPI PetscSplitReduction_Local(void *in, void *out, PetscMPI
   Collective but not synchronizing
 
   Input Parameter:
-   comm - communicator on which split reduction has been queued
+. comm - communicator on which split reduction has been queued
 
   Level: advanced
 
   Note:
-  Calling this function is optional when using split-mode reduction. On supporting hardware, calling this after all
-  VecXxxBegin() allows the reduction to make asynchronous progress before the result is needed (in VecXxxEnd()).
+  Calling this function is optional when using split-mode reduction. On supporting hardware,
+  calling this after all VecXxxBegin() allows the reduction to make asynchronous progress
+  before the result is needed (in VecXxxEnd()).
 
 .seealso: `VecNormBegin()`, `VecNormEnd()`, `VecDotBegin()`, `VecDotEnd()`, `VecTDotBegin()`, `VecTDotEnd()`, `VecMDotBegin()`, `VecMDotEnd()`, `VecMTDotBegin()`, `VecMTDotEnd()`
 @*/

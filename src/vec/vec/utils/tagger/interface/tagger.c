@@ -1,22 +1,7 @@
 #include <petsc/private/vecimpl.h> /*I "petscvec.h" I*/
 
 /*@C
-  VecTaggerCreate - create a `VecTagger` context.  This object is used to control the tagging/selection of index sets
-  based on the values in a vector.  This is used, for example, in adaptive simulations when aspects are selected for
-  refinement or coarsening.  The primary intent is that the selected index sets are based purely on the values in the
-  vector, though implementations that do not follow this intent are possible.
-
-  Once a `VecTagger` is created (`VecTaggerCreate()`), optionally modified by options (`VecTaggerSetFromOptions()`), and
-  set up (`VecTaggerSetUp()`), it is applied to vectors with `VecTaggerComputeIS()` to compute the selected index sets.
-
-  In many cases, the selection criteria for an index is whether the corresponding value falls within a collection of
-
-  Notes: for this common case, `VecTaggerCreateBoxes()` can also be used to determine those boxes.
-
-  Provided implementations support tagging based on a box/interval of values (`VECTAGGERABSOLUTE`), based on a box of
-  values of relative to the range of values present in the vector (`VECTAGGERRELATIVE`), based on where values fall in
-  the cumulative distribution of values in the vector (`VECTAGGERCDF`), and based on unions (`VECTAGGEROR`) or
-  intersections (`VECTAGGERAND`) of other criteria.
+  VecTaggerCreate - create a `VecTagger` context.
 
   Collective
 
@@ -27,6 +12,23 @@
 . tagger - new Vec tagger context
 
   Level: advanced
+
+  Notes:
+  This object is used to control the tagging/selection of index sets based on the values in a
+  vector. This is used, for example, in adaptive simulations when aspects are selected for
+  refinement or coarsening. The primary intent is that the selected index sets are based purely
+  on the values in the vector, though implementations that do not follow this intent are
+  possible.
+
+  Once a `VecTagger` is created (`VecTaggerCreate()`), optionally modified by options
+  (`VecTaggerSetFromOptions()`), and set up (`VecTaggerSetUp()`), it is applied to vectors with
+  `VecTaggerComputeIS()` to compute the selected index sets.
+
+  Provided implementations support tagging based on a box/interval of values
+  (`VECTAGGERABSOLUTE`), based on a box of values of relative to the range of values present in
+  the vector (`VECTAGGERRELATIVE`), based on where values fall in the cumulative distribution
+  of values in the vector (`VECTAGGERCDF`), and based on unions (`VECTAGGEROR`) or
+  intersections (`VECTAGGERAND`) of other criteria.
 
 .seealso: `VecTagger`, `VecTaggerSetBlockSize()`, `VecTaggerSetFromOptions()`, `VecTaggerSetUp()`, `VecTaggerComputeIS()`, `VecTaggerComputeBoxes()`, `VecTaggerDestroy()`
 @*/
@@ -207,17 +209,7 @@ PetscErrorCode VecTaggerSetFromOptions(VecTagger tagger)
 }
 
 /*@C
-  VecTaggerSetBlockSize - block size of the set of indices returned by `VecTaggerComputeIS()`.  Values greater than one
-  are useful when there are multiple criteria for determining which indices to include in the set.  For example,
-  consider adaptive mesh refinement in a multiphysics problem, with metrics of solution quality for multiple fields
-  measure on each cell.  The size of the vector will be [numCells * numFields]; the VecTagger block size should be
-  numFields; VecTaggerComputeIS() will return indices in the range [0,numCells), i.e., one index is given for each
-  block of values.
-
-  Note that the block size of the vector does not have to match.
-
-  Note also that the index set created in `VecTaggerComputeIS()` has block size: it is an index set over the list of
-  items that the vector refers to, not to the vector itself.
+  VecTaggerSetBlockSize - set the block size of the set of indices returned by `VecTaggerComputeIS()`.
 
   Logically Collective
 
@@ -226,6 +218,16 @@ PetscErrorCode VecTaggerSetFromOptions(VecTagger tagger)
 - blocksize - block size of the criteria used to tagger vectors
 
   Level: advanced
+
+  Notes:
+  Values greater than one are useful when there are multiple criteria for determining which
+  indices to include in the set. For example, consider adaptive mesh refinement in a
+  multiphysics problem, with metrics of solution quality for multiple fields measure on each
+  cell. The size of the vector will be `[numCells` * numFields]`; the `VecTagger` block size
+  should be `numFields`; `VecTaggerComputeIS()` will return indices in the range `[0,
+  numCells)`, i.e., one index is given for each block of values.
+
+  Note that the block size of the vector does not have to match this block size.
 
 .seealso: `VecTaggerComputeIS()`, `VecTaggerGetBlockSize()`, `VecSetBlockSize()`, `VecGetBlockSize()`, `VecTagger`, `VecTaggerCreate()`
 @*/

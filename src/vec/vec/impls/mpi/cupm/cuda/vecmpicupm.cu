@@ -65,6 +65,7 @@ PetscErrorCode VecCUDAGetArrays_Private(Vec v, const PetscScalar **host_array, c
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+// PetscClangLinter pragma disable: -fdoc-internal-linkage
 /*@
   VecCreateMPICUDA - Creates a standard, parallel, array-style vector for CUDA devices.
 
@@ -98,6 +99,7 @@ PetscErrorCode VecCreateMPICUDA(MPI_Comm comm, PetscInt n, PetscInt N, Vec *v)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+// PetscClangLinter pragma disable: -fdoc-internal-linkage
 /*@C
   VecCreateMPICUDAWithArrays - Creates a parallel, array-style vector using CUDA, where the
   user provides the complete array space to store the vector values.
@@ -132,6 +134,7 @@ PetscErrorCode VecCreateMPICUDAWithArrays(MPI_Comm comm, PetscInt bs, PetscInt n
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+// PetscClangLinter pragma disable: -fdoc-internal-linkage
 /*@C
   VecCreateMPICUDAWithArray - Creates a parallel, array-style vector using CUDA, where the
   user provides the device array space to store the vector values.

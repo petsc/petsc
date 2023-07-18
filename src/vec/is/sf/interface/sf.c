@@ -2308,7 +2308,7 @@ PetscErrorCode PetscSFBcastToZero_Private(PetscSF sf, MPI_Datatype unit, const v
     ( 1,  2) <- ( 1,  0)  =   2
     ( 1,  3) <- ( 1,  1)  =   3
 .ve
-  and pass them to `PetscSFConcatenate()` along with different choices of `rootMode`, yielding different result_sf:
+  and pass them to `PetscSFConcatenate()` along with different choices of `rootMode`, yielding different result_sf\:
 .vb
   rootMode = local:
   PetscSF Object: result_sf 2 MPI processes

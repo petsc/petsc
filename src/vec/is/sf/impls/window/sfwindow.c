@@ -45,7 +45,7 @@ static PetscErrorCode PetscSFWindowOpTranslate(MPI_Op *op)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*
    PetscSFWindowGetDataTypes - gets composite local and remote data types for each rank
 
    Not Collective
@@ -133,8 +133,7 @@ static PetscErrorCode PetscSFWindowGetDataTypes(PetscSF sf, MPI_Datatype unit, c
   Level: advanced
 
   Notes:
-
-  Windows reuse follows these rules:
+  Windows reuse follows these rules\:
 .vb
      PETSCSF_WINDOW_FLAVOR_CREATE: creates a new window every time, uses MPI_Win_create
 

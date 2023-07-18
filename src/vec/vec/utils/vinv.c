@@ -1275,6 +1275,7 @@ static PetscScalar ScalarAbs_Fn(PetscScalar x)
 
   Level: intermediate
 
+.seealso: `Vec`, `VecExp()`, `VecAbs()`, `VecSqrtAbs()`, `VecReciprocal()`, `VecLog()`
 @*/
 PetscErrorCode VecAbs(Vec v)
 {
@@ -1544,8 +1545,8 @@ PetscErrorCode VecShift(Vec v, PetscScalar shift)
   VecPermute - Permutes a vector in place using the given ordering.
 
   Input Parameters:
-+ vec   - The vector
-. order - The ordering
++ x   - The vector
+. row - The ordering
 - inv - The flag for inverting the permutation
 
   Level: beginner

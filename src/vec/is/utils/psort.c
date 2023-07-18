@@ -304,7 +304,8 @@ static PetscErrorCode PetscParallelSortInt_Samplesort(PetscLayout mapin, PetscLa
 
   Notes:
 
-  This implements a distributed samplesort, which, with local array sizes n_in and n_out, global size N, and global number of processes P, does:
+  This implements a distributed samplesort, which, with local array sizes n_in and n_out,
+  global size N, and global number of MPI processes P, does\:
 .vb
   - sorts locally
   - chooses pivots by sorting (in parallel) (P-1) pivot suggestions from each process using bitonic sort and allgathering a subset of (P-1) of those
@@ -313,7 +314,7 @@ static PetscErrorCode PetscParallelSortInt_Samplesort(PetscLayout mapin, PetscLa
   - redistributing to match the mapout layout
 .ve
 
-  If keysin != keysout, then keysin will not be changed during `PetscParallelSortInt()`.
+  If `keysin` != `keysout`, then `keysin` will not be changed during `PetscParallelSortInt()`.
 
 .seealso: `PetscSortInt()`, `PetscParallelSortedInt()`
 @*/

@@ -45,8 +45,11 @@ static PetscErrorCode PFSetFromOptions_String(PF pf, PetscOptionItems *PetscOpti
 + pf     - the function object
 - string - the string that defines the function
 
+  Level: intermediate
+
   Developer Notes:
-  Currently this can be used only ONCE in a running code. It needs to be fixed to generate a new library name for each new function added.
+  Currently this can be used only ONCE in a running code. It needs to be fixed to generate a
+  new library name for each new function added.
 
   Requires `PETSC_HAVE_POPEN` `PETSC_USE_SHARED_LIBRARIES` `PETSC_HAVE_DYNAMIC_LIBRARIES` to use
 

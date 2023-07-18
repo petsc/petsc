@@ -1057,13 +1057,13 @@ PetscErrorCode VecCreateSeqViennaCLWithArrays(MPI_Comm comm, PetscInt bs, PetscI
   Not Collective
 
   Input Parameters:
-+  vec - the vector
--  array - the ViennaCL vector
++ vin - the vector
+- a   - the ViennaCL vector
 
   Notes:
-  You can return to the original viennacl vector with a call to
-  VecViennaCLResetArray() It is not possible to use VecViennaCLPlaceArray()
-  and VecPlaceArray() at the same time on the same vector.
+  You can return to the original viennacl vector with a call to `VecViennaCLResetArray()`.
+  It is not possible to use `VecViennaCLPlaceArray()` and `VecPlaceArray()` at the same time on
+  the same vector.
 
   Level: intermediate
 

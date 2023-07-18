@@ -88,13 +88,6 @@ PetscErrorCode VecMaxPointwiseDivide(Vec x, Vec y, PetscReal *max)
   Output Parameter:
 . val - the dot product
 
-  Performance Issues:
-.vb
-    per-processor memory bandwidth
-    interprocessor latency
-    work load imbalance that causes certain processes to arrive much earlier than others
-.ve
-
   Level: intermediate
 
   Notes for Users of Complex Numbers:
@@ -147,13 +140,6 @@ PetscErrorCode VecDot(Vec x, Vec y, PetscScalar *val)
 
   Level: intermediate
 
-  Performance Issues:
-.vb
-    per-processor memory bandwidth
-    interprocessor latency
-    work load imbalance that causes certain processes to arrive much earlier than others
-.ve
-
   Notes for Users of Complex Numbers:
   See `VecDot()` for more details on the definition of the dot product for complex numbers
 
@@ -189,30 +175,21 @@ PetscErrorCode VecDotRealPart(Vec x, Vec y, PetscReal *val)
   Output Parameter:
 . val - the norm
 
-  Values of NormType:
-+     `NORM_1` - sum_i |x[i]|
-.     `NORM_2` - sqrt(sum_i |x[i]|^2)
-.     `NORM_INFINITY` - max_i |x[i]|
--     `NORM_1_AND_2` - computes efficiently both  `NORM_1` and `NORM_2` and stores them each in an output array
-
   Level: intermediate
 
   Notes:
-  For complex numbers `NORM_1` will return the traditional 1 norm of the 2 norm of the complex numbers; that is the 1
-  norm of the absolute values of the complex entries. In PETSc 3.6 and earlier releases it returned the 1 norm of
-  the 1 norm of the complex entries (what is returned by the BLAS routine asum()). Both are valid norms but most
-  people expect the former.
+  See `NormType` for descriptions of each norm.
 
-  This routine stashes the computed norm value, repeated calls before the vector entries are changed are then rapid since the
-  precomputed value is immediately available. Certain vector operations such as `VecSet()` store the norms so the value is
-  immediately available and does not need to be explicitly computed. `VecScale()` updates any stashed norm values, thus calls after `VecScale()`
-  do not need to explicitly recompute the norm.
+  For complex numbers `NORM_1` will return the traditional 1 norm of the 2 norm of the complex
+  numbers; that is the 1 norm of the absolute values of the complex entries. In PETSc 3.6 and
+  earlier releases it returned the 1 norm of the 1 norm of the complex entries (what is
+  returned by the BLAS routine `asum()`). Both are valid norms but most people expect the former.
 
-  Performance Issues:
-+    per-processor memory bandwidth - limits the speed of the computation of local portion of the norm
-.    interprocessor latency - limits the accumulation of the result across ranks, .i.e. MPI_Allreduce() time
-.    number of ranks - the time for the result will grow with the log base 2 of the number of ranks sharing the vector
--    work load imbalance - the rank with the largest number of vector entries will limit the speed up
+  This routine stashes the computed norm value, repeated calls before the vector entries are
+  changed are then rapid since the precomputed value is immediately available. Certain vector
+  operations such as `VecSet()` store the norms so the value is immediately available and does
+  not need to be explicitly computed. `VecScale()` updates any stashed norm values, thus calls
+  after `VecScale()` do not need to explicitly recompute the norm.
 
 .seealso: [](ch_vectors), `Vec`, `NormType`, `VecDot()`, `VecTDot()`, `VecDotBegin()`, `VecDotEnd()`, `VecNormAvailable()`,
           `VecNormBegin()`, `VecNormEnd()`, `NormType()`
@@ -258,13 +235,6 @@ PetscErrorCode VecNorm(Vec x, NormType type, PetscReal *val)
 - val       - the norm
 
   Level: intermediate
-
-  Performance Issues:
-.vb
-    per-processor memory bandwidth
-    interprocessor latency
-    work load imbalance that causes certain processes to arrive much earlier than others
-.ve
 
   Developer Notes:
   `PETSC_HAVE_SLOW_BLAS_NORM2` will cause a C (loop unrolled) version of the norm to be used, rather
@@ -1849,12 +1819,7 @@ PetscErrorCode VecRestoreLocalVector(Vec v, Vec w)
 
 /*@C
   VecGetArray - Returns a pointer to a contiguous array that contains this
-  processor's portion of the vector data. For the standard PETSc
-  vectors, `VecGetArray()` returns a pointer to the local data array and
-  does not use any copies. If the underlying vector data is not stored
-  in a contiguous array this routine will copy the data to a contiguous
-  array and return a pointer to that. You MUST call `VecRestoreArray()`
-  when you no longer need access to the array.
+  MPI processes's portion of the vector data
 
   Logically Collective
 
@@ -1865,6 +1830,12 @@ PetscErrorCode VecRestoreLocalVector(Vec v, Vec w)
 . a - location to put pointer to the array
 
   Level: beginner
+
+  Notes:
+  For the standard PETSc vectors, `VecGetArray()` returns a pointer to the local data array and
+  does not use any copies. If the underlying vector data is not stored in a contiguous array
+  this routine will copy the data to a contiguous array and return a pointer to that. You MUST
+  call `VecRestoreArray()` when you no longer need access to the array.
 
   Fortran Notes:
   `VecGetArray()` Fortran binding is deprecated (since PETSc 3.19), use `VecGetArrayF90()`
@@ -1970,8 +1941,8 @@ PetscErrorCode VecGetArrayRead(Vec x, const PetscScalar **a)
   Not Collective
 
   Input Parameters:
-+  vec - the vector
--  array - the array
++ x - the vector
+- a - the array
 
   Level: beginner
 
@@ -2004,8 +1975,7 @@ PetscErrorCode VecRestoreArrayRead(Vec x, const PetscScalar **a)
 
 /*@C
   VecGetArrayWrite - Returns a pointer to a contiguous array that WILL contain this
-  processor's portion of the vector data. The values in this array are NOT valid, the caller of this
-  routine is responsible for putting values into the array; any values it does not set will be invalid
+  MPI processes's portion of the vector data.
 
   Logically Collective
 
@@ -2018,10 +1988,13 @@ PetscErrorCode VecRestoreArrayRead(Vec x, const PetscScalar **a)
   Level: intermediate
 
   Note:
+  The values in this array are NOT valid, the caller of this routine is responsible for putting
+  values into the array; any values it does not set will be invalid.
+
   The array must be returned using a matching call to `VecRestoreArrayRead()`.
 
-  For vectors associated with GPUs, the host and device vectors are not synchronized before giving access. If you need correct
-  values in the array use `VecGetArray()`
+  For vectors associated with GPUs, the host and device vectors are not synchronized before
+  giving access. If you need correct values in the array use `VecGetArray()`
 
   Fortran Notes:
   `VecGetArrayWrite()` Fortran binding is deprecated (since PETSc 3.19), use `VecGetArrayWriteF90()`
@@ -2148,12 +2121,9 @@ PetscErrorCode VecRestoreArrays(const Vec x[], PetscInt n, PetscScalar **a[])
 }
 
 /*@C
-  VecGetArrayAndMemType - Like `VecGetArray()`, but if this is a standard device vector (e.g., `VECCUDA`), the returned pointer will be a device
-  pointer to the device memory that contains this processor's portion of the vector data. Device data is guaranteed to have the latest value.
-  Otherwise, when this is a host vector (e.g., `VECMPI`), this routine functions the same as `VecGetArray()` and returns a host pointer.
-
-  For `VECKOKKOS`, if Kokkos is configured without device (e.g., use serial or openmp), per this function, the vector works like `VECSEQ`/`VECMPI`;
-  otherwise, it works like `VECCUDA` or `VECHIP` etc.
+  VecGetArrayAndMemType - Like `VecGetArray()`, but if this is a standard device vector (e.g.,
+  `VECCUDA`), the returned pointer will be a device pointer to the device memory that contains
+  this MPI processes's portion of the vector data.
 
   Logically Collective; No Fortran Support
 
@@ -2167,7 +2137,15 @@ PetscErrorCode VecRestoreArrays(const Vec x[], PetscInt n, PetscScalar **a[])
   Level: beginner
 
   Note:
-  Use `VecRestoreArrayAndMemType()` when the array access is no longer needed
+  Device data is guaranteed to have the latest value. Otherwise, when this is a host vector
+  (e.g., `VECMPI`), this routine functions the same as `VecGetArray()` and returns a host
+  pointer.
+
+  For `VECKOKKOS`, if Kokkos is configured without device (e.g., use serial or openmp), per
+  this function, the vector works like `VECSEQ`/`VECMPI`; otherwise, it works like `VECCUDA` or
+  `VECHIP` etc.
+
+  Use `VecRestoreArrayAndMemType()` when the array access is no longer needed.
 
 .seealso: [](ch_vectors), `Vec`, `VecRestoreArrayAndMemType()`, `VecGetArrayReadAndMemType()`, `VecGetArrayWriteAndMemType()`, `VecRestoreArray()`, `VecGetArrayRead()`, `VecGetArrays()`, `VecGetArrayF90()`, `VecGetArrayReadF90()`,
           `VecPlaceArray()`, `VecGetArray2d()`, `VecGetArrayPair()`, `VecRestoreArrayPair()`, `VecGetArrayWrite()`, `VecRestoreArrayWrite()`
@@ -2274,8 +2252,8 @@ PetscErrorCode VecGetArrayReadAndMemType(Vec x, const PetscScalar **a, PetscMemT
   Not Collective; No Fortran Support
 
   Input Parameters:
-+  vec - the vector
--  array - the array
++ x - the vector
+- a - the array
 
   Level: beginner
 
@@ -2345,8 +2323,8 @@ PetscErrorCode VecGetArrayWriteAndMemType(Vec x, PetscScalar **a, PetscMemType *
   Not Collective; No Fortran Support
 
   Input Parameters:
-+  vec - the vector
--  array - the array
++ x - the vector
+- a - the array
 
   Level: beginner
 
@@ -3942,6 +3920,7 @@ PetscErrorCode VecLockWriteSet(Vec x, PetscBool flg)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+// PetscClangLinter pragma disable: -fdoc-param-list-func-parameter-documentation
 /*@
   VecLockPush  - Pushes a read-only lock on a vector to prevent it from being written to
 
@@ -3956,6 +3935,7 @@ PetscErrorCode VecLockPush(Vec x)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+// PetscClangLinter pragma disable: -fdoc-param-list-func-parameter-documentation
 /*@
   VecLockPop  - Pops a read-only lock from a vector
 

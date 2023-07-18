@@ -1000,15 +1000,14 @@ PetscErrorCode ISGlobalToLocalMappingApplyBlock(ISLocalToGlobalMapping mapping, 
   Level: advanced
 
   Fortran Notes:
+  There is no `ISLocalToGlobalMappingRestoreInfo()` in Fortran. You must make sure that
+  `procs`[], `numprocs`[] and `indices`[][] are large enough arrays, either by allocating them
+  dynamically or defining static ones large enough.
 .vb
-        PetscInt indices[nproc][numprocmax],ierr)
-        ISLocalToGlobalMpngGetInfoSize(ISLocalToGlobalMapping,PetscInt nproc,PetscInt numprocmax,ierr) followed by
-        ISLocalToGlobalMappingGetInfo(ISLocalToGlobalMapping,PetscInt nproc, PetscInt procs[nproc],PetscInt numprocs[nproc],
+  PetscInt indices[nproc][numprocmax],ierr)
+  ISLocalToGlobalMpngGetInfoSize(ISLocalToGlobalMapping,PetscInt nproc,PetscInt numprocmax,ierr) followed by
+  ISLocalToGlobalMappingGetInfo(ISLocalToGlobalMapping,PetscInt nproc, PetscInt procs[nproc],PetscInt numprocs[nproc],
 .ve
-
-  Fortran Notes:
-  There is no `ISLocalToGlobalMappingRestoreInfo()` in Fortran. You must make sure that `procs`[], `numprocs`[] and
-  `indices`[][] are large enough arrays, either by allocating them dynamically or defining static ones large enough.
 
 .seealso: [](sec_scatter), `ISLocalToGlobalMappingDestroy()`, `ISLocalToGlobalMappingCreateIS()`, `ISLocalToGlobalMappingCreate()`,
           `ISLocalToGlobalMappingRestoreInfo()`
@@ -1483,15 +1482,15 @@ PetscErrorCode ISLocalToGlobalMappingRestoreBlockInfo(ISLocalToGlobalMapping map
   The user needs to call `ISLocalToGlobalMappingRestoreInfo()` when the data is no longer needed.
 
   Fortran Notes:
-.vb
-        PetscInt indices[nproc][numprocmax],ierr)
-        ISLocalToGlobalMpngGetInfoSize(ISLocalToGlobalMapping,PetscInt nproc,PetscInt numprocmax,ierr) followed by
-        ISLocalToGlobalMappingGetInfo(ISLocalToGlobalMapping,PetscInt nproc, PetscInt procs[nproc],PetscInt numprocs[nproc],
-.ve
+  There is no `ISLocalToGlobalMappingRestoreInfo()` in Fortran. You must make sure that
+  `procs`[], `numprocs`[] and `indices`[][] are large enough arrays, either by allocating them
+  dynamically or defining static ones large enough.
 
-  Fortran Notes:
-  There is no `ISLocalToGlobalMappingRestoreInfo()` in Fortran. You must make sure that `procs`[], `numprocs`[] and
-  `indices`[][] are large enough arrays, either by allocating them dynamically or defining static ones large enough.
+.vb
+  PetscInt indices[nproc][numprocmax],ierr)
+  ISLocalToGlobalMpngGetInfoSize(ISLocalToGlobalMapping,PetscInt nproc,PetscInt numprocmax,ierr) followed by
+  ISLocalToGlobalMappingGetInfo(ISLocalToGlobalMapping,PetscInt nproc, PetscInt procs[nproc],PetscInt numprocs[nproc],
+.ve
 
 .seealso: [](sec_scatter), `ISLocalToGlobalMappingDestroy()`, `ISLocalToGlobalMappingCreateIS()`, `ISLocalToGlobalMappingCreate()`,
           `ISLocalToGlobalMappingRestoreInfo()`
