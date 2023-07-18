@@ -791,7 +791,7 @@ PetscErrorCode TaoGetRecycleHistory(Tao tao, PetscBool *recycle)
 . -tao_grtol <grtol> - Sets grtol
 - -tao_gttol <gttol> - Sets gttol
 
-  Stopping Criteria:
+  Stopping Criteria\:
 .vb
   ||g(X)||                            <= gatol
   ||g(X)|| / |f(X)|                   <= grtol
@@ -2659,19 +2659,19 @@ PetscErrorCode TaoGetGradientNorm(Tao tao, Mat *M)
 }
 
 /*@C
-   TaoGradientNorm - Compute the norm using the `NormType`, the user has selected
+  TaoGradientNorm - Compute the norm using the `NormType`, the user has selected
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  tao      - the `Tao` context
-.  gradient - the gradient to be computed
--  norm     - the norm type
+  Input Parameters:
++ tao      - the `Tao` context
+. gradient - the gradient to be computed
+- type     - the norm type
 
-   Output Parameter:
-.  gnorm    - the gradient norm
+  Output Parameter:
+. gnorm - the gradient norm
 
-   Level: advanced
+  Level: advanced
 
 .seealso: [](ch_tao), `Tao`, `TaoSetGradientNorm()`, `TaoGetGradientNorm()`
 @*/

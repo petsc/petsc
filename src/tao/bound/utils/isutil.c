@@ -4,21 +4,23 @@
 #include <../src/tao/matrix/submatfree.h>
 
 /*@C
-  TaoVecGetSubVec - Gets a subvector using the IS
+  TaoVecGetSubVec - Gets a subvector using the `IS`
 
   Input Parameters:
-+ vfull - the full matrix
-. is - the index set for the subvector
-. reduced_type - the method TAO is using for subsetting (TAO_SUBSET_SUBVEC, TAO_SUBSET_MASK,  TAO_SUBSET_MATRIXFREE)
-- maskvalue - the value to set the unused vector elements to (for TAO_SUBSET_MASK or TAO_SUBSET_MATRIXFREE)
++ vfull        - the full matrix
+. is           - the index set for the subvector
+. reduced_type - the method `Tao` is using for subsetting
+- maskvalue    - the value to set the unused vector elements to (for `TAO_SUBSET_MASK` or `TAO_SUBSET_MATRIXFREE`)
 
   Output Parameter:
 . vreduced - the subvector
 
-  Notes:
-  maskvalue should usually be 0.0, unless a pointwise divide will be used.
-
   Level: developer
+
+  Notes:
+  `maskvalue` should usually be `0.0`, unless a pointwise divide will be used.
+
+.seealso: `TaoMatGetSubMat()`, `TaoSubsetType`
 @*/
 PetscErrorCode TaoVecGetSubVec(Vec vfull, IS is, TaoSubsetType reduced_type, PetscReal maskvalue, Vec *vreduced)
 {
@@ -90,15 +92,17 @@ PetscErrorCode TaoVecGetSubVec(Vec vfull, IS is, TaoSubsetType reduced_type, Pet
   TaoMatGetSubMat - Gets a submatrix using the `IS`
 
   Input Parameters:
-+ M - the full matrix (n x n)
-. is - the index set for the submatrix (both row and column index sets need to be the same)
-. v1 - work vector of dimension n, needed for TAO_SUBSET_MASK option
-- subset_type <`TAO_SUBSET_SUBVEC`, `TAO_SUBSET_MASK`, `TAO_SUBSET_MATRIXFREE`> - the method `Tao` is using for subsetting
++ M           - the full matrix (`n x n`)
+. is          - the index set for the submatrix (both row and column index sets need to be the same)
+. v1          - work vector of dimension n, needed for `TAO_SUBSET_MASK` option
+- subset_type - the method `Tao` is using for subsetting
 
   Output Parameter:
 . Msub - the submatrix
 
   Level: developer
+
+.seealso: `TaoVecGetSubVec()`, `TaoSubsetType`
 @*/
 PetscErrorCode TaoMatGetSubMat(Mat M, IS is, Vec v1, TaoSubsetType subset_type, Mat *Msub)
 {
@@ -154,26 +158,28 @@ PetscErrorCode TaoMatGetSubMat(Mat M, IS is, Vec v1, TaoSubsetType subset_type, 
   bounds, as well as fixed variables where lower and upper bounds equal each other.
 
   Input Parameters:
-+ X - solution vector
-. XL - lower bound vector
-. XU - upper bound vector
-. G - unprojected gradient
-. S - step direction with which the active bounds will be estimated
-. W - work vector of type and size of X
++ X       - solution vector
+. XL      - lower bound vector
+. XU      - upper bound vector
+. G       - unprojected gradient
+. S       - step direction with which the active bounds will be estimated
+. W       - work vector of type and size of `X`
 - steplen - the step length at which the active bounds will be estimated (needs to be conservative)
 
   Output Parameters:
-+ bound_tol - tolerance for the bound estimation
++ bound_tol    - tolerance for the bound estimation
 . active_lower - index set for active variables at the lower bound
 . active_upper - index set for active variables at the upper bound
 . active_fixed - index set for fixed variables
-. active - index set for all active variables
-- inactive - complementary index set for inactive variables
-
-  Notes:
-  This estimation is based on Bertsekas' method, with a built in diagonal scaling value of 1.0e-3.
+. active       - index set for all active variables
+- inactive     - complementary index set for inactive variables
 
   Level: developer
+
+  Notes:
+  This estimation is based on Bertsekas' method, with a built in diagonal scaling value of `1.0e-3`.
+
+.seealso: `TAOBNCG`, `TAOBNTL`, `TAOBNTR`, `TaoBoundSolution()`
 @*/
 PetscErrorCode TaoEstimateActiveBounds(Vec X, Vec XL, Vec XU, Vec G, Vec S, Vec W, PetscReal steplen, PetscReal *bound_tol, IS *active_lower, IS *active_upper, IS *active_fixed, IS *active, IS *inactive)
 {
@@ -316,22 +322,24 @@ PetscErrorCode TaoEstimateActiveBounds(Vec X, Vec XL, Vec XU, Vec G, Vec S, Vec 
 }
 
 /*@C
-  TaoBoundStep - Ensures the correct zero or adjusted step direction
-  values for active variables.
+  TaoBoundStep - Ensures the correct zero or adjusted step direction values for active
+  variables.
 
   Input Parameters:
-+ X - solution vector
-. XL - lower bound vector
-. XU - upper bound vector
++ X            - solution vector
+. XL           - lower bound vector
+. XU           - upper bound vector
 . active_lower - index set for lower bounded active variables
 . active_upper - index set for lower bounded active variables
 . active_fixed - index set for fixed active variables
-- scale - amplification factor for the step that needs to be taken on actively bounded variables
+- scale        - amplification factor for the step that needs to be taken on actively bounded variables
 
   Output Parameter:
 . S - step direction to be modified
 
   Level: developer
+
+.seealso: `TAOBNCG`, `TAOBNTL`, `TAOBNTR`, `TaoBoundSolution()`
 @*/
 PetscErrorCode TaoBoundStep(Vec X, Vec XL, Vec XU, IS active_lower, IS active_upper, IS active_fixed, PetscReal scale, Vec S)
 {
@@ -381,18 +389,18 @@ PetscErrorCode TaoBoundStep(Vec X, Vec XL, Vec XU, IS active_lower, IS active_up
   Collective
 
   Input Parameters:
-+ X - solution vector
-. XL - lower bound vector
-. XU - upper bound vector
++ X         - solution vector
+. XL        - lower bound vector
+. XU        - upper bound vector
 - bound_tol - absolute tolerance in enforcing the bound
 
   Output Parameters:
 + nDiff - total number of vector entries that have been bounded
-- Xout - modified solution vector satisfying bounds to bound_tol
+- Xout  - modified solution vector satisfying bounds to `bound_tol`
 
   Level: developer
 
-.seealso: `TAOBNCG`, `TAOBNTL`, `TAOBNTR`
+.seealso: `TAOBNCG`, `TAOBNTL`, `TAOBNTR`, `TaoBoundStep()`
 @*/
 PetscErrorCode TaoBoundSolution(Vec X, Vec XL, Vec XU, PetscReal bound_tol, PetscInt *nDiff, Vec Xout)
 {

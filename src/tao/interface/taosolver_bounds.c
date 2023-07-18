@@ -41,7 +41,6 @@ PetscErrorCode TaoSetVariableBounds(Tao tao, Vec XL, Vec XU)
 - ctx  - [optional] user-defined context for private data for the bounds computation (may be `NULL`)
 
   Calling sequence of `func`:
-$ PetscErrorCode func(Tao tao, Vec xl, Vec xu, void *ctx);
 + tao - the `Tao` solver
 . xl  - vector of lower bounds
 . xu  - vector of upper bounds
@@ -54,7 +53,7 @@ $ PetscErrorCode func(Tao tao, Vec xl, Vec xu, void *ctx);
 
 .seealso: [](ch_tao), `Tao`, `TaoSetObjective()`, `TaoSetHessian()`, `TaoSetObjectiveAndGradient()`, `TaoSetVariableBounds()`
 @*/
-PetscErrorCode TaoSetVariableBoundsRoutine(Tao tao, PetscErrorCode (*func)(Tao, Vec, Vec, void *), void *ctx)
+PetscErrorCode TaoSetVariableBoundsRoutine(Tao tao, PetscErrorCode (*func)(Tao tao, Vec xl, Vec xu, void *ctx), void *ctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);
@@ -219,7 +218,6 @@ PetscErrorCode TaoComputeConstraints(Tao tao, Vec X, Vec C)
 - ctx  - [optional] user-defined context for private data for the constraints computation (may be `NULL`)
 
   Calling sequence of `func`:
-$ PetscErrorCode func(Tao tao, Vec x, Vec c, void *ctx);
 + tao - the `Tao` solver
 . x   - point to evaluate constraints
 . c   - vector constraints evaluated at `x`
@@ -229,7 +227,7 @@ $ PetscErrorCode func(Tao tao, Vec x, Vec c, void *ctx);
 
 .seealso: [](ch_tao), `Tao`, `TaoSetObjective()`, `TaoSetHessian()`, `TaoSetObjectiveAndGradient()`, `TaoSetVariablevBounds()`
 @*/
-PetscErrorCode TaoSetConstraintsRoutine(Tao tao, Vec c, PetscErrorCode (*func)(Tao, Vec, Vec, void *), void *ctx)
+PetscErrorCode TaoSetConstraintsRoutine(Tao tao, Vec c, PetscErrorCode (*func)(Tao tao, Vec x, Vec c, void *ctx), void *ctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);
@@ -319,7 +317,6 @@ PetscErrorCode TaoGetDualVariables(Tao tao, Vec *DE, Vec *DI)
 - ctx  - [optional] user-defined context for private data for the equality constraints computation (may be `NULL`)
 
   Calling sequence of `func`:
-$ PetscErrorCode func(Tao tao, Vec x, Vec ce, void *ctx);
 + tao - the `Tao` solver
 . x   - point to evaluate equality constraints
 . ce  - vector of equality constraints evaluated at x
@@ -329,7 +326,7 @@ $ PetscErrorCode func(Tao tao, Vec x, Vec ce, void *ctx);
 
 .seealso: [](ch_tao), `Tao`, `TaoSetObjective()`, `TaoSetHessian()`, `TaoSetObjectiveAndGradient()`, `TaoSetVariableBounds()`
 @*/
-PetscErrorCode TaoSetEqualityConstraintsRoutine(Tao tao, Vec ce, PetscErrorCode (*func)(Tao, Vec, Vec, void *), void *ctx)
+PetscErrorCode TaoSetEqualityConstraintsRoutine(Tao tao, Vec ce, PetscErrorCode (*func)(Tao tao, Vec x, Vec ce, void *ctx), void *ctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);
@@ -355,7 +352,6 @@ PetscErrorCode TaoSetEqualityConstraintsRoutine(Tao tao, Vec ce, PetscErrorCode 
 - ctx  - [optional] user-defined context for private data for the inequality constraints computation (may be `NULL`)
 
   Calling sequence of `func`:
-$ PetscErrorCode func(Tao tao, Vec x, Vec ci, void *ctx);
 + tao - the `Tao` solver
 . x   - point to evaluate inequality constraints
 . ci  - vector of inequality constraints evaluated at x
@@ -365,7 +361,7 @@ $ PetscErrorCode func(Tao tao, Vec x, Vec ci, void *ctx);
 
 .seealso: [](ch_tao), `Tao`, `TaoSetObjective()`, `TaoSetHessian()`, `TaoSetObjectiveAndGradient()`, `TaoSetVariableBounds()`
 @*/
-PetscErrorCode TaoSetInequalityConstraintsRoutine(Tao tao, Vec ci, PetscErrorCode (*func)(Tao, Vec, Vec, void *), void *ctx)
+PetscErrorCode TaoSetInequalityConstraintsRoutine(Tao tao, Vec ci, PetscErrorCode (*func)(Tao tao, Vec x, Vec ci, void *ctx), void *ctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);
