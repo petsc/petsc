@@ -2185,6 +2185,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPISBAIJ(Mat B)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+// PetscClangLinter pragma disable: -fdoc-section-header-unknown
 /*MC
    MATSBAIJ - MATSBAIJ = "sbaij" - A matrix type to be used for symmetric block sparse matrices.
 
@@ -2290,6 +2291,7 @@ PetscErrorCode MatMPISBAIJSetPreallocation(Mat B, PetscInt bs, PetscInt d_nz, co
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+// PetscClangLinter pragma disable: -fdoc-section-header-unknown
 /*@C
   MatCreateSBAIJ - Creates a sparse parallel matrix in symmetric block AIJ format, `MATSBAIJ`,
   (block compressed row).  For good matrix assembly performance

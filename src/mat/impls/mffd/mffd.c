@@ -741,11 +741,10 @@ PetscErrorCode MatMFFDGetH(Mat mat, PetscScalar *h)
 . func    - the function to use
 - funcctx - optional function context passed to function
 
-  Calling sequence:
-$  PetscErrorCode func(void *funcctx, Vec x, Vec f)
+  Calling sequence of `func`:
 + funcctx - user provided context
-.  x - input vector
--  f - computed output function
+. x       - input vector
+- f       - computed output function
 
   Level: advanced
 
@@ -756,9 +755,9 @@ $  PetscErrorCode func(void *funcctx, Vec x, Vec f)
   If this is not set then it will use the function set with `SNESSetFunction()` if `MatCreateSNESMF()` was used.
 
 .seealso: [](ch_matrices), `Mat`, `MATMFFD`, `MatCreateSNESMF()`, `MatMFFDGetH()`, `MatCreateMFFD()`,
-          `MatMFFDSetHHistory()`, `MatMFFDResetHHistory()`, `SNESetFunction()`
+          `MatMFFDSetHHistory()`, `MatMFFDResetHHistory()`, `SNESSetFunction()`
 @*/
-PetscErrorCode MatMFFDSetFunction(Mat mat, PetscErrorCode (*func)(void *, Vec, Vec), void *funcctx)
+PetscErrorCode MatMFFDSetFunction(Mat mat, PetscErrorCode (*func)(void *funcctx, Vec x, Vec f), void *funcctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);

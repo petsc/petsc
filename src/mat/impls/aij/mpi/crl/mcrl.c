@@ -135,12 +135,6 @@ PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_MPIAIJCRL(Mat A, MatType type, Mat
 
 /*@C
   MatCreateMPIAIJCRL - Creates a sparse matrix of type `MATMPIAIJCRL`.
-  This type inherits from `MATAIJ`, but stores some additional
-  information that is used to allow better vectorization of
-  the matrix-vector product. At the cost of increased storage, the AIJ formatted
-  matrix can be copied to a format in which pieces of the matrix are
-  stored in ELLPACK format, allowing the vectorized matrix multiply
-  routine to use stride-1 memory accesses.
 
   Collective
 
@@ -158,7 +152,13 @@ PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_MPIAIJCRL(Mat A, MatType type, Mat
 
   Level: intermediate
 
-  Note:
+  Notes:
+  This type inherits from `MATAIJ`, but stores some additional information that is used to
+  allow better vectorization of the matrix-vector product. At the cost of increased storage,
+  the AIJ formatted matrix can be copied to a format in which pieces of the matrix are stored
+  in ELLPACK format, allowing the vectorized matrix multiply routine to use stride-1 memory
+  accesses.
+
   If `nnz` is given then `nz` is ignored
 
 .seealso: [](ch_matrices), `Mat`, [Sparse Matrix Creation](sec_matsparse), `MATAIJ`, `MATAIJSELL`, `MATAIJPERM`, `MATAIJMKL`, `MatCreate()`, `MatCreateMPIAIJPERM()`, `MatSetValues()`

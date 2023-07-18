@@ -3109,11 +3109,14 @@ static PetscErrorCode MatSetFromOptions_IS(Mat A, PetscOptionItems *PetscOptions
   process but not across processes.
 
   Input Parameters:
-+ comm    - MPI communicator that will share the matrix
-. bs      - block size of the matrix
-. m,n,M,N - local and/or global sizes of the left and right vector used in matrix vector products
-. rmap    - local to global map for rows
-- cmap    - local to global map for cols
++ comm - MPI communicator that will share the matrix
+. bs   - block size of the matrix
+. m    - local size of left vector used in matrix vector products
+. n    - local size of right vector used in matrix vector products
+. M    - global size of left vector used in matrix vector products
+. N    - global size of right vector used in matrix vector products
+. rmap - local to global map for rows
+- cmap - local to global map for cols
 
   Output Parameter:
 . A - the resulting matrix

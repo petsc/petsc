@@ -3707,10 +3707,7 @@ static PetscErrorCode MatAssemblyEnd_SeqAIJCUSPARSE(Mat A, MatAssemblyType mode)
 
 /*@
   MatCreateSeqAIJCUSPARSE - Creates a sparse matrix in `MATAIJCUSPARSE` (compressed row) format
-  (the default parallel PETSc format). This matrix will ultimately pushed down
-  to NVIDIA GPUs and use the CuSPARSE library for calculations. For good matrix
-  assembly performance the user should preallocate the matrix storage by setting
-  the parameter `nz` (or the array `nnz`).
+  (the default parallel PETSc format).
 
   Collective
 
@@ -3727,6 +3724,10 @@ static PetscErrorCode MatAssemblyEnd_SeqAIJCUSPARSE(Mat A, MatAssemblyType mode)
   Level: intermediate
 
   Notes:
+  This matrix will ultimately pushed down to NVIDIA GPUs and use the CuSPARSE library for
+  calculations. For good matrix assembly performance the user should preallocate the matrix
+  storage by setting the parameter `nz` (or the array `nnz`).
+
   It is recommended that one use the `MatCreate()`, `MatSetType()` and/or `MatSetFromOptions()`,
   MatXXXXSetPreallocation() paradgm instead of this routine directly.
   [MatXXXXSetPreallocation() is, for example, `MatSeqAIJSetPreallocation()`]

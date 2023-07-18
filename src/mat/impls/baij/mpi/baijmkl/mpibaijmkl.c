@@ -26,6 +26,7 @@ static PetscErrorCode MatConvert_MPIBAIJ_MPIBAIJMKL(Mat A, MatType type, MatReus
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+// PetscClangLinter pragma disable: -fdoc-section-header-unknown
 /*@C
   MatCreateBAIJMKL - Creates a sparse parallel matrix in `MATBAIJMKL` format (block compressed row).
 

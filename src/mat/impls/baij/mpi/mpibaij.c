@@ -2941,6 +2941,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIBAIJ(Mat B)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+// PetscClangLinter pragma disable: -fdoc-section-header-unknown
 /*MC
    MATBAIJ - MATBAIJ = "baij" - A matrix type to be used for block sparse matrices.
 
@@ -3045,6 +3046,7 @@ PetscErrorCode MatMPIBAIJSetPreallocation(Mat B, PetscInt bs, PetscInt d_nz, con
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+// PetscClangLinter pragma disable: -fdoc-section-header-unknown
 /*@C
   MatCreateBAIJ - Creates a sparse parallel matrix in `MATBAIJ` format
   (block compressed row).
@@ -3401,6 +3403,7 @@ PetscErrorCode MatMPIBAIJGetSeqBAIJ(Mat A, Mat *Ad, Mat *Ao, const PetscInt *col
   #define matmpibaijsetvaluesblocked_ matmpibaijsetvaluesblocked
 #endif
 
+// PetscClangLinter pragma disable: -fdoc-synopsis-matching-symbol-name
 /*@C
   MatMPIBAIJSetValuesBlocked - Direct Fortran call to replace call to `MatSetValuesBlocked()`
 

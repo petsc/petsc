@@ -284,9 +284,7 @@ PetscErrorCode MatRegister(const char sname[], PetscErrorCode (*function)(Mat))
 MatRootName MatRootNameList = NULL;
 
 /*@C
-  MatRegisterRootName - Registers a name that can be used for either a sequential or its corresponding parallel matrix type. `MatSetType()`
-  and `-mat_type name` will automatically use the sequential or parallel version based on the size of the MPI communicator associated with the
-  matrix.
+  MatRegisterRootName - Registers a name that can be used for either a sequential or its corresponding parallel matrix type.
 
   Input Parameters:
 + rname - the rootname, for example, `MATAIJ`
@@ -295,8 +293,12 @@ MatRootName MatRootNameList = NULL;
 
   Level: developer
 
-  Note:
-  The matrix rootname should not be confused with the base type of the function `PetscObjectBaseTypeCompare()`
+  Notes:
+  `MatSetType()` and `-mat_type name` will automatically use the sequential or parallel version
+  based on the size of the MPI communicator associated with the matrix.
+
+  The matrix rootname should not be confused with the base type of the function
+  `PetscObjectBaseTypeCompare()`
 
   Developer Notes:
   PETSc vectors have a similar rootname that indicates PETSc should automatically select the appropriate `VecType` based on the

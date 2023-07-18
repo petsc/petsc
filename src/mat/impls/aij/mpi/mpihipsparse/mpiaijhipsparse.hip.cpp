@@ -485,10 +485,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJHIPSPARSE(Mat A)
 
 /*@
   MatCreateAIJHIPSPARSE - Creates a sparse matrix in AIJ (compressed row) format
-  (the default parallel PETSc format).  This matrix will ultimately pushed down
-  to AMD GPUs and use the HIPSPARSE library for calculations. For good matrix
-  assembly performance the user should preallocate the matrix storage by setting
-  the parameter `nz` (or the array `nnz`).
+  (the default parallel PETSc format).
 
   Collective
 
@@ -513,6 +510,10 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJHIPSPARSE(Mat A)
   Level: intermediate
 
   Notes:
+  This matrix will ultimately pushed down to AMD GPUs and use the HIPSPARSE library for
+  calculations. For good matrix assembly performance the user should preallocate the matrix
+  storage by setting the parameter `nz` (or the array `nnz`).
+
   It is recommended that one use the `MatCreate()`, `MatSetType()` and/or `MatSetFromOptions()`,
   MatXXXXSetPreallocation() paradigm instead of this routine directly.
   [MatXXXXSetPreallocation() is, for example, `MatSeqAIJSetPreallocation()`]

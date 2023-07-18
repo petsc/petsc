@@ -4019,7 +4019,7 @@ PetscErrorCode MatMPIAIJSetPreallocationCSR(Mat B, const PetscInt i[], const Pet
            structure. The size of this array is equal to the number
            of local rows, i.e 'm'.
 
-  Usage:
+  Example Usage:
   Consider the following 8x8 matrix with 34 non-zero values, that is
   assembled across 3 processors. Lets assume that proc0 owns 3 rows,
   proc1 owns 3 rows, proc2 owns 2 rows. This division can be shown
@@ -4416,17 +4416,17 @@ PetscErrorCode MatUpdateMPIAIJWithArray(Mat mat, const PetscScalar v[])
   type `MATSEQAIJ` is returned.  If a matrix of type `MATMPIAIJ` is desired for this
   type of communicator, use the construction mechanism
 .vb
-     MatCreate(...,&A);
-     MatSetType(A,MATMPIAIJ);
-     MatSetSizes(A, m,n,M,N);
-     MatMPIAIJSetPreallocation(A,...);
+  MatCreate(..., &A);
+  MatSetType(A, MATMPIAIJ);
+  MatSetSizes(A, m, n, M, N);
+  MatMPIAIJSetPreallocation(A, ...);
 .ve
 
   By default, this format uses inodes (identical nodes) when possible.
   We search for consecutive rows with the same nonzero structure, thereby
   reusing matrix information to achieve increased efficiency.
 
-  Usage:
+  Example Usage:
   Consider the following 8x8 matrix with 34 non-zero values, that is
   assembled across 3 processors. Lets assume that proc0 owns 3 rows,
   proc1 owns 3 rows, proc2 owns 2 rows. This division can be shown
@@ -5123,9 +5123,7 @@ PetscErrorCode MatCreateMPIAIJSumSeqAIJ(MPI_Comm comm, Mat seqmat, PetscInt m, P
 }
 
 /*@
-  MatAIJGetLocalMat - Creates a `MATSEQAIJ` from a `MATAIJ` matrix by taking its local rows and putting them into a sequential matrix with
-  mlocal rows and n columns. Where mlocal is obtained with `MatGetLocalSize()` and n is the global column count obtained
-  with `MatGetSize()`
+  MatAIJGetLocalMat - Creates a `MATSEQAIJ` from a `MATAIJ` matrix.
 
   Not Collective
 
@@ -5138,7 +5136,13 @@ PetscErrorCode MatCreateMPIAIJSumSeqAIJ(MPI_Comm comm, Mat seqmat, PetscInt m, P
   Level: developer
 
   Notes:
+  The matrix is created by taking `A`'s local rows and putting them into a sequential matrix
+  with `mlocal` rows and `n` columns. Where `mlocal` is obtained with `MatGetLocalSize()` and
+  `n` is the global column count obtained with `MatGetSize()`
+
   In other words combines the two parts of a parallel `MATMPIAIJ` matrix on each process to a single matrix.
+
+  For parallel matrices this creates an entirely new matrix. If the matrix is sequential it merely increases the reference count.
 
   Destroy the matrix with `MatDestroy()`
 
@@ -5160,9 +5164,7 @@ PetscErrorCode MatAIJGetLocalMat(Mat A, Mat *A_loc)
 }
 
 /*@
-  MatMPIAIJGetLocalMat - Creates a `MATSEQAIJ` from a `MATMPIAIJ` matrix by taking all its local rows and putting them into a sequential matrix with
-  mlocal rows and n columns. Where mlocal is the row count obtained with `MatGetLocalSize()` and n is the global column count obtained
-  with `MatGetSize()`
+  MatMPIAIJGetLocalMat - Creates a `MATSEQAIJ` from a `MATMPIAIJ` matrix.
 
   Not Collective
 
@@ -5176,12 +5178,16 @@ PetscErrorCode MatAIJGetLocalMat(Mat A, Mat *A_loc)
   Level: developer
 
   Notes:
+  The matrix is created by taking all `A`'s local rows and putting them into a sequential
+  matrix with `mlocal` rows and `n` columns.`mlocal` is the row count obtained with
+  `MatGetLocalSize()` and `n` is the global column count obtained with `MatGetSize()`.
+
   In other words combines the two parts of a parallel `MATMPIAIJ` matrix on each process to a single matrix.
 
-  When the communicator associated with `A` has size 1 and `MAT_INITIAL_MATRIX` is requested, the matrix returned is the diagonal part of `A`.
-  If `MAT_REUSE_MATRIX` is requested with comm size 1, `MatCopy`(Adiag,*`A_loc`,`SAME_NONZERO_PATTERN`) is called.
-  This means that one can preallocate the proper sequential matrix first and then call this routine with `MAT_REUSE_MATRIX` to safely
-  modify the values of the returned `A_loc`.
+  When `A` is sequential and `MAT_INITIAL_MATRIX` is requested, the matrix returned is the diagonal part of `A` (which contains the entire matrix),
+  with its reference count increased by one. Hence changing values of `A_loc` changes `A`. If `MAT_REUSE_MATRIX` is requested on a sequential matrix
+  then `MatCopy`(Adiag,*`A_loc`,`SAME_NONZERO_PATTERN`) is called to fill `A_loc`. Thus one can preallocate the appropriate sequential matrix `A_loc`
+  and then call this routine with `MAT_REUSE_MATRIX`. In this case, one can modify the values of `A_loc` without affecting the original sequential matrix.
 
 .seealso: [](ch_matrices), `Mat`, `MATMPIAIJ`, `MatGetOwnershipRange()`, `MatMPIAIJGetLocalMatCondensed()`, `MatMPIAIJGetLocalMatMerge()`
 @*/

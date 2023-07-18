@@ -274,23 +274,23 @@ PetscErrorCode MatFDColoringGetFunction(MatFDColoring matfd, PetscErrorCode (**f
 . f     - the function
 - fctx  - the optional user-defined function context
 
-  Calling sequence with `SNES` of `f`:
-$   PetscErrorCode f(SNES snes, Vec in, Vec out, void *fctx)
-+  snes - the nonlinear solver `SNES` object
-.  in - the location where the Jacobian is to be computed
-.  out - the location to put the computed function value
--  fctx - the function context
-
-  Calling sequence without `SNES` of `f`:
-$   PetscErrorCode f(void *dummy, Vec in, Vec out, void *fctx)
-+  dummy - an unused parameter
-.  in - the location where the Jacobian is to be computed
-.  out - the location to put the computed function value
--  fctx - the function context
-
   Level: advanced
 
   Note:
+  `f` has two possible calling configurations\:
+$ PetscErrorCode f(SNES snes, Vec in, Vec out, void *fctx)
++ snes - the nonlinear solver `SNES` object
+. in   - the location where the Jacobian is to be computed
+. out  - the location to put the computed function value
+- fctx - the function context
+
+  and
+$ PetscErrorCode f(void *dummy, Vec in, Vec out, void *fctx)
++ dummy - an unused parameter
+. in    - the location where the Jacobian is to be computed
+. out   - the location to put the computed function value
+- fctx  - the function context
+
   This function is usually used automatically by `SNES` (when one uses `SNESSetJacobian()` with the argument
   `SNESComputeJacobianDefaultColor()`) and only needs to be used by someone computing a matrix via coloring directly by
   calling `MatFDColoringApply()`

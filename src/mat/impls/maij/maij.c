@@ -1030,15 +1030,6 @@ static PetscErrorCode MatCreateSubMatrices_MAIJ(Mat mat, PetscInt n, const IS ir
 
   Level: advanced
 
-  Operations provided:
-.vb
-    MatMult()
-    MatMultTranspose()
-    MatMultAdd()
-    MatMultTransposeAdd()
-    MatView()
-.ve
-
 .seealso: [](ch_matrices), `Mat`, `MATAIJ`, `MATMAIJ`, `MatMAIJGetAIJ()`, `MatMAIJRedimension()`
 @*/
 PetscErrorCode MatCreateMAIJ(Mat A, PetscInt dof, Mat *maij)
