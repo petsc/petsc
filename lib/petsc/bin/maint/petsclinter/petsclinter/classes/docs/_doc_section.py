@@ -378,10 +378,10 @@ class FunctionParameterList(ParameterList):
     return
 
   @staticmethod
-  def _get_deref_pointer_cursor(cursor):
-    canon = cursor.type.get_canonical()
-    it    = 0
-    while canon.kind == clx.TypeKind.POINTER:
+  def _get_deref_pointer_cursor_type(cursor):
+    canon_type = cursor.type.get_canonical()
+    it         = 0
+    while canon_type.kind == clx.TypeKind.POINTER:
       if it >= 100:
         import petsclinter as pl
         # there is no chance that someone has a variable over 100 pointers deep, so
@@ -389,9 +389,9 @@ class FunctionParameterList(ParameterList):
         cursorview = '\n'.join(pl.classes._util.view_ast_from_cursor(cursor))
         emess      = f'Ran for {it} iterations (>= 100) trying to get pointer type for\n{cursor.error_view_from_cursor(arg)}\n{cursorview}'
         raise RuntimError(emess)
-      canon = canon.get_pointee()
-      it   += 1
-    return canon
+      canon_type = canon_type.get_pointee()
+      it        += 1
+    return canon_type
 
   def _check_fortran_interface(self, docstring, fnargs):
     """
@@ -402,7 +402,7 @@ class FunctionParameterList(ParameterList):
 
     requires_c = []
     for arg in fnargs:
-      kind = self._get_deref_pointer_cursor(arg).kind
+      kind = self._get_deref_pointer_cursor_type(arg).kind
 
       if kind in clx_char_type_kinds:
         requires_c.append((arg, 'char pointer'))
@@ -555,7 +555,8 @@ class FunctionParameterList(ParameterList):
       if func_ptr_cursors is None:
         # have not checked yet
         func_ptr_cursors = any(
-          c for c in arg_cursors if self._get_deref_pointer_cursor(c).kind == clx.TypeKind.FUNCTIONPROTO
+          c for c in arg_cursors
+          if self._get_deref_pointer_cursor_type(c).kind == clx.TypeKind.FUNCTIONPROTO
         )
       if func_ptr_cursors:
         diag.add_note(
@@ -594,7 +595,7 @@ class FunctionParameterList(ParameterList):
         # should recursively descend and pick up the names of all the function parameters
         #
         # note the order, by appending cursor first we effectively do a depth-first search
-        if cursor.type.get_pointee().kind == clx.TypeKind.FUNCTIONPROTO:
+        if self._get_deref_pointer_cursor_type(cursor).kind == clx.TypeKind.FUNCTIONPROTO:
           new_cursor_list.extend(
             get_recursive_cursor_list(c for c in cursor.get_children() if c.kind == PARM_DECL_KIND)
           )
