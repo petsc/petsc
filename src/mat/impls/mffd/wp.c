@@ -47,7 +47,7 @@ typedef struct {
    computing h with matrix-free finite differences.
 
   Input Parameters:
-+   ctx - the matrix free context
++   ctx - the matrix-free context
 .   U - the location at which you want the Jacobian
 -   a - the direction you want the derivative
 
@@ -82,11 +82,11 @@ static PetscErrorCode MatMFFDCompute_WP(MatMFFD ctx, Vec U, Vec a, PetscScalar *
 /*
    MatMFFDView_WP - Prints information about this particular
      method for computing h. Note that this does not print the general
-     information about the matrix free, that is printed by the calling
+     information about the matrix-free, that is printed by the calling
      routine.
 
   Input Parameters:
-+   ctx - the matrix free context
++   ctx - the matrix-free context
 -   viewer - the PETSc viewer
 
 */
@@ -112,7 +112,7 @@ static PetscErrorCode MatMFFDView_WP(MatMFFD ctx, PetscViewer viewer)
      any options appropriate for this method
 
   Input Parameter:
-.  ctx - the matrix free context
+.  ctx - the matrix-free context
 
 */
 static PetscErrorCode MatMFFDSetFromOptions_WP(MatMFFD ctx, PetscOptionItems *PetscOptionsObject)
@@ -178,7 +178,7 @@ PetscErrorCode MatMFFDWPSetComputeNormU(Mat A, PetscBool flag)
    computing h with matrix-free finite differences.
 
    Input Parameter:
-.  ctx - the matrix free context created by MatCreateMFFD()
+.  ctx - the matrix-free context created by MatCreateMFFD()
 
 */
 PETSC_EXTERN PetscErrorCode MatCreateMFFD_WP(MatMFFD ctx)

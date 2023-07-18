@@ -1792,7 +1792,7 @@ and
 to define the intergrid transfer operations. If only one of these is
 set, its transpose will be used for the other.
 
-It is possible for these interpolation operations to be matrix free (see
+It is possible for these interpolation operations to be matrix-free (see
 :any:`sec_matrixfree`); One should then make
 sure that these operations are defined for the (matrix-free) matrices
 passed in. Note that this system is arranged so that if the

@@ -843,7 +843,7 @@ The default ``SNES``
 matrix-free approximations can also be invoked with the command
 ``-snes_mf``. Or, one can retain the user-provided Jacobian
 preconditioner, but replace the user-provided Jacobian matrix with the
-default matrix free variant with the option ``-snes_mf_operator``.
+default matrix-free variant with the option ``-snes_mf_operator``.
 
 ``MatCreateSNESMF()`` uses
 
@@ -946,7 +946,7 @@ and preconditioning matrices are allowed, as well as both matrix-free
 and application-provided preconditioners. If :any:`ex3.c <snes-ex3>` is run with
 the options ``-snes_mf`` and ``-user_precond`` then it uses a
 matrix-free application of the matrix-vector multiple and a user
-provided matrix free Jacobian.
+provided matrix-free Jacobian.
 
 .. list-table:: Jacobian Options
    :name: tab-jacobians

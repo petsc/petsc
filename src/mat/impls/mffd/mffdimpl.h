@@ -40,7 +40,7 @@ struct _p_MatMFFD {
   PetscErrorCode (*checkh)(void *, Vec, Vec, PetscScalar *);
   void *checkhctx; /* optional context used by MatMFFDSetCheckh() */
 
-  PetscErrorCode (*func)(void *, Vec, Vec); /* function used for matrix free */
+  PetscErrorCode (*func)(void *, Vec, Vec); /* function used for matrix-free */
   void     *funcctx;                        /* the context for the function */
   Vec       current_f;                      /* location of F(u); used with F(u+h) */
   PetscBool current_f_allocated;

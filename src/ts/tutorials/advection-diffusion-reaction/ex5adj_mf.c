@@ -314,7 +314,7 @@ int main(int argc, char **argv)
     mctx.appctx = &appctx;
     PetscCall(VecDuplicate(x, &mctx.U));
     /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-      Create matrix free context
+      Create matrix-free context
       - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
     PetscCall(DMDAGetInfo(da, PETSC_IGNORE, &Mx, &My, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, &dof, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE));
     PetscCall(DMDAGetCorners(da, NULL, NULL, NULL, &xm, &ym, NULL));

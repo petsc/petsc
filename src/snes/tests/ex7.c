@@ -68,11 +68,11 @@ int main(int argc, char **argv)
     PetscCall(MatCreateMFFD(PETSC_COMM_WORLD, n, n, n, n, &J));
     PetscCall(MatMFFDSetFunction(J, (PetscErrorCode(*)(void *, Vec, Vec))SNESComputeFunction, snes));
     PetscCall(MatMFFDSetFunctioni(J, FormFunctioni));
-    /* Use the matrix free operator for both the Jacobian used to define the linear system and used to define the preconditioner */
+    /* Use the matrix-free operator for both the Jacobian used to define the linear system and used to define the preconditioner */
     /* This tests MatGetDiagonal() for MATMFFD */
     PetscCall(PetscOptionsHasName(NULL, NULL, "-puremf", &puremf));
   } else {
-    /* create matrix free matrix for Jacobian */
+    /* create matrix-free matrix for Jacobian */
     PetscCall(MatCreateSNESMF(snes, &J));
     /* demonstrates differencing a different function than FormFunction() to apply a matrix operator */
     /* note we use the same context for this function as FormFunction, the F vector */
@@ -153,7 +153,7 @@ PetscErrorCode FormFunctioni(void *dummy, PetscInt i, Vec x, PetscScalar *s)
 
 /*
 
-   Example function that when differenced produces the same matrix free Jacobian as FormFunction()
+   Example function that when differenced produces the same matrix-free Jacobian as FormFunction()
    this is provided to show how a user can provide a different function
 */
 PetscErrorCode OtherFunctionForDifferencing(void *dummy, Vec x, Vec f)

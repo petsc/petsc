@@ -440,7 +440,7 @@ PetscErrorCode DMStagStencilToIndexLocal(DM dm, PetscInt dim, PetscInt n, const 
   only allows access to entries in the local representation (including ghosts).
 
   This approach is not as efficient as getting values directly with `DMStagVecGetArray()`,
-  which is recommended for matrix free operators.
+  which is recommended for matrix-free operators.
 
   Level: advanced
 

@@ -1879,7 +1879,7 @@ cdef class SNES(Object):
                 'alpha2'    : toReal(alpha2),
                 'threshold' : toReal(threshold),}
 
-    # --- matrix free / finite differences ---
+    # --- matrix-free / finite differences ---
 
     def setUseMF(self, flag=True) -> None:
         """Set the boolean flag indicating to use matrix-free finite-differencing.
@@ -2333,7 +2333,7 @@ cdef class SNES(Object):
         def __get__(self) -> bool:
             return self.reason < 0
 
-    # --- matrix free / finite differences ---
+    # --- matrix-free / finite differences ---
 
     property use_mf:
         """Boolean indicating if the solver uses matrix-free finite-differencing."""

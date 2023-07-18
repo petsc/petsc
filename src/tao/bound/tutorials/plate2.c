@@ -42,7 +42,7 @@ static PetscErrorCode MSA_Plate(Vec, Vec, void *);
 PetscErrorCode        FormFunctionGradient(Tao, Vec, PetscReal *, Vec, void *);
 PetscErrorCode        FormHessian(Tao, Vec, Mat, Mat, void *);
 
-/* For testing matrix free submatrices */
+/* For testing matrix-free submatrices */
 PetscErrorCode MatrixFreeHessian(Tao, Vec, Mat, Mat, void *);
 PetscErrorCode MyMatMult(Mat, Vec, Vec);
 
@@ -842,7 +842,7 @@ static PetscErrorCode MSA_InitialPoint(AppCtx *user, Vec X)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* For testing matrix free submatrices */
+/* For testing matrix-free submatrices */
 PetscErrorCode MatrixFreeHessian(Tao tao, Vec x, Mat H, Mat Hpre, void *ptr)
 {
   AppCtx *user = (AppCtx *)ptr;
