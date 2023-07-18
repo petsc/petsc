@@ -204,7 +204,6 @@ typedef struct {
 PETSC_EXTERN PetscErrorCode DMDAGetLocalInfo(DM, DMDALocalInfo *);
 
 PETSC_EXTERN PetscErrorCode MatRegisterDAAD(void);
-PETSC_EXTERN PetscErrorCode MatCreateDAAD(DM, Mat *);
 PETSC_EXTERN PetscErrorCode MatCreateSeqUSFFT(Vec, DM, Mat *);
 
 PETSC_EXTERN PetscErrorCode DMDASetGetMatrix(DM, PetscErrorCode (*)(DM, Mat *));
@@ -225,9 +224,6 @@ PETSC_EXTERN PetscErrorCode DMDAGetNumVertices(DM, PetscInt *, PetscInt *, Petsc
 PETSC_EXTERN PetscErrorCode DMDAGetNumFaces(DM, PetscInt *, PetscInt *, PetscInt *, PetscInt *, PetscInt *, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMDAGetHeightStratum(DM, PetscInt, PetscInt *, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMDAGetDepthStratum(DM, PetscInt, PetscInt *, PetscInt *);
-PETSC_EXTERN PetscErrorCode DMDAComputeCellGeometryFEM(DM, PetscInt, PetscQuadrature, PetscReal[], PetscReal[], PetscReal[], PetscReal[]);
-PETSC_EXTERN PetscErrorCode DMDAGetTransitiveClosure(DM, PetscInt, PetscBool, PetscInt *, PetscInt **);
-PETSC_EXTERN PetscErrorCode DMDARestoreTransitiveClosure(DM, PetscInt, PetscBool, PetscInt *, PetscInt **);
 PETSC_EXTERN PetscErrorCode DMDAConvertToCell(DM, MatStencil, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMDASetVertexCoordinates(DM, PetscReal, PetscReal, PetscReal, PetscReal, PetscReal, PetscReal);
 PETSC_EXTERN PetscErrorCode DMDASetPreallocationCenterDimension(DM, PetscInt);

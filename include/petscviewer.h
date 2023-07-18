@@ -311,11 +311,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerMathematicaSetName(PetscViewer, const cha
 PETSC_EXTERN PetscErrorCode PetscViewerMathematicaClearName(PetscViewer);
 PETSC_EXTERN PetscErrorCode PetscViewerMathematicaSkipPackets(PetscViewer, int);
 
-PETSC_EXTERN PetscErrorCode PetscViewerSiloGetName(PetscViewer, char **);
-PETSC_EXTERN PetscErrorCode PetscViewerSiloSetName(PetscViewer, const char[]);
 PETSC_EXTERN PetscErrorCode PetscViewerSiloClearName(PetscViewer);
-PETSC_EXTERN PetscErrorCode PetscViewerSiloGetMeshName(PetscViewer, char **);
-PETSC_EXTERN PetscErrorCode PetscViewerSiloSetMeshName(PetscViewer, const char[]);
 PETSC_EXTERN PetscErrorCode PetscViewerSiloClearMeshName(PetscViewer);
 
 typedef enum {

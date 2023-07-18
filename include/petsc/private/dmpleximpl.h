@@ -348,8 +348,6 @@ PETSC_EXTERN PetscErrorCode DMPlexCreateReferenceTree_Union(DM, DM, const char *
 PETSC_EXTERN PetscErrorCode DMPlexComputeInterpolatorTree(DM, DM, PetscSF, PetscInt *, Mat);
 PETSC_EXTERN PetscErrorCode DMPlexComputeInjectorTree(DM, DM, PetscSF, PetscInt *, Mat);
 PETSC_EXTERN PetscErrorCode DMPlexAnchorsModifyMat(DM, PetscSection, PetscInt, PetscInt, const PetscInt[], const PetscInt ***, const PetscScalar[], PetscInt *, PetscInt *, PetscInt *[], PetscScalar *[], PetscInt[], PetscBool);
-PETSC_EXTERN PetscErrorCode indicesPoint_private(PetscSection, PetscInt, PetscInt, PetscInt *, PetscBool, PetscInt, PetscInt[]);
-PETSC_EXTERN PetscErrorCode indicesPointFields_private(PetscSection, PetscInt, PetscInt, PetscInt[], PetscBool, PetscInt, PetscInt[]);
 PETSC_INTERN PetscErrorCode DMPlexLocatePoint_Internal(DM, PetscInt, const PetscScalar[], PetscInt, PetscInt *);
 /* these two are PETSC_EXTERN just because of src/dm/impls/plex/tests/ex18.c */
 PETSC_EXTERN PetscErrorCode DMPlexOrientInterface_Internal(DM);

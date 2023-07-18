@@ -1385,7 +1385,6 @@ PETSC_EXTERN PetscErrorCode PetscSynchronizedFPrintf(MPI_Comm, FILE *, const cha
 PETSC_EXTERN PetscErrorCode PetscSynchronizedFlush(MPI_Comm, FILE *);
 PETSC_EXTERN PetscErrorCode PetscSynchronizedFGets(MPI_Comm, FILE *, size_t, char[]);
 PETSC_EXTERN PetscErrorCode PetscStartMatlab(MPI_Comm, const char[], const char[], FILE **);
-PETSC_EXTERN PetscErrorCode PetscStartJava(MPI_Comm, const char[], const char[], FILE **);
 PETSC_EXTERN PetscErrorCode PetscGetPetscDir(const char *[]);
 
 PETSC_EXTERN PetscClassId   PETSC_CONTAINER_CLASSID;
