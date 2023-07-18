@@ -22,7 +22,7 @@ PetscErrorCode DMGetCeed(DM dm, Ceed *ceed)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(ceed, 2);
+  PetscAssertPointer(ceed, 2);
   if (!dm->ceed) {
     char        ceedresource[PETSC_MAX_PATH_LEN]; /* libCEED resource specifier */
     const char *prefix;

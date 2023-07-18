@@ -143,7 +143,7 @@ static PetscErrorCode DMSlicedSetBlockFills_Private(PetscInt bs, const PetscInt 
   DMSlicedBlockFills *f;
 
   PetscFunctionBegin;
-  PetscValidPointer(inf, 3);
+  PetscAssertPointer(inf, 3);
   if (*inf) PetscCall(PetscFree3(*inf, (*inf)->i, (*inf)->j));
   if (!fill) PetscFunctionReturn(PETSC_SUCCESS);
   for (i = 0, nz = 0; i < bs * bs; i++)
@@ -212,7 +212,7 @@ static PetscErrorCode DMCreateGlobalVector_Sliced(DM dm, Vec *gvec)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(gvec, 2);
+  PetscAssertPointer(gvec, 2);
   *gvec = NULL;
   PetscCall(VecCreateGhostBlock(PetscObjectComm((PetscObject)dm), slice->bs, slice->n * slice->bs, PETSC_DETERMINE, slice->Nghosts, slice->ghosts, gvec));
   PetscCall(VecSetDM(*gvec, dm));
@@ -301,7 +301,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_Sliced(DM p)
 PetscErrorCode DMSlicedCreate(MPI_Comm comm, PetscInt bs, PetscInt nlocal, PetscInt Nghosts, const PetscInt ghosts[], const PetscInt d_nnz[], const PetscInt o_nnz[], DM *dm)
 {
   PetscFunctionBegin;
-  PetscValidPointer(dm, 8);
+  PetscAssertPointer(dm, 8);
   PetscCall(DMCreate(comm, dm));
   PetscCall(DMSetType(*dm, DMSLICED));
   PetscCall(DMSlicedSetGhosts(*dm, bs, nlocal, Nghosts, ghosts));

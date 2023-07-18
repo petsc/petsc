@@ -188,7 +188,7 @@ PetscErrorCode PetscViewerVUGetPointer(PetscViewer viewer, FILE **fd)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 1);
-  PetscValidPointer(fd, 2);
+  PetscAssertPointer(fd, 2);
   *fd = vu->fd;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -238,7 +238,7 @@ PetscErrorCode PetscViewerVUGetVecSeen(PetscViewer viewer, PetscBool *vecSeen)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 1);
-  PetscValidPointer(vecSeen, 2);
+  PetscAssertPointer(vecSeen, 2);
   *vecSeen = vu->vecSeen;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

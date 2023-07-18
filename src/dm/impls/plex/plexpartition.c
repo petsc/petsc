@@ -753,7 +753,7 @@ PetscErrorCode PetscPartitionerDMPlexPartition(PetscPartitioner part, DM dm, Pet
   PetscValidHeaderSpecific(dm, DM_CLASSID, 2);
   if (targetSection) PetscValidHeaderSpecific(targetSection, PETSC_SECTION_CLASSID, 3);
   PetscValidHeaderSpecific(partSection, PETSC_SECTION_CLASSID, 4);
-  PetscValidPointer(partition, 5);
+  PetscAssertPointer(partition, 5);
   PetscCall(PetscObjectTypeCompare((PetscObject)dm, DMPLEX, &isplex));
   PetscCheck(isplex, PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Not for type %s", ((PetscObject)dm)->type_name);
   PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)part), &size));
@@ -893,7 +893,7 @@ PetscErrorCode DMPlexGetPartitioner(DM dm, PetscPartitioner *part)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(part, 2);
+  PetscAssertPointer(part, 2);
   *part = mesh->partitioner;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

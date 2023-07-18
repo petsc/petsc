@@ -264,7 +264,7 @@ PetscErrorCode PetscViewerMathematicaSetLinkName(PetscViewer v, const char *name
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v, PETSC_VIEWER_CLASSID, 1);
-  PetscValidPointer(name, 2);
+  PetscAssertPointer(name, 2);
   PetscCall(PetscStrallocpy(name, &vmath->linkname));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -285,7 +285,7 @@ PetscErrorCode PetscViewerMathematicaSetLinkHost(PetscViewer v, const char *host
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v, PETSC_VIEWER_CLASSID, 1);
-  PetscValidPointer(host, 2);
+  PetscAssertPointer(host, 2);
   PetscCall(PetscStrallocpy(host, &vmath->linkhost));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -420,7 +420,7 @@ PetscErrorCode PetscViewerMathematicaGetName(PetscViewer viewer, const char **na
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 1);
-  PetscValidPointer(name, 2);
+  PetscAssertPointer(name, 2);
   *name = vmath->objName;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -442,7 +442,7 @@ PetscErrorCode PetscViewerMathematicaSetName(PetscViewer viewer, const char name
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 1);
-  PetscValidPointer(name, 2);
+  PetscAssertPointer(name, 2);
   vmath->objName = name;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

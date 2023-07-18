@@ -48,7 +48,7 @@ PetscErrorCode PetscViewerGetSubViewer(PetscViewer viewer, MPI_Comm comm, PetscV
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 1);
-  PetscValidPointer(outviewer, 3);
+  PetscAssertPointer(outviewer, 3);
   PetscUseTypeMethod(viewer, getsubviewer, comm, outviewer);
   PetscFunctionReturn(PETSC_SUCCESS);
 }

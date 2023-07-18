@@ -450,7 +450,7 @@ PetscErrorCode PetscIntView(PetscInt N, const PetscInt idx[], PetscViewer viewer
   PetscFunctionBegin;
   if (!viewer) viewer = PETSC_VIEWER_STDOUT_SELF;
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 3);
-  if (N) PetscValidPointer(idx, 2);
+  if (N) PetscAssertPointer(idx, 2);
   PetscCall(PetscObjectGetComm((PetscObject)viewer, &comm));
   PetscCallMPI(MPI_Comm_size(comm, &size));
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
@@ -547,7 +547,7 @@ PetscErrorCode PetscRealView(PetscInt N, const PetscReal idx[], PetscViewer view
   PetscFunctionBegin;
   if (!viewer) viewer = PETSC_VIEWER_STDOUT_SELF;
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 3);
-  PetscValidPointer(idx, 2);
+  PetscAssertPointer(idx, 2);
   PetscCall(PetscObjectGetComm((PetscObject)viewer, &comm));
   PetscCallMPI(MPI_Comm_size(comm, &size));
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
@@ -652,7 +652,7 @@ PetscErrorCode PetscScalarView(PetscInt N, const PetscScalar idx[], PetscViewer 
   PetscFunctionBegin;
   if (!viewer) viewer = PETSC_VIEWER_STDOUT_SELF;
   PetscValidHeader(viewer, 3);
-  if (N) PetscValidPointer(idx, 2);
+  if (N) PetscAssertPointer(idx, 2);
   PetscCall(PetscObjectGetComm((PetscObject)viewer, &comm));
   PetscCallMPI(MPI_Comm_size(comm, &size));
   PetscCallMPI(MPI_Comm_rank(comm, &rank));

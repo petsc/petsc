@@ -655,7 +655,7 @@ PetscErrorCode DMSwarmGetCoordinateFunction(DM sw, PetscSimplePointFunc *coordFu
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sw, DM_CLASSID, 1);
-  PetscValidPointer(coordFunc, 2);
+  PetscAssertPointer(coordFunc, 2);
   *coordFunc = swarm->coordFunc;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -705,7 +705,7 @@ PetscErrorCode DMSwarmGetVelocityFunction(DM sw, PetscSimplePointFunc *velFunc)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sw, DM_CLASSID, 1);
-  PetscValidPointer(velFunc, 2);
+  PetscAssertPointer(velFunc, 2);
   *velFunc = swarm->velFunc;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -39,7 +39,7 @@ PetscErrorCode PetscDrawBarCreate(PetscDraw draw, PetscDrawBar *bar)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw, PETSC_DRAW_CLASSID, 1);
-  PetscValidPointer(bar, 2);
+  PetscAssertPointer(bar, 2);
 
   PetscCall(PetscHeaderCreate(h, PETSC_DRAWBAR_CLASSID, "DrawBar", "Bar Graph", "Draw", PetscObjectComm((PetscObject)draw), PetscDrawBarDestroy, NULL));
 
@@ -335,7 +335,7 @@ PetscErrorCode PetscDrawBarGetAxis(PetscDrawBar bar, PetscDrawAxis *axis)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(bar, PETSC_DRAWBAR_CLASSID, 1);
-  PetscValidPointer(axis, 2);
+  PetscAssertPointer(axis, 2);
   *axis = bar->axis;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -359,7 +359,7 @@ PetscErrorCode PetscDrawBarGetDraw(PetscDrawBar bar, PetscDraw *draw)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(bar, PETSC_DRAWBAR_CLASSID, 1);
-  PetscValidPointer(draw, 2);
+  PetscAssertPointer(draw, 2);
   *draw = bar->win;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

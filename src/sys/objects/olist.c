@@ -31,8 +31,8 @@ PetscErrorCode PetscObjectListRemoveReference(PetscObjectList *fl, const char na
   PetscBool       match;
 
   PetscFunctionBegin;
-  PetscValidPointer(fl, 1);
-  PetscValidPointer(name, 2);
+  PetscAssertPointer(fl, 1);
+  PetscAssertPointer(name, 2);
   nlist = *fl;
   while (nlist) {
     PetscCall(PetscStrcmp(name, nlist->name, &match));
@@ -69,7 +69,7 @@ PetscErrorCode PetscObjectListAdd(PetscObjectList *fl, const char name[], PetscO
   PetscBool       match;
 
   PetscFunctionBegin;
-  PetscValidPointer(fl, 1);
+  PetscAssertPointer(fl, 1);
   if (!obj) { /* this means remove from list if it is there */
     nlist = *fl;
     prev  = NULL;
@@ -135,7 +135,7 @@ PetscErrorCode PetscObjectListDestroy(PetscObjectList *ifl)
   PetscObjectList tmp, fl;
 
   PetscFunctionBegin;
-  PetscValidPointer(ifl, 1);
+  PetscAssertPointer(ifl, 1);
   fl = *ifl;
   while (fl) {
     tmp = fl->next;
@@ -169,7 +169,7 @@ PetscErrorCode PetscObjectListDestroy(PetscObjectList *ifl)
 PetscErrorCode PetscObjectListFind(PetscObjectList fl, const char name[], PetscObject *obj)
 {
   PetscFunctionBegin;
-  PetscValidPointer(obj, 3);
+  PetscAssertPointer(obj, 3);
   *obj = NULL;
   while (fl) {
     PetscBool match;
@@ -206,8 +206,8 @@ PetscErrorCode PetscObjectListFind(PetscObjectList fl, const char name[], PetscO
 PetscErrorCode PetscObjectListReverseFind(PetscObjectList fl, PetscObject obj, char **name, PetscBool *skipdereference)
 {
   PetscFunctionBegin;
-  PetscValidPointer(name, 3);
-  if (skipdereference) PetscValidPointer(skipdereference, 4);
+  PetscAssertPointer(name, 3);
+  if (skipdereference) PetscAssertPointer(skipdereference, 4);
   *name = NULL;
   while (fl) {
     if (fl->obj == obj) {
@@ -237,7 +237,7 @@ PetscErrorCode PetscObjectListReverseFind(PetscObjectList fl, PetscObject obj, c
 PetscErrorCode PetscObjectListDuplicate(PetscObjectList fl, PetscObjectList *nl)
 {
   PetscFunctionBegin;
-  PetscValidPointer(nl, 2);
+  PetscAssertPointer(nl, 2);
   while (fl) {
     PetscCall(PetscObjectListAdd(nl, fl->name, fl->obj));
     fl = fl->next;

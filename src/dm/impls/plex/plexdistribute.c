@@ -94,7 +94,7 @@ PetscErrorCode DMPlexGetAdjacencyUseAnchors(DM dm, PetscBool *useAnchors)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(useAnchors, 2);
+  PetscAssertPointer(useAnchors, 2);
   *useAnchors = mesh->useAnchors;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -283,8 +283,8 @@ PetscErrorCode DMPlexGetAdjacency(DM dm, PetscInt p, PetscInt *adjSize, PetscInt
 
   PetscFunctionBeginHot;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(adjSize, 3);
-  PetscValidPointer(adj, 4);
+  PetscAssertPointer(adjSize, 3);
+  PetscAssertPointer(adj, 4);
   PetscCall(DMGetBasicAdjacency(dm, &useCone, &useClosure));
   PetscCall(DMPlexGetAdjacencyUseAnchors(dm, &useAnchors));
   PetscCall(DMPlexGetAdjacency_Internal(dm, p, useCone, useClosure, useAnchors, adjSize, adj));
@@ -326,8 +326,8 @@ PetscErrorCode DMPlexCreateTwoSidedProcessSF(DM dm, PetscSF sfPoint, PetscSectio
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidHeaderSpecific(sfPoint, PETSCSF_CLASSID, 2);
-  if (processRanks) PetscValidPointer(processRanks, 7);
-  if (sfProcess) PetscValidPointer(sfProcess, 8);
+  if (processRanks) PetscAssertPointer(processRanks, 7);
+  if (sfProcess) PetscAssertPointer(sfProcess, 8);
   PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)dm), &size));
   PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)dm), &rank));
   PetscCall(PetscSFGetGraph(sfPoint, NULL, &numLeaves, NULL, &remotePoints));
@@ -1431,7 +1431,7 @@ PetscErrorCode DMPlexGetPartitionBalance(DM dm, PetscBool *flg)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(flg, 2);
+  PetscAssertPointer(flg, 2);
   *flg = mesh->partitionBalance;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1704,8 +1704,8 @@ PetscErrorCode DMPlexDistribute(DM dm, PetscInt overlap, PetscSF *sf, DM *dmPara
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidLogicalCollectiveInt(dm, overlap, 2);
-  if (sf) PetscValidPointer(sf, 3);
-  PetscValidPointer(dmParallel, 4);
+  if (sf) PetscAssertPointer(sf, 3);
+  PetscAssertPointer(dmParallel, 4);
 
   if (sf) *sf = NULL;
   *dmParallel = NULL;
@@ -1913,8 +1913,8 @@ PetscErrorCode DMPlexDistributeOverlap(DM dm, PetscInt overlap, PetscSF *sf, DM 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidLogicalCollectiveInt(dm, overlap, 2);
-  if (sf) PetscValidPointer(sf, 3);
-  PetscValidPointer(dmOverlap, 4);
+  if (sf) PetscAssertPointer(sf, 3);
+  PetscAssertPointer(dmOverlap, 4);
 
   if (sf) *sf = NULL;
   *dmOverlap = NULL;
@@ -2027,7 +2027,7 @@ PetscErrorCode DMPlexGetOverlap(DM dm, PetscInt *overlap)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(overlap, 2);
+  PetscAssertPointer(overlap, 2);
   PetscUseMethod(dm, "DMPlexGetOverlap_C", (DM, PetscInt *), (dm, overlap));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -2117,7 +2117,7 @@ PetscErrorCode DMPlexDistributeGetDefault(DM dm, PetscBool *dist)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(dist, 2);
+  PetscAssertPointer(dist, 2);
   PetscUseMethod(dm, "DMPlexDistributeGetDefault_C", (DM, PetscBool *), (dm, dist));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -2147,7 +2147,7 @@ PetscErrorCode DMPlexGetGatherDM(DM dm, PetscSF *sf, DM *gatherMesh)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(gatherMesh, 3);
+  PetscAssertPointer(gatherMesh, 3);
   *gatherMesh = NULL;
   if (sf) *sf = NULL;
   comm = PetscObjectComm((PetscObject)dm);
@@ -2194,7 +2194,7 @@ PetscErrorCode DMPlexGetRedundantDM(DM dm, PetscSF *sf, DM *redundantMesh)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(redundantMesh, 3);
+  PetscAssertPointer(redundantMesh, 3);
   *redundantMesh = NULL;
   comm           = PetscObjectComm((PetscObject)dm);
   PetscCallMPI(MPI_Comm_size(comm, &size));
@@ -2270,7 +2270,7 @@ PetscErrorCode DMPlexIsDistributed(DM dm, PetscBool *distributed)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(distributed, 2);
+  PetscAssertPointer(distributed, 2);
   PetscCall(PetscObjectGetComm((PetscObject)dm, &comm));
   PetscCallMPI(MPI_Comm_size(comm, &size));
   if (size == 1) {
@@ -2307,7 +2307,7 @@ PetscErrorCode DMPlexDistributionSetName(DM dm, const char name[])
 
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(dm, DM_CLASSID, 1, DMPLEX);
-  if (name) PetscValidPointer(name, 2);
+  if (name) PetscAssertPointer(name, 2);
   PetscCall(PetscFree(mesh->distributionName));
   PetscCall(PetscStrallocpy(name, &mesh->distributionName));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -2338,7 +2338,7 @@ PetscErrorCode DMPlexDistributionGetName(DM dm, const char *name[])
 
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(dm, DM_CLASSID, 1, DMPLEX);
-  PetscValidPointer(name, 2);
+  PetscAssertPointer(name, 2);
   *name = mesh->distributionName;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

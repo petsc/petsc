@@ -145,7 +145,7 @@ def __register_all_symbol_checks():
     "PetscValidHeaderSpecificType"       : _code.checkPetscValidHeaderSpecificType,
     "PetscValidHeaderSpecific"           : _code.checkPetscValidHeaderSpecific,
     "PetscValidHeader"                   : _code.checkPetscValidHeader,
-    "PetscValidPointer"                  : _code.checkPetscValidPointer,
+    "PetscAssertPointer"                  : _code.checkPetscAssertPointer,
     "PetscValidCharPointer"              : _code.checkPetscValidCharPointer,
     "PetscValidIntPointer"               : _code.checkPetscValidIntPointer,
     "PetscValidBoolPointer"              : _code.checkPetscValidBoolPointer,

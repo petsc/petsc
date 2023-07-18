@@ -879,7 +879,7 @@ static PetscErrorCode PCASMGetSubMatType_ASM(PC pc, MatType *sub_mat_type)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
-  PetscValidPointer(sub_mat_type, 2);
+  PetscAssertPointer(sub_mat_type, 2);
   *sub_mat_type = osm->sub_mat_type;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1153,7 +1153,7 @@ PetscErrorCode PCASMGetLocalType(PC pc, PCCompositeType *type)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
-  PetscValidPointer(type, 2);
+  PetscAssertPointer(type, 2);
   PetscUseMethod(pc, "PCASMGetLocalType_C", (PC, PCCompositeType *), (pc, type));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1342,7 +1342,7 @@ PetscErrorCode PCASMCreateSubdomains(Mat A, PetscInt n, IS *outis[])
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
-  PetscValidPointer(outis, 3);
+  PetscAssertPointer(outis, 3);
   PetscCheck(n >= 1, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "number of local blocks must be > 0, n = %" PetscInt_FMT, n);
 
   /* Get prefix, row distribution, and block size */
@@ -1500,12 +1500,12 @@ PetscErrorCode PCASMDestroySubdomains(PetscInt n, IS is[], IS is_local[])
   PetscFunctionBegin;
   if (n <= 0) PetscFunctionReturn(PETSC_SUCCESS);
   if (is) {
-    PetscValidPointer(is, 2);
+    PetscAssertPointer(is, 2);
     for (i = 0; i < n; i++) PetscCall(ISDestroy(&is[i]));
     PetscCall(PetscFree(is));
   }
   if (is_local) {
-    PetscValidPointer(is_local, 3);
+    PetscAssertPointer(is_local, 3);
     for (i = 0; i < n; i++) PetscCall(ISDestroy(&is_local[i]));
     PetscCall(PetscFree(is_local));
   }
@@ -1629,9 +1629,9 @@ PetscErrorCode PCASMGetLocalSubdomains(PC pc, PetscInt *n, IS *is[], IS *is_loca
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
-  if (n) PetscValidPointer(n, 2);
-  if (is) PetscValidPointer(is, 3);
-  if (is_local) PetscValidPointer(is_local, 4);
+  if (n) PetscAssertPointer(n, 2);
+  if (is) PetscAssertPointer(is, 3);
+  if (is_local) PetscAssertPointer(is_local, 4);
   PetscCall(PetscObjectTypeCompare((PetscObject)pc, PCASM, &match));
   PetscCheck(match, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONG, "PC is not a PCASM");
   if (n) *n = osm->n_local_true;
@@ -1670,8 +1670,8 @@ PetscErrorCode PCASMGetLocalSubmatrices(PC pc, PetscInt *n, Mat *mat[])
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
-  if (n) PetscValidPointer(n, 2);
-  if (mat) PetscValidPointer(mat, 3);
+  if (n) PetscAssertPointer(n, 2);
+  if (mat) PetscAssertPointer(mat, 3);
   PetscCheck(pc->setupcalled, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONGSTATE, "Must call after KSPSetUp() or PCSetUp().");
   PetscCall(PetscObjectTypeCompare((PetscObject)pc, PCASM, &match));
   if (!match) {
@@ -1743,7 +1743,7 @@ PetscErrorCode PCASMGetDMSubdomains(PC pc, PetscBool *flg)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
-  PetscValidPointer(flg, 2);
+  PetscAssertPointer(flg, 2);
   PetscCall(PetscObjectTypeCompare((PetscObject)pc, PCASM, &match));
   if (match) *flg = osm->dm_subdomains;
   else *flg = PETSC_FALSE;

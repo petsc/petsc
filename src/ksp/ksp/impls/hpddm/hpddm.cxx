@@ -434,7 +434,7 @@ PetscErrorCode KSPHPDDMGetDeflationMat(KSP ksp, Mat *U)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
   if (U) {
-    PetscValidPointer(U, 2);
+    PetscAssertPointer(U, 2);
     PetscUseMethod(ksp, "KSPHPDDMGetDeflationMat_C", (KSP, Mat *), (ksp, U));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -589,7 +589,7 @@ PetscErrorCode KSPHPDDMGetType(KSP ksp, KSPHPDDMType *type)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
   if (type) {
-    PetscValidPointer(type, 2);
+    PetscAssertPointer(type, 2);
     PetscUseMethod(ksp, "KSPHPDDMGetType_C", (KSP, KSPHPDDMType *), (ksp, type));
   }
   PetscFunctionReturn(PETSC_SUCCESS);

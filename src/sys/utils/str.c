@@ -283,7 +283,7 @@ PetscErrorCode PetscStrcasecmp(const char a[], const char b[], PetscBool *t)
   int c;
 
   PetscFunctionBegin;
-  PetscValidPointer(t, 3);
+  PetscAssertPointer(t, 3);
   if (!a && !b) c = 0;
   else if (!a || !b) c = 1;
 #if defined(PETSC_HAVE_STRCASECMP)
@@ -328,8 +328,8 @@ PetscErrorCode PetscStrcasecmp(const char a[], const char b[], PetscBool *t)
 PetscErrorCode PetscStrendswithwhich(const char a[], const char *const *bs, PetscInt *cnt)
 {
   PetscFunctionBegin;
-  PetscValidPointer(bs, 2);
-  PetscValidPointer(cnt, 3);
+  PetscAssertPointer(bs, 2);
+  PetscAssertPointer(cnt, 3);
   *cnt = 0;
   while (bs[*cnt]) {
     PetscBool flg;
@@ -376,8 +376,8 @@ PetscErrorCode PetscTokenFind(PetscToken a, char *result[])
   char *ptr, token;
 
   PetscFunctionBegin;
-  PetscValidPointer(a, 1);
-  PetscValidPointer(result, 2);
+  PetscAssertPointer(a, 1);
+  PetscAssertPointer(result, 2);
   *result = ptr = a->current;
   if (ptr && !*ptr) {
     *result = NULL;
@@ -428,8 +428,8 @@ PetscErrorCode PetscTokenFind(PetscToken a, char *result[])
 PetscErrorCode PetscTokenCreate(const char a[], char b, PetscToken *t)
 {
   PetscFunctionBegin;
-  PetscValidPointer(a, 1);
-  PetscValidPointer(t, 3);
+  PetscAssertPointer(a, 1);
+  PetscAssertPointer(t, 3);
   PetscCall(PetscNew(t));
   PetscCall(PetscStrallocpy(a, &(*t)->array));
 
@@ -482,7 +482,7 @@ PetscErrorCode PetscStrInList(const char str[], const char list[], char sep, Pet
   char      *item;
 
   PetscFunctionBegin;
-  PetscValidPointer(found, 4);
+  PetscAssertPointer(found, 4);
   *found = PETSC_FALSE;
   PetscCall(PetscTokenCreate(list, sep, &token));
   PetscCall(PetscTokenFind(token, &item));
@@ -510,7 +510,7 @@ PetscErrorCode PetscStrInList(const char str[], const char list[], char sep, Pet
 PetscErrorCode PetscGetPetscDir(const char *dir[])
 {
   PetscFunctionBegin;
-  PetscValidPointer(dir, 1);
+  PetscAssertPointer(dir, 1);
   *dir = PETSC_DIR;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -549,8 +549,8 @@ PetscErrorCode PetscStrreplace(MPI_Comm comm, const char aa[], char b[], size_t 
   static size_t DISPLAY_LENGTH = 265, USER_LENGTH = 256, HOST_LENGTH = 256;
 
   PetscFunctionBegin;
-  PetscValidPointer(aa, 2);
-  PetscValidPointer(b, 3);
+  PetscAssertPointer(aa, 2);
+  PetscAssertPointer(b, 3);
   if (aa == b) PetscCall(PetscStrallocpy(aa, (char **)&a));
   PetscCall(PetscMalloc1(len, &work));
 
@@ -647,7 +647,7 @@ PetscErrorCode PetscStrcmpAny(const char src[], PetscBool *match, const char cmp
   va_list Argp;
 
   PetscFunctionBegin;
-  PetscValidPointer(match, 2);
+  PetscAssertPointer(match, 2);
   *match = PETSC_FALSE;
   if (!src) PetscFunctionReturn(PETSC_SUCCESS);
   va_start(Argp, cmp);
@@ -686,7 +686,7 @@ PetscErrorCode PetscEListFind(PetscInt n, const char *const *list, const char *s
 {
   PetscFunctionBegin;
   if (found) {
-    PetscValidPointer(found, 5);
+    PetscAssertPointer(found, 5);
     *found = PETSC_FALSE;
   }
   for (PetscInt i = 0; i < n; ++i) {
@@ -725,17 +725,17 @@ PetscErrorCode PetscEnumFind(const char *const *enumlist, const char *str, Petsc
   PetscBool efound;
 
   PetscFunctionBegin;
-  PetscValidPointer(enumlist, 1);
+  PetscAssertPointer(enumlist, 1);
   while (enumlist[n++]) PetscCheck(n <= 50, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "List argument appears to be wrong or have more than 50 entries");
   PetscCheck(n >= 3, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "List argument must have at least two entries: typename and type prefix");
   n -= 3; /* drop enum name, prefix, and null termination */
   PetscCall(PetscEListFind(n, enumlist, str, &evalue, &efound));
   if (efound) {
-    PetscValidPointer(value, 3);
+    PetscAssertPointer(value, 3);
     *value = (PetscEnum)evalue;
   }
   if (found) {
-    PetscValidPointer(found, 4);
+    PetscAssertPointer(found, 4);
     *found = efound;
   }
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -818,7 +818,7 @@ PetscErrorCode PetscStrcat(char s[], const char t[])
 {
   PetscFunctionBegin;
   if (!t) PetscFunctionReturn(PETSC_SUCCESS);
-  PetscValidPointer(s, 1);
+  PetscAssertPointer(s, 1);
   strcat(s, t);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -848,8 +848,8 @@ PetscErrorCode PetscStrcpy(char s[], const char t[])
 {
   PetscFunctionBegin;
   if (t) {
-    PetscValidPointer(s, 1);
-    PetscValidPointer(t, 2);
+    PetscAssertPointer(s, 1);
+    PetscAssertPointer(t, 2);
     strcpy(s, t);
   } else if (s) {
     s[0] = '\0';

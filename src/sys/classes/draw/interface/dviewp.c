@@ -64,10 +64,10 @@ PetscErrorCode PetscDrawGetViewPort(PetscDraw draw, PetscReal *xl, PetscReal *yl
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw, PETSC_DRAW_CLASSID, 1);
-  PetscValidPointer(xl, 2);
-  PetscValidPointer(yl, 3);
-  PetscValidPointer(xr, 4);
-  PetscValidPointer(yr, 5);
+  PetscAssertPointer(xl, 2);
+  PetscAssertPointer(yl, 3);
+  PetscAssertPointer(xr, 4);
+  PetscAssertPointer(yr, 5);
   *xl = draw->port_xl;
   *yl = draw->port_yl;
   *xr = draw->port_xr;
@@ -158,7 +158,7 @@ PetscErrorCode PetscDrawViewPortsCreate(PetscDraw draw, PetscInt nports, PetscDr
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw, PETSC_DRAW_CLASSID, 1);
   PetscCheck(nports >= 1, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Number of divisions must be positive: %" PetscInt_FMT, nports);
-  PetscValidPointer(newports, 3);
+  PetscAssertPointer(newports, 3);
   PetscCall(PetscDrawIsNull(draw, &isnull));
   if (isnull) {
     *newports = NULL;
@@ -239,7 +239,7 @@ PetscErrorCode PetscDrawViewPortsCreateRect(PetscDraw draw, PetscInt nx, PetscIn
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw, PETSC_DRAW_CLASSID, 1);
   PetscCheck(nx >= 1 && ny >= 1, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Number of divisions must be positive: %" PetscInt_FMT " x %" PetscInt_FMT, nx, ny);
-  PetscValidPointer(newports, 4);
+  PetscAssertPointer(newports, 4);
   PetscCall(PetscDrawIsNull(draw, &isnull));
   if (isnull) {
     *newports = NULL;
@@ -309,7 +309,7 @@ PetscErrorCode PetscDrawViewPortsDestroy(PetscDrawViewPorts *ports)
 {
   PetscFunctionBegin;
   if (!ports) PetscFunctionReturn(PETSC_SUCCESS);
-  PetscValidPointer(ports, 1);
+  PetscAssertPointer(ports, 1);
   /* reset Drawport of Window back to previous value */
   PetscCall(PetscDrawSetViewPort(ports->draw, ports->port_xl, ports->port_yl, ports->port_xr, ports->port_yr));
   PetscCall(PetscDrawDestroy(&ports->draw));
@@ -335,7 +335,7 @@ PetscErrorCode PetscDrawViewPortsSet(PetscDrawViewPorts *ports, PetscInt port)
 {
   PetscFunctionBegin;
   if (!ports) PetscFunctionReturn(PETSC_SUCCESS);
-  PetscValidPointer(ports, 1);
+  PetscAssertPointer(ports, 1);
   PetscCheck(port >= 0 && (port <= ports->nports - 1), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Port is out of range requested %" PetscInt_FMT " from 0 to %" PetscInt_FMT, port, ports->nports - 1);
   PetscCall(PetscDrawSetViewPort(ports->draw, ports->xl[port], ports->yl[port], ports->xr[port], ports->yr[port]));
   PetscFunctionReturn(PETSC_SUCCESS);

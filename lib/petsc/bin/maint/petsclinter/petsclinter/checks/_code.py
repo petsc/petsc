@@ -56,7 +56,7 @@ def checkPetscValidHeader(linter, func, parent):
   check_matching_arg_num(linter, obj, idx, parent_args)
   return
 
-def checkPetscValidPointerAndType(linter, func, parent, expected_types, **kwargs):
+def checkPetscAssertPointerAndType(linter, func, parent, expected_types, **kwargs):
   """
   Generic check for PetscValidXXXPointer(obj, idx)
   """
@@ -70,17 +70,17 @@ def checkPetscValidPointerAndType(linter, func, parent, expected_types, **kwargs
   check_matching_arg_num(linter, obj, idx, parent_args)
   return
 
-def checkPetscValidPointer(linter, func, parent):
+def checkPetscAssertPointer(linter, func, parent):
   """
-  Specific check for PetscValidPointer(obj, idx)
+  Specific check for PetscAssertPointer(obj, idx)
   """
   def try_to_convert_to_specific_PetscValidXXXPointer(linter, obj, obj_type, **kwargs):
     pointer_type_kinds = clx_pointer_type_kinds | {clx.TypeKind.RECORD, clx.TypeKind.VOID}
     if obj_type.kind not in pointer_type_kinds:
       convert_to_correct_PetscValidXXXPointer(linter, obj, obj_type, **kwargs)
-    return True # PetscValidPointer is always good
+    return True # PetscAssertPointer is always good
 
-  checkPetscValidPointerAndType(
+  checkPetscAssertPointerAndType(
     linter, func, parent, clx_pointer_type_kinds,
     success_function=try_to_convert_to_specific_PetscValidXXXPointer, permissive=True
   )
@@ -90,14 +90,14 @@ def checkPetscValidCharPointer(linter, func, parent):
   """
   Specific check for PetscValidCharPointer(obj, idx)
   """
-  checkPetscValidPointerAndType(linter, func, parent, clx_char_type_kinds)
+  checkPetscAssertPointerAndType(linter, func, parent, clx_char_type_kinds)
   return
 
 def checkPetscValidIntPointer(linter, func, parent):
   """
   Specific check for PetscValidIntPointer(obj, idx)
   """
-  checkPetscValidPointerAndType(
+  checkPetscAssertPointerAndType(
     linter, func, parent, clx_int_type_kinds,
     success_function=check_int_is_not_PetscBool, valid_func='PetscValidBoolPointer'
   )
@@ -107,7 +107,7 @@ def checkPetscValidBoolPointer(linter, func, parent):
   """
   Specific check for PetscValidBoolPointer(obj, idx)
   """
-  checkPetscValidPointerAndType(
+  checkPetscAssertPointerAndType(
     linter, func, parent, clx_bool_type_kinds, success_function=check_is_PetscBool
   )
   return
@@ -116,7 +116,7 @@ def checkPetscValidScalarPointer(linter, func, parent):
   """
   Specific check for PetscValidScalarPointer(obj, idx)
   """
-  checkPetscValidPointerAndType(
+  checkPetscAssertPointerAndType(
     linter, func, parent, clx_scalar_type_kinds,
     success_function=check_is_PetscScalar_and_not_PetscReal, valid_func='PetscValidRealPointer'
   )
@@ -126,7 +126,7 @@ def checkPetscValidRealPointer(linter, func, parent):
   """
   Specific check for PetscValidRealPointer(obj, idx)
   """
-  checkPetscValidPointerAndType(
+  checkPetscAssertPointerAndType(
     linter, func, parent, clx_real_type_kinds,
     success_function=check_is_PetscReal_and_not_PetscScalar, valid_func='PetscValidScalarPointer'
   )

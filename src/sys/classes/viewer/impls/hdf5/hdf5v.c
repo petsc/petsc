@@ -34,8 +34,8 @@ PetscErrorCode PetscViewerHDF5GetGroup(PetscViewer viewer, const char path[], ch
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 1);
-  if (path) PetscValidPointer(path, 2);
-  PetscValidPointer(abspath, 3);
+  if (path) PetscAssertPointer(path, 2);
+  PetscAssertPointer(abspath, 3);
   PetscCall(PetscViewerHDF5GetGroup_Internal(viewer, &group));
   PetscCall(PetscStrlen(path, &len));
   relative = (PetscBool)(!len || path[0] != '/');
@@ -386,7 +386,7 @@ PetscErrorCode PetscViewerHDF5GetCollective(PetscViewer viewer, PetscBool *flg)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 1);
-  PetscValidPointer(flg, 2);
+  PetscAssertPointer(flg, 2);
 
   PetscUseMethod(viewer, "PetscViewerHDF5GetCollective_C", (PetscViewer, PetscBool *), (viewer, flg));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -698,7 +698,7 @@ PetscErrorCode PetscViewerHDF5PushGroup(PetscViewer viewer, const char name[])
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 1);
-  if (name) PetscValidPointer(name, 2);
+  if (name) PetscAssertPointer(name, 2);
   PetscCall(PetscStrlen(name, &len));
   gname = NULL;
   if (len) {
@@ -760,7 +760,7 @@ PetscErrorCode PetscViewerHDF5GetGroup_Internal(PetscViewer viewer, const char *
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 1);
-  PetscValidPointer(name, 2);
+  PetscAssertPointer(name, 2);
   if (hdf5->groups) *name = hdf5->groups->name;
   else *name = NULL;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -1015,7 +1015,7 @@ PetscErrorCode PetscViewerHDF5GetTimestep(PetscViewer viewer, PetscInt *timestep
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 1);
-  PetscValidPointer(timestep, 2);
+  PetscAssertPointer(timestep, 2);
   PetscCheck(hdf5->timestepping, PetscObjectComm((PetscObject)viewer), PETSC_ERR_ARG_WRONGSTATE, "Timestepping has not been pushed yet. Call PetscViewerHDF5PushTimestepping() first");
   *timestep = hdf5->timestep;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -1121,10 +1121,10 @@ PetscErrorCode PetscViewerHDF5WriteAttribute(PetscViewer viewer, const char pare
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 1);
-  if (parent) PetscValidPointer(parent, 2);
-  PetscValidPointer(name, 3);
+  if (parent) PetscAssertPointer(parent, 2);
+  PetscAssertPointer(name, 3);
   PetscValidLogicalCollectiveEnum(viewer, datatype, 4);
-  PetscValidPointer(value, 5);
+  PetscAssertPointer(value, 5);
   PetscCall(PetscViewerHDF5GetGroup(viewer, parent, &parentAbsPath));
   PetscCall(PetscViewerHDF5Traverse_Internal(viewer, parentAbsPath, PETSC_TRUE, NULL, NULL));
   PetscCall(PetscViewerHDF5HasAttribute_Internal(viewer, parentAbsPath, name, &has));
@@ -1177,8 +1177,8 @@ PetscErrorCode PetscViewerHDF5WriteObjectAttribute(PetscViewer viewer, PetscObje
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 1);
   PetscValidHeader(obj, 2);
-  PetscValidPointer(name, 3);
-  PetscValidPointer(value, 5);
+  PetscAssertPointer(name, 3);
+  PetscAssertPointer(value, 5);
   PetscCall(PetscViewerHDF5CheckNamedObject_Internal(viewer, obj));
   PetscCall(PetscViewerHDF5WriteAttribute(viewer, obj->name, name, datatype, value));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -1227,10 +1227,10 @@ PetscErrorCode PetscViewerHDF5ReadAttribute(PetscViewer viewer, const char paren
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 1);
-  if (parent) PetscValidPointer(parent, 2);
-  PetscValidPointer(name, 3);
-  if (defaultValue) PetscValidPointer(defaultValue, 5);
-  PetscValidPointer(value, 6);
+  if (parent) PetscAssertPointer(parent, 2);
+  PetscAssertPointer(name, 3);
+  if (defaultValue) PetscAssertPointer(defaultValue, 5);
+  PetscAssertPointer(value, 6);
   PetscCall(PetscDataTypeToHDF5DataType(datatype, &dtype));
   PetscCall(PetscViewerHDF5GetGroup(viewer, parent, &parentAbsPath));
   PetscCall(PetscViewerHDF5Traverse_Internal(viewer, parentAbsPath, PETSC_FALSE, &has, NULL));
@@ -1299,8 +1299,8 @@ PetscErrorCode PetscViewerHDF5ReadObjectAttribute(PetscViewer viewer, PetscObjec
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 1);
   PetscValidHeader(obj, 2);
-  PetscValidPointer(name, 3);
-  PetscValidPointer(value, 6);
+  PetscAssertPointer(name, 3);
+  PetscAssertPointer(value, 6);
   PetscCall(PetscViewerHDF5CheckNamedObject_Internal(viewer, obj));
   PetscCall(PetscViewerHDF5ReadAttribute(viewer, obj->name, name, datatype, defaultValue, value));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -1335,14 +1335,14 @@ static PetscErrorCode PetscViewerHDF5Traverse_Internal(PetscViewer viewer, const
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 1);
-  if (name) PetscValidPointer(name, 2);
+  if (name) PetscAssertPointer(name, 2);
   else name = rootGroupName;
   if (has) {
-    PetscValidPointer(has, 4);
+    PetscAssertPointer(has, 4);
     *has = PETSC_FALSE;
   }
   if (otype) {
-    PetscValidPointer(otype, 5);
+    PetscAssertPointer(otype, 5);
     *otype = H5O_TYPE_UNKNOWN;
   }
   PetscCall(PetscViewerHDF5GetFileId(viewer, &h5));
@@ -1411,8 +1411,8 @@ PetscErrorCode PetscViewerHDF5HasGroup(PetscViewer viewer, const char path[], Pe
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 1);
-  if (path) PetscValidPointer(path, 2);
-  PetscValidPointer(has, 3);
+  if (path) PetscAssertPointer(path, 2);
+  PetscAssertPointer(has, 3);
   PetscCall(PetscViewerHDF5GetGroup(viewer, path, &abspath));
   PetscCall(PetscViewerHDF5Traverse_Internal(viewer, abspath, PETSC_FALSE, NULL, &type));
   *has = (PetscBool)(type == H5O_TYPE_GROUP);
@@ -1450,8 +1450,8 @@ PetscErrorCode PetscViewerHDF5HasDataset(PetscViewer viewer, const char path[], 
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 1);
-  if (path) PetscValidPointer(path, 2);
-  PetscValidPointer(has, 3);
+  if (path) PetscAssertPointer(path, 2);
+  PetscAssertPointer(has, 3);
   PetscCall(PetscViewerHDF5GetGroup(viewer, path, &abspath));
   PetscCall(PetscViewerHDF5Traverse_Internal(viewer, abspath, PETSC_FALSE, NULL, &type));
   *has = (PetscBool)(type == H5O_TYPE_DATASET);
@@ -1487,7 +1487,7 @@ PetscErrorCode PetscViewerHDF5HasObject(PetscViewer viewer, PetscObject obj, Pet
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 1);
   PetscValidHeader(obj, 2);
-  PetscValidPointer(has, 3);
+  PetscAssertPointer(has, 3);
   PetscCall(PetscStrlen(obj->name, &len));
   PetscCheck(len, PetscObjectComm((PetscObject)viewer), PETSC_ERR_ARG_WRONG, "Object must be named");
   PetscCall(PetscViewerHDF5HasDataset(viewer, obj->name, has));
@@ -1520,9 +1520,9 @@ PetscErrorCode PetscViewerHDF5HasAttribute(PetscViewer viewer, const char parent
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 1);
-  if (parent) PetscValidPointer(parent, 2);
-  PetscValidPointer(name, 3);
-  PetscValidPointer(has, 4);
+  if (parent) PetscAssertPointer(parent, 2);
+  PetscAssertPointer(name, 3);
+  PetscAssertPointer(has, 4);
   PetscCall(PetscViewerHDF5GetGroup(viewer, parent, &parentAbsPath));
   PetscCall(PetscViewerHDF5Traverse_Internal(viewer, parentAbsPath, PETSC_FALSE, has, NULL));
   if (*has) PetscCall(PetscViewerHDF5HasAttribute_Internal(viewer, parentAbsPath, name, has));
@@ -1556,8 +1556,8 @@ PetscErrorCode PetscViewerHDF5HasObjectAttribute(PetscViewer viewer, PetscObject
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 1);
   PetscValidHeader(obj, 2);
-  PetscValidPointer(name, 3);
-  PetscValidPointer(has, 4);
+  PetscAssertPointer(name, 3);
+  PetscAssertPointer(has, 4);
   PetscCall(PetscViewerHDF5CheckNamedObject_Internal(viewer, obj));
   PetscCall(PetscViewerHDF5HasAttribute(viewer, obj->name, name, has));
   PetscFunctionReturn(PETSC_SUCCESS);

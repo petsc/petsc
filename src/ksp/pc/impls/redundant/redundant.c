@@ -444,7 +444,7 @@ PetscErrorCode PCRedundantGetKSP(PC pc, KSP *innerksp)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
-  PetscValidPointer(innerksp, 2);
+  PetscAssertPointer(innerksp, 2);
   PetscUseMethod(pc, "PCRedundantGetKSP_C", (PC, KSP *), (pc, innerksp));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -479,8 +479,8 @@ PetscErrorCode PCRedundantGetOperators(PC pc, Mat *mat, Mat *pmat)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
-  if (mat) PetscValidPointer(mat, 2);
-  if (pmat) PetscValidPointer(pmat, 3);
+  if (mat) PetscAssertPointer(mat, 2);
+  if (pmat) PetscAssertPointer(pmat, 3);
   PetscUseMethod(pc, "PCRedundantGetOperators_C", (PC, Mat *, Mat *), (pc, mat, pmat));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

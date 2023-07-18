@@ -24,11 +24,11 @@ PetscErrorCode PetscLinearRegression(PetscInt n, const PetscReal x[], const Pets
 
   PetscFunctionBegin;
   if (n) {
-    PetscValidPointer(x, 2);
-    PetscValidPointer(y, 3);
+    PetscAssertPointer(x, 2);
+    PetscAssertPointer(y, 3);
   }
-  PetscValidPointer(slope, 4);
-  PetscValidPointer(intercept, 5);
+  PetscAssertPointer(slope, 4);
+  PetscAssertPointer(intercept, 5);
   PetscCall(PetscMalloc2(n * 2, &X, n * 2, &Y));
   for (PetscInt k = 0; k < n; ++k) {
     /* X[n,2] = [1, x] */

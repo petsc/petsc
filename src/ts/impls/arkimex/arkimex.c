@@ -1392,7 +1392,7 @@ PetscErrorCode TSARKIMEXSetType(TS ts, TSARKIMEXType arktype)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
-  PetscValidPointer(arktype, 2);
+  PetscAssertPointer(arktype, 2);
   PetscTryMethod(ts, "TSARKIMEXSetType_C", (TS, TSARKIMEXType), (ts, arktype));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1461,7 +1461,7 @@ PetscErrorCode TSARKIMEXGetFullyImplicit(TS ts, PetscBool *flg)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
-  PetscValidPointer(flg, 2);
+  PetscAssertPointer(flg, 2);
   PetscUseMethod(ts, "TSARKIMEXGetFullyImplicit_C", (TS, PetscBool *), (ts, flg));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

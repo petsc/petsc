@@ -60,7 +60,7 @@ PetscErrorCode PetscSFCreate(MPI_Comm comm, PetscSF *sf)
   PetscSF b;
 
   PetscFunctionBegin;
-  PetscValidPointer(sf, 2);
+  PetscAssertPointer(sf, 2);
   PetscCall(PetscSFInitializePackage());
 
   PetscCall(PetscHeaderCreate(b, PETSCSF_CLASSID, "PetscSF", "Star Forest", "PetscSF", comm, PetscSFDestroy, PetscSFView));
@@ -174,7 +174,7 @@ PetscErrorCode PetscSFSetType(PetscSF sf, PetscSFType type)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sf, PETSCSF_CLASSID, 1);
-  PetscValidPointer(type, 2);
+  PetscAssertPointer(type, 2);
 
   PetscCall(PetscObjectTypeCompare((PetscObject)sf, type, &match));
   if (match) PetscFunctionReturn(PETSC_SUCCESS);
@@ -208,7 +208,7 @@ PetscErrorCode PetscSFGetType(PetscSF sf, PetscSFType *type)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sf, PETSCSF_CLASSID, 1);
-  PetscValidPointer(type, 2);
+  PetscAssertPointer(type, 2);
   *type = ((PetscObject)sf)->type_name;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -458,8 +458,8 @@ PetscErrorCode PetscSFSetGraph(PetscSF sf, PetscInt nroots, PetscInt nleaves, Pe
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sf, PETSCSF_CLASSID, 1);
-  if (nleaves > 0 && ilocal) PetscValidPointer(ilocal, 4);
-  if (nleaves > 0) PetscValidPointer(iremote, 6);
+  if (nleaves > 0 && ilocal) PetscAssertPointer(ilocal, 4);
+  if (nleaves > 0) PetscAssertPointer(iremote, 6);
   PetscCheck(nroots >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "nroots %" PetscInt_FMT ", cannot be negative", nroots);
   PetscCheck(nleaves >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "nleaves %" PetscInt_FMT ", cannot be negative", nleaves);
   /* enums may be handled as unsigned by some compilers, NVHPC for example, the int cast
@@ -575,7 +575,7 @@ PetscErrorCode PetscSFSetGraphWithPattern(PetscSF sf, PetscLayout map, PetscSFPa
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sf, PETSCSF_CLASSID, 1);
-  if (pattern != PETSCSF_PATTERN_ALLTOALL) PetscValidPointer(map, 2);
+  if (pattern != PETSCSF_PATTERN_ALLTOALL) PetscAssertPointer(map, 2);
   PetscCall(PetscObjectGetComm((PetscObject)sf, &comm));
   PetscCheck(pattern >= PETSCSF_PATTERN_ALLGATHER && pattern <= PETSCSF_PATTERN_ALLTOALL, comm, PETSC_ERR_ARG_OUTOFRANGE, "Unsupported PetscSFPattern %d", pattern);
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
@@ -663,7 +663,7 @@ PetscErrorCode PetscSFCreateInverseSF(PetscSF sf, PetscSF *isf)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sf, PETSCSF_CLASSID, 1);
   PetscSFCheckGraphSet(sf, 1);
-  PetscValidPointer(isf, 2);
+  PetscAssertPointer(isf, 2);
 
   PetscCall(PetscSFGetGraph(sf, &nroots, &nleaves, &ilocal, NULL));
   maxlocal = sf->maxleaf + 1; /* TODO: We should use PetscSFGetLeafRange() */
@@ -726,7 +726,7 @@ PetscErrorCode PetscSFDuplicate(PetscSF sf, PetscSFDuplicateOption opt, PetscSF 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sf, PETSCSF_CLASSID, 1);
   PetscValidLogicalCollectiveEnum(sf, opt, 2);
-  PetscValidPointer(newsf, 3);
+  PetscAssertPointer(newsf, 3);
   PetscCall(PetscSFCreate(PetscObjectComm((PetscObject)sf), newsf));
   PetscCall(PetscSFGetType(sf, &type));
   if (type) PetscCall(PetscSFSetType(*newsf, type));
@@ -1194,7 +1194,7 @@ PetscErrorCode PetscSFGetMultiSF(PetscSF sf, PetscSF *multi)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sf, PETSCSF_CLASSID, 1);
-  PetscValidPointer(multi, 2);
+  PetscAssertPointer(multi, 2);
   if (sf->nroots < 0) { /* Graph has not been set yet; why do we need this? */
     PetscCall(PetscSFDuplicate(sf, PETSCSF_DUPLICATE_RANKS, &sf->multi));
     *multi           = sf->multi;
@@ -1292,8 +1292,8 @@ PetscErrorCode PetscSFCreateEmbeddedRootSF(PetscSF sf, PetscInt nselected, const
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sf, PETSCSF_CLASSID, 1);
   PetscSFCheckGraphSet(sf, 1);
-  if (nselected) PetscValidPointer(selected, 3);
-  PetscValidPointer(esf, 4);
+  if (nselected) PetscAssertPointer(selected, 3);
+  PetscAssertPointer(esf, 4);
 
   PetscCall(PetscSFSetUp(sf));
   PetscCall(PetscLogEventBegin(PETSCSF_EmbedSF, sf, 0, 0, 0));
@@ -1376,8 +1376,8 @@ PetscErrorCode PetscSFCreateEmbeddedLeafSF(PetscSF sf, PetscInt nselected, const
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sf, PETSCSF_CLASSID, 1);
   PetscSFCheckGraphSet(sf, 1);
-  if (nselected) PetscValidPointer(selected, 3);
-  PetscValidPointer(newsf, 4);
+  if (nselected) PetscAssertPointer(selected, 3);
+  PetscAssertPointer(newsf, 4);
 
   /* Uniq selected[] and put results in leaves[] */
   PetscCall(PetscObjectGetComm((PetscObject)sf, &comm));
@@ -1734,7 +1734,7 @@ PetscErrorCode PetscSFComputeDegreeBegin(PetscSF sf, const PetscInt **degree)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sf, PETSCSF_CLASSID, 1);
   PetscSFCheckGraphSet(sf, 1);
-  PetscValidPointer(degree, 2);
+  PetscAssertPointer(degree, 2);
   if (!sf->degreeknown) {
     PetscInt i, nroots = sf->nroots, maxlocal;
     PetscCheck(!sf->degree, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Calls to PetscSFComputeDegreeBegin() cannot be nested.");
@@ -1772,7 +1772,7 @@ PetscErrorCode PetscSFComputeDegreeEnd(PetscSF sf, const PetscInt **degree)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sf, PETSCSF_CLASSID, 1);
   PetscSFCheckGraphSet(sf, 1);
-  PetscValidPointer(degree, 2);
+  PetscAssertPointer(degree, 2);
   if (!sf->degreeknown) {
     PetscCheck(sf->degreetmp, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Must call PetscSFComputeDegreeBegin() before PetscSFComputeDegreeEnd()");
     PetscCall(PetscSFReduceEnd(sf, MPIU_INT, sf->degreetmp - sf->minleaf, sf->degree, MPI_SUM));
@@ -1812,9 +1812,9 @@ PetscErrorCode PetscSFComputeMultiRootOriginalNumbering(PetscSF sf, const PetscI
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sf, PETSCSF_CLASSID, 1);
   PetscCall(PetscSFGetGraph(sf, &nroots, NULL, NULL, NULL));
-  if (nroots) PetscValidPointer(degree, 2);
-  if (nMultiRoots) PetscValidPointer(nMultiRoots, 3);
-  PetscValidPointer(multiRootsOrigNumbering, 4);
+  if (nroots) PetscAssertPointer(degree, 2);
+  if (nMultiRoots) PetscAssertPointer(nMultiRoots, 3);
+  PetscAssertPointer(multiRootsOrigNumbering, 4);
   PetscCall(PetscSFGetMultiSF(sf, &msf));
   PetscCall(PetscSFGetGraph(msf, &nmroots, NULL, NULL, NULL));
   PetscCall(PetscMalloc1(nmroots, multiRootsOrigNumbering));
@@ -2000,7 +2000,7 @@ PetscErrorCode PetscSFCompose(PetscSF sfA, PetscSF sfB, PetscSF *sfBA)
   PetscValidHeaderSpecific(sfB, PETSCSF_CLASSID, 2);
   PetscSFCheckGraphSet(sfB, 2);
   PetscCheckSameComm(sfA, 1, sfB, 2);
-  PetscValidPointer(sfBA, 3);
+  PetscAssertPointer(sfBA, 3);
   PetscCall(PetscSFCheckLeavesUnique_Private(sfA));
   PetscCall(PetscSFCheckLeavesUnique_Private(sfB));
 
@@ -2108,7 +2108,7 @@ PetscErrorCode PetscSFComposeInverse(PetscSF sfA, PetscSF sfB, PetscSF *sfBA)
   PetscValidHeaderSpecific(sfB, PETSCSF_CLASSID, 2);
   PetscSFCheckGraphSet(sfB, 2);
   PetscCheckSameComm(sfA, 1, sfB, 2);
-  PetscValidPointer(sfBA, 3);
+  PetscAssertPointer(sfBA, 3);
   PetscCall(PetscSFCheckLeavesUnique_Private(sfA));
   PetscCall(PetscSFCheckLeavesUnique_Private(sfB));
 
@@ -2402,14 +2402,14 @@ PetscErrorCode PetscSFConcatenate(MPI_Comm comm, PetscInt nsfs, PetscSF sfs[], P
 
     PetscCall(PetscSFCreate(comm, &dummy));
     PetscValidLogicalCollectiveInt(dummy, nsfs, 2);
-    PetscValidPointer(sfs, 3);
+    PetscAssertPointer(sfs, 3);
     for (i = 0; i < nsfs; i++) {
       PetscValidHeaderSpecific(sfs[i], PETSCSF_CLASSID, 3);
       PetscCheckSameComm(dummy, 1, sfs[i], 3);
     }
     PetscValidLogicalCollectiveEnum(dummy, rootMode, 4);
-    if (leafOffsets) PetscValidPointer(leafOffsets, 5);
-    PetscValidPointer(newsf, 6);
+    if (leafOffsets) PetscAssertPointer(leafOffsets, 5);
+    PetscAssertPointer(newsf, 6);
     PetscCall(PetscSFDestroy(&dummy));
   }
   if (!nsfs) {

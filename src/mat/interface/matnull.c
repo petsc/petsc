@@ -232,9 +232,9 @@ PetscErrorCode MatNullSpaceCreate(MPI_Comm comm, PetscBool has_cnst, PetscInt n,
 
   PetscFunctionBegin;
   PetscCheck(n >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Number of vectors (given %" PetscInt_FMT ") cannot be negative", n);
-  if (n) PetscValidPointer(vecs, 4);
+  if (n) PetscAssertPointer(vecs, 4);
   for (i = 0; i < n; i++) PetscValidHeaderSpecific(vecs[i], VEC_CLASSID, 4);
-  PetscValidPointer(SP, 5);
+  PetscAssertPointer(SP, 5);
   if (n) {
     for (i = 0; i < n; i++) {
       /* prevent the user from changes values in the vector */

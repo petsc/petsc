@@ -1289,8 +1289,8 @@ static PetscErrorCode DMCreateInterpolation_DA_THI(DM dac, DM daf, Mat *A, Vec *
   PetscFunctionBeginUser;
   PetscValidHeaderSpecific(dac, DM_CLASSID, 1);
   PetscValidHeaderSpecific(daf, DM_CLASSID, 2);
-  PetscValidPointer(A, 3);
-  if (scale) PetscValidPointer(scale, 4);
+  PetscAssertPointer(A, 3);
+  if (scale) PetscAssertPointer(scale, 4);
   PetscCall(DMDAGetInfo(daf, &dim, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0));
   if (dim == 2) {
     /* We are in the 2D problem and use normal DMDA interpolation */

@@ -206,9 +206,9 @@ PetscErrorCode DMDAGetElementsCorners(DM da, PetscInt *gx, PetscInt *gy, PetscIn
 
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(da, DM_CLASSID, 1, DMDA);
-  if (gx) PetscValidPointer(gx, 2);
-  if (gy) PetscValidPointer(gy, 3);
-  if (gz) PetscValidPointer(gz, 4);
+  if (gx) PetscAssertPointer(gx, 2);
+  if (gy) PetscAssertPointer(gy, 3);
+  if (gz) PetscAssertPointer(gz, 4);
   PetscCall(PetscObjectTypeCompare((PetscObject)da, DMDA, &isda));
   PetscCheck(isda, PetscObjectComm((PetscObject)da), PETSC_ERR_USER, "Not for DM type %s", ((PetscObject)da)->type_name);
   PetscCall(DMDAGetCorners(da, &xs, &ys, &zs, NULL, NULL, NULL));
@@ -252,9 +252,9 @@ PetscErrorCode DMDAGetElementsSizes(DM da, PetscInt *mx, PetscInt *my, PetscInt 
 
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(da, DM_CLASSID, 1, DMDA);
-  if (mx) PetscValidPointer(mx, 2);
-  if (my) PetscValidPointer(my, 3);
-  if (mz) PetscValidPointer(mz, 4);
+  if (mx) PetscAssertPointer(mx, 2);
+  if (my) PetscAssertPointer(my, 3);
+  if (mz) PetscAssertPointer(mz, 4);
   PetscCall(PetscObjectTypeCompare((PetscObject)da, DMDA, &isda));
   PetscCheck(isda, PetscObjectComm((PetscObject)da), PETSC_ERR_USER, "Not for DM type %s", ((PetscObject)da)->type_name);
   PetscCall(DMDAGetCorners(da, &xs, &ys, &zs, &xe, &ye, &ze));
@@ -340,7 +340,7 @@ PetscErrorCode DMDAGetElementType(DM da, DMDAElementType *etype)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(da, DM_CLASSID, 1, DMDA);
-  PetscValidPointer(etype, 2);
+  PetscAssertPointer(etype, 2);
   PetscCall(PetscObjectTypeCompare((PetscObject)da, DMDA, &isda));
   PetscCheck(isda, PetscObjectComm((PetscObject)da), PETSC_ERR_USER, "Not for DM type %s", ((PetscObject)da)->type_name);
   *etype = dd->elementtype;
@@ -387,9 +387,9 @@ PetscErrorCode DMDAGetElements(DM dm, PetscInt *nel, PetscInt *nen, const PetscI
 
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(dm, DM_CLASSID, 1, DMDA);
-  PetscValidPointer(nel, 2);
-  PetscValidPointer(nen, 3);
-  PetscValidPointer(e, 4);
+  PetscAssertPointer(nel, 2);
+  PetscAssertPointer(nen, 3);
+  PetscAssertPointer(e, 4);
   PetscCall(PetscObjectTypeCompare((PetscObject)dm, DMDA, &isda));
   PetscCheck(isda, PetscObjectComm((PetscObject)dm), PETSC_ERR_USER, "Not for DM type %s", ((PetscObject)dm)->type_name);
   PetscCheck(dd->stencil_type != DMDA_STENCIL_STAR, PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "DMDAGetElements() requires you use a stencil type of DMDA_STENCIL_BOX");
@@ -440,7 +440,7 @@ PetscErrorCode DMDAGetSubdomainCornersIS(DM dm, IS *is)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(dm, DM_CLASSID, 1, DMDA);
-  PetscValidPointer(is, 2);
+  PetscAssertPointer(is, 2);
   PetscCall(PetscObjectTypeCompare((PetscObject)dm, DMDA, &isda));
   PetscCheck(isda, PetscObjectComm((PetscObject)dm), PETSC_ERR_USER, "Not for DM type %s", ((PetscObject)dm)->type_name);
   PetscCheck(dd->stencil_type != DMDA_STENCIL_STAR, PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "DMDAGetElement() requires you use a stencil type of DMDA_STENCIL_BOX");
@@ -477,9 +477,9 @@ PetscErrorCode DMDARestoreElements(DM dm, PetscInt *nel, PetscInt *nen, const Pe
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(dm, DM_CLASSID, 1, DMDA);
-  PetscValidPointer(nel, 2);
-  PetscValidPointer(nen, 3);
-  PetscValidPointer(e, 4);
+  PetscAssertPointer(nel, 2);
+  PetscAssertPointer(nen, 3);
+  PetscAssertPointer(e, 4);
   if (nel) *nel = 0;
   if (nen) *nen = -1;
   if (e) *e = NULL;

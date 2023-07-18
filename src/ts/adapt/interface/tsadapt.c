@@ -130,7 +130,7 @@ PetscErrorCode TSAdaptSetType(TSAdapt adapt, TSAdaptType type)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(adapt, TSADAPT_CLASSID, 1);
-  PetscValidPointer(type, 2);
+  PetscAssertPointer(type, 2);
   PetscCall(PetscObjectTypeCompare((PetscObject)adapt, type, &match));
   if (match) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscFunctionListFind(TSAdaptList, type, &r));
@@ -161,7 +161,7 @@ PetscErrorCode TSAdaptGetType(TSAdapt adapt, TSAdaptType *type)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(adapt, TSADAPT_CLASSID, 1);
-  PetscValidPointer(type, 2);
+  PetscAssertPointer(type, 2);
   *type = ((PetscObject)adapt)->type_name;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -427,8 +427,8 @@ PetscErrorCode TSAdaptGetSafety(TSAdapt adapt, PetscReal *safety, PetscReal *rej
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(adapt, TSADAPT_CLASSID, 1);
-  if (safety) PetscValidPointer(safety, 2);
-  if (reject_safety) PetscValidPointer(reject_safety, 3);
+  if (safety) PetscAssertPointer(safety, 2);
+  if (reject_safety) PetscAssertPointer(reject_safety, 3);
   if (safety) *safety = adapt->safety;
   if (reject_safety) *reject_safety = adapt->reject_safety;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -480,7 +480,7 @@ PetscErrorCode TSAdaptGetMaxIgnore(TSAdapt adapt, PetscReal *max_ignore)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(adapt, TSADAPT_CLASSID, 1);
-  PetscValidPointer(max_ignore, 2);
+  PetscAssertPointer(max_ignore, 2);
   *max_ignore = adapt->ignore_max;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -536,8 +536,8 @@ PetscErrorCode TSAdaptGetClip(TSAdapt adapt, PetscReal *low, PetscReal *high)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(adapt, TSADAPT_CLASSID, 1);
-  if (low) PetscValidPointer(low, 2);
-  if (high) PetscValidPointer(high, 3);
+  if (low) PetscAssertPointer(low, 2);
+  if (high) PetscAssertPointer(high, 3);
   if (low) *low = adapt->clip[0];
   if (high) *high = adapt->clip[1];
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -589,7 +589,7 @@ PetscErrorCode TSAdaptGetScaleSolveFailed(TSAdapt adapt, PetscReal *scale)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(adapt, TSADAPT_CLASSID, 1);
-  if (scale) PetscValidPointer(scale, 2);
+  if (scale) PetscAssertPointer(scale, 2);
   if (scale) *scale = adapt->scale_solve_failed;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -648,8 +648,8 @@ PetscErrorCode TSAdaptGetStepLimits(TSAdapt adapt, PetscReal *hmin, PetscReal *h
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(adapt, TSADAPT_CLASSID, 1);
-  if (hmin) PetscValidPointer(hmin, 2);
-  if (hmax) PetscValidPointer(hmax, 3);
+  if (hmin) PetscAssertPointer(hmin, 2);
+  if (hmax) PetscAssertPointer(hmax, 3);
   if (hmin) *hmin = adapt->dt_min;
   if (hmax) *hmax = adapt->dt_max;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -869,9 +869,9 @@ PetscErrorCode TSAdaptChoose(TSAdapt adapt, TS ts, PetscReal h, PetscInt *next_s
   PetscFunctionBegin;
   PetscValidHeaderSpecific(adapt, TSADAPT_CLASSID, 1);
   PetscValidHeaderSpecific(ts, TS_CLASSID, 2);
-  if (next_sc) PetscValidPointer(next_sc, 4);
-  PetscValidPointer(next_h, 5);
-  PetscValidPointer(accept, 6);
+  if (next_sc) PetscAssertPointer(next_sc, 4);
+  PetscAssertPointer(next_h, 5);
+  PetscAssertPointer(accept, 6);
   if (next_sc) *next_sc = 0;
 
   /* Do not mess with adaptivity while handling events*/
@@ -984,7 +984,7 @@ PetscErrorCode TSAdaptCheckStage(TSAdapt adapt, TS ts, PetscReal t, Vec Y, Petsc
   PetscFunctionBegin;
   PetscValidHeaderSpecific(adapt, TSADAPT_CLASSID, 1);
   PetscValidHeaderSpecific(ts, TS_CLASSID, 2);
-  PetscValidPointer(accept, 5);
+  PetscAssertPointer(accept, 5);
 
   PetscCall(TSFunctionDomainError(ts, t, Y, &func_accept));
   if (ts->snes) PetscCall(SNESGetConvergedReason(ts->snes, &snesreason));
@@ -1057,7 +1057,7 @@ PetscErrorCode TSAdaptCreate(MPI_Comm comm, TSAdapt *inadapt)
   TSAdapt adapt;
 
   PetscFunctionBegin;
-  PetscValidPointer(inadapt, 2);
+  PetscAssertPointer(inadapt, 2);
   *inadapt = NULL;
   PetscCall(TSAdaptInitializePackage());
 

@@ -602,9 +602,9 @@ PetscErrorCode TSAlphaGetParams(TS ts, PetscReal *alpha_m, PetscReal *alpha_f, P
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
-  if (alpha_m) PetscValidPointer(alpha_m, 2);
-  if (alpha_f) PetscValidPointer(alpha_f, 3);
-  if (gamma) PetscValidPointer(gamma, 4);
+  if (alpha_m) PetscAssertPointer(alpha_m, 2);
+  if (alpha_f) PetscAssertPointer(alpha_f, 3);
+  if (gamma) PetscAssertPointer(gamma, 4);
   PetscUseMethod(ts, "TSAlphaGetParams_C", (TS, PetscReal *, PetscReal *, PetscReal *), (ts, alpha_m, alpha_f, gamma));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

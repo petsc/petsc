@@ -1041,8 +1041,8 @@ PetscErrorCode DMCreateInterpolation_DA(DM dac, DM daf, Mat *A, Vec *scale)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dac, DM_CLASSID, 1);
   PetscValidHeaderSpecific(daf, DM_CLASSID, 2);
-  PetscValidPointer(A, 3);
-  if (scale) PetscValidPointer(scale, 4);
+  PetscAssertPointer(A, 3);
+  if (scale) PetscAssertPointer(scale, 4);
 
   PetscCall(DMDAGetInfo(dac, &dimc, &Mc, &Nc, &Pc, &mc, &nc, &pc, &dofc, &sc, &bxc, &byc, &bzc, &stc));
   PetscCall(DMDAGetInfo(daf, &dimf, &Mf, &Nf, &Pf, &mf, &nf, &pf, &doff, &sf, &bxf, &byf, &bzf, &stf));
@@ -1302,7 +1302,7 @@ PetscErrorCode DMCreateInjection_DA(DM dac, DM daf, Mat *mat)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dac, DM_CLASSID, 1);
   PetscValidHeaderSpecific(daf, DM_CLASSID, 2);
-  PetscValidPointer(mat, 3);
+  PetscAssertPointer(mat, 3);
 
   PetscCall(DMDAGetInfo(dac, &dimc, &Mc, &Nc, &Pc, &mc, &nc, &pc, &dofc, &sc, &bxc, &byc, &bzc, &stc));
   PetscCall(DMDAGetInfo(daf, &dimf, &Mf, &Nf, &Pf, &mf, &nf, &pf, &doff, &sf, &bxf, &byf, &bzf, &stf));
@@ -1384,7 +1384,7 @@ PetscErrorCode DMDACreateAggregates(DM dac, DM daf, Mat *rest)
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(dac, DM_CLASSID, 1, DMDA);
   PetscValidHeaderSpecificType(daf, DM_CLASSID, 2, DMDA);
-  PetscValidPointer(rest, 3);
+  PetscAssertPointer(rest, 3);
 
   PetscCall(DMDAGetInfo(dac, &dimc, &Mc, &Nc, &Pc, &mc, &nc, &pc, &dofc, &sc, &bxc, &byc, &bzc, &stc));
   PetscCall(DMDAGetInfo(daf, &dimf, &Mf, &Nf, &Pf, &mf, &nf, &pf, &doff, &sf, &bxf, &byf, &bzf, &stf));

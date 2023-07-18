@@ -20,7 +20,7 @@ PetscErrorCode TaoALMMGetType(Tao tao, TaoALMMType *type)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);
-  PetscValidPointer(type, 2);
+  PetscAssertPointer(type, 2);
   PetscUseMethod(tao, "TaoALMMGetType_C", (Tao, TaoALMMType *), (tao, type));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -80,7 +80,7 @@ PetscErrorCode TaoALMMGetSubsolver(Tao tao, Tao *subsolver)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);
-  PetscValidPointer(subsolver, 2);
+  PetscAssertPointer(subsolver, 2);
   PetscUseMethod(tao, "TaoALMMGetSubsolver_C", (Tao, Tao *), (tao, subsolver));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -167,7 +167,7 @@ PetscErrorCode TaoALMMGetMultipliers(Tao tao, Vec *Y)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);
-  PetscValidPointer(Y, 2);
+  PetscAssertPointer(Y, 2);
   PetscUseMethod(tao, "TaoALMMGetMultipliers_C", (Tao, Vec *), (tao, Y));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

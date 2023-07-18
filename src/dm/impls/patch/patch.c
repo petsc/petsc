@@ -402,7 +402,7 @@ PetscErrorCode DMPatchGetPatchSize(DM dm, MatStencil *patchSize)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(patchSize, 2);
+  PetscAssertPointer(patchSize, 2);
   *patchSize = mesh->patchSize;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -423,7 +423,7 @@ PetscErrorCode DMPatchGetCommSize(DM dm, MatStencil *commSize)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(commSize, 2);
+  PetscAssertPointer(commSize, 2);
   *commSize = mesh->commSize;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

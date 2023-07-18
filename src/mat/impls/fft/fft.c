@@ -48,8 +48,8 @@ PetscErrorCode MatCreateFFT(MPI_Comm comm, PetscInt ndim, const PetscInt dim[], 
   Mat_FFT    *fft;
 
   PetscFunctionBegin;
-  PetscValidPointer(dim, 3);
-  PetscValidPointer(A, 5);
+  PetscAssertPointer(dim, 3);
+  PetscAssertPointer(A, 5);
   PetscCheck(ndim >= 1, comm, PETSC_ERR_USER, "ndim %" PetscInt_FMT " must be > 0", ndim);
   PetscCallMPI(MPI_Comm_size(comm, &size));
 

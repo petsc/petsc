@@ -45,7 +45,7 @@ PetscErrorCode TSSetType(TS ts, TSType type)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
-  PetscValidPointer(type, 2);
+  PetscAssertPointer(type, 2);
   PetscCall(PetscObjectTypeCompare((PetscObject)ts, type, &match));
   if (match) PetscFunctionReturn(PETSC_SUCCESS);
 
@@ -82,7 +82,7 @@ PetscErrorCode TSGetType(TS ts, TSType *type)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
-  PetscValidPointer(type, 2);
+  PetscAssertPointer(type, 2);
   *type = ((PetscObject)ts)->type_name;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

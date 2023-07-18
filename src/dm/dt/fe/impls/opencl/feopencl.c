@@ -836,7 +836,7 @@ PetscErrorCode PetscFEOpenCLGetRealType(PetscFE fem, PetscDataType *realType)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fem, PETSCFE_CLASSID, 1);
-  PetscValidPointer(realType, 2);
+  PetscAssertPointer(realType, 2);
   *realType = ocl->realType;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

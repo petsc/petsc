@@ -35,7 +35,7 @@ PetscErrorCode DMGetLocalVector(DM dm, Vec *g)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(g, 2);
+  PetscAssertPointer(g, 2);
   for (PetscInt i = 0; i < DM_MAX_WORK_VECTORS; i++) {
     if (dm->localin[i]) {
       DM vdm;
@@ -84,7 +84,7 @@ PetscErrorCode DMRestoreLocalVector(DM dm, Vec *g)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(g, 2);
+  PetscAssertPointer(g, 2);
   for (j = 0; j < DM_MAX_WORK_VECTORS; j++) {
     if (*g == dm->localout[j]) {
       DM vdm;
@@ -144,7 +144,7 @@ PetscErrorCode DMGetGlobalVector(DM dm, Vec *g)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(g, 2);
+  PetscAssertPointer(g, 2);
   for (i = 0; i < DM_MAX_WORK_VECTORS; i++) {
     if (dm->globalin[i]) {
       DM vdm;
@@ -269,7 +269,7 @@ PetscErrorCode DMRestoreGlobalVector(DM dm, Vec *g)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(g, 2);
+  PetscAssertPointer(g, 2);
   PetscCall(VecSetErrorIfLocked(*g, 2));
   for (j = 0; j < DM_MAX_WORK_VECTORS; j++) {
     if (*g == dm->globalout[j]) {
@@ -375,8 +375,8 @@ PetscErrorCode DMHasNamedGlobalVector(DM dm, const char *name, PetscBool *exists
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(name, 2);
-  PetscValidPointer(exists, 3);
+  PetscAssertPointer(name, 2);
+  PetscAssertPointer(exists, 3);
   *exists = PETSC_FALSE;
   for (link = dm->namedglobal; link; link = link->next) {
     PetscBool match;
@@ -414,8 +414,8 @@ PetscErrorCode DMGetNamedGlobalVector(DM dm, const char *name, Vec *X)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(name, 2);
-  PetscValidPointer(X, 3);
+  PetscAssertPointer(name, 2);
+  PetscAssertPointer(X, 3);
   for (link = dm->namedglobal; link; link = link->next) {
     PetscBool match;
 
@@ -464,8 +464,8 @@ PetscErrorCode DMRestoreNamedGlobalVector(DM dm, const char *name, Vec *X)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(name, 2);
-  PetscValidPointer(X, 3);
+  PetscAssertPointer(name, 2);
+  PetscAssertPointer(X, 3);
   PetscValidHeaderSpecific(*X, VEC_CLASSID, 3);
   for (link = dm->namedglobal; link; link = link->next) {
     PetscBool match;
@@ -513,8 +513,8 @@ PetscErrorCode DMHasNamedLocalVector(DM dm, const char *name, PetscBool *exists)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(name, 2);
-  PetscValidPointer(exists, 3);
+  PetscAssertPointer(name, 2);
+  PetscAssertPointer(exists, 3);
   *exists = PETSC_FALSE;
   for (link = dm->namedlocal; link; link = link->next) {
     PetscBool match;
@@ -552,8 +552,8 @@ PetscErrorCode DMGetNamedLocalVector(DM dm, const char *name, Vec *X)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(name, 2);
-  PetscValidPointer(X, 3);
+  PetscAssertPointer(name, 2);
+  PetscAssertPointer(X, 3);
   for (link = dm->namedlocal; link; link = link->next) {
     PetscBool match;
 
@@ -602,8 +602,8 @@ PetscErrorCode DMRestoreNamedLocalVector(DM dm, const char *name, Vec *X)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(name, 2);
-  PetscValidPointer(X, 3);
+  PetscAssertPointer(name, 2);
+  PetscAssertPointer(X, 3);
   PetscValidHeaderSpecific(*X, VEC_CLASSID, 3);
   for (link = dm->namedlocal; link; link = link->next) {
     PetscBool match;

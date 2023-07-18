@@ -58,7 +58,7 @@ PetscErrorCode MatCoarsenGetType(MatCoarsen coarsen, MatCoarsenType *type)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(coarsen, MAT_COARSEN_CLASSID, 1);
-  PetscValidPointer(type, 2);
+  PetscAssertPointer(type, 2);
   *type = ((PetscObject)coarsen)->type_name;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -90,7 +90,7 @@ PetscErrorCode MatCoarsenApply(MatCoarsen coarser)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(coarser, MAT_COARSEN_CLASSID, 1);
-  PetscValidPointer(coarser, 1);
+  PetscAssertPointer(coarser, 1);
   PetscCheck(coarser->graph->assembled, PetscObjectComm((PetscObject)coarser), PETSC_ERR_ARG_WRONGSTATE, "Not for unassembled matrix");
   PetscCheck(!coarser->graph->factortype, PetscObjectComm((PetscObject)coarser), PETSC_ERR_ARG_WRONGSTATE, "Not for factored matrix");
   PetscCall(PetscLogEventBegin(MAT_Coarsen, coarser, 0, 0, 0));
@@ -298,7 +298,7 @@ PetscErrorCode MatCoarsenSetType(MatCoarsen coarser, MatCoarsenType type)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(coarser, MAT_COARSEN_CLASSID, 1);
-  PetscValidPointer(type, 2);
+  PetscAssertPointer(type, 2);
 
   PetscCall(PetscObjectTypeCompare((PetscObject)coarser, type, &match));
   if (match) PetscFunctionReturn(PETSC_SUCCESS);

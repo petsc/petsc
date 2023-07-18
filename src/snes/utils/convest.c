@@ -102,7 +102,7 @@ PetscErrorCode PetscConvEstGetSolver(PetscConvEst ce, PetscObject *solver)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ce, PETSC_OBJECT_CLASSID, 1);
-  PetscValidPointer(solver, 2);
+  PetscAssertPointer(solver, 2);
   *solver = ce->solver;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -192,7 +192,7 @@ PetscErrorCode PetscConvEstComputeError(PetscConvEst ce, PetscInt r, DM dm, Vec 
   PetscValidHeaderSpecific(ce, PETSC_OBJECT_CLASSID, 1);
   if (dm) PetscValidHeaderSpecific(dm, DM_CLASSID, 3);
   PetscValidHeaderSpecific(u, VEC_CLASSID, 4);
-  PetscValidPointer(errors, 5);
+  PetscAssertPointer(errors, 5);
   PetscUseTypeMethod(ce, computeerror, r, dm, u, errors);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -527,7 +527,7 @@ PetscErrorCode PetscConvEstRateView(PetscConvEst ce, const PetscReal alpha[], Pe
 PetscErrorCode PetscConvEstCreate(MPI_Comm comm, PetscConvEst *ce)
 {
   PetscFunctionBegin;
-  PetscValidPointer(ce, 2);
+  PetscAssertPointer(ce, 2);
   PetscCall(PetscSysInitializePackage());
   PetscCall(PetscHeaderCreate(*ce, PETSC_OBJECT_CLASSID, "PetscConvEst", "ConvergenceEstimator", "SNES", comm, PetscConvEstDestroy, PetscConvEstView));
   (*ce)->monitor           = PETSC_FALSE;

@@ -339,7 +339,7 @@ PetscErrorCode PCDeflationGetCoarseKSP(PC pc, KSP *ksp)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
-  PetscValidPointer(ksp, 2);
+  PetscAssertPointer(ksp, 2);
   PetscTryMethod(pc, "PCDeflationGetCoarseKSP_C", (PC, KSP *), (pc, ksp));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -372,7 +372,7 @@ PetscErrorCode PCDeflationGetPC(PC pc, PC *apc)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
-  PetscValidPointer(pc, 1);
+  PetscAssertPointer(pc, 1);
   PetscTryMethod(pc, "PCDeflationGetPC_C", (PC, PC *), (pc, apc));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

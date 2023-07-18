@@ -849,7 +849,7 @@ PetscErrorCode TaoADMMGetSpectralPenalty(Tao tao, PetscReal *mu)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);
-  PetscValidPointer(mu, 2);
+  PetscAssertPointer(mu, 2);
   *mu = am->mu;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

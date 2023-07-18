@@ -60,7 +60,7 @@ PetscErrorCode PetscViewerDrawGetDraw(PetscViewer viewer, PetscInt windownumber,
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 1);
   PetscValidLogicalCollectiveInt(viewer, windownumber, 2);
-  if (draw) PetscValidPointer(draw, 3);
+  if (draw) PetscAssertPointer(draw, 3);
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERDRAW, &isdraw));
   PetscCheck(isdraw, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Must be draw type PetscViewer");
   PetscCheck(windownumber >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Window number cannot be negative");
@@ -194,7 +194,7 @@ PetscErrorCode PetscViewerDrawGetDrawLG(PetscViewer viewer, PetscInt windownumbe
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 1);
   PetscValidLogicalCollectiveInt(viewer, windownumber, 2);
-  PetscValidPointer(drawlg, 3);
+  PetscAssertPointer(drawlg, 3);
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERDRAW, &isdraw));
   PetscCheck(isdraw, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Must be draw type PetscViewer");
   PetscCheck(windownumber >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Window number cannot be negative");
@@ -237,7 +237,7 @@ PetscErrorCode PetscViewerDrawGetDrawAxis(PetscViewer viewer, PetscInt windownum
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 1);
   PetscValidLogicalCollectiveInt(viewer, windownumber, 2);
-  PetscValidPointer(drawaxis, 3);
+  PetscAssertPointer(drawaxis, 3);
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERDRAW, &isdraw));
   PetscCheck(isdraw, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Must be draw type PetscViewer");
   PetscCheck(windownumber >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Window number cannot be negative");

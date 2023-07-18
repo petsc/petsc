@@ -53,7 +53,7 @@ PetscErrorCode DMPlexGetRawFaces_Internal(DM dm, DMPolytopeType ct, const PetscI
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  if (cone) PetscValidPointer(cone, 3);
+  if (cone) PetscAssertPointer(cone, 3);
   PetscCall(DMPlexGetMaxSizes(dm, &maxConeSize, &maxSupportSize));
   maxSize = PetscMax(maxConeSize, maxSupportSize);
   if (faceTypes) getSize += maxSize;
@@ -1479,7 +1479,7 @@ PetscErrorCode DMPlexInterpolate(DM dm, DM *dmInt)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(dmInt, 2);
+  PetscAssertPointer(dmInt, 2);
   PetscCall(PetscLogEventBegin(DMPLEX_Interpolate, dm, 0, 0, 0));
   PetscCall(DMPlexGetDepth(dm, &depth));
   PetscCall(DMGetDimension(dm, &dim));
@@ -1701,7 +1701,7 @@ PetscErrorCode DMPlexUninterpolate(DM dm, DM *dmUnint)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(dmUnint, 2);
+  PetscAssertPointer(dmUnint, 2);
   PetscCall(PetscLogEventBegin(DMPLEX_Uninterpolate, dm, 0, 0, 0));
   PetscCall(DMGetDimension(dm, &dim));
   PetscCall(DMPlexIsInterpolated(dm, &interpolated));
@@ -1883,7 +1883,7 @@ PetscErrorCode DMPlexIsInterpolated(DM dm, DMPlexInterpolatedFlag *interpolated)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(interpolated, 2);
+  PetscAssertPointer(interpolated, 2);
   if (plex->interpolated < 0) {
     PetscCall(DMPlexIsInterpolated_Internal(dm, &plex->interpolated));
   } else if (PetscDefined(USE_DEBUG)) {
@@ -1933,7 +1933,7 @@ PetscErrorCode DMPlexIsInterpolatedCollective(DM dm, DMPlexInterpolatedFlag *int
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(interpolated, 2);
+  PetscAssertPointer(interpolated, 2);
   PetscCall(PetscOptionsGetBool(((PetscObject)dm)->options, ((PetscObject)dm)->prefix, "-dm_plex_is_interpolated_collective_debug", &debug, NULL));
   if (plex->interpolatedCollective < 0) {
     DMPlexInterpolatedFlag min, max;

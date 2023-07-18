@@ -11,7 +11,7 @@ static inline PetscErrorCode VecTypeCompareAny_Private(VecType srcType, PetscBoo
   va_list   Argp;
 
   PetscFunctionBegin;
-  PetscValidPointer(match, 2);
+  PetscAssertPointer(match, 2);
   *match = PETSC_FALSE;
   va_start(Argp, tgtTypes);
   while (tgtTypes && tgtTypes[0]) {
@@ -187,7 +187,7 @@ PetscErrorCode VecGetType(Vec vec, VecType *type)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(vec, VEC_CLASSID, 1);
-  PetscValidPointer(type, 2);
+  PetscAssertPointer(type, 2);
   PetscCall(VecRegisterAll());
   *type = ((PetscObject)vec)->type_name;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -199,7 +199,7 @@ PetscErrorCode VecGetRootType_Private(Vec vec, VecType *vtype)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(vec, VEC_CLASSID, 1);
-  PetscValidPointer(vtype, 2);
+  PetscAssertPointer(vtype, 2);
   PetscCall(PetscObjectTypeCompareAny((PetscObject)vec, &iscuda, VECCUDA, VECMPICUDA, VECSEQCUDA, ""));
   PetscCall(PetscObjectTypeCompareAny((PetscObject)vec, &iship, VECHIP, VECMPIHIP, VECSEQHIP, ""));
   PetscCall(PetscObjectTypeCompareAny((PetscObject)vec, &iskokkos, VECKOKKOS, VECMPIKOKKOS, VECSEQKOKKOS, ""));

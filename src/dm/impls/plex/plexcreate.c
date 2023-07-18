@@ -772,7 +772,7 @@ static PetscErrorCode DMPlexCreateLineMesh_Internal(DM dm, PetscInt segments, Pe
   PetscMPIInt  rank;
 
   PetscFunctionBegin;
-  PetscValidPointer(dm, 1);
+  PetscAssertPointer(dm, 1);
 
   PetscCall(DMSetDimension(dm, 1));
   PetscCall(DMCreateLabel(dm, "marker"));
@@ -823,7 +823,7 @@ static PetscErrorCode DMPlexCreateBoxMesh_Simplex_Internal(DM dm, PetscInt dim, 
   DMLabel bdlabel;
 
   PetscFunctionBegin;
-  PetscValidPointer(dm, 1);
+  PetscAssertPointer(dm, 1);
   for (PetscInt i = 0; i < dim; ++i) PetscCheck(periodicity[i] == DM_BOUNDARY_NONE, PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Periodicity is not supported for simplex meshes");
   PetscCall(DMCreate(PetscObjectComm((PetscObject)dm), &boundary));
   PetscCall(DMSetType(boundary, DMPLEX));
@@ -1268,7 +1268,7 @@ static PetscErrorCode DMPlexCreateBoxMesh_Tensor_Internal(DM dm, PetscInt dim, c
   PetscInt       fac[3] = {0, 0, 0}, d;
 
   PetscFunctionBegin;
-  PetscValidPointer(dm, 1);
+  PetscAssertPointer(dm, 1);
   PetscValidLogicalCollectiveInt(dm, dim, 2);
   PetscCall(DMSetDimension(dm, dim));
   for (d = 0; d < dim; ++d) {
@@ -2184,7 +2184,7 @@ static PetscErrorCode DMPlexCreateHexCylinderMesh_Internal(DM dm, DMBoundaryType
 PetscErrorCode DMPlexCreateHexCylinderMesh(MPI_Comm comm, DMBoundaryType periodicZ, DM *dm)
 {
   PetscFunctionBegin;
-  PetscValidPointer(dm, 3);
+  PetscAssertPointer(dm, 3);
   PetscCall(DMCreate(comm, dm));
   PetscCall(DMSetType(*dm, DMPLEX));
   PetscCall(DMPlexCreateHexCylinderMesh_Internal(*dm, periodicZ));
@@ -2297,7 +2297,7 @@ static PetscErrorCode DMPlexCreateWedgeCylinderMesh_Internal(DM dm, PetscInt n, 
 PetscErrorCode DMPlexCreateWedgeCylinderMesh(MPI_Comm comm, PetscInt n, PetscBool interpolate, DM *dm)
 {
   PetscFunctionBegin;
-  PetscValidPointer(dm, 4);
+  PetscAssertPointer(dm, 4);
   PetscCall(DMCreate(comm, dm));
   PetscCall(DMSetType(*dm, DMPLEX));
   PetscCall(DMPlexCreateWedgeCylinderMesh_Internal(*dm, n, interpolate));
@@ -3561,7 +3561,7 @@ PetscErrorCode DMPlexCreateTPSMesh(MPI_Comm comm, DMPlexTPSType tpstype, const P
 PetscErrorCode DMPlexCreateSphereMesh(MPI_Comm comm, PetscInt dim, PetscBool simplex, PetscReal R, DM *dm)
 {
   PetscFunctionBegin;
-  PetscValidPointer(dm, 5);
+  PetscAssertPointer(dm, 5);
   PetscCall(DMCreate(comm, dm));
   PetscCall(DMSetType(*dm, DMPLEX));
   PetscCall(DMPlexCreateSphereMesh_Internal(*dm, dim, simplex, R));
@@ -4650,7 +4650,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_Plex(DM dm)
 PetscErrorCode DMPlexCreate(MPI_Comm comm, DM *mesh)
 {
   PetscFunctionBegin;
-  PetscValidPointer(mesh, 2);
+  PetscAssertPointer(mesh, 2);
   PetscCall(DMCreate(comm, mesh));
   PetscCall(DMSetType(*mesh, DMPLEX));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -5464,9 +5464,9 @@ PetscErrorCode DMPlexCreateFromFile(MPI_Comm comm, const char filename[], const 
   PetscMPIInt rank;
 
   PetscFunctionBegin;
-  PetscValidPointer(filename, 2);
-  if (plexname) PetscValidPointer(plexname, 3);
-  PetscValidPointer(dm, 5);
+  PetscAssertPointer(filename, 2);
+  if (plexname) PetscAssertPointer(plexname, 3);
+  PetscAssertPointer(dm, 5);
   PetscCall(DMInitializePackage());
   PetscCall(PetscLogEventBegin(DMPLEX_CreateFromFile, 0, 0, 0, 0));
   PetscCallMPI(MPI_Comm_rank(comm, &rank));

@@ -267,7 +267,7 @@ PetscErrorCode PetscSpacePolynomialGetTensor(PetscSpace sp, PetscBool *tensor)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
-  PetscValidPointer(tensor, 2);
+  PetscAssertPointer(tensor, 2);
   PetscTryMethod(sp, "PetscSpacePolynomialGetTensor_C", (PetscSpace, PetscBool *), (sp, tensor));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -287,7 +287,7 @@ static PetscErrorCode PetscSpacePolynomialGetTensor_Polynomial(PetscSpace sp, Pe
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
-  PetscValidPointer(tensor, 2);
+  PetscAssertPointer(tensor, 2);
   *tensor = poly->tensor;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

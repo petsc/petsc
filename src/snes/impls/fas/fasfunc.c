@@ -47,7 +47,7 @@ PetscErrorCode SNESFASGetType(SNES snes, SNESFASType *fastype)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(snes, SNES_CLASSID, 1, SNESFAS);
-  PetscValidPointer(fastype, 2);
+  PetscAssertPointer(fastype, 2);
   fas      = (SNES_FAS *)snes->data;
   *fastype = fas->fastype;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -142,7 +142,7 @@ PetscErrorCode SNESFASGetLevels(SNES snes, PetscInt *levels)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(snes, SNES_CLASSID, 1, SNESFAS);
-  PetscValidPointer(levels, 2);
+  PetscAssertPointer(levels, 2);
   fas     = (SNES_FAS *)snes->data;
   *levels = fas->levels;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -171,7 +171,7 @@ PetscErrorCode SNESFASGetCycleSNES(SNES snes, PetscInt level, SNES *lsnes)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(snes, SNES_CLASSID, 1, SNESFAS);
-  PetscValidPointer(lsnes, 3);
+  PetscAssertPointer(lsnes, 3);
   fas = (SNES_FAS *)snes->data;
   PetscCheck(level <= fas->levels - 1, PetscObjectComm((PetscObject)snes), PETSC_ERR_ARG_OUTOFRANGE, "Requested level %" PetscInt_FMT " from SNESFAS containing %" PetscInt_FMT " levels", level, fas->levels);
   PetscCheck(fas->level == fas->levels - 1, PetscObjectComm((PetscObject)snes), PETSC_ERR_ARG_OUTOFRANGE, "SNESFASGetCycleSNES may only be called on the finest-level SNES");
@@ -429,7 +429,7 @@ PetscErrorCode SNESFASCycleCreateSmoother_Private(SNES snes, SNES *smooth)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(snes, SNES_CLASSID, 1, SNESFAS);
-  PetscValidPointer(smooth, 2);
+  PetscAssertPointer(smooth, 2);
   fas = (SNES_FAS *)snes->data;
   PetscCall(SNESGetOptionsPrefix(fas->fine, &optionsprefix));
   /* create the default smoother */
@@ -503,7 +503,7 @@ PetscErrorCode SNESFASCycleGetSmoother(SNES snes, SNES *smooth)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(snes, SNES_CLASSID, 1, SNESFAS);
-  PetscValidPointer(smooth, 2);
+  PetscAssertPointer(smooth, 2);
   fas     = (SNES_FAS *)snes->data;
   *smooth = fas->smoothd;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -533,7 +533,7 @@ PetscErrorCode SNESFASCycleGetSmootherUp(SNES snes, SNES *smoothu)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(snes, SNES_CLASSID, 1, SNESFAS);
-  PetscValidPointer(smoothu, 2);
+  PetscAssertPointer(smoothu, 2);
   fas = (SNES_FAS *)snes->data;
   if (!fas->smoothu) *smoothu = fas->smoothd;
   else *smoothu = fas->smoothu;
@@ -561,7 +561,7 @@ PetscErrorCode SNESFASCycleGetSmootherDown(SNES snes, SNES *smoothd)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(snes, SNES_CLASSID, 1, SNESFAS);
-  PetscValidPointer(smoothd, 2);
+  PetscAssertPointer(smoothd, 2);
   fas      = (SNES_FAS *)snes->data;
   *smoothd = fas->smoothd;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -591,7 +591,7 @@ PetscErrorCode SNESFASCycleGetCorrection(SNES snes, SNES *correction)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(snes, SNES_CLASSID, 1, SNESFAS);
-  PetscValidPointer(correction, 2);
+  PetscAssertPointer(correction, 2);
   fas         = (SNES_FAS *)snes->data;
   *correction = fas->next;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -618,7 +618,7 @@ PetscErrorCode SNESFASCycleGetInterpolation(SNES snes, Mat *mat)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(snes, SNES_CLASSID, 1, SNESFAS);
-  PetscValidPointer(mat, 2);
+  PetscAssertPointer(mat, 2);
   fas  = (SNES_FAS *)snes->data;
   *mat = fas->interpolate;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -645,7 +645,7 @@ PetscErrorCode SNESFASCycleGetRestriction(SNES snes, Mat *mat)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(snes, SNES_CLASSID, 1, SNESFAS);
-  PetscValidPointer(mat, 2);
+  PetscAssertPointer(mat, 2);
   fas  = (SNES_FAS *)snes->data;
   *mat = fas->restrct;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -672,7 +672,7 @@ PetscErrorCode SNESFASCycleGetInjection(SNES snes, Mat *mat)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(snes, SNES_CLASSID, 1, SNESFAS);
-  PetscValidPointer(mat, 2);
+  PetscAssertPointer(mat, 2);
   fas  = (SNES_FAS *)snes->data;
   *mat = fas->inject;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -699,7 +699,7 @@ PetscErrorCode SNESFASCycleGetRScale(SNES snes, Vec *vec)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(snes, SNES_CLASSID, 1, SNESFAS);
-  PetscValidPointer(vec, 2);
+  PetscAssertPointer(vec, 2);
   fas  = (SNES_FAS *)snes->data;
   *vec = fas->rscale;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -726,7 +726,7 @@ PetscErrorCode SNESFASCycleIsFine(SNES snes, PetscBool *flg)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(snes, SNES_CLASSID, 1, SNESFAS);
-  PetscValidPointer(flg, 2);
+  PetscAssertPointer(flg, 2);
   fas = (SNES_FAS *)snes->data;
   if (fas->level == fas->levels - 1) *flg = PETSC_TRUE;
   else *flg = PETSC_FALSE;
@@ -793,7 +793,7 @@ PetscErrorCode SNESFASGetInterpolation(SNES snes, PetscInt level, Mat *mat)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(snes, SNES_CLASSID, 1, SNESFAS);
-  PetscValidPointer(mat, 3);
+  PetscAssertPointer(mat, 3);
   PetscCall(SNESFASGetCycleSNES(snes, level, &levelsnes));
   fas  = (SNES_FAS *)levelsnes->data;
   *mat = fas->interpolate;
@@ -861,7 +861,7 @@ PetscErrorCode SNESFASGetRestriction(SNES snes, PetscInt level, Mat *mat)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(snes, SNES_CLASSID, 1, SNESFAS);
-  PetscValidPointer(mat, 3);
+  PetscAssertPointer(mat, 3);
   PetscCall(SNESFASGetCycleSNES(snes, level, &levelsnes));
   fas  = (SNES_FAS *)levelsnes->data;
   *mat = fas->restrct;
@@ -924,7 +924,7 @@ PetscErrorCode SNESFASGetInjection(SNES snes, PetscInt level, Mat *mat)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(snes, SNES_CLASSID, 1, SNESFAS);
-  PetscValidPointer(mat, 3);
+  PetscAssertPointer(mat, 3);
   PetscCall(SNESFASGetCycleSNES(snes, level, &levelsnes));
   fas  = (SNES_FAS *)levelsnes->data;
   *mat = fas->inject;
@@ -984,7 +984,7 @@ PetscErrorCode SNESFASGetSmoother(SNES snes, PetscInt level, SNES *smooth)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(snes, SNES_CLASSID, 1, SNESFAS);
-  PetscValidPointer(smooth, 3);
+  PetscAssertPointer(smooth, 3);
   PetscCall(SNESFASGetCycleSNES(snes, level, &levelsnes));
   fas = (SNES_FAS *)levelsnes->data;
   if (!fas->smoothd) PetscCall(SNESFASCycleCreateSmoother_Private(levelsnes, &fas->smoothd));
@@ -1013,7 +1013,7 @@ PetscErrorCode SNESFASGetSmootherDown(SNES snes, PetscInt level, SNES *smooth)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(snes, SNES_CLASSID, 1, SNESFAS);
-  PetscValidPointer(smooth, 3);
+  PetscAssertPointer(smooth, 3);
   PetscCall(SNESFASGetCycleSNES(snes, level, &levelsnes));
   fas = (SNES_FAS *)levelsnes->data;
   /* if the user chooses to differentiate smoothers, create them both at this point */
@@ -1044,7 +1044,7 @@ PetscErrorCode SNESFASGetSmootherUp(SNES snes, PetscInt level, SNES *smooth)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(snes, SNES_CLASSID, 1, SNESFAS);
-  PetscValidPointer(smooth, 3);
+  PetscAssertPointer(smooth, 3);
   PetscCall(SNESFASGetCycleSNES(snes, level, &levelsnes));
   fas = (SNES_FAS *)levelsnes->data;
   /* if the user chooses to differentiate smoothers, create them both at this point */
@@ -1074,7 +1074,7 @@ PetscErrorCode SNESFASGetCoarseSolve(SNES snes, SNES *coarse)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(snes, SNES_CLASSID, 1, SNESFAS);
-  PetscValidPointer(coarse, 2);
+  PetscAssertPointer(coarse, 2);
   PetscCall(SNESFASGetCycleSNES(snes, 0, &levelsnes));
   fas = (SNES_FAS *)levelsnes->data;
   /* if the user chooses to differentiate smoothers, create them both at this point */

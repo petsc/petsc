@@ -466,7 +466,7 @@ PetscErrorCode PCFactorGetMatSolverType(PC pc, MatSolverType *stype)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
-  PetscValidPointer(stype, 2);
+  PetscAssertPointer(stype, 2);
   PetscCall(PetscObjectQueryFunction((PetscObject)pc, "PCFactorGetMatSolverType_C", &f));
   if (f) PetscCall((*f)(pc, stype));
   else *stype = NULL;

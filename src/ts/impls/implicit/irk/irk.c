@@ -681,7 +681,7 @@ PetscErrorCode TSIRKSetType(TS ts, TSIRKType irktype)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
-  PetscValidPointer(irktype, 2);
+  PetscAssertPointer(irktype, 2);
   PetscTryMethod(ts, "TSIRKSetType_C", (TS, TSIRKType), (ts, irktype));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -750,7 +750,7 @@ PetscErrorCode TSIRKGetNumStages(TS ts, PetscInt *nstages)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
-  PetscValidPointer(nstages, 2);
+  PetscAssertPointer(nstages, 2);
   PetscTryMethod(ts, "TSIRKGetNumStages_C", (TS, PetscInt *), (ts, nstages));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -796,7 +796,7 @@ static PetscErrorCode TSIRKGetNumStages_IRK(TS ts, PetscInt *nstages)
   TS_IRK *irk = (TS_IRK *)ts->data;
 
   PetscFunctionBegin;
-  PetscValidPointer(nstages, 2);
+  PetscAssertPointer(nstages, 2);
   *nstages = irk->nstages;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

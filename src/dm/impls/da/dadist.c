@@ -24,7 +24,7 @@ PetscErrorCode DMCreateGlobalVector_DA(DM da, Vec *g)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da, DM_CLASSID, 1);
-  PetscValidPointer(g, 2);
+  PetscAssertPointer(g, 2);
   PetscCall(VecCreate(PetscObjectComm((PetscObject)da), g));
   PetscCall(VecSetSizes(*g, dd->Nlocal, PETSC_DETERMINE));
   PetscCall(VecSetBlockSize(*g, dd->w));
@@ -74,7 +74,7 @@ PetscErrorCode DMDACreateNaturalVector(DM da, Vec *g)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(da, DM_CLASSID, 1, DMDA);
-  PetscValidPointer(g, 2);
+  PetscAssertPointer(g, 2);
   if (dd->natural) {
     PetscCall(PetscObjectGetReference((PetscObject)dd->natural, &cnt));
     if (cnt == 1) { /* object is not currently used by anyone */

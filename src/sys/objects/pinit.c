@@ -119,7 +119,7 @@ PetscErrorCode PetscInitializeNoPointers(int argc, char **args, const char *file
 PetscErrorCode PetscGetPETSC_COMM_SELF(MPI_Comm *comm)
 {
   PetscFunctionBegin;
-  if (PetscInitializeCalled) PetscValidPointer(comm, 1);
+  if (PetscInitializeCalled) PetscAssertPointer(comm, 1);
   *comm = PETSC_COMM_SELF;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -157,7 +157,7 @@ PetscErrorCode PetscInitializeNoArguments(void)
 PetscErrorCode PetscInitialized(PetscBool *isInitialized)
 {
   PetscFunctionBegin;
-  if (PetscInitializeCalled) PetscValidPointer(isInitialized, 1);
+  if (PetscInitializeCalled) PetscAssertPointer(isInitialized, 1);
   *isInitialized = PetscInitializeCalled;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -175,7 +175,7 @@ PetscErrorCode PetscInitialized(PetscBool *isInitialized)
 PetscErrorCode PetscFinalized(PetscBool *isFinalized)
 {
   PetscFunctionBegin;
-  if (!PetscFinalizeCalled) PetscValidPointer(isFinalized, 1);
+  if (!PetscFinalizeCalled) PetscAssertPointer(isFinalized, 1);
   *isFinalized = PetscFinalizeCalled;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

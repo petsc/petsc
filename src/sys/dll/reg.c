@@ -229,7 +229,7 @@ static PetscErrorCode PetscHMapFuncInsert_Private(PetscHMapFunc map, const char 
   PetscBool     found;
 
   PetscFunctionBegin;
-  PetscValidPointer(name, 2);
+  PetscAssertPointer(name, 2);
   if (fnc) PetscValidFunction(fnc, 3);
   PetscCall(PetscHMapFuncFind(map, name, &it, &found));
   if (fnc) {
@@ -292,8 +292,8 @@ M*/
 PetscErrorCode PetscFunctionListAdd_Private(PetscFunctionList *fl, const char name[], PetscVoidFunction fptr)
 {
   PetscFunctionBegin;
-  PetscValidPointer(fl, 1);
-  if (name) PetscValidPointer(name, 2);
+  PetscAssertPointer(fl, 1);
+  if (name) PetscAssertPointer(name, 2);
   if (fptr) PetscValidFunction(fptr, 3);
   PetscCall(PetscFunctionListCreate_Private(0, fl));
   PetscCall(PetscHMapFuncInsert_Private((*fl)->map, name, fptr));
@@ -428,8 +428,8 @@ M*/
 PetscErrorCode PetscFunctionListFind_Private(PetscFunctionList fl, const char name[], PetscVoidFunction *fptr)
 {
   PetscFunctionBegin;
-  PetscValidPointer(name, 2);
-  PetscValidPointer(fptr, 3);
+  PetscAssertPointer(name, 2);
+  PetscAssertPointer(fptr, 3);
   *fptr = NULL;
   if (fl) PetscCall(PetscHMapFuncGet(fl->map, name, fptr));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -453,7 +453,7 @@ PetscErrorCode PetscFunctionListView(PetscFunctionList list, PetscViewer viewer)
   PetscBool iascii;
 
   PetscFunctionBegin;
-  PetscValidPointer(list, 1);
+  PetscAssertPointer(list, 1);
   if (!viewer) PetscCall(PetscViewerASCIIGetStdout(PETSC_COMM_SELF, &viewer));
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
 
@@ -505,7 +505,7 @@ PetscErrorCode PetscFunctionListGet(PetscFunctionList list, const char ***array,
   PetscInt size = 0;
 
   PetscFunctionBegin;
-  PetscValidPointer(array, 2);
+  PetscAssertPointer(array, 2);
   *array = NULL;
   if (list) {
     const PetscHMapFunc map = list->map;

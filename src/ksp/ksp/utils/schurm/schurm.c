@@ -287,7 +287,7 @@ PetscErrorCode MatSchurComplementGetKSP(Mat S, KSP *ksp)
   PetscValidHeaderSpecific(S, MAT_CLASSID, 1);
   PetscCall(PetscObjectTypeCompare((PetscObject)S, MATSCHURCOMPLEMENT, &isschur));
   PetscCheck(isschur, PetscObjectComm((PetscObject)S), PETSC_ERR_ARG_WRONG, "Not for type %s", ((PetscObject)S)->type_name);
-  PetscValidPointer(ksp, 2);
+  PetscAssertPointer(ksp, 2);
   Na   = (Mat_SchurComplement *)S->data;
   *ksp = Na->ksp;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -834,7 +834,7 @@ PetscErrorCode MatSchurComplementGetPmat(Mat S, MatReuse preuse, Mat *Sp)
   PetscValidType(S, 1);
   PetscValidLogicalCollectiveEnum(S, preuse, 2);
   if (preuse != MAT_IGNORE_MATRIX) {
-    PetscValidPointer(Sp, 3);
+    PetscAssertPointer(Sp, 3);
     if (preuse == MAT_INITIAL_MATRIX) *Sp = NULL;
     if (preuse == MAT_REUSE_MATRIX) PetscValidHeaderSpecific(*Sp, MAT_CLASSID, 3);
   }

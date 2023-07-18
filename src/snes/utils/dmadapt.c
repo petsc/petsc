@@ -37,7 +37,7 @@ PetscErrorCode DMAdaptorCreate(MPI_Comm comm, DMAdaptor *adaptor)
   VecTaggerBox refineBox, coarsenBox;
 
   PetscFunctionBegin;
-  PetscValidPointer(adaptor, 2);
+  PetscAssertPointer(adaptor, 2);
   PetscCall(PetscSysInitializePackage());
   PetscCall(PetscHeaderCreate(*adaptor, DM_CLASSID, "DMAdaptor", "DM Adaptor", "SNES", comm, DMAdaptorDestroy, DMAdaptorView));
 
@@ -163,7 +163,7 @@ PetscErrorCode DMAdaptorGetSolver(DMAdaptor adaptor, SNES *snes)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(adaptor, DM_CLASSID, 1);
-  PetscValidPointer(snes, 2);
+  PetscAssertPointer(snes, 2);
   *snes = adaptor->snes;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -213,7 +213,7 @@ PetscErrorCode DMAdaptorGetSequenceLength(DMAdaptor adaptor, PetscInt *num)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(adaptor, DM_CLASSID, 1);
-  PetscValidPointer(num, 2);
+  PetscAssertPointer(num, 2);
   *num = adaptor->numSeq;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

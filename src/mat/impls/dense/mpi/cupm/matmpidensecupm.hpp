@@ -411,7 +411,7 @@ inline PetscErrorCode MatCreateDenseCUPM(MPI_Comm comm, PetscInt n, PetscInt m, 
   PetscMPIInt size;
 
   PetscFunctionBegin;
-  PetscValidPointer(A, 7);
+  PetscAssertPointer(A, 7);
   PetscCallMPI(MPI_Comm_size(comm, &size));
   if (size > 1) {
     PetscCall(MatCreateMPIDenseCUPM<T>(comm, n, m, N, M, data, A, dctx));

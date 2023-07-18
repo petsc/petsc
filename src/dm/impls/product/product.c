@@ -29,7 +29,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_Product(DM dm)
   PetscInt    d;
 
   PetscFunctionBegin;
-  PetscValidPointer(dm, 1);
+  PetscAssertPointer(dm, 1);
   PetscCall(PetscNew(&product));
   dm->data = product;
 

@@ -11,7 +11,7 @@ PetscErrorCode DMFieldShellGetContext(DMField field, void *ctx)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(field, DMFIELD_CLASSID, 1);
-  PetscValidPointer(ctx, 2);
+  PetscAssertPointer(ctx, 2);
   PetscCall(PetscObjectTypeCompare((PetscObject)field, DMFIELDSHELL, &flg));
   if (flg) *(void **)ctx = ((DMField_Shell *)(field->data))->ctx;
   else SETERRQ(PetscObjectComm((PetscObject)field), PETSC_ERR_SUP, "Cannot get context from non-shell shield");
@@ -255,8 +255,8 @@ PetscErrorCode DMFieldCreateShell(DM dm, PetscInt numComponents, DMFieldContinui
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  if (ctx) PetscValidPointer(ctx, 4);
-  PetscValidPointer(field, 5);
+  if (ctx) PetscAssertPointer(ctx, 4);
+  PetscAssertPointer(field, 5);
   PetscCall(DMFieldCreate(dm, numComponents, continuity, &b));
   PetscCall(DMFieldSetType(b, DMFIELDSHELL));
   shell      = (DMField_Shell *)b->data;

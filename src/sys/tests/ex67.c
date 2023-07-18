@@ -1,4 +1,4 @@
-const char help[] = "Test PetscValidPointer type generics";
+const char help[] = "Test PetscAssertPointer type generics";
 
 #include <petsc/private/petscimpl.h>
 
@@ -6,13 +6,13 @@ const char help[] = "Test PetscValidPointer type generics";
   do { \
     type         *h = NULL; \
     PetscBool     same_string; \
-    PetscDataType data_type         = PetscValidPointer_PetscDataType(h); \
+    PetscDataType data_type         = PetscAssertPointer_PetscDataType(h); \
     const char    expected_string[] = string; \
-    PetscCall(PetscInfo(NULL, "PetscValidPointer_PetscDataType(%s *h) = PETSC_%s\n", expected_string, PetscDataTypes[data_type])); \
-    PetscCall(PetscInfo(NULL, "PetscValidPointer_String(%s *h) = \"%s\"\n", expected_string, PetscValidPointer_String(h))); \
-    PetscCheck(data_type == PETSC_TYPE, PETSC_COMM_SELF, PETSC_ERR_PLIB, "[PetscValidPointer_PetscDataType(%s *h) = %s] != PETSC_%s", expected_string, PetscDataTypes[data_type], PetscDataTypes[PETSC_TYPE]); \
-    PetscCall(PetscStrcmp(PetscValidPointer_String(h), expected_string, &same_string)); \
-    PetscCheck(same_string, PETSC_COMM_SELF, PETSC_ERR_PLIB, "[PetscValidPointer_String(%s *h) = \"%s\"] != \"%s\"", expected_string, PetscValidPointer_String(h), expected_string); \
+    PetscCall(PetscInfo(NULL, "PetscAssertPointer_PetscDataType(%s *h) = PETSC_%s\n", expected_string, PetscDataTypes[data_type])); \
+    PetscCall(PetscInfo(NULL, "PetscAssertPointer_String(%s *h) = \"%s\"\n", expected_string, PetscAssertPointer_String(h))); \
+    PetscCheck(data_type == PETSC_TYPE, PETSC_COMM_SELF, PETSC_ERR_PLIB, "[PetscAssertPointer_PetscDataType(%s *h) = %s] != PETSC_%s", expected_string, PetscDataTypes[data_type], PetscDataTypes[PETSC_TYPE]); \
+    PetscCall(PetscStrcmp(PetscAssertPointer_String(h), expected_string, &same_string)); \
+    PetscCheck(same_string, PETSC_COMM_SELF, PETSC_ERR_PLIB, "[PetscAssertPointer_String(%s *h) = \"%s\"] != \"%s\"", expected_string, PetscAssertPointer_String(h), expected_string); \
   } while (0)
 #define PETSC_TEST_VALID_POINTER_GENERICS(type, PETSC_TYPE) \
   PETSC_TEST_VALID_POINTER_GENERICS_SINGLE(type, PETSC_TYPE, PetscStringize(type)); \
@@ -21,7 +21,7 @@ const char help[] = "Test PetscValidPointer type generics";
 int main(int argc, char **argv)
 {
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
-#if defined(PetscValidPointer_PetscDataType) && (defined(__cplusplus) || (PETSC_C_VERSION >= 11))
+#if defined(PetscAssertPointer_PetscDataType) && (defined(__cplusplus) || (PETSC_C_VERSION >= 11))
   // clang-format off
   PETSC_TEST_VALID_POINTER_GENERICS(          char, PETSC_CHAR   );
   PETSC_TEST_VALID_POINTER_GENERICS(   signed char, PETSC_CHAR   );
@@ -37,7 +37,7 @@ int main(int argc, char **argv)
   PETSC_TEST_VALID_POINTER_GENERICS(      uint64_t, PETSC_INT64  );
   // clang-format on
 #endif
-#if defined(PetscValidPointer_PetscDataType) && defined(__cplusplus)
+#if defined(PetscAssertPointer_PetscDataType) && defined(__cplusplus)
   PETSC_TEST_VALID_POINTER_GENERICS(PetscBool, PETSC_BOOL);
 #endif
   PetscCall(PetscFinalize());

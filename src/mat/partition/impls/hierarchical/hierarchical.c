@@ -251,7 +251,7 @@ PetscErrorCode MatPartitioningHierarchical_ReassembleFineparts(Mat adj, IS finep
   PetscSF         sf;
 
   PetscFunctionBegin;
-  PetscValidPointer(sfineparts, 4);
+  PetscAssertPointer(sfineparts, 4);
   PetscCall(PetscObjectGetComm((PetscObject)adj, &comm));
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
   PetscCall(MatGetLayouts(adj, &rmap, NULL));

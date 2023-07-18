@@ -256,7 +256,7 @@ PetscErrorCode MatPartitioningChacoGetGlobal(MatPartitioning part, MPChacoGlobal
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part, MAT_PARTITIONING_CLASSID, 1);
-  PetscValidPointer(method, 2);
+  PetscAssertPointer(method, 2);
   PetscTryMethod(part, "MatPartitioningChacoGetGlobal_C", (MatPartitioning, MPChacoGlobalType *), (part, method));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -334,7 +334,7 @@ PetscErrorCode MatPartitioningChacoGetLocal(MatPartitioning part, MPChacoLocalTy
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part, MAT_PARTITIONING_CLASSID, 1);
-  PetscValidPointer(method, 2);
+  PetscAssertPointer(method, 2);
   PetscUseMethod(part, "MatPartitioningChacoGetLocal_C", (MatPartitioning, MPChacoLocalType *), (part, method));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -449,7 +449,7 @@ PetscErrorCode MatPartitioningChacoGetEigenSolver(MatPartitioning part, MPChacoE
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part, MAT_PARTITIONING_CLASSID, 1);
-  PetscValidPointer(method, 2);
+  PetscAssertPointer(method, 2);
   PetscUseMethod(part, "MatPartitioningChacoGetEigenSolver_C", (MatPartitioning, MPChacoEigenType *), (part, method));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -523,7 +523,7 @@ PetscErrorCode MatPartitioningChacoGetEigenTol(MatPartitioning part, PetscReal *
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part, MAT_PARTITIONING_CLASSID, 1);
-  PetscValidPointer(tol, 2);
+  PetscAssertPointer(tol, 2);
   PetscUseMethod(part, "MatPartitioningChacoGetEigenTol_C", (MatPartitioning, PetscReal *), (part, tol));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -599,7 +599,7 @@ PetscErrorCode MatPartitioningChacoGetEigenNumber(MatPartitioning part, PetscInt
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part, MAT_PARTITIONING_CLASSID, 1);
-  PetscValidPointer(num, 2);
+  PetscAssertPointer(num, 2);
   PetscUseMethod(part, "MatPartitioningChacoGetEigenNumber_C", (MatPartitioning, PetscInt *), (part, num));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

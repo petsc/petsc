@@ -370,7 +370,7 @@ PETSC_EXTERN PetscBool PetscCheckPointer(const void *, PetscDataType);
       do { \
         (void)(h); \
       } while (0)
-    #define PetscValidPointer(h, arg) \
+    #define PetscAssertPointer(h, arg) \
       do { \
         (void)(h); \
       } while (0)
@@ -390,7 +390,7 @@ PETSC_EXTERN PetscBool PetscCheckPointer(const void *, PetscDataType);
         PetscCheck(_7_same, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Wrong subtype object:Parameter # %d must have implementation %s it is %s", arg, t, ((PetscObject)(h))->type_name); \
       } while (0)
 
-    #define PetscValidPointer_Internal(ptr, arg, ptype, ptrtype) \
+    #define PetscAssertPointer_Internal(ptr, arg, ptype, ptrtype) \
       do { \
         PetscCheck(ptr, PETSC_COMM_SELF, PETSC_ERR_ARG_NULL, "Null Pointer: Parameter # %d", arg); \
         PetscCheck(PetscCheckPointer(ptr, ptype), PETSC_COMM_SELF, PETSC_ERR_ARG_BADPTR, "Invalid Pointer to %s: Argument '" PetscStringize(ptr) "' (parameter # %d)", ptrtype, arg); \
@@ -398,7 +398,7 @@ PETSC_EXTERN PetscBool PetscCheckPointer(const void *, PetscDataType);
 
     #define PetscValidHeaderSpecific(h, ck, arg) \
       do { \
-        PetscValidPointer_Internal(h, arg, PETSC_OBJECT, "PetscObject"); \
+        PetscAssertPointer_Internal(h, arg, PETSC_OBJECT, "PetscObject"); \
         if (((PetscObject)(h))->classid != ck) { \
           PetscCheck(((PetscObject)(h))->classid != PETSCFREEDHEADER, PETSC_COMM_SELF, PETSC_ERR_ARG_CORRUPT, "Object already free: Parameter # %d", arg); \
           SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Wrong type of object: Parameter # %d", arg); \
@@ -407,7 +407,7 @@ PETSC_EXTERN PetscBool PetscCheckPointer(const void *, PetscDataType);
 
     #define PetscValidHeader(h, arg) \
       do { \
-        PetscValidPointer_Internal(h, arg, PETSC_OBJECT, "PetscObject"); \
+        PetscAssertPointer_Internal(h, arg, PETSC_OBJECT, "PetscObject"); \
         PetscCheck(((PetscObject)(h))->classid != PETSCFREEDHEADER, PETSC_COMM_SELF, PETSC_ERR_ARG_CORRUPT, "Object already free: Parameter # %d", arg); \
         PetscCheck(((PetscObject)(h))->classid >= PETSC_SMALLEST_CLASSID && ((PetscObject)(h))->classid <= PETSC_LARGEST_CLASSID, PETSC_COMM_SELF, PETSC_ERR_ARG_CORRUPT, "Invalid type of object: Parameter # %d", arg); \
       } while (0)
@@ -420,14 +420,14 @@ namespace util
 {
 
 template <typename T>
-struct PetscValidPointerImpl {
+struct PetscAssertPointerImpl {
   PETSC_NODISCARD static constexpr PetscDataType type() noexcept { return PETSC_CHAR; }
   PETSC_NODISCARD static constexpr const char   *string() noexcept { return "memory"; }
 };
 
       #define PETSC_VALID_POINTER_IMPL_SPECIALIZATION(T, PETSC_TYPE) \
         template <> \
-        struct PetscValidPointerImpl<T *> { \
+        struct PetscAssertPointerImpl<T *> { \
           PETSC_NODISCARD static constexpr PetscDataType type() noexcept \
           { \
             return PETSC_TYPE; \
@@ -438,11 +438,11 @@ struct PetscValidPointerImpl {
           } \
         }; \
         template <> \
-        struct PetscValidPointerImpl<const T *> : PetscValidPointerImpl<T *> { }; \
+        struct PetscAssertPointerImpl<const T *> : PetscAssertPointerImpl<T *> { }; \
         template <> \
-        struct PetscValidPointerImpl<volatile T *> : PetscValidPointerImpl<T *> { }; \
+        struct PetscAssertPointerImpl<volatile T *> : PetscAssertPointerImpl<T *> { }; \
         template <> \
-        struct PetscValidPointerImpl<const volatile T *> : PetscValidPointerImpl<T *> { }
+        struct PetscAssertPointerImpl<const volatile T *> : PetscAssertPointerImpl<T *> { }
 
 // clang-format off
 PETSC_VALID_POINTER_IMPL_SPECIALIZATION(          char,   PETSC_CHAR);
@@ -465,12 +465,12 @@ PETSC_VALID_POINTER_IMPL_SPECIALIZATION(PetscComplex, PETSC_COMPLEX);
 
 } // namespace Petsc
 
-      #define PetscValidPointer_PetscDataType(h) ::Petsc::util::PetscValidPointerImpl<decltype(h)>::type()
-      #define PetscValidPointer_String(h)        ::Petsc::util::PetscValidPointerImpl<decltype(h)>::string()
+      #define PetscAssertPointer_PetscDataType(h) ::Petsc::util::PetscAssertPointerImpl<decltype(h)>::type()
+      #define PetscAssertPointer_String(h)        ::Petsc::util::PetscAssertPointerImpl<decltype(h)>::string()
 
     #elif PETSC_C_VERSION >= 11
       // clang-format off
-      #define PetscValidPointer_PetscDataType_WithoutPetscComplex(h) _Generic((h), \
+      #define PetscAssertPointer_PetscDataType_WithoutPetscComplex(h) _Generic((h), \
                        default: PETSC_CHAR  , \
                         char *: PETSC_CHAR  , \
                   const char *: PETSC_CHAR  , \
@@ -494,7 +494,7 @@ PETSC_VALID_POINTER_IMPL_SPECIALIZATION(PetscComplex, PETSC_COMPLEX);
                const int64_t *: PETSC_INT64 , \
                     uint64_t *: PETSC_INT64 , \
               const uint64_t *: PETSC_INT64 )
-      #define PetscValidPointer_String_WithoutPetscComplex(h) _Generic((h), \
+      #define PetscAssertPointer_String_WithoutPetscComplex(h) _Generic((h), \
                        default:         "memory", \
                         char *:           "char", \
                   const char *:           "char", \
@@ -521,24 +521,24 @@ PETSC_VALID_POINTER_IMPL_SPECIALIZATION(PetscComplex, PETSC_COMPLEX);
       // clang-format on
       #if !defined(PETSC_SKIP_COMPLEX)
         // clang-format off
-        #define PetscValidPointer_PetscDataType(h) _Generic((h), \
-                     default: PetscValidPointer_PetscDataType_WithoutPetscComplex(h), \
+        #define PetscAssertPointer_PetscDataType(h) _Generic((h), \
+                     default: PetscAssertPointer_PetscDataType_WithoutPetscComplex(h), \
                 PetscComplex *: PETSC_COMPLEX, \
           const PetscComplex *: PETSC_COMPLEX)
-        #define PetscValidPointer_String(h) _Generic((h), \
-                     default: PetscValidPointer_String_WithoutPetscComplex(h), \
+        #define PetscAssertPointer_String(h) _Generic((h), \
+                     default: PetscAssertPointer_String_WithoutPetscComplex(h), \
                 PetscComplex *: "PetscComplex", \
           const PetscComplex *: "PetscComplex")
         // clang-format on
       #else
-        #define PetscValidPointer_PetscDataType(h) PetscValidPointer_PetscDataType_WithoutPetscComplex(h)
-        #define PetscValidPointer_String(h)        PetscValidPointer_String_WithoutPetscComplex(h)
+        #define PetscAssertPointer_PetscDataType(h) PetscAssertPointer_PetscDataType_WithoutPetscComplex(h)
+        #define PetscAssertPointer_String(h)        PetscAssertPointer_String_WithoutPetscComplex(h)
       #endif
     #else
-      #define PetscValidPointer_PetscDataType(h) PETSC_CHAR
-      #define PetscValidPointer_String(h)        "memory"
+      #define PetscAssertPointer_PetscDataType(h) PETSC_CHAR
+      #define PetscAssertPointer_String(h)        "memory"
     #endif
-    #define PetscValidPointer(h, arg) PetscValidPointer_Internal(h, arg, PetscValidPointer_PetscDataType(h), PetscValidPointer_String(h))
+    #define PetscAssertPointer(h, arg) PetscAssertPointer_Internal(h, arg, PetscAssertPointer_PetscDataType(h), PetscAssertPointer_String(h))
     #define PetscValidFunction(f, arg) \
       do { \
         PetscCheck((f), PETSC_COMM_SELF, PETSC_ERR_ARG_NULL, "Null Function Pointer: Parameter # %d", arg); \
@@ -554,18 +554,19 @@ void PetscValidHeaderSpecific(const T, PetscClassId, int);
 template <typename T>
 void PetscValidHeader(T, int);
 template <typename T>
-void PetscValidPointer(T, int);
+void PetscAssertPointer(T, int);
 template <typename T>
 void PetscValidFunction(T, int);
 #endif /* PETSC_CLANG_STATIC_ANALYZER */
 
-#define PetscValidCharPointer(h, arg)   PETSC_DEPRECATED_MACRO(3, 20, 0, "PetscValidPointer()", ) PetscValidPointer(h, arg)
-#define PetscValidIntPointer(h, arg)    PETSC_DEPRECATED_MACRO(3, 20, 0, "PetscValidPointer()", ) PetscValidPointer(h, arg)
-#define PetscValidInt64Pointer(h, arg)  PETSC_DEPRECATED_MACRO(3, 20, 0, "PetscValidPointer()", ) PetscValidPointer(h, arg)
-#define PetscValidCountPointer(h, arg)  PETSC_DEPRECATED_MACRO(3, 20, 0, "PetscValidPointer()", ) PetscValidPointer(h, arg)
-#define PetscValidBoolPointer(h, arg)   PETSC_DEPRECATED_MACRO(3, 20, 0, "PetscValidPointer()", ) PetscValidPointer(h, arg)
-#define PetscValidScalarPointer(h, arg) PETSC_DEPRECATED_MACRO(3, 20, 0, "PetscValidPointer()", ) PetscValidPointer(h, arg)
-#define PetscValidRealPointer(h, arg)   PETSC_DEPRECATED_MACRO(3, 20, 0, "PetscValidPointer()", ) PetscValidPointer(h, arg)
+#define PetscValidPointer(h, arg)       PETSC_DEPRECATED_MACRO(3, 20, 0, "PetscAssertPointer()", ) PetscAssertPointer(h, arg)
+#define PetscValidCharPointer(h, arg)   PETSC_DEPRECATED_MACRO(3, 20, 0, "PetscAssertPointer()", ) PetscAssertPointer(h, arg)
+#define PetscValidIntPointer(h, arg)    PETSC_DEPRECATED_MACRO(3, 20, 0, "PetscAssertPointer()", ) PetscAssertPointer(h, arg)
+#define PetscValidInt64Pointer(h, arg)  PETSC_DEPRECATED_MACRO(3, 20, 0, "PetscAssertPointer()", ) PetscAssertPointer(h, arg)
+#define PetscValidCountPointer(h, arg)  PETSC_DEPRECATED_MACRO(3, 20, 0, "PetscAssertPointer()", ) PetscAssertPointer(h, arg)
+#define PetscValidBoolPointer(h, arg)   PETSC_DEPRECATED_MACRO(3, 20, 0, "PetscAssertPointer()", ) PetscAssertPointer(h, arg)
+#define PetscValidScalarPointer(h, arg) PETSC_DEPRECATED_MACRO(3, 20, 0, "PetscAssertPointer()", ) PetscAssertPointer(h, arg)
+#define PetscValidRealPointer(h, arg)   PETSC_DEPRECATED_MACRO(3, 20, 0, "PetscAssertPointer()", ) PetscAssertPointer(h, arg)
 
 #define PetscSorted(n, idx, sorted) \
   do { \

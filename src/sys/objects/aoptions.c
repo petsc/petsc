@@ -35,9 +35,9 @@ static int ShouldPrintHelp(const PetscOptionItems *opts)
 PetscErrorCode PetscOptionsBegin_Private(PetscOptionItems *PetscOptionsObject, MPI_Comm comm, const char prefix[], const char title[], const char mansec[])
 {
   PetscFunctionBegin;
-  if (prefix) PetscValidPointer(prefix, 3);
-  PetscValidPointer(title, 4);
-  if (mansec) PetscValidPointer(mansec, 5);
+  if (prefix) PetscAssertPointer(prefix, 3);
+  PetscAssertPointer(title, 4);
+  if (mansec) PetscAssertPointer(mansec, 5);
   if (!PetscOptionsObject->alreadyprinted) {
     if (!PetscOptionsHelpPrintedSingleton) PetscCall(PetscOptionsHelpPrintedCreate(&PetscOptionsHelpPrintedSingleton));
     PetscCall(PetscOptionsHelpPrintedCheck(PetscOptionsHelpPrintedSingleton, prefix, title, &PetscOptionsObject->alreadyprinted));
@@ -63,7 +63,7 @@ PetscErrorCode PetscObjectOptionsBegin_Private(PetscObject obj, PetscOptionItems
   PetscBool flg;
 
   PetscFunctionBegin;
-  PetscValidPointer(PetscOptionsObject, 2);
+  PetscAssertPointer(PetscOptionsObject, 2);
   PetscValidHeader(obj, 1);
   PetscOptionsObject->object         = obj;
   PetscOptionsObject->alreadyprinted = obj->optionsprinted;
@@ -629,9 +629,9 @@ static PetscErrorCode GetListLength(const char *const *list, PetscInt *len)
   PetscInt retlen = 0;
 
   PetscFunctionBegin;
-  PetscValidPointer(len, 2);
+  PetscAssertPointer(len, 2);
   while (list[retlen]) {
-    PetscValidPointer(list[retlen], 1);
+    PetscAssertPointer(list[retlen], 1);
     PetscCheck(++retlen < 50, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "List argument appears to be wrong or have more than 50 entries");
   }
   PetscCheck(retlen > 2, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "List argument must have at least 2 entries: typename and type prefix");
@@ -693,10 +693,10 @@ PetscErrorCode PetscOptionsEnum_Private(PetscOptionItems *PetscOptionsObject, co
   PetscBool tflg;
 
   PetscFunctionBegin;
-  PetscValidPointer(opt, 2);
-  PetscValidPointer(list, 5);
-  PetscValidPointer(value, 7);
-  if (set) PetscValidPointer(set, 8);
+  PetscAssertPointer(opt, 2);
+  PetscAssertPointer(list, 5);
+  PetscAssertPointer(value, 7);
+  if (set) PetscAssertPointer(set, 8);
   PetscCall(GetListLength(list, &ntext));
   PetscCall(PetscOptionsEList_Private(PetscOptionsObject, opt, text, man, list, ntext, list[currentvalue], &tval, &tflg));
   /* with PETSC_USE_64BIT_INDICES sizeof(PetscInt) != sizeof(PetscEnum) */
@@ -749,12 +749,12 @@ PetscErrorCode PetscOptionsEnumArray_Private(PetscOptionItems *PetscOptionsObjec
   const char *prefix = PetscOptionsObject->prefix;
 
   PetscFunctionBegin;
-  PetscValidPointer(opt, 2);
-  PetscValidPointer(list, 5);
-  PetscValidPointer(value, 6);
-  PetscValidPointer(n, 7);
+  PetscAssertPointer(opt, 2);
+  PetscAssertPointer(list, 5);
+  PetscAssertPointer(value, 6);
+  PetscAssertPointer(n, 7);
   PetscCheck(*n > 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "n (%" PetscInt_FMT ") must be > 0", *n);
-  if (set) PetscValidPointer(set, 8);
+  if (set) PetscAssertPointer(set, 8);
   PetscCall(GetListLength(list, &nlist));
   PetscCall(PetscOptionsGetEnumArray(PetscOptionsObject->options, prefix, opt, list, value, n, set));
   if (ShouldPrintHelp(PetscOptionsObject)) {
@@ -914,9 +914,9 @@ PetscErrorCode PetscOptionsInt_Private(PetscOptionItems *PetscOptionsObject, con
   PetscBool          wasset;
 
   PetscFunctionBegin;
-  PetscValidPointer(opt, 2);
-  PetscValidPointer(value, 6);
-  if (set) PetscValidPointer(set, 7);
+  PetscAssertPointer(opt, 2);
+  PetscAssertPointer(value, 6);
+  if (set) PetscAssertPointer(set, 7);
   PetscCheck(currentvalue >= lb, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Current value %" PetscInt_FMT " less than allowed bound %" PetscInt_FMT, currentvalue, lb);
   PetscCheck(currentvalue <= ub, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Current value %" PetscInt_FMT " greater than allowed bound %" PetscInt_FMT, currentvalue, ub);
   if (!PetscOptionsObject->count) {
@@ -985,9 +985,9 @@ PetscErrorCode PetscOptionsString_Private(PetscOptionItems *PetscOptionsObject, 
   PetscBool   lset;
 
   PetscFunctionBegin;
-  PetscValidPointer(opt, 2);
-  PetscValidPointer(value, 6);
-  if (set) PetscValidPointer(set, 8);
+  PetscAssertPointer(opt, 2);
+  PetscAssertPointer(value, 6);
+  if (set) PetscAssertPointer(set, 8);
   if (!PetscOptionsObject->count) {
     PetscOptionItem amsopt;
 
@@ -1050,9 +1050,9 @@ PetscErrorCode PetscOptionsReal_Private(PetscOptionItems *PetscOptionsObject, co
   PetscBool   lset;
 
   PetscFunctionBegin;
-  PetscValidPointer(opt, 2);
-  PetscValidPointer(value, 6);
-  if (set) PetscValidPointer(set, 7);
+  PetscAssertPointer(opt, 2);
+  PetscAssertPointer(value, 6);
+  if (set) PetscAssertPointer(set, 7);
   if (!PetscOptionsObject->count) {
     PetscOptionItem amsopt;
 
@@ -1159,8 +1159,8 @@ PetscErrorCode PetscOptionsName_Private(PetscOptionItems *PetscOptionsObject, co
   const char *prefix = PetscOptionsObject->prefix;
 
   PetscFunctionBegin;
-  PetscValidPointer(opt, 2);
-  PetscValidPointer(flg, 5);
+  PetscAssertPointer(opt, 2);
+  PetscAssertPointer(flg, 5);
   if (!PetscOptionsObject->count) {
     PetscOptionItem amsopt;
 
@@ -1230,9 +1230,9 @@ PetscErrorCode PetscOptionsFList_Private(PetscOptionItems *PetscOptionsObject, c
   PetscBool   lset;
 
   PetscFunctionBegin;
-  PetscValidPointer(opt, 2);
-  PetscValidPointer(value, 7);
-  if (set) PetscValidPointer(set, 9);
+  PetscAssertPointer(opt, 2);
+  PetscAssertPointer(value, 7);
+  if (set) PetscAssertPointer(set, 9);
   if (!PetscOptionsObject->count) {
     PetscOptionItem amsopt;
 
@@ -1298,9 +1298,9 @@ PetscErrorCode PetscOptionsEList_Private(PetscOptionItems *PetscOptionsObject, c
   PetscBool   lset;
 
   PetscFunctionBegin;
-  PetscValidPointer(opt, 2);
-  PetscValidPointer(value, 8);
-  if (set) PetscValidPointer(set, 9);
+  PetscAssertPointer(opt, 2);
+  PetscAssertPointer(value, 8);
+  if (set) PetscAssertPointer(set, 9);
   if (!PetscOptionsObject->count) {
     PetscOptionItem amsopt;
 
@@ -1363,8 +1363,8 @@ PetscErrorCode PetscOptionsBoolGroupBegin_Private(PetscOptionItems *PetscOptions
   const char *prefix = PetscOptionsObject->prefix;
 
   PetscFunctionBegin;
-  PetscValidPointer(opt, 2);
-  PetscValidPointer(flg, 5);
+  PetscAssertPointer(opt, 2);
+  PetscAssertPointer(flg, 5);
   if (!PetscOptionsObject->count) {
     PetscOptionItem amsopt;
 
@@ -1421,8 +1421,8 @@ PetscErrorCode PetscOptionsBoolGroup_Private(PetscOptionItems *PetscOptionsObjec
   const char *prefix = PetscOptionsObject->prefix;
 
   PetscFunctionBegin;
-  PetscValidPointer(opt, 2);
-  PetscValidPointer(flg, 5);
+  PetscAssertPointer(opt, 2);
+  PetscAssertPointer(flg, 5);
   if (!PetscOptionsObject->count) {
     PetscOptionItem amsopt;
 
@@ -1474,8 +1474,8 @@ PetscErrorCode PetscOptionsBoolGroupEnd_Private(PetscOptionItems *PetscOptionsOb
   const char *prefix = PetscOptionsObject->prefix;
 
   PetscFunctionBegin;
-  PetscValidPointer(opt, 2);
-  PetscValidPointer(flg, 5);
+  PetscAssertPointer(opt, 2);
+  PetscAssertPointer(flg, 5);
   if (!PetscOptionsObject->count) {
     PetscOptionItem amsopt;
 
@@ -1537,9 +1537,9 @@ PetscErrorCode PetscOptionsBool_Private(PetscOptionItems *PetscOptionsObject, co
   PetscBool   iset;
 
   PetscFunctionBegin;
-  PetscValidPointer(opt, 2);
-  PetscValidPointer(flg, 6);
-  if (set) PetscValidPointer(set, 7);
+  PetscAssertPointer(opt, 2);
+  PetscAssertPointer(flg, 6);
+  if (set) PetscAssertPointer(set, 7);
   if (!PetscOptionsObject->count) {
     PetscOptionItem amsopt;
 
@@ -1597,11 +1597,11 @@ PetscErrorCode PetscOptionsRealArray_Private(PetscOptionItems *PetscOptionsObjec
   const char *prefix = PetscOptionsObject->prefix;
 
   PetscFunctionBegin;
-  PetscValidPointer(opt, 2);
-  PetscValidPointer(n, 6);
+  PetscAssertPointer(opt, 2);
+  PetscAssertPointer(n, 6);
   PetscCheck(*n >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "n (%" PetscInt_FMT ") cannot be negative", *n);
-  if (*n) PetscValidPointer(value, 5);
-  if (set) PetscValidPointer(set, 7);
+  if (*n) PetscAssertPointer(value, 5);
+  if (set) PetscAssertPointer(set, 7);
   if (!PetscOptionsObject->count) {
     const PetscInt  nv = *n;
     PetscReal      *vals;
@@ -1664,11 +1664,11 @@ PetscErrorCode PetscOptionsScalarArray_Private(PetscOptionItems *PetscOptionsObj
   const char *prefix = PetscOptionsObject->prefix;
 
   PetscFunctionBegin;
-  PetscValidPointer(opt, 2);
-  PetscValidPointer(n, 6);
+  PetscAssertPointer(opt, 2);
+  PetscAssertPointer(n, 6);
   PetscCheck(*n >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "n (%" PetscInt_FMT ") cannot be negative", *n);
-  if (*n) PetscValidPointer(value, 5);
-  if (set) PetscValidPointer(set, 7);
+  if (*n) PetscAssertPointer(value, 5);
+  if (set) PetscAssertPointer(set, 7);
   if (!PetscOptionsObject->count) {
     const PetscInt  nv = *n;
     PetscOptionItem amsopt;
@@ -1738,11 +1738,11 @@ PetscErrorCode PetscOptionsIntArray_Private(PetscOptionItems *PetscOptionsObject
   const char *prefix = PetscOptionsObject->prefix;
 
   PetscFunctionBegin;
-  PetscValidPointer(opt, 2);
-  PetscValidPointer(n, 6);
+  PetscAssertPointer(opt, 2);
+  PetscAssertPointer(n, 6);
   PetscCheck(*n >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "n (%" PetscInt_FMT ") cannot be negative", *n);
-  if (*n) PetscValidPointer(value, 5);
-  if (set) PetscValidPointer(set, 7);
+  if (*n) PetscAssertPointer(value, 5);
+  if (set) PetscAssertPointer(set, 7);
   if (!PetscOptionsObject->count) {
     const PetscInt  nv = *n;
     PetscInt       *vals;
@@ -1811,11 +1811,11 @@ PetscErrorCode PetscOptionsStringArray_Private(PetscOptionItems *PetscOptionsObj
   const char *prefix = PetscOptionsObject->prefix;
 
   PetscFunctionBegin;
-  PetscValidPointer(opt, 2);
-  PetscValidPointer(nmax, 6);
+  PetscAssertPointer(opt, 2);
+  PetscAssertPointer(nmax, 6);
   PetscCheck(*nmax >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "n (%" PetscInt_FMT ") cannot be negative", *nmax);
-  if (*nmax) PetscValidPointer(value, 5);
-  if (set) PetscValidPointer(set, 7);
+  if (*nmax) PetscAssertPointer(value, 5);
+  if (set) PetscAssertPointer(set, 7);
   if (!PetscOptionsObject->count) {
     const PetscInt  nmaxv = *nmax;
     PetscOptionItem amsopt;
@@ -1870,11 +1870,11 @@ PetscErrorCode PetscOptionsBoolArray_Private(PetscOptionItems *PetscOptionsObjec
   const char *prefix = PetscOptionsObject->prefix;
 
   PetscFunctionBegin;
-  PetscValidPointer(opt, 2);
-  PetscValidPointer(n, 6);
+  PetscAssertPointer(opt, 2);
+  PetscAssertPointer(n, 6);
   PetscCheck(*n >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "n (%" PetscInt_FMT ") cannot be negative", *n);
-  if (*n) PetscValidPointer(value, 5);
-  if (set) PetscValidPointer(set, 7);
+  if (*n) PetscAssertPointer(value, 5);
+  if (set) PetscAssertPointer(set, 7);
   if (!PetscOptionsObject->count) {
     const PetscInt  nv = *n;
     PetscBool      *vals;
@@ -1938,10 +1938,10 @@ PetscErrorCode PetscOptionsViewer_Private(PetscOptionItems *PetscOptionsObject, 
   const char    *prefix = PetscOptionsObject->prefix;
 
   PetscFunctionBegin;
-  PetscValidPointer(opt, 2);
-  PetscValidPointer(viewer, 5);
-  if (format) PetscValidPointer(format, 6);
-  if (set) PetscValidPointer(set, 7);
+  PetscAssertPointer(opt, 2);
+  PetscAssertPointer(viewer, 5);
+  if (format) PetscAssertPointer(format, 6);
+  if (set) PetscAssertPointer(set, 7);
   if (!PetscOptionsObject->count) {
     PetscOptionItem amsopt;
 

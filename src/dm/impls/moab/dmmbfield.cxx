@@ -234,7 +234,7 @@ PetscErrorCode DMMoabSetFieldName(DM dm, PetscInt field, const char *fieldName)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(fieldName, 3);
+  PetscAssertPointer(fieldName, 3);
 
   dmmoab = (DM_Moab *)(dm)->data;
   PetscCheck(!(field < 0) && !(field >= dmmoab->numFields), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "DM field %d should be in [%d, %d)", field, 0, dmmoab->numFields);
@@ -300,7 +300,7 @@ PetscErrorCode DMMoabGetFieldDofs(DM dm, PetscInt npoints, const moab::EntityHan
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(points, 3);
+  PetscAssertPointer(points, 3);
   dmmoab = (DM_Moab *)(dm)->data;
 
   if (!dof) PetscCall(PetscMalloc1(npoints, &dof));
@@ -339,7 +339,7 @@ PetscErrorCode DMMoabGetFieldDofsLocal(DM dm, PetscInt npoints, const moab::Enti
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(points, 3);
+  PetscAssertPointer(points, 3);
   dmmoab = (DM_Moab *)(dm)->data;
 
   if (!dof) PetscCall(PetscMalloc1(npoints, &dof));
@@ -378,7 +378,7 @@ PetscErrorCode DMMoabGetDofs(DM dm, PetscInt npoints, const moab::EntityHandle *
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(points, 3);
+  PetscAssertPointer(points, 3);
   dmmoab = (DM_Moab *)(dm)->data;
 
   if (!dof) PetscCall(PetscMalloc1(dmmoab->numFields * npoints, &dof));
@@ -419,7 +419,7 @@ PetscErrorCode DMMoabGetDofsLocal(DM dm, PetscInt npoints, const moab::EntityHan
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(points, 3);
+  PetscAssertPointer(points, 3);
   dmmoab = (DM_Moab *)(dm)->data;
 
   if (!dof) PetscCall(PetscMalloc1(dmmoab->numFields * npoints, &dof));
@@ -461,7 +461,7 @@ PetscErrorCode DMMoabGetDofsBlocked(DM dm, PetscInt npoints, const moab::EntityH
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(points, 3);
+  PetscAssertPointer(points, 3);
   dmmoab = (DM_Moab *)(dm)->data;
 
   if (!dof) PetscCall(PetscMalloc1(npoints, &dof));
@@ -496,7 +496,7 @@ PetscErrorCode DMMoabGetDofsBlockedLocal(DM dm, PetscInt npoints, const moab::En
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(points, 3);
+  PetscAssertPointer(points, 3);
   dmmoab = (DM_Moab *)(dm)->data;
 
   if (!dof) PetscCall(PetscMalloc1(npoints, &dof));
@@ -557,7 +557,7 @@ PetscErrorCode DMMoabGetVertexDofsBlockedLocal(DM dm, PetscInt **dof)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(dof, 2);
+  PetscAssertPointer(dof, 2);
   dmmoab = (DM_Moab *)(dm)->data;
 
   *dof = dmmoab->lidmap;

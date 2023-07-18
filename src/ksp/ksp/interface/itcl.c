@@ -158,7 +158,7 @@ PetscErrorCode KSPGetGuess(KSP ksp, KSPGuess *guess)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
-  PetscValidPointer(guess, 2);
+  PetscAssertPointer(guess, 2);
   if (!ksp->guess) {
     const char *prefix;
 

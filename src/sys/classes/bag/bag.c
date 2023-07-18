@@ -47,11 +47,11 @@ PetscErrorCode PetscBagRegisterEnum(PetscBag bag, void *addr, const char *const 
   PetscInt     i = 0;
 
   PetscFunctionBegin;
-  PetscValidPointer(bag, 1);
-  PetscValidPointer(addr, 2);
-  PetscValidPointer(list, 3);
-  PetscValidPointer(name, 5);
-  PetscValidPointer(help, 6);
+  PetscAssertPointer(bag, 1);
+  PetscAssertPointer(addr, 2);
+  PetscAssertPointer(list, 3);
+  PetscAssertPointer(name, 5);
+  PetscAssertPointer(help, 6);
   nname[0] = '-';
   nname[1] = 0;
   PetscCall(PetscStrlcat(nname, name, PETSC_BAG_NAME_LENGTH));
@@ -103,10 +103,10 @@ PetscErrorCode PetscBagRegisterIntArray(PetscBag bag, void *addr, PetscInt msize
   PetscInt     i, tmp = msize;
 
   PetscFunctionBegin;
-  PetscValidPointer(bag, 1);
-  PetscValidPointer(addr, 2);
-  PetscValidPointer(name, 4);
-  PetscValidPointer(help, 5);
+  PetscAssertPointer(bag, 1);
+  PetscAssertPointer(addr, 2);
+  PetscAssertPointer(name, 4);
+  PetscAssertPointer(help, 5);
   nname[0] = '-';
   nname[1] = 0;
   PetscCall(PetscStrlcat(nname, name, PETSC_BAG_NAME_LENGTH));
@@ -154,10 +154,10 @@ PetscErrorCode PetscBagRegisterRealArray(PetscBag bag, void *addr, PetscInt msiz
   PetscInt     i, tmp = msize;
 
   PetscFunctionBegin;
-  PetscValidPointer(bag, 1);
-  PetscValidPointer(addr, 2);
-  PetscValidPointer(name, 4);
-  PetscValidPointer(help, 5);
+  PetscAssertPointer(bag, 1);
+  PetscAssertPointer(addr, 2);
+  PetscAssertPointer(name, 4);
+  PetscAssertPointer(help, 5);
   nname[0] = '-';
   nname[1] = 0;
   PetscCall(PetscStrlcat(nname, name, PETSC_BAG_NAME_LENGTH));
@@ -204,10 +204,10 @@ PetscErrorCode PetscBagRegisterInt(PetscBag bag, void *addr, PetscInt mdefault, 
   PetscBool    printhelp;
 
   PetscFunctionBegin;
-  PetscValidPointer(bag, 1);
-  PetscValidPointer(addr, 2);
-  PetscValidPointer(name, 4);
-  PetscValidPointer(help, 5);
+  PetscAssertPointer(bag, 1);
+  PetscAssertPointer(addr, 2);
+  PetscAssertPointer(name, 4);
+  PetscAssertPointer(help, 5);
   nname[0] = '-';
   nname[1] = 0;
   PetscCall(PetscStrlcat(nname, name, PETSC_BAG_NAME_LENGTH));
@@ -298,10 +298,10 @@ PetscErrorCode PetscBagRegisterBoolArray(PetscBag bag, void *addr, PetscInt msiz
   PetscInt     i, tmp = msize;
 
   PetscFunctionBegin;
-  PetscValidPointer(bag, 1);
-  PetscValidPointer(addr, 2);
-  PetscValidPointer(name, 4);
-  PetscValidPointer(help, 5);
+  PetscAssertPointer(bag, 1);
+  PetscAssertPointer(addr, 2);
+  PetscAssertPointer(name, 4);
+  PetscAssertPointer(help, 5);
   nname[0] = '-';
   nname[1] = 0;
   PetscCall(PetscStrlcat(nname, name, PETSC_BAG_NAME_LENGTH));
@@ -352,11 +352,11 @@ PetscErrorCode PetscBagRegisterString(PetscBag bag, void *addr, PetscInt msize, 
   PetscBool    printhelp;
 
   PetscFunctionBegin;
-  PetscValidPointer(bag, 1);
-  PetscValidPointer(addr, 2);
-  PetscValidPointer(mdefault, 4);
-  PetscValidPointer(name, 5);
-  PetscValidPointer(help, 6);
+  PetscAssertPointer(bag, 1);
+  PetscAssertPointer(addr, 2);
+  PetscAssertPointer(mdefault, 4);
+  PetscAssertPointer(name, 5);
+  PetscAssertPointer(help, 6);
   nname[0] = '-';
   nname[1] = 0;
   PetscCall(PetscStrlcat(nname, name, PETSC_BAG_NAME_LENGTH));
@@ -400,10 +400,10 @@ PetscErrorCode PetscBagRegisterReal(PetscBag bag, void *addr, PetscReal mdefault
   PetscBool    printhelp;
 
   PetscFunctionBegin;
-  PetscValidPointer(bag, 1);
-  PetscValidPointer(addr, 2);
-  PetscValidPointer(name, 4);
-  PetscValidPointer(help, 5);
+  PetscAssertPointer(bag, 1);
+  PetscAssertPointer(addr, 2);
+  PetscAssertPointer(name, 4);
+  PetscAssertPointer(help, 5);
   nname[0] = '-';
   nname[1] = 0;
   PetscCall(PetscStrlcat(nname, name, PETSC_BAG_NAME_LENGTH));
@@ -447,10 +447,10 @@ PetscErrorCode PetscBagRegisterScalar(PetscBag bag, void *addr, PetscScalar mdef
   PetscBool    printhelp;
 
   PetscFunctionBegin;
-  PetscValidPointer(bag, 1);
-  PetscValidPointer(addr, 2);
-  PetscValidPointer(name, 4);
-  PetscValidPointer(help, 5);
+  PetscAssertPointer(bag, 1);
+  PetscAssertPointer(addr, 2);
+  PetscAssertPointer(name, 4);
+  PetscAssertPointer(help, 5);
   nname[0] = '-';
   nname[1] = 0;
   PetscCall(PetscStrlcat(nname, name, PETSC_BAG_NAME_LENGTH));
@@ -494,10 +494,10 @@ PetscErrorCode PetscBagRegisterBool(PetscBag bag, void *addr, PetscBool mdefault
   PetscBool    printhelp;
 
   PetscFunctionBegin;
-  PetscValidPointer(bag, 1);
-  PetscValidPointer(addr, 2);
-  PetscValidPointer(name, 4);
-  PetscValidPointer(help, 5);
+  PetscAssertPointer(bag, 1);
+  PetscAssertPointer(addr, 2);
+  PetscAssertPointer(name, 4);
+  PetscAssertPointer(help, 5);
   /* the checks here with != PETSC_FALSE and PETSC_TRUE is a special case; here we truly demand that the value be 0 or 1 */
   PetscCheck(mdefault == PETSC_FALSE || mdefault == PETSC_TRUE, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Boolean %s %s must be boolean; integer value %d", name, help, (int)mdefault);
   nname[0] = '-';
@@ -538,7 +538,7 @@ PetscErrorCode PetscBagDestroy(PetscBag *bag)
 
   PetscFunctionBegin;
   if (!*bag) PetscFunctionReturn(PETSC_SUCCESS);
-  PetscValidPointer(*bag, 1);
+  PetscAssertPointer(*bag, 1);
   nitem = (*bag)->bagitems;
   while (nitem) {
     PetscBagItem item = nitem->next;
@@ -576,7 +576,7 @@ PetscErrorCode PetscBagSetFromOptions(PetscBag bag)
   PetscInt     n;
 
   PetscFunctionBegin;
-  PetscValidPointer(bag, 1);
+  PetscAssertPointer(bag, 1);
   PetscCall(PetscStrncpy(helpname, bag->bagname, sizeof(helpname)));
   PetscCall(PetscStrlcat(helpname, " ", sizeof(helpname)));
   PetscCall(PetscStrlcat(helpname, bag->baghelp, sizeof(helpname)));
@@ -653,7 +653,7 @@ PetscErrorCode PetscBagView(PetscBag bag, PetscViewer view)
   PetscBagItem nitem = bag->bagitems;
 
   PetscFunctionBegin;
-  PetscValidPointer(bag, 1);
+  PetscAssertPointer(bag, 1);
   PetscValidHeaderSpecific(view, PETSC_VIEWER_CLASSID, 2);
   PetscCall(PetscObjectTypeCompare((PetscObject)view, PETSCVIEWERASCII, &isascii));
   PetscCall(PetscObjectTypeCompare((PetscObject)view, PETSCVIEWERBINARY, &isbinary));
@@ -775,7 +775,7 @@ PetscErrorCode PetscBagViewFromOptions(PetscBag bag, PetscObject bobj, const cha
   PetscFunctionBegin;
   if (incall) PetscFunctionReturn(PETSC_SUCCESS);
   incall = PETSC_TRUE;
-  PetscValidPointer(bag, 1);
+  PetscAssertPointer(bag, 1);
   if (bobj) PetscCall(PetscObjectGetOptionsPrefix(bobj, &bprefix));
   prefix = bobj ? bprefix : bag->bagprefix;
   PetscCall(PetscOptionsGetViewer(bag->bagcomm, NULL, prefix, optionname, &viewer, &format, &flg));
@@ -819,7 +819,7 @@ PetscErrorCode PetscBagLoad(PetscViewer view, PetscBag bag)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(view, PETSC_VIEWER_CLASSID, 1);
-  PetscValidPointer(bag, 2);
+  PetscAssertPointer(bag, 2);
   PetscCall(PetscObjectGetComm((PetscObject)view, &comm));
   PetscCallMPI(MPI_Comm_compare(comm, bag->bagcomm, &flag));
   PetscCheck(flag == MPI_CONGRUENT || flag == MPI_IDENT, PETSC_COMM_SELF, PETSC_ERR_ARG_NOTSAMECOMM, "Different communicators in the viewer and bag");
@@ -895,7 +895,7 @@ PetscErrorCode PetscBagCreate(MPI_Comm comm, size_t bagsize, PetscBag *bag)
   const size_t totalsize = bagsize + sizeof(struct _n_PetscBag) + sizeof(PetscScalar);
 
   PetscFunctionBegin;
-  PetscValidPointer(bag, 3);
+  PetscAssertPointer(bag, 3);
   PetscCall(PetscInfo(NULL, "Creating Bag with total size %d\n", (int)totalsize));
   PetscCall(PetscCalloc(totalsize, bag));
 
@@ -925,9 +925,9 @@ PetscErrorCode PetscBagCreate(MPI_Comm comm, size_t bagsize, PetscBag *bag)
 PetscErrorCode PetscBagSetName(PetscBag bag, const char *name, const char *help)
 {
   PetscFunctionBegin;
-  PetscValidPointer(bag, 1);
-  PetscValidPointer(name, 2);
-  PetscValidPointer(help, 3);
+  PetscAssertPointer(bag, 1);
+  PetscAssertPointer(name, 2);
+  PetscAssertPointer(help, 3);
   PetscCall(PetscStrncpy(bag->bagname, name, PETSC_BAG_NAME_LENGTH - 1));
   PetscCall(PetscStrncpy(bag->baghelp, help, PETSC_BAG_HELP_LENGTH - 1));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -953,8 +953,8 @@ PetscErrorCode PetscBagSetName(PetscBag bag, const char *name, const char *help)
 PetscErrorCode PetscBagGetName(PetscBag bag, char **name)
 {
   PetscFunctionBegin;
-  PetscValidPointer(bag, 1);
-  PetscValidPointer(name, 2);
+  PetscAssertPointer(bag, 1);
+  PetscAssertPointer(name, 2);
   *name = bag->bagname;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -981,8 +981,8 @@ PetscErrorCode PetscBagGetName(PetscBag bag, char **name)
 PetscErrorCode PetscBagGetData(PetscBag bag, void **data)
 {
   PetscFunctionBegin;
-  PetscValidPointer(bag, 1);
-  PetscValidPointer(data, 2);
+  PetscAssertPointer(bag, 1);
+  PetscAssertPointer(data, 2);
   *data = bag->structlocation;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1008,9 +1008,9 @@ PetscErrorCode PetscBagGetData(PetscBag bag, void **data)
 PetscErrorCode PetscBagSetOptionsPrefix(PetscBag bag, const char pre[])
 {
   PetscFunctionBegin;
-  PetscValidPointer(bag, 1);
+  PetscAssertPointer(bag, 1);
   if (pre) {
-    PetscValidPointer(pre, 2);
+    PetscAssertPointer(pre, 2);
     PetscCheck(pre[0] != '-', PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Options prefix should not begin with a hyphen");
     PetscCall(PetscFree(bag->bagprefix));
     PetscCall(PetscStrallocpy(pre, &(bag->bagprefix)));
@@ -1039,8 +1039,8 @@ PetscErrorCode PetscBagGetNames(PetscBag bag, const char *names[])
   PetscBagItem nitem = bag->bagitems;
 
   PetscFunctionBegin;
-  PetscValidPointer(bag, 1);
-  PetscValidPointer(names, 2);
+  PetscAssertPointer(bag, 1);
+  PetscAssertPointer(names, 2);
   for (PetscInt n = 0; nitem; ++n, nitem = nitem->next) names[n] = nitem->name;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -74,7 +74,7 @@ PetscErrorCode MatColoringCreate(Mat m, MatColoring *mcptr)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(m, MAT_CLASSID, 1);
-  PetscValidPointer(mcptr, 2);
+  PetscAssertPointer(mcptr, 2);
   *mcptr = NULL;
 
   PetscCall(MatInitializePackage());
@@ -146,7 +146,7 @@ PetscErrorCode MatColoringSetType(MatColoring mc, MatColoringType type)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mc, MAT_COLORING_CLASSID, 1);
-  PetscValidPointer(type, 2);
+  PetscAssertPointer(type, 2);
   PetscCall(PetscObjectTypeCompare((PetscObject)mc, type, &match));
   if (match) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscFunctionListFind(MatColoringList, type, &r));
@@ -361,7 +361,7 @@ PetscErrorCode MatColoringApply(MatColoring mc, ISColoring *coloring)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mc, MAT_COLORING_CLASSID, 1);
-  PetscValidPointer(coloring, 2);
+  PetscAssertPointer(coloring, 2);
   PetscCall(PetscLogEventBegin(MATCOLORING_Apply, mc, 0, 0, 0));
   PetscUseTypeMethod(mc, apply, coloring);
   PetscCall(PetscLogEventEnd(MATCOLORING_Apply, mc, 0, 0, 0));

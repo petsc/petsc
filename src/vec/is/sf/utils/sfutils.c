@@ -431,10 +431,10 @@ PetscErrorCode PetscSFCreateSectionSF(PetscSF sf, PetscSection rootSection, Pets
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sf, PETSCSF_CLASSID, 1);
-  PetscValidPointer(rootSection, 2);
-  /* Cannot check PetscValidPointer(remoteOffsets,3) because it can be NULL if sf does not reference any points in leafSection */
-  PetscValidPointer(leafSection, 4);
-  PetscValidPointer(sectionSF, 5);
+  PetscAssertPointer(rootSection, 2);
+  /* Cannot check PetscAssertPointer(remoteOffsets,3) because it can be NULL if sf does not reference any points in leafSection */
+  PetscAssertPointer(leafSection, 4);
+  PetscAssertPointer(sectionSF, 5);
   PetscCall(PetscObjectGetComm((PetscObject)sf, &comm));
   PetscCall(PetscSFCreate(comm, sectionSF));
   PetscCall(PetscSectionGetChart(leafSection, &lpStart, &lpEnd));
@@ -505,7 +505,7 @@ PetscErrorCode PetscSFCreateFromLayouts(PetscLayout rmap, PetscLayout lmap, Pets
   PetscMPIInt  flg;
 
   PetscFunctionBegin;
-  PetscValidPointer(sf, 3);
+  PetscAssertPointer(sf, 3);
   PetscCheck(rmap->setupcalled, rcomm, PETSC_ERR_ARG_WRONGSTATE, "Root layout not setup");
   PetscCheck(lmap->setupcalled, lcomm, PETSC_ERR_ARG_WRONGSTATE, "Leaf layout not setup");
   PetscCallMPI(MPI_Comm_compare(rcomm, lcomm, &flg));
@@ -699,12 +699,12 @@ PetscErrorCode PetscSFCreateByMatchingIndices(PetscLayout layout, PetscInt numRo
   PetscBool flag;
 
   PetscFunctionBegin;
-  if (rootIndices) PetscValidPointer(rootIndices, 3);
-  if (rootLocalIndices) PetscValidPointer(rootLocalIndices, 4);
-  if (leafIndices) PetscValidPointer(leafIndices, 7);
-  if (leafLocalIndices) PetscValidPointer(leafLocalIndices, 8);
-  if (sfA) PetscValidPointer(sfA, 10);
-  PetscValidPointer(sf, 11);
+  if (rootIndices) PetscAssertPointer(rootIndices, 3);
+  if (rootLocalIndices) PetscAssertPointer(rootLocalIndices, 4);
+  if (leafIndices) PetscAssertPointer(leafIndices, 7);
+  if (leafLocalIndices) PetscAssertPointer(leafLocalIndices, 8);
+  if (sfA) PetscAssertPointer(sfA, 10);
+  PetscAssertPointer(sf, 11);
   PetscCheck(numRootIndices >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "numRootIndices (%" PetscInt_FMT ") must be non-negative", numRootIndices);
   PetscCheck(numLeafIndices >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "numLeafIndices (%" PetscInt_FMT ") must be non-negative", numLeafIndices);
   PetscCallMPI(MPI_Comm_size(comm, &size));
@@ -811,7 +811,7 @@ PetscErrorCode PetscSFMerge(PetscSF sfa, PetscSF sfb, PetscSF *merged)
   PetscValidHeaderSpecific(sfa, PETSCSF_CLASSID, 1);
   PetscValidHeaderSpecific(sfb, PETSCSF_CLASSID, 2);
   PetscCheckSameComm(sfa, 1, sfb, 2);
-  PetscValidPointer(merged, 3);
+  PetscAssertPointer(merged, 3);
   {
     PetscInt aleaf, bleaf;
     PetscCall(PetscSFGetLeafRange(sfa, NULL, &aleaf));

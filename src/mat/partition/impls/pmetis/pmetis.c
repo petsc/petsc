@@ -46,7 +46,7 @@ static PetscErrorCode MatPartitioningApply_Parmetis_Private(MatPartitioning part
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part, MAT_PARTITIONING_CLASSID, 1);
-  PetscValidPointer(partitioning, 4);
+  PetscAssertPointer(partitioning, 4);
   PetscCall(PetscObjectTypeCompare((PetscObject)mat, MATMPIADJ, &flg));
   if (flg) {
     amat = mat;

@@ -66,7 +66,7 @@ PETSC_EXTERN PetscErrorCode DMLocatePoints_Moab(DM dm, Vec v, IS *cellIS);
 PetscErrorCode DMMoabCreate(MPI_Comm comm, DM *dmb)
 {
   PetscFunctionBegin;
-  PetscValidPointer(dmb, 2);
+  PetscAssertPointer(dmb, 2);
   PetscCall(DMCreate(comm, dmb));
   PetscCall(DMSetType(*dmb, DMMOAB));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -97,7 +97,7 @@ PetscErrorCode DMMoabCreateMoab(MPI_Comm comm, moab::Interface *mbiface, moab::T
   DM_Moab        *dmmoab;
 
   PetscFunctionBegin;
-  PetscValidPointer(dmb, 6);
+  PetscAssertPointer(dmb, 6);
 
   PetscCall(DMMoabCreate(comm, &dmmb));
   dmmoab = (DM_Moab *)(dmmb)->data;
@@ -201,7 +201,7 @@ PetscErrorCode DMMoabSetInterface(DM dm, moab::Interface *mbiface)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(mbiface, 2);
+  PetscAssertPointer(mbiface, 2);
 #ifdef MOAB_HAVE_MPI
   dmmoab->pcomm = NULL;
 #endif
@@ -649,8 +649,8 @@ PetscErrorCode DMMoabGetVertexCoordinates(DM dm, PetscInt nconn, const moab::Ent
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(conn, 3);
-  PetscValidPointer(vpos, 4);
+  PetscAssertPointer(conn, 3);
+  PetscAssertPointer(vpos, 4);
   dmmoab = (DM_Moab *)(dm)->data;
 
   /* Get connectivity information in MOAB canonical ordering */
@@ -689,7 +689,7 @@ PetscErrorCode DMMoabGetVertexConnectivity(DM dm, moab::EntityHandle vhandle, Pe
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(conn, 4);
+  PetscAssertPointer(conn, 4);
   dmmoab = (DM_Moab *)(dm)->data;
 
   /* Get connectivity information in MOAB canonical ordering */
@@ -725,7 +725,7 @@ PetscErrorCode DMMoabRestoreVertexConnectivity(DM dm, moab::EntityHandle ehandle
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(conn, 4);
+  PetscAssertPointer(conn, 4);
 
   if (conn) PetscCall(PetscFree(*conn));
   if (nconn) *nconn = 0;
@@ -759,7 +759,7 @@ PetscErrorCode DMMoabGetElementConnectivity(DM dm, moab::EntityHandle ehandle, P
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(conn, 4);
+  PetscAssertPointer(conn, 4);
   dmmoab = (DM_Moab *)(dm)->data;
 
   /* Get connectivity information in MOAB canonical ordering */
@@ -794,7 +794,7 @@ PetscErrorCode DMMoabIsEntityOnBoundary(DM dm, const moab::EntityHandle ent, Pet
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(ent_on_boundary, 3);
+  PetscAssertPointer(ent_on_boundary, 3);
   dmmoab = (DM_Moab *)(dm)->data;
 
   /* get the entity type and handle accordingly */
@@ -839,8 +839,8 @@ PetscErrorCode DMMoabCheckBoundaryVertices(DM dm, PetscInt nconn, const moab::En
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(cnt, 3);
-  PetscValidPointer(isbdvtx, 4);
+  PetscAssertPointer(cnt, 3);
+  PetscAssertPointer(isbdvtx, 4);
   dmmoab = (DM_Moab *)(dm)->data;
 
   for (i = 0; i < nconn; ++i) isbdvtx[i] = (dmmoab->bndyvtx->index(cnt[i]) >= 0 ? PETSC_TRUE : PETSC_FALSE);
@@ -1254,7 +1254,7 @@ PetscErrorCode DMMoabCreateVertices(DM dm, const PetscReal *coords, PetscInt nve
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(coords, 2);
+  PetscAssertPointer(coords, 2);
 
   dmmoab = (DM_Moab *)dm->data;
 
@@ -1294,7 +1294,7 @@ PetscErrorCode DMMoabCreateElement(DM dm, const moab::EntityType type, const moa
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(conn, 3);
+  PetscAssertPointer(conn, 3);
 
   dmmoab = (DM_Moab *)dm->data;
 

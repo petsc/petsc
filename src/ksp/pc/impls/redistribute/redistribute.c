@@ -429,7 +429,7 @@ PetscErrorCode PCRedistributeGetKSP(PC pc, KSP *innerksp)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
-  PetscValidPointer(innerksp, 2);
+  PetscAssertPointer(innerksp, 2);
   *innerksp = red->ksp;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -90,7 +90,7 @@ PetscErrorCode TaoCreate(MPI_Comm comm, Tao *newtao)
   Tao tao;
 
   PetscFunctionBegin;
-  PetscValidPointer(newtao, 2);
+  PetscAssertPointer(newtao, 2);
   PetscCall(TaoInitializePackage());
   PetscCall(TaoLineSearchInitializePackage());
   PetscCall(PetscHeaderCreate(tao, TAO_CLASSID, "Tao", "Optimization solver", "Tao", comm, TaoDestroy, TaoView));
@@ -770,7 +770,7 @@ PetscErrorCode TaoGetRecycleHistory(Tao tao, PetscBool *recycle)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);
-  PetscValidPointer(recycle, 2);
+  PetscAssertPointer(recycle, 2);
   *recycle = tao->recycle;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -964,7 +964,7 @@ PetscErrorCode TaoGetFunctionLowerBound(Tao tao, PetscReal *fmin)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);
-  PetscValidPointer(fmin, 2);
+  PetscAssertPointer(fmin, 2);
   *fmin = tao->fmin;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1018,7 +1018,7 @@ PetscErrorCode TaoGetMaximumFunctionEvaluations(Tao tao, PetscInt *nfcn)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);
-  PetscValidPointer(nfcn, 2);
+  PetscAssertPointer(nfcn, 2);
   *nfcn = tao->max_funcs;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1042,7 +1042,7 @@ PetscErrorCode TaoGetCurrentFunctionEvaluations(Tao tao, PetscInt *nfuncs)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);
-  PetscValidPointer(nfuncs, 2);
+  PetscAssertPointer(nfuncs, 2);
   *nfuncs = PetscMax(tao->nfuncs, tao->nfuncgrads);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1092,7 +1092,7 @@ PetscErrorCode TaoGetMaximumIterations(Tao tao, PetscInt *maxits)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);
-  PetscValidPointer(maxits, 2);
+  PetscAssertPointer(maxits, 2);
   *maxits = tao->max_it;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1142,7 +1142,7 @@ PetscErrorCode TaoGetInitialTrustRegionRadius(Tao tao, PetscReal *radius)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);
-  PetscValidPointer(radius, 2);
+  PetscAssertPointer(radius, 2);
   *radius = tao->trust0;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1166,7 +1166,7 @@ PetscErrorCode TaoGetCurrentTrustRegionRadius(Tao tao, PetscReal *radius)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);
-  PetscValidPointer(radius, 2);
+  PetscAssertPointer(radius, 2);
   *radius = tao->trust;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1220,7 +1220,7 @@ PetscErrorCode TaoGetKSP(Tao tao, KSP *ksp)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);
-  PetscValidPointer(ksp, 2);
+  PetscAssertPointer(ksp, 2);
   *ksp = tao->ksp;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1248,7 +1248,7 @@ PetscErrorCode TaoGetLinearSolveIterations(Tao tao, PetscInt *lits)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);
-  PetscValidPointer(lits, 2);
+  PetscAssertPointer(lits, 2);
   *lits = tao->ksp_tot_its;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1272,7 +1272,7 @@ PetscErrorCode TaoGetLineSearch(Tao tao, TaoLineSearch *ls)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);
-  PetscValidPointer(ls, 2);
+  PetscAssertPointer(ls, 2);
   *ls = tao->linesearch;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1329,7 +1329,7 @@ PetscErrorCode TaoGetSolution(Tao tao, Vec *X)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);
-  PetscValidPointer(X, 2);
+  PetscAssertPointer(X, 2);
   *X = tao->solution;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -2198,7 +2198,7 @@ PetscErrorCode TaoGetIterationNumber(Tao tao, PetscInt *iter)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);
-  PetscValidPointer(iter, 2);
+  PetscAssertPointer(iter, 2);
   *iter = tao->niter;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -2227,7 +2227,7 @@ PetscErrorCode TaoGetResidualNorm(Tao tao, PetscReal *value)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);
-  PetscValidPointer(value, 2);
+  PetscAssertPointer(value, 2);
   *value = tao->residual;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -2281,7 +2281,7 @@ PetscErrorCode TaoGetTotalIterationNumber(Tao tao, PetscInt *iter)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);
-  PetscValidPointer(iter, 2);
+  PetscAssertPointer(iter, 2);
   *iter = tao->ntotalits;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -2351,7 +2351,7 @@ PetscErrorCode TaoGetConvergedReason(Tao tao, TaoConvergedReason *reason)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);
-  PetscValidPointer(reason, 2);
+  PetscAssertPointer(reason, 2);
   *reason = tao->reason;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -2414,7 +2414,7 @@ PetscErrorCode TaoGetType(Tao tao, TaoType *type)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);
-  PetscValidPointer(type, 2);
+  PetscAssertPointer(type, 2);
   *type = ((PetscObject)tao)->type_name;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -2497,10 +2497,10 @@ PetscErrorCode TaoSetConvergenceHistory(Tao tao, PetscReal obj[], PetscReal resi
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);
-  if (obj) PetscValidPointer(obj, 2);
-  if (resid) PetscValidPointer(resid, 3);
-  if (cnorm) PetscValidPointer(cnorm, 4);
-  if (lits) PetscValidPointer(lits, 5);
+  if (obj) PetscAssertPointer(obj, 2);
+  if (resid) PetscAssertPointer(resid, 3);
+  if (cnorm) PetscAssertPointer(cnorm, 4);
+  if (lits) PetscAssertPointer(lits, 5);
 
   if (na == PETSC_DECIDE || na == PETSC_DEFAULT) na = 1000;
   if (!obj && !resid && !cnorm && !lits) {
@@ -2603,7 +2603,7 @@ PetscErrorCode TaoGetApplicationContext(Tao tao, void *usrP)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);
-  PetscValidPointer(usrP, 2);
+  PetscAssertPointer(usrP, 2);
   *(void **)usrP = tao->user;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -2653,7 +2653,7 @@ PetscErrorCode TaoGetGradientNorm(Tao tao, Mat *M)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);
-  PetscValidPointer(M, 2);
+  PetscAssertPointer(M, 2);
   *M = tao->gradient_norm;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -2681,7 +2681,7 @@ PetscErrorCode TaoGradientNorm(Tao tao, Vec gradient, NormType type, PetscReal *
   PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);
   PetscValidHeaderSpecific(gradient, VEC_CLASSID, 2);
   PetscValidLogicalCollectiveEnum(tao, type, 3);
-  PetscValidPointer(gnorm, 4);
+  PetscAssertPointer(gnorm, 4);
   if (tao->gradient_norm) {
     PetscScalar gnorms;
 

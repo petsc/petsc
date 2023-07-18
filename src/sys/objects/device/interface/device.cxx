@@ -101,7 +101,7 @@ PetscErrorCode PetscDeviceCreate(PetscDeviceType type, PetscInt devid, PetscDevi
 
   PetscFunctionBegin;
   PetscValidDeviceType(type, 1);
-  PetscValidPointer(device, 3);
+  PetscAssertPointer(device, 3);
   PetscCall(PetscDeviceInitializePackage());
   PetscCall(PetscNew(device));
   (*device)->id     = PetscDeviceCounter++;
@@ -140,7 +140,7 @@ PetscErrorCode PetscDeviceCreate(PetscDeviceType type, PetscInt devid, PetscDevi
 PetscErrorCode PetscDeviceDestroy(PetscDevice *device)
 {
   PetscFunctionBegin;
-  PetscValidPointer(device, 1);
+  PetscAssertPointer(device, 1);
   if (!*device) PetscFunctionReturn(PETSC_SUCCESS);
   PetscValidDevice(*device, 1);
   PetscCall(PetscDeviceDereference_Internal(*device));
@@ -277,7 +277,7 @@ PetscErrorCode PetscDeviceGetType(PetscDevice device, PetscDeviceType *type)
 {
   PetscFunctionBegin;
   PetscValidDevice(device, 1);
-  PetscValidPointer(type, 2);
+  PetscAssertPointer(type, 2);
   *type = device->type;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -306,7 +306,7 @@ PetscErrorCode PetscDeviceGetDeviceId(PetscDevice device, PetscInt *id)
 {
   PetscFunctionBegin;
   PetscValidDevice(device, 1);
-  PetscValidPointer(id, 2);
+  PetscAssertPointer(id, 2);
   *id = device->deviceId;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -455,7 +455,7 @@ PetscBool PetscDeviceInitialized(PetscDeviceType type)
 PetscErrorCode PetscDeviceGetDefaultForType_Internal(PetscDeviceType type, PetscDevice *device)
 {
   PetscFunctionBegin;
-  PetscValidPointer(device, 2);
+  PetscAssertPointer(device, 2);
   PetscCall(PetscDeviceInitialize(type));
   *device = defaultDevices[type].first;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -488,7 +488,7 @@ PetscErrorCode PetscDeviceGetAttribute(PetscDevice device, PetscDeviceAttribute 
   PetscFunctionBegin;
   PetscValidDevice(device, 1);
   PetscValidDeviceAttribute(attr, 2);
-  PetscValidPointer(value, 3);
+  PetscAssertPointer(value, 3);
   PetscUseTypeMethod(device, getattribute, attr, value);
   PetscFunctionReturn(PETSC_SUCCESS);
 }

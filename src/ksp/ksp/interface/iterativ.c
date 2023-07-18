@@ -33,7 +33,7 @@ PetscErrorCode KSPGetResidualNorm(KSP ksp, PetscReal *rnorm)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
-  PetscValidPointer(rnorm, 2);
+  PetscAssertPointer(rnorm, 2);
   *rnorm = ksp->rnorm;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -60,7 +60,7 @@ PetscErrorCode KSPGetIterationNumber(KSP ksp, PetscInt *its)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
-  PetscValidPointer(its, 2);
+  PetscAssertPointer(its, 2);
   *its = ksp->its;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -88,7 +88,7 @@ PetscErrorCode KSPGetTotalIterations(KSP ksp, PetscInt *its)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
-  PetscValidPointer(its, 2);
+  PetscAssertPointer(its, 2);
   *its = ksp->totalits;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1266,7 +1266,7 @@ PetscErrorCode KSPConvergedSkip(KSP ksp, PetscInt n, PetscReal rnorm, KSPConverg
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
-  PetscValidPointer(reason, 4);
+  PetscAssertPointer(reason, 4);
   *reason = KSP_CONVERGED_ITERATING;
   if (n >= ksp->max_it) *reason = KSP_CONVERGED_ITS;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -1319,7 +1319,7 @@ PetscErrorCode KSPGetConvergedNegativeCurvature(KSP ksp, PetscBool *flg)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
-  PetscValidPointer(flg, 2);
+  PetscAssertPointer(flg, 2);
   *flg = ksp->converged_neg_curve;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1518,7 +1518,7 @@ PetscErrorCode KSPConvergedDefault(KSP ksp, PetscInt n, PetscReal rnorm, KSPConv
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
   PetscValidLogicalCollectiveInt(ksp, n, 2);
-  PetscValidPointer(reason, 4);
+  PetscAssertPointer(reason, 4);
   PetscCheck(cctx, PetscObjectComm((PetscObject)ksp), PETSC_ERR_ARG_NULL, "Convergence context must have been created with KSPConvergedDefaultCreate()");
   *reason = KSP_CONVERGED_ITERATING;
 
@@ -1890,7 +1890,7 @@ PetscErrorCode KSPGetConvergedReason(KSP ksp, KSPConvergedReason *reason)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
-  PetscValidPointer(reason, 2);
+  PetscAssertPointer(reason, 2);
   *reason = ksp->reason;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1914,7 +1914,7 @@ PetscErrorCode KSPGetConvergedReasonString(KSP ksp, const char **strreason)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
-  PetscValidPointer(strreason, 2);
+  PetscAssertPointer(strreason, 2);
   *strreason = KSPConvergedReasons[ksp->reason];
   PetscFunctionReturn(PETSC_SUCCESS);
 }

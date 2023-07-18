@@ -86,7 +86,7 @@ PetscErrorCode PFCreate(MPI_Comm comm, PetscInt dimin, PetscInt dimout, PF *pf)
   PF newpf;
 
   PetscFunctionBegin;
-  PetscValidPointer(pf, 4);
+  PetscAssertPointer(pf, 4);
   *pf = NULL;
   PetscCall(PFInitializePackage());
 
@@ -191,8 +191,8 @@ PetscErrorCode PFApply(PF pf, PetscInt n, const PetscScalar *x, PetscScalar *y)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pf, PF_CLASSID, 1);
-  PetscValidPointer(x, 3);
-  PetscValidPointer(y, 4);
+  PetscAssertPointer(x, 3);
+  PetscAssertPointer(y, 4);
   PetscCheck(x != y, PETSC_COMM_SELF, PETSC_ERR_ARG_IDN, "x and y must be different arrays");
 
   PetscCall((*pf->ops->apply)(pf->data, n, x, y));
@@ -326,7 +326,7 @@ PetscErrorCode PFGetType(PF pf, PFType *type)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pf, PF_CLASSID, 1);
-  PetscValidPointer(type, 2);
+  PetscAssertPointer(type, 2);
   *type = ((PetscObject)pf)->type_name;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -358,7 +358,7 @@ PetscErrorCode PFSetType(PF pf, PFType type, void *ctx)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pf, PF_CLASSID, 1);
-  PetscValidPointer(type, 2);
+  PetscAssertPointer(type, 2);
 
   PetscCall(PetscObjectTypeCompare((PetscObject)pf, type, &match));
   if (match) PetscFunctionReturn(PETSC_SUCCESS);

@@ -463,18 +463,18 @@ PetscErrorCode TSMPRKRegister(TSMPRKType name, PetscInt order, PetscInt sbase, P
   PetscInt        s, i, j;
 
   PetscFunctionBegin;
-  PetscValidPointer(name, 1);
-  PetscValidPointer(Asb, 6);
-  if (bsb) PetscValidPointer(bsb, 7);
-  if (csb) PetscValidPointer(csb, 8);
-  if (rsb) PetscValidPointer(rsb, 9);
-  if (Amb) PetscValidPointer(Amb, 10);
-  if (bmb) PetscValidPointer(bmb, 11);
-  if (cmb) PetscValidPointer(cmb, 12);
-  if (rmb) PetscValidPointer(rmb, 13);
-  PetscValidPointer(Af, 14);
-  if (bf) PetscValidPointer(bf, 15);
-  if (cf) PetscValidPointer(cf, 16);
+  PetscAssertPointer(name, 1);
+  PetscAssertPointer(Asb, 6);
+  if (bsb) PetscAssertPointer(bsb, 7);
+  if (csb) PetscAssertPointer(csb, 8);
+  if (rsb) PetscAssertPointer(rsb, 9);
+  if (Amb) PetscAssertPointer(Amb, 10);
+  if (bmb) PetscAssertPointer(bmb, 11);
+  if (cmb) PetscAssertPointer(cmb, 12);
+  if (rmb) PetscAssertPointer(rmb, 13);
+  PetscAssertPointer(Af, 14);
+  if (bf) PetscAssertPointer(bf, 15);
+  if (cf) PetscAssertPointer(cf, 16);
 
   PetscCall(PetscNew(&link));
   t = &link->tab;
@@ -1155,7 +1155,7 @@ PetscErrorCode TSMPRKSetType(TS ts, TSMPRKType mprktype)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
-  PetscValidPointer(mprktype, 2);
+  PetscAssertPointer(mprktype, 2);
   PetscTryMethod(ts, "TSMPRKSetType_C", (TS, TSMPRKType), (ts, mprktype));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

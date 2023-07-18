@@ -45,7 +45,7 @@ PetscErrorCode VecCreate(MPI_Comm comm, Vec *vec)
   Vec v;
 
   PetscFunctionBegin;
-  PetscValidPointer(vec, 2);
+  PetscAssertPointer(vec, 2);
   *vec = NULL;
   PetscCall(VecInitializePackage());
   PetscCall(PetscHeaderCreate(v, VEC_CLASSID, "Vec", "Vector", "Vec", comm, VecDestroy, VecView));
@@ -61,7 +61,7 @@ PetscErrorCode VecCreateWithLayout_Private(PetscLayout map, Vec *vec)
   Vec v;
 
   PetscFunctionBegin;
-  PetscValidPointer(vec, 2);
+  PetscAssertPointer(vec, 2);
   *vec = NULL;
   PetscCall(VecInitializePackage());
   PetscCall(PetscHeaderCreate(v, VEC_CLASSID, "Vec", "Vector", "Vec", map->comm, VecDestroy, VecView));

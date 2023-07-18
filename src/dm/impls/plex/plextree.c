@@ -53,7 +53,7 @@ PetscErrorCode DMPlexGetReferenceTree(DM dm, DM *ref)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(ref, 2);
+  PetscAssertPointer(ref, 2);
   *ref = mesh->referenceTree;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

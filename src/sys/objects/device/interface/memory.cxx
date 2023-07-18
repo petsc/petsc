@@ -241,7 +241,7 @@ static PetscErrorCode PetscDeviceRegisterMemory_Private(const void *PETSC_RESTRI
 PetscErrorCode PetscDeviceRegisterMemory(const void *PETSC_RESTRICT ptr, PetscMemType mtype, std::size_t size)
 {
   PetscFunctionBegin;
-  if (PetscMemTypeHost(mtype)) PetscValidPointer(ptr, 1);
+  if (PetscMemTypeHost(mtype)) PetscAssertPointer(ptr, 1);
   if (PetscUnlikely(!size)) PetscFunctionReturn(PETSC_SUCCESS); // there is no point registering empty range
   PetscCall(PetscDeviceRegisterMemory_Private(ptr, mtype, size));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -319,7 +319,7 @@ PetscErrorCode PetscDeviceAllocate_Private(PetscDeviceContext dctx, PetscBool cl
     PetscCheck(alignment != 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Requested alignment %zu cannot be 0", alignment);
     PetscCheck(is_power_of_2(alignment), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Requested alignment %zu must be a power of 2", alignment);
   }
-  PetscValidPointer(ptr, 6);
+  PetscAssertPointer(ptr, 6);
   *ptr = nullptr;
   if (PetscUnlikely(!n)) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(memory_map.register_finalize());

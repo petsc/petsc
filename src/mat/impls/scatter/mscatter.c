@@ -31,7 +31,7 @@ PetscErrorCode MatScatterGetVecScatter(Mat mat, VecScatter *scatter)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
-  PetscValidPointer(scatter, 2);
+  PetscAssertPointer(scatter, 2);
   mscatter = (Mat_Scatter *)mat->data;
   *scatter = mscatter->scatter;
   PetscFunctionReturn(PETSC_SUCCESS);

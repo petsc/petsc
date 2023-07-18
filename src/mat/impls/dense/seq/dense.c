@@ -2117,7 +2117,7 @@ PetscErrorCode MatDenseGetLDA(Mat A, PetscInt *lda)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
-  PetscValidPointer(lda, 2);
+  PetscAssertPointer(lda, 2);
   MatCheckPreallocated(A, 1);
   PetscUseMethod(A, "MatDenseGetLDA_C", (Mat, PetscInt *), (A, lda));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -2166,7 +2166,7 @@ PetscErrorCode MatDenseGetArray(Mat A, PetscScalar **array)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
-  PetscValidPointer(array, 2);
+  PetscAssertPointer(array, 2);
   PetscUseMethod(A, "MatDenseGetArray_C", (Mat, PetscScalar **), (A, array));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -2191,7 +2191,7 @@ PetscErrorCode MatDenseRestoreArray(Mat A, PetscScalar **array)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
-  if (array) PetscValidPointer(array, 2);
+  if (array) PetscAssertPointer(array, 2);
   PetscUseMethod(A, "MatDenseRestoreArray_C", (Mat, PetscScalar **), (A, array));
   PetscCall(PetscObjectStateIncrease((PetscObject)A));
 #if defined(PETSC_HAVE_CUDA) || defined(PETSC_HAVE_HIP)
@@ -2219,7 +2219,7 @@ PetscErrorCode MatDenseGetArrayRead(Mat A, const PetscScalar **array)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
-  PetscValidPointer(array, 2);
+  PetscAssertPointer(array, 2);
   PetscUseMethod(A, "MatDenseGetArrayRead_C", (Mat, const PetscScalar **), (A, array));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -2241,7 +2241,7 @@ PetscErrorCode MatDenseRestoreArrayRead(Mat A, const PetscScalar **array)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
-  if (array) PetscValidPointer(array, 2);
+  if (array) PetscAssertPointer(array, 2);
   PetscUseMethod(A, "MatDenseRestoreArrayRead_C", (Mat, const PetscScalar **), (A, array));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -2265,7 +2265,7 @@ PetscErrorCode MatDenseGetArrayWrite(Mat A, PetscScalar **array)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
-  PetscValidPointer(array, 2);
+  PetscAssertPointer(array, 2);
   PetscUseMethod(A, "MatDenseGetArrayWrite_C", (Mat, PetscScalar **), (A, array));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -2287,7 +2287,7 @@ PetscErrorCode MatDenseRestoreArrayWrite(Mat A, PetscScalar **array)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
-  if (array) PetscValidPointer(array, 2);
+  if (array) PetscAssertPointer(array, 2);
   PetscUseMethod(A, "MatDenseRestoreArrayWrite_C", (Mat, PetscScalar **), (A, array));
   PetscCall(PetscObjectStateIncrease((PetscObject)A));
 #if defined(PETSC_HAVE_CUDA) || defined(PETSC_HAVE_HIP)
@@ -2323,7 +2323,7 @@ PetscErrorCode MatDenseGetArrayAndMemType(Mat A, PetscScalar **array, PetscMemTy
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
-  PetscValidPointer(array, 2);
+  PetscAssertPointer(array, 2);
   PetscCall(MatBindToCPU(A, PETSC_FALSE)); /* We want device matrices to always return device arrays, so we unbind the matrix if it is bound to CPU */
   PetscCall(PetscObjectBaseTypeCompare((PetscObject)A, MATMPIDENSE, &isMPI));
   if (isMPI) {
@@ -2362,7 +2362,7 @@ PetscErrorCode MatDenseRestoreArrayAndMemType(Mat A, PetscScalar **array)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
-  PetscValidPointer(array, 2);
+  PetscAssertPointer(array, 2);
   PetscCall(PetscObjectBaseTypeCompare((PetscObject)A, MATMPIDENSE, &isMPI));
   if (isMPI) {
     PetscCall(MatDenseRestoreArrayAndMemType(((Mat_MPIDense *)A->data)->A, array));
@@ -2408,7 +2408,7 @@ PetscErrorCode MatDenseGetArrayReadAndMemType(Mat A, const PetscScalar **array, 
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
-  PetscValidPointer(array, 2);
+  PetscAssertPointer(array, 2);
   PetscCall(MatBindToCPU(A, PETSC_FALSE)); /* We want device matrices to always return device arrays, so we unbind the matrix if it is bound to CPU */
   PetscCall(PetscObjectBaseTypeCompare((PetscObject)A, MATMPIDENSE, &isMPI));
   if (isMPI) { /* Dispatch here so that the code can be reused for all subclasses of MATDENSE */
@@ -2446,7 +2446,7 @@ PetscErrorCode MatDenseRestoreArrayReadAndMemType(Mat A, const PetscScalar **arr
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
-  PetscValidPointer(array, 2);
+  PetscAssertPointer(array, 2);
   PetscCall(PetscObjectBaseTypeCompare((PetscObject)A, MATMPIDENSE, &isMPI));
   if (isMPI) {
     PetscCall(MatDenseRestoreArrayReadAndMemType(((Mat_MPIDense *)A->data)->A, array));
@@ -2491,7 +2491,7 @@ PetscErrorCode MatDenseGetArrayWriteAndMemType(Mat A, PetscScalar **array, Petsc
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
-  PetscValidPointer(array, 2);
+  PetscAssertPointer(array, 2);
   PetscCall(MatBindToCPU(A, PETSC_FALSE)); /* We want device matrices to always return device arrays, so we unbind the matrix if it is bound to CPU */
   PetscCall(PetscObjectBaseTypeCompare((PetscObject)A, MATMPIDENSE, &isMPI));
   if (isMPI) {
@@ -2529,7 +2529,7 @@ PetscErrorCode MatDenseRestoreArrayWriteAndMemType(Mat A, PetscScalar **array)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
-  PetscValidPointer(array, 2);
+  PetscAssertPointer(array, 2);
   PetscCall(PetscObjectBaseTypeCompare((PetscObject)A, MATMPIDENSE, &isMPI));
   if (isMPI) {
     PetscCall(MatDenseRestoreArrayWriteAndMemType(((Mat_MPIDense *)A->data)->A, array));
@@ -3661,7 +3661,7 @@ PetscErrorCode MatDenseGetColumn(Mat A, PetscInt col, PetscScalar **vals)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
   PetscValidLogicalCollectiveInt(A, col, 2);
-  PetscValidPointer(vals, 3);
+  PetscAssertPointer(vals, 3);
   PetscUseMethod(A, "MatDenseGetColumn_C", (Mat, PetscInt, PetscScalar **), (A, col, vals));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -3683,7 +3683,7 @@ PetscErrorCode MatDenseRestoreColumn(Mat A, PetscScalar **vals)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
-  PetscValidPointer(vals, 2);
+  PetscAssertPointer(vals, 2);
   PetscUseMethod(A, "MatDenseRestoreColumn_C", (Mat, PetscScalar **), (A, vals));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -3715,7 +3715,7 @@ PetscErrorCode MatDenseGetColumnVec(Mat A, PetscInt col, Vec *v)
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
   PetscValidType(A, 1);
   PetscValidLogicalCollectiveInt(A, col, 2);
-  PetscValidPointer(v, 3);
+  PetscAssertPointer(v, 3);
   PetscCheck(A->preallocated, PetscObjectComm((PetscObject)A), PETSC_ERR_ORDER, "Matrix not preallocated");
   PetscCheck(col >= 0 && col < A->cmap->N, PetscObjectComm((PetscObject)A), PETSC_ERR_ARG_WRONG, "Invalid col %" PetscInt_FMT ", should be in [0,%" PetscInt_FMT ")", col, A->cmap->N);
   PetscUseMethod(A, "MatDenseGetColumnVec_C", (Mat, PetscInt, Vec *), (A, col, v));
@@ -3777,7 +3777,7 @@ PetscErrorCode MatDenseGetColumnVecRead(Mat A, PetscInt col, Vec *v)
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
   PetscValidType(A, 1);
   PetscValidLogicalCollectiveInt(A, col, 2);
-  PetscValidPointer(v, 3);
+  PetscAssertPointer(v, 3);
   PetscCheck(A->preallocated, PetscObjectComm((PetscObject)A), PETSC_ERR_ORDER, "Matrix not preallocated");
   PetscCheck(col >= 0 && col < A->cmap->N, PetscObjectComm((PetscObject)A), PETSC_ERR_ARG_WRONG, "Invalid col %" PetscInt_FMT ", should be in [0,%" PetscInt_FMT ")", col, A->cmap->N);
   PetscUseMethod(A, "MatDenseGetColumnVecRead_C", (Mat, PetscInt, Vec *), (A, col, v));
@@ -3837,7 +3837,7 @@ PetscErrorCode MatDenseGetColumnVecWrite(Mat A, PetscInt col, Vec *v)
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
   PetscValidType(A, 1);
   PetscValidLogicalCollectiveInt(A, col, 2);
-  PetscValidPointer(v, 3);
+  PetscAssertPointer(v, 3);
   PetscCheck(A->preallocated, PetscObjectComm((PetscObject)A), PETSC_ERR_ORDER, "Matrix not preallocated");
   PetscCheck(col >= 0 && col < A->cmap->N, PetscObjectComm((PetscObject)A), PETSC_ERR_ARG_WRONG, "Invalid col %" PetscInt_FMT ", should be in [0,%" PetscInt_FMT ")", col, A->cmap->N);
   PetscUseMethod(A, "MatDenseGetColumnVecWrite_C", (Mat, PetscInt, Vec *), (A, col, v));
@@ -3903,7 +3903,7 @@ PetscErrorCode MatDenseGetSubMatrix(Mat A, PetscInt rbegin, PetscInt rend, Petsc
   PetscValidLogicalCollectiveInt(A, rend, 3);
   PetscValidLogicalCollectiveInt(A, cbegin, 4);
   PetscValidLogicalCollectiveInt(A, cend, 5);
-  PetscValidPointer(v, 6);
+  PetscAssertPointer(v, 6);
   if (rbegin == PETSC_DECIDE) rbegin = 0;
   if (rend == PETSC_DECIDE) rend = A->rmap->N;
   if (cbegin == PETSC_DECIDE) cbegin = 0;
@@ -3935,7 +3935,7 @@ PetscErrorCode MatDenseRestoreSubMatrix(Mat A, Mat *v)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
   PetscValidType(A, 1);
-  PetscValidPointer(v, 2);
+  PetscAssertPointer(v, 2);
   PetscUseMethod(A, "MatDenseRestoreSubMatrix_C", (Mat, Mat *), (A, v));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

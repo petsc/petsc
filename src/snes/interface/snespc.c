@@ -83,7 +83,7 @@ PetscErrorCode SNESGetNPCFunction(SNES snes, Vec F, PetscReal *fnorm)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
-  if (fnorm) PetscValidPointer(fnorm, 3);
+  if (fnorm) PetscAssertPointer(fnorm, 3);
   PetscCheck(snes->npc, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "No nonlinear preconditioner set");
   PetscCall(SNESGetNPCSide(snes->npc, &npcside));
   PetscCall(SNESGetFunctionType(snes->npc, &functype));

@@ -57,7 +57,7 @@ static PetscErrorCode PetscDeviceContextCreateEvent_Private(PetscDeviceContext d
 {
   PetscFunctionBegin;
   PetscValidDeviceContext(dctx, 1);
-  PetscValidPointer(event, 2);
+  PetscAssertPointer(event, 2);
   PetscCall(event_pool.allocate(event));
   PetscCall(PetscDeviceContextGetDeviceType(dctx, &(*event)->dtype));
   PetscTryTypeMethod(dctx, createevent, *event);
@@ -67,7 +67,7 @@ static PetscErrorCode PetscDeviceContextCreateEvent_Private(PetscDeviceContext d
 static PetscErrorCode PetscEventDestroy_Private(PetscEvent *event)
 {
   PetscFunctionBegin;
-  PetscValidPointer(event, 1);
+  PetscAssertPointer(event, 1);
   if (*event) PetscCall(event_pool.deallocate(event));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -79,7 +79,7 @@ static PetscErrorCode PetscDeviceContextRecordEvent_Private(PetscDeviceContext d
 
   PetscFunctionBegin;
   PetscValidDeviceContext(dctx, 1);
-  PetscValidPointer(event, 2);
+  PetscAssertPointer(event, 2);
   id    = PetscObjectCast(dctx)->id;
   state = PetscObjectCast(dctx)->state;
   // technically state can never be less than event->dctx_state (only equal) but we include
@@ -106,7 +106,7 @@ static PetscErrorCode PetscDeviceContextWaitForEvent_Private(PetscDeviceContext 
 {
   PetscFunctionBegin;
   PetscValidDeviceContext(dctx, 1);
-  PetscValidPointer(event, 2);
+  PetscAssertPointer(event, 2);
   // empty data implies you cannot wait on this event
   if (!event->data) PetscFunctionReturn(PETSC_SUCCESS);
   if (PetscDefined(USE_DEBUG)) {
@@ -653,7 +653,7 @@ PetscErrorCode PetscDeviceContextMarkIntentFromID(PetscDeviceContext dctx, Petsc
 
   PetscFunctionBegin;
   PetscCall(PetscDeviceContextGetOptionalNullContext_Internal(&dctx));
-  if (name) PetscValidPointer(name, 4);
+  if (name) PetscAssertPointer(name, 4);
   PetscCall(marked_object_map.register_finalize());
   PetscCall(PetscLogEventBegin(DCONTEXT_Mark, dctx, nullptr, nullptr, nullptr));
   PetscCall(PetscDeviceContextMarkIntentFromID_Private(dctx, id, mode, MarkedObjectMap::snapshot_type::frame_type{file, function, line}, name ? name : "unknown object"));

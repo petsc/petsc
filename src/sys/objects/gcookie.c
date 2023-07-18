@@ -25,7 +25,7 @@ PetscErrorCode PetscObjectGetClassId(PetscObject obj, PetscClassId *classid)
 {
   PetscFunctionBegin;
   PetscValidHeader(obj, 1);
-  PetscValidPointer(classid, 2);
+  PetscAssertPointer(classid, 2);
   *classid = obj->classid;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -51,7 +51,7 @@ PetscErrorCode PetscObjectGetClassName(PetscObject obj, const char *classname[])
 {
   PetscFunctionBegin;
   PetscValidHeader(obj, 1);
-  PetscValidPointer(classname, 2);
+  PetscAssertPointer(classname, 2);
   *classname = obj->class_name;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

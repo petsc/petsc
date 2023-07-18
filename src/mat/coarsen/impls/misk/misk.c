@@ -54,7 +54,7 @@ static PetscErrorCode MatCoarsenApply_MISK_private(IS perm, const PetscInt misk,
   PetscFunctionBegin;
   PetscValidHeaderSpecific(perm, IS_CLASSID, 1);
   PetscValidHeaderSpecific(Gmat, MAT_CLASSID, 3);
-  PetscValidPointer(a_locals_llist, 4);
+  PetscAssertPointer(a_locals_llist, 4);
   PetscCheck(misk < 5 && misk > 0, PETSC_COMM_SELF, PETSC_ERR_SUP, "too many/few levels: %d", (int)misk);
   PetscCall(PetscObjectBaseTypeCompare((PetscObject)Gmat, MATMPIAIJ, &isMPI));
   PetscCall(PetscObjectGetComm((PetscObject)Gmat, &comm));

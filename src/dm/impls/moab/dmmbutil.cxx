@@ -846,7 +846,7 @@ PetscErrorCode DMMoabLoadFromFile(MPI_Comm comm, PetscInt dim, PetscInt nghost, 
   const char *readopts;
 
   PetscFunctionBegin;
-  PetscValidPointer(dm, 6);
+  PetscAssertPointer(dm, 6);
 
   /* Create the basic DMMoab object and keep the default parameters created by DM impls */
   PetscCall(DMMoabCreateMoab(comm, NULL, NULL, NULL, dm));

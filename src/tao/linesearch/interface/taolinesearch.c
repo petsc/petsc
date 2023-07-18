@@ -116,7 +116,7 @@ PetscErrorCode TaoLineSearchCreate(MPI_Comm comm, TaoLineSearch *newls)
   TaoLineSearch ls;
 
   PetscFunctionBegin;
-  PetscValidPointer(newls, 2);
+  PetscAssertPointer(newls, 2);
   PetscCall(TaoLineSearchInitializePackage());
 
   PetscCall(PetscHeaderCreate(ls, TAOLINESEARCH_CLASSID, "TaoLineSearch", "Linesearch", "Tao", comm, TaoLineSearchDestroy, TaoLineSearchView));
@@ -286,10 +286,10 @@ PetscErrorCode TaoLineSearchApply(TaoLineSearch ls, Vec x, PetscReal *f, Vec g, 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ls, TAOLINESEARCH_CLASSID, 1);
   PetscValidHeaderSpecific(x, VEC_CLASSID, 2);
-  PetscValidPointer(f, 3);
+  PetscAssertPointer(f, 3);
   PetscValidHeaderSpecific(g, VEC_CLASSID, 4);
   PetscValidHeaderSpecific(s, VEC_CLASSID, 5);
-  PetscValidPointer(reason, 7);
+  PetscAssertPointer(reason, 7);
   PetscCheckSameComm(ls, 1, x, 2);
   PetscCheckSameTypeAndComm(x, 2, g, 4);
   PetscCheckSameTypeAndComm(x, 2, s, 5);
@@ -377,7 +377,7 @@ PetscErrorCode TaoLineSearchSetType(TaoLineSearch ls, TaoLineSearchType type)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ls, TAOLINESEARCH_CLASSID, 1);
-  PetscValidPointer(type, 2);
+  PetscAssertPointer(type, 2);
   PetscCall(PetscObjectTypeCompare((PetscObject)ls, type, &flg));
   if (flg) PetscFunctionReturn(PETSC_SUCCESS);
 
@@ -528,7 +528,7 @@ PetscErrorCode TaoLineSearchGetType(TaoLineSearch ls, TaoLineSearchType *type)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ls, TAOLINESEARCH_CLASSID, 1);
-  PetscValidPointer(type, 2);
+  PetscAssertPointer(type, 2);
   *type = ((PetscObject)ls)->type_name;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -815,7 +815,7 @@ PetscErrorCode TaoLineSearchComputeObjective(TaoLineSearch ls, Vec x, PetscReal 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ls, TAOLINESEARCH_CLASSID, 1);
   PetscValidHeaderSpecific(x, VEC_CLASSID, 2);
-  PetscValidPointer(f, 3);
+  PetscAssertPointer(f, 3);
   PetscCheckSameComm(ls, 1, x, 2);
   if (ls->usetaoroutines) {
     PetscCall(TaoComputeObjective(ls->tao, x, f));
@@ -860,7 +860,7 @@ PetscErrorCode TaoLineSearchComputeObjectiveAndGradient(TaoLineSearch ls, Vec x,
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ls, TAOLINESEARCH_CLASSID, 1);
   PetscValidHeaderSpecific(x, VEC_CLASSID, 2);
-  PetscValidPointer(f, 3);
+  PetscAssertPointer(f, 3);
   PetscValidHeaderSpecific(g, VEC_CLASSID, 4);
   PetscCheckSameComm(ls, 1, x, 2);
   PetscCheckSameComm(ls, 1, g, 4);
@@ -949,8 +949,8 @@ PetscErrorCode TaoLineSearchComputeObjectiveAndGTS(TaoLineSearch ls, Vec x, Pets
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ls, TAOLINESEARCH_CLASSID, 1);
   PetscValidHeaderSpecific(x, VEC_CLASSID, 2);
-  PetscValidPointer(f, 3);
-  PetscValidPointer(gts, 4);
+  PetscAssertPointer(f, 3);
+  PetscAssertPointer(gts, 4);
   PetscCheckSameComm(ls, 1, x, 2);
   PetscCall(PetscLogEventBegin(TAOLINESEARCH_Eval, ls, 0, 0, 0));
   PetscCallBack("TaoLineSearch callback objective/gts", (*ls->ops->computeobjectiveandgts)(ls, x, ls->stepdirection, f, gts, ls->userctx_funcgts));
@@ -984,9 +984,9 @@ PetscErrorCode TaoLineSearchGetSolution(TaoLineSearch ls, Vec x, PetscReal *f, V
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ls, TAOLINESEARCH_CLASSID, 1);
   PetscValidHeaderSpecific(x, VEC_CLASSID, 2);
-  PetscValidPointer(f, 3);
+  PetscAssertPointer(f, 3);
   PetscValidHeaderSpecific(g, VEC_CLASSID, 4);
-  PetscValidPointer(reason, 6);
+  PetscAssertPointer(reason, 6);
   if (ls->new_x) PetscCall(VecCopy(ls->new_x, x));
   *f = ls->new_f;
   if (ls->new_g) PetscCall(VecCopy(ls->new_g, g));

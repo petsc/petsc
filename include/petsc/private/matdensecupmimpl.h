@@ -273,7 +273,7 @@ inline PetscErrorCode MatDense_CUPM<T, D>::CreateIMPLDenseCUPM(MPI_Comm comm, Pe
   Mat mat;
 
   PetscFunctionBegin;
-  PetscValidPointer(A, 7);
+  PetscAssertPointer(A, 7);
   PetscCall(MatCreate(comm, &mat));
   PetscCall(MatSetSizes(mat, m, n, M, N));
   PetscCall(MatSetType(mat, D::MATIMPLCUPM()));
@@ -516,7 +516,7 @@ inline PetscErrorCode MatDenseCUPMGetArray_Private(Mat A, PetscScalar **array) n
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
-  PetscValidPointer(array, 2);
+  PetscAssertPointer(array, 2);
   switch (access) {
   case PETSC_MEMORY_ACCESS_READ:
     PetscUseMethod(A, impl::MatDense_CUPM_Base<T>::MatDenseCUPMGetArrayRead_C(), (Mat, PetscScalar **), (A, array));
@@ -537,7 +537,7 @@ inline PetscErrorCode MatDenseCUPMRestoreArray_Private(Mat A, PetscScalar **arra
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
-  if (array) PetscValidPointer(array, 2);
+  if (array) PetscAssertPointer(array, 2);
   switch (access) {
   case PETSC_MEMORY_ACCESS_READ:
     PetscUseMethod(A, impl::MatDense_CUPM_Base<T>::MatDenseCUPMRestoreArrayRead_C(), (Mat, PetscScalar **), (A, array));

@@ -191,11 +191,11 @@ PetscErrorCode PetscRandomGetInterval(PetscRandom r, PetscScalar *low, PetscScal
   PetscFunctionBegin;
   PetscValidHeaderSpecific(r, PETSC_RANDOM_CLASSID, 1);
   if (low) {
-    PetscValidPointer(low, 2);
+    PetscAssertPointer(low, 2);
     *low = r->low;
   }
   if (high) {
-    PetscValidPointer(high, 3);
+    PetscAssertPointer(high, 3);
     *high = r->low + r->width;
   }
   PetscFunctionReturn(PETSC_SUCCESS);

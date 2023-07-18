@@ -64,7 +64,7 @@ PetscErrorCode AOGetType(AO ao, AOType *type)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ao, AO_CLASSID, 1);
-  PetscValidPointer(type, 2);
+  PetscAssertPointer(type, 2);
   PetscCall(AORegisterAll());
   *type = ((PetscObject)ao)->type_name;
   PetscFunctionReturn(PETSC_SUCCESS);

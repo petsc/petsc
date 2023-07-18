@@ -131,8 +131,8 @@ PetscErrorCode PetscDLLibraryOpen(MPI_Comm comm, const char path[], PetscDLLibra
   PetscErrorCode (*func)(void) = NULL;
 
   PetscFunctionBegin;
-  PetscValidPointer(path, 2);
-  PetscValidPointer(entry, 3);
+  PetscAssertPointer(path, 2);
+  PetscAssertPointer(entry, 3);
 
   *entry = NULL;
 
@@ -218,10 +218,10 @@ PetscErrorCode PetscDLLibrarySym(MPI_Comm comm, PetscDLLibrary *outlist, const c
   PetscDLLibrary list = NULL, nlist, prev;
 
   PetscFunctionBegin;
-  if (outlist) PetscValidPointer(outlist, 2);
-  if (path) PetscValidPointer(path, 3);
-  PetscValidPointer(insymbol, 4);
-  PetscValidPointer(value, 5);
+  if (outlist) PetscAssertPointer(outlist, 2);
+  if (path) PetscAssertPointer(path, 3);
+  PetscAssertPointer(insymbol, 4);
+  PetscAssertPointer(value, 5);
 
   if (outlist) list = *outlist;
   *value = NULL;
@@ -321,7 +321,7 @@ PetscErrorCode PetscDLLibraryAppend(MPI_Comm comm, PetscDLLibrary *outlist, cons
   PetscToken     token;
 
   PetscFunctionBegin;
-  PetscValidPointer(outlist, 2);
+  PetscAssertPointer(outlist, 2);
 
   /* is path a directory? */
   PetscCall(PetscTestDirectory(path, 'r', &dir));
@@ -403,7 +403,7 @@ PetscErrorCode PetscDLLibraryPrepend(MPI_Comm comm, PetscDLLibrary *outlist, con
   PetscToken     token;
 
   PetscFunctionBegin;
-  PetscValidPointer(outlist, 2);
+  PetscAssertPointer(outlist, 2);
 
   /* is path a directory? */
   PetscCall(PetscTestDirectory(path, 'r', &dir));

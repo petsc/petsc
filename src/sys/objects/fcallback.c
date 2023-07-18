@@ -56,8 +56,8 @@ PetscErrorCode PetscFortranCallbackRegister(PetscClassId classid, const char *su
   FortranCallbackLink  link;
 
   PetscFunctionBegin;
-  if (subtype) PetscValidPointer(subtype, 2);
-  PetscValidPointer(id, 3);
+  if (subtype) PetscAssertPointer(subtype, 2);
+  PetscAssertPointer(id, 3);
   PetscCheck(classid >= PETSC_SMALLEST_CLASSID && classid <= PETSC_LARGEST_CLASSID, PETSC_COMM_SELF, PETSC_ERR_ARG_CORRUPT, "ClassId %d corrupt", classid);
   *id = 0;
   if (classid >= _maxclassid) {
@@ -116,8 +116,8 @@ PetscErrorCode PetscFortranCallbackRegister(PetscClassId classid, const char *su
 PetscErrorCode PetscFortranCallbackGetSizes(PetscClassId classid, PetscFortranCallbackId *numbase, PetscFortranCallbackId *numsubtype)
 {
   PetscFunctionBegin;
-  PetscValidPointer(numbase, 2);
-  PetscValidPointer(numsubtype, 3);
+  PetscAssertPointer(numbase, 2);
+  PetscAssertPointer(numsubtype, 3);
   if (classid < _maxclassid) {
     FortranCallbackBase *base = &_classbase[classid - PETSC_SMALLEST_CLASSID];
     *numbase                  = base->basecount;

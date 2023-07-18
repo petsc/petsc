@@ -456,7 +456,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_Network(DM dm)
 PetscErrorCode DMNetworkCreate(MPI_Comm comm, DM *network)
 {
   PetscFunctionBegin;
-  PetscValidPointer(network, 2);
+  PetscAssertPointer(network, 2);
   PetscCall(DMCreate(comm, network));
   PetscCall(DMSetType(*network, DMNETWORK));
   PetscFunctionReturn(PETSC_SUCCESS);

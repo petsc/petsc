@@ -65,7 +65,7 @@ PetscErrorCode PetscRandomGetSeed(PetscRandom r, unsigned long *seed)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(r, PETSC_RANDOM_CLASSID, 1);
   if (seed) {
-    PetscValidPointer(seed, 2);
+    PetscAssertPointer(seed, 2);
     *seed = r->seed;
   }
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -333,7 +333,7 @@ PetscErrorCode PetscRandomCreate(MPI_Comm comm, PetscRandom *r)
   PetscMPIInt rank;
 
   PetscFunctionBegin;
-  PetscValidPointer(r, 2);
+  PetscAssertPointer(r, 2);
   *r = NULL;
   PetscCall(PetscRandomInitializePackage());
 

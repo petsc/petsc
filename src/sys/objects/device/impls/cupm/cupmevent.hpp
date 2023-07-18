@@ -48,7 +48,7 @@ template <DeviceType T, unsigned long flags>
 inline PetscErrorCode CUPMEventPool<T, flags>::allocate(cupmEvent_t *event) noexcept
 {
   PetscFunctionBegin;
-  PetscValidPointer(event, 1);
+  PetscAssertPointer(event, 1);
   if (pool_.empty()) {
     PetscCall(this->register_finalize());
     PetscCallCUPM(cupmEventCreateWithFlags(event, flags));
@@ -63,7 +63,7 @@ template <DeviceType T, unsigned long flags>
 inline PetscErrorCode CUPMEventPool<T, flags>::deallocate(cupmEvent_t *in_event) noexcept
 {
   PetscFunctionBegin;
-  PetscValidPointer(in_event, 1);
+  PetscAssertPointer(in_event, 1);
   if (auto event = std::exchange(*in_event, cupmEvent_t{})) {
     if (this->registered()) {
       PetscCallCXX(pool_.push(std::move(event)));

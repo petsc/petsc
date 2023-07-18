@@ -95,7 +95,7 @@ PetscErrorCode VecGetLocalToGlobalMapping(Vec X, ISLocalToGlobalMapping *mapping
   PetscFunctionBegin;
   PetscValidHeaderSpecific(X, VEC_CLASSID, 1);
   PetscValidType(X, 1);
-  PetscValidPointer(mapping, 2);
+  PetscAssertPointer(mapping, 2);
   *mapping = X->map->mapping;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -189,7 +189,7 @@ PetscErrorCode VecSetPreallocationCOO(Vec x, PetscCount ncoo, const PetscInt coo
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x, VEC_CLASSID, 1);
   PetscValidType(x, 1);
-  if (ncoo) PetscValidPointer(coo_i, 3);
+  if (ncoo) PetscAssertPointer(coo_i, 3);
   PetscCall(PetscLogEventBegin(VEC_SetPreallocateCOO, x, 0, 0, 0));
   PetscCall(PetscLayoutSetUp(x->map));
   if (x->ops->setpreallocationcoo) {
@@ -241,7 +241,7 @@ PetscErrorCode VecSetPreallocationCOOLocal(Vec x, PetscCount ncoo, PetscInt coo_
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x, VEC_CLASSID, 1);
   PetscValidType(x, 1);
-  if (ncoo) PetscValidPointer(coo_i, 3);
+  if (ncoo) PetscAssertPointer(coo_i, 3);
   PetscCheck(ncoo <= PETSC_MAX_INT, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "ncoo %" PetscCount_FMT " overflowed PetscInt; configure --with-64-bit-indices or request support", ncoo);
   PetscCall(PetscLayoutSetUp(x->map));
   PetscCall(VecGetLocalToGlobalMapping(x, &ltog));
@@ -501,7 +501,7 @@ PetscErrorCode VecDuplicate(Vec v, Vec *newv)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v, VEC_CLASSID, 1);
-  PetscValidPointer(newv, 2);
+  PetscAssertPointer(newv, 2);
   PetscValidType(v, 1);
   PetscUseTypeMethod(v, duplicate, newv);
 #if PetscDefined(HAVE_DEVICE)
@@ -529,7 +529,7 @@ PetscErrorCode VecDuplicate(Vec v, Vec *newv)
 PetscErrorCode VecDestroy(Vec *v)
 {
   PetscFunctionBegin;
-  PetscValidPointer(v, 1);
+  PetscAssertPointer(v, 1);
   if (!*v) PetscFunctionReturn(PETSC_SUCCESS);
   PetscValidHeaderSpecific((*v), VEC_CLASSID, 1);
   if (--((PetscObject)(*v))->refct > 0) {
@@ -576,7 +576,7 @@ PetscErrorCode VecDuplicateVecs(Vec v, PetscInt m, Vec *V[])
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v, VEC_CLASSID, 1);
-  PetscValidPointer(V, 3);
+  PetscAssertPointer(V, 3);
   PetscValidType(v, 1);
   PetscUseTypeMethod(v, duplicatevecs, m, V);
 #if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA) || defined(PETSC_HAVE_HIP)
@@ -616,7 +616,7 @@ PetscErrorCode VecDuplicateVecs(Vec v, PetscInt m, Vec *V[])
 PetscErrorCode VecDestroyVecs(PetscInt m, Vec *vv[])
 {
   PetscFunctionBegin;
-  PetscValidPointer(vv, 2);
+  PetscAssertPointer(vv, 2);
   PetscCheck(m >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Trying to destroy negative number of vectors %" PetscInt_FMT, m);
   if (!m || !*vv) {
     *vv = NULL;
@@ -840,7 +840,7 @@ PetscErrorCode VecGetSize(Vec x, PetscInt *size)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x, VEC_CLASSID, 1);
-  PetscValidPointer(size, 2);
+  PetscAssertPointer(size, 2);
   PetscValidType(x, 1);
   PetscUseTypeMethod(x, getsize, size);
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -866,7 +866,7 @@ PetscErrorCode VecGetLocalSize(Vec x, PetscInt *size)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x, VEC_CLASSID, 1);
-  PetscValidPointer(size, 2);
+  PetscAssertPointer(size, 2);
   PetscValidType(x, 1);
   PetscUseTypeMethod(x, getlocalsize, size);
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -903,8 +903,8 @@ PetscErrorCode VecGetOwnershipRange(Vec x, PetscInt *low, PetscInt *high)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x, VEC_CLASSID, 1);
   PetscValidType(x, 1);
-  if (low) PetscValidPointer(low, 2);
-  if (high) PetscValidPointer(high, 3);
+  if (low) PetscAssertPointer(low, 2);
+  if (high) PetscAssertPointer(high, 3);
   if (low) *low = x->map->rstart;
   if (high) *high = x->map->rend;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -995,7 +995,7 @@ PetscErrorCode VecDuplicateVecs_Default(Vec w, PetscInt m, Vec *V[])
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(w, VEC_CLASSID, 1);
-  PetscValidPointer(V, 3);
+  PetscAssertPointer(V, 3);
   PetscCheck(m > 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "m must be > 0: m = %" PetscInt_FMT, m);
   PetscCall(PetscMalloc1(m, V));
   for (PetscInt i = 0; i < m; i++) PetscCall(VecDuplicate(w, *V + i));
@@ -1007,7 +1007,7 @@ PetscErrorCode VecDestroyVecs_Default(PetscInt m, Vec v[])
   PetscInt i;
 
   PetscFunctionBegin;
-  PetscValidPointer(v, 2);
+  PetscAssertPointer(v, 2);
   for (i = 0; i < m; i++) PetscCall(VecDestroy(&v[i]));
   PetscCall(PetscFree(v));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -1524,7 +1524,7 @@ PetscErrorCode VecGetBlockSize(Vec v, PetscInt *bs)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v, VEC_CLASSID, 1);
-  PetscValidPointer(bs, 2);
+  PetscAssertPointer(bs, 2);
   PetscCall(PetscLayoutGetBlockSize(v->map, bs));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1933,7 +1933,7 @@ PetscErrorCode VecGetLayout(Vec x, PetscLayout *map)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x, VEC_CLASSID, 1);
-  PetscValidPointer(map, 2);
+  PetscAssertPointer(map, 2);
   *map = x->map;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -2033,7 +2033,7 @@ PetscErrorCode VecBoundToCPU(Vec v, PetscBool *flg)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v, VEC_CLASSID, 1);
-  PetscValidPointer(flg, 2);
+  PetscAssertPointer(flg, 2);
 #if defined(PETSC_HAVE_DEVICE)
   *flg = v->boundtocpu;
 #else
@@ -2088,7 +2088,7 @@ PetscErrorCode VecGetBindingPropagates(Vec v, PetscBool *flg)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v, VEC_CLASSID, 1);
-  PetscValidPointer(flg, 2);
+  PetscAssertPointer(flg, 2);
 #if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA) || defined(PETSC_HAVE_HIP)
   *flg = v->bindingpropagates;
 #else
@@ -2145,7 +2145,7 @@ PetscErrorCode VecGetPinnedMemoryMin(Vec v, size_t *mbytes)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v, VEC_CLASSID, 1);
-  PetscValidPointer(mbytes, 2);
+  PetscAssertPointer(mbytes, 2);
 #if PetscDefined(HAVE_DEVICE)
   *mbytes = v->minimum_bytes_pinned_memory;
 #endif
@@ -2171,7 +2171,7 @@ PetscErrorCode VecGetOffloadMask(Vec v, PetscOffloadMask *mask)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v, VEC_CLASSID, 1);
-  PetscValidPointer(mask, 2);
+  PetscAssertPointer(mask, 2);
   *mask = v->offloadmask;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -2339,12 +2339,12 @@ PetscErrorCode VecErrorWeightedNorms(Vec U, Vec Y, Vec E, NormType wnormtype, Pe
     PetscValidType(vrtol, 8);
   }
   PetscValidLogicalCollectiveReal(U, ignore_max, 9);
-  PetscValidPointer(norm, 10);
-  PetscValidPointer(norm_loc, 11);
-  PetscValidPointer(norma, 12);
-  PetscValidPointer(norma_loc, 13);
-  PetscValidPointer(normr, 14);
-  PetscValidPointer(normr_loc, 15);
+  PetscAssertPointer(norm, 10);
+  PetscAssertPointer(norm_loc, 11);
+  PetscAssertPointer(norma, 12);
+  PetscAssertPointer(norma_loc, 13);
+  PetscAssertPointer(normr, 14);
+  PetscAssertPointer(normr_loc, 15);
   PetscCheck(wnormtype == NORM_2 || wnormtype == NORM_INFINITY, PetscObjectComm((PetscObject)U), PETSC_ERR_SUP, "No support for norm type %s", NormTypes[wnormtype]);
 
   /* There are potentially 5 vectors involved, some of them may happen to be of different type or bound to cpu.

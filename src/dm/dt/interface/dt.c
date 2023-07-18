@@ -60,7 +60,7 @@ PetscClassId PETSCQUADRATURE_CLASSID = 0;
 PetscErrorCode PetscQuadratureCreate(MPI_Comm comm, PetscQuadrature *q)
 {
   PetscFunctionBegin;
-  PetscValidPointer(q, 2);
+  PetscAssertPointer(q, 2);
   PetscCall(DMInitializePackage());
   PetscCall(PetscHeaderCreate(*q, PETSCQUADRATURE_CLASSID, "PetscQuadrature", "Quadrature", "DT", comm, PetscQuadratureDestroy, PetscQuadratureView));
   (*q)->ct        = DM_POLYTOPE_UNKNOWN;
@@ -96,7 +96,7 @@ PetscErrorCode PetscQuadratureDuplicate(PetscQuadrature q, PetscQuadrature *r)
   PetscReal       *p, *w;
 
   PetscFunctionBegin;
-  PetscValidPointer(q, 1);
+  PetscAssertPointer(q, 1);
   PetscCall(PetscQuadratureCreate(PetscObjectComm((PetscObject)q), r));
   PetscCall(PetscQuadratureGetCellType(q, &ct));
   PetscCall(PetscQuadratureSetCellType(*r, ct));
@@ -157,7 +157,7 @@ PetscErrorCode PetscQuadratureGetCellType(PetscQuadrature q, DMPolytopeType *ct)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(q, PETSCQUADRATURE_CLASSID, 1);
-  PetscValidPointer(ct, 2);
+  PetscAssertPointer(ct, 2);
   *ct = q->ct;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -202,7 +202,7 @@ PetscErrorCode PetscQuadratureGetOrder(PetscQuadrature q, PetscInt *order)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(q, PETSCQUADRATURE_CLASSID, 1);
-  PetscValidPointer(order, 2);
+  PetscAssertPointer(order, 2);
   *order = q->order;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -250,7 +250,7 @@ PetscErrorCode PetscQuadratureGetNumComponents(PetscQuadrature q, PetscInt *Nc)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(q, PETSCQUADRATURE_CLASSID, 1);
-  PetscValidPointer(Nc, 2);
+  PetscAssertPointer(Nc, 2);
   *Nc = q->Nc;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -306,23 +306,23 @@ PetscErrorCode PetscQuadratureGetData(PetscQuadrature q, PetscInt *dim, PetscInt
   PetscFunctionBegin;
   PetscValidHeaderSpecific(q, PETSCQUADRATURE_CLASSID, 1);
   if (dim) {
-    PetscValidPointer(dim, 2);
+    PetscAssertPointer(dim, 2);
     *dim = q->dim;
   }
   if (Nc) {
-    PetscValidPointer(Nc, 3);
+    PetscAssertPointer(Nc, 3);
     *Nc = q->Nc;
   }
   if (npoints) {
-    PetscValidPointer(npoints, 4);
+    PetscAssertPointer(npoints, 4);
     *npoints = q->numPoints;
   }
   if (points) {
-    PetscValidPointer(points, 5);
+    PetscAssertPointer(points, 5);
     *points = q->points;
   }
   if (weights) {
-    PetscValidPointer(weights, 6);
+    PetscAssertPointer(weights, 6);
     *weights = q->weights;
   }
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -347,7 +347,7 @@ PetscErrorCode PetscQuadratureEqual(PetscQuadrature A, PetscQuadrature B, PetscB
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, PETSCQUADRATURE_CLASSID, 1);
   PetscValidHeaderSpecific(B, PETSCQUADRATURE_CLASSID, 2);
-  PetscValidPointer(equal, 3);
+  PetscAssertPointer(equal, 3);
   *equal = PETSC_FALSE;
   if (A->ct != B->ct || A->dim != B->dim || A->Nc != B->Nc || A->order != B->order || A->numPoints != B->numPoints) PetscFunctionReturn(PETSC_SUCCESS);
   for (PetscInt i = 0; i < A->numPoints * A->dim; i++) {
@@ -565,11 +565,11 @@ PetscErrorCode PetscQuadratureSetData(PetscQuadrature q, PetscInt dim, PetscInt 
   if (Nc >= 0) q->Nc = Nc;
   if (npoints >= 0) q->numPoints = npoints;
   if (points) {
-    PetscValidPointer(points, 5);
+    PetscAssertPointer(points, 5);
     q->points = points;
   }
   if (weights) {
-    PetscValidPointer(weights, 6);
+    PetscAssertPointer(weights, 6);
     q->weights = weights;
   }
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -664,9 +664,9 @@ PetscErrorCode PetscQuadratureExpandComposite(PetscQuadrature q, PetscInt numSub
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(q, PETSCQUADRATURE_CLASSID, 1);
-  PetscValidPointer(v0, 3);
-  PetscValidPointer(jac, 4);
-  PetscValidPointer(qref, 5);
+  PetscAssertPointer(v0, 3);
+  PetscAssertPointer(jac, 4);
+  PetscAssertPointer(qref, 5);
   PetscCall(PetscQuadratureCreate(PETSC_COMM_SELF, qref));
   PetscCall(PetscQuadratureGetCellType(q, &ct));
   PetscCall(PetscQuadratureGetOrder(q, &order));
@@ -2585,7 +2585,7 @@ PetscErrorCode PetscDTTensorQuadratureCreate(PetscQuadrature q1, PetscQuadrature
   PetscFunctionBegin;
   PetscValidHeaderSpecific(q1, PETSCQUADRATURE_CLASSID, 1);
   PetscValidHeaderSpecific(q2, PETSCQUADRATURE_CLASSID, 2);
-  PetscValidPointer(q, 3);
+  PetscAssertPointer(q, 3);
   PetscCall(PetscQuadratureGetOrder(q1, &order1));
   PetscCall(PetscQuadratureGetOrder(q2, &order2));
   PetscCheck(order1 == order2, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Order1 %" PetscInt_FMT " != %" PetscInt_FMT " Order2", order1, order2);
@@ -2848,9 +2848,9 @@ PetscErrorCode PetscDTReconstructPoly(PetscInt degree, PetscInt nsource, const P
   PetscScalar *tau, *work;
 
   PetscFunctionBegin;
-  PetscValidPointer(sourcex, 3);
-  PetscValidPointer(targetx, 5);
-  PetscValidPointer(R, 6);
+  PetscAssertPointer(sourcex, 3);
+  PetscAssertPointer(targetx, 5);
+  PetscAssertPointer(R, 6);
   PetscCheck(degree < nsource, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Reconstruction degree %" PetscInt_FMT " must be less than number of source intervals %" PetscInt_FMT, degree, nsource);
   if (PetscDefined(USE_DEBUG)) {
     for (i = 0; i < nsource; i++) PetscCheck(sourcex[i] < sourcex[i + 1], PETSC_COMM_SELF, PETSC_ERR_ARG_CORRUPT, "Source interval %" PetscInt_FMT " has negative orientation (%g,%g)", i, (double)sourcex[i], (double)sourcex[i + 1]);

@@ -522,15 +522,15 @@ PetscErrorCode PetscProbCreateFromOptions(PetscInt dim, const char prefix[], con
   PetscOptionsEnd();
 
   if (pdf) {
-    PetscValidPointer(pdf, 4);
+    PetscAssertPointer(pdf, 4);
     *pdf = NULL;
   }
   if (cdf) {
-    PetscValidPointer(cdf, 5);
+    PetscAssertPointer(cdf, 5);
     *cdf = NULL;
   }
   if (sampler) {
-    PetscValidPointer(sampler, 6);
+    PetscAssertPointer(sampler, 6);
     *sampler = NULL;
   }
   switch (den) {

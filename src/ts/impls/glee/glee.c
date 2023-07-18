@@ -850,7 +850,7 @@ PetscErrorCode TSGLEESetType(TS ts, TSGLEEType gleetype)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
-  PetscValidPointer(gleetype, 2);
+  PetscAssertPointer(gleetype, 2);
   PetscTryMethod(ts, "TSGLEESetType_C", (TS, TSGLEEType), (ts, gleetype));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

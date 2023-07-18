@@ -94,7 +94,7 @@ PetscErrorCode VecHIPGetArrays_Private(Vec v, const PetscScalar **host_array, co
 PetscErrorCode VecCreateMPIHIP(MPI_Comm comm, PetscInt n, PetscInt N, Vec *v)
 {
   PetscFunctionBegin;
-  PetscValidPointer(v, 4);
+  PetscAssertPointer(v, 4);
   PetscCall(VecCreateMPICUPMAsync<DeviceType::HIP>(comm, n, N, v));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

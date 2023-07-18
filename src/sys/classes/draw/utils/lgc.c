@@ -25,7 +25,7 @@ PetscErrorCode PetscDrawLGGetAxis(PetscDrawLG lg, PetscDrawAxis *axis)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(lg, PETSC_DRAWLG_CLASSID, 1);
-  PetscValidPointer(axis, 2);
+  PetscAssertPointer(axis, 2);
   *axis = lg->axis;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -49,7 +49,7 @@ PetscErrorCode PetscDrawLGGetDraw(PetscDrawLG lg, PetscDraw *draw)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(lg, PETSC_DRAWLG_CLASSID, 1);
-  PetscValidPointer(draw, 2);
+  PetscAssertPointer(draw, 2);
   *draw = lg->win;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -151,7 +151,7 @@ PetscErrorCode PetscDrawLGCreate(PetscDraw draw, PetscInt dim, PetscDrawLG *outl
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw, PETSC_DRAW_CLASSID, 1);
   PetscValidLogicalCollectiveInt(draw, dim, 2);
-  PetscValidPointer(outlg, 3);
+  PetscAssertPointer(outlg, 3);
 
   PetscCall(PetscHeaderCreate(lg, PETSC_DRAWLG_CLASSID, "DrawLG", "Line Graph", "Draw", PetscObjectComm((PetscObject)draw), PetscDrawLGDestroy, NULL));
   PetscCall(PetscDrawLGSetOptionsPrefix(lg, ((PetscObject)draw)->prefix));
@@ -197,7 +197,7 @@ PetscErrorCode PetscDrawLGSetColors(PetscDrawLG lg, const int colors[])
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(lg, PETSC_DRAWLG_CLASSID, 1);
-  if (lg->dim) PetscValidPointer(colors, 2);
+  if (lg->dim) PetscAssertPointer(colors, 2);
 
   PetscCall(PetscFree(lg->colors));
   PetscCall(PetscMalloc1(lg->dim, &lg->colors));
@@ -227,7 +227,7 @@ PetscErrorCode PetscDrawLGSetLegend(PetscDrawLG lg, const char *const *names)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(lg, PETSC_DRAWLG_CLASSID, 1);
-  if (names) PetscValidPointer(names, 2);
+  if (names) PetscAssertPointer(names, 2);
 
   if (lg->legend) {
     for (i = 0; i < lg->dim; i++) PetscCall(PetscFree(lg->legend[i]));
@@ -259,7 +259,7 @@ PetscErrorCode PetscDrawLGGetDimension(PetscDrawLG lg, PetscInt *dim)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(lg, PETSC_DRAWLG_CLASSID, 1);
-  PetscValidPointer(dim, 2);
+  PetscAssertPointer(dim, 2);
   *dim = lg->dim;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

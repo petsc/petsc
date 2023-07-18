@@ -194,7 +194,7 @@ PetscErrorCode MatCreateSubMatrixVirtual(Mat A, IS isrow, IS iscol, Mat *newmat)
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
   PetscValidHeaderSpecific(isrow, IS_CLASSID, 2);
   PetscValidHeaderSpecific(iscol, IS_CLASSID, 3);
-  PetscValidPointer(newmat, 4);
+  PetscAssertPointer(newmat, 4);
   *newmat = NULL;
 
   PetscCall(MatCreate(PetscObjectComm((PetscObject)A), &N));

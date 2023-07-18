@@ -27,7 +27,7 @@ PetscStageLog petsc_stageLog = NULL;
 PetscErrorCode PetscLogGetStageLog(PetscStageLog *stageLog)
 {
   PetscFunctionBegin;
-  PetscValidPointer(stageLog, 1);
+  PetscAssertPointer(stageLog, 1);
   if (!petsc_stageLog) {
     fprintf(stderr, "PETSC ERROR: Logging has not been enabled.\nYou might have forgotten to call PetscInitialize().\n");
     PETSCABORT(MPI_COMM_WORLD, PETSC_ERR_SUP);
@@ -94,7 +94,7 @@ PetscErrorCode PetscStageLogGetCurrent(PetscStageLog stageLog, int *stage)
 PetscErrorCode PetscStageLogGetEventPerfLog(PetscStageLog stageLog, int stage, PetscEventPerfLog *eventLog)
 {
   PetscFunctionBegin;
-  PetscValidPointer(eventLog, 3);
+  PetscAssertPointer(eventLog, 3);
   PetscCheck(!(stage < 0) && !(stage >= stageLog->numStages), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid stage %d should be in [0,%d)", stage, stageLog->numStages);
   *eventLog = stageLog->stageInfo[stage].eventLog;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -170,8 +170,8 @@ PetscErrorCode PetscStageLogRegister(PetscStageLog stageLog, const char sname[],
   int             s;
 
   PetscFunctionBegin;
-  PetscValidPointer(sname, 2);
-  PetscValidPointer(stage, 3);
+  PetscAssertPointer(sname, 2);
+  PetscAssertPointer(stage, 3);
   /* Check stage already registered */
   for (s = 0; s < stageLog->numStages; ++s) {
     PetscBool same;
@@ -352,7 +352,7 @@ PetscErrorCode PetscStageLogPop(PetscStageLog stageLog)
 PetscErrorCode PetscStageLogGetClassRegLog(PetscStageLog stageLog, PetscClassRegLog *classLog)
 {
   PetscFunctionBegin;
-  PetscValidPointer(classLog, 2);
+  PetscAssertPointer(classLog, 2);
   *classLog = stageLog->classLog;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -375,7 +375,7 @@ PetscErrorCode PetscStageLogGetClassRegLog(PetscStageLog stageLog, PetscClassReg
 PetscErrorCode PetscStageLogGetEventRegLog(PetscStageLog stageLog, PetscEventRegLog *eventLog)
 {
   PetscFunctionBegin;
-  PetscValidPointer(eventLog, 2);
+  PetscAssertPointer(eventLog, 2);
   *eventLog = stageLog->eventLog;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -399,7 +399,7 @@ PetscErrorCode PetscStageLogGetEventRegLog(PetscStageLog stageLog, PetscEventReg
 PetscErrorCode PetscStageLogGetClassPerfLog(PetscStageLog stageLog, int stage, PetscClassPerfLog *classLog)
 {
   PetscFunctionBegin;
-  PetscValidPointer(classLog, 3);
+  PetscAssertPointer(classLog, 3);
   PetscCheck(!(stage < 0) && !(stage >= stageLog->numStages), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid stage %d should be in [0,%d)", stage, stageLog->numStages);
   *classLog = stageLog->stageInfo[stage].classLog;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -447,7 +447,7 @@ PetscErrorCode PetscStageLogGetActive(PetscStageLog stageLog, int stage, PetscBo
 {
   PetscFunctionBegin;
   PetscCheck(!(stage < 0) && !(stage >= stageLog->numStages), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid stage %d should be in [0,%d)", stage, stageLog->numStages);
-  PetscValidPointer(isActive, 3);
+  PetscAssertPointer(isActive, 3);
   *isActive = stageLog->stageInfo[stage].perfInfo.active;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -500,7 +500,7 @@ PetscErrorCode PetscStageLogGetVisible(PetscStageLog stageLog, int stage, PetscB
 {
   PetscFunctionBegin;
   PetscCheck(!(stage < 0) && !(stage >= stageLog->numStages), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid stage %d should be in [0,%d)", stage, stageLog->numStages);
-  PetscValidPointer(isVisible, 3);
+  PetscAssertPointer(isVisible, 3);
   *isVisible = stageLog->stageInfo[stage].perfInfo.visible;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -527,8 +527,8 @@ PetscErrorCode PetscStageLogGetStage(PetscStageLog stageLog, const char name[], 
   int       s;
 
   PetscFunctionBegin;
-  PetscValidPointer(name, 2);
-  PetscValidPointer(stage, 3);
+  PetscAssertPointer(name, 2);
+  PetscAssertPointer(stage, 3);
   *stage = -1;
   for (s = 0; s < stageLog->numStages; s++) {
     PetscCall(PetscStrcasecmp(stageLog->stageInfo[s].name, name, &match));

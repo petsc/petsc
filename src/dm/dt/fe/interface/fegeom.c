@@ -88,8 +88,8 @@ PetscErrorCode PetscFEGeomGetChunk(PetscFEGeom *geom, PetscInt cStart, PetscInt 
   PetscInt dE;
 
   PetscFunctionBegin;
-  PetscValidPointer(geom, 1);
-  PetscValidPointer(chunkGeom, 4);
+  PetscAssertPointer(geom, 1);
+  PetscAssertPointer(chunkGeom, 4);
   if (!(*chunkGeom)) PetscCall(PetscNew(chunkGeom));
   Nq                        = geom->numPoints;
   dE                        = geom->dimEmbed;

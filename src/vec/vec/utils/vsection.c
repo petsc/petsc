@@ -319,7 +319,7 @@ PetscErrorCode PetscSectionVecNorm(PetscSection s, PetscSection gs, Vec x, NormT
   PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
   PetscValidHeaderSpecific(gs, PETSC_SECTION_CLASSID, 2);
   PetscValidHeaderSpecific(x, VEC_CLASSID, 3);
-  PetscValidPointer(val, 5);
+  PetscAssertPointer(val, 5);
   PetscCall(PetscSectionGetNumFields(s, &Nf));
   if (Nf < 2) PetscCall(VecNorm(x, type, val));
   else {

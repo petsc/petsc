@@ -251,7 +251,7 @@ PetscErrorCode DMForestGetTopology(DM dm, DMForestTopology *topology)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(topology, 2);
+  PetscAssertPointer(topology, 2);
   *topology = forest->topology;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -325,7 +325,7 @@ PetscErrorCode DMForestGetBaseDM(DM dm, DM *base)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(base, 2);
+  PetscAssertPointer(base, 2);
   *base = forest->base;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -601,7 +601,7 @@ PetscErrorCode DMForestGetAdjacencyDimension(DM dm, PetscInt *adjDim)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(adjDim, 2);
+  PetscAssertPointer(adjDim, 2);
   *adjDim = forest->adjDim;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -629,7 +629,7 @@ PetscErrorCode DMForestGetAdjacencyCodimension(DM dm, PetscInt *adjCodim)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(adjCodim, 2);
+  PetscAssertPointer(adjCodim, 2);
   PetscCall(DMGetDimension(dm, &dim));
   *adjCodim = dim - forest->adjDim;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -684,7 +684,7 @@ PetscErrorCode DMForestGetPartitionOverlap(DM dm, PetscInt *overlap)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(overlap, 2);
+  PetscAssertPointer(overlap, 2);
   *overlap = forest->overlap;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -738,7 +738,7 @@ PetscErrorCode DMForestGetMinimumRefinement(DM dm, PetscInt *minRefinement)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(minRefinement, 2);
+  PetscAssertPointer(minRefinement, 2);
   *minRefinement = forest->minRefinement;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -790,7 +790,7 @@ PetscErrorCode DMForestGetInitialRefinement(DM dm, PetscInt *initRefinement)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(initRefinement, 2);
+  PetscAssertPointer(initRefinement, 2);
   *initRefinement = forest->initRefinement;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -844,7 +844,7 @@ PetscErrorCode DMForestGetMaximumRefinement(DM dm, PetscInt *maxRefinement)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(maxRefinement, 2);
+  PetscAssertPointer(maxRefinement, 2);
   *maxRefinement = forest->maxRefinement;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -905,7 +905,7 @@ PetscErrorCode DMForestGetAdaptivityStrategy(DM dm, DMForestAdaptivityStrategy *
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(adaptStrategy, 2);
+  PetscAssertPointer(adaptStrategy, 2);
   *adaptStrategy = forest->adaptStrategy;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1111,7 +1111,7 @@ PetscErrorCode DMForestGetGradeFactor(DM dm, PetscInt *grade)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(grade, 2);
+  PetscAssertPointer(grade, 2);
   *grade = forest->gradeFactor;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1169,7 +1169,7 @@ PetscErrorCode DMForestGetCellWeightFactor(DM dm, PetscReal *weightsFactor)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(weightsFactor, 2);
+  PetscAssertPointer(weightsFactor, 2);
   *weightsFactor = forest->weightsFactor;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1196,8 +1196,8 @@ PetscErrorCode DMForestGetCellChart(DM dm, PetscInt *cStart, PetscInt *cEnd)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(cStart, 2);
-  PetscValidPointer(cEnd, 3);
+  PetscAssertPointer(cStart, 2);
+  PetscAssertPointer(cEnd, 3);
   if (((forest->cStart == PETSC_DETERMINE) || (forest->cEnd == PETSC_DETERMINE)) && forest->createcellchart) PetscCall(forest->createcellchart(dm, &forest->cStart, &forest->cEnd));
   *cStart = forest->cStart;
   *cEnd   = forest->cEnd;
@@ -1225,7 +1225,7 @@ PetscErrorCode DMForestGetCellSF(DM dm, PetscSF *cellSF)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(cellSF, 2);
+  PetscAssertPointer(cellSF, 2);
   if ((!forest->cellSF) && forest->createcellsf) PetscCall(forest->createcellsf(dm, &forest->cellSF));
   *cellSF = forest->cellSF;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -1346,7 +1346,7 @@ PetscErrorCode DMForestGetCellWeights(DM dm, PetscReal **weights)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(weights, 2);
+  PetscAssertPointer(weights, 2);
   *weights = forest->cellWeights;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1403,7 +1403,7 @@ PetscErrorCode DMForestGetWeightCapacity(DM dm, PetscReal *capacity)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(capacity, 2);
+  PetscAssertPointer(capacity, 2);
   *capacity = forest->weightCapacity;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

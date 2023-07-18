@@ -114,9 +114,9 @@ PetscErrorCode Compute_Lagrange_Basis_1D_Internal(const PetscInt nverts, const P
   int i, j;
 
   PetscFunctionBegin;
-  PetscValidPointer(jacobian, 9);
-  PetscValidPointer(ijacobian, 10);
-  PetscValidPointer(volume, 11);
+  PetscAssertPointer(jacobian, 9);
+  PetscAssertPointer(ijacobian, 10);
+  PetscAssertPointer(volume, 11);
   if (phypts) PetscCall(PetscArrayzero(phypts, npts * 3));
   if (dphidx) { /* Reset arrays. */
     PetscCall(PetscArrayzero(dphidx, npts * nverts));
@@ -225,9 +225,9 @@ PetscErrorCode Compute_Lagrange_Basis_2D_Internal(const PetscInt nverts, const P
   PetscInt i, j, k;
 
   PetscFunctionBegin;
-  PetscValidPointer(jacobian, 10);
-  PetscValidPointer(ijacobian, 11);
-  PetscValidPointer(volume, 12);
+  PetscAssertPointer(jacobian, 10);
+  PetscAssertPointer(ijacobian, 11);
+  PetscAssertPointer(volume, 12);
   PetscCall(PetscArrayzero(phi, npts));
   if (phypts) PetscCall(PetscArrayzero(phypts, npts * 3));
   if (dphidx) { /* Reset arrays. */
@@ -382,9 +382,9 @@ PetscErrorCode Compute_Lagrange_Basis_3D_Internal(const PetscInt nverts, const P
   PetscInt i, j, k;
 
   PetscFunctionBegin;
-  PetscValidPointer(jacobian, 11);
-  PetscValidPointer(ijacobian, 12);
-  PetscValidPointer(volume, 13);
+  PetscAssertPointer(jacobian, 11);
+  PetscAssertPointer(ijacobian, 12);
+  PetscAssertPointer(volume, 13);
 
   PetscCall(PetscArrayzero(phi, npts));
   if (phypts) PetscCall(PetscArrayzero(phypts, npts * 3));
@@ -563,9 +563,9 @@ PetscErrorCode DMMoabFEMComputeBasis(const PetscInt dim, const PetscInt nverts, 
   PetscReal        jacobian[9], ijacobian[9], volume;
 
   PetscFunctionBegin;
-  PetscValidPointer(coordinates, 3);
+  PetscAssertPointer(coordinates, 3);
   PetscValidHeaderSpecific(quadrature, PETSCQUADRATURE_CLASSID, 4);
-  PetscValidPointer(fe_basis, 7);
+  PetscAssertPointer(fe_basis, 7);
   compute_der = (fe_basis_derivatives != NULL);
 
   /* Get the quadrature points and weights for the given quadrature rule */
@@ -684,9 +684,9 @@ PetscErrorCode ComputeJacobian_Internal(const PetscInt dim, const PetscInt nvert
   PetscReal volume = 1.0;
 
   PetscFunctionBegin;
-  PetscValidPointer(coordinates, 3);
-  PetscValidPointer(quad, 4);
-  PetscValidPointer(jacobian, 5);
+  PetscAssertPointer(coordinates, 3);
+  PetscAssertPointer(quad, 4);
+  PetscAssertPointer(jacobian, 5);
   PetscCall(PetscArrayzero(jacobian, dim * dim));
   if (ijacobian) PetscCall(PetscArrayzero(ijacobian, dim * dim));
   if (phypts) PetscCall(PetscArrayzero(phypts, /*npts=1 * */ 3));
@@ -838,9 +838,9 @@ PetscErrorCode DMMoabPToRMapping(const PetscInt dim, const PetscInt nverts, cons
   PetscReal       error     = 1.0;
 
   PetscFunctionBegin;
-  PetscValidPointer(coordinates, 3);
-  PetscValidPointer(xphy, 4);
-  PetscValidPointer(natparam, 5);
+  PetscAssertPointer(coordinates, 3);
+  PetscAssertPointer(xphy, 4);
+  PetscAssertPointer(natparam, 5);
 
   PetscCall(PetscArrayzero(jacobian, dim * dim));
   PetscCall(PetscArrayzero(ijacobian, dim * dim));

@@ -1,7 +1,7 @@
 #ifndef PETSC_CPP_OBJECT_POOL_HPP
 #define PETSC_CPP_OBJECT_POOL_HPP
 
-#include <petsc/private/petscimpl.h> // PetscValidPointer()
+#include <petsc/private/petscimpl.h> // PetscAssertPointer()
 #include <petsc/private/mempoison.h> // PetscPoison/UnpoisonMemoryRegion()
 
 #include <petsc/private/cpp/register_finalize.hpp>
@@ -236,7 +236,7 @@ inline constexpr PoolAllocator::size_type PoolAllocator::total_size_(size_type s
 inline PetscErrorCode PoolAllocator::delete_ptr_(void **in_ptr) noexcept
 {
   PetscFunctionBegin;
-  PetscValidPointer(in_ptr, 1);
+  PetscAssertPointer(in_ptr, 1);
   if (const auto ptr = util::exchange(*in_ptr, nullptr)) {
     AllocationHeader *header = nullptr;
 
@@ -288,7 +288,7 @@ inline PetscErrorCode PoolAllocator::clear_(size_type *remaining) noexcept
   size_type remain = 0;
 
   PetscFunctionBegin;
-  if (remaining) PetscValidPointer(remaining, 1);
+  if (remaining) PetscAssertPointer(remaining, 1);
   // clang-format off
   PetscCall(
     this->for_each([&](void *&ptr)
@@ -348,7 +348,7 @@ inline PetscErrorCode PoolAllocator::valid_alignment_(align_type in_align) noexc
 . header - the pointer to the header
 
   Notes:
-  Setting check_in_ptr to false disabled the PetscValidPointer() check in the function
+  Setting check_in_ptr to false disabled the PetscAssertPointer() check in the function
   preamble. This allows the method to be used even if the aligned_ptr is poisoned (for example
   when extracting the header from a pointer that is checked into the pool).
 
@@ -359,8 +359,8 @@ inline PetscErrorCode PoolAllocator::valid_alignment_(align_type in_align) noexc
 inline PetscErrorCode PoolAllocator::extract_header_(void *user_ptr, AllocationHeader **header, bool check_in_ptr) noexcept
 {
   PetscFunctionBegin;
-  if (check_in_ptr) PetscValidPointer(user_ptr, 1);
-  PetscValidPointer(header, 2);
+  if (check_in_ptr) PetscAssertPointer(user_ptr, 1);
+  PetscAssertPointer(header, 2);
   {
     //       AllocationHeader::alignment_offset() (at least 1)
     //                        |
@@ -416,7 +416,7 @@ inline PetscErrorCode PoolAllocator::allocate_ptr_(size_type size, align_type al
   unsigned char *base_ptr    = nullptr;
 
   PetscFunctionBegin;
-  PetscValidPointer(ret_ptr, 1);
+  PetscAssertPointer(ret_ptr, 1);
   PetscCall(valid_alignment_(align));
   // memory is laid out as follows:
   //
@@ -487,9 +487,9 @@ inline PetscErrorCode PoolAllocator::get_attributes(const void *ptr, size_type *
 {
   PetscFunctionBegin;
   // ptr may be poisoned, so cannot check it here
-  // PetscValidPointer(out_ptr, 1);
-  if (size) PetscValidPointer(size, 2);
-  if (align) PetscValidPointer(align, 3);
+  // PetscAssertPointer(out_ptr, 1);
+  if (size) PetscAssertPointer(size, 2);
+  if (align) PetscAssertPointer(align, 3);
   if (PetscLikely(size || align)) {
     AllocationHeader *header = nullptr;
 
@@ -527,8 +527,8 @@ inline PetscErrorCode PoolAllocator::try_allocate(void **out_ptr, size_type size
   auto  found = false;
 
   PetscFunctionBegin;
-  PetscValidPointer(out_ptr, 1);
-  PetscValidPointer(success, 3);
+  PetscAssertPointer(out_ptr, 1);
+  PetscAssertPointer(success, 3);
   PetscCall(valid_alignment_(align));
   if (PetscLikely(size)) {
     const auto align_it = find_align_(align);
@@ -573,8 +573,8 @@ inline PetscErrorCode PoolAllocator::allocate(void **out_ptr, size_type size, al
   bool success;
 
   PetscFunctionBegin;
-  PetscValidPointer(out_ptr, 1);
-  if (allocated_from_pool) PetscValidPointer(allocated_from_pool, 3);
+  PetscAssertPointer(out_ptr, 1);
+  if (allocated_from_pool) PetscAssertPointer(allocated_from_pool, 3);
   PetscCall(try_allocate(out_ptr, size, align, &success));
   if (!success) {
     PetscCall(this->register_finalize());
@@ -602,7 +602,7 @@ inline PetscErrorCode PoolAllocator::allocate(void **out_ptr, size_type size, al
 inline PetscErrorCode PoolAllocator::deallocate(void **in_ptr, size_type size, align_type align) noexcept
 {
   PetscFunctionBegin;
-  PetscValidPointer(in_ptr, 1);
+  PetscAssertPointer(in_ptr, 1);
   if (auto ptr = util::exchange(*in_ptr, nullptr)) {
     if (this->registered()) {
       auto it = find_align_(align);
@@ -645,8 +645,8 @@ inline PetscErrorCode PoolAllocator::unpoison(const void *ptr, size_type *size) 
 {
   PetscFunctionBegin;
   // ptr may be poisoned, so cannot check it here
-  // PetscValidPointer(ptr, 1);
-  PetscValidPointer(size, 2);
+  // PetscAssertPointer(ptr, 1);
+  PetscAssertPointer(size, 2);
   PetscCall(get_attributes(ptr, size, nullptr));
   PetscCall(PetscUnpoisonMemoryRegion(ptr, *size));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -667,7 +667,7 @@ inline PetscErrorCode PoolAllocator::unpoison(const void *ptr, size_type *size) 
 inline PetscErrorCode PoolAllocator::repoison(const void *ptr, size_type size) noexcept
 {
   PetscFunctionBegin;
-  PetscValidPointer(ptr, 1);
+  PetscAssertPointer(ptr, 1);
   PetscCall(PetscPoisonMemoryRegion(ptr, size));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -880,7 +880,7 @@ protected:
   static PetscErrorCode construct_(value_type *ptr, Args &&...args) noexcept
   {
     PetscFunctionBegin;
-    PetscValidPointer(ptr, 1);
+    PetscAssertPointer(ptr, 1);
     PetscCallCXX(util::construct_at(ptr, std::forward<Args>(args)...));
     PetscFunctionReturn(PETSC_SUCCESS);
   }
@@ -889,7 +889,7 @@ protected:
   {
     PetscFunctionBegin;
     if (ptr) {
-      PetscValidPointer(ptr, 1);
+      PetscAssertPointer(ptr, 1);
       PetscCallCXX(util::destroy_at(ptr));
     }
     PetscFunctionReturn(PETSC_SUCCESS);
@@ -1015,7 +1015,7 @@ inline PetscErrorCode ObjectPool<T, Constructor>::allocate(value_type **obj, Arg
   void *mem                 = nullptr;
 
   PetscFunctionBegin;
-  PetscValidPointer(obj, 1);
+  PetscAssertPointer(obj, 1);
   // order is deliberate! We register our finalizer before the pool does so since we need to
   // destroy the objects within it before it deletes their memory.
   PetscCall(this->register_finalize());
@@ -1044,7 +1044,7 @@ template <typename T, typename Constructor>
 inline PetscErrorCode ObjectPool<T, Constructor>::deallocate(value_type **obj) noexcept
 {
   PetscFunctionBegin;
-  PetscValidPointer(obj, 1);
+  PetscAssertPointer(obj, 1);
   if (this->registered()) {
     PetscCall(this->constructor().invalidate(*obj));
   } else {

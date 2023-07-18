@@ -193,7 +193,7 @@ PetscErrorCode MatGetType(Mat mat, MatType *type)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
-  PetscValidPointer(type, 2);
+  PetscAssertPointer(type, 2);
   *type = ((PetscObject)mat)->type_name;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -217,7 +217,7 @@ PetscErrorCode MatGetVecType(Mat mat, VecType *vtype)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
-  PetscValidPointer(vtype, 2);
+  PetscAssertPointer(vtype, 2);
   *vtype = mat->defaultvectype;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

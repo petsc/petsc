@@ -3904,7 +3904,7 @@ PetscErrorCode MatSeqAIJHIPSPARSEGetArrayRead(Mat A, const PetscScalar **a)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
-  PetscValidPointer(a, 2);
+  PetscAssertPointer(a, 2);
   PetscCheckTypeName(A, MATSEQAIJHIPSPARSE);
   PetscCheck(cusp->format != MAT_HIPSPARSE_ELL && cusp->format != MAT_HIPSPARSE_HYB, PETSC_COMM_SELF, PETSC_ERR_SUP, "Not implemented");
   PetscCall(MatSeqAIJHIPSPARSECopyToGPU(A));
@@ -3932,7 +3932,7 @@ PetscErrorCode MatSeqAIJHIPSPARSERestoreArrayRead(Mat A, const PetscScalar **a)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
-  PetscValidPointer(a, 2);
+  PetscAssertPointer(a, 2);
   PetscCheckTypeName(A, MATSEQAIJHIPSPARSE);
   *a = NULL;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -3963,7 +3963,7 @@ PetscErrorCode MatSeqAIJHIPSPARSEGetArray(Mat A, PetscScalar **a)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
-  PetscValidPointer(a, 2);
+  PetscAssertPointer(a, 2);
   PetscCheckTypeName(A, MATSEQAIJHIPSPARSE);
   PetscCheck(cusp->format != MAT_HIPSPARSE_ELL && cusp->format != MAT_HIPSPARSE_HYB, PETSC_COMM_SELF, PETSC_ERR_SUP, "Not implemented");
   PetscCall(MatSeqAIJHIPSPARSECopyToGPU(A));
@@ -3992,7 +3992,7 @@ PetscErrorCode MatSeqAIJHIPSPARSERestoreArray(Mat A, PetscScalar **a)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
-  PetscValidPointer(a, 2);
+  PetscAssertPointer(a, 2);
   PetscCheckTypeName(A, MATSEQAIJHIPSPARSE);
   PetscCall(MatSeqAIJInvalidateDiagonal(A));
   PetscCall(PetscObjectStateIncrease((PetscObject)A));
@@ -4025,7 +4025,7 @@ PetscErrorCode MatSeqAIJHIPSPARSEGetArrayWrite(Mat A, PetscScalar **a)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
-  PetscValidPointer(a, 2);
+  PetscAssertPointer(a, 2);
   PetscCheckTypeName(A, MATSEQAIJHIPSPARSE);
   PetscCheck(cusp->format != MAT_HIPSPARSE_ELL && cusp->format != MAT_HIPSPARSE_HYB, PETSC_COMM_SELF, PETSC_ERR_SUP, "Not implemented");
   PetscCheck(cusp->mat, PETSC_COMM_SELF, PETSC_ERR_COR, "Missing Mat_SeqAIJHIPSPARSEMultStruct");
@@ -4054,7 +4054,7 @@ PetscErrorCode MatSeqAIJHIPSPARSERestoreArrayWrite(Mat A, PetscScalar **a)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
-  PetscValidPointer(a, 2);
+  PetscAssertPointer(a, 2);
   PetscCheckTypeName(A, MATSEQAIJHIPSPARSE);
   PetscCall(MatSeqAIJInvalidateDiagonal(A));
   PetscCall(PetscObjectStateIncrease((PetscObject)A));
@@ -4091,7 +4091,7 @@ PetscErrorCode MatSeqAIJHIPSPARSEMergeMats(Mat A, Mat B, MatReuse reuse, Mat *C)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
   PetscValidHeaderSpecific(B, MAT_CLASSID, 2);
-  PetscValidPointer(C, 4);
+  PetscAssertPointer(C, 4);
   PetscCheckTypeName(A, MATSEQAIJHIPSPARSE);
   PetscCheckTypeName(B, MATSEQAIJHIPSPARSE);
   PetscCheck(A->rmap->n == B->rmap->n, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Invalid number or rows %" PetscInt_FMT " != %" PetscInt_FMT, A->rmap->n, B->rmap->n);

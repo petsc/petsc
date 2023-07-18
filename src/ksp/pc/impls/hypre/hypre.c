@@ -1647,7 +1647,7 @@ PetscErrorCode PCHYPRESetInterpolations(PC pc, PetscInt dim, Mat RT_PiFull, Mat 
     PetscCheckSameComm(pc, 1, RT_PiFull, 3);
   }
   if (RT_Pi) {
-    PetscValidPointer(RT_Pi, 4);
+    PetscAssertPointer(RT_Pi, 4);
     for (i = 0; i < dim; ++i) {
       if (RT_Pi[i]) {
         PetscValidHeaderSpecific(RT_Pi[i], MAT_CLASSID, 4);
@@ -1660,7 +1660,7 @@ PetscErrorCode PCHYPRESetInterpolations(PC pc, PetscInt dim, Mat RT_PiFull, Mat 
     PetscCheckSameComm(pc, 1, ND_PiFull, 5);
   }
   if (ND_Pi) {
-    PetscValidPointer(ND_Pi, 6);
+    PetscAssertPointer(ND_Pi, 6);
     for (i = 0; i < dim; ++i) {
       if (ND_Pi[i]) {
         PetscValidHeaderSpecific(ND_Pi[i], MAT_CLASSID, 6);
@@ -2249,7 +2249,7 @@ PetscErrorCode PCHYPRESetType(PC pc, const char name[])
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
-  PetscValidPointer(name, 2);
+  PetscAssertPointer(name, 2);
   PetscTryMethod(pc, "PCHYPRESetType_C", (PC, const char[]), (pc, name));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -2271,7 +2271,7 @@ PetscErrorCode PCHYPREGetType(PC pc, const char *name[])
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
-  PetscValidPointer(name, 2);
+  PetscAssertPointer(name, 2);
   PetscTryMethod(pc, "PCHYPREGetType_C", (PC, const char *[]), (pc, name));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

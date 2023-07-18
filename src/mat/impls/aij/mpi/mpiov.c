@@ -3002,8 +3002,8 @@ PetscErrorCode MatGetSeqMats_MPIAIJ(Mat C, Mat *A, Mat *B)
   Mat_MPIAIJ *aij = (Mat_MPIAIJ *)C->data;
 
   PetscFunctionBegin;
-  PetscValidPointer(A, 2);
-  PetscValidPointer(B, 3);
+  PetscAssertPointer(A, 2);
+  PetscAssertPointer(B, 3);
   /* FIXME: make sure C is assembled */
   *A = aij->A;
   *B = aij->B;

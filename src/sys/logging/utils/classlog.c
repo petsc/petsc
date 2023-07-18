@@ -226,7 +226,7 @@ PetscErrorCode PetscClassRegLogRegister(PetscClassRegLog classLog, const char cn
   int                c;
 
   PetscFunctionBegin;
-  PetscValidPointer(cname, 2);
+  PetscAssertPointer(cname, 2);
   c = classLog->numClasses++;
   if (classLog->numClasses > classLog->maxClasses) {
     PetscCall(PetscMalloc1(classLog->maxClasses * 2, &classInfo));
@@ -266,7 +266,7 @@ PetscErrorCode PetscClassRegLogGetClass(PetscClassRegLog classLog, PetscClassId 
   int c;
 
   PetscFunctionBegin;
-  PetscValidPointer(oclass, 3);
+  PetscAssertPointer(oclass, 3);
   for (c = 0; c < classLog->numClasses; c++) {
     /* Could do bisection here */
     if (classLog->classInfo[c].classid == classid) break;

@@ -568,7 +568,7 @@ PETSC_EXTERN PetscErrorCode MatHtoolGetHierarchicalMat(Mat A, const htool::Virtu
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
-  PetscValidPointer(hmatrix, 2);
+  PetscAssertPointer(hmatrix, 2);
   PetscTryMethod(A, "MatHtoolGetHierarchicalMat_C", (Mat, const htool::VirtualHMatrix<PetscScalar> **), (A, hmatrix));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -602,7 +602,7 @@ PETSC_EXTERN PetscErrorCode MatHtoolSetKernel(Mat A, MatHtoolKernel kernel, void
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
   if (!kernelctx) PetscValidFunction(kernel, 2);
-  if (!kernel) PetscValidPointer(kernelctx, 3);
+  if (!kernel) PetscAssertPointer(kernelctx, 3);
   PetscTryMethod(A, "MatHtoolSetKernel_C", (Mat, MatHtoolKernel, void *), (A, kernel, kernelctx));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -636,7 +636,7 @@ PETSC_EXTERN PetscErrorCode MatHtoolGetPermutationSource(Mat A, IS *is)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
-  if (!is) PetscValidPointer(is, 2);
+  if (!is) PetscAssertPointer(is, 2);
   PetscTryMethod(A, "MatHtoolGetPermutationSource_C", (Mat, IS *), (A, is));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -670,7 +670,7 @@ PETSC_EXTERN PetscErrorCode MatHtoolGetPermutationTarget(Mat A, IS *is)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
-  if (!is) PetscValidPointer(is, 2);
+  if (!is) PetscAssertPointer(is, 2);
   PetscTryMethod(A, "MatHtoolGetPermutationTarget_C", (Mat, IS *), (A, is));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -846,10 +846,10 @@ PetscErrorCode MatCreateHtoolFromKernel(MPI_Comm comm, PetscInt m, PetscInt n, P
   PetscFunctionBegin;
   PetscCall(MatCreate(comm, &A));
   PetscValidLogicalCollectiveInt(A, spacedim, 6);
-  PetscValidPointer(coords_target, 7);
-  PetscValidPointer(coords_source, 8);
+  PetscAssertPointer(coords_target, 7);
+  PetscAssertPointer(coords_source, 8);
   if (!kernelctx) PetscValidFunction(kernel, 9);
-  if (!kernel) PetscValidPointer(kernelctx, 10);
+  if (!kernel) PetscAssertPointer(kernelctx, 10);
   PetscCall(MatSetSizes(A, m, n, M, N));
   PetscCall(MatSetType(A, MATHTOOL));
   PetscCall(MatSetUp(A));

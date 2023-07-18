@@ -56,10 +56,10 @@ PetscErrorCode PetscDrawGetCoordinates(PetscDraw draw, PetscReal *xl, PetscReal 
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw, PETSC_DRAW_CLASSID, 1);
-  PetscValidPointer(xl, 2);
-  PetscValidPointer(yl, 3);
-  PetscValidPointer(xr, 4);
-  PetscValidPointer(yr, 5);
+  PetscAssertPointer(xl, 2);
+  PetscAssertPointer(yl, 3);
+  PetscAssertPointer(xr, 4);
+  PetscAssertPointer(yr, 5);
   *xl = draw->coor_xl;
   *yl = draw->coor_yl;
   *xr = draw->coor_xr;

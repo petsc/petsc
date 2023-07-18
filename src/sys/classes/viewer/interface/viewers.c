@@ -50,7 +50,7 @@ PetscErrorCode PetscViewersDestroy(PetscViewers *v)
 PetscErrorCode PetscViewersCreate(MPI_Comm comm, PetscViewers *v)
 {
   PetscFunctionBegin;
-  PetscValidPointer(v, 2);
+  PetscAssertPointer(v, 2);
   PetscCall(PetscNew(v));
   (*v)->n    = 64;
   (*v)->comm = comm;
@@ -78,8 +78,8 @@ PetscErrorCode PetscViewersCreate(MPI_Comm comm, PetscViewers *v)
 PetscErrorCode PetscViewersGetViewer(PetscViewers viewers, PetscInt n, PetscViewer *viewer)
 {
   PetscFunctionBegin;
-  PetscValidPointer(viewers, 1);
-  PetscValidPointer(viewer, 3);
+  PetscAssertPointer(viewers, 1);
+  PetscAssertPointer(viewer, 3);
   PetscCheck(n >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Cannot access using a negative index - %" PetscInt_FMT, n);
   if (n >= viewers->n) {
     PetscViewer *v;
@@ -119,7 +119,7 @@ PetscErrorCode PetscViewersGetViewer(PetscViewers viewers, PetscInt n, PetscView
 PetscErrorCode PetscMonitorCompare(PetscErrorCode (*nmon)(void), void *nmctx, PetscErrorCode (*nmdestroy)(void **), PetscErrorCode (*mon)(void), void *mctx, PetscErrorCode (*mdestroy)(void **), PetscBool *identical)
 {
   PetscFunctionBegin;
-  PetscValidPointer(identical, 7);
+  PetscAssertPointer(identical, 7);
   *identical = PETSC_FALSE;
   if (nmon == mon && nmdestroy == mdestroy) {
     if (nmctx == mctx) *identical = PETSC_TRUE;

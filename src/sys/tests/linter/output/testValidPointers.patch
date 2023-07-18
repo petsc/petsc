@@ -2,7 +2,7 @@
  {
    /* incorrect */
 -  PetscValidCharPointer(a, 2);
-+  PetscValidPointer(a, 1);
++  PetscAssertPointer(a, 1);
    PetscValidIntPointer(b, 3);
    PetscValidBoolPointer(c, 4);
 @@ -8,5 +8,5 @@
@@ -58,55 +58,55 @@
  {
    /* incorrect */
 -  PetscValidCharPointer(a, 2);
-+  PetscValidPointer(a, 1);
-   PetscValidPointer(b, 3);
-   PetscValidPointer(c, 4);
++  PetscAssertPointer(a, 1);
+   PetscAssertPointer(b, 3);
+   PetscAssertPointer(c, 4);
 @@ -32,5 +32,5 @@
    /* incorrect */
    PetscValidCharPointer(a, 2);
--  PetscValidPointer(b, 3);
+-  PetscAssertPointer(b, 3);
 +  PetscValidCharPointer(b, 2);
-   PetscValidPointer(c, 4);
-   PetscValidPointer(d, 5);
+   PetscAssertPointer(c, 4);
+   PetscAssertPointer(d, 5);
 @@ -33,5 +33,5 @@
    PetscValidCharPointer(a, 2);
-   PetscValidPointer(b, 3);
--  PetscValidPointer(c, 4);
+   PetscAssertPointer(b, 3);
+-  PetscAssertPointer(c, 4);
 +  PetscValidIntPointer(c, 3);
-   PetscValidPointer(d, 5);
-   PetscValidPointer(e, 6);
+   PetscAssertPointer(d, 5);
+   PetscAssertPointer(e, 6);
 @@ -34,5 +34,5 @@
-   PetscValidPointer(b, 3);
-   PetscValidPointer(c, 4);
--  PetscValidPointer(d, 5);
+   PetscAssertPointer(b, 3);
+   PetscAssertPointer(c, 4);
+-  PetscAssertPointer(d, 5);
 +  PetscValidIntPointer(d, 4);
-   PetscValidPointer(e, 6);
-   PetscValidPointer(f, 7);
+   PetscAssertPointer(e, 6);
+   PetscAssertPointer(f, 7);
 @@ -35,5 +35,5 @@
-   PetscValidPointer(c, 4);
-   PetscValidPointer(d, 5);
--  PetscValidPointer(e, 6);
+   PetscAssertPointer(c, 4);
+   PetscAssertPointer(d, 5);
+-  PetscAssertPointer(e, 6);
 +  PetscValidIntPointer(e, 5);
-   PetscValidPointer(f, 7);
-   PetscValidPointer(g, 8);
+   PetscAssertPointer(f, 7);
+   PetscAssertPointer(g, 8);
 @@ -36,5 +36,5 @@
-   PetscValidPointer(d, 5);
-   PetscValidPointer(e, 6);
--  PetscValidPointer(f, 7);
+   PetscAssertPointer(d, 5);
+   PetscAssertPointer(e, 6);
+-  PetscAssertPointer(f, 7);
 +  PetscValidBoolPointer(f, 6);
-   PetscValidPointer(g, 8);
-   PetscValidPointer(h, 9);
+   PetscAssertPointer(g, 8);
+   PetscAssertPointer(h, 9);
 @@ -37,5 +37,5 @@
-   PetscValidPointer(e, 6);
-   PetscValidPointer(f, 7);
--  PetscValidPointer(g, 8);
+   PetscAssertPointer(e, 6);
+   PetscAssertPointer(f, 7);
+-  PetscAssertPointer(g, 8);
 +  PetscValidScalarPointer(g, 7);
-   PetscValidPointer(h, 9);
+   PetscAssertPointer(h, 9);
  
 @@ -38,5 +38,5 @@
-   PetscValidPointer(f, 7);
-   PetscValidPointer(g, 8);
--  PetscValidPointer(h, 9);
+   PetscAssertPointer(f, 7);
+   PetscAssertPointer(g, 8);
+-  PetscAssertPointer(h, 9);
 +  PetscValidRealPointer(h, 8);
  
    /* correct */
@@ -114,55 +114,55 @@
  {
    /* incorrect */
 -  PetscValidCharPointer(a, 1);
-+  PetscValidPointer(a, 1);
++  PetscAssertPointer(a, 1);
    PetscValidCharPointer(b, 2);
    PetscValidIntPointer(c, 3);
 @@ -56,5 +56,5 @@
    /* incorrect */
    PetscValidCharPointer(a, 1);
 -  PetscValidCharPointer(b, 2);
-+  PetscValidPointer(b, 2);
++  PetscAssertPointer(b, 2);
    PetscValidIntPointer(c, 3);
    PetscValidIntPointer(d, 4);
 @@ -57,5 +57,5 @@
    PetscValidCharPointer(a, 1);
    PetscValidCharPointer(b, 2);
 -  PetscValidIntPointer(c, 3);
-+  PetscValidPointer(c, 3);
++  PetscAssertPointer(c, 3);
    PetscValidIntPointer(d, 4);
    PetscValidIntPointer(e, 5);
 @@ -58,5 +58,5 @@
    PetscValidCharPointer(b, 2);
    PetscValidIntPointer(c, 3);
 -  PetscValidIntPointer(d, 4);
-+  PetscValidPointer(d, 4);
++  PetscAssertPointer(d, 4);
    PetscValidIntPointer(e, 5);
    PetscValidBoolPointer(f, 6);
 @@ -59,5 +59,5 @@
    PetscValidIntPointer(c, 3);
    PetscValidIntPointer(d, 4);
 -  PetscValidIntPointer(e, 5);
-+  PetscValidPointer(e, 5);
++  PetscAssertPointer(e, 5);
    PetscValidBoolPointer(f, 6);
    PetscValidScalarPointer(g, 7);
 @@ -60,5 +60,5 @@
    PetscValidIntPointer(d, 4);
    PetscValidIntPointer(e, 5);
 -  PetscValidBoolPointer(f, 6);
-+  PetscValidPointer(f, 6);
++  PetscAssertPointer(f, 6);
    PetscValidScalarPointer(g, 7);
    PetscValidRealPointer(h, 8);
 @@ -61,5 +61,5 @@
    PetscValidIntPointer(e, 5);
    PetscValidBoolPointer(f, 6);
 -  PetscValidScalarPointer(g, 7);
-+  PetscValidPointer(g, 7);
++  PetscAssertPointer(g, 7);
    PetscValidRealPointer(h, 8);
  
 @@ -62,5 +62,5 @@
    PetscValidBoolPointer(f, 6);
    PetscValidScalarPointer(g, 7);
 -  PetscValidRealPointer(h, 8);
-+  PetscValidPointer(h, 8);
++  PetscAssertPointer(h, 8);
  
    /* correct */

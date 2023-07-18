@@ -20,7 +20,7 @@ PetscErrorCode PetscSpaceSumGetNumSubspaces(PetscSpace sp, PetscInt *numSumSpace
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
-  PetscValidPointer(numSumSpaces, 2);
+  PetscAssertPointer(numSumSpaces, 2);
   PetscTryMethod(sp, "PetscSpaceSumGetNumSubspaces_C", (PetscSpace, PetscInt *), (sp, numSumSpaces));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -112,7 +112,7 @@ PetscErrorCode PetscSpaceSumGetSubspace(PetscSpace sp, PetscInt s, PetscSpace *s
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
-  PetscValidPointer(subsp, 3);
+  PetscAssertPointer(subsp, 3);
   PetscTryMethod(sp, "PetscSpaceSumGetSubspace_C", (PetscSpace, PetscInt, PetscSpace *), (sp, s, subsp));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

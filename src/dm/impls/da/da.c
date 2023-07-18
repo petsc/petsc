@@ -157,7 +157,7 @@ PetscErrorCode DMDAGetDof(DM da, PetscInt *dof)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(da, DM_CLASSID, 1, DMDA);
-  PetscValidPointer(dof, 2);
+  PetscAssertPointer(dof, 2);
   *dof = dd->w;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -468,7 +468,7 @@ PetscErrorCode DMDAGetStencilType(DM da, DMDAStencilType *stype)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(da, DM_CLASSID, 1, DMDA);
-  PetscValidPointer(stype, 2);
+  PetscAssertPointer(stype, 2);
   *stype = dd->stencil_type;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -519,7 +519,7 @@ PetscErrorCode DMDAGetStencilWidth(DM da, PetscInt *width)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(da, DM_CLASSID, 1, DMDA);
-  PetscValidPointer(width, 2);
+  PetscAssertPointer(width, 2);
   *width = dd->s;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -630,7 +630,7 @@ PetscErrorCode DMDAGetInterpolationType(DM da, DMDAInterpolationType *ctype)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(da, DM_CLASSID, 1, DMDA);
-  PetscValidPointer(ctype, 2);
+  PetscAssertPointer(ctype, 2);
   *ctype = dd->interptype;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -966,7 +966,7 @@ PetscErrorCode DMRefine_DA(DM da, MPI_Comm comm, DM *daref)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(da, DM_CLASSID, 1, DMDA);
-  PetscValidPointer(daref, 3);
+  PetscAssertPointer(daref, 3);
 
   PetscCall(DMGetDimension(da, &dim));
   if (dd->bx == DM_BOUNDARY_PERIODIC || dd->interptype == DMDA_Q0) {
@@ -1113,7 +1113,7 @@ PetscErrorCode DMCoarsen_DA(DM dmf, MPI_Comm comm, DM *dmc)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(dmf, DM_CLASSID, 1, DMDA);
-  PetscValidPointer(dmc, 3);
+  PetscAssertPointer(dmc, 3);
 
   PetscCall(DMGetDimension(dmf, &dim));
   if (dd->bx == DM_BOUNDARY_PERIODIC || dd->interptype == DMDA_Q0) {
@@ -1263,7 +1263,7 @@ PetscErrorCode DMRefineHierarchy_DA(DM da, PetscInt nlevels, DM daf[])
   PetscValidHeaderSpecific(da, DM_CLASSID, 1);
   PetscCheck(nlevels >= 0, PetscObjectComm((PetscObject)da), PETSC_ERR_ARG_OUTOFRANGE, "nlevels cannot be negative");
   if (nlevels == 0) PetscFunctionReturn(PETSC_SUCCESS);
-  PetscValidPointer(daf, 3);
+  PetscAssertPointer(daf, 3);
 
   /* Get refinement factors, defaults taken from the coarse DMDA */
   PetscCall(PetscMalloc3(nlevels, &refx, nlevels, &refy, nlevels, &refz));
@@ -1293,7 +1293,7 @@ PetscErrorCode DMCoarsenHierarchy_DA(DM da, PetscInt nlevels, DM dac[])
   PetscValidHeaderSpecific(da, DM_CLASSID, 1);
   PetscCheck(nlevels >= 0, PetscObjectComm((PetscObject)da), PETSC_ERR_ARG_OUTOFRANGE, "nlevels cannot be negative");
   if (nlevels == 0) PetscFunctionReturn(PETSC_SUCCESS);
-  PetscValidPointer(dac, 3);
+  PetscAssertPointer(dac, 3);
   PetscCall(DMCoarsen(da, PetscObjectComm((PetscObject)da), &dac[0]));
   for (i = 1; i < nlevels; i++) PetscCall(DMCoarsen(dac[i - 1], PetscObjectComm((PetscObject)da), &dac[i]));
   PetscFunctionReturn(PETSC_SUCCESS);

@@ -36,7 +36,7 @@ PetscErrorCode DMDAGlobalToNaturalAllCreate(DM da, VecScatter *scatter)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(da, DM_CLASSID, 1, DMDA);
-  PetscValidPointer(scatter, 2);
+  PetscAssertPointer(scatter, 2);
   PetscCall(DMDAGetAO(da, &ao));
 
   /* create the scatter context */
@@ -81,7 +81,7 @@ PetscErrorCode DMDANaturalAllToGlobalCreate(DM da, VecScatter *scatter)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(da, DM_CLASSID, 1, DMDA);
-  PetscValidPointer(scatter, 2);
+  PetscAssertPointer(scatter, 2);
   PetscCall(DMDAGetAO(da, &ao));
 
   /* create the scatter context */

@@ -48,7 +48,7 @@ def main(
   clang_compat_check    -- do clang lib compatibility check
   verbose               -- display debugging statements (default: False)
   workers               -- number of processes for multiprocessing, -1 is number of system CPU's-1, 0 or 1 for serial computation (default: -1)
-  check_function_filter -- list of function names as strings to only check for, none == all of them. For example ["PetscValidPointer","PetscValidHeaderSpecific"] (default: None)
+  check_function_filter -- list of function names as strings to only check for, none == all of them. For example ["PetscAssertPointer","PetscValidHeaderSpecific"] (default: None)
   patch_dir             -- directory to store patches if they are generated (default: $PETSC_DIR/petscLintPatches)
   apply_patches         -- automatically apply patch files to source if they are generated (default: False)
   extra_compiler_flags  -- list of extra compiler flags to append to petsc and system flags. For example ["-I/my/non/standard/include","-Wsome_warning"] (default: None)

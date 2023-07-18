@@ -23,7 +23,7 @@ PetscErrorCode DMDACreatePF(DM da, PF *pf)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(da, DM_CLASSID, 1, DMDA);
-  PetscValidPointer(pf, 2);
+  PetscAssertPointer(pf, 2);
   PetscCall(PFCreate(PetscObjectComm((PetscObject)da), da->dim, dd->w, pf));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

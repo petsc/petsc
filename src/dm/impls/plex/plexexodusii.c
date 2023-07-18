@@ -1375,7 +1375,7 @@ PetscErrorCode DMPlexCreateExodusFromFile(MPI_Comm comm, const char filename[], 
 #endif
 
   PetscFunctionBegin;
-  PetscValidPointer(filename, 2);
+  PetscAssertPointer(filename, 2);
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
 #if defined(PETSC_HAVE_EXODUSII)
   if (rank == 0) {

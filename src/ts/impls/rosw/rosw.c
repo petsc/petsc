@@ -676,11 +676,11 @@ PetscErrorCode TSRosWRegister(TSRosWType name, PetscInt order, PetscInt s, const
   PetscScalar    *GammaInv;
 
   PetscFunctionBegin;
-  PetscValidPointer(name, 1);
-  PetscValidPointer(A, 4);
-  PetscValidPointer(Gamma, 5);
-  PetscValidPointer(b, 6);
-  if (bembed) PetscValidPointer(bembed, 7);
+  PetscAssertPointer(name, 1);
+  PetscAssertPointer(A, 4);
+  PetscAssertPointer(Gamma, 5);
+  PetscAssertPointer(b, 6);
+  if (bembed) PetscAssertPointer(bembed, 7);
 
   PetscCall(TSRosWInitializePackage());
   PetscCall(PetscNew(&link));
@@ -1460,7 +1460,7 @@ PetscErrorCode TSRosWSetType(TS ts, TSRosWType roswtype)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
-  PetscValidPointer(roswtype, 2);
+  PetscAssertPointer(roswtype, 2);
   PetscTryMethod(ts, "TSRosWSetType_C", (TS, TSRosWType), (ts, roswtype));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

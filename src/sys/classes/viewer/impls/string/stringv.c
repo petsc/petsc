@@ -45,7 +45,7 @@ PetscErrorCode PetscViewerStringSPrintf(PetscViewer viewer, const char format[],
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 1);
-  PetscValidPointer(format, 2);
+  PetscAssertPointer(format, 2);
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERSTRING, &isstring));
   if (!isstring) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCheck(vstr->string, PETSC_COMM_SELF, PETSC_ERR_ORDER, "Must call PetscViewerStringSetString() before using");
@@ -203,7 +203,7 @@ PetscErrorCode PetscViewerStringSetString(PetscViewer viewer, char string[], siz
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 1);
-  PetscValidPointer(string, 2);
+  PetscAssertPointer(string, 2);
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERSTRING, &isstring));
   if (!isstring) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCheck(len > 2, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "String must have length at least 2");

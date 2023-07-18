@@ -28,7 +28,7 @@ PetscBool         ISRegisterAllCalled = PETSC_FALSE;
 PetscErrorCode ISCreate(MPI_Comm comm, IS *is)
 {
   PetscFunctionBegin;
-  PetscValidPointer(is, 2);
+  PetscAssertPointer(is, 2);
   PetscCall(ISInitializePackage());
 
   PetscCall(PetscHeaderCreate(*is, IS_CLASSID, "IS", "Index Set", "IS", comm, ISDestroy, ISView));
@@ -99,7 +99,7 @@ PetscErrorCode ISGetType(IS is, ISType *type)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is, IS_CLASSID, 1);
-  PetscValidPointer(type, 2);
+  PetscAssertPointer(type, 2);
   if (!ISRegisterAllCalled) PetscCall(ISRegisterAll());
   *type = ((PetscObject)is)->type_name;
   PetscFunctionReturn(PETSC_SUCCESS);

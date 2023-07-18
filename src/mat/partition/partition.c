@@ -212,7 +212,7 @@ PetscErrorCode MatPartitioningGetType(MatPartitioning partitioning, MatPartition
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(partitioning, MAT_PARTITIONING_CLASSID, 1);
-  PetscValidPointer(type, 2);
+  PetscAssertPointer(type, 2);
   *type = ((PetscObject)partitioning)->type_name;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -264,7 +264,7 @@ PetscErrorCode MatPartitioningApplyND(MatPartitioning matp, IS *partitioning)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(matp, MAT_PARTITIONING_CLASSID, 1);
-  PetscValidPointer(partitioning, 2);
+  PetscAssertPointer(partitioning, 2);
   PetscCheck(matp->adj->assembled, PetscObjectComm((PetscObject)matp), PETSC_ERR_ARG_WRONGSTATE, "Not for unassembled matrix");
   PetscCheck(!matp->adj->factortype, PetscObjectComm((PetscObject)matp), PETSC_ERR_ARG_WRONGSTATE, "Not for factored matrix");
   PetscCall(PetscLogEventBegin(MAT_PartitioningND, matp, 0, 0, 0));
@@ -306,7 +306,7 @@ PetscErrorCode MatPartitioningApply(MatPartitioning matp, IS *partitioning)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(matp, MAT_PARTITIONING_CLASSID, 1);
-  PetscValidPointer(partitioning, 2);
+  PetscAssertPointer(partitioning, 2);
   PetscCheck(matp->adj->assembled, PetscObjectComm((PetscObject)matp), PETSC_ERR_ARG_WRONGSTATE, "Not for unassembled matrix");
   PetscCheck(!matp->adj->factortype, PetscObjectComm((PetscObject)matp), PETSC_ERR_ARG_WRONGSTATE, "Not for factored matrix");
   PetscCall(PetscLogEventBegin(MAT_Partitioning, matp, 0, 0, 0));
@@ -352,7 +352,7 @@ PetscErrorCode MatPartitioningImprove(MatPartitioning matp, IS *partitioning)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(matp, MAT_PARTITIONING_CLASSID, 1);
-  PetscValidPointer(partitioning, 2);
+  PetscAssertPointer(partitioning, 2);
   PetscCheck(matp->adj->assembled, PetscObjectComm((PetscObject)matp), PETSC_ERR_ARG_WRONGSTATE, "Not for unassembled matrix");
   PetscCheck(!matp->adj->factortype, PetscObjectComm((PetscObject)matp), PETSC_ERR_ARG_WRONGSTATE, "Not for factored matrix");
   PetscCall(PetscLogEventBegin(MAT_Partitioning, matp, 0, 0, 0));
@@ -566,7 +566,7 @@ PetscErrorCode MatPartitioningGetUseEdgeWeights(MatPartitioning part, PetscBool 
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part, MAT_PARTITIONING_CLASSID, 1);
-  PetscValidPointer(use_edge_weights, 2);
+  PetscAssertPointer(use_edge_weights, 2);
   *use_edge_weights = part->use_edge_weights;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -714,7 +714,7 @@ PetscErrorCode MatPartitioningSetType(MatPartitioning part, MatPartitioningType 
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part, MAT_PARTITIONING_CLASSID, 1);
-  PetscValidPointer(type, 2);
+  PetscAssertPointer(type, 2);
 
   PetscCall(PetscObjectTypeCompare((PetscObject)part, type, &match));
   if (match) PetscFunctionReturn(PETSC_SUCCESS);

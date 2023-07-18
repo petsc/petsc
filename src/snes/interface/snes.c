@@ -60,7 +60,7 @@ PetscErrorCode SNESGetErrorIfNotConverged(SNES snes, PetscBool *flag)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
-  PetscValidPointer(flag, 2);
+  PetscAssertPointer(flag, 2);
   *flag = snes->errorifnotconverged;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -218,7 +218,7 @@ PetscErrorCode SNESGetCheckJacobianDomainError(SNES snes, PetscBool *flg)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
-  PetscValidPointer(flg, 2);
+  PetscAssertPointer(flg, 2);
   *flg = snes->checkjacdomainerror;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -242,7 +242,7 @@ PetscErrorCode SNESGetFunctionDomainError(SNES snes, PetscBool *domainerror)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
-  PetscValidPointer(domainerror, 2);
+  PetscAssertPointer(domainerror, 2);
   *domainerror = snes->domainerror;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -266,7 +266,7 @@ PetscErrorCode SNESGetJacobianDomainError(SNES snes, PetscBool *domainerror)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
-  PetscValidPointer(domainerror, 2);
+  PetscAssertPointer(domainerror, 2);
   *domainerror = snes->jacobiandomainerror;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1359,7 +1359,7 @@ PetscErrorCode SNESGetIterationNumber(SNES snes, PetscInt *iter)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
-  PetscValidPointer(iter, 2);
+  PetscAssertPointer(iter, 2);
   *iter = snes->iter;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1411,7 +1411,7 @@ PetscErrorCode SNESGetNonlinearStepFailures(SNES snes, PetscInt *nfails)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
-  PetscValidPointer(nfails, 2);
+  PetscAssertPointer(nfails, 2);
   *nfails = snes->numFailures;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1460,7 +1460,7 @@ PetscErrorCode SNESGetMaxNonlinearStepFailures(SNES snes, PetscInt *maxFails)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
-  PetscValidPointer(maxFails, 2);
+  PetscAssertPointer(maxFails, 2);
   *maxFails = snes->maxFailures;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1488,7 +1488,7 @@ PetscErrorCode SNESGetNumberFunctionEvals(SNES snes, PetscInt *nfuncs)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
-  PetscValidPointer(nfuncs, 2);
+  PetscAssertPointer(nfuncs, 2);
   *nfuncs = snes->nfuncs;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1519,7 +1519,7 @@ PetscErrorCode SNESGetLinearSolveFailures(SNES snes, PetscInt *nfails)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
-  PetscValidPointer(nfails, 2);
+  PetscAssertPointer(nfails, 2);
   *nfails = snes->numLinearSolveFailures;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1576,7 +1576,7 @@ PetscErrorCode SNESGetMaxLinearSolveFailures(SNES snes, PetscInt *maxFails)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
-  PetscValidPointer(maxFails, 2);
+  PetscAssertPointer(maxFails, 2);
   *maxFails = snes->maxLinearSolveFailures;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1607,7 +1607,7 @@ PetscErrorCode SNESGetLinearSolveIterations(SNES snes, PetscInt *lits)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
-  PetscValidPointer(lits, 2);
+  PetscAssertPointer(lits, 2);
   *lits = snes->linear_its;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1706,7 +1706,7 @@ PetscErrorCode SNESCreate(MPI_Comm comm, SNES *outsnes)
   SNESKSPEW *kctx;
 
   PetscFunctionBegin;
-  PetscValidPointer(outsnes, 2);
+  PetscAssertPointer(outsnes, 2);
   *outsnes = NULL;
   PetscCall(SNESInitializePackage());
 
@@ -1995,7 +1995,7 @@ PetscErrorCode SNESGetFunctionNorm(SNES snes, PetscReal *norm)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
-  PetscValidPointer(norm, 2);
+  PetscAssertPointer(norm, 2);
   *norm = snes->norm;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -2022,7 +2022,7 @@ PetscErrorCode SNESGetUpdateNorm(SNES snes, PetscReal *ynorm)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
-  PetscValidPointer(ynorm, 2);
+  PetscAssertPointer(ynorm, 2);
   *ynorm = snes->ynorm;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -2046,7 +2046,7 @@ PetscErrorCode SNESGetSolutionNorm(SNES snes, PetscReal *xnorm)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
-  PetscValidPointer(xnorm, 2);
+  PetscAssertPointer(xnorm, 2);
   *xnorm = snes->xnorm;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -2340,7 +2340,7 @@ PetscErrorCode SNESGetRhs(SNES snes, Vec *rhs)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
-  PetscValidPointer(rhs, 2);
+  PetscAssertPointer(rhs, 2);
   *rhs = snes->vec_rhs;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -4135,7 +4135,7 @@ PetscErrorCode SNESGetConvergedReason(SNES snes, SNESConvergedReason *reason)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
-  PetscValidPointer(reason, 2);
+  PetscAssertPointer(reason, 2);
   *reason = snes->reason;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -4159,7 +4159,7 @@ PetscErrorCode SNESGetConvergedReasonString(SNES snes, const char **strreason)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
-  PetscValidPointer(strreason, 2);
+  PetscAssertPointer(strreason, 2);
   *strreason = SNESConvergedReasons[snes->reason];
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -4218,8 +4218,8 @@ PetscErrorCode SNESSetConvergenceHistory(SNES snes, PetscReal a[], PetscInt its[
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
-  if (a) PetscValidPointer(a, 2);
-  if (its) PetscValidPointer(its, 3);
+  if (a) PetscAssertPointer(a, 2);
+  if (its) PetscAssertPointer(its, 3);
   if (!a) {
     if (na == PETSC_DECIDE || na == PETSC_DEFAULT) na = 1000;
     PetscCall(PetscCalloc2(na, &a, na, &its));
@@ -4727,7 +4727,7 @@ PetscErrorCode SNESSetType(SNES snes, SNESType type)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
-  PetscValidPointer(type, 2);
+  PetscAssertPointer(type, 2);
 
   PetscCall(PetscObjectTypeCompare((PetscObject)snes, type, &match));
   if (match) PetscFunctionReturn(PETSC_SUCCESS);
@@ -4773,7 +4773,7 @@ PetscErrorCode SNESGetType(SNES snes, SNESType *type)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
-  PetscValidPointer(type, 2);
+  PetscAssertPointer(type, 2);
   *type = ((PetscObject)snes)->type_name;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -4828,7 +4828,7 @@ PetscErrorCode SNESGetSolution(SNES snes, Vec *x)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
-  PetscValidPointer(x, 2);
+  PetscAssertPointer(x, 2);
   *x = snes->vec_sol;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -4853,7 +4853,7 @@ PetscErrorCode SNESGetSolutionUpdate(SNES snes, Vec *x)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
-  PetscValidPointer(x, 2);
+  PetscAssertPointer(x, 2);
   *x = snes->vec_sol_update;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -5150,7 +5150,7 @@ PetscErrorCode SNESKSPGetUseEW(SNES snes, PetscBool *flag)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
-  PetscValidPointer(flag, 2);
+  PetscAssertPointer(flag, 2);
   *flag = snes->ksp_ewconv;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -5375,7 +5375,7 @@ PetscErrorCode SNESGetKSP(SNES snes, KSP *ksp)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
-  PetscValidPointer(ksp, 2);
+  PetscAssertPointer(ksp, 2);
 
   if (!snes->ksp) {
     PetscCall(KSPCreate(PetscObjectComm((PetscObject)snes), &snes->ksp));
@@ -5529,7 +5529,7 @@ PetscErrorCode SNESGetNPC(SNES snes, SNES *pc)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
-  PetscValidPointer(pc, 2);
+  PetscAssertPointer(pc, 2);
   if (!snes->npc) {
     void *ctx;
 
@@ -5628,7 +5628,7 @@ PetscErrorCode SNESGetNPCSide(SNES snes, PCSide *side)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
-  PetscValidPointer(side, 2);
+  PetscAssertPointer(side, 2);
   *side = snes->npcside;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -5686,7 +5686,7 @@ PetscErrorCode SNESGetLineSearch(SNES snes, SNESLineSearch *linesearch)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
-  PetscValidPointer(linesearch, 2);
+  PetscAssertPointer(linesearch, 2);
   if (!snes->linesearch) {
     PetscCall(SNESGetOptionsPrefix(snes, &optionsprefix));
     PetscCall(SNESLineSearchCreate(PetscObjectComm((PetscObject)snes), &snes->linesearch));

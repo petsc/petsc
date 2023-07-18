@@ -41,7 +41,7 @@ PetscErrorCode PetscDrawSPCreate(PetscDraw draw, int dim, PetscDrawSP *drawsp)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw, PETSC_DRAW_CLASSID, 1);
-  PetscValidPointer(drawsp, 3);
+  PetscAssertPointer(drawsp, 3);
 
   PetscCall(PetscHeaderCreate(sp, PETSC_DRAWSP_CLASSID, "DrawSP", "Scatter Plot", "Draw", PetscObjectComm((PetscObject)draw), PetscDrawSPDestroy, NULL));
   PetscCall(PetscObjectReference((PetscObject)draw));
@@ -110,7 +110,7 @@ PetscErrorCode PetscDrawSPGetDimension(PetscDrawSP sp, int *dim)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSC_DRAWSP_CLASSID, 1);
-  PetscValidPointer(dim, 2);
+  PetscAssertPointer(dim, 2);
   *dim = sp->dim;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -465,7 +465,7 @@ PetscErrorCode PetscDrawSPGetAxis(PetscDrawSP sp, PetscDrawAxis *axis)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSC_DRAWSP_CLASSID, 1);
-  PetscValidPointer(axis, 2);
+  PetscAssertPointer(axis, 2);
   *axis = sp->axis;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -489,7 +489,7 @@ PetscErrorCode PetscDrawSPGetDraw(PetscDrawSP sp, PetscDraw *draw)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSC_DRAWSP_CLASSID, 1);
-  PetscValidPointer(draw, 2);
+  PetscAssertPointer(draw, 2);
   *draw = sp->win;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

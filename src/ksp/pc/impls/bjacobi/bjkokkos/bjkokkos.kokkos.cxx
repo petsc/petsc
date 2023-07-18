@@ -1152,7 +1152,7 @@ PetscErrorCode PCBJKOKKOSGetKSP(PC pc, KSP *ksp)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
-  PetscValidPointer(ksp, 2);
+  PetscAssertPointer(ksp, 2);
   PetscUseMethod(pc, "PCBJKOKKOSGetKSP_C", (PC, KSP *), (pc, ksp));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

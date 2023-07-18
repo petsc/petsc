@@ -81,7 +81,7 @@ PetscErrorCode VecTaggerSetBox_Simple(VecTagger tagger, VecTaggerBox *box)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tagger, VEC_TAGGER_CLASSID, 1);
-  PetscValidPointer(box, 2);
+  PetscAssertPointer(box, 2);
   if (box != smpl->box) {
     PetscInt bs, i;
 
@@ -99,7 +99,7 @@ PetscErrorCode VecTaggerGetBox_Simple(VecTagger tagger, const VecTaggerBox **box
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tagger, VEC_TAGGER_CLASSID, 1);
-  PetscValidPointer(box, 2);
+  PetscAssertPointer(box, 2);
   *box = smpl->box;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

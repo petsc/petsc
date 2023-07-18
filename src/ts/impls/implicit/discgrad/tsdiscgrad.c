@@ -473,9 +473,9 @@ PetscErrorCode TSDiscGradGetFormulation(TS ts, PetscErrorCode (**Sfunc)(TS, Pets
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
-  PetscValidPointer(Sfunc, 2);
-  PetscValidPointer(Ffunc, 3);
-  PetscValidPointer(Gfunc, 4);
+  PetscAssertPointer(Sfunc, 2);
+  PetscAssertPointer(Ffunc, 3);
+  PetscAssertPointer(Gfunc, 4);
   PetscUseMethod(ts, "TSDiscGradGetFormulation_C", (TS, PetscErrorCode(**Sfunc)(TS, PetscReal, Vec, Mat, void *), PetscErrorCode(**Ffunc)(TS, PetscReal, Vec, PetscScalar *, void *), PetscErrorCode(**Gfunc)(TS, PetscReal, Vec, Vec, void *), void *), (ts, Sfunc, Ffunc, Gfunc, ctx));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -535,7 +535,7 @@ PetscErrorCode TSDiscGradIsGonzalez(TS ts, PetscBool *gonzalez)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
-  PetscValidPointer(gonzalez, 2);
+  PetscAssertPointer(gonzalez, 2);
   PetscUseMethod(ts, "TSDiscGradIsGonzalez_C", (TS, PetscBool *), (ts, gonzalez));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

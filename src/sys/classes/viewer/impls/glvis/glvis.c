@@ -131,9 +131,9 @@ PetscErrorCode PetscViewerGLVisSetFields(PetscViewer viewer, PetscInt nf, const 
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 1);
   PetscValidLogicalCollectiveInt(viewer, nf, 2);
   PetscCheck(fec_type, PetscObjectComm((PetscObject)viewer), PETSC_ERR_SUP, "You need to provide the FiniteElementCollection names for the fields");
-  PetscValidPointer(fec_type, 3);
-  PetscValidPointer(dim, 4);
-  PetscValidPointer(Vfield, 6);
+  PetscAssertPointer(fec_type, 3);
+  PetscAssertPointer(dim, 4);
+  PetscAssertPointer(Vfield, 6);
   PetscTryMethod(viewer, "PetscViewerGLVisSetFields_C", (PetscViewer, PetscInt, const char *[], PetscInt[], PetscErrorCode (*)(PetscObject, PetscInt, PetscObject[], void *), PetscObject[], void *, PetscErrorCode (*)(void *)), (viewer, nf, fec_type, dim, g2l, Vfield, ctx, destroyctx));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -261,7 +261,7 @@ PetscErrorCode PetscViewerGLVisGetDMWindow_Private(PetscViewer viewer, PetscView
   PetscViewerGLVis socket = (PetscViewerGLVis)viewer->data;
 
   PetscFunctionBegin;
-  PetscValidPointer(view, 2);
+  PetscAssertPointer(view, 2);
   if (!socket->meshwindow) {
     if (socket->type == PETSC_VIEWER_GLVIS_SOCKET) {
       PetscCall(PetscViewerGLVisGetNewWindow_Private(viewer, &socket->meshwindow));
@@ -293,7 +293,7 @@ PetscErrorCode PetscViewerGLVisRestoreDMWindow_Private(PetscViewer viewer, Petsc
   PetscViewerGLVis socket = (PetscViewerGLVis)viewer->data;
 
   PetscFunctionBegin;
-  PetscValidPointer(view, 2);
+  PetscAssertPointer(view, 2);
   PetscCheck(!*view || *view == socket->meshwindow, PetscObjectComm((PetscObject)viewer), PETSC_ERR_USER, "Viewer was not obtained from PetscViewerGLVisGetDMWindow()");
   if (*view) {
     PetscCall(PetscViewerFlush(*view));
@@ -313,7 +313,7 @@ PetscErrorCode PetscViewerGLVisGetType_Private(PetscViewer viewer, PetscViewerGL
   PetscViewerGLVis socket = (PetscViewerGLVis)viewer->data;
 
   PetscFunctionBegin;
-  PetscValidPointer(type, 2);
+  PetscAssertPointer(type, 2);
   *type = socket->type;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -324,7 +324,7 @@ PetscErrorCode PetscViewerGLVisGetStatus_Private(PetscViewer viewer, PetscViewer
   PetscViewerGLVis socket = (PetscViewerGLVis)viewer->data;
 
   PetscFunctionBegin;
-  PetscValidPointer(sockstatus, 2);
+  PetscAssertPointer(sockstatus, 2);
   if (socket->type == PETSC_VIEWER_GLVIS_DUMP) {
     socket->status = PETSCVIEWERGLVIS_DISCONNECTED;
   } else if (socket->status == PETSCVIEWERGLVIS_DISCONNECTED && socket->nwindow) {
@@ -375,7 +375,7 @@ PetscErrorCode PetscViewerGLVisGetWindow_Private(PetscViewer viewer, PetscInt wi
 
   PetscFunctionBegin;
   PetscValidLogicalCollectiveInt(viewer, wid, 2);
-  PetscValidPointer(view, 3);
+  PetscAssertPointer(view, 3);
   PetscCheck(wid >= 0 && (wid <= socket->nwindow - 1), PetscObjectComm((PetscObject)viewer), PETSC_ERR_USER, "Cannot get window id %" PetscInt_FMT ": allowed range [0,%" PetscInt_FMT ")", wid, socket->nwindow - 1);
   status = socket->status;
   if (socket->type == PETSC_VIEWER_GLVIS_DUMP) PetscCheck(!socket->window[wid], PETSC_COMM_SELF, PETSC_ERR_USER, "Window %" PetscInt_FMT " is already in use", wid);
@@ -431,7 +431,7 @@ PetscErrorCode PetscViewerGLVisRestoreWindow_Private(PetscViewer viewer, PetscIn
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(viewer, PETSC_VIEWER_CLASSID, 1, PETSCVIEWERGLVIS);
   PetscValidLogicalCollectiveInt(viewer, wid, 2);
-  PetscValidPointer(view, 3);
+  PetscAssertPointer(view, 3);
   PetscCheck(wid >= 0 && wid < socket->nwindow, PetscObjectComm((PetscObject)viewer), PETSC_ERR_USER, "Cannot restore window id %" PetscInt_FMT ": allowed range [0,%" PetscInt_FMT ")", wid, socket->nwindow);
   PetscCheck(!*view || *view == socket->window[wid], PetscObjectComm((PetscObject)viewer), PETSC_ERR_USER, "Viewer was not obtained from PetscViewerGLVisGetWindow()");
   if (*view) {
@@ -783,8 +783,8 @@ static PetscErrorCode PetscViewerASCIISocketOpen(MPI_Comm comm, const char *host
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidPointer(hostname, 2);
-  PetscValidPointer(viewer, 4);
+  PetscAssertPointer(hostname, 2);
+  PetscAssertPointer(viewer, 4);
   #if defined(PETSC_USE_SOCKET_VIEWER)
   ierr = PetscOpenSocket(hostname, port, &fd);
   #else

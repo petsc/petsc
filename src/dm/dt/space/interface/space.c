@@ -103,7 +103,7 @@ PetscErrorCode PetscSpaceGetType(PetscSpace sp, PetscSpaceType *name)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
-  PetscValidPointer(name, 2);
+  PetscAssertPointer(name, 2);
   if (!PetscSpaceRegisterAllCalled) PetscCall(PetscSpaceRegisterAll());
   *name = ((PetscObject)sp)->type_name;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -286,7 +286,7 @@ PetscErrorCode PetscSpaceCreate(MPI_Comm comm, PetscSpace *sp)
   PetscSpace s;
 
   PetscFunctionBegin;
-  PetscValidPointer(sp, 2);
+  PetscAssertPointer(sp, 2);
   PetscCall(PetscCitationsRegister(FECitation, &FEcite));
   *sp = NULL;
   PetscCall(PetscFEInitializePackage());
@@ -322,7 +322,7 @@ PetscErrorCode PetscSpaceGetDimension(PetscSpace sp, PetscInt *dim)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
-  PetscValidPointer(dim, 2);
+  PetscAssertPointer(dim, 2);
   if (sp->dim == PETSC_DETERMINE) PetscTryTypeMethod(sp, getdimension, &sp->dim);
   *dim = sp->dim;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -346,8 +346,8 @@ PetscErrorCode PetscSpaceGetDegree(PetscSpace sp, PetscInt *minDegree, PetscInt 
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
-  if (minDegree) PetscValidPointer(minDegree, 2);
-  if (maxDegree) PetscValidPointer(maxDegree, 3);
+  if (minDegree) PetscAssertPointer(minDegree, 2);
+  if (maxDegree) PetscAssertPointer(maxDegree, 3);
   if (minDegree) *minDegree = sp->degree;
   if (maxDegree) *maxDegree = sp->maxDegree;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -394,7 +394,7 @@ PetscErrorCode PetscSpaceGetNumComponents(PetscSpace sp, PetscInt *Nc)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
-  PetscValidPointer(Nc, 2);
+  PetscAssertPointer(Nc, 2);
   *Nc = sp->Nc;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -454,7 +454,7 @@ PetscErrorCode PetscSpaceGetNumVariables(PetscSpace sp, PetscInt *n)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
-  PetscValidPointer(n, 2);
+  PetscAssertPointer(n, 2);
   *n = sp->Nv;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -485,10 +485,10 @@ PetscErrorCode PetscSpaceEvaluate(PetscSpace sp, PetscInt npoints, const PetscRe
   PetscFunctionBegin;
   if (!npoints) PetscFunctionReturn(PETSC_SUCCESS);
   PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
-  if (sp->Nv) PetscValidPointer(points, 3);
-  if (B) PetscValidPointer(B, 4);
-  if (D) PetscValidPointer(D, 5);
-  if (H) PetscValidPointer(H, 6);
+  if (sp->Nv) PetscAssertPointer(points, 3);
+  if (B) PetscAssertPointer(B, 4);
+  if (D) PetscAssertPointer(D, 5);
+  if (H) PetscAssertPointer(H, 6);
   PetscTryTypeMethod(sp, evaluate, npoints, points, B, D, H);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -520,7 +520,7 @@ PetscErrorCode PetscSpaceGetHeightSubspace(PetscSpace sp, PetscInt height, Petsc
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
-  PetscValidPointer(subsp, 3);
+  PetscAssertPointer(subsp, 3);
   *subsp = NULL;
   PetscTryTypeMethod(sp, getheightsubspace, height, subsp);
   PetscFunctionReturn(PETSC_SUCCESS);

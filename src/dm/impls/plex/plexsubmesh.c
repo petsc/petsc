@@ -987,8 +987,8 @@ PetscErrorCode DMPlexConstructGhostCells(DM dm, const char labelName[], PetscInt
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  if (numGhostCells) PetscValidPointer(numGhostCells, 3);
-  PetscValidPointer(dmGhosted, 4);
+  if (numGhostCells) PetscAssertPointer(numGhostCells, 3);
+  PetscAssertPointer(dmGhosted, 4);
   PetscCall(DMCreate(PetscObjectComm((PetscObject)dm), &gdm));
   PetscCall(DMSetType(gdm, DMPLEX));
   PetscCall(DMGetDimension(dm, &dim));
@@ -1877,7 +1877,7 @@ PetscErrorCode DMPlexConstructCohesiveCells(DM dm, DMLabel label, DMLabel splitL
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(dmSplit, 4);
+  PetscAssertPointer(dmSplit, 4);
   PetscCall(DMCreate(PetscObjectComm((PetscObject)dm), &sdm));
   PetscCall(DMSetType(sdm, DMPLEX));
   PetscCall(DMGetDimension(dm, &dim));
@@ -2310,12 +2310,12 @@ PetscErrorCode DMPlexCreateHybridMesh(DM dm, DMLabel label, DMLabel bdlabel, Pet
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  if (label) PetscValidPointer(label, 2);
-  if (bdlabel) PetscValidPointer(bdlabel, 3);
-  if (hybridLabel) PetscValidPointer(hybridLabel, 5);
-  if (splitLabel) PetscValidPointer(splitLabel, 6);
-  if (dmInterface) PetscValidPointer(dmInterface, 7);
-  PetscValidPointer(dmHybrid, 8);
+  if (label) PetscAssertPointer(label, 2);
+  if (bdlabel) PetscAssertPointer(bdlabel, 3);
+  if (hybridLabel) PetscAssertPointer(hybridLabel, 5);
+  if (splitLabel) PetscAssertPointer(splitLabel, 6);
+  if (dmInterface) PetscAssertPointer(dmInterface, 7);
+  PetscAssertPointer(dmHybrid, 8);
   PetscCall(DMGetDimension(dm, &dim));
   PetscCall(DMPlexCreateSubmesh(dm, label, 1, PETSC_FALSE, &idm));
   PetscCall(DMPlexCheckValidSubmesh_Private(dm, label, idm));
@@ -3619,7 +3619,7 @@ PetscErrorCode DMPlexCreateSubmesh(DM dm, DMLabel vertexLabel, PetscInt value, P
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(subdm, 5);
+  PetscAssertPointer(subdm, 5);
   PetscCall(DMGetDimension(dm, &dim));
   PetscCall(DMCreate(PetscObjectComm((PetscObject)dm), subdm));
   PetscCall(DMSetType(*subdm, DMPLEX));
@@ -3878,7 +3878,7 @@ PetscErrorCode DMPlexCreateCohesiveSubmesh(DM dm, PetscBool hasLagrange, const c
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(subdm, 5);
+  PetscAssertPointer(subdm, 5);
   PetscCall(DMGetDimension(dm, &dim));
   PetscCall(DMPlexGetDepth(dm, &depth));
   PetscCall(DMCreate(PetscObjectComm((PetscObject)dm), subdm));
@@ -3970,7 +3970,7 @@ PetscErrorCode DMPlexFilter(DM dm, DMLabel cellLabel, PetscInt value, DM *subdm)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(subdm, 4);
+  PetscAssertPointer(subdm, 4);
   PetscCall(DMGetDimension(dm, &dim));
   PetscCall(DMCreate(PetscObjectComm((PetscObject)dm), subdm));
   PetscCall(DMSetType(*subdm, DMPLEX));
@@ -4020,7 +4020,7 @@ PetscErrorCode DMPlexGetSubpointMap(DM dm, DMLabel *subpointMap)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(subpointMap, 2);
+  PetscAssertPointer(subpointMap, 2);
   *subpointMap = ((DM_Plex *)dm->data)->subpointMap;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -4135,7 +4135,7 @@ PetscErrorCode DMPlexGetSubpointIS(DM dm, IS *subpointIS)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(subpointIS, 2);
+  PetscAssertPointer(subpointIS, 2);
   PetscCall(DMPlexGetSubpointMap(dm, &spmap));
   PetscCall(PetscObjectStateGet((PetscObject)spmap, &state));
   if (state != mesh->subpointState || !mesh->subpointIS) PetscCall(DMPlexCreateSubpointIS_Internal(dm, &mesh->subpointIS));
@@ -4164,7 +4164,7 @@ PetscErrorCode DMGetEnclosureRelation(DM dmA, DM dmB, DMEnclosureType *rel)
   PetscInt pStartA, pEndA, pStartB, pEndB, NpA, NpB;
 
   PetscFunctionBegin;
-  PetscValidPointer(rel, 3);
+  PetscAssertPointer(rel, 3);
   *rel = DM_ENC_NONE;
   if (!dmA || !dmB) PetscFunctionReturn(PETSC_SUCCESS);
   PetscValidHeaderSpecific(dmA, DM_CLASSID, 1);

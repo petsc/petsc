@@ -44,7 +44,7 @@ PetscErrorCode ISEqual(IS is1, IS is2, PetscBool *flg)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is1, IS_CLASSID, 1);
   PetscValidHeaderSpecific(is2, IS_CLASSID, 2);
-  PetscValidPointer(flg, 3);
+  PetscAssertPointer(flg, 3);
 
   if (is1 == is2) {
     *flg = PETSC_TRUE;
@@ -126,7 +126,7 @@ PetscErrorCode ISEqualUnsorted(IS is1, IS is2, PetscBool *flg)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is1, IS_CLASSID, 1);
   PetscValidHeaderSpecific(is2, IS_CLASSID, 2);
-  PetscValidPointer(flg, 3);
+  PetscAssertPointer(flg, 3);
 
   if (is1 == is2) {
     *flg = PETSC_TRUE;

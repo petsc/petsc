@@ -596,7 +596,7 @@ PetscErrorCode TSBDFGetOrder(TS ts, PetscInt *order)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
-  PetscValidPointer(order, 2);
+  PetscAssertPointer(order, 2);
   PetscUseMethod(ts, "TSBDFGetOrder_C", (TS, PetscInt *), (ts, order));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

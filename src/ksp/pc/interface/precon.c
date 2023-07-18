@@ -142,7 +142,7 @@ PetscErrorCode PCGetDiagonalScale(PC pc, PetscBool *flag)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
-  PetscValidPointer(flag, 2);
+  PetscAssertPointer(flag, 2);
   *flag = pc->diagonalscale;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -378,7 +378,7 @@ PetscErrorCode PCCreate(MPI_Comm comm, PC *newpc)
   PC pc;
 
   PetscFunctionBegin;
-  PetscValidPointer(newpc, 2);
+  PetscAssertPointer(newpc, 2);
   *newpc = NULL;
   PetscCall(PCInitializePackage());
 
@@ -640,7 +640,7 @@ PetscErrorCode PCApplyTransposeExists(PC pc, PetscBool *flg)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
-  PetscValidPointer(flg, 2);
+  PetscAssertPointer(flg, 2);
   if (pc->ops->applytranspose) *flg = PETSC_TRUE;
   else *flg = PETSC_FALSE;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -798,7 +798,7 @@ PetscErrorCode PCApplyRichardsonExists(PC pc, PetscBool *exists)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
-  PetscValidPointer(exists, 2);
+  PetscAssertPointer(exists, 2);
   if (pc->ops->applyrichardson) *exists = PETSC_TRUE;
   else *exists = PETSC_FALSE;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -1258,7 +1258,7 @@ PetscErrorCode PCGetReusePreconditioner(PC pc, PetscBool *flag)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
-  PetscValidPointer(flag, 2);
+  PetscAssertPointer(flag, 2);
   *flag = pc->reusepreconditioner;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1411,7 +1411,7 @@ PetscErrorCode PCFactorGetMatrix(PC pc, Mat *mat)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
-  PetscValidPointer(mat, 2);
+  PetscAssertPointer(mat, 2);
   PetscCall(PCFactorSetUpMatSolverType(pc));
   PetscUseTypeMethod(pc, getfactoredmatrix, mat);
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -1495,7 +1495,7 @@ PetscErrorCode PCGetOptionsPrefix(PC pc, const char *prefix[])
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
-  PetscValidPointer(prefix, 2);
+  PetscAssertPointer(prefix, 2);
   PetscCall(PetscObjectGetOptionsPrefix((PetscObject)pc, prefix));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1509,7 +1509,7 @@ PETSC_INTERN PetscErrorCode PCPreSolveChangeRHS(PC pc, PetscBool *change)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
-  PetscValidPointer(change, 2);
+  PetscAssertPointer(change, 2);
   *change = PETSC_FALSE;
   PetscTryMethod(pc, "PCPreSolveChangeRHS_C", (PC, PetscBool *), (pc, change));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -1887,7 +1887,7 @@ PetscErrorCode PCComputeOperator(PC pc, MatType mattype, Mat *mat)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
-  PetscValidPointer(mat, 3);
+  PetscAssertPointer(mat, 3);
   PetscCall(PCGetOperators(pc, &A, NULL));
   PetscCall(MatGetLocalSize(A, &m, &n));
   PetscCall(MatGetSize(A, &M, &N));
@@ -1955,8 +1955,8 @@ PetscErrorCode PCGetInterpolations(PC pc, PetscInt *num_levels, Mat *interpolati
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
-  PetscValidPointer(num_levels, 2);
-  PetscValidPointer(interpolations, 3);
+  PetscAssertPointer(num_levels, 2);
+  PetscAssertPointer(interpolations, 3);
   PetscUseMethod(pc, "PCGetInterpolations_C", (PC, PetscInt *, Mat *[]), (pc, num_levels, interpolations));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1984,8 +1984,8 @@ PetscErrorCode PCGetCoarseOperators(PC pc, PetscInt *num_levels, Mat *coarseOper
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
-  PetscValidPointer(num_levels, 2);
-  PetscValidPointer(coarseOperators, 3);
+  PetscAssertPointer(num_levels, 2);
+  PetscAssertPointer(coarseOperators, 3);
   PetscUseMethod(pc, "PCGetCoarseOperators_C", (PC, PetscInt *, Mat *[]), (pc, num_levels, coarseOperators));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

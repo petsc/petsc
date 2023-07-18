@@ -153,7 +153,7 @@ PetscErrorCode DMPlexTransformCreate(MPI_Comm comm, DMPlexTransform *tr)
   DMPlexTransform t;
 
   PetscFunctionBegin;
-  PetscValidPointer(tr, 2);
+  PetscAssertPointer(tr, 2);
   *tr = NULL;
   PetscCall(DMInitializePackage());
 
@@ -220,7 +220,7 @@ PetscErrorCode DMPlexTransformGetType(DMPlexTransform tr, DMPlexTransformType *t
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tr, DMPLEXTRANSFORM_CLASSID, 1);
-  PetscValidPointer(type, 2);
+  PetscAssertPointer(type, 2);
   PetscCall(DMPlexTransformRegisterAll());
   *type = ((PetscObject)tr)->type_name;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -618,7 +618,7 @@ PetscErrorCode DMPlexTransformGetDM(DMPlexTransform tr, DM *dm)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tr, DMPLEXTRANSFORM_CLASSID, 1);
-  PetscValidPointer(dm, 2);
+  PetscAssertPointer(dm, 2);
   *dm = tr->dm;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -638,7 +638,7 @@ PetscErrorCode DMPlexTransformGetActive(DMPlexTransform tr, DMLabel *active)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tr, DMPLEXTRANSFORM_CLASSID, 1);
-  PetscValidPointer(active, 2);
+  PetscAssertPointer(active, 2);
   *active = tr->active;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -740,7 +740,7 @@ PetscErrorCode DMPlexTransformGetCellType(DMPlexTransform tr, PetscInt cell, DMP
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tr, DMPLEXTRANSFORM_CLASSID, 1);
-  PetscValidPointer(celltype, 3);
+  PetscAssertPointer(celltype, 3);
   /* TODO Can do bisection since everything is sorted */
   for (ctNew = DM_POLYTOPE_POINT; ctNew < DM_NUM_POLYTOPES; ++ctNew) {
     PetscInt ctSN = tr->ctStartNew[ctNew], ctEN = tr->ctStartNew[tr->ctOrderNew[tr->ctOrderInvNew[ctNew] + 1]];
@@ -1228,7 +1228,7 @@ PetscErrorCode DMPlexTransformGetConeSize(DMPlexTransform tr, PetscInt q, PetscI
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tr, DMPLEXTRANSFORM_CLASSID, 1);
-  PetscValidPointer(coneSize, 3);
+  PetscAssertPointer(coneSize, 3);
   PetscCall(DMPlexTransformGetCellType(tr, q, &ctNew));
   *coneSize = DMPolytopeTypeGetConeSize((DMPolytopeType)ctNew);
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -1338,8 +1338,8 @@ PetscErrorCode DMPlexTransformGetConeOriented(DMPlexTransform tr, PetscInt q, Pe
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tr, DMPLEXTRANSFORM_CLASSID, 1);
-  PetscValidPointer(cone, 4);
-  PetscValidPointer(ornt, 5);
+  PetscAssertPointer(cone, 4);
+  PetscAssertPointer(ornt, 5);
   for (p = 0; p < DM_NUM_POLYTOPES; ++p) maxConeSize = PetscMax(maxConeSize, DMPolytopeTypeGetConeSize((DMPolytopeType)p));
   PetscCall(DMPlexTransformGetDM(tr, &dm));
   PetscCall(DMGetWorkArray(dm, maxConeSize, MPIU_INT, &qcone));
@@ -1379,8 +1379,8 @@ PetscErrorCode DMPlexTransformGetCone(DMPlexTransform tr, PetscInt q, const Pets
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tr, DMPLEXTRANSFORM_CLASSID, 1);
-  if (cone) PetscValidPointer(cone, 3);
-  if (ornt) PetscValidPointer(ornt, 4);
+  if (cone) PetscAssertPointer(cone, 3);
+  if (ornt) PetscAssertPointer(ornt, 4);
   for (p = 0; p < DM_NUM_POLYTOPES; ++p) maxConeSize = PetscMax(maxConeSize, DMPolytopeTypeGetConeSize((DMPolytopeType)p));
   PetscCall(DMPlexTransformGetDM(tr, &dm));
   PetscCall(DMGetWorkArray(dm, maxConeSize, MPIU_INT, &qcone));
@@ -2152,7 +2152,7 @@ PetscErrorCode DMPlexTransformApply(DMPlexTransform tr, DM dm, DM *tdm)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tr, DMPLEXTRANSFORM_CLASSID, 1);
   PetscValidHeaderSpecific(dm, DM_CLASSID, 2);
-  PetscValidPointer(tdm, 3);
+  PetscAssertPointer(tdm, 3);
   PetscCall(PetscLogEventBegin(DMPLEX_Transform, tr, dm, 0, 0));
   PetscCall(DMPlexTransformSetDM(tr, dm));
 

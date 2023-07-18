@@ -78,7 +78,7 @@ PetscErrorCode ISColoringDestroy(ISColoring *iscoloring)
 
   PetscFunctionBegin;
   if (!*iscoloring) PetscFunctionReturn(PETSC_SUCCESS);
-  PetscValidPointer((*iscoloring), 1);
+  PetscAssertPointer((*iscoloring), 1);
   if (--(*iscoloring)->refct > 0) {
     *iscoloring = NULL;
     PetscFunctionReturn(PETSC_SUCCESS);
@@ -150,7 +150,7 @@ PetscErrorCode ISColoringView(ISColoring iscoloring, PetscViewer viewer)
   IS       *is;
 
   PetscFunctionBegin;
-  PetscValidPointer(iscoloring, 1);
+  PetscAssertPointer(iscoloring, 1);
   if (!viewer) PetscCall(PetscViewerASCIIGetStdout(iscoloring->comm, &viewer));
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
 
@@ -201,7 +201,7 @@ PetscErrorCode ISColoringView(ISColoring iscoloring, PetscViewer viewer)
 PetscErrorCode ISColoringGetColors(ISColoring iscoloring, PetscInt *n, PetscInt *nc, const ISColoringValue **colors)
 {
   PetscFunctionBegin;
-  PetscValidPointer(iscoloring, 1);
+  PetscAssertPointer(iscoloring, 1);
 
   if (n) *n = iscoloring->N;
   if (nc) *nc = iscoloring->n;
@@ -232,7 +232,7 @@ PetscErrorCode ISColoringGetColors(ISColoring iscoloring, PetscInt *n, PetscInt 
 PetscErrorCode ISColoringGetIS(ISColoring iscoloring, PetscCopyMode mode, PetscInt *nn, IS *isis[])
 {
   PetscFunctionBegin;
-  PetscValidPointer(iscoloring, 1);
+  PetscAssertPointer(iscoloring, 1);
 
   if (nn) *nn = iscoloring->n;
   if (isis) {
@@ -294,7 +294,7 @@ PetscErrorCode ISColoringGetIS(ISColoring iscoloring, PetscCopyMode mode, PetscI
 PetscErrorCode ISColoringRestoreIS(ISColoring iscoloring, PetscCopyMode mode, IS *is[])
 {
   PetscFunctionBegin;
-  PetscValidPointer(iscoloring, 1);
+  PetscAssertPointer(iscoloring, 1);
 
   /* currently nothing is done here */
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -522,7 +522,7 @@ PetscErrorCode ISPartitioningToNumbering(IS part, IS *is)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part, IS_CLASSID, 1);
-  PetscValidPointer(is, 2);
+  PetscAssertPointer(is, 2);
   /* see if the partitioning comes from nested dissection */
   PetscCall(PetscObjectQuery((PetscObject)part, "_petsc_matpartitioning_ndorder", (PetscObject *)&ndorder));
   if (ndorder) {
@@ -678,7 +678,7 @@ PetscErrorCode ISAllGather(IS is, IS *isout)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is, IS_CLASSID, 1);
-  PetscValidPointer(isout, 2);
+  PetscAssertPointer(isout, 2);
 
   PetscCall(PetscObjectGetComm((PetscObject)is, &comm));
   PetscCallMPI(MPI_Comm_size(comm, &size));
@@ -790,7 +790,7 @@ PetscErrorCode ISComplement(IS is, PetscInt nmin, PetscInt nmax, IS *isout)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is, IS_CLASSID, 1);
-  PetscValidPointer(isout, 4);
+  PetscAssertPointer(isout, 4);
   PetscCheck(nmin >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "nmin %" PetscInt_FMT " cannot be negative", nmin);
   PetscCheck(nmin <= nmax, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "nmin %" PetscInt_FMT " cannot be greater than nmax %" PetscInt_FMT, nmin, nmax);
   PetscCall(ISSorted(is, &sorted));

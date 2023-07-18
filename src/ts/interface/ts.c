@@ -17,7 +17,7 @@ static PetscErrorCode TSAdaptSetDefaultType(TSAdapt adapt, TSAdaptType default_t
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(adapt, TSADAPT_CLASSID, 1);
-  PetscValidPointer(default_type, 2);
+  PetscAssertPointer(default_type, 2);
   if (!((PetscObject)adapt)->type_name) PetscCall(TSAdaptSetType(adapt, default_type));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -903,9 +903,9 @@ PetscErrorCode TSComputeIJacobian(TS ts, PetscReal t, Vec U, Vec Udot, PetscReal
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscValidHeaderSpecific(U, VEC_CLASSID, 3);
   PetscValidHeaderSpecific(Udot, VEC_CLASSID, 4);
-  PetscValidPointer(A, 6);
+  PetscAssertPointer(A, 6);
   PetscValidHeaderSpecific(A, MAT_CLASSID, 6);
-  PetscValidPointer(B, 7);
+  PetscAssertPointer(B, 7);
   PetscValidHeaderSpecific(B, MAT_CLASSID, 7);
 
   PetscCall(TSGetDM(ts, &dm));
@@ -1851,8 +1851,8 @@ PetscErrorCode TS2GetSolution(TS ts, Vec *u, Vec *v)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
-  if (u) PetscValidPointer(u, 2);
-  if (v) PetscValidPointer(v, 3);
+  if (u) PetscAssertPointer(u, 2);
+  if (v) PetscAssertPointer(v, 3);
   if (u) *u = ts->vec_sol;
   if (v) *v = ts->vec_dot;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -2155,7 +2155,7 @@ PetscErrorCode TSGetStepNumber(TS ts, PetscInt *steps)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
-  PetscValidPointer(steps, 2);
+  PetscAssertPointer(steps, 2);
   *steps = ts->steps;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -2271,7 +2271,7 @@ PetscErrorCode TSGetExactFinalTime(TS ts, TSExactFinalTimeOption *eftopt)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
-  PetscValidPointer(eftopt, 2);
+  PetscAssertPointer(eftopt, 2);
   *eftopt = ts->exact_final_time;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -2295,7 +2295,7 @@ PetscErrorCode TSGetTimeStep(TS ts, PetscReal *dt)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
-  PetscValidPointer(dt, 2);
+  PetscAssertPointer(dt, 2);
   *dt = ts->time_step;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -2326,7 +2326,7 @@ PetscErrorCode TSGetSolution(TS ts, Vec *v)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
-  PetscValidPointer(v, 2);
+  PetscAssertPointer(v, 2);
   *v = ts->vec_sol;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -2491,7 +2491,7 @@ PetscErrorCode TSGetProblemType(TS ts, TSProblemType *type)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
-  PetscValidPointer(type, 2);
+  PetscAssertPointer(type, 2);
   *type = ts->problem_type;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -2754,7 +2754,7 @@ PetscErrorCode TSGetSNES(TS ts, SNES *snes)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
-  PetscValidPointer(snes, 2);
+  PetscAssertPointer(snes, 2);
   if (!ts->snes) {
     PetscCall(SNESCreate(PetscObjectComm((PetscObject)ts), &ts->snes));
     PetscCall(PetscObjectSetOptions((PetscObject)ts->snes, ((PetscObject)ts)->options));
@@ -2831,7 +2831,7 @@ PetscErrorCode TSGetKSP(TS ts, KSP *ksp)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
-  PetscValidPointer(ksp, 2);
+  PetscAssertPointer(ksp, 2);
   PetscCheck(((PetscObject)ts)->type_name, PETSC_COMM_SELF, PETSC_ERR_ARG_NULL, "KSP is not created yet. Call TSSetType() first");
   PetscCheck(ts->problem_type == TS_LINEAR, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Linear only; use TSGetSNES()");
   PetscCall(TSGetSNES(ts, &snes));
@@ -2889,7 +2889,7 @@ PetscErrorCode TSGetMaxSteps(TS ts, PetscInt *maxsteps)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
-  PetscValidPointer(maxsteps, 2);
+  PetscAssertPointer(maxsteps, 2);
   *maxsteps = ts->max_steps;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -2941,7 +2941,7 @@ PetscErrorCode TSGetMaxTime(TS ts, PetscReal *maxtime)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
-  PetscValidPointer(maxtime, 2);
+  PetscAssertPointer(maxtime, 2);
   *maxtime = ts->max_time;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -2972,11 +2972,11 @@ PetscErrorCode TSGetDuration(TS ts, PetscInt *maxsteps, PetscReal *maxtime)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   if (maxsteps) {
-    PetscValidPointer(maxsteps, 2);
+    PetscAssertPointer(maxsteps, 2);
     *maxsteps = ts->max_steps;
   }
   if (maxtime) {
-    PetscValidPointer(maxtime, 3);
+    PetscAssertPointer(maxtime, 3);
     *maxtime = ts->max_time;
   }
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -3502,9 +3502,9 @@ PetscErrorCode TSEvaluateWLTE(TS ts, NormType wnormtype, PetscInt *order, PetscR
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscValidType(ts, 1);
   PetscValidLogicalCollectiveEnum(ts, wnormtype, 2);
-  if (order) PetscValidPointer(order, 3);
+  if (order) PetscAssertPointer(order, 3);
   if (order) PetscValidLogicalCollectiveInt(ts, *order, 3);
-  PetscValidPointer(wlte, 4);
+  PetscAssertPointer(wlte, 4);
   PetscCheck(wnormtype == NORM_2 || wnormtype == NORM_INFINITY, PetscObjectComm((PetscObject)ts), PETSC_ERR_SUP, "No support for norm type %s", NormTypes[wnormtype]);
   PetscUseTypeMethod(ts, evaluatewlte, wnormtype, order, wlte);
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -3568,7 +3568,7 @@ PetscErrorCode TSGetComputeInitialCondition(TS ts, PetscErrorCode (**initConditi
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
-  PetscValidPointer(initCondition, 2);
+  PetscAssertPointer(initCondition, 2);
   *initCondition = ts->ops->initcondition;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -3647,7 +3647,7 @@ PetscErrorCode TSGetComputeExactError(TS ts, PetscErrorCode (**exactError)(TS, V
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
-  PetscValidPointer(exactError, 2);
+  PetscAssertPointer(exactError, 2);
   *exactError = ts->ops->exacterror;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -3830,7 +3830,7 @@ PetscErrorCode TSResizeRegisterVec(TS ts, const char *name, Vec vec)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
-  PetscValidCharPointer(name, 2);
+  PetscAssertPointer(name, 2);
   if (vec) PetscValidHeaderSpecific(vec, VEC_CLASSID, 3);
   PetscCall(PetscObjectListAdd(&ts->resizetransferobjs, name, (PetscObject)vec));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -3858,8 +3858,8 @@ PetscErrorCode TSResizeRetrieveVec(TS ts, const char *name, Vec *vec)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
-  PetscValidCharPointer(name, 2);
-  PetscValidPointer(vec, 3);
+  PetscAssertPointer(name, 2);
+  PetscAssertPointer(vec, 3);
   PetscCall(PetscObjectListFind(ts->resizetransferobjs, name, (PetscObject *)vec));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -4155,7 +4155,7 @@ PetscErrorCode TSGetTime(TS ts, PetscReal *t)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
-  PetscValidPointer(t, 2);
+  PetscAssertPointer(t, 2);
   *t = ts->ptime;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -4179,7 +4179,7 @@ PetscErrorCode TSGetPrevTime(TS ts, PetscReal *t)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
-  PetscValidPointer(t, 2);
+  PetscAssertPointer(t, 2);
   *t = ts->ptime_prev;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -4292,7 +4292,7 @@ PetscErrorCode TSGetOptionsPrefix(TS ts, const char *prefix[])
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
-  PetscValidPointer(prefix, 2);
+  PetscAssertPointer(prefix, 2);
   PetscCall(PetscObjectGetOptionsPrefix((PetscObject)ts, prefix));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -4505,9 +4505,9 @@ PetscErrorCode SNESTSFormJacobian(SNES snes, Vec U, Mat A, Mat B, void *ctx)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
   PetscValidHeaderSpecific(U, VEC_CLASSID, 2);
-  PetscValidPointer(A, 3);
+  PetscAssertPointer(A, 3);
   PetscValidHeaderSpecific(A, MAT_CLASSID, 3);
-  PetscValidPointer(B, 4);
+  PetscAssertPointer(B, 4);
   PetscValidHeaderSpecific(B, MAT_CLASSID, 4);
   PetscValidHeaderSpecific(ts, TS_CLASSID, 5);
   PetscCall((ts->ops->snesjacobian)(snes, U, A, B, ts));
@@ -4679,7 +4679,7 @@ PetscErrorCode TSGetEquationType(TS ts, TSEquationType *equation_type)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
-  PetscValidPointer(equation_type, 2);
+  PetscAssertPointer(equation_type, 2);
   *equation_type = ts->equation_type;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -4728,7 +4728,7 @@ PetscErrorCode TSGetConvergedReason(TS ts, TSConvergedReason *reason)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
-  PetscValidPointer(reason, 2);
+  PetscAssertPointer(reason, 2);
   *reason = ts->reason;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -4780,7 +4780,7 @@ PetscErrorCode TSGetSolveTime(TS ts, PetscReal *ftime)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
-  PetscValidPointer(ftime, 2);
+  PetscAssertPointer(ftime, 2);
   *ftime = ts->solvetime;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -4808,7 +4808,7 @@ PetscErrorCode TSGetSNESIterations(TS ts, PetscInt *nits)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
-  PetscValidPointer(nits, 2);
+  PetscAssertPointer(nits, 2);
   *nits = ts->snes_its;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -4836,7 +4836,7 @@ PetscErrorCode TSGetKSPIterations(TS ts, PetscInt *lits)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
-  PetscValidPointer(lits, 2);
+  PetscAssertPointer(lits, 2);
   *lits = ts->ksp_its;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -4863,7 +4863,7 @@ PetscErrorCode TSGetStepRejections(TS ts, PetscInt *rejects)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
-  PetscValidPointer(rejects, 2);
+  PetscAssertPointer(rejects, 2);
   *rejects = ts->reject;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -4890,7 +4890,7 @@ PetscErrorCode TSGetSNESFailures(TS ts, PetscInt *fails)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
-  PetscValidPointer(fails, 2);
+  PetscAssertPointer(fails, 2);
   *fails = ts->num_snes_failures;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -4986,7 +4986,7 @@ PetscErrorCode TSGetAdapt(TS ts, TSAdapt *adapt)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
-  PetscValidPointer(adapt, 2);
+  PetscAssertPointer(adapt, 2);
   if (!ts->adapt) {
     PetscCall(TSAdaptCreate(PetscObjectComm((PetscObject)ts), &ts->adapt));
     PetscCall(PetscObjectIncrementTabLevel((PetscObject)ts->adapt, (PetscObject)ts, 1));
@@ -5327,8 +5327,8 @@ PetscErrorCode TSGetStages(TS ts, PetscInt *ns, Vec **Y)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
-  if (ns) PetscValidPointer(ns, 2);
-  if (Y) PetscValidPointer(Y, 3);
+  if (ns) PetscAssertPointer(ns, 2);
+  if (Y) PetscAssertPointer(Y, 3);
   if (!ts->ops->getstages) {
     if (ns) *ns = 0;
     if (Y) *Y = NULL;
@@ -5516,7 +5516,7 @@ PetscErrorCode TSClone(TS tsin, TS *tsout)
   TSType type;
 
   PetscFunctionBegin;
-  PetscValidPointer(tsin, 1);
+  PetscAssertPointer(tsin, 1);
   *tsout = NULL;
 
   PetscCall(PetscHeaderCreate(t, TS_CLASSID, "TS", "Time stepping", "TS", PetscObjectComm((PetscObject)tsin), TSDestroy, TSView));
@@ -5805,8 +5805,8 @@ PetscErrorCode TSGetTimeSpan(TS ts, PetscInt *n, const PetscReal **span_times)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
-  if (n) PetscValidPointer(n, 2);
-  if (span_times) PetscValidPointer(span_times, 3);
+  if (n) PetscAssertPointer(n, 2);
+  if (span_times) PetscAssertPointer(span_times, 3);
   if (!ts->tspan) {
     if (n) *n = 0;
     if (span_times) *span_times = NULL;
@@ -5841,8 +5841,8 @@ PetscErrorCode TSGetTimeSpanSolutions(TS ts, PetscInt *nsol, Vec **Sols)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
-  if (nsol) PetscValidPointer(nsol, 2);
-  if (Sols) PetscValidPointer(Sols, 3);
+  if (nsol) PetscAssertPointer(nsol, 2);
+  if (Sols) PetscAssertPointer(Sols, 3);
   if (!ts->tspan) {
     if (nsol) *nsol = 0;
     if (Sols) *Sols = NULL;

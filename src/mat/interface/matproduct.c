@@ -1096,7 +1096,7 @@ PetscErrorCode MatProductCreate(Mat A, Mat B, Mat C, Mat *D)
     PetscCheck(!C->factortype, PetscObjectComm((PetscObject)C), PETSC_ERR_ARG_WRONGSTATE, "Not for factored matrix C");
   }
 
-  PetscValidPointer(D, 4);
+  PetscAssertPointer(D, 4);
   PetscCall(MatCreate(PetscObjectComm((PetscObject)A), D));
   /* Delay setting type of D to the MatProduct symbolic phase, as we allow sparse A and dense B */
   PetscCall(MatProductCreate_Private(A, B, C, *D));
@@ -1239,7 +1239,7 @@ PetscErrorCode MatProductGetType(Mat mat, MatProductType *mtype)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
-  PetscValidPointer(mtype, 2);
+  PetscAssertPointer(mtype, 2);
   *mtype = MATPRODUCT_UNSPECIFIED;
   if (mat->product) *mtype = mat->product->type;
   PetscFunctionReturn(PETSC_SUCCESS);

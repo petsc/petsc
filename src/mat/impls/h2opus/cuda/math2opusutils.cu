@@ -22,7 +22,7 @@ PETSC_INTERN PetscErrorCode PetscSFGetVectorSF(PetscSF sf, PetscInt nv, PetscInt
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sf, PETSCSF_CLASSID, 1);
   PetscValidLogicalCollectiveInt(sf, nv, 2);
-  PetscValidPointer(vsf, 5);
+  PetscAssertPointer(vsf, 5);
   if (nv == 1) {
     PetscCall(PetscObjectReference((PetscObject)sf));
     *vsf = sf;
@@ -86,7 +86,7 @@ PETSC_INTERN PetscErrorCode MatDenseGetH2OpusVectorSF(Mat A, PetscSF h2sf, Petsc
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
   PetscValidHeaderSpecific(h2sf, PETSCSF_CLASSID, 2);
-  PetscValidPointer(osf, 3);
+  PetscAssertPointer(osf, 3);
   PetscCall(PetscObjectQuery((PetscObject)A, "_math2opus_vectorsf", (PetscObject *)&asf));
   if (!asf) {
     PetscInt lda;

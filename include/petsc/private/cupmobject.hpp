@@ -9,9 +9,9 @@
 inline PetscErrorCode PetscStrFreeAllocpy(const char target[], char **dest) noexcept
 {
   PetscFunctionBegin;
-  PetscValidPointer(dest, 2);
+  PetscAssertPointer(dest, 2);
   if (*dest) {
-    PetscValidPointer(*dest, 2);
+    PetscAssertPointer(*dest, 2);
     PetscCall(PetscFree(*dest));
   }
   PetscCall(PetscStrallocpy(target, dest));
@@ -251,15 +251,15 @@ inline PetscErrorCode CUPMObject<T>::GetFromHandleDispatch_(PetscDeviceContext d
   PetscFunctionBegin;
   PetscValidDeviceContext(dctx, 1);
   if (blas_handle) {
-    PetscValidPointer(blas_handle, 2);
+    PetscAssertPointer(blas_handle, 2);
     *blas_handle = nullptr;
   }
   if (solver_handle) {
-    PetscValidPointer(solver_handle, 3);
+    PetscAssertPointer(solver_handle, 3);
     *solver_handle = nullptr;
   }
   if (stream_handle) {
-    PetscValidPointer(stream_handle, 4);
+    PetscAssertPointer(stream_handle, 4);
     *stream_handle = nullptr;
   }
   if (PetscDefined(USE_DEBUG)) {
