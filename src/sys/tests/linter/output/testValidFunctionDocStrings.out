@@ -1,5 +1,4 @@
 <--- FIXED --->
---------------------------------------------------------------------------------------------
 [31m[1m./src/sys/tests/linter/testValidFunctionDocStrings.c:34:6: error:[0m Invalid comment begin line, must only contain '/*' and sowing identifier [-fdoc-sowing-chars]:
   32: }
   33: 
@@ -658,9 +657,7 @@
                [33m[1m^[0m
   679: `andThisShouldBeLeftAlone()`
   680: @*/
---------------------------------------------------------------------------------------------
 <--- LEFT --->
---------------------------------------------------------------------------------------------
 [31m[1m./src/sys/tests/linter/testValidFunctionDocStrings.c:60:61: error:[0m Sowing treats all lines ending with ':' as header, are you sure 'qui officia deserunt mollit [...]' qualifies? Use '\:' to escape the colon if not [-fdoc-section-header-fishy-header]:
   58: Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut
   59: labore et dolore magna aliqua. Excepteur sint occaecat cupidatat non proident, sunt in culpa
@@ -1183,4 +1180,3 @@ PetscErrorCode MyFunction(PetscErrorCode (*func_ptr)(int foo, double bar))
        [33m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
   489: {
   490:   return PETSC_SUCCESS;
---------------------------------------------------------------------------------------------

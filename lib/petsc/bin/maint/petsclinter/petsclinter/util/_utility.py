@@ -3,26 +3,72 @@
 # Created: Mon Jun 20 14:36:59 2022 (-0400)
 # @author: Jacob Faibussowitsch
 """
+from __future__ import annotations
+
 import os
 import re
+import sys
+import traceback
 import subprocess
 import ctypes.util
-import clang.cindex as clx
+import clang.cindex as clx # type: ignore[import]
 import petsclinter  as pl
 
-from .. import __version__
+from .._typing import *
 
-def subprocess_run(*args, **kwargs):
+from ..__version__ import py_version_lt
+
+# TODO disentangle!
+from ..classes._path import Path
+
+from ._clang import base_pch_clang_options
+
+def traceback_format_exception(exc: ExceptionKind) -> list[str]:
+  r"""Format an exception for printing
+
+  Parameters
+  ----------
+  exc :
+    the exception instance
+
+  Returns
+  -------
+  ret :
+    a list of lines which would have been printed had the exception been re-raised
   """
-  lightweight wrapper to hoist the ugly version check out of the regular code, turns a
-  subprocess.CalledProcessError into a RuntimeError with more diagnostics
+  if py_version_lt(3, 10):
+    etype, value, tb = sys.exc_info()
+    ret = traceback.format_exception(etype, value, tb, chain=True)
+  else:
+    # type checkers do not grok that py_version_lt() means sys.version_info < (3, 10, 0)
+    ret = traceback.format_exception(exc, chain=True) # type: ignore [call-arg, arg-type]
+  return ret
+
+def subprocess_capture_output(*args, **kwargs) -> subprocess.CompletedProcess[str]:
+  r"""Lightweight wrapper over subprocess.run
+
+  turns a subprocess.CalledProcessError into a RuntimeError with more diagnostics
+
+  Parameters
+  ----------
+  args :
+    arguments to subprocess.run
+  kwargs :
+    keyword arguments to subprocess.run
+
+  Returns
+  -------
+  ret :
+    the return value of subprocess.run
+
+  Raises
+  ------
+  RuntimeError
+    if subprocess.run raises a subprocess.CalledProcessError, this routine converts it into a
+    RuntimeError with the output attached
   """
-  if __version__.py_version_lt(3, 7):
-    if kwargs.pop('capture_output', None):
-      kwargs.setdefault('stdout', subprocess.PIPE)
-      kwargs.setdefault('stderr', subprocess.PIPE)
   try:
-    output = subprocess.run(*args, **kwargs)
+    ret = subprocess.run(*args, capture_output=True, universal_newlines=True, check=True, **kwargs)
   except subprocess.CalledProcessError as cpe:
     emess = '\n'.join([
       'Subprocess error:',
@@ -33,37 +79,65 @@ def subprocess_run(*args, **kwargs):
       f'{cpe}'
     ])
     raise RuntimeError(emess) from cpe
-  return output
+  return ret
 
-def initialize_libclang(clang_dir=None, clang_lib=None, compat_check=True):
-  """
-  Set the required library file or directory path to initialize libclang
+def initialize_libclang(clang_dir: Optional[StrPathLike] = None, clang_lib: Optional[StrPathLike] = None, compat_check: bool = True) -> tuple[Optional[StrPathLike], Optional[StrPathLike]]:
+  r"""Initialize libclang
+
+  Sets the required library file or directory path to initialize libclang
+
+  Parameters
+  ----------
+  clang_dir : optional
+    the directory containing libclang
+  clang_lib : optional
+    the direct path to libclang
+  compat_check : optional
+    perform compatibility checks on loading the dynamic library
+
+  Returns
+  -------
+  clang_dir, clang_lib : path_like
+    the resolved paths if loading occured, otherwise the arguments unchanged
+
+  Raises
+  ------
+  ValueError
+    if both `clang_dir` and `clang_lib` are None
+
+  Notes
+  -----
+  If both `clang_lib` and `clang_dir` are given, `clang_lib` takes precedence. `clang_dir` is not
+  used in this instance.
   """
   clxconf = clx.conf
   if not clxconf.loaded:
     clxconf.set_compatibility_check(compat_check)
     if clang_lib:
-      clang_lib = pl.Path(clang_lib).resolve()
+      clang_lib = Path(clang_lib).resolve()
       clxconf.set_library_file(str(clang_lib))
     elif clang_dir:
-      clang_dir = pl.Path(clang_dir).resolve()
+      clang_dir = Path(clang_dir).resolve()
       clxconf.set_library_path(str(clang_dir))
     else:
-      raise RuntimeError('Must supply either clang directory path or clang library path')
+      raise ValueError('Must supply either clang directory path or clang library path')
   return clang_dir, clang_lib
 
-def try_to_find_libclang_dir():
-  """
-  Crudely tries to find libclang directory first using ctypes.util.find_library(), then llvm-config,
-  and then finally checks a few places on macos
+def try_to_find_libclang_dir() -> Optional[Path]:
+  r"""Crudely tries to find libclang directory.
+
+  First using ctypes.util.find_library(), then llvm-config, and then finally checks a few places on
+  macos
+
+  Returns
+  -------
+  llvm_lib_dir : path_like | None
+    the path to libclang (i.e. LLVM_DIR/lib) or None if it was not found
   """
   llvm_lib_dir = ctypes.util.find_library('clang')
   if not llvm_lib_dir:
     try:
-      output = subprocess_run(
-        ['llvm-config', '--libdir'], capture_output=True, universal_newlines=True, check=True
-      )
-      llvm_lib_dir = output.stdout.strip()
+      llvm_lib_dir = subprocess_capture_output(['llvm-config', '--libdir']).stdout.strip()
     except FileNotFoundError:
       # FileNotFoundError: [Errno 2] No such file or directory: 'llvm-config'
       # try to find llvm_lib_dir by hand
@@ -71,10 +145,7 @@ def try_to_find_libclang_dir():
 
       if platform.system().casefold() == 'darwin':
         try:
-          output = subprocess_run(
-            ['xcode-select', '-p'], capture_output=True, universal_newlines=True, check=True
-          )
-          xcode_dir = output.stdout.strip()
+          xcode_dir = subprocess_capture_output(['xcode-select', '-p']).stdout.strip()
           if xcode_dir == '/Applications/Xcode.app/Contents/Developer': # default Xcode path
             llvm_lib_dir = os.path.join(
               xcode_dir, 'Toolchains', 'XcodeDefault.xctoolchain', 'usr', 'lib'
@@ -84,9 +155,25 @@ def try_to_find_libclang_dir():
         except FileNotFoundError:
           # FileNotFoundError: [Errno 2] No such file or directory: 'xcode-select'
           pass
-  return pl.Path(llvm_lib_dir).resolve() if llvm_lib_dir else llvm_lib_dir
+  if not llvm_lib_dir:
+    return None
+  return Path(llvm_lib_dir).resolve(strict=True)
 
-def get_petsc_extra_includes(petsc_dir, petsc_arch):
+def get_petsc_extra_includes(petsc_dir: Path, petsc_arch: str) -> list[str]:
+  r"""Retrieve the set of compiler flags to include PETSc libs
+
+  Parameters
+  ----------
+  petsc_dir : path_like
+    the value of PETSC_DIR
+  petsc_arch : str
+    the value of PETSC_ARCH
+
+  Returns
+  -------
+  ret : list
+    a list containing the flags to add to the compiler flags to pick up PETSc headers and configuration
+  """
   # keep these separate, since ORDER MATTERS HERE. Imagine that for example the
   # mpiInclude dir has copies of old petsc headers, you don't want these to come first
   # in the include search path and hence override those found in petsc/include.
@@ -95,49 +182,73 @@ def get_petsc_extra_includes(petsc_dir, petsc_arch):
   # a bug report for python believing that cdll.load() was not deterministic...
   petsc_includes = []
   mpi_includes   = []
-  cxx_flags      = []
-  with open(pl.Path(petsc_dir, petsc_arch, 'lib', 'petsc', 'conf', 'petscvariables'), 'r') as pv:
+  raw_cxx_flags  = []
+  with open(petsc_dir/petsc_arch/'lib'/'petsc'/'conf'/'petscvariables', 'r') as pv:
     cc_includes_re  = re.compile('^PETSC_CC_INCLUDES\s*=')
     mpi_includes_re = re.compile('^MPI_INCLUDE\s*=')
     mpi_show_re     = re.compile('^MPICC_SHOW\s*=')
     cxx_flags_re    = re.compile('^CXX_FLAGS\s*=')
+
+    def split_and_strip(line: str) -> list[str]:
+      return line.split('=', maxsplit=1)[1].split()
+
     for line in pv:
       if cc_includes_re.search(line):
-        petsc_includes.append(line.split('=', maxsplit=1)[1])
+        petsc_includes.extend(split_and_strip(line))
       elif mpi_includes_re.search(line) or mpi_show_re.search(line):
-        mpi_includes.append(line.split('=', maxsplit=1)[1])
+        mpi_includes.extend(split_and_strip(line))
       elif cxx_flags_re.search(line):
-        cxx_flags.append(line.split('=', maxsplit=1)[1])
+        raw_cxx_flags.extend(split_and_strip(line))
 
-  cxx_flags      = [flag.strip().split() for flag in cxx_flags if flag]
-  cxx_flags      = [flag for flags in cxx_flags for flag in flags if flag.startswith('-std=')]
-  cxx_flags      = [cxx_flags[-1]] if cxx_flags else [] # take only the last one
-  extra_includes = [flag.strip().split() for flag in petsc_includes + mpi_includes if flag]
-  extra_includes = [flag for sublist in extra_includes for flag in sublist if flag.startswith('-I')]
-  seen           = set()
-  extra_includes = [flag for flag in extra_includes if not flag in seen and not seen.add(flag)]
+  def filter_flags(flags: list[str], keep_prefix: str) -> Iterable[str]:
+    return (flag for flag in flags if flag.startswith(keep_prefix))
+
+  std_flags = list(filter_flags(raw_cxx_flags, '-std='))
+  cxx_flags = [std_flags[-1]] if std_flags else [] # take only the last one
+
+  include_gen    = filter_flags(petsc_includes + mpi_includes, '-I')
+  seen: set[str] = set()
+  seen_add       = seen.add
+  extra_includes = [flag for flag in include_gen if not flag in seen and not seen_add(flag)]
+
   return cxx_flags + extra_includes
 
-def get_clang_sys_includes():
-  """
-  Get system clangs set of default include search directories.
+def get_clang_sys_includes() -> list[str]:
+  r"""Get system clangs set of default include search directories.
 
   Because for some reason these are hardcoded by the compilers and so libclang does not have them.
+
+  Returns
+  -------
+  ret :
+    list of paths to append to compiler flags to pick up sys inclusions (e.g. <ctypes> or <stdlib.h>)
   """
-  output = subprocess_run(
-    ['clang', '-E', '-x', 'c++', os.devnull, '-v'],
-    capture_output=True, check=True, universal_newlines=True
-  )
+  output = subprocess_capture_output(['clang', '-E', '-x', 'c++', os.devnull, '-v'])
   # goes to stderr because of /dev/null
   includes = output.stderr.split('#include <...> search starts here:\n')[1]
-  includes = includes.split('End of search list.', maxsplit=1)[0].replace(
-    '(framework directory)', ''
-  ).splitlines()
-  return [f'-I{pl.Path(i.strip()).resolve()}' for i in includes if i]
+  includes = includes.split('End of search list.', maxsplit=1)[0].replace('(framework directory)', '')
+  return [f'-I{Path(i.strip()).resolve()}' for i in includes.splitlines() if i]
 
-def build_compiler_flags(petsc_dir, petsc_arch, extra_compiler_flags=None, verbose=False):
-  """
-  build the baseline set of compiler flags, these are passed to all translation unit parse attempts
+def build_compiler_flags(petsc_dir: Path, petsc_arch: str, extra_compiler_flags: Optional[list[str]] = None, verbose: bool = False) -> list[str]:
+  r"""Build the baseline set of compiler flags.
+
+  These are passed to all translation unit parse attempts.
+
+  Parameters
+  ----------
+  petsc_dir : path_like | str
+    the value of PETSC_DIR
+  petsc_arch : str
+    the value of PETSC_ARCH
+  extra_compiler_flags : list[str] | None, optional
+    extra compiler flags, if None, an empty list is used
+  verbose : False, optional
+    print verbose output
+
+  Returns
+  -------
+  compiler_flags : list[str]
+    the full list of compiler flags to pass to the parsers
   """
   if extra_compiler_flags is None:
     extra_compiler_flags = []
@@ -159,38 +270,72 @@ def build_compiler_flags(petsc_dir, petsc_arch, extra_compiler_flags=None, verbo
   return compiler_flags
 
 class PrecompiledHeader:
-  __slots__ = ('verbose', 'pch')
+  __slots__ = 'pch', 'verbose'
 
-  def __init__(self, pch, verbose=False):
+  pch: PathLike
+  verbose: bool
+
+  def __init__(self, pch: PathLike, verbose: bool = False) -> None:
+    r"""Construct the PrecompiledHeader
+
+    Parameters
+    ----------
+    pch :
+      the path where the precompiled header should be stored
+    verbose : optional
+      print verbose information
+    """
     self.pch     = pch
     self.verbose = verbose
     return
 
-  def __enter__(self):
+  def __enter__(self) -> PrecompiledHeader:
     return self
 
-  def __exit__(self, *args, **kwargs):
+  def __exit__(self, *args, **kwargs) -> None:
     if self.verbose:
       pl.sync_print('Deleting precompiled header', self.pch)
       self.pch.unlink()
     return
 
   @classmethod
-  def from_flags(cls, petsc_dir, compiler_flags, extra_header_includes=None, verbose=False, pch_clang_options=None):
-    """
-    create a precompiled header from petsc.h, and all of the private headers, this not only saves a lot
-    of time, but is critical to finding struct definitions. Header contents are not parsed during the
-    actual linting, since this balloons the parsing time as libclang provides no builtin auto
-    header-precompilation like the normal compiler does.
+  def from_flags(cls, petsc_dir: Path, compiler_flags: list[str], extra_header_includes: Optional[list[str]] = None, verbose: bool = False, pch_clang_options: Optional[CXTranslationUnit] = None) -> PrecompiledHeader:
+    r"""Create a precompiled header from flags.
+
+    This builds the precompiled head from petsc.h, and all of the private headers. This not only saves
+    a lot of time, but is critical to finding struct definitions. Header contents are not parsed
+    during the actual linting, since this balloons the parsing time as libclang provides no builtin
+    auto header-precompilation like the normal compiler does.
 
     Including petsc.h first should define almost everything we need so no side effects from including
     headers in the wrong order below.
-    """
-    if not isinstance(petsc_dir, pl.Path):
-      petsc_dir = pl.Path(petsc_dir).resolve()
 
+    Parameters
+    ----------
+    petsc_dir : path_like | str
+      the value of PETSC_DIR
+    compiler_flags : list[str]
+      the list of compiler flags to parse with
+    extra_header_includes : list[str], optional
+      extra header include directives to add
+    verbose : False, optional
+      print verbose information
+    pch_clang_options : iterable(int)
+      clang parsing options to use, if not set, petsclinter.util.base_pch_clang_options are used
+
+    Returns
+    -------
+    ret : PrecompiledHeader
+      the precompiled header object
+
+    Raises
+    ------
+    clang.cindex.LibclangError
+      if `extra_header_includes` is not None, and the compilation results in compiler diagnostics
+    """
+    assert isinstance(petsc_dir, Path)
     if pch_clang_options is None:
-      pch_clang_options = pl.util.base_pch_clang_options
+      pch_clang_options = base_pch_clang_options
 
     if extra_header_includes is None:
       extra_header_includes = []

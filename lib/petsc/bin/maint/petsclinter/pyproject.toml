@@ -1,0 +1,50 @@
+[project]
+name            = "petsclinter"
+version         = "1.2.0"
+requires-python = ">=3.8"
+dependencies    = [
+  "clang",
+  "colorama",
+  "tomli; python_version < '3.11'",
+]
+
+[tool.mypy]
+python_version = "3.8"
+pretty = true
+# For all of these I don't know which one of these actually does the job...
+allow_untyped_globals = false
+disallow_untyped_globals = true
+allow_redefinition = false
+disallow_redefinition = true
+allow_any_generics = false
+disallow_any_generics = true
+allow_subclassing_any = false
+disallow_subclassing_any = true
+allow_untyped_calls = false
+disallow_untyped_calls = true
+strict_equality = true
+warn_unused_ignores = true
+warn_unused_configs = true
+warn_redundant_casts = true
+warn_no_return = true
+warn_return_any = true
+warn_unreachable = true
+enable_error_code = [
+  "redundant-expr",
+  "redundant-self",
+  "truthy-bool",
+  "truthy-iterable",
+  "ignore-without-code"
+]
+
+[[tool.mypy.overrides]]
+module = [
+  "petsclinter.__version__",
+  "petsclinter.pkg_consistency_checks"
+]
+warn_unused_ignores = false
+
+[vermin]
+verbose = 3
+only_show_violations = true
+targets = 3.8

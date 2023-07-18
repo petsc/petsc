@@ -1,5 +1,4 @@
 <--- FIXED --->
---------------------------------------------------------------------------------------------
 [31m[1m./src/sys/tests/linter/testValidLogicalCollective.c:8:3: error:[0m Incorrect use of PetscValidLogicalCollectiveInt(), use PetscValidLogicalCollectiveBool() instead [-fincompatible-function]:
   6 : 
   7 : /* incorrect */
@@ -180,5 +179,4 @@
                                                                           [33m[1m^^^^^^^^^^[0m
   4: {
   5:   PetscViewer v; /* dummy variable to satisfy the PetscObject for the following */
---------------------------------------------------------------------------------------------
 <--- LEFT --->

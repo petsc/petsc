@@ -1,5 +1,4 @@
 <--- FIXED --->
---------------------------------------------------------------------------------------------
 [31m[1m./src/sys/tests/linter/testDuplicates.c:10:25: error:[0m Argument number doesn't match for 'b'. Expected '2', found '5' [-fmatching-arg-num]:
   8 : PetscAssertPointer(a, 1);
   9 : /* no remove */
@@ -260,5 +259,4 @@
   115:   /* remove */
   116:   PetscAssertPointer(a, 1);
   117:   PetscAssertPointer(b, 2);
---------------------------------------------------------------------------------------------
 <--- LEFT --->

@@ -1,5 +1,4 @@
 <--- FIXED --->
---------------------------------------------------------------------------------------------
 [31m[1m./src/sys/tests/linter/testValidEnumDocstrings.c:12:11: error:[0m seealso symbol 'Lorem' not enclosed with '`' [-fdoc-inline-list-seealso-backticks]:
   10:   Level: advanced
   11: 
@@ -102,9 +101,7 @@
 > 46: .seealso:                         IllFormedEnum,[33m[1mWellFormedEnum[0m,WellFormedEnum,WellFormedEnum,BadSpellingEnum,BadSpellingEnum
                                                       [33m[1m^^^^^^^^^^^^^^[0m
   47: */
---------------------------------------------------------------------------------------------
 <--- LEFT --->
---------------------------------------------------------------------------------------------
 [31m[1m./src/sys/tests/linter/testValidEnumDocstrings.c:21:1: error:[0m Synopsis seems to be missing a description separator; I suspect you may be using ' ' as a separator instead of '-'. Expected 'IllFormedEnum - -' [-fdoc-synopsis-wrong-description-separator]:
   19: 
   20: /*E
@@ -143,4 +140,3 @@
 > 47: */
   48: typedef enum {
   49:   FOO
---------------------------------------------------------------------------------------------

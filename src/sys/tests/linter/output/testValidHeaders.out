@@ -1,5 +1,4 @@
 <--- FIXED --->
---------------------------------------------------------------------------------------------
 [31m[1m./src/sys/tests/linter/testValidHeaders.c:12:35: error:[0m Classid doesn't match. Expected 'PETSC_RANDOM_CLASSID' found 'PETSC_VIEWER_CLASSID' [-fincompatible-classid]:
   10: {
   11:   /* incorrect */
@@ -300,5 +299,4 @@
                                                                                  [33m[1m^^^^^^^^^^^^^^^[0m
   10: {
   11:   /* incorrect */
---------------------------------------------------------------------------------------------
 <--- LEFT --->

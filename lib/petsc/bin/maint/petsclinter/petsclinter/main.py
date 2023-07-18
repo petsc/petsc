@@ -3,6 +3,8 @@
 # Created: Mon Jun 20 14:35:58 2022 (-0400)
 # @author: Jacob Faibussowitsch
 """
+from __future__ import annotations
+
 import os
 import sys
 
@@ -13,6 +15,11 @@ if __name__ == '__main__':
 
 import petsclinter as pl
 import enum
+import pathlib
+import argparse
+
+from petsclinter._error  import ClobberTestOutputError
+from petsclinter._typing import *
 
 @enum.unique
 class ReturnCode(enum.IntFlag):
@@ -21,82 +28,49 @@ class ReturnCode(enum.IntFlag):
   ERROR_ERROR_FIXED = enum.auto()
   ERROR_ERROR_LEFT  = enum.auto()
   ERROR_ERROR_TEST  = enum.auto()
+  ERROR_TEST_FAILED = enum.auto()
 
-def main(
-    petsc_dir, petsc_arch,
-    src_path=None,
-    clang_dir=None, clang_lib=None, clang_compat_check=True,
-    verbose=False,
-    workers=-1,
-    check_function_filter=None,
-    patch_dir=None, apply_patches=False,
-    extra_compiler_flags=None, extra_header_includes=None,
-    test_output_dir=None, replace_tests=False,
-    werror=False
-):
-  """
-  entry point for linter
+__AT_SRC__ = '__at_src__'
 
-  Positional arguments:
-  petsc_dir  -- $PETSC_DIR
-  petsc_arch -- $PETSC_ARCH
+def __sanitize_petsc_dir(petsc_dir: StrPathLike) -> Path:
+  petsc_dir = pl.Path(petsc_dir).resolve(strict=True)
+  if not petsc_dir.is_dir():
+    raise NotADirectoryError(f'PETSC_DIR: {petsc_dir} is not a directory!')
+  return petsc_dir
 
-  Keyword arguments:
-  src_path              -- directory (or file) to lint (default: $PETSC_DIR/src)
-  clang_dir             -- directory containing libclang.[so|dylib|dll] (default: None)
-  clang_lib             -- direct path to libclang.[so|dylib|dll], overrrides clang_dir if set (default: None)
-  clang_compat_check    -- do clang lib compatibility check
-  verbose               -- display debugging statements (default: False)
-  workers               -- number of processes for multiprocessing, -1 is number of system CPU's-1, 0 or 1 for serial computation (default: -1)
-  check_function_filter -- list of function names as strings to only check for, none == all of them. For example ["PetscAssertPointer","PetscValidHeaderSpecific"] (default: None)
-  patch_dir             -- directory to store patches if they are generated (default: $PETSC_DIR/petscLintPatches)
-  apply_patches         -- automatically apply patch files to source if they are generated (default: False)
-  extra_compiler_flags  -- list of extra compiler flags to append to petsc and system flags. For example ["-I/my/non/standard/include","-Wsome_warning"] (default: None)
-  extra_header_includes -- list of #include statements to append to the precompiled mega-header, these must be in the include search path. Use extra_compiler_flags to make any other search path additions. For example ["#include <slepc/private/epsimpl.h>"] (default: None)
-  test_output_dir       -- directory containing test output to compare patches against, use special keyword '__at_src__' to use src_path/output (default: None)
-  replace_tests         -- replace output files in test_output_dir with patches generated (default: False)
-  werror                -- treat all linter-generated warnings as errors (default: False)
-  """
-  if extra_compiler_flags is None:
-    extra_compiler_flags = []
-
-  if extra_header_includes is None:
-    extra_header_includes = []
-
-  def root_sync_print(*args, **kwargs):
-    if args or kwargs:
-      print('[ROOT]', *args, **kwargs)
-    return
-  pl.sync_print = root_sync_print
-
-  # pre-processing setup
-  if bool(apply_patches) and bool(test_output_dir):
-    raise RuntimeError('Test directory and apply patches are both non-zero. It is probably not a good idea to apply patches over the test directory!')
-  clang_dir, clang_lib = pl.util.initialize_libclang(
-    clang_dir=clang_dir, clang_lib=clang_lib, compat_check=clang_compat_check
-  )
-
-  petsc_dir = pl.Path(petsc_dir).resolve()
+def __sanitize_src_path(petsc_dir: Path, src_path: Optional[Union[StrPathLike, Iterable[StrPathLike]]]) -> list[Path]:
   if src_path is None:
     src_path = [petsc_dir / 'src']
+  elif isinstance(src_path, pl.Path):
+    src_path = [src_path]
+  elif isinstance(src_path, (str, pathlib.Path)):
+    src_path = [pl.Path(src_path)]
+  elif isinstance(src_path, (list, tuple)):
+    src_path = list(map(pl.Path, src_path))
   else:
-    if isinstance(src_path, (str, pl.Path)):
-      src_path = [src_path]
-    if not isinstance(src_path, (list, tuple)):
-      raise RuntimeError(f'Source path must be a :ist or Tuple, not {type(src_path)}')
-    src_path = [pl.Path(s).resolve() for s in src_path]
+    raise TypeError(f'Source path must be a list or tuple, not {type(src_path)}')
 
-  for p in src_path:
-    if not p.exists():
-      raise RuntimeError(f'Path {p} does not exist!')
+  # type checkers still believe that src_path could be a list of strings after this point
+  # for whatever reason
+  return [p.resolve(strict=True) for p in TYPE_CAST(List[pl.Path], src_path)]
 
+def __sanitize_patch_dir(petsc_dir: Path, patch_dir: Optional[StrPathLike]) -> Path:
   patch_dir = petsc_dir / 'petscLintPatches' if patch_dir is None else pl.Path(patch_dir).resolve()
   if patch_dir.exists() and not patch_dir.is_dir():
-    raise RuntimeError(f'Patch Directory (as the name suggests) must be a directory, not {patch_dir}')
+    raise NotADirectoryError(
+      f'Patch Directory (as the name suggests) must be a directory, not {patch_dir}'
+    )
+  return patch_dir
 
-  if test_output_dir == '__at_src__':
+def __sanitize_test_output_dir(src_path: list[Path], test_output_dir: Optional[StrPathLike]) -> Optional[Path]:
+  if isinstance(test_output_dir, str):
+    if test_output_dir != __AT_SRC__:
+      raise ValueError(
+        f'The only allowed string value for test_output_dir is \'{__AT_SRC__}\', don\'t know what to '
+        f'do with {test_output_dir}'
+      )
     if len(src_path) != 1:
-      raise RuntimeError(
+      raise ValueError(
         f'Can only use default test output dir for single file or directory, not {len(src_path)}'
       )
 
@@ -108,18 +82,130 @@ def main(
     else:
       raise RuntimeError(f'Got neither a directory or file as src_path {test_src_path}')
 
-  if test_output_dir is not None and not test_output_dir.exists():
-    raise RuntimeError(f'Test Output Directory {test_output_dir} does not appear to exist')
+  if test_output_dir is not None:
+    if not test_output_dir.exists():
+      raise RuntimeError(f'Test Output Directory {test_output_dir} does not appear to exist')
+    test_output_dir = pl.Path(test_output_dir)
 
-  pl.checks.filter_check_function_map(check_function_filter)
-  compiler_flags    = pl.util.build_compiler_flags(
+  return test_output_dir
+
+def __sanitize_compiler_flags(petsc_dir: Path, petsc_arch: str, verbose: bool, extra_compiler_flags:  Optional[list[str]]) -> list[str]:
+  if extra_compiler_flags is None:
+    extra_compiler_flags = []
+
+  return pl.util.build_compiler_flags(
     petsc_dir, petsc_arch, extra_compiler_flags=extra_compiler_flags, verbose=verbose
   )
+
+def main(
+    petsc_dir:             StrPathLike,
+    petsc_arch:            str,
+    src_path:              Optional[Union[StrPathLike, Iterable[StrPathLike]]] = None,
+    clang_dir:             Optional[StrPathLike] = None,
+    clang_lib:             Optional[StrPathLike] = None,
+    clang_compat_check:    bool = True,
+    verbose:               bool = False,
+    workers:               int = -1,
+    check_function_filter: Optional[Collection[str]] = None,
+    patch_dir:             Optional[StrPathLike] = None,
+    apply_patches:         bool = False,
+    extra_compiler_flags:  Optional[list[str]] = None,
+    extra_header_includes: Optional[list[str]] = None,
+    test_output_dir:       Optional[StrPathLike] = None,
+    replace_tests:         bool = False,
+    werror:                bool = False
+) -> int:
+  r"""Entry point for linter
+
+  Paramaters
+  ----------
+  petsc_dir :
+    $PETSC_DIR
+  petsc_arch :
+    $PETSC_ARCH
+  src_path : optional
+    directory (or file) to lint (default: $PETSC_DIR/src)
+  clang_dir : optional
+    directory containing libclang.[so|dylib|dll] (default: None)
+  clang_lib : optional
+    direct path to libclang.[so|dylib|dll], overrides clang_dir if set (default: None)
+  clang_compat_check : optional
+    do clang lib compatibility check
+  verbose : optional
+    display debugging statements (default: False)
+  workers : optional
+    number of processes for multiprocessing, -1 is number of system CPU's-1, 0 or 1 for serial
+    computation (default: -1)
+  check_function_filter : optional
+    list of function names as strings to only check for, none == all of them. For example
+    ["PetscAssertPointer", "PetscValidHeaderSpecific"] (default: None)
+  patch_dir : optional
+    directory to store patches if they are generated (default: $PETSC_DIR/petscLintPatches)
+  apply_patches : optional
+    automatically apply patch files to source if they are generated (default: False)
+  extra_compiler_flags : optional
+    list of extra compiler flags to append to petsc and system flags.
+    For example ["-I/my/non/standard/include","-Wsome_warning"] (default: None)
+  extra_header_includes : optional
+    list of #include statements to append to the precompiled mega-header, these must be in the
+    include search path. Use extra_compiler_flags to make any other search path additions.
+    For example ["#include <slepc/private/epsimpl.h>"] (default: None)
+  test_output_dir : optional
+    directory containing test output to compare patches against, use special keyword '__at_src__' to
+    use src_path/output (default: None)
+  replace_tests : optional
+    replace output files in test_output_dir with patches generated (default: False)
+  werror : optional
+    treat all linter-generated warnings as errors (default: False)
+
+  Returns
+  -------
+  ret :
+    an integer returncode corresponding to `ReturnCode` to indicate success or error
+
+  Raises
+  ------
+  ClobberTestOutputError
+    if `apply_patches` and `test_output_dir` are both truthy, as it is not a good idea to clobber the
+    test files
+  TypeError
+    if `src_path` is not a `Path`, str, or list/tuple thereof
+  FileNotFoundError
+    if any of the paths in `src_path` do not exist
+  NotADirectoryError
+    if `patch_dir` or `petsc_dir` are not a directories
+  ValueError
+    - if `test_output_dir` is '__at_src__' and the number of `src_path`s > 1, since that would make
+      '__at_src__' (i.e. find output directly at `src_path / 'output'`) ambigious
+    - if `test_output_dir` is a str, but not '__at_src__'
+  """
+  if extra_header_includes is None:
+    extra_header_includes = []
+
+  def root_sync_print(*args, **kwargs) -> None:
+    if args or kwargs:
+      print('[ROOT]', *args, **kwargs)
+    return
+  pl.sync_print = root_sync_print
+
+  # pre-processing setup
+  if bool(apply_patches) and bool(test_output_dir):
+    raise ClobberTestOutputError('Test directory and apply patches are both non-zero. It is probably not a good idea to apply patches over the test directory!')
+
+  pl.util.initialize_libclang(clang_dir=clang_dir, clang_lib=clang_lib, compat_check=clang_compat_check)
+  petsc_dir       = __sanitize_petsc_dir(petsc_dir)
+  src_path        = __sanitize_src_path(petsc_dir, src_path)
+  patch_dir       = __sanitize_patch_dir(petsc_dir, patch_dir)
+  test_output_dir = __sanitize_test_output_dir(src_path, test_output_dir)
+  compiler_flags  = __sanitize_compiler_flags(petsc_dir, petsc_arch, verbose, extra_compiler_flags)
 
   if len(src_path) == 1 and src_path[0].is_file():
     if verbose:
       pl.sync_print(f'Only processing a single file ({src_path[0]}), setting number of workers to 1')
     workers = 1
+
+  if check_function_filter is not None:
+    pl.checks.filter_check_function_map(check_function_filter)
 
   with pl.util.PrecompiledHeader.from_flags(
       petsc_dir, compiler_flags, extra_header_includes=extra_header_includes, verbose=verbose
@@ -133,10 +219,10 @@ def main(
   if test_output_dir is not None:
     from petsclinter.test_main import test_main
 
+    assert len(src_path) == 1
     # reset the printer
     pl.sync_print = print
-    pl.sync_print('', end='', flush=True)
-    assert len(src_path) == 1
+    sys.stdout.flush()
     return test_main(
       petsc_dir, src_path[0], test_output_dir, patches, errors_fixed, errors_left,
       replace=replace_tests, verbose=verbose
@@ -168,30 +254,37 @@ def main(
       if verbose: pl.sync_print('Applying patches from patch directory', patch_dir)
       for patch_file in patch_dir.glob('*' + mangle_postfix):
         if verbose: pl.sync_print('Applying patch', patch_file)
-        output = pl.util.subprocess_run(
-          [patch_exec, root_dir, '--strip=0', '--unified', f'--input={patch_file}'],
-          check=True, universal_newlines=True, capture_output=True
+        output = pl.util.subprocess_capture_output(
+          [patch_exec, root_dir, '--strip=0', '--unified', f'--input={patch_file}']
         )
         if verbose: pl.sync_print(output.stdout)
+
+  def flatten_diags(diag_list: list[CondensedDiags]) -> str:
+    return '\n'.join(
+      mess
+      for diags in diag_list
+        for dlist in diags.values()
+          for mess in dlist
+    )
 
   ret        = ReturnCode.SUCCESS
   format_str = '{:=^85}'
   if warnings:
     if verbose:
       pl.sync_print(format_str.format(' Found Warnings '))
-      pl.sync_print('\n'.join(s for tup in warnings for _, s in tup))
+      pl.sync_print(flatten_diags(warnings))
       pl.sync_print(format_str.format(' End warnings '))
     if werror:
       ret |= ReturnCode.ERROR_WERROR
   if errors_fixed:
     if verbose:
       pl.sync_print(format_str.format(' Fixed Errors ' if apply_patches else ' Fixable Errors '))
-      pl.sync_print('\n'.join(e for _, e in errors_fixed))
+      pl.sync_print(flatten_diags(errors_fixed))
       pl.sync_print(format_str.format(' End Fixed Errors '))
     ret |= ReturnCode.ERROR_ERROR_FIXED
   if errors_left:
     pl.sync_print(format_str.format(' Unfixable Errors '))
-    pl.sync_print('\n'.join(e for _, e in errors_left))
+    pl.sync_print(flatten_diags(errors_left))
     pl.sync_print(format_str.format(' End Unfixable Errors '))
     pl.sync_print('Some errors or warnings could not be automatically corrected via the patch files')
     ret |= ReturnCode.ERROR_ERROR_LEFT
@@ -210,20 +303,35 @@ def main(
       assert ret != ReturnCode.SUCCESS
   return int(ret)
 
-
 __ADVANCED_HELP_FLAG__ = '--help-hidden'
 
-def __build_arg_parser(parent_parsers=None, advanced_help=False):
-  import argparse
+def __build_arg_parser(parent_parsers: Optional[list[argparse.ArgumentParser]] = None, advanced_help: bool = False) -> tuple[argparse.ArgumentParser, set[str]]:
+  r"""Build an argument parser which will produce the necessary arguments to call `main()`
 
-  def add_advanced_argument(prsr, *args, help=None, **kwargs):
-    def help_str(descr):
-      return descr if advanced_help else argparse.SUPPRESS
+  Parameters
+  ----------
+  parent_parsers : optional
+    a list of parent parsers to construct this parser object from
+  advanced_help : optional
+    whether the parser should emit 'advanced' help options
 
-    return prsr.add_argument(*args, help=help_str(help), **kwargs)
+  Returns
+  -------
+  parser :
+    the constructed parser
+  all_diagnostics :
+    a set containing every registered diagnostic flag
+  """
+  class ParserLike(Protocol):
+    def add_argument(self, *args, **kwargs) -> argparse.Action: ...
 
-  def add_bool_argument(prsr, *args, advanced=False, **kwargs):
-    def str2bool(v):
+  def add_advanced_argument(prsr: ParserLike, *args, **kwargs) -> argparse.Action:
+    if not advanced_help:
+      kwargs['help'] = argparse.SUPPRESS
+    return prsr.add_argument(*args, **kwargs)
+
+  def add_bool_argument(prsr: ParserLike, *args, advanced: bool = False, **kwargs) -> argparse.Action:
+    def str2bool(v: Union[str, bool]) -> bool:
       if isinstance(v, bool):
         return v
       v = v.casefold()
@@ -248,7 +356,7 @@ def __build_arg_parser(parent_parsers=None, advanced_help=False):
   clang_dir = pl.util.try_to_find_libclang_dir()
   try:
     petsc_dir       = os.environ['PETSC_DIR']
-    default_src_dir = pl.Path(petsc_dir).resolve()/'src'
+    default_src_dir = str(pl.Path(petsc_dir).resolve() / 'src')
   except KeyError:
     petsc_dir       = None
     default_src_dir = '$PETSC_DIR/src'
@@ -292,7 +400,7 @@ def __build_arg_parser(parent_parsers=None, advanced_help=False):
   group_petsc.add_argument('--PETSC_ARCH', default=petsc_arch, help='if this option is unused defaults to environment variable $PETSC_ARCH', dest='petsc_arch')
 
   group_test = parser.add_argument_group(title='Testing settings')
-  group_test.add_argument('--test', metavar='path', nargs='?', const='__at_src__', help='test the linter for correctness. Optionally provide a directory containing the files against which to compare patches, defaults to SRC_DIR/output if no argument is given. The files of correct patches must be in the format [path_from_src_dir_to_testFileName].out', dest='test_output_dir')
+  group_test.add_argument('--test', metavar='path', nargs='?', const=__AT_SRC__, help='test the linter for correctness. Optionally provide a directory containing the files against which to compare patches, defaults to SRC_DIR/output if no argument is given. The files of correct patches must be in the format [path_from_src_dir_to_testFileName].out', dest='test_output_dir')
   add_bool_argument(group_test, '--replace', help='replace output files in test directory with patches generated', dest='replace_tests')
 
   group_diag = parser.add_argument_group(title='Diagnostics settings')
@@ -301,7 +409,8 @@ def __build_arg_parser(parent_parsers=None, advanced_help=False):
   add_advanced_argument(group_diag, '--functions', nargs='+', choices=check_function_map_keys, metavar='FUNCTIONNAME', help='filter to display errors only related to list of provided function names, default is all functions. Choose from available function names: '+filter_func_choices, dest='check_function_filter')
 
   class CheckFilter(argparse.Action):
-    def __call__(self, parser, namespace, values, *args, **kwargs):
+    def __call__(self, parser: argparse.ArgumentParser, namespace: argparse.Namespace, values: Union[str, bool, Sequence[Any], None], *args, **kwargs) -> None:
+      assert isinstance(values, bool)
       flag = self.dest.replace(pl.DiagnosticManager.flagprefix[1:], '', 1).replace('_', '-')
       if flag == 'diagnostics-all':
         for diag, _ in pl.DiagnosticManager.registered().items():
@@ -328,15 +437,35 @@ def __build_arg_parser(parent_parsers=None, advanced_help=False):
   parser.add_argument('src_path', default=default_src_dir, help='path to files or directory containing source (e.g. $SLEPC_DIR/src)', nargs='*')
   return parser, all_diagnostics
 
-def parse_command_line_args(argv=None, **kwargs):
-  import re
+def parse_command_line_args(argv: Optional[list[str]] = None, parent_parsers: Optional[list[argparse.ArgumentParser]] = None) -> tuple[argparse.Namespace, argparse.ArgumentParser]:
+  r"""Parse command line argument and return the results
 
-  def expand_argv_globs(in_argv, diagnostics):
-    argv        = []
-    skip        = False
-    nargv       = len(in_argv)
-    flag_prefix = pl.DiagnosticManager.flagprefix
+  Parameters
+  ----------
+  argv : optional
+    the raw command line arguments to parse, defaults to `sys.argv`
+  parent_parsers : optional
+    a set of parent parsers from which to construct the argument parser
 
+  Returns
+  -------
+  ns :
+    a `argparse.Namespace` object containing the results of the argument parsing
+  parser :
+    the construct `argparse.ArgumentParser` responsible for producing `ns`
+
+  Raises
+  ------
+  RuntimeError
+    if `args.petsc_dir` or `args.petsc_arch` are None
+  """
+  def expand_argv_globs(in_argv: list[str], diagnostics: Iterable[str]) -> list[str]:
+    import re
+
+    argv: list[str] = []
+    skip            = False
+    nargv           = len(in_argv)
+    flag_prefix     = pl.DiagnosticManager.flagprefix
     # always skip first entry of argv
     for i, argi in enumerate(in_argv[1:], start=1):
       if skip:
@@ -358,9 +487,10 @@ def parse_command_line_args(argv=None, **kwargs):
   if argv is None:
     argv = sys.argv
 
-  kwargs.setdefault('advanced_help', __ADVANCED_HELP_FLAG__ in argv)
-  parser, all_diagnostics = __build_arg_parser(**kwargs)
-  args                    = parser.parse_args(args=expand_argv_globs(argv, tuple(all_diagnostics)))
+  parser, all_diagnostics = __build_arg_parser(
+    parent_parsers=parent_parsers, advanced_help = __ADVANCED_HELP_FLAG__ in argv
+  )
+  args = parser.parse_args(args=expand_argv_globs(argv, all_diagnostics))
 
   if getattr(args, __ADVANCED_HELP_FLAG__.replace('-', '_').lstrip('_')):
     parser.print_help()
@@ -376,7 +506,20 @@ def parse_command_line_args(argv=None, **kwargs):
 
   return args, parser
 
-def namespace_main(args):
+def namespace_main(args: argparse.Namespace) -> int:
+  r"""The main function for when the linter is invoked from arguments parsed via argparse
+
+  Parameters
+  ----------
+  args :
+    the result of `argparse.ArgumentParser.parse_args()`, which should have all the options required to
+    call `main()`
+
+  Returns
+  -------
+  ret :
+    the resultant error code from `main()`
+  """
   return main(
     args.petsc_dir, args.petsc_arch,
     src_path=args.src_path,
@@ -390,7 +533,14 @@ def namespace_main(args):
     werror=args.werror
   )
 
-def command_line_main():
+def command_line_main() -> int:
+  r"""The main function for when the linter is invoked from the command line
+
+  Returns
+  -------
+  ret :
+    the resultant error code from `main()`
+  """
   args, _ = parse_command_line_args()
   have_pm = args.pm
   if have_pm:
@@ -398,7 +548,7 @@ def command_line_main():
       pl.sync_print('Running with --pm flag, setting number of workers to 1')
     args.workers = 1
     try:
-      import ipdb as py_db # LINT IGNORE
+      import ipdb as py_db # type: ignore[import]
     except ModuleNotFoundError:
       import pdb as py_db # LINT IGNORE
 
