@@ -6812,7 +6812,7 @@ PetscErrorCode DMSetStratumIS(DM dm, const char name[], PetscInt value, IS point
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscAssertPointer(name, 2);
-  PetscAssertPointer(points, 4);
+  PetscValidHeaderSpecific(points, IS_CLASSID, 4);
   PetscCall(DMGetLabel(dm, name, &label));
   if (!label) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(DMLabelSetStratumIS(label, value, points));

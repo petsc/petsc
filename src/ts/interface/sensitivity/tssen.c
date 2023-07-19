@@ -1131,7 +1131,7 @@ PetscErrorCode TSAdjointComputeRHSJacobian(TS ts, PetscReal t, Vec U, Mat Amat)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscValidHeaderSpecific(U, VEC_CLASSID, 3);
-  PetscAssertPointer(Amat, 4);
+  PetscValidHeaderSpecific(Amat, MAT_CLASSID, 4);
 
   PetscCallBack("TS callback JacobianP for sensitivity analysis", (*ts->rhsjacobianp)(ts, t, U, Amat, ts->rhsjacobianpctx));
   PetscFunctionReturn(PETSC_SUCCESS);

@@ -163,7 +163,7 @@ PetscErrorCode DMAdaptLabel(DM dm, DMLabel label, DM *dmAdapt)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  if (label) PetscAssertPointer(label, 2);
+  if (label) PetscValidHeaderSpecific(label, DMLABEL_CLASSID, 2);
   PetscAssertPointer(dmAdapt, 3);
   *dmAdapt = NULL;
   PetscCall(DMGetDimension(dm, &dim));
@@ -222,8 +222,8 @@ PetscErrorCode DMAdaptMetric(DM dm, Vec metric, DMLabel bdLabel, DMLabel rgLabel
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidHeaderSpecific(metric, VEC_CLASSID, 2);
-  if (bdLabel) PetscAssertPointer(bdLabel, 3);
-  if (rgLabel) PetscAssertPointer(rgLabel, 4);
+  if (bdLabel) PetscValidHeaderSpecific(bdLabel, DMLABEL_CLASSID, 3);
+  if (rgLabel) PetscValidHeaderSpecific(rgLabel, DMLABEL_CLASSID, 4);
   PetscAssertPointer(dmAdapt, 5);
   *dmAdapt = NULL;
   PetscCall(DMGetDimension(dm, &dim));

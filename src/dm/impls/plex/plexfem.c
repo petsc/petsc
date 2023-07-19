@@ -2464,7 +2464,7 @@ PetscErrorCode DMPlexComputeBdIntegral(DM dm, Vec X, DMLabel label, PetscInt num
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidHeaderSpecific(X, VEC_CLASSID, 2);
-  PetscAssertPointer(label, 3);
+  PetscValidHeaderSpecific(label, DMLABEL_CLASSID, 3);
   if (vals) PetscAssertPointer(vals, 5);
   PetscAssertPointer(integral, 7);
   PetscCall(PetscLogEventBegin(DMPLEX_IntegralFEM, dm, 0, 0, 0));

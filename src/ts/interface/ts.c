@@ -903,9 +903,7 @@ PetscErrorCode TSComputeIJacobian(TS ts, PetscReal t, Vec U, Vec Udot, PetscReal
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscValidHeaderSpecific(U, VEC_CLASSID, 3);
   PetscValidHeaderSpecific(Udot, VEC_CLASSID, 4);
-  PetscAssertPointer(A, 6);
   PetscValidHeaderSpecific(A, MAT_CLASSID, 6);
-  PetscAssertPointer(B, 7);
   PetscValidHeaderSpecific(B, MAT_CLASSID, 7);
 
   PetscCall(TSGetDM(ts, &dm));
@@ -4505,9 +4503,7 @@ PetscErrorCode SNESTSFormJacobian(SNES snes, Vec U, Mat A, Mat B, void *ctx)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
   PetscValidHeaderSpecific(U, VEC_CLASSID, 2);
-  PetscAssertPointer(A, 3);
   PetscValidHeaderSpecific(A, MAT_CLASSID, 3);
-  PetscAssertPointer(B, 4);
   PetscValidHeaderSpecific(B, MAT_CLASSID, 4);
   PetscValidHeaderSpecific(ts, TS_CLASSID, 5);
   PetscCall((ts->ops->snesjacobian)(snes, U, A, B, ts));
