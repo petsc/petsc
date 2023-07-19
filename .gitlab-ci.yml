@@ -813,11 +813,11 @@ linux-xsdk-dbg:
 
 linux-analyzer:
   extends:
-    - .stage-1
+    - .stage-2
     - .linux_test
     - .coverage-disable
   tags:
-    - gce-u22-stage1
+    - gce-u22-stage2
   script:
     - printf "PATH:$PATH\n"
     - printf "PYTHONPATH:$PYTHONPATH\n"
