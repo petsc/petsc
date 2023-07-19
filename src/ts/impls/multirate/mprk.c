@@ -49,14 +49,14 @@ typedef struct {
   Vec         *Y; /* States computed during the step                           */
   Vec         *YdotRHS;
   Vec         *YdotRHS_slow;         /* Function evaluations by slow tableau for slow components  */
-  Vec         *YdotRHS_slowbuffer;   /* Function evaluations by slow tableau for slow components  */
-  Vec         *YdotRHS_medium;       /* Function evaluations by slow tableau for slow components  */
-  Vec         *YdotRHS_mediumbuffer; /* Function evaluations by slow tableau for slow components  */
+  Vec         *YdotRHS_slowbuffer;   /* Function evaluations by medium tableau for slow components  */
+  Vec         *YdotRHS_medium;       /* Function evaluations by medium tableau for medium components*/
+  Vec         *YdotRHS_mediumbuffer; /* Function evaluations by fast tableau for medium components  */
   Vec         *YdotRHS_fast;         /* Function evaluations by fast tableau for fast components  */
   PetscScalar *work_slow;            /* Scalar work_slow by slow tableau                          */
   PetscScalar *work_slowbuffer;      /* Scalar work_slow by slow tableau                          */
   PetscScalar *work_medium;          /* Scalar work_slow by medium tableau                        */
-  PetscScalar *work_mediumbuffer;    /* Scalar work_slow by medium tableau                        */
+  PetscScalar *work_mediumbuffer;    /* Scalar work_mediumbuffer by fast tableau                          */
   PetscScalar *work_fast;            /* Scalar work_fast by fast tableau                          */
   PetscReal    stage_time;
   TSStepStatus status;
@@ -442,12 +442,17 @@ PetscErrorCode TSMPRKFinalizePackage(void)
 . sbase  - number of stages in the base methods
 . ratio1 - stepsize ratio at 1st level (e.g. slow/medium)
 . ratio2 - stepsize ratio at 2nd level (e.g. medium/fast)
+. Asb    - stage coefficients for slow components(dimension s*s, row-major)
+. bsb    - step completion table for slow components(dimension s)
+. csb    - abscissa for slow components(dimension s)
+. rsb    - array of flags for repeated stages for slow components (dimension s)
+. Amb    - stage coefficients for medium components(dimension s*s, row-major)
+. bmb    - step completion table for medium components(dimension s)
+. cmb    - abscissa for medium components(dimension s)
+. rmb    - array of flags for repeated stages for medium components (dimension s)
 . Af     - stage coefficients for fast components(dimension s*s, row-major)
 . bf     - step completion table for fast components(dimension s)
-. cf     - abscissa for fast components(dimension s)
-.  As - stage coefficients for slow components(dimension s*s, row-major)
-.  bs - step completion table for slow components(dimension s)
--  cs - abscissa for slow components(dimension s)
+- cf     - abscissa for fast components(dimension s)
 
   Level: advanced
 

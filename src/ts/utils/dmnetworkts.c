@@ -2,15 +2,18 @@
 #include <petscts.h>
 #include <petscdraw.h>
 
-/*
-   TSMonitorLGCtxDestroy - Destroys  line graph contexts that where created with TSMonitorLGCtxNetworkCreate().
+/*@C
+  TSMonitorLGCtxNetworkDestroy - Destroys  line graph contexts that where created with `TSMonitorLGCtxNetworkCreate()`.
 
-   Collective
+  Collective
 
-   Input Parameter:
-.  ctx - the monitor context
+  Input Parameter:
+. ctx - the monitor context
 
-*/
+  Level: intermediate
+
+.seealso: [](ch_ts), `TS`, `TSMonitorLGCtxNetworkSolution()`
+@*/
 PetscErrorCode TSMonitorLGCtxNetworkDestroy(TSMonitorLGCtxNetwork *ctx)
 {
   PetscInt i;
@@ -81,7 +84,7 @@ PetscErrorCode TSMonitorLGCtxNetworkCreate(TS ts, const char host[], const char 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*
+/*@C
   TSMonitorLGCtxNetworkSolution - Monitors progress of the `TS` solvers for a `DMNETWORK` solution with one window for each vertex and each edge
 
   Collective
@@ -99,9 +102,10 @@ PetscErrorCode TSMonitorLGCtxNetworkCreate(TS ts, const char host[], const char 
   Level: intermediate
 
   Note:
-  Each process in a parallel run displays its component solutions in a separate window
+  Each process in a parallel run displays its component solutions in a separate graphics window
 
-*/
+.seealso: [](ch_ts), `TS`, `TSMonitorLGCtxNetworkDestroy()`
+@*/
 PetscErrorCode TSMonitorLGCtxNetworkSolution(TS ts, PetscInt step, PetscReal ptime, Vec u, void *dctx)
 {
   TSMonitorLGCtxNetwork ctx = (TSMonitorLGCtxNetwork)dctx;

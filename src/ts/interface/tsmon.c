@@ -94,18 +94,17 @@ PetscErrorCode TSMonitorSetFromOptions(TS ts, const char name[], const char help
   Logically Collective
 
   Input Parameters:
-+ ts      - the `TS` context obtained from `TSCreate()`
-. monitor - monitoring routine
-. mctx    - [optional] user-defined context for private data for the monitor routine (use `NULL` if no context is desired)
--  monitordestroy - [optional] routine that frees monitor context (may be `NULL`)
++ ts       - the `TS` context obtained from `TSCreate()`
+. monitor  - monitoring routine
+. mctx     - [optional] user-defined context for private data for the monitor routine (use `NULL` if no context is desired)
+- mdestroy - [optional] routine that frees monitor context (may be `NULL`)
 
   Calling sequence of `monitor`:
-$    PetscErrorCode monitor(TS ts, PetscInt steps, PetscReal time, Vec u, void *mctx)
-+ ts   - the `TS` context
-.    steps - iteration number (after the final time step the monitor routine may be called with a step of -1, this indicates the solution has been interpolated to this time)
-.    time - current time
-.    u - current iterate
-- mctx - [optional] monitoring context
++ ts    - the `TS` context
+. steps - iteration number (after the final time step the monitor routine may be called with a step of -1, this indicates the solution has been interpolated to this time)
+. time  - current time
+. u     - current iterate
+- ctx   - [optional] monitoring context
 
   Level: intermediate
 
@@ -119,7 +118,7 @@ $    PetscErrorCode monitor(TS ts, PetscInt steps, PetscReal time, Vec u, void *
           `TSMonitorDrawSolutionPhase()`, `TSMonitorDrawSolutionFunction()`, `TSMonitorDrawError()`, `TSMonitorSolution()`, `TSMonitorSolutionVTK()`,
           `TSMonitorLGSolution()`, `TSMonitorLGError()`, `TSMonitorSPSwarmSolution()`, `TSMonitorError()`, `TSMonitorEnvelope()`
 @*/
-PetscErrorCode TSMonitorSet(TS ts, PetscErrorCode (*monitor)(TS, PetscInt, PetscReal, Vec, void *), void *mctx, PetscErrorCode (*mdestroy)(void **))
+PetscErrorCode TSMonitorSet(TS ts, PetscErrorCode (*monitor)(TS ts, PetscInt steps, PetscReal time, Vec u, void *ctx), void *mctx, PetscErrorCode (*mdestroy)(void **))
 {
   PetscInt  i;
   PetscBool identical;
@@ -167,6 +166,13 @@ PetscErrorCode TSMonitorCancel(TS ts)
 
 /*@C
   TSMonitorDefault - The default monitor, prints the timestep and time for each step
+
+  Input Parameters:
++ ts    - the `TS` context
+. step  - iteration number (after the final time step the monitor routine may be called with a step of -1, this indicates the solution has been interpolated to this time)
+. ptime - current time
+. v     - current iterate
+- vf    - the viewer and format
 
   Options Database Key:
 . -ts_monitor - monitors the time integration
@@ -220,6 +226,13 @@ PetscErrorCode TSMonitorDefault(TS ts, PetscInt step, PetscReal ptime, Vec v, Pe
 /*@C
   TSMonitorExtreme - Prints the extreme values of the solution at each timestep
 
+  Input Parameters:
++ ts    - the `TS` context
+. step  - iteration number (after the final time step the monitor routine may be called with a step of -1, this indicates the solution has been interpolated to this time)
+. ptime - current time
+. v     - current iterate
+- vf    - the viewer and format
+
   Level: intermediate
 
   Note:
@@ -256,10 +269,13 @@ PetscErrorCode TSMonitorExtreme(TS ts, PetscInt step, PetscReal ptime, Vec v, Pe
   Collective
 
   Input Parameters:
-+ host     - the X display to open, or `NULL` for the local machine
++ comm     - the MPI communicator to use
+. host     - the X display to open, or `NULL` for the local machine
 . label    - the title to put in the title bar
-. x, y     - the screen coordinates of the upper left coordinate of the window
-. m, n     - the screen width and height in pixels
+. x        - the x screen coordinates of the upper left coordinate of the window
+. y        - the y screen coordinates of the upper left coordinate of the window
+. m        - the screen width in pixels
+. n        - the screen height in pixels
 - howoften - if positive then determines the frequency of the plotting, if -1 then only at the final time
 
   Output Parameter:
@@ -432,6 +448,7 @@ PetscErrorCode TSMonitorHGCtxDestroy(TSMonitorHGCtx *ctx)
 + ts    - the `TS` context
 . step  - current time-step
 . ptime - current time
+. u     - the solution at the current time
 - dummy - either a viewer or `NULL`
 
   Options Database Keys:
@@ -495,6 +512,7 @@ PetscErrorCode TSMonitorDrawSolution(TS ts, PetscInt step, PetscReal ptime, Vec 
 + ts    - the `TS` context
 . step  - current time-step
 . ptime - current time
+. u     - the solution at the current time
 - dummy - either a viewer or `NULL`
 
   Level: intermediate
@@ -577,8 +595,15 @@ PetscErrorCode TSMonitorDrawCtxDestroy(TSMonitorDrawCtx *ictx)
 
   Collective
 
-  Input Parameter:
-.    ts - time-step context
+  Input Parameters:
++ comm     - the MPI communicator to use
+. host     - the X display to open, or `NULL` for the local machine
+. label    - the title to put in the title bar
+. x        - the x screen coordinates of the upper left coordinate of the window
+. y        - the y screen coordinates of the upper left coordinate of the window
+. m        - the screen width in pixels
+. n        - the screen height in pixels
+- howoften - if positive then determines the frequency of the plotting, if -1 then only at the final time
 
   Output Parameter:
 . ctx - the monitor context
@@ -620,6 +645,7 @@ PetscErrorCode TSMonitorDrawCtxCreate(MPI_Comm comm, const char host[], const ch
 + ts    - the `TS` context
 . step  - current time-step
 . ptime - current time
+. u     - solution at current time
 - dummy - either a viewer or `NULL`
 
   Options Database Key:
@@ -658,6 +684,7 @@ PetscErrorCode TSMonitorDrawSolutionFunction(TS ts, PetscInt step, PetscReal pti
 + ts    - the `TS` context
 . step  - current time-step
 . ptime - current time
+. u     - solution at current time
 - dummy - either a viewer or `NULL`
 
   Options Database Key:
@@ -1605,8 +1632,8 @@ PetscErrorCode TSMonitorEnvelopeCtxDestroy(TSMonitorEnvelopeCtx *ctx)
 + ts   - the `TS` context
 . step - current timestep
 . t    - current time
-. u    - current solution
-- ctx  - not used
+. U    - current solution
+- vf   - not used
 
   Options Database Key:
 . -ts_dmswarm_monitor_moments - Monitor moments of particle distribution
@@ -1630,6 +1657,8 @@ PetscErrorCode TSDMSwarmMonitorMoments(TS ts, PetscInt step, PetscReal t, Vec U,
   MPI_Comm           comm;
 
   PetscFunctionBeginUser;
+  (void)t;
+  (void)vf;
   PetscCall(TSGetDM(ts, &sw));
   if (!sw || step % ts->monitorFrequency != 0) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscObjectGetComm((PetscObject)ts, &comm));

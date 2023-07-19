@@ -8,6 +8,8 @@
 #include <petscsnes.h>
 #include <petscconvest.h>
 
+/*I <petscts.h> I*/
+
 /* SUBMANSEC = TS */
 
 /*S
@@ -452,29 +454,178 @@ PETSC_EXTERN PetscErrorCode TSSetTimeStep(TS, PetscReal);
 PETSC_EXTERN PetscErrorCode TSGetStepNumber(TS, PetscInt *);
 PETSC_EXTERN PetscErrorCode TSSetStepNumber(TS, PetscInt);
 
-PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*TSRHSFunction)(TS, PetscReal, Vec, Vec, void *);
-PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*TSRHSJacobian)(TS, PetscReal, Vec, Mat, Mat, void *);
-PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*TSRHSJacobianP)(TS, PetscReal, Vec, Mat, void *);
+/*S
+  TSRHSFunction - An `TS` right-hand-side evaluation function
+
+  Calling Sequence:
++ ts  - timestep context
+. t   - current time
+. u   - input vector
+. F   - function vector
+- ctx - [optional] user-defined function context
+
+  Level: beginner
+
+.seealso: [](ch_ts), `TS`, `TSSetRHSFunction()`, `DMTSSetRHSFunction()`, `TSIFunction()`,
+`TSIJacobian()`, `TSRHSJacobian()`
+S*/
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*TSRHSFunction)(TS ts, PetscReal t, Vec u, Vec F, void *ctx);
+
+/*S
+  TSRHSJacobian - A `TS` right-hand-side Jacobian evaluation function
+
+  Calling Sequence:
++ ts   - the `TS` context obtained from `TSCreate()`
+. t    - current time
+. u    - input vector
+. Amat - (approximate) Jacobian matrix
+. Pmat - matrix from which preconditioner is to be constructed (usually the same as Amat)
+- ctx  - [optional] user-defined context for matrix evaluation routine
+
+  Level: beginner
+
+.seealso: [](ch_ts), `TS`, `TSSetRHSJacobian()`, `DMTSSetRHSJacobian()`, `TSRHSFunction()`,
+`TSIFunction()`, `TSIJacobian()`
+S*/
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*TSRHSJacobian)(TS ts, PetscReal t, Vec u, Mat Amat, Mat Pmat, void *ctx);
+
+/*S
+  TSRHSJacobianP - A function that computes the Jacobian of G w.r.t. the parameters P where U_t
+  = G(U,P,t), as well as the location to store the matrix.
+
+  Calling Sequence:
++ ts  - the `TS` context
+. t   - current timestep
+. U   - input vector (current ODE solution)
+. A   - output matrix
+- ctx - [optional] user-defined function context
+
+  Level: beginner
+
+.seealso: [](ch_ts), `TS`, `TSSetRHSJacobianP()`, `TSGetRHSJacobianP()`
+S*/
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*TSRHSJacobianP)(TS ts, PetscReal t, Vec U, Mat A, void *ctx);
+
 PETSC_EXTERN PetscErrorCode TSSetRHSFunction(TS, Vec, TSRHSFunction, void *);
 PETSC_EXTERN PetscErrorCode TSGetRHSFunction(TS, Vec *, TSRHSFunction *, void **);
 PETSC_EXTERN PetscErrorCode TSSetRHSJacobian(TS, Mat, Mat, TSRHSJacobian, void *);
 PETSC_EXTERN PetscErrorCode TSGetRHSJacobian(TS, Mat *, Mat *, TSRHSJacobian *, void **);
 PETSC_EXTERN PetscErrorCode TSRHSJacobianSetReuse(TS, PetscBool);
 
-PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*TSSolutionFunction)(TS, PetscReal, Vec, void *);
+/*S
+  TSSolutionFunction - A `TS` solution evaluation function
+
+  Calling Sequence:
++ ts  - timestep context
+. t   - current time
+. u   - output vector
+- ctx - [optional] user-defined function context
+
+  Level: advanced
+
+.seealso: [](ch_ts), `TS`, `TSSetSolutionFunction()`, `DMTSSetSolutionFunction()`
+S*/
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*TSSolutionFunction)(TS ts, PetscReal t, Vec u, void *ctx);
+
 PETSC_EXTERN PetscErrorCode TSSetSolutionFunction(TS, TSSolutionFunction, void *);
-PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*TSForcingFunction)(TS, PetscReal, Vec, void *);
+
+/*S
+  TSForcingFunction - A `TS` forcing function evaluation function
+
+  Calling Sequence:
++ ts  - timestep context
+. t   - current time
+. f   - output vector
+- ctx - [optional] user-defined function context
+
+  Level: advanced
+
+.seealso: [](ch_ts), `TS`, `TSSetForcingFunction()`, `DMTSSetForcingFunction()`
+S*/
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*TSForcingFunction)(TS ts, PetscReal t, Vec f, void *ctx);
+
 PETSC_EXTERN PetscErrorCode TSSetForcingFunction(TS, TSForcingFunction, void *);
 
-PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*TSIFunction)(TS, PetscReal, Vec, Vec, Vec, void *);
-PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*TSIJacobian)(TS, PetscReal, Vec, Vec, PetscReal, Mat, Mat, void *);
+/*S
+  TSIFunction - A `TS` implicit function evaluation function
+
+  Calling Sequence:
++ ts  - the `TS` context obtained from `TSCreate()`
+. t   - time at step/stage being solved
+. U   - state vector
+. U_t - time derivative of state vector
+. F   - function vector
+- ctx - [optional] user-defined context for function
+
+  Level: beginner
+
+.seealso: [](ch_ts), `TS`, `TSSetIFunction()`, `DMTSSetIFunction()`, `TSIJacobian()`, `TSRHSFunction()`, `TSRHSJacobian()`
+S*/
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*TSIFunction)(TS ts, PetscReal t, Vec U, Vec U_tt, Vec F, void *ctx);
+
+/*S
+  TSIJacobian - A `TS` Jacobian evaluation function
+
+  Calling Sequence:
++ ts   - the `TS` context obtained from `TSCreate()`
+. t    - time at step/stage being solved
+. U    - state vector
+. U_t  - time derivative of state vector
+. a    - shift
+. Amat - (approximate) Jacobian of F(t,U,W+a*U), equivalent to dF/dU + a*dF/dU_t
+. Pmat - matrix used for constructing preconditioner, usually the same as `Amat`
+- ctx  - [optional] user-defined context for Jacobian evaluation routine
+
+  Level: beginner
+
+.seealso: [](ch_ts), `TSSetIJacobian()`, `DMTSSetIJacobian()`, `TSIFunction()`, `TSRHSFunction()`, `TSRHSJacobian()`
+S*/
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*TSIJacobian)(TS ts, PetscReal t, Vec U, Vec U_t, PetscReal a, Mat Amat, Mat Pmat, void *ctx);
+
 PETSC_EXTERN PetscErrorCode TSSetIFunction(TS, Vec, TSIFunction, void *);
 PETSC_EXTERN PetscErrorCode TSGetIFunction(TS, Vec *, TSIFunction *, void **);
 PETSC_EXTERN PetscErrorCode TSSetIJacobian(TS, Mat, Mat, TSIJacobian, void *);
 PETSC_EXTERN PetscErrorCode TSGetIJacobian(TS, Mat *, Mat *, TSIJacobian *, void **);
 
-PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*TSI2Function)(TS, PetscReal, Vec, Vec, Vec, Vec, void *);
-PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*TSI2Jacobian)(TS, PetscReal, Vec, Vec, Vec, PetscReal, PetscReal, Mat, Mat, void *);
+/*S
+  TSI2Function - A `TS` implicit function evaluation function for 2nd order systems
+
+  Calling Sequence:
++ ts   - the `TS` context obtained from `TSCreate()`
+. t    - time at step/stage being solved
+. U    - state vector
+. U_t  - time derivative of state vector
+. U_tt - second time derivative of state vector
+. F    - function vector
+- ctx  - [optional] user-defined context for matrix evaluation routine (may be `NULL`)
+
+  Level: advanced
+
+.seealso: [](ch_ts), `TS`, `TSSetI2Function()`, `DMTSSetI2Function()`
+S*/
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*TSI2Function)(TS ts, PetscReal t, Vec U, Vec U_t, Vec U_tt, Vec F, void *ctx);
+
+/*S
+  TSI2Jacobian - A `TS` implicit Jacobian evaluation function for 2nd order systems
+
+  Calling Sequence:
++ ts   - the `TS` context obtained from `TSCreate()`
+. t    - time at step/stage being solved
+. U    - state vector
+. U_t  - time derivative of state vector
+. U_tt - second time derivative of state vector
+. v    - shift for U_t
+. a    - shift for U_tt
+. J    - Jacobian of G(U) = F(t,U,W+v*U,W'+a*U), equivalent to dF/dU + v*dF/dU_t  + a*dF/dU_tt
+. jac  - matrix from which to construct the preconditioner, may be same as `J`
+- ctx  - [optional] user-defined context for matrix evaluation routine
+
+  Level: advanced
+
+.seealso: [](ch_ts), `TS`, `TSSetI2Jacobian()`, `DMTSSetI2Jacobian()`, `TSIFunction()`, `TSIJacobian()`, `TSRHSFunction()`, `TSRHSJacobian()`
+S*/
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*TSI2Jacobian)(TS ts, PetscReal t, Vec U, Vec U_t, Vec U_tt, PetscReal v, PetscReal a, Mat J, Mat Jac, void *ctx);
+
 PETSC_EXTERN PetscErrorCode TSSetI2Function(TS, Vec, TSI2Function, void *);
 PETSC_EXTERN PetscErrorCode TSGetI2Function(TS, Vec *, TSI2Function *, void **);
 PETSC_EXTERN PetscErrorCode TSSetI2Jacobian(TS, Mat, Mat, TSI2Jacobian, void *);
@@ -565,7 +716,21 @@ PETSC_EXTERN PetscErrorCode DMTSSetI2Jacobian(DM, TSI2Jacobian, void *);
 PETSC_EXTERN PetscErrorCode DMTSGetI2Jacobian(DM, TSI2Jacobian *, void **);
 PETSC_EXTERN PetscErrorCode DMTSSetI2JacobianContextDestroy(DM, PetscErrorCode (*)(void *));
 
-PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*TSTransientVariable)(TS, Vec, Vec, void *);
+/*S
+  TSTransientVariable - A function to transform from state to transient variables
+
+  Calling Sequence:
++ ts  - timestep context
+. p   - input vector (primitive form)
+. c   - output vector, transient variables (conservative form)
+- ctx - [optional] user-defined function context
+
+  Level: advanced
+
+.seealso: [](ch_ts), `TS`, `TSSetTransientVariable()`, `DMTSSetTransientVariable()`
+S*/
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*TSTransientVariable)(TS ts, Vec p, Vec c, void *ctx);
+
 PETSC_EXTERN PetscErrorCode TSSetTransientVariable(TS, TSTransientVariable, void *);
 PETSC_EXTERN PetscErrorCode DMTSSetTransientVariable(DM, TSTransientVariable, void *);
 PETSC_EXTERN PetscErrorCode DMTSGetTransientVariable(DM, TSTransientVariable *, void *);
@@ -593,15 +758,79 @@ PETSC_EXTERN PetscErrorCode DMTSDestroyRHSMassMatrix(DM);
 PETSC_EXTERN PetscErrorCode DMTSSetIFunctionSerialize(DM, PetscErrorCode (*)(void *, PetscViewer), PetscErrorCode (*)(void **, PetscViewer));
 PETSC_EXTERN PetscErrorCode DMTSSetIJacobianSerialize(DM, PetscErrorCode (*)(void *, PetscViewer), PetscErrorCode (*)(void **, PetscViewer));
 
-PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*DMDATSRHSFunctionLocal)(DMDALocalInfo *, PetscReal, void *, void *, void *);
-PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*DMDATSRHSJacobianLocal)(DMDALocalInfo *, PetscReal, void *, Mat, Mat, void *);
-PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*DMDATSIFunctionLocal)(DMDALocalInfo *, PetscReal, void *, void *, void *, void *);
-PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*DMDATSIJacobianLocal)(DMDALocalInfo *, PetscReal, void *, void *, PetscReal, Mat, Mat, void *);
+/*S
+  DMDATSRHSFunctionLocal - A local `TS` right hand side residual evaluation function for use with `DMDA`
 
-PETSC_EXTERN PetscErrorCode DMDATSSetRHSFunctionLocal(DM, InsertMode, PetscErrorCode (*)(DMDALocalInfo *, PetscReal, void *, void *, void *), void *);
-PETSC_EXTERN PetscErrorCode DMDATSSetRHSJacobianLocal(DM, PetscErrorCode (*)(DMDALocalInfo *, PetscReal, void *, Mat, Mat, void *), void *);
-PETSC_EXTERN PetscErrorCode DMDATSSetIFunctionLocal(DM, InsertMode, PetscErrorCode (*)(DMDALocalInfo *, PetscReal, void *, void *, void *, void *), void *);
-PETSC_EXTERN PetscErrorCode DMDATSSetIJacobianLocal(DM, PetscErrorCode (*)(DMDALocalInfo *, PetscReal, void *, void *, PetscReal, Mat, Mat, void *), void *);
+  Calling Sequence:
++ info - defines the subdomain to evaluate the residual on
+. t    - time at which to evaluate residual
+. x    - array of local state information
+. f    - output array of local residual information
+- ctx  - optional user context
+
+  Level: beginner
+
+.seealso: `DMDA`, `DMDATSSetRHSFunctionLocal()`, `TSRHSFunction()`, `DMDATSRHSJacobianLocal()`, `DMDATSIJacobianLocal()`, `DMDATSIFunctionLocal()`
+S*/
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*DMDATSRHSFunctionLocal)(DMDALocalInfo *info, PetscReal t, void *x, void *f, void *ctx);
+
+/*S
+  DMDATSRHSJacobianLocal - A local residual evaluation function for use with `DMDA`
+
+  Calling Sequence:
++ info - defines the subdomain to evaluate the residual on
+. t    - time at which to evaluate residual
+. x    - array of local state information
+. J    - Jacobian matrix
+. B    - matrix from which to construct the preconditioner; often same as `J`
+- ctx  - optional context
+
+  Level: beginner
+
+.seealso: `DMDA`, `DMDATSSetRHSJacobianLocal()`, `TSRHSJacobian()`, `DMDATSRHSFunctionLocal()`, `DMDATSIJacobianLocal()`, `DMDATSIFunctionLocal()`
+S*/
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*DMDATSRHSJacobianLocal)(DMDALocalInfo *info, PetscReal t, void *x, Mat J, Mat B, void *ctx);
+
+/*S
+  DMDATSIFunctionLocal - A local residual evaluation function for use with `DMDA`
+
+  Calling Sequence:
++ info  - defines the subdomain to evaluate the residual on
+. t     - time at which to evaluate residual
+. x     - array of local state information
+. xdot  - array of local time derivative information
+. imode - output array of local function evaluation information
+- ctx   - optional context
+
+  Level: beginner
+
+.seealso: `DMDA`, `DMDATSSetIFunctionLocal()`, `DMDATSIJacobianLocal()`, `TSIFunction()`
+S*/
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*DMDATSIFunctionLocal)(DMDALocalInfo *info, PetscReal t, void *x, void *xdot, void *imode, void *ctx);
+
+/*S
+  DMDATSIJacobianLocal - A local residual evaluation function for use with `DMDA`
+
+  Calling Sequence:
++ info  - defines the subdomain to evaluate the residual on
+. t     - time at which to evaluate the jacobian
+. x     - array of local state information
+. xdot  - time derivative at this state
+. shift - see `TSSetIJacobian()` for the meaning of this parameter
+. J     - Jacobian matrix
+. B     - matrix from which to construct the preconditioner; often same as `J`
+- ctx   - optional context
+
+  Level: beginner
+
+.seealso: `DMDA` `DMDATSSetIJacobianLocal()`, `TSIJacobian()`, `DMDATSIFunctionLocal()`, `DMDATSRHSFunctionLocal()`,  `DMDATSRHSJacob ianlocal()`
+S*/
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*DMDATSIJacobianLocal)(DMDALocalInfo *info, PetscReal t, void *x, void *xdot, PetscReal shift, Mat J, Mat B, void *ctx);
+
+PETSC_EXTERN PetscErrorCode DMDATSSetRHSFunctionLocal(DM, InsertMode, DMDATSRHSFunctionLocal, void *);
+PETSC_EXTERN PetscErrorCode DMDATSSetRHSJacobianLocal(DM, DMDATSRHSJacobianLocal, void *);
+PETSC_EXTERN PetscErrorCode DMDATSSetIFunctionLocal(DM, InsertMode, DMDATSIFunctionLocal, void *);
+PETSC_EXTERN PetscErrorCode DMDATSSetIJacobianLocal(DM, DMDATSIJacobianLocal, void *);
 
 typedef struct _n_TSMonitorLGCtx *TSMonitorLGCtx;
 typedef struct {

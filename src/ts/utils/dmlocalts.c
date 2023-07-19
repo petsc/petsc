@@ -183,8 +183,6 @@ static PetscErrorCode TSComputeIJacobian_DMLocal(TS ts, PetscReal time, Vec X, V
 
 /*@C
   DMTSSetBoundaryLocal - set the function for essential boundary data for a local implicit function evaluation.
-  It should set the essential boundary data for the local portion of the solution X, as well its time derivative X_t (if it is not NULL).
-  Vectors are initialized to zero before this function, so it is only needed for non homogeneous data.
 
   Logically Collective
 
@@ -195,10 +193,17 @@ static PetscErrorCode TSComputeIJacobian_DMLocal(TS ts, PetscReal time, Vec X, V
 
   Level: intermediate
 
-  Note:
-  This function is somewhat optional: boundary data could potentially be inserted by a function passed to
-  `DMTSSetIFunctionLocal()`.  The use case for this function is for discretizations with constraints (see
-  `DMGetDefaultConstraints()`): this function inserts boundary values before constraint interpolation.
+  Notes:
+  `func` should set the essential boundary data for the local portion of the solution, as
+  well its time derivative (if it is not `NULL`).
+
+  Vectors are initialized to zero before this function, so it is only needed for non
+  homogeneous data.
+
+  This function is somewhat optional: boundary data could potentially be inserted by a function
+  passed to `DMTSSetIFunctionLocal()`. The use case for this function is for discretizations
+  with constraints (see `DMGetDefaultConstraints()`): this function inserts boundary values
+  before constraint interpolation.
 
 .seealso: [](ch_ts), `DM`, `TS`, `DMTSSetIFunction()`, `DMTSSetIJacobianLocal()`
 @*/

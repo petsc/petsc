@@ -358,12 +358,11 @@ static PetscErrorCode TSView_Pseudo(TS ts, PetscViewer viewer)
 - ctx - [optional] user-defined context for private data for the timestep verification routine (may be `NULL`)
 
   Calling sequence of `func`:
-$  PetscErrorCode func(TS ts, Vec update, void *ctx, PetscReal *newdt, PetscBool  *flag);
-+ ts  - the time-step context
-.  update - latest solution vector
-. ctx - [optional] timestep context
-.  newdt - the timestep to use for the next step
--  flag - flag indicating whether the last time step was acceptable
++ ts     - the time-step context
+. update - latest solution vector
+. ctx    - [optional] user-defined timestep context
+. newdt  - the timestep to use for the next step
+- flag   - flag indicating whether the last time step was acceptable
 
   Level: advanced
 
@@ -373,7 +372,7 @@ $  PetscErrorCode func(TS ts, Vec update, void *ctx, PetscReal *newdt, PetscBool
 
 .seealso: [](ch_ts), `TSPSEUDO`, `TSPseudoVerifyTimeStepDefault()`, `TSPseudoVerifyTimeStep()`
 @*/
-PetscErrorCode TSPseudoSetVerifyTimeStep(TS ts, PetscErrorCode (*dt)(TS, Vec, void *, PetscReal *, PetscBool *), void *ctx)
+PetscErrorCode TSPseudoSetVerifyTimeStep(TS ts, PetscErrorCode (*dt)(TS ts, Vec update, void *ctx, PetscReal *newdt, PetscBool *flag), void *ctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
@@ -472,9 +471,9 @@ PetscErrorCode TSPseudoIncrementDtFromInitialDt(TS ts)
 - ctx - [optional] user-defined context for private data required by the function (may be `NULL`)
 
   Calling sequence of `dt`:
-$  PetscErrorCode dt(TS ts, PetscReal *newdt, void *ctx);
-+  newdt - the newly computed timestep
-- ctx - [optional] timestep context
++ ts    - the `TS` context
+. newdt - the newly computed timestep
+- ctx   - [optional] user-defined context
 
   Level: intermediate
 
@@ -486,7 +485,7 @@ $  PetscErrorCode dt(TS ts, PetscReal *newdt, void *ctx);
 
 .seealso: [](ch_ts), `TSPSEUDO`, `TSPseudoTimeStepDefault()`, `TSPseudoComputeTimeStep()`
 @*/
-PetscErrorCode TSPseudoSetTimeStep(TS ts, PetscErrorCode (*dt)(TS, PetscReal *, void *), void *ctx)
+PetscErrorCode TSPseudoSetTimeStep(TS ts, PetscErrorCode (*dt)(TS ts, PetscReal *newdt, void *ctx), void *ctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
