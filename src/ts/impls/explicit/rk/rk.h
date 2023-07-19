@@ -18,6 +18,7 @@ struct _RKTableauLink {
 
 typedef struct {
   RKTableau    tableau;
+  PetscBool    newtableau; /* flag to indicate if tableau has changed */
   Vec          X0;
   Vec         *Y;            /* States computed during the step                                              */
   Vec         *YdotRHS;      /* Function evaluations for the non-stiff part and contains all components      */

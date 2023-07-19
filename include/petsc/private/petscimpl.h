@@ -1488,4 +1488,11 @@ PETSC_INTERN PetscErrorCode PetscKokkosFinalize_Private(void);
 PETSC_EXTERN PetscInt PetscNumOMPThreads;
 #endif
 
+struct _n_PetscObjectList {
+  char            name[256];
+  PetscBool       skipdereference; /* when the PetscObjectList is destroyed do not call PetscObjectDereference() on this object */
+  PetscObject     obj;
+  PetscObjectList next;
+};
+
 #endif /* PETSCIMPL_H */

@@ -792,7 +792,7 @@ static PetscErrorCode TSStep_RK(TS ts)
   const PetscReal *A = tab->A, *c = tab->c;
   PetscScalar     *w = rk->work;
   Vec             *Y = rk->Y, *YdotRHS = rk->YdotRHS;
-  PetscBool        FSAL = tab->FSAL;
+  PetscBool        FSAL = (PetscBool)(tab->FSAL && !rk->newtableau);
   TSAdapt          adapt;
   PetscInt         i, j;
   PetscInt         rejections = 0;
@@ -802,6 +802,7 @@ static PetscErrorCode TSStep_RK(TS ts)
   PetscFunctionBegin;
   if (ts->steprollback || ts->steprestart) FSAL = PETSC_FALSE;
   if (FSAL) PetscCall(VecCopy(YdotRHS[s - 1], YdotRHS[0]));
+  rk->newtableau = PETSC_FALSE;
 
   rk->status = TS_STEP_INCOMPLETE;
   while (!ts->reason && rk->status != TS_STEP_COMPLETE) {
@@ -1149,6 +1150,7 @@ static PetscErrorCode TSRKTableauSetUp(TS ts)
   PetscCall(PetscMalloc1(tab->s, &rk->work));
   PetscCall(VecDuplicateVecs(ts->vec_sol, tab->s, &rk->Y));
   PetscCall(VecDuplicateVecs(ts->vec_sol, tab->s, &rk->YdotRHS));
+  rk->newtableau = PETSC_TRUE;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

@@ -705,37 +705,6 @@ static PetscErrorCode SetProblem(TS ts)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode DMSwarmTSRedistribute(TS ts)
-{
-  DM        sw;
-  Vec       u;
-  PetscReal t, maxt, dt;
-  PetscInt  n, maxn;
-
-  PetscFunctionBegin;
-  PetscCall(TSGetDM(ts, &sw));
-  PetscCall(TSGetTime(ts, &t));
-  PetscCall(TSGetMaxTime(ts, &maxt));
-  PetscCall(TSGetTimeStep(ts, &dt));
-  PetscCall(TSGetStepNumber(ts, &n));
-  PetscCall(TSGetMaxSteps(ts, &maxn));
-
-  PetscCall(TSReset(ts));
-  PetscCall(TSSetDM(ts, sw));
-  /* TODO Check whether TS was set from options */
-  PetscCall(TSSetFromOptions(ts));
-  PetscCall(TSSetTime(ts, t));
-  PetscCall(TSSetMaxTime(ts, maxt));
-  PetscCall(TSSetTimeStep(ts, dt));
-  PetscCall(TSSetStepNumber(ts, n));
-  PetscCall(TSSetMaxSteps(ts, maxn));
-
-  PetscCall(CreateSolution(ts));
-  PetscCall(SetProblem(ts));
-  PetscCall(TSGetSolution(ts, &u));
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
 PetscErrorCode circleSingleX(PetscInt dim, PetscReal time, const PetscReal dummy[], PetscInt p, PetscScalar x[], void *ctx)
 {
   x[0] = p + 1.;
@@ -805,7 +774,9 @@ static PetscErrorCode InitializeSolveAndSwarm(TS ts, PetscBool useInitial)
     PetscCall(DMSwarmInitializeCoordinates(sw));
     PetscCall(DMSwarmInitializeVelocitiesFromOptions(sw, v0));
     PetscCall(DMSwarmMigrate(sw, PETSC_TRUE));
-    PetscCall(DMSwarmTSRedistribute(ts));
+    PetscCall(TSReset(ts));
+    PetscCall(CreateSolution(ts));
+    PetscCall(SetProblem(ts));
   }
   PetscCall(TSGetSolution(ts, &u));
   PetscCall(TSRHSSplitGetIS(ts, "position", &isx));
@@ -938,11 +909,12 @@ static PetscErrorCode EnergyMonitor(TS ts, PetscInt step, PetscReal t, Vec U, vo
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MigrateParticles(TS ts)
+static PetscErrorCode SetUpMigrateParticles(TS ts, PetscInt n, PetscReal t, Vec x, PetscBool *flg, void *ctx)
 {
   DM sw;
 
   PetscFunctionBeginUser;
+  *flg = PETSC_TRUE;
   PetscCall(TSGetDM(ts, &sw));
   PetscCall(DMViewFromOptions(sw, NULL, "-migrate_view_pre"));
   {
@@ -959,8 +931,18 @@ static PetscErrorCode MigrateParticles(TS ts)
     PetscCall(VecISCopy(u, isv, SCATTER_REVERSE, gv));
     PetscCall(DMSwarmDestroyGlobalVectorFromField(sw, "velocity", &gv));
   }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode MigrateParticles(TS ts, PetscInt nv, Vec vecsin[], Vec vecsout[], void *ctx)
+{
+  DM sw;
+
+  PetscFunctionBeginUser;
+  PetscCall(TSGetDM(ts, &sw));
   PetscCall(DMSwarmMigrate(sw, PETSC_TRUE));
-  PetscCall(DMSwarmTSRedistribute(ts));
+  PetscCall(CreateSolution(ts));
+  PetscCall(SetProblem(ts));
   PetscCall(InitializeSolveAndSwarm(ts, PETSC_FALSE));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -991,7 +973,7 @@ int main(int argc, char **argv)
   PetscCall(DMSwarmVectorDefineField(sw, "velocity"));
   PetscCall(TSSetComputeInitialCondition(ts, InitializeSolve));
   PetscCall(TSSetComputeExactError(ts, ComputeError));
-  PetscCall(TSSetPostStep(ts, MigrateParticles));
+  PetscCall(TSSetResize(ts, SetUpMigrateParticles, MigrateParticles, NULL));
 
   PetscCall(CreateSolution(ts));
   PetscCall(TSGetSolution(ts, &u));

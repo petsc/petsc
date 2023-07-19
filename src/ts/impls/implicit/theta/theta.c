@@ -179,6 +179,22 @@ static PetscErrorCode TSTheta_SNESSolve(TS ts, Vec b, Vec x)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/* We need to transfer X0 which will be copied into sol_prev */
+static PetscErrorCode TSResizeRegister_Theta(TS ts, PetscBool reg)
+{
+  TS_Theta  *th     = (TS_Theta *)ts->data;
+  const char name[] = "ts:theta:X0";
+
+  PetscFunctionBegin;
+  if (reg && th->vec_sol_prev) {
+    PetscCall(TSResizeRegisterVec(ts, name, th->X0));
+  } else if (!reg) {
+    PetscCall(TSResizeRetrieveVec(ts, name, &th->X0));
+    PetscCall(PetscObjectReference((PetscObject)th->X0));
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 static PetscErrorCode TSStep_Theta(TS ts)
 {
   TS_Theta *th         = (TS_Theta *)ts->data;
@@ -1229,6 +1245,7 @@ PETSC_EXTERN PetscErrorCode TSCreate_Theta(TS ts)
   ts->ops->interpolate    = TSInterpolate_Theta;
   ts->ops->evaluatewlte   = TSEvaluateWLTE_Theta;
   ts->ops->rollback       = TSRollBack_Theta;
+  ts->ops->resizeregister = TSResizeRegister_Theta;
   ts->ops->setfromoptions = TSSetFromOptions_Theta;
   ts->ops->snesfunction   = SNESTSFormFunction_Theta;
   ts->ops->snesjacobian   = SNESTSFormJacobian_Theta;
