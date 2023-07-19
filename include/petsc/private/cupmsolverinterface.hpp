@@ -276,6 +276,14 @@ struct SolverInterface : SolverInterfaceImpl<T> {
   PETSC_CUPMSOLVER_IMPL_CLASS_HEADER(T); \
   using ::Petsc::device::cupm::impl::SolverInterface<T>::cupmSolverName
 
+#if PetscDefined(HAVE_CUDA)
+extern template struct PETSC_SINGLE_LIBRARY_VISIBILITY_INTERNAL SolverInterface<DeviceType::CUDA>;
+#endif
+
+#if PetscDefined(HAVE_HIP)
+extern template struct PETSC_SINGLE_LIBRARY_VISIBILITY_INTERNAL SolverInterface<DeviceType::HIP>;
+#endif
+
 } // namespace impl
 
 } // namespace cupm
