@@ -510,12 +510,7 @@ PetscErrorCode PCFactorSetFill(PC pc, PetscReal fill)
 }
 
 /*@
-  PCFactorSetUseInPlace - Tells the system to do an in-place factorization.
-  For dense matrices, this enables the solution of much larger problems.
-  For sparse matrices the factorization cannot be done truly in-place
-  so this does not save memory during the factorization, but after the matrix
-  is factored, the original unfactored matrix is freed, thus recovering that
-  space. For ICC(0) and ILU(0) with the default natural ordering the factorization is done efficiently in-place.
+  PCFactorSetUseInPlace - Tells the preconditioner to do an in-place factorization.
 
   Logically Collective
 
@@ -527,6 +522,12 @@ PetscErrorCode PCFactorSetFill(PC pc, PetscReal fill)
 . -pc_factor_in_place <true,false> - Activate/deactivate in-place factorization
 
   Note:
+  For dense matrices, this enables the solution of much larger problems.
+  For sparse matrices the factorization cannot be done truly in-place
+  so this does not save memory during the factorization, but after the matrix
+  is factored, the original unfactored matrix is freed, thus recovering that
+  space. For ICC(0) and ILU(0) with the default natural ordering the factorization is done efficiently in-place.
+
   `PCFactorSetUseInplace()` can only be used with the `KSP` method `KSPPREONLY` or when
   a different matrix is provided for the multiply and the preconditioner in
   a call to `KSPSetOperators()`.
@@ -536,7 +537,7 @@ PetscErrorCode PCFactorSetFill(PC pc, PetscReal fill)
 
   Level: intermediate
 
-.seealso: `PCLU`, `PCCHOLESKY`, `PCILU`, `PCICC`, `PCFactorGetUseInPlace()`
+.seealso: `PC`, `Mat`, `PCLU`, `PCCHOLESKY`, `PCILU`, `PCICC`, `PCFactorGetUseInPlace()`
 @*/
 PetscErrorCode PCFactorSetUseInPlace(PC pc, PetscBool flg)
 {

@@ -159,7 +159,6 @@ static PetscErrorCode PCSetUp_Redundant(PC pc)
     if (red->useparallelmat) {
       MatReuse reuse;
       /* grab the parallel matrix and put it into the processes of a subcommunicator */
-      /*--------------------------------------------------------------------------*/
       if (pc->flag == DIFFERENT_NONZERO_PATTERN) {
         /* destroy old matrices */
         PetscCall(MatDestroy(&red->pmats));

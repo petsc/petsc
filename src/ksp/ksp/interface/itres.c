@@ -9,9 +9,11 @@
   Collective
 
   Input Parameters:
-+ vsoln    - solution to use in computing residual
-. vt1, vt2 - temporary work vectors
-- vb       - right-hand-side vector
++ ksp   - the `KSP` solver object
+. vsoln - solution to use in computing residual
+. vt1   - temporary work vector
+. vt2   - temporary work vector
+- vb    - right-hand-side vector
 
   Output Parameter:
 . vres - calculated residual
@@ -27,7 +29,7 @@ $     CA x = Cb (left preconditioning).
   This means that the calculated residual will be scaled and/or preconditioned;
   the true residual
 $     b-Ax
-  is returned in the `vt2` temporary.
+  is returned in the `vt2` temporary work vector.
 
 .seealso: [](ch_ksp), `KSP`, `KSPSolve()`, `KSPMonitor()`
 @*/

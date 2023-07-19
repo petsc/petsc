@@ -584,25 +584,24 @@ PetscErrorCode KSPGetOperatorsSet(KSP ksp, PetscBool *mat, PetscBool *pmat)
   Input Parameters:
 + ksp      - the solver object
 . presolve - the function to call before the solve
-- prectx   - any context needed by the function
+- ctx      - any context needed by the function
 
   Calling sequence of `presolve`:
-$  PetscErrorCode func(KSP ksp, Vec rhs, Vec x, void *ctx)
 + ksp - the `KSP` context
-.  rhs - the right-hand side vector
-.  x - the solution vector
--  ctx - optional user-provided context
+. rhs - the right-hand side vector
+. x   - the solution vector
+- ctx - optional user-provided context
 
   Level: developer
 
 .seealso: `KSPSetUp()`, `KSPSolve()`, `KSPDestroy()`, `KSP`, `KSPSetPostSolve()`, `PCEISENSTAT`
 @*/
-PetscErrorCode KSPSetPreSolve(KSP ksp, PetscErrorCode (*presolve)(KSP, Vec, Vec, void *), void *prectx)
+PetscErrorCode KSPSetPreSolve(KSP ksp, PetscErrorCode (*presolve)(KSP ksp, Vec rhs, Vec x, void *ctx), void *ctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
   ksp->presolve = presolve;
-  ksp->prectx   = prectx;
+  ksp->prectx   = ctx;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -614,25 +613,24 @@ PetscErrorCode KSPSetPreSolve(KSP ksp, PetscErrorCode (*presolve)(KSP, Vec, Vec,
   Input Parameters:
 + ksp       - the solver object
 . postsolve - the function to call after the solve
-- postctx   - any context needed by the function
+- ctx       - any context needed by the function
 
   Calling sequence of `postsolve`:
-$  PetscErrorCode func(KSP ksp, Vec rhs, Vec x, void *ctx)
 + ksp - the `KSP` context
-.  rhs - the right-hand side vector
-.  x - the solution vector
--  ctx - optional user-provided context
+. rhs - the right-hand side vector
+. x   - the solution vector
+- ctx - optional user-provided context
 
   Level: developer
 
 .seealso: `KSPSetUp()`, `KSPSolve()`, `KSPDestroy()`, `KSP`, `KSPSetPreSolve()`, `PCEISENSTAT`
 @*/
-PetscErrorCode KSPSetPostSolve(KSP ksp, PetscErrorCode (*postsolve)(KSP, Vec, Vec, void *), void *postctx)
+PetscErrorCode KSPSetPostSolve(KSP ksp, PetscErrorCode (*postsolve)(KSP ksp, Vec rhs, Vec x, void *ctx), void *ctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
   ksp->postsolve = postsolve;
-  ksp->postctx   = postctx;
+  ksp->postctx   = ctx;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -691,7 +689,7 @@ PetscErrorCode KSPGetNestLevel(KSP ksp, PetscInt *level)
 . comm - MPI communicator
 
   Output Parameter:
-.  inksp - location to put the `KSP` context
+. inksp - location to put the `KSP` context
 
   Level: beginner
 

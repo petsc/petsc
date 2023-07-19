@@ -18,14 +18,6 @@ static PetscErrorCode KSPFGMRESGetNewVectors(KSP, PetscInt);
 static PetscErrorCode KSPFGMRESUpdateHessenberg(KSP, PetscInt, PetscBool, PetscReal *);
 static PetscErrorCode KSPFGMRESBuildSoln(PetscScalar *, Vec, Vec, KSP, PetscInt);
 
-/*
-
-    KSPSetUp_FGMRES - Sets up the workspace needed by fgmres.
-
-    This is called once, usually automatically by KSPSolve() or KSPSetUp(),
-    but can be called directly by KSPSetUp().
-
-*/
 PetscErrorCode KSPSetUp_FGMRES(KSP ksp)
 {
   PetscInt    max_k, k;
@@ -47,9 +39,6 @@ PetscErrorCode KSPSetUp_FGMRES(KSP ksp)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*
-    KSPFGMRESResidual - This routine computes the initial residual (NOT PRECONDITIONED)
-*/
 static PetscErrorCode KSPFGMRESResidual(KSP ksp)
 {
   KSP_FGMRES *fgmres = (KSP_FGMRES *)(ksp->data);
@@ -65,23 +54,6 @@ static PetscErrorCode KSPFGMRESResidual(KSP ksp)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*
-
-    KSPFGMRESCycle - Run fgmres, possibly with restart.  Return residual
-                  history if requested.
-
-    input parameters:
-.        fgmres  - structure containing parameters and work areas
-
-    output parameters:
-.        itcount - number of iterations used.  If null, ignored.
-.        converged - 0 if not converged
-
-    Notes:
-    On entry, the value in vector VEC_VV(0) should be
-    the initial residual.
-
- */
 PetscErrorCode KSPFGMRESCycle(PetscInt *itcount, KSP ksp)
 {
   KSP_FGMRES *fgmres = (KSP_FGMRES *)(ksp->data);
@@ -204,7 +176,7 @@ PetscErrorCode KSPFGMRESCycle(PetscInt *itcount, KSP ksp)
     /* Catch error in happy breakdown and signal convergence and break from loop */
     if (hapend) {
       if (!ksp->reason) {
-        PetscCheck(!ksp->errorifnotconverged, PetscObjectComm((PetscObject)ksp), PETSC_ERR_NOT_CONVERGED, "You reached the happy break down, but convergence was not indicated. Residual norm = %g", (double)res_norm);
+        PetscCheck(!ksp->errorifnotconverged, PetscObjectComm((PetscObject)ksp), PETSC_ERR_NOT_CONVERGED, "Reached happy break down, but convergence was not indicated. Residual norm = %g", (double)res_norm);
         ksp->reason = KSP_DIVERGED_BREAKDOWN;
         break;
       }
@@ -233,16 +205,6 @@ PetscErrorCode KSPFGMRESCycle(PetscInt *itcount, KSP ksp)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*
-  KSPSolve_FGMRES - This routine applies the FGMRES method.
-
-  Input Parameter:
-. ksp - the Krylov space object that was set to use fgmres
-
-  Output Parameter:
-.     outits - number of iterations used
-
-*/
 PetscErrorCode KSPSolve_FGMRES(KSP ksp)
 {
   PetscInt    cycle_its = 0; /* iterations done in a call to KSPFGMRESCycle */
@@ -281,11 +243,7 @@ PetscErrorCode KSPSolve_FGMRES(KSP ksp)
 }
 
 extern PetscErrorCode KSPReset_FGMRES(KSP);
-/*
 
-   KSPDestroy_FGMRES - Frees all memory space used by the Krylov method.
-
-*/
 PetscErrorCode KSPDestroy_FGMRES(KSP ksp)
 {
   PetscFunctionBegin;
@@ -295,19 +253,6 @@ PetscErrorCode KSPDestroy_FGMRES(KSP ksp)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*
-    KSPFGMRESBuildSoln - create the solution from the starting vector and the
-                      current iterates.
-
-    Input parameters:
-        nrs - work area of size it + 1.
-        vguess  - index of initial guess
-        vdest - index of result.  Note that vguess may == vdest (replace
-                guess with the solution).
-        it - HH upper triangular part is a block of size (it+1) x (it+1)
-
-     This is an internal routine that knows about the FGMRES internals.
- */
 static PetscErrorCode KSPFGMRESBuildSoln(PetscScalar *nrs, Vec vguess, Vec vdest, KSP ksp, PetscInt it)
 {
   PetscScalar tt;
@@ -353,22 +298,6 @@ static PetscErrorCode KSPFGMRESBuildSoln(PetscScalar *nrs, Vec vguess, Vec vdest
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*
-
-    KSPFGMRESUpdateHessenberg - Do the scalar work for the orthogonalization.
-                            Return new residual.
-
-    input parameters:
-
-.        ksp -    Krylov space object
-.        it  -    plane rotations are applied to the (it+1)th column of the
-                  modified hessenberg (i.e. HH(:,it))
-.        hapend - PETSC_FALSE not happy breakdown ending.
-
-    output parameters:
-.        res - the new residual
-
- */
 static PetscErrorCode KSPFGMRESUpdateHessenberg(KSP ksp, PetscInt it, PetscBool hapend, PetscReal *res)
 {
   PetscScalar *hh, *cc, *ss, tt;
@@ -436,13 +365,6 @@ static PetscErrorCode KSPFGMRESUpdateHessenberg(KSP ksp, PetscInt it, PetscBool 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*
-
-   KSPFGMRESGetNewVectors - This routine allocates more work vectors, starting from
-                         VEC_VV(it), and more preconditioned work vectors, starting
-                         from PREVEC(i).
-
-*/
 static PetscErrorCode KSPFGMRESGetNewVectors(KSP ksp, PetscInt it)
 {
   KSP_FGMRES *fgmres = (KSP_FGMRES *)ksp->data;
@@ -476,21 +398,6 @@ static PetscErrorCode KSPFGMRESGetNewVectors(KSP ksp, PetscInt it)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*
-
-  KSPBuildSolution_FGMRES
-
-  Input Parameter:
-+ ksp - the Krylov space object
-- ptr - the vec
-
-  Output Parameter:
-. result - the solution
-
-  Note: this calls KSPFGMRESBuildSoln - the same function that KSPFGMRESCycle
-  calls directly.
-
-*/
 PetscErrorCode KSPBuildSolution_FGMRES(KSP ksp, Vec ptr, Vec *result)
 {
   KSP_FGMRES *fgmres = (KSP_FGMRES *)ksp->data;
@@ -589,8 +496,7 @@ PetscErrorCode KSPGMRESGetRestart_FGMRES(KSP ksp, PetscInt *max_k)
    Options Database Keys:
 +   -ksp_gmres_restart <restart> - the number of Krylov directions to orthogonalize against
 .   -ksp_gmres_haptol <tol> - sets the tolerance for "happy ending" (exact convergence)
-.   -ksp_gmres_preallocate - preallocate all the Krylov search directions initially (otherwise groups of
-                             vectors are allocated as needed)
+.   -ksp_gmres_preallocate - preallocate all the Krylov search directions initially (otherwise groups of vectors are allocated as needed)
 .   -ksp_gmres_classicalgramschmidt - use classical (unmodified) Gram-Schmidt to orthogonalize against the Krylov space (fast) (the default)
 .   -ksp_gmres_modifiedgramschmidt - use modified Gram-Schmidt in the orthogonalization (more stable, but slower)
 .   -ksp_gmres_cgs_refinement_type <refine_never,refine_ifneeded,refine_always> - determine if iterative refinement is used to increase the
@@ -606,11 +512,11 @@ PetscErrorCode KSPGMRESGetRestart_FGMRES(KSP ksp, PetscInt *max_k)
 
     Only right preconditioning is supported.
 
-    The following options -ksp_type fgmres -pc_type ksp -ksp_ksp_type bcgs -ksp_view -ksp_pc_type jacobi make the preconditioner (or inner solver)
-    be bi-CG-stab with a preconditioner of Jacobi.
+    The following options `-ksp_type fgmres -pc_type ksp -ksp_ksp_type bcgs -ksp_view -ksp_pc_type jacobi` make the preconditioner (or inner solver)
+    be bi-CG-stab with a preconditioner of `PCJACOBI`
 
     Developer Note:
-    This object is subclassed off of `KSPGMRES`
+    This object is subclassed off of `KSPGMRES`, see the source code in src/ksp/ksp/impls/gmres for comments on the structure of the code
 
     Contributed by:
     Allison Baker

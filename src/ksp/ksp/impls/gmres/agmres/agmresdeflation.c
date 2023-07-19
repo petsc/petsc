@@ -1,18 +1,18 @@
 /*
- *  This file computes data for the deflated restarting in the Newton-basis GMRES. At each restart (or at each detected stagnation in the adaptive strategy), a basis of an (approximated)invariant subspace corresponding to the smallest eigenvalues is extracted from the Krylov subspace. It is then used to augment the Newton basis.
- *
- * References : D. Nuentsa Wakam and J. Erhel, Parallelism and robustness in GMRES with the Newton basis and the deflation of eigenvalues. Research report INRIA RR-7787.
- * Author: Desire NUENTSA WAKAM <desire.nuentsa_wakam@inria.fr>, 2011
- */
+  This file computes data for the deflated restarting in the Newton-basis GMRES.
+  At each restart (or at each detected stagnation in the adaptive strategy), a basis of an
+  (approximated)invariant subspace corresponding to the smallest eigenvalues is extracted from the Krylov subspace.
+  It is then used to augment the Newton basis.
+*/
 
 #include <../src/ksp/ksp/impls/gmres/agmres/agmresimpl.h>
 
 /* Quicksort algorithm to sort  the eigenvalues in increasing orders
- * val_r - real part of eigenvalues, unchanged on exit.
- * val_i - Imaginary part of eigenvalues unchanged on exit.
- * size - Number of eigenvalues (with complex conjugates)
- * perm - contains on exit the permutation vector to reorder the vectors val_r and val_i.
- */
+   val_r - real part of eigenvalues, unchanged on exit.
+   val_i - Imaginary part of eigenvalues unchanged on exit.
+   size - Number of eigenvalues (with complex conjugates)
+   perm - contains on exit the permutation vector to reorder the vectors val_r and val_i.
+*/
 #define DEPTH 500
 static PetscErrorCode KSPAGMRESQuickSort(PetscScalar *val_r, PetscScalar *val_i, PetscInt size, PetscInt *perm)
 {
@@ -77,18 +77,18 @@ static PetscErrorCode KSPAGMRESQuickSort(PetscScalar *val_r, PetscScalar *val_i,
 }
 
 /*
- * Compute the Schur vectors from the generalized eigenvalue problem A.u =\lambda.B.u
- * KspSize -  rank of the matrices A and B, size of the current Krylov basis
- * A - Left matrix
- * B - Right matrix
- * ldA - first dimension of A as declared  in the calling program
- * ldB - first dimension of B as declared  in the calling program
- * IsReduced - specifies if the matrices are already in the reduced form,
- * i.e A is a Hessenberg matrix and B is upper triangular.
- * Sr - on exit, the extracted Schur vectors corresponding
- * the smallest eigenvalues (with complex conjugates)
- * CurNeig - Number of extracted eigenvalues
- */
+ Compute the Schur vectors from the generalized eigenvalue problem A.u =\lambda.B.u
+ KspSize -  rank of the matrices A and B, size of the current Krylov basis
+ A - Left matrix
+ B - Right matrix
+ ldA - first dimension of A as declared  in the calling program
+ ldB - first dimension of B as declared  in the calling program
+ IsReduced - specifies if the matrices are already in the reduced form,
+ i.e A is a Hessenberg matrix and B is upper triangular.
+ Sr - on exit, the extracted Schur vectors corresponding
+ the smallest eigenvalues (with complex conjugates)
+ CurNeig - Number of extracted eigenvalues
+*/
 static PetscErrorCode KSPAGMRESSchurForm(KSP ksp, PetscBLASInt KspSize, PetscScalar *A, PetscBLASInt ldA, PetscScalar *B, PetscBLASInt ldB, PetscBool IsReduced, PetscScalar *Sr, PetscInt *CurNeig)
 {
   KSP_AGMRES   *agmres = (KSP_AGMRES *)ksp->data;
@@ -173,9 +173,9 @@ static PetscErrorCode KSPAGMRESSchurForm(KSP ksp, PetscBLASInt KspSize, PetscSca
 }
 
 /*
- * This function form the matrices for the generalized eigenvalue problem,
- * it then compute the Schur vectors needed to augment the Newton basis.
- */
+  Forms the matrices for the generalized eigenvalue problem,
+  it then compute the Schur vectors needed to augment the Newton basis.
+*/
 PetscErrorCode KSPAGMRESComputeDeflationData(KSP ksp)
 {
   KSP_AGMRES  *agmres  = (KSP_AGMRES *)ksp->data;

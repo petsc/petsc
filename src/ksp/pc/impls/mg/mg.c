@@ -1213,8 +1213,6 @@ PetscErrorCode PCSetUp_MG(PC pc)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* -------------------------------------------------------------------------------------*/
-
 PetscErrorCode PCMGGetLevels_MG(PC pc, PetscInt *levels)
 {
   PC_MG *mg = (PC_MG *)pc->data;
@@ -1303,7 +1301,7 @@ PetscErrorCode PCMGGetGridComplexity(PC pc, PetscReal *gc, PetscReal *oc)
 }
 
 /*@
-  PCMGSetType - Determines the form of multigrid to use:
+  PCMGSetType - Determines the form of multigrid to use, either
   multiplicative, additive, full, or the Kaskade algorithm.
 
   Logically Collective
@@ -1824,14 +1822,13 @@ PetscErrorCode PCGetCoarseOperators_MG(PC pc, PetscInt *num_levels, Mat *coarseO
 - function - constructor routine
 
   Calling sequence of `function`:
-$  PetscErrorCode my_csp(PC pc, PetscInt l, DM dm, KSP smooth, PetscInt Nc, Mat initGuess, Mat *coarseSp)
-+  pc        - The `PC` object
-.  l         - The multigrid level, 0 is the coarse level
-.  dm        - The `DM` for this level
-.  smooth    - The level smoother
-.  Nc        - The size of the coarse space
-.  initGuess - Basis for an initial guess for the space
--  coarseSp  - A basis for the computed coarse space
++ pc        - The `PC` object
+. l         - The multigrid level, 0 is the coarse level
+. dm        - The `DM` for this level
+. smooth    - The level smoother
+. Nc        - The size of the coarse space
+. initGuess - Basis for an initial guess for the space
+- coarseSp  - A basis for the computed coarse space
 
   Level: advanced
 
@@ -1840,7 +1837,7 @@ $  PetscErrorCode my_csp(PC pc, PetscInt l, DM dm, KSP smooth, PetscInt Nc, Mat 
 
 .seealso: `PCMG`, `PCMGGetCoarseSpaceConstructor()`, `PCRegister()`
 @*/
-PetscErrorCode PCMGRegisterCoarseSpaceConstructor(const char name[], PetscErrorCode (*function)(PC, PetscInt, DM, KSP, PetscInt, Mat, Mat *))
+PetscErrorCode PCMGRegisterCoarseSpaceConstructor(const char name[], PetscErrorCode (*function)(PC pc, PetscInt l, DM dm, KSP smooth, PetscInt Nc, Mat initGuess, Mat *coarseSp))
 {
   PetscFunctionBegin;
   PetscCall(PCInitializePackage());
@@ -1890,16 +1887,25 @@ PetscErrorCode PCMGGetCoarseSpaceConstructor(const char name[], PetscErrorCode (
    Level: intermediate
 
    Notes:
-    If one uses a Krylov method such `KSPGMRES` or `KSPCG` as the smoother then one must use `KSPFGMRES`, `KSPGCR`, or `KSPRICHARDSON` as the outer Krylov method
+   The Krylov solver (if any) and preconditioner (smoother) and their parameters are controlled from the options database with the standard
+   options database keywords prefixed with `-mg_levels_` to affect all the levels but the coarsest, which is controlled with `-mg_coarse_`.
+   One can set different preconditioners etc on specific levels with the prefix `-mg_levels_n_` where `n` is the level number (zero being
+   the coarse level. For example
+.vb
+   -mg_levels_ksp_type gmres -mg_levels_pc_type bjacobi -mg_coarse_pc_type svd -mg_levels_2_pc_type sor
+.ve
+   These options also work for controlling the smoothers etc inside `PCGAMG`
 
-       When run with a single level the smoother options are used on that level NOT the coarse grid solver options
+   If one uses a Krylov method such `KSPGMRES` or `KSPCG` as the smoother then one must use `KSPFGMRES`, `KSPGCR`, or `KSPRICHARDSON` as the outer Krylov method
 
-       When run with `KSPRICHARDSON` the convergence test changes slightly if monitor is turned on. The iteration count may change slightly. This
-       is because without monitoring the residual norm is computed WITHIN each multigrid cycle on the finest level after the pre-smoothing
-       (because the residual has just been computed for the multigrid algorithm and is hence available for free) while with monitoring the
-       residual is computed at the end of each cycle.
+   When run with a single level the smoother options are used on that level NOT the coarse grid solver options
 
-.seealso: `PCCreate()`, `PCSetType()`, `PCType`, `PC`, `PCMGType`, `PCEXOTIC`, `PCGAMG`, `PCML`, `PCHYPRE`
+   When run with `KSPRICHARDSON` the convergence test changes slightly if monitor is turned on. The iteration count may change slightly. This
+   is because without monitoring the residual norm is computed WITHIN each multigrid cycle on the finest level after the pre-smoothing
+   (because the residual has just been computed for the multigrid algorithm and is hence available for free) while with monitoring the
+   residual is computed at the end of each cycle.
+
+.seealso: [](sec_mg), `PCCreate()`, `PCSetType()`, `PCType`, `PC`, `PCMGType`, `PCEXOTIC`, `PCGAMG`, `PCML`, `PCHYPRE`
           `PCMGSetLevels()`, `PCMGGetLevels()`, `PCMGSetType()`, `PCMGSetCycleType()`,
           `PCMGSetDistinctSmoothUp()`, `PCMGGetCoarseSolve()`, `PCMGSetResidual()`, `PCMGSetInterpolation()`,
           `PCMGSetRestriction()`, `PCMGGetSmoother()`, `PCMGGetSmootherUp()`, `PCMGGetSmootherDown()`,

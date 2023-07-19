@@ -428,12 +428,11 @@ static PetscErrorCode KSPGuessFischerSetModel_Fischer(KSPGuess guess, PetscInt m
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*
-    KSPGUESSFISCHER - Implements Paul Fischer's two initial guess algorithms and a nonorthogonalizing variant for situations where
+/*MC
+    KSPGUESSFISCHER - Implements Paul Fischer's initial guess algorithms and a non-orthogonalizing variant for situations where
     a linear system is solved repeatedly
 
-  References:
-. * - https://ntrs.nasa.gov/archive/nasa/casi.ntrs.nasa.gov/19940020363_1994020363.pdf
+    Level: intermediate
 
    Notes:
     the algorithm is different from Fischer's paper because we do not CHANGE the right hand side of the new
@@ -442,29 +441,33 @@ static PetscErrorCode KSPGuessFischerSetModel_Fischer(KSPGuess guess, PetscInt m
     the original RHS). We use the xtilde = x - xguess as the new direction so that it is not
     mostly orthogonal to the previous solutions.
 
-    These are not intended to be used directly, they are called by KSP automatically with the command line options -ksp_guess_type fischer -ksp_guess_fischer_model <int,int> or programmatically as
+    These are not intended to be used directly, they are called by `KSP` automatically with the command line options `-ksp_guess_type fischer`
+    `-ksp_guess_fischer_model <int,int>` or programmatically with
 .vb
     KSPGetGuess(ksp,&guess);
     KSPGuessSetType(guess,KSPGUESSFISCHER);
     KSPGuessFischerSetModel(guess,model,basis);
     KSPGuessSetTolerance(guess,PETSC_MACHINE_EPSILON);
-
-    The default tolerance (which is only used in Method 3) is 32*PETSC_MACHINE_EPSILON. This value was chosen
+.ve
+    The default tolerance (which is only used in Method 3) is 32*`PETSC_MACHINE_EPSILON`. This value was chosen
     empirically by trying a range of tolerances and picking the one that lowered the solver iteration count the most
     with five vectors.
 
-    Method 2 is only for positive definite matrices, since it uses the A norm.
+    Method 2 is only for positive definite matrices, since it uses the energy norm.
 
     Method 3 is not in the original paper. It is the same as the first two methods except that it
     does not orthogonalize the input vectors or use A at all. This choice is faster but provides a
     less effective initial guess for large (about 10) numbers of stored vectors.
 
-    Developer note:
-      The option -ksp_fischer_guess <int,int> is still available for backward compatibility
+    Developer Note:
+      The option `-ksp_fischer_guess <int,int>` is still available for backward compatibility
 
-    Level: intermediate
+  References:
+. * - https://ntrs.nasa.gov/archive/nasa/casi.ntrs.nasa.gov/19940020363_1994020363.pdf
 
-@*/
+.seealso: `KSPGuess`, `KSPGuessType`, `KSP`
+M*/
+
 PetscErrorCode KSPGuessCreate_Fischer(KSPGuess guess)
 {
   KSPGuessFischer *fischer;

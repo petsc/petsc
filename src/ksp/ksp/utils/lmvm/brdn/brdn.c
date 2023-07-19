@@ -1,7 +1,5 @@
 #include <../src/ksp/ksp/utils/lmvm/brdn/brdn.h> /*I "petscksp.h" I*/
 
-/*------------------------------------------------------------*/
-
 /*
   The solution method is the matrix-free implementation of the inverse Hessian
   representation in page 312 of Griewank "Broyden Updating, The Good and The Bad!"
@@ -53,8 +51,6 @@ static PetscErrorCode MatSolve_LMVMBrdn(Mat B, Vec F, Vec dX)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*------------------------------------------------------------*/
-
 /*
   The forward product is the matrix-free implementation of Equation 2 in
   page 302 of Griewank "Broyden Updating, The Good and The Bad!"
@@ -105,8 +101,6 @@ static PetscErrorCode MatMult_LMVMBrdn(Mat B, Vec X, Vec Z)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*------------------------------------------------------------*/
-
 static PetscErrorCode MatUpdate_LMVMBrdn(Mat B, Vec X, Vec F)
 {
   Mat_LMVM   *lmvm  = (Mat_LMVM *)B->data;
@@ -138,8 +132,6 @@ static PetscErrorCode MatUpdate_LMVMBrdn(Mat B, Vec X, Vec F)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*------------------------------------------------------------*/
-
 static PetscErrorCode MatCopy_LMVMBrdn(Mat B, Mat M, MatStructure str)
 {
   Mat_LMVM *bdata = (Mat_LMVM *)B->data;
@@ -160,8 +152,6 @@ static PetscErrorCode MatCopy_LMVMBrdn(Mat B, Mat M, MatStructure str)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*------------------------------------------------------------*/
-
 static PetscErrorCode MatReset_LMVMBrdn(Mat B, PetscBool destructive)
 {
   Mat_LMVM *lmvm  = (Mat_LMVM *)B->data;
@@ -178,8 +168,6 @@ static PetscErrorCode MatReset_LMVMBrdn(Mat B, PetscBool destructive)
   PetscCall(MatReset_LMVM(B, destructive));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-
-/*------------------------------------------------------------*/
 
 static PetscErrorCode MatAllocate_LMVMBrdn(Mat B, Vec X, Vec F)
 {
@@ -199,8 +187,6 @@ static PetscErrorCode MatAllocate_LMVMBrdn(Mat B, Vec X, Vec F)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*------------------------------------------------------------*/
-
 static PetscErrorCode MatDestroy_LMVMBrdn(Mat B)
 {
   Mat_LMVM *lmvm  = (Mat_LMVM *)B->data;
@@ -217,8 +203,6 @@ static PetscErrorCode MatDestroy_LMVMBrdn(Mat B)
   PetscCall(MatDestroy_LMVM(B));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-
-/*------------------------------------------------------------*/
 
 static PetscErrorCode MatSetUp_LMVMBrdn(Mat B)
 {
@@ -237,8 +221,6 @@ static PetscErrorCode MatSetUp_LMVMBrdn(Mat B)
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-
-/*------------------------------------------------------------*/
 
 PetscErrorCode MatCreate_LMVMBrdn(Mat B)
 {
@@ -266,8 +248,6 @@ PetscErrorCode MatCreate_LMVMBrdn(Mat B)
   lbrdn->needP = lbrdn->needQ = PETSC_TRUE;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-
-/*------------------------------------------------------------*/
 
 /*@
   MatCreateLMVMBroyden - Creates a limited-memory "good" Broyden-type approximation

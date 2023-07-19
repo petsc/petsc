@@ -6,8 +6,6 @@
 
 PetscLogEvent KSP_DGMRESComputeDeflationData, KSP_DGMRESApplyDeflation;
 
-#define GMRES_DELTA_DIRECTIONS 10
-#define GMRES_DEFAULT_MAXK     30
 static PetscErrorCode KSPDGMRESGetNewVectors(KSP, PetscInt);
 static PetscErrorCode KSPDGMRESUpdateHessenberg(KSP, PetscInt, PetscBool, PetscReal *);
 static PetscErrorCode KSPDGMRESBuildSoln(PetscScalar *, Vec, Vec, KSP, PetscInt);
@@ -170,7 +168,7 @@ PetscErrorCode KSPDGMRESCycle(PetscInt *itcount, KSP ksp)
       PetscCall(KSP_PCApplyBAorAB(ksp, VEC_VV(it), VEC_VV(1 + it), VEC_TEMP_MATOP));
     }
     dgmres->matvecs += 1;
-    /* update hessenberg matrix and do Gram-Schmidt */
+    /* update Hessenberg matrix and do Gram-Schmidt */
     PetscCall((*dgmres->orthog)(ksp, it));
 
     /* vv(i+1) . vv(i+1) */
@@ -200,7 +198,7 @@ PetscErrorCode KSPDGMRESCycle(PetscInt *itcount, KSP ksp)
     /* Catch error in happy breakdown and signal convergence and break from loop */
     if (hapend) {
       if (!ksp->reason) {
-        PetscCheck(!ksp->errorifnotconverged, PetscObjectComm((PetscObject)ksp), PETSC_ERR_NOT_CONVERGED, "You reached the happy break down, but convergence was not indicated. Residual norm = %g", (double)res);
+        PetscCheck(!ksp->errorifnotconverged, PetscObjectComm((PetscObject)ksp), PETSC_ERR_NOT_CONVERGED, "Reached happy break down, but convergence was not indicated. Residual norm = %g", (double)res);
         ksp->reason = KSP_DIVERGED_BREAKDOWN;
         break;
       }
@@ -418,7 +416,6 @@ static PetscErrorCode KSPDGMRESUpdateHessenberg(KSP ksp, PetscInt it, PetscBool 
      but now the new sine rotation would be zero...so the residual should
      be zero...so we will multiply "zero" by the last residual.  This might
      not be exactly what we want to do here -could just return "zero". */
-
     *res = 0.0;
   }
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -426,7 +423,7 @@ static PetscErrorCode KSPDGMRESUpdateHessenberg(KSP ksp, PetscInt it, PetscBool 
 
 /*
   Allocates more work vectors, starting from VEC_VV(it).
- */
+*/
 static PetscErrorCode KSPDGMRESGetNewVectors(KSP ksp, PetscInt it)
 {
   KSP_DGMRES *dgmres = (KSP_DGMRES *)ksp->data;
@@ -594,10 +591,10 @@ PetscErrorCode KSPDGMRESComputeDeflationData_DGMRES(KSP ksp, PetscInt *ExtrNeig)
   for (j = 0; j < neig; j++) PetscCall(KSP_PCApplyBAorAB(ksp, XX[j], MX[j], VEC_TEMP_MATOP));
   dgmres->matvecs += neig;
 
-  if ((r + neig1) > max_neig && dgmres->improve) { /* Improve the approximate eigenvectors in X by solving a new generalized eigenvalue -- Quite expensive to do this actually */
+  if ((r + neig1) > max_neig && dgmres->improve) { /* Improve the approximate eigenvectors in X by solving a new generalized eigenvalue -- expensive to do this */
     PetscCall(KSPDGMRESImproveEig(ksp, neig));
     PetscCall(PetscLogEventEnd(KSP_DGMRESComputeDeflationData, ksp, 0, 0, 0));
-    PetscFunctionReturn(PETSC_SUCCESS); /* We return here since data for M have been improved in  KSPDGMRESImproveEig()*/
+    PetscFunctionReturn(PETSC_SUCCESS); /* We return here since data for M have been improved in KSPDGMRESImproveEig()*/
   }
 
   /* Compute XMX = X'*M^{-1}*A*X -- size (neig, neig) */
@@ -769,7 +766,7 @@ PetscErrorCode KSPDGMRESComputeSchurForm_DGMRES(KSP ksp, PetscInt *neig)
     PetscReal    CondEig; /* lower bound on the reciprocal condition number for the selected cluster of eigenvalues */
     PetscReal    CondSub; /* estimated reciprocal condition number of the specified invariant subspace. */
     PetscCallBLAS("LAPACKtrsen", LAPACKtrsen_("B", "V", select, &bn, A, &ldA, Q, &ldQ, wr, wi, &NbrEig, &CondEig, &CondSub, work, &lwork, iwork, &liwork, &info));
-    PetscCheck(info != 1, PetscObjectComm((PetscObject)ksp), PETSC_ERR_LIB, "UNABLE TO REORDER THE EIGENVALUES WITH THE LAPACK ROUTINE : ILL-CONDITIONED PROBLEM");
+    PetscCheck(info != 1, PetscObjectComm((PetscObject)ksp), PETSC_ERR_LIB, "Unable to reorder the eigenvalues with the LAPACK routine: ILL-CONDITIONED PROBLEM");
   }
   PetscCall(PetscFree(select));
 
@@ -991,8 +988,6 @@ static PetscErrorCode KSPDGMRESImproveEig_DGMRES(KSP ksp, PetscInt neig)
 
 /*MC
      KSPDGMRES - Implements the deflated GMRES as defined in [1,2].
-                 In this implementation, the adaptive strategy allows to switch to the deflated GMRES when the
-                 stagnation occurs.
 
    Options Database Keys:
    GMRES Options (inherited):
@@ -1023,8 +1018,10 @@ static PetscErrorCode KSPDGMRESImproveEig_DGMRES(KSP ksp, PetscInt neig)
 
  Level: beginner
 
- Note:
-    Left and right preconditioning are supported, but not symmetric preconditioning. Complex arithmetic is not supported
+ Notes:
+ Left and right preconditioning are supported, but not symmetric preconditioning. Complex arithmetic is not supported
+
+ In this implementation, the adaptive strategy allows switching to deflated GMRES when the stagnation occurs.
 
  References:
 + [1] - J. Erhel, K. Burrage and B. Pohl,  Restarted GMRES preconditioned by deflation,J. Computational and Applied Mathematics, 69(1996).

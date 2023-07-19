@@ -416,8 +416,7 @@ PetscErrorCode KSPHPDDMSetDeflationMat(KSP ksp, Mat U)
 }
 
 /*@
-  KSPHPDDMGetDeflationMat - Gets the deflation space computed by Krylov methods in `KSPHPDDM`  with recycling or NULL if `KSPSolve()` has not been called yet.
-  This space is viewed as a set of vectors stored in a `MATDENSE` (column major). It is the responsibility of the user to free the returned `Mat`.
+  KSPHPDDMGetDeflationMat - Gets the deflation space computed by Krylov methods in `KSPHPDDM`  with recycling or `NULL` if `KSPSolve()` has not been called yet.
 
   Input Parameter:
 . ksp - iterative context
@@ -426,6 +425,9 @@ PetscErrorCode KSPHPDDMSetDeflationMat(KSP ksp, Mat U)
 . U - deflation space generated during `KSPSolve()`
 
   Level: intermediate
+
+  Note:
+  This space is viewed as a set of vectors stored in a `MATDENSE` (column major). It is the responsibility of the user to free the returned `Mat`.
 
 .seealso: [](ch_ksp), `KSPHPDDM`, `KSPCreate()`, `KSPType`, `KSPHPDDMSetDeflationMat()`
 @*/
@@ -550,7 +552,7 @@ static PetscErrorCode KSPMatSolve_HPDDM(KSP ksp, Mat B, Mat X)
   Notes:
   Unlike `KSPReset()`, this function does not destroy any deflation space attached to the `KSP`.
 
-  As an example, in the following sequence:
+  As an example, in the following sequence\:
 .vb
      KSPHPDDMSetType(ksp, KSPGCRODR);
      KSPSolve(ksp, b, x);

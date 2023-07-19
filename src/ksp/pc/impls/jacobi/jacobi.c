@@ -1,6 +1,5 @@
 
-/*  --------------------------------------------------------------------
-
+/*
      This file implements a Jacobi preconditioner in PETSc as part of PC.
      You can use this as a starting point for implementing your own
      preconditioner that is not provided with PETSc. (You might also consider
@@ -40,8 +39,7 @@
      right symmetric preconditioner application via PCApplySymmetricLeft()
      and PCApplySymmetricRight().  The Jacobi implementation is
      PCApplySymmetricLeftOrRight_Jacobi().
-
-    -------------------------------------------------------------------- */
+*/
 
 /*
    Include files needed for the Jacobi preconditioner:

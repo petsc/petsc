@@ -13,43 +13,36 @@ PetscBool PCRegisterAllCalled = PETSC_FALSE;
 PetscFunctionList PCList = NULL;
 
 /*@C
-  PCSetType - Builds PC for a particular preconditioner type
+  PCSetType - Builds `PC` for a particular preconditioner type
 
   Collective
 
   Input Parameters:
-+ pc   - the preconditioner context.
-- type - a known method
++ pc   - the preconditioner context
+- type - a known method, see `PCType` for possible values
 
   Options Database Key:
-. -pc_type <type> - Sets PC type
-
-   Use -help for a list of available methods (for instance,
-   jacobi or bjacobi)
+. -pc_type <type> - Sets `PC` type
 
   Notes:
-  See "petsc/include/petscpc.h" for available methods (for instance,
-  PCJACOBI, PCILU, or PCBJACOBI).
-
-  Normally, it is best to use the KSPSetFromOptions() command and
-  then set the PC type from the options database rather than by using
+  Normally, it is best to use the `KSPSetFromOptions()` command and
+  then set the `PC` type from the options database rather than by using
   this routine.  Using the options database provides the user with
   maximum flexibility in evaluating the many different preconditioners.
-  The PCSetType() routine is provided for those situations where it
+  The `PCSetType()` routine is provided for those situations where it
   is necessary to set the preconditioner independently of the command
   line or options database.  This might be the case, for example, when
   the choice of preconditioner changes during the execution of the
   program, and the user's application is taking responsibility for
-  choosing the appropriate preconditioner.  In other words, this
-  routine is not for beginners.
+  choosing the appropriate preconditioner.
 
   Level: intermediate
 
-  Developer Notes: PCRegister() is used to add preconditioner types to PCList from which they
-  are accessed by PCSetType().
+  Developer Notes:
+  `PCRegister()` is used to add preconditioner types to `PCList` from which they
+  are accessed by `PCSetType()`.
 
 .seealso: `KSPSetType()`, `PCType`, `PCRegister()`, `PCCreate()`, `KSPGetPC()`
-
 @*/
 PetscErrorCode PCSetType(PC pc, PCType type)
 {
@@ -85,7 +78,7 @@ PetscErrorCode PCSetType(PC pc, PCType type)
 }
 
 /*@C
-  PCGetType - Gets the PC method type and name (as a string) from the PC
+  PCGetType - Gets the `PCType` (as a string) from the `PC`
   context.
 
   Not Collective
@@ -98,8 +91,7 @@ PetscErrorCode PCSetType(PC pc, PCType type)
 
   Level: intermediate
 
-.seealso: `PCSetType()`
-
+.seealso: `PC`, `PCType`, `PCSetType()`
 @*/
 PetscErrorCode PCGetType(PC pc, PCType *type)
 {
@@ -113,9 +105,7 @@ PetscErrorCode PCGetType(PC pc, PCType *type)
 extern PetscErrorCode PCGetDefaultType_Private(PC, const char *[]);
 
 /*@
-  PCSetFromOptions - Sets PC options from the options database.
-  This routine must be called before PCSetUp() if the user is to be
-  allowed to set the preconditioner method.
+  PCSetFromOptions - Sets `PC` options from the options database.
 
   Collective
 
@@ -123,12 +113,17 @@ extern PetscErrorCode PCGetDefaultType_Private(PC, const char *[]);
 . pc - the preconditioner context
 
   Options Database Key:
-. -pc_use_amat true,false - see PCSetUseAmat()
+. -pc_type - name of type, for example `bjacobi`
 
-  Level: developer
+  Level: advanced
 
-.seealso: `PCSetUseAmat()`
+  Notes:
+  This routine must be called before `PCSetUp()` if the user is to be
+  allowed to set the preconditioner method from the options database.
 
+  This is called from `KSPSetFromOptions()` so rarely needs to be called directly
+
+.seealso: `PC`, `PCSetType()`, `PCType`, `KSPSetFromOptions()`
 @*/
 PetscErrorCode PCSetFromOptions(PC pc)
 {
@@ -170,21 +165,24 @@ skipoptions:
 }
 
 /*@
-  PCSetDM - Sets the DM that may be used by some preconditioners
+  PCSetDM - Sets the `DM` that may be used by some preconditioners
 
   Logically Collective
 
   Input Parameters:
 + pc - the preconditioner context
-- dm - the dm, can be NULL
+- dm - the `DM`, can be `NULL` to remove any current `DM`
 
   Level: intermediate
 
-  Developer Notes:
-  The routines KSP/SNES/TSSetDM() require the dm to be non-NULL, but this one can be NULL since all it does is
-  replace the current DM
+  Note:
+  Users generally call  `KSPSetDM()`, `SNESSetDM()`, or `TSSetDM()` so this is rarely called directly
 
-.seealso: `PCGetDM()`, `KSPSetDM()`, `KSPGetDM()`
+  Developer Notes:
+  The routines KSP/SNES/TSSetDM() require `dm` to be non-`NULL`, but this one can be `NULL` since all it does is
+  replace the current `DM`
+
+.seealso: `PC`, `DM`, `PCGetDM()`, `KSPSetDM()`, `KSPGetDM()`, `SNESSetDM()`, `TSSetDM()`
 @*/
 PetscErrorCode PCSetDM(PC pc, DM dm)
 {
@@ -197,7 +195,7 @@ PetscErrorCode PCSetDM(PC pc, DM dm)
 }
 
 /*@
-  PCGetDM - Gets the DM that may be used by some preconditioners
+  PCGetDM - Gets the `DM` that may be used by some preconditioners
 
   Not Collective
 
@@ -205,11 +203,11 @@ PetscErrorCode PCSetDM(PC pc, DM dm)
 . pc - the preconditioner context
 
   Output Parameter:
-. dm - the dm
+. dm - the `DM`
 
   Level: intermediate
 
-.seealso: `PCSetDM()`, `KSPSetDM()`, `KSPGetDM()`
+.seealso: `PC`, `DM`, `PCSetDM()`, `KSPSetDM()`, `KSPGetDM()`
 @*/
 PetscErrorCode PCGetDM(PC pc, DM *dm)
 {
@@ -220,17 +218,17 @@ PetscErrorCode PCGetDM(PC pc, DM *dm)
 }
 
 /*@
-  PCSetApplicationContext - Sets the optional user-defined context for the linear solver.
+  PCSetApplicationContext - Sets the optional user-defined context for the preconditioner
 
   Logically Collective
 
   Input Parameters:
-+ pc   - the PC context
++ pc   - the `PC` context
 - usrP - optional user context
 
-  Level: intermediate
+  Level: advanced
 
-.seealso: `PCGetApplicationContext()`
+.seealso: `PC`, `PCGetApplicationContext()`
 @*/
 PetscErrorCode PCSetApplicationContext(PC pc, void *usrP)
 {
@@ -241,19 +239,19 @@ PetscErrorCode PCSetApplicationContext(PC pc, void *usrP)
 }
 
 /*@
-  PCGetApplicationContext - Gets the user-defined context for the linear solver.
+  PCGetApplicationContext - Gets the user-defined context for the preconditioner set with `PCSetApplicationContext()`
 
   Not Collective
 
   Input Parameter:
-. pc - PC context
+. pc - `PC` context
 
   Output Parameter:
 . usrP - user context
 
   Level: intermediate
 
-.seealso: `PCSetApplicationContext()`
+.seealso: `PC`, `PCSetApplicationContext()`
 @*/
 PetscErrorCode PCGetApplicationContext(PC pc, void *usrP)
 {

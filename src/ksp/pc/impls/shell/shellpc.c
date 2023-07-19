@@ -26,12 +26,12 @@ typedef struct {
 } PC_Shell;
 
 /*@C
-  PCShellGetContext - Returns the user-provided context associated with a shell `PC`
+  PCShellGetContext - Returns the user-provided context associated with a shell `PC` that was provided with `PCShellSetContext()`
 
   Not Collective
 
   Input Parameter:
-. pc - of type `PCSHELL` created with `PCSetType`(pc,shell)
+. pc - of type `PCSHELL`
 
   Output Parameter:
 . ctx - the user provided context
@@ -39,13 +39,13 @@ typedef struct {
   Level: advanced
 
   Note:
-  This routine is intended for use within various shell routines
+  This routine is intended for use within the various user provided shell routines such as `PCShellSetAppy()`
 
-  Fortran Notes:
+  Fortran Note:
   To use this from Fortran you must write a Fortran interface definition for this
   function that tells Fortran the Fortran derived data type that you are passing in as the ctx argument.
 
-.seealso: `PCSHELL`, `PCShellSetContext()`
+.seealso: `PC`, `PCSHELL`, `PCShellSetContext()`, `PCShellSetAppy()`, `PCShellSetDestroy()`
 @*/
 PetscErrorCode PCShellGetContext(PC pc, void *ctx)
 {
@@ -61,7 +61,7 @@ PetscErrorCode PCShellGetContext(PC pc, void *ctx)
 }
 
 /*@
-  PCShellSetContext - sets the context for a shell `PC`
+  PCShellSetContext - sets the context for a shell `PC` that can be accessed with `PCShellGetContext()`
 
   Logically Collective
 
@@ -71,11 +71,16 @@ PetscErrorCode PCShellGetContext(PC pc, void *ctx)
 
   Level: advanced
 
+  Notes:
+  This routine is intended for use within the various user-provided shell routines such as `PCShellSetAppy()`
+
+  One should also provide a routine to destroy the context when `pc` is destroyed with `PCShellSetDestroy()`
+
   Fortran Notes:
   To use this from Fortran you must write a Fortran interface definition for this
   function that tells Fortran the Fortran derived data type that you are passing in as the ctx argument.
 
-.seealso: `PCShellGetContext()`, `PCSHELL`
+.seealso: `PC`, `PCShellGetContext()`, `PCSHELL`, `PCShellSetAppy()`, `PCShellSetDestroy()`
 @*/
 PetscErrorCode PCShellSetContext(PC pc, void *ctx)
 {
@@ -413,8 +418,7 @@ static PetscErrorCode PCShellGetName_Shell(PC pc, const char *name[])
 }
 
 /*@C
-  PCShellSetDestroy - Sets routine to use to destroy the user-provided
-  application context.
+  PCShellSetDestroy - Sets routine to use to destroy the user-provided application context that was provided with `PCShellSetContext()`
 
   Logically Collective
 
@@ -423,14 +427,13 @@ static PetscErrorCode PCShellGetName_Shell(PC pc, const char *name[])
 - destroy - the application-provided destroy routine
 
   Calling sequence of `destroy`:
-$  PetscErrorCode destroy(PC pc)
-. pc - the preconditioner, get the application context with `PCShellGetContext()`
+. pc - the preconditioner
 
   Level: intermediate
 
-.seealso: `PCSHELL`, `PCShellSetApply()`, `PCShellSetContext()`
+.seealso: `PCSHELL`, `PCShellSetApply()`, `PCShellSetContext()`, `PCShellGetContext()`
 @*/
-PetscErrorCode PCShellSetDestroy(PC pc, PetscErrorCode (*destroy)(PC))
+PetscErrorCode PCShellSetDestroy(PC pc, PetscErrorCode (*destroy)(PC pc))
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
@@ -449,17 +452,16 @@ PetscErrorCode PCShellSetDestroy(PC pc, PetscErrorCode (*destroy)(PC))
 - setup - the application-provided setup routine
 
   Calling sequence of `setup`:
-$   PetscErrorCode setup(PC pc)
-. pc - the preconditioner, get the application context with `PCShellGetContext()`
-
-  Note:
-  the function MUST return an error code of 0 on success and nonzero on failure.
+. pc - the preconditioner
 
   Level: intermediate
 
-.seealso: `PCSHELL`, `PCShellSetApplyRichardson()`, `PCShellSetApply()`, `PCShellSetContext()`
+  Note:
+  You can get the `PCSHELL` context set with `PCShellSetContext()` using `PCShellGetContext()` if needed by `setup`.
+
+.seealso: `PCSHELL`, `PCShellSetApplyRichardson()`, `PCShellSetApply()`, `PCShellSetContext()`, , `PCShellGetContext()`
 @*/
-PetscErrorCode PCShellSetSetUp(PC pc, PetscErrorCode (*setup)(PC))
+PetscErrorCode PCShellSetSetUp(PC pc, PetscErrorCode (*setup)(PC pc))
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
@@ -468,7 +470,7 @@ PetscErrorCode PCShellSetSetUp(PC pc, PetscErrorCode (*setup)(PC))
 }
 
 /*@C
-  PCShellSetView - Sets routine to use as viewer of shell preconditioner
+  PCShellSetView - Sets routine to use as viewer of a `PCSHELL` shell preconditioner
 
   Logically Collective
 
@@ -477,17 +479,17 @@ PetscErrorCode PCShellSetSetUp(PC pc, PetscErrorCode (*setup)(PC))
 - view - the application-provided view routine
 
   Calling sequence of `view`:
-.vb
-   PetscErrorCode view(PC pc, PetscViewer v)
-.ve
-+ pc - the preconditioner, get the application context with `PCShellGetContext()`
--  v   - viewer
++ pc - the preconditioner
+- v  - viewer
 
   Level: advanced
 
-.seealso: `PCSHELL`, `PCShellSetApplyRichardson()`, `PCShellSetSetUp()`, `PCShellSetApplyTranspose()`
+  Note:
+  You can get the `PCSHELL` context set with `PCShellSetContext()` using `PCShellGetContext()` if needed by `view`.
+
+.seealso: `PC`, `PCSHELL`, `PCShellSetApplyRichardson()`, `PCShellSetSetUp()`, `PCShellSetApplyTranspose()`, `PCShellSetContext()`, `PCShellGetContext()`
 @*/
-PetscErrorCode PCShellSetView(PC pc, PetscErrorCode (*view)(PC, PetscViewer))
+PetscErrorCode PCShellSetView(PC pc, PetscErrorCode (*view)(PC pc, PetscViewer v))
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
@@ -505,18 +507,18 @@ PetscErrorCode PCShellSetView(PC pc, PetscErrorCode (*view)(PC, PetscViewer))
 - apply - the application-provided preconditioning routine
 
   Calling sequence of `apply`:
-.vb
-   PetscErrorCode apply(PC pc, Vec xin, Vec xout)
-.ve
-+ pc - the preconditioner, get the application context with `PCShellGetContext()`
-.  xin - input vector
--  xout - output vector
++ pc   - the preconditioner, get the application context with `PCShellGetContext()`
+. xin  - input vector
+- xout - output vector
 
   Level: intermediate
 
-.seealso: `PCSHELL`, `PCShellSetApplyRichardson()`, `PCShellSetSetUp()`, `PCShellSetApplyTranspose()`, `PCShellSetContext()`, `PCShellSetApplyBA()`, `PCShellSetApplySymmetricRight()`, `PCShellSetApplySymmetricLeft()`
+  Note:
+  You can get the `PCSHELL` context set with `PCShellSetContext()` using `PCShellGetContext()` if needed by `apply`.
+
+.seealso: `PCSHELL`, `PCShellSetApplyRichardson()`, `PCShellSetSetUp()`, `PCShellSetApplyTranspose()`, `PCShellSetContext()`, `PCShellSetApplyBA()`, `PCShellSetApplySymmetricRight()`, `PCShellSetApplySymmetricLeft()`, `PCShellGetContext()`
 @*/
-PetscErrorCode PCShellSetApply(PC pc, PetscErrorCode (*apply)(PC, Vec, Vec))
+PetscErrorCode PCShellSetApply(PC pc, PetscErrorCode (*apply)(PC pc, Vec xin, Vec xout))
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
@@ -530,22 +532,22 @@ PetscErrorCode PCShellSetApply(PC pc, PetscErrorCode (*apply)(PC, Vec, Vec))
   Logically Collective
 
   Input Parameters:
-+ pc - the preconditioner context
--  apply - the application-provided preconditioning routine
++ pc       - the preconditioner context
+- matapply - the application-provided preconditioning routine
 
-  Calling sequence of `apply`:
-.vb
-   PetscErrorCode apply(PC pc, Mat Xin, Mat Xout)
-.ve
-+ pc - the preconditioner, get the application context with `PCShellGetContext()`
-.  Xin - input block of vectors
--  Xout - output block of vectors
+  Calling sequence of `matapply`:
++ pc   - the preconditioner
+. Xin  - input block of vectors represented as a dense `Mat`
+- Xout - output block of vectors represented as a dense `Mat`
 
   Level: advanced
 
-.seealso: `PCSHELL`, `PCShellSetApply()`
+  Note:
+  You can get the `PCSHELL` context set with `PCShellSetContext()` using `PCShellGetContext()` if needed by `matapply`.
+
+.seealso: `PCSHELL`, `PCShellSetApply()`, `PCShellSetContext()`, `PCShellGetContext()`
 @*/
-PetscErrorCode PCShellSetMatApply(PC pc, PetscErrorCode (*matapply)(PC, Mat, Mat))
+PetscErrorCode PCShellSetMatApply(PC pc, PetscErrorCode (*matapply)(PC pc, Mat Xin, Mat Xout))
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
@@ -563,18 +565,18 @@ PetscErrorCode PCShellSetMatApply(PC pc, PetscErrorCode (*matapply)(PC, Mat, Mat
 - apply - the application-provided left preconditioning routine
 
   Calling sequence of `apply`:
-.vb
-   PetscErrorCode apply(PC pc, Vec xin, Vec xout)
-.ve
-+ pc - the preconditioner, get the application context with `PCShellGetContext()`
-.  xin - input vector
--  xout - output vector
++ pc   - the preconditioner
+. xin  - input vector
+- xout - output vector
 
   Level: advanced
 
+  Note:
+  You can get the `PCSHELL` context set with `PCShellSetContext()` using `PCShellGetContext()` if needed by `apply`.
+
 .seealso: `PCSHELL`, `PCShellSetApply()`, `PCShellSetSetUp()`, `PCShellSetApplyTranspose()`, `PCShellSetContext()`
 @*/
-PetscErrorCode PCShellSetApplySymmetricLeft(PC pc, PetscErrorCode (*apply)(PC, Vec, Vec))
+PetscErrorCode PCShellSetApplySymmetricLeft(PC pc, PetscErrorCode (*apply)(PC pc, Vec xin, Vec xout))
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
@@ -592,18 +594,18 @@ PetscErrorCode PCShellSetApplySymmetricLeft(PC pc, PetscErrorCode (*apply)(PC, V
 - apply - the application-provided right preconditioning routine
 
   Calling sequence of `apply`:
-.vb
-   PetscErrorCode apply(PC pc, Vec xin, Vec xout)
-.ve
-+ pc - the preconditioner, get the application context with PCShellGetContext()
-.  xin - input vector
--  xout - output vector
++ pc   - the preconditioner
+. xin  - input vector
+- xout - output vector
 
   Level: advanced
 
-.seealso: `PCSHELL`, `PCShellSetApply()`, `PCShellSetApplySymmetricLeft()`, `PCShellSetSetUp()`, `PCShellSetApplyTranspose()`, `PCShellSetContext()`
+  Note:
+  You can get the `PCSHELL` context set with `PCShellSetContext()` using `PCShellGetContext()` if needed by `apply`.
+
+.seealso: `PCSHELL`, `PCShellSetApply()`, `PCShellSetApplySymmetricLeft()`, `PCShellSetSetUp()`, `PCShellSetApplyTranspose()`, `PCShellSetContext()`, `PCShellGetContext()`
 @*/
-PetscErrorCode PCShellSetApplySymmetricRight(PC pc, PetscErrorCode (*apply)(PC, Vec, Vec))
+PetscErrorCode PCShellSetApplySymmetricRight(PC pc, PetscErrorCode (*apply)(PC pc, Vec xin, Vec xout))
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
@@ -612,7 +614,7 @@ PetscErrorCode PCShellSetApplySymmetricRight(PC pc, PetscErrorCode (*apply)(PC, 
 }
 
 /*@C
-  PCShellSetApplyBA - Sets routine to use as preconditioner times operator.
+  PCShellSetApplyBA - Sets routine to use as the preconditioner times the operator.
 
   Logically Collective
 
@@ -621,18 +623,20 @@ PetscErrorCode PCShellSetApplySymmetricRight(PC pc, PetscErrorCode (*apply)(PC, 
 - applyBA - the application-provided BA routine
 
   Calling sequence of `applyBA`:
-.vb
-   PetscErrorCode applyBA(PC pc, Vec xin, Vec xout)
-.ve
-+ pc - the preconditioner, get the application context with `PCShellGetContext()`
-.  xin - input vector
--  xout - output vector
++ pc   - the preconditioner
+. side - `PC_LEFT`, `PC_RIGHT`, or `PC_SYMMETRIC`
+. xin  - input vector
+. xout - output vector
+- w    - work vector
 
   Level: intermediate
 
-.seealso: `PCSHELL`, `PCShellSetApplyRichardson()`, `PCShellSetSetUp()`, `PCShellSetApplyTranspose()`, `PCShellSetContext()`, `PCShellSetApply()`
+  Note:
+  You can get the `PCSHELL` context set with `PCShellSetContext()` using `PCShellGetContext()` if needed by `applyBA`.
+
+.seealso: `PCSHELL`, `PCShellSetApplyRichardson()`, `PCShellSetSetUp()`, `PCShellSetApplyTranspose()`, `PCShellSetContext()`, `PCShellSetApply()`, `PCShellGetContext()`, `PCSide`
 @*/
-PetscErrorCode PCShellSetApplyBA(PC pc, PetscErrorCode (*applyBA)(PC, PCSide, Vec, Vec, Vec))
+PetscErrorCode PCShellSetApplyBA(PC pc, PetscErrorCode (*applyBA)(PC pc, PCSide side, Vec xin, Vec xout, Vec w))
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
@@ -650,21 +654,18 @@ PetscErrorCode PCShellSetApplyBA(PC pc, PetscErrorCode (*applyBA)(PC, PCSide, Ve
 - applytranspose - the application-provided preconditioning transpose routine
 
   Calling sequence of `applytranspose`:
-.vb
-   PetscErrorCode applytranspose(PC pc, Vec xin, Vec xout)
-.ve
-+ pc - the preconditioner, get the application context with `PCShellGetContext()`
-.  xin - input vector
--  xout - output vector
++ pc   - the preconditioner
+. xin  - input vector
+- xout - output vector
 
   Level: intermediate
 
   Note:
-  Uses the same context variable as `PCShellSetApply()`.
+  You can get the `PCSHELL` context set with `PCShellSetContext()` using `PCShellGetContext()` if needed by `applytranspose`.
 
-.seealso: `PCSHELL`, `PCShellSetApplyRichardson()`, `PCShellSetSetUp()`, `PCShellSetApply()`, `PCSetContext()`, `PCShellSetApplyBA()`
+.seealso: `PCSHELL`, `PCShellSetApplyRichardson()`, `PCShellSetSetUp()`, `PCShellSetApply()`, `PCSetContext()`, `PCShellSetApplyBA()`, `PCGetContext()`
 @*/
-PetscErrorCode PCShellSetApplyTranspose(PC pc, PetscErrorCode (*applytranspose)(PC, Vec, Vec))
+PetscErrorCode PCShellSetApplyTranspose(PC pc, PetscErrorCode (*applytranspose)(PC pc, Vec xin, Vec xout))
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
@@ -684,18 +685,19 @@ PetscErrorCode PCShellSetApplyTranspose(PC pc, PetscErrorCode (*applytranspose)(
 - presolve - the application-provided presolve routine
 
   Calling sequence of `presolve`:
-.vb
-   PetscErrorCode presolve(PC pc, KSP ksp, Vec b, Vec x)
-.ve
-+ pc - the preconditioner, get the application context with `PCShellGetContext()`
-.  xin - input vector
--  xout - output vector
++ pc   - the preconditioner
+. ksp  - the `KSP` that contains `pc`
+. xin  - input vector
+- xout - output vector
 
   Level: advanced
 
-.seealso: `PCSHELL`, `PCShellSetApplyRichardson()`, `PCShellSetSetUp()`, `PCShellSetApplyTranspose()`, `PCShellSetPostSolve()`, `PCShellSetContext()`
+  Note:
+  You can get the `PCSHELL` context set with `PCShellSetContext()` using `PCShellGetContext()` if needed by `presolve`.
+
+.seealso: `PCSHELL`, `PCShellSetApplyRichardson()`, `PCShellSetSetUp()`, `PCShellSetApplyTranspose()`, `PCShellSetPostSolve()`, `PCShellSetContext()`, `PCGetContext()`
 @*/
-PetscErrorCode PCShellSetPreSolve(PC pc, PetscErrorCode (*presolve)(PC, KSP, Vec, Vec))
+PetscErrorCode PCShellSetPreSolve(PC pc, PetscErrorCode (*presolve)(PC pc, KSP ksp, Vec xin, Vec xout))
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
@@ -704,7 +706,7 @@ PetscErrorCode PCShellSetPreSolve(PC pc, PetscErrorCode (*presolve)(PC, KSP, Vec
 }
 
 /*@C
-  PCShellSetPostSolve - Sets routine to apply to the operators/vectors before a `KSPSolve()` is
+  PCShellSetPostSolve - Sets routine to apply to the operators/vectors after a `KSPSolve()` is
   applied. This usually does something like scale the linear system in some application
   specific way.
 
@@ -715,18 +717,19 @@ PetscErrorCode PCShellSetPreSolve(PC pc, PetscErrorCode (*presolve)(PC, KSP, Vec
 - postsolve - the application-provided presolve routine
 
   Calling sequence of `postsolve`:
-.vb
-   PetscErrorCode postsolve(PC pc, KSP ksp, Vec b, Vec x)
-.ve
-+ pc - the preconditioner, get the application context with `PCShellGetContext()`
-.  xin - input vector
--  xout - output vector
++ pc   - the preconditioner
+. ksp  - the `KSP` that contains `pc`
+. xin  - input vector
+- xout - output vector
 
   Level: advanced
 
-.seealso: `PCSHELL`, `PCShellSetApplyRichardson()`, `PCShellSetSetUp()`, `PCShellSetApplyTranspose()`, `PCShellSetPreSolve()`, `PCShellSetContext()`
+  Note:
+  You can get the `PCSHELL` context set with `PCShellSetContext()` using `PCShellGetContext()` if needed by `postsolve`.
+
+.seealso: `PCSHELL`, `PCShellSetApplyRichardson()`, `PCShellSetSetUp()`, `PCShellSetApplyTranspose()`, `PCShellSetPreSolve()`, `PCShellSetContext()`, `PCGetContext()`
 @*/
-PetscErrorCode PCShellSetPostSolve(PC pc, PetscErrorCode (*postsolve)(PC, KSP, Vec, Vec))
+PetscErrorCode PCShellSetPostSolve(PC pc, PetscErrorCode (*postsolve)(PC pc, KSP ksp, Vec xin, Vec xout))
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
@@ -746,7 +749,10 @@ PetscErrorCode PCShellSetPostSolve(PC pc, PetscErrorCode (*postsolve)(PC, KSP, V
 
   Level: intermediate
 
-.seealso: `PCSHELL`, `PCShellGetName()`
+  Note:
+  This is seperate from the name you can provide with `PetscObjectSetName()`
+
+.seealso: `PCSHELL`, `PCShellGetName()`, `PetscObjectSetName()`, `PetscObjectGetName()`
 @*/
 PetscErrorCode PCShellSetName(PC pc, const char name[])
 {
@@ -757,7 +763,7 @@ PetscErrorCode PCShellSetName(PC pc, const char name[])
 }
 
 /*@C
-  PCShellGetName - Gets an optional name that the user has set for a `PCSHELL`
+  PCShellGetName - Gets an optional name that the user has set for a `PCSHELL` with `PCShellSetName()`
   preconditioner.
 
   Not Collective
@@ -770,7 +776,7 @@ PetscErrorCode PCShellSetName(PC pc, const char name[])
 
   Level: intermediate
 
-.seealso: `PCSHELL`, `PCShellSetName()`
+.seealso: `PCSHELL`, `PCShellSetName()`, `PetscObjectSetName()`, `PetscObjectGetName()`
 @*/
 PetscErrorCode PCShellGetName(PC pc, const char *name[])
 {
@@ -792,23 +798,26 @@ PetscErrorCode PCShellGetName(PC pc, const char *name[])
 - apply - the application-provided preconditioning routine
 
   Calling sequence of `apply`:
-.vb
-   PetscErrorCode apply(PC pc, Vec b, Vec x, Vec r, PetscReal rtol, PetscReal abstol, PetscReal dtol, PetscInt maxits)
-.ve
-+ pc - the preconditioner, get the application context with `PCShellGetContext()`
-.  b - right-hand-side
-.  x - current iterate
-.  r - work space
-.  rtol - relative tolerance of residual norm to stop at
-.  abstol - absolute tolerance of residual norm to stop at
-.  dtol - if residual norm increases by this factor than return
--  maxits - number of iterations to run
++ pc               - the preconditioner
+. b                - right-hand-side
+. x                - current iterate
+. r                - work space
+. rtol             - relative tolerance of residual norm to stop at
+. abstol           - absolute tolerance of residual norm to stop at
+. dtol             - if residual norm increases by this factor than return
+. maxits           - number of iterations to run
+. zeroinitialguess - `PETSC_TRUE` if `x` is known to be initially zero
+. its              - returns the number of iterations used
+- reason           - returns the reason the iteration has converged
 
   Level: advanced
 
-.seealso: `PCShellSetApply()`, `PCShellSetContext()`
+  Note:
+  You can get the `PCSHELL` context set with `PCShellSetContext()` using `PCShellGetContext()` if needed by `apply`.
+
+.seealso: `PCSHELL`, `PCShellSetApply()`, `PCShellSetContext()`, `PCRichardsonConvergedReason()`, `PCShellGetContext()`
 @*/
-PetscErrorCode PCShellSetApplyRichardson(PC pc, PetscErrorCode (*apply)(PC, Vec, Vec, Vec, PetscReal, PetscReal, PetscReal, PetscInt, PetscBool, PetscInt *, PCRichardsonConvergedReason *))
+PetscErrorCode PCShellSetApplyRichardson(PC pc, PetscErrorCode (*apply)(PC pc, Vec b, Vec x, Vec r, PetscReal rtol, PetscReal abstol, PetscReal dtol, PetscInt maxits, PetscBool zeroinitialguess, PetscInt *its, PCRichardsonConvergedReason *reason))
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
@@ -839,6 +848,10 @@ PetscErrorCode PCShellSetApplyRichardson(PC pc, PetscErrorCode (*apply)(PC, Vec,
        PCShellSetSetUp(pc,setup);                   (optional)
        PCShellSetDestroy(pc,destroy);               (optional)
 .ve
+
+   Note:
+   Information required for the preconditioner and its internal datastructures can be set with `PCShellSetContext()` and then accessed
+   with `PCShellGetContext()` inside the routines provided above
 
 .seealso: `PCCreate()`, `PCSetType()`, `PCType`, `PC`,
           `MATSHELL`, `PCShellSetSetUp()`, `PCShellSetApply()`, `PCShellSetView()`, `PCShellSetDestroy()`, `PCShellSetPostSolve()`,

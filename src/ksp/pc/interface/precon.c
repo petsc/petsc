@@ -409,7 +409,7 @@ PetscErrorCode PCGetKSPNestLevel(PC pc, PetscInt *level)
 . comm - MPI communicator
 
   Output Parameter:
-.  newpc - location to put the preconditioner context
+. newpc - location to put the preconditioner context
 
   Level: developer
 
@@ -1106,32 +1106,33 @@ PetscErrorCode PCSetUpOnBlocks(PC pc)
 
 /*@C
   PCSetModifySubMatrices - Sets a user-defined routine for modifying the
-  submatrices that arise within certain subdomain-based preconditioners.
-  The basic submatrices are extracted from the preconditioner matrix as
-  usual; the user can then alter these (for example, to set different boundary
-  conditions for each submatrix) before they are used for the local solves.
+  submatrices that arise within certain subdomain-based preconditioners such as `PCASM`
 
   Logically Collective
 
   Input Parameters:
 + pc   - the preconditioner context
 . func - routine for modifying the submatrices
-- ctx  - optional user-defined context (may be null)
+- ctx  - optional user-defined context (may be `NULL`)
 
   Calling sequence of `func`:
-$  PetscErrorCode func(PC pc, PetscInt nsub, IS *row, IS *col, Mat *submat, void *ctx);
-+ pc  - the preconditioner context
-.  row - an array of index sets that contain the global row numbers
++ pc     - the preconditioner context
+. nsub   - number of index sets
+. row    - an array of index sets that contain the global row numbers
          that comprise each local submatrix
-.  col - an array of index sets that contain the global column numbers
+. col    - an array of index sets that contain the global column numbers
          that comprise each local submatrix
-.  submat - array of local submatrices
-- ctx - optional user-defined context for private data for the
-         user-defined func routine (may be null)
+. submat - array of local submatrices
+- ctx    - optional user-defined context for private data for the
+         user-defined func routine (may be `NULL`)
 
   Level: advanced
 
   Notes:
+  The basic submatrices are extracted from the preconditioner matrix as
+  usual; the user can then alter these (for example, to set different boundary
+  conditions for each submatrix) before they are used for the local solves.
+
   `PCSetModifySubMatrices()` MUST be called before `KSPSetUp()` and
   `KSPSolve()`.
 
@@ -1141,7 +1142,7 @@ $  PetscErrorCode func(PC pc, PetscInt nsub, IS *row, IS *col, Mat *submat, void
 
 .seealso: `PC`, `PCBJACOBI`, `PCASM`, `PCModifySubMatrices()`
 @*/
-PetscErrorCode PCSetModifySubMatrices(PC pc, PetscErrorCode (*func)(PC, PetscInt, const IS[], const IS[], Mat[], void *), void *ctx)
+PetscErrorCode PCSetModifySubMatrices(PC pc, PetscErrorCode (*func)(PC pc, PetscInt nsub, const IS row[], const IS col[], Mat submat[], void *ctx), void *ctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
@@ -1173,15 +1174,9 @@ PetscErrorCode PCSetModifySubMatrices(PC pc, PetscErrorCode (*func)(PC, PetscInt
 
   Level: developer
 
-  Notes:
+  Note:
   The user should NOT generally call this routine, as it will
-  automatically be called within certain preconditioners (currently
-  block Jacobi, additive Schwarz) if set.
-
-  The basic submatrices are extracted from the preconditioner matrix
-  as usual; the user can then alter these (for example, to set different
-  boundary conditions for each submatrix) before they are used for the
-  local solves.
+  automatically be called within certain preconditioners.
 
 .seealso: `PC`, `PCSetModifySubMatrices()`
 @*/
@@ -1617,15 +1612,14 @@ PetscErrorCode PCPreSolve(PC pc, KSP ksp)
 - presolve - the function to call before the solve
 
   Calling sequence of `presolve`:
-$  PetscErrorCode presolve(PC pc, KSP ksp)
-+ pc - the `PC` context
--  ksp - the `KSP` context
++ pc  - the `PC` context
+- ksp - the `KSP` context
 
   Level: developer
 
 .seealso: `PC`, `PCSetUp()`, `PCPreSolve()`
 @*/
-PetscErrorCode PCSetPreSolve(PC pc, PetscErrorCode (*presolve)(PC, KSP))
+PetscErrorCode PCSetPreSolve(PC pc, PetscErrorCode (*presolve)(PC pc, KSP ksp))
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);

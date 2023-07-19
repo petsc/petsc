@@ -180,29 +180,43 @@ static PetscErrorCode PCHPDDMSetAuxiliaryMat_HPDDM(PC pc, IS is, Mat A, PetscErr
 }
 
 /*@C
-  PCHPDDMSetAuxiliaryMat - Sets the auxiliary matrix used by `PCHPDDM` for the concurrent GenEO problems at the finest level. As an example, in a finite element context with nonoverlapping subdomains plus (overlapping) ghost elements, this could be the unassembled (Neumann) local overlapping operator. As opposed to the assembled (Dirichlet) local overlapping operator obtained by summing neighborhood contributions at the interface of ghost elements.
+  PCHPDDMSetAuxiliaryMat - Sets the auxiliary matrix used by `PCHPDDM` for the concurrent GenEO problems at the finest level.
 
   Input Parameters:
-+ pc        - preconditioner context
-. is        - index set of the local auxiliary, e.g., Neumann, matrix
-. A         - auxiliary sequential matrix
-. setup     - function for generating the auxiliary matrix, may be `NULL`
-- setup_ctx - context for setup, may be `NULL`
++ pc    - preconditioner context
+. is    - index set of the local auxiliary, e.g., Neumann, matrix
+. A     - auxiliary sequential matrix
+. setup - function for generating the auxiliary matrix entries, may be `NULL`
+- ctx   - context for `setup`, may be `NULL`
+
+  Calling sequence of `setup`:
++ J   - matrix whose values are to be set
+. t   - time
+. X   - linearization point
+. X_t - time-derivative of the linearization point
+. s   - step
+. ovl - index set of the local auxiliary, e.g., Neumann, matrix
+- ctx - context for `setup`, may be `NULL`
 
   Level: intermediate
 
+  Note:
+  As an example, in a finite element context with nonoverlapping subdomains plus (overlapping) ghost elements, this could be the unassembled (Neumann)
+  local overlapping operator. As opposed to the assembled (Dirichlet) local overlapping operator obtained by summing neighborhood contributions
+  at the interface of ghost elements.
+
   Fortran Notes:
-  Only `PETSC_NULL_FUNCTION` is supported for `setup` and `setup_ctx` is never accessed
+  Only `PETSC_NULL_FUNCTION` is supported for `setup` and `ctx` is never accessed
 
 .seealso: `PCHPDDM`, `PCCreate()`, `PCSetType()`, `PCType`, `PC`, `PCHPDDMSetRHSMat()`, `MATIS`
 @*/
-PetscErrorCode PCHPDDMSetAuxiliaryMat(PC pc, IS is, Mat A, PetscErrorCode (*setup)(Mat, PetscReal, Vec, Vec, PetscReal, IS, void *), void *setup_ctx)
+PetscErrorCode PCHPDDMSetAuxiliaryMat(PC pc, IS is, Mat A, PetscErrorCode (*setup)(Mat J, PetscReal t, Vec X, Vec X_t, PetscReal s, IS ovl, void *ctx), void *ctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   if (is) PetscValidHeaderSpecific(is, IS_CLASSID, 2);
   if (A) PetscValidHeaderSpecific(A, MAT_CLASSID, 3);
-  PetscTryMethod(pc, "PCHPDDMSetAuxiliaryMat_C", (PC, IS, Mat, PetscErrorCode(*)(Mat, PetscReal, Vec, Vec, PetscReal, IS, void *), void *), (pc, is, A, setup, setup_ctx));
+  PetscTryMethod(pc, "PCHPDDMSetAuxiliaryMat_C", (PC, IS, Mat, PetscErrorCode(*)(Mat, PetscReal, Vec, Vec, PetscReal, IS, void *), void *), (pc, is, A, setup, ctx));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -251,13 +265,17 @@ static PetscErrorCode PCHPDDMSetRHSMat_HPDDM(PC pc, Mat B)
 }
 
 /*@
-  PCHPDDMSetRHSMat - Sets the right-hand side matrix used by `PCHPDDM` for the concurrent GenEO problems at the finest level. Must be used in conjunction with `PCHPDDMSetAuxiliaryMat`(N), so that Nv = lambda Bv is solved using `EPSSetOperators`(N, B). It is assumed that N and B are provided using the same numbering. This provides a means to try more advanced methods such as GenEO-II or H-GenEO.
+  PCHPDDMSetRHSMat - Sets the right-hand side matrix used by `PCHPDDM` for the concurrent GenEO problems at the finest level.
 
   Input Parameters:
 + pc - preconditioner context
 - B  - right-hand side sequential matrix
 
   Level: advanced
+
+  Note:
+  Must be used in conjunction with `PCHPDDMSetAuxiliaryMat`(N), so that Nv = lambda Bv is solved using `EPSSetOperators`(N, B).
+  It is assumed that N and `B` are provided using the same numbering. This provides a means to try more advanced methods such as GenEO-II or H-GenEO.
 
 .seealso: `PCHPDDMSetAuxiliaryMat()`, `PCHPDDM`
 @*/
@@ -388,6 +406,7 @@ static PetscErrorCode PCMatApply_HPDDM(PC pc, Mat X, Mat Y)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+// PetscClangLinter pragma disable: -fdoc-internal-linkage
 /*@C
      PCHPDDMGetComplexities - Computes the grid and operator complexities.
 
