@@ -206,7 +206,7 @@ int main(int argc, char **argv)
     suffix: 7
     nsize: 1
     requires: defined(PETSC_USE_LOG)
-    args: -log_view ::ascii_info_detail
+    args: -log_view ::ascii_info_detail -log_handler_default_use_threadsafe_events
     filter: grep "Event[123]" | grep "\\(Main Stage\\|Stage[123]\\)"
 
   # test the sync warning
