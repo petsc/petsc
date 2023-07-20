@@ -207,45 +207,40 @@ static PetscErrorCode TSStep_BasicSymplectic(TS ts)
   Vec                   solution = ts->vec_sol, update = bsymp->update, q, p, q_update, p_update;
   IS                    is_q = bsymp->is_q, is_p = bsymp->is_p;
   TS                    subts_q = bsymp->subts_q, subts_p = bsymp->subts_p;
-  PetscBool             stageok;
-  PetscReal             next_time_step = ts->time_step;
+  PetscBool             stageok = PETSC_TRUE;
+  PetscReal             ptime = ts->ptime, next_time_step = ts->time_step;
   PetscInt              iter;
 
   PetscFunctionBegin;
-  PetscCall(VecGetSubVector(solution, is_q, &q));
-  PetscCall(VecGetSubVector(solution, is_p, &p));
   PetscCall(VecGetSubVector(update, is_q, &q_update));
   PetscCall(VecGetSubVector(update, is_p, &p_update));
-
   for (iter = 0; iter < scheme->s; iter++) {
-    PetscCall(TSPreStage(ts, ts->ptime));
+    PetscCall(TSPreStage(ts, ptime));
+    PetscCall(VecGetSubVector(solution, is_q, &q));
+    PetscCall(VecGetSubVector(solution, is_p, &p));
     /* update velocity p */
     if (scheme->c[iter]) {
-      PetscCall(TSComputeRHSFunction(subts_p, ts->ptime, q, p_update));
+      PetscCall(TSComputeRHSFunction(subts_p, ptime, q, p_update));
       PetscCall(VecAXPY(p, scheme->c[iter] * ts->time_step, p_update));
     }
     /* update position q */
     if (scheme->d[iter]) {
-      PetscCall(TSComputeRHSFunction(subts_q, ts->ptime, p, q_update));
+      PetscCall(TSComputeRHSFunction(subts_q, ptime, p, q_update));
       PetscCall(VecAXPY(q, scheme->d[iter] * ts->time_step, q_update));
-      ts->ptime = ts->ptime + scheme->d[iter] * ts->time_step;
+      ptime = ptime + scheme->d[iter] * ts->time_step;
     }
-    PetscCall(TSPostStage(ts, ts->ptime, 0, &solution));
-    PetscCall(TSAdaptCheckStage(ts->adapt, ts, ts->ptime, solution, &stageok));
-    if (!stageok) {
-      ts->reason = TS_DIVERGED_STEP_REJECTED;
-      PetscFunctionReturn(PETSC_SUCCESS);
-    }
-    PetscCall(TSFunctionDomainError(ts, ts->ptime + ts->time_step, update, &stageok));
-    if (!stageok) {
-      ts->reason = TS_DIVERGED_STEP_REJECTED;
-      PetscFunctionReturn(PETSC_SUCCESS);
-    }
+    PetscCall(VecRestoreSubVector(solution, is_q, &q));
+    PetscCall(VecRestoreSubVector(solution, is_p, &p));
+    PetscCall(TSPostStage(ts, ptime, 0, &solution));
+    PetscCall(TSAdaptCheckStage(ts->adapt, ts, ptime, solution, &stageok));
+    if (!stageok) goto finally;
+    PetscCall(TSFunctionDomainError(ts, ptime, solution, &stageok));
+    if (!stageok) goto finally;
   }
 
-  ts->time_step = next_time_step;
-  PetscCall(VecRestoreSubVector(solution, is_q, &q));
-  PetscCall(VecRestoreSubVector(solution, is_p, &p));
+finally:
+  if (!stageok) ts->reason = TS_DIVERGED_STEP_REJECTED;
+  else ts->ptime += next_time_step;
   PetscCall(VecRestoreSubVector(update, is_q, &q_update));
   PetscCall(VecRestoreSubVector(update, is_p, &p_update));
   PetscFunctionReturn(PETSC_SUCCESS);
