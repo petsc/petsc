@@ -1204,6 +1204,117 @@ static PetscErrorCode PCApply_FieldSplit_Schur(PC pc, Vec x, Vec y)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+static PetscErrorCode PCApplyTranspose_FieldSplit_Schur(PC pc, Vec x, Vec y)
+{
+  PC_FieldSplit    *jac    = (PC_FieldSplit *)pc->data;
+  PC_FieldSplitLink ilinkA = jac->head, ilinkD = ilinkA->next;
+  KSP               kspA = ilinkA->ksp, kspLower = kspA, kspUpper = jac->kspupper;
+
+  PetscFunctionBegin;
+  switch (jac->schurfactorization) {
+  case PC_FIELDSPLIT_SCHUR_FACT_DIAG:
+    /* [A00 0; 0 -S], positive definite, suitable for MINRES */
+    PetscCall(VecScatterBegin(ilinkA->sctx, x, ilinkA->x, INSERT_VALUES, SCATTER_FORWARD));
+    PetscCall(VecScatterBegin(ilinkD->sctx, x, ilinkD->x, INSERT_VALUES, SCATTER_FORWARD));
+    PetscCall(VecScatterEnd(ilinkA->sctx, x, ilinkA->x, INSERT_VALUES, SCATTER_FORWARD));
+    PetscCall(PetscLogEventBegin(ilinkA->event, kspA, ilinkA->x, ilinkA->y, NULL));
+    PetscCall(KSPSolveTranspose(kspA, ilinkA->x, ilinkA->y));
+    PetscCall(KSPCheckSolve(kspA, pc, ilinkA->y));
+    PetscCall(PetscLogEventEnd(ilinkA->event, kspA, ilinkA->x, ilinkA->y, NULL));
+    PetscCall(VecScatterBegin(ilinkA->sctx, ilinkA->y, y, INSERT_VALUES, SCATTER_REVERSE));
+    PetscCall(VecScatterEnd(ilinkD->sctx, x, ilinkD->x, INSERT_VALUES, SCATTER_FORWARD));
+    PetscCall(PetscLogEventBegin(KSP_Solve_FS_S, jac->kspschur, ilinkD->x, ilinkD->y, NULL));
+    PetscCall(KSPSolveTranspose(jac->kspschur, ilinkD->x, ilinkD->y));
+    PetscCall(KSPCheckSolve(jac->kspschur, pc, ilinkD->y));
+    PetscCall(PetscLogEventEnd(KSP_Solve_FS_S, jac->kspschur, ilinkD->x, ilinkD->y, NULL));
+    PetscCall(VecScale(ilinkD->y, jac->schurscale));
+    PetscCall(VecScatterEnd(ilinkA->sctx, ilinkA->y, y, INSERT_VALUES, SCATTER_REVERSE));
+    PetscCall(VecScatterBegin(ilinkD->sctx, ilinkD->y, y, INSERT_VALUES, SCATTER_REVERSE));
+    PetscCall(VecScatterEnd(ilinkD->sctx, ilinkD->y, y, INSERT_VALUES, SCATTER_REVERSE));
+    break;
+  case PC_FIELDSPLIT_SCHUR_FACT_UPPER:
+    PetscCall(VecScatterBegin(ilinkA->sctx, x, ilinkA->x, INSERT_VALUES, SCATTER_FORWARD));
+    PetscCall(VecScatterEnd(ilinkA->sctx, x, ilinkA->x, INSERT_VALUES, SCATTER_FORWARD));
+    PetscCall(PetscLogEventBegin(ilinkA->event, kspA, ilinkA->x, ilinkA->y, NULL));
+    PetscCall(KSPSolveTranspose(kspA, ilinkA->x, ilinkA->y));
+    PetscCall(KSPCheckSolve(kspA, pc, ilinkA->y));
+    PetscCall(PetscLogEventEnd(ilinkA->event, kspA, ilinkA->x, ilinkA->y, NULL));
+    PetscCall(MatMultTranspose(jac->B, ilinkA->y, ilinkD->x));
+    PetscCall(VecScale(ilinkD->x, -1.));
+    PetscCall(VecScatterBegin(ilinkD->sctx, x, ilinkD->x, ADD_VALUES, SCATTER_FORWARD));
+    PetscCall(VecScatterBegin(ilinkA->sctx, ilinkA->y, y, INSERT_VALUES, SCATTER_REVERSE));
+    PetscCall(VecScatterEnd(ilinkD->sctx, x, ilinkD->x, ADD_VALUES, SCATTER_FORWARD));
+    PetscCall(PetscLogEventBegin(KSP_Solve_FS_S, jac->kspschur, ilinkD->x, ilinkD->y, NULL));
+    PetscCall(KSPSolveTranspose(jac->kspschur, ilinkD->x, ilinkD->y));
+    PetscCall(KSPCheckSolve(jac->kspschur, pc, ilinkD->y));
+    PetscCall(PetscLogEventEnd(KSP_Solve_FS_S, jac->kspschur, ilinkD->x, ilinkD->y, NULL));
+    PetscCall(VecScatterEnd(ilinkA->sctx, ilinkA->y, y, INSERT_VALUES, SCATTER_REVERSE));
+    PetscCall(VecScatterBegin(ilinkD->sctx, ilinkD->y, y, INSERT_VALUES, SCATTER_REVERSE));
+    PetscCall(VecScatterEnd(ilinkD->sctx, ilinkD->y, y, INSERT_VALUES, SCATTER_REVERSE));
+    break;
+  case PC_FIELDSPLIT_SCHUR_FACT_LOWER:
+    PetscCall(VecScatterBegin(ilinkD->sctx, x, ilinkD->x, INSERT_VALUES, SCATTER_FORWARD));
+    PetscCall(VecScatterEnd(ilinkD->sctx, x, ilinkD->x, INSERT_VALUES, SCATTER_FORWARD));
+    PetscCall(PetscLogEventBegin(KSP_Solve_FS_S, jac->kspschur, ilinkD->x, ilinkD->y, NULL));
+    PetscCall(KSPSolveTranspose(jac->kspschur, ilinkD->x, ilinkD->y));
+    PetscCall(KSPCheckSolve(jac->kspschur, pc, ilinkD->y));
+    PetscCall(PetscLogEventEnd(KSP_Solve_FS_S, jac->kspschur, ilinkD->x, ilinkD->y, NULL));
+    PetscCall(MatMultTranspose(jac->C, ilinkD->y, ilinkA->x));
+    PetscCall(VecScale(ilinkA->x, -1.));
+    PetscCall(VecScatterBegin(ilinkA->sctx, x, ilinkA->x, ADD_VALUES, SCATTER_FORWARD));
+    PetscCall(VecScatterBegin(ilinkD->sctx, ilinkD->y, y, INSERT_VALUES, SCATTER_REVERSE));
+    PetscCall(VecScatterEnd(ilinkA->sctx, x, ilinkA->x, ADD_VALUES, SCATTER_FORWARD));
+    PetscCall(PetscLogEventBegin(ilinkA->event, kspA, ilinkA->x, ilinkA->y, NULL));
+    PetscCall(KSPSolveTranspose(kspA, ilinkA->x, ilinkA->y));
+    PetscCall(KSPCheckSolve(kspA, pc, ilinkA->y));
+    PetscCall(PetscLogEventEnd(ilinkA->event, kspA, ilinkA->x, ilinkA->y, NULL));
+    PetscCall(VecScatterEnd(ilinkD->sctx, ilinkD->y, y, INSERT_VALUES, SCATTER_REVERSE));
+    PetscCall(VecScatterBegin(ilinkA->sctx, ilinkA->y, y, INSERT_VALUES, SCATTER_REVERSE));
+    PetscCall(VecScatterEnd(ilinkA->sctx, ilinkA->y, y, INSERT_VALUES, SCATTER_REVERSE));
+    break;
+  case PC_FIELDSPLIT_SCHUR_FACT_FULL:
+    PetscCall(VecScatterBegin(ilinkA->sctx, x, ilinkA->x, INSERT_VALUES, SCATTER_FORWARD));
+    PetscCall(VecScatterEnd(ilinkA->sctx, x, ilinkA->x, INSERT_VALUES, SCATTER_FORWARD));
+    PetscCall(PetscLogEventBegin(KSP_Solve_FS_U, kspUpper, ilinkA->x, ilinkA->y, NULL));
+    PetscCall(KSPSolveTranspose(kspUpper, ilinkA->x, ilinkA->y));
+    PetscCall(KSPCheckSolve(kspUpper, pc, ilinkA->y));
+    PetscCall(PetscLogEventEnd(KSP_Solve_FS_U, kspUpper, ilinkA->x, ilinkA->y, NULL));
+    PetscCall(MatMultTranspose(jac->B, ilinkA->y, ilinkD->x));
+    PetscCall(VecScale(ilinkD->x, -1.0));
+    PetscCall(VecScatterBegin(ilinkD->sctx, x, ilinkD->x, ADD_VALUES, SCATTER_FORWARD));
+    PetscCall(VecScatterEnd(ilinkD->sctx, x, ilinkD->x, ADD_VALUES, SCATTER_FORWARD));
+
+    PetscCall(PetscLogEventBegin(KSP_Solve_FS_S, jac->kspschur, ilinkD->x, ilinkD->y, NULL));
+    PetscCall(KSPSolveTranspose(jac->kspschur, ilinkD->x, ilinkD->y));
+    PetscCall(KSPCheckSolve(jac->kspschur, pc, ilinkD->y));
+    PetscCall(PetscLogEventEnd(KSP_Solve_FS_S, jac->kspschur, ilinkD->x, ilinkD->y, NULL));
+    PetscCall(VecScatterBegin(ilinkD->sctx, ilinkD->y, y, INSERT_VALUES, SCATTER_REVERSE));
+
+    if (kspLower == kspA) {
+      PetscCall(MatMultTranspose(jac->C, ilinkD->y, ilinkA->y));
+      PetscCall(VecAXPY(ilinkA->x, -1.0, ilinkA->y));
+      PetscCall(PetscLogEventBegin(ilinkA->event, kspA, ilinkA->x, ilinkA->y, NULL));
+      PetscCall(KSPSolveTranspose(kspA, ilinkA->x, ilinkA->y));
+      PetscCall(KSPCheckSolve(kspA, pc, ilinkA->y));
+      PetscCall(PetscLogEventEnd(ilinkA->event, kspA, ilinkA->x, ilinkA->y, NULL));
+    } else {
+      PetscCall(PetscLogEventBegin(ilinkA->event, kspA, ilinkA->x, ilinkA->y, NULL));
+      PetscCall(KSPSolveTranspose(kspA, ilinkA->x, ilinkA->y));
+      PetscCall(KSPCheckSolve(kspA, pc, ilinkA->y));
+      PetscCall(MatMultTranspose(jac->C, ilinkD->y, ilinkA->x));
+      PetscCall(PetscLogEventBegin(KSP_Solve_FS_L, kspLower, ilinkA->x, ilinkA->z, NULL));
+      PetscCall(KSPSolveTranspose(kspLower, ilinkA->x, ilinkA->z));
+      PetscCall(KSPCheckSolve(kspLower, pc, ilinkA->z));
+      PetscCall(PetscLogEventEnd(KSP_Solve_FS_L, kspLower, ilinkA->x, ilinkA->z, NULL));
+      PetscCall(VecAXPY(ilinkA->y, -1.0, ilinkA->z));
+    }
+    PetscCall(VecScatterEnd(ilinkD->sctx, ilinkD->y, y, INSERT_VALUES, SCATTER_REVERSE));
+    PetscCall(VecScatterBegin(ilinkA->sctx, ilinkA->y, y, INSERT_VALUES, SCATTER_REVERSE));
+    PetscCall(VecScatterEnd(ilinkA->sctx, ilinkA->y, y, INSERT_VALUES, SCATTER_REVERSE));
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 static PetscErrorCode PCApply_FieldSplit(PC pc, Vec x, Vec y)
 {
   PC_FieldSplit    *jac   = (PC_FieldSplit *)pc->data;
@@ -2751,8 +2862,9 @@ static PetscErrorCode PCFieldSplitSetType_FieldSplit(PC pc, PCCompositeType type
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCFieldSplitSetGKBDelay_C", NULL));
 
   if (type == PC_COMPOSITE_SCHUR) {
-    pc->ops->apply = PCApply_FieldSplit_Schur;
-    pc->ops->view  = PCView_FieldSplit_Schur;
+    pc->ops->apply          = PCApply_FieldSplit_Schur;
+    pc->ops->applytranspose = PCApplyTranspose_FieldSplit_Schur;
+    pc->ops->view           = PCView_FieldSplit_Schur;
 
     PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCFieldSplitGetSubKSP_C", PCFieldSplitGetSubKSP_FieldSplit_Schur));
     PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCFieldSplitSetSchurPre_C", PCFieldSplitSetSchurPre_FieldSplit));

@@ -77,6 +77,7 @@ int main(int argc, char *argv[])
   PetscCall(replace_submats(A));
   PetscCall(replace_submats(P));
   PetscCall(KSPSolve(ksp, b, x));
+  PetscCall(KSPSolveTranspose(ksp, b, x));
 
   PetscCall(KSPDestroy(&ksp));
   PetscCall(VecDestroy(&x));
