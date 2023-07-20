@@ -747,77 +747,6 @@ PetscErrorCode MatSetValuesBlocked_SeqSBAIJ(Mat A, PetscInt m, const PetscInt im
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*
-    This is not yet used
-*/
-PetscErrorCode MatAssemblyEnd_SeqSBAIJ_SeqAIJ_Inode(Mat A)
-{
-  Mat_SeqSBAIJ   *a  = (Mat_SeqSBAIJ *)A->data;
-  const PetscInt *ai = a->i, *aj = a->j, *cols;
-  PetscInt        i = 0, j, blk_size, m = A->rmap->n, node_count = 0, nzx, nzy, *ns, row, nz, cnt, cnt2, *counts;
-  PetscBool       flag;
-
-  PetscFunctionBegin;
-  PetscCall(PetscMalloc1(m, &ns));
-  while (i < m) {
-    nzx = ai[i + 1] - ai[i]; /* Number of nonzeros */
-    /* Limits the number of elements in a node to 'a->inode.limit' */
-    for (j = i + 1, blk_size = 1; j < m && blk_size < a->inode.limit; ++j, ++blk_size) {
-      nzy = ai[j + 1] - ai[j];
-      if (nzy != (nzx - j + i)) break;
-      PetscCall(PetscArraycmp(aj + ai[i] + j - i, aj + ai[j], nzy, &flag));
-      if (!flag) break;
-    }
-    ns[node_count++] = blk_size;
-
-    i = j;
-  }
-  if (!a->inode.size && m && node_count > .9 * m) {
-    PetscCall(PetscFree(ns));
-    PetscCall(PetscInfo(A, "Found %" PetscInt_FMT " nodes out of %" PetscInt_FMT " rows. Not using Inode routines\n", node_count, m));
-  } else {
-    a->inode.node_count = node_count;
-
-    PetscCall(PetscMalloc1(node_count, &a->inode.size));
-    PetscCall(PetscArraycpy(a->inode.size, ns, node_count));
-    PetscCall(PetscFree(ns));
-    PetscCall(PetscInfo(A, "Found %" PetscInt_FMT " nodes of %" PetscInt_FMT ". Limit used: %" PetscInt_FMT ". Using Inode routines\n", node_count, m, a->inode.limit));
-
-    /* count collections of adjacent columns in each inode */
-    row = 0;
-    cnt = 0;
-    for (i = 0; i < node_count; i++) {
-      cols = aj + ai[row] + a->inode.size[i];
-      nz   = ai[row + 1] - ai[row] - a->inode.size[i];
-      for (j = 1; j < nz; j++) {
-        if (cols[j] != cols[j - 1] + 1) cnt++;
-      }
-      cnt++;
-      row += a->inode.size[i];
-    }
-    PetscCall(PetscMalloc1(2 * cnt, &counts));
-    cnt = 0;
-    row = 0;
-    for (i = 0; i < node_count; i++) {
-      cols            = aj + ai[row] + a->inode.size[i];
-      counts[2 * cnt] = cols[0];
-      nz              = ai[row + 1] - ai[row] - a->inode.size[i];
-      cnt2            = 1;
-      for (j = 1; j < nz; j++) {
-        if (cols[j] != cols[j - 1] + 1) {
-          counts[2 * (cnt++) + 1] = cnt2;
-          counts[2 * cnt]         = cols[j];
-          cnt2                    = 1;
-        } else cnt2++;
-      }
-      counts[2 * (cnt++) + 1] = cnt2;
-      row += a->inode.size[i];
-    }
-    PetscCall(PetscIntView(2 * cnt, counts, NULL));
-  }
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
 PetscErrorCode MatAssemblyEnd_SeqSBAIJ(Mat A, MatAssemblyType mode)
 {
   Mat_SeqSBAIJ *a      = (Mat_SeqSBAIJ *)A->data;
@@ -827,7 +756,7 @@ PetscErrorCode MatAssemblyEnd_SeqSBAIJ(Mat A, MatAssemblyType mode)
   MatScalar    *aa = a->a, *ap;
 
   PetscFunctionBegin;
-  if (mode == MAT_FLUSH_ASSEMBLY) PetscFunctionReturn(PETSC_SUCCESS);
+  if (mode == MAT_FLUSH_ASSEMBLY || (A->was_assembled && A->ass_nonzerostate == A->nonzerostate)) PetscFunctionReturn(PETSC_SUCCESS);
 
   if (m) rmax = ailen[0];
   for (i = 1; i < mbs; i++) {
@@ -1347,6 +1276,53 @@ PetscErrorCode MatShift_SeqSBAIJ(Mat Y, PetscScalar a)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+PetscErrorCode MatEliminateZeros_SeqSBAIJ(Mat A, PetscBool keep)
+{
+  Mat_SeqSBAIJ *a      = (Mat_SeqSBAIJ *)A->data;
+  PetscInt      fshift = 0, fshift_prev = 0, i, *ai = a->i, *aj = a->j, *imax = a->imax, j, k;
+  PetscInt      m = A->rmap->N, *ailen = a->ilen;
+  PetscInt      mbs = a->mbs, bs2 = a->bs2, rmax = 0;
+  MatScalar    *aa = a->a, *ap;
+  PetscBool     zero;
+
+  PetscFunctionBegin;
+  PetscCheck(A->assembled, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Cannot eliminate zeros for unassembled matrix");
+  if (m) rmax = ailen[0];
+  for (i = 1; i <= mbs; i++) {
+    for (k = ai[i - 1]; k < ai[i]; k++) {
+      zero = PETSC_TRUE;
+      ap   = aa + bs2 * k;
+      for (j = 0; j < bs2 && zero; j++) {
+        if (ap[j] != 0.0) zero = PETSC_FALSE;
+      }
+      if (zero && (aj[k] != i - 1 || !keep)) fshift++;
+      else {
+        if (zero && aj[k] == i - 1) PetscCall(PetscInfo(A, "Keep the diagonal block at row %" PetscInt_FMT "\n", i - 1));
+        aj[k - fshift] = aj[k];
+        PetscCall(PetscArraymove(ap - bs2 * fshift, ap, bs2));
+      }
+    }
+    ai[i - 1] -= fshift_prev;
+    fshift_prev  = fshift;
+    ailen[i - 1] = imax[i - 1] = ai[i] - fshift - ai[i - 1];
+    a->nonzerorowcnt += ((ai[i] - fshift - ai[i - 1]) > 0);
+    rmax = PetscMax(rmax, ailen[i - 1]);
+  }
+  if (fshift) {
+    if (mbs) {
+      ai[mbs] -= fshift;
+      a->nz = ai[mbs];
+    }
+    PetscCall(PetscInfo(A, "Matrix size: %" PetscInt_FMT " X %" PetscInt_FMT "; zeros eliminated: %" PetscInt_FMT "; nonzeros left: %" PetscInt_FMT "\n", m, A->cmap->n, fshift, a->nz));
+    A->nonzerostate++;
+    A->info.nz_unneeded += (PetscReal)fshift;
+    a->rmax = rmax;
+    PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 static struct _MatOps MatOps_Values = {MatSetValues_SeqSBAIJ,
                                        MatGetRow_SeqSBAIJ,
                                        MatRestoreRow_SeqSBAIJ,
@@ -1498,7 +1474,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqSBAIJ,
                                        NULL,
                                        NULL,
                                        /*150*/ NULL,
-                                       NULL};
+                                       MatEliminateZeros_SeqSBAIJ};
 
 PetscErrorCode MatStoreValues_SeqSBAIJ(Mat mat)
 {

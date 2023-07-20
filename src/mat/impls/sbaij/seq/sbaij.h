@@ -158,4 +158,6 @@ PETSC_INTERN PetscErrorCode MatGetRow_SeqSBAIJ(Mat, PetscInt, PetscInt *, PetscI
 PETSC_INTERN PetscErrorCode MatRestoreRow_SeqSBAIJ(Mat, PetscInt, PetscInt *, PetscInt **, PetscScalar **);
 PETSC_INTERN PetscErrorCode MatZeroRows_SeqSBAIJ(Mat, IS, PetscScalar *, Vec, Vec);
 
+PETSC_INTERN PetscErrorCode MatEliminateZeros_SeqSBAIJ(Mat, PetscBool);
+
 #endif

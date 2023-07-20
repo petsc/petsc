@@ -147,7 +147,7 @@ PetscErrorCode SNESPruneJacobianColor(SNES snes, Mat J, Mat B)
 
   PetscFunctionBegin;
   /* Generate new coloring after eliminating zeros in the matrix */
-  PetscCall(MatEliminateZeros(B));
+  PetscCall(MatEliminateZeros(B, PETSC_TRUE));
   PetscCall(MatColoringCreate(B, &mc));
   PetscCall(MatColoringSetDistance(mc, 2));
   PetscCall(MatColoringSetType(mc, MATCOLORINGSL));
