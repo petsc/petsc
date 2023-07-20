@@ -328,6 +328,6 @@ int main(int argc, char **argv)
       requires: !complex
 
    test:
-      args: -ts_monitor
+      args: -ts_monitor -ts_event_post_event_step 0
 
 TEST*/

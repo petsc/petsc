@@ -123,5 +123,5 @@ PetscErrorCode PostEvent(TS ts, PetscInt nevents, PetscInt event_list[], PetscRe
 
     test:
       suffix: 3
-      args: -ts_type beuler -ts_dt 0.5 -ts_event_monitor
+      args: -ts_type beuler -ts_dt 0.5 -ts_event_monitor -ts_event_post_event_step 0
 TEST*/

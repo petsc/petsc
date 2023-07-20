@@ -1981,7 +1981,7 @@ cdef class TS(Object):
         self,
         direction: Sequence[int],
         terminate: Sequence[bool],
-        indicator: TSEventIndicatorFunction,
+        indicator: TSIndicatorFunction,
         postevent: TSPostEventFunction=None,
         args: tuple[Any, ...] | None = None,
         kargs: dict[str, Any] | None = None) -> None:
@@ -1996,7 +1996,7 @@ cdef class TS(Object):
         terminate
             Flags for each event to indicate stepping should be terminated.
         indicator
-            Function for detecting the event
+            Function for defining the indicator-functions marking the events
         postevent
             Function to execute after the event
         args
@@ -2025,10 +2025,10 @@ cdef class TS(Object):
             self.set_attr('__indicator__', (indicator, args, kargs))
             if postevent is not None:
                 self.set_attr('__postevent__', (postevent, args, kargs))
-                CHKERR( TSSetEventHandler(self.ts, nevents, idirs, iterm, TS_EventIndicator, TS_PostEvent, <void*>NULL) )
+                CHKERR( TSSetEventHandler(self.ts, nevents, idirs, iterm, TS_Indicator, TS_PostEvent, <void*>NULL) )
             else:
                 self.set_attr('__postevent__', None)
-                CHKERR( TSSetEventHandler(self.ts, nevents, idirs, iterm, TS_EventIndicator, NULL, <void*>NULL) )
+                CHKERR( TSSetEventHandler(self.ts, nevents, idirs, iterm, TS_Indicator, NULL, <void*>NULL) )
         else:
             CHKERR( TSSetEventHandler(self.ts, nevents, idirs, iterm, NULL, NULL, <void*>NULL) )
 

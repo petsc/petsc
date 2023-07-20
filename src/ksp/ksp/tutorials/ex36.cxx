@@ -561,7 +561,7 @@ PetscErrorCode InitializeOptions(UserContext *user)
 /*TEST
 
    build:
-      requires: moab
+      requires: moab !complex
 
    test:
       args: -levels 1 -nu .01 -n 4 -mg -ksp_converged_reason

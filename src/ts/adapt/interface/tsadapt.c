@@ -875,7 +875,7 @@ PetscErrorCode TSAdaptChoose(TSAdapt adapt, TS ts, PetscReal h, PetscInt *next_s
   if (next_sc) *next_sc = 0;
 
   /* Do not mess with adaptivity while handling events*/
-  if (ts->event && ts->event->status != TSEVENT_NONE) {
+  if (ts->event && ts->event->processing) {
     *next_h = h;
     *accept = PETSC_TRUE;
     PetscFunctionReturn(PETSC_SUCCESS);
@@ -888,28 +888,32 @@ PetscErrorCode TSAdaptChoose(TSAdapt adapt, TS ts, PetscReal h, PetscInt *next_s
 
   if (*accept && ts->exact_final_time == TS_EXACTFINALTIME_MATCHSTEP) {
     /* Increase/reduce step size if end time of next step is close to or overshoots max time */
-    PetscReal t = ts->ptime + ts->time_step, h = *next_h;
-    PetscReal tend = t + h, tmax, hmax;
-    PetscReal a    = (PetscReal)(1.0 + adapt->matchstepfac[0]);
-    PetscReal b    = adapt->matchstepfac[1];
+    PetscReal t   = ts->ptime + ts->time_step, tend, tmax, h1, hmax;
+    PetscReal a   = (PetscReal)(1.0 + adapt->matchstepfac[0]);
+    PetscReal b   = adapt->matchstepfac[1];
+    PetscReal eps = 10 * PETSC_MACHINE_EPSILON;
 
-    if (ts->tspan) {
-      if (PetscIsCloseAtTol(t, ts->tspan->span_times[ts->tspan->spanctr], ts->tspan->reltol * h + ts->tspan->abstol, 0)) /* hit a span time point */
+    if (h <= *next_h && *next_h <= adapt->dt_span_cached) *next_h = adapt->dt_span_cached; /* try employing the cache */
+    h1   = *next_h;
+    tend = t + h1;
+
+    if (ts->tspan && ts->tspan->spanctr < ts->tspan->num_span_times) {
+      PetscCheck(ts->tspan->worktol == 0, PetscObjectComm((PetscObject)adapt), PETSC_ERR_PLIB, "Unexpected state (tspan->worktol != 0) in TSAdaptChoose()");
+      ts->tspan->worktol = ts->tspan->reltol * h1 + ts->tspan->abstol;
+      if (PetscIsCloseAtTol(t, ts->tspan->span_times[ts->tspan->spanctr], ts->tspan->worktol, 0)) /* hit a span time point */
         if (ts->tspan->spanctr + 1 < ts->tspan->num_span_times) tmax = ts->tspan->span_times[ts->tspan->spanctr + 1];
         else tmax = ts->max_time; /* hit the last span time point */
       else tmax = ts->tspan->span_times[ts->tspan->spanctr];
     } else tmax = ts->max_time;
+    tmax = PetscMin(tmax, ts->max_time);
     hmax = tmax - t;
+    PetscCheck((hmax > eps) || (PetscAbsReal(hmax) <= eps && PetscIsCloseAtTol(t, ts->max_time, eps, 0)), PetscObjectComm((PetscObject)adapt), PETSC_ERR_PLIB, "Unexpected state: bad hmax in TSAdaptChoose()");
+
     if (t < tmax && tend > tmax) *next_h = hmax;
-    if (t < tmax && tend < tmax && h * b > hmax) *next_h = hmax / 2;
-    if (t < tmax && tend < tmax && h * a > hmax) *next_h = hmax;
-    /* if step size is changed to match a span time point */
-    if (ts->tspan && h != *next_h && !adapt->dt_span_cached) adapt->dt_span_cached = h;
-    /* reset time step after a span time point */
-    if (ts->tspan && h == *next_h && adapt->dt_span_cached && PetscIsCloseAtTol(t, ts->tspan->span_times[ts->tspan->spanctr], ts->tspan->reltol * h + ts->tspan->abstol, 0)) {
-      *next_h               = adapt->dt_span_cached;
-      adapt->dt_span_cached = 0;
-    }
+    if (t < tmax && tend < tmax && h1 * b > hmax) *next_h = hmax / 2;
+    if (t < tmax && tend < tmax && h1 * a > hmax) *next_h = hmax;
+    if (ts->tspan && h1 != *next_h && !adapt->dt_span_cached) adapt->dt_span_cached = h1; /* cache the step size if it is to be changed    */
+    if (ts->tspan && h1 == *next_h && adapt->dt_span_cached) adapt->dt_span_cached = 0;   /* clear the cache if the step size is unchanged */
   }
   if (adapt->monitor) {
     const char *sc_name = (scheme < ncandidates) ? adapt->candidates.name[scheme] : "";

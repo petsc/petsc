@@ -74,6 +74,7 @@ int main(int argc, char **argv)
     terminate[1] = PETSC_FALSE;
     direction[2] = 0;
     terminate[2] = PETSC_FALSE;
+    PetscCall(TSSetTimeStep(ts, 1));
     PetscCall(TSSetEventHandler(ts, 3, direction, terminate, Event, PostEvent, NULL));
   }
   PetscCall(TSSetExactFinalTime(ts, TS_EXACTFINALTIME_STEPOVER));
