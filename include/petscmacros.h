@@ -1262,7 +1262,7 @@ M*/
 
 #define PETSC_DEPRECATED_IDENTIFIER_(__PETSC_DEPRECATION_MACRO__, __SILENCE_MACRO__, major, minor, subminor, replacement, ...) \
   PetscIfPetscDefined(__SILENCE_MACRO__, PetscExpandToNothing, \
-                      __PETSC_DEPRECATION_MACRO__)(PetscStringize(Use replacement (since version major.minor.subminor) instead. Silence this warning (and all others for this version) by defining PetscConcat_(PETSC_, __SILENCE_MACRO__). __VA_ARGS__))
+                      __PETSC_DEPRECATION_MACRO__)(PetscStringize(Use replacement (since version major.minor.subminor) instead. Silence this warning (as well as all others for this version) by defining PetscConcat_(PETSC_, __SILENCE_MACRO__). __VA_ARGS__))
 
 #define PETSC_DEPRECATED_IDENTIFIER(__PETSC_DEPRECATION_MACRO__, major, minor, subminor, ...) \
   PETSC_DEPRECATED_IDENTIFIER_(__PETSC_DEPRECATION_MACRO__, PetscConcat6(SILENCE_DEPRECATION_WARNINGS_, major, _, minor, _, subminor), major, minor, subminor, __VA_ARGS__)
