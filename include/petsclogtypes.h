@@ -152,11 +152,7 @@ typedef const char *PetscLogHandlerType;
 typedef struct _n_PetscLogRegistry *PetscLogRegistry;
 
 /*S
-   PetscLogState - Interface for the shared state information used by `PetscLogHandler`s.  It holds
-   a registry of events (`PetscLogStateEventRegister()`), stages (`PetscLogStateStageRegister()`), and
-   classes (`PetscLogStateClassRegister()`).  It keeps track of when the user has activated
-   events (`PetscLogStateEventSetActive()`) and stages (`PetscLogStateStageSetActive()`).  It
-   also keeps a stack of running stages (`PetscLogStateStagePush()`, `PetscLogStateStagePop()`).
+   PetscLogState - Interface for the shared state information used by `PetscLogHandler`s.
 
    Most users will not need to reference a `PetscLogState` directly: global logging routines
    like `PetscLogEventRegister()`  and `PetscLogStagePush()` implicitly manipulate PETSc's global
@@ -164,7 +160,13 @@ typedef struct _n_PetscLogRegistry *PetscLogRegistry;
 
    Level: developer
 
-   Note:
+   Notes:
+   `PetscLogState` holds a registry of events (`PetscLogStateEventRegister()`), stages
+   (`PetscLogStateStageRegister()`), and classes (`PetscLogStateClassRegister()`).
+   It keeps track of when the user has activated events (`PetscLogStateEventSetActive()`) and
+   stages (`PetscLogStateStageSetActive()`).  It also keeps a stack of running stages
+   (`PetscLogStateStagePush()`, `PetscLogStateStagePop()`).
+
    The struct defining `PetscLogState` is in a public header so that `PetscLogEventBegin()`,
    `PetscLogEventEnd()`, `PetscLogObjectCreate()`, and `PetscLogObjectDestroy()` can be defined
    as macros rather than function calls, but users are discouraged from directly accessing
