@@ -37,13 +37,13 @@ Changes: Development
 
 - Add ``PetscLogState`` interface for describing profiling events and stages
 - Add ``PetscLogHandler`` interface that interprets the profiling events of a ``PetscLogState``
-- Add ``PETSC_LOG_HANDLER_DEFAULT`` implementation of ``PetscLogHandler``
-- Add ``PETSC_LOG_HANDLER_NESTED`` implementation of ``PetscLogHandler``
-- Add ``PETSC_LOG_HANDLER_TRACE`` implementation of ``PetscLogHandler``
+- Add ``PETSCLOGHANDLERDEFAULT`` implementation of ``PetscLogHandler``
+- Add ``PETSCLOGHANDLERNESTED`` implementation of ``PetscLogHandler``
+- Add ``PETSCLOGHANDLERTRACE`` implementation of ``PetscLogHandler``
 - Add ``PetscLogHandlerCreateTrace()``
-- Add ``PETSC_LOG_HANDLER_MPE`` implementation of ``PetscLogHandler``
-- Add ``PETSC_LOG_HANDLER_PERFSTUBS`` implementation of ``PetscLogHandler``
-- Add ``PETSC_LOG_HANDLER_LEGACY`` implementation of ``PetscLogHandler``
+- Add ``PETSCLOGHANDLERMPE`` implementation of ``PetscLogHandler``
+- Add ``PETSCLOGHANDLERPERFSTUBS`` implementation of ``PetscLogHandler``
+- Add ``PETSCLOGHANDLERLEGACY`` implementation of ``PetscLogHandler``
 - Add ``PetscLogHandlerCreateLegacy()``
 - Add ``PetscLogPerfstubsBegin()`` for log handling with PerfStubs/TAU
 - Add ``PetscLogLegacyCallbacksBegin()`` to transition old log handler callbacks to the ``PetscLogHandler``-based approach

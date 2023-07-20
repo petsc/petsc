@@ -1774,7 +1774,7 @@ static PetscErrorCode PetscLogHandlerView_Default(PetscLogHandler handler, Petsc
 }
 
 /*MC
-  PETSC_LOG_HANDLER_DEFAULT - PETSC_LOG_DEFAULT = "default" -  A `PetscLogHandler` that collects data for PETSc
+  PETSCLOGHANDLERDEFAULT - PETSCLOGHANDLERDEFAULT = "default" -  A `PetscLogHandler` that collects data for PETSc
   default profiling log viewers (`PetscLogView()` and `PetscLogDump()`).  A log handler of this type is
   created and started (`PetscLogHandlerStart()`) by `PetscLogDefaultBegin()`.
 

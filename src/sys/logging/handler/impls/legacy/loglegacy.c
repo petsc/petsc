@@ -44,7 +44,7 @@ static PetscErrorCode PetcLogHandlerDestroy_Legacy(PetscLogHandler handler)
 }
 
 /*MC
-  PETSC_LOG_HANDLER_LEGACY - PETSC_LOG_HANDLER_LEGACY = "legacy" -  A
+  PETSCLOGHANDLERLEGACY - PETSCLOGHANDLERLEGACY = "legacy" -  A
   `PetscLogHandler` that can be constructed from the callbacks used in
   `PetscLogSet()`.  A log handler of this type is created and started by
   `PetscLogLegacyCallbacksBegin()`.
@@ -120,7 +120,7 @@ PetscErrorCode PetscLogHandlerCreateLegacy(MPI_Comm comm, PetscErrorCode (*Petsc
   PetscFunctionBegin;
   PetscCall(PetscLogHandlerCreate(comm, handler));
   h = *handler;
-  PetscCall(PetscLogHandlerSetType(h, PETSC_LOG_HANDLER_LEGACY));
+  PetscCall(PetscLogHandlerSetType(h, PETSCLOGHANDLERLEGACY));
   legacy = (PetscLogHandler_Legacy)h->data;
 
   legacy->PetscLogPLB = PetscLogPLB;

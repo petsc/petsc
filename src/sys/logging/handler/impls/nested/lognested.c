@@ -167,7 +167,7 @@ static PetscErrorCode PetscLogHandlerContextCreate_Nested(MPI_Comm comm, PetscLo
   nested->threshold       = 0.01;
   PetscCall(PetscNestedHashCreate(&nested->pair_map));
   PetscCall(PetscLogHandlerCreate(comm, &nested->handler));
-  PetscCall(PetscLogHandlerSetType(nested->handler, PETSC_LOG_HANDLER_DEFAULT));
+  PetscCall(PetscLogHandlerSetType(nested->handler, PETSCLOGHANDLERDEFAULT));
   PetscCall(PetscLogHandlerSetState(nested->handler, nested->state));
   PetscCall(PetscLogStateStageRegister(nested->state, "", &root_stage));
   PetscAssert(root_stage == 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "root stage not zero");
@@ -351,7 +351,7 @@ static PetscErrorCode PetscLogHandlerView_Nested(PetscLogHandler handler, PetscV
 }
 
 /*MC
-  PETSC_LOG_HANDLER_NESTED - PETSC_LOG_NESTED = "nested" -  A `PetscLogHandler` that collects data for PETSc's
+  PETSCLOGHANDLERNESTED - PETSCLOGHANDLERNESTED = "nested" -  A `PetscLogHandler` that collects data for PETSc's
   XML and flamegraph profiling log viewers.  A log handler of this type is created and started by
   by `PetscLogNestedBegin()`.
 

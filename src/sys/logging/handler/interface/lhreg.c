@@ -24,16 +24,16 @@ static PetscErrorCode PetscLogHandlerRegisterAll(void)
   PetscFunctionBegin;
   if (PetscLogHandlerRegisterAllCalled) PetscFunctionReturn(PETSC_SUCCESS);
   PetscLogHandlerRegisterAllCalled = PETSC_TRUE;
-  PetscCall(PetscLogHandlerRegister(PETSC_LOG_HANDLER_DEFAULT, PetscLogHandlerCreate_Default));
-  PetscCall(PetscLogHandlerRegister(PETSC_LOG_HANDLER_NESTED, PetscLogHandlerCreate_Nested));
-  PetscCall(PetscLogHandlerRegister(PETSC_LOG_HANDLER_TRACE, PetscLogHandlerCreate_Trace));
+  PetscCall(PetscLogHandlerRegister(PETSCLOGHANDLERDEFAULT, PetscLogHandlerCreate_Default));
+  PetscCall(PetscLogHandlerRegister(PETSCLOGHANDLERNESTED, PetscLogHandlerCreate_Nested));
+  PetscCall(PetscLogHandlerRegister(PETSCLOGHANDLERTRACE, PetscLogHandlerCreate_Trace));
 #if PetscDefined(HAVE_MPE)
-  PetscCall(PetscLogHandlerRegister(PETSC_LOG_HANDLER_MPE, PetscLogHandlerCreate_MPE));
+  PetscCall(PetscLogHandlerRegister(PETSCLOGHANDLERMPE, PetscLogHandlerCreate_MPE));
 #endif
 #if PetscDefined(HAVE_TAU_PERFSTUBS)
-  PetscCall(PetscLogHandlerRegister(PETSC_LOG_HANDLER_PERFSTUBS, PetscLogHandlerCreate_Perfstubs));
+  PetscCall(PetscLogHandlerRegister(PETSCLOGHANDLERPERFSTUBS, PetscLogHandlerCreate_Perfstubs));
 #endif
-  PetscCall(PetscLogHandlerRegister(PETSC_LOG_HANDLER_LEGACY, PetscLogHandlerCreate_Legacy));
+  PetscCall(PetscLogHandlerRegister(PETSCLOGHANDLERLEGACY, PetscLogHandlerCreate_Legacy));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

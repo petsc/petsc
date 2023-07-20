@@ -16,7 +16,7 @@ const char help[] = "How to create a log handler using the PetscLogHandler inter
    PetscLogEventEnd().  The user defined handler in this example shows how many
    times an event is running. */
 
-#define PETSC_LOG_HANDLER_EX7 "ex7"
+#define PETSCLOGHANDLEREX7 "ex7"
 
 typedef struct _HandlerCtx *HandlerCtx;
 
@@ -233,10 +233,10 @@ int main(int argc, char **argv)
   PetscLogHandlerType type;
 
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
-  PetscCall(PetscLogHandlerRegister(PETSC_LOG_HANDLER_EX7, PetscLogHandlerCreate_Ex7));
+  PetscCall(PetscLogHandlerRegister(PETSCLOGHANDLEREX7, PetscLogHandlerCreate_Ex7));
 
   PetscCall(PetscLogHandlerCreate(PETSC_COMM_WORLD, &h));
-  PetscCall(PetscLogHandlerSetType(h, PETSC_LOG_HANDLER_EX7));
+  PetscCall(PetscLogHandlerSetType(h, PETSCLOGHANDLEREX7));
   PetscCall(PetscLogHandlerGetType(h, &type));
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Log handler type is: %s\n", type));
   PetscCall(PetscLogHandlerStart(h));

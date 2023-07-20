@@ -115,7 +115,7 @@ static PetscErrorCode PetscLogHandlerEventEnd_MPE(PetscLogHandler handler, Petsc
 }
 
 /*MC
-  PETSC_LOG_HANDLER_MPE - PETSC_LOG_HANDLER_MPE = "mpe" -  A
+  PETSCLOGHANDLERMPE - PETSCLOGHANDLERMPE = "mpe" -  A
   `PetscLogHandler` that collects data for MPE, the MPI Parallel Enviornment for
   performance visualization.  A log handler of this type is created and started
   by `PetscLogMPEBegin()`.

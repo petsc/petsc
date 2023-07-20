@@ -131,23 +131,23 @@ typedef struct _p_PetscLogHandler *PetscLogHandler;
 
   Note:
   Implementations included with PETSc include\:
-+ `PETSC_LOG_HANDLER_DEFAULT` (`PetscLogDefaultBegin()`)        - formats data for PETSc's default summary (`PetscLogView()`) and data-dump (`PetscLogDump()`) formats.
-. `PETSC_LOG_HANDLER_NESTED` (`PetscLogNestedBegin()`)          - formats data for XML or flamegraph output
-. `PETSC_LOG_HANDLER_TRACE` (`PetscLogTraceBegin()`)            - traces profiling events in an output stream
-. `PETSC_LOG_HANDLER_MPE` (`PetscLogMPEBegin()`)                - outputs parallel performance visualization using MPE
-. `PETSC_LOG_HANDLER_PERFSTUBS` (`PetscLogPerfstubsBegin()`)    - outputs instrumentation data for PerfStubs/TAU
-- `PETSC_LOG_HANDLER_LEGACY` (`PetscLogLegacyCallbacksBegin()`) - adapts legacy callbacks to the `PetscLogHandler` interface
++ `PETSCLOGHANDLERDEFAULT` (`PetscLogDefaultBegin()`)        - formats data for PETSc's default summary (`PetscLogView()`) and data-dump (`PetscLogDump()`) formats.
+. `PETSCLOGHANDLERNESTED` (`PetscLogNestedBegin()`)          - formats data for XML or flamegraph output
+. `PETSCLOGHANDLERTRACE` (`PetscLogTraceBegin()`)            - traces profiling events in an output stream
+. `PETSCLOGHANDLERMPE` (`PetscLogMPEBegin()`)                - outputs parallel performance visualization using MPE
+. `PETSCLOGHANDLERPERFSTUBS` (`PetscLogPerfstubsBegin()`)    - outputs instrumentation data for PerfStubs/TAU
+- `PETSCLOGHANDLERLEGACY` (`PetscLogLegacyCallbacksBegin()`) - adapts legacy callbacks to the `PetscLogHandler` interface
 
 .seealso: [](ch_profiling), `PetscLogHandler`, `PetscLogHandlerSetType()`, `PetscLogHandlerGetType()`
 J*/
 typedef const char *PetscLogHandlerType;
 
-#define PETSC_LOG_HANDLER_DEFAULT   "default"
-#define PETSC_LOG_HANDLER_NESTED    "nested"
-#define PETSC_LOG_HANDLER_TRACE     "trace"
-#define PETSC_LOG_HANDLER_MPE       "mpe"
-#define PETSC_LOG_HANDLER_PERFSTUBS "perfstubs"
-#define PETSC_LOG_HANDLER_LEGACY    "legacy"
+#define PETSCLOGHANDLERDEFAULT   "default"
+#define PETSCLOGHANDLERNESTED    "nested"
+#define PETSCLOGHANDLERTRACE     "trace"
+#define PETSCLOGHANDLERMPE       "mpe"
+#define PETSCLOGHANDLERPERFSTUBS "perfstubs"
+#define PETSCLOGHANDLERLEGACY    "legacy"
 
 typedef struct _n_PetscLogRegistry *PetscLogRegistry;
 

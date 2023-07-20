@@ -66,7 +66,7 @@ static PetscErrorCode PetscLogHandlerDestroy_Trace(PetscLogHandler h)
 }
 
 /*MC
-  PETSC_LOG_HANDLER_TRACE - PETSC_LOG_HANDLER_TRACE = "trace" -  A
+  PETSCLOGHANDLERTRACE - PETSCLOGHANDLERTRACE = "trace" -  A
   `PetscLogHandler` that collects data for PETSc's tracing log viewer.
   A log handler of this type is created and started by `PetscLogTraceBegin()`.
 
@@ -98,7 +98,7 @@ PETSC_INTERN PetscErrorCode PetscLogHandlerCreate_Trace(PetscLogHandler handler)
 - file - a file descriptor
 
   Output Parameters:
-. handler - a `PetscLogHandler of type `PETSC_LOG_HANDLER_TRACE`
+. handler - a `PetscLogHandler of type `PETSCLOGHANDLERTRACE`
 
   Level: developer
 
@@ -115,7 +115,7 @@ PetscErrorCode PetscLogHandlerCreateTrace(MPI_Comm comm, FILE *file, PetscLogHan
   PetscFunctionBegin;
   PetscCall(PetscLogHandlerCreate(comm, handler));
   h = *handler;
-  PetscCall(PetscLogHandlerSetType(h, PETSC_LOG_HANDLER_TRACE));
+  PetscCall(PetscLogHandlerSetType(h, PETSCLOGHANDLERTRACE));
   tr                  = (PetscLogHandler_Trace)(h->data);
   tr->petsc_tracefile = file;
   PetscFunctionReturn(PETSC_SUCCESS);
