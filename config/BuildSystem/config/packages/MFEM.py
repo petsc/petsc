@@ -9,7 +9,7 @@ class Configure(config.package.Package):
     #self.versionname            = 'MFEM_VERSION_STRING'
     #self.versioninclude         = 'mfem/config.hpp'
     self.gitcommit              = 'v4.5.2'
-    self.download               = ['git://https://github.com/mfem/mfem.git']
+    self.download               = ['git://https://github.com/mfem/mfem.git','https://github.com/mfem/mfem/archive/'+self.gitcommit+'.tar.gz']
     self.linkedbypetsc          = 0
     self.downloadonWindows      = 1
     self.buildLanguages         = ['Cxx']

@@ -6,7 +6,7 @@ class Configure(config.package.CMakePackage):
     config.package.CMakePackage.__init__(self, framework)
     self.gitcommit          = 'v0.14.0'
     self.versionname        = 'RAJA_VERSION_MAJOR.RAJA_VERSION_MINOR.RAJA_VERSION_PATCHLEVEL'
-    self.download           = ['git://https://github.com/LLNL/RAJA.git']
+    self.download           = ['git://https://github.com/LLNL/RAJA.git','https://github.com/LLNL/RAJA/archive/'+self.gitcommit+'.tar.gz']
     self.gitsubmodules      = ['.']
     self.downloaddirnames   = ['raja']
     # TODO: BuildSystem checks C++ headers blindly using CXX. However, when Raja  is compiled by CUDAC, for example, using

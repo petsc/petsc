@@ -4,7 +4,7 @@ class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
     self.gitcommit = 'cbd530a38221043db9a0a4a127aca9cf477e50a5' #main july-04-2022
-    self.download  = ['git://https://github.com/caidao22/cams.git']
+    self.download  = ['git://https://github.com/caidao22/cams.git','https://github.com/caidao22/cams/archive/'+self.gitcommit+'.tar.gz']
     self.functions = ['offline_cams_create']
     self.includes  = ['offline_schedule.h']
     self.liblist   = [['libcams.a']]

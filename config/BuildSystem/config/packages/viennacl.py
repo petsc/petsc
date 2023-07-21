@@ -5,7 +5,7 @@ class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
     self.gitcommit         = 'dc552a8'
-    self.download          = ['git://https://github.com/viennacl/viennacl-dev']
+    self.download          = ['git://https://github.com/viennacl/viennacl-dev','https://github.com/viennacl/viennacl-dev/archive/'+self.gitcommit+'.tar.gz']
     self.downloaddirname   = [str('viennacl-dev')]
     self.includes          = ['viennacl/forwards.h']
     self.buildLanguages    = ['Cxx']

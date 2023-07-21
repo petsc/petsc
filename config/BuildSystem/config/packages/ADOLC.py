@@ -5,7 +5,7 @@ class Configure(config.package.GNUPackage):
     config.package.GNUPackage.__init__(self, framework)
     self.version          = '2.7.2'
     self.gitcommit        = 'da34066' # master 10/20/202
-    self.download         = ['git://https://github.com/coin-or/ADOL-C.git']
+    self.download         = ['git://https://github.com/coin-or/ADOL-C.git','https://github.com/coin-or/ADOL-C/archive/'+self.gitcommit+'.tar.gz']
     self.includes         = ['adolc/adolc.h']
     self.liblist          = [['libadolc.a']]
     self.functions        = ['myalloc2','myfree2']
