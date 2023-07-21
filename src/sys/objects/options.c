@@ -234,7 +234,7 @@ PetscErrorCode PetscOptionsPush(PetscOptions opt)
 
   Level: advanced
 
-.seealso: `PetscOptionsPop()`, `PetscOptionsCreate()`, `PetscOptionsInsert()`, `PetscOptionsSetValue()`, `PetscOptionsLeft()`
+.seealso: `PetscOptionsCreate()`, `PetscOptionsInsert()`, `PetscOptionsSetValue()`, `PetscOptionsLeft()`
 @*/
 PetscErrorCode PetscOptionsPop(void)
 {

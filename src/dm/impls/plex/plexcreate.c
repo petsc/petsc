@@ -3774,7 +3774,7 @@ static PetscErrorCode DMPlexCreateReferenceCell_Internal(DM rdm, DMPolytopeType 
 
   Level: intermediate
 
-.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexCreateReferenceCell()`, `DMPlexCreateBoxMesh()`
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexCreateBoxMesh()`
 @*/
 PetscErrorCode DMPlexCreateReferenceCell(MPI_Comm comm, DMPolytopeType ct, DM *refdm)
 {
@@ -4645,7 +4645,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_Plex(DM dm)
 
   Level: beginner
 
-.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMType`, `DMPlexCreate()`, `DMCreate()`, `DMSetType()`
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMType`, `DMCreate()`, `DMSetType()`
 @*/
 PetscErrorCode DMPlexCreate(MPI_Comm comm, DM *mesh)
 {

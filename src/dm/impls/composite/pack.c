@@ -353,7 +353,7 @@ PetscErrorCode DMCompositeGetLocalAccessArray(DM dm, Vec pvec, PetscInt nwanted,
 
 .seealso: `DMCOMPOSITE`, `DM`, `DMCompositeAddDM()`, `DMCreateGlobalVector()`,
          `DMCompositeGather()`, `DMCompositeCreate()`, `DMCompositeGetISLocalToGlobalMappings()`, `DMCompositeScatter()`,
-         `DMCompositeRestoreAccess()`, `DMCompositeGetAccess()`
+         `DMCompositeGetAccess()`
 @*/
 PetscErrorCode DMCompositeRestoreAccess(DM dm, Vec gvec, ...)
 {
@@ -713,7 +713,7 @@ PetscErrorCode DMCompositeGatherArray(DM dm, InsertMode imode, Vec gvec, Vec *lv
 
   Level: advanced
 
-.seealso: `DMCOMPOSITE`, `DM`, `DMDestroy()`, `DMCompositeGather()`, `DMCompositeAddDM()`, `DMCreateGlobalVector()`,
+.seealso: `DMCOMPOSITE`, `DM`, `DMDestroy()`, `DMCompositeGather()`, `DMCreateGlobalVector()`,
          `DMCompositeScatter()`, `DMCompositeCreate()`, `DMCompositeGetISLocalToGlobalMappings()`, `DMCompositeGetAccess()`,
          `DMCompositeGetLocalVectors()`, `DMCompositeRestoreLocalVectors()`, `DMCompositeGetEntries()`
 @*/

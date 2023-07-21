@@ -361,7 +361,7 @@ PetscErrorCode TaoLMVMGetH0(Tao tao, Mat *H0)
 
   Level: advanced
 
-.seealso: `Tao`, `TAOLMVM`, `TAOBLMVM``TaoLMVMGetH0()`, `TaoLMVMGetH0KSP()`
+.seealso: `Tao`, `TAOLMVM`, `TAOBLMVM``TaoLMVMGetH0()`
 @*/
 PetscErrorCode TaoLMVMGetH0KSP(Tao tao, KSP *ksp)
 {

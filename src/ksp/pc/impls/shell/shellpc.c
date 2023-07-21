@@ -572,7 +572,7 @@ PetscErrorCode PCShellSetMatApply(PC pc, PetscErrorCode (*matapply)(PC, Mat, Mat
 
   Level: advanced
 
-.seealso: `PCSHELL`, `PCShellSetApply()`, `PCShellSetApplySymmetricLeft()`, `PCShellSetSetUp()`, `PCShellSetApplyTranspose()`, `PCShellSetContext()`
+.seealso: `PCSHELL`, `PCShellSetApply()`, `PCShellSetSetUp()`, `PCShellSetApplyTranspose()`, `PCShellSetContext()`
 @*/
 PetscErrorCode PCShellSetApplySymmetricLeft(PC pc, PetscErrorCode (*apply)(PC, Vec, Vec))
 {
@@ -653,7 +653,7 @@ PetscErrorCode PCShellSetApplyBA(PC pc, PetscErrorCode (*applyBA)(PC, PCSide, Ve
 .vb
    PetscErrorCode applytranspose(PC pc, Vec xin, Vec xout)
 .ve
-+  pc - the preconditioner, get the application context with `PCShellGetContext()`
++ pc - the preconditioner, get the application context with `PCShellGetContext()`
 .  xin - input vector
 -  xout - output vector
 

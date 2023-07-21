@@ -294,7 +294,7 @@ PetscErrorCode ISCreateSubIS(IS is, IS comps, IS *subis)
   Because all processes must agree on the global permanent status of a property,
   the permanent status can only be changed with `ISSetInfo()`, because this routine is not collective
 
-.seealso: `IS`, `ISInfo`, `ISInfoType`, `ISSetInfo()`, `ISClearInfoCache()`
+.seealso: `IS`, `ISInfo`, `ISInfoType`, `ISSetInfo()`
 @*/
 PetscErrorCode ISClearInfoCache(IS is, PetscBool clear_permanent_local)
 {
@@ -1412,7 +1412,7 @@ PetscErrorCode ISGetTotalIndices(IS is, const PetscInt *indices[])
 
   Level: intermediate
 
-.seealso: `IS`, `ISRestoreTotalIndices()`, `ISGetNonlocalIndices()`
+.seealso: `IS`, `ISGetNonlocalIndices()`
 @*/
 PetscErrorCode ISRestoreTotalIndices(IS is, const PetscInt *indices[])
 {

@@ -164,7 +164,7 @@ PetscErrorCode MatKAIJRestoreS(Mat A, PetscScalar **S)
   This routine zeros the array pointer to prevent accidental reuse after it has been restored.
   If `NULL` is passed, it will not attempt to zero the array pointer.
 
-.seealso: [](ch_matrices), `Mat`, `MATKAIJ`, `MatKAIJGetS()`, `MatKAIJGetSRead()`, `MatKAIJRestoreSRead()`
+.seealso: [](ch_matrices), `Mat`, `MATKAIJ`, `MatKAIJGetS()`, `MatKAIJGetSRead()`
 @*/
 PetscErrorCode MatKAIJRestoreSRead(Mat A, const PetscScalar **S)
 {
@@ -273,7 +273,7 @@ PetscErrorCode MatKAIJRestoreT(Mat A, PetscScalar **T)
   This routine zeros the array pointer to prevent accidental reuse after it has been restored.
   If `NULL` is passed, it will not attempt to zero the array pointer.
 
-.seealso: [](ch_matrices), `Mat`, `MATKAIJ`, `MatKAIJGetT()`, `MatKAIJGetTRead()`, `MatKAIJRestoreTRead()`
+.seealso: [](ch_matrices), `Mat`, `MATKAIJ`, `MatKAIJGetT()`, `MatKAIJGetTRead()`
 @*/
 PetscErrorCode MatKAIJRestoreTRead(Mat A, const PetscScalar **T)
 {

@@ -487,7 +487,7 @@ PetscErrorCode DMMoabGetDofsBlocked(DM dm, PetscInt npoints, const moab::EntityH
 
   Level: intermediate
 
-.seealso: `DMMoabGetDofsLocal()`, `DMMoabGetDofs()`, `DMMoabGetDofsBlockedLocal()`
+.seealso: `DMMoabGetDofsLocal()`, `DMMoabGetDofs()`
 @*/
 PetscErrorCode DMMoabGetDofsBlockedLocal(DM dm, PetscInt npoints, const moab::EntityHandle *points, PetscInt *dof)
 {

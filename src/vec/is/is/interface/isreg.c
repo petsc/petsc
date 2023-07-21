@@ -139,7 +139,7 @@ PetscErrorCode ISGetType(IS is, ISType *type)
   This is no `ISSetFromOptions()` and the current implementations do not have a way to dynamically determine type, so
   dynamic registration of custom `IS` types will be of limited use to users.
 
-.seealso: [](sec_scatter), `IS`, `ISType`, `ISSetType()`, `ISRegisterAll()`, `ISRegisterDestroy()`, `ISRegister()`
+.seealso: [](sec_scatter), `IS`, `ISType`, `ISSetType()`, `ISRegisterAll()`, `ISRegisterDestroy()`
 @*/
 PetscErrorCode ISRegister(const char sname[], PetscErrorCode (*function)(IS))
 {

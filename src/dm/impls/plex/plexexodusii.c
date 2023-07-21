@@ -1282,7 +1282,7 @@ PetscErrorCode PetscViewerExodusIIGetId(PetscViewer viewer, int *exoid)
 
   Level: beginner
 
-.seealso: `PETSCVIEWEREXODUSII`, `PetscViewer`, `PetscViewerExodusIIGetId()`, `PetscViewerExodusIIGetOrder()`, `PetscViewerExodusIISetOrder()`
+.seealso: `PETSCVIEWEREXODUSII`, `PetscViewer`, `PetscViewerExodusIIGetId()`, `PetscViewerExodusIIGetOrder()`
 @*/
 PetscErrorCode PetscViewerExodusIISetOrder(PetscViewer viewer, PetscInt order)
 {
@@ -1305,7 +1305,7 @@ PetscErrorCode PetscViewerExodusIISetOrder(PetscViewer viewer, PetscInt order)
 
   Level: beginner
 
-.seealso: `PETSCVIEWEREXODUSII`, `PetscViewer`, `PetscViewerExodusIIGetId()`, `PetscViewerExodusIIGetOrder()`, `PetscViewerExodusIISetOrder()`
+.seealso: `PETSCVIEWEREXODUSII`, `PetscViewer`, `PetscViewerExodusIIGetId()`, `PetscViewerExodusIISetOrder()`
 @*/
 PetscErrorCode PetscViewerExodusIIGetOrder(PetscViewer viewer, PetscInt *order)
 {

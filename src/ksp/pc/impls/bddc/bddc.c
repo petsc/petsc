@@ -916,7 +916,7 @@ static PetscErrorCode PCBDDCGetDirichletBoundariesLocal_BDDC(PC pc, IS *Dirichle
   or a global-to-local map of the global `IS` (if provided with `PCBDDCSetDirichletBoundaries()`).
   In the latter case, the `IS` will be available only after `PCSetUp()`.
 
-.seealso: `PCBDDC`, `PCBDDCGetDirichletBoundariesLocal()`, `PCBDDCGetDirichletBoundaries()`, `PCBDDCSetDirichletBoundaries()`
+.seealso: `PCBDDC`, `PCBDDCGetDirichletBoundaries()`, `PCBDDCSetDirichletBoundaries()`
 @*/
 PetscErrorCode PCBDDCGetDirichletBoundariesLocal(PC pc, IS *DirichletBoundaries)
 {

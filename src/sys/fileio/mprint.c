@@ -169,7 +169,7 @@ PetscErrorCode PetscFormatConvert(const char *format, char *newformat)
 
   If the length of the format string `format` is on the order of `PETSCDEFAULTBUFFERSIZE` (8 * 1024 bytes) or larger, this function will call `PetscMalloc()`
 
-.seealso: `PetscFormatConvert()`, `PetscFormatConvertGetSize()`, `PetscVSNPrintf()`, `PetscErrorPrintf()`, `PetscVPrintf()`
+.seealso: `PetscFormatConvert()`, `PetscFormatConvertGetSize()`, `PetscErrorPrintf()`, `PetscVPrintf()`
 @*/
 PetscErrorCode PetscVSNPrintf(char *str, size_t len, const char *format, size_t *fullLength, va_list Argp)
 {

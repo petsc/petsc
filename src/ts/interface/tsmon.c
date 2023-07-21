@@ -304,7 +304,7 @@ PetscErrorCode TSMonitorExtreme(TS ts, PetscInt step, PetscReal ptime, Vec v, Pe
   One can control the names displayed for each solution or error variable with `TSMonitorLGCtxSetVariableNames()` or `TSMonitorLGSetVariableNames()`
 
 .seealso: [](ch_ts), `TSMonitorLGTimeStep()`, `TSMonitorSet()`, `TSMonitorLGSolution()`, `TSMonitorLGError()`, `TSMonitorDefault()`, `VecView()`,
-          `TSMonitorLGCtxCreate()`, `TSMonitorLGCtxSetVariableNames()`, `TSMonitorLGCtxGetVariableNames()`,
+          `TSMonitorLGCtxSetVariableNames()`, `TSMonitorLGCtxGetVariableNames()`,
           `TSMonitorLGSetVariableNames()`, `TSMonitorLGGetVariableNames()`, `TSMonitorLGSetDisplayVariables()`, `TSMonitorLGCtxSetDisplayVariables()`,
           `TSMonitorLGCtxSetTransform()`, `TSMonitorLGSetTransform()`, `TSMonitorLGSNESIterations()`, `TSMonitorLGKSPIterations()`,
           `TSMonitorEnvelopeCtxCreate()`, `TSMonitorEnvelopeGetBounds()`, `TSMonitorEnvelopeCtxDestroy()`, `TSMonitorEnvelop()`

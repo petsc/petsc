@@ -37,7 +37,7 @@ PetscErrorCode SNESLineSearchBTSetAlpha(SNESLineSearch linesearch, PetscReal alp
 
   Level: intermediate
 
-.seealso: `SNESLineSearchGetLambda()`, `SNESLineSearchGetTolerances()` `SNESLINESEARCHBT`, `SNESLineSearchBTGetAlpha()`
+.seealso: `SNESLineSearchGetLambda()`, `SNESLineSearchGetTolerances()` `SNESLINESEARCHBT`
 @*/
 PetscErrorCode SNESLineSearchBTGetAlpha(SNESLineSearch linesearch, PetscReal *alpha)
 {

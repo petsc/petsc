@@ -102,7 +102,7 @@ PetscErrorCode PetscRandomGetType(PetscRandom rnd, PetscRandomType *type)
     -random_type my_random_name
 .ve
 
-.seealso: `PetscRandom`, `PetscRandomRegisterAll()`, `PetscRandomRegisterDestroy()`, `PetscRandomRegister()`
+.seealso: `PetscRandom`, `PetscRandomRegisterAll()`, `PetscRandomRegisterDestroy()`
 @*/
 PetscErrorCode PetscRandomRegister(const char sname[], PetscErrorCode (*function)(PetscRandom))
 {

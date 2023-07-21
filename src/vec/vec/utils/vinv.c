@@ -61,7 +61,7 @@ PetscErrorCode VecStrideSet(Vec v, PetscInt start, PetscScalar s)
 
   This will only work if the desire subvector is a stride subvector
 
-.seealso: `Vec`, `VecNorm()`, `VecStrideGather()`, `VecStrideScatter()`, `VecStrideMin()`, `VecStrideMax()`, `VecStrideScale()`
+.seealso: `Vec`, `VecNorm()`, `VecStrideGather()`, `VecStrideScatter()`, `VecStrideMin()`, `VecStrideMax()`
 @*/
 PetscErrorCode VecStrideScale(Vec v, PetscInt start, PetscScalar scale)
 {
@@ -749,7 +749,7 @@ PetscErrorCode VecStrideGatherAll(Vec v, Vec s[], InsertMode addv)
   Not optimized; could be easily
 
 .seealso: `Vec`, `VecStrideNorm()`, `VecStrideScatter()`, `VecStrideMin()`, `VecStrideMax()`, `VecStrideGather()`,
-          `VecStrideScatterAll()`
+
 @*/
 PetscErrorCode VecStrideScatterAll(Vec s[], Vec v, InsertMode addv)
 {
@@ -1275,7 +1275,7 @@ static PetscScalar ScalarAbs_Fn(PetscScalar x)
 
   Level: intermediate
 
-.seealso: `Vec`, `VecExp()`, `VecAbs()`, `VecSqrtAbs()`, `VecReciprocal()`, `VecLog()`
+.seealso: `Vec`, `VecExp()`, `VecSqrtAbs()`, `VecReciprocal()`, `VecLog()`
 @*/
 PetscErrorCode VecAbs(Vec v)
 {

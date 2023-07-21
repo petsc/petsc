@@ -297,7 +297,7 @@ PetscErrorCode PetscObjectSetFortranCallback(PetscObject obj, PetscFortranCallba
   Note:
   This is used to help manage user callback functions that were provided in Fortran
 
-.seealso: `PetscObjectSetFortranCallback()`, `PetscObjectGetFortranCallback()`, `PetscFortranCallbackRegister()`, `PetscFortranCallbackGetSizes()`
+.seealso: `PetscObjectSetFortranCallback()`, `PetscFortranCallbackRegister()`, `PetscFortranCallbackGetSizes()`
 @*/
 PetscErrorCode PetscObjectGetFortranCallback(PetscObject obj, PetscFortranCallbackType cbtype, PetscFortranCallbackId cid, void (**func)(void), void **ctx)
 {

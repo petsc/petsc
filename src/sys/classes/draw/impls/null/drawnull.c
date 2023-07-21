@@ -209,7 +209,7 @@ PetscErrorCode PetscDrawOpenNull(MPI_Comm comm, PetscDraw *win)
 
   Level: advanced
 
-.seealso: `PetscDraw`, `PETSC_DRAW_NULL`, `PetscDrawOpenX()`, `PetscDrawIsNull()`
+.seealso: `PetscDraw`, `PETSC_DRAW_NULL`, `PetscDrawOpenX()`
 @*/
 PetscErrorCode PetscDrawIsNull(PetscDraw draw, PetscBool *yes)
 {

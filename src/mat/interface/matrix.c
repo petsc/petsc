@@ -125,8 +125,9 @@ PetscErrorCode MatSetRandom(Mat x, PetscRandom rctx)
 
   This can also be called on non-factored matrices that come from, for example, matrices used in SOR.
 
-.seealso: [](ch_matrices), `Mat`, `MatZeroEntries()`, `MatFactor()`, `MatGetFactor()`, `MatLUFactorSymbolic()`, `MatCholeskyFactorSymbolic()`, `MatFactorClearError()`, `MatFactorGetErrorZeroPivot()`,
-          `MAT_FACTOR_NUMERIC_ZEROPIVOT`
+.seealso: [](ch_matrices), `Mat`, `MatZeroEntries()`, `MatFactor()`, `MatGetFactor()`,
+`MatLUFactorSymbolic()`, `MatCholeskyFactorSymbolic()`, `MatFactorClearError()`,
+`MAT_FACTOR_NUMERIC_ZEROPIVOT`
 @*/
 PetscErrorCode MatFactorGetErrorZeroPivot(Mat mat, PetscReal *pivot, PetscInt *row)
 {
@@ -9687,7 +9688,7 @@ static PetscErrorCode MatFactorUpdateSchurStatus_Private(Mat F)
 
   Level: advanced
 
-.seealso: [](ch_matrices), `Mat`, `MatGetFactor()`, `MatFactorSetSchurIS()`, `MatFactorRestoreSchurComplement()`, `MatFactorCreateSchurComplement()`, `MatFactorSchurStatus`
+.seealso: [](ch_matrices), `Mat`, `MatGetFactor()`, `MatFactorSetSchurIS()`, `MatFactorCreateSchurComplement()`, `MatFactorSchurStatus`
 @*/
 PetscErrorCode MatFactorRestoreSchurComplement(Mat F, Mat *S, MatFactorSchurStatus status)
 {

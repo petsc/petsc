@@ -293,7 +293,7 @@ PetscErrorCode SNESMonitorDefaultSetUp(SNES snes, PetscViewerAndFormat *vf)
   to be used during the `SNES` solve.
 
 .seealso: [](ch_snes), `SNESMonitorSet()`, `SNESMonitorSolution()`, `SNESMonitorFunction()`, `SNESMonitorResidual()`,
-          `SNESMonitorSolutionUpdate()`, `SNESMonitorDefault()`, `SNESMonitorScaling()`, `SNESMonitorRange()`, `SNESMonitorRatio()`,
+          `SNESMonitorSolutionUpdate()`, `SNESMonitorScaling()`, `SNESMonitorRange()`, `SNESMonitorRatio()`,
           `SNESMonitorDefaultField()`, `PetscViewerFormat`, `PetscViewerAndFormat`
 @*/
 PetscErrorCode SNESMonitorDefault(SNES snes, PetscInt its, PetscReal fgnorm, PetscViewerAndFormat *vf)

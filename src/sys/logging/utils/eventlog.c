@@ -575,7 +575,7 @@ PetscErrorCode PetscEventPerfLogActivateClass(PetscEventPerfLog eventLog, PetscE
   Note:
   This is a low level routine used by the logging functions in PETSc
 
-.seealso: `PetscEventPerfLogDeactivateClass()`, `PetscEventPerfLogDeactivate()`, `PetscEventPerfLogActivate()`
+.seealso: `PetscEventPerfLogDeactivate()`, `PetscEventPerfLogActivate()`
 @*/
 PetscErrorCode PetscEventPerfLogDeactivateClass(PetscEventPerfLog eventLog, PetscEventRegLog eventRegLog, PetscClassId classid)
 {

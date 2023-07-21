@@ -219,7 +219,7 @@ PetscErrorCode TaoComputeObjective(Tao tao, Vec X, PetscReal *f)
   `TaoComputeObjectiveAndGradient()` is typically used within the implementation of the optimization algorithm,
   so most users would not generally call this routine themselves.
 
-.seealso: [](ch_tao), `TaoComputeGradient()`, `TaoComputeObjectiveAndGradient()`, `TaoSetObjective()`
+.seealso: [](ch_tao), `TaoComputeGradient()`, `TaoSetObjective()`
 @*/
 PetscErrorCode TaoComputeObjectiveAndGradient(Tao tao, Vec X, PetscReal *f, Vec G)
 {

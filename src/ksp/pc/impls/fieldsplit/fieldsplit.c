@@ -2629,7 +2629,7 @@ static PetscErrorCode PCFieldSplitSetSchurFactType_FieldSplit(PC pc, PCFieldSpli
 
   Level: intermediate
 
-.seealso: [](sec_block_matrices), `PC`, `PCFIELDSPLIT`, `PCFieldSplitSetFields()`, `PCFieldSplitSchurFactType`, `PCFieldSplitSetSchurScale()`, `PCFieldSplitSetSchurFactType()`
+.seealso: [](sec_block_matrices), `PC`, `PCFIELDSPLIT`, `PCFieldSplitSetFields()`, `PCFieldSplitSchurFactType`, `PCFieldSplitSetSchurFactType()`
 @*/
 PetscErrorCode PCFieldSplitSetSchurScale(PC pc, PetscScalar scale)
 {

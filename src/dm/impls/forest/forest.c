@@ -676,7 +676,7 @@ PetscErrorCode DMForestSetPartitionOverlap(DM dm, PetscInt overlap)
 
   Level: intermediate
 
-.seealso: `DM`, `DMFOREST`, `DMForestGetPartitionOverlap()`, `DMForestSetAdjacencyDimension()`, `DMForestSetAdjacencyCodimension()`
+.seealso: `DM`, `DMFOREST`, `DMForestSetAdjacencyDimension()`, `DMForestSetAdjacencyCodimension()`
 @*/
 PetscErrorCode DMForestGetPartitionOverlap(DM dm, PetscInt *overlap)
 {
@@ -808,7 +808,7 @@ PetscErrorCode DMForestGetInitialRefinement(DM dm, PetscInt *initRefinement)
 
   Level: intermediate
 
-.seealso: `DM`, `DMFOREST`, `DMForestGetMinimumRefinement()`, `DMForestSetMaximumRefinement()`, `DMForestSetInitialRefinement()`, `DMForestGetBaseDM()`, `DMForestGetAdaptivityDM()`
+.seealso: `DM`, `DMFOREST`, `DMForestGetMinimumRefinement()`, `DMForestSetInitialRefinement()`, `DMForestGetBaseDM()`, `DMForestGetAdaptivityDM()`
 @*/
 PetscErrorCode DMForestSetMaximumRefinement(DM dm, PetscInt maxRefinement)
 {

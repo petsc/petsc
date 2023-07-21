@@ -935,7 +935,7 @@ PetscErrorCode DMTSSetForcingFunction(DM dm, TSForcingFunction func, void *ctx)
   associated with the `DM`.  This makes the interface consistent regardless of whether the user interacts with a `DM` or
   not. If `DM` took a more central role at some later date, this could become the primary method of setting the residual.
 
-.seealso: [](ch_ts), `TS`, `DM`, `DMTSSetContext()`, `TSSetFunction()`, `DMTSSetJacobian()`, `TSSetForcingFunction()`, `DMTSGetForcingFunction()`
+.seealso: [](ch_ts), `TS`, `DM`, `DMTSSetContext()`, `TSSetFunction()`, `DMTSSetJacobian()`, `TSSetForcingFunction()`
 @*/
 PetscErrorCode DMTSGetForcingFunction(DM dm, TSForcingFunction *f, void **ctx)
 {

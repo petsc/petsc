@@ -382,7 +382,7 @@ static PetscErrorCode TSComputeLinearStability_BasicSymplectic(TS ts, PetscReal 
   The symplectic solver always expects a two-way splitting with the split names being "position" and "momentum". Each split is associated with an `IS` object and a sub-`TS`
   that is intended to store the user-provided RHS function.
 
-.seealso: [](ch_ts), `TSBASICSYMPLECTIC`, `TSBasicSymplecticType`, `TSBasicSymplecticSetType()`
+.seealso: [](ch_ts), `TSBASICSYMPLECTIC`, `TSBasicSymplecticType`
 @*/
 PetscErrorCode TSBasicSymplecticSetType(TS ts, TSBasicSymplecticType bsymptype)
 {

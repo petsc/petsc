@@ -140,7 +140,7 @@ PetscErrorCode PetscDrawLGSPDraw(PetscDrawLG lg, PetscDrawSP spin)
 
   All MPI ranks in the communicator must call `PetscDrawLGDraw()` to display the updated graph.
 
-.seealso: `PetscDrawLGCreate`, `PetscDrawLGDestroy()`, `PetscDrawLGAddPoint()`, `PetscDrawLGAddCommonPoint()`, `PetscDrawLGAddPoints()`, `PetscDrawLGDraw()`, `PetscDrawLGSave()`,
+.seealso: `PetscDrawLGDestroy()`, `PetscDrawLGAddPoint()`, `PetscDrawLGAddCommonPoint()`, `PetscDrawLGAddPoints()`, `PetscDrawLGDraw()`, `PetscDrawLGSave()`,
           `PetscDrawLGView()`, `PetscDrawLGReset()`, `PetscDrawLGSetDimension()`, `PetscDrawLGGetDimension()`, `PetscDrawLGSetLegend()`, `PetscDrawLGGetAxis()`,
           `PetscDrawLGGetDraw()`, `PetscDrawLGSetUseMarkers()`, `PetscDrawLGSetLimits()`, `PetscDrawLGSetColors()`, `PetscDrawLGSetOptionsPrefix()`, `PetscDrawLGSetFromOptions()`
 @*/

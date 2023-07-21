@@ -78,7 +78,7 @@ PetscErrorCode KSPFGMRESModifyPCNoChange(KSP ksp, PetscInt total_its, PetscInt l
   Note:
   You can use this as a template for writing a custom monification callback
 
-.seealso: [](ch_ksp), [](sec_flexibleksp), `KSPFGMRES`, `KSPFGMRESSetModifyPC()`, `KSPFGMRESModifyPCKSP()`
+.seealso: [](ch_ksp), [](sec_flexibleksp), `KSPFGMRES`, `KSPFGMRESSetModifyPC()`
 @*/
 PetscErrorCode KSPFGMRESModifyPCKSP(KSP ksp, PetscInt total_its, PetscInt loc_its, PetscReal res_norm, void *dummy)
 {

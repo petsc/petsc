@@ -153,7 +153,7 @@ PetscErrorCode PetscViewerAndFormatCreate(PetscViewer viewer, PetscViewerFormat 
   Level: developer
 
 .seealso: [](sec_viewers), `PetscViewer`, `PetscViewerAndFormat`, `PetscViewerFormat`, `PetscViewerAndFormatCreate()`, `PetscViewerSocketOpen()`,
-          `PetscViewerASCIIOpen()`, `PetscViewerCreate()`, `PetscViewerDrawOpen()`, `PetscViewerAndFormatDestroy()`
+          `PetscViewerASCIIOpen()`, `PetscViewerCreate()`, `PetscViewerDrawOpen()`
 @*/
 PetscErrorCode PetscViewerAndFormatDestroy(PetscViewerAndFormat **vf)
 {

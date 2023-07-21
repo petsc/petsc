@@ -4220,7 +4220,7 @@ PetscErrorCode MatCreateMPIAIJWithArrays(MPI_Comm comm, PetscInt m, PetscInt n, 
   Level: deprecated
 
 .seealso: [](ch_matrices), `Mat`, `MATMPIAIJ`, `MatCreate()`, `MatCreateSeqAIJ()`, `MatSetValues()`, `MatMPIAIJSetPreallocation()`, `MatMPIAIJSetPreallocationCSR()`,
-          `MatCreateAIJ()`, `MatCreateMPIAIJWithSplitArrays()`, `MatUpdateMPIAIJWithArrays()`, `MatUpdateMPIAIJWithArray()`
+          `MatCreateAIJ()`, `MatCreateMPIAIJWithSplitArrays()`, `MatUpdateMPIAIJWithArray()`
 @*/
 PetscErrorCode MatUpdateMPIAIJWithArrays(Mat mat, PetscInt m, PetscInt n, PetscInt M, PetscInt N, const PetscInt Ii[], const PetscInt J[], const PetscScalar v[])
 {

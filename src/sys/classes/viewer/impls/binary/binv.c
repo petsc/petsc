@@ -932,7 +932,7 @@ static PetscErrorCode PetscViewerBinaryWriteReadMPIIO(PetscViewer viewer, void *
 
 .seealso: [](sec_viewers), `PETSCVIEWERBINARY`, `PetscViewerASCIIOpen()`, `PetscViewerPushFormat()`, `PetscViewerDestroy()`,
           `VecView()`, `MatView()`, `VecLoad()`, `MatLoad()`, `PetscViewerBinaryGetDescriptor()`,
-          `PetscViewerBinaryGetInfoPointer()`, `PetscFileMode`, `PetscViewer`, `PetscViewerBinaryRead()`
+          `PetscViewerBinaryGetInfoPointer()`, `PetscFileMode`, `PetscViewer`
 @*/
 PetscErrorCode PetscViewerBinaryRead(PetscViewer viewer, void *data, PetscInt num, PetscInt *count, PetscDataType dtype)
 {
@@ -1134,7 +1134,7 @@ PetscErrorCode PetscViewerBinaryReadAll(PetscViewer viewer, void *data, PetscInt
 
   Level: advanced
 
-.seealso: [](sec_viewers), `PETSCVIEWERBINARY`, `PetscViewerBinaryOpen()`, `PetscViewerBinarySetUseMPIIO()`, `PetscViewerBinaryWriteAll()`, `PetscViewerBinaryReadAll()`
+.seealso: [](sec_viewers), `PETSCVIEWERBINARY`, `PetscViewerBinaryOpen()`, `PetscViewerBinarySetUseMPIIO()`, `PetscViewerBinaryReadAll()`
 @*/
 PetscErrorCode PetscViewerBinaryWriteAll(PetscViewer viewer, const void *data, PetscInt count, PetscInt64 start, PetscInt64 total, PetscDataType dtype)
 {
@@ -1240,7 +1240,7 @@ PetscErrorCode PetscViewerBinaryReadStringArray(PetscViewer viewer, char ***data
 
   Level: advanced
 
-.seealso: [](sec_viewers), `PetscViewerFileSetMode()`, `PetscViewerCreate()`, `PetscViewerSetType()`, `PetscViewerBinaryOpen()`
+.seealso: [](sec_viewers), `PetscViewerCreate()`, `PetscViewerSetType()`, `PetscViewerBinaryOpen()`
 @*/
 PetscErrorCode PetscViewerFileSetMode(PetscViewer viewer, PetscFileMode mode)
 {

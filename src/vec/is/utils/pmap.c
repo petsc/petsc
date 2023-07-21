@@ -396,7 +396,7 @@ PetscErrorCode PetscLayoutSetLocalSize(PetscLayout map, PetscInt n)
   Note:
   Call this after the call to `PetscLayoutSetUp()`
 
-.seealso: [PetscLayout](sec_matlayout), `PetscLayoutCreate()`, `PetscLayoutSetSize()`, `PetscLayoutGetSize()`, `PetscLayoutGetLocalSize()`, `PetscLayoutSetUp()`
+.seealso: [PetscLayout](sec_matlayout), `PetscLayoutCreate()`, `PetscLayoutSetSize()`, `PetscLayoutGetSize()`, `PetscLayoutSetUp()`
           `PetscLayoutGetRange()`, `PetscLayoutGetRanges()`, `PetscLayoutSetBlockSize()`, `PetscLayoutGetBlockSize()`
 @*/
 PetscErrorCode PetscLayoutGetLocalSize(PetscLayout map, PetscInt *n)

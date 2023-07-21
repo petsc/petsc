@@ -638,9 +638,9 @@ PetscFunctionList ISLocalToGlobalMappingList = NULL;
 
   Level: advanced
 
-.seealso: [](sec_scatter), `ISLocalToGlobalMapping`, `ISLocalToGlobalMappingDestroy()`, `ISLocalToGlobalMappingCreateIS()`, `ISLocalToGlobalMappingSetFromOptions()`,
-          `ISLOCALTOGLOBALMAPPINGBASIC`, `ISLOCALTOGLOBALMAPPINGHASH`
-          `ISLocalToGlobalMappingSetType()`, `ISLocalToGlobalMappingType`
+.seealso: [](sec_scatter), `ISLocalToGlobalMapping`, `ISLocalToGlobalMappingDestroy()`,
+`ISLocalToGlobalMappingCreateIS()`, `ISLOCALTOGLOBALMAPPINGBASIC`,
+`ISLOCALTOGLOBALMAPPINGHASH`, `ISLocalToGlobalMappingSetType()`, `ISLocalToGlobalMappingType`
 @*/
 PetscErrorCode ISLocalToGlobalMappingSetFromOptions(ISLocalToGlobalMapping mapping)
 {

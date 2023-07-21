@@ -59,7 +59,7 @@ PetscErrorCode TSSetRHSJacobianP(TS ts, Mat Amat, TSRHSJacobianP func, void *ctx
   Note:
   `Amat` has the same number of rows and the same row parallel layout as `u`, `Amat` has the same number of columns and parallel layout as `p`
 
-.seealso: [](ch_ts), `TSSetRHSJacobianP()`, `TS`, `TSRHSJacobianP`, `TSGetRHSJacobianP()`
+.seealso: [](ch_ts), `TSSetRHSJacobianP()`, `TS`, `TSRHSJacobianP`
 @*/
 PetscErrorCode TSGetRHSJacobianP(TS ts, Mat *Amat, TSRHSJacobianP *func, void **ctx)
 {
@@ -1497,7 +1497,7 @@ PetscErrorCode TSAdjointStep(TS ts)
 
   By default this will integrate back to the initial time, one can use `TSAdjointSetSteps()` to step back to a later time
 
-.seealso: [](ch_ts), `TSAdjointSolve()`, `TSCreate()`, `TSSetCostGradients()`, `TSSetSolution()`, `TSAdjointStep()`
+.seealso: [](ch_ts), `TSCreate()`, `TSSetCostGradients()`, `TSSetSolution()`, `TSAdjointStep()`
 @*/
 PetscErrorCode TSAdjointSolve(TS ts)
 {
@@ -1677,7 +1677,7 @@ PetscErrorCode TSForwardReset(TS ts)
 
   Level: deprecated
 
-.seealso: [](ch_ts), `TSForwardGetSensitivities()`, `TSForwardSetIntegralGradients()`, `TSForwardGetIntegralGradients()`, `TSForwardStep()`
+.seealso: [](ch_ts), `TSForwardGetSensitivities()`, `TSForwardGetIntegralGradients()`, `TSForwardStep()`
 @*/
 PetscErrorCode TSForwardSetIntegralGradients(TS ts, PetscInt numfwdint, Vec *vp)
 {
@@ -1702,7 +1702,7 @@ PetscErrorCode TSForwardSetIntegralGradients(TS ts, PetscInt numfwdint, Vec *vp)
 
   Level: deprecated
 
-.seealso: [](ch_ts), `TSForwardSetSensitivities()`, `TSForwardSetIntegralGradients()`, `TSForwardGetIntegralGradients()`, `TSForwardStep()`
+.seealso: [](ch_ts), `TSForwardSetSensitivities()`, `TSForwardSetIntegralGradients()`, `TSForwardStep()`
 @*/
 PetscErrorCode TSForwardGetIntegralGradients(TS ts, PetscInt *numfwdint, Vec **vp)
 {

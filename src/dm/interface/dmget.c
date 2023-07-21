@@ -299,7 +299,7 @@ alldone:
   Collective
 
   Input Parameter:
-.  dm - the `DM`
+. dm - the `DM`
 
   Level: developer
 
@@ -329,7 +329,7 @@ PetscErrorCode DMClearNamedGlobalVectors(DM dm)
   Collective
 
   Input Parameter:
-.  dm - the `DM`
+. dm - the `DM`
 
   Level: developer
 

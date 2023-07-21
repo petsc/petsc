@@ -568,7 +568,7 @@ PetscErrorCode PCMGGetSmoother(PC pc, PetscInt l, KSP *ksp)
   Note:
   Calling this will result in a different pre and post smoother so you may need to set options on the pre smoother also
 
-.seealso: `PCMG`, `PCMGGetSmootherUp()`, `PCMGGetSmootherDown()`
+.seealso: `PCMG`, `PCMGGetSmootherDown()`
 @*/
 PetscErrorCode PCMGGetSmootherUp(PC pc, PetscInt l, KSP *ksp)
 {

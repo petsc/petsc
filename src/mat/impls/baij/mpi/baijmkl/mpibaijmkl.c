@@ -126,7 +126,7 @@ static PetscErrorCode MatConvert_MPIBAIJ_MPIBAIJMKL(Mat A, MatType type, MatReus
   In general, for PDE problems in which most nonzeros are near the diagonal,
   one expects `d_nz` >> `o_nz`.
 
-.seealso: [](ch_matrices), `Mat`, `MATBAIJMKL`, `MATBAIJ`, `MatCreate()`, `MatCreateSeqBAIJMKL()`, `MatSetValues()`, `MatCreateBAIJMKL()`, `MatMPIBAIJSetPreallocation()`, `MatMPIBAIJSetPreallocationCSR()`
+.seealso: [](ch_matrices), `Mat`, `MATBAIJMKL`, `MATBAIJ`, `MatCreate()`, `MatCreateSeqBAIJMKL()`, `MatSetValues()`, `MatMPIBAIJSetPreallocation()`, `MatMPIBAIJSetPreallocationCSR()`
 @*/
 PetscErrorCode MatCreateBAIJMKL(MPI_Comm comm, PetscInt bs, PetscInt m, PetscInt n, PetscInt M, PetscInt N, PetscInt d_nz, const PetscInt d_nnz[], PetscInt o_nz, const PetscInt o_nnz[], Mat *A)
 {

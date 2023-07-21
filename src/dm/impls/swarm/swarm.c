@@ -1020,7 +1020,7 @@ PetscErrorCode DMSwarmRegisterUserStructField(DM dm, const char fieldname[], siz
   Note:
   The textual name for each registered field must be unique.
 
-.seealso: `DM`, `DMSWARM`, `DMSwarmRegisterPetscDatatypeField()`, `DMSwarmRegisterUserStructField()`, `DMSwarmRegisterUserDatatypeField()`
+.seealso: `DM`, `DMSWARM`, `DMSwarmRegisterPetscDatatypeField()`, `DMSwarmRegisterUserStructField()`
 @*/
 PetscErrorCode DMSwarmRegisterUserDatatypeField(DM dm, const char fieldname[], size_t size, PetscInt blocksize)
 {

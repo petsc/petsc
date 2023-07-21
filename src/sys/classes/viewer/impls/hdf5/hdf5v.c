@@ -1071,7 +1071,7 @@ PetscErrorCode PetscDataTypeToHDF5DataType(PetscDataType ptype, hid_t *htype)
 
   Level: advanced
 
-.seealso: [](sec_viewers), `PetscDataType`, `PetscHDF5DataTypeToPetscDataType()`
+.seealso: [](sec_viewers), `PetscDataType`
 @*/
 PetscErrorCode PetscHDF5DataTypeToPetscDataType(hid_t htype, PetscDataType *ptype)
 {

@@ -118,7 +118,7 @@ PetscErrorCode PetscDrawPixelToCoordinate(PetscDraw draw, int i, int j, PetscRea
 
   Level: beginner
 
-.seealso: `PetscDraw`, `PetscDrawLine()`, `PetscDrawRectangle()`, `PetscDrawTriangle()`, `PetscDrawEllipse()`,
+.seealso: `PetscDraw`, `PetscDrawLine()`, `PetscDrawTriangle()`, `PetscDrawEllipse()`,
           `PetscDrawMarker()`, `PetscDrawPoint()`, `PetscDrawString()`, `PetscDrawArrow()`
 @*/
 PetscErrorCode PetscDrawRectangle(PetscDraw draw, PetscReal xl, PetscReal yl, PetscReal xr, PetscReal yr, int c1, int c2, int c3, int c4)

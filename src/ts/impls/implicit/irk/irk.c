@@ -249,7 +249,7 @@ PetscErrorCode TSIRKInitializePackage(void)
 
   Level: developer
 
-.seealso: [](ch_ts), `TSIRK`, `PetscFinalize()`, `TSIRKFinalizePackage()`, `TSInitializePackage()`
+.seealso: [](ch_ts), `TSIRK`, `PetscFinalize()`, `TSInitializePackage()`
 @*/
 PetscErrorCode TSIRKFinalizePackage(void)
 {
@@ -699,7 +699,7 @@ PetscErrorCode TSIRKSetType(TS ts, TSIRKType irktype)
 
   Level: intermediate
 
-.seealso: [](ch_ts), `TSIRKGetType()`, `TSIRK`, `TSIRKType`, `TSIRKGAUSS`
+.seealso: [](ch_ts), `TSIRK`, `TSIRKType`, `TSIRKGAUSS`
 @*/
 PetscErrorCode TSIRKGetType(TS ts, TSIRKType *irktype)
 {

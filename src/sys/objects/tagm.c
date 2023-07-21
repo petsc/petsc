@@ -145,7 +145,7 @@ PetscErrorCode PetscCommGetComm(MPI_Comm comm_in, MPI_Comm *comm_out)
 
   Level: developer
 
-.seealso: `PetscObjectGetNewTag()`, `PetscCommGetNewTag()`, `PetscCommDestroy()`, `PetscCommRestoreComm()`
+.seealso: `PetscObjectGetNewTag()`, `PetscCommGetNewTag()`, `PetscCommDestroy()`
 @*/
 PetscErrorCode PetscCommRestoreComm(MPI_Comm comm_in, MPI_Comm *comm_out)
 {

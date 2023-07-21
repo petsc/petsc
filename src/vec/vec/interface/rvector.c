@@ -3059,7 +3059,7 @@ PetscErrorCode VecRestoreArray1dWrite(Vec x, PetscInt m, PetscInt mstart, PetscS
   For standard PETSc vectors this is an inexpensive call; it does not copy the vector values.
 
 .seealso: [](ch_vectors), `Vec`, `VecGetArray()`, `VecRestoreArray()`, `VecGetArrays()`, `VecGetArrayF90()`, `VecPlaceArray()`,
-          `VecRestoreArray2d()`, `DMDAVecGetarray()`, `DMDAVecRestoreArray()`, `VecGetArray3d()`, `VecRestoreArray3d()`,
+          `VecRestoreArray2d()`, `DMDAVecGetarray()`, `DMDAVecRestoreArray()`, `VecRestoreArray3d()`,
           `VecGetArray1d()`, `VecRestoreArray1d()`, `VecGetArray4d()`, `VecRestoreArray4d()`
 @*/
 PetscErrorCode VecGetArray3d(Vec x, PetscInt m, PetscInt n, PetscInt p, PetscInt mstart, PetscInt nstart, PetscInt pstart, PetscScalar ***a[])
@@ -3166,7 +3166,7 @@ PetscErrorCode VecGetArray3dWrite(Vec x, PetscInt m, PetscInt n, PetscInt p, Pet
   This routine actually zeros out the `a` pointer.
 
 .seealso: [](ch_vectors), `Vec`, `VecGetArray()`, `VecRestoreArray()`, `VecRestoreArrays()`, `VecRestoreArrayF90()`, `VecPlaceArray()`,
-          `VecGetArray2d()`, `VecGetArray3d()`, `VecRestoreArray3d()`, `DMDAVecGetArray()`, `DMDAVecRestoreArray()`
+          `VecGetArray2d()`, `VecGetArray3d()`, `DMDAVecGetArray()`, `DMDAVecRestoreArray()`
           `VecGetArray1d()`, `VecRestoreArray1d()`, `VecGetArray4d()`, `VecRestoreArray4d()`, `VecGet`
 @*/
 PetscErrorCode VecRestoreArray3d(Vec x, PetscInt m, PetscInt n, PetscInt p, PetscInt mstart, PetscInt nstart, PetscInt pstart, PetscScalar ***a[])
@@ -3261,7 +3261,7 @@ PetscErrorCode VecRestoreArray3dWrite(Vec x, PetscInt m, PetscInt n, PetscInt p,
 
 .seealso: [](ch_vectors), `Vec`, `VecGetArray()`, `VecRestoreArray()`, `VecGetArrays()`, `VecGetArrayF90()`, `VecPlaceArray()`,
           `VecRestoreArray2d()`, `DMDAVecGetarray()`, `DMDAVecRestoreArray()`, `VecGetArray3d()`, `VecRestoreArray3d()`,
-          `VecGetArray1d()`, `VecRestoreArray1d()`, `VecGetArray4d()`, `VecRestoreArray4d()`
+          `VecGetArray1d()`, `VecRestoreArray1d()`, `VecRestoreArray4d()`
 @*/
 PetscErrorCode VecGetArray4d(Vec x, PetscInt m, PetscInt n, PetscInt p, PetscInt q, PetscInt mstart, PetscInt nstart, PetscInt pstart, PetscInt qstart, PetscScalar ****a[])
 {
@@ -3379,7 +3379,7 @@ PetscErrorCode VecGetArray4dWrite(Vec x, PetscInt m, PetscInt n, PetscInt p, Pet
 
 .seealso: [](ch_vectors), `Vec`, `VecGetArray()`, `VecRestoreArray()`, `VecRestoreArrays()`, `VecRestoreArrayF90()`, `VecPlaceArray()`,
           `VecGetArray2d()`, `VecGetArray3d()`, `VecRestoreArray3d()`, `DMDAVecGetArray()`, `DMDAVecRestoreArray()`
-          `VecGetArray1d()`, `VecRestoreArray1d()`, `VecGetArray4d()`, `VecRestoreArray4d()`, `VecGet`
+          `VecGetArray1d()`, `VecRestoreArray1d()`, `VecGetArray4d()`, `VecGet`
 @*/
 PetscErrorCode VecRestoreArray4d(Vec x, PetscInt m, PetscInt n, PetscInt p, PetscInt q, PetscInt mstart, PetscInt nstart, PetscInt pstart, PetscInt qstart, PetscScalar ****a[])
 {

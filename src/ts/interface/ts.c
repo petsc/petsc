@@ -3566,7 +3566,7 @@ PetscErrorCode TSComputeInitialCondition(TS ts, Vec u)
 
   Level: advanced
 
-.seealso: [](ch_ts), `TS`, `TSGetComputeExactError()`, `TSComputeExactError()`
+.seealso: [](ch_ts), `TS`, `TSComputeExactError()`
 @*/
 PetscErrorCode TSGetComputeExactError(TS ts, PetscErrorCode (**exactError)(TS ts, Vec u, Vec e))
 {
@@ -4878,7 +4878,7 @@ PetscErrorCode TSSetMaxSNESFailures(TS ts, PetscInt fails)
 
   Level: intermediate
 
-.seealso: [](ch_ts), `TS`, `TSGetSNESIterations()`, `TSGetKSPIterations()`, `TSSetMaxStepRejections()`, `TSGetStepRejections()`, `TSGetSNESFailures()`, `TSSetErrorIfStepFails()`, `TSGetConvergedReason()`
+.seealso: [](ch_ts), `TS`, `TSGetSNESIterations()`, `TSGetKSPIterations()`, `TSSetMaxStepRejections()`, `TSGetStepRejections()`, `TSGetSNESFailures()`, `TSGetConvergedReason()`
 @*/
 PetscErrorCode TSSetErrorIfStepFails(TS ts, PetscBool err)
 {

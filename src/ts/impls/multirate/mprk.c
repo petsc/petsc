@@ -1178,7 +1178,7 @@ PetscErrorCode TSMPRKSetType(TS ts, TSMPRKType mprktype)
 
   Level: intermediate
 
-.seealso: [](ch_ts), `TSMPRKGetType()`, `TSMPRK`
+.seealso: [](ch_ts), `TSMPRK`
 @*/
 PetscErrorCode TSMPRKGetType(TS ts, TSMPRKType *mprktype)
 {

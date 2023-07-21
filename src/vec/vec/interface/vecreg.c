@@ -181,7 +181,7 @@ newvec:
 
   Level: intermediate
 
-.seealso: [](ch_vectors), `Vec`, `VecType`, `VecGetType()`, `VecCreate()`, `VecDuplicate()`, `VecDuplicateVecs()`
+.seealso: [](ch_vectors), `Vec`, `VecType`, `VecCreate()`, `VecDuplicate()`, `VecDuplicateVecs()`
 @*/
 PetscErrorCode VecGetType(Vec vec, VecType *type)
 {

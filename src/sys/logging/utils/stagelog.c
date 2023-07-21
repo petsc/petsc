@@ -550,7 +550,7 @@ PetscErrorCode PetscStageLogGetStage(PetscStageLog stageLog, const char name[], 
 
   Level: developer
 
-.seealso: `PetscStageLogCreate()`
+.seealso: `PetscStageLogDestroy()`, `PetscStageLogGetCurrent()`
 @*/
 PetscErrorCode PetscStageLogCreate(PetscStageLog *stageLog)
 {

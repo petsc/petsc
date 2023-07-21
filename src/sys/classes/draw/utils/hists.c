@@ -187,7 +187,7 @@ PetscErrorCode PetscDrawHGDestroy(PetscDrawHG *hist)
 
   Level: intermediate
 
-.seealso: `PetscDrawHGCreate()`, `PetscDrawHG`, `PetscDrawHGDraw()`, `PetscDrawHGAddValue()`, `PetscDrawHGReset()`
+.seealso: `PetscDrawHGCreate()`, `PetscDrawHG`, `PetscDrawHGDraw()`, `PetscDrawHGReset()`
 @*/
 PetscErrorCode PetscDrawHGAddValue(PetscDrawHG hist, PetscReal value)
 {
@@ -244,7 +244,7 @@ PetscErrorCode PetscDrawHGAddValue(PetscDrawHG hist, PetscReal value)
 
   Level: intermediate
 
-.seealso: `PetscDrawHGCreate()`, `PetscDrawHG`, `PetscDrawHGDraw()`, `PetscDrawHGAddValue()`, `PetscDrawHGReset()`
+.seealso: `PetscDrawHGCreate()`, `PetscDrawHG`, `PetscDrawHGAddValue()`, `PetscDrawHGReset()`
 @*/
 PetscErrorCode PetscDrawHGDraw(PetscDrawHG hist)
 {

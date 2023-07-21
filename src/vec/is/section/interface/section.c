@@ -499,7 +499,7 @@ PetscErrorCode PetscSectionGetComponentName(PetscSection s, PetscInt field, Pets
   The function name should have Field in it since they are field components.
 
 .seealso: [PetscSection](sec_petscsection), `PetscSection`, `PetscSectionGetComponentName()`, `PetscSectionSetNumFields()`, `PetscSectionGetNumFields()`,
-          `PetscSectionSetComponentName()`, `PetscSectionSetFieldName()`, `PetscSectionGetFieldComponents()`, `PetscSectionSetFieldComponents()`
+          `PetscSectionSetFieldName()`, `PetscSectionGetFieldComponents()`, `PetscSectionSetFieldComponents()`
 @*/
 PetscErrorCode PetscSectionSetComponentName(PetscSection s, PetscInt field, PetscInt comp, const char compName[])
 {
@@ -1522,7 +1522,7 @@ PetscErrorCode PetscSectionCreateGlobalSection(PetscSection s, PetscSF sf, Petsc
   Developer Notes:
   This is a terrible function name
 
-.seealso: [PetscSection](sec_petscsection), `PetscSection`, `PetscSectionCreate()`, `PetscSectionCreateGlobalSectionCensored()`
+.seealso: [PetscSection](sec_petscsection), `PetscSection`, `PetscSectionCreate()`
 @*/
 PetscErrorCode PetscSectionCreateGlobalSectionCensored(PetscSection s, PetscSF sf, PetscBool includeConstraints, PetscInt numExcludes, const PetscInt excludes[], PetscSection *gsection)
 {
@@ -3222,7 +3222,7 @@ PetscErrorCode PetscSectionSymRegister(const char sname[], PetscErrorCode (*func
 
   Level: developer
 
-.seealso: [PetscSection](sec_petscsection), `PetscSectionSym`, `PetscSectionSymCreate()`, `PetscSectionSymDestroy()`
+.seealso: [PetscSection](sec_petscsection), `PetscSectionSym`, `PetscSectionSymCreate()`
 @*/
 PetscErrorCode PetscSectionSymDestroy(PetscSectionSym *sym)
 {

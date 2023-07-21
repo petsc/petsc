@@ -406,7 +406,7 @@ PetscErrorCode PetscDrawSPDraw(PetscDrawSP sp, PetscBool clear)
 
   Level: intermediate
 
-.seealso: `PetscDrawSPSave()`, `PetscDrawSPCreate()`, `PetscDrawSPGetDraw()`, `PetscDrawSetSave()`, `PetscDrawSave()`
+.seealso: `PetscDrawSPCreate()`, `PetscDrawSPGetDraw()`, `PetscDrawSetSave()`, `PetscDrawSave()`
 @*/
 PetscErrorCode PetscDrawSPSave(PetscDrawSP sp)
 {

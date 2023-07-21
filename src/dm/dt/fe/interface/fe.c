@@ -433,7 +433,7 @@ PetscErrorCode PetscFESetNumComponents(PetscFE fem, PetscInt comp)
 
   Level: intermediate
 
-.seealso: `PetscFE`, `PetscFECreate()`, `PetscFEGetSpatialDimension()`, `PetscFEGetNumComponents()`
+.seealso: `PetscFE`, `PetscFECreate()`, `PetscFEGetSpatialDimension()`
 @*/
 PetscErrorCode PetscFEGetNumComponents(PetscFE fem, PetscInt *comp)
 {
@@ -696,7 +696,7 @@ PetscErrorCode PetscFEGetFaceQuadrature(PetscFE fem, PetscQuadrature *q)
 
   Level: intermediate
 
-.seealso: `PetscFE`, `PetscSpace`, `PetscDualSpace`, `PetscQuadrature`, `PetscFECreate()`, `PetscFESetQuadrature()`, `PetscFESetFaceQuadrature()`
+.seealso: `PetscFE`, `PetscSpace`, `PetscDualSpace`, `PetscQuadrature`, `PetscFECreate()`, `PetscFESetQuadrature()`
 @*/
 PetscErrorCode PetscFESetFaceQuadrature(PetscFE fem, PetscQuadrature q)
 {
@@ -1429,7 +1429,7 @@ PetscErrorCode PetscFEIntegrateBd(PetscDS prob, PetscInt field, void (*obj_func)
       elemVec[i] += \psi^{fc}_f(q) f0_{fc}(u, \nabla u) + \nabla\psi^{fc}_f(q) \cdot f1_{fc,df}(u, \nabla u)
 .ve
 
-.seealso: `PetscFEIntegrateResidual()`
+.seealso: `PetscFEIntegrateBdResidual()`
 @*/
 PetscErrorCode PetscFEIntegrateResidual(PetscDS ds, PetscFormKey key, PetscInt Ne, PetscFEGeom *cgeom, const PetscScalar coefficients[], const PetscScalar coefficients_t[], PetscDS probAux, const PetscScalar coefficientsAux[], PetscReal t, PetscScalar elemVec[])
 {
