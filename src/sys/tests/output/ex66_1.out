@@ -9,13 +9,10 @@ The error is a contrived error to test error handling
 [0]PETSC ERROR: #4 CreateError() at ex66.c:0
 [0]PETSC ERROR: #5 CreateError() at ex66.c:0
 [0]PETSC ERROR: #6 CreateError() at ex66.c:0
-[0]PETSC ERROR: 
+[0]PETSC ERROR: --------------------- Error Message --------------------------------------------------------------
 [0]PETSC ERROR:   It appears a new error in the code was triggered after a previous error was not properly handled
 [0]PETSC ERROR:   via (for example) the use of PetscCall(TheFunctionThatErrors());
-[0]PETSC ERROR:   Above is the traceback for the previous unhandled error, below the traceback for the next error
 [0]PETSC ERROR:   ALL ERRORS in the PETSc libraries are fatal, you should add the appropriate error checking to the code
-[0]PETSC ERROR: 
-[0]PETSC ERROR: --------------------- Error Message --------------------------------------------------------------
 [0]PETSC ERROR: Error Created
 [0]PETSC ERROR: See https://petsc.org/release/faq/ for trouble shooting.
 [0]PETSC ERROR: #1 CreateError() at ex66.c:0
@@ -24,8 +21,18 @@ The error is a contrived error to test error handling
 [0]PETSC ERROR: #4 CreateError() at ex66.c:0
 [0]PETSC ERROR: #5 CreateError() at ex66.c:0
 [0]PETSC ERROR: #6 CreateError() at ex66.c:0
-[0]PETSC ERROR: 
-[0]PETSC ERROR:   There are multiple unhandled errors in the code; aborting program
-[0]PETSC ERROR: 
+[0]PETSC ERROR: --------------------- Error Message --------------------------------------------------------------
+[0]PETSC ERROR:   It appears a new error in the code was triggered after a previous error was not properly handled
+[0]PETSC ERROR:   via (for example) the use of PetscCall(TheFunctionThatErrors());
+[0]PETSC ERROR:   ALL ERRORS in the PETSc libraries are fatal, you should add the appropriate error checking to the code
+[0]PETSC ERROR: Error Created
+[0]PETSC ERROR: See https://petsc.org/release/faq/ for trouble shooting.
+[0]PETSC ERROR: #1 CreateError() at ex66.c:0
+[0]PETSC ERROR: #2 CreateError() at ex66.c:0
+[0]PETSC ERROR: #3 CreateError() at ex66.c:0
+[0]PETSC ERROR: #4 CreateError() at ex66.c:0
+[0]PETSC ERROR: #5 CreateError() at ex66.c:0
+[0]PETSC ERROR: #6 CreateError() at ex66.c:0
+[0]PETSC ERROR: #7 main() at ex66.c:0
 [0]PETSC ERROR: No PETSc Option Table entries
 [0]PETSC ERROR: ----------------End of Error Message -------send entire error message to petsc-maint@mcs.anl.gov----------

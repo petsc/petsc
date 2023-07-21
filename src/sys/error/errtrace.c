@@ -181,34 +181,20 @@ PetscErrorCode PetscTraceBackErrorHandler(MPI_Comm comm, int line, const char *f
   if (comm != PETSC_COMM_SELF) MPI_Comm_rank(comm, &rank);
 
   if (rank == 0 && (!PetscCIEnabledPortableErrorOutput || PetscGlobalRank == 0)) {
-    static int cnt         = 1;
-    static int repeaterror = 0;
+    static int cnt = 1;
 
-    if (p == PETSC_ERROR_INITIAL && cnt > 1) {
-      if (repeaterror < 1) {
-        ierr = (*PetscErrorPrintf)("\n");
-        ierr = (*PetscErrorPrintf)("  It appears a new error in the code was triggered after a previous error was not properly handled\n");
-        ierr = (*PetscErrorPrintf)("  via (for example) the use of PetscCall(TheFunctionThatErrors());\n");
-        ierr = (*PetscErrorPrintf)("  Above is the traceback for the previous unhandled error, below the traceback for the next error\n");
-        ierr = (*PetscErrorPrintf)("  ALL ERRORS in the PETSc libraries are fatal, you should add the appropriate error checking to the code\n");
-        ierr = (*PetscErrorPrintf)("\n");
-        cnt  = 1;
-        repeaterror++;
-      } else {
-        ierr = (*PetscErrorPrintf)("\n");
-        ierr = (*PetscErrorPrintf)("  There are multiple unhandled errors in the code; aborting program\n");
-        ierr = (*PetscErrorPrintf)("\n");
-        ierr = PetscOptionsViewError();
-        PetscErrorPrintfHilight();
-        ierr = (*PetscErrorPrintf)("----------------End of Error Message -------send entire error message to petsc-maint@mcs.anl.gov----------\n");
-        PetscErrorPrintfNormal();
-        PETSCABORT(comm, ierr);
-      }
-    }
-    if (cnt == 1) {
+    if (p == PETSC_ERROR_INITIAL) {
       PetscErrorPrintfHilight();
       ierr = (*PetscErrorPrintf)("--------------------- Error Message --------------------------------------------------------------\n");
       PetscErrorPrintfNormal();
+      if (cnt > 1) {
+        ierr = (*PetscErrorPrintf)("  It appears a new error in the code was triggered after a previous error was not properly handled\n");
+        ierr = (*PetscErrorPrintf)("  via (for example) the use of PetscCall(TheFunctionThatErrors());\n");
+        ierr = (*PetscErrorPrintf)("  ALL ERRORS in the PETSc libraries are fatal, you should add the appropriate error checking to the code\n");
+        cnt  = 1;
+      }
+    }
+    if (cnt == 1) {
       if (n == PETSC_ERR_MEM) {
         ierr = (*PetscErrorPrintf)("Out of memory. This could be due to allocating\n");
         ierr = (*PetscErrorPrintf)("too large an object or bleeding by not properly\n");
