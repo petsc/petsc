@@ -283,8 +283,7 @@ PetscErrorCode KSPLGMRESCycle(PetscInt *itcount, KSP ksp)
     }
 
     /*now multiply result by V+ */
-    PetscCall(VecSet(VEC_TEMP, 0.0));
-    PetscCall(VecMAXPY(VEC_TEMP, it_total + 1, avec, &VEC_VV(0))); /*answer is in VEC_TEMP*/
+    PetscCall(VecMAXPBY(VEC_TEMP, it_total + 1, avec, 0, &VEC_VV(0))); /*answer is in VEC_TEMP*/
 
     /*copy answer to aug location  and scale*/
     PetscCall(VecCopy(VEC_TEMP, A_AUGVEC(spot)));
@@ -428,15 +427,14 @@ static PetscErrorCode KSPLGMRESBuildSoln(PetscScalar *nrs, Vec vguess, Vec vdest
   }
 
   /* Accumulate the correction to the soln of the preconditioned prob. in VEC_TEMP */
-  PetscCall(VecSet(VEC_TEMP, 0.0)); /* set VEC_TEMP components to 0 */
 
   /*LGMRES_MOD - if augmenting has happened we need to form the solution
     using the augvecs */
   if (!it_aug) { /* all its are from arnoldi */
-    PetscCall(VecMAXPY(VEC_TEMP, it + 1, nrs, &VEC_VV(0)));
+    PetscCall(VecMAXPBY(VEC_TEMP, it + 1, nrs, 0, &VEC_VV(0)));
   } else { /*use aug vecs */
     /*first do regular krylov directions */
-    PetscCall(VecMAXPY(VEC_TEMP, it_arnoldi, nrs, &VEC_VV(0)));
+    PetscCall(VecMAXPBY(VEC_TEMP, it_arnoldi, nrs, 0, &VEC_VV(0)));
     /*now add augmented portions - add contribution of aug vectors one at a time*/
 
     for (ii = 0; ii < it_aug; ii++) {

@@ -418,8 +418,7 @@ static PetscErrorCode KSPPIPEFGMRESBuildSoln(PetscScalar *nrs, Vec vguess, Vec v
   }
 
   /* Accumulate the correction to the solution of the preconditioned problem in VEC_TEMP */
-  PetscCall(VecZeroEntries(VEC_TEMP));
-  PetscCall(VecMAXPY(VEC_TEMP, it + 1, nrs, &PREVEC(0)));
+  PetscCall(VecMAXPBY(VEC_TEMP, it + 1, nrs, 0, &PREVEC(0)));
 
   /* add solution to previous solution */
   if (vdest == vguess) {

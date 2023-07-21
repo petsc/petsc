@@ -237,8 +237,7 @@ PetscErrorCode KSPAGMRESComputeDeflationData(KSP ksp)
   }
 
   for (j = 0; j < CurNeig; j++) {
-    PetscCall(VecZeroEntries(U[j]));
-    PetscCall(VecMAXPY(U[j], max_k, &Sr[j * (N + 1)], &VEC_V(0)));
+    PetscCall(VecMAXPBY(U[j], max_k, &Sr[j * (N + 1)], 0, &VEC_V(0)));
     PetscCall(VecMAXPY(U[j], PrevNeig, &Sr[j * (N + 1) + max_k], TmpU));
   }
   agmres->r = CurNeig;

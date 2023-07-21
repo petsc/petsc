@@ -256,10 +256,7 @@ PetscErrorCode KSPComputeRitz_GMRES(KSP ksp, PetscBool ritz, PetscBool small, Pe
   PetscCall(PetscFree4(H, Q, wr, wi));
 
   /* Form the (Harmonic) Ritz vectors S = SR*V, columns of VV correspond to the basis of the Krylov subspace */
-  for (j = 0; j < nb; j++) {
-    PetscCall(VecZeroEntries(S[j]));
-    PetscCall(VecMAXPY(S[j], bn, &SR[j * bn], gmres->fullcycle ? gmres->vecb : &VEC_VV(0)));
-  }
+  for (j = 0; j < nb; j++) PetscCall(VecMAXPBY(S[j], bn, &SR[j * bn], 0, gmres->fullcycle ? gmres->vecb : &VEC_VV(0)));
 
   PetscCall(PetscFree(SR));
   *nrit = nb;

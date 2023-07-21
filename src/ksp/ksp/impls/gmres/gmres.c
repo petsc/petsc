@@ -345,8 +345,7 @@ static PetscErrorCode KSPGMRESBuildSoln(PetscScalar *nrs, Vec vs, Vec vdest, KSP
   }
 
   /* Accumulate the correction to the solution of the preconditioned problem in TEMP */
-  PetscCall(VecSet(VEC_TEMP, 0.0));
-  PetscCall(VecMAXPY(VEC_TEMP, it + 1, nrs, &VEC_VV(0)));
+  PetscCall(VecMAXPBY(VEC_TEMP, it + 1, nrs, 0, &VEC_VV(0)));
 
   PetscCall(KSPUnwindPreconditioner(ksp, VEC_TEMP, VEC_TEMP_MATOP));
   /* add solution to previous solution */

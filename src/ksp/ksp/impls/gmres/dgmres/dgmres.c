@@ -355,8 +355,7 @@ static PetscErrorCode KSPDGMRESBuildSoln(PetscScalar *nrs, Vec vs, Vec vdest, KS
   }
 
   /* Accumulate the correction to the solution of the preconditioned problem in TEMP */
-  PetscCall(VecSet(VEC_TEMP, 0.0));
-  PetscCall(VecMAXPY(VEC_TEMP, it + 1, nrs, &VEC_VV(0)));
+  PetscCall(VecMAXPBY(VEC_TEMP, it + 1, nrs, 0, &VEC_VV(0)));
 
   /* Apply deflation */
   if (ksp->pc_side == PC_RIGHT && dgmres->r > 0) {
@@ -575,10 +574,7 @@ PetscErrorCode KSPDGMRESComputeDeflationData_DGMRES(KSP ksp, PetscInt *ExtrNeig)
   PetscCall(KSPDGMRESComputeSchurForm(ksp, &neig));
   /* Form the extended Schur vectors X=VV*Sr */
   if (!XX) PetscCall(VecDuplicateVecs(VEC_VV(0), neig1, &XX));
-  for (j = 0; j < neig; j++) {
-    PetscCall(VecZeroEntries(XX[j]));
-    PetscCall(VecMAXPY(XX[j], n, &SR[j * N], &VEC_VV(0)));
-  }
+  for (j = 0; j < neig; j++) PetscCall(VecMAXPBY(XX[j], n, &SR[j * N], 0, &VEC_VV(0)));
 
   /* Orthogonalize X against U */
   if (!ORTH) PetscCall(PetscMalloc1(max_neig, &ORTH));
@@ -838,8 +834,7 @@ PetscErrorCode KSPDGMRESApplyDeflation_DGMRES(KSP ksp, Vec x, Vec y)
   for (i = 0; i < r; i++) X2[i] = X1[i] / lambda - X2[i];
 
   /* Compute X2=U*X2 */
-  PetscCall(VecZeroEntries(y));
-  PetscCall(VecMAXPY(y, r, X2, UU));
+  PetscCall(VecMAXPBY(y, r, X2, 0, UU));
   PetscCall(VecAXPY(y, alpha, x));
 
   PetscCall(PetscLogEventEnd(KSP_DGMRESApplyDeflation, ksp, 0, 0, 0));
@@ -962,8 +957,7 @@ static PetscErrorCode KSPDGMRESImproveEig_DGMRES(KSP ksp, PetscInt neig)
   /* Multiply the Schur vectors SR2 by U (and X)  to get a new U
    -- save it temporarily in MU */
   for (j = 0; j < r; j++) {
-    PetscCall(VecZeroEntries(MU[j]));
-    PetscCall(VecMAXPY(MU[j], r_old, &SR2[j * aug1], UU));
+    PetscCall(VecMAXPBY(MU[j], r_old, &SR2[j * aug1], 0, UU));
     PetscCall(VecMAXPY(MU[j], neig, &SR2[j * aug1 + r_old], XX));
   }
   /* Form T = U'*MU*U */
