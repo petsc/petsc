@@ -309,12 +309,12 @@
 @@ -379,5 +379,5 @@
    Level: beg
  
--.seealso: testPredeclarationCursorIgnored()`
-+.seealso: `testPredeclarationCursorIgnored()`
+-.seealso: testPredeclarationCursorIgnored()`, foo()`, `Bar, baz()
++.seealso: `foo()`, `Bar`, `baz()`
  */
  
 @@ -381,5 +381,4 @@
- .seealso: testPredeclarationCursorIgnored()`
+ .seealso: testPredeclarationCursorIgnored()`, foo()`, `Bar, baz()
  */
 -
  PetscErrorCode testPredeclarationCursorIgnored(int arg, int *another_arg)

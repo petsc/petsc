@@ -375,7 +375,7 @@ extern PetscErrorCode testPredeclarationCursorIgnored(int, int *);
 
   Level: beg
 
-.seealso: testPredeclarationCursorIgnored()`
+.seealso: testPredeclarationCursorIgnored()`, foo()`, `Bar, baz()
 */
 
 PetscErrorCode testPredeclarationCursorIgnored(int arg, int *another_arg)

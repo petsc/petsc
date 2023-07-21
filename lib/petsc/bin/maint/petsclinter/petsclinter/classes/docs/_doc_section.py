@@ -942,7 +942,7 @@ class SeeAlso(InlineList):
     symbol_name = Cursor.get_name_from_cursor(cursor)
     for line_after_colon, sub_items in items:
       for loc, text in sub_items:
-        if text.rstrip('()') == symbol_name:
+        if text.replace(self.special_chars, '').rstrip('()') == symbol_name:
           mess = f"Found self-referential seealso entry '{text}'; your documentation may be good but it's not *that* good"
           docstring.add_error_from_source_range(
             self.diags.self_reference, mess, loc,

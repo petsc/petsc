@@ -498,7 +498,7 @@
   358: 
   359: @*/
 [31m[1m./src/sys/tests/linter/testValidFunctionDocStrings.c:380:1: error:[0m Invalid line-spacing between docstring and the symbol it describes. The docstring must appear immediately above its target [-fdoc-symbol-spacing]:
-  378: .seealso: testPredeclarationCursorIgnored()`
+  378: .seealso: testPredeclarationCursorIgnored()`, foo()`, `Bar, baz()
   379: */
 > 380: 
   381: PetscErrorCode testPredeclarationCursorIgnored(int arg, int *another_arg)
@@ -517,11 +517,32 @@
          [33m[1m^^^^^^^^^^^^^[0m
   374: . another_arg_asd22 - another arg
   375: 
-[31m[1m./src/sys/tests/linter/testValidFunctionDocStrings.c:378:11: error:[0m seealso symbol 'testPredeclarationCursorIgnored()`' not enclosed with '`' [-fdoc-inline-list-seealso-backticks]:
+[31m[1m./src/sys/tests/linter/testValidFunctionDocStrings.c:378:11: error:[0m Found self-referential seealso entry 'testPredeclarationCursorIgnored()`'; your documentation may be good but it's not *that* good [-fdoc-inline-list-seealso-self-reference]:
   376:   Level: beg
   377: 
-> 378: .seealso: [33m[1mtestPredeclarationCursorIgnored()`[0m
+> 378: .seealso: [33m[1mtestPredeclarationCursorIgnored()`[0m, foo()`, `Bar, baz()
                  [33m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  379: */
+  380: 
+[31m[1m./src/sys/tests/linter/testValidFunctionDocStrings.c:378:47: error:[0m seealso symbol 'foo()`' not enclosed with '`' [-fdoc-inline-list-seealso-backticks]:
+  376:   Level: beg
+  377: 
+> 378: .seealso: testPredeclarationCursorIgnored()`, [33m[1mfoo()`[0m, `Bar, baz()
+                                                     [33m[1m^^^^^^[0m
+  379: */
+  380: 
+[31m[1m./src/sys/tests/linter/testValidFunctionDocStrings.c:378:55: error:[0m seealso symbol '`Bar' not enclosed with '`' [-fdoc-inline-list-seealso-backticks]:
+  376:   Level: beg
+  377: 
+> 378: .seealso: testPredeclarationCursorIgnored()`, foo()`, [33m[1m`Bar[0m, baz()
+                                                             [33m[1m^^^^[0m
+  379: */
+  380: 
+[31m[1m./src/sys/tests/linter/testValidFunctionDocStrings.c:378:61: error:[0m seealso symbol 'baz()' not enclosed with '`' [-fdoc-inline-list-seealso-backticks]:
+  376:   Level: beg
+  377: 
+> 378: .seealso: testPredeclarationCursorIgnored()`, foo()`, `Bar, [33m[1mbaz()[0m
+                                                                   [33m[1m^^^^^[0m
   379: */
   380: 
 [31m[1m./src/sys/tests/linter/testValidFunctionDocStrings.c:386:3: error:[0m Function requires custom fortran interface but missing 'C' from docstring header [-fdoc-param-list-func-fortran-interface]:
@@ -1014,7 +1035,7 @@
 > 376:   Level: [33m[1mbeg[0m
                 [33m[1m^^^[0m
   377: 
-  378: .seealso: testPredeclarationCursorIgnored()`
+  378: .seealso: testPredeclarationCursorIgnored()`, foo()`, `Bar, baz()
 [31m[1m./src/sys/tests/linter/testValidFunctionDocStrings.c:395:3: error:[0m Extra docstring parameter 'foo_parm1' not found in symbol parameter list [-fdoc-param-list-func-parameter-documentation]:
   393: 
   394:   Calling sequence of `foo`:
