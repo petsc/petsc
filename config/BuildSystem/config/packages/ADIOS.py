@@ -4,7 +4,7 @@ class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.GNUPackage.__init__(self, framework)
     self.gitcommit         = 'de85222e71148d2ae47e6af3f9e48dc98323cffb' # master Aug 4, 2021
-    self.download          = ['git://https://github.com/ornladios/ADIOS.git']
+    self.download          = ['git://https://github.com/ornladios/ADIOS.git', 'https://github.com/ornladios/ADIOS/archive/'+self.gitcommit+'.tar.gz']
     self.downloaddirnames  = ['adios']
     self.functions         = ['adios_open']
     self.includes          = ['adios.h']

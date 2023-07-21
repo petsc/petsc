@@ -7,7 +7,7 @@ class Configure(config.package.CMakePackage):
     self.gitcommit        = '4.1.00'
     self.minversion       = '3.7.01'
     self.versionname      = 'KOKKOS_VERSION'
-    self.download         = ['git://https://github.com/kokkos/kokkos.git']
+    self.download         = ['git://https://github.com/kokkos/kokkos.git','https://github.com/kokkos/kokkos/archive/'+self.gitcommit+'.tar.gz']
     self.downloaddirnames = ['kokkos']
     self.excludedDirs     = ['kokkos-kernels'] # Do not wrongly think kokkos-kernels as kokkos-vernum
     self.includes         = ['Kokkos_Macros.hpp']

@@ -7,7 +7,7 @@ class Configure(config.package.CMakePackage):
     self.version          = ''
     self.versionname      = ''
     self.gitcommit        = '888c206e7596fe926ea05d7121de4cbb4e9ff90f' # main Aug 22 2022
-    self.download         = ['git://https://github.com/NVIDIA/AMGX']
+    self.download         = ['git://https://github.com/NVIDIA/AMGX', 'https://github.com/NVIDIA/AMGX/archive/'+self.gitcommit+'.tar.gz']
     self.functions        = []
     self.includes         = ['amgx_c.h']
     self.liblist          = [['libamgx.a']]

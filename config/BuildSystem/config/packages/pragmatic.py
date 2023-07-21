@@ -4,8 +4,8 @@ class Configure(config.package.CMakePackage):
   def __init__(self, framework):
     import os
     config.package.CMakePackage.__init__(self, framework)
-    self.download          = ['git://https://github.com/meshadaptation/pragmatic.git']
     self.gitcommit         = 'ef941eddf50a6de307a5d6b54b5d44504dd3ce89' #joe/old-no-debug Sep 15, 2021 - with fixes for 1dfe81f in master Sep 21, 2018
+    self.download          = ['git://https://github.com/meshadaptation/pragmatic.git','https://github.com/meshadaptation/pragmatic/archive/'+self.gitcommit+'.tar.gz']
     self.functions         = ['pragmatic_2d_init']
     self.includes          = ['pragmatic/pragmatic.h']
     self.liblist           = [['libpragmatic.a']]

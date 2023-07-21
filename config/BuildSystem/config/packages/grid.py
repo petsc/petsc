@@ -4,7 +4,7 @@ class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.GNUPackage.__init__(self, framework)
     self.gitcommit      = '796abfad80625d81bb16af7ff6ec612a836f17d8'
-    self.download       = ['git://https://github.com/paboyle/Grid.git']
+    self.download       = ['git://https://github.com/paboyle/Grid.git','https://github.com/paboyle/Grid/archive/'+self.gitcommit+'.tar.gz']
     self.buildLanguages = ['Cxx']
     self.maxCxxVersion  = 'c++17'
     return

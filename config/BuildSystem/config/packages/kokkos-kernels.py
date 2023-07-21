@@ -7,7 +7,7 @@ class Configure(config.package.CMakePackage):
     self.gitcommit        = '4.1.00'
     self.minversion       = '3.7.01'
     self.versionname      = 'KOKKOSKERNELS_VERSION'
-    self.download         = ['git://https://github.com/kokkos/kokkos-kernels.git']
+    self.download         = ['git://https://github.com/kokkos/kokkos-kernels.git','https://github.com/kokkos/kokkos-kernels/archive/'+self.gitcommit+'.tar.gz']
     self.includes         = ['KokkosBlas.hpp','KokkosSparse_CrsMatrix.hpp']
     self.liblist          = [['libkokkoskernels.a']]
     self.functions        = ['']
