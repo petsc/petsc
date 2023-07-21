@@ -219,11 +219,9 @@ static PetscErrorCode TSStep_Theta(TS ts)
       PetscCall(VecZeroEntries(th->Xdot));
       PetscCall(TSComputeIFunction(ts, ts->ptime, th->X0, th->Xdot, th->affine, PETSC_FALSE));
       PetscCall(VecScale(th->affine, (th->Theta - 1) / th->Theta));
-    } else if (th->affine) { /* Just in case th->endpoint is changed between calls to TSStep_Theta() */
-      PetscCall(VecZeroEntries(th->affine));
     }
     PetscCall(TSPreStage(ts, th->stage_time));
-    PetscCall(TSTheta_SNESSolve(ts, th->affine, th->X));
+    PetscCall(TSTheta_SNESSolve(ts, th->endpoint ? th->affine : NULL, th->X));
     PetscCall(TSPostStage(ts, th->stage_time, 0, &th->X));
     PetscCall(TSAdaptCheckStage(ts->adapt, ts, th->stage_time, th->X, &stageok));
     if (!stageok) goto reject_step;
