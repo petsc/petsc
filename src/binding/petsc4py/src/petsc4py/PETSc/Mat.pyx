@@ -380,37 +380,34 @@ cdef class Mat(Object):
     # binary operations
 
     def __add__(self, other):
-        if isinstance(self, Mat):
-            return mat_add(self, other)
-        else:
-            return mat_radd(other, self)
+        return mat_add(self, other)
+
+    def __radd__(self, other):
+        return mat_radd(self, other)
 
     def __sub__(self, other):
-        if isinstance(self, Mat):
-            return mat_sub(self, other)
-        else:
-            return mat_rsub(other, self)
+        return mat_sub(self, other)
+
+    def __rsub__(self, other):
+        return mat_rsub(self, other)
 
     def __mul__(self, other):
-        if isinstance(self, Mat):
-            if isinstance(other, Vec):
-                return mat_mul_vec(self, other)
-            else:
-                return mat_mul(self, other)
-        else:
-            return mat_rmul(other, self)
+        return mat_mul(self, other)
+
+    def __rmul__(self, other):
+        return mat_rmul(self, other)
 
     def __div__(self, other):
-        if isinstance(self, Mat):
-            return mat_div(self, other)
-        else:
-            return mat_rdiv(other, self)
+        return mat_div(self, other)
+
+    def __rdiv__(self, other):
+        return mat_rdiv(self, other)
 
     def __truediv__(self, other):
-        if isinstance(self, Mat):
-            return mat_div(self, other)
-        else:
-            return mat_rdiv(other, self)
+        return mat_div(self, other)
+
+    def __rtruediv__(self, other):
+        return mat_rdiv(self, other)
 
     #
 
