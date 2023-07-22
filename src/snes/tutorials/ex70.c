@@ -197,6 +197,8 @@ PetscErrorCode StokesExactSolution(Stokes *s)
     }
     PetscCall(VecSetValue(y0, row, val, INSERT_VALUES));
   }
+  PetscCall(VecAssemblyBegin(y0));
+  PetscCall(VecAssemblyEnd(y0));
   PetscCall(VecRestoreSubVector(s->y, s->isg[0], &y0));
 
   /* pressure part */
@@ -207,6 +209,8 @@ PetscErrorCode StokesExactSolution(Stokes *s)
     val = StokesExactPressure(i * s->hx + s->hx / 2);
     PetscCall(VecSetValue(y1, row, val, INSERT_VALUES));
   }
+  PetscCall(VecAssemblyBegin(y1));
+  PetscCall(VecAssemblyEnd(y1));
   PetscCall(VecRestoreSubVector(s->y, s->isg[1], &y1));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
