@@ -190,7 +190,7 @@ petsc4py-pip:
   script:
     - python3 -m venv pip-builds
     - source pip-builds/bin/activate
-    - python3 -m pip install --upgrade pip==23.0.1 cython==0.29.36
+    - python3 -m pip install --upgrade pip==23.0.1
     - python3 -m pip install .
     - python3 -m pip install src/binding/petsc4py
     - python3 -m petsc4py
