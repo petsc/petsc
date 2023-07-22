@@ -75,34 +75,34 @@ cdef class Vec(Object):
     # binary operations
 
     def __add__(self, other):
-        if isinstance(self, Vec):
-            return vec_add(self, other)
-        else:
-            return vec_radd(other, self)
+        return vec_add(self, other)
+
+    def __radd__(self, other):
+        return vec_radd(self, other)
 
     def __sub__(self, other):
-        if isinstance(self, Vec):
-            return vec_sub(self, other)
-        else:
-            return vec_rsub(other, self)
+        return vec_sub(self, other)
+
+    def __rsub__(self, other):
+        return vec_rsub(self, other)
 
     def __mul__(self, other):
-        if isinstance(self, Vec):
-            return vec_mul(self, other)
-        else:
-            return vec_rmul(other, self)
+        return vec_mul(self, other)
+
+    def __rmul__(self, other):
+        return vec_rmul(self, other)
 
     def __div__(self, other):
-        if isinstance(self, Vec):
-            return vec_div(self, other)
-        else:
-            return vec_rdiv(other, self)
+        return vec_div(self, other)
+
+    def __rdiv__(self, other):
+        return vec_rdiv(self, other)
 
     def __truediv__(self, other):
-        if isinstance(self, Vec):
-            return vec_div(self, other)
-        else:
-            return vec_rdiv(other, self)
+        return vec_div(self, other)
+
+    def __rtruediv__(self, other):
+        return vec_rdiv(self, other)
 
     #
 

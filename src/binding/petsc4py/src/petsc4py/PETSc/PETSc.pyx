@@ -58,7 +58,7 @@ cdef PetscErrorCode SETERR(PetscErrorCode ierr) with gil:
         PyErr_SetObject(<object>PyExc_RuntimeError, <long>ierr)
     return ierr
 
-cdef inline PetscErrorCode CHKERR(PetscErrorCode ierr) nogil except PETSC_ERR_PYTHON:
+cdef inline PetscErrorCode CHKERR(PetscErrorCode ierr) except PETSC_ERR_PYTHON nogil:
     if ierr == PETSC_SUCCESS:
         return ierr # no error
     if ierr == PETSC_ERR_PYTHON:
@@ -92,7 +92,7 @@ cdef inline int SETERRMPI(int ierr) with gil:
     <void>SETERR(PETSC_ERR_MPI)
     return ierr
 
-cdef inline PetscErrorCode CHKERRMPI(int ierr) nogil except PETSC_ERR_PYTHON:
+cdef inline PetscErrorCode CHKERRMPI(int ierr) except PETSC_ERR_PYTHON nogil:
     if ierr == MPI_SUCCESS:
       return PETSC_SUCCESS
     <void>SETERRMPI(ierr)
@@ -334,7 +334,7 @@ cdef extern from "<stdio.h>" nogil:
     int fprintf(FILE *, char *, ...)
 
 cdef extern from "Python.h":
-    int Py_AtExit(void (*)())
+    int Py_AtExit(void (*)() noexcept nogil)
     void PySys_WriteStderr(char*,...)
 
 cdef extern from * nogil:
@@ -367,7 +367,7 @@ cdef int getinitargs(object args, int *argc, char **argv[]) except -1:
     argc[0] = c; argv[0] = v
     return 0
 
-cdef void delinitargs(int *argc, char **argv[]) nogil:
+cdef void delinitargs(int *argc, char **argv[]) noexcept nogil:
     # dallocate command line arguments
     cdef int i, c = argc[0]
     cdef char** v = argv[0]
@@ -377,7 +377,7 @@ cdef void delinitargs(int *argc, char **argv[]) nogil:
             if  v[i] != NULL: free(v[i])
         free(v)
 
-cdef void finalize() nogil:
+cdef void finalize() noexcept nogil:
     cdef int ierr = 0
     # deallocate command line arguments
     global PyPetsc_Argc, PyPetsc_Argv
@@ -406,15 +406,15 @@ cdef void finalize() nogil:
 
 # --------------------------------------------------------------------
 
-cdef extern from * nogil:
-    PetscErrorCode (*PetscVFPrintf)(FILE*,const char*,va_list)
+cdef extern from *:
+    PetscErrorCode (*PetscVFPrintf)(FILE*,const char*,va_list) except PETSC_ERR_PYTHON nogil
 
-cdef PetscErrorCode (*prevfprintf)(FILE*,const char*,va_list) nogil
+cdef PetscErrorCode (*prevfprintf)(FILE*,const char*,va_list) except PETSC_ERR_PYTHON nogil
 prevfprintf = NULL
 
 cdef PetscErrorCode PetscVFPrintf_PythonStdStream(
     FILE *fd, const char fmt[], va_list ap,
-) with gil:
+) except PETSC_ERR_PYTHON with gil:
     import sys
     cdef char cstring[8192]
     cdef size_t stringlen = sizeof(cstring)
@@ -432,11 +432,11 @@ cdef PetscErrorCode PetscVFPrintf_PythonStdStream(
         ustring = cstring[:final_pos].decode('UTF-8')
         sys.stderr.write(ustring)
     else:
-        PetscVFPrintfDefault(fd, fmt, ap)
+        CHKERR( PetscVFPrintfDefault(fd, fmt, ap) )
     return PETSC_SUCCESS
 
 cdef int _push_vfprintf(
-    PetscErrorCode (*vfprintf)(FILE*, const char*, va_list) nogil,
+    PetscErrorCode (*vfprintf)(FILE*, const char*, va_list) except PETSC_ERR_PYTHON nogil,
 ) except -1:
     global PetscVFPrintf, prevfprintf
     assert prevfprintf == NULL
