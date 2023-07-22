@@ -4,6 +4,13 @@ cdef extern from * nogil:
     """
     #include "lib-petsc/compat.h"
     #include "lib-petsc/custom.h"
+
+    /* Silence Clang warnings in Cython-generated C code */
+    #if defined(__clang__)
+    #pragma clang diagnostic ignored "-Wextra-semi-stmt"
+    #pragma clang diagnostic ignored "-Wparentheses-equality"
+    #pragma clang diagnostic ignored "-Wunreachable-code-fallthrough"
+    #endif
     """
 
 # --------------------------------------------------------------------
