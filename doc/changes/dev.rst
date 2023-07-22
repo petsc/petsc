@@ -13,6 +13,7 @@ Changes: Development
 
 - Add ``PetscOptionsBegin()``, ``PetscOptionsEnd()``, ``PetscOptionsInt()``, ``PetscOptionsBool()``, ``PetscOptionsIntArray()``,
   ``PetscOptionsReal()``, ``PetscOptionsRealArray()``, and ``PetscOptionsScalar()`` for Fortran
+- Add ``PetscAssertPointer()`` as a replacement for ``PetscValidPointer()``, ``PetscValidCharPointer()``, ``PetscValidIntPointer()``, ``PetscValidInt64Pointer()``, ``PetscValidCountPointer()``, ``PetscValidBoolPointer()``, ``PetscvalidScalarPointer()``, and ``PetscValidRealPointer()``
 
 .. rubric:: Configure/Build:
 
