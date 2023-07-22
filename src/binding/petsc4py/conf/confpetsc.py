@@ -101,7 +101,7 @@ def cython_chk(VERSION, verbose=True):
     REQUIRED = Version(VERSION)
     PROVIDED = Version(m.groups()[0])
     if PROVIDED != REQUIRED:
-        warn("You need Cython >= {0} (you have version {1})"
+        warn("You need Cython == {0} (you have version {1})"
              .format(VERSION, CYTHON_VERSION))
         return False
     #
@@ -763,7 +763,7 @@ def setup(**attrs):
         version = cython_req()
         if not cython_chk(version, verbose=False):
             reqs = attrs.setdefault('setup_requires', [])
-            reqs += ['Cython>='+version]
+            reqs += ['Cython=='+version]
     return _setup(**attrs)
 
 # --------------------------------------------------------------------
