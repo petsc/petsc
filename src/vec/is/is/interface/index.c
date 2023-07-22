@@ -45,7 +45,7 @@ PetscErrorCode ISRenumber(IS subset, IS subset_mult, PetscInt *N, IS *subset_n)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(subset, IS_CLASSID, 1);
   if (subset_mult) PetscValidHeaderSpecific(subset_mult, IS_CLASSID, 2);
-  if (N) PetscValidIntPointer(N, 3);
+  if (N) PetscAssertPointer(N, 3);
   else if (!subset_n) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(ISGetLocalSize(subset, &n));
   if (subset_mult) {
@@ -241,7 +241,7 @@ PetscErrorCode ISCreateSubIS(IS is, IS comps, IS *subis)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is, IS_CLASSID, 1);
   PetscValidHeaderSpecific(comps, IS_CLASSID, 2);
-  PetscValidPointer(subis, 3);
+  PetscAssertPointer(subis, 3);
 
   PetscCall(PetscObjectGetComm((PetscObject)is, &comm));
   PetscCall(ISGetLocalSize(comps, &nleaves));
@@ -865,7 +865,7 @@ PetscErrorCode ISIdentity(IS is, PetscBool *ident)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is, IS_CLASSID, 1);
-  PetscValidBoolPointer(ident, 2);
+  PetscAssertPointer(ident, 2);
   PetscCall(ISGetInfo(is, IS_IDENTITY, IS_GLOBAL, PETSC_TRUE, ident));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -921,8 +921,8 @@ PetscErrorCode ISContiguousLocal(IS is, PetscInt gstart, PetscInt gend, PetscInt
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is, IS_CLASSID, 1);
-  PetscValidIntPointer(start, 4);
-  PetscValidBoolPointer(contig, 5);
+  PetscAssertPointer(start, 4);
+  PetscAssertPointer(contig, 5);
   *start  = -1;
   *contig = PETSC_FALSE;
   PetscTryTypeMethod(is, contiguous, gstart, gend, start, contig);
@@ -959,7 +959,7 @@ PetscErrorCode ISPermutation(IS is, PetscBool *perm)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is, IS_CLASSID, 1);
-  PetscValidBoolPointer(perm, 2);
+  PetscAssertPointer(perm, 2);
   PetscCall(ISGetInfo(is, IS_PERMUTATION, IS_GLOBAL, PETSC_FALSE, perm));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1075,7 +1075,7 @@ PetscErrorCode ISInvertPermutation(IS is, PetscInt nlocal, IS *isout)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is, IS_CLASSID, 1);
-  PetscValidPointer(isout, 3);
+  PetscAssertPointer(isout, 3);
   PetscCall(ISGetInfo(is, IS_PERMUTATION, IS_GLOBAL, PETSC_TRUE, &isperm));
   PetscCheck(isperm, PetscObjectComm((PetscObject)is), PETSC_ERR_ARG_WRONG, "Not a permutation");
   PetscCall(ISGetInfo(is, IS_IDENTITY, IS_GLOBAL, PETSC_TRUE, &isidentity));
@@ -1117,7 +1117,7 @@ PetscErrorCode ISGetSize(IS is, PetscInt *size)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is, IS_CLASSID, 1);
-  PetscValidIntPointer(size, 2);
+  PetscAssertPointer(size, 2);
   *size = is->map->N;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1141,7 +1141,7 @@ PetscErrorCode ISGetLocalSize(IS is, PetscInt *size)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is, IS_CLASSID, 1);
-  PetscValidIntPointer(size, 2);
+  PetscAssertPointer(size, 2);
   *size = is->map->n;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1165,7 +1165,7 @@ PetscErrorCode ISGetLayout(IS is, PetscLayout *map)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is, IS_CLASSID, 1);
-  PetscValidPointer(map, 2);
+  PetscAssertPointer(map, 2);
   *map = is->map;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1193,7 +1193,7 @@ PetscErrorCode ISSetLayout(IS is, PetscLayout map)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is, IS_CLASSID, 1);
-  PetscValidPointer(map, 2);
+  PetscAssertPointer(map, 2);
   PetscCall(PetscLayoutReference(map, &is->map));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1222,7 +1222,7 @@ PetscErrorCode ISGetIndices(IS is, const PetscInt *ptr[])
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is, IS_CLASSID, 1);
-  PetscValidPointer(ptr, 2);
+  PetscAssertPointer(ptr, 2);
   PetscUseTypeMethod(is, getindices, ptr);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1324,7 +1324,7 @@ PetscErrorCode ISRestoreIndices(IS is, const PetscInt *ptr[])
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is, IS_CLASSID, 1);
-  PetscValidPointer(ptr, 2);
+  PetscAssertPointer(ptr, 2);
   PetscTryTypeMethod(is, restoreindices, ptr);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1390,7 +1390,7 @@ PetscErrorCode ISGetTotalIndices(IS is, const PetscInt *indices[])
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is, IS_CLASSID, 1);
-  PetscValidPointer(indices, 2);
+  PetscAssertPointer(indices, 2);
   PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)is), &size));
   if (size == 1) {
     PetscUseTypeMethod(is, getindices, indices);
@@ -1420,7 +1420,7 @@ PetscErrorCode ISRestoreTotalIndices(IS is, const PetscInt *indices[])
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is, IS_CLASSID, 1);
-  PetscValidPointer(indices, 2);
+  PetscAssertPointer(indices, 2);
   PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)is), &size));
   if (size == 1) {
     PetscUseTypeMethod(is, restoreindices, indices);
@@ -1461,7 +1461,7 @@ PetscErrorCode ISGetNonlocalIndices(IS is, const PetscInt *indices[])
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is, IS_CLASSID, 1);
-  PetscValidPointer(indices, 2);
+  PetscAssertPointer(indices, 2);
   PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)is), &size));
   if (size == 1) *indices = NULL;
   else {
@@ -1493,7 +1493,7 @@ PetscErrorCode ISRestoreNonlocalIndices(IS is, const PetscInt *indices[])
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is, IS_CLASSID, 1);
-  PetscValidPointer(indices, 2);
+  PetscAssertPointer(indices, 2);
   PetscCheck(is->nonlocal == *indices, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Index array pointer being restored does not point to the array obtained from the IS.");
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1525,7 +1525,7 @@ PetscErrorCode ISGetNonlocalIS(IS is, IS *complement)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is, IS_CLASSID, 1);
-  PetscValidPointer(complement, 2);
+  PetscAssertPointer(complement, 2);
   /* Check if the complement exists already. */
   if (is->complement) {
     *complement = is->complement;
@@ -1562,7 +1562,7 @@ PetscErrorCode ISRestoreNonlocalIS(IS is, IS *complement)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is, IS_CLASSID, 1);
-  PetscValidPointer(complement, 2);
+  PetscAssertPointer(complement, 2);
   PetscCheck(*complement == is->complement, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Complement IS being restored was not obtained with ISGetNonlocalIS()");
   PetscCall(PetscObjectGetReference((PetscObject)(is->complement), &refcnt));
   PetscCheck(refcnt > 1, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Duplicate call to ISRestoreNonlocalIS() detected");
@@ -1748,7 +1748,7 @@ PetscErrorCode ISSorted(IS is, PetscBool *flg)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is, IS_CLASSID, 1);
-  PetscValidBoolPointer(flg, 2);
+  PetscAssertPointer(flg, 2);
   PetscCall(ISGetInfo(is, IS_SORTED, IS_LOCAL, PETSC_TRUE, flg));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1772,7 +1772,7 @@ PetscErrorCode ISDuplicate(IS is, IS *newIS)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is, IS_CLASSID, 1);
-  PetscValidPointer(newIS, 2);
+  PetscAssertPointer(newIS, 2);
   PetscUseTypeMethod(is, duplicate, newIS);
   PetscCall(ISCopyInfo(is, *newIS));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -1886,7 +1886,7 @@ PetscErrorCode ISOnComm(IS is, MPI_Comm comm, PetscCopyMode mode, IS *newis)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is, IS_CLASSID, 1);
-  PetscValidPointer(newis, 4);
+  PetscAssertPointer(newis, 4);
   PetscCallMPI(MPI_Comm_compare(PetscObjectComm((PetscObject)is), comm, &match));
   if (mode != PETSC_COPY_VALUES && (match == MPI_IDENT || match == MPI_CONGRUENT)) {
     PetscCall(PetscObjectReference((PetscObject)is));

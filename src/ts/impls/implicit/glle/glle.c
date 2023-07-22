@@ -113,7 +113,7 @@ static PetscErrorCode TSGLLESchemeCreate(PetscInt p, PetscInt q, PetscInt r, Pet
   PetscCheck(p >= 1, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Scheme order must be positive");
   PetscCheck(r >= 1, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "At least one item must be carried between steps");
   PetscCheck(s >= 1, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "At least one stage is required");
-  PetscValidPointer(inscheme, 10);
+  PetscAssertPointer(inscheme, 10);
   *inscheme = NULL;
   PetscCall(PetscNew(&scheme));
   scheme->p = p;
@@ -641,7 +641,7 @@ PetscErrorCode TSGLLESetType(TS ts, TSGLLEType type)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
-  PetscValidCharPointer(type, 2);
+  PetscAssertPointer(type, 2);
   PetscTryMethod(ts, "TSGLLESetType_C", (TS, TSGLLEType), (ts, type));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -669,7 +669,7 @@ PetscErrorCode TSGLLESetAcceptType(TS ts, TSGLLEAcceptType type)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
-  PetscValidCharPointer(type, 2);
+  PetscAssertPointer(type, 2);
   PetscTryMethod(ts, "TSGLLESetAcceptType_C", (TS, TSGLLEAcceptType), (ts, type));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -697,7 +697,7 @@ PetscErrorCode TSGLLEGetAdapt(TS ts, TSGLLEAdapt *adapt)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
-  PetscValidPointer(adapt, 2);
+  PetscAssertPointer(adapt, 2);
   PetscUseMethod(ts, "TSGLLEGetAdapt_C", (TS, TSGLLEAdapt *), (ts, adapt));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

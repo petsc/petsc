@@ -39,7 +39,7 @@ PetscErrorCode ISDifference(IS is1, IS is2, IS *isout)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is1, IS_CLASSID, 1);
-  PetscValidPointer(isout, 3);
+  PetscAssertPointer(isout, 3);
   if (!is2) {
     PetscCall(ISDuplicate(is1, isout));
     PetscFunctionReturn(PETSC_SUCCESS);
@@ -280,7 +280,7 @@ PetscErrorCode ISExpand(IS is1, IS is2, IS *isout)
   PetscFunctionBegin;
   if (is1) PetscValidHeaderSpecific(is1, IS_CLASSID, 1);
   if (is2) PetscValidHeaderSpecific(is2, IS_CLASSID, 2);
-  PetscValidPointer(isout, 3);
+  PetscAssertPointer(isout, 3);
 
   PetscCheck(is1 || is2, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Both arguments cannot be NULL");
   if (!is1) {
@@ -372,7 +372,7 @@ PetscErrorCode ISIntersect(IS is1, IS is2, IS *isout)
   PetscValidHeaderSpecific(is1, IS_CLASSID, 1);
   PetscValidHeaderSpecific(is2, IS_CLASSID, 2);
   PetscCheckSameComm(is1, 1, is2, 2);
-  PetscValidPointer(isout, 3);
+  PetscAssertPointer(isout, 3);
   PetscCall(PetscObjectGetComm((PetscObject)is1, &comm));
 
   PetscCall(ISGetLocalSize(is1, &n1));
@@ -480,12 +480,12 @@ PetscErrorCode ISConcatenate(MPI_Comm comm, PetscInt len, const IS islist[], IS 
   PetscInt       *idx;
 
   PetscFunctionBegin;
-  if (len) PetscValidPointer(islist, 3);
+  if (len) PetscAssertPointer(islist, 3);
   if (PetscDefined(USE_DEBUG)) {
     for (i = 0; i < len; ++i)
       if (islist[i]) PetscValidHeaderSpecific(islist[i], IS_CLASSID, 3);
   }
-  PetscValidPointer(isout, 4);
+  PetscAssertPointer(isout, 4);
   if (!len) {
     PetscCall(ISCreateGeneral(comm, 0, NULL, PETSC_OWN_POINTER, isout));
     PetscFunctionReturn(PETSC_SUCCESS);
@@ -617,8 +617,8 @@ PetscErrorCode ISPairToList(IS xis, IS yis, PetscInt *listlen, IS **islist)
   PetscValidHeaderSpecific(xis, IS_CLASSID, 1);
   PetscValidHeaderSpecific(yis, IS_CLASSID, 2);
   PetscCheckSameComm(xis, 1, yis, 2);
-  PetscValidIntPointer(listlen, 3);
-  PetscValidPointer(islist, 4);
+  PetscAssertPointer(listlen, 3);
+  PetscAssertPointer(islist, 4);
   PetscCall(PetscObjectGetComm((PetscObject)xis, &comm));
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
   PetscCallMPI(MPI_Comm_rank(comm, &size));
@@ -742,7 +742,7 @@ PetscErrorCode ISEmbed(IS a, IS b, PetscBool drop, IS *c)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(a, IS_CLASSID, 1);
   PetscValidHeaderSpecific(b, IS_CLASSID, 2);
-  PetscValidPointer(c, 4);
+  PetscAssertPointer(c, 4);
   PetscCall(ISLocalToGlobalMappingCreateIS(b, &ltog));
   PetscCall(ISGetLocalSize(a, &alen));
   PetscCall(ISGetIndices(a, &aindices));
@@ -792,7 +792,7 @@ PetscErrorCode ISSortPermutation(IS f, PetscBool always, IS *h)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(f, IS_CLASSID, 1);
-  PetscValidPointer(h, 3);
+  PetscAssertPointer(h, 3);
   PetscCall(ISGetLocalSize(f, &fsize));
   PetscCall(ISGetIndices(f, &findices));
   *h = NULL;

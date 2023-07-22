@@ -112,7 +112,7 @@ PetscErrorCode PetscLimiterGetType(PetscLimiter lim, PetscLimiterType *name)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(lim, PETSCLIMITER_CLASSID, 1);
-  PetscValidPointer(name, 2);
+  PetscAssertPointer(name, 2);
   PetscCall(PetscLimiterRegisterAll());
   *name = ((PetscObject)lim)->type_name;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -270,7 +270,7 @@ PetscErrorCode PetscLimiterCreate(MPI_Comm comm, PetscLimiter *lim)
   PetscLimiter l;
 
   PetscFunctionBegin;
-  PetscValidPointer(lim, 2);
+  PetscAssertPointer(lim, 2);
   PetscCall(PetscCitationsRegister(LimiterCitation, &Limitercite));
   *lim = NULL;
   PetscCall(PetscFVInitializePackage());
@@ -336,7 +336,7 @@ PetscErrorCode PetscLimiterLimit(PetscLimiter lim, PetscReal flim, PetscReal *ph
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(lim, PETSCLIMITER_CLASSID, 1);
-  PetscValidRealPointer(phi, 3);
+  PetscAssertPointer(phi, 3);
   PetscUseTypeMethod(lim, limit, flim, phi);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -986,7 +986,7 @@ PetscErrorCode PetscFVGetType(PetscFV fvm, PetscFVType *name)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fvm, PETSCFV_CLASSID, 1);
-  PetscValidPointer(name, 2);
+  PetscAssertPointer(name, 2);
   PetscCall(PetscFVRegisterAll());
   *name = ((PetscObject)fvm)->type_name;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -1160,7 +1160,7 @@ PetscErrorCode PetscFVCreate(MPI_Comm comm, PetscFV *fvm)
   PetscFV f;
 
   PetscFunctionBegin;
-  PetscValidPointer(fvm, 2);
+  PetscAssertPointer(fvm, 2);
   *fvm = NULL;
   PetscCall(PetscFVInitializePackage());
 
@@ -1221,7 +1221,7 @@ PetscErrorCode PetscFVGetLimiter(PetscFV fvm, PetscLimiter *lim)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fvm, PETSCFV_CLASSID, 1);
-  PetscValidPointer(lim, 2);
+  PetscAssertPointer(lim, 2);
   *lim = fvm->limiter;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1275,7 +1275,7 @@ PetscErrorCode PetscFVGetNumComponents(PetscFV fvm, PetscInt *comp)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fvm, PETSCFV_CLASSID, 1);
-  PetscValidIntPointer(comp, 2);
+  PetscAssertPointer(comp, 2);
   *comp = fvm->numComponents;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1365,7 +1365,7 @@ PetscErrorCode PetscFVGetSpatialDimension(PetscFV fvm, PetscInt *dim)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fvm, PETSCFV_CLASSID, 1);
-  PetscValidIntPointer(dim, 2);
+  PetscAssertPointer(dim, 2);
   *dim = fvm->dim;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1410,7 +1410,7 @@ PetscErrorCode PetscFVGetComputeGradients(PetscFV fvm, PetscBool *computeGradien
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fvm, PETSCFV_CLASSID, 1);
-  PetscValidBoolPointer(computeGradients, 2);
+  PetscAssertPointer(computeGradients, 2);
   *computeGradients = fvm->computeGradients;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1457,7 +1457,7 @@ PetscErrorCode PetscFVGetQuadrature(PetscFV fvm, PetscQuadrature *q)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fvm, PETSCFV_CLASSID, 1);
-  PetscValidPointer(q, 2);
+  PetscAssertPointer(q, 2);
   if (!fvm->quadrature) {
     /* Create default 1-point quadrature */
     PetscReal *points, *weights;
@@ -1494,7 +1494,7 @@ PetscErrorCode PetscFVGetDualSpace(PetscFV fvm, PetscDualSpace *sp)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fvm, PETSCFV_CLASSID, 1);
-  PetscValidPointer(sp, 2);
+  PetscAssertPointer(sp, 2);
   if (!fvm->dualSpace) {
     DM       K;
     PetscInt dim, Nc, c;
@@ -1583,7 +1583,7 @@ PetscErrorCode PetscFVGetCellTabulation(PetscFV fvm, PetscTabulation *T)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fvm, PETSCFV_CLASSID, 1);
-  PetscValidPointer(T, 2);
+  PetscAssertPointer(T, 2);
   PetscCall(PetscQuadratureGetData(fvm->quadrature, NULL, NULL, &npoints, &points, NULL));
   if (!fvm->T) PetscCall(PetscFVCreateTabulation(fvm, 1, npoints, points, 1, &fvm->T));
   *T = fvm->T;
@@ -1629,8 +1629,8 @@ PetscErrorCode PetscFVCreateTabulation(PetscFV fvm, PetscInt nrepl, PetscInt npo
     PetscFunctionReturn(PETSC_SUCCESS);
   }
   PetscValidHeaderSpecific(fvm, PETSCFV_CLASSID, 1);
-  PetscValidRealPointer(points, 4);
-  PetscValidPointer(T, 6);
+  PetscAssertPointer(points, 4);
+  PetscAssertPointer(T, 6);
   PetscCall(PetscFVGetSpatialDimension(fvm, &cdim));
   PetscCall(PetscFVGetNumComponents(fvm, &Nc));
   PetscCall(PetscMalloc1(1, T));

@@ -20,7 +20,7 @@ PetscErrorCode SNESPythonSetType(SNES snes, const char pyname[])
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
-  PetscValidCharPointer(pyname, 2);
+  PetscAssertPointer(pyname, 2);
   PetscTryMethod(snes, "SNESPythonSetType_C", (SNES, const char[]), (snes, pyname));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -44,7 +44,7 @@ PetscErrorCode SNESPythonGetType(SNES snes, const char *pyname[])
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
-  PetscValidPointer(pyname, 2);
+  PetscAssertPointer(pyname, 2);
   PetscUseMethod(snes, "SNESPythonGetType_C", (SNES, const char *[]), (snes, pyname));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

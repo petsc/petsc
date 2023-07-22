@@ -189,7 +189,7 @@ PetscErrorCode SNESConvergedDefault_VI(SNES snes, PetscInt it, PetscReal xnorm, 
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
-  PetscValidPointer(reason, 6);
+  PetscAssertPointer(reason, 6);
 
   *reason = SNES_CONVERGED_ITERATING;
 

@@ -303,7 +303,7 @@ PetscErrorCode ISLocalToGlobalMappingGetSize(ISLocalToGlobalMapping mapping, Pet
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mapping, IS_LTOGM_CLASSID, 1);
-  PetscValidIntPointer(n, 2);
+  PetscAssertPointer(n, 2);
   *n = mapping->bs * mapping->n;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -401,7 +401,7 @@ PetscErrorCode ISLocalToGlobalMappingCreateIS(IS is, ISLocalToGlobalMapping *map
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is, IS_CLASSID, 1);
-  PetscValidPointer(mapping, 2);
+  PetscAssertPointer(mapping, 2);
 
   PetscCall(PetscObjectGetComm((PetscObject)is, &comm));
   PetscCall(ISGetLocalSize(is, &n));
@@ -446,7 +446,7 @@ PetscErrorCode ISLocalToGlobalMappingCreateSF(PetscSF sf, PetscInt start, ISLoca
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sf, PETSCSF_CLASSID, 1);
-  PetscValidPointer(mapping, 3);
+  PetscAssertPointer(mapping, 3);
   PetscCall(PetscObjectGetComm((PetscObject)sf, &comm));
   PetscCall(PetscSFGetGraph(sf, &nroots, &nleaves, NULL, NULL));
   if (start == PETSC_DECIDE) {
@@ -600,8 +600,8 @@ PetscErrorCode ISLocalToGlobalMappingCreate(MPI_Comm comm, PetscInt bs, PetscInt
   PetscInt *in;
 
   PetscFunctionBegin;
-  if (n) PetscValidIntPointer(indices, 4);
-  PetscValidPointer(mapping, 6);
+  if (n) PetscAssertPointer(indices, 4);
+  PetscAssertPointer(mapping, 6);
 
   *mapping = NULL;
   PetscCall(ISInitializePackage());
@@ -728,7 +728,7 @@ PetscErrorCode ISLocalToGlobalMappingApplyIS(ISLocalToGlobalMapping mapping, IS 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mapping, IS_LTOGM_CLASSID, 1);
   PetscValidHeaderSpecific(is, IS_CLASSID, 2);
-  PetscValidPointer(newis, 3);
+  PetscAssertPointer(newis, 3);
 
   PetscCall(ISGetLocalSize(is, &n));
   PetscCall(ISGetIndices(is, &idxin));
@@ -919,7 +919,7 @@ PetscErrorCode ISGlobalToLocalMappingApplyIS(ISLocalToGlobalMapping mapping, ISG
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mapping, IS_LTOGM_CLASSID, 1);
   PetscValidHeaderSpecific(is, IS_CLASSID, 3);
-  PetscValidPointer(newis, 4);
+  PetscAssertPointer(newis, 4);
 
   PetscCall(ISGetLocalSize(is, &n));
   PetscCall(ISGetIndices(is, &idxin));
@@ -1707,7 +1707,7 @@ PetscErrorCode ISLocalToGlobalMappingGetIndices(ISLocalToGlobalMapping ltog, con
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ltog, IS_LTOGM_CLASSID, 1);
-  PetscValidPointer(array, 2);
+  PetscAssertPointer(array, 2);
   if (ltog->bs == 1) {
     *array = ltog->indices;
   } else {
@@ -1741,7 +1741,7 @@ PetscErrorCode ISLocalToGlobalMappingRestoreIndices(ISLocalToGlobalMapping ltog,
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ltog, IS_LTOGM_CLASSID, 1);
-  PetscValidPointer(array, 2);
+  PetscAssertPointer(array, 2);
   PetscCheck(ltog->bs != 1 || *array == ltog->indices, PETSC_COMM_SELF, PETSC_ERR_ARG_BADPTR, "Trying to return mismatched pointer");
 
   if (ltog->bs > 1) PetscCall(PetscFree(*(void **)array));
@@ -1767,7 +1767,7 @@ PetscErrorCode ISLocalToGlobalMappingGetBlockIndices(ISLocalToGlobalMapping ltog
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ltog, IS_LTOGM_CLASSID, 1);
-  PetscValidPointer(array, 2);
+  PetscAssertPointer(array, 2);
   *array = ltog->indices;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1789,7 +1789,7 @@ PetscErrorCode ISLocalToGlobalMappingRestoreBlockIndices(ISLocalToGlobalMapping 
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ltog, IS_LTOGM_CLASSID, 1);
-  PetscValidPointer(array, 2);
+  PetscAssertPointer(array, 2);
   PetscCheck(*array == ltog->indices, PETSC_COMM_SELF, PETSC_ERR_ARG_BADPTR, "Trying to return mismatched pointer");
   *array = NULL;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -1824,9 +1824,9 @@ PetscErrorCode ISLocalToGlobalMappingConcatenate(MPI_Comm comm, PetscInt n, cons
 
   PetscFunctionBegin;
   PetscCheck(n >= 0, comm, PETSC_ERR_ARG_OUTOFRANGE, "Must have a non-negative number of mappings, given %" PetscInt_FMT, n);
-  if (n > 0) PetscValidPointer(ltogs, 3);
+  if (n > 0) PetscAssertPointer(ltogs, 3);
   for (i = 0; i < n; i++) PetscValidHeaderSpecific(ltogs[i], IS_LTOGM_CLASSID, 3);
-  PetscValidPointer(ltogcat, 4);
+  PetscAssertPointer(ltogcat, 4);
   for (cnt = 0, i = 0; i < n; i++) {
     PetscCall(ISLocalToGlobalMappingGetSize(ltogs[i], &m));
     cnt += m;
@@ -1961,7 +1961,7 @@ PetscErrorCode ISLocalToGlobalMappingSetType(ISLocalToGlobalMapping ltog, ISLoca
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ltog, IS_LTOGM_CLASSID, 1);
-  if (type) PetscValidCharPointer(type, 2);
+  if (type) PetscAssertPointer(type, 2);
 
   PetscCall(PetscObjectTypeCompare((PetscObject)ltog, type, &match));
   if (match) PetscFunctionReturn(PETSC_SUCCESS);
@@ -1999,7 +1999,7 @@ PetscErrorCode ISLocalToGlobalMappingGetType(ISLocalToGlobalMapping ltog, ISLoca
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ltog, IS_LTOGM_CLASSID, 1);
-  PetscValidPointer(type, 2);
+  PetscAssertPointer(type, 2);
   *type = ((PetscObject)ltog)->type_name;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

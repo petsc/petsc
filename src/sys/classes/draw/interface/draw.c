@@ -122,8 +122,8 @@ PetscErrorCode PetscDrawGetWindowSize(PetscDraw draw, int *w, int *h)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw, PETSC_DRAW_CLASSID, 1);
-  if (w) PetscValidPointer(w, 2);
-  if (h) PetscValidPointer(h, 3);
+  if (w) PetscAssertPointer(w, 2);
+  if (h) PetscAssertPointer(h, 3);
   if (w) *w = draw->w;
   if (h) *h = draw->h;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -168,7 +168,7 @@ PetscErrorCode PetscDrawGetTitle(PetscDraw draw, const char *title[])
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw, PETSC_DRAW_CLASSID, 1);
-  PetscValidPointer(title, 2);
+  PetscAssertPointer(title, 2);
   *title = draw->title;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -199,7 +199,7 @@ PetscErrorCode PetscDrawSetTitle(PetscDraw draw, const char title[])
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw, PETSC_DRAW_CLASSID, 1);
-  PetscValidCharPointer(title, 2);
+  PetscAssertPointer(title, 2);
   PetscCall(PetscFree(draw->title));
   PetscCall(PetscStrallocpy(title, &draw->title));
   PetscTryTypeMethod(draw, settitle, draw->title);
@@ -227,7 +227,7 @@ PetscErrorCode PetscDrawAppendTitle(PetscDraw draw, const char title[])
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw, PETSC_DRAW_CLASSID, 1);
-  if (title) PetscValidCharPointer(title, 2);
+  if (title) PetscAssertPointer(title, 2);
   if (!title || !title[0]) PetscFunctionReturn(PETSC_SUCCESS);
 
   if (draw->title) {
@@ -318,7 +318,7 @@ PetscErrorCode PetscDrawGetPopup(PetscDraw draw, PetscDraw *popup)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw, PETSC_DRAW_CLASSID, 1);
-  PetscValidPointer(popup, 2);
+  PetscAssertPointer(popup, 2);
 
   if (draw->popup) *popup = draw->popup;
   else if (draw->ops->getpopup) {
@@ -393,7 +393,7 @@ PetscErrorCode PetscDrawGetSingleton(PetscDraw draw, PetscDraw *sdraw)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw, PETSC_DRAW_CLASSID, 1);
-  PetscValidPointer(sdraw, 2);
+  PetscAssertPointer(sdraw, 2);
 
   PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)draw), &size));
   if (size == 1) {
@@ -427,7 +427,7 @@ PetscErrorCode PetscDrawRestoreSingleton(PetscDraw draw, PetscDraw *sdraw)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw, PETSC_DRAW_CLASSID, 1);
-  PetscValidPointer(sdraw, 2);
+  PetscAssertPointer(sdraw, 2);
   PetscValidHeaderSpecific(*sdraw, PETSC_DRAW_CLASSID, 2);
 
   PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)draw), &size));

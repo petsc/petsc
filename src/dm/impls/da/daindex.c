@@ -118,7 +118,7 @@ PetscErrorCode DMDAGetAO(DM da, AO *ao)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(da, DM_CLASSID, 1, DMDA);
-  PetscValidPointer(ao, 2);
+  PetscAssertPointer(ao, 2);
   PetscCall(PetscObjectTypeCompare((PetscObject)da, DMDA, &isdmda));
   PetscCheck(isdmda, PetscObjectComm((PetscObject)da), PETSC_ERR_SUP, "Requires a DMDA as input");
   /* now we can safely dereference */

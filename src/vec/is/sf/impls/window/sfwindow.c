@@ -195,7 +195,7 @@ PetscErrorCode PetscSFWindowGetFlavorType(PetscSF sf, PetscSFWindowFlavorType *f
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sf, PETSCSF_CLASSID, 1);
-  PetscValidPointer(flavor, 2);
+  PetscAssertPointer(flavor, 2);
   PetscUseMethod(sf, "PetscSFWindowGetFlavorType_C", (PetscSF, PetscSFWindowFlavorType *), (sf, flavor));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -262,7 +262,7 @@ PetscErrorCode PetscSFWindowGetSyncType(PetscSF sf, PetscSFWindowSyncType *sync)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sf, PETSCSF_CLASSID, 1);
-  PetscValidPointer(sync, 2);
+  PetscAssertPointer(sync, 2);
   PetscUseMethod(sf, "PetscSFWindowGetSyncType_C", (PetscSF, PetscSFWindowSyncType *), (sf, sync));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -332,7 +332,7 @@ PetscErrorCode PetscSFWindowGetInfo(PetscSF sf, MPI_Info *info)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sf, PETSCSF_CLASSID, 1);
-  PetscValidPointer(info, 2);
+  PetscAssertPointer(info, 2);
   PetscUseMethod(sf, "PetscSFWindowGetInfo_C", (PetscSF, MPI_Info *), (sf, info));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -667,7 +667,7 @@ PetscErrorCode PetscViewerASCIIPrintf(PetscViewer viewer, const char format[], .
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 1);
   PetscCheck(!ascii->sviewer, PetscObjectComm((PetscObject)viewer), PETSC_ERR_ARG_WRONGSTATE, "Cannot call with outstanding call to PetscViewerRestoreSubViewer()");
-  PetscValidCharPointer(format, 2);
+  PetscAssertPointer(format, 2);
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
   PetscCheck(iascii, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Not ASCII PetscViewer");
   PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)viewer), &rank));
@@ -737,7 +737,7 @@ PetscErrorCode PetscViewerFileSetName(PetscViewer viewer, const char name[])
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 1);
-  PetscValidCharPointer(name, 2);
+  PetscAssertPointer(name, 2);
   PetscCall(PetscStrreplace(PetscObjectComm((PetscObject)viewer), name, filename, sizeof(filename)));
   PetscTryMethod(viewer, "PetscViewerFileSetName_C", (PetscViewer, const char[]), (viewer, filename));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -765,7 +765,7 @@ PetscErrorCode PetscViewerFileGetName(PetscViewer viewer, const char **name)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 1);
-  PetscValidPointer(name, 2);
+  PetscAssertPointer(name, 2);
   PetscUseMethod(viewer, "PetscViewerFileGetName_C", (PetscViewer, const char **), (viewer, name));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1003,7 +1003,7 @@ PetscErrorCode PetscViewerASCIISynchronizedPrintf(PetscViewer viewer, const char
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 1);
-  PetscValidCharPointer(format, 2);
+  PetscAssertPointer(format, 2);
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
   PetscCheck(iascii, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Not ASCII PetscViewer");
   PetscCheck(vascii->allowsynchronized, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "First call PetscViewerASCIIPushSynchronized() to allow this call");

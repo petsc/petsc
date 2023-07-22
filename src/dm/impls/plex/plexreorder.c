@@ -73,7 +73,7 @@ PetscErrorCode DMPlexGetOrdering(DM dm, MatOrderingType otype, DMLabel label, IS
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(perm, 4);
+  PetscAssertPointer(perm, 4);
   PetscCall(DMPlexCreateNeighborCSR(dm, 0, &numCells, &start, &adjacency));
   PetscCall(PetscMalloc3(numCells, &cperm, numCells, &mask, numCells * 2, &xls));
   if (numCells) {
@@ -250,7 +250,7 @@ PetscErrorCode DMPlexPermute(DM dm, IS perm, DM *pdm)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidHeaderSpecific(perm, IS_CLASSID, 2);
-  PetscValidPointer(pdm, 3);
+  PetscAssertPointer(pdm, 3);
   PetscCall(DMCreate(PetscObjectComm((PetscObject)dm), pdm));
   PetscCall(DMSetType(*pdm, DMPLEX));
   PetscCall(PetscObjectGetName((PetscObject)dm, &name));
@@ -424,7 +424,7 @@ PetscErrorCode DMPlexReorderGetDefault(DM dm, DMPlexReorderDefaultFlag *reorder)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(reorder, 2);
+  PetscAssertPointer(reorder, 2);
   PetscUseMethod(dm, "DMPlexReorderGetDefault_C", (DM, DMPlexReorderDefaultFlag *), (dm, reorder));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

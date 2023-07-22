@@ -453,7 +453,7 @@ code such as
       Vec            v;
 
       PetscFunctionBegin;
-      PetscValidPointer(vec,2);
+      PetscAssertPointer(vec,2);
       *vec = NULL;
       VecInitializePackage();
       ...

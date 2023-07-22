@@ -431,7 +431,7 @@ static PetscErrorCode ISBlockSetIndices_Block(IS is, PetscInt bs, PetscInt n, co
   PetscFunctionBegin;
   PetscCheck(bs >= 1, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "block size < 1");
   PetscCheck(n >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "length < 0");
-  if (n) PetscValidIntPointer(idx, 4);
+  if (n) PetscAssertPointer(idx, 4);
 
   PetscCall(PetscLayoutCreateFromSizes(PetscObjectComm((PetscObject)is), n * bs, is->map->N, bs, &map));
   PetscCall(PetscLayoutDestroy(&is->map));
@@ -500,10 +500,10 @@ static PetscErrorCode ISBlockSetIndices_Block(IS is, PetscInt bs, PetscInt n, co
 PetscErrorCode ISCreateBlock(MPI_Comm comm, PetscInt bs, PetscInt n, const PetscInt idx[], PetscCopyMode mode, IS *is)
 {
   PetscFunctionBegin;
-  PetscValidPointer(is, 6);
+  PetscAssertPointer(is, 6);
   PetscCheck(bs >= 1, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "block size < 1");
   PetscCheck(n >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "length < 0");
-  if (n) PetscValidIntPointer(idx, 4);
+  if (n) PetscAssertPointer(idx, 4);
 
   PetscCall(ISCreate(comm, is));
   PetscCall(ISSetType(*is, ISBLOCK));

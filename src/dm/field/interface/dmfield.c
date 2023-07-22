@@ -10,7 +10,7 @@ PETSC_INTERN PetscErrorCode DMFieldCreate(DM dm, PetscInt numComponents, DMField
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(field, 4);
+  PetscAssertPointer(field, 4);
   PetscCall(DMFieldInitializePackage());
 
   PetscCall(PetscHeaderCreate(b, DMFIELD_CLASSID, "DMField", "Field over DM", "DM", PetscObjectComm((PetscObject)dm), DMFieldDestroy, DMFieldView));
@@ -112,7 +112,7 @@ PetscErrorCode DMFieldSetType(DMField field, DMFieldType type)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(field, DMFIELD_CLASSID, 1);
-  PetscValidCharPointer(type, 2);
+  PetscAssertPointer(type, 2);
 
   PetscCall(PetscObjectTypeCompare((PetscObject)field, type, &match));
   if (match) PetscFunctionReturn(PETSC_SUCCESS);
@@ -148,7 +148,7 @@ PetscErrorCode DMFieldGetType(DMField field, DMFieldType *type)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(field, DMFIELD_CLASSID, 1);
-  PetscValidPointer(type, 2);
+  PetscAssertPointer(type, 2);
   PetscCall(DMFieldRegisterAll());
   *type = ((PetscObject)field)->type_name;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -173,7 +173,7 @@ PetscErrorCode DMFieldGetNumComponents(DMField field, PetscInt *nc)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(field, DMFIELD_CLASSID, 1);
-  PetscValidIntPointer(nc, 2);
+  PetscAssertPointer(nc, 2);
   *nc = field->numComponents;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -197,7 +197,7 @@ PetscErrorCode DMFieldGetDM(DMField field, DM *dm)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(field, DMFIELD_CLASSID, 1);
-  PetscValidPointer(dm, 2);
+  PetscAssertPointer(dm, 2);
   *dm = field->dm;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -236,9 +236,9 @@ PetscErrorCode DMFieldEvaluate(DMField field, Vec points, PetscDataType datatype
   PetscFunctionBegin;
   PetscValidHeaderSpecific(field, DMFIELD_CLASSID, 1);
   PetscValidHeaderSpecific(points, VEC_CLASSID, 2);
-  if (B) PetscValidPointer(B, 4);
-  if (D) PetscValidPointer(D, 5);
-  if (H) PetscValidPointer(H, 6);
+  if (B) PetscAssertPointer(B, 4);
+  if (D) PetscAssertPointer(D, 5);
+  if (H) PetscAssertPointer(H, 6);
   if (field->ops->evaluate) {
     PetscCall((*field->ops->evaluate)(field, points, datatype, B, D, H));
   } else SETERRQ(PetscObjectComm((PetscObject)field), PETSC_ERR_SUP, "Not implemented for this type");
@@ -281,9 +281,9 @@ PetscErrorCode DMFieldEvaluateFE(DMField field, IS cellIS, PetscQuadrature point
   PetscValidHeaderSpecific(field, DMFIELD_CLASSID, 1);
   PetscValidHeaderSpecific(cellIS, IS_CLASSID, 2);
   PetscValidHeader(points, 3);
-  if (B) PetscValidPointer(B, 5);
-  if (D) PetscValidPointer(D, 6);
-  if (H) PetscValidPointer(H, 7);
+  if (B) PetscAssertPointer(B, 5);
+  if (D) PetscAssertPointer(D, 6);
+  if (H) PetscAssertPointer(H, 7);
   if (field->ops->evaluateFE) {
     PetscCall((*field->ops->evaluateFE)(field, cellIS, points, datatype, B, D, H));
   } else SETERRQ(PetscObjectComm((PetscObject)field), PETSC_ERR_SUP, "Not implemented for this type");
@@ -322,9 +322,9 @@ PetscErrorCode DMFieldEvaluateFV(DMField field, IS cellIS, PetscDataType datatyp
   PetscFunctionBegin;
   PetscValidHeaderSpecific(field, DMFIELD_CLASSID, 1);
   PetscValidHeaderSpecific(cellIS, IS_CLASSID, 2);
-  if (B) PetscValidPointer(B, 4);
-  if (D) PetscValidPointer(D, 5);
-  if (H) PetscValidPointer(H, 6);
+  if (B) PetscAssertPointer(B, 4);
+  if (D) PetscAssertPointer(D, 5);
+  if (H) PetscAssertPointer(H, 6);
   if (field->ops->evaluateFV) {
     PetscCall((*field->ops->evaluateFV)(field, cellIS, datatype, B, D, H));
   } else SETERRQ(PetscObjectComm((PetscObject)field), PETSC_ERR_SUP, "Not implemented for this type");
@@ -354,8 +354,8 @@ PetscErrorCode DMFieldGetDegree(DMField field, IS cellIS, PetscInt *minDegree, P
   PetscFunctionBegin;
   PetscValidHeaderSpecific(field, DMFIELD_CLASSID, 1);
   PetscValidHeaderSpecific(cellIS, IS_CLASSID, 2);
-  if (minDegree) PetscValidIntPointer(minDegree, 3);
-  if (maxDegree) PetscValidIntPointer(maxDegree, 4);
+  if (minDegree) PetscAssertPointer(minDegree, 3);
+  if (maxDegree) PetscAssertPointer(maxDegree, 4);
 
   if (minDegree) *minDegree = -1;
   if (maxDegree) *maxDegree = PETSC_MAX_INT;
@@ -386,7 +386,7 @@ PetscErrorCode DMFieldCreateDefaultQuadrature(DMField field, IS pointIS, PetscQu
   PetscFunctionBegin;
   PetscValidHeaderSpecific(field, DMFIELD_CLASSID, 1);
   PetscValidHeaderSpecific(pointIS, IS_CLASSID, 2);
-  PetscValidPointer(quad, 3);
+  PetscAssertPointer(quad, 3);
 
   *quad = NULL;
   PetscTryTypeMethod(field, createDefaultQuadrature, pointIS, quad);

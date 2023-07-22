@@ -74,7 +74,7 @@ static PetscErrorCode MatMFFDSetType_MFFD(Mat mat, MatMFFDType ftype)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
-  PetscValidCharPointer(ftype, 2);
+  PetscAssertPointer(ftype, 2);
   PetscCall(MatShellGetContext(mat, &ctx));
 
   /* already set, so just return */
@@ -118,7 +118,7 @@ PetscErrorCode MatMFFDSetType(Mat mat, MatMFFDType ftype)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
-  PetscValidCharPointer(ftype, 2);
+  PetscAssertPointer(ftype, 2);
   PetscTryMethod(mat, "MatMFFDSetType_C", (Mat, MatMFFDType), (mat, ftype));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -726,7 +726,7 @@ PetscErrorCode MatMFFDGetH(Mat mat, PetscScalar *h)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
-  PetscValidScalarPointer(h, 2);
+  PetscAssertPointer(h, 2);
   PetscUseMethod(mat, "MatMFFDGetH_C", (Mat, PetscScalar *), (mat, h));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -906,7 +906,7 @@ PetscErrorCode MatMFFDSetHHistory(Mat J, PetscScalar history[], PetscInt nhistor
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(J, MAT_CLASSID, 1);
-  if (history) PetscValidScalarPointer(history, 2);
+  if (history) PetscAssertPointer(history, 2);
   PetscValidLogicalCollectiveInt(J, nhistory, 3);
   PetscUseMethod(J, "MatMFFDSetHHistory_C", (Mat, PetscScalar[], PetscInt), (J, history, nhistory));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -1032,7 +1032,7 @@ PetscErrorCode MatMFFDCheckPositivity(void *dummy, Vec U, Vec a, PetscScalar *h)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(U, VEC_CLASSID, 2);
   PetscValidHeaderSpecific(a, VEC_CLASSID, 3);
-  PetscValidScalarPointer(h, 4);
+  PetscAssertPointer(h, 4);
   PetscCall(PetscObjectGetComm((PetscObject)U, &comm));
   PetscCall(VecGetArray(U, &u_vec));
   PetscCall(VecGetArray(a, &a_vec));

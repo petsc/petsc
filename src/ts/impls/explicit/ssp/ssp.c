@@ -262,7 +262,7 @@ PetscErrorCode TSSSPSetType(TS ts, TSSSPType ssptype)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
-  PetscValidCharPointer(ssptype, 2);
+  PetscAssertPointer(ssptype, 2);
   PetscTryMethod(ts, "TSSSPSetType_C", (TS, TSSSPType), (ts, ssptype));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

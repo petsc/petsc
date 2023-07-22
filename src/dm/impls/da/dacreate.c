@@ -289,7 +289,7 @@ static PetscErrorCode DMHasCreateInjection_DA(DM dm, PetscBool *flg)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidBoolPointer(flg, 2);
+  PetscAssertPointer(flg, 2);
   *flg = da->interptype == DMDA_Q1 ? PETSC_TRUE : PETSC_FALSE;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -350,7 +350,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_DA(DM da)
   DM_DA *dd;
 
   PetscFunctionBegin;
-  PetscValidPointer(da, 1);
+  PetscAssertPointer(da, 1);
   PetscCall(PetscNew(&dd));
   da->data = dd;
 
@@ -471,7 +471,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_DA(DM da)
 PetscErrorCode DMDACreate(MPI_Comm comm, DM *da)
 {
   PetscFunctionBegin;
-  PetscValidPointer(da, 2);
+  PetscAssertPointer(da, 2);
   PetscCall(DMCreate(comm, da));
   PetscCall(DMSetType(*da, DMDA));
   PetscFunctionReturn(PETSC_SUCCESS);

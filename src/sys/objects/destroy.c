@@ -158,13 +158,13 @@ PetscErrorCode PetscObjectViewFromOptions(PetscObject obj, PetscObject bobj, con
 PetscErrorCode PetscObjectTypeCompare(PetscObject obj, const char type_name[], PetscBool *same)
 {
   PetscFunctionBegin;
-  PetscValidBoolPointer(same, 3);
+  PetscAssertPointer(same, 3);
   if (!obj) *same = (PetscBool)!type_name;
   else {
     PetscValidHeader(obj, 1);
     if (!type_name || !obj->type_name) *same = (PetscBool)(!obj->type_name == !type_name);
     else {
-      PetscValidCharPointer(type_name, 2);
+      PetscAssertPointer(type_name, 2);
       PetscCall(PetscStrcmp(obj->type_name, type_name, same));
     }
   }
@@ -193,7 +193,7 @@ PetscErrorCode PetscObjectObjectTypeCompare(PetscObject obj1, PetscObject obj2, 
   PetscFunctionBegin;
   PetscValidHeader(obj1, 1);
   PetscValidHeader(obj2, 2);
-  PetscValidBoolPointer(same, 3);
+  PetscAssertPointer(same, 3);
   PetscCall(PetscStrcmp(obj1->type_name, obj2->type_name, same));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -217,13 +217,13 @@ PetscErrorCode PetscObjectObjectTypeCompare(PetscObject obj1, PetscObject obj2, 
 PetscErrorCode PetscObjectBaseTypeCompare(PetscObject obj, const char type_name[], PetscBool *same)
 {
   PetscFunctionBegin;
-  PetscValidBoolPointer(same, 3);
+  PetscAssertPointer(same, 3);
   if (!obj) *same = (PetscBool)!type_name;
   else {
     PetscValidHeader(obj, 1);
     if (!type_name || !obj->type_name) *same = (PetscBool)(!obj->type_name == !type_name);
     else {
-      PetscValidCharPointer(type_name, 2);
+      PetscAssertPointer(type_name, 2);
       PetscCall(PetscStrbeginswith(obj->type_name, type_name, same));
     }
   }
@@ -252,7 +252,7 @@ PetscErrorCode PetscObjectTypeCompareAny(PetscObject obj, PetscBool *match, cons
   va_list Argp;
 
   PetscFunctionBegin;
-  PetscValidBoolPointer(match, 2);
+  PetscAssertPointer(match, 2);
   *match = PETSC_FALSE;
   if (!obj) PetscFunctionReturn(PETSC_SUCCESS);
   va_start(Argp, type_name);
@@ -291,7 +291,7 @@ PetscErrorCode PetscObjectBaseTypeCompareAny(PetscObject obj, PetscBool *match, 
   va_list Argp;
 
   PetscFunctionBegin;
-  PetscValidBoolPointer(match, 2);
+  PetscAssertPointer(match, 2);
   *match = PETSC_FALSE;
   va_start(Argp, type_name);
   while (type_name && type_name[0]) {

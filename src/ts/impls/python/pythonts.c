@@ -20,7 +20,7 @@ PetscErrorCode TSPythonSetType(TS ts, const char pyname[])
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
-  PetscValidCharPointer(pyname, 2);
+  PetscAssertPointer(pyname, 2);
   PetscTryMethod(ts, "TSPythonSetType_C", (TS, const char[]), (ts, pyname));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -44,7 +44,7 @@ PetscErrorCode TSPythonGetType(TS ts, const char *pyname[])
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
-  PetscValidPointer(pyname, 2);
+  PetscAssertPointer(pyname, 2);
   PetscUseMethod(ts, "TSPythonGetType_C", (TS, const char *[]), (ts, pyname));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

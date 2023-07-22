@@ -178,7 +178,7 @@ static PetscErrorCode DMCreateMatrix_Shell(DM dm, Mat *J)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(J, 2);
+  PetscAssertPointer(J, 2);
   if (!shell->A) {
     if (shell->Xglobal) {
       PetscInt m, M;
@@ -204,7 +204,7 @@ PetscErrorCode DMCreateGlobalVector_Shell(DM dm, Vec *gvec)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(gvec, 2);
+  PetscAssertPointer(gvec, 2);
   *gvec = NULL;
   X     = shell->Xglobal;
   PetscCheck(X, PetscObjectComm((PetscObject)dm), PETSC_ERR_USER, "Must call DMShellSetGlobalVector() or DMShellSetCreateGlobalVector()");
@@ -222,7 +222,7 @@ PetscErrorCode DMCreateLocalVector_Shell(DM dm, Vec *gvec)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(gvec, 2);
+  PetscAssertPointer(gvec, 2);
   *gvec = NULL;
   X     = shell->Xlocal;
   PetscCheck(X, PetscObjectComm((PetscObject)dm), PETSC_ERR_USER, "Must call DMShellSetLocalVector() or DMShellSetCreateLocalVector()");
@@ -436,7 +436,7 @@ PetscErrorCode DMShellGetGlobalVector(DM dm, Vec *X)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(X, 2);
+  PetscAssertPointer(X, 2);
   PetscCall(PetscObjectTypeCompare((PetscObject)dm, DMSHELL, &isshell));
   if (!isshell) PetscFunctionReturn(PETSC_SUCCESS);
   *X = shell->Xglobal;
@@ -1162,7 +1162,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_Shell(DM dm)
 PetscErrorCode DMShellCreate(MPI_Comm comm, DM *dm)
 {
   PetscFunctionBegin;
-  PetscValidPointer(dm, 2);
+  PetscAssertPointer(dm, 2);
   PetscCall(DMCreate(comm, dm));
   PetscCall(DMSetType(*dm, DMSHELL));
   PetscCall(DMSetUp(*dm));

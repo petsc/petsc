@@ -60,7 +60,7 @@ PetscErrorCode PetscTableCreate(PetscInt n, PetscInt maxkey, PetscTable *rta)
   PetscTable ta;
 
   PetscFunctionBegin;
-  PetscValidPointer(rta, 3);
+  PetscAssertPointer(rta, 3);
   PetscCheck(n >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "n < 0");
   PetscCall(PetscNew(&ta));
   PetscCall(PetscTableCreateHashSize(n, &ta->tablesize));
@@ -81,8 +81,8 @@ PetscErrorCode PetscTableCreateCopy(const PetscTable intable, PetscTable *rta)
   PetscTable ta;
 
   PetscFunctionBegin;
-  PetscValidPointer(intable, 1);
-  PetscValidPointer(rta, 2);
+  PetscAssertPointer(intable, 1);
+  PetscAssertPointer(rta, 2);
   PetscCall(PetscNew(&ta));
   ta->tablesize = intable->tablesize;
   PetscCall(PetscMalloc1(ta->tablesize, &ta->keytable));
@@ -115,8 +115,8 @@ PetscErrorCode PetscTableDestroy(PetscTable *ta)
 PetscErrorCode PetscTableGetCount(const PetscTable ta, PetscInt *count)
 {
   PetscFunctionBegin;
-  PetscValidPointer(ta, 1);
-  PetscValidIntPointer(count, 2);
+  PetscAssertPointer(ta, 1);
+  PetscAssertPointer(count, 2);
   *count = ta->count;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -126,8 +126,8 @@ PetscErrorCode PetscTableGetCount(const PetscTable ta, PetscInt *count)
 PetscErrorCode PetscTableIsEmpty(const PetscTable ta, PetscInt *flag)
 {
   PetscFunctionBegin;
-  PetscValidPointer(ta, 1);
-  PetscValidIntPointer(flag, 2);
+  PetscAssertPointer(ta, 1);
+  PetscAssertPointer(flag, 2);
   *flag = !(ta->count);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -142,7 +142,7 @@ PetscErrorCode PetscTableAddExpand(PetscTable ta, PetscInt key, PetscInt data, I
   PetscInt      *oldtab = ta->table, *oldkt = ta->keytable;
 
   PetscFunctionBegin;
-  PetscValidPointer(ta, 1);
+  PetscAssertPointer(ta, 1);
   PetscCall(PetscTableCreateHashSize(ta->tablesize, &ta->tablesize));
   PetscCall(PetscMalloc1(ta->tablesize, &ta->table));
   PetscCall(PetscCalloc1(ta->tablesize, &ta->keytable));
@@ -171,7 +171,7 @@ PetscErrorCode PetscTableAddExpand(PetscTable ta, PetscInt key, PetscInt data, I
 PetscErrorCode PetscTableRemoveAll(PetscTable ta)
 {
   PetscFunctionBegin;
-  PetscValidPointer(ta, 1);
+  PetscAssertPointer(ta, 1);
   ta->head = 0;
   if (ta->count) {
     ta->count = 0;
@@ -189,8 +189,8 @@ PetscErrorCode PetscTableGetHeadPosition(PetscTable ta, PetscTablePosition *ppos
   PetscInt i = 0;
 
   PetscFunctionBegin;
-  PetscValidPointer(ta, 1);
-  PetscValidPointer(ppos, 2);
+  PetscAssertPointer(ta, 1);
+  PetscAssertPointer(ppos, 2);
   *ppos = NULL;
   if (!ta->count) PetscFunctionReturn(PETSC_SUCCESS);
 
@@ -216,10 +216,10 @@ PetscErrorCode PetscTableGetNext(PetscTable ta, PetscTablePosition *rPosition, P
   PetscTablePosition pos;
 
   PetscFunctionBegin;
-  PetscValidPointer(ta, 1);
-  PetscValidPointer(rPosition, 2);
-  PetscValidIntPointer(pkey, 3);
-  PetscValidIntPointer(data, 4);
+  PetscAssertPointer(ta, 1);
+  PetscAssertPointer(rPosition, 2);
+  PetscAssertPointer(pkey, 3);
+  PetscAssertPointer(data, 4);
   pos = *rPosition;
   PetscCheck(pos, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Null position");
   *data = *pos;

@@ -426,7 +426,7 @@ PetscErrorCode KSPGetNormType(KSP ksp, KSPNormType *normtype)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
-  PetscValidPointer(normtype, 2);
+  PetscAssertPointer(normtype, 2);
   PetscCall(KSPSetUpNorms_Private(ksp, PETSC_TRUE, &ksp->normtype, &ksp->pc_side));
   *normtype = ksp->normtype;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -660,7 +660,7 @@ PetscErrorCode KSPCreate(MPI_Comm comm, KSP *inksp)
   void *ctx;
 
   PetscFunctionBegin;
-  PetscValidPointer(inksp, 2);
+  PetscAssertPointer(inksp, 2);
   *inksp = NULL;
   PetscCall(KSPInitializePackage());
 
@@ -758,7 +758,7 @@ PetscErrorCode KSPSetType(KSP ksp, KSPType type)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
-  PetscValidCharPointer(type, 2);
+  PetscAssertPointer(type, 2);
 
   PetscCall(PetscObjectTypeCompare((PetscObject)ksp, type, &match));
   if (match) PetscFunctionReturn(PETSC_SUCCESS);
@@ -803,7 +803,7 @@ PetscErrorCode KSPGetType(KSP ksp, KSPType *type)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
-  PetscValidPointer(type, 2);
+  PetscAssertPointer(type, 2);
   *type = ((PetscObject)ksp)->type_name;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

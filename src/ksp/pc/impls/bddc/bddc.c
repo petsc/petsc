@@ -504,7 +504,7 @@ PetscErrorCode PCBDDCGetPrimalVerticesIS(PC pc, IS *is)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
-  PetscValidPointer(is, 2);
+  PetscAssertPointer(is, 2);
   PetscUseMethod(pc, "PCBDDCGetPrimalVerticesIS_C", (PC, IS *), (pc, is));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -575,7 +575,7 @@ PetscErrorCode PCBDDCGetPrimalVerticesLocalIS(PC pc, IS *is)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
-  PetscValidPointer(is, 2);
+  PetscAssertPointer(is, 2);
   PetscUseMethod(pc, "PCBDDCGetPrimalVerticesLocalIS_C", (PC, IS *), (pc, is));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1070,8 +1070,8 @@ PetscErrorCode PCBDDCSetLocalAdjacencyGraph(PC pc, PetscInt nvtxs, const PetscIn
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   if (nvtxs) {
-    PetscValidIntPointer(xadj, 3);
-    if (xadj[nvtxs]) PetscValidIntPointer(adjncy, 4);
+    PetscAssertPointer(xadj, 3);
+    if (xadj[nvtxs]) PetscAssertPointer(adjncy, 4);
   }
   PetscTryMethod(pc, "PCBDDCSetLocalAdjacencyGraph_C", (PC, PetscInt, const PetscInt[], const PetscInt[], PetscCopyMode), (pc, nvtxs, xadj, adjncy, copymode));
   /* free arrays if PCBDDC is not the PC type */

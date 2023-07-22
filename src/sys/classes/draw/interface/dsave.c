@@ -43,7 +43,7 @@ PetscErrorCode PetscDrawSetSave(PetscDraw draw, const char filename[])
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw, PETSC_DRAW_CLASSID, 1);
-  if (filename) PetscValidCharPointer(filename, 2);
+  if (filename) PetscAssertPointer(filename, 2);
 
   /* determine save filename and image extension */
   if (filename && filename[0]) {
@@ -100,7 +100,7 @@ PetscErrorCode PetscDrawSetSaveMovie(PetscDraw draw, const char movieext[])
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw, PETSC_DRAW_CLASSID, 1);
-  if (movieext) PetscValidCharPointer(movieext, 2);
+  if (movieext) PetscAssertPointer(movieext, 2);
 
   if (!draw->savefilename) PetscCall(PetscDrawSetSave(draw, ""));
   PetscCall(PetscDrawMovieCheckFormat(&movieext));

@@ -104,8 +104,8 @@ protected:
     MPI_Comm     comm;
 
     PetscFunctionBegin;
-    PetscValidPointer(vimpl, 1);
-    PetscValidPointer(vcu, 1);
+    PetscAssertPointer(vimpl, 1);
+    PetscAssertPointer(vcu, 1);
     PetscCall(PetscObjectGetComm(pobj, &comm));
     PetscCall(PetscPrintf(comm, "---------- %s ----------\n", message));
     PetscCall(PetscObjectPrintClassNamePrefixType(pobj, PETSC_VIEWER_STDOUT_(comm)));

@@ -20,7 +20,7 @@ PetscErrorCode KSPPythonSetType(KSP ksp, const char pyname[])
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
-  PetscValidCharPointer(pyname, 2);
+  PetscAssertPointer(pyname, 2);
   PetscTryMethod(ksp, "KSPPythonSetType_C", (KSP, const char[]), (ksp, pyname));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -44,7 +44,7 @@ PetscErrorCode KSPPythonGetType(KSP ksp, const char *pyname[])
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
-  PetscValidPointer(pyname, 2);
+  PetscAssertPointer(pyname, 2);
   PetscUseMethod(ksp, "KSPPythonGetType_C", (KSP, const char *[]), (ksp, pyname));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

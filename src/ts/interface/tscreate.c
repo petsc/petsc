@@ -31,7 +31,7 @@ PetscErrorCode TSCreate(MPI_Comm comm, TS *ts)
   TS t;
 
   PetscFunctionBegin;
-  PetscValidPointer(ts, 2);
+  PetscAssertPointer(ts, 2);
   *ts = NULL;
   PetscCall(TSInitializePackage());
 

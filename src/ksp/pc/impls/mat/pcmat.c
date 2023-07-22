@@ -158,7 +158,7 @@ PetscErrorCode PCMatGetApplyOperation(PC pc, MatOperation *matop)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
-  PetscValidPointer(matop, 2);
+  PetscAssertPointer(matop, 2);
   PetscUseMethod((PetscObject)pc, "PCMatGetApplyOperation_C", (PC, MatOperation *), (pc, matop));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -30,7 +30,7 @@ PetscErrorCode PetscDrawGetMouseButton(PetscDraw draw, PetscDrawButton *button, 
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw, PETSC_DRAW_CLASSID, 1);
-  PetscValidPointer(button, 2);
+  PetscAssertPointer(button, 2);
   *button = PETSC_BUTTON_NONE;
   if (!draw->ops->getmousebutton) PetscFunctionReturn(PETSC_SUCCESS);
 

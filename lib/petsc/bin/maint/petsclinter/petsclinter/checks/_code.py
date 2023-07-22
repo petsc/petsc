@@ -3,9 +3,20 @@
 # Created: Mon Jun 20 17:00:36 2022 (-0400)
 # @author: Jacob Faibussowitsch
 """
-import clang.cindex as clx
+from ..util._clang import (
+  clx_scalar_type_kinds, clx_real_type_kinds, clx_int_type_kinds, clx_mpiint_type_kinds,
+  clx_bool_type_kinds, clx_enum_type_kinds
+)
 
-from ._util import *
+from ._util import (
+  check_matching_arg_num, check_matching_classid, check_is_petsc_object, check_matching_specific_type,
+  convert_to_correct_PetscValidLogicalCollectiveXXX,
+  check_is_PetscScalar_and_not_PetscReal,
+  check_is_PetscReal_and_not_PetscScalar,
+  check_int_is_not_PetscBool,
+  check_MPIInt_is_not_PetscInt,
+  check_is_PetscBool
+)
 
 """Specific 'driver' function to test a particular function archetype"""
 def check_obj_idx_generic(linter, func, parent):
@@ -54,82 +65,6 @@ def checkPetscValidHeader(linter, func, parent):
   obj, idx = func_args
   check_is_petsc_object(linter, obj)
   check_matching_arg_num(linter, obj, idx, parent_args)
-  return
-
-def checkPetscValidPointerAndType(linter, func, parent, expected_types, **kwargs):
-  """
-  Generic check for PetscValidXXXPointer(obj, idx)
-  """
-  func_args   = linter.get_argument_cursors(func)
-  parent_args = linter.get_argument_cursors(parent)
-
-  obj, idx = func_args
-  kwargs.setdefault('func_cursor', func)
-  kwargs.setdefault('failure_function', convert_to_correct_PetscValidXXXPointer)
-  check_matching_specific_type(linter, obj, expected_types, True, **kwargs)
-  check_matching_arg_num(linter, obj, idx, parent_args)
-  return
-
-def checkPetscValidPointer(linter, func, parent):
-  """
-  Specific check for PetscValidPointer(obj, idx)
-  """
-  def try_to_convert_to_specific_PetscValidXXXPointer(linter, obj, obj_type, **kwargs):
-    pointer_type_kinds = clx_pointer_type_kinds | {clx.TypeKind.RECORD, clx.TypeKind.VOID}
-    if obj_type.kind not in pointer_type_kinds:
-      convert_to_correct_PetscValidXXXPointer(linter, obj, obj_type, **kwargs)
-    return True # PetscValidPointer is always good
-
-  checkPetscValidPointerAndType(
-    linter, func, parent, clx_pointer_type_kinds,
-    success_function=try_to_convert_to_specific_PetscValidXXXPointer, permissive=True
-  )
-  return
-
-def checkPetscValidCharPointer(linter, func, parent):
-  """
-  Specific check for PetscValidCharPointer(obj, idx)
-  """
-  checkPetscValidPointerAndType(linter, func, parent, clx_char_type_kinds)
-  return
-
-def checkPetscValidIntPointer(linter, func, parent):
-  """
-  Specific check for PetscValidIntPointer(obj, idx)
-  """
-  checkPetscValidPointerAndType(
-    linter, func, parent, clx_int_type_kinds,
-    success_function=check_int_is_not_PetscBool, valid_func='PetscValidBoolPointer'
-  )
-  return
-
-def checkPetscValidBoolPointer(linter, func, parent):
-  """
-  Specific check for PetscValidBoolPointer(obj, idx)
-  """
-  checkPetscValidPointerAndType(
-    linter, func, parent, clx_bool_type_kinds, success_function=check_is_PetscBool
-  )
-  return
-
-def checkPetscValidScalarPointer(linter, func, parent):
-  """
-  Specific check for PetscValidScalarPointer(obj, idx)
-  """
-  checkPetscValidPointerAndType(
-    linter, func, parent, clx_scalar_type_kinds,
-    success_function=check_is_PetscScalar_and_not_PetscReal, valid_func='PetscValidRealPointer'
-  )
-  return
-
-def checkPetscValidRealPointer(linter, func, parent):
-  """
-  Specific check for PetscValidRealPointer(obj, idx)
-  """
-  checkPetscValidPointerAndType(
-    linter, func, parent, clx_real_type_kinds,
-    success_function=check_is_PetscReal_and_not_PetscScalar, valid_func='PetscValidScalarPointer'
-  )
   return
 
 def checkPetscValidLogicalCollective(linter, func, parent, expected_types, **kwargs):

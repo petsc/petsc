@@ -988,11 +988,11 @@ PetscErrorCode DMNetworkGetNumVertices(DM dm, PetscInt *nVertices, PetscInt *NVe
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(dm, DM_CLASSID, 1, DMNETWORK);
   if (nVertices) {
-    PetscValidIntPointer(nVertices, 2);
+    PetscAssertPointer(nVertices, 2);
     *nVertices = network->cloneshared->nVertices;
   }
   if (NVertices) {
-    PetscValidIntPointer(NVertices, 3);
+    PetscAssertPointer(NVertices, 3);
     *NVertices = network->cloneshared->NVertices;
   }
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -1021,11 +1021,11 @@ PetscErrorCode DMNetworkGetNumEdges(DM dm, PetscInt *nEdges, PetscInt *NEdges)
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(dm, DM_CLASSID, 1, DMNETWORK);
   if (nEdges) {
-    PetscValidIntPointer(nEdges, 2);
+    PetscAssertPointer(nEdges, 2);
     *nEdges = network->cloneshared->nEdges;
   }
   if (NEdges) {
-    PetscValidIntPointer(NEdges, 3);
+    PetscAssertPointer(NEdges, 3);
     *NEdges = network->cloneshared->NEdges;
   }
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -1778,7 +1778,7 @@ PetscErrorCode DMNetworkDistribute(DM *dm, PetscInt overlap)
   DMNetworkComponentHeader header;
 
   PetscFunctionBegin;
-  PetscValidPointer(dm, 1);
+  PetscAssertPointer(dm, 1);
   PetscValidHeaderSpecific(*dm, DM_CLASSID, 1);
   PetscCall(PetscObjectGetComm((PetscObject)*dm, &comm));
   PetscCallMPI(MPI_Comm_size(comm, &size));
@@ -2097,7 +2097,7 @@ PetscErrorCode DMNetworkIsSharedVertex(DM dm, PetscInt p, PetscBool *flag)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidBoolPointer(flag, 3);
+  PetscAssertPointer(flag, 3);
   if (dm->setupcalled) { /* DMNetworkGetGlobalVertexIndex() requires DMSetUp() be called */
     DM_Network *network = (DM_Network *)dm->data;
     PetscInt    gidx;

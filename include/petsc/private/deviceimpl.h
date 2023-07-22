@@ -79,7 +79,7 @@ void PetscCheckCompatibleDeviceContexts(T, int, U, int);
     do { \
       PetscDevice pvd_dev_   = dev; \
       int         pvd_argno_ = (int)(argno); \
-      PetscValidPointer(pvd_dev_, pvd_argno_); \
+      PetscAssertPointer(pvd_dev_, pvd_argno_); \
       PetscValidDeviceType(pvd_dev_->type, pvd_argno_); \
       PetscCheck(pvd_dev_->id >= 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid PetscDevice: Argument #%d; id %" PetscInt_FMT " < 0", pvd_argno_, pvd_dev_->id); \
       PetscCheck(pvd_dev_->refcnt >= 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid PetscDevice: Argument #%d; negative reference count %" PetscInt_FMT, pvd_argno_, pvd_dev_->refcnt); \
@@ -324,7 +324,7 @@ static inline PetscErrorCode PetscDeviceContextGetStreamHandle_Internal(PetscDev
   PetscFunctionBegin;
   /* we do error checking here as this routine is an entry-point */
   PetscValidDeviceContext(dctx, 1);
-  PetscValidPointer(handle, 2);
+  PetscAssertPointer(handle, 2);
   PetscUseTypeMethod(dctx, getstreamhandle, handle);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -343,7 +343,7 @@ static inline PetscErrorCode PetscDeviceContextEndTimer_Internal(PetscDeviceCont
   PetscFunctionBegin;
   /* we do error checking here as this routine is an entry-point */
   PetscValidDeviceContext(dctx, 1);
-  PetscValidRealPointer(elapsed, 2);
+  PetscAssertPointer(elapsed, 2);
   PetscUseTypeMethod(dctx, endtimer, elapsed);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -374,7 +374,7 @@ static inline PetscErrorCode PetscDeviceContextGetCurrentContextAssertType_Inter
 static inline PetscErrorCode PetscDeviceContextGetOptionalNullContext_Internal(PetscDeviceContext *dctx)
 {
   PetscFunctionBegin;
-  PetscValidPointer(dctx, 1);
+  PetscAssertPointer(dctx, 1);
   if (!*dctx) PetscCall(PetscDeviceContextGetNullContext_Internal(dctx));
   PetscValidDeviceContext(*dctx, 1);
   PetscFunctionReturn(PETSC_SUCCESS);

@@ -100,7 +100,7 @@ static PetscErrorCode LandauFormJacobian_Internal(Vec a_X, Mat JacP, const Petsc
   PetscFunctionBegin;
   PetscValidHeaderSpecific(a_X, VEC_CLASSID, 1);
   PetscValidHeaderSpecific(JacP, MAT_CLASSID, 2);
-  PetscValidPointer(ctx, 5);
+  PetscAssertPointer(ctx, 5);
   /* check for matrix container for GPU assembly. Support CPU assembly for debugging */
   PetscCheck(ctx->plex[0] != NULL, ctx->comm, PETSC_ERR_ARG_WRONG, "Plex not created");
   PetscCall(PetscLogEventBegin(ctx->events[10], 0, 0, 0, 0));
@@ -2458,7 +2458,7 @@ PetscErrorCode DMPlexLandauCreateMassMatrix(DM pack, Mat *Amat)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pack, DM_CLASSID, 1);
-  if (Amat) PetscValidPointer(Amat, 2);
+  if (Amat) PetscAssertPointer(Amat, 2);
   PetscCall(DMGetApplicationContext(pack, &ctx));
   PetscCheck(ctx, PETSC_COMM_SELF, PETSC_ERR_PLIB, "no context");
   PetscCall(PetscLogEventBegin(ctx->events[14], 0, 0, 0, 0));

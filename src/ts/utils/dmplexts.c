@@ -314,7 +314,7 @@ PetscErrorCode DMTSCheckResidual(TS ts, DM dm, PetscReal t, Vec u, Vec u_t, Pets
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscValidHeaderSpecific(dm, DM_CLASSID, 2);
   PetscValidHeaderSpecific(u, VEC_CLASSID, 4);
-  if (residual) PetscValidRealPointer(residual, 7);
+  if (residual) PetscAssertPointer(residual, 7);
   PetscCall(PetscObjectGetComm((PetscObject)ts, &comm));
   PetscCall(DMComputeExactSolution(dm, t, u, u_t));
   PetscCall(VecDuplicate(u, &r));
@@ -369,8 +369,8 @@ PetscErrorCode DMTSCheckJacobian(TS ts, DM dm, PetscReal t, Vec u, Vec u_t, Pets
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscValidHeaderSpecific(dm, DM_CLASSID, 2);
   PetscValidHeaderSpecific(u, VEC_CLASSID, 4);
-  if (isLinear) PetscValidBoolPointer(isLinear, 7);
-  if (convRate) PetscValidRealPointer(convRate, 8);
+  if (isLinear) PetscAssertPointer(isLinear, 7);
+  if (convRate) PetscAssertPointer(convRate, 8);
   PetscCall(PetscObjectGetComm((PetscObject)ts, &comm));
   PetscCall(DMComputeExactSolution(dm, t, u, u_t));
   /* Create and view matrices */

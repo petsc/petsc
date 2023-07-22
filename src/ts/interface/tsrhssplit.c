@@ -173,7 +173,7 @@ PetscErrorCode TSRHSSplitGetSubTS(TS ts, const char splitname[], TS *subts)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
-  PetscValidPointer(subts, 3);
+  PetscAssertPointer(subts, 3);
   *subts = NULL;
   /* look up the split */
   PetscCall(TSRHSSplitGetRHSSplit(ts, splitname, &isplit));

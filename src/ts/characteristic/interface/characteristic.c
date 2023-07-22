@@ -63,7 +63,7 @@ PetscErrorCode CharacteristicCreate(MPI_Comm comm, Characteristic *c)
   Characteristic newC;
 
   PetscFunctionBegin;
-  PetscValidPointer(c, 2);
+  PetscAssertPointer(c, 2);
   *c = NULL;
   PetscCall(CharacteristicInitializePackage());
 
@@ -147,7 +147,7 @@ PetscErrorCode CharacteristicSetType(Characteristic c, CharacteristicType type)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(c, CHARACTERISTIC_CLASSID, 1);
-  PetscValidCharPointer(type, 2);
+  PetscAssertPointer(type, 2);
 
   PetscCall(PetscObjectTypeCompare((PetscObject)c, type, &match));
   if (match) PetscFunctionReturn(PETSC_SUCCESS);

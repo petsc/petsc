@@ -469,7 +469,7 @@ PetscErrorCode PetscSpaceTensorGetNumSubspaces(PetscSpace sp, PetscInt *numTensS
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
-  PetscValidIntPointer(numTensSpaces, 2);
+  PetscAssertPointer(numTensSpaces, 2);
   PetscTryMethod(sp, "PetscSpaceTensorGetNumSubspaces_C", (PetscSpace, PetscInt *), (sp, numTensSpaces));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -519,7 +519,7 @@ PetscErrorCode PetscSpaceTensorGetSubspace(PetscSpace sp, PetscInt s, PetscSpace
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
-  PetscValidPointer(subsp, 3);
+  PetscAssertPointer(subsp, 3);
   PetscTryMethod(sp, "PetscSpaceTensorGetSubspace_C", (PetscSpace, PetscInt, PetscSpace *), (sp, s, subsp));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

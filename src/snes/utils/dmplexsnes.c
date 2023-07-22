@@ -174,7 +174,7 @@ static PetscErrorCode DMSNESConvertPlex(DM dm, DM *plex, PetscBool copy)
 PetscErrorCode DMInterpolationCreate(MPI_Comm comm, DMInterpolationInfo *ctx)
 {
   PetscFunctionBegin;
-  PetscValidPointer(ctx, 2);
+  PetscAssertPointer(ctx, 2);
   PetscCall(PetscNew(ctx));
 
   (*ctx)->comm   = comm;
@@ -226,7 +226,7 @@ PetscErrorCode DMInterpolationSetDim(DMInterpolationInfo ctx, PetscInt dim)
 PetscErrorCode DMInterpolationGetDim(DMInterpolationInfo ctx, PetscInt *dim)
 {
   PetscFunctionBegin;
-  PetscValidIntPointer(dim, 2);
+  PetscAssertPointer(dim, 2);
   *dim = ctx->dim;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -270,7 +270,7 @@ PetscErrorCode DMInterpolationSetDof(DMInterpolationInfo ctx, PetscInt dof)
 PetscErrorCode DMInterpolationGetDof(DMInterpolationInfo ctx, PetscInt *dof)
 {
   PetscFunctionBegin;
-  PetscValidIntPointer(dof, 2);
+  PetscAssertPointer(dof, 2);
   *dof = ctx->dof;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -453,7 +453,7 @@ PetscErrorCode DMInterpolationSetUp(DMInterpolationInfo ctx, DM dm, PetscBool re
 PetscErrorCode DMInterpolationGetCoordinates(DMInterpolationInfo ctx, Vec *coordinates)
 {
   PetscFunctionBegin;
-  PetscValidPointer(coordinates, 2);
+  PetscAssertPointer(coordinates, 2);
   PetscCheck(ctx->coords, ctx->comm, PETSC_ERR_ARG_WRONGSTATE, "The interpolation context has not been setup.");
   *coordinates = ctx->coords;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -480,7 +480,7 @@ PetscErrorCode DMInterpolationGetCoordinates(DMInterpolationInfo ctx, Vec *coord
 PetscErrorCode DMInterpolationGetVector(DMInterpolationInfo ctx, Vec *v)
 {
   PetscFunctionBegin;
-  PetscValidPointer(v, 2);
+  PetscAssertPointer(v, 2);
   PetscCheck(ctx->coords, ctx->comm, PETSC_ERR_ARG_WRONGSTATE, "The interpolation context has not been setup.");
   PetscCall(VecCreate(ctx->comm, v));
   PetscCall(VecSetSizes(*v, ctx->n * ctx->dof, PETSC_DECIDE));
@@ -505,7 +505,7 @@ PetscErrorCode DMInterpolationGetVector(DMInterpolationInfo ctx, Vec *v)
 PetscErrorCode DMInterpolationRestoreVector(DMInterpolationInfo ctx, Vec *v)
 {
   PetscFunctionBegin;
-  PetscValidPointer(v, 2);
+  PetscAssertPointer(v, 2);
   PetscCheck(ctx->coords, ctx->comm, PETSC_ERR_ARG_WRONGSTATE, "The interpolation context has not been setup.");
   PetscCall(VecDestroy(v));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -1143,7 +1143,7 @@ PetscErrorCode DMInterpolationEvaluate(DMInterpolationInfo ctx, DM dm, Vec x, Ve
 PetscErrorCode DMInterpolationDestroy(DMInterpolationInfo *ctx)
 {
   PetscFunctionBegin;
-  PetscValidPointer(ctx, 1);
+  PetscAssertPointer(ctx, 1);
   PetscCall(VecDestroy(&(*ctx)->coords));
   PetscCall(PetscFree((*ctx)->points));
   PetscCall(PetscFree((*ctx)->cells));
@@ -1711,7 +1711,7 @@ PetscErrorCode DMSNESCheckDiscretization(SNES snes, DM dm, PetscReal t, Vec u, P
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
   PetscValidHeaderSpecific(dm, DM_CLASSID, 2);
   PetscValidHeaderSpecific(u, VEC_CLASSID, 4);
-  if (error) PetscValidRealPointer(error, 6);
+  if (error) PetscAssertPointer(error, 6);
 
   PetscCall(DMComputeExactSolution(dm, t, u, NULL));
   PetscCall(VecViewFromOptions(u, NULL, "-vec_view"));
@@ -1794,7 +1794,7 @@ PetscErrorCode DMSNESCheckResidual(SNES snes, DM dm, Vec u, PetscReal tol, Petsc
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
   PetscValidHeaderSpecific(dm, DM_CLASSID, 2);
   PetscValidHeaderSpecific(u, VEC_CLASSID, 3);
-  if (residual) PetscValidRealPointer(residual, 5);
+  if (residual) PetscAssertPointer(residual, 5);
   PetscCall(PetscObjectGetComm((PetscObject)snes, &comm));
   PetscCall(DMComputeExactSolution(dm, 0.0, u, NULL));
   PetscCall(VecDuplicate(u, &r));
@@ -1845,8 +1845,8 @@ PetscErrorCode DMSNESCheckJacobian(SNES snes, DM dm, Vec u, PetscReal tol, Petsc
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
   PetscValidHeaderSpecific(dm, DM_CLASSID, 2);
   PetscValidHeaderSpecific(u, VEC_CLASSID, 3);
-  if (isLinear) PetscValidBoolPointer(isLinear, 5);
-  if (convRate) PetscValidRealPointer(convRate, 6);
+  if (isLinear) PetscAssertPointer(isLinear, 5);
+  if (convRate) PetscAssertPointer(convRate, 6);
   PetscCall(PetscObjectGetComm((PetscObject)snes, &comm));
   PetscCall(DMComputeExactSolution(dm, 0.0, u, NULL));
   /* Create and view matrices */

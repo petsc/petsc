@@ -53,7 +53,7 @@ PetscErrorCode PCShellGetContext(PC pc, void *ctx)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
-  PetscValidPointer(ctx, 2);
+  PetscAssertPointer(ctx, 2);
   PetscCall(PetscObjectTypeCompare((PetscObject)pc, PCSHELL, &flg));
   if (!flg) *(void **)ctx = NULL;
   else *(void **)ctx = ((PC_Shell *)(pc->data))->ctx;
@@ -776,7 +776,7 @@ PetscErrorCode PCShellGetName(PC pc, const char *name[])
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
-  PetscValidPointer(name, 2);
+  PetscAssertPointer(name, 2);
   PetscUseMethod(pc, "PCShellGetName_C", (PC, const char *[]), (pc, name));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

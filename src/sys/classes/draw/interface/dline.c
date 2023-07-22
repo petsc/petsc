@@ -26,10 +26,10 @@ PetscErrorCode PetscDrawGetBoundingBox(PetscDraw draw, PetscReal *xl, PetscReal 
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw, PETSC_DRAW_CLASSID, 1);
-  if (xl) PetscValidRealPointer(xl, 2);
-  if (yl) PetscValidRealPointer(yl, 3);
-  if (xr) PetscValidRealPointer(xr, 4);
-  if (yr) PetscValidRealPointer(yr, 5);
+  if (xl) PetscAssertPointer(xl, 2);
+  if (yl) PetscAssertPointer(yl, 3);
+  if (xr) PetscAssertPointer(xr, 4);
+  if (yr) PetscAssertPointer(yr, 5);
   if (xl) *xl = draw->boundbox_xl;
   if (yl) *yl = draw->boundbox_yl;
   if (xr) *xr = draw->boundbox_xr;
@@ -57,8 +57,8 @@ PetscErrorCode PetscDrawGetCurrentPoint(PetscDraw draw, PetscReal *x, PetscReal 
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw, PETSC_DRAW_CLASSID, 1);
-  PetscValidRealPointer(x, 2);
-  PetscValidRealPointer(y, 3);
+  PetscAssertPointer(x, 2);
+  PetscAssertPointer(y, 3);
   *x = draw->currentpoint_x[draw->currentpoint];
   *y = draw->currentpoint_y[draw->currentpoint];
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -230,7 +230,7 @@ PetscErrorCode PetscDrawLineGetWidth(PetscDraw draw, PetscReal *width)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw, PETSC_DRAW_CLASSID, 1);
-  PetscValidRealPointer(width, 2);
+  PetscAssertPointer(width, 2);
   PetscUseTypeMethod(draw, linegetwidth, width);
   PetscFunctionReturn(PETSC_SUCCESS);
 }

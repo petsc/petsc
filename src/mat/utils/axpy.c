@@ -400,7 +400,7 @@ PetscErrorCode MatComputeOperator(Mat inmat, MatType mattype, Mat *mat)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(inmat, MAT_CLASSID, 1);
-  PetscValidPointer(mat, 3);
+  PetscAssertPointer(mat, 3);
   PetscCall(MatConvert_Shell(inmat, mattype ? mattype : MATDENSE, MAT_INITIAL_MATRIX, mat));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -433,7 +433,7 @@ PetscErrorCode MatComputeOperatorTranspose(Mat inmat, MatType mattype, Mat *mat)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(inmat, MAT_CLASSID, 1);
-  PetscValidPointer(mat, 3);
+  PetscAssertPointer(mat, 3);
   PetscCall(MatCreateTranspose(inmat, &A));
   PetscCall(MatConvert_Shell(A, mattype ? mattype : MATDENSE, MAT_INITIAL_MATRIX, mat));
   PetscCall(MatDestroy(&A));

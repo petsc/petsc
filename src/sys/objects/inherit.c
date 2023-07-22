@@ -423,8 +423,8 @@ PetscErrorCode PetscObjectsGetObject(const char *name, PetscObject *obj, char **
   PetscBool   flg;
 
   PetscFunctionBegin;
-  PetscValidCharPointer(name, 1);
-  PetscValidPointer(obj, 2);
+  PetscAssertPointer(name, 1);
+  PetscAssertPointer(obj, 2);
   *obj = NULL;
   for (i = 0; i < PetscObjectsMaxCounts; i++) {
     if ((h = PetscObjects[i])) {
@@ -458,7 +458,7 @@ PetscErrorCode PetscObjectsGetObject(const char *name, PetscObject *obj, char **
 PetscErrorCode PetscObjectSetPrintedOptions(PetscObject obj)
 {
   PetscFunctionBegin;
-  PetscValidPointer(obj, 1);
+  PetscAssertPointer(obj, 1);
   obj->optionsprinted = PETSC_TRUE;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -611,7 +611,7 @@ PetscErrorCode PetscObjectGetReference(PetscObject obj, PetscInt *cnt)
 {
   PetscFunctionBegin;
   PetscValidHeader(obj, 1);
-  PetscValidIntPointer(cnt, 2);
+  PetscAssertPointer(cnt, 2);
   *cnt = obj->refct;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -692,7 +692,7 @@ PetscErrorCode PetscObjectCompose(PetscObject obj, const char name[], PetscObjec
 {
   PetscFunctionBegin;
   PetscValidHeader(obj, 1);
-  PetscValidCharPointer(name, 2);
+  PetscAssertPointer(name, 2);
   if (ptr) PetscValidHeader(ptr, 3);
   PetscCheck(obj != ptr, PetscObjectComm((PetscObject)obj), PETSC_ERR_SUP, "Cannot compose object with itself");
   if (ptr) {
@@ -731,8 +731,8 @@ PetscErrorCode PetscObjectQuery(PetscObject obj, const char name[], PetscObject 
 {
   PetscFunctionBegin;
   PetscValidHeader(obj, 1);
-  PetscValidCharPointer(name, 2);
-  PetscValidPointer(ptr, 3);
+  PetscAssertPointer(name, 2);
+  PetscAssertPointer(ptr, 3);
   PetscCall(PetscObjectListFind(obj->olist, name, ptr));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -772,7 +772,7 @@ PetscErrorCode PetscObjectComposeFunction_Private(PetscObject obj, const char na
 {
   PetscFunctionBegin;
   PetscValidHeader(obj, 1);
-  PetscValidCharPointer(name, 2);
+  PetscAssertPointer(name, 2);
   PetscCall(PetscFunctionListAdd(&obj->qlist, name, fptr));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -802,7 +802,7 @@ PETSC_EXTERN PetscErrorCode PetscObjectQueryFunction_Private(PetscObject obj, co
 {
   PetscFunctionBegin;
   PetscValidHeader(obj, 1);
-  PetscValidCharPointer(name, 2);
+  PetscAssertPointer(name, 2);
   PetscCall(PetscFunctionListFind(obj->qlist, name, fptr));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -853,7 +853,7 @@ PetscErrorCode PetscContainerGetPointer(PetscContainer obj, void **ptr)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(obj, PETSC_CONTAINER_CLASSID, 1);
-  PetscValidPointer(ptr, 2);
+  PetscAssertPointer(ptr, 2);
   *ptr = obj->ptr;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -876,7 +876,7 @@ PetscErrorCode PetscContainerSetPointer(PetscContainer obj, void *ptr)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(obj, PETSC_CONTAINER_CLASSID, 1);
-  if (ptr) PetscValidPointer(ptr, 2);
+  if (ptr) PetscAssertPointer(ptr, 2);
   obj->ptr = ptr;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -961,7 +961,7 @@ PetscClassId PETSC_CONTAINER_CLASSID;
 PetscErrorCode PetscContainerCreate(MPI_Comm comm, PetscContainer *container)
 {
   PetscFunctionBegin;
-  PetscValidPointer(container, 2);
+  PetscAssertPointer(container, 2);
   PetscCall(PetscSysInitializePackage());
   PetscCall(PetscHeaderCreate(*container, PETSC_CONTAINER_CLASSID, "PetscContainer", "Container", "Sys", comm, PetscContainerDestroy, NULL));
   PetscFunctionReturn(PETSC_SUCCESS);

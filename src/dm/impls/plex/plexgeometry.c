@@ -655,8 +655,8 @@ PetscErrorCode PetscGridHashSetGrid(PetscGridHash box, const PetscInt n[], const
   PetscInt d;
 
   PetscFunctionBegin;
-  PetscValidIntPointer(n, 2);
-  if (h) PetscValidRealPointer(h, 3);
+  PetscAssertPointer(n, 2);
+  if (h) PetscAssertPointer(h, 3);
   for (d = 0; d < box->dim; ++d) {
     box->extent[d] = box->upper[d] - box->lower[d];
     if (n[d] == PETSC_DETERMINE) {
@@ -2497,7 +2497,7 @@ PetscErrorCode DMPlexComputeCellGeometryFEM(DM dm, PetscInt cell, PetscQuadratur
   PetscFE fe = NULL;
 
   PetscFunctionBegin;
-  PetscValidRealPointer(detJ, 7);
+  PetscAssertPointer(detJ, 7);
   PetscCall(DMGetCoordinateDM(dm, &cdm));
   if (cdm) {
     PetscClassId id;
@@ -3002,7 +3002,7 @@ PetscErrorCode DMPlexGetMinRadius(DM dm, PetscReal *minradius)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidRealPointer(minradius, 2);
+  PetscAssertPointer(minradius, 2);
   *minradius = ((DM_Plex *)dm->data)->minradius;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

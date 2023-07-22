@@ -1492,7 +1492,7 @@ PetscErrorCode PCGASMCreateSubdomains(Mat A, PetscInt N, PetscInt *n, IS *iis[])
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
-  PetscValidPointer(iis, 4);
+  PetscAssertPointer(iis, 4);
 
   PetscCheck(N >= 1, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Number of subdomains must be > 0, N = %" PetscInt_FMT, N);
   PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)A), &size));
@@ -1533,17 +1533,17 @@ PetscErrorCode PCGASMDestroySubdomains(PetscInt n, IS **iis, IS **ois)
   PetscFunctionBegin;
   if (n <= 0) PetscFunctionReturn(PETSC_SUCCESS);
   if (ois) {
-    PetscValidPointer(ois, 3);
+    PetscAssertPointer(ois, 3);
     if (*ois) {
-      PetscValidPointer(*ois, 3);
+      PetscAssertPointer(*ois, 3);
       for (i = 0; i < n; i++) PetscCall(ISDestroy(&(*ois)[i]));
       PetscCall(PetscFree((*ois)));
     }
   }
   if (iis) {
-    PetscValidPointer(iis, 2);
+    PetscAssertPointer(iis, 2);
     if (*iis) {
-      PetscValidPointer(*iis, 2);
+      PetscAssertPointer(*iis, 2);
       for (i = 0; i < n; i++) PetscCall(ISDestroy(&(*iis)[i]));
       PetscCall(PetscFree((*iis)));
     }
@@ -1839,8 +1839,8 @@ PetscErrorCode PCGASMGetSubmatrices(PC pc, PetscInt *n, Mat *mat[])
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
-  PetscValidIntPointer(n, 2);
-  if (mat) PetscValidPointer(mat, 3);
+  PetscAssertPointer(n, 2);
+  if (mat) PetscAssertPointer(mat, 3);
   PetscCheck(pc->setupcalled, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONGSTATE, "Must call after KSPSetUp() or PCSetUp().");
   PetscCall(PetscObjectTypeCompare((PetscObject)pc, PCGASM, &match));
   PetscCheck(match, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONG, "Expected %s, got %s instead", PCGASM, ((PetscObject)pc)->type_name);
@@ -1913,7 +1913,7 @@ PetscErrorCode PCGASMGetUseDMSubdomains(PC pc, PetscBool *flg)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
-  PetscValidBoolPointer(flg, 2);
+  PetscAssertPointer(flg, 2);
   PetscCall(PetscObjectTypeCompare((PetscObject)pc, PCGASM, &match));
   if (match) {
     if (flg) *flg = osm->dm_subdomains;

@@ -48,8 +48,8 @@ PetscErrorCode PetscLogStageFindId(const char name[], PetscLogStage *stageid)
   PetscBool     match    = PETSC_FALSE;
 
   PetscFunctionBegin;
-  PetscValidCharPointer(name,1);
-  PetscValidIntPointer(stageid,2);
+  PetscAssertPointer(name,1);
+  PetscAssertPointer(stageid,2);
   *stageid = -1;
   if (!(stageLog=petsc_stageLog)) PetscFunctionReturn(PETSC_SUCCESS); /* logging is off ? */
   for (s = 0; s < stageLog->numStages; s++) {
@@ -68,8 +68,8 @@ PetscErrorCode PetscLogClassFindId(const char name[], PetscClassId *classid)
   PetscBool     match    = PETSC_FALSE;
 
   PetscFunctionBegin;
-  PetscValidCharPointer(name,1);
-  PetscValidIntPointer(classid,2);
+  PetscAssertPointer(name,1);
+  PetscAssertPointer(classid,2);
   *classid = -1;
   if (!(stageLog=petsc_stageLog)) PetscFunctionReturn(PETSC_SUCCESS); /* logging is off ? */
   for (c = 0; c < stageLog->classLog->numClasses; c++) {
@@ -89,8 +89,8 @@ PetscErrorCode PetscLogEventFindId(const char name[], PetscLogEvent *eventid)
   PetscBool     match    = PETSC_FALSE;
 
   PetscFunctionBegin;
-  PetscValidCharPointer(name,1);
-  PetscValidIntPointer(eventid,2);
+  PetscAssertPointer(name,1);
+  PetscAssertPointer(eventid,2);
   *eventid = -1;
   if (!(stageLog=petsc_stageLog)) PetscFunctionReturn(PETSC_SUCCESS); /* logging is off ? */
   for (e = 0; e < stageLog->eventLog->numEvents; e++) {
@@ -106,7 +106,7 @@ PetscErrorCode PetscLogStageFindName(PetscLogStage stageid, const char *name[])
 {
   PetscStageLog stageLog = 0;
   PetscFunctionBegin;
-  PetscValidPointer(name,3);
+  PetscAssertPointer(name,3);
   *name = 0;
   if (!(stageLog=petsc_stageLog)) PetscFunctionReturn(PETSC_SUCCESS); /* logging is off ? */
   if (stageid >=0 && stageid < stageLog->numStages) {
@@ -121,7 +121,7 @@ PetscErrorCode PetscLogClassFindName(PetscClassId classid, const char *name[])
   int           c;
   PetscStageLog stageLog = 0;
   PetscFunctionBegin;
-  PetscValidPointer(name,3);
+  PetscAssertPointer(name,3);
   *name = 0;
   if (!(stageLog=petsc_stageLog)) PetscFunctionReturn(PETSC_SUCCESS); /* logging is off ? */
   for (c = 0; c < stageLog->classLog->numClasses; c++) {
@@ -138,7 +138,7 @@ PetscErrorCode PetscLogEventFindName(PetscLogEvent eventid, const char *name[])
 {
   PetscStageLog stageLog = 0;
   PetscFunctionBegin;
-  PetscValidPointer(name,3);
+  PetscAssertPointer(name,3);
   *name = 0;
   if (!(stageLog=petsc_stageLog)) PetscFunctionReturn(PETSC_SUCCESS); /* logging is off ? */
   if (eventid >=0 && eventid < stageLog->eventLog->numEvents) {
@@ -204,7 +204,7 @@ PetscErrorCode VecGetCurrentMemType(Vec v, PetscMemType *m)
   PetscBool bound;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_CLASSID,1);
-  PetscValidPointer(m,2);
+  PetscAssertPointer(m,2);
   *m = PETSC_MEMTYPE_HOST;
   PetscCall(VecBoundToCPU(v,&bound));
   if (!bound) {
@@ -229,7 +229,7 @@ PetscErrorCode MatIsPreallocated(Mat A,PetscBool *flag)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
-  PetscValidPointer(flag,2);
+  PetscAssertPointer(flag,2);
   *flag = A->preallocated;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -242,10 +242,10 @@ PetscErrorCode MatHasPreallocationAIJ(Mat A,PetscBool *aij,PetscBool *baij,Petsc
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
   PetscValidType(A,1);
-  PetscValidPointer(aij,2);
-  PetscValidPointer(baij,3);
-  PetscValidPointer(sbaij,4);
-  PetscValidPointer(is,5);
+  PetscAssertPointer(aij,2);
+  PetscAssertPointer(baij,3);
+  PetscAssertPointer(sbaij,4);
+  PetscAssertPointer(is,5);
   *aij = *baij = *sbaij = *is = PETSC_FALSE;
   if (!f) PetscCall(PetscObjectQueryFunction((PetscObject)A,"MatMPIAIJSetPreallocation_C",&f));
   if (!f) PetscCall(PetscObjectQueryFunction((PetscObject)A,"MatSeqAIJSetPreallocation_C",&f));
@@ -268,7 +268,7 @@ PetscErrorCode MatGetCurrentMemType(Mat A, PetscMemType *m)
   PetscBool bound;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
-  PetscValidPointer(m,2);
+  PetscAssertPointer(m,2);
   *m = PETSC_MEMTYPE_HOST;
   PetscCall(MatBoundToCPU(A,&bound));
   if (!bound) {
@@ -296,7 +296,7 @@ static
 PetscErrorCode MatFactorInfoDefaults(PetscBool incomplete,PetscBool cholesky,MatFactorInfo *info)
 {
   PetscFunctionBegin;
-  PetscValidPointer(info,2);
+  PetscAssertPointer(info,2);
   PetscCall(MatFactorInfoInitialize(info));
   if (incomplete) {
     info->levels         = (PetscReal)0;
@@ -354,7 +354,7 @@ PetscErrorCode KSPConvergenceTestCall(KSP ksp, PetscInt its, PetscReal rnorm, KS
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  PetscValidPointer(reason,4);
+  PetscAssertPointer(reason,4);
   PetscCheck(its >= 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"iteration number must be nonnegative");
   PetscCheck(rnorm >= 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"residual norm must be nonnegative");
   PetscCall((*ksp->converged)(ksp,its,rnorm,reason,ksp->cnvP));
@@ -375,7 +375,7 @@ PetscErrorCode KSPConverged(KSP ksp,PetscInt iter,PetscReal rnorm,KSPConvergedRe
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  if (reason) PetscValidPointer(reason,2);
+  if (reason) PetscAssertPointer(reason,2);
   if (!iter) ksp->rnorm0 = rnorm;
   if (!iter) {
     ksp->reason = KSP_CONVERGED_ITERATING;
@@ -408,7 +408,7 @@ PetscErrorCode SNESConvergenceTestCall(SNES snes, PetscInt its, PetscReal xnorm,
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
-  PetscValidPointer(reason,4);
+  PetscAssertPointer(reason,4);
   PetscCheck(its >= 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"iteration number must be nonnegative");
   PetscCheck(xnorm >= 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"solution norm must be nonnegative");
   PetscCheck(ynorm >= 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"step norm must be nonnegative");
@@ -434,7 +434,7 @@ PetscErrorCode SNESGetUseMFFD(SNES snes,PetscBool *flag)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
-  PetscValidPointer(flag,2);
+  PetscAssertPointer(flag,2);
   *flag = PETSC_FALSE;
   PetscCall(SNESGetJacobian(snes,&J,0,&jac,0));
   if (J) PetscCall(PetscObjectTypeCompare((PetscObject)J,MATMFFD,flag));
@@ -497,7 +497,7 @@ PetscErrorCode SNESGetUseFDColoring(SNES snes,PetscBool *flag)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
-  PetscValidPointer(flag,2);
+  PetscAssertPointer(flag,2);
   *flag = PETSC_FALSE;
   PetscCall(SNESGetJacobian(snes,0,0,&jac,0));
   if (jac == SNESComputeJacobianDefaultColor) *flag = PETSC_TRUE;
@@ -546,7 +546,7 @@ PetscErrorCode TaoConverged(Tao tao, TaoConvergedReason *reason)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
-  PetscValidBoolPointer(reason,2);
+  PetscAssertPointer(reason,2);
   if (tao->ops->convergencetest) {
     PetscUseTypeMethod(tao,convergencetest,tao->cnvP);
   } else {
@@ -595,7 +595,7 @@ PetscErrorCode TaoHasGradientRoutine(Tao tao, PetscBool* flg)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
-  PetscValidBoolPointer(flg,2);
+  PetscAssertPointer(flg,2);
   *flg = (PetscBool)(tao->ops->computegradient || tao->ops->computeobjectiveandgradient);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -606,7 +606,7 @@ PetscErrorCode TaoHasHessianRoutine(Tao tao, PetscBool* flg)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
-  PetscValidBoolPointer(flg,2);
+  PetscAssertPointer(flg,2);
   *flg = tao->ops->computehessian;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -645,8 +645,8 @@ PetscErrorCode TaoApplyLineSearch(Tao tao, PetscReal* f, PetscReal *s, TaoLineSe
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
-  PetscValidRealPointer(f,2);
-  PetscValidRealPointer(s,3);
+  PetscAssertPointer(f,2);
+  PetscAssertPointer(s,3);
   PetscCall(TaoLineSearchApply(tao->linesearch,tao->solution,f,tao->gradient,tao->stepdirection,s,lsr));
   PetscCall(TaoAddLineSearchCounts(tao));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -667,7 +667,7 @@ PetscErrorCode DMDACreateND(MPI_Comm comm,
   DM da;
 
   PetscFunctionBegin;
-  PetscValidPointer(dm,18);
+  PetscAssertPointer(dm,18);
   PetscCall(DMDACreate(comm,&da));
   PetscCall(DMSetDimension(da,dim));
   PetscCall(DMDASetDof(da,dof));

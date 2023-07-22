@@ -672,7 +672,7 @@ PetscErrorCode MatSeqAIJKokkosMergeMats(Mat A, Mat B, MatReuse reuse, Mat *C)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
   PetscValidHeaderSpecific(B, MAT_CLASSID, 2);
-  PetscValidPointer(C, 4);
+  PetscAssertPointer(C, 4);
   PetscCheckTypeName(A, MATSEQAIJKOKKOS);
   PetscCheckTypeName(B, MATSEQAIJKOKKOS);
   PetscCheck(A->rmap->n == B->rmap->n, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Invalid number or rows %" PetscInt_FMT " != %" PetscInt_FMT, A->rmap->n, B->rmap->n);
@@ -1041,7 +1041,7 @@ PetscErrorCode MatSeqAIJGetKokkosView(Mat A, ConstMatScalarKokkosView *kv)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
-  PetscValidPointer(kv, 2);
+  PetscAssertPointer(kv, 2);
   PetscCheckTypeName(A, MATSEQAIJKOKKOS);
   PetscCall(MatSeqAIJKokkosSyncDevice(A));
   aijkok = static_cast<Mat_SeqAIJKokkos *>(A->spptr);
@@ -1053,7 +1053,7 @@ PetscErrorCode MatSeqAIJRestoreKokkosView(Mat A, ConstMatScalarKokkosView *kv)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
-  PetscValidPointer(kv, 2);
+  PetscAssertPointer(kv, 2);
   PetscCheckTypeName(A, MATSEQAIJKOKKOS);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1064,7 +1064,7 @@ PetscErrorCode MatSeqAIJGetKokkosView(Mat A, MatScalarKokkosView *kv)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
-  PetscValidPointer(kv, 2);
+  PetscAssertPointer(kv, 2);
   PetscCheckTypeName(A, MATSEQAIJKOKKOS);
   PetscCall(MatSeqAIJKokkosSyncDevice(A));
   aijkok = static_cast<Mat_SeqAIJKokkos *>(A->spptr);
@@ -1076,7 +1076,7 @@ PetscErrorCode MatSeqAIJRestoreKokkosView(Mat A, MatScalarKokkosView *kv)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
-  PetscValidPointer(kv, 2);
+  PetscAssertPointer(kv, 2);
   PetscCheckTypeName(A, MATSEQAIJKOKKOS);
   PetscCall(MatSeqAIJKokkosModifyDevice(A));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -1088,7 +1088,7 @@ PetscErrorCode MatSeqAIJGetKokkosViewWrite(Mat A, MatScalarKokkosView *kv)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
-  PetscValidPointer(kv, 2);
+  PetscAssertPointer(kv, 2);
   PetscCheckTypeName(A, MATSEQAIJKOKKOS);
   aijkok = static_cast<Mat_SeqAIJKokkos *>(A->spptr);
   *kv    = aijkok->a_dual.view_device();
@@ -1099,7 +1099,7 @@ PetscErrorCode MatSeqAIJRestoreKokkosViewWrite(Mat A, MatScalarKokkosView *kv)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
-  PetscValidPointer(kv, 2);
+  PetscAssertPointer(kv, 2);
   PetscCheckTypeName(A, MATSEQAIJKOKKOS);
   PetscCall(MatSeqAIJKokkosModifyDevice(A));
   PetscFunctionReturn(PETSC_SUCCESS);

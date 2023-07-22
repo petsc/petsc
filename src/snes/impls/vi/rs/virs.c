@@ -635,7 +635,7 @@ PetscErrorCode SNESVIRedundancyCheck_Matlab(SNES snes, IS is_act, IS *is_redact,
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
   PetscValidHeaderSpecific(is_act, IS_CLASSID, 2);
-  PetscValidPointer(is_redact, 3);
+  PetscAssertPointer(is_redact, 3);
   PetscCheckSameComm(snes, 1, is_act, 2);
 
   /* Create IS for reduced active set of size 0, its size and indices will

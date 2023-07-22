@@ -23,7 +23,7 @@ PetscErrorCode PetscObjectGetName(PetscObject obj, const char *name[])
 {
   PetscFunctionBegin;
   PetscValidHeader(obj, 1);
-  PetscValidPointer(name, 2);
+  PetscAssertPointer(name, 2);
   PetscCall(PetscObjectName(obj));
   *name = obj->name;
   PetscFunctionReturn(PETSC_SUCCESS);

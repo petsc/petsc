@@ -265,7 +265,7 @@ PetscErrorCode MatH2OpusGetNativeMult(Mat A, PetscBool *nm)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
-  PetscValidPointer(nm, 2);
+  PetscAssertPointer(nm, 2);
   PetscCall(PetscObjectTypeCompare((PetscObject)A, MATH2OPUS, &ish2opus));
   PetscCheck(ish2opus, PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "Not for type %s", ((PetscObject)A)->type_name);
   *nm = a->nativemult;
@@ -1679,7 +1679,7 @@ PetscErrorCode MatCreateH2OpusFromMat(Mat B, PetscInt spacedim, const PetscReal 
   PetscValidLogicalCollectiveInt(B, maxrank, 7);
   PetscValidLogicalCollectiveInt(B, bs, 8);
   PetscValidLogicalCollectiveReal(B, rtol, 9);
-  PetscValidPointer(nA, 10);
+  PetscAssertPointer(nA, 10);
   PetscCall(PetscObjectGetComm((PetscObject)B, &comm));
   PetscCheck(B->rmap->n == B->cmap->n, PETSC_COMM_SELF, PETSC_ERR_SUP, "Different row and column local sizes are not supported");
   PetscCheck(B->rmap->N == B->cmap->N, comm, PETSC_ERR_SUP, "Rectangular matrices are not supported");
@@ -1738,7 +1738,7 @@ PetscErrorCode MatH2OpusGetIndexMap(Mat A, IS *indexmap)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
   PetscValidType(A, 1);
-  PetscValidPointer(indexmap, 2);
+  PetscAssertPointer(indexmap, 2);
   PetscCheck(A->assembled, PetscObjectComm((PetscObject)A), PETSC_ERR_ARG_WRONGSTATE, "Not for unassembled matrix");
   PetscCall(PetscObjectTypeCompare((PetscObject)A, MATH2OPUS, &ish2opus));
   PetscCheck(ish2opus, PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "Not for type %s", ((PetscObject)A)->type_name);
@@ -1773,7 +1773,7 @@ PetscErrorCode MatH2OpusMapVec(Mat A, PetscBool nativetopetsc, Vec in, Vec *out)
   PetscValidType(A, 1);
   PetscValidLogicalCollectiveBool(A, nativetopetsc, 2);
   PetscValidHeaderSpecific(in, VEC_CLASSID, 3);
-  PetscValidPointer(out, 4);
+  PetscAssertPointer(out, 4);
   PetscCheck(A->assembled, PetscObjectComm((PetscObject)A), PETSC_ERR_ARG_WRONGSTATE, "Not for unassembled matrix");
   PetscCall(PetscObjectTypeCompare((PetscObject)A, MATH2OPUS, &ish2opus));
   PetscCheck(ish2opus, PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "Not for type %s", ((PetscObject)A)->type_name);

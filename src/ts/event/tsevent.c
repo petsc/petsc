@@ -7,7 +7,7 @@ PetscErrorCode TSEventInitialize(TSEvent event, TS ts, PetscReal t, Vec U)
 {
   PetscFunctionBegin;
   if (!event) PetscFunctionReturn(PETSC_SUCCESS);
-  PetscValidPointer(event, 1);
+  PetscAssertPointer(event, 1);
   PetscValidHeaderSpecific(ts, TS_CLASSID, 2);
   PetscValidHeaderSpecific(U, VEC_CLASSID, 4);
   event->ptime_prev = t;
@@ -21,7 +21,7 @@ PetscErrorCode TSEventDestroy(TSEvent *event)
   PetscInt i;
 
   PetscFunctionBegin;
-  PetscValidPointer(event, 1);
+  PetscAssertPointer(event, 1);
   if (!*event) PetscFunctionReturn(PETSC_SUCCESS);
   if (--(*event)->refct > 0) {
     *event = NULL;
@@ -113,7 +113,7 @@ PetscErrorCode TSSetEventTolerances(TS ts, PetscReal tol, PetscReal vtol[])
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
-  if (vtol) PetscValidRealPointer(vtol, 3);
+  if (vtol) PetscAssertPointer(vtol, 3);
   PetscCheck(ts->event, PetscObjectComm((PetscObject)ts), PETSC_ERR_USER, "Must set the events first by calling TSSetEventHandler()");
 
   event = ts->event;
@@ -187,8 +187,8 @@ PetscErrorCode TSSetEventHandler(TS ts, PetscInt nevents, PetscInt direction[], 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   if (nevents) {
-    PetscValidIntPointer(direction, 3);
-    PetscValidBoolPointer(terminate, 4);
+    PetscAssertPointer(direction, 3);
+    PetscAssertPointer(terminate, 4);
   }
 
   PetscCall(PetscNew(&event));

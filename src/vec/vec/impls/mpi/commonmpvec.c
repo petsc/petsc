@@ -71,7 +71,7 @@ PetscErrorCode VecGhostGetLocalForm(Vec g, Vec *l)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(g, VEC_CLASSID, 1);
-  PetscValidPointer(l, 2);
+  PetscAssertPointer(l, 2);
 
   PetscCall(PetscObjectTypeCompare((PetscObject)g, VECSEQ, &isseq));
   PetscCall(PetscObjectTypeCompare((PetscObject)g, VECMPI, &ismpi));

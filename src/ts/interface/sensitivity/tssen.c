@@ -305,7 +305,7 @@ PetscErrorCode TSGetCostIntegral(TS ts, Vec *v)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
-  PetscValidPointer(v, 2);
+  PetscAssertPointer(v, 2);
   PetscCall(TSGetQuadratureTS(ts, NULL, &quadts));
   *v = quadts->vec_sol;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -422,7 +422,7 @@ PetscErrorCode TSSetIHessianProduct(TS ts, Vec *ihp1, PetscErrorCode (*ihessianp
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
-  PetscValidPointer(ihp1, 2);
+  PetscAssertPointer(ihp1, 2);
 
   ts->ihessianproductctx = ctx;
   if (ihp1) ts->vecs_fuu = ihp1;
@@ -644,7 +644,7 @@ PetscErrorCode TSSetRHSHessianProduct(TS ts, Vec *rhshp1, PetscErrorCode (*rhshe
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
-  PetscValidPointer(rhshp1, 2);
+  PetscAssertPointer(rhshp1, 2);
 
   ts->rhshessianproductctx = ctx;
   if (rhshp1) ts->vecs_guu = rhshp1;
@@ -821,7 +821,7 @@ PetscErrorCode TSSetCostGradients(TS ts, PetscInt numcost, Vec *lambda, Vec *mu)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
-  PetscValidPointer(lambda, 3);
+  PetscAssertPointer(lambda, 3);
   ts->vecs_sensi  = lambda;
   ts->vecs_sensip = mu;
   PetscCheck(!ts->numcost || ts->numcost == numcost, PetscObjectComm((PetscObject)ts), PETSC_ERR_USER, "The number of cost functions (2nd parameter of TSSetCostIntegrand()) is inconsistent with the one set by TSSetCostIntegrand");
@@ -1131,7 +1131,7 @@ PetscErrorCode TSAdjointComputeRHSJacobian(TS ts, PetscReal t, Vec U, Mat Amat)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscValidHeaderSpecific(U, VEC_CLASSID, 3);
-  PetscValidPointer(Amat, 4);
+  PetscValidHeaderSpecific(Amat, MAT_CLASSID, 4);
 
   PetscCallBack("TS callback JacobianP for sensitivity analysis", (*ts->rhsjacobianp)(ts, t, U, Amat, ts->rhsjacobianpctx));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -1687,7 +1687,7 @@ PetscErrorCode TSForwardGetIntegralGradients(TS ts, PetscInt *numfwdint, Vec **v
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
-  PetscValidPointer(vp, 3);
+  PetscAssertPointer(vp, 3);
   if (numfwdint) *numfwdint = ts->numcost;
   if (vp) *vp = ts->vecs_integral_sensip;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -1870,7 +1870,7 @@ PetscErrorCode TSCreateQuadratureTS(TS ts, PetscBool fwd, TS *quadts)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
-  PetscValidPointer(quadts, 3);
+  PetscAssertPointer(quadts, 3);
   PetscCall(TSDestroy(&ts->quadraturets));
   PetscCall(TSCreate(PetscObjectComm((PetscObject)ts), &ts->quadraturets));
   PetscCall(PetscObjectIncrementTabLevel((PetscObject)ts->quadraturets, (PetscObject)ts, 1));

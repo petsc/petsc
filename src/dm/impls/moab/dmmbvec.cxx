@@ -63,7 +63,7 @@ PetscErrorCode DMMoabGetVecTag(Vec vec, moab::Tag *tag)
   Vec_MOAB      *vmoab;
 
   PetscFunctionBegin;
-  PetscValidPointer(tag, 2);
+  PetscAssertPointer(tag, 2);
 
   /* Get the MOAB private data */
   PetscCall(PetscObjectQuery((PetscObject)vec, "MOABData", (PetscObject *)&moabdata));
@@ -92,7 +92,7 @@ PetscErrorCode DMMoabGetVecRange(Vec vec, moab::Range *range)
   Vec_MOAB      *vmoab;
 
   PetscFunctionBegin;
-  PetscValidPointer(range, 2);
+  PetscAssertPointer(range, 2);
 
   /* Get the MOAB private data handle */
   PetscCall(PetscObjectQuery((PetscObject)vec, "MOABData", (PetscObject *)&moabdata));
@@ -132,7 +132,7 @@ PetscErrorCode DMMoabVecGetArray(DM dm, Vec vec, void *array)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidHeaderSpecific(vec, VEC_CLASSID, 2);
-  PetscValidPointer(array, 3);
+  PetscAssertPointer(array, 3);
   dmmoab = (DM_Moab *)dm->data;
 
   /* Get the Vec_MOAB struct for the original vector */
@@ -212,7 +212,7 @@ PetscErrorCode DMMoabVecRestoreArray(DM dm, Vec vec, void *array)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidHeaderSpecific(vec, VEC_CLASSID, 2);
-  PetscValidPointer(array, 3);
+  PetscAssertPointer(array, 3);
   dmmoab = (DM_Moab *)dm->data;
 
   /* Get the Vec_MOAB struct for the original vector */
@@ -293,7 +293,7 @@ PetscErrorCode DMMoabVecGetArrayRead(DM dm, Vec vec, void *array)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidHeaderSpecific(vec, VEC_CLASSID, 2);
-  PetscValidPointer(array, 3);
+  PetscAssertPointer(array, 3);
   dmmoab = (DM_Moab *)dm->data;
 
   /* Get the Vec_MOAB struct for the original vector */
@@ -366,7 +366,7 @@ PetscErrorCode DMMoabVecRestoreArrayRead(DM dm, Vec vec, void *array)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidHeaderSpecific(vec, VEC_CLASSID, 2);
-  PetscValidPointer(array, 3);
+  PetscAssertPointer(array, 3);
 
   /* Get the Vec_MOAB struct for the original vector */
   PetscCall(PetscObjectQuery((PetscObject)vec, "MOABData", (PetscObject *)&moabdata));
@@ -585,7 +585,7 @@ PETSC_EXTERN PetscErrorCode DMCreateGlobalVector_Moab(DM dm, Vec *gvec)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(gvec, 2);
+  PetscAssertPointer(gvec, 2);
   PetscCall(DMCreateVector_Moab_Private(dm, NULL, dmmoab->vowned, PETSC_TRUE, PETSC_TRUE, gvec));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -596,7 +596,7 @@ PETSC_EXTERN PetscErrorCode DMCreateLocalVector_Moab(DM dm, Vec *lvec)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(lvec, 2);
+  PetscAssertPointer(lvec, 2);
   PetscCall(DMCreateVector_Moab_Private(dm, NULL, dmmoab->vlocal, PETSC_FALSE, PETSC_TRUE, lvec));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -609,7 +609,7 @@ PetscErrorCode DMVecDuplicate_Moab(Vec x, Vec *y)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x, VEC_CLASSID, 1);
-  PetscValidPointer(y, 2);
+  PetscAssertPointer(y, 2);
 
   /* Get the Vec_MOAB struct for the original vector */
   PetscCall(PetscObjectQuery((PetscObject)x, "MOABData", (PetscObject *)&moabdata));

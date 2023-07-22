@@ -538,14 +538,14 @@ static PetscErrorCode MatNestFindISRange(Mat A, PetscInt n, const IS list[], IS 
   IS        out, concatenate[2];
 
   PetscFunctionBegin;
-  PetscValidPointer(list, 3);
+  PetscAssertPointer(list, 3);
   PetscValidHeaderSpecific(is, IS_CLASSID, 4);
   if (begin) {
-    PetscValidIntPointer(begin, 5);
+    PetscAssertPointer(begin, 5);
     *begin = -1;
   }
   if (end) {
-    PetscValidIntPointer(end, 6);
+    PetscAssertPointer(end, 6);
     *end = -1;
   }
   for (i = 0; i < n; i++) {
@@ -1441,15 +1441,15 @@ PetscErrorCode MatNestSetSubMats(Mat A, PetscInt nr, const IS is_row[], PetscInt
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
   PetscCheck(nr >= 0, PetscObjectComm((PetscObject)A), PETSC_ERR_ARG_OUTOFRANGE, "Number of rows cannot be negative");
   if (nr && is_row) {
-    PetscValidPointer(is_row, 3);
+    PetscAssertPointer(is_row, 3);
     for (i = 0; i < nr; i++) PetscValidHeaderSpecific(is_row[i], IS_CLASSID, 3);
   }
   PetscCheck(nc >= 0, PetscObjectComm((PetscObject)A), PETSC_ERR_ARG_OUTOFRANGE, "Number of columns cannot be negative");
   if (nc && is_col) {
-    PetscValidPointer(is_col, 5);
+    PetscAssertPointer(is_col, 5);
     for (i = 0; i < nc; i++) PetscValidHeaderSpecific(is_col[i], IS_CLASSID, 5);
   }
-  if (nr * nc > 0) PetscValidPointer(a, 6);
+  if (nr * nc > 0) PetscAssertPointer(a, 6);
   PetscUseMethod(A, "MatNestSetSubMats_C", (Mat, PetscInt, const IS[], PetscInt, const IS[], const Mat[]), (A, nr, is_row, nc, is_col, a));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

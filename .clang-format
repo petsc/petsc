@@ -183,6 +183,9 @@ WhitespaceSensitiveMacros:
   - _Pragma
   - PETSC_DEPRECATED_IDENTIFIER
   - PETSC_DEPRECATED_IDENTIFIER_
+  - PETSC_VALID_POINTER_IMPL_SPECIALIZATION
+  - _Generic
+  - PETSC_GENERIC_CV
 TypenameMacros:
   - khash_t
 InsertNewlineAtEOF: true

@@ -25,7 +25,7 @@ PetscErrorCode PetscObjectGetType(PetscObject obj, const char *type[])
 {
   PetscFunctionBegin;
   PetscValidHeader(obj, 1);
-  PetscValidPointer(type, 2);
+  PetscAssertPointer(type, 2);
   *type = obj->type_name;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

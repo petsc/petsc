@@ -91,7 +91,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_Patch(DM dm)
 PetscErrorCode DMPatchCreate(MPI_Comm comm, DM *mesh)
 {
   PetscFunctionBegin;
-  PetscValidPointer(mesh, 2);
+  PetscAssertPointer(mesh, 2);
   PetscCall(DMCreate(comm, mesh));
   PetscCall(DMSetType(*mesh, DMPATCH));
   PetscFunctionReturn(PETSC_SUCCESS);

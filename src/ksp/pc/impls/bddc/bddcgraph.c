@@ -1236,7 +1236,7 @@ PetscErrorCode PCBDDCGraphInit(PCBDDCGraph graph, ISLocalToGlobalMapping l2gmap,
   PetscInt n;
 
   PetscFunctionBegin;
-  PetscValidPointer(graph, 1);
+  PetscAssertPointer(graph, 1);
   PetscValidHeaderSpecific(l2gmap, IS_LTOGM_CLASSID, 2);
   PetscValidLogicalCollectiveInt(l2gmap, N, 3);
   PetscValidLogicalCollectiveInt(l2gmap, maxcount, 4);

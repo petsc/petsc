@@ -188,7 +188,7 @@ PetscErrorCode PetscViewerBinaryGetMPIIOOffset(PetscViewer viewer, MPI_Offset *o
 
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(viewer, PETSC_VIEWER_CLASSID, 1, PETSCVIEWERBINARY);
-  PetscValidPointer(off, 2);
+  PetscAssertPointer(off, 2);
   vbinary = (PetscViewer_Binary *)viewer->data;
   *off    = vbinary->moff;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -243,7 +243,7 @@ PetscErrorCode PetscViewerBinaryGetMPIIODescriptor(PetscViewer viewer, MPI_File 
 
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(viewer, PETSC_VIEWER_CLASSID, 1, PETSCVIEWERBINARY);
-  PetscValidPointer(fdes, 2);
+  PetscAssertPointer(fdes, 2);
   PetscCall(PetscViewerSetUp(viewer));
   vbinary = (PetscViewer_Binary *)viewer->data;
   *fdes   = vbinary->mfdes;
@@ -311,7 +311,7 @@ PetscErrorCode PetscViewerBinaryGetUseMPIIO(PetscViewer viewer, PetscBool *use)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 1);
-  PetscValidBoolPointer(use, 2);
+  PetscAssertPointer(use, 2);
   *use = PETSC_FALSE;
   PetscTryMethod(viewer, "PetscViewerBinaryGetUseMPIIO_C", (PetscViewer, PetscBool *), (viewer, use));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -379,7 +379,7 @@ PetscErrorCode PetscViewerBinaryGetFlowControl(PetscViewer viewer, PetscInt *fc)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 1);
-  PetscValidIntPointer(fc, 2);
+  PetscAssertPointer(fc, 2);
   PetscUseMethod(viewer, "PetscViewerBinaryGetFlowControl_C", (PetscViewer, PetscInt *), (viewer, fc));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -420,7 +420,7 @@ PetscErrorCode PetscViewerBinaryGetDescriptor(PetscViewer viewer, int *fdes)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(viewer, PETSC_VIEWER_CLASSID, 1, PETSCVIEWERBINARY);
-  PetscValidPointer(fdes, 2);
+  PetscAssertPointer(fdes, 2);
   PetscCall(PetscViewerSetUp(viewer));
   vbinary = (PetscViewer_Binary *)viewer->data;
   *fdes   = vbinary->fdes;
@@ -526,7 +526,7 @@ PetscErrorCode PetscViewerBinaryGetSkipInfo(PetscViewer viewer, PetscBool *skip)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 1);
-  PetscValidBoolPointer(skip, 2);
+  PetscAssertPointer(skip, 2);
   PetscUseMethod(viewer, "PetscViewerBinaryGetSkipInfo_C", (PetscViewer, PetscBool *), (viewer, skip));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -601,7 +601,7 @@ PetscErrorCode PetscViewerBinaryGetSkipOptions(PetscViewer viewer, PetscBool *sk
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 1);
-  PetscValidBoolPointer(skip, 2);
+  PetscAssertPointer(skip, 2);
   PetscUseMethod(viewer, "PetscViewerBinaryGetSkipOptions_C", (PetscViewer, PetscBool *), (viewer, skip));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -680,7 +680,7 @@ PetscErrorCode PetscViewerBinaryGetSkipHeader(PetscViewer viewer, PetscBool *ski
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 1);
-  PetscValidBoolPointer(skip, 2);
+  PetscAssertPointer(skip, 2);
   PetscUseMethod(viewer, "PetscViewerBinaryGetSkipHeader_C", (PetscViewer, PetscBool *), (viewer, skip));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -719,7 +719,7 @@ PetscErrorCode PetscViewerBinaryGetInfoPointer(PetscViewer viewer, FILE **file)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 1);
-  PetscValidPointer(file, 2);
+  PetscAssertPointer(file, 2);
   *file = NULL;
   PetscTryMethod(viewer, "PetscViewerBinaryGetInfoPointer_C", (PetscViewer, FILE **), (viewer, file));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -1287,7 +1287,7 @@ PetscErrorCode PetscViewerFileGetMode(PetscViewer viewer, PetscFileMode *mode)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 1);
-  PetscValidPointer(mode, 2);
+  PetscAssertPointer(mode, 2);
   PetscUseMethod(viewer, "PetscViewerFileGetMode_C", (PetscViewer, PetscFileMode *), (viewer, mode));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

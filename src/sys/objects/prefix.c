@@ -87,7 +87,7 @@ PetscErrorCode PetscObjectSetOptionsPrefix(PetscObject obj, const char prefix[])
   PetscFunctionBegin;
   PetscValidHeader(obj, 1);
   if (prefix) {
-    PetscValidCharPointer(prefix, 2);
+    PetscAssertPointer(prefix, 2);
     PetscCheck(prefix[0] != '-', PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Options prefix should not begin with a hyphen");
     if (prefix != obj->prefix) {
       PetscCall(PetscFree(obj->prefix));
@@ -153,7 +153,7 @@ PetscErrorCode PetscObjectGetOptionsPrefix(PetscObject obj, const char *prefix[]
 {
   PetscFunctionBegin;
   PetscValidHeader(obj, 1);
-  PetscValidPointer(prefix, 2);
+  PetscAssertPointer(prefix, 2);
   *prefix = obj->prefix;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

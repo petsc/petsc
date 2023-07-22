@@ -34,8 +34,8 @@ PetscErrorCode DMPlexCreateProcessSF(DM dm, PetscSF sfPoint, IS *processRanks, P
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidHeaderSpecific(sfPoint, PETSCSF_CLASSID, 2);
-  if (processRanks) PetscValidPointer(processRanks, 3);
-  if (sfProcess) PetscValidPointer(sfProcess, 4);
+  if (processRanks) PetscAssertPointer(processRanks, 3);
+  if (sfProcess) PetscAssertPointer(sfProcess, 4);
   PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)dm), &size));
   PetscCall(PetscSFGetGraph(sfPoint, &numRoots, &numLeaves, &localPoints, &remotePoints));
   PetscCall(PetscMalloc1(numLeaves, &ranks));
@@ -118,7 +118,7 @@ PetscErrorCode DMPlexSetTransformType(DM dm, DMPlexTransformType type)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(dm, DM_CLASSID, 1, DMPLEX);
-  if (type) PetscValidCharPointer(type, 2);
+  if (type) PetscAssertPointer(type, 2);
   PetscCall(PetscFree(mesh->transformType));
   PetscCall(PetscStrallocpy(type, &mesh->transformType));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -143,7 +143,7 @@ PetscErrorCode DMPlexGetTransformType(DM dm, DMPlexTransformType *type)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(dm, DM_CLASSID, 1, DMPLEX);
-  PetscValidPointer(type, 2);
+  PetscAssertPointer(type, 2);
   *type = mesh->transformType;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -188,7 +188,7 @@ PetscErrorCode DMPlexGetRefinementUniform(DM dm, PetscBool *refinementUniform)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(dm, DM_CLASSID, 1, DMPLEX);
-  PetscValidBoolPointer(refinementUniform, 2);
+  PetscAssertPointer(refinementUniform, 2);
   *refinementUniform = mesh->refinementUniform;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -233,7 +233,7 @@ PetscErrorCode DMPlexGetRefinementLimit(DM dm, PetscReal *refinementLimit)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidRealPointer(refinementLimit, 2);
+  PetscAssertPointer(refinementLimit, 2);
   /* if (mesh->refinementLimit < 0) = getMaxVolume()/2.0; */
   *refinementLimit = mesh->refinementLimit;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -289,7 +289,7 @@ PetscErrorCode DMPlexGetRefinementFunction(DM dm, PetscErrorCode (**refinementFu
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(refinementFunc, 2);
+  PetscAssertPointer(refinementFunc, 2);
   *refinementFunc = mesh->refinementFunc;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

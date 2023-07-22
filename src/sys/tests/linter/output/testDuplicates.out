@@ -1,27 +1,12 @@
 <--- FIXED --->
 --------------------------------------------------------------------------------------------
-[31m[1m./src/sys/tests/linter/testDuplicates.c:10:3: error:[0m Incorrect use of PetscValidIntPointer(), use PetscValidScalarPointer() instead [-fincompatible-function]:
-  8 : PetscValidIntPointer(a, 1);
+[31m[1m./src/sys/tests/linter/testDuplicates.c:10:25: error:[0m Argument number doesn't match for 'b'. Expected '2', found '5' [-fmatching-arg-num]:
+  8 : PetscAssertPointer(a, 1);
   9 : /* no remove */
-> 10: [33m[1mPetscValidIntPointer(b, 5)[0m;
-      [33m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+> 10: PetscAssertPointer(b, [33m[1m5[0m);
+                            [33m[1m^[0m
   11: /* ~should~ be removed but won't be */
-  12: PetscValidScalarPointer(b, 7);
-
-./src/sys/tests/linter/testDuplicates.c:10:24 Note: Due to 'b' of type 'PetscScalar *' (a.k.a. 'double *')
-  8 : PetscValidIntPointer(a, 1);
-  9 : /* no remove */
-> 10: PetscValidIntPointer([33m[1mb[0m, 5);
-                           [33m[1m^[0m
-  11: /* ~should~ be removed but won't be */
-  12: PetscValidScalarPointer(b, 7);
-[31m[1m./src/sys/tests/linter/testDuplicates.c:10:27: error:[0m Argument number doesn't match for 'b'. Expected '2', found '5' [-fmatching-arg-num]:
-  8 : PetscValidIntPointer(a, 1);
-  9 : /* no remove */
-> 10: PetscValidIntPointer(b, [33m[1m5[0m);
-                              [33m[1m^[0m
-  11: /* ~should~ be removed but won't be */
-  12: PetscValidScalarPointer(b, 7);
+  12: PetscAssertPointer(b, 7);
 
 ./src/sys/tests/linter/testDuplicates.c:3:55 Note: 'b' is traceable to argument #2 'b' in enclosing function here:
   1: #include <petsc/private/petscimpl.h>
@@ -30,12 +15,12 @@
                                                            [33m[1m^^^^^^^^^^^^^^[0m
   4: {
   5:   /* no remove */
-[31m[1m./src/sys/tests/linter/testDuplicates.c:12:30: error:[0m Argument number doesn't match for 'b'. Expected '2', found '7' [-fmatching-arg-num]:
-  10: PetscValidIntPointer(b, 5);
+[31m[1m./src/sys/tests/linter/testDuplicates.c:12:25: error:[0m Argument number doesn't match for 'b'. Expected '2', found '7' [-fmatching-arg-num]:
+  10: PetscAssertPointer(b, 5);
   11: /* ~should~ be removed but won't be */
-> 12: PetscValidScalarPointer(b, [33m[1m7[0m);
-                                 [33m[1m^[0m
-  13: PetscValidScalarPointer(b, 3);
+> 12: PetscAssertPointer(b, [33m[1m7[0m);
+                            [33m[1m^[0m
+  13: PetscAssertPointer(b, 3);
   14: return 0;
 
 ./src/sys/tests/linter/testDuplicates.c:3:55 Note: 'b' is traceable to argument #2 'b' in enclosing function here:
@@ -45,11 +30,11 @@
                                                            [33m[1m^^^^^^^^^^^^^^[0m
   4: {
   5:   /* no remove */
-[31m[1m./src/sys/tests/linter/testDuplicates.c:13:30: error:[0m Argument number doesn't match for 'b'. Expected '2', found '3' [-fmatching-arg-num]:
+[31m[1m./src/sys/tests/linter/testDuplicates.c:13:25: error:[0m Argument number doesn't match for 'b'. Expected '2', found '3' [-fmatching-arg-num]:
   11:   /* ~should~ be removed but won't be */
-  12:   PetscValidScalarPointer(b, 7);
-> 13:   PetscValidScalarPointer(b, [33m[1m3[0m);
-                                   [33m[1m^[0m
+  12:   PetscAssertPointer(b, 7);
+> 13:   PetscAssertPointer(b, [33m[1m3[0m);
+                              [33m[1m^[0m
   14:   return 0;
   15: }
 
@@ -63,217 +48,217 @@
 [31m[1m./src/sys/tests/linter/testDuplicates.c:8:3: error:[0m Duplicate function found previous identical usage [-fduplicate-function]:
   4: {
   5:   /* no remove */
-> 6:   [33m[1mPetscValidIntPointer(a, 1)[0m;
-       [33m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+> 6:   [33m[1mPetscAssertPointer(a, 1)[0m;
+       [33m[1m^^^^^^^^^^^^^^^^^^^^^^^^[0m
   7:   /* remove */
-  8:   PetscValidIntPointer(a, 1);
+  8:   PetscAssertPointer(a, 1);
 [31m[1m./src/sys/tests/linter/testDuplicates.c:23:3: error:[0m Duplicate function found previous identical usage [-fduplicate-function]:
   18: {
   19:   /* no remove */
-> 20:   [33m[1mPetscValidIntPointer(a, 1)[0m;
-        [33m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
-  21:   PetscValidScalarPointer(b, 2);
+> 20:   [33m[1mPetscAssertPointer(a, 1)[0m;
+        [33m[1m^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  21:   PetscAssertPointer(b, 2);
   22:   /* remove */
-  23:   PetscValidIntPointer(a, 1);
+  23:   PetscAssertPointer(a, 1);
 [31m[1m./src/sys/tests/linter/testDuplicates.c:24:3: error:[0m Duplicate function found previous identical usage [-fduplicate-function]:
   19: /* no remove */
-  20: PetscValidIntPointer(a, 1);
-> 21: [33m[1mPetscValidScalarPointer(b, 2)[0m;
-      [33m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  20: PetscAssertPointer(a, 1);
+> 21: [33m[1mPetscAssertPointer(b, 2)[0m;
+      [33m[1m^^^^^^^^^^^^^^^^^^^^^^^^[0m
   22: /* remove */
-  23: PetscValidIntPointer(a, 1);
-  24: PetscValidScalarPointer(b, 2);
+  23: PetscAssertPointer(a, 1);
+  24: PetscAssertPointer(b, 2);
 [31m[1m./src/sys/tests/linter/testDuplicates.c:27:5: error:[0m Duplicate function found previous identical usage [-fduplicate-function]:
   18: {
   19:   /* no remove */
-> 20:   [33m[1mPetscValidIntPointer(a, 1)[0m;
-        [33m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
-  21:   PetscValidScalarPointer(b, 2);
+> 20:   [33m[1mPetscAssertPointer(a, 1)[0m;
+        [33m[1m^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  21:   PetscAssertPointer(b, 2);
   22:   /* remove */
-  23:   PetscValidIntPointer(a, 1);
-  24:   PetscValidScalarPointer(b, 2);
+  23:   PetscAssertPointer(a, 1);
+  24:   PetscAssertPointer(b, 2);
   25:   {
   26:     /* remove */
-  27:     PetscValidIntPointer(a, 1);
+  27:     PetscAssertPointer(a, 1);
 [31m[1m./src/sys/tests/linter/testDuplicates.c:28:5: error:[0m Duplicate function found previous identical usage [-fduplicate-function]:
   19: /* no remove */
-  20: PetscValidIntPointer(a, 1);
-> 21: [33m[1mPetscValidScalarPointer(b, 2)[0m;
-      [33m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  20: PetscAssertPointer(a, 1);
+> 21: [33m[1mPetscAssertPointer(b, 2)[0m;
+      [33m[1m^^^^^^^^^^^^^^^^^^^^^^^^[0m
   22: /* remove */
-  23: PetscValidIntPointer(a, 1);
-  24: PetscValidScalarPointer(b, 2);
+  23: PetscAssertPointer(a, 1);
+  24: PetscAssertPointer(b, 2);
   25: {
   26:   /* remove */
-  27:   PetscValidIntPointer(a, 1);
-  28:   PetscValidScalarPointer(b, 2);
+  27:   PetscAssertPointer(a, 1);
+  28:   PetscAssertPointer(b, 2);
 [31m[1m./src/sys/tests/linter/testDuplicates.c:39:3: error:[0m Duplicate function found previous identical usage [-fduplicate-function]:
   34: {
   35:   /* no remove */
-> 36:   [33m[1mPetscValidIntPointer(a, 1)[0m;
-        [33m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
-  37:   PetscValidScalarPointer(b, 2);
+> 36:   [33m[1mPetscAssertPointer(a, 1)[0m;
+        [33m[1m^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  37:   PetscAssertPointer(b, 2);
   38:   /* remove */
-  39:   PetscValidIntPointer(a, 1);
+  39:   PetscAssertPointer(a, 1);
 [31m[1m./src/sys/tests/linter/testDuplicates.c:40:3: error:[0m Duplicate function found previous identical usage [-fduplicate-function]:
   35: /* no remove */
-  36: PetscValidIntPointer(a, 1);
-> 37: [33m[1mPetscValidScalarPointer(b, 2)[0m;
-      [33m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  36: PetscAssertPointer(a, 1);
+> 37: [33m[1mPetscAssertPointer(b, 2)[0m;
+      [33m[1m^^^^^^^^^^^^^^^^^^^^^^^^[0m
   38: /* remove */
-  39: PetscValidIntPointer(a, 1);
-  40: PetscValidScalarPointer(b, 2);
+  39: PetscAssertPointer(a, 1);
+  40: PetscAssertPointer(b, 2);
 [31m[1m./src/sys/tests/linter/testDuplicates.c:43:5: error:[0m Duplicate function found previous identical usage [-fduplicate-function]:
   34: {
   35:   /* no remove */
-> 36:   [33m[1mPetscValidIntPointer(a, 1)[0m;
-        [33m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
-  37:   PetscValidScalarPointer(b, 2);
+> 36:   [33m[1mPetscAssertPointer(a, 1)[0m;
+        [33m[1m^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  37:   PetscAssertPointer(b, 2);
   38:   /* remove */
-  39:   PetscValidIntPointer(a, 1);
-  40:   PetscValidScalarPointer(b, 2);
+  39:   PetscAssertPointer(a, 1);
+  40:   PetscAssertPointer(b, 2);
   41:   {
   42:     /* remove */
-  43:     PetscValidIntPointer(a, 1);
+  43:     PetscAssertPointer(a, 1);
 [31m[1m./src/sys/tests/linter/testDuplicates.c:44:5: error:[0m Duplicate function found previous identical usage [-fduplicate-function]:
   35: /* no remove */
-  36: PetscValidIntPointer(a, 1);
-> 37: [33m[1mPetscValidScalarPointer(b, 2)[0m;
-      [33m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  36: PetscAssertPointer(a, 1);
+> 37: [33m[1mPetscAssertPointer(b, 2)[0m;
+      [33m[1m^^^^^^^^^^^^^^^^^^^^^^^^[0m
   38: /* remove */
-  39: PetscValidIntPointer(a, 1);
-  40: PetscValidScalarPointer(b, 2);
+  39: PetscAssertPointer(a, 1);
+  40: PetscAssertPointer(b, 2);
   41: {
   42:   /* remove */
-  43:   PetscValidIntPointer(a, 1);
-  44:   PetscValidScalarPointer(b, 2);
+  43:   PetscAssertPointer(a, 1);
+  44:   PetscAssertPointer(b, 2);
 [31m[1m./src/sys/tests/linter/testDuplicates.c:48:5: error:[0m Duplicate function found previous identical usage [-fduplicate-function]:
   34: {
   35:   /* no remove */
-> 36:   [33m[1mPetscValidIntPointer(a, 1)[0m;
-        [33m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
-  37:   PetscValidScalarPointer(b, 2);
+> 36:   [33m[1mPetscAssertPointer(a, 1)[0m;
+        [33m[1m^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  37:   PetscAssertPointer(b, 2);
   38:   /* remove */
-  39:   PetscValidIntPointer(a, 1);
-  40:   PetscValidScalarPointer(b, 2);
+  39:   PetscAssertPointer(a, 1);
+  40:   PetscAssertPointer(b, 2);
   41:   {
   42:     /* remove */
-  43:     PetscValidIntPointer(a, 1);
-  44:     PetscValidScalarPointer(b, 2);
+  43:     PetscAssertPointer(a, 1);
+  44:     PetscAssertPointer(b, 2);
   45:   }
   46:   {
   47:     /* remove */
-  48:     PetscValidIntPointer(a, 1);
+  48:     PetscAssertPointer(a, 1);
 [31m[1m./src/sys/tests/linter/testDuplicates.c:49:5: error:[0m Duplicate function found previous identical usage [-fduplicate-function]:
   35: /* no remove */
-  36: PetscValidIntPointer(a, 1);
-> 37: [33m[1mPetscValidScalarPointer(b, 2)[0m;
-      [33m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  36: PetscAssertPointer(a, 1);
+> 37: [33m[1mPetscAssertPointer(b, 2)[0m;
+      [33m[1m^^^^^^^^^^^^^^^^^^^^^^^^[0m
   38: /* remove */
-  39: PetscValidIntPointer(a, 1);
-  40: PetscValidScalarPointer(b, 2);
+  39: PetscAssertPointer(a, 1);
+  40: PetscAssertPointer(b, 2);
   41: {
   42:   /* remove */
-  43:   PetscValidIntPointer(a, 1);
-  44:   PetscValidScalarPointer(b, 2);
+  43:   PetscAssertPointer(a, 1);
+  44:   PetscAssertPointer(b, 2);
   45: }
   46: {
   47:   /* remove */
-  48:   PetscValidIntPointer(a, 1);
-  49:   PetscValidScalarPointer(b, 2);
+  48:   PetscAssertPointer(a, 1);
+  49:   PetscAssertPointer(b, 2);
 [31m[1m./src/sys/tests/linter/testDuplicates.c:79:5: error:[0m Duplicate function found previous identical usage [-fduplicate-function]:
   72: {
   73:   /* no remove */
-> 74:   [33m[1mPetscValidIntPointer(a, 1)[0m;
-        [33m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
-  75:   PetscValidScalarPointer(b, 2);
+> 74:   [33m[1mPetscAssertPointer(a, 1)[0m;
+        [33m[1m^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  75:   PetscAssertPointer(b, 2);
   76:   switch (cond) {
   77:   case PETSC_TRUE:
   78:     /* remove */
-  79:     PetscValidIntPointer(a, 1);
+  79:     PetscAssertPointer(a, 1);
 [31m[1m./src/sys/tests/linter/testDuplicates.c:80:5: error:[0m Duplicate function found previous identical usage [-fduplicate-function]:
   73: /* no remove */
-  74: PetscValidIntPointer(a, 1);
-> 75: [33m[1mPetscValidScalarPointer(b, 2)[0m;
-      [33m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  74: PetscAssertPointer(a, 1);
+> 75: [33m[1mPetscAssertPointer(b, 2)[0m;
+      [33m[1m^^^^^^^^^^^^^^^^^^^^^^^^[0m
   76: switch (cond) {
   77: case PETSC_TRUE:
   78:   /* remove */
-  79:   PetscValidIntPointer(a, 1);
-  80:   PetscValidScalarPointer(b, 2);
+  79:   PetscAssertPointer(a, 1);
+  80:   PetscAssertPointer(b, 2);
 [31m[1m./src/sys/tests/linter/testDuplicates.c:84:5: error:[0m Duplicate function found previous identical usage [-fduplicate-function]:
   72: {
   73:   /* no remove */
-> 74:   [33m[1mPetscValidIntPointer(a, 1)[0m;
-        [33m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
-  75:   PetscValidScalarPointer(b, 2);
+> 74:   [33m[1mPetscAssertPointer(a, 1)[0m;
+        [33m[1m^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  75:   PetscAssertPointer(b, 2);
   76:   switch (cond) {
   77:   case PETSC_TRUE:
   78:     /* remove */
-  79:     PetscValidIntPointer(a, 1);
-  80:     PetscValidScalarPointer(b, 2);
+  79:     PetscAssertPointer(a, 1);
+  80:     PetscAssertPointer(b, 2);
   81:     break;
   82:   case PETSC_FALSE:
   83:     /* remove */
-  84:     PetscValidIntPointer(a, 1);
+  84:     PetscAssertPointer(a, 1);
 [31m[1m./src/sys/tests/linter/testDuplicates.c:85:5: error:[0m Duplicate function found previous identical usage [-fduplicate-function]:
   73: /* no remove */
-  74: PetscValidIntPointer(a, 1);
-> 75: [33m[1mPetscValidScalarPointer(b, 2)[0m;
-      [33m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  74: PetscAssertPointer(a, 1);
+> 75: [33m[1mPetscAssertPointer(b, 2)[0m;
+      [33m[1m^^^^^^^^^^^^^^^^^^^^^^^^[0m
   76: switch (cond) {
   77: case PETSC_TRUE:
   78:   /* remove */
-  79:   PetscValidIntPointer(a, 1);
-  80:   PetscValidScalarPointer(b, 2);
+  79:   PetscAssertPointer(a, 1);
+  80:   PetscAssertPointer(b, 2);
   81:   break;
   82: case PETSC_FALSE:
   83:   /* remove */
-  84:   PetscValidIntPointer(a, 1);
-  85:   PetscValidScalarPointer(b, 2);
+  84:   PetscAssertPointer(a, 1);
+  85:   PetscAssertPointer(b, 2);
 [31m[1m./src/sys/tests/linter/testDuplicates.c:112:5: error:[0m Duplicate function found previous identical usage [-fduplicate-function]:
   106: {
   107:   /* no remove */
-> 108:   [33m[1mPetscValidIntPointer(a, 1)[0m;
-         [33m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
-  109:   PetscValidScalarPointer(b, 2);
+> 108:   [33m[1mPetscAssertPointer(a, 1)[0m;
+         [33m[1m^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  109:   PetscAssertPointer(b, 2);
   110:   if (cond) {
   111:     /* remove */
-  112:     PetscValidIntPointer(a, 1);
+  112:     PetscAssertPointer(a, 1);
 [31m[1m./src/sys/tests/linter/testDuplicates.c:113:5: error:[0m Duplicate function found previous identical usage [-fduplicate-function]:
   107: /* no remove */
-  108: PetscValidIntPointer(a, 1);
-> 109: [33m[1mPetscValidScalarPointer(b, 2)[0m;
-       [33m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  108: PetscAssertPointer(a, 1);
+> 109: [33m[1mPetscAssertPointer(b, 2)[0m;
+       [33m[1m^^^^^^^^^^^^^^^^^^^^^^^^[0m
   110: if (cond) {
   111:   /* remove */
-  112:   PetscValidIntPointer(a, 1);
-  113:   PetscValidScalarPointer(b, 2);
+  112:   PetscAssertPointer(a, 1);
+  113:   PetscAssertPointer(b, 2);
 [31m[1m./src/sys/tests/linter/testDuplicates.c:116:5: error:[0m Duplicate function found previous identical usage [-fduplicate-function]:
   106: {
   107:   /* no remove */
-> 108:   [33m[1mPetscValidIntPointer(a, 1)[0m;
-         [33m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
-  109:   PetscValidScalarPointer(b, 2);
+> 108:   [33m[1mPetscAssertPointer(a, 1)[0m;
+         [33m[1m^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  109:   PetscAssertPointer(b, 2);
   110:   if (cond) {
   111:     /* remove */
-  112:     PetscValidIntPointer(a, 1);
-  113:     PetscValidScalarPointer(b, 2);
+  112:     PetscAssertPointer(a, 1);
+  113:     PetscAssertPointer(b, 2);
   114:   } else {
   115:     /* remove */
-  116:     PetscValidIntPointer(a, 1);
+  116:     PetscAssertPointer(a, 1);
 [31m[1m./src/sys/tests/linter/testDuplicates.c:117:5: error:[0m Duplicate function found previous identical usage [-fduplicate-function]:
   107: /* no remove */
-  108: PetscValidIntPointer(a, 1);
-> 109: [33m[1mPetscValidScalarPointer(b, 2)[0m;
-       [33m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  108: PetscAssertPointer(a, 1);
+> 109: [33m[1mPetscAssertPointer(b, 2)[0m;
+       [33m[1m^^^^^^^^^^^^^^^^^^^^^^^^[0m
   110: if (cond) {
   111:   /* remove */
-  112:   PetscValidIntPointer(a, 1);
-  113:   PetscValidScalarPointer(b, 2);
+  112:   PetscAssertPointer(a, 1);
+  113:   PetscAssertPointer(b, 2);
   114: } else {
   115:   /* remove */
-  116:   PetscValidIntPointer(a, 1);
-  117:   PetscValidScalarPointer(b, 2);
+  116:   PetscAssertPointer(a, 1);
+  117:   PetscAssertPointer(b, 2);
 --------------------------------------------------------------------------------------------
 <--- LEFT --->

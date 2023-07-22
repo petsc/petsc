@@ -427,7 +427,7 @@ PetscErrorCode SNESFASCreateCoarseVec(SNES snes, Vec *Xcoarse)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(snes, SNES_CLASSID, 1, SNESFAS);
-  PetscValidPointer(Xcoarse, 2);
+  PetscAssertPointer(Xcoarse, 2);
   fas = (SNES_FAS *)snes->data;
   if (fas->rscale) {
     PetscCall(VecDuplicate(fas->rscale, Xcoarse));

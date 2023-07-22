@@ -126,7 +126,7 @@ PetscErrorCode KSPFETIDPGetInnerKSP(KSP ksp, KSP *innerksp)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
-  PetscValidPointer(innerksp, 2);
+  PetscAssertPointer(innerksp, 2);
   PetscUseMethod(ksp, "KSPFETIDPGetInnerKSP_C", (KSP, KSP *), (ksp, innerksp));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -155,7 +155,7 @@ PetscErrorCode KSPFETIDPGetInnerBDDC(KSP ksp, PC *pc)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
-  PetscValidPointer(pc, 2);
+  PetscAssertPointer(pc, 2);
   PetscUseMethod(ksp, "KSPFETIDPGetInnerBDDC_C", (KSP, PC *), (ksp, pc));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

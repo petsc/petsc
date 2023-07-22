@@ -540,7 +540,7 @@ PetscErrorCode PCCompositeGetNumberPC(PC pc, PetscInt *num)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
-  PetscValidIntPointer(num, 2);
+  PetscAssertPointer(num, 2);
   PetscUseMethod(pc, "PCCompositeGetNumberPC_C", (PC, PetscInt *), (pc, num));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -569,7 +569,7 @@ PetscErrorCode PCCompositeGetPC(PC pc, PetscInt n, PC *subpc)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
-  PetscValidPointer(subpc, 3);
+  PetscAssertPointer(subpc, 3);
   PetscUseMethod(pc, "PCCompositeGetPC_C", (PC, PetscInt, PC *), (pc, n, subpc));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

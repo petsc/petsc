@@ -139,7 +139,7 @@ PetscErrorCode MatDiagonalGetDiagonal(Mat A, Vec *diag)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
-  PetscValidPointer(diag, 2);
+  PetscAssertPointer(diag, 2);
   *diag = NULL;
   PetscUseMethod((PetscObject)A, "MatDiagonalGetDiagonal_C", (Mat, Vec *), (A, diag));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -175,7 +175,7 @@ PetscErrorCode MatDiagonalRestoreDiagonal(Mat A, Vec *diag)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
-  PetscValidPointer(diag, 2);
+  PetscAssertPointer(diag, 2);
   PetscUseMethod((PetscObject)A, "MatDiagonalRestoreDiagonal_C", (Mat, Vec *), (A, diag));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -222,7 +222,7 @@ PetscErrorCode MatDiagonalGetInverseDiagonal(Mat A, Vec *inv_diag)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
-  PetscValidPointer(inv_diag, 2);
+  PetscAssertPointer(inv_diag, 2);
   *inv_diag = NULL;
   PetscUseMethod((PetscObject)A, "MatDiagonalGetInverseDiagonal_C", (Mat, Vec *), (A, inv_diag));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -255,7 +255,7 @@ PetscErrorCode MatDiagonalRestoreInverseDiagonal(Mat A, Vec *inv_diag)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
-  PetscValidPointer(inv_diag, 2);
+  PetscAssertPointer(inv_diag, 2);
   PetscUseMethod((PetscObject)A, "MatDiagonalRestoreInverseDiagonal_C", (Mat, Vec *), (A, inv_diag));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

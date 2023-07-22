@@ -35,7 +35,7 @@ static inline PetscErrorCode PetscHMapIJVQueryAdd(PetscHMapIJV ht, PetscHashIJKe
   int      ret;
   khiter_t iter;
   PetscFunctionBeginHot;
-  PetscValidPointer(ht, 1);
+  PetscAssertPointer(ht, 1);
   iter = kh_put(HMapIJV, ht, key, &ret);
   PetscHashAssert(ret >= 0);
   if (ret) kh_val(ht, iter) = val;

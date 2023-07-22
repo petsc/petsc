@@ -87,8 +87,8 @@ PetscErrorCode SNESLineSearchShellGetUserFunc(SNESLineSearch linesearch, SNESLin
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(linesearch, SNESLINESEARCH_CLASSID, 1);
-  if (func) PetscValidPointer(func, 2);
-  if (ctx) PetscValidPointer(ctx, 3);
+  if (func) PetscAssertPointer(func, 2);
+  if (ctx) PetscAssertPointer(ctx, 3);
   PetscCall(PetscObjectTypeCompare((PetscObject)linesearch, SNESLINESEARCHSHELL, &flg));
   if (flg) {
     if (func) *func = shell->func;

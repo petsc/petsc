@@ -958,7 +958,7 @@ PetscErrorCode DMCompositeGetLocalISs(DM dm, IS **is)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(is, 2);
+  PetscAssertPointer(is, 2);
   PetscCall(PetscObjectTypeCompare((PetscObject)dm, DMCOMPOSITE, &flg));
   PetscCheck(flg, PetscObjectComm((PetscObject)dm), PETSC_ERR_USER, "Not for type %s", ((PetscObject)dm)->type_name);
   PetscCall(PetscMalloc1(com->nmine, is));
@@ -1729,7 +1729,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_Composite(DM p)
 PetscErrorCode DMCompositeCreate(MPI_Comm comm, DM *packer)
 {
   PetscFunctionBegin;
-  PetscValidPointer(packer, 2);
+  PetscAssertPointer(packer, 2);
   PetscCall(DMCreate(comm, packer));
   PetscCall(DMSetType(*packer, DMCOMPOSITE));
   PetscFunctionReturn(PETSC_SUCCESS);

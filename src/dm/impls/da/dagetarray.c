@@ -54,7 +54,7 @@ PetscErrorCode DMDAVecGetArray(DM da, Vec vec, void *array)
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(da, DM_CLASSID, 1, DMDA);
   PetscValidHeaderSpecific(vec, VEC_CLASSID, 2);
-  PetscValidPointer(array, 3);
+  PetscAssertPointer(array, 3);
   PetscCall(DMDAGetCorners(da, &xs, &ys, &zs, &xm, &ym, &zm));
   PetscCall(DMDAGetGhostCorners(da, &gxs, &gys, &gzs, &gxm, &gym, &gzm));
   PetscCall(DMDAGetInfo(da, &dim, NULL, NULL, NULL, NULL, NULL, NULL, &dof, NULL, NULL, NULL, NULL, NULL));
@@ -112,7 +112,7 @@ PetscErrorCode DMDAVecRestoreArray(DM da, Vec vec, void *array)
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(da, DM_CLASSID, 1, DMDA);
   PetscValidHeaderSpecific(vec, VEC_CLASSID, 2);
-  PetscValidPointer(array, 3);
+  PetscAssertPointer(array, 3);
   PetscCall(DMDAGetCorners(da, &xs, &ys, &zs, &xm, &ym, &zm));
   PetscCall(DMDAGetGhostCorners(da, &gxs, &gys, &gzs, &gxm, &gym, &gzm));
   PetscCall(DMDAGetInfo(da, &dim, NULL, NULL, NULL, NULL, NULL, NULL, &dof, NULL, NULL, NULL, NULL, NULL));
@@ -198,7 +198,7 @@ PetscErrorCode DMDAVecGetArrayWrite(DM da, Vec vec, void *array)
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(da, DM_CLASSID, 1, DMDA);
   PetscValidHeaderSpecific(vec, VEC_CLASSID, 2);
-  PetscValidPointer(array, 3);
+  PetscAssertPointer(array, 3);
   if (da->localSection) {
     PetscCall(VecGetArrayWrite(vec, (PetscScalar **)array));
     PetscFunctionReturn(PETSC_SUCCESS);
@@ -259,7 +259,7 @@ PetscErrorCode DMDAVecRestoreArrayWrite(DM da, Vec vec, void *array)
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(da, DM_CLASSID, 1, DMDA);
   PetscValidHeaderSpecific(vec, VEC_CLASSID, 2);
-  PetscValidPointer(array, 3);
+  PetscAssertPointer(array, 3);
   if (da->localSection) {
     PetscCall(VecRestoreArray(vec, (PetscScalar **)array));
     PetscFunctionReturn(PETSC_SUCCESS);
@@ -455,7 +455,7 @@ PetscErrorCode DMDAVecGetArrayRead(DM da, Vec vec, void *array)
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(da, DM_CLASSID, 1, DMDA);
   PetscValidHeaderSpecific(vec, VEC_CLASSID, 2);
-  PetscValidPointer(array, 3);
+  PetscAssertPointer(array, 3);
   PetscCall(DMDAGetCorners(da, &xs, &ys, &zs, &xm, &ym, &zm));
   PetscCall(DMDAGetGhostCorners(da, &gxs, &gys, &gzs, &gxm, &gym, &gzm));
   PetscCall(DMDAGetInfo(da, &dim, NULL, NULL, NULL, NULL, NULL, NULL, &dof, NULL, NULL, NULL, NULL, NULL));
@@ -513,7 +513,7 @@ PetscErrorCode DMDAVecRestoreArrayRead(DM da, Vec vec, void *array)
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(da, DM_CLASSID, 1, DMDA);
   PetscValidHeaderSpecific(vec, VEC_CLASSID, 2);
-  PetscValidPointer(array, 3);
+  PetscAssertPointer(array, 3);
   PetscCall(DMDAGetCorners(da, &xs, &ys, &zs, &xm, &ym, &zm));
   PetscCall(DMDAGetGhostCorners(da, &gxs, &gys, &gzs, &gxm, &gym, &gzm));
   PetscCall(DMDAGetInfo(da, &dim, NULL, NULL, NULL, NULL, NULL, NULL, &dof, NULL, NULL, NULL, NULL, NULL));

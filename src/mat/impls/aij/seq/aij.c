@@ -3643,7 +3643,7 @@ PetscErrorCode MatSeqAIJCompactOutExtraColumns_SeqAIJ(Mat mat, ISLocalToGlobalMa
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
-  PetscValidPointer(mapping, 2);
+  PetscAssertPointer(mapping, 2);
   /* use a table */
   PetscCall(PetscHMapICreateWithSize(mat->rmap->n, &gid1_lid1));
   ec = 0;
@@ -3712,7 +3712,7 @@ PetscErrorCode MatSeqAIJSetColumnIndices(Mat mat, PetscInt *indices)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
-  PetscValidIntPointer(indices, 2);
+  PetscAssertPointer(indices, 2);
   PetscUseMethod(mat, "MatSeqAIJSetColumnIndices_C", (Mat, PetscInt *), (mat, indices));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -4160,7 +4160,7 @@ PetscErrorCode MatSeqAIJKron(Mat A, Mat B, MatReuse reuse, Mat *C)
   PetscValidType(A, 1);
   PetscValidHeaderSpecific(B, MAT_CLASSID, 2);
   PetscValidType(B, 2);
-  PetscValidPointer(C, 4);
+  PetscAssertPointer(C, 4);
   if (reuse == MAT_REUSE_MATRIX) {
     PetscValidHeaderSpecific(*C, MAT_CLASSID, 4);
     PetscValidType(*C, 4);

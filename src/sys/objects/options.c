@@ -153,7 +153,7 @@ static PetscErrorCode PetscOptionsMonitor(PetscOptions options, const char name[
 PetscErrorCode PetscOptionsCreate(PetscOptions *options)
 {
   PetscFunctionBegin;
-  PetscValidPointer(options, 1);
+  PetscAssertPointer(options, 1);
   *options = (PetscOptions)calloc(1, sizeof(**options));
   PetscCheck(*options, PETSC_COMM_SELF, PETSC_ERR_MEM, "Failed to allocate the options database");
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -174,7 +174,7 @@ PetscErrorCode PetscOptionsCreate(PetscOptions *options)
 PetscErrorCode PetscOptionsDestroy(PetscOptions *options)
 {
   PetscFunctionBegin;
-  PetscValidPointer(options, 1);
+  PetscAssertPointer(options, 1);
   if (!*options) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCheck(!(*options)->previous, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "You are destroying an option that has been used with PetscOptionsPush() but does not have a corresponding PetscOptionsPop()");
   PetscCall(PetscOptionsClear(*options));
@@ -286,8 +286,8 @@ PetscErrorCode PetscOptionsValidKey(const char key[], PetscBool *valid)
   char *ptr;
 
   PetscFunctionBegin;
-  if (key) PetscValidCharPointer(key, 1);
-  PetscValidBoolPointer(valid, 2);
+  if (key) PetscAssertPointer(key, 1);
+  PetscAssertPointer(valid, 2);
   *valid = PETSC_FALSE;
   if (!key) PetscFunctionReturn(PETSC_SUCCESS);
   if (key[0] != '-') PetscFunctionReturn(PETSC_SUCCESS);
@@ -786,7 +786,7 @@ static PetscErrorCode PetscOptionsProcessPrecedentFlags(PetscOptions options, in
 static inline PetscErrorCode PetscOptionsSkipPrecedent(PetscOptions options, const char name[], PetscBool *flg)
 {
   PetscFunctionBegin;
-  PetscValidBoolPointer(flg, 3);
+  PetscAssertPointer(flg, 3);
   *flg = PETSC_FALSE;
   if (options->precedentProcessed) {
     for (int i = 0; i < PO_NUM; ++i) {
@@ -1068,7 +1068,7 @@ PetscErrorCode PetscOptionsPrefixPush(PetscOptions options, const char prefix[])
   PetscBool valid;
 
   PetscFunctionBegin;
-  PetscValidCharPointer(prefix, 2);
+  PetscAssertPointer(prefix, 2);
   options = options ? options : defaultoptions;
   PetscCheck(options->prefixind < MAXPREFIXES, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Maximum depth of prefix stack %d exceeded, recompile \n src/sys/objects/options.c with larger value for MAXPREFIXES", MAXPREFIXES);
   key[0] = '-'; /* keys must start with '-' */
@@ -1202,8 +1202,8 @@ PetscErrorCode PetscOptionsSetAlias(PetscOptions options, const char newname[], 
   PetscBool valid;
 
   PetscFunctionBegin;
-  PetscValidCharPointer(newname, 2);
-  PetscValidCharPointer(oldname, 3);
+  PetscAssertPointer(newname, 2);
+  PetscAssertPointer(oldname, 3);
   options = options ? options : defaultoptions;
   PetscCall(PetscOptionsValidKey(newname, &valid));
   PetscCheck(valid, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid aliased option %s", newname);
@@ -1726,7 +1726,7 @@ PetscErrorCode PetscOptionsReject(PetscOptions options, const char pre[], const 
 PetscErrorCode PetscOptionsHasHelp(PetscOptions options, PetscBool *set)
 {
   PetscFunctionBegin;
-  PetscValidBoolPointer(set, 2);
+  PetscAssertPointer(set, 2);
   options = options ? options : defaultoptions;
   *set    = options->help;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -1735,7 +1735,7 @@ PetscErrorCode PetscOptionsHasHelp(PetscOptions options, PetscBool *set)
 PetscErrorCode PetscOptionsHasHelpIntro_Internal(PetscOptions options, PetscBool *set)
 {
   PetscFunctionBegin;
-  PetscValidBoolPointer(set, 2);
+  PetscAssertPointer(set, 2);
   options = options ? options : defaultoptions;
   *set    = options->help_intro;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -1805,7 +1805,7 @@ PetscErrorCode PetscOptionsGetAll(PetscOptions options, char *copts[])
   char    *coptions = NULL;
 
   PetscFunctionBegin;
-  PetscValidPointer(copts, 2);
+  PetscAssertPointer(copts, 2);
   options = options ? options : defaultoptions;
   /* count the length of the required string */
   for (i = 0; i < options->N; i++) {
@@ -1856,8 +1856,8 @@ PetscErrorCode PetscOptionsUsed(PetscOptions options, const char *name, PetscBoo
   PetscInt i;
 
   PetscFunctionBegin;
-  PetscValidCharPointer(name, 2);
-  PetscValidBoolPointer(used, 3);
+  PetscAssertPointer(name, 2);
+  PetscAssertPointer(used, 3);
   options = options ? options : defaultoptions;
   *used   = PETSC_FALSE;
   for (i = 0; i < options->N; i++) {
@@ -1895,7 +1895,7 @@ PetscErrorCode PetscOptionsAllUsed(PetscOptions options, PetscInt *N)
   PetscInt i, n = 0;
 
   PetscFunctionBegin;
-  PetscValidIntPointer(N, 2);
+  PetscAssertPointer(N, 2);
   options = options ? options : defaultoptions;
   for (i = 0; i < options->N; i++) {
     if (!options->used[i]) n++;
@@ -1984,9 +1984,9 @@ PetscErrorCode PetscOptionsLeftGet(PetscOptions options, PetscInt *N, char **nam
   PetscInt i, n;
 
   PetscFunctionBegin;
-  if (N) PetscValidIntPointer(N, 2);
-  if (names) PetscValidPointer(names, 3);
-  if (values) PetscValidPointer(values, 4);
+  if (N) PetscAssertPointer(N, 2);
+  if (names) PetscAssertPointer(names, 3);
+  if (values) PetscAssertPointer(values, 4);
   options = options ? options : defaultoptions;
 
   /* The number of unused PETSc options */
@@ -2035,9 +2035,9 @@ PetscErrorCode PetscOptionsLeftRestore(PetscOptions options, PetscInt *N, char *
 {
   PetscFunctionBegin;
   (void)options;
-  if (N) PetscValidIntPointer(N, 2);
-  if (names) PetscValidPointer(names, 3);
-  if (values) PetscValidPointer(values, 4);
+  if (N) PetscAssertPointer(N, 2);
+  if (names) PetscAssertPointer(names, 3);
+  if (values) PetscAssertPointer(values, 4);
   if (N) *N = 0;
   if (names) PetscCall(PetscFree(*names));
   if (values) PetscCall(PetscFree(*values));
@@ -2392,8 +2392,8 @@ PetscErrorCode PetscOptionsGetBool(PetscOptions options, const char pre[], const
   PetscBool   flag;
 
   PetscFunctionBegin;
-  PetscValidCharPointer(name, 3);
-  if (ivalue) PetscValidBoolPointer(ivalue, 4);
+  PetscAssertPointer(name, 3);
+  if (ivalue) PetscAssertPointer(ivalue, 4);
   PetscCall(PetscOptionsFindPair(options, pre, name, &value, &flag));
   if (flag) {
     if (set) *set = PETSC_TRUE;
@@ -2444,7 +2444,7 @@ PetscErrorCode PetscOptionsGetEList(PetscOptions options, const char pre[], cons
   PetscInt  i;
 
   PetscFunctionBegin;
-  PetscValidCharPointer(opt, 3);
+  PetscAssertPointer(opt, 3);
   for (i = 0; i < ntext; i++) {
     PetscCall(PetscStrlen(list[i], &alen));
     if (alen > len) len = alen;
@@ -2510,7 +2510,7 @@ PetscErrorCode PetscOptionsGetEnum(PetscOptions options, const char pre[], const
   PetscBool fset;
 
   PetscFunctionBegin;
-  PetscValidCharPointer(opt, 3);
+  PetscAssertPointer(opt, 3);
   while (list[ntext++]) PetscCheck(ntext <= 50, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "List argument appears to be wrong or have more than 50 entries");
   PetscCheck(ntext >= 3, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "List argument must have at least two entries: typename and type prefix");
   ntext -= 3;
@@ -2555,8 +2555,8 @@ PetscErrorCode PetscOptionsGetInt(PetscOptions options, const char pre[], const 
   PetscBool   flag;
 
   PetscFunctionBegin;
-  PetscValidCharPointer(name, 3);
-  PetscValidIntPointer(ivalue, 4);
+  PetscAssertPointer(name, 3);
+  PetscAssertPointer(ivalue, 4);
   PetscCall(PetscOptionsFindPair(options, pre, name, &value, &flag));
   if (flag) {
     if (!value) {
@@ -2605,8 +2605,8 @@ PetscErrorCode PetscOptionsGetReal(PetscOptions options, const char pre[], const
   PetscBool   flag;
 
   PetscFunctionBegin;
-  PetscValidCharPointer(name, 3);
-  PetscValidRealPointer(dvalue, 4);
+  PetscAssertPointer(name, 3);
+  PetscAssertPointer(dvalue, 4);
   PetscCall(PetscOptionsFindPair(options, pre, name, &value, &flag));
   if (flag) {
     if (!value) {
@@ -2658,8 +2658,8 @@ PetscErrorCode PetscOptionsGetScalar(PetscOptions options, const char pre[], con
   PetscBool   flag;
 
   PetscFunctionBegin;
-  PetscValidCharPointer(name, 3);
-  PetscValidScalarPointer(dvalue, 4);
+  PetscAssertPointer(name, 3);
+  PetscAssertPointer(dvalue, 4);
   PetscCall(PetscOptionsFindPair(options, pre, name, &value, &flag));
   if (flag) {
     if (!value) {
@@ -2727,8 +2727,8 @@ PetscErrorCode PetscOptionsGetString(PetscOptions options, const char pre[], con
   PetscBool   flag;
 
   PetscFunctionBegin;
-  PetscValidCharPointer(name, 3);
-  PetscValidCharPointer(string, 4);
+  PetscAssertPointer(name, 3);
+  PetscAssertPointer(string, 4);
   PetscCall(PetscOptionsFindPair(options, pre, name, &value, &flag));
   if (!flag) {
     if (set) *set = PETSC_FALSE;
@@ -2777,9 +2777,9 @@ PetscErrorCode PetscOptionsGetBoolArray(PetscOptions options, const char pre[], 
   PetscToken  token;
 
   PetscFunctionBegin;
-  PetscValidCharPointer(name, 3);
-  PetscValidBoolPointer(dvalue, 4);
-  PetscValidIntPointer(nmax, 5);
+  PetscAssertPointer(name, 3);
+  PetscAssertPointer(dvalue, 4);
+  PetscAssertPointer(nmax, 5);
 
   PetscCall(PetscOptionsFindPair(options, pre, name, &svalue, &flag));
   if (!flag || !svalue) {
@@ -2843,10 +2843,10 @@ PetscErrorCode PetscOptionsGetEnumArray(PetscOptions options, const char pre[], 
   PetscToken  token;
 
   PetscFunctionBegin;
-  PetscValidCharPointer(name, 3);
-  PetscValidPointer(list, 4);
-  PetscValidPointer(ivalue, 5);
-  PetscValidIntPointer(nmax, 6);
+  PetscAssertPointer(name, 3);
+  PetscAssertPointer(list, 4);
+  PetscAssertPointer(ivalue, 5);
+  PetscAssertPointer(nmax, 6);
 
   PetscCall(PetscOptionsFindPair(options, pre, name, &svalue, &flag));
   if (!flag || !svalue) {
@@ -2911,9 +2911,9 @@ PetscErrorCode PetscOptionsGetIntArray(PetscOptions options, const char pre[], c
   PetscToken  token;
 
   PetscFunctionBegin;
-  PetscValidCharPointer(name, 3);
-  PetscValidIntPointer(ivalue, 4);
-  PetscValidIntPointer(nmax, 5);
+  PetscAssertPointer(name, 3);
+  PetscAssertPointer(ivalue, 4);
+  PetscAssertPointer(nmax, 5);
 
   PetscCall(PetscOptionsFindPair(options, pre, name, &svalue, &flag));
   if (!flag || !svalue) {
@@ -3006,9 +3006,9 @@ PetscErrorCode PetscOptionsGetRealArray(PetscOptions options, const char pre[], 
   PetscToken  token;
 
   PetscFunctionBegin;
-  PetscValidCharPointer(name, 3);
-  PetscValidRealPointer(dvalue, 4);
-  PetscValidIntPointer(nmax, 5);
+  PetscAssertPointer(name, 3);
+  PetscAssertPointer(dvalue, 4);
+  PetscAssertPointer(nmax, 5);
 
   PetscCall(PetscOptionsFindPair(options, pre, name, &svalue, &flag));
   if (!flag || !svalue) {
@@ -3063,9 +3063,9 @@ PetscErrorCode PetscOptionsGetScalarArray(PetscOptions options, const char pre[]
   PetscToken  token;
 
   PetscFunctionBegin;
-  PetscValidCharPointer(name, 3);
-  PetscValidScalarPointer(dvalue, 4);
-  PetscValidIntPointer(nmax, 5);
+  PetscAssertPointer(name, 3);
+  PetscAssertPointer(dvalue, 4);
+  PetscAssertPointer(nmax, 5);
 
   PetscCall(PetscOptionsFindPair(options, pre, name, &svalue, &flag));
   if (!flag || !svalue) {
@@ -3129,9 +3129,9 @@ PetscErrorCode PetscOptionsGetStringArray(PetscOptions options, const char pre[]
   PetscToken  token;
 
   PetscFunctionBegin;
-  PetscValidCharPointer(name, 3);
-  PetscValidPointer(strings, 4);
-  PetscValidIntPointer(nmax, 5);
+  PetscAssertPointer(name, 3);
+  PetscAssertPointer(strings, 4);
+  PetscAssertPointer(nmax, 5);
 
   PetscCall(PetscOptionsFindPair(options, pre, name, &svalue, &flag));
   if (!flag || !svalue) {
@@ -3201,8 +3201,8 @@ PetscErrorCode PetscOptionsDeprecated_Private(PetscOptionItems *PetscOptionsObje
   MPI_Comm          comm    = PETSC_COMM_SELF;
 
   PetscFunctionBegin;
-  PetscValidCharPointer(oldname, 2);
-  PetscValidCharPointer(version, 4);
+  PetscAssertPointer(oldname, 2);
+  PetscAssertPointer(version, 4);
   if (PetscOptionsObject) {
     prefix  = PetscOptionsObject->prefix;
     options = PetscOptionsObject->options;

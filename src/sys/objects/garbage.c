@@ -53,7 +53,7 @@ PetscErrorCode PetscObjectDelayedDestroy(PetscObject *obj)
   PetscGarbage garbage;
 
   PetscFunctionBegin;
-  PetscValidPointer(obj, 1);
+  PetscAssertPointer(obj, 1);
   /* Don't stash NULL pointers */
   if (*obj != NULL) {
     /* Elaborate check for getting non-cyclic reference counts */

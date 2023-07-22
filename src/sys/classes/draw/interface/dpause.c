@@ -72,7 +72,7 @@ PetscErrorCode PetscDrawGetPause(PetscDraw draw, PetscReal *lpause)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw, PETSC_DRAW_CLASSID, 1);
-  PetscValidRealPointer(lpause, 2);
+  PetscAssertPointer(lpause, 2);
   *lpause = draw->pause;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

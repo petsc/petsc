@@ -50,7 +50,7 @@ PetscErrorCode PetscObjectGetComm(PetscObject obj, MPI_Comm *comm)
 {
   PetscFunctionBegin;
   PetscValidHeader(obj, 1);
-  PetscValidPointer(comm, 2);
+  PetscAssertPointer(comm, 2);
   *comm = obj->comm;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -81,7 +81,7 @@ PetscErrorCode PetscObjectGetTabLevel(PetscObject obj, PetscInt *tab)
 {
   PetscFunctionBegin;
   PetscValidHeader(obj, 1);
-  PetscValidIntPointer(tab, 2);
+  PetscAssertPointer(tab, 2);
   *tab = obj->tablevel;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

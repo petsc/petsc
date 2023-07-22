@@ -176,7 +176,7 @@ PetscErrorCode KSPGuessCreate(MPI_Comm comm, KSPGuess *guess)
   KSPGuess tguess;
 
   PetscFunctionBegin;
-  PetscValidPointer(guess, 2);
+  PetscAssertPointer(guess, 2);
   *guess = NULL;
   PetscCall(KSPInitializePackage());
   PetscCall(PetscHeaderCreate(tguess, KSPGUESS_CLASSID, "KSPGuess", "Initial guess for Krylov Method", "KSPGuess", comm, KSPGuessDestroy, KSPGuessView));
@@ -208,7 +208,7 @@ PetscErrorCode KSPGuessSetType(KSPGuess guess, KSPGuessType type)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(guess, KSPGUESS_CLASSID, 1);
-  PetscValidCharPointer(type, 2);
+  PetscAssertPointer(type, 2);
 
   PetscCall(PetscObjectTypeCompare((PetscObject)guess, type, &match));
   if (match) PetscFunctionReturn(PETSC_SUCCESS);
@@ -243,7 +243,7 @@ PetscErrorCode KSPGuessGetType(KSPGuess guess, KSPGuessType *type)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(guess, KSPGUESS_CLASSID, 1);
-  PetscValidPointer(type, 2);
+  PetscAssertPointer(type, 2);
   *type = ((PetscObject)guess)->type_name;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

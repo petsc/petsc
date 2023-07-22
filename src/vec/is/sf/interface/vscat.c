@@ -502,7 +502,7 @@ PetscErrorCode VecScatterDestroy(VecScatter *sf)
 PetscErrorCode VecScatterCopy(VecScatter sf, VecScatter *newsf)
 {
   PetscFunctionBegin;
-  PetscValidPointer(newsf, 2);
+  PetscAssertPointer(newsf, 2);
   PetscCall(PetscSFDuplicate(sf, PETSCSF_DUPLICATE_GRAPH, newsf));
   PetscCall(PetscSFSetUp(*newsf));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -581,8 +581,8 @@ PetscErrorCode VecScatterView(VecScatter sf, PetscViewer viewer)
 PetscErrorCode VecScatterRemap(VecScatter sf, PetscInt tomap[], PetscInt frommap[])
 {
   PetscFunctionBegin;
-  if (tomap) PetscValidIntPointer(tomap, 2);
-  if (frommap) PetscValidIntPointer(frommap, 3);
+  if (tomap) PetscAssertPointer(tomap, 2);
+  if (frommap) PetscAssertPointer(frommap, 3);
   PetscCall(VecScatterRemap_Internal(sf, tomap, frommap));
   PetscCheck(!frommap, PETSC_COMM_SELF, PETSC_ERR_SUP, "Unable to remap the FROM in scatters yet");
   /* Mark then vector lengths as unknown because we do not know the lengths of the remapped vectors */
@@ -680,7 +680,7 @@ PetscErrorCode VecScatterCreate(Vec x, IS ix, Vec y, IS iy, VecScatter *newsf)
   PetscSF         sf;
 
   PetscFunctionBegin;
-  PetscValidPointer(newsf, 5);
+  PetscAssertPointer(newsf, 5);
   PetscCheck(ix || iy, PetscObjectComm((PetscObject)x), PETSC_ERR_SUP, "Cannot pass default in for both input and output indices");
 
   /* Get comm from x and y */
@@ -1148,9 +1148,9 @@ PetscErrorCode VecScatterCreateToAll(Vec vin, VecScatter *ctx, Vec *vout)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(vin, VEC_CLASSID, 1);
   PetscValidType(vin, 1);
-  PetscValidPointer(ctx, 2);
+  PetscAssertPointer(ctx, 2);
   if (vout) {
-    PetscValidPointer(vout, 3);
+    PetscAssertPointer(vout, 3);
     tmpv = vout;
   } else {
     tmpvout = PETSC_TRUE;
@@ -1222,9 +1222,9 @@ PetscErrorCode VecScatterCreateToZero(Vec vin, VecScatter *ctx, Vec *vout)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(vin, VEC_CLASSID, 1);
   PetscValidType(vin, 1);
-  PetscValidPointer(ctx, 2);
+  PetscAssertPointer(ctx, 2);
   if (vout) {
-    PetscValidPointer(vout, 3);
+    PetscAssertPointer(vout, 3);
     tmpv = vout;
   } else {
     tmpvout = PETSC_TRUE;

@@ -215,7 +215,7 @@ PetscErrorCode PetscDrawIsNull(PetscDraw draw, PetscBool *yes)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw, PETSC_DRAW_CLASSID, 1);
-  PetscValidBoolPointer(yes, 2);
+  PetscAssertPointer(yes, 2);
   PetscCall(PetscObjectTypeCompare((PetscObject)draw, PETSC_DRAW_NULL, yes));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

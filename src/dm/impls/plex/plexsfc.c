@@ -664,7 +664,7 @@ PetscErrorCode DMPlexCreateBoxMesh_Tensor_SFC_Internal(DM dm, PetscInt dim, cons
   const PetscInt *const face_orient_dim[] = {NULL, face_orient_1, face_orient_2, face_orient_3};
 
   PetscFunctionBegin;
-  PetscValidPointer(dm, 1);
+  PetscAssertPointer(dm, 1);
   PetscValidLogicalCollectiveInt(dm, dim, 2);
   PetscCall(DMSetDimension(dm, dim));
   PetscMPIInt rank, size;

@@ -51,7 +51,7 @@ FILE                    *PetscInfoFile                                          
 PetscErrorCode PetscInfoEnabled(PetscClassId classid, PetscBool *enabled)
 {
   PetscFunctionBegin;
-  PetscValidBoolPointer(enabled, 2);
+  PetscAssertPointer(enabled, 2);
   PetscCheck(classid >= PETSC_SMALLEST_CLASSID, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Classid (current: %d) must be equal to or greater than PETSC_SMALLEST_CLASSID", classid);
   *enabled = (PetscBool)(PetscLogPrintInfo && PetscInfoFlags[classid - PETSC_SMALLEST_CLASSID]);
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -101,8 +101,8 @@ PetscErrorCode PetscInfoSetFile(const char filename[], const char mode[])
     PetscMPIInt rank;
     char        fname[PETSC_MAX_PATH_LEN], tname[11];
 
-    PetscValidCharPointer(filename, 1);
-    PetscValidCharPointer(mode, 2);
+    PetscAssertPointer(filename, 1);
+    PetscAssertPointer(mode, 2);
     PetscCall(PetscFixFilename(filename, fname));
     PetscCall(PetscStrallocpy(fname, &PetscInfoFilename));
     PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
@@ -144,8 +144,8 @@ PetscErrorCode PetscInfoSetFile(const char filename[], const char mode[])
 PetscErrorCode PetscInfoGetFile(char **filename, FILE **InfoFile)
 {
   PetscFunctionBegin;
-  PetscValidPointer(filename, 1);
-  PetscValidPointer(InfoFile, 2);
+  PetscAssertPointer(filename, 1);
+  PetscAssertPointer(InfoFile, 2);
   PetscCall(PetscStrallocpy(PetscInfoFilename, filename));
   *InfoFile = PetscInfoFile;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -217,8 +217,8 @@ PetscErrorCode PetscInfoGetClass(const char *classname, PetscBool *found)
   PetscInt unused;
 
   PetscFunctionBegin;
-  PetscValidCharPointer(classname, 1);
-  PetscValidBoolPointer(found, 2);
+  PetscAssertPointer(classname, 1);
+  PetscAssertPointer(found, 2);
   PetscCall(PetscEListFind(PetscInfoNumClasses, (const char *const *)PetscInfoClassnames, classname ? classname : "sys", &unused, found));
   PetscInfoClassesLocked = PETSC_TRUE;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -247,11 +247,11 @@ PetscErrorCode PetscInfoGetClass(const char *classname, PetscBool *found)
 PetscErrorCode PetscInfoGetInfo(PetscBool *infoEnabled, PetscBool *classesSet, PetscBool *exclude, PetscBool *locked, PetscInfoCommFlag *commSelfFlag)
 {
   PetscFunctionBegin;
-  if (infoEnabled) PetscValidBoolPointer(infoEnabled, 1);
-  if (classesSet) PetscValidBoolPointer(classesSet, 2);
-  if (exclude) PetscValidBoolPointer(exclude, 3);
-  if (locked) PetscValidBoolPointer(locked, 4);
-  if (commSelfFlag) PetscValidPointer(commSelfFlag, 5);
+  if (infoEnabled) PetscAssertPointer(infoEnabled, 1);
+  if (classesSet) PetscAssertPointer(classesSet, 2);
+  if (exclude) PetscAssertPointer(exclude, 3);
+  if (locked) PetscAssertPointer(locked, 4);
+  if (commSelfFlag) PetscAssertPointer(commSelfFlag, 5);
   if (infoEnabled) *infoEnabled = PetscLogPrintInfo;
   if (classesSet) *classesSet = PetscInfoClassesSet;
   if (exclude) *exclude = PetscInfoInvertClasses;
@@ -283,9 +283,9 @@ PetscErrorCode PetscInfoProcessClass(const char classname[], PetscInt numClassID
   char      logList[256];
 
   PetscFunctionBegin;
-  PetscValidCharPointer(classname, 1);
+  PetscAssertPointer(classname, 1);
   PetscAssert(numClassID > 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Number of classids %" PetscInt_FMT " <= 0", numClassID);
-  if (numClassID) PetscValidPointer(classIDs, 3);
+  if (numClassID) PetscAssertPointer(classIDs, 3);
   PetscCall(PetscInfoGetInfo(&enabled, NULL, &exclude, NULL, NULL));
   PetscCall(PetscOptionsDeprecated_Private(NULL, "-info_exclude", NULL, "3.13", "Use ~ with -info to indicate classes to exclude"));
   PetscCall(PetscOptionsGetString(NULL, NULL, "-info_exclude", logList, sizeof(logList), &opt));
@@ -598,7 +598,7 @@ PetscErrorCode PetscInfo_Private(const char func[], PetscObject obj, const char 
     PetscValidHeader(obj, 2);
     classid = obj->classid;
   }
-  PetscValidCharPointer(message, 3);
+  PetscAssertPointer(message, 3);
   PetscCall(PetscInfoEnabled(classid, &enabled));
   if (!enabled) PetscFunctionReturn(PETSC_SUCCESS);
   if (obj) {

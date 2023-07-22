@@ -17,7 +17,7 @@ inline PetscErrorCode PetscCxxObjectRegisterFinalize(T *obj, MPI_Comm comm = PET
   };
 
   PetscFunctionBegin;
-  PetscValidPointer(obj, 1);
+  PetscAssertPointer(obj, 1);
   PetscCall(PetscContainerCreate(comm, &contain));
   PetscCall(PetscContainerSetPointer(contain, obj));
   PetscCall(PetscContainerSetUserDestroy(contain, std::move(finalizer)));

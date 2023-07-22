@@ -73,7 +73,7 @@ PetscErrorCode PetscShmCommGet(MPI_Comm globcomm, PetscShmComm *pshmcomm)
   PetscCommCounter *counter;
 
   PetscFunctionBegin;
-  PetscValidPointer(pshmcomm, 2);
+  PetscAssertPointer(pshmcomm, 2);
   /* Get a petsc inner comm, since we always want to stash pshmcomm on petsc inner comms */
   PetscCallMPI(MPI_Comm_get_attr(globcomm, Petsc_Counter_keyval, &counter, &flg));
   if (!flg) { /* globcomm is not a petsc comm */
@@ -151,8 +151,8 @@ PetscErrorCode PetscShmCommGlobalToLocal(PetscShmComm pshmcomm, PetscMPIInt gran
   PetscBool   flg = PETSC_FALSE;
 
   PetscFunctionBegin;
-  PetscValidPointer(pshmcomm, 1);
-  PetscValidIntPointer(lrank, 3);
+  PetscAssertPointer(pshmcomm, 1);
+  PetscAssertPointer(lrank, 3);
   *lrank = MPI_PROC_NULL;
   if (grank < pshmcomm->globranks[0]) PetscFunctionReturn(PETSC_SUCCESS);
   if (grank > pshmcomm->globranks[pshmcomm->shmsize - 1]) PetscFunctionReturn(PETSC_SUCCESS);
@@ -192,8 +192,8 @@ PetscErrorCode PetscShmCommGlobalToLocal(PetscShmComm pshmcomm, PetscMPIInt gran
 PetscErrorCode PetscShmCommLocalToGlobal(PetscShmComm pshmcomm, PetscMPIInt lrank, PetscMPIInt *grank)
 {
   PetscFunctionBegin;
-  PetscValidPointer(pshmcomm, 1);
-  PetscValidIntPointer(grank, 3);
+  PetscAssertPointer(pshmcomm, 1);
+  PetscAssertPointer(grank, 3);
   PetscCheck(lrank >= 0 && lrank < pshmcomm->shmsize, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "No rank %d in the shared memory communicator", lrank);
   *grank = pshmcomm->globranks[lrank];
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -215,8 +215,8 @@ PetscErrorCode PetscShmCommLocalToGlobal(PetscShmComm pshmcomm, PetscMPIInt lran
 PetscErrorCode PetscShmCommGetMpiShmComm(PetscShmComm pshmcomm, MPI_Comm *comm)
 {
   PetscFunctionBegin;
-  PetscValidPointer(pshmcomm, 1);
-  PetscValidPointer(comm, 2);
+  PetscAssertPointer(pshmcomm, 1);
+  PetscAssertPointer(comm, 2);
   *comm = pshmcomm->shmcomm;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

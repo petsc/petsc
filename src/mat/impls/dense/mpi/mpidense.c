@@ -30,7 +30,7 @@ PetscErrorCode MatDenseGetLocalMatrix(Mat A, Mat *B)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
-  PetscValidPointer(B, 2);
+  PetscAssertPointer(B, 2);
   PetscCall(PetscObjectBaseTypeCompare((PetscObject)A, MATMPIDENSE, &flg));
   if (flg) *B = mat->A;
   else {

@@ -222,7 +222,7 @@ PetscErrorCode AOPetscToApplication(AO ao, PetscInt n, PetscInt ia[])
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ao, AO_CLASSID, 1);
-  if (n) PetscValidIntPointer(ia, 3);
+  if (n) PetscAssertPointer(ia, 3);
   PetscUseTypeMethod(ao, petsctoapplication, n, ia);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -257,7 +257,7 @@ PetscErrorCode AOApplicationToPetsc(AO ao, PetscInt n, PetscInt ia[])
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ao, AO_CLASSID, 1);
-  if (n) PetscValidIntPointer(ia, 3);
+  if (n) PetscAssertPointer(ia, 3);
   PetscUseTypeMethod(ao, applicationtopetsc, n, ia);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -292,7 +292,7 @@ PetscErrorCode AOPetscToApplicationPermuteInt(AO ao, PetscInt block, PetscInt ar
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ao, AO_CLASSID, 1);
-  PetscValidIntPointer(array, 3);
+  PetscAssertPointer(array, 3);
   PetscUseTypeMethod(ao, petsctoapplicationpermuteint, block, array);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -327,7 +327,7 @@ PetscErrorCode AOApplicationToPetscPermuteInt(AO ao, PetscInt block, PetscInt ar
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ao, AO_CLASSID, 1);
-  PetscValidIntPointer(array, 3);
+  PetscAssertPointer(array, 3);
   PetscUseTypeMethod(ao, applicationtopetscpermuteint, block, array);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -362,7 +362,7 @@ PetscErrorCode AOPetscToApplicationPermuteReal(AO ao, PetscInt block, PetscReal 
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ao, AO_CLASSID, 1);
-  PetscValidRealPointer(array, 3);
+  PetscAssertPointer(array, 3);
   PetscUseTypeMethod(ao, petsctoapplicationpermutereal, block, array);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -397,7 +397,7 @@ PetscErrorCode AOApplicationToPetscPermuteReal(AO ao, PetscInt block, PetscReal 
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ao, AO_CLASSID, 1);
-  PetscValidRealPointer(array, 3);
+  PetscAssertPointer(array, 3);
   PetscUseTypeMethod(ao, applicationtopetscpermutereal, block, array);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -496,7 +496,7 @@ PetscErrorCode AOCreate(MPI_Comm comm, AO *ao)
   AO aonew;
 
   PetscFunctionBegin;
-  PetscValidPointer(ao, 2);
+  PetscAssertPointer(ao, 2);
   *ao = NULL;
   PetscCall(AOInitializePackage());
 

@@ -264,7 +264,7 @@ PetscErrorCode KSPChebyshevEstEigGetKSP(KSP ksp, KSP *kspest)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
-  PetscValidPointer(kspest, 2);
+  PetscAssertPointer(kspest, 2);
   *kspest = NULL;
   PetscTryMethod(ksp, "KSPChebyshevEstEigGetKSP_C", (KSP, KSP *), (ksp, kspest));
   PetscFunctionReturn(PETSC_SUCCESS);

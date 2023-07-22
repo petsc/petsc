@@ -195,7 +195,7 @@ PetscErrorCode DMDAGetLocalInfo(DM da, DMDALocalInfo *info)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(da, DM_CLASSID, 1, DMDA);
-  PetscValidPointer(info, 2);
+  PetscAssertPointer(info, 2);
   info->da  = da;
   info->dim = da->dim;
   if (dd->Mo < 0) info->mx = dd->M;

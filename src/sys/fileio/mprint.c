@@ -42,8 +42,8 @@ PetscErrorCode PetscFormatConvertGetSize(const char *format, size_t *size)
   PetscInt i  = 0;
 
   PetscFunctionBegin;
-  PetscValidCharPointer(format, 1);
-  PetscValidPointer(size, 2);
+  PetscAssertPointer(format, 1);
+  PetscAssertPointer(size, 2);
   while (format[i]) {
     if (format[i] == '%') {
       if (format[i + 1] == '%') {
@@ -285,7 +285,7 @@ PetscErrorCode PetscVSNPrintf(char *str, size_t len, const char *format, size_t 
 PetscErrorCode PetscFFlush(FILE *fd)
 {
   PetscFunctionBegin;
-  if (fd) PetscValidPointer(fd, 1);
+  if (fd) PetscAssertPointer(fd, 1);
   // could also use PetscCallExternal() here, but since we can get additional error explanation
   // from strerror() we opted for a manual check
   PetscCheck(0 == fflush(fd), PETSC_COMM_SELF, PETSC_ERR_FILE_WRITE, "Error in fflush() due to \"%s\"", strerror(errno));

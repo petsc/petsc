@@ -1171,7 +1171,7 @@ PetscErrorCode PetscIntSortSemiOrdered(PetscInt n, PetscInt arr[])
 {
   PetscFunctionBegin;
   if (n <= 1) PetscFunctionReturn(PETSC_SUCCESS);
-  PetscValidIntPointer(arr, 2);
+  PetscAssertPointer(arr, 2);
   if (n < 64) {
     PetscCall(PetscSortInt(n, arr));
   } else {
@@ -1208,8 +1208,8 @@ PetscErrorCode PetscIntSortSemiOrderedWithArray(PetscInt n, PetscInt arr1[], Pet
 {
   PetscFunctionBegin;
   if (n <= 1) PetscFunctionReturn(PETSC_SUCCESS);
-  PetscValidIntPointer(arr1, 2);
-  PetscValidIntPointer(arr2, 3);
+  PetscAssertPointer(arr1, 2);
+  PetscAssertPointer(arr2, 3);
   /* cannot export out to PetscIntSortWithArray here since it isn't stable */
   PetscCall(PetscTimSortWithArray(n, arr1, sizeof(PetscInt), arr2, sizeof(PetscInt), Compare_PetscInt_Private, NULL));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -1242,7 +1242,7 @@ PetscErrorCode PetscMPIIntSortSemiOrdered(PetscInt n, PetscMPIInt arr[])
 {
   PetscFunctionBegin;
   if (n <= 1) PetscFunctionReturn(PETSC_SUCCESS);
-  PetscValidIntPointer(arr, 2);
+  PetscAssertPointer(arr, 2);
   if (n < 64) {
     PetscCall(PetscSortMPIInt(n, arr));
   } else {
@@ -1279,8 +1279,8 @@ PetscErrorCode PetscMPIIntSortSemiOrderedWithArray(PetscInt n, PetscMPIInt arr1[
 {
   PetscFunctionBegin;
   if (n <= 1) PetscFunctionReturn(PETSC_SUCCESS);
-  PetscValidIntPointer(arr1, 2);
-  PetscValidIntPointer(arr2, 3);
+  PetscAssertPointer(arr1, 2);
+  PetscAssertPointer(arr2, 3);
   /* cannot export out to PetscMPIIntSortWithArray here since it isn't stable */
   PetscCall(PetscTimSortWithArray(n, arr1, sizeof(PetscMPIInt), arr2, sizeof(PetscMPIInt), Compare_PetscMPIInt_Private, NULL));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -1313,7 +1313,7 @@ PetscErrorCode PetscRealSortSemiOrdered(PetscInt n, PetscReal arr[])
 {
   PetscFunctionBegin;
   if (n <= 1) PetscFunctionReturn(PETSC_SUCCESS);
-  PetscValidRealPointer(arr, 2);
+  PetscAssertPointer(arr, 2);
   if (n < 64) {
     PetscCall(PetscSortReal(n, arr));
   } else {
@@ -1348,8 +1348,8 @@ PetscErrorCode PetscRealSortSemiOrderedWithArrayInt(PetscInt n, PetscReal arr1[]
 {
   PetscFunctionBegin;
   if (n <= 1) PetscFunctionReturn(PETSC_SUCCESS);
-  PetscValidRealPointer(arr1, 2);
-  PetscValidIntPointer(arr2, 3);
+  PetscAssertPointer(arr1, 2);
+  PetscAssertPointer(arr2, 3);
   /* cannot export out to PetscRealSortWithArrayInt here since it isn't stable */
   PetscCall(PetscTimSortWithArray(n, arr1, sizeof(PetscReal), arr2, sizeof(PetscInt), Compare_PetscReal_Private, NULL));
   PetscFunctionReturn(PETSC_SUCCESS);

@@ -136,7 +136,7 @@ PetscErrorCode PetscViewerHDF5GetDMPlexStorageVersionWriting(PetscViewer viewer,
 
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(viewer, PETSC_VIEWER_CLASSID, 1, PETSCVIEWERHDF5);
-  PetscValidPointer(version, 2);
+  PetscAssertPointer(version, 2);
   PetscCall(PetscViewerGetAttachedVersion_Private(viewer, DMPLEX_STORAGE_VERSION_WRITING_KEY, version));
   if (*version) PetscFunctionReturn(PETSC_SUCCESS);
 
@@ -175,7 +175,7 @@ PetscErrorCode PetscViewerHDF5GetDMPlexStorageVersionReading(PetscViewer viewer,
 
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(viewer, PETSC_VIEWER_CLASSID, 1, PETSCVIEWERHDF5);
-  PetscValidPointer(version, 2);
+  PetscAssertPointer(version, 2);
   PetscCall(PetscViewerGetAttachedVersion_Private(viewer, DMPLEX_STORAGE_VERSION_READING_KEY, version));
   if (*version) PetscFunctionReturn(PETSC_SUCCESS);
 

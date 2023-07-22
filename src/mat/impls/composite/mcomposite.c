@@ -491,7 +491,7 @@ PetscErrorCode MatCreateComposite(MPI_Comm comm, PetscInt nmat, const Mat *mats,
 
   PetscFunctionBegin;
   PetscCheck(nmat >= 1, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Must pass in at least one matrix");
-  PetscValidPointer(mat, 4);
+  PetscAssertPointer(mat, 4);
 
   PetscCall(MatGetLocalSize(mats[0], PETSC_IGNORE, &n));
   PetscCall(MatGetLocalSize(mats[nmat - 1], &m, PETSC_IGNORE));
@@ -626,7 +626,7 @@ PetscErrorCode MatCompositeGetType(Mat mat, MatCompositeType *type)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
-  PetscValidPointer(type, 2);
+  PetscAssertPointer(type, 2);
   PetscUseMethod(mat, "MatCompositeGetType_C", (Mat, MatCompositeType *), (mat, type));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -692,7 +692,7 @@ PetscErrorCode MatCompositeGetMatStructure(Mat mat, MatStructure *str)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
-  PetscValidPointer(str, 2);
+  PetscAssertPointer(str, 2);
   PetscUseMethod(mat, "MatCompositeGetMatStructure_C", (Mat, MatStructure *), (mat, str));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -847,7 +847,7 @@ PetscErrorCode MatCompositeGetNumberMat(Mat mat, PetscInt *nmat)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
-  PetscValidIntPointer(nmat, 2);
+  PetscAssertPointer(nmat, 2);
   PetscUseMethod(mat, "MatCompositeGetNumberMat_C", (Mat, PetscInt *), (mat, nmat));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -887,7 +887,7 @@ PetscErrorCode MatCompositeGetMat(Mat mat, PetscInt i, Mat *Ai)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
   PetscValidLogicalCollectiveInt(mat, i, 2);
-  PetscValidPointer(Ai, 3);
+  PetscAssertPointer(Ai, 3);
   PetscUseMethod(mat, "MatCompositeGetMat_C", (Mat, PetscInt, Mat *), (mat, i, Ai));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -921,7 +921,7 @@ PetscErrorCode MatCompositeSetScalings(Mat mat, const PetscScalar *scalings)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
-  PetscValidScalarPointer(scalings, 2);
+  PetscAssertPointer(scalings, 2);
   PetscValidLogicalCollectiveScalar(mat, *scalings, 2);
   PetscUseMethod(mat, "MatCompositeSetScalings_C", (Mat, const PetscScalar *), (mat, scalings));
   PetscFunctionReturn(PETSC_SUCCESS);

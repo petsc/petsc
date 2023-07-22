@@ -66,7 +66,7 @@ PetscErrorCode PetscCommGetNewTag(MPI_Comm comm, PetscMPIInt *tag)
   PetscMPIInt      *maxval, flg;
 
   PetscFunctionBegin;
-  PetscValidIntPointer(tag, 2);
+  PetscAssertPointer(tag, 2);
 
   PetscCallMPI(MPI_Comm_get_attr(comm, Petsc_Counter_keyval, &counter, &flg));
   PetscCheck(flg, PETSC_COMM_SELF, PETSC_ERR_ARG_CORRUPT, "Bad MPI communicator supplied; must be a PETSc communicator");
@@ -364,7 +364,7 @@ PetscErrorCode PetscObjectsListGetGlobalNumbering(MPI_Comm comm, PetscInt len, P
   PetscMPIInt size, rank;
 
   PetscFunctionBegin;
-  PetscValidPointer(objlist, 3);
+  PetscAssertPointer(objlist, 3);
   if (!count && !numbering) PetscFunctionReturn(PETSC_SUCCESS);
 
   PetscCallMPI(MPI_Comm_size(comm, &size));

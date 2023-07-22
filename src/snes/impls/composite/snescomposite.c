@@ -613,7 +613,7 @@ PetscErrorCode SNESCompositeGetSNES(SNES snes, PetscInt n, SNES *subsnes)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
-  PetscValidPointer(subsnes, 3);
+  PetscAssertPointer(subsnes, 3);
   PetscUseMethod(snes, "SNESCompositeGetSNES_C", (SNES, PetscInt, SNES *), (snes, n, subsnes));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

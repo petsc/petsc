@@ -107,7 +107,7 @@ PetscErrorCode DMPlexGetScale(DM dm, PetscUnit unit, PetscReal *scale)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidRealPointer(scale, 3);
+  PetscAssertPointer(scale, 3);
   *scale = mesh->scale[unit];
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -435,7 +435,7 @@ static PetscErrorCode DMPlexBasisTransformGetMatrix_Rotation_Internal(DM dm, con
   RotCtx *rc = (RotCtx *)ctx;
 
   PetscFunctionBeginHot;
-  PetscValidPointer(ctx, 5);
+  PetscAssertPointer(ctx, 5);
   if (l2g) {
     *A = rc->R;
   } else {
@@ -2226,7 +2226,7 @@ PetscErrorCode DMPlexComputeIntegralFEM(DM dm, Vec X, PetscScalar *integral, voi
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidHeaderSpecific(X, VEC_CLASSID, 2);
-  PetscValidScalarPointer(integral, 3);
+  PetscAssertPointer(integral, 3);
   PetscCall(PetscLogEventBegin(DMPLEX_IntegralFEM, dm, 0, 0, 0));
   PetscCall(DMGetNumFields(dm, &Nf));
   PetscCall(DMPlexGetVTKCellHeight(dm, &cellHeight));
@@ -2464,9 +2464,9 @@ PetscErrorCode DMPlexComputeBdIntegral(DM dm, Vec X, DMLabel label, PetscInt num
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidHeaderSpecific(X, VEC_CLASSID, 2);
-  PetscValidPointer(label, 3);
-  if (vals) PetscValidIntPointer(vals, 5);
-  PetscValidScalarPointer(integral, 7);
+  PetscValidHeaderSpecific(label, DMLABEL_CLASSID, 3);
+  if (vals) PetscAssertPointer(vals, 5);
+  PetscAssertPointer(integral, 7);
   PetscCall(PetscLogEventBegin(DMPLEX_IntegralFEM, dm, 0, 0, 0));
   PetscCall(DMPlexGetDepthLabel(dm, &depthLabel));
   PetscCall(DMGetDimension(dm, &dim));
@@ -3358,9 +3358,9 @@ PetscErrorCode DMPlexGetCellFields(DM dm, IS cellIS, Vec locX, Vec locX_t, Vec l
   PetscValidHeaderSpecific(locX, VEC_CLASSID, 3);
   if (locX_t) PetscValidHeaderSpecific(locX_t, VEC_CLASSID, 4);
   if (locA) PetscValidHeaderSpecific(locA, VEC_CLASSID, 5);
-  PetscValidPointer(u, 6);
-  PetscValidPointer(u_t, 7);
-  PetscValidPointer(a, 8);
+  PetscAssertPointer(u, 6);
+  PetscAssertPointer(u_t, 7);
+  PetscAssertPointer(a, 8);
   PetscCall(DMPlexConvertPlex(dm, &plex, PETSC_FALSE));
   PetscCall(ISGetPointRange(cellIS, &cStart, &cEnd, &cells));
   PetscCall(DMGetLocalSection(dm, &section));
@@ -3454,9 +3454,9 @@ PetscErrorCode DMPlexGetHybridCellFields(DM dm, IS cellIS, Vec locX, Vec locX_t,
   PetscValidHeaderSpecific(locX, VEC_CLASSID, 3);
   if (locX_t) { PetscValidHeaderSpecific(locX_t, VEC_CLASSID, 4); }
   if (locA) { PetscValidHeaderSpecific(locA, VEC_CLASSID, 5); }
-  PetscValidPointer(u, 6);
-  PetscValidPointer(u_t, 7);
-  PetscValidPointer(a, 8);
+  PetscAssertPointer(u, 6);
+  PetscAssertPointer(u_t, 7);
+  PetscAssertPointer(a, 8);
   PetscCall(ISGetPointRange(cellIS, &cStart, &cEnd, &cells));
   numCells = cEnd - cStart;
   PetscCall(DMPlexConvertPlex(dm, &plex, PETSC_FALSE));
@@ -3593,12 +3593,12 @@ static PetscErrorCode DMPlexGetHybridFields(DM dm, DM dmX[], PetscDS dsX[], IS c
   PetscInt        cStart, cEnd, numCells, c, s, totDimX[2];
 
   PetscFunctionBegin;
-  PetscValidPointer(locX, 5);
+  PetscAssertPointer(locX, 5);
   if (!locX[0] || !locX[1]) PetscFunctionReturn(PETSC_SUCCESS);
-  PetscValidPointer(dmX, 2);
-  PetscValidPointer(dsX, 3);
+  PetscAssertPointer(dmX, 2);
+  PetscAssertPointer(dsX, 3);
   PetscValidHeaderSpecific(cellIS, IS_CLASSID, 4);
-  PetscValidPointer(x, 7);
+  PetscAssertPointer(x, 7);
   PetscCall(ISGetPointRange(cellIS, &cStart, &cEnd, &cells));
   numCells = cEnd - cStart;
   for (s = 0; s < 2; ++s) {
@@ -3695,8 +3695,8 @@ PetscErrorCode DMPlexGetFaceFields(DM dm, PetscInt fStart, PetscInt fEnd, Vec lo
   PetscValidHeaderSpecific(faceGeometry, VEC_CLASSID, 6);
   PetscValidHeaderSpecific(cellGeometry, VEC_CLASSID, 7);
   if (locGrad) PetscValidHeaderSpecific(locGrad, VEC_CLASSID, 8);
-  PetscValidPointer(uL, 10);
-  PetscValidPointer(uR, 11);
+  PetscAssertPointer(uL, 10);
+  PetscAssertPointer(uR, 11);
   PetscCall(DMGetDimension(dm, &dim));
   PetscCall(DMGetDS(dm, &prob));
   PetscCall(DMGetLocalSection(dm, &section));
@@ -3880,8 +3880,8 @@ PetscErrorCode DMPlexGetFaceGeometry(DM dm, PetscInt fStart, PetscInt fEnd, Vec 
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidHeaderSpecific(faceGeometry, VEC_CLASSID, 4);
   PetscValidHeaderSpecific(cellGeometry, VEC_CLASSID, 5);
-  PetscValidPointer(fgeom, 7);
-  PetscValidPointer(vol, 8);
+  PetscAssertPointer(fgeom, 7);
+  PetscAssertPointer(vol, 8);
   PetscCall(DMGetDimension(dm, &dim));
   PetscCall(DMGetLabel(dm, "ghost", &ghostLabel));
   PetscCall(VecGetDM(faceGeometry, &dmFace));
@@ -4472,7 +4472,7 @@ PetscErrorCode DMPlexGetGradientDM(DM dm, PetscFV fv, DM *dmGrad)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidHeaderSpecific(fv, PETSCFV_CLASSID, 2);
-  PetscValidPointer(dmGrad, 3);
+  PetscAssertPointer(dmGrad, 3);
   PetscCall(PetscFVGetComputeGradients(fv, &computeGradients));
   if (!computeGradients) {
     *dmGrad = NULL;

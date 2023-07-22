@@ -1263,7 +1263,7 @@ PetscErrorCode PetscLogGetCurrentEvent_Internal(PetscLogEvent *event)
   PetscBool empty;
 
   PetscFunctionBegin;
-  PetscValidIntPointer(event, 1);
+  PetscAssertPointer(event, 1);
   *event = PETSC_DECIDE;
   PetscCall(PetscIntStackEmpty(current_log_event_stack, &empty));
   if (!empty) PetscCall(PetscIntStackTop(current_log_event_stack, event));

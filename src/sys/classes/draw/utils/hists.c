@@ -62,7 +62,7 @@ PetscErrorCode PetscDrawHGCreate(PetscDraw draw, int bins, PetscDrawHG *hist)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw, PETSC_DRAW_CLASSID, 1);
   PetscValidLogicalCollectiveInt(draw, bins, 2);
-  PetscValidPointer(hist, 3);
+  PetscAssertPointer(hist, 3);
 
   PetscCall(PetscHeaderCreate(h, PETSC_DRAWHG_CLASSID, "DrawHG", "Histogram", "Draw", PetscObjectComm((PetscObject)draw), PetscDrawHGDestroy, NULL));
 
@@ -608,7 +608,7 @@ PetscErrorCode PetscDrawHGGetAxis(PetscDrawHG hist, PetscDrawAxis *axis)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(hist, PETSC_DRAWHG_CLASSID, 1);
-  PetscValidPointer(axis, 2);
+  PetscAssertPointer(axis, 2);
   *axis = hist->axis;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -632,7 +632,7 @@ PetscErrorCode PetscDrawHGGetDraw(PetscDrawHG hist, PetscDraw *draw)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(hist, PETSC_DRAWHG_CLASSID, 1);
-  PetscValidPointer(draw, 2);
+  PetscAssertPointer(draw, 2);
   *draw = hist->win;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

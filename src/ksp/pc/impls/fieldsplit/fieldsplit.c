@@ -2026,9 +2026,9 @@ PetscErrorCode PCFieldSplitSetFields(PC pc, const char splitname[], PetscInt n, 
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
-  PetscValidCharPointer(splitname, 2);
+  PetscAssertPointer(splitname, 2);
   PetscCheck(n >= 1, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_OUTOFRANGE, "Provided number of fields %" PetscInt_FMT " in split \"%s\" not positive", n, splitname);
-  PetscValidIntPointer(fields, 4);
+  PetscAssertPointer(fields, 4);
   PetscTryMethod(pc, "PCFieldSplitSetFields_C", (PC, const char[], PetscInt, const PetscInt *, const PetscInt *), (pc, splitname, n, fields, fields_col));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -2086,7 +2086,7 @@ PetscErrorCode PCFieldSplitGetDiagUseAmat(PC pc, PetscBool *flg)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
-  PetscValidBoolPointer(flg, 2);
+  PetscAssertPointer(flg, 2);
   PetscCall(PetscObjectTypeCompare((PetscObject)pc, PCFIELDSPLIT, &isfs));
   PetscCheck(isfs, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "PC not of type %s", PCFIELDSPLIT);
   *flg = jac->diag_use_amat;
@@ -2146,7 +2146,7 @@ PetscErrorCode PCFieldSplitGetOffDiagUseAmat(PC pc, PetscBool *flg)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
-  PetscValidBoolPointer(flg, 2);
+  PetscAssertPointer(flg, 2);
   PetscCall(PetscObjectTypeCompare((PetscObject)pc, PCFIELDSPLIT, &isfs));
   PetscCheck(isfs, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "PC not of type %s", PCFIELDSPLIT);
   *flg = jac->offdiag_use_amat;
@@ -2177,7 +2177,7 @@ PetscErrorCode PCFieldSplitSetIS(PC pc, const char splitname[], IS is)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
-  if (splitname) PetscValidCharPointer(splitname, 2);
+  if (splitname) PetscAssertPointer(splitname, 2);
   PetscValidHeaderSpecific(is, IS_CLASSID, 3);
   PetscTryMethod(pc, "PCFieldSplitSetIS_C", (PC, const char[], IS), (pc, splitname, is));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -2203,8 +2203,8 @@ PetscErrorCode PCFieldSplitGetIS(PC pc, const char splitname[], IS *is)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
-  PetscValidCharPointer(splitname, 2);
-  PetscValidPointer(is, 3);
+  PetscAssertPointer(splitname, 2);
+  PetscAssertPointer(is, 3);
   {
     PC_FieldSplit    *jac   = (PC_FieldSplit *)pc->data;
     PC_FieldSplitLink ilink = jac->head;
@@ -2244,7 +2244,7 @@ PetscErrorCode PCFieldSplitGetISByIndex(PC pc, PetscInt index, IS *is)
   PetscFunctionBegin;
   PetscCheck(index >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Negative field %" PetscInt_FMT " requested", index);
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
-  PetscValidPointer(is, 3);
+  PetscAssertPointer(is, 3);
   {
     PC_FieldSplit    *jac   = (PC_FieldSplit *)pc->data;
     PC_FieldSplitLink ilink = jac->head;
@@ -2326,7 +2326,7 @@ PetscErrorCode PCFieldSplitGetSubKSP(PC pc, PetscInt *n, KSP *subksp[])
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
-  if (n) PetscValidIntPointer(n, 2);
+  if (n) PetscAssertPointer(n, 2);
   PetscUseMethod(pc, "PCFieldSplitGetSubKSP_C", (PC, PetscInt *, KSP **), (pc, n, subksp));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -2376,7 +2376,7 @@ PetscErrorCode PCFieldSplitSchurGetSubKSP(PC pc, PetscInt *n, KSP *subksp[])
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
-  if (n) PetscValidIntPointer(n, 2);
+  if (n) PetscAssertPointer(n, 2);
   PetscUseMethod(pc, "PCFieldSplitSchurGetSubKSP_C", (PC, PetscInt *, KSP **), (pc, n, subksp));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -2983,7 +2983,7 @@ PetscErrorCode PCFieldSplitGetType(PC pc, PCCompositeType *type)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
-  PetscValidIntPointer(type, 2);
+  PetscAssertPointer(type, 2);
   *type = jac->type;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -3039,7 +3039,7 @@ PetscErrorCode PCFieldSplitGetDMSplits(PC pc, PetscBool *flg)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
-  PetscValidBoolPointer(flg, 2);
+  PetscAssertPointer(flg, 2);
   PetscCall(PetscObjectTypeCompare((PetscObject)pc, PCFIELDSPLIT, &isfs));
   if (isfs) {
     if (flg) *flg = jac->dm_splits;

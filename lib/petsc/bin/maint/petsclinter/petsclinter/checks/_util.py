@@ -11,7 +11,10 @@ from ..classes._cursor  import Cursor
 from ..classes._patch   import Patch
 from ..classes._src_pos import SourceRange, SourceLocation
 
-from ..util._clang import *
+from ..util._clang import (
+  clx_scalar_type_kinds, clx_enum_type_kinds, clx_int_type_kinds, clx_conversion_cursor_kinds,
+  clx_function_type_kinds, clx_var_token_kinds, clx_math_cursor_kinds, clx_pointer_type_kinds
+)
 
 # utilities for checking functions
 
@@ -59,45 +62,6 @@ def convert_to_correct_PetscValidLogicalCollectiveXXX(linter, obj, obj_type, fun
     elif 'PetscMPIInt' in obj.derivedtypename:
       valid_func_name = 'PetscValidLogicalCollectiveMPIInt'
   if valid_func_name:
-    add_function_fix_to_bad_source(linter, obj, func_cursor, valid_func_name)
-    return True
-  return False
-
-def convert_to_correct_PetscValidXXXPointer(linter, obj, obj_type, func_cursor=None, **kwargs):
-  """
-  Try to glean the correct PetscValidLogicalXXXPointer from the type, used as a failure hook in the
-  validpointer checks.
-  """
-  valid_func_name = None
-  obj_type_kind   = obj_type.kind
-  if obj_type_kind in {clx.TypeKind.RECORD, clx.TypeKind.VOID} | clx_pointer_type_kinds:
-    # pointer to struct or void pointer, use PetscValidPointer() instead
-    valid_func_name = 'PetscValidPointer'
-  elif obj_type_kind in clx_char_type_kinds:
-    valid_func_name = 'PetscValidCharPointer'
-  elif obj_type_kind in clx_scalar_type_kinds:
-    if 'PetscReal' in obj.derivedtypename:
-      valid_func_name = 'PetscValidRealPointer'
-    elif 'PetscScalar' in obj.derivedtypename:
-      valid_func_name = 'PetscValidScalarPointer'
-  elif obj_type_kind in clx_enum_type_kinds:
-    if 'PetscBool' in obj.derivedtypename:
-      valid_func_name = 'PetscValidBoolPointer'
-  elif obj_type_kind in clx_int_type_kinds:
-    if ('PetscInt' in obj.derivedtypename) or ('PetscMPIInt' in obj.derivedtypename):
-      valid_func_name = 'PetscValidIntPointer'
-  if valid_func_name:
-    if valid_func_name != 'PetscValidPointer':
-      count = 0
-      while obj_type.kind == clx.TypeKind.INCOMPLETEARRAY or count > 100:
-        count   += 1
-        obj_type = obj_type.element_type
-      while obj_type.kind == clx.TypeKind.POINTER or count > 100:
-        count   += 1
-        obj_type = obj_type.get_pointee()
-      if count != 0:
-        mess = f'\n{Cursor.error_view_from_cursor(obj)}\n\nExpected to select PetscValidPointer() for object of clang type {obj_type.kind} (a pointer of arrity > 1), chose {valid_func_name}() instead'
-        raise RuntimeError(mess)
     add_function_fix_to_bad_source(linter, obj, func_cursor, valid_func_name)
     return True
   return False
@@ -393,7 +357,7 @@ def check_matching_arg_num(linter, obj, idx, parent_args):
   if idx.canonical.kind not in clx_math_cursor_kinds:
     # sometimes it is impossible to tell if the index is correct so this is a warning not
     # an error. For example in the case of a loop:
-    # for (i = 0; i < n; ++i) PetscValidIntPointer(arr+i, i);
+    # for (i = 0; i < n; ++i) PetscAssertPointer(arr+i, i);
     linter.add_warning_from_cursor(
       idx, Diagnostic(
         diag_name, f"Index value is of unexpected type '{idx.canonical.kind}'", obj.extent.start
@@ -471,7 +435,7 @@ def check_matching_specific_type(linter, obj, expected_type_kinds, pointer, unex
   success_function                - the object matches the type and pointer specification
   failure_function                - the object does NOT match the base type
   permissive                      - allow type mismatch (e.g. when checking generic functions like
-                                    PetscValidPointer() which can accept anytype)
+                                    PetscAssertPointer() which can accept anytype)
   pointer_depth                   - how many levels of pointer to remove (-1 for no limit)
 
   The hooks must return whether they handled the failure, this can mean either determining

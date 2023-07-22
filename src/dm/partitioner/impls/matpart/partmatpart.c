@@ -33,7 +33,7 @@ PetscErrorCode PetscPartitionerMatPartitioningGetMatPartitioning(PetscPartitione
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part, PETSCPARTITIONER_CLASSID, 1);
-  PetscValidPointer(mp, 2);
+  PetscAssertPointer(mp, 2);
   PetscUseMethod(part, "PetscPartitionerMatPartitioningGetMatPartitioning_C", (PetscPartitioner, MatPartitioning *), (part, mp));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -556,13 +556,13 @@ public:
     cupmError_t             cerr;
 
     PetscFunctionBegin;
-    if (type) PetscValidPointer(type, 2);
+    if (type) PetscAssertPointer(type, 2);
     if (registered) {
-      PetscValidBoolPointer(registered, 3);
+      PetscAssertPointer(registered, 3);
       *registered = PETSC_FALSE;
     }
     if (managed) {
-      PetscValidBoolPointer(managed, 4);
+      PetscAssertPointer(managed, 4);
       *managed = PETSC_FALSE;
     }
     // Do not check error, instead reset it via GetLastError() since before CUDA 11.0, passing
@@ -611,7 +611,7 @@ public:
     static_assert(!std::is_void<M>::value, "");
 
     PetscFunctionBegin;
-    PetscValidPointer(ptr, 1);
+    PetscAssertPointer(ptr, 1);
     *ptr = nullptr;
     if (n) {
       const auto bytes = n * sizeof(M);
@@ -643,7 +643,7 @@ public:
     static_assert(!std::is_void<M>::value, "");
 
     PetscFunctionBegin;
-    PetscValidPointer(ptr, 1);
+    PetscAssertPointer(ptr, 1);
     *ptr = nullptr;
     if (n) PetscCallCUPM(cupmMallocHost(reinterpret_cast<void **>(ptr), n * sizeof(M), flags));
     PetscFunctionReturn(PETSC_SUCCESS);
@@ -657,7 +657,7 @@ public:
 
     PetscFunctionBegin;
     if (PetscUnlikely(!n)) PetscFunctionReturn(PETSC_SUCCESS);
-    // cannot dereference (i.e. cannot call PetscValidPointer() here)
+    // cannot dereference (i.e. cannot call PetscAssertPointer() here)
     PetscCheck(dest, PETSC_COMM_SELF, PETSC_ERR_POINTER, "Trying to copy to a NULL pointer");
     PetscCheck(src, PETSC_COMM_SELF, PETSC_ERR_POINTER, "Trying to copy from a NULL pointer");
     // do early return after nullptr check since we need to check that they are not both nullptrs

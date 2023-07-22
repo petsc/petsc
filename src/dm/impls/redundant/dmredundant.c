@@ -58,7 +58,7 @@ static PetscErrorCode DMCreateGlobalVector_Redundant(DM dm, Vec *gvec)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(gvec, 2);
+  PetscAssertPointer(gvec, 2);
   *gvec = NULL;
   PetscCall(VecCreate(PetscObjectComm((PetscObject)dm), gvec));
   PetscCall(VecSetSizes(*gvec, red->n, red->N));
@@ -75,7 +75,7 @@ static PetscErrorCode DMCreateLocalVector_Redundant(DM dm, Vec *lvec)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(lvec, 2);
+  PetscAssertPointer(lvec, 2);
   *lvec = NULL;
   PetscCall(VecCreate(PETSC_COMM_SELF, lvec));
   PetscCall(VecSetSizes(*lvec, red->N, red->N));
@@ -399,7 +399,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_Redundant(DM dm)
 PetscErrorCode DMRedundantCreate(MPI_Comm comm, PetscMPIInt rank, PetscInt N, DM *dm)
 {
   PetscFunctionBegin;
-  PetscValidPointer(dm, 4);
+  PetscAssertPointer(dm, 4);
   PetscCall(DMCreate(comm, dm));
   PetscCall(DMSetType(*dm, DMREDUNDANT));
   PetscCall(DMRedundantSetSize(*dm, rank, N));

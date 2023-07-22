@@ -18,7 +18,7 @@ PETSC_EXTERN PetscErrorCode DMCreateMatrix_Moab(DM dm, Mat *J)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(J, 3);
+  PetscAssertPointer(J, 3);
 
   /* next, need to allocate the non-zero arrays to enable pre-allocation */
   mtype = dm->mattype;

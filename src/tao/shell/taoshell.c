@@ -58,7 +58,7 @@ PetscErrorCode TaoShellGetContext(Tao tao, void *ctx)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);
-  PetscValidPointer(ctx, 2);
+  PetscAssertPointer(ctx, 2);
   PetscCall(PetscObjectTypeCompare((PetscObject)tao, TAOSHELL, &flg));
   if (!flg) *(void **)ctx = NULL;
   else *(void **)ctx = ((Tao_Shell *)(tao->data))->ctx;

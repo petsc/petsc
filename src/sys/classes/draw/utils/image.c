@@ -16,9 +16,9 @@ PETSC_EXTERN PetscErrorCode PetscDrawImageSavePPM(const char filename[], unsigne
   unsigned char *rgb;
 
   PetscFunctionBegin;
-  PetscValidCharPointer(filename, 1);
-  if (palette) PetscValidPointer(palette, 2);
-  PetscValidCharPointer(pixels, 5);
+  PetscAssertPointer(filename, 1);
+  if (palette) PetscAssertPointer(palette, 2);
+  PetscAssertPointer(pixels, 5);
   /* map pixels to RGB colors */
   if (palette) {
     int                  k, p, n = (int)(w * h);
@@ -71,9 +71,9 @@ PETSC_EXTERN PetscErrorCode PetscDrawImageSavePNG(const char filename[], unsigne
   unsigned int row, stride = palette ? w : 3 * w;
 
   PetscFunctionBegin;
-  PetscValidCharPointer(filename, 1);
-  if (palette) PetscValidCharPointer(palette, 2);
-  PetscValidCharPointer(pixels, 5);
+  PetscAssertPointer(filename, 1);
+  if (palette) PetscAssertPointer(palette, 2);
+  PetscAssertPointer(pixels, 5);
 
   /* open file and create libpng structures */
   PetscCall(PetscFOpen(PETSC_COMM_SELF, filename, "wb", &fp));
@@ -149,9 +149,9 @@ PETSC_EXTERN PetscErrorCode PetscDrawImageSaveGIF(const char filename[], unsigne
     } while (0)
 
   PetscFunctionBegin;
-  PetscValidCharPointer(filename, 1);
-  PetscValidCharPointer(palette, 2);
-  PetscValidCharPointer(pixels, 5);
+  PetscAssertPointer(filename, 1);
+  PetscAssertPointer(palette, 2);
+  PetscAssertPointer(pixels, 5);
 
   GifCMap = GifMakeMapObject(ColorCount, (GifColorType *)palette);
   if (!GifCMap) SETERRGIF("Allocating colormap");
@@ -183,8 +183,8 @@ PETSC_EXTERN PetscErrorCode PetscDrawMovieSaveGIF(const char pattern[], PetscInt
   #define SETERRGIF(msg, fn) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, msg " GIF file %s", fn)
 
   PetscFunctionBegin;
-  PetscValidCharPointer(pattern, 1);
-  PetscValidCharPointer(movie, 3);
+  PetscAssertPointer(pattern, 1);
+  PetscAssertPointer(movie, 3);
   if (count < 1) PetscFunctionReturn(PETSC_SUCCESS);
 
   for (i = 0; i < count; i++) {
@@ -244,9 +244,9 @@ PETSC_EXTERN PetscErrorCode PetscDrawImageSaveJPG(const char filename[], unsigne
   struct jpeg_error_mgr       jerr;
 
   PetscFunctionBegin;
-  PetscValidCharPointer(filename, 1);
-  if (palette) PetscValidCharPointer(palette, 2);
-  PetscValidCharPointer(pixels, 5);
+  PetscAssertPointer(filename, 1);
+  if (palette) PetscAssertPointer(palette, 2);
+  PetscAssertPointer(pixels, 5);
   /* map pixels to RGB colors */
   if (palette) {
     int                  k, p, n = (int)(w * h);
@@ -324,13 +324,13 @@ PetscErrorCode PetscDrawImageCheckFormat(const char *ext[])
 
   PetscFunctionBegin;
   /* if extension is empty, return default format to caller */
-  PetscValidPointer(ext, 1);
+  PetscAssertPointer(ext, 1);
   if (!*ext || !**ext) {
     *ext = PetscDrawImageSaveTable[0].extension;
     PetscFunctionReturn(PETSC_SUCCESS);
   }
   /* check the extension matches a supported format */
-  PetscValidCharPointer(*ext, 1);
+  PetscAssertPointer(*ext, 1);
   for (k = 0; k < PETSC_STATIC_ARRAY_LENGTH(PetscDrawImageSaveTable); k++) {
     PetscCall(PetscStrcasecmp(*ext, PetscDrawImageSaveTable[k].extension, &match));
     if (match && PetscDrawImageSaveTable[k].SaveImage) PetscFunctionReturn(PETSC_SUCCESS);
@@ -345,10 +345,10 @@ PetscErrorCode PetscDrawImageSave(const char basename[], const char ext[], unsig
   char      filename[PETSC_MAX_PATH_LEN];
 
   PetscFunctionBegin;
-  PetscValidCharPointer(basename, 1);
-  if (ext) PetscValidCharPointer(ext, 2);
-  if (palette) PetscValidPointer(palette, 3);
-  PetscValidCharPointer(pixels, 6);
+  PetscAssertPointer(basename, 1);
+  if (ext) PetscAssertPointer(ext, 2);
+  if (palette) PetscAssertPointer(palette, 3);
+  PetscAssertPointer(pixels, 6);
 
   PetscCall(PetscDrawImageCheckFormat(&ext));
   PetscCall(PetscSNPrintf(filename, sizeof(filename), "%s%s", basename, ext));
@@ -365,7 +365,7 @@ PetscErrorCode PetscDrawImageSave(const char basename[], const char ext[], unsig
 PetscErrorCode PetscDrawMovieCheckFormat(const char *ext[])
 {
   PetscFunctionBegin;
-  PetscValidPointer(ext, 1);
+  PetscAssertPointer(ext, 1);
   if (!*ext || !**ext) *ext = ".m4v";
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -377,9 +377,9 @@ PetscErrorCode PetscDrawMovieSave(const char basename[], PetscInt count, const c
   PetscBool gifinput;
 
   PetscFunctionBegin;
-  PetscValidCharPointer(basename, 1);
-  PetscValidCharPointer(imext, 3);
-  if (mvext) PetscValidCharPointer(mvext, 5);
+  PetscAssertPointer(basename, 1);
+  PetscAssertPointer(imext, 3);
+  if (mvext) PetscAssertPointer(mvext, 5);
   if (count < 1) PetscFunctionReturn(PETSC_SUCCESS);
 
   PetscCall(PetscStrcasecmp(imext, ".gif", &gifinput));

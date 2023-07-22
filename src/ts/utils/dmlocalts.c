@@ -249,11 +249,11 @@ PetscErrorCode DMTSGetIFunctionLocal(DM dm, PetscErrorCode (**func)(DM, PetscRea
   ierr = DMLocalTSGetContext(dm, tdm, &dmlocalts);
   CHKERRQ(ierr);
   if (func) {
-    PetscValidPointer(func, 2);
+    PetscAssertPointer(func, 2);
     *func = dmlocalts->ifunctionlocal;
   }
   if (ctx) {
-    PetscValidPointer(ctx, 3);
+    PetscAssertPointer(ctx, 3);
     *ctx = dmlocalts->ifunctionlocalctx;
   }
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -324,11 +324,11 @@ PetscErrorCode DMTSGetIJacobianLocal(DM dm, PetscErrorCode (**func)(DM, PetscRea
   ierr = DMLocalTSGetContext(dm, tdm, &dmlocalts);
   CHKERRQ(ierr);
   if (func) {
-    PetscValidPointer(func, 2);
+    PetscAssertPointer(func, 2);
     *func = dmlocalts->ijacobianlocal;
   }
   if (ctx) {
-    PetscValidPointer(ctx, 3);
+    PetscAssertPointer(ctx, 3);
     *ctx = dmlocalts->ijacobianlocalctx;
   }
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -396,11 +396,11 @@ PetscErrorCode DMTSGetRHSFunctionLocal(DM dm, PetscErrorCode (**func)(DM, PetscR
   ierr = DMLocalTSGetContext(dm, tdm, &dmlocalts);
   CHKERRQ(ierr);
   if (func) {
-    PetscValidPointer(func, 2);
+    PetscAssertPointer(func, 2);
     *func = dmlocalts->rhsfunctionlocal;
   }
   if (ctx) {
-    PetscValidPointer(ctx, 3);
+    PetscAssertPointer(ctx, 3);
     *ctx = dmlocalts->rhsfunctionlocalctx;
   }
   PetscFunctionReturn(PETSC_SUCCESS);

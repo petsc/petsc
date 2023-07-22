@@ -94,7 +94,7 @@ static inline PetscErrorCode PetscPoisonMemoryRegion(const void *ptr, size_t siz
 {
   PetscFunctionBegin;
   // cannot check ptr as it may be poisoned
-  // PetscValidPointer(ptr, 1);
+  // PetscAssertPointer(ptr, 1);
   if (PetscDefined(HAVE_ASAN)) {
     ASAN_POISON_MEMORY_REGION(ptr, size);
   } else if (PetscDefined(HAVE_VALGRIND_MEMPOISON)) {
@@ -128,7 +128,7 @@ static inline PetscErrorCode PetscUnpoisonMemoryRegion(const void *ptr, size_t s
 {
   PetscFunctionBegin;
   // cannot check pointer as it is poisoned, duh!
-  // PetscValidPointer(ptr, 1);
+  // PetscAssertPointer(ptr, 1);
   if (PetscDefined(HAVE_ASAN)) {
     ASAN_UNPOISON_MEMORY_REGION(ptr, size);
   } else if (PetscDefined(HAVE_VALGRIND_MEMPOISON)) {
@@ -167,8 +167,8 @@ static inline PetscErrorCode PetscIsRegionPoisoned(const void *ptr, size_t size,
 {
   PetscFunctionBegin;
   // cannot check pointer as may be poisoned
-  // PetscValidPointer(ptr, 1);
-  PetscValidBoolPointer(poisoned, 3);
+  // PetscAssertPointer(ptr, 1);
+  PetscAssertPointer(poisoned, 3);
   *poisoned = PETSC_BOOL3_FALSE;
   // if ptr is NULL, or if size = 0 then the "region" is not poisoned
   if (ptr && size) {

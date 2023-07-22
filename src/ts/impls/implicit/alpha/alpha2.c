@@ -659,10 +659,10 @@ PetscErrorCode TSAlpha2GetParams(TS ts, PetscReal *alpha_m, PetscReal *alpha_f, 
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
-  if (alpha_m) PetscValidRealPointer(alpha_m, 2);
-  if (alpha_f) PetscValidRealPointer(alpha_f, 3);
-  if (gamma) PetscValidRealPointer(gamma, 4);
-  if (beta) PetscValidRealPointer(beta, 5);
+  if (alpha_m) PetscAssertPointer(alpha_m, 2);
+  if (alpha_f) PetscAssertPointer(alpha_f, 3);
+  if (gamma) PetscAssertPointer(gamma, 4);
+  if (beta) PetscAssertPointer(beta, 5);
   PetscUseMethod(ts, "TSAlpha2GetParams_C", (TS, PetscReal *, PetscReal *, PetscReal *, PetscReal *), (ts, alpha_m, alpha_f, gamma, beta));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

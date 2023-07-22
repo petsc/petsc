@@ -52,8 +52,8 @@ PetscErrorCode PetscDLOpen(const char name[], PetscDLMode mode, PetscDLHandle *h
   dlhandle_t       dlhandle;
 
   PetscFunctionBegin;
-  PetscValidCharPointer(name, 1);
-  PetscValidPointer(handle, 3);
+  PetscAssertPointer(name, 1);
+  PetscAssertPointer(handle, 3);
 
   dlflags1 = 0;
   dlflags2 = 0;
@@ -140,7 +140,7 @@ PetscErrorCode PetscDLOpen(const char name[], PetscDLMode mode, PetscDLHandle *h
 PetscErrorCode PetscDLClose(PetscDLHandle *handle)
 {
   PetscFunctionBegin;
-  PetscValidPointer(handle, 1);
+  PetscAssertPointer(handle, 1);
 
   /*
      --- FreeLibrary ---
@@ -219,8 +219,8 @@ PetscErrorCode PetscDLSym(PetscDLHandle handle, const char symbol[], void **valu
   dlsymbol_t              dlsymbol;
 
   PetscFunctionBegin;
-  PetscValidCharPointer(symbol, 2);
-  PetscValidPointer(value, 3);
+  PetscAssertPointer(symbol, 2);
+  PetscAssertPointer(value, 3);
 
   dlhandle = (dlhandle_t)0;
   dlsymbol = (dlsymbol_t)0;
@@ -329,7 +329,7 @@ PetscErrorCode PetscDLSym(PetscDLHandle handle, const char symbol[], void **valu
 PetscErrorCode PetscDLAddr(void (*func)(void), char **name)
 {
   PetscFunctionBegin;
-  PetscValidPointer(name, 2);
+  PetscAssertPointer(name, 2);
   *name = NULL;
 #if defined(PETSC_HAVE_DLADDR) && !(defined(__cray__) && defined(__clang__))
   dlerror(); /* clear any previous error */

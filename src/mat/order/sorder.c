@@ -163,8 +163,8 @@ PetscErrorCode MatGetOrdering(Mat mat, MatOrderingType type, IS *rperm, IS *cper
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
-  PetscValidPointer(rperm, 3);
-  PetscValidPointer(cperm, 4);
+  PetscAssertPointer(rperm, 3);
+  PetscAssertPointer(cperm, 4);
   PetscCheck(mat->assembled, PetscObjectComm((PetscObject)mat), PETSC_ERR_ARG_WRONGSTATE, "Not for unassembled matrix");
   PetscCheck(!mat->factortype, PetscObjectComm((PetscObject)mat), PETSC_ERR_ARG_WRONGSTATE, "Not for factored matrix");
   PetscCheck(type, PETSC_COMM_SELF, PETSC_ERR_ARG_NULL, "Ordering type cannot be null");

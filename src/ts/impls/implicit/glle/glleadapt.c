@@ -183,12 +183,12 @@ PetscErrorCode TSGLLEAdaptChoose(TSGLLEAdapt adapt, PetscInt n, const PetscInt o
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(adapt, TSGLLEADAPT_CLASSID, 1);
-  PetscValidIntPointer(orders, 3);
-  PetscValidRealPointer(errors, 4);
-  PetscValidRealPointer(cost, 5);
-  PetscValidIntPointer(next_sc, 9);
-  PetscValidRealPointer(next_h, 10);
-  PetscValidBoolPointer(finish, 11);
+  PetscAssertPointer(orders, 3);
+  PetscAssertPointer(errors, 4);
+  PetscAssertPointer(cost, 5);
+  PetscAssertPointer(next_sc, 9);
+  PetscAssertPointer(next_h, 10);
+  PetscAssertPointer(finish, 11);
   PetscUseTypeMethod(adapt, choose, n, orders, errors, cost, cur, h, tleft, next_sc, next_h, finish);
   PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -87,7 +87,7 @@ static PetscErrorCode MatGetNonzeroColumnsLocal_Private(Mat PT, IS *cis)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(PT, MAT_CLASSID, 1);
-  PetscValidPointer(cis, 2);
+  PetscAssertPointer(cis, 2);
   PetscCall(PetscObjectGetComm((PetscObject)PT, &comm));
   bs = 1;
   PetscCall(PetscObjectBaseTypeCompare((PetscObject)PT, MATMPIAIJ, &ismpiaij));
@@ -2069,7 +2069,7 @@ PetscErrorCode MatISGetMPIXAIJ(Mat mat, MatReuse reuse, Mat *newmat)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
   PetscValidLogicalCollectiveEnum(mat, reuse, 2);
-  PetscValidPointer(newmat, 3);
+  PetscAssertPointer(newmat, 3);
   if (reuse == MAT_REUSE_MATRIX) {
     PetscValidHeaderSpecific(*newmat, MAT_CLASSID, 3);
     PetscCheckSameComm(mat, 1, *newmat, 3);
@@ -2841,7 +2841,7 @@ PetscErrorCode MatISGetLocalMat(Mat mat, Mat *local)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
-  PetscValidPointer(local, 2);
+  PetscAssertPointer(local, 2);
   PetscUseMethod(mat, "MatISGetLocalMat_C", (Mat, Mat *), (mat, local));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -2861,7 +2861,7 @@ PetscErrorCode MatISRestoreLocalMat(Mat mat, Mat *local)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
-  PetscValidPointer(local, 2);
+  PetscAssertPointer(local, 2);
   PetscUseMethod(mat, "MatISRestoreLocalMat_C", (Mat, Mat *), (mat, local));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -3341,8 +3341,8 @@ PetscErrorCode MatISGetLocalToGlobalMapping(Mat A, ISLocalToGlobalMapping *rmapp
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
   PetscValidType(A, 1);
-  if (rmapping) PetscValidPointer(rmapping, 2);
-  if (cmapping) PetscValidPointer(cmapping, 3);
+  if (rmapping) PetscAssertPointer(rmapping, 2);
+  if (cmapping) PetscAssertPointer(cmapping, 3);
   PetscUseMethod(A, "MatISGetLocalToGlobalMapping_C", (Mat, ISLocalToGlobalMapping *, ISLocalToGlobalMapping *), (A, rmapping, cmapping));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

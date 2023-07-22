@@ -1679,7 +1679,7 @@ PetscErrorCode PCHPDDMGetCoarseCorrectionType(PC pc, PCHPDDMCoarseCorrectionType
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   if (type) {
-    PetscValidPointer(type, 2);
+    PetscAssertPointer(type, 2);
     PetscUseMethod(pc, "PCHPDDMGetCoarseCorrectionType_C", (PC, PCHPDDMCoarseCorrectionType *), (pc, type));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -1749,7 +1749,7 @@ PetscErrorCode PCHPDDMGetSTShareSubKSP(PC pc, PetscBool *share)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   if (share) {
-    PetscValidBoolPointer(share, 2);
+    PetscAssertPointer(share, 2);
     PetscUseMethod(pc, "PCHPDDMGetSTShareSubKSP_C", (PC, PetscBool *), (pc, share));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -1808,7 +1808,7 @@ PetscErrorCode HPDDMLoadDL_Private(PetscBool *found)
   char      lib[PETSC_MAX_PATH_LEN], dlib[PETSC_MAX_PATH_LEN], dir[PETSC_MAX_PATH_LEN];
 
   PetscFunctionBegin;
-  PetscValidBoolPointer(found, 1);
+  PetscAssertPointer(found, 1);
   PetscCall(PetscStrncpy(dir, "${PETSC_LIB_DIR}", sizeof(dir)));
   PetscCall(PetscOptionsGetString(nullptr, nullptr, "-hpddm_dir", dir, sizeof(dir), nullptr));
   PetscCall(PetscSNPrintf(lib, sizeof(lib), "%s/libhpddm_petsc", dir));
