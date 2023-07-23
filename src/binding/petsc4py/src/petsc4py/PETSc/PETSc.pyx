@@ -7,9 +7,13 @@ cdef extern from * nogil:
 
     /* Silence Clang warnings in Cython-generated C code */
     #if defined(__clang__)
-    #pragma clang diagnostic ignored "-Wextra-semi-stmt"
-    #pragma clang diagnostic ignored "-Wparentheses-equality"
-    #pragma clang diagnostic ignored "-Wunreachable-code-fallthrough"
+      #pragma clang diagnostic ignored "-Wextra-semi-stmt"
+      #pragma clang diagnostic ignored "-Wparentheses-equality"
+      #pragma clang diagnostic ignored "-Wunreachable-code-fallthrough"
+      #pragma clang diagnostic ignored "-Woverlength-strings"
+    #elif defined(__GNUC__) || defined(__GNUG__)
+      #pragma GCC diagnostic ignored "-Wstrict-aliasing"
+      #pragma GCC diagnostic ignored "-Wtype-limits"
     #endif
     """
 
