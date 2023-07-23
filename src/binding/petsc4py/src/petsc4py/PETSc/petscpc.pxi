@@ -362,7 +362,7 @@ cdef extern from * nogil:
 cdef inline PC ref_PC(PetscPC pc):
     cdef PC ob = <PC> PC()
     ob.pc = pc
-    PetscINCREF(ob.obj)
+    CHKERR( PetscINCREF(ob.obj) )
     return ob
 
 cdef PetscErrorCode PCPatch_ComputeOperator(
@@ -484,7 +484,7 @@ cdef PetscErrorCode PCPatch_UserConstructOperator(
     CHKERR(PetscMalloc(<size_t>n[0]*sizeof(PetscIS), userIS))
     for i in range(n[0]):
         userIS[0][i] = (<IS?>patches[i]).iset
-        PetscINCREF(<PetscObject*>&(userIS[0][i]))
+        CHKERR( PetscINCREF(<PetscObject*>&(userIS[0][i])) )
     userIterationSet[0] = (<IS?>iterationSet).iset
-    PetscINCREF(<PetscObject*>&(userIterationSet[0]))
+    CHKERR( PetscINCREF(<PetscObject*>&(userIterationSet[0])) )
     return PETSC_SUCCESS

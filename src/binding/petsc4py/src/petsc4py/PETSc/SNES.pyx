@@ -157,7 +157,7 @@ cdef class SNES(Object):
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef PetscSNES newsnes = NULL
         CHKERR( SNESCreate(ccomm, &newsnes) )
-        PetscCLEAR(self.obj); self.snes = newsnes
+        CHKERR( PetscCLEAR(self.obj) ); self.snes = newsnes
         return self
 
     def setType(self, snes_type: Type | str) -> None:
@@ -287,7 +287,7 @@ cdef class SNES(Object):
         CHKERR( SNESGetDM(self.snes, &newdm) )
         cdef DM dm = subtype_DM(newdm)()
         dm.dm = newdm
-        PetscINCREF(dm.obj)
+        CHKERR( PetscINCREF(dm.obj) )
         return dm
 
     def setDM(self, DM dm) -> None:
@@ -331,7 +331,7 @@ cdef class SNES(Object):
         cdef PetscInt clevel = asInt(level)
         cdef Mat mat = Mat()
         CHKERR( SNESFASGetInterpolation(self.snes, clevel, &mat.mat) )
-        PetscINCREF(mat.obj)
+        CHKERR( PetscINCREF(mat.obj) )
         return mat
 
     def setFASRestriction(self, level: int, Mat mat) -> None:
@@ -361,7 +361,7 @@ cdef class SNES(Object):
         cdef PetscInt clevel = asInt(level)
         cdef Mat mat = Mat()
         CHKERR( SNESFASGetRestriction(self.snes, clevel, &mat.mat) )
-        PetscINCREF(mat.obj)
+        CHKERR( PetscINCREF(mat.obj) )
         return mat
 
     def setFASInjection(self, level: int, Mat mat) -> None:
@@ -391,7 +391,7 @@ cdef class SNES(Object):
         cdef PetscInt clevel = asInt(level)
         cdef Mat mat = Mat()
         CHKERR( SNESFASGetInjection(self.snes, clevel, &mat.mat) )
-        PetscINCREF(mat.obj)
+        CHKERR( PetscINCREF(mat.obj) )
         return mat
 
     def setFASRScale(self, level: int, Vec vec) -> None:
@@ -469,7 +469,7 @@ cdef class SNES(Object):
         cdef PetscInt clevel = asInt(level)
         cdef SNES lsnes = SNES()
         CHKERR( SNESFASGetCycleSNES(self.snes, clevel, &lsnes.snes) )
-        PetscINCREF(lsnes.obj)
+        CHKERR( PetscINCREF(lsnes.obj) )
         return lsnes
 
     def getFASCoarseSolve(self) -> SNES:
@@ -484,7 +484,7 @@ cdef class SNES(Object):
         """
         cdef SNES smooth = SNES()
         CHKERR( SNESFASGetCoarseSolve(self.snes, &smooth.snes) )
-        PetscINCREF(smooth.obj)
+        CHKERR( PetscINCREF(smooth.obj) )
         return smooth
 
     def getFASSmoother(self, level: int) -> SNES:
@@ -501,7 +501,7 @@ cdef class SNES(Object):
         cdef PetscInt clevel = asInt(level)
         cdef SNES smooth = SNES()
         CHKERR( SNESFASGetSmoother(self.snes, clevel, &smooth.snes) )
-        PetscINCREF(smooth.obj)
+        CHKERR( PetscINCREF(smooth.obj) )
         return smooth
 
     def getFASSmootherDown(self, level: int) -> SNES:
@@ -518,7 +518,7 @@ cdef class SNES(Object):
         cdef PetscInt clevel = asInt(level)
         cdef SNES smooth = SNES()
         CHKERR( SNESFASGetSmootherDown(self.snes, clevel, &smooth.snes) )
-        PetscINCREF(smooth.obj)
+        CHKERR( PetscINCREF(smooth.obj) )
         return smooth
 
     def getFASSmootherUp(self, level: int) -> SNES:
@@ -535,7 +535,7 @@ cdef class SNES(Object):
         cdef PetscInt clevel = asInt(level)
         cdef SNES smooth = SNES()
         CHKERR( SNESFASGetSmootherUp(self.snes, clevel, &smooth.snes) )
-        PetscINCREF(smooth.obj)
+        CHKERR( PetscINCREF(smooth.obj) )
         return smooth
 
     # --- nonlinear preconditioner ---
@@ -552,7 +552,7 @@ cdef class SNES(Object):
         """
         cdef SNES snes = SNES()
         CHKERR( SNESGetNPC(self.snes, &snes.snes) )
-        PetscINCREF(snes.obj)
+        CHKERR( PetscINCREF(snes.obj) )
         return snes
 
     def hasNPC(self) -> bool:
@@ -734,7 +734,7 @@ cdef class SNES(Object):
         cdef void* ctx
         cdef PetscErrorCode (*fun)(PetscSNES,PetscVec,PetscVec,void*)
         CHKERR( SNESGetFunction(self.snes, &f.vec, &fun, &ctx) )
-        PetscINCREF(f.obj)
+        CHKERR( PetscINCREF(f.obj) )
         cdef object function = self.get_attr('__function__')
         cdef object context
 
@@ -851,8 +851,8 @@ cdef class SNES(Object):
         cdef Mat J = Mat()
         cdef Mat P = Mat()
         CHKERR( SNESGetJacobian(self.snes, &J.mat, &P.mat, NULL, NULL) )
-        PetscINCREF(J.obj)
-        PetscINCREF(P.obj)
+        CHKERR( PetscINCREF(J.obj) )
+        CHKERR( PetscINCREF(P.obj) )
         cdef object jacobian = self.get_attr('__jacobian__')
         return (J, P, jacobian)
 
@@ -1691,7 +1691,7 @@ cdef class SNES(Object):
         """
         cdef Vec vec = Vec()
         CHKERR( SNESGetRhs(self.snes, &vec.vec) )
-        PetscINCREF(vec.obj)
+        CHKERR( PetscINCREF(vec.obj) )
         return vec
 
     def getSolution(self) -> Vec:
@@ -1706,7 +1706,7 @@ cdef class SNES(Object):
         """
         cdef Vec vec = Vec()
         CHKERR( SNESGetSolution(self.snes, &vec.vec) )
-        PetscINCREF(vec.obj)
+        CHKERR( PetscINCREF(vec.obj) )
         return vec
 
     def setSolution(self, Vec vec) -> None:
@@ -1733,7 +1733,7 @@ cdef class SNES(Object):
         """
         cdef Vec vec = Vec()
         CHKERR( SNESGetSolutionUpdate(self.snes, &vec.vec) )
-        PetscINCREF(vec.obj)
+        CHKERR( PetscINCREF(vec.obj) )
         return vec
 
     # --- linear solver ---
@@ -1762,7 +1762,7 @@ cdef class SNES(Object):
         """
         cdef KSP ksp = KSP()
         CHKERR( SNESGetKSP(self.snes, &ksp.ksp) )
-        PetscINCREF(ksp.obj)
+        CHKERR( PetscINCREF(ksp.obj) )
         return ksp
 
     def setUseEW(self, flag: bool = True, *targs: Any, **kargs: Any) -> None:
@@ -1961,7 +1961,7 @@ cdef class SNES(Object):
         """
         cdef IS inact = IS()
         CHKERR( SNESVIGetInactiveSet(self.snes, &inact.iset) )
-        PetscINCREF(inact.obj)
+        CHKERR( PetscINCREF(inact.obj) )
         return inact
 
     # --- Python ---
@@ -1986,7 +1986,7 @@ cdef class SNES(Object):
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef PetscSNES newsnes = NULL
         CHKERR( SNESCreate(ccomm, &newsnes) )
-        PetscCLEAR(self.obj); self.snes = newsnes
+        CHKERR( PetscCLEAR(self.obj) ); self.snes = newsnes
         CHKERR( SNESSetType(self.snes, SNESPYTHON) )
         CHKERR( SNESPythonSetContext(self.snes, <void*>context) )
         return self
@@ -2064,7 +2064,7 @@ cdef class SNES(Object):
         cdef SNES snes = SNES()
         cn = asInt(n)
         CHKERR( SNESCompositeGetSNES(self.snes, cn, &snes.snes) )
-        PetscINCREF(snes.obj)
+        CHKERR( PetscINCREF(snes.obj) )
         return snes
 
     def getCompositeNumber(self) -> int:
@@ -2096,7 +2096,7 @@ cdef class SNES(Object):
         cdef PetscInt cn = asInt(n)
         cdef SNES snes = SNES()
         CHKERR( SNESNASMGetSNES(self.snes, cn, &snes.snes) )
-        PetscINCREF(snes.obj)
+        CHKERR( PetscINCREF(snes.obj) )
         return snes
 
     def getNASMNumber(self) -> int:

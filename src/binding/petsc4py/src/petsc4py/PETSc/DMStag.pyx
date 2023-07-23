@@ -150,7 +150,7 @@ cdef class DMStag(DM):
             CHKERR( DMStagCreate2d(ccomm, btx, bty, M, N, m, n, dof0, dof1, dof2, stype, swidth, lx, ly, &newda) )
         if dim == 3:
             CHKERR( DMStagCreate3d(ccomm, btx, bty, btz, M, N, P, m, n, p, dof0, dof1, dof2, dof3, stype, swidth, lx, ly, lz, &newda) )
-        PetscCLEAR(self.obj); self.dm = newda
+        CHKERR( PetscCLEAR(self.obj) ); self.dm = newda
         if setUp:
             CHKERR( DMSetUp(self.dm) )
         return self
@@ -785,7 +785,7 @@ cdef class DMStag(DM):
         cdef PetscDM newda = NULL
         CHKERR( DMStagCreateCompatibleDMStag(self.dm, dof0, dof1, dof2, dof3, &newda) )
         cdef DM newdm = type(self)()
-        PetscCLEAR(newdm.obj); newdm.dm = newda
+        CHKERR( PetscCLEAR(newdm.obj) ); newdm.dm = newda
         return newdm
 
     def VecSplitToDMDA(
@@ -822,9 +822,9 @@ cdef class DMStag(DM):
         cdef PetscVec pdavec = NULL
         CHKERR( DMStagVecSplitToDMDA(self.dm, vec.vec, sloc, pc, &pda, &pdavec) )
         cdef DM da = DMDA()
-        PetscCLEAR(da.obj); da.dm = pda
+        CHKERR( PetscCLEAR(da.obj) ); da.dm = pda
         cdef Vec davec = Vec()
-        PetscCLEAR(davec.obj); davec.vec = pdavec
+        CHKERR( PetscCLEAR(davec.obj) ); davec.vec = pdavec
         return (da,davec)
 
     def getVecArray(self, Vec vec) -> None:

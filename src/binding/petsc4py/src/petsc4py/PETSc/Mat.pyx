@@ -485,7 +485,7 @@ cdef class Mat(Object):
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef PetscMat newmat = NULL
         CHKERR( MatCreate(ccomm, &newmat) )
-        PetscCLEAR(self.obj); self.mat = newmat
+        CHKERR( PetscCLEAR(self.obj) ); self.mat = newmat
         return self
 
     def setType(self, mat_type: Type | str) -> None:
@@ -676,7 +676,7 @@ cdef class Mat(Object):
         # create matrix
         cdef PetscMat newmat = NULL
         Mat_Create(MATAIJ, comm, size, bsize, &newmat)
-        PetscCLEAR(self.obj); self.mat = newmat
+        CHKERR( PetscCLEAR(self.obj) ); self.mat = newmat
         # preallocate matrix
         Mat_AllocAIJ(self.mat, nnz, csr)
         return self
@@ -721,7 +721,7 @@ cdef class Mat(Object):
         # create matrix
         cdef PetscMat newmat = NULL
         Mat_Create(MATBAIJ, comm, size, bsize, &newmat)
-        PetscCLEAR(self.obj); self.mat = newmat
+        CHKERR( PetscCLEAR(self.obj) ); self.mat = newmat
         # preallocate matrix
         Mat_AllocAIJ(self.mat, nnz, csr)
         return self
@@ -766,7 +766,7 @@ cdef class Mat(Object):
         # create matrix
         cdef PetscMat newmat = NULL
         Mat_Create(MATSBAIJ, comm, size, bsize, &newmat)
-        PetscCLEAR(self.obj); self.mat = newmat
+        CHKERR( PetscCLEAR(self.obj) ); self.mat = newmat
         # preallocate matrix
         Mat_AllocAIJ(self.mat, nnz, csr)
         return self
@@ -814,7 +814,7 @@ cdef class Mat(Object):
         # create matrix
         cdef PetscMat newmat = NULL
         Mat_Create(MATAIJCRL, comm, size, bsize, &newmat)
-        PetscCLEAR(self.obj); self.mat = newmat
+        CHKERR( PetscCLEAR(self.obj) ); self.mat = newmat
         # preallocate matrix
         Mat_AllocAIJ(self.mat, nnz, csr)
         return self
@@ -965,7 +965,7 @@ cdef class Mat(Object):
                 CHKERR( MatCreateMPIAIJWithArrays(
                     ccomm, m, n, M, N, i, j, v, &newmat) )
                 csr = None
-        PetscCLEAR(self.obj); self.mat = newmat
+        CHKERR( PetscCLEAR(self.obj) ); self.mat = newmat
         self.set_attr('__csr__', csr)
         return self
 
@@ -1001,7 +1001,7 @@ cdef class Mat(Object):
         # create matrix
         cdef PetscMat newmat = NULL
         Mat_Create(MATDENSE, comm, size, bsize, &newmat)
-        PetscCLEAR(self.obj); self.mat = newmat
+        CHKERR( PetscCLEAR(self.obj) ); self.mat = newmat
         # preallocate matrix
         if array is not None:
             array = Mat_AllocDense(self.mat, array)
@@ -1063,7 +1063,7 @@ cdef class Mat(Object):
             if array is not None:
                 array = Mat_AllocDense(self.mat, array)
                 self.set_attr('__array__', array)
-        PetscCLEAR(self.obj); self.mat = newmat
+        CHKERR( PetscCLEAR(self.obj) ); self.mat = newmat
         return self
 
     def setPreallocationDense(self, array: Sequence[Scalar]) -> Self:
@@ -1111,7 +1111,7 @@ cdef class Mat(Object):
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef PetscMat newmat = NULL
         CHKERR( MatCreateScatter(ccomm, scatter.sct, &newmat) )
-        PetscCLEAR(self.obj); self.mat = newmat
+        CHKERR( PetscCLEAR(self.obj) ); self.mat = newmat
         return self
 
     def createNormal(self, Mat mat) -> Self:
@@ -1136,7 +1136,7 @@ cdef class Mat(Object):
         """
         cdef PetscMat newmat = NULL
         CHKERR( MatCreateNormal(mat.mat, &newmat) )
-        PetscCLEAR(self.obj); self.mat = newmat
+        CHKERR( PetscCLEAR(self.obj) ); self.mat = newmat
         return self
 
     def createTranspose(self, Mat mat) -> Self:
@@ -1161,7 +1161,7 @@ cdef class Mat(Object):
         """
         cdef PetscMat newmat = NULL
         CHKERR( MatCreateTranspose(mat.mat, &newmat) )
-        PetscCLEAR(self.obj); self.mat = newmat
+        CHKERR( PetscCLEAR(self.obj) ); self.mat = newmat
         return self
 
     def createNormalHermitian(self, Mat mat) -> Self:
@@ -1186,7 +1186,7 @@ cdef class Mat(Object):
         """
         cdef PetscMat newmat = NULL
         CHKERR( MatCreateNormalHermitian(mat.mat, &newmat) )
-        PetscCLEAR(self.obj); self.mat = newmat
+        CHKERR( PetscCLEAR(self.obj) ); self.mat = newmat
         return self
 
     def createHermitianTranspose(self, Mat mat) -> Self:
@@ -1211,7 +1211,7 @@ cdef class Mat(Object):
         """
         cdef PetscMat newmat = NULL
         CHKERR( MatCreateHermitianTranspose(mat.mat, &newmat) )
-        PetscCLEAR(self.obj); self.mat = newmat
+        CHKERR( PetscCLEAR(self.obj) ); self.mat = newmat
         return self
 
     def createLRC(self, Mat A, Mat U, Vec c, Mat V) -> Self:
@@ -1258,7 +1258,7 @@ cdef class Mat(Object):
         if c is not None: cvec = c.vec
         if V is not None: Vmat = V.mat
         CHKERR( MatCreateLRC(Amat, Umat, cvec, Vmat, &newmat) )
-        PetscCLEAR(self.obj); self.mat = newmat
+        CHKERR( PetscCLEAR(self.obj) ); self.mat = newmat
         return self
 
     def createSubMatrixVirtual(self, Mat A, IS isrow, IS iscol=None) -> Self:
@@ -1283,7 +1283,7 @@ cdef class Mat(Object):
         if iscol is None: iscol = isrow
         cdef PetscMat newmat = NULL
         CHKERR( MatCreateSubMatrixVirtual(A.mat, isrow.iset, iscol.iset, &newmat) )
-        PetscCLEAR(self.obj); self.mat = newmat
+        CHKERR( PetscCLEAR(self.obj) ); self.mat = newmat
         return self
 
     def createNest(
@@ -1351,7 +1351,7 @@ cdef class Mat(Object):
             for j from 0 <= j < mc: ciscols[j] = (<IS?>iscols[j]).iset
         cdef PetscMat newmat = NULL
         CHKERR( MatCreateNest(ccomm, nr, cisrows, nc, ciscols, cmats, &newmat) )
-        PetscCLEAR(self.obj); self.mat = newmat
+        CHKERR( PetscCLEAR(self.obj) ); self.mat = newmat
         return self
 
     def createH2OpusFromMat(
@@ -1431,7 +1431,7 @@ cdef class Mat(Object):
 
         cdef PetscMat newmat = NULL
         CHKERR( MatCreateH2OpusFromMat(A.mat, cdim, coords, cdist, peta, lsize, maxr, pbs, tol, &newmat) )
-        PetscCLEAR(self.obj); self.mat = newmat
+        CHKERR( PetscCLEAR(self.obj) ); self.mat = newmat
         return self
 
     def createIS(
@@ -1482,7 +1482,7 @@ cdef class Mat(Object):
         if lgmapc is not None:
            lgmc = lgmapc.lgm
         CHKERR( MatCreateIS(ccomm, bs, m, n, M, N, lgmr, lgmc, &newmat) )
-        PetscCLEAR(self.obj); self.mat = newmat
+        CHKERR( PetscCLEAR(self.obj) ); self.mat = newmat
         return self
 
     def createPython(self, size: MatSizeSpec, context: Any = None, comm: Comm | None = None) -> Self:
@@ -1514,7 +1514,7 @@ cdef class Mat(Object):
         # FIXME: propagate block sizes?
         cdef PetscMat newmat = NULL
         CHKERR( MatCreate(ccomm, &newmat) )
-        PetscCLEAR(self.obj); self.mat = newmat
+        CHKERR( PetscCLEAR(self.obj) ); self.mat = newmat
         CHKERR( MatSetSizes(self.mat, m, n, M, N) )
         CHKERR( MatSetType(self.mat, MATPYTHON) )
         CHKERR( MatPythonSetContext(self.mat, <void*>context) )
@@ -2650,8 +2650,8 @@ cdef class Mat(Object):
         cdef LGMap cmap = LGMap()
         cdef LGMap rmap = LGMap()
         CHKERR( MatGetLocalToGlobalMapping(self.mat, &rmap.lgm, &cmap.lgm) )
-        PetscINCREF(cmap.obj)
-        PetscINCREF(rmap.obj)
+        CHKERR( PetscINCREF(cmap.obj) )
+        CHKERR( PetscINCREF(rmap.obj) )
         return (rmap, cmap)
 
     def setValueLocal(
@@ -3508,7 +3508,7 @@ cdef class Mat(Object):
         """
         cdef NullSpace nsp = NullSpace()
         CHKERR( MatGetNullSpace(self.mat, &nsp.nsp) )
-        PetscINCREF(nsp.obj)
+        CHKERR( PetscINCREF(nsp.obj) )
         return nsp
 
     def setTransposeNullSpace(self, NullSpace nsp) -> None:
@@ -3535,7 +3535,7 @@ cdef class Mat(Object):
         """
         cdef NullSpace nsp = NullSpace()
         CHKERR( MatGetTransposeNullSpace(self.mat, &nsp.nsp) )
-        PetscINCREF(nsp.obj)
+        CHKERR( PetscINCREF(nsp.obj) )
         return nsp
 
     def setNearNullSpace(self, NullSpace nsp) -> None:
@@ -3562,7 +3562,7 @@ cdef class Mat(Object):
         """
         cdef NullSpace nsp = NullSpace()
         CHKERR( MatGetNearNullSpace(self.mat, &nsp.nsp) )
-        PetscINCREF(nsp.obj)
+        CHKERR( PetscINCREF(nsp.obj) )
         return nsp
 
     # matrix-vector product
@@ -3731,7 +3731,7 @@ cdef class Mat(Object):
         """
         cdef Mat submat = Mat()
         CHKERR( MatGetDiagonalBlock(self.mat, &submat.mat) )
-        PetscINCREF(submat.obj)
+        CHKERR( PetscINCREF(submat.obj) )
         return submat
 
     def increaseOverlap(self, IS iset, overlap: int = 1) -> None:
@@ -3825,7 +3825,7 @@ cdef class Mat(Object):
             CHKERR( PetscMalloc(<size_t>(n+1)*sizeof(PetscMat), &cmats) )
             for i from 0 <= i < n: cmats[i] = (<Mat?>submats[i]).mat
         CHKERR( MatCreateSubMatrices(self.mat, <PetscInt>n, cisrows, ciscols, reuse, &cmats) )
-        for i from 0 <= i < n: PetscINCREF(<PetscObject*>&cmats[i])
+        for i from 0 <= i < n: CHKERR( PetscINCREF(<PetscObject*>&cmats[i]) )
         if reuse == MAT_INITIAL_MATRIX:
             submats = [None] * n
             for i from 0 <= i < n:
@@ -4633,7 +4633,7 @@ cdef class Mat(Object):
         """
         cdef Mat local = Mat()
         CHKERR( MatISGetLocalMat(self.mat, &local.mat) )
-        PetscINCREF(local.obj)
+        CHKERR( PetscINCREF(local.obj) )
         return local
 
     def restoreISLocalMat(self, Mat local not None) -> None:
@@ -4724,10 +4724,10 @@ cdef class Mat(Object):
         cdef Vec c = Vec()
         cdef Mat V = Mat()
         CHKERR( MatLRCGetMats(self.mat, &A.mat, &U.mat, &c.vec, &V.mat) )
-        PetscINCREF(A.obj)
-        PetscINCREF(U.obj)
-        PetscINCREF(c.obj)
-        PetscINCREF(V.obj)
+        CHKERR( PetscINCREF(A.obj) )
+        CHKERR( PetscINCREF(U.obj) )
+        CHKERR( PetscINCREF(c.obj) )
+        CHKERR( PetscINCREF(V.obj) )
         return (A, U, c, V)
 
     def setLRCMats(self, Mat A, Mat U, Vec c=None, Mat V=None):
@@ -5199,7 +5199,7 @@ cdef class Mat(Object):
         """
         cdef Mat mat = type(self)()
         CHKERR( MatDenseGetLocalMatrix(self.mat, &mat.mat) )
-        PetscINCREF(mat.obj)
+        CHKERR( PetscINCREF(mat.obj) )
         return mat
 
     def getDenseColumnVec(self, i: int, mode: AccessModeSpec = 'rw') -> Vec:
@@ -5231,7 +5231,7 @@ cdef class Mat(Object):
             CHKERR( MatDenseGetColumnVecRead(self.mat, _i, &v.vec) )
         else:
             CHKERR( MatDenseGetColumnVecWrite(self.mat, _i, &v.vec) )
-        PetscINCREF(v.obj)
+        CHKERR( PetscINCREF(v.obj) )
         return v
 
     def restoreDenseColumnVec(self, i: int, mode: AccessModeSpec = 'rw') -> None:
@@ -5339,7 +5339,7 @@ cdef class Mat(Object):
         cdef PetscInt idxm = asInt(i)
         cdef PetscInt jdxm = asInt(j)
         CHKERR( MatNestGetSubMat(self.mat, idxm, jdxm, &submat.mat) )
-        PetscINCREF(submat.obj)
+        CHKERR( PetscINCREF(submat.obj) )
         return submat
 
     # DM
@@ -5358,7 +5358,7 @@ cdef class Mat(Object):
         CHKERR( MatGetDM(self.mat, &newdm) )
         cdef DM dm = subtype_DM(newdm)()
         dm.dm = newdm
-        PetscINCREF(dm.obj)
+        CHKERR( PetscINCREF(dm.obj) )
         return dm
 
     def setDM(self, DM dm) -> None:
@@ -5606,7 +5606,7 @@ cdef class NullSpace(Object):
             v[i] = (<Vec?>(vectors[<Py_ssize_t>i])).vec
         cdef PetscNullSpace newnsp = NULL
         CHKERR( MatNullSpaceCreate(ccomm, has_const, nv, v, &newnsp) )
-        PetscCLEAR(self.obj); self.nsp = newnsp
+        CHKERR( PetscCLEAR(self.obj) ); self.nsp = newnsp
         return self
 
     def createRigidBody(self, Vec coords) -> Self:
@@ -5627,7 +5627,7 @@ cdef class NullSpace(Object):
         """
         cdef PetscNullSpace newnsp = NULL
         CHKERR( MatNullSpaceCreateRigidBody(coords.vec, &newnsp) )
-        PetscCLEAR(self.obj); self.nsp = newnsp
+        CHKERR( PetscCLEAR(self.obj) ); self.nsp = newnsp
         return self
 
     def setFunction(
@@ -5697,7 +5697,7 @@ cdef class NullSpace(Object):
         for i from 0 <= i < nv:
             vec = Vec()
             vec.vec = v[i]
-            PetscINCREF(vec.obj)
+            CHKERR( PetscINCREF(vec.obj) )
             vectors.append(vec)
         return vectors
 

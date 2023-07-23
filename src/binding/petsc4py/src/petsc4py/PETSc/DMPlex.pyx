@@ -37,7 +37,7 @@ cdef class DMPlex(DM):
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef PetscDM newdm = NULL
         CHKERR( DMPlexCreate(ccomm, &newdm) )
-        PetscCLEAR(self.obj); self.dm = newdm
+        CHKERR( PetscCLEAR(self.obj) ); self.dm = newdm
         return self
 
     def createFromCellList(self, dim: int, cells: Sequence[int], coords: Sequence[float], interpolate: bool | None = True, comm: Comm | None = None) -> Self:
@@ -92,7 +92,7 @@ cdef class DMPlex(DM):
         CHKERR( DMPlexCreateFromCellListPetsc(ccomm, cdim, numCells, numVertices,
                                               numCorners, interp, cellVertices,
                                               spaceDim, vertexCoords, &newdm) )
-        PetscCLEAR(self.obj); self.dm = newdm
+        CHKERR( PetscCLEAR(self.obj) ); self.dm = newdm
         return self
 
     def createBoxMesh(self, faces: Sequence[int], lower: Sequence[float] | None = (0,0,0), upper: Sequence[float] | None = (1,1,1),
@@ -143,7 +143,7 @@ cdef class DMPlex(DM):
         cdef PetscDM   newdm = NULL
         CHKERR( DMPlexCreateBoxMesh(ccomm, dim, csimplex, cfaces,
                                     clower, cupper, btype, cinterp, &newdm) )
-        PetscCLEAR(self.obj); self.dm = newdm
+        CHKERR( PetscCLEAR(self.obj) ); self.dm = newdm
         return self
 
     def createBoxSurfaceMesh(self, faces: Sequence[int], lower: Sequence[float] | None = (0,0,0), upper: Sequence[float] | None = (1,1,1),
@@ -186,7 +186,7 @@ cdef class DMPlex(DM):
         cdef MPI_Comm  ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef PetscDM   newdm = NULL
         CHKERR( DMPlexCreateBoxSurfaceMesh(ccomm, dim, cfaces, clower, cupper, cinterp, &newdm) )
-        PetscCLEAR(self.obj); self.dm = newdm
+        CHKERR( PetscCLEAR(self.obj) ); self.dm = newdm
         return self
 
     def createFromFile(self, filename: str, plexname: str | None = "unnamed", interpolate: bool | None = True, comm: Comm | None = None):
@@ -220,7 +220,7 @@ cdef class DMPlex(DM):
         filename = str2bytes(filename, &cfile)
         plexname = str2bytes(plexname, &pname)
         CHKERR( DMPlexCreateFromFile(ccomm, cfile, pname, interp, &newdm) )
-        PetscCLEAR(self.obj); self.dm = newdm
+        CHKERR( PetscCLEAR(self.obj) ); self.dm = newdm
         return self
 
     def createCGNS(self, cgid: int, interpolate: bool | None = True, comm: Comm | None = None) -> Self:
@@ -248,7 +248,7 @@ cdef class DMPlex(DM):
         cdef PetscDM   newdm = NULL
         cdef PetscInt  ccgid = asInt(cgid)
         CHKERR( DMPlexCreateCGNS(ccomm, ccgid, interp, &newdm) )
-        PetscCLEAR(self.obj); self.dm = newdm
+        CHKERR( PetscCLEAR(self.obj) ); self.dm = newdm
         return self
 
     def createCGNSFromFile(self, filename: str, interpolate: bool | None = True, comm: Comm | None = None) -> Self:
@@ -277,7 +277,7 @@ cdef class DMPlex(DM):
         cdef const char *cfile = NULL
         filename = str2bytes(filename, &cfile)
         CHKERR( DMPlexCreateCGNSFromFile(ccomm, cfile, interp, &newdm) )
-        PetscCLEAR(self.obj); self.dm = newdm
+        CHKERR( PetscCLEAR(self.obj) ); self.dm = newdm
         return self
 
     def createExodusFromFile(self, filename: str, interpolate: bool | None = True, comm: Comm | None = None) -> Self:
@@ -306,7 +306,7 @@ cdef class DMPlex(DM):
         cdef const char *cfile = NULL
         filename = str2bytes(filename, &cfile)
         CHKERR( DMPlexCreateExodusFromFile(ccomm, cfile, interp, &newdm) )
-        PetscCLEAR(self.obj); self.dm = newdm
+        CHKERR( PetscCLEAR(self.obj) ); self.dm = newdm
         return self
 
     def createExodus(self, exoid: int, interpolate: bool | None = True, comm: Comm | None = None) -> Self:
@@ -333,7 +333,7 @@ cdef class DMPlex(DM):
         cdef PetscDM   newdm = NULL
         cdef PetscInt  cexoid = asInt(exoid)
         CHKERR( DMPlexCreateExodus(ccomm, cexoid, interp, &newdm) )
-        PetscCLEAR(self.obj); self.dm = newdm
+        CHKERR( PetscCLEAR(self.obj) ); self.dm = newdm
         return self
 
     def createGmsh(self, Viewer viewer, interpolate: bool | None = True, comm: Comm | None = None) -> Self:
@@ -371,7 +371,7 @@ cdef class DMPlex(DM):
         cdef PetscBool interp = interpolate
         cdef PetscDM   newdm = NULL
         CHKERR( DMPlexCreateGmsh(ccomm, viewer.vwr, interp, &newdm) )
-        PetscCLEAR(self.obj); self.dm = newdm
+        CHKERR( PetscCLEAR(self.obj) ); self.dm = newdm
         return self
 
     def createCohesiveSubmesh(self, hasLagrange: bool, value: int) -> DMPlex:
@@ -714,7 +714,7 @@ cdef class DMPlex(DM):
         """
         cdef DMLabel label = DMLabel()
         CHKERR( DMPlexGetCellTypeLabel(self.dm, &label.dmlabel) )
-        PetscINCREF(label.obj)
+        CHKERR( PetscINCREF(label.obj) )
         return label
 
     def getSupportSize(self, p: int) -> int:
@@ -888,7 +888,7 @@ cdef class DMPlex(DM):
         """
         cdef IS iset = IS()
         CHKERR( DMPlexGetCellNumbering(self.dm, &iset.iset) )
-        PetscINCREF(iset.obj)
+        CHKERR( PetscINCREF(iset.obj) )
         return iset
 
     def getVertexNumbering(self) -> IS:
@@ -901,7 +901,7 @@ cdef class DMPlex(DM):
         """
         cdef IS iset = IS()
         CHKERR( DMPlexGetVertexNumbering(self.dm, &iset.iset) )
-        PetscINCREF(iset.obj)
+        CHKERR( PetscINCREF(iset.obj) )
         return iset
 
     def createPointNumbering(self) -> IS:
@@ -1298,7 +1298,7 @@ cdef class DMPlex(DM):
         if name: name = str2bytes(name, &cname)
         cdef PetscDM   newdm = NULL
         CHKERR( DMPlexGenerate(boundary.dm, cname, interp, &newdm) )
-        PetscCLEAR(self.obj); self.dm = newdm
+        CHKERR( PetscCLEAR(self.obj) ); self.dm = newdm
         return self
 
     def setTriangleOptions(self, opts: str) -> None:
@@ -1498,7 +1498,7 @@ cdef class DMPlex(DM):
         """
         cdef Partitioner part = Partitioner()
         CHKERR( DMPlexGetPartitioner(self.dm, &part.part) )
-        PetscINCREF(part.obj)
+        CHKERR( PetscINCREF(part.obj) )
         return part
 
     def rebalanceSharedPoints(self, entityDepth: int | None = 0, useInitialGuess: bool | None = True, parallel: bool | None = True) -> bool:
@@ -1558,7 +1558,7 @@ cdef class DMPlex(DM):
         cdef SF sf = SF()
         CHKERR( DMPlexDistribute(self.dm, coverlap, &sf.sf, &dmParallel) )
         if dmParallel != NULL:
-            PetscCLEAR(self.obj); self.dm = dmParallel
+            CHKERR( PetscCLEAR(self.obj) ); self.dm = dmParallel
             return sf
 
     def distributeOverlap(self, overlap: int | None = 0) -> SF:
@@ -1587,7 +1587,7 @@ cdef class DMPlex(DM):
         cdef PetscDM dmOverlap = NULL
         CHKERR( DMPlexDistributeOverlap(self.dm, coverlap,
                                         &sf.sf, &dmOverlap) )
-        PetscCLEAR(self.obj); self.dm = dmOverlap
+        CHKERR( PetscCLEAR(self.obj) ); self.dm = dmOverlap
         return sf
 
     def isDistributed(self) -> bool:
@@ -1707,7 +1707,7 @@ cdef class DMPlex(DM):
         """
         cdef PetscDM newdm = NULL
         CHKERR( DMPlexInterpolate(self.dm, &newdm) )
-        PetscCLEAR(self.obj); self.dm = newdm
+        CHKERR( PetscCLEAR(self.obj) ); self.dm = newdm
 
     def uninterpolate(self) -> None:
         """Convert to a mesh with only cells and vertices.
@@ -1722,7 +1722,7 @@ cdef class DMPlex(DM):
         """
         cdef PetscDM newdm = NULL
         CHKERR( DMPlexUninterpolate(self.dm, &newdm) )
-        PetscCLEAR(self.obj); self.dm = newdm
+        CHKERR( PetscCLEAR(self.obj) ); self.dm = newdm
 
     def distributeField(self, SF sf, Section sec, Vec vec,
                         Section newsec=None, Vec newvec=None) -> tuple[Section, Vec]:
@@ -2232,7 +2232,7 @@ cdef class DMPlex(DM):
         cdef PetscInt numGhostCells = 0
         cdef PetscDM dmGhosted = NULL
         CHKERR( DMPlexConstructGhostCells(self.dm, cname, &numGhostCells, &dmGhosted))
-        PetscCLEAR(self.obj); self.dm = dmGhosted
+        CHKERR( PetscCLEAR(self.obj) ); self.dm = dmGhosted
         return toInt(numGhostCells)
 
     # Metric
@@ -3307,7 +3307,7 @@ cdef class DMPlexTransform(Object):
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef PetscDMPlexTransform newtr = NULL
         CHKERR( DMPlexTransformCreate(ccomm, &newtr) )
-        PetscCLEAR(self.obj)
+        CHKERR( PetscCLEAR(self.obj) )
         self.tr = newtr
         return self
 

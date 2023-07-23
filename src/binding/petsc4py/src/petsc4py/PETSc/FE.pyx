@@ -68,7 +68,7 @@ cdef class FE(Object):
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef PetscFE newfe = NULL
         CHKERR( PetscFECreate(ccomm, &newfe) )
-        PetscCLEAR(self.obj); self.fe = newfe
+        CHKERR( PetscCLEAR(self.obj) ); self.fe = newfe
         return self
 
     def createDefault(
@@ -115,7 +115,7 @@ cdef class FE(Object):
         if prefix:
              prefix = str2bytes(prefix, &cprefix)
         CHKERR( PetscFECreateDefault(ccomm, cdim, cnc, cisSimplex, cprefix, cqorder, &newfe))
-        PetscCLEAR(self.obj); self.fe = newfe
+        CHKERR( PetscCLEAR(self.obj) ); self.fe = newfe
         return self
 
     def createLagrange(
@@ -160,7 +160,7 @@ cdef class FE(Object):
         cdef PetscInt cqorder = asInt(qorder)
         cdef PetscBool cisSimplex = asBool(isSimplex)
         CHKERR( PetscFECreateLagrange(ccomm, cdim, cnc, cisSimplex, ck, cqorder, &newfe))
-        PetscCLEAR(self.obj); self.fe = newfe
+        CHKERR( PetscCLEAR(self.obj) ); self.fe = newfe
         return self
 
     def getQuadrature(self) -> Quad:

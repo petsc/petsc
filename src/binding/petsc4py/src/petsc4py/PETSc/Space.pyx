@@ -51,7 +51,7 @@ cdef class Space(Object):
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef PetscSpace newsp = NULL
         CHKERR( PetscSpaceCreate(ccomm, &newsp) )
-        PetscCLEAR(self.obj); self.space = newsp
+        CHKERR( PetscCLEAR(self.obj) ); self.space = newsp
         return self
 
     def destroy(self) -> Self:
@@ -598,7 +598,7 @@ cdef class DualSpace(Object):
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef PetscDualSpace newdsp = NULL
         CHKERR( PetscDualSpaceCreate(ccomm, &newdsp) )
-        PetscCLEAR(self.obj); self.dualspace = newdsp
+        CHKERR( PetscCLEAR(self.obj) ); self.dualspace = newdsp
         return self
 
     def view(self, Viewer viewer=None) -> None:

@@ -72,7 +72,7 @@ cdef class Partitioner(Object):
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef PetscPartitioner newpart = NULL
         CHKERR( PetscPartitionerCreate(ccomm, &newpart) )
-        PetscCLEAR(self.obj); self.part = newpart
+        CHKERR( PetscCLEAR(self.obj) ); self.part = newpart
         return self
 
     def setType(self, part_type: Type | str) -> None:

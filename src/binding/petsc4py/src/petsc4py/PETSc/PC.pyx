@@ -267,7 +267,7 @@ cdef class PC(Object):
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef PetscPC newpc = NULL
         CHKERR( PCCreate(ccomm, &newpc) )
-        PetscCLEAR(self.obj); self.pc = newpc
+        CHKERR( PetscCLEAR(self.obj) ); self.pc = newpc
         return self
 
     def setType(self, pc_type: Type | str) -> None:
@@ -409,8 +409,8 @@ cdef class PC(Object):
         """
         cdef Mat A = Mat(), P = Mat()
         CHKERR( PCGetOperators(self.pc, &A.mat, &P.mat) )
-        PetscINCREF(A.obj)
-        PetscINCREF(P.obj)
+        CHKERR( PetscINCREF(A.obj) )
+        CHKERR( PetscINCREF(P.obj) )
         return (A, P)
 
     def setUseAmat(self, flag: bool) -> None:
@@ -688,7 +688,7 @@ cdef class PC(Object):
         CHKERR( PCGetDM(self.pc, &newdm) )
         cdef DM dm = subtype_DM(newdm)()
         dm.dm = newdm
-        PetscINCREF(dm.obj)
+        CHKERR( PetscINCREF(dm.obj) )
         return dm
 
     def setDM(self, DM dm) -> None:
@@ -755,7 +755,7 @@ cdef class PC(Object):
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef PetscPC newpc = NULL
         CHKERR( PCCreate(ccomm, &newpc) )
-        PetscCLEAR(self.obj); self.pc = newpc
+        CHKERR( PetscCLEAR(self.obj) ); self.pc = newpc
         CHKERR( PCSetType(self.pc, PCPYTHON) )
         CHKERR( PCPythonSetContext(self.pc, <void*>context) )
         return self
@@ -1431,7 +1431,7 @@ cdef class PC(Object):
         """
         cdef Mat mat = Mat()
         CHKERR( PCFactorGetMatrix(self.pc, &mat.mat) )
-        PetscINCREF(mat.obj)
+        CHKERR( PetscINCREF(mat.obj) )
         return mat
 
     # --- FieldSplit ---
@@ -1625,7 +1625,7 @@ cdef class PC(Object):
         cdef PC pc = PC()
         cdef cn = asInt(n)
         CHKERR( PCCompositeGetPC(self.pc, cn, &pc.pc) )
-        PetscINCREF(pc.obj)
+        CHKERR( PetscINCREF(pc.obj) )
         return pc
 
     def addCompositePCType(self, pc_type: Type | str) -> None:
@@ -1661,7 +1661,7 @@ cdef class PC(Object):
         """
         cdef KSP ksp = KSP()
         CHKERR( PCKSPGetKSP(self.pc, &ksp.ksp) )
-        PetscINCREF(ksp.obj)
+        CHKERR( PetscINCREF(ksp.obj) )
         return ksp
 
     # --- MG ---
@@ -1735,7 +1735,7 @@ cdef class PC(Object):
         """
         cdef KSP ksp = KSP()
         CHKERR( PCMGGetCoarseSolve(self.pc, &ksp.ksp) )
-        PetscINCREF(ksp.obj)
+        CHKERR( PetscINCREF(ksp.obj) )
         return ksp
 
     def setMGInterpolation(self, level, Mat mat) -> None:
@@ -1776,7 +1776,7 @@ cdef class PC(Object):
         cdef PetscInt clevel = asInt(level)
         cdef Mat interpolation = Mat()
         CHKERR( PCMGGetInterpolation(self.pc, clevel, &interpolation.mat) )
-        PetscINCREF(interpolation.obj)
+        CHKERR( PetscINCREF(interpolation.obj) )
         return interpolation
 
     def setMGRestriction(self, level: int, Mat mat) -> None:
@@ -1817,7 +1817,7 @@ cdef class PC(Object):
         cdef PetscInt clevel = asInt(level)
         cdef Mat restriction = Mat()
         CHKERR( PCMGGetRestriction(self.pc, clevel, &restriction.mat) )
-        PetscINCREF(restriction.obj)
+        CHKERR( PetscINCREF(restriction.obj) )
         return restriction
 
     def setMGRScale(self, level: int, Vec rscale) -> None:
@@ -1858,7 +1858,7 @@ cdef class PC(Object):
         cdef PetscInt clevel = asInt(level)
         cdef Vec rscale = Vec()
         CHKERR( PCMGGetRScale(self.pc, clevel, &rscale.vec) )
-        PetscINCREF(rscale.obj)
+        CHKERR( PetscINCREF(rscale.obj) )
         return rscale
 
     def getMGSmoother(self, level: int) -> KSP:
@@ -1879,7 +1879,7 @@ cdef class PC(Object):
         cdef PetscInt clevel = asInt(level)
         cdef KSP ksp = KSP()
         CHKERR( PCMGGetSmoother(self.pc, clevel, &ksp.ksp) )
-        PetscINCREF(ksp.obj)
+        CHKERR( PetscINCREF(ksp.obj) )
         return ksp
 
     def getMGSmootherDown(self, level: int) -> KSP:
@@ -1900,7 +1900,7 @@ cdef class PC(Object):
         cdef PetscInt clevel = asInt(level)
         cdef KSP ksp = KSP()
         CHKERR( PCMGGetSmootherDown(self.pc, clevel, &ksp.ksp) )
-        PetscINCREF(ksp.obj)
+        CHKERR( PetscINCREF(ksp.obj) )
         return ksp
 
     def getMGSmootherUp(self, level: int) -> KSP:
@@ -1921,7 +1921,7 @@ cdef class PC(Object):
         cdef PetscInt clevel = asInt(level)
         cdef KSP ksp = KSP()
         CHKERR( PCMGGetSmootherUp(self.pc, clevel, &ksp.ksp) )
-        PetscINCREF(ksp.obj)
+        CHKERR( PetscINCREF(ksp.obj) )
         return ksp
 
     def setMGCycleType(self, cycle_type: MGCycleType) -> None:
@@ -2793,7 +2793,7 @@ cdef class PC(Object):
         """
         cdef KSP ksp = KSP()
         CHKERR( PCDeflationGetCoarseKSP(self.pc, &ksp.ksp) )
-        PetscINCREF(ksp.obj)
+        CHKERR( PetscINCREF(ksp.obj) )
         return ksp
 
     def getDeflationPC(self) -> PC:
@@ -2806,7 +2806,7 @@ cdef class PC(Object):
         """
         cdef PC apc = PC()
         CHKERR( PCDeflationGetPC(self.pc, &apc.pc) )
-        PetscINCREF(apc.obj)
+        CHKERR( PetscINCREF(apc.obj) )
         return apc
 
 # --------------------------------------------------------------------

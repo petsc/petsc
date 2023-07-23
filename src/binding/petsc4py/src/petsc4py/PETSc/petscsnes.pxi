@@ -263,7 +263,7 @@ cdef extern from * nogil: # custom.h
 cdef inline SNES ref_SNES(PetscSNES snes):
     cdef SNES ob = <SNES> SNES()
     ob.snes = snes
-    PetscINCREF(ob.obj)
+    CHKERR( PetscINCREF(ob.obj) )
     return ob
 
 # -----------------------------------------------------------------------------

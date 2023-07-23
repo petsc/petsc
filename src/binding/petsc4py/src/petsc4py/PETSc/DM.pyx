@@ -136,7 +136,7 @@ cdef class DM(Object):
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef PetscDM newdm = NULL
         CHKERR( DMCreate(ccomm, &newdm) )
-        PetscCLEAR(self.obj); self.dm = newdm
+        CHKERR( PetscCLEAR(self.obj) ); self.dm = newdm
         return self
 
     def clone(self) -> DM:
@@ -613,7 +613,7 @@ cdef class DM(Object):
         assert clbl == NULL
         cdef Object field = subtype_Object(cobj)()
         field.obj[0] = cobj
-        PetscINCREF(field.obj)
+        CHKERR( PetscINCREF(field.obj) )
         return (field, None) # TODO REVIEW
 
     def addField(self, Object field, label: str | None = None) -> None:
@@ -704,7 +704,7 @@ cdef class DM(Object):
         """
         cdef DS ds = DS()
         CHKERR( DMGetDS(self.dm, &ds.ds) )
-        PetscINCREF(ds.obj)
+        CHKERR( PetscINCREF(ds.obj) )
         return ds
 
     def copyDS(self, DM dm) -> None:
@@ -811,7 +811,7 @@ cdef class DM(Object):
         """
         cdef Vec vg = Vec()
         CHKERR( DMGetGlobalVector(self.dm, &vg.vec) )
-        PetscINCREF(vg.obj)
+        CHKERR( PetscINCREF(vg.obj) )
         return vg
 
     def restoreGlobalVec(self, Vec vg) -> None:
@@ -844,7 +844,7 @@ cdef class DM(Object):
         """
         cdef Vec vl = Vec()
         CHKERR( DMGetLocalVector(self.dm, &vl.vec) )
-        PetscINCREF(vl.obj)
+        CHKERR( PetscINCREF(vl.obj) )
         return vl
 
     def restoreLocalVec(self, Vec vl) -> None:
@@ -946,7 +946,7 @@ cdef class DM(Object):
         """
         cdef LGMap lgm = LGMap()
         CHKERR( DMGetLocalToGlobalMapping(self.dm, &lgm.lgm) )
-        PetscINCREF(lgm.obj)
+        CHKERR( PetscINCREF(lgm.obj) )
         return lgm
 
     #
@@ -963,7 +963,7 @@ cdef class DM(Object):
         """
         cdef DM cdm = type(self)()
         CHKERR( DMGetCoordinateDM(self.dm, &cdm.dm) )
-        PetscINCREF(cdm.obj)
+        CHKERR( PetscINCREF(cdm.obj) )
         return cdm
 
     def getCoordinateSection(self) -> Section:
@@ -978,7 +978,7 @@ cdef class DM(Object):
         """
         cdef Section sec = Section()
         CHKERR( DMGetCoordinateSection(self.dm, &sec.sec) )
-        PetscINCREF(sec.obj)
+        CHKERR( PetscINCREF(sec.obj) )
         return sec
 
     def setCoordinates(self, Vec c) -> None:
@@ -1010,7 +1010,7 @@ cdef class DM(Object):
         """
         cdef Vec c = Vec()
         CHKERR( DMGetCoordinates(self.dm, &c.vec) )
-        PetscINCREF(c.obj)
+        CHKERR( PetscINCREF(c.obj) )
         return c
 
     def setCoordinatesLocal(self, Vec c) -> None:
@@ -1042,7 +1042,7 @@ cdef class DM(Object):
         """
         cdef Vec c = Vec()
         CHKERR( DMGetCoordinatesLocal(self.dm, &c.vec) )
-        PetscINCREF(c.obj)
+        CHKERR( PetscINCREF(c.obj) )
         return c
 
     def projectCoordinates(self, FE disc) -> Self:
@@ -1472,7 +1472,7 @@ cdef class DM(Object):
         cdef DMLabel dmlabel = DMLabel()
         name = str2bytes(name, &cname)
         CHKERR( DMGetLabel(self.dm, cname, &dmlabel.dmlabel) )
-        PetscINCREF(dmlabel.obj)
+        CHKERR( PetscINCREF(dmlabel.obj) )
         return dmlabel
 
     #
@@ -1497,7 +1497,7 @@ cdef class DM(Object):
         """
         cdef Section sec = Section()
         CHKERR( DMGetLocalSection(self.dm, &sec.sec) )
-        PetscINCREF(sec.obj)
+        CHKERR( PetscINCREF(sec.obj) )
         return sec
 
     def setGlobalSection(self, Section sec) -> None:
@@ -1520,7 +1520,7 @@ cdef class DM(Object):
         """
         cdef Section sec = Section()
         CHKERR( DMGetGlobalSection(self.dm, &sec.sec) )
-        PetscINCREF(sec.obj)
+        CHKERR( PetscINCREF(sec.obj) )
         return sec
 
     setSection = setLocalSection
@@ -1563,7 +1563,7 @@ cdef class DM(Object):
         """
         cdef SF sf = SF()
         CHKERR( DMGetSectionSF(self.dm, &sf.sf) )
-        PetscINCREF(sf.obj)
+        CHKERR( PetscINCREF(sf.obj) )
         return sf
 
     def setSectionSF(self, SF sf) -> None:
@@ -1590,7 +1590,7 @@ cdef class DM(Object):
         """
         cdef SF sf = SF()
         CHKERR( DMGetPointSF(self.dm, &sf.sf) )
-        PetscINCREF(sf.obj)
+        CHKERR( PetscINCREF(sf.obj) )
         return sf
 
     def setPointSF(self, SF sf) -> None:
@@ -1989,7 +1989,7 @@ cdef class DM(Object):
             if cdm != NULL:
                 dm = subtype_DM(cdm[i])()
                 dm.dm = cdm[i]
-                PetscINCREF(dm.obj)
+                CHKERR( PetscINCREF(dm.obj) )
                 dms.append(dm)
             else:
                 dms.append(None)

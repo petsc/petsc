@@ -245,7 +245,7 @@ cdef extern from * nogil:
 cdef inline TAO ref_TAO(PetscTAO tao):
     cdef TAO ob = <TAO> TAO()
     ob.tao = tao
-    PetscINCREF(ob.obj)
+    CHKERR( PetscINCREF(ob.obj) )
     return ob
 
 # --------------------------------------------------------------------
@@ -521,7 +521,7 @@ cdef PetscErrorCode TAO_Monitor(PetscTAO _tao,
 cdef inline TAOLineSearch ref_TAOLS(PetscTAOLineSearch taols):
     cdef TAOLineSearch ob = <TAOLineSearch> TAOLineSearch()
     ob.taols = taols
-    PetscINCREF(ob.obj)
+    CHKERR( PetscINCREF(ob.obj) )
     return ob
 
 # --------------------------------------------------------------------

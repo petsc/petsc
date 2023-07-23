@@ -144,7 +144,7 @@ cdef class Object:
         if cobj == NULL: return None
         cdef Object obj = subtype_Object(cobj)()
         obj.obj[0] = cobj
-        PetscINCREF(obj.obj)
+        CHKERR( PetscINCREF(obj.obj) )
         return obj
 
     def incRef(self):

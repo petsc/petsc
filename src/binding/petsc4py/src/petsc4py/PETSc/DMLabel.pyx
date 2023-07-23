@@ -59,7 +59,7 @@ cdef class DMLabel(Object):
         cdef const char *cname = NULL
         name = str2bytes(name, &cname)
         CHKERR( DMLabelCreate(ccomm, cname, &newdmlabel) )
-        PetscCLEAR(self.obj); self.dmlabel = newdmlabel
+        CHKERR( PetscCLEAR(self.obj) ); self.dmlabel = newdmlabel
         return self
 
     def duplicate(self) -> DMLabel:

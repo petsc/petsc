@@ -80,7 +80,7 @@ cdef class SF(Object):
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef PetscSF newsf = NULL
         CHKERR( PetscSFCreate(ccomm, &newsf) )
-        PetscCLEAR(self.obj); self.sf = newsf
+        CHKERR( PetscCLEAR(self.obj) ); self.sf = newsf
         return self
 
     def setType(self, sf_type: Type | str) -> None:
@@ -258,7 +258,7 @@ cdef class SF(Object):
         """
         cdef SF sf = SF()
         CHKERR( PetscSFGetMultiSF(self.sf, &sf.sf) )
-        PetscINCREF(sf.obj)
+        CHKERR( PetscINCREF(sf.obj) )
         return sf
 
     def createInverse(self) -> SF:

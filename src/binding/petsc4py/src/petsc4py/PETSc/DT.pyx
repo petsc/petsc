@@ -43,7 +43,7 @@ cdef class Quad(Object):
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef PetscQuadrature newquad = NULL
         CHKERR( PetscQuadratureCreate(ccomm, &newquad) )
-        PetscCLEAR(self.obj); self.quad = newquad
+        CHKERR( PetscCLEAR(self.obj) ); self.quad = newquad
         return self
 
     def duplicate(self) -> Quad:

@@ -219,7 +219,7 @@ cdef extern from * nogil: # custom.h
 cdef inline Vec ref_Vec(PetscVec vec):
     cdef Vec ob = <Vec> Vec()
     ob.vec = vec
-    PetscINCREF(ob.obj)
+    CHKERR( PetscINCREF(ob.obj) )
     return ob
 
 # --------------------------------------------------------------------

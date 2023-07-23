@@ -137,7 +137,7 @@ cdef class DMDA(DM):
                              btx, bty, btz, stype, swidth,
                              &newda) )
         if setup and ndim > 0: CHKERR( DMSetUp(newda) )
-        PetscCLEAR(self.obj); self.dm = newda
+        CHKERR( PetscCLEAR(self.obj) ); self.dm = newda
         return self
 
     def duplicate(
@@ -921,7 +921,7 @@ cdef class DMDA(DM):
         """
         cdef AO ao = AO()
         CHKERR( DMDAGetAO(self.dm, &ao.ao) )
-        PetscINCREF(ao.obj)
+        CHKERR( PetscINCREF(ao.obj) )
         return ao
 
     def getScatter(self) -> tuple[Scatter, Scatter]:
@@ -937,8 +937,8 @@ cdef class DMDA(DM):
         cdef Scatter l2g = Scatter()
         cdef Scatter g2l = Scatter()
         CHKERR( DMDAGetScatter(self.dm, &l2g.sct, &g2l.sct) )
-        PetscINCREF(l2g.obj)
-        PetscINCREF(g2l.obj)
+        CHKERR( PetscINCREF(l2g.obj) )
+        CHKERR( PetscINCREF(g2l.obj) )
         return (l2g, g2l)
 
     #

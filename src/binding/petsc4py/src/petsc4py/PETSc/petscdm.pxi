@@ -247,7 +247,7 @@ cdef inline object toBoundary(PetscInt dim,
 cdef inline DM ref_DM(PetscDM dm):
     cdef DM ob = <DM> DM()
     ob.dm = dm
-    PetscINCREF(ob.obj)
+    CHKERR( PetscINCREF(ob.obj) )
     return ob
 
 # --------------------------------------------------------------------
