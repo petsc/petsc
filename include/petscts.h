@@ -52,6 +52,7 @@ typedef const char *TSType;
 #define TSMPRK            "mprk"
 #define TSDISCGRAD        "discgrad"
 #define TSIRK             "irk"
+#define TSDIRK            "dirk"
 
 /*E
     TSProblemType - Determines the type of problem this `TS` object is to be used to solve
@@ -1215,6 +1216,34 @@ PETSC_EXTERN PetscErrorCode TSARKIMEXRegister(TSARKIMEXType, PetscInt, PetscInt,
 PETSC_EXTERN PetscErrorCode TSARKIMEXInitializePackage(void);
 PETSC_EXTERN PetscErrorCode TSARKIMEXFinalizePackage(void);
 PETSC_EXTERN PetscErrorCode TSARKIMEXRegisterDestroy(void);
+
+/*J
+    TSDIRKType - String with the name of a Diagonally Implicit Runge-Kutta `TSDIRK` type
+
+   Level: beginner
+
+.seealso: [](ch_ts), `TSDIRKSetType()`, `TS`, `TSDIRK`, `TSDIRKRegister()`
+J*/
+typedef const char *TSDIRKType;
+#define TSDIRKS212      "s212"
+#define TSDIRKES212     "es212"
+#define TSDIRKES213SAL  "es213sal"
+#define TSDIRKES324SAL  "es324sal"
+#define TSDIRKES325SAL  "es325sal"
+#define TSDIRK657A      "657a"
+#define TSDIRKES648SA   "es648sa"
+#define TSDIRK658A      "658a"
+#define TSDIRKS659A     "s659a"
+#define TSDIRK7510SAL   "7510sal"
+#define TSDIRKES7510SA  "es7510sa"
+#define TSDIRK759A      "759a"
+#define TSDIRKS7511SAL  "s7511sal"
+#define TSDIRK8614A     "8614a"
+#define TSDIRK8616SAL   "8616sal"
+#define TSDIRKES8516SAL "es8516sal"
+PETSC_EXTERN PetscErrorCode TSDIRKGetType(TS ts, TSDIRKType *);
+PETSC_EXTERN PetscErrorCode TSDIRKSetType(TS ts, TSDIRKType);
+PETSC_EXTERN PetscErrorCode TSDIRKRegister(TSDIRKType, PetscInt, PetscInt, const PetscReal[], const PetscReal[], const PetscReal[], const PetscReal[], PetscInt, const PetscReal[]);
 
 /*J
     TSRosWType - String with the name of a Rosenbrock-W `TSROSW` type
