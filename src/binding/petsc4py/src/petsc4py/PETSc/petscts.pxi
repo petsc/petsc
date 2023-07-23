@@ -331,7 +331,7 @@ cdef extern from * nogil: # custom.h
 cdef inline TS ref_TS(PetscTS ts):
     cdef TS ob = <TS> TS()
     ob.ts = ts
-    PetscINCREF(ob.obj)
+    CHKERR( PetscINCREF(ob.obj) )
     return ob
 
 # -----------------------------------------------------------------------------

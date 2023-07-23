@@ -470,7 +470,7 @@ cdef class KSP(Object):
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef PetscKSP newksp = NULL
         CHKERR( KSPCreate(ccomm, &newksp) )
-        PetscCLEAR(self.obj); self.ksp = newksp
+        CHKERR( PetscCLEAR(self.obj) ); self.ksp = newksp
         return self
 
     def setType(self, ksp_type: Type | str) -> None:
@@ -668,7 +668,7 @@ cdef class KSP(Object):
         CHKERR( KSPGetDM(self.ksp, &newdm) )
         cdef DM dm = subtype_DM(newdm)()
         dm.dm = newdm
-        PetscINCREF(dm.obj)
+        CHKERR( PetscINCREF(dm.obj) )
         return dm
 
     def setDM(self, DM dm) -> None:
@@ -875,8 +875,8 @@ cdef class KSP(Object):
         """
         cdef Mat A = Mat(), P = Mat()
         CHKERR( KSPGetOperators(self.ksp, &A.mat, &P.mat) )
-        PetscINCREF(A.obj)
-        PetscINCREF(P.obj)
+        CHKERR( PetscINCREF(A.obj) )
+        CHKERR( PetscINCREF(P.obj) )
         return (A, P)
 
     def setPC(self, PC pc) -> None:
@@ -911,7 +911,7 @@ cdef class KSP(Object):
         """
         cdef PC pc = PC()
         CHKERR( KSPGetPC(self.ksp, &pc.pc) )
-        PetscINCREF(pc.obj)
+        CHKERR( PetscINCREF(pc.obj) )
         return pc
 
     # --- tolerances and convergence ---
@@ -1827,7 +1827,7 @@ cdef class KSP(Object):
         """
         cdef Vec vec = Vec()
         CHKERR( KSPGetRhs(self.ksp, &vec.vec) )
-        PetscINCREF(vec.obj)
+        CHKERR( PetscINCREF(vec.obj) )
         return vec
 
     def getSolution(self) -> Vec:
@@ -1843,7 +1843,7 @@ cdef class KSP(Object):
         """
         cdef Vec vec = Vec()
         CHKERR( KSPGetSolution(self.ksp, &vec.vec) )
-        PetscINCREF(vec.obj)
+        CHKERR( PetscINCREF(vec.obj) )
         return vec
 
     def getWorkVecs(
@@ -2021,7 +2021,7 @@ cdef class KSP(Object):
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef PetscKSP newksp = NULL
         CHKERR( KSPCreate(ccomm, &newksp) )
-        PetscCLEAR(self.obj); self.ksp = newksp
+        CHKERR( PetscCLEAR(self.obj) ); self.ksp = newksp
         CHKERR( KSPSetType(self.ksp, KSPPYTHON) )
         CHKERR( KSPPythonSetContext(self.ksp, <void*>context) )
         return self

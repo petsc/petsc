@@ -78,7 +78,7 @@ cdef class Section(Object):
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef PetscSection newsec = NULL
         CHKERR( PetscSectionCreate(ccomm, &newsec) )
-        PetscCLEAR(self.obj); self.sec = newsec
+        CHKERR( PetscCLEAR(self.obj) ); self.sec = newsec
         return self
 
     def clone(self) -> Section:
@@ -292,7 +292,7 @@ cdef class Section(Object):
         """
         cdef IS perm = IS()
         CHKERR( PetscSectionGetPermutation(self.sec, &perm.iset))
-        PetscINCREF(perm.obj)
+        CHKERR( PetscINCREF(perm.obj) )
         return perm
 
     def setPermutation(self, IS perm) -> None:

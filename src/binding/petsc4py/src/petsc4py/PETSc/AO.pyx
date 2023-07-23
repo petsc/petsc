@@ -95,7 +95,7 @@ cdef class AO(Object):
                 petsc = iarray_i(petsc, &npetsc, &idxpetsc)
                 assert napp == npetsc, "incompatible array sizes"
             CHKERR( AOCreateBasic(ccomm, napp, idxapp, idxpetsc, &newao) )
-        PetscCLEAR(self.obj); self.ao = newao
+        CHKERR( PetscCLEAR(self.obj) ); self.ao = newao
         return self
 
     def createMemoryScalable(
@@ -148,7 +148,7 @@ cdef class AO(Object):
                 petsc = iarray_i(petsc, &npetsc, &idxpetsc)
                 assert napp == npetsc, "incompatible array sizes"
             CHKERR( AOCreateMemoryScalable(ccomm, napp, idxapp, idxpetsc, &newao) )
-        PetscCLEAR(self.obj); self.ao = newao
+        CHKERR( PetscCLEAR(self.obj) ); self.ao = newao
         return self
 
     def createMapping(
@@ -195,7 +195,7 @@ cdef class AO(Object):
                 petsc = iarray_i(petsc, &npetsc, &idxpetsc)
                 assert napp == npetsc, "incompatible array sizes"
             CHKERR( AOCreateMapping(ccomm, napp, idxapp, idxpetsc, &newao) )
-        PetscCLEAR(self.obj); self.ao = newao
+        CHKERR( PetscCLEAR(self.obj) ); self.ao = newao
         return self
 
     def getType(self) -> str:

@@ -102,7 +102,7 @@ cdef class IS(Object):
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef PetscIS newiset = NULL
         CHKERR( ISCreate(ccomm, &newiset) )
-        PetscCLEAR(self.obj); self.iset = newiset
+        CHKERR( PetscCLEAR(self.obj) ); self.iset = newiset
         return self
 
     def setType(self, is_type: IS.Type | str) -> None:
@@ -165,7 +165,7 @@ cdef class IS(Object):
         cdef PetscIS newiset = NULL
         indices = iarray_i(indices, &nidx, &idx)
         CHKERR( ISCreateGeneral(ccomm, nidx, idx, cm, &newiset) )
-        PetscCLEAR(self.obj); self.iset = newiset
+        CHKERR( PetscCLEAR(self.obj) ); self.iset = newiset
         return self
 
     def createBlock(
@@ -199,7 +199,7 @@ cdef class IS(Object):
         cdef PetscIS newiset = NULL
         indices = iarray_i(indices, &nidx, &idx)
         CHKERR( ISCreateBlock(ccomm, bs, nidx, idx, cm, &newiset) )
-        PetscCLEAR(self.obj); self.iset = newiset
+        CHKERR( PetscCLEAR(self.obj) ); self.iset = newiset
         return self
 
     def createStride(
@@ -235,7 +235,7 @@ cdef class IS(Object):
         cdef PetscInt cstep  = asInt(step)
         cdef PetscIS newiset = NULL
         CHKERR( ISCreateStride(ccomm, csize, cfirst, cstep, &newiset) )
-        PetscCLEAR(self.obj); self.iset = newiset
+        CHKERR( PetscCLEAR(self.obj) ); self.iset = newiset
         return self
 
     def duplicate(self) -> IS:
@@ -1219,7 +1219,7 @@ cdef class LGMap(Object):
         indices = iarray_i(indices, &nidx, &idx)
         CHKERR( ISLocalToGlobalMappingCreate(
                 ccomm, bs, nidx, idx, cm, &newlgm) )
-        PetscCLEAR(self.obj); self.lgm = newlgm
+        CHKERR( PetscCLEAR(self.obj) ); self.lgm = newlgm
         return self
 
     def createIS(self, IS iset) -> Self:
@@ -1240,7 +1240,7 @@ cdef class LGMap(Object):
         cdef PetscLGMap newlgm = NULL
         CHKERR( ISLocalToGlobalMappingCreateIS(
             iset.iset, &newlgm) )
-        PetscCLEAR(self.obj); self.lgm = newlgm
+        CHKERR( PetscCLEAR(self.obj) ); self.lgm = newlgm
         return self
 
     def createSF(self, SF sf, start: int) -> Self:
@@ -1263,7 +1263,7 @@ cdef class LGMap(Object):
         cdef PetscLGMap newlgm = NULL
         cdef PetscInt cstart = asInt(start)
         CHKERR( ISLocalToGlobalMappingCreateSF(sf.sf, cstart, &newlgm) )
-        PetscCLEAR(self.obj); self.lgm = newlgm
+        CHKERR( PetscCLEAR(self.obj) ); self.lgm = newlgm
         return self
 
     def getSize(self) -> int:

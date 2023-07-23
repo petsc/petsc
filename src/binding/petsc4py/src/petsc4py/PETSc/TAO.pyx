@@ -157,7 +157,7 @@ cdef class TAO(Object):
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef PetscTAO newtao = NULL
         CHKERR( TaoCreate(ccomm, &newtao) )
-        PetscCLEAR(self.obj); self.tao = newtao
+        CHKERR( PetscCLEAR(self.obj) ); self.tao = newtao
         return self
 
     def setType(self, tao_type: Type | str) -> None:
@@ -424,7 +424,7 @@ cdef class TAO(Object):
         """
         cdef Vec vec = Vec()
         CHKERR( TaoGetGradient(self.tao, &vec.vec, NULL, NULL) )
-        PetscINCREF(vec.obj)
+        CHKERR( PetscINCREF(vec.obj) )
         cdef object gradient = self.get_attr("__gradient__")
         return (vec, gradient)
 
@@ -470,7 +470,7 @@ cdef class TAO(Object):
         """
         cdef Vec vec = Vec()
         CHKERR( TaoGetObjectiveAndGradient(self.tao, &vec.vec, NULL, NULL) )
-        PetscINCREF(vec.obj)
+        CHKERR( PetscINCREF(vec.obj) )
         cdef object objgrad = self.get_attr("__objgrad__")
         return (vec, objgrad)
 
@@ -587,8 +587,8 @@ cdef class TAO(Object):
         cdef Mat J = Mat()
         cdef Mat P = Mat()
         CHKERR( TaoGetHessian(self.tao, &J.mat, &P.mat, NULL, NULL) )
-        PetscINCREF(J.obj)
-        PetscINCREF(P.obj)
+        CHKERR( PetscINCREF(J.obj) )
+        CHKERR( PetscINCREF(P.obj) )
         cdef object hessian = self.get_attr("__hessian__")
         return (J, P, hessian)
 
@@ -1303,7 +1303,7 @@ cdef class TAO(Object):
         """
         cdef Vec vec = Vec()
         CHKERR( TaoGetSolution(self.tao, &vec.vec) )
-        PetscINCREF(vec.obj)
+        CHKERR( PetscINCREF(vec.obj) )
         return vec
 
     def setGradientNorm(self, Mat mat) -> None:
@@ -1330,7 +1330,7 @@ cdef class TAO(Object):
         """
         cdef Mat mat = Mat()
         CHKERR( TaoGetGradientNorm(self.tao, &mat.mat) )
-        PetscINCREF(mat.obj)
+        CHKERR( PetscINCREF(mat.obj) )
         return mat
 
     def setLMVMH0(self, Mat mat) -> None:
@@ -1357,7 +1357,7 @@ cdef class TAO(Object):
         """
         cdef Mat mat = Mat()
         CHKERR( TaoLMVMGetH0(self.tao, &mat.mat) )
-        PetscINCREF(mat.obj)
+        CHKERR( PetscINCREF(mat.obj) )
         return mat
 
     def getLMVMH0KSP(self) -> KSP:
@@ -1372,7 +1372,7 @@ cdef class TAO(Object):
         """
         cdef KSP ksp = KSP()
         CHKERR( TaoLMVMGetH0KSP(self.tao, &ksp.ksp) )
-        PetscINCREF(ksp.obj)
+        CHKERR( PetscINCREF(ksp.obj) )
         return ksp
 
     def getVariableBounds(self) -> tuple[Vec, Vec]:
@@ -1387,7 +1387,7 @@ cdef class TAO(Object):
         """
         cdef Vec xl = Vec(), xu = Vec()
         CHKERR( TaoGetVariableBounds(self.tao, &xl.vec, &xu.vec) )
-        PetscINCREF(xl.obj); PetscINCREF(xu.obj)
+        CHKERR( PetscINCREF(xl.obj) ); CHKERR( PetscINCREF(xu.obj) )
         return (xl, xu)
 
     def setBNCGType(self, cg_type: BNCGType) -> None:
@@ -1546,7 +1546,7 @@ cdef class TAO(Object):
         """
         cdef KSP ksp = KSP()
         CHKERR( TaoGetKSP(self.tao, &ksp.ksp) )
-        PetscINCREF(ksp.obj)
+        CHKERR( PetscINCREF(ksp.obj) )
         return ksp
 
     # BRGN routines
@@ -1563,7 +1563,7 @@ cdef class TAO(Object):
         """
         cdef TAO subsolver = TAO()
         CHKERR( TaoBRGNGetSubsolver(self.tao, &subsolver.tao) )
-        PetscINCREF(subsolver.obj)
+        CHKERR( PetscINCREF(subsolver.obj) )
         return subsolver
 
     def setBRGNRegularizerObjectiveGradient(self, objgrad, args: tuple[Any, ...] | None = None, kargs: dict[str, Any] | None = None) -> None:
@@ -1646,7 +1646,7 @@ cdef class TAO(Object):
         #petsc.TaoBRGNGetDampingVector
         cdef Vec damp = Vec()
         CHKERR( TaoBRGNGetDampingVector(self.tao, &damp.vec) )
-        PetscINCREF(damp.obj)
+        CHKERR( PetscINCREF(damp.obj) )
         return damp
 
     def createPython(self, context: Any = None, comm: Comm | None = None) -> Self:
@@ -1669,7 +1669,7 @@ cdef class TAO(Object):
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef PetscTAO tao = NULL
         CHKERR( TaoCreate(ccomm, &tao) )
-        PetscCLEAR(self.obj); self.tao = tao
+        CHKERR( PetscCLEAR(self.obj) ); self.tao = tao
         CHKERR( TaoSetType(self.tao, TAOPYTHON) )
         CHKERR( TaoPythonSetContext(self.tao, <void*>context) )
         return self
@@ -1743,7 +1743,7 @@ cdef class TAO(Object):
         """
         cdef TAOLineSearch ls = TAOLineSearch()
         CHKERR( TaoGetLineSearch(self.tao, &ls.taols) )
-        PetscINCREF(ls.obj)
+        CHKERR( PetscINCREF(ls.obj) )
         return ls
 
     # --- backward compatibility ---
@@ -1962,7 +1962,7 @@ cdef class TAOLineSearch(Object):
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef PetscTAOLineSearch newtaols = NULL
         CHKERR( TaoLineSearchCreate(ccomm, &newtaols) )
-        PetscCLEAR(self.obj); self.taols = newtaols
+        CHKERR( PetscCLEAR(self.obj) ); self.taols = newtaols
         return self
 
     def setType(self, ls_type: Type | str) -> None:

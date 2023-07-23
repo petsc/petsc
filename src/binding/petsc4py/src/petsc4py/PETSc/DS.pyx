@@ -68,7 +68,7 @@ cdef class DS(Object):
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef PetscDS newds = NULL
         CHKERR( PetscDSCreate(ccomm, &newds) )
-        PetscCLEAR(self.obj); self.ds = newds
+        CHKERR( PetscCLEAR(self.obj) ); self.ds = newds
         return self
 
     def setType(self, ds_type: Type | str) -> None:

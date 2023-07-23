@@ -51,7 +51,7 @@ cdef class DMSwarm(DM):
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef PetscDM newdm = NULL
         CHKERR( DMCreate(ccomm, &newdm) )
-        PetscCLEAR(self.obj); self.dm = newdm
+        CHKERR( PetscCLEAR(self.obj) ); self.dm = newdm
         CHKERR( DMSetType(self.dm, DMSWARM) )
         return self
 
@@ -490,7 +490,7 @@ cdef class DMSwarm(DM):
         CHKERR( DMSwarmGetCellDM(self.dm, &newdm) )
         cdef DM dm = subtype_DM(newdm)()
         dm.dm = newdm
-        PetscINCREF(dm.obj)
+        CHKERR( PetscINCREF(dm.obj) )
         return dm
 
     def setType(self, dmswarm_type: Type | str) -> None:

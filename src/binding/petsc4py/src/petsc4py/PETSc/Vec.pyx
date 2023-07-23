@@ -194,7 +194,7 @@ cdef class Vec(Object):
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef PetscVec newvec = NULL
         CHKERR( VecCreate(ccomm, &newvec) )
-        PetscCLEAR(self.obj); self.vec = newvec
+        CHKERR( PetscCLEAR(self.obj) ); self.vec = newvec
         return self
 
     def setType(self, vec_type: Type | str) -> None:
@@ -280,7 +280,7 @@ cdef class Vec(Object):
         CHKERR( VecSetSizes(newvec, n, N) )
         CHKERR( VecSetBlockSize(newvec, bs) )
         CHKERR( VecSetType(newvec, VECSEQ) )
-        PetscCLEAR(self.obj); self.vec = newvec
+        CHKERR( PetscCLEAR(self.obj) ); self.vec = newvec
         return self
 
     def createMPI(
@@ -317,7 +317,7 @@ cdef class Vec(Object):
         CHKERR( VecSetSizes(newvec, n, N) )
         CHKERR( VecSetBlockSize(newvec, bs) )
         CHKERR( VecSetType(newvec, VECMPI) )
-        PetscCLEAR(self.obj); self.vec = newvec
+        CHKERR( PetscCLEAR(self.obj) ); self.vec = newvec
         return self
 
     def createWithArray(
@@ -368,7 +368,7 @@ cdef class Vec(Object):
             CHKERR( VecCreateSeqWithArray(ccomm,bs,N,sa,&newvec) )
         else:
             CHKERR( VecCreateMPIWithArray(ccomm,bs,n,N,sa,&newvec) )
-        PetscCLEAR(self.obj); self.vec = newvec
+        CHKERR( PetscCLEAR(self.obj) ); self.vec = newvec
         self.set_attr('__array__', array)
         return self
 
@@ -425,7 +425,7 @@ cdef class Vec(Object):
             CHKERR( VecCreateSeqCUDAWithArrays(ccomm,bs,N,sa,gpuarray,&newvec) )
         else:
             CHKERR( VecCreateMPICUDAWithArrays(ccomm,bs,n,N,sa,gpuarray,&newvec) )
-        PetscCLEAR(self.obj); self.vec = newvec
+        CHKERR( PetscCLEAR(self.obj) ); self.vec = newvec
 
         if cpuarray is not None:
             self.set_attr('__array__', cpuarray)
@@ -484,7 +484,7 @@ cdef class Vec(Object):
             CHKERR( VecCreateSeqHIPWithArrays(ccomm,bs,N,sa,gpuarray,&newvec) )
         else:
             CHKERR( VecCreateMPIHIPWithArrays(ccomm,bs,n,N,sa,gpuarray,&newvec) )
-        PetscCLEAR(self.obj); self.vec = newvec
+        CHKERR( PetscCLEAR(self.obj) ); self.vec = newvec
 
         if cpuarray is not None:
             self.set_attr('__array__', cpuarray)
@@ -543,7 +543,7 @@ cdef class Vec(Object):
             CHKERR( VecCreateSeqViennaCLWithArrays(ccomm,bs,N,sa,vclvec,&newvec) )
         else:
             CHKERR( VecCreateMPIViennaCLWithArrays(ccomm,bs,n,N,sa,vclvec,&newvec) )
-        PetscCLEAR(self.obj); self.vec = newvec
+        CHKERR( PetscCLEAR(self.obj) ); self.vec = newvec
 
         if cpuarray is not None:
             self.set_attr('__array__', cpuarray)
@@ -636,7 +636,7 @@ cdef class Vec(Object):
         else:
             raise TypeError("Device type {} not supported".format(dltype))
 
-        PetscCLEAR(self.obj); self.vec = newvec
+        CHKERR( PetscCLEAR(self.obj) ); self.vec = newvec
         self.set_attr('__array__', dltensor)
         cdef int64_t* shape_arr = NULL
         cdef int64_t* strides_arr = NULL
@@ -867,7 +867,7 @@ cdef class Vec(Object):
         else:
             CHKERR( VecCreateGhostBlock(
                     ccomm, bs, n, N, ng, ig, &newvec) )
-        PetscCLEAR(self.obj); self.vec = newvec
+        CHKERR( PetscCLEAR(self.obj) ); self.vec = newvec
         return self
 
     def createGhostWithArray(
@@ -924,7 +924,7 @@ cdef class Vec(Object):
         else:
             CHKERR( VecCreateGhostBlockWithArray(
                     ccomm, bs, n, N, ng, ig, sa, &newvec) )
-        PetscCLEAR(self.obj); self.vec = newvec
+        CHKERR( PetscCLEAR(self.obj) ); self.vec = newvec
         self.set_attr('__array__', array)
         return self
 
@@ -958,7 +958,7 @@ cdef class Vec(Object):
         Sys_Layout(ccomm, bs, &n, &N)
         cdef PetscVec newvec = NULL
         CHKERR( VecCreateShared(ccomm, n, N, &newvec) )
-        PetscCLEAR(self.obj); self.vec = newvec
+        CHKERR( PetscCLEAR(self.obj) ); self.vec = newvec
         if bs != PETSC_DECIDE:
             CHKERR( VecSetBlockSize(self.vec, bs) )
         return self
@@ -1007,7 +1007,7 @@ cdef class Vec(Object):
             for i from 0 <= i < m: cisets[i] = (<IS?>isets[i]).iset
         cdef PetscVec newvec = NULL
         CHKERR( VecCreateNest(ccomm, n, cisets, cvecs,&newvec) )
-        PetscCLEAR(self.obj); self.vec = newvec
+        CHKERR( PetscCLEAR(self.obj) ); self.vec = newvec
         return self
 
     #
@@ -2771,7 +2771,7 @@ cdef class Vec(Object):
         """
         cdef LGMap cmap = LGMap()
         CHKERR( VecGetLocalToGlobalMapping(self.vec, &cmap.lgm) )
-        PetscINCREF(cmap.obj)
+        CHKERR( PetscINCREF(cmap.obj) )
         return cmap
 
     def setValueLocal(

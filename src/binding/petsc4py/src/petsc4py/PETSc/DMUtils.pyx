@@ -86,7 +86,7 @@ cdef class DMInterpolation:
         """
         cdef Vec coords = Vec()
         CHKERR( DMInterpolationGetCoordinates(self.dminterp, &coords.vec) )
-        PetscINCREF(coords.obj)
+        CHKERR( PetscINCREF(coords.obj) )
         return coords
 
     def getDim(self) -> int:

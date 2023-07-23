@@ -141,7 +141,7 @@ cdef class Scatter(Object):
         cdef PetscScatter newsct = NULL
         CHKERR( VecScatterCreate(
                 vec_from.vec, cisfrom, vec_to.vec, cisto, &newsct) )
-        PetscCLEAR(self.obj); self.sct = newsct
+        CHKERR( PetscCLEAR(self.obj) ); self.sct = newsct
         return self
 
     def setType(self, scatter_type: Type | str) -> None:

@@ -221,7 +221,7 @@ cdef extern from * nogil: # custom.h
 cdef inline KSP ref_KSP(PetscKSP ksp):
     cdef KSP ob = <KSP> KSP()
     ob.ksp = ksp
-    PetscINCREF(ob.obj)
+    CHKERR( PetscINCREF(ob.obj) )
     return ob
 
 # -----------------------------------------------------------------------------

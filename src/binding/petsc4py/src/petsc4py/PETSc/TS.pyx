@@ -202,7 +202,7 @@ cdef class TS(Object):
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef PetscTS newts = NULL
         CHKERR( TSCreate(ccomm, &newts) )
-        PetscCLEAR(self.obj); self.ts = newts
+        CHKERR( PetscCLEAR(self.obj) ); self.ts = newts
         return self
 
     def clone(self) -> TS:
@@ -666,7 +666,7 @@ cdef class TS(Object):
         """
         cdef Vec f = Vec()
         CHKERR( TSGetRHSFunction(self.ts, &f.vec, NULL, NULL) )
-        PetscINCREF(f.obj)
+        CHKERR( PetscINCREF(f.obj) )
         cdef object function = self.get_attr('__rhsfunction__')
         return (f, function)
 
@@ -682,7 +682,7 @@ cdef class TS(Object):
         """
         cdef Mat J = Mat(), P = Mat()
         CHKERR( TSGetRHSJacobian(self.ts, &J.mat, &P.mat, NULL, NULL) )
-        PetscINCREF(J.obj); PetscINCREF(P.obj)
+        CHKERR( PetscINCREF(J.obj) ); CHKERR( PetscINCREF(P.obj) )
         cdef object jacobian = self.get_attr('__rhsjacobian__')
         return (J, P, jacobian)
 
@@ -927,7 +927,7 @@ cdef class TS(Object):
         """
         cdef Vec f = Vec()
         CHKERR( TSGetIFunction(self.ts, &f.vec, NULL, NULL) )
-        PetscINCREF(f.obj)
+        CHKERR( PetscINCREF(f.obj) )
         cdef object function = self.get_attr('__ifunction__')
         return (f, function)
 
@@ -943,7 +943,7 @@ cdef class TS(Object):
         """
         cdef Mat J = Mat(), P = Mat()
         CHKERR( TSGetIJacobian(self.ts, &J.mat, &P.mat, NULL, NULL) )
-        PetscINCREF(J.obj); PetscINCREF(P.obj)
+        CHKERR( PetscINCREF(J.obj) ); CHKERR( PetscINCREF(P.obj) )
         cdef object jacobian = self.get_attr('__ijacobian__')
         return (J, P, jacobian)
 
@@ -1114,7 +1114,7 @@ cdef class TS(Object):
         """
         cdef Vec f = Vec()
         CHKERR( TSGetI2Function(self.ts, &f.vec, NULL, NULL) )
-        PetscINCREF(f.obj)
+        CHKERR( PetscINCREF(f.obj) )
         cdef object function = self.get_attr('__i2function__')
         return (f, function)
 
@@ -1130,7 +1130,7 @@ cdef class TS(Object):
         """
         cdef Mat J = Mat(), P = Mat()
         CHKERR( TSGetI2Jacobian(self.ts, &J.mat, &P.mat, NULL, NULL) )
-        PetscINCREF(J.obj); PetscINCREF(P.obj)
+        CHKERR( PetscINCREF(J.obj) ); CHKERR( PetscINCREF(P.obj) )
         cdef object jacobian = self.get_attr('__i2jacobian__')
         return (J, P, jacobian)
 
@@ -1169,7 +1169,7 @@ cdef class TS(Object):
         """
         cdef Vec u = Vec()
         CHKERR( TSGetSolution(self.ts, &u.vec) )
-        PetscINCREF(u.obj)
+        CHKERR( PetscINCREF(u.obj) )
         return u
 
     def setSolution2(self, Vec u, Vec v) -> None:
@@ -1208,8 +1208,8 @@ cdef class TS(Object):
         cdef Vec u = Vec()
         cdef Vec v = Vec()
         CHKERR( TS2GetSolution(self.ts, &u.vec, &v.vec) )
-        PetscINCREF(u.obj)
-        PetscINCREF(v.obj)
+        CHKERR( PetscINCREF(u.obj) )
+        CHKERR( PetscINCREF(v.obj) )
         return (u, v)
 
     # --- time span ---
@@ -1292,7 +1292,7 @@ cdef class TS(Object):
         """
         cdef SNES snes = SNES()
         CHKERR( TSGetSNES(self.ts, &snes.snes) )
-        PetscINCREF(snes.obj)
+        CHKERR( PetscINCREF(snes.obj) )
         return snes
 
     def getKSP(self) -> KSP:
@@ -1307,7 +1307,7 @@ cdef class TS(Object):
         """
         cdef KSP ksp = KSP()
         CHKERR( TSGetKSP(self.ts, &ksp.ksp) )
-        PetscINCREF(ksp.obj)
+        CHKERR( PetscINCREF(ksp.obj) )
         return ksp
 
     # --- discretization space ---
@@ -1329,7 +1329,7 @@ cdef class TS(Object):
         CHKERR( TSGetDM(self.ts, &newdm) )
         cdef DM dm = subtype_DM(newdm)()
         dm.dm = newdm
-        PetscINCREF(dm.obj)
+        CHKERR( PetscINCREF(dm.obj) )
         return dm
 
     def setDM(self, DM dm) -> None:
@@ -2303,7 +2303,7 @@ cdef class TS(Object):
         """
         cdef Vec cost = Vec()
         CHKERR( TSGetCostIntegral(self.ts, &cost.vec) )
-        PetscINCREF(cost.obj)
+        CHKERR( PetscINCREF(cost.obj) )
         return cost
 
     def setCostGradients(
@@ -2424,7 +2424,7 @@ cdef class TS(Object):
         cdef TS qts = TS()
         cdef PetscBool fwd = forward
         CHKERR( TSCreateQuadratureTS(self.ts, fwd, &qts.ts) )
-        PetscINCREF(qts.obj)
+        CHKERR( PetscINCREF(qts.obj) )
         return qts
 
     def getQuadratureTS(self) -> tuple[bool, TS]:
@@ -2445,7 +2445,7 @@ cdef class TS(Object):
         cdef TS qts = TS()
         cdef PetscBool fwd = PETSC_FALSE
         CHKERR( TSGetQuadratureTS(self.ts, &fwd, &qts.ts) )
-        PetscINCREF(qts.obj)
+        CHKERR( PetscINCREF(qts.obj) )
         return (toBool(fwd), qts)
 
     def setRHSJacobianP(
@@ -2589,7 +2589,7 @@ cdef class TS(Object):
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef PetscTS newts = NULL
         CHKERR( TSCreate(ccomm, &newts) )
-        PetscCLEAR(self.obj); self.ts = newts
+        CHKERR( PetscCLEAR(self.obj) ); self.ts = newts
         CHKERR( TSSetType(self.ts, TSPYTHON) )
         CHKERR( TSPythonSetContext(self.ts, <void*>context) )
         return self
