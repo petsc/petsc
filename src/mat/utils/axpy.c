@@ -1,4 +1,3 @@
-
 #include <petsc/private/matimpl.h> /*I   "petscmat.h"  I*/
 
 static PetscErrorCode MatTransposeAXPY_Private(Mat Y, PetscScalar a, Mat X, MatStructure str, Mat T)
@@ -441,17 +440,19 @@ PetscErrorCode MatComputeOperatorTranspose(Mat inmat, MatType mattype, Mat *mat)
 }
 
 /*@
-  MatChop - Set all values in the matrix less than the tolerance to zero
+  MatFilter - Set all values in the matrix with an absolute value less than or equal to the tolerance to zero, and optionally compress the underlying storage
 
   Input Parameters:
-+ A   - The matrix
-- tol - The zero tolerance
++ A        - The matrix
+. tol      - The zero tolerance
+. compress - Whether the storage from the input matrix `A` should be compressed once values less than or equal to `tol` are set to zero
+- keep     - If `compress` is true and for a given row of `A`, the diagonal coefficient is less than or equal to `tol`, indicates whether it should be left in the structure or eliminated as well
 
   Level: intermediate
 
-.seealso: [](ch_matrices), `Mat`, `MatCreate()`, `MatZeroEntries()`
+.seealso: [](ch_matrices), `Mat`, `MatCreate()`, `MatZeroEntries()`, `MatRemoveZeros()`, `VecFilter()`
  @*/
-PetscErrorCode MatChop(Mat A, PetscReal tol)
+PetscErrorCode MatFilter(Mat A, PetscReal tol, PetscBool compress, PetscBool keep)
 {
   Mat          a;
   PetscScalar *newVals;
@@ -466,7 +467,7 @@ PetscErrorCode MatChop(Mat A, PetscReal tol)
     PetscCall(MatGetSize(a, &rStart, &rEnd));
     PetscCall(MatDenseGetArray(a, &newVals));
     for (; colMax < rEnd; ++colMax) {
-      for (maxRows = 0; maxRows < rStart; ++maxRows) newVals[maxRows + colMax * r] = PetscAbsScalar(newVals[maxRows + colMax * r]) < tol ? 0.0 : newVals[maxRows + colMax * r];
+      for (maxRows = 0; maxRows < rStart; ++maxRows) newVals[maxRows + colMax * r] = PetscAbsScalar(newVals[maxRows + colMax * r]) <= tol ? 0.0 : newVals[maxRows + colMax * r];
     }
     PetscCall(MatDenseRestoreArray(a, &newVals));
   } else {
@@ -501,7 +502,7 @@ PetscErrorCode MatChop(Mat A, PetscReal tol)
 
         PetscCall(MatGetRow(A, r, &ncols, &cols, &vals));
         for (c = 0; c < ncols; ++c) {
-          if (PetscUnlikely(PetscAbsScalar(vals[c]) < tol)) newCols[newcols++] = cols[c];
+          if (PetscUnlikely(PetscAbsScalar(vals[c]) <= tol)) newCols[newcols++] = cols[c];
         }
         PetscCall(MatRestoreRow(A, r, &ncols, &cols, &vals));
         PetscCall(MatSetValues(A, 1, &r, newcols, newCols, newVals, INSERT_VALUES));
@@ -512,6 +513,17 @@ PetscErrorCode MatChop(Mat A, PetscReal tol)
     PetscCall(MatRestoreRowUpperTriangular(A));
     PetscCall(PetscFree2(newCols, newVals));
     PetscCall(MatSetOption(A, MAT_NO_OFF_PROC_ENTRIES, flg)); /* reset option to its user-defined value */
+  }
+  if (compress && A->ops->eliminatezeros) {
+    Mat       B;
+    PetscBool flg;
+
+    PetscCall(PetscObjectTypeCompareAny((PetscObject)A, &flg, MATSEQAIJHIPSPARSE, MATMPIAIJHIPSPARSE, ""));
+    if (!flg) {
+      PetscCall(MatEliminateZeros(A, keep));
+      PetscCall(MatDuplicate(A, MAT_COPY_VALUES, &B));
+      PetscCall(MatHeaderReplace(A, &B));
+    }
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }

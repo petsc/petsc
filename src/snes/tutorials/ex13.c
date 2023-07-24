@@ -323,7 +323,7 @@ static PetscErrorCode ComputeSpectral(DM dm, Vec u, PetscInt numPlanes, const Pe
       /* Do FFT along the ray */
       PetscCall(MatMult(F, x, y));
       /* Chop FFT */
-      PetscCall(VecChop(y, PETSC_SMALL));
+      PetscCall(VecFilter(y, PETSC_SMALL));
       PetscCall(VecViewFromOptions(x, NULL, "-real_view"));
       PetscCall(VecViewFromOptions(y, NULL, "-fft_view"));
       PetscCall(VecDestroy(&x));

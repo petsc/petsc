@@ -88,7 +88,7 @@ cdef extern from * nogil:
 
     PetscErrorCode VecDuplicate(PetscVec,PetscVec*)
     PetscErrorCode VecCopy(PetscVec,PetscVec)
-    PetscErrorCode VecChop(PetscVec,PetscReal)
+    PetscErrorCode VecFilter(PetscVec,PetscReal)
 
     PetscErrorCode VecDuplicateVecs(PetscVec,PetscInt,PetscVec*[])
     PetscErrorCode VecDestroyVecs(PetscInt,PetscVec*[])
@@ -149,7 +149,7 @@ cdef extern from * nogil:
     PetscErrorCode VecPointwiseDivide(PetscVec,PetscVec,PetscVec)
     PetscErrorCode VecMaxPointwiseDivide(PetscVec,PetscVec,PetscReal*)
     PetscErrorCode VecShift(PetscVec,PetscScalar)
-    PetscErrorCode VecChop(PetscVec,PetscReal)
+    PetscErrorCode VecFilter(PetscVec,PetscReal)
     PetscErrorCode VecReciprocal(PetscVec)
     PetscErrorCode VecPermute(PetscVec,PetscIS,PetscBool)
     PetscErrorCode VecExp(PetscVec)

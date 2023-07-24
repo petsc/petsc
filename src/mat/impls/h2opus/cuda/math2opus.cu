@@ -972,9 +972,9 @@ static PetscErrorCode MatAssemblyEnd_H2OPUS(Mat A, MatAssemblyType assemblytype)
         PetscCall(MatComputeOperator(A, MATAIJ, &eA));
         PetscCall(MatComputeOperator(E, MATAIJ, &eE));
         PetscCall(MatComputeOperator(Ae, MATAIJ, &eAe));
-        PetscCall(MatChop(eA, PETSC_SMALL));
-        PetscCall(MatChop(eE, PETSC_SMALL));
-        PetscCall(MatChop(eAe, PETSC_SMALL));
+        PetscCall(MatFilter(eA, PETSC_SMALL, PETSC_FALSE, PETSC_FALSE));
+        PetscCall(MatFilter(eE, PETSC_SMALL, PETSC_FALSE, PETSC_FALSE));
+        PetscCall(MatFilter(eAe, PETSC_SMALL, PETSC_FALSE, PETSC_FALSE));
         PetscCall(PetscObjectSetName((PetscObject)eA, "H2Mat"));
         PetscCall(MatView(eA, NULL));
         PetscCall(PetscObjectSetName((PetscObject)eAe, "S"));

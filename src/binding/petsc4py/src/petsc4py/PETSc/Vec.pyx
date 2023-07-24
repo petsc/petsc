@@ -1761,11 +1761,11 @@ cdef class Vec(Object):
 
         See Also
         --------
-        petsc.VecChop
+        petsc.VecFilter
 
         """
         cdef PetscReal rval = asReal(tol)
-        CHKERR( VecChop(self.vec, rval) )
+        CHKERR( VecFilter(self.vec, rval) )
 
     def load(self, Viewer viewer) -> Self:
         """Load a vector.

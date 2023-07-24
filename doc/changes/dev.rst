@@ -53,6 +53,7 @@ Changes: Development
 - Add ``VecErrorWeightedNorms()`` to unify weighted local truncation error norms used in ``TS``
 - Add CUDA/HIP implementations for ``VecAbs()``, ``VecSqrt()``, ``VecExp()``, ``VecLog()``, ``VecPointwiseMax()``, ``VecPointwiseMaxAbs()``, and ``VecPointwiseMin()``
 - Add ``VecMAXPBY()``
+- Deprecate ``VecChop()`` in favor of ``VecFilter()``
 
 .. rubric:: PetscSection:
 
@@ -65,7 +66,7 @@ Changes: Development
 - Remove ``MATSOLVERSPARSEELEMENTAL`` since it is no longer functional
 - Add MATSELLCUDA. It supports fast ``MatMult()``, ``MatMultTranspose()`` and ``MatMultAdd()`` on GPUs
 - Add support for ``MAT_FACTOR_LU`` and ``MAT_FACTOR_CHOLESKY`` with ``MATSOLVERMUMPS`` for ``MATNEST``
-- ``MatGetFactor()`` can now return ``NULL`` for some combinations of matrices and solvers types. This is to support those combinations that can only be inspected at runtime (i.e. MatNest with AIJ blocks vs MatNest with SHELL blocks).
+- ``MatGetFactor()`` can now return ``NULL`` for some combinations of matrices and solvers types. This is to support those combinations that can only be inspected at runtime (i.e. MatNest with AIJ blocks vs MatNest with SHELL blocks)
 - Remove ``MatSetValuesDevice()``, ``MatCUSPARSEGetDeviceMatWrite()``, ``MatKokkosGetDeviceMatWrite``
 - Add ``MatDenseCUDASetPreallocation()`` and ``MatDenseHIPSetPreallocation()``
 - Add support for KOKKOS in ``MATH2OPUS``
@@ -78,6 +79,7 @@ Changes: Development
 - Add a Boolean parameter to ``MatEliminateZeros()`` to force the removal of zero diagonal coefficients
 - Expose ``MatComputeVariableBlockEnvelope()`` in public headers
 - Add ``MatEliminateZeros()`` implementations for ``MatBAIJ`` and ``MatSBAIJ``
+- Deprecate ``MatChop()`` in favor of ``MatFilter()``, with two additional Boolean parameters to compress the underlying storage and keep or discard near-zero diagonal coefficients
 
 .. rubric:: MatCoarsen:
 
@@ -92,9 +94,9 @@ Changes: Development
 
 .. rubric:: SNES:
 
-- Add a convenient, developer-level ``SNESConverged()`` function that runs the convergence test and updates the internal converged reason.
-- Swap the order of monitor and convergence test. Now monitors are always called after a convergence test.
-- Deprecate option ``-snes_ms_norms``. Use ``-snes_norm_schedule always``.
+- Add a convenient, developer-level ``SNESConverged()`` function that runs the convergence test and updates the internal converged reason
+- Swap the order of monitor and convergence test. Now monitors are always called after a convergence test
+- Deprecate option ``-snes_ms_norms`` in favor of ``-snes_norm_schedule always``
 
 .. rubric:: SNESLineSearch:
 
