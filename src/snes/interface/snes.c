@@ -3946,6 +3946,7 @@ PetscErrorCode SNESMonitor(SNES snes, PetscInt iter, PetscReal rnorm)
   PetscInt i, n = snes->numbermonitors;
 
   PetscFunctionBegin;
+  if (n > 0) SNESCheckFunctionNorm(snes, rnorm);
   PetscCall(VecLockReadPush(snes->vec_sol));
   for (i = 0; i < n; i++) PetscCall((*snes->monitor[i])(snes, iter, rnorm, snes->monitorcontext[i]));
   PetscCall(VecLockReadPop(snes->vec_sol));
@@ -4185,6 +4186,7 @@ PetscErrorCode SNESSetConvergedReason(SNES snes, SNESConvergedReason reason)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
+  PetscCheck(!snes->errorifnotconverged || reason > 0, PetscObjectComm((PetscObject)snes), PETSC_ERR_PLIB, "SNES code should have previously errored due to negative reason");
   snes->reason = reason;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
