@@ -777,7 +777,7 @@ static PetscErrorCode DMAdaptorAdapt_Sequence_Private(DMAdaptor adaptor, Vec inx
   Input Parameters:
 + adaptor  - The `DMAdaptor` object
 . x        - The global approximate solution
-- strategy - The adaptation strategy
+- strategy - The adaptation strategy, see `DMAdaptationStrategy`
 
   Output Parameters:
 + adm - The adapted `DM`
@@ -791,14 +791,7 @@ static PetscErrorCode DMAdaptorAdapt_Sequence_Private(DMAdaptor adaptor, Vec inx
 
   Level: intermediate
 
-  Note:
-
-  The available adaptation strategies are:
-+ * - Adapt the initial mesh until a quality metric, e.g., a priori error bound, is satisfied
-. * - Solve the problem on a series of adapted meshes until a quality metric, e.g. a posteriori error bound, is satisfied
-- * - Solve the problem on a hierarchy of adapted meshes generated to satisfy a quality metric using multigrid
-
-.seealso: `DMAdaptor`, `DMAdaptorSetSolver()`, `DMAdaptorCreate()`
+.seealso: `DMAdaptor`, `DMAdaptationStrategy`, `DMAdaptorSetSolver()`, `DMAdaptorCreate()`
 @*/
 PetscErrorCode DMAdaptorAdapt(DMAdaptor adaptor, Vec x, DMAdaptationStrategy strategy, DM *adm, Vec *ax)
 {

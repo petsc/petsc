@@ -113,17 +113,14 @@ static PetscErrorCode SNESNEWTONLSCheckResidual_Private(SNES snes, Mat A, Vec F,
      above description applies to these categories also.
 
 */
+
+// PetscClangLinter pragma disable: -fdoc-sowing-chars
 /*
   SNESSolve_NEWTONLS - Solves a nonlinear system with a truncated Newton
   method with a line search.
 
   Input Parameter:
 . snes - the SNES context
-
-  Output Parameter:
-.  outits - number of iterations until termination
-
-   Application Interface Routine: SNESSolve()
 
 */
 PetscErrorCode SNESSolve_NEWTONLS(SNES snes)

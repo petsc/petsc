@@ -524,6 +524,7 @@ static PetscErrorCode SNESComputePicardJacobian_DMDA(SNES snes, Vec X, Mat A, Ma
 + dm    - `DM` to associate callback with
 . imode - `INSERT_VALUES` if local function computes owned part, `ADD_VALUES` if it contributes to ghosted part
 . func  - local residual evaluation
+. jac   - function to compute Jacobian
 - ctx   - optional context for local residual evaluation
 
   Calling sequence of `func`:

@@ -207,6 +207,7 @@ PetscErrorCode SNESNewtonTRDCGetPostCheck(SNES snes, PetscErrorCode (**func)(SNE
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+// PetscClangLinter pragma disable: -fdoc-internal-linkage
 /*@C
    SNESNewtonTRDCPreCheck - Called before the step has been determined in `SNESNEWTONTRDC`
 
@@ -237,6 +238,7 @@ static PetscErrorCode SNESNewtonTRDCPreCheck(SNES snes, Vec X, Vec Y, PetscBool 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+// PetscClangLinter pragma disable: -fdoc-internal-linkage
 /*@C
    SNESNewtonTRDCPostCheck - Called after the step has been determined in `SNESNEWTONTRDC` but before the function evaluation at that step
 

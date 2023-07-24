@@ -16,7 +16,6 @@
 . x     - the point at which the Jacobian vector products will be performed
 . jac   - the matrix-free Jacobian object of `MatType` `MATMFFD`, likely obtained with `MatCreateSNESMF()`
 . B     - either the same as jac or another matrix type (ignored)
-.   flag - not relevant for matrix-free form
 - dummy - the user context (ignored)
 
   Options Database Key:

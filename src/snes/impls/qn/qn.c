@@ -382,7 +382,7 @@ static PetscErrorCode SNESView_QN(SNES snes, PetscViewer viewer)
 
   Input Parameters:
 + snes  - the iterative context
-- rtype - restart type
+- rtype - restart type, see `SNESQNRestartType`
 
   Options Database Keys:
 + -snes_qn_restart_type <powell,periodic,none> - set the restart type
@@ -390,12 +390,8 @@ static PetscErrorCode SNESView_QN(SNES snes, PetscViewer viewer)
 
   Level: intermediate
 
-  `SNESQNRestartType`s:
-+   `SNES_QN_RESTART_NONE` - never restart
-.   `SNES_QN_RESTART_POWELL` - restart based upon descent criteria
--   `SNES_QN_RESTART_PERIODIC` - restart after a fixed number of iterations
-
-.seealso: `SNESQN`, `SNESQNRestartType`, `SNES_QN_RESTART_NONE`, `SNES_QN_RESTART_POWELL`, `SNES_QN_RESTART_PERIODIC`
+.seealso: `SNESQN`, `SNESQNRestartType`, `SNES_QN_RESTART_NONE`, `SNES_QN_RESTART_POWELL`, `SNES_QN_RESTART_PERIODIC`,
+          `SNESQNType`, `SNESQNScaleType`
 @*/
 PetscErrorCode SNESQNSetRestartType(SNES snes, SNESQNRestartType rtype)
 {
@@ -412,21 +408,14 @@ PetscErrorCode SNESQNSetRestartType(SNES snes, SNESQNRestartType rtype)
 
   Input Parameters:
 + snes  - the nonlinear solver context
-- stype - scale type
+- stype - scale type, see `SNESQNScaleType`
 
   Options Database Key:
 . -snes_qn_scale_type <diagonal,none,scalar,jacobian> - Scaling type
 
   Level: intermediate
 
-  `SNESQNScaleType`s:
-+   `SNES_QN_SCALE_NONE` - don't scale the problem
-.   `SNES_QN_SCALE_SCALAR` - use Shanno scaling
-.   `SNES_QN_SCALE_DIAGONAL` - scale with a diagonalized BFGS formula (see Gilbert and Lemarechal 1989), available
--   `SNES_QN_SCALE_JACOBIAN` - scale by solving a linear system coming from the Jacobian you provided with SNESSetJacobian() computed at the first iteration
-  of QN and at ever restart.
-
-.seealso: `SNES`, `SNESQN`, `SNESLineSearch`, `SNESQNScaleType`, `SNESSetJacobian()`
+.seealso: `SNES`, `SNESQN`, `SNESLineSearch`, `SNESQNScaleType`, `SNESSetJacobian()`, `SNESQNType`, `SNESQNRestartType`
 @*/
 PetscErrorCode SNESQNSetScaleType(SNES snes, SNESQNScaleType stype)
 {
@@ -462,19 +451,14 @@ PetscErrorCode SNESQNSetRestartType_QN(SNES snes, SNESQNRestartType rtype)
 
   Input Parameters:
 + snes  - the iterative context
-- qtype - variant type
+- qtype - variant type, see `SNESQNType`
 
   Options Database Key:
 . -snes_qn_type <lbfgs,broyden,badbroyden> - quasi-Newton type
 
-  Level: beginner
+  Level: intermediate
 
-  `SNESQNType`s:
-+   `SNES_QN_LBFGS` - LBFGS variant
-.   `SNES_QN_BROYDEN` - Broyden variant
--   `SNES_QN_BADBROYDEN` - Bad Broyden variant
-
-.seealso: `SNESQN`, `SNES_QN_LBFGS`, `SNES_QN_BROYDEN`, `SNES_QN_BADBROYDEN`, `SNESQNType`, `TAOLMVM`, `TAOBLMVM`
+.seealso: `SNESQN`, `SNES_QN_LBFGS`, `SNES_QN_BROYDEN`, `SNES_QN_BADBROYDEN`, `SNESQNType`,  `SNESQNScaleType`, `TAOLMVM`, `TAOBLMVM`
 @*/
 PetscErrorCode SNESQNSetType(SNES snes, SNESQNType qtype)
 {

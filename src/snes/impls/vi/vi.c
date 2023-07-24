@@ -250,17 +250,21 @@ PetscErrorCode SNESVIProjectOntoBounds(SNES snes, Vec X)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*
+/*@
   SNESVIGetActiveSetIS - Gets the global indices for the active set variables
 
-  Input Parameter:
-+ snes - the SNES context
-. X    - the snes solution vector
+  Input Parameters:
++ snes - the `SNES` context
+. X    - the `snes` solution vector
 - F    - the nonlinear function vector
 
   Output Parameter:
 . ISact - active set index set
- */
+
+  Level: developer
+
+.seealso: `SNES`, `SNESVINEWTONRSLS`, `SNESVINEWTONSSLS`
+@*/
 PetscErrorCode SNESVIGetActiveSetIS(SNES snes, Vec X, Vec F, IS *ISact)
 {
   Vec                Xl = snes->xl, Xu = snes->xu;
