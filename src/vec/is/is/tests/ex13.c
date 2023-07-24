@@ -47,7 +47,7 @@ int main(int argc, char **argv)
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
   comm = PETSC_COMM_WORLD;
-  PetscCall(PetscArrayzero(is, sizeof(is) / sizeof(is[0])));
+  PetscCall(PetscArrayzero(is, PETSC_STATIC_ARRAY_LENGTH(is)));
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-n", &n, NULL));
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-first", &first, NULL));
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-step", &step, NULL));
@@ -92,7 +92,7 @@ int main(int argc, char **argv)
     PetscCall(ISShift(is[j], -offset, is[j]));
     j++;
   }
-  PetscAssert(j < (PetscInt)(sizeof(is) / sizeof(is[0])), comm, PETSC_ERR_ARG_OUTOFRANGE, "assertion failed: j < sizeof(is)/sizeof(is[0])");
+  PetscAssert(j < (PetscInt)PETSC_STATIC_ARRAY_LENGTH(is), comm, PETSC_ERR_ARG_OUTOFRANGE, "assertion failed: j < length of is[])");
   PetscCall(ISViewFromOptions(is[0], NULL, "-is0_view"));
   PetscCall(ISViewFromOptions(is[j / 2], NULL, "-is1_view"));
   for (i = 0; i < j; i++) {

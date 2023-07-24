@@ -28,9 +28,9 @@ int main(int argc, char **args)
   } coo_data;
 
   coo_data coos[3] = {
-    {i0, j0, sizeof(i0) / sizeof(PetscInt)},
-    {i1, j1, sizeof(i1) / sizeof(PetscInt)},
-    {i2, j2, sizeof(i2) / sizeof(PetscInt)}
+    {i0, j0, PETSC_STATIC_ARRAY_LENGTH(i0)},
+    {i1, j1, PETSC_STATIC_ARRAY_LENGTH(i1)},
+    {i2, j2, PETSC_STATIC_ARRAY_LENGTH(i2)}
   };
   coo_data mycoo;
 

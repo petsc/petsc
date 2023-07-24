@@ -43,9 +43,9 @@ int main(int argc, char **argv)
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
   PetscCall(PetscRandomCreate(PETSC_COMM_WORLD, &rnd));
 
-  n = nsamples = sizeof(Ns) / sizeof(Ns[0]); // length of Ns[]
-  ny           = sizeof(Ys) / sizeof(Ys[0]); // length of Ys[]
-  maxys        = Ys[ny - 1];                 // at most this many y vectors
+  n = nsamples = PETSC_STATIC_ARRAY_LENGTH(Ns); // length of Ns[]
+  ny           = PETSC_STATIC_ARRAY_LENGTH(Ys); // length of Ys[]
+  maxys        = Ys[ny - 1];                    // at most this many y vectors
 
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-n", &n, NULL)); // Up to vectors of local size 2^{n+6}
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-m", &m, NULL)); // Run each VecMDot() m times

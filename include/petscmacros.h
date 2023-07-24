@@ -1171,7 +1171,19 @@ M*/
 
   Level: intermediate
 M*/
-#define PETSC_STATIC_ARRAY_LENGTH(a) (sizeof(a) / sizeof((a)[0]))
+#if PETSC_CPP_VERSION >= 14
+  #include <cstddef>
+  #include <type_traits>
+
+template <typename T>
+static inline constexpr std::size_t PETSC_STATIC_ARRAY_LENGTH(const T &) noexcept
+{
+  static_assert(std::is_array<T>::value, "");
+  return std::extent<T, std::rank<T>::value - 1>::value;
+}
+#else
+  #define PETSC_STATIC_ARRAY_LENGTH(...) (sizeof(__VA_ARGS__) / sizeof(__VA_ARGS__)[0])
+#endif
 
 /*
   These macros allow extracting out the first argument or all but the first argument from a macro __VAR_ARGS__ INSIDE another macro.

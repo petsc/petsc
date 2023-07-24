@@ -998,7 +998,7 @@ PetscErrorCode SNESSetFromOptions(SNES snes)
   PetscCall(PetscOptionsInt("-snes_grid_sequence", "Use grid sequencing to generate initial guess", "SNESSetGridSequence", snes->gridsequence, &grids, &flg));
   if (flg) PetscCall(SNESSetGridSequence(snes, grids));
 
-  PetscCall(PetscOptionsEList("-snes_convergence_test", "Convergence test", "SNESSetConvergenceTest", convtests, sizeof(convtests) / sizeof(char *), "default", &indx, &flg));
+  PetscCall(PetscOptionsEList("-snes_convergence_test", "Convergence test", "SNESSetConvergenceTest", convtests, PETSC_STATIC_ARRAY_LENGTH(convtests), "default", &indx, &flg));
   if (flg) {
     switch (indx) {
     case 0:

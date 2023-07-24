@@ -38,7 +38,7 @@ int main(int argc, char **argv)
   PetscMPIInt    size;
   PetscInt       Ns[] = {/* Use explicit sizes so that one can add sizes very close to 2^31 */
                    128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768, 65536, 131072, 262144, 524288, 1048576, 2097152, 4194304, 8388608, 16777216, 33554432, 67108864, 134217728, 268435456, 536870912};
-  n = nsamples = sizeof(Ns) / sizeof(Ns[0]);
+  n = nsamples = PETSC_STATIC_ARRAY_LENGTH(Ns);
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));

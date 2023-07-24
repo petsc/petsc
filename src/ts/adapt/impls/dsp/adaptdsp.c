@@ -223,7 +223,7 @@ static struct FilterTab filterlist[] = {
 static PetscErrorCode TSAdaptDSPSetFilter_DSP(TSAdapt adapt, const char *name)
 {
   TSAdapt_DSP      *dsp = (TSAdapt_DSP *)adapt->data;
-  PetscInt          i, count = (PetscInt)(sizeof(filterlist) / sizeof(filterlist[0]));
+  PetscInt          i, count = PETSC_STATIC_ARRAY_LENGTH(filterlist);
   struct FilterTab *tab = NULL;
   PetscBool         match;
 
@@ -260,8 +260,8 @@ static PetscErrorCode TSAdaptDSPSetPID_DSP(TSAdapt adapt, PetscReal kkI, PetscRe
 static PetscErrorCode TSAdaptSetFromOptions_DSP(TSAdapt adapt, PetscOptionItems *PetscOptionsObject)
 {
   TSAdapt_DSP *dsp = (TSAdapt_DSP *)adapt->data;
-  const char  *names[sizeof(filterlist) / sizeof(filterlist[0])];
-  PetscInt     count  = (PetscInt)(sizeof(filterlist) / sizeof(filterlist[0]));
+  const char  *names[PETSC_STATIC_ARRAY_LENGTH(filterlist)];
+  PetscInt     count  = PETSC_STATIC_ARRAY_LENGTH(filterlist);
   PetscInt     index  = 2; /* PI42 */
   PetscReal    pid[3] = {1, 0, 0};
   PetscInt     i, n;
