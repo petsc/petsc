@@ -130,6 +130,8 @@ Changes: Development
 
 - Add ``-dmnetwork_view_all_ranks`` ``-dmnetwork_view_rank_range`` ``-dmnetwork_view_no_vertices`` ``-dmnetwork_view_no_numbering`` for viewing DMNetworks with the Matplotlib viewer
 
+- Add ``-dmnetwork_view_zoomin_vertices`` ``-dmnetwork_view_zoomin_vertices_padding`` for viewing DMNetworks with the Matplotlib viewer
+
 .. rubric:: DMStag:
 
 .. rubric:: DT:
