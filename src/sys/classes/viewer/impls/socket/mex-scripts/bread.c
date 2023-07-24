@@ -95,9 +95,7 @@ PetscErrorCode PetscBinaryRead(int fd, void *p, int n, int *dummy, PetscDataType
   while (n) {
     wsize = (n < maxblock) ? n : maxblock;
     err   = read(fd, pp, wsize);
-#if !defined(PETSC_MISSING_ERRNO_EINTR)
     if (err < 0 && errno == EINTR) continue;
-#endif
     if (!err && wsize > 0) return 1;
     if (err < 0) PETSC_MEX_ERROR("Error reading from socket\n");
     n -= err;
@@ -148,9 +146,7 @@ PetscErrorCode PetscBinaryWrite(int fd, const void *p, int n, PetscDataType type
   while (n) {
     wsize = (n < maxblock) ? n : maxblock;
     err   = write(fd, pp, wsize);
-#if !defined(PETSC_MISSING_ERRNO_EINTR)
     if (err < 0 && errno == EINTR) continue;
-#endif
     if (!err && wsize > 0) {
       retv = 1;
       break;
