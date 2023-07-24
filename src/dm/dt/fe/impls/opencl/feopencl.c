@@ -491,7 +491,7 @@ static PetscErrorCode PetscFEOpenCLLogResidual(PetscFE fem, PetscLogDouble time,
     PetscEventPerfInfo *eventInfo;
     PetscFE_OpenCL     *ocl = (PetscFE_OpenCL *)fem->data;
 
-    PetscCall(PetscLogHandlerDefaultGetEventPerfInfo(h, PETSC_DEFAULT, ocl->residualEvent, &eventInfo));
+    PetscCall(PetscLogHandlerGetEventPerfInfo(h, PETSC_DEFAULT, ocl->residualEvent, &eventInfo));
     eventInfo->count++;
     eventInfo->time += time;
     eventInfo->flops += flops;

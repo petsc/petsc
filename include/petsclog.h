@@ -126,6 +126,19 @@ PETSC_EXTERN PetscErrorCode PetscLogHandlerStagePush(PetscLogHandler, PetscLogSt
 PETSC_EXTERN PetscErrorCode PetscLogHandlerStagePop(PetscLogHandler, PetscLogStage);
 PETSC_EXTERN PetscErrorCode PetscLogHandlerView(PetscLogHandler, PetscViewer);
 
+PETSC_EXTERN PetscErrorCode PetscLogHandlerGetEventPerfInfo(PetscLogHandler, PetscLogStage, PetscLogEvent, PetscEventPerfInfo **);
+PETSC_EXTERN PetscErrorCode PetscLogHandlerSetLogActions(PetscLogHandler, PetscBool);
+PETSC_EXTERN PetscErrorCode PetscLogHandlerSetLogObjects(PetscLogHandler, PetscBool);
+PETSC_EXTERN PetscErrorCode PetscLogHandlerLogObjectState(PetscLogHandler, PetscObject, const char[], ...);
+PETSC_EXTERN PetscErrorCode PetscLogHandlerGetNumObjects(PetscLogHandler, PetscInt *);
+PETSC_EXTERN PetscErrorCode PetscLogHandlerEventDeactivatePush(PetscLogHandler, PetscLogStage, PetscLogEvent);
+PETSC_EXTERN PetscErrorCode PetscLogHandlerEventDeactivatePop(PetscLogHandler, PetscLogStage, PetscLogEvent);
+PETSC_EXTERN PetscErrorCode PetscLogHandlerEventsPause(PetscLogHandler);
+PETSC_EXTERN PetscErrorCode PetscLogHandlerEventsResume(PetscLogHandler);
+PETSC_EXTERN PetscErrorCode PetscLogHandlerDump(PetscLogHandler, const char[]);
+PETSC_EXTERN PetscErrorCode PetscLogHandlerStageSetVisible(PetscLogHandler, PetscLogStage, PetscBool);
+PETSC_EXTERN PetscErrorCode PetscLogHandlerStageGetVisible(PetscLogHandler, PetscLogStage, PetscBool *);
+
 PETSC_EXTERN PetscErrorCode PetscLogHandlerCreateTrace(MPI_Comm, FILE *, PetscLogHandler *);
 PETSC_EXTERN PetscErrorCode PetscLogHandlerCreateLegacy(MPI_Comm, PetscErrorCode (*)(PetscLogEvent, int, PetscObject, PetscObject, PetscObject, PetscObject), PetscErrorCode (*)(PetscLogEvent, int, PetscObject, PetscObject, PetscObject, PetscObject), PetscErrorCode (*)(PetscObject), PetscErrorCode (*)(PetscObject), PetscLogHandler *);
 

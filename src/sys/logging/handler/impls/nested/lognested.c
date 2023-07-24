@@ -310,7 +310,7 @@ static PetscErrorCode PetscLogNestedCreatePerfNodes(MPI_Comm comm, PetscLogHandl
     if (event_id >= 0) {
       PetscEventPerfInfo *event_info;
 
-      PetscCall(PetscLogHandlerDefaultGetEventPerfInfo(nested->handler, 0, event_id, &event_info));
+      PetscCall(PetscLogHandlerGetEventPerfInfo(nested->handler, 0, event_id, &event_info));
       perf[node] = *event_info;
     } else {
       PetscCall(PetscArrayzero(&perf[node], 1));

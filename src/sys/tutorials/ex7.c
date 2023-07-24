@@ -55,7 +55,7 @@ static PetscErrorCode HandlerCtxDestroy(HandlerCtx *ctx_p)
     PetscLogDouble _time; \
     PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &_rank)); \
     PetscCall(PetscTime(&_time)); \
-    PetscCall(PetscPrintf(PETSC_COMM_SELF, "[%d:%-7g:%-29s] " format_string, _rank, _time, PETSC_FUNCTION_NAME, __VA_ARGS__)); \
+    PetscCall(PetscPrintf(PETSC_COMM_SELF, "[%d:%-7g:%-33s] " format_string, _rank, _time, PETSC_FUNCTION_NAME, __VA_ARGS__)); \
   } while (0)
 
 static PetscErrorCode PetscLogHandlerEventBegin_Ex7(PetscLogHandler h, PetscLogEvent e, PetscObject o1, PetscObject o2, PetscObject o3, PetscObject o4)
@@ -135,16 +135,6 @@ static PetscErrorCode PetscLogHandlerObjectDestroy_Ex7(PetscLogHandler h, PetscO
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode PetscLogHandlerDestroy_Ex7(PetscLogHandler h)
-{
-  HandlerCtx ctx;
-
-  PetscFunctionBegin;
-  ctx = (HandlerCtx)h->data;
-  PetscCall(HandlerCtxDestroy(&ctx));
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
 static PetscErrorCode PetscLogHandlerStagePush_Ex7(PetscLogHandler h, PetscLogStage new_stage)
 {
   PetscLogStage     old_stage;
@@ -204,6 +194,30 @@ static PetscErrorCode PetscLogHandlerView_Ex7(PetscLogHandler h, PetscViewer vie
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+// An example of overloading one of the methods defined using PetscObjectComposeFunction()
+static PetscErrorCode PetscLogHandlerLogObjectState_Ex7(PetscLogHandler h, PetscObject obj, const char format[], va_list argp)
+{
+  const char *name;
+
+  PetscFunctionBegin;
+  PetscCall(PetscObjectGetName(obj, &name));
+  PrintData("Logged state for \"%s\": ", name);
+  PetscCall(PetscVFPrintf(PETSC_STDOUT, format, argp));
+  PetscCall(PetscPrintf(PETSC_COMM_SELF, "\n"));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode PetscLogHandlerDestroy_Ex7(PetscLogHandler h)
+{
+  HandlerCtx ctx;
+
+  PetscFunctionBegin;
+  ctx = (HandlerCtx)h->data;
+  PetscCall(HandlerCtxDestroy(&ctx));
+  PetscCall(PetscObjectComposeFunction((PetscObject)h, "PetscLogHandlerLogObjectState_C", NULL));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 static PetscErrorCode PetscLogHandlerCreate_Ex7(PetscLogHandler handler)
 {
   HandlerCtx ctx;
@@ -220,6 +234,7 @@ static PetscErrorCode PetscLogHandlerCreate_Ex7(PetscLogHandler handler)
   handler->ops->objectdestroy = PetscLogHandlerObjectDestroy_Ex7;
   handler->ops->stagepush     = PetscLogHandlerStagePush_Ex7;
   handler->ops->stagepop      = PetscLogHandlerStagePop_Ex7;
+  PetscCall(PetscObjectComposeFunction((PetscObject)handler, "PetscLogHandlerLogObjectState_C", PetscLogHandlerLogObjectState_Ex7));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -230,6 +245,7 @@ int main(int argc, char **argv)
   PetscLogStage       stage_1;
   PetscContainer      user_object;
   PetscLogHandler     h;
+  PetscLogDouble      time;
   PetscLogHandlerType type;
 
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
@@ -251,7 +267,10 @@ int main(int argc, char **argv)
   PetscCall(PetscLogEventBegin(event_2, NULL, NULL, NULL, NULL));
   PetscCall(PetscLogEventSync(event_1, PETSC_COMM_WORLD));
   PetscCall(PetscLogEventBegin(event_1, NULL, NULL, NULL, NULL));
+  PetscCall(PetscTime(&time));
   PetscCall(PetscContainerCreate(PETSC_COMM_SELF, &user_object));
+  PetscCall(PetscObjectSetName((PetscObject)user_object, "User Container"));
+  PetscCall(PetscLogHandlerLogObjectState(h, (PetscObject)user_object, "Created at %e", time));
   PetscCall(PetscContainerDestroy(&user_object));
   PetscCall(PetscLogEventEnd(event_1, NULL, NULL, NULL, NULL));
   PetscCall(PetscLogEventEnd(event_2, NULL, NULL, NULL, NULL));

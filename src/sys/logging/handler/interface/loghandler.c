@@ -2,6 +2,7 @@
 #include <petscviewer.h>
 #include <petsc/private/logimpl.h> /*I "petscsys.h" I*/
 #include <petsc/private/loghandlerimpl.h>
+#include <petsc/private/petscimpl.h>
 
 /*@
   PetscLogHandlerCreate - Create a log handler for profiling events and stages.  PETSc
@@ -340,5 +341,347 @@ PetscErrorCode PetscLogHandlerView(PetscLogHandler h, PetscViewer viewer)
   PetscValidHeaderSpecific(h, PETSCLOGHANDLER_CLASSID, 1);
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
   PetscTryTypeMethod(h, view, viewer);
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@C
+  PetscLogHandlerGetEventPerfInfo - Get a direct reference to the `PetscEventPerfInfo` of a stage and event
+
+  Not collective
+
+  Input Parameters:
++ handler - a `PetscLogHandler`
+. stage   - a `PetscLogStage` (or `PETSC_DEFAULT` for the current stage)
+- event   - a `PetscLogEvent`
+
+  Output Parameter:
+. event_info - a pointer to a performance log for `event` during `stage` (or `NULL` if this handler does not use
+               `PetscEventPerfInfo` to record performance data); writing to `event_info` will change the record in
+               `handler`
+
+  Level: developer
+
+.seealso: [](ch_profiling), `PetscLogEventGetPerfInfo()`, `PETSCLOGHANDLERDEFAULT`
+@*/
+PetscErrorCode PetscLogHandlerGetEventPerfInfo(PetscLogHandler handler, PetscLogStage stage, PetscLogEvent event, PetscEventPerfInfo **event_info)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(handler, PETSCLOGHANDLER_CLASSID, 1);
+  PetscAssertPointer(event_info, 4);
+  *event_info = NULL;
+  PetscTryMethod(handler, "PetscLogHandlerGetEventPerfInfo_C", (PetscLogHandler, PetscLogStage, PetscLogEvent, PetscEventPerfInfo **), (handler, stage, event, event_info));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  PetscLogHandlerSetLogActions - Determines whether actions are logged for a log handler.
+
+  Not Collective
+
+  Input Parameters:
++ handler - a `PetscLogHandler`
+- flag    - `PETSC_TRUE` if actions are to be logged (ignored if `handler` does not log actions)
+
+  Level: developer
+
+  Notes:
+  The default log handler `PETSCLOGHANDLERDEFAULT` implements this function, but others generally do not.  You can use
+  `PetscLogSetLogActions()` to call this function for the default log handler that is connected to the global
+  logging state (`PetscLogGetState()`).
+
+  Logging of actions continues to consume more memory as the program runs. Long running programs should consider
+  turning this feature off.
+
+.seealso: [](ch_profiling), `PetscLogSetLogActions()`, `PetscLogStagePush()`, `PetscLogStagePop()`, `PetscLogGetDefaultHandler()`
+@*/
+PetscErrorCode PetscLogHandlerSetLogActions(PetscLogHandler handler, PetscBool flag)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(handler, PETSCLOGHANDLER_CLASSID, 1);
+  PetscTryMethod(handler, "PetscLogHandlerSetLogActions_C", (PetscLogHandler, PetscBool), (handler, flag));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  PetscLogHandlerSetLogObjects - Determines whether objects are logged for a log handler.
+
+  Not Collective
+
+  Input Parameters:
++ handler - a `PetscLogHandler`
+- flag    - `PETSC_TRUE` if objects are to be logged (ignored if `handler` does not log objects)
+
+  Level: developer
+
+  Notes:
+  The default log handler `PETSCLOGHANDLERDEFAULT` implements this function, but others generally do not.  You can use
+  `PetscLogSetLogObjects()` to call this function for the default log handler that is connected to the global
+  logging state (`PetscLogGetState()`).
+
+  Logging of objects continues to consume more memory as the program runs. Long running programs should consider
+  turning this feature off.
+
+.seealso: [](ch_profiling), `PetscLogSetLogObjects()`, `PetscLogStagePush()`, `PetscLogStagePop()`, `PetscLogGetDefaultHandler()`
+@*/
+PetscErrorCode PetscLogHandlerSetLogObjects(PetscLogHandler handler, PetscBool flag)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(handler, PETSCLOGHANDLER_CLASSID, 1);
+  PetscTryMethod(handler, "PetscLogHandlerSetLogObjects_C", (PetscLogHandler, PetscBool), (handler, flag));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+PetscErrorCode PetscLogHandlerLogObjectState_Internal(PetscLogHandler handler, PetscObject obj, const char format[], va_list argp)
+{
+  PetscFunctionBegin;
+  PetscTryMethod(handler, "PetscLogHandlerLogObjectState_C", (PetscLogHandler, PetscObject, const char *, va_list), (handler, obj, format, argp));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@C
+  PetscLogHandlerLogObjectState - Record information about an object with the default log handler
+
+  Not Collective
+
+  Input Parameters:
++ handler - a `PetscLogHandler`
+. obj     - the `PetscObject`
+. format  - a printf-style format string
+- ...     - printf arguments to format
+
+  Level: developer
+
+  Note:
+  The default log handler `PETSCLOGHANDLERDEFAULT` implements this function, but others generally do not.  You can use
+  `PetscLogObjectState()` to call this function for the default log handler that is connected to the global
+  logging state (`PetscLogGetState()`).
+
+.seealso: [](ch_profiling), `PetcLogObjectState`, `PetscLogObjectCreate()`, `PetscLogObjectDestroy()`, `PetscLogGetDefaultHandler()`
+@*/
+PetscErrorCode PetscLogHandlerLogObjectState(PetscLogHandler handler, PetscObject obj, const char format[], ...)
+{
+  va_list argp;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(handler, PETSCLOGHANDLER_CLASSID, 1);
+  PetscValidHeader(obj, 2);
+  PetscAssertPointer(format, 3);
+  va_start(argp, format);
+  PetscCall(PetscLogHandlerLogObjectState_Internal(handler, obj, format, argp));
+  va_end(argp);
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  PetscLogHandlerGetNumObjects - Get the number of objects that were logged with a log handler
+
+  Not Collective
+
+  Input Parameter:
+. handler - a `PetscLogHandler`
+
+  Output Parameter:
+. num_objects - the number of objects whose creations and destructions were logged with `handler`
+                (`PetscLogHandlerObjectCreate()` / `PetscLogHandlerObjectDestroy()`), or -1
+                if the handler does not keep track of this number.
+
+  Level: developer
+
+  Note:
+  The default log handler `PETSCLOGHANDLERDEFAULT` implements this function, but others generally do not.
+
+.seealso: [](ch_profiling)
+@*/
+PetscErrorCode PetscLogHandlerGetNumObjects(PetscLogHandler handler, PetscInt *num_objects)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(handler, PETSCLOGHANDLER_CLASSID, 1);
+  PetscAssertPointer(num_objects, 2);
+  PetscTryMethod(handler, "PetscLogHandlerGetNumObjects_C", (PetscLogHandler, PetscInt *), (handler, num_objects));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  PetscLogHandlerEventDeactivatePush - Temporarily deactivate a logging event for a log handler
+
+  Not collective
+
+  Input Parameters:
++ handler - a `PetscLogHandler`
+. stage   - a `PetscLogStage` (or `PETSC_DEFAULT` for the current stage)
+- event   - a `PetscLogEvent`
+
+  Level: developer
+
+  Note:
+  The default log handler `PETSCLOGHANDLERDEFAULT` implements this function, but others generally do not.  You can use
+  `PetscLogEventDeactivatePush()` to call this function for the default log handler that is connected to the global
+  logging state (`PetscLogGetState()`).
+
+.seealso: [](ch_profiling), `PetscLogHandlerEventDeactivatePop()`
+@*/
+PetscErrorCode PetscLogHandlerEventDeactivatePush(PetscLogHandler handler, PetscLogStage stage, PetscLogEvent event)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(handler, PETSCLOGHANDLER_CLASSID, 1);
+  PetscTryMethod(handler, "PetscLogHandlerEventDeactivatePush_C", (PetscLogHandler, PetscLogStage, PetscLogEvent), (handler, stage, event));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  PetscLogHandlerEventDeactivatePop - Undo temporary deactivation a logging event for a log handler
+
+  Not collective
+
+  Input Parameters:
++ handler - a `PetscLogHandler`
+. stage   - a `PetscLogStage` (or `PETSC_DEFAULT` for the current stage)
+- event   - a `PetscLogEvent`
+
+  Level: developer
+
+  Note:
+  The default log handler `PETSCLOGHANDLERDEFAULT` implements this function, but others generally do not.  You can use
+  `PetscLogEventDeactivatePop()` to call this function for the default log handler that is connected to the global
+  logging state (`PetscLogGetState()`).
+
+.seealso: [](ch_profiling), `PetscLogHandlerEventDeactivatePush()`
+@*/
+PetscErrorCode PetscLogHandlerEventDeactivatePop(PetscLogHandler handler, PetscLogStage stage, PetscLogEvent event)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(handler, PETSCLOGHANDLER_CLASSID, 1);
+  PetscTryMethod(handler, "PetscLogHandlerEventDeactivatePop_C", (PetscLogHandler, PetscLogStage, PetscLogEvent), (handler, stage, event));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  PetscLogHandlerEventsPause - Put event logging into "paused" mode (see `PetscLogEventsPause()` for details.) for a log handler
+
+  Not collective
+
+  Input Parameter:
+. handler - a `PetscLogHandler`
+
+  Level: developer
+
+  Note:
+  The default log handler `PETSCLOGHANDLERDEFAULT` implements this function, but others generally do not.  You can use
+  `PetscLogEventsPause()` to call this function for the default log handler that is connected to the global
+  logging state (`PetscLogGetState()`).
+
+.seealso: [](ch_profiling), `PetscLogHandlerEventsResume()`
+@*/
+PetscErrorCode PetscLogHandlerEventsPause(PetscLogHandler handler)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(handler, PETSCLOGHANDLER_CLASSID, 1);
+  PetscTryMethod(handler, "PetscLogHandlerEventsPause_C", (PetscLogHandler), (handler));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  PetscLogHandlerEventsResume - Resume event logging that had been put into "paused" mode (see `PetscLogEventsPause()` for details.) for a log handler
+
+  Not collective
+
+  Input Parameter:
+. handler - a `PetscLogHandler`
+
+  Level: developer
+
+  Note:
+  The default log handler `PETSCLOGHANDLERDEFAULT` implements this function, but others generally do not.  You can use
+  `PetscLogEventsResume()` to call this function for the default log handler that is connected to the global
+  logging state (`PetscLogGetState()`).
+
+.seealso: [](ch_profiling), `PetscLogHandlerEventsPause()`
+@*/
+PetscErrorCode PetscLogHandlerEventsResume(PetscLogHandler handler)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(handler, PETSCLOGHANDLER_CLASSID, 1);
+  PetscTryMethod(handler, "PetscLogHandlerEventsResume_C", (PetscLogHandler), (handler));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  PetscLogHandlerDump - Dump the records of a log handler to file
+
+  Not collective
+
+  Input Parameters:
++ handler - a `PetscLogHandler`
+- sname   - the name of the file to dump log data to
+
+  Level: developer
+
+  Note:
+  The default log handler `PETSCLOGHANDLERDEFAULT` implements this function, but others generally do not.  You can use
+  `PetscLogDump()` to call this function for the default log handler that is connected to the global
+  logging state (`PetscLogGetState()`).
+
+.seealso: [](ch_profiling)
+@*/
+PetscErrorCode PetscLogHandlerDump(PetscLogHandler handler, const char sname[])
+{
+  PetscFunctionBegin;
+  PetscTryMethod(handler, "PetscLogHandlerDump_C", (PetscLogHandler, const char *), (handler, sname));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  PetscLogHandlerStageSetVisible - Set the visiblity of logging stage in `PetscLogHandlerView()` for a log handler
+
+  Not collective
+
+  Input Parameters:
++ handler   - a `PetscLogHandler`
+. stage     - a `PetscLogStage`
+- isVisible - the visibility flag, `PETSC_TRUE` to print, else `PETSC_FALSE` (defaults to `PETSC_TRUE`)
+
+  Level: developer
+
+  Note:
+  The default log handler `PETSCLOGHANDLERDEFAULT` implements this function, but others generally do not.  You can use
+  `PetscLogStageSetVisible()` to call this function for the default log handler that is connected to the global
+  logging state (`PetscLogGetState()`).
+
+.seealso: [](ch_profiling), `PetscLogHandlerStageGetVisible()`
+@*/
+PetscErrorCode PetscLogHandlerStageSetVisible(PetscLogHandler handler, PetscLogStage stage, PetscBool isVisible)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(handler, PETSCLOGHANDLER_CLASSID, 1);
+  PetscTryMethod(handler, "PetscLogHandlerStageSetVisible_C", (PetscLogHandler, PetscLogStage, PetscBool), (handler, stage, isVisible));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  PetscLogHandlerStageGetVisible - Get the visiblity of logging stage in `PetscLogHandlerView()` for a log handler
+
+  Not collective
+
+  Input Parameters:
++ handler - a `PetscLogHandler`
+- stage   - a `PetscLogStage`
+
+  Output Parameter:
+. isVisible - the visibility flag, `PETSC_TRUE` to print, else `PETSC_FALSE` (defaults to `PETSC_TRUE`)
+
+  Level: developer
+
+  Note:
+  The default log handler `PETSCLOGHANDLERDEFAULT` implements this function, but others generally do not.  You can use
+  `PetscLogStageGetVisible()` to call this function for the default log handler that is connected to the global
+  logging state (`PetscLogGetState()`).
+
+.seealso: [](ch_profiling), `PetscLogHandlerStageSetVisible()`
+@*/
+PetscErrorCode PetscLogHandlerStageGetVisible(PetscLogHandler handler, PetscLogStage stage, PetscBool *isVisible)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(handler, PETSCLOGHANDLER_CLASSID, 1);
+  PetscTryMethod(handler, "PetscLogHandlerStageGetVisible_C", (PetscLogHandler, PetscLogStage, PetscBool *), (handler, stage, isVisible));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

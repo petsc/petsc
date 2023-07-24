@@ -64,6 +64,18 @@ Changes: Development
 - Deprecate ``PetscLogPopCurrentEvent_Internal()``
 - Deprecate ``PetscLogAllBegin()``
 - Deprecate ``PetscLogSet()``
+- Add ``PetscLogHandlerGetEventPerfInfo()``
+- Add ``PetscLogHandlerSetLogActions()``
+- Add ``PetscLogHandlerSetLogObjects()``
+- Add ``PetscLogHandlerLogObjectState()``
+- Add ``PetscLogHandlerGetNumObjects()``
+- Add ``PetscLogHandlerEventDeactivatePush()``
+- Add ``PetscLogHandlerEventDeactivatePop()``
+- Add ``PetscLogHandlerEventsPause()``
+- Add ``PetscLogHandlerEventsResume()``
+- Add ``PetscLogHandlerDump()``
+- Add ``PetscLogHandlerStageSetVisible()``
+- Add ``PetscLogHandlerStageGetVisible()``
 
 .. rubric:: PetscViewer:
 
