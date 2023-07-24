@@ -102,14 +102,6 @@ PetscErrorCode TSRHSSplitGetIS(TS ts, const char splitname[], IS *is)
 . rhsfunc   - the RHS function evaluation routine
 - ctx       - user-defined context for private data for the split function evaluation routine (may be `NULL`)
 
-  Calling sequence of `rhsfun`:
-$  PetscErrorCode rhsfunc(TS ts, PetscReal t, Vec u, Vec f,ctx)
-+ ts  - the `TS` context obtained from `TSCreate()`
-.  t    - time at step/stage being solved
-.  u    - state vector
-.  f    - function vector
-- ctx - [optional] user-defined context for matrix evaluation routine (may be `NULL`)
-
   Level: intermediate
 
 .seealso: [](ch_ts), `TS`, `TSRHSFunction`, `IS`, `TSRHSSplitSetIS()`

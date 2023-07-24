@@ -1015,22 +1015,14 @@ PetscErrorCode TSComputeIJacobian(TS ts, PetscReal t, Vec U, Vec Udot, PetscReal
 . f   - routine for evaluating the right-hand-side function
 - ctx - [optional] user-defined context for private data for the function evaluation routine (may be `NULL`)
 
-  Calling sequence of `f`:
-$     PetscErrorCode f(TS ts, PetscReal t, Vec u, Vec F, void *ctx)
-+ ts  - timestep context
-.   t - current timestep
-.   u - input vector
-.   F - function vector
-- ctx - [optional] user-defined function context
-
   Level: beginner
 
   Note:
   You must call this function or `TSSetIFunction()` to define your ODE. You cannot use this function when solving a DAE.
 
-.seealso: [](ch_ts), `TS`, `TSSetRHSJacobian()`, `TSSetIJacobian()`, `TSSetIFunction()`
+.seealso: [](ch_ts), `TS`, `TSRHSFunction`, `TSSetRHSJacobian()`, `TSSetIJacobian()`, `TSSetIFunction()`
 @*/
-PetscErrorCode TSSetRHSFunction(TS ts, Vec r, PetscErrorCode (*f)(TS, PetscReal, Vec, Vec, void *), void *ctx)
+PetscErrorCode TSSetRHSFunction(TS ts, Vec r, TSRHSFunction f, void *ctx)
 {
   SNES snes;
   Vec  ralloc = NULL;
@@ -1063,13 +1055,6 @@ PetscErrorCode TSSetRHSFunction(TS ts, Vec r, PetscErrorCode (*f)(TS, PetscReal,
 - ctx - [optional] user-defined context for private data for the
           function evaluation routine (may be `NULL`)
 
-  Calling sequence of `f`:
-$   PetscErrorCode f(TS ts, PetscReal t, Vec u, void *ctx)
-+ ts  - the integrator context
-.   t - current timestep
-.   u - output vector
-- ctx - [optional] user-defined function context
-
   Options Database Keys:
 + -ts_monitor_lg_error   - create a graphical monitor of error history, requires user to have provided `TSSetSolutionFunction()`
 - -ts_monitor_draw_error - Monitor error graphically, requires user to have provided `TSSetSolutionFunction()`
@@ -1083,9 +1068,9 @@ $   PetscErrorCode f(TS ts, PetscReal t, Vec u, void *ctx)
 
   For low-dimensional problems solved in serial, such as small discrete systems, `TSMonitorLGError()` can be used to monitor the error history.
 
-.seealso: [](ch_ts), `TS`, `TSSetRHSJacobian()`, `TSSetIJacobian()`, `TSComputeSolutionFunction()`, `TSSetForcingFunction()`, `TSSetSolution()`, `TSGetSolution()`, `TSMonitorLGError()`, `TSMonitorDrawError()`
+.seealso: [](ch_ts), `TS`, `TSSolutionFunction`, `TSSetRHSJacobian()`, `TSSetIJacobian()`, `TSComputeSolutionFunction()`, `TSSetForcingFunction()`, `TSSetSolution()`, `TSGetSolution()`, `TSMonitorLGError()`, `TSMonitorDrawError()`
 @*/
-PetscErrorCode TSSetSolutionFunction(TS ts, PetscErrorCode (*f)(TS, PetscReal, Vec, void *), void *ctx)
+PetscErrorCode TSSetSolutionFunction(TS ts, TSSolutionFunction f, void *ctx)
 {
   DM dm;
 
@@ -1104,15 +1089,8 @@ PetscErrorCode TSSetSolutionFunction(TS ts, PetscErrorCode (*f)(TS, PetscReal, V
   Input Parameters:
 + ts   - the `TS` context obtained from `TSCreate()`
 . func - routine for evaluating the forcing function
-- ctx  - [optional] user-defined context for private data for the
-          function evaluation routine (may be `NULL`)
-
-  Calling sequence of func:
-$   PetscErrorCode func(TS ts, PetscReal t, Vec f, void *ctx)
-+ ts  - the integrator context
-.   t - current timestep
-.   f - output vector
-- ctx - [optional] user-defined function context
+- ctx  - [optional] user-defined context for private data for the function evaluation routine
+         (may be `NULL`)
 
   Level: intermediate
 
@@ -1128,7 +1106,8 @@ $   PetscErrorCode func(TS ts, PetscReal t, Vec f, void *ctx)
 
   For low-dimensional problems solved in serial, such as small discrete systems, `TSMonitorLGError()` can be used to monitor the error history.
 
-.seealso: [](ch_ts), `TS`, `TSSetRHSJacobian()`, `TSSetIJacobian()`, `TSComputeSolutionFunction()`, `TSSetSolutionFunction()`
+.seealso: [](ch_ts), `TS`, `TSForcingFunction`, `TSSetRHSJacobian()`, `TSSetIJacobian()`,
+`TSComputeSolutionFunction()`, `TSSetSolutionFunction()`
 @*/
 PetscErrorCode TSSetForcingFunction(TS ts, TSForcingFunction func, void *ctx)
 {
@@ -1154,24 +1133,16 @@ PetscErrorCode TSSetForcingFunction(TS ts, TSForcingFunction func, void *ctx)
 . f    - the Jacobian evaluation routine
 - ctx  - [optional] user-defined context for private data for the Jacobian evaluation routine (may be `NULL`)
 
-  Calling sequence of `f`:
-$  PetscErrorCode f(TS ts, PetscReal t, Vec u, Mat A, Mat B, void *ctx)
-+ ts   - the `TS` context obtained from `TSCreate()`
-.  t - current timestep
-.  u - input vector
-. Amat - (approximate) Jacobian matrix
-. Pmat - matrix from which preconditioner is to be constructed (usually the same as `Amat`)
-- ctx  - [optional] user-defined context for matrix evaluation routine
-
   Level: beginner
 
   Notes:
   You must set all the diagonal entries of the matrices, if they are zero you must still set them with a zero value
 
-  The `TS` solver may modify the nonzero structure and the entries of the matrices Amat and Pmat between the calls to f()
+  The `TS` solver may modify the nonzero structure and the entries of the matrices `Amat` and `Pmat` between the calls to `f()`
   You should not assume the values are the same in the next call to f() as you set them in the previous call.
 
-.seealso: [](ch_ts), `TS`, `SNESComputeJacobianDefaultColor()`, `TSSetRHSFunction()`, `TSRHSJacobianSetReuse()`, `TSSetIJacobian()`
+.seealso: [](ch_ts), `TS`, `TSRHSJacobian`, `SNESComputeJacobianDefaultColor()`,
+`TSSetRHSFunction()`, `TSRHSJacobianSetReuse()`, `TSSetIJacobian()`, `TSRHSFunction()`, `TSIFunction()`
 @*/
 PetscErrorCode TSSetRHSJacobian(TS ts, Mat Amat, Mat Pmat, TSRHSJacobian f, void *ctx)
 {
@@ -1215,21 +1186,13 @@ PetscErrorCode TSSetRHSJacobian(TS ts, Mat Amat, Mat Pmat, TSRHSJacobian f, void
 . f   - the function evaluation routine
 - ctx - user-defined context for private data for the function evaluation routine (may be `NULL`)
 
-  Calling sequence of `f`:
-$   PetscErrorCode f(TS ts, PetscReal t, Vec u, Vec u_t, Vec F, void *ctx)
-+ ts  - the `TS` context obtained from `TSCreate()`
-.  t   - time at step/stage being solved
-.  u   - state vector
-.  u_t - time derivative of state vector
-.  F   - function vector
-- ctx - [optional] user-defined context for matrix evaluation routine
-
   Level: beginner
 
   Note:
   The user MUST call either this routine or `TSSetRHSFunction()` to define the ODE.  When solving DAEs you must use this function.
 
-.seealso: [](ch_ts), `TS`, `TSSetRHSJacobian()`, `TSSetRHSFunction()`, `TSSetIJacobian()`
+.seealso: [](ch_ts), `TS`, `TSIFunction`, `TSSetRHSJacobian()`, `TSSetRHSFunction()`,
+`TSSetIJacobian()`
 @*/
 PetscErrorCode TSSetIFunction(TS ts, Vec r, TSIFunction f, void *ctx)
 {
@@ -1329,17 +1292,6 @@ PetscErrorCode TSGetRHSFunction(TS ts, Vec *r, TSRHSFunction *func, void **ctx)
 . f    - the Jacobian evaluation routine
 - ctx  - user-defined context for private data for the Jacobian evaluation routine (may be `NULL`)
 
-  Calling sequence of `f`:
-$    PetscErrorCode f(TS ts, PetscReal t, Vec U, Vec U_t, PetscReal a, Mat Amat, Mat Pmat, void *ctx)
-+ ts   - the `TS` context obtained from `TSCreate()`
-.  t    - time at step/stage being solved
-.  U    - state vector
-.  U_t  - time derivative of state vector
-.  a    - shift
-. Amat - (approximate) Jacobian of F(t,U,W+a*U), equivalent to dF/dU + a*dF/dU_t
-. Pmat - matrix used for constructing preconditioner, usually the same as `Amat`
-- ctx  - [optional] user-defined context for matrix evaluation routine
-
   Level: beginner
 
   Notes:
@@ -1360,7 +1312,8 @@ $    PetscErrorCode f(TS ts, PetscReal t, Vec U, Vec U_t, PetscReal a, Mat Amat,
   The TS solver may modify the nonzero structure and the entries of the matrices `Amat` and `Pmat` between the calls to `f`
   You should not assume the values are the same in the next call to `f` as you set them in the previous call.
 
-.seealso: [](ch_ts), `TS`, `TSSetIFunction()`, `TSSetRHSJacobian()`, `SNESComputeJacobianDefaultColor()`, `SNESComputeJacobianDefault()`, `TSSetRHSFunction()`
+.seealso: [](ch_ts), `TS`, `TSIJacobian`, `TSSetIFunction()`, `TSSetRHSJacobian()`,
+`SNESComputeJacobianDefaultColor()`, `SNESComputeJacobianDefault()`, `TSSetRHSFunction()`
 @*/
 PetscErrorCode TSSetIJacobian(TS ts, Mat Amat, Mat Pmat, TSIJacobian f, void *ctx)
 {
@@ -1383,10 +1336,7 @@ PetscErrorCode TSSetIJacobian(TS ts, Mat Amat, Mat Pmat, TSIJacobian f, void *ct
 }
 
 /*@
-  TSRHSJacobianSetReuse - restore RHS Jacobian before re-evaluating.  Without this flag, `TS` will change the sign and
-  shift the RHS Jacobian for a finite-time-step implicit solve, in which case the user function will need to recompute
-  the entire Jacobian.  The reuse flag must be set if the evaluation function will assume that the matrix entries have
-  not been changed by the `TS`.
+  TSRHSJacobianSetReuse - restore the RHS Jacobian before calling the user-provided `TSRHSJacobian()` function again
 
   Logically Collective
 
@@ -1395,6 +1345,12 @@ PetscErrorCode TSSetIJacobian(TS ts, Mat Amat, Mat Pmat, TSIJacobian f, void *ct
 - reuse - `PETSC_TRUE` if the RHS Jacobian
 
   Level: intermediate
+
+  Notes:
+  Without this flag, `TS` will change the sign and shift the RHS Jacobian for a
+  finite-time-step implicit solve, in which case the user function will need to recompute the
+  entire Jacobian.  The `reuse `flag must be set if the evaluation function assumes that the
+  matrix entries have not been changed by the `TS`.
 
 .seealso: [](ch_ts), `TS`, `TSSetRHSJacobian()`, `TSComputeRHSJacobianConstant()`
 @*/
@@ -1416,19 +1372,10 @@ PetscErrorCode TSRHSJacobianSetReuse(TS ts, PetscBool reuse)
 . fun - the function evaluation routine
 - ctx - user-defined context for private data for the function evaluation routine (may be `NULL`)
 
-  Calling sequence of `fun`:
-$   PetscErrorCode fun(TS ts, PetscReal t, Vec U, Vec U_t, Vec U_tt, Vec F,void *ctx);
-+ ts  - the `TS` context obtained from `TSCreate()`
-.  t    - time at step/stage being solved
-.  U    - state vector
-.  U_t  - time derivative of state vector
-.  U_tt - second time derivative of state vector
-. F   - function vector
-- ctx - [optional] user-defined context for matrix evaluation routine (may be `NULL`)
-
   Level: beginner
 
-.seealso: [](ch_ts), `TS`, `TSSetI2Jacobian()`, `TSSetIFunction()`, `TSCreate()`, `TSSetRHSFunction()`
+.seealso: [](ch_ts), `TS`, `TSI2Function`, `TSSetI2Jacobian()`, `TSSetIFunction()`,
+`TSCreate()`, `TSSetRHSFunction()`
 @*/
 PetscErrorCode TSSetI2Function(TS ts, Vec F, TSI2Function fun, void *ctx)
 {
@@ -1487,19 +1434,6 @@ PetscErrorCode TSGetI2Function(TS ts, Vec *r, TSI2Function *fun, void **ctx)
 . jac - the Jacobian evaluation routine
 - ctx - user-defined context for private data for the Jacobian evaluation routine (may be `NULL`)
 
-  Calling sequence of `jac`:
-$    PetscErrorCode jac(TS ts, PetscReal t, Vec U, Vec U_t, Vec U_tt, PetscReal v, PetscReal a, Mat J, Mat P, void *ctx)
-+ ts  - the `TS` context obtained from `TSCreate()`
-.  t    - time at step/stage being solved
-.  U    - state vector
-.  U_t  - time derivative of state vector
-.  U_tt - second time derivative of state vector
-.  v    - shift for U_t
-.  a    - shift for U_tt
-. J   - Jacobian of G(U) = F(t,U,W+v*U,W'+a*U), equivalent to dF/dU + v*dF/dU_t  + a*dF/dU_tt
-. P   - preconditioning matrix for J, may be same as J
-- ctx - [optional] user-defined context for matrix evaluation routine
-
   Level: beginner
 
   Notes:
@@ -1510,7 +1444,7 @@ $    PetscErrorCode jac(TS ts, PetscReal t, Vec U, Vec U_t, Vec U_tt, PetscReal 
   The time integrator internally approximates U_t by W+v*U and U_tt by W'+a*U  where the positive "shift"
   parameters 'v' and 'a' and vectors W, W' depend on the integration method, step size, and past states.
 
-.seealso: [](ch_ts), `TS`, `TSSetI2Function()`, `TSGetI2Jacobian()`
+.seealso: [](ch_ts), `TS`, `TSI2Jacobian`, `TSSetI2Function()`, `TSGetI2Jacobian()`
 @*/
 PetscErrorCode TSSetI2Jacobian(TS ts, Mat J, Mat P, TSI2Jacobian jac, void *ctx)
 {
@@ -1700,13 +1634,6 @@ PetscErrorCode TSComputeI2Jacobian(TS ts, PetscReal t, Vec U, Vec V, Vec A, Pets
 . tvar - a function that transforms to transient variables
 - ctx  - a context for tvar
 
-  Calling sequence of `tvar`:
-$   PetscErrorCode tvar(TS ts, Vec p, Vec c, void *ctx)
-+ ts  - timestep context
-.   p - input vector (primitive form)
-.   c - output vector, transient variables (conservative form)
-- ctx - [optional] user-defined function context
-
   Level: advanced
 
   Notes:
@@ -1719,7 +1646,7 @@ $   PetscErrorCode tvar(TS ts, Vec p, Vec c, void *ctx)
      dF/dP + shift * dF/dCdot dC/dP.
 .ve
 
-.seealso: [](ch_ts), `TS`, `TSBDF`, `DMTSSetTransientVariable()`, `DMTSGetTransientVariable()`, `TSSetIFunction()`, `TSSetIJacobian()`
+.seealso: [](ch_ts), `TS`, `TSBDF`, `TSTransientVariable`, `DMTSSetTransientVariable()`, `DMTSGetTransientVariable()`, `TSSetIFunction()`, `TSSetIJacobian()`
 @*/
 PetscErrorCode TSSetTransientVariable(TS ts, TSTransientVariable tvar, void *ctx)
 {
@@ -1828,11 +1755,9 @@ PetscErrorCode TS2SetSolution(TS ts, Vec u, Vec v)
 
 /*@
   TS2GetSolution - Returns the solution and time derivative at the present timestep
-  for second order equations. It is valid to call this routine inside the function
-  that you are evaluating in order to move to the new timestep. This vector not
-  changed until the solution at the next timestep has been calculated.
+  for second order equations.
 
-  Not Collective, but `u` returned is parallel if `TS` is parallel
+  Not Collective
 
   Input Parameter:
 . ts - the `TS` context obtained from `TSCreate()`
@@ -1842,6 +1767,11 @@ PetscErrorCode TS2SetSolution(TS ts, Vec u, Vec v)
 - v - the vector containing the time derivative
 
   Level: intermediate
+
+  Notes:
+  It is valid to call this routine inside the function
+  that you are evaluating in order to move to the new timestep. This vector not
+  changed until the solution at the next timestep has been calculated.
 
 .seealso: [](ch_ts), `TS`, `TS2SetSolution()`, `TSGetTimeStep()`, `TSGetTime()`
 @*/
@@ -2677,6 +2607,8 @@ PetscErrorCode TSReset(TS ts)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+static PetscErrorCode TSResizeReset(TS);
+
 /*@C
   TSDestroy - Destroys the timestepper context that was created
   with `TSCreate()`.
@@ -2944,6 +2876,7 @@ PetscErrorCode TSGetMaxTime(TS ts, PetscReal *maxtime)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+// PetscClangLinter pragma disable: -fdoc-*
 /*@
   TSSetInitialTimeStep - Deprecated, use `TSSetTime()` and `TSSetTimeStep()`.
 
@@ -2959,6 +2892,7 @@ PetscErrorCode TSSetInitialTimeStep(TS ts, PetscReal initial_time, PetscReal tim
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+// PetscClangLinter pragma disable: -fdoc-*
 /*@
   TSGetDuration - Deprecated, use `TSGetMaxSteps()` and `TSGetMaxTime()`.
 
@@ -2980,6 +2914,7 @@ PetscErrorCode TSGetDuration(TS ts, PetscInt *maxsteps, PetscReal *maxtime)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+// PetscClangLinter pragma disable: -fdoc-*
 /*@
   TSSetDuration - Deprecated, use `TSSetMaxSteps()` and `TSSetMaxTime()`.
 
@@ -2997,6 +2932,7 @@ PetscErrorCode TSSetDuration(TS ts, PetscInt maxsteps, PetscReal maxtime)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+// PetscClangLinter pragma disable: -fdoc-*
 /*@
   TSGetTimeStepNumber - Deprecated, use `TSGetStepNumber()`.
 
@@ -3008,6 +2944,7 @@ PetscErrorCode TSGetTimeStepNumber(TS ts, PetscInt *steps)
   return TSGetStepNumber(ts, steps);
 }
 
+// PetscClangLinter pragma disable: -fdoc-*
 /*@
   TSGetTotalSteps - Deprecated, use `TSGetStepNumber()`.
 
@@ -3060,15 +2997,13 @@ PetscErrorCode TSSetSolution(TS ts, Vec u)
 - func - The function
 
   Calling sequence of `func`:
-.vb
-  PetscErrorCode func (TS ts)
-.ve
+. ts - the `TS` context
 
   Level: intermediate
 
 .seealso: [](ch_ts), `TS`, `TSSetPreStage()`, `TSSetPostStage()`, `TSSetPostStep()`, `TSStep()`, `TSRestartStep()`
 @*/
-PetscErrorCode TSSetPreStep(TS ts, PetscErrorCode (*func)(TS))
+PetscErrorCode TSSetPreStep(TS ts, PetscErrorCode (*func)(TS ts))
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
@@ -3125,9 +3060,8 @@ PetscErrorCode TSPreStep(TS ts)
 - func - The function
 
   Calling sequence of `func`:
-.vb
-  PetscErrorCode func(TS ts, PetscReal stagetime)
-.ve
++ ts        - the `TS` context
+- stagetime - the stage time
 
   Level: intermediate
 
@@ -3138,7 +3072,7 @@ PetscErrorCode TSPreStep(TS ts)
 
 .seealso: [](ch_ts), `TS`, `TSSetPostStage()`, `TSSetPreStep()`, `TSSetPostStep()`, `TSGetApplicationContext()`
 @*/
-PetscErrorCode TSSetPreStage(TS ts, PetscErrorCode (*func)(TS, PetscReal))
+PetscErrorCode TSSetPreStage(TS ts, PetscErrorCode (*func)(TS ts, PetscReal stagetime))
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
@@ -3157,9 +3091,10 @@ PetscErrorCode TSSetPreStage(TS ts, PetscErrorCode (*func)(TS, PetscReal))
 - func - The function
 
   Calling sequence of `func`:
-.vb
-  PetscErrorCode func(TS ts, PetscReal stagetime, PetscInt stageindex, Vec* Y)
-.ve
++ ts         - the `TS` context
+. stagetime  - the stage time
+. stageindex - the stage index
+- Y          - Array of vectors (of size = total number of stages) with the stage solutions
 
   Level: intermediate
 
@@ -3170,7 +3105,7 @@ PetscErrorCode TSSetPreStage(TS ts, PetscErrorCode (*func)(TS, PetscReal))
 
 .seealso: [](ch_ts), `TS`, `TSSetPreStage()`, `TSSetPreStep()`, `TSSetPostStep()`, `TSGetApplicationContext()`
 @*/
-PetscErrorCode TSSetPostStage(TS ts, PetscErrorCode (*func)(TS, PetscReal, PetscInt, Vec *))
+PetscErrorCode TSSetPostStage(TS ts, PetscErrorCode (*func)(TS ts, PetscReal stagetime, PetscInt stageindex, Vec *Y))
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
@@ -3189,9 +3124,7 @@ PetscErrorCode TSSetPostStage(TS ts, PetscErrorCode (*func)(TS, PetscReal, Petsc
 - func - The function
 
   Calling sequence of `func`:
-.vb
-  PetscErrorCode func(TS ts)
-.ve
+. ts - the `TS` context
 
   Level: intermediate
 
@@ -3204,7 +3137,7 @@ PetscErrorCode TSSetPostStage(TS ts, PetscErrorCode (*func)(TS, PetscReal, Petsc
 
 .seealso: [](ch_ts), `TS`, `TSSetPreStage()`, `TSSetPreStep()`, `TSSetPostStep()`, `TSGetApplicationContext()`
 @*/
-PetscErrorCode TSSetPostEvaluate(TS ts, PetscErrorCode (*func)(TS))
+PetscErrorCode TSSetPostEvaluate(TS ts, PetscErrorCode (*func)(TS ts))
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
@@ -3218,8 +3151,8 @@ PetscErrorCode TSSetPostEvaluate(TS ts, PetscErrorCode (*func)(TS))
   Collective
 
   Input Parameters:
-. ts - The `TS` context obtained from `TSCreate()`
-  stagetime   - The absolute time of the current stage
++ ts        - The `TS` context obtained from `TSCreate()`
+- stagetime - The absolute time of the current stage
 
   Level: developer
 
@@ -3243,11 +3176,10 @@ PetscErrorCode TSPreStage(TS ts, PetscReal stagetime)
   Collective
 
   Input Parameters:
-. ts - The `TS` context obtained from `TSCreate()`
-  stagetime   - The absolute time of the current stage
-  stageindex  - Stage number
-  Y           - Array of vectors (of size = total number
-                of stages) with the stage solutions
++ ts         - The `TS` context obtained from `TSCreate()`
+. stagetime  - The absolute time of the current stage
+. stageindex - Stage number
+- Y          - Array of vectors (of size = total number of stages) with the stage solutions
 
   Level: developer
 
@@ -3309,7 +3241,7 @@ PetscErrorCode TSPostEvaluate(TS ts)
 - func - The function
 
   Calling sequence of `func`:
-$ PetscErrorCode func(TS ts)
+. ts - the `TS` context
 
   Level: intermediate
 
@@ -3320,7 +3252,7 @@ $ PetscErrorCode func(TS ts)
 
 .seealso: [](ch_ts), `TS`, `TSSetPreStep()`, `TSSetPreStage()`, `TSSetPostEvaluate()`, `TSGetTimeStep()`, `TSGetStepNumber()`, `TSGetTime()`, `TSRestartStep()`
 @*/
-PetscErrorCode TSSetPostStep(TS ts, PetscErrorCode (*func)(TS))
+PetscErrorCode TSSetPostStep(TS ts, PetscErrorCode (*func)(TS ts))
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
@@ -3552,9 +3484,6 @@ PetscErrorCode TSEvaluateStep(TS ts, PetscInt order, Vec U, PetscBool *done)
 . initCondition - The function which computes an initial condition
 
   Calling sequence of `initCondition`:
-.vb
-  PetscErrorCode initCondition(TS ts, Vec u)
-.ve
 + ts - The timestepping context
 - u  - The input vector in which the initial condition is stored
 
@@ -3562,7 +3491,7 @@ PetscErrorCode TSEvaluateStep(TS ts, PetscInt order, Vec U, PetscBool *done)
 
 .seealso: [](ch_ts), `TS`, `TSSetComputeInitialCondition()`, `TSComputeInitialCondition()`
 @*/
-PetscErrorCode TSGetComputeInitialCondition(TS ts, PetscErrorCode (**initCondition)(TS, Vec))
+PetscErrorCode TSGetComputeInitialCondition(TS ts, PetscErrorCode (**initCondition)(TS ts, Vec u))
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
@@ -3581,15 +3510,14 @@ PetscErrorCode TSGetComputeInitialCondition(TS ts, PetscErrorCode (**initConditi
 - initCondition - The function which computes an initial condition
 
   Calling sequence of `initCondition`:
-$ PetscErrorCode initCondition(TS ts, Vec u)
 + ts - The timestepping context
-- u  - The input vector in which the initial condition is to be stored
+- e  - The input vector in which the initial condition is to be stored
 
   Level: advanced
 
 .seealso: [](ch_ts), `TS`, `TSGetComputeInitialCondition()`, `TSComputeInitialCondition()`
 @*/
-PetscErrorCode TSSetComputeInitialCondition(TS ts, PetscErrorCode (*initCondition)(TS, Vec))
+PetscErrorCode TSSetComputeInitialCondition(TS ts, PetscErrorCode (*initCondition)(TS ts, Vec e))
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
@@ -3632,16 +3560,15 @@ PetscErrorCode TSComputeInitialCondition(TS ts, Vec u)
 . exactError - The function which computes the solution error
 
   Calling sequence of `exactError`:
-$ PetscErrorCode exactError(TS ts, Vec u, Vec e)
 + ts - The timestepping context
 . u  - The approximate solution vector
 - e  - The vector in which the error is stored
 
   Level: advanced
 
-.seealso: [](ch_ts), `TS`, `TSGetComputeExactError()`, `TSComputeExactError()`
+.seealso: [](ch_ts), `TS`, `TSComputeExactError()`
 @*/
-PetscErrorCode TSGetComputeExactError(TS ts, PetscErrorCode (**exactError)(TS, Vec, Vec))
+PetscErrorCode TSGetComputeExactError(TS ts, PetscErrorCode (**exactError)(TS ts, Vec u, Vec e))
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
@@ -3660,7 +3587,6 @@ PetscErrorCode TSGetComputeExactError(TS ts, PetscErrorCode (**exactError)(TS, V
 - exactError - The function which computes the solution error
 
   Calling sequence of `exactError`:
-$ PetscErrorCode exactError(TS ts, Vec u)
 + ts - The timestepping context
 . u  - The approximate solution vector
 - e  - The  vector in which the error is stored
@@ -3669,7 +3595,7 @@ $ PetscErrorCode exactError(TS ts, Vec u)
 
 .seealso: [](ch_ts), `TS`, `TSGetComputeExactError()`, `TSComputeExactError()`
 @*/
-PetscErrorCode TSSetComputeExactError(TS ts, PetscErrorCode (*exactError)(TS, Vec, Vec))
+PetscErrorCode TSSetComputeExactError(TS ts, PetscErrorCode (*exactError)(TS ts, Vec u, Vec e))
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
@@ -3708,26 +3634,25 @@ PetscErrorCode TSComputeExactError(TS ts, Vec u, Vec e)
   Logically Collective
 
   Input Parameters:
-+ ts   - The `TS` context obtained from `TSCreate()`
-. setup - The setup function
-- transfer - The transfer function
++ ts       - The `TS` context obtained from `TSCreate()`
+. setup    - The setup function
+. transfer - The transfer function
+- ctx      - [optional] The user-defined context
 
   Calling sequence of `setup`:
-$   PetscErrorCode setup(TS ts, PetscInt step, PetscReal time, Vec state, PetscBool *resize, void *ctx)
-+   ts - the TS context
-.   step - the current step
-.   time - the current time
-.   state - the current vector of state
-.   resize - (output parameter) `PETSC_TRUE` if need resizing, `PETSC_FALSE` otherwise
--   ctx - user defined context
++ ts     - the TS context
+. step   - the current step
+. time   - the current time
+. state  - the current vector of state
+. resize - (output parameter) `PETSC_TRUE` if need resizing, `PETSC_FALSE` otherwise
+- ctx    - user defined context
 
   Calling sequence of `transfer`:
-$   PetscErrorCode transfer(TS ts, PetscInt nv, Vec vecsin[], Vec vecsout[], void *ctx)
-+   ts - the TS context
-.   nv - the number of vectors to be transferred
-.   vecsin - array of vectors to be transferred
-.   vecsout - array of transferred vectors
--   ctx - user defined context
++ ts      - the TS context
+. nv      - the number of vectors to be transferred
+. vecsin  - array of vectors to be transferred
+. vecsout - array of transferred vectors
+- ctx     - user defined context
 
   Notes:
   The `setup` function is called inside `TSSolve()` after `TSPostStep()` at the end of each time step
@@ -3747,7 +3672,7 @@ $   PetscErrorCode transfer(TS ts, PetscInt nv, Vec vecsin[], Vec vecsout[], voi
 
 .seealso: [](ch_ts), `TS`, `TSSetDM()`, `TSSetIJacobian()`, `TSSetRHSJacobian()`
 @*/
-PetscErrorCode TSSetResize(TS ts, PetscErrorCode (*setup)(TS, PetscInt, PetscReal, Vec, PetscBool *, void *), PetscErrorCode (*transfer)(TS, PetscInt, Vec[], Vec[], void *), void *ctx)
+PetscErrorCode TSSetResize(TS ts, PetscErrorCode (*setup)(TS ts, PetscInt step, PetscReal time, Vec state, PetscBool *resize, void *ctx), PetscErrorCode (*transfer)(TS ts, PetscInt nv, Vec vecsin[], Vec vecsout[], void *ctx), void *ctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
@@ -3757,7 +3682,7 @@ PetscErrorCode TSSetResize(TS ts, PetscErrorCode (*setup)(TS, PetscInt, PetscRea
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*
   TSResizeRegisterOrRetrieve - Register or import vectors transferred with `TSResize()`.
 
   Collective
@@ -3775,7 +3700,7 @@ PetscErrorCode TSSetResize(TS ts, PetscErrorCode (*setup)(TS, PetscInt, PetscRea
 
 .seealso: [](ch_ts), `TS`, `TSSetResize()`
 @*/
-PetscErrorCode TSResizeRegisterOrRetrieve(TS ts, PetscBool flg)
+static PetscErrorCode TSResizeRegisterOrRetrieve(TS ts, PetscBool flg)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
@@ -3784,7 +3709,7 @@ PetscErrorCode TSResizeRegisterOrRetrieve(TS ts, PetscBool flg)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode TSResizeReset(TS ts)
+static PetscErrorCode TSResizeReset(TS ts)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
@@ -3814,7 +3739,7 @@ static PetscErrorCode TSResizeTransferVecs(TS ts, PetscInt cnt, Vec vecsin[], Ve
   Input Parameters:
 + ts   - The `TS` context obtained from `TSCreate()`
 . name - A string identifiying the vector
-- vec - The vector
+- vec  - The vector
 
   Level: developer
 
@@ -3842,7 +3767,7 @@ PetscErrorCode TSResizeRegisterVec(TS ts, const char *name, Vec vec)
   Input Parameters:
 + ts   - The `TS` context obtained from `TSCreate()`
 . name - A string identifiying the vector
-- vec - The vector
+- vec  - The vector
 
   Level: developer
 
@@ -3893,7 +3818,7 @@ static PetscErrorCode TSResizeGetVecArray(TS ts, PetscInt *nv, const char **name
   Collective
 
   Input Parameter:
-. ts   - The `TS` context obtained from `TSCreate()`
+. ts - The `TS` context obtained from `TSCreate()`
 
   Level: developer
 
@@ -4953,7 +4878,7 @@ PetscErrorCode TSSetMaxSNESFailures(TS ts, PetscInt fails)
 
   Level: intermediate
 
-.seealso: [](ch_ts), `TS`, `TSGetSNESIterations()`, `TSGetKSPIterations()`, `TSSetMaxStepRejections()`, `TSGetStepRejections()`, `TSGetSNESFailures()`, `TSSetErrorIfStepFails()`, `TSGetConvergedReason()`
+.seealso: [](ch_ts), `TS`, `TSGetSNESIterations()`, `TSGetKSPIterations()`, `TSSetMaxStepRejections()`, `TSGetStepRejections()`, `TSGetSNESFailures()`, `TSGetConvergedReason()`
 @*/
 PetscErrorCode TSSetErrorIfStepFails(TS ts, PetscBool err)
 {
@@ -5422,11 +5347,10 @@ PetscErrorCode TSComputeIJacobianDefaultColor(TS ts, PetscReal t, Vec U, Vec Udo
 - func - function called within `TSFunctionDomainError()`
 
   Calling sequence of `func`:
-$   PetscErrorCode func(TS ts, PetscReal time, Vec state, PetscBool reject)
-+ ts - the TS context
-.   time - the current time (of the stage)
-.   state - the state to check if it is valid
--   reject - (output parameter) `PETSC_FALSE` if the state is acceptable, `PETSC_TRUE` if not acceptable
++ ts     - the TS context
+. time   - the current time (of the stage)
+. state  - the state to check if it is valid
+- reject - (output parameter) `PETSC_FALSE` if the state is acceptable, `PETSC_TRUE` if not acceptable
 
   Level: intermediate
 
@@ -5442,7 +5366,7 @@ $   PetscErrorCode func(TS ts, PetscReal time, Vec state, PetscBool reject)
 
 .seealso: [](ch_ts), `TSAdaptCheckStage()`, `TSFunctionDomainError()`, `SNESSetFunctionDomainError()`, `TSGetSNES()`
 @*/
-PetscErrorCode TSSetFunctionDomainError(TS ts, PetscErrorCode (*func)(TS, PetscReal, Vec, PetscBool *))
+PetscErrorCode TSSetFunctionDomainError(TS ts, PetscErrorCode (*func)(TS ts, PetscReal time, Vec state, PetscBool *reject))
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);

@@ -706,7 +706,7 @@ PetscErrorCode PetscBinarySynchronizedWrite(MPI_Comm comm, int fd, const void *p
   Level: developer
 
 .seealso: `PetscBinaryRead()`, `PetscBinarySeekType`, `PetscBinaryWrite()`, `PetscBinaryOpen()`, `PetscBinarySynchronizedWrite()`, `PetscBinarySynchronizedRead()`,
-          `PetscBinarySynchronizedSeek()`
+
 @*/
 PetscErrorCode PetscBinarySynchronizedSeek(MPI_Comm comm, int fd, off_t off, PetscBinarySeekType whence, off_t *offset)
 {

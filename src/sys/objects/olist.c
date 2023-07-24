@@ -232,7 +232,7 @@ PetscErrorCode PetscObjectListReverseFind(PetscObjectList fl, PetscObject obj, c
   Level: developer
 
 .seealso: `PetscObjectListDestroy()`, `PetscObjectListAdd()`, `PetscObjectListReverseFind()`,
-`PetscObjectListFind()`, `PetscObjectListDuplicate()`, `PetscObjectList`
+`PetscObjectListFind()`, `PetscObjectList`
 @*/
 PetscErrorCode PetscObjectListDuplicate(PetscObjectList fl, PetscObjectList *nl)
 {

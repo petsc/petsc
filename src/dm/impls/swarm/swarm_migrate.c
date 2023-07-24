@@ -678,7 +678,7 @@ PETSC_EXTERN PetscErrorCode DMSwarmCollect_General(DM dm, PetscErrorCode (*colle
 
   Level: intermediate
 
-.seealso: `DM`, `DMSWARM`, `DMSwarmMigrateType`, `DMSwarmGetMigrateType()`, `DMSwarmMigrate()`
+.seealso: `DM`, `DMSWARM`, `DMSwarmMigrateType`, `DMSwarmMigrate()`
 @*/
 PetscErrorCode DMSwarmGetMigrateType(DM dm, DMSwarmMigrateType *mtype)
 {

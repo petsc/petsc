@@ -1410,7 +1410,7 @@ PetscErrorCode TSARKIMEXSetType(TS ts, TSARKIMEXType arktype)
 
   Level: intermediate
 
-.seealso: [](ch_ts), `TSARKIMEXc`, `TSARKIMEXGetType()`
+.seealso: [](ch_ts), `TSARKIMEXc`
 @*/
 PetscErrorCode TSARKIMEXGetType(TS ts, TSARKIMEXType *arktype)
 {

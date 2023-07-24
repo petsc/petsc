@@ -256,7 +256,7 @@ PetscErrorCode MatPartitioningSetNParts(MatPartitioning part, PetscInt n)
   Note:
   The user can define additional partitionings; see `MatPartitioningRegister()`.
 
-.seealso: [](ch_matrices), `Mat`, `MatPartitioningApplyND()`, `MatPartitioningRegister()`, `MatPartitioningCreate()`,
+.seealso: [](ch_matrices), `Mat`, `MatPartitioningRegister()`, `MatPartitioningCreate()`,
           `MatPartitioningDestroy()`, `MatPartitioningSetAdjacency()`, `ISPartitioningToNumbering()`,
           `ISPartitioningCount()`
 @*/

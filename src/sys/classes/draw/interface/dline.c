@@ -99,7 +99,7 @@ PetscErrorCode PetscDrawSetCurrentPoint(PetscDraw draw, PetscReal x, PetscReal y
 
   Level: intermediate
 
-.seealso: `PetscDraw`, `PetscDrawPushCurrentPoint()`, `PetscDrawPopCurrentPoint()`, `PetscDrawGetCurrentPoint()`
+.seealso: `PetscDraw`, `PetscDrawPopCurrentPoint()`, `PetscDrawGetCurrentPoint()`
 @*/
 PetscErrorCode PetscDrawPushCurrentPoint(PetscDraw draw, PetscReal x, PetscReal y)
 {

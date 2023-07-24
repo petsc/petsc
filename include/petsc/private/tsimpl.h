@@ -555,9 +555,6 @@ PETSC_EXTERN PetscErrorCode TSAdaptHistorySetTSHistory(TSAdapt, TSHistory, Petsc
 PETSC_INTERN PetscErrorCode TSTrajectoryReconstruct_Private(TSTrajectory, TS, PetscReal, Vec, Vec);
 PETSC_INTERN PetscErrorCode TSTrajectorySetUp_Basic(TSTrajectory, TS);
 
-PETSC_INTERN PetscErrorCode TSResizeRegisterOrRetrieve(TS, PetscBool);
-PETSC_INTERN PetscErrorCode TSResizeReset(TS);
-
 PETSC_EXTERN PetscLogEvent TSTrajectory_Set;
 PETSC_EXTERN PetscLogEvent TSTrajectory_Get;
 PETSC_EXTERN PetscLogEvent TSTrajectory_GetVecs;

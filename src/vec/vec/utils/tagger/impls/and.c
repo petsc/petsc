@@ -38,7 +38,7 @@ PetscErrorCode VecTaggerAndGetSubs(VecTagger tagger, PetscInt *nsubs, VecTagger 
 
   Level: advanced
 
-.seealso: `VecTagger`, `VecTaggerAndSetSubs()`
+.seealso: `VecTagger`
 @*/
 PetscErrorCode VecTaggerAndSetSubs(VecTagger tagger, PetscInt nsubs, VecTagger *subs, PetscCopyMode mode)
 {

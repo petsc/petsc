@@ -1188,7 +1188,7 @@ PetscErrorCode SNESResetFromOptions(SNES snes)
 
   Use `SNESSetApplicationContext()` to see the context immediately
 
-.seealso: [](ch_snes), `SNESGetApplicationContext()`, `SNESSetComputeApplicationContext()`, `SNESSetApplicationContext()`
+.seealso: [](ch_snes), `SNESGetApplicationContext()`, `SNESSetApplicationContext()`
 @*/
 PetscErrorCode SNESSetComputeApplicationContext(SNES snes, PetscErrorCode (*compute)(SNES, void **), PetscErrorCode (*destroy)(void **))
 {
@@ -1653,7 +1653,7 @@ PetscErrorCode SNESSetCountersReset(SNES snes, PetscBool reset)
   The `KSP` object that is already in the `SNES` object has its reference count
   decreased by one.
 
-.seealso: [](ch_snes), `SNES`, `KSP`, `KSPGetPC()`, `SNESCreate()`, `KSPCreate()`, `SNESSetKSP()`
+.seealso: [](ch_snes), `SNES`, `KSP`, `KSPGetPC()`, `SNESCreate()`, `KSPCreate()`
 @*/
 PetscErrorCode SNESSetKSP(SNES snes, KSP ksp)
 {
@@ -3555,7 +3555,7 @@ PetscErrorCode SNESGetLagJacobian(SNES snes, PetscInt *lag)
   several solves, and for implicit time-stepping, where Jacobian lagging in the inner nonlinear solve over several
   timesteps may present huge efficiency gains.
 
-.seealso: [](ch_snes), `SNES`, `SNESSetLagPreconditionerPersists()`, `SNESSetLagJacobian()`, `SNESGetLagJacobian()`, `SNESGetNPC()`, `SNESSetLagJacobianPersists()`
+.seealso: [](ch_snes), `SNES`, `SNESSetLagPreconditionerPersists()`, `SNESSetLagJacobian()`, `SNESGetLagJacobian()`, `SNESGetNPC()`
 @*/
 PetscErrorCode SNESSetLagJacobianPersists(SNES snes, PetscBool flg)
 {

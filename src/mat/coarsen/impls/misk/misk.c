@@ -459,9 +459,9 @@ PetscErrorCode MatCoarsenMISKSetDistance(MatCoarsen crs, PetscInt k)
 
   Level: advanced
 
-.seealso: `MATCOARSENMISK`, `MatCoarsen`, `MatCoarseSetFromOptions()`, `MatCoarsenSetType()`, `MatCoarsenRegister()`, `MatCoarsenCreate()`,
-          `MatCoarsenDestroy()`, `MatCoarsenSetAdjacency()`, `MatCoarsenMISKGetDistance()`
-          `MatCoarsenGetData()`
+.seealso: `MATCOARSENMISK`, `MatCoarsen`, `MatCoarseSetFromOptions()`, `MatCoarsenSetType()`,
+`MatCoarsenRegister()`, `MatCoarsenCreate()`, `MatCoarsenDestroy()`,
+`MatCoarsenSetAdjacency()`, `MatCoarsenGetData()`
 @*/
 PetscErrorCode MatCoarsenMISKGetDistance(MatCoarsen crs, PetscInt *k)
 {

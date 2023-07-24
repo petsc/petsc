@@ -1076,7 +1076,7 @@ PetscErrorCode PCTelescopeGetUseCoarseDM(PC pc, PetscBool *v)
 
   Level: advanced
 
-.seealso: `PCTELESCOPE`, `PCTelescopeSetIgnoreDM()`, `PCTelescopeSetUseCoarseDM()`
+.seealso: `PCTELESCOPE`, `PCTelescopeSetIgnoreDM()`
 @*/
 PetscErrorCode PCTelescopeSetUseCoarseDM(PC pc, PetscBool v)
 {

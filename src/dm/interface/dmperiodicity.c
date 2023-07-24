@@ -15,7 +15,7 @@
 
   Level: developer
 
-.seealso: `DM`, `DMGetPeriodicity()`
+.seealso: `DM`
 @*/
 PetscErrorCode DMGetPeriodicity(DM dm, const PetscReal **maxCell, const PetscReal **Lstart, const PetscReal **L)
 {

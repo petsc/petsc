@@ -853,7 +853,7 @@ PetscErrorCode TaoLineSearchComputeObjective(TaoLineSearch ls, Vec x, PetscReal 
   `TaoLineSearchComputeObjectiveAndGradient()` is typically used within line searches
   so most users would not generally call this routine themselves.
 
-.seealso: [](ch_tao), `Tao`, `TaoLineSearch`, `TaoLineSearchComputeGradient()`, `TaoLineSearchComputeObjectiveAndGradient()`, `TaoLineSearchSetObjectiveRoutine()`
+.seealso: [](ch_tao), `Tao`, `TaoLineSearch`, `TaoLineSearchComputeGradient()`, `TaoLineSearchSetObjectiveRoutine()`
 @*/
 PetscErrorCode TaoLineSearchComputeObjectiveAndGradient(TaoLineSearch ls, Vec x, PetscReal *f, Vec g)
 {

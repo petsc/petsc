@@ -296,7 +296,7 @@ $     -pf_type my_function
   Note:
   `PFRegister()` may be called multiple times to add several user-defined functions
 
-.seealso: `PF`, `PFRegisterAll()`, `PFRegisterDestroy()`, `PFRegister()`
+.seealso: `PF`, `PFRegisterAll()`, `PFRegisterDestroy()`
 @*/
 PetscErrorCode PFRegister(const char sname[], PetscErrorCode (*function)(PF, void *))
 {

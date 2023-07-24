@@ -659,7 +659,7 @@ PetscErrorCode MatLMVMGetUpdateCount(Mat B, PetscInt *nupdates)
 
   Level: intermediate
 
-.seealso: [](ch_ksp), [LMVM Matrices](sec_matlmvm), `MATLMVM`, `MatLMVMGetRejectCount()`, `MatLMVMReset()`
+.seealso: [](ch_ksp), [LMVM Matrices](sec_matlmvm), `MATLMVM`, `MatLMVMReset()`
 @*/
 PetscErrorCode MatLMVMGetRejectCount(Mat B, PetscInt *nrejects)
 {

@@ -67,7 +67,7 @@ PetscErrorCode PetscDataTypeToMPIDataType(PetscDataType ptype, MPI_Datatype *mty
 
   Level: advanced
 
-.seealso: `PetscDataType`, `PetscMPIDataTypeToPetscDataType()`
+.seealso: `PetscDataType`
 @*/
 PetscErrorCode PetscMPIDataTypeToPetscDataType(MPI_Datatype mtype, PetscDataType *ptype)
 {

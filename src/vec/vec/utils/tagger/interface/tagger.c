@@ -159,7 +159,7 @@ PetscErrorCode VecTaggerDestroy(VecTagger *tagger)
 
   Level: advanced
 
-.seealso: `VecTaggerSetFromOptions()`, `VecTaggerSetType()`, `VecTagger`, `VecTaggerCreate()`, `VecTaggerSetUp()`
+.seealso: `VecTaggerSetFromOptions()`, `VecTaggerSetType()`, `VecTagger`, `VecTaggerCreate()`
 @*/
 PetscErrorCode VecTaggerSetUp(VecTagger tagger)
 {

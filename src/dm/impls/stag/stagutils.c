@@ -1592,7 +1592,7 @@ PetscErrorCode DMStagVecGetArray(DM dm, Vec vec, void *array)
   Note:
   `DMStagVecRestoreArrayRead()` must be called, once finished with the array
 
-.seealso: [](ch_stag), `DMSTAG`, `DMStagVecGetArrayRead()`, `DMStagGetLocationSlot()`, `DMGetLocalVector()`, `DMCreateLocalVector()`, `DMGetGlobalVector()`, `DMCreateGlobalVector()`, `DMDAVecGetArrayRead()`, `DMDAVecGetArrayDOFRead()`
+.seealso: [](ch_stag), `DMSTAG`, `DMStagGetLocationSlot()`, `DMGetLocalVector()`, `DMCreateLocalVector()`, `DMGetGlobalVector()`, `DMCreateGlobalVector()`, `DMDAVecGetArrayRead()`, `DMDAVecGetArrayDOFRead()`
 @*/
 PetscErrorCode DMStagVecGetArrayRead(DM dm, Vec vec, void *array)
 {

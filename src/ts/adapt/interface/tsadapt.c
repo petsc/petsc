@@ -331,16 +331,17 @@ PetscErrorCode TSAdaptSetMonitor(TSAdapt adapt, PetscBool flg)
 - func  - stage check function
 
   Calling sequence:
-$  PetscErrorCode func(TSAdapt adapt,TS ts,PetscBool *accept)
-+ adapt - adaptive controller context
-.  ts - time stepping context
--  accept - pending choice of whether to accept, can be modified by this routine
++ adapt  - adaptive controller context
+. ts     - time stepping context
+. t      - current time
+. Y      - current solution vector
+- accept - pending choice of whether to accept, can be modified by this routine
 
   Level: advanced
 
 .seealso: [](ch_ts), `TSAdapt`, `TSGetAdapt()`, `TSAdaptChoose()`
 @*/
-PetscErrorCode TSAdaptSetCheckStage(TSAdapt adapt, PetscErrorCode (*func)(TSAdapt, TS, PetscReal, Vec, PetscBool *))
+PetscErrorCode TSAdaptSetCheckStage(TSAdapt adapt, PetscErrorCode (*func)(TSAdapt adapt, TS ts, PetscReal t, Vec Y, PetscBool *accept))
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(adapt, TSADAPT_CLASSID, 1);
@@ -655,12 +656,12 @@ PetscErrorCode TSAdaptGetStepLimits(TSAdapt adapt, PetscReal *hmin, PetscReal *h
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*
+/*@C
   TSAdaptSetFromOptions - Sets various `TSAdapt` parameters from user options.
 
   Collective
 
-  Input Parameter:
+  Input Parameters:
 + adapt              - the `TSAdapt` context
 - PetscOptionsObject - object created by `PetscOptionsBegin()`
 
@@ -683,7 +684,7 @@ PetscErrorCode TSAdaptGetStepLimits(TSAdapt adapt, PetscReal *hmin, PetscReal *h
 
 .seealso: [](ch_ts), `TSAdapt`, `TSGetAdapt()`, `TSAdaptSetType()`, `TSAdaptSetAlwaysAccept()`, `TSAdaptSetSafety()`,
           `TSAdaptSetClip()`, `TSAdaptSetScaleSolveFailed()`, `TSAdaptSetStepLimits()`, `TSAdaptSetMonitor()`
-*/
+@*/
 PetscErrorCode TSAdaptSetFromOptions(TSAdapt adapt, PetscOptionItems *PetscOptionsObject)
 {
   char      type[256] = TSADAPTBASIC;

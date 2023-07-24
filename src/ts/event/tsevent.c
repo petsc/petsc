@@ -136,32 +136,31 @@ PetscErrorCode TSSetEventTolerances(TS ts, PetscReal tol, PetscReal vtol[])
 + ts           - the `TS` context obtained from `TSCreate()`
 . nevents      - number of local events
 . direction    - direction of zero crossing to be detected. -1 => Zero crossing in negative direction,
-               .1 => Zero crossing in positive direction, 0 => both ways (one for each event)
+                 0.1 => Zero crossing in positive direction, 0 => both ways (one for each event)
 . terminate    - flag to indicate whether time stepping should be terminated after
-               event is detected (one for each event)
-. eventhandler - a change in sign of this function (see `direction`) is used to determine an even has occurred
+                 event is detected (one for each event)
+. eventhandler - a change in sign of this function (see `direction`) is used to determine an
+                 even has occurred
 . postevent    - [optional] post-event function, this function can change properties of the solution, ODE etc at the time of the event
 - ctx          - [optional] user-defined context for private data for the
                event detector and post event routine (use `NULL` if no
                context is desired)
 
   Calling sequence of `eventhandler`:
-$   PetscErrorCode eventhandler(TS ts, PetscReal t, Vec U, PetscScalar fvalue[], void* ctx)
-+ ts  - the `TS` context
-.  t   - current time
-.  U   - current iterate
-. ctx - [optional] context passed with eventhandler
--  fvalue    - function value of events at time t
++ ts     - the `TS` context
+. t      - current time
+. U      - current iterate
+. fvalue - function value of events at time t
+- ctx    - [optional] context passed with eventhandler
 
   Calling sequence of `postevent`:
-$   PetscErrorCode postevent(TS ts, PetscInt nevents_zero, PetscInt events_zero[], PetscReal t, Vec U, PetscBool forwardsolve, void *ctx)
-+ ts  - the `TS` context
-.  nevents_zero - number of local events whose event function is zero
-.  events_zero  - indices of local events which have reached zero
-.  t            - current time
-.  U            - current solution
-.  forwardsolve - Flag to indicate whether `TS` is doing a forward solve (1) or adjoint solve (0)
-- ctx - the context passed with eventhandler
++ ts           - the `TS` context
+. nevents_zero - number of local events whose event function has been marked as crossing 0
+. events_zero  - indices of local events which have been marked as crossing 0
+. t            - current time
+. U            - current solution
+. forwardsolve - Flag to indicate whether `TS` is doing a forward solve (1) or adjoint solve (0)
+- ctx          - the context passed with eventhandler
 
   Level: intermediate
 
@@ -171,7 +170,7 @@ $   PetscErrorCode postevent(TS ts, PetscInt nevents_zero, PetscInt events_zero[
 
 .seealso: [](ch_ts), `TSEvent`, `TSCreate()`, `TSSetTimeStep()`, `TSSetConvergedReason()`
 @*/
-PetscErrorCode TSSetEventHandler(TS ts, PetscInt nevents, PetscInt direction[], PetscBool terminate[], PetscErrorCode (*eventhandler)(TS, PetscReal, Vec, PetscScalar[], void *), PetscErrorCode (*postevent)(TS, PetscInt, PetscInt[], PetscReal, Vec, PetscBool, void *), void *ctx)
+PetscErrorCode TSSetEventHandler(TS ts, PetscInt nevents, PetscInt direction[], PetscBool terminate[], PetscErrorCode (*eventhandler)(TS ts, PetscReal t, Vec U, PetscScalar fvalue[], void *ctx), PetscErrorCode (*postevent)(TS ts, PetscInt nevents_zero, PetscInt events_zero[], PetscReal t, Vec U, PetscBool forwardsolve, void *ctx), void *ctx)
 {
   TSAdapt   adapt;
   PetscReal hmin;

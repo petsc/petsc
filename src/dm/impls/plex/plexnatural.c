@@ -323,7 +323,7 @@ PetscErrorCode DMPlexGlobalToNaturalEnd(DM dm, Vec gv, Vec nv)
   Note:
   The user must call `DMSetUseNatural`(dm, `PETSC_TRUE`) before `DMPlexDistribute()`.
 
-.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `Vec`, `DMPlexDistribute()`, `DMPlexDistributeField()`, `DMPlexNaturalToGlobalBegin()`, `DMPlexGlobalToNaturalEnd()`
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `Vec`, `DMPlexDistribute()`, `DMPlexDistributeField()`, `DMPlexGlobalToNaturalEnd()`
 @*/
 PetscErrorCode DMPlexNaturalToGlobalBegin(DM dm, Vec nv, Vec gv)
 {

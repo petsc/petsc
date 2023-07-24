@@ -202,7 +202,7 @@ PetscErrorCode PetscDataTypeToADIOSDataType(PetscDataType ptype, enum ADIOS_DATA
 
   Level: advanced
 
-.seealso: `PetscDataType`, `PetscADIOSDataTypeToPetscDataType()`
+.seealso: `PetscDataType`
 @*/
 PetscErrorCode PetscADIOSDataTypeToPetscDataType(enum ADIOS_DATATYPES htype, PetscDataType *ptype)
 {

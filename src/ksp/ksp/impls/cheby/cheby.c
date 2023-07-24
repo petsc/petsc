@@ -203,7 +203,7 @@ PetscErrorCode KSPChebyshevSetEigenvalues(KSP ksp, PetscReal emax, PetscReal emi
 
   Level: intermediate
 
-.seealso: [](ch_ksp), `KSPCHEBYSHEV`, `KSPChebyshevEstEigSet()`, `KSPChebyshevEstEigSetUseNoisy()`, `KSPChebyshevEstEigGetKSP()`
+.seealso: [](ch_ksp), `KSPCHEBYSHEV`, `KSPChebyshevEstEigSetUseNoisy()`, `KSPChebyshevEstEigGetKSP()`
 @*/
 PetscErrorCode KSPChebyshevEstEigSet(KSP ksp, PetscReal a, PetscReal b, PetscReal c, PetscReal d)
 {

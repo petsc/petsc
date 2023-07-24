@@ -27,8 +27,9 @@ $   PetscErrorCode fcn(KSP ksp, PetscInt it);
 
   Use `KSPGMRESSetCGSRefinementType()` to determine if iterative refinement is used to increase stability.
 
-.seealso: [](ch_ksp), `KSPGMRESSetRestart()`, `KSPGMRESSetPreAllocateVectors()`, `KSPGMRESSetCGSRefinementType()`, `KSPGMRESSetOrthogonalization()`,
-          `KSPGMRESModifiedGramSchmidtOrthogonalization()`, `KSPGMRESClassicalGramSchmidtOrthogonalization()`, `KSPGMRESGetCGSRefinementType()`
+.seealso: [](ch_ksp), `KSPGMRESSetRestart()`, `KSPGMRESSetPreAllocateVectors()`,
+`KSPGMRESSetCGSRefinementType()`, `KSPGMRESModifiedGramSchmidtOrthogonalization()`,
+`KSPGMRESClassicalGramSchmidtOrthogonalization()`, `KSPGMRESGetCGSRefinementType()`
 @*/
 PetscErrorCode KSPGMRESSetOrthogonalization(KSP ksp, PetscErrorCode (*fcn)(KSP, PetscInt))
 {

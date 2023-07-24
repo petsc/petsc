@@ -403,10 +403,9 @@ static PetscErrorCode TSDiscGradSetFormulation_DiscGrad(TS ts, PetscErrorCode (*
   Level: intermediate
 
   Notes:
-  This is the implicit midpoint rule, with an optional term that guarantees the discrete gradient property. This
-  timestepper applies to systems of the form
-$ u_t = S(u) grad F(u)
-  where S(u) is a linear operator, and F is a functional of u.
+  This is the implicit midpoint rule, with an optional term that guarantees the discrete
+  gradient property. This timestepper applies to systems of the form $u_t = S(u) \nabla F(u)$
+  where $S(u)$ is a linear operator, and $F$ is a functional of $u$.
 
 .seealso: [](ch_ts), `TSCreate()`, `TSSetType()`, `TS`, `TSDISCGRAD`, `TSDiscGradSetFormulation()`
 M*/
@@ -443,7 +442,8 @@ PETSC_EXTERN PetscErrorCode TSCreate_DiscGrad(TS ts)
 }
 
 /*@C
-  TSDiscGradGetFormulation - Get the construction method for S, F, and grad F from the formulation u_t = S grad F for `TSDISCGRAD`
+  TSDiscGradGetFormulation - Get the construction method for S, F, and grad F from the
+  formulation $u_t = S \nabla F$ for `TSDISCGRAD`
 
   Not Collective
 
@@ -481,7 +481,8 @@ PetscErrorCode TSDiscGradGetFormulation(TS ts, PetscErrorCode (**Sfunc)(TS, Pets
 }
 
 /*@C
-  TSDiscGradSetFormulation - Set the construction method for S, F, and grad F from the formulation u_t = S(u) grad F(u) for `TSDISCGRAD`
+  TSDiscGradSetFormulation - Set the construction method for S, F, and grad F from the
+  formulation $u_t = S(u) \nabla F(u)$ for `TSDISCGRAD`
 
   Not Collective
 
@@ -517,7 +518,8 @@ PetscErrorCode TSDiscGradSetFormulation(TS ts, PetscErrorCode (*Sfunc)(TS, Petsc
 }
 
 /*@
-  TSDiscGradIsGonzalez - Checks flag for whether to use additional conservative terms in discrete gradient formulation for `TSDISCGRAD`
+  TSDiscGradIsGonzalez - Checks flag for whether to use additional conservative terms in
+  discrete gradient formulation for `TSDISCGRAD`
 
   Not Collective
 
@@ -541,8 +543,8 @@ PetscErrorCode TSDiscGradIsGonzalez(TS ts, PetscBool *gonzalez)
 }
 
 /*@
-  TSDiscGradUseGonzalez - Sets discrete gradient formulation with or without additional conservative terms.
-  Without the flag, the discrete gradients timestepper is just backwards Euler
+  TSDiscGradUseGonzalez - Sets discrete gradient formulation with or without additional
+  conservative terms.
 
   Not Collective
 
@@ -554,6 +556,9 @@ PetscErrorCode TSDiscGradIsGonzalez(TS ts, PetscBool *gonzalez)
 . -ts_discgrad_gonzalez <flg> - use the Gonzalez term for the discrete gradient formulation
 
   Level: intermediate
+
+  Notes:
+  Without `flg`, the discrete gradients timestepper is just backwards Euler.
 
 .seealso: [](ch_ts), `TSDISCGRAD`
 @*/

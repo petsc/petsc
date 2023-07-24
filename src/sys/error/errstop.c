@@ -26,7 +26,7 @@
   `PetscMPIAbortErrorHandler()`, `PetscAttachDebuggerErrorHandler()`, and `PetscAbortErrorHandler()`.
 
 .seealso: `PetscError()`, `PetscPushErrorHandler()`, `PetscPopErrorHandler()`, `PetscAttachDebuggerErrorHandler()`,
-          `PetscAbortErrorHandler()`, `PetscMPIAbortErrorHandler()`, `PetscTraceBackErrorHandler()`, `PetscEmacsClientErrorHandler()`, `PetscReturnErrorHandler()`
+          `PetscAbortErrorHandler()`, `PetscTraceBackErrorHandler()`, `PetscEmacsClientErrorHandler()`, `PetscReturnErrorHandler()`
  @*/
 PetscErrorCode PetscMPIAbortErrorHandler(MPI_Comm comm, int line, const char *fun, const char *file, PetscErrorCode n, PetscErrorType p, const char *mess, void *ctx)
 {

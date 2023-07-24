@@ -435,7 +435,7 @@ PetscErrorCode TSEIMEXSetRowCol(TS ts, PetscInt row, PetscInt col)
 
   Level: intermediate
 
-.seealso: [](ch_ts), `TSEIMEXSetRowCol()`, `TSEIMEXSetOrdAdapt()`, `TSEIMEX`
+.seealso: [](ch_ts), `TSEIMEXSetRowCol()`, `TSEIMEX`
 @*/
 PetscErrorCode TSEIMEXSetOrdAdapt(TS ts, PetscBool flg)
 {

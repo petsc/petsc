@@ -456,7 +456,7 @@ $ || u_\Delta - u_exact || < C \Delta^alpha
   We solve a series of problems using increasing resolution (refined meshes or decreased timesteps), calculate an error
   based upon the exact solution in the `PetscDS`, and then fit the result to our model above using linear regression.
 
-.seealso: `PetscConvEstSetSolver()`, `PetscConvEstCreate()`, `PetscConvEstGetConvRate()`, `SNESSolve()`, `TSSolve()`
+.seealso: `PetscConvEstSetSolver()`, `PetscConvEstCreate()`, `SNESSolve()`, `TSSolve()`
 @*/
 PetscErrorCode PetscConvEstGetConvRate(PetscConvEst ce, PetscReal alpha[])
 {

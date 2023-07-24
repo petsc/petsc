@@ -128,7 +128,7 @@ PetscErrorCode DMPlexTSComputeBoundary(DM dm, PetscReal time, Vec locX, Vec locX
 
   Level: developer
 
-.seealso: [](ch_ts), `DMPLEX`, `TS`, `DMPlexTSComputeIFunctionFEM()`, `DMPlexTSComputeRHSFunctionFEM()`
+.seealso: [](ch_ts), `DMPLEX`, `TS`, `DMPlexTSComputeRHSFunctionFEM()`
 @*/
 PetscErrorCode DMPlexTSComputeIFunctionFEM(DM dm, PetscReal time, Vec locX, Vec locX_t, Vec locF, void *user)
 {

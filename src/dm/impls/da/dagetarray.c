@@ -369,7 +369,7 @@ PetscErrorCode DMDAVecGetArrayDOF(DM da, Vec vec, void *array)
   Fortran Notes:
   Use `DMDAVecRestoreArayF90()`
 
-.seealso: `DM`, `DMDA`, `DMDAGetGhostCorners()`, `DMDAGetCorners()`, `VecGetArray()`, `VecRestoreArray()`, `DMDAVecGetArray()`, `DMDAVecGetArrayDOF()`, `DMDAVecRestoreArrayDOF()`,
+.seealso: `DM`, `DMDA`, `DMDAGetGhostCorners()`, `DMDAGetCorners()`, `VecGetArray()`, `VecRestoreArray()`, `DMDAVecGetArray()`, `DMDAVecGetArrayDOF()`,
           `DMDAVecGetArrayWrite()`, `DMDAVecRestoreArrayWrite()`, `DMDAVecGetArrayRead()`, `DMDAVecRestoreArrayRead()`
 @*/
 PetscErrorCode DMDAVecRestoreArrayDOF(DM da, Vec vec, void *array)
@@ -444,9 +444,10 @@ M*/
   `array(0:dof-1,xs:xs+xm-1,ys:ys+ym-1,zs:zs+zm-1)` where the values are obtained from
   `DMDAGetCorners()` for a global vector or `DMDAGetGhostCorners()` for a local vector.
 
-.seealso: `DM`, `DMDA`, `DMDAVecGetArrayReadF90()`, `DMDAGetGhostCorners()`, `DMDAGetCorners()`, `VecGetArray()`, `VecRestoreArray()`, `DMDAVecRestoreArrayRead()`, `DMDAVecRestoreArrayDOF()`
-          `DMDAVecGetArrayDOF()`, `DMDAVecGetArray()`, `DMDAVecRestoreArray()`, `DMDAVecGetArrayRead()`,
-          `DMStagVecGetArrayRead()`
+.seealso: `DM`, `DMDA`, `DMDAVecGetArrayReadF90()`, `DMDAGetGhostCorners()`,
+`DMDAGetCorners()`, `VecGetArray()`, `VecRestoreArray()`, `DMDAVecRestoreArrayRead()`,
+`DMDAVecRestoreArrayDOF()`, `DMDAVecGetArrayDOF()`, `DMDAVecGetArray()`,
+`DMDAVecRestoreArray()`, `DMStagVecGetArrayRead()`
 @*/
 PetscErrorCode DMDAVecGetArrayRead(DM da, Vec vec, void *array)
 {

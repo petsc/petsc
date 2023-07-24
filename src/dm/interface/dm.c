@@ -353,7 +353,7 @@ PetscErrorCode DMSetISColoringType(DM dm, ISColoringType ctype)
   Level: intermediate
 
 .seealso: [](ch_dmbase), `DM`, `DMDACreate1d()`, `DMDACreate2d()`, `DMDACreate3d()`, `DMCreateMatrix()`, `DMCreateMassMatrix()`, `DMSetMatrixPreallocateOnly()`, `MatType`, `DMGetMatType()`,
-          `DMGetISColoringType()`, `ISColoringType`, `IS_COLORING_GLOBAL`, `IS_COLORING_LOCAL`
+          `ISColoringType`, `IS_COLORING_GLOBAL`, `IS_COLORING_LOCAL`
 @*/
 PetscErrorCode DMGetISColoringType(DM dm, ISColoringType *ctype)
 {
@@ -377,7 +377,7 @@ PetscErrorCode DMGetISColoringType(DM dm, ISColoringType *ctype)
 
   Level: intermediate
 
-.seealso: [](ch_dmbase), `DM`, `MatType`, `DMDACreate1d()`, `DMDACreate2d()`, `DMDACreate3d()`, `DMCreateMatrix()`, `DMCreateMassMatrix()`, `DMSetMatrixPreallocateOnly()`, `DMGetMatType()`, `DMSetMatType()`, `DMCreateGlobalVector()`, `DMCreateLocalVector()`
+.seealso: [](ch_dmbase), `DM`, `MatType`, `DMDACreate1d()`, `DMDACreate2d()`, `DMDACreate3d()`, `DMCreateMatrix()`, `DMCreateMassMatrix()`, `DMSetMatrixPreallocateOnly()`, `DMGetMatType()`, `DMCreateGlobalVector()`, `DMCreateLocalVector()`
 @*/
 PetscErrorCode DMSetMatType(DM dm, MatType ctype)
 {
@@ -401,7 +401,7 @@ PetscErrorCode DMSetMatType(DM dm, MatType ctype)
 
   Level: intermediate
 
-.seealso: [](ch_dmbase), `DM`, `DMDACreate1d()`, `DMDACreate2d()`, `DMDACreate3d()`, `DMCreateMatrix()`, `DMCreateMassMatrix()`, `DMSetMatrixPreallocateOnly()`, `MatType`, `DMSetMatType()`, `DMGetMatType()`
+.seealso: [](ch_dmbase), `DM`, `DMDACreate1d()`, `DMDACreate2d()`, `DMDACreate3d()`, `DMCreateMatrix()`, `DMCreateMassMatrix()`, `DMSetMatrixPreallocateOnly()`, `MatType`, `DMSetMatType()`
 @*/
 PetscErrorCode DMGetMatType(DM dm, MatType *ctype)
 {
@@ -1343,7 +1343,7 @@ PetscErrorCode DMCreateInjection(DM dac, DM daf, Mat *mat)
 
   if `dmc` is `dmf` then x^t M x is an approximation to the L2 norm of the vector x which is obtained by `DMCreateGlobalVector()`
 
-.seealso: [](ch_dmbase), `DM`, `DMCreateMassMatrixLumped()`, `DMCreateMatrix()`, `DMCreateMassMatrix()`, `DMRefine()`, `DMCoarsen()`, `DMCreateRestriction()`, `DMCreateInterpolation()`, `DMCreateInjection()`
+.seealso: [](ch_dmbase), `DM`, `DMCreateMassMatrixLumped()`, `DMCreateMatrix()`, `DMRefine()`, `DMCoarsen()`, `DMCreateRestriction()`, `DMCreateInterpolation()`, `DMCreateInjection()`
 @*/
 PetscErrorCode DMCreateMassMatrix(DM dmc, DM dmf, Mat *mat)
 {
@@ -3559,7 +3559,7 @@ PetscErrorCode DMGetCoarsenLevel(DM dm, PetscInt *level)
   Note:
   This is rarely used directly, the information is automatically set when a `DM` is created with `DMCoarsen()`
 
-.seealso: [](ch_dmbase), `DM`, `DMSetCoarsenLevel()`, `DMCoarsen()`, `DMGetCoarsenLevel()`, `DMGetRefineLevel()`, `DMDestroy()`, `DMView()`, `DMCreateGlobalVector()`, `DMCreateInterpolation()`
+.seealso: [](ch_dmbase), `DM`, `DMCoarsen()`, `DMGetCoarsenLevel()`, `DMGetRefineLevel()`, `DMDestroy()`, `DMView()`, `DMCreateGlobalVector()`, `DMCreateInterpolation()`
 @*/
 PetscErrorCode DMSetCoarsenLevel(DM dm, PetscInt level)
 {
@@ -3698,7 +3698,7 @@ PetscErrorCode DMSetApplicationContext(DM dm, void *ctx)
   Note:
   A user context is a way to pass problem specific information that is accessible whenever the `DM` is available
 
-.seealso: [](ch_dmbase), `DM`, `DMGetApplicationContext()`, `DMView()`, `DMCreateGlobalVector()`, `DMCreateInterpolation()`, `DMCreateColoring()`, `DMCreateMatrix()`, `DMCreateMassMatrix()`
+.seealso: [](ch_dmbase), `DM`, `DMView()`, `DMCreateGlobalVector()`, `DMCreateInterpolation()`, `DMCreateColoring()`, `DMCreateMatrix()`, `DMCreateMassMatrix()`
 @*/
 PetscErrorCode DMGetApplicationContext(DM dm, void *ctx)
 {
@@ -8453,7 +8453,7 @@ PetscErrorCode DMComputeL2GradientDiff(DM dm, PetscReal time, PetscErrorCode (**
 
   The notes need to provide some information about what has to be provided to the `DM` to be able to perform the computation.
 
-.seealso: [](ch_dmbase), `DM`, `DMProjectFunction()`, `DMComputeL2FieldDiff()`, `DMComputeL2GradientDiff()`
+.seealso: [](ch_dmbase), `DM`, `DMProjectFunction()`, `DMComputeL2GradientDiff()`
 @*/
 PetscErrorCode DMComputeL2FieldDiff(DM dm, PetscReal time, PetscErrorCode (**funcs)(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar *, void *), void **ctxs, Vec X, PetscReal diff[])
 {

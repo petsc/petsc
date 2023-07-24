@@ -380,7 +380,7 @@ PetscErrorCode VecPointwiseMax(Vec w, Vec x, Vec y)
 
   For complex numbers compares only the real part
 
-.seealso: [](ch_vectors), `Vec`, `VecPointwiseDivide()`, `VecPointwiseMult()`, `VecPointwiseMin()`, `VecPointwiseMaxAbs()`, `VecMaxPointwiseDivide()`
+.seealso: [](ch_vectors), `Vec`, `VecPointwiseDivide()`, `VecPointwiseMult()`, `VecPointwiseMaxAbs()`, `VecMaxPointwiseDivide()`
 @*/
 PetscErrorCode VecPointwiseMin(Vec w, Vec x, Vec y)
 {
@@ -1092,7 +1092,7 @@ PetscErrorCode VecResetArray(Vec vec)
   are converted to the small-endian format when they are read in from the file.
   See PetscBinaryRead() and PetscBinaryWrite() to see how this may be done.
 
-.seealso: [](ch_vectors), `Vec`, `PetscViewerBinaryOpen()`, `VecView()`, `MatLoad()`, `VecLoad()`
+.seealso: [](ch_vectors), `Vec`, `PetscViewerBinaryOpen()`, `VecView()`, `MatLoad()`
 @*/
 PetscErrorCode VecLoad(Vec vec, PetscViewer viewer)
 {

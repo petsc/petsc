@@ -405,7 +405,7 @@ PetscErrorCode TaoComputeJacobianState(Tao tao, Vec X, Mat J, Mat Jpre, Mat Jinv
   Most users should not need to explicitly call this routine, as it
   is used internally within the optimization algorithms.
 
-.seealso: [](ch_tao), `Tao`, `TaoComputeObjective()`, `TaoComputeObjectiveAndGradient()`, `TaoSetJacobianDesignRoutine()`, `TaoComputeJacobianDesign()`, `TaoSetStateDesignIS()`
+.seealso: [](ch_tao), `Tao`, `TaoComputeObjective()`, `TaoComputeObjectiveAndGradient()`, `TaoSetJacobianDesignRoutine()`, `TaoSetStateDesignIS()`
 @*/
 PetscErrorCode TaoComputeJacobianDesign(Tao tao, Vec X, Mat J)
 {

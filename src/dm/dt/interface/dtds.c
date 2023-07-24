@@ -1286,23 +1286,23 @@ PetscErrorCode PetscDSSetJetDegree(PetscDS ds, PetscInt f, PetscInt k)
           const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
           PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar obj[])
 .ve
-+ dim - the spatial dimension
-. Nf - the number of fields
-. uOff - the offset into u[] and u_t[] for each field
-. uOff_x - the offset into u_x[] for each field
-. u - each field evaluated at the current point
-. u_t - the time derivative of each field evaluated at the current point
-. u_x - the gradient of each field evaluated at the current point
-. aOff - the offset into a[] and a_t[] for each auxiliary field
-. aOff_x - the offset into a_x[] for each auxiliary field
-. a - each auxiliary field evaluated at the current point
-. a_t - the time derivative of each auxiliary field evaluated at the current point
-. a_x - the gradient of auxiliary each field evaluated at the current point
-. t - current time
-. x - coordinates of the current point
++ dim          - the spatial dimension
+. Nf           - the number of fields
+. uOff         - the offset into u[] and u_t[] for each field
+. uOff_x       - the offset into u_x[] for each field
+. u            - each field evaluated at the current point
+. u_t          - the time derivative of each field evaluated at the current point
+. u_x          - the gradient of each field evaluated at the current point
+. aOff         - the offset into a[] and a_t[] for each auxiliary field
+. aOff_x       - the offset into a_x[] for each auxiliary field
+. a            - each auxiliary field evaluated at the current point
+. a_t          - the time derivative of each auxiliary field evaluated at the current point
+. a_x          - the gradient of auxiliary each field evaluated at the current point
+. t            - current time
+. x            - coordinates of the current point
 . numConstants - number of constant parameters
-. constants - constant parameters
-- obj - output values at the current point
+. constants    - constant parameters
+- obj          - output values at the current point
 
   Level: intermediate
 
@@ -1397,23 +1397,23 @@ PetscErrorCode PetscDSSetObjective(PetscDS ds, PetscInt f, void (*obj)(PetscInt 
           const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
           PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
 .ve
-+ dim - the spatial dimension
-. Nf - the number of fields
-. uOff - the offset into u[] and u_t[] for each field
-. uOff_x - the offset into u_x[] for each field
-. u - each field evaluated at the current point
-. u_t - the time derivative of each field evaluated at the current point
-. u_x - the gradient of each field evaluated at the current point
-. aOff - the offset into a[] and a_t[] for each auxiliary field
-. aOff_x - the offset into a_x[] for each auxiliary field
-. a - each auxiliary field evaluated at the current point
-. a_t - the time derivative of each auxiliary field evaluated at the current point
-. a_x - the gradient of auxiliary each field evaluated at the current point
-. t - current time
-. x - coordinates of the current point
++ dim          - the spatial dimension
+. Nf           - the number of fields
+. uOff         - the offset into u[] and u_t[] for each field
+. uOff_x       - the offset into u_x[] for each field
+. u            - each field evaluated at the current point
+. u_t          - the time derivative of each field evaluated at the current point
+. u_x          - the gradient of each field evaluated at the current point
+. aOff         - the offset into a[] and a_t[] for each auxiliary field
+. aOff_x       - the offset into a_x[] for each auxiliary field
+. a            - each auxiliary field evaluated at the current point
+. a_t          - the time derivative of each auxiliary field evaluated at the current point
+. a_x          - the gradient of auxiliary each field evaluated at the current point
+. t            - current time
+. x            - coordinates of the current point
 . numConstants - number of constant parameters
-. constants - constant parameters
-- f0 - output values at the current point
+. constants    - constant parameters
+- f0           - output values at the current point
 
   Level: intermediate
 
@@ -1510,23 +1510,23 @@ PetscErrorCode PetscDSSetResidual(PetscDS ds, PetscInt f, void (*f0)(PetscInt di
           const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
           PetscReal t, const PetscReal x[], PetscScalar f0[])
 .ve
-+ dim - the spatial dimension
-. Nf - the number of fields
-. uOff - the offset into u[] and u_t[] for each field
-. uOff_x - the offset into u_x[] for each field
-. u - each field evaluated at the current point
-. u_t - the time derivative of each field evaluated at the current point
-. u_x - the gradient of each field evaluated at the current point
-. aOff - the offset into a[] and a_t[] for each auxiliary field
-. aOff_x - the offset into a_x[] for each auxiliary field
-. a - each auxiliary field evaluated at the current point
-. a_t - the time derivative of each auxiliary field evaluated at the current point
-. a_x - the gradient of auxiliary each field evaluated at the current point
-. t - current time
-. x - coordinates of the current point
++ dim          - the spatial dimension
+. Nf           - the number of fields
+. uOff         - the offset into u[] and u_t[] for each field
+. uOff_x       - the offset into u_x[] for each field
+. u            - each field evaluated at the current point
+. u_t          - the time derivative of each field evaluated at the current point
+. u_x          - the gradient of each field evaluated at the current point
+. aOff         - the offset into a[] and a_t[] for each auxiliary field
+. aOff_x       - the offset into a_x[] for each auxiliary field
+. a            - each auxiliary field evaluated at the current point
+. a_t          - the time derivative of each auxiliary field evaluated at the current point
+. a_x          - the gradient of auxiliary each field evaluated at the current point
+. t            - current time
+. x            - coordinates of the current point
 . numConstants - number of constant parameters
-. constants - constant parameters
-- f0 - output values at the current point
+. constants    - constant parameters
+- f0           - output values at the current point
 
   Level: intermediate
 
@@ -2106,16 +2106,16 @@ PetscErrorCode PetscDSSetDynamicJacobian(PetscDS ds, PetscInt f, PetscInt g, voi
 .vb
   void r(PetscInt dim, PetscInt Nf, const PetscReal x[], const PetscReal n[], const PetscScalar uL[], const PetscScalar uR[], PetscScalar flux[], void *ctx)
 .ve
-+ dim  - The spatial dimension
-. Nf   - The number of fields
-. x    - The coordinates at a point on the interface
-. n    - The normal vector to the interface
-. uL   - The state vector to the left of the interface
-. uR   - The state vector to the right of the interface
-. flux - output array of flux through the interface
++ dim          - The spatial dimension
+. Nf           - The number of fields
+. x            - The coordinates at a point on the interface
+. n            - The normal vector to the interface
+. uL           - The state vector to the left of the interface
+. uR           - The state vector to the right of the interface
+. flux         - output array of flux through the interface
 . numConstants - number of constant parameters
-. constants - constant parameters
-- ctx  - optional user context
+. constants    - constant parameters
+- ctx          - optional user context
 
   Level: intermediate
 
@@ -2193,21 +2193,21 @@ PetscErrorCode PetscDSSetRiemannSolver(PetscDS ds, PetscInt f, void (*r)(PetscIn
               const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
               PetscReal t, const PetscReal x[], PetscScalar uNew[])
 .ve
-+ dim - the spatial dimension
-. Nf - the number of fields
-. uOff - the offset into u[] and u_t[] for each field
++ dim    - the spatial dimension
+. Nf     - the number of fields
+. uOff   - the offset into u[] and u_t[] for each field
 . uOff_x - the offset into u_x[] for each field
-. u - each field evaluated at the current point
-. u_t - the time derivative of each field evaluated at the current point
-. u_x - the gradient of each field evaluated at the current point
-. aOff - the offset into a[] and a_t[] for each auxiliary field
+. u      - each field evaluated at the current point
+. u_t    - the time derivative of each field evaluated at the current point
+. u_x    - the gradient of each field evaluated at the current point
+. aOff   - the offset into a[] and a_t[] for each auxiliary field
 . aOff_x - the offset into a_x[] for each auxiliary field
-. a - each auxiliary field evaluated at the current point
-. a_t - the time derivative of each auxiliary field evaluated at the current point
-. a_x - the gradient of auxiliary each field evaluated at the current point
-. t - current time
-. x - coordinates of the current point
-- uNew - new value for field at the current point
+. a      - each auxiliary field evaluated at the current point
+. a_t    - the time derivative of each auxiliary field evaluated at the current point
+. a_x    - the gradient of auxiliary each field evaluated at the current point
+. t      - current time
+. x      - coordinates of the current point
+- uNew   - new value for field at the current point
 
   Level: intermediate
 
@@ -2313,24 +2313,24 @@ PetscErrorCode PetscDSSetContext(PetscDS ds, PetscInt f, void *ctx)
           const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
           PetscReal t, const PetscReal x[], const PetscReal n[], PetscScalar f0[])
 .ve
-+ dim - the spatial dimension
-. Nf - the number of fields
-. uOff - the offset into u[] and u_t[] for each field
-. uOff_x - the offset into u_x[] for each field
-. u - each field evaluated at the current point
-. u_t - the time derivative of each field evaluated at the current point
-. u_x - the gradient of each field evaluated at the current point
-. aOff - the offset into a[] and a_t[] for each auxiliary field
-. aOff_x - the offset into a_x[] for each auxiliary field
-. a - each auxiliary field evaluated at the current point
-. a_t - the time derivative of each auxiliary field evaluated at the current point
-. a_x - the gradient of auxiliary each field evaluated at the current point
-. t - current time
-. x - coordinates of the current point
-. n - unit normal at the current point
++ dim          - the spatial dimension
+. Nf           - the number of fields
+. uOff         - the offset into u[] and u_t[] for each field
+. uOff_x       - the offset into u_x[] for each field
+. u            - each field evaluated at the current point
+. u_t          - the time derivative of each field evaluated at the current point
+. u_x          - the gradient of each field evaluated at the current point
+. aOff         - the offset into a[] and a_t[] for each auxiliary field
+. aOff_x       - the offset into a_x[] for each auxiliary field
+. a            - each auxiliary field evaluated at the current point
+. a_t          - the time derivative of each auxiliary field evaluated at the current point
+. a_x          - the gradient of auxiliary each field evaluated at the current point
+. t            - current time
+. x            - coordinates of the current point
+. n            - unit normal at the current point
 . numConstants - number of constant parameters
-. constants - constant parameters
-- f0 - output values at the current point
+. constants    - constant parameters
+- f0           - output values at the current point
 
   Level: intermediate
 
@@ -2744,9 +2744,9 @@ PetscErrorCode PetscDSSetBdJacobianPreconditioner(PetscDS ds, PetscInt f, PetscI
   PetscErrorCode sol(PetscInt dim, PetscReal t, const PetscReal x[], PetscInt Nc, PetscScalar u[], void *ctx)
 .ve
 + dim - the spatial dimension
-. t - current time
-. x - coordinates of the current point
-. Nc - the number of field components
+. t   - current time
+. x   - coordinates of the current point
+. Nc  - the number of field components
 . sol - the solution field evaluated at the current point
 - ctx - a user context
 
@@ -2831,9 +2831,9 @@ PetscErrorCode PetscDSSetExactSolution(PetscDS prob, PetscInt f, PetscErrorCode 
   PetscErrorCode sol(PetscInt dim, PetscReal t, const PetscReal x[], PetscInt Nc, PetscScalar u[], void *ctx)
 .ve
 + dim - the spatial dimension
-. t - current time
-. x - coordinates of the current point
-. Nc - the number of field components
+. t   - current time
+. x   - coordinates of the current point
+. Nc  - the number of field components
 . sol - the solution field evaluated at the current point
 - ctx - a user context
 

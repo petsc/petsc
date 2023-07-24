@@ -3150,7 +3150,7 @@ PetscErrorCode MatMPIBAIJSetPreallocation(Mat B, PetscInt bs, PetscInt d_nz, con
   In general, for PDE problems in which most nonzeros are near the diagonal,
   one expects `d_nz` >> `o_nz`.
 
-.seealso: `Mat`, `MatCreate()`, `MatCreateSeqBAIJ()`, `MatSetValues()`, `MatCreateBAIJ()`, `MatMPIBAIJSetPreallocation()`, `MatMPIBAIJSetPreallocationCSR()`
+.seealso: `Mat`, `MatCreate()`, `MatCreateSeqBAIJ()`, `MatSetValues()`, `MatMPIBAIJSetPreallocation()`, `MatMPIBAIJSetPreallocationCSR()`
 @*/
 PetscErrorCode MatCreateBAIJ(MPI_Comm comm, PetscInt bs, PetscInt m, PetscInt n, PetscInt M, PetscInt N, PetscInt d_nz, const PetscInt d_nnz[], PetscInt o_nz, const PetscInt o_nnz[], Mat *A)
 {

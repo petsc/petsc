@@ -990,7 +990,7 @@ PetscErrorCode SNESLineSearchSetSNES(SNESLineSearch linesearch, SNES snes)
 
   Level: developer
 
-.seealso: `SNESLineSearch`, `SNESType`, `SNESLineSearchGetSNES()`, `SNESLineSearchSetVecs()`, `SNES`
+.seealso: `SNESLineSearch`, `SNESType`, `SNESLineSearchSetVecs()`, `SNES`
 @*/
 PetscErrorCode SNESLineSearchGetSNES(SNESLineSearch linesearch, SNES *snes)
 {

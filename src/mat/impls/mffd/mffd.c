@@ -956,7 +956,7 @@ PetscErrorCode MatMFFDResetHHistory(Mat J)
   If `F` is provided then it is not recomputed. Otherwise the function is evaluated at the base
   point during the first `MatMult()` after each call to `MatMFFDSetBase()`.
 
-.seealso: [](ch_matrices), `Mat`, `MATMFFD`, `MatMult()`, `MatMFFDSetBase()`
+.seealso: [](ch_matrices), `Mat`, `MATMFFD`, `MatMult()`
 @*/
 PetscErrorCode MatMFFDSetBase(Mat J, Vec U, Vec F)
 {

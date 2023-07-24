@@ -2574,7 +2574,7 @@ PetscErrorCode TaoGetConvergenceHistory(Tao tao, PetscReal **obj, PetscReal **re
 
   Level: intermediate
 
-.seealso: [](ch_tao), `Tao`, `TaoGetApplicationContext()`, `TaoSetApplicationContext()`
+.seealso: [](ch_tao), `Tao`, `TaoGetApplicationContext()`
 @*/
 PetscErrorCode TaoSetApplicationContext(Tao tao, void *usrP)
 {

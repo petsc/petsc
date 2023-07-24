@@ -798,7 +798,7 @@ static PetscErrorCode DMAdaptorAdapt_Sequence_Private(DMAdaptor adaptor, Vec inx
 . * - Solve the problem on a series of adapted meshes until a quality metric, e.g. a posteriori error bound, is satisfied
 - * - Solve the problem on a hierarchy of adapted meshes generated to satisfy a quality metric using multigrid
 
-.seealso: `DMAdaptor`, `DMAdaptorSetSolver()`, `DMAdaptorCreate()`, `DMAdaptorAdapt()`
+.seealso: `DMAdaptor`, `DMAdaptorSetSolver()`, `DMAdaptorCreate()`
 @*/
 PetscErrorCode DMAdaptorAdapt(DMAdaptor adaptor, Vec x, DMAdaptationStrategy strategy, DM *adm, Vec *ax)
 {

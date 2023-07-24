@@ -434,7 +434,7 @@ PetscErrorCode PetscViewerMathematicaGetName(PetscViewer viewer, const char **na
 
   Level: intermediate
 
-.seealso: `PETSCVIEWERMATHEMATICA`, `PetscViewerMathematicaSetName()`, `PetscViewerMathematicaClearName()`
+.seealso: `PETSCVIEWERMATHEMATICA`, `PetscViewerMathematicaClearName()`
 @*/
 PetscErrorCode PetscViewerMathematicaSetName(PetscViewer viewer, const char name[])
 {

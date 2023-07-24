@@ -91,7 +91,7 @@ PetscErrorCode KSPAppendOptionsPrefix(KSP ksp, const char prefix[])
 
   Level: advanced
 
-.seealso: [](ch_ksp), `KSP`, `KSPSetOptionsPrefix()`, `KSPAppendOptionsPrefix()`, `KSPSetUseFischerGuess()`, `KSPSetGuess()`, `KSPGetGuess()`, `KSPGuess`
+.seealso: [](ch_ksp), `KSP`, `KSPSetOptionsPrefix()`, `KSPAppendOptionsPrefix()`, `KSPSetGuess()`, `KSPGetGuess()`, `KSPGuess`
 @*/
 PetscErrorCode KSPSetUseFischerGuess(KSP ksp, PetscInt model, PetscInt size)
 {

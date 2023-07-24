@@ -230,7 +230,7 @@ PetscErrorCode PetscViewerVUSetVecSeen(PetscViewer viewer, PetscBool vecSeen)
 
   Level: advanced
 
-.seealso: [](sec_viewers), `PETSCVIEWERVU`, `PetscViewerVUGetVecSeen()`
+.seealso: [](sec_viewers), `PETSCVIEWERVU`
 @*/
 PetscErrorCode PetscViewerVUGetVecSeen(PetscViewer viewer, PetscBool *vecSeen)
 {

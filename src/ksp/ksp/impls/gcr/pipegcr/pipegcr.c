@@ -598,7 +598,7 @@ PetscErrorCode KSPPIPEGCRGetNprealloc(KSP ksp, PetscInt *nprealloc)
 
   Level: intermediate
 
-.seealso: [](ch_ksp), `KSPPIPEGCR`, `KSPPIPEGCRSetTruncationType`, `KSPPIPEGCRTruncationType`, `KSPFCDTruncationType`
+.seealso: [](ch_ksp), `KSPPIPEGCR`, `KSPPIPEGCRTruncationType`, `KSPFCDTruncationType`
 @*/
 PetscErrorCode KSPPIPEGCRSetTruncationType(KSP ksp, KSPFCDTruncationType truncstrat)
 {

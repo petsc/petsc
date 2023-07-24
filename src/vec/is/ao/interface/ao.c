@@ -251,7 +251,7 @@ PetscErrorCode AOPetscToApplication(AO ao, PetscInt n, PetscInt ia[])
   Integers that are out of range are mapped to -1
 
 .seealso: [](sec_ao), `AOCreateBasic()`, `AOView()`, `AOPetscToApplication()`,
-          `AOPetscToApplicationIS()`, `AOApplicationToPetsc()`
+          `AOPetscToApplicationIS()`
 @*/
 PetscErrorCode AOApplicationToPetsc(AO ao, PetscInt n, PetscInt ia[])
 {

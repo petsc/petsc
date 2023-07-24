@@ -457,8 +457,8 @@ PetscErrorCode PCFactorSetMatSolverType(PC pc, MatSolverType stype)
 
   Level: intermediate
 
-.seealso: `PCLU`, `PCCHOLESKY`, `MatGetFactor()`, `MatSolverType`, `PCFactorGetMatSolverType()`,
-          `MATSOLVERSUPERLU`, `MATSOLVERSUPERLU_DIST`, `MATSOLVERMUMPS`
+.seealso: `PCLU`, `PCCHOLESKY`, `MatGetFactor()`, `MatSolverType`, `MATSOLVERSUPERLU`,
+`MATSOLVERSUPERLU_DIST`, `MATSOLVERMUMPS`
 @*/
 PetscErrorCode PCFactorGetMatSolverType(PC pc, MatSolverType *stype)
 {
