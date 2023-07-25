@@ -284,7 +284,7 @@ distclean:
 	-${RM} -rf ${PETSC_DIR}/${PETSC_ARCH}/
 
 info:
-	-@${OMAKE} -f gmakefile gmakeinfo
+	+@${OMAKE} -f gmakefile gmakeinfo
 
 check_usermakefile:
 	-@echo "Testing compile with user makefile"
