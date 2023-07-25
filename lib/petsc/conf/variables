@@ -1,4 +1,4 @@
-# -*- mode: makefile -*-
+# -*- mode: makefile-gmake -*-
 #
 #  This turns off any environmental variables for flags to not be used during the build process.
 #  Put them in the makefile or use make CFLAGS=xxx yyy

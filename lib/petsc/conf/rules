@@ -1,4 +1,4 @@
-# -*- mode: makefile -*-
+# -*- mode: makefile-gmake -*-
 #
 #    Contains rules for building PETSc application codes (not PETSc libraries).
 #      * for example, make ex1

@@ -1,4 +1,4 @@
-# -*- mode: makefile -*-
+# -*- mode: makefile-gmake -*-
 #
 #    Contains rules that are shared between SLEPc and PETSc
 #
