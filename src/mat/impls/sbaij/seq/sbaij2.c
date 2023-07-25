@@ -223,7 +223,7 @@ PetscErrorCode MatCreateSubMatrices_SeqSBAIJ(Mat A, PetscInt n, const IS irow[],
   PetscInt i;
 
   PetscFunctionBegin;
-  if (scall == MAT_INITIAL_MATRIX) PetscCall(PetscCalloc1(n + 1, B));
+  if (scall == MAT_INITIAL_MATRIX) PetscCall(PetscCalloc1(n, B));
 
   for (i = 0; i < n; i++) PetscCall(MatCreateSubMatrix_SeqSBAIJ(A, irow[i], icol[i], scall, &(*B)[i]));
   PetscFunctionReturn(PETSC_SUCCESS);
