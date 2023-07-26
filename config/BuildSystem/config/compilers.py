@@ -1382,6 +1382,17 @@ Otherwise you need a different combination of C, C++, and Fortran compilers")
       self.logWrite(self.setCompilers.restoreLog())
     return
 
+  def checkLinux(self):
+    '''Check for __linux__'''
+    includes = """
+    #if !defined(__linux__)
+    #error "__linux__ not defined"
+    #endif
+    """
+    body = ""
+    if self.checkCompile(includes, body):
+      self.addDefine('HAVE_LINUX', 1)
+
   def checkC99Flag(self):
     '''Check for -std=c99 or equivalent flag'''
     includes = "#include <float.h>"
@@ -1441,6 +1452,7 @@ Otherwise you need a different combination of C, C++, and Fortran compilers")
     import config.setCompilers
     if hasattr(self.setCompilers, 'CC'):
       self.isGCC = config.setCompilers.Configure.isGNU(self.setCompilers.CC, self.log)
+      self.executeTest(self.checkLinux)
       self.executeTest(self.checkC99Flag)
       self.executeTest(self.checkCFormatting)
       self.executeTest(self.checkDynamicLoadFlag)
