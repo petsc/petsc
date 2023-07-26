@@ -120,7 +120,7 @@ class Configure(config.base.Configure):
           flags = options.getCompilerFlags(language, self.setCompilers.getCompiler(), bopt)
 
         for testFlag in flags:
-          if isinstance(testFlag,tuple):
+          if isinstance(testFlag, (tuple, list)):
             testFlag = ' '.join(testFlag)
           self.logPrint('Trying '+language+' compiler flag '+testFlag)
           try:

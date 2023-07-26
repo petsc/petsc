@@ -37,8 +37,6 @@ class CompilerOptions(config.base.Configure):
         if config.setCompilers.Configure.isClang(compiler, self.log):
           flags.extend(['-Qunused-arguments'])
         if self.argDB['with-visibility']:
-          if language == 'CUDA':
-            flags.extend(['-Xcompiler'])
           flags.extend(['-fvisibility=hidden'])
         if language == 'CUDA':
           flags.extend(['-x cuda'])
@@ -91,7 +89,10 @@ class CompilerOptions(config.base.Configure):
         elif bopt == 'O':
           flags.extend(['-O2', '-QxW'])
       elif config.setCompilers.Configure.isNVCC(compiler, self.log):
-        if bopt == 'g':
+        if bopt == '':
+          if self.argDB['with-visibility']:
+            flags.append(('-Xcompiler', '-fvisibility=hidden'))
+        elif bopt == 'g':
           # nvcc --help says:
           #  -g : Generate debug information for host code.
           #  -G : Generate debug information for device code. Turns off all optimizations. Don't use for profiling; use -lineinfo instead.
@@ -101,8 +102,6 @@ class CompilerOptions(config.base.Configure):
           flags.extend(['-g', '-lineinfo'])
         elif bopt == 'O':
           flags.append('-O3')
-        if self.argDB['with-visibility']:
-          flags.extend(['-Xcompiler', '-fvisibility=hidden'])
       # NEC
       elif config.setCompilers.Configure.isNEC(compiler, self.log):
         if bopt == '':
@@ -152,8 +151,6 @@ class CompilerOptions(config.base.Configure):
         # The option below would prevent warnings about compiling C as C++ being deprecated, but it causes Clang to SEGV, http://llvm.org/bugs/show_bug.cgi?id=12924
         # flags.extend([('-x','c++')])
         if self.argDB['with-visibility']:
-          if language == 'CUDA':
-            flags.extend(['-Xcompiler'])
           flags.extend(['-fvisibility=hidden'])
       elif bopt in ['g']:
         # -g3 causes an as SEGV on OSX
