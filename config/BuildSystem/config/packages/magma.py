@@ -70,12 +70,12 @@ class Configure(config.package.Package):
 
     self.pushLanguage('C')
     cc = self.getCompiler()
-    cflags = self.getCompilerFlags()
+    cflags = self.updatePackageCFlags(self.getCompilerFlags())
     self.popLanguage()
 
     self.pushLanguage('Cxx')
     cxx = self.getCompiler()
-    cxxflags = self.getCompilerFlags()
+    cxxflags = self.updatePackageCxxFlags(self.getCompilerFlags())
     cxxflags = cxxflags.replace('-fvisibility=hidden','')
     self.popLanguage()
 
@@ -84,14 +84,14 @@ class Configure(config.package.Package):
     if fcbindings:
       self.pushLanguage('FC')
       fc = self.getCompiler()
-      fcflags = self.getCompilerFlags()
+      fcflags = self.updatePackageFFlags(self.getCompilerFlags())
       self.popLanguage()
 
     nvccflags = ''
     if usecuda:
       self.pushLanguage('CUDA')
       nvcc = self.getCompiler()
-      nvccflags = self.getCompilerFlags()
+      nvccflags = self.updatePackageCUDAFlags(self.getCompilerFlags())
       self.popLanguage()
       self.getExecutable(nvcc,getFullPath=1,resultName='systemNvcc')
       if hasattr(self,'systemNvcc'):
