@@ -119,8 +119,6 @@ class CompilerOptions(config.base.Configure):
         flags.extend(['-g','-O0'])
       elif bopt == 'O':
         flags.append('-O')
-    if bopt == 'O':
-      self.logPrintWarning('Using default optimization '+language+' flags "'+' '.join(flags)+'". You might consider manually setting optimal optimization flags for your system with '+language.upper()+'OPTFLAGS="optimization flags" see config/examples/arch-*-opt.py for examples')
     return flags
 
   def getCxxFlags(self, compiler, bopt, language):
@@ -239,8 +237,6 @@ class CompilerOptions(config.base.Configure):
           flags.extend(['-g','-O0'])
       elif bopt in ['O']:
         flags.append('-O')
-    if bopt == 'O':
-      self.logPrintWarning('Using default ' + language + ' optimization flags "'+' '.join(flags)+'". You might consider manually setting optimal optimization flags for your system with ' + language.upper() + 'OPTFLAGS="optimization flags" see config/examples/arch-*-opt.py for examples')
     return flags
 
   def getFortranFlags(self, compiler, bopt):
@@ -315,21 +311,23 @@ class CompilerOptions(config.base.Configure):
         flags.extend(['-g','-O0'])
       elif bopt == 'O':
         flags.append('-O')
-    if bopt == 'O':
-      self.logPrintWarning('Using default FORTRAN optimization flags "'+' '.join(flags)+'". You might consider manually setting optimal optimization flags for your system with FOPTFLAGS="optimization flags" see config/examples/arch-*-opt.py for examples')
     return flags
 
   def getCompilerFlags(self, language, compiler, bopt):
     if bopt == 'gcov':
       raise RuntimeError('Internal error! bopt = gcov is deprecated')
 
-    flags = ''
+    flags = []
     if language == 'C' or language == 'CUDA':
       flags = self.getCFlags(compiler, bopt, language)
     elif language == 'Cxx' or language == 'HIP' or language == 'SYCL':
       flags = self.getCxxFlags(compiler, bopt, language)
     elif language in ['Fortran', 'FC']:
       flags = self.getFortranFlags(compiler, bopt)
+    if bopt == 'O':
+      flat_flags  = (' '.join(f) if isinstance(f, (list, tuple)) else f for f in flags)
+      fopt_prefix = 'F' if language in ('Fortran', 'FC') else language.upper()
+      self.logPrintWarning('Using default ' + language + ' optimization flags "'+' '.join(flat_flags)+'". You might consider manually setting optimal optimization flags for your system with ' + fopt_prefix + 'OPTFLAGS="optimization flags" see config/examples/arch-*-opt.py for examples')
     return flags
 
   def getCompilerVersion(self, language, compiler):
