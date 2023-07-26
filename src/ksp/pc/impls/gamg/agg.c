@@ -725,6 +725,7 @@ static PetscErrorCode PCGAMGOptProlongator_AGG(PC pc, Mat Amat, Mat *a_P)
       PetscCall(KSPSetNoisy_Private(bb));
 
       PetscCall(KSPCreate(comm, &eksp));
+      PetscCall(KSPSetNestLevel(eksp, pc->kspnestlevel));
       PetscCall(PCGetOptionsPrefix(pc, &prefix));
       PetscCall(KSPSetOptionsPrefix(eksp, prefix));
       PetscCall(KSPAppendOptionsPrefix(eksp, "pc_gamg_esteig_"));

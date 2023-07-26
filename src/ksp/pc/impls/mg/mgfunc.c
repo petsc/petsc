@@ -601,6 +601,7 @@ PetscErrorCode PCMGGetSmootherUp(PC pc, PetscInt l, KSP *ksp)
     PetscCall(PCGetType(ipc, &pctype));
 
     PetscCall(KSPCreate(comm, &mglevels[l]->smoothu));
+    PetscCall(KSPSetNestLevel(mglevels[l]->smoothu, pc->kspnestlevel));
     PetscCall(KSPSetErrorIfNotConverged(mglevels[l]->smoothu, pc->erroriffailure));
     PetscCall(PetscObjectIncrementTabLevel((PetscObject)mglevels[l]->smoothu, (PetscObject)pc, mglevels[0]->levels - l));
     PetscCall(KSPSetOptionsPrefix(mglevels[l]->smoothu, prefix));

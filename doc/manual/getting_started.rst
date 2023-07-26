@@ -655,7 +655,7 @@ number of threads being used. The default number is often absurdly high for the 
 Users can also put OpenMP pragmas into their own code. However since standard PETSc is not thread-safe, they should not, in general,
 call PETSc routines from inside the parallel regions.
 
-PETSc MPI based linear solvers may be accessed from a sequential or OpenMP program with the ``PCMPI`` solver wrapper, see :any:`sec_pcmpi`.
+PETSc's MPI based linear solvers may be accessed from a sequential or non-MPI OpenMP program, see :any:`sec_pcmpi`.
 
 
 There is an OpenMP thread-safe subset of PETSc that may be configured for using ``--with-threadsafety [--with-openmp or

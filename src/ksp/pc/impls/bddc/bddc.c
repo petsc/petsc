@@ -2643,12 +2643,13 @@ static PetscErrorCode PCBDDCCreateFETIDPOperators_BDDC(PC pc, PetscBool fully_re
 
         for (i = 0; i < nn; i++) {
           KSP       kspC;
-          PC        pc;
+          PC        npc;
           Mat       F, pF;
           Vec       x, y;
           PetscBool isschur, prec = PETSC_TRUE;
 
           PetscCall(KSPCreate(PetscObjectComm((PetscObject)ksps[i]), &kspC));
+          PetscCall(KSPSetNestLevel(kspC, pc->kspnestlevel));
           PetscCall(KSPSetOptionsPrefix(kspC, ((PetscObject)ksps[i])->prefix));
           PetscCall(KSPAppendOptionsPrefix(kspC, "check_"));
           PetscCall(KSPGetOperators(ksps[i], &F, &pF));
@@ -2664,27 +2665,27 @@ static PetscErrorCode PCBDDCCreateFETIDPOperators_BDDC(PC pc, PetscBool fully_re
             PetscCall(MatSchurComplementGetKSP(F, &kspS2));
             PetscCall(PetscSNPrintf(prefix, sizeof(prefix), "%sschur_", ((PetscObject)kspC)->prefix));
             PetscCall(KSPSetOptionsPrefix(kspS2, prefix));
-            PetscCall(KSPGetPC(kspS2, &pc));
-            PetscCall(PCSetType(pc, PCKSP));
-            PetscCall(PCKSPSetKSP(pc, kspS));
+            PetscCall(KSPGetPC(kspS2, &npc));
+            PetscCall(PCSetType(npc, PCKSP));
+            PetscCall(PCKSPSetKSP(npc, kspS));
             PetscCall(KSPSetFromOptions(kspS2));
-            PetscCall(KSPGetPC(kspS2, &pc));
-            PetscCall(PCSetUseAmat(pc, PETSC_TRUE));
+            PetscCall(KSPGetPC(kspS2, &npc));
+            PetscCall(PCSetUseAmat(npc, PETSC_TRUE));
           } else {
             PetscCall(PetscObjectReference((PetscObject)F));
           }
           PetscCall(KSPSetFromOptions(kspC));
           PetscCall(PetscOptionsGetBool(NULL, ((PetscObject)kspC)->prefix, "-preconditioned", &prec, NULL));
           if (prec) {
-            PetscCall(KSPGetPC(ksps[i], &pc));
-            PetscCall(KSPSetPC(kspC, pc));
+            PetscCall(KSPGetPC(ksps[i], &npc));
+            PetscCall(KSPSetPC(kspC, npc));
           }
           PetscCall(KSPSetOperators(kspC, F, pF));
           PetscCall(MatCreateVecs(F, &x, &y));
           PetscCall(VecSetRandom(x, NULL));
           PetscCall(MatMult(F, x, y));
           PetscCall(KSPSolve(kspC, y, x));
-          PetscCall(KSPCheckSolve(kspC, pc, x));
+          PetscCall(KSPCheckSolve(kspC, npc, x));
           PetscCall(KSPDestroy(&kspC));
           PetscCall(MatDestroy(&F));
           PetscCall(VecDestroy(&x));

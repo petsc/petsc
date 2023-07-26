@@ -512,6 +512,7 @@ static PetscErrorCode PCSetUp_GASM(PC pc)
     for (i = 0; i < osm->n; i++) {
       char subprefix[PETSC_MAX_PATH_LEN + 1];
       PetscCall(KSPCreate(((PetscObject)(osm->ois[i]))->comm, &ksp));
+      PetscCall(KSPSetNestLevel(ksp, pc->kspnestlevel));
       PetscCall(KSPSetErrorIfNotConverged(ksp, pc->erroriffailure));
       PetscCall(PetscObjectIncrementTabLevel((PetscObject)ksp, (PetscObject)pc, 1));
       PetscCall(KSPSetType(ksp, KSPPREONLY));

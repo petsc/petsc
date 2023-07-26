@@ -779,6 +779,7 @@ PetscErrorCode PCSetFromOptions_Exotic(PC pc, PetscOptionItems *PetscOptionsObje
     if (!ctx->ksp) {
       const char *prefix;
       PetscCall(KSPCreate(PETSC_COMM_SELF, &ctx->ksp));
+      PetscCall(KSPSetNestLevel(ctx->ksp, pc->kspnestlevel));
       PetscCall(KSPSetErrorIfNotConverged(ctx->ksp, pc->erroriffailure));
       PetscCall(PetscObjectIncrementTabLevel((PetscObject)ctx->ksp, (PetscObject)pc, 1));
       PetscCall(PCGetOptionsPrefix(pc, &prefix));

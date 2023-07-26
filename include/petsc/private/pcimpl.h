@@ -57,6 +57,8 @@ struct _p_PC {
   PCFailedReason failedreasonrank; /* failed reason on this rank */
 
   PetscErrorCode (*presolve)(PC, KSP);
+
+  PetscInt kspnestlevel; /* how many levels of nesting does the KSP have that contains the PC */
 };
 
 PETSC_EXTERN PetscLogEvent PC_SetUp;

@@ -688,6 +688,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
 
       PetscCall(ISGetLocalSize(sub_schurs->is_subs[i], &subset_size));
       PetscCall(KSPCreate(PETSC_COMM_SELF, &sub_schurs->change[i]));
+      PetscCall(KSPSetNestLevel(sub_schurs->change[i], 1)); /* do not seem to have direct access to a PC from which to get the level of nests */
       PetscCall(KSPSetType(sub_schurs->change[i], KSPPREONLY));
       if (!sub_schurs->change_with_qr) {
         PetscCall(MatCreateSubMatrix(change, sub_schurs->is_subs[i], sub_schurs->is_subs[i], MAT_INITIAL_MATRIX, &change_sub));
@@ -1597,6 +1598,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
             PetscCall(ISDestroy(&EE));
 
             PetscCall(KSPCreate(PETSC_COMM_SELF, &pS_II));
+            PetscCall(KSPSetNestLevel(pS_II, 1)); /* do not have direct access to a PC to provide the level of nesting of the KSP */
             PetscCall(KSPSetType(pS_II, KSPPREONLY));
             PetscCall(KSPGetPC(pS_II, &pS_II_pc));
             PetscCall(PCSetType(pS_II_pc, PCSVD));

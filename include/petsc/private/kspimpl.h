@@ -192,6 +192,8 @@ struct _p_KSP {
   PetscErrorCode (*presolve)(KSP, Vec, Vec, void *);
   PetscErrorCode (*postsolve)(KSP, Vec, Vec, void *);
   void *prectx, *postctx;
+
+  PetscInt nestlevel; /* how many levels of nesting does the KSP have */
 };
 
 typedef struct { /* dummy data structure used in KSPMonitorDynamicTolerance() */

@@ -331,6 +331,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_Galerkin(PC pc)
   pc->ops->applyrichardson = NULL;
 
   PetscCall(KSPCreate(PetscObjectComm((PetscObject)pc), &jac->ksp));
+  PetscCall(KSPSetNestLevel(jac->ksp, pc->kspnestlevel));
   PetscCall(KSPSetErrorIfNotConverged(jac->ksp, pc->erroriffailure));
   PetscCall(PetscObjectIncrementTabLevel((PetscObject)jac->ksp, (PetscObject)pc, 1));
 

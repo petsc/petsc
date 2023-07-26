@@ -2406,6 +2406,7 @@ static PetscErrorCode PCSetUp_PATCH_Linear(PC pc)
         PC  subpc;
 
         PetscCall(KSPCreate(PETSC_COMM_SELF, &ksp));
+        PetscCall(KSPSetNestLevel(ksp, pc->kspnestlevel));
         PetscCall(KSPSetErrorIfNotConverged(ksp, pc->erroriffailure));
         PetscCall(KSPSetOptionsPrefix(ksp, prefix));
         PetscCall(KSPAppendOptionsPrefix(ksp, "sub_"));

@@ -581,6 +581,7 @@ PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx)
     PetscCall(PetscObjectReference((PetscObject)BD1));
     ctx->BD = BD1;
     PetscCall(KSPCreate(PETSC_COMM_SELF, &ctx->kBD));
+    PetscCall(KSPSetNestLevel(ctx->kBD, fetidpmat_ctx->pc->kspnestlevel));
     PetscCall(KSPSetOperators(ctx->kBD, BD2, BD2));
     PetscCall(VecDuplicate(fetidpmat_ctx->lambda_local, &ctx->work));
     fetidpmat_ctx->deluxe_nonred = PETSC_TRUE;

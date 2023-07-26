@@ -403,6 +403,7 @@ static PetscErrorCode PCRedundantGetKSP_Redundant(PC pc, KSP *innerksp)
     subcomm = PetscSubcommChild(red->psubcomm);
 
     PetscCall(KSPCreate(subcomm, &red->ksp));
+    PetscCall(KSPSetNestLevel(red->ksp, pc->kspnestlevel));
     PetscCall(KSPSetErrorIfNotConverged(red->ksp, pc->erroriffailure));
     PetscCall(PetscObjectIncrementTabLevel((PetscObject)red->ksp, (PetscObject)pc, 1));
     PetscCall(KSPSetType(red->ksp, KSPPREONLY));

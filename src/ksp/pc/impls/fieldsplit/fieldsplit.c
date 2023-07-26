@@ -942,6 +942,7 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
 
         PetscCall(PetscSNPrintf(schurprefix, sizeof(schurprefix), "%sfieldsplit_%s_upper_", ((PetscObject)pc)->prefix ? ((PetscObject)pc)->prefix : "", ilink->splitname));
         PetscCall(KSPCreate(PetscObjectComm((PetscObject)pc), &jac->kspupper));
+        PetscCall(KSPSetNestLevel(jac->kspupper, pc->kspnestlevel));
         PetscCall(KSPSetErrorIfNotConverged(jac->kspupper, pc->erroriffailure));
         PetscCall(KSPSetOptionsPrefix(jac->kspupper, schurprefix));
         PetscCall(PetscObjectIncrementTabLevel((PetscObject)jac->kspupper, (PetscObject)pc, 1));
@@ -959,6 +960,7 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
 
       if (jac->schurpre == PC_FIELDSPLIT_SCHUR_PRE_SELFP) PetscCall(MatSchurComplementGetPmat(jac->schur, MAT_INITIAL_MATRIX, &jac->schurp));
       PetscCall(KSPCreate(PetscObjectComm((PetscObject)pc), &jac->kspschur));
+      PetscCall(KSPSetNestLevel(jac->kspschur, pc->kspnestlevel));
       PetscCall(KSPSetErrorIfNotConverged(jac->kspschur, pc->erroriffailure));
       PetscCall(PetscObjectIncrementTabLevel((PetscObject)jac->kspschur, (PetscObject)pc, 1));
       if (jac->schurpre == PC_FIELDSPLIT_SCHUR_PRE_SELF) {
@@ -1785,6 +1787,7 @@ static PetscErrorCode PCFieldSplitSetFields_FieldSplit(PC pc, const char splitna
   ilink->nfields = n;
   ilink->next    = NULL;
   PetscCall(KSPCreate(PetscObjectComm((PetscObject)pc), &ilink->ksp));
+  PetscCall(KSPSetNestLevel(ilink->ksp, pc->kspnestlevel));
   PetscCall(KSPSetErrorIfNotConverged(ilink->ksp, pc->erroriffailure));
   PetscCall(PetscObjectIncrementTabLevel((PetscObject)ilink->ksp, (PetscObject)pc, 1));
   PetscCall(KSPSetType(ilink->ksp, KSPPREONLY));
@@ -1968,6 +1971,7 @@ static PetscErrorCode PCFieldSplitSetIS_FieldSplit(PC pc, const char splitname[]
   ilink->is_col = is;
   ilink->next   = NULL;
   PetscCall(KSPCreate(PetscObjectComm((PetscObject)pc), &ilink->ksp));
+  PetscCall(KSPSetNestLevel(ilink->ksp, pc->kspnestlevel));
   PetscCall(KSPSetErrorIfNotConverged(ilink->ksp, pc->erroriffailure));
   PetscCall(PetscObjectIncrementTabLevel((PetscObject)ilink->ksp, (PetscObject)pc, 1));
   PetscCall(KSPSetType(ilink->ksp, KSPPREONLY));

@@ -5278,6 +5278,7 @@ PetscErrorCode PCBDDCSetUpLocalSolvers(PC pc, PetscBool dirichlet, PetscBool neu
     if (!pcbddc->ksp_D) { /* create object if not yet build */
       opts = PETSC_TRUE;
       PetscCall(KSPCreate(PETSC_COMM_SELF, &pcbddc->ksp_D));
+      PetscCall(KSPSetNestLevel(pcbddc->ksp_D, pc->kspnestlevel));
       PetscCall(PetscObjectIncrementTabLevel((PetscObject)pcbddc->ksp_D, (PetscObject)pc, 1));
       /* default */
       PetscCall(KSPSetType(pcbddc->ksp_D, KSPPREONLY));
@@ -5423,6 +5424,7 @@ PetscErrorCode PCBDDCSetUpLocalSolvers(PC pc, PetscBool dirichlet, PetscBool neu
     if (!pcbddc->ksp_R) { /* create object if not present */
       opts = PETSC_TRUE;
       PetscCall(KSPCreate(PETSC_COMM_SELF, &pcbddc->ksp_R));
+      PetscCall(KSPSetNestLevel(pcbddc->ksp_R, pc->kspnestlevel));
       PetscCall(PetscObjectIncrementTabLevel((PetscObject)pcbddc->ksp_R, (PetscObject)pc, 1));
       /* default */
       PetscCall(KSPSetType(pcbddc->ksp_R, KSPPREONLY));
@@ -8122,6 +8124,7 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc, PetscScalar *coarse_submat_vals)
       size_t len;
 
       PetscCall(KSPCreate(PetscObjectComm((PetscObject)coarse_mat), &pcbddc->coarse_ksp));
+      PetscCall(KSPSetNestLevel(pcbddc->coarse_ksp, pc->kspnestlevel));
       PetscCall(KSPSetErrorIfNotConverged(pcbddc->coarse_ksp, pc->erroriffailure));
       PetscCall(PetscObjectIncrementTabLevel((PetscObject)pcbddc->coarse_ksp, (PetscObject)pc, 1));
       PetscCall(KSPSetTolerances(pcbddc->coarse_ksp, PETSC_DEFAULT, PETSC_DEFAULT, PETSC_DEFAULT, 1));
@@ -8415,6 +8418,7 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc, PetscScalar *coarse_submat_vals)
 
       /* Create ksp object suitable for estimation of extreme eigenvalues */
       PetscCall(KSPCreate(PetscObjectComm((PetscObject)pcbddc->coarse_ksp), &check_ksp));
+      PetscCall(KSPSetNestLevel(check_ksp, pc->kspnestlevel));
       PetscCall(PetscObjectIncrementTabLevel((PetscObject)check_ksp, (PetscObject)pcbddc->coarse_ksp, 0));
       PetscCall(KSPSetErrorIfNotConverged(pcbddc->coarse_ksp, PETSC_FALSE));
       PetscCall(KSPSetOperators(check_ksp, coarse_mat, coarse_mat));

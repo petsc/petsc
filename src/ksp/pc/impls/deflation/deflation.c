@@ -578,6 +578,7 @@ static PetscErrorCode PCSetUp_Deflation(PC pc)
 
     /* TODO use MATINV ? */
     PetscCall(KSPCreate(comm, &def->WtAWinv));
+    PetscCall(KSPSetNestLevel(def->WtAWinv, pc->kspnestlevel));
     PetscCall(KSPSetOperators(def->WtAWinv, def->WtAW, def->WtAW));
     PetscCall(KSPGetPC(def->WtAWinv, &pcinner));
     /* Setup KSP and PC */
