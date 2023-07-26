@@ -108,7 +108,9 @@ class Petsc(object):
           self.pkg_arch = self.petsc_arch
         self.pkg_pkgs = PetscPKGS
         if pkg_pkgs is not None:
-          self.pkg_pkgs += list(set(pkg_pkgs.split(','))-set(self.pkg_pkgs))
+          if pkg_pkgs.find(',') > 0: npkgs = set(pkg_pkgs.split(','))
+          else: npkgs = set(pkg_pkgs.split(' '))
+          self.pkg_pkgs += list(npkgs - set(self.pkg_pkgs))
         self.read_conf()
         try:
             logging.basicConfig(filename=self.pkg_arch_path('lib',self.pkg_name,'conf', 'gmake.log'), level=logging.DEBUG)

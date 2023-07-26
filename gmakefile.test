@@ -8,7 +8,7 @@ CONFIGDIR := $(PETSC_DIR)/config
 # TESTSRCDIR is always relative to gmakefile.test
 #  This must be before includes
 mkfile_path := $(abspath $(lastword $(MAKEFILE_LIST)))
-TESTSRCDIR := $(dir $(mkfile_path))src
+TESTSRCDIR ?= $(dir $(mkfile_path))src
 
 -include $(PETSC_DIR)/$(PETSC_ARCH)/lib/petsc/conf/petscvariables
 -include $(PETSC_DIR)/lib/petsc/conf/variables
@@ -19,7 +19,7 @@ TESTLOGTAPFILE ?= $(TESTDIR)/test_$(PETSC_ARCH)_tap.log
 TESTLOGERRFILE ?= $(TESTDIR)/test_$(PETSC_ARCH)_err.log
 EXAMPLESDIR := $(TESTSRCDIR)
 
-pkgs := sys vec mat dm ksp snes ts tao
+pkgs ?= sys vec mat dm ksp snes ts tao
 
 petscconf      := $(PETSC_DIR)/$(PETSC_ARCH)/include/petscconf.h
 petscvariables := $(PETSC_DIR)/$(PETSC_ARCH)/lib/petsc/conf/petscvariables
@@ -99,7 +99,7 @@ ifdef TIMEOUT
 endif
 
 $(generatedtest) : $(petscconf) $(petscvariables) $(CONFIGDIR)/gmakegentest.py $(TESTDIR)/.DIR | $$(@D)/.DIR
-	$(PYTHON) $(CONFIGDIR)/gmakegentest.py --petsc-dir=$(PETSC_DIR) --petsc-arch=$(PETSC_ARCH) --testdir=$(TESTDIR)
+	$(PYTHON) $(CONFIGDIR)/gmakegentest.py --petsc-dir=$(PETSC_DIR) --petsc-arch=$(PETSC_ARCH) --testdir=$(TESTDIR) --srcdir $(TESTSRCDIR) --pkg-pkgs "$(pkgs)"
 
 ifneq ($(filter-out help docs clean check info gmakeinfo libs all install install-lib checkbadSource checkbadFileChange deletefortranstubs allfortranstubs allfortranstubsinplace alletags clangformat checkclangformat get%,$(MAKECMDGOALS:clean%=clean)),)
 include $(generatedtest)
@@ -425,7 +425,7 @@ report_tests: starttime $(TESTTARGETS)
 	$(PYTHON) $(CONFIGDIR)/report_tests.py -m $(MAKE) -d $(TESTDIR)/counts -t 5 -e $${elapsed_time} $(showreport)
 
 check_output:
-	$(PYTHON) $(CONFIGDIR)/gmakegentest.py --petsc-dir=$(PETSC_DIR) --petsc-arch=$(PETSC_ARCH) --testdir=$(TESTDIR) --check-output
+	$(PYTHON) $(CONFIGDIR)/gmakegentest.py --petsc-dir=$(PETSC_DIR) --petsc-arch=$(PETSC_ARCH) --testdir=$(TESTDIR)  --srcdir $(TESTSRCDIR) --pkg-pkgs "$(pkgs)" --check-output
 
 # If users make is a gnumake then these messages are provided even if the user does not do make -f gmakefile.test
 HASGMAKEFILE := $(filter gmakefile,$(MAKEFILE_LIST))
