@@ -1341,7 +1341,7 @@ static PetscErrorCode adaptToleranceFVMSetUp(TS ts, PetscInt nstep, PetscReal ti
   PetscCall(VecGetArrayRead(locX, &pointVals));
   PetscCall(VecGetDM(cellGeom, &cellDM));
   PetscCall(DMLabelCreate(PETSC_COMM_SELF, "adapt", &adaptLabel));
-  PetscCall(VecCreateMPI(PetscObjectComm((PetscObject)plex), cEnd - cStart, PETSC_DETERMINE, &errVec));
+  PetscCall(VecCreateFromOptions(PetscObjectComm((PetscObject)plex), NULL, 1, cEnd - cStart, PETSC_DETERMINE, &errVec));
   PetscCall(VecSetUp(errVec));
   PetscCall(VecGetArray(errVec, &errArray));
   for (c = cStart; c < cEnd; c++) {

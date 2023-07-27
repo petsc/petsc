@@ -21,6 +21,8 @@
   Level: intermediate
 
   Notes:
+  It is recommended to use `VecCreateFromOptions()` instead of this routine
+
   Use `VecDuplicate()` or `VecDuplicateVecs()` to form additional vectors of the
   same type as an existing vector.
 

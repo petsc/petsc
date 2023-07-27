@@ -160,12 +160,8 @@ int main(int argc, char **argv)
      Jacobian.  See the users manual for a discussion of better techniques
      for preallocating matrix memory.
   */
-  if (size == 1) {
-    PetscCall(MatCreateSeqAIJ(comm, N, N, 5, NULL, &J));
-  } else {
-    PetscCall(VecGetLocalSize(X, &m));
-    PetscCall(MatCreateAIJ(comm, m, m, N, N, 5, NULL, 3, NULL, &J));
-  }
+  PetscCall(VecGetLocalSize(X, &m));
+  PetscCall(MatCreateFromOptions(comm, NULL, 1, m, m, N, N, &J));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Customize linear solver; set runtime options

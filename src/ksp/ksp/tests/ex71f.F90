@@ -9,7 +9,7 @@
       implicit none
 
       Mat :: A
-      PetscInt :: M, M2, NSubx, dof, overlap, NSub
+      PetscInt :: M, M2, NSubx, dof, overlap, NSub,i1
       PetscInt :: I, J
       PetscMPIInt :: size
       PetscErrorCode :: ierr
@@ -22,7 +22,8 @@
       PetscCallMPIA(MPI_Comm_size(PETSC_COMM_WORLD, size, ierr))
       M = 16
       M2 = M*M
-      PetscCallA(MatCreateAIJ(PETSC_COMM_WORLD, PETSC_DECIDE, PETSC_DECIDE, M2, M2, PETSC_DEFAULT_INTEGER, PETSC_NULL_INTEGER, PETSC_DEFAULT_INTEGER, PETSC_NULL_INTEGER,A, ierr))
+      i1 = 1
+      PetscCallA(MatCreateFromOptions(PETSC_COMM_WORLD, PETSC_NULL_CHARACTER,i1, PETSC_DECIDE, PETSC_DECIDE, M2, M2,A, ierr))
       DO I=1,M2
          DO J=1,M2
             v = I*J

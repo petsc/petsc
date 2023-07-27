@@ -3095,14 +3095,14 @@ PetscErrorCode MatMPIBAIJSetPreallocation(Mat B, PetscInt bs, PetscInt d_nz, con
   Level: intermediate
 
   Notes:
+  It is recommended that one use `MatCreateFromOptions()` or the `MatCreate()`, `MatSetType()` and/or `MatSetFromOptions()`,
+  MatXXXXSetPreallocation() paradigm instead of this routine directly.
+  [MatXXXXSetPreallocation() is, for example, `MatSeqBAIJSetPreallocation()`]
+
   For good matrix assembly performance
   the user should preallocate the matrix storage by setting the parameters
   `d_nz` (or `d_nnz`) and `o_nz` (or `o_nnz`).  By setting these parameters accurately,
   performance can be increased by more than a factor of 50.
-
-  It is recommended that one use the `MatCreate()`, `MatSetType()` and/or `MatSetFromOptions()`,
-  MatXXXXSetPreallocation() paradigm instead of this routine directly.
-  [MatXXXXSetPreallocation() is, for example, `MatSeqBAIJSetPreallocation()`]
 
   If the *_nnz parameter is given then the *_nz parameter is ignored
 

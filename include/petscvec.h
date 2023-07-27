@@ -127,6 +127,7 @@ PETSC_EXTERN PetscErrorCode VecInitializePackage(void);
 PETSC_EXTERN PetscErrorCode VecFinalizePackage(void);
 
 PETSC_EXTERN PetscErrorCode VecCreate(MPI_Comm, Vec *);
+PETSC_EXTERN PetscErrorCode VecCreateFromOptions(MPI_Comm, const char *, PetscInt, PetscInt, PetscInt, Vec *);
 PETSC_EXTERN PetscErrorCode VecCreateSeq(MPI_Comm, PetscInt, Vec *);
 PETSC_EXTERN PetscErrorCode VecCreateMPI(MPI_Comm, PetscInt, PetscInt, Vec *);
 PETSC_EXTERN PetscErrorCode VecCreateSeqWithArray(MPI_Comm, PetscInt, PetscInt, const PetscScalar[], Vec *);

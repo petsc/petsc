@@ -126,7 +126,7 @@ int main(int argc, char **argv)
   PetscCall(TaoSetObjectiveAndGradient(tao, NULL, FormFunctionGradient, (void *)&user));
 
   PetscCall(VecGetLocalSize(x, &m));
-  PetscCall(MatCreateAIJ(MPI_COMM_WORLD, m, m, N, N, 7, NULL, 3, NULL, &(user.H)));
+  PetscCall(DMCreateMatrix(user.dm, &user.H));
   PetscCall(MatSetOption(user.H, MAT_SYMMETRIC, PETSC_TRUE));
 
   PetscCall(DMGetLocalToGlobalMapping(user.dm, &isltog));

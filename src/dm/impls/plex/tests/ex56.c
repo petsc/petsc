@@ -218,14 +218,14 @@ static PetscErrorCode VertexCoordinatesToAll(DM dm, IS vertices, Vec *allCoords)
   if (vertices) {
     PetscCall(DMGetCoordinatesLocalTuple(dm, vertices, NULL, &coords));
   } else {
-    PetscCall(VecCreateSeq(PETSC_COMM_SELF, 0, &coords));
+    PetscCall(VecCreateFromOptions(PETSC_COMM_SELF, NULL, 1, 0, 0, &coords));
   }
   {
     PetscInt n;
     Vec      mpivec;
 
     PetscCall(VecGetLocalSize(coords, &n));
-    PetscCall(VecCreateMPI(comm, n, PETSC_DECIDE, &mpivec));
+    PetscCall(VecCreateFromOptions(comm, NULL, 1, n, PETSC_DECIDE, &mpivec));
     PetscCall(VecCopy(coords, mpivec));
     PetscCall(VecDestroy(&coords));
     coords = mpivec;

@@ -55,6 +55,41 @@ PetscErrorCode VecCreate(MPI_Comm comm, Vec *vec)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@C
+  VecCreateFromOptions - Creates a vector whose type is set from the options database
+
+  Collective
+
+  Input Parameters:
++ comm   - The communicator for the vector object
+. prefix - [optional] prefix for the options database
+. bs     - the block size (commonly 1)
+. m      - the local size (or `PETSC_DECIDE`)
+- n      - the global size (or `PETSC_DETERMINE`)
+
+  Output Parameter:
+. vec - The vector object
+
+  Options Database Keys:
+. -vec_type - see `VecType`, for example `seq`, `mpi`, `cuda`, defaults to `mpi`
+
+  Level: beginner
+
+.seealso: [](ch_vectors), `Vec`, `VecSetType()`, `VecSetSizes()`, `VecCreateMPIWithArray()`, `VecCreateMPI()`, `VecDuplicate()`,
+          `VecDuplicateVecs()`, `VecCreateGhost()`, `VecCreateSeq()`, `VecPlaceArray()`, `VecCreate()`, `VecType`
+@*/
+PetscErrorCode VecCreateFromOptions(MPI_Comm comm, const char *prefix, PetscInt bs, PetscInt m, PetscInt n, Vec *vec)
+{
+  PetscFunctionBegin;
+  PetscAssertPointer(vec, 6);
+  PetscCall(VecCreate(comm, vec));
+  if (prefix) PetscCall(VecSetOptionsPrefix(*vec, prefix));
+  PetscCall(VecSetBlockSize(*vec, bs));
+  PetscCall(VecSetSizes(*vec, m, n));
+  PetscCall(VecSetFromOptions(*vec));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 /* Create a vector with the given layout.  The reference count of the input layout will be increased by 1 */
 PetscErrorCode VecCreateWithLayout_Private(PetscLayout map, Vec *vec)
 {

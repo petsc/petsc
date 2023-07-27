@@ -98,6 +98,46 @@ PetscErrorCode MatCreate(MPI_Comm comm, Mat *A)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@C
+  MatCreateFromOptions - Creates a matrix whose type is set from the options database
+
+  Collective
+
+  Input Parameters:
++ comm   - MPI communicator
+. prefix - [optional] prefix for the options database
+. bs     - the blocksize (commonly 1)
+. m      - the local number of rows (or `PETSC_DECIDE`)
+. n      - the local number of columns (or `PETSC_DECIDE` or `PETSC_DETERMINE`)
+. M      - the global number of rows (or `PETSC_DETERMINE`)
+- N      - the global number of columns (or `PETSC_DETERMINE`)
+
+  Output Parameter:
+. A - the matrix
+
+  Options Database Key:
+. -mat_type - see `MatType`, for example `aij`, `aijcusparse`, `baij`, `sbaij`, dense, defaults to `aij`
+
+  Level: beginner
+
+.seealso: [](ch_matrices), `Mat`, `MatCreateSeqAIJ()`, `MatCreateAIJ()`,
+          `MatCreateSeqDense()`, `MatCreateDense()`,
+          `MatCreateSeqBAIJ()`, `MatCreateBAIJ()`,
+          `MatCreateSeqSBAIJ()`, `MatCreateSBAIJ()`,
+          `MatConvert()`, `MatCreate()`
+@*/
+PetscErrorCode MatCreateFromOptions(MPI_Comm comm, const char *prefix, PetscInt bs, PetscInt m, PetscInt n, PetscInt M, PetscInt N, Mat *A)
+{
+  PetscFunctionBegin;
+  PetscAssertPointer(A, 8);
+  PetscCall(MatCreate(comm, A));
+  if (prefix) PetscCall(MatSetOptionsPrefix(*A, prefix));
+  PetscCall(MatSetBlockSize(*A, bs));
+  PetscCall(MatSetSizes(*A, m, n, M, N));
+  PetscCall(MatSetFromOptions(*A));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 /*@
   MatSetErrorIfFailure - Causes `Mat` to generate an immediate error, for example a zero pivot, is detected.
 

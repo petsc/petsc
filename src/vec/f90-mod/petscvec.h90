@@ -17,7 +17,7 @@
           type(*) :: larray(:)
           PetscErrorCode :: ierr
         end Subroutine PetscSFBcastEnd
-              
+
       subroutine PetscSFReduceBegin(sf,unit,larray,rarray,op,ierr)
           import tPetscSF
           PetscSF :: sf
@@ -142,6 +142,19 @@
        end subroutine
       end Interface
 
+      Interface
+      subroutine VecCreateFromOptions(a,b,c,d,e,f,z)
+      import tVec
+       MPI_Comm a
+       character(*) b
+       PetscInt c
+       PetscInt d
+       PetscInt e
+       Vec f
+       PetscErrorCode z
+       end subroutine
+      End Interface
+
       Interface VecCreateSeqWithArray
         subroutine VecCreateSeqWithArray0(a,b,c,d,e,z)
           import tVec
@@ -162,7 +175,6 @@
           PetscErrorCode z
         end subroutine
       end Interface
-
 
       Interface VecSetValuesLocal
         subroutine VecSetValuesLocal0(a,b,c,d,e,z)

@@ -141,7 +141,7 @@
 !     for preallocating matrix memory.
 !
       PetscCallA(VecGetLocalSize(X,m,ierr))
-      PetscCallA(MatCreateAIJ(comm,m,m,N,N,ifive,PETSC_NULL_INTEGER,ithree,PETSC_NULL_INTEGER,B,ierr))
+      PetscCallA(MatCreateFromOptions(comm,PETSC_NULL_CHARACTER,one,m,m,N,N,B,ierr))
 
 !  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !     if usemf is on then matrix vector product is done via matrix-free
