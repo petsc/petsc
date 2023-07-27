@@ -1,4 +1,4 @@
-# -*- mode: makefile -*-
+# -*- mode: makefile-gmake -*-
 #
 #    Contains rules that work on a single directory (which are called from $PETSC_DIR/makefile) to
 #       *  generate .md files for manual pages from comments in the source code using Sowing

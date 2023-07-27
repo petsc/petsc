@@ -1,4 +1,4 @@
-# -*- mode: makefile -*-
+# -*- mode: makefile-gmake -*-
 #
 #    Contains rules for building PETSc application codes (not PETSc libraries).
 #      * for example, make ex1
@@ -200,7 +200,7 @@ else
 endif
 
 # Why do we filter out -fvisibility=hidden? See comments in gmakefile.test on PETSC_COMPILE.kokkos.cxx
-PETSC_KOKKOSCOMPILE_SINGLE = $(filter-out -fvisibility=hidden,$(KOKKOS_COMPILE_SINGLE))
+PETSC_KOKKOSCOMPILE_SINGLE = $(filter-out -fvisibility=hidden,$(subst -Xcompiler -fvisibility=hidden ,,$(strip $(KOKKOS_COMPILE_SINGLE))))
 
 LINK.hip.cpp = $(HIPC) $(HIPC_FLAGS) $(HIPPP_FLAGS) $(HIPOPTFLAGS) $(CXXFLAGS) $(CXXCPPFLAGS) $(LDFLAGS) $(MPICXX_INCLUDES) $(MPICXX_LIBS)
 

@@ -48,7 +48,7 @@ class Configure(config.package.Package):
 
     self.pushLanguage('Cxx')
     cxx = self.getCompiler()
-    cxxflags = self.getCompilerFlags()
+    cxxflags = self.updatePackageCxxFlags(self.getCompilerFlags())
     cxxflags = cxxflags.replace('-fvisibility=hidden','')
     cxxflags = cxxflags.replace('-std=gnu++14','-std=c++14')
     ldflags = self.setCompilers.LIBS + ' ' + self.setCompilers.LDFLAGS
@@ -64,7 +64,7 @@ class Configure(config.package.Package):
     if with_gpu:
       self.pushLanguage('CUDA')
       nvcc = self.getCompiler()
-      nvopts = self.getCompilerFlags()
+      nvopts = self.updatePackageCUDAFlags(self.getCompilerFlags())
       self.popLanguage()
       self.getExecutable(nvcc,getFullPath=1,resultName='systemNvcc',setMakeMacro=0)
       if hasattr(self,'systemNvcc'):
