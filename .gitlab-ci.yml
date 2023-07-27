@@ -142,6 +142,12 @@ c99-mlib-static-py:
     MAKE_TEST_FFLAGS: -Werror -std=f2008
     LOAD_MODULES: gcc/12.1.0 mpich/4.1-gcc-12.1.0
 
+clang-uni:
+  extends: .stage-1
+  variables:
+    CONFIG_OPTS: --with-cc=clang --with-cxx=clang++ --with-mpi=0
+    TEST_SEARCH: snes_tutorials-ex48%
+
 petsc4py-install:
   extends: .stage-2
   tags:
