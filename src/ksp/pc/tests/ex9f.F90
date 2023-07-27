@@ -130,7 +130,6 @@
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
       PetscCallA(KSPSolve(ksp,b,x,ierr))
-      PetscCallA(PetscLogStagePop(ierr))
 
 !  View solver info; we could instead use the option -ksp_view
 

@@ -846,9 +846,7 @@ PetscErrorCode PetscViewerFileSetName_ASCII(PetscViewer viewer, const char name[
       PetscCheck(vascii->fd, PETSC_COMM_SELF, PETSC_ERR_FILE_OPEN, "Cannot open PetscViewer file: %s due to \"%s\"", fname, strerror(errno));
     }
   }
-#if defined(PETSC_USE_LOG)
   PetscCall(PetscLogObjectState((PetscObject)viewer, "File: %s", name));
-#endif
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

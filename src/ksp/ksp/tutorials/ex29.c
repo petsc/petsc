@@ -82,10 +82,8 @@ int main(int argc, char **argv)
     PetscCall(KSPSetDMActive(ksp, PETSC_FALSE));
     PetscCall(KSPSolve(ksp, b, x));
     {
-#if defined(PETSC_USE_LOG)
       PetscLogStage stage;
-#endif
-      PetscInt i, n = 20;
+      PetscInt      i, n = 20;
 
       PetscCall(PetscLogStageRegister("Solve only", &stage));
       PetscCall(PetscLogStagePush(stage));

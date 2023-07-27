@@ -1,0 +1,15 @@
+Log handler type is: ex7
+[0:time_removed:PetscLogHandlerStagePush_Ex7     ] Pushing initial stage "Main Stage"
+[0:time_removed:PetscLogHandlerEventBegin_Ex7    ] Event "Event 1" started: now running 1 times
+[0:time_removed:PetscLogHandlerStagePush_Ex7     ] Pushing stage stage "Stage 1" (replacing "Main Stage")
+[0:time_removed:PetscLogHandlerEventBegin_Ex7    ] Event "Event 2" started: now running 1 times
+[0:time_removed:PetscLogHandlerEventSync_Ex7     ] Event "Event 1" synced: took 6.13e-07 seconds
+[0:time_removed:PetscLogHandlerEventBegin_Ex7    ] Event "Event 1" started: now running 2 times
+[0:time_removed:PetscLogHandlerLogObjectState_Ex7] Logged state for "User Container": Created at 2.544994e+03
+[0:time_removed:PetscLogHandlerEventEnd_Ex7      ] Event "Event 1" stopped: now running 1 times
+[0:time_removed:PetscLogHandlerEventEnd_Ex7      ] Event "Event 2" stopped: now running 0 times
+[0:time_removed:PetscLogHandlerStagePop_Ex7      ] Popping stage "Stage 1" (back to "Main Stage")
+[0:time_removed:PetscLogHandlerEventEnd_Ex7      ] Event "Event 1" stopped: now running 0 times
+[0:time_removed:PetscLogHandlerStagePop_Ex7      ] Popping initial stage "Main Stage"
+2 events were seen by the handler
+1 object(s) were created and 1 object(s) were destroyed

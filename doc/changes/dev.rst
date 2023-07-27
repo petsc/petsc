@@ -31,8 +31,51 @@ Changes: Development
 - Remove deprecated ``-malloc_info`` startup option
 - Remove deprecated ``-log_summary`` option
 - Remove ``PetscURLShorten()``, it has not worked since 2019
+- Move ``PetscIntStackCreate()``, ``PetscIntStackDestroy()``, ``PetscIntStackPush()``, ``PetscIntStackPop()``, and ``PetscIntStackEmpty()`` declarations to public API in `petsclog.h`
 
 .. rubric:: Event Logging:
+
+- Add ``PetscLogState`` interface for describing profiling events and stages
+- Add ``PetscLogHandler`` interface that interprets the profiling events of a ``PetscLogState``
+- Add ``PETSCLOGHANDLERDEFAULT`` implementation of ``PetscLogHandler``
+- Add ``PETSCLOGHANDLERNESTED`` implementation of ``PetscLogHandler``
+- Add ``PETSCLOGHANDLERTRACE`` implementation of ``PetscLogHandler``
+- Add ``PetscLogHandlerCreateTrace()``
+- Add ``PETSCLOGHANDLERMPE`` implementation of ``PetscLogHandler``
+- Add ``PETSCLOGHANDLERPERFSTUBS`` implementation of ``PetscLogHandler``
+- Add ``PETSCLOGHANDLERLEGACY`` implementation of ``PetscLogHandler``
+- Add ``PetscLogHandlerCreateLegacy()``
+- Add ``PetscLogPerfstubsBegin()`` for log handling with PerfStubs/TAU
+- Add ``PetscLogLegacyCallbacksBegin()`` to transition old log handler callbacks to the ``PetscLogHandler``-based approach
+- Add ``PetscLogHandlerStart()`` to connect a ``PetscLogHandler`` to PETSc's global logging events
+- Add ``PetscLogStageGetName()``
+- Add ``PetscLogEventGetName()``
+- Add ``PetscLogEventsPause()`` and ``PetscLogEventsResume()`` to isolate a logging event from unrelated in-process events
+- Add ``PetscLogClassGetClassId()``
+- Add ``PetscLogClassIdGetName()``
+- Deprecate ``PetscLogClassPerfInfoClear()` , ``PetscLogClassPerfLogCreate()``, and ``PetscLogClassPerfLogDestroy()``
+- Deprecate ``PetscClassPerfLogEnsureSize()``, ``PetscClassRegInfoDestroy()``, ``PetscClassRegLogCreate()``, ``PetscClassRegLogDestroy()``, ``PetscClassRegLogGetClass()``, and ``PetscClassRegLogRegister()``
+- Deprecate ``PetscEventPerfInfoClear()`` and ``PetscEventPerfInfoCopy()``
+- Deprecate ``PetscEventPerfLogActivate()``, ``PetscEventPerfLogActivateClass()``, ``PetscEventPerfLogCreate()``, ``PetscEventPerfLogDeactivate()``, ``PetscEventPerfLogDeactivateClass()``, ``PetscEventPerfLogDeactivatePop()``, ``PetscEventPerfLogDeactivatePush()``, ``PetscEventPerfLogDestroy()``, ``PetscEventPerfLogEnsureSize()``, ``PetscEventPerfLogGetVisible()``, and ``PetscEventPerfLogSetVisible()``
+- Deprecate ``PetscEventRegLogCreate()``, ``PetscEventRegLogDestroy()``, ``PetscEventRegLogGetEvent()``, and ``PetscEventRegLogRegister()``
+- Deprecate ``PetscStageLogCreate()``, ``PetscStageLogDestroy()``, ``PetscStageLogGetActive()``, ``PetscStageLogGetClassPerfLog()``, ``PetscStageLogGetClassRegLog()``, ``PetscStageLogGetEventRegLog()``, ``PetscStageLogGetStage()``, ``PetscStageLogGetVisible()``, ``PetscStageLogPop()``, ``PetscStageLogPush()``, ``PetscStageLogRegister()``, ``PetscStageLogSetActive()``, ``PetscStageLogSetVisible()``, ``PetscStageLogGetCurrent()``, and ``PetscStageLogGetEventPerfLog()``
+- Deprecate ``PetscLogGetStageLog()``
+- Deprecate ``PetscLogPushCurrentEvent_Internal()``
+- Deprecate ``PetscLogPopCurrentEvent_Internal()``
+- Deprecate ``PetscLogAllBegin()``
+- Deprecate ``PetscLogSet()``
+- Add ``PetscLogHandlerGetEventPerfInfo()``
+- Add ``PetscLogHandlerSetLogActions()``
+- Add ``PetscLogHandlerSetLogObjects()``
+- Add ``PetscLogHandlerLogObjectState()``
+- Add ``PetscLogHandlerGetNumObjects()``
+- Add ``PetscLogHandlerEventDeactivatePush()``
+- Add ``PetscLogHandlerEventDeactivatePop()``
+- Add ``PetscLogHandlerEventsPause()``
+- Add ``PetscLogHandlerEventsResume()``
+- Add ``PetscLogHandlerDump()``
+- Add ``PetscLogHandlerStageSetVisible()``
+- Add ``PetscLogHandlerStageGetVisible()``
 
 .. rubric:: PetscViewer:
 

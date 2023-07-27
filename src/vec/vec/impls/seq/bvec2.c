@@ -726,9 +726,7 @@ PetscErrorCode VecDestroy_Seq(Vec v)
   Vec_Seq *vs = (Vec_Seq *)v->data;
 
   PetscFunctionBegin;
-#if defined(PETSC_USE_LOG)
   PetscCall(PetscLogObjectState((PetscObject)v, "Length=%" PetscInt_FMT, v->map->n));
-#endif
   if (vs) PetscCall(PetscFree(vs->array_allocated));
   PetscCall(VecResetPreallocationCOO_Seq(v));
   PetscCall(PetscObjectComposeFunction((PetscObject)v, "PetscMatlabEnginePut_C", NULL));

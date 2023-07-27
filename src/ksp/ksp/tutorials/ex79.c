@@ -15,20 +15,17 @@ PetscErrorCode MatApply(PC pc, Mat X, Mat Y)
 
 int main(int argc, char **args)
 {
-  Mat       A, X, B; /* computed solutions and RHS */
-  KSP       ksp;     /* linear solver context */
-  PC        pc;      /* preconditioner context */
-  PetscInt  m = 10;
-  PetscBool flg, transpose = PETSC_FALSE;
-#if defined(PETSC_USE_LOG)
-  PetscLogEvent event;
-#endif
+  Mat                A, X, B; /* computed solutions and RHS */
+  KSP                ksp;     /* linear solver context */
+  PC                 pc;      /* preconditioner context */
+  PetscInt           m = 10;
+  PetscBool          flg, transpose = PETSC_FALSE;
+  PetscLogEvent      event;
   PetscEventPerfInfo info;
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &args, NULL, help));
-  PetscCall(PetscLogIsActive(&flg));
-  if (!flg) PetscCall(PetscLogDefaultBegin());
+  PetscCall(PetscLogDefaultBegin());
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-m", &m, NULL));
   PetscCall(MatCreateAIJ(PETSC_COMM_WORLD, m, m, PETSC_DECIDE, PETSC_DECIDE, m, NULL, m, NULL, &A));
   PetscCall(MatSetRandom(A, NULL));

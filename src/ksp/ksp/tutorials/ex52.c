@@ -43,11 +43,9 @@ int main(int argc, char **args)
 #if defined(PETSC_HAVE_STRUMPACK)
   PetscBool flg_strumpack = PETSC_FALSE;
 #endif
-  PetscScalar v;
-  PetscMPIInt rank, size;
-#if defined(PETSC_USE_LOG)
+  PetscScalar   v;
+  PetscMPIInt   rank, size;
   PetscLogStage stage;
-#endif
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &args, (char *)0, help));

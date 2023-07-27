@@ -27,9 +27,7 @@ int main(int argc, char **argv)
   char               testName[64] = "VecMDot"; // By default, test VecMDot
   PetscBool          testMDot, testMAXPY;
   PetscRandom        rnd;
-#if defined(PETSC_USE_LOG)
-  PetscLogStage stage1;
-#endif
+  PetscLogStage      stage1;
   // clang-format off
   // Try vectors of these (local) sizes. The max is very close to 2^31
   PetscInt  Ns[]  = {128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768,

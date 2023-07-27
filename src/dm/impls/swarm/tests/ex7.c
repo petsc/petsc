@@ -215,18 +215,16 @@ static PetscErrorCode maxwellian(PetscInt dim, const PetscReal x[], PetscReal kt
 #define MAX_NUM_THRDS 12
 PetscErrorCode go()
 {
-  DM        dm_t[MAX_NUM_THRDS], sw_t[MAX_NUM_THRDS];
-  PetscFE   fe;
-  PetscInt  dim = 2, Nc = 1, i, faces[3];
-  PetscInt  Np[2] = {10, 10}, Np2[2], field = 0, target = 0, Np_t[MAX_NUM_THRDS];
-  PetscReal moments_0[3], moments_1[3], vol = 1;
-  PetscReal lo[3] = {-5, 0, -5}, hi[3] = {5, 5, 5}, h[3], hp[3], *xx_t[MAX_NUM_THRDS], *yy_t[MAX_NUM_THRDS], *wp_t[MAX_NUM_THRDS];
-  Vec       rho_t[MAX_NUM_THRDS], rhs_t[MAX_NUM_THRDS];
-  Mat       M_p_t[MAX_NUM_THRDS];
-#if defined PETSC_USE_LOG
+  DM            dm_t[MAX_NUM_THRDS], sw_t[MAX_NUM_THRDS];
+  PetscFE       fe;
+  PetscInt      dim = 2, Nc = 1, i, faces[3];
+  PetscInt      Np[2] = {10, 10}, Np2[2], field = 0, target = 0, Np_t[MAX_NUM_THRDS];
+  PetscReal     moments_0[3], moments_1[3], vol = 1;
+  PetscReal     lo[3] = {-5, 0, -5}, hi[3] = {5, 5, 5}, h[3], hp[3], *xx_t[MAX_NUM_THRDS], *yy_t[MAX_NUM_THRDS], *wp_t[MAX_NUM_THRDS];
+  Vec           rho_t[MAX_NUM_THRDS], rhs_t[MAX_NUM_THRDS];
+  Mat           M_p_t[MAX_NUM_THRDS];
   PetscLogStage stage;
   PetscLogEvent swarm_create_ev, solve_ev, solve_loop_ev;
-#endif
 #if defined(PETSC_HAVE_OPENMP) && defined(PETSC_HAVE_THREADSAFETY)
   PetscInt numthreads = PetscNumOMPThreads;
 #else

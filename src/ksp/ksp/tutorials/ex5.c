@@ -18,19 +18,17 @@ also uses multiple profiling stages.  Input arguments are\n\
 
 int main(int argc, char **args)
 {
-  KSP         ksp;         /* linear solver context */
-  Mat         C;           /* matrix */
-  Vec         x, u, b;     /* approx solution, RHS, exact solution */
-  PetscReal   norm, bnorm; /* norm of solution error */
-  PetscScalar v, none = -1.0;
-  PetscInt    Ii, J, ldim, low, high, iglobal, Istart, Iend;
-  PetscInt    i, j, m = 3, n = 2, its;
-  PetscMPIInt size, rank;
-  PetscBool   mat_nonsymmetric = PETSC_FALSE;
-  PetscBool   testnewC = PETSC_FALSE, testscaledMat = PETSC_FALSE, single = PETSC_FALSE;
-#if defined(PETSC_USE_LOG)
+  KSP           ksp;         /* linear solver context */
+  Mat           C;           /* matrix */
+  Vec           x, u, b;     /* approx solution, RHS, exact solution */
+  PetscReal     norm, bnorm; /* norm of solution error */
+  PetscScalar   v, none = -1.0;
+  PetscInt      Ii, J, ldim, low, high, iglobal, Istart, Iend;
+  PetscInt      i, j, m = 3, n = 2, its;
+  PetscMPIInt   size, rank;
+  PetscBool     mat_nonsymmetric = PETSC_FALSE;
+  PetscBool     testnewC = PETSC_FALSE, testscaledMat = PETSC_FALSE, single = PETSC_FALSE;
   PetscLogStage stages[2];
-#endif
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &args, (char *)0, help));

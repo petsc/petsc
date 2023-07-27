@@ -4,10 +4,8 @@ static char help[] = "Benchmark DMPlexInterpolate.\n\n";
 
 int main(int argc, char **argv)
 {
-  DM dm, dm2;
-#if defined(PETSC_USE_LOG)
+  DM            dm, dm2;
   PetscLogStage stage;
-#endif
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));

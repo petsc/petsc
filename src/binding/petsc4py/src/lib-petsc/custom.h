@@ -33,117 +33,84 @@ PETSC_EXTERN PetscErrorCode (*PetscPythonMonitorSet_C)(PetscObject,const char*);
 
 /* ---------------------------------------------------------------- */
 
-#if !defined(PETSC_USE_LOG)
-static PetscStageLog petsc_stageLog = NULL;
-#endif
-
-#define PetscCLASSID(stageLog,index) \
-        ((stageLog)->classLog->classInfo[(index)].classid)
-
 static
 PetscErrorCode PetscLogStageFindId(const char name[], PetscLogStage *stageid)
 {
-  int           s;
-  PetscStageLog stageLog = 0;
-  PetscBool     match    = PETSC_FALSE;
+  PetscLogState log_state = NULL;
 
   PetscFunctionBegin;
   PetscAssertPointer(name,1);
   PetscAssertPointer(stageid,2);
   *stageid = -1;
-  if (!(stageLog=petsc_stageLog)) PetscFunctionReturn(PETSC_SUCCESS); /* logging is off ? */
-  for (s = 0; s < stageLog->numStages; s++) {
-    const char *sname = stageLog->stageInfo[s].name;
-    PetscCall(PetscStrcasecmp(sname, name, &match));
-    if (match) { *stageid = s; break; }
-  }
+  if (!(log_state = petsc_log_state)) PetscFunctionReturn(PETSC_SUCCESS); /* logging is off ? */
+  PetscCall(PetscLogStageGetId(name, stageid));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static
 PetscErrorCode PetscLogClassFindId(const char name[], PetscClassId *classid)
 {
-  int           c;
-  PetscStageLog stageLog = 0;
-  PetscBool     match    = PETSC_FALSE;
+  PetscLogState log_state = NULL;
 
   PetscFunctionBegin;
   PetscAssertPointer(name,1);
   PetscAssertPointer(classid,2);
   *classid = -1;
-  if (!(stageLog=petsc_stageLog)) PetscFunctionReturn(PETSC_SUCCESS); /* logging is off ? */
-  for (c = 0; c < stageLog->classLog->numClasses; c++) {
-    const char *cname = stageLog->classLog->classInfo[c].name;
-    PetscClassId id = PetscCLASSID(stageLog,c);
-    PetscCall(PetscStrcasecmp(cname, name, &match));
-    if (match) { *classid = id; break; }
-  }
+  if (!(log_state = petsc_log_state)) PetscFunctionReturn(PETSC_SUCCESS); /* logging is off ? */
+  PetscCall(PetscLogClassGetClassId(name, classid));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static
 PetscErrorCode PetscLogEventFindId(const char name[], PetscLogEvent *eventid)
 {
-  int           e;
-  PetscStageLog stageLog = 0;
-  PetscBool     match    = PETSC_FALSE;
+  PetscLogState log_state = NULL;
 
   PetscFunctionBegin;
   PetscAssertPointer(name,1);
   PetscAssertPointer(eventid,2);
   *eventid = -1;
-  if (!(stageLog=petsc_stageLog)) PetscFunctionReturn(PETSC_SUCCESS); /* logging is off ? */
-  for (e = 0; e < stageLog->eventLog->numEvents; e++) {
-    const char *ename = stageLog->eventLog->eventInfo[e].name;
-    PetscCall(PetscStrcasecmp(ename, name, &match));
-    if (match) { *eventid = e; break; }
-  }
+  if (!(log_state = petsc_log_state)) PetscFunctionReturn(PETSC_SUCCESS); /* logging is off ? */
+  PetscCall(PetscLogEventGetId(name, eventid));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static
 PetscErrorCode PetscLogStageFindName(PetscLogStage stageid, const char *name[])
 {
-  PetscStageLog stageLog = 0;
+  PetscLogState log_state = NULL;
+
   PetscFunctionBegin;
   PetscAssertPointer(name,3);
-  *name = 0;
-  if (!(stageLog=petsc_stageLog)) PetscFunctionReturn(PETSC_SUCCESS); /* logging is off ? */
-  if (stageid >=0 && stageid < stageLog->numStages) {
-    *name  = stageLog->stageInfo[stageid].name;
-  }
+  *name = NULL;
+  if (!(log_state = petsc_log_state)) PetscFunctionReturn(PETSC_SUCCESS); /* logging is off ? */
+  PetscCall(PetscLogStageGetName(stageid, name));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static
 PetscErrorCode PetscLogClassFindName(PetscClassId classid, const char *name[])
 {
-  int           c;
-  PetscStageLog stageLog = 0;
+  PetscLogState log_state = NULL;
+
   PetscFunctionBegin;
   PetscAssertPointer(name,3);
   *name = 0;
-  if (!(stageLog=petsc_stageLog)) PetscFunctionReturn(PETSC_SUCCESS); /* logging is off ? */
-  for (c = 0; c < stageLog->classLog->numClasses; c++) {
-    if (classid == PetscCLASSID(stageLog,c)) {
-      *name  = stageLog->classLog->classInfo[c].name;
-      break;
-    }
-  }
+  if (!(log_state = petsc_log_state)) PetscFunctionReturn(PETSC_SUCCESS); /* logging is off ? */
+  PetscCall(PetscLogClassIdGetName(classid, name));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static
 PetscErrorCode PetscLogEventFindName(PetscLogEvent eventid, const char *name[])
 {
-  PetscStageLog stageLog = 0;
+  PetscLogState log_state = NULL;
+
   PetscFunctionBegin;
   PetscAssertPointer(name,3);
   *name = 0;
-  if (!(stageLog=petsc_stageLog)) PetscFunctionReturn(PETSC_SUCCESS); /* logging is off ? */
-  if (eventid >=0 && eventid < stageLog->eventLog->numEvents) {
-    *name  = stageLog->eventLog->eventInfo[eventid].name;
-  }
+  if (!(log_state = petsc_log_state)) PetscFunctionReturn(PETSC_SUCCESS); /* logging is off ? */
+  PetscCall(PetscLogEventGetName(eventid, name));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

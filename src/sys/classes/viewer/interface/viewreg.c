@@ -168,6 +168,210 @@ PetscErrorCode PetscOptionsGetViewerOff(PetscBool *flg)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+static PetscErrorCode PetscOptionsGetViewers_Single(MPI_Comm comm, const char value[], PetscViewer *viewer, PetscViewerFormat *format)
+{
+  char       *loc0_vtype = NULL, *loc1_fname = NULL, *loc2_fmt = NULL, *loc3_fmode = NULL;
+  PetscInt    cnt;
+  size_t      viewer_string_length;
+  const char *viewers[] = {PETSCVIEWERASCII, PETSCVIEWERBINARY, PETSCVIEWERDRAW, PETSCVIEWERSOCKET, PETSCVIEWERMATLAB, PETSCVIEWERSAWS, PETSCVIEWERVTK, PETSCVIEWERHDF5, PETSCVIEWERGLVIS, PETSCVIEWEREXODUSII, NULL};
+
+  PetscFunctionBegin;
+  PetscCall(PetscStrlen(value, &viewer_string_length));
+  if (!viewer_string_length) {
+    if (format) *format = PETSC_VIEWER_DEFAULT;
+    if (viewer) {
+      PetscCall(PetscViewerASCIIGetStdout(comm, viewer));
+      PetscCall(PetscObjectReference((PetscObject)*viewer));
+    }
+    PetscFunctionReturn(PETSC_SUCCESS);
+  }
+
+  PetscCall(PetscStrallocpy(value, &loc0_vtype));
+  PetscCall(PetscStrchr(loc0_vtype, ':', &loc1_fname));
+  if (loc1_fname) {
+    *loc1_fname++ = 0;
+    PetscCall(PetscStrchr(loc1_fname, ':', &loc2_fmt));
+  }
+  if (loc2_fmt) {
+    *loc2_fmt++ = 0;
+    PetscCall(PetscStrchr(loc2_fmt, ':', &loc3_fmode));
+  }
+  if (loc3_fmode) *loc3_fmode++ = 0;
+  PetscCall(PetscStrendswithwhich(*loc0_vtype ? loc0_vtype : "ascii", viewers, &cnt));
+  PetscCheck(cnt <= (PetscInt)sizeof(viewers) - 1, comm, PETSC_ERR_ARG_OUTOFRANGE, "Unknown viewer type: %s", loc0_vtype);
+  if (viewer) {
+    if (!loc1_fname) {
+      switch (cnt) {
+      case 0:
+        PetscCall(PetscViewerASCIIGetStdout(comm, viewer));
+        break;
+      case 1:
+        if (!(*viewer = PETSC_VIEWER_BINARY_(comm))) PetscCall(PETSC_ERR_PLIB);
+        break;
+      case 2:
+        if (!(*viewer = PETSC_VIEWER_DRAW_(comm))) PetscCall(PETSC_ERR_PLIB);
+        break;
+#if defined(PETSC_USE_SOCKET_VIEWER)
+      case 3:
+        if (!(*viewer = PETSC_VIEWER_SOCKET_(comm))) PetscCall(PETSC_ERR_PLIB);
+        break;
+#endif
+#if defined(PETSC_HAVE_MATLAB)
+      case 4:
+        if (!(*viewer = PETSC_VIEWER_MATLAB_(comm))) PetscCall(PETSC_ERR_PLIB);
+        break;
+#endif
+#if defined(PETSC_HAVE_SAWS)
+      case 5:
+        if (!(*viewer = PETSC_VIEWER_SAWS_(comm))) PetscCall(PETSC_ERR_PLIB);
+        break;
+#endif
+#if defined(PETSC_HAVE_HDF5)
+      case 7:
+        if (!(*viewer = PETSC_VIEWER_HDF5_(comm))) PetscCall(PETSC_ERR_PLIB);
+        break;
+#endif
+      case 8:
+        if (!(*viewer = PETSC_VIEWER_GLVIS_(comm))) PetscCall(PETSC_ERR_PLIB);
+        break;
+#if defined(PETSC_HAVE_EXODUSII)
+      case 9:
+        if (!(*viewer = PETSC_VIEWER_EXODUSII_(comm))) PetscCall(PETSC_ERR_PLIB);
+        break;
+#endif
+      default:
+        SETERRQ(comm, PETSC_ERR_SUP, "Unsupported viewer %s", loc0_vtype);
+      }
+      PetscCall(PetscObjectReference((PetscObject)*viewer));
+    } else {
+      if (loc2_fmt && !*loc1_fname && (cnt == 0)) { /* ASCII format without file name */
+        PetscCall(PetscViewerASCIIGetStdout(comm, viewer));
+        PetscCall(PetscObjectReference((PetscObject)*viewer));
+      } else {
+        PetscFileMode fmode;
+        PetscBool     flag = PETSC_FALSE;
+
+        PetscCall(PetscViewerCreate(comm, viewer));
+        PetscCall(PetscViewerSetType(*viewer, *loc0_vtype ? loc0_vtype : "ascii"));
+        fmode = FILE_MODE_WRITE;
+        if (loc3_fmode && *loc3_fmode) { /* Has non-empty file mode ("write" or "append") */
+          PetscCall(PetscEnumFind(PetscFileModes, loc3_fmode, (PetscEnum *)&fmode, &flag));
+          PetscCheck(flag, comm, PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown file mode: %s", loc3_fmode);
+        }
+        if (loc2_fmt) {
+          PetscBool tk, im;
+          PetscCall(PetscStrcmp(loc1_fname, "tikz", &tk));
+          PetscCall(PetscStrcmp(loc1_fname, "image", &im));
+          if (tk || im) {
+            PetscCall(PetscViewerDrawSetInfo(*viewer, NULL, loc2_fmt, PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE));
+            *loc2_fmt = 0;
+          }
+        }
+        PetscCall(PetscViewerFileSetMode(*viewer, flag ? fmode : FILE_MODE_WRITE));
+        PetscCall(PetscViewerFileSetName(*viewer, loc1_fname));
+        if (*loc1_fname) PetscCall(PetscViewerDrawSetDrawType(*viewer, loc1_fname));
+        PetscCall(PetscViewerSetFromOptions(*viewer));
+      }
+    }
+  }
+  if (viewer) PetscCall(PetscViewerSetUp(*viewer));
+  if (loc2_fmt && *loc2_fmt) {
+    PetscViewerFormat tfmt;
+    PetscBool         flag;
+
+    PetscCall(PetscEnumFind(PetscViewerFormats, loc2_fmt, (PetscEnum *)&tfmt, &flag));
+    if (format) *format = tfmt;
+    PetscCheck(flag, comm, PETSC_ERR_SUP, "Unknown viewer format %s", loc2_fmt);
+  } else if (viewer && (cnt == 6) && format) { /* Get format from VTK viewer */
+    PetscCall(PetscViewerGetFormat(*viewer, format));
+  }
+  PetscCall(PetscFree(loc0_vtype));
+
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode PetscOptionsGetViewers_Internal(MPI_Comm comm, PetscOptions options, const char pre[], const char name[], PetscInt *n_max_p, PetscViewer viewer[], PetscViewerFormat format[], PetscBool *set, const char func_name[], PetscBool allow_multiple)
+{
+  const char *value;
+  PetscBool   flag, hashelp;
+  PetscInt    n_max;
+
+  PetscFunctionBegin;
+  PetscAssertPointer(name, 4);
+  PetscAssertPointer(n_max_p, 5);
+  n_max = *n_max_p;
+  PetscCheck(n_max >= 0, comm, PETSC_ERR_ARG_OUTOFRANGE, "Invalid size %" PetscInt_FMT " of passed arrays", *n_max_p);
+  *n_max_p = 0;
+
+  if (set) *set = PETSC_FALSE;
+  PetscCall(PetscOptionsGetViewerOff(&flag));
+  if (flag) PetscFunctionReturn(PETSC_SUCCESS);
+
+  PetscCall(PetscOptionsHasHelp(NULL, &hashelp));
+  if (hashelp) {
+    PetscBool found;
+
+    if (!PetscOptionsHelpPrintedSingleton) PetscCall(PetscOptionsHelpPrintedCreate(&PetscOptionsHelpPrintedSingleton));
+    PetscCall(PetscOptionsHelpPrintedCheck(PetscOptionsHelpPrintedSingleton, pre, name, &found));
+    if (!found && viewer) {
+      PetscCall((*PetscHelpPrintf)(comm, "----------------------------------------\nViewer (-%s%s) options:\n", pre ? pre : "", name + 1));
+      PetscCall((*PetscHelpPrintf)(comm, "  -%s%s ascii[:[filename][:[format][:append]]]: %s (%s)\n", pre ? pre : "", name + 1, "Prints object to stdout or ASCII file", func_name));
+      PetscCall((*PetscHelpPrintf)(comm, "  -%s%s binary[:[filename][:[format][:append]]]: %s (%s)\n", pre ? pre : "", name + 1, "Saves object to a binary file", func_name));
+      PetscCall((*PetscHelpPrintf)(comm, "  -%s%s draw[:[drawtype][:filename|format]] %s (%s)\n", pre ? pre : "", name + 1, "Draws object", func_name));
+      PetscCall((*PetscHelpPrintf)(comm, "  -%s%s socket[:port]: %s (%s)\n", pre ? pre : "", name + 1, "Pushes object to a Unix socket", func_name));
+      PetscCall((*PetscHelpPrintf)(comm, "  -%s%s saws[:communicatorname]: %s (%s)\n", pre ? pre : "", name + 1, "Publishes object to SAWs", func_name));
+      if (allow_multiple) PetscCall((*PetscHelpPrintf)(comm, "  -%s%s v1[,v2,...]: %s (%s)\n", pre ? pre : "", name + 1, "Multiple viewers", func_name));
+    }
+  }
+
+  PetscCall(PetscOptionsFindPair(options, pre, name, &value, &flag));
+  if (flag) {
+    if (set) *set = PETSC_TRUE;
+    if (!value) {
+      PetscCheck(n_max > 0, comm, PETSC_ERR_ARG_SIZ, "More viewers (1) than max available (0)");
+      if (format) *format = PETSC_VIEWER_DEFAULT;
+      if (viewer) {
+        PetscCall(PetscViewerASCIIGetStdout(comm, viewer));
+        PetscCall(PetscObjectReference((PetscObject)*viewer));
+      }
+      *n_max_p = 1;
+    } else {
+      char  *loc0_viewer_string = NULL, *this_viewer_string = NULL;
+      size_t viewer_string_length;
+
+      PetscCall(PetscStrallocpy(value, &loc0_viewer_string));
+      PetscCall(PetscStrlen(loc0_viewer_string, &viewer_string_length));
+      this_viewer_string = loc0_viewer_string;
+
+      do {
+        PetscViewer       *this_viewer;
+        PetscViewerFormat *this_viewer_format;
+        char              *next_viewer_string = NULL;
+        char              *comma_separator    = NULL;
+        PetscInt           n                  = *n_max_p;
+
+        PetscCheck(n < n_max, comm, PETSC_ERR_PLIB, "More viewers than max available (%d)", (int)n_max);
+
+        PetscCall(PetscStrchr(this_viewer_string, ',', &comma_separator));
+        if (comma_separator) {
+          PetscCheck(allow_multiple, comm, PETSC_ERR_ARG_OUTOFRANGE, "Trying to pass multiple viewers to %s: only one allowed.  Use PetscOptionsGetViewers() instead", func_name);
+          *comma_separator   = 0;
+          next_viewer_string = comma_separator + 1;
+        }
+        this_viewer = viewer ? &viewer[n] : NULL;
+        if (this_viewer) *this_viewer = NULL;
+        this_viewer_format = format ? &format[n] : NULL;
+        if (this_viewer_format) *this_viewer_format = PETSC_VIEWER_DEFAULT;
+        PetscCall(PetscOptionsGetViewers_Single(comm, this_viewer_string, this_viewer, this_viewer_format));
+        this_viewer_string = next_viewer_string;
+        (*n_max_p)++;
+      } while (this_viewer_string);
+      PetscCall(PetscFree(loc0_viewer_string));
+    }
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 /*@C
   PetscOptionsGetViewer - Gets a viewer appropriate for the type indicated by the user
 
@@ -215,147 +419,50 @@ PetscErrorCode PetscOptionsGetViewerOff(PetscBool *flg)
 @*/
 PetscErrorCode PetscOptionsGetViewer(MPI_Comm comm, PetscOptions options, const char pre[], const char name[], PetscViewer *viewer, PetscViewerFormat *format, PetscBool *set)
 {
-  const char *value;
-  PetscBool   flag, hashelp;
+  PetscInt  n_max = 1;
+  PetscBool set_internal;
 
   PetscFunctionBegin;
-  PetscAssertPointer(name, 4);
-
   if (viewer) *viewer = NULL;
   if (format) *format = PETSC_VIEWER_DEFAULT;
-  if (set) *set = PETSC_FALSE;
-  PetscCall(PetscOptionsGetViewerOff(&flag));
-  if (flag) PetscFunctionReturn(PETSC_SUCCESS);
+  PetscCall(PetscOptionsGetViewers_Internal(comm, options, pre, name, &n_max, viewer, format, &set_internal, PETSC_FUNCTION_NAME, PETSC_FALSE));
+  if (set_internal) PetscAssert(n_max == 1, comm, PETSC_ERR_PLIB, "Unexpected: %d != 1 viewers set", (int)n_max);
+  if (set) *set = set_internal;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
 
-  PetscCall(PetscOptionsHasHelp(NULL, &hashelp));
-  if (hashelp) {
-    PetscBool found;
+/*@C
+  PetscOptionsGetViewers - Get multiple viewers from a comma-separated list in the options database
 
-    if (!PetscOptionsHelpPrintedSingleton) PetscCall(PetscOptionsHelpPrintedCreate(&PetscOptionsHelpPrintedSingleton));
-    PetscCall(PetscOptionsHelpPrintedCheck(PetscOptionsHelpPrintedSingleton, pre, name, &found));
-    if (!found && viewer) {
-      PetscCall((*PetscHelpPrintf)(comm, "----------------------------------------\nViewer (-%s%s) options:\n", pre ? pre : "", name + 1));
-      PetscCall((*PetscHelpPrintf)(comm, "  -%s%s ascii[:[filename][:[format][:append]]]: %s (%s)\n", pre ? pre : "", name + 1, "Prints object to stdout or ASCII file", "PetscOptionsGetViewer"));
-      PetscCall((*PetscHelpPrintf)(comm, "  -%s%s binary[:[filename][:[format][:append]]]: %s (%s)\n", pre ? pre : "", name + 1, "Saves object to a binary file", "PetscOptionsGetViewer"));
-      PetscCall((*PetscHelpPrintf)(comm, "  -%s%s draw[:[drawtype][:filename|format]] %s (%s)\n", pre ? pre : "", name + 1, "Draws object", "PetscOptionsGetViewer"));
-      PetscCall((*PetscHelpPrintf)(comm, "  -%s%s socket[:port]: %s (%s)\n", pre ? pre : "", name + 1, "Pushes object to a Unix socket", "PetscOptionsGetViewer"));
-      PetscCall((*PetscHelpPrintf)(comm, "  -%s%s saws[:communicatorname]: %s (%s)\n", pre ? pre : "", name + 1, "Publishes object to SAWs", "PetscOptionsGetViewer"));
-    }
-  }
+  Collective
 
-  if (format) *format = PETSC_VIEWER_DEFAULT;
-  PetscCall(PetscOptionsFindPair(options, pre, name, &value, &flag));
-  if (flag) {
-    if (set) *set = PETSC_TRUE;
-    if (!value) {
-      if (viewer) {
-        PetscCall(PetscViewerASCIIGetStdout(comm, viewer));
-        PetscCall(PetscObjectReference((PetscObject)*viewer));
-      }
-    } else {
-      char       *loc0_vtype = NULL, *loc1_fname = NULL, *loc2_fmt = NULL, *loc3_fmode = NULL;
-      PetscInt    cnt;
-      const char *viewers[] = {PETSCVIEWERASCII, PETSCVIEWERBINARY, PETSCVIEWERDRAW, PETSCVIEWERSOCKET, PETSCVIEWERMATLAB, PETSCVIEWERSAWS, PETSCVIEWERVTK, PETSCVIEWERHDF5, PETSCVIEWERGLVIS, PETSCVIEWEREXODUSII, NULL};
+  Input Parameters:
++ comm    - the communicator to own the viewer
+. options - options database, use `NULL` for default global database
+. pre     - the string to prepend to the name or `NULL`
+. name    - the option one is seeking
+- n_max   - on input: the maximum number of viewers; on output: the number of viewers in the comma-separated list
 
-      PetscCall(PetscStrallocpy(value, &loc0_vtype));
-      PetscCall(PetscStrchr(loc0_vtype, ':', &loc1_fname));
-      if (loc1_fname) {
-        *loc1_fname++ = 0;
-        PetscCall(PetscStrchr(loc1_fname, ':', &loc2_fmt));
-      }
-      if (loc2_fmt) {
-        *loc2_fmt++ = 0;
-        PetscCall(PetscStrchr(loc2_fmt, ':', &loc3_fmode));
-      }
-      if (loc3_fmode) *loc3_fmode++ = 0;
-      PetscCall(PetscStrendswithwhich(*loc0_vtype ? loc0_vtype : "ascii", viewers, &cnt));
-      PetscCheck(cnt <= (PetscInt)sizeof(viewers) - 1, comm, PETSC_ERR_ARG_OUTOFRANGE, "Unknown viewer type: %s", loc0_vtype);
-      if (viewer) {
-        if (!loc1_fname) {
-          switch (cnt) {
-          case 0:
-            PetscCall(PetscViewerASCIIGetStdout(comm, viewer));
-            break;
-          case 1:
-            if (!(*viewer = PETSC_VIEWER_BINARY_(comm))) PetscCall(PETSC_ERR_PLIB);
-            break;
-          case 2:
-            if (!(*viewer = PETSC_VIEWER_DRAW_(comm))) PetscCall(PETSC_ERR_PLIB);
-            break;
-#if defined(PETSC_USE_SOCKET_VIEWER)
-          case 3:
-            if (!(*viewer = PETSC_VIEWER_SOCKET_(comm))) PetscCall(PETSC_ERR_PLIB);
-            break;
-#endif
-#if defined(PETSC_HAVE_MATLAB)
-          case 4:
-            if (!(*viewer = PETSC_VIEWER_MATLAB_(comm))) PetscCall(PETSC_ERR_PLIB);
-            break;
-#endif
-#if defined(PETSC_HAVE_SAWS)
-          case 5:
-            if (!(*viewer = PETSC_VIEWER_SAWS_(comm))) PetscCall(PETSC_ERR_PLIB);
-            break;
-#endif
-#if defined(PETSC_HAVE_HDF5)
-          case 7:
-            if (!(*viewer = PETSC_VIEWER_HDF5_(comm))) PetscCall(PETSC_ERR_PLIB);
-            break;
-#endif
-          case 8:
-            if (!(*viewer = PETSC_VIEWER_GLVIS_(comm))) PetscCall(PETSC_ERR_PLIB);
-            break;
-#if defined(PETSC_HAVE_EXODUSII)
-          case 9:
-            if (!(*viewer = PETSC_VIEWER_EXODUSII_(comm))) PetscCall(PETSC_ERR_PLIB);
-            break;
-#endif
-          default:
-            SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Unsupported viewer %s", loc0_vtype);
-          }
-          PetscCall(PetscObjectReference((PetscObject)*viewer));
-        } else {
-          if (loc2_fmt && !*loc1_fname && (cnt == 0)) { /* ASCII format without file name */
-            PetscCall(PetscViewerASCIIGetStdout(comm, viewer));
-            PetscCall(PetscObjectReference((PetscObject)*viewer));
-          } else {
-            PetscFileMode fmode;
-            PetscCall(PetscViewerCreate(comm, viewer));
-            PetscCall(PetscViewerSetType(*viewer, *loc0_vtype ? loc0_vtype : "ascii"));
-            fmode = FILE_MODE_WRITE;
-            if (loc3_fmode && *loc3_fmode) { /* Has non-empty file mode ("write" or "append") */
-              PetscCall(PetscEnumFind(PetscFileModes, loc3_fmode, (PetscEnum *)&fmode, &flag));
-              PetscCheck(flag, comm, PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown file mode: %s", loc3_fmode);
-            }
-            if (loc2_fmt) {
-              PetscBool tk, im;
-              PetscCall(PetscStrcmp(loc1_fname, "tikz", &tk));
-              PetscCall(PetscStrcmp(loc1_fname, "image", &im));
-              if (tk || im) {
-                PetscCall(PetscViewerDrawSetInfo(*viewer, NULL, loc2_fmt, PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE));
-                *loc2_fmt = 0;
-              }
-            }
-            PetscCall(PetscViewerFileSetMode(*viewer, flag ? fmode : FILE_MODE_WRITE));
-            PetscCall(PetscViewerFileSetName(*viewer, loc1_fname));
-            if (*loc1_fname) PetscCall(PetscViewerDrawSetDrawType(*viewer, loc1_fname));
-            PetscCall(PetscViewerSetFromOptions(*viewer));
-          }
-        }
-      }
-      if (viewer) PetscCall(PetscViewerSetUp(*viewer));
-      if (loc2_fmt && *loc2_fmt) {
-        PetscViewerFormat tfmt;
+  Output Parameters:
++ viewers - an array to hold at least `n_max` `PetscViewer`s, or `NULL` if not needed; on output: if not `NULL`, the
+             first `n_max` entries are initialized `PetscViewer`s
+. formats - an array to hold at least `n_max` `PetscViewerFormat`s, or `NULL` if not needed; on output: if not
+             `NULL`, the first `n_max` entries are valid `PetscViewewFormat`s
+- set     - `PETSC_TRUE` if found, else `PETSC_FALSE`
 
-        PetscCall(PetscEnumFind(PetscViewerFormats, loc2_fmt, (PetscEnum *)&tfmt, &flag));
-        if (format) *format = tfmt;
-        PetscCheck(flag, comm, PETSC_ERR_SUP, "Unknown viewer format %s", loc2_fmt);
-      } else if (viewer && (cnt == 6) && format) { /* Get format from VTK viewer */
-        PetscCall(PetscViewerGetFormat(*viewer, format));
-      }
-      PetscCall(PetscFree(loc0_vtype));
-    }
-  }
+  Level: intermediate
+
+  Note:
+  See `PetscOptionsGetViewer()` for how the format strings for the viewers are interpreted.  Use `PetscViewerDestroy()` on each viewer, otherwise a memory leak will occur.
+
+  If PETSc is configured with `--with-viewfromoptions=0` this function always returns with `n_max` of 0 and `set` of `PETSC_FALSE`
+
+.seealso: [](sec_viewers), `PetscOptionsGetViewer()`
+@*/
+PetscErrorCode PetscOptionsGetViewers(MPI_Comm comm, PetscOptions options, const char pre[], const char name[], PetscInt *n_max, PetscViewer viewers[], PetscViewerFormat formats[], PetscBool *set)
+{
+  PetscFunctionBegin;
+  PetscCall(PetscOptionsGetViewers_Internal(comm, options, pre, name, n_max, viewers, formats, set, PETSC_FUNCTION_NAME, PETSC_TRUE));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

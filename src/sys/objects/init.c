@@ -6,6 +6,7 @@
   what malloc is being used until it has already processed the input.
 */
 #include <petsc/private/petscimpl.h> /*I  "petscsys.h"   I*/
+#include <petsc/private/logimpl.h>
 
 #if defined(PETSC_HAVE_UNISTD_H)
   #include <unistd.h>
@@ -202,9 +203,7 @@ static char                 emacsmachinename[256];
 PetscErrorCode (*PetscExternalVersionFunction)(MPI_Comm) = NULL;
 PetscErrorCode (*PetscExternalHelpFunction)(MPI_Comm)    = NULL;
 
-#if PetscDefined(USE_LOG)
-  #include <petscviewer.h>
-#endif
+#include <petscviewer.h>
 
 /*@C
   PetscSetHelpVersionFunctions - Sets functions that print help and version information
@@ -232,9 +231,7 @@ PetscErrorCode PetscSetHelpVersionFunctions(PetscErrorCode (*help)(MPI_Comm), Pe
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-#if defined(PETSC_USE_LOG)
 PETSC_INTERN PetscBool PetscObjectsLog;
-#endif
 
 PETSC_INTERN PetscErrorCode PetscOptionsCheckInitial_Private(const char help[])
 {
@@ -247,11 +244,6 @@ PETSC_INTERN PetscErrorCode PetscOptionsCheckInitial_Private(const char help[])
   int         i;
   PetscMPIInt rank;
   char        version[256];
-#if defined(PETSC_USE_LOG)
-  char              mname[PETSC_MAX_PATH_LEN];
-  PetscViewerFormat format;
-  PetscBool         flg4 = PETSC_FALSE;
-#endif
 
   PetscFunctionBegin;
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
@@ -304,9 +296,7 @@ PETSC_INTERN PetscErrorCode PetscOptionsCheckInitial_Private(const char help[])
       PetscCall(PetscOptionsGetReal(NULL, NULL, "-malloc_view_threshold", &logthreshold, NULL));
       PetscCall(PetscMallocViewSet(logthreshold));
     }
-  #if defined(PETSC_USE_LOG)
     PetscCall(PetscOptionsGetBool(NULL, NULL, "-log_view_memory", &PetscLogMemory, NULL));
-  #endif
   }
 
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-malloc_coalesce", &flg1, &flg2));
@@ -321,9 +311,7 @@ PETSC_INTERN PetscErrorCode PetscOptionsCheckInitial_Private(const char help[])
   if (flg1) PetscCall(PetscMemorySetGetMaximumUsage());
 #endif
 
-#if defined(PETSC_USE_LOG)
   PetscCall(PetscOptionsHasName(NULL, NULL, "-objects_dump", &PetscObjectsLog));
-#endif
 
   /*
       Set the display variable for graphics
@@ -488,69 +476,82 @@ PETSC_INTERN PetscErrorCode PetscOptionsCheckInitial_Private(const char help[])
   PetscCall(PetscOptionsGetString(NULL, NULL, "-on_error_emacs", emacsmachinename, sizeof(emacsmachinename), &flg1));
   if (flg1 && rank == 0) PetscCall(PetscPushErrorHandler(PetscEmacsClientErrorHandler, emacsmachinename));
 
-    /*
+  /*
         Setup profiling and logging
   */
-#if defined(PETSC_USE_INFO)
-  {
-    PetscCall(PetscInfoSetFromOptions(NULL));
-  }
-#endif
+  if (PetscDefined(USE_LOG)) { PetscCall(PetscInfoSetFromOptions(NULL)); }
   PetscCall(PetscDetermineInitialFPTrap());
   flg1 = PETSC_FALSE;
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-fp_trap", &flg1, &flag));
   if (flag) PetscCall(PetscSetFPTrap(flg1 ? PETSC_FP_TRAP_ON : PETSC_FP_TRAP_OFF));
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-check_pointer_intensity", &intensity, &flag));
   if (flag) PetscCall(PetscCheckPointerSetIntensity(intensity));
-#if defined(PETSC_USE_LOG)
-  mname[0] = 0;
-  PetscCall(PetscOptionsGetString(NULL, NULL, "-history", mname, sizeof(mname), &flg1));
-  if (flg1) {
-    if (mname[0]) {
-      PetscCall(PetscOpenHistoryFile(mname, &petsc_history));
-    } else {
-      PetscCall(PetscOpenHistoryFile(NULL, &petsc_history));
+  if (PetscDefined(USE_LOG)) {
+    char              mname[PETSC_MAX_PATH_LEN];
+    PetscInt          n_max = PETSC_LOG_VIEW_FROM_OPTIONS_MAX;
+    PetscViewerFormat format[PETSC_LOG_VIEW_FROM_OPTIONS_MAX];
+
+    mname[0] = 0;
+    PetscCall(PetscOptionsGetString(NULL, NULL, "-history", mname, sizeof(mname), &flg1));
+    if (flg1) {
+      if (mname[0]) {
+        PetscCall(PetscOpenHistoryFile(mname, &petsc_history));
+      } else {
+        PetscCall(PetscOpenHistoryFile(NULL, &petsc_history));
+      }
+    }
+
+    PetscCall(PetscOptionsGetBool(NULL, NULL, "-log_sync", &PetscLogSyncOn, NULL));
+
+    if (PetscDefined(HAVE_MPE)) {
+      flg1 = PETSC_FALSE;
+      PetscCall(PetscOptionsHasName(NULL, NULL, "-log_mpe", &flg1));
+      if (flg1) PetscCall(PetscLogMPEBegin());
+    }
+    if (PetscDefined(HAVE_TAU_PERFSTUBS)) {
+      flg1 = PETSC_FALSE;
+      PetscCall(PetscOptionsHasName(NULL, NULL, "-log_perfstubs", &flg1));
+      if (flg1) PetscCall(PetscLogPerfstubsBegin());
+    }
+    flg1 = PETSC_FALSE;
+    PetscCall(PetscOptionsGetBool(NULL, NULL, "-log_all", &flg1, NULL));
+    PetscCall(PetscOptionsGetBool(NULL, NULL, "-log", &flg2, NULL));
+    if (flg1 || flg2) PetscCall(PetscLogDefaultBegin());
+
+    PetscCall(PetscOptionsGetString(NULL, NULL, "-log_trace", mname, sizeof(mname), &flg1));
+    if (flg1) {
+      char  name[PETSC_MAX_PATH_LEN], fname[PETSC_MAX_PATH_LEN];
+      FILE *file;
+      if (mname[0]) {
+        PetscCall(PetscSNPrintf(name, PETSC_MAX_PATH_LEN, "%s.%d", mname, rank));
+        PetscCall(PetscFixFilename(name, fname));
+        file = fopen(fname, "w");
+        PetscCheck(file, PETSC_COMM_SELF, PETSC_ERR_FILE_OPEN, "Unable to open trace file: %s", fname);
+      } else file = PETSC_STDOUT;
+      PetscCall(PetscLogTraceBegin(file));
+    }
+
+    PetscCall(PetscOptionsGetViewers(comm, NULL, NULL, "-log_view", &n_max, NULL, format, NULL));
+    if (n_max > 0) {
+      PetscBool any_nested  = PETSC_FALSE;
+      PetscBool any_default = PETSC_FALSE;
+
+      for (PetscInt i = 0; i < n_max; i++) {
+        if (format[i] == PETSC_VIEWER_ASCII_XML || format[i] == PETSC_VIEWER_ASCII_FLAMEGRAPH) {
+          any_nested = PETSC_TRUE;
+        } else {
+          any_default = PETSC_TRUE;
+        }
+      }
+      if (any_default) { PetscCall(PetscLogDefaultBegin()); }
+      if (any_nested) {
+        PetscCall(PetscLogNestedBegin());
+        PetscReal threshold = PetscRealConstant(0.01);
+        PetscCall(PetscOptionsGetReal(NULL, NULL, "-log_threshold", &threshold, &flg1));
+        if (flg1) PetscCall(PetscLogSetThreshold((PetscLogDouble)threshold, NULL));
+      }
     }
   }
-
-  PetscCall(PetscOptionsGetBool(NULL, NULL, "-log_sync", &PetscLogSyncOn, NULL));
-
-  #if defined(PETSC_HAVE_MPE)
-  flg1 = PETSC_FALSE;
-  PetscCall(PetscOptionsHasName(NULL, NULL, "-log_mpe", &flg1));
-  if (flg1) PetscCall(PetscLogMPEBegin());
-  #endif
-  flg1 = PETSC_FALSE;
-  PetscCall(PetscOptionsGetBool(NULL, NULL, "-log_all", &flg1, NULL));
-  if (flg1) PetscCall(PetscLogAllBegin());
-
-  PetscCall(PetscOptionsGetString(NULL, NULL, "-log_trace", mname, sizeof(mname), &flg1));
-  if (flg1) {
-    char  name[PETSC_MAX_PATH_LEN], fname[PETSC_MAX_PATH_LEN];
-    FILE *file;
-    if (mname[0]) {
-      PetscCall(PetscSNPrintf(name, PETSC_MAX_PATH_LEN, "%s.%d", mname, rank));
-      PetscCall(PetscFixFilename(name, fname));
-      file = fopen(fname, "w");
-      PetscCheck(file, PETSC_COMM_SELF, PETSC_ERR_FILE_OPEN, "Unable to open trace file: %s", fname);
-    } else file = PETSC_STDOUT;
-    PetscCall(PetscLogTraceBegin(file));
-  }
-
-  PetscCall(PetscOptionsGetViewer(comm, NULL, NULL, "-log_view", NULL, &format, &flg4));
-  if (flg4) {
-    if (format == PETSC_VIEWER_ASCII_XML || format == PETSC_VIEWER_ASCII_FLAMEGRAPH) {
-      PetscCall(PetscLogNestedBegin());
-    } else {
-      PetscCall(PetscLogDefaultBegin());
-    }
-  }
-  if (flg4 && (format == PETSC_VIEWER_ASCII_XML || format == PETSC_VIEWER_ASCII_FLAMEGRAPH)) {
-    PetscReal threshold = PetscRealConstant(0.01);
-    PetscCall(PetscOptionsGetReal(NULL, NULL, "-log_threshold", &threshold, &flg1));
-    if (flg1) PetscCall(PetscLogSetThreshold((PetscLogDouble)threshold, NULL));
-  }
-#endif
 
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-saws_options", &PetscOptionsPublish, NULL));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-use_gpu_aware_mpi", &use_gpu_aware_mpi, &flg1));

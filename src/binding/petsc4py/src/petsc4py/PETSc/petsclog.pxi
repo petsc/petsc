@@ -9,7 +9,6 @@ cdef extern from * nogil:
         PetscLogDouble numReductions
 
     PetscErrorCode PetscLogDefaultBegin()
-    PetscErrorCode PetscLogAllBegin()
     PetscErrorCode PetscLogView(PetscViewer)
     PetscErrorCode PetscLogIsActive(PetscBool*)
 

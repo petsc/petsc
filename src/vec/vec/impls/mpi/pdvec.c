@@ -29,9 +29,7 @@ PetscErrorCode VecDestroy_MPI(Vec v)
   Vec_MPI *x = (Vec_MPI *)v->data;
 
   PetscFunctionBegin;
-#if defined(PETSC_USE_LOG)
   PetscCall(PetscLogObjectState((PetscObject)v, "Length=%" PetscInt_FMT, v->map->N));
-#endif
   if (!x) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscFree(x->array_allocated));
 

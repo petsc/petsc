@@ -638,6 +638,7 @@ linux-cmplx-single:
   extends:
     - .stage-3
     - .linux_test
+    # gcovr is not on si
     - .coverage-disable
   tags:
     - name:si
@@ -737,7 +738,6 @@ linux-pkgs-opt:
   extends:
     - .stage-3
     - .linux_test
-    - .coverage-disable
   tags:
     - gce-u22-stage3, linux-fast
   variables:
@@ -985,6 +985,7 @@ osx-cxx-pkgs-opt:
   extends:
     - .stage-3
     - .osx_test
+    - .coverage-disable
   tags:
     - os:macos-x64
   variables:
@@ -1045,12 +1046,12 @@ coverage-analyze:
     - linux-xsdk-dbg
     - linux-opt-misc
     - linux-pkgs-64idx
+    - linux-pkgs-opt
     - linux-64idx-i8
     - linux-gcc-ifc-cmplx
     - linux-opt-cxx-quad
     - linux-ILP64
     - linux-64idx-i8-uni
-    - osx-cxx-pkgs-opt
   variables:
     PYTHON: python3
     PETSC_ARCH: arch-ci-analyze-pipeline

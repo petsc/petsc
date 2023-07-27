@@ -179,11 +179,9 @@ int main(int argc, char **argv)
   PetscCall(PetscTimeSubtract(&time));
   /* Benchmark system */
   if (user.nit) {
-    Vec      b;
-    PetscInt i;
-#if defined(PETSC_USE_LOG)
+    Vec           b;
+    PetscInt      i;
     PetscLogStage kspstage;
-#endif
     PetscCall(PetscLogStageRegister("Solve only", &kspstage));
     PetscCall(PetscLogStagePush(kspstage));
     PetscCall(SNESGetSolution(snes, &u));

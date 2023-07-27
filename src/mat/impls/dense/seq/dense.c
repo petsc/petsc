@@ -1685,9 +1685,7 @@ PetscErrorCode MatDestroy_SeqDense(Mat mat)
   Mat_SeqDense *l = (Mat_SeqDense *)mat->data;
 
   PetscFunctionBegin;
-#if defined(PETSC_USE_LOG)
   PetscCall(PetscLogObjectState((PetscObject)mat, "Rows %" PetscInt_FMT " Cols %" PetscInt_FMT, mat->rmap->n, mat->cmap->n));
-#endif
   PetscCall(VecDestroy(&(l->qrrhs)));
   PetscCall(PetscFree(l->tau));
   PetscCall(PetscFree(l->pivots));

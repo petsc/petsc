@@ -11,9 +11,7 @@ PetscErrorCode MatDestroy_MPIAIJ(Mat mat)
   Mat_MPIAIJ *aij = (Mat_MPIAIJ *)mat->data;
 
   PetscFunctionBegin;
-#if defined(PETSC_USE_LOG)
   PetscCall(PetscLogObjectState((PetscObject)mat, "Rows=%" PetscInt_FMT ", Cols=%" PetscInt_FMT, mat->rmap->N, mat->cmap->N));
-#endif
   PetscCall(MatStashDestroy_Private(&mat->stash));
   PetscCall(VecDestroy(&aij->diag));
   PetscCall(MatDestroy(&aij->A));

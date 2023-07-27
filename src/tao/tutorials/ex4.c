@@ -47,10 +47,8 @@ static PetscErrorCode CreateRHS(UserCtx ctx)
 
 static PetscErrorCode CreateMatrix(UserCtx ctx)
 {
-  PetscInt Istart, Iend, i, j, Ii, gridN, I_n, I_s, I_e, I_w;
-#if defined(PETSC_USE_LOG)
+  PetscInt      Istart, Iend, i, j, Ii, gridN, I_n, I_s, I_e, I_w;
   PetscLogStage stage;
-#endif
 
   PetscFunctionBegin;
   /* build the matrix F in ctx */

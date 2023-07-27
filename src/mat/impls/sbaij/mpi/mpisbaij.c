@@ -8,9 +8,7 @@ PetscErrorCode MatDestroy_MPISBAIJ(Mat mat)
   Mat_MPISBAIJ *baij = (Mat_MPISBAIJ *)mat->data;
 
   PetscFunctionBegin;
-#if defined(PETSC_USE_LOG)
   PetscCall(PetscLogObjectState((PetscObject)mat, "Rows=%" PetscInt_FMT ",Cols=%" PetscInt_FMT, mat->rmap->N, mat->cmap->N));
-#endif
   PetscCall(MatStashDestroy_Private(&mat->stash));
   PetscCall(MatStashDestroy_Private(&mat->bstash));
   PetscCall(MatDestroy(&baij->A));

@@ -315,18 +315,14 @@ static PetscErrorCode PetscConvEstGetConvRateSNES_Private(PetscConvEst ce, Petsc
   /* Loop over meshes */
   dm[0] = ce->idm;
   for (r = 0; r <= Nr; ++r) {
-    Vec u;
-#if defined(PETSC_USE_LOG)
+    Vec           u;
     PetscLogStage stage;
-#endif
-    char        stageName[PETSC_MAX_PATH_LEN];
-    const char *dmname, *uname;
+    char          stageName[PETSC_MAX_PATH_LEN];
+    const char   *dmname, *uname;
 
     PetscCall(PetscSNPrintf(stageName, PETSC_MAX_PATH_LEN - 1, "ConvEst Refinement Level %" PetscInt_FMT, r));
-#if defined(PETSC_USE_LOG)
     PetscCall(PetscLogStageGetId(stageName, &stage));
     if (stage < 0) PetscCall(PetscLogStageRegister(stageName, &stage));
-#endif
     PetscCall(PetscLogStagePush(stage));
     if (r > 0) {
       if (!ce->noRefine) {

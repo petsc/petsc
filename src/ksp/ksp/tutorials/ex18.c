@@ -18,19 +18,17 @@ Input parameters include:\n\
 
 int main(int argc, char **args)
 {
-  Vec         x, b, u; /* approx solution, RHS, exact solution */
-  Mat         A;       /* linear system matrix */
-  KSP         ksp;     /* linear solver context */
-  PetscRandom rctx;    /* random number generator context */
-  PetscReal   norm;    /* norm of solution error */
-  PetscInt    i, j, Ii, J, Istart, Iend, m, n, its;
-  PetscBool   random_exact_sol, view_exact_sol, permute;
-  char        ordering[256] = MATORDERINGRCM;
-  IS          rowperm = NULL, colperm = NULL;
-  PetscScalar v;
-#if defined(PETSC_USE_LOG)
+  Vec           x, b, u; /* approx solution, RHS, exact solution */
+  Mat           A;       /* linear system matrix */
+  KSP           ksp;     /* linear solver context */
+  PetscRandom   rctx;    /* random number generator context */
+  PetscReal     norm;    /* norm of solution error */
+  PetscInt      i, j, Ii, J, Istart, Iend, m, n, its;
+  PetscBool     random_exact_sol, view_exact_sol, permute;
+  char          ordering[256] = MATORDERINGRCM;
+  IS            rowperm = NULL, colperm = NULL;
+  PetscScalar   v;
   PetscLogStage stage;
-#endif
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &args, (char *)0, help));

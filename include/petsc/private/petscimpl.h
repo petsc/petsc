@@ -278,6 +278,8 @@ PETSC_EXTERN PetscErrorCode PetscComposedQuantitiesDestroy(PetscObject obj);
 PETSC_EXTERN PetscErrorCode PetscHeaderCreate_Private(PetscObject, PetscClassId, const char[], const char[], const char[], MPI_Comm, PetscObjectDestroyFunction, PetscObjectViewFunction);
 PETSC_INTERN PetscObjectId  PetscObjectNewId_Internal(void);
 
+#define PetscHeaderFinalize_Private(h) (PetscLogObjectDestroy(h) || (PetscErrorCode)(PetscHeaderDestroy_Private((PetscObject)(h), PETSC_FALSE)))
+
 /*MC
   PetscHeaderDestroy - Final step in destroying a `PetscObject`
 
@@ -332,9 +334,10 @@ PETSC_INTERN PetscObjectId  PetscObjectNewId_Internal(void);
 
 .seealso: `PetscObject`, `PetscHeaderCreate()`
 M*/
-#define PetscHeaderDestroy(h) ((PetscErrorCode)(PetscHeaderDestroy_Private((PetscObject)(*(h)), PETSC_FALSE) || PetscFree(*(h))))
+#define PetscHeaderDestroy(h) ((PetscErrorCode)(PetscHeaderFinalize_Private(*(h)) || PetscFree(*(h))))
 
 PETSC_EXTERN PetscErrorCode                PetscHeaderDestroy_Private(PetscObject, PetscBool);
+PETSC_INTERN PetscErrorCode                PetscHeaderDestroy_Private_Unlogged(PetscObject, PetscBool);
 PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode PetscHeaderReset_Internal(PetscObject);
 PETSC_EXTERN PetscErrorCode                PetscObjectCopyFortranFunctionPointers(PetscObject, PetscObject);
 PETSC_EXTERN PetscErrorCode                PetscObjectSetFortranCallback(PetscObject, PetscFortranCallbackType, PetscFortranCallbackId *, void (*)(void), void *ctx);

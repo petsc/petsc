@@ -5,20 +5,18 @@ Contributed by Jose E. Roman, SLEPc developer, for testing repeated call of KSPS
 #include <petscksp.h>
 int main(int argc, char **args)
 {
-  Vec         x, b, u; /* approx solution, RHS, exact solution */
-  Mat         A;       /* linear system matrix */
-  KSP         ksp;     /* linear solver context */
-  PetscRandom rctx;    /* random number generator context */
-  PetscInt    i, j, Ii, J, Istart, Iend, m = 8, n = 7;
-  PetscBool   flg = PETSC_FALSE;
-  PetscScalar v;
-  PC          pc;
-  PetscInt    in;
-  Mat         F, B;
-  PetscBool   solve = PETSC_FALSE, sameA = PETSC_FALSE, setfromoptions_first = PETSC_FALSE;
-#if defined(PETSC_USE_LOG)
+  Vec           x, b, u; /* approx solution, RHS, exact solution */
+  Mat           A;       /* linear system matrix */
+  KSP           ksp;     /* linear solver context */
+  PetscRandom   rctx;    /* random number generator context */
+  PetscInt      i, j, Ii, J, Istart, Iend, m = 8, n = 7;
+  PetscBool     flg = PETSC_FALSE;
+  PetscScalar   v;
+  PC            pc;
+  PetscInt      in;
+  Mat           F, B;
+  PetscBool     solve = PETSC_FALSE, sameA = PETSC_FALSE, setfromoptions_first = PETSC_FALSE;
   PetscLogStage stage;
-#endif
 #if !defined(PETSC_HAVE_MUMPS)
   PetscMPIInt size;
 #endif

@@ -93,16 +93,14 @@ static char help[] = "";
 
 int main(int argc, char **argv)
 {
-  Vec      x, x0;
-  Tao      tao;
-  AppCtx   user;
-  IS       is_allstate, is_alldesign;
-  PetscInt lo, hi, hi2, lo2, ksp_old;
-  PetscInt ntests = 1;
-  PetscInt i;
-#if defined(PETSC_USE_LOG)
+  Vec           x, x0;
+  Tao           tao;
+  AppCtx        user;
+  IS            is_allstate, is_alldesign;
+  PetscInt      lo, hi, hi2, lo2, ksp_old;
+  PetscInt      ntests = 1;
+  PetscInt      i;
   PetscLogStage stages[1];
-#endif
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));

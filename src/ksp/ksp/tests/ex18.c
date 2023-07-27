@@ -8,16 +8,14 @@ Input arguments are:\n\
 
 int main(int argc, char **args)
 {
-  PetscInt    its, m, n, mvec;
-  PetscReal   norm;
-  Vec         x, b, u;
-  Mat         A;
-  KSP         ksp;
-  char        file[PETSC_MAX_PATH_LEN];
-  PetscViewer fd;
-#if defined(PETSC_USE_LOG)
+  PetscInt      its, m, n, mvec;
+  PetscReal     norm;
+  Vec           x, b, u;
+  Mat           A;
+  KSP           ksp;
+  char          file[PETSC_MAX_PATH_LEN];
+  PetscViewer   fd;
   PetscLogStage stage1;
-#endif
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &args, (char *)0, help));

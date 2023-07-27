@@ -125,9 +125,7 @@ static PetscErrorCode PetscViewerFileSetName_VU(PetscViewer viewer, const char n
   }
 
   PetscCheck(vu->fd, PETSC_COMM_SELF, PETSC_ERR_FILE_OPEN, "Cannot open PetscViewer file: %s", fname);
-#if defined(PETSC_USE_LOG)
   PetscCall(PetscLogObjectState((PetscObject)viewer, "File: %s", name));
-#endif
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

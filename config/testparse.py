@@ -50,7 +50,7 @@ sys.path.insert(0,maintdir)
 # These are special keys describing build
 buildkeys="requires TODO SKIP depends".split()
 
-acceptedkeys=set("test nsize requires command suffix diff_args args filter filter_output localrunfiles comments TODO SKIP output_file timeoutfactor env".split())
+acceptedkeys=set("test nsize requires command suffix diff_args args filter filter_output localrunfiles comments TODO SKIP output_file timeoutfactor env temporaries".split())
 appendlist="args diff_args requires comments env".split()
 
 import re

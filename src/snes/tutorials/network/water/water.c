@@ -8,12 +8,10 @@ static char help[] = "This example demonstrates the use of DMNetwork interface f
 
 int main(int argc, char **argv)
 {
-  char         waterdata_file[PETSC_MAX_PATH_LEN] = "sample1.inp";
-  WATERDATA   *waterdata;
-  AppCtx_Water appctx;
-#if defined(PETSC_USE_LOG)
-  PetscLogStage stage1, stage2;
-#endif
+  char                waterdata_file[PETSC_MAX_PATH_LEN] = "sample1.inp";
+  WATERDATA          *waterdata;
+  AppCtx_Water        appctx;
+  PetscLogStage       stage1, stage2;
   PetscMPIInt         crank;
   DM                  networkdm;
   PetscInt           *edgelist = NULL;

@@ -9,14 +9,12 @@ static char help[] = "Tests binary I/O of vectors and illustrates the use of use
 
 int main(int argc, char **args)
 {
-  PetscMPIInt rank, size;
-  PetscInt    i, m = 10, low, high, ldim, iglobal;
-  PetscScalar v;
-  Vec         u;
-  PetscViewer viewer;
-#if defined(PETSC_USE_LOG)
+  PetscMPIInt   rank, size;
+  PetscInt      i, m = 10, low, high, ldim, iglobal;
+  PetscScalar   v;
+  Vec           u;
+  PetscViewer   viewer;
   PetscLogEvent VECTOR_GENERATE, VECTOR_READ;
-#endif
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &args, (char *)0, help));

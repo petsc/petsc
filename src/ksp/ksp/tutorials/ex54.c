@@ -7,18 +7,16 @@ static char help[] = "Creates a matrix from quadrilateral finite elements in 2D,
 
 int main(int argc, char **args)
 {
-  Mat         Amat, Pmat;
-  PetscInt    i, m, M, its, Istart, Iend, j, Ii, ix, ne = 4;
-  PetscReal   x, y, h;
-  Vec         xx, bb;
-  KSP         ksp;
-  PetscReal   soft_alpha = 1.e-3;
-  MPI_Comm    comm;
-  PetscMPIInt npe, mype;
-  PetscScalar DD[4][4], DD2[4][4];
-#if defined(PETSC_USE_LOG)
+  Mat           Amat, Pmat;
+  PetscInt      i, m, M, its, Istart, Iend, j, Ii, ix, ne = 4;
+  PetscReal     x, y, h;
+  Vec           xx, bb;
+  KSP           ksp;
+  PetscReal     soft_alpha = 1.e-3;
+  MPI_Comm      comm;
+  PetscMPIInt   npe, mype;
+  PetscScalar   DD[4][4], DD2[4][4];
   PetscLogStage stage;
-#endif
 #define DIAG_S 0.0
   PetscScalar DD1[4][4] = {
     {5.0 + DIAG_S, -2.0,         -1.0,         -2.0        },
@@ -161,19 +159,15 @@ int main(int argc, char **args)
   }
 
   /* solve */
-#if defined(PETSC_USE_LOG)
   PetscCall(PetscLogStageRegister("Solve", &stage));
   PetscCall(PetscLogStagePush(stage));
-#endif
   PetscCall(VecSet(xx, .0));
 
   PetscCall(KSPSetUp(ksp));
 
   PetscCall(KSPSolve(ksp, bb, xx));
 
-#if defined(PETSC_USE_LOG)
   PetscCall(PetscLogStagePop());
-#endif
 
   PetscCall(KSPGetIterationNumber(ksp, &its));
 

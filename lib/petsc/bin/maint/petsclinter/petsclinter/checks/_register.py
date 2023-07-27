@@ -115,6 +115,7 @@ def __register_all_classids():
     "_p_PetscFV *"                : "PETSCFV_CLASSID",
     "_p_PetscLimiter *"           : "PETSCLIMITER_CLASSID",
     "_p_PetscLinterDummyObj *"    : "PETSC_LINTER_DUMMY_OBJECT",
+    "_p_PetscLogHandler *"        : "PETSCLOGHANDLER_CLASSID",
     "_p_PetscObject *"            : "PETSC_OBJECT_CLASSID",
     "_p_PetscPartitioner *"       : "PETSCPARTITIONER_CLASSID",
     "_p_PetscQuadrature *"        : "PETSCQUADRATURE_CLASSID",

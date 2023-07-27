@@ -51,10 +51,6 @@
       PetscCallA(PetscLogNestedBegin(ierr))
       threshold = 1.0
       PetscCallA(PetscLogSetThreshold(threshold,oldthreshold,ierr))
-! dummy test of logging a reduction
-#if defined(PETSC_USE_LOG)
-      ierr = PetscAReduce()
-#endif
       PetscCallMPIA(MPI_Comm_size(PETSC_COMM_WORLD,size,ierr))
       PetscCallMPIA(MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr))
       PetscCheckA(size .eq. 1,PETSC_COMM_SELF,PETSC_ERR_WRONG_MPI_SIZE,'Uniprocessor example')

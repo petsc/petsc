@@ -53,29 +53,17 @@ cdef class Log:
         return event
 
     @classmethod
-    def begin(cls, all: bool = False):
+    def begin(cls):
         """Turn on logging of objects and events.
 
         Collective.
 
-        Parameters
-        ----------
-        all
-            Whether to enable extensive logging.
-
-        Notes
-        -----
-        If ``all == True`` logging is extensive;
-        this creates large log files and slows the program down.
-        If ``all == False``, the default logging functions are used.
-
         See Also
         --------
-        petsc.PetscLogAllBegin, petsc.PetscLogDefaultBegin
+        petsc.PetscLogDefaultBegin
 
         """
-        if all: CHKERR( PetscLogAllBegin() )
-        else:   CHKERR( PetscLogDefaultBegin() )
+        CHKERR( PetscLogDefaultBegin() )
 
     @classmethod
     def view(cls, Viewer viewer=None) -> None:

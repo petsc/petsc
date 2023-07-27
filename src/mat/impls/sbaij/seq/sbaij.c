@@ -185,9 +185,7 @@ PetscErrorCode MatDestroy_SeqSBAIJ(Mat A)
     PetscCall(PetscFree(a->bdnz));
     A->hash_active = PETSC_FALSE;
   }
-#if defined(PETSC_USE_LOG)
   PetscCall(PetscLogObjectState((PetscObject)A, "Rows=%" PetscInt_FMT ", NZ=%" PetscInt_FMT, A->rmap->N, a->nz));
-#endif
   PetscCall(MatSeqXAIJFreeAIJ(A, &a->a, &a->j, &a->i));
   if (a->free_diag) PetscCall(PetscFree(a->diag));
   PetscCall(ISDestroy(&a->row));
