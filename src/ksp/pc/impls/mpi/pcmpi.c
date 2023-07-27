@@ -116,7 +116,7 @@ static PetscErrorCode PCMPICreate(PC pc)
   if (pc) {
     size_t      slen;
     const char *prefix = NULL;
-    char       *found;
+    char       *found  = NULL;
 
     PetscCallMPI(MPI_Comm_size(comm, &size));
     PCMPIKSPCounts[size - 1]++;
@@ -547,7 +547,7 @@ static PetscErrorCode PCSetUp_Seq(PC pc)
   PC_MPI     *km = (PC_MPI *)pc->data;
   Mat         sA;
   const char *prefix;
-  char       *found, *cprefix;
+  char       *found = NULL, *cprefix;
 
   PetscFunctionBegin;
   PetscCall(PCGetOperators(pc, NULL, &sA));
@@ -753,7 +753,7 @@ M*/
 PETSC_EXTERN PetscErrorCode PCCreate_MPI(PC pc)
 {
   PC_MPI *km;
-  char   *found;
+  char   *found = NULL;
 
   PetscFunctionBegin;
   PetscCall(PetscStrstr(((PetscObject)pc)->prefix, "mpi_linear_solver_server_", &found));
