@@ -447,6 +447,9 @@ linux-gcc-pkgs-opt:
     - gce-stage2
   variables:
     TEST_ARCH: arch-ci-linux-gcc-pkgs-opt
+  except:
+    variables:
+      - $PETSC_CI_SCHEDULED =~ /yes/
 
 linux-gcc-complex-opt-32bit:
   extends:
@@ -726,9 +729,6 @@ linux-pkgs-cxx-mlib:
   variables:
     TEST_ARCH: arch-ci-linux-pkgs-cxx-mlib
     PETSC_OPTIONS: -fp_trap
-  except:
-    variables:
-      - $PETSC_CI_SCHEDULED =~ /yes/
 
 linux-pkgs-valgrind:
   extends:
