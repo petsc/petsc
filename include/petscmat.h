@@ -916,20 +916,16 @@ PETSC_EXTERN PetscErrorCode MatFindZeroDiagonals(Mat, IS *);
 PETSC_EXTERN PetscErrorCode MatFindOffBlockDiagonalEntries(Mat, IS *);
 PETSC_EXTERN PetscErrorCode MatCreateMPIMatConcatenateSeqMat(MPI_Comm, Mat, PetscInt, MatReuse, Mat *);
 
-/*MC
+/*@C
    MatSetValue - Set a single entry into a matrix.
 
    This value may be cached, so `MatAssemblyBegin()` and `MatAssemblyEnd()`
    MUST be called after all calls to `MatSetValue()` have been completed.
 
-   Synopsis:
-     #include <petscmat.h>
-     PetscErrorCode MatSetValue(Mat m,PetscInt i,PetscInt j,PetscScalar va,InsertMode mode)
-
    Not Collective
 
    Input Parameters:
-+  m - the matrix
++  mat - the matrix
 .  i - the row location of the entry
 .  j - the column location of the entry
 .  va - the value to insert
@@ -942,10 +938,10 @@ PETSC_EXTERN PetscErrorCode MatCreateMPIMatConcatenateSeqMat(MPI_Comm, Mat, Pets
 
 .seealso: [](ch_matrices), `Mat`, `MatAssemblyBegin()`, `MatAssemblyEnd`, `InsertMode`, `MatGetValue()`, `MatSetValues()`,
           `MatSetValueLocal()`, `MatSetValuesLocal()`
-M*/
-static inline PetscErrorCode MatSetValue(Mat m, PetscInt i, PetscInt j, PetscScalar va, InsertMode mode)
+@*/
+static inline PetscErrorCode MatSetValue(Mat mat, PetscInt i, PetscInt j, PetscScalar va, InsertMode mode)
 {
-  return MatSetValues(m, 1, &i, 1, &j, &va, mode);
+  return MatSetValues(mat, 1, &i, 1, &j, &va, mode);
 }
 
 /*@C
@@ -977,13 +973,13 @@ static inline PetscErrorCode MatGetValue(Mat mat, PetscInt row, PetscInt col, Pe
   return MatGetValues(mat, 1, &row, 1, &col, va);
 }
 
-/*MC
+/*@C
    MatSetValueLocal - Inserts or adds a single value into a matrix, using a local numbering of the nodes.
 
    Not Collective
 
    Input Parameters:
-+  m - the matrix
++  mat - the matrix
 .  i - the row location of the entry
 .  j - the column location of the entry
 .  va - the value to insert
@@ -997,10 +993,10 @@ static inline PetscErrorCode MatGetValue(Mat mat, PetscInt row, PetscInt col, Pe
    See notes for `MatSetValuesLocal()` for additional information on when and how this function can be used.
 
 .seealso: [](ch_matrices), `MatSetValue()`, `MatSetValuesLocal()`
-M*/
-static inline PetscErrorCode MatSetValueLocal(Mat m, PetscInt i, PetscInt j, PetscScalar va, InsertMode mode)
+@*/
+static inline PetscErrorCode MatSetValueLocal(Mat mat, PetscInt i, PetscInt j, PetscScalar va, InsertMode mode)
 {
-  return MatSetValuesLocal(m, 1, &i, 1, &j, &va, mode);
+  return MatSetValuesLocal(mat, 1, &i, 1, &j, &va, mode);
 }
 
 /*MC
