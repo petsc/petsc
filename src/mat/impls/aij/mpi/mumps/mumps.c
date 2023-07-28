@@ -8,6 +8,8 @@
 #include <../src/mat/impls/sbaij/mpi/mpisbaij.h>
 #include <../src/mat/impls/sell/mpi/mpisell.h>
 
+#define MUMPS_MANUALS "(see users manual https://mumps-solver.org/index.php?page=doc \"Error and warning diagnostics\")"
+
 EXTERN_C_BEGIN
 #if defined(PETSC_USE_COMPLEX)
   #if defined(PETSC_USE_REAL_SINGLE)
@@ -335,7 +337,7 @@ static PetscErrorCode MatMumpsHandleSchur_Private(Mat F, PetscBool expansion)
     PetscCall(MatMumpsSolveSchur_Private(F));
     mumps->id.ICNTL(26) = 2; /* expansion phase */
     PetscMUMPS_c(mumps);
-    PetscCheck(mumps->id.INFOG(1) >= 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error reported by MUMPS in solve phase: INFOG(1)=%d", mumps->id.INFOG(1));
+    PetscCheck(mumps->id.INFOG(1) >= 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "MUMPS error in solve: INFOG(1)=%d " MUMPS_MANUALS, mumps->id.INFOG(1));
     /* restore defaults */
     mumps->id.ICNTL(26) = -1;
     /* free MUMPS internal array for redrhs if we have solved for multiple rhs in order to save memory space */
@@ -1210,7 +1212,7 @@ PetscErrorCode MatDestroy_MUMPS(Mat A)
   if (mumps->id.job != JOB_NULL) { /* cannot call PetscMUMPS_c() if JOB_INIT has never been called for this instance */
     mumps->id.job = JOB_END;
     PetscMUMPS_c(mumps);
-    PetscCheck(mumps->id.INFOG(1) >= 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error reported by MUMPS in MatDestroy_MUMPS: INFOG(1)=%d", mumps->id.INFOG(1));
+    PetscCheck(mumps->id.INFOG(1) >= 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "MUMPS error in termination: INFOG(1)=%d " MUMPS_MANUALS, mumps->id.INFOG(1));
     if (mumps->mumps_comm != MPI_COMM_NULL) {
       if (PetscDefined(HAVE_OPENMP_SUPPORT) && mumps->use_petsc_omp_support) PetscCallMPI(MPI_Comm_free(&mumps->mumps_comm));
       else PetscCall(PetscCommRestoreComm(PetscObjectComm((PetscObject)A), &mumps->mumps_comm));
@@ -1409,7 +1411,7 @@ PetscErrorCode MatSolve_MUMPS(Mat A, Vec b, Vec x)
   /* solve phase */
   mumps->id.job = JOB_SOLVE;
   PetscMUMPS_c(mumps);
-  PetscCheck(mumps->id.INFOG(1) >= 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error reported by MUMPS in solve phase: INFOG(1)=%d", mumps->id.INFOG(1));
+  PetscCheck(mumps->id.INFOG(1) >= 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "MUMPS error in solve: INFOG(1)=%d " MUMPS_MANUALS, mumps->id.INFOG(1));
 
   /* handle expansion step of Schur complement (if any) */
   if (second_solve) PetscCall(MatMumpsHandleSchur_Private(A, PETSC_TRUE));
@@ -1532,7 +1534,7 @@ PetscErrorCode MatMatSolve_MUMPS(Mat A, Mat B, Mat X)
     /* solve phase */
     mumps->id.job = JOB_SOLVE;
     PetscMUMPS_c(mumps);
-    PetscCheck(mumps->id.INFOG(1) >= 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error reported by MUMPS in solve phase: INFOG(1)=%d", mumps->id.INFOG(1));
+    PetscCheck(mumps->id.INFOG(1) >= 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "MUMPS error in solve: INFOG(1)=%d " MUMPS_MANUALS, mumps->id.INFOG(1));
 
     /* handle expansion step of Schur complement (if any) */
     if (second_solve) PetscCall(MatMumpsHandleSchur_Private(A, PETSC_TRUE));
@@ -1641,7 +1643,7 @@ PetscErrorCode MatMatSolve_MUMPS(Mat A, Mat B, Mat X)
   /* solve phase */
   mumps->id.job = JOB_SOLVE;
   PetscMUMPS_c(mumps);
-  PetscCheck(mumps->id.INFOG(1) >= 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error reported by MUMPS in solve phase: INFOG(1)=%d", mumps->id.INFOG(1));
+  PetscCheck(mumps->id.INFOG(1) >= 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "MUMPS error in solve: INFOG(1)=%d " MUMPS_MANUALS, mumps->id.INFOG(1));
 
   /* scatter mumps distributed solution to petsc vector v_mpi, which shares local arrays with solution matrix X */
   PetscCall(MatDenseGetArray(X, &array));
@@ -1902,22 +1904,22 @@ PetscErrorCode MatFactorNumeric_MUMPS(Mat F, Mat A, const MatFactorInfo *info)
   }
   PetscMUMPS_c(mumps);
   if (mumps->id.INFOG(1) < 0) {
-    PetscCheck(!A->erroriffailure, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error reported by MUMPS in numerical factorization phase: INFOG(1)=%d, INFO(2)=%d", mumps->id.INFOG(1), mumps->id.INFO(2));
-    if (mumps->id.INFOG(1) == -10) { /* numerically singular matrix */
-      PetscCall(PetscInfo(F, "matrix is numerically singular, INFOG(1)=%d, INFO(2)=%d\n", mumps->id.INFOG(1), mumps->id.INFO(2)));
+    PetscCheck(!A->erroriffailure, PETSC_COMM_SELF, PETSC_ERR_LIB, "MUMPS error in numerical factorization: INFOG(1)=%d, INFO(2)=%d " MUMPS_MANUALS, mumps->id.INFOG(1), mumps->id.INFO(2));
+    if (mumps->id.INFOG(1) == -10) {
+      PetscCall(PetscInfo(F, "MUMPS error in numerical factorization: matrix is numerically singular, INFOG(1)=%d, INFO(2)=%d\n", mumps->id.INFOG(1), mumps->id.INFO(2)));
       F->factorerrortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
     } else if (mumps->id.INFOG(1) == -13) {
-      PetscCall(PetscInfo(F, "MUMPS in numerical factorization phase: INFOG(1)=%d, cannot allocate required memory %d megabytes\n", mumps->id.INFOG(1), mumps->id.INFO(2)));
+      PetscCall(PetscInfo(F, "MUMPS error in numerical factorization: INFOG(1)=%d, cannot allocate required memory %d megabytes\n", mumps->id.INFOG(1), mumps->id.INFO(2)));
       F->factorerrortype = MAT_FACTOR_OUTMEMORY;
     } else if (mumps->id.INFOG(1) == -8 || mumps->id.INFOG(1) == -9 || (-16 < mumps->id.INFOG(1) && mumps->id.INFOG(1) < -10)) {
-      PetscCall(PetscInfo(F, "MUMPS in numerical factorization phase: INFOG(1)=%d, INFO(2)=%d, problem with workarray\n", mumps->id.INFOG(1), mumps->id.INFO(2)));
+      PetscCall(PetscInfo(F, "MUMPS error in numerical factorizatione: INFOG(1)=%d, INFO(2)=%d, problem with work array\n", mumps->id.INFOG(1), mumps->id.INFO(2)));
       F->factorerrortype = MAT_FACTOR_OUTMEMORY;
     } else {
-      PetscCall(PetscInfo(F, "MUMPS in numerical factorization phase: INFOG(1)=%d, INFO(2)=%d\n", mumps->id.INFOG(1), mumps->id.INFO(2)));
+      PetscCall(PetscInfo(F, "MUMPS error in numerical factorization: INFOG(1)=%d, INFO(2)=%d\n", mumps->id.INFOG(1), mumps->id.INFO(2)));
       F->factorerrortype = MAT_FACTOR_OTHER;
     }
   }
-  PetscCheck(mumps->myid || mumps->id.ICNTL(16) <= 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "  mumps->id.ICNTL(16):=%d", mumps->id.INFOG(16));
+  PetscCheck(mumps->myid || mumps->id.ICNTL(16) <= 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "MUMPS error in numerical factorization: ICNTL(16)=%d " MUMPS_MANUALS, mumps->id.INFOG(16));
 
   F->assembled = PETSC_TRUE;
 
@@ -2017,7 +2019,7 @@ PetscErrorCode MatSetFromOptions_MUMPS(Mat F, Mat A)
     arr           = mumps->id.schur;
     listvar_schur = mumps->id.listvar_schur;
     PetscMUMPS_c(mumps);
-    PetscCheck(mumps->id.INFOG(1) >= 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error reported by MUMPS: INFOG(1)=%d", mumps->id.INFOG(1));
+    PetscCheck(mumps->id.INFOG(1) >= 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "MUMPS error: INFOG(1)=%d " MUMPS_MANUALS, mumps->id.INFOG(1));
     /* restore cached ICNTL and CNTL values */
     for (icntl = 0; icntl < nICNTL_pre; ++icntl) mumps->id.ICNTL(mumps->ICNTL_pre[1 + 2 * icntl]) = mumps->ICNTL_pre[2 + 2 * icntl];
     for (icntl = 0; icntl < nCNTL_pre; ++icntl) mumps->id.CNTL((PetscInt)mumps->CNTL_pre[1 + 2 * icntl]) = mumps->CNTL_pre[2 + 2 * icntl];
@@ -2171,17 +2173,17 @@ PetscErrorCode MatFactorSymbolic_MUMPS_ReportIfError(Mat F, Mat A, const MatFact
 {
   PetscFunctionBegin;
   if (mumps->id.INFOG(1) < 0) {
-    PetscCheck(!A->erroriffailure, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error reported by MUMPS in analysis phase: INFOG(1)=%d", mumps->id.INFOG(1));
+    PetscCheck(!A->erroriffailure, PETSC_COMM_SELF, PETSC_ERR_LIB, "MUMPS error in analysis: INFOG(1)=%d " MUMPS_MANUALS, mumps->id.INFOG(1));
     if (mumps->id.INFOG(1) == -6) {
-      PetscCall(PetscInfo(F, "matrix is singular in structure, INFOG(1)=%d, INFO(2)=%d\n", mumps->id.INFOG(1), mumps->id.INFO(2)));
+      PetscCall(PetscInfo(F, "MUMPS error in analysis: matrix is singular, INFOG(1)=%d, INFO(2)=%d\n", mumps->id.INFOG(1), mumps->id.INFO(2)));
       F->factorerrortype = MAT_FACTOR_STRUCT_ZEROPIVOT;
     } else if (mumps->id.INFOG(1) == -5 || mumps->id.INFOG(1) == -7) {
-      PetscCall(PetscInfo(F, "problem of workspace, INFOG(1)=%d, INFO(2)=%d\n", mumps->id.INFOG(1), mumps->id.INFO(2)));
+      PetscCall(PetscInfo(F, "MUMPS error in analysis: problem with work array, INFOG(1)=%d, INFO(2)=%d\n", mumps->id.INFOG(1), mumps->id.INFO(2)));
       F->factorerrortype = MAT_FACTOR_OUTMEMORY;
     } else if (mumps->id.INFOG(1) == -16 && mumps->id.INFOG(1) == 0) {
-      PetscCall(PetscInfo(F, "Empty matrix\n"));
+      PetscCall(PetscInfo(F, "MUMPS error in analysis: empty matrix\n"));
     } else {
-      PetscCall(PetscInfo(F, "Error reported by MUMPS in analysis phase: INFOG(1)=%d, INFO(2)=%d\n", mumps->id.INFOG(1), mumps->id.INFO(2)));
+      PetscCall(PetscInfo(F, "MUMPS error in analysis: INFOG(1)=%d, INFO(2)=%d " MUMPS_MANUALS "\n", mumps->id.INFOG(1), mumps->id.INFO(2)));
       F->factorerrortype = MAT_FACTOR_OTHER;
     }
   }
@@ -2582,7 +2584,7 @@ PetscErrorCode MatFactorCreateSchurComplement_MUMPS(Mat F, Mat *S)
 #endif
 
   PetscFunctionBegin;
-  PetscCheck(mumps->id.ICNTL(19), PetscObjectComm((PetscObject)F), PETSC_ERR_ORDER, "Schur complement mode not selected! You should call MatFactorSetSchurIS to enable it");
+  PetscCheck(mumps->id.ICNTL(19), PetscObjectComm((PetscObject)F), PETSC_ERR_ORDER, "Schur complement mode not selected! Call MatFactorSetSchurIS() to enable it");
   PetscCall(MatCreate(PETSC_COMM_SELF, &St));
   PetscCall(MatSetSizes(St, PETSC_DECIDE, PETSC_DECIDE, mumps->id.size_schur, mumps->id.size_schur));
   PetscCall(MatSetType(St, MATDENSE));
@@ -2935,7 +2937,7 @@ PetscErrorCode MatMumpsGetInverse_MUMPS(Mat F, Mat spRHS)
   /* solve phase */
   mumps->id.job = JOB_SOLVE;
   PetscMUMPS_c(mumps);
-  PetscCheck(mumps->id.INFOG(1) >= 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error reported by MUMPS in solve phase: INFOG(1)=%d INFO(2)=%d", mumps->id.INFOG(1), mumps->id.INFO(2));
+  PetscCheck(mumps->id.INFOG(1) >= 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "MUMPS error in solve: INFOG(1)=%d INFO(2)=%d " MUMPS_MANUALS, mumps->id.INFOG(1), mumps->id.INFO(2));
 
   if (!mumps->myid) {
     PetscCall(MatSeqAIJRestoreArray(Btseq, &aa));
