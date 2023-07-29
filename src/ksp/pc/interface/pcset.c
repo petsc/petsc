@@ -227,7 +227,7 @@ PetscErrorCode PCGetDM(PC pc, DM *dm)
 
   Level: advanced
 
-.seealso: `PC`, `PCGetApplicationContext()`
+.seealso: `PC`, `PCGetApplicationContext()`, `KSPSetApplicationContext()`, `KSPGetApplicationContext()`, `PetscObjectCompose()`
 @*/
 PetscErrorCode PCSetApplicationContext(PC pc, void *usrP)
 {
@@ -250,7 +250,7 @@ PetscErrorCode PCSetApplicationContext(PC pc, void *usrP)
 
   Level: intermediate
 
-.seealso: `PC`, `PCSetApplicationContext()`
+.seealso: `PC`, `PCSetApplicationContext()`, `KSPSetApplicationContext()`, `KSPGetApplicationContext()`
 @*/
 PetscErrorCode PCGetApplicationContext(PC pc, void *usrP)
 {
