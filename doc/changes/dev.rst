@@ -18,6 +18,8 @@ Changes: Development
 
 .. rubric:: Sys:
 
+- Add ``PetscBench`` an object class for managing benchmarks in PETSc
+
 .. rubric:: Event Logging:
 
 .. rubric:: PetscViewer:

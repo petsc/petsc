@@ -130,6 +130,9 @@ PETSC_INTERN PetscErrorCode MatGetFactor_seqdense_hip(Mat, MatFactorType, Mat *)
 PETSC_INTERN PetscErrorCode MatGetFactor_constantdiagonal_petsc(Mat, MatFactorType, Mat *);
 PETSC_INTERN PetscErrorCode MatGetFactor_seqaij_bas(Mat, MatFactorType, Mat *);
 
+#include <petscbm.h>
+PETSC_INTERN PetscErrorCode PetscBenchCreate_HPL(PetscBench);
+
 /*@C
   MatInitializePackage - This function initializes everything in the `Mat` package. It is called
   from `PetscDLLibraryRegister_petscmat()` when using dynamic libraries, and on the first call to `MatCreate()`
@@ -423,6 +426,9 @@ PetscErrorCode MatInitializePackage(void)
 #endif
 #if defined(PETSC_HAVE_LUSOL)
   PetscCall(MatSolverTypeRegister_Lusol());
+#endif
+#if defined(PETSC_HAVE_HPL)
+  PetscCall(PetscBenchRegister(PETSCBMHPL, PetscBenchCreate_HPL));
 #endif
   /* Register package finalizer */
   PetscCall(PetscRegisterFinalize(MatFinalizePackage));

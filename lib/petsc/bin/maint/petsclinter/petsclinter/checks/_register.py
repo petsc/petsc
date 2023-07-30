@@ -128,6 +128,7 @@ def __register_all_classids() -> None:
   """
   default_classid_map = {
     "_p_AO *"                     : "AO_CLASSID",
+    "_p_PetscBench *"                : "BM_CLASSID",
     "_p_Characteristic *"         : "CHARACTERISTIC_CLASSID",
     "_p_DM *"                     : "DM_CLASSID",
     "_p_DMAdaptor *"              : "DM_CLASSID",

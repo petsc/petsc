@@ -2556,3 +2556,6 @@ PETSC_EXTERN PetscErrorCode MatCreateGraph(Mat, PetscBool, PetscBool, PetscReal,
 PETSC_EXTERN PetscErrorCode MatEliminateZeros(Mat, PetscBool);
 
 PETSC_EXTERN PetscErrorCode MatCreateDenseFromVecType(MPI_Comm, VecType, PetscInt, PetscInt, PetscInt, PetscInt, PetscInt, PetscScalar *, Mat *);
+
+PETSC_EXTERN PetscErrorCode MatSetHPL(Mat, int);
+#define PETSCBMHPL "hpl"
