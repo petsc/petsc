@@ -3206,11 +3206,6 @@ PetscErrorCode PCFieldSplitSetDetectSaddlePoint(PC pc, PetscBool flg)
    The Schur complement functionality of `PCFIELDSPLIT` should likely be factored into its own `PC` thus simplifying the implementation of the preconditioners and their
    user API.
 
-     References:
-     ```{bibliography}
-     :filter: docname in docnames
-     ```
-
 .seealso: [](sec_block_matrices), `PC`, `PCCreate()`, `PCSetType()`, `PCType`, `PC`, `PCLSC`,
           `PCFieldSplitGetSubKSP()`, `PCFieldSplitSchurGetSubKSP()`, `PCFieldSplitSetFields()`,
           `PCFieldSplitSetType()`, `PCFieldSplitSetIS()`, `PCFieldSplitSetSchurPre()`, `PCFieldSplitSetSchurFactType()`,

@@ -4,9 +4,6 @@
 """ Reads in all the generated manual pages, and creates the index
 for the manualpages, ordering the indices into sections based
 on the 'Level of Difficulty'.
-
- Usage:
-   wwwindex.py PETSC_DIR LOC
 """
 
 import os
