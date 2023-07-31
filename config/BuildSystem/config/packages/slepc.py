@@ -73,7 +73,7 @@ class Configure(config.package.Package):
     self.addMakeRule('slepcbuild','', \
                        ['@echo "*** Building SLEPc ***"',\
                         '@${RM} '+os.path.join(self.petscdir.dir,self.arch,'lib','petsc','conf','slepc.errorflg'),\
-                        '@(cd '+self.packageDir+' && \\\n\
+                        '+@(cd '+self.packageDir+' && \\\n\
             '+carg+' '+self.python.pyexe+' ./configure --prefix='+prefix+' '+configargs+' && \\\n\
             '+barg+' ${OMAKE} '+barg+') || \\\n\
             (echo "**************************ERROR*************************************" && \\\n\
