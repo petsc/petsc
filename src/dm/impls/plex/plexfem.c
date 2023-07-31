@@ -6078,7 +6078,7 @@ PetscErrorCode DMPlexComputeJacobian_Hybrid_Internal(DM dm, PetscFormKey key[], 
 . key    - The PetscWeakFormKey indcating where integration should happen
 . cellIS - The cells to integrate over
 . t      - The time
-. X_tShift - The multiplier for the Jacobian with repsect to X_t
+. X_tShift - The multiplier for the Jacobian with respect to X_t
 . X      - Local solution vector
 . X_t    - Time-derivative of the local solution vector
 . Y      - Local input vector

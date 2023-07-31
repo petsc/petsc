@@ -912,7 +912,7 @@ static inline PetscErrorCode PetscSFLinkLogFlopsAfterUnpackLeafData(PetscSF sf, 
   +sf      - The StarForest
   .link    - The link
   .count   - Number of entries to unpack
-  .start   - The first index, significent when indices=NULL
+  .start   - The first index, significant when indices=NULL
   .indices - Indices of entries in <data>. If NULL, it means indices are contiguous and the first is given in <start>
   .buf     - A contiguous buffer to unpack from
   -op      - Operation after unpack

@@ -106,7 +106,7 @@ int main(int argc, char **argv)
   PetscCall(TSSetTimeStep(ts, dt));
 
   /* Use slow fd Jacobian or fast fd Jacobian with colorings.
-     Note: this requirs snes which is not created until TSSetUp()/TSSetFromOptions() is called */
+     Note: this requires snes which is not created until TSSetUp()/TSSetFromOptions() is called */
   PetscOptionsBegin(PETSC_COMM_WORLD, NULL, "Options for Jacobian evaluation", NULL);
   PetscCall(PetscOptionsEnum("-jac_type", "Type of Jacobian", "", JacobianTypes, (PetscEnum)jacType, (PetscEnum *)&jacType, 0));
   PetscOptionsEnd();

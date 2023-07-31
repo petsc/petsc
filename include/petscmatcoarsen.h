@@ -44,7 +44,7 @@ typedef struct _PetscCDArrNd {
   struct _PetscCDIntNd *array;
 } PetscCDArrNd;
 
-/* linked list data structure that encodes aggragates and C-F points with array[idx] == NULL for F point and array of indices in an aggrate or C point (first index is always global index my0 + idx */
+/* linked list data structure that encodes aggregates and C-F points with array[idx] == NULL for F point and array of indices in an aggregate or C point (first index is always global index my0 + idx */
 typedef struct _PetscCoarsenData {
   PetscCDArrNd   pool_list; /* node pool */
   PetscCDIntNd  *new_node;

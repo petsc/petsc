@@ -298,7 +298,7 @@ static PetscErrorCode MatCoarsenApply_MISK_private(IS perm, const PetscInt misk,
   }
   PetscCall(MatTranspose(Rtot, MAT_INPLACE_MATRIX, &Rtot)); // R now
   PetscCall(MatViewFromOptions(Rtot, NULL, "-misk_aggregation_view"));
-  /* make aggregates with Rtot - could use Rtot directly in theory but have to go through the aggrate list data structure */
+  /* make aggregates with Rtot - could use Rtot directly in theory but have to go through the aggregate list data structure */
   {
     PetscInt          Istart, Iend, ncols, NN, MM, jj = 0, max_osz = 0;
     const PetscInt    nloc = Gmat->rmap->n;

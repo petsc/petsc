@@ -247,7 +247,7 @@ static PetscErrorCode DMPlexCreateAdjacencySection_Static(DM dm, PetscInt bs, Pe
     PetscCall(PetscSectionInvalidateMaxDof_Internal(rootSectionAdj));
   }
   if (debug) {
-    PetscCall(PetscPrintf(comm, "Adjancency Section for Preallocation on Roots:\n"));
+    PetscCall(PetscPrintf(comm, "Adjacency Section for Preallocation on Roots:\n"));
     PetscCall(PetscSectionView(rootSectionAdj, NULL));
   }
   /* Add in local adjacency sizes for owned dofs on interface (roots) */
@@ -276,7 +276,7 @@ static PetscErrorCode DMPlexCreateAdjacencySection_Static(DM dm, PetscInt bs, Pe
   }
   PetscCall(PetscSectionSetUp(rootSectionAdj));
   if (debug) {
-    PetscCall(PetscPrintf(comm, "Adjancency Section for Preallocation on Roots after local additions:\n"));
+    PetscCall(PetscPrintf(comm, "Adjacency Section for Preallocation on Roots after local additions:\n"));
     PetscCall(PetscSectionView(rootSectionAdj, NULL));
   }
   /* Create adj SF based on dof SF */
@@ -431,7 +431,7 @@ static PetscErrorCode DMPlexCreateAdjacencySection_Static(DM dm, PetscInt bs, Pe
   /* Debugging */
   if (debug) {
     IS tmp;
-    PetscCall(PetscPrintf(comm, "Adjancency Section for Preallocation on Roots after compression:\n"));
+    PetscCall(PetscPrintf(comm, "Adjacency Section for Preallocation on Roots after compression:\n"));
     PetscCall(PetscSectionView(rootSectionAdj, NULL));
     PetscCall(PetscPrintf(comm, "Root adjacency indices after compression\n"));
     PetscCall(ISCreateGeneral(comm, adjSize, rootAdj, PETSC_USE_POINTER, &tmp));

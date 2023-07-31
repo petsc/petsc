@@ -457,7 +457,7 @@ static PetscErrorCode TSBasicSymplecticGetType_BasicSymplectic(TS ts, TSBasicSym
   H(q,p,t) = T(p,t) + V(q,t).
 .ve
 
-  As a result, the system can be genearlly represented by
+  As a result, the system can be generally represented by
 .vb
   qdot = f(p,t) = dT(p,t)/dp
   pdot = g(q,t) = -dV(q,t)/dq
