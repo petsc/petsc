@@ -1204,7 +1204,7 @@ PETSC_EXTERN PetscErrorCode DMSetUp_Moab(DM dm)
     moab::Range msets;
     merr = dmmoab->mbiface->get_entities_by_type_and_tag(dmmoab->fileset, moab::MBENTITYSET, &dmmoab->material_tag, NULL, 1, msets, moab::Interface::UNION);
     MBERRNM(merr);
-    if (msets.size() == 0) PetscCall(PetscInfo(NULL, "No material sets found in the fileset."));
+    if (msets.size() == 0) PetscCall(PetscInfo(NULL, "No material sets found in the fileset.\n"));
 
     for (unsigned i = 0; i < msets.size(); ++i) {
       moab::Range msetelems;

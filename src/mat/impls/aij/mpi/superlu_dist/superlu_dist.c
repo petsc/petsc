@@ -784,7 +784,7 @@ static PetscErrorCode MatLUFactorSymbolic_SuperLU_DIST(Mat F, Mat A, IS r, IS c,
       PetscCall(PetscInfo(NULL, "Storing communicator and SuperLU_DIST grid in communicator attribute\n"));
     }
   } else { /* (mpiflg && !context->busy) */
-    PetscCall(PetscInfo(NULL, "Reusing communicator and superlu_gridinit() for SuperLU_DIST from communicator attribute."));
+    PetscCall(PetscInfo(NULL, "Reusing communicator and superlu_gridinit() for SuperLU_DIST from communicator attribute.\n"));
     context->busy = PETSC_TRUE;
     lu->grid      = context->grid;
   }

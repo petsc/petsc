@@ -1072,7 +1072,7 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
       PetscCall(KSPGetPC(jac->kspschur, &pc_coords));
       PetscCall(PCSetCoordinates(pc_coords, jac->head->next->dim, jac->head->next->ndofs, jac->head->next->coords));
     } else if (jac->type == PC_COMPOSITE_GKB) {
-      PetscCall(PetscInfo(pc, "Warning: Setting coordinates does nothing for the GKB Fieldpslit preconditioner"));
+      PetscCall(PetscInfo(pc, "Warning: Setting coordinates does nothing for the GKB Fieldpslit preconditioner\n"));
     } else {
       ilink = jac->head;
       while (ilink) {

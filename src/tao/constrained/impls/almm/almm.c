@@ -249,11 +249,11 @@ static PetscErrorCode TaoSetUp_ALMM(Tao tao)
     PetscCall(PetscObjectTypeCompare((PetscObject)auglag->subsolver, TAOLMVM, &is_lmvm));
     if (is_cg) {
       PetscCall(TaoSetType(auglag->subsolver, TAOBNCG));
-      PetscCall(PetscInfo(tao, "TAOCG detected for bound-constrained problem, switching to TAOBNCG instead."));
+      PetscCall(PetscInfo(tao, "TAOCG detected for bound-constrained problem, switching to TAOBNCG.\n"));
     }
     if (is_lmvm) {
       PetscCall(TaoSetType(auglag->subsolver, TAOBQNLS));
-      PetscCall(PetscInfo(tao, "TAOLMVM detected for bound-constrained problem, switching to TAOBQNLS instead."));
+      PetscCall(PetscInfo(tao, "TAOLMVM detected for bound-constrained problem, switching to TAOBQNLS.\n"));
     }
     /* create lower and upper bound clone vectors for subsolver */
     if (!auglag->PL) PetscCall(VecDuplicate(auglag->P, &auglag->PL));

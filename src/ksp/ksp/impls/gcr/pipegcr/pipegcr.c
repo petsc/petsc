@@ -298,7 +298,7 @@ static PetscErrorCode KSPSolve_PIPEGCR(KSP ksp)
 
   /* Is A symmetric? */
   PetscCall(PetscObjectTypeCompareAny((PetscObject)A, &issym, MATSBAIJ, MATSEQSBAIJ, MATMPISBAIJ, ""));
-  if (!issym) PetscCall(PetscInfo(A, "Matrix type is not any of MATSBAIJ,MATSEQSBAIJ,MATMPISBAIJ. Is matrix A symmetric (as required by CR methods)?"));
+  if (!issym) PetscCall(PetscInfo(A, "Matrix type is not any of MATSBAIJ,MATSEQSBAIJ,MATMPISBAIJ. Is matrix A symmetric (as required by CR methods)?\n"));
 
   /* logging */
   PetscCall(PetscObjectSAWsTakeAccess((PetscObject)ksp));

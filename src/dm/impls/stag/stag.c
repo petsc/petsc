@@ -623,7 +623,7 @@ static PetscErrorCode DMGetCompatibility_Stag(DM dm, DM dm2, PetscBool *compatib
   PetscCall(DMGetDimension(dm, &dim));
   PetscCall(DMGetDimension(dm2, &dim2));
   if (dim != dim2) {
-    PetscCall(PetscInfo((PetscObject)dm, "DMStag objects have different dimensions"));
+    PetscCall(PetscInfo((PetscObject)dm, "DMStag objects have different dimensions\n"));
     *set        = PETSC_TRUE;
     *compatible = PETSC_FALSE;
     PetscFunctionReturn(PETSC_SUCCESS);
