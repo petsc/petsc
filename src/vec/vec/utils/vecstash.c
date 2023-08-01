@@ -81,7 +81,7 @@ PetscErrorCode VecStashDestroy_Private(VecStash *stash)
 }
 
 /*
-   VecStashScatterEnd_Private - This is called as the fial stage of
+   VecStashScatterEnd_Private - This is called as the final stage of
    scatter. The final stages of message passing is done here, and
    all the memory used for message passing is cleanedu up. This
    routine also resets the stash, and deallocates the memory used

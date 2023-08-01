@@ -397,7 +397,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 }
 
 //
-// Function for the anlytic solution
+// Function for the analytic solution
 //
 double solution(double x, double y)
 {

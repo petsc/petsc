@@ -460,7 +460,7 @@ static cJSON_bool print_number(const cJSON *const item, printbuffer *const outpu
   } else if (d == (double)item->valueint) {
     length = snprintf((char *)number_buffer, sizeof(number_buffer) / sizeof(number_buffer[0]), "%d", item->valueint);
   } else {
-    /* Try 15 decimal places of precision to avoid nonsignificant nonzero digits */
+    /* Try 15 decimal places of precision to avoid insignificant nonzero digits */
     length = snprintf((char *)number_buffer, sizeof(number_buffer) / sizeof(number_buffer[0]), "%1.15g", d);
 
     /* Check whether the original double can be recovered */

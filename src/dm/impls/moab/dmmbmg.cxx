@@ -327,7 +327,7 @@ PETSC_EXTERN PetscErrorCode DMCreateInterpolation_Moab(DM dmp, DM dmc, Mat *inte
 
     /* Compute the actual interpolation weights when projecting solution/residual between levels */
     if (use_consistent_bases) {
-      /* Use the cached values of natural parameteric coordinates and basis pre-evaluated.
+      /* Use the cached values of natural parametric coordinates and basis pre-evaluated.
          We are making an assumption here that UMR used in GMG to generate the hierarchy uses
          the same template for all elements; This will fail for mixed element meshes (TRI/QUAD).
 

@@ -172,7 +172,7 @@ PetscErrorCode VecAssemblyEnd(Vec vec)
   Level: beginner
 
   Notes:
-  This and `VecSetValuesCOO()` provide an alernative API to using `VecSetValues()` to provide vector values.
+  This and `VecSetValuesCOO()` provide an alternative API to using `VecSetValues()` to provide vector values.
 
   This API is particularly efficient for use on GPUs.
 
@@ -219,7 +219,7 @@ PetscErrorCode VecSetPreallocationCOO(Vec x, PetscCount ncoo, const PetscInt coo
   Level: beginner
 
   Notes:
-  This and `VecSetValuesCOO()` provide an alernative API to using `VecSetValuesLocal()` to provide vector values.
+  This and `VecSetValuesCOO()` provide an alternative API to using `VecSetValuesLocal()` to provide vector values.
 
   This API is particularly efficient for use on GPUs.
 
@@ -263,7 +263,7 @@ PetscErrorCode VecSetPreallocationCOOLocal(Vec x, PetscCount ncoo, PetscInt coo_
   Level: beginner
 
   Note:
-  This and `VecSetPreallocationCOO() or ``VecSetPreallocationCOOLocal()` provide an alernative API to using `VecSetValues()` to provide vector values.
+  This and `VecSetPreallocationCOO() or ``VecSetPreallocationCOOLocal()` provide an alternative API to using `VecSetValues()` to provide vector values.
 
   This API is particularly efficient for use on GPUs.
 

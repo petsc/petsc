@@ -262,7 +262,7 @@ PETSC_INTERN PetscErrorCode MatSeqAIJKokkosGenerateTranspose_Private(Mat A, Kokk
 
   PetscFunctionBegin;
   PetscCheck(akok, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Unexpected NULL (Mat_SeqAIJKokkos*)A->spptr");
-  PetscCallCXX(akok->a_dual.sync_device()); // Sync A's valeus since we are going to access them on device
+  PetscCallCXX(akok->a_dual.sync_device()); // Sync A's values since we are going to access them on device
 
   const auto &Aa = akok->a_dual.view_device();
 

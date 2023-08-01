@@ -129,7 +129,7 @@ static PetscErrorCode PCDestroy_GAMG_AGG(PC pc)
 
    Input Parameter:
    . pc - the preconditioner context
-   . ndm - dimesion of data (used for dof/vertex for Stokes)
+   . ndm - dimension of data (used for dof/vertex for Stokes)
    . a_nloc - number of vertices local
    . coords - [a_nloc][ndm] - interleaved coordinate data: {x_0, y_0, z_0, x_1, y_1, ...}
 */
