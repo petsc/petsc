@@ -67,9 +67,9 @@
 #define TSRK5F    '5f'
 #define TSRK5DP   '5dp'
 #define TSRK5BS   '5bs'
-#define TSRK6VR   "6vr"
-#define TSRK7VR   "7vr"
-#define TSRK8VR   "8vr"
+#define TSRK6VR   '6vr'
+#define TSRK7VR   '7vr'
+#define TSRK8VR   '8vr'
 
 #define TSMPRKType   character*(80)
 #define TSMPRKPM2     'pm2'
