@@ -47,8 +47,14 @@ getautoconfargs:
 
 #********* Rules for make clangformat and checking violation of coding standards **************************************************************
 
-# Format all the source code in the given directory and down according to the file .clang_format
-clangformat:
+# Check the version of clang-format matches PETSc requirement
+checkclangformatversion:
+	@version=`clang-format --version | cut -d" " -f3 | cut -d"." -f 1` ;\
+         if [ "$$version" == "version" ]; then version=`clang-format --version | cut -d" " -f4 | cut -d"." -f 1`; fi;\
+         if [ $$version != 16 ]; then echo "Require clang-format version 16! Currently used clang-format version is $$version" ;false ; fi
+
+# Format all the source code in the given directory and down according to the file $PETSC_DIR/.clang_format
+clangformat: checkclangformatversion
 	-@git --no-pager ls-files -z ${GITCFSRC} | xargs -0 -P $(MAKE_NP) -L 10 clang-format -i
 
 GITSRC = '*.[chF]' '*.F90' '*.hpp' '*.cpp' '*.cxx' '*.cu' ${GITSRCEXCL}
