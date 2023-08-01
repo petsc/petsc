@@ -112,7 +112,7 @@ static PetscErrorCode PCGAMGCreateLevel_GAMG(PC pc, Mat Amat_fine, PetscInt cr_b
       new_size     = new_new_size;
       PetscCall(PetscInfo(pc, "%s: Fine grid with Cuda. %" PetscInt_FMT " nodes. Change new active set size %d --> %d (devCount=%d #nodes=%" PetscInt_FMT ")\n", ((PetscObject)pc)->prefix, r_nnodes, nactive, new_size, devCount, r_nnodes));
     } else {
-      PetscCall(PetscInfo(pc, "%s: With Cuda but no device. Use heuristics.", ((PetscObject)pc)->prefix));
+      PetscCall(PetscInfo(pc, "%s: With Cuda but no device. Use heuristics.\n", ((PetscObject)pc)->prefix));
       goto HEURISTIC;
     }
 #else

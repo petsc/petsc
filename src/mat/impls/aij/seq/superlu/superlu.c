@@ -322,7 +322,7 @@ static PetscErrorCode MatLUFactorNumeric_SuperLU(Mat F, Mat A, const MatFactorIn
                       of situations where the computed solution can be more
                       accurate than the value of RCOND would suggest.
          */
-        PetscCall(PetscInfo(F, "Matrix factor U is nonsingular, but is singular to working precision. The solution is computed. info %" PetscInt_FMT, sinfo));
+        PetscCall(PetscInfo(F, "Matrix factor U is nonsingular, but is singular to working precision. The solution is computed. info %" PetscInt_FMT "\n", sinfo));
       } else { /* sinfo > lu->A.ncol + 1 */
         F->factorerrortype = MAT_FACTOR_OUTMEMORY;
         PetscCall(PetscInfo(F, "Number of bytes allocated when memory allocation fails %" PetscInt_FMT "\n", sinfo));

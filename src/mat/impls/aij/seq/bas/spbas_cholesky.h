@@ -89,7 +89,7 @@ PetscErrorCode spbas_cholesky_garbage_collect(spbas_matrix *result,         /* I
   if (n_alloc_max != n_alloc_est && n_alloc < result->n_alloc_icol) n_alloc = result->n_alloc_icol;
 
   /* Motivate dimension choice */
-  PetscCall(PetscInfo(NULL, "   Allocating %" PetscInt_FMT " nonzeros: ", n_alloc));
+  PetscCall(PetscInfo(NULL, "   Allocating %" PetscInt_FMT " nonzeros: ", n_alloc)); /* checkbadSource \n */
   if (n_alloc_max == n_alloc_est) {
     PetscCall(PetscInfo(NULL, "this is the correct size\n"));
   } else if (n_alloc_now >= n_alloc_est) {

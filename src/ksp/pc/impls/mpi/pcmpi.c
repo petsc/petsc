@@ -431,7 +431,7 @@ PetscErrorCode PCMPIServerBegin(void)
   PetscMPIInt rank;
 
   PetscFunctionBegin;
-  PetscCall(PetscInfo(NULL, "Starting MPI Linear Solver Server"));
+  PetscCall(PetscInfo(NULL, "Starting MPI Linear Solver Server\n"));
   if (PetscDefined(USE_SINGLE_LIBRARY)) {
     PetscCall(VecInitializePackage());
     PetscCall(MatInitializePackage());

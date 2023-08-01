@@ -87,8 +87,8 @@ static PetscErrorCode testIdentity(DM dm, PetscBool dmIsSimplicial, PetscInt cel
           offset += count;
         }
       }
-      PetscCall(PetscSNPrintfCount(strBuf + offset, BUFSIZ - offset, ")\n", &count));
-      PetscCall(PetscInfo(dm, "%s", strBuf));
+      PetscCall(PetscSNPrintfCount(strBuf + offset, BUFSIZ - offset, ")", &count));
+      PetscCall(PetscInfo(dm, "%s\n", strBuf));
     }
   }
 

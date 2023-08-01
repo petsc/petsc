@@ -642,7 +642,7 @@ static PetscErrorCode LandauDMCreateVMeshes(MPI_Comm comm_self, const PetscInt d
           }
           PetscCall(VecRestoreArray(coords, &x));
           PetscCall(PetscObjectSetName((PetscObject)ctx->plex[grid], ctx->filename));
-          PetscCall(PetscInfo(ctx->plex[grid], "%d) Read %s mesh file (%s)", (int)grid, ctx->filename, str));
+          PetscCall(PetscInfo(ctx->plex[grid], "%d) Read %s mesh file (%s)\n", (int)grid, ctx->filename, str));
           PetscCall(DMViewFromOptions(ctx->plex[grid], NULL, str));
         } else {
           PetscInt       numCells = ctx->simplex ? 12 : 6, cell_size = ctx->simplex ? 3 : 4, j;
@@ -693,7 +693,7 @@ static PetscErrorCode LandauDMCreateVMeshes(MPI_Comm comm_self, const PetscInt d
           coords[j++][1] = 0;
           PetscCall(DMPlexCreateFromCellListPetsc(comm_self, 2, numCells, numVerts, cell_size, ctx->interpolate, pcell, 2, flatCoords, &ctx->plex[grid]));
           PetscCall(PetscObjectSetName((PetscObject)ctx->plex[grid], "semi-circle"));
-          PetscCall(PetscInfo(ctx->plex[grid], "\t%" PetscInt_FMT ") Make circle %s mesh", grid, ctx->simplex ? "simplex" : "tensor"));
+          PetscCall(PetscInfo(ctx->plex[grid], "\t%" PetscInt_FMT ") Make circle %s mesh\n", grid, ctx->simplex ? "simplex" : "tensor"));
         }
       } else SETERRQ(ctx->comm, PETSC_ERR_PLIB, "Velocity space meshes does not support 3V cubed sphere or simplex");
       PetscCall(DMSetFromOptions(ctx->plex[grid]));

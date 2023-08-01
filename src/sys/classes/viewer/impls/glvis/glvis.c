@@ -796,17 +796,11 @@ static PetscErrorCode PetscViewerASCIISocketOpen(MPI_Comm comm, const char *host
      of fd to indicate it was impossible to open the socket, or add another return argument to it indicating the socket was not opened.
    */
   if (PetscUnlikely(ierr)) {
-    char err[1024];
-
-    PetscCall(PetscSNPrintf(err, 1024, "Cannot connect to socket on %s:%" PetscInt_FMT ". Socket visualization is disabled\n", hostname, port));
-    PetscCall(PetscInfo(NULL, "%s", err));
+    PetscCall(PetscInfo(NULL, "Cannot connect to socket on %s:%" PetscInt_FMT ". Socket visualization is disabled\n", hostname, port));
     *viewer = NULL;
     PetscFunctionReturn(PETSC_SUCCESS);
   } else {
-    char msg[1024];
-
-    PetscCall(PetscSNPrintf(msg, 1024, "Successfully connect to socket on %s:%" PetscInt_FMT ". Socket visualization is enabled\n", hostname, port));
-    PetscCall(PetscInfo(NULL, "%s", msg));
+    PetscCall(PetscInfo(NULL, "Successfully connect to socket on %s:%" PetscInt_FMT ". Socket visualization is enabled\n", hostname, port));
   }
   stream = fdopen(fd, "w"); /* Not possible on Windows */
   PetscCheck(stream, PETSC_COMM_SELF, PETSC_ERR_SYS, "Cannot open stream from socket %s:%" PetscInt_FMT, hostname, port);
