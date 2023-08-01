@@ -584,7 +584,7 @@ static PetscErrorCode PetscFEIntegrateHybridResidual_Basic(PetscDS ds, PetscDS d
   PetscCall(PetscDSGetNumFields(ds, &Nf));
   PetscCall(PetscDSGetTotalDimension(ds, &totDim));
   PetscCall(PetscDSGetTotalDimension(dsIn, &totDimIn));
-  PetscCall(PetscDSGetComponentOffsetsCohesive(dsIn, s, &uOff));
+  PetscCall(PetscDSGetComponentOffsetsCohesive(dsIn, 0, &uOff)); // Change 0 to s for one-sided offsets
   PetscCall(PetscDSGetComponentDerivativeOffsetsCohesive(dsIn, s, &uOff_x));
   PetscCall(PetscDSGetFieldOffsetCohesive(ds, field, &fOffset));
   PetscCall(PetscDSGetWeakForm(ds, &wf));
@@ -1003,7 +1003,7 @@ PetscErrorCode PetscFEIntegrateHybridJacobian_Basic(PetscDS ds, PetscDS dsIn, Pe
   PetscCall(PetscFEGetSpatialDimension(feI, &dim));
   PetscCall(PetscFEGetQuadrature(feI, &quad));
   PetscCall(PetscDSGetTotalDimension(ds, &totDim));
-  PetscCall(PetscDSGetComponentOffsetsCohesive(ds, s, &uOff));
+  PetscCall(PetscDSGetComponentOffsetsCohesive(ds, 0, &uOff)); // Change 0 to s for one-sided offsets
   PetscCall(PetscDSGetComponentDerivativeOffsetsCohesive(ds, s, &uOff_x));
   PetscCall(PetscDSGetWeakForm(ds, &wf));
   switch (jtype) {
