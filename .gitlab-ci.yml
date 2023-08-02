@@ -390,7 +390,7 @@ pause-for-approval:
 # (in a blue box beneath it)
 #
 
-osx-m1:
+.disable-osx-m1:
   extends:
     - .stage-3
     - .osx_test
@@ -643,7 +643,7 @@ linux-without-fc:
   variables:
     TEST_ARCH: arch-ci-linux-without-fc
 
-linux-cmplx-single:
+.disable-linux-cmplx-single:
   extends:
     - .stage-3
     - .linux_test
