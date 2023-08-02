@@ -621,7 +621,7 @@ Parallel Communication
 
 When used in a message-passing environment, all communication within
 PETSc is done through MPI, the message-passing interface standard
-:cite:`MPI-final`. Any file that includes ``petscsys.h`` (or
+:cite:`mpi-final`. Any file that includes ``petscsys.h`` (or
 any other PETSc include file) can freely use any MPI routine.
 
 .. _sec_graphics:

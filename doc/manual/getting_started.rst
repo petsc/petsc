@@ -145,7 +145,7 @@ subdirectories give the possible values for ``$PETSC_ARCH``.
 See :any:`handson` to immediately jump in and run PETSc code.
 
 All PETSc programs use the MPI (Message Passing Interface) standard for
-message-passing communication :cite:`MPI-final`. Thus, to
+message-passing communication :cite:`mpi-final`. Thus, to
 execute PETSc programs, users must know the procedure for beginning MPI
 jobs on their selected computer system(s). For instance, when using the
 `MPICH <https://www.mpich.org/>`__ implementation of MPI and many

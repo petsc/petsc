@@ -1274,7 +1274,7 @@ method. The method for initializing the trust-region radius is set with
 the command line argument
 ``-tao_nls_init_type <constant,direction,interpolation>``;
 ``interpolation``, which chooses an initial value based on the
-interpolation scheme found in :cite:`CGT`, is the default.
+interpolation scheme found in :cite:`cgt`, is the default.
 This scheme performs a number of function and gradient evaluations to
 determine a radius such that the reduction predicted by the quadratic
 model along the gradient direction coincides with the actual reduction
@@ -1521,7 +1521,7 @@ The method for computing an initial trust-region radius is set with the
 command line arguments
 ``-tao_ntr_init_type <constant,direction,interpolation>``;
 ``interpolation``, which chooses an initial value based on the
-interpolation scheme found in :cite:`CGT`, is the default.
+interpolation scheme found in :cite:`cgt`, is the default.
 This scheme performs a number of function and gradient evaluations to
 determine a radius such that the reduction predicted by the quadratic
 model along the gradient direction coincides with the actual reduction
@@ -1645,7 +1645,7 @@ should be performed simultaneously when using this algorithm.
 
 Five variations are currently supported by the TAO implementation: the
 Fletcher-Reeves method, the Polak-Ribiére method, the Polak-Ribiére-Plus
-method :cite:`NW99`, the Hestenes-Stiefel method, and the
+method :cite:`nw99`, the Hestenes-Stiefel method, and the
 Dai-Yuan method. These conjugate gradient methods can be specified by
 using the command line argument ``-tao_cg_type <fr,pr,prp,hs,dy>``,
 respectively. The default value is ``prp``.
@@ -2488,10 +2488,10 @@ One algorithm for solving the least squares problem
 :math:`F` is unavailable is the model-based POUNDERS (Practical
 Optimization Using No Derivatives for sums of Squares) algorithm
 (``tao_pounders``). POUNDERS employs a derivative-free trust-region
-framework as described in :cite:`Dfobook` in order to
+framework as described in :cite:`dfobook` in order to
 converge to local minimizers. An example of this version of POUNDERS
 applied to a practical least-squares problem can be found in
-:cite:`UNEDF0`.
+:cite:`unedf0`.
 
 Derivative-Free Trust-Region Algorithm
 """"""""""""""""""""""""""""""""""""""

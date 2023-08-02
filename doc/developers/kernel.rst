@@ -11,7 +11,7 @@ support for
 * memory management,
 * profiling,
 * object management,
-* Fortran interfaces (see :cite:`BalayBrownKnepleyMcInnesSmith2015`)
+* Fortran interfaces (see :cite:`balaybrownknepleymcinnessmith2015`)
 * mechanism for generating appropriate citations for algorithms and software used in PETSc (see :cite:`knepley2013accurately`)
 * file I/O,
 * an options database, and

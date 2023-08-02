@@ -21,7 +21,7 @@ techniques and their associated options can be selected at runtime.
 
 The combination of a Krylov subspace method and a preconditioner is at
 the center of most modern numerical codes for the iterative solution of
-linear systems. Many textbooks (e.g. :cite:`fgn` :cite:`VanDerVorst2003`, or :cite:`saad2003`) provide an
+linear systems. Many textbooks (e.g. :cite:`fgn` :cite:`vandervorst2003`, or :cite:`saad2003`) provide an
 overview of the theory of such methods.
 The ``KSP`` package, discussed in
 :any:`sec_ksp`, provides many popular Krylov subspace
@@ -325,7 +325,7 @@ can be used by the options database command
   * - Conjugate Gradient :cite:`hs:52`
     - ``KSPCG``
     - ``cg``
-  * - Pipelined Conjugate Gradients :cite:`GhyselsVanroose2014`
+  * - Pipelined Conjugate Gradients :cite:`ghyselsvanroose2014`
     - ``KSPPIPECG``
     - ``pipecg``
   * - Pipelined Conjugate Gradients (Gropp)
@@ -337,10 +337,10 @@ can be used by the options database command
   * - Conjugate Gradients for the Normal Equations
     - ``KSPCGNE``
     - ``cgne``
-  * - Flexible Conjugate Gradients :cite:`flexibleCG`
+  * - Flexible Conjugate Gradients :cite:`flexiblecg`
     - ``KSPFCG``
     - ``fcg``
-  * -  Pipelined, Flexible Conjugate Gradients :cite:`SananSchneppMay2016`
+  * -  Pipelined, Flexible Conjugate Gradients :cite:`sananschneppmay2016`
     - ``KSPPIPEFCG``
     - ``pipefcg``
   * - Conjugate Gradients for Least Squares
@@ -379,22 +379,22 @@ can be used by the options database command
   * - Enhanced BiCGSTAB(L)
     - ``KSPBCGSL``
     - ``bcgsl``
-  * - Minimal Residual Method :cite:`PaigeSaunders1975`
+  * - Minimal Residual Method :cite:`paigesaunders1975`
     - ``KSPMINRES``
     - ``minres``
   * - Generalized Minimal Residual :cite:`ss:86`
     - ``KSPGMRES``
     - ``gmres``
-  * - Flexible Generalized Minimal Residual :cite:`Saad1993`
+  * - Flexible Generalized Minimal Residual :cite:`saad1993`
     - ``KSPFGMRES``
     - ``fgmres``
   * - Deflated Generalized Minimal Residual
     - ``KSPDGMRES``
     - ``dgmres``
-  * - Pipelined Generalized Minimal Residual :cite:`GhyselsAshbyMeerbergenVanroose2013`
+  * - Pipelined Generalized Minimal Residual :cite:`ghyselsashbymeerbergenvanroose2013`
     - ``KSPPGMRES``
     - ``pgmres``
-  * - Pipelined, Flexible Generalized Minimal Residual :cite:`SananSchneppMay2016`
+  * - Pipelined, Flexible Generalized Minimal Residual :cite:`sananschneppmay2016`
     - ``KSPPIPEFGMRES``
     - ``pipefgmres``
   * - Generalized Minimal Residual with Accelerated Restart
@@ -409,7 +409,7 @@ can be used by the options database command
   * - Pipelined Conjugate Residual
     - ``KSPPIPECR``
     - ``pipecr``
-  * - Pipelined, Flexible Conjugate Residual :cite:`SananSchneppMay2016`
+  * - Pipelined, Flexible Conjugate Residual :cite:`sananschneppmay2016`
     - ``KSPPIPEGCR``
     - ``pipegcr``
   * - FETI-DP
@@ -427,7 +427,7 @@ can be used by the options database command
   * - Least Squares Method
     - ``KSPLSQR``
     - ``lsqr``
-  * - Symmetric LQ Method :cite:`PaigeSaunders1975`
+  * - Symmetric LQ Method :cite:`paigesaunders1975`
     - ``KSPSYMMLQ``
     - ``symmlq``
   * - TSIRM
@@ -1093,7 +1093,7 @@ used (see :any:`sec_mg`). PETSc provides a fully supported (smoothed) aggregatio
 ``PCGAMGSetType(pc,PCGAMGAGG)``. Examples of extension are a reference implementations of
 a classical AMG method (``-pc_gamg_type classical``), a (2D) hybrid geometric
 AMG method (``-pc_gamg_type geo``) that are not supported. A 2.5D AMG method DofColumns
-:cite:`IsaacStadlerGhattas2015` supports 2D coarsenings extruded in the third dimension. ``PCGAMG`` does require the use
+:cite:`isaacstadlerghattas2015` supports 2D coarsenings extruded in the third dimension. ``PCGAMG`` does require the use
 of ``MATAIJ`` matrices. For instance, ``MATBAIJ`` matrices are not supported. One
 can use ``MATAIJ`` instead of ``MATBAIJ`` without changing any code other than the
 constructor (or the ``-mat_type`` from the command line). For instance,
@@ -1339,7 +1339,7 @@ so that our discrete optimization problem is
 
 and we will treat each row of the interpolator as a separate optimization problem. We could allow an arbitrary sparsity pattern, or try to determine adaptively, as is done in sparse approximate inverse preconditioning. However, we know the supports of the basis functions in finite elements, and thus the naive sparsity pattern from local interpolation can be used.
 
-We note here that the BAMG framework of Brannick et al. :cite:`BrandtBrannickKahlLivshits2011` does not use fine and coarse functions spaces, but rather a fine point/coarse point division which we will not employ here. Our general PETSc routine should work for both since the input would be the checking set (fine basis coefficients or fine space points) and the approximation set (coarse basis coefficients in the support or coarse points in the sparsity pattern).
+We note here that the BAMG framework of Brannick et al. :cite:`brandtbrannickkahllivshits2011` does not use fine and coarse functions spaces, but rather a fine point/coarse point division which we will not employ here. Our general PETSc routine should work for both since the input would be the checking set (fine basis coefficients or fine space points) and the approximation set (coarse basis coefficients in the support or coarse points in the sparsity pattern).
 
 We can easily solve the above problem using QR factorization. However, there are many smooth functions from the coarse space that we want interpolated accurately, and a single :math:`f` would not constrain the values :math:`P_{ij}`` well. Therefore, we will use several functions :math:`\{f_k\}` in our minimization,
 

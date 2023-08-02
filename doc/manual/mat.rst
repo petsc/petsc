@@ -553,27 +553,27 @@ applications based on a fixed number of stored update vectors.
     - PETSc Type
     - Name
     - Property
-  * - "Good" Broyden   :cite:`KEYPREFIX-griewank2012broyden`
+  * - "Good" Broyden   :cite:`keyprefix-griewank2012broyden`
     - ``MATLMVMBrdn``
     - ``lmvmbrdn``
     - Square
-  * - "Bad" Broyden :cite:`KEYPREFIX-griewank2012broyden`
+  * - "Bad" Broyden :cite:`keyprefix-griewank2012broyden`
     - ``MATLMVMBadBrdn``
     - ``lmvmbadbrdn``
     - Square
-  * - Symmetric Rank-1 :cite:`KEYPREFIX-NW99`
+  * - Symmetric Rank-1 :cite:`keyprefix-nw99`
     - ``MATLMVMSR1``
     - ``lmvmsr1``
     - Symmetric
-  * - Davidon-Fletcher-Powell (DFP) :cite:`KEYPREFIX-NW99`
+  * - Davidon-Fletcher-Powell (DFP) :cite:`keyprefix-nw99`
     - ``MATLMVMDFP``
     - ``lmvmdfp``
     - SPD
-  * - Broyden-Fletcher-Goldfarb-Shanno (BFGS) :cite:`KEYPREFIX-NW99`
+  * - Broyden-Fletcher-Goldfarb-Shanno (BFGS) :cite:`keyprefix-nw99`
     - ``MATLMVMBFGS``
     - ``lmvmbfgs``
     - SPD
-  * - Restricted Broyden Family :cite:`KEYPREFIX-erway2017solving`
+  * - Restricted Broyden Family :cite:`keyprefix-erway2017solving`
     - ``MATLMVMSymBrdn``
     - ``lmvmsymbrdn``
     - SPD
@@ -641,7 +641,7 @@ choices below:
    The number of updates to be used in the :math:`S` and :math:`Y`
    matrices is 1 by default (i.e.: the latest update only) and can be
    changed via ``-mat_lmvm_sigma_hist``. This technique is inspired by
-   Gilbert and Lemarechal :cite:`KEYPREFIX-Gilbert-Lemarechal`.
+   Gilbert and Lemarechal :cite:`keyprefix-gilbert-lemarechal`.
 
 -  ``diagonal`` – Uses a full-memory restricted Broyden update formula
    to construct a diagonal matrix for the Jacobian initialization.
@@ -649,7 +649,7 @@ choices below:
    footprint is restricted to only the vector representing the diagonal
    and some additional work vectors used in its construction. The
    diagonal terms are also re-scaled with every update as suggested in
-   :cite:`KEYPREFIX-Gilbert-Lemarechal`. This initialization requires
+   :cite:`keyprefix-gilbert-lemarechal`. This initialization requires
    the most computational effort of the available choices but typically
    results in a significant reduction in the number of function
    evaluations taken to compute a solution.
@@ -1347,5 +1347,5 @@ reduce fill in sparse matrix factorizations.
 
 .. bibliography:: /petsc.bib
    :filter: docname in docnames
-   :keyprefix: KEYPREFIX-
+   :keyprefix: keyprefix-
    :labelprefix: ref-

@@ -55,7 +55,7 @@ where integration by parts has added a boundary integral over the normal derivat
 Equation Definition
 -------------------
 
-The test functions :math:`v, q` and their derivatives are determined by the discretization, whereas the form of the integrand is determined by the physics. Given a quadrature rule to evaluate the form integral, we would only need the evaluation of the physics integrand at the quadrature points, given the values of the fields and their derivatives. The entire scheme is detailed in :cite:`KnepleyBrownRuppSmith13`. The kernels paired with test functions we will call :math:`f_0` and those paired with gradients of test functions will be called :math:`f_1`.
+The test functions :math:`v, q` and their derivatives are determined by the discretization, whereas the form of the integrand is determined by the physics. Given a quadrature rule to evaluate the form integral, we would only need the evaluation of the physics integrand at the quadrature points, given the values of the fields and their derivatives. The entire scheme is detailed in :cite:`knepleybrownruppsmith13`. The kernels paired with test functions we will call :math:`f_0` and those paired with gradients of test functions will be called :math:`f_1`.
 
 For example, the kernel for the continuity equation, paired with the pressure test function, is called ``f0_p`` and can be seen here
 
