@@ -4037,6 +4037,7 @@ PetscErrorCode TSSolve(TS ts, Vec u)
     PetscCall(TSMonitor(ts, ts->steps, ts->ptime, ts->vec_sol));
 
     if (ts->exact_final_time == TS_EXACTFINALTIME_INTERPOLATE && ts->ptime > ts->max_time) {
+      if (!u) u = ts->vec_sol;
       PetscCall(TSInterpolate(ts, ts->max_time, u));
       ts->solvetime = ts->max_time;
       solution      = u;
