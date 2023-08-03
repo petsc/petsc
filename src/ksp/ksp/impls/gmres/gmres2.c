@@ -10,10 +10,9 @@
 + ksp - iterative context obtained from `KSPCreate()`
 - fcn - orthogonalization function
 
-  Calling sequence:
-$   PetscErrorCode fcn(KSP ksp, PetscInt it);
-+   KSP - the solver context
--   it - the current iteration
+  Calling sequence of fcn:
++ ksp - the solver context
+- it  - the current iteration
 
   Options Database Keys:
 + -ksp_gmres_classicalgramschmidt - Activates KSPGMRESClassicalGramSchmidtOrthogonalization() (default)
@@ -31,7 +30,7 @@ $   PetscErrorCode fcn(KSP ksp, PetscInt it);
 `KSPGMRESSetCGSRefinementType()`, `KSPGMRESModifiedGramSchmidtOrthogonalization()`,
 `KSPGMRESClassicalGramSchmidtOrthogonalization()`, `KSPGMRESGetCGSRefinementType()`
 @*/
-PetscErrorCode KSPGMRESSetOrthogonalization(KSP ksp, PetscErrorCode (*fcn)(KSP, PetscInt))
+PetscErrorCode KSPGMRESSetOrthogonalization(KSP ksp, PetscErrorCode (*fcn)(KSP ksp, PetscInt it))
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
@@ -50,12 +49,9 @@ PetscErrorCode KSPGMRESSetOrthogonalization(KSP ksp, PetscErrorCode (*fcn)(KSP, 
   Output Parameter:
 . fcn - orthogonalization function
 
-  Calling sequence:
-.vb
-   PetscErrorCode fcn(KSP ksp, PetscInt it);
-.ve
-+   KSP - the solver context
--   it - the current iteration
+  Calling sequence of `fcn`:
++ ksp - the solver context
+- it  - the current iteration
 
   Options Database Keys:
 + -ksp_gmres_classicalgramschmidt - Activates KSPGMRESClassicalGramSchmidtOrthogonalization() (default)
@@ -72,7 +68,7 @@ PetscErrorCode KSPGMRESSetOrthogonalization(KSP ksp, PetscErrorCode (*fcn)(KSP, 
 .seealso: [](ch_ksp), `KSPGMRESSetRestart()`, `KSPGMRESSetPreAllocateVectors()`, `KSPGMRESSetCGSRefinementType()`, `KSPGMRESSetOrthogonalization()`,
           `KSPGMRESModifiedGramSchmidtOrthogonalization()`, `KSPGMRESClassicalGramSchmidtOrthogonalization()`, `KSPGMRESGetCGSRefinementType()`
 @*/
-PetscErrorCode KSPGMRESGetOrthogonalization(KSP ksp, PetscErrorCode (**fcn)(KSP, PetscInt))
+PetscErrorCode KSPGMRESGetOrthogonalization(KSP ksp, PetscErrorCode (**fcn)(KSP ksp, PetscInt it))
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);

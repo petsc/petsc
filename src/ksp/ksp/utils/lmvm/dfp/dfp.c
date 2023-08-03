@@ -6,8 +6,6 @@
   the forward product and inverse application of a Jacobian.
  */
 
-/*------------------------------------------------------------*/
-
 /*
   The solution method (approximate inverse Jacobian application) is
   matrix-vector product version of the recursive formula given in
@@ -71,8 +69,6 @@ PetscErrorCode MatSolve_LMVMDFP(Mat B, Vec F, Vec dX)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*------------------------------------------------------------*/
-
 /*
   The forward product for the approximate Jacobian is the matrix-free
   implementation of the recursive formula given in Equation 6.13 of
@@ -129,8 +125,6 @@ PetscErrorCode MatMult_LMVMDFP(Mat B, Vec X, Vec Z)
   PetscCall(PetscFree(alpha));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-
-/*------------------------------------------------------------*/
 
 static PetscErrorCode MatUpdate_LMVMDFP(Mat B, Vec X, Vec F)
 {
@@ -213,8 +207,6 @@ static PetscErrorCode MatUpdate_LMVMDFP(Mat B, Vec X, Vec F)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*------------------------------------------------------------*/
-
 static PetscErrorCode MatCopy_LMVMDFP(Mat B, Mat M, MatStructure str)
 {
   Mat_LMVM    *bdata = (Mat_LMVM *)B->data;
@@ -252,8 +244,6 @@ static PetscErrorCode MatCopy_LMVMDFP(Mat B, Mat M, MatStructure str)
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-
-/*------------------------------------------------------------*/
 
 static PetscErrorCode MatReset_LMVMDFP(Mat B, PetscBool destructive)
 {
@@ -301,8 +291,6 @@ static PetscErrorCode MatReset_LMVMDFP(Mat B, PetscBool destructive)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*------------------------------------------------------------*/
-
 static PetscErrorCode MatAllocate_LMVMDFP(Mat B, Vec X, Vec F)
 {
   Mat_LMVM    *lmvm = (Mat_LMVM *)B->data;
@@ -326,8 +314,6 @@ static PetscErrorCode MatAllocate_LMVMDFP(Mat B, Vec X, Vec F)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*------------------------------------------------------------*/
-
 static PetscErrorCode MatDestroy_LMVMDFP(Mat B)
 {
   Mat_LMVM    *lmvm = (Mat_LMVM *)B->data;
@@ -345,8 +331,6 @@ static PetscErrorCode MatDestroy_LMVMDFP(Mat B)
   PetscCall(MatDestroy_LMVM(B));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-
-/*------------------------------------------------------------*/
 
 static PetscErrorCode MatSetUp_LMVMDFP(Mat B)
 {
@@ -375,8 +359,6 @@ static PetscErrorCode MatSetUp_LMVMDFP(Mat B)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*------------------------------------------------------------*/
-
 static PetscErrorCode MatSetFromOptions_LMVMDFP(Mat B, PetscOptionItems *PetscOptionsObject)
 {
   PetscFunctionBegin;
@@ -386,8 +368,6 @@ static PetscErrorCode MatSetFromOptions_LMVMDFP(Mat B, PetscOptionItems *PetscOp
   PetscOptionsHeadEnd();
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-
-/*------------------------------------------------------------*/
 
 PetscErrorCode MatCreate_LMVMDFP(Mat B)
 {
@@ -414,8 +394,6 @@ PetscErrorCode MatCreate_LMVMDFP(Mat B)
   ldfp->phi   = 1.0;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-
-/*------------------------------------------------------------*/
 
 /*@
   MatCreateLMVMDFP - Creates a limited-memory Davidon-Fletcher-Powell (DFP) matrix

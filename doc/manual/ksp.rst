@@ -1088,7 +1088,7 @@ and then constructs a ``PCMG`` with Galerkin coarse grid operator
 construction. ``PCGAMG`` is designed from the beginning to be modular, to
 allow for new components to be added easily and also populates a
 multigrid preconditioner ``PCMG`` so generic multigrid parameters are
-used. PETSc provides a fully supported (smoothed) aggregation AMG, but supports the addition of new methods
+used (see :any:`sec_mg`). PETSc provides a fully supported (smoothed) aggregation AMG, but supports the addition of new methods
 (``-pc_type gamg -pc_gamg_type agg`` or ``PCSetType(pc,PCGAMG)`` and
 ``PCGAMGSetType(pc,PCGAMGAGG)``. Examples of extension are a reference implementations of
 a classical AMG method (``-pc_gamg_type classical``), a (2D) hybrid geometric

@@ -213,18 +213,17 @@ static PetscErrorCode KSPGCRSetModifyPC_GCR(KSP ksp, KSPGCRModifyPCFunction func
   Input Parameters:
 + ksp      - iterative context obtained from KSPCreate()
 . function - user defined function to modify the preconditioner
- .  ctx      - user provided context for the modify preconditioner function
+. ctx      - user provided context for the modify preconditioner function
 - destroy  - the function to use to destroy the user provided application context.
 
-  Calling sequence:
-$  PetscErrorCode function(KSP ksp, PetscInt n, PetscReal rnorm, void *ctx)
-+ ksp  - iterative context
-.  n     - the total number of GCR iterations that have occurred
-.  rnorm - 2-norm residual value
-- data - the user provided application context
+  Calling sequence of `function`:
++ ksp   - iterative context
+. n     - the total number of GCR iterations that have occurred
+. rnorm - 2-norm residual value
+- ctx   - the user provided application context
 
-  Calling sequence:
-$ PetscErrorCode destroy(void *ctx)
+  Calling sequence of `destroy`:
+. ctx - the user provided application context
 
   Level: intermediate
 
@@ -236,10 +235,10 @@ $ PetscErrorCode destroy(void *ctx)
 
 .seealso: [](ch_ksp), `KSP`, `KSPGCR`, `KSPGCRModifyPCNoChange()`, [](sec_flexibleksp)
  @*/
-PetscErrorCode KSPGCRSetModifyPC(KSP ksp, PetscErrorCode (*function)(KSP, PetscInt, PetscReal, void *), void *data, PetscErrorCode (*destroy)(void *))
+PetscErrorCode KSPGCRSetModifyPC(KSP ksp, PetscErrorCode (*function)(KSP ksp, PetscInt n, PetscReal rnorm, void *ctx), void *ctx, PetscErrorCode (*destroy)(void *ctx))
 {
   PetscFunctionBegin;
-  PetscUseMethod(ksp, "KSPGCRSetModifyPC_C", (KSP, PetscErrorCode(*)(KSP, PetscInt, PetscReal, void *), void *data, PetscErrorCode (*)(void *)), (ksp, function, data, destroy));
+  PetscUseMethod(ksp, "KSPGCRSetModifyPC_C", (KSP, PetscErrorCode(*)(KSP, PetscInt, PetscReal, void *), void *data, PetscErrorCode (*)(void *)), (ksp, function, ctx, destroy));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -280,7 +279,7 @@ static PetscErrorCode KSPGCRGetRestart_GCR(KSP ksp, PetscInt *restart)
   Note:
   The default value is 30.
 
-  Developer Notes:
+  Developer Note:
   The API could be made uniform for all `KSP` methods have have a restart.
 
 .seealso: [](ch_ksp), `KSPGCR`, `KSPSetTolerances()`, `KSPGCRGetRestart()`, `KSPGMRESSetRestart()`

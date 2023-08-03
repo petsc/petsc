@@ -1588,7 +1588,9 @@ PetscErrorCode PCSetFromOptions_GAMG(PC pc, PetscOptionItems *PetscOptionsObject
   call `MatSetBlockSize()` to indicate the number of degrees of freedom per grid point
   call `MatSetNearNullSpace()` (or `PCSetCoordinates()` if solving the equations of elasticity) to indicate the near null space of the operator
 
-  See [the Users Manual section on PCGAMG](sec_amg) for more details.
+  The many options for `PCMG` also work directly for `PCGAMG` such as controlling the smoothers on each level etc.
+
+  See [the Users Manual section on PCGAMG](sec_amg) and [the Users Manual section on PCMG](sec_mg)for more details.
 
 .seealso: `PCCreate()`, `PCSetType()`, `MatSetBlockSize()`, `PCMGType`, `PCSetCoordinates()`, `MatSetNearNullSpace()`, `PCGAMGSetType()`, `PCGAMGAGG`, `PCGAMGGEO`, `PCGAMGCLASSICAL`, `PCGAMGSetProcEqLim()`,
           `PCGAMGSetCoarseEqLim()`, `PCGAMGSetRepartition()`, `PCGAMGRegister()`, `PCGAMGSetReuseInterpolation()`, `PCGAMGASMSetUseAggs()`, `PCGAMGSetUseParallelCoarseGridSolve()`, `PCGAMGSetNlevels()`, `PCGAMGSetThreshold()`, `PCGAMGGetType()`, `PCGAMGSetReuseInterpolation()`, `PCGAMGSetUseSAEstEig()`

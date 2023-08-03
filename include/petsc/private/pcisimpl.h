@@ -65,11 +65,4 @@ typedef struct {
   PetscBool              reusesubmatrices;
 } PC_IS;
 
-PETSC_EXTERN PetscErrorCode PCISSetUp(PC, PetscBool, PetscBool);
-PETSC_EXTERN PetscErrorCode PCISDestroy(PC);
-PETSC_EXTERN PetscErrorCode PCISCreate(PC);
-PETSC_EXTERN PetscErrorCode PCISApplySchur(PC, Vec, Vec, Vec, Vec, Vec);
-PETSC_EXTERN PetscErrorCode PCISScatterArrayNToVecB(PetscScalar *, Vec, InsertMode, ScatterMode, PC);
-PETSC_EXTERN PetscErrorCode PCISApplyInvSchur(PC, Vec, Vec, Vec, Vec);
-
 #endif // PETSC_PCISIMPL_H

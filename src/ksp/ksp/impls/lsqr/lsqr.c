@@ -554,14 +554,16 @@ PetscErrorCode KSPView_LSQR(KSP ksp, PetscViewer viewer)
 + ksp   - iterative context
 . n     - iteration number
 . rnorm - 2-norm residual value (may be estimated)
-- ctx   - convergence context which must be created by `KSPConvergedDefaultCreate()`
+- ctx   - convergence context which must have been created by `KSPConvergedDefaultCreate()`
 
-  reason is set to:
-+   positive - if the iteration has converged;
-.   negative - if residual norm exceeds divergence threshold;
--   0 - otherwise.
+  Output Parameter:
+. reason - the convergence reason
+
+  Level: intermediate
 
   Notes:
+  This is not called directly but rather is passed to `KSPSetConvergenceTest()`. It is used automatically by `KSPLSQR`
+
   `KSPConvergedDefault()` is called first to check for convergence in A*x=b.
   If that does not determine convergence then checks convergence for the least squares problem, i.e. in min{|b-A*x|}.
   Possible convergence for the least squares problem (which is based on the residual of the normal equations) are `KSP_CONVERGED_RTOL_NORMAL` norm
@@ -570,8 +572,6 @@ PetscErrorCode KSPView_LSQR(KSP ksp, PetscViewer viewer)
   `KSP_CONVERGED_RTOL_NORMAL` is returned if ||A'*r|| < rtol * ||A|| * ||r||.
   Matrix norm ||A|| is iteratively refined estimate, see `KSPLSQRGetNorms()`.
   This criterion is now largely compatible with that in MATLAB `lsqr()`.
-
-  Level: intermediate
 
 .seealso: [](ch_ksp), `KSPLSQR`, `KSPSetConvergenceTest()`, `KSPSetTolerances()`, `KSPConvergedSkip()`, `KSPConvergedReason`, `KSPGetConvergedReason()`,
           `KSPConvergedDefaultSetUIRNorm()`, `KSPConvergedDefaultSetUMIRNorm()`, `KSPConvergedDefaultCreate()`, `KSPConvergedDefaultDestroy()`, `KSPConvergedDefault()`, `KSPLSQRGetNorms()`, `KSPLSQRSetExactMatNorm()`

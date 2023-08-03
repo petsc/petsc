@@ -1051,10 +1051,11 @@ static PetscErrorCode PCBDDCSetLocalAdjacencyGraph_BDDC(PC pc, PetscInt nvtxs, c
   Not collective
 
   Input Parameters:
-+ pc           - the preconditioning context.
-. nvtxs        - number of local vertices of the graph (i.e., the number of local dofs).
-. xadj, adjncy - the connectivity of the dofs in CSR format.
-- copymode     - supported modes are `PETSC_COPY_VALUES`, `PETSC_USE_POINTER` or `PETSC_OWN_POINTER`.
++ pc       - the preconditioning context.
+. nvtxs    - number of local vertices of the graph (i.e., the number of local dofs).
+. xadj     - CSR format row pointers for the connectivity of the dofs
+. adjncy   - CSR format column pointers for the connectivity of the dofs
+- copymode - supported modes are `PETSC_COPY_VALUES`, `PETSC_USE_POINTER` or `PETSC_OWN_POINTER`.
 
   Level: intermediate
 
@@ -1438,6 +1439,7 @@ static PetscErrorCode PCPostSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+// PetscClangLinter pragma disable: -fdoc-sowing-chars
 /*
   PCSetUp_BDDC - Prepares for the use of the BDDC preconditioner
   by setting data structures and options.
@@ -1447,9 +1449,6 @@ static PetscErrorCode PCPostSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
 
    Application Interface Routine: PCSetUp()
 
-  Note:
-  The interface routine PCSetUp() is not usually called directly by
-  the user, but instead is called by PCApply() if necessary.
 */
 PetscErrorCode PCSetUp_BDDC(PC pc)
 {
@@ -1734,6 +1733,7 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+// PetscClangLinter pragma disable: -fdoc-sowing-chars
 /*
    PCApply_BDDC - Applies the BDDC operator to a vector.
 
@@ -2077,7 +2077,7 @@ PetscErrorCode PCReset_BDDC(PC pc)
   PetscCall(VecDestroy(&pcbddc->temp_solution));
   PetscCall(VecDestroy(&pcbddc->original_rhs));
   /* free data created by PCIS */
-  PetscCall(PCISDestroy(pc));
+  PetscCall(PCISReset(pc));
 
   /* restore defaults */
   kspD = pcbddc->ksp_D;
@@ -2825,8 +2825,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_BDDC(PC pc)
   PetscCall(PetscNew(&pcbddc));
   pc->data = pcbddc;
 
-  /* create PCIS data structure */
-  PetscCall(PCISCreate(pc));
+  PetscCall(PCISInitialize(pc));
 
   /* create local graph structure */
   PetscCall(PCBDDCGraphCreate(&pcbddc->mat_graph));

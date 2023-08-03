@@ -9,11 +9,9 @@ typedef struct {
 } KSP_PGMRES;
 
 #define HH(a, b) (pgmres->hh_origin + (b) * (pgmres->max_k + 2) + (a))
-/* HH will be size (max_k+2)*(max_k+1)  -  think of HH as
-   being stored columnwise for access purposes. */
+/* HH will be size (max_k+2)*(max_k+1)  -  think of HH as being stored columnwise for access purposes. */
 #define HES(a, b) (pgmres->hes_origin + (b) * (pgmres->max_k + 1) + (a))
-/* HES will be size (max_k + 1) * (max_k + 1) -
-   again, think of HES as being stored columnwise */
+/* HES will be size (max_k + 1) * (max_k + 1) -  again, think of HES as being stored columnwise */
 #define CC(a) (pgmres->cc_origin + (a)) /* CC will be length (max_k+1) - cosines */
 #define SS(a) (pgmres->ss_origin + (a)) /* SS will be length (max_k+1) - sines */
 #define RS(a) (pgmres->rs_origin + (a)) /* RS will be length (max_k+2) - rt side */
@@ -23,5 +21,8 @@ typedef struct {
 #define VEC_TEMP       pgmres->vecs[0]              /* work space */
 #define VEC_TEMP_MATOP pgmres->vecs[1]              /* work space */
 #define VEC_VV(i)      pgmres->vecs[VEC_OFFSET + i] /* use to access othog basis vectors */
+
+#define PGMRES_DELTA_DIRECTIONS 10
+#define PGMRES_DEFAULT_MAXK     30
 
 #endif // PETSC_PGMRESIMPL_H

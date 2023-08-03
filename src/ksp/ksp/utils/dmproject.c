@@ -42,9 +42,7 @@ static PetscErrorCode DMGlobalToLocalSolve_project1(PetscInt dim, PetscReal time
 
 /*@
   DMGlobalToLocalSolve - Solve for the global vector that is mapped to a given local vector by `DMGlobalToLocalBegin()`/`DMGlobalToLocalEnd()` with mode
-  = `INSERT_VALUES`.  It is assumed that the sum of all the local vector sizes is greater than or equal to the global vector size, so the solution is
-  a least-squares solution.  It is also assumed that `DMLocalToGlobalBegin()`/`DMLocalToGlobalEnd()` with mode = `ADD_VALUES` is the adjoint of the
-  global-to-local map, so that the least-squares solution may be found by the normal equations.
+  `INSERT_VALUES`.
 
   Collective
 
@@ -59,9 +57,17 @@ static PetscErrorCode DMGlobalToLocalSolve_project1(PetscInt dim, PetscReal time
   Level: advanced
 
   Note:
-  If the `DM` is of type `DMPLEX`, then y is the solution of L' * D * L * y = L' * D * x, where D is a diagonal mask that is 1 for every point in
+  It is assumed that the sum of all the local vector sizes is greater than or equal to the global vector size, so the solution is
+  a least-squares solution.  It is also assumed that `DMLocalToGlobalBegin()`/`DMLocalToGlobalEnd()` with mode `ADD_VALUES` is the adjoint of the
+  global-to-local map, so that the least-squares solution may be found by the normal equations.
+
+  If the `DM` is of type `DMPLEX`, then `y` is the solution of L' * D * L * y = L' * D * x, where D is a diagonal mask that is 1 for every point in
   the union of the closures of the local cells and 0 otherwise.  This difference is only relevant if there are anchor points that are not in the
   closure of any local cell (see `DMPlexGetAnchors()`/`DMPlexSetAnchors()`).
+
+  What is L?
+
+  If this solves for a global vector from a local vector why is not called `DMLocalToGlobalSolve()`?
 
 .seealso: [](ch_ksp), `DM`, `DMGlobalToLocalBegin()`, `DMGlobalToLocalEnd()`, `DMLocalToGlobalBegin()`, `DMLocalToGlobalEnd()`, `DMPlexGetAnchors()`, `DMPlexSetAnchors()`
 @*/
@@ -151,7 +157,7 @@ PetscErrorCode DMGlobalToLocalSolve(DM dm, Vec x, Vec y)
 }
 
 /*@C
-  DMProjectField - This projects the given function of the input fields into the function space provided, putting the coefficients in a global vector.
+  DMProjectField - This projects a given function of the input fields into the function space provided by a `DM`, putting the coefficients in a global vector.
 
   Collective
 
@@ -165,31 +171,25 @@ PetscErrorCode DMGlobalToLocalSolve(DM dm, Vec x, Vec y)
   Output Parameter:
 . X - The output vector
 
-  Calling sequence of `func`:
-.vb
-   void funcs(PetscInt dim, PetscInt Nf, PetscInt NfAux,
-              const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
-              const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-              PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f[]);
-.ve
-+  dim          - The spatial dimension
-.  Nf           - The number of input fields
-.  NfAux        - The number of input auxiliary fields
-.  uOff         - The offset of each field in u[]
-.  uOff_x       - The offset of each field in u_x[]
-.  u            - The field values at this point in space
-.  u_t          - The field time derivative at this point in space (or `NULL`)
-.  u_x          - The field derivatives at this point in space
-.  aOff         - The offset of each auxiliary field in u[]
-.  aOff_x       - The offset of each auxiliary field in u_x[]
-.  a            - The auxiliary field values at this point in space
-.  a_t          - The auxiliary field time derivative at this point in space (or `NULL`)
-.  a_x          - The auxiliary field derivatives at this point in space
-.  t            - The current time
-.  x            - The coordinates of this point
-.  numConstants - The number of constants
-.  constants    - The value of each constant
--  f            - The value of the function at this point in space
+  Calling sequence of `funcs`:
++ dim          - The spatial dimension
+. Nf           - The number of input fields
+. NfAux        - The number of input auxiliary fields
+. uOff         - The offset of each field in u[]
+. uOff_x       - The offset of each field in u_x[]
+. u            - The field values at this point in space
+. u_t          - The field time derivative at this point in space (or `NULL`)
+. u_x          - The field derivatives at this point in space
+. aOff         - The offset of each auxiliary field in u[]
+. aOff_x       - The offset of each auxiliary field in u_x[]
+. a            - The auxiliary field values at this point in space
+. a_t          - The auxiliary field time derivative at this point in space (or `NULL`)
+. a_x          - The auxiliary field derivatives at this point in space
+. t            - The current time
+. x            - The coordinates of this point
+. numConstants - The number of constants
+. constants    - The value of each constant
+- f            - The value of the function at this point in space
 
   Level: advanced
 
@@ -201,7 +201,7 @@ PetscErrorCode DMGlobalToLocalSolve(DM dm, Vec x, Vec y)
 
 .seealso: [](ch_ksp), `DM`, `DMProjectFieldLocal()`, `DMProjectFieldLabelLocal()`, `DMProjectFunction()`, `DMComputeL2Diff()`
 @*/
-PetscErrorCode DMProjectField(DM dm, PetscReal time, Vec U, void (**funcs)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]), InsertMode mode, Vec X)
+PetscErrorCode DMProjectField(DM dm, PetscReal time, Vec U, void (**funcs)(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f[]), InsertMode mode, Vec X)
 {
   Vec localX, localU;
   DM  dmIn;

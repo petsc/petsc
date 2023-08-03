@@ -369,9 +369,15 @@ PETSC_EXTERN PetscErrorCode PCBDDCMatFETIDPGetSolution(Mat, Vec, Vec);
 PETSC_EXTERN PetscErrorCode PCBDDCFinalizePackage(void);
 PETSC_EXTERN PetscErrorCode PCBDDCInitializePackage(void);
 
+PETSC_EXTERN PetscErrorCode PCISInitialize(PC);
+PETSC_EXTERN PetscErrorCode PCISSetUp(PC, PetscBool, PetscBool);
 PETSC_EXTERN PetscErrorCode PCISSetUseStiffnessScaling(PC, PetscBool);
 PETSC_EXTERN PetscErrorCode PCISSetSubdomainScalingFactor(PC, PetscScalar);
 PETSC_EXTERN PetscErrorCode PCISSetSubdomainDiagonalScaling(PC, Vec);
+PETSC_EXTERN PetscErrorCode PCISScatterArrayNToVecB(PC, PetscScalar *, Vec, InsertMode, ScatterMode);
+PETSC_EXTERN PetscErrorCode PCISApplySchur(PC, Vec, Vec, Vec, Vec, Vec);
+PETSC_EXTERN PetscErrorCode PCISApplyInvSchur(PC, Vec, Vec, Vec, Vec);
+PETSC_EXTERN PetscErrorCode PCISReset(PC);
 
 PETSC_EXTERN PetscInt       PetscMGLevelId;
 PETSC_EXTERN PetscErrorCode PCMGSetType(PC, PCMGType);

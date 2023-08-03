@@ -6,8 +6,6 @@
   the forward product and inverse application of a Jacobian.
 */
 
-/*------------------------------------------------------------*/
-
 /*
   The solution method (approximate inverse Jacobian application) is adapted
    from Algorithm 7.4 on page 178 of Nocedal and Wright "Numerical Optimization"
@@ -66,8 +64,6 @@ PetscErrorCode MatSolve_LMVMBFGS(Mat B, Vec F, Vec dX)
   PetscCall(PetscFree(alpha));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-
-/*------------------------------------------------------------*/
 
 /*
   The forward product for the approximate Jacobian is the matrix-free
@@ -138,8 +134,6 @@ PetscErrorCode MatMult_LMVMBFGS(Mat B, Vec X, Vec Z)
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-
-/*------------------------------------------------------------*/
 
 static PetscErrorCode MatUpdate_LMVMBFGS(Mat B, Vec X, Vec F)
 {
@@ -222,8 +216,6 @@ static PetscErrorCode MatUpdate_LMVMBFGS(Mat B, Vec X, Vec F)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*------------------------------------------------------------*/
-
 static PetscErrorCode MatCopy_LMVMBFGS(Mat B, Mat M, MatStructure str)
 {
   Mat_LMVM    *bdata = (Mat_LMVM *)B->data;
@@ -262,8 +254,6 @@ static PetscErrorCode MatCopy_LMVMBFGS(Mat B, Mat M, MatStructure str)
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-
-/*------------------------------------------------------------*/
 
 static PetscErrorCode MatReset_LMVMBFGS(Mat B, PetscBool destructive)
 {
@@ -311,8 +301,6 @@ static PetscErrorCode MatReset_LMVMBFGS(Mat B, PetscBool destructive)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*------------------------------------------------------------*/
-
 static PetscErrorCode MatAllocate_LMVMBFGS(Mat B, Vec X, Vec F)
 {
   Mat_LMVM    *lmvm  = (Mat_LMVM *)B->data;
@@ -336,8 +324,6 @@ static PetscErrorCode MatAllocate_LMVMBFGS(Mat B, Vec X, Vec F)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*------------------------------------------------------------*/
-
 static PetscErrorCode MatDestroy_LMVMBFGS(Mat B)
 {
   Mat_LMVM    *lmvm  = (Mat_LMVM *)B->data;
@@ -355,8 +341,6 @@ static PetscErrorCode MatDestroy_LMVMBFGS(Mat B)
   PetscCall(MatDestroy_LMVM(B));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-
-/*------------------------------------------------------------*/
 
 static PetscErrorCode MatSetUp_LMVMBFGS(Mat B)
 {
@@ -386,8 +370,6 @@ static PetscErrorCode MatSetUp_LMVMBFGS(Mat B)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*------------------------------------------------------------*/
-
 static PetscErrorCode MatSetFromOptions_LMVMBFGS(Mat B, PetscOptionItems *PetscOptionsObject)
 {
   PetscFunctionBegin;
@@ -397,8 +379,6 @@ static PetscErrorCode MatSetFromOptions_LMVMBFGS(Mat B, PetscOptionItems *PetscO
   PetscOptionsHeadEnd();
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-
-/*------------------------------------------------------------*/
 
 PetscErrorCode MatCreate_LMVMBFGS(Mat B)
 {
@@ -425,8 +405,6 @@ PetscErrorCode MatCreate_LMVMBFGS(Mat B)
   lbfgs->phi   = 0.0;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-
-/*------------------------------------------------------------*/
 
 /*@
   MatCreateLMVMBFGS - Creates a limited-memory Broyden-Fletcher-Goldfarb-Shano (BFGS)

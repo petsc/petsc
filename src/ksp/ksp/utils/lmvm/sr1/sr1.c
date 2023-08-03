@@ -12,8 +12,6 @@ typedef struct {
   PetscReal *stp, *ytq;
 } Mat_LSR1;
 
-/*------------------------------------------------------------*/
-
 /*
   The solution method is adapted from Algorithm 8 of Erway and Marcia
   "On Solving Large-Scale Limited-Memory Quasi-Newton Equations"
@@ -66,8 +64,6 @@ static PetscErrorCode MatSolve_LMVMSR1(Mat B, Vec F, Vec dX)
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-
-/*------------------------------------------------------------*/
 
 /*
   The forward product is the matrix-free implementation of
@@ -123,8 +119,6 @@ static PetscErrorCode MatMult_LMVMSR1(Mat B, Vec X, Vec Z)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*------------------------------------------------------------*/
-
 static PetscErrorCode MatUpdate_LMVMSR1(Mat B, Vec X, Vec F)
 {
   Mat_LMVM   *lmvm = (Mat_LMVM *)B->data;
@@ -161,8 +155,6 @@ static PetscErrorCode MatUpdate_LMVMSR1(Mat B, Vec X, Vec F)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*------------------------------------------------------------*/
-
 static PetscErrorCode MatCopy_LMVMSR1(Mat B, Mat M, MatStructure str)
 {
   Mat_LMVM *bdata = (Mat_LMVM *)B->data;
@@ -183,8 +175,6 @@ static PetscErrorCode MatCopy_LMVMSR1(Mat B, Mat M, MatStructure str)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*------------------------------------------------------------*/
-
 static PetscErrorCode MatReset_LMVMSR1(Mat B, PetscBool destructive)
 {
   Mat_LMVM *lmvm = (Mat_LMVM *)B->data;
@@ -202,8 +192,6 @@ static PetscErrorCode MatReset_LMVMSR1(Mat B, PetscBool destructive)
   PetscCall(MatReset_LMVM(B, destructive));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-
-/*------------------------------------------------------------*/
 
 static PetscErrorCode MatAllocate_LMVMSR1(Mat B, Vec X, Vec F)
 {
@@ -224,8 +212,6 @@ static PetscErrorCode MatAllocate_LMVMSR1(Mat B, Vec X, Vec F)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*------------------------------------------------------------*/
-
 static PetscErrorCode MatDestroy_LMVMSR1(Mat B)
 {
   Mat_LMVM *lmvm = (Mat_LMVM *)B->data;
@@ -243,8 +229,6 @@ static PetscErrorCode MatDestroy_LMVMSR1(Mat B)
   PetscCall(MatDestroy_LMVM(B));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-
-/*------------------------------------------------------------*/
 
 static PetscErrorCode MatSetUp_LMVMSR1(Mat B)
 {
@@ -264,8 +248,6 @@ static PetscErrorCode MatSetUp_LMVMSR1(Mat B)
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-
-/*------------------------------------------------------------*/
 
 PetscErrorCode MatCreate_LMVMSR1(Mat B)
 {
@@ -294,8 +276,6 @@ PetscErrorCode MatCreate_LMVMSR1(Mat B)
   lsr1->needP = lsr1->needQ = PETSC_TRUE;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-
-/*------------------------------------------------------------*/
 
 /*@
   MatCreateLMVMSR1 - Creates a limited-memory Symmetric-Rank-1 approximation

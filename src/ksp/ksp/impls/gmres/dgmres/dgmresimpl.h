@@ -89,4 +89,8 @@ PETSC_EXTERN PetscLogEvent KSP_DGMRESApplyDeflation;
 #define IWORK    dgmres->iwork
 #define ORTH     dgmres->orth
 #define SMV      1
+
+#define GMRES_DELTA_DIRECTIONS 10
+#define GMRES_DEFAULT_MAXK     30
+
 #endif // PETSC_DGMRESIMPL_H

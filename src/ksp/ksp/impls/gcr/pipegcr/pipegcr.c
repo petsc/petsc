@@ -685,18 +685,17 @@ static PetscErrorCode KSPPIPEGCRSetModifyPC_PIPEGCR(KSP ksp, KSPPIPEGCRModifyPCF
   Input Parameters:
 + ksp      - iterative context obtained from KSPCreate()
 . function - user defined function to modify the preconditioner
- .  ctx      - user provided context for the modify preconditioner function
+. ctx      - user provided context for the modify preconditioner function
 - destroy  - the function to use to destroy the user provided application context.
 
-  Calling sequence:
-$  PetscErrorCode function(KSP ksp, PetscInt n, PetscReal rnorm, void *ctx)
-+ ksp  - iterative context
+  Calling sequence of `function`:
++ ksp   - iterative context
 . n     - the total number of PIPEGCR iterations that have occurred
 . rnorm - 2-norm residual value
-- data - the user provided application context
+- ctx   - the user provided application context
 
-  Calling sequence:
-$ PetscErrorCode destroy(void *ctx)
+  Calling sequence of `destroy`:
+. ctx - the user provided application context
 
   Level: intermediate
 
@@ -705,10 +704,10 @@ $ PetscErrorCode destroy(void *ctx)
 
 .seealso: [](ch_ksp), `KSPPIPEGCR`, `KSPPIPEGCRModifyPCNoChange()`
  @*/
-PetscErrorCode KSPPIPEGCRSetModifyPC(KSP ksp, PetscErrorCode (*function)(KSP, PetscInt, PetscReal, void *), void *data, PetscErrorCode (*destroy)(void *))
+PetscErrorCode KSPPIPEGCRSetModifyPC(KSP ksp, PetscErrorCode (*function)(KSP ksp, PetscInt n, PetscReal rnorm, void *ctx), void *ctx, PetscErrorCode (*destroy)(void *ctx))
 {
   PetscFunctionBegin;
-  PetscUseMethod(ksp, "KSPPIPEGCRSetModifyPC_C", (KSP, PetscErrorCode(*)(KSP, PetscInt, PetscReal, void *), void *data, PetscErrorCode (*)(void *)), (ksp, function, data, destroy));
+  PetscUseMethod(ksp, "KSPPIPEGCRSetModifyPC_C", (KSP, PetscErrorCode(*)(KSP, PetscInt, PetscReal, void *), void *ctx, PetscErrorCode (*)(void *)), (ksp, function, ctx, destroy));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -744,10 +743,8 @@ PetscErrorCode KSPPIPEGCRSetModifyPC(KSP ksp, PetscErrorCode (*function)(KSP, Pe
   Sascha M. Schnepp and Patrick Sanan
 
   Reference:
-    P. Sanan, S.M. Schnepp, and D.A. May,
-    "Pipelined, Flexible Krylov Subspace Methods,"
-    SIAM Journal on Scientific Computing 2016 38:5, C441-C470,
-    DOI: 10.1137/15M1049130
+. * - P. Sanan, S.M. Schnepp, and D.A. May, "Pipelined, Flexible Krylov Subspace Methods,"
+    SIAM Journal on Scientific Computing 2016 38:5, C441-C470, DOI: 10.1137/15M1049130
 
 .seealso: [](ch_ksp), [](sec_flexibleksp), [](sec_pipelineksp), [](doc_faq_pipelined), `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`,
           `KSPPIPEFGMRES`, `KSPPIPECG`, `KSPPIPECR`, `KSPPIPEFCG`, `KSPPIPEGCRSetTruncationType()`, `KSPPIPEGCRSetNprealloc()`, `KSPPIPEGCRSetUnrollW()`, `KSPPIPEGCRSetMmax()`

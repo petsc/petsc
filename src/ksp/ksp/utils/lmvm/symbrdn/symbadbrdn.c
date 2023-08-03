@@ -1,8 +1,6 @@
 #include <../src/ksp/ksp/utils/lmvm/symbrdn/symbrdn.h> /*I "petscksp.h" I*/
 #include <../src/ksp/ksp/utils/lmvm/diagbrdn/diagbrdn.h>
 
-/*------------------------------------------------------------*/
-
 static PetscErrorCode MatSolve_LMVMSymBadBrdn(Mat B, Vec F, Vec dX)
 {
   Mat_LMVM    *lmvm = (Mat_LMVM *)B->data;
@@ -64,11 +62,8 @@ static PetscErrorCode MatSolve_LMVMSymBadBrdn(Mat B, Vec F, Vec dX)
     PetscCall(VecDot(lsb->work, F, &wtf));
     PetscCall(VecAXPY(dX, lsb->phi * lsb->ytq[i] * PetscRealPart(wtf), lsb->work));
   }
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-
-/*------------------------------------------------------------*/
 
 static PetscErrorCode MatMult_LMVMSymBadBrdn(Mat B, Vec X, Vec Z)
 {
@@ -167,8 +162,6 @@ static PetscErrorCode MatMult_LMVMSymBadBrdn(Mat B, Vec X, Vec Z)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*------------------------------------------------------------*/
-
 static PetscErrorCode MatSetFromOptions_LMVMSymBadBrdn(Mat B, PetscOptionItems *PetscOptionsObject)
 {
   Mat_LMVM     *lmvm = (Mat_LMVM *)B->data;
@@ -186,8 +179,6 @@ static PetscErrorCode MatSetFromOptions_LMVMSymBadBrdn(Mat B, PetscOptionItems *
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*------------------------------------------------------------*/
-
 PetscErrorCode MatCreate_LMVMSymBadBrdn(Mat B)
 {
   Mat_LMVM *lmvm;
@@ -203,20 +194,9 @@ PetscErrorCode MatCreate_LMVMSymBadBrdn(Mat B)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*------------------------------------------------------------*/
-
 /*@
   MatCreateLMVMSymBadBroyden - Creates a limited-memory Symmetric "Bad" Broyden-type matrix used
-  for approximating Jacobians. L-SymBadBrdn is a convex combination of L-DFP and
-  L-BFGS such that SymBadBrdn^{-1} = (1 - phi)*BFGS^{-1} + phi*DFP^{-1}. The combination factor
-  phi is restricted to the range [0, 1], where the L-SymBadBrdn matrix is guaranteed
-  to be symmetric positive-definite. Note that this combination is on the inverses and not
-  on the forwards. For forward convex combinations, use the L-SymBrdn matrix.
-
-  To use the L-SymBrdn matrix with other vector types, the matrix must be
-  created using MatCreate() and MatSetType(), followed by `MatLMVMAllocate()`.
-  This ensures that the internal storage and work vectors are duplicated from the
-  correct type of vector.
+  for approximating Jacobians.
 
   Collective
 
@@ -240,6 +220,17 @@ PetscErrorCode MatCreate_LMVMSymBadBrdn(Mat B)
   Level: intermediate
 
   Note:
+  L-SymBadBrdn is a convex combination of L-DFP and
+  L-BFGS such that SymBadBrdn^{-1} = (1 - phi)*BFGS^{-1} + phi*DFP^{-1}. The combination factor
+  phi is restricted to the range [0, 1], where the L-SymBadBrdn matrix is guaranteed
+  to be symmetric positive-definite. Note that this combination is on the inverses and not
+  on the forwards. For forward convex combinations, use the L-SymBrdn matrix.
+
+  To use the L-SymBrdn matrix with other vector types, the matrix must be
+  created using `MatCreate()` and `MatSetType()`, followed by `MatLMVMAllocate()`.
+  This ensures that the internal storage and work vectors are duplicated from the
+  correct type of vector.
+
   It is recommended that one use the `MatCreate()`, `MatSetType()` and/or `MatSetFromOptions()`
   paradigm instead of this routine directly.
 
