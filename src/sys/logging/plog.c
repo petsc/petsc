@@ -1526,6 +1526,38 @@ M*/
 M*/
 
 /*@C
+  PetscLogStageGetPerfInfo - Return the performance information about the given stage
+
+  Input Parameters:
+. stage - The stage number or `PETSC_DETERMINE` for the current stage
+
+  Output Parameter:
+. info - This structure is filled with the performance information
+
+  Level: intermediate
+
+  Notes:
+  This is a low level routine used by the logging functions in PETSc.
+
+  A `PETSCLOGHANDLERDEFAULT` must be running for this to work, having been started either with
+  `PetscLogDefaultBegin()` or from the command line wth `-log_view`.
+
+.seealso: [](ch_profiling), `PetscLogEventRegister()`, `PetscLogEventBegin()`, `PetscLogEventEnd()`, `PetscLogGetDefaultHandler()`
+@*/
+PetscErrorCode PetscLogStageGetPerfInfo(PetscLogStage stage, PetscEventPerfInfo *info)
+{
+  PetscLogHandler     handler;
+  PetscEventPerfInfo *event_info;
+
+  PetscFunctionBegin;
+  PetscAssertPointer(info, 2);
+  PetscCall(PetscLogGetHandler(PETSCLOGHANDLERDEFAULT, &handler));
+  PetscCall(PetscLogHandlerGetStagePerfInfo(handler, stage, &event_info));
+  *info = *event_info;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@C
   PetscLogEventGetPerfInfo - Return the performance information about the given event in the given stage
 
   Input Parameters:

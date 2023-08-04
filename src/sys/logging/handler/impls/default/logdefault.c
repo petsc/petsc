@@ -301,6 +301,7 @@ static PetscErrorCode PetscLogHandlerDestroy_Default(PetscLogHandler h)
     PetscCall(PetscHMapEventDestroy(&def->eventInfoMap_th));
   }
   PetscCall(PetscObjectComposeFunction((PetscObject)h, "PetscLogHandlerGetEventPerfInfo_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)h, "PetscLogHandlerGetStagePerfInfo_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)h, "PetscLogHandlerSetLogActions_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)h, "PetscLogHandlerSetLogObjects_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)h, "PetscLogHandlerLogObjectState_C", NULL));
@@ -342,6 +343,17 @@ static PetscErrorCode PetscLogHandlerGetEventPerfInfo_Default(PetscLogHandler ha
   PetscCall(PetscLogEventPerfArrayGetRef(event_log, event, &event_info));
   event_info->id = event;
   *event_info_p  = event_info;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode PetscLogHandlerGetStagePerfInfo_Default(PetscLogHandler handler, PetscLogStage stage, PetscEventPerfInfo **stage_info_p)
+{
+  PetscStagePerf *stage_perf_info = NULL;
+
+  PetscFunctionBegin;
+  if (stage < 0) PetscCall(PetscLogStateGetCurrentStage(handler->state, &stage));
+  PetscCall(PetscLogHandlerDefaultGetStageInfo(handler, stage, &stage_perf_info));
+  *stage_info_p = &stage_perf_info->perfInfo;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1813,6 +1825,7 @@ PETSC_INTERN PetscErrorCode PetscLogHandlerCreate_Default(PetscLogHandler handle
   handler->ops->stagepop      = PetscLogHandlerStagePop_Default;
   handler->ops->view          = PetscLogHandlerView_Default;
   PetscCall(PetscObjectComposeFunction((PetscObject)handler, "PetscLogHandlerGetEventPerfInfo_C", PetscLogHandlerGetEventPerfInfo_Default));
+  PetscCall(PetscObjectComposeFunction((PetscObject)handler, "PetscLogHandlerGetStagePerfInfo_C", PetscLogHandlerGetStagePerfInfo_Default));
   PetscCall(PetscObjectComposeFunction((PetscObject)handler, "PetscLogHandlerSetLogActions_C", PetscLogHandlerSetLogActions_Default));
   PetscCall(PetscObjectComposeFunction((PetscObject)handler, "PetscLogHandlerSetLogObjects_C", PetscLogHandlerSetLogObjects_Default));
   PetscCall(PetscObjectComposeFunction((PetscObject)handler, "PetscLogHandlerLogObjectState_C", PetscLogHandlerLogObjectState_Default));

@@ -127,6 +127,7 @@ PETSC_EXTERN PetscErrorCode PetscLogHandlerStagePop(PetscLogHandler, PetscLogSta
 PETSC_EXTERN PetscErrorCode PetscLogHandlerView(PetscLogHandler, PetscViewer);
 
 PETSC_EXTERN PetscErrorCode PetscLogHandlerGetEventPerfInfo(PetscLogHandler, PetscLogStage, PetscLogEvent, PetscEventPerfInfo **);
+PETSC_EXTERN PetscErrorCode PetscLogHandlerGetStagePerfInfo(PetscLogHandler, PetscLogStage, PetscEventPerfInfo **);
 PETSC_EXTERN PetscErrorCode PetscLogHandlerSetLogActions(PetscLogHandler, PetscBool);
 PETSC_EXTERN PetscErrorCode PetscLogHandlerSetLogObjects(PetscLogHandler, PetscBool);
 PETSC_EXTERN PetscErrorCode PetscLogHandlerLogObjectState(PetscLogHandler, PetscObject, const char[], ...);
@@ -296,6 +297,7 @@ PETSC_EXTERN PetscErrorCode PetscLogStageSetVisible(PetscLogStage, PetscBool);
 PETSC_EXTERN PetscErrorCode PetscLogStageGetVisible(PetscLogStage, PetscBool *);
 PETSC_EXTERN PetscErrorCode PetscLogStageGetId(const char[], PetscLogStage *);
 PETSC_EXTERN PetscErrorCode PetscLogStageGetName(PetscLogEvent, const char **);
+PETSC_EXTERN PetscErrorCode PetscLogStageGetPerfInfo(PetscLogStage, PetscEventPerfInfo *);
 
 /* Event functions */
 PETSC_EXTERN PetscErrorCode PetscLogEventRegister(const char[], PetscClassId, PetscLogEvent *);
@@ -616,15 +618,16 @@ static inline int PetscMPIParallelComm(MPI_Comm comm)
   #define PetscLogFlops(n) ((void)(n), PETSC_SUCCESS)
   #define PetscGetFlops(a) (*(a) = 0.0, PETSC_SUCCESS)
 
-  #define PetscLogStageRegister(a, b)   ((void)(a), *(b) = -1, PETSC_SUCCESS)
-  #define PetscLogStagePush(a)          ((void)(a), PETSC_SUCCESS)
-  #define PetscLogStagePop()            PETSC_SUCCESS
-  #define PetscLogStageSetActive(a, b)  ((void)(a), (void)(b), PETSC_SUCCESS)
-  #define PetscLogStageGetActive(a, b)  ((void)(a), *(b) = PETSC_FALSE, PETSC_SUCCESS)
-  #define PetscLogStageGetVisible(a, b) ((void)(a), *(b) = PETSC_FALSE, PETSC_SUCCESS)
-  #define PetscLogStageSetVisible(a, b) ((void)(a), (void)(b), PETSC_SUCCESS)
-  #define PetscLogStageGetId(a, b)      ((void)(a), *(b) = -1, PETSC_SUCCESS)
-  #define PetscLogStageGetName(a, b)    ((void)(a), *(b) = NULL, PETSC_SUCCESS)
+  #define PetscLogStageRegister(a, b)    ((void)(a), *(b) = -1, PETSC_SUCCESS)
+  #define PetscLogStagePush(a)           ((void)(a), PETSC_SUCCESS)
+  #define PetscLogStagePop()             PETSC_SUCCESS
+  #define PetscLogStageSetActive(a, b)   ((void)(a), (void)(b), PETSC_SUCCESS)
+  #define PetscLogStageGetActive(a, b)   ((void)(a), *(b) = PETSC_FALSE, PETSC_SUCCESS)
+  #define PetscLogStageGetVisible(a, b)  ((void)(a), *(b) = PETSC_FALSE, PETSC_SUCCESS)
+  #define PetscLogStageSetVisible(a, b)  ((void)(a), (void)(b), PETSC_SUCCESS)
+  #define PetscLogStageGetId(a, b)       ((void)(a), *(b) = -1, PETSC_SUCCESS)
+  #define PetscLogStageGetName(a, b)     ((void)(a), *(b) = NULL, PETSC_SUCCESS)
+  #define PetscLogStageGetPerfInfo(a, b) ((void)(a), *(b) = (const PetscEventPerfInfo){0}, PETSC_SUCCESS)
 
   #define PetscLogEventRegister(a, b, c)    ((void)(a), (void)(b), *(c) = -1, PETSC_SUCCESS)
   #define PetscLogEventSetCollective(a, b)  ((void)(a), (void)(b), PETSC_SUCCESS)
