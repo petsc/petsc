@@ -83,7 +83,7 @@ public:
 
     PetscFunctionBegin;
     PetscCallAbort(PETSC_COMM_SELF, clear_(&leaked));
-    PetscCheckAbort(leaked == 0, PETSC_COMM_SELF, PETSC_ERR_MEM, "%zu objects remaining in the pool are leaked", leaked);
+    PetscCheckAbort(leaked == 0, PETSC_COMM_SELF, PETSC_ERR_MEM_LEAK, "%zu objects remaining in the pool are leaked", leaked);
     PetscFunctionReturnVoid();
   }
 #endif

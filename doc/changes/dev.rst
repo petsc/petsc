@@ -32,6 +32,7 @@ Changes: Development
 - Remove deprecated ``-log_summary`` option
 - Remove ``PetscURLShorten()``, it has not worked since 2019
 - Move ``PetscIntStackCreate()``, ``PetscIntStackDestroy()``, ``PetscIntStackPush()``, ``PetscIntStackPop()``, and ``PetscIntStackEmpty()`` declarations to public API in `petsclog.h`
+- Add ``-on_error_malloc_dump`` option
 
 .. rubric:: Event Logging:
 

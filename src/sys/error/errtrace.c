@@ -5,6 +5,7 @@
 #if defined(PETSC_HAVE_UNISTD_H)
   #include <unistd.h>
 #endif
+#include "err.h"
 
 /*@C
   PetscIgnoreErrorHandler - Deprecated, use `PetscReturnErrorHandler()`. Ignores the error, allows program to continue as if error did not occur
@@ -173,8 +174,6 @@ PETSC_EXTERN PetscErrorCode PetscOptionsViewError(void);
 PetscErrorCode PetscTraceBackErrorHandler(MPI_Comm comm, int line, const char *fun, const char *file, PetscErrorCode n, PetscErrorType p, const char *mess, void *ctx)
 {
   PetscErrorCode ierr;
-  PetscLogDouble mem, rss;
-  PetscBool      flg1 = PETSC_FALSE, flg2 = PETSC_FALSE, flg3 = PETSC_FALSE;
   PetscMPIInt    rank = 0;
 
   (void)ctx;
@@ -188,29 +187,18 @@ PetscErrorCode PetscTraceBackErrorHandler(MPI_Comm comm, int line, const char *f
       ierr = (*PetscErrorPrintf)("--------------------- Error Message --------------------------------------------------------------\n");
       PetscErrorPrintfNormal();
       if (cnt > 1) {
-        ierr = (*PetscErrorPrintf)("  It appears a new error in the code was triggered after a previous error was not properly handled\n");
-        ierr = (*PetscErrorPrintf)("  via (for example) the use of PetscCall(TheFunctionThatErrors());\n");
+        ierr = (*PetscErrorPrintf)("  It appears a new error in the code was triggered after a previous error, possibly because:\n");
+        ierr = (*PetscErrorPrintf)("  -  The first error was not properly handled via (for example) the use of\n");
+        ierr = (*PetscErrorPrintf)("     PetscCall(TheFunctionThatErrors()); or\n");
+        ierr = (*PetscErrorPrintf)("  -  The second error was triggered while handling the first error.\n");
+        ierr = (*PetscErrorPrintf)("  Above is the traceback for the previous unhandled error, below the traceback for the next error\n");
         ierr = (*PetscErrorPrintf)("  ALL ERRORS in the PETSc libraries are fatal, you should add the appropriate error checking to the code\n");
         cnt  = 1;
       }
     }
     if (cnt == 1) {
-      if (n == PETSC_ERR_MEM) {
-        ierr = (*PetscErrorPrintf)("Out of memory. This could be due to allocating\n");
-        ierr = (*PetscErrorPrintf)("too large an object or bleeding by not properly\n");
-        ierr = (*PetscErrorPrintf)("destroying unneeded objects.\n");
-        ierr = PetscMallocGetCurrentUsage(&mem);
-        ierr = PetscMemoryGetCurrentUsage(&rss);
-        ierr = PetscOptionsGetBool(NULL, NULL, "-malloc_dump", &flg1, NULL);
-        ierr = PetscOptionsGetBool(NULL, NULL, "-malloc_view", &flg2, NULL);
-        ierr = PetscOptionsHasName(NULL, NULL, "-malloc_view_threshold", &flg3);
-        if (flg2 || flg3) ierr = PetscMallocView(stdout);
-        else {
-          ierr = (*PetscErrorPrintf)("Memory allocated %.0f Memory used by process %.0f\n", mem, rss);
-          if (flg1) ierr = PetscMallocDump(stdout);
-          else ierr = (*PetscErrorPrintf)("Try running with -malloc_dump or -malloc_view for info.\n");
-        }
-      } else {
+      if (n == PETSC_ERR_MEM || n == PETSC_ERR_MEM_LEAK) ierr = PetscErrorMemoryMessage(n);
+      else {
         const char *text;
         ierr = PetscErrorMessage(n, &text, NULL);
         if (text) ierr = (*PetscErrorPrintf)("%s\n", text);
