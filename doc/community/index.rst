@@ -4,6 +4,11 @@
 Community
 *********
 
+PETSc is associated with `NumFOCUS <http://numfocus.org>`__, a 501(c)(3) nonprofit supporting open code and reproducible science, through which you can help support PETSc.
+
+.. image:: /images/community/numfocus.png
+   :align: center
+
 .. toctree::
    :maxdepth: 2
 
