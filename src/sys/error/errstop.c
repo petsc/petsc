@@ -1,5 +1,6 @@
 
 #include <petscsys.h> /*I "petscsys.h" I*/
+#include "err.h"
 
 /*@C
   PetscMPIAbortErrorHandler - Calls PETSCABORT and exits.
@@ -31,29 +32,12 @@
 PetscErrorCode PetscMPIAbortErrorHandler(MPI_Comm comm, int line, const char *fun, const char *file, PetscErrorCode n, PetscErrorType p, const char *mess, void *ctx)
 {
   PetscErrorCode ierr;
-  PetscBool      flg1 = PETSC_FALSE, flg2 = PETSC_FALSE, flg3 = PETSC_FALSE;
-  PetscLogDouble mem, rss;
 
   PetscFunctionBegin;
   if (!mess) mess = " ";
 
-  if (n == PETSC_ERR_MEM) {
-    ierr = (*PetscErrorPrintf)("%s() at %s:%d\n", fun, file, line);
-    ierr = (*PetscErrorPrintf)("Out of memory. This could be due to allocating\n");
-    ierr = (*PetscErrorPrintf)("too large an object or bleeding by not properly\n");
-    ierr = (*PetscErrorPrintf)("destroying unneeded objects.\n");
-    ierr = PetscMallocGetCurrentUsage(&mem);
-    ierr = PetscMemoryGetCurrentUsage(&rss);
-    ierr = PetscOptionsGetBool(NULL, NULL, "-malloc_dump", &flg1, NULL);
-    ierr = PetscOptionsGetBool(NULL, NULL, "-malloc_view", &flg2, NULL);
-    ierr = PetscOptionsHasName(NULL, NULL, "-malloc_view_threshold", &flg3);
-    if (flg2 || flg3) ierr = PetscMallocView(stdout);
-    else {
-      ierr = (*PetscErrorPrintf)("Memory allocated %.0f Memory used by process %.0f\n", mem, rss);
-      if (flg1) ierr = PetscMallocDump(stdout);
-      else ierr = (*PetscErrorPrintf)("Try running with -malloc_dump or -malloc_view for info.\n");
-    }
-  } else if (n == PETSC_ERR_SUP) {
+  if (n == PETSC_ERR_MEM || n == PETSC_ERR_MEM_LEAK) ierr = PetscErrorMemoryMessage(n);
+  else if (n == PETSC_ERR_SUP) {
     ierr = (*PetscErrorPrintf)("%s() at %s:%d\n", fun, file, line);
     ierr = (*PetscErrorPrintf)("No support for this operation for this object type!\n");
     ierr = (*PetscErrorPrintf)("%s\n", mess);
