@@ -677,7 +677,7 @@ PetscErrorCode VecCreateGhostWithArray(MPI_Comm comm, PetscInt n, PetscInt N, Pe
   Input Parameters:
 + comm   - the MPI communicator to use
 . n      - local vector length
-. N      - global vector length (or `PETSC_DETERMEINE` to have calculated if `n` is given)
+. N      - global vector length (or `PETSC_DETERMINE` to have calculated if `n` is given)
 . nghost - number of local ghost points
 - ghosts - global indices of ghost points, these do not need to be in increasing order (sorted)
 
