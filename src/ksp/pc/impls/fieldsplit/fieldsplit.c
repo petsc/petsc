@@ -2552,8 +2552,8 @@ static PetscErrorCode PCFieldSplitGetSchurPre_FieldSplit(PC pc, PCFieldSplitSchu
   PC_FieldSplit *jac = (PC_FieldSplit *)pc->data;
 
   PetscFunctionBegin;
-  *ptype = jac->schurpre;
-  *pre   = jac->schur_user;
+  if (ptype) *ptype = jac->schurpre;
+  if (pre) *pre = jac->schur_user;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
