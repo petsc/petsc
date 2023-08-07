@@ -1,4 +1,3 @@
-
 /*
    This provides a simple shell for Fortran (and C programmers) to
   create their own preconditioner without writing much interface code.
@@ -39,13 +38,13 @@ typedef struct {
   Level: advanced
 
   Note:
-  This routine is intended for use within the various user provided shell routines such as `PCShellSetAppy()`
+  This routine is intended for use within the various user-provided routines set with, for example, `PCShellSetApply()`
 
   Fortran Note:
   To use this from Fortran you must write a Fortran interface definition for this
   function that tells Fortran the Fortran derived data type that you are passing in as the ctx argument.
 
-.seealso: `PC`, `PCSHELL`, `PCShellSetContext()`, `PCShellSetAppy()`, `PCShellSetDestroy()`
+.seealso: `PC`, `PCSHELL`, `PCShellSetContext()`, `PCShellSetApply()`, `PCShellSetDestroy()`
 @*/
 PetscErrorCode PCShellGetContext(PC pc, void *ctx)
 {
@@ -72,7 +71,7 @@ PetscErrorCode PCShellGetContext(PC pc, void *ctx)
   Level: advanced
 
   Notes:
-  This routine is intended for use within the various user-provided shell routines such as `PCShellSetAppy()`
+  This routine is intended for use within the various user-provided routines set with, for example, `PCShellSetApply()`
 
   One should also provide a routine to destroy the context when `pc` is destroyed with `PCShellSetDestroy()`
 
@@ -80,7 +79,7 @@ PetscErrorCode PCShellGetContext(PC pc, void *ctx)
   To use this from Fortran you must write a Fortran interface definition for this
   function that tells Fortran the Fortran derived data type that you are passing in as the ctx argument.
 
-.seealso: `PC`, `PCShellGetContext()`, `PCSHELL`, `PCShellSetAppy()`, `PCShellSetDestroy()`
+.seealso: `PC`, `PCShellGetContext()`, `PCSHELL`, `PCShellSetApply()`, `PCShellSetDestroy()`
 @*/
 PetscErrorCode PCShellSetContext(PC pc, void *ctx)
 {
