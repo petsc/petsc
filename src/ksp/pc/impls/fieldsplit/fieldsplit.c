@@ -2399,7 +2399,7 @@ PetscErrorCode PCFieldSplitSchurGetSubKSP(PC pc, PetscInt *n, KSP *subksp[])
 - pre   - matrix to use for preconditioning, or `NULL`
 
   Options Database Keys:
-+ -pc_fieldsplit_schur_precondition <self,selfp,user,a11,full> - default is a11. See notes for meaning of various arguments
++ -pc_fieldsplit_schur_precondition <self,selfp,user,a11,full> - default is `a11`. See notes for meaning of various arguments
 - -fieldsplit_1_pc_type <pctype>                               - the preconditioner algorithm that is used to construct the preconditioner from the operator
 
   Level: intermediate
@@ -2415,14 +2415,14 @@ PetscErrorCode PCFieldSplitSchurGetSubKSP(PC pc, PetscInt *n, KSP *subksp[])
   to this function).
 .     selfp - the preconditioning for the Schur complement is generated from an explicitly-assembled approximation Sp = A11 - A10 inv(diag(A00)) A01
   This is only a good preconditioner when diag(A00) is a good preconditioner for A00. Optionally, A00 can be
-  lumped before extracting the diagonal using the additional option -fieldsplit_1_mat_schur_complement_ainv_type lump
+  lumped before extracting the diagonal using the additional option `-fieldsplit_1_mat_schur_complement_ainv_type lump`
 -     full - the preconditioner for the Schur complement is generated from the exact Schur complement matrix representation
   computed internally by `PCFIELDSPLIT` (this is expensive)
   useful mostly as a test that the Schur complement approach can work for your problem
 
-  When solving a saddle point problem, where the A11 block is identically zero, using a11 as the ptype only makes sense
-  with the additional option -fieldsplit_1_pc_type none. Usually for saddle point problems one would use a ptype of self and
-  -fieldsplit_1_pc_type lsc which uses the least squares commutator to compute a preconditioner for the Schur complement.
+  When solving a saddle point problem, where the A11 block is identically zero, using `a11` as the ptype only makes sense
+  with the additional option `-fieldsplit_1_pc_type none`. Usually for saddle point problems one would use a ptype of self and
+  `-fieldsplit_1_pc_type lsc` which uses the least squares commutator to compute a preconditioner for the Schur complement.
 
 .seealso: [](sec_block_matrices), `PC`, `PCFieldSplitGetSchurPre()`, `PCFieldSplitGetSubKSP()`, `PCFIELDSPLIT`, `PCFieldSplitSetFields()`, `PCFieldSplitSchurPreType`,
           `MatSchurComplementSetAinvType()`, `PCLSC`,
@@ -2451,12 +2451,12 @@ PetscErrorCode PCFieldSplitSchurPrecondition(PC pc, PCFieldSplitSchurPreType pty
 . pc - the preconditioner context
 
   Output Parameters:
-+ ptype - which matrix to use for preconditioning the Schur complement: `PC_FIELDSPLIT_SCHUR_PRE_A11`, `PC_FIELDSPLIT_SCHUR_PRE_SELF`, `PC_FIELDSPLIT_PRE_USER`
-- pre   - matrix to use for preconditioning (with `PC_FIELDSPLIT_PRE_USER`), or NULL
++ ptype - which matrix to use for preconditioning the Schur complement: `PC_FIELDSPLIT_SCHUR_PRE_A11`, `PC_FIELDSPLIT_SCHUR_PRE_SELF`, `PC_FIELDSPLIT_SCHUR_PRE_USER`
+- pre   - matrix to use for preconditioning (with `PC_FIELDSPLIT_SCHUR_PRE_USER`), or `NULL`
 
   Level: intermediate
 
-.seealso: [](sec_block_matrices), `PC`, `PCFieldSplitSetSchurPre()`, `PCFieldSplitGetSubKSP()`, `PCFIELDSPLIT`, `PCFieldSplitSetFields()`, `PCFieldSplitSchurPreType`, `PCLSC`,
+.seealso: [](sec_block_matrices), `PC`, `PCFieldSplitSetSchurPre()`, `PCFieldSplitGetSubKSP()`, `PCFIELDSPLIT`, `PCFieldSplitSetFields()`, `PCFieldSplitSchurPreType`, `PCLSC`
 
 @*/
 PetscErrorCode PCFieldSplitGetSchurPre(PC pc, PCFieldSplitSchurPreType *ptype, Mat *pre)
@@ -2567,7 +2567,7 @@ static PetscErrorCode PCFieldSplitGetSchurPre_FieldSplit(PC pc, PCFieldSplitSchu
 - ftype - which blocks of factorization to retain, `PC_FIELDSPLIT_SCHUR_FACT_FULL` is default
 
   Options Database Key:
-. -pc_fieldsplit_schur_fact_type <diag,lower,upper,full> - default is full
+. -pc_fieldsplit_schur_fact_type <diag,lower,upper,full> - default is `full`
 
   Level: intermediate
 
@@ -3119,7 +3119,7 @@ PetscErrorCode PCFieldSplitSetDetectSaddlePoint(PC pc, PetscBool flg)
                               been supplied explicitly by `-pc_fieldsplit_%d_fields`
 .   -pc_fieldsplit_block_size <bs> - size of block that defines fields (i.e. there are bs fields)
 .   -pc_fieldsplit_type <additive,multiplicative,symmetric_multiplicative,schur,gkb> - type of relaxation or factorization splitting
-.   -pc_fieldsplit_schur_precondition <self,selfp,user,a11,full> - default is a11; see `PCFieldSplitSetSchurPre()`
+.   -pc_fieldsplit_schur_precondition <self,selfp,user,a11,full> - default is `a11`; see `PCFieldSplitSetSchurPre()`
 .   -pc_fieldsplit_schur_fact_type <diag,lower,upper,full> - set factorization type when using `-pc_fieldsplit_type schur`; see `PCFieldSplitSetSchurFactType()`
 -   -pc_fieldsplit_detect_saddle_point - automatically finds rows with zero diagonal and uses Schur complement with no preconditioner as the solver
 

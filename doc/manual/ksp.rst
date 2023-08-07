@@ -1918,7 +1918,7 @@ diagonal blocks to be found, one associated with all rows/columns that
 have zeros on the diagonals and the rest.
 
 For simplicity in the rest of the section we restrict our matrices to
-two by two blocks. So the matrix is
+two-by-two blocks. So the matrix is
 
 .. math::
 
@@ -2040,7 +2040,7 @@ argument ``-pc_fieldsplit_diag_use_amat``. Similarly,
 ``-pc_fieldsplit_off_diag_use_amat`` will cause the off-diagonal blocks
 :math:`A_{01},A_{10}` etc. to be extracted out of ``Amat``.
 
-For two by two blocks only there are another family of solvers, based on
+For two-by-two blocks only, there is another family of solvers, based on
 Schur complements. The inverse of the Schur complement factorization is
 
 .. math::
