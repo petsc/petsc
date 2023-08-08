@@ -5498,9 +5498,11 @@ static PetscErrorCode PetscSectionFieldGetTensorDegree_Private(PetscSection sect
 
   Level: developer
 
-  Note:
+  Notes:
   The point is used to determine the number of dofs/field on an edge. For SEM, this is related to the polynomial
   degree of the basis.
+
+  This is required to run with libCEED.
 
 .seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMGetLocalSection()`, `PetscSectionSetClosurePermutation()`, `DMSetGlobalSection()`
 @*/
