@@ -3905,7 +3905,9 @@ PetscErrorCode DMPlexCreateCohesiveSubmesh(DM dm, PetscBool hasLagrange, const c
 
   Level: developer
 
-  Note: For the negative size (first) face, the cohesive cell should be first in the support, and for the positive side (second) face, the cohesive cell should be second in the support.
+  Note:
+  For the negative size (first) face, the cohesive cell should be first in the support, and for
+  the positive side (second) face, the cohesive cell should be second in the support.
 
 .seealso: `DMPlexConstructCohesiveCells()`, `DMPlexCreateCohesiveSubmesh()`
 @*/

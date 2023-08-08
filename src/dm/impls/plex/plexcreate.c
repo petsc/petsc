@@ -1340,7 +1340,7 @@ static PetscErrorCode DMPlexCreateBoxMesh_Internal(DM dm, DMPlexShape shape, Pet
 .ve
   and use the options in `DMSetFromOptions()`.
 
-  Here is the numbering returned for 2 faces in each direction for tensor cells:
+  Here is the numbering returned for 2 faces in each direction for tensor cells\:
 .vb
  10---17---11---18----12
   |         |         |
@@ -2145,8 +2145,7 @@ static PetscErrorCode DMPlexCreateHexCylinderMesh_Internal(DM dm, DMBoundaryType
   Level: beginner
 
   Note:
-
-  Here is the output numbering looking from the bottom of the cylinder:
+  Here is the output numbering looking from the bottom of the cylinder\:
 .vb
        17-----14
         |     |
@@ -5224,7 +5223,7 @@ PetscErrorCode DMPlexCreateFromDAG(DM dm, PetscInt depth, const PetscInt numPoin
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*
   DMPlexCreateCellVertexFromFile - Create a `DMPLEX` mesh from a simple cell-vertex file.
 
   Collective
@@ -5251,7 +5250,7 @@ PetscErrorCode DMPlexCreateFromDAG(DM dm, PetscInt depth, const PetscInt numPoin
   Should use a `PetscViewer` not a filename
 
 .seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexCreateFromFile()`, `DMPlexCreateMedFromFile()`, `DMPlexCreateGmsh()`, `DMPlexCreate()`
-@*/
+*/
 static PetscErrorCode DMPlexCreateCellVertexFromFile(MPI_Comm comm, const char filename[], PetscBool interpolate, DM *dm)
 {
   DMLabel      marker;

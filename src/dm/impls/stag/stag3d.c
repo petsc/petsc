@@ -7,17 +7,27 @@
   Collective
 
   Input Parameters:
-+ comm           - MPI communicator
-. bndx,bndy,bndz - boundary type: `DM_BOUNDARY_NONE`, `DM_BOUNDARY_PERIODIC`, or `DM_BOUNDARY_GHOSTED`
-. M,N,P          - global number of elements in x,y,z directions
-. m,n,p          - number of ranks in the x,y,z directions (may be `PETSC_DECIDE`)
-. dof0           - number of degrees of freedom per vertex/0-cell
-. dof1           - number of degrees of freedom per edge/1-cell
-. dof2           - number of degrees of freedom per face/2-cell
-. dof3           - number of degrees of freedom per element/3-cell
-. stencilType    - ghost/halo region type: `DMSTAG_STENCIL_NONE`, `DMSTAG_STENCIL_BOX`, or `DMSTAG_STENCIL_STAR`
-. stencilWidth   - width, in elements, of halo/ghost region
-- lx,ly,lz       - arrays of local x,y,z element counts, of length equal to m,n,p, summing to M,N,P
++ comm         - MPI communicator
+. bndx         - x boundary type, `DM_BOUNDARY_NONE`, `DM_BOUNDARY_PERIODIC`, or
+`DM_BOUNDARY_GHOSTED`
+. bndy         - y boundary type, `DM_BOUNDARY_NONE`, `DM_BOUNDARY_PERIODIC`, or
+`DM_BOUNDARY_GHOSTED`
+. bndz         - z boundary type, `DM_BOUNDARY_NONE`, `DM_BOUNDARY_PERIODIC`, or `DM_BOUNDARY_GHOSTED`
+. M            - global number of elements in x direction
+. N            - global number of elements in y direction
+. P            - global number of elements in z direction
+. m            - number of ranks in the x direction (may be `PETSC_DECIDE`)
+. n            - number of ranks in the y direction (may be `PETSC_DECIDE`)
+. p            - number of ranks in the z direction (may be `PETSC_DECIDE`)
+. dof0         - number of degrees of freedom per vertex/0-cell
+. dof1         - number of degrees of freedom per edge/1-cell
+. dof2         - number of degrees of freedom per face/2-cell
+. dof3         - number of degrees of freedom per element/3-cell
+. stencilType  - ghost/halo region type: `DMSTAG_STENCIL_NONE`, `DMSTAG_STENCIL_BOX`, or `DMSTAG_STENCIL_STAR`
+. stencilWidth - width, in elements, of halo/ghost region
+. lx           - array of local x  element counts, of length equal to `m`, summing to `M`
+. ly           - arrays of local y element counts, of length equal to `n`, summing to `N`
+- lz           - arrays of local z element counts, of length equal to `p`, summing to `P`
 
   Output Parameter:
 . dm - the new `DMSTAG` object

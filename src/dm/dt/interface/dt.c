@@ -833,8 +833,6 @@ static PetscErrorCode PetscDTJacobiEval_Internal(PetscInt npoints, PetscReal a, 
 
 /*@
   PetscDTJacobiEvalJet - Evaluate the jet (function and derivatives) of the Jacobi polynomials basis up to a given degree.
-  The Jacobi polynomials with indices $\alpha$ and $\beta$ are orthogonal with respect to the weighted inner product
-  $\langle f, g \rangle = \int_{-1}^1 (1+x)^{\alpha} (1-x)^{\beta} f(x) g(x) dx$.
 
   Input Parameters:
 + alpha   - the left exponent of the weight
@@ -851,6 +849,11 @@ static PetscErrorCode PetscDTJacobiEval_Internal(PetscInt npoints, PetscReal a, 
   varying) dimension is the index of the evaluation point.
 
   Level: advanced
+
+  Notes:
+  The Jacobi polynomials with indices $\alpha$ and $\beta$ are orthogonal with respect to the
+  weighted inner product $\langle f, g \rangle = \int_{-1}^1 (1+x)^{\alpha} (1-x)^{\beta} f(x)
+  g(x) dx$.
 
 .seealso: `PetscDTJacobiEval()`, `PetscDTPKDEvalJet()`
 @*/
@@ -1052,9 +1055,7 @@ const char       PKDCitation[] = "@article{Kirby2010,\n"
 
 /*@
   PetscDTPKDEvalJet - Evaluate the jet (function and derivatives) of the Proriol-Koornwinder-Dubiner (PKD) basis for
-  the space of polynomials up to a given degree.  The PKD basis is L2-orthonormal on the biunit simplex (which is used
-  as the reference element for finite elements in PETSc), which makes it a stable basis to use for evaluating
-  polynomials in that domain.
+  the space of polynomials up to a given degree.
 
   Input Parameters:
 + dim     - the number of variables in the multivariate polynomials
@@ -1073,6 +1074,10 @@ const char       PKDCitation[] = "@article{Kirby2010,\n"
   Level: advanced
 
   Notes:
+  The PKD basis is L2-orthonormal on the biunit simplex (which is used as the reference element
+  for finite elements in PETSc), which makes it a stable basis to use for evaluating
+  polynomials in that domain.
+
   The ordering of the basis functions, and the ordering of the derivatives in the jet, both follow the graded
   ordering of `PetscDTIndexToGradedOrder()` and `PetscDTGradedOrderToIndex()`.  For example, in 3D, the polynomial with
   leading monomial x^2,y^0,z^1, which has degree tuple (2,0,1), which by `PetscDTGradedOrderToIndex()` has index 12 (it is the 13th basis function in the space);
@@ -1371,20 +1376,20 @@ static PetscErrorCode PetscDTPTrimmedEvalJet_Internal(PetscInt dim, PetscInt npo
               in the jet.  Choosing jetDegree = 0 means to evaluate just the function and no derivatives
 
   Output Parameter:
-. p - an array containing the evaluations of the PKD polynomials' jets on the points.  The size is
-      `PetscDTPTrimmedSize()` x ((dim + formDegree) choose dim) x ((dim + k) choose dim) x npoints,
-      which also describes the order of the dimensions of t
-his
+. p - an array containing the evaluations of the PKD polynomials' jets on the points.
 
-  four-dimensional array:
+  Level: advanced
+
+  Notes:
+  The size of `p` is `PetscDTPTrimmedSize()` x ((dim + formDegree) choose dim) x ((dim + k)
+  choose dim) x npoints,which also describes the order of the dimensions of this
+  four-dimensional array\:
+
   the first (slowest varying) dimension is basis function index;
   the second dimension is component of the form;
   the third dimension is jet index;
   the fourth (fastest varying) dimension is the index of the evaluation point.
 
-  Level: advanced
-
-  Notes:
   The ordering of the basis functions is not graded, so the basis functions are not nested by degree like `PetscDTPKDEvalJet()`.
   The basis functions are not an L2-orthonormal basis on any particular domain.
 

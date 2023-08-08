@@ -248,7 +248,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_ExodusII(PetscViewer v)
 
 .seealso: `EXOGetVarIndex()`, `DMPlexView_ExodusII_Internal()`, `VecViewPlex_ExodusII_Nodal_Internal()`, `VecLoadNodal_PlexEXO()`, `VecLoadZonal_PlexEXO()`
 */
-PetscErrorCode EXOGetVarIndex_Internal(int exoid, ex_entity_type obj_type, const char name[], int *varIndex)
+static PetscErrorCode EXOGetVarIndex_Internal(int exoid, ex_entity_type obj_type, const char name[], int *varIndex)
 {
   int       num_vars, i, j;
   char      ext_name[MAX_STR_LENGTH + 1], var_name[MAX_STR_LENGTH + 1];
@@ -811,6 +811,11 @@ PetscErrorCode DMView_PlexExodusII(DM dm, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+static PetscErrorCode VecViewPlex_ExodusII_Nodal_Internal(Vec v, int exoid, int step, int offset);
+static PetscErrorCode VecViewPlex_ExodusII_Zonal_Internal(Vec v, int exoid, int step, int offset);
+static PetscErrorCode VecLoadPlex_ExodusII_Nodal_Internal(Vec v, int exoid, int step, int offset);
+static PetscErrorCode VecLoadPlex_ExodusII_Zonal_Internal(Vec v, int exoid, int step, int offset);
+
 /*
   VecView_PlexExodusII_Internal - Write a Vec corresponding in an exodus file
 
@@ -930,7 +935,7 @@ PetscErrorCode VecLoad_PlexExodusII_Internal(Vec v, PetscViewer viewer)
 
 .seealso: `EXOGetVarIndex_Internal()`, `DMPlexView_ExodusII_Internal()`, `VecLoadNodal_PlexEXO()`, `VecViewZonal_PlexEXO()`, `VecLoadZonal_PlexEXO()`
 @*/
-PetscErrorCode VecViewPlex_ExodusII_Nodal_Internal(Vec v, int exoid, int step, int offset)
+static PetscErrorCode VecViewPlex_ExodusII_Nodal_Internal(Vec v, int exoid, int step, int offset)
 {
   MPI_Comm           comm;
   PetscMPIInt        size;
@@ -1003,7 +1008,7 @@ PetscErrorCode VecViewPlex_ExodusII_Nodal_Internal(Vec v, int exoid, int step, i
 
 .seealso: `EXOGetVarIndex_Internal()`, `DMPlexView_ExodusII_Internal()`, `VecViewPlex_ExodusII_Nodal_Internal()`, `VecViewZonal_PlexEXO()`, `VecLoadZonal_PlexEXO()`
 */
-PetscErrorCode VecLoadPlex_ExodusII_Nodal_Internal(Vec v, int exoid, int step, int offset)
+static PetscErrorCode VecLoadPlex_ExodusII_Nodal_Internal(Vec v, int exoid, int step, int offset)
 {
   MPI_Comm     comm;
   PetscMPIInt  size;
@@ -1073,7 +1078,7 @@ PetscErrorCode VecLoadPlex_ExodusII_Nodal_Internal(Vec v, int exoid, int step, i
 
 .seealso: `EXOGetVarIndex_Internal()`, `DMPlexView_ExodusII_Internal()`, `VecViewPlex_ExodusII_Nodal_Internal()`, `VecLoadPlex_ExodusII_Nodal_Internal()`, `VecLoadPlex_ExodusII_Zonal_Internal()`
 */
-PetscErrorCode VecViewPlex_ExodusII_Zonal_Internal(Vec v, int exoid, int step, int offset)
+static PetscErrorCode VecViewPlex_ExodusII_Zonal_Internal(Vec v, int exoid, int step, int offset)
 {
   MPI_Comm           comm;
   PetscMPIInt        size;
@@ -1170,7 +1175,7 @@ PetscErrorCode VecViewPlex_ExodusII_Zonal_Internal(Vec v, int exoid, int step, i
 
 .seealso: `EXOGetVarIndex_Internal()`, `DMPlexView_ExodusII_Internal()`, `VecViewPlex_ExodusII_Nodal_Internal()`, `VecLoadPlex_ExodusII_Nodal_Internal()`, `VecLoadPlex_ExodusII_Zonal_Internal()`
 */
-PetscErrorCode VecLoadPlex_ExodusII_Zonal_Internal(Vec v, int exoid, int step, int offset)
+static PetscErrorCode VecLoadPlex_ExodusII_Zonal_Internal(Vec v, int exoid, int step, int offset)
 {
   MPI_Comm     comm;
   PetscMPIInt  size;

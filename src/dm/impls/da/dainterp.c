@@ -1327,6 +1327,7 @@ PetscErrorCode DMCreateInjection_DA(DM dac, DM daf, Mat *mat)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+// PetscClangLinter pragma ignore: -fdoc-*
 /*@
   DMCreateAggregates - Deprecated, see DMDACreateAggregates.
 

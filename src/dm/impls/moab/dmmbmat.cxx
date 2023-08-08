@@ -221,8 +221,7 @@ static PetscErrorCode DMMoabSetBlockFills_Private(PetscInt w, const PetscInt *fi
 
   Contributed by Glenn Hammond
 
-.seealso `DMCreateMatrix()`, `DMDASetGetMatrix()`, `DMSetMatrixPreallocateOnly()`
-
+.seealso: `DMCreateMatrix()`, `DMDASetGetMatrix()`, `DMSetMatrixPreallocateOnly()`
 @*/
 PetscErrorCode DMMoabSetBlockFills(DM dm, const PetscInt *dfill, const PetscInt *ofill)
 {

@@ -113,8 +113,10 @@ PetscErrorCode DMDAGetNumCells(DM dm, PetscInt *numCellsX, PetscInt *numCellsY, 
   DMDAGetCellPoint - Get the DM point corresponding to the tuple (i, j, k) in the `DMDA`
 
   Input Parameters:
-+ dm    - The `DMDA` object
-- i,j,k - The global indices for the cell
++ dm - The `DMDA` object
+. i  - The global x index for the cell
+. j  - The global y index for the cell
+- k  - The global z index for the cell
 
   Output Parameter:
 . point - The local `DM` point

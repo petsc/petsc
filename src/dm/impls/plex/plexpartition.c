@@ -1447,8 +1447,7 @@ PetscErrorCode DMPlexPartitionLabelCreateSF(DM dm, DMLabel label, PetscSF *sf)
  * when PETSc is built without ParMETIS. To avoid -Wunused-function, we take
  * them out in that case. */
 #if defined(PETSC_HAVE_PARMETIS)
-/*@C
-
+/*
   DMPlexRewriteSF - Rewrites the ownership of the `PetsSF` of a `DM` (in place).
 
   Input parameters:
@@ -1461,7 +1460,7 @@ PetscErrorCode DMPlexPartitionLabelCreateSF(DM dm, DMLabel label, PetscSF *sf)
   Level: developer
 
 .seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMLabel`, `PetscSF`, `DMPlexDistribute()`, `DMPlexCreateOverlap()`
-@*/
+*/
 static PetscErrorCode DMPlexRewriteSF(DM dm, PetscInt n, PetscInt *pointsToRewrite, PetscInt *targetOwners, const PetscInt *degrees)
 {
   PetscInt           pStart, pEnd, i, j, counter, leafCounter, sumDegrees, nroots, nleafs;

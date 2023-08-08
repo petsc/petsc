@@ -247,7 +247,6 @@ PetscErrorCode DMPlexGetRefinementLimit(DM dm, PetscReal *refinementLimit)
 - refinementFunc - Function giving the maximum cell volume in the refined mesh
 
   Calling Sequence of `refinementFunc`:
-$ PetscErrorCode refinementFunc(const PetscReal coords[], PetscReal *limit)
 + coords - Coordinates of the current point, usually a cell centroid
 - limit  - The maximum cell volume for a cell containing this point
 
@@ -255,7 +254,7 @@ $ PetscErrorCode refinementFunc(const PetscReal coords[], PetscReal *limit)
 
 .seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMRefine()`, `DMPlexGetRefinementFunction()`, `DMPlexGetRefinementUniform()`, `DMPlexSetRefinementUniform()`, `DMPlexGetRefinementLimit()`, `DMPlexSetRefinementLimit()`
 @*/
-PetscErrorCode DMPlexSetRefinementFunction(DM dm, PetscErrorCode (*refinementFunc)(const PetscReal[], PetscReal *))
+PetscErrorCode DMPlexSetRefinementFunction(DM dm, PetscErrorCode (*refinementFunc)(const PetscReal coords[], PetscReal *limit))
 {
   DM_Plex *mesh = (DM_Plex *)dm->data;
 
@@ -275,7 +274,6 @@ PetscErrorCode DMPlexSetRefinementFunction(DM dm, PetscErrorCode (*refinementFun
 . refinementFunc - Function giving the maximum cell volume in the refined mesh
 
   Calling Sequence of `refinementFunc`:
-$ PetscErrorCode refinementFunc(const PetscReal coords[], PetscReal *limit)
 + coords - Coordinates of the current point, usually a cell centroid
 - limit  - The maximum cell volume for a cell containing this point
 
@@ -283,7 +281,7 @@ $ PetscErrorCode refinementFunc(const PetscReal coords[], PetscReal *limit)
 
 .seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMRefine()`, `DMPlexSetRefinementFunction()`, `DMPlexGetRefinementUniform()`, `DMPlexSetRefinementUniform()`, `DMPlexGetRefinementLimit()`, `DMPlexSetRefinementLimit()`
 @*/
-PetscErrorCode DMPlexGetRefinementFunction(DM dm, PetscErrorCode (**refinementFunc)(const PetscReal[], PetscReal *))
+PetscErrorCode DMPlexGetRefinementFunction(DM dm, PetscErrorCode (**refinementFunc)(const PetscReal coords[], PetscReal *limit))
 {
   DM_Plex *mesh = (DM_Plex *)dm->data;
 

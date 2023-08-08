@@ -93,7 +93,23 @@ typedef void (*PetscPointJac)(PetscInt, PetscInt, PetscInt, const PetscInt[], co
 typedef void (*PetscBdPointFunc)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, const PetscReal[], const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]);
 typedef void (*PetscBdPointJac)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, PetscReal, const PetscReal[], const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]);
 typedef void (*PetscRiemannFunc)(PetscInt, PetscInt, const PetscReal[], const PetscReal[], const PetscScalar[], const PetscScalar[], PetscInt, const PetscScalar[], PetscScalar[], void *);
-typedef PetscErrorCode (*PetscSimplePointFunc)(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar[], void *);
+
+/*S
+  PetscSimplePointFunc - A simple pointwise function
+
+  Calling Sequence:
++ dim  - The coordinate dimension of the original mesh (usually a surface)
+. time - The current time, or 0.
+. x    - The location of the current normal, in the coordinate space of the original mesh
+. r    - The layer number of this point
+. u    - The user provides the computed normal on output
+- ctx  - An optional user context
+
+  Level: beginner
+
+.seealso: [](ch_dmbase), `DMPlexTransformExtrudeSetNormalFunction()`
+S*/
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*PetscSimplePointFunc)(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt r, PetscScalar u[], void *ctx);
 
 PETSC_EXTERN PetscFunctionList PetscDSList;
 PETSC_EXTERN PetscErrorCode    PetscDSCreate(MPI_Comm, PetscDS *);

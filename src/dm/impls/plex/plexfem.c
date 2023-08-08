@@ -312,17 +312,21 @@ PetscErrorCode DMPlexCreateRigidBodies(DM dm, PetscInt nb, DMLabel label, const 
 /*@
   DMPlexSetMaxProjectionHeight - In DMPlexProjectXXXLocal() functions, the projected values of a basis function's dofs
   are computed by associating the basis function with one of the mesh points in its transitively-closed support, and
-  evaluating the dual space basis of that point.  A basis function is associated with the point in its
-  transitively-closed support whose mesh height is highest (w.r.t. DAG height), but not greater than the maximum
-  projection height, which is set with this function.  By default, the maximum projection height is zero, which means
-  that only mesh cells are used to project basis functions.  A height of one, for example, evaluates a cell-interior
-  basis functions using its cells dual space basis, but all other basis functions with the dual space basis of a face.
+  evaluating the dual space basis of that point.
 
   Input Parameters:
 + dm     - the `DMPLEX` object
 - height - the maximum projection height >= 0
 
   Level: advanced
+
+  Notes:
+  A basis function is associated with the point in its transitively-closed support whose mesh
+  height is highest (w.r.t. DAG height), but not greater than the maximum projection height,
+  which is set with this function.  By default, the maximum projection height is zero, which
+  means that only mesh cells are used to project basis functions.  A height of one, for
+  example, evaluates a cell-interior basis functions using its cells dual space basis, but all
+  other basis functions with the dual space basis of a face.
 
 .seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexGetMaxProjectionHeight()`, `DMProjectFunctionLocal()`, `DMProjectFunctionLabelLocal()`
 @*/
@@ -3439,7 +3443,7 @@ PetscErrorCode DMPlexRestoreCellFields(DM dm, IS cellIS, Vec locX, Vec locX_t, V
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode DMPlexGetHybridCellFields(DM dm, IS cellIS, Vec locX, Vec locX_t, Vec locA, PetscScalar **u, PetscScalar **u_t, PetscScalar **a)
+static PetscErrorCode DMPlexGetHybridCellFields(DM dm, IS cellIS, Vec locX, Vec locX_t, Vec locA, PetscScalar **u, PetscScalar **u_t, PetscScalar **a)
 {
   DM              plex, plexA = NULL;
   DMEnclosureType encAux;
@@ -4632,7 +4636,7 @@ PetscErrorCode DMPlexComputeBdResidualSingle(DM dm, PetscReal t, PetscWeakForm w
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode DMPlexComputeBdResidual_Internal(DM dm, Vec locX, Vec locX_t, PetscReal t, Vec locF, void *user)
+static PetscErrorCode DMPlexComputeBdResidual_Internal(DM dm, Vec locX, Vec locX_t, PetscReal t, Vec locF, void *user)
 {
   PetscDS  prob;
   PetscInt numBd, bd;
@@ -5339,7 +5343,7 @@ PetscErrorCode DMPlexComputeResidual_Hybrid_Internal(DM dm, PetscFormKey key[], 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode DMPlexComputeBdJacobian_Single_Internal(DM dm, PetscReal t, PetscWeakForm wf, DMLabel label, PetscInt numValues, const PetscInt values[], PetscInt fieldI, Vec locX, Vec locX_t, PetscReal X_tShift, Mat Jac, Mat JacP, DMField coordField, IS facetIS)
+static PetscErrorCode DMPlexComputeBdJacobian_Single_Internal(DM dm, PetscReal t, PetscWeakForm wf, DMLabel label, PetscInt numValues, const PetscInt values[], PetscInt fieldI, Vec locX, Vec locX_t, PetscReal X_tShift, Mat Jac, Mat JacP, DMField coordField, IS facetIS)
 {
   DM_Plex        *mesh = (DM_Plex *)dm->data;
   DM              plex = NULL, plexA = NULL, tdm;
@@ -5502,7 +5506,7 @@ PetscErrorCode DMPlexComputeBdJacobianSingle(DM dm, PetscReal t, PetscWeakForm w
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode DMPlexComputeBdJacobian_Internal(DM dm, Vec locX, Vec locX_t, PetscReal t, PetscReal X_tShift, Mat Jac, Mat JacP, void *user)
+static PetscErrorCode DMPlexComputeBdJacobian_Internal(DM dm, Vec locX, Vec locX_t, PetscReal t, PetscReal X_tShift, Mat Jac, Mat JacP, void *user)
 {
   PetscDS  prob;
   PetscInt dim, numBd, bd;

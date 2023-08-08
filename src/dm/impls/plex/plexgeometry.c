@@ -636,7 +636,7 @@ static PetscErrorCode DMPlexCreateGridHash(DM dm, PetscGridHash *box)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*
+/*@C
   PetscGridHashSetGrid - Divide the grid into boxes
 
   Not Collective
@@ -649,7 +649,7 @@ static PetscErrorCode DMPlexCreateGridHash(DM dm, PetscGridHash *box)
   Level: developer
 
 .seealso: `DMPLEX`, `PetscGridHashCreate()`
-*/
+@*/
 PetscErrorCode PetscGridHashSetGrid(PetscGridHash box, const PetscInt n[], const PetscReal h[])
 {
   PetscInt d;
@@ -671,7 +671,7 @@ PetscErrorCode PetscGridHashSetGrid(PetscGridHash box, const PetscInt n[], const
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*
+/*@C
   PetscGridHashGetEnclosingBox - Find the grid boxes containing each input point
 
   Not Collective
@@ -691,7 +691,7 @@ PetscErrorCode PetscGridHashSetGrid(PetscGridHash box, const PetscInt n[], const
   This only guarantees that a box contains a point, not that a cell does.
 
 .seealso: `DMPLEX`, `PetscGridHashCreate()`
-*/
+@*/
 PetscErrorCode PetscGridHashGetEnclosingBox(PetscGridHash box, PetscInt numPoints, const PetscScalar points[], PetscInt dboxes[], PetscInt boxes[])
 {
   const PetscReal *lower = box->lower;
@@ -740,7 +740,7 @@ PetscErrorCode PetscGridHashGetEnclosingBox(PetscGridHash box, PetscInt numPoint
 
 .seealso: `DMPLEX`, `PetscGridHashGetEnclosingBox()`
 */
-PetscErrorCode PetscGridHashGetEnclosingBoxQuery(PetscGridHash box, PetscSection cellSection, PetscInt numPoints, const PetscScalar points[], PetscInt dboxes[], PetscInt boxes[], PetscBool *found)
+static PetscErrorCode PetscGridHashGetEnclosingBoxQuery(PetscGridHash box, PetscSection cellSection, PetscInt numPoints, const PetscScalar points[], PetscInt dboxes[], PetscInt boxes[], PetscBool *found)
 {
   const PetscReal *lower = box->lower;
   const PetscReal *upper = box->upper;
@@ -813,7 +813,7 @@ PetscErrorCode DMPlexLocatePoint_Internal(DM dm, PetscInt dim, const PetscScalar
 /*
   DMPlexClosestPoint_Internal - Returns the closest point in the cell to the given point
 */
-PetscErrorCode DMPlexClosestPoint_Internal(DM dm, PetscInt dim, const PetscScalar point[], PetscInt cell, PetscReal cpoint[])
+static PetscErrorCode DMPlexClosestPoint_Internal(DM dm, PetscInt dim, const PetscScalar point[], PetscInt cell, PetscReal cpoint[])
 {
   DMPolytopeType ct;
 
@@ -3649,9 +3649,8 @@ static PetscErrorCode DMPlexReferenceToCoordinates_FE(DM dm, PetscFE fe, PetscIn
 }
 
 /*@
-  DMPlexCoordinatesToReference - Pull coordinates back from the mesh to the reference element using a single element
-  map.  This inversion will be accurate inside the reference element, but may be inaccurate for mappings that do not
-  extend uniquely outside the reference cell (e.g, most non-affine maps)
+  DMPlexCoordinatesToReference - Pull coordinates back from the mesh to the reference element
+  using a single element map.
 
   Not Collective
 
@@ -3667,6 +3666,10 @@ static PetscErrorCode DMPlexReferenceToCoordinates_FE(DM dm, PetscFE fe, PetscIn
 . refCoords - (`numPoints` x `dimension`) array of reference coordinates (see `DMGetDimension()`)
 
   Level: intermediate
+
+  Notes:
+  This inversion will be accurate inside the reference element, but may be inaccurate for
+  mappings that do not extend uniquely outside the reference cell (e.g, most non-affine maps)
 
 .seealso: `DMPLEX`, `DMPlexReferenceToCoordinates()`
 @*/
@@ -3815,39 +3818,33 @@ PetscErrorCode DMPlexReferenceToCoordinates(DM dm, PetscInt cell, PetscInt numPo
   Input Parameters:
 + dm   - The `DM`
 . time - The time
-- func - The function transforming current coordinates to new coordaintes
+- func - The function transforming current coordinates to new coordinates
 
   Calling sequence of `func`:
-.vb
-   void func(PetscInt dim, PetscInt Nf, PetscInt NfAux,
-             const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
-             const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-             PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f[]);
-.ve
-+  dim          - The spatial dimension
-.  Nf           - The number of input fields (here 1)
-.  NfAux        - The number of input auxiliary fields
-.  uOff         - The offset of the coordinates in u[] (here 0)
-.  uOff_x       - The offset of the coordinates in u_x[] (here 0)
-.  u            - The coordinate values at this point in space
-.  u_t          - The coordinate time derivative at this point in space (here `NULL`)
-.  u_x          - The coordinate derivatives at this point in space
-.  aOff         - The offset of each auxiliary field in u[]
-.  aOff_x       - The offset of each auxiliary field in u_x[]
-.  a            - The auxiliary field values at this point in space
-.  a_t          - The auxiliary field time derivative at this point in space (or `NULL`)
-.  a_x          - The auxiliary field derivatives at this point in space
-.  t            - The current time
-.  x            - The coordinates of this point (here not used)
-.  numConstants - The number of constants
-.  constants    - The value of each constant
--  f            - The new coordinates at this point in space
++ dim          - The spatial dimension
+. Nf           - The number of input fields (here 1)
+. NfAux        - The number of input auxiliary fields
+. uOff         - The offset of the coordinates in u[] (here 0)
+. uOff_x       - The offset of the coordinates in u_x[] (here 0)
+. u            - The coordinate values at this point in space
+. u_t          - The coordinate time derivative at this point in space (here `NULL`)
+. u_x          - The coordinate derivatives at this point in space
+. aOff         - The offset of each auxiliary field in u[]
+. aOff_x       - The offset of each auxiliary field in u_x[]
+. a            - The auxiliary field values at this point in space
+. a_t          - The auxiliary field time derivative at this point in space (or `NULL`)
+. a_x          - The auxiliary field derivatives at this point in space
+. t            - The current time
+. x            - The coordinates of this point (here not used)
+. numConstants - The number of constants
+. constants    - The value of each constant
+- f            - The new coordinates at this point in space
 
   Level: intermediate
 
 .seealso: `DMPLEX`, `DMGetCoordinates()`, `DMGetCoordinatesLocal()`, `DMGetCoordinateDM()`, `DMProjectFieldLocal()`, `DMProjectFieldLabelLocal()`
 @*/
-PetscErrorCode DMPlexRemapGeometry(DM dm, PetscReal time, void (*func)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]))
+PetscErrorCode DMPlexRemapGeometry(DM dm, PetscReal time, void (*func)(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f[]))
 {
   DM      cdm;
   DMField cf;

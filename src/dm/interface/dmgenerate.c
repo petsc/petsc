@@ -204,7 +204,8 @@ PetscErrorCode DMAdaptLabel(DM dm, DMLabel label, DM *dmAdapt)
   Output Parameter:
 . dmAdapt - Pointer to the DM object containing the adapted mesh
 
-  Note: The label in the adapted mesh will be registered under the name of the input DMLabel object
+  Note:
+  The label in the adapted mesh will be registered under the name of the input `DMLabel` object
 
   Level: advanced
 

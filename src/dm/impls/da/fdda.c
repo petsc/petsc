@@ -547,7 +547,7 @@ PetscErrorCode MatSetupDM(Mat mat, DM da)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatView_MPI_DA(Mat A, PetscViewer viewer)
+static PetscErrorCode MatView_MPI_DA(Mat A, PetscViewer viewer)
 {
   DM                da;
   const char       *prefix;
@@ -594,7 +594,7 @@ PetscErrorCode MatView_MPI_DA(Mat A, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatLoad_MPI_DA(Mat A, PetscViewer viewer)
+static PetscErrorCode MatLoad_MPI_DA(Mat A, PetscViewer viewer)
 {
   DM       da;
   Mat      Anatural, Aapp;

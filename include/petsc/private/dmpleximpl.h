@@ -324,14 +324,9 @@ PETSC_INTERN PetscErrorCode DMComputeL2FieldDiff_Plex(DM, PetscReal, PetscErrorC
 PETSC_INTERN PetscErrorCode DMLocatePoints_Plex(DM, Vec, DMPointLocationType, PetscSF);
 
 #if defined(PETSC_HAVE_EXODUSII)
-PETSC_EXTERN PetscErrorCode DMView_PlexExodusII(DM, PetscViewer);
+PETSC_INTERN PetscErrorCode DMView_PlexExodusII(DM, PetscViewer);
 PETSC_INTERN PetscErrorCode VecView_PlexExodusII_Internal(Vec, PetscViewer);
 PETSC_INTERN PetscErrorCode VecLoad_PlexExodusII_Internal(Vec, PetscViewer);
-PETSC_INTERN PetscErrorCode VecViewPlex_ExodusII_Nodal_Internal(Vec, int, int, int);
-PETSC_INTERN PetscErrorCode VecLoadPlex_ExodusII_Nodal_Internal(Vec, int, int, int);
-PETSC_INTERN PetscErrorCode VecViewPlex_ExodusII_Zonal_Internal(Vec, int, int, int);
-PETSC_INTERN PetscErrorCode VecLoadPlex_ExodusII_Zonal_Internal(Vec, int, int, int);
-PETSC_INTERN PetscErrorCode EXOGetVarIndex_Internal(int, ex_entity_type, const char[], int *);
 #endif
 PETSC_INTERN PetscErrorCode DMView_PlexCGNS(DM, PetscViewer);
 PETSC_INTERN PetscErrorCode DMPlexCreateCGNSFromFile_Internal(MPI_Comm, const char *, PetscBool, DM *);

@@ -351,7 +351,7 @@ extern PetscErrorCode private_DMSwarmInsertPointsUsingCellDM_PLEX(DM, DM, DMSwar
 
   When using a `DMDA` both 2D and 3D are supported for all layout types provided you are using `DMDA_ELEMENT_Q1`.
 
-  When using a `DMPLEX` the following case are supported:
+  When using a `DMPLEX` the following case are supported\:
 .vb
    (i) DMSWARMPIC_LAYOUT_REGULAR: 2D (triangle),
    (ii) DMSWARMPIC_LAYOUT_GAUSS: 2D and 3D provided the cell is a tri/tet or a quad/hex,
@@ -387,7 +387,6 @@ extern PetscErrorCode private_DMSwarmSetPointCoordinatesCellwise_PLEX(DM, DM, Pe
 
   Input Parameters:
 + dm      - the `DMSWARM`
-.  celldm - the cell `DM`
 . npoints - the number of points to insert in each cell
 - xi      - the coordinates (defined in the local coordinate system for each cell) to insert
 
@@ -716,8 +715,8 @@ PetscErrorCode DMSwarmGetVelocityFunction(DM sw, PetscSimplePointFunc *velFunc)
   Not Collective
 
   Input Parameters:
-+ dm - the `DMSWARM`
-- coordFunc - the function setting initial particle velocities
++ sw      - the `DMSWARM`
+- velFunc - the function setting initial particle velocities
 
   Level: intermediate
 

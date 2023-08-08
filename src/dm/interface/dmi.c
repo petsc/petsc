@@ -105,7 +105,7 @@ PetscErrorCode DMCreateLocalVector_Section_Private(DM dm, Vec *vec)
   This handles all information in the `DM` class and the `PetscSection`. This is used as the basis for creating subDMs in specialized classes,
   such as `DMPLEX` and `DMFOREST`
 
-.seealso `DMCreateSubDM()`, `DMGetLocalSection()`, `DMPlexSetMigrationSF()`, `DMView()`
+.seealso: `DMCreateSubDM()`, `DMGetLocalSection()`, `DMPlexSetMigrationSF()`, `DMView()`
 @*/
 PetscErrorCode DMCreateSectionSubDM(DM dm, PetscInt numFields, const PetscInt fields[], IS *is, DM *subdm)
 {
@@ -318,7 +318,7 @@ PetscErrorCode DMCreateSectionSubDM(DM dm, PetscInt numFields, const PetscInt fi
   This handles all information in the `DM` class and the `PetscSection`. This is used as the basis for creating subDMs in specialized classes,
   such as `DMPLEX` and `DMFOREST`
 
-.seealso `DMCreateSuperDM()`, `DMGetLocalSection()`, `DMPlexSetMigrationSF()`, `DMView()`
+.seealso: `DMCreateSuperDM()`, `DMGetLocalSection()`, `DMPlexSetMigrationSF()`, `DMView()`
 @*/
 PetscErrorCode DMCreateSectionSuperDM(DM dms[], PetscInt len, IS **is, DM *superdm)
 {

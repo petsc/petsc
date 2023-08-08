@@ -1376,6 +1376,7 @@ static PetscErrorCode GmshCreateFE(MPI_Comm comm, const char prefix[], PetscBool
 /*@C
   DMPlexCreateGmshFromFile - Create a `DMPLEX` mesh from a Gmsh file
 
+  Input Parameters:
 + comm        - The MPI communicator
 . filename    - Name of the Gmsh file
 - interpolate - Create faces and edges in the mesh

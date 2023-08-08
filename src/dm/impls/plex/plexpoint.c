@@ -50,8 +50,7 @@ PetscErrorCode DMPlexGetPointLocal(DM dm, PetscInt point, PetscInt *start, Petsc
   Level: intermediate
 
   Note:
-
-  A common usage when data sizes are known statically:
+  A common usage when data sizes are known statically\:
 .vb
   const struct { PetscScalar foo,bar,baz; } *ptr;
   DMPlexPointLocalRead(dm,point,array,&ptr);
@@ -89,8 +88,7 @@ PetscErrorCode DMPlexPointLocalRead(DM dm, PetscInt point, const PetscScalar *ar
   Level: intermediate
 
   Note:
-
-  A common usage when data sizes are known statically:
+  A common usage when data sizes are known statically\:
 .vb
   struct { PetscScalar foo,bar,baz; } *ptr;
   DMPlexPointLocalRef(dm,point,array,&ptr);
@@ -259,8 +257,7 @@ PetscErrorCode DMPlexGetPointGlobal(DM dm, PetscInt point, PetscInt *start, Pets
   Level: intermediate
 
   Note:
-
-  A common usage when data sizes are known statically:
+  A common usage when data sizes are known statically\:
 .vb
   const struct { PetscScalar foo,bar,baz; } *ptr;
   DMPlexPointGlobalRead(dm,point,array,&ptr);
@@ -298,8 +295,7 @@ PetscErrorCode DMPlexPointGlobalRead(DM dm, PetscInt point, const PetscScalar *a
   Level: intermediate
 
   Note:
-
-  A common usage when data sizes are known statically:
+  A common usage when data sizes are known statically\:
 .vb
   struct { PetscScalar foo,bar,baz; } *ptr;
   DMPlexPointGlobalRef(dm,point,array,&ptr);

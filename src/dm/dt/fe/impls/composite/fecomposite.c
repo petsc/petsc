@@ -241,10 +241,10 @@ PETSC_EXTERN PetscErrorCode PetscFECreate_Composite(PetscFE fem)
 . fem - The `PetscFE` object
 
   Output Parameters:
-+ blockSize - The number of elements in a block
-. numBlocks - The number of blocks in a batch
-. batchSize - The number of elements in a batch
-- numBatches - The number of batches in a chunk
++ numSubelements - The number of sub elements
+. v0             - The affine transformation for each element
+. jac            - The Jacobian for each element
+- invjac         - The inverse of the Jacobian
 
   Level: intermediate
 

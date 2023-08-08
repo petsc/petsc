@@ -1442,19 +1442,24 @@ PetscErrorCode DMSetUp_DA_3D(DM da)
 
   Input Parameters:
 + comm         - MPI communicator
-. bx,by,bz     - type of ghost nodes the array have.
+. bx           - type of x ghost nodes the array have.
+         Use one of `DM_BOUNDARY_NONE`, `DM_BOUNDARY_GHOSTED`, `DM_BOUNDARY_PERIODIC`.
+. by           - type of y ghost nodes the array have.
+         Use one of `DM_BOUNDARY_NONE`, `DM_BOUNDARY_GHOSTED`, `DM_BOUNDARY_PERIODIC`.
+. bz           - type of z ghost nodes the array have.
          Use one of `DM_BOUNDARY_NONE`, `DM_BOUNDARY_GHOSTED`, `DM_BOUNDARY_PERIODIC`.
 . stencil_type - Type of stencil (`DMDA_STENCIL_STAR` or `DMDA_STENCIL_BOX`)
-. M,N,P        - global dimension in each direction of the array
-. m,n,p        - corresponding number of processors in each dimension
-           (or `PETSC_DECIDE` to have calculated)
+. M            - global dimension in x direction of the array
+. N            - global dimension in y direction of the array
+. P            - global dimension in z direction of the array
+. m            - corresponding number of processors in x dimension (or `PETSC_DECIDE` to have calculated)
+. n            - corresponding number of processors in y dimension (or `PETSC_DECIDE` to have calculated)
+. p            - corresponding number of processors in z dimension (or `PETSC_DECIDE` to have calculated)
 . dof          - number of degrees of freedom per node
 . s            - stencil width
-- lx, ly, lz   - arrays containing the number of nodes in each cell along
-          the x, y, and z coordinates, or NULL. If non-null, these
-          must be of length as m,n,p and the corresponding
-          m,n, or p cannot be PETSC_DECIDE. Sum of the lx[] entries must be M, sum of
-          the ly[] must N, sum of the lz[] must be P
+. lx           - arrays containing the number of nodes in each cell along the x  coordinates, or `NULL`.
+. ly           - arrays containing the number of nodes in each cell along the y coordinates, or `NULL`.
+- lz           - arrays containing the number of nodes in each cell along the z coordinates, or `NULL`.
 
   Output Parameter:
 . da - the resulting distributed array object
@@ -1475,6 +1480,10 @@ PetscErrorCode DMSetUp_DA_3D(DM da)
   Level: beginner
 
   Notes:
+  If `lx`, `ly`, or `lz` are non-null, these must be of length as `m`, `n`, `p` and the
+  corresponding `m`, `n`, or `p` cannot be `PETSC_DECIDE`. Sum of the `lx` entries must be `M`,
+  sum of the `ly` must `N`, sum of the `lz` must be `P`.
+
   The stencil type `DMDA_STENCIL_STAR` with width 1 corresponds to the
   standard 7-pt stencil, while `DMDA_STENCIL_BOX` with width 1 denotes
   the standard 27-pt stencil.
