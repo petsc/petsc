@@ -3,6 +3,10 @@
 # Created: Mon Jun 20 17:00:36 2022 (-0400)
 # @author: Jacob Faibussowitsch
 """
+from __future__ import annotations
+
+from .._typing import *
+
 from ..util._clang import (
   clx_scalar_type_kinds, clx_real_type_kinds, clx_int_type_kinds, clx_mpiint_type_kinds,
   clx_bool_type_kinds, clx_enum_type_kinds
@@ -19,9 +23,22 @@ from ._util import (
 )
 
 """Specific 'driver' function to test a particular function archetype"""
-def check_obj_idx_generic(linter, func, parent):
-  """
-  For generic checks where the form is func(obj1, idx1,..., objN, idxN)
+def check_obj_idx_generic(linter: Linter, func: Cursor, parent: Cursor) -> None:
+  r"""For generic checks where the form is func(obj1, idx1,..., objN, idxN)
+
+  Parameters
+  ----------
+  linter :
+    the linter instance
+  func :
+    the function cursor to check
+  parent :
+    the cursor of the parent function
+
+  Notes
+  -----
+  This is used 'generic' checking macros. I.e. they are comprised of argument and arg_idx pairs, so
+  the only thing to really check is whether the argument number matches.
   """
   func_args   = linter.get_argument_cursors(func)
   parent_args = linter.get_argument_cursors(parent)
@@ -30,9 +47,17 @@ def check_obj_idx_generic(linter, func, parent):
     check_matching_arg_num(linter, obj, idx, parent_args)
   return
 
-def checkPetscValidHeaderSpecificType(linter, func, parent):
-  """
-  Specific check for PetscValidHeaderSpecificType(obj, classid, idx, type)
+def checkPetscValidHeaderSpecificType(linter: Linter, func: Cursor, parent: Cursor) -> None:
+  r"""Specific check for PetscValidHeaderSpecificType(obj, classid, idx, type)
+
+  Parameters
+  ----------
+  linter :
+    the linter instance
+  func :
+    the function cursor to check
+  parent :
+    the cursor of the parent function
   """
   func_args   = linter.get_argument_cursors(func)
   parent_args = linter.get_argument_cursors(parent)
@@ -43,9 +68,17 @@ def checkPetscValidHeaderSpecificType(linter, func, parent):
   check_matching_arg_num(linter, obj, idx, parent_args)
   return
 
-def checkPetscValidHeaderSpecific(linter, func, parent):
-  """
-  Specific check for PetscValidHeaderSpecific(obj, classid, idx)
+def checkPetscValidHeaderSpecific(linter: Linter, func: Cursor, parent: Cursor) -> None:
+  r"""Specific check for PetscValidHeaderSpecific(obj, classid, idx)
+
+  Parameters
+  ----------
+  linter :
+    the linter instance
+  func :
+    the function cursor to check
+  parent :
+    the cursor of the parent function
   """
   func_args   = linter.get_argument_cursors(func)
   parent_args = linter.get_argument_cursors(parent)
@@ -55,9 +88,17 @@ def checkPetscValidHeaderSpecific(linter, func, parent):
   check_matching_arg_num(linter, obj, idx, parent_args)
   return
 
-def checkPetscValidHeader(linter, func, parent):
-  """
-  Specific check for PetscValidHeader(obj, idx)
+def checkPetscValidHeader(linter: Linter, func: Cursor, parent: Cursor) -> None:
+  r"""Specific check for PetscValidHeader(obj, idx)
+
+  Parameters
+  ----------
+  linter :
+    the linter instance
+  func :
+    the function cursor to check
+  parent :
+    the cursor of the parent function
   """
   func_args   = linter.get_argument_cursors(func)
   parent_args = linter.get_argument_cursors(parent)
@@ -67,9 +108,21 @@ def checkPetscValidHeader(linter, func, parent):
   check_matching_arg_num(linter, obj, idx, parent_args)
   return
 
-def checkPetscValidLogicalCollective(linter, func, parent, expected_types, **kwargs):
-  """
-  Generic check for PetscValidLogicalCollectiveXXX(pobj, obj, idx)
+def checkPetscValidLogicalCollective(linter: Linter, func: Cursor, parent: Cursor, expected_types: Collection[clx.TypeKind], **kwargs) -> None:
+  r"""Generic check for PetscValidLogicalCollectiveXXX(pobj, obj, idx)
+
+  Parameters
+  ----------
+  linter :
+    the linter instance
+  func :
+    the function cursor to check
+  parent :
+    the cursor of the parent function
+  expected_types :
+    the set of expected types that the second argument in `func` may have
+  **kwargs :
+    additional keyword arguments to `check_matching_specific_type()`
   """
   func_args   = linter.get_argument_cursors(func)
   parent_args = linter.get_argument_cursors(parent)
@@ -82,9 +135,17 @@ def checkPetscValidLogicalCollective(linter, func, parent, expected_types, **kwa
   check_matching_arg_num(linter, obj, idx, parent_args)
   return
 
-def checkPetscValidLogicalCollectiveScalar(linter, func, parent):
-  """
-  Specific check for PetscValidLogicalCollectiveScalar(pobj, obj, idx)
+def checkPetscValidLogicalCollectiveScalar(linter: Linter, func: Cursor, parent: Cursor) -> None:
+  r"""Specific check for PetscValidLogicalCollectiveScalar(pobj, obj, idx)
+
+  Parameters
+  ----------
+  linter :
+    the linter instance
+  func :
+    the function cursor to check
+  parent :
+    the cursor of the parent function
   """
   checkPetscValidLogicalCollective(
     linter, func, parent, clx_scalar_type_kinds,
@@ -93,9 +154,17 @@ def checkPetscValidLogicalCollectiveScalar(linter, func, parent):
   )
   return
 
-def checkPetscValidLogicalCollectiveReal(linter, func, parent):
-  """
-  Specific check for PetscValidLogicalCollectiveReal(pobj, obj, idx)
+def checkPetscValidLogicalCollectiveReal(linter: Linter, func: Cursor, parent: Cursor) -> None:
+  r"""Specific check for PetscValidLogicalCollectiveReal(pobj, obj, idx)
+
+  Parameters
+  ----------
+  linter :
+    the linter instance
+  func :
+    the function cursor to check
+  parent :
+    the cursor of the parent function
   """
   checkPetscValidLogicalCollective(
     linter, func, parent, clx_real_type_kinds,
@@ -104,9 +173,17 @@ def checkPetscValidLogicalCollectiveReal(linter, func, parent):
   )
   return
 
-def checkPetscValidLogicalCollectiveInt(linter, func, parent):
-  """
-  Specific check for PetscValidLogicalCollectiveInt(pobj, obj, idx)
+def checkPetscValidLogicalCollectiveInt(linter: Linter, func: Cursor, parent: Cursor) -> None:
+  r"""Specific check for PetscValidLogicalCollectiveInt(pobj, obj, idx)
+
+  Parameters
+  ----------
+  linter :
+    the linter instance
+  func :
+    the function cursor to check
+  parent :
+    the cursor of the parent function
   """
   checkPetscValidLogicalCollective(
     linter, func, parent, clx_int_type_kinds,
@@ -114,9 +191,17 @@ def checkPetscValidLogicalCollectiveInt(linter, func, parent):
   )
   return
 
-def checkPetscValidLogicalCollectiveMPIInt(linter, func, parent):
-  """
-  Specific check for PetscValidLogicalCollectiveMPIInt(pobj, obj, idx)
+def checkPetscValidLogicalCollectiveMPIInt(linter: Linter, func: Cursor, parent: Cursor) -> None:
+  r"""Specific check for PetscValidLogicalCollectiveMPIInt(pobj, obj, idx)
+
+  Parameters
+  ----------
+  linter :
+    the linter instance
+  func :
+    the function cursor to check
+  parent :
+    the cursor of the parent function
   """
   checkPetscValidLogicalCollective(
     linter, func, parent, clx_mpiint_type_kinds,
@@ -124,18 +209,34 @@ def checkPetscValidLogicalCollectiveMPIInt(linter, func, parent):
   )
   return
 
-def checkPetscValidLogicalCollectiveBool(linter, func, parent):
-  """
-  Specific check for PetscValidLogicalCollectiveBool(pobj, obj, idx)
+def checkPetscValidLogicalCollectiveBool(linter: Linter, func: Cursor, parent: Cursor) -> None:
+  r"""Specific check for PetscValidLogicalCollectiveBool(pobj, obj, idx)
+
+  Parameters
+  ----------
+  linter :
+    the linter instance
+  func :
+    the function cursor to check
+  parent :
+    the cursor of the parent function
   """
   checkPetscValidLogicalCollective(
     linter, func, parent, clx_bool_type_kinds, success_function=check_is_PetscBool
   )
   return
 
-def checkPetscValidLogicalCollectiveEnum(linter, func, parent):
-  """
-  Specific check for PetscValidLogicalCollectiveEnum(pobj, obj, idx)
+def checkPetscValidLogicalCollectiveEnum(linter: Linter, func: Cursor, parent: Cursor) -> None:
+  r"""Specific check for PetscValidLogicalCollectiveEnum(pobj, obj, idx)
+
+  Parameters
+  ----------
+  linter :
+    the linter instance
+  func :
+    the function cursor to check
+  parent :
+    the cursor of the parent function
   """
   checkPetscValidLogicalCollective(linter, func, parent, clx_enum_type_kinds)
   return

@@ -5,6 +5,6 @@
 """
 if __name__ == '__main__':
   import sys
-  import petsclinter as pl
+  import petsclinter.main
 
-  sys.exit(pl.main.command_line_main())
+  sys.exit(petsclinter.main.command_line_main())

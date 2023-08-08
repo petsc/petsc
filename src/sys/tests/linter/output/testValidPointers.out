@@ -1,5 +1,4 @@
 <--- FIXED --->
---------------------------------------------------------------------------------------------
 [31m[1m./src/sys/tests/linter/testValidPointers.c:6:25: error:[0m Argument number doesn't match for 'a'. Expected '1', found '2' [-fmatching-arg-num]:
   4: {
   5:   /* incorrect */
@@ -360,5 +359,4 @@
   69: PetscAssertPointer(f, 6);
   70: PetscAssertPointer(g, 7);
   71: PetscAssertPointer(h, 8);
---------------------------------------------------------------------------------------------
 <--- LEFT --->

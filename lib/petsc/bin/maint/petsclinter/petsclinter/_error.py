@@ -27,3 +27,17 @@ class KnownUnhandleableCursorError(ParsingError):
   all intents and purposes uncheckable :)
   """
   pass
+
+class ClassidNotRegisteredError(BaseError):
+  """
+  An error to indicate that a particular object has not been registered in the classid map
+  """
+  pass
+
+class TimeoutError(BaseError):
+  r"""An error to indicate some operation timed out"""
+  pass
+
+class ClobberTestOutputError(BaseError):
+  r"""An error to indicate you are about to clobbber your test code output with patches"""
+  pass

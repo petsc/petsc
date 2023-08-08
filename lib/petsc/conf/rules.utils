@@ -163,7 +163,24 @@ help-lint:
 	-@echo "  REPLACE=[1,0]                          Enable or disable replacing test output"
 	-@echo
 
-test-lint:
+checkvermin_exist:
+	@ret=`which vermin > /dev/null`; \
+	if [ $$? -ne 0 ]; then \
+          echo "vermin is required, please install: python3 -m pip install vermin"; \
+          false; \
+        fi
+
+checkmypy_exist:
+	@ret=`which mypy > /dev/null`; \
+	if [ $$? -ne 0 ]; then \
+          echo "MyPy is required, please install: python3 -m pip install mypy"; \
+          false; \
+        fi
+
+test-lint: checkvermin_exist checkmypy_exist
+	vermin --config-file ${PETSC_DIR}/lib/petsc/bin/maint/petsclinter/pyproject.toml -- ${PETSC_DIR}/lib/petsc/bin/maint/petsclinter
+	cd ${PETSC_DIR}/lib/petsc/bin/maint/petsclinter && mypy .
+	${PYTHON} ${PETSC_DIR}/lib/petsc/bin/maint/petsclinter/petsclinter/pkg_consistency_checks.py
 	${PYTHON} ${PETSC_DIR}/lib/petsc/bin/maint/petsclinter ${PETSC_DIR}/src/sys/tests/linter --test -j0 --werror --replace=${REPLACE} --verbose=${V} $(LINTER_OPTIONS)
 
 
