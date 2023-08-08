@@ -110,6 +110,10 @@ class DiagnosticsContainer:
             resolved_list.append(err)
           else:
             unresolved_list.append(err)
+      # remove any empty sets
+      for d in (resolved, unresolved):
+        if not d[path]:
+          del d[path]
     return unresolved, resolved
 
   def view_last(self) -> None:

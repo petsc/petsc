@@ -297,7 +297,7 @@ class ParallelPool(WorkerPoolBase):
       if not isinstance(packet, self.ReturnPacket):
         raise ValueError(type(packet))
       self.errors_left.append(packet.errors_left)
-      self.errors_fixed.append(packet.errors_left)
+      self.errors_fixed.append(packet.errors_fixed)
       self.patches.extend(packet.patches)
       self.warnings.append(packet.warnings)
     return
