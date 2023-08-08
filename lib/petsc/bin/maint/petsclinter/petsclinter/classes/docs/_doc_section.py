@@ -421,8 +421,10 @@ class FunctionParameterList(ParameterList):
     **kwargs :
       additional keyword arguments to `SectionBase.__init__()`
     """
-    kwargs.setdefault('titles', ('Input Parameter', 'Output Parameter', 'Calling sequence'))
-    kwargs.setdefault('keywords', ('Input', 'Output', 'Calling sequence of'))
+    kwargs.setdefault(
+      'titles', ('Input Parameter', 'Output Parameter', 'Calling sequence', 'Calling Sequence')
+    )
+    kwargs.setdefault('keywords', ('Input', 'Output', 'Calling sequence of', 'Calling Sequence Of'))
     super().__init__(*args, **kwargs)
     return
 
