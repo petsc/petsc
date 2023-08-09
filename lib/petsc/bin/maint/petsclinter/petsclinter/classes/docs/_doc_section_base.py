@@ -522,7 +522,10 @@ class SectionBase(DocBase):
         warn_diag.add_note(
           f'If this is indeed a valid heading, you can locally silence this diagnostic by adding \'// PetscClangLinter pragma disable: {DiagnosticManager.make_command_line_flag(warn_diag.flag)}\' on its own line before the docstring'
         ).add_note(
-          docstring.make_diagnostic_message('add it here', loc, highlight=False), location=loc.start
+          Diagnostic.make_message_from_formattable(
+            'add it here', crange=loc, highlight=False
+          ),
+          location=loc.start
         )
         docstring.add_diagnostic(warn_diag)
       else:

@@ -1,3 +1,10 @@
+@@ -8,5 +8,5 @@
+ extern void extractFunc(PetscViewer, void **);
+ 
+-PetscErrorCode testOutOfLineReference(PetscViewer v, PetscViewer v2)
++static PetscErrorCode testOutOfLineReference(PetscViewer v, PetscViewer v2)
+ {
+   /* linter should be able to connect all of these to v */
 @@ -19,5 +19,5 @@
  
    /* incorrect */

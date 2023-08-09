@@ -1,4 +1,11 @@
 <--- FIXED --->
+[31m[1m./src/sys/tests/linter/testTypes.c:3:1: error:[0m Function 'testTypes()' does not appear to be used anywhere outside of testTypes.c, and can be made static [-fstatic-function-candidate]:
+  1: #include <petsc/private/petscimpl.h>
+  2: 
+> 3: [33m[1mPetscErrorCode testTypes(PetscRandom r, PetscViewer v, PetscObject o, PetscFunctionList f)[0m
+     [33m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  4: {
+  5:   /* incorrect */
 [31m[1m./src/sys/tests/linter/testTypes.c:6:21: error:[0m Argument number doesn't match for 'r'. Expected '1', found '-1' [-fmatching-arg-num]:
   4: {
   5:   /* incorrect */

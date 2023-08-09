@@ -639,30 +639,6 @@ class PetscDocString(DocBase):
         )
     return dict(pragmas)
 
-  @staticmethod
-  def make_diagnostic_message(message: str, crange: Optional[Formattable] = None, num_context: int = 2, **kwargs) -> str:
-    r"""Make a formatted error message from a source range
-
-    Parameters
-    ----------
-    message :
-      the base message
-    crange : optional
-      the source range, whose formatted text is optionally appended to the message
-    num_context : optional
-      if crange is given, the number of context lines to append
-    **kwargs : optional
-      if crange is given, additional keyword arguments to pass to `SourceRange.formatted()`
-
-    Returns
-    -------
-    mess :
-      the error message
-    """
-    if crange is None:
-      return message
-    return f'{message}:\n{crange.formatted(num_context=num_context, **kwargs)}'
-
   def make_source_location(self, lineno: int, col: int) -> SourceLocation:
     r"""Make a `SourceLocation`
 
@@ -740,10 +716,7 @@ class PetscDocString(DocBase):
       src_range = self.extent
     else:
       src_range = SourceRange.cast(src_range)
-    return Diagnostic(
-      kind, diag_flag, self.make_diagnostic_message(msg, crange=src_range, **kwargs), src_range.start,
-      patch=patch
-    )
+    return Diagnostic.from_source_range(kind, diag_flag, msg, src_range, patch=patch, **kwargs)
 
   def add_diagnostic_from_source_range(self, kind: DiagnosticKind, diag_flag: str, msg: str, src_range: SourceRangeLike, **kwargs) -> None:
     r"""Log an error from a given source range
@@ -847,14 +820,16 @@ class PetscDocString(DocBase):
         'A sowing docstring for a symbol with internal linkage is pointless', self.extent,
         highlight=False
       ).add_note(
-        self.make_diagnostic_message(
-          f'\'{cursor.displayname}\' is declared \'{linked_cursor_name}\' here', linkage_extent
+        Diagnostic.make_message_from_formattable(
+          f'\'{cursor.displayname}\' is declared \'{linked_cursor_name}\' here', crange=linkage_extent
         ),
         location=linkage_extent.start
       ).add_note(
         'If this docstring is meant as developer-only documentation, remove the sowing chars from the docstring declaration. The linter will then ignore this docstring.'
       ).add_note(
-        self.make_diagnostic_message('Sowing chars declared here', begin_sowing_range),
+        Diagnostic.make_message_from_formattable(
+          'Sowing chars declared here', crange=begin_sowing_range
+        ),
         location=begin_sowing_range.start
       )
       self.add_diagnostic(diag)

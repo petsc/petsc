@@ -1,3 +1,10 @@
+@@ -10,5 +10,5 @@
+ #endif
+ 
+-PetscErrorCode testValidHeaders(PetscRandom r, PetscViewer v, PetscDraw d, PetscDrawAxis a)
++static PetscErrorCode testValidHeaders(PetscRandom r, PetscViewer v, PetscDraw d, PetscDrawAxis a)
+ {
+   /* incorrect */
 @@ -13,5 +13,5 @@
  {
    /* incorrect */

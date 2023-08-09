@@ -16,7 +16,7 @@ _T = TypeVar('_T')
 
 from ..util._color import Color
 
-from ._src_pos import SourceLocation
+from ._src_pos import SourceLocation, SourceRange
 
 class DiagnosticMapProxy:
   __slots__ = '_diag_map', '_mro'
@@ -463,6 +463,69 @@ class Diagnostic:
     self.notes    = notes
     self.kind     = kind
     return
+
+  @staticmethod
+  def make_message_from_formattable(message: str, crange: Optional[Formattable] = None, num_context: int = 2, **kwargs) -> str:
+    r"""Make a formatted error message from a formattable object
+
+    Parameters
+    ----------
+    message :
+      the base message
+    crange : optional
+      the formattable object, which must have a method `formatted(num_context: int, **kwargs) -> str`
+      whose formatted text is optionally appended to the message
+    num_context : optional
+      if crange is given, the number of context lines to append
+    **kwargs : optional
+      if crange is given, additional keyword arguments to pass to `SourceRange.formatted()`
+
+    Returns
+    -------
+    mess :
+      the error message
+    """
+    if crange is None:
+      return message
+    return f'{message}:\n{crange.formatted(num_context=num_context, **kwargs)}'
+
+  @classmethod
+  def from_source_range(cls, kind: DiagnosticKind, diag_flag: str, msg: str, src_range: SourceRangeLike, patch: Optional[Patch] = None, **kwargs) -> Diagnostic:
+    r"""Construct a `Diagnostic` from a source_range
+
+    Parameters
+    ----------
+    kind :
+      the `DiagnostiKind`
+    diag_flag :
+      the diagnostic flag to display
+    msg :
+      the base message text
+    src_range :
+      the source range to generate the message from
+    patch : optional
+      the patch to create a fixit form
+    **kwargs :
+      additional keyword arguments to pass to `src_range.formatted()`
+
+    Returns
+    -------
+    diag :
+      the constructed `Diagnostic`
+
+    Notes
+    -----
+    This is the de-facto standard factory for creating `Diagnostic`s as it ensures that the messages
+    are all similarly formatted and displayed. The vast majority of `Diagnostic`s are created via this
+    function
+    """
+    src_range = SourceRange.cast(src_range)
+    return cls(
+      kind, diag_flag,
+      cls.make_message_from_formattable(msg, crange=src_range, **kwargs),
+      src_range.start,
+      patch=patch
+    )
 
   def __repr__(self) -> str:
     return f'<flag: {self.clflag}, patch: {self.patch}, message: {self.message}, notes: {self.notes}>'

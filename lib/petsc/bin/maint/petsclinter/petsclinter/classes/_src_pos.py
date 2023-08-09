@@ -88,7 +88,7 @@ class SourceLocation(AttributeCache):
     return self.offset >= other.offset
 
   @classmethod
-  def cast(cls, other: SourceLocationLike) -> SourceLocation:
+  def cast(cls, other: SourceLocationLike, tu: Optional[clx.TranslationUnit] = None) -> SourceLocation:
     r"""Cast `other` to `SourceLocation
 
     Parameters
@@ -100,6 +100,8 @@ class SourceLocation(AttributeCache):
     -------
     loc :
       the `SourceLocation`
+    tu : optional
+      the translation unit if `other` does not have one already
 
     Notes
     -----
@@ -114,7 +116,7 @@ class SourceLocation(AttributeCache):
     if isinstance(other, cls):
       return other
     if isinstance(other, clx.SourceLocation):
-      return cls(other)
+      return cls(other, tu=tu)
     raise NotImplementedError(type(other))
 
   @classmethod

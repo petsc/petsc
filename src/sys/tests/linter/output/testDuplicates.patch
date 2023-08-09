@@ -1,3 +1,10 @@
+@@ -4,5 +4,5 @@
+ #include <petsc/private/petscimpl.h>
+ 
+-PetscErrorCode testDuplicatesWithChanges(PetscInt *a, PetscScalar *b)
++static PetscErrorCode testDuplicatesWithChanges(PetscInt *a, PetscScalar *b)
+ {
+   /* no remove */
 @@ -9,5 +9,5 @@
    PetscAssertPointer(a, 1);
    /* remove */
@@ -26,6 +33,13 @@
 +  PetscAssertPointer(b, 2);
    return 0;
  }
+@@ -18,5 +18,5 @@
+ }
+ 
+-PetscErrorCode testDuplicatesScoped(PetscInt *a, PetscScalar *b)
++static PetscErrorCode testDuplicatesScoped(PetscInt *a, PetscScalar *b)
+ {
+   /* no remove */
 @@ -24,5 +24,5 @@
    PetscAssertPointer(b, 2);
    /* remove */
@@ -54,6 +68,13 @@
 +    
    }
    return 0;
+@@ -34,5 +34,5 @@
+ }
+ 
+-PetscErrorCode testDuplicatesDoubleScoped(PetscInt *a, PetscScalar *b)
++static PetscErrorCode testDuplicatesDoubleScoped(PetscInt *a, PetscScalar *b)
+ {
+   /* no remove */
 @@ -40,5 +40,5 @@
    PetscAssertPointer(b, 2);
    /* remove */
@@ -96,6 +117,20 @@
 +    
    }
    return 0;
+@@ -55,5 +55,5 @@
+ }
+ 
+-PetscErrorCode testNoDuplicatesSwitch(PetscInt *a, PetscScalar *b, PetscBool cond)
++static PetscErrorCode testNoDuplicatesSwitch(PetscInt *a, PetscScalar *b, PetscBool cond)
+ {
+   switch (cond) {
+@@ -72,5 +72,5 @@
+ }
+ 
+-PetscErrorCode testDuplicatesNoChangesSwitch(PetscInt *a, PetscScalar *b, PetscBool cond)
++static PetscErrorCode testDuplicatesNoChangesSwitch(PetscInt *a, PetscScalar *b, PetscBool cond)
+ {
+   /* no remove */
 @@ -80,5 +80,5 @@
    case PETSC_TRUE:
      /* remove */
@@ -124,6 +159,20 @@
 +    
      break;
    }
+@@ -92,5 +92,5 @@
+ }
+ 
+-PetscErrorCode testNoDuplicatesIfElse(PetscInt *a, PetscScalar *b, PetscBool cond)
++static PetscErrorCode testNoDuplicatesIfElse(PetscInt *a, PetscScalar *b, PetscBool cond)
+ {
+   if (cond) {
+@@ -106,5 +106,5 @@
+ }
+ 
+-PetscErrorCode testDuplicatesIfElse(PetscInt *a, PetscScalar *b, PetscBool cond)
++static PetscErrorCode testDuplicatesIfElse(PetscInt *a, PetscScalar *b, PetscBool cond)
+ {
+   /* no remove */
 @@ -113,5 +113,5 @@
    if (cond) {
      /* remove */
@@ -152,3 +201,10 @@
 +    
    }
    return 0;
+@@ -123,5 +123,5 @@
+ }
+ 
+-PetscErrorCode testNoDuplicatesIfElseIfElse(PetscInt *a, PetscScalar *b, PetscBool cond)
++static PetscErrorCode testNoDuplicatesIfElseIfElse(PetscInt *a, PetscScalar *b, PetscBool cond)
+ {
+   if (cond) {

@@ -754,7 +754,7 @@ class Cursor(AttributeCache):
       canon       = cursor.canonical
       if canon.location.file != cursor_file:
         return Cursor.cast(canon)
-      for child in cursor.get_children():
+      for child in canon.get_children():
         if child.kind.is_attribute() and child.location.file != cursor_file:
           if refs := cls.find_cursor_references_from_cursor(child):
             assert len(refs) == 1, 'Don\'t know how to handle >1 ref!'

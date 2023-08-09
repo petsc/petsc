@@ -1,4 +1,11 @@
 <--- FIXED --->
+[31m[1m./src/sys/tests/linter/testDisabled.c:3:1: error:[0m Function 'testDisabled()' does not appear to be used anywhere outside of testDisabled.c, and can be made static [-fstatic-function-candidate]:
+  1: #include <petsc/private/petscimpl.h>
+  2: 
+> 3: [33m[1mPetscErrorCode testDisabled(PetscRandom r)[0m
+     [33m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  4: {
+  5:   /* incorrect */
 [31m[1m./src/sys/tests/linter/testDisabled.c:6:53: error:[0m Argument number doesn't match for 'r'. Expected '1', found '2' [-fmatching-arg-num]:
   4: {
   5:   /* incorrect */

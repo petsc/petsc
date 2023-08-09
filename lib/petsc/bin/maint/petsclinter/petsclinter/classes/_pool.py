@@ -26,6 +26,7 @@ _T = TypeVar('_T')
 exclude_dir_names = {
   'tests', 'tutorials', 'output', 'input', 'python', 'benchmarks', 'docs', 'binding', 'contrib',
   'fsrc', 'f90-mod', 'f90-src', 'f90-custom', 'ftn-auto', 'ftn-custom', 'f2003-src', 'ftn-kernels',
+  'perfstubs', 'yaml'
 }
 # directory suffixes to exclude from processing, case sensitive
 exclude_dir_suffixes  = ('.dSYM', '.DS_Store')

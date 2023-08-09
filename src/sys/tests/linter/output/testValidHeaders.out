@@ -1,4 +1,11 @@
 <--- FIXED --->
+[31m[1m./src/sys/tests/linter/testValidHeaders.c:9:1: error:[0m Function 'testValidHeaders()' does not appear to be used anywhere outside of testValidHeaders.c, and can be made static [-fstatic-function-candidate]:
+  7 : #endif
+  8 : 
+> 9 : [33m[1mPetscErrorCode testValidHeaders(PetscRandom r, PetscViewer v, PetscDraw d, PetscDrawAxis a)[0m
+      [33m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  10: {
+  11:   /* incorrect */
 [31m[1m./src/sys/tests/linter/testValidHeaders.c:12:35: error:[0m Classid doesn't match. Expected 'PETSC_RANDOM_CLASSID' found 'PETSC_VIEWER_CLASSID' [-fincompatible-classid]:
   10: {
   11:   /* incorrect */

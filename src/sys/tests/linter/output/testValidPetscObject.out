@@ -1,4 +1,11 @@
 <--- FIXED --->
+[31m[1m./src/sys/tests/linter/testValidPetscObject.c:9:1: error:[0m Function 'ValidPetscObject()' does not appear to be used anywhere outside of testValidPetscObject.c, and can be made static [-fstatic-function-candidate]:
+  7 : typedef struct _p_PetscLinterDummyObj *PetscLinterDummyObj;
+  8 : 
+> 9 : [33m[1mPetscErrorCode ValidPetscObject(PetscObject obj, PetscLinterDummyObj dobj)[0m
+      [33m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  10: {
+  11:   /* incorrect */
 [31m[1m./src/sys/tests/linter/testValidPetscObject.c:12:25: error:[0m Argument number doesn't match for 'obj'. Expected '1', found '2' [-fmatching-arg-num]:
   10: {
   11:   /* incorrect */
