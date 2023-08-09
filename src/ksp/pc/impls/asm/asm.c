@@ -601,7 +601,7 @@ static PetscErrorCode PCApplyTranspose_ASM(PC pc, Vec x, Vec y)
     PetscCall(KSPCheckSolve(osm->ksp[i], pc, osm->y[i]));
     PetscCall(PetscLogEventEnd(PC_ApplyOnBlocks, osm->ksp[i], osm->x[i], osm->y[i], 0));
 
-    if (osm->lprolongation) { /* interpolate the non-overlapping i-block solution to the local solution */
+    if (osm->lprolongation && osm->type != PC_ASM_RESTRICT) { /* interpolate the non-overlapping i-block solution to the local solution */
       PetscCall(VecScatterBegin(osm->lprolongation[i], osm->y[i], osm->ly, ADD_VALUES, forward));
       PetscCall(VecScatterEnd(osm->lprolongation[i], osm->y[i], osm->ly, ADD_VALUES, forward));
     } else { /* interpolate the overlapping i-block solution to the local solution */
