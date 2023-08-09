@@ -506,11 +506,6 @@ PetscErrorCode DMLabelReset(DMLabel label)
   PetscCall(PetscFree(label->ht));
   PetscCall(PetscFree(label->points));
   PetscCall(PetscFree(label->validIS));
-  label->stratumValues = NULL;
-  label->stratumSizes  = NULL;
-  label->ht            = NULL;
-  label->points        = NULL;
-  label->validIS       = NULL;
   PetscCall(PetscHMapIReset(label->hmap));
   label->pStart = -1;
   label->pEnd   = -1;
