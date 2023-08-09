@@ -51,7 +51,6 @@ def test_main(
     errors_fixed: list[CondensedDiags],
     errors_left:  list[CondensedDiags],
     replace:      bool = False,
-    verbose:      bool = False
 ) -> ReturnCode:
   r"""The "main" function for testing
 
@@ -71,8 +70,6 @@ def test_main(
     the set of generated (and not fixed) errors
   replace :
     should the output be replaced?
-  verbose :
-    whether to print verbose output
 
   Returns
   -------

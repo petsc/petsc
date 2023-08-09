@@ -89,7 +89,7 @@ def __sanitize_test_output_dir(src_path: list[Path], test_output_dir: Optional[S
 
   return test_output_dir
 
-def __sanitize_compiler_flags(petsc_dir: Path, petsc_arch: str, verbose: bool, extra_compiler_flags:  Optional[list[str]]) -> list[str]:
+def __sanitize_compiler_flags(petsc_dir: Path, petsc_arch: str, verbose: int, extra_compiler_flags:  Optional[list[str]]) -> list[str]:
   if extra_compiler_flags is None:
     extra_compiler_flags = []
 
@@ -104,7 +104,7 @@ def main(
     clang_dir:             Optional[StrPathLike] = None,
     clang_lib:             Optional[StrPathLike] = None,
     clang_compat_check:    bool = True,
-    verbose:               bool = False,
+    verbose:               int = 0,
     workers:               int = -1,
     check_function_filter: Optional[Collection[str]] = None,
     patch_dir:             Optional[StrPathLike] = None,
@@ -224,8 +224,7 @@ def main(
     pl.sync_print = print
     sys.stdout.flush()
     return test_main(
-      petsc_dir, src_path[0], test_output_dir, patches, errors_fixed, errors_left,
-      replace=replace_tests, verbose=verbose
+      petsc_dir, src_path[0], test_output_dir, patches, errors_fixed, errors_left, replace=replace_tests
     )
   elif patches:
     import time
@@ -378,9 +377,20 @@ def __build_arg_parser(parent_parsers: Optional[list[argparse.ArgumentParser]] =
     parser, __ADVANCED_HELP_FLAG__, help='show more help output (e.g. the various check flags)'
   )
 
+  def str2int(v: str) -> int:
+    v = v.strip()
+    if v == '':
+      # for the case of --option=${SOME_MAKE_VAR} where SOME_MAKE_VAR is empty/undefined
+      ret = 0
+    else:
+      ret = int(v)
+    if ret < 0:
+      raise ValueError(f'Integer argument {v} must be >= 0')
+    return ret
+
   group_general = parser.add_argument_group(title='General options')
   group_general.add_argument('--version', action='version', version=f'%(prog)s {pl.version_str()}')
-  add_bool_argument(group_general, '-v', '--verbose', help='verbose progress printed to screen')
+  group_general.add_argument('-v', '--verbose', nargs='?', type=str2int, const=1, default=0, help='verbose progress printed to screen, must be >= 0')
   add_bool_argument(group_general, '--pm', help='launch an IPython post_mortem() on any raised exceptions (implies -j/--jobs 1)')
   add_bool_argument(group_general, '--werror', help='treat all warnings as errors')
   group_general.add_argument('-j', '--jobs', type=int, const=-1, default=-1, nargs='?', help='number of multiprocessing jobs, -1 means number of processors on machine', dest='workers')

@@ -35,7 +35,7 @@ allow_file_extensions = ('.c', '.cpp', '.cxx', '.cu', '.cc', '.h', '.hpp', '.inc
 class WorkerPoolBase(abc.ABC):
   __slots__ = ('verbose', 'warnings', 'errors_left', 'errors_fixed', 'patches')
 
-  verbose: bool
+  verbose: int
   warnings: list[CondensedDiags]
   errors_left: list[CondensedDiags]
   errors_fixed: list[CondensedDiags]
@@ -48,13 +48,13 @@ class WorkerPoolBase(abc.ABC):
     FILE_PATH  = enum.auto()
     EXIT_QUEUE = enum.auto()
 
-  def __init__(self, verbose: bool) -> None:
+  def __init__(self, verbose: int) -> None:
     r"""Construct a `WoekerPoolBase`
 
     Parameters
     ----------
     verbose :
-      whether to print verbose logging output
+      whether to print verbose logging output (at level)
     """
     super().__init__()
     self.verbose      = verbose
@@ -218,7 +218,7 @@ class ParallelPool(WorkerPoolBase):
   workers: list[mp.Process]
   num_workers: int
 
-  def __init__(self, num_workers: int, verbose: bool) -> None:
+  def __init__(self, num_workers: int, verbose: int) -> None:
     r"""Construct a `ParallelPool`
 
     Parameters
@@ -328,8 +328,9 @@ class ParallelPool(WorkerPoolBase):
 
     # in case we are double-calling this
     self._flush_workers()
-    self.workers = [
-      mp.Process(
+    assert len(self.workers) == 0
+    for i in range(self.num_workers):
+      worker = mp.Process(
         target=queue_main,
         args=(
           clang_lib, clang_compat_check, check_function_map, classid_map, DiagnosticManager,
@@ -338,11 +339,8 @@ class ParallelPool(WorkerPoolBase):
         ),
         name=f'[{i}]'
       )
-      for i in range(self.num_workers)
-    ]
-
-    for worker in self.workers:
       worker.start()
+      self.workers.append(worker)
     return
 
   def _flush_workers(self) -> None:
@@ -490,7 +488,7 @@ class SerialPool(WorkerPoolBase):
 
   linter: Linter
 
-  def __init__(self, verbose: bool) -> None:
+  def __init__(self, verbose: int) -> None:
     r"""Construct a `SerialPool`
 
     Parameters
@@ -549,7 +547,7 @@ class SerialPool(WorkerPoolBase):
     self.patches.extend(patches)
     return
 
-def WorkerPool(num_workers: int, verbose: bool) -> Union[SerialPool, ParallelPool]:
+def WorkerPool(num_workers: int, verbose: int) -> Union[SerialPool, ParallelPool]:
   r"""Construct a `WorkerPool`
 
   Parameters
@@ -557,7 +555,7 @@ def WorkerPool(num_workers: int, verbose: bool) -> Union[SerialPool, ParallelPoo
   num_workers :
     the number of worker threads the pool should own
   verbose :
-    whether to print verbose output
+    what level to print verbose output at
 
   Returns
   -------

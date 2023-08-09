@@ -138,7 +138,7 @@ class Linter:
 
   flags: list[str]
   clang_opts: CXTranslationUnit
-  verbose: bool
+  verbose: int
   index: clx.Index
   errors: DiagnosticsContainer
   warnings: DiagnosticsContainer
@@ -146,7 +146,7 @@ class Linter:
 
   diags: DiagnosticMap # satisfy type checkers
 
-  def __init__(self, compiler_flags: list[str], clang_options: Optional[CXTranslationUnit] = None, verbose: bool = False, werror: bool = False) -> None:
+  def __init__(self, compiler_flags: list[str], clang_options: Optional[CXTranslationUnit] = None, verbose: int = 0, werror: bool = False) -> None:
     r"""Construct a `Linter`
 
     Parameters
@@ -157,7 +157,7 @@ class Linter:
       the set of clang options to pass to the `clang.cindex.Index.parse()` function, defaults to
       `petsclinter.util.base_clang_options`
     verbose : optional
-      whether to print verbose output
+      whether to print verbose output (and at what level)
     werror : optional
       whether to treat warnings as errors
     """

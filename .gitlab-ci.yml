@@ -833,10 +833,10 @@ linux-analyzer:
     - cat ./config/examples/${TEST_ARCH}.py
     - ./config/examples/${TEST_ARCH}.py
     - make LINTER_OPTIONS="${LINTER_OPTIONS}" test-lint
-    - make LINTER_OPTIONS="${LINTER_OPTIONS} -- ./src" lint
+    - make V=3 LINTER_OPTIONS="${LINTER_OPTIONS} -- ./src" lint
   variables:
     TEST_ARCH: arch-ci-linux-analyzer
-    LINTER_OPTIONS: "--PETSC_ARCH=${TEST_ARCH} --clang_lib=`llvm-config-14 --libdir`/libclang.so.1 --verbose 1 --werror 1"
+    LINTER_OPTIONS: "--PETSC_ARCH=${TEST_ARCH} --clang_lib=`llvm-config-14 --libdir`/libclang.so.1 --werror 1"
   artifacts:
     paths:
     - arch-*/lib/petsc/conf/*.log
