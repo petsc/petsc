@@ -308,8 +308,8 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
     /* Create the local work vectors (from the local matrices) and scatter contexts */
     PetscCall(MatCreateVecs(pc->pmat, &vec, NULL));
 
-    PetscCheck(!osm->is_local || (osm->type != PC_ASM_INTERPOLATE && osm->type != PC_ASM_NONE), PetscObjectComm((PetscObject)pc), PETSC_ERR_SUP, "Cannot use interpolate or none PCASMType if is_local was provided to PCASMSetLocalSubdomains()");
-    if (osm->is_local && osm->type == PC_ASM_RESTRICT && osm->loctype == PC_COMPOSITE_ADDITIVE) PetscCall(PetscMalloc1(osm->n_local_true, &osm->lprolongation));
+    PetscCheck(!osm->is_local || osm->n_local_true == 1 || (osm->type != PC_ASM_INTERPOLATE && osm->type != PC_ASM_NONE), PetscObjectComm((PetscObject)pc), PETSC_ERR_SUP, "Cannot use interpolate or none PCASMType if is_local was provided to PCASMSetLocalSubdomains() with more than a single subdomain");
+    if (osm->is_local && osm->type != PC_ASM_BASIC && osm->loctype == PC_COMPOSITE_ADDITIVE) PetscCall(PetscMalloc1(osm->n_local_true, &osm->lprolongation));
     PetscCall(PetscMalloc1(osm->n_local_true, &osm->lrestriction));
     PetscCall(PetscMalloc1(osm->n_local_true, &osm->x));
     PetscCall(PetscMalloc1(osm->n_local_true, &osm->y));
@@ -461,7 +461,7 @@ static PetscErrorCode PCApply_ASM(PC pc, Vec x, Vec y)
     PetscCall(KSPCheckSolve(osm->ksp[i], pc, osm->y[i]));
     PetscCall(PetscLogEventEnd(PC_ApplyOnBlocks, osm->ksp[i], osm->x[i], osm->y[i], 0));
 
-    if (osm->lprolongation) { /* interpolate the non-overlapping i-block solution to the local solution (only for restrictive additive) */
+    if (osm->lprolongation && osm->type != PC_ASM_INTERPOLATE) { /* interpolate the non-overlapping i-block solution to the local solution (only for restrictive additive) */
       PetscCall(VecScatterBegin(osm->lprolongation[i], osm->y[i], osm->ly, ADD_VALUES, forward));
       PetscCall(VecScatterEnd(osm->lprolongation[i], osm->y[i], osm->ly, ADD_VALUES, forward));
     } else { /* interpolate the overlapping i-block solution to the local solution */
@@ -540,7 +540,7 @@ static PetscErrorCode PCMatApply_ASM(PC pc, Mat X, Mat Y)
   for (i = 0; i < N; ++i) {
     PetscCall(VecSet(osm->ly, 0.0));
     PetscCall(MatDenseGetColumnVecRead(W, i, &x));
-    if (osm->lprolongation) { /* interpolate the non-overlapping 0-block solution to the local solution (only for restrictive additive) */
+    if (osm->lprolongation && osm->type != PC_ASM_INTERPOLATE) { /* interpolate the non-overlapping 0-block solution to the local solution (only for restrictive additive) */
       PetscCall(VecScatterBegin(osm->lprolongation[0], x, osm->ly, ADD_VALUES, forward));
       PetscCall(VecScatterEnd(osm->lprolongation[0], x, osm->ly, ADD_VALUES, forward));
     } else { /* interpolate the overlapping 0-block solution to the local solution */
