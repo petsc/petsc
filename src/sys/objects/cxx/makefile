@@ -1,8 +1,9 @@
 -include ../../../../petscdir.mk
-#requirespackage 'PETSC_HAVE_ELEMENTAL'
+#requiresdefine 'PETSC_HAVE_CXX'
 
-MANSEC   = Sys
-LIBBASE  = libpetscsys
+MANSEC  = Sys
+LIBBASE = libpetscsys
+DIRS    = elemental
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules.doc

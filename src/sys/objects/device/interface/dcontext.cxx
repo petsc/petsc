@@ -16,7 +16,7 @@ public:
     PetscFunctionBegin;
     PetscCall(PetscArrayzero(dctx, 1));
     PetscCall(PetscHeaderInitialize_Private(dctx, PETSC_DEVICE_CONTEXT_CLASSID, "PetscDeviceContext", "PetscDeviceContext", "Sys", PETSC_COMM_SELF, PetscDeviceContextDestroy, PetscDeviceContextView));
-    PetscCallCXX(PetscObjectCast(dctx)->cpp = new CxxData());
+    PetscCallCXX(PetscObjectCast(dctx)->cpp = new CxxData{dctx});
     PetscCall(underlying().reset(dctx, false));
     PetscFunctionReturn(PETSC_SUCCESS);
   }
@@ -50,12 +50,18 @@ public:
       // don't deallocate the child array, rather just zero it out
       PetscCall(PetscArrayzero(dctx->childIDs, dctx->maxNumChildren));
       PetscCall(CxxDataCast(dctx)->clear());
+      PetscCall(CxxDataCast(dctx)->reset_self(dctx));
     }
     dctx->streamType = PETSC_STREAM_DEFAULT_BLOCKING;
     PetscFunctionReturn(PETSC_SUCCESS);
   }
 
-  static PetscErrorCode invalidate_(PetscDeviceContext) noexcept { return PETSC_SUCCESS; }
+  static PetscErrorCode invalidate_(PetscDeviceContext dctx) noexcept
+  {
+    PetscFunctionBegin;
+    PetscCall(CxxDataCast(dctx)->reset_self(dctx));
+    PetscFunctionReturn(PETSC_SUCCESS);
+  }
 };
 
 static Petsc::ObjectPool<_p_PetscDeviceContext, PetscDeviceContextConstructor> contextPool;
@@ -511,20 +517,20 @@ PetscErrorCode PetscDeviceContextQueryIdle(PetscDeviceContext dctx, PetscBool *i
 @*/
 PetscErrorCode PetscDeviceContextWaitForContext(PetscDeviceContext dctxa, PetscDeviceContext dctxb)
 {
-  PetscObject aobj;
+  PetscObjectId bid;
 
   PetscFunctionBegin;
   PetscCall(PetscDeviceContextGetOptionalNullContext_Internal(&dctxa));
   PetscCall(PetscDeviceContextGetOptionalNullContext_Internal(&dctxb));
   PetscCheckCompatibleDeviceContexts(dctxa, 1, dctxb, 2);
   if (dctxa == dctxb) PetscFunctionReturn(PETSC_SUCCESS);
-  aobj = PetscObjectCast(dctxa);
+  bid = PetscObjectCast(dctxb)->id;
   PetscCall(PetscLogEventBegin(DCONTEXT_WaitForCtx, dctxa, dctxb, nullptr, nullptr));
   PetscUseTypeMethod(dctxa, waitforcontext, dctxb);
-  PetscCallCXX(CxxDataCast(dctxa)->upstream[dctxb] = CxxDataParent(dctxb));
+  PetscCallCXX(CxxDataCast(dctxa)->upstream()[bid] = CxxDataCast(dctxb)->weak_snapshot());
   PetscCall(PetscLogEventEnd(DCONTEXT_WaitForCtx, dctxa, dctxb, nullptr, nullptr));
-  PetscCall(PetscInfo(dctxa, "dctx %" PetscInt64_FMT " waiting on dctx %" PetscInt64_FMT "\n", aobj->id, PetscObjectCast(dctxb)->id));
-  PetscCall(PetscObjectStateIncrease(aobj));
+  PetscCall(PetscInfo(dctxa, "dctx %" PetscInt64_FMT " waiting on dctx %" PetscInt64_FMT "\n", PetscObjectCast(dctxa)->id, bid));
+  PetscCall(PetscObjectStateIncrease(PetscObjectCast(dctxa)));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -859,7 +865,8 @@ static PetscErrorCode PetscDeviceContextGetNullContextForDevice_Private(PetscBoo
   PetscValidDevice(device, 2);
   PetscAssertPointer(dctx, 3);
   if (PetscUnlikely(!nullContextsFinalizer)) {
-    const auto finalizer = [] {
+    nullContextsFinalizer = true;
+    PetscCall(PetscRegisterFinalize([] {
       PetscFunctionBegin;
       for (auto &&dvec : nullContexts) {
         for (auto &&dctx : dvec) PetscCall(PetscDeviceContextDestroy(&dctx));
@@ -867,10 +874,7 @@ static PetscErrorCode PetscDeviceContextGetNullContextForDevice_Private(PetscBoo
       }
       nullContextsFinalizer = false;
       PetscFunctionReturn(PETSC_SUCCESS);
-    };
-
-    nullContextsFinalizer = true;
-    PetscCall(PetscRegisterFinalize(std::move(finalizer)));
+    }));
   }
   PetscCall(PetscDeviceGetDeviceId(device, &devid));
   PetscCall(PetscDeviceGetType(device, &dtype));

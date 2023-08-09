@@ -1446,9 +1446,7 @@ PetscErrorCode PetscFinalize(void)
     if (flg1) PetscCall(PetscLogMPEDump(mname[0] ? mname : NULL));
   }
 
-  /*
-     Free all objects registered with PetscObjectRegisterDestroy() such as PETSC_VIEWER_XXX_().
-  */
+  // Free all objects registered with PetscObjectRegisterDestroy() such as PETSC_VIEWER_XXX_().
   PetscCall(PetscObjectRegisterDestroyAll());
 
   if (PetscDefined(USE_LOG)) {
@@ -1456,9 +1454,7 @@ PetscErrorCode PetscFinalize(void)
     PetscCall(PetscLogViewFromOptions());
     PetscCall(PetscOptionsPopGetViewerOff());
 
-    /*
-       Free any objects created by the last block of code.
-       */
+    // Free any objects created by the last block of code.
     PetscCall(PetscObjectRegisterDestroyAll());
 
     mname[0] = 0;

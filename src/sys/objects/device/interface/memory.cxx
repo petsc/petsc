@@ -7,6 +7,20 @@
 #include <algorithm> // std::find_if
 #include <cstring>   // std::memset
 
+#include <petsc/private/cpp/object_pool.hpp>
+
+namespace Petsc
+{
+
+namespace memory
+{
+
+typename PoolAllocated::allocator_type PoolAllocated::pool_{};
+
+} // namespace memory
+
+} // namespace Petsc
+
 const char *const PetscDeviceCopyModes[] = {"host_to_host", "device_to_host", "host_to_device", "device_to_device", "auto", "PetscDeviceCopyMode", "PETSC_DEVICE_COPY_", nullptr};
 static_assert(Petsc::util::to_underlying(PETSC_DEVICE_COPY_HTOH) == 0, "");
 static_assert(Petsc::util::to_underlying(PETSC_DEVICE_COPY_DTOH) == 1, "");

@@ -391,11 +391,11 @@ template <typename T>
 static PetscErrorCode PetscDeviceContextMapIterVisitor(PetscDeviceContext dctx, T &&callback) noexcept
 {
   const auto dctx_id    = PetscObjectCast(dctx)->id;
-  auto      &dctx_deps  = CxxDataCast(dctx)->deps;
+  auto     &&marked     = CxxDataCast(dctx)->marked_objects();
   auto      &object_map = marked_object_map.map;
 
   PetscFunctionBegin;
-  for (auto &&dep : dctx_deps) {
+  for (auto &&dep : marked) {
     const auto mapit = object_map.find(dep);
 
     // Need this check since the final PetscDeviceContext may run through this *after* the map
@@ -414,7 +414,7 @@ static PetscErrorCode PetscDeviceContextMapIterVisitor(PetscDeviceContext dctx, 
       if (deps.empty()) PetscCallCXX(object_map.erase(mapit));
     }
   }
-  PetscCallCXX(dctx_deps.clear());
+  PetscCallCXX(marked.clear());
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -443,22 +443,24 @@ PetscErrorCode PetscDeviceContextSyncClearMap_Internal(PetscDeviceContext dctx)
   {
     // the recursive sync clear map call is unbounded in case of a dependenct loop so we make a
     // copy
+    const auto cxx_data = CxxDataCast(dctx);
     // clang-format off
     const std::vector<CxxData::upstream_type::value_type> upstream_copy(
-      std::make_move_iterator(CxxDataCast(dctx)->upstream.begin()),
-      std::make_move_iterator(CxxDataCast(dctx)->upstream.end())
+      std::make_move_iterator(cxx_data->upstream().begin()),
+      std::make_move_iterator(cxx_data->upstream().end())
     );
     // clang-format on
 
     // aftermath, clear our set of parents (to avoid infinite recursion) and mark ourselves as no
     // longer contained (while the empty graph technically *is* always contained, it is not what
     // we mean by it)
-    PetscCall(CxxDataCast(dctx)->clear());
-    //dctx->contained = PETSC_FALSE;
+    PetscCall(cxx_data->clear());
     for (auto &&upstrm : upstream_copy) {
-      // check that this parent still points to what we originally thought it was
-      PetscCheck(upstrm.second.id == PetscObjectCast(upstrm.first)->id, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Upstream dctx %" PetscInt64_FMT " no longer exists, now has id %" PetscInt64_FMT, upstrm.second.id, PetscObjectCast(upstrm.first)->id);
-      PetscCall(PetscDeviceContextSyncClearMap_Internal(upstrm.first));
+      if (const auto udctx = upstrm.second.weak_dctx().lock()) {
+        // check that this parent still points to what we originally thought it was
+        PetscCheck(upstrm.first == PetscObjectCast(udctx.get())->id, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Upstream dctx %" PetscInt64_FMT " no longer exists, now has id %" PetscInt64_FMT, upstrm.first, PetscObjectCast(udctx.get())->id);
+        PetscCall(PetscDeviceContextSyncClearMap_Internal(udctx.get()));
+      }
     }
   }
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -510,7 +512,7 @@ static PetscErrorCode MarkFromID_CompatibleModes(MarkedObjectMap::mapped_type &m
 
     // we have been here before, all we must do is update our entry then we can bail
     PetscCall(DEBUG_INFO("found old self as dependency, updating\n"));
-    PetscAssert(CxxDataCast(dctx)->deps.find(id) != CxxDataCast(dctx)->deps.end(), PETSC_COMM_SELF, PETSC_ERR_PLIB, "PetscDeviceContext %" PetscInt64_FMT " listed as dependency for object %" PetscInt64_FMT " (%s), but does not have the object in private dependency list!", dctx_id, id, name);
+    PetscAssert(CxxDataCast(dctx)->has_marked(id), PETSC_COMM_SELF, PETSC_ERR_PLIB, "PetscDeviceContext %" PetscInt64_FMT " listed as dependency for object %" PetscInt64_FMT " (%s), but does not have the object in private dependency list!", dctx_id, id, name);
     swap(it->frame(), frame);
     PetscCall(PetscDeviceContextRecordEvent_Private(dctx, it->event()));
     *update_object_dependencies = false;
@@ -541,14 +543,13 @@ static PetscErrorCode MarkFromID_IncompatibleModes_UpdateLastWrite(MarkedObjectM
   }
 
   // we match the device type of the dependency, we can reuse its event!
-  auto      &dctx_upstream_deps     = CxxDataCast(dctx)->deps;
+  const auto cxx_data               = CxxDataCast(dctx);
   const auto last_write_was_also_us = last_write.event() && (last_write.dctx_id() == dctx_id);
   using std::swap;
 
   PetscCall(DEBUG_INFO("we matched the previous write dependency's (intent %s) device type (%s), swapping last dependency with last write\n", PetscMemoryAccessModeToString(marked.mode), PetscDeviceTypes[dtype]));
-  if (last_dep.event()->dctx_id != dctx_id) dctx_upstream_deps.emplace(id);
-  PetscAssert(dctx_upstream_deps.find(id) != dctx_upstream_deps.end(), PETSC_COMM_SELF, PETSC_ERR_PLIB, "Did not find id %" PetscInt64_FMT "in object dependencies, but we have apparently recorded the last dependency %s!", id,
-              last_write.frame().to_string().c_str());
+  if (last_dep.event()->dctx_id != dctx_id) PetscCall(cxx_data->add_mark(id));
+  PetscAssert(cxx_data->has_marked(id), PETSC_COMM_SELF, PETSC_ERR_PLIB, "Did not find id %" PetscInt64_FMT "in object dependencies, but we have apparently recorded the last dependency %s!", id, last_write.frame().to_string().c_str());
   swap(last_write, last_dep);
   if (last_write_was_also_us) {
     PetscCall(DEBUG_INFO("we were also the last write event (intent %s), updating\n", PetscMemoryAccessModeToString(mode)));
@@ -606,7 +607,7 @@ static PetscErrorCode PetscDeviceContextMarkIntentFromID_Private(PetscDeviceCont
     // become the new leaf by appending ourselves
     PetscCall(DEBUG_INFO("%s with intent %s\n", object_dependencies.empty() ? "dependency list is empty, creating new leaf" : "appending to existing leaves", PetscMemoryAccessModeToString(mode)));
     PetscCallCXX(object_dependencies.emplace_back(dctx, std::move(frame)));
-    PetscCallCXX(CxxDataCast(dctx)->deps.emplace(id));
+    PetscCall(CxxDataCast(dctx)->add_mark(id));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
