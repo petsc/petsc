@@ -22,6 +22,7 @@ Changes: Development
 .. rubric:: Sys:
 
 - Add ``PetscDeviceContextGetStreamHandle()`` to return a handle to the stream the current device context is using
+- Add utility functions ``PetscGetCurrentCUDAStream()`` and ``PetscGetCurrentHIPStream()`` to return the GPU stream the current device context is using
 - Add ``PetscStrcmpAny()`` to compare against multiple non-empty strings
 - Change arguments 4 and 5 of ``PetscViewerBinaryReadAll()`` and ``PetscViewerBinaryWriteAll()`` to ``PetscInt64``
 - Add ``PetscIsCloseAtTolScalar()``
