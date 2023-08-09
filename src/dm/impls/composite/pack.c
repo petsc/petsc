@@ -1305,7 +1305,7 @@ static PetscErrorCode DMCompositeSampleGLVisFields_Private(PetscObject oX, Petsc
     void    *fctx;
     PetscInt nfi;
 
-    PetscCall(PetscViewerGLVisGetFields_Private(ctx->subv[i], &nfi, NULL, NULL, &g2l, NULL, &fctx));
+    PetscCall(PetscViewerGLVisGetFields_Internal(ctx->subv[i], &nfi, NULL, NULL, &g2l, NULL, &fctx));
     if (!nfi) continue;
     if (g2l) PetscCall((*g2l)((PetscObject)ctx->vecs[i], nfi, oXfield + cumf, fctx));
     else PetscCall(VecCopy(ctx->vecs[i], (Vec)(oXfield[cumf])));
@@ -1336,8 +1336,8 @@ static PetscErrorCode DMSetUpGLVisViewer_Composite(PetscObject odm, PetscViewer 
 
     PetscCall(PetscViewerCreate(PetscObjectComm(odm), &ctx->subv[i]));
     PetscCall(PetscViewerSetType(ctx->subv[i], PETSCVIEWERGLVIS));
-    PetscCall(PetscViewerGLVisSetDM_Private(ctx->subv[i], (PetscObject)dms[i]));
-    PetscCall(PetscViewerGLVisGetFields_Private(ctx->subv[i], &nf, NULL, NULL, NULL, NULL, NULL));
+    PetscCall(PetscViewerGLVisSetDM_Internal(ctx->subv[i], (PetscObject)dms[i]));
+    PetscCall(PetscViewerGLVisGetFields_Internal(ctx->subv[i], &nf, NULL, NULL, NULL, NULL, NULL));
     tnf += nf;
   }
   PetscCall(PetscFree(dms));
@@ -1347,7 +1347,7 @@ static PetscErrorCode DMSetUpGLVisViewer_Composite(PetscObject odm, PetscViewer 
     const char **fec;
     Vec         *Uf;
 
-    PetscCall(PetscViewerGLVisGetFields_Private(ctx->subv[i], &nf, &fec, &sd, NULL, (PetscObject **)&Uf, NULL));
+    PetscCall(PetscViewerGLVisGetFields_Internal(ctx->subv[i], &nf, &fec, &sd, NULL, (PetscObject **)&Uf, NULL));
     for (f = 0; f < nf; f++) {
       PetscCall(PetscStrallocpy(fec[f], &fecs[tnf + f]));
       Ufds[tnf + f] = Uf[f];

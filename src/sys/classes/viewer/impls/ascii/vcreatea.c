@@ -169,10 +169,13 @@ PetscMPIInt Petsc_Viewer_keyval = MPI_KEYVAL_INVALID;
   This is called by MPI, not by users.
 
 */
-PETSC_EXTERN PetscMPIInt MPIAPI Petsc_DelViewer(MPI_Comm comm, PetscMPIInt keyval, void *attr_val, void *extra_state)
+PetscMPIInt MPIAPI Petsc_DelViewer(MPI_Comm comm, PetscMPIInt keyval, void *attr_val, void *extra_state)
 {
   PetscFunctionBegin;
-  PetscCallMPI(PetscInfo(NULL, "Removing viewer data attribute in an MPI_Comm %ld\n", (long)comm));
+  (void)keyval;
+  (void)attr_val;
+  (void)extra_state;
+  PetscCallMPI(PetscInfo(NULL, "Removing viewer data attribute in an MPI_Comm %" PETSC_INTPTR_T_FMT "\n", (PETSC_INTPTR_T)comm));
   PetscFunctionReturn(MPI_SUCCESS);
 }
 

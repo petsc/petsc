@@ -91,7 +91,7 @@ PetscErrorCode PetscViewerStringOpen(MPI_Comm comm, char string[], size_t len, P
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PetscViewerGetSubViewer_String(PetscViewer viewer, MPI_Comm comm, PetscViewer *sviewer)
+static PetscErrorCode PetscViewerGetSubViewer_String(PetscViewer viewer, MPI_Comm comm, PetscViewer *sviewer)
 {
   PetscViewer_String *vstr = (PetscViewer_String *)viewer->data;
 
@@ -100,7 +100,7 @@ PetscErrorCode PetscViewerGetSubViewer_String(PetscViewer viewer, MPI_Comm comm,
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PetscViewerRestoreSubViewer_String(PetscViewer viewer, MPI_Comm comm, PetscViewer *sviewer)
+static PetscErrorCode PetscViewerRestoreSubViewer_String(PetscViewer viewer, MPI_Comm comm, PetscViewer *sviewer)
 {
   PetscViewer_String *iviewer = (PetscViewer_String *)(*sviewer)->data;
   PetscViewer_String *vstr    = (PetscViewer_String *)viewer->data;

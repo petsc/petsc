@@ -76,25 +76,6 @@ PetscViewer PETSC_VIEWER_SAWS_(MPI_Comm comm)
   PetscFunctionReturn(viewer);
 }
 
-/*
-       If there is a PetscViewer associated with this communicator, it is destroyed.
-*/
-PetscErrorCode PetscViewer_SAWS_Destroy(MPI_Comm comm)
-{
-  PetscMPIInt flag;
-  PetscViewer viewer;
-
-  PetscFunctionBegin;
-  if (Petsc_Viewer_SAWs_keyval == MPI_KEYVAL_INVALID) PetscFunctionReturn(PETSC_SUCCESS);
-
-  PetscCallMPI(MPI_Comm_get_attr(comm, Petsc_Viewer_SAWs_keyval, (void **)&viewer, &flag));
-  if (flag) {
-    PetscCall(PetscViewerDestroy(&viewer));
-    PetscCallMPI(MPI_Comm_delete_attr(comm, Petsc_Viewer_SAWs_keyval));
-  }
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
 static PetscErrorCode PetscViewerDestroy_SAWs(PetscViewer viewer)
 {
   PetscFunctionBegin;

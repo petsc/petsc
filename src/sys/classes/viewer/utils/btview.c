@@ -1,9 +1,8 @@
-
 #include <petscsys.h>
 #include <petscbt.h>
 #include <petscviewer.h>
 
-PETSC_EXTERN PetscErrorCode PetscBTView(PetscInt m, const PetscBT bt, PetscViewer viewer)
+PetscErrorCode PetscBTView(PetscInt m, const PetscBT bt, PetscViewer viewer)
 {
   PetscFunctionBegin;
   if (m < 1) PetscFunctionReturn(PETSC_SUCCESS);
