@@ -27,7 +27,7 @@ static PetscErrorCode PetscPartitionerMatPartitioningGetMatPartitioning_MatParti
 
   Level: developer
 
-.seealso `DMPlexDistribute()`, `PetscPartitionerCreate()`
+.seealso: `DMPlexDistribute()`, `PetscPartitionerCreate()`
 @*/
 PetscErrorCode PetscPartitionerMatPartitioningGetMatPartitioning(PetscPartitioner part, MatPartitioning *mp)
 {

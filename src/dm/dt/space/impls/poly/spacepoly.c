@@ -225,9 +225,7 @@ static PetscErrorCode PetscSpaceEvaluate_Polynomial(PetscSpace sp, PetscInt npoi
 }
 
 /*@
-  PetscSpacePolynomialSetTensor - Set whether a function space is a space of tensor polynomials (the space is spanned
-  by polynomials whose degree in each variable is bounded by the given order), as opposed to polynomials (the space is
-  spanned by polynomials whose total degree---summing over all variables---is bounded by the given order).
+  PetscSpacePolynomialSetTensor - Set whether a function space is a space of tensor polynomials.
 
   Input Parameters:
 + sp     - the function space object
@@ -237,6 +235,11 @@ static PetscErrorCode PetscSpaceEvaluate_Polynomial(PetscSpace sp, PetscInt npoi
 . -petscspace_poly_tensor <bool> - Whether to use tensor product polynomials in higher dimension
 
   Level: intermediate
+
+  Notes:
+  It is a tensor space if it is spanned by polynomials whose degree in each variable is
+  bounded by the given order, as opposed to the space spanned by polynomials
+  whose total degree---summing over all variables---is bounded by the given order.
 
 .seealso: `PetscSpace`, `PetscSpacePolynomialGetTensor()`, `PetscSpaceSetDegree()`, `PetscSpaceSetNumVariables()`
 @*/
@@ -249,9 +252,8 @@ PetscErrorCode PetscSpacePolynomialSetTensor(PetscSpace sp, PetscBool tensor)
 }
 
 /*@
-  PetscSpacePolynomialGetTensor - Get whether a function space is a space of tensor polynomials (the space is spanned
-  by polynomials whose degree in each variable is bounded by the given order), as opposed to polynomials (the space is
-  spanned by polynomials whose total degree---summing over all variables---is bounded by the given order).
+  PetscSpacePolynomialGetTensor - Get whether a function space is a space of tensor
+  polynomials.
 
   Input Parameter:
 . sp - the function space object
@@ -260,6 +262,11 @@ PetscErrorCode PetscSpacePolynomialSetTensor(PetscSpace sp, PetscBool tensor)
 . tensor - `PETSC_TRUE` for a tensor polynomial space, `PETSC_FALSE` for a polynomial space
 
   Level: intermediate
+
+  Notes:
+  The space is a tensor space if it is spanned by polynomials whose degree in each variable is
+  bounded by the given order, as opposed to the space spanned by polynomials
+  whose total degree---summing over all variables---is bounded by the given order.
 
 .seealso: `PetscSpace`, `PetscSpacePolynomialSetTensor()`, `PetscSpaceSetDegree()`, `PetscSpaceSetNumVariables()`
 @*/

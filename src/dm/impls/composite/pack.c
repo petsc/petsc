@@ -155,7 +155,7 @@ PetscErrorCode DMCompositeGetNumberDM(DM dm, PetscInt *nDM)
 - gvec - the global vector
 
   Output Parameter:
-.    Vec* ... - the packed parallel vectors, NULL for those that are not needed
+. ... - the packed parallel vectors, `NULL` for those that are not needed
 
   Level: advanced
 
@@ -347,7 +347,7 @@ PetscErrorCode DMCompositeGetLocalAccessArray(DM dm, Vec pvec, PetscInt nwanted,
   Input Parameters:
 + dm   - the `DMCOMPOSITE` object
 . gvec - the global vector
--    Vec* ... - the individual parallel vectors, NULL for those that are not needed
+- ...  - the individual parallel vectors, `NULL` for those that are not needed
 
   Level: advanced
 
@@ -488,7 +488,7 @@ PetscErrorCode DMCompositeRestoreLocalAccessArray(DM dm, Vec pvec, PetscInt nwan
   Input Parameters:
 + dm   - the `DMCOMPOSITE` object
 . gvec - the global vector
--    Vec ... - the individual sequential vectors, NULL for those that are not needed
+- ...  - the individual sequential vectors, `NULL` for those that are not needed
 
   Level: advanced
 
@@ -598,9 +598,9 @@ PetscErrorCode DMCompositeScatterArray(DM dm, Vec gvec, Vec *lvecs)
 
   Input Parameters:
 + dm    - the `DMCOMPOSITE` object
-. gvec  - the global vector
 . imode - `INSERT_VALUES` or `ADD_VALUES`
--    Vec ... - the individual sequential vectors, NULL for any that are not needed
+. gvec  - the global vector
+- ...   - the individual sequential vectors, `NULL` for any that are not needed
 
   Level: advanced
 
@@ -1120,7 +1120,7 @@ PetscErrorCode DMCreateFieldDecomposition_Composite(DM dm, PetscInt *len, char *
 . dm - the `DMCOMPOSITE` object
 
   Output Parameter:
-.   Vec ... - the individual sequential `Vec`s
+. ... - the individual sequential `Vec`s
 
   Level: advanced
 
@@ -1161,7 +1161,7 @@ PetscErrorCode DMCompositeGetLocalVectors(DM dm, ...)
 . dm - the `DMCOMPOSITE` object
 
   Output Parameter:
-.   Vec ... - the individual sequential `Vec`
+. ... - the individual sequential `Vec`
 
   Level: advanced
 
@@ -1203,7 +1203,7 @@ PetscErrorCode DMCompositeRestoreLocalVectors(DM dm, ...)
 . dm - the `DMCOMPOSITE` object
 
   Output Parameter:
-.   DM ... - the individual entries `DM`
+. ... - the individual entries `DM`
 
   Level: advanced
 

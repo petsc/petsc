@@ -1296,11 +1296,8 @@ PetscErrorCode PetscDualSpaceCreateAllDataDefault(PetscDualSpace sp, PetscQuadra
 
 /*@
   PetscDualSpaceGetInteriorData - Get all quadrature points necessary to compute the interior degrees of freedom from
-  this space, as well as the matrix that computes the degrees of freedom from the quadrature values.  Degrees of
-  freedom are interior degrees of freedom if they belong (by `PetscDualSpaceGetSection()`) to interior points in the
-
-  References: complementary boundary degrees of freedom are marked as constrained in the section returned by
-  `PetscDualSpaceGetSection()`).
+  this space, as well as the matrix that computes the degrees of freedom from the quadrature
+  values.
 
   Input Parameter:
 . sp - The dualspace
@@ -1312,6 +1309,12 @@ PetscErrorCode PetscDualSpaceCreateAllDataDefault(PetscDualSpace sp, PetscQuadra
              npoints is the number of points in intNodes and nc is `PetscDualSpaceGetNumComponents()`.
 
   Level: advanced
+
+  Notes:
+  Degrees of freedom are interior degrees of freedom if they belong (by
+  `PetscDualSpaceGetSection()`) to interior points in the references, complementary boundary
+  degrees of freedom are marked as constrained in the section returned by
+  `PetscDualSpaceGetSection()`).
 
 .seealso: `PetscDualSpace`, `PetscQuadrature`, `Mat`, `PetscDualSpaceCreate()`, `PetscDualSpaceGetDimension()`, `PetscDualSpaceGetNumComponents()`, `PetscQuadratureGetData()`
 @*/
@@ -1614,15 +1617,17 @@ PetscErrorCode PetscDualSpaceGetHeightSubspace(PetscDualSpace sp, PetscInt heigh
 - point - the point (in the dual space's DM) for which the subspace is desired
 
   Output Parameters:
-  bdsp - the subspace. The functionals in the subspace are with respect to the intrinsic geometry of the
-  point, which will be of lesser dimension if height > 0.
+. bdsp - the subspace.
 
   Level: advanced
 
   Notes:
+  The functionals in the subspace are with respect to the intrinsic geometry of the point,
+  which will be of lesser dimension if height > 0.
+
   If the dual space is not defined on the mesh point (e.g. if the space is discontinuous and pointwise values are not
   defined on the element boundaries), or if the implementation of `PetscDualSpace` does not support extracting
-  subspaces, then NULL is returned.
+  subspaces, then `NULL` is returned.
 
   This does not increment the reference count on the returned dual space, and the user should not destroy it.
 

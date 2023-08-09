@@ -10,6 +10,7 @@
 
   Collective
 
+  Input Parameters:
 + comm        - The MPI communicator
 . filename    - Name of the .med file
 - interpolate - Create faces and edges in the mesh

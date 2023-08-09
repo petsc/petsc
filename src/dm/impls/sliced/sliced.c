@@ -13,7 +13,7 @@ typedef struct {
   DMSlicedBlockFills *dfill, *ofill;
 } DM_Sliced;
 
-PetscErrorCode DMCreateMatrix_Sliced(DM dm, Mat *J)
+static PetscErrorCode DMCreateMatrix_Sliced(DM dm, Mat *J)
 {
   PetscInt              *globals, *sd_nnz, *so_nnz, rstart, bs, i;
   ISLocalToGlobalMapping lmap;

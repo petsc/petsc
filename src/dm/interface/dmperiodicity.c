@@ -225,7 +225,7 @@ PetscErrorCode DMLocalizeAddCoordinate_Internal(DM dm, PetscInt dim, const Petsc
 . dm - The `DM`
 
   Output Parameter:
-  areLocalized - `PETSC_TRUE` if localized
+. areLocalized - `PETSC_TRUE` if localized
 
   Level: developer
 
@@ -249,7 +249,7 @@ PetscErrorCode DMGetCoordinatesLocalizedLocal(DM dm, PetscBool *areLocalized)
 . dm - The `DM`
 
   Output Parameter:
-  areLocalized - `PETSC_TRUE` if localized
+. areLocalized - `PETSC_TRUE` if localized
 
   Level: developer
 

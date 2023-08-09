@@ -1265,7 +1265,7 @@ PetscErrorCode PetscFVSetNumComponents(PetscFV fvm, PetscInt comp)
 . fvm - the `PetscFV` object
 
   Output Parameter:
-, comp - The number of components
+. comp - The number of components
 
   Level: intermediate
 
@@ -1670,6 +1670,9 @@ PetscErrorCode PetscFVCreateTabulation(PetscFV fvm, PetscInt nrepl, PetscInt npo
 . numFaces - The number of cell faces which are not constrained
 - dx       - The vector from the cell centroid to the neighboring cell centroid for each face
 
+  Output Parameter:
+. grad - the gradient
+
   Level: advanced
 
 .seealso: `PetscFV`, `PetscFVCreate()`
@@ -1714,9 +1717,8 @@ PetscErrorCode PetscFVIntegrateRHSFunction(PetscFV fvm, PetscDS prob, PetscInt f
 }
 
 /*@
-  PetscFVRefine - Create a "refined" `PetscFV` object that refines the reference cell into smaller copies. This is typically used
-  to precondition a higher order method with a lower order method on a refined mesh having the same number of dofs (but more
-  sparsity). It is also used to create an interpolation between regularly refined meshes.
+  PetscFVRefine - Create a "refined" `PetscFV` object that refines the reference cell into
+  smaller copies.
 
   Input Parameter:
 . fv - The initial `PetscFV`
@@ -1725,6 +1727,11 @@ PetscErrorCode PetscFVIntegrateRHSFunction(PetscFV fvm, PetscDS prob, PetscInt f
 . fvRef - The refined `PetscFV`
 
   Level: advanced
+
+  Notes:
+  This is typically used to generate a preconditioner for a high order method from a lower order method on a
+  refined mesh having the same number of dofs (but more sparsity). It is also used to create an
+  interpolation between regularly refined meshes.
 
 .seealso: `PetscFV`, `PetscFVType`, `PetscFVCreate()`, `PetscFVSetType()`
 @*/

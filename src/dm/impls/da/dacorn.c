@@ -292,6 +292,7 @@ PetscErrorCode DMGetLocalBoundingIndices_DMDA(DM dm, PetscReal lmin[], PetscReal
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+// PetscClangLinter pragma ignore: -fdoc-*
 /*@
   DMDAGetReducedDMDA - Deprecated; use DMDACreateCompatibleDMDA()
 

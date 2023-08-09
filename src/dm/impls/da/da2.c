@@ -753,19 +753,17 @@ PetscErrorCode DMSetUp_DA_2D(DM da)
 
   Input Parameters:
 + comm         - MPI communicator
-. bx,by        - type of ghost nodes the array have.
-         Use one of `DM_BOUNDARY_NONE`, `DM_BOUNDARY_GHOSTED`, `DM_BOUNDARY_PERIODIC`.
+. bx           - type of ghost nodes the x array have. Use one of `DM_BOUNDARY_NONE`, `DM_BOUNDARY_GHOSTED`, `DM_BOUNDARY_PERIODIC`.
+. by           - type of ghost nodes the y array have. Use one of `DM_BOUNDARY_NONE`, `DM_BOUNDARY_GHOSTED`, `DM_BOUNDARY_PERIODIC`.
 . stencil_type - stencil type.  Use either `DMDA_STENCIL_BOX` or `DMDA_STENCIL_STAR`.
-. M,N          - global dimension in each direction of the array
-. m,n          - corresponding number of processors in each dimension
-         (or `PETSC_DECIDE` to have calculated)
+. M            - global dimension in x direction of the array
+. N            - global dimension in y direction of the array
+. m            - corresponding number of processors in x dimension (or `PETSC_DECIDE` to have calculated)
+. n            - corresponding number of processors in y dimension (or `PETSC_DECIDE` to have calculated)
 . dof          - number of degrees of freedom per node
 . s            - stencil width
-- lx, ly       - arrays containing the number of nodes in each cell along
-           the x and y coordinates, or NULL. If non-null, these
-           must be of length as m and n, and the corresponding
-           m and n cannot be PETSC_DECIDE. The sum of the lx[] entries
-           must be M, and the sum of the ly[] entries must be N.
+. lx           - arrays containing the number of nodes in each cell along the x coordinates, or `NULL`.
+- ly           - arrays containing the number of nodes in each cell along the y coordinates, or `NULL`.
 
   Output Parameter:
 . da - the resulting distributed array object
@@ -783,6 +781,10 @@ PetscErrorCode DMSetUp_DA_2D(DM da)
   Level: beginner
 
   Notes:
+  If `lx` or `ly` are non-null, these must be of length as `m` and `n`, and the corresponding
+  `m` and `n` cannot be `PETSC_DECIDE`. The sum of the `lx` entries must be `M`, and the sum of
+  the `ly` entries must be `N`.
+
   The stencil type `DMDA_STENCIL_STAR` with width 1 corresponds to the
   standard 5-pt stencil, while `DMDA_STENCIL_BOX` with width 1 denotes
   the standard 9-pt stencil.

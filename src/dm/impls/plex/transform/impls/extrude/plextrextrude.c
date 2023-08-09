@@ -1084,15 +1084,6 @@ PetscErrorCode DMPlexTransformExtrudeSetNormal(DMPlexTransform tr, const PetscRe
 + tr         - The `DMPlexTransform`
 - normalFunc - A function determining the extrusion direction
 
-  Calling sequence of `normalFunc`:
-$ PetscErrorCode normalFunc(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt r, PetscScalar u[], void *ctx)
-+ dim  - The coordinate dimension of the original mesh (usually a surface)
-. time - The current time, or 0.
-. x    - The location of the current normal, in the coordinate space of the original mesh
-. r    - The extrusion replica number (layer number) of this point
-. u    - The user provides the computed normal on output; the sign and magnitude is not significant
-- ctx  - An optional user context
-
   Level: intermediate
 
 .seealso: `DMPlexTransform`, `DMPlexTransformExtrudeGetNormal()`

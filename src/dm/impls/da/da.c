@@ -87,8 +87,10 @@ PetscErrorCode DMDASetNumProcs(DM da, PetscInt m, PetscInt n, PetscInt p)
   Not Collective
 
   Input Parameters:
-+ da       - The `DMDA`
-- bx,by,bz - One of `DM_BOUNDARY_NONE`, `DM_BOUNDARY_GHOSTED`, `DM_BOUNDARY_PERIODIC`
++ da - The `DMDA`
+. bx - x boundary type, one of `DM_BOUNDARY_NONE`, `DM_BOUNDARY_GHOSTED`, `DM_BOUNDARY_PERIODIC`
+. by - y boundary type, one of `DM_BOUNDARY_NONE`, `DM_BOUNDARY_GHOSTED`, `DM_BOUNDARY_PERIODIC`
+- bz - z boundary type, one of `DM_BOUNDARY_NONE`, `DM_BOUNDARY_GHOSTED`, `DM_BOUNDARY_PERIODIC`
 
   Level: intermediate
 
@@ -279,7 +281,10 @@ PetscErrorCode DMDASetNumLocalSubDomains(DM da, PetscInt Nsub)
 + da - The `DMDA`
 . xo - The offset in the x direction
 . yo - The offset in the y direction
-- zo - The offset in the z direction
+. zo - The offset in the z direction
+. Mo - The problem offset in the x direction
+. No - The problem offset in the y direction
+- Po - The problem offset in the z direction
 
   Level: intermediate
 
@@ -359,9 +364,9 @@ PetscErrorCode DMDAGetOffset(DM da, PetscInt *xo, PetscInt *yo, PetscInt *zo, Pe
 + xs - The start of the region in x
 . ys - The start of the region in y
 . zs - The start of the region in z
-. xs - The size of the region in x
-. ys - The size of the region in y
-- zs - The size of the region in z
+. xm - The size of the region in x
+. ym - The size of the region in y
+- zm - The size of the region in z
 
   Level: intermediate
 
@@ -392,9 +397,9 @@ PetscErrorCode DMDAGetNonOverlappingRegion(DM da, PetscInt *xs, PetscInt *ys, Pe
 . xs - The start of the region in x
 . ys - The start of the region in y
 . zs - The start of the region in z
-. xs  - The size of the region in x
-. ys  - The size of the region in y
-- zs  - The size of the region in z
+. xm - The size of the region in x
+. ym - The size of the region in y
+- zm - The size of the region in z
 
   Level: intermediate
 
@@ -548,7 +553,8 @@ static PetscErrorCode DMDACheckOwnershipRanges_Private(DM da, PetscInt M, PetscI
 
   Level: intermediate
 
-  Note: these numbers are NOT multiplied by the number of dof per node.
+  Note:
+  These numbers are NOT multiplied by the number of dof per node.
 
 .seealso: `DM`, `DMDA`, `DMDACreate()`, `DMDestroy()`
 @*/

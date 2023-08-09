@@ -229,7 +229,7 @@ def get_clang_sys_includes() -> list[str]:
   includes = includes.split('End of search list.', maxsplit=1)[0].replace('(framework directory)', '')
   return [f'-I{Path(i.strip()).resolve()}' for i in includes.splitlines() if i]
 
-def build_compiler_flags(petsc_dir: Path, petsc_arch: str, extra_compiler_flags: Optional[list[str]] = None, verbose: bool = False) -> list[str]:
+def build_compiler_flags(petsc_dir: Path, petsc_arch: str, extra_compiler_flags: Optional[list[str]] = None, verbose: int = 0) -> list[str]:
   r"""Build the baseline set of compiler flags.
 
   These are passed to all translation unit parse attempts.
@@ -243,7 +243,7 @@ def build_compiler_flags(petsc_dir: Path, petsc_arch: str, extra_compiler_flags:
   extra_compiler_flags : list[str] | None, optional
     extra compiler flags, if None, an empty list is used
   verbose : False, optional
-    print verbose output
+    print verbose output (at level)
 
   Returns
   -------
@@ -265,7 +265,7 @@ def build_compiler_flags(petsc_dir: Path, petsc_arch: str, extra_compiler_flags:
   ]
   petsc_includes = get_petsc_extra_includes(petsc_dir, petsc_arch)
   compiler_flags = get_clang_sys_includes() + misc_flags + petsc_includes + extra_compiler_flags
-  if verbose:
+  if verbose > 1:
     pl.sync_print('\n'.join(['Compile flags:', *compiler_flags]))
   return compiler_flags
 
@@ -273,17 +273,17 @@ class PrecompiledHeader:
   __slots__ = 'pch', 'verbose'
 
   pch: PathLike
-  verbose: bool
+  verbose: int
 
-  def __init__(self, pch: PathLike, verbose: bool = False) -> None:
+  def __init__(self, pch: PathLike, verbose: int) -> None:
     r"""Construct the PrecompiledHeader
 
     Parameters
     ----------
     pch :
       the path where the precompiled header should be stored
-    verbose : optional
-      print verbose information
+    verbose :
+      print verbose information (at level)
     """
     self.pch     = pch
     self.verbose = verbose
@@ -299,7 +299,7 @@ class PrecompiledHeader:
     return
 
   @classmethod
-  def from_flags(cls, petsc_dir: Path, compiler_flags: list[str], extra_header_includes: Optional[list[str]] = None, verbose: bool = False, pch_clang_options: Optional[CXTranslationUnit] = None) -> PrecompiledHeader:
+  def from_flags(cls, petsc_dir: Path, compiler_flags: list[str], extra_header_includes: Optional[list[str]] = None, verbose: int = 0, pch_clang_options: Optional[CXTranslationUnit] = None) -> PrecompiledHeader:
     r"""Create a precompiled header from flags.
 
     This builds the precompiled head from petsc.h, and all of the private headers. This not only saves
@@ -403,7 +403,7 @@ class PrecompiledHeader:
                 diags[filename] = (basename, diag)
       if diags:
         diagerrs = '\n'+'\n'.join(str(d) for _, d in diags.values())
-        if verbose:
+        if verbose > 1:
           pl.sync_print('Included header has errors, removing', diagerrs)
         mega_header_lines = [(hdr, hfi) for hdr, hfi in mega_header_lines if hdr not in diags]
       else:
@@ -412,7 +412,7 @@ class PrecompiledHeader:
       # now include the other headers but this time immediately crash on errors, let the
       # user figure out their own busted header files
       mega_header += '\n'.join(extra_header_includes)
-      if verbose:
+      if verbose > 1:
         pl.sync_print(f'Mega header:\n{mega_header}')
       tu = index.parse(
         mega_header_name,
@@ -421,11 +421,11 @@ class PrecompiledHeader:
       if tu.diagnostics:
         pl.sync_print('\n'.join(map(str, tu.diagnostics)))
         raise clx.LibclangError('\n\nWarnings or errors generated when creating the precompiled header. This usually means that the provided libclang setup is faulty. If you used the auto-detection mechanism to find libclang then perhaps try specifying the location directly.')
-    elif verbose:
+    elif verbose > 1:
       pl.sync_print(f'Mega header:\n{mega_header}')
     precompiled_header.unlink(missing_ok=True)
     tu.save(precompiled_header)
     compiler_flags.extend(['-include-pch', str(precompiled_header)])
     if verbose:
       pl.sync_print('Saving precompiled header', precompiled_header)
-    return cls(precompiled_header, verbose=verbose)
+    return cls(precompiled_header, verbose)

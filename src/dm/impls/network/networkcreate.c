@@ -2,7 +2,7 @@
 #include <petsc/private/dmnetworkimpl.h> /*I   "petscdmnetwork.h"   I*/
 #include <petsc/private/vecimpl.h>
 
-PetscErrorCode DMSetFromOptions_Network(DM dm, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode DMSetFromOptions_Network(DM dm, PetscOptionItems *PetscOptionsObject)
 {
   PetscFunctionBegin;
   PetscOptionsHeadBegin(PetscOptionsObject, "DMNetwork Options");
@@ -20,7 +20,6 @@ extern PetscErrorCode DMLocalToGlobalBegin_Network(DM, Vec, InsertMode, Vec);
 extern PetscErrorCode DMLocalToGlobalEnd_Network(DM, Vec, InsertMode, Vec);
 extern PetscErrorCode DMSetUp_Network(DM);
 extern PetscErrorCode DMClone_Network(DM, DM *);
-extern PetscErrorCode DMCreateCoordinateDM_Network(DM, DM *);
 
 static PetscErrorCode VecArrayPrint_private(PetscViewer viewer, PetscInt n, const PetscScalar *xv)
 {
@@ -196,7 +195,7 @@ static PetscErrorCode VecView_Network_MPI(DM networkdm, Vec X, PetscViewer viewe
 
 PETSC_EXTERN PetscErrorCode VecView_MPI(Vec, PetscViewer);
 
-PetscErrorCode VecView_Network(Vec v, PetscViewer viewer)
+static PetscErrorCode VecView_Network(Vec v, PetscViewer viewer)
 {
   DM        dm;
   PetscBool isseq;
@@ -314,7 +313,7 @@ PetscErrorCode DMNetworkInitializeToDefault(DM dm)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode DMInitialize_Network(DM dm)
+static PetscErrorCode DMInitialize_Network(DM dm)
 {
   PetscFunctionBegin;
   PetscCall(DMSetDimension(dm, 1));
@@ -452,6 +451,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_Network(DM dm)
 
   Level: beginner
 
+.seealso: `DMCreate()`
 @*/
 PetscErrorCode DMNetworkCreate(MPI_Comm comm, DM *network)
 {

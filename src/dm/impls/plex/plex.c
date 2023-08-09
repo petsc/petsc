@@ -2295,7 +2295,7 @@ PetscErrorCode DMPlexLabelsLoad(DM dm, PetscViewer viewer, PetscSF globalToLocal
 . sectiondm            - The `DM` into which the on-disk section (sectionA) is migrated
 - globalToLocalPointSF - The `PetscSF` returned by `DMPlexTopologyLoad(`) when loading dm from viewer
 
-  Output Parameters
+  Output Parameters:
 + globalDofSF - The `PetscSF` that migrates any on-disk `Vec` data associated with sectionA into a global `Vec` associated with the `sectiondm`'s global section (`NULL` if not needed)
 - localDofSF  - The `PetscSF` that migrates any on-disk `Vec` data associated with sectionA into a local `Vec` associated with the `sectiondm`'s local section (`NULL` if not needed)
 
@@ -2946,12 +2946,12 @@ PetscErrorCode DMPlexGetConeRecursiveVertices(DM dm, IS points, IS *expandedPoin
   Notes:
   Like `DMPlexGetConeTuple()` but recursive.
 
-  Array `expandedPoints` has size equal to `depth`. `Each expandedPoints`[d] contains DAG points with maximum depth d, recursively cone-wise expanded from the input points.
+  Array `expandedPoints` has size equal to `depth`. Each `expandedPoints`[d] contains DAG points with maximum depth d, recursively cone-wise expanded from the input points.
   For example, for d=0 it contains only vertices, for d=1 it can contain vertices and edges, etc.
 
-  Array section has size equal to depth.  Each `PetscSection` sections[d] realizes mapping from `expandedPoints`[d+1] (section points) to `expandedPoints`[d] (section dofs) as follows:
-  (1) DAG points in expandedPoints[d+1] with `depth` d+1 to their cone points in `expandedPoints`[d];
-  (2) DAG points in expandedPoints[d+1] with `depth` in [0,d] to the same points in `expandedPoints`[d].
+  Array section has size equal to `depth`.  Each `PetscSection` `sections`[d] realizes mapping from `expandedPoints`[d+1] (section points) to `expandedPoints`[d] (section dofs) as follows\:
+  (1) DAG points in `expandedPoints`[d+1] with `depth` d+1 to their cone points in `expandedPoints`[d];
+  (2) DAG points in `expandedPoints`[d+1] with `depth` in [0,d] to the same points in `expandedPoints`[d].
 
 .seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexCreate()`, `DMPlexGetCone()`, `DMPlexGetConeTuple()`, `DMPlexRestoreConeRecursive()`, `DMPlexGetConeRecursiveVertices()`,
           `DMPlexGetDepth()`, `PetscSection`, `IS`
@@ -4078,10 +4078,7 @@ static PetscErrorCode DMPlexCreateDepthStratum(DM dm, DMLabel label, PetscInt de
 }
 
 /*@
-  DMPlexStratify - The DAG for most topologies is a graded poset (https://en.wikipedia.org/wiki/Graded_poset), and
-  can be illustrated by a Hasse Diagram (https://en.wikipedia.org/wiki/Hasse_diagram). The strata group all points of the
-  same grade, and this function calculates the strata. This grade can be seen as the height (or depth) of the point in
-  the DAG.
+  DMPlexStratify - Computes the strata for all points in the `DMPLEX`
 
   Collective
 
@@ -4091,6 +4088,11 @@ static PetscErrorCode DMPlexCreateDepthStratum(DM dm, DMLabel label, PetscInt de
   Level: beginner
 
   Notes:
+  The strata group all points of the same grade, and this function calculates the strata. This
+  grade can be seen as the height (or depth) of the point in the DAG.
+
+  The DAG for most topologies is a graded poset (https://en.wikipedia.org/wiki/Graded_poset), and
+  can be illustrated by a Hasse Diagram (https://en.wikipedia.org/wiki/Hasse_diagram).
   Concretely, `DMPlexStratify()` creates a new label named "depth" containing the depth in the DAG of each point. For cell-vertex
   meshes, vertices are depth 0 and cells are depth 1. For fully interpolated meshes, depth 0 for vertices, 1 for edges, and so on
   until cells have depth equal to the dimension of the mesh. The depth label can be accessed through `DMPlexGetDepthLabel()` or `DMPlexGetDepthStratum()`, or
@@ -9367,7 +9369,7 @@ PetscErrorCode DMPlexCheckCellShape(DM dm, PetscBool output, PetscReal condLimit
   Level: intermediate
 
   Notes:
-  Orthogonal quality is given by the following formula:
+  Orthogonal quality is given by the following formula\:
 
   $ \min \left[ \frac{A_i \cdot f_i}{\|A_i\| \|f_i\|} , \frac{A_i \cdot c_i}{\|A_i\| \|c_i\|} \right]$
 
@@ -9849,9 +9851,7 @@ PetscErrorCode DMPlexGetAnchors(DM dm, PetscSection *anchorSection, IS *anchorIS
 }
 
 /*@
-  DMPlexSetAnchors - Set the layout of the local anchor (point-to-point) constraints.  Unlike boundary conditions,
-  when a point's degrees of freedom in a section are constrained to an outside value, the anchor constraints set a
-  point's degrees of freedom to be a linear combination of other points' degrees of freedom.
+  DMPlexSetAnchors - Set the layout of the local anchor (point-to-point) constraints.
 
   Collective
 
@@ -9864,6 +9864,10 @@ PetscErrorCode DMPlexGetAnchors(DM dm, PetscSection *anchorSection, IS *anchorIS
   Level: intermediate
 
   Notes:
+  Unlike boundary conditions, when a point's degrees of freedom in a section are constrained to
+  an outside value, the anchor constraints set a point's degrees of freedom to be a linear
+  combination of other points' degrees of freedom.
+
   After specifying the layout of constraints with `DMPlexSetAnchors()`, one specifies the constraints by calling
   `DMGetDefaultConstraints()` and filling in the entries in the constraint matrix.
 

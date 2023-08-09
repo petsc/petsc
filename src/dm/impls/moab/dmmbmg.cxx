@@ -19,6 +19,7 @@
 
   Level: beginner
 
+.seealso: `DMMoabCreate()`
 @*/
 PetscErrorCode DMMoabGenerateHierarchy(DM dm, PetscInt nlevels, PetscInt *ldegrees)
 {
@@ -79,7 +80,8 @@ PetscErrorCode DMMoabGenerateHierarchy(DM dm, PetscInt nlevels, PetscInt *ldegre
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+// PetscClangLinter pragma ignore: -fdoc-*
+/*
   DMRefineHierarchy_Moab - Generate a multi-level `DM` hierarchy
   by succesively refining a coarse mesh.
 
@@ -93,8 +95,7 @@ PetscErrorCode DMMoabGenerateHierarchy(DM dm, PetscInt nlevels, PetscInt *ldegre
 - dmf     - The DM objects after successive refinement of the hierarchy
 
   Level: beginner
-
-@*/
+*/
 PETSC_EXTERN PetscErrorCode DMRefineHierarchy_Moab(DM dm, PetscInt nlevels, DM dmf[])
 {
   PetscInt i;
@@ -106,7 +107,8 @@ PETSC_EXTERN PetscErrorCode DMRefineHierarchy_Moab(DM dm, PetscInt nlevels, DM d
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+// PetscClangLinter pragma ignore: -fdoc-*
+/*
   DMCoarsenHierarchy_Moab - Generate a multi-level `DM` hierarchy
   by succesively coarsening a refined mesh.
 
@@ -120,8 +122,7 @@ PETSC_EXTERN PetscErrorCode DMRefineHierarchy_Moab(DM dm, PetscInt nlevels, DM d
 - dmc     - The `DM` objects after successive coarsening of the hierarchy
 
   Level: beginner
-
-@*/
+*/
 PETSC_EXTERN PetscErrorCode DMCoarsenHierarchy_Moab(DM dm, PetscInt nlevels, DM dmc[])
 {
   PetscInt i;
@@ -135,7 +136,8 @@ PETSC_EXTERN PetscErrorCode DMCoarsenHierarchy_Moab(DM dm, PetscInt nlevels, DM 
 
 PETSC_EXTERN PetscErrorCode DMMoab_Compute_NNZ_From_Connectivity(DM, PetscInt *, PetscInt *, PetscInt *, PetscInt *, PetscBool);
 
-/*@C
+// PetscClangLinter pragma ignore: -fdoc-*
+/*
   DMCreateInterpolation_Moab - Generate the interpolation operators to transform
   operators (matrices, vectors) from parent level to child level as defined by
   the `DM` inputs provided by the user.
@@ -151,8 +153,7 @@ PETSC_EXTERN PetscErrorCode DMMoab_Compute_NNZ_From_Connectivity(DM, PetscInt *,
 - vec     - The scaling vector (optional)
 
   Level: developer
-
-@*/
+*/
 PETSC_EXTERN PetscErrorCode DMCreateInterpolation_Moab(DM dmp, DM dmc, Mat *interpl, Vec *vec)
 {
   DM_Moab        *dmbp, *dmbc;
@@ -376,7 +377,8 @@ PETSC_EXTERN PetscErrorCode DMCreateInterpolation_Moab(DM dmp, DM dmc, Mat *inte
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+// PetscClangLinter pragma ignore: -fdoc-*
+/*
   DMCreateInjection_Moab - Generate a multi-level uniform refinement hierarchy
   by succesively refining a coarse mesh, already defined in the `DM` object
   provided by the user.
@@ -391,8 +393,7 @@ PETSC_EXTERN PetscErrorCode DMCreateInterpolation_Moab(DM dmp, DM dmc, Mat *inte
 - ldegrees  - The degree of refinement at each level in the hierarchy
 
   Level: beginner
-
-@*/
+*/
 PETSC_EXTERN PetscErrorCode DMCreateInjection_Moab(DM dm1, DM dm2, VecScatter *ctx)
 {
   //DM_Moab        *dmmoab;
@@ -491,7 +492,8 @@ static PetscErrorCode DMMoab_UMR_Private(DM dm, MPI_Comm comm, PetscBool refine,
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+// PetscClangLinter pragma ignore: -fdoc-*
+/*
   DMRefine_Moab - Generate a multi-level uniform refinement hierarchy
   by succesively refining a coarse mesh, already defined in the `DM` object
   provided by the user.
@@ -509,8 +511,7 @@ static PetscErrorCode DMMoab_UMR_Private(DM dm, MPI_Comm comm, PetscBool refine,
 
   Note:
   If no refinement was done, the return value is `NULL`
-
-@*/
+*/
 PETSC_EXTERN PetscErrorCode DMRefine_Moab(DM dm, MPI_Comm comm, DM *dmf)
 {
   PetscFunctionBegin;
@@ -520,7 +521,8 @@ PETSC_EXTERN PetscErrorCode DMRefine_Moab(DM dm, MPI_Comm comm, DM *dmf)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+// PetscClangLinter pragma ignore: -fdoc-*
+/*
   DMCoarsen_Moab - Generate a multi-level uniform refinement hierarchy
   by succesively refining a coarse mesh, already defined in the `DM` object
   provided by the user.
@@ -538,8 +540,7 @@ PETSC_EXTERN PetscErrorCode DMRefine_Moab(DM dm, MPI_Comm comm, DM *dmf)
 
   Note:
   If no coarsening was done, the return value is `NULL`
-
-@*/
+*/
 PETSC_EXTERN PetscErrorCode DMCoarsen_Moab(DM dm, MPI_Comm comm, DM *dmc)
 {
   PetscFunctionBegin;

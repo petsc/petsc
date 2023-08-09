@@ -81,7 +81,7 @@ extern PetscErrorCode DMDAGetNatural_Private(DM, PetscInt *, IS *);
 .seealso: `DM`, `DMDA`, `DMDAGlobalToNaturalBegin()`, `DMDAGlobalToNaturalEnd()`, `DMLocalToGlobalBegin()`, `DMDACreate2d()`,
           `DMGlobalToLocalBegin()`, `DMGlobalToLocalEnd()`, `DMDACreateNaturalVector()`
 */
-PetscErrorCode DMDAGlobalToNatural_Create(DM da)
+static PetscErrorCode DMDAGlobalToNatural_Create(DM da)
 {
   PetscInt m, start, Nlocal;
   IS       from, to;

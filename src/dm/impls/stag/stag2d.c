@@ -8,15 +8,20 @@
 
   Input Parameters:
 + comm         - MPI communicator
-. bndx,bndy    - boundary type: `DM_BOUNDARY_NONE`, `DM_BOUNDARY_PERIODIC`, or `DM_BOUNDARY_GHOSTED`
-. M,N          - global number of elements in x,y directions
-. m,n          - number of ranks in the x,y directions (may be `PETSC_DECIDE`)
+. bndx         - x boundary type, `DM_BOUNDARY_NONE`, `DM_BOUNDARY_PERIODIC`, or
+`DM_BOUNDARY_GHOSTED`
+. bndy         - y boundary type, `DM_BOUNDARY_NONE`, `DM_BOUNDARY_PERIODIC`, or `DM_BOUNDARY_GHOSTED`
+. M            - global number of elements in x direction
+. N            - global number of elements in y direction
+. m            - number of ranks in the x direction (may be `PETSC_DECIDE`)
+. n            - number of ranks in the y direction (may be `PETSC_DECIDE`)
 . dof0         - number of degrees of freedom per vertex/0-cell
 . dof1         - number of degrees of freedom per face/1-cell
 . dof2         - number of degrees of freedom per element/2-cell
 . stencilType  - ghost/halo region type: `DMSTAG_STENCIL_NONE`, `DMSTAG_STENCIL_BOX`, or `DMSTAG_STENCIL_STAR`
 . stencilWidth - width, in elements, of halo/ghost region
-- lx,ly        - arrays of local x,y element counts, of length equal to m,n, summing to M,N
+. lx           - array of local x element counts, of length equal to `m`, summing to `M`
+- ly           - array of local y element counts, of length equal to `n`, summing to `N`
 
   Output Parameter:
 . dm - the new `DMSTAG` object

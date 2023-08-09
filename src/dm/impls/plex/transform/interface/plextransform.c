@@ -1881,8 +1881,8 @@ static PetscErrorCode DMPlexTransformCreateSF(DMPlexTransform tr, DM rdm)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
-  DMPlexCellRefinerMapLocalizedCoordinates - Given a cell of `DMPolytopeType` ct with localized coordinates x, generate localized coordinates xr for subcell r of type rct.
+/*
+  DMPlexCellRefinerMapLocalizedCoordinates - Given a cell of `DMPolytopeType` `ct` with localized coordinates `x`, generate localized coordinates `xr` for subcell `r` of type `rct`.
 
   Not Collective
 
@@ -1899,7 +1899,7 @@ static PetscErrorCode DMPlexTransformCreateSF(DMPlexTransform tr, DM rdm)
   Level: developer
 
 .seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexTransform`, `DMPolytopeType`, `DMPlexCellRefinerSetCoordinates()`
-@*/
+*/
 static PetscErrorCode DMPlexTransformMapLocalizedCoordinates(DMPlexTransform tr, DMPolytopeType ct, DMPolytopeType rct, PetscInt r, const PetscScalar x[], PetscScalar xr[])
 {
   PetscFE  fe = NULL;

@@ -613,7 +613,7 @@ PetscErrorCode DMLabelDuplicate(DMLabel label, DMLabel *labelnew)
 . l0   - First `DMLabel`
 - l1   - Second `DMLabel`
 
-  Output Parameters
+  Output Parameters:
 + equal   - (Optional) Flag whether the two labels are equal
 - message - (Optional) Message describing the difference
 
@@ -2081,22 +2081,21 @@ PetscErrorCode DMLabelPropagateEnd(DMLabel label, PetscSF pointSF)
 
   Input Parameters:
 + label     - The `DMLabel` to propagate across processes
-. sf        - The `PetscSF` describing parallel layout of the label points
+. pointSF   - The `PetscSF` describing parallel layout of the label points
 . markPoint - An optional callback that is called when a point is marked, or `NULL`
 - ctx       - An optional user context for the callback, or `NULL`
 
   Calling sequence of `markPoint`:
-$ PetscErrorCode markPoint(DMLabel label, PetscInt p, PetscInt val, void *ctx);
-+ label   - The `DMLabel`
++ label - The `DMLabel`
 . p     - The point being marked
-. pointSF - The label value for `p`
-- ctx     - An optional user context
+. val   - The label value for `p`
+- ctx   - An optional user context
 
   Level: intermediate
 
 .seealso: `DMLabel`, `DM`, `DMLabelPropagateBegin()`, `DMLabelPropagateEnd()`
 @*/
-PetscErrorCode DMLabelPropagatePush(DMLabel label, PetscSF pointSF, PetscErrorCode (*markPoint)(DMLabel, PetscInt, PetscInt, void *), void *ctx)
+PetscErrorCode DMLabelPropagatePush(DMLabel label, PetscSF pointSF, PetscErrorCode (*markPoint)(DMLabel label, PetscInt p, PetscInt val, void *ctx), void *ctx)
 {
   PetscInt   *valArray = label->propArray, Nr;
   PetscMPIInt size;

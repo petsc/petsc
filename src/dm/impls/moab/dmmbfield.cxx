@@ -507,8 +507,7 @@ PetscErrorCode DMMoabGetDofsBlockedLocal(DM dm, PetscInt npoints, const moab::En
 
 /*@C
   DMMoabGetVertexDofsBlocked - Gets the global degree-of-freedom for the first field (component) defined on an
-  array of locally owned MOAB mesh vertices. It's utility is when performing Finite-Difference type calculations
-  where vertex traversal is faster than element-wise assembly that is typically done in FEM calculations.
+  array of locally owned MOAB mesh vertices.
 
   Not Collective
 
@@ -519,6 +518,10 @@ PetscErrorCode DMMoabGetDofsBlockedLocal(DM dm, PetscInt npoints, const moab::En
 . dof - the blocked global degree-of-freedom index array in the discrete representation (Vec, Mat) that is vertex-based based on local numbering
 
   Level: intermediate
+
+  Note:
+  It's utility is when performing Finite-Difference type calculations where vertex traversal is
+  faster than element-wise assembly that is typically done in FEM calculations.
 
 .seealso: `DMMoabGetVertexDofsBlockedLocal()`, `DMMoabGetDofsBlocked()`, `DMMoabGetDofsBlockedLocal()`
 @*/
@@ -536,8 +539,7 @@ PetscErrorCode DMMoabGetVertexDofsBlocked(DM dm, PetscInt **dof)
 
 /*@C
   DMMoabGetVertexDofsBlockedLocal - Gets the local degree-of-freedom for the first field (component) defined on an
-  array of locally owned MOAB mesh vertices. It's utility is when performing Finite-Difference type calculations
-  where vertex traversal is faster than element-wise assembly that is typically done in FEM calculations.
+  array of locally owned MOAB mesh vertices.
 
   Not Collective
 
@@ -548,6 +550,10 @@ PetscErrorCode DMMoabGetVertexDofsBlocked(DM dm, PetscInt **dof)
 . dof - the blocked local degree-of-freedom index array in the discrete representation (Vec, Mat) that is vertex-based based on local numbering
 
   Level: intermediate
+
+  Note:
+  It's utility is when performing Finite-Difference type calculations where vertex traversal is
+  faster than element-wise assembly that is typically done in FEM calculations.
 
 .seealso: `DMMoabGetVertexDofsBlocked()`, `DMMoabGetDofsBlocked()`, `DMMoabGetDofsBlockedLocal()`
 @*/

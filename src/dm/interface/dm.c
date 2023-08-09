@@ -1205,9 +1205,8 @@ PetscErrorCode DMCreateInterpolation(DM dmc, DM dmf, Mat *mat, Vec *vec)
 }
 
 /*@
-  DMCreateInterpolationScale - Forms L = 1/(R*1) where 1 is the vector of all ones, and R is the transpose of the interpolation between the `DM`.
-  xcoarse = diag(L)*R*xfine preserves scale and is thus suitable for state (versus residual) restriction. In other words xcoarse is the coarse
-  representation of xfine.
+  DMCreateInterpolationScale - Forms L = 1/(R*1) where 1 is the vector of all ones, and R is
+  the transpose of the interpolation between the `DM`.
 
   Input Parameters:
 + dac - `DM` that defines a coarse mesh
@@ -1218,6 +1217,10 @@ PetscErrorCode DMCreateInterpolation(DM dmc, DM dmf, Mat *mat, Vec *vec)
 . scale - the scaled vector
 
   Level: advanced
+
+  Notes:
+  xcoarse = diag(L)*R*xfine preserves scale and is thus suitable for state (versus residual)
+  restriction. In other words xcoarse is the coarse representation of xfine.
 
   Developer Notes:
   If the fine-scale `DMDA` has the -dm_bind_below option set to true, then `DMCreateInterpolationScale()` calls `MatSetBindingPropagates()`
@@ -1288,10 +1291,7 @@ PetscErrorCode DMCreateRestriction(DM dmc, DM dmf, Mat *mat)
 }
 
 /*@
-  DMCreateInjection - Gets injection matrix between two `DM` objects. This is an operator that applied to a vector obtained with
-  `DMCreateGlobalVector()` on the fine grid maps the values to a vector on the vector on the coarse `DM` by simply selecting the values
-  on the coarse grid points. This compares to the operator obtained by `DMCreateRestriction()` or the transpose of the operator obtained
-  by `DMCreateInterpolation()` that uses a "local weighted average" of the values around the coarse grid point as the coarse grid value.
+  DMCreateInjection - Gets injection matrix between two `DM` objects.
 
   Collective
 
@@ -1304,7 +1304,14 @@ PetscErrorCode DMCreateRestriction(DM dmc, DM dmf, Mat *mat)
 
   Level: developer
 
-  Note:
+  Notes:
+  This is an operator that applied to a vector obtained with `DMCreateGlobalVector()` on the
+  fine grid maps the values to a vector on the vector on the coarse `DM` by simply selecting
+  the values on the coarse grid points. This compares to the operator obtained by
+  `DMCreateRestriction()` or the transpose of the operator obtained by
+  `DMCreateInterpolation()` that uses a "local weighted average" of the values around the
+  coarse grid point as the coarse grid value.
+
   For `DMDA` objects this only works for "uniform refinement", that is the refined mesh was obtained `DMRefine()` or the coarse mesh was obtained by
   `DMCoarsen()`. The coordinates set into the `DMDA` are completely ignored in computing the injection.
 
@@ -1490,9 +1497,9 @@ PetscErrorCode DMCreateMatrix(DM dm, Mat *mat)
 }
 
 /*@
-  DMSetMatrixPreallocateSkip - When `DMCreateMatrix()` is called the matrix sizes and `ISLocalToGlobalMapping` will be
-  properly set, but the data structures to store values in the matrices will not be preallocated. This is most useful to reduce initialization costs when
-  `MatSetPreallocationCOO()` and `MatSetValuesCOO()` will be used.
+  DMSetMatrixPreallocateSkip - When `DMCreateMatrix()` is called the matrix sizes and
+  `ISLocalToGlobalMapping` will be properly set, but the data structures to store values in the
+  matrices will not be preallocated.
 
   Logically Collective
 
@@ -1501,6 +1508,10 @@ PetscErrorCode DMCreateMatrix(DM dm, Mat *mat)
 - skip - `PETSC_TRUE` to skip preallocation
 
   Level: developer
+
+  Notes:
+  This is most useful to reduce initialization costs when `MatSetPreallocationCOO()` and
+  `MatSetValuesCOO()` will be used.
 
 .seealso: [](ch_dmbase), `DM`, `DMCreateMatrix()`, `DMSetMatrixStructureOnly()`, `DMSetMatrixPreallocateOnly()`
 @*/
@@ -1701,6 +1712,8 @@ PetscErrorCode DMRestoreWorkArray(DM dm, PetscInt count, MPI_Datatype dtype, voi
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscAssertPointer(mem, 4);
+  (void)count;
+  (void)dtype;
   if (!*(void **)mem) PetscFunctionReturn(PETSC_SUCCESS);
   for (p = &dm->workout; (link = *p); p = &link->next) {
     if (link->mem == *(void **)mem) {
@@ -1726,19 +1739,16 @@ PetscErrorCode DMRestoreWorkArray(DM dm, PetscInt count, MPI_Datatype dtype, voi
 - nullsp - A callback to create the nullspace
 
   Calling sequence of `nullsp`:
-.vb
-    PetscErrorCode nullsp(DM dm, PetscInt origField, PetscInt field, MatNullSpace *nullSpace)
-.ve
-+ dm    - The present `DM`
-.  origField - The field number given above, in the original `DM`
-. field - The field number in dm
--  nullSpace - The nullspace for the given field
++ dm        - The present `DM`
+. origField - The field number given above, in the original `DM`
+. field     - The field number in dm
+- nullSpace - The nullspace for the given field
 
   Level: intermediate
 
 .seealso: [](ch_dmbase), `DM`, `DMAddField()`, `DMGetNullSpaceConstructor()`, `DMSetNearNullSpaceConstructor()`, `DMGetNearNullSpaceConstructor()`, `DMCreateSubDM()`, `DMCreateSuperDM()`
 @*/
-PetscErrorCode DMSetNullSpaceConstructor(DM dm, PetscInt field, PetscErrorCode (*nullsp)(DM, PetscInt, PetscInt, MatNullSpace *))
+PetscErrorCode DMSetNullSpaceConstructor(DM dm, PetscInt field, PetscErrorCode (*nullsp)(DM dm, PetscInt origField, PetscInt field, MatNullSpace *nullSpace))
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
@@ -1760,19 +1770,16 @@ PetscErrorCode DMSetNullSpaceConstructor(DM dm, PetscInt field, PetscErrorCode (
 . nullsp - A callback to create the nullspace
 
   Calling sequence of `nullsp`:
-.vb
-    PetscErrorCode nullsp(DM dm, PetscInt origField, PetscInt field, MatNullSpace *nullSpace)
-.ve
-+ dm    - The present DM
-.  origField - The field number given above, in the original DM
-. field - The field number in dm
--  nullSpace - The nullspace for the given field
++ dm        - The present DM
+. origField - The field number given above, in the original DM
+. field     - The field number in dm
+- nullSpace - The nullspace for the given field
 
   Level: intermediate
 
 .seealso: [](ch_dmbase), `DM`, `DMAddField()`, `DMGetField()`, `DMSetNullSpaceConstructor()`, `DMSetNearNullSpaceConstructor()`, `DMGetNearNullSpaceConstructor()`, `DMCreateSubDM()`, `DMCreateSuperDM()`
 @*/
-PetscErrorCode DMGetNullSpaceConstructor(DM dm, PetscInt field, PetscErrorCode (**nullsp)(DM, PetscInt, PetscInt, MatNullSpace *))
+PetscErrorCode DMGetNullSpaceConstructor(DM dm, PetscInt field, PetscErrorCode (**nullsp)(DM dm, PetscInt origField, PetscInt field, MatNullSpace *nullSpace))
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
@@ -1793,20 +1800,17 @@ PetscErrorCode DMGetNullSpaceConstructor(DM dm, PetscInt field, PetscErrorCode (
 - nullsp - A callback to create the near-nullspace
 
   Calling sequence of `nullsp`:
-.vb
-    PetscErrorCode nullsp(DM dm, PetscInt origField, PetscInt field, MatNullSpace *nullSpace)
-.ve
-+ dm    - The present `DM`
-.  origField - The field number given above, in the original `DM`
-. field - The field number in dm
--  nullSpace - The nullspace for the given field
++ dm        - The present `DM`
+. origField - The field number given above, in the original `DM`
+. field     - The field number in dm
+- nullSpace - The nullspace for the given field
 
   Level: intermediate
 
 .seealso: [](ch_dmbase), `DM`, `DMAddField()`, `DMGetNearNullSpaceConstructor()`, `DMSetNullSpaceConstructor()`, `DMGetNullSpaceConstructor()`, `DMCreateSubDM()`, `DMCreateSuperDM()`,
           `MatNullSpace`
 @*/
-PetscErrorCode DMSetNearNullSpaceConstructor(DM dm, PetscInt field, PetscErrorCode (*nullsp)(DM, PetscInt, PetscInt, MatNullSpace *))
+PetscErrorCode DMSetNearNullSpaceConstructor(DM dm, PetscInt field, PetscErrorCode (*nullsp)(DM dm, PetscInt origField, PetscInt field, MatNullSpace *nullSpace))
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
@@ -1828,20 +1832,17 @@ PetscErrorCode DMSetNearNullSpaceConstructor(DM dm, PetscInt field, PetscErrorCo
 . nullsp - A callback to create the near-nullspace
 
   Calling sequence of `nullsp`:
-.vb
-    PetscErrorCode nullsp(DM dm, PetscInt origField, PetscInt field, MatNullSpace *nullSpace)
-.ve
-+ dm    - The present `DM`
-.  origField - The field number given above, in the original `DM`
-. field - The field number in dm
--  nullSpace - The nullspace for the given field
++ dm        - The present `DM`
+. origField - The field number given above, in the original `DM`
+. field     - The field number in dm
+- nullSpace - The nullspace for the given field
 
   Level: intermediate
 
 .seealso: [](ch_dmbase), `DM`, `DMAddField()`, `DMGetField()`, `DMSetNearNullSpaceConstructor()`, `DMSetNullSpaceConstructor()`, `DMGetNullSpaceConstructor()`, `DMCreateSubDM()`,
           `MatNullSpace`, `DMCreateSuperDM()`
 @*/
-PetscErrorCode DMGetNearNullSpaceConstructor(DM dm, PetscInt field, PetscErrorCode (**nullsp)(DM, PetscInt, PetscInt, MatNullSpace *))
+PetscErrorCode DMGetNearNullSpaceConstructor(DM dm, PetscInt field, PetscErrorCode (**nullsp)(DM dm, PetscInt origField, PetscInt field, MatNullSpace *nullSpace))
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
@@ -1977,9 +1978,7 @@ PetscErrorCode DMCreateFieldIS(DM dm, PetscInt *numFields, char ***fieldNames, I
 
 /*@C
   DMCreateFieldDecomposition - Returns a list of `IS` objects defining a decomposition of a problem into subproblems
-  corresponding to different fields: each `IS` contains the global indices of the dofs of the
-  corresponding field, defined by `DMAddField()`. The optional list of `DM`s define the `DM` for each subproblem.
-  The same as `DMCreateFieldIS()` but also returns a `DM` for each field.
+  corresponding to different fields.
 
   Not Collective; No Fortran Support
 
@@ -1994,7 +1993,12 @@ PetscErrorCode DMCreateFieldIS(DM dm, PetscInt *numFields, char ***fieldNames, I
 
   Level: intermediate
 
-  Note:
+  Notes:
+  Each `IS` contains the global indices of the dofs of the corresponding field, defined by
+  `DMAddField()`. The optional list of `DM`s define the `DM` for each subproblem.
+
+  The same as `DMCreateFieldIS()` but also returns a `DM` for each field.
+
   The user is responsible for freeing all requested arrays. In particular, every entry of names should be freed with
   `PetscFree()`, every entry of is should be destroyed with `ISDestroy()`, every entry of dm should be destroyed with `DMDestroy()`,
   and all of the arrays should be freed with `PetscFree()`.
@@ -2130,11 +2134,8 @@ PetscErrorCode DMCreateSuperDM(DM dms[], PetscInt n, IS **is, DM *superdm)
 }
 
 /*@C
-  DMCreateDomainDecomposition - Returns lists of `IS` objects defining a decomposition of a problem into subproblems
-  corresponding to restrictions to pairs of nested subdomains: each `IS` contains the global
-  indices of the dofs of the corresponding subdomains with in the dofs of the original `DM`.
-  The inner subdomains conceptually define a nonoverlapping covering, while outer subdomains can overlap.
-  The optional list of `DM`s define a `DM` for each subproblem.
+  DMCreateDomainDecomposition - Returns lists of `IS` objects defining a decomposition of a
+  problem into subproblems corresponding to restrictions to pairs of nested subdomains.
 
   Not Collective
 
@@ -2151,11 +2152,17 @@ PetscErrorCode DMCreateSuperDM(DM dms[], PetscInt n, IS **is, DM *superdm)
   Level: intermediate
 
   Note:
+  Each `IS` contains the global indices of the dofs of the corresponding subdomains with in the
+  dofs of the original `DM`. The inner subdomains conceptually define a nonoverlapping
+  covering, while outer subdomains can overlap.
+
+  The optional list of `DM`s define a `DM` for each subproblem.
+
   The user is responsible for freeing all requested arrays. In particular, every entry of names should be freed with
   `PetscFree()`, every entry of is should be destroyed with `ISDestroy()`, every entry of dm should be destroyed with `DMDestroy()`,
   and all of the arrays should be freed with `PetscFree()`.
 
-  Questions:
+  Developer Notes:
   The `dmlist` is for the inner subdomains or the outer subdomains or all subdomains?
 
 .seealso: [](ch_dmbase), `DM`, `DMCreateFieldDecomposition()`, `DMDestroy()`, `DMCreateDomainDecompositionScatters()`, `DMView()`, `DMCreateInterpolation()`, `DMCreateColoring()`, `DMCreateMatrix()`, `DMCreateMassMatrix()`
@@ -2232,8 +2239,9 @@ PetscErrorCode DMCreateDomainDecomposition(DM dm, PetscInt *n, char ***namelist,
   of the residual equations to be created is fine for linear problems, nonlinear problems require local assembly of
   solution and residual data.
 
-  Questions:
-  Can the subdms input be anything or are they exactly the `DM` obtained from `DMCreateDomainDecomposition()`?
+  Developer Notes:
+  Can the subdms input be anything or are they exactly the `DM` obtained from
+  `DMCreateDomainDecomposition()`?
 
 .seealso: [](ch_dmbase), `DM`, `DMCreateDomainDecomposition()`, `DMDestroy()`, `DMView()`, `DMCreateInterpolation()`, `DMCreateColoring()`, `DMCreateMatrix()`, `DMCreateMassMatrix()`, `DMCreateFieldIS()`
 @*/
@@ -2306,16 +2314,14 @@ PetscErrorCode DMRefine(DM dm, MPI_Comm comm, DM *dmf)
 - ctx        - [optional] user-defined context for provide data for the hooks (may be `NULL`)
 
   Calling sequence of `refinehook`:
-$  PetscErrorCode refinehook(DM coarse, DM fine, void *ctx);
 + coarse - coarse level `DM`
-.  fine - fine level `DM` to interpolate problem to
+. fine   - fine level `DM` to interpolate problem to
 - ctx    - optional user-defined function context
 
   Calling sequence of `interphook`:
-$  PetscErrorCode interphook(DM coarse, Mat interp, DM fine, void *ctx)
 + coarse - coarse level `DM`
-.  interp - matrix interpolating a coarse-level solution to the finer grid
-.  fine - fine level `DM` to update
+. interp - matrix interpolating a coarse-level solution to the finer grid
+. fine   - fine level `DM` to update
 - ctx    - optional user-defined function context
 
   Level: advanced
@@ -2330,7 +2336,7 @@ $  PetscErrorCode interphook(DM coarse, Mat interp, DM fine, void *ctx)
 
 .seealso: [](ch_dmbase), `DM`, `DMCoarsenHookAdd()`, `DMInterpolate()`, `SNESFASGetInterpolation()`, `SNESFASGetInjection()`, `PetscObjectCompose()`, `PetscContainerCreate()`
 @*/
-PetscErrorCode DMRefineHookAdd(DM coarse, PetscErrorCode (*refinehook)(DM, DM, void *), PetscErrorCode (*interphook)(DM, Mat, DM, void *), void *ctx)
+PetscErrorCode DMRefineHookAdd(DM coarse, PetscErrorCode (*refinehook)(DM coarse, DM fine, void *ctx), PetscErrorCode (*interphook)(DM coarse, Mat interp, DM fine, void *ctx), void *ctx)
 {
   DMRefineHookLink link, *p;
 
@@ -2662,17 +2668,18 @@ PetscErrorCode DMCopyTransform(DM dm, DM newdm)
 - ctx       - [optional] user-defined context for provide data for the hooks (may be `NULL`)
 
   Calling sequence of `beginhook`:
-$  PetscErrorCode  beginhook(DM fine, VecScatter out, VecScatter in, DM coarse, void *ctx)
-+ dm  - global DM
-.  g - global vector
-.  mode - mode
-.  l - local vector
-- ctx - optional user-defined function context
++ dm   - global `DM`
+. g    - global vector
+. mode - mode
+. l    - local vector
+- ctx  - optional user-defined function context
 
   Calling sequence of `endhook`:
-$  PetscErrorCode  endhook(DM fine, VecScatter out, VecScatter in, DM coarse, void *ctx)
-+  global - global DM
-- ctx - optional user-defined function context
++ dm   - global `DM`
+. g    - global vector
+. mode - mode
+. l    - local vector
+- ctx  - optional user-defined function context
 
   Level: advanced
 
@@ -2681,7 +2688,7 @@ $  PetscErrorCode  endhook(DM fine, VecScatter out, VecScatter in, DM coarse, vo
 
 .seealso: [](ch_dmbase), `DM`, `DMGlobalToLocal()`, `DMRefineHookAdd()`, `SNESFASGetInterpolation()`, `SNESFASGetInjection()`, `PetscObjectCompose()`, `PetscContainerCreate()`
 @*/
-PetscErrorCode DMGlobalToLocalHookAdd(DM dm, PetscErrorCode (*beginhook)(DM, Vec, InsertMode, Vec, void *), PetscErrorCode (*endhook)(DM, Vec, InsertMode, Vec, void *), void *ctx)
+PetscErrorCode DMGlobalToLocalHookAdd(DM dm, PetscErrorCode (*beginhook)(DM dm, Vec g, InsertMode mode, Vec l, void *ctx), PetscErrorCode (*endhook)(DM dm, Vec g, InsertMode mode, Vec l, void *ctx), void *ctx)
 {
   DMGlobalToLocalHookLink link, *p;
 
@@ -2705,6 +2712,8 @@ static PetscErrorCode DMGlobalToLocalHook_Constraints(DM dm, Vec g, InsertMode m
   PetscInt     pStart, pEnd, p, dof;
 
   PetscFunctionBegin;
+  (void)g;
+  (void)ctx;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscCall(DMGetDefaultConstraints(dm, &cSec, &cMat, &cBias));
   if (cMat && (mode == INSERT_VALUES || mode == INSERT_ALL_VALUES || mode == INSERT_BC_VALUES)) {
@@ -2875,26 +2884,24 @@ PetscErrorCode DMGlobalToLocalEnd(DM dm, Vec g, InsertMode mode, Vec l)
 - ctx       - [optional] user-defined context for provide data for the hooks (may be `NULL`)
 
   Calling sequence of `beginhook`:
-$  PetscErrorCode  beginhook(DM fine, Vec l, InsertMode mode, Vec g, void *ctx)
-+ dm  - global `DM`
-.  l - local vector
-.  mode - mode
-.  g - global vector
-- ctx - optional user-defined function context
++ global - global `DM`
+. l      - local vector
+. mode   - mode
+. g      - global vector
+- ctx    - optional user-defined function context
 
   Calling sequence of `endhook`:
-$  PetscErrorCode  endhook(DM fine, Vec l, InsertMode mode, Vec g, void *ctx)
-+  global - global `DM`
-.  l - local vector
-.  mode - mode
-.  g - global vector
-- ctx - optional user-defined function context
++ global - global `DM`
+. l      - local vector
+. mode   - mode
+. g      - global vector
+- ctx    - optional user-defined function context
 
   Level: advanced
 
 .seealso: [](ch_dmbase), `DM`, `DMLocalToGlobal()`, `DMRefineHookAdd()`, `DMGlobalToLocalHookAdd()`, `SNESFASGetInterpolation()`, `SNESFASGetInjection()`, `PetscObjectCompose()`, `PetscContainerCreate()`
 @*/
-PetscErrorCode DMLocalToGlobalHookAdd(DM dm, PetscErrorCode (*beginhook)(DM, Vec, InsertMode, Vec, void *), PetscErrorCode (*endhook)(DM, Vec, InsertMode, Vec, void *), void *ctx)
+PetscErrorCode DMLocalToGlobalHookAdd(DM dm, PetscErrorCode (*beginhook)(DM global, Vec l, InsertMode mode, Vec g, void *ctx), PetscErrorCode (*endhook)(DM global, Vec l, InsertMode mode, Vec g, void *ctx), void *ctx)
 {
   DMLocalToGlobalHookLink link, *p;
 
@@ -2918,6 +2925,8 @@ static PetscErrorCode DMLocalToGlobalHook_Constraints(DM dm, Vec l, InsertMode m
   PetscInt     pStart, pEnd, p, dof;
 
   PetscFunctionBegin;
+  (void)g;
+  (void)ctx;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscCall(DMGetDefaultConstraints(dm, &cSec, &cMat, NULL));
   if (cMat && (mode == ADD_VALUES || mode == ADD_ALL_VALUES || mode == ADD_BC_VALUES)) {
@@ -3187,9 +3196,9 @@ PetscErrorCode DMLocalToGlobalEnd(DM dm, Vec l, InsertMode mode, Vec g)
 }
 
 /*@
-  DMLocalToLocalBegin - Begins the process of mapping values from a local vector (that include ghost points
-  that contain irrelevant values) to another local vector where the ghost
-  points in the second are set correctly from values on other MPI ranks. Must be followed by `DMLocalToLocalEnd()`.
+  DMLocalToLocalBegin - Begins the process of mapping values from a local vector (that include
+  ghost points that contain irrelevant values) to another local vector where the ghost points
+  in the second are set correctly from values on other MPI ranks.
 
   Neighbor-wise Collective
 
@@ -3202,6 +3211,9 @@ PetscErrorCode DMLocalToGlobalEnd(DM dm, Vec l, InsertMode mode, Vec g)
 . l - the local vector with correct ghost values
 
   Level: intermediate
+
+  Notes:
+  Must be followed by `DMLocalToLocalEnd()`.
 
 .seealso: [](ch_dmbase), `DM`, `DMLocalToLocalEnd()`, `DMCoarsen()`, `DMDestroy()`, `DMView()`, `DMCreateLocalVector()`, `DMCreateGlobalVector()`, `DMCreateInterpolation()`, `DMGlobalToLocalEnd()`, `DMLocalToGlobalBegin()`
 @*/
@@ -3297,19 +3309,17 @@ PetscErrorCode DMCoarsen(DM dm, MPI_Comm comm, DM *dmc)
 - ctx          - [optional] user-defined context for provide data for the hooks (may be `NULL`)
 
   Calling sequence of `coarsenhook`:
-$  PetscErrorCode  coarsenhook(DM fine, DM coarse, void *ctx);
-+ fine - fine level `DM`
-.  coarse - coarse level `DM` to restrict problem to
-- ctx  - optional user-defined function context
++ fine   - fine level `DM`
+. coarse - coarse level `DM` to restrict problem to
+- ctx    - optional user-defined function context
 
   Calling sequence of `restricthook`:
-$  PetscErrorCode  restricthook(DM fine, Mat mrestrict, Vec rscale, Mat inject, DM coarse, void *ctx)
-+ fine - fine level `DM`
-.  mrestrict - matrix restricting a fine-level solution to the coarse grid, usually the transpose of the interpolation
-.  rscale - scaling vector for restriction
-.  inject - matrix restricting by injection
-.  coarse - coarse level DM to update
-- ctx  - optional user-defined function context
++ fine      - fine level `DM`
+. mrestrict - matrix restricting a fine-level solution to the coarse grid, usually the transpose of the interpolation
+. rscale    - scaling vector for restriction
+. inject    - matrix restricting by injection
+. coarse    - coarse level DM to update
+- ctx       - optional user-defined function context
 
   Level: advanced
 
@@ -3325,7 +3335,7 @@ $  PetscErrorCode  restricthook(DM fine, Mat mrestrict, Vec rscale, Mat inject, 
 
 .seealso: [](ch_dmbase), `DM`, `DMCoarsenHookRemove()`, `DMRefineHookAdd()`, `SNESFASGetInterpolation()`, `SNESFASGetInjection()`, `PetscObjectCompose()`, `PetscContainerCreate()`
 @*/
-PetscErrorCode DMCoarsenHookAdd(DM fine, PetscErrorCode (*coarsenhook)(DM, DM, void *), PetscErrorCode (*restricthook)(DM, Mat, Vec, Mat, DM, void *), void *ctx)
+PetscErrorCode DMCoarsenHookAdd(DM fine, PetscErrorCode (*coarsenhook)(DM fine, DM coarse, void *ctx), PetscErrorCode (*restricthook)(DM fine, Mat mrestrict, Vec rscale, Mat inject, DM coarse, void *ctx), void *ctx)
 {
   DMCoarsenHookLink link, *p;
 
@@ -3420,17 +3430,15 @@ PetscErrorCode DMRestrict(DM fine, Mat restrct, Vec rscale, Mat inject, DM coars
 - ctx          - [optional] user-defined context for provide data for the hooks (may be `NULL`)
 
   Calling sequence of `ddhook`:
-$  PetscErrorCode ddhook(DM global, DM block, void *ctx)
 + global - global `DM`
-.  block  - block `DM`
+. block  - block `DM`
 - ctx    - optional user-defined function context
 
   Calling sequence of `restricthook`:
-$  PetscErrorCode restricthook(DM global, VecScatter out, VecScatter in, DM block, void *ctx)
 + global - global `DM`
-.  out    - scatter to the outer (with ghost and overlap points) block vector
-.  in     - scatter to block vector values only owned locally
-.  block  - block `DM`
+. out    - scatter to the outer (with ghost and overlap points) block vector
+. in     - scatter to block vector values only owned locally
+. block  - block `DM`
 - ctx    - optional user-defined function context
 
   Level: advanced
@@ -3445,7 +3453,7 @@ $  PetscErrorCode restricthook(DM global, VecScatter out, VecScatter in, DM bloc
 
 .seealso: [](ch_dmbase), `DM`, `DMSubDomainHookRemove()`, `DMRefineHookAdd()`, `SNESFASGetInterpolation()`, `SNESFASGetInjection()`, `PetscObjectCompose()`, `PetscContainerCreate()`
 @*/
-PetscErrorCode DMSubDomainHookAdd(DM global, PetscErrorCode (*ddhook)(DM, DM, void *), PetscErrorCode (*restricthook)(DM, VecScatter, VecScatter, DM, void *), void *ctx)
+PetscErrorCode DMSubDomainHookAdd(DM global, PetscErrorCode (*ddhook)(DM global, DM block, void *ctx), PetscErrorCode (*restricthook)(DM global, VecScatter out, VecScatter in, DM block, void *ctx), void *ctx)
 {
   DMSubDomainHookLink link, *p;
 
@@ -3501,10 +3509,10 @@ PetscErrorCode DMSubDomainHookRemove(DM global, PetscErrorCode (*ddhook)(DM, DM,
   Collective if any hooks are
 
   Input Parameters:
-+  fine - finer `DM` to use as a base
-. oscatter - scatter from domain global vector filling subdomain global vector with overlap
-. gscatter - scatter from domain global vector filling subdomain local vector with ghosts
--  coarse - coarser `DM` to update
++ global   - The global `DM` to use as a base
+. oscatter - The scatter from domain global vector filling subdomain global vector with overlap
+. gscatter - The scatter from domain global vector filling subdomain local vector with ghosts
+- subdm    - The subdomain `DM` to update
 
   Level: developer
 
@@ -6396,9 +6404,10 @@ PetscErrorCode DMSetOutputSequenceNumber(DM dm, PetscInt num, PetscReal val)
   DMOutputSequenceLoad - Retrieve the sequence value from a `PetscViewer`
 
   Input Parameters:
-+ dm   - The original `DM`
-. name - The sequence name
-- num  - The output sequence number
++ dm     - The original `DM`
+. viewer - The viewer to get it from
+. name   - The sequence name
+- num    - The output sequence number
 
   Output Parameter:
 . val - The output sequence value
@@ -6952,6 +6961,7 @@ PetscErrorCode DMHasLabel(DM dm, const char name[], PetscBool *hasLabel)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+// PetscClangLinter pragma ignore: -fdoc-section-header-unknown
 /*@C
   DMGetLabel - Return the label of a given name, or `NULL`, from a `DM`
 
@@ -6965,12 +6975,12 @@ PetscErrorCode DMHasLabel(DM dm, const char name[], PetscBool *hasLabel)
 . label - The `DMLabel`, or `NULL` if the label is absent
 
   Default labels in a `DMPLEX`:
-+   "depth"       - Holds the depth (co-dimension) of each mesh point
-.   "celltype"    - Holds the topological type of each cell
-.   "ghost"       - If the DM is distributed with overlap, this marks the cells and faces in the overlap
-.   "Cell Sets"   - Mirrors the cell sets defined by GMsh and ExodusII
-.   "Face Sets"   - Mirrors the face sets defined by GMsh and ExodusII
--  "Vertex Sets" - Mirrors the vertex sets defined by GMsh
++ "depth"       - Holds the depth (co-dimension) of each mesh point
+. "celltype"    - Holds the topological type of each cell
+. "ghost"       - If the DM is distributed with overlap, this marks the cells and faces in the overlap
+. "Cell Sets"   - Mirrors the cell sets defined by GMsh and ExodusII
+. "Face Sets"   - Mirrors the face sets defined by GMsh and ExodusII
+- "Vertex Sets" - Mirrors the vertex sets defined by GMsh
 
   Level: intermediate
 
@@ -7072,6 +7082,7 @@ PetscErrorCode DMAddLabel(DM dm, DMLabel label)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+// PetscClangLinter pragma ignore: -fdoc-section-header-unknown
 /*@C
   DMSetLabel - Replaces the label of a given name, or ignores it if the name is not present
 
@@ -7082,11 +7093,11 @@ PetscErrorCode DMAddLabel(DM dm, DMLabel label)
 - label - The `DMLabel`, having the same name, to substitute
 
   Default labels in a `DMPLEX`:
-+  "depth"       - Holds the depth (co-dimension) of each mesh point
-.  "celltype"    - Holds the topological type of each cell
-.  "ghost"       - If the DM is distributed with overlap, this marks the cells and faces in the overlap
-.  "Cell Sets"   - Mirrors the cell sets defined by GMsh and ExodusII
-.  "Face Sets"   - Mirrors the face sets defined by GMsh and ExodusII
++ "depth"       - Holds the depth (co-dimension) of each mesh point
+. "celltype"    - Holds the topological type of each cell
+. "ghost"       - If the DM is distributed with overlap, this marks the cells and faces in the overlap
+. "Cell Sets"   - Mirrors the cell sets defined by GMsh and ExodusII
+. "Face Sets"   - Mirrors the face sets defined by GMsh and ExodusII
 - "Vertex Sets" - Mirrors the vertex sets defined by GMsh
 
   Level: intermediate
@@ -7368,7 +7379,7 @@ PetscErrorCode DMCopyLabels(DM dmA, DM dmB, PetscCopyMode mode, PetscBool all, D
 + dm0 - First `DM` object
 - dm1 - Second `DM` object
 
-  Output Parameters
+  Output Parameters:
 + equal   - (Optional) Flag whether labels of dm0 and dm1 are the same
 - message - (Optional) Message describing the difference, or `NULL` if there is no difference
 
@@ -7768,7 +7779,7 @@ PetscErrorCode DMSetFineDM(DM dm, DM fdm)
 
 $ void bcFunc(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar bcval[])
 
-  If the type is `DM_BC_ESSENTIAL_FIELD` or other _FIELD value, then the calling sequence is:
+  If the type is `DM_BC_ESSENTIAL_FIELD` or other _FIELD value, then the calling sequence is\:
 
 .vb
   void bcFunc(PetscInt dim, PetscInt Nf, PetscInt NfAux,
@@ -7908,13 +7919,12 @@ PetscErrorCode DMIsBoundaryPoint(DM dm, PetscInt point, PetscBool *isBd)
 . X - vector
 
   Calling sequence of `funcs`:
-$  PetscErrorCode funcs(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar u[], void *ctx);
-+  dim - The spatial dimension
++ dim  - The spatial dimension
 . time - The time at which to sample
-.  x   - The coordinates
-.  Nc  - The number of components
-.  u   - The output field values
--  ctx - optional user-defined function context
+. x    - The coordinates
+. Nc   - The number of components
+. u    - The output field values
+- ctx  - optional user-defined function context
 
   Level: developer
 
@@ -7925,7 +7935,7 @@ $  PetscErrorCode funcs(PetscInt dim, PetscReal time, const PetscReal x[], Petsc
 
 .seealso: [](ch_dmbase), `DM`, `DMProjectFunctionLocal()`, `DMProjectFunctionLabel()`, `DMComputeL2Diff()`
 @*/
-PetscErrorCode DMProjectFunction(DM dm, PetscReal time, PetscErrorCode (**funcs)(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar *, void *), void **ctxs, InsertMode mode, Vec X)
+PetscErrorCode DMProjectFunction(DM dm, PetscReal time, PetscErrorCode (**funcs)(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx), void **ctxs, InsertMode mode, Vec X)
 {
   Vec localX;
 
@@ -7958,12 +7968,12 @@ PetscErrorCode DMProjectFunction(DM dm, PetscReal time, PetscErrorCode (**funcs)
 . localX - vector
 
   Calling sequence of `funcs`:
-$  PetscErrorCode funcs(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar u[], void *ctx);
-+  dim - The spatial dimension
-.  x   - The coordinates
-.  Nc  - The number of components
-.  u   - The output field values
--  ctx - optional user-defined function context
++ dim  - The spatial dimension
+. time - The current timestep
+. x    - The coordinates
+. Nc   - The number of components
+. u    - The output field values
+- ctx  - optional user-defined function context
 
   Level: developer
 
@@ -7974,7 +7984,7 @@ $  PetscErrorCode funcs(PetscInt dim, PetscReal time, const PetscReal x[], Petsc
 
 .seealso: [](ch_dmbase), `DM`, `DMProjectFunction()`, `DMProjectFunctionLabel()`, `DMComputeL2Diff()`
 @*/
-PetscErrorCode DMProjectFunctionLocal(DM dm, PetscReal time, PetscErrorCode (**funcs)(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar *, void *), void **ctxs, InsertMode mode, Vec localX)
+PetscErrorCode DMProjectFunctionLocal(DM dm, PetscReal time, PetscErrorCode (**funcs)(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx), void **ctxs, InsertMode mode, Vec localX)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
@@ -7989,23 +7999,27 @@ PetscErrorCode DMProjectFunctionLocal(DM dm, PetscReal time, PetscErrorCode (**f
   Collective
 
   Input Parameters:
-+ dm    - The `DM`
-. time  - The time
-. label - The `DMLabel` selecting the portion of the mesh for projection
-. funcs - The coordinate functions to evaluate, one per field
-. ctxs  - Optional array of contexts to pass to each coordinate function.  ctxs may be null.
-- mode  - The insertion mode for values
++ dm     - The `DM`
+. time   - The time
+. numIds - The number of ids
+. ids    - The ids
+. Nc     - The number of components
+. comps  - The components
+. label  - The `DMLabel` selecting the portion of the mesh for projection
+. funcs  - The coordinate functions to evaluate, one per field
+. ctxs   - Optional array of contexts to pass to each coordinate function.  ctxs may be null.
+- mode   - The insertion mode for values
 
   Output Parameter:
 . X - vector
 
   Calling sequence of `funcs`:
-$  PetscErrorCode funcs(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar u[], void *ctx);
-+  dim - The spatial dimension
-.  x   - The coordinates
-. Nc - The number of components
-.  u   - The output field values
--  ctx - optional user-defined function context
++ dim  - The spatial dimension
+. time - The current timestep
+. x    - The coordinates
+. Nc   - The number of components
+. u    - The output field values
+- ctx  - optional user-defined function context
 
   Level: developer
 
@@ -8016,7 +8030,7 @@ $  PetscErrorCode funcs(PetscInt dim, PetscReal time, const PetscReal x[], Petsc
 
 .seealso: [](ch_dmbase), `DM`, `DMProjectFunction()`, `DMProjectFunctionLocal()`, `DMProjectFunctionLabelLocal()`, `DMComputeL2Diff()`
 @*/
-PetscErrorCode DMProjectFunctionLabel(DM dm, PetscReal time, DMLabel label, PetscInt numIds, const PetscInt ids[], PetscInt Nc, const PetscInt comps[], PetscErrorCode (**funcs)(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar *, void *), void **ctxs, InsertMode mode, Vec X)
+PetscErrorCode DMProjectFunctionLabel(DM dm, PetscReal time, DMLabel label, PetscInt numIds, const PetscInt ids[], PetscInt Nc, const PetscInt comps[], PetscErrorCode (**funcs)(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx), void **ctxs, InsertMode mode, Vec X)
 {
   Vec localX;
 
@@ -8037,23 +8051,27 @@ PetscErrorCode DMProjectFunctionLabel(DM dm, PetscReal time, DMLabel label, Pets
   Not Collective
 
   Input Parameters:
-+ dm    - The `DM`
-. time  - The time
-. label - The `DMLabel` selecting the portion of the mesh for projection
-. funcs - The coordinate functions to evaluate, one per field
-. ctxs  - Optional array of contexts to pass to each coordinate function.  ctxs itself may be null.
-- mode  - The insertion mode for values
++ dm     - The `DM`
+. time   - The time
+. label  - The `DMLabel` selecting the portion of the mesh for projection
+. numIds - The number of ids
+. ids    - The ids
+. Nc     - The number of components
+. comps  - The components
+. funcs  - The coordinate functions to evaluate, one per field
+. ctxs   - Optional array of contexts to pass to each coordinate function.  ctxs itself may be null.
+- mode   - The insertion mode for values
 
   Output Parameter:
 . localX - vector
 
   Calling sequence of `funcs`:
-$  PetscErrorCode funcs(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar u[], void *ctx);
-+  dim - The spatial dimension
-.  x   - The coordinates
-. Nc - The number of components
-.  u   - The output field values
--  ctx - optional user-defined function context
++ dim  - The spatial dimension
+. time - The current time
+. x    - The coordinates
+. Nc   - The number of components
+. u    - The output field values
+- ctx  - optional user-defined function context
 
   Level: developer
 
@@ -8064,7 +8082,7 @@ $  PetscErrorCode funcs(PetscInt dim, PetscReal time, const PetscReal x[], Petsc
 
 .seealso: [](ch_dmbase), `DM`, `DMProjectFunction()`, `DMProjectFunctionLocal()`, `DMProjectFunctionLabel()`, `DMComputeL2Diff()`
 @*/
-PetscErrorCode DMProjectFunctionLabelLocal(DM dm, PetscReal time, DMLabel label, PetscInt numIds, const PetscInt ids[], PetscInt Nc, const PetscInt comps[], PetscErrorCode (**funcs)(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar *, void *), void **ctxs, InsertMode mode, Vec localX)
+PetscErrorCode DMProjectFunctionLabelLocal(DM dm, PetscReal time, DMLabel label, PetscInt numIds, const PetscInt ids[], PetscInt Nc, const PetscInt comps[], PetscErrorCode (**funcs)(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx), void **ctxs, InsertMode mode, Vec localX)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
@@ -8089,30 +8107,24 @@ PetscErrorCode DMProjectFunctionLabelLocal(DM dm, PetscReal time, DMLabel label,
 . localX - The output vector
 
   Calling sequence of `funcs`:
-.vb
-   void funcs(PetscInt dim, PetscInt Nf, PetscInt NfAux,
-              const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
-              const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-              PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f[]);
-.ve
-+  dim          - The spatial dimension
-.  Nf           - The number of input fields
-.  NfAux        - The number of input auxiliary fields
-.  uOff         - The offset of each field in u[]
-.  uOff_x       - The offset of each field in u_x[]
-.  u            - The field values at this point in space
-.  u_t          - The field time derivative at this point in space (or NULL)
-.  u_x          - The field derivatives at this point in space
-.  aOff         - The offset of each auxiliary field in u[]
-.  aOff_x       - The offset of each auxiliary field in u_x[]
-.  a            - The auxiliary field values at this point in space
-.  a_t          - The auxiliary field time derivative at this point in space (or NULL)
-.  a_x          - The auxiliary field derivatives at this point in space
-.  t            - The current time
-.  x            - The coordinates of this point
-.  numConstants - The number of constants
-.  constants    - The value of each constant
--  f            - The value of the function at this point in space
++ dim          - The spatial dimension
+. Nf           - The number of input fields
+. NfAux        - The number of input auxiliary fields
+. uOff         - The offset of each field in u[]
+. uOff_x       - The offset of each field in u_x[]
+. u            - The field values at this point in space
+. u_t          - The field time derivative at this point in space (or NULL)
+. u_x          - The field derivatives at this point in space
+. aOff         - The offset of each auxiliary field in u[]
+. aOff_x       - The offset of each auxiliary field in u_x[]
+. a            - The auxiliary field values at this point in space
+. a_t          - The auxiliary field time derivative at this point in space (or NULL)
+. a_x          - The auxiliary field derivatives at this point in space
+. t            - The current time
+. x            - The coordinates of this point
+. numConstants - The number of constants
+. constants    - The value of each constant
+- f            - The value of the function at this point in space
 
   Note:
   There are three different `DM`s that potentially interact in this function. The output `DM`, dm, specifies the layout of the values calculates by funcs.
@@ -8127,9 +8139,10 @@ PetscErrorCode DMProjectFunctionLabelLocal(DM dm, PetscReal time, DMLabel label,
 
   The notes need to provide some information about what has to be provided to the `DM` to be able to perform the computation.
 
-.seealso: [](ch_dmbase), `DM`, `DMProjectField()`, `DMProjectFieldLabelLocal()`, `DMProjectFunction()`, `DMComputeL2Diff()`
+.seealso: [](ch_dmbase), `DM`, `DMProjectField()`, `DMProjectFieldLabelLocal()`,
+`DMProjectFunction()`, `DMComputeL2Diff()`
 @*/
-PetscErrorCode DMProjectFieldLocal(DM dm, PetscReal time, Vec localU, void (**funcs)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]), InsertMode mode, Vec localX)
+PetscErrorCode DMProjectFieldLocal(DM dm, PetscReal time, Vec localU, void (**funcs)(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f[]), InsertMode mode, Vec localX)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
@@ -8160,30 +8173,24 @@ PetscErrorCode DMProjectFieldLocal(DM dm, PetscReal time, Vec localU, void (**fu
 . localX - The output vector
 
   Calling sequence of `funcs`:
-.vb
-   void funcs(PetscInt dim, PetscInt Nf, PetscInt NfAux,
-              const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
-              const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-              PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f[]);
-.ve
-+  dim          - The spatial dimension
-.  Nf           - The number of input fields
-.  NfAux        - The number of input auxiliary fields
-.  uOff         - The offset of each field in u[]
-.  uOff_x       - The offset of each field in u_x[]
-.  u            - The field values at this point in space
-.  u_t          - The field time derivative at this point in space (or NULL)
-.  u_x          - The field derivatives at this point in space
-.  aOff         - The offset of each auxiliary field in u[]
-.  aOff_x       - The offset of each auxiliary field in u_x[]
-.  a            - The auxiliary field values at this point in space
-.  a_t          - The auxiliary field time derivative at this point in space (or NULL)
-.  a_x          - The auxiliary field derivatives at this point in space
-.  t            - The current time
-.  x            - The coordinates of this point
-.  numConstants - The number of constants
-.  constants    - The value of each constant
--  f            - The value of the function at this point in space
++ dim          - The spatial dimension
+. Nf           - The number of input fields
+. NfAux        - The number of input auxiliary fields
+. uOff         - The offset of each field in u[]
+. uOff_x       - The offset of each field in u_x[]
+. u            - The field values at this point in space
+. u_t          - The field time derivative at this point in space (or NULL)
+. u_x          - The field derivatives at this point in space
+. aOff         - The offset of each auxiliary field in u[]
+. aOff_x       - The offset of each auxiliary field in u_x[]
+. a            - The auxiliary field values at this point in space
+. a_t          - The auxiliary field time derivative at this point in space (or NULL)
+. a_x          - The auxiliary field derivatives at this point in space
+. t            - The current time
+. x            - The coordinates of this point
+. numConstants - The number of constants
+. constants    - The value of each constant
+- f            - The value of the function at this point in space
 
   Note:
   There are three different `DM`s that potentially interact in this function. The output `DM`, dm, specifies the layout of the values calculates by funcs.
@@ -8200,7 +8207,7 @@ PetscErrorCode DMProjectFieldLocal(DM dm, PetscReal time, Vec localU, void (**fu
 
 .seealso: [](ch_dmbase), `DM`, `DMProjectField()`, `DMProjectFieldLabel()`, `DMProjectFunction()`, `DMComputeL2Diff()`
 @*/
-PetscErrorCode DMProjectFieldLabelLocal(DM dm, PetscReal time, DMLabel label, PetscInt numIds, const PetscInt ids[], PetscInt Nc, const PetscInt comps[], Vec localU, void (**funcs)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]), InsertMode mode, Vec localX)
+PetscErrorCode DMProjectFieldLabelLocal(DM dm, PetscReal time, DMLabel label, PetscInt numIds, const PetscInt ids[], PetscInt Nc, const PetscInt comps[], Vec localU, void (**funcs)(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f[]), InsertMode mode, Vec localX)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
@@ -8231,30 +8238,24 @@ PetscErrorCode DMProjectFieldLabelLocal(DM dm, PetscReal time, DMLabel label, Pe
 . X - The output vector
 
   Calling sequence of `funcs`:
-.vb
-  void func(PetscInt dim, PetscInt Nf, PetscInt NfAux,
-            const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
-            const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-            PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f[]);
-.ve
-+  dim          - The spatial dimension
-.  Nf           - The number of input fields
-.  NfAux        - The number of input auxiliary fields
-.  uOff         - The offset of each field in u[]
-.  uOff_x       - The offset of each field in u_x[]
-.  u            - The field values at this point in space
-.  u_t          - The field time derivative at this point in space (or NULL)
-.  u_x          - The field derivatives at this point in space
-.  aOff         - The offset of each auxiliary field in u[]
-.  aOff_x       - The offset of each auxiliary field in u_x[]
-.  a            - The auxiliary field values at this point in space
-.  a_t          - The auxiliary field time derivative at this point in space (or NULL)
-.  a_x          - The auxiliary field derivatives at this point in space
-.  t            - The current time
-.  x            - The coordinates of this point
-.  numConstants - The number of constants
-.  constants    - The value of each constant
--  f            - The value of the function at this point in space
++ dim          - The spatial dimension
+. Nf           - The number of input fields
+. NfAux        - The number of input auxiliary fields
+. uOff         - The offset of each field in u[]
+. uOff_x       - The offset of each field in u_x[]
+. u            - The field values at this point in space
+. u_t          - The field time derivative at this point in space (or NULL)
+. u_x          - The field derivatives at this point in space
+. aOff         - The offset of each auxiliary field in u[]
+. aOff_x       - The offset of each auxiliary field in u_x[]
+. a            - The auxiliary field values at this point in space
+. a_t          - The auxiliary field time derivative at this point in space (or NULL)
+. a_x          - The auxiliary field derivatives at this point in space
+. t            - The current time
+. x            - The coordinates of this point
+. numConstants - The number of constants
+. constants    - The value of each constant
+- f            - The value of the function at this point in space
 
   Note:
   There are three different `DM`s that potentially interact in this function. The output `DM`, dm, specifies the layout of the values calculates by funcs.
@@ -8271,7 +8272,7 @@ PetscErrorCode DMProjectFieldLabelLocal(DM dm, PetscReal time, DMLabel label, Pe
 
 .seealso: [](ch_dmbase), `DM`, `DMProjectField()`, `DMProjectFieldLabelLocal()`, `DMProjectFunction()`, `DMComputeL2Diff()`
 @*/
-PetscErrorCode DMProjectFieldLabel(DM dm, PetscReal time, DMLabel label, PetscInt numIds, const PetscInt ids[], PetscInt Nc, const PetscInt comps[], Vec U, void (**funcs)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]), InsertMode mode, Vec X)
+PetscErrorCode DMProjectFieldLabel(DM dm, PetscReal time, DMLabel label, PetscInt numIds, const PetscInt ids[], PetscInt Nc, const PetscInt comps[], Vec U, void (**funcs)(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f[]), InsertMode mode, Vec X)
 {
   DM  dmIn;
   Vec localU, localX;
@@ -8313,31 +8314,25 @@ PetscErrorCode DMProjectFieldLabel(DM dm, PetscReal time, DMLabel label, PetscIn
 . localX - The output vector
 
   Calling sequence of `funcs`:
-.vb
-   void funcs(PetscInt dim, PetscInt Nf, PetscInt NfAux,
-              const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
-              const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-              PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f[]);
-.ve
-+  dim          - The spatial dimension
-.  Nf           - The number of input fields
-.  NfAux        - The number of input auxiliary fields
-.  uOff         - The offset of each field in u[]
-.  uOff_x       - The offset of each field in u_x[]
-.  u            - The field values at this point in space
-.  u_t          - The field time derivative at this point in space (or NULL)
-.  u_x          - The field derivatives at this point in space
-.  aOff         - The offset of each auxiliary field in u[]
-.  aOff_x       - The offset of each auxiliary field in u_x[]
-.  a            - The auxiliary field values at this point in space
-.  a_t          - The auxiliary field time derivative at this point in space (or NULL)
-.  a_x          - The auxiliary field derivatives at this point in space
-.  t            - The current time
-.  x            - The coordinates of this point
-.  n            - The face normal
-.  numConstants - The number of constants
-.  constants    - The value of each constant
--  f            - The value of the function at this point in space
++ dim          - The spatial dimension
+. Nf           - The number of input fields
+. NfAux        - The number of input auxiliary fields
+. uOff         - The offset of each field in u[]
+. uOff_x       - The offset of each field in u_x[]
+. u            - The field values at this point in space
+. u_t          - The field time derivative at this point in space (or NULL)
+. u_x          - The field derivatives at this point in space
+. aOff         - The offset of each auxiliary field in u[]
+. aOff_x       - The offset of each auxiliary field in u_x[]
+. a            - The auxiliary field values at this point in space
+. a_t          - The auxiliary field time derivative at this point in space (or NULL)
+. a_x          - The auxiliary field derivatives at this point in space
+. t            - The current time
+. x            - The coordinates of this point
+. n            - The face normal
+. numConstants - The number of constants
+. constants    - The value of each constant
+- f            - The value of the function at this point in space
 
   Note:
   There are three different `DM`s that potentially interact in this function. The output `DM`, dm, specifies the layout of the values calculates by funcs.
@@ -8354,7 +8349,7 @@ PetscErrorCode DMProjectFieldLabel(DM dm, PetscReal time, DMLabel label, PetscIn
 
 .seealso: [](ch_dmbase), `DM`, `DMProjectField()`, `DMProjectFieldLabelLocal()`, `DMProjectFunction()`, `DMComputeL2Diff()`
 @*/
-PetscErrorCode DMProjectBdFieldLabelLocal(DM dm, PetscReal time, DMLabel label, PetscInt numIds, const PetscInt ids[], PetscInt Nc, const PetscInt comps[], Vec localU, void (**funcs)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, const PetscReal[], const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]), InsertMode mode, Vec localX)
+PetscErrorCode DMProjectBdFieldLabelLocal(DM dm, PetscReal time, DMLabel label, PetscInt numIds, const PetscInt ids[], PetscInt Nc, const PetscInt comps[], Vec localU, void (**funcs)(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], const PetscReal n[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f[]), InsertMode mode, Vec localX)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
@@ -8404,7 +8399,7 @@ PetscErrorCode DMComputeL2Diff(DM dm, PetscReal time, PetscErrorCode (**funcs)(P
 
   Input Parameters:
 + dm    - The `DM`
-, time  - The time
+. time  - The time
 . funcs - The gradient functions to evaluate for each field component
 . ctxs  - Optional array of contexts to pass to each function, or NULL.
 . X     - The coefficient vector u_h, a global vector
@@ -8522,8 +8517,9 @@ PetscErrorCode MatFDColoringApply_AIJDM(Mat J, MatFDColoring coloring, Vec x1, v
 /*@
   MatFDColoringUseDM - allows a `MatFDColoring` object to use the `DM` associated with the matrix to compute a `IS_COLORING_LOCAL` coloring
 
-  Input Parameter:
-. coloring - the `MatFDColoring` object
+  Input Parameters:
++ coloring   - The matrix to get the `DM` from
+- fdcoloring - the `MatFDColoring` object
 
   Level: advanced
 
@@ -8801,9 +8797,10 @@ PetscErrorCode DMMonitorSetFromOptions(DM dm, const char name[], const char help
 
   Level: developer
 
-  Question:
-  Note should indicate when during the life of the `DM` the monitor is run. It appears to be related to the discretization process seems rather specialized
-  since some `DM` have no concept of discretization
+  Developer Notes:
+  Note should indicate when during the life of the `DM` the monitor is run. It appears to be
+  related to the discretization process seems rather specialized since some `DM` have no
+  concept of discretization.
 
 .seealso: [](ch_dmbase), `DM`, `DMMonitorSet()`, `DMMonitorSetFromOptions()`
 @*/

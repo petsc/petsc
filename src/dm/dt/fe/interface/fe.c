@@ -932,7 +932,9 @@ PetscErrorCode PetscFEGetFaceCentroidTabulation(PetscFE fem, PetscTabulation *Tc
 .vb
   T->T[0] = B[(p*pdim + i)*Nc + c] is the value at point p for basis function i and component c
   T->T[1] = D[((p*pdim + i)*Nc + c)*dim + d] is the derivative value at point p for basis function i, component c, in direction d
-  T->T[2] = H[(((p*pdim + i)*Nc + c)*dim + d)*dim + e] is the value at point p for basis function i, component c, in directions d and e
+  T->T[2] = H[(((p*pdim + i)*Nc + c)*dim + d)*dim + e] is the value at point p for basis
+  T->function i, component c, in directions d and e
+.ve
 
 .seealso: `PetscTabulation`, `PetscFEGetCellTabulation()`, `PetscTabulationDestroy()`
 @*/
@@ -1495,7 +1497,7 @@ PetscErrorCode PetscFEIntegrateBdResidual(PetscDS ds, PetscWeakForm wf, PetscFor
 . coefficientsAux - The array of FEM auxiliary basis coefficients for the elements
 - t               - The time
 
-  Output Parameter
+  Output Parameter:
 . elemVec - the element residual vectors from each element
 
   Level: developer
@@ -1523,7 +1525,6 @@ PetscErrorCode PetscFEIntegrateHybridResidual(PetscDS ds, PetscDS dsIn, PetscFor
 + ds              - The `PetscDS` specifying the discretizations and continuum functions
 . jtype           - The type of matrix pointwise functions that should be used
 . key             - The (label+value, fieldI*Nf + fieldJ) being integrated
-. s            - The side of the cell being integrated, 0 for negative and 1 for positive
 . Ne              - The number of elements in the chunk
 . cgeom           - The cell geometry for each cell in the chunk
 . coefficients    - The array of FEM basis coefficients for the elements for the Jacobian evaluation point
@@ -1635,7 +1636,7 @@ PetscErrorCode PetscFEIntegrateBdJacobian(PetscDS ds, PetscWeakForm wf, PetscFor
 . t               - The time
 - u_tshift        - A multiplier for the dF/du_t term (as opposed to the dF/du term)
 
-  Output Parameter
+  Output Parameter:
 . elemMat - the element matrices for the Jacobian from each element
 
   Level: developer
@@ -1735,9 +1736,8 @@ PetscErrorCode PetscFEGetHeightSubspace(PetscFE fe, PetscInt height, PetscFE *su
 }
 
 /*@
-  PetscFERefine - Create a "refined" `PetscFE` object that refines the reference cell into smaller copies. This is typically used
-  to precondition a higher order method with a lower order method on a refined mesh having the same number of dofs (but more
-  sparsity). It is also used to create an interpolation between regularly refined meshes.
+  PetscFERefine - Create a "refined" `PetscFE` object that refines the reference cell into
+  smaller copies.
 
   Collective
 
@@ -1748,6 +1748,11 @@ PetscErrorCode PetscFEGetHeightSubspace(PetscFE fe, PetscInt height, PetscFE *su
 . feRef - The refined `PetscFE`
 
   Level: advanced
+
+  Notes:
+  This is typically used to generate a preconditioner for a higher order method from a lower order method on a
+  refined mesh having the same number of dofs (but more sparsity). It is also used to create an
+  interpolation between regularly refined meshes.
 
 .seealso: `PetscFEType`, `PetscFECreate()`, `PetscFESetType()`
 @*/

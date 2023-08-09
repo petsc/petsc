@@ -62,6 +62,7 @@ PETSC_EXTERN PetscErrorCode DMLocatePoints_Moab(DM dm, Vec v, IS *cellIS);
 
   Level: beginner
 
+.seealso: `DMMoabCreateMoab()`
 @*/
 PetscErrorCode DMMoabCreate(MPI_Comm comm, DM *dmb)
 {
@@ -89,6 +90,7 @@ PetscErrorCode DMMoabCreate(MPI_Comm comm, DM *dmb)
 
   Level: intermediate
 
+.seealso: `DMMoabCreate()`
 @*/
 PetscErrorCode DMMoabCreateMoab(MPI_Comm comm, moab::Interface *mbiface, moab::Tag *ltog_tag, moab::Range *range, DM *dmb)
 {
@@ -172,6 +174,7 @@ PetscErrorCode DMMoabCreateMoab(MPI_Comm comm, moab::Interface *mbiface, moab::T
 
   Level: beginner
 
+.seealso: `DMMoabSetInterface()`
 @*/
 PetscErrorCode DMMoabGetParallelComm(DM dm, moab::ParallelComm **pcomm)
 {
@@ -194,6 +197,7 @@ PetscErrorCode DMMoabGetParallelComm(DM dm, moab::ParallelComm **pcomm)
 
   Level: beginner
 
+.seealso: `DMMoabGetInterface()`
 @*/
 PetscErrorCode DMMoabSetInterface(DM dm, moab::Interface *mbiface)
 {
@@ -223,6 +227,7 @@ PetscErrorCode DMMoabSetInterface(DM dm, moab::Interface *mbiface)
 
   Level: beginner
 
+.seealso: `DMMoabSetInterface()`
 @*/
 PetscErrorCode DMMoabGetInterface(DM dm, moab::Interface **mbiface)
 {
@@ -248,6 +253,7 @@ PetscErrorCode DMMoabGetInterface(DM dm, moab::Interface **mbiface)
 
   Level: beginner
 
+.seealso: `DMMoabGetAllVertices()`
 @*/
 PetscErrorCode DMMoabSetLocalVertices(DM dm, moab::Range *range)
 {
@@ -301,6 +307,7 @@ PetscErrorCode DMMoabSetLocalVertices(DM dm, moab::Range *range)
 
   Level: beginner
 
+.seealso: `DMMoabGetLocalVertices()`
 @*/
 PetscErrorCode DMMoabGetAllVertices(DM dm, moab::Range *local)
 {
@@ -324,6 +331,7 @@ PetscErrorCode DMMoabGetAllVertices(DM dm, moab::Range *local)
 
   Level: beginner
 
+.seealso: `DMMoabGetAllVertices()`
 @*/
 PetscErrorCode DMMoabGetLocalVertices(DM dm, const moab::Range **owned, const moab::Range **ghost)
 {
@@ -347,6 +355,7 @@ PetscErrorCode DMMoabGetLocalVertices(DM dm, const moab::Range **owned, const mo
 
   Level: beginner
 
+.seealso: `DMMoabSetLocalElements()`
 @*/
 PetscErrorCode DMMoabGetLocalElements(DM dm, const moab::Range **range)
 {
@@ -367,6 +376,7 @@ PetscErrorCode DMMoabGetLocalElements(DM dm, const moab::Range **range)
 
   Level: beginner
 
+.seealso: `DMMoabGetLocalElements()`
 @*/
 PetscErrorCode DMMoabSetLocalElements(DM dm, moab::Range *range)
 {
@@ -405,6 +415,7 @@ PetscErrorCode DMMoabSetLocalElements(DM dm, moab::Range *range)
 
   Level: beginner
 
+.seealso: `DMMoabGetLocalToGlobalTag()`
 @*/
 PetscErrorCode DMMoabSetLocalToGlobalTag(DM dm, moab::Tag ltogtag)
 {
@@ -427,6 +438,7 @@ PetscErrorCode DMMoabSetLocalToGlobalTag(DM dm, moab::Tag ltogtag)
 
   Level: beginner
 
+.seealso: `DMMoabSetLocalToGlobalTag()`
 @*/
 PetscErrorCode DMMoabGetLocalToGlobalTag(DM dm, moab::Tag *ltog_tag)
 {
@@ -447,6 +459,7 @@ PetscErrorCode DMMoabGetLocalToGlobalTag(DM dm, moab::Tag *ltog_tag)
 
   Level: beginner
 
+.seealso: `DMMoabGetBlockSize()`
 @*/
 PetscErrorCode DMMoabSetBlockSize(DM dm, PetscInt bs)
 {
@@ -469,6 +482,7 @@ PetscErrorCode DMMoabSetBlockSize(DM dm, PetscInt bs)
 
   Level: beginner
 
+.seealso: `DMMoabSetBlockSize()`
 @*/
 PetscErrorCode DMMoabGetBlockSize(DM dm, PetscInt *bs)
 {
@@ -492,6 +506,7 @@ PetscErrorCode DMMoabGetBlockSize(DM dm, PetscInt *bs)
 
   Level: beginner
 
+.seealso: `DMMoabGetLocalSize()`
 @*/
 PetscErrorCode DMMoabGetSize(DM dm, PetscInt *neg, PetscInt *nvg)
 {
@@ -518,6 +533,7 @@ PetscErrorCode DMMoabGetSize(DM dm, PetscInt *neg, PetscInt *nvg)
 
   Level: beginner
 
+.seealso: `DMMoabGetSize()`
 @*/
 PetscErrorCode DMMoabGetLocalSize(DM dm, PetscInt *nel, PetscInt *neg, PetscInt *nvl, PetscInt *nvg)
 {
@@ -543,6 +559,7 @@ PetscErrorCode DMMoabGetLocalSize(DM dm, PetscInt *nel, PetscInt *neg, PetscInt 
 
   Level: beginner
 
+.seealso: `DMMoabGetDimension()`
 @*/
 PetscErrorCode DMMoabGetOffset(DM dm, PetscInt *offset)
 {
@@ -565,6 +582,7 @@ PetscErrorCode DMMoabGetOffset(DM dm, PetscInt *offset)
 
   Level: beginner
 
+.seealso: `DMMoabGetOffset()`
 @*/
 PetscErrorCode DMMoabGetDimension(DM dm, PetscInt *dim)
 {
@@ -588,6 +606,7 @@ PetscErrorCode DMMoabGetDimension(DM dm, PetscInt *dim)
 
   Level: beginner
 
+.seealso: `DMMoabGetMaterialBlock()`
 @*/
 PetscErrorCode DMMoabGetHierarchyLevel(DM dm, PetscInt *nlevel)
 {
@@ -611,6 +630,7 @@ PetscErrorCode DMMoabGetHierarchyLevel(DM dm, PetscInt *nlevel)
 
   Level: beginner
 
+.seealso: `DMMoabGetHierarchyLevel()`
 @*/
 PetscErrorCode DMMoabGetMaterialBlock(DM dm, const moab::EntityHandle ehandle, PetscInt *mat)
 {
@@ -1234,8 +1254,7 @@ PETSC_EXTERN PetscErrorCode DMSetUp_Moab(DM dm)
   Collective
 
   Input Parameters:
-+ dm     - The DM object
-. type - The type of element to create and add (Edge/Tri/Quad/Tet/Hex/Prism/Pyramid/Polygon/Polyhedra)
++ dm     - The `DM` object
 . coords - The connectivity of the element
 - nverts - The number of vertices that form the element
 

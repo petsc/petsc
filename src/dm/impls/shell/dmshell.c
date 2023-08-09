@@ -534,7 +534,7 @@ PetscErrorCode DMShellSetCreateLocalVector(DM dm, PetscErrorCode (*func)(DM, Vec
 
   Logically Collective on dm
 
-  Input Parameters
+  Input Parameters:
 + dm    - the `DMSHELL`
 . begin - the routine that begins the global to local scatter
 - end   - the routine that ends the global to local scatter
@@ -561,7 +561,7 @@ PetscErrorCode DMShellSetGlobalToLocal(DM dm, PetscErrorCode (*begin)(DM, Vec, I
 
   Logically Collective on dm
 
-  Input Parameters
+  Input Parameters:
 + dm    - the `DMSHELL`
 . begin - the routine that begins the local to global scatter
 - end   - the routine that ends the local to global scatter
@@ -588,7 +588,7 @@ PetscErrorCode DMShellSetLocalToGlobal(DM dm, PetscErrorCode (*begin)(DM, Vec, I
 
   Logically Collective on dm
 
-  Input Parameters
+  Input Parameters:
 + dm    - the `DMSHELL`
 . begin - the routine that begins the local to local scatter
 - end   - the routine that ends the local to local scatter
@@ -615,7 +615,7 @@ PetscErrorCode DMShellSetLocalToLocal(DM dm, PetscErrorCode (*begin)(DM, Vec, In
 
   Logically Collective on dm
 
-  Input Parameters
+  Input Parameters:
 + dm   - the `DMSHELL`
 - gtol - the global to local `VecScatter` context
 
@@ -641,7 +641,7 @@ PetscErrorCode DMShellSetGlobalToLocalVecScatter(DM dm, VecScatter gtol)
 
   Logically Collective on dm
 
-  Input Parameters
+  Input Parameters:
 + dm   - the `DMSHELL`
 - ltog - the local to global `VecScatter` context
 
@@ -667,7 +667,7 @@ PetscErrorCode DMShellSetLocalToGlobalVecScatter(DM dm, VecScatter ltog)
 
   Logically Collective
 
-  Input Parameters
+  Input Parameters:
 + dm   - the `DMSHELL`
 - ltol - the local to local `VecScatter` context
 
@@ -693,7 +693,7 @@ PetscErrorCode DMShellSetLocalToLocalVecScatter(DM dm, VecScatter ltol)
 
   Logically Collective
 
-  Input Parameters
+  Input Parameters:
 + dm      - the `DMSHELL`
 - coarsen - the routine that coarsens the `DM`
 
@@ -745,7 +745,7 @@ PetscErrorCode DMShellGetCoarsen(DM dm, PetscErrorCode (**coarsen)(DM, MPI_Comm,
 
   Logically Collective
 
-  Input Parameters
+  Input Parameters:
 + dm     - the `DMSHELL`
 - refine - the routine that refines the `DM`
 
@@ -797,7 +797,7 @@ PetscErrorCode DMShellGetRefine(DM dm, PetscErrorCode (**refine)(DM, MPI_Comm, D
 
   Logically Collective
 
-  Input Parameters
+  Input Parameters:
 + dm     - the `DMSHELL`
 - interp - the routine to create the interpolation
 
@@ -849,7 +849,7 @@ PetscErrorCode DMShellGetCreateInterpolation(DM dm, PetscErrorCode (**interp)(DM
 
   Logically Collective
 
-  Input Parameters
+  Input Parameters:
 + dm          - the `DMSHELL`
 - restriction - the routine to create the restriction
 
@@ -1157,7 +1157,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_Shell(DM dm)
 
   Level: advanced
 
-.seealso `DMDestroy()`, `DMCreateGlobalVector()`, `DMCreateLocalVector()`, `DMShellSetContext()`, `DMShellGetContext()`
+.seealso: `DMDestroy()`, `DMCreateGlobalVector()`, `DMCreateLocalVector()`, `DMShellSetContext()`, `DMShellGetContext()`
 @*/
 PetscErrorCode DMShellCreate(MPI_Comm comm, DM *dm)
 {

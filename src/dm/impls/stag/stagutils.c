@@ -980,22 +980,21 @@ static PetscErrorCode DMStagRestoreProductCoordinateArrays_Private(DM dm, void *
 
   Notes:
   This function does not automatically perform a local->global scatter to populate global coordinates from the local coordinates.
-  Thus, it may be required to explicitly perform these operations in some situations, as in the following partial example:
+  Thus, it may be required to explicitly perform these operations in some situations, as in the following partial example\:
+.vb
+  PetscCall(DMGetCoordinateDM(dm, &cdm));
+  for (PetscInt d = 0; d < 3; ++d) {
+    DM  subdm;
+    Vec coor, coor_local;
 
-  ```
-  PetscCall(DMGetCoordinateDM(dm,&cdm));
-  for (d=0; d<3; ++d) {
-  DM  subdm;
-  Vec coor,coor_local;
-
-  PetscCall(DMProductGetDM(cdm,d,&subdm));
-  PetscCall(DMGetCoordinates(subdm,&coor));
-  PetscCall(DMGetCoordinatesLocal(subdm,&coor_local));
-  PetscCall(DMLocalToGlobal(subdm,coor_local,INSERT_VALUES,coor));
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Coordinates dim %" PetscInt_FMT ":\n",d));
-  PetscCall(VecView(coor,PETSC_VIEWER_STDOUT_WORLD));
+    PetscCall(DMProductGetDM(cdm, d, &subdm));
+    PetscCall(DMGetCoordinates(subdm, &coor));
+    PetscCall(DMGetCoordinatesLocal(subdm, &coor_local));
+    PetscCall(DMLocalToGlobal(subdm, coor_local, INSERT_VALUES, coor));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Coordinates dim %" PetscInt_FMT ":\n", d));
+    PetscCall(VecView(coor, PETSC_VIEWER_STDOUT_WORLD));
   }
-  ```
+.ve
 
 .seealso: [](ch_stag), `DMSTAG`, `DMStagGetProductCoordinateArrays()`, `DMStagGetProductCoordinateArraysRead()`
 @*/

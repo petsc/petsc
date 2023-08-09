@@ -160,8 +160,8 @@ $            [first vertex of first edge, second vertex of first edge, first ver
   each subnetwork topology needs to be set on a unique rank and the communicator size needs to be at least equal to the number of subnetworks.
 
   Example usage:
-  Consider the following networks:
-  1) A single subnetwork:
+  Consider the following networks\:
+  1) A single subnetwork\:
 .vb
  network 0:
  rank[0]:
@@ -1495,7 +1495,7 @@ PetscErrorCode DMNetworkGetComponent(DM dm, PetscInt p, PetscInt compnum, PetscI
  Sets up the array that holds the data for all components and its associated section.
  It copies the data for all components in a contiguous array called componentdataarray. The component data is stored pointwise with an additional header (metadata) stored for each point. The header has metadata information such as number of components at each point, number of variables for each component, offsets for the components data, etc.
 */
-PetscErrorCode DMNetworkComponentSetUp(DM dm)
+static PetscErrorCode DMNetworkComponentSetUp(DM dm)
 {
   DM_Network                        *network = (DM_Network *)dm->data;
   PetscInt                           arr_size, p, offset, offsetp, ncomp, i, *headerarr;
@@ -1602,8 +1602,8 @@ static PetscErrorCode DMNetworkSetSubMap_private(DM dm, PetscInt pstart, PetscIn
   Level: intermediate
 
   Note:
-
-  the routine will create alternative orderings for the vertices and edges. Assume global network points are:
+  The routine will create alternative orderings for the vertices and edges. Assume global
+  network points are\:
 
   points = [0 1 2 3 4 5 6]
 
@@ -1611,6 +1611,7 @@ static PetscErrorCode DMNetworkSetSubMap_private(DM dm, PetscInt pstart, PetscIn
 
   With this new ordering a local `PetscSection`, global `PetscSection` and` PetscSF` will be created specific to the subset.
 
+.seealso: `DMNetworkDistribute()`
 @*/
 PetscErrorCode DMNetworkAssembleGraphStructures(DM dm)
 {
@@ -2174,6 +2175,7 @@ PetscErrorCode DMSetUp_Network(DM dm)
 
   Level: intermediate
 
+.seealso: `DMNetworkSetOption()`
 @*/
 PetscErrorCode DMNetworkHasJacobian(DM dm, PetscBool eflg, PetscBool vflg)
 {
@@ -2372,7 +2374,7 @@ static inline PetscErrorCode MatSetblock_private(Mat Ju, PetscInt nrows, PetscIn
 
 /* Creates a GlobalToLocal mapping with a Local and Global section. This is akin to the routine DMGetLocalToGlobalMapping but without the need of providing a dm.
 */
-PetscErrorCode CreateSubGlobalToLocalMapping_private(PetscSection globalsec, PetscSection localsec, ISLocalToGlobalMapping *ltog)
+static PetscErrorCode CreateSubGlobalToLocalMapping_private(PetscSection globalsec, PetscSection localsec, ISLocalToGlobalMapping *ltog)
 {
   PetscInt  i, size, dof;
   PetscInt *glob2loc;
@@ -2396,7 +2398,7 @@ PetscErrorCode CreateSubGlobalToLocalMapping_private(PetscSection globalsec, Pet
 
 #include <petsc/private/matimpl.h>
 
-PetscErrorCode DMCreateMatrix_Network_Nest(DM dm, Mat *J)
+static PetscErrorCode DMCreateMatrix_Network_Nest(DM dm, Mat *J)
 {
   DM_Network            *network = (DM_Network *)dm->data;
   PetscInt               eDof, vDof;

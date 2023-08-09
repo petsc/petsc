@@ -103,12 +103,12 @@ class GuessHeadingFailError(BaseError):
 class SectionManager:
   __slots__ = '_verbose', '_sections', '_findcache', '_cachekey'
 
-  _verbose: bool
+  _verbose: int
   _sections: dict[str, SectionBase]
   _cachekey: tuple[str, ...]
   _findcache: dict[tuple[str, ...], dict[str, str]]
 
-  def __init__(self, *args: SectionImpl, verbose: bool = False) -> None:
+  def __init__(self, *args: SectionImpl, verbose: int = 0) -> None:
     r"""Construct a `SectionManager` object
 
     Parameters
@@ -150,14 +150,25 @@ class SectionManager:
   def __contains__(self, section: SectionImpl) -> bool:
     return self.registered(section)
 
-  def _print(self, *args, **kwargs) -> None:
-    if self._verbose:
+  def _print(self, *args, verbosity = 1, **kwargs) -> None:
+    r"""Print, but only if verbosity if high enough
+
+    Parameters
+    ----------
+    *args :
+      positional arguments to `petsclinter.sync_print`
+    verbosity :
+      the minimum verbosity at which to print
+    **kwargs :
+      keyword arguments to `petsclinter.sync_print`
+    """
+    if self._verbose >= verbosity:
       import petsclinter as pl
 
       pl.sync_print(*args, **kwargs)
     return
 
-  def set_verbose(self, verbose: bool) -> bool:
+  def set_verbose(self, verbose: int) -> int:
     r"""Sets verbosity level
 
     Parameters
@@ -246,6 +257,7 @@ class SectionManager:
         f'UNHANDLED POSSIBLE HEADING! (strict = {strict}, cached = {cache_result})',
         heading,
         80 * '*',
+        verbosity=2,
         sep='\n'
       )
       if strict:
@@ -254,14 +266,16 @@ class SectionManager:
       self._print(
         '*********** DEFAULTED TO {:{}} FROM {} FOR {}'.format(
           f'{matched} (strict = {strict})', max_match_len, found_reason, heading
-        )
+        ),
+        verbosity=2
       )
     else:
       if not found_reason.direct_match():
         # found via keyword or subword
         matched = next(filter(lambda item: item[0] == matched, keywords))[1]
       self._print(
-        f'**** CLOSEST MATCH FOUND {matched:{max_match_len}} FROM {found_reason} FOR {heading}'
+        f'**** CLOSEST MATCH FOUND {matched:{max_match_len}} FROM {found_reason} FOR {heading}',
+        verbosity=2
       )
 
     if cache_result:
