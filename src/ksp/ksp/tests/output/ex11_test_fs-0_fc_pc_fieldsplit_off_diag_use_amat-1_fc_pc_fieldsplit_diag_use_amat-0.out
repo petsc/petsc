@@ -171,33 +171,7 @@ PC Object: (fc_) 1 MPI process
                 total: nonzeros=7936, allocated nonzeros=7936
                 total number of mallocs used during MatSetValues calls=0
                   not using I-node routines
-            KSP of A00
-              KSP Object: (fc_fieldsplit_velocity_) 1 MPI process
-                type: cg
-                maximum iterations=10000, initial guess is zero
-                tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
-                left preconditioning
-                using PRECONDITIONED norm type for convergence test
-              PC Object: (fc_fieldsplit_velocity_) 1 MPI process
-                type: cholesky
-                  out-of-place factorization
-                  tolerance for zero pivot 2.22045e-14
-                  matrix ordering: nd
-                  factor fill ratio given 5., needed 4.40672
-                    Factored matrix follows:
-                      Mat Object: (fc_fieldsplit_velocity_) 1 MPI process
-                        type: seqsbaij
-                        rows=2046, cols=2046
-                        package used to perform factorization: petsc
-                        total: nonzeros=81520, allocated nonzeros=81520
-                            block size is 1
-                linear system matrix = precond matrix:
-                Mat Object: (fc_fieldsplit_velocity_) 1 MPI process
-                  type: seqaij
-                  rows=2046, cols=2046
-                  total: nonzeros=34952, allocated nonzeros=34952
-                  total number of mallocs used during MatSetValues calls=0
-                    using I-node routines: found 1085 nodes, limit used is 5
+            KSP solver for A00 block viewable with the additional option -fc_fieldsplit_velocity_ksp_view
             A01
               Mat Object: 1 MPI process
                 type: seqaij
@@ -376,33 +350,7 @@ PC Object: (fc_) 1 MPI process
                 total: nonzeros=7936, allocated nonzeros=7936
                 total number of mallocs used during MatSetValues calls=0
                   not using I-node routines
-            KSP of A00
-              KSP Object: (fc_fieldsplit_velocity_) 1 MPI process
-                type: cg
-                maximum iterations=10000, initial guess is zero
-                tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
-                left preconditioning
-                using PRECONDITIONED norm type for convergence test
-              PC Object: (fc_fieldsplit_velocity_) 1 MPI process
-                type: cholesky
-                  out-of-place factorization
-                  tolerance for zero pivot 2.22045e-14
-                  matrix ordering: nd
-                  factor fill ratio given 5., needed 4.40672
-                    Factored matrix follows:
-                      Mat Object: (fc_fieldsplit_velocity_) 1 MPI process
-                        type: seqsbaij
-                        rows=2046, cols=2046
-                        package used to perform factorization: petsc
-                        total: nonzeros=81520, allocated nonzeros=81520
-                            block size is 1
-                linear system matrix = precond matrix:
-                Mat Object: (fc_fieldsplit_velocity_) 1 MPI process
-                  type: seqaij
-                  rows=2046, cols=2046
-                  total: nonzeros=34952, allocated nonzeros=34952
-                  total number of mallocs used during MatSetValues calls=0
-                    using I-node routines: found 1085 nodes, limit used is 5
+            KSP solver for A00 block viewable with the additional option -fc_fieldsplit_velocity_ksp_view
             A01
               Mat Object: 1 MPI process
                 type: seqaij

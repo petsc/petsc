@@ -34,10 +34,7 @@ PetscErrorCode MatView_SchurComplement(Mat N, PetscViewer viewer)
   PetscCall(PetscViewerASCIIPushTab(viewer));
   PetscCall(MatView(Na->C, viewer));
   PetscCall(PetscViewerASCIIPopTab(viewer));
-  PetscCall(PetscViewerASCIIPrintf(viewer, "KSP of A00\n"));
-  PetscCall(PetscViewerASCIIPushTab(viewer));
-  PetscCall(KSPView(Na->ksp, viewer));
-  PetscCall(PetscViewerASCIIPopTab(viewer));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "KSP solver for A00 block viewable with the additional option -%sksp_view\n", ((PetscObject)Na->ksp)->prefix ? ((PetscObject)Na->ksp)->prefix : NULL));
   PetscCall(PetscViewerASCIIPrintf(viewer, "A01\n"));
   PetscCall(PetscViewerASCIIPushTab(viewer));
   PetscCall(MatView(Na->B, viewer));

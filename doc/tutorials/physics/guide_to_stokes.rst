@@ -499,41 +499,7 @@ In order to see exactly what solver we have employed, we can use the ``-snes_vie
                      total: nonzeros=122, allocated nonzeros=122
                      total number of mallocs used during MatSetValues calls=0
                        not using I-node routines
-                 KSP of A00
-                   KSP Object: (fieldsplit_velocity_) 1 MPI process
-                     type: gmres
-                       restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
-                       happy breakdown tolerance 1e-30
-                     maximum iterations=10000, initial guess is zero
-                     tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
-                     left preconditioning
-                     using PRECONDITIONED norm type for convergence test
-                   PC Object: (fieldsplit_velocity_) 1 MPI process
-                     type: lu
-                       out-of-place factorization
-                       tolerance for zero pivot 2.22045e-14
-                       matrix ordering: nd
-                       factor fill ratio given 5., needed 1.15761
-                         Factored matrix follows:
-                           Mat Object: 1 MPI process
-                             type: seqaij
-                             rows=30, cols=30
-                             package used to perform factorization: petsc
-                             total: nonzeros=426, allocated nonzeros=426
-                               using I-node routines: found 17 nodes, limit used is 5
-                     linear system matrix followed by preconditioner matrix:
-                     Mat Object: 1 MPI process
-                       type: seqaij
-                       rows=30, cols=30
-                       total: nonzeros=368, allocated nonzeros=368
-                       total number of mallocs used during MatSetValues calls=0
-                         using I-node routines: found 20 nodes, limit used is 5
-                     Mat Object: (fieldsplit_velocity_) 1 MPI process
-                       type: seqaij
-                       rows=30, cols=30
-                       total: nonzeros=368, allocated nonzeros=368
-                       total number of mallocs used during MatSetValues calls=0
-                         using I-node routines: found 20 nodes, limit used is 5
+                 KSP solver for A00 block viewable with the additional option -fc_fieldsplit_velocity_ksp_view
                  A01
                    Mat Object: 1 MPI process
                      type: seqaij
