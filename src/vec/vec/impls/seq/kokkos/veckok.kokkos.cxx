@@ -16,7 +16,7 @@
 #include <../src/vec/vec/impls/seq/kokkos/veckokkosimpl.hpp>
 
 template <class MemorySpace>
-PetscErrorCode VecGetKokkosView_Private(Vec v, PetscScalarKokkosViewType<MemorySpace> *kv, PetscBool overwrite)
+static PetscErrorCode VecGetKokkosView_Private(Vec v, PetscScalarKokkosViewType<MemorySpace> *kv, PetscBool overwrite)
 {
   Vec_Kokkos *veckok = static_cast<Vec_Kokkos *>(v->spptr);
 
@@ -32,7 +32,7 @@ PetscErrorCode VecGetKokkosView_Private(Vec v, PetscScalarKokkosViewType<MemoryS
 }
 
 template <class MemorySpace>
-PetscErrorCode VecRestoreKokkosView_Private(Vec v, PetscScalarKokkosViewType<MemorySpace> *kv, PetscBool overwrite)
+static PetscErrorCode VecRestoreKokkosView_Private(Vec v, PetscScalarKokkosViewType<MemorySpace> *kv, PetscBool overwrite)
 {
   Vec_Kokkos *veckok = static_cast<Vec_Kokkos *>(v->spptr);
 
@@ -1255,6 +1255,8 @@ static PetscErrorCode VecCopySyncState_Kokkos_Private(Vec xin, Vec yout)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+static PetscErrorCode VecCreateSeqKokkosWithArrays_Private(MPI_Comm, PetscInt, PetscInt, const PetscScalar[], const PetscScalar[], Vec *);
+
 /* Internal routine shared by VecGetSubVector_{SeqKokkos,MPIKokkos} */
 PetscErrorCode VecGetSubVector_Kokkos_Private(Vec x, PetscBool xIsMPI, IS is, Vec *y)
 {
@@ -1387,6 +1389,26 @@ static PetscErrorCode VecSetValuesCOO_SeqKokkos(Vec x, const PetscScalar v[], In
 
   if (imode == INSERT_VALUES) PetscCall(VecRestoreKokkosViewWrite(x, &xv));
   else PetscCall(VecRestoreKokkosView(x, &xv));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/* Duplicate layout etc but not the values in the input vector */
+PetscErrorCode VecDuplicate_SeqKokkos(Vec win, Vec *v)
+{
+  PetscFunctionBegin;
+  PetscCall(VecDuplicate_Seq(win, v)); /* It also dups ops of win */
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+PetscErrorCode VecDestroy_SeqKokkos(Vec v)
+{
+  Vec_Kokkos *veckok = static_cast<Vec_Kokkos *>(v->spptr);
+  Vec_Seq    *vecseq = static_cast<Vec_Seq *>(v->data);
+
+  PetscFunctionBegin;
+  delete veckok;
+  v->spptr = NULL;
+  if (vecseq) PetscCall(VecDestroy_Seq(v));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1546,7 +1568,7 @@ PetscErrorCode VecCreateSeqKokkosWithArray(MPI_Comm comm, PetscInt bs, PetscInt 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PETSC_INTERN PetscErrorCode VecConvert_Seq_SeqKokkos_inplace(Vec v)
+PetscErrorCode VecConvert_Seq_SeqKokkos_inplace(Vec v)
 {
   Vec_Seq *vecseq;
 
@@ -1589,7 +1611,7 @@ PETSC_INTERN PetscErrorCode VecConvert_Seq_SeqKokkos_inplace(Vec v)
    PETSc does NOT free the array when the vector is destroyed via VecDestroy().
    Caller should not free the array until the vector is destroyed.
 */
-PetscErrorCode VecCreateSeqKokkosWithArrays_Private(MPI_Comm comm, PetscInt bs, PetscInt n, const PetscScalar harray[], const PetscScalar darray[], Vec *v)
+static PetscErrorCode VecCreateSeqKokkosWithArrays_Private(MPI_Comm comm, PetscInt bs, PetscInt n, const PetscScalar harray[], const PetscScalar darray[], Vec *v)
 {
   PetscMPIInt size;
   Vec         w;
@@ -1641,25 +1663,5 @@ PetscErrorCode VecCreateSeqKokkos(MPI_Comm comm, PetscInt n, Vec *v)
   PetscCall(VecCreate(comm, v));
   PetscCall(VecSetSizes(*v, n, n));
   PetscCall(VecSetType(*v, VECSEQKOKKOS)); /* Calls VecCreate_SeqKokkos */
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-/* Duplicate layout etc but not the values in the input vector */
-PetscErrorCode VecDuplicate_SeqKokkos(Vec win, Vec *v)
-{
-  PetscFunctionBegin;
-  PetscCall(VecDuplicate_Seq(win, v)); /* It also dups ops of win */
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-PetscErrorCode VecDestroy_SeqKokkos(Vec v)
-{
-  Vec_Kokkos *veckok = static_cast<Vec_Kokkos *>(v->spptr);
-  Vec_Seq    *vecseq = static_cast<Vec_Seq *>(v->data);
-
-  PetscFunctionBegin;
-  delete veckok;
-  v->spptr = NULL;
-  if (vecseq) PetscCall(VecDestroy_Seq(v));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

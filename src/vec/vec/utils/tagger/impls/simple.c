@@ -2,7 +2,7 @@
 #include <petsc/private/vecimpl.h> /*I "petscvec.h" I*/
 #include "../src/vec/vec/utils/tagger/impls/simple.h"
 
-PetscErrorCode VecTaggerDestroy_Simple(VecTagger tagger)
+static PetscErrorCode VecTaggerDestroy_Simple(VecTagger tagger)
 {
   VecTagger_Simple *smpl = (VecTagger_Simple *)tagger->data;
 
@@ -39,7 +39,7 @@ PetscErrorCode VecTaggerSetFromOptions_Simple(VecTagger tagger, PetscOptionItems
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode VecTaggerSetUp_Simple(VecTagger tagger)
+static PetscErrorCode VecTaggerSetUp_Simple(VecTagger tagger)
 {
   VecTagger_Simple *smpl = (VecTagger_Simple *)tagger->data;
 

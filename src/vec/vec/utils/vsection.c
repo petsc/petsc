@@ -156,7 +156,7 @@ $   VecSetValuesSectionF90(vec, section, point, values, mode, ierr)
 
 .seealso: `PetscSection`, `PetscSectionCreate()`, `VecGetValuesSection()`
 @*/
-PetscErrorCode VecSetValuesSection(Vec v, PetscSection s, PetscInt point, PetscScalar values[], InsertMode mode)
+PetscErrorCode VecSetValuesSection(Vec v, PetscSection s, PetscInt point, const PetscScalar values[], InsertMode mode)
 {
   PetscScalar    *baseArray, *array;
   const PetscBool doInsert    = mode == INSERT_VALUES || mode == INSERT_ALL_VALUES || mode == INSERT_BC_VALUES ? PETSC_TRUE : PETSC_FALSE;

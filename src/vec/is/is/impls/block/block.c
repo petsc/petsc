@@ -379,12 +379,38 @@ static PetscErrorCode ISToGeneral_Block(IS inis)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static struct _ISOps myops = {ISGetIndices_Block, ISRestoreIndices_Block, ISInvertPermutation_Block, ISSort_Block, ISSortRemoveDups_Block, ISSorted_Block, ISDuplicate_Block, ISDestroy_Block, ISView_Block, ISLoad_Default, ISCopy_Block, ISToGeneral_Block, ISOnComm_Block, ISSetBlockSize_Block, NULL, ISLocate_Block,
-                              /* we can have specialized local routines for determining properties,
-                                * but unless the block size is the same on each process (which is not guaranteed at
-                                * the moment), then trying to do something specialized for global properties is too
-                                * complicated */
-                              ISSortedLocal_Block, NULL, ISUniqueLocal_Block, NULL, ISPermutationLocal_Block, NULL, ISIntervalLocal_Block, NULL};
+// clang-format off
+static const struct _ISOps myops = {
+  PetscDesignatedInitializer(getindices, ISGetIndices_Block),
+  PetscDesignatedInitializer(restoreindices, ISRestoreIndices_Block),
+  PetscDesignatedInitializer(invertpermutation, ISInvertPermutation_Block),
+  PetscDesignatedInitializer(sort, ISSort_Block),
+  PetscDesignatedInitializer(sortremovedups, ISSortRemoveDups_Block),
+  PetscDesignatedInitializer(sorted, ISSorted_Block),
+  PetscDesignatedInitializer(duplicate, ISDuplicate_Block),
+  PetscDesignatedInitializer(destroy, ISDestroy_Block),
+  PetscDesignatedInitializer(view, ISView_Block),
+  PetscDesignatedInitializer(load, ISLoad_Default),
+  PetscDesignatedInitializer(copy, ISCopy_Block),
+  PetscDesignatedInitializer(togeneral, ISToGeneral_Block),
+  PetscDesignatedInitializer(oncomm, ISOnComm_Block),
+  PetscDesignatedInitializer(setblocksize, ISSetBlockSize_Block),
+  PetscDesignatedInitializer(contiguous, NULL),
+  PetscDesignatedInitializer(locate, ISLocate_Block),
+  /* we can have specialized local routines for determining properties,
+   * but unless the block size is the same on each process (which is not guaranteed at
+   * the moment), then trying to do something specialized for global properties is too
+   * complicated */
+  PetscDesignatedInitializer(sortedlocal, ISSortedLocal_Block),
+  PetscDesignatedInitializer(sortedglobal, NULL),
+  PetscDesignatedInitializer(uniquelocal, ISUniqueLocal_Block),
+  PetscDesignatedInitializer(uniqueglobal, NULL),
+  PetscDesignatedInitializer(permlocal, ISPermutationLocal_Block),
+  PetscDesignatedInitializer(permglobal, NULL),
+  PetscDesignatedInitializer(intervallocal, ISIntervalLocal_Block),
+  PetscDesignatedInitializer(intervalglobal, NULL)
+};
+// clang-format on
 
 /*@
   ISBlockSetIndices - Set integers representing blocks of indices in an index set of `ISType` `ISBLOCK`
@@ -639,7 +665,7 @@ static PetscErrorCode ISBlockGetSize_Block(IS is, PetscInt *size)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PETSC_EXTERN PetscErrorCode ISCreate_Block(IS is)
+PETSC_INTERN PetscErrorCode ISCreate_Block(IS is)
 {
   IS_Block *sub;
 

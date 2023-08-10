@@ -1,5 +1,5 @@
-#ifndef __VECKOKKOSIMPL_HPP
-#define __VECKOKKOSIMPL_HPP
+#ifndef PETSC_VECKOKKOSIMPL_HPP
+#define PETSC_VECKOKKOSIMPL_HPP
 
 #include <../src/vec/vec/impls/mpi/pvecimpl.h>
 #include <petsc/private/vecimpl_kokkos.hpp>
@@ -115,7 +115,7 @@ PETSC_INTERN PetscErrorCode VecPointwiseDivide_SeqKokkos(Vec, Vec, Vec);
 PETSC_INTERN PetscErrorCode VecWAXPY_SeqKokkos(Vec, PetscScalar, Vec, Vec);
 PETSC_INTERN PetscErrorCode VecMDot_SeqKokkos(Vec, PetscInt, const Vec[], PetscScalar *);
 PETSC_INTERN PetscErrorCode VecMTDot_SeqKokkos(Vec, PetscInt, const Vec[], PetscScalar *);
-PETSC_EXTERN PetscErrorCode VecSet_SeqKokkos(Vec, PetscScalar);
+PETSC_INTERN PetscErrorCode VecSet_SeqKokkos(Vec, PetscScalar);
 PETSC_INTERN PetscErrorCode VecMAXPY_SeqKokkos(Vec, PetscInt, const PetscScalar *, Vec *);
 PETSC_INTERN PetscErrorCode VecAXPBYPCZ_SeqKokkos(Vec, PetscScalar, PetscScalar, PetscScalar, Vec, Vec);
 PETSC_INTERN PetscErrorCode VecPointwiseMult_SeqKokkos(Vec, Vec, Vec);
@@ -125,20 +125,18 @@ PETSC_INTERN PetscErrorCode VecReplaceArray_SeqKokkos(Vec, const PetscScalar *);
 PETSC_INTERN PetscErrorCode VecDot_SeqKokkos(Vec, Vec, PetscScalar *);
 PETSC_INTERN PetscErrorCode VecTDot_SeqKokkos(Vec, Vec, PetscScalar *);
 PETSC_INTERN PetscErrorCode VecScale_SeqKokkos(Vec, PetscScalar);
-PETSC_EXTERN PetscErrorCode VecCopy_SeqKokkos(Vec, Vec);
+PETSC_INTERN PetscErrorCode VecCopy_SeqKokkos(Vec, Vec);
 PETSC_INTERN PetscErrorCode VecSwap_SeqKokkos(Vec, Vec);
-PETSC_EXTERN PetscErrorCode VecAXPY_SeqKokkos(Vec, PetscScalar, Vec);
+PETSC_INTERN PetscErrorCode VecAXPY_SeqKokkos(Vec, PetscScalar, Vec);
 PETSC_INTERN PetscErrorCode VecAXPBY_SeqKokkos(Vec, PetscScalar, PetscScalar, Vec);
-PETSC_INTERN PetscErrorCode VecDuplicate_SeqKokkos(Vec, Vec *);
 PETSC_INTERN PetscErrorCode VecConjugate_SeqKokkos(Vec xin);
 PETSC_INTERN PetscErrorCode VecNorm_SeqKokkos(Vec, NormType, PetscReal *);
 PETSC_INTERN PetscErrorCode VecErrorWeightedNorms_SeqKokkos(Vec, Vec, Vec, NormType, PetscReal, Vec, PetscReal, Vec, PetscReal, PetscReal *, PetscInt *, PetscReal *, PetscInt *, PetscReal *, PetscInt *);
-PETSC_EXTERN PetscErrorCode VecCreate_SeqKokkos(Vec);
+PETSC_INTERN PetscErrorCode VecCreate_SeqKokkos(Vec);
 PETSC_INTERN PetscErrorCode VecCreate_SeqKokkos_Private(Vec, const PetscScalar *);
 PETSC_INTERN PetscErrorCode VecCreate_MPIKokkos(Vec);
 PETSC_INTERN PetscErrorCode VecCreate_MPIKokkos_Private(Vec, PetscBool, PetscInt, const PetscScalar *);
 PETSC_INTERN PetscErrorCode VecCreate_Kokkos(Vec);
-PETSC_INTERN PetscErrorCode VecDestroy_SeqKokkos(Vec);
 PETSC_INTERN PetscErrorCode VecAYPX_SeqKokkos(Vec, PetscScalar, Vec);
 PETSC_INTERN PetscErrorCode VecSetRandom_SeqKokkos(Vec, PetscRandom);
 PETSC_INTERN PetscErrorCode VecGetLocalVector_SeqKokkos(Vec, Vec);

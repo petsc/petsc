@@ -15,7 +15,7 @@ typedef struct {
   PetscInt *petscPerm;
 } AO_Mapping;
 
-PetscErrorCode AODestroy_Mapping(AO ao)
+static PetscErrorCode AODestroy_Mapping(AO ao)
 {
   AO_Mapping *aomap = (AO_Mapping *)ao->data;
 
@@ -25,7 +25,7 @@ PetscErrorCode AODestroy_Mapping(AO ao)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode AOView_Mapping(AO ao, PetscViewer viewer)
+static PetscErrorCode AOView_Mapping(AO ao, PetscViewer viewer)
 {
   AO_Mapping *aomap = (AO_Mapping *)ao->data;
   PetscMPIInt rank;
@@ -44,7 +44,7 @@ PetscErrorCode AOView_Mapping(AO ao, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode AOPetscToApplication_Mapping(AO ao, PetscInt n, PetscInt *ia)
+static PetscErrorCode AOPetscToApplication_Mapping(AO ao, PetscInt n, PetscInt *ia)
 {
   AO_Mapping *aomap = (AO_Mapping *)ao->data;
   PetscInt   *app   = aomap->app;
@@ -79,7 +79,7 @@ PetscErrorCode AOPetscToApplication_Mapping(AO ao, PetscInt n, PetscInt *ia)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode AOApplicationToPetsc_Mapping(AO ao, PetscInt n, PetscInt *ia)
+static PetscErrorCode AOApplicationToPetsc_Mapping(AO ao, PetscInt n, PetscInt *ia)
 {
   AO_Mapping *aomap = (AO_Mapping *)ao->data;
   PetscInt   *app   = aomap->app;
@@ -114,7 +114,7 @@ PetscErrorCode AOApplicationToPetsc_Mapping(AO ao, PetscInt n, PetscInt *ia)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static struct _AOOps AOps = {
+static const struct _AOOps AOps = {
   PetscDesignatedInitializer(view, AOView_Mapping),
   PetscDesignatedInitializer(destroy, AODestroy_Mapping),
   PetscDesignatedInitializer(petsctoapplication, AOPetscToApplication_Mapping),

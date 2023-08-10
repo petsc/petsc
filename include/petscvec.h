@@ -410,6 +410,7 @@ PETSC_EXTERN PetscFunctionList VecList;
 PETSC_EXTERN PetscErrorCode    VecSetType(Vec, VecType);
 PETSC_EXTERN PetscErrorCode    VecGetType(Vec, VecType *);
 PETSC_EXTERN PetscErrorCode    VecRegister(const char[], PetscErrorCode (*)(Vec));
+PETSC_EXTERN PetscErrorCode    VecRegisterAll(void);
 
 PETSC_EXTERN PetscErrorCode VecScatterBegin(VecScatter, Vec, Vec, InsertMode, ScatterMode);
 PETSC_EXTERN PetscErrorCode VecScatterEnd(VecScatter, Vec, Vec, InsertMode, ScatterMode);
@@ -808,7 +809,7 @@ PETSC_EXTERN PetscErrorCode VecSetLayout(Vec, PetscLayout);
 
 PETSC_EXTERN PetscErrorCode PetscSectionVecView(PetscSection, Vec, PetscViewer);
 PETSC_EXTERN PetscErrorCode VecGetValuesSection(Vec, PetscSection, PetscInt, PetscScalar **);
-PETSC_EXTERN PetscErrorCode VecSetValuesSection(Vec, PetscSection, PetscInt, PetscScalar[], InsertMode);
+PETSC_EXTERN PetscErrorCode VecSetValuesSection(Vec, PetscSection, PetscInt, const PetscScalar[], InsertMode);
 PETSC_EXTERN PetscErrorCode PetscSectionVecNorm(PetscSection, PetscSection, Vec, NormType, PetscReal[]);
 
 /*S
@@ -849,6 +850,7 @@ typedef const char *VecTaggerType;
 PETSC_EXTERN PetscClassId      VEC_TAGGER_CLASSID;
 PETSC_EXTERN PetscFunctionList VecTaggerList;
 PETSC_EXTERN PetscErrorCode    VecTaggerRegister(const char[], PetscErrorCode (*)(VecTagger));
+PETSC_EXTERN PetscErrorCode    VecTaggerRegisterAll(void);
 
 PETSC_EXTERN PetscErrorCode VecTaggerCreate(MPI_Comm, VecTagger *);
 PETSC_EXTERN PetscErrorCode VecTaggerSetBlockSize(VecTagger, PetscInt);

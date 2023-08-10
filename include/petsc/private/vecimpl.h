@@ -1,20 +1,17 @@
+#ifndef PETSC_VECIMPL_H
+#define PETSC_VECIMPL_H
 
 /*
-   This private file should not be included in users' code.
-   Defines the fields shared by all vector implementations.
-
+  This private file should not be included in users' code.  Defines the fields shared by all
+  vector implementations.
 */
-
-#ifndef __VECIMPL_H
-#define __VECIMPL_H
 
 #include <petscvec.h>
 #include <petsc/private/petscimpl.h>
 
-PETSC_EXTERN PetscBool      VecRegisterAllCalled;
-PETSC_EXTERN PetscErrorCode VecRegisterAll(void);
-PETSC_EXTERN MPI_Op         MPIU_MAXLOC;
-PETSC_EXTERN MPI_Op         MPIU_MINLOC;
+PETSC_INTERN PetscBool VecRegisterAllCalled;
+PETSC_EXTERN MPI_Op    MPIU_MAXLOC;
+PETSC_EXTERN MPI_Op    MPIU_MINLOC;
 
 /* ----------------------------------------------------------------------------*/
 
@@ -218,7 +215,7 @@ PETSC_EXTERN PetscLogEvent VEC_CUDACopyFromGPU;
 PETSC_EXTERN PetscLogEvent VEC_HIPCopyToGPU;
 PETSC_EXTERN PetscLogEvent VEC_HIPCopyFromGPU;
 
-PETSC_EXTERN PetscErrorCode VecView_Seq(Vec, PetscViewer);
+PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode VecView_Seq(Vec, PetscViewer);
 #if defined(PETSC_HAVE_VIENNACL)
 PETSC_EXTERN PetscErrorCode VecViennaCLAllocateCheckHost(Vec v);
 PETSC_EXTERN PetscErrorCode VecViennaCLCopyFromGPU(Vec v);
@@ -237,24 +234,25 @@ PETSC_EXTERN PetscErrorCode VecViennaCLCopyFromGPU(Vec v);
 PETSC_EXTERN PetscErrorCode VecGetRootType_Private(Vec, VecType *);
 
 /* Default obtain and release vectors; can be used by any implementation */
-PETSC_EXTERN PetscErrorCode VecDuplicateVecs_Default(Vec, PetscInt, Vec *[]);
-PETSC_EXTERN PetscErrorCode VecDestroyVecs_Default(PetscInt, Vec[]);
-PETSC_EXTERN PetscErrorCode VecView_Binary(Vec, PetscViewer);
-PETSC_EXTERN PetscErrorCode VecLoad_Binary(Vec, PetscViewer);
-PETSC_EXTERN PetscErrorCode VecLoad_Default(Vec, PetscViewer);
+PETSC_INTERN PetscErrorCode VecDuplicateVecs_Default(Vec, PetscInt, Vec *[]);
+PETSC_INTERN PetscErrorCode VecDestroyVecs_Default(PetscInt, Vec[]);
+PETSC_INTERN PetscErrorCode VecView_Binary(Vec, PetscViewer);
 
-PETSC_EXTERN PetscInt NormIds[7]; /* map from NormType to IDs used to cache/retrieve values of norms */
+PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode VecLoad_Default(Vec, PetscViewer);
+
+PETSC_INTERN PetscInt NormIds[7]; /* map from NormType to IDs used to cache/retrieve values of norms */
 
 PETSC_INTERN PetscErrorCode VecStashCreate_Private(MPI_Comm, PetscInt, VecStash *);
 PETSC_INTERN PetscErrorCode VecStashDestroy_Private(VecStash *);
-PETSC_EXTERN PetscErrorCode VecStashExpand_Private(VecStash *, PetscInt);
 PETSC_INTERN PetscErrorCode VecStashScatterEnd_Private(VecStash *);
 PETSC_INTERN PetscErrorCode VecStashSetInitialSize_Private(VecStash *, PetscInt);
 PETSC_INTERN PetscErrorCode VecStashGetInfo_Private(VecStash *, PetscInt *, PetscInt *);
-PETSC_INTERN PetscErrorCode VecStashScatterBegin_Private(VecStash *, PetscInt *);
+PETSC_INTERN PetscErrorCode VecStashScatterBegin_Private(VecStash *, const PetscInt *);
 PETSC_INTERN PetscErrorCode VecStashScatterGetMesg_Private(VecStash *, PetscMPIInt *, PetscInt **, PetscScalar **, PetscInt *);
 PETSC_INTERN PetscErrorCode VecStashSortCompress_Private(VecStash *);
 PETSC_INTERN PetscErrorCode VecStashGetOwnerList_Private(VecStash *, PetscLayout, PetscMPIInt *, PetscMPIInt **);
+
+PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode VecStashExpand_Private(VecStash *, PetscInt);
 
 /*
   VecStashValue_Private - inserts a single value into the stash.
@@ -308,8 +306,8 @@ PETSC_EXTERN PetscErrorCode VecMatlabEnginePut_Default(PetscObject, void *);
 PETSC_EXTERN PetscErrorCode VecMatlabEngineGet_Default(PetscObject, void *);
 #endif
 
-PETSC_EXTERN PetscErrorCode PetscSectionGetField_Internal(PetscSection, PetscSection, Vec, PetscInt, PetscInt, PetscInt, IS *, Vec *);
-PETSC_EXTERN PetscErrorCode PetscSectionRestoreField_Internal(PetscSection, PetscSection, Vec, PetscInt, PetscInt, PetscInt, IS *, Vec *);
+PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode PetscSectionGetField_Internal(PetscSection, PetscSection, Vec, PetscInt, PetscInt, PetscInt, IS *, Vec *);
+PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode PetscSectionRestoreField_Internal(PetscSection, PetscSection, Vec, PetscInt, PetscInt, PetscInt, IS *, Vec *);
 
 #define VecCheckSameLocalSize(x, ar1, y, ar2) \
   do { \
@@ -352,10 +350,9 @@ struct _p_VecTagger {
   PetscBool setupcalled;
 };
 
-PETSC_EXTERN PetscBool      VecTaggerRegisterAllCalled;
-PETSC_EXTERN PetscErrorCode VecTaggerRegisterAll(void);
-PETSC_EXTERN PetscErrorCode VecTaggerComputeIS_FromBoxes(VecTagger, Vec, IS *, PetscBool *);
-PETSC_EXTERN PetscMPIInt    Petsc_Reduction_keyval;
+PETSC_INTERN PetscBool      VecTaggerRegisterAllCalled;
+PETSC_INTERN PetscErrorCode VecTaggerComputeIS_FromBoxes(VecTagger, Vec, IS *, PetscBool *);
+PETSC_INTERN PetscMPIInt    Petsc_Reduction_keyval;
 
 PETSC_INTERN PetscInt       VecGetSubVectorSavedStateId;
 PETSC_INTERN PetscErrorCode VecGetSubVectorContiguityAndBS_Private(Vec, IS, PetscBool *, PetscInt *, PetscInt *);
@@ -380,18 +377,17 @@ PETSC_INTERN PetscErrorCode VecConvert_MPI_MPIHIP_inplace(Vec);
 #endif
 
 #if defined(PETSC_HAVE_KOKKOS)
-PETSC_INTERN PetscErrorCode VecCreateSeqKokkosWithArrays_Private(MPI_Comm, PetscInt, PetscInt, const PetscScalar *, const PetscScalar *, Vec *);
 PETSC_INTERN PetscErrorCode VecCreateMPIKokkosWithArrays_Private(MPI_Comm, PetscInt, PetscInt, PetscInt, const PetscScalar *, const PetscScalar *, Vec *);
 PETSC_INTERN PetscErrorCode VecConvert_Seq_SeqKokkos_inplace(Vec);
 PETSC_INTERN PetscErrorCode VecConvert_MPI_MPIKokkos_inplace(Vec);
 #endif
 
-PETSC_EXTERN PetscErrorCode VecCreateWithLayout_Private(PetscLayout, Vec *);
+PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode VecCreateWithLayout_Private(PetscLayout, Vec *);
 
 /* std::upper_bound(): Given a sorted array, return index of the first element in range [first,last) whose value
    is greater than value, or last if there is no such element.
 */
-static inline PetscErrorCode PetscSortedIntUpperBound(PetscInt *array, PetscCount first, PetscCount last, PetscInt value, PetscCount *upper)
+static inline PetscErrorCode PetscSortedIntUpperBound(const PetscInt *array, PetscCount first, PetscCount last, PetscInt value, PetscCount *upper)
 {
   PetscCount it, step, count = last - first;
 
@@ -409,4 +405,4 @@ static inline PetscErrorCode PetscSortedIntUpperBound(PetscInt *array, PetscCoun
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-#endif /* __VECIMPL_H */
+#endif /* PETSCVECIMPL_H */

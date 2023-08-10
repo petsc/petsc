@@ -98,7 +98,7 @@ PetscErrorCode PFStringSetFunction(PF pf, const char *string)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PETSC_EXTERN PetscErrorCode PFCreate_String(PF pf, void *value)
+PETSC_INTERN PetscErrorCode PFCreate_String(PF pf, void *value)
 {
   PetscFunctionBegin;
   PetscCall(PFStringSetFunction(pf, (const char *)value));

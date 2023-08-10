@@ -217,7 +217,7 @@ PetscErrorCode VecStashExpand_Private(VecStash *stash, PetscInt incr)
   ranges specified blocked global indices, and for the regular stash in
   the proper global indices.
 */
-PetscErrorCode VecStashScatterBegin_Private(VecStash *stash, PetscInt *owners)
+PetscErrorCode VecStashScatterBegin_Private(VecStash *stash, const PetscInt *owners)
 {
   PetscMPIInt  size = stash->size, tag1 = stash->tag1, tag2 = stash->tag2;
   PetscInt    *owner, *start, *nprocs, nsends, nreceives;

@@ -9,10 +9,6 @@
 #include <petsc/private/glvisvecimpl.h>
 #include <petscblaslapack.h>
 
-#if defined(PETSC_HAVE_HDF5)
-extern PetscErrorCode VecView_MPI_HDF5(Vec, PetscViewer);
-#endif
-
 static PetscErrorCode VecPointwiseApply_Seq(Vec win, Vec xin, Vec yin, PetscScalar (*const func)(PetscScalar, PetscScalar))
 {
   const PetscInt n = win->map->n;
@@ -513,7 +509,7 @@ PetscErrorCode VecView_Seq_Matlab(Vec vec, PetscViewer viewer)
 }
 #endif
 
-PETSC_EXTERN PetscErrorCode VecView_Seq(Vec xin, PetscViewer viewer)
+PetscErrorCode VecView_Seq(Vec xin, PetscViewer viewer)
 {
   PetscBool isdraw, iascii, issocket, isbinary;
 #if defined(PETSC_HAVE_MATHEMATICA)
@@ -755,7 +751,7 @@ PetscErrorCode VecDuplicate_Seq(Vec win, Vec *V)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static struct _VecOps DvOps = {
+static const struct _VecOps DvOps = {
   PetscDesignatedInitializer(duplicate, VecDuplicate_Seq), /* 1 */
   PetscDesignatedInitializer(duplicatevecs, VecDuplicateVecs_Default),
   PetscDesignatedInitializer(destroyvecs, VecDestroyVecs_Default),
