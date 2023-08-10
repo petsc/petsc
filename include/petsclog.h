@@ -366,7 +366,7 @@ static inline PETSC_UNUSED PetscErrorCode PetscLogEventEnd_Internal(PetscLogEven
   #define PetscLogEventEnd(e, o1, o2, o3, o4) PetscLogEventEnd_Internal(e, (PetscObject)(o1), (PetscObject)(o2), (PetscObject)(o3), (PetscObject)(o4))
 
 /* Object functions */
-static inline PETSC_UNUSED PetscErrorCode PetscLogObjectCreate_Internal(PetscObject o)
+static inline PETSC_UNUSED PetscErrorCode PetscLogObjectCreate(PetscObject o)
 {
   if (petsc_log_state) {
     for (int i = 0; i < PETSC_LOG_HANDLER_MAX; i++) {
@@ -379,9 +379,8 @@ static inline PETSC_UNUSED PetscErrorCode PetscLogObjectCreate_Internal(PetscObj
   }
   return PETSC_SUCCESS;
 }
-  #define PetscLogObjectCreate(o) PetscLogObjectCreate_Internal((PetscObject)(o))
 
-static inline PETSC_UNUSED PetscErrorCode PetscLogObjectDestroy_Internal(PetscObject o)
+static inline PETSC_UNUSED PetscErrorCode PetscLogObjectDestroy(PetscObject o)
 {
   if (petsc_log_state) {
     for (int i = 0; i < PETSC_LOG_HANDLER_MAX; i++) {
@@ -394,7 +393,6 @@ static inline PETSC_UNUSED PetscErrorCode PetscLogObjectDestroy_Internal(PetscOb
   }
   return PETSC_SUCCESS;
 }
-  #define PetscLogObjectDestroy(o) PetscLogObjectDestroy_Internal((PetscObject)(o))
 
   /*
    Flop counting:  We count each arithmetic operation (e.g., addition, multiplication) separately.
