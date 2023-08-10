@@ -129,6 +129,7 @@ typedef struct _p_PetscObject {
   PetscOptions options; /* options database used, NULL means default */
   PetscBool    optionsprinted;
   PetscBool    donotPetscObjectPrintClassNamePrefixType;
+  PetscBool    persistent;
 } _p_PetscObject;
 
 #define PETSCHEADER(ObjectOps) \

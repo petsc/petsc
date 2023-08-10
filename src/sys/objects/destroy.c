@@ -349,6 +349,7 @@ PetscErrorCode PetscRunRegisteredFinalizers(void)
     PetscCall(PetscArrayzero(&regfin[reg_count].thunk, 1));
     switch (top.type) {
     case PETSC_FINALIZE_OBJECT:
+      top.thunk.obj->persistent = PETSC_FALSE;
       PetscCall(PetscObjectDestroy(&top.thunk.obj));
       break;
     case PETSC_FINALIZE_FUNC:

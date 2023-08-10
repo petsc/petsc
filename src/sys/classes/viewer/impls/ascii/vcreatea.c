@@ -22,6 +22,9 @@ PetscMPIInt Petsc_Viewer_Stdout_keyval = MPI_KEYVAL_INVALID;
   Level: beginner
 
   Note:
+  This object is destroyed in `PetscFinalize()`, `PetscViewerDestroy()` should never be called on it
+
+  Developer Note:
   This should be used in all PETSc source code instead of `PETSC_VIEWER_STDOUT_()` since it allows error checking
 
 .seealso: [](sec_viewers), `PETSC_VIEWER_DRAW_()`, `PetscViewerASCIIOpen()`, `PETSC_VIEWER_STDERR_`, `PETSC_VIEWER_STDOUT_WORLD`,
@@ -39,6 +42,7 @@ PetscErrorCode PetscViewerASCIIGetStdout(MPI_Comm comm, PetscViewer *viewer)
   PetscCallMPI(MPI_Comm_get_attr(ncomm, Petsc_Viewer_Stdout_keyval, (void **)viewer, (PetscMPIInt *)&flg));
   if (!flg) { /* PetscViewer not yet created */
     PetscCall(PetscViewerASCIIOpen(ncomm, "stdout", viewer));
+    ((PetscObject)*viewer)->persistent = PETSC_TRUE;
     PetscCall(PetscObjectRegisterDestroy((PetscObject)*viewer));
     PetscCallMPI(MPI_Comm_set_attr(ncomm, Petsc_Viewer_Stdout_keyval, (void *)*viewer));
   }
@@ -58,7 +62,9 @@ PetscErrorCode PetscViewerASCIIGetStdout(MPI_Comm comm, PetscViewer *viewer)
 
    Level: beginner
 
-   Note:
+   Notes:
+   This object is destroyed in `PetscFinalize()`, `PetscViewerDestroy()` should never be called on it
+
    Unlike almost all other PETSc routines, this does not return
    an error code. Usually used in the form
 $      XXXView(XXX object, PETSC_VIEWER_STDOUT_(comm));
@@ -101,6 +107,9 @@ PetscMPIInt Petsc_Viewer_Stderr_keyval = MPI_KEYVAL_INVALID;
   Level: beginner
 
   Note:
+  This object is destroyed in `PetscFinalize()`, `PetscViewerDestroy()` should never be called on it
+
+  Developer Note:
   This should be used in all PETSc source code instead of `PETSC_VIEWER_STDERR_()` since it allows error checking
 
 .seealso: [](sec_viewers), `PETSC_VIEWER_DRAW_()`, `PetscViewerASCIIOpen()`, `PETSC_VIEWER_STDERR_`, `PETSC_VIEWER_STDERR_WORLD`,
@@ -118,6 +127,7 @@ PetscErrorCode PetscViewerASCIIGetStderr(MPI_Comm comm, PetscViewer *viewer)
   PetscCallMPI(MPI_Comm_get_attr(ncomm, Petsc_Viewer_Stderr_keyval, (void **)viewer, (PetscMPIInt *)&flg));
   if (!flg) { /* PetscViewer not yet created */
     PetscCall(PetscViewerASCIIOpen(ncomm, "stderr", viewer));
+    ((PetscObject)*viewer)->persistent = PETSC_TRUE;
     PetscCall(PetscObjectRegisterDestroy((PetscObject)*viewer));
     PetscCallMPI(MPI_Comm_set_attr(ncomm, Petsc_Viewer_Stderr_keyval, (void *)*viewer));
   }
@@ -138,6 +148,8 @@ PetscErrorCode PetscViewerASCIIGetStderr(MPI_Comm comm, PetscViewer *viewer)
    Level: beginner
 
    Notes:
+   This object is destroyed in `PetscFinalize()`, `PetscViewerDestroy()` should never be called on it
+
    Unlike almost all other PETSc routines, this does not return
    an error code. Usually used in the form
 $      XXXView(XXX object, PETSC_VIEWER_STDERR_(comm));

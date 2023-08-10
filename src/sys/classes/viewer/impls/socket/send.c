@@ -488,6 +488,8 @@ PetscMPIInt Petsc_Viewer_Socket_keyval = MPI_KEYVAL_INVALID;
 -   `PETSC_VIEWER_SOCKET_MACHINE` - machine name
 
      Notes:
+     This object is destroyed in `PetscFinalize()`, `PetscViewerDestroy()` should never be called on it
+
      Unlike almost all other PETSc routines, `PETSC_VIEWER_SOCKET_()` does not return
      an error code, it returns NULL if it fails. The  `PETSCVIEWERSOCKET`  `PetscViewer` is usually used in the form
 $       XXXView(XXX object, PETSC_VIEWER_SOCKET_(comm));
@@ -532,7 +534,8 @@ PetscViewer PETSC_VIEWER_SOCKET_(MPI_Comm comm)
     PetscFunctionReturn(NULL);
   }
   if (!flg) { /* PetscViewer not yet created */
-    ierr = PetscViewerSocketOpen(ncomm, NULL, 0, &viewer);
+    ierr                              = PetscViewerSocketOpen(ncomm, NULL, 0, &viewer);
+    ((PetscObject)viewer)->persistent = PETSC_TRUE;
     if (ierr) {
       ierr = PetscError(PETSC_COMM_SELF, __LINE__, "PETSC_VIEWER_SOCKET_", __FILE__, PETSC_ERR_PLIB, PETSC_ERROR_REPEAT, " ");
       PetscFunctionReturn(NULL);

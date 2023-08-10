@@ -103,6 +103,7 @@ PetscErrorCode PetscHeaderDestroy_Private(PetscObject obj, PetscBool clear_for_r
 {
   PetscFunctionBegin;
   PetscValidHeader(obj, 1);
+  PetscCheck(!obj->persistent, PetscObjectComm((PetscObject)obj), PETSC_ERR_ARG_WRONGSTATE, "Cannot destroy this object, it is destroyed automatically in PetscFinalize()");
   PetscCall(PetscComposedQuantitiesDestroy(obj));
   if (PetscMemoryCollectMaximumUsage) {
     PetscLogDouble usage;
