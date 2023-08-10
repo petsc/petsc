@@ -156,11 +156,12 @@ help-lint:
 	-@echo "   make test-lint <options> <test only options>"
 	-@echo
 	-@echo "Options:"
-	-@echo "  V=[0, 1, 2, 3]                           Enable increasingly verbose output"
-	-@echo "  LINTER_OPTIONS=\"--opt1 --opt2 ...\"     See above for available options"
+	-@echo "  V=[0, 1, 2, 3]                        Enable increasingly verbose output"
+	-@echo "  LINTER_OPTIONS=\"--opt1 --opt2 ...\"  See above for available options"
 	-@echo
 	-@echo "Test Only Options:"
-	-@echo "  REPLACE=[1,0]                          Enable or disable replacing test output"
+	-@echo "  LINTER_SKIP_MYPY=[1, 0]               Enable or disable mypy checks"
+	-@echo "  REPLACE=[1, 0]                        Enable or disable replacing test output"
 	-@echo
 
 checkvermin_exist:
@@ -177,9 +178,13 @@ checkmypy_exist:
           false; \
         fi
 
+LINTER_SKIP_MYPY ?= 0
+
 test-lint: checkvermin_exist checkmypy_exist
 	vermin --config-file ${PETSC_DIR}/lib/petsc/bin/maint/petsclinter/pyproject.toml -- ${PETSC_DIR}/lib/petsc/bin/maint/petsclinter
-	cd ${PETSC_DIR}/lib/petsc/bin/maint/petsclinter && mypy .
+	if [[ "$(LINTER_SKIP_MYPY)" == "0" ]]; then \
+          cd ${PETSC_DIR}/lib/petsc/bin/maint/petsclinter && mypy . ; \
+        fi
 	${PYTHON} ${PETSC_DIR}/lib/petsc/bin/maint/petsclinter/petsclinter/pkg_consistency_checks.py
 	${PYTHON} ${PETSC_DIR}/lib/petsc/bin/maint/petsclinter ${PETSC_DIR}/src/sys/tests/linter --test -j0 --werror --replace=${REPLACE} --verbose=${V} $(LINTER_OPTIONS)
 
