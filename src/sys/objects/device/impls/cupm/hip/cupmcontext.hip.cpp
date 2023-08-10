@@ -43,3 +43,16 @@ PetscErrorCode PetscHIPSOLVERGetHandle(hipsolverHandle_t *handle)
   PetscCall(PetscDeviceContextGetSOLVERHandle_Internal(dctx, handle));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
+
+PetscErrorCode PetscGetCurrentHIPStream(hipStream_t *stream)
+{
+  PetscDeviceContext dctx;
+  void              *handle;
+
+  PetscFunctionBegin;
+  PetscAssertPointer(stream, 1);
+  PetscCall(PetscDeviceContextGetCurrentContextAssertType_Internal(&dctx, PETSC_DEVICE_HIP));
+  PetscCall(PetscDeviceContextGetStreamHandle(dctx, &handle));
+  *stream = *(hipStream_t *)handle;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}

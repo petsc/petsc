@@ -2,6 +2,7 @@
 #define _MHYPRE_H
 
 #include <petscsys.h>
+#include <petscmat.h>
 #include <../src/vec/vec/impls/hypre/vhyp.h>
 #include <HYPRE_IJ_mv.h>
 
@@ -23,6 +24,13 @@ typedef struct {
   /* An agent matrix which does the MatSetValuesCOO() job for IJMatrix */
   Mat       cooMat;
   PetscBool cooMatAttached;
+
+  /* helper array storing row ids on device, used in MatZeroRows */
+  PetscInt *rows_d;
 } Mat_HYPRE;
+
+PETSC_INTERN PetscErrorCode MatZeroRows_CUDA(PetscInt n, const PetscInt *rows, const HYPRE_Int *i, const HYPRE_Int *j, HYPRE_Complex *a, HYPRE_Complex diag);
+PETSC_INTERN PetscErrorCode MatZeroRows_HIP(PetscInt n, const PetscInt *rows, const HYPRE_Int *i, const HYPRE_Int *j, HYPRE_Complex *a, HYPRE_Complex diag);
+PETSC_INTERN PetscErrorCode MatZeroRows_Kokkos(PetscInt n, const PetscInt *rows, const HYPRE_Int *i, const HYPRE_Int *j, HYPRE_Complex *a, HYPRE_Complex diag);
 
 #endif

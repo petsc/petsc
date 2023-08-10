@@ -1360,6 +1360,7 @@ static PetscErrorCode MatDestroy_HYPRE(Mat A)
 
   PetscCall(MatStashDestroy_Private(&A->stash));
   PetscCall(PetscFree(hA->array));
+  if (hA->rows_d) PetscStackCallExternalVoid("hypre_Free", hypre_Free(hA->rows_d, HYPRE_MEMORY_DEVICE));
 
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatConvert_hypre_aij_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatConvert_hypre_is_C", NULL));
@@ -2022,16 +2023,30 @@ static PetscErrorCode MatZeroRows_HYPRE_CSRMatrix(hypre_CSRMatrix *hA, PetscInt 
   i = hypre_CSRMatrixI(hA);
   j = hypre_CSRMatrixJ(hA);
   a = hypre_CSRMatrixData(hA);
+#if defined(PETSC_HAVE_HYPRE_DEVICE)
+  if (HYPRE_MEMORY_DEVICE == hypre_CSRMatrixMemoryLocation(hA)) {
+  #if defined(HYPRE_USING_CUDA)
+    MatZeroRows_CUDA(N, rows, i, j, a, diag);
+  #elif defined(HYPRE_USING_HIP)
+    MatZeroRows_HIP(N, rows, i, j, a, diag);
+  #elif defined(PETSC_HAVE_KOKKOS)
+    MatZeroRows_Kokkos(N, rows, i, j, a, diag);
+  #else
+    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "No support for MatZeroRows on a hypre matrix in this memory location");
+  #endif
+  } else
+#endif
+  {
+    for (ii = 0; ii < N; ii++) {
+      HYPRE_Int jj, ibeg, iend, irow;
 
-  for (ii = 0; ii < N; ii++) {
-    HYPRE_Int jj, ibeg, iend, irow;
-
-    irow = rows[ii];
-    ibeg = i[irow];
-    iend = i[irow + 1];
-    for (jj = ibeg; jj < iend; jj++)
-      if (j[jj] == irow) a[jj] = diag;
-      else a[jj] = 0.0;
+      irow = rows[ii];
+      ibeg = i[irow];
+      iend = i[irow + 1];
+      for (jj = ibeg; jj < iend; jj++)
+        if (j[jj] == irow) a[jj] = diag;
+        else a[jj] = 0.0;
+    }
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -2039,7 +2054,7 @@ static PetscErrorCode MatZeroRows_HYPRE_CSRMatrix(hypre_CSRMatrix *hA, PetscInt 
 static PetscErrorCode MatZeroRows_HYPRE(Mat A, PetscInt N, const PetscInt rows[], PetscScalar diag, Vec x, Vec b)
 {
   hypre_ParCSRMatrix *parcsr;
-  PetscInt           *lrows, len;
+  PetscInt           *lrows, len, *lrows2;
   HYPRE_Complex       hdiag;
 
   PetscFunctionBegin;
@@ -2049,10 +2064,29 @@ static PetscErrorCode MatZeroRows_HYPRE(Mat A, PetscInt N, const PetscInt rows[]
   PetscCall(MatHYPREGetParCSR_HYPRE(A, &parcsr));
   /* get locally owned rows */
   PetscCall(MatZeroRowsMapLocal_Private(A, N, rows, &len, &lrows));
+
+#if defined(PETSC_HAVE_HYPRE_DEVICE)
+  if (HYPRE_MEMORY_DEVICE == hypre_CSRMatrixMemoryLocation(hypre_ParCSRMatrixDiag(parcsr))) {
+    Mat_HYPRE *hA = (Mat_HYPRE *)A->data;
+    PetscInt   m;
+    PetscCall(MatGetLocalSize(A, &m, NULL));
+    if (!hA->rows_d) {
+      hA->rows_d = hypre_TAlloc(PetscInt, m, HYPRE_MEMORY_DEVICE);
+      if (m) PetscCheck(hA->rows_d, PETSC_COMM_SELF, PETSC_ERR_MEM, "HYPRE_TAlloc failed");
+    }
+    PetscCheck(len <= m, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Too many rows in rows[]");
+    PetscStackCallExternalVoid("hypre_Memcpy", hypre_Memcpy(hA->rows_d, lrows, sizeof(PetscInt) * len, HYPRE_MEMORY_DEVICE, HYPRE_MEMORY_HOST));
+    lrows2 = hA->rows_d;
+  } else
+#endif
+  {
+    lrows2 = lrows;
+  }
+
   /* zero diagonal part */
-  PetscCall(MatZeroRows_HYPRE_CSRMatrix(hypre_ParCSRMatrixDiag(parcsr), len, lrows, hdiag));
+  PetscCall(MatZeroRows_HYPRE_CSRMatrix(hypre_ParCSRMatrixDiag(parcsr), len, lrows2, hdiag));
   /* zero off-diagonal part */
-  PetscCall(MatZeroRows_HYPRE_CSRMatrix(hypre_ParCSRMatrixOffd(parcsr), len, lrows, 0.0));
+  PetscCall(MatZeroRows_HYPRE_CSRMatrix(hypre_ParCSRMatrixOffd(parcsr), len, lrows2, 0.0));
 
   PetscCall(PetscFree(lrows));
   PetscFunctionReturn(PETSC_SUCCESS);
