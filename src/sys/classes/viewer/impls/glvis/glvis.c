@@ -227,7 +227,7 @@ static PetscErrorCode PetscViewerGLVisGetNewWindow_Private(PetscViewer viewer, P
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PetscViewerGLVisPause_Private(PetscViewer viewer)
+PetscErrorCode PetscViewerGLVisPause_Internal(PetscViewer viewer)
 {
   PetscViewerGLVis socket = (PetscViewerGLVis)viewer->data;
 
@@ -237,7 +237,7 @@ PetscErrorCode PetscViewerGLVisPause_Private(PetscViewer viewer)
 }
 
 /* DM specific support */
-PetscErrorCode PetscViewerGLVisSetDM_Private(PetscViewer viewer, PetscObject dm)
+PetscErrorCode PetscViewerGLVisSetDM_Internal(PetscViewer viewer, PetscObject dm)
 {
   PetscViewerGLVis socket = (PetscViewerGLVis)viewer->data;
 
@@ -256,7 +256,7 @@ PetscErrorCode PetscViewerGLVisSetDM_Private(PetscViewer viewer, PetscObject dm)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PetscViewerGLVisGetDMWindow_Private(PetscViewer viewer, PetscViewer *view)
+PetscErrorCode PetscViewerGLVisGetDMWindow_Internal(PetscViewer viewer, PetscViewer *view)
 {
   PetscViewerGLVis socket = (PetscViewerGLVis)viewer->data;
 
@@ -288,7 +288,7 @@ PetscErrorCode PetscViewerGLVisGetDMWindow_Private(PetscViewer viewer, PetscView
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PetscViewerGLVisRestoreDMWindow_Private(PetscViewer viewer, PetscViewer *view)
+PetscErrorCode PetscViewerGLVisRestoreDMWindow_Internal(PetscViewer viewer, PetscViewer *view)
 {
   PetscViewerGLVis socket = (PetscViewerGLVis)viewer->data;
 
@@ -308,7 +308,7 @@ PetscErrorCode PetscViewerGLVisRestoreDMWindow_Private(PetscViewer viewer, Petsc
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PetscViewerGLVisGetType_Private(PetscViewer viewer, PetscViewerGLVisType *type)
+PetscErrorCode PetscViewerGLVisGetType_Internal(PetscViewer viewer, PetscViewerGLVisType *type)
 {
   PetscViewerGLVis socket = (PetscViewerGLVis)viewer->data;
 
@@ -319,7 +319,7 @@ PetscErrorCode PetscViewerGLVisGetType_Private(PetscViewer viewer, PetscViewerGL
 }
 
 /* This function is only relevant in the SOCKET_GLIVS case. The status is computed the first time it is requested, as GLVis currently has issues when connecting the first time through the socket */
-PetscErrorCode PetscViewerGLVisGetStatus_Private(PetscViewer viewer, PetscViewerGLVisStatus *sockstatus)
+PetscErrorCode PetscViewerGLVisGetStatus_Internal(PetscViewer viewer, PetscViewerGLVisStatus *sockstatus)
 {
   PetscViewerGLVis socket = (PetscViewerGLVis)viewer->data;
 
@@ -341,7 +341,7 @@ PetscErrorCode PetscViewerGLVisGetStatus_Private(PetscViewer viewer, PetscViewer
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PetscViewerGLVisGetDM_Private(PetscViewer viewer, PetscObject *dm)
+PetscErrorCode PetscViewerGLVisGetDM_Internal(PetscViewer viewer, PetscObject *dm)
 {
   PetscViewerGLVis socket = (PetscViewerGLVis)viewer->data;
 
@@ -350,7 +350,7 @@ PetscErrorCode PetscViewerGLVisGetDM_Private(PetscViewer viewer, PetscObject *dm
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PetscViewerGLVisGetFields_Private(PetscViewer viewer, PetscInt *nfield, const char **fec[], PetscInt *spacedim[], PetscErrorCode (**g2lfield)(PetscObject, PetscInt, PetscObject[], void *), PetscObject *Ufield[], void **userctx)
+PetscErrorCode PetscViewerGLVisGetFields_Internal(PetscViewer viewer, PetscInt *nfield, const char **fec[], PetscInt *spacedim[], PetscErrorCode (**g2lfield)(PetscObject, PetscInt, PetscObject[], void *), PetscObject *Ufield[], void **userctx)
 {
   PetscViewerGLVis socket = (PetscViewerGLVis)viewer->data;
 
@@ -368,7 +368,7 @@ PetscErrorCode PetscViewerGLVisGetFields_Private(PetscViewer viewer, PetscInt *n
    PETSC_VIEWER_GLVIS_DUMP   : it returns a new viewer every time
    PETSC_VIEWER_GLVIS_SOCKET : it returns the socket, and creates it if not yet done.
 */
-PetscErrorCode PetscViewerGLVisGetWindow_Private(PetscViewer viewer, PetscInt wid, PetscViewer *view)
+PetscErrorCode PetscViewerGLVisGetWindow_Internal(PetscViewer viewer, PetscInt wid, PetscViewer *view)
 {
   PetscViewerGLVis       socket = (PetscViewerGLVis)viewer->data;
   PetscViewerGLVisStatus status;
@@ -424,7 +424,7 @@ PetscErrorCode PetscViewerGLVisGetWindow_Private(PetscViewer viewer, PetscInt wi
                    with the socket (i.e. SIGPIPE when a user closes the popup window)
                    and that the caller already handled it (see VecView_GLVis).
 */
-PetscErrorCode PetscViewerGLVisRestoreWindow_Private(PetscViewer viewer, PetscInt wid, PetscViewer *view)
+PetscErrorCode PetscViewerGLVisRestoreWindow_Internal(PetscViewer viewer, PetscInt wid, PetscViewer *view)
 {
   PetscViewerGLVis socket = (PetscViewerGLVis)viewer->data;
 
@@ -448,7 +448,7 @@ PetscErrorCode PetscViewerGLVisRestoreWindow_Private(PetscViewer viewer, PetscIn
 }
 
 /* default window appearance in the PETSC_VIEWER_GLVIS_SOCKET case */
-PetscErrorCode PetscViewerGLVisInitWindow_Private(PetscViewer viewer, PetscBool mesh, PetscInt dim, const char *name)
+PetscErrorCode PetscViewerGLVisInitWindow_Internal(PetscViewer viewer, PetscBool mesh, PetscInt dim, const char *name)
 {
   PetscViewerGLVisInfo info;
   PetscContainer       container;

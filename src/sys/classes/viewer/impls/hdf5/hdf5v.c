@@ -2,6 +2,7 @@
 
 static PetscErrorCode PetscViewerHDF5Traverse_Internal(PetscViewer, const char[], PetscBool, PetscBool *, H5O_type_t *);
 static PetscErrorCode PetscViewerHDF5HasAttribute_Internal(PetscViewer, const char[], const char[], PetscBool *);
+static PetscErrorCode PetscViewerHDF5GetGroup_Internal(PetscViewer, const char *[]);
 
 /*@C
   PetscViewerHDF5GetGroup - Get the current HDF5 group name (full path), set with `PetscViewerHDF5PushGroup()`/`PetscViewerHDF5PopGroup()`.
@@ -754,7 +755,7 @@ PetscErrorCode PetscViewerHDF5PopGroup(PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PetscViewerHDF5GetGroup_Internal(PetscViewer viewer, const char *name[])
+static PetscErrorCode PetscViewerHDF5GetGroup_Internal(PetscViewer viewer, const char *name[])
 {
   PetscViewer_HDF5 *hdf5 = (PetscViewer_HDF5 *)viewer->data;
 
@@ -1306,7 +1307,7 @@ PetscErrorCode PetscViewerHDF5ReadObjectAttribute(PetscViewer viewer, PetscObjec
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static inline PetscErrorCode PetscViewerHDF5Traverse_Inner_Internal(hid_t h5, const char name[], PetscBool createGroup, PetscBool *exists_)
+static PetscErrorCode PetscViewerHDF5Traverse_Inner_Internal(hid_t h5, const char name[], PetscBool createGroup, PetscBool *exists_)
 {
   htri_t exists;
   hid_t  group;

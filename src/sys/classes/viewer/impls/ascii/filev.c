@@ -36,7 +36,7 @@ static PetscErrorCode PetscViewerFileClose_ASCII(PetscViewer viewer)
 }
 
 /* ----------------------------------------------------------------------*/
-PetscErrorCode PetscViewerDestroy_ASCII(PetscViewer viewer)
+static PetscErrorCode PetscViewerDestroy_ASCII(PetscViewer viewer)
 {
   PetscViewer_ASCII *vascii = (PetscViewer_ASCII *)viewer->data;
   PetscViewerLink   *vlink;
@@ -88,7 +88,7 @@ PetscErrorCode PetscViewerDestroy_ASCII(PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PetscViewerDestroy_ASCII_SubViewer(PetscViewer viewer)
+static PetscErrorCode PetscViewerDestroy_ASCII_SubViewer(PetscViewer viewer)
 {
   PetscViewer_ASCII *vascii = (PetscViewer_ASCII *)viewer->data;
 
@@ -97,7 +97,7 @@ PetscErrorCode PetscViewerDestroy_ASCII_SubViewer(PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PetscViewerFlush_ASCII(PetscViewer viewer)
+static PetscErrorCode PetscViewerFlush_ASCII(PetscViewer viewer)
 {
   PetscViewer_ASCII *vascii = (PetscViewer_ASCII *)viewer->data;
   MPI_Comm           comm;
@@ -203,7 +203,7 @@ PetscErrorCode PetscViewerASCIIGetPointer(PetscViewer viewer, FILE **fd)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PetscViewerFileGetMode_ASCII(PetscViewer viewer, PetscFileMode *mode)
+static PetscErrorCode PetscViewerFileGetMode_ASCII(PetscViewer viewer, PetscFileMode *mode)
 {
   PetscViewer_ASCII *vascii = (PetscViewer_ASCII *)viewer->data;
 
@@ -212,7 +212,7 @@ PetscErrorCode PetscViewerFileGetMode_ASCII(PetscViewer viewer, PetscFileMode *m
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PetscViewerFileSetMode_ASCII(PetscViewer viewer, PetscFileMode mode)
+static PetscErrorCode PetscViewerFileSetMode_ASCII(PetscViewer viewer, PetscFileMode mode)
 {
   PetscViewer_ASCII *vascii = (PetscViewer_ASCII *)viewer->data;
 
@@ -770,7 +770,7 @@ PetscErrorCode PetscViewerFileGetName(PetscViewer viewer, const char **name)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PetscViewerFileGetName_ASCII(PetscViewer viewer, const char **name)
+static PetscErrorCode PetscViewerFileGetName_ASCII(PetscViewer viewer, const char **name)
 {
   PetscViewer_ASCII *vascii = (PetscViewer_ASCII *)viewer->data;
 
@@ -780,7 +780,7 @@ PetscErrorCode PetscViewerFileGetName_ASCII(PetscViewer viewer, const char **nam
 }
 
 #include <errno.h>
-PetscErrorCode PetscViewerFileSetName_ASCII(PetscViewer viewer, const char name[])
+static PetscErrorCode PetscViewerFileSetName_ASCII(PetscViewer viewer, const char name[])
 {
   size_t             len;
   char               fname[PETSC_MAX_PATH_LEN], *gz = NULL;
@@ -850,7 +850,7 @@ PetscErrorCode PetscViewerFileSetName_ASCII(PetscViewer viewer, const char name[
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PetscViewerGetSubViewer_ASCII(PetscViewer viewer, MPI_Comm subcomm, PetscViewer *outviewer)
+static PetscErrorCode PetscViewerGetSubViewer_ASCII(PetscViewer viewer, MPI_Comm subcomm, PetscViewer *outviewer)
 {
   PetscViewer_ASCII *vascii = (PetscViewer_ASCII *)viewer->data, *ovascii;
 
@@ -881,7 +881,7 @@ PetscErrorCode PetscViewerGetSubViewer_ASCII(PetscViewer viewer, MPI_Comm subcom
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PetscViewerRestoreSubViewer_ASCII(PetscViewer viewer, MPI_Comm comm, PetscViewer *outviewer)
+static PetscErrorCode PetscViewerRestoreSubViewer_ASCII(PetscViewer viewer, MPI_Comm comm, PetscViewer *outviewer)
 {
   PetscViewer_ASCII *ascii = (PetscViewer_ASCII *)viewer->data;
 
@@ -897,7 +897,7 @@ PetscErrorCode PetscViewerRestoreSubViewer_ASCII(PetscViewer viewer, MPI_Comm co
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PetscViewerView_ASCII(PetscViewer v, PetscViewer viewer)
+static PetscErrorCode PetscViewerView_ASCII(PetscViewer v, PetscViewer viewer)
 {
   PetscViewer_ASCII *ascii = (PetscViewer_ASCII *)v->data;
 

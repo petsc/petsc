@@ -31,7 +31,7 @@ static PetscErrorCode PetscViewerFileClose_ADIOS(PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PetscViewerDestroy_ADIOS(PetscViewer viewer)
+static PetscErrorCode PetscViewerDestroy_ADIOS(PetscViewer viewer)
 {
   PetscViewer_ADIOS *adios = (PetscViewer_ADIOS *)viewer->data;
 
@@ -44,7 +44,7 @@ PetscErrorCode PetscViewerDestroy_ADIOS(PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PetscViewerFileSetMode_ADIOS(PetscViewer viewer, PetscFileMode type)
+static PetscErrorCode PetscViewerFileSetMode_ADIOS(PetscViewer viewer, PetscFileMode type)
 {
   PetscViewer_ADIOS *adios = (PetscViewer_ADIOS *)viewer->data;
 
@@ -53,7 +53,7 @@ PetscErrorCode PetscViewerFileSetMode_ADIOS(PetscViewer viewer, PetscFileMode ty
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PetscViewerFileSetName_ADIOS(PetscViewer viewer, const char name[])
+static PetscErrorCode PetscViewerFileSetName_ADIOS(PetscViewer viewer, const char name[])
 {
   PetscViewer_ADIOS *adios = (PetscViewer_ADIOS *)viewer->data;
 

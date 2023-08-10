@@ -402,7 +402,7 @@ PetscErrorCode PetscViewerDrawOpen(MPI_Comm comm, const char display[], const ch
 
 #include <petsc/private/drawimpl.h>
 
-PetscErrorCode PetscViewerGetSubViewer_Draw(PetscViewer viewer, MPI_Comm comm, PetscViewer *sviewer)
+static PetscErrorCode PetscViewerGetSubViewer_Draw(PetscViewer viewer, MPI_Comm comm, PetscViewer *sviewer)
 {
   PetscMPIInt       rank;
   PetscInt          i;
@@ -445,7 +445,7 @@ PetscErrorCode PetscViewerGetSubViewer_Draw(PetscViewer viewer, MPI_Comm comm, P
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PetscViewerRestoreSubViewer_Draw(PetscViewer viewer, MPI_Comm comm, PetscViewer *sviewer)
+static PetscErrorCode PetscViewerRestoreSubViewer_Draw(PetscViewer viewer, MPI_Comm comm, PetscViewer *sviewer)
 {
   PetscMPIInt       rank;
   PetscInt          i;
@@ -481,7 +481,7 @@ PetscErrorCode PetscViewerRestoreSubViewer_Draw(PetscViewer viewer, MPI_Comm com
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PetscViewerSetFromOptions_Draw(PetscViewer v, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode PetscViewerSetFromOptions_Draw(PetscViewer v, PetscOptionItems *PetscOptionsObject)
 {
   PetscReal bounds[16];
   PetscInt  nbounds = 16;
@@ -495,7 +495,7 @@ PetscErrorCode PetscViewerSetFromOptions_Draw(PetscViewer v, PetscOptionItems *P
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PetscViewerView_Draw(PetscViewer viewer, PetscViewer v)
+static PetscErrorCode PetscViewerView_Draw(PetscViewer viewer, PetscViewer v)
 {
   PetscDraw         draw;
   PetscInt          i;

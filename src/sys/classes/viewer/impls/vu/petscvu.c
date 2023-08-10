@@ -31,7 +31,7 @@ static PetscErrorCode PetscViewerFileClose_VU(PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PetscViewerDestroy_VU(PetscViewer viewer)
+static PetscErrorCode PetscViewerDestroy_VU(PetscViewer viewer)
 {
   PetscViewer_VU *vu = (PetscViewer_VU *)viewer->data;
 
@@ -45,7 +45,7 @@ PetscErrorCode PetscViewerDestroy_VU(PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PetscViewerFlush_VU(PetscViewer viewer)
+static PetscErrorCode PetscViewerFlush_VU(PetscViewer viewer)
 {
   PetscMPIInt rank;
 

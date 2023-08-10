@@ -103,7 +103,7 @@ static PetscErrorCode PetscViewerFlush_VTK(PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PetscViewerFileSetName_VTK(PetscViewer viewer, const char name[])
+static PetscErrorCode PetscViewerFileSetName_VTK(PetscViewer viewer, const char name[])
 {
   PetscViewer_VTK *vtk = (PetscViewer_VTK *)viewer->data;
   PetscBool        isvtk, isvts, isvtu, isvtr;
@@ -138,7 +138,7 @@ PetscErrorCode PetscViewerFileSetName_VTK(PetscViewer viewer, const char name[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PetscViewerFileGetName_VTK(PetscViewer viewer, const char **name)
+static PetscErrorCode PetscViewerFileGetName_VTK(PetscViewer viewer, const char **name)
 {
   PetscViewer_VTK *vtk = (PetscViewer_VTK *)viewer->data;
   PetscFunctionBegin;
@@ -146,7 +146,7 @@ PetscErrorCode PetscViewerFileGetName_VTK(PetscViewer viewer, const char **name)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PetscViewerFileSetMode_VTK(PetscViewer viewer, PetscFileMode type)
+static PetscErrorCode PetscViewerFileSetMode_VTK(PetscViewer viewer, PetscFileMode type)
 {
   PetscViewer_VTK *vtk = (PetscViewer_VTK *)viewer->data;
 
@@ -155,7 +155,7 @@ PetscErrorCode PetscViewerFileSetMode_VTK(PetscViewer viewer, PetscFileMode type
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PetscViewerFileGetMode_VTK(PetscViewer viewer, PetscFileMode *type)
+static PetscErrorCode PetscViewerFileGetMode_VTK(PetscViewer viewer, PetscFileMode *type)
 {
   PetscViewer_VTK *vtk = (PetscViewer_VTK *)viewer->data;
 
@@ -164,7 +164,7 @@ PetscErrorCode PetscViewerFileGetMode_VTK(PetscViewer viewer, PetscFileMode *typ
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PetscViewerVTKAddField_VTK(PetscViewer viewer, PetscObject dm, PetscErrorCode (*PetscViewerVTKWriteFunction)(PetscObject, PetscViewer), PetscInt fieldnum, PetscViewerVTKFieldType fieldtype, PetscBool checkdm, PetscObject vec)
+static PetscErrorCode PetscViewerVTKAddField_VTK(PetscViewer viewer, PetscObject dm, PetscErrorCode (*PetscViewerVTKWriteFunction)(PetscObject, PetscViewer), PetscInt fieldnum, PetscViewerVTKFieldType fieldtype, PetscBool checkdm, PetscObject vec)
 {
   PetscViewer_VTK         *vtk = (PetscViewer_VTK *)viewer->data;
   PetscViewerVTKObjectLink link, tail = vtk->link;
@@ -190,7 +190,7 @@ PetscErrorCode PetscViewerVTKAddField_VTK(PetscViewer viewer, PetscObject dm, Pe
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PetscViewerVTKGetDM_VTK(PetscViewer viewer, PetscObject *dm)
+static PetscErrorCode PetscViewerVTKGetDM_VTK(PetscViewer viewer, PetscObject *dm)
 {
   PetscViewer_VTK *vtk = (PetscViewer_VTK *)viewer->data;
 
