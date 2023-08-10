@@ -1285,8 +1285,8 @@ PetscErrorCode DMLocatePoints_Plex(DM dm, Vec v, DMPointLocationType ltype, Pets
   if (hash) PetscCall(ISRestoreIndices(mesh->lbox->cells, &boxCells));
   if (ltype == DM_POINTLOCATION_NEAREST && hash && numFound < numPoints) {
     for (p = 0; p < numPoints; p++) {
-      const PetscScalar *point = &a[p * bs];
-      PetscReal          cpoint[3], diff[3], best[3] = {PETSC_MAX_REAL, PETSC_MAX_REAL, PETSC_MAX_REAL}, dist, distMax = PETSC_MAX_REAL;
+      const PetscScalar *point     = &a[p * bs];
+      PetscReal          cpoint[3] = {0, 0, 0}, diff[3], best[3] = {PETSC_MAX_REAL, PETSC_MAX_REAL, PETSC_MAX_REAL}, dist, distMax = PETSC_MAX_REAL;
       PetscInt           dbin[3] = {-1, -1, -1}, bin, cellOffset, d, bestc = -1;
 
       if (cells[p].index < 0) {
