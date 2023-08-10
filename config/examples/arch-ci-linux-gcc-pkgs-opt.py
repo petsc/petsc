@@ -23,7 +23,7 @@ configure_options = [
   '--download-suitesparse',
   '--download-triangle',
   '--download-cgns',
-  '--download-chaco',
+  #'--download-chaco', run with hdf5, exodus, but without chaco
   '--download-ctetgen',
   '--download-cmake',
   '--download-amrex',
