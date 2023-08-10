@@ -78,6 +78,8 @@ Changes: Development
 - Add ``PetscLogHandlerDump()``
 - Add ``PetscLogHandlerStageSetVisible()``
 - Add ``PetscLogHandlerStageGetVisible()``
+- Add ``PetscLogHandlerGetStagePerfInfo()``
+- Add ``PetscLogStageGetPerfInfo()``
 
 .. rubric:: PetscViewer:
 

@@ -373,6 +373,33 @@ PetscErrorCode PetscLogHandlerGetEventPerfInfo(PetscLogHandler handler, PetscLog
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@C
+  PetscLogHandlerGetStagePerfInfo - Get a direct reference to the `PetscEventPerfInfo` of a stage
+
+  Not collective
+
+  Input Parameters:
++ handler - a `PetscLogHandler`
+- stage   - a `PetscLogStage` (or `PETSC_DEFAULT` for the current stage)
+
+  Output Parameter:
+. stage_info - a pointer to a performance log for `stage` (or `NULL` if this handler does not use `PetscEventPerfInfo`
+               to record performance data); writing to `stage_info` will change the record in `handler`
+
+  Level: developer
+
+.seealso: [](ch_profiling), `PetscLogEventGetPerfInfo()`, `PETSCLOGHANDLERDEFAULT`
+@*/
+PetscErrorCode PetscLogHandlerGetStagePerfInfo(PetscLogHandler handler, PetscLogStage stage, PetscEventPerfInfo **stage_info)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(handler, PETSCLOGHANDLER_CLASSID, 1);
+  PetscAssertPointer(stage_info, 3);
+  *stage_info = NULL;
+  PetscTryMethod(handler, "PetscLogHandlerGetStagePerfInfo_C", (PetscLogHandler, PetscLogStage, PetscEventPerfInfo **), (handler, stage, stage_info));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 /*@
   PetscLogHandlerSetLogActions - Determines whether actions are logged for a log handler.
 

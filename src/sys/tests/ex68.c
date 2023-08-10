@@ -63,6 +63,17 @@ int main(int argc, char **argv)
 
   PetscCall(PetscLogEventEnd(unrelated_event, NULL, NULL, NULL, NULL));
   PetscCall(PetscLogStagePop());
+  { // test of PetscLogStageGetPerfInfo()
+    PetscLogHandler handler;
+
+    PetscCall(PetscLogGetDefaultHandler(&handler));
+    if (handler) {
+      PetscEventPerfInfo stage_info;
+
+      PetscCall(PetscLogStageGetPerfInfo(unrelated_stage, &stage_info));
+      (void)stage_info;
+    }
+  }
   PetscCall(PetscFinalize());
   return 0;
 }
