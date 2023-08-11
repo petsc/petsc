@@ -28,7 +28,9 @@ Install
           ``python -m pip install mpi4py petsc petsc4py``
     - Slackware: https://slackbuilds.org/repository/15.0/academic/petsc/?search=petsc
     - Spack: https://spack.io
-          ``spack install petsc``
+          - debug install - ``spack install petsc debug=True``
+          - install with some external packages - ``spack install petsc ~superlu-dist ~metis ~hypre ~hdf5 debug=False``
+          - optimized install -``spack install petsc cflags='-g -O3 -march=native -mtune=native' fflags='-g -O3 -march=native -mtune=native'  cxxflags='-g -O3 -march=native -mtune=native'  debug=False``
     - Ubuntu: https://packages.ubuntu.com/petsc-dev
           ``sudo apt install petsc-dev``
 
@@ -44,4 +46,3 @@ Information and tutorials on setting up a PETSc installation.
    multibuild
    external_software
    license
-
