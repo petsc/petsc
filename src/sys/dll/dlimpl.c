@@ -249,23 +249,25 @@ PetscErrorCode PetscDLSym(PetscDLHandle handle, const char symbol[], void **valu
         #if defined(PETSC_HAVE_DLOPEN)
           /* Attempt to retrieve the main executable's dlhandle. */
           {
+            #if !defined(PETSC_HAVE_RTLD_DEFAULT)
             int dlflags1 = 0, dlflags2 = 0;
-            #if defined(PETSC_HAVE_RTLD_LAZY)
+              #if defined(PETSC_HAVE_RTLD_LAZY)
               dlflags1 = RTLD_LAZY;
-            #endif /* PETSC_HAVE_RTLD_LAZY */
-            #if defined(PETSC_HAVE_RTLD_NOW)
+              #endif /* PETSC_HAVE_RTLD_LAZY */
+              #if defined(PETSC_HAVE_RTLD_NOW)
               if (!dlflags1) {
                 dlflags1 = RTLD_NOW;
               }
-            #endif /* PETSC_HAVE_RTLD_NOW */
-            #if defined(PETSC_HAVE_RTLD_LOCAL)
+              #endif /* PETSC_HAVE_RTLD_NOW */
+              #if defined(PETSC_HAVE_RTLD_LOCAL)
               dlflags2 = RTLD_LOCAL;
-            #endif /* PETSC_HAVE_RTLD_LOCAL */
-            #if defined(PETSC_HAVE_RTLD_GLOBAL)
+              #endif /* PETSC_HAVE_RTLD_LOCAL */
+              #if defined(PETSC_HAVE_RTLD_GLOBAL)
               if (!dlflags2) {
                 dlflags2 = RTLD_GLOBAL;
               }
-            #endif /* PETSC_HAVE_RTLD_GLOBAL */
+              #endif /* PETSC_HAVE_RTLD_GLOBAL */
+            #endif /* !PETSC_HAVE_RTLD_DEFAULT */
             #if defined(PETSC_HAVE_DLERROR)
               if (!(PETSC_RUNNING_ON_VALGRIND)) { dlerror(); /* clear any previous error; valgrind does not like this */ }
             #endif /* PETSC_HAVE_DLERROR */
@@ -280,7 +282,7 @@ PetscErrorCode PetscDLSym(PetscDLHandle handle, const char symbol[], void **valu
                   PetscCheck(!e, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Error opening main executable as a dynamic library:\n  Error message from dlopen(): '%s'", e);
                 }
               #endif /* PETSC_HAVE_DLERROR */
-            #endif /* PETSC_HAVE_RTLD_DEFAULT */
+            #endif /* !PETSC_HAVE_RTLD_DEFAULT */
           }
         #endif /* PETSC_HAVE_DLOPEN */
       }
