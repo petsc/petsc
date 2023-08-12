@@ -22,10 +22,10 @@ def processfile(petsc_dir,dir,file,implsClassAll,implsFuncAll):
 def loadstructfunctions(petsc_dir):
   '''Creates the list of structs and class functions'''
   import subprocess
-  implsClassAll = subprocess.check_output(['git', 'grep', 'struct\s\+_[pn]_[^\s]\+.*{', '--', '*.c', '*.cpp', '*.cu', '*.c', '*.h', '*.cxx'], cwd = petsc_dir).strip().decode('utf-8')
+  implsClassAll = subprocess.check_output(['git', 'grep', '-E', 'struct[[:space:]]+_[pn]_[^[:space:]]+.*\{', '--', '*.c', '*.cpp', '*.cu', '*.c', '*.h', '*.cxx'], cwd = petsc_dir).strip().decode('utf-8')
   implsClassAll = list(filter(lambda x: not (x.find('/tests/') > -1 or x.find('/tutorials') > -1 or x.find(';') > -1), implsClassAll.split('\n')))
 
-  implsFuncAll = subprocess.check_output(['git', 'grep', '-n', '^\(static \)\?\(PETSC_EXTERN \)\?\(PETSC_INTERN \)\?\(extern \)\?PetscErrorCode \+[^_ ]\+_[^_ ]\+(', '--', '*/impls/*.c', '*/impls/*.cpp', '*/impls/*.cu', '*/impls/*.c', '*/impls/*.h', '*/impls/*.cxx'], cwd = petsc_dir).strip().decode('utf-8')
+  implsFuncAll = subprocess.check_output(['git', 'grep', '-nE', '^(static )?(PETSC_EXTERN )?(PETSC_INTERN )?(extern )?PetscErrorCode +[^_ ]+_[^_ ]+\(', '--', '*/impls/*.c', '*/impls/*.cpp', '*/impls/*.cu', '*/impls/*.c', '*/impls/*.h', '*/impls/*.cxx'], cwd = petsc_dir).strip().decode('utf-8')
   implsFuncAll = list(filter(lambda x: not (x.find('_Private') > -1 or x.find('_private') > -1 or x.find(';') > -1), implsFuncAll.split('\n')))
   return (implsClassAll,implsFuncAll)
 
