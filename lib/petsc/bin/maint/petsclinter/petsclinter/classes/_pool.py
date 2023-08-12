@@ -568,7 +568,8 @@ def WorkerPool(num_workers: int, verbose: int) -> Union[SerialPool, ParallelPool
   the number logical cores for the current machine.
   """
   if num_workers < 0:
-    num_workers = max(mp.cpu_count() - 1, 1)
+    # take number of cores - 1, up to a maximum of 16 as not to overload big machines
+    num_workers = min(max(mp.cpu_count() - 1, 1), 16)
 
   if num_workers in (0, 1):
     if verbose:
