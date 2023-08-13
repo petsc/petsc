@@ -461,17 +461,19 @@ static PetscErrorCode PCHPDDMGetComplexities(PC pc, PetscReal *gc, PetscReal *oc
 
 static PetscErrorCode PCView_HPDDM(PC pc, PetscViewer viewer)
 {
-  PC_HPDDM    *data = (PC_HPDDM *)pc->data;
-  PetscViewer  subviewer;
-  PetscSubcomm subcomm;
-  PetscReal    oc, gc;
-  PetscInt     i, tabs;
-  PetscMPIInt  size, color, rank;
-  PetscBool    ascii;
+  PC_HPDDM         *data = (PC_HPDDM *)pc->data;
+  PetscViewer       subviewer;
+  PetscViewerFormat format;
+  PetscSubcomm      subcomm;
+  PetscReal         oc, gc;
+  PetscInt          i, tabs;
+  PetscMPIInt       size, color, rank;
+  PetscBool         flg;
+  const char       *name;
 
   PetscFunctionBegin;
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &ascii));
-  if (ascii) {
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &flg));
+  if (flg) {
     PetscCall(PetscViewerASCIIPrintf(viewer, "level%s: %" PetscInt_FMT "\n", data->N > 1 ? "s" : "", data->N));
     PetscCall(PCHPDDMGetComplexities(pc, &gc, &oc));
     if (data->N > 1) {
@@ -513,6 +515,39 @@ static PetscErrorCode PCView_HPDDM(PC pc, PetscViewer viewer)
         PetscCall(PetscViewerASCIIPopTab(viewer));
         PetscCall(PetscSubcommDestroy(&subcomm));
         PetscCall(PetscViewerFlush(viewer));
+      }
+    }
+    PetscCall(PetscViewerGetFormat(viewer, &format));
+    if (format == PETSC_VIEWER_ASCII_INFO_DETAIL) {
+      PetscCall(PetscViewerFileGetName(viewer, &name));
+      if (name) {
+        IS          is;
+        PetscInt    sizes[4] = {pc->mat->rmap->n, pc->mat->cmap->n, pc->mat->rmap->N, pc->mat->cmap->N};
+        char       *tmp;
+        std::string prefix, suffix;
+        size_t      pos;
+
+        PetscCall(PetscStrstr(name, ".", &tmp));
+        if (tmp) {
+          pos    = std::distance(const_cast<char *>(name), tmp);
+          prefix = std::string(name, pos);
+          suffix = std::string(name + pos + 1);
+        } else prefix = name;
+        if (data->aux) {
+          PetscCall(PetscViewerBinaryOpen(PETSC_COMM_SELF, std::string(prefix + "_aux_" + std::to_string(rank) + "_" + std::to_string(size) + (tmp ? ("." + suffix) : "")).c_str(), FILE_MODE_WRITE, &subviewer));
+          PetscCall(MatView(data->aux, subviewer));
+          PetscCall(PetscViewerDestroy(&subviewer));
+        }
+        if (data->is) {
+          PetscCall(PetscViewerBinaryOpen(PETSC_COMM_SELF, std::string(prefix + "_is_" + std::to_string(rank) + "_" + std::to_string(size) + (tmp ? ("." + suffix) : "")).c_str(), FILE_MODE_WRITE, &subviewer));
+          PetscCall(ISView(data->is, subviewer));
+          PetscCall(PetscViewerDestroy(&subviewer));
+        }
+        PetscCall(ISCreateGeneral(PETSC_COMM_SELF, PETSC_STATIC_ARRAY_LENGTH(sizes), sizes, PETSC_USE_POINTER, &is));
+        PetscCall(PetscViewerBinaryOpen(PETSC_COMM_SELF, std::string(prefix + "_sizes_" + std::to_string(rank) + "_" + std::to_string(size) + (tmp ? ("." + suffix) : "")).c_str(), FILE_MODE_WRITE, &subviewer));
+        PetscCall(ISView(is, subviewer));
+        PetscCall(PetscViewerDestroy(&subviewer));
+        PetscCall(ISDestroy(&is));
       }
     }
   }
@@ -1259,11 +1294,11 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
           } else PetscCall(MatScale(P, -1.0));
           if (diagonal) {
             PetscCall(MatDiagonalSet(P, diagonal, ADD_VALUES));
-            PetscCall(PCSetOperators(pc, P, P)); /* replace P by diag(P11) - A01' inv(diag(P00)) A01 */
+            PetscCall(PCSetOperators(pc, P, P)); /* replace P by diag(P11) - A01^T inv(diag(P00)) A01 */
             PetscCall(VecDestroy(&diagonal));
           } else {
             PetscCall(MatScale(N, -1.0));
-            PetscCall(PCSetOperators(pc, N, P)); /* replace P by - A01' inv(diag(P00)) A01 */
+            PetscCall(PCSetOperators(pc, N, P)); /* replace P by - A01^T inv(diag(P00)) A01 */
           }
           PetscCall(MatDestroy(&N));
           PetscCall(MatDestroy(&P));

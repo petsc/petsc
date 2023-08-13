@@ -241,6 +241,25 @@ int main(int argc, char **args)
       PetscCall(MatDestroy(&aux));
     }
   }
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-viewer", &flg, NULL));
+  if (flg) {
+    PetscCall(PetscObjectTypeCompare((PetscObject)pc, PCHPDDM, &flg));
+    if (flg) {
+      PetscCall(PetscStrncpy(dir, "XXXXXX", sizeof(dir)));
+      if (rank == 0) PetscCall(PetscMkdtemp(dir));
+      PetscCallMPI(MPI_Bcast(dir, 6, MPI_CHAR, 0, PETSC_COMM_WORLD));
+      for (PetscInt i = 0; i < 2; ++i) {
+        PetscCall(PetscSNPrintf(name, sizeof(name), "%s/%s", dir, (i == 0 ? "A" : "A.dat")));
+        PetscCall(PetscViewerASCIIOpen(PETSC_COMM_WORLD, name, &viewer));
+        PetscCall(PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_INFO_DETAIL));
+        PetscCall(PCView(pc, viewer));
+        PetscCall(PetscViewerPopFormat(viewer));
+        PetscCall(PetscViewerDestroy(&viewer));
+      }
+      PetscCallMPI(MPI_Barrier(PETSC_COMM_WORLD));
+      if (rank == 0) PetscCall(PetscRMTree(dir));
+    }
+  }
 #endif
   PetscCall(KSPDestroy(&ksp));
   PetscCall(MatDestroy(&A));
@@ -259,7 +278,7 @@ int main(int argc, char **args)
       requires: hpddm slepc datafilespath double !complex !defined(PETSC_USE_64BIT_INDICES) defined(PETSC_HAVE_DYNAMIC_LIBRARIES) defined(PETSC_USE_SHARED_LIBRARIES)
       suffix: define_subdomains
       nsize: 4
-      args: -ksp_rtol 1e-3 -ksp_converged_reason -pc_type {{asm hpddm}shared output} -pc_hpddm_coarse_sub_pc_type lu -sub_pc_type lu -pc_hpddm_define_subdomains -options_left no -load_dir ${DATAFILESPATH}/matrices/hpddm/GENEO
+      args: -ksp_rtol 1e-3 -ksp_converged_reason -pc_type {{asm hpddm}shared output} -pc_hpddm_coarse_sub_pc_type lu -sub_pc_type lu -pc_hpddm_define_subdomains -options_left no -load_dir ${DATAFILESPATH}/matrices/hpddm/GENEO -viewer
 
    testset:
       requires: hpddm slepc datafilespath double !complex !defined(PETSC_USE_64BIT_INDICES) defined(PETSC_HAVE_DYNAMIC_LIBRARIES) defined(PETSC_USE_SHARED_LIBRARIES)
