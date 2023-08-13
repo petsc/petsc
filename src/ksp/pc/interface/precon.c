@@ -1756,8 +1756,9 @@ PetscErrorCode PCViewFromOptions(PC A, PetscObject obj, const char name[])
 @*/
 PetscErrorCode PCView(PC pc, PetscViewer viewer)
 {
-  PCType    cstr;
-  PetscBool iascii, isstring, isbinary, isdraw;
+  PCType            cstr;
+  PetscViewerFormat format;
+  PetscBool         iascii, isstring, isbinary, isdraw, pop = PETSC_FALSE;
 #if defined(PETSC_HAVE_SAWS)
   PetscBool issaws;
 #endif
@@ -1783,7 +1784,11 @@ PetscErrorCode PCView(PC pc, PetscViewer viewer)
     PetscTryTypeMethod(pc, view, viewer);
     PetscCall(PetscViewerASCIIPopTab(viewer));
     if (pc->mat) {
-      PetscCall(PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_INFO));
+      PetscCall(PetscViewerGetFormat(viewer, &format));
+      if (format != PETSC_VIEWER_ASCII_INFO_DETAIL) {
+        PetscCall(PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_INFO));
+        pop = PETSC_TRUE;
+      }
       if (pc->pmat == pc->mat) {
         PetscCall(PetscViewerASCIIPrintf(viewer, "  linear system matrix = precond matrix:\n"));
         PetscCall(PetscViewerASCIIPushTab(viewer));
@@ -1800,7 +1805,7 @@ PetscErrorCode PCView(PC pc, PetscViewer viewer)
         if (pc->pmat) PetscCall(MatView(pc->pmat, viewer));
         PetscCall(PetscViewerASCIIPopTab(viewer));
       }
-      PetscCall(PetscViewerPopFormat(viewer));
+      if (pop) PetscCall(PetscViewerPopFormat(viewer));
     }
   } else if (isstring) {
     PetscCall(PCGetType(pc, &cstr));
