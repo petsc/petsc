@@ -765,7 +765,7 @@ PetscErrorCode ISAllGatherColors(MPI_Comm comm, PetscInt n, ISColoringValue *lin
   Input Parameters:
 + is   - the index set
 . nmin - the first index desired in the local part of the complement
-- nmax - the largest index desired in the local part of the complement (note that all indices in is must be greater or equal to nmin and less than nmax)
+- nmax - the largest index desired in the local part of the complement (note that all indices in `is` must be greater or equal to `nmin` and less than `nmax`)
 
   Output Parameter:
 . isout - the complement
@@ -777,7 +777,7 @@ PetscErrorCode ISAllGatherColors(MPI_Comm comm, PetscInt n, ISColoringValue *lin
 
   For a parallel `is`, this will generate the local part of the complement on each process
 
-  To generate the entire complement (on each process) of a parallel `IS`, first call `ISAllGather()` and then
+  To generate the entire complement (on each process) of a parallel `is`, first call `ISAllGather()` and then
   call this routine.
 
 .seealso: [](sec_scatter), `IS`, `ISCreateGeneral()`, `ISCreateStride()`, `ISCreateBlock()`, `ISAllGather()`
