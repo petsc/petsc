@@ -1746,7 +1746,7 @@ PetscErrorCode PCViewFromOptions(PC A, PetscObject obj, const char name[])
 +     `PETSC_VIEWER_STDOUT_SELF` - standard output (default)
 -     `PETSC_VIEWER_STDOUT_WORLD` - synchronized standard
   output where only the first processor opens
-  the file.  All other processors send their
+  the file. All other processors send their
   data to the first processor to print.
 
   The user can open an alternative visualization contexts with
