@@ -907,11 +907,11 @@ static PetscErrorCode MatView_Nest(Mat A, PetscViewer viewer)
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
   if (isascii) {
     PetscCall(PetscOptionsGetBool(((PetscObject)A)->options, ((PetscObject)A)->prefix, "-mat_view_nest_sub", &viewSub, NULL));
-    PetscCall(PetscViewerASCIIPrintf(viewer, "Matrix object: \n"));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "Matrix object:\n"));
     PetscCall(PetscViewerASCIIPushTab(viewer));
-    PetscCall(PetscViewerASCIIPrintf(viewer, "type=nest, rows=%" PetscInt_FMT ", cols=%" PetscInt_FMT " \n", bA->nr, bA->nc));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "type=nest, rows=%" PetscInt_FMT ", cols=%" PetscInt_FMT "\n", bA->nr, bA->nc));
 
-    PetscCall(PetscViewerASCIIPrintf(viewer, "MatNest structure: \n"));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "MatNest structure:\n"));
     for (i = 0; i < bA->nr; i++) {
       for (j = 0; j < bA->nc; j++) {
         MatType   type;
@@ -920,7 +920,7 @@ static PetscErrorCode MatView_Nest(Mat A, PetscViewer viewer)
         PetscBool isNest = PETSC_FALSE;
 
         if (!bA->m[i][j]) {
-          PetscCall(PetscViewerASCIIPrintf(viewer, "(%" PetscInt_FMT ",%" PetscInt_FMT ") : NULL \n", i, j));
+          PetscCall(PetscViewerASCIIPrintf(viewer, "(%" PetscInt_FMT ",%" PetscInt_FMT ") : NULL\n", i, j));
           continue;
         }
         PetscCall(MatGetSize(bA->m[i][j], &NR, &NC));
@@ -929,7 +929,7 @@ static PetscErrorCode MatView_Nest(Mat A, PetscViewer viewer)
         if (((PetscObject)bA->m[i][j])->prefix) PetscCall(PetscSNPrintf(prefix, sizeof(prefix), "prefix=\"%s\", ", ((PetscObject)bA->m[i][j])->prefix));
         PetscCall(PetscObjectTypeCompare((PetscObject)bA->m[i][j], MATNEST, &isNest));
 
-        PetscCall(PetscViewerASCIIPrintf(viewer, "(%" PetscInt_FMT ",%" PetscInt_FMT ") : %s%stype=%s, rows=%" PetscInt_FMT ", cols=%" PetscInt_FMT " \n", i, j, name, prefix, type, NR, NC));
+        PetscCall(PetscViewerASCIIPrintf(viewer, "(%" PetscInt_FMT ",%" PetscInt_FMT ") : %s%stype=%s, rows=%" PetscInt_FMT ", cols=%" PetscInt_FMT "\n", i, j, name, prefix, type, NR, NC));
 
         if (isNest || viewSub) {
           PetscCall(PetscViewerASCIIPushTab(viewer)); /* push1 */

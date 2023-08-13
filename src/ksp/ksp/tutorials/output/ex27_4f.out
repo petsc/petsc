@@ -124,13 +124,13 @@ PC Object: 4 MPI processes
   Mat Object: 4 MPI processes
     type: nest
     rows=5730, cols=5730
-      Matrix object: 
-        type=nest, rows=2, cols=2 
-        MatNest structure: 
-        (0,0) : prefix="fieldsplit_0_", type=constantdiagonal, rows=4889, cols=4889 
-        (0,1) : name="A", type=mpiaij, rows=4889, cols=841 
-        (1,0) : type=transpose, rows=841, cols=4889 
-        (1,1) : prefix="fieldsplit_1_", type=mpiaij, rows=841, cols=841 
+      Matrix object:
+        type=nest, rows=2, cols=2
+        MatNest structure:
+        (0,0) : prefix="fieldsplit_0_", type=constantdiagonal, rows=4889, cols=4889
+        (0,1) : name="A", type=mpiaij, rows=4889, cols=841
+        (1,0) : type=transpose, rows=841, cols=4889
+        (1,1) : prefix="fieldsplit_1_", type=mpiaij, rows=841, cols=841
 KSP type: gmres
 Number of iterations =   5
 Residual norm 1.63035e-05
