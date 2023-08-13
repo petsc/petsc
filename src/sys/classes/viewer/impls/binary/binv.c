@@ -1600,7 +1600,9 @@ PetscMPIInt Petsc_Viewer_Binary_keyval = MPI_KEYVAL_INVALID;
    Environmental variable:
 -   PETSC_VIEWER_BINARY_FILENAME - filename in which to store the binary data, defaults to binaryoutput
 
-     Note:
+     Notes:
+     This object is destroyed in `PetscFinalize()`, `PetscViewerDestroy()` should never be called on it
+
      Unlike almost all other PETSc routines, `PETSC_VIEWER_BINARY_` does not return
      an error code.  The binary PetscViewer is usually used in the form
 $       XXXView(XXX object, PETSC_VIEWER_BINARY_(comm));
@@ -1648,7 +1650,8 @@ PetscViewer PETSC_VIEWER_BINARY_(MPI_Comm comm)
         PetscFunctionReturn(NULL);
       }
     }
-    ierr = PetscViewerBinaryOpen(ncomm, fname, FILE_MODE_WRITE, &viewer);
+    ierr                              = PetscViewerBinaryOpen(ncomm, fname, FILE_MODE_WRITE, &viewer);
+    ((PetscObject)viewer)->persistent = PETSC_TRUE;
     if (ierr) {
       ierr = PetscError(PETSC_COMM_SELF, __LINE__, "PETSC_VIEWER_BINARY_", __FILE__, PETSC_ERR_PLIB, PETSC_ERROR_REPEAT, " ");
       PetscFunctionReturn(NULL);

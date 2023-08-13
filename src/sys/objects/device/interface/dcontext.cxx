@@ -15,7 +15,9 @@ public:
   {
     PetscFunctionBegin;
     PetscCall(PetscArrayzero(dctx, 1));
-    PetscCall(PetscHeaderInitialize_Private(dctx, PETSC_DEVICE_CONTEXT_CLASSID, "PetscDeviceContext", "PetscDeviceContext", "Sys", PETSC_COMM_SELF, PetscDeviceContextDestroy, PetscDeviceContextView));
+    PetscCall(PetscHeaderCreate_Private((PetscObject)dctx, PETSC_DEVICE_CONTEXT_CLASSID, "PetscDeviceContext", "PetscDeviceContext", "Sys", PETSC_COMM_SELF, (PetscObjectDestroyFunction)PetscDeviceContextDestroy, (PetscObjectViewFunction)PetscDeviceContextView));
+    PetscCall(PetscLogObjectCreate((PetscObject)dctx));
+
     PetscCallCXX(PetscObjectCast(dctx)->cpp = new CxxData{dctx});
     PetscCall(underlying().reset(dctx, false));
     PetscFunctionReturn(PETSC_SUCCESS);

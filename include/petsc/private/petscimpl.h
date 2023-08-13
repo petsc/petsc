@@ -129,6 +129,7 @@ typedef struct _p_PetscObject {
   PetscOptions options; /* options database used, NULL means default */
   PetscBool    optionsprinted;
   PetscBool    donotPetscObjectPrintClassNamePrefixType;
+  PetscBool    persistent;
 } _p_PetscObject;
 
 #define PETSCHEADER(ObjectOps) \
@@ -139,9 +140,6 @@ typedef struct _p_PetscObject {
 
 PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*PetscObjectDestroyFunction)(PetscObject *); /* force cast in next macro to NEVER use extern "C" style */
 PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*PetscObjectViewFunction)(PetscObject, PetscViewer);
-
-#define PetscHeaderInitialize_Private(h, classid, class_name, descr, mansec, comm, destroy, view) \
-  ((PetscErrorCode)(PetscHeaderCreate_Private((PetscObject)(h), classid, class_name, descr, mansec, comm, (PetscObjectDestroyFunction)(destroy), (PetscObjectViewFunction)(view)) || PetscLogObjectCreate(h)))
 
 /*MC
     PetscHeaderCreate - Creates a raw PETSc object of a particular class
@@ -272,13 +270,14 @@ PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*PetscObjectViewFunction)(PetscObje
 
 .seealso: `PetscObject`, `PetscHeaderDestroy()`, `PetscClassIdRegister()`
 M*/
-#define PetscHeaderCreate(h, classid, class_name, descr, mansec, comm, destroy, view) ((PetscErrorCode)(PetscNew(&(h)) || PetscHeaderInitialize_Private((h), (classid), (class_name), (descr), (mansec), (comm), (destroy), (view))))
+#define PetscHeaderCreate(h, classid, class_name, descr, mansec, comm, destroy, view) \
+  PetscHeaderCreate_Function(PetscNew(&(h)), (PetscObject *)&(h), (classid), (class_name), (descr), (mansec), (comm), (PetscObjectDestroyFunction)(destroy), (PetscObjectViewFunction)(view))
 
-PETSC_EXTERN PetscErrorCode PetscComposedQuantitiesDestroy(PetscObject obj);
+PETSC_EXTERN PetscErrorCode PetscHeaderCreate_Function(PetscErrorCode, PetscObject *, PetscClassId, const char[], const char[], const char[], MPI_Comm, PetscObjectDestroyFunction, PetscObjectViewFunction);
 PETSC_EXTERN PetscErrorCode PetscHeaderCreate_Private(PetscObject, PetscClassId, const char[], const char[], const char[], MPI_Comm, PetscObjectDestroyFunction, PetscObjectViewFunction);
+PETSC_EXTERN PetscErrorCode PetscHeaderDestroy_Function(PetscObject *);
+PETSC_EXTERN PetscErrorCode PetscComposedQuantitiesDestroy(PetscObject obj);
 PETSC_INTERN PetscObjectId  PetscObjectNewId_Internal(void);
-
-#define PetscHeaderFinalize_Private(h) (PetscLogObjectDestroy(h) || (PetscErrorCode)(PetscHeaderDestroy_Private((PetscObject)(h), PETSC_FALSE)))
 
 /*MC
   PetscHeaderDestroy - Final step in destroying a `PetscObject`
@@ -334,7 +333,7 @@ PETSC_INTERN PetscObjectId  PetscObjectNewId_Internal(void);
 
 .seealso: `PetscObject`, `PetscHeaderCreate()`
 M*/
-#define PetscHeaderDestroy(h) ((PetscErrorCode)(PetscHeaderFinalize_Private(*(h)) || PetscFree(*(h))))
+#define PetscHeaderDestroy(h) PetscHeaderDestroy_Function((PetscObject *)h)
 
 PETSC_EXTERN PetscErrorCode                PetscHeaderDestroy_Private(PetscObject, PetscBool);
 PETSC_INTERN PetscErrorCode                PetscHeaderDestroy_Private_Unlogged(PetscObject, PetscBool);

@@ -19,9 +19,17 @@ PetscObjectId PetscObjectNewId_Internal(void)
   return idcnt++;
 }
 
+PetscErrorCode PetscHeaderCreate_Function(PetscErrorCode ierr, PetscObject *h, PetscClassId classid, const char class_name[], const char descr[], const char mansec[], MPI_Comm comm, PetscObjectDestroyFunction destroy, PetscObjectViewFunction view)
+{
+  if (ierr) return ierr;
+  PetscFunctionBegin;
+  PetscCall(PetscHeaderCreate_Private(*h, classid, class_name, descr, mansec, comm, destroy, view));
+  PetscCall(PetscLogObjectCreate(*h));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 /*
-   PetscHeaderCreate_Private - Creates a base PETSc object header and fills
-   in the default values.  Called by the macro PetscHeaderCreate().
+   PetscHeaderCreate_Private - Fills in the default values.
 */
 PetscErrorCode PetscHeaderCreate_Private(PetscObject h, PetscClassId classid, const char class_name[], const char descr[], const char mansec[], MPI_Comm comm, PetscObjectDestroyFunction destroy, PetscObjectViewFunction view)
 {
@@ -78,6 +86,15 @@ PetscErrorCode PetscHeaderCreate_Private(PetscObject h, PetscClassId classid, co
 PETSC_INTERN PetscBool      PetscMemoryCollectMaximumUsage;
 PETSC_INTERN PetscLogDouble PetscMemoryMaximumUsage;
 
+PetscErrorCode PetscHeaderDestroy_Function(PetscObject *h)
+{
+  PetscFunctionBegin;
+  PetscCall(PetscLogObjectDestroy(*h));
+  PetscCall(PetscHeaderDestroy_Private(*h, PETSC_FALSE));
+  PetscCall(PetscFree(*h));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 /*
     PetscHeaderDestroy_Private - Destroys a base PETSc object header. Called by
     the macro PetscHeaderDestroy().
@@ -86,6 +103,7 @@ PetscErrorCode PetscHeaderDestroy_Private(PetscObject obj, PetscBool clear_for_r
 {
   PetscFunctionBegin;
   PetscValidHeader(obj, 1);
+  PetscCheck(!obj->persistent, PetscObjectComm((PetscObject)obj), PETSC_ERR_ARG_WRONGSTATE, "Cannot destroy this object, it is destroyed automatically in PetscFinalize()");
   PetscCall(PetscComposedQuantitiesDestroy(obj));
   if (PetscMemoryCollectMaximumUsage) {
     PetscLogDouble usage;

@@ -735,7 +735,9 @@ PetscMPIInt Petsc_Viewer_Draw_keyval = MPI_KEYVAL_INVALID;
 
      Level: intermediate
 
-     Note:
+     Notes:
+     This object is destroyed in `PetscFinalize()`, `PetscViewerDestroy()` should never be called on it
+
      Unlike almost all other PETSc routines, `PETSC_VIEWER_DRAW_()` does not return
      an error code.  The window is usually used in the form
 $       XXXView(XXX object, PETSC_VIEWER_DRAW_(comm));
@@ -768,7 +770,8 @@ PetscViewer PETSC_VIEWER_DRAW_(MPI_Comm comm)
     PetscFunctionReturn(NULL);
   }
   if (!flag) { /* PetscViewer not yet created */
-    ierr = PetscViewerDrawOpen(ncomm, NULL, NULL, PETSC_DECIDE, PETSC_DECIDE, 300, 300, &viewer);
+    ierr                              = PetscViewerDrawOpen(ncomm, NULL, NULL, PETSC_DECIDE, PETSC_DECIDE, 300, 300, &viewer);
+    ((PetscObject)viewer)->persistent = PETSC_TRUE;
     if (ierr) {
       ierr = PetscError(PETSC_COMM_SELF, __LINE__, "PETSC_VIEWER_DRAW_", __FILE__, PETSC_ERR_PLIB, PETSC_ERROR_REPEAT, " ");
       PetscFunctionReturn(NULL);

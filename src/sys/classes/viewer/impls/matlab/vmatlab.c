@@ -258,7 +258,9 @@ static PetscMPIInt Petsc_Viewer_Matlab_keyval = MPI_KEYVAL_INVALID;
 
      Level: intermediate
 
-     Note:
+     Notes:
+     This object is destroyed in `PetscFinalize()`, `PetscViewerDestroy()` should never be called on it
+
      Unlike almost all other PETSc routines, `PETSC_VIEWER_MATLAB_()` does not return
      an error code.  The matlab PetscViewer is usually used in the form
 $       XXXView(XXX object, PETSC_VIEWER_MATLAB_(comm));
@@ -307,7 +309,8 @@ PetscViewer PETSC_VIEWER_MATLAB_(MPI_Comm comm)
         PetscFunctionReturn(NULL);
       }
     }
-    ierr = PetscViewerMatlabOpen(ncomm, fname, FILE_MODE_WRITE, &viewer);
+    ierr                              = PetscViewerMatlabOpen(ncomm, fname, FILE_MODE_WRITE, &viewer);
+    ((PetscObject)viewer)->persistent = PETSC_TRUE;
     if (ierr) {
       PetscError(PETSC_COMM_SELF, __LINE__, "PETSC_VIEWER_MATLAB_", __FILE__, PETSC_ERR_PLIB, PETSC_ERROR_REPEAT, " ");
       PetscFunctionReturn(NULL);
