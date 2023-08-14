@@ -1,6 +1,7 @@
 /*
    Implements the sequential Kokkos vectors.
 */
+#include <petsc_kokkos.hpp>
 #include <petscvec_kokkos.hpp>
 
 #include <petsc/private/sfimpl.h>
@@ -21,7 +22,11 @@ PetscErrorCode VecGetKokkosView_Private(Vec v, PetscScalarKokkosViewType<MemoryS
 
   PetscFunctionBegin;
   VecErrorIfNotKokkos(v);
-  if (!overwrite) veckok->v_dual.sync<MemorySpace>(); /* If overwrite=true, no need to sync the space, since caller will overwrite the data */
+  if (!overwrite) { /* If overwrite=true, no need to sync the space, since caller will overwrite the data */
+    auto &exec = PetscGetKokkosExecutionSpace();
+    veckok->v_dual.sync<MemorySpace>(exec);                           // async call
+    if (std::is_same_v<MemorySpace, Kokkos::HostSpace>) exec.fence(); // make sure one can access the host copy immediately
+  }
   *kv = veckok->v_dual.view<MemorySpace>();
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -43,9 +48,12 @@ template <class MemorySpace>
 PetscErrorCode VecGetKokkosView(Vec v, ConstPetscScalarKokkosViewType<MemorySpace> *kv)
 {
   Vec_Kokkos *veckok = static_cast<Vec_Kokkos *>(v->spptr);
+  auto       &exec   = PetscGetKokkosExecutionSpace();
+
   PetscFunctionBegin;
   VecErrorIfNotKokkos(v);
-  veckok->v_dual.sync<MemorySpace>(); /* Sync the space for caller to read */
+  veckok->v_dual.sync<MemorySpace>(exec);
+  if (std::is_same_v<MemorySpace, Kokkos::HostSpace>) exec.fence(); // make sure one can access the host copy immediately
   *kv = veckok->v_dual.view<MemorySpace>();
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1088,10 +1096,12 @@ PetscErrorCode VecResetArray_SeqKokkos(Vec vin)
 {
   Vec_Seq    *vecseq = (Vec_Seq *)vin->data;
   Vec_Kokkos *veckok = static_cast<Vec_Kokkos *>(vin->spptr);
+  auto       &exec   = PetscGetKokkosExecutionSpace();
 
   PetscFunctionBegin;
-  PetscCallCXX(veckok->v_dual.sync_host()); /* User wants to unhook the provided host array. Sync it so that user can get the latest */
-  PetscCall(VecResetArray_Seq(vin));        /* Swap back the old host array, assuming its has the latest value */
+  PetscCallCXX(veckok->v_dual.sync_host(exec)); /* User wants to unhook the provided host array. Sync it so that user can get the latest */
+  PetscCallCXX(exec.fence());
+  PetscCall(VecResetArray_Seq(vin)); /* Swap back the old host array, assuming its has the latest value */
   PetscCall(veckok->UpdateArray<Kokkos::HostSpace>(vecseq->array));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1104,7 +1114,11 @@ PetscErrorCode VecReplaceArray_SeqKokkos(Vec vin, const PetscScalar *a)
 
   PetscFunctionBegin;
   /* Make sure the users array has the latest values */
-  if (vecseq->array != vecseq->array_allocated) PetscCallCXX(veckok->v_dual.sync_host());
+  if (vecseq->array != vecseq->array_allocated) {
+    auto &exec = PetscGetKokkosExecutionSpace();
+    PetscCallCXX(veckok->v_dual.sync_host(exec));
+    PetscCallCXX(exec.fence());
+  }
   PetscCall(VecReplaceArray_Seq(vin, a));
   PetscCall(veckok->UpdateArray<Kokkos::HostSpace>(vecseq->array));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -1148,9 +1162,11 @@ PetscErrorCode VecRestoreLocalVector_SeqKokkos(Vec v, Vec w)
 PetscErrorCode VecGetArray_SeqKokkos(Vec v, PetscScalar **a)
 {
   Vec_Kokkos *veckok = static_cast<Vec_Kokkos *>(v->spptr);
+  auto       &exec   = PetscGetKokkosExecutionSpace();
 
   PetscFunctionBegin;
-  PetscCallCXX(veckok->v_dual.sync_host());
+  PetscCallCXX(veckok->v_dual.sync_host(exec));
+  PetscCallCXX(exec.fence()); // make sure the array is ready for access after the call
   *a = *((PetscScalar **)v->data);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1178,6 +1194,7 @@ PetscErrorCode VecGetArrayWrite_SeqKokkos(Vec v, PetscScalar **a)
 PetscErrorCode VecGetArrayAndMemType_SeqKokkos(Vec v, PetscScalar **a, PetscMemType *mtype)
 {
   Vec_Kokkos *veckok = static_cast<Vec_Kokkos *>(v->spptr);
+  auto       &exec   = PetscGetKokkosExecutionSpace();
 
   PetscFunctionBegin;
   if (std::is_same<DefaultMemorySpace, Kokkos::HostSpace>::value) {
@@ -1185,7 +1202,7 @@ PetscErrorCode VecGetArrayAndMemType_SeqKokkos(Vec v, PetscScalar **a, PetscMemT
     if (mtype) *mtype = PETSC_MEMTYPE_HOST;
   } else {
     /* When there is device, we always return up-to-date device data */
-    PetscCallCXX(veckok->v_dual.sync_device());
+    PetscCallCXX(veckok->v_dual.sync_device(exec));
     *a = veckok->v_dual.view_device().data();
     if (mtype) *mtype = PETSC_MEMTYPE_KOKKOS;
   }
@@ -1311,11 +1328,13 @@ PetscErrorCode VecRestoreSubVector_SeqKokkos(Vec x, IS is, Vec *y)
     PetscCheck(!state, PetscObjectComm((PetscObject)x), PETSC_ERR_ARG_WRONGSTATE, "Vec x is locked for read-only or read/write access");
 
     /* The tricky part: one has to carefully sync the arrays */
-    if (xkok->v_dual.need_sync_device()) {      /* x's host has newer data */
-      PetscCallCXX(ykok->v_dual.sync_host());   /* Move y's latest values to host (since y is just a subset of x) */
-    } else if (xkok->v_dual.need_sync_host()) { /* x's device has newer data */
-      PetscCallCXX(ykok->v_dual.sync_device()); /* Move y's latest data to device */
-    } else {                                    /* x's host and device data is already sync'ed; Copy y's sync state to x */
+    auto &exec = PetscGetKokkosExecutionSpace();
+    if (xkok->v_dual.need_sync_device()) {        /* x's host has newer data */
+      PetscCallCXX(ykok->v_dual.sync_host(exec)); /* Move y's latest values to host (since y is just a subset of x) */
+      PetscCallCXX(exec.fence());
+    } else if (xkok->v_dual.need_sync_host()) {     /* x's device has newer data */
+      PetscCallCXX(ykok->v_dual.sync_device(exec)); /* Move y's latest data to device */
+    } else {                                        /* x's host and device data is already sync'ed; Copy y's sync state to x */
       PetscCall(VecCopySyncState_Kokkos_Private(*y, x));
     }
     PetscCall(PetscObjectStateIncrease((PetscObject)x)); /* Since x is updated */

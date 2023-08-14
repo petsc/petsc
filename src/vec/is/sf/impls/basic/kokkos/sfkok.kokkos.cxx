@@ -581,20 +581,21 @@ static PetscErrorCode PetscSFLinkMemcpy_Kokkos(PetscSFLink PETSC_UNUSED link, Pe
   if (PetscMemTypeHost(dstmtype) && PetscMemTypeHost(srcmtype)) {
     PetscCall(PetscMemcpy(dst, src, n));
   } else {
-    if (PetscMemTypeDevice(dstmtype) && PetscMemTypeHost(srcmtype)) {
+    if (PetscMemTypeDevice(dstmtype) && PetscMemTypeHost(srcmtype)) { // H2D
       deviceBuffer_t    dbuf(static_cast<char *>(dst), n);
       HostConstBuffer_t sbuf(static_cast<const char *>(src), n);
-      Kokkos::deep_copy(exec, dbuf, sbuf);
+      PetscCallCXX(Kokkos::deep_copy(exec, dbuf, sbuf));
       PetscCall(PetscLogCpuToGpu(n));
-    } else if (PetscMemTypeHost(dstmtype) && PetscMemTypeDevice(srcmtype)) {
+    } else if (PetscMemTypeHost(dstmtype) && PetscMemTypeDevice(srcmtype)) { // D2H
       HostBuffer_t        dbuf(static_cast<char *>(dst), n);
       deviceConstBuffer_t sbuf(static_cast<const char *>(src), n);
-      Kokkos::deep_copy(exec, dbuf, sbuf);
+      PetscCallCXX(Kokkos::deep_copy(exec, dbuf, sbuf));
+      PetscCallCXX(exec.fence()); // make sure dbuf is ready for use immediately on host
       PetscCall(PetscLogGpuToCpu(n));
     } else if (PetscMemTypeDevice(dstmtype) && PetscMemTypeDevice(srcmtype)) {
       deviceBuffer_t      dbuf(static_cast<char *>(dst), n);
       deviceConstBuffer_t sbuf(static_cast<const char *>(src), n);
-      Kokkos::deep_copy(exec, dbuf, sbuf);
+      PetscCallCXX(Kokkos::deep_copy(exec, dbuf, sbuf));
     }
   }
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -606,7 +607,7 @@ PetscErrorCode PetscSFMalloc_Kokkos(PetscMemType mtype, size_t size, void **ptr)
   if (PetscMemTypeHost(mtype)) PetscCall(PetscMalloc(size, ptr));
   else if (PetscMemTypeDevice(mtype)) {
     if (!PetscKokkosInitialized) PetscCall(PetscKokkosInitializeCheck());
-    *ptr = Kokkos::kokkos_malloc<DeviceMemorySpace>(size);
+    PetscCallCXX(*ptr = Kokkos::kokkos_malloc<DeviceMemorySpace>(size));
   } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Wrong PetscMemType %d", (int)mtype);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -616,7 +617,7 @@ PetscErrorCode PetscSFFree_Kokkos(PetscMemType mtype, void *ptr)
   PetscFunctionBegin;
   if (PetscMemTypeHost(mtype)) PetscCall(PetscFree(ptr));
   else if (PetscMemTypeDevice(mtype)) {
-    Kokkos::kokkos_free<DeviceMemorySpace>(ptr);
+    PetscCallCXX(Kokkos::kokkos_free<DeviceMemorySpace>(ptr));
   } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Wrong PetscMemType %d", (int)mtype);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
