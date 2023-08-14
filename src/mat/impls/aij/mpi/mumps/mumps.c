@@ -233,8 +233,8 @@ static PetscErrorCode PetscMUMPSIntCSRCast(Mat_MUMPS *mumps, PetscInt nrow, Pets
     *ja_mumps = mumps->ja_alloc;
   }
 #else
-  *ia_mumps          = ia;
-  *ja_mumps          = ja;
+  *ia_mumps = ia;
+  *ja_mumps = ja;
 #endif
   PetscCall(PetscMUMPSIntCast(nnz, nnz_mumps));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -331,8 +331,7 @@ static PetscErrorCode MatMumpsHandleSchur_Private(Mat F, PetscBool expansion)
       PetscCall(PetscMalloc1(mumps->id.nrhs * mumps->id.lredrhs, &mumps->id.redrhs));
       mumps->sizeredrhs = mumps->id.nrhs * mumps->id.lredrhs;
     }
-    mumps->id.ICNTL(26) = 1; /* condensation phase */
-  } else {                   /* prepare for the expansion step */
+  } else { /* prepare for the expansion step */
     /* solve Schur complement (this has to be done by the MUMPS user, so basically us) */
     PetscCall(MatMumpsSolveSchur_Private(F));
     mumps->id.ICNTL(26) = 2; /* expansion phase */
@@ -1403,10 +1402,13 @@ PetscErrorCode MatSolve_MUMPS(Mat A, Vec b, Vec x)
      Unless the user provides a valid value for ICNTL(26), MatSolve and MatMatSolve routines solve the full system.
      This requires an extra call to PetscMUMPS_c and the computation of the factors for S
   */
-  if (mumps->id.size_schur > 0 && (mumps->id.ICNTL(26) < 0 || mumps->id.ICNTL(26) > 2)) {
+  if (mumps->id.size_schur > 0) {
     PetscCheck(mumps->petsc_size <= 1, PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "Parallel Schur complements not yet supported from PETSc");
-    second_solve = PETSC_TRUE;
-    PetscCall(MatMumpsHandleSchur_Private(A, PETSC_FALSE));
+    if (mumps->id.ICNTL(26) < 0 || mumps->id.ICNTL(26) > 2) {
+      second_solve = PETSC_TRUE;
+      PetscCall(MatMumpsHandleSchur_Private(A, PETSC_FALSE));
+      mumps->id.ICNTL(26) = 1; /* condensation phase */
+    } else if (mumps->id.ICNTL(26) == 1) PetscCall(MatMumpsHandleSchur_Private(A, PETSC_FALSE));
   }
   /* solve phase */
   mumps->id.job = JOB_SOLVE;
@@ -1415,6 +1417,17 @@ PetscErrorCode MatSolve_MUMPS(Mat A, Vec b, Vec x)
 
   /* handle expansion step of Schur complement (if any) */
   if (second_solve) PetscCall(MatMumpsHandleSchur_Private(A, PETSC_TRUE));
+  else if (mumps->id.ICNTL(26) == 1) {
+    PetscCall(MatMumpsSolveSchur_Private(A));
+    for (i = 0; i < mumps->id.size_schur; ++i) {
+#if !defined(PETSC_USE_COMPLEX)
+      PetscScalar val = mumps->id.redrhs[i];
+#else
+      PetscScalar val = mumps->id.redrhs[i].r + PETSC_i * mumps->id.redrhs[i].i;
+#endif
+      array[mumps->id.listvar_schur[i] - 1] = val;
+    }
+  }
 
   if (mumps->petsc_size > 1) { /* convert mumps distributed solution to petsc mpi x */
     if (mumps->scat_sol && mumps->ICNTL9_pre != mumps->id.ICNTL(9)) {
@@ -1527,9 +1540,13 @@ PetscErrorCode MatMatSolve_MUMPS(Mat A, Mat B, Mat X)
       mumps->id.rhs_sparse = (MumpsScalar *)aa;
     }
     /* handle condensation step of Schur complement (if any) */
-    if (mumps->id.size_schur > 0 && (mumps->id.ICNTL(26) < 0 || mumps->id.ICNTL(26) > 2)) {
-      second_solve = PETSC_TRUE;
-      PetscCall(MatMumpsHandleSchur_Private(A, PETSC_FALSE));
+    if (mumps->id.size_schur > 0) {
+      PetscCheck(mumps->petsc_size <= 1, PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "Parallel Schur complements not yet supported from PETSc");
+      if (mumps->id.ICNTL(26) < 0 || mumps->id.ICNTL(26) > 2) {
+        second_solve = PETSC_TRUE;
+        PetscCall(MatMumpsHandleSchur_Private(A, PETSC_FALSE));
+        mumps->id.ICNTL(26) = 1; /* condensation phase */
+      } else if (mumps->id.ICNTL(26) == 1) PetscCall(MatMumpsHandleSchur_Private(A, PETSC_FALSE));
     }
     /* solve phase */
     mumps->id.job = JOB_SOLVE;
@@ -1538,6 +1555,18 @@ PetscErrorCode MatMatSolve_MUMPS(Mat A, Mat B, Mat X)
 
     /* handle expansion step of Schur complement (if any) */
     if (second_solve) PetscCall(MatMumpsHandleSchur_Private(A, PETSC_TRUE));
+    else if (mumps->id.ICNTL(26) == 1) {
+      PetscCall(MatMumpsSolveSchur_Private(A));
+      for (j = 0; j < nrhs; ++j)
+        for (i = 0; i < mumps->id.size_schur; ++i) {
+#if !defined(PETSC_USE_COMPLEX)
+          PetscScalar val = mumps->id.redrhs[i + j * mumps->id.lredrhs];
+#else
+          PetscScalar val = mumps->id.redrhs[i + j * mumps->id.lredrhs].r + PETSC_i * mumps->id.redrhs[i + j * mumps->id.lredrhs].i;
+#endif
+          array[mumps->id.listvar_schur[i] - 1 + j * M] = val;
+        }
+    }
     if (!denseB) { /* sparse B */
       PetscCall(MatSeqAIJRestoreArray(Bt, &aa));
       PetscCall(MatRestoreRowIJ(Bt, 1, PETSC_FALSE, PETSC_FALSE, &spnr, (const PetscInt **)&ia, (const PetscInt **)&ja, &flg));
@@ -2579,9 +2608,6 @@ PetscErrorCode MatFactorCreateSchurComplement_MUMPS(Mat F, Mat *S)
   Mat          St;
   Mat_MUMPS   *mumps = (Mat_MUMPS *)F->data;
   PetscScalar *array;
-#if defined(PETSC_USE_COMPLEX)
-  PetscScalar im = PetscSqrtScalar((PetscScalar)-1.0);
-#endif
 
   PetscFunctionBegin;
   PetscCheck(mumps->id.ICNTL(19), PetscObjectComm((PetscObject)F), PETSC_ERR_ORDER, "Schur complement mode not selected! Call MatFactorSetSchurIS() to enable it");
@@ -2598,7 +2624,7 @@ PetscErrorCode MatFactorCreateSchurComplement_MUMPS(Mat F, Mat *S)
 #if !defined(PETSC_USE_COMPLEX)
           PetscScalar val = mumps->id.schur[i * N + j];
 #else
-          PetscScalar val = mumps->id.schur[i * N + j].r + im * mumps->id.schur[i * N + j].i;
+          PetscScalar val = mumps->id.schur[i * N + j].r + PETSC_i * mumps->id.schur[i * N + j].i;
 #endif
           array[j * N + i] = val;
         }
@@ -2614,10 +2640,9 @@ PetscErrorCode MatFactorCreateSchurComplement_MUMPS(Mat F, Mat *S)
 #if !defined(PETSC_USE_COMPLEX)
           PetscScalar val = mumps->id.schur[i * N + j];
 #else
-          PetscScalar val = mumps->id.schur[i * N + j].r + im * mumps->id.schur[i * N + j].i;
+          PetscScalar val = mumps->id.schur[i * N + j].r + PETSC_i * mumps->id.schur[i * N + j].i;
 #endif
-          array[i * N + j] = val;
-          array[j * N + i] = val;
+          array[i * N + j] = array[j * N + i] = val;
         }
       }
     } else if (mumps->id.ICNTL(19) == 3) { /* full matrix */
@@ -2629,10 +2654,9 @@ PetscErrorCode MatFactorCreateSchurComplement_MUMPS(Mat F, Mat *S)
 #if !defined(PETSC_USE_COMPLEX)
           PetscScalar val = mumps->id.schur[i * N + j];
 #else
-          PetscScalar val = mumps->id.schur[i * N + j].r + im * mumps->id.schur[i * N + j].i;
+          PetscScalar val = mumps->id.schur[i * N + j].r + PETSC_i * mumps->id.schur[i * N + j].i;
 #endif
-          array[i * N + j] = val;
-          array[j * N + i] = val;
+          array[i * N + j] = array[j * N + i] = val;
         }
       }
     }

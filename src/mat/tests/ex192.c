@@ -251,6 +251,18 @@ int main(int argc, char **args)
       PetscCall(MatAXPY(X, -1.0, C, SAME_NONZERO_PATTERN));
       PetscCall(MatNorm(X, NORM_FROBENIUS, &norm));
       if (norm > tol) PetscCall(PetscPrintf(PETSC_COMM_SELF, "(f %" PetscInt_FMT ", s %" PetscInt_FMT ") MatMatSolve: Norm of error %g\n", nfact, nsolve, (double)norm));
+#if PetscDefined(HAVE_MUMPS)
+      PetscCall(MatMumpsSetIcntl(F, 26, 1));
+      PetscCall(MatMatSolve(F, RHS, X));
+      PetscCall(MatMumpsSetIcntl(F, 26, 2));
+      PetscCall(MatMatSolve(F, RHS, X));
+      PetscCall(MatMumpsSetIcntl(F, 26, -1));
+
+      /* Check the error */
+      PetscCall(MatAXPY(X, -1.0, C, SAME_NONZERO_PATTERN));
+      PetscCall(MatNorm(X, NORM_FROBENIUS, &norm));
+      if (norm > tol) PetscCall(PetscPrintf(PETSC_COMM_SELF, "(f %" PetscInt_FMT ", s %" PetscInt_FMT ") MatMatSolve: Norm of error %g\n", nfact, nsolve, (double)norm));
+#endif
     }
     if (isolver == 0) {
       Mat spRHS, spRHST, RHST;
