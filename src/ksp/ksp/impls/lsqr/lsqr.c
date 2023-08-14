@@ -235,7 +235,7 @@ static PetscErrorCode KSPSolve_LSQR(KSP ksp)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode KSPDestroy_LSQR(KSP ksp)
+static PetscErrorCode KSPDestroy_LSQR(KSP ksp)
 {
   KSP_LSQR *lsqr = (KSP_LSQR *)ksp->data;
 
@@ -368,7 +368,7 @@ PetscErrorCode KSPLSQRGetNorms(KSP ksp, PetscReal *arnorm, PetscReal *anorm)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode KSPLSQRMonitorResidual_LSQR(KSP ksp, PetscInt n, PetscReal rnorm, PetscViewerAndFormat *vf)
+static PetscErrorCode KSPLSQRMonitorResidual_LSQR(KSP ksp, PetscInt n, PetscReal rnorm, PetscViewerAndFormat *vf)
 {
   KSP_LSQR         *lsqr   = (KSP_LSQR *)ksp->data;
   PetscViewer       viewer = vf->viewer;
@@ -423,7 +423,7 @@ PetscErrorCode KSPLSQRMonitorResidual(KSP ksp, PetscInt n, PetscReal rnorm, Pets
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode KSPLSQRMonitorResidualDrawLG_LSQR(KSP ksp, PetscInt n, PetscReal rnorm, PetscViewerAndFormat *vf)
+static PetscErrorCode KSPLSQRMonitorResidualDrawLG_LSQR(KSP ksp, PetscInt n, PetscReal rnorm, PetscViewerAndFormat *vf)
 {
   KSP_LSQR          *lsqr   = (KSP_LSQR *)ksp->data;
   PetscViewer        viewer = vf->viewer;
@@ -508,7 +508,7 @@ PetscErrorCode KSPLSQRMonitorResidualDrawLGCreate(PetscViewer viewer, PetscViewe
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode KSPSetFromOptions_LSQR(KSP ksp, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode KSPSetFromOptions_LSQR(KSP ksp, PetscOptionItems *PetscOptionsObject)
 {
   KSP_LSQR *lsqr = (KSP_LSQR *)ksp->data;
 
@@ -521,7 +521,7 @@ PetscErrorCode KSPSetFromOptions_LSQR(KSP ksp, PetscOptionItems *PetscOptionsObj
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode KSPView_LSQR(KSP ksp, PetscViewer viewer)
+static PetscErrorCode KSPView_LSQR(KSP ksp, PetscViewer viewer)
 {
   KSP_LSQR *lsqr = (KSP_LSQR *)ksp->data;
   PetscBool iascii;

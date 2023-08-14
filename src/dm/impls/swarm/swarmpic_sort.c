@@ -4,7 +4,7 @@
 #include <petscdmswarm.h>
 #include <petsc/private/dmswarmimpl.h>
 
-int sort_CompareSwarmPoint(const void *dataA, const void *dataB)
+static int sort_CompareSwarmPoint(const void *dataA, const void *dataB)
 {
   SwarmPoint *pointA = (SwarmPoint *)dataA;
   SwarmPoint *pointB = (SwarmPoint *)dataB;
@@ -18,14 +18,14 @@ int sort_CompareSwarmPoint(const void *dataA, const void *dataB)
   }
 }
 
-PetscErrorCode DMSwarmSortApplyCellIndexSort(DMSwarmSort ctx)
+static PetscErrorCode DMSwarmSortApplyCellIndexSort(DMSwarmSort ctx)
 {
   PetscFunctionBegin;
   qsort(ctx->list, ctx->npoints, sizeof(SwarmPoint), sort_CompareSwarmPoint);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode DMSwarmSortCreate(DMSwarmSort *_ctx)
+static PetscErrorCode DMSwarmSortCreate(DMSwarmSort *_ctx)
 {
   DMSwarmSort ctx;
 
@@ -40,7 +40,7 @@ PetscErrorCode DMSwarmSortCreate(DMSwarmSort *_ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode DMSwarmSortSetup(DMSwarmSort ctx, DM dm, PetscInt ncells)
+static PetscErrorCode DMSwarmSortSetup(DMSwarmSort ctx, DM dm, PetscInt ncells)
 {
   PetscInt *swarm_cellid;
   PetscInt  p, npoints;

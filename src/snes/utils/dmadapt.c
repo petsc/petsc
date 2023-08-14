@@ -284,7 +284,7 @@ PetscErrorCode DMAdaptorSetTransferFunction(DMAdaptor adaptor, PetscErrorCode (*
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode DMAdaptorPreAdapt(DMAdaptor adaptor, Vec locX)
+static PetscErrorCode DMAdaptorPreAdapt(DMAdaptor adaptor, Vec locX)
 {
   DM           plex;
   PetscDS      prob;
@@ -360,7 +360,7 @@ PetscErrorCode DMAdaptorPreAdapt(DMAdaptor adaptor, Vec locX)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode DMAdaptorTransferSolution(DMAdaptor adaptor, DM dm, Vec x, DM adm, Vec ax)
+static PetscErrorCode DMAdaptorTransferSolution(DMAdaptor adaptor, DM dm, Vec x, DM adm, Vec ax)
 {
   PetscReal time = 0.0;
   Mat       interp;
@@ -388,7 +388,7 @@ PetscErrorCode DMAdaptorTransferSolution(DMAdaptor adaptor, DM dm, Vec x, DM adm
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode DMAdaptorPostAdapt(DMAdaptor adaptor)
+static PetscErrorCode DMAdaptorPostAdapt(DMAdaptor adaptor)
 {
   PetscDS      prob;
   PetscObject  obj;

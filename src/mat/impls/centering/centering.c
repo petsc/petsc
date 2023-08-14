@@ -1,7 +1,7 @@
 
 #include <petsc/private/matimpl.h> /*I "petscmat.h" I*/
 
-PetscErrorCode MatMult_Centering(Mat A, Vec xx, Vec yy)
+static PetscErrorCode MatMult_Centering(Mat A, Vec xx, Vec yy)
 {
   PetscScalar       *y;
   const PetscScalar *x;

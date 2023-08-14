@@ -263,7 +263,7 @@ static PetscErrorCode MatMPIAIJGetLocalMatMerge_MPIAIJCUSPARSE(Mat A, MatReuse s
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatMPIAIJSetPreallocation_MPIAIJCUSPARSE(Mat B, PetscInt d_nz, const PetscInt d_nnz[], PetscInt o_nz, const PetscInt o_nnz[])
+static PetscErrorCode MatMPIAIJSetPreallocation_MPIAIJCUSPARSE(Mat B, PetscInt d_nz, const PetscInt d_nnz[], PetscInt o_nz, const PetscInt o_nnz[])
 {
   Mat_MPIAIJ         *b              = (Mat_MPIAIJ *)B->data;
   Mat_MPIAIJCUSPARSE *cusparseStruct = (Mat_MPIAIJCUSPARSE *)b->spptr;
@@ -316,7 +316,7 @@ PetscErrorCode MatMPIAIJSetPreallocation_MPIAIJCUSPARSE(Mat B, PetscInt d_nz, co
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatMult_MPIAIJCUSPARSE(Mat A, Vec xx, Vec yy)
+static PetscErrorCode MatMult_MPIAIJCUSPARSE(Mat A, Vec xx, Vec yy)
 {
   Mat_MPIAIJ *a = (Mat_MPIAIJ *)A->data;
 
@@ -328,7 +328,7 @@ PetscErrorCode MatMult_MPIAIJCUSPARSE(Mat A, Vec xx, Vec yy)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatZeroEntries_MPIAIJCUSPARSE(Mat A)
+static PetscErrorCode MatZeroEntries_MPIAIJCUSPARSE(Mat A)
 {
   Mat_MPIAIJ *l = (Mat_MPIAIJ *)A->data;
 
@@ -338,7 +338,7 @@ PetscErrorCode MatZeroEntries_MPIAIJCUSPARSE(Mat A)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatMultAdd_MPIAIJCUSPARSE(Mat A, Vec xx, Vec yy, Vec zz)
+static PetscErrorCode MatMultAdd_MPIAIJCUSPARSE(Mat A, Vec xx, Vec yy, Vec zz)
 {
   Mat_MPIAIJ *a = (Mat_MPIAIJ *)A->data;
 
@@ -350,7 +350,7 @@ PetscErrorCode MatMultAdd_MPIAIJCUSPARSE(Mat A, Vec xx, Vec yy, Vec zz)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatMultTranspose_MPIAIJCUSPARSE(Mat A, Vec xx, Vec yy)
+static PetscErrorCode MatMultTranspose_MPIAIJCUSPARSE(Mat A, Vec xx, Vec yy)
 {
   Mat_MPIAIJ *a = (Mat_MPIAIJ *)A->data;
 
@@ -362,7 +362,7 @@ PetscErrorCode MatMultTranspose_MPIAIJCUSPARSE(Mat A, Vec xx, Vec yy)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatCUSPARSESetFormat_MPIAIJCUSPARSE(Mat A, MatCUSPARSEFormatOperation op, MatCUSPARSEStorageFormat format)
+static PetscErrorCode MatCUSPARSESetFormat_MPIAIJCUSPARSE(Mat A, MatCUSPARSEFormatOperation op, MatCUSPARSEStorageFormat format)
 {
   Mat_MPIAIJ         *a              = (Mat_MPIAIJ *)A->data;
   Mat_MPIAIJCUSPARSE *cusparseStruct = (Mat_MPIAIJCUSPARSE *)a->spptr;
@@ -385,7 +385,7 @@ PetscErrorCode MatCUSPARSESetFormat_MPIAIJCUSPARSE(Mat A, MatCUSPARSEFormatOpera
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatSetFromOptions_MPIAIJCUSPARSE(Mat A, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode MatSetFromOptions_MPIAIJCUSPARSE(Mat A, PetscOptionItems *PetscOptionsObject)
 {
   MatCUSPARSEStorageFormat format;
   PetscBool                flg;
@@ -406,7 +406,7 @@ PetscErrorCode MatSetFromOptions_MPIAIJCUSPARSE(Mat A, PetscOptionItems *PetscOp
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatAssemblyEnd_MPIAIJCUSPARSE(Mat A, MatAssemblyType mode)
+static PetscErrorCode MatAssemblyEnd_MPIAIJCUSPARSE(Mat A, MatAssemblyType mode)
 {
   Mat_MPIAIJ *mpiaij = (Mat_MPIAIJ *)A->data;
 
@@ -416,7 +416,7 @@ PetscErrorCode MatAssemblyEnd_MPIAIJCUSPARSE(Mat A, MatAssemblyType mode)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatDestroy_MPIAIJCUSPARSE(Mat A)
+static PetscErrorCode MatDestroy_MPIAIJCUSPARSE(Mat A)
 {
   Mat_MPIAIJ         *aij            = (Mat_MPIAIJ *)A->data;
   Mat_MPIAIJCUSPARSE *cusparseStruct = (Mat_MPIAIJCUSPARSE *)aij->spptr;

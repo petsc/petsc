@@ -62,7 +62,7 @@ static PetscErrorCode VecMTDot_MPIKokkos(Vec xin, PetscInt nv, const Vec y[], Pe
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode VecMax_MPIKokkos(Vec xin, PetscInt *idx, PetscReal *z)
+static PetscErrorCode VecMax_MPIKokkos(Vec xin, PetscInt *idx, PetscReal *z)
 {
   const MPI_Op ops[] = {MPIU_MAXLOC, MPIU_MAX};
 
@@ -71,7 +71,7 @@ PetscErrorCode VecMax_MPIKokkos(Vec xin, PetscInt *idx, PetscReal *z)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode VecMin_MPIKokkos(Vec xin, PetscInt *idx, PetscReal *z)
+static PetscErrorCode VecMin_MPIKokkos(Vec xin, PetscInt *idx, PetscReal *z)
 {
   const MPI_Op ops[] = {MPIU_MINLOC, MPIU_MIN};
 
@@ -80,7 +80,7 @@ PetscErrorCode VecMin_MPIKokkos(Vec xin, PetscInt *idx, PetscReal *z)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode VecDuplicate_MPIKokkos(Vec win, Vec *vv)
+static PetscErrorCode VecDuplicate_MPIKokkos(Vec win, Vec *vv)
 {
   Vec         v;
   Vec_MPI    *vecmpi;
@@ -102,7 +102,7 @@ PetscErrorCode VecDuplicate_MPIKokkos(Vec win, Vec *vv)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode VecDotNorm2_MPIKokkos(Vec s, Vec t, PetscScalar *dp, PetscScalar *nm)
+static PetscErrorCode VecDotNorm2_MPIKokkos(Vec s, Vec t, PetscScalar *dp, PetscScalar *nm)
 {
   PetscFunctionBegin;
   PetscCall(VecDotNorm2_MPI_Default(s, t, dp, nm, VecDotNorm2_SeqKokkos));

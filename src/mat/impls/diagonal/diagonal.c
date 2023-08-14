@@ -428,7 +428,7 @@ static PetscErrorCode MatZeroEntries_Diagonal(Mat Y)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatSolve_Diagonal(Mat matin, Vec b, Vec x)
+static PetscErrorCode MatSolve_Diagonal(Mat matin, Vec b, Vec x)
 {
   Mat_Diagonal *ctx = (Mat_Diagonal *)matin->data;
 
@@ -438,7 +438,7 @@ PetscErrorCode MatSolve_Diagonal(Mat matin, Vec b, Vec x)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatGetInfo_Diagonal(Mat A, MatInfoType flag, MatInfo *info)
+static PetscErrorCode MatGetInfo_Diagonal(Mat A, MatInfoType flag, MatInfo *info)
 {
   PetscFunctionBegin;
   info->block_size        = 1.0;

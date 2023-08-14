@@ -43,7 +43,7 @@ PetscErrorCode MatPartitioningPTScotchSetImbalance(MatPartitioning part, PetscRe
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatPartitioningPTScotchSetImbalance_PTScotch(MatPartitioning part, PetscReal imb)
+static PetscErrorCode MatPartitioningPTScotchSetImbalance_PTScotch(MatPartitioning part, PetscReal imb)
 {
   MatPartitioning_PTScotch *scotch = (MatPartitioning_PTScotch *)part->data;
 
@@ -81,7 +81,7 @@ PetscErrorCode MatPartitioningPTScotchGetImbalance(MatPartitioning part, PetscRe
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatPartitioningPTScotchGetImbalance_PTScotch(MatPartitioning part, PetscReal *imb)
+static PetscErrorCode MatPartitioningPTScotchGetImbalance_PTScotch(MatPartitioning part, PetscReal *imb)
 {
   MatPartitioning_PTScotch *scotch = (MatPartitioning_PTScotch *)part->data;
 
@@ -126,7 +126,7 @@ PetscErrorCode MatPartitioningPTScotchSetStrategy(MatPartitioning part, MPPTScot
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatPartitioningPTScotchSetStrategy_PTScotch(MatPartitioning part, MPPTScotchStrategyType strategy)
+static PetscErrorCode MatPartitioningPTScotchSetStrategy_PTScotch(MatPartitioning part, MPPTScotchStrategyType strategy)
 {
   MatPartitioning_PTScotch *scotch = (MatPartitioning_PTScotch *)part->data;
 
@@ -178,7 +178,7 @@ PetscErrorCode MatPartitioningPTScotchGetStrategy(MatPartitioning part, MPPTScot
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatPartitioningPTScotchGetStrategy_PTScotch(MatPartitioning part, MPPTScotchStrategyType *strategy)
+static PetscErrorCode MatPartitioningPTScotchGetStrategy_PTScotch(MatPartitioning part, MPPTScotchStrategyType *strategy)
 {
   MatPartitioning_PTScotch *scotch = (MatPartitioning_PTScotch *)part->data;
 
@@ -206,7 +206,7 @@ PetscErrorCode MatPartitioningPTScotchGetStrategy_PTScotch(MatPartitioning part,
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatPartitioningView_PTScotch(MatPartitioning part, PetscViewer viewer)
+static PetscErrorCode MatPartitioningView_PTScotch(MatPartitioning part, PetscViewer viewer)
 {
   MatPartitioning_PTScotch *scotch = (MatPartitioning_PTScotch *)part->data;
   PetscBool                 isascii;
@@ -241,7 +241,7 @@ PetscErrorCode MatPartitioningView_PTScotch(MatPartitioning part, PetscViewer vi
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatPartitioningSetFromOptions_PTScotch(MatPartitioning part, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode MatPartitioningSetFromOptions_PTScotch(MatPartitioning part, PetscOptionItems *PetscOptionsObject)
 {
   PetscBool                 flag;
   PetscReal                 r;
@@ -435,21 +435,21 @@ static PetscErrorCode MatPartitioningApply_PTScotch_Private(MatPartitioning part
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatPartitioningApply_PTScotch(MatPartitioning part, IS *partitioning)
+static PetscErrorCode MatPartitioningApply_PTScotch(MatPartitioning part, IS *partitioning)
 {
   PetscFunctionBegin;
   PetscCall(MatPartitioningApply_PTScotch_Private(part, PETSC_FALSE, partitioning));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatPartitioningApplyND_PTScotch(MatPartitioning part, IS *partitioning)
+static PetscErrorCode MatPartitioningApplyND_PTScotch(MatPartitioning part, IS *partitioning)
 {
   PetscFunctionBegin;
   PetscCall(MatPartitioningApply_PTScotch_Private(part, PETSC_TRUE, partitioning));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatPartitioningDestroy_PTScotch(MatPartitioning part)
+static PetscErrorCode MatPartitioningDestroy_PTScotch(MatPartitioning part)
 {
   MatPartitioning_PTScotch *scotch = (MatPartitioning_PTScotch *)part->data;
 

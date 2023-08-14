@@ -48,7 +48,7 @@ static const char citation[] = "@inproceedings{MaySananRuppKnepleySmith2016,\n"
    * Using comm_c = MPI_COMM_NULL is valid. If all instances of comm_c are NULL the subcomm is not valid.
    * If any non NULL comm_c communicator cannot map any of its ranks to comm_f, the subcomm is not valid.
 */
-PetscErrorCode PCTelescopeTestValidSubcomm(MPI_Comm comm_f, MPI_Comm comm_c, PetscBool *isvalid)
+static PetscErrorCode PCTelescopeTestValidSubcomm(MPI_Comm comm_f, MPI_Comm comm_c, PetscBool *isvalid)
 {
   PetscInt     valid = 1;
   MPI_Group    group_f, group_c;
@@ -102,7 +102,7 @@ PetscErrorCode PCTelescopeTestValidSubcomm(MPI_Comm comm_f, MPI_Comm comm_c, Pet
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-DM private_PCTelescopeGetSubDM(PC_Telescope sred)
+static DM private_PCTelescopeGetSubDM(PC_Telescope sred)
 {
   DM subdm = NULL;
 
@@ -127,7 +127,7 @@ DM private_PCTelescopeGetSubDM(PC_Telescope sred)
   return subdm;
 }
 
-PetscErrorCode PCTelescopeSetUp_default(PC pc, PC_Telescope sred)
+static PetscErrorCode PCTelescopeSetUp_default(PC pc, PC_Telescope sred)
 {
   PetscInt   m, M, bs, st, ed;
   Vec        x, xred, yred, xtmp;
@@ -187,7 +187,7 @@ PetscErrorCode PCTelescopeSetUp_default(PC pc, PC_Telescope sred)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PCTelescopeMatCreate_default(PC pc, PC_Telescope sred, MatReuse reuse, Mat *A)
+static PetscErrorCode PCTelescopeMatCreate_default(PC pc, PC_Telescope sred, MatReuse reuse, Mat *A)
 {
   MPI_Comm comm, subcomm;
   Mat      Bred, B;
@@ -502,7 +502,7 @@ static PetscErrorCode PCSetUp_Telescope(PC pc)
       DM          dm, dm_coarse_partition          = NULL;
       MPI_Comm    comm_fine, comm_coarse_partition = MPI_COMM_NULL;
       PetscMPIInt csize_fine = 0, csize_coarse_partition = 0, cs[2], csg[2], cnt = 0;
-      PetscBool   isvalidsubcomm;
+      PetscBool   isvalidsubcomm = PETSC_TRUE;
 
       PetscCall(PCGetDM(pc, &dm));
       comm_fine = PetscObjectComm((PetscObject)dm);

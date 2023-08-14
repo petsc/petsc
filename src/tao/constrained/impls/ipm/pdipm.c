@@ -682,7 +682,7 @@ static PetscErrorCode KKTAddShifts(Tao tao, SNES snes, Vec X)
 /*
   PCPreSolve_PDIPM -- called between MatFactorNumeric() and MatSolve()
 */
-PetscErrorCode PCPreSolve_PDIPM(PC pc, KSP ksp)
+static PetscErrorCode PCPreSolve_PDIPM(PC pc, KSP ksp)
 {
   Tao        tao;
   TAO_PDIPM *pdipm;
@@ -789,7 +789,7 @@ static PetscErrorCode SNESLineSearch_PDIPM(SNESLineSearch linesearch, void *ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode TaoSolve_PDIPM(Tao tao)
+static PetscErrorCode TaoSolve_PDIPM(Tao tao)
 {
   TAO_PDIPM     *pdipm = (TAO_PDIPM *)tao->data;
   SNESLineSearch linesearch; /* SNESLineSearch context */
@@ -833,7 +833,7 @@ PetscErrorCode TaoSolve_PDIPM(Tao tao)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode TaoView_PDIPM(Tao tao, PetscViewer viewer)
+static PetscErrorCode TaoView_PDIPM(Tao tao, PetscViewer viewer)
 {
   TAO_PDIPM *pdipm = (TAO_PDIPM *)tao->data;
 
@@ -846,7 +846,7 @@ PetscErrorCode TaoView_PDIPM(Tao tao, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode TaoSetup_PDIPM(Tao tao)
+static PetscErrorCode TaoSetup_PDIPM(Tao tao)
 {
   TAO_PDIPM         *pdipm = (TAO_PDIPM *)tao->data;
   MPI_Comm           comm;
@@ -1353,7 +1353,7 @@ PetscErrorCode TaoSetup_PDIPM(Tao tao)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode TaoDestroy_PDIPM(Tao tao)
+static PetscErrorCode TaoDestroy_PDIPM(Tao tao)
 {
   TAO_PDIPM *pdipm = (TAO_PDIPM *)tao->data;
 
@@ -1409,7 +1409,7 @@ PetscErrorCode TaoDestroy_PDIPM(Tao tao)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode TaoSetFromOptions_PDIPM(Tao tao, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode TaoSetFromOptions_PDIPM(Tao tao, PetscOptionItems *PetscOptionsObject)
 {
   TAO_PDIPM *pdipm = (TAO_PDIPM *)tao->data;
 

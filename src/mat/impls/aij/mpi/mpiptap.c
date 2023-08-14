@@ -13,7 +13,7 @@
 #include <petsc/private/hashseti.h>
 #include <petscsf.h>
 
-PetscErrorCode MatView_MPIAIJ_PtAP(Mat A, PetscViewer viewer)
+static PetscErrorCode MatView_MPIAIJ_PtAP(Mat A, PetscViewer viewer)
 {
   PetscBool         iascii;
   PetscViewerFormat format;

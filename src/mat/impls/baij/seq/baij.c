@@ -94,7 +94,7 @@ static PetscErrorCode MatGetColumnReductions_SeqBAIJ(Mat A, PetscInt type, Petsc
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatInvertBlockDiagonal_SeqBAIJ(Mat A, const PetscScalar **values)
+static PetscErrorCode MatInvertBlockDiagonal_SeqBAIJ(Mat A, const PetscScalar **values)
 {
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ *)A->data;
   PetscInt    *diag_offset, i, bs = A->rmap->bs, mbs = a->mbs, ipvt[5], bs2 = bs * bs, *v_pivots;
@@ -214,7 +214,7 @@ PetscErrorCode MatInvertBlockDiagonal_SeqBAIJ(Mat A, const PetscScalar **values)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatSOR_SeqBAIJ(Mat A, Vec bb, PetscReal omega, MatSORType flag, PetscReal fshift, PetscInt its, PetscInt lits, Vec xx)
+static PetscErrorCode MatSOR_SeqBAIJ(Mat A, Vec bb, PetscReal omega, MatSORType flag, PetscReal fshift, PetscInt its, PetscInt lits, Vec xx)
 {
   Mat_SeqBAIJ       *a = (Mat_SeqBAIJ *)A->data;
   PetscScalar       *x, *work, *w, *workt, *t;
@@ -1603,7 +1603,7 @@ PetscErrorCode MatDestroy_SeqBAIJ(Mat A)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatSetOption_SeqBAIJ(Mat A, MatOption op, PetscBool flg)
+static PetscErrorCode MatSetOption_SeqBAIJ(Mat A, MatOption op, PetscBool flg)
 {
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ *)A->data;
 
@@ -1711,7 +1711,7 @@ PetscErrorCode MatRestoreRow_SeqBAIJ(Mat A, PetscInt row, PetscInt *nz, PetscInt
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatTranspose_SeqBAIJ(Mat A, MatReuse reuse, Mat *B)
+static PetscErrorCode MatTranspose_SeqBAIJ(Mat A, MatReuse reuse, Mat *B)
 {
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ *)A->data, *at;
   Mat          C;
@@ -2637,7 +2637,7 @@ PetscErrorCode MatSeqBAIJSetColumnIndices(Mat mat, PetscInt *indices)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatGetRowMaxAbs_SeqBAIJ(Mat A, Vec v, PetscInt idx[])
+static PetscErrorCode MatGetRowMaxAbs_SeqBAIJ(Mat A, Vec v, PetscInt idx[])
 {
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ *)A->data;
   PetscInt     i, j, n, row, bs, *ai, *aj, mbs;
@@ -2682,7 +2682,7 @@ PetscErrorCode MatGetRowMaxAbs_SeqBAIJ(Mat A, Vec v, PetscInt idx[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatCopy_SeqBAIJ(Mat A, Mat B, MatStructure str)
+static PetscErrorCode MatCopy_SeqBAIJ(Mat A, Mat B, MatStructure str)
 {
   PetscFunctionBegin;
   /* If the two matrices have the same copy implementation, use fast copy. */
@@ -2916,7 +2916,7 @@ PetscErrorCode MatRestoreColumnIJ_SeqBAIJ_Color(Mat A, PetscInt oshift, PetscBoo
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatShift_SeqBAIJ(Mat Y, PetscScalar a)
+static PetscErrorCode MatShift_SeqBAIJ(Mat Y, PetscScalar a)
 {
   Mat_SeqBAIJ *aij = (Mat_SeqBAIJ *)Y->data;
 
@@ -3392,7 +3392,7 @@ PetscErrorCode MatSeqBAIJSetPreallocation_SeqBAIJ(Mat B, PetscInt bs, PetscInt n
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatSeqBAIJSetPreallocationCSR_SeqBAIJ(Mat B, PetscInt bs, const PetscInt ii[], const PetscInt jj[], const PetscScalar V[])
+static PetscErrorCode MatSeqBAIJSetPreallocationCSR_SeqBAIJ(Mat B, PetscInt bs, const PetscInt ii[], const PetscInt jj[], const PetscScalar V[])
 {
   PetscInt     i, m, nz, nz_max = 0, *nnz;
   PetscScalar *values      = NULL;

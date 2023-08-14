@@ -14,7 +14,7 @@ typedef struct {
   cufftComplex *devArray;
 } Mat_CUFFT;
 
-PetscErrorCode MatMult_SeqCUFFT(Mat A, Vec x, Vec y)
+static PetscErrorCode MatMult_SeqCUFFT(Mat A, Vec x, Vec y)
 {
   Mat_CUFFT    *cufft    = (Mat_CUFFT *)A->data;
   cufftComplex *devArray = cufft->devArray;
@@ -51,7 +51,7 @@ PetscErrorCode MatMult_SeqCUFFT(Mat A, Vec x, Vec y)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatMultTranspose_SeqCUFFT(Mat A, Vec x, Vec y)
+static PetscErrorCode MatMultTranspose_SeqCUFFT(Mat A, Vec x, Vec y)
 {
   Mat_CUFFT    *cufft    = (Mat_CUFFT *)A->data;
   cufftComplex *devArray = cufft->devArray;
@@ -88,7 +88,7 @@ PetscErrorCode MatMultTranspose_SeqCUFFT(Mat A, Vec x, Vec y)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatDestroy_SeqCUFFT(Mat A)
+static PetscErrorCode MatDestroy_SeqCUFFT(Mat A)
 {
   Mat_CUFFT *cufft = (Mat_CUFFT *)A->data;
 

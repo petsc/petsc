@@ -29,7 +29,7 @@ PetscInt SwarmDataFieldId = -1;
 #if defined(PETSC_HAVE_HDF5)
   #include <petscviewerhdf5.h>
 
-PetscErrorCode VecView_Swarm_HDF5_Internal(Vec v, PetscViewer viewer)
+static PetscErrorCode VecView_Swarm_HDF5_Internal(Vec v, PetscViewer viewer)
 {
   DM        dm;
   PetscReal seqval;
@@ -50,7 +50,7 @@ PetscErrorCode VecView_Swarm_HDF5_Internal(Vec v, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode DMSwarmView_HDF5(DM dm, PetscViewer viewer)
+static PetscErrorCode DMSwarmView_HDF5(DM dm, PetscViewer viewer)
 {
   Vec       coordinates;
   PetscInt  Np;
@@ -70,7 +70,7 @@ PetscErrorCode DMSwarmView_HDF5(DM dm, PetscViewer viewer)
 }
 #endif
 
-PetscErrorCode VecView_Swarm(Vec v, PetscViewer viewer)
+static PetscErrorCode VecView_Swarm(Vec v, PetscViewer viewer)
 {
   DM dm;
 #if defined(PETSC_HAVE_HDF5)
@@ -134,7 +134,7 @@ PetscErrorCode DMSwarmVectorDefineField(DM dm, const char fieldname[])
 }
 
 /* requires DMSwarmDefineFieldVector has been called */
-PetscErrorCode DMCreateGlobalVector_Swarm(DM dm, Vec *vec)
+static PetscErrorCode DMCreateGlobalVector_Swarm(DM dm, Vec *vec)
 {
   DM_Swarm *swarm = (DM_Swarm *)dm->data;
   Vec       x;
@@ -159,7 +159,7 @@ PetscErrorCode DMCreateGlobalVector_Swarm(DM dm, Vec *vec)
 }
 
 /* requires DMSwarmDefineFieldVector has been called */
-PetscErrorCode DMCreateLocalVector_Swarm(DM dm, Vec *vec)
+static PetscErrorCode DMCreateLocalVector_Swarm(DM dm, Vec *vec)
 {
   DM_Swarm *swarm = (DM_Swarm *)dm->data;
   Vec       x;
@@ -1237,7 +1237,7 @@ PetscErrorCode DMSwarmCopyPoint(DM dm, PetscInt pi, PetscInt pj)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode DMSwarmMigrate_Basic(DM dm, PetscBool remove_sent_points)
+static PetscErrorCode DMSwarmMigrate_Basic(DM dm, PetscBool remove_sent_points)
 {
   PetscFunctionBegin;
   PetscCall(DMSwarmMigrate_Push_Basic(dm, remove_sent_points));
@@ -1367,7 +1367,7 @@ PetscErrorCode DMSwarmCollectViewDestroy(DM dm)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode DMSwarmSetUpPIC(DM dm)
+static PetscErrorCode DMSwarmSetUpPIC(DM dm)
 {
   PetscInt dim;
 
@@ -1470,7 +1470,7 @@ PetscErrorCode DMSwarmSetType(DM dm, DMSwarmType stype)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode DMSetup_Swarm(DM dm)
+static PetscErrorCode DMSetup_Swarm(DM dm)
 {
   DM_Swarm   *swarm = (DM_Swarm *)dm->data;
   PetscMPIInt rank;
@@ -1522,7 +1522,7 @@ PetscErrorCode DMSetup_Swarm(DM dm)
 
 extern PetscErrorCode DMSwarmSortDestroy(DMSwarmSort *_ctx);
 
-PetscErrorCode DMDestroy_Swarm(DM dm)
+static PetscErrorCode DMDestroy_Swarm(DM dm)
 {
   DM_Swarm *swarm = (DM_Swarm *)dm->data;
 
@@ -1534,7 +1534,7 @@ PetscErrorCode DMDestroy_Swarm(DM dm)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode DMSwarmView_Draw(DM dm, PetscViewer viewer)
+static PetscErrorCode DMSwarmView_Draw(DM dm, PetscViewer viewer)
 {
   DM         cdm;
   PetscDraw  draw;
@@ -1613,7 +1613,7 @@ static PetscErrorCode DMView_Swarm_Ascii(DM dm, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode DMView_Swarm(DM dm, PetscViewer viewer)
+static PetscErrorCode DMView_Swarm(DM dm, PetscViewer viewer)
 {
   DM_Swarm *swarm = (DM_Swarm *)dm->data;
   PetscBool iascii, ibinary, isvtk, isdraw;

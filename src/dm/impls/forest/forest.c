@@ -1558,7 +1558,7 @@ PETSC_EXTERN PetscErrorCode DMSetFromOptions_Forest(DM dm, PetscOptionItems *Pet
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode DMCreateSubDM_Forest(DM dm, PetscInt numFields, const PetscInt fields[], IS *is, DM *subdm)
+static PetscErrorCode DMCreateSubDM_Forest(DM dm, PetscInt numFields, const PetscInt fields[], IS *is, DM *subdm)
 {
   PetscFunctionBegin;
   if (subdm) PetscCall(DMClone(dm, subdm));
@@ -1566,7 +1566,7 @@ PetscErrorCode DMCreateSubDM_Forest(DM dm, PetscInt numFields, const PetscInt fi
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode DMRefine_Forest(DM dm, MPI_Comm comm, DM *dmRefined)
+static PetscErrorCode DMRefine_Forest(DM dm, MPI_Comm comm, DM *dmRefined)
 {
   DMLabel refine;
   DM      fineDM;
@@ -1589,7 +1589,7 @@ PetscErrorCode DMRefine_Forest(DM dm, MPI_Comm comm, DM *dmRefined)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode DMCoarsen_Forest(DM dm, MPI_Comm comm, DM *dmCoarsened)
+static PetscErrorCode DMCoarsen_Forest(DM dm, MPI_Comm comm, DM *dmCoarsened)
 {
   DMLabel coarsen;
   DM      coarseDM;

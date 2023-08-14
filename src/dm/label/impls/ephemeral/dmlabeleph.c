@@ -173,7 +173,7 @@ static PetscErrorCode DMLabelDuplicate_Ephemeral(DMLabel label, DMLabel *labelne
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode DMLabelInitialize_Ephemeral(DMLabel label)
+static PetscErrorCode DMLabelInitialize_Ephemeral(DMLabel label)
 {
   PetscFunctionBegin;
   label->ops->view         = DMLabelView_Ephemeral;

@@ -4,7 +4,7 @@
 
 #include <../src/mat/impls/fft/fft.h> /*I "petscmat.h" I*/
 
-PetscErrorCode MatDestroy_FFT(Mat A)
+static PetscErrorCode MatDestroy_FFT(Mat A)
 {
   Mat_FFT *fft = (Mat_FFT *)A->data;
 

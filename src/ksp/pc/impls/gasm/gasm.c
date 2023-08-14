@@ -241,7 +241,7 @@ static PetscErrorCode PCView_GASM(PC pc, PetscViewer viewer)
 
 PETSC_INTERN PetscErrorCode PCGASMCreateLocalSubdomains(Mat A, PetscInt nloc, IS *iis[]);
 
-PetscErrorCode PCGASMSetHierarchicalPartitioning(PC pc)
+static PetscErrorCode PCGASMSetHierarchicalPartitioning(PC pc)
 {
   PC_GASM        *osm = (PC_GASM *)pc->data;
   MatPartitioning part;

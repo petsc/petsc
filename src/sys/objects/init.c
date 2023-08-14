@@ -93,7 +93,7 @@ PetscErrorCode (*PetscVFPrintf)(FILE *, const char[], va_list) = PetscVFPrintfDe
 PETSC_INTERN FILE *petsc_history;
 FILE              *petsc_history = NULL;
 
-PetscErrorCode PetscOpenHistoryFile(const char filename[], FILE **fd)
+static PetscErrorCode PetscOpenHistoryFile(const char filename[], FILE **fd)
 {
   PetscMPIInt rank, size;
   char        pfile[PETSC_MAX_PATH_LEN], pname[PETSC_MAX_PATH_LEN], fname[PETSC_MAX_PATH_LEN], date[64];
@@ -160,14 +160,14 @@ PETSC_INTERN PetscErrorCode PetscCloseHistoryFile(FILE **fd)
   in the debugger hence we call abort() instead of MPI_Abort().
 */
 
-void Petsc_MPI_AbortOnError(PETSC_UNUSED MPI_Comm *comm, PetscMPIInt *flag, ...)
+static void Petsc_MPI_AbortOnError(PETSC_UNUSED MPI_Comm *comm, PetscMPIInt *flag, ...)
 {
   PetscFunctionBegin;
   PetscCallContinue((*PetscErrorPrintf)("MPI error %d\n", *flag));
   abort();
 }
 
-void Petsc_MPI_DebuggerOnError(MPI_Comm *comm, PetscMPIInt *flag, ...)
+static void Petsc_MPI_DebuggerOnError(MPI_Comm *comm, PetscMPIInt *flag, ...)
 {
   PetscFunctionBegin;
   PetscCallContinue((*PetscErrorPrintf)("MPI error %d\n", *flag));

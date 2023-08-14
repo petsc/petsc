@@ -7,7 +7,7 @@
 
 #include <../src/ksp/pc/impls/factor/lu/lu.h> /*I "petscpc.h" I*/
 
-PetscErrorCode PCFactorReorderForNonzeroDiagonal_LU(PC pc, PetscReal z)
+static PetscErrorCode PCFactorReorderForNonzeroDiagonal_LU(PC pc, PetscReal z)
 {
   PC_LU *lu = (PC_LU *)pc->data;
 

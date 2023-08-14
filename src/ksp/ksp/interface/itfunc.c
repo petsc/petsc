@@ -1157,7 +1157,7 @@ static PetscErrorCode KSPViewFinalMatResidual_Internal(KSP ksp, Mat B, Mat X, Pe
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode KSPMatSolve_Private(KSP ksp, Mat B, Mat X)
+static PetscErrorCode KSPMatSolve_Private(KSP ksp, Mat B, Mat X)
 {
   Mat       A, P, vB, vX;
   Vec       cb, cx;

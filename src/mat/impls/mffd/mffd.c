@@ -9,6 +9,7 @@ PetscClassId  MATMFFD_CLASSID;
 PetscLogEvent MATMFFD_Mult;
 
 static PetscBool MatMFFDPackageInitialized = PETSC_FALSE;
+
 /*@C
   MatMFFDFinalizePackage - This function destroys everything in the MATMFFD` package. It is
   called from `PetscFinalize()`.
@@ -383,7 +384,7 @@ static PetscErrorCode MatMult_MFFD(Mat mat, Vec a, Vec y)
         u = current iterate
         h = difference interval
 */
-PetscErrorCode MatGetDiagonal_MFFD(Mat mat, Vec a)
+static PetscErrorCode MatGetDiagonal_MFFD(Mat mat, Vec a)
 {
   MatMFFD     ctx;
   PetscScalar h, *aa, *ww, v;
@@ -554,7 +555,7 @@ static PetscErrorCode MatMFFDSetFunctionError_MFFD(Mat mat, PetscReal error)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatMFFDSetHHistory_MFFD(Mat J, PetscScalar history[], PetscInt nhistory)
+static PetscErrorCode MatMFFDSetHHistory_MFFD(Mat J, PetscScalar history[], PetscInt nhistory)
 {
   MatMFFD ctx;
 

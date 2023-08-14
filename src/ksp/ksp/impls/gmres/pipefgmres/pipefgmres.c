@@ -443,7 +443,7 @@ static PetscErrorCode KSPPIPEFGMRESUpdateHessenberg(KSP ksp, PetscInt it, PetscB
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode KSPBuildSolution_PIPEFGMRES(KSP ksp, Vec ptr, Vec *result)
+static PetscErrorCode KSPBuildSolution_PIPEFGMRES(KSP ksp, Vec ptr, Vec *result)
 {
   KSP_PIPEFGMRES *pipefgmres = (KSP_PIPEFGMRES *)ksp->data;
 
@@ -462,7 +462,7 @@ PetscErrorCode KSPBuildSolution_PIPEFGMRES(KSP ksp, Vec ptr, Vec *result)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode KSPSetFromOptions_PIPEFGMRES(KSP ksp, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode KSPSetFromOptions_PIPEFGMRES(KSP ksp, PetscOptionItems *PetscOptionsObject)
 {
   KSP_PIPEFGMRES *pipefgmres = (KSP_PIPEFGMRES *)ksp->data;
   PetscBool       flg;
@@ -477,7 +477,7 @@ PetscErrorCode KSPSetFromOptions_PIPEFGMRES(KSP ksp, PetscOptionItems *PetscOpti
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode KSPView_PIPEFGMRES(KSP ksp, PetscViewer viewer)
+static PetscErrorCode KSPView_PIPEFGMRES(KSP ksp, PetscViewer viewer)
 {
   KSP_PIPEFGMRES *pipefgmres = (KSP_PIPEFGMRES *)ksp->data;
   PetscBool       iascii, isstring;

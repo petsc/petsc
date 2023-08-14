@@ -3,7 +3,7 @@
 #include <../src/mat/impls/sbaij/seq/sbaij.h>
 #include <../src/mat/impls/aij/seq/bas/spbas.h>
 
-PetscErrorCode MatICCFactorSymbolic_SeqAIJ_Bas(Mat fact, Mat A, IS perm, const MatFactorInfo *info)
+static PetscErrorCode MatICCFactorSymbolic_SeqAIJ_Bas(Mat fact, Mat A, IS perm, const MatFactorInfo *info)
 {
   Mat_SeqAIJ     *a = (Mat_SeqAIJ *)A->data;
   Mat_SeqSBAIJ   *b;
@@ -95,7 +95,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqAIJ_Bas(Mat fact, Mat A, IS perm, const M
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ_Bas(Mat B, Mat A, const MatFactorInfo *info)
+static PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ_Bas(Mat B, Mat A, const MatFactorInfo *info)
 {
   Mat             C  = B;
   Mat_SeqSBAIJ   *b  = (Mat_SeqSBAIJ *)C->data;
@@ -172,7 +172,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ_Bas(Mat B, Mat A, const MatFactor
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatFactorGetSolverType_seqaij_bas(Mat A, MatSolverType *type)
+static PetscErrorCode MatFactorGetSolverType_seqaij_bas(Mat A, MatSolverType *type)
 {
   PetscFunctionBegin;
   *type = MATSOLVERBAS;

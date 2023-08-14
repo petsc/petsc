@@ -1209,7 +1209,7 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ_Sorted(Mat A, Mat B, PetscReal f
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatDestroy_SeqAIJ_MatMatMultTrans(void *data)
+static PetscErrorCode MatDestroy_SeqAIJ_MatMatMultTrans(void *data)
 {
   Mat_MatMatTransMult *abt = (Mat_MatMatTransMult *)data;
 

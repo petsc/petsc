@@ -514,7 +514,7 @@ PetscErrorCode VecMDot_SeqViennaCL(Vec xin, PetscInt nv, const Vec yin[], PetscS
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode VecMTDot_SeqViennaCL(Vec xin, PetscInt nv, const Vec yin[], PetscScalar *z)
+static PetscErrorCode VecMTDot_SeqViennaCL(Vec xin, PetscInt nv, const Vec yin[], PetscScalar *z)
 {
   PetscFunctionBegin;
   /* Since complex case is not supported at the moment, this is the same as VecMDot_SeqViennaCL */

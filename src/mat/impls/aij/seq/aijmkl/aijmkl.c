@@ -73,7 +73,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJMKL_SeqAIJ(Mat A, MatType type, Mat
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatDestroy_SeqAIJMKL(Mat A)
+static PetscErrorCode MatDestroy_SeqAIJMKL(Mat A)
 {
   Mat_SeqAIJMKL *aijmkl = (Mat_SeqAIJMKL *)A->spptr;
 
@@ -301,7 +301,7 @@ PETSC_INTERN PetscErrorCode MatSeqAIJMKL_view_mkl_handle(Mat A, PetscViewer view
 }
 #endif /* PETSC_HAVE_MKL_SPARSE_OPTIMIZE */
 
-PetscErrorCode MatDuplicate_SeqAIJMKL(Mat A, MatDuplicateOption op, Mat *M)
+static PetscErrorCode MatDuplicate_SeqAIJMKL(Mat A, MatDuplicateOption op, Mat *M)
 {
   Mat_SeqAIJMKL *aijmkl = (Mat_SeqAIJMKL *)A->spptr;
   Mat_SeqAIJMKL *aijmkl_dest;
@@ -315,7 +315,7 @@ PetscErrorCode MatDuplicate_SeqAIJMKL(Mat A, MatDuplicateOption op, Mat *M)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatAssemblyEnd_SeqAIJMKL(Mat A, MatAssemblyType mode)
+static PetscErrorCode MatAssemblyEnd_SeqAIJMKL(Mat A, MatAssemblyType mode)
 {
   Mat_SeqAIJ    *a = (Mat_SeqAIJ *)A->data;
   Mat_SeqAIJMKL *aijmkl;
@@ -340,7 +340,7 @@ PetscErrorCode MatAssemblyEnd_SeqAIJMKL(Mat A, MatAssemblyType mode)
 }
 
 #if !defined(PETSC_MKL_SPBLAS_DEPRECATED)
-PetscErrorCode MatMult_SeqAIJMKL(Mat A, Vec xx, Vec yy)
+static PetscErrorCode MatMult_SeqAIJMKL(Mat A, Vec xx, Vec yy)
 {
   Mat_SeqAIJ        *a = (Mat_SeqAIJ *)A->data;
   const PetscScalar *x;
@@ -414,7 +414,7 @@ PetscErrorCode MatMult_SeqAIJMKL_SpMV2(Mat A, Vec xx, Vec yy)
 #endif /* PETSC_HAVE_MKL_SPARSE_OPTIMIZE */
 
 #if !defined(PETSC_MKL_SPBLAS_DEPRECATED)
-PetscErrorCode MatMultTranspose_SeqAIJMKL(Mat A, Vec xx, Vec yy)
+static PetscErrorCode MatMultTranspose_SeqAIJMKL(Mat A, Vec xx, Vec yy)
 {
   Mat_SeqAIJ        *a = (Mat_SeqAIJ *)A->data;
   const PetscScalar *x;
@@ -488,7 +488,7 @@ PetscErrorCode MatMultTranspose_SeqAIJMKL_SpMV2(Mat A, Vec xx, Vec yy)
 #endif /* PETSC_HAVE_MKL_SPARSE_OPTIMIZE */
 
 #if !defined(PETSC_MKL_SPBLAS_DEPRECATED)
-PetscErrorCode MatMultAdd_SeqAIJMKL(Mat A, Vec xx, Vec yy, Vec zz)
+static PetscErrorCode MatMultAdd_SeqAIJMKL(Mat A, Vec xx, Vec yy, Vec zz)
 {
   Mat_SeqAIJ        *a = (Mat_SeqAIJ *)A->data;
   const PetscScalar *x;
@@ -587,7 +587,7 @@ PetscErrorCode MatMultAdd_SeqAIJMKL_SpMV2(Mat A, Vec xx, Vec yy, Vec zz)
 #endif /* PETSC_HAVE_MKL_SPARSE_OPTIMIZE */
 
 #if !defined(PETSC_MKL_SPBLAS_DEPRECATED)
-PetscErrorCode MatMultTransposeAdd_SeqAIJMKL(Mat A, Vec xx, Vec yy, Vec zz)
+static PetscErrorCode MatMultTransposeAdd_SeqAIJMKL(Mat A, Vec xx, Vec yy, Vec zz)
 {
   Mat_SeqAIJ        *a = (Mat_SeqAIJ *)A->data;
   const PetscScalar *x;

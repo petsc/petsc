@@ -444,7 +444,7 @@ static PetscErrorCode PCSetCoordinates_ML(PC pc, PetscInt ndm, PetscInt a_nloc, 
 }
 
 extern PetscErrorCode PCReset_MG(PC);
-PetscErrorCode        PCReset_ML(PC pc)
+static PetscErrorCode PCReset_ML(PC pc)
 {
   PC_MG   *mg    = (PC_MG *)pc->data;
   PC_ML   *pc_ml = (PC_ML *)mg->innerctx;
@@ -507,7 +507,7 @@ PetscErrorCode        PCReset_ML(PC pc)
 extern PetscErrorCode PCSetFromOptions_MG(PC, PetscOptionItems *PetscOptionsObject);
 extern PetscErrorCode PCReset_MG(PC);
 
-PetscErrorCode PCSetUp_ML(PC pc)
+static PetscErrorCode PCSetUp_ML(PC pc)
 {
   PetscMPIInt      size;
   FineGridCtx     *PetscMLdata;
@@ -951,7 +951,7 @@ PetscErrorCode PCSetUp_ML(PC pc)
 
    Application Interface Routine: PCDestroy()
 */
-PetscErrorCode PCDestroy_ML(PC pc)
+static PetscErrorCode PCDestroy_ML(PC pc)
 {
   PC_MG *mg    = (PC_MG *)pc->data;
   PC_ML *pc_ml = (PC_ML *)mg->innerctx;
@@ -964,7 +964,7 @@ PetscErrorCode PCDestroy_ML(PC pc)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PCSetFromOptions_ML(PC pc, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode PCSetFromOptions_ML(PC pc, PetscOptionItems *PetscOptionsObject)
 {
   PetscInt    indx, PrintLevel, partindx;
   const char *scheme[] = {"Uncoupled", "Coupled", "MIS", "METIS"};

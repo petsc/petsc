@@ -96,7 +96,7 @@ PetscErrorCode PetscViewerMatlabGetArray(PetscViewer mfile, int m, int n, PetscS
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PetscViewerFileSetMode_Matlab(PetscViewer viewer, PetscFileMode type)
+static PetscErrorCode PetscViewerFileSetMode_Matlab(PetscViewer viewer, PetscFileMode type)
 {
   PetscViewer_Matlab *vmatlab = (PetscViewer_Matlab *)viewer->data;
 
@@ -108,7 +108,7 @@ PetscErrorCode PetscViewerFileSetMode_Matlab(PetscViewer viewer, PetscFileMode t
 /*
         Actually opens the file
 */
-PetscErrorCode PetscViewerFileSetName_Matlab(PetscViewer viewer, const char name[])
+static PetscErrorCode PetscViewerFileSetName_Matlab(PetscViewer viewer, const char name[])
 {
   PetscViewer_Matlab *vmatlab = (PetscViewer_Matlab *)viewer->data;
   PetscFileMode       type    = vmatlab->btype;
@@ -129,7 +129,7 @@ PetscErrorCode PetscViewerFileSetName_Matlab(PetscViewer viewer, const char name
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PetscViewerDestroy_Matlab(PetscViewer v)
+static PetscErrorCode PetscViewerDestroy_Matlab(PetscViewer v)
 {
   PetscViewer_Matlab *vf = (PetscViewer_Matlab *)v->data;
 

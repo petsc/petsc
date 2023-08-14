@@ -400,7 +400,7 @@ static PetscErrorCode MatRestoreRowIJ_MPIAdj(Mat A, PetscInt oshift, PetscBool s
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatConvertFrom_MPIAdj(Mat A, MatType type, MatReuse reuse, Mat *newmat)
+static PetscErrorCode MatConvertFrom_MPIAdj(Mat A, MatType type, MatReuse reuse, Mat *newmat)
 {
   Mat                B;
   PetscInt           i, m, N, nzeros = 0, *ia, *ja, len, rstart, cnt, j, *a;
@@ -461,7 +461,7 @@ PetscErrorCode MatConvertFrom_MPIAdj(Mat A, MatType type, MatReuse reuse, Mat *n
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatSetValues_MPIAdj(Mat A, PetscInt m, const PetscInt *rows, PetscInt n, const PetscInt *cols, const PetscScalar *values, InsertMode im)
+static PetscErrorCode MatSetValues_MPIAdj(Mat A, PetscInt m, const PetscInt *rows, PetscInt n, const PetscInt *cols, const PetscScalar *values, InsertMode im)
 {
   Mat_MPIAdj *adj = (Mat_MPIAdj *)A->data;
   PetscInt    rStart, rEnd, cStart, cEnd;
@@ -494,7 +494,7 @@ PetscErrorCode MatSetValues_MPIAdj(Mat A, PetscInt m, const PetscInt *rows, Pets
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatAssemblyBegin_MPIAdj(Mat A, MatAssemblyType type)
+static PetscErrorCode MatAssemblyBegin_MPIAdj(Mat A, MatAssemblyType type)
 {
   PetscInt    nstash, reallocs;
   Mat_MPIAdj *adj = (Mat_MPIAdj *)A->data;
@@ -511,7 +511,7 @@ PetscErrorCode MatAssemblyBegin_MPIAdj(Mat A, MatAssemblyType type)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatAssemblyEnd_MPIAdj(Mat A, MatAssemblyType type)
+static PetscErrorCode MatAssemblyEnd_MPIAdj(Mat A, MatAssemblyType type)
 {
   PetscScalar   *val;
   PetscInt      *row, *col, m, rstart, *rowstarts;
@@ -812,7 +812,7 @@ static PetscErrorCode MatMPIAdjCreateNonemptySubcommMat_MPIAdj(Mat A, Mat *B)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatMPIAdjToSeq_MPIAdj(Mat A, Mat *B)
+static PetscErrorCode MatMPIAdjToSeq_MPIAdj(Mat A, Mat *B)
 {
   PetscInt    M, N, *II, *J, NZ, nz, m, nzstart, i;
   PetscInt   *Values = NULL;
@@ -858,7 +858,7 @@ PetscErrorCode MatMPIAdjToSeq_MPIAdj(Mat A, Mat *B)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatMPIAdjToSeqRankZero_MPIAdj(Mat A, Mat *B)
+static PetscErrorCode MatMPIAdjToSeqRankZero_MPIAdj(Mat A, Mat *B)
 {
   PetscInt    M, N, *II, *J, NZ, nz, m, nzstart, i;
   PetscInt   *Values = NULL;

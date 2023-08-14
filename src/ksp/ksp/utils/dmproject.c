@@ -10,7 +10,7 @@ typedef struct _projectConstraintsCtx {
   Vec mask;
 } projectConstraintsCtx;
 
-PetscErrorCode MatMult_GlobalToLocalNormal(Mat CtC, Vec x, Vec y)
+static PetscErrorCode MatMult_GlobalToLocalNormal(Mat CtC, Vec x, Vec y)
 {
   DM                     dm;
   Vec                    local, mask;

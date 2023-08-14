@@ -88,7 +88,7 @@ static PetscErrorCode MatGetInfo_ScaLAPACK(Mat A, MatInfoType flag, MatInfo *inf
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatSetOption_ScaLAPACK(Mat A, MatOption op, PetscBool flg)
+static PetscErrorCode MatSetOption_ScaLAPACK(Mat A, MatOption op, PetscBool flg)
 {
   Mat_ScaLAPACK *a = (Mat_ScaLAPACK *)A->data;
 
@@ -820,7 +820,7 @@ static PetscErrorCode MatCholeskyFactorSymbolic_ScaLAPACK(Mat F, Mat A, IS perm,
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatFactorGetSolverType_scalapack_scalapack(Mat A, MatSolverType *type)
+static PetscErrorCode MatFactorGetSolverType_scalapack_scalapack(Mat A, MatSolverType *type)
 {
   PetscFunctionBegin;
   *type = MATSOLVERSCALAPACK;
@@ -1223,7 +1223,7 @@ static PetscErrorCode MatDestroy_ScaLAPACK(Mat A)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatSetUp_ScaLAPACK(Mat A)
+static PetscErrorCode MatSetUp_ScaLAPACK(Mat A)
 {
   Mat_ScaLAPACK *a    = (Mat_ScaLAPACK *)A->data;
   PetscBLASInt   info = 0;
@@ -1255,7 +1255,7 @@ PetscErrorCode MatSetUp_ScaLAPACK(Mat A)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatAssemblyBegin_ScaLAPACK(Mat A, MatAssemblyType type)
+static PetscErrorCode MatAssemblyBegin_ScaLAPACK(Mat A, MatAssemblyType type)
 {
   PetscInt nstash, reallocs;
 
@@ -1267,7 +1267,7 @@ PetscErrorCode MatAssemblyBegin_ScaLAPACK(Mat A, MatAssemblyType type)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatAssemblyEnd_ScaLAPACK(Mat A, MatAssemblyType type)
+static PetscErrorCode MatAssemblyEnd_ScaLAPACK(Mat A, MatAssemblyType type)
 {
   Mat_ScaLAPACK *a = (Mat_ScaLAPACK *)A->data;
   PetscMPIInt    n;
@@ -1301,7 +1301,7 @@ PetscErrorCode MatAssemblyEnd_ScaLAPACK(Mat A, MatAssemblyType type)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatLoad_ScaLAPACK(Mat newMat, PetscViewer viewer)
+static PetscErrorCode MatLoad_ScaLAPACK(Mat newMat, PetscViewer viewer)
 {
   Mat      Adense, As;
   MPI_Comm comm;

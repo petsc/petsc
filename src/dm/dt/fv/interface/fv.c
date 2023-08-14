@@ -2172,7 +2172,7 @@ static PetscErrorCode PetscFVLeastSquaresSetMaxFaces_LS(PetscFV fvm, PetscInt ma
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PetscFVInitialize_LeastSquares(PetscFV fvm)
+static PetscErrorCode PetscFVInitialize_LeastSquares(PetscFV fvm)
 {
   PetscFunctionBegin;
   fvm->ops->setfromoptions       = NULL;

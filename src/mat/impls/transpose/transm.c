@@ -5,7 +5,7 @@ typedef struct {
   Mat A;
 } Mat_Transpose;
 
-PetscErrorCode MatMult_Transpose(Mat N, Vec x, Vec y)
+static PetscErrorCode MatMult_Transpose(Mat N, Vec x, Vec y)
 {
   Mat_Transpose *Na = (Mat_Transpose *)N->data;
 
@@ -14,7 +14,7 @@ PetscErrorCode MatMult_Transpose(Mat N, Vec x, Vec y)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatMultAdd_Transpose(Mat N, Vec v1, Vec v2, Vec v3)
+static PetscErrorCode MatMultAdd_Transpose(Mat N, Vec v1, Vec v2, Vec v3)
 {
   Mat_Transpose *Na = (Mat_Transpose *)N->data;
 
@@ -23,7 +23,7 @@ PetscErrorCode MatMultAdd_Transpose(Mat N, Vec v1, Vec v2, Vec v3)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatMultTranspose_Transpose(Mat N, Vec x, Vec y)
+static PetscErrorCode MatMultTranspose_Transpose(Mat N, Vec x, Vec y)
 {
   Mat_Transpose *Na = (Mat_Transpose *)N->data;
 
@@ -32,7 +32,7 @@ PetscErrorCode MatMultTranspose_Transpose(Mat N, Vec x, Vec y)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatMultTransposeAdd_Transpose(Mat N, Vec v1, Vec v2, Vec v3)
+static PetscErrorCode MatMultTransposeAdd_Transpose(Mat N, Vec v1, Vec v2, Vec v3)
 {
   Mat_Transpose *Na = (Mat_Transpose *)N->data;
 
@@ -41,7 +41,7 @@ PetscErrorCode MatMultTransposeAdd_Transpose(Mat N, Vec v1, Vec v2, Vec v3)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatDestroy_Transpose(Mat N)
+static PetscErrorCode MatDestroy_Transpose(Mat N)
 {
   Mat_Transpose *Na = (Mat_Transpose *)N->data;
 
@@ -53,7 +53,7 @@ PetscErrorCode MatDestroy_Transpose(Mat N)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatDuplicate_Transpose(Mat N, MatDuplicateOption op, Mat *m)
+static PetscErrorCode MatDuplicate_Transpose(Mat N, MatDuplicateOption op, Mat *m)
 {
   Mat_Transpose *Na = (Mat_Transpose *)N->data;
 
@@ -67,7 +67,7 @@ PetscErrorCode MatDuplicate_Transpose(Mat N, MatDuplicateOption op, Mat *m)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatCreateVecs_Transpose(Mat A, Vec *r, Vec *l)
+static PetscErrorCode MatCreateVecs_Transpose(Mat A, Vec *r, Vec *l)
 {
   Mat_Transpose *Aa = (Mat_Transpose *)A->data;
 
@@ -76,7 +76,7 @@ PetscErrorCode MatCreateVecs_Transpose(Mat A, Vec *r, Vec *l)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatAXPY_Transpose(Mat Y, PetscScalar a, Mat X, MatStructure str)
+static PetscErrorCode MatAXPY_Transpose(Mat Y, PetscScalar a, Mat X, MatStructure str)
 {
   Mat_Transpose *Ya = (Mat_Transpose *)Y->data;
   Mat_Transpose *Xa = (Mat_Transpose *)X->data;
@@ -88,7 +88,7 @@ PetscErrorCode MatAXPY_Transpose(Mat Y, PetscScalar a, Mat X, MatStructure str)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatHasOperation_Transpose(Mat mat, MatOperation op, PetscBool *has)
+static PetscErrorCode MatHasOperation_Transpose(Mat mat, MatOperation op, PetscBool *has)
 {
   Mat_Transpose *X = (Mat_Transpose *)mat->data;
   PetscFunctionBegin;
@@ -208,7 +208,7 @@ PETSC_INTERN PetscErrorCode MatProductSetFromOptions_Transpose(Mat D)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatGetDiagonal_Transpose(Mat A, Vec v)
+static PetscErrorCode MatGetDiagonal_Transpose(Mat A, Vec v)
 {
   Mat_Transpose *Aa = (Mat_Transpose *)A->data;
 
@@ -217,7 +217,7 @@ PetscErrorCode MatGetDiagonal_Transpose(Mat A, Vec v)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatConvert_Transpose(Mat A, MatType newtype, MatReuse reuse, Mat *newmat)
+static PetscErrorCode MatConvert_Transpose(Mat A, MatType newtype, MatReuse reuse, Mat *newmat)
 {
   Mat_Transpose *Aa = (Mat_Transpose *)A->data;
   PetscBool      flg;
@@ -241,7 +241,7 @@ PetscErrorCode MatConvert_Transpose(Mat A, MatType newtype, MatReuse reuse, Mat 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatTransposeGetMat_Transpose(Mat A, Mat *M)
+static PetscErrorCode MatTransposeGetMat_Transpose(Mat A, Mat *M)
 {
   Mat_Transpose *Aa = (Mat_Transpose *)A->data;
 

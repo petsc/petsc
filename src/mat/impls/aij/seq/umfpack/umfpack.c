@@ -356,7 +356,7 @@ static PetscErrorCode MatView_UMFPACK(Mat A, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatFactorGetSolverType_seqaij_umfpack(Mat A, MatSolverType *type)
+static PetscErrorCode MatFactorGetSolverType_seqaij_umfpack(Mat A, MatSolverType *type)
 {
   PetscFunctionBegin;
   *type = MATSOLVERUMFPACK;

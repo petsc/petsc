@@ -1994,7 +1994,7 @@ static PetscErrorCode MatZeroEntries_HYPRE_CSRMatrix(hypre_CSRMatrix *ha)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatZeroEntries_HYPRE(Mat A)
+static PetscErrorCode MatZeroEntries_HYPRE(Mat A)
 {
   Mat_HYPRE *hA = (Mat_HYPRE *)A->data;
 

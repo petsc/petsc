@@ -122,7 +122,7 @@ static PetscErrorCode PCMGCreateCoarseSpace_Polynomial(PC pc, PetscInt level, DM
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PCMGCreateCoarseSpace_Harmonic(PC pc, PetscInt level, DM dm, KSP ksp, PetscInt Nc, Mat initialGuess, Mat *coarseSpace)
+static PetscErrorCode PCMGCreateCoarseSpace_Harmonic(PC pc, PetscInt level, DM dm, KSP ksp, PetscInt Nc, Mat initialGuess, Mat *coarseSpace)
 {
   PetscFunctionBegin;
   PetscCall(PCMGCreateCoarseSpaceDefault_Private(pc, level, PCMG_ADAPT_HARMONIC, dm, ksp, Nc, initialGuess, coarseSpace));

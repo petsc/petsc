@@ -240,7 +240,7 @@ static PetscErrorCode MatPartitioningImprove_Parmetis(MatPartitioning part, IS *
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatPartitioningView_Parmetis(MatPartitioning part, PetscViewer viewer)
+static PetscErrorCode MatPartitioningView_Parmetis(MatPartitioning part, PetscViewer viewer)
 {
   MatPartitioning_Parmetis *pmetis = (MatPartitioning_Parmetis *)part->data;
   PetscMPIInt               rank;
@@ -330,7 +330,7 @@ PetscErrorCode MatPartitioningParmetisGetEdgeCut(MatPartitioning part, PetscInt 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatPartitioningSetFromOptions_Parmetis(MatPartitioning part, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode MatPartitioningSetFromOptions_Parmetis(MatPartitioning part, PetscOptionItems *PetscOptionsObject)
 {
   PetscBool flag = PETSC_FALSE;
 
@@ -344,7 +344,7 @@ PetscErrorCode MatPartitioningSetFromOptions_Parmetis(MatPartitioning part, Pets
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatPartitioningDestroy_Parmetis(MatPartitioning part)
+static PetscErrorCode MatPartitioningDestroy_Parmetis(MatPartitioning part)
 {
   MatPartitioning_Parmetis *pmetis = (MatPartitioning_Parmetis *)part->data;
 

@@ -123,7 +123,7 @@ PetscErrorCode KSPQCGGetQuadratic(KSP ksp, PetscReal *quadratic)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode KSPSolve_QCG(KSP ksp)
+static PetscErrorCode KSPSolve_QCG(KSP ksp)
 {
   /*
    Correpondence with documentation above:
@@ -303,7 +303,7 @@ PetscErrorCode KSPSolve_QCG(KSP ksp)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode KSPSetUp_QCG(KSP ksp)
+static PetscErrorCode KSPSetUp_QCG(KSP ksp)
 {
   PetscFunctionBegin;
   /* Get work vectors from user code */
@@ -311,7 +311,7 @@ PetscErrorCode KSPSetUp_QCG(KSP ksp)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode KSPDestroy_QCG(KSP ksp)
+static PetscErrorCode KSPDestroy_QCG(KSP ksp)
 {
   PetscFunctionBegin;
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPQCGGetQuadratic_C", NULL));
@@ -348,7 +348,7 @@ static PetscErrorCode KSPQCGGetQuadratic_QCG(KSP ksp, PetscReal *quadratic)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode KSPSetFromOptions_QCG(KSP ksp, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode KSPSetFromOptions_QCG(KSP ksp, PetscOptionItems *PetscOptionsObject)
 {
   PetscReal delta;
   KSP_QCG  *cgP = (KSP_QCG *)ksp->data;

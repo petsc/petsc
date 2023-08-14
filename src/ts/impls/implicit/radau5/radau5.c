@@ -8,7 +8,7 @@ typedef struct {
   Vec work, workf;
 } TS_Radau5;
 
-void FVPOL(int *N, double *X, double *Y, double *F, double *RPAR, void *IPAR)
+static void FVPOL(int *N, double *X, double *Y, double *F, double *RPAR, void *IPAR)
 {
   TS          ts    = (TS)IPAR;
   TS_Radau5  *cvode = (TS_Radau5 *)ts->data;
@@ -39,7 +39,7 @@ void FVPOL(int *N, double *X, double *Y, double *F, double *RPAR, void *IPAR)
   PetscCallAbort(PETSC_COMM_SELF, VecResetArray(cvode->workf));
 }
 
-void JVPOL(PetscInt *N, PetscScalar *X, PetscScalar *Y, PetscScalar *DFY, int *LDFY, PetscScalar *RPAR, void *IPAR)
+static void JVPOL(PetscInt *N, PetscScalar *X, PetscScalar *Y, PetscScalar *DFY, int *LDFY, PetscScalar *RPAR, void *IPAR)
 {
   TS         ts    = (TS)IPAR;
   TS_Radau5 *cvode = (TS_Radau5 *)ts->data;
@@ -59,7 +59,7 @@ void JVPOL(PetscInt *N, PetscScalar *X, PetscScalar *Y, PetscScalar *DFY, int *L
   PetscCallAbort(PETSC_COMM_SELF, VecResetArray(cvode->work));
 }
 
-void SOLOUT(int *NR, double *XOLD, double *X, double *Y, double *CONT, double *LRC, int *N, double *RPAR, void *IPAR, int *IRTRN)
+static void SOLOUT(int *NR, double *XOLD, double *X, double *Y, double *CONT, double *LRC, int *N, double *RPAR, void *IPAR, int *IRTRN)
 {
   TS         ts    = (TS)IPAR;
   TS_Radau5 *cvode = (TS_Radau5 *)ts->data;
@@ -70,9 +70,9 @@ void SOLOUT(int *NR, double *XOLD, double *X, double *Y, double *CONT, double *L
   PetscCallAbort(PETSC_COMM_SELF, VecResetArray(cvode->work));
 }
 
-void radau5_(int *, void *, double *, double *, double *, double *, double *, double *, int *, void *, int *, int *, int *, void *, int *, int *, int *, void *, int *, double *, int *, int *, int *, double *, void *, int *);
+static void radau5_(int *, void *, double *, double *, double *, double *, double *, double *, int *, void *, int *, int *, int *, void *, int *, int *, int *, void *, int *, double *, int *, int *, int *, double *, void *, int *);
 
-PetscErrorCode TSSolve_Radau5(TS ts)
+static PetscErrorCode TSSolve_Radau5(TS ts)
 {
   TS_Radau5   *cvode = (TS_Radau5 *)ts->data;
   PetscScalar *Y, *WORK, X, XEND, RTOL, ATOL, H, RPAR;
@@ -119,7 +119,7 @@ PetscErrorCode TSSolve_Radau5(TS ts)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode TSDestroy_Radau5(TS ts)
+static PetscErrorCode TSDestroy_Radau5(TS ts)
 {
   TS_Radau5 *cvode = (TS_Radau5 *)ts->data;
 

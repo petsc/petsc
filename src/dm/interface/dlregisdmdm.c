@@ -186,6 +186,7 @@ PetscErrorCode DMInitializePackage(void)
 #include <petscfe.h>
 
 static PetscBool PetscFEPackageInitialized = PETSC_FALSE;
+
 /*@C
   PetscFEFinalizePackage - This function finalizes everything in the PetscFE package. It is called
   from PetscFinalize().
@@ -260,6 +261,7 @@ PetscErrorCode PetscFEInitializePackage(void)
 #include <petscfv.h>
 
 static PetscBool PetscFVPackageInitialized = PETSC_FALSE;
+
 /*@C
   PetscFVFinalizePackage - This function finalizes everything in the PetscFV package. It is called
   from PetscFinalize().
@@ -327,6 +329,7 @@ PetscErrorCode PetscFVInitializePackage(void)
 #include <petscds.h>
 
 static PetscBool PetscDSPackageInitialized = PETSC_FALSE;
+
 /*@C
   PetscDSFinalizePackage - This function finalizes everything in the PetscDS package. It is called
   from PetscFinalize().

@@ -754,7 +754,7 @@ static PetscErrorCode TSSetUp_GLEE(TS ts)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode TSStartingMethod_GLEE(TS ts)
+static PetscErrorCode TSStartingMethod_GLEE(TS ts)
 {
   TS_GLEE    *glee = (TS_GLEE *)ts->data;
   GLEETableau tab  = glee->tableau;
@@ -878,7 +878,7 @@ PetscErrorCode TSGLEEGetType(TS ts, TSGLEEType *gleetype)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode TSGLEEGetType_GLEE(TS ts, TSGLEEType *gleetype)
+static PetscErrorCode TSGLEEGetType_GLEE(TS ts, TSGLEEType *gleetype)
 {
   TS_GLEE *glee = (TS_GLEE *)ts->data;
 
@@ -887,7 +887,7 @@ PetscErrorCode TSGLEEGetType_GLEE(TS ts, TSGLEEType *gleetype)
   *gleetype = glee->tableau->name;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-PetscErrorCode TSGLEESetType_GLEE(TS ts, TSGLEEType gleetype)
+static PetscErrorCode TSGLEESetType_GLEE(TS ts, TSGLEEType gleetype)
 {
   TS_GLEE        *glee = (TS_GLEE *)ts->data;
   PetscBool       match;
@@ -919,7 +919,7 @@ static PetscErrorCode TSGetStages_GLEE(TS ts, PetscInt *ns, Vec **Y)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode TSGetSolutionComponents_GLEE(TS ts, PetscInt *n, Vec *Y)
+static PetscErrorCode TSGetSolutionComponents_GLEE(TS ts, PetscInt *n, Vec *Y)
 {
   TS_GLEE    *glee = (TS_GLEE *)ts->data;
   GLEETableau tab  = glee->tableau;
@@ -934,7 +934,7 @@ PetscErrorCode TSGetSolutionComponents_GLEE(TS ts, PetscInt *n, Vec *Y)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode TSGetAuxSolution_GLEE(TS ts, Vec *X)
+static PetscErrorCode TSGetAuxSolution_GLEE(TS ts, Vec *X)
 {
   TS_GLEE     *glee = (TS_GLEE *)ts->data;
   GLEETableau  tab  = glee->tableau;
@@ -951,7 +951,7 @@ PetscErrorCode TSGetAuxSolution_GLEE(TS ts, Vec *X)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode TSGetTimeError_GLEE(TS ts, PetscInt n, Vec *X)
+static PetscErrorCode TSGetTimeError_GLEE(TS ts, PetscInt n, Vec *X)
 {
   TS_GLEE     *glee = (TS_GLEE *)ts->data;
   GLEETableau  tab  = glee->tableau;
@@ -972,7 +972,7 @@ PetscErrorCode TSGetTimeError_GLEE(TS ts, PetscInt n, Vec *X)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode TSSetTimeError_GLEE(TS ts, Vec X)
+static PetscErrorCode TSSetTimeError_GLEE(TS ts, Vec X)
 {
   TS_GLEE    *glee = (TS_GLEE *)ts->data;
   GLEETableau tab  = glee->tableau;

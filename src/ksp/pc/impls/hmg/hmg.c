@@ -13,8 +13,8 @@ typedef struct {
   PetscInt  component;     /* Which subspace is used for the subspace-based coarsening algorithm? */
 } PC_HMG;
 
-PetscErrorCode PCSetFromOptions_HMG(PC, PetscOptionItems *);
-PetscErrorCode PCReset_MG(PC);
+static PetscErrorCode PCSetFromOptions_HMG(PC, PetscOptionItems *);
+PetscErrorCode        PCReset_MG(PC);
 
 static PetscErrorCode PCHMGExtractSubMatrix_Private(Mat pmat, Mat *submat, MatReuse reuse, PetscInt component, PetscInt blocksize)
 {
@@ -90,7 +90,7 @@ static PetscErrorCode PCHMGExpandInterpolation_Private(Mat subinterp, Mat *inter
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PCSetUp_HMG(PC pc)
+static PetscErrorCode PCSetUp_HMG(PC pc)
 {
   Mat              PA, submat;
   PC_MG           *mg  = (PC_MG *)pc->data;
@@ -211,7 +211,7 @@ PetscErrorCode PCSetUp_HMG(PC pc)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PCDestroy_HMG(PC pc)
+static PetscErrorCode PCDestroy_HMG(PC pc)
 {
   PC_MG  *mg  = (PC_MG *)pc->data;
   PC_HMG *hmg = (PC_HMG *)mg->innerctx;
@@ -230,7 +230,7 @@ PetscErrorCode PCDestroy_HMG(PC pc)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PCView_HMG(PC pc, PetscViewer viewer)
+static PetscErrorCode PCView_HMG(PC pc, PetscViewer viewer)
 {
   PC_MG    *mg  = (PC_MG *)pc->data;
   PC_HMG   *hmg = (PC_HMG *)mg->innerctx;
@@ -249,7 +249,7 @@ PetscErrorCode PCView_HMG(PC pc, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PCSetFromOptions_HMG(PC pc, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode PCSetFromOptions_HMG(PC pc, PetscOptionItems *PetscOptionsObject)
 {
   PC_MG  *mg  = (PC_MG *)pc->data;
   PC_HMG *hmg = (PC_HMG *)mg->innerctx;

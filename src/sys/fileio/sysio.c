@@ -23,7 +23,7 @@ const char *const PetscFileModes[] = {"READ", "WRITE", "APPEND", "UPDATE", "APPE
   PetscByteSwapEnum - Swap bytes in a  PETSc Enum
 
 */
-PetscErrorCode PetscByteSwapEnum(PetscEnum *buff, PetscInt n)
+static PetscErrorCode PetscByteSwapEnum(PetscEnum *buff, PetscInt n)
 {
   PetscInt  i, j;
   PetscEnum tmp = ENUM_DUMMY;
@@ -42,7 +42,7 @@ PetscErrorCode PetscByteSwapEnum(PetscEnum *buff, PetscInt n)
   PetscByteSwapBool - Swap bytes in a  PETSc Bool
 
 */
-PetscErrorCode PetscByteSwapBool(PetscBool *buff, PetscInt n)
+static PetscErrorCode PetscByteSwapBool(PetscBool *buff, PetscInt n)
 {
   PetscInt  i, j;
   PetscBool tmp = PETSC_FALSE;
@@ -61,7 +61,7 @@ PetscErrorCode PetscByteSwapBool(PetscBool *buff, PetscInt n)
   PetscByteSwapInt - Swap bytes in a  PETSc integer (which may be 32 or 64-bits)
 
 */
-PetscErrorCode PetscByteSwapInt(PetscInt *buff, PetscInt n)
+static PetscErrorCode PetscByteSwapInt(PetscInt *buff, PetscInt n)
 {
   PetscInt i, j, tmp = 0;
   char    *ptr1, *ptr2 = (char *)&tmp;
@@ -79,7 +79,7 @@ PetscErrorCode PetscByteSwapInt(PetscInt *buff, PetscInt n)
   PetscByteSwapInt64 - Swap bytes in a  PETSc integer (64-bits)
 
 */
-PetscErrorCode PetscByteSwapInt64(PetscInt64 *buff, PetscInt n)
+static PetscErrorCode PetscByteSwapInt64(PetscInt64 *buff, PetscInt n)
 {
   PetscInt   i, j;
   PetscInt64 tmp = 0;
@@ -98,7 +98,7 @@ PetscErrorCode PetscByteSwapInt64(PetscInt64 *buff, PetscInt n)
   PetscByteSwapInt32 - Swap bytes in a  PETSc integer (32-bits)
 
 */
-PetscErrorCode PetscByteSwapInt32(PetscInt32 *buff, PetscInt n)
+static PetscErrorCode PetscByteSwapInt32(PetscInt32 *buff, PetscInt n)
 {
   PetscInt   i, j;
   PetscInt32 tmp = 0;
@@ -116,7 +116,7 @@ PetscErrorCode PetscByteSwapInt32(PetscInt32 *buff, PetscInt n)
 /*
   PetscByteSwapShort - Swap bytes in a short
 */
-PetscErrorCode PetscByteSwapShort(short *buff, PetscInt n)
+static PetscErrorCode PetscByteSwapShort(short *buff, PetscInt n)
 {
   PetscInt i, j;
   short    tmp;
@@ -133,7 +133,7 @@ PetscErrorCode PetscByteSwapShort(short *buff, PetscInt n)
 /*
   PetscByteSwapLong - Swap bytes in a long
 */
-PetscErrorCode PetscByteSwapLong(long *buff, PetscInt n)
+static PetscErrorCode PetscByteSwapLong(long *buff, PetscInt n)
 {
   PetscInt i, j;
   long     tmp;
@@ -151,7 +151,7 @@ PetscErrorCode PetscByteSwapLong(long *buff, PetscInt n)
 /*
   PetscByteSwapReal - Swap bytes in a PetscReal
 */
-PetscErrorCode PetscByteSwapReal(PetscReal *buff, PetscInt n)
+static PetscErrorCode PetscByteSwapReal(PetscReal *buff, PetscInt n)
 {
   PetscInt  i, j;
   PetscReal tmp, *buff1 = (PetscReal *)buff;
@@ -170,7 +170,7 @@ PetscErrorCode PetscByteSwapReal(PetscReal *buff, PetscInt n)
   PetscByteSwapScalar - Swap bytes in a PetscScalar
   The complex case is dealt with with an array of PetscReal, twice as long.
 */
-PetscErrorCode PetscByteSwapScalar(PetscScalar *buff, PetscInt n)
+static PetscErrorCode PetscByteSwapScalar(PetscScalar *buff, PetscInt n)
 {
   PetscInt  i, j;
   PetscReal tmp, *buff1 = (PetscReal *)buff;
@@ -191,7 +191,7 @@ PetscErrorCode PetscByteSwapScalar(PetscScalar *buff, PetscInt n)
 /*
   PetscByteSwapDouble - Swap bytes in a double
 */
-PetscErrorCode PetscByteSwapDouble(double *buff, PetscInt n)
+static PetscErrorCode PetscByteSwapDouble(double *buff, PetscInt n)
 {
   PetscInt i, j;
   double   tmp, *buff1 = (double *)buff;
@@ -209,7 +209,7 @@ PetscErrorCode PetscByteSwapDouble(double *buff, PetscInt n)
 /*
   PetscByteSwapFloat - Swap bytes in a float
 */
-PetscErrorCode PetscByteSwapFloat(float *buff, PetscInt n)
+static PetscErrorCode PetscByteSwapFloat(float *buff, PetscInt n)
 {
   PetscInt i, j;
   float    tmp, *buff1 = (float *)buff;

@@ -298,7 +298,7 @@ static PetscErrorCode KSPPGMRESUpdateHessenberg(KSP ksp, PetscInt it, PetscBool 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode KSPBuildSolution_PGMRES(KSP ksp, Vec ptr, Vec *result)
+static PetscErrorCode KSPBuildSolution_PGMRES(KSP ksp, Vec ptr, Vec *result)
 {
   KSP_PGMRES *pgmres = (KSP_PGMRES *)ksp->data;
 
@@ -317,7 +317,7 @@ PetscErrorCode KSPBuildSolution_PGMRES(KSP ksp, Vec ptr, Vec *result)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode KSPSetFromOptions_PGMRES(KSP ksp, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode KSPSetFromOptions_PGMRES(KSP ksp, PetscOptionItems *PetscOptionsObject)
 {
   PetscFunctionBegin;
   PetscCall(KSPSetFromOptions_GMRES(ksp, PetscOptionsObject));
@@ -326,7 +326,7 @@ PetscErrorCode KSPSetFromOptions_PGMRES(KSP ksp, PetscOptionItems *PetscOptionsO
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode KSPReset_PGMRES(KSP ksp)
+static PetscErrorCode KSPReset_PGMRES(KSP ksp)
 {
   PetscFunctionBegin;
   PetscCall(KSPReset_GMRES(ksp));

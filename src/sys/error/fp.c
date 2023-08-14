@@ -638,7 +638,7 @@ PetscErrorCode PetscDetermineInitialFPTrap(void)
 /* -------------------------Default -----------------------------------*/
 #else
 
-void PetscDefaultFPTrap(int sig)
+static void PetscDefaultFPTrap(int sig)
 {
   PetscErrorCode ierr;
 

@@ -404,7 +404,7 @@ PetscErrorCode MatFDColoringSetType(MatFDColoring matfd, MatMFFDType type)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatFDColoringViewFromOptions(MatFDColoring fd, const char prefix[], const char optionname[])
+static PetscErrorCode MatFDColoringViewFromOptions(MatFDColoring fd, const char prefix[], const char optionname[])
 {
   PetscBool         flg;
   PetscViewer       viewer;

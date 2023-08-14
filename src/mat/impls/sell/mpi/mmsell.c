@@ -197,7 +197,7 @@ PetscErrorCode MatSetUpMultiply_MPISELL(Mat mat)
 static PetscInt *auglyrmapd = NULL, *auglyrmapo = NULL; /* mapping from the local ordering to the "diagonal" and "off-diagonal" parts of the local matrix */
 static Vec       auglydd = NULL, auglyoo = NULL;        /* work vectors used to scale the two parts of the local matrix */
 
-PetscErrorCode MatMPISELLDiagonalScaleLocalSetUp(Mat inA, Vec scale)
+static PetscErrorCode MatMPISELLDiagonalScaleLocalSetUp(Mat inA, Vec scale)
 {
   Mat_MPISELL *ina = (Mat_MPISELL *)inA->data; /*access private part of matrix */
   PetscInt     i, n, nt, cstart, cend, no, *garray = ina->garray, *lindices;

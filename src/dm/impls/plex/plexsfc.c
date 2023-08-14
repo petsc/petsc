@@ -166,7 +166,7 @@ static PetscInt ZLayoutElementsOnRank(const ZLayout *layout, PetscMPIInt rank)
   return remote_elem;
 }
 
-PetscInt ZCodeFind(ZCode key, PetscInt n, const ZCode X[])
+static PetscInt ZCodeFind(ZCode key, PetscInt n, const ZCode X[])
 {
   PetscInt lo = 0, hi = n;
 

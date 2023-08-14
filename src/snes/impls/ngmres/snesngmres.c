@@ -90,7 +90,7 @@ PetscErrorCode SNESSetUp_NGMRES(SNES snes)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode SNESSetFromOptions_NGMRES(SNES snes, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode SNESSetFromOptions_NGMRES(SNES snes, PetscOptionItems *PetscOptionsObject)
 {
   SNES_NGMRES *ngmres = (SNES_NGMRES *)snes->data;
   PetscBool    debug  = PETSC_FALSE;
@@ -133,7 +133,7 @@ PetscErrorCode SNESView_NGMRES(SNES snes, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode SNESSolve_NGMRES(SNES snes)
+static PetscErrorCode SNESSolve_NGMRES(SNES snes)
 {
   SNES_NGMRES *ngmres = (SNES_NGMRES *)snes->data;
   /* present solution, residual, and preconditioned residual */
@@ -347,7 +347,7 @@ PetscErrorCode SNESNGMRESSetRestartFmRise(SNES snes, PetscBool flg)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode SNESNGMRESSetRestartFmRise_NGMRES(SNES snes, PetscBool flg)
+static PetscErrorCode SNESNGMRESSetRestartFmRise_NGMRES(SNES snes, PetscBool flg)
 {
   SNES_NGMRES *ngmres = (SNES_NGMRES *)snes->data;
 
@@ -366,7 +366,7 @@ PetscErrorCode SNESNGMRESGetRestartFmRise(SNES snes, PetscBool *flg)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode SNESNGMRESGetRestartFmRise_NGMRES(SNES snes, PetscBool *flg)
+static PetscErrorCode SNESNGMRESGetRestartFmRise_NGMRES(SNES snes, PetscBool *flg)
 {
   SNES_NGMRES *ngmres = (SNES_NGMRES *)snes->data;
 
@@ -428,7 +428,7 @@ PetscErrorCode SNESNGMRESSetSelectType(SNES snes, SNESNGMRESSelectType stype)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode SNESNGMRESSetSelectType_NGMRES(SNES snes, SNESNGMRESSelectType stype)
+static PetscErrorCode SNESNGMRESSetSelectType_NGMRES(SNES snes, SNESNGMRESSelectType stype)
 {
   SNES_NGMRES *ngmres = (SNES_NGMRES *)snes->data;
 
@@ -437,7 +437,7 @@ PetscErrorCode SNESNGMRESSetSelectType_NGMRES(SNES snes, SNESNGMRESSelectType st
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode SNESNGMRESSetRestartType_NGMRES(SNES snes, SNESNGMRESRestartType rtype)
+static PetscErrorCode SNESNGMRESSetRestartType_NGMRES(SNES snes, SNESNGMRESRestartType rtype)
 {
   SNES_NGMRES *ngmres = (SNES_NGMRES *)snes->data;
 

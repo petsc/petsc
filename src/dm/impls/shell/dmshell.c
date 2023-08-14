@@ -197,7 +197,7 @@ static PetscErrorCode DMCreateMatrix_Shell(DM dm, Mat *J)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode DMCreateGlobalVector_Shell(DM dm, Vec *gvec)
+static PetscErrorCode DMCreateGlobalVector_Shell(DM dm, Vec *gvec)
 {
   DM_Shell *shell = (DM_Shell *)dm->data;
   Vec       X;
@@ -215,7 +215,7 @@ PetscErrorCode DMCreateGlobalVector_Shell(DM dm, Vec *gvec)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode DMCreateLocalVector_Shell(DM dm, Vec *gvec)
+static PetscErrorCode DMCreateLocalVector_Shell(DM dm, Vec *gvec)
 {
   DM_Shell *shell = (DM_Shell *)dm->data;
   Vec       X;
@@ -1111,7 +1111,7 @@ static PetscErrorCode DMLoad_Shell(DM dm, PetscViewer v)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode DMCreateSubDM_Shell(DM dm, PetscInt numFields, const PetscInt fields[], IS *is, DM *subdm)
+static PetscErrorCode DMCreateSubDM_Shell(DM dm, PetscInt numFields, const PetscInt fields[], IS *is, DM *subdm)
 {
   PetscFunctionBegin;
   if (subdm) PetscCall(DMShellCreate(PetscObjectComm((PetscObject)dm), subdm));

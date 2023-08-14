@@ -13,14 +13,13 @@ PetscLogEvent CHARACTERISTIC_FullTimeLocal, CHARACTERISTIC_FullTimeRemote, CHARA
 PetscFunctionList CharacteristicList              = NULL;
 PetscBool         CharacteristicRegisterAllCalled = PETSC_FALSE;
 
-PetscErrorCode DMDAGetNeighborsRank(DM, PetscMPIInt[]);
-PetscInt       DMDAGetNeighborRelative(DM, PetscReal, PetscReal);
-PetscErrorCode DMDAMapToPeriodicDomain(DM, PetscScalar[]);
+static PetscErrorCode DMDAGetNeighborsRank(DM, PetscMPIInt[]);
+static PetscInt       DMDAGetNeighborRelative(DM, PetscReal, PetscReal);
 
-PetscErrorCode CharacteristicHeapSort(Characteristic, Queue, PetscInt);
-PetscErrorCode CharacteristicSiftDown(Characteristic, Queue, PetscInt, PetscInt);
+static PetscErrorCode CharacteristicHeapSort(Characteristic, Queue, PetscInt);
+static PetscErrorCode CharacteristicSiftDown(Characteristic, Queue, PetscInt, PetscInt);
 
-PetscErrorCode CharacteristicView(Characteristic c, PetscViewer viewer)
+static PetscErrorCode CharacteristicView(Characteristic c, PetscViewer viewer)
 {
   PetscBool iascii;
 
@@ -632,7 +631,7 @@ PetscErrorCode CharacteristicGetValuesEnd(Characteristic c)
 /*
   Based on code from http://linux.wku.edu/~lamonml/algor/sort/heap.html
 */
-PetscErrorCode CharacteristicHeapSort(Characteristic c, Queue queue, PetscInt size)
+static PetscErrorCode CharacteristicHeapSort(Characteristic c, Queue queue, PetscInt size)
 /*---------------------------------------------------------------------*/
 {
   CharacteristicPointDA2D temp;
@@ -663,7 +662,7 @@ PetscErrorCode CharacteristicHeapSort(Characteristic c, Queue queue, PetscInt si
 /*
   Based on code from http://linux.wku.edu/~lamonml/algor/sort/heap.html
 */
-PetscErrorCode CharacteristicSiftDown(Characteristic c, Queue queue, PetscInt root, PetscInt bottom)
+static PetscErrorCode CharacteristicSiftDown(Characteristic c, Queue queue, PetscInt root, PetscInt bottom)
 /*---------------------------------------------------------------------*/
 {
   PetscBool               done = PETSC_FALSE;
@@ -687,7 +686,7 @@ PetscErrorCode CharacteristicSiftDown(Characteristic c, Queue queue, PetscInt ro
 }
 
 /* [center, left, top-left, top, top-right, right, bottom-right, bottom, bottom-left] */
-PetscErrorCode DMDAGetNeighborsRank(DM da, PetscMPIInt neighbors[])
+static PetscErrorCode DMDAGetNeighborsRank(DM da, PetscMPIInt neighbors[])
 {
   DMBoundaryType bx, by;
   PetscBool      IPeriodic = PETSC_FALSE, JPeriodic = PETSC_FALSE;
@@ -756,7 +755,7 @@ PetscErrorCode DMDAGetNeighborsRank(DM da, PetscMPIInt neighbors[])
     8 | 7 | 6
       |   |
 */
-PetscInt DMDAGetNeighborRelative(DM da, PetscReal ir, PetscReal jr)
+static PetscInt DMDAGetNeighborRelative(DM da, PetscReal ir, PetscReal jr)
 {
   DMDALocalInfo info;
   PetscReal     is, ie, js, je;

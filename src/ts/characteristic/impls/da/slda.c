@@ -2,7 +2,7 @@
 #include <petscdmda.h>
 #include <petscviewer.h>
 
-PetscErrorCode CharacteristicView_DA(Characteristic c, PetscViewer viewer)
+static PetscErrorCode CharacteristicView_DA(Characteristic c, PetscViewer viewer)
 {
   Characteristic_DA *da = (Characteristic_DA *)c->data;
   PetscBool          iascii, isstring;
@@ -19,7 +19,7 @@ PetscErrorCode CharacteristicView_DA(Characteristic c, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode CharacteristicDestroy_DA(Characteristic c)
+static PetscErrorCode CharacteristicDestroy_DA(Characteristic c)
 {
   Characteristic_DA *da = (Characteristic_DA *)c->data;
 
@@ -28,7 +28,7 @@ PetscErrorCode CharacteristicDestroy_DA(Characteristic c)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode CharacteristicSetUp_DA(Characteristic c)
+static PetscErrorCode CharacteristicSetUp_DA(Characteristic c)
 {
   PetscMPIInt  blockLen[2];
   MPI_Aint     indices[2];

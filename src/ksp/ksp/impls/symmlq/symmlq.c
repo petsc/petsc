@@ -5,14 +5,14 @@ typedef struct {
   PetscReal haptol;
 } KSP_SYMMLQ;
 
-PetscErrorCode KSPSetUp_SYMMLQ(KSP ksp)
+static PetscErrorCode KSPSetUp_SYMMLQ(KSP ksp)
 {
   PetscFunctionBegin;
   PetscCall(KSPSetWorkVecs(ksp, 9));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode KSPSolve_SYMMLQ(KSP ksp)
+static PetscErrorCode KSPSolve_SYMMLQ(KSP ksp)
 {
   PetscInt    i;
   PetscScalar alpha, beta, ibeta, betaold, beta1, ceta = 0, ceta_oold = 0.0, ceta_old = 0.0, ceta_bar;

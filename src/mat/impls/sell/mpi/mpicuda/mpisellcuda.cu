@@ -2,7 +2,7 @@
 #include <petscdevice.h>
 #include <../src/mat/impls/sell/mpi/mpisell.h> /*I "petscmat.h" I*/
 
-PetscErrorCode MatMPISELLSetPreallocation_MPISELLCUDA(Mat B, PetscInt d_rlenmax, const PetscInt d_rlen[], PetscInt o_rlenmax, const PetscInt o_rlen[])
+static PetscErrorCode MatMPISELLSetPreallocation_MPISELLCUDA(Mat B, PetscInt d_rlenmax, const PetscInt d_rlen[], PetscInt o_rlenmax, const PetscInt o_rlen[])
 {
   Mat_MPISELL *b = (Mat_MPISELL *)B->data;
 
@@ -29,7 +29,7 @@ PetscErrorCode MatMPISELLSetPreallocation_MPISELLCUDA(Mat B, PetscInt d_rlenmax,
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatMult_MPISELLCUDA(Mat A, Vec xx, Vec yy)
+static PetscErrorCode MatMult_MPISELLCUDA(Mat A, Vec xx, Vec yy)
 {
   Mat_MPISELL *a = (Mat_MPISELL *)A->data;
   PetscInt     nt;
@@ -44,7 +44,7 @@ PetscErrorCode MatMult_MPISELLCUDA(Mat A, Vec xx, Vec yy)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatZeroEntries_MPISELLCUDA(Mat A)
+static PetscErrorCode MatZeroEntries_MPISELLCUDA(Mat A)
 {
   Mat_MPISELL *l = (Mat_MPISELL *)A->data;
 
@@ -54,7 +54,7 @@ PetscErrorCode MatZeroEntries_MPISELLCUDA(Mat A)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatMultAdd_MPISELLCUDA(Mat A, Vec xx, Vec yy, Vec zz)
+static PetscErrorCode MatMultAdd_MPISELLCUDA(Mat A, Vec xx, Vec yy, Vec zz)
 {
   Mat_MPISELL *a = (Mat_MPISELL *)A->data;
   PetscInt     nt;
@@ -69,7 +69,7 @@ PetscErrorCode MatMultAdd_MPISELLCUDA(Mat A, Vec xx, Vec yy, Vec zz)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatMultTranspose_MPISELLCUDA(Mat A, Vec xx, Vec yy)
+static PetscErrorCode MatMultTranspose_MPISELLCUDA(Mat A, Vec xx, Vec yy)
 {
   Mat_MPISELL *a = (Mat_MPISELL *)A->data;
   PetscInt     nt;
@@ -84,12 +84,12 @@ PetscErrorCode MatMultTranspose_MPISELLCUDA(Mat A, Vec xx, Vec yy)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatSetFromOptions_MPISELLCUDA(Mat, PetscOptionItems *)
+static PetscErrorCode MatSetFromOptions_MPISELLCUDA(Mat, PetscOptionItems *)
 {
   return PETSC_SUCCESS;
 }
 
-PetscErrorCode MatAssemblyEnd_MPISELLCUDA(Mat A, MatAssemblyType mode)
+static PetscErrorCode MatAssemblyEnd_MPISELLCUDA(Mat A, MatAssemblyType mode)
 {
   PetscFunctionBegin;
   PetscCall(MatAssemblyEnd_MPISELL(A, mode));
@@ -97,7 +97,7 @@ PetscErrorCode MatAssemblyEnd_MPISELLCUDA(Mat A, MatAssemblyType mode)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatDestroy_MPISELLCUDA(Mat A)
+static PetscErrorCode MatDestroy_MPISELLCUDA(Mat A)
 {
   PetscFunctionBegin;
   PetscCall(MatDestroy_MPISELL(A));

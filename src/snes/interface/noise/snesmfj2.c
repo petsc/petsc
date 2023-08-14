@@ -25,7 +25,7 @@ typedef struct {                 /* default context for matrix-free SNES */
   void        *data;             /* implementation-specific data */
 } MFCtx_Private;
 
-PetscErrorCode SNESMatrixFreeDestroy2_Private(Mat mat)
+static PetscErrorCode SNESMatrixFreeDestroy2_Private(Mat mat)
 {
   MFCtx_Private *ctx;
 
@@ -41,7 +41,7 @@ PetscErrorCode SNESMatrixFreeDestroy2_Private(Mat mat)
 /*
    SNESMatrixFreeView2_Private - Views matrix-free parameters.
  */
-PetscErrorCode SNESMatrixFreeView2_Private(Mat J, PetscViewer viewer)
+static PetscErrorCode SNESMatrixFreeView2_Private(Mat J, PetscViewer viewer)
 {
   MFCtx_Private *ctx;
   PetscBool      iascii;
@@ -67,7 +67,7 @@ PetscErrorCode SNESMatrixFreeView2_Private(Mat J, PetscViewer viewer)
         u = current iterate
         h = difference interval
 */
-PetscErrorCode SNESMatrixFreeMult2_Private(Mat mat, Vec a, Vec y)
+static PetscErrorCode SNESMatrixFreeMult2_Private(Mat mat, Vec a, Vec y)
 {
   MFCtx_Private *ctx;
   SNES           snes;

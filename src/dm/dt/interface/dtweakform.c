@@ -98,7 +98,7 @@ PetscErrorCode PetscFormKeySort(PetscInt n, PetscFormKey arr[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PetscWeakFormGetFunction_Private(PetscWeakForm wf, PetscHMapForm ht, DMLabel label, PetscInt value, PetscInt f, PetscInt part, PetscInt *n, void (***func)(void))
+static PetscErrorCode PetscWeakFormGetFunction_Private(PetscWeakForm wf, PetscHMapForm ht, DMLabel label, PetscInt value, PetscInt f, PetscInt part, PetscInt *n, void (***func)(void))
 {
   PetscFormKey key;
   PetscChunk   chunk;
@@ -120,7 +120,7 @@ PetscErrorCode PetscWeakFormGetFunction_Private(PetscWeakForm wf, PetscHMapForm 
 }
 
 /* A NULL argument for func causes this to clear the key */
-PetscErrorCode PetscWeakFormSetFunction_Private(PetscWeakForm wf, PetscHMapForm ht, DMLabel label, PetscInt value, PetscInt f, PetscInt part, PetscInt n, void (**func)(void))
+static PetscErrorCode PetscWeakFormSetFunction_Private(PetscWeakForm wf, PetscHMapForm ht, DMLabel label, PetscInt value, PetscInt f, PetscInt part, PetscInt n, void (**func)(void))
 {
   PetscFormKey key;
   PetscChunk   chunk;
@@ -146,7 +146,7 @@ PetscErrorCode PetscWeakFormSetFunction_Private(PetscWeakForm wf, PetscHMapForm 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PetscWeakFormAddFunction_Private(PetscWeakForm wf, PetscHMapForm ht, DMLabel label, PetscInt value, PetscInt f, PetscInt part, void (*func)(void))
+static PetscErrorCode PetscWeakFormAddFunction_Private(PetscWeakForm wf, PetscHMapForm ht, DMLabel label, PetscInt value, PetscInt f, PetscInt part, void (*func)(void))
 {
   PetscFormKey key;
   PetscChunk   chunk;
@@ -170,7 +170,7 @@ PetscErrorCode PetscWeakFormAddFunction_Private(PetscWeakForm wf, PetscHMapForm 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PetscWeakFormGetIndexFunction_Private(PetscWeakForm wf, PetscHMapForm ht, DMLabel label, PetscInt value, PetscInt f, PetscInt part, PetscInt ind, void (**func)(void))
+static PetscErrorCode PetscWeakFormGetIndexFunction_Private(PetscWeakForm wf, PetscHMapForm ht, DMLabel label, PetscInt value, PetscInt f, PetscInt part, PetscInt ind, void (**func)(void))
 {
   PetscFormKey key;
   PetscChunk   chunk;
@@ -191,7 +191,7 @@ PetscErrorCode PetscWeakFormGetIndexFunction_Private(PetscWeakForm wf, PetscHMap
 }
 
 /* Ignore a NULL func */
-PetscErrorCode PetscWeakFormSetIndexFunction_Private(PetscWeakForm wf, PetscHMapForm ht, DMLabel label, PetscInt value, PetscInt f, PetscInt part, PetscInt ind, void (*func)(void))
+static PetscErrorCode PetscWeakFormSetIndexFunction_Private(PetscWeakForm wf, PetscHMapForm ht, DMLabel label, PetscInt value, PetscInt f, PetscInt part, PetscInt ind, void (*func)(void))
 {
   PetscFormKey key;
   PetscChunk   chunk;
@@ -214,7 +214,7 @@ PetscErrorCode PetscWeakFormSetIndexFunction_Private(PetscWeakForm wf, PetscHMap
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PetscWeakFormClearIndexFunction_Private(PetscWeakForm wf, PetscHMapForm ht, DMLabel label, PetscInt value, PetscInt f, PetscInt part, PetscInt ind)
+static PetscErrorCode PetscWeakFormClearIndexFunction_Private(PetscWeakForm wf, PetscHMapForm ht, DMLabel label, PetscInt value, PetscInt f, PetscInt part, PetscInt ind)
 {
   PetscFormKey key;
   PetscChunk   chunk;

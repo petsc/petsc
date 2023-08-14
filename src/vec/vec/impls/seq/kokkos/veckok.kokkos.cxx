@@ -381,7 +381,7 @@ PetscErrorCode VecMultiDot_Private(Vec xin, PetscInt nv, const Vec yin[], PetscS
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode VecMultiDot_Verbose(Vec xin, PetscInt nv, const Vec yin[], PetscScalar *z)
+static PetscErrorCode VecMultiDot_Verbose(Vec xin, PetscInt nv, const Vec yin[], PetscScalar *z)
 {
   PetscInt                   ngroup = nv / 8, rem = nv % 8, N = xin->map->n;
   ConstPetscScalarKokkosView xv, y0, y1, y2, y3, y4, y5, y6, y7;
@@ -1299,7 +1299,7 @@ PetscErrorCode VecGetSubVector_Kokkos_Private(Vec x, PetscBool xIsMPI, IS is, Ve
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode VecGetSubVector_SeqKokkos(Vec x, IS is, Vec *y)
+static PetscErrorCode VecGetSubVector_SeqKokkos(Vec x, IS is, Vec *y)
 {
   PetscFunctionBegin;
   PetscCall(VecGetSubVector_Kokkos_Private(x, PETSC_FALSE, is, y));
@@ -1393,14 +1393,14 @@ static PetscErrorCode VecSetValuesCOO_SeqKokkos(Vec x, const PetscScalar v[], In
 }
 
 /* Duplicate layout etc but not the values in the input vector */
-PetscErrorCode VecDuplicate_SeqKokkos(Vec win, Vec *v)
+static PetscErrorCode VecDuplicate_SeqKokkos(Vec win, Vec *v)
 {
   PetscFunctionBegin;
   PetscCall(VecDuplicate_Seq(win, v)); /* It also dups ops of win */
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode VecDestroy_SeqKokkos(Vec v)
+static PetscErrorCode VecDestroy_SeqKokkos(Vec v)
 {
   Vec_Kokkos *veckok = static_cast<Vec_Kokkos *>(v->spptr);
   Vec_Seq    *vecseq = static_cast<Vec_Seq *>(v->data);

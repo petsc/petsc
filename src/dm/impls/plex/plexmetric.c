@@ -840,7 +840,7 @@ PetscErrorCode DMPlexMetricGetNumIterations(DM dm, PetscInt *numIter)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode DMPlexP1FieldCreate_Private(DM dm, PetscInt f, PetscInt size, Vec *metric)
+static PetscErrorCode DMPlexP1FieldCreate_Private(DM dm, PetscInt f, PetscInt size, Vec *metric)
 {
   MPI_Comm comm;
   PetscFE  fe;

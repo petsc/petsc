@@ -254,7 +254,7 @@ static PetscErrorCode SNESLineSearchApply_NLEQERR(SNESLineSearch linesearch)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode SNESLineSearchView_NLEQERR(SNESLineSearch linesearch, PetscViewer viewer)
+static PetscErrorCode SNESLineSearchView_NLEQERR(SNESLineSearch linesearch, PetscViewer viewer)
 {
   PetscBool               iascii;
   SNESLineSearch_NLEQERR *nleqerr;

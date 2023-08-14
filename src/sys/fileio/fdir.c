@@ -14,7 +14,7 @@
   #include <unistd.h>
 #endif
 
-PetscErrorCode PetscPathJoin(const char dname[], const char fname[], size_t n, char fullname[])
+static PetscErrorCode PetscPathJoin(const char dname[], const char fname[], size_t n, char fullname[])
 {
   size_t l1, l2;
   PetscFunctionBegin;

@@ -676,7 +676,7 @@ static PetscErrorCode PCApply_MPI(PC pc, Vec b, Vec x)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PCDestroy_MPI(PC pc)
+static PetscErrorCode PCDestroy_MPI(PC pc)
 {
   PCMPICommand request = PCMPI_DESTROY;
 
@@ -690,7 +690,7 @@ PetscErrorCode PCDestroy_MPI(PC pc)
 /*
      PCView_MPI - Cannot call view on the MPI parallel KSP because other ranks do not have access to the viewer
 */
-PetscErrorCode PCView_MPI(PC pc, PetscViewer viewer)
+static PetscErrorCode PCView_MPI(PC pc, PetscViewer viewer)
 {
   PC_MPI     *km = (PC_MPI *)pc->data;
   MPI_Comm    comm;
@@ -705,7 +705,7 @@ PetscErrorCode PCView_MPI(PC pc, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PCSetFromOptions_MPI(PC pc, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode PCSetFromOptions_MPI(PC pc, PetscOptionItems *PetscOptionsObject)
 {
   PC_MPI *km = (PC_MPI *)pc->data;
 

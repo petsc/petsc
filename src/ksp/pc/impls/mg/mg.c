@@ -1418,7 +1418,7 @@ PetscErrorCode PCMGMultiplicativeSetCycles(PC pc, PetscInt n)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PCMGSetGalerkin_MG(PC pc, PCMGGalerkinType use)
+static PetscErrorCode PCMGSetGalerkin_MG(PC pc, PCMGGalerkinType use)
 {
   PC_MG *mg = (PC_MG *)pc->data;
 
@@ -1481,7 +1481,7 @@ PetscErrorCode PCMGGetGalerkin(PC pc, PCMGGalerkinType *galerkin)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PCMGSetAdaptInterpolation_MG(PC pc, PetscBool adapt)
+static PetscErrorCode PCMGSetAdaptInterpolation_MG(PC pc, PetscBool adapt)
 {
   PC_MG *mg = (PC_MG *)pc->data;
 
@@ -1490,7 +1490,7 @@ PetscErrorCode PCMGSetAdaptInterpolation_MG(PC pc, PetscBool adapt)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PCMGGetAdaptInterpolation_MG(PC pc, PetscBool *adapt)
+static PetscErrorCode PCMGGetAdaptInterpolation_MG(PC pc, PetscBool *adapt)
 {
   PC_MG *mg = (PC_MG *)pc->data;
 
@@ -1499,7 +1499,7 @@ PetscErrorCode PCMGGetAdaptInterpolation_MG(PC pc, PetscBool *adapt)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PCMGSetAdaptCoarseSpaceType_MG(PC pc, PCMGCoarseSpaceType ctype)
+static PetscErrorCode PCMGSetAdaptCoarseSpaceType_MG(PC pc, PCMGCoarseSpaceType ctype)
 {
   PC_MG *mg = (PC_MG *)pc->data;
 
@@ -1509,7 +1509,7 @@ PetscErrorCode PCMGSetAdaptCoarseSpaceType_MG(PC pc, PCMGCoarseSpaceType ctype)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PCMGGetAdaptCoarseSpaceType_MG(PC pc, PCMGCoarseSpaceType *ctype)
+static PetscErrorCode PCMGGetAdaptCoarseSpaceType_MG(PC pc, PCMGCoarseSpaceType *ctype)
 {
   PC_MG *mg = (PC_MG *)pc->data;
 
@@ -1518,7 +1518,7 @@ PetscErrorCode PCMGGetAdaptCoarseSpaceType_MG(PC pc, PCMGCoarseSpaceType *ctype)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PCMGSetAdaptCR_MG(PC pc, PetscBool cr)
+static PetscErrorCode PCMGSetAdaptCR_MG(PC pc, PetscBool cr)
 {
   PC_MG *mg = (PC_MG *)pc->data;
 
@@ -1527,7 +1527,7 @@ PetscErrorCode PCMGSetAdaptCR_MG(PC pc, PetscBool cr)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PCMGGetAdaptCR_MG(PC pc, PetscBool *cr)
+static PetscErrorCode PCMGGetAdaptCR_MG(PC pc, PetscBool *cr)
 {
   PC_MG *mg = (PC_MG *)pc->data;
 
@@ -1773,7 +1773,7 @@ PetscErrorCode PCMGSetDistinctSmoothUp(PC pc)
 }
 
 /* No new matrices are created, and the coarse operator matrices are the references to the original ones */
-PetscErrorCode PCGetInterpolations_MG(PC pc, PetscInt *num_levels, Mat *interpolations[])
+static PetscErrorCode PCGetInterpolations_MG(PC pc, PetscInt *num_levels, Mat *interpolations[])
 {
   PC_MG         *mg       = (PC_MG *)pc->data;
   PC_MG_Levels **mglevels = mg->levels;
@@ -1793,7 +1793,7 @@ PetscErrorCode PCGetInterpolations_MG(PC pc, PetscInt *num_levels, Mat *interpol
 }
 
 /* No new matrices are created, and the coarse operator matrices are the references to the original ones */
-PetscErrorCode PCGetCoarseOperators_MG(PC pc, PetscInt *num_levels, Mat *coarseOperators[])
+static PetscErrorCode PCGetCoarseOperators_MG(PC pc, PetscInt *num_levels, Mat *coarseOperators[])
 {
   PC_MG         *mg       = (PC_MG *)pc->data;
   PC_MG_Levels **mglevels = mg->levels;

@@ -30,13 +30,13 @@ PetscErrorCode SNESShellSetSolve(SNES snes, PetscErrorCode (*solve)(SNES snes, V
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode SNESReset_Shell(SNES snes)
+static PetscErrorCode SNESReset_Shell(SNES snes)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode SNESDestroy_Shell(SNES snes)
+static PetscErrorCode SNESDestroy_Shell(SNES snes)
 {
   PetscFunctionBegin;
   PetscCall(SNESReset_Shell(snes));
@@ -44,20 +44,20 @@ PetscErrorCode SNESDestroy_Shell(SNES snes)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode SNESSetUp_Shell(SNES snes)
+static PetscErrorCode SNESSetUp_Shell(SNES snes)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode SNESSetFromOptions_Shell(SNES snes, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode SNESSetFromOptions_Shell(SNES snes, PetscOptionItems *PetscOptionsObject)
 {
   PetscFunctionBegin;
   PetscOptionsHeadBegin(PetscOptionsObject, "SNES Shell options");
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode SNESView_Shell(SNES snes, PetscViewer viewer)
+static PetscErrorCode SNESView_Shell(SNES snes, PetscViewer viewer)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -119,7 +119,7 @@ PetscErrorCode SNESShellSetContext(SNES snes, void *ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode SNESSolve_Shell(SNES snes)
+static PetscErrorCode SNESSolve_Shell(SNES snes)
 {
   SNES_Shell *shell = (SNES_Shell *)snes->data;
 
@@ -130,7 +130,7 @@ PetscErrorCode SNESSolve_Shell(SNES snes)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode SNESShellSetSolve_Shell(SNES snes, PetscErrorCode (*solve)(SNES, Vec))
+static PetscErrorCode SNESShellSetSolve_Shell(SNES snes, PetscErrorCode (*solve)(SNES, Vec))
 {
   SNES_Shell *shell = (SNES_Shell *)snes->data;
 

@@ -4,14 +4,14 @@
 */
 #include <petsc/private/pcimpl.h> /*I "petscpc.h" I*/
 
-PetscErrorCode PCApply_None(PC pc, Vec x, Vec y)
+static PetscErrorCode PCApply_None(PC pc, Vec x, Vec y)
 {
   PetscFunctionBegin;
   PetscCall(VecCopy(x, y));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PCMatApply_None(PC pc, Mat X, Mat Y)
+static PetscErrorCode PCMatApply_None(PC pc, Mat X, Mat Y)
 {
   PetscFunctionBegin;
   PetscCall(MatCopy(X, Y, SAME_NONZERO_PATTERN));

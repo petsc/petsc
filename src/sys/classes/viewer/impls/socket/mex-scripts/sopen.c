@@ -81,7 +81,7 @@ typedef unsigned long  u_long;
 static int listenport;
 /*-----------------------------------------------------------------*/
 extern int establish(u_short);
-int        SOCKConnect_Private(int portnumber)
+static int SOCKConnect_Private(int portnumber)
 {
   struct sockaddr_in isa;
 #if defined(PETSC_HAVE_ACCEPT_SIZE_T)

@@ -460,7 +460,7 @@ static PetscErrorCode MatMult_BlockMat(Mat A, Vec x, Vec y)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatMult_BlockMat_Symmetric(Mat A, Vec x, Vec y)
+static PetscErrorCode MatMult_BlockMat_Symmetric(Mat A, Vec x, Vec y)
 {
   Mat_BlockMat *bmat = (Mat_BlockMat *)A->data;
   PetscScalar  *xx, *yy;

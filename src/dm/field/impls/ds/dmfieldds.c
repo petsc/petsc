@@ -82,7 +82,7 @@ static PetscErrorCode DMFieldDSGetHeightDisc(DMField field, PetscInt height, Pet
 /*
   Since this is used for coordinates, we need to allow for the possibility that values come from multiple sections/Vecs, so that we can have DG version of the coordinates for periodicity. This reproduces DMPlexGetCellCoordinates_Internal().
 */
-PetscErrorCode DMFieldGetClosure_Internal(DMField field, PetscInt cell, PetscBool *isDG, PetscInt *Nc, const PetscScalar *array[], PetscScalar *values[])
+static PetscErrorCode DMFieldGetClosure_Internal(DMField field, PetscInt cell, PetscBool *isDG, PetscInt *Nc, const PetscScalar *array[], PetscScalar *values[])
 {
   DMField_DS        *dsfield = (DMField_DS *)field->data;
   DM                 fdm     = dsfield->dmDG;
@@ -123,7 +123,7 @@ cg:
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode DMFieldRestoreClosure_Internal(DMField field, PetscInt cell, PetscBool *isDG, PetscInt *Nc, const PetscScalar *array[], PetscScalar *values[])
+static PetscErrorCode DMFieldRestoreClosure_Internal(DMField field, PetscInt cell, PetscBool *isDG, PetscInt *Nc, const PetscScalar *array[], PetscScalar *values[])
 {
   DMField_DS  *dsfield = (DMField_DS *)field->data;
   DM           fdm;

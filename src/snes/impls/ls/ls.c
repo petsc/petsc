@@ -123,7 +123,7 @@ static PetscErrorCode SNESNEWTONLSCheckResidual_Private(SNES snes, Mat A, Vec F,
 . snes - the SNES context
 
 */
-PetscErrorCode SNESSolve_NEWTONLS(SNES snes)
+static PetscErrorCode SNESSolve_NEWTONLS(SNES snes)
 {
   PetscInt             maxits, i, lits;
   SNESLineSearchReason lssucceed;
@@ -279,7 +279,7 @@ PetscErrorCode SNESSolve_NEWTONLS(SNES snes)
    Application Interface Routine: SNESSetUp()
 
  */
-PetscErrorCode SNESSetUp_NEWTONLS(SNES snes)
+static PetscErrorCode SNESSetUp_NEWTONLS(SNES snes)
 {
   PetscFunctionBegin;
   PetscCall(SNESSetUpMatrices(snes));
@@ -287,7 +287,7 @@ PetscErrorCode SNESSetUp_NEWTONLS(SNES snes)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode SNESReset_NEWTONLS(SNES snes)
+static PetscErrorCode SNESReset_NEWTONLS(SNES snes)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -302,7 +302,7 @@ PetscErrorCode SNESReset_NEWTONLS(SNES snes)
 
    Application Interface Routine: SNESDestroy()
  */
-PetscErrorCode SNESDestroy_NEWTONLS(SNES snes)
+static PetscErrorCode SNESDestroy_NEWTONLS(SNES snes)
 {
   PetscFunctionBegin;
   PetscCall(SNESReset_NEWTONLS(snes));

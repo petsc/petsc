@@ -1933,7 +1933,7 @@ PetscErrorCode MatCreateSubMatrices_MPIAIJ_SingleIS_Local(Mat C, PetscInt ismax,
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatCreateSubMatrices_MPIAIJ_SingleIS(Mat C, PetscInt ismax, const IS isrow[], const IS iscol[], MatReuse scall, Mat *submat[])
+static PetscErrorCode MatCreateSubMatrices_MPIAIJ_SingleIS(Mat C, PetscInt ismax, const IS isrow[], const IS iscol[], MatReuse scall, Mat *submat[])
 {
   PetscInt  ncol;
   PetscBool colflag, allcolumns = PETSC_FALSE;
@@ -3015,7 +3015,7 @@ PetscErrorCode MatGetSeqMats_MPIAIJ(Mat C, Mat *A, Mat *B)
   Extract MPI submatrices encoded by pairs of IS that may live on subcomms of C.
   NOT SCALABLE due to the use of ISGetNonlocalIS() (see below).
 */
-PetscErrorCode MatCreateSubMatricesMPI_MPIXAIJ(Mat C, PetscInt ismax, const IS isrow[], const IS iscol[], MatReuse scall, Mat *submat[], PetscErrorCode (*getsubmats_seq)(Mat, PetscInt, const IS[], const IS[], MatReuse, Mat **), PetscErrorCode (*getlocalmats)(Mat, Mat *, Mat *), PetscErrorCode (*setseqmat)(Mat, IS, IS, MatStructure, Mat), PetscErrorCode (*setseqmats)(Mat, IS, IS, IS, MatStructure, Mat, Mat))
+static PetscErrorCode MatCreateSubMatricesMPI_MPIXAIJ(Mat C, PetscInt ismax, const IS isrow[], const IS iscol[], MatReuse scall, Mat *submat[], PetscErrorCode (*getsubmats_seq)(Mat, PetscInt, const IS[], const IS[], MatReuse, Mat **), PetscErrorCode (*getlocalmats)(Mat, Mat *, Mat *), PetscErrorCode (*setseqmat)(Mat, IS, IS, MatStructure, Mat), PetscErrorCode (*setseqmats)(Mat, IS, IS, IS, MatStructure, Mat, Mat))
 {
   PetscMPIInt size, flag;
   PetscInt    i, ii, cismax, ispar;

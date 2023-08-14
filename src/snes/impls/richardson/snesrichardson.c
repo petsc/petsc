@@ -1,12 +1,12 @@
 #include <../src/snes/impls/richardson/snesrichardsonimpl.h>
 
-PetscErrorCode SNESReset_NRichardson(SNES snes)
+static PetscErrorCode SNESReset_NRichardson(SNES snes)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode SNESDestroy_NRichardson(SNES snes)
+static PetscErrorCode SNESDestroy_NRichardson(SNES snes)
 {
   PetscFunctionBegin;
   PetscCall(SNESReset_NRichardson(snes));
@@ -14,7 +14,7 @@ PetscErrorCode SNESDestroy_NRichardson(SNES snes)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode SNESSetUp_NRichardson(SNES snes)
+static PetscErrorCode SNESSetUp_NRichardson(SNES snes)
 {
   PetscFunctionBegin;
   PetscCheck(snes->npcside != PC_RIGHT, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "NRichardson only supports left preconditioning");
@@ -40,7 +40,7 @@ static PetscErrorCode SNESView_NRichardson(SNES snes, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode SNESSolve_NRichardson(SNES snes)
+static PetscErrorCode SNESSolve_NRichardson(SNES snes)
 {
   Vec                  X, Y, F;
   PetscReal            xnorm, fnorm, ynorm;

@@ -25,7 +25,7 @@
 .seealso: `MatCreate()`, `PCPFMG`, `MatSetDM()`, `DMCreateMatrix()`
 M*/
 
-PetscErrorCode MatSetValuesLocal_HYPREStruct_3d(Mat mat, PetscInt nrow, const PetscInt irow[], PetscInt ncol, const PetscInt icol[], const PetscScalar y[], InsertMode addv)
+static PetscErrorCode MatSetValuesLocal_HYPREStruct_3d(Mat mat, PetscInt nrow, const PetscInt irow[], PetscInt ncol, const PetscInt icol[], const PetscScalar y[], InsertMode addv)
 {
   HYPRE_Int        index[3], entries[9];
   PetscInt         i, j, stencil, row;
@@ -64,7 +64,7 @@ PetscErrorCode MatSetValuesLocal_HYPREStruct_3d(Mat mat, PetscInt nrow, const Pe
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatZeroRowsLocal_HYPREStruct_3d(Mat mat, PetscInt nrow, const PetscInt irow[], PetscScalar d, Vec x, Vec b)
+static PetscErrorCode MatZeroRowsLocal_HYPREStruct_3d(Mat mat, PetscInt nrow, const PetscInt irow[], PetscScalar d, Vec x, Vec b)
 {
   HYPRE_Int        index[3], entries[7] = {0, 1, 2, 3, 4, 5, 6};
   PetscInt         row, i;
@@ -86,7 +86,7 @@ PetscErrorCode MatZeroRowsLocal_HYPREStruct_3d(Mat mat, PetscInt nrow, const Pet
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatZeroEntries_HYPREStruct_3d(Mat mat)
+static PetscErrorCode MatZeroEntries_HYPREStruct_3d(Mat mat)
 {
   HYPRE_Int        indices[7] = {0, 1, 2, 3, 4, 5, 6};
   Mat_HYPREStruct *ex         = (Mat_HYPREStruct *)mat->data;
@@ -230,7 +230,7 @@ static PetscErrorCode MatSetUp_HYPREStruct(Mat mat)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatMult_HYPREStruct(Mat A, Vec x, Vec y)
+static PetscErrorCode MatMult_HYPREStruct(Mat A, Vec x, Vec y)
 {
   const PetscScalar *xx;
   PetscScalar       *yy;
@@ -266,7 +266,7 @@ PetscErrorCode MatMult_HYPREStruct(Mat A, Vec x, Vec y)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatAssemblyEnd_HYPREStruct(Mat mat, MatAssemblyType mode)
+static PetscErrorCode MatAssemblyEnd_HYPREStruct(Mat mat, MatAssemblyType mode)
 {
   Mat_HYPREStruct *ex = (Mat_HYPREStruct *)mat->data;
 
@@ -276,14 +276,14 @@ PetscErrorCode MatAssemblyEnd_HYPREStruct(Mat mat, MatAssemblyType mode)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatZeroEntries_HYPREStruct(Mat mat)
+static PetscErrorCode MatZeroEntries_HYPREStruct(Mat mat)
 {
   PetscFunctionBegin;
   /* before the DMDA is set to the matrix the zero doesn't need to do anything */
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatDestroy_HYPREStruct(Mat mat)
+static PetscErrorCode MatDestroy_HYPREStruct(Mat mat)
 {
   Mat_HYPREStruct *ex = (Mat_HYPREStruct *)mat->data;
 
@@ -341,7 +341,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_HYPREStruct(Mat B)
 .seealso: `Mat`
 M*/
 
-PetscErrorCode MatSetValuesLocal_HYPRESStruct_3d(Mat mat, PetscInt nrow, const PetscInt irow[], PetscInt ncol, const PetscInt icol[], const PetscScalar y[], InsertMode addv)
+static PetscErrorCode MatSetValuesLocal_HYPRESStruct_3d(Mat mat, PetscInt nrow, const PetscInt irow[], PetscInt ncol, const PetscInt icol[], const PetscScalar y[], InsertMode addv)
 {
   HYPRE_Int         index[3], *entries;
   PetscInt          i, j, stencil;
@@ -444,7 +444,7 @@ PetscErrorCode MatSetValuesLocal_HYPRESStruct_3d(Mat mat, PetscInt nrow, const P
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatZeroRowsLocal_HYPRESStruct_3d(Mat mat, PetscInt nrow, const PetscInt irow[], PetscScalar d, Vec x, Vec b)
+static PetscErrorCode MatZeroRowsLocal_HYPRESStruct_3d(Mat mat, PetscInt nrow, const PetscInt irow[], PetscScalar d, Vec x, Vec b)
 {
   HYPRE_Int         index[3], *entries;
   PetscInt          i;
@@ -503,7 +503,7 @@ PetscErrorCode MatZeroRowsLocal_HYPRESStruct_3d(Mat mat, PetscInt nrow, const Pe
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatZeroEntries_HYPRESStruct_3d(Mat mat)
+static PetscErrorCode MatZeroEntries_HYPRESStruct_3d(Mat mat)
 {
   Mat_HYPRESStruct *ex    = (Mat_HYPRESStruct *)mat->data;
   PetscInt          nvars = ex->nvars;
@@ -701,7 +701,7 @@ static PetscErrorCode MatSetUp_HYPRESStruct(Mat mat)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatMult_HYPRESStruct(Mat A, Vec x, Vec y)
+static PetscErrorCode MatMult_HYPRESStruct(Mat A, Vec x, Vec y)
 {
   const PetscScalar *xx;
   PetscScalar       *yy;
@@ -776,7 +776,7 @@ PetscErrorCode MatMult_HYPRESStruct(Mat A, Vec x, Vec y)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatAssemblyEnd_HYPRESStruct(Mat mat, MatAssemblyType mode)
+static PetscErrorCode MatAssemblyEnd_HYPRESStruct(Mat mat, MatAssemblyType mode)
 {
   Mat_HYPRESStruct *ex = (Mat_HYPRESStruct *)mat->data;
 
@@ -785,14 +785,14 @@ PetscErrorCode MatAssemblyEnd_HYPRESStruct(Mat mat, MatAssemblyType mode)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatZeroEntries_HYPRESStruct(Mat mat)
+static PetscErrorCode MatZeroEntries_HYPRESStruct(Mat mat)
 {
   PetscFunctionBegin;
   /* before the DMDA is set to the matrix the zero doesn't need to do anything */
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatDestroy_HYPRESStruct(Mat mat)
+static PetscErrorCode MatDestroy_HYPRESStruct(Mat mat)
 {
   Mat_HYPRESStruct      *ex = (Mat_HYPRESStruct *)mat->data;
   ISLocalToGlobalMapping ltog;

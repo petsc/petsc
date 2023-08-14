@@ -339,7 +339,7 @@ typedef struct {
 static int                     reg_count = 0;
 static PetscFinalizerContainer regfin[PETSC_MAX_REGISTERED_FINALIZERS];
 
-PetscErrorCode PetscRunRegisteredFinalizers(void)
+static PetscErrorCode PetscRunRegisteredFinalizers(void)
 {
   PetscFunctionBegin;
   while (reg_count) {

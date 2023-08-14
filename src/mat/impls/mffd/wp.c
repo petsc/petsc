@@ -134,7 +134,7 @@ static PetscErrorCode MatMFFDDestroy_WP(MatMFFD ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatMFFDWPSetComputeNormU_P(Mat mat, PetscBool flag)
+static PetscErrorCode MatMFFDWPSetComputeNormU_P(Mat mat, PetscBool flag)
 {
   MatMFFD     ctx  = (MatMFFD)mat->data;
   MatMFFD_WP *hctx = (MatMFFD_WP *)ctx->hctx;

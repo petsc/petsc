@@ -58,7 +58,7 @@ PetscErrorCode PetscCDSetChuckSize(PetscCoarsenData *ail, PetscInt a_sz)
 
 /*  PetscCDGetNewNode
  */
-PetscErrorCode PetscCDGetNewNode(PetscCoarsenData *ail, PetscCDIntNd **a_out, PetscInt a_id)
+static PetscErrorCode PetscCDGetNewNode(PetscCoarsenData *ail, PetscCDIntNd **a_out, PetscInt a_id)
 {
   PetscFunctionBegin;
   *a_out = NULL; /* squelch -Wmaybe-uninitialized */

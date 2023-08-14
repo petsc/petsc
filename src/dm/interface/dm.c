@@ -607,7 +607,7 @@ PetscErrorCode DMDestroyLabelLinkList_Internal(DM dm)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode DMDestroyCoordinates_Private(DMCoordinates *c)
+static PetscErrorCode DMDestroyCoordinates_Private(DMCoordinates *c)
 {
   PetscFunctionBegin;
   c->dim = PETSC_DEFAULT;
@@ -8492,7 +8492,7 @@ PetscErrorCode DMGetNeighbors(DM dm, PetscInt *nranks, const PetscMPIInt *ranks[
     Converts the input vector to a ghosted vector and then calls the standard coloring code.
     This must be a different function because it requires DM which is not defined in the Mat library
 */
-PetscErrorCode MatFDColoringApply_AIJDM(Mat J, MatFDColoring coloring, Vec x1, void *sctx)
+static PetscErrorCode MatFDColoringApply_AIJDM(Mat J, MatFDColoring coloring, Vec x1, void *sctx)
 {
   PetscFunctionBegin;
   if (coloring->ctype == IS_COLORING_LOCAL) {

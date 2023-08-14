@@ -128,7 +128,7 @@ PetscErrorCode SNESNGSGetSweeps(SNES snes, PetscInt *sweeps)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode SNESReset_NGS(SNES snes)
+static PetscErrorCode SNESReset_NGS(SNES snes)
 {
   SNES_NGS *gs = (SNES_NGS *)snes->data;
 
@@ -137,7 +137,7 @@ PetscErrorCode SNESReset_NGS(SNES snes)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode SNESDestroy_NGS(SNES snes)
+static PetscErrorCode SNESDestroy_NGS(SNES snes)
 {
   PetscFunctionBegin;
   PetscCall(SNESReset_NGS(snes));
@@ -145,7 +145,7 @@ PetscErrorCode SNESDestroy_NGS(SNES snes)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode SNESSetUp_NGS(SNES snes)
+static PetscErrorCode SNESSetUp_NGS(SNES snes)
 {
   PetscErrorCode (*f)(SNES, Vec, Vec, void *);
 
@@ -155,7 +155,7 @@ PetscErrorCode SNESSetUp_NGS(SNES snes)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode SNESSetFromOptions_NGS(SNES snes, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode SNESSetFromOptions_NGS(SNES snes, PetscOptionItems *PetscOptionsObject)
 {
   SNES_NGS *gs = (SNES_NGS *)snes->data;
   PetscInt  sweeps, max_its = PETSC_DEFAULT;
@@ -185,7 +185,7 @@ PetscErrorCode SNESSetFromOptions_NGS(SNES snes, PetscOptionItems *PetscOptionsO
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode SNESView_NGS(SNES snes, PetscViewer viewer)
+static PetscErrorCode SNESView_NGS(SNES snes, PetscViewer viewer)
 {
   PetscErrorCode (*f)(SNES, Vec, Vec, void *);
   SNES_NGS *gs = (SNES_NGS *)snes->data;
@@ -200,7 +200,7 @@ PetscErrorCode SNESView_NGS(SNES snes, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode SNESSolve_NGS(SNES snes)
+static PetscErrorCode SNESSolve_NGS(SNES snes)
 {
   Vec              F;
   Vec              X;

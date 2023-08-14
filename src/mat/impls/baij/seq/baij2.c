@@ -67,7 +67,7 @@ PetscErrorCode MatIncreaseOverlap_SeqBAIJ(Mat A, PetscInt is_max, IS is[], Petsc
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatCreateSubMatrix_SeqBAIJ_Private(Mat A, IS isrow, IS iscol, MatReuse scall, Mat *B)
+static PetscErrorCode MatCreateSubMatrix_SeqBAIJ_Private(Mat A, IS isrow, IS iscol, MatReuse scall, Mat *B)
 {
   Mat_SeqBAIJ    *a = (Mat_SeqBAIJ *)A->data, *c;
   PetscInt       *smap, i, k, kstart, kend, oldcols = a->nbs, *lens;
@@ -3371,7 +3371,7 @@ PetscErrorCode MatMatMultSymbolic_SeqBAIJ_SeqDense(Mat A, Mat B, PetscReal fill,
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatMatMult_SeqBAIJ_1_Private(Mat A, PetscScalar *b, PetscInt bm, PetscScalar *c, PetscInt cm, PetscInt cn)
+static PetscErrorCode MatMatMult_SeqBAIJ_1_Private(Mat A, PetscScalar *b, PetscInt bm, PetscScalar *c, PetscInt cm, PetscInt cn)
 {
   Mat_SeqBAIJ       *a = (Mat_SeqBAIJ *)A->data;
   PetscScalar       *z = NULL, sum1;
@@ -3419,7 +3419,7 @@ PetscErrorCode MatMatMult_SeqBAIJ_1_Private(Mat A, PetscScalar *b, PetscInt bm, 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatMatMult_SeqBAIJ_2_Private(Mat A, PetscScalar *b, PetscInt bm, PetscScalar *c, PetscInt cm, PetscInt cn)
+static PetscErrorCode MatMatMult_SeqBAIJ_2_Private(Mat A, PetscScalar *b, PetscInt bm, PetscScalar *c, PetscInt cm, PetscInt cn)
 {
   Mat_SeqBAIJ       *a = (Mat_SeqBAIJ *)A->data;
   PetscScalar       *z = NULL, sum1, sum2;
@@ -3471,7 +3471,7 @@ PetscErrorCode MatMatMult_SeqBAIJ_2_Private(Mat A, PetscScalar *b, PetscInt bm, 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatMatMult_SeqBAIJ_3_Private(Mat A, PetscScalar *b, PetscInt bm, PetscScalar *c, PetscInt cm, PetscInt cn)
+static PetscErrorCode MatMatMult_SeqBAIJ_3_Private(Mat A, PetscScalar *b, PetscInt bm, PetscScalar *c, PetscInt cm, PetscInt cn)
 {
   Mat_SeqBAIJ       *a = (Mat_SeqBAIJ *)A->data;
   PetscScalar       *z = NULL, sum1, sum2, sum3;
@@ -3527,7 +3527,7 @@ PetscErrorCode MatMatMult_SeqBAIJ_3_Private(Mat A, PetscScalar *b, PetscInt bm, 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatMatMult_SeqBAIJ_4_Private(Mat A, PetscScalar *b, PetscInt bm, PetscScalar *c, PetscInt cm, PetscInt cn)
+static PetscErrorCode MatMatMult_SeqBAIJ_4_Private(Mat A, PetscScalar *b, PetscInt bm, PetscScalar *c, PetscInt cm, PetscInt cn)
 {
   Mat_SeqBAIJ       *a = (Mat_SeqBAIJ *)A->data;
   PetscScalar       *z = NULL, sum1, sum2, sum3, sum4;
@@ -3587,7 +3587,7 @@ PetscErrorCode MatMatMult_SeqBAIJ_4_Private(Mat A, PetscScalar *b, PetscInt bm, 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatMatMult_SeqBAIJ_5_Private(Mat A, PetscScalar *b, PetscInt bm, PetscScalar *c, PetscInt cm, PetscInt cn)
+static PetscErrorCode MatMatMult_SeqBAIJ_5_Private(Mat A, PetscScalar *b, PetscInt bm, PetscScalar *c, PetscInt cm, PetscInt cn)
 {
   Mat_SeqBAIJ       *a = (Mat_SeqBAIJ *)A->data;
   PetscScalar       *z = NULL, sum1, sum2, sum3, sum4, sum5;

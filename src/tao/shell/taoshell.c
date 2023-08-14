@@ -104,26 +104,26 @@ static PetscErrorCode TaoSolve_Shell(Tao tao)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode TaoDestroy_Shell(Tao tao)
+static PetscErrorCode TaoDestroy_Shell(Tao tao)
 {
   PetscFunctionBegin;
   PetscCall(PetscFree(tao->data));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode TaoSetUp_Shell(Tao tao)
+static PetscErrorCode TaoSetUp_Shell(Tao tao)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode TaoSetFromOptions_Shell(Tao tao, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode TaoSetFromOptions_Shell(Tao tao, PetscOptionItems *PetscOptionsObject)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode TaoView_Shell(Tao tao, PetscViewer viewer)
+static PetscErrorCode TaoView_Shell(Tao tao, PetscViewer viewer)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(PETSC_SUCCESS);
