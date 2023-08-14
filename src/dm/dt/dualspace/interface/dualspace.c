@@ -182,7 +182,7 @@ static PetscErrorCode PetscDualSpaceView_ASCII(PetscDualSpace sp, PetscViewer v)
   PetscCall(PetscDualSpaceGetDimension(sp, &pdim));
   PetscCall(PetscObjectPrintClassNamePrefixType((PetscObject)sp, v));
   PetscCall(PetscViewerASCIIPushTab(v));
-  if (sp->k) {
+  if (sp->k != 0 && sp->k != PETSC_FORM_DEGREE_UNDEFINED) {
     PetscCall(PetscViewerASCIIPrintf(v, "Dual space for %" PetscInt_FMT "-forms %swith %" PetscInt_FMT " components, size %" PetscInt_FMT "\n", PetscAbsInt(sp->k), sp->k < 0 ? "(stored in dual form) " : "", sp->Nc, pdim));
   } else {
     PetscCall(PetscViewerASCIIPrintf(v, "Dual space with %" PetscInt_FMT " components, size %" PetscInt_FMT "\n", sp->Nc, pdim));
@@ -372,6 +372,7 @@ static PetscErrorCode PetscDualSpaceClearDMData_Internal(PetscDualSpace sp, DM d
   PetscCall(PetscFree(sp->heightSpaces));
 
   PetscCall(PetscSectionDestroy(&(sp->pointSection)));
+  PetscCall(PetscSectionDestroy(&(sp->intPointSection)));
   PetscCall(PetscQuadratureDestroy(&(sp->intNodes)));
   PetscCall(VecDestroy(&(sp->intDofValues)));
   PetscCall(VecDestroy(&(sp->intNodeValues)));
@@ -488,8 +489,8 @@ PetscErrorCode PetscDualSpaceDuplicate(PetscDualSpace sp, PetscDualSpace *spNew)
   PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);
   PetscAssertPointer(spNew, 2);
   PetscCall(PetscDualSpaceCreate(PetscObjectComm((PetscObject)sp), spNew));
-  PetscCall(PetscObjectGetName((PetscObject)sp, &name));
-  PetscCall(PetscObjectSetName((PetscObject)*spNew, name));
+  name = ((PetscObject)sp)->name;
+  if (name) { PetscCall(PetscObjectSetName((PetscObject)*spNew, name)); }
   PetscCall(PetscDualSpaceGetType(sp, &type));
   PetscCall(PetscDualSpaceSetType(*spNew, type));
   PetscCall(PetscDualSpaceGetDM(sp, &dm));
@@ -932,6 +933,56 @@ PetscErrorCode PetscDualSpaceGetSection(PetscDualSpace sp, PetscSection *section
     PetscCall(PetscDualSpaceSectionSetUp_Internal(sp, sp->pointSection));
   }
   *section = sp->pointSection;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  PetscDualSpaceGetInteriorSection - Create a `PetscSection` over the reference cell with the layout from this space
+  for interior degrees of freedom
+
+  Collective
+
+  Input Parameter:
+. sp - The `PetscDualSpace`
+
+  Output Parameter:
+. section - The interior section
+
+  Level: advanced
+
+  Note:
+  Most reference domains have one cell, in which case the only cell will have
+  all of the interior degrees of freedom in the interior section.  But
+  for `PETSCDUALSPACEREFINED` there may be other mesh points in the interior,
+  and this section describes their layout.
+
+.seealso: `PetscDualSpace`, `PetscSection`, `PetscDualSpaceCreate()`, `DMPLEX`
+@*/
+PetscErrorCode PetscDualSpaceGetInteriorSection(PetscDualSpace sp, PetscSection *section)
+{
+  PetscInt pStart, pEnd, p;
+
+  PetscFunctionBegin;
+  if (!sp->dm) {
+    *section = NULL;
+    PetscFunctionReturn(PETSC_SUCCESS);
+  }
+  if (!sp->intPointSection) {
+    PetscSection full_section;
+
+    PetscCall(PetscDualSpaceGetSection(sp, &full_section));
+    PetscCall(PetscDualSpaceSectionCreate_Internal(sp, &(sp->intPointSection)));
+    PetscCall(PetscSectionGetChart(full_section, &pStart, &pEnd));
+    for (p = pStart; p < pEnd; p++) {
+      PetscInt dof, cdof;
+
+      PetscCall(PetscSectionGetDof(full_section, p, &dof));
+      PetscCall(PetscSectionGetConstraintDof(full_section, p, &cdof));
+      PetscCall(PetscSectionSetDof(sp->intPointSection, p, dof - cdof));
+    }
+    PetscCall(PetscDualSpaceSectionSetUp_Internal(sp, sp->intPointSection));
+  }
+  *section = sp->intPointSection;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1766,7 +1817,7 @@ PetscErrorCode PetscDualSpaceSetFormDegree(PetscDualSpace dsp, PetscInt k)
   PetscValidHeaderSpecific(dsp, PETSCDUALSPACE_CLASSID, 1);
   PetscCheck(!dsp->setupcalled, PetscObjectComm((PetscObject)dsp), PETSC_ERR_ARG_WRONGSTATE, "Cannot change number of components after dualspace is set up");
   dim = dsp->dm->dim;
-  PetscCheck(k >= -dim && k <= dim, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Unsupported %" PetscInt_FMT "-form on %" PetscInt_FMT "-dimensional reference cell", PetscAbsInt(k), dim);
+  PetscCheck((k >= -dim && k <= dim) || k == PETSC_FORM_DEGREE_UNDEFINED, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Unsupported %" PetscInt_FMT "-form on %" PetscInt_FMT "-dimensional reference cell", PetscAbsInt(k), dim);
   dsp->k = k;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

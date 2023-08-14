@@ -1,0 +1,764 @@
+PetscFE Object: base FE (scalar) 1 MPI process
+  type: basic
+  Basic Finite Element in 3 dimensions with 1 components
+  PetscSpace Object: P3 1 MPI process
+    type: poly
+    Space in 3 variables with 1 components, size 20
+    Polynomial space of degree 3
+  PetscDualSpace Object: P3 1 MPI process
+    type: lagrange
+    Dual space with 1 components, size 20
+    Continuous Lagrange dual space
+    Quadrature on a tetrahedron of order 6 on 24 points (dim 3)
+  PetscFE Object: vector fe 1 MPI process
+    type: vector
+    Vector Finite Element in 3 dimensions with 1 components
+    PetscSpace Object: vector basis space 1 MPI process
+      type: sum
+      Space in 3 variables with 1 components, size 20
+      Sum space of 1 subspaces (all identical)
+        PetscSpace Object: P3 1 MPI process
+          type: poly
+          Space in 3 variables with 1 components, size 20
+          Polynomial space of degree 3
+    PetscDualSpace Object: vector dual space 1 MPI process
+      type: sum
+      Dual space with 1 components, size 20
+      Sum dual space of 1 concatenated subspaces (all identical)
+        PetscDualSpace Object: P3 1 MPI process
+          type: lagrange
+          Dual space with 1 components, size 20
+          Continuous Lagrange dual space
+      Quadrature on a tetrahedron of order 6 on 24 points (dim 3)
+  Vector basis to original basis:  
+     0     1     2     3     4     5     6     7     8     9    10    11    12    13    14    15  
+    16    17    18    19  
+  PetscFE Object: vector fe 1 MPI process
+    type: vector
+    Vector Finite Element in 3 dimensions with 1 components
+    PetscSpace Object: vector basis space 1 MPI process
+      type: sum
+      Space in 3 variables with 1 components, size 20
+      Sum space of 1 subspaces (all identical)
+        PetscSpace Object: P3 1 MPI process
+          type: poly
+          Space in 3 variables with 1 components, size 20
+          Polynomial space of degree 3
+    PetscDualSpace Object: vector dual space 1 MPI process
+      type: sum
+      Dual space with 1 components, size 20
+      Sum dual space of 1 concatenated subspaces (all identical)
+        PetscDualSpace Object: P3 1 MPI process
+          type: lagrange
+          Dual space with 1 components, size 20
+          Continuous Lagrange dual space
+      Quadrature on a tetrahedron of order 6 on 24 points (dim 3)
+  Vector basis to original basis:  
+     0     1     2     3     4     5     6     7     8     9    10    11    12    13    14    15  
+    16    17    18    19  
+  PetscFE Object: vector fe 1 MPI process
+    type: vector
+    Vector Finite Element in 3 dimensions with 1 components
+    PetscSpace Object: vector basis space 1 MPI process
+      type: sum
+      Space in 3 variables with 1 components, size 20
+      Sum space of 1 subspaces (all identical)
+        PetscSpace Object: P3 1 MPI process
+          type: poly
+          Space in 3 variables with 1 components, size 20
+          Polynomial space of degree 3
+    PetscDualSpace Object: vector dual space 1 MPI process
+      type: sum
+      Dual space with 1 components, size 20
+      Sum dual space of 1 concatenated subspaces (all identical)
+        PetscDualSpace Object: P3 1 MPI process
+          type: lagrange
+          Dual space with 1 components, size 20
+          Continuous Lagrange dual space
+      Quadrature on a tetrahedron of order 6 on 24 points (dim 3)
+  Vector basis to original basis:  
+     0     1     2     3     4     5     6     7     8     9    10    11    12    13    14    15  
+    16    17    18    19  
+  PetscFE Object: vector fe 1 MPI process
+    type: vector
+    Vector Finite Element in 3 dimensions with 1 components
+    PetscSpace Object: vector basis space 1 MPI process
+      type: sum
+      Space in 3 variables with 1 components, size 20
+      Sum space of 1 subspaces (all identical)
+        PetscSpace Object: P3 1 MPI process
+          type: poly
+          Space in 3 variables with 1 components, size 20
+          Polynomial space of degree 3
+    PetscDualSpace Object: vector dual space 1 MPI process
+      type: sum
+      Dual space with 1 components, size 20
+      Sum dual space of 1 concatenated subspaces (all identical)
+        PetscDualSpace Object: P3 1 MPI process
+          type: lagrange
+          Dual space with 1 components, size 20
+          Continuous Lagrange dual space
+      Quadrature on a tetrahedron of order 6 on 24 points (dim 3)
+  Vector basis to original basis:  
+     0     1     2     3     4     5     6     7     8     9    10    11    12    13    14    15  
+    16    17    18    19  
+  PetscFE Object: vector fe 1 MPI process
+    type: vector
+    Vector Finite Element in 3 dimensions with 2 components
+    PetscSpace Object: vector basis space 1 MPI process
+      type: sum
+      Space in 3 variables with 2 components, size 40
+      Sum space of 2 concatenated subspaces (all identical)
+        PetscSpace Object: P3 1 MPI process
+          type: poly
+          Space in 3 variables with 1 components, size 20
+          Polynomial space of degree 3
+    PetscDualSpace Object: vector dual space 1 MPI process
+      type: sum
+      Dual space with 2 components, size 40
+      Sum dual space of 2 concatenated subspaces (all identical)
+        PetscDualSpace Object: P3 1 MPI process
+          type: lagrange
+          Dual space with 1 components, size 20
+          Continuous Lagrange dual space
+      Quadrature on a tetrahedron of order 6 on 24 points (dim 3)
+  Vector basis to original basis:  
+     0     0     1     1     2     2     3     3     4     5     4     5     6     7     6     7  
+     8     9     8     9    10    11    10    11    12    13    12    13    14    15    14    15  
+    16    16    17    17    18    18    19    19  
+  PetscFE Object: vector fe 1 MPI process
+    type: vector
+    Vector Finite Element in 3 dimensions with 2 components
+    PetscSpace Object: vector basis space 1 MPI process
+      type: sum
+      Space in 3 variables with 2 components, size 40
+      Sum space of 2 concatenated subspaces (all identical)
+        PetscSpace Object: P3 1 MPI process
+          type: poly
+          Space in 3 variables with 1 components, size 20
+          Polynomial space of degree 3
+    PetscDualSpace Object: vector dual space 1 MPI process
+      type: sum
+      Dual space with 2 components, size 40
+      Sum dual space of 2 concatenated subspaces (all identical)
+        PetscDualSpace Object: P3 1 MPI process
+          type: lagrange
+          Dual space with 1 components, size 20
+          Continuous Lagrange dual space
+      Quadrature on a tetrahedron of order 6 on 24 points (dim 3)
+  Vector basis to original basis:  
+     0     0     1     1     2     2     3     3     4     5     4     5     6     7     6     7  
+     8     9     8     9    10    11    10    11    12    13    12    13    14    15    14    15  
+    16    16    17    17    18    18    19    19  
+  PetscFE Object: vector fe 1 MPI process
+    type: vector
+    Vector Finite Element in 3 dimensions with 2 components
+    PetscSpace Object: vector basis space 1 MPI process
+      type: sum
+      Space in 3 variables with 2 components, size 40
+      Sum space of 2 concatenated subspaces (all identical)
+        PetscSpace Object: P3 1 MPI process
+          type: poly
+          Space in 3 variables with 1 components, size 20
+          Polynomial space of degree 3
+    PetscDualSpace Object: vector dual space 1 MPI process
+      type: sum
+      Dual space with 2 components, size 40
+      Sum dual space of 2 concatenated subspaces (all identical)
+        PetscDualSpace Object: P3 1 MPI process
+          type: lagrange
+          Dual space with 1 components, size 20
+          Continuous Lagrange dual space
+      Quadrature on a tetrahedron of order 6 on 24 points (dim 3)
+  Vector basis to original basis:  
+     0     0     1     1     2     2     3     3     4     4     5     5     6     6     7     7  
+     8     8     9     9    10    10    11    11    12    12    13    13    14    14    15    15  
+    16    16    17    17    18    18    19    19  
+  PetscFE Object: vector fe 1 MPI process
+    type: vector
+    Vector Finite Element in 3 dimensions with 2 components
+    PetscSpace Object: vector basis space 1 MPI process
+      type: sum
+      Space in 3 variables with 2 components, size 40
+      Sum space of 2 concatenated subspaces (all identical)
+        PetscSpace Object: P3 1 MPI process
+          type: poly
+          Space in 3 variables with 1 components, size 20
+          Polynomial space of degree 3
+    PetscDualSpace Object: vector dual space 1 MPI process
+      type: sum
+      Dual space with 2 components, size 40
+      Sum dual space of 2 concatenated subspaces (all identical)
+        PetscDualSpace Object: P3 1 MPI process
+          type: lagrange
+          Dual space with 1 components, size 20
+          Continuous Lagrange dual space
+      Quadrature on a tetrahedron of order 6 on 24 points (dim 3)
+  Vector basis to original basis:  
+     0     0     1     1     2     2     3     3     4     4     5     5     6     6     7     7  
+     8     8     9     9    10    10    11    11    12    12    13    13    14    14    15    15  
+    16    16    17    17    18    18    19    19  
+  PetscFE Object: vector fe 1 MPI process
+    type: vector
+    Vector Finite Element in 3 dimensions with 3 components
+    PetscSpace Object: vector basis space 1 MPI process
+      type: sum
+      Space in 3 variables with 3 components, size 60
+      Sum space of 3 concatenated subspaces (all identical)
+        PetscSpace Object: P3 1 MPI process
+          type: poly
+          Space in 3 variables with 1 components, size 20
+          Polynomial space of degree 3
+    PetscDualSpace Object: vector dual space 1 MPI process
+      type: sum
+      Dual space with 3 components, size 60
+      Sum dual space of 3 concatenated subspaces (all identical)
+        PetscDualSpace Object: P3 1 MPI process
+          type: lagrange
+          Dual space with 1 components, size 20
+          Continuous Lagrange dual space
+      Quadrature on a tetrahedron of order 6 on 24 points (dim 3)
+  Vector basis to original basis:  
+     0     0     0     1     1     1     2     2     2     3     3     3     4     5     4     5  
+     4     5     6     7     6     7     6     7     8     9     8     9     8     9    10    11  
+    10    11    10    11    12    13    12    13    12    13    14    15    14    15    14    15  
+    16    16    16    17    17    17    18    18    18    19    19    19  
+  PetscFE Object: vector fe 1 MPI process
+    type: vector
+    Vector Finite Element in 3 dimensions with 3 components
+    PetscSpace Object: vector basis space 1 MPI process
+      type: sum
+      Space in 3 variables with 3 components, size 60
+      Sum space of 3 concatenated subspaces (all identical)
+        PetscSpace Object: P3 1 MPI process
+          type: poly
+          Space in 3 variables with 1 components, size 20
+          Polynomial space of degree 3
+    PetscDualSpace Object: vector dual space 1 MPI process
+      type: sum
+      Dual space with 3 components, size 60
+      Sum dual space of 3 concatenated subspaces (all identical)
+        PetscDualSpace Object: P3 1 MPI process
+          type: lagrange
+          Dual space with 1 components, size 20
+          Continuous Lagrange dual space
+      Quadrature on a tetrahedron of order 6 on 24 points (dim 3)
+  Vector basis to original basis:  
+     0     0     0     1     1     1     2     2     2     3     3     3     4     5     4     5  
+     4     5     6     7     6     7     6     7     8     9     8     9     8     9    10    11  
+    10    11    10    11    12    13    12    13    12    13    14    15    14    15    14    15  
+    16    16    16    17    17    17    18    18    18    19    19    19  
+  PetscFE Object: vector fe 1 MPI process
+    type: vector
+    Vector Finite Element in 3 dimensions with 3 components
+    PetscSpace Object: vector basis space 1 MPI process
+      type: sum
+      Space in 3 variables with 3 components, size 60
+      Sum space of 3 concatenated subspaces (all identical)
+        PetscSpace Object: P3 1 MPI process
+          type: poly
+          Space in 3 variables with 1 components, size 20
+          Polynomial space of degree 3
+    PetscDualSpace Object: vector dual space 1 MPI process
+      type: sum
+      Dual space with 3 components, size 60
+      Sum dual space of 3 concatenated subspaces (all identical)
+        PetscDualSpace Object: P3 1 MPI process
+          type: lagrange
+          Dual space with 1 components, size 20
+          Continuous Lagrange dual space
+      Quadrature on a tetrahedron of order 6 on 24 points (dim 3)
+  Vector basis to original basis:  
+     0     0     0     1     1     1     2     2     2     3     3     3     4     4     4     5  
+     5     5     6     6     6     7     7     7     8     8     8     9     9     9    10    10  
+    10    11    11    11    12    12    12    13    13    13    14    14    14    15    15    15  
+    16    16    16    17    17    17    18    18    18    19    19    19  
+  PetscFE Object: vector fe 1 MPI process
+    type: vector
+    Vector Finite Element in 3 dimensions with 3 components
+    PetscSpace Object: vector basis space 1 MPI process
+      type: sum
+      Space in 3 variables with 3 components, size 60
+      Sum space of 3 concatenated subspaces (all identical)
+        PetscSpace Object: P3 1 MPI process
+          type: poly
+          Space in 3 variables with 1 components, size 20
+          Polynomial space of degree 3
+    PetscDualSpace Object: vector dual space 1 MPI process
+      type: sum
+      Dual space with 3 components, size 60
+      Sum dual space of 3 concatenated subspaces (all identical)
+        PetscDualSpace Object: P3 1 MPI process
+          type: lagrange
+          Dual space with 1 components, size 20
+          Continuous Lagrange dual space
+      Quadrature on a tetrahedron of order 6 on 24 points (dim 3)
+  Vector basis to original basis:  
+     0     0     0     1     1     1     2     2     2     3     3     3     4     4     4     5  
+     5     5     6     6     6     7     7     7     8     8     8     9     9     9    10    10  
+    10    11    11    11    12    12    12    13    13    13    14    14    14    15    15    15  
+    16    16    16    17    17    17    18    18    18    19    19    19  
+PetscFE Object: base FE (vector) 1 MPI process
+  type: vector
+  Vector Finite Element in 3 dimensions with 3 components
+  PetscSpace Object: P3 1 MPI process
+    type: sum
+    Space in 3 variables with 3 components, size 60
+    Sum space of 3 concatenated subspaces (all identical)
+      PetscSpace Object: P3 (sumcomp_) 1 MPI process
+        type: poly
+        Space in 3 variables with 1 components, size 20
+        Polynomial space of degree 3
+  PetscDualSpace Object: P3 1 MPI process
+    type: sum
+    Dual space with 3 components, size 60
+    Sum dual space of 3 concatenated subspaces (all identical)
+      PetscDualSpace Object: P3 1 MPI process
+        type: lagrange
+        Dual space with 1 components, size 20
+        Continuous Lagrange dual space
+    Quadrature on a tetrahedron of order 6 on 24 points (dim 3)
+  PetscFE Object: vector fe 1 MPI process
+    type: vector
+    Vector Finite Element in 3 dimensions with 3 components (1 copies of finite element with 3 components)
+    PetscSpace Object: vector basis space 1 MPI process
+      type: sum
+      Space in 3 variables with 3 components, size 60
+      Sum space of 1 subspaces (all identical)
+        PetscSpace Object: P3 1 MPI process
+          type: sum
+          Space in 3 variables with 3 components, size 60
+          Sum space of 3 concatenated subspaces (all identical)
+            PetscSpace Object: P3 (sumcomp_) 1 MPI process
+              type: poly
+              Space in 3 variables with 1 components, size 20
+              Polynomial space of degree 3
+    PetscDualSpace Object: vector dual space 1 MPI process
+      type: sum
+      Dual space with 3 components, size 60
+      Sum dual space of 1 concatenated subspaces (all identical)
+        PetscDualSpace Object: P3 1 MPI process
+          type: sum
+          Dual space with 3 components, size 60
+          Sum dual space of 3 concatenated subspaces (all identical)
+            PetscDualSpace Object: P3 1 MPI process
+              type: lagrange
+              Dual space with 1 components, size 20
+              Continuous Lagrange dual space
+      Quadrature on a tetrahedron of order 6 on 24 points (dim 3)
+  Vector basis to original basis:  
+     0     1     2     3     4     5     6     7     8     9    10    11    12    13    14    15  
+    16    17    18    19    20    21    22    23    24    25    26    27    28    29    30    31  
+    32    33    34    35    36    37    38    39    40    41    42    43    44    45    46    47  
+    48    49    50    51    52    53    54    55    56    57    58    59  
+  PetscFE Object: vector fe 1 MPI process
+    type: vector
+    Vector Finite Element in 3 dimensions with 3 components (1 copies of finite element with 3 components)
+    PetscSpace Object: vector basis space 1 MPI process
+      type: sum
+      Space in 3 variables with 3 components, size 60
+      Sum space of 1 subspaces (all identical)
+        PetscSpace Object: P3 1 MPI process
+          type: sum
+          Space in 3 variables with 3 components, size 60
+          Sum space of 3 concatenated subspaces (all identical)
+            PetscSpace Object: P3 (sumcomp_) 1 MPI process
+              type: poly
+              Space in 3 variables with 1 components, size 20
+              Polynomial space of degree 3
+    PetscDualSpace Object: vector dual space 1 MPI process
+      type: sum
+      Dual space with 3 components, size 60
+      Sum dual space of 1 concatenated subspaces (all identical)
+        PetscDualSpace Object: P3 1 MPI process
+          type: sum
+          Dual space with 3 components, size 60
+          Sum dual space of 3 concatenated subspaces (all identical)
+            PetscDualSpace Object: P3 1 MPI process
+              type: lagrange
+              Dual space with 1 components, size 20
+              Continuous Lagrange dual space
+      Quadrature on a tetrahedron of order 6 on 24 points (dim 3)
+  Vector basis to original basis:  
+     0     1     2     3     4     5     6     7     8     9    10    11    12    13    14    15  
+    16    17    18    19    20    21    22    23    24    25    26    27    28    29    30    31  
+    32    33    34    35    36    37    38    39    40    41    42    43    44    45    46    47  
+    48    49    50    51    52    53    54    55    56    57    58    59  
+  PetscFE Object: vector fe 1 MPI process
+    type: vector
+    Vector Finite Element in 3 dimensions with 3 components (1 copies of finite element with 3 components)
+    PetscSpace Object: vector basis space 1 MPI process
+      type: sum
+      Space in 3 variables with 3 components, size 60
+      Sum space of 1 subspaces (all identical)
+        PetscSpace Object: P3 1 MPI process
+          type: sum
+          Space in 3 variables with 3 components, size 60
+          Sum space of 3 concatenated subspaces (all identical)
+            PetscSpace Object: P3 (sumcomp_) 1 MPI process
+              type: poly
+              Space in 3 variables with 1 components, size 20
+              Polynomial space of degree 3
+    PetscDualSpace Object: vector dual space 1 MPI process
+      type: sum
+      Dual space with 3 components, size 60
+      Sum dual space of 1 concatenated subspaces (all identical)
+        PetscDualSpace Object: P3 1 MPI process
+          type: sum
+          Dual space with 3 components, size 60
+          Sum dual space of 3 concatenated subspaces (all identical)
+            PetscDualSpace Object: P3 1 MPI process
+              type: lagrange
+              Dual space with 1 components, size 20
+              Continuous Lagrange dual space
+      Quadrature on a tetrahedron of order 6 on 24 points (dim 3)
+  Vector basis to original basis:  
+     0     1     2     3     4     5     6     7     8     9    10    11    12    13    14    15  
+    16    17    18    19    20    21    22    23    24    25    26    27    28    29    30    31  
+    32    33    34    35    36    37    38    39    40    41    42    43    44    45    46    47  
+    48    49    50    51    52    53    54    55    56    57    58    59  
+  PetscFE Object: vector fe 1 MPI process
+    type: vector
+    Vector Finite Element in 3 dimensions with 3 components (1 copies of finite element with 3 components)
+    PetscSpace Object: vector basis space 1 MPI process
+      type: sum
+      Space in 3 variables with 3 components, size 60
+      Sum space of 1 subspaces (all identical)
+        PetscSpace Object: P3 1 MPI process
+          type: sum
+          Space in 3 variables with 3 components, size 60
+          Sum space of 3 concatenated subspaces (all identical)
+            PetscSpace Object: P3 (sumcomp_) 1 MPI process
+              type: poly
+              Space in 3 variables with 1 components, size 20
+              Polynomial space of degree 3
+    PetscDualSpace Object: vector dual space 1 MPI process
+      type: sum
+      Dual space with 3 components, size 60
+      Sum dual space of 1 concatenated subspaces (all identical)
+        PetscDualSpace Object: P3 1 MPI process
+          type: sum
+          Dual space with 3 components, size 60
+          Sum dual space of 3 concatenated subspaces (all identical)
+            PetscDualSpace Object: P3 1 MPI process
+              type: lagrange
+              Dual space with 1 components, size 20
+              Continuous Lagrange dual space
+      Quadrature on a tetrahedron of order 6 on 24 points (dim 3)
+  Vector basis to original basis:  
+     0     1     2     3     4     5     6     7     8     9    10    11    12    13    14    15  
+    16    17    18    19    20    21    22    23    24    25    26    27    28    29    30    31  
+    32    33    34    35    36    37    38    39    40    41    42    43    44    45    46    47  
+    48    49    50    51    52    53    54    55    56    57    58    59  
+  PetscFE Object: vector fe 1 MPI process
+    type: vector
+    Vector Finite Element in 3 dimensions with 6 components (2 copies of finite element with 3 components)
+    PetscSpace Object: vector basis space 1 MPI process
+      type: sum
+      Space in 3 variables with 6 components, size 120
+      Sum space of 2 concatenated subspaces (all identical)
+        PetscSpace Object: P3 1 MPI process
+          type: sum
+          Space in 3 variables with 3 components, size 60
+          Sum space of 3 concatenated subspaces (all identical)
+            PetscSpace Object: P3 (sumcomp_) 1 MPI process
+              type: poly
+              Space in 3 variables with 1 components, size 20
+              Polynomial space of degree 3
+    PetscDualSpace Object: vector dual space 1 MPI process
+      type: sum
+      Dual space with 6 components, size 120
+      Sum dual space of 2 concatenated subspaces (all identical)
+        PetscDualSpace Object: P3 1 MPI process
+          type: sum
+          Dual space with 3 components, size 60
+          Sum dual space of 3 concatenated subspaces (all identical)
+            PetscDualSpace Object: P3 1 MPI process
+              type: lagrange
+              Dual space with 1 components, size 20
+              Continuous Lagrange dual space
+      Quadrature on a tetrahedron of order 6 on 24 points (dim 3)
+  Vector basis to original basis:  
+     0     1     2     0     1     2     3     4     5     3     4     5     6     7     8     6  
+     7     8     9    10    11     9    10    11    12    13    14    15    16    17    12    13  
+    14    15    16    17    18    19    20    21    22    23    18    19    20    21    22    23  
+    24    25    26    27    28    29    24    25    26    27    28    29    30    31    32    33  
+    34    35    30    31    32    33    34    35    36    37    38    39    40    41    36    37  
+    38    39    40    41    42    43    44    45    46    47    42    43    44    45    46    47  
+    48    49    50    48    49    50    51    52    53    51    52    53    54    55    56    54  
+    55    56    57    58    59    57    58    59  
+  PetscFE Object: vector fe 1 MPI process
+    type: vector
+    Vector Finite Element in 3 dimensions with 6 components (2 copies of finite element with 3 components)
+    PetscSpace Object: vector basis space 1 MPI process
+      type: sum
+      Space in 3 variables with 6 components, size 120
+      Sum space of 2 concatenated subspaces (all identical)
+        PetscSpace Object: P3 1 MPI process
+          type: sum
+          Space in 3 variables with 3 components, size 60
+          Sum space of 3 concatenated subspaces (all identical)
+            PetscSpace Object: P3 (sumcomp_) 1 MPI process
+              type: poly
+              Space in 3 variables with 1 components, size 20
+              Polynomial space of degree 3
+    PetscDualSpace Object: vector dual space 1 MPI process
+      type: sum
+      Dual space with 6 components, size 120
+      Sum dual space of 2 concatenated subspaces (all identical)
+        PetscDualSpace Object: P3 1 MPI process
+          type: sum
+          Dual space with 3 components, size 60
+          Sum dual space of 3 concatenated subspaces (all identical)
+            PetscDualSpace Object: P3 1 MPI process
+              type: lagrange
+              Dual space with 1 components, size 20
+              Continuous Lagrange dual space
+      Quadrature on a tetrahedron of order 6 on 24 points (dim 3)
+  Vector basis to original basis:  
+     0     1     2     0     1     2     3     4     5     3     4     5     6     7     8     6  
+     7     8     9    10    11     9    10    11    12    13    14    15    16    17    12    13  
+    14    15    16    17    18    19    20    21    22    23    18    19    20    21    22    23  
+    24    25    26    27    28    29    24    25    26    27    28    29    30    31    32    33  
+    34    35    30    31    32    33    34    35    36    37    38    39    40    41    36    37  
+    38    39    40    41    42    43    44    45    46    47    42    43    44    45    46    47  
+    48    49    50    48    49    50    51    52    53    51    52    53    54    55    56    54  
+    55    56    57    58    59    57    58    59  
+  PetscFE Object: vector fe 1 MPI process
+    type: vector
+    Vector Finite Element in 3 dimensions with 6 components (2 copies of finite element with 3 components)
+    PetscSpace Object: vector basis space 1 MPI process
+      type: sum
+      Space in 3 variables with 6 components, size 120
+      Sum space of 2 concatenated subspaces (all identical)
+        PetscSpace Object: P3 1 MPI process
+          type: sum
+          Space in 3 variables with 3 components, size 60
+          Sum space of 3 concatenated subspaces (all identical)
+            PetscSpace Object: P3 (sumcomp_) 1 MPI process
+              type: poly
+              Space in 3 variables with 1 components, size 20
+              Polynomial space of degree 3
+    PetscDualSpace Object: vector dual space 1 MPI process
+      type: sum
+      Dual space with 6 components, size 120
+      Sum dual space of 2 concatenated subspaces (all identical)
+        PetscDualSpace Object: P3 1 MPI process
+          type: sum
+          Dual space with 3 components, size 60
+          Sum dual space of 3 concatenated subspaces (all identical)
+            PetscDualSpace Object: P3 1 MPI process
+              type: lagrange
+              Dual space with 1 components, size 20
+              Continuous Lagrange dual space
+      Quadrature on a tetrahedron of order 6 on 24 points (dim 3)
+  Vector basis to original basis:  
+     0     0     1     1     2     2     3     3     4     4     5     5     6     6     7     7  
+     8     8     9     9    10    10    11    11    12    12    13    13    14    14    15    15  
+    16    16    17    17    18    18    19    19    20    20    21    21    22    22    23    23  
+    24    24    25    25    26    26    27    27    28    28    29    29    30    30    31    31  
+    32    32    33    33    34    34    35    35    36    36    37    37    38    38    39    39  
+    40    40    41    41    42    42    43    43    44    44    45    45    46    46    47    47  
+    48    48    49    49    50    50    51    51    52    52    53    53    54    54    55    55  
+    56    56    57    57    58    58    59    59  
+  PetscFE Object: vector fe 1 MPI process
+    type: vector
+    Vector Finite Element in 3 dimensions with 6 components (2 copies of finite element with 3 components)
+    PetscSpace Object: vector basis space 1 MPI process
+      type: sum
+      Space in 3 variables with 6 components, size 120
+      Sum space of 2 concatenated subspaces (all identical)
+        PetscSpace Object: P3 1 MPI process
+          type: sum
+          Space in 3 variables with 3 components, size 60
+          Sum space of 3 concatenated subspaces (all identical)
+            PetscSpace Object: P3 (sumcomp_) 1 MPI process
+              type: poly
+              Space in 3 variables with 1 components, size 20
+              Polynomial space of degree 3
+    PetscDualSpace Object: vector dual space 1 MPI process
+      type: sum
+      Dual space with 6 components, size 120
+      Sum dual space of 2 concatenated subspaces (all identical)
+        PetscDualSpace Object: P3 1 MPI process
+          type: sum
+          Dual space with 3 components, size 60
+          Sum dual space of 3 concatenated subspaces (all identical)
+            PetscDualSpace Object: P3 1 MPI process
+              type: lagrange
+              Dual space with 1 components, size 20
+              Continuous Lagrange dual space
+      Quadrature on a tetrahedron of order 6 on 24 points (dim 3)
+  Vector basis to original basis:  
+     0     0     1     1     2     2     3     3     4     4     5     5     6     6     7     7  
+     8     8     9     9    10    10    11    11    12    12    13    13    14    14    15    15  
+    16    16    17    17    18    18    19    19    20    20    21    21    22    22    23    23  
+    24    24    25    25    26    26    27    27    28    28    29    29    30    30    31    31  
+    32    32    33    33    34    34    35    35    36    36    37    37    38    38    39    39  
+    40    40    41    41    42    42    43    43    44    44    45    45    46    46    47    47  
+    48    48    49    49    50    50    51    51    52    52    53    53    54    54    55    55  
+    56    56    57    57    58    58    59    59  
+  PetscFE Object: vector fe 1 MPI process
+    type: vector
+    Vector Finite Element in 3 dimensions with 9 components (3 copies of finite element with 3 components)
+    PetscSpace Object: vector basis space 1 MPI process
+      type: sum
+      Space in 3 variables with 9 components, size 180
+      Sum space of 3 concatenated subspaces (all identical)
+        PetscSpace Object: P3 1 MPI process
+          type: sum
+          Space in 3 variables with 3 components, size 60
+          Sum space of 3 concatenated subspaces (all identical)
+            PetscSpace Object: P3 (sumcomp_) 1 MPI process
+              type: poly
+              Space in 3 variables with 1 components, size 20
+              Polynomial space of degree 3
+    PetscDualSpace Object: vector dual space 1 MPI process
+      type: sum
+      Dual space with 9 components, size 180
+      Sum dual space of 3 concatenated subspaces (all identical)
+        PetscDualSpace Object: P3 1 MPI process
+          type: sum
+          Dual space with 3 components, size 60
+          Sum dual space of 3 concatenated subspaces (all identical)
+            PetscDualSpace Object: P3 1 MPI process
+              type: lagrange
+              Dual space with 1 components, size 20
+              Continuous Lagrange dual space
+      Quadrature on a tetrahedron of order 6 on 24 points (dim 3)
+  Vector basis to original basis:  
+     0     1     2     0     1     2     0     1     2     3     4     5     3     4     5     3  
+     4     5     6     7     8     6     7     8     6     7     8     9    10    11     9    10  
+    11     9    10    11    12    13    14    15    16    17    12    13    14    15    16    17  
+    12    13    14    15    16    17    18    19    20    21    22    23    18    19    20    21  
+    22    23    18    19    20    21    22    23    24    25    26    27    28    29    24    25  
+    26    27    28    29    24    25    26    27    28    29    30    31    32    33    34    35  
+    30    31    32    33    34    35    30    31    32    33    34    35    36    37    38    39  
+    40    41    36    37    38    39    40    41    36    37    38    39    40    41    42    43  
+    44    45    46    47    42    43    44    45    46    47    42    43    44    45    46    47  
+    48    49    50    48    49    50    48    49    50    51    52    53    51    52    53    51  
+    52    53    54    55    56    54    55    56    54    55    56    57    58    59    57    58  
+    59    57    58    59  
+  PetscFE Object: vector fe 1 MPI process
+    type: vector
+    Vector Finite Element in 3 dimensions with 9 components (3 copies of finite element with 3 components)
+    PetscSpace Object: vector basis space 1 MPI process
+      type: sum
+      Space in 3 variables with 9 components, size 180
+      Sum space of 3 concatenated subspaces (all identical)
+        PetscSpace Object: P3 1 MPI process
+          type: sum
+          Space in 3 variables with 3 components, size 60
+          Sum space of 3 concatenated subspaces (all identical)
+            PetscSpace Object: P3 (sumcomp_) 1 MPI process
+              type: poly
+              Space in 3 variables with 1 components, size 20
+              Polynomial space of degree 3
+    PetscDualSpace Object: vector dual space 1 MPI process
+      type: sum
+      Dual space with 9 components, size 180
+      Sum dual space of 3 concatenated subspaces (all identical)
+        PetscDualSpace Object: P3 1 MPI process
+          type: sum
+          Dual space with 3 components, size 60
+          Sum dual space of 3 concatenated subspaces (all identical)
+            PetscDualSpace Object: P3 1 MPI process
+              type: lagrange
+              Dual space with 1 components, size 20
+              Continuous Lagrange dual space
+      Quadrature on a tetrahedron of order 6 on 24 points (dim 3)
+  Vector basis to original basis:  
+     0     1     2     0     1     2     0     1     2     3     4     5     3     4     5     3  
+     4     5     6     7     8     6     7     8     6     7     8     9    10    11     9    10  
+    11     9    10    11    12    13    14    15    16    17    12    13    14    15    16    17  
+    12    13    14    15    16    17    18    19    20    21    22    23    18    19    20    21  
+    22    23    18    19    20    21    22    23    24    25    26    27    28    29    24    25  
+    26    27    28    29    24    25    26    27    28    29    30    31    32    33    34    35  
+    30    31    32    33    34    35    30    31    32    33    34    35    36    37    38    39  
+    40    41    36    37    38    39    40    41    36    37    38    39    40    41    42    43  
+    44    45    46    47    42    43    44    45    46    47    42    43    44    45    46    47  
+    48    49    50    48    49    50    48    49    50    51    52    53    51    52    53    51  
+    52    53    54    55    56    54    55    56    54    55    56    57    58    59    57    58  
+    59    57    58    59  
+  PetscFE Object: vector fe 1 MPI process
+    type: vector
+    Vector Finite Element in 3 dimensions with 9 components (3 copies of finite element with 3 components)
+    PetscSpace Object: vector basis space 1 MPI process
+      type: sum
+      Space in 3 variables with 9 components, size 180
+      Sum space of 3 concatenated subspaces (all identical)
+        PetscSpace Object: P3 1 MPI process
+          type: sum
+          Space in 3 variables with 3 components, size 60
+          Sum space of 3 concatenated subspaces (all identical)
+            PetscSpace Object: P3 (sumcomp_) 1 MPI process
+              type: poly
+              Space in 3 variables with 1 components, size 20
+              Polynomial space of degree 3
+    PetscDualSpace Object: vector dual space 1 MPI process
+      type: sum
+      Dual space with 9 components, size 180
+      Sum dual space of 3 concatenated subspaces (all identical)
+        PetscDualSpace Object: P3 1 MPI process
+          type: sum
+          Dual space with 3 components, size 60
+          Sum dual space of 3 concatenated subspaces (all identical)
+            PetscDualSpace Object: P3 1 MPI process
+              type: lagrange
+              Dual space with 1 components, size 20
+              Continuous Lagrange dual space
+      Quadrature on a tetrahedron of order 6 on 24 points (dim 3)
+  Vector basis to original basis:  
+     0     0     0     1     1     1     2     2     2     3     3     3     4     4     4     5  
+     5     5     6     6     6     7     7     7     8     8     8     9     9     9    10    10  
+    10    11    11    11    12    12    12    13    13    13    14    14    14    15    15    15  
+    16    16    16    17    17    17    18    18    18    19    19    19    20    20    20    21  
+    21    21    22    22    22    23    23    23    24    24    24    25    25    25    26    26  
+    26    27    27    27    28    28    28    29    29    29    30    30    30    31    31    31  
+    32    32    32    33    33    33    34    34    34    35    35    35    36    36    36    37  
+    37    37    38    38    38    39    39    39    40    40    40    41    41    41    42    42  
+    42    43    43    43    44    44    44    45    45    45    46    46    46    47    47    47  
+    48    48    48    49    49    49    50    50    50    51    51    51    52    52    52    53  
+    53    53    54    54    54    55    55    55    56    56    56    57    57    57    58    58  
+    58    59    59    59  
+  PetscFE Object: vector fe 1 MPI process
+    type: vector
+    Vector Finite Element in 3 dimensions with 9 components (3 copies of finite element with 3 components)
+    PetscSpace Object: vector basis space 1 MPI process
+      type: sum
+      Space in 3 variables with 9 components, size 180
+      Sum space of 3 concatenated subspaces (all identical)
+        PetscSpace Object: P3 1 MPI process
+          type: sum
+          Space in 3 variables with 3 components, size 60
+          Sum space of 3 concatenated subspaces (all identical)
+            PetscSpace Object: P3 (sumcomp_) 1 MPI process
+              type: poly
+              Space in 3 variables with 1 components, size 20
+              Polynomial space of degree 3
+    PetscDualSpace Object: vector dual space 1 MPI process
+      type: sum
+      Dual space with 9 components, size 180
+      Sum dual space of 3 concatenated subspaces (all identical)
+        PetscDualSpace Object: P3 1 MPI process
+          type: sum
+          Dual space with 3 components, size 60
+          Sum dual space of 3 concatenated subspaces (all identical)
+            PetscDualSpace Object: P3 1 MPI process
+              type: lagrange
+              Dual space with 1 components, size 20
+              Continuous Lagrange dual space
+      Quadrature on a tetrahedron of order 6 on 24 points (dim 3)
+  Vector basis to original basis:  
+     0     0     0     1     1     1     2     2     2     3     3     3     4     4     4     5  
+     5     5     6     6     6     7     7     7     8     8     8     9     9     9    10    10  
+    10    11    11    11    12    12    12    13    13    13    14    14    14    15    15    15  
+    16    16    16    17    17    17    18    18    18    19    19    19    20    20    20    21  
+    21    21    22    22    22    23    23    23    24    24    24    25    25    25    26    26  
+    26    27    27    27    28    28    28    29    29    29    30    30    30    31    31    31  
+    32    32    32    33    33    33    34    34    34    35    35    35    36    36    36    37  
+    37    37    38    38    38    39    39    39    40    40    40    41    41    41    42    42  
+    42    43    43    43    44    44    44    45    45    45    46    46    46    47    47    47  
+    48    48    48    49    49    49    50    50    50    51    51    51    52    52    52    53  
+    53    53    54    54    54    55    55    55    56    56    56    57    57    57    58    58  
+    58    59    59    59  
