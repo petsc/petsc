@@ -46,7 +46,7 @@ struct Vec_Kokkos {
     if (array_d) {
       v_d = PetscScalarKokkosView(array_d, n); /* Use the given device array */
     } else {
-      v_d = Kokkos::create_mirror_view(DefaultMemorySpace(), v_h); /* Create a mirror in DefaultMemorySpace but do not copy values */
+      v_d = Kokkos::create_mirror_view(Kokkos::WithoutInitializing, DefaultMemorySpace(), v_h); /* Create a mirror in DefaultMemorySpace but do not copy values */
     }
     v_dual = PetscScalarKokkosDualView(v_d, v_h);
     if (!array_d) v_dual.modify_host();
