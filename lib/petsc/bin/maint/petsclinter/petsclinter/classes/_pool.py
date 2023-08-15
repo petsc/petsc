@@ -295,6 +295,10 @@ class ParallelPool(WorkerPoolBase):
         # queue, but it's here just in case
         break
       if not isinstance(packet, self.ReturnPacket):
+        try: # type: ignore[unreachable]
+          self.__crash_and_burn('')
+        except RuntimeError:
+          pass
         raise ValueError(type(packet))
       self.errors_left.append(packet.errors_left)
       self.errors_fixed.append(packet.errors_fixed)
@@ -468,6 +472,7 @@ class ParallelPool(WorkerPoolBase):
       except queue.Full:
         # we don't want to join here since a child may have encountered an error!
         self.check()
+        self._consume_results()
       else:
         # only get here if put is successful
         break
