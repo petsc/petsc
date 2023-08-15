@@ -36,21 +36,21 @@ PETSC_INTERN PetscLogEvent DCONTEXT_Mark;
 
 #if defined(PETSC_CLANG_STATIC_ANALYZER)
 template <typename T>
-void PetscValidDeviceType(T, int);
+extern void PetscValidDeviceType(T, int);
 template <typename T, typename U>
-void PetscCheckCompatibleDeviceTypes(T, int, U, int);
+extern void PetscCheckCompatibleDeviceTypes(T, int, U, int);
 template <typename T>
-void PetscValidDevice(T, int);
+extern void PetscValidDevice(T, int);
 template <typename T>
-void PetscValidDeviceAttribute(T, int);
+extern void PetscValidDeviceAttribute(T, int);
 template <typename T, typename U>
-void PetscCheckCompatibleDevices(T, int, U, int);
+extern void PetscCheckCompatibleDevices(T, int, U, int);
 template <typename T>
-void PetscValidStreamType(T, int);
+extern void PetscValidStreamType(T, int);
 template <typename T>
-void PetscValidDeviceContext(T, int);
+extern void PetscValidDeviceContext(T, int);
 template <typename T, typename U>
-void PetscCheckCompatibleDeviceContexts(T, int, U, int);
+extern void PetscCheckCompatibleDeviceContexts(T, int, U, int);
 #elif PetscDefined(HAVE_CXX) && (PetscDefined(USE_DEBUG) || PetscDefined(DEVICE_KEEP_ERROR_CHECKING_MACROS))
   #define PetscValidDeviceType(dtype, argno) \
     do { \

@@ -352,6 +352,19 @@ PETSC_EXTERN PetscErrorCode TSTrajectorySetDirname(TSTrajectory, const char[]);
 PETSC_EXTERN PetscErrorCode TSTrajectorySetFiletemplate(TSTrajectory, const char[]);
 PETSC_EXTERN PetscErrorCode TSGetTrajectory(TS, TSTrajectory *);
 
+typedef enum {
+  TJ_REVOLVE,
+  TJ_CAMS,
+  TJ_PETSC
+} TSTrajectoryMemoryType;
+PETSC_EXTERN const char *const TSTrajectoryMemoryTypes[];
+
+PETSC_EXTERN PetscErrorCode TSTrajectoryMemorySetType(TSTrajectory, TSTrajectoryMemoryType);
+PETSC_EXTERN PetscErrorCode TSTrajectorySetMaxCpsRAM(TSTrajectory, PetscInt);
+PETSC_EXTERN PetscErrorCode TSTrajectorySetMaxCpsDisk(TSTrajectory, PetscInt);
+PETSC_EXTERN PetscErrorCode TSTrajectorySetMaxUnitsRAM(TSTrajectory, PetscInt);
+PETSC_EXTERN PetscErrorCode TSTrajectorySetMaxUnitsDisk(TSTrajectory, PetscInt);
+
 PETSC_EXTERN PetscErrorCode TSSetCostGradients(TS, PetscInt, Vec *, Vec *);
 PETSC_EXTERN PetscErrorCode TSGetCostGradients(TS, PetscInt *, Vec **, Vec **);
 PETSC_EXTERN PETSC_DEPRECATED_FUNCTION(3, 12, 0, "TSCreateQuadratureTS() and TSForwardSetSensitivities()", ) PetscErrorCode TSSetCostIntegrand(TS, PetscInt, Vec, PetscErrorCode (*)(TS, PetscReal, Vec, Vec, void *), PetscErrorCode (*)(TS, PetscReal, Vec, Vec *, void *), PetscErrorCode (*)(TS, PetscReal, Vec, Vec *, void *), PetscBool, void *);
@@ -1182,6 +1195,7 @@ J*/
 PETSC_EXTERN PetscErrorCode TSGLEEGetType(TS ts, TSGLEEType *);
 PETSC_EXTERN PetscErrorCode TSGLEESetType(TS ts, TSGLEEType);
 PETSC_EXTERN PetscErrorCode TSGLEERegister(TSGLEEType, PetscInt, PetscInt, PetscInt, PetscReal, const PetscReal[], const PetscReal[], const PetscReal[], const PetscReal[], const PetscReal[], const PetscReal[], const PetscReal[], const PetscReal[], const PetscReal[], const PetscReal[], PetscInt, const PetscReal[]);
+PETSC_EXTERN PetscErrorCode TSGLEERegisterAll(void);
 PETSC_EXTERN PetscErrorCode TSGLEEFinalizePackage(void);
 PETSC_EXTERN PetscErrorCode TSGLEEInitializePackage(void);
 PETSC_EXTERN PetscErrorCode TSGLEERegisterDestroy(void);
@@ -1268,6 +1282,7 @@ typedef const char *TSBasicSymplecticType;
 PETSC_EXTERN PetscErrorCode TSBasicSymplecticSetType(TS, TSBasicSymplecticType);
 PETSC_EXTERN PetscErrorCode TSBasicSymplecticGetType(TS, TSBasicSymplecticType *);
 PETSC_EXTERN PetscErrorCode TSBasicSymplecticRegister(TSBasicSymplecticType, PetscInt, PetscInt, PetscReal[], PetscReal[]);
+PETSC_EXTERN PetscErrorCode TSBasicSymplecticRegisterAll(void);
 PETSC_EXTERN PetscErrorCode TSBasicSymplecticInitializePackage(void);
 PETSC_EXTERN PetscErrorCode TSBasicSymplecticFinalizePackage(void);
 PETSC_EXTERN PetscErrorCode TSBasicSymplecticRegisterDestroy(void);
@@ -1281,6 +1296,7 @@ PETSC_EXTERN PetscErrorCode TSBasicSymplecticRegisterDestroy(void);
 .seealso: [](ch_ts), `TS`, TSDiscGradSetFormulation()`, `TSDiscGradGetFormulation()`
 J*/
 PETSC_EXTERN PetscErrorCode TSDiscGradSetFormulation(TS, PetscErrorCode (*)(TS, PetscReal, Vec, Mat, void *), PetscErrorCode (*)(TS, PetscReal, Vec, PetscScalar *, void *), PetscErrorCode (*)(TS, PetscReal, Vec, Vec, void *), void *);
+PETSC_EXTERN PetscErrorCode TSDiscGradGetFormulation(TS, PetscErrorCode (**)(TS, PetscReal, Vec, Mat, void *), PetscErrorCode (**)(TS, PetscReal, Vec, PetscScalar *, void *), PetscErrorCode (**)(TS, PetscReal, Vec, Vec, void *), void *);
 PETSC_EXTERN PetscErrorCode TSDiscGradIsGonzalez(TS, PetscBool *);
 PETSC_EXTERN PetscErrorCode TSDiscGradUseGonzalez(TS, PetscBool);
 
@@ -1298,19 +1314,20 @@ typedef enum {
   SUNDIALS_CLASSICAL_GS = 2
 } TSSundialsGramSchmidtType;
 PETSC_EXTERN const char *const TSSundialsGramSchmidtTypes[];
-PETSC_EXTERN PetscErrorCode    TSSundialsSetType(TS, TSSundialsLmmType);
-PETSC_EXTERN PetscErrorCode    TSSundialsGetPC(TS, PC *);
-PETSC_EXTERN PetscErrorCode    TSSundialsSetTolerance(TS, PetscReal, PetscReal);
-PETSC_EXTERN PetscErrorCode    TSSundialsSetMinTimeStep(TS, PetscReal);
-PETSC_EXTERN PetscErrorCode    TSSundialsSetMaxTimeStep(TS, PetscReal);
-PETSC_EXTERN PetscErrorCode    TSSundialsGetIterations(TS, PetscInt *, PetscInt *);
-PETSC_EXTERN PetscErrorCode    TSSundialsSetGramSchmidtType(TS, TSSundialsGramSchmidtType);
-PETSC_EXTERN PetscErrorCode    TSSundialsSetGMRESRestart(TS, PetscInt);
-PETSC_EXTERN PetscErrorCode    TSSundialsSetLinearTolerance(TS, PetscReal);
-PETSC_EXTERN PetscErrorCode    TSSundialsMonitorInternalSteps(TS, PetscBool);
-PETSC_EXTERN PetscErrorCode    TSSundialsSetMaxl(TS, PetscInt);
-PETSC_EXTERN PetscErrorCode    TSSundialsSetMaxord(TS, PetscInt);
-PETSC_EXTERN PetscErrorCode    TSSundialsSetUseDense(TS, PetscBool);
+
+PETSC_EXTERN PetscErrorCode TSSundialsSetType(TS, TSSundialsLmmType);
+PETSC_EXTERN PetscErrorCode TSSundialsGetPC(TS, PC *);
+PETSC_EXTERN PetscErrorCode TSSundialsSetTolerance(TS, PetscReal, PetscReal);
+PETSC_EXTERN PetscErrorCode TSSundialsSetMinTimeStep(TS, PetscReal);
+PETSC_EXTERN PetscErrorCode TSSundialsSetMaxTimeStep(TS, PetscReal);
+PETSC_EXTERN PetscErrorCode TSSundialsGetIterations(TS, PetscInt *, PetscInt *);
+PETSC_EXTERN PetscErrorCode TSSundialsSetGramSchmidtType(TS, TSSundialsGramSchmidtType);
+PETSC_EXTERN PetscErrorCode TSSundialsSetGMRESRestart(TS, PetscInt);
+PETSC_EXTERN PetscErrorCode TSSundialsSetLinearTolerance(TS, PetscReal);
+PETSC_EXTERN PetscErrorCode TSSundialsMonitorInternalSteps(TS, PetscBool);
+PETSC_EXTERN PetscErrorCode TSSundialsSetMaxl(TS, PetscInt);
+PETSC_EXTERN PetscErrorCode TSSundialsSetMaxord(TS, PetscInt);
+PETSC_EXTERN PetscErrorCode TSSundialsSetUseDense(TS, PetscBool);
 #endif
 
 PETSC_EXTERN PetscErrorCode TSThetaSetTheta(TS, PetscReal);

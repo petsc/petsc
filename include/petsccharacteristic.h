@@ -10,6 +10,7 @@
 /* SUBMANSEC = Characteristic */
 
 PETSC_EXTERN PetscErrorCode CharacteristicInitializePackage(void);
+PETSC_EXTERN PetscErrorCode CharacteristicFinalizePackage(void);
 
 /*S
      Characteristic - Abstract PETSc object that manages method of characteristics solves

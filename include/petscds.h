@@ -69,6 +69,7 @@ PETSC_EXTERN PetscErrorCode PetscWeakFormSetRiemannSolver(PetscWeakForm, DMLabel
 PETSC_EXTERN PetscErrorCode PetscWeakFormSetIndexRiemannSolver(PetscWeakForm, DMLabel, PetscInt, PetscInt, PetscInt, PetscInt, void (*)(PetscInt, PetscInt, const PetscReal[], const PetscReal[], const PetscScalar[], const PetscScalar[], PetscInt, const PetscScalar[], PetscScalar[], void *));
 
 PETSC_EXTERN PetscErrorCode PetscDSInitializePackage(void);
+PETSC_EXTERN PetscErrorCode PetscDSFinalizePackage(void);
 
 PETSC_EXTERN PetscClassId PETSCDS_CLASSID;
 

@@ -13,7 +13,7 @@
 #endif
 
 #if defined(PETSC_CLANG_STATIC_ANALYZER)
-void PetscSFCheckGraphSet(PetscSF, int);
+extern void PetscSFCheckGraphSet(PetscSF, int);
 #else
   #if defined(PETSC_USE_DEBUG)
     #define PetscSFCheckGraphSet(sf, arg) PetscCheck((sf)->graphset, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Must call PetscSFSetGraph() or PetscSFSetGraphWithPattern() on argument %d \"%s\" before %s()", (arg), #sf, PETSC_FUNCTION_NAME)

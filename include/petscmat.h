@@ -347,6 +347,7 @@ typedef enum {
 } MatCreateSubMatrixOption;
 
 PETSC_EXTERN PetscErrorCode MatInitializePackage(void);
+PETSC_EXTERN PetscErrorCode MatFinalizePackage(void);
 
 PETSC_EXTERN PetscErrorCode MatCreate(MPI_Comm, Mat *);
 PETSC_EXTERN PetscErrorCode MatCreateFromOptions(MPI_Comm, const char *, PetscInt, PetscInt, PetscInt, PetscInt, PetscInt, Mat *);
@@ -398,6 +399,9 @@ PETSC_EXTERN PetscErrorCode MatCreateBAIJMKL(MPI_Comm, PetscInt, PetscInt, Petsc
 PETSC_EXTERN PetscErrorCode MatCreateSeqBAIJMKL(MPI_Comm, PetscInt, PetscInt, PetscInt, PetscInt, const PetscInt[], Mat *);
 #endif
 
+PETSC_EXTERN PetscErrorCode MatCreateMPIAIJPERM(MPI_Comm, PetscInt, PetscInt, PetscInt, PetscInt, PetscInt, const PetscInt[], PetscInt, const PetscInt[], Mat *);
+PETSC_EXTERN PetscErrorCode MatCreateSeqAIJPERM(MPI_Comm, PetscInt, PetscInt, PetscInt, const PetscInt[], Mat *);
+
 PETSC_EXTERN PetscErrorCode MatCreateSeqSELL(MPI_Comm, PetscInt, PetscInt, PetscInt, const PetscInt[], Mat *);
 PETSC_EXTERN PetscErrorCode MatCreateSELL(MPI_Comm, PetscInt, PetscInt, PetscInt, PetscInt, PetscInt, const PetscInt[], PetscInt, const PetscInt[], Mat *);
 PETSC_EXTERN PetscErrorCode MatSeqSELLSetPreallocation(Mat, PetscInt, const PetscInt[]);
@@ -407,6 +411,9 @@ PETSC_EXTERN PetscErrorCode MatSeqSELLGetMaxSliceWidth(Mat, PetscInt *);
 PETSC_EXTERN PetscErrorCode MatSeqSELLGetAvgSliceWidth(Mat, PetscReal *);
 PETSC_EXTERN PetscErrorCode MatSeqSELLSetSliceHeight(Mat, PetscInt);
 PETSC_EXTERN PetscErrorCode MatSeqSELLGetVarSliceSize(Mat, PetscReal *);
+
+PETSC_EXTERN PetscErrorCode MatCreateSeqAIJSELL(MPI_Comm, PetscInt, PetscInt, PetscInt, const PetscInt[], Mat *);
+PETSC_EXTERN PetscErrorCode MatCreateMPIAIJSELL(MPI_Comm, PetscInt, PetscInt, PetscInt, PetscInt, PetscInt, const PetscInt[], PetscInt, const PetscInt[], Mat *);
 
 PETSC_EXTERN PetscErrorCode MatCreateSeqDense(MPI_Comm, PetscInt, PetscInt, PetscScalar[], Mat *);
 PETSC_EXTERN PetscErrorCode MatCreateDense(MPI_Comm, PetscInt, PetscInt, PetscInt, PetscInt, PetscScalar[], Mat *);
@@ -2090,6 +2097,9 @@ PETSC_EXTERN PetscErrorCode MatKAIJGetScaledIdentity(Mat, PetscBool *);
 
 PETSC_EXTERN PetscErrorCode MatDiagonalScaleLocal(Mat, Vec);
 
+PETSC_EXTERN PetscErrorCode MatMFFDInitializePackage(void);
+PETSC_EXTERN PetscErrorCode MatMFFDFinalizePackage(void);
+
 PETSC_EXTERN PetscErrorCode MatCreateMFFD(MPI_Comm, PetscInt, PetscInt, PetscInt, PetscInt, Mat *);
 PETSC_EXTERN PetscErrorCode MatMFFDSetBase(Mat, Vec, Vec);
 PETSC_EXTERN PetscErrorCode MatMFFDSetFunction(Mat, PetscErrorCode (*)(void *, Vec, Vec), void *);
@@ -2447,6 +2457,11 @@ PETSC_EXTERN PetscErrorCode MatDenseHIPSetPreallocation(Mat, PetscScalar *);
 #if defined(PETSC_HAVE_VIENNACL)
 PETSC_EXTERN PetscErrorCode MatCreateSeqAIJViennaCL(MPI_Comm, PetscInt, PetscInt, PetscInt, const PetscInt[], Mat *);
 PETSC_EXTERN PetscErrorCode MatCreateAIJViennaCL(MPI_Comm, PetscInt, PetscInt, PetscInt, PetscInt, PetscInt, const PetscInt[], PetscInt, const PetscInt[], Mat *);
+#endif
+
+#if PetscDefined(HAVE_KOKKOS)
+PETSC_EXTERN PetscErrorCode MatCreateAIJKokkos(MPI_Comm, PetscInt, PetscInt, PetscInt, PetscInt, PetscInt, const PetscInt[], PetscInt, const PetscInt[], Mat *);
+PETSC_EXTERN PetscErrorCode MatCreateSeqAIJKokkos(MPI_Comm, PetscInt, PetscInt, PetscInt, const PetscInt[], Mat *);
 #endif
 
 #if defined(PETSC_HAVE_FFTW)

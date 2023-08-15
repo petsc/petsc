@@ -364,6 +364,7 @@ PETSC_EXTERN PetscErrorCode DMInterpolationEvaluate(DMInterpolationInfo, DM, Vec
 PETSC_EXTERN PetscErrorCode DMInterpolationDestroy(DMInterpolationInfo *);
 
 PETSC_EXTERN PetscErrorCode DMCreateLabel(DM, const char[]);
+PETSC_EXTERN PetscErrorCode DMCreateLabelAtIndex(DM, PetscInt, const char[]);
 PETSC_EXTERN PetscErrorCode DMGetLabelValue(DM, const char[], PetscInt, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMSetLabelValue(DM, const char[], PetscInt, PetscInt);
 PETSC_EXTERN PetscErrorCode DMClearLabelValue(DM, const char[], PetscInt, PetscInt);

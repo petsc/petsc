@@ -11,6 +11,7 @@
 /* SUBMANSEC = PC */
 
 PETSC_EXTERN PetscErrorCode PCInitializePackage(void);
+PETSC_EXTERN PetscErrorCode PCFinalizePackage(void);
 
 /*
     PCList contains the list of preconditioners currently registered

@@ -429,7 +429,7 @@ PetscErrorCode VecView_MPI_Draw_LG(Vec xin, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode VecView_MPI_Draw(Vec xin, PetscViewer viewer)
+PETSC_INTERN PetscErrorCode VecView_MPI_Draw(Vec xin, PetscViewer viewer)
 {
   PetscMPIInt        rank, size, tag = ((PetscObject)viewer)->tag;
   PetscInt           i, start, end;

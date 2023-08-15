@@ -357,17 +357,17 @@ PETSC_EXTERN PetscBool PetscCheckPointer(const void *, PetscDataType);
 
 #if defined(PETSC_CLANG_STATIC_ANALYZER)
 template <typename T>
-void PetscValidHeaderSpecificType(T, PetscClassId, int, const char[]);
+extern void PetscValidHeaderSpecificType(T, PetscClassId, int, const char[]);
 template <typename T>
-void PetscValidHeaderSpecific(T, PetscClassId, int);
+extern void PetscValidHeaderSpecific(T, PetscClassId, int);
 template <typename T>
-void PetscValidHeaderSpecific(const T, PetscClassId, int);
+extern void PetscValidHeader(T, int);
 template <typename T>
-void PetscValidHeader(T, int);
+extern void PetscAssertPointer(T, int)
+{
+}
 template <typename T>
-void PetscAssertPointer(T, int);
-template <typename T>
-void PetscValidFunction(T, int);
+extern void PetscValidFunction(T, int);
 #else
   // Macros to test if a PETSc object is valid and if pointers are valid
   #if PetscDefined(USE_DEBUG)
@@ -766,31 +766,31 @@ PETSC_ASSERT_POINTER_IMPL_SPECIALIZATION(PetscComplex, PETSC_COMPLEX);
   #endif
 #else  /* PETSC_CLANG_STATIC_ANALYZER */
 template <typename Ta, typename Tb>
-void PetscCheckSameType(Ta, int, Tb, int);
+extern void PetscCheckSameType(Ta, int, Tb, int);
 template <typename Ta, typename Tb>
-void PetscCheckTypeName(Ta, Tb);
+extern void PetscCheckTypeName(Ta, Tb);
 template <typename Ta, typename Tb, typename Tc>
-void PetscCheckTypeName(Ta, Tb, Tc);
+extern void PetscCheckTypeNames(Ta, Tb, Tc);
 template <typename T>
-void PetscValidType(T, int);
+extern void PetscValidType(T, int);
 template <typename Ta, typename Tb>
-void PetscCheckSameComm(Ta, int, Tb, int);
+extern void PetscCheckSameComm(Ta, int, Tb, int);
 template <typename Ta, typename Tb>
-void PetscCheckSameTypeAndComm(Ta, int, Tb, int);
+extern void PetscCheckSameTypeAndComm(Ta, int, Tb, int);
 template <typename Ta, typename Tb>
-void PetscValidLogicalCollectiveScalar(Ta, Tb, int);
+extern void PetscValidLogicalCollectiveScalar(Ta, Tb, int);
 template <typename Ta, typename Tb>
-void PetscValidLogicalCollectiveReal(Ta, Tb, int);
+extern void PetscValidLogicalCollectiveReal(Ta, Tb, int);
 template <typename Ta, typename Tb>
-void PetscValidLogicalCollectiveInt(Ta, Tb, int);
+extern void PetscValidLogicalCollectiveInt(Ta, Tb, int);
 template <typename Ta, typename Tb>
-void PetscValidLogicalCollectiveMPIInt(Ta, Tb, int);
+extern void PetscValidLogicalCollectiveMPIInt(Ta, Tb, int);
 template <typename Ta, typename Tb>
-void PetscValidLogicalCollectiveBool(Ta, Tb, int);
+extern void PetscValidLogicalCollectiveBool(Ta, Tb, int);
 template <typename Ta, typename Tb>
-void PetscValidLogicalCollectiveEnum(Ta, Tb, int);
+extern void PetscValidLogicalCollectiveEnum(Ta, Tb, int);
 template <typename T>
-void PetscCheckSorted(PetscInt, T);
+extern void PetscCheckSorted(PetscInt, T);
 #endif /* PETSC_CLANG_STATIC_ANALYZER */
 
 /*MC

@@ -55,6 +55,7 @@ PETSC_EXTERN PetscClassId SNES_CLASSID;
 PETSC_EXTERN PetscClassId DMSNES_CLASSID;
 
 PETSC_EXTERN PetscErrorCode SNESInitializePackage(void);
+PETSC_EXTERN PetscErrorCode SNESFinalizePackage(void);
 
 PETSC_EXTERN PetscErrorCode SNESCreate(MPI_Comm, SNES *);
 PETSC_EXTERN PetscErrorCode SNESReset(SNES);
@@ -821,6 +822,7 @@ PETSC_EXTERN PetscErrorCode SNESMultiblockSetFields(SNES, const char[], PetscInt
 PETSC_EXTERN PetscErrorCode SNESMultiblockSetIS(SNES, const char[], IS);
 PETSC_EXTERN PetscErrorCode SNESMultiblockSetBlockSize(SNES, PetscInt);
 PETSC_EXTERN PetscErrorCode SNESMultiblockSetType(SNES, PCCompositeType);
+PETSC_EXTERN PetscErrorCode SNESMultiblockGetSubSNES(SNES, PetscInt *, SNES *[]);
 
 /*J
     SNESMSType - String with the name of a PETSc `SNESMS` method.
@@ -841,6 +843,7 @@ typedef const char *SNESMSType;
 #define SNESMSVLTP61    "vltp61"
 
 PETSC_EXTERN PetscErrorCode SNESMSRegister(SNESMSType, PetscInt, PetscInt, PetscReal, const PetscReal[], const PetscReal[], const PetscReal[]);
+PETSC_EXTERN PetscErrorCode SNESMSRegisterAll(void);
 PETSC_EXTERN PetscErrorCode SNESMSGetType(SNES, SNESMSType *);
 PETSC_EXTERN PetscErrorCode SNESMSSetType(SNES, SNESMSType);
 PETSC_EXTERN PetscErrorCode SNESMSGetDamping(SNES, PetscReal *);

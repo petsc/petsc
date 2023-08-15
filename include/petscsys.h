@@ -1138,6 +1138,7 @@ PETSC_EXTERN PetscErrorCode PetscFreeArguments(char **);
 
 PETSC_EXTERN PetscErrorCode PetscEnd(void);
 PETSC_EXTERN PetscErrorCode PetscSysInitializePackage(void);
+PETSC_EXTERN PetscErrorCode PetscSysFinalizePackage(void);
 
 PETSC_EXTERN PetscErrorCode PetscPythonInitialize(const char[], const char[]);
 PETSC_EXTERN PetscErrorCode PetscPythonFinalize(void);
@@ -1249,6 +1250,8 @@ PETSC_EXTERN PetscErrorCode PetscDemangleSymbol(const char *, char **);
 PETSC_EXTERN PetscErrorCode PetscMallocGetStack(void *, PetscStack **);
 
 PETSC_EXTERN PetscErrorCode PetscObjectsDump(FILE *, PetscBool);
+PETSC_EXTERN PetscErrorCode PetscObjectsView(PetscViewer);
+PETSC_EXTERN PetscErrorCode PetscObjectsGetObject(const char *, PetscObject *, char **);
 PETSC_EXTERN PetscErrorCode PetscObjectListDestroy(PetscObjectList *);
 PETSC_EXTERN PetscErrorCode PetscObjectListFind(PetscObjectList, const char[], PetscObject *);
 PETSC_EXTERN PetscErrorCode PetscObjectListReverseFind(PetscObjectList, PetscObject, char **, PetscBool *);
@@ -2035,6 +2038,7 @@ typedef const char *PetscRandomType;
 PETSC_EXTERN PetscClassId PETSC_RANDOM_CLASSID;
 
 PETSC_EXTERN PetscErrorCode PetscRandomInitializePackage(void);
+PETSC_EXTERN PetscErrorCode PetscRandomFinalizePackage(void);
 
 /* Dynamic creation and loading functions */
 PETSC_EXTERN PetscFunctionList PetscRandomList;
@@ -2238,8 +2242,11 @@ PETSC_EXTERN PetscErrorCode PetscGoogleDriveUpload(MPI_Comm, const char[], const
 
 PETSC_EXTERN PetscErrorCode PetscBoxAuthorize(MPI_Comm, char[], char[], size_t);
 PETSC_EXTERN PetscErrorCode PetscBoxRefresh(MPI_Comm, const char[], char[], char[], size_t);
+PETSC_EXTERN PetscErrorCode PetscBoxUpload(MPI_Comm, const char[], const char[]);
 
 PETSC_EXTERN PetscErrorCode PetscGlobusGetTransfers(MPI_Comm, const char[], char[], size_t);
+PETSC_EXTERN PetscErrorCode PetscGlobusAuthorize(MPI_Comm, char[], size_t);
+PETSC_EXTERN PetscErrorCode PetscGlobusUpload(MPI_Comm, const char[], const char[]);
 
 PETSC_EXTERN PetscErrorCode PetscPullJSONValue(const char[], const char[], char[], size_t, PetscBool *);
 PETSC_EXTERN PetscErrorCode PetscPushJSONValue(char[], const char[], const char[], size_t);

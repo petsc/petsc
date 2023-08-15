@@ -36,6 +36,7 @@ typedef const char *AOType;
 PETSC_EXTERN PetscClassId AO_CLASSID;
 
 PETSC_EXTERN PetscErrorCode AOInitializePackage(void);
+PETSC_EXTERN PetscErrorCode AOFinalizePackage(void);
 
 PETSC_EXTERN PetscErrorCode AOCreate(MPI_Comm, AO *);
 PETSC_EXTERN PetscErrorCode AOSetIS(AO, IS, IS);
