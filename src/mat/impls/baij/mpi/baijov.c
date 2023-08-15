@@ -598,24 +598,6 @@ PetscErrorCode MatCreateSubMatrices_MPIBAIJ(Mat C, PetscInt ismax, const IS isro
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-#if defined(PETSC_USE_CTABLE)
-PetscErrorCode PetscGetProc(const PetscInt row, const PetscMPIInt size, const PetscInt proc_gnode[], PetscMPIInt *rank)
-{
-  PetscInt    nGlobalNd = proc_gnode[size];
-  PetscMPIInt fproc;
-
-  PetscFunctionBegin;
-  PetscCall(PetscMPIIntCast((PetscInt)(((float)row * (float)size / (float)nGlobalNd + 0.5)), &fproc));
-  if (fproc > size) fproc = size;
-  while (row < proc_gnode[fproc] || row >= proc_gnode[fproc + 1]) {
-    if (row < proc_gnode[fproc]) fproc--;
-    else fproc++;
-  }
-  *rank = fproc;
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-#endif
-
 /* This code is used for BAIJ and SBAIJ matrices (unfortunate dependency) */
 PetscErrorCode MatCreateSubMatrices_MPIBAIJ_local(Mat C, PetscInt ismax, const IS isrow[], const IS iscol[], MatReuse scall, Mat *submats)
 {

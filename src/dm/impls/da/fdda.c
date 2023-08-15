@@ -525,28 +525,6 @@ extern PetscErrorCode DMCreateMatrix_DA_2d_MPISELL(DM, Mat);
 extern PetscErrorCode DMCreateMatrix_DA_3d_MPISELL(DM, Mat);
 extern PetscErrorCode DMCreateMatrix_DA_IS(DM, Mat);
 
-/*@C
-  MatSetupDM - Sets the `DMDA` that is to be used by the HYPRE_StructMatrix PETSc matrix
-
-  Logically Collective
-
-  Input Parameters:
-+ mat - the matrix
-- da  - the da
-
-  Level: intermediate
-
-.seealso: `DMDA`, `Mat`, `MatSetUp()`
-@*/
-PetscErrorCode MatSetupDM(Mat mat, DM da)
-{
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
-  PetscValidHeaderSpecificType(da, DM_CLASSID, 2, DMDA);
-  PetscTryMethod(mat, "MatSetupDM_C", (Mat, DM), (mat, da));
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
 static PetscErrorCode MatView_MPI_DA(Mat A, PetscViewer viewer)
 {
   DM                da;

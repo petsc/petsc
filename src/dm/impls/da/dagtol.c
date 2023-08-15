@@ -63,7 +63,6 @@ PetscErrorCode DMLocalToGlobalEnd_DA(DM da, Vec l, InsertMode mode, Vec g)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-extern PetscErrorCode DMDAGetNatural_Private(DM, PetscInt *, IS *);
 /*
   DMDAGlobalToNatural_Create - Create the global to natural scatter object
 

@@ -4,7 +4,6 @@
 */
 
 #include <petsc/private/dmdaimpl.h> /*I   "petscdmda.h"   I*/
-extern PetscErrorCode DMLocalToLocalCreate_DA(DM);
 
 /*@C
   DMDAGetScatter - Gets the global-to-local, and

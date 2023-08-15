@@ -44,12 +44,7 @@ typedef enum {
   SOLUTION_STAGES = 2
 } CheckpointType;
 
-typedef enum {
-  TJ_REVOLVE,
-  TJ_CAMS,
-  TJ_PETSC
-} TSTrajectoryMemoryType;
-static const char *const TSTrajectoryMemoryTypes[] = {"REVOLVE", "CAMS", "PETSC", "TSTrajectoryMemoryType", "TJ_", NULL};
+const char *const TSTrajectoryMemoryTypes[] = {"REVOLVE", "CAMS", "PETSC", "TSTrajectoryMemoryType", "TJ_", NULL};
 
 #define HaveSolution(m) ((m) == SOLUTIONONLY || (m) == SOLUTION_STAGES)
 #define HaveStages(m)   ((m) == STAGESONLY || (m) == SOLUTION_STAGES)

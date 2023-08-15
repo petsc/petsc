@@ -33,10 +33,8 @@ EXTERN_C_BEGIN
 #include <matrix.h>
 EXTERN_C_END
 
-extern PetscErrorCode ConvertMatToMatrix(MPI_Comm, Mat, Mat, matrix **);
-extern PetscErrorCode ConvertMatrixToMat(MPI_Comm, matrix *, Mat *);
-extern PetscErrorCode ConvertVectorToVec(MPI_Comm, vector *, Vec *);
-extern PetscErrorCode MM_to_PETSC(char *, char *, char *);
+static PetscErrorCode ConvertMatToMatrix(MPI_Comm, Mat, Mat, matrix **);
+static PetscErrorCode ConvertMatrixToMat(MPI_Comm, matrix *, Mat *);
 
 typedef struct {
   matrix *B;  /* matrix in SPAI format */
@@ -529,7 +527,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_SPAI(PC pc)
 /*
    Converts from a PETSc matrix to an SPAI matrix
 */
-PetscErrorCode ConvertMatToMatrix(MPI_Comm comm, Mat A, Mat AT, matrix **B)
+static PetscErrorCode ConvertMatToMatrix(MPI_Comm comm, Mat A, Mat AT, matrix **B)
 {
   matrix                  *M;
   int                      i, j, col;
@@ -653,7 +651,7 @@ PetscErrorCode ConvertMatToMatrix(MPI_Comm comm, Mat A, Mat AT, matrix **B)
    This assumes that the SPAI matrix B is stored in
    COMPRESSED-ROW format.
 */
-PetscErrorCode ConvertMatrixToMat(MPI_Comm comm, matrix *B, Mat *PB)
+static PetscErrorCode ConvertMatrixToMat(MPI_Comm comm, matrix *B, Mat *PB)
 {
   PetscMPIInt size, rank;
   int         m, n, M, N;
@@ -706,44 +704,5 @@ PetscErrorCode ConvertMatrixToMat(MPI_Comm comm, matrix *B, Mat *PB)
 
   PetscCall(MatAssemblyBegin(*PB, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(*PB, MAT_FINAL_ASSEMBLY));
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-/*
-   Converts from an SPAI vector v  to a PETSc vec Pv.
-*/
-PetscErrorCode ConvertVectorToVec(MPI_Comm comm, vector *v, Vec *Pv)
-{
-  PetscMPIInt size, rank;
-  int         m, M, i, *mnls, *start_indices, *global_indices;
-
-  PetscFunctionBegin;
-  PetscCallMPI(MPI_Comm_size(comm, &size));
-  PetscCallMPI(MPI_Comm_rank(comm, &rank));
-
-  m = v->mnl;
-  M = v->n;
-
-  PetscCall(VecCreateMPI(comm, m, M, Pv));
-
-  PetscCall(PetscMalloc1(size, &mnls));
-  PetscCallMPI(MPI_Allgather(&v->mnl, 1, MPI_INT, mnls, 1, MPI_INT, comm));
-
-  PetscCall(PetscMalloc1(size, &start_indices));
-
-  start_indices[0] = 0;
-  for (i = 1; i < size; i++) start_indices[i] = start_indices[i - 1] + mnls[i - 1];
-
-  PetscCall(PetscMalloc1(v->mnl, &global_indices));
-  for (i = 0; i < v->mnl; i++) global_indices[i] = start_indices[rank] + i;
-
-  PetscCall(PetscFree(mnls));
-  PetscCall(PetscFree(start_indices));
-
-  PetscCall(VecSetValues(*Pv, v->mnl, global_indices, v->v, INSERT_VALUES));
-  PetscCall(VecAssemblyBegin(*Pv));
-  PetscCall(VecAssemblyEnd(*Pv));
-
-  PetscCall(PetscFree(global_indices));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

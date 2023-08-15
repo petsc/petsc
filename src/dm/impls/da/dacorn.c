@@ -18,27 +18,6 @@ PetscErrorCode DMCreateCoordinateDM_DA(DM dm, DM *cdm)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode DMCreateCoordinateField_DA(DM dm, DMField *field)
-{
-  PetscReal   gmin[3], gmax[3];
-  PetscScalar corners[24];
-  PetscInt    dim;
-  PetscInt    i, j;
-  DM          cdm;
-
-  PetscFunctionBegin;
-  PetscCall(DMGetDimension(dm, &dim));
-  /* TODO: this is wrong if coordinates are not rectilinear */
-  PetscCall(DMGetBoundingBox(dm, gmin, gmax));
-  for (i = 0; i < (1 << dim); i++) {
-    for (j = 0; j < dim; j++) corners[i * dim + j] = (i & (1 << j)) ? gmax[j] : gmin[j];
-  }
-  PetscCall(DMClone(dm, &cdm));
-  PetscCall(DMFieldCreateDA(cdm, dim, corners, field));
-  PetscCall(DMDestroy(&cdm));
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
 /*@C
   DMDASetFieldName - Sets the names of individual field components in multicomponent
   vectors associated with a `DMDA`.

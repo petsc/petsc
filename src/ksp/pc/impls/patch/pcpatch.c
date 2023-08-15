@@ -294,33 +294,8 @@ static PetscErrorCode PCPatchCreateDefaultSF_Private(PC pc, PetscInt n, const Pe
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PCPatchSetDenseInverse(PC pc, PetscBool flg)
-{
-  PC_PATCH *patch = (PC_PATCH *)pc->data;
-  PetscFunctionBegin;
-  patch->denseinverse = flg;
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-PetscErrorCode PCPatchGetDenseInverse(PC pc, PetscBool *flg)
-{
-  PC_PATCH *patch = (PC_PATCH *)pc->data;
-  PetscFunctionBegin;
-  *flg = patch->denseinverse;
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
 /* TODO: Docs */
-PetscErrorCode PCPatchSetIgnoreDim(PC pc, PetscInt dim)
-{
-  PC_PATCH *patch = (PC_PATCH *)pc->data;
-  PetscFunctionBegin;
-  patch->ignoredim = dim;
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-/* TODO: Docs */
-PetscErrorCode PCPatchGetIgnoreDim(PC pc, PetscInt *dim)
+static PetscErrorCode PCPatchGetIgnoreDim(PC pc, PetscInt *dim)
 {
   PC_PATCH *patch = (PC_PATCH *)pc->data;
   PetscFunctionBegin;
@@ -383,21 +358,12 @@ PetscErrorCode PCPatchGetPartitionOfUnity(PC pc, PetscBool *flg)
 }
 
 /* TODO: Docs */
-PetscErrorCode PCPatchSetLocalComposition(PC pc, PCCompositeType type)
+static PetscErrorCode PCPatchSetLocalComposition(PC pc, PCCompositeType type)
 {
   PC_PATCH *patch = (PC_PATCH *)pc->data;
   PetscFunctionBegin;
   PetscCheck(type == PC_COMPOSITE_ADDITIVE || type == PC_COMPOSITE_MULTIPLICATIVE, PetscObjectComm((PetscObject)pc), PETSC_ERR_SUP, "Only supports additive or multiplicative as the local type");
   patch->local_composition_type = type;
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-/* TODO: Docs */
-PetscErrorCode PCPatchGetLocalComposition(PC pc, PCCompositeType *type)
-{
-  PC_PATCH *patch = (PC_PATCH *)pc->data;
-  PetscFunctionBegin;
-  *type = patch->local_composition_type;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -543,7 +509,7 @@ PetscErrorCode PCPatchSetDiscretisationInfo(PC pc, PetscInt nsubspaces, DM *dms,
 }
 
 /* TODO: Docs */
-PetscErrorCode PCPatchSetDiscretisationInfoCombined(PC pc, DM dm, PetscInt *nodesPerCell, const PetscInt **cellNodeMap, PetscInt numGhostBcs, const PetscInt *ghostBcNodes, PetscInt numGlobalBcs, const PetscInt *globalBcNodes)
+static PetscErrorCode PCPatchSetDiscretisationInfoCombined(PC pc, DM dm, PetscInt *nodesPerCell, const PetscInt **cellNodeMap, PetscInt numGhostBcs, const PetscInt *ghostBcNodes, PetscInt numGlobalBcs, const PetscInt *globalBcNodes)
 {
   PC_PATCH *patch = (PC_PATCH *)pc->data;
   PetscInt  cStart, cEnd, i, j;
