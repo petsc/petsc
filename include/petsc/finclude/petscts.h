@@ -93,7 +93,7 @@
 
 #define TSDIRKType character*(80)
 #define TSDIRKS212      's212'
-#define TSDIRKES212     'es212'
+#define TSDIRKES122SAL  'es122sal'
 #define TSDIRKES213SAL  'es213sal'
 #define TSDIRKES324SAL  'es324sal'
 #define TSDIRKES325SAL  'es325sal'

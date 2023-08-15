@@ -18,6 +18,7 @@ class TSType(object):
     GLEE            = S_(TSGLEE)
     SSP             = S_(TSSSP)
     ARKIMEX         = S_(TSARKIMEX)
+    DIRK            = S_(TSDIRK)
     ROSW            = S_(TSROSW)
     EIMEX           = S_(TSEIMEX)
     MIMEX           = S_(TSMIMEX)
@@ -62,6 +63,25 @@ class TSARKIMEXType(object):
     ARKIMEXARS443 = S_(TSARKIMEXARS443)
     ARKIMEX4      = S_(TSARKIMEX4)
     ARKIMEX5      = S_(TSARKIMEX5)
+
+class TSDIRKType(object):
+    """The *DIRK* subtype."""
+    DIRKS212      = S_(TSDIRKS212)
+    DIRKES122SAL  = S_(TSDIRKES122SAL)
+    DIRKES213SAL  = S_(TSDIRKES213SAL)
+    DIRKES324SAL  = S_(TSDIRKES324SAL)
+    DIRKES325SAL  = S_(TSDIRKES325SAL)
+    DIRK657A      = S_(TSDIRK657A)
+    DIRKES648SA   = S_(TSDIRKES648SA)
+    DIRK658A      = S_(TSDIRK658A)
+    DIRKS659A     = S_(TSDIRKS659A)
+    DIRK7510SAL   = S_(TSDIRK7510SAL)
+    DIRKES7510SA  = S_(TSDIRKES7510SA)
+    DIRK759A      = S_(TSDIRK759A)
+    DIRKS7511SAL  = S_(TSDIRKS7511SAL)
+    DIRK8614A     = S_(TSDIRK8614A)
+    DIRK8616SAL   = S_(TSDIRK8616SAL)
+    DIRKES8516SAL = S_(TSDIRKES8516SAL)
 
 class TSProblemType(object):
     """Distinguishes linear and nonlinear problems."""
@@ -120,6 +140,7 @@ cdef class TS(Object):
     Type = TSType
     RKType = TSRKType
     ARKIMEXType = TSARKIMEXType
+    DIRKType = TSDIRKType
     ProblemType = TSProblemType
     EquationType = TSEquationType
     ExactFinalTime = TSExactFinalTime
@@ -332,6 +353,39 @@ cdef class TS(Object):
         """
         cdef PetscTSARKIMEXType cval = NULL
         CHKERR( TSARKIMEXGetType(self.ts, &cval) )
+        return bytes2str(cval)
+
+    def setDIRKType(self, ts_type: DIRKType | str) -> None:
+        """Set the type of `Type.DIRK` scheme.
+
+        Parameters
+        ----------
+        ts_type
+            The type of `Type.DIRK` scheme.
+
+        Notes
+        -----
+            ``-ts_dirk_type`` sets scheme type from the commandline.
+
+        See Also
+        --------
+        petsc.TSDIRKSetType
+
+        """
+        cdef PetscTSDIRKType cval = NULL
+        ts_type = str2bytes(ts_type, &cval)
+        CHKERR( TSDIRKSetType(self.ts, cval) )
+
+    def getDIRKType(self) -> str:
+        """Return the `Type.DIRK` scheme.
+
+        See Also
+        --------
+        setDIRKType, petsc.TSDIRKGetType
+
+        """
+        cdef PetscTSDIRKType cval = NULL
+        CHKERR( TSDIRKGetType(self.ts, &cval) )
         return bytes2str(cval)
 
     def setProblemType(self, ptype: ProblemType) -> None:
@@ -2911,6 +2965,7 @@ cdef class TS(Object):
 del TSType
 del TSRKType
 del TSARKIMEXType
+del TSDIRKType
 del TSProblemType
 del TSEquationType
 del TSExactFinalTime

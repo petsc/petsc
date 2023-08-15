@@ -13,7 +13,7 @@
 #include <petscdm.h>
 
 static TSARKIMEXType  TSARKIMEXDefault = TSARKIMEX3;
-static TSDIRKType     TSDIRKDefault    = TSDIRKS212;
+static TSDIRKType     TSDIRKDefault    = TSDIRKES213SAL;
 static PetscBool      TSARKIMEXRegisterAllCalled;
 static PetscBool      TSARKIMEXPackageInitialized;
 static PetscErrorCode TSExtrapolate_ARKIMEX(TS, PetscReal, Vec);
@@ -261,6 +261,267 @@ M*/
 .seealso: [](ch_ts), `TSARKIMEX`, `TSARKIMEXType`, `TSARKIMEXSetType()`
 M*/
 
+/*MC
+     TSDIRKS212 - Second order DIRK scheme.
+
+     This method has two implicit stages with an embedded method of other 1.
+     See `TSDIRK` for additional details.
+
+     Options Database Key:
+.      -ts_dirk_type s212 - select this method.
+
+     Level: advanced
+
+     Note:
+     This is the default DIRK scheme in SUNDIALS.
+
+.seealso: [](ch_ts), `TSDIRK`, `TSDIRKType`, `TSDIRKSetType()`
+M*/
+
+/*MC
+     TSDIRKES122SAL - First order DIRK scheme.
+
+     Uses backward Euler as advancing method and trapezoidal rule as embedded method. See `TSDIRK` for additional details.
+
+     Options Database Key:
+.      -ts_dirk_type es122sal - select this method.
+
+     Level: advanced
+
+     References:
+.    * - https://arxiv.org/abs/1803.01613
+
+.seealso: [](ch_ts), `TSDIRK`, `TSDIRKType`, `TSDIRKSetType()`
+M*/
+
+/*MC
+     TSDIRKES213SAL - Second order DIRK scheme.
+
+     See `TSDIRK` for additional details.
+
+     Options Database Key:
+.      -ts_dirk_type es213sal - select this method.
+
+     Level: advanced
+
+     Note:
+     This is the default DIRK scheme used in PETSc.
+
+     References:
++    * - Kennedy and Carpenter, Diagonally Implicit Runge-Kutta methods for stiff ODEs (2016), https://ntrs.nasa.gov/api/citations/20160005923/downloads/20160005923.pdf
+-    * - This method is also known as TR-BDF2, see M.E. Hosea and L.F. Shampine, Analysis and implementation of TR-BDF2, Appl. Numer. Math., 20(1) (1996) 21-37.
+
+.seealso: [](ch_ts), `TSDIRK`, `TSDIRKType`, `TSDIRKSetType()`
+M*/
+
+/*MC
+     TSDIRKES324SAL - Third order DIRK scheme.
+
+     See `TSDIRK` for additional details.
+
+     Options Database Key:
+.      -ts_dirk_type es324sal - select this method.
+
+     Level: advanced
+
+     References:
+.    * - Kennedy and Carpenter, Diagonally Implicit Runge-Kutta methods for stiff ODEs (2016), https://ntrs.nasa.gov/api/citations/20160005923/downloads/20160005923.pdf
+
+.seealso: [](ch_ts), `TSDIRK`, `TSDIRKType`, `TSDIRKSetType()`
+M*/
+
+/*MC
+     TSDIRKES325SAL - Third order DIRK scheme.
+
+     See `TSDIRK` for additional details.
+
+     Options Database Key:
+.      -ts_dirk_type es325sal - select this method.
+
+     Level: advanced
+
+     References:
+.    * - Kennedy and Carpenter, Diagonally Implicit Runge-Kutta methods for stiff ODEs (2016), https://ntrs.nasa.gov/api/citations/20160005923/downloads/20160005923.pdf
+
+.seealso: [](ch_ts), `TSDIRK`, `TSDIRKType`, `TSDIRKSetType()`
+M*/
+
+/*MC
+     TSDIRK657A - Sixth order DIRK scheme.
+
+     See `TSDIRK` for additional details.
+
+     Options Database Key:
+.      -ts_dirk_type 657a - select this method.
+
+     Level: advanced
+
+     References:
+.    * - https://github.com/yousefalamri55/High_Order_DIRK_Methods_Coeffs
+
+.seealso: [](ch_ts), `TSDIRK`, `TSDIRKType`, `TSDIRKSetType()`
+M*/
+
+/*MC
+     TSDIRKES648SA - Sixth order DIRK scheme.
+
+     See `TSDIRK` for additional details.
+
+     Options Database Key:
+.      -ts_dirk_type es648sa - select this method.
+
+     Level: advanced
+
+     References:
+.    * - https://github.com/yousefalamri55/High_Order_DIRK_Methods_Coeffs
+
+.seealso: [](ch_ts), `TSDIRK`, `TSDIRKType`, `TSDIRKSetType()`
+M*/
+
+/*MC
+     TSDIRK658A - Sixth order DIRK scheme.
+
+     See `TSDIRK` for additional details.
+
+     Options Database Key:
+.      -ts_dirk_type 658a - select this method.
+
+     Level: advanced
+
+     References:
+.    * - https://github.com/yousefalamri55/High_Order_DIRK_Methods_Coeffs
+
+.seealso: [](ch_ts), `TSDIRK`, `TSDIRKType`, `TSDIRKSetType()`
+M*/
+
+/*MC
+     TSDIRKS659A - Sixth order DIRK scheme.
+
+     See `TSDIRK` for additional details.
+
+     Options Database Key:
+.      -ts_dirk_type s659a - select this method.
+
+     Level: advanced
+
+     References:
+.    * - https://github.com/yousefalamri55/High_Order_DIRK_Methods_Coeffs
+
+.seealso: [](ch_ts), `TSDIRK`, `TSDIRKType`, `TSDIRKSetType()`
+M*/
+
+/*MC
+     TSDIRK7510SAL - Seventh order DIRK scheme.
+
+     See `TSDIRK` for additional details.
+
+     Options Database Key:
+.      -ts_dirk_type 7510sal - select this method.
+
+     Level: advanced
+
+     References:
+.    * - https://github.com/yousefalamri55/High_Order_DIRK_Methods_Coeffs
+
+.seealso: [](ch_ts), `TSDIRK`, `TSDIRKType`, `TSDIRKSetType()`
+M*/
+
+/*MC
+     TSDIRKES7510SA - Seventh order DIRK scheme.
+
+     See `TSDIRK` for additional details.
+
+     Options Database Key:
+.      -ts_dirk_type es7510sa - select this method.
+
+     Level: advanced
+
+     References:
+.    * - https://github.com/yousefalamri55/High_Order_DIRK_Methods_Coeffs
+
+.seealso: [](ch_ts), `TSDIRK`, `TSDIRKType`, `TSDIRKSetType()`
+M*/
+
+/*MC
+     TSDIRK759A - Seventh order DIRK scheme.
+
+     See `TSDIRK` for additional details.
+
+     Options Database Key:
+.      -ts_dirk_type 759a - select this method.
+
+     Level: advanced
+
+     References:
+.    * - https://github.com/yousefalamri55/High_Order_DIRK_Methods_Coeffs
+
+.seealso: [](ch_ts), `TSDIRK`, `TSDIRKType`, `TSDIRKSetType()`
+M*/
+
+/*MC
+     TSDIRKS7511SAL - Seventh order DIRK scheme.
+
+     See `TSDIRK` for additional details.
+
+     Options Database Key:
+.      -ts_dirk_type s7511sal - select this method.
+
+     Level: advanced
+
+     References:
+.    * - https://github.com/yousefalamri55/High_Order_DIRK_Methods_Coeffs
+
+.seealso: [](ch_ts), `TSDIRK`, `TSDIRKType`, `TSDIRKSetType()`
+M*/
+
+/*MC
+     TSDIRK8614A - Eighth order DIRK scheme.
+
+     See `TSDIRK` for additional details.
+
+     Options Database Key:
+.      -ts_dirk_type 8614a - select this method.
+
+     Level: advanced
+
+     References:
+.    * - https://github.com/yousefalamri55/High_Order_DIRK_Methods_Coeffs
+
+.seealso: [](ch_ts), `TSDIRK`, `TSDIRKType`, `TSDIRKSetType()`
+M*/
+
+/*MC
+     TSDIRK8616SAL - Eighth order DIRK scheme.
+
+     See `TSDIRK` for additional details.
+
+     Options Database Key:
+.      -ts_dirk_type 8616sal - select this method.
+
+     Level: advanced
+
+     References:
+.    * - https://github.com/yousefalamri55/High_Order_DIRK_Methods_Coeffs
+
+.seealso: [](ch_ts), `TSDIRK`, `TSDIRKType`, `TSDIRKSetType()`
+M*/
+
+/*MC
+     TSDIRKES8516SAL - Eighth order DIRK scheme.
+
+     See `TSDIRK` for additional details.
+
+     Options Database Key:
+.      -ts_dirk_type es8516sal - select this method.
+
+     Level: advanced
+
+     References:
+.    * - https://github.com/yousefalamri55/High_Order_DIRK_Methods_Coeffs
+
+.seealso: [](ch_ts), `TSDIRK`, `TSDIRKType`, `TSDIRKSetType()`
+M*/
+
 static PetscErrorCode TSHasRHSFunction(TS ts, PetscBool *has)
 {
   TSRHSFunction func;
@@ -311,12 +572,13 @@ PetscErrorCode TSARKIMEXRegisterAll(void)
     };
     const PetscReal b[2]      = {RC(0.0), RC(1.0)};
     const PetscReal bembed[2] = {RC(0.5), RC(0.5)};
-    PetscCall(TSDIRKRegister(TSDIRKES212, 2, 2, &A[0][0], b, NULL, bembed, 1, b));
+    PetscCall(TSDIRKRegister(TSDIRKES122SAL, 1, 2, &A[0][0], b, NULL, bembed, 1, b));
   }
 
   {
     /* ESDIRK213L[2]SA from KC16.
-       TR-BDF2 from Osea and Shampine */
+       TR-BDF2 from Hosea and Shampine
+       ESDIRK23 in https://arxiv.org/pdf/1803.01613.pdf */
     const PetscReal A[3][3] = {
       {RC(0.0),      RC(0.0),      RC(0.0)},
       {us2,          us2,          RC(0.0)},
@@ -2253,12 +2515,21 @@ PetscErrorCode TSDIRKGetType(TS ts, TSDIRKType *dirktype)
 }
 
 /*MC
-      TSDIRK - ODE and DAE solver using Diagonally implicit Runge-Kutta schemes
+      TSDIRK - ODE and DAE solver using Diagonally implicit Runge-Kutta schemes.
 
   Level: beginner
 
   Notes:
-  The default is `TSDIRKS212`, it can be changed with `TSDIRKSetType()` or -ts_dirk_type
+  The default is `TSDIRKES213SAL`, it can be changed with `TSDIRKSetType()` or -ts_dirk_type.
+  The convention used in PETSc to name the DIRK methods is TSDIRK[E][S]PQS[SA][L][A] with:
++ E - whether the method has an explicit first stage
+. S - whether the method is single diagonal
+. P - order of the advancing method
+. Q - order of the embedded method
+. S - number of stages
+. SA - whether the method is stiffly accurate
+. L - whether the method is L-stable
+- A - whether the method is A-stable
 
 .seealso: [](ch_ts), `TSCreate()`, `TS`, `TSSetType()`, `TSDIRKSetType()`, `TSDIRKGetType()`, `TSDIRKRegister()`.
 M*/

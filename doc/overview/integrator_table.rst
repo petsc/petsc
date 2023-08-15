@@ -43,6 +43,11 @@ Summary of Time Integrators Available In PETSc
      - one-step
      - implicit
      - :math:`\le 2`
+   * - bdf
+     - Backward Differentiation Formulas
+     - one-step
+     - implicit
+     - :math:`\le 6`
    * - alpha
      - alpha-method :cite:`Jansen_2000`
      - one-step
@@ -58,6 +63,11 @@ Summary of Time Integrators Available In PETSc
      - one-step
      - IMEX
      - :math:`\ge 1`, adaptive
+   * - dirk
+     - DIRK
+     - diagonally implicit Runge-Kutta
+     - implicit
+     - :math:`\ge 1`
    * - arkimex
      - See :any:`tab_IMEX_RK_PETSc`
      - IMEX Runge-Kutta
