@@ -118,6 +118,101 @@ PetscErrorCode DMPlexGetSimplexOrBoxCells(DM dm, PetscInt height, PetscInt *cSta
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+PetscErrorCode DMPlexGetFieldTypes_Internal(DM dm, PetscSection section, PetscInt field, PetscInt *types, PetscInt **ssStart, PetscInt **ssEnd, PetscViewerVTKFieldType **sft)
+{
+  PetscInt                 cdim, pStart, pEnd, vStart, vEnd, cStart, cEnd, c, depth, cellHeight, t;
+  PetscInt                *sStart, *sEnd;
+  PetscViewerVTKFieldType *ft;
+  PetscInt                 vcdof[DM_NUM_POLYTOPES + 1], globalvcdof[DM_NUM_POLYTOPES + 1];
+  DMLabel                  depthLabel, ctLabel;
+
+  PetscFunctionBegin;
+
+  /* the vcdof and globalvcdof are sized to allow every polytope type and simple vertex at DM_NUM_POLYTOPES */
+  PetscCall(PetscArrayzero(vcdof, DM_NUM_POLYTOPES + 1));
+  PetscCall(DMGetCoordinateDim(dm, &cdim));
+  PetscCall(DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd));
+  PetscCall(PetscSectionGetChart(section, &pStart, &pEnd));
+  if (field >= 0) {
+    if ((vStart >= pStart) && (vStart < pEnd)) PetscCall(PetscSectionGetFieldDof(section, vStart, field, &vcdof[DM_NUM_POLYTOPES]));
+  } else {
+    if ((vStart >= pStart) && (vStart < pEnd)) PetscCall(PetscSectionGetDof(section, vStart, &vcdof[DM_NUM_POLYTOPES]));
+  }
+
+  PetscCall(DMPlexGetVTKCellHeight(dm, &cellHeight));
+  PetscCall(DMPlexGetDepth(dm, &depth));
+  PetscCall(DMPlexGetDepthLabel(dm, &depthLabel));
+  PetscCall(DMPlexGetCellTypeLabel(dm, &ctLabel));
+  for (c = 0; c < DM_NUM_POLYTOPES; ++c) {
+    const DMPolytopeType ict = (DMPolytopeType)c;
+    PetscInt             dep;
+
+    if (ict == DM_POLYTOPE_FV_GHOST) continue;
+    PetscCall(DMLabelGetStratumBounds(ctLabel, ict, &cStart, &cEnd));
+    if (pStart >= 0) {
+      PetscCall(DMLabelGetValue(depthLabel, cStart, &dep));
+      if (dep != depth - cellHeight) continue;
+    }
+    if (field >= 0) {
+      if ((cStart >= pStart) && (cStart < pEnd)) PetscCall(PetscSectionGetFieldDof(section, cStart, field, &vcdof[c]));
+    } else {
+      if ((cStart >= pStart) && (cStart < pEnd)) PetscCall(PetscSectionGetDof(section, cStart, &vcdof[c]));
+    }
+    PetscCall(MPIU_Allreduce(vcdof, globalvcdof, 2, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)dm)));
+  }
+
+  PetscCall(MPIU_Allreduce(vcdof, globalvcdof, DM_NUM_POLYTOPES + 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)dm)));
+  *types = 0;
+
+  for (c = 0; c < DM_NUM_POLYTOPES + 1; ++c) {
+    if (globalvcdof[c]) ++(*types);
+  }
+
+  PetscCall(PetscMalloc3(*types, &sStart, *types, &sEnd, *types, &ft));
+  t = 0;
+  if (globalvcdof[DM_NUM_POLYTOPES]) {
+    sStart[t] = vStart;
+    sEnd[t]   = vEnd;
+    ft[t]     = (globalvcdof[t] == cdim) ? PETSC_VTK_POINT_VECTOR_FIELD : PETSC_VTK_POINT_FIELD;
+    ++t;
+  }
+
+  for (c = 0; c < DM_NUM_POLYTOPES; ++c) {
+    if (globalvcdof[c]) {
+      const DMPolytopeType ict = (DMPolytopeType)c;
+
+      PetscCall(DMLabelGetStratumBounds(ctLabel, ict, &cStart, &cEnd));
+      sStart[t] = cStart;
+      sEnd[t]   = cEnd;
+      ft[t]     = (globalvcdof[c] == cdim) ? PETSC_VTK_CELL_VECTOR_FIELD : PETSC_VTK_CELL_FIELD;
+      ++t;
+    }
+  }
+
+  if (!(*types)) {
+    if (field >= 0) {
+      const char *fieldname;
+
+      PetscCall(PetscSectionGetFieldName(section, field, &fieldname));
+      PetscCall(PetscInfo((PetscObject)dm, "Could not classify VTK output type of section field %" PetscInt_FMT " \"%s\"\n", field, fieldname));
+    } else {
+      PetscCall(PetscInfo((PetscObject)dm, "Could not classify VTK output type of section\n"));
+    }
+  }
+
+  *ssStart = sStart;
+  *ssEnd   = sEnd;
+  *sft     = ft;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+PetscErrorCode DMPlexRestoreFieldTypes_Internal(DM dm, PetscSection section, PetscInt field, PetscInt *types, PetscInt **sStart, PetscInt **sEnd, PetscViewerVTKFieldType **ft)
+{
+  PetscFunctionBegin;
+  PetscCall(PetscFree3(*sStart, *sEnd, *ft));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 PetscErrorCode DMPlexGetFieldType_Internal(DM dm, PetscSection section, PetscInt field, PetscInt *sStart, PetscInt *sEnd, PetscViewerVTKFieldType *ft)
 {
   PetscInt cdim, pStart, pEnd, vStart, vEnd, cStart, cEnd;
