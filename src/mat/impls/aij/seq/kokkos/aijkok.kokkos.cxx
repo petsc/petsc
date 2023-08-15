@@ -1,3 +1,4 @@
+#include <petsc_kokkos.hpp>
 #include <petscvec_kokkos.hpp>
 #include <petscpkg_version.h>
 #include <petsc/private/petscimpl.h>
@@ -94,13 +95,15 @@ PETSC_INTERN PetscErrorCode MatSeqAIJKokkosModifyDevice(Mat A)
 static PetscErrorCode MatSeqAIJKokkosSyncHost(Mat A)
 {
   Mat_SeqAIJKokkos *aijkok = static_cast<Mat_SeqAIJKokkos *>(A->spptr);
+  auto             &exec   = PetscGetKokkosExecutionSpace();
 
   PetscFunctionBegin;
   PetscCheckTypeName(A, MATSEQAIJKOKKOS);
   /* We do not expect one needs factors on host  */
   PetscCheck(A->factortype == MAT_FACTOR_NONE, PetscObjectComm((PetscObject)A), PETSC_ERR_PLIB, "Can't sync factorized matrix from device to host");
   PetscCheck(aijkok, PetscObjectComm((PetscObject)A), PETSC_ERR_PLIB, "Missing AIJKOK");
-  aijkok->a_dual.sync_host();
+  PetscCallCXX(aijkok->a_dual.sync_host(exec));
+  PetscCallCXX(exec.fence());
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -115,7 +118,9 @@ static PetscErrorCode MatSeqAIJGetArray_SeqAIJKokkos(Mat A, PetscScalar *array[]
     must have been updated. The stale aijkok will be rebuilt during MatAssemblyEnd.
   */
   if (aijkok && A->nonzerostate == aijkok->nonzerostate) {
-    aijkok->a_dual.sync_host();
+    auto &exec = PetscGetKokkosExecutionSpace();
+    PetscCallCXX(aijkok->a_dual.sync_host(exec));
+    PetscCallCXX(exec.fence());
     *array = aijkok->a_dual.view_host().data();
   } else { /* Happens when calling MatSetValues on a newly created matrix */
     *array = static_cast<Mat_SeqAIJ *>(A->data)->a;
@@ -138,7 +143,9 @@ static PetscErrorCode MatSeqAIJGetArrayRead_SeqAIJKokkos(Mat A, const PetscScala
 
   PetscFunctionBegin;
   if (aijkok && A->nonzerostate == aijkok->nonzerostate) {
-    aijkok->a_dual.sync_host();
+    auto &exec = PetscGetKokkosExecutionSpace();
+    PetscCallCXX(aijkok->a_dual.sync_host(exec));
+    PetscCallCXX(exec.fence());
     *array = aijkok->a_dual.view_host().data();
   } else {
     *array = static_cast<Mat_SeqAIJ *>(A->data)->a;
@@ -1414,6 +1421,7 @@ PETSC_INTERN PetscErrorCode MatSetSeqAIJKokkosWithCSRMatrix(Mat A, Mat_SeqAIJKok
 {
   Mat_SeqAIJ *aseq;
   PetscInt    i, m, n;
+  auto       &exec = PetscGetKokkosExecutionSpace();
 
   PetscFunctionBegin;
   PetscCheck(!A->spptr, PETSC_COMM_SELF, PETSC_ERR_PLIB, "A->spptr is supposed to be empty");
@@ -1427,8 +1435,9 @@ PETSC_INTERN PetscErrorCode MatSetSeqAIJKokkosWithCSRMatrix(Mat A, Mat_SeqAIJKok
   PetscCall(MatSeqAIJSetPreallocation_SeqAIJ(A, MAT_SKIP_ALLOCATION, NULL));
   aseq = (Mat_SeqAIJ *)(A)->data;
 
-  akok->i_dual.sync_host(); /* We always need sync'ed i, j on host */
-  akok->j_dual.sync_host();
+  PetscCallCXX(akok->i_dual.sync_host(exec)); /* We always need sync'ed i, j on host */
+  PetscCallCXX(akok->j_dual.sync_host(exec));
+  PetscCallCXX(exec.fence());
 
   aseq->i            = akok->i_host_data();
   aseq->j            = akok->j_host_data();
