@@ -1,8 +1,7 @@
 
 #include <petsc/private/vecimpl.h> /*I "petscvec.h"  I*/
 
-PetscFunctionList VecList              = NULL;
-PetscBool         VecRegisterAllCalled = PETSC_FALSE;
+PetscFunctionList VecList = NULL;
 
 /* compare a vector type against a list of target vector types */
 static inline PetscErrorCode VecTypeCompareAny_Private(VecType srcType, PetscBool *match, const char tgtTypes[], ...)

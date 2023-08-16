@@ -77,10 +77,9 @@ struct _p_PetscSectionSym {
   SymWorkLink workout;
 };
 
-PETSC_EXTERN PetscErrorCode PetscSectionSetClosurePermutation_Internal(PetscSection, PetscObject, PetscInt, PetscInt, PetscCopyMode, PetscInt *);
-PETSC_EXTERN PetscErrorCode PetscSectionGetClosurePermutation_Internal(PetscSection, PetscObject, PetscInt, PetscInt, const PetscInt *[]);
-PETSC_EXTERN PetscErrorCode PetscSectionGetClosureInversePermutation_Internal(PetscSection, PetscObject, PetscInt, PetscInt, const PetscInt *[]);
-PETSC_EXTERN PetscErrorCode ISIntersect_Caching_Internal(IS, IS, IS *);
+PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode PetscSectionSetClosurePermutation_Internal(PetscSection, PetscObject, PetscInt, PetscInt, PetscCopyMode, PetscInt *);
+PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode PetscSectionGetClosureInversePermutation_Internal(PetscSection, PetscObject, PetscInt, PetscInt, const PetscInt *[]);
+PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode ISIntersect_Caching_Internal(IS, IS, IS *);
 #if defined(PETSC_HAVE_HDF5)
 PETSC_INTERN PetscErrorCode PetscSectionView_HDF5_Internal(PetscSection, PetscViewer);
 PETSC_INTERN PetscErrorCode PetscSectionLoad_HDF5_Internal(PetscSection, PetscViewer);

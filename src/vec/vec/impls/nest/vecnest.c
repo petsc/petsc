@@ -832,7 +832,7 @@ static PetscErrorCode VecNestGetSubVecs_Private(Vec x, PetscInt m, const PetscIn
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode VecNestGetSubVec_Nest(Vec X, PetscInt idxm, Vec *sx)
+static PetscErrorCode VecNestGetSubVec_Nest(Vec X, PetscInt idxm, Vec *sx)
 {
   PetscFunctionBegin;
   PetscCall(PetscObjectStateIncrease((PetscObject)X));
@@ -863,7 +863,7 @@ PetscErrorCode VecNestGetSubVec(Vec X, PetscInt idxm, Vec *sx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode VecNestGetSubVecs_Nest(Vec X, PetscInt *N, Vec **sx)
+static PetscErrorCode VecNestGetSubVecs_Nest(Vec X, PetscInt *N, Vec **sx)
 {
   Vec_Nest *b = (Vec_Nest *)X->data;
 
@@ -971,7 +971,7 @@ static PetscErrorCode VecNestSetSubVec_Private(Vec X, PetscInt idxm, Vec x)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode VecNestSetSubVec_Nest(Vec X, PetscInt idxm, Vec sx)
+static PetscErrorCode VecNestSetSubVec_Nest(Vec X, PetscInt idxm, Vec sx)
 {
   PetscFunctionBegin;
   PetscCall(PetscObjectStateIncrease((PetscObject)X));
@@ -1003,7 +1003,7 @@ PetscErrorCode VecNestSetSubVec(Vec X, PetscInt idxm, Vec sx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode VecNestSetSubVecs_Nest(Vec X, PetscInt N, PetscInt *idxm, Vec *sx)
+static PetscErrorCode VecNestSetSubVecs_Nest(Vec X, PetscInt N, PetscInt *idxm, Vec *sx)
 {
   PetscInt i;
 
@@ -1039,7 +1039,7 @@ PetscErrorCode VecNestSetSubVecs(Vec X, PetscInt N, PetscInt *idxm, Vec *sx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode VecNestGetSize_Nest(Vec X, PetscInt *N)
+static PetscErrorCode VecNestGetSize_Nest(Vec X, PetscInt *N)
 {
   Vec_Nest *b = (Vec_Nest *)X->data;
 
@@ -1103,6 +1103,7 @@ static PetscErrorCode VecSetUp_NestIS_Private(Vec V, PetscInt nb, IS is[])
   PetscInt  i, offset, m, n, M, N;
 
   PetscFunctionBegin;
+  (void)nb;
   if (is) { /* Do some consistency checks and reference the is */
     offset = V->map->rstart;
     for (i = 0; i < ctx->nb; i++) {

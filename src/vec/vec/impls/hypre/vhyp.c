@@ -73,7 +73,7 @@ PetscErrorCode VecHYPRE_IJVectorCopy(Vec v, VecHYPRE_IJVector ij)
    - the function returns a pointer to the data (ptr) and the corresponding restore
   Could be extended to VECKOKKOS if we had a way to access the raw pointer to device data.
 */
-static inline PetscErrorCode VecGetArrayForHYPRE(Vec v, int rw, HYPRE_MemoryLocation hmem, PetscScalar **ptr, PetscErrorCode (**res)(Vec, PetscScalar **))
+static PetscErrorCode VecGetArrayForHYPRE(Vec v, int rw, HYPRE_MemoryLocation hmem, PetscScalar **ptr, PetscErrorCode (**res)(Vec, PetscScalar **))
 {
   PetscMemType mtype;
   MPI_Comm     comm;

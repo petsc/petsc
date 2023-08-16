@@ -2,14 +2,14 @@
 #include <petscpf.h> /*I   "petscpf.h"   I*/
 #include <../src/vec/pf/pfimpl.h>
 
-PETSC_EXTERN PetscErrorCode PFCreate_Constant(PF, void *);
-PETSC_EXTERN PetscErrorCode PFCreate_Quick(PF, void *);
-PETSC_EXTERN PetscErrorCode PFCreate_Identity(PF, void *);
+PETSC_INTERN PetscErrorCode PFCreate_Constant(PF, void *);
+PETSC_INTERN PetscErrorCode PFCreate_Quick(PF, void *);
+PETSC_INTERN PetscErrorCode PFCreate_Identity(PF, void *);
 #if defined(PETSC_HAVE_POPEN) && defined(PETSC_USE_SHARED_LIBRARIES) && defined(PETSC_HAVE_DYNAMIC_LIBRARIES)
-PETSC_EXTERN PetscErrorCode PFCreate_String(PF, void *);
+PETSC_INTERN PetscErrorCode PFCreate_String(PF, void *);
 #endif
 #if defined(PETSC_HAVE_MATLAB)
-PETSC_EXTERN PetscErrorCode PFCreate_Matlab(PF, void *);
+PETSC_INTERN PetscErrorCode PFCreate_Matlab(PF, void *);
 #endif
 
 /*@C

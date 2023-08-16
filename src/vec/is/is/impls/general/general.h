@@ -1,6 +1,5 @@
-
-#ifndef __GENERAL_H
-#define __GENERAL_H
+#ifndef PETSC_IS_GENERAL_H
+#define PETSC_IS_GENERAL_H
 
 /*
     Defines the data structure used for the general index set

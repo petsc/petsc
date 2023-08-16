@@ -1,8 +1,8 @@
 
 #include <petsc/private/isimpl.h> /*I  "petscis.h"  I*/
-PETSC_EXTERN PetscErrorCode ISCreate_General(IS);
-PETSC_EXTERN PetscErrorCode ISCreate_Stride(IS);
-PETSC_EXTERN PetscErrorCode ISCreate_Block(IS);
+PETSC_INTERN PetscErrorCode ISCreate_General(IS);
+PETSC_INTERN PetscErrorCode ISCreate_Stride(IS);
+PETSC_INTERN PetscErrorCode ISCreate_Block(IS);
 
 /*@C
   ISRegisterAll - Registers all of the index set components in the `IS` package.

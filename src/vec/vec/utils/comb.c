@@ -264,7 +264,7 @@ PetscErrorCode PetscSplitReductionExtend(PetscSplitReduction *sr)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PetscSplitReductionDestroy(PetscSplitReduction *sr)
+static PetscErrorCode PetscSplitReductionDestroy(PetscSplitReduction *sr)
 {
   PetscFunctionBegin;
   PetscCall(PetscFree6(sr->lvalues, sr->gvalues, sr->reducetype, sr->invecs, sr->lvalues_mix, sr->gvalues_mix));
@@ -281,9 +281,11 @@ PetscMPIInt Petsc_Reduction_keyval = MPI_KEYVAL_INVALID;
   The binding for the first argument changed from MPI 1.0 to 1.1; in 1.0
   it was MPI_Comm *comm.
 */
-PETSC_EXTERN PetscMPIInt MPIAPI Petsc_DelReduction(MPI_Comm comm, PetscMPIInt keyval, void *attr_val, void *extra_state)
+static PetscMPIInt MPIAPI Petsc_DelReduction(MPI_Comm comm, PetscMPIInt keyval, void *attr_val, void *extra_state)
 {
   PetscFunctionBegin;
+  (void)keyval;
+  (void)extra_state;
   PetscCallMPI(PetscInfo(0, "Deleting reduction data in an MPI_Comm %ld\n", (long)comm));
   PetscCallMPI(PetscSplitReductionDestroy((PetscSplitReduction *)attr_val));
   PetscFunctionReturn(PETSC_SUCCESS);

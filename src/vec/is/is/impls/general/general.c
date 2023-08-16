@@ -43,7 +43,7 @@ static PetscErrorCode ISCopy_General(IS is, IS isy)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode ISShift_General(IS is, PetscInt shift, IS isy)
+static PetscErrorCode ISShift_General(IS is, PetscInt shift, IS isy)
 {
   IS_General *is_general = (IS_General *)is->data, *isy_general = (IS_General *)isy->data;
   PetscInt    i, n;
@@ -435,21 +435,44 @@ static PetscErrorCode ISSorted_General(IS is, PetscBool *flg)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode ISToGeneral_General(IS is)
+static PetscErrorCode ISToGeneral_General(IS is)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static struct _ISOps myops = {ISGetIndices_General, ISRestoreIndices_General, ISInvertPermutation_General, ISSort_General, ISSortRemoveDups_General, ISSorted_General, ISDuplicate_General, ISDestroy_General, ISView_General, ISLoad_Default, ISCopy_General, ISToGeneral_General, ISOnComm_General, ISSetBlockSize_General, ISContiguousLocal_General, ISLocate_General,
-                              /* no specializations of {sorted,unique,perm,interval}{local,global}
-                                * because the default checks in ISGetInfo_XXX in index.c are exactly
-                                * what we would do for ISGeneral */
-                              NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
+// clang-format off
+static const struct _ISOps myops = {
+  PetscDesignatedInitializer(getindices, ISGetIndices_General),
+  PetscDesignatedInitializer(restoreindices, ISRestoreIndices_General),
+  PetscDesignatedInitializer(invertpermutation, ISInvertPermutation_General),
+  PetscDesignatedInitializer(sort, ISSort_General),
+  PetscDesignatedInitializer(sortremovedups, ISSortRemoveDups_General),
+  PetscDesignatedInitializer(sorted, ISSorted_General),
+  PetscDesignatedInitializer(duplicate, ISDuplicate_General),
+  PetscDesignatedInitializer(destroy, ISDestroy_General),
+  PetscDesignatedInitializer(view, ISView_General),
+  PetscDesignatedInitializer(load, ISLoad_Default),
+  PetscDesignatedInitializer(copy, ISCopy_General),
+  PetscDesignatedInitializer(togeneral, ISToGeneral_General),
+  PetscDesignatedInitializer(oncomm, ISOnComm_General),
+  PetscDesignatedInitializer(setblocksize, ISSetBlockSize_General),
+  PetscDesignatedInitializer(contiguous, ISContiguousLocal_General),
+  PetscDesignatedInitializer(locate, ISLocate_General),
+  /* no specializations of {sorted,unique,perm,interval}{local,global} because the default
+   * checks in ISGetInfo_XXX in index.c are exactly what we would do for ISGeneral */
+  PetscDesignatedInitializer(sortedlocal, NULL),
+  PetscDesignatedInitializer(sortedglobal, NULL),
+  PetscDesignatedInitializer(uniquelocal, NULL),
+  PetscDesignatedInitializer(uniqueglobal, NULL),
+  PetscDesignatedInitializer(permlocal, NULL),
+  PetscDesignatedInitializer(permglobal, NULL),
+  PetscDesignatedInitializer(intervallocal, NULL),
+  PetscDesignatedInitializer(intervalglobal, NULL)
+};
+// clang-format on
 
-PETSC_INTERN PetscErrorCode ISSetUp_General(IS);
-
-PetscErrorCode ISSetUp_General(IS is)
+PETSC_INTERN PetscErrorCode ISSetUp_General(IS is)
 {
   IS_General     *sub = (IS_General *)is->data;
   const PetscInt *idx = sub->idx;
@@ -537,7 +560,7 @@ PetscErrorCode ISGeneralSetIndices(IS is, PetscInt n, const PetscInt idx[], Pets
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode ISGeneralSetIndices_General(IS is, PetscInt n, const PetscInt idx[], PetscCopyMode mode)
+static PetscErrorCode ISGeneralSetIndices_General(IS is, PetscInt n, const PetscInt idx[], PetscCopyMode mode)
 {
   PetscLayout map;
   IS_General *sub = (IS_General *)is->data;
@@ -607,7 +630,7 @@ PetscErrorCode ISGeneralSetIndicesFromMask(IS is, PetscInt rstart, PetscInt rend
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode ISGeneralSetIndicesFromMask_General(IS is, PetscInt rstart, PetscInt rend, const PetscBool mask[])
+static PetscErrorCode ISGeneralSetIndicesFromMask_General(IS is, PetscInt rstart, PetscInt rend, const PetscBool mask[])
 {
   PetscInt  i, nidx;
   PetscInt *idx;
@@ -666,7 +689,7 @@ PetscErrorCode ISGeneralFilter(IS is, PetscInt start, PetscInt end)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PETSC_EXTERN PetscErrorCode ISCreate_General(IS is)
+PETSC_INTERN PetscErrorCode ISCreate_General(IS is)
 {
   IS_General *sub;
 

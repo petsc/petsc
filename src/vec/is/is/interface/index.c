@@ -472,7 +472,7 @@ PetscErrorCode ISSetInfo(IS is, ISInfo info, ISInfoType type, PetscBool permanen
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode ISGetInfo_Sorted(IS is, ISInfoType type, PetscBool *flg)
+static PetscErrorCode ISGetInfo_Sorted_Private(IS is, ISInfoType type, PetscBool *flg)
 {
   MPI_Comm    comm;
   PetscMPIInt size, rank;
@@ -523,9 +523,9 @@ static PetscErrorCode ISGetInfo_Sorted(IS is, ISInfoType type, PetscBool *flg)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode ISGetIndicesCopy(IS is, PetscInt idx[]);
+static PetscErrorCode ISGetIndicesCopy_Private(IS is, PetscInt idx[]);
 
-static PetscErrorCode ISGetInfo_Unique(IS is, ISInfoType type, PetscBool *flg)
+static PetscErrorCode ISGetInfo_Unique_Private(IS is, ISInfoType type, PetscBool *flg)
 {
   MPI_Comm    comm;
   PetscMPIInt size, rank;
@@ -553,7 +553,7 @@ static PetscErrorCode ISGetInfo_Unique(IS is, ISInfoType type, PetscBool *flg)
       uniqueLocal = PETSC_TRUE;
       PetscCall(ISGetLocalSize(is, &n));
       PetscCall(PetscMalloc1(n, &idx));
-      PetscCall(ISGetIndicesCopy(is, idx));
+      PetscCall(ISGetIndicesCopy_Private(is, idx));
       PetscCall(PetscIntSortSemiOrdered(n, idx));
       for (i = 1; i < n; i++)
         if (idx[i] == idx[i - 1]) break;
@@ -571,7 +571,7 @@ static PetscErrorCode ISGetInfo_Unique(IS is, ISInfoType type, PetscBool *flg)
         if (!idx) {
           PetscCall(ISGetLocalSize(is, &n));
           PetscCall(PetscMalloc1(n, &idx));
-          PetscCall(ISGetIndicesCopy(is, idx));
+          PetscCall(ISGetIndicesCopy_Private(is, idx));
         }
         PetscCall(PetscParallelSortInt(is->map, is->map, idx, idx));
         if (n) {
@@ -612,7 +612,7 @@ static PetscErrorCode ISGetInfo_Permutation(IS is, ISInfoType type, PetscBool *f
 
     PetscCall(ISGetLocalSize(is, &n));
     PetscCall(PetscMalloc1(n, &idx));
-    PetscCall(ISGetIndicesCopy(is, idx));
+    PetscCall(ISGetIndicesCopy_Private(is, idx));
     if (type == IS_GLOBAL) {
       PetscCall(PetscParallelSortInt(is->map, is->map, idx, idx));
       PetscCall(PetscLayoutGetRange(is->map, &rStart, NULL));
@@ -806,10 +806,10 @@ PetscErrorCode ISGetInfo(IS is, ISInfo info, ISInfoType type, PetscBool compute,
   } else if (compute) {
     switch (info) {
     case IS_SORTED:
-      PetscCall(ISGetInfo_Sorted(is, type, &hasprop));
+      PetscCall(ISGetInfo_Sorted_Private(is, type, &hasprop));
       break;
     case IS_UNIQUE:
-      PetscCall(ISGetInfo_Unique(is, type, &hasprop));
+      PetscCall(ISGetInfo_Unique_Private(is, type, &hasprop));
       break;
     case IS_PERMUTATION:
       PetscCall(ISGetInfo_Permutation(is, type, &hasprop));
@@ -831,7 +831,7 @@ PetscErrorCode ISGetInfo(IS is, ISInfo info, ISInfoType type, PetscBool compute,
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode ISCopyInfo(IS source, IS dest)
+static PetscErrorCode ISCopyInfo_Private(IS source, IS dest)
 {
   PetscFunctionBegin;
   PetscCall(PetscArraycpy(&dest->info[0], &source->info[0], 2));
@@ -1774,7 +1774,7 @@ PetscErrorCode ISDuplicate(IS is, IS *newIS)
   PetscValidHeaderSpecific(is, IS_CLASSID, 1);
   PetscAssertPointer(newIS, 2);
   PetscUseTypeMethod(is, duplicate, newIS);
-  PetscCall(ISCopyInfo(is, *newIS));
+  PetscCall(ISCopyInfo_Private(is, *newIS));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1807,7 +1807,7 @@ PetscErrorCode ISCopy(IS is, IS isy)
   PetscCheck(is->map->N == isy->map->N, PetscObjectComm((PetscObject)is), PETSC_ERR_ARG_INCOMP, "Index sets have different global size %" PetscInt_FMT " != %" PetscInt_FMT, is->map->N, isy->map->N);
   PetscCheck(is->map->n == isy->map->n, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Index sets have different local size %" PetscInt_FMT " != %" PetscInt_FMT, is->map->n, isy->map->n);
   PetscCheck(bs == bsy, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Index sets have different block size %" PetscInt_FMT " != %" PetscInt_FMT, bs, bsy);
-  PetscCall(ISCopyInfo(is, isy));
+  PetscCall(ISCopyInfo_Private(is, isy));
   isy->max = is->max;
   isy->min = is->min;
   PetscUseTypeMethod(is, copy, isy);
@@ -1848,7 +1848,7 @@ PetscErrorCode ISShift(IS is, PetscInt offset, IS isy)
   PetscCheck(is->map->N == isy->map->N, PetscObjectComm((PetscObject)is), PETSC_ERR_ARG_INCOMP, "Index sets have different global size %" PetscInt_FMT " != %" PetscInt_FMT, is->map->N, isy->map->N);
   PetscCheck(is->map->n == isy->map->n, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Index sets have different local size %" PetscInt_FMT " != %" PetscInt_FMT, is->map->n, isy->map->n);
   PetscCheck(is->map->bs == isy->map->bs, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Index sets have different block size %" PetscInt_FMT " != %" PetscInt_FMT, is->map->bs, isy->map->bs);
-  PetscCall(ISCopyInfo(is, isy));
+  PetscCall(ISCopyInfo_Private(is, isy));
   isy->max = is->max + offset;
   isy->min = is->min + offset;
   PetscUseMethod(is, "ISShift_C", (IS, PetscInt, IS), (is, offset, isy));
@@ -1965,7 +1965,7 @@ PetscErrorCode ISGetBlockSize(IS is, PetscInt *size)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode ISGetIndicesCopy(IS is, PetscInt idx[])
+static PetscErrorCode ISGetIndicesCopy_Private(IS is, PetscInt idx[])
 {
   PetscInt        len, i;
   const PetscInt *ptr;

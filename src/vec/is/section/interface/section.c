@@ -2125,7 +2125,7 @@ PetscErrorCode PetscSectionCreateSupersection(PetscSection s[], PetscInt len, Pe
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PetscSectionCreateSubplexSection_Internal(PetscSection s, IS subpointMap, PetscBool renumberPoints, PetscSection *subs)
+static PetscErrorCode PetscSectionCreateSubplexSection_Private(PetscSection s, IS subpointMap, PetscBool renumberPoints, PetscSection *subs)
 {
   const PetscInt *points = NULL, *indices = NULL;
   PetscInt        numFields, f, c, numSubpoints = 0, pStart, pEnd, p, spStart, spEnd, subp;
@@ -2241,7 +2241,7 @@ PetscErrorCode PetscSectionCreateSubplexSection_Internal(PetscSection s, IS subp
 PetscErrorCode PetscSectionCreateSubmeshSection(PetscSection s, IS subpointMap, PetscSection *subs)
 {
   PetscFunctionBegin;
-  PetscCall(PetscSectionCreateSubplexSection_Internal(s, subpointMap, PETSC_TRUE, subs));
+  PetscCall(PetscSectionCreateSubplexSection_Private(s, subpointMap, PETSC_TRUE, subs));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -2273,7 +2273,7 @@ PetscErrorCode PetscSectionCreateSubmeshSection(PetscSection s, IS subpointMap, 
 PetscErrorCode PetscSectionCreateSubdomainSection(PetscSection s, IS subpointMap, PetscSection *subs)
 {
   PetscFunctionBegin;
-  PetscCall(PetscSectionCreateSubplexSection_Internal(s, subpointMap, PETSC_FALSE, subs));
+  PetscCall(PetscSectionCreateSubplexSection_Private(s, subpointMap, PETSC_FALSE, subs));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -2426,7 +2426,7 @@ PetscErrorCode PetscSectionLoad(PetscSection s, PetscViewer viewer)
   } else SETERRQ(PetscObjectComm((PetscObject)s), PETSC_ERR_SUP, "Viewer type %s not yet supported for PetscSection loading", ((PetscObject)viewer)->type_name);
 }
 
-static PetscErrorCode PetscSectionResetClosurePermutation(PetscSection section)
+static PetscErrorCode PetscSectionResetClosurePermutation_Private(PetscSection section)
 {
   PetscSectionClosurePermVal clVal;
 
@@ -2475,7 +2475,7 @@ PetscErrorCode PetscSectionReset(PetscSection s)
   PetscCall(PetscSectionDestroy(&s->clSection));
   PetscCall(ISDestroy(&s->clPoints));
   PetscCall(ISDestroy(&s->perm));
-  PetscCall(PetscSectionResetClosurePermutation(s));
+  PetscCall(PetscSectionResetClosurePermutation_Private(s));
   PetscCall(PetscSectionSymDestroy(&s->sym));
   PetscCall(PetscSectionDestroy(&s->clSection));
   PetscCall(ISDestroy(&s->clPoints));
@@ -2515,7 +2515,7 @@ PetscErrorCode PetscSectionDestroy(PetscSection *s)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode VecIntGetValuesSection(PetscInt *baseArray, PetscSection s, PetscInt point, const PetscInt **values)
+static PetscErrorCode VecIntGetValuesSection_Private(const PetscInt *baseArray, PetscSection s, PetscInt point, const PetscInt **values)
 {
   const PetscInt p = point - s->pStart;
 
@@ -2525,7 +2525,7 @@ PetscErrorCode VecIntGetValuesSection(PetscInt *baseArray, PetscSection s, Petsc
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode VecIntSetValuesSection(PetscInt *baseArray, PetscSection s, PetscInt point, const PetscInt values[], InsertMode mode)
+static PetscErrorCode VecIntSetValuesSection_Private(PetscInt *baseArray, PetscSection s, PetscInt point, const PetscInt values[], InsertMode mode)
 {
   PetscInt      *array;
   const PetscInt p           = point - s->pStart;
@@ -2657,7 +2657,7 @@ PetscErrorCode PetscSectionGetConstraintIndices(PetscSection s, PetscInt point, 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
   if (s->bc) {
-    PetscCall(VecIntGetValuesSection(s->bcIndices, s->bc, point, indices));
+    PetscCall(VecIntGetValuesSection_Private(s->bcIndices, s->bc, point, indices));
   } else *indices = NULL;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -2689,7 +2689,7 @@ PetscErrorCode PetscSectionSetConstraintIndices(PetscSection s, PetscInt point, 
     PetscInt       d;
 
     for (d = 0; d < cdof; ++d) PetscCheck(indices[d] < dof, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Point %" PetscInt_FMT " dof %" PetscInt_FMT ", invalid constraint index[%" PetscInt_FMT "]: %" PetscInt_FMT, point, dof, d, indices[d]);
-    PetscCall(VecIntSetValuesSection(s->bcIndices, s->bc, point, indices, INSERT_VALUES));
+    PetscCall(VecIntSetValuesSection_Private(s->bcIndices, s->bc, point, indices, INSERT_VALUES));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -2876,7 +2876,7 @@ PetscErrorCode PetscSectionSetClosureIndex(PetscSection section, PetscObject obj
   PetscValidHeaderSpecific(section, PETSC_SECTION_CLASSID, 1);
   PetscValidHeaderSpecific(clSection, PETSC_SECTION_CLASSID, 3);
   PetscValidHeaderSpecific(clPoints, IS_CLASSID, 4);
-  if (section->clObj != obj) PetscCall(PetscSectionResetClosurePermutation(section));
+  if (section->clObj != obj) PetscCall(PetscSectionResetClosurePermutation_Private(section));
   section->clObj = obj;
   PetscCall(PetscObjectReference((PetscObject)clSection));
   PetscCall(PetscObjectReference((PetscObject)clPoints));
@@ -2987,12 +2987,13 @@ PetscErrorCode PetscSectionSetClosurePermutation(PetscSection section, PetscObje
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PetscSectionGetClosurePermutation_Internal(PetscSection section, PetscObject obj, PetscInt depth, PetscInt size, const PetscInt *perm[])
+static PetscErrorCode PetscSectionGetClosurePermutation_Private(PetscSection section, PetscObject obj, PetscInt depth, PetscInt size, const PetscInt *perm[])
 {
   PetscFunctionBegin;
   if (section->clObj == obj) {
     PetscSectionClosurePermKey k = {depth, size};
     PetscSectionClosurePermVal v;
+
     PetscCall(PetscClPermGet(section->clHash, k, &v));
     if (perm) *perm = v.perm;
   } else {
@@ -3024,10 +3025,10 @@ PetscErrorCode PetscSectionGetClosurePermutation_Internal(PetscSection section, 
 @*/
 PetscErrorCode PetscSectionGetClosurePermutation(PetscSection section, PetscObject obj, PetscInt depth, PetscInt clSize, IS *perm)
 {
-  const PetscInt *clPerm;
+  const PetscInt *clPerm = NULL;
 
   PetscFunctionBegin;
-  PetscCall(PetscSectionGetClosurePermutation_Internal(section, obj, depth, clSize, &clPerm));
+  PetscCall(PetscSectionGetClosurePermutation_Private(section, obj, depth, clSize, &clPerm));
   PetscCall(ISCreateGeneral(PETSC_COMM_SELF, clSize, clPerm, PETSC_USE_POINTER, perm));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -3069,7 +3070,7 @@ PetscErrorCode PetscSectionGetClosureInversePermutation_Internal(PetscSection se
 @*/
 PetscErrorCode PetscSectionGetClosureInversePermutation(PetscSection section, PetscObject obj, PetscInt depth, PetscInt clSize, IS *perm)
 {
-  const PetscInt *clPerm;
+  const PetscInt *clPerm = NULL;
 
   PetscFunctionBegin;
   PetscCall(PetscSectionGetClosureInversePermutation_Internal(section, obj, depth, clSize, &clPerm));

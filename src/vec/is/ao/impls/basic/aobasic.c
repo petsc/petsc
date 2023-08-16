@@ -14,7 +14,7 @@ typedef struct {
 /*
        All processors have the same data so processor 1 prints it
 */
-PetscErrorCode AOView_Basic(AO ao, PetscViewer viewer)
+static PetscErrorCode AOView_Basic(AO ao, PetscViewer viewer)
 {
   PetscMPIInt rank;
   PetscInt    i;
@@ -35,7 +35,7 @@ PetscErrorCode AOView_Basic(AO ao, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode AODestroy_Basic(AO ao)
+static PetscErrorCode AODestroy_Basic(AO ao)
 {
   AO_Basic *aobasic = (AO_Basic *)ao->data;
 
@@ -45,17 +45,7 @@ PetscErrorCode AODestroy_Basic(AO ao)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode AOBasicGetIndices_Private(AO ao, PetscInt **app, PetscInt **petsc)
-{
-  AO_Basic *basic = (AO_Basic *)ao->data;
-
-  PetscFunctionBegin;
-  if (app) *app = basic->app;
-  if (petsc) *petsc = basic->petsc;
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-PetscErrorCode AOPetscToApplication_Basic(AO ao, PetscInt n, PetscInt *ia)
+static PetscErrorCode AOPetscToApplication_Basic(AO ao, PetscInt n, PetscInt *ia)
 {
   PetscInt  i, N = ao->N;
   AO_Basic *aobasic = (AO_Basic *)ao->data;
@@ -71,7 +61,7 @@ PetscErrorCode AOPetscToApplication_Basic(AO ao, PetscInt n, PetscInt *ia)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode AOApplicationToPetsc_Basic(AO ao, PetscInt n, PetscInt *ia)
+static PetscErrorCode AOApplicationToPetsc_Basic(AO ao, PetscInt n, PetscInt *ia)
 {
   PetscInt  i, N = ao->N;
   AO_Basic *aobasic = (AO_Basic *)ao->data;
@@ -87,7 +77,7 @@ PetscErrorCode AOApplicationToPetsc_Basic(AO ao, PetscInt n, PetscInt *ia)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode AOPetscToApplicationPermuteInt_Basic(AO ao, PetscInt block, PetscInt *array)
+static PetscErrorCode AOPetscToApplicationPermuteInt_Basic(AO ao, PetscInt block, PetscInt *array)
 {
   AO_Basic *aobasic = (AO_Basic *)ao->data;
   PetscInt *temp;
@@ -103,7 +93,7 @@ PetscErrorCode AOPetscToApplicationPermuteInt_Basic(AO ao, PetscInt block, Petsc
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode AOApplicationToPetscPermuteInt_Basic(AO ao, PetscInt block, PetscInt *array)
+static PetscErrorCode AOApplicationToPetscPermuteInt_Basic(AO ao, PetscInt block, PetscInt *array)
 {
   AO_Basic *aobasic = (AO_Basic *)ao->data;
   PetscInt *temp;
@@ -119,7 +109,7 @@ PetscErrorCode AOApplicationToPetscPermuteInt_Basic(AO ao, PetscInt block, Petsc
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode AOPetscToApplicationPermuteReal_Basic(AO ao, PetscInt block, PetscReal *array)
+static PetscErrorCode AOPetscToApplicationPermuteReal_Basic(AO ao, PetscInt block, PetscReal *array)
 {
   AO_Basic  *aobasic = (AO_Basic *)ao->data;
   PetscReal *temp;
@@ -135,7 +125,7 @@ PetscErrorCode AOPetscToApplicationPermuteReal_Basic(AO ao, PetscInt block, Pets
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode AOApplicationToPetscPermuteReal_Basic(AO ao, PetscInt block, PetscReal *array)
+static PetscErrorCode AOApplicationToPetscPermuteReal_Basic(AO ao, PetscInt block, PetscReal *array)
 {
   AO_Basic  *aobasic = (AO_Basic *)ao->data;
   PetscReal *temp;
@@ -151,7 +141,7 @@ PetscErrorCode AOApplicationToPetscPermuteReal_Basic(AO ao, PetscInt block, Pets
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static struct _AOOps AOOps_Basic = {
+static const struct _AOOps AOOps_Basic = {
   PetscDesignatedInitializer(view, AOView_Basic),
   PetscDesignatedInitializer(destroy, AODestroy_Basic),
   PetscDesignatedInitializer(petsctoapplication, AOPetscToApplication_Basic),
@@ -162,7 +152,7 @@ static struct _AOOps AOOps_Basic = {
   PetscDesignatedInitializer(applicationtopetscpermutereal, AOApplicationToPetscPermuteReal_Basic),
 };
 
-PETSC_EXTERN PetscErrorCode AOCreate_Basic(AO ao)
+PETSC_INTERN PetscErrorCode AOCreate_Basic(AO ao)
 {
   AO_Basic       *aobasic;
   PetscMPIInt     size, rank, count, *lens, *disp;

@@ -1,10 +1,10 @@
 #include <petsc/private/vecimpl.h> /*I  "petscvec.h"  I*/
 
-PETSC_EXTERN PetscErrorCode VecTaggerCreate_Absolute(VecTagger);
-PETSC_EXTERN PetscErrorCode VecTaggerCreate_Relative(VecTagger);
-PETSC_EXTERN PetscErrorCode VecTaggerCreate_CDF(VecTagger);
-PETSC_EXTERN PetscErrorCode VecTaggerCreate_Or(VecTagger);
-PETSC_EXTERN PetscErrorCode VecTaggerCreate_And(VecTagger);
+PETSC_INTERN PetscErrorCode VecTaggerCreate_Absolute(VecTagger);
+PETSC_INTERN PetscErrorCode VecTaggerCreate_Relative(VecTagger);
+PETSC_INTERN PetscErrorCode VecTaggerCreate_CDF(VecTagger);
+PETSC_INTERN PetscErrorCode VecTaggerCreate_Or(VecTagger);
+PETSC_INTERN PetscErrorCode VecTaggerCreate_And(VecTagger);
 
 PetscFunctionList VecTaggerList;
 

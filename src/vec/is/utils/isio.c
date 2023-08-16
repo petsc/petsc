@@ -56,7 +56,7 @@ PetscErrorCode ISLoad_HDF5(IS is, PetscViewer viewer)
 }
 #endif
 
-PetscErrorCode ISLoad_Binary(IS is, PetscViewer viewer)
+static PetscErrorCode ISLoad_Binary(IS is, PetscViewer viewer)
 {
   PetscBool   isgeneral, skipHeader;
   PetscInt    tr[2], rows, N, n, s, *idx;

@@ -53,11 +53,11 @@ PETSC_EXTERN PetscErrorCode AOViewFromOptions(AO, PetscObject, const char[]);
 PETSC_EXTERN PetscErrorCode AODestroy(AO *);
 
 /* Dynamic creation and loading functions */
-PETSC_EXTERN PetscFunctionList AOList;
-PETSC_EXTERN PetscErrorCode    AOSetType(AO, AOType);
-PETSC_EXTERN PetscErrorCode    AOGetType(AO, AOType *);
+PETSC_EXTERN PetscErrorCode AOSetType(AO, AOType);
+PETSC_EXTERN PetscErrorCode AOGetType(AO, AOType *);
 
 PETSC_EXTERN PetscErrorCode AORegister(const char[], PetscErrorCode (*)(AO));
+PETSC_EXTERN PetscErrorCode AORegisterAll(void);
 
 PETSC_EXTERN PetscErrorCode AOPetscToApplication(AO, PetscInt, PetscInt[]);
 PETSC_EXTERN PetscErrorCode AOApplicationToPetsc(AO, PetscInt, PetscInt[]);
