@@ -377,7 +377,6 @@ PetscErrorCode MatConvertToTriples_seqaij_seqaij(Mat A, PetscInt shift, MatReuse
 
   PetscFunctionBegin;
   PetscCall(MatSeqAIJGetArrayRead(A, &av));
-  mumps->val = (PetscScalar *)av;
   if (reuse == MAT_INITIAL_MATRIX) {
     nz = aa->nz;
     ai = aa->i;
@@ -392,10 +391,11 @@ PetscErrorCode MatConvertToTriples_seqaij_seqaij(Mat A, PetscInt shift, MatReuse
         k++;
       }
     }
+    mumps->val = (PetscScalar *)av;
     mumps->irn = row;
     mumps->jcn = col;
     mumps->nnz = nz;
-  }
+  } else PetscCall(PetscArraycpy(mumps->val, av, aa->nz));
   PetscCall(MatSeqAIJRestoreArrayRead(A, &av));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -407,9 +407,8 @@ PetscErrorCode MatConvertToTriples_seqsell_seqaij(Mat A, PetscInt shift, MatReus
   PetscMUMPSInt *row, *col;
 
   PetscFunctionBegin;
-  mumps->val = a->val;
+  nz = a->sliidx[a->totalslices];
   if (reuse == MAT_INITIAL_MATRIX) {
-    nz = a->sliidx[a->totalslices];
     PetscCall(PetscMalloc2(nz, &row, nz, &col));
     for (i = k = 0; i < a->totalslices; i++) {
       for (j = a->sliidx[i], r = 0; j < a->sliidx[i + 1]; j++, r = ((r + 1) & 0x07)) PetscCall(PetscMUMPSIntCast(8 * i + r + shift, &row[k++]));
@@ -418,7 +417,8 @@ PetscErrorCode MatConvertToTriples_seqsell_seqaij(Mat A, PetscInt shift, MatReus
     mumps->irn = row;
     mumps->jcn = col;
     mumps->nnz = nz;
-  }
+    mumps->val = a->val;
+  } else PetscCall(PetscArraycpy(mumps->val, a->val, nz));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -426,18 +426,16 @@ PetscErrorCode MatConvertToTriples_seqbaij_seqaij(Mat A, PetscInt shift, MatReus
 {
   Mat_SeqBAIJ    *aa = (Mat_SeqBAIJ *)A->data;
   const PetscInt *ai, *aj, *ajj, bs2 = aa->bs2;
-  PetscInt64      M, nz, idx = 0, rnz, i, j, k, m;
+  PetscInt64      M, nz = bs2 * aa->nz, idx = 0, rnz, i, j, k, m;
   PetscInt        bs;
   PetscMUMPSInt  *row, *col;
 
   PetscFunctionBegin;
-  PetscCall(MatGetBlockSize(A, &bs));
-  M          = A->rmap->N / bs;
-  mumps->val = aa->a;
   if (reuse == MAT_INITIAL_MATRIX) {
+    PetscCall(MatGetBlockSize(A, &bs));
+    M  = A->rmap->N / bs;
     ai = aa->i;
     aj = aa->j;
-    nz = bs2 * aa->nz;
     PetscCall(PetscMalloc2(nz, &row, nz, &col));
     for (i = 0; i < M; i++) {
       ajj = aj + ai[i];
@@ -455,7 +453,8 @@ PetscErrorCode MatConvertToTriples_seqbaij_seqaij(Mat A, PetscInt shift, MatReus
     mumps->irn = row;
     mumps->jcn = col;
     mumps->nnz = nz;
-  }
+    mumps->val = aa->a;
+  } else PetscCall(PetscArraycpy(mumps->val, aa->a, nz));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -493,7 +492,6 @@ PetscErrorCode MatConvertToTriples_seqsbaij_seqsbaij(Mat A, PetscInt shift, MatR
     mumps->irn = row;
     mumps->jcn = col;
   } else {
-    if (bs == 1) mumps->val = aa->a;
     row = mumps->irn;
     col = mumps->jcn;
   }
@@ -529,7 +527,7 @@ PetscErrorCode MatConvertToTriples_seqsbaij_seqsbaij(Mat A, PetscInt shift, MatR
       }
     }
     PetscCheck(nz == aa->nz, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Different numbers of nonzeros %" PetscInt64_FMT " != %" PetscInt_FMT, nz, aa->nz);
-  }
+  } else PetscCall(PetscArraycpy(mumps->val, aa->a, aa->nz)); /* bs == 1 and MAT_REUSE_MATRIX */
   if (reuse == MAT_INITIAL_MATRIX) mumps->nnz = nz;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1133,10 +1131,11 @@ PetscErrorCode MatConvertToTriples_nest_xaij(Mat A, PetscInt shift, MatReuse reu
         }
 
         /* Import values to full COO */
-        if (isHTrans) { /* conjugate the entries */
-          for (PetscInt k = 0; k < mumps->nnz; k++) mumps->val[k] = PetscConj(mumps->val[k]);
-        }
         PetscCall(PetscArraycpy(vals + cumnnz, mumps->val, mumps->nnz));
+        if (isHTrans) { /* conjugate the entries */
+          PetscScalar *v = vals + cumnnz;
+          for (PetscInt k = 0; k < mumps->nnz; k++) v[k] = PetscConj(v[k]);
+        }
 
         /* Shift new starting point and sanity check */
         cumnnz += mumps->nnz;
