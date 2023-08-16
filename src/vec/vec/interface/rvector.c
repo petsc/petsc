@@ -420,6 +420,35 @@ PetscErrorCode VecTDot(Vec x, Vec y, PetscScalar *val)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+PetscErrorCode VecScaleAsync_Private(Vec x, PetscScalar alpha, PetscDeviceContext dctx)
+{
+  PetscReal   norms[4];
+  PetscBool   flgs[4];
+  PetscScalar one = 1.0;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(x, VEC_CLASSID, 1);
+  PetscValidType(x, 1);
+  VecCheckAssembled(x);
+  PetscCall(VecSetErrorIfLocked(x, 1));
+  if (alpha == one) PetscFunctionReturn(PETSC_SUCCESS);
+
+  /* get current stashed norms */
+  for (PetscInt i = 0; i < 4; i++) PetscCall(PetscObjectComposedDataGetReal((PetscObject)x, NormIds[i], norms[i], flgs[i]));
+
+  PetscCall(PetscLogEventBegin(VEC_Scale, x, 0, 0, 0));
+  VecMethodDispatch(x, dctx, VecAsyncFnName(Scale), scale, (Vec, PetscScalar, PetscDeviceContext), alpha);
+  PetscCall(PetscLogEventEnd(VEC_Scale, x, 0, 0, 0));
+
+  PetscCall(PetscObjectStateIncrease((PetscObject)x));
+  /* put the scaled stashed norms back into the Vec */
+  for (PetscInt i = 0; i < 4; i++) {
+    PetscReal ar = PetscAbsScalar(alpha);
+    if (flgs[i]) PetscCall(PetscObjectComposedDataSetReal((PetscObject)x, NormIds[i], ar * norms[i]));
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 /*@
   VecScale - Scales a vector.
 
@@ -438,29 +467,52 @@ PetscErrorCode VecTDot(Vec x, Vec y, PetscScalar *val)
 @*/
 PetscErrorCode VecScale(Vec x, PetscScalar alpha)
 {
-  PetscReal   norms[4];
-  PetscBool   flgs[4];
-  PetscScalar one = 1.0;
+  PetscFunctionBegin;
+  PetscCall(VecScaleAsync_Private(x, alpha, NULL));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
 
+PetscErrorCode VecSetAsync_Private(Vec x, PetscScalar alpha, PetscDeviceContext dctx)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x, VEC_CLASSID, 1);
   PetscValidType(x, 1);
   VecCheckAssembled(x);
+  PetscValidLogicalCollectiveScalar(x, alpha, 2);
   PetscCall(VecSetErrorIfLocked(x, 1));
-  if (alpha == one) PetscFunctionReturn(PETSC_SUCCESS);
 
-  /* get current stashed norms */
-  for (PetscInt i = 0; i < 4; i++) PetscCall(PetscObjectComposedDataGetReal((PetscObject)x, NormIds[i], norms[i], flgs[i]));
+  if (alpha == 0) {
+    PetscReal norm;
+    PetscBool set;
 
-  PetscCall(PetscLogEventBegin(VEC_Scale, x, 0, 0, 0));
-  PetscUseTypeMethod(x, scale, alpha);
-  PetscCall(PetscLogEventEnd(VEC_Scale, x, 0, 0, 0));
-
+    PetscCall(VecNormAvailable(x, NORM_2, &set, &norm));
+    if (set == PETSC_TRUE && norm == 0) PetscFunctionReturn(PETSC_SUCCESS);
+  }
+  PetscCall(PetscLogEventBegin(VEC_Set, x, 0, 0, 0));
+  VecMethodDispatch(x, dctx, VecAsyncFnName(Set), set, (Vec, PetscScalar, PetscDeviceContext), alpha);
+  PetscCall(PetscLogEventEnd(VEC_Set, x, 0, 0, 0));
   PetscCall(PetscObjectStateIncrease((PetscObject)x));
-  /* put the scaled stashed norms back into the Vec */
-  for (PetscInt i = 0; i < 4; i++) {
-    PetscReal ar = PetscAbsScalar(alpha);
-    if (flgs[i]) PetscCall(PetscObjectComposedDataSetReal((PetscObject)x, NormIds[i], ar * norms[i]));
+
+  /*  norms can be simply set (if |alpha|*N not too large) */
+
+  {
+    PetscReal      val = PetscAbsScalar(alpha);
+    const PetscInt N   = x->map->N;
+
+    if (N == 0) {
+      PetscCall(PetscObjectComposedDataSetReal((PetscObject)x, NormIds[NORM_1], 0.0l));
+      PetscCall(PetscObjectComposedDataSetReal((PetscObject)x, NormIds[NORM_INFINITY], 0.0));
+      PetscCall(PetscObjectComposedDataSetReal((PetscObject)x, NormIds[NORM_2], 0.0));
+      PetscCall(PetscObjectComposedDataSetReal((PetscObject)x, NormIds[NORM_FROBENIUS], 0.0));
+    } else if (val > PETSC_MAX_REAL / N) {
+      PetscCall(PetscObjectComposedDataSetReal((PetscObject)x, NormIds[NORM_INFINITY], val));
+    } else {
+      PetscCall(PetscObjectComposedDataSetReal((PetscObject)x, NormIds[NORM_1], N * val));
+      PetscCall(PetscObjectComposedDataSetReal((PetscObject)x, NormIds[NORM_INFINITY], val));
+      val *= PetscSqrtReal((PetscReal)N);
+      PetscCall(PetscObjectComposedDataSetReal((PetscObject)x, NormIds[NORM_2], val));
+      PetscCall(PetscObjectComposedDataSetReal((PetscObject)x, NormIds[NORM_FROBENIUS], val));
+    }
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -492,48 +544,36 @@ PetscErrorCode VecScale(Vec x, PetscScalar alpha)
 PetscErrorCode VecSet(Vec x, PetscScalar alpha)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(x, VEC_CLASSID, 1);
-  PetscValidType(x, 1);
-  VecCheckAssembled(x);
-  PetscValidLogicalCollectiveScalar(x, alpha, 2);
-  PetscCall(VecSetErrorIfLocked(x, 1));
-
-  if (alpha == 0) {
-    PetscReal norm;
-    PetscBool set;
-
-    PetscCall(VecNormAvailable(x, NORM_2, &set, &norm));
-    if (set == PETSC_TRUE && norm == 0) PetscFunctionReturn(PETSC_SUCCESS);
-  }
-  PetscCall(PetscLogEventBegin(VEC_Set, x, 0, 0, 0));
-  PetscUseTypeMethod(x, set, alpha);
-  PetscCall(PetscLogEventEnd(VEC_Set, x, 0, 0, 0));
-  PetscCall(PetscObjectStateIncrease((PetscObject)x));
-
-  /*  norms can be simply set (if |alpha|*N not too large) */
-
-  {
-    PetscReal      val = PetscAbsScalar(alpha);
-    const PetscInt N   = x->map->N;
-
-    if (N == 0) {
-      PetscCall(PetscObjectComposedDataSetReal((PetscObject)x, NormIds[NORM_1], 0.0l));
-      PetscCall(PetscObjectComposedDataSetReal((PetscObject)x, NormIds[NORM_INFINITY], 0.0));
-      PetscCall(PetscObjectComposedDataSetReal((PetscObject)x, NormIds[NORM_2], 0.0));
-      PetscCall(PetscObjectComposedDataSetReal((PetscObject)x, NormIds[NORM_FROBENIUS], 0.0));
-    } else if (val > PETSC_MAX_REAL / N) {
-      PetscCall(PetscObjectComposedDataSetReal((PetscObject)x, NormIds[NORM_INFINITY], val));
-    } else {
-      PetscCall(PetscObjectComposedDataSetReal((PetscObject)x, NormIds[NORM_1], N * val));
-      PetscCall(PetscObjectComposedDataSetReal((PetscObject)x, NormIds[NORM_INFINITY], val));
-      val *= PetscSqrtReal((PetscReal)N);
-      PetscCall(PetscObjectComposedDataSetReal((PetscObject)x, NormIds[NORM_2], val));
-      PetscCall(PetscObjectComposedDataSetReal((PetscObject)x, NormIds[NORM_FROBENIUS], val));
-    }
-  }
+  PetscCall(VecSetAsync_Private(x, alpha, NULL));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+PetscErrorCode VecAXPYAsync_Private(Vec y, PetscScalar alpha, Vec x, PetscDeviceContext dctx)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(x, VEC_CLASSID, 3);
+  PetscValidHeaderSpecific(y, VEC_CLASSID, 1);
+  PetscValidType(x, 3);
+  PetscValidType(y, 1);
+  PetscCheckSameTypeAndComm(x, 3, y, 1);
+  VecCheckSameSize(x, 3, y, 1);
+  VecCheckAssembled(x);
+  VecCheckAssembled(y);
+  PetscValidLogicalCollectiveScalar(y, alpha, 2);
+  if (alpha == (PetscScalar)0.0) PetscFunctionReturn(PETSC_SUCCESS);
+  PetscCall(VecSetErrorIfLocked(y, 1));
+  if (x == y) {
+    PetscCall(VecScale(y, alpha + 1.0));
+    PetscFunctionReturn(PETSC_SUCCESS);
+  }
+  PetscCall(VecLockReadPush(x));
+  PetscCall(PetscLogEventBegin(VEC_AXPY, x, y, 0, 0));
+  VecMethodDispatch(y, dctx, VecAsyncFnName(AXPY), axpy, (Vec, PetscScalar, Vec, PetscDeviceContext), alpha, x);
+  PetscCall(PetscLogEventEnd(VEC_AXPY, x, y, 0, 0));
+  PetscCall(VecLockReadPop(x));
+  PetscCall(PetscObjectStateIncrease((PetscObject)y));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
 /*@
   VecAXPY - Computes `y = alpha x + y`.
 
@@ -565,27 +605,37 @@ PetscErrorCode VecSet(Vec x, PetscScalar alpha)
 PetscErrorCode VecAXPY(Vec y, PetscScalar alpha, Vec x)
 {
   PetscFunctionBegin;
+  PetscCall(VecAXPYAsync_Private(y, alpha, x, NULL));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+PetscErrorCode VecAYPXAsync_Private(Vec y, PetscScalar beta, Vec x, PetscDeviceContext dctx)
+{
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(x, VEC_CLASSID, 3);
   PetscValidHeaderSpecific(y, VEC_CLASSID, 1);
   PetscValidType(x, 3);
   PetscValidType(y, 1);
   PetscCheckSameTypeAndComm(x, 3, y, 1);
-  VecCheckSameSize(x, 3, y, 1);
+  VecCheckSameSize(x, 1, y, 3);
   VecCheckAssembled(x);
   VecCheckAssembled(y);
-  PetscValidLogicalCollectiveScalar(y, alpha, 2);
-  if (alpha == (PetscScalar)0.0) PetscFunctionReturn(PETSC_SUCCESS);
+  PetscValidLogicalCollectiveScalar(y, beta, 2);
   PetscCall(VecSetErrorIfLocked(y, 1));
   if (x == y) {
-    PetscCall(VecScale(y, alpha + 1.0));
+    PetscCall(VecScale(y, beta + 1.0));
     PetscFunctionReturn(PETSC_SUCCESS);
   }
   PetscCall(VecLockReadPush(x));
-  PetscCall(PetscLogEventBegin(VEC_AXPY, x, y, 0, 0));
-  PetscUseTypeMethod(y, axpy, alpha, x);
-  PetscCall(PetscLogEventEnd(VEC_AXPY, x, y, 0, 0));
+  if (beta == (PetscScalar)0.0) {
+    PetscCall(VecCopy(x, y));
+  } else {
+    PetscCall(PetscLogEventBegin(VEC_AYPX, x, y, 0, 0));
+    VecMethodDispatch(y, dctx, VecAsyncFnName(AYPX), aypx, (Vec, PetscScalar, Vec, PetscDeviceContext), beta, x);
+    PetscCall(PetscLogEventEnd(VEC_AYPX, x, y, 0, 0));
+    PetscCall(PetscObjectStateIncrease((PetscObject)y));
+  }
   PetscCall(VecLockReadPop(x));
-  PetscCall(PetscObjectStateIncrease((PetscObject)y));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -612,33 +662,38 @@ PetscErrorCode VecAXPY(Vec y, PetscScalar alpha, Vec x)
 PetscErrorCode VecAYPX(Vec y, PetscScalar beta, Vec x)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(x, VEC_CLASSID, 3);
-  PetscValidHeaderSpecific(y, VEC_CLASSID, 1);
-  PetscValidType(x, 3);
-  PetscValidType(y, 1);
-  PetscCheckSameTypeAndComm(x, 3, y, 1);
-  VecCheckSameSize(x, 1, y, 3);
-  VecCheckAssembled(x);
-  VecCheckAssembled(y);
-  PetscValidLogicalCollectiveScalar(y, beta, 2);
-  PetscCall(VecSetErrorIfLocked(y, 1));
-  if (x == y) {
-    PetscCall(VecScale(y, beta + 1.0));
-    PetscFunctionReturn(PETSC_SUCCESS);
-  }
-  PetscCall(VecLockReadPush(x));
-  if (beta == (PetscScalar)0.0) {
-    PetscCall(VecCopy(x, y));
-  } else {
-    PetscCall(PetscLogEventBegin(VEC_AYPX, x, y, 0, 0));
-    PetscUseTypeMethod(y, aypx, beta, x);
-    PetscCall(PetscLogEventEnd(VEC_AYPX, x, y, 0, 0));
-    PetscCall(PetscObjectStateIncrease((PetscObject)y));
-  }
-  PetscCall(VecLockReadPop(x));
+  PetscCall(VecAYPXAsync_Private(y, beta, x, NULL));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+PetscErrorCode VecAXPBYAsync_Private(Vec y, PetscScalar alpha, PetscScalar beta, Vec x, PetscDeviceContext dctx)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(x, VEC_CLASSID, 4);
+  PetscValidHeaderSpecific(y, VEC_CLASSID, 1);
+  PetscValidType(x, 4);
+  PetscValidType(y, 1);
+  PetscCheckSameTypeAndComm(x, 4, y, 1);
+  VecCheckSameSize(y, 1, x, 4);
+  VecCheckAssembled(x);
+  VecCheckAssembled(y);
+  PetscValidLogicalCollectiveScalar(y, alpha, 2);
+  PetscValidLogicalCollectiveScalar(y, beta, 3);
+  if (alpha == (PetscScalar)0.0 && beta == (PetscScalar)1.0) PetscFunctionReturn(PETSC_SUCCESS);
+  if (x == y) {
+    PetscCall(VecScale(y, alpha + beta));
+    PetscFunctionReturn(PETSC_SUCCESS);
+  }
+
+  PetscCall(VecSetErrorIfLocked(y, 1));
+  PetscCall(VecLockReadPush(x));
+  PetscCall(PetscLogEventBegin(VEC_AXPY, y, x, 0, 0));
+  VecMethodDispatch(y, dctx, VecAsyncFnName(AXPBY), axpby, (Vec, PetscScalar, PetscScalar, Vec, PetscDeviceContext), alpha, beta, x);
+  PetscCall(PetscLogEventEnd(VEC_AXPY, y, x, 0, 0));
+  PetscCall(PetscObjectStateIncrease((PetscObject)y));
+  PetscCall(VecLockReadPop(x));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
 /*@
   VecAXPBY - Computes `y = alpha x + beta y`.
 
@@ -663,32 +718,44 @@ PetscErrorCode VecAYPX(Vec y, PetscScalar beta, Vec x)
 PetscErrorCode VecAXPBY(Vec y, PetscScalar alpha, PetscScalar beta, Vec x)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(x, VEC_CLASSID, 4);
-  PetscValidHeaderSpecific(y, VEC_CLASSID, 1);
-  PetscValidType(x, 4);
-  PetscValidType(y, 1);
-  PetscCheckSameTypeAndComm(x, 4, y, 1);
-  VecCheckSameSize(y, 1, x, 4);
-  VecCheckAssembled(x);
-  VecCheckAssembled(y);
-  PetscValidLogicalCollectiveScalar(y, alpha, 2);
-  PetscValidLogicalCollectiveScalar(y, beta, 3);
-  if (alpha == (PetscScalar)0.0 && beta == (PetscScalar)1.0) PetscFunctionReturn(PETSC_SUCCESS);
-  if (x == y) {
-    PetscCall(VecScale(y, alpha + beta));
-    PetscFunctionReturn(PETSC_SUCCESS);
-  }
-
-  PetscCall(VecSetErrorIfLocked(y, 1));
-  PetscCall(VecLockReadPush(x));
-  PetscCall(PetscLogEventBegin(VEC_AXPY, y, x, 0, 0));
-  PetscUseTypeMethod(y, axpby, alpha, beta, x);
-  PetscCall(PetscLogEventEnd(VEC_AXPY, y, x, 0, 0));
-  PetscCall(PetscObjectStateIncrease((PetscObject)y));
-  PetscCall(VecLockReadPop(x));
+  PetscCall(VecAXPBYAsync_Private(y, alpha, beta, x, NULL));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+PetscErrorCode VecAXPBYPCZAsync_Private(Vec z, PetscScalar alpha, PetscScalar beta, PetscScalar gamma, Vec x, Vec y, PetscDeviceContext dctx)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(z, VEC_CLASSID, 1);
+  PetscValidHeaderSpecific(x, VEC_CLASSID, 5);
+  PetscValidHeaderSpecific(y, VEC_CLASSID, 6);
+  PetscValidType(z, 1);
+  PetscValidType(x, 5);
+  PetscValidType(y, 6);
+  PetscCheckSameTypeAndComm(x, 5, y, 6);
+  PetscCheckSameTypeAndComm(x, 5, z, 1);
+  VecCheckSameSize(x, 1, y, 5);
+  VecCheckSameSize(x, 1, z, 6);
+  PetscCheck(x != y && x != z, PetscObjectComm((PetscObject)x), PETSC_ERR_ARG_IDN, "x, y, and z must be different vectors");
+  PetscCheck(y != z, PetscObjectComm((PetscObject)y), PETSC_ERR_ARG_IDN, "x, y, and z must be different vectors");
+  VecCheckAssembled(x);
+  VecCheckAssembled(y);
+  VecCheckAssembled(z);
+  PetscValidLogicalCollectiveScalar(z, alpha, 2);
+  PetscValidLogicalCollectiveScalar(z, beta, 3);
+  PetscValidLogicalCollectiveScalar(z, gamma, 4);
+  if (alpha == (PetscScalar)0.0 && beta == (PetscScalar)0.0 && gamma == (PetscScalar)1.0) PetscFunctionReturn(PETSC_SUCCESS);
+
+  PetscCall(VecSetErrorIfLocked(z, 1));
+  PetscCall(VecLockReadPush(x));
+  PetscCall(VecLockReadPush(y));
+  PetscCall(PetscLogEventBegin(VEC_AXPBYPCZ, x, y, z, 0));
+  VecMethodDispatch(z, dctx, VecAsyncFnName(AXPBYPCZ), axpbypcz, (Vec, PetscScalar, PetscScalar, PetscScalar, Vec, Vec, PetscDeviceContext), alpha, beta, gamma, x, y);
+  PetscCall(PetscLogEventEnd(VEC_AXPBYPCZ, x, y, z, 0));
+  PetscCall(PetscObjectStateIncrease((PetscObject)z));
+  PetscCall(VecLockReadPop(x));
+  PetscCall(VecLockReadPop(y));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
 /*@
   VecAXPBYPCZ - Computes `z = alpha x + beta y + gamma z`
 
@@ -718,33 +785,40 @@ PetscErrorCode VecAXPBY(Vec y, PetscScalar alpha, PetscScalar beta, Vec x)
 PetscErrorCode VecAXPBYPCZ(Vec z, PetscScalar alpha, PetscScalar beta, PetscScalar gamma, Vec x, Vec y)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(z, VEC_CLASSID, 1);
-  PetscValidHeaderSpecific(x, VEC_CLASSID, 5);
-  PetscValidHeaderSpecific(y, VEC_CLASSID, 6);
-  PetscValidType(z, 1);
-  PetscValidType(x, 5);
-  PetscValidType(y, 6);
-  PetscCheckSameTypeAndComm(x, 5, y, 6);
-  PetscCheckSameTypeAndComm(x, 5, z, 1);
-  VecCheckSameSize(x, 1, y, 5);
-  VecCheckSameSize(x, 1, z, 6);
-  PetscCheck(x != y && x != z, PetscObjectComm((PetscObject)x), PETSC_ERR_ARG_IDN, "x, y, and z must be different vectors");
-  PetscCheck(y != z, PetscObjectComm((PetscObject)y), PETSC_ERR_ARG_IDN, "x, y, and z must be different vectors");
+  PetscCall(VecAXPBYPCZAsync_Private(z, alpha, beta, gamma, x, y, NULL));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+PetscErrorCode VecWAXPYAsync_Private(Vec w, PetscScalar alpha, Vec x, Vec y, PetscDeviceContext dctx)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(w, VEC_CLASSID, 1);
+  PetscValidHeaderSpecific(x, VEC_CLASSID, 3);
+  PetscValidHeaderSpecific(y, VEC_CLASSID, 4);
+  PetscValidType(w, 1);
+  PetscValidType(x, 3);
+  PetscValidType(y, 4);
+  PetscCheckSameTypeAndComm(x, 3, y, 4);
+  PetscCheckSameTypeAndComm(y, 4, w, 1);
+  VecCheckSameSize(x, 3, y, 4);
+  VecCheckSameSize(x, 3, w, 1);
+  PetscCheck(w != y, PETSC_COMM_SELF, PETSC_ERR_SUP, "Result vector w cannot be same as input vector y, suggest VecAXPY()");
+  PetscCheck(w != x, PETSC_COMM_SELF, PETSC_ERR_SUP, "Result vector w cannot be same as input vector x, suggest VecAYPX()");
   VecCheckAssembled(x);
   VecCheckAssembled(y);
-  VecCheckAssembled(z);
-  PetscValidLogicalCollectiveScalar(z, alpha, 2);
-  PetscValidLogicalCollectiveScalar(z, beta, 3);
-  PetscValidLogicalCollectiveScalar(z, gamma, 4);
-  if (alpha == (PetscScalar)0.0 && beta == (PetscScalar)0.0 && gamma == (PetscScalar)1.0) PetscFunctionReturn(PETSC_SUCCESS);
+  PetscValidLogicalCollectiveScalar(y, alpha, 2);
+  PetscCall(VecSetErrorIfLocked(w, 1));
 
-  PetscCall(VecSetErrorIfLocked(z, 1));
   PetscCall(VecLockReadPush(x));
   PetscCall(VecLockReadPush(y));
-  PetscCall(PetscLogEventBegin(VEC_AXPBYPCZ, x, y, z, 0));
-  PetscUseTypeMethod(z, axpbypcz, alpha, beta, gamma, x, y);
-  PetscCall(PetscLogEventEnd(VEC_AXPBYPCZ, x, y, z, 0));
-  PetscCall(PetscObjectStateIncrease((PetscObject)z));
+  if (alpha == (PetscScalar)0.0) {
+    PetscCall(VecCopyAsync_Private(y, w, dctx));
+  } else {
+    PetscCall(PetscLogEventBegin(VEC_WAXPY, x, y, w, 0));
+    VecMethodDispatch(w, dctx, VecAsyncFnName(WAXPY), waxpy, (Vec, PetscScalar, Vec, Vec, PetscDeviceContext), alpha, x, y);
+    PetscCall(PetscLogEventEnd(VEC_WAXPY, x, y, w, 0));
+    PetscCall(PetscObjectStateIncrease((PetscObject)w));
+  }
   PetscCall(VecLockReadPop(x));
   PetscCall(VecLockReadPop(y));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -776,35 +850,7 @@ PetscErrorCode VecAXPBYPCZ(Vec z, PetscScalar alpha, PetscScalar beta, PetscScal
 PetscErrorCode VecWAXPY(Vec w, PetscScalar alpha, Vec x, Vec y)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(w, VEC_CLASSID, 1);
-  PetscValidHeaderSpecific(x, VEC_CLASSID, 3);
-  PetscValidHeaderSpecific(y, VEC_CLASSID, 4);
-  PetscValidType(w, 1);
-  PetscValidType(x, 3);
-  PetscValidType(y, 4);
-  PetscCheckSameTypeAndComm(x, 3, y, 4);
-  PetscCheckSameTypeAndComm(y, 4, w, 1);
-  VecCheckSameSize(x, 3, y, 4);
-  VecCheckSameSize(x, 3, w, 1);
-  PetscCheck(w != y, PETSC_COMM_SELF, PETSC_ERR_SUP, "Result vector w cannot be same as input vector y, suggest VecAXPY()");
-  PetscCheck(w != x, PETSC_COMM_SELF, PETSC_ERR_SUP, "Result vector w cannot be same as input vector x, suggest VecAYPX()");
-  VecCheckAssembled(x);
-  VecCheckAssembled(y);
-  PetscValidLogicalCollectiveScalar(y, alpha, 2);
-  PetscCall(VecSetErrorIfLocked(w, 1));
-
-  PetscCall(VecLockReadPush(x));
-  PetscCall(VecLockReadPush(y));
-  if (alpha == (PetscScalar)0.0) {
-    PetscCall(VecCopy(y, w));
-  } else {
-    PetscCall(PetscLogEventBegin(VEC_WAXPY, x, y, w, 0));
-    PetscUseTypeMethod(w, waxpy, alpha, x, y);
-    PetscCall(PetscLogEventEnd(VEC_WAXPY, x, y, w, 0));
-    PetscCall(PetscObjectStateIncrease((PetscObject)w));
-  }
-  PetscCall(VecLockReadPop(x));
-  PetscCall(VecLockReadPop(y));
+  PetscCall(VecWAXPYAsync_Private(w, alpha, x, y, NULL));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1164,25 +1210,7 @@ PetscErrorCode VecMDot(Vec x, PetscInt nv, const Vec y[], PetscScalar val[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@
-  VecMAXPY - Computes `y = y + sum alpha[i] x[i]`
-
-  Logically Collective
-
-  Input Parameters:
-+ nv    - number of scalars and x-vectors
-. alpha - array of scalars
-. y     - one vector
-- x     - array of vectors
-
-  Level: intermediate
-
-  Note:
-  `y` cannot be any of the `x` vectors
-
-.seealso: [](ch_vectors), `Vec`, `VecMAXPBY()`,`VecAYPX()`, `VecWAXPY()`, `VecAXPY()`, `VecAXPBYPCZ()`, `VecAXPBY()`
-@*/
-PetscErrorCode VecMAXPY(Vec y, PetscInt nv, const PetscScalar alpha[], Vec x[])
+PetscErrorCode VecMAXPYAsync_Private(Vec y, PetscInt nv, const PetscScalar alpha[], Vec x[], PetscDeviceContext dctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(y, VEC_CLASSID, 1);
@@ -1209,13 +1237,38 @@ PetscErrorCode VecMAXPY(Vec y, PetscInt nv, const PetscScalar alpha[], Vec x[])
 
     if (zeros < nv) {
       PetscCall(PetscLogEventBegin(VEC_MAXPY, y, *x, 0, 0));
-      PetscUseTypeMethod(y, maxpy, nv, alpha, x);
+      VecMethodDispatch(y, dctx, VecAsyncFnName(MAXPY), maxpy, (Vec, PetscInt, const PetscScalar[], Vec[], PetscDeviceContext), nv, alpha, x);
       PetscCall(PetscLogEventEnd(VEC_MAXPY, y, *x, 0, 0));
       PetscCall(PetscObjectStateIncrease((PetscObject)y));
     }
 
     for (PetscInt i = 0; i < nv; ++i) PetscCall(VecLockReadPop(x[i]));
   }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  VecMAXPY - Computes `y = y + sum alpha[i] x[i]`
+
+  Logically Collective
+
+  Input Parameters:
++ nv    - number of scalars and x-vectors
+. alpha - array of scalars
+. y     - one vector
+- x     - array of vectors
+
+  Level: intermediate
+
+  Note:
+  `y` cannot be any of the `x` vectors
+
+.seealso: [](ch_vectors), `Vec`, `VecMAXPBY()`,`VecAYPX()`, `VecWAXPY()`, `VecAXPY()`, `VecAXPBYPCZ()`, `VecAXPBY()`
+@*/
+PetscErrorCode VecMAXPY(Vec y, PetscInt nv, const PetscScalar alpha[], Vec x[])
+{
+  PetscFunctionBegin;
+  PetscCall(VecMAXPYAsync_Private(y, nv, alpha, x, NULL));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
