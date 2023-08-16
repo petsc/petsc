@@ -67,7 +67,7 @@ class SourceLocation(AttributeCache):
     return
 
   def __hash__(self) -> int:
-    return hash(self.source_location.file) ^ hash(self.offset)
+    return hash((self.source_location.file, self.offset))
 
   def __str__(self) -> str:
     return f'{Path(str(self.file)).resolve()}:{self.line}:{self.column}'
@@ -282,7 +282,7 @@ class SourceRange(AttributeCache):
     return
 
   def __hash__(self) -> int:
-    return hash(self.__start()) ^ hash(self.__end())
+    return hash((self.__start(), self.__end()))
 
   def __repr__(self) -> str:
     return f'<self:{object.__repr__(self)}, tu: {self.translation_unit}, source range: {self.source_range}>'
