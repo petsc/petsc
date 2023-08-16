@@ -9,7 +9,6 @@ They include individuals who have contributed code, documentation, designs, user
 or other work to PETSc. Anyone can be a contributor. The PETSc **community** consists of the contributors, users, supporters, and anyone else interested in PETSc,
 its use, or its future. [#source_footnote]_
 
-
 Consensus-based decision making by the community
 ================================================
 
@@ -54,13 +53,30 @@ The role of the council is as follows.
 * Vote on changes to the NumFOCUS signatories which will be conducted by the council using the Schulze Method of ranked choice voting.
 
 * Vote on the addition and removal of PETSc Council members; with a 2/3 majority vote of all council members. Anyone in the PETSc community can
-  be on the PETSc Council, one need not be a contributor. The initial council will consist of the 15 most active code contributors,
+  be on the PETSc Council, one need not be a contributor. The initial council consists of the 15 most active code contributors,
   plus two long-term contributors who now play important non-coding roles in the community. The initial high bias in the council towards contributors
   is simply due to the few non-contributors who are heavily actively engaged in the community.
 
 * Vote on :any:`changes to the governance policy<governance_changes>` (this document) with a 2/3 majority vote of all council members.
 
 Votes are public, presented in the usual discussion venues, and the voting period must remain open for at least seven days or until a required majority has been achieved.
+The current members of the PETSc Council are
+Mark Adams,
+Satish Balay,
+Jed Brown,
+Jacob Faibussowitsch,
+Toby Isaac,
+Pierre Jolivet,
+Matt Knepley,
+Lois McInnes,
+Richard Tran Mills,
+Todd Munson,
+Jose Roman,
+Barry Smith,
+Stefano Zampini,
+Hong Zhang-Sun,
+Hong Zhang, and
+Junchao Zhang.
 
 .. _numfocus_signatories:
 
@@ -68,10 +84,16 @@ Votes are public, presented in the usual discussion venues, and the voting perio
 NumFOCUS signatories
 ====================
 
-As a requirement of fiscal sponsorship by PETSc's planned membership in **NumFOCUS** there are five initial NumFOCUS signatories from five institutions.
+As a requirement of fiscal sponsorship by PETSc's membership in `NumFOCUS <http://numfocus.org>`__ there are five NumFOCUS signatories from five institutions.
 Their role is to manage interactions with NumFOCUS and any project funding that comes through NumFOCUS.
 It is expected that such funds will be spent in a manner that is consistent with the non-profit mission of NumFOCUS. Changes in the signatories will
-be done by a vote of the PETSc Council.
+be done by a vote of the PETSc Council. The current signatories are
+Jed Brown,
+Matt Knepley,
+Barry Smith,
+Stefano Zampini, and
+Hong Zhang-Sun.
+
 
 .. _governance_changes:
 
@@ -84,4 +106,3 @@ After a community discussion of the proposed changes, the PETSc Council can pass
 .. rubric:: Footnotes
 
 .. [#source_footnote] Material in this document, including occasionally exact wording, is partially based on https://github.com/dask/governance/blob/main/governance.md and https://numpy.org/doc/stable/dev/governance/governance.html.
-

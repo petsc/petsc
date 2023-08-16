@@ -14,6 +14,13 @@ PETSc is developed as :ref:`open-source <doc_license>`, requests and contributio
 
 News
 ====
+
+.. admonition:: News: PETSc is now associated with `NumFOCUS <http://numfocus.org>`__, a 501(c)(3) nonprofit supporting open code and reproducible science,
+                through which you can help support PETSc.
+
+  .. image:: /images/community/numfocus.png
+     :align: center
+
 .. admonition:: News: PETSc 2024 Annual Meeting
 
   The :any:`PETSc 2024 Annual Meeting <meetings>` will take place May 23, 24 in Cologne, Germany

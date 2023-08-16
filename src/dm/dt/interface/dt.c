@@ -1644,7 +1644,7 @@ static PetscErrorCode PetscDTGaussJacobiQuadrature_GolubWelsch_Internal(PetscInt
     if (ia == a && ib == b && ia + 1 > 0 && ib + 1 > 0 && ia + ib + 2 > 0) { /* All gamma(x) terms are (x-1)! terms */
       PetscCall(PetscDTFactorial(ia, &ga));
       PetscCall(PetscDTFactorial(ib, &gb));
-      PetscCall(PetscDTFactorial(ia + ib + 1, &gb));
+      PetscCall(PetscDTFactorial(ia + ib + 1, &gab));
     } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "tgamma() - math routine is unavailable.");
   }
 #endif
