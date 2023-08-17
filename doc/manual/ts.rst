@@ -182,7 +182,7 @@ One can set the solution method with the routine
 
    TSSetType(TS ts,TSType type);
 
-| Currently supported types are ``TSEULER``, ``TSRK`` (Runge-Kutta),
+| Some of the currently supported types are ``TSEULER``, ``TSRK`` (Runge-Kutta),
   ``TSBEULER``, ``TSCN`` (Crank-Nicolson), ``TSTHETA``, ``TSGLLE``
   (generalized linear), ``TSPSEUDO``, and ``TSSUNDIALS`` (only if the
   Sundials package is installed), or the command line option
@@ -819,7 +819,7 @@ y)_{n+1} - (\tilde{y} - y)_n]`.
 Using fully implicit methods
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-To use a fully implicit method like ``TSTHETA`` or ``TSGL``, either
+To use a fully implicit method like ``TSTHETA``, ``TSBDF`` or ``TSDIRK``, either
 provide the Jacobian of :math:`F()` (and :math:`G()` if :math:`G()` is
 provided) or use a ``DM`` that provides a coloring so the Jacobian can
 be computed efficiently via finite differences.
@@ -1050,10 +1050,6 @@ The arguments to ``postevent()`` routine are the timestep context,
 number of events occurred, indices of events occured, current time, input
 state :math:`u`, a boolean flag indicating forward solve (1) or adjoint
 solve (0), and the (optional) user-provided context ``eventP``.
-
-The event monitoring functionality is only available with PETSc’s
-implicit time-stepping solvers ``TSTHETA``, ``TSARKIMEX``, and
-``TSROSW``.
 
 .. _sec_tchem:
 
