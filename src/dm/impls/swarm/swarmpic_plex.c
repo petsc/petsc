@@ -244,25 +244,18 @@ PetscErrorCode private_DMSwarmInsertPointsUsingCellDM_PLEX(DM dm, DM celldm, DMS
     PetscCall(private_DMSwarmInsertPointsUsingCellDM_PLEX2D_Regular(dm, celldm, layout_param));
     break;
   case DMSWARMPIC_LAYOUT_GAUSS: {
-    PetscInt         npoints, npoints1, ps, pe, nfaces;
+    PetscQuadrature  quad, facequad;
     const PetscReal *xi;
-    PetscBool        is_simplex;
-    PetscQuadrature  quadrature;
+    DMPolytopeType   ct;
+    PetscInt         cStart, Nq;
 
-    is_simplex = PETSC_FALSE;
-    PetscCall(DMPlexGetHeightStratum(celldm, 0, &ps, &pe));
-    PetscCall(DMPlexGetConeSize(celldm, ps, &nfaces));
-    if (nfaces == (dim + 1)) is_simplex = PETSC_TRUE;
-
-    npoints1 = layout_param;
-    if (is_simplex) {
-      PetscCall(PetscDTStroudConicalQuadrature(dim, 1, npoints1, -1.0, 1.0, &quadrature));
-    } else {
-      PetscCall(PetscDTGaussTensorQuadrature(dim, 1, npoints1, -1.0, 1.0, &quadrature));
-    }
-    PetscCall(PetscQuadratureGetData(quadrature, NULL, NULL, &npoints, &xi, NULL));
-    PetscCall(private_DMSwarmSetPointCoordinatesCellwise_PLEX(dm, celldm, npoints, (PetscReal *)xi));
-    PetscCall(PetscQuadratureDestroy(&quadrature));
+    PetscCall(DMPlexGetHeightStratum(celldm, 0, &cStart, NULL));
+    PetscCall(DMPlexGetCellType(celldm, cStart, &ct));
+    PetscCall(PetscDTCreateDefaultQuadrature(ct, layout_param, &quad, &facequad));
+    PetscCall(PetscQuadratureGetData(quad, NULL, NULL, &Nq, &xi, NULL));
+    PetscCall(private_DMSwarmSetPointCoordinatesCellwise_PLEX(dm, celldm, Nq, (PetscReal *)xi));
+    PetscCall(PetscQuadratureDestroy(&quad));
+    PetscCall(PetscQuadratureDestroy(&facequad));
   } break;
   case DMSWARMPIC_LAYOUT_SUBDIVISION:
     PetscCall(private_DMSwarmInsertPointsUsingCellDM_PLEX_SubDivide(dm, celldm, layout_param));
