@@ -3,6 +3,17 @@
 #include <petscdmswarm.h>
 #include "../src/dm/impls/swarm/data_bucket.h"
 
+PetscBool  SwarmProjcite       = PETSC_FALSE;
+const char SwarmProjCitation[] = "@article{PusztayKnepleyAdams2022,\n"
+                                 "title   = {Conservative Projection Between FEM and Particle Bases},\n"
+                                 "author  = {Joseph V. Pusztay and Matthew G. Knepley and Mark F. Adams},\n"
+                                 "journal = {SIAM Journal on Scientific Computing},\n"
+                                 "volume  = {44},\n"
+                                 "number  = {4},\n"
+                                 "pages   = {C310--C319},\n"
+                                 "doi     = {10.1137/21M145407},\n"
+                                 "year    = {2022}\n}\n";
+
 PetscErrorCode private_DMSwarmSetPointCoordinatesCellwise_PLEX(DM, DM, PetscInt, PetscReal *xi);
 
 static PetscErrorCode private_PetscFECreateDefault_scalar_pk1(DM dm, PetscInt dim, PetscBool isSimplex, PetscInt qorder, PetscFE *fem)

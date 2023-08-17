@@ -5,6 +5,9 @@
 #include <petscdmswarm.h> /*I      "petscdmswarm.h"    I*/
 #include <petsc/private/dmimpl.h>
 
+PETSC_EXTERN PetscBool  SwarmProjcite;
+PETSC_EXTERN const char SwarmProjCitation[];
+
 PETSC_EXTERN PetscLogEvent DMSWARM_Migrate;
 PETSC_EXTERN PetscLogEvent DMSWARM_SetSizes;
 PETSC_EXTERN PetscLogEvent DMSWARM_AddPoints;
