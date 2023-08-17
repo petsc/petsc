@@ -26,6 +26,7 @@ _T = TypeVar('_T')
 exclude_dir_names = {
   'tests', 'tutorials', 'output', 'input', 'python', 'benchmarks', 'docs', 'binding', 'contrib',
   'fsrc', 'f90-mod', 'f90-src', 'f90-custom', 'ftn-auto', 'ftn-custom', 'f2003-src', 'ftn-kernels',
+  'perfstubs', 'yaml'
 }
 # directory suffixes to exclude from processing, case sensitive
 exclude_dir_suffixes  = ('.dSYM', '.DS_Store')
@@ -295,6 +296,10 @@ class ParallelPool(WorkerPoolBase):
         # queue, but it's here just in case
         break
       if not isinstance(packet, self.ReturnPacket):
+        try: # type: ignore[unreachable]
+          self.__crash_and_burn('')
+        except RuntimeError:
+          pass
         raise ValueError(type(packet))
       self.errors_left.append(packet.errors_left)
       self.errors_fixed.append(packet.errors_fixed)
@@ -468,6 +473,7 @@ class ParallelPool(WorkerPoolBase):
       except queue.Full:
         # we don't want to join here since a child may have encountered an error!
         self.check()
+        self._consume_results()
       else:
         # only get here if put is successful
         break
@@ -568,7 +574,8 @@ def WorkerPool(num_workers: int, verbose: int) -> Union[SerialPool, ParallelPool
   the number logical cores for the current machine.
   """
   if num_workers < 0:
-    num_workers = max(mp.cpu_count() - 1, 1)
+    # take number of cores - 1, up to a maximum of 16 as not to overload big machines
+    num_workers = min(max(mp.cpu_count() - 1, 1), 16)
 
   if num_workers in (0, 1):
     if verbose:

@@ -48,7 +48,7 @@ PetscErrorCode SNESVISetComputeVariableBounds_VI(SNES snes, SNESVIComputeVariabl
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode SNESVIMonitorResidual(SNES snes, PetscInt its, PetscReal fgnorm, void *dummy)
+static PetscErrorCode SNESVIMonitorResidual(SNES snes, PetscInt its, PetscReal fgnorm, void *dummy)
 {
   Vec         X, F, Finactive;
   IS          isactive;
@@ -67,7 +67,7 @@ PetscErrorCode SNESVIMonitorResidual(SNES snes, PetscInt its, PetscReal fgnorm, 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode SNESMonitorVI(SNES snes, PetscInt its, PetscReal fgnorm, void *dummy)
+static PetscErrorCode SNESMonitorVI(SNES snes, PetscInt its, PetscReal fgnorm, void *dummy)
 {
   PetscViewer        viewer = (PetscViewer)dummy;
   const PetscScalar *x, *xl, *xu, *f;
@@ -150,29 +150,6 @@ PetscErrorCode SNESVICheckLocalMin_Private(SNES snes, Mat A, Vec F, Vec W, Petsc
     a1 = PetscAbsScalar(result) / (fnorm * wnorm);
     PetscCall(PetscInfo(snes, "(F^T J random)/(|| F ||*||random|| %g near zero implies found a local minimum\n", (double)a1));
     if (a1 < 1.e-4) *ismin = PETSC_TRUE;
-  }
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-/*
-     Checks if J^T(F - J*X) = 0
-*/
-PetscErrorCode SNESVICheckResidual_Private(SNES snes, Mat A, Vec F, Vec X, Vec W1, Vec W2)
-{
-  PetscReal a1, a2;
-  PetscBool hastranspose;
-
-  PetscFunctionBegin;
-  PetscCall(MatHasOperation(A, MATOP_MULT_TRANSPOSE, &hastranspose));
-  if (hastranspose) {
-    PetscCall(MatMult(A, X, W1));
-    PetscCall(VecAXPY(W1, -1.0, F));
-
-    /* Compute || J^T W|| */
-    PetscCall(MatMultTranspose(A, W1, W2));
-    PetscCall(VecNorm(W1, NORM_2, &a1));
-    PetscCall(VecNorm(W2, NORM_2, &a2));
-    if (a1 != 0.0) PetscCall(PetscInfo(snes, "||J^T(F-Ax)||/||F-AX|| %g near zero implies inconsistent rhs\n", (double)(a2 / a1)));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -301,17 +278,6 @@ PetscErrorCode SNESVIGetActiveSetIS(SNES snes, Vec X, Vec F, IS *ISact)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode SNESVICreateIndexSets_RS(SNES snes, Vec X, Vec F, IS *ISact, IS *ISinact)
-{
-  PetscInt rstart, rend;
-
-  PetscFunctionBegin;
-  PetscCall(SNESVIGetActiveSetIS(snes, X, F, ISact));
-  PetscCall(VecGetOwnershipRange(X, &rstart, &rend));
-  PetscCall(ISComplement(*ISact, rstart, rend, ISinact));
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
 PetscErrorCode SNESVIComputeInactiveSetFnorm(SNES snes, Vec F, Vec X, PetscReal *fnorm)
 {
   const PetscScalar *x, *xl, *xu, *f;
@@ -337,7 +303,7 @@ PetscErrorCode SNESVIComputeInactiveSetFnorm(SNES snes, Vec F, Vec X, PetscReal 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode SNESVIDMComputeVariableBounds(SNES snes, Vec xl, Vec xu)
+static PetscErrorCode SNESVIDMComputeVariableBounds(SNES snes, Vec xl, Vec xu)
 {
   PetscFunctionBegin;
   PetscCall(DMComputeVariableBounds(snes->dm, xl, xu));

@@ -2790,7 +2790,7 @@ PetscErrorCode MatSolve_SeqAIJ_Inode(Mat A, Vec bb, Vec xx)
 /*
      Makes a longer coloring[] array and calls the usual code with that
 */
-PetscErrorCode MatColoringPatch_SeqAIJ_Inode(Mat mat, PetscInt ncolors, PetscInt nin, ISColoringValue coloring[], ISColoring *iscoloring)
+static PetscErrorCode MatColoringPatch_SeqAIJ_Inode(Mat mat, PetscInt ncolors, PetscInt nin, ISColoringValue coloring[], ISColoring *iscoloring)
 {
   Mat_SeqAIJ      *a = (Mat_SeqAIJ *)mat->data;
   PetscInt         n = mat->cmap->n, m = a->inode.node_count, j, *ns = a->inode.size, row;

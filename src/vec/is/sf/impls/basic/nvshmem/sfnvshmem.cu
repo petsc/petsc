@@ -301,7 +301,7 @@ __global__ static void NvshmemWaitSignals(PetscInt n, uint64_t *sig, uint64_t ex
 /* PrePack operation -- since sender will overwrite the send buffer which the receiver might be getting data from.
    Sender waits for signals (from receivers) indicating receivers have finished getting data
 */
-PetscErrorCode PetscSFLinkWaitSignalsOfCompletionOfGettingData_NVSHMEM(PetscSF sf, PetscSFLink link, PetscSFDirection direction)
+static PetscErrorCode PetscSFLinkWaitSignalsOfCompletionOfGettingData_NVSHMEM(PetscSF sf, PetscSFLink link, PetscSFDirection direction)
 {
   PetscSF_Basic *bas = (PetscSF_Basic *)sf->data;
   uint64_t      *sig;
@@ -336,7 +336,7 @@ __global__ static void GetDataFromRemotelyAccessible(PetscInt nsrcranks, PetscMP
 }
 
 /* Start communication -- Get data in the given direction */
-PetscErrorCode PetscSFLinkGetDataBegin_NVSHMEM(PetscSF sf, PetscSFLink link, PetscSFDirection direction)
+static PetscErrorCode PetscSFLinkGetDataBegin_NVSHMEM(PetscSF sf, PetscSFLink link, PetscSFDirection direction)
 {
   cudaError_t    cerr;
   PetscSF_Basic *bas = (PetscSF_Basic *)sf->data;
@@ -432,7 +432,7 @@ PetscErrorCode PetscSFLinkGetDataBegin_NVSHMEM(PetscSF sf, PetscSFLink link, Pet
 /* Finish the communication (can be done before Unpack)
    Receiver tells its senders that they are allowed to reuse their send buffer (since receiver has got data from their send buffer)
 */
-PetscErrorCode PetscSFLinkGetDataEnd_NVSHMEM(PetscSF sf, PetscSFLink link, PetscSFDirection direction)
+static PetscErrorCode PetscSFLinkGetDataEnd_NVSHMEM(PetscSF sf, PetscSFLink link, PetscSFDirection direction)
 {
   cudaError_t    cerr;
   PetscSF_Basic *bas = (PetscSF_Basic *)sf->data;
@@ -511,7 +511,7 @@ __global__ static void WaitSignalsFromLocallyAccessible(PetscInt ndstranks, Pets
 }
 
 /* Put data in the given direction  */
-PetscErrorCode PetscSFLinkPutDataBegin_NVSHMEM(PetscSF sf, PetscSFLink link, PetscSFDirection direction)
+static PetscErrorCode PetscSFLinkPutDataBegin_NVSHMEM(PetscSF sf, PetscSFLink link, PetscSFDirection direction)
 {
   cudaError_t    cerr;
   PetscSF_Basic *bas = (PetscSF_Basic *)sf->data;
@@ -603,7 +603,7 @@ __global__ static void PutDataEnd(PetscInt nsrcranks, PetscInt ndstranks, PetscM
 }
 
 /* Finish the communication -- A receiver waits until it can access its receive buffer */
-PetscErrorCode PetscSFLinkPutDataEnd_NVSHMEM(PetscSF sf, PetscSFLink link, PetscSFDirection direction)
+static PetscErrorCode PetscSFLinkPutDataEnd_NVSHMEM(PetscSF sf, PetscSFLink link, PetscSFDirection direction)
 {
   cudaError_t    cerr;
   PetscSF_Basic *bas = (PetscSF_Basic *)sf->data;
@@ -637,7 +637,7 @@ PetscErrorCode PetscSFLinkPutDataEnd_NVSHMEM(PetscSF sf, PetscSFLink link, Petsc
 }
 
 /* PostUnpack operation -- A receiver tells its senders that they are allowed to put data to here (it implies recv buf is free to take new data) */
-PetscErrorCode PetscSFLinkSendSignalsToAllowPuttingData_NVSHMEM(PetscSF sf, PetscSFLink link, PetscSFDirection direction)
+static PetscErrorCode PetscSFLinkSendSignalsToAllowPuttingData_NVSHMEM(PetscSF sf, PetscSFLink link, PetscSFDirection direction)
 {
   PetscSF_Basic *bas = (PetscSF_Basic *)sf->data;
   uint64_t      *srcsig;

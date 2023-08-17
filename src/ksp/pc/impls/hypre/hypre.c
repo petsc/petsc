@@ -144,15 +144,6 @@ typedef struct {
   PetscInt          ams_proj_freq;
 } PC_HYPRE;
 
-PetscErrorCode PCHYPREGetSolver(PC pc, HYPRE_Solver *hsolver)
-{
-  PC_HYPRE *jac = (PC_HYPRE *)pc->data;
-
-  PetscFunctionBegin;
-  *hsolver = jac->hsolver;
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
 /*
   Matrices with AIJ format are created IN PLACE with using (I,J,data) from BoomerAMG. Since the data format in hypre_ParCSRMatrix
   is different from that used in PETSc, the original hypre_ParCSRMatrix can not be used any more after call this routine.
@@ -2212,7 +2203,7 @@ static PetscErrorCode PCHYPRESetType_HYPRE(PC pc, const char name[])
     It only gets here if the HYPRE type has not been set before the call to
    ...SetFromOptions() which actually is most of the time
 */
-PetscErrorCode PCSetFromOptions_HYPRE(PC pc, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode PCSetFromOptions_HYPRE(PC pc, PetscOptionItems *PetscOptionsObject)
 {
   PetscInt    indx;
   const char *type[] = {"euclid", "pilut", "parasails", "boomeramg", "ams", "ads"};
@@ -2433,7 +2424,7 @@ typedef struct {
   PetscBool print_statistics;
 } PC_PFMG;
 
-PetscErrorCode PCDestroy_PFMG(PC pc)
+static PetscErrorCode PCDestroy_PFMG(PC pc)
 {
   PC_PFMG *ex = (PC_PFMG *)pc->data;
 
@@ -2447,7 +2438,7 @@ PetscErrorCode PCDestroy_PFMG(PC pc)
 static const char *PFMGRelaxType[] = {"Jacobi", "Weighted-Jacobi", "symmetric-Red/Black-Gauss-Seidel", "Red/Black-Gauss-Seidel"};
 static const char *PFMGRAPType[]   = {"Galerkin", "non-Galerkin"};
 
-PetscErrorCode PCView_PFMG(PC pc, PetscViewer viewer)
+static PetscErrorCode PCView_PFMG(PC pc, PetscViewer viewer)
 {
   PetscBool iascii;
   PC_PFMG  *ex = (PC_PFMG *)pc->data;
@@ -2467,7 +2458,7 @@ PetscErrorCode PCView_PFMG(PC pc, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PCSetFromOptions_PFMG(PC pc, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode PCSetFromOptions_PFMG(PC pc, PetscOptionItems *PetscOptionsObject)
 {
   PC_PFMG *ex = (PC_PFMG *)pc->data;
 
@@ -2496,7 +2487,7 @@ PetscErrorCode PCSetFromOptions_PFMG(PC pc, PetscOptionItems *PetscOptionsObject
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PCApply_PFMG(PC pc, Vec x, Vec y)
+static PetscErrorCode PCApply_PFMG(PC pc, Vec x, Vec y)
 {
   PC_PFMG           *ex = (PC_PFMG *)pc->data;
   PetscScalar       *yy;
@@ -2554,7 +2545,7 @@ static PetscErrorCode PCApplyRichardson_PFMG(PC pc, Vec b, Vec y, Vec w, PetscRe
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PCSetUp_PFMG(PC pc)
+static PetscErrorCode PCSetUp_PFMG(PC pc)
 {
   PC_PFMG         *ex = (PC_PFMG *)pc->data;
   Mat_HYPREStruct *mx = (Mat_HYPREStruct *)(pc->pmat->data);
@@ -2657,7 +2648,7 @@ typedef struct {
   PetscInt num_pre_relax, num_post_relax;
 } PC_SysPFMG;
 
-PetscErrorCode PCDestroy_SysPFMG(PC pc)
+static PetscErrorCode PCDestroy_SysPFMG(PC pc)
 {
   PC_SysPFMG *ex = (PC_SysPFMG *)pc->data;
 
@@ -2670,7 +2661,7 @@ PetscErrorCode PCDestroy_SysPFMG(PC pc)
 
 static const char *SysPFMGRelaxType[] = {"Weighted-Jacobi", "Red/Black-Gauss-Seidel"};
 
-PetscErrorCode PCView_SysPFMG(PC pc, PetscViewer viewer)
+static PetscErrorCode PCView_SysPFMG(PC pc, PetscViewer viewer)
 {
   PetscBool   iascii;
   PC_SysPFMG *ex = (PC_SysPFMG *)pc->data;
@@ -2687,7 +2678,7 @@ PetscErrorCode PCView_SysPFMG(PC pc, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PCSetFromOptions_SysPFMG(PC pc, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode PCSetFromOptions_SysPFMG(PC pc, PetscOptionItems *PetscOptionsObject)
 {
   PC_SysPFMG *ex  = (PC_SysPFMG *)pc->data;
   PetscBool   flg = PETSC_FALSE;
@@ -2711,7 +2702,7 @@ PetscErrorCode PCSetFromOptions_SysPFMG(PC pc, PetscOptionItems *PetscOptionsObj
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PCApply_SysPFMG(PC pc, Vec x, Vec y)
+static PetscErrorCode PCApply_SysPFMG(PC pc, Vec x, Vec y)
 {
   PC_SysPFMG        *ex = (PC_SysPFMG *)pc->data;
   PetscScalar       *yy;
@@ -2807,7 +2798,7 @@ static PetscErrorCode PCApplyRichardson_SysPFMG(PC pc, Vec b, Vec y, Vec w, Pets
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PCSetUp_SysPFMG(PC pc)
+static PetscErrorCode PCSetUp_SysPFMG(PC pc)
 {
   PC_SysPFMG       *ex = (PC_SysPFMG *)pc->data;
   Mat_HYPRESStruct *mx = (Mat_HYPRESStruct *)(pc->pmat->data);
@@ -2888,7 +2879,7 @@ typedef struct {
   PetscInt           num_pre_relax, num_post_relax;
 } PC_SMG;
 
-PetscErrorCode PCDestroy_SMG(PC pc)
+static PetscErrorCode PCDestroy_SMG(PC pc)
 {
   PC_SMG *ex = (PC_SMG *)pc->data;
 
@@ -2899,7 +2890,7 @@ PetscErrorCode PCDestroy_SMG(PC pc)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PCView_SMG(PC pc, PetscViewer viewer)
+static PetscErrorCode PCView_SMG(PC pc, PetscViewer viewer)
 {
   PetscBool iascii;
   PC_SMG   *ex = (PC_SMG *)pc->data;
@@ -2915,7 +2906,7 @@ PetscErrorCode PCView_SMG(PC pc, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PCSetFromOptions_SMG(PC pc, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode PCSetFromOptions_SMG(PC pc, PetscOptionItems *PetscOptionsObject)
 {
   PC_SMG *ex = (PC_SMG *)pc->data;
 
@@ -2931,7 +2922,7 @@ PetscErrorCode PCSetFromOptions_SMG(PC pc, PetscOptionItems *PetscOptionsObject)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PCApply_SMG(PC pc, Vec x, Vec y)
+static PetscErrorCode PCApply_SMG(PC pc, Vec x, Vec y)
 {
   PC_SMG            *ex = (PC_SMG *)pc->data;
   PetscScalar       *yy;
@@ -2989,7 +2980,7 @@ static PetscErrorCode PCApplyRichardson_SMG(PC pc, Vec b, Vec y, Vec w, PetscRea
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PCSetUp_SMG(PC pc)
+static PetscErrorCode PCSetUp_SMG(PC pc)
 {
   PetscInt         i, dim;
   PC_SMG          *ex = (PC_SMG *)pc->data;

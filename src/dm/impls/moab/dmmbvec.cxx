@@ -393,7 +393,7 @@ PetscErrorCode DMMoabVecRestoreArrayRead(DM dm, Vec vec, void *array)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode DMCreateVector_Moab_Private(DM dm, moab::Tag tag, const moab::Range *userrange, PetscBool is_global_vec, PetscBool destroy_tag, Vec *vec)
+static PetscErrorCode DMCreateVector_Moab_Private(DM dm, moab::Tag tag, const moab::Range *userrange, PetscBool is_global_vec, PetscBool destroy_tag, Vec *vec)
 {
   moab::ErrorCode    merr;
   PetscBool          is_newtag;
@@ -541,7 +541,7 @@ PetscErrorCode DMCreateVector_Moab_Private(DM dm, moab::Tag tag, const moab::Ran
 #ifdef MOAB_HAVE_MPI
 PetscErrorCode DMVecCreateTagName_Moab_Private(moab::Interface *mbiface, moab::ParallelComm *pcomm, char **tag_name)
 #else
-PetscErrorCode DMVecCreateTagName_Moab_Private(moab::Interface *mbiface, char **tag_name)
+static PetscErrorCode DMVecCreateTagName_Moab_Private(moab::Interface *mbiface, char **tag_name)
 #endif
 {
   moab::ErrorCode mberr;
@@ -601,7 +601,7 @@ PETSC_EXTERN PetscErrorCode DMCreateLocalVector_Moab(DM dm, Vec *lvec)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode DMVecDuplicate_Moab(Vec x, Vec *y)
+static PetscErrorCode DMVecDuplicate_Moab(Vec x, Vec *y)
 {
   DM             dm;
   PetscContainer moabdata;
@@ -623,7 +623,7 @@ PetscErrorCode DMVecDuplicate_Moab(Vec x, Vec *y)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode DMVecUserDestroy_Moab(void *user)
+static PetscErrorCode DMVecUserDestroy_Moab(void *user)
 {
   Vec_MOAB       *vmoab = (Vec_MOAB *)user;
   moab::ErrorCode merr;

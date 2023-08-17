@@ -37,7 +37,7 @@ static PetscErrorCode ConvertToAIJ(MatType intype, MatType *outtype)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode DMCreateInterpolation_DA_1D_Q1(DM dac, DM daf, Mat *A)
+static PetscErrorCode DMCreateInterpolation_DA_1D_Q1(DM dac, DM daf, Mat *A)
 {
   PetscInt               i, i_start, m_f, Mx;
   const PetscInt        *idx_f, *idx_c;
@@ -174,7 +174,7 @@ PetscErrorCode DMCreateInterpolation_DA_1D_Q1(DM dac, DM daf, Mat *A)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode DMCreateInterpolation_DA_1D_Q0(DM dac, DM daf, Mat *A)
+static PetscErrorCode DMCreateInterpolation_DA_1D_Q0(DM dac, DM daf, Mat *A)
 {
   PetscInt               i, i_start, m_f, Mx;
   const PetscInt        *idx_f, *idx_c;
@@ -260,7 +260,7 @@ PetscErrorCode DMCreateInterpolation_DA_1D_Q0(DM dac, DM daf, Mat *A)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode DMCreateInterpolation_DA_2D_Q1(DM dac, DM daf, Mat *A)
+static PetscErrorCode DMCreateInterpolation_DA_2D_Q1(DM dac, DM daf, Mat *A)
 {
   PetscInt               i, j, i_start, j_start, m_f, n_f, Mx, My, dof;
   const PetscInt        *idx_c, *idx_f;
@@ -492,7 +492,7 @@ PetscErrorCode DMCreateInterpolation_DA_2D_Q1(DM dac, DM daf, Mat *A)
 /*
        Contributed by Andrei Draganescu <aidraga@sandia.gov>
 */
-PetscErrorCode DMCreateInterpolation_DA_2D_Q0(DM dac, DM daf, Mat *A)
+static PetscErrorCode DMCreateInterpolation_DA_2D_Q0(DM dac, DM daf, Mat *A)
 {
   PetscInt               i, j, i_start, j_start, m_f, n_f, Mx, My, dof;
   const PetscInt        *idx_c, *idx_f;
@@ -617,7 +617,7 @@ PetscErrorCode DMCreateInterpolation_DA_2D_Q0(DM dac, DM daf, Mat *A)
 /*
        Contributed by Jianming Yang <jianming-yang@uiowa.edu>
 */
-PetscErrorCode DMCreateInterpolation_DA_3D_Q0(DM dac, DM daf, Mat *A)
+static PetscErrorCode DMCreateInterpolation_DA_3D_Q0(DM dac, DM daf, Mat *A)
 {
   PetscInt               i, j, l, i_start, j_start, l_start, m_f, n_f, p_f, Mx, My, Mz, dof;
   const PetscInt        *idx_c, *idx_f;
@@ -752,7 +752,7 @@ PetscErrorCode DMCreateInterpolation_DA_3D_Q0(DM dac, DM daf, Mat *A)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode DMCreateInterpolation_DA_3D_Q1(DM dac, DM daf, Mat *A)
+static PetscErrorCode DMCreateInterpolation_DA_3D_Q1(DM dac, DM daf, Mat *A)
 {
   PetscInt               i, j, i_start, j_start, m_f, n_f, Mx, My, dof, l;
   const PetscInt        *idx_c, *idx_f;
@@ -1076,7 +1076,7 @@ PetscErrorCode DMCreateInterpolation_DA(DM dac, DM daf, Mat *A, Vec *scale)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode DMCreateInjection_DA_1D(DM dac, DM daf, VecScatter *inject)
+static PetscErrorCode DMCreateInjection_DA_1D(DM dac, DM daf, VecScatter *inject)
 {
   PetscInt               i, i_start, m_f, Mx, dof;
   const PetscInt        *idx_f;
@@ -1132,7 +1132,7 @@ PetscErrorCode DMCreateInjection_DA_1D(DM dac, DM daf, VecScatter *inject)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode DMCreateInjection_DA_2D(DM dac, DM daf, VecScatter *inject)
+static PetscErrorCode DMCreateInjection_DA_2D(DM dac, DM daf, VecScatter *inject)
 {
   PetscInt               i, j, i_start, j_start, m_f, n_f, Mx, My, dof;
   const PetscInt        *idx_c, *idx_f;
@@ -1202,7 +1202,7 @@ PetscErrorCode DMCreateInjection_DA_2D(DM dac, DM daf, VecScatter *inject)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode DMCreateInjection_DA_3D(DM dac, DM daf, VecScatter *inject)
+static PetscErrorCode DMCreateInjection_DA_3D(DM dac, DM daf, VecScatter *inject)
 {
   PetscInt               i, j, k, i_start, j_start, k_start, m_f, n_f, p_f, Mx, My, Mz;
   PetscInt               m_ghost, n_ghost, p_ghost, m_ghost_c, n_ghost_c, p_ghost_c;

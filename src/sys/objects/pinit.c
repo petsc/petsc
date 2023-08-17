@@ -113,17 +113,6 @@ PetscErrorCode PetscInitializeNoPointers(int argc, char **args, const char *file
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*
-      Used by Julia interface to get communicator
-*/
-PetscErrorCode PetscGetPETSC_COMM_SELF(MPI_Comm *comm)
-{
-  PetscFunctionBegin;
-  if (PetscInitializeCalled) PetscAssertPointer(comm, 1);
-  *comm = PETSC_COMM_SELF;
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
 /*@C
   PetscInitializeNoArguments - Calls `PetscInitialize()` from C/C++ without
   the command line arguments.

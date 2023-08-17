@@ -7,7 +7,7 @@ typedef struct {
   curandGenerator_t gen;
 } PetscRandom_CURAND;
 
-PetscErrorCode PetscRandomSeed_CURAND(PetscRandom r)
+static PetscErrorCode PetscRandomSeed_CURAND(PetscRandom r)
 {
   PetscRandom_CURAND *curand = (PetscRandom_CURAND *)r->data;
 
@@ -18,7 +18,7 @@ PetscErrorCode PetscRandomSeed_CURAND(PetscRandom r)
 
 PETSC_INTERN PetscErrorCode PetscRandomCurandScale_Private(PetscRandom, size_t, PetscReal *, PetscBool);
 
-PetscErrorCode PetscRandomGetValuesReal_CURAND(PetscRandom r, PetscInt n, PetscReal *val)
+static PetscErrorCode PetscRandomGetValuesReal_CURAND(PetscRandom r, PetscInt n, PetscReal *val)
 {
   PetscRandom_CURAND *curand = (PetscRandom_CURAND *)r->data;
   size_t              nn     = n < 0 ? (size_t)(-2 * n) : (size_t)n; /* handle complex case */
@@ -33,7 +33,7 @@ PetscErrorCode PetscRandomGetValuesReal_CURAND(PetscRandom r, PetscInt n, PetscR
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PetscRandomGetValues_CURAND(PetscRandom r, PetscInt n, PetscScalar *val)
+static PetscErrorCode PetscRandomGetValues_CURAND(PetscRandom r, PetscInt n, PetscScalar *val)
 {
   PetscFunctionBegin;
 #if defined(PETSC_USE_COMPLEX)
@@ -45,7 +45,7 @@ PetscErrorCode PetscRandomGetValues_CURAND(PetscRandom r, PetscInt n, PetscScala
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PetscRandomDestroy_CURAND(PetscRandom r)
+static PetscErrorCode PetscRandomDestroy_CURAND(PetscRandom r)
 {
   PetscRandom_CURAND *curand = (PetscRandom_CURAND *)r->data;
 

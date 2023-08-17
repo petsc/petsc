@@ -4,7 +4,7 @@
 #include <../src/mat/impls/aij/mpi/mpiaij.h> /*I "petscmat.h" I*/
 #include <../src/mat/impls/aij/seq/seqviennacl/viennaclmatimpl.h>
 
-PetscErrorCode MatMPIAIJSetPreallocation_MPIAIJViennaCL(Mat B, PetscInt d_nz, const PetscInt d_nnz[], PetscInt o_nz, const PetscInt o_nnz[])
+static PetscErrorCode MatMPIAIJSetPreallocation_MPIAIJViennaCL(Mat B, PetscInt d_nz, const PetscInt d_nnz[], PetscInt o_nz, const PetscInt o_nnz[])
 {
   Mat_MPIAIJ *b = (Mat_MPIAIJ *)B->data;
 
@@ -26,7 +26,7 @@ PetscErrorCode MatMPIAIJSetPreallocation_MPIAIJViennaCL(Mat B, PetscInt d_nz, co
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatAssemblyEnd_MPIAIJViennaCL(Mat A, MatAssemblyType mode)
+static PetscErrorCode MatAssemblyEnd_MPIAIJViennaCL(Mat A, MatAssemblyType mode)
 {
   Mat_MPIAIJ *b = (Mat_MPIAIJ *)A->data;
   PetscBool   v;
@@ -40,13 +40,6 @@ PetscErrorCode MatAssemblyEnd_MPIAIJViennaCL(Mat A, MatAssemblyType mode)
     PetscCall(VecDestroy(&b->lvec));
     PetscCall(VecCreateSeqViennaCL(PETSC_COMM_SELF, m, &b->lvec));
   }
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-PetscErrorCode MatDestroy_MPIAIJViennaCL(Mat A)
-{
-  PetscFunctionBegin;
-  PetscCall(MatDestroy_MPIAIJ(A));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

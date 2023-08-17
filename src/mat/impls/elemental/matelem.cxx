@@ -89,7 +89,7 @@ static PetscErrorCode MatGetInfo_Elemental(Mat A, MatInfoType flag, MatInfo *inf
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatSetOption_Elemental(Mat A, MatOption op, PetscBool flg)
+static PetscErrorCode MatSetOption_Elemental(Mat A, MatOption op, PetscBool flg)
 {
   Mat_Elemental *a = (Mat_Elemental *)A->data;
 
@@ -388,7 +388,7 @@ PETSC_INTERN PetscErrorCode MatProductSetFromOptions_Elemental(Mat C)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatMatMultNumeric_Elemental_MPIDense(Mat A, Mat B, Mat C)
+static PetscErrorCode MatMatMultNumeric_Elemental_MPIDense(Mat A, Mat B, Mat C)
 {
   Mat Be, Ce;
 
@@ -401,7 +401,7 @@ PetscErrorCode MatMatMultNumeric_Elemental_MPIDense(Mat A, Mat B, Mat C)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatMatMultSymbolic_Elemental_MPIDense(Mat A, Mat B, PetscReal, Mat C)
+static PetscErrorCode MatMatMultSymbolic_Elemental_MPIDense(Mat A, Mat B, PetscReal, Mat C)
 {
   PetscFunctionBegin;
   PetscCall(MatSetSizes(C, A->rmap->n, B->cmap->n, PETSC_DECIDE, PETSC_DECIDE));
@@ -411,7 +411,7 @@ PetscErrorCode MatMatMultSymbolic_Elemental_MPIDense(Mat A, Mat B, PetscReal, Ma
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatProductSetFromOptions_Elemental_MPIDense_AB(Mat C)
+static PetscErrorCode MatProductSetFromOptions_Elemental_MPIDense_AB(Mat C)
 {
   PetscFunctionBegin;
   C->ops->matmultsymbolic = MatMatMultSymbolic_Elemental_MPIDense;
@@ -419,7 +419,7 @@ PetscErrorCode MatProductSetFromOptions_Elemental_MPIDense_AB(Mat C)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatProductSetFromOptions_Elemental_MPIDense(Mat C)
+static PetscErrorCode MatProductSetFromOptions_Elemental_MPIDense(Mat C)
 {
   Mat_Product *product = C->product;
 
@@ -748,7 +748,7 @@ static PetscErrorCode MatCholeskyFactorSymbolic_Elemental(Mat, Mat, IS, const Ma
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatFactorGetSolverType_elemental_elemental(Mat, MatSolverType *type)
+static PetscErrorCode MatFactorGetSolverType_elemental_elemental(Mat, MatSolverType *type)
 {
   PetscFunctionBegin;
   *type = MATSOLVERELEMENTAL;
@@ -1103,7 +1103,7 @@ static PetscErrorCode MatDestroy_Elemental(Mat A)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatSetUp_Elemental(Mat A)
+static PetscErrorCode MatSetUp_Elemental(Mat A)
 {
   Mat_Elemental *a = (Mat_Elemental *)A->data;
   MPI_Comm       comm;
@@ -1143,7 +1143,7 @@ PetscErrorCode MatSetUp_Elemental(Mat A)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatAssemblyBegin_Elemental(Mat A, MatAssemblyType)
+static PetscErrorCode MatAssemblyBegin_Elemental(Mat A, MatAssemblyType)
 {
   Mat_Elemental *a = (Mat_Elemental *)A->data;
 
@@ -1154,14 +1154,14 @@ PetscErrorCode MatAssemblyBegin_Elemental(Mat A, MatAssemblyType)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatAssemblyEnd_Elemental(Mat, MatAssemblyType)
+static PetscErrorCode MatAssemblyEnd_Elemental(Mat, MatAssemblyType)
 {
   PetscFunctionBegin;
   /* Currently does nothing */
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatLoad_Elemental(Mat newMat, PetscViewer viewer)
+static PetscErrorCode MatLoad_Elemental(Mat newMat, PetscViewer viewer)
 {
   Mat      Adense, Ae;
   MPI_Comm comm;

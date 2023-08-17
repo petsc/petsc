@@ -13,7 +13,7 @@ typedef struct {
   PetscInt nd;
 } PC_TFS;
 
-PetscErrorCode PCDestroy_TFS(PC pc)
+static PetscErrorCode PCDestroy_TFS(PC pc)
 {
   PC_TFS *tfs = (PC_TFS *)pc->data;
 

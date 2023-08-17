@@ -773,7 +773,7 @@ PetscErrorCode MatCreateSchurComplementPmat(Mat A00, Mat A01, Mat A10, Mat A11, 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatSchurComplementGetPmat_Basic(Mat S, MatReuse preuse, Mat *Sp)
+static PetscErrorCode MatSchurComplementGetPmat_Basic(Mat S, MatReuse preuse, Mat *Sp)
 {
   Mat                  A, B, C, D;
   Mat_SchurComplement *schur = (Mat_SchurComplement *)S->data;

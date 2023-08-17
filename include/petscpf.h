@@ -49,6 +49,7 @@ PETSC_EXTERN PetscErrorCode PFApplyVec(PF, Vec, Vec);
 PETSC_EXTERN PetscErrorCode PFStringSetFunction(PF, const char *);
 
 PETSC_EXTERN PetscErrorCode PFInitializePackage(void);
+PETSC_EXTERN PetscErrorCode PFFinalizePackage(void);
 
 PETSC_EXTERN PetscErrorCode PFRegister(const char[], PetscErrorCode (*)(PF, void *));
 

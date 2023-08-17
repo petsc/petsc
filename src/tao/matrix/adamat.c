@@ -349,7 +349,7 @@ static PetscErrorCode MatNorm_ADA(Mat mat, NormType type, PetscReal *norm)
 
 .seealso: `Mat`, `MatCreate()`
 */
-PetscErrorCode MatCreateADA(Mat mat, Vec d1, Vec d2, Mat *J)
+static PetscErrorCode MatCreateADA(Mat mat, Vec d1, Vec d2, Mat *J)
 {
   MPI_Comm     comm = PetscObjectComm((PetscObject)mat);
   TaoMatADACtx ctx;

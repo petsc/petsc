@@ -24,7 +24,7 @@ static PetscLogStage gamg_stages[PETSC_MG_MAXLEVELS];
 static PetscFunctionList GAMGList = NULL;
 static PetscBool         PCGAMGPackageInitialized;
 
-PetscErrorCode PCReset_GAMG(PC pc)
+static PetscErrorCode PCReset_GAMG(PC pc)
 {
   PC_MG   *mg      = (PC_MG *)pc->data;
   PC_GAMG *pc_gamg = (PC_GAMG *)mg->innerctx;
@@ -502,7 +502,7 @@ PetscErrorCode PCGAMGSquareGraph_GAMG(PC a_pc, Mat Gmat1, Mat *Gmat2)
 .  pc - the preconditioner context
 
 */
-PetscErrorCode PCSetUp_GAMG(PC pc)
+static PetscErrorCode PCSetUp_GAMG(PC pc)
 {
   PC_MG      *mg      = (PC_MG *)pc->data;
   PC_GAMG    *pc_gamg = (PC_GAMG *)mg->innerctx;
@@ -1495,7 +1495,7 @@ static PetscErrorCode PCView_GAMG(PC pc, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PCSetFromOptions_GAMG(PC pc, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode PCSetFromOptions_GAMG(PC pc, PetscOptionItems *PetscOptionsObject)
 {
   PC_MG             *mg      = (PC_MG *)pc->data;
   PC_GAMG           *pc_gamg = (PC_GAMG *)mg->innerctx;

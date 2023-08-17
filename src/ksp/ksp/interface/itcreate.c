@@ -372,7 +372,7 @@ PetscErrorCode KSPSetSupportedNorm(KSP ksp, KSPNormType normtype, PCSide pcside,
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode KSPNormSupportTableReset_Private(KSP ksp)
+static PetscErrorCode KSPNormSupportTableReset_Private(KSP ksp)
 {
   PetscFunctionBegin;
   PetscCall(PetscMemzero(ksp->normsupporttable, sizeof(ksp->normsupporttable)));

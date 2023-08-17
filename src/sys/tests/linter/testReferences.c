@@ -2,7 +2,7 @@
 #include <petsc/private/viewerimpl.h>
 
 /* forward declare */
-void extractFunc(PetscViewer, void **);
+extern void extractFunc(PetscViewer, void **);
 
 PetscErrorCode testOutOfLineReference(PetscViewer v, PetscViewer v2)
 {

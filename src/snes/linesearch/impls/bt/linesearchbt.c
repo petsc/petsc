@@ -359,7 +359,7 @@ static PetscErrorCode SNESLineSearchApply_BT(SNESLineSearch linesearch)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode SNESLineSearchView_BT(SNESLineSearch linesearch, PetscViewer viewer)
+static PetscErrorCode SNESLineSearchView_BT(SNESLineSearch linesearch, PetscViewer viewer)
 {
   PetscBool          iascii;
   SNESLineSearch_BT *bt = (SNESLineSearch_BT *)linesearch->data;

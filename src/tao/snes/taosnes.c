@@ -77,7 +77,7 @@ static PetscErrorCode TaoSetFromOptions_SNES(Tao tao, PetscOptionItems *PetscOpt
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode TaoView_SNES(Tao tao, PetscViewer viewer)
+static PetscErrorCode TaoView_SNES(Tao tao, PetscViewer viewer)
 {
   Tao_SNES *taosnes = (Tao_SNES *)tao->data;
 

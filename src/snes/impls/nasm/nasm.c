@@ -588,7 +588,7 @@ static PetscErrorCode SNESNASMGetDamping_NASM(SNES snes, PetscReal *dmp)
 
   TODO: All scatters should be packed into one
 */
-PetscErrorCode SNESNASMSolveLocal_Private(SNES snes, Vec B, Vec Y, Vec X)
+static PetscErrorCode SNESNASMSolveLocal_Private(SNES snes, Vec B, Vec Y, Vec X)
 {
   SNES_NASM *nasm = (SNES_NASM *)snes->data;
   SNES       subsnes;

@@ -8,7 +8,7 @@
 #include <../src/mat/impls/aij/seq/aij.h> /*I "petscmat.h" I*/
 #include <../src/mat/impls/dense/seq/dense.h>
 
-PetscErrorCode MatDestroy_SeqDense_MatTransMatMult(void *data)
+static PetscErrorCode MatDestroy_SeqDense_MatTransMatMult(void *data)
 {
   Mat_MatTransMatMult *atb = (Mat_MatTransMatMult *)data;
 
@@ -60,7 +60,7 @@ PETSC_INTERN PetscErrorCode MatTMatTMultSymbolic_SeqAIJ_SeqDense(Mat A, Mat B, P
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatTMatTMultNumeric_SeqAIJ_SeqDense(Mat A, Mat B, Mat C)
+static PetscErrorCode MatTMatTMultNumeric_SeqAIJ_SeqDense(Mat A, Mat B, Mat C)
 {
   PetscInt             i, j, m = A->rmap->n, n = A->cmap->n, blda, clda;
   PetscInt             mdof = C->cmap->N;

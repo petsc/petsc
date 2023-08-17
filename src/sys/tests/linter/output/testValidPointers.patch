@@ -1,3 +1,10 @@
+@@ -4,5 +4,5 @@
+ #include <petsc/private/petscimpl.h>
+ 
+-PetscErrorCode testValidPointers(void *a, char *b, PetscInt *c, PetscMPIInt *d, PetscInt *e, PetscBool *f, PetscScalar *g, PetscReal *h)
++static PetscErrorCode testValidPointers(void *a, char *b, PetscInt *c, PetscMPIInt *d, PetscInt *e, PetscBool *f, PetscScalar *g, PetscReal *h)
+ {
+   /* incorrect */
 @@ -7,5 +7,5 @@
  {
    /* incorrect */
@@ -54,6 +61,13 @@
 +  PetscAssertPointer(h, 8);
  
    /* correct */
+@@ -28,5 +28,5 @@
+ }
+ 
+-void testValidPointers2(void *a, char *b, PetscInt *c, PetscMPIInt *d, PetscInt *e, PetscBool *f, PetscScalar *g, PetscReal *h)
++static void testValidPointers2(void *a, char *b, PetscInt *c, PetscMPIInt *d, PetscInt *e, PetscBool *f, PetscScalar *g, PetscReal *h)
+ {
+   /* incorrect */
 @@ -31,5 +31,5 @@
  {
    /* incorrect */
@@ -110,6 +124,13 @@
 +  PetscAssertPointer(h, 8);
  
    /* correct */
+@@ -52,5 +52,5 @@
+ }
+ 
+-void testValidPointers3(void **a, char **b, PetscInt **c, PetscMPIInt **d, PetscInt **e, PetscBool **f, PetscScalar **g, PetscReal **h)
++static void testValidPointers3(void **a, char **b, PetscInt **c, PetscMPIInt **d, PetscInt **e, PetscBool **f, PetscScalar **g, PetscReal **h)
+ {
+   /* incorrect */
 @@ -65,5 +65,5 @@
  
    /* correct */

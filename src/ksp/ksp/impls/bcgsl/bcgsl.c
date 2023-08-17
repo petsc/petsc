@@ -435,7 +435,7 @@ PetscErrorCode KSPBCGSLSetEll(KSP ksp, PetscInt ell)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode KSPView_BCGSL(KSP ksp, PetscViewer viewer)
+static PetscErrorCode KSPView_BCGSL(KSP ksp, PetscViewer viewer)
 {
   KSP_BCGSL *bcgsl = (KSP_BCGSL *)ksp->data;
   PetscBool  isascii;
@@ -450,7 +450,7 @@ PetscErrorCode KSPView_BCGSL(KSP ksp, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode KSPSetFromOptions_BCGSL(KSP ksp, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode KSPSetFromOptions_BCGSL(KSP ksp, PetscOptionItems *PetscOptionsObject)
 {
   KSP_BCGSL *bcgsl = (KSP_BCGSL *)ksp->data;
   PetscInt   this_ell;
@@ -486,7 +486,7 @@ PetscErrorCode KSPSetFromOptions_BCGSL(KSP ksp, PetscOptionItems *PetscOptionsOb
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode KSPSetUp_BCGSL(KSP ksp)
+static PetscErrorCode KSPSetUp_BCGSL(KSP ksp)
 {
   KSP_BCGSL *bcgsl = (KSP_BCGSL *)ksp->data;
   PetscInt   ell = bcgsl->ell, ldMZ = ell + 1;
@@ -499,7 +499,7 @@ PetscErrorCode KSPSetUp_BCGSL(KSP ksp)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode KSPReset_BCGSL(KSP ksp)
+static PetscErrorCode KSPReset_BCGSL(KSP ksp)
 {
   KSP_BCGSL *bcgsl = (KSP_BCGSL *)ksp->data;
 
@@ -510,7 +510,7 @@ PetscErrorCode KSPReset_BCGSL(KSP ksp)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode KSPDestroy_BCGSL(KSP ksp)
+static PetscErrorCode KSPDestroy_BCGSL(KSP ksp)
 {
   PetscFunctionBegin;
   PetscCall(KSPReset_BCGSL(ksp));

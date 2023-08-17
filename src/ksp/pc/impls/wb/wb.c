@@ -16,7 +16,7 @@ const char *const PCExoticTypes[] = {"face", "wirebasket", "PCExoticType", "PC_E
       DMDAGetWireBasketInterpolation - Gets the interpolation for a wirebasket based coarse space
 
 */
-PetscErrorCode DMDAGetWireBasketInterpolation(PC pc, DM da, PC_Exotic *exotic, Mat Aglobal, MatReuse reuse, Mat *P)
+static PetscErrorCode DMDAGetWireBasketInterpolation(PC pc, DM da, PC_Exotic *exotic, Mat Aglobal, MatReuse reuse, Mat *P)
 {
   PetscInt               dim, i, j, k, m, n, p, dof, Nint, Nface, Nwire, Nsurf, *Iint, *Isurf, cint = 0, csurf = 0, istart, jstart, kstart, *II, N, c = 0;
   PetscInt               mwidth, nwidth, pwidth, cnt, mp, np, pp, Ntotal, gl[26], *globals, Ng, *IIint, *IIsurf;
@@ -365,7 +365,7 @@ PetscErrorCode DMDAGetWireBasketInterpolation(PC pc, DM da, PC_Exotic *exotic, M
       DMDAGetFaceInterpolation - Gets the interpolation for a face based coarse space
 
 */
-PetscErrorCode DMDAGetFaceInterpolation(PC pc, DM da, PC_Exotic *exotic, Mat Aglobal, MatReuse reuse, Mat *P)
+static PetscErrorCode DMDAGetFaceInterpolation(PC pc, DM da, PC_Exotic *exotic, Mat Aglobal, MatReuse reuse, Mat *P)
 {
   PetscInt               dim, i, j, k, m, n, p, dof, Nint, Nface, Nwire, Nsurf, *Iint, *Isurf, cint = 0, csurf = 0, istart, jstart, kstart, *II, N, c = 0;
   PetscInt               mwidth, nwidth, pwidth, cnt, mp, np, pp, Ntotal, gl[6], *globals, Ng, *IIint, *IIsurf;
@@ -695,7 +695,7 @@ static PetscErrorCode PCExoticSetType_Exotic(PC pc, PCExoticType type)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PCSetUp_Exotic(PC pc)
+static PetscErrorCode PCSetUp_Exotic(PC pc)
 {
   Mat        A;
   PC_MG     *mg    = (PC_MG *)pc->data;
@@ -718,7 +718,7 @@ PetscErrorCode PCSetUp_Exotic(PC pc)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PCDestroy_Exotic(PC pc)
+static PetscErrorCode PCDestroy_Exotic(PC pc)
 {
   PC_MG     *mg  = (PC_MG *)pc->data;
   PC_Exotic *ctx = (PC_Exotic *)mg->innerctx;
@@ -732,7 +732,7 @@ PetscErrorCode PCDestroy_Exotic(PC pc)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PCView_Exotic(PC pc, PetscViewer viewer)
+static PetscErrorCode PCView_Exotic(PC pc, PetscViewer viewer)
 {
   PC_MG     *mg = (PC_MG *)pc->data;
   PetscBool  iascii;
@@ -763,7 +763,7 @@ PetscErrorCode PCView_Exotic(PC pc, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PCSetFromOptions_Exotic(PC pc, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode PCSetFromOptions_Exotic(PC pc, PetscOptionItems *PetscOptionsObject)
 {
   PetscBool    flg;
   PC_MG       *mg = (PC_MG *)pc->data;

@@ -48,7 +48,7 @@ PetscErrorCode MatCreateSubMatrices_MPIDense(Mat C, PetscInt ismax, const IS isr
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatCreateSubMatrices_MPIDense_Local(Mat C, PetscInt ismax, const IS isrow[], const IS iscol[], MatReuse scall, Mat *submats)
+static PetscErrorCode MatCreateSubMatrices_MPIDense_Local(Mat C, PetscInt ismax, const IS isrow[], const IS iscol[], MatReuse scall, Mat *submats)
 {
   Mat_MPIDense    *c = (Mat_MPIDense *)C->data;
   Mat              A = c->A;

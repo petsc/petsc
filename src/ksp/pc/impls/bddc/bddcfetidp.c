@@ -818,7 +818,7 @@ PetscErrorCode PCBDDCSetupFETIDPPCContext(Mat fetimat, FETIDPPC_ctx fetidppc_ctx
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode FETIDPMatMult_Kernel(Mat fetimat, Vec x, Vec y, PetscBool trans)
+static PetscErrorCode FETIDPMatMult_Kernel(Mat fetimat, Vec x, Vec y, PetscBool trans)
 {
   FETIDPMat_ctx mat_ctx;
   PC_BDDC      *pcbddc;
@@ -916,7 +916,7 @@ PetscErrorCode FETIDPMatMultTranspose(Mat fetimat, Vec x, Vec y)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode FETIDPPCApply_Kernel(PC fetipc, Vec x, Vec y, PetscBool trans)
+static PetscErrorCode FETIDPPCApply_Kernel(PC fetipc, Vec x, Vec y, PetscBool trans)
 {
   FETIDPPC_ctx pc_ctx;
   PC_IS       *pcis;

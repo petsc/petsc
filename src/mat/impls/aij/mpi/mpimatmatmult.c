@@ -386,7 +386,7 @@ typedef struct {
   PetscInt      blda;
 } MPIAIJ_MPIDense;
 
-PetscErrorCode MatMPIAIJ_MPIDenseDestroy(void *ctx)
+static PetscErrorCode MatMPIAIJ_MPIDenseDestroy(void *ctx)
 {
   MPIAIJ_MPIDense *contents = (MPIAIJ_MPIDense *)ctx;
   PetscInt         i;
@@ -518,7 +518,7 @@ PETSC_INTERN PetscErrorCode MatMatMultNumericAdd_SeqAIJ_SeqDense(Mat, Mat, Mat, 
     Input: If Bbidx = 0, uses B = Bb, else B = Bb1, see MatMatMultSymbolic_MPIAIJ_MPIDense()
 */
 
-PetscErrorCode MatMPIDenseScatter(Mat A, Mat B, PetscInt Bbidx, Mat C, Mat *outworkB)
+static PetscErrorCode MatMPIDenseScatter(Mat A, Mat B, PetscInt Bbidx, Mat C, Mat *outworkB)
 {
   Mat_MPIAIJ        *aij = (Mat_MPIAIJ *)A->data;
   const PetscScalar *b;

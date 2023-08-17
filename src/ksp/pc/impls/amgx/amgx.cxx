@@ -171,7 +171,7 @@ static void print_callback(const char *msg, int length)
 }
 
 // Outputs messages from the AmgX message buffer and clears it
-PetscErrorCode amgx_output_messages(PC_AMGX *amgx)
+static PetscErrorCode amgx_output_messages(PC_AMGX *amgx)
 {
   PetscFunctionBegin;
 

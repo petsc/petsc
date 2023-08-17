@@ -272,7 +272,7 @@ static void _get_tags(PetscInt counter, PetscMPIInt N, PetscMPIInt r0, PetscMPII
 /*
 Makes the communication map symmetric
 */
-PetscErrorCode _DMSwarmDataExCompleteCommunicationMap(MPI_Comm comm, PetscMPIInt n, PetscMPIInt proc_neighbours[], PetscMPIInt *n_new, PetscMPIInt **proc_neighbours_new)
+static PetscErrorCode DMSwarmDataExCompleteCommunicationMap_Private(MPI_Comm comm, PetscMPIInt n, const PetscMPIInt proc_neighbours[], PetscMPIInt *n_new, PetscMPIInt **proc_neighbours_new)
 {
   Mat                A;
   PetscInt           i, j, nc;
@@ -286,7 +286,7 @@ PetscErrorCode _DMSwarmDataExCompleteCommunicationMap(MPI_Comm comm, PetscMPIInt
 
   PetscFunctionBegin;
   n_ = n;
-  PetscCall(PetscMalloc(sizeof(PetscInt) * n_, &proc_neighbours_));
+  PetscCall(PetscMalloc1(n_, &proc_neighbours_));
   for (i = 0; i < n_; ++i) proc_neighbours_[i] = proc_neighbours[i];
   PetscCallMPI(MPI_Comm_size(comm, &size));
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
@@ -333,14 +333,14 @@ PetscErrorCode _DMSwarmDataExCompleteCommunicationMap(MPI_Comm comm, PetscMPIInt
 
 PetscErrorCode DMSwarmDataExTopologyFinalize(DMSwarmDataEx d)
 {
-  PetscMPIInt symm_nn, *symm_procs, r0, n, st, rt, size, *maxtag, flg;
+  PetscMPIInt symm_nn = 0, *symm_procs = NULL, r0, n, st, rt, size, *maxtag, flg;
 
   PetscFunctionBegin;
   PetscCheck(d->topology_status == DEOBJECT_INITIALIZED, d->comm, PETSC_ERR_ARG_WRONGSTATE, "Topology must be initialised. Call DMSwarmDataExTopologyInitialize() first");
 
   PetscCall(PetscLogEventBegin(DMSWARM_DataExchangerTopologySetup, 0, 0, 0, 0));
   /* given information about all my neighbours, make map symmetric */
-  PetscCall(_DMSwarmDataExCompleteCommunicationMap(d->comm, d->n_neighbour_procs, d->neighbour_procs, &symm_nn, &symm_procs));
+  PetscCall(DMSwarmDataExCompleteCommunicationMap_Private(d->comm, d->n_neighbour_procs, d->neighbour_procs, &symm_nn, &symm_procs));
   /* update my arrays */
   PetscCall(PetscFree(d->neighbour_procs));
   d->n_neighbour_procs = symm_nn;
@@ -372,7 +372,7 @@ PetscErrorCode DMSwarmDataExTopologyFinalize(DMSwarmDataEx d)
 }
 
 /* === Phase B === */
-PetscErrorCode _DMSwarmDataExConvertProcIdToLocalIndex(DMSwarmDataEx de, PetscMPIInt proc_id, PetscMPIInt *local)
+static PetscErrorCode _DMSwarmDataExConvertProcIdToLocalIndex(DMSwarmDataEx de, PetscMPIInt proc_id, PetscMPIInt *local)
 {
   PetscMPIInt i, np;
 
@@ -436,7 +436,7 @@ PetscErrorCode DMSwarmDataExFinalizeSendCount(DMSwarmDataEx de)
   zeros out all counters
   zero out packed data counters
 */
-PetscErrorCode _DMSwarmDataExInitializeTmpStorage(DMSwarmDataEx de)
+static PetscErrorCode _DMSwarmDataExInitializeTmpStorage(DMSwarmDataEx de)
 {
   PetscMPIInt i, np;
 

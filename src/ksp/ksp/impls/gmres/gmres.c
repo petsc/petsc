@@ -98,7 +98,7 @@ PetscErrorCode KSPSetUp_GMRES(KSP ksp)
     On entry, the value in vector VEC_VV(0) should be the initial residual
     (this allows shortcuts where the initial preconditioned residual is 0).
  */
-PetscErrorCode KSPGMRESCycle(PetscInt *itcount, KSP ksp)
+static PetscErrorCode KSPGMRESCycle(PetscInt *itcount, KSP ksp)
 {
   KSP_GMRES *gmres = (KSP_GMRES *)(ksp->data);
   PetscReal  res, hapbnd, tt;
@@ -205,7 +205,7 @@ PetscErrorCode KSPGMRESCycle(PetscInt *itcount, KSP ksp)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode KSPSolve_GMRES(KSP ksp)
+static PetscErrorCode KSPSolve_GMRES(KSP ksp)
 {
   PetscInt   its, itcount, i;
   KSP_GMRES *gmres      = (KSP_GMRES *)ksp->data;
@@ -432,7 +432,7 @@ PetscErrorCode KSPGMRESGetNewVectors(KSP ksp, PetscInt it)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode KSPBuildSolution_GMRES(KSP ksp, Vec ptr, Vec *result)
+static PetscErrorCode KSPBuildSolution_GMRES(KSP ksp, Vec ptr, Vec *result)
 {
   KSP_GMRES *gmres = (KSP_GMRES *)ksp->data;
 
@@ -573,7 +573,7 @@ PetscErrorCode KSPGMRESSetHapTol_GMRES(KSP ksp, PetscReal tol)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode KSPGMRESSetBreakdownTolerance_GMRES(KSP ksp, PetscReal tol)
+static PetscErrorCode KSPGMRESSetBreakdownTolerance_GMRES(KSP ksp, PetscReal tol)
 {
   KSP_GMRES *gmres = (KSP_GMRES *)ksp->data;
 

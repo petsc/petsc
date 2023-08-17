@@ -870,7 +870,7 @@ static PetscErrorCode DMPlexClosestPoint_Internal(DM dm, PetscInt dim, const Pet
 
 .seealso: `DMPLEX`, `PetscGridHashCreate()`, `PetscGridHashGetEnclosingBox()`
 */
-PetscErrorCode DMPlexComputeGridHash_Internal(DM dm, PetscGridHash *localBox)
+static PetscErrorCode DMPlexComputeGridHash_Internal(DM dm, PetscGridHash *localBox)
 {
   PetscInt        debug = ((DM_Plex *)dm->data)->printLocate;
   PetscGridHash   lbox;

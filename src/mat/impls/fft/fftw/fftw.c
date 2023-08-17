@@ -705,7 +705,7 @@ PetscErrorCode VecScatterPetscToFFTW(Mat A, Vec x, Vec y)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode VecScatterPetscToFFTW_FFTW(Mat A, Vec x, Vec y)
+static PetscErrorCode VecScatterPetscToFFTW_FFTW(Mat A, Vec x, Vec y)
 {
   MPI_Comm    comm;
   Mat_FFT    *fft = (Mat_FFT *)A->data;
@@ -939,7 +939,7 @@ PetscErrorCode VecScatterFFTWToPetsc(Mat A, Vec x, Vec y)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode VecScatterFFTWToPetsc_FFTW(Mat A, Vec x, Vec y)
+static PetscErrorCode VecScatterFFTWToPetsc_FFTW(Mat A, Vec x, Vec y)
 {
   MPI_Comm    comm;
   Mat_FFT    *fft = (Mat_FFT *)A->data;

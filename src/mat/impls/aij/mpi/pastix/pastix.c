@@ -77,7 +77,7 @@ extern PetscErrorCode MatDuplicate_Pastix(Mat, MatDuplicateOption, Mat *);
     row     - Row of each element of the matrix
     values  - Value of each element of the matrix
  */
-PetscErrorCode MatConvertToCSC(Mat A, PetscBool valOnly, PetscInt *n, PetscInt **colptr, PetscInt **row, PetscScalar **values)
+static PetscErrorCode MatConvertToCSC(Mat A, PetscBool valOnly, PetscInt *n, PetscInt **colptr, PetscInt **row, PetscScalar **values)
 {
   Mat_SeqAIJ  *aa      = (Mat_SeqAIJ *)A->data;
   PetscInt    *rowptr  = aa->i;
@@ -177,7 +177,7 @@ PetscErrorCode MatConvertToCSC(Mat A, PetscBool valOnly, PetscInt *n, PetscInt *
   Call clean step of PaStiX if lu->CleanUpPastix == true.
   Free the CSC matrix.
  */
-PetscErrorCode MatDestroy_Pastix(Mat A)
+static PetscErrorCode MatDestroy_Pastix(Mat A)
 {
   Mat_Pastix *lu = (Mat_Pastix *)A->data;
 
@@ -210,7 +210,7 @@ PetscErrorCode MatDestroy_Pastix(Mat A)
   Call for Solve step.
   Scatter solution.
  */
-PetscErrorCode MatSolve_PaStiX(Mat A, Vec b, Vec x)
+static PetscErrorCode MatSolve_PaStiX(Mat A, Vec b, Vec x)
 {
   Mat_Pastix  *lu = (Mat_Pastix *)A->data;
   PetscScalar *array;
@@ -260,7 +260,7 @@ PetscErrorCode MatSolve_PaStiX(Mat A, Vec b, Vec x)
   Numeric factorisation using PaStiX solver.
 
  */
-PetscErrorCode MatFactorNumeric_PaStiX(Mat F, Mat A, const MatFactorInfo *info)
+static PetscErrorCode MatFactorNumeric_PaStiX(Mat F, Mat A, const MatFactorInfo *info)
 {
   Mat_Pastix *lu = (Mat_Pastix *)(F)->data;
   Mat        *tseq;
@@ -370,7 +370,7 @@ PetscErrorCode MatFactorNumeric_PaStiX(Mat F, Mat A, const MatFactorInfo *info)
 }
 
 /* Note the Petsc r and c permutations are ignored */
-PetscErrorCode MatLUFactorSymbolic_AIJPASTIX(Mat F, Mat A, IS r, IS c, const MatFactorInfo *info)
+static PetscErrorCode MatLUFactorSymbolic_AIJPASTIX(Mat F, Mat A, IS r, IS c, const MatFactorInfo *info)
 {
   Mat_Pastix *lu = (Mat_Pastix *)F->data;
 
@@ -382,7 +382,7 @@ PetscErrorCode MatLUFactorSymbolic_AIJPASTIX(Mat F, Mat A, IS r, IS c, const Mat
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatCholeskyFactorSymbolic_SBAIJPASTIX(Mat F, Mat A, IS r, const MatFactorInfo *info)
+static PetscErrorCode MatCholeskyFactorSymbolic_SBAIJPASTIX(Mat F, Mat A, IS r, const MatFactorInfo *info)
 {
   Mat_Pastix *lu = (Mat_Pastix *)(F)->data;
 
@@ -394,7 +394,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_SBAIJPASTIX(Mat F, Mat A, IS r, const M
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatView_PaStiX(Mat A, PetscViewer viewer)
+static PetscErrorCode MatView_PaStiX(Mat A, PetscViewer viewer)
 {
   PetscBool         iascii;
   PetscViewerFormat format;
@@ -437,7 +437,7 @@ PetscErrorCode MatView_PaStiX(Mat A, PetscViewer viewer)
 .seealso: [](ch_matrices), `Mat`, `PCFactorSetMatSolverType()`, `MatSolverType`, `MatGetFactor()`
 M*/
 
-PetscErrorCode MatGetInfo_PaStiX(Mat A, MatInfoType flag, MatInfo *info)
+static PetscErrorCode MatGetInfo_PaStiX(Mat A, MatInfoType flag, MatInfo *info)
 {
   Mat_Pastix *lu = (Mat_Pastix *)A->data;
 

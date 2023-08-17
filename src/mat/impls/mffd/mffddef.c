@@ -123,7 +123,7 @@ static PetscErrorCode MatMFFDDestroy_DS(MatMFFD ctx)
    The following two routines use the PetscObjectCompose() and PetscObjectQuery()
    mechanism to allow the user to change the Umin parameter used in this method.
 */
-PetscErrorCode MatMFFDDSSetUmin_DS(Mat mat, PetscReal umin)
+static PetscErrorCode MatMFFDDSSetUmin_DS(Mat mat, PetscReal umin)
 {
   MatMFFD     ctx = NULL;
   MatMFFD_DS *hctx;

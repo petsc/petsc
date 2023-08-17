@@ -1,4 +1,11 @@
 <--- FIXED --->
+[31m[1m./src/sys/tests/linter/testValidLogicalCollective.c:3:1: error:[0m Function 'testValidLogicalCollective()' does not appear to be used anywhere outside of testValidLogicalCollective.c, and can be made static [-fstatic-function-candidate]:
+  1: #include <petsc/private/viewerimpl.h>
+  2: 
+> 3: [33m[1mPetscErrorCode testValidLogicalCollective(PetscInt a, PetscMPIInt b, PetscInt c, PetscBool d, PetscScalar e, PetscReal f)[0m
+     [33m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  4: {
+  5:   PetscViewer v; /* dummy variable to satisfy the PetscObject for the following */
 [31m[1m./src/sys/tests/linter/testValidLogicalCollective.c:8:3: error:[0m Incorrect use of PetscValidLogicalCollectiveInt(), use PetscValidLogicalCollectiveBool() instead [-fincompatible-function]:
   6 : 
   7 : /* incorrect */

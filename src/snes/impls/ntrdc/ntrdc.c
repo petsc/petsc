@@ -571,7 +571,7 @@ static PetscErrorCode SNESSetUp_NEWTONTRDC(SNES snes)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode SNESReset_NEWTONTRDC(SNES snes)
+static PetscErrorCode SNESReset_NEWTONTRDC(SNES snes)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(PETSC_SUCCESS);

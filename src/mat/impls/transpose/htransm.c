@@ -107,7 +107,7 @@ PETSC_INTERN PetscErrorCode MatProductSetFromOptions_HermitianTranspose(Mat D)
   PetscCall(MatProductSetFromOptions(D));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-PetscErrorCode MatMult_HT(Mat N, Vec x, Vec y)
+static PetscErrorCode MatMult_HT(Mat N, Vec x, Vec y)
 {
   Mat_HT *Na = (Mat_HT *)N->data;
 
@@ -116,7 +116,7 @@ PetscErrorCode MatMult_HT(Mat N, Vec x, Vec y)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatMultAdd_HT(Mat N, Vec v1, Vec v2, Vec v3)
+static PetscErrorCode MatMultAdd_HT(Mat N, Vec v1, Vec v2, Vec v3)
 {
   Mat_HT *Na = (Mat_HT *)N->data;
 
@@ -125,7 +125,7 @@ PetscErrorCode MatMultAdd_HT(Mat N, Vec v1, Vec v2, Vec v3)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatMultHermitianTranspose_HT(Mat N, Vec x, Vec y)
+static PetscErrorCode MatMultHermitianTranspose_HT(Mat N, Vec x, Vec y)
 {
   Mat_HT *Na = (Mat_HT *)N->data;
 
@@ -134,7 +134,7 @@ PetscErrorCode MatMultHermitianTranspose_HT(Mat N, Vec x, Vec y)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatMultHermitianTransposeAdd_HT(Mat N, Vec v1, Vec v2, Vec v3)
+static PetscErrorCode MatMultHermitianTransposeAdd_HT(Mat N, Vec v1, Vec v2, Vec v3)
 {
   Mat_HT *Na = (Mat_HT *)N->data;
 
@@ -143,7 +143,7 @@ PetscErrorCode MatMultHermitianTransposeAdd_HT(Mat N, Vec v1, Vec v2, Vec v3)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatDestroy_HT(Mat N)
+static PetscErrorCode MatDestroy_HT(Mat N)
 {
   Mat_HT *Na = (Mat_HT *)N->data;
 
@@ -158,7 +158,7 @@ PetscErrorCode MatDestroy_HT(Mat N)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatDuplicate_HT(Mat N, MatDuplicateOption op, Mat *m)
+static PetscErrorCode MatDuplicate_HT(Mat N, MatDuplicateOption op, Mat *m)
 {
   Mat_HT *Na = (Mat_HT *)N->data;
 
@@ -172,7 +172,7 @@ PetscErrorCode MatDuplicate_HT(Mat N, MatDuplicateOption op, Mat *m)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatCreateVecs_HT(Mat N, Vec *r, Vec *l)
+static PetscErrorCode MatCreateVecs_HT(Mat N, Vec *r, Vec *l)
 {
   Mat_HT *Na = (Mat_HT *)N->data;
 
@@ -181,7 +181,7 @@ PetscErrorCode MatCreateVecs_HT(Mat N, Vec *r, Vec *l)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatAXPY_HT(Mat Y, PetscScalar a, Mat X, MatStructure str)
+static PetscErrorCode MatAXPY_HT(Mat Y, PetscScalar a, Mat X, MatStructure str)
 {
   Mat_HT *Ya = (Mat_HT *)Y->data;
   Mat_HT *Xa = (Mat_HT *)X->data;
@@ -193,7 +193,7 @@ PetscErrorCode MatAXPY_HT(Mat Y, PetscScalar a, Mat X, MatStructure str)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatHermitianTransposeGetMat_HT(Mat N, Mat *M)
+static PetscErrorCode MatHermitianTransposeGetMat_HT(Mat N, Mat *M)
 {
   Mat_HT *Na = (Mat_HT *)N->data;
 
@@ -229,7 +229,7 @@ PetscErrorCode MatHermitianTransposeGetMat(Mat A, Mat *M)
 
 PETSC_INTERN PetscErrorCode MatProductSetFromOptions_Transpose(Mat);
 
-PetscErrorCode MatGetDiagonal_HT(Mat A, Vec v)
+static PetscErrorCode MatGetDiagonal_HT(Mat A, Vec v)
 {
   Mat_HT *Na = (Mat_HT *)A->data;
 
@@ -239,7 +239,7 @@ PetscErrorCode MatGetDiagonal_HT(Mat A, Vec v)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatConvert_HT(Mat A, MatType newtype, MatReuse reuse, Mat *newmat)
+static PetscErrorCode MatConvert_HT(Mat A, MatType newtype, MatReuse reuse, Mat *newmat)
 {
   Mat_HT   *Na = (Mat_HT *)A->data;
   PetscBool flg;

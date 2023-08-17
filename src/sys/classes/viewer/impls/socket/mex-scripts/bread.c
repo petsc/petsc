@@ -14,7 +14,7 @@
 /*
   SYByteSwapInt - Swap bytes in an integer
 */
-void SYByteSwapInt(int *buff, int n)
+static void SYByteSwapInt(int *buff, int n)
 {
   int   i, j, tmp;
   char *ptr1, *ptr2 = (char *)&tmp;
@@ -27,7 +27,7 @@ void SYByteSwapInt(int *buff, int n)
 /*
   SYByteSwapShort - Swap bytes in a short
 */
-void SYByteSwapShort(short *buff, int n)
+static void SYByteSwapShort(short *buff, int n)
 {
   int   i, j;
   short tmp;
@@ -42,7 +42,7 @@ void SYByteSwapShort(short *buff, int n)
   SYByteSwapScalar - Swap bytes in a double
   Complex is dealt with as if array of double twice as long.
 */
-void SYByteSwapScalar(PetscScalar *buff, int n)
+static void SYByteSwapScalar(PetscScalar *buff, int n)
 {
   int    i, j;
   double tmp, *buff1 = (double *)buff;

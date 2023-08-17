@@ -25,7 +25,7 @@ typedef struct {
     in one particular set of coordinates. It is a callback
     called from PetscDrawZoom()
 */
-PetscErrorCode VecView_MPI_Draw_DA2d_Zoom(PetscDraw draw, void *ctx)
+static PetscErrorCode VecView_MPI_Draw_DA2d_Zoom(PetscDraw draw, void *ctx)
 {
   ZoomCtx           *zctx = (ZoomCtx *)ctx;
   PetscInt           m, n, i, j, k, dof, id, c1, c2, c3, c4;
@@ -113,7 +113,7 @@ PetscErrorCode VecView_MPI_Draw_DA2d_Zoom(PetscDraw draw, void *ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode VecView_MPI_Draw_DA2d(Vec xin, PetscViewer viewer)
+static PetscErrorCode VecView_MPI_Draw_DA2d(Vec xin, PetscViewer viewer)
 {
   DM                  da, dac, dag;
   PetscInt            N, s, M, w, ncoors = 4;
@@ -407,7 +407,7 @@ static PetscErrorCode VecGetHDF5ChunkSize(DM_DA *da, Vec xin, PetscInt dimension
 #endif
 
 #if defined(PETSC_HAVE_HDF5)
-PetscErrorCode VecView_MPI_HDF5_DA(Vec xin, PetscViewer viewer)
+static PetscErrorCode VecView_MPI_HDF5_DA(Vec xin, PetscViewer viewer)
 {
   PetscViewer_HDF5  *hdf5 = (PetscViewer_HDF5 *)viewer->data;
   DM                 dm;
@@ -757,7 +757,7 @@ PetscErrorCode VecView_MPI_DA(Vec xin, PetscViewer viewer)
 }
 
 #if defined(PETSC_HAVE_HDF5)
-PetscErrorCode VecLoad_HDF5_DA(Vec xin, PetscViewer viewer)
+static PetscErrorCode VecLoad_HDF5_DA(Vec xin, PetscViewer viewer)
 {
   PetscViewer_HDF5 *hdf5 = (PetscViewer_HDF5 *)viewer->data;
   DM                da;
@@ -875,7 +875,7 @@ PetscErrorCode VecLoad_HDF5_DA(Vec xin, PetscViewer viewer)
 }
 #endif
 
-PetscErrorCode VecLoad_Binary_DA(Vec xin, PetscViewer viewer)
+static PetscErrorCode VecLoad_Binary_DA(Vec xin, PetscViewer viewer)
 {
   DM          da;
   Vec         natural;

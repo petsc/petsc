@@ -1,14 +1,14 @@
 #define PETSC_DESIRE_FEATURE_TEST_MACROS /* for drand48() */
 #include <petsc/private/randomimpl.h>
 
-PetscErrorCode PetscRandomSeed_Rand48(PetscRandom r)
+static PetscErrorCode PetscRandomSeed_Rand48(PetscRandom r)
 {
   PetscFunctionBegin;
   srand48(r->seed);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PetscRandomGetValue_Rand48(PetscRandom r, PetscScalar *val)
+static PetscErrorCode PetscRandomGetValue_Rand48(PetscRandom r, PetscScalar *val)
 {
   PetscFunctionBegin;
 #if defined(PETSC_USE_COMPLEX)
@@ -24,7 +24,7 @@ PetscErrorCode PetscRandomGetValue_Rand48(PetscRandom r, PetscScalar *val)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PetscRandomGetValueReal_Rand48(PetscRandom r, PetscReal *val)
+static PetscErrorCode PetscRandomGetValueReal_Rand48(PetscRandom r, PetscReal *val)
 {
   PetscFunctionBegin;
 #if defined(PETSC_USE_COMPLEX)

@@ -31,7 +31,7 @@ static inline int petsc_geo_mg_compare(const void *a, const void *b)
    Input Parameter:
    .  pc - the preconditioner context
 */
-PetscErrorCode PCSetCoordinates_GEO(PC pc, PetscInt ndm, PetscInt a_nloc, PetscReal *coords)
+static PetscErrorCode PCSetCoordinates_GEO(PC pc, PetscInt ndm, PetscInt a_nloc, PetscReal *coords)
 {
   PC_MG   *mg      = (PC_MG *)pc->data;
   PC_GAMG *pc_gamg = (PC_GAMG *)mg->innerctx;
@@ -82,13 +82,13 @@ PetscErrorCode PCSetCoordinates_GEO(PC pc, PetscInt ndm, PetscInt a_nloc, PetscR
   Input Parameter:
    . pc -
 */
-PetscErrorCode PCSetData_GEO(PC pc, Mat m)
+static PetscErrorCode PCSetData_GEO(PC pc, Mat m)
 {
   PetscFunctionBegin;
   SETERRQ(PetscObjectComm((PetscObject)pc), PETSC_ERR_PLIB, "GEO MG needs coordinates");
 }
 
-PetscErrorCode PCSetFromOptions_GEO(PC pc, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode PCSetFromOptions_GEO(PC pc, PetscOptionItems *PetscOptionsObject)
 {
   PetscFunctionBegin;
   PetscOptionsHeadBegin(PetscOptionsObject, "GAMG-GEO options");
@@ -515,7 +515,7 @@ static PetscErrorCode getGIDsOnSquareGraph(PC pc, PetscInt nselected_1, const Pe
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PCGAMGCreateGraph_GEO(PC pc, Mat Amat, Mat *a_Gmat)
+static PetscErrorCode PCGAMGCreateGraph_GEO(PC pc, Mat Amat, Mat *a_Gmat)
 {
   PC_MG          *mg      = (PC_MG *)pc->data;
   PC_GAMG        *pc_gamg = (PC_GAMG *)mg->innerctx;
@@ -526,7 +526,7 @@ PetscErrorCode PCGAMGCreateGraph_GEO(PC pc, Mat Amat, Mat *a_Gmat)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PCGAMGCoarsen_GEO(PC a_pc, Mat *a_Gmat, PetscCoarsenData **a_llist_parent)
+static PetscErrorCode PCGAMGCoarsen_GEO(PC a_pc, Mat *a_Gmat, PetscCoarsenData **a_llist_parent)
 {
   PetscInt   Istart, Iend, nloc, kk, Ii, ncols;
   IS         perm;
@@ -600,7 +600,7 @@ PetscErrorCode PCGAMGCoarsen_GEO(PC a_pc, Mat *a_Gmat, PetscCoarsenData **a_llis
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PCGAMGProlongator_GEO(PC pc, Mat Amat, Mat Gmat, PetscCoarsenData *agg_lists, Mat *a_P_out)
+static PetscErrorCode PCGAMGProlongator_GEO(PC pc, Mat Amat, Mat Gmat, PetscCoarsenData *agg_lists, Mat *a_P_out)
 {
   PC_MG          *mg      = (PC_MG *)pc->data;
   PC_GAMG        *pc_gamg = (PC_GAMG *)mg->innerctx;

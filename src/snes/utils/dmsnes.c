@@ -129,7 +129,7 @@ static PetscErrorCode DMInterpolateHook_DMSNES(DM dm, Mat Interp, DM dmf, void *
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*
   DMSNESCopy - copies the information in a `DMSNES` to another `DMSNES`
 
   Not Collective
@@ -141,8 +141,8 @@ static PetscErrorCode DMInterpolateHook_DMSNES(DM dm, Mat Interp, DM dmf, void *
   Level: developer
 
 .seealso: `DMSNES`, `DMSNESCreate()`, `DMSNESDestroy()`
-@*/
-PetscErrorCode DMSNESCopy(DMSNES kdm, DMSNES nkdm)
+*/
+static PetscErrorCode DMSNESCopy(DMSNES kdm, DMSNES nkdm)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(kdm, DMSNES_CLASSID, 1);

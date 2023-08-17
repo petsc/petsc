@@ -54,9 +54,9 @@ PetscLogEvent PC_BDDC_Solves[PETSC_PCBDDC_MAXLEVELS][3];
 
 const char *const PCBDDCInterfaceExtTypes[] = {"DIRICHLET", "LUMP", "PCBDDCInterfaceExtType", "PC_BDDC_INTERFACE_EXT_", NULL};
 
-PetscErrorCode PCApply_BDDC(PC, Vec, Vec);
+static PetscErrorCode PCApply_BDDC(PC, Vec, Vec);
 
-PetscErrorCode PCSetFromOptions_BDDC(PC pc, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode PCSetFromOptions_BDDC(PC pc, PetscOptionItems *PetscOptionsObject)
 {
   PC_BDDC *pcbddc = (PC_BDDC *)pc->data;
   PetscInt nt, i;
@@ -1450,7 +1450,7 @@ static PetscErrorCode PCPostSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
    Application Interface Routine: PCSetUp()
 
 */
-PetscErrorCode PCSetUp_BDDC(PC pc)
+static PetscErrorCode PCSetUp_BDDC(PC pc)
 {
   PC_BDDC        *pcbddc = (PC_BDDC *)pc->data;
   PCBDDCSubSchurs sub_schurs;
@@ -1746,7 +1746,7 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
 
    Application Interface Routine: PCApply()
  */
-PetscErrorCode PCApply_BDDC(PC pc, Vec r, Vec z)
+static PetscErrorCode PCApply_BDDC(PC pc, Vec r, Vec z)
 {
   PC_IS            *pcis   = (PC_IS *)(pc->data);
   PC_BDDC          *pcbddc = (PC_BDDC *)(pc->data);
@@ -1916,7 +1916,7 @@ PetscErrorCode PCApply_BDDC(PC pc, Vec r, Vec z)
 
    Application Interface Routine: PCApplyTranspose()
  */
-PetscErrorCode PCApplyTranspose_BDDC(PC pc, Vec r, Vec z)
+static PetscErrorCode PCApplyTranspose_BDDC(PC pc, Vec r, Vec z)
 {
   PC_IS            *pcis   = (PC_IS *)(pc->data);
   PC_BDDC          *pcbddc = (PC_BDDC *)(pc->data);
@@ -2058,7 +2058,7 @@ PetscErrorCode PCApplyTranspose_BDDC(PC pc, Vec r, Vec z)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PCReset_BDDC(PC pc)
+static PetscErrorCode PCReset_BDDC(PC pc)
 {
   PC_BDDC *pcbddc = (PC_BDDC *)pc->data;
   PC_IS   *pcis   = (PC_IS *)pc->data;
@@ -2108,7 +2108,7 @@ PetscErrorCode PCReset_BDDC(PC pc)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PCDestroy_BDDC(PC pc)
+static PetscErrorCode PCDestroy_BDDC(PC pc)
 {
   PC_BDDC *pcbddc = (PC_BDDC *)pc->data;
 

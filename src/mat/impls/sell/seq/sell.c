@@ -199,7 +199,7 @@ PetscErrorCode MatSeqSELLSetPreallocation_SeqSELL(Mat B, PetscInt maxallocrow, c
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatGetRow_SeqSELL(Mat A, PetscInt row, PetscInt *nz, PetscInt **idx, PetscScalar **v)
+static PetscErrorCode MatGetRow_SeqSELL(Mat A, PetscInt row, PetscInt *nz, PetscInt **idx, PetscScalar **v)
 {
   Mat_SeqSELL *a = (Mat_SeqSELL *)A->data;
   PetscInt     shift;
@@ -222,7 +222,7 @@ PetscErrorCode MatGetRow_SeqSELL(Mat A, PetscInt row, PetscInt *nz, PetscInt **i
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatRestoreRow_SeqSELL(Mat A, PetscInt row, PetscInt *nz, PetscInt **idx, PetscScalar **v)
+static PetscErrorCode MatRestoreRow_SeqSELL(Mat A, PetscInt row, PetscInt *nz, PetscInt **idx, PetscScalar **v)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -1076,7 +1076,7 @@ PetscErrorCode MatGetValues_SeqSELL(Mat A, PetscInt m, const PetscInt im[], Pets
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatView_SeqSELL_ASCII(Mat A, PetscViewer viewer)
+static PetscErrorCode MatView_SeqSELL_ASCII(Mat A, PetscViewer viewer)
 {
   Mat_SeqSELL      *a = (Mat_SeqSELL *)A->data;
   PetscInt          i, j, m = A->rmap->n, shift;
@@ -1299,7 +1299,7 @@ PetscErrorCode MatView_SeqSELL_ASCII(Mat A, PetscViewer viewer)
 }
 
 #include <petscdraw.h>
-PetscErrorCode MatView_SeqSELL_Draw_Zoom(PetscDraw draw, void *Aa)
+static PetscErrorCode MatView_SeqSELL_Draw_Zoom(PetscDraw draw, void *Aa)
 {
   Mat               A = (Mat)Aa;
   Mat_SeqSELL      *a = (Mat_SeqSELL *)A->data;
@@ -1388,7 +1388,7 @@ PetscErrorCode MatView_SeqSELL_Draw_Zoom(PetscDraw draw, void *Aa)
 }
 
 #include <petscdraw.h>
-PetscErrorCode MatView_SeqSELL_Draw(Mat A, PetscViewer viewer)
+static PetscErrorCode MatView_SeqSELL_Draw(Mat A, PetscViewer viewer)
 {
   PetscDraw draw;
   PetscReal xr, yr, xl, yl, h, w;
@@ -1655,35 +1655,6 @@ PetscErrorCode MatSeqSELLGetArray_SeqSELL(Mat A, PetscScalar *array[])
 PetscErrorCode MatSeqSELLRestoreArray_SeqSELL(Mat A, PetscScalar *array[])
 {
   PetscFunctionBegin;
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-PetscErrorCode MatRealPart_SeqSELL(Mat A)
-{
-  Mat_SeqSELL *a = (Mat_SeqSELL *)A->data;
-  PetscInt     i;
-  MatScalar   *aval = a->val;
-
-  PetscFunctionBegin;
-  for (i = 0; i < a->sliidx[a->totalslices]; i++) aval[i] = PetscRealPart(aval[i]);
-#if defined(PETSC_HAVE_CUDA)
-  if (A->offloadmask != PETSC_OFFLOAD_UNALLOCATED) A->offloadmask = PETSC_OFFLOAD_CPU;
-#endif
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-PetscErrorCode MatImaginaryPart_SeqSELL(Mat A)
-{
-  Mat_SeqSELL *a = (Mat_SeqSELL *)A->data;
-  PetscInt     i;
-  MatScalar   *aval = a->val;
-
-  PetscFunctionBegin;
-  for (i = 0; i < a->sliidx[a->totalslices]; i++) aval[i] = PetscImaginaryPart(aval[i]);
-  PetscCall(MatSeqSELLInvalidateDiagonal(A));
-#if defined(PETSC_HAVE_CUDA)
-  if (A->offloadmask != PETSC_OFFLOAD_UNALLOCATED) A->offloadmask = PETSC_OFFLOAD_CPU;
-#endif
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1970,7 +1941,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqSELL,
                                        /*150*/ NULL,
                                        NULL};
 
-PetscErrorCode MatStoreValues_SeqSELL(Mat mat)
+static PetscErrorCode MatStoreValues_SeqSELL(Mat mat)
 {
   Mat_SeqSELL *a = (Mat_SeqSELL *)mat->data;
 
@@ -1985,7 +1956,7 @@ PetscErrorCode MatStoreValues_SeqSELL(Mat mat)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatRetrieveValues_SeqSELL(Mat mat)
+static PetscErrorCode MatRetrieveValues_SeqSELL(Mat mat)
 {
   Mat_SeqSELL *a = (Mat_SeqSELL *)mat->data;
 
@@ -1996,7 +1967,7 @@ PetscErrorCode MatRetrieveValues_SeqSELL(Mat mat)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatSeqSELLGetFillRatio_SeqSELL(Mat mat, PetscReal *ratio)
+static PetscErrorCode MatSeqSELLGetFillRatio_SeqSELL(Mat mat, PetscReal *ratio)
 {
   Mat_SeqSELL *a = (Mat_SeqSELL *)mat->data;
 
@@ -2009,7 +1980,7 @@ PetscErrorCode MatSeqSELLGetFillRatio_SeqSELL(Mat mat, PetscReal *ratio)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatSeqSELLGetMaxSliceWidth_SeqSELL(Mat mat, PetscInt *slicewidth)
+static PetscErrorCode MatSeqSELLGetMaxSliceWidth_SeqSELL(Mat mat, PetscInt *slicewidth)
 {
   Mat_SeqSELL *a = (Mat_SeqSELL *)mat->data;
   PetscInt     i, current_slicewidth;
@@ -2023,7 +1994,7 @@ PetscErrorCode MatSeqSELLGetMaxSliceWidth_SeqSELL(Mat mat, PetscInt *slicewidth)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatSeqSELLGetAvgSliceWidth_SeqSELL(Mat mat, PetscReal *slicewidth)
+static PetscErrorCode MatSeqSELLGetAvgSliceWidth_SeqSELL(Mat mat, PetscReal *slicewidth)
 {
   Mat_SeqSELL *a = (Mat_SeqSELL *)mat->data;
 
@@ -2033,7 +2004,7 @@ PetscErrorCode MatSeqSELLGetAvgSliceWidth_SeqSELL(Mat mat, PetscReal *slicewidth
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatSeqSELLGetVarSliceSize_SeqSELL(Mat mat, PetscReal *variance)
+static PetscErrorCode MatSeqSELLGetVarSliceSize_SeqSELL(Mat mat, PetscReal *variance)
 {
   Mat_SeqSELL *a = (Mat_SeqSELL *)mat->data;
   PetscReal    mean;
@@ -2048,7 +2019,7 @@ PetscErrorCode MatSeqSELLGetVarSliceSize_SeqSELL(Mat mat, PetscReal *variance)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatSeqSELLSetSliceHeight_SeqSELL(Mat A, PetscInt sliceheight)
+static PetscErrorCode MatSeqSELLSetSliceHeight_SeqSELL(Mat A, PetscInt sliceheight)
 {
   Mat_SeqSELL *a = (Mat_SeqSELL *)A->data;
 
@@ -2059,26 +2030,6 @@ PetscErrorCode MatSeqSELLSetSliceHeight_SeqSELL(Mat A, PetscInt sliceheight)
 #if defined(PETSC_HAVE_CUDA)
   PetscCheck(DEVICE_MEM_ALIGN % sliceheight == 0, PETSC_COMM_SELF, PETSC_ERR_SUP, "DEVICE_MEM_ALIGN is not divisible by the slice height %" PetscInt_FMT, sliceheight);
 #endif
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-/*@C
-  MatSeqSELLRestoreArray - returns access to the array where the data for a `MATSEQSELL` matrix is stored obtained by `MatSeqSELLGetArray()`
-
-  Not Collective
-
-  Input Parameters:
-+ A     - a `MATSEQSELL` matrix
-- array - pointer to the data
-
-  Level: intermediate
-
-.seealso: `Mat`, `MATSEQSELL`, `MatSeqSELLGetArray()`, `MatSeqSELLRestoreArrayF90()`
-@*/
-PetscErrorCode MatSeqSELLRestoreArray(Mat A, PetscScalar **array)
-{
-  PetscFunctionBegin;
-  PetscUseMethod(A, "MatSeqSELLRestoreArray_C", (Mat, PetscScalar **), (A, array));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -2275,7 +2226,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqSELL(Mat B)
 /*
  Given a matrix generated with MatGetFactor() duplicates all the information in A into B
  */
-PetscErrorCode MatDuplicateNoCreate_SeqSELL(Mat C, Mat A, MatDuplicateOption cpvalues, PetscBool mallocmatspace)
+static PetscErrorCode MatDuplicateNoCreate_SeqSELL(Mat C, Mat A, MatDuplicateOption cpvalues, PetscBool mallocmatspace)
 {
   Mat_SeqSELL *c = (Mat_SeqSELL *)C->data, *a = (Mat_SeqSELL *)A->data;
   PetscInt     i, m                           = A->rmap->n;

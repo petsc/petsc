@@ -417,6 +417,7 @@ PetscErrorCode PFSetFromOptions(PF pf)
 }
 
 static PetscBool PFPackageInitialized = PETSC_FALSE;
+
 /*@C
   PFFinalizePackage - This function destroys everything in the PETSc `PF` package. It is
   called from `PetscFinalize()`.

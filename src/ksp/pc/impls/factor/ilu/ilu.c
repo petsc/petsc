@@ -4,7 +4,7 @@
 */
 #include <../src/ksp/pc/impls/factor/ilu/ilu.h> /*I "petscpc.h"  I*/
 
-PetscErrorCode PCFactorReorderForNonzeroDiagonal_ILU(PC pc, PetscReal z)
+static PetscErrorCode PCFactorReorderForNonzeroDiagonal_ILU(PC pc, PetscReal z)
 {
   PC_ILU *ilu = (PC_ILU *)pc->data;
 
@@ -15,7 +15,7 @@ PetscErrorCode PCFactorReorderForNonzeroDiagonal_ILU(PC pc, PetscReal z)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PCReset_ILU(PC pc)
+static PetscErrorCode PCReset_ILU(PC pc)
 {
   PC_ILU *ilu = (PC_ILU *)pc->data;
 

@@ -2225,7 +2225,7 @@ divide:
 }
 
 /* Check that no cell have all vertices on the fault */
-PetscErrorCode DMPlexCheckValidSubmesh_Private(DM dm, DMLabel label, DM subdm)
+static PetscErrorCode DMPlexCheckValidSubmesh_Private(DM dm, DMLabel label, DM subdm)
 {
   IS              subpointIS;
   const PetscInt *dmpoints;

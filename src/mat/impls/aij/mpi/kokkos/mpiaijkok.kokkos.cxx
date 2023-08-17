@@ -6,7 +6,7 @@
 #include <KokkosSparse_spadd.hpp>
 #include <KokkosSparse_spgemm.hpp>
 
-PetscErrorCode MatAssemblyEnd_MPIAIJKokkos(Mat A, MatAssemblyType mode)
+static PetscErrorCode MatAssemblyEnd_MPIAIJKokkos(Mat A, MatAssemblyType mode)
 {
   Mat_MPIAIJ *mpiaij = (Mat_MPIAIJ *)A->data;
 
@@ -24,7 +24,7 @@ PetscErrorCode MatAssemblyEnd_MPIAIJKokkos(Mat A, MatAssemblyType mode)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatMPIAIJSetPreallocation_MPIAIJKokkos(Mat mat, PetscInt d_nz, const PetscInt d_nnz[], PetscInt o_nz, const PetscInt o_nnz[])
+static PetscErrorCode MatMPIAIJSetPreallocation_MPIAIJKokkos(Mat mat, PetscInt d_nz, const PetscInt d_nnz[], PetscInt o_nz, const PetscInt o_nnz[])
 {
   Mat_MPIAIJ *mpiaij = (Mat_MPIAIJ *)mat->data;
 
@@ -70,7 +70,7 @@ PetscErrorCode MatMPIAIJSetPreallocation_MPIAIJKokkos(Mat mat, PetscInt d_nz, co
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatMult_MPIAIJKokkos(Mat mat, Vec xx, Vec yy)
+static PetscErrorCode MatMult_MPIAIJKokkos(Mat mat, Vec xx, Vec yy)
 {
   Mat_MPIAIJ *mpiaij = (Mat_MPIAIJ *)mat->data;
   PetscInt    nt;
@@ -85,7 +85,7 @@ PetscErrorCode MatMult_MPIAIJKokkos(Mat mat, Vec xx, Vec yy)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatMultAdd_MPIAIJKokkos(Mat mat, Vec xx, Vec yy, Vec zz)
+static PetscErrorCode MatMultAdd_MPIAIJKokkos(Mat mat, Vec xx, Vec yy, Vec zz)
 {
   Mat_MPIAIJ *mpiaij = (Mat_MPIAIJ *)mat->data;
   PetscInt    nt;
@@ -100,7 +100,7 @@ PetscErrorCode MatMultAdd_MPIAIJKokkos(Mat mat, Vec xx, Vec yy, Vec zz)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatMultTranspose_MPIAIJKokkos(Mat mat, Vec xx, Vec yy)
+static PetscErrorCode MatMultTranspose_MPIAIJKokkos(Mat mat, Vec xx, Vec yy)
 {
   Mat_MPIAIJ *mpiaij = (Mat_MPIAIJ *)mat->data;
   PetscInt    nt;
@@ -119,7 +119,7 @@ PetscErrorCode MatMultTranspose_MPIAIJKokkos(Mat mat, Vec xx, Vec yy)
    A is put before B. C's size would be A->rmap->n by (A->cmap->n + B->cmap->n).
    C still uses local column ids. Their corresponding global column ids are returned in glob.
 */
-PetscErrorCode MatMPIAIJGetLocalMatMerge_MPIAIJKokkos(Mat mat, MatReuse reuse, IS *glob, Mat *C)
+static PetscErrorCode MatMPIAIJGetLocalMatMerge_MPIAIJKokkos(Mat mat, MatReuse reuse, IS *glob, Mat *C)
 {
   Mat             Ad, Ao;
   const PetscInt *cmap;
@@ -1334,7 +1334,7 @@ static PetscErrorCode MatProductNumeric_MPIAIJKokkos_AB(Mat_Product *product, Ma
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatProductNumeric_MPIAIJKokkos(Mat C)
+static PetscErrorCode MatProductNumeric_MPIAIJKokkos(Mat C)
 {
   Mat_MPIAIJ                  *cmpi = static_cast<Mat_MPIAIJ *>(C->data);
   Mat_Product                 *product;
@@ -1372,7 +1372,7 @@ PetscErrorCode MatProductNumeric_MPIAIJKokkos(Mat C)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatProductSymbolic_MPIAIJKokkos(Mat C)
+static PetscErrorCode MatProductSymbolic_MPIAIJKokkos(Mat C)
 {
   Mat                          A, B;
   Mat_Product                 *product;

@@ -174,7 +174,7 @@ PetscErrorCode MatViennaCLCopyFromGPU(Mat A, const ViennaCLAIJMatrix *Agpu)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatMult_SeqAIJViennaCL(Mat A, Vec xx, Vec yy)
+static PetscErrorCode MatMult_SeqAIJViennaCL(Mat A, Vec xx, Vec yy)
 {
   Mat_SeqAIJ           *a              = (Mat_SeqAIJ *)A->data;
   Mat_SeqAIJViennaCL   *viennaclstruct = (Mat_SeqAIJViennaCL *)A->spptr;
@@ -208,7 +208,7 @@ PetscErrorCode MatMult_SeqAIJViennaCL(Mat A, Vec xx, Vec yy)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatMultAdd_SeqAIJViennaCL(Mat A, Vec xx, Vec yy, Vec zz)
+static PetscErrorCode MatMultAdd_SeqAIJViennaCL(Mat A, Vec xx, Vec yy, Vec zz)
 {
   Mat_SeqAIJ           *a              = (Mat_SeqAIJ *)A->data;
   Mat_SeqAIJViennaCL   *viennaclstruct = (Mat_SeqAIJViennaCL *)A->spptr;
@@ -244,7 +244,7 @@ PetscErrorCode MatMultAdd_SeqAIJViennaCL(Mat A, Vec xx, Vec yy, Vec zz)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatAssemblyEnd_SeqAIJViennaCL(Mat A, MatAssemblyType mode)
+static PetscErrorCode MatAssemblyEnd_SeqAIJViennaCL(Mat A, MatAssemblyType mode)
 {
   PetscFunctionBegin;
   PetscCall(MatAssemblyEnd_SeqAIJ(A, mode));
@@ -299,7 +299,7 @@ PetscErrorCode MatCreateSeqAIJViennaCL(MPI_Comm comm, PetscInt m, PetscInt n, Pe
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatDestroy_SeqAIJViennaCL(Mat A)
+static PetscErrorCode MatDestroy_SeqAIJViennaCL(Mat A)
 {
   Mat_SeqAIJViennaCL *viennaclcontainer = (Mat_SeqAIJViennaCL *)A->spptr;
 

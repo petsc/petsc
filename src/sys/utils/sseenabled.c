@@ -88,7 +88,7 @@ PetscErrorCode PetscSSEOSEnabledTest_TRUE(PetscBool *flag)
   #define PetscSSEHardwareTest(arg)  PetscSSEEnabledTest_FALSE(arg)
   #define PetscSSEOSEnabledTest(arg) PetscSSEEnabledTest_FALSE(arg)
 
-PetscErrorCode PetscSSEEnabledTest_FALSE(PetscBool *flag)
+static PetscErrorCode PetscSSEEnabledTest_FALSE(PetscBool *flag)
 {
   PetscFunctionBegin;
   if (flag) *flag = PETSC_FALSE;

@@ -15,7 +15,7 @@
 #include <../src/mat/impls/aij/mpi/mpiaij.h>
 #include <../src/mat/impls/aij/seq/crl/crl.h>
 
-PetscErrorCode MatDestroy_MPIAIJCRL(Mat A)
+static PetscErrorCode MatDestroy_MPIAIJCRL(Mat A)
 {
   Mat_AIJCRL *aijcrl = (Mat_AIJCRL *)A->spptr;
 
@@ -33,7 +33,7 @@ PetscErrorCode MatDestroy_MPIAIJCRL(Mat A)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatMPIAIJCRL_create_aijcrl(Mat A)
+static PetscErrorCode MatMPIAIJCRL_create_aijcrl(Mat A)
 {
   Mat_MPIAIJ  *a   = (Mat_MPIAIJ *)(A)->data;
   Mat_SeqAIJ  *Aij = (Mat_SeqAIJ *)(a->A->data), *Bij = (Mat_SeqAIJ *)(a->B->data);
@@ -84,7 +84,7 @@ PetscErrorCode MatMPIAIJCRL_create_aijcrl(Mat A)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatAssemblyEnd_MPIAIJCRL(Mat A, MatAssemblyType mode)
+static PetscErrorCode MatAssemblyEnd_MPIAIJCRL(Mat A, MatAssemblyType mode)
 {
   Mat_MPIAIJ *a   = (Mat_MPIAIJ *)A->data;
   Mat_SeqAIJ *Aij = (Mat_SeqAIJ *)(a->A->data), *Bij = (Mat_SeqAIJ *)(a->A->data);

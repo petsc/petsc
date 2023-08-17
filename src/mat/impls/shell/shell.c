@@ -1004,7 +1004,7 @@ static PetscErrorCode MatDuplicate_Shell(Mat mat, MatDuplicateOption op, Mat *M)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatMult_Shell(Mat A, Vec x, Vec y)
+static PetscErrorCode MatMult_Shell(Mat A, Vec x, Vec y)
 {
   Mat_Shell       *shell = (Mat_Shell *)A->data;
   Vec              xx;
@@ -1188,7 +1188,7 @@ static PetscErrorCode MatDiagonalSet_Shell_Private(Mat A, Vec D, PetscScalar s)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatDiagonalSet_Shell(Mat A, Vec D, InsertMode ins)
+static PetscErrorCode MatDiagonalSet_Shell(Mat A, Vec D, InsertMode ins)
 {
   Mat_Shell *shell = (Mat_Shell *)A->data;
   Vec        d;
@@ -1257,7 +1257,7 @@ static PetscErrorCode MatDiagonalScale_Shell(Mat Y, Vec left, Vec right)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatAssemblyEnd_Shell(Mat Y, MatAssemblyType t)
+static PetscErrorCode MatAssemblyEnd_Shell(Mat Y, MatAssemblyType t)
 {
   Mat_Shell *shell = (Mat_Shell *)Y->data;
 
@@ -1288,7 +1288,7 @@ static PetscErrorCode MatMissingDiagonal_Shell(Mat A, PetscBool *missing, PetscI
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatAXPY_Shell(Mat Y, PetscScalar a, Mat X, MatStructure str)
+static PetscErrorCode MatAXPY_Shell(Mat Y, PetscScalar a, Mat X, MatStructure str)
 {
   Mat_Shell *shell = (Mat_Shell *)Y->data;
 
@@ -1480,7 +1480,7 @@ static PetscErrorCode MatShellSetContext_Shell(Mat mat, void *ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatShellSetContextDestroy_Shell(Mat mat, PetscErrorCode (*f)(void *))
+static PetscErrorCode MatShellSetContextDestroy_Shell(Mat mat, PetscErrorCode (*f)(void *))
 {
   Mat_Shell *shell = (Mat_Shell *)mat->data;
 
@@ -1497,7 +1497,7 @@ static PetscErrorCode MatShellSetVecType_Shell(Mat mat, VecType vtype)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatShellSetManageScalingShifts_Shell(Mat A)
+static PetscErrorCode MatShellSetManageScalingShifts_Shell(Mat A)
 {
   Mat_Shell *shell = (Mat_Shell *)A->data;
 

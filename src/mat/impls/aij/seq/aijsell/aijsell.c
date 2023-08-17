@@ -50,7 +50,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJSELL_SeqAIJ(Mat A, MatType type, Ma
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatDestroy_SeqAIJSELL(Mat A)
+static PetscErrorCode MatDestroy_SeqAIJSELL(Mat A)
 {
   Mat_SeqAIJSELL *aijsell = (Mat_SeqAIJSELL *)A->spptr;
 
@@ -103,7 +103,7 @@ PETSC_INTERN PetscErrorCode MatSeqAIJSELL_build_shadow(Mat A)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatDuplicate_SeqAIJSELL(Mat A, MatDuplicateOption op, Mat *M)
+static PetscErrorCode MatDuplicate_SeqAIJSELL(Mat A, MatDuplicateOption op, Mat *M)
 {
   Mat_SeqAIJSELL *aijsell;
   Mat_SeqAIJSELL *aijsell_dest;
@@ -119,7 +119,7 @@ PetscErrorCode MatDuplicate_SeqAIJSELL(Mat A, MatDuplicateOption op, Mat *M)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatAssemblyEnd_SeqAIJSELL(Mat A, MatAssemblyType mode)
+static PetscErrorCode MatAssemblyEnd_SeqAIJSELL(Mat A, MatAssemblyType mode)
 {
   Mat_SeqAIJ     *a       = (Mat_SeqAIJ *)A->data;
   Mat_SeqAIJSELL *aijsell = (Mat_SeqAIJSELL *)A->spptr;
@@ -147,7 +147,7 @@ PetscErrorCode MatAssemblyEnd_SeqAIJSELL(Mat A, MatAssemblyType mode)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatMult_SeqAIJSELL(Mat A, Vec xx, Vec yy)
+static PetscErrorCode MatMult_SeqAIJSELL(Mat A, Vec xx, Vec yy)
 {
   Mat_SeqAIJSELL *aijsell = (Mat_SeqAIJSELL *)A->spptr;
 
@@ -157,7 +157,7 @@ PetscErrorCode MatMult_SeqAIJSELL(Mat A, Vec xx, Vec yy)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatMultTranspose_SeqAIJSELL(Mat A, Vec xx, Vec yy)
+static PetscErrorCode MatMultTranspose_SeqAIJSELL(Mat A, Vec xx, Vec yy)
 {
   Mat_SeqAIJSELL *aijsell = (Mat_SeqAIJSELL *)A->spptr;
 
@@ -167,7 +167,7 @@ PetscErrorCode MatMultTranspose_SeqAIJSELL(Mat A, Vec xx, Vec yy)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatMultAdd_SeqAIJSELL(Mat A, Vec xx, Vec yy, Vec zz)
+static PetscErrorCode MatMultAdd_SeqAIJSELL(Mat A, Vec xx, Vec yy, Vec zz)
 {
   Mat_SeqAIJSELL *aijsell = (Mat_SeqAIJSELL *)A->spptr;
 
@@ -177,7 +177,7 @@ PetscErrorCode MatMultAdd_SeqAIJSELL(Mat A, Vec xx, Vec yy, Vec zz)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatMultTransposeAdd_SeqAIJSELL(Mat A, Vec xx, Vec yy, Vec zz)
+static PetscErrorCode MatMultTransposeAdd_SeqAIJSELL(Mat A, Vec xx, Vec yy, Vec zz)
 {
   Mat_SeqAIJSELL *aijsell = (Mat_SeqAIJSELL *)A->spptr;
 
@@ -187,7 +187,7 @@ PetscErrorCode MatMultTransposeAdd_SeqAIJSELL(Mat A, Vec xx, Vec yy, Vec zz)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatSOR_SeqAIJSELL(Mat A, Vec bb, PetscReal omega, MatSORType flag, PetscReal fshift, PetscInt its, PetscInt lits, Vec xx)
+static PetscErrorCode MatSOR_SeqAIJSELL(Mat A, Vec bb, PetscReal omega, MatSORType flag, PetscReal fshift, PetscInt its, PetscInt lits, Vec xx)
 {
   Mat_SeqAIJSELL *aijsell = (Mat_SeqAIJSELL *)A->spptr;
 

@@ -150,7 +150,7 @@ PETSC_INTERN PetscErrorCode MatProductNumeric_Nest_Dense(Mat C)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatNest_DenseDestroy(void *ctx)
+static PetscErrorCode MatNest_DenseDestroy(void *ctx)
 {
   Nest_Dense *contents = (Nest_Dense *)ctx;
   PetscInt    i;
@@ -704,7 +704,7 @@ static PetscErrorCode MatCreateSubMatrix_Nest(Mat A, IS isrow, IS iscol, MatReus
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatGetLocalSubMatrix_Nest(Mat A, IS isrow, IS iscol, Mat *B)
+static PetscErrorCode MatGetLocalSubMatrix_Nest(Mat A, IS isrow, IS iscol, Mat *B)
 {
   Mat_Nest *vs = (Mat_Nest *)A->data;
   Mat       sub;
@@ -1039,7 +1039,7 @@ static PetscErrorCode MatDuplicate_Nest(Mat A, MatDuplicateOption op, Mat *B)
 }
 
 /* nest api */
-PetscErrorCode MatNestGetSubMat_Nest(Mat A, PetscInt idxm, PetscInt jdxm, Mat *mat)
+static PetscErrorCode MatNestGetSubMat_Nest(Mat A, PetscInt idxm, PetscInt jdxm, Mat *mat)
 {
   Mat_Nest *bA = (Mat_Nest *)A->data;
 
@@ -1075,7 +1075,7 @@ PetscErrorCode MatNestGetSubMat(Mat A, PetscInt idxm, PetscInt jdxm, Mat *sub)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatNestSetSubMat_Nest(Mat A, PetscInt idxm, PetscInt jdxm, Mat mat)
+static PetscErrorCode MatNestSetSubMat_Nest(Mat A, PetscInt idxm, PetscInt jdxm, Mat mat)
 {
   Mat_Nest *bA = (Mat_Nest *)A->data;
   PetscInt  m, n, M, N, mi, ni, Mi, Ni;
@@ -1132,7 +1132,7 @@ PetscErrorCode MatNestSetSubMat(Mat A, PetscInt idxm, PetscInt jdxm, Mat sub)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatNestGetSubMats_Nest(Mat A, PetscInt *M, PetscInt *N, Mat ***mat)
+static PetscErrorCode MatNestGetSubMats_Nest(Mat A, PetscInt *M, PetscInt *N, Mat ***mat)
 {
   Mat_Nest *bA = (Mat_Nest *)A->data;
 
@@ -1176,7 +1176,7 @@ PetscErrorCode MatNestGetSubMats(Mat A, PetscInt *M, PetscInt *N, Mat ***mat)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatNestGetSize_Nest(Mat A, PetscInt *M, PetscInt *N)
+static PetscErrorCode MatNestGetSize_Nest(Mat A, PetscInt *M, PetscInt *N)
 {
   Mat_Nest *bA = (Mat_Nest *)A->data;
 
@@ -1292,7 +1292,7 @@ PetscErrorCode MatNestGetLocalISs(Mat A, IS rows[], IS cols[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatNestSetVecType_Nest(Mat A, VecType vtype)
+static PetscErrorCode MatNestSetVecType_Nest(Mat A, VecType vtype)
 {
   PetscBool flg;
 
@@ -1324,7 +1324,7 @@ PetscErrorCode MatNestSetVecType(Mat A, VecType vtype)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatNestSetSubMats_Nest(Mat A, PetscInt nr, const IS is_row[], PetscInt nc, const IS is_col[], const Mat a[])
+static PetscErrorCode MatNestSetSubMats_Nest(Mat A, PetscInt nr, const IS is_row[], PetscInt nc, const IS is_col[], const Mat a[])
 {
   Mat_Nest *s = (Mat_Nest *)A->data;
   PetscInt  i, j, m, n, M, N;
@@ -1736,7 +1736,7 @@ PetscErrorCode MatCreateNest(MPI_Comm comm, PetscInt nr, const IS is_row[], Pets
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatConvert_Nest_SeqAIJ_fast(Mat A, MatType newtype, MatReuse reuse, Mat *newmat)
+static PetscErrorCode MatConvert_Nest_SeqAIJ_fast(Mat A, MatType newtype, MatReuse reuse, Mat *newmat)
 {
   Mat_Nest     *nest = (Mat_Nest *)A->data;
   Mat          *trans;
@@ -1964,7 +1964,7 @@ PETSC_INTERN PetscErrorCode MatAXPY_Dense_Nest(Mat Y, PetscScalar a, Mat X)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatConvert_Nest_AIJ(Mat A, MatType newtype, MatReuse reuse, Mat *newmat)
+static PetscErrorCode MatConvert_Nest_AIJ(Mat A, MatType newtype, MatReuse reuse, Mat *newmat)
 {
   Mat_Nest   *nest = (Mat_Nest *)A->data;
   PetscInt    m, n, M, N, i, j, k, *dnnz, *onnz, rstart, cstart, cend;
@@ -2150,7 +2150,7 @@ PetscErrorCode MatConvert_Nest_AIJ(Mat A, MatType newtype, MatReuse reuse, Mat *
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatConvert_Nest_Dense(Mat A, MatType newtype, MatReuse reuse, Mat *newmat)
+static PetscErrorCode MatConvert_Nest_Dense(Mat A, MatType newtype, MatReuse reuse, Mat *newmat)
 {
   Mat      B;
   PetscInt m, n, M, N;
@@ -2171,7 +2171,7 @@ PetscErrorCode MatConvert_Nest_Dense(Mat A, MatType newtype, MatReuse reuse, Mat
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatHasOperation_Nest(Mat mat, MatOperation op, PetscBool *has)
+static PetscErrorCode MatHasOperation_Nest(Mat mat, MatOperation op, PetscBool *has)
 {
   Mat_Nest    *bA = (Mat_Nest *)mat->data;
   MatOperation opAdd;

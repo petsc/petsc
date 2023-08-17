@@ -275,9 +275,9 @@ PETSC_INTERN PetscErrorCode MatCreateGraph_Simple_AIJ(Mat, PetscBool, PetscBool,
 
 #if defined(PETSC_CLANG_STATIC_ANALYZER)
 template <typename Tm>
-void MatCheckPreallocated(Tm, int);
+extern void MatCheckPreallocated(Tm, int);
 template <typename Tm>
-void MatCheckProduct(Tm, int);
+extern void MatCheckProduct(Tm, int);
 #else /* PETSC_CLANG_STATIC_ANALYZER */
   #define MatCheckPreallocated(A, arg) \
     do { \
@@ -1263,9 +1263,9 @@ static inline PetscErrorCode PetscIncompleteLLClean(PetscInt idx_start, PetscInt
     } while (0)
 #else
 template <typename Tm>
-void MatCheckSameLocalSize(Tm, int, Tm, int);
+extern void MatCheckSameLocalSize(Tm, int, Tm, int);
 template <typename Tm>
-void MatCheckSameSize(Tm, int, Tm, int);
+extern void MatCheckSameSize(Tm, int, Tm, int);
 #endif
 
 #define VecCheckMatCompatible(M, x, ar1, b, ar2) \

@@ -308,7 +308,7 @@ PetscErrorCode DMPatchSolve(DM dm)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode DMPatchView_ASCII(DM dm, PetscViewer viewer)
+static PetscErrorCode DMPatchView_ASCII(DM dm, PetscViewer viewer)
 {
   DM_Patch         *mesh = (DM_Patch *)dm->data;
   PetscViewerFormat format;

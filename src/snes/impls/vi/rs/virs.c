@@ -48,7 +48,7 @@ typedef struct {
 /*
      DMCreateGlobalVector_SNESVI - Creates global vector of the size of the reduced space
 */
-PetscErrorCode DMCreateGlobalVector_SNESVI(DM dm, Vec *vec)
+static PetscErrorCode DMCreateGlobalVector_SNESVI(DM dm, Vec *vec)
 {
   PetscContainer isnes;
   DM_SNESVI     *dmsnesvi;
@@ -65,7 +65,7 @@ PetscErrorCode DMCreateGlobalVector_SNESVI(DM dm, Vec *vec)
 /*
      DMCreateInterpolation_SNESVI - Modifieds the interpolation obtained from the DM by removing all rows and columns associated with active constraints.
 */
-PetscErrorCode DMCreateInterpolation_SNESVI(DM dm1, DM dm2, Mat *mat, Vec *vec)
+static PetscErrorCode DMCreateInterpolation_SNESVI(DM dm1, DM dm2, Mat *mat, Vec *vec)
 {
   PetscContainer isnes;
   DM_SNESVI     *dmsnesvi1, *dmsnesvi2;
@@ -89,7 +89,7 @@ PetscErrorCode DMCreateInterpolation_SNESVI(DM dm1, DM dm2, Mat *mat, Vec *vec)
 /*
      DMCoarsen_SNESVI - Computes the regular coarsened DM then computes additional information about its inactive set
 */
-PetscErrorCode DMCoarsen_SNESVI(DM dm1, MPI_Comm comm, DM *dm2)
+static PetscErrorCode DMCoarsen_SNESVI(DM dm1, MPI_Comm comm, DM *dm2)
 {
   PetscContainer  isnes;
   DM_SNESVI      *dmsnesvi1;
@@ -163,7 +163,7 @@ PetscErrorCode DMCoarsen_SNESVI(DM dm1, MPI_Comm comm, DM *dm2)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode DMDestroy_SNESVI(DM_SNESVI *dmsnesvi)
+static PetscErrorCode DMDestroy_SNESVI(DM_SNESVI *dmsnesvi)
 {
   PetscFunctionBegin;
   /* reset the base methods in the DM object that were changed when the DM_SNESVI was reset */
@@ -248,16 +248,8 @@ PetscErrorCode DMDestroyVI(DM dm)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode SNESCreateIndexSets_VINEWTONRSLS(SNES snes, Vec X, Vec F, IS *ISact, IS *ISinact)
-{
-  PetscFunctionBegin;
-  PetscCall(SNESVIGetActiveSetIS(snes, X, F, ISact));
-  PetscCall(ISComplement(*ISact, X->map->rstart, X->map->rend, ISinact));
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
 /* Create active and inactive set vectors. The local size of this vector is set and petsc computes the global size */
-PetscErrorCode SNESCreateSubVectors_VINEWTONRSLS(SNES snes, PetscInt n, Vec *newv)
+static PetscErrorCode SNESCreateSubVectors_VINEWTONRSLS(SNES snes, PetscInt n, Vec *newv)
 {
   Vec v;
 
@@ -270,7 +262,7 @@ PetscErrorCode SNESCreateSubVectors_VINEWTONRSLS(SNES snes, PetscInt n, Vec *new
 }
 
 /* Resets the snes PC and KSP when the active set sizes change */
-PetscErrorCode SNESVIResetPCandKSP(SNES snes, Mat Amat, Mat Pmat)
+static PetscErrorCode SNESVIResetPCandKSP(SNES snes, Mat Amat, Mat Pmat)
 {
   KSP snesksp;
 
@@ -304,7 +296,7 @@ PetscErrorCode SNESVIResetPCandKSP(SNES snes, Mat Amat, Mat Pmat)
 /* Variational Inequality solver using reduce space method. No semismooth algorithm is
    implemented in this algorithm. It basically identifies the active constraints and does
    a linear solve on the other variables (those not associated with the active constraints). */
-PetscErrorCode SNESSolve_VINEWTONRSLS(SNES snes)
+static PetscErrorCode SNESSolve_VINEWTONRSLS(SNES snes)
 {
   SNES_VINEWTONRSLS   *vi = (SNES_VINEWTONRSLS *)snes->data;
   PetscInt             maxits, i, lits;
@@ -675,7 +667,7 @@ PetscErrorCode SNESVISetRedundancyCheckMatlab(SNES snes, const char *func, mxArr
 
 #endif
 
-PetscErrorCode SNESSetUp_VINEWTONRSLS(SNES snes)
+static PetscErrorCode SNESSetUp_VINEWTONRSLS(SNES snes)
 {
   SNES_VINEWTONRSLS *vi = (SNES_VINEWTONRSLS *)snes->data;
   PetscInt          *indices;
@@ -702,7 +694,7 @@ PetscErrorCode SNESSetUp_VINEWTONRSLS(SNES snes)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode SNESReset_VINEWTONRSLS(SNES snes)
+static PetscErrorCode SNESReset_VINEWTONRSLS(SNES snes)
 {
   SNES_VINEWTONRSLS *vi = (SNES_VINEWTONRSLS *)snes->data;
 

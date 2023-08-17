@@ -16,6 +16,7 @@ const char *const        PCFailedReasons_Shifted[] = {"SETUP_ERROR", "FACTOR_NOE
 const char *const *const PCFailedReasons           = PCFailedReasons_Shifted + 1;
 
 static PetscBool PCPackageInitialized = PETSC_FALSE;
+
 /*@C
   PCFinalizePackage - This function destroys everything in the `PC` package. It is
   called from `PetscFinalize()`.
@@ -119,6 +120,7 @@ const char *const *KSPConvergedReasons     = KSPConvergedReasons_Shifted + 11;
 const char *const  KSPFCDTruncationTypes[] = {"STANDARD", "NOTAY", "KSPFCDTruncationTypes", "KSP_FCD_TRUNC_TYPE_", NULL};
 
 static PetscBool KSPPackageInitialized = PETSC_FALSE;
+
 /*@C
   KSPFinalizePackage - This function destroys everything in the Petsc interface to the KSP package. It is
   called from PetscFinalize().

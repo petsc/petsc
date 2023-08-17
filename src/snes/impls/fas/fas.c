@@ -542,7 +542,7 @@ coarse problem: F^c(x^c) = b^c
 b^c = F^c(Rx) - R(F(x) - b)
 
  */
-PetscErrorCode SNESFASCoarseCorrection(SNES snes, Vec X, Vec F, Vec X_new)
+static PetscErrorCode SNESFASCoarseCorrection(SNES snes, Vec X, Vec F, Vec X_new)
 {
   Vec                 X_c, Xo_c, F_c, B_c;
   SNESConvergedReason reason;

@@ -9,12 +9,6 @@
 PetscFunctionList MatOrderingList              = NULL;
 PetscBool         MatOrderingRegisterAllCalled = PETSC_FALSE;
 
-PetscErrorCode MatGetOrdering_Flow(Mat mat, MatOrderingType type, IS *irow, IS *icol)
-{
-  PetscFunctionBegin;
-  SETERRQ(PetscObjectComm((PetscObject)mat), PETSC_ERR_SUP, "Cannot do default flow ordering for matrix type");
-}
-
 PETSC_INTERN PetscErrorCode MatGetOrdering_Natural(Mat mat, MatOrderingType type, IS *irow, IS *icol)
 {
   PetscInt  n, i, *ii;

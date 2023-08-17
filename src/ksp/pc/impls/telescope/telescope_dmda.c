@@ -343,7 +343,7 @@ static PetscErrorCode PCTelescopeSetUp_dmda_repart_coors(PC pc, PC_Telescope sre
 }
 
 /* setup repartitioned dm */
-PetscErrorCode PCTelescopeSetUp_dmda_repart(PC pc, PC_Telescope sred, PC_Telescope_DMDACtx *ctx)
+static PetscErrorCode PCTelescopeSetUp_dmda_repart(PC pc, PC_Telescope sred, PC_Telescope_DMDACtx *ctx)
 {
   DM                    dm;
   PetscInt              dim, nx, ny, nz, ndof, nsw, sum, k;
@@ -483,7 +483,7 @@ PetscErrorCode PCTelescopeSetUp_dmda_repart(PC pc, PC_Telescope sred, PC_Telesco
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PCTelescopeSetUp_dmda_permutation_3d(PC pc, PC_Telescope sred, PC_Telescope_DMDACtx *ctx)
+static PetscErrorCode PCTelescopeSetUp_dmda_permutation_3d(PC pc, PC_Telescope sred, PC_Telescope_DMDACtx *ctx)
 {
   DM       dm;
   MPI_Comm comm;
@@ -554,7 +554,7 @@ PetscErrorCode PCTelescopeSetUp_dmda_permutation_3d(PC pc, PC_Telescope sred, PC
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PCTelescopeSetUp_dmda_permutation_2d(PC pc, PC_Telescope sred, PC_Telescope_DMDACtx *ctx)
+static PetscErrorCode PCTelescopeSetUp_dmda_permutation_2d(PC pc, PC_Telescope sred, PC_Telescope_DMDACtx *ctx)
 {
   DM       dm;
   MPI_Comm comm;
@@ -620,7 +620,7 @@ PetscErrorCode PCTelescopeSetUp_dmda_permutation_2d(PC pc, PC_Telescope sred, PC
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PCTelescopeSetUp_dmda_scatters(PC pc, PC_Telescope sred, PC_Telescope_DMDACtx *ctx)
+static PetscErrorCode PCTelescopeSetUp_dmda_scatters(PC pc, PC_Telescope sred, PC_Telescope_DMDACtx *ctx)
 {
   Vec        xred, yred, xtmp, x, xp;
   VecScatter scatter;
@@ -697,7 +697,7 @@ PetscErrorCode PCTelescopeSetUp_dmda(PC pc, PC_Telescope sred)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PCTelescopeMatCreate_dmda_dmactivefalse(PC pc, PC_Telescope sred, MatReuse reuse, Mat *A)
+static PetscErrorCode PCTelescopeMatCreate_dmda_dmactivefalse(PC pc, PC_Telescope sred, MatReuse reuse, Mat *A)
 {
   PC_Telescope_DMDACtx *ctx;
   MPI_Comm              comm, subcomm;
@@ -775,7 +775,7 @@ PetscErrorCode PCTelescopeMatCreate_dmda(PC pc, PC_Telescope sred, MatReuse reus
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PCTelescopeSubNullSpaceCreate_dmda_Telescope(PC pc, PC_Telescope sred, MatNullSpace nullspace, MatNullSpace *sub_nullspace)
+static PetscErrorCode PCTelescopeSubNullSpaceCreate_dmda_Telescope(PC pc, PC_Telescope sred, MatNullSpace nullspace, MatNullSpace *sub_nullspace)
 {
   PetscBool             has_const;
   PetscInt              i, k, n = 0;
@@ -998,7 +998,7 @@ PetscErrorCode PCReset_Telescope_dmda(PC pc)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode DMView_DA_Short_3d(DM dm, PetscViewer v)
+static PetscErrorCode DMView_DA_Short_3d(DM dm, PetscViewer v)
 {
   PetscInt    M, N, P, m, n, p, ndof, nsw;
   MPI_Comm    comm;
@@ -1016,7 +1016,7 @@ PetscErrorCode DMView_DA_Short_3d(DM dm, PetscViewer v)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode DMView_DA_Short_2d(DM dm, PetscViewer v)
+static PetscErrorCode DMView_DA_Short_2d(DM dm, PetscViewer v)
 {
   PetscInt    M, N, m, n, ndof, nsw;
   MPI_Comm    comm;

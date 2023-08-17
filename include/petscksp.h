@@ -9,6 +9,7 @@
 /* SUBMANSEC = KSP */
 
 PETSC_EXTERN PetscErrorCode KSPInitializePackage(void);
+PETSC_EXTERN PetscErrorCode KSPFinalizePackage(void);
 
 /*S
      KSP - Abstract PETSc object that manages all Krylov methods. This is the object that manages the
@@ -268,6 +269,7 @@ PETSC_EXTERN PetscErrorCode KSPPIPEGCRSetTruncationType(KSP, KSPFCDTruncationTyp
 PETSC_EXTERN PetscErrorCode KSPPIPEGCRGetTruncationType(KSP, KSPFCDTruncationType *);
 PETSC_EXTERN PetscErrorCode KSPPIPEGCRSetUnrollW(KSP, PetscBool);
 PETSC_EXTERN PetscErrorCode KSPPIPEGCRGetUnrollW(KSP, PetscBool *);
+PETSC_EXTERN PetscErrorCode KSPPIPEGCRSetModifyPC(KSP, PetscErrorCode (*)(KSP, PetscInt, PetscReal, void *), void *, PetscErrorCode (*)(void *));
 
 PETSC_EXTERN PetscErrorCode KSPGMRESSetRestart(KSP, PetscInt);
 PETSC_EXTERN PetscErrorCode KSPGMRESGetRestart(KSP, PetscInt *);
@@ -1046,4 +1048,7 @@ PETSC_EXTERN PetscErrorCode DMProjectField(DM, PetscReal, Vec, void (**)(PetscIn
 
 PETSC_EXTERN PetscErrorCode DMAdaptInterpolator(DM, DM, Mat, KSP, Mat, Mat, Mat *, void *);
 PETSC_EXTERN PetscErrorCode DMCheckInterpolator(DM, Mat, Mat, Mat, PetscReal);
+
+PETSC_EXTERN PetscErrorCode PCBJKOKKOSSetKSP(PC, KSP);
+PETSC_EXTERN PetscErrorCode PCBJKOKKOSGetKSP(PC, KSP *);
 #endif

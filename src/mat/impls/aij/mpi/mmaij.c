@@ -199,7 +199,7 @@ PetscErrorCode MatDisAssemble_MPIAIJ(Mat A)
 static PetscInt *auglyrmapd = NULL, *auglyrmapo = NULL; /* mapping from the local ordering to the "diagonal" and "off-diagonal" parts of the local matrix */
 static Vec       auglydd = NULL, auglyoo = NULL;        /* work vectors used to scale the two parts of the local matrix */
 
-PetscErrorCode MatMPIAIJDiagonalScaleLocalSetUp(Mat inA, Vec scale)
+static PetscErrorCode MatMPIAIJDiagonalScaleLocalSetUp(Mat inA, Vec scale)
 {
   Mat_MPIAIJ *ina = (Mat_MPIAIJ *)inA->data; /*access private part of matrix */
   PetscInt    i, n, nt, cstart, cend, no, *garray = ina->garray, *lindices;
@@ -243,15 +243,6 @@ PetscErrorCode MatMPIAIJDiagonalScaleLocalSetUp(Mat inA, Vec scale)
   }
   PetscCall(PetscFree(r_rmapo));
   PetscCall(VecCreateSeq(PETSC_COMM_SELF, nt, &auglyoo));
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-PetscErrorCode MatMPIAIJDiagonalScaleLocal(Mat A, Vec scale)
-{
-  /* This routine should really be abandoned as it duplicates MatDiagonalScaleLocal */
-
-  PetscFunctionBegin;
-  PetscTryMethod(A, "MatDiagonalScaleLocal_C", (Mat, Vec), (A, scale));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

@@ -841,7 +841,7 @@ static PetscErrorCode PetscSFBcastBegin_Window(PetscSF sf, MPI_Datatype unit, Pe
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PetscSFBcastEnd_Window(PetscSF sf, MPI_Datatype unit, const void *rootdata, void *leafdata, MPI_Op op)
+static PetscErrorCode PetscSFBcastEnd_Window(PetscSF sf, MPI_Datatype unit, const void *rootdata, void *leafdata, MPI_Op op)
 {
   PetscSF_Window *w = (PetscSF_Window *)sf->data;
   MPI_Win         win;
@@ -861,7 +861,7 @@ PetscErrorCode PetscSFBcastEnd_Window(PetscSF sf, MPI_Datatype unit, const void 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PetscSFReduceBegin_Window(PetscSF sf, MPI_Datatype unit, PetscMemType leafmtype, const void *leafdata, PetscMemType rootmtype, void *rootdata, MPI_Op op)
+static PetscErrorCode PetscSFReduceBegin_Window(PetscSF sf, MPI_Datatype unit, PetscMemType leafmtype, const void *leafdata, PetscMemType rootmtype, void *rootdata, MPI_Op op)
 {
   PetscSF_Window     *w = (PetscSF_Window *)sf->data;
   PetscInt            i, nranks;

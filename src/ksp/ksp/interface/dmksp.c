@@ -44,7 +44,7 @@ static PetscErrorCode DMRefineHook_DMKSP(DM dm, DM dmc, void *ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*
   DMKSPCopy - copies the information in a `DMKSP` to another `DMKSP`
 
   Not Collective
@@ -56,8 +56,8 @@ static PetscErrorCode DMRefineHook_DMKSP(DM dm, DM dmc, void *ctx)
   Level: developer
 
 .seealso: [](ch_ksp), `DMKSPCreate()`, `DMKSPDestroy()`
-@*/
-PetscErrorCode DMKSPCopy(DMKSP kdm, DMKSP nkdm)
+*/
+static PetscErrorCode DMKSPCopy(DMKSP kdm, DMKSP nkdm)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(kdm, DMKSP_CLASSID, 1);

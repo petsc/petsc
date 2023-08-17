@@ -87,7 +87,7 @@ PetscErrorCode MatSeqDenseInvertFactors_Private(Mat A)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatZeroRowsColumns_SeqDense(Mat A, PetscInt N, const PetscInt rows[], PetscScalar diag, Vec x, Vec b)
+static PetscErrorCode MatZeroRowsColumns_SeqDense(Mat A, PetscInt N, const PetscInt rows[], PetscScalar diag, Vec x, Vec b)
 {
   Mat_SeqDense      *l = (Mat_SeqDense *)A->data;
   PetscInt           m = l->lda, n = A->cmap->n, r = A->rmap->n, i, j;
@@ -1419,7 +1419,7 @@ PetscErrorCode MatLoad_Dense_Binary(Mat mat, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatLoad_SeqDense(Mat newMat, PetscViewer viewer)
+static PetscErrorCode MatLoad_SeqDense(Mat newMat, PetscViewer viewer)
 {
   PetscBool isbinary, ishdf5;
 

@@ -37,7 +37,7 @@ PetscErrorCode MatScatterGetVecScatter(Mat mat, VecScatter *scatter)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatDestroy_Scatter(Mat mat)
+static PetscErrorCode MatDestroy_Scatter(Mat mat)
 {
   Mat_Scatter *scatter = (Mat_Scatter *)mat->data;
 
@@ -47,7 +47,7 @@ PetscErrorCode MatDestroy_Scatter(Mat mat)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatMult_Scatter(Mat A, Vec x, Vec y)
+static PetscErrorCode MatMult_Scatter(Mat A, Vec x, Vec y)
 {
   Mat_Scatter *scatter = (Mat_Scatter *)A->data;
 
@@ -59,7 +59,7 @@ PetscErrorCode MatMult_Scatter(Mat A, Vec x, Vec y)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatMultAdd_Scatter(Mat A, Vec x, Vec y, Vec z)
+static PetscErrorCode MatMultAdd_Scatter(Mat A, Vec x, Vec y, Vec z)
 {
   Mat_Scatter *scatter = (Mat_Scatter *)A->data;
 
@@ -71,7 +71,7 @@ PetscErrorCode MatMultAdd_Scatter(Mat A, Vec x, Vec y, Vec z)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatMultTranspose_Scatter(Mat A, Vec x, Vec y)
+static PetscErrorCode MatMultTranspose_Scatter(Mat A, Vec x, Vec y)
 {
   Mat_Scatter *scatter = (Mat_Scatter *)A->data;
 
@@ -83,7 +83,7 @@ PetscErrorCode MatMultTranspose_Scatter(Mat A, Vec x, Vec y)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatMultTransposeAdd_Scatter(Mat A, Vec x, Vec y, Vec z)
+static PetscErrorCode MatMultTransposeAdd_Scatter(Mat A, Vec x, Vec y, Vec z)
 {
   Mat_Scatter *scatter = (Mat_Scatter *)A->data;
 

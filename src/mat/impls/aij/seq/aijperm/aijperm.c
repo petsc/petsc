@@ -92,7 +92,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJPERM_SeqAIJ(Mat A, MatType type, Ma
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatDestroy_SeqAIJPERM(Mat A)
+static PetscErrorCode MatDestroy_SeqAIJPERM(Mat A)
 {
   Mat_SeqAIJPERM *aijperm = (Mat_SeqAIJPERM *)A->spptr;
 
@@ -115,7 +115,7 @@ PetscErrorCode MatDestroy_SeqAIJPERM(Mat A)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatDuplicate_SeqAIJPERM(Mat A, MatDuplicateOption op, Mat *M)
+static PetscErrorCode MatDuplicate_SeqAIJPERM(Mat A, MatDuplicateOption op, Mat *M)
 {
   Mat_SeqAIJPERM *aijperm = (Mat_SeqAIJPERM *)A->spptr;
   Mat_SeqAIJPERM *aijperm_dest;
@@ -151,7 +151,7 @@ PetscErrorCode MatDuplicate_SeqAIJPERM(Mat A, MatDuplicateOption op, Mat *M)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatSeqAIJPERM_create_perm(Mat A)
+static PetscErrorCode MatSeqAIJPERM_create_perm(Mat A)
 {
   Mat_SeqAIJ     *a       = (Mat_SeqAIJ *)(A)->data;
   Mat_SeqAIJPERM *aijperm = (Mat_SeqAIJPERM *)A->spptr;
@@ -251,7 +251,7 @@ PetscErrorCode MatSeqAIJPERM_create_perm(Mat A)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatAssemblyEnd_SeqAIJPERM(Mat A, MatAssemblyType mode)
+static PetscErrorCode MatAssemblyEnd_SeqAIJPERM(Mat A, MatAssemblyType mode)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ *)A->data;
 
@@ -274,7 +274,7 @@ PetscErrorCode MatAssemblyEnd_SeqAIJPERM(Mat A, MatAssemblyType mode)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatMult_SeqAIJPERM(Mat A, Vec xx, Vec yy)
+static PetscErrorCode MatMult_SeqAIJPERM(Mat A, Vec xx, Vec yy)
 {
   Mat_SeqAIJ        *a = (Mat_SeqAIJ *)A->data;
   const PetscScalar *x;
@@ -463,7 +463,7 @@ PetscErrorCode MatMult_SeqAIJPERM(Mat A, Vec xx, Vec yy)
 /*
     I hate having virtually identical code for the mult and the multadd!!!
 */
-PetscErrorCode MatMultAdd_SeqAIJPERM(Mat A, Vec xx, Vec ww, Vec yy)
+static PetscErrorCode MatMultAdd_SeqAIJPERM(Mat A, Vec xx, Vec ww, Vec yy)
 {
   Mat_SeqAIJ        *a = (Mat_SeqAIJ *)A->data;
   const PetscScalar *x;

@@ -508,9 +508,9 @@ class FunctionParameterList(ParameterList):
           f'Symbol parameters are all undocumented {Diagnostic.FLAG_SUBST}',
           docstring.extent, highlight=False
         ).add_note(
-          docstring.make_diagnostic_message(
+          Diagnostic.make_message_from_formattable(
             'Parameters defined here',
-            SourceRange.from_locations(arg_cursors[0].extent.start, arg_cursors[-1].extent.end)
+            crange=SourceRange.from_locations(arg_cursors[0].extent.start, arg_cursors[-1].extent.end)
           ),
           location=arg_cursors[0].extent.start
         )
@@ -529,7 +529,7 @@ class FunctionParameterList(ParameterList):
           self.extent,
           highlight=False, patch=Patch(self.extent, '')
         ).add_note(
-          # can't use the docstring.make_diagnostic_message() (with doc_cursor.extent),
+          # can't use the Diagnostic.make_diagnostic_message() (with doc_cursor.extent),
           # since that prints the whole function. Cursor.formatted() has special code to
           # only print the function line for us, so use that instead
           f'\'{disp_name}\' defined here:\n{doc_cursor.formatted(num_context=2)}',
@@ -706,13 +706,13 @@ class FunctionParameterList(ParameterList):
       except IndexError:
         # the difflib call failed
         note_loc = docstring.cursor.extent.start
-        note     = docstring.make_diagnostic_message(
+        note     = Diagnostic.make_message_from_formattable(
           'Parameter list defined here', crange=docstring.cursor
         )
       else:
         match_cursor = [c for c in arg_cursors if c.name == arg_match][0]
         note_loc     = match_cursor.extent.start
-        note         = docstring.make_diagnostic_message(
+        note         = Diagnostic.make_message_from_formattable(
           f'Maybe you meant {match_cursor.get_formatted_blurb()}'
         )
         args_left.remove(arg_match)
@@ -823,8 +823,8 @@ class FunctionParameterList(ParameterList):
           f'Undocumented parameter \'{arg}\' not found in parameter section',
           self.extent, highlight=False
         ).add_note(
-          docstring.make_diagnostic_message(
-            f'Parameter \'{arg}\' defined here', full_arg_cursors[idx], num_context=1
+          Diagnostic.make_message_from_formattable(
+            f'Parameter \'{arg}\' defined here', crange=full_arg_cursors[idx], num_context=1
           ),
           location=full_arg_cursors[idx].extent.start
         )
@@ -1349,7 +1349,9 @@ class SeeAlso(InlineList):
             Diagnostic.Kind.ERROR, self.diags.duplicate, f"Seealso entry '{text}' is duplicate", loc,
             patch=self.__make_deletion_patch(loc, text, loc == last_loc)
           ).add_note(
-            docstring.make_diagnostic_message('first instance found here', first_seen, num_context=1),
+            Diagnostic.make_message_from_formattable(
+              'first instance found here', crange=first_seen, num_context=1
+            ),
             location=first_seen.start
           )
         )

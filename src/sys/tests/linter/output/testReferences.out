@@ -1,4 +1,11 @@
 <--- FIXED --->
+[31m[1m./src/sys/tests/linter/testReferences.c:7:1: error:[0m Function 'testOutOfLineReference()' does not appear to be used anywhere outside of testReferences.c, and can be made static [-fstatic-function-candidate]:
+  5: extern void extractFunc(PetscViewer, void **);
+  6: 
+> 7: [33m[1mPetscErrorCode testOutOfLineReference(PetscViewer v, PetscViewer v2)[0m
+     [33m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  8: {
+  9:   /* linter should be able to connect all of these to v */
 [31m[1m./src/sys/tests/linter/testReferences.c:18:27: error:[0m Argument number doesn't match for 'foo'. Expected '1', found '-1' [-fmatching-arg-num]:
   16: 
   17: /* incorrect */
@@ -8,7 +15,7 @@
   20: PetscAssertPointer(baz, -3);
 
 ./src/sys/tests/linter/testReferences.c:7:39 Note: 'foo' is traceable to argument #1 'v' in enclosing function here:
-  5: void extractFunc(PetscViewer, void **);
+  5: extern void extractFunc(PetscViewer, void **);
   6: 
 > 7: PetscErrorCode testOutOfLineReference([33m[1mPetscViewer v[0m, PetscViewer v2)
                                            [33m[1m^^^^^^^^^^^^^[0m
@@ -39,7 +46,7 @@
   21: PetscAssertPointer((void *)v->data, -4);
 
 ./src/sys/tests/linter/testReferences.c:7:39 Note: 'bar' is traceable to argument #1 'v' in enclosing function here:
-  5: void extractFunc(PetscViewer, void **);
+  5: extern void extractFunc(PetscViewer, void **);
   6: 
 > 7: PetscErrorCode testOutOfLineReference([33m[1mPetscViewer v[0m, PetscViewer v2)
                                            [33m[1m^^^^^^^^^^^^^[0m
@@ -70,7 +77,7 @@
   22: PetscAssertPointer(*blip, -5);
 
 ./src/sys/tests/linter/testReferences.c:7:39 Note: 'baz' is traceable to argument #1 'v' in enclosing function here:
-  5: void extractFunc(PetscViewer, void **);
+  5: extern void extractFunc(PetscViewer, void **);
   6: 
 > 7: PetscErrorCode testOutOfLineReference([33m[1mPetscViewer v[0m, PetscViewer v2)
                                            [33m[1m^^^^^^^^^^^^^[0m
@@ -101,7 +108,7 @@
   23: PetscAssertPointer(blop, -6);
 
 ./src/sys/tests/linter/testReferences.c:7:39 Note: 'data' is traceable to argument #1 'v' in enclosing function here:
-  5: void extractFunc(PetscViewer, void **);
+  5: extern void extractFunc(PetscViewer, void **);
   6: 
 > 7: PetscErrorCode testOutOfLineReference([33m[1mPetscViewer v[0m, PetscViewer v2)
                                            [33m[1m^^^^^^^^^^^^^[0m
@@ -132,7 +139,7 @@
   24: 
 
 ./src/sys/tests/linter/testReferences.c:7:39 Note: 'blip' is traceable to argument #1 'v' in enclosing function here:
-  5: void extractFunc(PetscViewer, void **);
+  5: extern void extractFunc(PetscViewer, void **);
   6: 
 > 7: PetscErrorCode testOutOfLineReference([33m[1mPetscViewer v[0m, PetscViewer v2)
                                            [33m[1m^^^^^^^^^^^^^[0m
@@ -171,7 +178,7 @@
   25: /* correct */
 
 ./src/sys/tests/linter/testReferences.c:7:39 Note: 'blop' is traceable to argument #1 'v' in enclosing function here:
-  5: void extractFunc(PetscViewer, void **);
+  5: extern void extractFunc(PetscViewer, void **);
   6: 
 > 7: PetscErrorCode testOutOfLineReference([33m[1mPetscViewer v[0m, PetscViewer v2)
                                            [33m[1m^^^^^^^^^^^^^[0m

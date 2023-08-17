@@ -5,7 +5,7 @@
 #include <petscsys.h>
 #include <../src/vec/vec/impls/mpi/pvecimpl.h> /*I  "petscvec.h"   I*/
 
-extern PetscErrorCode VecView_MPI_Draw(Vec, PetscViewer);
+PETSC_INTERN PetscErrorCode VecView_MPI_Draw(Vec, PetscViewer);
 
 PetscErrorCode VecPlaceArray_MPI(Vec vin, const PetscScalar *a)
 {

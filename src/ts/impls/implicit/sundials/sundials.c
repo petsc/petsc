@@ -78,7 +78,7 @@ static int TSPSolve_Sundials_Private(realtype tn, N_Vector y, N_Vector fy, N_Vec
 /*
         TSFunction_Sundials - routine that we provide to SUNDIALS that applies the right hand side.
 */
-int TSFunction_Sundials(realtype t, N_Vector y, N_Vector ydot, void *ctx)
+static int TSFunction_Sundials(realtype t, N_Vector y, N_Vector ydot, void *ctx)
 {
   TS           ts = (TS)ctx;
   DM           dm;
@@ -116,7 +116,7 @@ int TSFunction_Sundials(realtype t, N_Vector y, N_Vector ydot, void *ctx)
 /*
        TSStep_Sundials - Calls SUNDIALS to integrate the ODE.
 */
-PetscErrorCode TSStep_Sundials(TS ts)
+static PetscErrorCode TSStep_Sundials(TS ts)
 {
   TS_Sundials *cvode = (TS_Sundials *)ts->data;
   PetscInt     flag;
@@ -240,7 +240,7 @@ static PetscErrorCode TSInterpolate_Sundials(TS ts, PetscReal t, Vec X)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode TSReset_Sundials(TS ts)
+static PetscErrorCode TSReset_Sundials(TS ts)
 {
   TS_Sundials *cvode = (TS_Sundials *)ts->data;
 
@@ -253,7 +253,7 @@ PetscErrorCode TSReset_Sundials(TS ts)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode TSDestroy_Sundials(TS ts)
+static PetscErrorCode TSDestroy_Sundials(TS ts)
 {
   TS_Sundials *cvode = (TS_Sundials *)ts->data;
 
@@ -275,7 +275,7 @@ PetscErrorCode TSDestroy_Sundials(TS ts)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode TSSetUp_Sundials(TS ts)
+static PetscErrorCode TSSetUp_Sundials(TS ts)
 {
   TS_Sundials *cvode = (TS_Sundials *)ts->data;
   PetscInt     glosize, locsize, i;
@@ -379,7 +379,7 @@ const char *const TSSundialsLmmTypes[] = {"", "ADAMS", "BDF", "TSSundialsLmmType
 /* type of G-S orthogonalization used by CVODE linear solver */
 const char *const TSSundialsGramSchmidtTypes[] = {"", "MODIFIED", "CLASSICAL", "TSSundialsGramSchmidtType", "SUNDIALS_", NULL};
 
-PetscErrorCode TSSetFromOptions_Sundials(TS ts, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode TSSetFromOptions_Sundials(TS ts, PetscOptionItems *PetscOptionsObject)
 {
   TS_Sundials *cvode = (TS_Sundials *)ts->data;
   int          indx;
@@ -407,7 +407,7 @@ PetscErrorCode TSSetFromOptions_Sundials(TS ts, PetscOptionItems *PetscOptionsOb
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode TSView_Sundials(TS ts, PetscViewer viewer)
+static PetscErrorCode TSView_Sundials(TS ts, PetscViewer viewer)
 {
   TS_Sundials *cvode = (TS_Sundials *)ts->data;
   char        *type;
@@ -480,7 +480,7 @@ PetscErrorCode TSView_Sundials(TS ts, PetscViewer viewer)
 }
 
 /* --------------------------------------------------------------------------*/
-PetscErrorCode TSSundialsSetType_Sundials(TS ts, TSSundialsLmmType type)
+static PetscErrorCode TSSundialsSetType_Sundials(TS ts, TSSundialsLmmType type)
 {
   TS_Sundials *cvode = (TS_Sundials *)ts->data;
 
@@ -489,7 +489,7 @@ PetscErrorCode TSSundialsSetType_Sundials(TS ts, TSSundialsLmmType type)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode TSSundialsSetMaxl_Sundials(TS ts, PetscInt maxl)
+static PetscErrorCode TSSundialsSetMaxl_Sundials(TS ts, PetscInt maxl)
 {
   TS_Sundials *cvode = (TS_Sundials *)ts->data;
 
@@ -498,7 +498,7 @@ PetscErrorCode TSSundialsSetMaxl_Sundials(TS ts, PetscInt maxl)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode TSSundialsSetLinearTolerance_Sundials(TS ts, PetscReal tol)
+static PetscErrorCode TSSundialsSetLinearTolerance_Sundials(TS ts, PetscReal tol)
 {
   TS_Sundials *cvode = (TS_Sundials *)ts->data;
 
@@ -507,7 +507,7 @@ PetscErrorCode TSSundialsSetLinearTolerance_Sundials(TS ts, PetscReal tol)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode TSSundialsSetGramSchmidtType_Sundials(TS ts, TSSundialsGramSchmidtType type)
+static PetscErrorCode TSSundialsSetGramSchmidtType_Sundials(TS ts, TSSundialsGramSchmidtType type)
 {
   TS_Sundials *cvode = (TS_Sundials *)ts->data;
 
@@ -516,7 +516,7 @@ PetscErrorCode TSSundialsSetGramSchmidtType_Sundials(TS ts, TSSundialsGramSchmid
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode TSSundialsSetTolerance_Sundials(TS ts, PetscReal aabs, PetscReal rel)
+static PetscErrorCode TSSundialsSetTolerance_Sundials(TS ts, PetscReal aabs, PetscReal rel)
 {
   TS_Sundials *cvode = (TS_Sundials *)ts->data;
 
@@ -526,7 +526,7 @@ PetscErrorCode TSSundialsSetTolerance_Sundials(TS ts, PetscReal aabs, PetscReal 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode TSSundialsSetMinTimeStep_Sundials(TS ts, PetscReal mindt)
+static PetscErrorCode TSSundialsSetMinTimeStep_Sundials(TS ts, PetscReal mindt)
 {
   TS_Sundials *cvode = (TS_Sundials *)ts->data;
 
@@ -535,7 +535,7 @@ PetscErrorCode TSSundialsSetMinTimeStep_Sundials(TS ts, PetscReal mindt)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode TSSundialsSetMaxTimeStep_Sundials(TS ts, PetscReal maxdt)
+static PetscErrorCode TSSundialsSetMaxTimeStep_Sundials(TS ts, PetscReal maxdt)
 {
   TS_Sundials *cvode = (TS_Sundials *)ts->data;
 
@@ -544,7 +544,7 @@ PetscErrorCode TSSundialsSetMaxTimeStep_Sundials(TS ts, PetscReal maxdt)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode TSSundialsSetUseDense_Sundials(TS ts, PetscBool use_dense)
+static PetscErrorCode TSSundialsSetUseDense_Sundials(TS ts, PetscBool use_dense)
 {
   TS_Sundials *cvode = (TS_Sundials *)ts->data;
 
@@ -553,7 +553,7 @@ PetscErrorCode TSSundialsSetUseDense_Sundials(TS ts, PetscBool use_dense)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode TSSundialsGetPC_Sundials(TS ts, PC *pc)
+static PetscErrorCode TSSundialsGetPC_Sundials(TS ts, PC *pc)
 {
   SNES snes;
   KSP  ksp;
@@ -565,7 +565,7 @@ PetscErrorCode TSSundialsGetPC_Sundials(TS ts, PC *pc)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode TSSundialsGetIterations_Sundials(TS ts, int *nonlin, int *lin)
+static PetscErrorCode TSSundialsGetIterations_Sundials(TS ts, int *nonlin, int *lin)
 {
   PetscFunctionBegin;
   if (nonlin) *nonlin = ts->snes_its;
@@ -573,7 +573,7 @@ PetscErrorCode TSSundialsGetIterations_Sundials(TS ts, int *nonlin, int *lin)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode TSSundialsMonitorInternalSteps_Sundials(TS ts, PetscBool s)
+static PetscErrorCode TSSundialsMonitorInternalSteps_Sundials(TS ts, PetscBool s)
 {
   TS_Sundials *cvode = (TS_Sundials *)ts->data;
 

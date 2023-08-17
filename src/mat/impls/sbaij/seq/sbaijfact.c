@@ -30,7 +30,7 @@ PetscErrorCode MatGetInertia_SeqSBAIJ(Mat F, PetscInt *nneg, PetscInt *nzero, Pe
   Symbolic U^T*D*U factorization for SBAIJ format. Modified from SSF of YSMP.
   Use Modified Sparse Row (MSR) storage for u and ju. See page 85, "Iterative Methods ..." by Saad.
 */
-PetscErrorCode MatCholeskyFactorSymbolic_SeqSBAIJ_MSR(Mat F, Mat A, IS perm, const MatFactorInfo *info)
+static PetscErrorCode MatCholeskyFactorSymbolic_SeqSBAIJ_MSR(Mat F, Mat A, IS perm, const MatFactorInfo *info)
 {
   Mat_SeqSBAIJ   *a = (Mat_SeqSBAIJ *)A->data, *b;
   const PetscInt *rip, *ai, *aj;

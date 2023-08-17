@@ -127,31 +127,6 @@ static PetscErrorCode SNESView_NCG(SNES snes, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*
-
- Assuming F = SNESComputeFunction(X) compute Y^tJ^tF using a simple secant approximation of the jacobian.
-
- This routine is not currently used. I don't know what its intended purpose is.
-
- Note it has a hardwired differencing parameter of 1e-5
-
- */
-PetscErrorCode SNESNCGComputeYtJtF_Private(SNES snes, Vec X, Vec F, Vec Y, Vec W, Vec G, PetscScalar *ytJtf)
-{
-  PetscScalar ftf, ftg, fty, h;
-
-  PetscFunctionBegin;
-  PetscCall(VecDot(F, F, &ftf));
-  PetscCall(VecDot(F, Y, &fty));
-  h = 1e-5 * fty / fty;
-  PetscCall(VecCopy(X, W));
-  PetscCall(VecAXPY(W, -h, Y)); /* this is arbitrary */
-  PetscCall(SNESComputeFunction(snes, W, G));
-  PetscCall(VecDot(G, F, &ftg));
-  *ytJtf = (ftg - ftf) / h;
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
 /*@
   SNESNCGSetType - Sets the conjugate update type for nonlinear CG `SNESNCG`.
 

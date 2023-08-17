@@ -7,17 +7,17 @@ from __future__ import annotations
 
 import weakref
 import difflib
+import textwrap
 import datetime
 import itertools
 import collections
 import clang.cindex as clx # type: ignore[import]
-import petsclinter  as pl
 
 from .._typing import *
 
 from ._diag      import DiagnosticManager, Diagnostic
 from ._cursor    import Cursor
-from ._src_pos   import SourceRange
+from ._src_pos   import SourceLocation, SourceRange
 from ._patch     import Patch
 from ._scope     import Scope
 from ._weak_list import WeakList
@@ -25,9 +25,8 @@ from ._add_line  import Addline
 
 from .._error import ParsingError, KnownUnhandleableCursorError
 
-from ..checks import _register
-
-from ..util._clang import clx_func_call_cursor_kinds, base_clang_options
+from ..util._clang   import clx_func_call_cursor_kinds, base_clang_options
+from ..util._utility import subprocess_capture_output, subprocess_check_returncode
 
 class DiagnosticsContainer:
   __slots__ = 'prefix', 'data'
@@ -128,6 +127,7 @@ class DiagnosticsContainer:
 
 @DiagnosticManager.register(
   ('duplicate-function', 'Check for duplicate function-calls on the same execution path'),
+  ('static-function-candidate', 'Check for functions that are used only within a single TU, and make them static'),
   ('parsing-error', 'Generic parsing errors')
 )
 class Linter:
@@ -143,6 +143,7 @@ class Linter:
   errors: DiagnosticsContainer
   warnings: DiagnosticsContainer
   patches: collections.defaultdict[Path, list[Patch]]
+  werror: bool
 
   diags: DiagnosticMap # satisfy type checkers
 
@@ -183,6 +184,14 @@ class Linter:
         for mess in v.values():
           print_list.append('\n'.join(mess))
     return '\n'.join(print_list)
+
+  def _vprint(self, *args, **kwargs) -> None:
+    r"""Print only if verbose"""
+    if self.verbose:
+      import petsclinter as pl
+
+      pl.sync_print(*args, **kwargs)
+    return
 
   def _check_duplicate_function_calls(self, processed_funcs: dict[str, list[tuple[Cursor, Scope]]]) -> None:
     r"""Check for duplicate instances of functions along the same execution path
@@ -383,11 +392,10 @@ class Linter:
       the `Linter` instance
     """
     self.clear()
-    if self.verbose:
-      pl.sync_print('Processing file     ', filename)
+    self._vprint('Processing file     ', filename)
     tu = self.index.parse(str(filename), args=self.flags, options=self.clang_opts)
-    if self.verbose and tu.diagnostics:
-      pl.sync_print('\n'.join(map(str, tu.diagnostics)))
+    if tu.diagnostics:
+      self._vprint('\n'.join(map(str, tu.diagnostics)))
     self.process(tu)
     return self
 
@@ -413,6 +421,236 @@ class Linter:
       fname, args=self.flags, unsaved_files=[(fname, src)], options=self.clang_opts
     )
 
+  def _check_possible_static_function(self, func: Cursor) -> None:
+    r"""Check that `func` could be make static
+
+    Parameters
+    ----------
+    func :
+      the function cursor to check
+
+    Notes
+    -----
+    Determines whether `func` can be made static, and if so, adds the static qualifier to it. Currently
+    the check is very basic, it only catches functions with are defined in a TU, and used absolutely
+    nowhere else. As soon as it is defined in a header, or other file, this function bails immediately.
+
+    We could try and figure out whether it belongs in that header, but that has many false positives.
+    We would need to be able to:
+
+    1. (reliably) distinguish between public and internal API
+    2. if the function is internal API, (relibaly) determine whether it is used within the same mansec.
+       If it is, we can make the decl PETSC_INTERN (if it isn't already). If it's used from multiple
+       mansecs, we can make it PETSC_SINGLE_LIBRARY_INTERN (if it isn't already).
+
+    But these are hard problems, which we leave for another time...
+    """
+    def cursor_is_public(cursor: CursorLike) -> bool:
+      if cursor.storage_class == clx.StorageClass.EXTERN or cursor.spelling == 'main':
+        return True
+
+      for child in cursor.get_children():
+        if child.kind == clx.CursorKind.VISIBILITY_ATTR and child.spelling in {'default', 'hidden'}:
+          # The function cursor has a PETSC_INTERN or PETSC_EXTERN attached
+          return True
+      return False
+
+    if func.kind != clx.CursorKind.FUNCTION_DECL or func.storage_class == clx.StorageClass.STATIC:
+      # nothing to do
+      return
+
+    if cursor_is_public(func):
+      return
+
+    func_decl = func.get_declaration()
+    if cursor_is_public(func_decl):
+      # the cursor declaration has some kind of public api, be that extern, PETSC_EXTERN,
+      # or whatever
+      return
+
+    lex_parent = func_decl.lexical_parent
+    try:
+      lex_parent_kind = lex_parent.kind
+    except ValueError as ve:
+      # Possible ValueError: Unknown template argument kind 300
+      #
+      # I think this is a bug in libclang. clx.CursorKind.TRANSLATION_UNIT is 350, I
+      # think it used to be 300, and they haven't updated the python bindings?
+      if 'unknown template argument kind 300' not in str(ve).casefold():
+        raise
+      lex_parent_kind = clx.CursorKind.TRANSLATION_UNIT
+    if lex_parent_kind == clx.CursorKind.CLASS_DECL:
+      # we have a situation like
+      #
+      # class Foo <---- func_decl.lexical_parent
+      # {
+      #   friend void bar();
+      #               ^^^---- func_decl
+      # };
+      #
+      # void bar() { }
+      #      ^^^------- func
+      #
+      # Note, I have *ONLY* seen this happen with friend functions, so let's assert that
+      # that is the case here so we can potentially handle the other variants
+      assert any('friend' in t.spelling for t in lex_parent.get_tokens())
+      return
+
+    origin_file = func.get_file()
+    decl_file   = Cursor.get_file_from_cursor(func_decl).resolve()
+    if origin_file != decl_file:
+      # The function declaration is in some other file, presumably a header. This implies
+      # the function is used elsewhere/is public API.
+      return
+
+    result_type     = func.result_type
+    result_spelling = result_type.spelling
+    if result_type.get_declaration().kind == clx.CursorKind.NO_DECL_FOUND:
+      # The result type declaration (i.e. typedef x_type result_type) cannot be located!
+      # This indicates 1 of 2 scenarios:
+      #
+      # 1. The type is built-in, e.g. int, or void, or double
+      # 2. The type is actually completely uknown (likely due to linter not having the
+      #    appropriate package installed). In this case, the type defaults to int, meaning
+      #    that instead of searching for e.g. "BlopexInt PETSC_dpotrf_interface" the
+      #    linter searches for "int PETSC_dpotrf_interface" which of course it will not
+      #    find!
+
+      # extract 'PETSC_EXTERN inline void' from 'PETSC_EXTERN inline void FooBar(...)'
+      raw_result_spelling = func.raw().partition(func.spelling)[0]
+      if result_spelling not in raw_result_spelling:
+        # The type is likely unknown, i.e. it defaulted to int
+        assert result_type.kind == clx.TypeKind.INT
+        # Let's try and extract the type nonetheless
+        raw_types = [
+          t
+          for t in raw_result_spelling.split()
+            if t not in {'static', 'inline', 'extern', '\"C\"', '\"C++\"'} or
+              not t.startswith(('PETSC_', 'SLEPC_'))
+        ]
+        if len(raw_types) > 1:
+          # something we didn't handle
+          return
+        # we have narrowed the type down to just a single string, let's try it out
+        result_spelling = raw_types[0]
+
+    if result_spelling.endswith('*'):
+      # if the result type is a pointer, it will sit flush against the function name, so
+      # we should match for potentially 0 spaces, i.e.
+      #
+      # void *Foo()
+      #
+      # We don't match for exactly 0 spaces since someone may have disabled clang-format
+      # and hence it's possible the pointer is not flush.
+      result_type_spacing = ' *'
+    else:
+      # not a pointer, so result type must always be at least 1 space away from function
+      # name
+      result_type_spacing = ' +'
+    # have to escape the pointers
+    result_spelling    = result_spelling.replace('*', '\*')
+    func_name_and_type = rf'{result_spelling}{result_type_spacing}{func.spelling} *\('
+    # The absolute final check, we need to grep for the symbol across the code-base. This
+    # is needed for cases when:
+    #
+    # // my_file.c
+    # PetscErrorCode PetscFoo(PetscBar baz) <--- marked as a potential static candidate
+    # {
+    #   ...
+    #
+    # // my_file.h
+    # #if PetscDefined(HAVE_FOO)
+    # PETSC_EXTERN PetscErrorCode PetscFoo(PetscBar);
+    # #endif
+    #
+    # In the case where the linter is not configured with PETSC_HAVE_FOO, the above checks
+    # will fail to find the extern decl (since from the viewpoint of the compiler, it
+    # literally does not exist) and hence produce a false positive. So the only way to
+    # reliably determine is to search the text.
+    #
+    # The alternative is to emit the diagnostic anyway, knowing that there will be false
+    # positives. To offset this, we could attach a note that says "if this is a false
+    # positive, add PETSC_EXTERN/PETSC_INTERN to the definition as well".
+    #
+    # We chose not to do that because it makes the whole process more brittle, and
+    # introduces otherwise unecessary changes just to placate the linter.
+    ret = subprocess_capture_output([
+      'git', '--no-pager', 'grep', '--color=never', '-r', '-l',
+      '-P', # use Perl regex, which is -- for whatever reason -- over 6x faster
+      '-e', func_name_and_type, '--',
+      # The reason for all of this exclusion nonsense is because without it, this search
+      # is __slooooow__. Running the test-lint job, even a naive search (seach only
+      # src and include) takes ~30s to complete. Adding these exclusions drops that to
+      # just under 7s. Not great, but manageable.
+
+      # magic git pathspecs see
+      # https://git-scm.com/docs/gitglossary#Documentation/gitglossary.txt-aiddefpathspecapathspec
+
+      # :/NAME means match NAME from the project root directory, i.e. PETSC_DIR
+      ':/src',
+      ':/include',
+      # exclude all fortran wrappers
+      ':!**/ftn-*/**',
+      ':!**/f90-*/**',
+      # exclude docs, we don't want to match changelog mentions
+      ':!**/docs/**',
+      # exclude bindings (the symbol must have been declared extern somewhere else for it
+      # to be usable from them anyways)
+      ':!**/binding/**',
+      # similarly, for the symbol to be usable from tests and tutorials it must be
+      # extern somewhere else
+      ':!**/tests/**',
+      ':!**/tutorials/**',
+      # ignore code we don't own
+      ':!**/yaml/**',
+      ':!**/perfstubs/**',
+      # last but not least, don't search makefiles
+      ':!*makefile'
+    ], check=False)
+    if (retcode := ret.returncode) == 0:
+      # found matches
+      str_origin = str(origin_file)
+      for found_file in filter(len, map(str.strip, ret.stdout.splitlines())):
+        # origin_file is:
+        # '/full/path/to/petsc/src/sys/tests/linter/testStaticFunctionCandidates.cxx'
+        # found_file is:
+        # 'src/sys/tests/linter/testStaticFunctionCandidates.cxx'
+        if not str_origin.endswith(found_file):
+          # Some other file contains a match. We conservatively assume that the API is
+          # somehow public and bail
+          return
+    elif retcode == 1:
+      # no matches, the current file appears to be the only place this function is visible
+      # from
+      pass
+    else:
+      # something else went wrong, propagate the error
+      subprocess_check_returncode(ret)
+
+    start = SourceLocation.cast(func.extent.start, tu=func.translation_unit)
+    self.add_diagnostic_from_cursor(
+      func, Diagnostic(
+        Diagnostic.Kind.ERROR, self.diags.static_function_candidate,
+        Diagnostic.make_message_from_formattable(
+          f'Function \'{func.name}()\' does not appear to be used anywhere outside of '
+          f'{origin_file.name}, and can be made static',
+          crange=func
+        ),
+        start,
+        # Note the space in 'static '! start points to exactly the first letter of
+        # the type, so we need to insert an extra space
+        #
+        #  ~~~ start
+        # v
+        # PetscErrorCode Foo(...)
+        # {
+        #    ...
+        #
+        patch=Patch(SourceRange.from_locations(start, start), 'static ')
+      )
+    )
+    return
+
   def process(self, tu: clx.TranslationUnit) -> None:
     r"""Process a translation unit for errors
 
@@ -425,6 +663,10 @@ class Linter:
     -----
     This is the main entry point for the linter
     """
+    from ..checks import _register
+
+    # TODO: these check function maps need to be unified into a single dispatcher... it is
+    # not very intuitive currently how to add "general" AST-matching checks.
     func_map        = _register.check_function_map
     docs_map        = _register.check_doc_map
     parsing_diag    = self.diags.parsing_error
@@ -433,7 +675,8 @@ class Linter:
     for results in self.find_lintable_expressions(tu, set(func_map.keys())):
       try:
         if isinstance(results, clx.Cursor):
-          docs_map[results.kind](self, Cursor.cast(results))
+          func = Cursor.cast(results)
+          docs_map[results.kind](self, func)
         else:
           func, parent, scope = results
           func                = Cursor.cast(func)
@@ -448,6 +691,10 @@ class Linter:
         self.add_diagnostic_from_cursor(
           tu_cursor, Diagnostic(Diagnostic.Kind.WARNING, parsing_diag, str(pe), tu_cursor.extent.start)
         )
+        # we don't want to check these
+        continue
+      self._check_possible_static_function(func)
+
     self._check_duplicate_function_calls(processed_funcs)
     return
 
@@ -604,6 +851,7 @@ class Linter:
     warnings_left, warnings_fixed = self.get_all_warnings()
     if nfix := sum(map(len, warnings_fixed.values())):
       raise RuntimeError(
-        f'Have {nfix} "fixable" warnings, this should not happen! If a warning has a fix then it should be an error instead!'
+        f'Have {nfix} "fixable" warnings, this should not happen! '
+        'If a warning has a fix then it should be an error instead!'
       )
     return errors_left, errors_fixed, warnings_left, patches

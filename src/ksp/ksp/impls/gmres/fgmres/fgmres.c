@@ -18,7 +18,7 @@ static PetscErrorCode KSPFGMRESGetNewVectors(KSP, PetscInt);
 static PetscErrorCode KSPFGMRESUpdateHessenberg(KSP, PetscInt, PetscBool, PetscReal *);
 static PetscErrorCode KSPFGMRESBuildSoln(PetscScalar *, Vec, Vec, KSP, PetscInt);
 
-PetscErrorCode KSPSetUp_FGMRES(KSP ksp)
+static PetscErrorCode KSPSetUp_FGMRES(KSP ksp)
 {
   PetscInt    max_k, k;
   KSP_FGMRES *fgmres = (KSP_FGMRES *)ksp->data;
@@ -54,7 +54,7 @@ static PetscErrorCode KSPFGMRESResidual(KSP ksp)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode KSPFGMRESCycle(PetscInt *itcount, KSP ksp)
+static PetscErrorCode KSPFGMRESCycle(PetscInt *itcount, KSP ksp)
 {
   KSP_FGMRES *fgmres = (KSP_FGMRES *)(ksp->data);
   PetscReal   res_norm;
@@ -205,7 +205,7 @@ PetscErrorCode KSPFGMRESCycle(PetscInt *itcount, KSP ksp)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode KSPSolve_FGMRES(KSP ksp)
+static PetscErrorCode KSPSolve_FGMRES(KSP ksp)
 {
   PetscInt    cycle_its = 0; /* iterations done in a call to KSPFGMRESCycle */
   KSP_FGMRES *fgmres    = (KSP_FGMRES *)ksp->data;
@@ -244,7 +244,7 @@ PetscErrorCode KSPSolve_FGMRES(KSP ksp)
 
 extern PetscErrorCode KSPReset_FGMRES(KSP);
 
-PetscErrorCode KSPDestroy_FGMRES(KSP ksp)
+static PetscErrorCode KSPDestroy_FGMRES(KSP ksp)
 {
   PetscFunctionBegin;
   PetscCall(KSPReset_FGMRES(ksp));
@@ -398,7 +398,7 @@ static PetscErrorCode KSPFGMRESGetNewVectors(KSP ksp, PetscInt it)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode KSPBuildSolution_FGMRES(KSP ksp, Vec ptr, Vec *result)
+static PetscErrorCode KSPBuildSolution_FGMRES(KSP ksp, Vec ptr, Vec *result)
 {
   KSP_FGMRES *fgmres = (KSP_FGMRES *)ksp->data;
 
@@ -417,7 +417,7 @@ PetscErrorCode KSPBuildSolution_FGMRES(KSP ksp, Vec ptr, Vec *result)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode KSPSetFromOptions_FGMRES(KSP ksp, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode KSPSetFromOptions_FGMRES(KSP ksp, PetscOptionItems *PetscOptionsObject)
 {
   PetscBool flg;
 
@@ -464,7 +464,7 @@ PetscErrorCode KSPReset_FGMRES(KSP ksp)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode KSPGMRESSetRestart_FGMRES(KSP ksp, PetscInt max_k)
+static PetscErrorCode KSPGMRESSetRestart_FGMRES(KSP ksp, PetscInt max_k)
 {
   KSP_FGMRES *gmres = (KSP_FGMRES *)ksp->data;
 
@@ -481,7 +481,7 @@ PetscErrorCode KSPGMRESSetRestart_FGMRES(KSP ksp, PetscInt max_k)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode KSPGMRESGetRestart_FGMRES(KSP ksp, PetscInt *max_k)
+static PetscErrorCode KSPGMRESGetRestart_FGMRES(KSP ksp, PetscInt *max_k)
 {
   KSP_FGMRES *gmres = (KSP_FGMRES *)ksp->data;
 

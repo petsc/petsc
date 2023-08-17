@@ -444,7 +444,7 @@ static PetscErrorCode DMLabelView_Concrete_Ascii(DMLabel label, PetscViewer view
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode DMLabelView_Concrete(DMLabel label, PetscViewer viewer)
+static PetscErrorCode DMLabelView_Concrete(DMLabel label, PetscViewer viewer)
 {
   PetscBool iascii;
 
@@ -545,7 +545,7 @@ PetscErrorCode DMLabelDestroy(DMLabel *label)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode DMLabelDuplicate_Concrete(DMLabel label, DMLabel *labelnew)
+static PetscErrorCode DMLabelDuplicate_Concrete(DMLabel label, DMLabel *labelnew)
 {
   PetscFunctionBegin;
   for (PetscInt v = 0; v < label->numStrata; ++v) {
@@ -1392,7 +1392,7 @@ PetscErrorCode DMLabelGetStratumBounds(DMLabel label, PetscInt value, PetscInt *
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode DMLabelGetStratumIS_Concrete(DMLabel label, PetscInt v, IS *pointIS)
+static PetscErrorCode DMLabelGetStratumIS_Concrete(DMLabel label, PetscInt v, IS *pointIS)
 {
   PetscFunctionBegin;
   PetscCall(PetscObjectReference((PetscObject)label->points[v]));
@@ -1688,7 +1688,7 @@ PetscErrorCode DMLabelPermute(DMLabel label, IS permutation, DMLabel *labelNew)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode DMLabelDistribute_Internal(DMLabel label, PetscSF sf, PetscSection *leafSection, PetscInt **leafStrata)
+static PetscErrorCode DMLabelDistribute_Internal(DMLabel label, PetscSF sf, PetscSection *leafSection, PetscInt **leafStrata)
 {
   MPI_Comm     comm;
   PetscInt     s, l, nroots, nleaves, offset, size;

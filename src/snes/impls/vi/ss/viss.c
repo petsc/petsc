@@ -94,7 +94,7 @@ PetscErrorCode SNESVIComputeFunction(SNES snes, Vec X, Vec phi, void *functx)
    SNESVIComputeBsubdifferentialVectors - Computes the diagonal shift (Da) and row scaling (Db) vectors needed for the
                                           the semismooth jacobian.
 */
-PetscErrorCode SNESVIComputeBsubdifferentialVectors(SNES snes, Vec X, Vec F, Mat jac, Vec Da, Vec Db)
+static PetscErrorCode SNESVIComputeBsubdifferentialVectors(SNES snes, Vec X, Vec F, Mat jac, Vec Da, Vec Db)
 {
   PetscScalar *l, *u, *x, *f, *da, *db, da1, da2, db1, db2;
   PetscInt     i, nlocal;
@@ -158,7 +158,7 @@ PetscErrorCode SNESVIComputeBsubdifferentialVectors(SNES snes, Vec X, Vec F, Mat
          Da is the diagonal perturbation matrix stored as a vector
    and   jacfun is the jacobian of the original nonlinear function.
 */
-PetscErrorCode SNESVIComputeJacobian(Mat jac, Mat jac_pre, Vec Da, Vec Db)
+static PetscErrorCode SNESVIComputeJacobian(Mat jac, Mat jac_pre, Vec Da, Vec Db)
 {
   /* Do row scaling  and add diagonal perturbation */
   PetscFunctionBegin;
@@ -193,7 +193,7 @@ static PetscErrorCode SNESVIComputeMeritFunctionGradient(Mat H, Vec phi, Vec dps
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode SNESSolve_VINEWTONSSLS(SNES snes)
+static PetscErrorCode SNESSolve_VINEWTONSSLS(SNES snes)
 {
   SNES_VINEWTONSSLS   *vi = (SNES_VINEWTONSSLS *)snes->data;
   PetscInt             maxits, i, lits;
@@ -339,7 +339,7 @@ PetscErrorCode SNESSolve_VINEWTONSSLS(SNES snes)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode SNESSetUp_VINEWTONSSLS(SNES snes)
+static PetscErrorCode SNESSetUp_VINEWTONSSLS(SNES snes)
 {
   SNES_VINEWTONSSLS *vi = (SNES_VINEWTONSSLS *)snes->data;
 
@@ -354,7 +354,7 @@ PetscErrorCode SNESSetUp_VINEWTONSSLS(SNES snes)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode SNESReset_VINEWTONSSLS(SNES snes)
+static PetscErrorCode SNESReset_VINEWTONSSLS(SNES snes)
 {
   SNES_VINEWTONSSLS *vi = (SNES_VINEWTONSSLS *)snes->data;
 

@@ -16,6 +16,7 @@
 PETSC_EXTERN PetscClassId IS_CLASSID;
 
 PETSC_EXTERN PetscErrorCode ISInitializePackage(void);
+PETSC_EXTERN PetscErrorCode ISFinalizePackage(void);
 
 /*J
     ISType - String with the name of a PETSc index set type

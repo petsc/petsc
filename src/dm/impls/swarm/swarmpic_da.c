@@ -4,7 +4,7 @@
 #include <petsc/private/dmswarmimpl.h>
 #include "../src/dm/impls/swarm/data_bucket.h"
 
-PetscErrorCode private_DMSwarmCreateCellLocalCoords_DA_Q1_Regular(PetscInt dim, PetscInt np[], PetscInt *_npoints, PetscReal **_xi)
+static PetscErrorCode private_DMSwarmCreateCellLocalCoords_DA_Q1_Regular(PetscInt dim, PetscInt np[], PetscInt *_npoints, PetscReal **_xi)
 {
   PetscReal *xi;
   PetscInt   d, npoints = 0, cnt;
@@ -65,7 +65,7 @@ PetscErrorCode private_DMSwarmCreateCellLocalCoords_DA_Q1_Regular(PetscInt dim, 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode private_DMSwarmCreateCellLocalCoords_DA_Q1_Gauss(PetscInt dim, PetscInt np_1d, PetscInt *_npoints, PetscReal **_xi)
+static PetscErrorCode private_DMSwarmCreateCellLocalCoords_DA_Q1_Gauss(PetscInt dim, PetscInt np_1d, PetscInt *_npoints, PetscReal **_xi)
 {
   PetscQuadrature  quadrature;
   const PetscReal *quadrature_xi;
@@ -85,7 +85,7 @@ PetscErrorCode private_DMSwarmCreateCellLocalCoords_DA_Q1_Gauss(PetscInt dim, Pe
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode private_DMSwarmInsertPointsUsingCellDM_DA_Q1(DM dm, DM dmc, PetscInt npoints, DMSwarmPICLayoutType layout)
+static PetscErrorCode private_DMSwarmInsertPointsUsingCellDM_DA_Q1(DM dm, DM dmc, PetscInt npoints, DMSwarmPICLayoutType layout)
 {
   PetscInt           dim, npoints_q;
   PetscInt           nel, npe, e, q, k, d;
@@ -210,7 +210,7 @@ PetscErrorCode private_DMSwarmInsertPointsUsingCellDM_DA(DM dm, DM celldm, DMSwa
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode DMSwarmProjectField_ApproxQ1_DA_2D(DM swarm, PetscReal *swarm_field, DM dm, Vec v_field)
+static PetscErrorCode DMSwarmProjectField_ApproxQ1_DA_2D(DM swarm, PetscReal *swarm_field, DM dm, Vec v_field)
 {
   Vec                v_field_l, denom_l, coor_l, denom;
   PetscScalar       *_field_l, *_denom_l;

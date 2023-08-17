@@ -157,7 +157,7 @@ PetscErrorCode PetscMallocValidate(int line, const char function[], const char f
     PetscTrMallocDefault - Malloc with logging and error checking
 
 */
-PetscErrorCode PetscTrMallocDefault(size_t a, PetscBool clear, int lineno, const char function[], const char filename[], void **result)
+static PetscErrorCode PetscTrMallocDefault(size_t a, PetscBool clear, int lineno, const char function[], const char filename[], void **result)
 {
   TRSPACE *head;
   char    *inew;
@@ -248,7 +248,7 @@ PetscErrorCode PetscTrMallocDefault(size_t a, PetscBool clear, int lineno, const
    PetscTrFreeDefault - Free with logging and error checking
 
 */
-PetscErrorCode PetscTrFreeDefault(void *aa, int lineno, const char function[], const char filename[])
+static PetscErrorCode PetscTrFreeDefault(void *aa, int lineno, const char function[], const char filename[])
 {
   char         *a = (char *)aa;
   TRSPACE      *head;
@@ -319,7 +319,7 @@ PetscErrorCode PetscTrFreeDefault(void *aa, int lineno, const char function[], c
   PetscTrReallocDefault - Realloc with logging and error checking
 
 */
-PetscErrorCode PetscTrReallocDefault(size_t len, int lineno, const char function[], const char filename[], void **result)
+static PetscErrorCode PetscTrReallocDefault(size_t len, int lineno, const char function[], const char filename[], void **result)
 {
   char         *a = (char *)*result;
   TRSPACE      *head;

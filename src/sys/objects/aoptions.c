@@ -159,7 +159,7 @@ static const char *OptionsBodyBottom = "<div id=\"variablesInfo\" style=\"backgr
 -    Only works for PetscInt == int, PetscReal == double etc
 
 */
-PetscErrorCode PetscOptionsSAWsInput(PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode PetscOptionsSAWsInput(PetscOptionItems *PetscOptionsObject)
 {
   PetscOptionItem next     = PetscOptionsObject->next;
   static int      mancount = 0;

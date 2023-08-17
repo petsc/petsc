@@ -84,13 +84,3 @@ int TV_add_row(const char *field_name, const char *type_name, const void *value)
 
   return 0;
 }
-
-void TV_pre_display_callback(void)
-{
-  TV_data_format_control = TV_FORMAT_FIRST_CALL;
-}
-
-void TV_post_display_callback(void)
-{
-  TV_data_format_control = TV_FORMAT_INACTIVE;
-}

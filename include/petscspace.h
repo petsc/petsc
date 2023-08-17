@@ -18,6 +18,7 @@ S*/
 typedef struct _p_PetscSpace *PetscSpace;
 
 PETSC_EXTERN PetscErrorCode PetscFEInitializePackage(void);
+PETSC_EXTERN PetscErrorCode PetscFEFinalizePackage(void);
 
 PETSC_EXTERN PetscClassId PETSCSPACE_CLASSID;
 

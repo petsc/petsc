@@ -5,7 +5,7 @@
 
 #include <petsc/private/dmdaimpl.h> /*I   "petscdmda.h"   I*/
 
-PetscErrorCode VecDuplicate_MPI_DA(Vec g, Vec *gg)
+static PetscErrorCode VecDuplicate_MPI_DA(Vec g, Vec *gg)
 {
   DM          da;
   PetscLayout map;

@@ -1,7 +1,7 @@
 #include <petsc/private/dmpatchimpl.h> /*I      "petscdmpatch.h"   I*/
 #include <petscdmda.h>
 
-PetscErrorCode DMSetFromOptions_Patch(DM dm, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode DMSetFromOptions_Patch(DM dm, PetscOptionItems *PetscOptionsObject)
 {
   /* DM_Patch      *mesh = (DM_Patch*) dm->data; */
 
@@ -21,7 +21,7 @@ extern PetscErrorCode DMCreateLocalVector_Patch(DM dm, Vec *l);
 extern PetscErrorCode DMDestroy_Patch(DM dm);
 extern PetscErrorCode DMCreateSubDM_Patch(DM dm, PetscInt numFields, const PetscInt fields[], IS *is, DM *subdm);
 
-PetscErrorCode DMInitialize_Patch(DM dm)
+static PetscErrorCode DMInitialize_Patch(DM dm)
 {
   PetscFunctionBegin;
   dm->ops->view                    = DMView_Patch;

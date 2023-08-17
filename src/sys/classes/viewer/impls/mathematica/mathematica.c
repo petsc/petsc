@@ -50,7 +50,7 @@ PetscErrorCode PetscViewerMathematicaInitializePackage(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PetscViewerInitializeMathematicaWorld_Private()
+static PetscErrorCode PetscViewerInitializeMathematicaWorld_Private()
 {
   PetscFunctionBegin;
   if (PETSC_VIEWER_MATHEMATICA_WORLD_PRIVATE) PetscFunctionReturn(PETSC_SUCCESS);
@@ -70,14 +70,14 @@ static PetscErrorCode PetscViewerDestroy_Mathematica(PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PetscViewerDestroyMathematica_Private(void)
+static PetscErrorCode PetscViewerDestroyMathematica_Private(void)
 {
   PetscFunctionBegin;
   if (PETSC_VIEWER_MATHEMATICA_WORLD_PRIVATE) PetscCall(PetscViewerDestroy(PETSC_VIEWER_MATHEMATICA_WORLD_PRIVATE));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PetscViewerMathematicaSetupConnection_Private(PetscViewer v)
+static PetscErrorCode PetscViewerMathematicaSetupConnection_Private(PetscViewer v)
 {
   PetscViewer_Mathematica *vmath = (PetscViewer_Mathematica *)v->data;
 #if defined(MATHEMATICA_3_0)
@@ -354,7 +354,7 @@ PetscErrorCode PetscViewerMathematicaOpen(MPI_Comm comm, int port, const char ma
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*
   PetscViewerMathematicaGetLink - Returns the link to Mathematica from a `PETSCVIEWERMATHEMATICA`
 
   Input Parameters:
@@ -364,8 +364,8 @@ PetscErrorCode PetscViewerMathematicaOpen(MPI_Comm comm, int port, const char ma
   Level: intermediate
 
 .seealso: `PETSCVIEWERMATHEMATICA`, `PetscViewerMathematicaOpen()`
-@*/
-PetscErrorCode PetscViewerMathematicaGetLink(PetscViewer viewer, MLINK *link)
+*/
+static PetscErrorCode PetscViewerMathematicaGetLink(PetscViewer viewer, MLINK *link)
 {
   PetscViewer_Mathematica *vmath = (PetscViewer_Mathematica *)viewer->data;
 

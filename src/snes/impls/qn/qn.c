@@ -425,7 +425,7 @@ PetscErrorCode SNESQNSetScaleType(SNES snes, SNESQNScaleType stype)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode SNESQNSetScaleType_QN(SNES snes, SNESQNScaleType stype)
+static PetscErrorCode SNESQNSetScaleType_QN(SNES snes, SNESQNScaleType stype)
 {
   SNES_QN *qn = (SNES_QN *)snes->data;
 
@@ -435,7 +435,7 @@ PetscErrorCode SNESQNSetScaleType_QN(SNES snes, SNESQNScaleType stype)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode SNESQNSetRestartType_QN(SNES snes, SNESQNRestartType rtype)
+static PetscErrorCode SNESQNSetRestartType_QN(SNES snes, SNESQNRestartType rtype)
 {
   SNES_QN *qn = (SNES_QN *)snes->data;
 
@@ -468,7 +468,7 @@ PetscErrorCode SNESQNSetType(SNES snes, SNESQNType qtype)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode SNESQNSetType_QN(SNES snes, SNESQNType qtype)
+static PetscErrorCode SNESQNSetType_QN(SNES snes, SNESQNType qtype)
 {
   SNES_QN *qn = (SNES_QN *)snes->data;
 

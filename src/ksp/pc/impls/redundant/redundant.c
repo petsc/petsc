@@ -18,7 +18,7 @@ typedef struct {
   MatFactorShiftType shifttype;
 } PC_Redundant;
 
-PetscErrorCode PCFactorSetShiftType_Redundant(PC pc, MatFactorShiftType shifttype)
+static PetscErrorCode PCFactorSetShiftType_Redundant(PC pc, MatFactorShiftType shifttype)
 {
   PC_Redundant *red = (PC_Redundant *)pc->data;
 

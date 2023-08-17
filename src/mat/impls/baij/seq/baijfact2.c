@@ -250,7 +250,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_N(Mat B, Mat A, const MatFactorInfo *i
    because this code is almost identical to MatILUFactorSymbolic_SeqAIJ_ilu0_inplace().
 */
 
-PetscErrorCode MatILUFactorSymbolic_SeqBAIJ_ilu0(Mat fact, Mat A, IS isrow, IS iscol, const MatFactorInfo *info)
+static PetscErrorCode MatILUFactorSymbolic_SeqBAIJ_ilu0(Mat fact, Mat A, IS isrow, IS iscol, const MatFactorInfo *info)
 {
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ *)A->data, *b;
   PetscInt     n = a->mbs, *ai = a->i, *aj, *adiag = a->diag, bs2 = a->bs2;

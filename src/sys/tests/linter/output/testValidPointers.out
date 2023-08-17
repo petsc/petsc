@@ -1,4 +1,11 @@
 <--- FIXED --->
+[31m[1m./src/sys/tests/linter/testValidPointers.c:3:1: error:[0m Function 'testValidPointers()' does not appear to be used anywhere outside of testValidPointers.c, and can be made static [-fstatic-function-candidate]:
+  1: #include <petsc/private/petscimpl.h>
+  2: 
+> 3: [33m[1mPetscErrorCode testValidPointers(void *a, char *b, PetscInt *c, PetscMPIInt *d, PetscInt *e, PetscBool *f, PetscScalar *g, PetscReal *h)[0m
+     [33m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  4: {
+  5:   /* incorrect */
 [31m[1m./src/sys/tests/linter/testValidPointers.c:6:25: error:[0m Argument number doesn't match for 'a'. Expected '1', found '2' [-fmatching-arg-num]:
   4: {
   5:   /* incorrect */
@@ -119,6 +126,13 @@
                                                                                                                                 [33m[1m^^^^^^^^^^^^[0m
   4: {
   5:   /* incorrect */
+[31m[1m./src/sys/tests/linter/testValidPointers.c:27:1: error:[0m Function 'testValidPointers2()' does not appear to be used anywhere outside of testValidPointers.c, and can be made static [-fstatic-function-candidate]:
+  25: }
+  26: 
+> 27: [33m[1mvoid testValidPointers2(void *a, char *b, PetscInt *c, PetscMPIInt *d, PetscInt *e, PetscBool *f, PetscScalar *g, PetscReal *h)[0m
+      [33m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  28: {
+  29:   /* incorrect */
 [31m[1m./src/sys/tests/linter/testValidPointers.c:30:25: error:[0m Argument number doesn't match for 'a'. Expected '1', found '2' [-fmatching-arg-num]:
   28: {
   29:   /* incorrect */
@@ -239,6 +253,13 @@
                                                                                                                         [33m[1m^^^^^^^^^^^^[0m
   28: {
   29:   /* incorrect */
+[31m[1m./src/sys/tests/linter/testValidPointers.c:51:1: error:[0m Function 'testValidPointers3()' does not appear to be used anywhere outside of testValidPointers.c, and can be made static [-fstatic-function-candidate]:
+  49: }
+  50: 
+> 51: [33m[1mvoid testValidPointers3(void **a, char **b, PetscInt **c, PetscMPIInt **d, PetscInt **e, PetscBool **f, PetscScalar **g, PetscReal **h)[0m
+      [33m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  52: {
+  53:   /* incorrect */
 [31m[1m./src/sys/tests/linter/testValidPointers.c:64:3: error:[0m Duplicate function found previous identical usage [-fduplicate-function]:
   52: {
   53:   /* incorrect */

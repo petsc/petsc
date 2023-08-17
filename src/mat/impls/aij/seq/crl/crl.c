@@ -11,7 +11,7 @@
 */
 #include <../src/mat/impls/aij/seq/crl/crl.h>
 
-PetscErrorCode MatDestroy_SeqAIJCRL(Mat A)
+static PetscErrorCode MatDestroy_SeqAIJCRL(Mat A)
 {
   Mat_AIJCRL *aijcrl = (Mat_AIJCRL *)A->spptr;
 
@@ -29,7 +29,7 @@ PetscErrorCode MatDuplicate_AIJCRL(Mat A, MatDuplicateOption op, Mat *M)
   SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Cannot duplicate AIJCRL matrices yet");
 }
 
-PetscErrorCode MatSeqAIJCRL_create_aijcrl(Mat A)
+static PetscErrorCode MatSeqAIJCRL_create_aijcrl(Mat A)
 {
   Mat_SeqAIJ  *a      = (Mat_SeqAIJ *)(A)->data;
   Mat_AIJCRL  *aijcrl = (Mat_AIJCRL *)A->spptr;
@@ -62,7 +62,7 @@ PetscErrorCode MatSeqAIJCRL_create_aijcrl(Mat A)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatAssemblyEnd_SeqAIJCRL(Mat A, MatAssemblyType mode)
+static PetscErrorCode MatAssemblyEnd_SeqAIJCRL(Mat A, MatAssemblyType mode)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ *)A->data;
 
