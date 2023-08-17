@@ -1,3 +1,5 @@
+#ifndef GMSHLEX_H
+#define GMSHLEX_H
 /*
  S: simplex  B: box
  N: size     I: index  L: loop
@@ -301,3 +303,4 @@ static inline int GmshLexOrder_PYR(int p, int lex[], int node)
   for (i = 0; i < m; ++i) lex[i] = node++; /* TODO */
   return node;
 }
+#endif

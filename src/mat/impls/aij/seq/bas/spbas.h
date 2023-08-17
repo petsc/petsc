@@ -1,3 +1,6 @@
+#ifndef SPBAS_H
+#define SPBAS_H
+
 /*
    Define type spbas_matrix: sparse matrices using pointers
 
@@ -97,3 +100,5 @@ PetscErrorCode spbas_apply_reordering(spbas_matrix *, const PetscInt *, const Pe
 PetscErrorCode spbas_pattern_only(PetscInt, PetscInt, PetscInt *, PetscInt *, spbas_matrix *);
 PetscErrorCode spbas_power(spbas_matrix, PetscInt, spbas_matrix *);
 PetscErrorCode spbas_keep_upper(spbas_matrix *);
+
+#endif

@@ -1,3 +1,5 @@
+#ifndef MPIDENSE_H
+#define MPIDENSE_H
 
 #include <../src/mat/impls/dense/seq/dense.h>
 #include <petscsf.h>
@@ -77,4 +79,6 @@ PETSC_INTERN PetscErrorCode MatConvert_MPIDense_MPIDenseCUDA(Mat, MatType, MatRe
 
 #if PetscDefined(HAVE_HIP)
 PETSC_INTERN PetscErrorCode MatConvert_MPIDense_MPIDenseHIP(Mat, MatType, MatReuse, Mat *);
+#endif
+
 #endif

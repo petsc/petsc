@@ -1,3 +1,5 @@
+#ifndef EX55_H
+#define EX55_H
 #include <petscdmda.h>
 
 /*
@@ -17,3 +19,4 @@ struct AppCtx {
 PETSC_EXTERN PetscErrorCode FormFunctionLocalVec(DMDALocalInfo *info, Vec x, Vec f, AppCtx *user);
 PETSC_EXTERN PetscErrorCode FormObjectiveLocalVec(DMDALocalInfo *info, Vec x, PetscReal *obj, AppCtx *user);
 PETSC_EXTERN PetscErrorCode FormJacobianLocalVec(DMDALocalInfo *info, Vec x, Mat jac, Mat jacpre, AppCtx *user);
+#endif

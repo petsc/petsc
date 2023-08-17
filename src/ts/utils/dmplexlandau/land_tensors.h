@@ -1,3 +1,6 @@
+#ifndef LAND_TENSORS_H
+#define LAND_TENSORS_H
+
 #define LANDAU_INVSQRT(q) (1. / PetscSqrtReal(q))
 
 #if defined(__CUDA_ARCH__)
@@ -153,5 +156,7 @@ static PETSC_DEVICE_FUNC_DECL void LandauTensor3DRelativistic(const PetscReal a_
     }
   }
 }
+
+#endif
 
 #endif

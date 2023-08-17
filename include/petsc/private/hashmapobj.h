@@ -1,7 +1,7 @@
-#if !defined(PETSC_HASHMAPOBJ_H)
-  #define PETSC_HASHMAPOBJ_H
+#ifndef PETSC_HASHMAPOBJ_H
+#define PETSC_HASHMAPOBJ_H
 
-  #include <petsc/private/hashmap.h>
+#include <petsc/private/hashmap.h>
 
 /*
   Hash map from PetscInt64 --> PetscObject

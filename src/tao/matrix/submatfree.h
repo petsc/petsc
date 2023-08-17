@@ -1,3 +1,7 @@
+#ifndef SUBMATFREE_H
+#define SUBMATFREE_H
+
+#include <petscmat.h>
 
 typedef struct {
   Mat A;
@@ -29,3 +33,4 @@ PetscErrorCode MatNorm_SMF(Mat, NormType, PetscReal *);
 PetscErrorCode MatGetRowMax_SMF(Mat, Vec);
 PetscErrorCode MatGetRow_SMF(Mat, PetscInt, PetscInt *, const PetscInt **, const PetscScalar **);
 PetscErrorCode MatRestoreRow_SMF(Mat, PetscInt, PetscInt *, const PetscInt **, const PetscScalar **);
+#endif

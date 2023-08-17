@@ -1,3 +1,6 @@
+#ifndef EX3_H
+#define EX3_H
+
 typedef enum {
   SA_ADJ,
   SA_TLM
@@ -222,3 +225,4 @@ PetscErrorCode ComputeSensiP(Vec lambda, Vec mu, AppCtx *ctx)
   PetscCall(VecRestoreArrayRead(lambda, &x));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
+#endif

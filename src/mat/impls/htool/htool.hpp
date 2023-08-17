@@ -1,3 +1,6 @@
+#ifndef HTOOL_HPP
+#define HTOOL_HPP
+
 #include <petsc/private/matimpl.h>
 #include <htool/misc/petsc.hpp>
 
@@ -44,3 +47,5 @@ struct MatHtoolKernelTranspose {
   MatHtoolKernel kernel;
   void          *kernelctx;
 };
+
+#endif

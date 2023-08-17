@@ -1,3 +1,5 @@
+#ifndef MATHEMATICA_H
+#define MATHEMATICA_H
 /*
    This is the definition of the Mathematica viewer structure.
 */
@@ -28,3 +30,4 @@ PETSC_EXTERN PetscErrorCode PetscViewerMathematicaSetLinkName(PetscViewer, const
 PETSC_EXTERN PetscErrorCode PetscViewerMathematicaSetLinkPort(PetscViewer, int);
 PETSC_EXTERN PetscErrorCode PetscViewerMathematicaSetLinkHost(PetscViewer, const char *);
 PETSC_EXTERN PetscErrorCode PetscViewerMathematicaSetLinkMode(PetscViewer, LinkMode);
+#endif

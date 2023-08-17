@@ -1,3 +1,6 @@
+#ifndef REACTION_DIFFUSION_H
+#define REACTION_DIFFUSION_H
+
 #include <petscts.h>
 
 /* Simple C struct that allows us to access the two velocity (x and y directions) values easily in the code */
@@ -19,3 +22,4 @@ PetscErrorCode RHSFunction(TS, PetscReal, Vec, Vec, void *);
 PetscErrorCode RHSJacobian(TS, PetscReal, Vec, Mat, Mat, void *);
 PetscErrorCode IFunction(TS, PetscReal, Vec, Vec, Vec, void *);
 PetscErrorCode IJacobian(TS, PetscReal, Vec, Vec, PetscReal, Mat, Mat, void *);
+#endif

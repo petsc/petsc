@@ -1,4 +1,3 @@
-
 /*
     This is included by sbaij.c to generate unsigned short and regular versions of these two functions
 */

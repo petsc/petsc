@@ -1,3 +1,5 @@
+#ifndef AIJMKL_H
+#define AIJMKL_H
 /*
   Wrappers for mkl_cspblas_ routines.
   A more elegant way to do this would be to use an approach like that used in petsclbaslapack_mangle.h,
@@ -81,4 +83,6 @@
   #elif defined(PETSC_USE_REAL_DOUBLE)
     #define mkl_sparse_x_export_csr mkl_sparse_z_export_csr
   #endif
+#endif
+
 #endif

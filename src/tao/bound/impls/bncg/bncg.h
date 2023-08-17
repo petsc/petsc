@@ -1,11 +1,11 @@
+#ifndef __TAO_BNCG_H
+#define __TAO_BNCG_H
+
 /*
     Context for bound-constrained nonlinear conjugate gradient method
  */
 
-#ifndef __TAO_BNCG_H
-  #define __TAO_BNCG_H
-
-  #include <petsc/private/taoimpl.h>
+#include <petsc/private/taoimpl.h>
 
 typedef struct {
   Mat B;
@@ -49,8 +49,6 @@ typedef struct {
 
 } TAO_BNCG;
 
-#endif /* ifndef __TAO_BNCG_H */
-
 PETSC_INTERN PetscErrorCode TaoBNCGEstimateActiveSet(Tao, PetscInt);
 PETSC_INTERN PetscErrorCode TaoBNCGBoundStep(Tao, PetscInt, Vec);
 PETSC_INTERN PetscErrorCode TaoBNCGComputeScalarScaling(PetscReal, PetscReal, PetscReal, PetscReal *, PetscReal);
@@ -59,3 +57,4 @@ PETSC_INTERN PetscErrorCode TaoBNCGStepDirectionUpdate(Tao, PetscReal, PetscReal
 PETSC_INTERN PetscErrorCode TaoBNCGComputeDiagScaling(Tao, PetscReal, PetscReal);
 PETSC_INTERN PetscErrorCode TaoBNCGResetUpdate(Tao, PetscReal);
 PETSC_INTERN PetscErrorCode TaoBNCGCheckDynamicRestart(Tao, PetscReal, PetscReal, PetscReal, PetscBool *, PetscReal);
+#endif /* ifndef __TAO_BNCG_H */

@@ -1,3 +1,5 @@
+#ifndef PARULA_H
+#define PARULA_H
 static const unsigned char PetscDrawCmap_parula[256 - PETSC_DRAW_BASIC_COLORS][3] = {
   {53,  42,  134},
   {53,  43,  138},
@@ -223,3 +225,4 @@ static const unsigned char PetscDrawCmap_parula[256 - PETSC_DRAW_BASIC_COLORS][3
   {248, 248, 15 },
   {248, 250, 13 },
 };
+#endif

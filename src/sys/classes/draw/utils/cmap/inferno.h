@@ -1,3 +1,5 @@
+#ifndef INFERNO_H
+#define INFERNO_H
 static const unsigned char PetscDrawCmap_inferno[256 - PETSC_DRAW_BASIC_COLORS][3] = {
   {0,   0,   3  },
   {0,   0,   4  },
@@ -223,3 +225,4 @@ static const unsigned char PetscDrawCmap_inferno[256 - PETSC_DRAW_BASIC_COLORS][
   {250, 253, 160},
   {252, 254, 164},
 };
+#endif

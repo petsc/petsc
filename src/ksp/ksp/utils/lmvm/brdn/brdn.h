@@ -1,3 +1,6 @@
+#ifndef BDRN_H
+#define BDRN_H
+
 #include <../src/ksp/ksp/utils/lmvm/lmvm.h>
 
 /*
@@ -11,3 +14,5 @@ typedef struct {
   PetscReal *yty, *yts;
   PetscReal *sts, *stq;
 } Mat_Brdn;
+
+#endif

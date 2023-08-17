@@ -1,3 +1,6 @@
+#ifndef SCHURM_H
+#define SCHURM_H
+
 #include <petsc/private/kspimpl.h>
 #include <petsc/private/matimpl.h>
 #include <petscksp.h>
@@ -19,3 +22,5 @@ PETSC_INTERN PetscErrorCode MatDestroy_SchurComplement(Mat);
 PETSC_INTERN PetscErrorCode MatGetSchurComplement_Basic(Mat, IS, IS, IS, IS, MatReuse, Mat *, MatSchurComplementAinvType, MatReuse, Mat *);
 
 PETSC_EXTERN PetscErrorCode MatCreate_SchurComplement(Mat);
+
+#endif

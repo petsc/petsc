@@ -1,3 +1,5 @@
+#ifndef TCQMRIMPL_H
+#define TCQMRIMPL_H
 /*
    Private include for tcqmr package
  */
@@ -27,3 +29,5 @@
 #define pvec       ksp->work[VEC_OFFSET + 15]
 #define vtmp       ksp->work[VEC_OFFSET + 16]
 #define TCQMR_VECS 17
+
+#endif

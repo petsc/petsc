@@ -1,8 +1,8 @@
-#if !defined(GARBAGECOLLECTOR_H)
-  #define GARBAGECOLLECTOR_H
+#ifndef GARBAGECOLLECTOR_H
+#define GARBAGECOLLECTOR_H
 
-  #include <petsc/private/hashmapobj.h>
-  #include <petscsys.h>
+#include <petsc/private/hashmapobj.h>
+#include <petscsys.h>
 
 typedef union _PetscGarbage
 {
