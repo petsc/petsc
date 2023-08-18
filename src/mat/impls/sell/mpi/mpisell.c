@@ -282,8 +282,6 @@ static PetscErrorCode MatGetValues_MPISELL(Mat mat, PetscInt m, const PetscInt i
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-extern PetscErrorCode MatMultDiagonalBlock_MPISELL(Mat, Vec, Vec);
-
 static PetscErrorCode MatAssemblyBegin_MPISELL(Mat mat, MatAssemblyType mode)
 {
   Mat_MPISELL *sell = (Mat_MPISELL *)mat->data;
@@ -383,7 +381,7 @@ static PetscErrorCode MatMult_MPISELL(Mat A, Vec xx, Vec yy)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatMultDiagonalBlock_MPISELL(Mat A, Vec bb, Vec xx)
+static PetscErrorCode MatMultDiagonalBlock_MPISELL(Mat A, Vec bb, Vec xx)
 {
   Mat_MPISELL *a = (Mat_MPISELL *)A->data;
 
@@ -891,8 +889,6 @@ static PetscErrorCode MatSetUp_MPISELL(Mat A)
   PetscCall(MatMPISELLSetPreallocation(A, PETSC_DEFAULT, NULL, PETSC_DEFAULT, NULL));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-
-extern PetscErrorCode MatConjugate_SeqSELL(Mat);
 
 static PetscErrorCode MatConjugate_MPISELL(Mat mat)
 {
@@ -1577,6 +1573,106 @@ PetscErrorCode MatCreateSELL(MPI_Comm comm, PetscInt m, PetscInt n, PetscInt M, 
     PetscCall(MatSetType(*A, MATSEQSELL));
     PetscCall(MatSeqSELLSetPreallocation(*A, d_rlenmax, d_rlen));
   }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@C
+  MatMPISELLGetSeqSELL - Returns the local pieces of this distributed matrix
+
+  Not Collective
+
+  Input Parameter:
+. A - the `MATMPISELL` matrix
+
+  Output Parameters:
++ Ad     - The diagonal portion of `A`
+. Ao     - The off diagonal portion of `A`
+- colmap - An array mapping local column numbers of `Ao` to global column numbers of the parallel matrix
+
+  Level: advanced
+
+.seealso: `Mat`, `MATSEQSELL`, `MATMPISELL`
+@*/
+PetscErrorCode MatMPISELLGetSeqSELL(Mat A, Mat *Ad, Mat *Ao, const PetscInt *colmap[])
+{
+  Mat_MPISELL *a = (Mat_MPISELL *)A->data;
+  PetscBool    flg;
+
+  PetscFunctionBegin;
+  PetscCall(PetscObjectTypeCompare((PetscObject)A, MATMPISELL, &flg));
+  PetscCheck(flg, PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "This function requires a MATMPISELL matrix as input");
+  if (Ad) *Ad = a->A;
+  if (Ao) *Ao = a->B;
+  if (colmap) *colmap = a->garray;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@C
+  MatMPISELLGetLocalMatCondensed - Creates a `MATSEQSELL` matrix from an `MATMPISELL` matrix by
+  taking all its local rows and NON-ZERO columns
+
+  Not Collective
+
+  Input Parameters:
++ A     - the matrix
+. scall - either `MAT_INITIAL_MATRIX` or `MAT_REUSE_MATRIX`
+. row   - index sets of rows to extract (or `NULL`)
+- col   - index sets of columns to extract (or `NULL`)
+
+  Output Parameter:
+. A_loc - the local sequential matrix generated
+
+  Level: advanced
+
+.seealso: `Mat`, `MATSEQSELL`, `MATMPISELL`, `MatGetOwnershipRange()`, `MatMPISELLGetLocalMat()`
+@*/
+PetscErrorCode MatMPISELLGetLocalMatCondensed(Mat A, MatReuse scall, IS *row, IS *col, Mat *A_loc)
+{
+  Mat_MPISELL *a = (Mat_MPISELL *)A->data;
+  PetscInt     i, start, end, ncols, nzA, nzB, *cmap, imark, *idx;
+  IS           isrowa, iscola;
+  Mat         *aloc;
+  PetscBool    match;
+
+  PetscFunctionBegin;
+  PetscCall(PetscObjectTypeCompare((PetscObject)A, MATMPISELL, &match));
+  PetscCheck(match, PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "Requires MATMPISELL matrix as input");
+  PetscCall(PetscLogEventBegin(MAT_Getlocalmatcondensed, A, 0, 0, 0));
+  if (!row) {
+    start = A->rmap->rstart;
+    end   = A->rmap->rend;
+    PetscCall(ISCreateStride(PETSC_COMM_SELF, end - start, start, 1, &isrowa));
+  } else {
+    isrowa = *row;
+  }
+  if (!col) {
+    start = A->cmap->rstart;
+    cmap  = a->garray;
+    nzA   = a->A->cmap->n;
+    nzB   = a->B->cmap->n;
+    PetscCall(PetscMalloc1(nzA + nzB, &idx));
+    ncols = 0;
+    for (i = 0; i < nzB; i++) {
+      if (cmap[i] < start) idx[ncols++] = cmap[i];
+      else break;
+    }
+    imark = i;
+    for (i = 0; i < nzA; i++) idx[ncols++] = start + i;
+    for (i = imark; i < nzB; i++) idx[ncols++] = cmap[i];
+    PetscCall(ISCreateGeneral(PETSC_COMM_SELF, ncols, idx, PETSC_OWN_POINTER, &iscola));
+  } else {
+    iscola = *col;
+  }
+  if (scall != MAT_INITIAL_MATRIX) {
+    PetscCall(PetscMalloc1(1, &aloc));
+    aloc[0] = *A_loc;
+  }
+  PetscCall(MatCreateSubMatrices(A, 1, &isrowa, &iscola, scall, &aloc));
+  *A_loc = aloc[0];
+  PetscCall(PetscFree(aloc));
+  if (!row) PetscCall(ISDestroy(&isrowa));
+  if (!col) PetscCall(ISDestroy(&iscola));
+  PetscCall(PetscLogEventEnd(MAT_Getlocalmatcondensed, A, 0, 0, 0));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
