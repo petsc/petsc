@@ -193,7 +193,7 @@ static PetscErrorCode PetscLogGetHandler(PetscLogHandlerType type, PetscLogHandl
   PetscFunctionBegin;
   PetscAssertPointer(handler, 2);
   PetscCall(PetscLogTryGetHandler(type, handler));
-  PetscCheck(handler != NULL, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "A PetscLogHandler of type %s has not been started.", type);
+  PetscCheck(*handler != NULL, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "A PetscLogHandler of type %s has not been started.", type);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
