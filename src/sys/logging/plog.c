@@ -1540,7 +1540,8 @@ M*/
   This is a low level routine used by the logging functions in PETSc.
 
   A `PETSCLOGHANDLERDEFAULT` must be running for this to work, having been started either with
-  `PetscLogDefaultBegin()` or from the command line wth `-log_view`.
+  `PetscLogDefaultBegin()` or from the command line wth `-log_view`.  If it was not started,
+  all performance statistics in `info` will be zeroed.
 
 .seealso: [](ch_profiling), `PetscLogEventRegister()`, `PetscLogEventBegin()`, `PetscLogEventEnd()`, `PetscLogGetDefaultHandler()`
 @*/
@@ -1551,9 +1552,14 @@ PetscErrorCode PetscLogStageGetPerfInfo(PetscLogStage stage, PetscEventPerfInfo 
 
   PetscFunctionBegin;
   PetscAssertPointer(info, 2);
-  PetscCall(PetscLogGetHandler(PETSCLOGHANDLERDEFAULT, &handler));
-  PetscCall(PetscLogHandlerGetStagePerfInfo(handler, stage, &event_info));
-  *info = *event_info;
+  PetscCall(PetscLogTryGetHandler(PETSCLOGHANDLERDEFAULT, &handler));
+  if (handler) {
+    PetscCall(PetscLogHandlerGetStagePerfInfo(handler, stage, &event_info));
+    *info = *event_info;
+  } else {
+    PetscCall(PetscInfo(NULL, "Default log handler is not running, PetscLogStageGetPerfInfo() returning zeros\n"));
+    PetscCall(PetscMemzero(info, sizeof(*info)));
+  }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1572,6 +1578,10 @@ PetscErrorCode PetscLogStageGetPerfInfo(PetscLogStage stage, PetscEventPerfInfo 
   Note:
   This is a low level routine used by the logging functions in PETSc
 
+  A `PETSCLOGHANDLERDEFAULT` must be running for this to work, having been started either with
+  `PetscLogDefaultBegin()` or from the command line wth `-log_view`.  If it was not started,
+  all performance statistics in `info` will be zeroed.
+
 .seealso: [](ch_profiling), `PetscLogEventRegister()`, `PetscLogEventBegin()`, `PetscLogEventEnd()`, `PetscLogGetDefaultHandler()`
 @*/
 PetscErrorCode PetscLogEventGetPerfInfo(PetscLogStage stage, PetscLogEvent event, PetscEventPerfInfo *info)
@@ -1581,9 +1591,14 @@ PetscErrorCode PetscLogEventGetPerfInfo(PetscLogStage stage, PetscLogEvent event
 
   PetscFunctionBegin;
   PetscAssertPointer(info, 3);
-  PetscCall(PetscLogGetHandler(PETSCLOGHANDLERDEFAULT, &handler));
-  PetscCall(PetscLogHandlerGetEventPerfInfo(handler, stage, event, &event_info));
-  *info = *event_info;
+  PetscCall(PetscLogTryGetHandler(PETSCLOGHANDLERDEFAULT, &handler));
+  if (handler) {
+    PetscCall(PetscLogHandlerGetEventPerfInfo(handler, stage, event, &event_info));
+    *info = *event_info;
+  } else {
+    PetscCall(PetscInfo(NULL, "Default log handler is not running, PetscLogEventGetPerfInfo() returning zeros\n"));
+    PetscCall(PetscMemzero(info, sizeof(*info)));
+  }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
