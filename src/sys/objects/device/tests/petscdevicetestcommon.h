@@ -1,5 +1,4 @@
-#ifndef PETSCDEVICETESTCOMMON_H
-#define PETSCDEVICETESTCOMMON_H
+#pragma once
 
 /* this file needs to be the one to include petsc/private/deviceimpl.h since it needs to define
  * a special macro to ensure that the error checking macros stay defined even in optimized
@@ -75,4 +74,3 @@ static inline PetscErrorCode AssertPetscDeviceContextsValidAndEqual(PetscDeviceC
   PetscCheck(left == right, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "%s", errStr);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-#endif /* PETSCDEVICETESTCOMMON_H */

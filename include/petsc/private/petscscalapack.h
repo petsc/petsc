@@ -1,5 +1,4 @@
-#ifndef _PETSCSCALAPACK_H
-#define _PETSCSCALAPACK_H
+#pragma once
 
 #include <petsc/private/matimpl.h>
 #include <petscblaslapack.h>
@@ -123,7 +122,5 @@ BLAS_EXTERN void         SCALAPACKelget_(const char *, const char *, PetscScalar
                    _aa->grid->mycol == _bb->grid->mycol, \
                  PetscObjectComm((PetscObject)(a)), PETSC_ERR_ARG_INCOMP, "Arguments #%d and #%d have different ScaLAPACK distribution", arga, argb); \
     } while (0)
-
-#endif
 
 #endif

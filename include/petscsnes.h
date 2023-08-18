@@ -1,8 +1,7 @@
 /*
     User interface for the nonlinear solvers package.
 */
-#ifndef PETSCSNES_H
-#define PETSCSNES_H
+#pragma once
 
 #include <petscksp.h>
 #include <petscdmtypes.h>
@@ -1118,5 +1117,3 @@ PETSC_EXTERN PetscErrorCode DMSNESCheckJacobian(SNES, DM, Vec, PetscReal, PetscB
 PETSC_EXTERN PetscErrorCode DMSNESCheckFromOptions(SNES, Vec);
 PETSC_EXTERN PetscErrorCode DMSNESComputeJacobianAction(DM, Vec, Vec, Vec, void *);
 PETSC_EXTERN PetscErrorCode DMSNESCreateJacobianMF(DM, Vec, void *, Mat *);
-
-#endif

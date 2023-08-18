@@ -1,5 +1,4 @@
-#ifndef CRL_H
-#define CRL_H
+#pragma once
 
 #include <../src/mat/impls/aij/seq/aij.h>
 
@@ -15,5 +14,3 @@ typedef struct {
   VecScatter   xscat; /* gathers the locally needed part of global vector */
   PetscScalar *array; /* array used to create xwork */
 } Mat_AIJCRL;
-
-#endif

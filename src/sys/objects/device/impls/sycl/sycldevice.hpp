@@ -1,5 +1,4 @@
-#ifndef PETSCSYCLDEVICE_HPP
-#define PETSCSYCLDEVICE_HPP
+#pragma once
 
 #include "../impldevicebase.hpp" /* I "petscdevice.h" */
 
@@ -53,5 +52,3 @@ private:
 } // namespace device
 
 } // namespace Petsc
-
-#endif /* PETSCSYCLDEVICE_HPP */

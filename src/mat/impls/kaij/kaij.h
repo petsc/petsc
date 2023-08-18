@@ -1,5 +1,4 @@
-#ifndef _KAIJ_H
-#define _KAIJ_H
+#pragma once
 
 #include <../src/mat/impls/aij/mpi/mpiaij.h>
 
@@ -27,5 +26,3 @@ typedef struct {
   Vec              w;     /* work space for ghost values for parallel case */
   PetscObjectState state; /* state of the matrix A when AIJ and OIJ were last updated */
 } Mat_MPIKAIJ;
-
-#endif

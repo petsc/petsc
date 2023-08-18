@@ -3,8 +3,7 @@
   degrees of freedom for finite element/finite difference functions
   on a grid. They have more mathematical structure then simple arrays.
 */
-#ifndef PETSCVEC_H
-#define PETSCVEC_H
+#pragma once
 
 #include <petscsys.h>
 #include <petscsftypes.h> /* for VecScatter, VecScatterType */
@@ -1003,5 +1002,3 @@ VEC_HIP__DECL_OR_STUB(PetscErrorCode VecHIPResetArray(Vec a), (void)a)
 #undef VEC_CUPM_NOT_CONFIGURED
 #undef VEC_CUDA_DECL_OR_STUB
 #undef VEC_HIP__DECL_OR_STUB
-
-#endif

@@ -1,5 +1,4 @@
-#ifndef PETSCVECCUPMIMPL_H
-#define PETSCVECCUPMIMPL_H
+#pragma once
 
 #include <petsc/private/vecimpl.h>
 #include <../src/vec/vec/impls/dvecimpl.h> // for Vec_Seq
@@ -1211,5 +1210,3 @@ inline PetscErrorCode Vec_CUPMBase<T, D>::Convert_IMPL_IMPLCUPM(Vec v) noexcept
 } // namespace Petsc
 
 #endif // __cplusplus && PetscDefined(HAVE_DEVICE)
-
-#endif // PETSCVECCUPMIMPL_H

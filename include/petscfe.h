@@ -1,8 +1,7 @@
 /*
       Objects which encapsulate finite element spaces and operations
 */
-#ifndef PETSCFE_H
-#define PETSCFE_H
+#pragma once
 #include <petscdm.h>
 #include <petscdt.h>
 #include <petscfetypes.h>
@@ -146,5 +145,3 @@ PETSC_EXTERN PetscErrorCode PetscFECreatePointTrace(PetscFE, PetscInt, PetscFE *
 
 PETSC_EXTERN PetscErrorCode PetscFEOpenCLSetRealType(PetscFE, PetscDataType);
 PETSC_EXTERN PetscErrorCode PetscFEOpenCLGetRealType(PetscFE, PetscDataType *);
-
-#endif

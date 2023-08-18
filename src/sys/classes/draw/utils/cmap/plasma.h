@@ -1,5 +1,4 @@
-#ifndef PLASMA_H
-#define PLASMA_H
+#pragma once
 static const unsigned char PetscDrawCmap_plasma[256 - PETSC_DRAW_BASIC_COLORS][3] = {
   {12,  7,   134},
   {16,  7,   135},
@@ -225,4 +224,3 @@ static const unsigned char PetscDrawCmap_plasma[256 - PETSC_DRAW_BASIC_COLORS][3
   {240, 246, 35 },
   {239, 248, 33 },
 };
-#endif

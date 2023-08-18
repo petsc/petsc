@@ -1,5 +1,4 @@
-#ifndef TV_DATA_DISPLAY_H
-#define TV_DATA_DISPLAY_H
+#pragma once
 
 /*
  * $Header: /home/tv/src/debugger/src/datadisp/tv_data_display.h,v 1.3 2010-04-21 15:32:50 tringali Exp $
@@ -59,6 +58,4 @@ PETSC_EXTERN int TV_add_row(const char *, const char *, const void *);
 
 #if defined(__cplusplus)
 }
-#endif
-
 #endif

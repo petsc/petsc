@@ -1,5 +1,4 @@
-#ifndef __FSOLVEBAIJ_H
-#define __FSOLVEBAIJ_H
+#pragma once
 
 #include <petscsys.h>
 #if defined(PETSC_USE_FORTRAN_KERNEL_SOLVEBAIJ)
@@ -14,5 +13,4 @@
 PETSC_EXTERN void fortransolvebaij4_(const PetscInt *, void *, const PetscInt *, const PetscInt *, const PetscInt *, const void *, const void *, const void *);
 PETSC_EXTERN void fortransolvebaij4unroll_(const PetscInt *, void *, const PetscInt *, const PetscInt *, const PetscInt *, const void *, const void *);
 
-#endif
 #endif

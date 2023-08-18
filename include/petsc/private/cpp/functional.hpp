@@ -1,5 +1,4 @@
-#ifndef PETSC_CPP_FUNCTIONAL_HPP
-#define PETSC_CPP_FUNCTIONAL_HPP
+#pragma once
 
 #include <petsc/private/cpp/macros.hpp>
 #include <petsc/private/cpp/utility.hpp>     // index_sequence
@@ -141,5 +140,3 @@ struct func_traits : detail::func_traits_impl<decay_t<T>> {
 #define PETSC_ALIAS_UNIQUE_NAME_INTERNAL(prefix, name)   PETSC_ALIAS_UNIQUE_NAME_INTERNAL_(prefix, _, __LINE__, _, name)
 
 #define PETSC_ALIAS_FUNCTION_GOBBLE_NTH_LAST_ARGS(alias, original, N) PETSC_ALIAS_FUNCTION_GOBBLE_NTH_LAST_ARGS_(alias, original, PETSC_ALIAS_UNIQUE_NAME_INTERNAL(PetscAliasFunctionGobbleDispatch, original), N)
-
-#endif // PETSC_CPP_FUNCTIONAL_HPP

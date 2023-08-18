@@ -1,5 +1,4 @@
-#ifndef __MPISELL_H
-#define __MPISELL_H
+#pragma once
 
 #include <../src/mat/impls/sell/seq/sell.h>
 
@@ -56,4 +55,3 @@ PETSC_INTERN PetscErrorCode MatSOR_MPISELL(Mat, Vec, PetscReal, MatSORType, Pets
 
 PETSC_INTERN PetscErrorCode MatCreateColmap_MPISELL_Private(Mat);
 PETSC_INTERN PetscErrorCode MatDiagonalScaleLocal_MPISELL(Mat, Vec);
-#endif

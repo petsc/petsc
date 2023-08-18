@@ -1,5 +1,4 @@
-#ifndef __SNES_VIRS_H
-#define __SNES_VIRS_H
+#pragma once
 
 /*
    Private context for reduced space active set newton method with line search for solving
@@ -15,5 +14,3 @@ typedef struct {
   IS    IS_inact_prev;
   IS    IS_inact;
 } SNES_VINEWTONRSLS;
-
-#endif

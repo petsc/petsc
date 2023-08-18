@@ -1,5 +1,4 @@
-#ifndef PETSC_DM_PLEX_MMGCOMMON_H
-#define PETSC_DM_PLEX_MMGCOMMON_H
+#pragma once
 
 #include <petsc/private/dmpleximpl.h>
 
@@ -16,4 +15,3 @@
 // MMG sometimes returns 1, sometimes 0 when an error has occurred
 #define PetscCallMMG(name, ...)             PetscCallMMG_Private(MMG5_SUCCESS, name, __VA_ARGS__)
 #define PetscCallMMG_NONSTANDARD(name, ...) PetscCallMMG_Private(1, name, __VA_ARGS__)
-#endif // PETSC_DM_PLEX_MMGCOMMON_H

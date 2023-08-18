@@ -1,5 +1,4 @@
-#ifndef __MPIAIJ_H
-#define __MPIAIJ_H
+#pragma once
 
 #include <../src/mat/impls/aij/seq/aij.h>
 
@@ -277,5 +276,3 @@ PETSC_INTERN PetscErrorCode MatResetPreallocationCOO_MPIAIJ(Mat);
       } \
     } \
   } while (0)
-
-#endif

@@ -1,5 +1,4 @@
-#ifndef PETSC_LOGIMPL_H
-#define PETSC_LOGIMPL_H
+#pragma once
 
 #include <petsc/private/petscimpl.h>
 
@@ -206,4 +205,3 @@ PETSC_INTERN PetscInt PetscLogGetTid(void);
 PETSC_EXTERN PetscBool PetscLogGpuTimeFlag;
 
 #define PETSC_LOG_VIEW_FROM_OPTIONS_MAX 4
-#endif /* PETSC_LOGIMPL_H */

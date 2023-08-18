@@ -1,5 +1,4 @@
-#ifndef PETSC_CUPMSTREAM_HPP
-#define PETSC_CUPMSTREAM_HPP
+#pragma once
 
 #include <petsc/private/cupminterface.hpp>
 
@@ -145,5 +144,3 @@ inline PetscErrorCode CUPMStream<T>::wait_for_(event_type &event) const noexcept
 } // namespace device
 
 } // namespace Petsc
-
-#endif // PETSC_CUPMSTREAM_HPP

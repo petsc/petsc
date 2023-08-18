@@ -1,5 +1,4 @@
-#ifndef __SFPACK_H
-#define __SFPACK_H
+#pragma once
 
 #include <../src/vec/is/sf/impls/basic/sfbasic.h>
 #if defined(PETSC_HAVE_CUDA)
@@ -448,4 +447,3 @@ static inline PetscErrorCode PetscSFLinkGetLeafPackOptAndIndices(PetscSF sf, Pet
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-#endif

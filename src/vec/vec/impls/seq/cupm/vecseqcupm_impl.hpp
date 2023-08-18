@@ -1,5 +1,4 @@
-#ifndef PETSCVECSEQCUPM_IMPL_HPP
-#define PETSCVECSEQCUPM_IMPL_HPP
+#pragma once
 
 #include "vecseqcupm.hpp"
 
@@ -2209,5 +2208,3 @@ inline PetscErrorCode VecSeq_CUPM<T>::SetValuesCOO(Vec x, const PetscScalar v[],
 } // namespace vec
 
 } // namespace Petsc
-
-#endif // PETSCVECSEQCUPM_IMPL_HPP

@@ -1,5 +1,4 @@
-#ifndef __MATORDERIMPL_H
-#define __MATORDERIMPL_H
+#pragma once
 
 #include <petscmat.h>
 #include <petsc/private/petscimpl.h>
@@ -23,5 +22,3 @@ PETSC_EXTERN PetscErrorCode SPARSEPACKrootls(const PetscInt *, const PetscInt *,
 PETSC_EXTERN PetscErrorCode SPARSEPACKfndsep(PetscInt *, const PetscInt *, const PetscInt *, PetscInt *, PetscInt *, PetscInt *, PetscInt *, PetscInt *);
 PETSC_EXTERN PetscErrorCode SPARSEPACKdegree(const PetscInt *, const PetscInt *, const PetscInt *, PetscInt *, PetscInt *, PetscInt *, PetscInt *);
 PETSC_EXTERN PetscErrorCode SPARSEPACKrcm(const PetscInt *, const PetscInt *, const PetscInt *, PetscInt *, PetscInt *, PetscInt *, PetscInt *);
-
-#endif

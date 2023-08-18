@@ -1,5 +1,4 @@
-#ifndef PETSCSECTIONTYPES_H
-#define PETSCSECTIONTYPES_H
+#pragma once
 
 /* SUBMANSEC = PetscSection */
 
@@ -50,5 +49,3 @@ typedef struct _p_PetscSectionSym *PetscSectionSym;
 .seealso: [PetscSection](sec_petscsection), `PetscSectionSymSetType()`, `PetscSectionSymGetType()`, `PetscSectionSym`, `PetscSectionSymCreate()`, `PetscSectionSymRegister()`
 J*/
 typedef const char *PetscSectionSymType;
-
-#endif

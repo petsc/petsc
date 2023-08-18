@@ -1,5 +1,4 @@
-#ifndef __WIN32DRAW_H
-#define __WIN32DRAW_H
+#pragma once
 
 #if defined(PETSC_HAVE_WINDOWS_H)
   #include <windows.h>
@@ -52,5 +51,3 @@ typedef struct {
   DWORD      popup, caption, overlapped;
 
 } PetscDraw_Win32;
-
-#endif

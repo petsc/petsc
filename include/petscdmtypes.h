@@ -1,5 +1,4 @@
-#ifndef PETSCDMTYPES_H
-#define PETSCDMTYPES_H
+#pragma once
 
 /* SUBMANSEC = DM */
 
@@ -287,5 +286,3 @@ S*/
 typedef struct _p_UniversalLabel *DMUniversalLabel;
 
 typedef struct _n_DMGeneratorFunctionList *DMGeneratorFunctionList;
-
-#endif

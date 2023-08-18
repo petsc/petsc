@@ -1,5 +1,4 @@
-#ifndef EX43_SOLCX_H
-#define EX43_SOLCX_H
+#pragma once
 
 static void evaluate_solCx(PetscReal pos[], PetscReal _eta_A, PetscReal _eta_B, /* Input parameters: density, viscosity A, viscosity B */
                            PetscReal _x_c, int _n,                              /* Input parameters: viscosity jump location, wavenumber in z */
@@ -2271,5 +2270,3 @@ static void evaluate_solCx(PetscReal pos[], PetscReal _eta_A, PetscReal _eta_B, 
     strain_rate[2] = (sum4 + sum5) / (2.0 * Z);
   }
 }
-
-#endif

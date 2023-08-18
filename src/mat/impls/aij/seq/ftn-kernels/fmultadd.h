@@ -1,5 +1,4 @@
-#ifndef __FMULTADD_H
-#define __FMULTADD_H
+#pragma once
 
 #include <petscsys.h>
 #if defined(PETSC_USE_FORTRAN_KERNEL_MULTADDAIJ)
@@ -11,5 +10,4 @@
 
 PETSC_EXTERN void fortranmultaddaij_(PetscInt *, const void *, const PetscInt *, const PetscInt *, const MatScalar *, void *, void *);
 
-#endif
 #endif

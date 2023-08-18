@@ -1,5 +1,4 @@
-#ifndef PETSCCUPMINTERFACE_HPP
-#define PETSCCUPMINTERFACE_HPP
+#pragma once
 
 #include <petscdevice_cupm.h>
 
@@ -403,9 +402,9 @@ struct InterfaceImpl<DeviceType::HIP> : InterfaceBase<DeviceType::HIP> {
   PETSC_CUPM_ALIAS_FUNCTION(cupmMemset2D, hipMemset2D)
   PETSC_CUPM_ALIAS_FUNCTION_GOBBLE(cupmMemset2DAsync, hipMemset2DAsync, 1)
 
-    // launch control
-    // HIP appears to only have hipLaunchHostFunc from 5.2.0 onwards
-    // https://github.com/ROCm-Developer-Tools/HIPIFY/blob/master/doc/markdown/CUDA_Runtime_API_functions_supported_by_HIP.md#7-execution-control=
+  // launch control
+  // HIP appears to only have hipLaunchHostFunc from 5.2.0 onwards
+  // https://github.com/ROCm-Developer-Tools/HIPIFY/blob/master/doc/markdown/CUDA_Runtime_API_functions_supported_by_HIP.md#7-execution-control=
   #if PETSC_PKG_HIP_VERSION_GE(5, 2, 0)
   PETSC_CUPM_ALIAS_FUNCTION(cupmLaunchHostFunc, hipLaunchHostFunc)
   #else
@@ -942,5 +941,3 @@ extern template struct PETSC_SINGLE_LIBRARY_VISIBILITY_INTERNAL Interface<Device
 } // namespace device
 
 } // namespace Petsc
-
-#endif /* PETSCCUPMINTERFACE_HPP */

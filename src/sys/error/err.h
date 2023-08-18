@@ -1,5 +1,4 @@
-#ifndef PETSC_SYS_ERROR_ERR_H
-#define PETSC_SYS_ERROR_ERR_H
+#pragma once
 
 #include <petscsys.h>
 
@@ -30,5 +29,3 @@ static inline PetscErrorCode PetscErrorMemoryMessage(PetscErrorCode n)
   }
   return ierr;
 }
-
-#endif // #define PETSC_SYS_ERROR_ERR_H

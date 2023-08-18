@@ -1,5 +1,4 @@
-#ifndef SYMBRDN_H
-#define SYMBRDN_H
+#pragma once
 
 #include <../src/ksp/ksp/utils/lmvm/lmvm.h>
 
@@ -32,5 +31,3 @@ PETSC_INTERN PetscErrorCode MatSymBrdnComputeJ0Scalar(Mat);
 PETSC_INTERN PetscErrorCode MatView_LMVMSymBrdn(Mat, PetscViewer);
 PETSC_INTERN PetscErrorCode MatSetFromOptions_LMVMSymBrdn(Mat, PetscOptionItems *);
 PETSC_INTERN PetscErrorCode MatSetFromOptions_LMVMSymBrdn_Private(Mat, PetscOptionItems *);
-
-#endif

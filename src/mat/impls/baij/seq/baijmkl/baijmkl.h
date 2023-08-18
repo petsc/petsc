@@ -1,5 +1,4 @@
-#ifndef BAIJMKL_H
-#define BAIJMKL_H
+#pragma once
 
 #define MKL_Complex16 PetscScalar
 #define MKL_Complex8  PetscScalar
@@ -33,6 +32,4 @@
   #elif defined(PETSC_USE_REAL_DOUBLE)
     #define mkl_sparse_x_mv(operation, alpha, A, descr, x, beta, y) mkl_sparse_z_mv(operation, alpha, A, descr, x, beta, y)
   #endif
-#endif
-
 #endif

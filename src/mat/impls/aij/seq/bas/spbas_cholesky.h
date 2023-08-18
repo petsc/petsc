@@ -1,5 +1,4 @@
-#ifndef SPBAS_CHOLESKY_H
-#define SPBAS_CHOLESKY_H
+#pragma once
 /*
    spbas_cholesky_row_alloc:
       in the data arrays, find a place where another row may be stored.
@@ -406,5 +405,3 @@ PetscErrorCode spbas_incomplete_cholesky(Mat A, const PetscInt *rip, const Petsc
   *success  = PETSC_TRUE;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-
-#endif

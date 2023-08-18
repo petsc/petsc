@@ -1,5 +1,4 @@
-#ifndef _NETWORKIMPL_H
-#define _NETWORKIMPL_H
+#pragma once
 
 #include "petscistypes.h"
 #include <petscmat.h>                 /*I      "petscmat.h"          I*/
@@ -174,5 +173,3 @@ PETSC_INTERN PetscErrorCode DMNetworkInitializeToDefault(DM);
 PETSC_INTERN PetscErrorCode DMNetworkInitializeToDefault_NonShared(DM);
 
 PETSC_INTERN PetscErrorCode DMCreateCoordinateDM_Network(DM, DM *);
-
-#endif /* _NETWORKIMPL_H */

@@ -1,6 +1,4 @@
-
-#ifndef __SELL_H
-#define __SELL_H
+#pragma once
 
 #include <petsc/private/matimpl.h>
 #include <petsc/private/hashmapi.h>
@@ -226,4 +224,3 @@ PETSC_INTERN PetscErrorCode MatRestoreColumnIJ_SeqSELL_Color(Mat, PetscInt, Pets
 PETSC_INTERN PetscErrorCode MatConjugate_SeqSELL(Mat A);
 PETSC_INTERN PetscErrorCode MatScale_SeqSELL(Mat, PetscScalar);
 PETSC_INTERN PetscErrorCode MatDiagonalScale_SeqSELL(Mat, Vec, Vec);
-#endif

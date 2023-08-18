@@ -1,5 +1,4 @@
-#ifndef PFOREST_H
-#define PFOREST_H
+#pragma once
 
 #include <petscds.h>
 #include <petsc/private/dmimpl.h>
@@ -1666,7 +1665,7 @@ static PetscErrorCode DMPlexCreateConnectivity_pforest(DM dm, p4est_connectivity
          * permutation of this cell-facet's cone */
         orntAtoB = DihedralCompose(N, DihedralInvert(N, myOrnt[1 - s]), myOrnt[s]);
 
-          /* convert cone-description permutation (i.e., edges around facet) to cap-description permutation (i.e.,
+        /* convert cone-description permutation (i.e., edges around facet) to cap-description permutation (i.e.,
          * vertices around facet) */
   #if !defined(P4_TO_P8)
         p4estOrient = orntAtoB < 0 ? -(orntAtoB + 1) : orntAtoB;
@@ -5146,4 +5145,3 @@ PETSC_EXTERN PetscErrorCode DMCreate_pforest(DM dm)
 }
 
 #endif /* defined(PETSC_HAVE_P4EST) */
-#endif

@@ -1,5 +1,4 @@
-#ifndef RK_H
-#define RK_H
+#pragma once
 typedef struct _RKTableau *RKTableau;
 struct _RKTableau {
   char      *name;
@@ -47,4 +46,3 @@ typedef struct {
   Mat         *MatsFwdSensipTemp;
   Vec          VecDeltaFwdSensipCol; /* Working vector for holding one column of the sensitivity matrix */
 } TS_RK;
-#endif

@@ -1,5 +1,4 @@
-#ifndef DIAGBRDN_H
-#define DIAGBRDN_H
+#pragma once
 
 #include <../src/ksp/ksp/utils/lmvm/lmvm.h>
 
@@ -16,5 +15,3 @@ typedef struct {
   PetscBool  allocated;
   PetscBool  forward;
 } Mat_DiagBrdn;
-
-#endif

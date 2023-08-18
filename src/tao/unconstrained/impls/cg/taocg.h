@@ -2,8 +2,7 @@
     Context for conjugate gradient method (unconstrained minimization)
  */
 
-#ifndef __TAO_CG_H
-#define __TAO_CG_H
+#pragma once
 
 #include <petsc/private/taoimpl.h>
 
@@ -27,5 +26,3 @@ typedef struct {
 
   PetscInt cg_type; /*  Formula to use */
 } TAO_CG;
-
-#endif /* ifndef __TAO_CG_H */

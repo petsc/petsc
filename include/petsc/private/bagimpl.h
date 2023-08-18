@@ -1,5 +1,4 @@
-#ifndef __BAGIMPL
-#define __BAGIMPL
+#pragma once
 
 #include <petscbag.h>
 
@@ -26,5 +25,3 @@ struct _n_PetscBag {
   char        *bagprefix;
   PetscBagItem bagitems;
 };
-
-#endif

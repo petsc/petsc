@@ -1,5 +1,4 @@
-#ifndef _PETSC_HASHMAPIV_H
-#define _PETSC_HASHMAPIV_H
+#pragma once
 
 #include <petsc/private/hashmap.h>
 
@@ -38,5 +37,3 @@ static inline PetscErrorCode PetscHMapIVAddValue(PetscHMapIV ht, PetscInt key, P
   else kh_val(ht, iter) += val;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-
-#endif /* _PETSC_HASHMAPIV_H */

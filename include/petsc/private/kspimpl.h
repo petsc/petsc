@@ -1,5 +1,4 @@
-#ifndef _KSPIMPL_H
-#define _KSPIMPL_H
+#pragma once
 
 #include <petscksp.h>
 #include <petscds.h>
@@ -557,4 +556,3 @@ M*/
 
 PETSC_INTERN PetscErrorCode KSPMonitorMakeKey_Internal(const char[], PetscViewerType, PetscViewerFormat, char[]);
 PETSC_INTERN PetscErrorCode KSPMonitorRange_Private(KSP, PetscInt, PetscReal *);
-#endif

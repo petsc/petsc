@@ -1,8 +1,7 @@
 /*
       Objects which encapsulate finite element spaces
 */
-#ifndef PETSCDUALSPACE_H
-#define PETSCDUALSPACE_H
+#pragma once
 #include <petscdm.h>
 #include <petscdt.h>
 #include <petscfetypes.h>
@@ -160,5 +159,3 @@ PETSC_EXTERN PetscErrorCode PetscDualSpaceSimpleSetFunctional(PetscDualSpace, Pe
 
 PETSC_EXTERN PetscErrorCode PetscDualSpaceRefinedSetCellSpaces(PetscDualSpace, const PetscDualSpace[]);
 PETSC_EXTERN PetscErrorCode PetscSpaceCreateSubspace(PetscSpace, PetscDualSpace, PetscReal *, PetscReal *, PetscReal *, PetscReal *, PetscCopyMode, PetscSpace *);
-
-#endif

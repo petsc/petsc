@@ -1,5 +1,4 @@
-#ifndef TESTHEADER_H
-#define TESTHEADER_H
+#pragma once
 
 #include <petscsystypes.h>
 
@@ -18,5 +17,3 @@ PETSC_EXTERN char *PetscInternHeaderPointerShouldNotGetStatic();
 PETSC_EXTERN           char *PetscExternHeaderPointerBadFormattingShouldNotGetStatic          (  ) ;
 PETSC_EXTERN char *          PetscInternHeaderPointerBadFormattingShouldNotGetStatic       ( )    ;
 // clang-format on
-
-#endif // TESTHEADER_H

@@ -1,5 +1,4 @@
-#ifndef PETSCBT_H
-#define PETSCBT_H
+#pragma once
 
 #include <petscsystypes.h>
 #include <petscviewertypes.h>
@@ -80,5 +79,3 @@ static inline char PetscBTLookupClear(PetscBT array, PetscInt index)
 }
 
 PETSC_EXTERN PetscErrorCode PetscBTView(PetscInt, const PetscBT, PetscViewer);
-
-#endif /* PETSCBT_H */

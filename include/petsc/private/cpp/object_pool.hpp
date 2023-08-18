@@ -1,5 +1,4 @@
-#ifndef PETSC_CPP_OBJECT_POOL_HPP
-#define PETSC_CPP_OBJECT_POOL_HPP
+#pragma once
 
 #include <petsc/private/petscimpl.h> // PetscAssertPointer()
 #include <petsc/private/mempoison.h> // PetscPoison/UnpoisonMemoryRegion()
@@ -453,5 +452,3 @@ inline PetscErrorCode ObjectPool<T, Constructor>::deallocate(value_type **obj) n
 }
 
 } // namespace Petsc
-
-#endif // PETSC_CPP_OBJECT_POOL_HPP

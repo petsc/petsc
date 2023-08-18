@@ -4,8 +4,7 @@
    Portions of this code are under:
    Copyright (c) 2022 Advanced Micro Devices, Inc. All rights reserved.
 */
-#ifndef PETSCSYS_H
-#define PETSCSYS_H
+#pragma once
 
 /* ========================================================================== */
 /*
@@ -2292,9 +2291,8 @@ static inline unsigned int PetscStrHash(const char *str)
 
 .seealso: `MPI_Allreduce()`
 M*/
-  // clang-format off
-#define MPIU_Allreduce(a, b, c, d, e, fcomm) \
-  PetscMacroReturnStandard( \
+  #define MPIU_Allreduce(a, b, c, d, e, fcomm) \
+    PetscMacroReturnStandard( \
     PetscMPIInt a_b1[6], a_b2[6]; \
     int _mpiu_allreduce_c_int = (int)(c); \
     a_b1[0] = -(PetscMPIInt)__LINE__; \
@@ -2309,7 +2307,6 @@ M*/
     PetscCheck(-a_b2[2] == a_b2[3], PETSC_COMM_SELF, PETSC_ERR_PLIB, "MPI_Allreduce() called in different locations (functions) on different processors"); \
     PetscCheck(-a_b2[4] == a_b2[5], PETSC_COMM_SELF, PETSC_ERR_PLIB, "MPI_Allreduce() called with different counts %d on different processors", _mpiu_allreduce_c_int); \
     PetscCallMPI(MPI_Allreduce((a), (b), (c), (d), (e), (fcomm)));)
-// clang-format on
 #else
   #define MPIU_Allreduce(a, b, c, d, e, fcomm) PetscMacroReturnStandard(PetscCallMPI(MPI_Allreduce((a), (b), (c), (d), (e), (fcomm))))
 #endif
@@ -2338,5 +2335,3 @@ PETSC_EXTERN PetscErrorCode PCMPICommsDestroy(void);
 PETSC_EXTERN PetscBool      PCMPIServerActive;
 
 #define PETSC_HAVE_FORTRAN PETSC_DEPRECATED_MACRO(3, 20, 0, "PETSC_USE_FORTRAN_BINDINGS", ) PETSC_USE_FORTRAN_BINDINGS
-
-#endif

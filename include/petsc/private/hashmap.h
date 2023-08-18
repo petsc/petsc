@@ -1,5 +1,4 @@
-#ifndef PETSC_HASHMAP_H
-#define PETSC_HASHMAP_H
+#pragma once
 
 #include <petsc/private/hashtable.h>
 
@@ -385,5 +384,3 @@ M*/
     PetscCall(Petsc##HashT##IterSet(ht, it, val)); \
     PetscFunctionReturn(PETSC_SUCCESS); \
   }
-
-#endif /* PETSC_HASHMAP_H */

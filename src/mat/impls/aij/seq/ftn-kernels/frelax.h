@@ -1,5 +1,4 @@
-#ifndef __FRELAX_H
-#define __FRELAX_H
+#pragma once
 
 #include <petscsys.h>
 #if defined(PETSC_USE_FORTRAN_KERNEL_RELAXAIJ)
@@ -20,5 +19,4 @@ PETSC_EXTERN void fortranrelaxaijbackward_(PetscInt *, PetscReal *, void *, Pets
 PETSC_EXTERN void fortranrelaxaijforwardzero_(PetscInt *, PetscReal *, void *, PetscInt *, PetscInt *, const PetscInt *, const void *, void *, void *);
 PETSC_EXTERN void fortranrelaxaijbackwardzero_(PetscInt *, PetscReal *, void *, PetscInt *, PetscInt *, const PetscInt *, const void *, void *, void *);
 
-#endif
 #endif

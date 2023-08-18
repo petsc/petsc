@@ -1,6 +1,4 @@
-
-#ifndef __BAIJ_H
-#define __BAIJ_H
+#pragma once
 #include <petsc/private/matimpl.h>
 #include <../src/mat/impls/aij/seq/aij.h>
 #include <../src/mat/impls/baij/seq/ftn-kernels/fsolvebaij.h>
@@ -2023,5 +2021,3 @@ static inline PetscErrorCode PetscKernel_A_gets_A_minus_B_times_C_15(PetscScalar
   A[224] -= B[14] * C[210] + B[29] * C[211] + B[44] * C[212] + B[59] * C[213] + B[74] * C[214] + B[89] * C[215] + B[104] * C[216] + B[119] * C[217] + B[134] * C[218] + B[149] * C[219] + B[164] * C[220] + B[179] * C[221] + B[194] * C[222] + B[209] * C[223] + B[224] * C[224];
   return PETSC_SUCCESS;
 }
-
-#endif

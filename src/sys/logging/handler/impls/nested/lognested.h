@@ -1,5 +1,4 @@
-#ifndef PETSC_LOGNESTED_H
-#define PETSC_LOGNESTED_H
+#pragma once
 
 #include <petsc/private/loghandlerimpl.h>
 #include <petsc/private/logimpl.h>
@@ -59,5 +58,3 @@ typedef enum {
 
 PETSC_INTERN PetscErrorCode PetscLogHandlerView_Nested_XML(PetscLogHandler_Nested, PetscNestedEventTree *, PetscViewer);
 PETSC_INTERN PetscErrorCode PetscLogHandlerView_Nested_Flamegraph(PetscLogHandler_Nested, PetscNestedEventTree *, PetscViewer);
-
-#endif // #define PETSC_LOGNESTED_H

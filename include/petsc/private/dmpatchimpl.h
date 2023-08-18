@@ -1,5 +1,4 @@
-#ifndef _PATCHIMPL_H
-#define _PATCHIMPL_H
+#pragma once
 
 #include <petscmat.h>     /*I      "petscmat.h"        I*/
 #include <petscdmpatch.h> /*I      "petscdmpatch.h"    I*/
@@ -11,5 +10,3 @@ typedef struct {
   MatStencil patchSize;
   MatStencil commSize;
 } DM_Patch;
-
-#endif /* _PATCHIMPL_H */

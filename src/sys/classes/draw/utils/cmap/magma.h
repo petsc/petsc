@@ -1,5 +1,4 @@
-#ifndef MAGMA_H
-#define MAGMA_H
+#pragma once
 static const unsigned char PetscDrawCmap_magma[256 - PETSC_DRAW_BASIC_COLORS][3] = {
   {0,   0,   3  },
   {0,   0,   4  },
@@ -225,4 +224,3 @@ static const unsigned char PetscDrawCmap_magma[256 - PETSC_DRAW_BASIC_COLORS][3]
   {251, 250, 189},
   {251, 252, 191},
 };
-#endif

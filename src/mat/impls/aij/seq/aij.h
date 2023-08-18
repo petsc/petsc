@@ -1,5 +1,4 @@
-#ifndef PETSC_MATAIJ_IMPL_H
-#define PETSC_MATAIJ_IMPL_H
+#pragma once
 
 #include <petsc/private/matimpl.h>
 #include <petsc/private/hashmapi.h>
@@ -659,5 +658,3 @@ static inline void PetscSparseDensePlusDot_AVX512_Private(PetscScalar *sum, cons
       } \
     } \
   } while (0)
-
-#endif

@@ -1,5 +1,4 @@
-#ifndef SOCKET_H
-#define SOCKET_H
+#pragma once
 #include <petsc/private/viewerimpl.h> /*I  "petscsys.h"  I*/
 
 /*
@@ -26,4 +25,3 @@ typedef struct {
 /* Note: DENSEREAL and DENSECHARACTER are stored exactly the same way */
 /* DENSECHARACTER simply has a flag set which tells that it should be */
 /* interpreted as a string not a numeric vector                       */
-#endif

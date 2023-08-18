@@ -1,8 +1,7 @@
 /*
       Objects which encapsulate finite element spaces
 */
-#ifndef PETSCSPACE_H
-#define PETSCSPACE_H
+#pragma once
 #include <petscdm.h>
 #include <petscdt.h>
 
@@ -101,5 +100,3 @@ PETSC_EXTERN PetscErrorCode PetscSpaceCreateSum(PetscInt numSubspaces, const Pet
 
 PETSC_EXTERN PetscErrorCode PetscSpacePointGetPoints(PetscSpace, PetscQuadrature *);
 PETSC_EXTERN PetscErrorCode PetscSpacePointSetPoints(PetscSpace, PetscQuadrature);
-
-#endif

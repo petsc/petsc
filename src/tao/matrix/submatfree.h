@@ -1,5 +1,4 @@
-#ifndef SUBMATFREE_H
-#define SUBMATFREE_H
+#pragma once
 
 #include <petscmat.h>
 
@@ -33,4 +32,3 @@ PetscErrorCode MatNorm_SMF(Mat, NormType, PetscReal *);
 PetscErrorCode MatGetRowMax_SMF(Mat, Vec);
 PetscErrorCode MatGetRow_SMF(Mat, PetscInt, PetscInt *, const PetscInt **, const PetscScalar **);
 PetscErrorCode MatRestoreRow_SMF(Mat, PetscInt, PetscInt *, const PetscInt **, const PetscScalar **);
-#endif

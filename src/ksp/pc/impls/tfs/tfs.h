@@ -1,6 +1,4 @@
-
-#ifndef __TFS_H
-#define __TFS_H
+#pragma once
 
 /**********************************const.h*************************************
 
@@ -452,5 +450,3 @@ PETSC_INTERN PetscInt       PCTFS_len_bit_mask(PetscInt);
 PETSC_INTERN PetscInt       PCTFS_ct_bits(char *, PetscInt);
 PETSC_INTERN PetscErrorCode PCTFS_bm_to_proc(char *, PetscInt, PetscInt *);
 PETSC_INTERN PetscInt       PCTFS_len_buf(PetscInt, PetscInt);
-
-#endif

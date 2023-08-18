@@ -2,8 +2,7 @@
    Private data structure used by the LGMRES method.
 */
 
-#ifndef PETSC_LGMRESIMPL_H
-#define PETSC_LGMRESIMPL_H
+#pragma once
 
 #define KSPGMRES_NO_MACROS
 #include <../src/ksp/ksp/impls/gmres/gmresimpl.h>
@@ -58,5 +57,3 @@ typedef struct {
 #define LGMRES_DELTA_DIRECTIONS 10
 #define LGMRES_DEFAULT_MAXK     30
 #define LGMRES_DEFAULT_AUGDIM   2 /*default number of augmentation vectors */
-
-#endif // PETSC_LGMRESIMPL_H

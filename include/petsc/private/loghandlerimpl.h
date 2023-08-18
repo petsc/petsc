@@ -1,5 +1,4 @@
-#ifndef PETSCLOGHANDLERIMPL_H
-#define PETSCLOGHANDLERIMPL_H
+#pragma once
 
 #include <petsc/private/petscimpl.h>
 
@@ -24,5 +23,3 @@ struct _p_PetscLogHandler {
 
 PETSC_INTERN PetscErrorCode PetscLogHandlerPackageInitialize(void);
 PETSC_INTERN PetscErrorCode PetscLogHandlerLogObjectState_Internal(PetscLogHandler, PetscObject, const char *, va_list);
-
-#endif /* #define PETSCLOGHANDLERIMPL_H */

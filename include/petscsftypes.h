@@ -1,5 +1,4 @@
-#ifndef PETSCSFTYPES_H
-#define PETSCSFTYPES_H
+#pragma once
 
 /* SUBMANSEC = PetscSF */
 
@@ -80,4 +79,3 @@ typedef PetscSF VecScatter;
 .seealso: `PetscSFType`, `VecScatterSetType()`, `VecScatter`, `VecScatterCreate()`, `VecScatterDestroy()`
 J*/
 typedef PetscSFType VecScatterType;
-#endif

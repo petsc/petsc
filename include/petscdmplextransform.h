@@ -1,5 +1,4 @@
-#ifndef PETSCDMPLEXTRANSFORM_H
-#define PETSCDMPLEXTRANSFORM_H
+#pragma once
 
 #include <petscdmplex.h>
 #include <petscdmplextransformtypes.h>
@@ -79,5 +78,3 @@ PETSC_EXTERN PetscErrorCode DMPlexTransformExtrudeSetNormalFunction(DMPlexTransf
 PETSC_EXTERN PetscErrorCode DMPlexTransformExtrudeSetThicknesses(DMPlexTransform, PetscInt, const PetscReal[]);
 
 PETSC_EXTERN PetscErrorCode DMPlexCreateEphemeral(DMPlexTransform, const char[], DM *);
-
-#endif

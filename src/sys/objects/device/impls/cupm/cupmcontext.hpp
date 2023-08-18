@@ -1,5 +1,4 @@
-#ifndef PETSCDEVICECONTEXTCUPM_HPP
-#define PETSCDEVICECONTEXTCUPM_HPP
+#pragma once
 
 #include <petsc/private/deviceimpl.h>
 #include <petsc/private/cupmsolverinterface.hpp>
@@ -548,5 +547,3 @@ using CUPMContextHip  = impl::DeviceContext<DeviceType::HIP>;
 } // namespace device
 
 } // namespace Petsc
-
-#endif // PETSCDEVICECONTEXTCUDA_HPP

@@ -1,5 +1,4 @@
-#ifndef PETSCDMSWARM_H
-#define PETSCDMSWARM_H
+#pragma once
 
 #include <petscdm.h>
 #include <petscdt.h>
@@ -135,5 +134,3 @@ PETSC_EXTERN PetscErrorCode DMSwarmComputeLocalSizeFromOptions(DM);
 PETSC_EXTERN PetscErrorCode DMSwarmInitializeCoordinates(DM);
 PETSC_EXTERN PetscErrorCode DMSwarmInitializeVelocities(DM, PetscProbFunc, const PetscReal[]);
 PETSC_EXTERN PetscErrorCode DMSwarmInitializeVelocitiesFromOptions(DM, const PetscReal[]);
-
-#endif

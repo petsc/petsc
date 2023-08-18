@@ -1,5 +1,4 @@
-#ifndef PETSC_CUPMEVENT_HPP
-#define PETSC_CUPMEVENT_HPP
+#pragma once
 
 #include <petsc/private/cupminterface.hpp>
 #include <petsc/private/cpp/memory.hpp>
@@ -177,5 +176,3 @@ inline CUPMEvent<T>::operator bool() const noexcept
 } // namespace device
 
 } // namespace Petsc
-
-#endif // PETSC_CUPMEVENT_HPP

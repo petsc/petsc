@@ -1,6 +1,4 @@
-
-#ifndef PETSCBAG_H
-#define PETSCBAG_H
+#pragma once
 
 #include <petscsys.h>
 
@@ -61,5 +59,3 @@ PETSC_EXTERN PetscErrorCode PetscBagLoad(PetscViewer, PetscBag);
 PETSC_EXTERN PetscErrorCode PetscBagViewFromOptions(PetscBag, PetscObject, const char[]);
 
 #define PETSC_BAG_FILE_CLASSID 1211219
-
-#endif

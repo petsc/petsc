@@ -1,5 +1,4 @@
-#ifndef PETSC_FCOPY_H
-#define PETSC_FCOPY_H
+#pragma once
 
 #include <petscsys.h>
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
@@ -11,4 +10,3 @@
 #endif
 PETSC_EXTERN void fortrancopy_(PetscInt *, PetscScalar *, PetscScalar *);
 PETSC_EXTERN void fortranzero_(PetscInt *, PetscScalar *);
-#endif // PETSC_FCOPY_H

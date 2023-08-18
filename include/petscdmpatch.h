@@ -1,8 +1,7 @@
 /*
   DMPatch, for domains covered by sets of patches.
 */
-#ifndef PETSCDMPATCH_H
-#define PETSCDMPATCH_H
+#pragma once
 
 #include <petscdm.h>
 
@@ -39,5 +38,3 @@ PETSC_EXTERN PetscErrorCode DMPatchCreateGrid(MPI_Comm, PetscInt, MatStencil, Ma
  - Need routine for viewing a full global vector
  - Jed handles solver
 */
-
-#endif

@@ -1,5 +1,4 @@
-#ifndef VIRIDIS_H
-#define VIRIDIS_H
+#pragma once
 
 static const unsigned char PetscDrawCmap_viridis[256 - PETSC_DRAW_BASIC_COLORS][3] = {
   {68,  1,   84 },
@@ -226,4 +225,3 @@ static const unsigned char PetscDrawCmap_viridis[256 - PETSC_DRAW_BASIC_COLORS][
   {250, 230, 34 },
   {253, 231, 36 },
 };
-#endif

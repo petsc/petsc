@@ -1,5 +1,4 @@
-#ifndef PETSCDMFIELD_H
-#define PETSCDMFIELD_H
+#pragma once
 
 #include <petscdm.h>
 #include <petscdt.h>
@@ -66,5 +65,3 @@ PETSC_EXTERN PetscErrorCode DMFieldShellSetEvaluateFV(DMField, PetscErrorCode (*
 PETSC_EXTERN PetscErrorCode DMFieldShellEvaluateFVDefault(DMField, IS, PetscDataType, void *, void *, void *);
 PETSC_EXTERN PetscErrorCode DMFieldShellSetGetDegree(DMField, PetscErrorCode (*)(DMField, IS, PetscInt *, PetscInt *));
 PETSC_EXTERN PetscErrorCode DMFieldShellSetCreateDefaultQuadrature(DMField, PetscErrorCode (*)(DMField, IS, PetscQuadrature *));
-
-#endif

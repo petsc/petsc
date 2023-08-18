@@ -1,5 +1,4 @@
-#ifndef __SEQAIJKOKKOSIMPL_HPP
-#define __SEQAIJKOKKOSIMPL_HPP
+#pragma once
 
 #include <petsc/private/vecimpl_kokkos.hpp>
 #include <../src/mat/impls/aij/seq/aij.h>
@@ -201,5 +200,3 @@ PETSC_INTERN PetscErrorCode MatSeqAIJRestoreKokkosView(Mat, MatScalarKokkosView 
 PETSC_INTERN PetscErrorCode MatSeqAIJGetKokkosViewWrite(Mat, MatScalarKokkosView *);
 PETSC_INTERN PetscErrorCode MatSeqAIJRestoreKokkosViewWrite(Mat, MatScalarKokkosView *);
 PETSC_INTERN PetscErrorCode MatInvertVariableBlockDiagonal_SeqAIJKokkos(Mat, const PetscIntKokkosView &, const PetscIntKokkosView &, const PetscIntKokkosView &, PetscScalarKokkosView &, PetscScalarKokkosView &);
-
-#endif

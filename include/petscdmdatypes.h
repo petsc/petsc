@@ -1,5 +1,4 @@
-#ifndef PETSCDMDATYPES_H
-#define PETSCDMDATYPES_H
+#pragma once
 
 #include <petscdmtypes.h>
 
@@ -74,5 +73,3 @@ typedef struct {
   DMDAStencilType st;
   DM              da;
 } DMDALocalInfo;
-
-#endif

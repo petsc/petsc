@@ -7,8 +7,7 @@
     This file is included by petscsys.h and should not be used directly.
 
 */
-#ifndef PETSCMATH_H
-#define PETSCMATH_H
+#pragma once
 
 #include <math.h>
 #include <petscmacros.h>
@@ -210,7 +209,7 @@ M*/
  */
 #if defined(PETSC_HAVE_COMPLEX)
   #if defined(__cplusplus) && !defined(PETSC_USE_REAL___FLOAT128)
-    /* C++ support of complex number */
+  /* C++ support of complex number */
 
     #define PetscRealPartComplex(a)      (static_cast<PetscComplex>(a)).real()
     #define PetscImaginaryPartComplex(a) (static_cast<PetscComplex>(a)).imag()
@@ -234,7 +233,7 @@ M*/
     #define PetscAcoshComplex(a)         petsccomplexlib::acosh(static_cast<PetscComplex>(a))
     #define PetscAtanhComplex(a)         petsccomplexlib::atanh(static_cast<PetscComplex>(a))
 
-    /* TODO: Add configure tests
+  /* TODO: Add configure tests
 
 #if !defined(PETSC_HAVE_CXX_TAN_COMPLEX)
 #undef PetscTanComplex
@@ -1021,4 +1020,3 @@ M*/
 #define PetscCeilInt64(x, y) ((((PetscInt64)(x)) / ((PetscInt64)(y))) + ((((PetscInt64)(x)) % ((PetscInt64)(y))) ? 1 : 0))
 
 PETSC_EXTERN PetscErrorCode PetscLinearRegression(PetscInt, const PetscReal[], const PetscReal[], PetscReal *, PetscReal *);
-#endif

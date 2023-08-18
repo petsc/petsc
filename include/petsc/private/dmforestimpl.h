@@ -1,5 +1,4 @@
-#ifndef _FORESTIMPL_H
-#define _FORESTIMPL_H
+#pragma once
 
 #include <petscmat.h>      /*I      "petscmat.h"          I*/
 #include <petscdmforest.h> /*I      "petscdmforest.h"    I*/
@@ -47,5 +46,3 @@ PETSC_EXTERN PetscErrorCode DMCreate_Forest(DM);
 PETSC_EXTERN PetscErrorCode DMClone_Forest(DM, DM *);
 PETSC_EXTERN PetscErrorCode DMSetFromOptions_Forest(DM, PetscOptionItems *);
 PETSC_INTERN PetscErrorCode DMAdaptLabel_Forest(DM, Vec, DMLabel, DMLabel, DM *);
-
-#endif /* _FORESTIMPL_H */

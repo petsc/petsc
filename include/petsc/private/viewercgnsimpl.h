@@ -1,5 +1,4 @@
-#ifndef viewercgnsimpl_h
-#define viewercgnsimpl_h
+#pragma once
 
 #include <petsc/private/viewerimpl.h>
 #include <cgnstypes.h>
@@ -27,5 +26,3 @@ typedef struct {
 
 PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode PetscViewerCGNSCheckBatch_Internal(PetscViewer);
 PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode PetscViewerCGNSFileOpen_Internal(PetscViewer, PetscInt);
-
-#endif

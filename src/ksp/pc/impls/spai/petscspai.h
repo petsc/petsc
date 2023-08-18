@@ -1,5 +1,4 @@
-#ifndef __SPAI_PACKAGE
-#define __SPAI_PACKAGE
+#pragma once
 
 /* $Id: spai.h,v 1.1 1997/02/03 00:11:31 bsmith Exp bsmith $ */
 /*
@@ -11,5 +10,3 @@
 
 PETSC_EXTERN PetscErrorCode MatDumpSPAI(Mat, FILE *);
 PETSC_EXTERN PetscErrorCode VecDumpSPAI(Vec, FILE *);
-
-#endif

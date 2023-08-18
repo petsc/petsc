@@ -1,5 +1,4 @@
-#ifndef _MAIJ_H
-#define _MAIJ_H
+#pragma once
 
 #include <../src/mat/impls/aij/mpi/mpiaij.h>
 
@@ -18,4 +17,3 @@ typedef struct {
 
 PETSC_INTERN PetscErrorCode MatProductSymbolic_PtAP_SeqAIJ_SeqMAIJ(Mat);
 PETSC_INTERN PetscErrorCode MatProductSymbolic_PtAP_MPIAIJ_MPIMAIJ(Mat);
-#endif

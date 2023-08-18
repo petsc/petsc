@@ -1,5 +1,4 @@
-#ifndef PETSCLOGDEPRECATED_H
-#define PETSCLOGDEPRECATED_H
+#pragma once
 
 #include <petsclog.h>
 
@@ -184,5 +183,3 @@ static inline PetscErrorCode PetscLogSet(PetscErrorCode (*a)(int, int, PetscObje
 {
   return PetscLogLegacyCallbacksBegin(a, b, PETSC_NULLPTR, PETSC_NULLPTR);
 }
-
-#endif /* define PETSCLOGDEPRECATED_H */

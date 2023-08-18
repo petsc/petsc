@@ -1,8 +1,7 @@
 /*
    Private data structure for ILU preconditioner.
 */
-#ifndef __ILU_H
-#define __ILU_H
+#pragma once
 
 #include <../src/ksp/pc/impls/factor/factor.h>
 
@@ -13,5 +12,3 @@ typedef struct {
   PetscBool nonzerosalongdiagonal;
   PetscReal nonzerosalongdiagonaltol;
 } PC_ILU;
-
-#endif

@@ -1,5 +1,4 @@
-#ifndef __TSHISTORYIMPL_H
-#define __TSHISTORYIMPL_H
+#pragma once
 
 #include <petsc/private/tsimpl.h>
 
@@ -12,4 +11,3 @@ PETSC_EXTERN PetscErrorCode TSHistoryUpdate(TSHistory, PetscInt, PetscReal);
 PETSC_EXTERN PetscErrorCode TSHistoryGetTimeStep(TSHistory, PetscBool, PetscInt, PetscReal *);
 PETSC_EXTERN PetscErrorCode TSHistoryGetTime(TSHistory, PetscBool, PetscInt, PetscReal *);
 PETSC_EXTERN PetscErrorCode TSHistoryGetNumSteps(TSHistory, PetscInt *);
-#endif

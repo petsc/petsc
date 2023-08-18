@@ -1,8 +1,7 @@
 /*
       Objects which encapsulate discretizations+continuum residuals
 */
-#ifndef PETSCDS_H
-#define PETSCDS_H
+#pragma once
 
 #include <petscfe.h>
 #include <petscfv.h>
@@ -213,5 +212,3 @@ PETSC_EXTERN PetscErrorCode PetscDSGetNumBoundary(PetscDS, PetscInt *);
 PETSC_EXTERN PetscErrorCode PetscDSGetBoundary(PetscDS, PetscInt, PetscWeakForm *, DMBoundaryConditionType *, const char *[], DMLabel *, PetscInt *, const PetscInt *[], PetscInt *, PetscInt *, const PetscInt *[], void (**)(void), void (**)(void), void **);
 PETSC_EXTERN PetscErrorCode PetscDSCopyBoundary(PetscDS, PetscInt, const PetscInt[], PetscDS);
 PETSC_EXTERN PetscErrorCode PetscDSDestroyBoundary(PetscDS);
-
-#endif

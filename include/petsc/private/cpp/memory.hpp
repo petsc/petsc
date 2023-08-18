@@ -1,5 +1,4 @@
-#ifndef PETSC_CPP_MEMORY_HPP
-#define PETSC_CPP_MEMORY_HPP
+#pragma once
 
 #include <petscmacros.h> // PETSC_CPP_VERSION
 
@@ -84,5 +83,3 @@ inline constexpr T *construct_at(T *ptr, Args &&...args) noexcept(std::is_nothro
 } // namespace util
 
 } // namespace Petsc
-
-#endif // PETSC_CPP_MEMORY_HPP

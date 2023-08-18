@@ -1,5 +1,4 @@
-#ifndef PETSC_HASHSET_H
-#define PETSC_HASHSET_H
+#pragma once
 
 #include <petsc/private/hashtable.h>
 
@@ -203,5 +202,3 @@ M*/
     *off = pos; \
     PetscFunctionReturn(PETSC_SUCCESS); \
   }
-
-#endif /* PETSC_HASHSET_H */

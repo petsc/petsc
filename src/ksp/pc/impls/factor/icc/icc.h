@@ -1,6 +1,4 @@
-
-#ifndef __ICC_H
-#define __ICC_H
+#pragma once
 
 #include <../src/ksp/pc/impls/factor/factor.h>
 
@@ -10,5 +8,3 @@ typedef struct {
   PC_Factor hdr;
   void     *implctx;
 } PC_ICC;
-
-#endif

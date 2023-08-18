@@ -1,5 +1,4 @@
-#ifndef __TAO_BNCG_H
-#define __TAO_BNCG_H
+#pragma once
 
 /*
     Context for bound-constrained nonlinear conjugate gradient method
@@ -57,4 +56,3 @@ PETSC_INTERN PetscErrorCode TaoBNCGStepDirectionUpdate(Tao, PetscReal, PetscReal
 PETSC_INTERN PetscErrorCode TaoBNCGComputeDiagScaling(Tao, PetscReal, PetscReal);
 PETSC_INTERN PetscErrorCode TaoBNCGResetUpdate(Tao, PetscReal);
 PETSC_INTERN PetscErrorCode TaoBNCGCheckDynamicRestart(Tao, PetscReal, PetscReal, PetscReal, PetscBool *, PetscReal);
-#endif /* ifndef __TAO_BNCG_H */

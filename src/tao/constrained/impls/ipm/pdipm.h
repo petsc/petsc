@@ -1,6 +1,4 @@
-
-#ifndef __TAO_PDIPM_H
-#define __TAO_PDIPM_H
+#pragma once
 #include <petsc/private/taoimpl.h>
 
 /*
@@ -83,5 +81,3 @@ typedef struct {
   /* Offsets for parallel assembly */
   PetscInt *nce_all;
 } TAO_PDIPM;
-
-#endif /* ifndef __TAO_PDIPM_H */

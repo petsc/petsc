@@ -1,5 +1,4 @@
-#ifndef PETSCMATELEMENTAL_H
-#define PETSCMATELEMENTAL_H
+#pragma once
 
 #include <petscmat.h>
 
@@ -29,5 +28,3 @@ typedef El::Complex<PetscReal> PetscElemScalar;
 typedef PetscScalar PetscElemScalar;
   #endif
 #endif
-
-#endif /* PETSCMATELEMENTAL_H */

@@ -1,5 +1,4 @@
-#ifndef PETSCCXXCOMPLEXFIX_H
-#define PETSCCXXCOMPLEXFIX_H
+#pragma once
 
 /*
     The pragma below silence all compiler warnings coming from code in this header file.
@@ -100,5 +99,3 @@ PETSC_CXX_COMPLEX_FIX(double)
 #elif defined(PETSC_USE_REAL_DOUBLE)
 PETSC_CXX_COMPLEX_FIX(PetscInt)
 #endif /* PETSC_USE_REAL_* */
-
-#endif

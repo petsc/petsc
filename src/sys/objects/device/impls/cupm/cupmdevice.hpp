@@ -1,5 +1,4 @@
-#ifndef PETSCCUPMDEVICE_HPP
-#define PETSCCUPMDEVICE_HPP
+#pragma once
 
 #include <petsc/private/cupminterface.hpp>
 #include <petsc/private/cpp/memory.hpp>
@@ -70,5 +69,3 @@ bool Device<T>::initialized_ = false;
 } // namespace device
 
 } // namespace Petsc
-
-#endif /* PETSCCUPMDEVICE_HPP */

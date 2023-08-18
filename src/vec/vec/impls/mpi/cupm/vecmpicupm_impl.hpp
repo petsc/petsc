@@ -1,5 +1,4 @@
-#ifndef PETSCVECMPICUPM_IMPL_HPP
-#define PETSCVECMPICUPM_IMPL_HPP
+#pragma once
 
 #include "vecmpicupm.hpp"
 
@@ -372,5 +371,3 @@ inline PetscErrorCode VecMPI_CUPM<T>::SetValuesCOO(Vec x, const PetscScalar v[],
 } // namespace vec
 
 } // namespace Petsc
-
-#endif // PETSCVECMPICUPM_IMPL_HPP

@@ -1,5 +1,4 @@
-#ifndef PETSC_CUPMATOMICS_HPP
-#define PETSC_CUPMATOMICS_HPP
+#pragma once
 
 /*====================================================================================*/
 /*                             Atomic operations on device                            */
@@ -228,7 +227,7 @@ struct AtomicMult {
   __device__ Type operator()(Type &x, Type y) const { return atomicMult(&x, y); }
 };
 
-  /*
+/*
   Atomic Min/Max operations
 
   CUDA C Programming Guide V10.1 Chapter B.12.1.4~5:
@@ -333,7 +332,7 @@ struct AtomicMax {
   __device__ Type operator()(Type &x, Type y) const { return atomicMax(&x, y); }
 };
 
-  /*
+/*
   Atomic bitwise operations
 
   CUDA C Programming Guide V10.1 Chapter B.12.2.1 ~ B.12.2.3:
@@ -851,5 +850,3 @@ struct AtomicLXOR {
   }
 };
 #endif
-
-#endif // PETSC_CUPMATOMICS_HPP

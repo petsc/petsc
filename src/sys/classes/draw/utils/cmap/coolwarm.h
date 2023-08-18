@@ -1,5 +1,4 @@
-#ifndef COOLWARM_H
-#define COOLWARM_H
+#pragma once
 static const unsigned char PetscDrawCmap_coolwarm[256 - PETSC_DRAW_BASIC_COLORS][3] = {
   {59,  75,  192},
   {60,  78,  193},
@@ -225,4 +224,3 @@ static const unsigned char PetscDrawCmap_coolwarm[256 - PETSC_DRAW_BASIC_COLORS]
   {181, 12,  39 },
   {179, 4,   38 },
 };
-#endif

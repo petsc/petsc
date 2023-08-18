@@ -3,8 +3,7 @@
       non-Microsoft Windows systems, which may append an underscore, use
       upper or lower case, and/or use a configurable symbol suffix.
 */
-#ifndef _BLASLAPACK_MANGLE_H
-#define _BLASLAPACK_MANGLE_H
+#pragma once
 
 /****************************************************************************/
 /* macros to mangle BLAS/LAPACK names as needed for linking */
@@ -228,12 +227,10 @@
   #if !defined(PETSC_MISSING_LAPACK_ORMQR)
     #define LAPACKormqr_ PETSCBLAS(unmqr, UNMQR)
   #endif
-  /* note: dot and dotu are handled separately for complex data */
+/* note: dot and dotu are handled separately for complex data */
 
   #define LAPACKsyev_  PETSCBLAS(heev, HEEV)   /* eigenvalues and eigenvectors of a symm matrix */
   #define LAPACKsyevx_ PETSCBLAS(heevx, HEEVX) /* selected eigenvalues and eigenvectors of a symm matrix */
   #define LAPACKsygv_  PETSCBLAS(hegv, HEGV)
   #define LAPACKsygvx_ PETSCBLAS(hegvx, HEGVX)
-#endif
-
 #endif

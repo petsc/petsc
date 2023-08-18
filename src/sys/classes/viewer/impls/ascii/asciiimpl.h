@@ -1,5 +1,4 @@
-#ifndef ASCIIIMPL_H
-#define ASCIIIMPL_H
+#pragma once
 
 #include <petsc/private/viewerimpl.h> /*I     "petscsys.h"   I*/
 #include <../src/sys/fileio/mprint.h> /* defines the queue datastructures and variables */
@@ -30,4 +29,3 @@ struct PetscViewerLink_t {
 };
 
 PETSC_EXTERN PetscMPIInt MPIAPI Petsc_DelViewer(MPI_Comm, PetscMPIInt, void *, void *);
-#endif

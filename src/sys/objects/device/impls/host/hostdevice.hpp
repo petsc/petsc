@@ -1,5 +1,4 @@
-#ifndef HOSTDEVICE_HPP
-#define HOSTDEVICE_HPP
+#pragma once
 
 #include "../impldevicebase.hpp" /*I "petscdevice.h" I*/
 
@@ -29,5 +28,3 @@ private:
 } // namespace device
 
 } // namespace Petsc
-
-#endif // HOSTDEVICE_HPP

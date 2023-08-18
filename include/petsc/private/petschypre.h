@@ -1,5 +1,4 @@
-#ifndef _PETSCHYPRE_H
-#define _PETSCHYPRE_H
+#pragma once
 
 #include <petscsys.h>
 #include <petscpkg_version.h>
@@ -63,5 +62,4 @@ static inline PetscErrorCode PetscHYPREFinalize_Private(void)
 typedef int HYPRE_MemoryLocation;
   #define hypre_IJVectorMemoryLocation(a) 0
   #define hypre_IJMatrixMemoryLocation(a) 0
-#endif
 #endif

@@ -1,5 +1,4 @@
-#ifndef PETSCDMSHELL_H
-#define PETSCDMSHELL_H
+#pragma once
 
 #include <petscdm.h>
 
@@ -41,5 +40,3 @@ PETSC_EXTERN PetscErrorCode DMLocalToGlobalBeginDefaultShell(DM, Vec, InsertMode
 PETSC_EXTERN PetscErrorCode DMLocalToGlobalEndDefaultShell(DM, Vec, InsertMode, Vec);
 PETSC_EXTERN PetscErrorCode DMLocalToLocalBeginDefaultShell(DM, Vec, InsertMode, Vec);
 PETSC_EXTERN PetscErrorCode DMLocalToLocalEndDefaultShell(DM, Vec, InsertMode, Vec);
-
-#endif

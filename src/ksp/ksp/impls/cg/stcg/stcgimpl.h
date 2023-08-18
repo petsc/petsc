@@ -11,8 +11,7 @@
 /*     pages 626-637, 1983.                                                  */
 /*****************************************************************************/
 
-#ifndef PETSC_CG_STCGIMPL_H
-#define PETSC_CG_STCGIMPL_H
+#pragma once
 
 #include <petsc/private/kspimpl.h>
 
@@ -22,5 +21,3 @@ typedef struct {
   PetscReal o_fcn;
   PetscInt  dtype;
 } KSPCG_STCG;
-
-#endif // PETSC_CG_STCGIMPL_H

@@ -1,5 +1,4 @@
-#ifndef PETSCDRAWTYPES_H
-#define PETSCDRAWTYPES_H
+#pragma once
 
 /* SUBMANSEC = Draw */
 
@@ -70,5 +69,3 @@ typedef struct _p_PetscDrawHG *PetscDrawHG;
 .seealso: `PetscDrawAxis`, `PetscDraw`, `PetscDrawLG`, `PetscDrawHG`, `PetscDrawSP`, `PetscDrawBarCreate()`
 S*/
 typedef struct _p_PetscDrawBar *PetscDrawBar;
-
-#endif

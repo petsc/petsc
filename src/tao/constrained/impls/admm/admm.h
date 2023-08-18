@@ -1,5 +1,4 @@
-#ifndef TAOADMM_H
-#define TAOADMM_H
+#pragma once
 #include <petsc/private/taoimpl.h>
 
 typedef struct _TaoADMMOps *TaoADMMOps;
@@ -37,5 +36,3 @@ typedef struct {
   TaoADMMUpdateType      update;             /* update policy for mu */
   TaoADMMRegularizerType regswitch;          /* regularization policy */
 } TAO_ADMM;
-
-#endif

@@ -1,5 +1,4 @@
-#ifndef PETSCPARTITIONER_H
-#define PETSCPARTITIONER_H
+#pragma once
 
 #include <petscsection.h>
 
@@ -58,5 +57,3 @@ PETSC_EXTERN PetscErrorCode PetscPartitionerShellGetRandom(PetscPartitioner, Pet
 #include <petscmat.h>
 #define PETSCPARTITIONERMATPARTITIONING "matpartitioning"
 PETSC_EXTERN PetscErrorCode PetscPartitionerMatPartitioningGetMatPartitioning(PetscPartitioner, MatPartitioning *);
-
-#endif

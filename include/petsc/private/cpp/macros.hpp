@@ -1,5 +1,4 @@
-#ifndef PETSC_CPP_MACROS_HPP
-#define PETSC_CPP_MACROS_HPP
+#pragma once
 
 #include <petscmacros.h>
 
@@ -77,5 +76,3 @@
 //   ...
 // }
 #define PETSC_CXX_COMPAT_DEFN(...) inline __VA_ARGS__ noexcept
-
-#endif // PETSC_CPP_MACROS_HPP

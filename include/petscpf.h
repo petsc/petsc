@@ -1,8 +1,7 @@
 /*
       mathematical function module.
 */
-#ifndef PETSCPF_H
-#define PETSCPF_H
+#pragma once
 
 #include <petscvec.h>
 
@@ -61,5 +60,3 @@ PETSC_EXTERN PetscErrorCode PFView(PF, PetscViewer);
 PETSC_EXTERN PetscErrorCode PFViewFromOptions(PF, PetscObject, const char[]);
 
 #define PFSetOptionsPrefix(a, s) PetscObjectSetOptionsPrefix((PetscObject)(a), s)
-
-#endif

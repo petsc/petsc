@@ -1,6 +1,4 @@
-
-#ifndef _DMIMPL_H
-#define _DMIMPL_H
+#pragma once
 
 #include <petscdm.h>
 #ifdef PETSC_HAVE_LIBCEED
@@ -542,5 +540,3 @@ PETSC_EXTERN PetscErrorCode DMUniversalLabelGetLabel(DMUniversalLabel, DMLabel *
 PETSC_EXTERN PetscErrorCode DMUniversalLabelCreateLabels(DMUniversalLabel, PetscBool, DM);
 PETSC_EXTERN PetscErrorCode DMUniversalLabelSetLabelValue(DMUniversalLabel, DM, PetscBool, PetscInt, PetscInt);
 PETSC_INTERN PetscInt       PetscGCD(PetscInt a, PetscInt b);
-
-#endif

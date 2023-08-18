@@ -1,5 +1,4 @@
-#ifndef PETSC_CUPM_THRUST_UTILITY_HPP
-#define PETSC_CUPM_THRUST_UTILITY_HPP
+#pragma once
 
 #include <petsclog.h>         // PetscLogGpuTimeBegin()/End()
 #include <petscerror.h>       // SETERRQ()
@@ -81,5 +80,3 @@ struct PetscLogGpuTimer {
 } // namespace device
 
 } // namespace Petsc
-
-#endif // PETSC_CUPM_THRUST_UTILITY_HPP

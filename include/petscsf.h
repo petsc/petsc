@@ -1,8 +1,7 @@
 /*
    A star forest (SF) describes a communication pattern
 */
-#ifndef PETSCSF_H
-#define PETSCSF_H
+#pragma once
 
 #include <petscsys.h>
 #include <petscsftypes.h>
@@ -223,5 +222,3 @@ static inline PetscErrorCode PetscSFBcastAndOpWithMemtypeBegin(PetscSF sf, MPI_D
 {
   return PetscSFBcastWithMemTypeBegin(sf, unit, rootmtype, rootdata, leafmtype, leafdata, op);
 }
-
-#endif

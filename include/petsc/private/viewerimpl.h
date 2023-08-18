@@ -1,5 +1,4 @@
-#ifndef PETSC_VIEWERIMPL
-#define PETSC_VIEWERIMPL
+#pragma once
 
 #include <petsc/private/petscimpl.h>
 #include <petscviewer.h>
@@ -43,5 +42,3 @@ PETSC_INTERN PetscMPIInt Petsc_Viewer_HDF5_keyval;
 #if defined(PETSC_USE_SOCKETVIEWER)
 PETSC_INTERN PetscMPIInt Petsc_Viewer_Socket_keyval;
 #endif
-
-#endif /* PETSC_VIEWERIMPL */

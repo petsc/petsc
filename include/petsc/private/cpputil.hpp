@@ -1,5 +1,4 @@
-#ifndef PETSC_CPPUTIL_HPP
-#define PETSC_CPPUTIL_HPP
+#pragma once
 
 #include <petsc/private/petscimpl.h>
 
@@ -11,5 +10,3 @@
 #include <petsc/private/cpp/functional.hpp>
 #include <petsc/private/cpp/register_finalize.hpp>
 #include <petsc/private/cpp/crtp.hpp>
-
-#endif // PETSC_CPPUTIL_HPP

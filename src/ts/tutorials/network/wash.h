@@ -1,5 +1,4 @@
-#ifndef WASH_H
-#define WASH_H
+#pragma once
 
 #include <petscdmnetwork.h>
 #include "pipe.h"
@@ -72,4 +71,3 @@ typedef struct _p_Wash *Wash;
 
 extern PetscErrorCode WashNetworkCreate(MPI_Comm, PetscInt, Wash *);
 extern PetscErrorCode WashNetworkCleanUp(Wash);
-#endif

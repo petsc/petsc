@@ -1,5 +1,4 @@
-#ifndef VPBJACOBI_H
-#define VPBJACOBI_H
+#pragma once
 
 #include <petsc/private/pcimpl.h>
 
@@ -22,5 +21,3 @@ PETSC_INTERN PetscErrorCode PCSetUp_VPBJacobi_Kokkos(PC);
 
 PETSC_INTERN PetscErrorCode PCSetUp_VPBJacobi_Host(PC);
 PETSC_INTERN PetscErrorCode PCDestroy_VPBJacobi(PC);
-
-#endif

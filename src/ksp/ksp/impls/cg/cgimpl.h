@@ -1,4 +1,3 @@
-
 /*
     Private Krylov Context Structure (KSP) for Conjugate Gradient
 
@@ -7,8 +6,7 @@
    eigenvalues.
 */
 
-#ifndef __CGIMPL_H
-#define __CGIMPL_H
+#pragma once
 
 /*
         Defines the basic KSP object
@@ -39,5 +37,3 @@ typedef struct {
 
   PetscBool singlereduction; /* use variant of CG that combines both inner products */
 } KSP_CG;
-
-#endif

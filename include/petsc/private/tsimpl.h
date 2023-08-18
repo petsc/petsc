@@ -1,5 +1,4 @@
-#ifndef __TSIMPL_H
-#define __TSIMPL_H
+#pragma once
 
 #include <petscts.h>
 #include <petsc/private/petscimpl.h>
@@ -569,4 +568,3 @@ struct _n_TSMonitorDrawCtx {
   PetscInt    howoften; /* when > 0 uses step % howoften, when negative only final solution plotted */
   PetscBool   showtimestepandtime;
 };
-#endif

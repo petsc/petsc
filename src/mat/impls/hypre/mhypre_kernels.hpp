@@ -1,5 +1,4 @@
-#ifndef MHYPRE_KERNELS_HPP
-#define MHYPRE_KERNELS_HPP
+#pragma once
 
 #include <../src/mat/impls/hypre/mhypre.h>
 
@@ -19,5 +18,3 @@ __global__ static void ZeroRows(PetscInt n, const PetscInt rows[], const HYPRE_I
     }
   }
 }
-
-#endif

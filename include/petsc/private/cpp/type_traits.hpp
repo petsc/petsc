@@ -1,5 +1,4 @@
-#ifndef PETSC_CPP_TYPE_TRAITS_HPP
-#define PETSC_CPP_TYPE_TRAITS_HPP
+#pragma once
 
 #include <petsc/private/petscimpl.h> // _p_PetscObject
 #include <petsc/private/cpp/macros.hpp>
@@ -250,5 +249,3 @@ PETSC_NODISCARD inline constexpr auto PetscObjectComm(T &&obj) noexcept -> Petsc
 {
   return PetscObjectComm(PetscObjectCast(std::forward<T>(obj)));
 }
-
-#endif // PETSC_CPP_TYPE_TRAITS_HPP

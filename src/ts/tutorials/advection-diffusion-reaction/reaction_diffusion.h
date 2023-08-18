@@ -1,5 +1,4 @@
-#ifndef REACTION_DIFFUSION_H
-#define REACTION_DIFFUSION_H
+#pragma once
 
 #include <petscts.h>
 
@@ -22,4 +21,3 @@ PetscErrorCode RHSFunction(TS, PetscReal, Vec, Vec, void *);
 PetscErrorCode RHSJacobian(TS, PetscReal, Vec, Mat, Mat, void *);
 PetscErrorCode IFunction(TS, PetscReal, Vec, Vec, Vec, void *);
 PetscErrorCode IJacobian(TS, PetscReal, Vec, Vec, PetscReal, Mat, Mat, void *);
-#endif

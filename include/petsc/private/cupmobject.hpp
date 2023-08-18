@@ -1,5 +1,4 @@
-#ifndef PETSC_PRIVATE_CUPMOBJECT_HPP
-#define PETSC_PRIVATE_CUPMOBJECT_HPP
+#pragma once
 
 #include <petsc/private/deviceimpl.h>
 #include <petsc/private/cupmsolverinterface.hpp>
@@ -401,5 +400,3 @@ inline PetscErrorCode CUPMObject<T>::CheckPointerMatchesMemType_(const void *ptr
 } // namespace device
 
 } // namespace Petsc
-
-#endif // PETSC_PRIVATE_CUPMOBJECT_HPP

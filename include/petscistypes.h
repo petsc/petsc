@@ -1,5 +1,4 @@
-#ifndef PETSCISTYPES_H
-#define PETSCISTYPES_H
+#pragma once
 
 /* SUBMANSEC = IS */
 
@@ -74,5 +73,3 @@ typedef struct _n_ISColoring *ISColoring;
           `VecGetLayout()`, `VecGetLocalSize()`, `VecGetOwnershipRange()`
 S*/
 typedef struct _n_PetscLayout *PetscLayout;
-
-#endif

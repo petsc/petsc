@@ -1,5 +1,4 @@
-#ifndef PETSCLOGTYPES_H
-#define PETSCLOGTYPES_H
+#pragma once
 #include <petscsystypes.h>
 
 /* SUBMANSEC = Profiling */
@@ -220,5 +219,3 @@ S*/
 typedef struct _PetscLogStageInfo {
   char *name; /* The stage name */
 } PetscLogStageInfo;
-
-#endif

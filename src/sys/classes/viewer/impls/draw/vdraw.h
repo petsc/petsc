@@ -1,5 +1,4 @@
-#ifndef PETSC_DRAW_VDRAW_H
-#define PETSC_DRAW_VDRAW_H
+#pragma once
 
 #include <petscdraw.h>
 #include <petsc/private/viewerimpl.h>
@@ -21,5 +20,3 @@ typedef struct {
   PetscReal      pause;
   PetscDrawType  drawtype;
 } PetscViewer_Draw;
-
-#endif /* PETSC_DRAW_VDRAW_H */

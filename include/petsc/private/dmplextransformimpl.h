@@ -1,5 +1,4 @@
-#ifndef _PLEXTRANSFORMIMPL_H
-#define _PLEXTRANSFORMIMPL_H
+#pragma once
 
 #include <petsc/private/dmpleximpl.h>
 #include <petscdmplextransform.h>
@@ -109,5 +108,3 @@ PetscErrorCode DMPlexTransformSetDimensions_Internal(DMPlexTransform, DM, DM);
 PetscErrorCode DMPlexTransformMapCoordinatesBarycenter_Internal(DMPlexTransform, DMPolytopeType, DMPolytopeType, PetscInt, PetscInt, PetscInt, PetscInt, const PetscScalar[], PetscScalar[]);
 PetscErrorCode DMPlexTransformGetSubcellOrientation_Regular(DMPlexTransform, DMPolytopeType, PetscInt, PetscInt, DMPolytopeType, PetscInt, PetscInt, PetscInt *, PetscInt *);
 PetscErrorCode DMPlexTransformCellRefine_Regular(DMPlexTransform, DMPolytopeType, PetscInt, PetscInt *, PetscInt *, DMPolytopeType *[], PetscInt *[], PetscInt *[], PetscInt *[]);
-
-#endif

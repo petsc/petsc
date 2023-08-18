@@ -1,5 +1,4 @@
-#ifndef PETSCAO_H
-#define PETSCAO_H
+#pragma once
 
 #include <petscis.h>
 
@@ -72,5 +71,3 @@ PETSC_EXTERN PetscErrorCode AOApplicationToPetscPermuteReal(AO, PetscInt, PetscR
 
 PETSC_EXTERN PetscErrorCode AOMappingHasApplicationIndex(AO, PetscInt, PetscBool *);
 PETSC_EXTERN PetscErrorCode AOMappingHasPetscIndex(AO, PetscInt, PetscBool *);
-
-#endif

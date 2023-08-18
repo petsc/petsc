@@ -5,8 +5,7 @@ Extended with L1-regularizer with a linear transformation matrix D:
 When D is an identity matrix, we have the classic lasso, aka basis pursuit denoising in compressive sensing problem.
 */
 
-#ifndef __TAO_BRGN_H
-#define __TAO_BRGN_H
+#pragma once
 
 #include <../src/tao/bound/impls/bnk/bnk.h> /* BNLS, a sub-type of BNK, is used in brgn solver */
 
@@ -26,5 +25,3 @@ typedef struct {
   PetscInt  reg_type;
   PetscBool mat_explicit;
 } TAO_BRGN;
-
-#endif /* if !defined(__TAO_BRGN_H) */

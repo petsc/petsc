@@ -1,5 +1,4 @@
-#ifndef PETSC_PVECIMPL_H
-#define PETSC_PVECIMPL_H
+#pragma once
 
 #include <../src/vec/vec/impls/dvecimpl.h>
 
@@ -209,4 +208,3 @@ static inline PetscErrorCode VecErrorWeightedNorms_MPI_Default(Vec U, Vec Y, Vec
   *normr_loc = loc[5];
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-#endif // PETSC_PVECIMPL_H

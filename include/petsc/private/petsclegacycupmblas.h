@@ -1,5 +1,4 @@
-#ifndef PETSCLEGACYCUPMBLAS_H
-#define PETSCLEGACYCUPMBLAS_H
+#pragma once
 
 #include <petscdevice_cupm.h>
 
@@ -266,5 +265,3 @@
     #endif
   #endif
 #endif // PETSC_HAVE_HIP
-
-#endif // PETSCLEGACYCUPMBLAS_H

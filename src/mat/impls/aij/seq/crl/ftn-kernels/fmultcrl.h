@@ -1,5 +1,4 @@
-#ifndef __FMULATCRL_H
-#define __FMULATCRL_H
+#pragma once
 
 #include <petscsys.h>
 #if defined(PETSC_USE_FORTRAN_KERNEL_MULTCRL)
@@ -9,6 +8,4 @@
     #define fortranmultcrl_ fortranmultcrl
   #endif
 PETSC_EXTERN void fortranmultcrl_(PetscInt *, PetscInt *, const PetscScalar *, PetscScalar *, PetscInt *, PetscScalar *);
-#endif
-
 #endif

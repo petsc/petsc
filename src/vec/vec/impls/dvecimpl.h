@@ -1,5 +1,4 @@
-#ifndef PETSC_DVECIMPL_H
-#define PETSC_DVECIMPL_H
+#pragma once
 
 /*
   This should not be included in users code.
@@ -61,5 +60,3 @@ PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode VecSetRandom_Seq(Vec, PetscRandom);
 PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode VecPointwiseMult_Seq(Vec, Vec, Vec);
 PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode VecPointwiseDivide_Seq(Vec, Vec, Vec);
 PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode VecAXPY_Seq(Vec, PetscScalar, Vec);
-
-#endif // PETSC_DVECIMPL_H

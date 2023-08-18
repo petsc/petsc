@@ -1,5 +1,4 @@
-#ifndef __FMULT_H
-#define __FMULT_H
+#pragma once
 
 #include <petscsys.h>
 #if defined(PETSC_USE_FORTRAN_KERNEL_MULTAIJ)
@@ -14,5 +13,4 @@
 PETSC_EXTERN void fortranmultaij_(PetscInt *, const PetscScalar *, const PetscInt *, const PetscInt *, const MatScalar *, PetscScalar *);
 PETSC_EXTERN void fortranmulttransposeaddaij_(PetscInt *, const PetscScalar *, const PetscInt *, const PetscInt *, const MatScalar *, PetscScalar *);
 
-#endif
 #endif

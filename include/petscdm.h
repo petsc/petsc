@@ -1,8 +1,7 @@
 /*
       Objects to manage the interactions between the mesh data structures and the algebraic objects
 */
-#ifndef PETSCDM_H
-#define PETSCDM_H
+#pragma once
 #include <petscmat.h>
 #include <petscdmtypes.h>
 #include <petscfetypes.h>
@@ -1099,5 +1098,3 @@ PETSC_EXTERN PetscErrorCode DMPolytopeMatchVertexOrientation(DMPolytopeType, con
 PETSC_EXTERN PetscErrorCode DMPolytopeGetOrientation(DMPolytopeType, const PetscInt[], const PetscInt[], PetscInt *);
 PETSC_EXTERN PetscErrorCode DMPolytopeGetVertexOrientation(DMPolytopeType, const PetscInt[], const PetscInt[], PetscInt *);
 PETSC_EXTERN PetscErrorCode DMPolytopeInCellTest(DMPolytopeType, const PetscReal[], PetscBool *);
-
-#endif

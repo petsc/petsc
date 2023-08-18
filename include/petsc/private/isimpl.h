@@ -1,5 +1,4 @@
-#ifndef PETSC_ISIMPL_H
-#define PETSC_ISIMPL_H
+#pragma once
 
 /* Index sets for scatter-gather type operations in vectors and matrices. */
 
@@ -96,5 +95,3 @@ struct _n_ISColoring {
   ISColoringType   ctype;
   PetscBool        allocated;
 };
-
-#endif /* PETSC_ISIMPL_H */

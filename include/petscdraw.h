@@ -1,8 +1,7 @@
 /*
   Interface to the PETSc graphics
 */
-#ifndef PETSCDRAW_H
-#define PETSCDRAW_H
+#pragma once
 #include <petscsys.h>
 #include <petscdrawtypes.h>
 
@@ -447,5 +446,3 @@ M*/
   #define PetscDrawCollectiveBegin(draw)
   #define PetscDrawCollectiveEnd(draw)
 #endif /* PetscDefined(HAVE_X) && PetscDefined(HAVE_SETJMP_H) */
-
-#endif /* PETSCDRAW_H */

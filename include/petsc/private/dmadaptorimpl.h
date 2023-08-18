@@ -1,5 +1,4 @@
-#ifndef _DMADAPTORIMPL_H
-#define _DMADAPTORIMPL_H
+#pragma once
 
 #include <petscdmadaptor.h>
 #include <petsc/private/petscimpl.h>
@@ -38,5 +37,3 @@ struct _p_DMAdaptor {
   PetscErrorCode (**exactSol)(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar[], void *);
   void **exactCtx;
 };
-
-#endif
