@@ -3,6 +3,7 @@
    This file defines the initialization of PETSc, including PetscInitialize()
 */
 #include <petsc/private/petscimpl.h> /*I  "petscsys.h"   I*/
+#include <petsc/private/logimpl.h>
 #include <petscviewer.h>
 #include <petsc/private/garbagecollector.h>
 
@@ -1442,6 +1443,8 @@ PetscErrorCode PetscFinalize(void)
     PetscCall(PetscOptionsPushGetViewerOff(PETSC_FALSE));
     PetscCall(PetscLogViewFromOptions());
     PetscCall(PetscOptionsPopGetViewerOff());
+    //  It should be turned on with PetscLogGpuTime() and never turned off except in this place
+    PetscLogGpuTimeFlag = PETSC_FALSE;
 
     // Free any objects created by the last block of code.
     PetscCall(PetscObjectRegisterDestroyAll());

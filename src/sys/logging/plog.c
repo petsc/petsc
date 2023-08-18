@@ -2291,16 +2291,6 @@ M*/
   #if PetscDefined(HAVE_DEVICE)
     #include <petsc/private/deviceimpl.h>
 
-/*
-   This cannot be called by users between PetscInitialize() and PetscFinalize() at any random location in the code
-   because it will result in timing results that cannot be interpreted.
-*/
-static PetscErrorCode PetscLogGpuTime_Off(void)
-{
-  PetscLogGpuTimeFlag = PETSC_FALSE;
-  return PETSC_SUCCESS;
-}
-
 /*@C
   PetscLogGpuTime - turn on the logging of GPU time for GPU kernels
 
@@ -2321,9 +2311,10 @@ static PetscErrorCode PetscLogGpuTime_Off(void)
 @*/
 PetscErrorCode PetscLogGpuTime(void)
 {
-  if (!PetscLogGpuTimeFlag) PetscCall(PetscRegisterFinalize(PetscLogGpuTime_Off));
+  PetscFunctionBegin;
+  PetscCheck(petsc_gtime == 0.0, PETSC_COMM_SELF, PETSC_ERR_SUP, "GPU logging has already been turned on");
   PetscLogGpuTimeFlag = PETSC_TRUE;
-  return PETSC_SUCCESS;
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
