@@ -1,7 +1,6 @@
-
 #ifndef __MPISELL_H
-  #define __MPISELL_H
-#endif
+#define __MPISELL_H
+
 #include <../src/mat/impls/sell/seq/sell.h>
 
 typedef struct {
@@ -44,17 +43,11 @@ PETSC_INTERN PetscErrorCode MatAssemblyEnd_MPISELL(Mat, MatAssemblyType);
 
 PETSC_INTERN PetscErrorCode MatSetUpMultiply_MPISELL(Mat);
 PETSC_INTERN PetscErrorCode MatDisAssemble_MPISELL(Mat);
-PETSC_INTERN PetscErrorCode MatDuplicate_MPISELL(Mat, MatDuplicateOption, Mat *);
 
 PETSC_INTERN PetscErrorCode MatDestroy_MPISELL_PtAP(Mat);
 PETSC_INTERN PetscErrorCode MatDestroy_MPISELL(Mat);
 
-PETSC_INTERN PetscErrorCode MatSetValues_MPISELL(Mat, PetscInt, const PetscInt[], PetscInt, const PetscInt[], const PetscScalar[], InsertMode);
-PETSC_INTERN PetscErrorCode MatSetOption_MPISELL(Mat, MatOption, PetscBool);
 PETSC_INTERN PetscErrorCode MatGetSeqNonzeroStructure_MPISELL(Mat, Mat *);
-
-PETSC_INTERN PetscErrorCode MatSetFromOptions_MPISELL(Mat, PetscOptionItems *);
-PETSC_INTERN PetscErrorCode MatMPISELLSetPreallocation_MPISELL(Mat, PetscInt, const PetscInt[], PetscInt, const PetscInt[]);
 
 PETSC_INTERN PetscErrorCode MatConvert_MPISELL_MPIAIJ(Mat, MatType, MatReuse, Mat *);
 PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_MPISELL(Mat, MatType, MatReuse, Mat *);
@@ -63,3 +56,4 @@ PETSC_INTERN PetscErrorCode MatSOR_MPISELL(Mat, Vec, PetscReal, MatSORType, Pets
 
 PETSC_INTERN PetscErrorCode MatCreateColmap_MPISELL_Private(Mat);
 PETSC_INTERN PetscErrorCode MatDiagonalScaleLocal_MPISELL(Mat, Vec);
+#endif
