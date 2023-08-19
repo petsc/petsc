@@ -516,8 +516,29 @@ The default handler ``PetscSignalHandlerDefault()`` calls
 ``PetscError()`` and then terminates. In general, a signal in PETSc
 indicates a catastrophic failure. Any error handler that the user
 provides should try to clean up only before exiting. By default all
-PETSc programs use the default signal handler, although the user can
-turn this off at runtime with the option ``-no_signal_handler`` .
+PETSc programs turn on the default PETSc signal handler in ``PetscInitialize()``,
+this can be prevented with the option ``-no_signal_handler``  that can be provided on the command line,
+in the ~./petscrc file, or with the call
+
+.. code-block::
+
+   PetscCall(PetscOptionsSetValue(NULL, "-no_signal_handler", "true"));
+
+Once the first PETSc signal handler has been pushed it is impossible to go back to
+to a signal handler that was set directly by the user with the UNIX signal handler API or by
+the loader.
+
+Some Fortran compilers/loaders cause, by default, a traceback of the Fortran call stack when a
+segmentation violation occurs to be printed. This is handled by them setting a special signal handler
+when the program is started up. This feature is useful for debugging without needing to start up a debugger.
+If  ``PetscPushSignalHandler()`` has been called this traceback will not occur, hence if the Fortran traceback
+is desired one should put
+
+.. code-block::
+
+   PetscCallA(PetscOptionsSetValue(PETSC_NULL_OPTIONS,"-no_signal_handler","true",ierr))
+
+**before** the call to ``PetscInitialize()``. This prevents PETSc from defaulting to using a signal handler.
 
 There is a separate signal handler for floating-point exceptions. The
 option ``-fp_trap`` turns on the floating-point trap at runtime, and the

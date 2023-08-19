@@ -190,7 +190,11 @@ PetscErrorCode PetscSignalHandlerDefault(int sig, void *ptr)
 
   Level: developer
 
-.seealso: `PetscPopSignalHandler()`, `PetscSignalHandlerDefault()`, `PetscPushErrorHandler()`
+  Note:
+  There is no way to return to a signal handler that was set directly by the user with the UNIX signal handler API or by
+  the loader. That information is lost with the first call to `PetscPushSignalHandler()`
+
+.seealso: [](sec_errors), `PetscPopSignalHandler()`, `PetscSignalHandlerDefault()`, `PetscPushErrorHandler()`
 @*/
 PetscErrorCode PetscPushSignalHandler(PetscErrorCode (*routine)(int, void *), void *ctx)
 {
@@ -334,7 +338,7 @@ PetscErrorCode PetscPushSignalHandler(PetscErrorCode (*routine)(int, void *), vo
 }
 
 /*@
-  PetscPopSignalHandler - Removes the most last signal handler that was pushed.
+  PetscPopSignalHandler - Removes the last signal handler that was pushed.
   If no signal handlers are left on the stack it will remove the PETSc signal handler.
   (That is PETSc will no longer catch signals).
 
@@ -342,7 +346,11 @@ PetscErrorCode PetscPushSignalHandler(PetscErrorCode (*routine)(int, void *), vo
 
   Level: developer
 
-.seealso: `PetscPushSignalHandler()`
+  Note:
+  There is no way to return to a signal handler that was set directly by the user with the UNIX signal handler API or by
+  the loader. That information is lost with the first call to `PetscPushSignalHandler()`
+
+.seealso: [](sec_errors), `PetscPushSignalHandler()`
 @*/
 PetscErrorCode PetscPopSignalHandler(void)
 {
