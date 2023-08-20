@@ -8,7 +8,7 @@ class Configure(config.package.Package):
     #self.version                = '4.0.0'
     #self.versionname            = 'MFEM_VERSION_STRING'
     #self.versioninclude         = 'mfem/config.hpp'
-    self.gitcommit              = 'v4.5.2'
+    self.gitcommit              = '6d81b467c22b6b40015aab7b50ea539840970c7f' # master sept-24-2023
     self.download               = ['git://https://github.com/mfem/mfem.git','https://github.com/mfem/mfem/archive/'+self.gitcommit+'.tar.gz']
     self.linkedbypetsc          = 0
     self.downloadonWindows      = 1
