@@ -57,7 +57,7 @@ class Configure(config.package.Package):
     if not os.path.exists(configDir):
       os.makedirs(configDir)
 
-    if self.framework.argDB['prefix']:
+    if self.framework.argDB['prefix'] and not 'package-prefix-hash' in self.argDB:
       PETSC_DIR  = os.path.abspath(os.path.expanduser(self.argDB['prefix']))
       PETSC_ARCH = ''
       prefix     = os.path.abspath(os.path.expanduser(self.argDB['prefix']))
@@ -158,7 +158,7 @@ class Configure(config.package.Package):
         slepclib = '-L'+prefix+'/lib -lslepc'
         slepcext = ''
         g.write('SLEPC_LIB = '+petscrpt+' '+slepclib+' '+slepcext+' $(PETSC_LIB)\n')
-        if self.argDB['prefix']:
+        if self.argDB['prefix'] and not 'package-prefix-hash' in self.argDB:
           makedepend = 'slepc-install'
         else:
           makedepend = 'slepc-build'
@@ -216,7 +216,7 @@ class Configure(config.package.Package):
              echo "********************************************************************" && \\\n\
              exit 1)'])
 
-    if self.argDB['prefix']:
+    if self.argDB['prefix'] and not 'package-prefix-hash' in self.argDB:
       self.addMakeRule('mfem-build','')
       self.addMakeRule('mfem-install','mfembuild mfeminstall')
     else:
