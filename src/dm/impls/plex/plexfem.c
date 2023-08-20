@@ -3310,7 +3310,7 @@ PetscErrorCode DMPlexComputeInjectorFEM(DM dmc, DM dmf, VecScatter *sc, void *us
     PetscCall(DMPlexMatGetClosureIndicesRefined(dmf, fsection, fglobalSection, dmc, csection, cglobalSection, c, cellCIndices, cellFIndices));
     for (d = 0; d < cTotDim; ++d) {
       if ((cellCIndices[d] < startC) || (cellCIndices[d] >= endC)) continue;
-      PetscCheck(!(findices[cellCIndices[d] - startC] >= 0) || !(findices[cellCIndices[d] - startC] != cellFIndices[cmap[d]]), PETSC_COMM_SELF, PETSC_ERR_PLIB, "Coarse dof %" PetscInt_FMT " maps to both %" PetscInt_FMT " and %" PetscInt_FMT, cindices[cellCIndices[d] - startC], findices[cellCIndices[d] - startC], cellFIndices[cmap[d]]);
+      PetscCheck(!(findices[cellCIndices[d] - startC] >= 0) || !(findices[cellCIndices[d] - startC] != cellFIndices[cmap[d]]), PETSC_COMM_SELF, PETSC_ERR_PLIB, "Cell %" PetscInt_FMT " Coarse dof %" PetscInt_FMT " maps to both %" PetscInt_FMT " and %" PetscInt_FMT, c, cindices[cellCIndices[d] - startC], findices[cellCIndices[d] - startC], cellFIndices[cmap[d]]);
       cindices[cellCIndices[d] - startC] = cellCIndices[d];
       findices[cellCIndices[d] - startC] = cellFIndices[cmap[d]];
     }
