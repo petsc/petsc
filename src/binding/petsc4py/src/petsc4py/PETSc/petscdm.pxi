@@ -123,6 +123,8 @@ cdef extern from * nogil:
     PetscErrorCode DMGetRefineLevel(PetscDM,PetscInt*)
     PetscErrorCode DMSetRefineLevel(PetscDM,PetscInt)
     PetscErrorCode DMGetCoarsenLevel(PetscDM,PetscInt*)
+    PetscErrorCode DMGetCoarseDM(PetscDM,PetscDM*)
+    PetscErrorCode DMSetCoarseDM(PetscDM,PetscDM)
 
     PetscErrorCode DMAdaptLabel(PetscDM,PetscDMLabel,PetscDM*)
     PetscErrorCode DMAdaptMetric(PetscDM,PetscVec,PetscDMLabel,PetscDMLabel,PetscDM*)
