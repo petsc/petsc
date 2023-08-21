@@ -486,7 +486,7 @@ def command_line_main() -> int:
     help=f'set directory names to exclude, must not contain \'{os.path.sep}\''
   )
   parser.add_argument(
-    '--exclude-files', nargs='+', default=['petscversion.h'],
+    '--exclude-files', nargs='+', default=['petscversion.h', 'slepcversion.h'],
     help=f'set file names to exclude, must not contain \'{os.path.sep}\''
   )
   parser.add_argument('--version', action='version', version=f'%(prog)s v{__version_str__}')
