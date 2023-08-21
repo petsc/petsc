@@ -3182,7 +3182,8 @@ static PetscErrorCode MatProductSymbolic_SeqAIJCUSPARSE_SeqAIJCUSPARSE(Mat C)
 
 #if PETSC_PKG_CUDA_VERSION_GE(11, 0, 0)
   PetscCallCUSPARSE(cusparseSetPointerMode(Ccusp->handle, CUSPARSE_POINTER_MODE_DEVICE));
-  stat = cusparseCreateCsr(&Cmat->matDescr, Ccsr->num_rows, Ccsr->num_cols, 0, NULL, NULL, NULL, CUSPARSE_INDEX_32I, CUSPARSE_INDEX_32I, CUSPARSE_INDEX_BASE_ZERO, cusparse_scalartype);
+  // cuda-12.2 requires non-null csrRowOffsets
+  stat = cusparseCreateCsr(&Cmat->matDescr, Ccsr->num_rows, Ccsr->num_cols, 0, Ccsr->row_offsets->data().get(), NULL, NULL, CUSPARSE_INDEX_32I, CUSPARSE_INDEX_32I, CUSPARSE_INDEX_BASE_ZERO, cusparse_scalartype);
   PetscCallCUSPARSE(stat);
   PetscCallCUSPARSE(cusparseSpGEMM_createDescr(&mmdata->spgemmDesc));
   #if PETSC_PKG_CUDA_VERSION_GE(11, 4, 0)
