@@ -193,13 +193,22 @@ class Configure(config.package.Package):
         g.write('MPI_LIB = '+self.mpi.libpaths+' '+self.mpi.mpilibs+'\n')
       g.close()
 
+    with open(os.path.join(configDir,'petsc.mk'),'w') as f:
+      f.write('''
+MAKEOVERRIDES := $(filter-out CXXFLAGS=%,$(MAKEOVERRIDES))
+unexport CXXFLAGS
+.PHONY: run-config
+run-config:
+\t$(MAKE) -f {mfile} config MFEM_DIR={mfemdir}
+'''.format(mfile=os.path.join(self.packageDir,'makefile'), mfemdir=self.packageDir))
+
     self.addDefine('HAVE_MFEM',1)
     self.addMakeMacro('MFEM','yes')
     self.addMakeRule('mfembuild',makedepend, \
                        ['@echo "*** Building MFEM ***"',\
                           '@${RM} ${PETSC_ARCH}/lib/petsc/conf/mfem.errorflg',\
                           '@(cd '+buildDir+' && \\\n\
-           ${OMAKE} -f '+self.packageDir+'/makefile config MFEM_DIR='+self.packageDir+' && \\\n\
+           ${OMAKE} -f '+configDir+'/petsc.mk run-config && \\\n\
            ${OMAKE} clean && \\\n\
            '+self.make.make_jnp+') > ${PETSC_ARCH}/lib/petsc/conf/mfem.log 2>&1 || \\\n\
              (echo "**************************ERROR*************************************" && \\\n\
