@@ -149,7 +149,7 @@ PetscErrorCode MatCreateColmap_MPISELL_Private(Mat mat)
     b->rlen[row] = nrow2; \
   }
 
-PetscErrorCode MatSetValues_MPISELL(Mat mat, PetscInt m, const PetscInt im[], PetscInt n, const PetscInt in[], const PetscScalar v[], InsertMode addv)
+static PetscErrorCode MatSetValues_MPISELL(Mat mat, PetscInt m, const PetscInt im[], PetscInt n, const PetscInt in[], const PetscScalar v[], InsertMode addv)
 {
   Mat_MPISELL *sell = (Mat_MPISELL *)mat->data;
   PetscScalar  value;
@@ -282,8 +282,6 @@ static PetscErrorCode MatGetValues_MPISELL(Mat mat, PetscInt m, const PetscInt i
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-extern PetscErrorCode MatMultDiagonalBlock_MPISELL(Mat, Vec, Vec);
-
 static PetscErrorCode MatAssemblyBegin_MPISELL(Mat mat, MatAssemblyType mode)
 {
   Mat_MPISELL *sell = (Mat_MPISELL *)mat->data;
@@ -383,7 +381,7 @@ static PetscErrorCode MatMult_MPISELL(Mat A, Vec xx, Vec yy)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatMultDiagonalBlock_MPISELL(Mat A, Vec bb, Vec xx)
+static PetscErrorCode MatMultDiagonalBlock_MPISELL(Mat A, Vec bb, Vec xx)
 {
   Mat_MPISELL *a = (Mat_MPISELL *)A->data;
 
@@ -747,7 +745,7 @@ static PetscErrorCode MatGetInfo_MPISELL(Mat matin, MatInfoType flag, MatInfo *i
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatSetOption_MPISELL(Mat A, MatOption op, PetscBool flg)
+static PetscErrorCode MatSetOption_MPISELL(Mat A, MatOption op, PetscBool flg)
 {
   Mat_MPISELL *a = (Mat_MPISELL *)A->data;
 
@@ -892,8 +890,6 @@ static PetscErrorCode MatSetUp_MPISELL(Mat A)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-extern PetscErrorCode MatConjugate_SeqSELL(Mat);
-
 static PetscErrorCode MatConjugate_MPISELL(Mat mat)
 {
   PetscFunctionBegin;
@@ -948,7 +944,7 @@ static PetscErrorCode MatSetRandom_MPISELL(Mat x, PetscRandom rctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatSetFromOptions_MPISELL(Mat A, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode MatSetFromOptions_MPISELL(Mat A, PetscOptionItems *PetscOptionsObject)
 {
   PetscFunctionBegin;
   PetscOptionsHeadBegin(PetscOptionsObject, "MPISELL options");
@@ -995,159 +991,6 @@ static PetscErrorCode MatGetDiagonalBlock_MPISELL(Mat A, Mat *a)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static struct _MatOps MatOps_Values = {MatSetValues_MPISELL,
-                                       NULL,
-                                       NULL,
-                                       MatMult_MPISELL,
-                                       /* 4*/ MatMultAdd_MPISELL,
-                                       MatMultTranspose_MPISELL,
-                                       MatMultTransposeAdd_MPISELL,
-                                       NULL,
-                                       NULL,
-                                       NULL,
-                                       /*10*/ NULL,
-                                       NULL,
-                                       NULL,
-                                       MatSOR_MPISELL,
-                                       NULL,
-                                       /*15*/ MatGetInfo_MPISELL,
-                                       MatEqual_MPISELL,
-                                       MatGetDiagonal_MPISELL,
-                                       MatDiagonalScale_MPISELL,
-                                       NULL,
-                                       /*20*/ MatAssemblyBegin_MPISELL,
-                                       MatAssemblyEnd_MPISELL,
-                                       MatSetOption_MPISELL,
-                                       MatZeroEntries_MPISELL,
-                                       /*24*/ NULL,
-                                       NULL,
-                                       NULL,
-                                       NULL,
-                                       NULL,
-                                       /*29*/ MatSetUp_MPISELL,
-                                       NULL,
-                                       NULL,
-                                       MatGetDiagonalBlock_MPISELL,
-                                       NULL,
-                                       /*34*/ MatDuplicate_MPISELL,
-                                       NULL,
-                                       NULL,
-                                       NULL,
-                                       NULL,
-                                       /*39*/ NULL,
-                                       NULL,
-                                       NULL,
-                                       MatGetValues_MPISELL,
-                                       MatCopy_MPISELL,
-                                       /*44*/ NULL,
-                                       MatScale_MPISELL,
-                                       MatShift_MPISELL,
-                                       MatDiagonalSet_MPISELL,
-                                       NULL,
-                                       /*49*/ MatSetRandom_MPISELL,
-                                       NULL,
-                                       NULL,
-                                       NULL,
-                                       NULL,
-                                       /*54*/ MatFDColoringCreate_MPIXAIJ,
-                                       NULL,
-                                       MatSetUnfactored_MPISELL,
-                                       NULL,
-                                       NULL,
-                                       /*59*/ NULL,
-                                       MatDestroy_MPISELL,
-                                       MatView_MPISELL,
-                                       NULL,
-                                       NULL,
-                                       /*64*/ NULL,
-                                       NULL,
-                                       NULL,
-                                       NULL,
-                                       NULL,
-                                       /*69*/ NULL,
-                                       NULL,
-                                       NULL,
-                                       NULL,
-                                       NULL,
-                                       NULL,
-                                       /*75*/ MatFDColoringApply_AIJ, /* reuse AIJ function */
-                                       MatSetFromOptions_MPISELL,
-                                       NULL,
-                                       NULL,
-                                       NULL,
-                                       /*80*/ NULL,
-                                       NULL,
-                                       NULL,
-                                       /*83*/ NULL,
-                                       NULL,
-                                       NULL,
-                                       NULL,
-                                       NULL,
-                                       NULL,
-                                       /*89*/ NULL,
-                                       NULL,
-                                       NULL,
-                                       NULL,
-                                       NULL,
-                                       /*94*/ NULL,
-                                       NULL,
-                                       NULL,
-                                       NULL,
-                                       NULL,
-                                       /*99*/ NULL,
-                                       NULL,
-                                       NULL,
-                                       MatConjugate_MPISELL,
-                                       NULL,
-                                       /*104*/ NULL,
-                                       MatRealPart_MPISELL,
-                                       MatImaginaryPart_MPISELL,
-                                       NULL,
-                                       NULL,
-                                       /*109*/ NULL,
-                                       NULL,
-                                       NULL,
-                                       NULL,
-                                       MatMissingDiagonal_MPISELL,
-                                       /*114*/ NULL,
-                                       NULL,
-                                       MatGetGhosts_MPISELL,
-                                       NULL,
-                                       NULL,
-                                       /*119*/ NULL,
-                                       NULL,
-                                       NULL,
-                                       NULL,
-                                       NULL,
-                                       /*124*/ NULL,
-                                       NULL,
-                                       MatInvertBlockDiagonal_MPISELL,
-                                       NULL,
-                                       NULL,
-                                       /*129*/ NULL,
-                                       NULL,
-                                       NULL,
-                                       NULL,
-                                       NULL,
-                                       /*134*/ NULL,
-                                       NULL,
-                                       NULL,
-                                       NULL,
-                                       NULL,
-                                       /*139*/ NULL,
-                                       NULL,
-                                       NULL,
-                                       MatFDColoringSetUp_MPIXAIJ,
-                                       NULL,
-                                       /*144*/ NULL,
-                                       NULL,
-                                       NULL,
-                                       NULL,
-                                       NULL,
-                                       NULL,
-                                       /*150*/ NULL,
-                                       NULL};
-
 static PetscErrorCode MatStoreValues_MPISELL(Mat mat)
 {
   Mat_MPISELL *sell = (Mat_MPISELL *)mat->data;
@@ -1168,7 +1011,7 @@ static PetscErrorCode MatRetrieveValues_MPISELL(Mat mat)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatMPISELLSetPreallocation_MPISELL(Mat B, PetscInt d_rlenmax, const PetscInt d_rlen[], PetscInt o_rlenmax, const PetscInt o_rlen[])
+static PetscErrorCode MatMPISELLSetPreallocation_MPISELL(Mat B, PetscInt d_rlenmax, const PetscInt d_rlen[], PetscInt o_rlenmax, const PetscInt o_rlen[])
 {
   Mat_MPISELL *b;
 
@@ -1202,7 +1045,7 @@ PetscErrorCode MatMPISELLSetPreallocation_MPISELL(Mat B, PetscInt d_rlenmax, con
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatDuplicate_MPISELL(Mat matin, MatDuplicateOption cpvalues, Mat *newmat)
+static PetscErrorCode MatDuplicate_MPISELL(Mat matin, MatDuplicateOption cpvalues, Mat *newmat)
 {
   Mat          mat;
   Mat_MPISELL *a, *oldmat = (Mat_MPISELL *)matin->data;
@@ -1254,6 +1097,159 @@ PetscErrorCode MatDuplicate_MPISELL(Mat matin, MatDuplicateOption cpvalues, Mat 
   *newmat = mat;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
+
+static const struct _MatOps MatOps_Values = {MatSetValues_MPISELL,
+                                             NULL,
+                                             NULL,
+                                             MatMult_MPISELL,
+                                             /* 4*/ MatMultAdd_MPISELL,
+                                             MatMultTranspose_MPISELL,
+                                             MatMultTransposeAdd_MPISELL,
+                                             NULL,
+                                             NULL,
+                                             NULL,
+                                             /*10*/ NULL,
+                                             NULL,
+                                             NULL,
+                                             MatSOR_MPISELL,
+                                             NULL,
+                                             /*15*/ MatGetInfo_MPISELL,
+                                             MatEqual_MPISELL,
+                                             MatGetDiagonal_MPISELL,
+                                             MatDiagonalScale_MPISELL,
+                                             NULL,
+                                             /*20*/ MatAssemblyBegin_MPISELL,
+                                             MatAssemblyEnd_MPISELL,
+                                             MatSetOption_MPISELL,
+                                             MatZeroEntries_MPISELL,
+                                             /*24*/ NULL,
+                                             NULL,
+                                             NULL,
+                                             NULL,
+                                             NULL,
+                                             /*29*/ MatSetUp_MPISELL,
+                                             NULL,
+                                             NULL,
+                                             MatGetDiagonalBlock_MPISELL,
+                                             NULL,
+                                             /*34*/ MatDuplicate_MPISELL,
+                                             NULL,
+                                             NULL,
+                                             NULL,
+                                             NULL,
+                                             /*39*/ NULL,
+                                             NULL,
+                                             NULL,
+                                             MatGetValues_MPISELL,
+                                             MatCopy_MPISELL,
+                                             /*44*/ NULL,
+                                             MatScale_MPISELL,
+                                             MatShift_MPISELL,
+                                             MatDiagonalSet_MPISELL,
+                                             NULL,
+                                             /*49*/ MatSetRandom_MPISELL,
+                                             NULL,
+                                             NULL,
+                                             NULL,
+                                             NULL,
+                                             /*54*/ MatFDColoringCreate_MPIXAIJ,
+                                             NULL,
+                                             MatSetUnfactored_MPISELL,
+                                             NULL,
+                                             NULL,
+                                             /*59*/ NULL,
+                                             MatDestroy_MPISELL,
+                                             MatView_MPISELL,
+                                             NULL,
+                                             NULL,
+                                             /*64*/ NULL,
+                                             NULL,
+                                             NULL,
+                                             NULL,
+                                             NULL,
+                                             /*69*/ NULL,
+                                             NULL,
+                                             NULL,
+                                             NULL,
+                                             NULL,
+                                             NULL,
+                                             /*75*/ MatFDColoringApply_AIJ, /* reuse AIJ function */
+                                             MatSetFromOptions_MPISELL,
+                                             NULL,
+                                             NULL,
+                                             NULL,
+                                             /*80*/ NULL,
+                                             NULL,
+                                             NULL,
+                                             /*83*/ NULL,
+                                             NULL,
+                                             NULL,
+                                             NULL,
+                                             NULL,
+                                             NULL,
+                                             /*89*/ NULL,
+                                             NULL,
+                                             NULL,
+                                             NULL,
+                                             NULL,
+                                             /*94*/ NULL,
+                                             NULL,
+                                             NULL,
+                                             NULL,
+                                             NULL,
+                                             /*99*/ NULL,
+                                             NULL,
+                                             NULL,
+                                             MatConjugate_MPISELL,
+                                             NULL,
+                                             /*104*/ NULL,
+                                             MatRealPart_MPISELL,
+                                             MatImaginaryPart_MPISELL,
+                                             NULL,
+                                             NULL,
+                                             /*109*/ NULL,
+                                             NULL,
+                                             NULL,
+                                             NULL,
+                                             MatMissingDiagonal_MPISELL,
+                                             /*114*/ NULL,
+                                             NULL,
+                                             MatGetGhosts_MPISELL,
+                                             NULL,
+                                             NULL,
+                                             /*119*/ MatMultDiagonalBlock_MPISELL,
+                                             NULL,
+                                             NULL,
+                                             NULL,
+                                             NULL,
+                                             /*124*/ NULL,
+                                             NULL,
+                                             MatInvertBlockDiagonal_MPISELL,
+                                             NULL,
+                                             NULL,
+                                             /*129*/ NULL,
+                                             NULL,
+                                             NULL,
+                                             NULL,
+                                             NULL,
+                                             /*134*/ NULL,
+                                             NULL,
+                                             NULL,
+                                             NULL,
+                                             NULL,
+                                             /*139*/ NULL,
+                                             NULL,
+                                             NULL,
+                                             MatFDColoringSetUp_MPIXAIJ,
+                                             NULL,
+                                             /*144*/ NULL,
+                                             NULL,
+                                             NULL,
+                                             NULL,
+                                             NULL,
+                                             NULL,
+                                             /*150*/ NULL,
+                                             NULL};
 
 /*@C
   MatMPISELLSetPreallocation - Preallocates memory for a `MATMPISELL` sparse parallel matrix in sell format.
@@ -1577,6 +1573,106 @@ PetscErrorCode MatCreateSELL(MPI_Comm comm, PetscInt m, PetscInt n, PetscInt M, 
     PetscCall(MatSetType(*A, MATSEQSELL));
     PetscCall(MatSeqSELLSetPreallocation(*A, d_rlenmax, d_rlen));
   }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@C
+  MatMPISELLGetSeqSELL - Returns the local pieces of this distributed matrix
+
+  Not Collective
+
+  Input Parameter:
+. A - the `MATMPISELL` matrix
+
+  Output Parameters:
++ Ad     - The diagonal portion of `A`
+. Ao     - The off diagonal portion of `A`
+- colmap - An array mapping local column numbers of `Ao` to global column numbers of the parallel matrix
+
+  Level: advanced
+
+.seealso: `Mat`, `MATSEQSELL`, `MATMPISELL`
+@*/
+PetscErrorCode MatMPISELLGetSeqSELL(Mat A, Mat *Ad, Mat *Ao, const PetscInt *colmap[])
+{
+  Mat_MPISELL *a = (Mat_MPISELL *)A->data;
+  PetscBool    flg;
+
+  PetscFunctionBegin;
+  PetscCall(PetscObjectTypeCompare((PetscObject)A, MATMPISELL, &flg));
+  PetscCheck(flg, PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "This function requires a MATMPISELL matrix as input");
+  if (Ad) *Ad = a->A;
+  if (Ao) *Ao = a->B;
+  if (colmap) *colmap = a->garray;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@C
+  MatMPISELLGetLocalMatCondensed - Creates a `MATSEQSELL` matrix from an `MATMPISELL` matrix by
+  taking all its local rows and NON-ZERO columns
+
+  Not Collective
+
+  Input Parameters:
++ A     - the matrix
+. scall - either `MAT_INITIAL_MATRIX` or `MAT_REUSE_MATRIX`
+. row   - index sets of rows to extract (or `NULL`)
+- col   - index sets of columns to extract (or `NULL`)
+
+  Output Parameter:
+. A_loc - the local sequential matrix generated
+
+  Level: advanced
+
+.seealso: `Mat`, `MATSEQSELL`, `MATMPISELL`, `MatGetOwnershipRange()`, `MatMPISELLGetLocalMat()`
+@*/
+PetscErrorCode MatMPISELLGetLocalMatCondensed(Mat A, MatReuse scall, IS *row, IS *col, Mat *A_loc)
+{
+  Mat_MPISELL *a = (Mat_MPISELL *)A->data;
+  PetscInt     i, start, end, ncols, nzA, nzB, *cmap, imark, *idx;
+  IS           isrowa, iscola;
+  Mat         *aloc;
+  PetscBool    match;
+
+  PetscFunctionBegin;
+  PetscCall(PetscObjectTypeCompare((PetscObject)A, MATMPISELL, &match));
+  PetscCheck(match, PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "Requires MATMPISELL matrix as input");
+  PetscCall(PetscLogEventBegin(MAT_Getlocalmatcondensed, A, 0, 0, 0));
+  if (!row) {
+    start = A->rmap->rstart;
+    end   = A->rmap->rend;
+    PetscCall(ISCreateStride(PETSC_COMM_SELF, end - start, start, 1, &isrowa));
+  } else {
+    isrowa = *row;
+  }
+  if (!col) {
+    start = A->cmap->rstart;
+    cmap  = a->garray;
+    nzA   = a->A->cmap->n;
+    nzB   = a->B->cmap->n;
+    PetscCall(PetscMalloc1(nzA + nzB, &idx));
+    ncols = 0;
+    for (i = 0; i < nzB; i++) {
+      if (cmap[i] < start) idx[ncols++] = cmap[i];
+      else break;
+    }
+    imark = i;
+    for (i = 0; i < nzA; i++) idx[ncols++] = start + i;
+    for (i = imark; i < nzB; i++) idx[ncols++] = cmap[i];
+    PetscCall(ISCreateGeneral(PETSC_COMM_SELF, ncols, idx, PETSC_OWN_POINTER, &iscola));
+  } else {
+    iscola = *col;
+  }
+  if (scall != MAT_INITIAL_MATRIX) {
+    PetscCall(PetscMalloc1(1, &aloc));
+    aloc[0] = *A_loc;
+  }
+  PetscCall(MatCreateSubMatrices(A, 1, &isrowa, &iscola, scall, &aloc));
+  *A_loc = aloc[0];
+  PetscCall(PetscFree(aloc));
+  if (!row) PetscCall(ISDestroy(&isrowa));
+  if (!col) PetscCall(ISDestroy(&iscola));
+  PetscCall(PetscLogEventEnd(MAT_Getlocalmatcondensed, A, 0, 0, 0));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

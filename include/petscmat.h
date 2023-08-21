@@ -414,6 +414,8 @@ PETSC_EXTERN PetscErrorCode MatSeqSELLGetVarSliceSize(Mat, PetscReal *);
 
 PETSC_EXTERN PetscErrorCode MatCreateSeqAIJSELL(MPI_Comm, PetscInt, PetscInt, PetscInt, const PetscInt[], Mat *);
 PETSC_EXTERN PetscErrorCode MatCreateMPIAIJSELL(MPI_Comm, PetscInt, PetscInt, PetscInt, PetscInt, PetscInt, const PetscInt[], PetscInt, const PetscInt[], Mat *);
+PETSC_EXTERN PetscErrorCode MatMPISELLGetLocalMatCondensed(Mat, MatReuse, IS *, IS *, Mat *);
+PETSC_EXTERN PetscErrorCode MatMPISELLGetSeqSELL(Mat, Mat *, Mat *, const PetscInt *[]);
 
 PETSC_EXTERN PetscErrorCode MatCreateSeqDense(MPI_Comm, PetscInt, PetscInt, PetscScalar[], Mat *);
 PETSC_EXTERN PetscErrorCode MatCreateDense(MPI_Comm, PetscInt, PetscInt, PetscInt, PetscInt, PetscScalar[], Mat *);
