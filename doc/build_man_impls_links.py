@@ -1,11 +1,21 @@
 #!/usr/bin/env python
-""" Adds links in the manual pages to implementations of the function"""
+""" Adds links in the manual pages to implementations of the function
+    Also adds References section if any {cite} are found in the manual page
+"""
 
 import os
 import re
 
 def processfile(petsc_dir,dir,file,implsClassAll,implsFuncAll):
   #print('Processing '+os.path.join(dir,file))
+  with open(os.path.join(dir,file),'r') as f:
+    text = f.read()
+    bibneeded = text.find('{cite}') > -1
+  if bibneeded:
+    with open(os.path.join(dir,file),'w') as f:
+      f.write(text[0:text.find('## See Also')])
+      f.write('\n## References\n```{bibliography}\n:filter: docname in docnames\n```\n\n')
+      f.write(text[text.find('## See Also'):])
   itemName = file[0:-3]
   func = list(filter(lambda x: x.find(itemName+'_') > -1, implsFuncAll))
   iclass = list(filter(lambda x: x.find('_p_'+itemName) > -1, implsClassAll))
@@ -18,7 +28,6 @@ def processfile(petsc_dir,dir,file,implsClassAll,implsFuncAll):
       if iclass:
         for str in iclass:
           f.write(re.sub('(.*\.[ch]x*u*):.*struct.*(_p_'+itemName+').*{','<A HREF=\"PETSC_DOC_OUT_ROOT_PLACEHOLDER/\\1.html#\\2\">\\2 in \\1</A><BR>',str,count=1)+'\n')
-
 def loadstructfunctions(petsc_dir):
   '''Creates the list of structs and class functions'''
   import subprocess

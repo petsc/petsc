@@ -3186,7 +3186,7 @@ PetscErrorCode PCFieldSplitSetDetectSaddlePoint(PC pc, PetscBool flg)
      Generally it should be used with the `MATAIJ` format.
 
      The forms of these preconditioners are closely related if not identical to forms derived as "Distributive Iterations", see,
-     for example, page 294 in "Principles of Computational Fluid Dynamics" by Pieter Wesseling {cite}`Wesseling2009`.
+     for example, page 294 in "Principles of Computational Fluid Dynamics" by Pieter Wesseling {cite}`wesseling2009`.
      One can also use `PCFIELDSPLIT`
      inside a smoother resulting in "Distributive Smoothers".
 
@@ -3199,17 +3199,12 @@ PetscErrorCode PCFieldSplitSetDetectSaddlePoint(PC pc, PetscBool flg)
      ```{math}
      \left[\begin{array}{cc} A_{00} & A_{01} \\ A_{01}' & 0 \end{array}\right]
      ```
-     with $A_{00}$ positive semi-definite. The implementation follows {cite}`Arioli2013`. Therein, we choose $N := 1/\nu * I$ and the $(1,1)$-block of the matrix is modified to $H = _{A00} + \nu*A_{01}*A_{01}'$.
+     with $A_{00}$ positive semi-definite. The implementation follows {cite}`arioli2013`. Therein, we choose $N := 1/\nu * I$ and the $(1,1)$-block of the matrix is modified to $H = _{A00} + \nu*A_{01}*A_{01}'$.
      A linear system $Hx = b$ has to be solved in each iteration of the GKB algorithm. This solver is chosen with the option prefix `-fieldsplit_0_`.
 
    Developer Note:
    The Schur complement functionality of `PCFIELDSPLIT` should likely be factored into its own `PC` thus simplifying the implementation of the preconditioners and their
    user API.
-
-     References:
-     ```{bibliography}
-     :filter: docname in docnames
-     ```
 
 .seealso: [](sec_block_matrices), `PC`, `PCCreate()`, `PCSetType()`, `PCType`, `PC`, `PCLSC`,
           `PCFieldSplitGetSubKSP()`, `PCFieldSplitSchurGetSubKSP()`, `PCFieldSplitSetFields()`,

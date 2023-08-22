@@ -776,7 +776,7 @@ the shape and orientation of elements in the adapted mesh, as well as their
 size. This can be particularly useful for advection-dominated and
 directionally-dependent problems.
 
-See :cite:`Alauzet2010` for further details on metric-based anisotropic mesh
+See :cite:`alauzet2010` for further details on metric-based anisotropic mesh
 adaptation.
 
 The two main ingredients for metric-based mesh adaptation are an input mesh

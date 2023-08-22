@@ -1,5 +1,5 @@
 sphinx==5.3.0
-sphinxcontrib-bibtex>=1.0.0
+sphinxcontrib-bibtex>=2.4.1
 sphinxcontrib-katex
 sphinxcontrib-svg2pdfconverter
 sphinx-copybutton

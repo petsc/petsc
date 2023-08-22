@@ -19,7 +19,7 @@ Summary of Time Integrators Available In PETSc
      - explicit
      - :math:`1`
    * - ssp
-     - multistage SSP :cite:`Ketcheson_2008`
+     - multistage SSP :cite:`ketcheson_2008`
      - Runge-Kutta
      - explicit
      - :math:`\le 4`
@@ -49,17 +49,17 @@ Summary of Time Integrators Available In PETSc
      - implicit
      - :math:`\le 6`
    * - alpha
-     - alpha-method :cite:`Jansen_2000`
+     - alpha-method :cite:`jansen_2000`
      - one-step
      - implicit
      - :math:`2`
    * - gl
-     - general linear :cite:`Butcher_2007`
+     - general linear :cite:`butcher_2007`
      - multistep-multistage
      - implicit
      - :math:`\le 3`
    * - eimex
-     - extrapolated IMEX :cite:`Constantinescu_A2010a`
+     - extrapolated IMEX :cite:`constantinescu_a2010a`
      - one-step
      - IMEX
      - :math:`\ge 1`, adaptive

@@ -130,19 +130,19 @@ For general citations on PETSc please use the following:
 
 .. literalinclude:: /petsc.bib
    :language: none
-   :start-at: @misc{petsc-web-page
+   :start-at: petsc-web-page
    :end-at: year
    :append: }
 
 .. literalinclude:: /petsc.bib
    :language: none
-   :start-at: @techreport{petsc-user-ref
+   :start-at: petsc-user-ref
    :end-at: year
    :append: }
 
 .. literalinclude:: /petsc.bib
    :language: none
-   :start-at: @inproceedings{petsc-efficient
+   :start-at: petsc-efficient
    :end-at: year
    :append: }
 
@@ -150,7 +150,7 @@ For petsc4py usage please cite
 
 .. literalinclude:: /petsc.bib
    :language: none
-   :start-at: @article{DalcinPazKlerCosimo2011
+   :start-at: dalcinpazklercosimo2011
    :end-at: year
    :append: }
 
@@ -158,7 +158,7 @@ For PETSc usage on GPUs please cite
 
 .. literalinclude:: /petsc.bib
    :language: none
-   :start-at: @article{MILLS2021
+   :start-at: mills2021
    :end-at: author
    :append: }
 
@@ -166,7 +166,7 @@ For PetscSF -- parallel communication in PETSc -- please cite
 
 .. literalinclude:: /petsc.bib
    :language: none
-   :start-at: @article{PetscSF2022
+   :start-at: petscsf2022
    :end-at: pages
    :append: }
 
@@ -174,7 +174,7 @@ If you use the TS component of PETSc please cite the following:
 
 .. literalinclude:: petsc.bib
    :language: none
-   :start-at: @techreport{AbhyankarEtAl2018
+   :start-at: abhyankaretal2018
    :end-at: year
    :append: }
 
@@ -182,6 +182,6 @@ If you utilize the TS adjoint solver please cite
 
 .. literalinclude:: /petsc.bib
    :language: none
-   :start-at: @article{Zhang2022tsadjoint
+   :start-at: zhang2022tsadjoint
    :end-at: year
    :append: }

@@ -575,7 +575,6 @@ where noted, add a newline after the section headings.
    .. code-block:: console
 
       Calling sequence of `func()`:
-      $ PetscErrorCode func(PetscInt arg);
       . arg - the integer argument description
 
 #. If documenting a function that interacts with the options database, a
@@ -597,6 +596,10 @@ where noted, add a newline after the section headings.
 #. (If applicable) a ``Developer Note(s):`` section detailing any relevant
    information about the code for developers, for example, why a
    particular algorithm was implemented.
+
+#. (If applicable) references should be indicated inline with \{cite\}\`Bibtex-key\` where
+   Bibtex-key is in the file `doc/petsc.bib`.  Manual pages that have not been updated use ``References:``
+   followed by the list of references and should be updated to the current system.
 
 #. ``.seealso:`` (no newline, no spaces to the left of this text), followed by a list of related manual
    pages. These manual pages should usually also point back to this

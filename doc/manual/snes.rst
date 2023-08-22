@@ -806,7 +806,7 @@ Here :math:`\mathbf{x}_0` is an initial approximation of the solution, and
 By default a constant relative convergence tolerance is used for solving
 the subsidiary linear systems within the Newton-like methods of
 ``SNES``. When solving a system of nonlinear equations, one can instead
-employ the techniques of Eisenstat and Walker :cite:`EW96`
+employ the techniques of Eisenstat and Walker :cite:`ew96`
 to compute :math:`\eta_k` at each step of the nonlinear solver by using
 the option ``-snes_ksp_ew`` . In addition, by adding one’s own
 ``KSP`` convergence test (see :any:`sec_convergencetests`), one can easily create one’s own,
@@ -1182,7 +1182,7 @@ of the steps selected by `SNES`.
 Nonlinear Preconditioning
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The mathematical framework of nonlinear preconditioning is explained in detail in :cite:`BruneKnepleySmithTu15`.
+The mathematical framework of nonlinear preconditioning is explained in detail in :cite:`bruneknepleysmithtu15`.
 Nonlinear preconditioning in PETSc involves the use of an inner ``SNES``
 instance to define the step for an outer ``SNES`` instance. The inner
 instance may be extracted using
