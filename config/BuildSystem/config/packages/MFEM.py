@@ -13,6 +13,7 @@ class Configure(config.package.Package):
     self.linkedbypetsc          = 0
     self.downloadonWindows      = 1
     self.buildLanguages         = ['Cxx']
+    self.maxCxxVersion          = 'c++17'
     self.skippackagewithoptions = 1
     self.builtafterpetsc        = 1
     self.noMPIUni               = 1
@@ -171,6 +172,7 @@ class Configure(config.package.Package):
         g.write('MFEM_USE_CUDA = YES\n')
         g.write('CUDA_CXX = '+petscNvcc+'\n')
         g.write('CXXFLAGS := '+cudaFlags+' $(addprefix -Xcompiler ,$(CXXFLAGS))\n')
+        g.write('CUDA_ARCH = sm_' + self.cuda.cudaArchSingle() + '\n')
       if self.hip.found:
         self.pushLanguage('HIP')
         hipcc = self.getCompiler()
