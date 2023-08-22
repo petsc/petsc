@@ -70,16 +70,8 @@ class Configure(config.package.Package):
 
     self.pushLanguage('Cxx')
     cxx = self.getCompiler()
-    cxxflags = self.getCompilerFlags()
+    cxxflags = self.updatePackageCxxFlags(self.getCompilerFlags())
     self.popLanguage()
-    cxxflags = cxxflags.replace('-fvisibility=hidden','') # MFEM is currently broken with -fvisibility=hidden
-    # MFEM uses the macro MFEM_BUILD_DIR that builds a path by combining the directory plus other stuff but if the
-    # directory name contains  "-linux" this is converted by CPP to the value 1 since that is defined in Linux header files
-    # unless the -std=C++11 or -std=C++14 flag is used; we want to support MFEM without this flag
-    if '-linux' in self.packageDir:
-      cxxflags += ' -Dlinux=linux'
-    # MFEM adds C++ standard flags automatically
-    cxxflags = re.sub(r'-std=([^\s]+) ','',cxxflags)
     if 'download-mfem-ghv-cxx' in self.argDB and self.argDB['download-mfem-ghv-cxx']:
       ghv = self.argDB['download-mfem-ghv-cxx']
     else:
@@ -173,7 +165,7 @@ class Configure(config.package.Package):
       if self.cuda.found:
         self.pushLanguage('CUDA')
         petscNvcc = self.getCompiler()
-        cudaFlags = self.getCompilerFlags()
+        cudaFlags = self.updatePackageCUDAFlags(self.getCompilerFlags())
         self.popLanguage()
         cudaFlags = re.sub(r'-std=([^\s]+) ','',cudaFlags)
         g.write('MFEM_USE_CUDA = YES\n')
@@ -182,7 +174,7 @@ class Configure(config.package.Package):
       if self.hip.found:
         self.pushLanguage('HIP')
         hipcc = self.getCompiler()
-        hipFlags = self.getCompilerFlags()
+        hipFlags = self.updatePackageCxxFlags(self.getCompilerFlags())
         self.popLanguage()
         hipFlags = re.sub(r'-std=([^\s]+) ','',hipFlags)
         g.write('MFEM_USE_HIP = YES\n')
