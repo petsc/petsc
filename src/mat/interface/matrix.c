@@ -4264,7 +4264,7 @@ PetscErrorCode MatCopy(Mat A, Mat B, MatStructure str)
 
   B->stencil.dim = A->stencil.dim;
   B->stencil.noc = A->stencil.noc;
-  for (i = 0; i <= A->stencil.dim; i++) {
+  for (i = 0; i <= A->stencil.dim + (A->stencil.noc ? 0 : -1); i++) {
     B->stencil.dims[i]   = A->stencil.dims[i];
     B->stencil.starts[i] = A->stencil.starts[i];
   }
@@ -4437,7 +4437,7 @@ PetscErrorCode MatConvert(Mat mat, MatType newtype, MatReuse reuse, Mat *M)
     }
     (*M)->stencil.dim = mat->stencil.dim;
     (*M)->stencil.noc = mat->stencil.noc;
-    for (i = 0; i <= mat->stencil.dim; i++) {
+    for (i = 0; i <= mat->stencil.dim + (mat->stencil.noc ? 0 : -1); i++) {
       (*M)->stencil.dims[i]   = mat->stencil.dims[i];
       (*M)->stencil.starts[i] = mat->stencil.starts[i];
     }
@@ -4884,7 +4884,7 @@ PetscErrorCode MatDuplicate(Mat mat, MatDuplicateOption op, Mat *M)
 
   B->stencil.dim = mat->stencil.dim;
   B->stencil.noc = mat->stencil.noc;
-  for (i = 0; i <= mat->stencil.dim; i++) {
+  for (i = 0; i <= mat->stencil.dim + (mat->stencil.noc ? 0 : -1); i++) {
     B->stencil.dims[i]   = mat->stencil.dims[i];
     B->stencil.starts[i] = mat->stencil.starts[i];
   }
