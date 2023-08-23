@@ -2043,7 +2043,7 @@ use `valgrind <http://valgrind.org>`__. Follow the below instructions:
    .. code-block:: console
 
       $ mpiexec -n NPROC valgrind --tool=memcheck -q --num-callers=20 \
-      --suppressions=$PETSC_DIR/share/petsc/valgrind/petsc-val.supp \
+      --suppressions=$PETSC_DIR/share/petsc/suppressions/valgrind \
       --log-file=valgrind.log.%p PETSCPROGRAMNAME -malloc off PROGRAMOPTIONS
 
 .. note::
