@@ -44,11 +44,15 @@ static PetscErrorCode GarbageGetHMap_Private(MPI_Comm comm, PetscGarbage *garbag
   Python or Julia, which may not destroy objects in a deterministic
   order.
 
+  Serial objects (that have a communicator with size 1) are destroyed
+  eagerly since deadlocks cannot occur.
+
 .seealso: `PetscGarbageCleanup()`, `PetscObjectDestroy()`
 @*/
 PetscErrorCode PetscObjectDelayedDestroy(PetscObject *obj)
 {
-  MPI_Comm     petsc_comm;
+  MPI_Comm     comm;
+  PetscMPIInt  size;
   PetscInt     count;
   PetscGarbage garbage;
 
@@ -67,9 +71,15 @@ PetscErrorCode PetscObjectDelayedDestroy(PetscObject *obj)
     /* Only stash if the (non-cyclic) reference count hits 0 */
     if (count == 0) {
       (*obj)->refct = 1;
-      PetscCall(PetscObjectGetComm(*obj, &petsc_comm));
-      PetscCall(GarbageGetHMap_Private(petsc_comm, &garbage));
-      PetscCall(PetscHMapObjSet(garbage.map, (*obj)->cidx, *obj));
+      PetscCall(PetscObjectGetComm(*obj, &comm));
+      PetscCallMPI(MPI_Comm_size(comm, &size));
+      /* Eagerly destroy serial objects */
+      if (size == 1) {
+        PetscCall(PetscObjectDestroy(obj));
+      } else {
+        PetscCall(GarbageGetHMap_Private(comm, &garbage));
+        PetscCall(PetscHMapObjSet(garbage.map, (*obj)->cidx, *obj));
+      }
     }
   }
   *obj = NULL;
