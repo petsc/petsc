@@ -150,7 +150,7 @@ PetscErrorCode PetscSegBufferExtractTo(PetscSegBuffer seg, void *contig)
   PetscFunctionBegin;
   unitbytes = seg->unitbytes;
   s         = seg->head;
-  ptr       = ((char *)contig) + s->tailused * unitbytes;
+  ptr       = contig ? ((char *)contig) + s->tailused * unitbytes : NULL;
   PetscCall(PetscMemcpy(ptr, s->u.array, s->used * unitbytes));
   for (t = s->tail; t;) {
     struct _PetscSegBufferLink *tail = t->tail;

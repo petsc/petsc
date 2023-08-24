@@ -133,7 +133,7 @@ static PetscErrorCode DMPlexComputeAnchorAdjacencies(DM dm, PetscBool useCone, P
           for (nd = 0; nd < qAdjDof - qAdjCDof; ++nd) adj[aOff++] = (qAdjOff < 0 ? -(qAdjOff + 1) : qAdjOff) + nd;
         }
       }
-      PetscCall(PetscSortRemoveDupsInt(&aDof, &adj[aOffOrig]));
+      if (adj) PetscCall(PetscSortRemoveDupsInt(&aDof, &adj[aOffOrig]));
       PetscCall(PetscSectionSetDof(adjSec, p, aDof));
     }
     *anchorAdj = adj;

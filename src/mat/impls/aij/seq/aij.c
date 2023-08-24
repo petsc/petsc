@@ -2241,15 +2241,13 @@ PetscErrorCode MatGetRow_SeqAIJ(Mat A, PetscInt row, PetscInt *nz, PetscInt **id
 {
   Mat_SeqAIJ        *a = (Mat_SeqAIJ *)A->data;
   const PetscScalar *aa;
-  PetscInt          *itmp;
 
   PetscFunctionBegin;
   PetscCall(MatSeqAIJGetArrayRead(A, &aa));
   *nz = a->i[row + 1] - a->i[row];
-  if (v) *v = (PetscScalar *)(aa + a->i[row]);
+  if (v) *v = aa ? (PetscScalar *)(aa + a->i[row]) : NULL;
   if (idx) {
-    itmp = a->j + a->i[row];
-    if (*nz) *idx = itmp;
+    if (*nz && a->j) *idx = a->j + a->i[row];
     else *idx = NULL;
   }
   PetscCall(MatSeqAIJRestoreArrayRead(A, &aa));

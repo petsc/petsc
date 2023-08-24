@@ -1081,7 +1081,7 @@ PetscErrorCode PetscSFSetUpRanks(PetscSF sf, MPI_Group dgroup)
   }
   PetscCall(PetscFree(groupranks));
   PetscCall(PetscSortIntWithArray(sf->ndranks, ranks, rcount));
-  PetscCall(PetscSortIntWithArray(sf->nranks - sf->ndranks, ranks + sf->ndranks, rcount + sf->ndranks));
+  if (rcount) PetscCall(PetscSortIntWithArray(sf->nranks - sf->ndranks, ranks + sf->ndranks, rcount + sf->ndranks));
   sf->roffset[0] = 0;
   for (i = 0; i < sf->nranks; i++) {
     PetscCall(PetscMPIIntCast(ranks[i], sf->ranks + i));
@@ -1240,7 +1240,7 @@ PetscErrorCode PetscSFGetMultiSF(PetscSF sf, PetscSF *multi)
       for (i = 0; i < sf->nroots; i++) {
         PetscInt j;
         for (j = 0; j < indegree[i]; j++) tmpoffset[j] = j;
-        PetscCall(PetscSortIntWithArray(indegree[i], inranks + inoffset[i], tmpoffset));
+        if (inranks) PetscCall(PetscSortIntWithArray(indegree[i], inranks + inoffset[i], tmpoffset));
         for (j = 0; j < indegree[i]; j++) newoffset[inoffset[i] + tmpoffset[j]] = inoffset[i] + j;
       }
       PetscCall(PetscSFBcastBegin(sf->multi, MPIU_INT, newoffset, newoutoffset, MPI_REPLACE));

@@ -2218,7 +2218,7 @@ PetscErrorCode MatDenseGetArrayRead(Mat A, const PetscScalar **array)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
   PetscAssertPointer(array, 2);
-  PetscUseMethod(A, "MatDenseGetArrayRead_C", (Mat, const PetscScalar **), (A, array));
+  PetscUseMethod(A, "MatDenseGetArrayRead_C", (Mat, PetscScalar **), (A, (PetscScalar **)array));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -2240,7 +2240,7 @@ PetscErrorCode MatDenseRestoreArrayRead(Mat A, const PetscScalar **array)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
   if (array) PetscAssertPointer(array, 2);
-  PetscUseMethod(A, "MatDenseRestoreArrayRead_C", (Mat, const PetscScalar **), (A, array));
+  PetscUseMethod(A, "MatDenseRestoreArrayRead_C", (Mat, PetscScalar **), (A, (PetscScalar **)array));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -2418,7 +2418,7 @@ PetscErrorCode MatDenseGetArrayReadAndMemType(Mat A, const PetscScalar **array, 
     if (fptr) {
       PetscCall((*fptr)(A, array, mtype));
     } else {
-      PetscUseMethod(A, "MatDenseGetArrayRead_C", (Mat, const PetscScalar **), (A, array));
+      PetscUseMethod(A, "MatDenseGetArrayRead_C", (Mat, PetscScalar **), (A, (PetscScalar **)array));
       if (mtype) *mtype = PETSC_MEMTYPE_HOST;
     }
   }
@@ -2455,7 +2455,7 @@ PetscErrorCode MatDenseRestoreArrayReadAndMemType(Mat A, const PetscScalar **arr
     if (fptr) {
       PetscCall((*fptr)(A, array));
     } else {
-      PetscUseMethod(A, "MatDenseRestoreArrayRead_C", (Mat, const PetscScalar **), (A, array));
+      PetscUseMethod(A, "MatDenseRestoreArrayRead_C", (Mat, PetscScalar **), (A, (PetscScalar **)array));
     }
     *array = NULL;
   }
@@ -3529,9 +3529,9 @@ PetscErrorCode MatDenseGetSubMatrix_SeqDense(Mat A, PetscInt rbegin, PetscInt re
   PetscCheck(!a->matinuse, PETSC_COMM_SELF, PETSC_ERR_ORDER, "Need to call MatDenseRestoreSubMatrix() first");
   if (a->cmat && (cend - cbegin != a->cmat->cmap->N || rend - rbegin != a->cmat->rmap->N)) PetscCall(MatDestroy(&a->cmat));
   if (!a->cmat) {
-    PetscCall(MatCreateDense(PetscObjectComm((PetscObject)A), rend - rbegin, PETSC_DECIDE, rend - rbegin, cend - cbegin, a->v + rbegin + (size_t)cbegin * a->lda, &a->cmat));
+    PetscCall(MatCreateDense(PetscObjectComm((PetscObject)A), rend - rbegin, PETSC_DECIDE, rend - rbegin, cend - cbegin, a->v ? a->v + rbegin + (size_t)cbegin * a->lda : NULL, &a->cmat));
   } else {
-    PetscCall(MatDensePlaceArray(a->cmat, a->v + rbegin + (size_t)cbegin * a->lda));
+    PetscCall(MatDensePlaceArray(a->cmat, a->v ? a->v + rbegin + (size_t)cbegin * a->lda : NULL));
   }
   PetscCall(MatDenseSetLDA(a->cmat, a->lda));
   a->matinuse = cbegin + 1;

@@ -219,14 +219,15 @@ PetscErrorCode PetscSFLinkCreate_MPI(PetscSF sf, MPI_Datatype unit, PetscMemType
   PetscCall(PetscMalloc1(nreqs, &link->reqs));
   for (i = 0; i < nreqs; i++) link->reqs[i] = MPI_REQUEST_NULL; /* Initialized to NULL so that we know which need to be freed in Destroy */
 
-  for (i = 0; i < 2; i++) {     /* Two communication directions */
-    for (j = 0; j < 2; j++) {   /* Two memory types */
-      for (k = 0; k < 2; k++) { /* root/leafdirect 0 or 1 */
-        link->rootreqs[i][j][k] = link->reqs + nrootreqs * (4 * i + 2 * j + k);
-        link->leafreqs[i][j][k] = link->reqs + nrootreqs * 8 + nleafreqs * (4 * i + 2 * j + k);
+  if (nreqs)
+    for (i = 0; i < 2; i++) {     /* Two communication directions */
+      for (j = 0; j < 2; j++) {   /* Two memory types */
+        for (k = 0; k < 2; k++) { /* root/leafdirect 0 or 1 */
+          link->rootreqs[i][j][k] = link->reqs + nrootreqs * (4 * i + 2 * j + k);
+          link->leafreqs[i][j][k] = link->reqs + nrootreqs * 8 + nleafreqs * (4 * i + 2 * j + k);
+        }
       }
     }
-  }
   link->StartCommunication  = PetscSFLinkStartRequests_MPI;
   link->FinishCommunication = PetscSFLinkWaitRequests_MPI;
 #if defined(PETSC_HAVE_MPIX_STREAM)
