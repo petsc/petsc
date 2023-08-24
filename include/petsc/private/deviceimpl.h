@@ -418,4 +418,15 @@ PETSC_INTERN PetscErrorCode PetscDeviceContextCreate_SYCL(PetscDeviceContext);
 // Used for testing purposes, internal use ONLY
 PETSC_EXTERN PetscErrorCode PetscGetMarkedObjectMap_Internal(size_t *, PetscObjectId **, PetscMemoryAccessMode **, size_t **, PetscEvent ***);
 PETSC_EXTERN PetscErrorCode PetscRestoreMarkedObjectMap_Internal(size_t, PetscObjectId **, PetscMemoryAccessMode **, size_t **, PetscEvent ***);
+
+static inline PetscErrorCode PetscDeviceContextSynchronizeIfGlobalBlocking_Internal(PetscDeviceContext dctx)
+{
+  PetscStreamType stream_type;
+
+  PetscFunctionBegin;
+  PetscCall(PetscDeviceContextGetStreamType(dctx, &stream_type));
+  if (stream_type == PETSC_STREAM_GLOBAL_BLOCKING) PetscCall(PetscDeviceContextSynchronize(dctx));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 #endif /* PETSCDEVICEIMPL_H */

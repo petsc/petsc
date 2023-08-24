@@ -306,8 +306,10 @@ PetscErrorCode VecSetValuesCOO(Vec x, const PetscScalar coo_v[], InsertMode imod
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode VecPointwiseApply_Private(Vec w, Vec x, Vec y, PetscLogEvent event, PetscErrorCode (*const pointwise_op)(Vec, Vec, Vec))
+static PetscErrorCode VecPointwiseApply_Private(Vec w, Vec x, Vec y, PetscDeviceContext dctx, PetscLogEvent event, const char async_name[], PetscErrorCode (*const pointwise_op)(Vec, Vec, Vec))
 {
+  PetscErrorCode (*async_fn)(Vec, Vec, Vec, PetscDeviceContext) = NULL;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(w, VEC_CLASSID, 1);
   PetscValidHeaderSpecific(x, VEC_CLASSID, 2);
@@ -324,10 +326,23 @@ static PetscErrorCode VecPointwiseApply_Private(Vec w, Vec x, Vec y, PetscLogEve
   PetscCall(VecSetErrorIfLocked(w, 1));
   PetscValidFunction(pointwise_op, 5);
 
+  if (dctx) PetscCall(PetscObjectQueryFunction((PetscObject)w, async_name, &async_fn));
   if (event) PetscCall(PetscLogEventBegin(event, x, y, w, 0));
-  PetscCall((*pointwise_op)(w, x, y));
+  if (async_fn) {
+    PetscCall((*async_fn)(w, x, y, dctx));
+  } else {
+    PetscCall((*pointwise_op)(w, x, y));
+  }
   if (event) PetscCall(PetscLogEventEnd(event, x, y, w, 0));
   PetscCall(PetscObjectStateIncrease((PetscObject)w));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+PetscErrorCode VecPointwiseMaxAsync_Private(Vec w, Vec x, Vec y, PetscDeviceContext dctx)
+{
+  PetscFunctionBegin;
+  // REVIEW ME: no log event?
+  PetscCall(VecPointwiseApply_Private(w, x, y, dctx, 0, VecAsyncFnName(PointwiseMax), w->ops->pointwisemax));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -355,9 +370,15 @@ static PetscErrorCode VecPointwiseApply_Private(Vec w, Vec x, Vec y, PetscLogEve
 PetscErrorCode VecPointwiseMax(Vec w, Vec x, Vec y)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(w, VEC_CLASSID, 1);
+  PetscCall(VecPointwiseMaxAsync_Private(w, x, y, NULL));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+PetscErrorCode VecPointwiseMinAsync_Private(Vec w, Vec x, Vec y, PetscDeviceContext dctx)
+{
+  PetscFunctionBegin;
   // REVIEW ME: no log event?
-  PetscCall(VecPointwiseApply_Private(w, x, y, 0, w->ops->pointwisemax));
+  PetscCall(VecPointwiseApply_Private(w, x, y, dctx, 0, VecAsyncFnName(PointwiseMin), w->ops->pointwisemin));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -385,10 +406,15 @@ PetscErrorCode VecPointwiseMax(Vec w, Vec x, Vec y)
 PetscErrorCode VecPointwiseMin(Vec w, Vec x, Vec y)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(w, VEC_CLASSID, 1);
-  VecCheckAssembled(x);
+  PetscCall(VecPointwiseMinAsync_Private(w, x, y, NULL));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+PetscErrorCode VecPointwiseMaxAbsAsync_Private(Vec w, Vec x, Vec y, PetscDeviceContext dctx)
+{
+  PetscFunctionBegin;
   // REVIEW ME: no log event?
-  PetscCall(VecPointwiseApply_Private(w, x, y, 0, w->ops->pointwisemin));
+  PetscCall(VecPointwiseApply_Private(w, x, y, dctx, 0, VecAsyncFnName(PointwiseMaxAbs), w->ops->pointwisemaxabs));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -414,9 +440,15 @@ PetscErrorCode VecPointwiseMin(Vec w, Vec x, Vec y)
 PetscErrorCode VecPointwiseMaxAbs(Vec w, Vec x, Vec y)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(w, VEC_CLASSID, 1);
+  PetscCall(VecPointwiseMaxAbsAsync_Private(w, x, y, NULL));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+PetscErrorCode VecPointwiseDivideAsync_Private(Vec w, Vec x, Vec y, PetscDeviceContext dctx)
+{
+  PetscFunctionBegin;
   // REVIEW ME: no log event?
-  PetscCall(VecPointwiseApply_Private(w, x, y, 0, w->ops->pointwisemaxabs));
+  PetscCall(VecPointwiseApply_Private(w, x, y, dctx, 0, VecAsyncFnName(PointwiseDivide), w->ops->pointwisedivide));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -442,9 +474,15 @@ PetscErrorCode VecPointwiseMaxAbs(Vec w, Vec x, Vec y)
 PetscErrorCode VecPointwiseDivide(Vec w, Vec x, Vec y)
 {
   PetscFunctionBegin;
+  PetscCall(VecPointwiseDivideAsync_Private(w, x, y, NULL));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+PetscErrorCode VecPointwiseMultAsync_Private(Vec w, Vec x, Vec y, PetscDeviceContext dctx)
+{
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(w, VEC_CLASSID, 1);
-  // REVIEW ME: no log event?
-  PetscCall(VecPointwiseApply_Private(w, x, y, 0, w->ops->pointwisedivide));
+  PetscCall(VecPointwiseApply_Private(w, x, y, dctx, VEC_PointwiseMult, VecAsyncFnName(PointwiseMult), w->ops->pointwisemult));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -470,8 +508,7 @@ PetscErrorCode VecPointwiseDivide(Vec w, Vec x, Vec y)
 PetscErrorCode VecPointwiseMult(Vec w, Vec x, Vec y)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(w, VEC_CLASSID, 1);
-  PetscCall(VecPointwiseApply_Private(w, x, y, VEC_PointwiseMult, w->ops->pointwisemult));
+  PetscCall(VecPointwiseMultAsync_Private(w, x, y, NULL));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1143,12 +1180,7 @@ PetscErrorCode VecLoad(Vec vec, PetscViewer viewer)
 PetscErrorCode VecReciprocal(Vec vec)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(vec, VEC_CLASSID, 1);
-  PetscValidType(vec, 1);
-  VecCheckAssembled(vec);
-  PetscCall(VecSetErrorIfLocked(vec, 1));
-  PetscUseTypeMethod(vec, reciprocal);
-  PetscCall(PetscObjectStateIncrease((PetscObject)vec));
+  PetscCall(VecReciprocalAsync_Private(vec, NULL));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1252,33 +1284,6 @@ PetscErrorCode VecStashSetInitialSize(Vec vec, PetscInt size, PetscInt bsize)
   PetscValidHeaderSpecific(vec, VEC_CLASSID, 1);
   PetscCall(VecStashSetInitialSize_Private(&vec->stash, size));
   PetscCall(VecStashSetInitialSize_Private(&vec->bstash, bsize));
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-/*@
-  VecConjugate - Conjugates a vector. That is, replace every entry in a vector with its complex conjugate
-
-  Logically Collective
-
-  Input Parameter:
-. x - the vector
-
-  Level: intermediate
-
-.seealso: [](ch_vectors), `Vec`, `VecSet()`
-@*/
-PetscErrorCode VecConjugate(Vec x)
-{
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(x, VEC_CLASSID, 1);
-  PetscValidType(x, 1);
-  VecCheckAssembled(x);
-  PetscCall(VecSetErrorIfLocked(x, 1));
-  if (PetscDefined(USE_COMPLEX)) {
-    PetscUseTypeMethod(x, conjugate);
-    /* we need to copy norms here */
-    PetscCall(PetscObjectStateIncrease((PetscObject)x));
-  }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1649,31 +1654,7 @@ PetscErrorCode VecSetUp(Vec v)
     will become independent of PetscScalar/PetscReal
 */
 
-/*@
-  VecCopy - Copies a vector `y = x`
-
-  Logically Collective
-
-  Input Parameter:
-. x - the vector
-
-  Output Parameter:
-. y - the copy
-
-  Level: beginner
-
-  Note:
-  For default parallel PETSc vectors, both `x` and `y` must be distributed in
-  the same manner; local copies are done.
-
-  Developer Notes:
-  `PetscCheckSameTypeAndComm`(x,1,y,2) is not used on these vectors because we allow one
-  of the vectors to be sequential and one to be parallel so long as both have the same
-  local sizes. This is used in some internal functions in PETSc.
-
-.seealso: [](ch_vectors), `Vec`, `VecDuplicate()`
-@*/
-PetscErrorCode VecCopy(Vec x, Vec y)
+PetscErrorCode VecCopyAsync_Private(Vec x, Vec y, PetscDeviceContext dctx)
 {
   PetscBool flgs[4];
   PetscReal norms[4] = {0.0, 0.0, 0.0, 0.0};
@@ -1724,7 +1705,7 @@ PetscErrorCode VecCopy(Vec x, Vec y)
     PetscCall(VecRestoreArray(y, &yy));
   } else PetscUseTypeMethod(x, copy, y);
 #else
-  PetscUseTypeMethod(x, copy, y);
+  VecMethodDispatch(x, dctx, VecAsyncFnName(Copy), copy, (Vec, Vec, PetscDeviceContext), y);
 #endif
 
   PetscCall(PetscObjectStateIncrease((PetscObject)y));
@@ -1739,19 +1720,37 @@ PetscErrorCode VecCopy(Vec x, Vec y)
 }
 
 /*@
-  VecSwap - Swaps the values between two vectors, `x` and `y`.
+  VecCopy - Copies a vector `y = x`
 
   Logically Collective
 
-  Input Parameters:
-+ x - the first vector
-- y - the second vector
+  Input Parameter:
+. x - the vector
 
-  Level: advanced
+  Output Parameter:
+. y - the copy
 
-.seealso: [](ch_vectors), `Vec`, `VecSet()`
+  Level: beginner
+
+  Note:
+  For default parallel PETSc vectors, both `x` and `y` must be distributed in
+  the same manner; local copies are done.
+
+  Developer Notes:
+  `PetscCheckSameTypeAndComm`(x,1,y,2) is not used on these vectors because we allow one
+  of the vectors to be sequential and one to be parallel so long as both have the same
+  local sizes. This is used in some internal functions in PETSc.
+
+.seealso: [](ch_vectors), `Vec`, `VecDuplicate()`
 @*/
-PetscErrorCode VecSwap(Vec x, Vec y)
+PetscErrorCode VecCopy(Vec x, Vec y)
+{
+  PetscFunctionBegin;
+  PetscCall(VecCopyAsync_Private(x, y, NULL));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+PetscErrorCode VecSwapAsync_Private(Vec x, Vec y, PetscDeviceContext dctx)
 {
   PetscReal normxs[4], normys[4];
   PetscBool flgxs[4], flgys[4];
@@ -1774,7 +1773,7 @@ PetscErrorCode VecSwap(Vec x, Vec y)
   }
 
   PetscCall(PetscLogEventBegin(VEC_Swap, x, y, 0, 0));
-  PetscUseTypeMethod(x, swap, y);
+  VecMethodDispatch(x, dctx, VecAsyncFnName(Swap), swap, (Vec, Vec, PetscDeviceContext), y);
   PetscCall(PetscLogEventEnd(VEC_Swap, x, y, 0, 0));
 
   PetscCall(PetscObjectStateIncrease((PetscObject)x));
@@ -1783,6 +1782,25 @@ PetscErrorCode VecSwap(Vec x, Vec y)
     if (flgxs[i]) PetscCall(PetscObjectComposedDataSetReal((PetscObject)y, NormIds[i], normxs[i]));
     if (flgys[i]) PetscCall(PetscObjectComposedDataSetReal((PetscObject)x, NormIds[i], normys[i]));
   }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+/*@
+  VecSwap - Swaps the values between two vectors, `x` and `y`.
+
+  Logically Collective
+
+  Input Parameters:
++ x - the first vector
+- y - the second vector
+
+  Level: advanced
+
+.seealso: [](ch_vectors), `Vec`, `VecSet()`
+@*/
+PetscErrorCode VecSwap(Vec x, Vec y)
+{
+  PetscFunctionBegin;
+  PetscCall(VecSwapAsync_Private(x, y, NULL));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
