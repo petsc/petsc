@@ -1,5 +1,4 @@
-#ifndef PETSCMATMPIDENSECUPM_HPP
-#define PETSCMATMPIDENSECUPM_HPP
+#pragma once
 
 #include <petsc/private/matdensecupmimpl.h> /*I <petscmat.h> I*/
 #include <../src/mat/impls/dense/mpi/mpidense.h>
@@ -432,5 +431,3 @@ inline PetscErrorCode MatCreateDenseCUPM(MPI_Comm comm, PetscInt n, PetscInt m, 
 } // namespace mat
 
 } // namespace Petsc
-
-#endif // PETSCMATMPIDENSECUPM_HPP

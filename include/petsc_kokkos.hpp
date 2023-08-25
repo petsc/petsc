@@ -1,5 +1,4 @@
-#ifndef PETSC_KOKKOS_HPP
-#define PETSC_KOKKOS_HPP
+#pragma once
 
 #include <Kokkos_Core.hpp>
 
@@ -17,5 +16,3 @@ inline Kokkos::DefaultExecutionSpace &PetscGetKokkosExecutionSpace(void)
 {
   return *PetscKokkosExecutionSpacePtr;
 }
-
-#endif

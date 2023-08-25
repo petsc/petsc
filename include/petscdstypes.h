@@ -1,5 +1,4 @@
-#ifndef PETSCDSTYPES_H
-#define PETSCDSTYPES_H
+#pragma once
 
 #include <petscdmlabel.h>
 
@@ -90,5 +89,3 @@ typedef enum {
   PETSC_NUM_WF
 } PetscWeakFormKind;
 PETSC_EXTERN const char *const PetscWeakFormKinds[];
-
-#endif

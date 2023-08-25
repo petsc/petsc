@@ -2,8 +2,7 @@
    Copyright (c) 2022 Advanced Micro Devices, Inc. All rights reserved.
 */
 
-#ifndef PETSCSYSTYPES_H
-#define PETSCSYSTYPES_H
+#pragma once
 
 #include <petscconf.h>
 #include <petscconf_poison.h>
@@ -1073,5 +1072,3 @@ typedef char *PetscBT;
 
 /* The number of bits in a byte */
 #define PETSC_BITS_PER_BYTE CHAR_BIT
-
-#endif

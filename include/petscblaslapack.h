@@ -18,8 +18,7 @@
   PetscBLASInt is almost always 32-bit integers but can be 64-bit integers for certain usages of MKL and OpenBLAS BLAS/LAPACK libraries
 
 */
-#ifndef _BLASLAPACK_H
-#define _BLASLAPACK_H
+#pragma once
 
 #include <petscsys.h>
 #if defined(__cplusplus)
@@ -277,6 +276,4 @@ BLAS_EXTERN void LAPACKgesvd_(const char *, const char *, const PetscBLASInt *, 
 #else
 BLAS_EXTERN void LAPACKgeev_(const char *, const char *, const PetscBLASInt *, PetscScalar *, const PetscBLASInt *, PetscReal *, PetscReal *, PetscScalar *, const PetscBLASInt *, PetscScalar *, const PetscBLASInt *, PetscScalar *, const PetscBLASInt *, PetscBLASInt *);
 BLAS_EXTERN void LAPACKgesvd_(const char *, const char *, const PetscBLASInt *, const PetscBLASInt *, PetscScalar *, const PetscBLASInt *, PetscReal *, PetscScalar *, const PetscBLASInt *, PetscScalar *, const PetscBLASInt *, PetscScalar *, const PetscBLASInt *, PetscBLASInt *);
-#endif
-
 #endif

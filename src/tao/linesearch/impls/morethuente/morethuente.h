@@ -1,5 +1,4 @@
-#ifndef __TAOLINESEARCH_MORETHUENTE_H
-#define __TAOLINESEARCH_MORETHUENTE_H
+#pragma once
 
 typedef struct {
   PetscInt  bracket;
@@ -12,5 +11,3 @@ typedef struct {
   PetscReal sty, fy, dgy;
 
 } TaoLineSearch_MT;
-
-#endif

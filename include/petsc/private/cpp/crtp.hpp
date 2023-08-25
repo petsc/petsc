@@ -1,5 +1,4 @@
-#ifndef PETSC_CPP_CRTP_HPP
-#define PETSC_CPP_CRTP_HPP
+#pragma once
 
 namespace Petsc
 {
@@ -24,5 +23,3 @@ private:
 } // namespace util
 
 } // namespace Petsc
-
-#endif // PETSC_CPP_CRTP_HPP

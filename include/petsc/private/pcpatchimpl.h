@@ -1,8 +1,7 @@
 /*
       Data structure used for Patch preconditioner.
 */
-#ifndef PETSC_PCPATCHIMPL_H
-#define PETSC_PCPATCHIMPL_H
+#pragma once
 #include <petsc/private/pcimpl.h>
 #include <petsc/private/hashseti.h>
 #include <petsc/private/hashmapi.h>
@@ -148,5 +147,3 @@ typedef enum {
   SCATTER_WITHALL
 } PatchScatterType;
 PETSC_EXTERN PetscErrorCode PCPatch_ScatterLocal_Private(PC, PetscInt, Vec, Vec, InsertMode, ScatterMode, PatchScatterType);
-
-#endif // PETSC_PCPATCHIMPL_H

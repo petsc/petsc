@@ -1,5 +1,4 @@
-#ifndef PETSCADVANCEDMACROS_H
-#define PETSCADVANCEDMACROS_H
+#pragma once
 
 #include <petscmacros.h>
 
@@ -68,5 +67,3 @@
 .seealso: `PetscIf()`, `PetscDefined()`, `PetscConcat()`, `PetscExpand()`, `PetscCompl()`
 */
 #define PetscIfPetscDefined(cond, result_if_true, ...) PetscIf(PetscDefined(cond), result_if_true, __VA_ARGS__)
-
-#endif /* PETSCADVANCEDMACROS_H */

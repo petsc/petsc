@@ -1,5 +1,4 @@
-#ifndef PETSC_DGMRESIMPL_H
-#define PETSC_DGMRESIMPL_H
+#pragma once
 
 #define KSPGMRES_NO_MACROS
 #include <../src/ksp/ksp/impls/gmres/gmresimpl.h>
@@ -92,5 +91,3 @@ PETSC_EXTERN PetscLogEvent KSP_DGMRESApplyDeflation;
 
 #define GMRES_DELTA_DIRECTIONS 10
 #define GMRES_DEFAULT_MAXK     30
-
-#endif // PETSC_DGMRESIMPL_H

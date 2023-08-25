@@ -1,5 +1,4 @@
-#ifndef PETSC_SEGMENTEDMEMPOOL_HPP
-#define PETSC_SEGMENTEDMEMPOOL_HPP
+#pragma once
 
 #include <petsc/private/deviceimpl.h>
 
@@ -908,5 +907,3 @@ inline PetscErrorCode SegmentedMemoryPool<MemType, StreamType, AllocType, Defaul
 } // namespace memory
 
 } // namespace Petsc
-
-#endif // PETSC_SEGMENTEDMEMPOOL_HPP

@@ -1,8 +1,7 @@
 /* Portions of this code are under:
    Copyright (c) 2022 Advanced Micro Devices, Inc. All rights reserved.
 */
-#ifndef __DENSE_H
-#define __DENSE_H
+#pragma once
 #include <petsc/private/matimpl.h>
 /* TODO REMOVE */
 #include <../src/mat/impls/aij/seq/aij.h> /* Mat_MatTransMatMult is defined here */
@@ -117,4 +116,3 @@ PETSC_INTERN PetscErrorCode MatLoad_Dense_Binary(Mat, PetscViewer);
 PETSC_INTERN PetscErrorCode MatLoad_Dense_HDF5(Mat, PetscViewer);
 
 PETSC_INTERN PetscErrorCode MatDenseCreateColumnVec_Private(Mat, Vec *);
-#endif

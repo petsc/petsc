@@ -1,5 +1,4 @@
-#ifndef PETSCMATSEQDENSECUPM_HPP
-#define PETSCMATSEQDENSECUPM_HPP
+#pragma once
 
 #include <petsc/private/matdensecupmimpl.h> /*I <petscmat.h> I*/
 #include <../src/mat/impls/dense/seq/dense.h>
@@ -1827,5 +1826,3 @@ inline PetscErrorCode MatSolverTypeRegister_DENSECUPM() noexcept
 } // namespace mat
 
 } // namespace Petsc
-
-#endif // PETSCMATSEQDENSECUPM_HPP

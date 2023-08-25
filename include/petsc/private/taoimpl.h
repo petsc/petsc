@@ -1,5 +1,4 @@
-#ifndef __TAO_IMPL_H
-#define __TAO_IMPL_H
+#pragma once
 
 #include <petsctao.h>
 #include <petsctaolinesearch.h>
@@ -214,4 +213,3 @@ static inline PetscErrorCode TaoLogConvergenceHistory(Tao tao, PetscReal obj, Pe
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-#endif

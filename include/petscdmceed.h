@@ -1,5 +1,4 @@
-#ifndef PETSCDMCEED_H
-#define PETSCDMCEED_H
+#pragma once
 
 #include <petscdm.h>
 
@@ -18,7 +17,5 @@ void PetscCallCEED(CeedErrorType);
   #define CHKERRQ_CEED(...) PetscCallCEED(__VA_ARGS__)
 
 PETSC_EXTERN PetscErrorCode DMGetCeed(DM, Ceed *);
-
-#endif
 
 #endif

@@ -1,5 +1,4 @@
-#ifndef PETSCDEVICE_CUPM_H
-#define PETSCDEVICE_CUPM_H
+#pragma once
 
 #include <petscmacros.h>
 #include <petscdevice_cuda.h>
@@ -16,5 +15,3 @@
 #if PetscDefined(USING_NVCC) || PetscDefined(USING_HCC)
   #define PETSC_USING_CUPMCC 1
 #endif
-
-#endif // PETSCDEVICE_CUPM_H

@@ -1,8 +1,7 @@
 /* Portions of this code are under:
    Copyright (c) 2022 Advanced Micro Devices, Inc. All rights reserved.
 */
-#ifndef __MPIHIPSPARSEMATIMPL
-#define __MPIHIPSPARSEMATIMPL
+#pragma once
 
 #include <petscpkg_version.h>
 #if PETSC_PKG_HIP_VERSION_GE(5, 2, 0)
@@ -17,5 +16,3 @@ struct Mat_MPIAIJHIPSPARSE {
   MatHIPSPARSEStorageFormat diagGPUMatFormat    = MAT_HIPSPARSE_CSR;
   MatHIPSPARSEStorageFormat offdiagGPUMatFormat = MAT_HIPSPARSE_CSR;
 };
-
-#endif

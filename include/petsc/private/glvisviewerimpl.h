@@ -1,5 +1,4 @@
-#ifndef _GLVISIMPL_H
-#define _GLVISIMPL_H
+#pragma once
 
 #include <petscviewer.h>
 #include <petscsys.h>
@@ -38,4 +37,3 @@ PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode PetscViewerGLVisRestoreDMWindow_Inter
 
 PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode PetscGLVisCollectiveBegin(MPI_Comm, PetscViewer *);
 PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode PetscGLVisCollectiveEnd(MPI_Comm, PetscViewer *);
-#endif

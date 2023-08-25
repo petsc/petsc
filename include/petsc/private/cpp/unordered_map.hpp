@@ -1,5 +1,4 @@
-#ifndef PETSC_CPP_UNORDERED_MAP_HPP
-#define PETSC_CPP_UNORDERED_MAP_HPP
+#pragma once
 
 #include <petsc/private/cpp/type_traits.hpp>
 #include <petsc/private/cpp/utility.hpp>    // std ::pair
@@ -1386,5 +1385,3 @@ PETSC_NODISCARD bool operator!=(const UnorderedMap<K, T, H, KE> &lhs, const Unor
 } // namespace Petsc
 
 #undef PETSC_OPTIONAL_GET_KEY
-
-#endif // PETSC_CPP_UNORDERED_MAP_HPP

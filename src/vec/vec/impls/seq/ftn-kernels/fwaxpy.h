@@ -1,6 +1,4 @@
-
-#ifndef __FWAXPY_H
-#define __FWAXPY_H
+#pragma once
 
 #include <petscsys.h>
 #if defined(PETSC_USE_FORTRAN_KERNEL_WAXPY)
@@ -10,5 +8,4 @@
     #define fortranwaxpy_ fortranwaxpy
   #endif
 PETSC_EXTERN void fortranwaxpy_(const PetscInt *, const PetscScalar *, const PetscScalar *, const PetscScalar *, PetscScalar *);
-#endif
 #endif

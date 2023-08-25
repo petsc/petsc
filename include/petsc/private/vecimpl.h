@@ -1,5 +1,4 @@
-#ifndef PETSC_VECIMPL_H
-#define PETSC_VECIMPL_H
+#pragma once
 
 /*
   This private file should not be included in users' code.  Defines the fields shared by all
@@ -389,17 +388,19 @@ PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode VecCreateWithLayout_Private(PetscLayo
 */
 static inline PetscErrorCode PetscSortedIntUpperBound(const PetscInt *array, PetscCount first, PetscCount last, PetscInt value, PetscCount *upper)
 {
-  PetscCount it, step, count = last - first;
+  PetscCount count = last - first;
 
   PetscFunctionBegin;
   while (count > 0) {
-    it   = first;
-    step = count / 2;
-    it += step;
-    if (!(value < array[it])) {
-      first = ++it;
+    const PetscCount step = count / 2;
+    PetscCount       it   = first + step;
+
+    if (value < array[it]) {
+      count = step;
+    } else {
+      first = it + 1;
       count -= step + 1;
-    } else count = step;
+    }
   }
   *upper = first;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -464,5 +465,3 @@ PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode VecWAXPYAsync_Private(Vec, PetscScala
       PetscUseTypeMethod(v, name, __VA_ARGS__); \
     } \
   } while (0)
-
-#endif /* PETSCVECIMPL_H */

@@ -1,6 +1,4 @@
-
-#ifndef PETSCVIEWEREXODUSII_H
-#define PETSCVIEWEREXODUSII_H
+#pragma once
 
 #include <petscviewer.h>
 
@@ -8,4 +6,3 @@
   #include <exodusII.h>
 
 #endif /* defined(PETSC_HAVE_EXODUSII) */
-#endif

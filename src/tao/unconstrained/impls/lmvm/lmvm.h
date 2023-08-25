@@ -3,8 +3,7 @@
  optimization.
 */
 
-#ifndef __TAO_LMVM_H
-#define __TAO_LMVM_H
+#pragma once
 #include <petsc/private/taoimpl.h>
 
 typedef struct {
@@ -24,5 +23,3 @@ typedef struct {
 
   PetscBool recycle;
 } TAO_LMVM;
-
-#endif /* ifndef __TAO_LMVM_H */

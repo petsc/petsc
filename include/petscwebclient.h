@@ -1,8 +1,7 @@
 /*
   This is the include file for source code that accesses HTTPS
 */
-#ifndef PETSCWEBCLIENT_H
-#define PETSCWEBCLIENT_H
+#pragma once
 
 /*  complex number I conflicts with SSL include files */
 #if !defined(PETSC_SKIP_COMPLEX)
@@ -30,4 +29,3 @@ PETSC_EXTERN PetscErrorCode PetscHTTPSRequest(const char[], const char[], const 
 PETSC_EXTERN PetscErrorCode PetscHTTPSConnect(const char[], int, SSL_CTX *, int *, SSL **);
 
 PETSC_EXTERN PetscErrorCode PetscHTTPRequest(const char[], const char[], const char[], const char[], const char[], int, char[], size_t);
-#endif

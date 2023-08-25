@@ -14,6 +14,7 @@ Changes: Development
 - Add ``PetscOptionsBegin()``, ``PetscOptionsEnd()``, ``PetscOptionsInt()``, ``PetscOptionsBool()``, ``PetscOptionsIntArray()``,
   ``PetscOptionsReal()``, ``PetscOptionsRealArray()``, and ``PetscOptionsScalar()`` for Fortran
 - Add ``PetscAssertPointer()`` as a replacement for ``PetscValidPointer()``, ``PetscValidCharPointer()``, ``PetscValidIntPointer()``, ``PetscValidInt64Pointer()``, ``PetscValidCountPointer()``, ``PetscValidBoolPointer()``, ``PetscvalidScalarPointer()``, and ``PetscValidRealPointer()``
+- Convert standard header-guards in PETSc header-files to ``#pragma once``. Users relying on specific preprocessor definitions to determine whether particular PETSc headers (e.g. ``petscdm.h`` used to be guarded by ``PETSCDM_H``) have been included will find that this no longer works. While header-guards are technically "public" (insofar that they appear in public header-files), their name and value are considered implementation details
 
 .. rubric:: Configure/Build:
 

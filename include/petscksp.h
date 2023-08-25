@@ -1,8 +1,7 @@
 /*
    Defines the interface functions for the Krylov subspace accelerators.
 */
-#ifndef PETSCKSP_H
-#define PETSCKSP_H
+#pragma once
 
 #include <petscpc.h>
 
@@ -1051,4 +1050,3 @@ PETSC_EXTERN PetscErrorCode DMCheckInterpolator(DM, Mat, Mat, Mat, PetscReal);
 
 PETSC_EXTERN PetscErrorCode PCBJKOKKOSSetKSP(PC, KSP);
 PETSC_EXTERN PetscErrorCode PCBJKOKKOSGetKSP(PC, KSP *);
-#endif

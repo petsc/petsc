@@ -1,5 +1,4 @@
-#ifndef _PETSC_HASHMAPIJV_H
-#define _PETSC_HASHMAPIJV_H
+#pragma once
 
 #include <petsc/private/hashmap.h>
 #include <petsc/private/hashijkey.h>
@@ -43,4 +42,3 @@ static inline PetscErrorCode PetscHMapIJVQueryAdd(PetscHMapIJV ht, PetscHashIJKe
   *missing = ret ? PETSC_TRUE : PETSC_FALSE;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-#endif /* _PETSC_HASHMAPIJV_H */

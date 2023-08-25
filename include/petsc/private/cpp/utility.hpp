@@ -1,5 +1,4 @@
-#ifndef PETSC_CPP_UTILITY_HPP
-#define PETSC_CPP_UTILITY_HPP
+#pragma once
 
 #include <petsc/private/cpp/macros.hpp>
 #include <petsc/private/cpp/type_traits.hpp>
@@ -298,5 +297,3 @@ static_assert(sizeof(compressed_pair<NotEmpty, EmptyMember>) >= (sizeof(NotEmpty
 } // namespace util
 
 } // namespace Petsc
-
-#endif // PETSC_CPP_UTILITY_HPP

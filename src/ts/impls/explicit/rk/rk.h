@@ -1,3 +1,4 @@
+#pragma once
 typedef struct _RKTableau *RKTableau;
 struct _RKTableau {
   char      *name;

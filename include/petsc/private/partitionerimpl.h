@@ -1,5 +1,4 @@
-#ifndef PARTITIONERIMPL_H
-#define PARTITIONERIMPL_H
+#pragma once
 
 #include <petscviewer.h>
 #include <petscpartitioner.h>
@@ -30,5 +29,3 @@ struct _p_PetscPartitioner {
   PetscBool   noGraph; /* if true, the partitioner does not need the connectivity graph, only the number of local vertices */
   PetscBool   usevwgt; /* if true, the partitioner looks at the local section vertSection to weight the vertices of the graph */
 };
-
-#endif

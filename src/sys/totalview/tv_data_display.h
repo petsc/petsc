@@ -1,3 +1,5 @@
+#pragma once
+
 /*
  * $Header: /home/tv/src/debugger/src/datadisp/tv_data_display.h,v 1.3 2010-04-21 15:32:50 tringali Exp $
  * $Locker:  $
@@ -29,14 +31,11 @@
  *
  */
 
-#if !defined(TV_DATA_DISPLAY_H_INCLUDED)
-  #define TV_DATA_DISPLAY_H_INCLUDED 1
+#include <petscsys.h>
 
-  #include <petscsys.h>
-
-  #if defined(__cplusplus)
+#if defined(__cplusplus)
 extern "C" {
-  #endif
+#endif
 
 enum TV_format_result {
   TV_format_OK,     /* Type is known, and successfully converted */
@@ -45,8 +44,8 @@ enum TV_format_result {
   TV_format_never   /* Don't know about this type, and please don't ask again */
 };
 
-  #define TV_ascii_string_type "$string"
-  #define TV_int_type          "$int"
+#define TV_ascii_string_type "$string"
+#define TV_int_type          "$int"
 
 PETSC_EXTERN int TV_add_row(const char *, const char *, const void *);
 
@@ -57,8 +56,6 @@ PETSC_EXTERN int TV_add_row(const char *, const char *, const void *);
   ENOMEM: No more room left for display data
 */
 
-  #if defined(__cplusplus)
+#if defined(__cplusplus)
 }
-  #endif
-
 #endif

@@ -2,8 +2,7 @@
   Private data structure used for blmvm method.
 */
 
-#ifndef __TAO_BLMVM_H
-#define __TAO_BLMVM_H
+#pragma once
 
 #include <petsc/private/taoimpl.h>
 
@@ -27,5 +26,3 @@ typedef struct {
 
   PetscBool recycle;
 } TAO_BLMVM;
-
-#endif /* if !defined(__TAO_BLMVM_H) */

@@ -2,8 +2,7 @@
 Context for bounded quasi-Newton-Krylov type optimization algorithms
 */
 
-#ifndef __TAO_BQNK_H
-#define __TAO_BQNK_H
+#pragma once
 
 #include <../src/tao/bound/impls/bnk/bnk.h>
 #include <../src/ksp/ksp/utils/lmvm/lmvm.h>
@@ -23,5 +22,3 @@ typedef struct {
 PETSC_INTERN PetscErrorCode TaoSolve_BQNK(Tao);
 PETSC_INTERN PetscErrorCode TaoSetUp_BQNK(Tao);
 PETSC_INTERN PetscErrorCode TaoCreate_BQNK(Tao);
-
-#endif /* if !defined(__TAO_BQNK_H) */

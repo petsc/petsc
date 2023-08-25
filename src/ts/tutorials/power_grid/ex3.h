@@ -1,3 +1,5 @@
+#pragma once
+
 typedef enum {
   SA_ADJ,
   SA_TLM

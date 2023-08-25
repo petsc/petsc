@@ -1,5 +1,4 @@
-#ifndef PETSCDMPLEXTRANSFORMTYPES_H
-#define PETSCDMPLEXTRANSFORMTYPES_H
+#pragma once
 
 /* SUBMANSEC = DMPlex */
 
@@ -11,5 +10,3 @@
 .seealso: `DMPlexTransformCreate()`, `DMPlexTransformType`
 S*/
 typedef struct _p_DMPlexTransform *DMPlexTransform;
-
-#endif

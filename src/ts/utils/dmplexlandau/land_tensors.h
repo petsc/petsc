@@ -1,3 +1,5 @@
+#pragma once
+
 #define LANDAU_INVSQRT(q) (1. / PetscSqrtReal(q))
 
 #if defined(__CUDA_ARCH__)

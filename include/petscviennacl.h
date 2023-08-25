@@ -1,5 +1,4 @@
-#ifndef PETSCVIENNACL_H
-#define PETSCVIENNACL_H
+#pragma once
 
 #include <petscvec.h>
 
@@ -35,5 +34,3 @@ PETSC_EXTERN PetscErrorCode VecCreateMPIViennaCLWithArrays(MPI_Comm, PetscInt, P
 
 PETSC_EXTERN PetscErrorCode VecViennaCLPlaceArray(Vec, const viennacl::vector<PetscScalar> *);
 PETSC_EXTERN PetscErrorCode VecViennaCLResetArray(Vec);
-
-#endif

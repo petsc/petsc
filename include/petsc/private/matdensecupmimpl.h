@@ -1,5 +1,4 @@
-#ifndef PETSCMATDENSECUPMIMPL_H
-#define PETSCMATDENSECUPMIMPL_H
+#pragma once
 
 #define PETSC_SKIP_IMMINTRIN_H_CUDAWORKAROUND 1
 #include <petsc/private/matimpl.h> /*I <petscmat.h> I*/
@@ -81,7 +80,7 @@ public:
   MatDenseCUPMComposedOpDecl(ReplaceArray_C)
   MatDenseCUPMComposedOpDecl(ResetArray_C)
   MatDenseCUPMComposedOpDecl(SetPreallocation_C)
-    // clang-format on
+  // clang-format on
 
   #undef MatDenseCUPMComposedOpDecl
 
@@ -653,5 +652,3 @@ inline PetscErrorCode MatDenseCUPMSetPreallocation(Mat A, PetscScalar *device_da
 } // namespace Petsc
 
 #endif // __cplusplus
-
-#endif // PETSCMATDENSECUPMIMPL_H

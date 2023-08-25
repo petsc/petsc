@@ -1,5 +1,4 @@
-#ifndef PETSC_VECNESTIMPL_H
-#define PETSC_VECNESTIMPL_H
+#pragma once
 
 #include <petsc/private/vecimpl.h>
 
@@ -45,5 +44,3 @@ extern void VecNestCheckCompatible2(Tv, int, Tv, int);
 template <typename Tv>
 extern void VecNestCheckCompatible3(Tv, int, Tv, int, Tv, int);
 #endif
-
-#endif // PETSC_VECNESTIMPL_H

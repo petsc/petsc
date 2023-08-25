@@ -1,8 +1,7 @@
 /*
   DMNetwork, for parallel unstructured network problems.
 */
-#ifndef PETSCDMNETWORK_H
-#define PETSCDMNETWORK_H
+#pragma once
 
 #include <petscdmplex.h>
 #include <petscviewer.h>
@@ -91,4 +90,3 @@ PETSC_EXTERN PetscErrorCode DMNetworkViewSetViewRanks(DM, IS);
 PETSC_EXTERN PetscErrorCode DMNetworkViewSetShowGlobal(DM, PetscBool);
 PETSC_EXTERN PetscErrorCode DMNetworkViewSetShowVertices(DM, PetscBool);
 PETSC_EXTERN PetscErrorCode DMNetworkViewSetShowNumbering(DM, PetscBool);
-#endif

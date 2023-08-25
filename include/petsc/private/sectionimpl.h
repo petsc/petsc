@@ -1,5 +1,4 @@
-#ifndef PETSCSECTIONIMPL_H
-#define PETSCSECTIONIMPL_H
+#pragma once
 
 #include <petscsection.h>
 #include <petsc/private/petscimpl.h>
@@ -115,5 +114,3 @@ void PetscSectionCheckValidFieldComponent(PetscInt, PetscInt);
 
   #define PetscSectionCheckValidField(field, nfields) PetscSectionCheckValid_("field number", field, nfields)
 #endif /* PETSC_CLANG_STATIC_ANALYZER */
-
-#endif /* PETSCSECTIONIMPL_H */

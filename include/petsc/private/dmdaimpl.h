@@ -2,8 +2,7 @@
    Distributed arrays - communication tools for parallel, rectangular grids.
 */
 
-#ifndef _DAIMPL_H
-#define _DAIMPL_H
+#pragma once
 
 #include <petscdmda.h>
 #include <petsc/private/dmimpl.h>
@@ -127,5 +126,3 @@ PETSC_INTERN PetscErrorCode DMDAGetNatural_Private(DM, PetscInt *, IS *);
 PETSC_INTERN PetscErrorCode DMSetUp_DA_1D(DM);
 PETSC_INTERN PetscErrorCode DMSetUp_DA_2D(DM);
 PETSC_INTERN PetscErrorCode DMSetUp_DA_3D(DM);
-
-#endif

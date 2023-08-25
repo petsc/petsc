@@ -1,5 +1,4 @@
-#ifndef PETSCCUPMSOLVERINTERFACE_HPP
-#define PETSCCUPMSOLVERINTERFACE_HPP
+#pragma once
 
 #include <petsc/private/cupmblasinterface.hpp>
 #include <petsc/private/petscadvancedmacros.h>
@@ -291,5 +290,3 @@ extern template struct PETSC_SINGLE_LIBRARY_VISIBILITY_INTERNAL SolverInterface<
 } // namespace device
 
 } // namespace Petsc
-
-#endif // PETSCCUPMSOLVERINTERFACE_HPP

@@ -1,5 +1,4 @@
-#ifndef PETSC_CPP_TUPLE_HPP
-#define PETSC_CPP_TUPLE_HPP
+#pragma once
 
 #include <petsc/private/cpp/type_traits.hpp>
 #include <petsc/private/cpp/utility.hpp>
@@ -48,5 +47,3 @@ constexpr inline F &&tuple_for_each(T &&tuple, F &&f)
 } // namespace util
 
 } // namespace Petsc
-
-#endif // PETSC_CPP_TUPLE_HPP

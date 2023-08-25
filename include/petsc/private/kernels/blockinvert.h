@@ -10,8 +10,7 @@
        does not have some arguments in single and some in double.
 
 */
-#ifndef __ILU_H
-#define __ILU_H
+#pragma once
 #include <petscblaslapack.h>
 
 /*
@@ -282,11 +281,11 @@ PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_15(MatScalar *, PetscIn
     } while (0)
 
 #else /* !defined(PETSC_USE_REAL_MAT_SINGLE) */
-  /*
+/*
        Version that calls Fortran routines; can handle different precision
    of matrix (array) and vectors
 */
-  /*
+/*
      These are Fortran kernels: They replace certain BLAS routines but
    have some arguments that may be single precision,rather than double
    These routines are provided in src/fortran/kernels/sgemv.F
@@ -390,5 +389,3 @@ PETSC_EXTERN void msgemm_(PetscInt *, MatScalar *, MatScalar *, MatScalar *);
   #define PetscKernel_v_gets_v_plus_Atranspose_times_w(bs, v, A, w)
 
 #endif /* !defined(PETSC_USE_REAL_MAT_SINGLE) */
-
-#endif /* __ILU_H */

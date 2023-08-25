@@ -1,8 +1,7 @@
 /*
     Defines an interface to the MATLAB Engine from PETSc
 */
-#ifndef PETSCMATLAB_H
-#define PETSCMATLAB_H
+#pragma once
 
 /* SUBMANSEC = Sys */
 
@@ -56,5 +55,3 @@ M*/
 .seealso: `PetscMatlabEngine`, `PETSC_MATLAB_ENGINE_()`, `PETSC_MATLAB_ENGINE_WORLD`
 M*/
 #define PETSC_MATLAB_ENGINE_SELF PETSC_MATLAB_ENGINE_(PETSC_COMM_SELF)
-
-#endif

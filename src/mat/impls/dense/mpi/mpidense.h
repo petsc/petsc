@@ -1,3 +1,4 @@
+#pragma once
 
 #include <../src/mat/impls/dense/seq/dense.h>
 #include <petscsf.h>

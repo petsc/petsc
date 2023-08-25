@@ -1,8 +1,7 @@
 /*
   Common tools for constructing discretizations
 */
-#ifndef PETSCDT_H
-#define PETSCDT_H
+#pragma once
 
 #include <petscsys.h>
 #include <petscdmtypes.h>
@@ -598,5 +597,3 @@ PETSC_EXTERN PetscErrorCode PetscProbCreateFromOptions(PetscInt, const char[], c
 #include <petscvec.h>
 
 PETSC_EXTERN PetscErrorCode PetscProbComputeKSStatistic(Vec, PetscProbFunc, PetscReal *);
-
-#endif

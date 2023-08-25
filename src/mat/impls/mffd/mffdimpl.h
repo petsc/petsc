@@ -8,8 +8,7 @@
           F'(u)a  ~=  ----------------
                             h
 */
-#ifndef PETSC_MFFDIMPL_H
-#define PETSC_MFFDIMPL_H
+#pragma once
 
 #include <petscmat.h> /*I  "petscmat.h"   I*/
 #include <petsc/private/petscimpl.h>
@@ -58,5 +57,3 @@ struct _p_MatMFFD {
 PETSC_EXTERN PetscFunctionList MatMFFDList;
 PETSC_EXTERN PetscBool         MatMFFDRegisterAllCalled;
 PETSC_EXTERN PetscErrorCode    MatMFFDRegisterAll(void);
-
-#endif // PETSC_MFFDIMPL_H

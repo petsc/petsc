@@ -1,8 +1,7 @@
 /*
    Routines to determine options set in the options database.
 */
-#ifndef PETSCOPTIONS_H
-#define PETSCOPTIONS_H
+#pragma once
 
 #include <petscsys.h>
 #include <petscviewertypes.h>
@@ -444,4 +443,3 @@ PETSC_EXTERN PetscErrorCode PetscObjectProcessOptionsHandlers(PetscObject, Petsc
 PETSC_EXTERN PetscErrorCode PetscObjectDestroyOptionsHandlers(PetscObject);
 
 PETSC_EXTERN PetscErrorCode PetscOptionsLeftError(void);
-#endif

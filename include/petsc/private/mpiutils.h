@@ -1,5 +1,4 @@
-#ifndef MPIUTILS_H
-#define MPIUTILS_H
+#pragma once
 
 #include <petscsys.h>
 
@@ -117,6 +116,4 @@ static inline PetscMPIInt MPIU_Reduce_local(const void *inbuf, void *inoutbuf, P
 #else
   #define MPIU_Neighbor_alltoallv(a, b, c, d, e, f, g, h, i)     MPI_Neighbor_alltoallv(a, b, c, d, e, f, g, h, i)
   #define MPIU_Ineighbor_alltoallv(a, b, c, d, e, f, g, h, i, j) MPI_Ineighbor_alltoallv(a, b, c, d, e, f, g, h, i, j)
-#endif
-
 #endif

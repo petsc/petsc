@@ -1,7 +1,5 @@
-
 /* This file contains info for the use of PETSc Fortran interface stubs */
-#ifndef PETSCFORTRANIMPL_H
-#define PETSCFORTRANIMPL_H
+#pragma once
 
 #include <petsc/private/petscimpl.h>
 PETSC_INTERN PetscErrorCode PETScParseFortranArgs_Private(int *, char ***);
@@ -294,5 +292,3 @@ typedef PETSC_UINTPTR_T PetscFortranAddr;
 #define PETSC_DEPRECATED_TYPEDEF(...)
 #undef PETSC_DEPRECATED_MACRO
 #define PETSC_DEPRECATED_MACRO(...)
-
-#endif

@@ -186,6 +186,7 @@ WhitespaceSensitiveMacros:
   - PETSC_VALID_POINTER_IMPL_SPECIALIZATION
   - _Generic
   - PETSC_GENERIC_CV
+  - PetscMacroReturnStandard
 TypenameMacros:
   - khash_t
 InsertNewlineAtEOF: true

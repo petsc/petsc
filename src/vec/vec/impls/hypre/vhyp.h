@@ -1,5 +1,4 @@
-#ifndef PETSC_VEC_IMPLS_VHYP_H
-#define PETSC_VEC_IMPLS_VHYP_H
+#pragma once
 
 #include <petsc/private/petschypre.h>
 #include <petscistypes.h> // PetscLayout
@@ -24,5 +23,3 @@ PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode VecHYPRE_IJVectorPushVecWrite(VecHYPR
 PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode VecHYPRE_IJVectorPushVec(VecHYPRE_IJVector, Vec);
 PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode VecHYPRE_IJVectorPopVec(VecHYPRE_IJVector);
 PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode VecHYPRE_IJBindToCPU(VecHYPRE_IJVector, PetscBool);
-
-#endif

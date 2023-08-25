@@ -1,6 +1,4 @@
-
-#ifndef PETSCVIEWERHDF5_H
-#define PETSCVIEWERHDF5_H
+#pragma once
 
 #include <petscviewer.h>
 
@@ -86,4 +84,3 @@ PETSC_EXTERN PetscErrorCode PetscViewerHDF5GetSPOutput(PetscViewer, PetscBool *)
 PETSC_EXTERN PetscErrorCode PetscViewerHDF5SetCollective(PetscViewer, PetscBool);
 PETSC_EXTERN PetscErrorCode PetscViewerHDF5GetCollective(PetscViewer, PetscBool *);
 #endif /* defined(PETSC_HAVE_HDF5) */
-#endif

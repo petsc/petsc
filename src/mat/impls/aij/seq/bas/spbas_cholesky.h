@@ -1,4 +1,4 @@
-
+#pragma once
 /*
    spbas_cholesky_row_alloc:
       in the data arrays, find a place where another row may be stored.

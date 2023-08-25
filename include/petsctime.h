@@ -1,8 +1,7 @@
 /*
        Low cost access to a system time. This, in general, should not be included in user programs.
 */
-#ifndef PETSCTIME_H
-#define PETSCTIME_H
+#pragma once
 
 #include <petscsys.h>
 
@@ -114,5 +113,3 @@ static inline PetscErrorCode PetscTimeAdd(PetscLogDouble *v)
   *v += MPI_Wtime();
   return PETSC_SUCCESS;
 }
-
-#endif

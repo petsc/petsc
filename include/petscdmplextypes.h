@@ -1,5 +1,4 @@
-#ifndef PETSCDMPLEXTYPES_H
-#define PETSCDMPLEXTYPES_H
+#pragma once
 
 /* SUBMANSEC = DMPlex */
 
@@ -65,5 +64,3 @@ struct _p_DMPlexPointQueue {
   PetscInt  back;   /* Index of the back of the queue */
   PetscInt  num;    /* Number of enqueued points */
 };
-
-#endif

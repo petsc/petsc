@@ -1,5 +1,4 @@
-#ifndef _BLOCKTRANSPOSE_H
-#define _BLOCKTRANSPOSE_H
+#pragma once
 
 #include <petscsys.h>
 #include <petscblaslapack.h>
@@ -33,5 +32,3 @@ PetscKernel_A_gets_transpose_A_DECLARE(6)
 PetscKernel_A_gets_transpose_A_DECLARE(7)
 PetscKernel_A_gets_transpose_A_DECLARE(8)
 PetscKernel_A_gets_transpose_A_DECLARE(9)
-
-#endif

@@ -1,4 +1,3 @@
-
 /*
      This is a terrible way of doing "templates" in C.
 */

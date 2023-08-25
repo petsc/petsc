@@ -1,8 +1,7 @@
 /*
     Defines profile/logging in PETSc.
 */
-#ifndef PETSCLOG_H
-#define PETSCLOG_H
+#pragma once
 
 #include <petscsys.h>
 #include <petsctime.h>
@@ -396,7 +395,7 @@ static inline PETSC_UNUSED PetscErrorCode PetscLogObjectDestroy(PetscObject o)
   return PETSC_SUCCESS;
 }
 
-  /*
+/*
    Flop counting:  We count each arithmetic operation (e.g., addition, multiplication) separately.
 
    For the complex numbers version, note that
@@ -792,5 +791,3 @@ static inline PetscErrorCode PetscLogGpuToCpuScalar(PetscLogDouble size)
 #undef PETSC_TLS
 
 #include <petsclogdeprecated.h>
-
-#endif

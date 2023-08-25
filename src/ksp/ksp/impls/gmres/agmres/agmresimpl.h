@@ -4,8 +4,7 @@
   If you modify something there (located in gmresimpl.h and in dgmresimpl.h), you should  modify it here as well.
   In this KSP, KSPSIZE denotes the size of the basis (possibly augmented with Schur vectors) and MAXKSPSIZE denotes the maximum size of the augmented basis
 */
-#ifndef PETSC_AGMRESIMPL_H
-#define PETSC_AGMRESIMPL_H
+#pragma once
 
 #include <../src/ksp/ksp/impls/gmres/dgmres/dgmresimpl.h>
 typedef struct {
@@ -58,5 +57,3 @@ PetscErrorCode KSPAGMRESComputeDeflationData(KSP);
 
 #define AGMRES_DEFAULT_MAXK     30
 #define AGMRES_DELTA_DIRECTIONS 10
-
-#endif // PETSC_AGMRESIMPL_H

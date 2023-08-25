@@ -1,5 +1,4 @@
-#ifndef PETSCPCTYPES_H
-#define PETSCPCTYPES_H
+#pragma once
 
 /* SUBMANSEC = PC */
 
@@ -542,5 +541,3 @@ typedef enum {
   PCGAMG_LAYOUT_COMPACT,
   PCGAMG_LAYOUT_SPREAD
 } PCGAMGLayoutType;
-
-#endif

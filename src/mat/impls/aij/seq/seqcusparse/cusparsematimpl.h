@@ -1,5 +1,4 @@
-#ifndef PETSC_CUSPARSEMATIMPL_H
-#define PETSC_CUSPARSEMATIMPL_H
+#pragma once
 
 #include <petscpkg_version.h>
 #include <../src/vec/vec/impls/seq/cupm/vecseqcupm.hpp> /* for VecSeq_CUPM */
@@ -336,5 +335,3 @@ static inline bool isCudaMem(const void *data)
   PetscCallAbort(PETSC_COMM_SELF, impl::Interface<DeviceType::CUDA>::PetscCUPMGetMemType(data, &mtype));
   PetscFunctionReturn(PetscMemTypeDevice(mtype));
 }
-
-#endif // PETSC_CUSPARSEMATIMPL_H

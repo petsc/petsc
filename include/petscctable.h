@@ -1,5 +1,4 @@
-#ifndef PETSCCTABLE_H
-#define PETSCCTABLE_H
+#pragma once
 
 #include <petscsys.h>
 
@@ -147,5 +146,3 @@ PETSC_TABLE_DEPRECATION_WARNING("PetscHMapIGetWithDefault()") static inline Pets
 #undef PetscHashMacroImplToGetAroundDeprecationWarning_Private
 #undef PetscHashStepMacroImplToGetAroundDeprecationWarning_Private
 #undef PETSC_TABLE_DEPRECATION_WARNING
-
-#endif /* PETSCCTABLE_H */

@@ -1,6 +1,7 @@
 /*
     This include file allows you to use ANY public PETSc function
 */
+#pragma once
 
 #include <petscbag.h>
 #include <petsctime.h>

@@ -1,8 +1,7 @@
 /*
       Objects which encapsulate discretizations+continuum residuals
 */
-#ifndef PETSCCE_H
-#define PETSCCE_H
+#pragma once
 
 #include <petscsnes.h>
 
@@ -31,5 +30,3 @@ PETSC_EXTERN PetscErrorCode PetscConvEstComputeError(PetscConvEst, PetscInt, DM,
 PETSC_EXTERN PetscErrorCode PetscConvEstGetConvRate(PetscConvEst, PetscReal[]);
 PETSC_EXTERN PetscErrorCode PetscConvEstMonitorDefault(PetscConvEst, PetscInt);
 PETSC_EXTERN PetscErrorCode PetscConvEstRateView(PetscConvEst, const PetscReal[], PetscViewer);
-
-#endif

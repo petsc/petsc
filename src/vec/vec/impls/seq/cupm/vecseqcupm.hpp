@@ -1,5 +1,4 @@
-#ifndef PETSCVECSEQCUPM_HPP
-#define PETSCVECSEQCUPM_HPP
+#pragma once
 
 #include <petsc/private/veccupmimpl.h>
 #include <petsc/private/cpp/utility.hpp> // util::index_sequence
@@ -326,5 +325,3 @@ extern template class PETSC_SINGLE_LIBRARY_VISIBILITY_INTERNAL ::Petsc::vec::cup
 #if PetscDefined(HAVE_HIP)
 extern template class PETSC_SINGLE_LIBRARY_VISIBILITY_INTERNAL ::Petsc::vec::cupm::impl::VecSeq_CUPM<::Petsc::device::cupm::DeviceType::HIP>;
 #endif
-
-#endif // PETSCVECSEQCUPM_HPP

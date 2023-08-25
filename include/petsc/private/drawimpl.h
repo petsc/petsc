@@ -2,8 +2,7 @@
        Abstract data structure and functions for graphics.
 */
 
-#ifndef PETSCDRAWIMPL_H
-#define PETSCDRAWIMPL_H
+#pragma once
 
 #include <petsc/private/petscimpl.h>
 #include <petscdraw.h>
@@ -149,5 +148,3 @@ struct _p_PetscDrawSP {
   PetscBool     colorized;
 };
 #define PETSC_DRAW_SP_CHUNK_SIZE 100
-
-#endif /* PETSCDRAWIMPL_H */

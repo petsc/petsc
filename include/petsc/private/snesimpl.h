@@ -1,5 +1,4 @@
-#ifndef __SNESIMPL_H
-#define __SNESIMPL_H
+#pragma once
 
 #include <petscsnes.h>
 #include <petsc/private/petscimpl.h>
@@ -343,5 +342,3 @@ PETSC_EXTERN PetscErrorCode SNESEWSetFromOptions_Private(SNESKSPEW *, PetscBool,
 #define SNESNeedNorm_Private(snes, iter) \
   (((iter) == (snes)->max_its && ((snes)->normschedule == SNES_NORM_FINAL_ONLY || (snes)->normschedule == SNES_NORM_INITIAL_FINAL_ONLY)) || ((iter) == 0 && ((snes)->normschedule == SNES_NORM_INITIAL_ONLY || (snes)->normschedule == SNES_NORM_INITIAL_FINAL_ONLY)) || \
    (snes)->normschedule == SNES_NORM_ALWAYS)
-
-#endif

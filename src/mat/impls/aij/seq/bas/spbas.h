@@ -1,3 +1,5 @@
+#pragma once
+
 /*
    Define type spbas_matrix: sparse matrices using pointers
 

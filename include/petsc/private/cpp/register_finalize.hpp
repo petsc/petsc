@@ -1,5 +1,4 @@
-#ifndef PETSC_CPP_REGISTER_FINALIZE_HPP
-#define PETSC_CPP_REGISTER_FINALIZE_HPP
+#pragma once
 
 #include <petscsys.h>
 
@@ -203,5 +202,3 @@ inline PetscErrorCode RegisterFinalizeable<D>::register_finalize(Args &&...args)
 }
 
 } // namespace Petsc
-
-#endif // PETSC_CPP_REGISTER_FINALIZE_HPP

@@ -1,5 +1,4 @@
-#ifndef PETSC_PCISIMPL_H
-#define PETSC_PCISIMPL_H
+#pragma once
 
 #include <petsc/private/pcimpl.h>
 #include <petsc/private/matisimpl.h>
@@ -64,5 +63,3 @@ typedef struct {
   ISLocalToGlobalMapping BtoNmap;
   PetscBool              reusesubmatrices;
 } PC_IS;
-
-#endif // PETSC_PCISIMPL_H

@@ -1,5 +1,4 @@
-#ifndef TAOALMM_H
-#define TAOALMM_H
+#pragma once
 #include <petsc/private/taoimpl.h>
 
 typedef struct {
@@ -34,5 +33,3 @@ PETSC_INTERN PetscErrorCode TaoALMMGetPrimalIS_Private(Tao, IS *, IS *);
 PETSC_INTERN PetscErrorCode TaoALMMGetDualIS_Private(Tao, IS *, IS *);
 PETSC_INTERN PetscErrorCode TaoALMMSubsolverObjective_Private(Tao, Vec, PetscReal *, void *);
 PETSC_INTERN PetscErrorCode TaoALMMSubsolverObjectiveAndGradient_Private(Tao, Vec, PetscReal *, Vec, void *);
-
-#endif

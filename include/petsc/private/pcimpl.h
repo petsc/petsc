@@ -1,6 +1,4 @@
-
-#ifndef _PCIMPL_H
-#define _PCIMPL_H
+#pragma once
 
 #include <petscksp.h>
 #include <petscpc.h>
@@ -73,5 +71,3 @@ PETSC_EXTERN PetscLogEvent PC_ModifySubMatrices;
 PETSC_EXTERN PetscLogEvent PC_ApplyOnBlocks;
 PETSC_EXTERN PetscLogEvent PC_ApplyTransposeOnBlocks;
 PETSC_EXTERN PetscLogStage PCMPIStage;
-
-#endif

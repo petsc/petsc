@@ -1,5 +1,4 @@
-#ifndef __TAO_GPCG_H
-#define __TAO_GPCG_H
+#pragma once
 #include <petsc/private/taoimpl.h>
 #include <petsctaolinesearch.h>
 
@@ -56,5 +55,3 @@ typedef struct {
   PetscInt ksp_type;
   PetscInt subset_type;
 } TAO_GPCG;
-
-#endif

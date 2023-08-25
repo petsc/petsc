@@ -1,5 +1,4 @@
-#ifndef PETSCDEVICETYPES_H
-#define PETSCDEVICETYPES_H
+#pragma once
 
 #include <petscsys.h> /*I <petscdevicetypes.h> I*/
 
@@ -101,8 +100,8 @@ PETSC_NODISCARD static inline PETSC_CONSTEXPR_14 const char *PetscMemTypeToStrin
   static_assert(PETSC_MEMTYPE_CUDA == PETSC_MEMTYPE_DEVICE, "");
 #endif
 #define PETSC_CASE_NAME(v) \
-case v: \
-  return PetscStringize(v)
+  case v: \
+    return PetscStringize(v)
 
   switch (mtype) {
     PETSC_CASE_NAME(PETSC_MEMTYPE_HOST);
@@ -181,8 +180,8 @@ static_assert(!PetscOffloadBoth(PETSC_OFFLOAD_KOKKOS), "");
 PETSC_NODISCARD static inline PETSC_CONSTEXPR_14 const char *PetscOffloadMaskToString(PetscOffloadMask mask)
 {
 #define PETSC_CASE_RETURN(v) \
-case v: \
-  return PetscStringize(v)
+  case v: \
+    return PetscStringize(v)
 
   switch (mask) {
     PETSC_CASE_RETURN(PETSC_OFFLOAD_UNALLOCATED);
@@ -458,8 +457,8 @@ static_assert((PETSC_MEMORY_ACCESS_READ | PETSC_MEMORY_ACCESS_WRITE) == PETSC_ME
 PETSC_NODISCARD static inline PETSC_CONSTEXPR_14 const char *PetscMemoryAccessModeToString(PetscMemoryAccessMode mode)
 {
 #define PETSC_CASE_RETURN(v) \
-case v: \
-  return PetscStringize(v)
+  case v: \
+    return PetscStringize(v)
 
   switch (mode) {
     PETSC_CASE_RETURN(PETSC_MEMORY_ACCESS_READ);
@@ -472,5 +471,3 @@ case v: \
 }
 
 #undef PETSC_SHOULD_SILENCE_GCC_TAUTOLOGICAL_COMPARE_WARNING
-
-#endif /* PETSCDEVICETYPES_H */

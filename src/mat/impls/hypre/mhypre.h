@@ -1,5 +1,4 @@
-#ifndef _MHYPRE_H
-#define _MHYPRE_H
+#pragma once
 
 #include <petscsys.h>
 #include <petscmat.h>
@@ -32,5 +31,3 @@ typedef struct {
 PETSC_INTERN PetscErrorCode MatZeroRows_CUDA(PetscInt n, const PetscInt *rows, const HYPRE_Int *i, const HYPRE_Int *j, HYPRE_Complex *a, HYPRE_Complex diag);
 PETSC_INTERN PetscErrorCode MatZeroRows_HIP(PetscInt n, const PetscInt *rows, const HYPRE_Int *i, const HYPRE_Int *j, HYPRE_Complex *a, HYPRE_Complex diag);
 PETSC_INTERN PetscErrorCode MatZeroRows_Kokkos(PetscInt n, const PetscInt *rows, const HYPRE_Int *i, const HYPRE_Int *j, HYPRE_Complex *a, HYPRE_Complex diag);
-
-#endif

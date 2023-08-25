@@ -1,8 +1,7 @@
 /*
   DMPlex, for parallel unstructured distributed mesh problems.
 */
-#ifndef PETSCDMPLEX_H
-#define PETSCDMPLEX_H
+#pragma once
 
 #include <petscsection.h>
 #include <petscpartitioner.h>
@@ -560,5 +559,3 @@ PETSC_EXTERN PetscErrorCode DMPlexPointQueueFront(DMPlexPointQueue, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMPlexPointQueueBack(DMPlexPointQueue, PetscInt *);
 PETSC_EXTERN PetscBool      DMPlexPointQueueEmpty(DMPlexPointQueue);
 PETSC_EXTERN PetscErrorCode DMPlexPointQueueEmptyCollective(PetscObject, DMPlexPointQueue, PetscBool *);
-
-#endif

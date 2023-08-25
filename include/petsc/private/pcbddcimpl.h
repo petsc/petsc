@@ -1,5 +1,4 @@
-#ifndef PETSC_PCBDDCIMPL_H
-#define PETSC_PCBDDCIMPL_H
+#pragma once
 
 #include <petsc/private/pcisimpl.h>
 #include <petsc/private/pcbddcstructsimpl.h>
@@ -189,5 +188,3 @@ typedef struct {
   PetscInt    dbg_flag;
   PetscViewer dbg_viewer;
 } PC_BDDC;
-
-#endif // PETSC_PCBDDCIMPL_H

@@ -3,8 +3,7 @@
  optimization.
 */
 
-#ifndef __TAO_OWLQN_H
-#define __TAO_OWLQN_H
+#pragma once
 #include <petsc/private/taoimpl.h>
 
 typedef struct {
@@ -29,5 +28,3 @@ typedef struct {
 static PetscErrorCode ProjDirect_OWLQN(Vec d, Vec g);
 
 static PetscErrorCode ComputePseudoGrad_OWLQN(Vec x, Vec gv, PetscReal lambda);
-
-#endif /* ifndef __TAO_OWLQN_H */

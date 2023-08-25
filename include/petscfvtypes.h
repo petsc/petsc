@@ -1,5 +1,4 @@
-#ifndef PETSCFVTYPES_H
-#define PETSCFVTYPES_H
+#pragma once
 
 /* SUBMANSEC = FV */
 
@@ -59,5 +58,3 @@ typedef struct {
   PetscReal centroid[3];
   PetscReal volume;
 } PetscFVCellGeom;
-
-#endif

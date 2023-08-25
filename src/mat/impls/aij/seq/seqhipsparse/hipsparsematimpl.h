@@ -1,8 +1,7 @@
 /* Portions of this code are under:
    Copyright (c) 2022 Advanced Micro Devices, Inc. All rights reserved.
 */
-#ifndef PETSC_HIPSPARSEMATIMPL_H
-#define PETSC_HIPSPARSEMATIMPL_H
+#pragma once
 
 #include <petscpkg_version.h>
 #include <../src/vec/vec/impls/seq/cupm/vecseqcupm.hpp> /* for VecSeq_CUPM */
@@ -308,5 +307,3 @@ static inline bool isHipMem(const void *data)
   PetscCallAbort(PETSC_COMM_SELF, impl::Interface<DeviceType::HIP>::PetscCUPMGetMemType(data, &mtype));
   PetscFunctionReturn(PetscMemTypeDevice(mtype));
 }
-
-#endif // PETSC_HIPSPARSEIMPL_H

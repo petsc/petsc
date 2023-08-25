@@ -1,5 +1,4 @@
-#ifndef MY_TEST_H_
-#define MY_TEST_H_
+#pragma once
 
 #include <AMReX_EBFabFactory.H>
 #include <AMReX_MLMG.H>
@@ -55,5 +54,3 @@ private:
     amrex::Vector<amrex::Array<amrex::MultiFab,AMREX_SPACEDIM> > bcoef;
     amrex::Vector<amrex::MultiFab> bcoef_eb;
 };
-
-#endif

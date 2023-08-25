@@ -1,8 +1,7 @@
 /*
     Contains all error handling interfaces for PETSc.
 */
-#ifndef PETSCERROR_H
-#define PETSCERROR_H
+#pragma once
 
 #include <petscmacros.h>
 #include <petscsystypes.h>
@@ -1768,5 +1767,3 @@ M*/
       PetscCheck(ierr_petsc_call_external_ == 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in %s(): error code %d", PetscStringize(func), ierr_petsc_call_external_); \
     } while (0)
 #endif /* PETSC_CLANG_STATIC_ANALYZER */
-
-#endif

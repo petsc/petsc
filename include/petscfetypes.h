@@ -1,5 +1,4 @@
-#ifndef PETSCFETYPES_H
-#define PETSCFETYPES_H
+#pragma once
 
 /* SUBMANSEC = FE */
 
@@ -24,5 +23,3 @@ typedef enum {
   PETSCFE_JACOBIAN_PRE,
   PETSCFE_JACOBIAN_DYN
 } PetscFEJacobianType;
-
-#endif

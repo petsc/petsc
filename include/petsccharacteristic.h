@@ -1,8 +1,7 @@
 /*
    Defines the interface functions for the method of characteristics solvers
 */
-#ifndef PETSCCHARACTERISTICS_H
-#define PETSCCHARACTERISTICS_H
+#pragma once
 
 #include <petscvec.h>
 #include <petscdmdatypes.h>
@@ -44,5 +43,3 @@ PETSC_EXTERN PetscErrorCode CharacteristicDestroy(Characteristic *);
 PETSC_EXTERN PetscFunctionList CharacteristicList;
 
 PETSC_EXTERN PetscErrorCode CharacteristicRegister(const char[], PetscErrorCode (*)(Characteristic));
-
-#endif /* PETSCCHARACTERISTICS_H */

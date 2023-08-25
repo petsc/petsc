@@ -1,6 +1,4 @@
-
-#ifndef __FMDOT_H
-#define __FMDOT_H
+#pragma once
 
 #include <petscsys.h>
 #if defined(PETSC_USE_FORTRAN_KERNEL_MDOT)
@@ -19,5 +17,4 @@ PETSC_EXTERN void fortranmdot4_(const void *, const void *, const void *, const 
 PETSC_EXTERN void fortranmdot3_(const void *, const void *, const void *, const void *, const PetscInt *, void *, void *, void *);
 PETSC_EXTERN void fortranmdot2_(const void *, const void *, const void *, const PetscInt *, void *, void *);
 PETSC_EXTERN void fortranmdot1_(const void *, const void *, const PetscInt *, void *);
-#endif
 #endif

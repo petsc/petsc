@@ -1,5 +1,4 @@
-#ifndef __VECIMPL_KOKKOS_HPP
-#define __VECIMPL_KOKKOS_HPP
+#pragma once
 
 /* types used by all petsc kokkos code */
 
@@ -119,4 +118,3 @@ using PetscIntKokkosViewHost   = Kokkos::View<PetscInt *, Kokkos::HostSpace>;
 using PetscIntKokkosDualView   = Kokkos::DualView<PetscInt *>;
 using PetscCountKokkosView     = Kokkos::View<PetscCount *, DefaultMemorySpace>;
 using PetscCountKokkosViewHost = Kokkos::View<PetscCount *, Kokkos::HostSpace>;
-#endif

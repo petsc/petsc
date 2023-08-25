@@ -1,3 +1,5 @@
+#pragma once
+
 #include <petscds.h>
 #include <petsc/private/dmimpl.h>
 #include <petsc/private/dmforestimpl.h>

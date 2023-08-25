@@ -1,8 +1,7 @@
 /*
      PetscViewers are objects where other objects can be looked at or stored.
 */
-#ifndef PETSCVIEWER_H
-#define PETSCVIEWER_H
+#pragma once
 
 #include <petscsys.h>
 #include <petscviewertypes.h>
@@ -466,5 +465,3 @@ typedef struct _n_PetscViewers *PetscViewers;
 PETSC_EXTERN PetscErrorCode     PetscViewersCreate(MPI_Comm, PetscViewers *);
 PETSC_EXTERN PetscErrorCode     PetscViewersDestroy(PetscViewers *);
 PETSC_EXTERN PetscErrorCode     PetscViewersGetViewer(PetscViewers, PetscInt, PetscViewer *);
-
-#endif

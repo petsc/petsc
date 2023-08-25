@@ -1,5 +1,4 @@
-#ifndef PETSCDEVICE_INTERFACE_INTERNAL_HPP
-#define PETSCDEVICE_INTERFACE_INTERNAL_HPP
+#pragma once
 
 #include <petsc/private/deviceimpl.h>
 
@@ -192,5 +191,3 @@ inline PetscErrorCode PetscDeviceContextQueryOptions_Internal(PetscOptionItems *
 }
 
 } // anonymous namespace
-
-#endif // PETSCDEVICE_INTERFACE_INTERNAL_HPP

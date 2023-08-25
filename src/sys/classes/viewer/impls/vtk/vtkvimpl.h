@@ -1,5 +1,4 @@
-#ifndef _VTKVIMPL_H
-#define _VTKVIMPL_H
+#pragma once
 
 #include <petsc/private/viewerimpl.h> /*I   "petscsys.h"   I*/
 
@@ -53,4 +52,3 @@ static inline PetscErrorCode PetscViewerVTKSanitizeName_Internal(char name[], si
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-#endif

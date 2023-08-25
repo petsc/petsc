@@ -1,5 +1,4 @@
-#ifndef PETSCDEVICE_H
-#define PETSCDEVICE_H
+#pragma once
 
 #include <petscdevicetypes.h>
 #include <petscviewertypes.h>
@@ -343,5 +342,3 @@ M*/
 `PetscDeviceArrayCopy()`, `PetscDeviceMemset()`
 M*/
 #define PetscDeviceArrayZero(dctx, ptr, n) PetscDeviceMemset((dctx), (ptr), 0, (size_t)(n) * sizeof(*(ptr)))
-
-#endif /* PETSCDEVICE_H */

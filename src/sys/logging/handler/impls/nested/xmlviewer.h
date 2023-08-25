@@ -1,8 +1,5 @@
-#ifndef PETSCXMLVIEWER_H
-#define PETSCXMLVIEWER_H
+#pragma once
 
 #include "lognested.h"
 
 PETSC_INTERN PetscErrorCode PetscLogView_Nested_XML(PetscLogHandler_Nested, PetscNestedEventTree *, PetscViewer);
-
-#endif

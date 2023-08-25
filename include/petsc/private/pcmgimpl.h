@@ -1,8 +1,7 @@
 /*
       Data structure used for Multigrid preconditioner.
 */
-#ifndef PETSC_PCMGIMPL_H
-#define PETSC_PCMGIMPL_H
+#pragma once
 
 #include <petsc/private/pcimpl.h>
 #include <petscksp.h>
@@ -100,4 +99,3 @@ PETSC_INTERN PetscErrorCode PCMGKCycle_Private(PC, PC_MG_Levels **, PetscBool, P
 PETSC_INTERN PetscErrorCode PCMGMCycle_Private(PC, PC_MG_Levels **, PetscBool, PetscBool, PCRichardsonConvergedReason *);
 
 PETSC_INTERN PetscErrorCode PCMGGDSWCreateCoarseSpace_Private(PC, PetscInt, DM, KSP, PetscInt, Mat, Mat *);
-#endif // PETSC_PCMGIMPL_H

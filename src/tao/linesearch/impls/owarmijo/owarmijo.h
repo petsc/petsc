@@ -1,5 +1,4 @@
-#ifndef __TAOLINESEARCH_OWARMIJO_H
-#define __TAOLINESEARCH_OWARMIJO_H
+#pragma once
 
 /* Context for an Armijo (nonmonotone) linesearch for orthant wise unconstrained
  minimization.
@@ -84,5 +83,3 @@ typedef struct {
 } TaoLineSearch_OWARMIJO;
 
 static PetscErrorCode ProjWork_OWLQN(Vec w, Vec x, Vec gv, PetscReal *gdx);
-
-#endif

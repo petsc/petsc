@@ -1,5 +1,4 @@
-#ifndef _DT_H
-#define _DT_H
+#pragma once
 
 #include <petscdt.h>
 
@@ -19,5 +18,3 @@ struct _p_PetscQuadrature {
 #endif
 
 PETSC_EXTERN PetscBool PetscDTGaussQuadratureNewton_Internal;
-
-#endif

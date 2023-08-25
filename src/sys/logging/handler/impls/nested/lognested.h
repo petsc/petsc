@@ -1,10 +1,9 @@
-#if !defined(PETSC_LOGNESTED_H)
-  #define PETSC_LOGNESTED_H
+#pragma once
 
-  #include <petsc/private/loghandlerimpl.h>
-  #include <petsc/private/logimpl.h>
-  #include <../src/sys/logging/handler/impls/default/logdefault.h>
-  #include <petsc/private/hashmap.h>
+#include <petsc/private/loghandlerimpl.h>
+#include <petsc/private/logimpl.h>
+#include <../src/sys/logging/handler/impls/default/logdefault.h>
+#include <petsc/private/hashmap.h>
 
 typedef int NestedId;
 
@@ -23,8 +22,8 @@ struct _n_NestedIdPair {
   NestedId      leaf;
 };
 
-  #define NestedIdPairHash(key)     PetscHashCombine(PetscHash_UInt32((PetscHash32_t)((key).root)), PetscHash_UInt32((PetscHash32_t)((key).leaf)))
-  #define NestedIdPairEqual(k1, k2) (((k1).root == (k2).root) && ((k1).leaf == (k2).leaf))
+#define NestedIdPairHash(key)     PetscHashCombine(PetscHash_UInt32((PetscHash32_t)((key).root)), PetscHash_UInt32((PetscHash32_t)((key).leaf)))
+#define NestedIdPairEqual(k1, k2) (((k1).root == (k2).root) && ((k1).leaf == (k2).leaf))
 
 PETSC_HASH_MAP(NestedHash, NestedIdPair, PetscLogEvent, NestedIdPairHash, NestedIdPairEqual, -1)
 
@@ -59,5 +58,3 @@ typedef enum {
 
 PETSC_INTERN PetscErrorCode PetscLogHandlerView_Nested_XML(PetscLogHandler_Nested, PetscNestedEventTree *, PetscViewer);
 PETSC_INTERN PetscErrorCode PetscLogHandlerView_Nested_Flamegraph(PetscLogHandler_Nested, PetscNestedEventTree *, PetscViewer);
-
-#endif // #define PETSC_LOGNESTED_H

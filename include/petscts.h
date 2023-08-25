@@ -2,8 +2,7 @@
    User interface for the timestepping package. This package
    is for use in solving time-dependent PDEs.
 */
-#ifndef PETSCTS_H
-#define PETSCTS_H
+#pragma once
 
 #include <petscsnes.h>
 #include <petscconvest.h>
@@ -1390,4 +1389,3 @@ PETSC_EXTERN PetscErrorCode TSComputeExactError(TS, Vec, Vec);
 PETSC_EXTERN PetscErrorCode PetscConvEstUseTS(PetscConvEst, PetscBool);
 
 PETSC_EXTERN PetscErrorCode TSSetMatStructure(TS, MatStructure);
-#endif

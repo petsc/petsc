@@ -1,5 +1,4 @@
-#ifndef PETSCTAOLINESEARCH_H
-#define PETSCTAOLINESEARCH_H
+#pragma once
 
 /* SUBMANSEC = Tao */
 
@@ -118,5 +117,3 @@ PETSC_EXTERN PetscErrorCode TaoLineSearchFinalizePackage(void);
 
 PETSC_EXTERN PetscErrorCode TaoLineSearchRegister(const char[], PetscErrorCode (*)(TaoLineSearch));
 PETSC_EXTERN PetscErrorCode TaoLineSearchUseTaoRoutines(TaoLineSearch, Tao);
-
-#endif

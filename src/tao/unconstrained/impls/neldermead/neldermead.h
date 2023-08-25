@@ -1,5 +1,4 @@
-#ifndef __TAO_NELDERMEAD_H
-#define __TAO_NELDERMEAD_H
+#pragma once
 #include <petsc/private/taoimpl.h>
 
 typedef struct {
@@ -26,5 +25,3 @@ typedef struct {
   PetscInt noutcontract;
 
 } TAO_NelderMead;
-
-#endif /* ifndef __TAO_NELDERMEAD_H */

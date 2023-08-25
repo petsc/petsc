@@ -1,5 +1,4 @@
-#ifndef PETSC_PREPROCESSOR_MACROS_H
-#define PETSC_PREPROCESSOR_MACROS_H
+#pragma once
 
 #include <petscconf.h>
 #include <petscconf_poison.h> /* for PetscDefined() error checking */
@@ -1284,5 +1283,3 @@ static inline constexpr std::size_t PETSC_STATIC_ARRAY_LENGTH(const T &) noexcep
 #define PETSC_DEPRECATED_TYPEDEF(major, minor, subminor, replacement, ...)  PETSC_DEPRECATED_IDENTIFIER(PETSC_DEPRECATED_TYPEDEF_BASE, major, minor, subminor, replacement, __VA_ARGS__)
 #define PETSC_DEPRECATED_ENUM(major, minor, subminor, replacement, ...)     PETSC_DEPRECATED_IDENTIFIER(PETSC_DEPRECATED_ENUM_BASE, major, minor, subminor, replacement, __VA_ARGS__)
 #define PETSC_DEPRECATED_MACRO(major, minor, subminor, replacement, ...)    PETSC_DEPRECATED_IDENTIFIER(PETSC_DEPRECATED_MACRO_BASE, major, minor, subminor, replacement, __VA_ARGS__)
-
-#endif /* PETSC_PREPROCESSOR_MACROS_H */

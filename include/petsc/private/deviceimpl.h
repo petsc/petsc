@@ -1,5 +1,4 @@
-#ifndef PETSCDEVICEIMPL_H
-#define PETSCDEVICEIMPL_H
+#pragma once
 
 #include <petscdevice.h>
 #include <petsc/private/petscimpl.h>
@@ -428,5 +427,3 @@ static inline PetscErrorCode PetscDeviceContextSynchronizeIfGlobalBlocking_Inter
   if (stream_type == PETSC_STREAM_GLOBAL_BLOCKING) PetscCall(PetscDeviceContextSynchronize(dctx));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-
-#endif /* PETSCDEVICEIMPL_H */

@@ -1,5 +1,4 @@
-#ifndef __BJACOBI_H
-#define __BJACOBI_H
+#pragma once
 /*
     Private data for block Jacobi and block Gauss-Seidel preconditioner.
 */
@@ -44,4 +43,3 @@ typedef struct {
   Mat          submats;    /* matrix and optional preconditioner matrix belong to a subcommunicator */
   PetscSubcomm psubcomm;
 } PC_BJacobi_Multiproc;
-#endif

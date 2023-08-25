@@ -1,5 +1,4 @@
-#ifndef PETSC_DMSTAG_H
-#define PETSC_DMSTAG_H
+#pragma once
 
 #include <petscdm.h>
 #include <petscdmproduct.h>
@@ -175,5 +174,3 @@ PETSC_DEPRECATED_FUNCTION(3, 13, 0, "DMStagVecRestoreArrayRead()", ) static inli
 {
   return DMStagVecRestoreArrayRead(dm, v, a);
 }
-
-#endif // PETSC_DMSTAG_H

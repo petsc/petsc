@@ -1,5 +1,4 @@
-#ifndef __VIEWERHDF5IMPL_H
-#define __VIEWERHDF5IMPL_H
+#pragma once
 
 #if defined(H5_VERSION)
   #error "viewerhdf5impl.h must be included *before* any other HDF5 headers"
@@ -70,5 +69,4 @@ static inline PetscErrorCode PetscViewerHDF5ResetAttachedDMPlexStorageVersion(Pe
   PetscCall(PetscObjectCompose((PetscObject)v, DMPLEX_STORAGE_VERSION_WRITING_KEY, NULL));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-#endif
 #endif

@@ -1,5 +1,4 @@
-#ifndef PETSCHPDDM_H
-#define PETSCHPDDM_H
+#pragma once
 
 #include <petsc/private/kspimpl.h>
 
@@ -63,5 +62,3 @@ PETSC_INTERN PetscErrorCode KSPSolve_HPDDM_CUDA_Private(KSP_HPDDM *, const Petsc
 #endif
 
 #include <HPDDM.hpp>
-
-#endif /* PETSCHPDDM_H */

@@ -1,6 +1,4 @@
-
-#ifndef _SWARMIMPL_H
-#define _SWARMIMPL_H
+#pragma once
 
 #include <petscvec.h>     /*I "petscvec.h" I*/
 #include <petscmat.h>     /*I      "petscmat.h"          I*/
@@ -71,5 +69,3 @@ struct _p_DMSwarmSort {
 PETSC_INTERN PetscErrorCode DMSwarmMigrate_Push_Basic(DM, PetscBool);
 PETSC_INTERN PetscErrorCode DMSwarmMigrate_CellDMScatter(DM, PetscBool);
 PETSC_INTERN PetscErrorCode DMSwarmMigrate_CellDMExact(DM, PetscBool);
-
-#endif /* _SWARMIMPL_H */

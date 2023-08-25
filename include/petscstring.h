@@ -1,5 +1,4 @@
-#ifndef PETSC_STRING_H
-#define PETSC_STRING_H
+#pragma once
 
 #include <petscsystypes.h>
 #include <petscerror.h>
@@ -865,5 +864,3 @@ M*/
 .seealso: `PetscMemcpy()`, `PetscMemcmp()`, `PetscMemzero()`, `PetscArraycmp()`, `PetscArraycpy()`, `PetscMemmove()`, `PetscStrallocpy()`, `PetscArraymove()`
 M*/
 #define PetscArrayzero(str1, cnt) PetscMemzero((str1), (size_t)(cnt) * sizeof(*(str1)))
-
-#endif // PETSC_STRING_H

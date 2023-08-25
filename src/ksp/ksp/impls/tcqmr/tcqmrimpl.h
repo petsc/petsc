@@ -1,3 +1,4 @@
+#pragma once
 /*
    Private include for tcqmr package
  */

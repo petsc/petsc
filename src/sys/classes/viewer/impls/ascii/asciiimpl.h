@@ -1,3 +1,4 @@
+#pragma once
 
 #include <petsc/private/viewerimpl.h> /*I     "petscsys.h"   I*/
 #include <../src/sys/fileio/mprint.h> /* defines the queue datastructures and variables */

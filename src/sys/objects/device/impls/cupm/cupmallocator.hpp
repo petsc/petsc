@@ -1,5 +1,4 @@
-#ifndef CUPMALLOCATOR_HPP
-#define CUPMALLOCATOR_HPP
+#pragma once
 
 #include <petsc/private/cpp/object_pool.hpp>
 
@@ -154,5 +153,3 @@ inline PetscErrorCode DeviceAllocator<T, P>::set_canary(value_type *ptr, size_ty
 } // namespace device
 
 } // namespace Petsc
-
-#endif // CUPMALLOCATOR_HPP

@@ -1,5 +1,4 @@
-#ifndef PETSCDMDA_H
-#define PETSCDMDA_H
+#pragma once
 
 #include <petscdm.h>
 #include <petscdmdatypes.h>
@@ -228,5 +227,3 @@ PETSC_EXTERN PetscErrorCode DMDAConvertToCell(DM, MatStencil, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMDASetVertexCoordinates(DM, PetscReal, PetscReal, PetscReal, PetscReal, PetscReal, PetscReal);
 PETSC_EXTERN PetscErrorCode DMDASetPreallocationCenterDimension(DM, PetscInt);
 PETSC_EXTERN PetscErrorCode DMDAGetPreallocationCenterDimension(DM, PetscInt *);
-
-#endif

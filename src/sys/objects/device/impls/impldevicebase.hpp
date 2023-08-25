@@ -1,5 +1,4 @@
-#ifndef IMPLDEVICEBASE_HPP
-#define IMPLDEVICEBASE_HPP
+#pragma once
 
 #include <petsc/private/deviceimpl.h>
 #include <petsc/private/viewerimpl.h>
@@ -245,5 +244,3 @@ inline PetscErrorCode DeviceBase<D>::PetscOptionDeviceAll(MPI_Comm comm, std::pa
   using base_name = ::Petsc::device::impl::DeviceBase<T>; \
   friend base_name; \
   using base_name::base_name
-
-#endif // IMPLDEVICEBASE_HPP

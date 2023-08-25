@@ -1,5 +1,4 @@
-#ifndef PETSC_PGMRESIMPL_H
-#define PETSC_PGMRESIMPL_H
+#pragma once
 
 #define KSPGMRES_NO_MACROS
 #include <../src/ksp/ksp/impls/gmres/gmresimpl.h>
@@ -24,5 +23,3 @@ typedef struct {
 
 #define PGMRES_DELTA_DIRECTIONS 10
 #define PGMRES_DEFAULT_MAXK     30
-
-#endif // PETSC_PGMRESIMPL_H

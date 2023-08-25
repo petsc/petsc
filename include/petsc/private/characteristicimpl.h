@@ -1,6 +1,4 @@
-
-#ifndef __CHARACTERISTICIMPL_H
-#define __CHARACTERISTICIMPL_H
+#pragma once
 
 #include <petsccharacteristic.h>
 #include <petsc/private/petscimpl.h>
@@ -89,5 +87,3 @@ PETSC_EXTERN PetscErrorCode CharacteristicSendCoordinatesBegin(Characteristic);
 PETSC_EXTERN PetscErrorCode CharacteristicSendCoordinatesEnd(Characteristic);
 PETSC_EXTERN PetscErrorCode CharacteristicGetValuesBegin(Characteristic);
 PETSC_EXTERN PetscErrorCode CharacteristicGetValuesEnd(Characteristic);
-
-#endif /*__CHARACTERISTICIMPL_H*/

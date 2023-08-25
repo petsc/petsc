@@ -3,8 +3,7 @@
    implementation of the graphics functionality in PETSc.
 */
 
-#ifndef _XIMPL_H
-#define _XIMPL_H
+#pragma once
 #include <petsc/private/drawimpl.h>
 
 #include <X11/Xlib.h>
@@ -75,5 +74,3 @@ PETSC_INTERN PetscErrorCode PetscDrawXiQuickWindowFromWindow(PetscDraw_X *, Wind
 PETSC_INTERN PetscErrorCode PetscDrawXiQuickPixmap(PetscDraw_X *);
 PETSC_INTERN PetscErrorCode PetscDrawXiResizeWindow(PetscDraw_X *, int, int);
 PETSC_INTERN PetscErrorCode PetscDrawXiGetGeometry(PetscDraw_X *, int *, int *, int *, int *);
-
-#endif

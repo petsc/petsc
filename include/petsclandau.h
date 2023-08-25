@@ -1,5 +1,4 @@
-#ifndef PETSCLANDAU_H
-#define PETSCLANDAU_H
+#pragma once
 
 #include <petscdmplex.h> /*I      "petscdmplex.h"    I*/
 #include <petscts.h>
@@ -221,5 +220,3 @@ PETSC_EXTERN PetscErrorCode LandauKokkosDestroyMatMaps(P4estVertexMaps *, PetscI
 PETSC_EXTERN PetscErrorCode LandauKokkosStaticDataSet(DM, const PetscInt, const PetscInt, const PetscInt, const PetscInt, PetscInt[], PetscInt[], PetscInt[], PetscReal[], PetscReal[], PetscReal[], PetscReal[], PetscReal[], PetscReal[], PetscReal[], PetscReal[], PetscReal[], LandauStaticData *);
 PETSC_EXTERN PetscErrorCode LandauKokkosStaticDataClear(LandauStaticData *);
 #endif
-
-#endif /* PETSCLANDAU_H */

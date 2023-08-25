@@ -2,8 +2,7 @@
      PetscViewers are objects where other objects can be looked at or stored.
 */
 
-#ifndef PETSCVIEWERTYPES_H
-#define PETSCVIEWERTYPES_H
+#pragma once
 
 /* SUBMANSEC = Viewer */
 
@@ -16,5 +15,3 @@
 .seealso: [](sec_viewers), `PetscViewerType`, `PETSCVIEWERASCII`, `PetscViewerCreate()`, `PetscViewerSetType()`
 S*/
 typedef struct _p_PetscViewer *PetscViewer;
-
-#endif

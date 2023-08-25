@@ -1,6 +1,4 @@
-
-#ifndef PETSCF90_H
-#define PETSCF90_H
+#pragma once
 #include <petsc/private/fortranimpl.h>
 
 /* PGI compilers pass in f90 pointers as 2 arguments */
@@ -57,5 +55,3 @@ PETSC_EXTERN PetscErrorCode F90Array4dDestroy(F90Array4d *, MPI_Datatype PETSC_F
   Output Parameter:
 .   ptr - Fortran 90 pointer
 */
-
-#endif

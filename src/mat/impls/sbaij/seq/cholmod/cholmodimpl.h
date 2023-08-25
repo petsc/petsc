@@ -1,5 +1,4 @@
-#ifndef PETSC_CHOLMODIMPL_H
-#define PETSC_CHOLMODIMPL_H
+#pragma once
 
 #include <petscsys.h>
 
@@ -65,4 +64,3 @@ PETSC_INTERN PetscErrorCode VecWrapCholmod(Vec, PetscInt, cholmod_dense *);
 PETSC_INTERN PetscErrorCode VecUnWrapCholmod(Vec, PetscInt, cholmod_dense *);
 PETSC_INTERN PetscErrorCode MatDenseWrapCholmod(Mat, PetscInt, cholmod_dense *);
 PETSC_INTERN PetscErrorCode MatDenseUnWrapCholmod(Mat, PetscInt, cholmod_dense *);
-#endif // PETSC_CHOLMODIMPL_H

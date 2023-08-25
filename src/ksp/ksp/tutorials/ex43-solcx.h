@@ -1,3 +1,4 @@
+#pragma once
 
 static void evaluate_solCx(PetscReal pos[], PetscReal _eta_A, PetscReal _eta_B, /* Input parameters: density, viscosity A, viscosity B */
                            PetscReal _x_c, int _n,                              /* Input parameters: viscosity jump location, wavenumber in z */

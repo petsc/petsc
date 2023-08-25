@@ -2,8 +2,7 @@
 Context for a Newton line search method (unconstrained minimization)
 */
 
-#ifndef __TAO_NLS_H
-#define __TAO_NLS_H
+#pragma once
 #include <petsc/private/taoimpl.h>
 
 typedef struct {
@@ -171,5 +170,3 @@ typedef struct {
   PetscInt ksp_iter;
   PetscInt ksp_othr;
 } TAO_NLS;
-
-#endif /* if !defined(__TAO_NLS_H) */

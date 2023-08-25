@@ -1,5 +1,4 @@
-#ifndef VECTAGGERANDOR_H
-#define VECTAGGERANDOR_H
+#pragma once
 #include <petsc/private/vecimpl.h>
 
 typedef struct {
@@ -13,4 +12,3 @@ PETSC_INTERN PetscErrorCode VecTaggerSetSubs_AndOr(VecTagger, PetscInt, VecTagge
 PETSC_INTERN PetscErrorCode VecTaggerCreate_AndOr(VecTagger);
 PETSC_INTERN PetscErrorCode VecTaggerAndOrIsSubBox_Private(PetscInt, const VecTaggerBox *, const VecTaggerBox *, PetscBool *);
 PETSC_INTERN PetscErrorCode VecTaggerAndOrIntersect_Private(PetscInt, const VecTaggerBox *, const VecTaggerBox *, VecTaggerBox *, PetscBool *);
-#endif

@@ -1,5 +1,4 @@
-#ifndef PIPE_H
-#define PIPE_H
+#pragma once
 
 #define GRAV                9.806
 #define PIPE_CHARACTERISTIC 10000000.0
@@ -59,4 +58,3 @@ extern PetscErrorCode PipeMonitor(TS, PetscInt, PetscReal, Vec, void *);
 
 extern PetscErrorCode PipeCreateJacobian(Pipe, Mat *, Mat *[]);
 extern PetscErrorCode PipeDestroyJacobian(Pipe);
-#endif

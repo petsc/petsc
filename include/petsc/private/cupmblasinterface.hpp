@@ -1,5 +1,4 @@
-#ifndef PETSCCUPMBLASINTERFACE_HPP
-#define PETSCCUPMBLASINTERFACE_HPP
+#pragma once
 
 #include <petsc/private/cupminterface.hpp>
 #include <petsc/private/petscadvancedmacros.h>
@@ -488,5 +487,3 @@ extern template struct PETSC_SINGLE_LIBRARY_VISIBILITY_INTERNAL BlasInterface<De
 } // namespace device
 
 } // namespace Petsc
-
-#endif // PETSCCUPMBLASINTERFACE_HPP

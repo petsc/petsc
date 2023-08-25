@@ -1,5 +1,4 @@
-#ifndef __TAO_LCL_H
-#define __TAO_LCL_H
+#pragma once
 
 #include <petsc/private/taoimpl.h>
 #include <petscis.h>
@@ -80,5 +79,3 @@ typedef struct {
   PetscReal tau[4];
 
 } TAO_LCL;
-
-#endif

@@ -1,5 +1,4 @@
-#ifndef PETSC_MEMORY_POISON_H
-#define PETSC_MEMORY_POISON_H
+#pragma once
 
 #include <petsc/private/petscimpl.h>
 
@@ -181,4 +180,3 @@ static inline PetscErrorCode PetscIsRegionPoisoned(const void *ptr, size_t size,
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-#endif // PETSC_MEMORY_POISON_H

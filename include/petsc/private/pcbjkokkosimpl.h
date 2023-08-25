@@ -1,3 +1,5 @@
+#pragma once
+
 #include <petscvec_kokkos.hpp>
 #include <petsc/private/pcimpl.h>
 #include <petsc/private/deviceimpl.h>

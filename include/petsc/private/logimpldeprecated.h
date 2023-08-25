@@ -1,5 +1,4 @@
-#ifndef PETSCLOGIMPLDEPRECATED_H
-#define PETSCLOGIMPLDEPRECATED_H
+#pragma once
 
 #include <petscsystypes.h>
 #include <petsclogtypes.h>
@@ -725,4 +724,3 @@ PETSC_DEPRECATED_FUNCTION(3, 20, 0, "nothing", "PetscStageLog is no longer used.
   (void)c;
   return PETSC_SUCCESS;
 }
-#endif /* #define PETSCLOGIMPLDEPRECATED_H */
