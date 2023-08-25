@@ -1099,7 +1099,7 @@ PetscErrorCode PetscDeviceContextViewFromOptions(PetscDeviceContext dctx, PetscO
   PetscDeviceContextGetDeviceType(dctx, &type);
 
   if (type == PETSC_DEVICE_CUDA) {
-    cudsStream_t stream = *(cudaStream_t*)handle;
+    cudaStream_t stream = *(cudaStream_t *)handle;
 
     my_cuda_kernel<<<1, 2, 3, stream>>>();
   }
