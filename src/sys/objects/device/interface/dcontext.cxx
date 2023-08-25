@@ -1067,9 +1067,11 @@ PetscErrorCode PetscDeviceContextViewFromOptions(PetscDeviceContext dctx, PetscO
 /*@C
   PetscDeviceContextGetStreamHandle - Return a handle to the underlying stream of the current device context
 
-  Input Parameters:
-+ dctx   - The `PetscDeviceContext` to get the stream from
-- handle - A handle to the stream
+  Input Parameter:
+. dctx - The `PetscDeviceContext` to get the stream from
+
+  Output Parameter:
+. handle - A pointer to the handle to the stream
 
   Level: developer
 
@@ -1104,16 +1106,26 @@ PetscErrorCode PetscDeviceContextViewFromOptions(PetscDeviceContext dctx, PetscO
     my_cuda_kernel<<<1, 2, 3, stream>>>();
   }
 .ve
+  Alternatively, if type of `PetscDeviceContext` is known (for example `PETSC_DEVICE_HIP`), the
+  user may pass in a pointer to stream handle directly\:
+.vb
+  hipStream_t *stream;
+
+  // note the cast to void **
+  PetscDeviceContextGetStreamHandle(dctx, (void **)&stream);
+  // note the dereference
+  my_hip_kernel<<<1, 2, 3, *stream>>>();
+.ve
 
 .N ASYNC_API
 
 .seealso: `PetscDeviceContext`
 @*/
-PetscErrorCode PetscDeviceContextGetStreamHandle(PetscDeviceContext dctx, void *handle)
+PetscErrorCode PetscDeviceContextGetStreamHandle(PetscDeviceContext dctx, void **handle)
 {
   PetscFunctionBegin;
   PetscCall(PetscDeviceContextGetOptionalNullContext_Internal(&dctx));
   PetscAssertPointer(handle, 2);
-  PetscCall(PetscDeviceContextGetStreamHandle_Internal(dctx, (void **)handle));
+  PetscCall(PetscDeviceContextGetStreamHandle_Internal(dctx, handle));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
