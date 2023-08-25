@@ -3159,7 +3159,7 @@ static PetscErrorCode MatRetrieveValues_SeqBAIJ(Mat mat)
 PETSC_INTERN PetscErrorCode MatConvert_SeqBAIJ_SeqAIJ(Mat, MatType, MatReuse, Mat *);
 PETSC_INTERN PetscErrorCode MatConvert_SeqBAIJ_SeqSBAIJ(Mat, MatType, MatReuse, Mat *);
 
-PetscErrorCode MatSeqBAIJSetPreallocation_SeqBAIJ(Mat B, PetscInt bs, PetscInt nz, PetscInt *nnz)
+PetscErrorCode MatSeqBAIJSetPreallocation_SeqBAIJ(Mat B, PetscInt bs, PetscInt nz, const PetscInt nnz[])
 {
   Mat_SeqBAIJ *b = (Mat_SeqBAIJ *)B->data;
   PetscInt     i, mbs, nbs, bs2;

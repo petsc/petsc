@@ -277,7 +277,7 @@ static PetscErrorCode PCBJacobiGetSubKSP_BJacobi(PC pc, PetscInt *n_local, Petsc
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode PCBJacobiSetTotalBlocks_BJacobi(PC pc, PetscInt blocks, PetscInt *lens)
+static PetscErrorCode PCBJacobiSetTotalBlocks_BJacobi(PC pc, PetscInt blocks, const PetscInt *lens)
 {
   PC_BJacobi *jac = (PC_BJacobi *)pc->data;
 

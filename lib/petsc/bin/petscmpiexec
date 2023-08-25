@@ -87,7 +87,7 @@ qrun=`echo ${qrun} | sed -e "s,\\${PETSC_DIR},${PETSC_DIR},"`
 
 if [ ${valgrind} = "1" ]; then
   VALGRIND_CMD=`which valgrind`
-  VALGRIND_OPTIONS="-q --tool=memcheck  --num-callers=20 --track-origins=yes --suppressions=${PETSC_DIR}/share/petsc/valgrind/petsc-val.supp --error-exitcode=10 ${PETSCVALGRIND_OPTIONS}"
+  VALGRIND_OPTIONS="-q --tool=memcheck  --num-callers=20 --track-origins=yes --suppressions=${PETSC_DIR}/share/petsc/suppressions/valgrind --error-exitcode=10 ${PETSCVALGRIND_OPTIONS}"
   if [ ${debugger} = "1" ]; then
     VALGRIND_CMD="xterm -e ${VALGRIND_CMD}"
     VALGRIND_OPTIONS="${VALGRIND_OPTIONS} --db-attach=yes"

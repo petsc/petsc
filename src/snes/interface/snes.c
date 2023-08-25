@@ -5255,8 +5255,9 @@ PetscErrorCode SNESKSPGetParametersEW(SNES snes, PetscInt *version, PetscReal *r
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode KSPPreSolve_SNESEW(KSP ksp, Vec b, Vec x, SNES snes)
+PetscErrorCode KSPPreSolve_SNESEW(KSP ksp, Vec b, Vec x, void *ctx)
 {
+  SNES       snes = (SNES)ctx;
   SNESKSPEW *kctx = (SNESKSPEW *)snes->kspconvctx;
   PetscReal  rtol = PETSC_DEFAULT, stol;
 
@@ -5308,8 +5309,9 @@ PetscErrorCode KSPPreSolve_SNESEW(KSP ksp, Vec b, Vec x, SNES snes)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode KSPPostSolve_SNESEW(KSP ksp, Vec b, Vec x, SNES snes)
+PetscErrorCode KSPPostSolve_SNESEW(KSP ksp, Vec b, Vec x, void *ctx)
 {
+  SNES       snes = (SNES)ctx;
   SNESKSPEW *kctx = (SNESKSPEW *)snes->kspconvctx;
   PCSide     pcside;
   Vec        lres;
@@ -5380,8 +5382,8 @@ PetscErrorCode SNESGetKSP(SNES snes, KSP *ksp)
     PetscCall(KSPCreate(PetscObjectComm((PetscObject)snes), &snes->ksp));
     PetscCall(PetscObjectIncrementTabLevel((PetscObject)snes->ksp, (PetscObject)snes, 1));
 
-    PetscCall(KSPSetPreSolve(snes->ksp, (PetscErrorCode(*)(KSP, Vec, Vec, void *))KSPPreSolve_SNESEW, snes));
-    PetscCall(KSPSetPostSolve(snes->ksp, (PetscErrorCode(*)(KSP, Vec, Vec, void *))KSPPostSolve_SNESEW, snes));
+    PetscCall(KSPSetPreSolve(snes->ksp, KSPPreSolve_SNESEW, snes));
+    PetscCall(KSPSetPostSolve(snes->ksp, KSPPostSolve_SNESEW, snes));
 
     PetscCall(KSPMonitorSetFromOptions(snes->ksp, "-snes_monitor_ksp", "snes_preconditioned_residual", snes));
     PetscCall(PetscObjectSetOptions((PetscObject)snes->ksp, ((PetscObject)snes)->options));

@@ -1526,20 +1526,22 @@ PETSC_INTERN PetscErrorCode MatMatMultNumericAdd_SeqAIJ_SeqDense(Mat A, Mat B, M
   PetscCall(MatDenseGetLDA(C, &clda));
   am4 = 4 * clda;
   bm4 = 4 * bm;
-  b1  = b;
-  b2  = b1 + bm;
-  b3  = b2 + bm;
-  b4  = b3 + bm;
-  c1  = c;
-  c2  = c1 + clda;
-  c3  = c2 + clda;
-  c4  = c3 + clda;
+  if (b) {
+    b1 = b;
+    b2 = b1 + bm;
+    b3 = b2 + bm;
+    b4 = b3 + bm;
+  } else b1 = b2 = b3 = b4 = NULL;
+  c1 = c;
+  c2 = c1 + clda;
+  c3 = c2 + clda;
+  c4 = c3 + clda;
   for (col = 0; col < (cn / 4) * 4; col += 4) { /* over columns of C */
     for (i = 0; i < am; i++) {                  /* over rows of A in those columns */
       r1 = r2 = r3 = r4 = 0.0;
       n                 = a->i[i + 1] - a->i[i];
-      aj                = a->j + a->i[i];
-      aa                = av + a->i[i];
+      aj                = a->j ? a->j + a->i[i] : NULL;
+      aa                = av ? av + a->i[i] : NULL;
       for (j = 0; j < n; j++) {
         const PetscScalar aatmp = aa[j];
         const PetscInt    ajtmp = aj[j];
@@ -1560,10 +1562,12 @@ PETSC_INTERN PetscErrorCode MatMatMultNumericAdd_SeqAIJ_SeqDense(Mat A, Mat B, M
         c4[i] = r4;
       }
     }
-    b1 += bm4;
-    b2 += bm4;
-    b3 += bm4;
-    b4 += bm4;
+    if (b) {
+      b1 += bm4;
+      b2 += bm4;
+      b3 += bm4;
+      b4 += bm4;
+    }
     c1 += am4;
     c2 += am4;
     c3 += am4;
@@ -1607,8 +1611,8 @@ PETSC_INTERN PetscErrorCode MatMatMultNumericAdd_SeqAIJ_SeqDense(Mat A, Mat B, M
       for (i = 0; i < am; i++) {
         r1 = r2 = r3 = 0.0;
         n            = a->i[i + 1] - a->i[i];
-        aj           = a->j + a->i[i];
-        aa           = av + a->i[i];
+        aj           = a->j ? a->j + a->i[i] : NULL;
+        aa           = av ? av + a->i[i] : NULL;
         for (j = 0; j < n; j++) {
           const PetscScalar aatmp = aa[j];
           const PetscInt    ajtmp = aj[j];

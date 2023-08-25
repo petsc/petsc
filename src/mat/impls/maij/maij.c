@@ -279,8 +279,8 @@ PETSC_FORCE_INLINE static inline PetscErrorCode MatMultTranspose_MatMultTranspos
 
   for (PetscInt i = 0; i < m; i++) {
     const PetscInt     a_ii = a_i[i];
-    const PetscInt    *idx  = a_j + a_ii;
-    const PetscScalar *v    = a_a + a_ii;
+    const PetscInt    *idx  = a_j ? a_j + a_ii : NULL;
+    const PetscScalar *v    = a_a ? a_a + a_ii : NULL;
     const PetscInt     n    = a_i[i + 1] - a_ii;
     PetscScalar        alpha[MAT_SEQMAIJ_MAX_TEMPLATE_SIZE];
 

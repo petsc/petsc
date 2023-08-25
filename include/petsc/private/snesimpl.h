@@ -267,7 +267,6 @@ PETSC_EXTERN PetscErrorCode DMSNESCheck_Internal(SNES, DM, Vec);
 
 PETSC_EXTERN PetscLogEvent SNES_Solve;
 PETSC_EXTERN PetscLogEvent SNES_SetUp;
-PETSC_EXTERN PetscLogEvent SNES_LineSearch;
 PETSC_EXTERN PetscLogEvent SNES_FunctionEval;
 PETSC_EXTERN PetscLogEvent SNES_JacobianEval;
 PETSC_EXTERN PetscLogEvent SNES_NGSEval;
@@ -279,8 +278,8 @@ PETSC_INTERN PetscBool  SNEScite;
 PETSC_INTERN const char SNESCitation[];
 
 /* Used by TAOBNK solvers */
-PETSC_EXTERN PetscErrorCode KSPPostSolve_SNESEW(KSP, Vec, Vec, SNES);
-PETSC_EXTERN PetscErrorCode KSPPreSolve_SNESEW(KSP, Vec, Vec, SNES);
+PETSC_EXTERN PetscErrorCode KSPPostSolve_SNESEW(KSP, Vec, Vec, void *);
+PETSC_EXTERN PetscErrorCode KSPPreSolve_SNESEW(KSP, Vec, Vec, void *);
 PETSC_EXTERN PetscErrorCode SNESEWSetFromOptions_Private(SNESKSPEW *, PetscBool, MPI_Comm, const char *);
 
 /*

@@ -99,7 +99,7 @@ PetscErrorCode PetscGatherMessageLengths(MPI_Comm comm, PetscMPIInt nsends, Pets
 
   /* cannot use PetscMalloc3() here because in the call to MPI_Waitall() they MUST be contiguous */
   PetscCall(PetscMalloc2(nrecvs + nsends, &r_waits, nrecvs + nsends, &w_status));
-  s_waits = r_waits + nrecvs;
+  if (nrecvs + nsends) s_waits = r_waits + nrecvs;
 
   /* Post the Irecv to get the message length-info */
   PetscCall(PetscMalloc1(nrecvs, olengths));
@@ -177,7 +177,7 @@ PetscErrorCode PetscGatherMessageLengths_Private(MPI_Comm comm, PetscMPIInt nsen
 
   /* cannot use PetscMalloc3() here because in the call to MPI_Waitall() they MUST be contiguous */
   PetscCall(PetscMalloc2(nrecvs + nsends, &r_waits, nrecvs + nsends, &w_status));
-  s_waits = r_waits + nrecvs;
+  if (r_waits) s_waits = r_waits + nrecvs;
 
   /* Post the Irecv to get the message length-info */
   PetscCall(PetscMalloc1(nrecvs, olengths));
