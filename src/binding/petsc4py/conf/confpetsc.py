@@ -130,7 +130,7 @@ def cython_run(
             return
     finally:
         os.chdir(cwd)
-    require = 'Cython >= %s' % VERSION
+    require = 'Cython == %s' % VERSION
     if setuptools and not cython_chk(VERSION, verbose=False):
         if sys.modules.get('Cython'):
             removed = getattr(sys.modules['Cython'], '__version__', '')
