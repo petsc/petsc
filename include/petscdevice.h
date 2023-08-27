@@ -78,7 +78,7 @@ PETSC_EXTERN PetscErrorCode PetscDeviceContextView(PetscDeviceContext, PetscView
 PETSC_EXTERN PetscErrorCode PetscDeviceContextViewFromOptions(PetscDeviceContext, PetscObject, const char name[]);
 PETSC_EXTERN PetscErrorCode PetscDeviceContextGetCurrentContext(PetscDeviceContext *);
 PETSC_EXTERN PetscErrorCode PetscDeviceContextSetCurrentContext(PetscDeviceContext);
-PETSC_EXTERN PetscErrorCode PetscDeviceContextGetStreamHandle(PetscDeviceContext, void *);
+PETSC_EXTERN PetscErrorCode PetscDeviceContextGetStreamHandle(PetscDeviceContext, void **);
 #else
   #define PetscDeviceContextCreate(dctx)                                                                            (*(dctx) = PETSC_NULLPTR, PETSC_SUCCESS)
   #define PetscDeviceContextDestroy(dctx)                                                                           (*(dctx) = PETSC_NULLPTR, PETSC_SUCCESS)
