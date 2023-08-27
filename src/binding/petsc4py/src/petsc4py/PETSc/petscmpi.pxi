@@ -2,12 +2,12 @@
 
 cdef extern from * nogil:
 
-    MPI_Comm MPI_COMM_NULL
-    MPI_Comm MPI_COMM_SELF
-    MPI_Comm MPI_COMM_WORLD
+    const MPI_Comm MPI_COMM_NULL
+    const MPI_Comm MPI_COMM_SELF
+    const MPI_Comm MPI_COMM_WORLD
 
-    MPI_Datatype MPI_DATATYPE_NULL
-    MPI_Op       MPI_OP_NULL
+    const MPI_Datatype MPI_DATATYPE_NULL
+    const MPI_Op       MPI_OP_NULL
 
     enum: MPI_IDENT
     enum: MPI_CONGRUENT
@@ -41,7 +41,9 @@ ctypedef object        PyMPICommNew(MPI_Comm)
 ctypedef MPI_Datatype* PyMPIDatatypeGet(object) except NULL
 ctypedef MPI_Op*       PyMPIOpGet(object) except NULL
 
-cdef inline MPI_Comm mpi4py_Comm_Get(object comm) except *:
+cdef inline MPI_Comm mpi4py_Comm_Get(
+    object comm,
+) except? MPI_COMM_NULL:
     from mpi4py import MPI
     cdef PyMPICommGet *commget = \
         <PyMPICommGet*> Cython_ImportFunction(
@@ -59,7 +61,9 @@ cdef inline object mpi4py_Comm_New(MPI_Comm comm):
     if commnew == NULL: return None
     return commnew(comm)
 
-cdef inline MPI_Datatype mpi4py_Datatype_Get(object datatype) except *:
+cdef inline MPI_Datatype mpi4py_Datatype_Get(
+    object datatype,
+) except? MPI_DATATYPE_NULL:
     from mpi4py import MPI
     cdef PyMPIDatatypeGet *datatypeget = \
         <PyMPIDatatypeGet*> Cython_ImportFunction(
@@ -69,7 +73,9 @@ cdef inline MPI_Datatype mpi4py_Datatype_Get(object datatype) except *:
     if ptr == NULL: return MPI_DATATYPE_NULL
     return ptr[0]
 
-cdef inline MPI_Op mpi4py_Op_Get(object op) except *:
+cdef inline MPI_Op mpi4py_Op_Get(
+    object op,
+) except? MPI_OP_NULL:
     from mpi4py import MPI
     cdef PyMPIOpGet *opget = \
         <PyMPIOpGet*> Cython_ImportFunction(
@@ -90,7 +96,9 @@ cdef inline PetscErrorCode PetscCommDEALLOC(MPI_Comm* comm):
     if (<int>PetscFinalizeCalled): return PETSC_SUCCESS
     return PetscCommDestroy(&tmp)
 
-cdef inline MPI_Comm def_Comm(object comm, MPI_Comm defv) except *:
+cdef inline MPI_Comm def_Comm(
+    object comm, MPI_Comm defv,
+) except? MPI_COMM_NULL:
     cdef MPI_Comm retv = MPI_COMM_NULL
     if comm is None:
         retv = defv
