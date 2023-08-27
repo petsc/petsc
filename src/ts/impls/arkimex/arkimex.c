@@ -1517,7 +1517,7 @@ static PetscErrorCode TSStep_ARKIMEX(TS ts)
        F(tn,xn,xdot) = 0
      for the explicit first stage */
   if (dirk && tab->explicit_first_stage && ts->steprestart) {
-    ark->scoeff = 0.0;
+    ark->scoeff = PETSC_MAX_REAL;
     PetscCall(VecCopy(ts->vec_sol, Z));
     PetscCall(TSGetSNES(ts, &snes));
     PetscCall(SNESSolve(snes, NULL, Ydot0));
@@ -1965,7 +1965,6 @@ static PetscErrorCode SNESTSFormFunction_ARKIMEX(SNES snes, Vec X, Vec F, TS ts)
   TS_ARKIMEX *ark = (TS_ARKIMEX *)ts->data;
   DM          dm, dmsave;
   Vec         Z, Ydot;
-  PetscReal   shift = ark->scoeff / ts->time_step;
 
   PetscFunctionBegin;
   PetscCall(SNESGetDM(snes, &dm));
@@ -1973,10 +1972,11 @@ static PetscErrorCode SNESTSFormFunction_ARKIMEX(SNES snes, Vec X, Vec F, TS ts)
   dmsave = ts->dm;
   ts->dm = dm;
 
-  if (ark->scoeff == 0.0) {
+  if (ark->scoeff == PETSC_MAX_REAL) {
     /* We are solving F(t,x_n,xdot) = 0 to start the method */
     PetscCall(TSComputeIFunction(ts, ark->stage_time, Z, X, F, ark->imex));
   } else {
+    PetscReal shift = ark->scoeff / ts->time_step;
     PetscCall(VecAXPBYPCZ(Ydot, -shift, shift, 0, Z, X)); /* Ydot = shift*(X-Z) */
     PetscCall(TSComputeIFunction(ts, ark->stage_time, X, Ydot, F, ark->imex));
   }
@@ -1991,7 +1991,7 @@ static PetscErrorCode SNESTSFormJacobian_ARKIMEX(SNES snes, Vec X, Mat A, Mat B,
   TS_ARKIMEX *ark = (TS_ARKIMEX *)ts->data;
   DM          dm, dmsave;
   Vec         Ydot, Z;
-  PetscReal   shift = ark->scoeff / ts->time_step;
+  PetscReal   shift;
 
   PetscFunctionBegin;
   PetscCall(SNESGetDM(snes, &dm));
@@ -2000,7 +2000,7 @@ static PetscErrorCode SNESTSFormJacobian_ARKIMEX(SNES snes, Vec X, Mat A, Mat B,
   dmsave = ts->dm;
   ts->dm = dm;
 
-  if (ark->scoeff == 0.0) {
+  if (ark->scoeff == PETSC_MAX_REAL) {
     /* We are solving F(t,x_n,xdot) = 0 to start the method, we only only dF/dXdot
        Jed's proposal is to compute with a very large shift and scale back the matrix */
     shift = 1.0 / PETSC_MACHINE_EPSILON;
@@ -2008,6 +2008,7 @@ static PetscErrorCode SNESTSFormJacobian_ARKIMEX(SNES snes, Vec X, Mat A, Mat B,
     PetscCall(MatScale(B, PETSC_MACHINE_EPSILON));
     if (A != B) PetscCall(MatScale(A, PETSC_MACHINE_EPSILON));
   } else {
+    shift = ark->scoeff / ts->time_step;
     PetscCall(TSComputeIJacobian(ts, ark->stage_time, X, Ydot, shift, A, B, ark->imex));
   }
   ts->dm = dmsave;
