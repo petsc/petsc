@@ -21,7 +21,7 @@ cdef api object PyPetscComm_New(MPI_Comm arg):
     retv.comm = arg
     return retv
 
-cdef api MPI_Comm PyPetscComm_Get(object arg) except *:
+cdef api MPI_Comm PyPetscComm_Get(object arg) except? MPI_COMM_NULL:
     cdef MPI_Comm retv = MPI_COMM_NULL
     cdef Comm ob = <Comm?> arg
     retv = ob.comm
