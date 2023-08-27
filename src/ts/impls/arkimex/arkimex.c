@@ -1673,12 +1673,12 @@ static PetscErrorCode TSStep_ARKIMEX(TS ts)
 
   The complete adjoint equations are
   (shift*I - dHdu) lambda_s[i]   = 1/at[i][i] (
-    (b_i dGdU + bt[i] dHdU) lambda_{n+1} + dGdU \sum_{j=i+1}^s a[j][i] lambda_s[j]
-    + dHdU \sum_{j=i+1}^s at[j][i] lambda_s[j]),  i = s-1,...,0
+    dGdU (b_i lambda_{n+1} + \sum_{j=i+1}^s a[j][i] lambda_s[j])
+    + dHdU (bt[i] lambda_{n+1} +  \sum_{j=i+1}^s at[j][i] lambda_s[j])), i = s-1,...,0
   lambda_n = lambda_{n+1} + \sum_{j=1}^s lambda_s[j]
   mu_{n+1}[i]   = h (at[i][i] dHdP lambda_s[i]
-    + (b_i dGdP + bt[i] dHdP) lambda_{n+1} + dGdP \sum_{j=i+1}^s a[j][i] lambda_s[j]
-    + dHdP \sum_{j=i+1}^s at[j][i] lambda_s[j]), i = s-1,...,0
+    + dGdP (b_i lambda_{n+1} + \sum_{j=i+1}^s a[j][i] lambda_s[j])
+    + dHdP (bt[i] lambda_{n+1} + \sum_{j=i+1}^s at[j][i] lambda_s[j])), i = s-1,...,0
   mu_n = mu_{n+1} + \sum_{j=1}^s mu_{n+1}[j]
   where shift = 1/(at[i][i]*h)
 
@@ -1722,13 +1722,18 @@ static PetscErrorCode TSAdjointStep_ARKIMEX(TS ts)
       PetscCall(TSComputeIJacobianP(ts, ark->stage_time, Y[i], Ydot, ark->scoeff / adjoint_time_step, ts->Jacp, PETSC_TRUE)); // get dFdP (-dHdP), Ydot not really used since mass matrix is identity
       PetscCall(TSComputeRHSJacobianP(ts, stage_time_ex, Y[i], ts->Jacprhs));                                                 // get dGdP
     }
+    /* Build RHS (stored in VecsDeltaLam) for first-order adjoint */
     for (nadj = 0; nadj < ts->numcost; nadj++) {
-      /* Build RHS (stored in VecsDeltaLam) for first-order adjoint */
+      /* build implicit part */
+      PetscCall(VecSet(VecsSensiTemp[nadj], 0));
       if (s - i - 1 > 0) {
         /* Temp = -\sum_{j=i+1}^s at[j][i] lambda_s[j] */
         for (j = i + 1; j < s; j++) w[j - i - 1] = -At[j * s + i];
-        PetscCall(VecSet(VecsSensiTemp[nadj], 0));
         PetscCall(VecMAXPY(VecsSensiTemp[nadj], s - i - 1, w, &VecsDeltaLam[nadj * s + i + 1]));
+      }
+      /* Temp = Temp - bt[i] lambda_{n+1} */
+      PetscCall(VecAXPY(VecsSensiTemp[nadj], -bt[i], ts->vecs_sensi[nadj]));
+      if (bt[i] || s - i - 1 > 0) {
         /* (shift I - dHdU) Temp */
         PetscCall(MatMultTranspose(Jim, VecsSensiTemp[nadj], VecsDeltaLam[nadj * s + i]));
         /* cancel out shift Temp where shift=-scoeff/h */
@@ -1736,13 +1741,22 @@ static PetscErrorCode TSAdjointStep_ARKIMEX(TS ts)
         if (ts->vecs_sensip) {
           /* - dHdP Temp */
           PetscCall(MatMultTranspose(ts->Jacp, VecsSensiTemp[nadj], VecsSensiPTemp[nadj]));
-          /* mu_n += h dHdP Temp */
-          PetscCall(VecAXPY(ts->vecs_sensip[nadj], -adjoint_time_step, VecsSensiPTemp[nadj]));
+          /* mu_n += -h dHdP Temp */
+          PetscCall(VecAXPY(ts->vecs_sensip[nadj], adjoint_time_step, VecsSensiPTemp[nadj]));
         }
+      } else {
+        PetscCall(VecSet(VecsDeltaLam[nadj * s + i], 0)); // make sure it is initialized
+      }
+      /* build explicit part */
+      PetscCall(VecSet(VecsSensiTemp[nadj], 0));
+      if (s - i - 1 > 0) {
         /* Temp = \sum_{j=i+1}^s a[j][i] lambda_s[j] */
         for (j = i + 1; j < s; j++) w[j - i - 1] = A[j * s + i];
-        PetscCall(VecSet(VecsSensiTemp[nadj], 0));
         PetscCall(VecMAXPY(VecsSensiTemp[nadj], s - i - 1, w, &VecsDeltaLam[nadj * s + i + 1]));
+      }
+      /* Temp = Temp + b[i] lambda_{n+1} */
+      PetscCall(VecAXPY(VecsSensiTemp[nadj], b[i], ts->vecs_sensi[nadj]));
+      if (b[i] || s - i - 1 > 0) {
         /* dGdU Temp */
         PetscCall(MatMultTransposeAdd(Jex, VecsSensiTemp[nadj], VecsDeltaLam[nadj * s + i], VecsDeltaLam[nadj * s + i]));
         if (ts->vecs_sensip) {
@@ -1750,34 +1764,6 @@ static PetscErrorCode TSAdjointStep_ARKIMEX(TS ts)
           PetscCall(MatMultTranspose(ts->Jacprhs, VecsSensiTemp[nadj], VecsSensiPTemp[nadj]));
           /* mu_n += h dGdP Temp */
           PetscCall(VecAXPY(ts->vecs_sensip[nadj], adjoint_time_step, VecsSensiPTemp[nadj]));
-        }
-      } else {
-        PetscCall(VecSet(VecsDeltaLam[nadj * s + i], 0)); // make sure it is initialized
-      }
-      if (bt[i]) { // bt[i] dHdU lambda_{n+1}
-        /* (shift I - dHdU)^T lambda_{n+1} */
-        PetscCall(MatMultTranspose(Jim, ts->vecs_sensi[nadj], VecsSensiTemp[nadj]));
-        /* -bt[i] (shift I - dHdU)^T lambda_{n+1} */
-        PetscCall(VecAXPY(VecsDeltaLam[nadj * s + i], -bt[i], VecsSensiTemp[nadj]));
-        /* cancel out -bt[i] shift lambda_{n+1} */
-        PetscCall(VecAXPY(VecsDeltaLam[nadj * s + i], -bt[i] * ark->scoeff / adjoint_time_step, ts->vecs_sensi[nadj]));
-        if (ts->vecs_sensip) {
-          /* -dHdP lambda_{n+1} */
-          PetscCall(MatMultTranspose(ts->Jacp, ts->vecs_sensi[nadj], VecsSensiPTemp[nadj]));
-          /* mu_n += h bt[i] dHdP lambda_{n+1} */
-          PetscCall(VecAXPY(ts->vecs_sensip[nadj], -bt[i] * adjoint_time_step, VecsSensiPTemp[nadj]));
-        }
-      }
-      if (b[i]) { // b[i] dGdU lambda_{n+1}
-        /* dGdU lambda_{n+1} */
-        PetscCall(MatMultTranspose(Jex, ts->vecs_sensi[nadj], VecsSensiTemp[nadj]));
-        /* b[i] dGdU lambda_{n+1} */
-        PetscCall(VecAXPY(VecsDeltaLam[nadj * s + i], b[i], VecsSensiTemp[nadj]));
-        if (ts->vecs_sensip) {
-          /* dGdP lambda_{n+1} */
-          PetscCall(MatMultTranspose(ts->Jacprhs, ts->vecs_sensi[nadj], VecsSensiPTemp[nadj]));
-          /* mu_n += h b[i] dGdP lambda_{n+1} */
-          PetscCall(VecAXPY(ts->vecs_sensip[nadj], b[i] * adjoint_time_step, VecsSensiPTemp[nadj]));
         }
       }
       /* Build LHS for first-order adjoint */
