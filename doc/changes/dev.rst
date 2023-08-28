@@ -111,9 +111,9 @@ Changes: Development
 .. rubric:: Mat:
 
 - Add ``MatCreateDenseFromVecType()``
-- Add support for calling ``MatDuplicate()`` on a matirx preallocated via ``MatSetPreallocationCOO()``, and then ``MatSetValuesCOO()`` on the new matrix
+- Add support for calling ``MatDuplicate()`` on a matrix preallocated via ``MatSetPreallocationCOO()``, and then ``MatSetValuesCOO()`` on the new matrix
 - Remove ``MATSOLVERSPARSEELEMENTAL`` since it is no longer functional
-- Add MATSELLCUDA. It supports fast ``MatMult()``, ``MatMultTranspose()`` and ``MatMultAdd()`` on GPUs
+- Add ``MATSELLCUDA``. It supports fast ``MatMult()``, ``MatMultTranspose()``, and ``MatMultAdd()`` on GPUs
 - Add support for ``MAT_FACTOR_LU`` and ``MAT_FACTOR_CHOLESKY`` with ``MATSOLVERMUMPS`` for ``MATNEST``
 - ``MatGetFactor()`` can now return ``NULL`` for some combinations of matrices and solvers types. This is to support those combinations that can only be inspected at runtime (i.e. MatNest with AIJ blocks vs MatNest with SHELL blocks)
 - Remove ``MatSetValuesDevice()``, ``MatCUSPARSEGetDeviceMatWrite()``, ``MatKokkosGetDeviceMatWrite``
@@ -140,6 +140,7 @@ Changes: Development
 - Add ``PCSetKSPNestLevel()`` and ``PCSetKSPNestLevel()``
 - Refactor ``PCMPI`` to be a private system used automatically when ``-mpi_linear_solver_server`` is used. The ``KSP`` and ``PC`` objects that solve the system now inherit any prefix provided
   initially with ``KSPSetPrefix()`` and do not require the previously required ``mpi_`` prefix
+- Add option ``-fieldsplit_1_pc_hpddm_schur_precondition`` to use ``PCHPDDM`` on the Schur complements from ``PCFIELDSPLIT``
 
 .. rubric:: KSP:
 

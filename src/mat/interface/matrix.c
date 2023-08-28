@@ -5910,7 +5910,7 @@ PetscErrorCode MatAssemblyEnd(Mat mat, MatAssemblyType type)
 
   Developer Notes:
   `MAT_SYMMETRY_ETERNAL`, `MAT_STRUCTURAL_SYMMETRY_ETERNAL`, and `MAT_SPD_ETERNAL` are used by `MatAssemblyEnd()` and in other
-  places where otherwise the value of `MAT_SYMMETRIC`, `MAT_STRUCTURAL_SYMMETRIC` or `MAT_SPD` would need to be changed back
+  places where otherwise the value of `MAT_SYMMETRIC`, `MAT_STRUCTURALLY_SYMMETRIC` or `MAT_SPD` would need to be changed back
   to `PETSC_BOOL3_UNKNOWN` because the matrix values had changed so the code cannot be certain that the related property had
   not changed.
 
@@ -5978,7 +5978,7 @@ PetscErrorCode MatSetOption(Mat mat, MatOption op, PetscBool flg)
     if (flg) mat->structural_symmetry_eternal = PETSC_TRUE;
     break;
   case MAT_STRUCTURAL_SYMMETRY_ETERNAL:
-    PetscCheck(mat->structurally_symmetric != PETSC_BOOL3_UNKNOWN, PetscObjectComm((PetscObject)mat), PETSC_ERR_ARG_WRONGSTATE, "Cannot set MAT_STRUCTURAL_SYMMETRY_ETERNAL without first setting MAT_STRUCTURAL_SYMMETRIC to true or false");
+    PetscCheck(mat->structurally_symmetric != PETSC_BOOL3_UNKNOWN, PetscObjectComm((PetscObject)mat), PETSC_ERR_ARG_WRONGSTATE, "Cannot set MAT_STRUCTURAL_SYMMETRY_ETERNAL without first setting MAT_STRUCTURALLY_SYMMETRIC to true or false");
     mat->structural_symmetry_eternal = flg;
     break;
   case MAT_SPD_ETERNAL:
