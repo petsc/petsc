@@ -5,12 +5,15 @@ static const char help[] = "Test initialization and migration with swarm.\n";
 
 typedef struct {
   PetscReal L[3]; /* Dimensions of the mesh bounding box */
+  PetscBool setClosurePermutation;
 } AppCtx;
 
 static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 {
   PetscFunctionBeginUser;
   PetscOptionsBegin(comm, "", "Swarm configuration options", "DMSWARM");
+  options->setClosurePermutation = PETSC_FALSE;
+  PetscCall(PetscOptionsBool("-set_closure_permutation", "Set the closure permutation to tensor ordering", NULL, options->setClosurePermutation, &options->setClosurePermutation, NULL));
   PetscOptionsEnd();
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -25,6 +28,14 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, AppCtx *user)
   PetscCall(DMSetType(*dm, DMPLEX));
   PetscCall(DMSetFromOptions(*dm));
   PetscCall(DMViewFromOptions(*dm, NULL, "-dm_view"));
+  if (user->setClosurePermutation) {
+    DM cdm;
+
+    // -- Set tensor permutation
+    PetscCall(DMGetCoordinateDM(*dm, &cdm));
+    PetscCall(DMPlexSetClosurePermutationTensor(*dm, PETSC_DETERMINE, NULL));
+    PetscCall(DMPlexSetClosurePermutationTensor(cdm, PETSC_DETERMINE, NULL));
+  }
   PetscCall(DMGetCoordinateDim(*dm, &cdim));
   PetscCall(DMGetBoundingBox(*dm, low, high));
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "dim: %" PetscInt_FMT "\n", cdim));
@@ -205,18 +216,30 @@ int main(int argc, char **argv)
   # be sent to the process which has the highest rank that has that portion of the domain.
   test:
     suffix: swarm_migrate_hash
-    requires: ctetgen
     nsize: 2
     args: -dm_plex_dim 3 -dm_plex_simplex 0 -dm_distribute_overlap 1 -dm_plex_box_faces 10,10,10\
           -dm_plex_box_lower 0.,0.,0. -dm_plex_box_upper 1.,1.,10. -dm_plex_box_bd none,none,none\
           -dm_plex_hash_location true
     filter: grep -v marker | grep -v atomic | grep -v usage
   test:
+    suffix: swarm_migrate_hash_tensor_permutation
+    nsize: 2
+    args: -dm_plex_dim 3 -dm_plex_simplex 0 -dm_distribute_overlap 1 -dm_plex_box_faces 10,10,10\
+          -dm_plex_box_lower 0.,0.,0. -dm_plex_box_upper 1.,1.,10. -dm_plex_box_bd none,none,none\
+          -dm_plex_hash_location true -set_closure_permutation
+    filter: grep -v marker | grep -v atomic | grep -v usage
+  test:
     suffix: swarm_migrate_scan
-    requires: ctetgen
     nsize: 2
     args: -dm_plex_dim 3 -dm_plex_simplex 0 -dm_distribute_overlap 1 -dm_plex_box_faces 10,10,10\
           -dm_plex_box_lower 0.,0.,0. -dm_plex_box_upper 1.,1.,10. -dm_plex_box_bd none,none,none\
           -dm_plex_hash_location false
+    filter: grep -v marker | grep -v atomic | grep -v usage
+  test:
+    suffix: swarm_migrate_scan_tensor_permutation
+    nsize: 2
+    args: -dm_plex_dim 3 -dm_plex_simplex 0 -dm_distribute_overlap 1 -dm_plex_box_faces 10,10,10\
+          -dm_plex_box_lower 0.,0.,0. -dm_plex_box_upper 1.,1.,10. -dm_plex_box_bd none,none,none\
+          -dm_plex_hash_location false -set_closure_permutation
     filter: grep -v marker | grep -v atomic | grep -v usage
 TEST*/
