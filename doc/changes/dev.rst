@@ -19,6 +19,9 @@ Changes: Development
 .. rubric:: Configure/Build:
 
 - Add support for external-packages to prefer tarball download for regular use - as currently all packages  prefer git clones. MPICH is a package using this feature. Here MPICH tarball will be downloaded for regular use. However on providing ``--download-mpich-commit=main`` option - configure download and builds from MPICH git repository
+- Add support for external package SLATE, optional dependency for STRUMPACK
+- Add support for external package ZFP, optional dependency for STRUMPACK
+- Add support for external package ButterflyPACK, optional dependency for STRUMPACK
 
 .. rubric:: Sys:
 
@@ -130,6 +133,10 @@ Changes: Development
 - Add ``MatEliminateZeros()`` implementations for ``MatBAIJ`` and ``MatSBAIJ``
 - Deprecate ``MatChop()`` in favor of ``MatFilter()``, with two additional Boolean parameters to compress the underlying storage and keep or discard near-zero diagonal coefficients
 - Add ``MatCreateFromOptions()``
+- Add ``MatSTRUMPACKGetReordering()``, ``MatSTRUMPACKSetGeometricNxyz()``, ``MatSTRUMPACKSetGeometricComponents()``, ``MatSTRUMPACKSetGeometricWidth()``, ``MatSTRUMPACKGetColPerm()``, ``MatSTRUMPACKSetGPU()``, ``MatSTRUMPACKGetGPU()``, ``MatSTRUMPACKSetCompression()``, ``MatSTRUMPACKGetCompression()``, ``MatSTRUMPACKSetCompRelTol()``, ``MatSTRUMPACKGetCompRelTol()``, ``MatSTRUMPACKSetCompAbsTol()``, ``MatSTRUMPACKGetCompAbsTol()``, ``MatSTRUMPACKSetCompMinSepSize()``, ``MatSTRUMPACKGetCompMinSepSize()``, ``MatSTRUMPACKSetCompLeafSize()``, ``MatSTRUMPACKGetCompLeafSize()``, ``MatSTRUMPACKSetCompLossyPrecision()``, ``MatSTRUMPACKGetCompLossyPrecision()``, ``MatSTRUMPACKSetCompButterflyLevels()``, ``MatSTRUMPACKGetCompButterflyLevels()``
+- Add ``MAT_STRUMPACK_GEOMETRIC``, ``MAT_STRUMPACK_AMD``, ``MAT_STRUMPACK_MMD``, ``MAT_STRUMPACK_AND``, ``MAT_STRUMPACK_MLF``, ``MAT_STRUMPACK_SPECTRAL`` to ``MatSTRUMPACKReordering``
+- Add ``MatSTRUMPACKCompressionType``
+- Remove ``MatSTRUMPACKSetHSSLeafSize()``, ``MatSTRUMPACKSetHSSMaxRank()``, ``MatSTRUMPACKSetHSSMinSize()``, ``MatSTRUMPACKSetHSSMinSepSize()``, ``MatSTRUMPACKSetHSSAbsTol()``, ``MatSTRUMPACKSetHSSRelCompTol()``, ``MatSTRUMPACKSetHSSRelTol()``
 
 .. rubric:: MatCoarsen:
 
