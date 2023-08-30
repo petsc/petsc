@@ -572,13 +572,15 @@ static PetscErrorCode MatMult_SeqSELLCUDA(Mat A, Vec xx, Vec yy)
   PetscScalar       *y;
   const PetscScalar *x;
   PetscInt           nrows = A->rmap->n, sliceheight = a->sliceheight;
-  PetscInt           chunksperblock, nchunks, *chunk_slice_map;
   MatScalar         *aval;
   PetscInt          *acolidx;
   PetscInt          *sliidx;
   PetscInt           nblocks, blocksize = 512; /* blocksize must be multiple of SLICE_HEIGHT*32 */
   dim3               block2(256, 2), block4(128, 4), block8(64, 8), block16(32, 16), block32(16, 32);
-  PetscReal          maxoveravg;
+#if !defined(PETSC_USE_COMPLEX)
+  PetscInt  chunksperblock, nchunks, *chunk_slice_map;
+  PetscReal maxoveravg;
+#endif
 
   PetscFunctionBegin;
   PetscCheck(32 % sliceheight == 0, PETSC_COMM_SELF, PETSC_ERR_SUP, "The kernel requires a slice height be a divisor of 32, but the input matrix has a slice height of %" PetscInt_FMT, sliceheight);
@@ -712,18 +714,21 @@ static PetscErrorCode MatMultAdd_SeqSELLCUDA(Mat A, Vec xx, Vec yy, Vec zz)
   PetscScalar       *z;
   const PetscScalar *y, *x;
   PetscInt           nrows = A->rmap->n, sliceheight = a->sliceheight;
-  PetscInt           chunksperblock, nchunks, *chunk_slice_map;
   MatScalar         *aval    = cudastruct->val;
   PetscInt          *acolidx = cudastruct->colidx;
   PetscInt          *sliidx  = cudastruct->sliidx;
-  PetscReal          maxoveravg;
+#if !defined(PETSC_USE_COMPLEX)
+  PetscReal maxoveravg;
+  PetscInt  chunksperblock, nchunks, *chunk_slice_map;
+  PetscInt  blocky = cudastruct->blocky;
+#endif
 
   PetscFunctionBegin;
   PetscCheck(32 % sliceheight == 0, PETSC_COMM_SELF, PETSC_ERR_SUP, "The kernel requires a slice height be a divisor of 32, but the input matrix has a slice height of %" PetscInt_FMT, sliceheight);
   PetscCheck(!(cudastruct->kernelchoice >= 2 && cudastruct->kernelchoice <= 6 && sliceheight != SLICE_HEIGHT), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Kernel choices {2-6} requires the slice height of the matrix be 16, but the current slice height is %" PetscInt_FMT, sliceheight);
   PetscCall(MatSeqSELLCUDACopyToGPU(A));
   if (a->nz) {
-    PetscInt blocky = cudastruct->blocky, nblocks, blocksize = 512;
+    PetscInt nblocks, blocksize = 512;
     dim3     block2(256, 2), block4(128, 4), block8(64, 8), block16(32, 16), block32(16, 32);
     PetscCall(VecCUDAGetArrayRead(xx, &x));
     PetscCall(VecCUDAGetArrayRead(yy, &y));
