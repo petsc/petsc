@@ -2430,11 +2430,11 @@ PetscErrorCode PetscSectionLoad(PetscSection s, PetscViewer viewer)
   PetscSectionResetClosurePermutation - Remove any existing closure permutation
 
   Input Parameter:
-. section - The Section
+. section - The `PetscSection`
 
   Level: intermediate
 
-.seealso: PetscSectionSetClosurePermutation(), PetscSectionSetClosureIndex(), PetscSectionReset()
+.seealso: `PetscSectionSetClosurePermutation()`, `PetscSectionSetClosureIndex()`, `PetscSectionReset()`
 @*/
 PetscErrorCode PetscSectionResetClosurePermutation(PetscSection section)
 {

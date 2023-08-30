@@ -428,15 +428,27 @@ PetscErrorCode PetscFEIntegrateResidual_Basic(PetscDS ds, PetscFormKey key, Pets
       for (c = 0; c < T[field]->Nc; ++c)
         for (d = 0; d < dim; ++d) f1[(q * T[field]->Nc + c) * dim + d] *= w;
       if (debug) {
-        PetscCall(PetscPrintf(PETSC_COMM_SELF, "  quad point %" PetscInt_FMT " wt %g\n", q, (double)quadWeights[q]));
+        // LCOV_EXCL_START
+        PetscCall(PetscPrintf(PETSC_COMM_SELF, "  quad point %" PetscInt_FMT " wt %g x:", q, (double)quadWeights[q]));
+        for (c = 0; c < dE; ++c) PetscCall(PetscPrintf(PETSC_COMM_SELF, " %g", (double)fegeom.v[c]));
+        PetscCall(PetscPrintf(PETSC_COMM_SELF, "\n"));
         if (debug > 2) {
           PetscCall(PetscPrintf(PETSC_COMM_SELF, "  field %" PetscInt_FMT ":", field));
           for (c = 0; c < T[field]->Nc; ++c) PetscCall(PetscPrintf(PETSC_COMM_SELF, " %g", (double)PetscRealPart(u[uOff[field] + c])));
           PetscCall(PetscPrintf(PETSC_COMM_SELF, "\n"));
+          PetscCall(PetscPrintf(PETSC_COMM_SELF, "  field der %" PetscInt_FMT ":", field));
+          for (c = 0; c < T[field]->Nc * dE; ++c) PetscCall(PetscPrintf(PETSC_COMM_SELF, " %g", (double)PetscRealPart(u_x[uOff[field] + c])));
+          PetscCall(PetscPrintf(PETSC_COMM_SELF, "\n"));
           PetscCall(PetscPrintf(PETSC_COMM_SELF, "  resid %" PetscInt_FMT ":", field));
           for (c = 0; c < T[field]->Nc; ++c) PetscCall(PetscPrintf(PETSC_COMM_SELF, " %g", (double)PetscRealPart(f0[q * T[field]->Nc + c])));
           PetscCall(PetscPrintf(PETSC_COMM_SELF, "\n"));
+          PetscCall(PetscPrintf(PETSC_COMM_SELF, "  res der %" PetscInt_FMT ":", field));
+          for (c = 0; c < T[field]->Nc; ++c) {
+            for (d = 0; d < dim; ++d) PetscCall(PetscPrintf(PETSC_COMM_SELF, " %g", (double)PetscRealPart(f1[(q * T[field]->Nc + c) * dim + d])));
+          }
+          PetscCall(PetscPrintf(PETSC_COMM_SELF, "\n"));
         }
+        // LCOV_EXCL_STOP
       }
     }
     PetscCall(PetscFEUpdateElementVec_Internal(fe, T[field], 0, basisReal, basisDerReal, e, cgeom, f0, f1, &elemVec[cOffset + fOffset]));

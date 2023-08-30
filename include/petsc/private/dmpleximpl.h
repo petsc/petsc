@@ -241,6 +241,9 @@ typedef struct {
   /* Metric */
   DMPlexMetricCtx *metricCtx;
 
+  /* FEM */
+  PetscBool useMatClPerm; /* Use the closure permutation when assembling matrices */
+
   /* Debugging */
   PetscBool printSetValues;
   PetscInt  printFEM;
@@ -300,6 +303,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerHDF5GetDMPlexStorageVersionWriting(PetscV
 #endif
 PETSC_EXTERN PetscErrorCode VecView_Plex_Local_CGNS(Vec, PetscViewer);
 
+PETSC_INTERN PetscErrorCode DMPlexVecGetClosure_Internal(DM, PetscSection, PetscBool, Vec, PetscInt, PetscInt *, PetscScalar *[]);
 PETSC_INTERN PetscErrorCode DMPlexVecGetClosureAtDepth_Internal(DM, PetscSection, Vec, PetscInt, PetscInt, PetscInt *, PetscScalar *[]);
 PETSC_INTERN PetscErrorCode DMPlexClosurePoints_Private(DM, PetscInt, const PetscInt[], IS *);
 PETSC_INTERN PetscErrorCode DMSetFromOptions_NonRefinement_Plex(DM, PetscOptionItems *);
@@ -786,7 +790,8 @@ PETSC_INTERN PetscErrorCode DMPlexGetPointDualSpaceFEM(DM, PetscInt, PetscInt, P
 PETSC_INTERN PetscErrorCode DMPlexGetIndicesPoint_Internal(PetscSection, PetscBool, PetscInt, PetscInt, PetscInt *, PetscBool, const PetscInt[], const PetscInt[], PetscInt[]);
 PETSC_INTERN PetscErrorCode DMPlexGetIndicesPointFields_Internal(PetscSection, PetscBool, PetscInt, PetscInt, PetscInt[], PetscBool, const PetscInt ***, PetscInt, const PetscInt[], PetscInt[]);
 PETSC_INTERN PetscErrorCode DMPlexGetTransitiveClosure_Internal(DM, PetscInt, PetscInt, PetscBool, PetscInt *, PetscInt *[]);
-PETSC_INTERN PetscErrorCode DMPlexVecGetOrientedClosure_Internal(DM, PetscSection, Vec, PetscInt, PetscInt, PetscInt *, PetscScalar *[]);
+PETSC_INTERN PetscErrorCode DMPlexVecGetOrientedClosure_Internal(DM, PetscSection, PetscBool, Vec, PetscInt, PetscInt, PetscInt *, PetscScalar *[]);
+PETSC_INTERN PetscErrorCode DMPlexMatSetClosure_Internal(DM, PetscSection, PetscSection, PetscBool, Mat, PetscInt, const PetscScalar[], InsertMode);
 
 PETSC_EXTERN PetscErrorCode DMPlexGetAllCells_Internal(DM, IS *);
 PETSC_EXTERN PetscErrorCode DMSNESGetFEGeom(DMField, IS, PetscQuadrature, PetscBool, PetscFEGeom **);
