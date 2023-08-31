@@ -773,6 +773,7 @@ M*/
 
 PETSC_EXTERN PetscBool petscwaitonerrorflg;
 PETSC_EXTERN PetscBool petscindebugger;
+PETSC_EXTERN PetscBool petscabortmpifinalize;
 
 /*MC
    PETSCABORT - Call `MPI_Abort()` with an informative error code
@@ -819,7 +820,7 @@ void PETSCABORT(MPI_Comm, PetscErrorCode);
         PetscMPIInt size_; \
         ierr_petsc_abort_ = __VA_ARGS__; \
         MPI_Comm_size(comm, &size_); \
-        if (PetscCIEnabledPortableErrorOutput && size_ == PetscGlobalSize && ierr_petsc_abort_ != PETSC_ERR_SIG) { \
+        if (PetscCIEnabledPortableErrorOutput && (size_ == PetscGlobalSize || petscabortmpifinalize) && ierr_petsc_abort_ != PETSC_ERR_SIG) { \
           MPI_Finalize(); \
           exit(0); \
         } else if (PetscCIEnabledPortableErrorOutput && PetscGlobalSize == 1) { \

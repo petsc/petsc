@@ -6,6 +6,7 @@
   #include <unistd.h>
 #endif
 #include "err.h"
+#include <petsc/private/logimpl.h> // PETSC_TLS
 
 /*@C
   PetscIgnoreErrorHandler - Deprecated, use `PetscReturnErrorHandler()`. Ignores the error, allows program to continue as if error did not occur
@@ -140,6 +141,8 @@ static void PetscErrorPrintfNormal(void)
 
 PETSC_EXTERN PetscErrorCode PetscOptionsViewError(void);
 
+static PETSC_TLS PetscBool petsc_traceback_error_silent = PETSC_FALSE;
+
 /*@C
 
   PetscTraceBackErrorHandler - Default error handler routine that generates
@@ -179,7 +182,18 @@ PetscErrorCode PetscTraceBackErrorHandler(MPI_Comm comm, int line, const char *f
   (void)ctx;
   if (comm != PETSC_COMM_SELF) MPI_Comm_rank(comm, &rank);
 
-  if (rank == 0 && (!PetscCIEnabledPortableErrorOutput || PetscGlobalRank == 0)) {
+  // reinitialize the error handler when a new initializing error is detected
+  if (p != PETSC_ERROR_REPEAT) {
+    petsc_traceback_error_silent = PETSC_FALSE;
+    if (PetscCIEnabledPortableErrorOutput) {
+      PetscMPIInt size = 1;
+
+      if (comm != MPI_COMM_NULL) MPI_Comm_size(comm, &size);
+      petscabortmpifinalize = (size == PetscGlobalSize) ? PETSC_TRUE : PETSC_FALSE;
+    }
+  }
+
+  if (rank == 0 && (!PetscCIEnabledPortableErrorOutput || PetscGlobalRank == 0) && (p != PETSC_ERROR_REPEAT || !petsc_traceback_error_silent)) {
     static int cnt = 1;
 
     if (p == PETSC_ERROR_INITIAL) {
@@ -228,9 +242,24 @@ PetscErrorCode PetscTraceBackErrorHandler(MPI_Comm comm, int line, const char *f
       }
     }
   } else {
-    /* do not print error messages since process 0 will print them, sleep before aborting so will not accidentally kill process 0*/
-    ierr = PetscSleep(10.0);
-    exit(0);
+    // silence this process's stacktrace if it is not the root of an originating error
+    if (p != PETSC_ERROR_REPEAT && rank) petsc_traceback_error_silent = PETSC_TRUE;
+    if (fun) {
+      PetscBool ismain = PETSC_FALSE;
+
+      ierr = PetscStrncmp(fun, "main", 4, &ismain);
+      if (ismain && petsc_traceback_error_silent) {
+        /* This results from PetscError() being called in main: PETSCABORT()
+           will be called after the error handler.  But this thread is not the
+           root rank of the communicator that initialized the error.  So sleep
+           to allow the root thread to finish its printing.
+
+           (Unless this is running CI, in which case do not sleep because
+           we expect all processes to call MPI_Finalize() and make a clean
+           exit.) */
+        if (!PetscCIEnabledPortableErrorOutput) ierr = PetscSleep(10.0);
+      }
+    }
   }
   (void)ierr;
   return n;
