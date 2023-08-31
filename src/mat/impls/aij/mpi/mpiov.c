@@ -2375,7 +2375,7 @@ PetscErrorCode MatCreateSubMatrices_MPIAIJ_Local(Mat C, PetscInt ismax, const IS
             nzB    = b_i[row + 1] - b_i[row];
             ncols  = nzA + nzB;
             cworkA = a_j + a_i[row];
-            cworkB = b_j + b_i[row];
+            cworkB = b_j ? b_j + b_i[row] : NULL;
 
             /* load the column indices for this row into cols */
             cols = sbuf_aj_i + ct2;
@@ -2656,9 +2656,9 @@ PetscErrorCode MatCreateSubMatrices_MPIAIJ_Local(Mat C, PetscInt ismax, const IS
           nzA    = a_i[row + 1] - a_i[row];
           nzB    = b_i[row + 1] - b_i[row];
           ncols  = nzA + nzB;
-          cworkB = b_j + b_i[row];
+          cworkB = b_j ? b_j + b_i[row] : NULL;
           vworkA = a_a + a_i[row];
-          vworkB = b_a + b_i[row];
+          vworkB = b_a ? b_a + b_i[row] : NULL;
 
           /* load the column values for this row into vals*/
           vals = sbuf_aa_i + ct2;

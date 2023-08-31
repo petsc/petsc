@@ -8,6 +8,7 @@ fun:PetscSFDistributeSection
 fun:PetscFEIntegrateResidual_Basic
 fun:PetscFEIntegrateJacobian_Basic
 fun:PetscSFSetUp_Basic
+fun:PetscSortRealWithPermutation_Private
 src:bitmap.c
 src:src/mpi/coll/*
 src:src/mpid/ch3/*
