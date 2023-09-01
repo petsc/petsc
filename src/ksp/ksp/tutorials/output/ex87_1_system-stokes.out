@@ -1,5 +1,5 @@
   0 KSP Residual norm 1.495920494211e+01 
-  1 KSP Residual norm 6.665014176297e-05 
+  1 KSP Residual norm 4.713642610855e-05 
 PC Object: 4 MPI processes
   type: ksp
     KSP and PC on KSP preconditioner follow
@@ -24,8 +24,8 @@ PC Object: 4 MPI processes
             Neumann matrix attached? TRUE
             shared subdomain KSP between SLEPc and PETSc? TRUE
             coarse correction: BALANCED
-            on process #0, value (+ threshold if available) for selecting deflation vectors: 20
-            grid and operator complexities: 1.04759 1.00226
+            on process #0, value (+ threshold if available) for selecting deflation vectors: 10
+            grid and operator complexities: 1.0238 1.00035
             KSP Object: (fieldsplit_1_pc_hpddm_levels_1_) 4 MPI processes
               type: preonly
               maximum iterations=10000, initial guess is zero
@@ -148,7 +148,7 @@ PC Object: 4 MPI processes
                 linear system matrix = precond matrix:
                 Mat Object: (fieldsplit_1_pc_hpddm_coarse_) 2 MPI processes
                   type: mpisbaij
-                  rows=80, cols=80
+                  rows=40, cols=40, bs=10
                   total number of mallocs used during MatSetValues calls=0
             linear system matrix = precond matrix:
             Mat Object: (fieldsplit_1_) 4 MPI processes
