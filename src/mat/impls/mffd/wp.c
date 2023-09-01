@@ -14,7 +14,7 @@
    || U || does not change between linear iterations so is reused
 
    In `KSPGMRES` || a || == 1 and so does not need to ever be computed except at restart
-    when it is recomputed.  Thus equires no global collectives when used with `KSPGMRES`
+    when it is recomputed.  Thus requires no global collectives when used with `KSPGMRES`
 
    Formula used:
      F'(u)*a = [F(u+h*a) - F(u)]/h where

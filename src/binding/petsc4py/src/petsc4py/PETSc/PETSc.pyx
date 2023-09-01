@@ -11,6 +11,8 @@ cdef extern from * nogil:
       #pragma clang diagnostic ignored "-Wparentheses-equality"
       #pragma clang diagnostic ignored "-Wunreachable-code-fallthrough"
       #pragma clang diagnostic ignored "-Woverlength-strings"
+      #pragma clang diagnostic ignored "-Wunreachable-code"
+      #pragma clang diagnostic ignored "-Wundef"
     #elif defined(__GNUC__) || defined(__GNUG__)
       #pragma GCC diagnostic ignored "-Wstrict-aliasing"
       #pragma GCC diagnostic ignored "-Wtype-limits"

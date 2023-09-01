@@ -2428,7 +2428,7 @@ PetscErrorCode TaoGetType(Tao tao, TaoType *type)
 + tao        - the `Tao` context
 . its        - the current iterate number (>=0)
 . f          - the current objective function value
-. res        - the gradient norm, square root of the duality gap, or other measure indicating distince from optimality.  This measure will be recorded and
+. res        - the gradient norm, square root of the duality gap, or other measure indicating distance from optimality.  This measure will be recorded and
           used for some termination tests.
 . cnorm      - the infeasibility of the current solution with regard to the constraints.
 - steplength - multiple of the step direction added to the previous iterate.
