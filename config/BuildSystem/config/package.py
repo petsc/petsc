@@ -1524,7 +1524,7 @@ Brief overview of how BuildSystem\'s configuration of packages works.
 
     setupDependencies:
     -----------------
-    This is used to specify other conifigure objects that the package being configured depends on.
+    This is used to specify other configure objects that the package being configured depends on.
     This is done via the configure framework\'s "require" mechanism:
       self.framework.require(<dependentObject>, self)
     dependentObject is a string -- the name of the configure module this package depends on.

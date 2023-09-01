@@ -996,7 +996,7 @@ static PetscErrorCode MatCoarsenApply_HEM_private(IS perm, Mat a_Gmat, PetscCoar
       PetscCall(MatAssemblyBegin(P, MAT_FINAL_ASSEMBLY));
       PetscCall(MatAssemblyEnd(P, MAT_FINAL_ASSEMBLY));
 
-      /* project to make new graph with colapsed edges */
+      /* project to make new graph with collapsed edges */
       PetscCall(MatPtAP(cMat, P, MAT_INITIAL_MATRIX, 1.0, &tMat));
       PetscCall(MatDestroy(&P));
       PetscCall(MatDestroy(&cMat));

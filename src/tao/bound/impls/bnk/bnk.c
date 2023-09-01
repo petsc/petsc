@@ -1207,7 +1207,7 @@ PetscErrorCode TaoView_BNK(Tao tao, PetscViewer viewer)
 /*MC
   TAOBNK - Shared base-type for Bounded Newton-Krylov type algorithms.
   At each iteration, the BNK methods solve the symmetric
-  system of equations to obtain the step diretion dk:
+  system of equations to obtain the step direction dk:
               Hk dk = -gk
   for free variables only. The step can be globalized either through
   trust-region methods, or a line search, or a heuristic mixture of both.
