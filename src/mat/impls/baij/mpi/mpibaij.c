@@ -2673,7 +2673,7 @@ static PetscErrorCode MatMPIBAIJSetPreallocationCSR_MPIBAIJ(Mat B, PetscInt bs, 
 
   Though this routine has Preallocation() in the name it also sets the exact nonzero locations of the matrix entries and usually the numerical values as well
 
-.seealso: `Mat`, `MatCreate()`, `MatCreateSeqAIJ()`, `MatSetValues()`, `MatMPIBAIJSetPreallocation()`, `MatCreateAIJ()`, `MPIAIJ`, `MatCreateMPIBAIJWithArrays()`, `MPIBAIJ`
+.seealso: `Mat`, `MatCreate()`, `MatCreateSeqAIJ()`, `MatSetValues()`, `MatMPIBAIJSetPreallocation()`, `MatCreateAIJ()`, `MATMPIAIJ`, `MatCreateMPIBAIJWithArrays()`, `MATMPIBAIJ`
 @*/
 PetscErrorCode MatMPIBAIJSetPreallocationCSR(Mat B, PetscInt bs, const PetscInt i[], const PetscInt j[], const PetscScalar v[])
 {
@@ -3578,7 +3578,7 @@ PETSC_EXTERN PetscErrorCode matmpibaijsetvaluesblocked_(Mat *matin, PetscInt *mi
   The `i` and `j` indices are 0 based, and i indices are indices corresponding to the local `j` array.
 
 .seealso: `Mat`, `MatCreate()`, `MatCreateSeqAIJ()`, `MatSetValues()`, `MatMPIAIJSetPreallocation()`, `MatMPIAIJSetPreallocationCSR()`,
-          `MPIAIJ`, `MatCreateAIJ()`, `MatCreateMPIAIJWithSplitArrays()`
+          `MATMPIAIJ`, `MatCreateAIJ()`, `MatCreateMPIAIJWithSplitArrays()`
 @*/
 PetscErrorCode MatCreateMPIBAIJWithArrays(MPI_Comm comm, PetscInt bs, PetscInt m, PetscInt n, PetscInt M, PetscInt N, const PetscInt i[], const PetscInt j[], const PetscScalar a[], Mat *mat)
 {

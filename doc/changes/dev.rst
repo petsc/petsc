@@ -125,7 +125,7 @@ Changes: Development
 - Add ``-pc_precision single`` option for use with ``MATSOLVERSUPERLU_DIST``
 - Add ``MATDIAGONAL`` which can be created with ``MatCreateDiagonal()``
 - Add ``MatDiagonalGetDiagonal()``, ``MatDiagonalRestoreDiagonal()``, ``MatDiagonalGetInverseDiagonal()``, and ``MatDiagonalRestoreInverseDiagonal()``
-- Add support for ``MatLoad()`` and ``MatView()`` to load and store ``MPIAIJ`` matrices that have more than ``PETSC_INT_MAX`` nonzeros, so long as each rank has fewer than ``PETSC_INT_MAX``
+- Add support for ``MatLoad()`` and ``MatView()`` to load and store ``MATMPIAIJ`` matrices that have more than ``PETSC_INT_MAX`` nonzeros, so long as each rank has fewer than ``PETSC_INT_MAX``
 - Add ``MatLRCSetMats()`` and register creation routine for ``MatLRC``
 - Add CUDA/HIP implementation for ``MatGetDiagonal()``
 - Add a Boolean parameter to ``MatEliminateZeros()`` to force the removal of zero diagonal coefficients

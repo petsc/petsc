@@ -2768,7 +2768,7 @@ PetscErrorCode MatSOR_MPISBAIJ(Mat matin, Vec bb, PetscReal omega, MatSORType fl
   The `i` and `j` indices are 0 based, and `i` indices are indices corresponding to the local `j` array.
 
 .seealso: [](ch_matrices), `Mat`, `MATMPISBAIJ`, `MatCreate()`, `MatCreateSeqAIJ()`, `MatSetValues()`, `MatMPIAIJSetPreallocation()`, `MatMPIAIJSetPreallocationCSR()`,
-          `MPIAIJ`, `MatCreateAIJ()`, `MatCreateMPIAIJWithSplitArrays()`
+          `MATMPIAIJ`, `MatCreateAIJ()`, `MatCreateMPIAIJWithSplitArrays()`
 @*/
 PetscErrorCode MatCreateMPISBAIJWithArrays(MPI_Comm comm, PetscInt bs, PetscInt m, PetscInt n, PetscInt M, PetscInt N, const PetscInt i[], const PetscInt j[], const PetscScalar a[], Mat *mat)
 {
@@ -2802,7 +2802,7 @@ PetscErrorCode MatCreateMPISBAIJWithArrays(MPI_Comm comm, PetscInt bs, PetscInt 
 
   Any entries below the diagonal are ignored
 
-.seealso: [](ch_matrices), `Mat`, `MATMPISBAIJ`, `MatCreate()`, `MatCreateSeqAIJ()`, `MatSetValues()`, `MatMPIBAIJSetPreallocation()`, `MatCreateAIJ()`, `MPIAIJ`
+.seealso: [](ch_matrices), `Mat`, `MATMPISBAIJ`, `MatCreate()`, `MatCreateSeqAIJ()`, `MatSetValues()`, `MatMPIBAIJSetPreallocation()`, `MatCreateAIJ()`, `MATMPIAIJ`
 @*/
 PetscErrorCode MatMPISBAIJSetPreallocationCSR(Mat B, PetscInt bs, const PetscInt i[], const PetscInt j[], const PetscScalar v[])
 {
