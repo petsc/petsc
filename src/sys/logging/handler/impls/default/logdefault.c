@@ -1517,7 +1517,7 @@ static PetscErrorCode PetscLogHandlerView_Default_Info(PetscLogHandler handler, 
 
 #if defined(PETSC_HAVE_DEVICE)
   /* this indirect way of accessing these values is needed when PETSc is build with multiple libraries since the symbols are not in libpetscsys */
-  PetscCall(PetscLogStateGetEventFromName(state, "TAOSolve", &TAO_Solve));
+  PetscCall(PetscLogStateGetEventFromName(state, "TaoSolve", &TAO_Solve));
   PetscCall(PetscLogStateGetEventFromName(state, "TSStep", &TS_Step));
   PetscCall(PetscLogStateGetEventFromName(state, "SNESSolve", &SNES_Solve));
   PetscCall(PetscLogStateGetEventFromName(state, "KSPSolve", &KSP_Solve));
