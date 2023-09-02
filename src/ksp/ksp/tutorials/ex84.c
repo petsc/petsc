@@ -8,7 +8,7 @@ int main(int argc, char **argv)
   Mat         A;
   IS          field0, field1, zeroedrows;
   PetscInt    row;
-  KSP         ksp;
+  KSP         ksp, kspred;
   PC          pc;
   Vec         x, b;
 
@@ -61,10 +61,16 @@ int main(int argc, char **argv)
   PetscCall(KSPSetOperators(ksp, A, A));
   PetscCall(KSPGetPC(ksp, &pc));
   PetscCall(PCSetType(pc, PCREDISTRIBUTE));
+  /* note that one provides the indices for the fields on the original full system, not on the reduced system PCREDISTRIBUTE solves */
   PetscCall(PCFieldSplitSetIS(pc, NULL, field0));
   PetscCall(PCFieldSplitSetIS(pc, NULL, field1));
   PetscCall(KSPSetFromOptions(ksp));
 
+  PetscCall(KSPSolve(ksp, b, x));
+
+  PetscCall(KSPSetInitialGuessNonzero(ksp, PETSC_TRUE));
+  PetscCall(PCRedistributeGetKSP(pc, &kspred));
+  PetscCall(KSPSetInitialGuessNonzero(kspred, PETSC_TRUE));
   PetscCall(KSPSolve(ksp, b, x));
 
   PetscCall(KSPDestroy(&ksp));
@@ -82,6 +88,6 @@ int main(int argc, char **argv)
 
    test:
      nsize: 2
-     args: -ksp_monitor -redistribute_ksp_monitor -ksp_view -redistribute_pc_type fieldsplit
+     args: -ksp_monitor -redistribute_ksp_monitor -ksp_view -redistribute_pc_type fieldsplit -ksp_type preonly
 
 TEST*/

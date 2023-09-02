@@ -145,6 +145,7 @@ Changes: Development
 
 - Add ``KSPSetMinimumIterations()`` and ``KSPGetMinimumIterations()``
 - Add ``KSPSetNestLevel()`` and ``KSPGetNestLevel()``
+- Support ``KSPSetInitialGuessNonzero()`` with ``KSPPREONLY`` and ``PCDISTRIBUTE`` when it is called on both the outer and inner ``KSP``
 
 .. rubric:: SNES:
 
