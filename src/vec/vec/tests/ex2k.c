@@ -5,12 +5,13 @@ static char help[] = "Benchmarking VecMDot() or VecMAXPY()\n";
      -n  <n>  # number of data points of vector sizes from 128, 256, 512 and up. Maxima and default is 23.
      -m  <m>  # run each VecMDot() m times to get the average time, default is 100.
      -test_name <VecMDot or VecMAXPY>  # test to run, by default it is VecMDot
+     -output_bw <bool> # output bandwidth instead of time
 
   Example:
 
-  Running on Crusher at OLCF:
-  # run with 1 mpi rank (-n1), 32 CPUs (-c32), and map the process to CPU 0 and GPU 0
-  $ srun -n1 -c32 --cpu-bind=map_cpu:0 --gpus-per-node=8 --gpu-bind=map_gpu:0 ./ex2k -vec_type kokkos
+  Running on Frontier at OLCF:
+  # run with 1 mpi rank (-n1), 32 CPUs (-c32)
+  $ srun -n1 -c32 --gpus-per-node=8 --gpu-bind=closest ./ex2k -vec_type kokkos
 */
 
 #include <petscvec.h>
@@ -18,22 +19,23 @@ static char help[] = "Benchmarking VecMDot() or VecMAXPY()\n";
 
 int main(int argc, char **argv)
 {
-  PetscInt           i, j, k, N, n, m = 100, nsamples, ny, maxys;
-  PetscLogDouble     tstart, tend, times[8];
+  PetscInt           i, j, k, M, N, mcount, its = 100, nsamples, ncount, maxN;
+  PetscLogDouble     tstart, tend, times[8], fom; // figure of merit
   Vec                x, *ys;
   PetscScalar       *vals;
   PetscMPIInt        size;
   PetscDeviceContext dctx;
   char               testName[64] = "VecMDot"; // By default, test VecMDot
   PetscBool          testMDot, testMAXPY;
+  PetscBool          outputBW = PETSC_FALSE; // output bandwidth instead of time
   PetscRandom        rnd;
   PetscLogStage      stage1;
   // clang-format off
   // Try vectors of these (local) sizes. The max is very close to 2^31
-  PetscInt  Ns[]  = {128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768,
+  PetscInt  Ms[]  = {128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768,
                      65536, 131072, 262144, 524288, 1048576, 2097152, 4194304,
                      8388608, 16777216, 33554432, 67108864, 134217728, 268435456, 536870912};
-  PetscInt  Ys[] = {1, 3, 8, 30}; // try this number of y vectors in VecMDot
+  PetscInt  Ns[] = {1, 3, 8, 30}; // try this number of y vectors in VecMDot
   // clang-format on
 
   PetscFunctionBeginUser;
@@ -41,65 +43,78 @@ int main(int argc, char **argv)
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
   PetscCall(PetscRandomCreate(PETSC_COMM_WORLD, &rnd));
 
-  n = nsamples = PETSC_STATIC_ARRAY_LENGTH(Ns); // length of Ns[]
-  ny           = PETSC_STATIC_ARRAY_LENGTH(Ys); // length of Ys[]
-  maxys        = Ys[ny - 1];                    // at most this many y vectors
+  mcount = sizeof(Ms) / sizeof(Ms[0]); // length of Ms[]
+  ncount = sizeof(Ns) / sizeof(Ns[0]); // length of Ns[]
+  maxN   = Ns[ncount - 1];             // at most this many y vectors
 
-  PetscCall(PetscOptionsGetInt(NULL, NULL, "-n", &n, NULL)); // Up to vectors of local size 2^{n+6}
-  PetscCall(PetscOptionsGetInt(NULL, NULL, "-m", &m, NULL)); // Run each VecMDot() m times
+  nsamples = mcount;
+  PetscCall(PetscOptionsGetInt(NULL, NULL, "-n", &mcount, NULL)); // Up to vectors of local size 2^{mcount+6}
+  PetscCall(PetscOptionsGetInt(NULL, NULL, "-m", &its, NULL));    // Run each VecMDot() its times
   PetscCall(PetscOptionsGetString(NULL, NULL, "-test_name", testName, sizeof(testName), NULL));
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-output_bw", &outputBW, NULL));
   PetscCall(PetscStrncmp(testName, "VecMDot", sizeof(testName), &testMDot));
   PetscCall(PetscStrncmp(testName, "VecMAXPY", sizeof(testName), &testMAXPY));
   PetscCheck(testMDot || testMAXPY, PETSC_COMM_WORLD, PETSC_ERR_USER_INPUT, "Unsupported test name: %s", testName);
   PetscCall(PetscDeviceContextGetCurrentContext(&dctx));
-  PetscCall(PetscMalloc1(maxys, &vals));
-  for (j = 0; j < maxys; j++) PetscCall(PetscRandomGetValue(rnd, &vals[j]));
+  PetscCall(PetscMalloc1(maxN, &vals));
+  for (j = 0; j < maxN; j++) vals[j] = 3.14 + j; // same across all processes
 
   PetscCall(PetscLogStageRegister("Profiling", &stage1));
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Vector(N)   "));
-  for (j = 0; j < ny; j++) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "%s(nv=%" PetscInt_FMT ") ", testName, Ys[j]));
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD, " (us)\n"));
+  for (j = 0; j < ncount; j++) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "   %s-%" PetscInt_FMT " ", testName, Ns[j]));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, outputBW ? " (GB/s)\n" : " (us)\n"));
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "--------------------------------------------------------------------------\n"));
 
-  nsamples = PetscMin(nsamples, n);
-  for (k = 0; k < nsamples; k++) { // for vector (local) size N
-    N = Ns[k];
+  nsamples = PetscMin(nsamples, mcount);
+  for (k = 0; k < nsamples; k++) { // for vector (local) size M
+    M = Ms[k];
     PetscCall(VecCreate(PETSC_COMM_WORLD, &x));
     PetscCall(VecSetFromOptions(x));
-    PetscCall(VecSetSizes(x, N, PETSC_DECIDE));
+    PetscCall(VecSetSizes(x, M, PETSC_DECIDE));
     PetscCall(VecSetUp(x));
-    PetscCall(VecDuplicateVecs(x, maxys, &ys));
+    PetscCall(VecDuplicateVecs(x, maxN, &ys));
     PetscCall(VecSetRandom(x, rnd));
-    for (i = 0; i < maxys; i++) PetscCall(VecSetRandom(ys[i], rnd));
+    for (i = 0; i < maxN; i++) PetscCall(VecSetRandom(ys[i], rnd));
 
-    for (j = 0; j < ny; j++) { // try Ys[j] y vectors
+    for (j = 0; j < ncount; j++) { // try N y vectors
       // Warm-up
+      N = Ns[j];
       for (i = 0; i < 2; i++) {
-        if (testMDot) PetscCall(VecMDot(x, Ys[j], ys, vals));
-        else if (testMAXPY) PetscCall(VecMAXPY(x, Ys[j], vals, ys));
+        if (testMDot) PetscCall(VecMDot(x, N, ys, vals));
+        else if (testMAXPY) PetscCall(VecMAXPY(x, N, vals, ys));
       }
       PetscCall(PetscDeviceContextSynchronize(dctx));
       PetscCallMPI(MPI_Barrier(PETSC_COMM_WORLD));
 
       PetscCall(PetscLogStagePush(stage1)); // use LogStage so that -log_view result will be clearer
       PetscCall(PetscTime(&tstart));
-      for (i = 0; i < m; i++) {
-        if (testMDot) PetscCall(VecMDot(x, Ys[j], ys, vals));
-        else if (testMAXPY) PetscCall(VecMAXPY(x, Ys[j], vals, ys));
+      for (i = 0; i < its; i++) {
+        if (testMDot) PetscCall(VecMDot(x, N, ys, vals));
+        else if (testMAXPY) PetscCall(VecMAXPY(x, N, vals, ys));
       }
       PetscCall(PetscDeviceContextSynchronize(dctx));
       PetscCallMPI(MPI_Barrier(PETSC_COMM_WORLD));
       PetscCall(PetscTime(&tend));
-      times[j] = (tend - tstart) * 1e6 / m;
+      times[j] = (tend - tstart) * 1e6 / its;
       PetscCall(PetscLogStagePop());
     }
 
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "%12" PetscInt_FMT, N));
-    for (j = 0; j < ny; j++) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "%12.1f ", times[j]));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "%12" PetscInt_FMT, M));
+    for (j = 0; j < ncount; j++) {
+      N = Ns[j];
+      if (outputBW) {
+        // Read N y vectors and x vector of size M, and then write vals[] of size N
+        PetscLogDouble bytes = (M * (N + 1.0) + N) * sizeof(PetscScalar);
+        fom                  = (bytes / times[j]) * 1e-3;
+      } else {
+        fom = times[j];
+      }
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD, "%12.1f ", fom));
+    }
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, "\n"));
 
     PetscCall(VecDestroy(&x));
-    PetscCall(VecDestroyVecs(maxys, &ys));
+    PetscCall(VecDestroyVecs(maxN, &ys));
   }
 
   PetscCall(PetscRandomDestroy(&rnd));
