@@ -337,9 +337,16 @@ static PetscErrorCode PCApply_Redistribute(PC pc, Vec b, Vec x)
   const PetscInt    *drows = red->drows;
   PetscScalar       *xwork;
   const PetscScalar *bwork, *diag = red->diag;
+  PetscBool          nonzero_guess;
 
   PetscFunctionBegin;
   if (!red->work) PetscCall(VecDuplicate(b, &red->work));
+  PetscCall(KSPGetInitialGuessNonzero(red->ksp, &nonzero_guess));
+  if (nonzero_guess) {
+    PetscCall(VecScatterBegin(red->scatter, x, red->x, INSERT_VALUES, SCATTER_FORWARD));
+    PetscCall(VecScatterEnd(red->scatter, x, red->x, INSERT_VALUES, SCATTER_FORWARD));
+  }
+
   /* compute the rows of solution that have diagonal entries only */
   PetscCall(VecSet(x, 0.0)); /* x = diag(A)^{-1} b */
   PetscCall(VecGetArray(x, &xwork));
