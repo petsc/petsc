@@ -181,6 +181,9 @@ Changes: Development
 
 .. rubric:: DMSwarm:
 
+- Add scatter mode to ``DMSwarmProjectFields()`` and no longer create vectors
+- Promote ``DMSwarmDataFieldGetEntries()``, ``DMSwarmDataFieldRestoreEntries()``, ``DMSwarmDataBucketGetDMSwarmDataFieldByName()``, ``DMSwarmDataBucketGetDMSwarmDataFieldIdByName()``, and ``DMSwarmDataBucketQueryDMSwarmDataFieldByName()`` to public interface
+
 .. rubric:: DMPlex:
 
 - Add ``DMPlexTransformExtrudeGetPeriodic()`` and ``DMPlexTransformExtrudeSetPeriodic()``

@@ -1044,6 +1044,7 @@ PETSC_EXTERN PetscErrorCode DMKSPGetComputeInitialGuess(DM, PetscErrorCode (**)(
 
 PETSC_EXTERN PetscErrorCode DMGlobalToLocalSolve(DM, Vec, Vec);
 PETSC_EXTERN PetscErrorCode DMProjectField(DM, PetscReal, Vec, void (**)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]), InsertMode, Vec);
+PETSC_EXTERN PetscErrorCode DMSwarmProjectFields(DM, PetscInt, const char **, Vec[], ScatterMode mode);
 
 PETSC_EXTERN PetscErrorCode DMAdaptInterpolator(DM, DM, Mat, KSP, Mat, Mat, Mat *, void *);
 PETSC_EXTERN PetscErrorCode DMCheckInterpolator(DM, Mat, Mat, Mat, PetscReal);
