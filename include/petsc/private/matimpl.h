@@ -771,7 +771,7 @@ static inline PetscErrorCode MatPivotCheck_pd(PETSC_UNUSED Mat mat, const MatFac
       sctx->shift_fraction = sctx->shift_hi;
     } else {
       sctx->shift_lo       = sctx->shift_fraction;
-      sctx->shift_fraction = (sctx->shift_hi + sctx->shift_lo) / 2.;
+      sctx->shift_fraction = (sctx->shift_hi + sctx->shift_lo) / (PetscReal)2.;
     }
     sctx->shift_amount = sctx->shift_fraction * sctx->shift_top;
     sctx->nshift++;
