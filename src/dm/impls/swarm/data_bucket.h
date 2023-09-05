@@ -58,16 +58,10 @@ PETSC_INTERN PetscErrorCode DMSwarmDataFieldRestoreAccess(DMSwarmDataField);
 PETSC_INTERN PetscErrorCode DMSwarmDataFieldVerifyAccess(const DMSwarmDataField, const size_t);
 PETSC_INTERN PetscErrorCode DMSwarmDataFieldGetAtomicSize(const DMSwarmDataField, size_t *);
 
-PETSC_INTERN PetscErrorCode DMSwarmDataFieldGetEntries(const DMSwarmDataField, void **);
-PETSC_INTERN PetscErrorCode DMSwarmDataFieldRestoreEntries(const DMSwarmDataField, void **);
-
 PETSC_INTERN PetscErrorCode DMSwarmDataFieldInsertPoint(const DMSwarmDataField, const PetscInt, const void *);
 PETSC_INTERN PetscErrorCode DMSwarmDataFieldCopyPoint(const PetscInt, const DMSwarmDataField, const PetscInt, const DMSwarmDataField);
 PETSC_INTERN PetscErrorCode DMSwarmDataFieldZeroPoint(const DMSwarmDataField, const PetscInt);
 
-PETSC_INTERN PetscErrorCode DMSwarmDataBucketGetDMSwarmDataFieldByName(DMSwarmDataBucket, const char[], DMSwarmDataField *);
-PETSC_INTERN PetscErrorCode DMSwarmDataBucketGetDMSwarmDataFieldIdByName(DMSwarmDataBucket, const char[], PetscInt *);
-PETSC_INTERN PetscErrorCode DMSwarmDataBucketQueryDMSwarmDataFieldByName(DMSwarmDataBucket, const char[], PetscBool *);
 PETSC_INTERN PetscErrorCode DMSwarmDataBucketFinalize(DMSwarmDataBucket);
 PETSC_INTERN PetscErrorCode DMSwarmDataBucketSetInitialSizes(DMSwarmDataBucket, const PetscInt, const PetscInt);
 PETSC_INTERN PetscErrorCode DMSwarmDataBucketSetSizes(DMSwarmDataBucket, const PetscInt, const PetscInt);

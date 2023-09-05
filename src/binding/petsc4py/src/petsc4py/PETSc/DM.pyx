@@ -951,6 +951,34 @@ cdef class DM(Object):
 
     #
 
+    def getCoarseDM(self) -> DM:
+        """Return the coarse `DM`.
+
+        Collective.
+
+        See Also
+        --------
+        petsc.DMGetCoarseDM
+
+        """
+        cdef DM cdm = type(self)()
+        CHKERR( DMGetCoarseDM(self.dm, &cdm.dm) )
+        CHKERR( PetscINCREF(cdm.obj) )
+        return cdm
+
+    def setCoarseDM(self, DM dm) -> None:
+        """Set the coarse `DM`.
+
+        Collective.
+
+        See Also
+        --------
+        petsc.DMSetCoarseDM
+
+        """
+        CHKERR( DMSetCoarseDM(self.dm, dm.dm) )
+        return
+
     def getCoordinateDM(self) -> DM:
         """Return the coordinate `DM`.
 

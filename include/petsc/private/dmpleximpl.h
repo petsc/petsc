@@ -11,6 +11,9 @@
   #include <exodusII.h>
 #endif
 
+PETSC_EXTERN PetscBool  Plexcite;
+PETSC_EXTERN const char PlexCitation[];
+
 PETSC_EXTERN PetscLogEvent DMPLEX_Interpolate;
 PETSC_EXTERN PetscLogEvent DMPLEX_Partition;
 PETSC_EXTERN PetscLogEvent DMPLEX_PartSelf;

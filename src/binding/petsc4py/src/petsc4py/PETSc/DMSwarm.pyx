@@ -802,7 +802,7 @@ cdef class DMSwarm(DM):
         CHKERR( DMSwarmSortGetSizes(self.dm, &ncells, &npoints) )
         return (toInt(ncells), toInt(npoints))
 
-    def projectFields(self, fieldnames: Sequence[str], reuse: bool = False) -> list[Vec]:
+    def projectFields(self, fieldnames: Sequence[str], vecs: Sequence[Vec], mode: ScatterModeSpec = None) -> None:
         """Project a set of `DMSwarm` fields onto the cell `DM`.
 
         Collective.
@@ -811,32 +811,26 @@ cdef class DMSwarm(DM):
         ----------
         fieldnames
             The textual names of the swarm fields to project.
-        reuse
-            Flag indicating whether the array and contents of fields should be
-            reused or internally allocated.
 
         See Also
         --------
         petsc.DMSwarmProjectFields
 
         """
-        cdef PetscBool creuse = asBool(reuse)
         cdef const char *cval = NULL
         cdef PetscInt cnfields = <PetscInt> len(fieldnames)
         cdef const char** cfieldnames = NULL
         cdef object tmp = oarray_p(empty_p(cnfields), NULL, <void**>&cfieldnames)
         cdef PetscVec *cfieldvecs
+        cdef object tmp2 = oarray_p(empty_p(cnfields), NULL, <void**>&cfieldvecs)
+        cdef PetscScatterMode cmode = scattermode(mode)
         fieldnames = list(fieldnames)
         for i from 0 <= i < cnfields:
             fieldnames[i] = str2bytes(fieldnames[i], &cval)
             cfieldnames[i] = cval
-        CHKERR( DMSwarmProjectFields(self.dm, cnfields, cfieldnames, &cfieldvecs, creuse) )
-        cdef list fieldvecs = []
-        for i from 0 <= i < cnfields:
-            newVec = Vec()
-            newVec.vec = cfieldvecs[i]
-            fieldvecs.append(newVec)
-        return fieldvecs
+            cfieldvecs[i] = (<Vec?>(vecs[i])).vec
+        CHKERR( DMSwarmProjectFields(self.dm, cnfields, cfieldnames, cfieldvecs, cmode) )
+        return
 
 
 del DMSwarmType

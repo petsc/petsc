@@ -178,8 +178,12 @@ Changes: Development
 
 - Add support for ``DMDAGetElements()`` for Fortran
 - Add support for clearing named vectors with ``DMClearNamedGlobalVectors()`` and ``DMClearNamedLocalVectors()``
+- Add ``DMPrintCellIndices()`` for debugging
 
 .. rubric:: DMSwarm:
+
+- Add scatter mode to ``DMSwarmProjectFields()`` and no longer create vectors
+- Promote ``DMSwarmDataFieldGetEntries()``, ``DMSwarmDataFieldRestoreEntries()``, ``DMSwarmDataBucketGetDMSwarmDataFieldByName()``, ``DMSwarmDataBucketGetDMSwarmDataFieldIdByName()``, and ``DMSwarmDataBucketQueryDMSwarmDataFieldByName()`` to public interface
 
 .. rubric:: DMPlex:
 

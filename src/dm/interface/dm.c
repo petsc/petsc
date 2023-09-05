@@ -4133,6 +4133,16 @@ PetscErrorCode DMLoad(DM newdm, PetscViewer viewer)
 
 /******************************** FEM Support **********************************/
 
+PetscErrorCode DMPrintCellIndices(PetscInt c, const char name[], PetscInt len, const PetscInt x[])
+{
+  PetscInt f;
+
+  PetscFunctionBegin;
+  PetscCall(PetscPrintf(PETSC_COMM_SELF, "Cell %" PetscInt_FMT " Element %s\n", c, name));
+  for (f = 0; f < len; ++f) PetscCall(PetscPrintf(PETSC_COMM_SELF, "  | %" PetscInt_FMT " |\n", x[f]));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 PetscErrorCode DMPrintCellVector(PetscInt c, const char name[], PetscInt len, const PetscScalar x[])
 {
   PetscInt f;

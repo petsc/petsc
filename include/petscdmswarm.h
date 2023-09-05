@@ -3,6 +3,10 @@
 #include <petscdm.h>
 #include <petscdt.h>
 
+typedef struct _p_DMSwarmDataField  *DMSwarmDataField;
+typedef struct _p_DMSwarmDataBucket *DMSwarmDataBucket;
+typedef struct _p_DMSwarmSort       *DMSwarmSort;
+
 /* SUBMANSEC = DMSwarm */
 
 /*E
@@ -118,7 +122,6 @@ PETSC_EXTERN PetscErrorCode DMSwarmSortGetNumberOfPointsPerCell(DM, PetscInt, Pe
 PETSC_EXTERN PetscErrorCode DMSwarmSortGetIsValid(DM, PetscBool *);
 PETSC_EXTERN PetscErrorCode DMSwarmSortGetSizes(DM, PetscInt *, PetscInt *);
 
-PETSC_EXTERN PetscErrorCode DMSwarmProjectFields(DM, PetscInt, const char **, Vec **, PetscBool);
 PETSC_EXTERN PetscErrorCode DMSwarmCreateMassMatrixSquare(DM, DM, Mat *);
 
 PETSC_EXTERN PetscErrorCode DMSwarmGetCellSwarm(DM, PetscInt, DM);
@@ -134,3 +137,10 @@ PETSC_EXTERN PetscErrorCode DMSwarmComputeLocalSizeFromOptions(DM);
 PETSC_EXTERN PetscErrorCode DMSwarmInitializeCoordinates(DM);
 PETSC_EXTERN PetscErrorCode DMSwarmInitializeVelocities(DM, PetscProbFunc, const PetscReal[]);
 PETSC_EXTERN PetscErrorCode DMSwarmInitializeVelocitiesFromOptions(DM, const PetscReal[]);
+
+// Interface to internal storage
+PETSC_EXTERN PetscErrorCode DMSwarmDataFieldGetEntries(const DMSwarmDataField, void **);
+PETSC_EXTERN PetscErrorCode DMSwarmDataFieldRestoreEntries(const DMSwarmDataField, void **);
+PETSC_EXTERN PetscErrorCode DMSwarmDataBucketGetDMSwarmDataFieldByName(DMSwarmDataBucket, const char[], DMSwarmDataField *);
+PETSC_EXTERN PetscErrorCode DMSwarmDataBucketGetDMSwarmDataFieldIdByName(DMSwarmDataBucket, const char[], PetscInt *);
+PETSC_EXTERN PetscErrorCode DMSwarmDataBucketQueryDMSwarmDataFieldByName(DMSwarmDataBucket, const char[], PetscBool *);

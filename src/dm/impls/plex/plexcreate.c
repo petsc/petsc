@@ -4603,6 +4603,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_Plex(DM dm)
   PetscInt unit;
 
   PetscFunctionBegin;
+  PetscCall(PetscCitationsRegister(PlexCitation, &Plexcite));
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscCall(PetscNew(&mesh));
   dm->data = mesh;

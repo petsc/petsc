@@ -7,6 +7,18 @@
 #include <petscds.h>
 #include <../src/mat/impls/dense/seq/dense.h> /*I "petscmat.h" I*/
 
+PetscBool  PCPatchcite       = PETSC_FALSE;
+const char PCPatchCitation[] = "@article{FarrellKnepleyWechsungMitchell2020,\n"
+                               "title   = {{PCPATCH}: software for the topological construction of multigrid relaxation methods},\n"
+                               "author  = {Patrick E Farrell and Matthew G Knepley and Lawrence Mitchell and Florian Wechsung},\n"
+                               "journal = {ACM Transaction on Mathematical Software},\n"
+                               "eprint  = {http://arxiv.org/abs/1912.08516},\n"
+                               "volume  = {47},\n"
+                               "number  = {3},\n"
+                               "pages   = {1--22},\n"
+                               "year    = {2021},\n"
+                               "petsc_uses={KSP,DMPlex}\n}\n";
+
 PetscLogEvent PC_Patch_CreatePatches, PC_Patch_ComputeOp, PC_Patch_Solve, PC_Patch_Apply, PC_Patch_Prealloc;
 
 static inline PetscErrorCode ObjectView(PetscObject obj, PetscViewer viewer, PetscViewerFormat format)
@@ -3147,6 +3159,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_Patch(PC pc)
   PC_PATCH *patch;
 
   PetscFunctionBegin;
+  PetscCall(PetscCitationsRegister(PCPatchCitation, &PCPatchcite));
   PetscCall(PetscNew(&patch));
 
   if (patch->subspaces_to_exclude) PetscCall(PetscHSetIDestroy(&patch->subspaces_to_exclude));

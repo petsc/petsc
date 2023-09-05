@@ -7,6 +7,9 @@
 #include <petsc/private/hashmapi.h>
 #include <petscksp.h>
 
+PETSC_EXTERN PetscBool  PCPatchcite;
+PETSC_EXTERN const char PCPatchCitation[];
+
 typedef struct {
   /* Topology */
   PCPatchConstructType ctype;                                           /* Algorithm for patch construction */
