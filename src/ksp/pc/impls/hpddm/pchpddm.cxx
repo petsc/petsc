@@ -330,7 +330,7 @@ static PetscErrorCode PCSetFromOptions_HPDDM(PC pc, PetscOptionItems *PetscOptio
       PetscCall(PetscOptionsBool(prefix, "Shared KSP between SLEPc ST and the fine-level subdomain solver", "PCHPDDMSetSTShareSubKSP", PETSC_FALSE, &data->share, nullptr));
     }
     /* if there is no prescribed coarsening, just break out of the loop */
-    if (data->levels[i - 1]->threshold <= 0.0 && data->levels[i - 1]->nu <= 0 && !(data->deflation && i == 1)) break;
+    if (data->levels[i - 1]->threshold <= PetscReal() && data->levels[i - 1]->nu <= 0 && !(data->deflation && i == 1)) break;
     else {
       ++i;
       PetscCall(PetscSNPrintf(prefix, sizeof(prefix), "-pc_hpddm_levels_%d_eps_nev", i));
@@ -496,7 +496,7 @@ static PetscErrorCode PCView_HPDDM(PC pc, PetscViewer viewer)
       PetscCall(PetscViewerASCIISetTab(viewer, 0));
       for (i = 1; i < data->N; ++i) {
         PetscCall(PetscViewerASCIIPrintf(viewer, " %" PetscInt_FMT, data->levels[i - 1]->nu));
-        if (data->levels[i - 1]->threshold > -0.1) PetscCall(PetscViewerASCIIPrintf(viewer, " (%g)", (double)data->levels[i - 1]->threshold));
+        if (data->levels[i - 1]->threshold > static_cast<PetscReal>(-0.1)) PetscCall(PetscViewerASCIIPrintf(viewer, " (%g)", (double)data->levels[i - 1]->threshold));
       }
       PetscCall(PetscViewerASCIIPrintf(viewer, "\n"));
       PetscCall(PetscViewerASCIISetTab(viewer, tabs));
@@ -1501,7 +1501,7 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
               if (data->aux) PetscCall(MatNorm(data->aux, NORM_FROBENIUS, &norm));
               else norm = 0.0;
               PetscCall(MPIU_Allreduce(MPI_IN_PLACE, &norm, 1, MPIU_REAL, MPI_MAX, PetscObjectComm((PetscObject)P)));
-              if (norm < PETSC_MACHINE_EPSILON * 10.0) { /* if A11 is near zero, e.g., Stokes equation, build a diagonal auxiliary (Neumann) Mat which is just a small diagonal weighted by the inverse of the multiplicity */
+              if (norm < PETSC_MACHINE_EPSILON * static_cast<PetscReal>(10.0)) { /* if A11 is near zero, e.g., Stokes equation, build a diagonal auxiliary (Neumann) Mat which is just a small diagonal weighted by the inverse of the multiplicity */
                 VecScatter         scatter;
                 Vec                x;
                 const PetscScalar *read;
@@ -1521,7 +1521,7 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
                 PetscCall(VecCreateSeq(PETSC_COMM_SELF, n, &v));
                 PetscCall(VecGetArrayRead(x, &read));
                 PetscCall(VecGetArrayWrite(v, &write));
-                PetscCallCXX(std::transform(read, read + n, write, [](const PetscScalar &m) { return PETSC_SMALL / (1000.0 * m); }));
+                PetscCallCXX(std::transform(read, read + n, write, [](const PetscScalar &m) { return PETSC_SMALL / (static_cast<PetscReal>(1000.0) * m); }));
                 PetscCall(VecRestoreArrayRead(x, &read));
                 PetscCall(VecRestoreArrayWrite(v, &write));
                 PetscCall(VecDestroy(&x));

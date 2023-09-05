@@ -256,7 +256,7 @@ static inline PetscScalar KSPNoisyHash_Private(PetscInt xx)
   x              = ((x >> 16) ^ x) * 0x45d9f3b;
   x              = ((x >> 16) ^ x) * 0x45d9f3b;
   x              = ((x >> 16) ^ x);
-  return (PetscScalar)((PetscInt64)x - 2147483648) * 5.e-10; /* center around zero, scaled about -1. to 1.*/
+  return (PetscScalar)(((PetscInt64)x - 2147483648) * 5.e-10); /* center around zero, scaled about -1. to 1.*/
 }
 
 static inline PetscErrorCode KSPSetNoisy_Private(Vec v)

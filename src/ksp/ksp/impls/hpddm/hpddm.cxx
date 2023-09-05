@@ -297,10 +297,10 @@ static inline PetscErrorCode KSPSolve_HPDDM_Private(KSP ksp, const PetscScalar *
       for (PetscInt i = 0; i < N; ++i) low[1][i] = x[i];
       PetscCall(HPDDM::IterativeMethod::solve(*data->op, low[0], low[1], n, PetscObjectComm((PetscObject)ksp)));
   #if !PetscDefined(USE_COMPLEX)
-      for (PetscInt i = N; i-- > 0;) x[i] = low[1][i];
+      for (PetscInt i = N; i-- > 0;) x[i] = static_cast<PetscScalar>(low[1][i]);
   #else
       x_r = reinterpret_cast<PetscAliasedReal *>(x), low_r = reinterpret_cast<PetscDownscaledReal *>(x_r);
-      for (PetscInt i = 2 * N; i-- > 0;) x_r[i] = low_r[i];
+      for (PetscInt i = 2 * N; i-- > 0;) x_r[i] = static_cast<PetscReal>(low_r[i]);
   #endif
       PetscCall(PetscFree(low[0]));
     } else {

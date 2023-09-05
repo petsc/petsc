@@ -3,7 +3,7 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.gitcommit              = '3bbeb82a4f6e3ae432f677c91346bec70ad1ab72' # august-31-2023 main
+    self.gitcommit              = 'd1770a7bcd8794ead4e61f3d0f8fdd9006d8230c' # main sep-04-2023
     self.download               = ['git://https://gitlab.com/slepc/slepc.git','https://gitlab.com/slepc/slepc/-/archive/'+self.gitcommit+'/slepc-'+self.gitcommit+'.tar.gz']
     self.functions              = []
     self.includes               = []
