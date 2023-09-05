@@ -303,17 +303,18 @@ static PetscErrorCode PetscLogNestedCreatePerfNodes(MPI_Comm comm, PetscLogHandl
   PetscAssert(num_descendants == num_nodes, comm, PETSC_ERR_PLIB, "Failed tree ordering invariant");
 
   PetscCall(PetscCalloc1(num_nodes, &perf));
-  for (PetscInt node = 0; node < num_nodes; node++) {
+  for (PetscInt tree_node = 0; tree_node < num_nodes; tree_node++) {
+    PetscInt global_id = tree[tree_node].id;
     PetscInt event_id;
 
-    PetscCall(PetscLogGlobalNamesGlobalGetLocal(global_events, node, &event_id));
+    PetscCall(PetscLogGlobalNamesGlobalGetLocal(global_events, global_id, &event_id));
     if (event_id >= 0) {
       PetscEventPerfInfo *event_info;
 
       PetscCall(PetscLogHandlerGetEventPerfInfo(nested->handler, 0, event_id, &event_info));
-      perf[node] = *event_info;
+      perf[tree_node] = *event_info;
     } else {
-      PetscCall(PetscArrayzero(&perf[node], 1));
+      PetscCall(PetscArrayzero(&perf[tree_node], 1));
     }
   }
   *tree_p = tree;
