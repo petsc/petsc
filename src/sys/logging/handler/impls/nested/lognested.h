@@ -11,7 +11,18 @@ static inline PETSC_UNUSED NestedId NestedIdFromEvent(PetscLogEvent e)
 {
   return e;
 }
+
+static inline PETSC_UNUSED PetscLogEvent NestedIdToEvent(NestedId e)
+{
+  return e;
+}
+
 static inline PETSC_UNUSED NestedId NestedIdFromStage(PetscLogStage s)
+{
+  return -(s + 2);
+}
+
+static inline PETSC_UNUSED PetscLogStage NestedIdToStage(NestedId s)
 {
   return -(s + 2);
 }
@@ -32,7 +43,8 @@ struct _n_PetscLogHandler_Nested {
   PetscLogState   state;
   PetscLogHandler handler;
   PetscNestedHash pair_map;
-  PetscIntStack   stack; // stack of nested ids
+  PetscIntStack   nested_stack; // stack of nested ids
+  PetscIntStack   orig_stack;   // stack of the original ids
   PetscClassId    nested_stage_id;
   PetscLogDouble  threshold;
 };
