@@ -109,9 +109,8 @@ int main(int argc, char **argv)
   Mat         A;
   PetscInt    order = 2;
   PetscScalar results[2][10];
-  /* I would like to use 0 here, but linux-gcc-complex-opt-32bit
-     errors with arkimex with 1.e-18 errors */
-  PetscReal tol = PETSC_MACHINE_EPSILON;
+  /* I would like to use 0 here, but linux-gcc-complex-opt-32bit  errors with arkimex with 1.e-18 errors, macOS clang requires an even larger tolerance */
+  PetscReal tol = 10 * PETSC_MACHINE_EPSILON;
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
