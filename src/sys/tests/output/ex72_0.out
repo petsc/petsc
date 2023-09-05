@@ -1,0 +1,9 @@
+[0] <loghandler:nested> PetscLogHandlerNestedEventEnd(): Log event Event-2 wasn't ended, ending it to maintain stack property for nested log handler
+[0] <loghandler:nested> PetscLogHandlerNestedEventEnd(): Log event Event-1 wasn't ended, ending it to maintain stack property for nested log handler
+[0] <loghandler:nested> PetscLogHandlerNestedEventEnd(): Log event Event-2 wasn't ended, ending it to maintain stack property for nested log handler
+Main Stage time_removed
+Main Stage;User Stage time_removed
+Main Stage;User Stage;Event-1 time_removed
+Main Stage;User Stage;Event-1;Event-2 time_removed
+Main Stage;Event-1 time_removed
+Main Stage;Event-1;Event-2 time_removed
