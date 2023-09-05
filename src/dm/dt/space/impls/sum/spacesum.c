@@ -385,6 +385,8 @@ static PetscErrorCode PetscSpaceDestroy_Sum(PetscSpace sp)
   PetscCall(PetscObjectComposeFunction((PetscObject)sp, "PetscSpaceSumGetNumSubspaces_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)sp, "PetscSpaceSumGetConcatenate_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)sp, "PetscSpaceSumSetConcatenate_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)sp, "PetscSpaceSumGetInterleave_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)sp, "PetscSpaceSumSetInterleave_C", NULL));
   PetscCall(PetscFree(sum));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -455,12 +457,13 @@ static PetscErrorCode PetscSpaceEvaluate_Sum(PetscSpace sp, PetscInt npoints, co
 
         for (j = 0; j < spdim; ++j) {
           PetscInt c;
+          PetscInt b = sum->interleave_basis ? (j * Ns + s) : (j + offset);
 
           for (c = 0; c < sNc; ++c) {
             PetscInt compoffset, BInd, sBInd;
 
-            compoffset = concatenate ? c + ncoffset : c;
-            BInd       = (p * pdimfull + j + offset) * Nc + compoffset;
+            compoffset = concatenate ? (sum->interleave_components ? (c * Ns + s) : (c + ncoffset)) : c;
+            BInd       = (p * pdimfull + b) * Nc + compoffset;
             sBInd      = (p * spdim + j) * sNc + c;
             if (B) B[BInd] = sB[sBInd];
             if (D || H) {
@@ -541,6 +544,74 @@ static PetscErrorCode PetscSpaceGetHeightSubspace_Sum(PetscSpace sp, PetscInt he
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@
+  PetscSpaceSumSetInterleave - Set whether the basis functions and components of a uniform sum are interleaved
+
+  Logically collective
+
+  Input Parameters:
++ sp                    - a `PetscSpace` of type `PETSCSPACESUM`
+. interleave_basis      - if `PETSC_TRUE`, the basis vectors of the subspaces are interleaved
+- interleave_components - if `PETSC_TRUE` and the space concatenates components (`PetscSpaceSumGetConcatenate()`),
+                          interleave the concatenated components
+
+  Level: developer
+
+.seealso: `PetscSpace`, `PETSCSPACESUM`, `PETSCFEVECTOR`, `PetscSpaceSumGetInterleave()`
+@*/
+PetscErrorCode PetscSpaceSumSetInterleave(PetscSpace sp, PetscBool interleave_basis, PetscBool interleave_components)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
+  PetscTryMethod(sp, "PetscSpaceSumSetInterleave_C", (PetscSpace, PetscBool, PetscBool), (sp, interleave_basis, interleave_components));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode PetscSpaceSumSetInterleave_Sum(PetscSpace sp, PetscBool interleave_basis, PetscBool interleave_components)
+{
+  PetscSpace_Sum *sum = (PetscSpace_Sum *)sp->data;
+  PetscFunctionBegin;
+  sum->interleave_basis      = interleave_basis;
+  sum->interleave_components = interleave_components;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  PetscSpaceSumGetInterleave - Get whether the basis functions and components of a uniform sum are interleaved
+
+  Logically collective
+
+  Input Parameter:
+. sp - a `PetscSpace` of type `PETSCSPACESUM`
+
+  Output Parameters:
++ interleave_basis      - if `PETSC_TRUE`, the basis vectors of the subspaces are interleaved
+- interleave_components - if `PETSC_TRUE` and the space concatenates components (`PetscSpaceSumGetConcatenate()`),
+                          interleave the concatenated components
+
+  Level: developer
+
+.seealso: `PetscSpace`, `PETSCSPACESUM`, `PETSCFEVECTOR`, `PetscSpaceSumSetInterleave()`
+@*/
+PetscErrorCode PetscSpaceSumGetInterleave(PetscSpace sp, PetscBool *interleave_basis, PetscBool *interleave_components)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
+  if (interleave_basis) PetscAssertPointer(interleave_basis, 2);
+  if (interleave_components) PetscAssertPointer(interleave_components, 3);
+  PetscTryMethod(sp, "PetscSpaceSumGetInterleave_C", (PetscSpace, PetscBool *, PetscBool *), (sp, interleave_basis, interleave_components));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode PetscSpaceSumGetInterleave_Sum(PetscSpace sp, PetscBool *interleave_basis, PetscBool *interleave_components)
+{
+  PetscSpace_Sum *sum = (PetscSpace_Sum *)sp->data;
+  PetscFunctionBegin;
+  if (interleave_basis) *interleave_basis = sum->interleave_basis;
+  if (interleave_components) *interleave_components = sum->interleave_components;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 static PetscErrorCode PetscSpaceInitialize_Sum(PetscSpace sp)
 {
   PetscFunctionBegin;
@@ -558,6 +629,8 @@ static PetscErrorCode PetscSpaceInitialize_Sum(PetscSpace sp)
   PetscCall(PetscObjectComposeFunction((PetscObject)sp, "PetscSpaceSumSetSubspace_C", PetscSpaceSumSetSubspace_Sum));
   PetscCall(PetscObjectComposeFunction((PetscObject)sp, "PetscSpaceSumGetConcatenate_C", PetscSpaceSumGetConcatenate_Sum));
   PetscCall(PetscObjectComposeFunction((PetscObject)sp, "PetscSpaceSumSetConcatenate_C", PetscSpaceSumSetConcatenate_Sum));
+  PetscCall(PetscObjectComposeFunction((PetscObject)sp, "PetscSpaceSumGetInterleave_C", PetscSpaceSumGetInterleave_Sum));
+  PetscCall(PetscObjectComposeFunction((PetscObject)sp, "PetscSpaceSumSetInterleave_C", PetscSpaceSumSetInterleave_Sum));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -592,7 +665,6 @@ PETSC_EXTERN PetscErrorCode PetscSpaceCreateSum(PetscInt numSubspaces, const Pet
   PetscInt i, Nv, Nc = 0;
 
   PetscFunctionBegin;
-  if (sumSpace) PetscCall(PetscSpaceDestroy(sumSpace));
   PetscCall(PetscSpaceCreate(PetscObjectComm((PetscObject)subspaces[0]), sumSpace));
   PetscCall(PetscSpaceSetType(*sumSpace, PETSCSPACESUM));
   PetscCall(PetscSpaceSumSetNumSubspaces(*sumSpace, numSubspaces));

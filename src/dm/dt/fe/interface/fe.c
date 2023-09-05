@@ -968,7 +968,7 @@ PetscErrorCode PetscFECreateTabulation(PetscFE fem, PetscInt nrepl, PetscInt npo
   (*T)->Nc   = Nc;
   (*T)->cdim = cdim;
   PetscCall(PetscMalloc1((*T)->K + 1, &(*T)->T));
-  for (k = 0; k <= (*T)->K; ++k) PetscCall(PetscMalloc1(nrepl * npoints * Nb * Nc * PetscPowInt(cdim, k), &(*T)->T[k]));
+  for (k = 0; k <= (*T)->K; ++k) PetscCall(PetscCalloc1(nrepl * npoints * Nb * Nc * PetscPowInt(cdim, k), &(*T)->T[k]));
   PetscUseTypeMethod(fem, createtabulation, nrepl * npoints, points, K, *T);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1055,12 +1055,11 @@ PetscErrorCode PetscTabulationDestroy(PetscTabulation *T)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PETSC_EXTERN PetscErrorCode PetscFECreatePointTrace(PetscFE fe, PetscInt refPoint, PetscFE *trFE)
+static PetscErrorCode PetscFECreatePointTraceDefault_Internal(PetscFE fe, PetscInt refPoint, PetscFE *trFE)
 {
   PetscSpace      bsp, bsubsp;
   PetscDualSpace  dsp, dsubsp;
   PetscInt        dim, depth, numComp, i, j, coneSize, order;
-  PetscFEType     type;
   DM              dm;
   DMLabel         label;
   PetscReal      *xi, *v, *J, detJ;
@@ -1068,8 +1067,6 @@ PETSC_EXTERN PetscErrorCode PetscFECreatePointTrace(PetscFE fe, PetscInt refPoin
   PetscQuadrature origin, fullQuad, subQuad;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(fe, PETSCFE_CLASSID, 1);
-  PetscAssertPointer(trFE, 3);
   PetscCall(PetscFEGetBasisSpace(fe, &bsp));
   PetscCall(PetscFEGetDualSpace(fe, &dsp));
   PetscCall(PetscDualSpaceGetDM(dsp, &dm));
@@ -1092,8 +1089,7 @@ PETSC_EXTERN PetscErrorCode PetscFECreatePointTrace(PetscFE fe, PetscInt refPoin
   PetscCall(PetscSpaceCreateSubspace(bsp, dsubsp, v, J, NULL, NULL, PETSC_OWN_POINTER, &bsubsp));
   PetscCall(PetscSpaceSetUp(bsubsp));
   PetscCall(PetscFECreate(PetscObjectComm((PetscObject)fe), trFE));
-  PetscCall(PetscFEGetType(fe, &type));
-  PetscCall(PetscFESetType(*trFE, type));
+  PetscCall(PetscFESetType(*trFE, PETSCFEBASIC));
   PetscCall(PetscFEGetNumComponents(fe, &numComp));
   PetscCall(PetscFESetNumComponents(*trFE, numComp));
   PetscCall(PetscFESetBasisSpace(*trFE, bsubsp));
@@ -1109,6 +1105,22 @@ PETSC_EXTERN PetscErrorCode PetscFECreatePointTrace(PetscFE fe, PetscInt refPoin
   PetscCall(PetscFESetUp(*trFE));
   PetscCall(PetscQuadratureDestroy(&subQuad));
   PetscCall(PetscSpaceDestroy(&bsubsp));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+PETSC_EXTERN PetscErrorCode PetscFECreatePointTrace(PetscFE fe, PetscInt refPoint, PetscFE *trFE)
+{
+  PetscErrorCode (*createpointtrace)(PetscFE, PetscInt, PetscFE *);
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(fe, PETSCFE_CLASSID, 1);
+  PetscAssertPointer(trFE, 3);
+  createpointtrace = fe->ops->createpointtrace;
+  if (createpointtrace) {
+    PetscCall((*createpointtrace)(fe, refPoint, trFE));
+  } else {
+    PetscCall(PetscFECreatePointTraceDefault_Internal(fe, refPoint, trFE));
+  }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1690,7 +1702,6 @@ PetscErrorCode PetscFEGetHeightSubspace(PetscFE fe, PetscInt height, PetscFE *su
   PetscSpace      P, subP;
   PetscDualSpace  Q, subQ;
   PetscQuadrature subq;
-  PetscFEType     fetype;
   PetscInt        dim, Nc;
 
   PetscFunctionBegin;
@@ -1715,16 +1726,14 @@ PetscErrorCode PetscFEGetHeightSubspace(PetscFE fe, PetscInt height, PetscFE *su
       PetscCall(PetscSpaceGetHeightSubspace(P, height, &subP));
       PetscCall(PetscDualSpaceGetHeightSubspace(Q, height, &subQ));
       if (subQ) {
-        PetscCall(PetscFECreate(PetscObjectComm((PetscObject)fe), &sub));
+        PetscCall(PetscObjectReference((PetscObject)subP));
+        PetscCall(PetscObjectReference((PetscObject)subQ));
+        PetscCall(PetscObjectReference((PetscObject)subq));
+        PetscCall(PetscFECreateFromSpaces(subP, subQ, subq, NULL, &sub));
+      }
+      if (sub) {
         PetscCall(PetscObjectGetName((PetscObject)fe, &name));
-        PetscCall(PetscObjectSetName((PetscObject)sub, name));
-        PetscCall(PetscFEGetType(fe, &fetype));
-        PetscCall(PetscFESetType(sub, fetype));
-        PetscCall(PetscFESetBasisSpace(sub, subP));
-        PetscCall(PetscFESetDualSpace(sub, subQ));
-        PetscCall(PetscFESetNumComponents(sub, Nc));
-        PetscCall(PetscFESetUp(sub));
-        PetscCall(PetscFESetQuadrature(sub, subq));
+        if (name) PetscCall(PetscFESetName(sub, name));
       }
       fe->subspaces[height - 1] = sub;
     }
@@ -1870,17 +1879,72 @@ static PetscErrorCode PetscFESetDefaultName_Private(PetscFE fe)
 PetscErrorCode PetscFECreateFromSpaces(PetscSpace P, PetscDualSpace Q, PetscQuadrature q, PetscQuadrature fq, PetscFE *fem)
 {
   PetscInt    Nc;
+  PetscInt    p_Ns = -1, p_Nc = -1, q_Ns = -1, q_Nc = -1;
+  PetscBool   p_is_uniform_sum = PETSC_FALSE, p_interleave_basis = PETSC_FALSE, p_interleave_components = PETSC_FALSE;
+  PetscBool   q_is_uniform_sum = PETSC_FALSE, q_interleave_basis = PETSC_FALSE, q_interleave_components = PETSC_FALSE;
   const char *prefix;
 
   PetscFunctionBegin;
-  PetscCall(PetscFECreate(PetscObjectComm((PetscObject)P), fem));
-  PetscCall(PetscObjectGetOptionsPrefix((PetscObject)P, &prefix));
-  PetscCall(PetscObjectSetOptionsPrefix((PetscObject)*fem, prefix));
-  PetscCall(PetscFESetType(*fem, PETSCFEBASIC));
-  PetscCall(PetscFESetBasisSpace(*fem, P));
-  PetscCall(PetscFESetDualSpace(*fem, Q));
+  PetscCall(PetscObjectTypeCompare((PetscObject)P, PETSCSPACESUM, &p_is_uniform_sum));
+  if (p_is_uniform_sum) {
+    PetscSpace subsp_0 = NULL;
+    PetscCall(PetscSpaceSumGetNumSubspaces(P, &p_Ns));
+    PetscCall(PetscSpaceGetNumComponents(P, &p_Nc));
+    PetscCall(PetscSpaceSumGetConcatenate(P, &p_is_uniform_sum));
+    PetscCall(PetscSpaceSumGetInterleave(P, &p_interleave_basis, &p_interleave_components));
+    for (PetscInt s = 0; s < p_Ns; s++) {
+      PetscSpace subsp;
+
+      PetscCall(PetscSpaceSumGetSubspace(P, s, &subsp));
+      if (!s) {
+        subsp_0 = subsp;
+      } else if (subsp != subsp_0) {
+        p_is_uniform_sum = PETSC_FALSE;
+      }
+    }
+  }
+  PetscCall(PetscObjectTypeCompare((PetscObject)Q, PETSCDUALSPACESUM, &q_is_uniform_sum));
+  if (q_is_uniform_sum) {
+    PetscDualSpace subsp_0 = NULL;
+    PetscCall(PetscDualSpaceSumGetNumSubspaces(Q, &q_Ns));
+    PetscCall(PetscDualSpaceGetNumComponents(Q, &q_Nc));
+    PetscCall(PetscDualSpaceSumGetConcatenate(Q, &q_is_uniform_sum));
+    PetscCall(PetscDualSpaceSumGetInterleave(Q, &q_interleave_basis, &q_interleave_components));
+    for (PetscInt s = 0; s < q_Ns; s++) {
+      PetscDualSpace subsp;
+
+      PetscCall(PetscDualSpaceSumGetSubspace(Q, s, &subsp));
+      if (!s) {
+        subsp_0 = subsp;
+      } else if (subsp != subsp_0) {
+        q_is_uniform_sum = PETSC_FALSE;
+      }
+    }
+  }
+  if (p_is_uniform_sum && q_is_uniform_sum && (p_interleave_basis == q_interleave_basis) && (p_interleave_components == q_interleave_components) && (p_Ns == q_Ns) && (p_Nc == q_Nc)) {
+    PetscSpace     scalar_space;
+    PetscDualSpace scalar_dspace;
+    PetscFE        scalar_fe;
+
+    PetscCall(PetscSpaceSumGetSubspace(P, 0, &scalar_space));
+    PetscCall(PetscDualSpaceSumGetSubspace(Q, 0, &scalar_dspace));
+    PetscCall(PetscObjectReference((PetscObject)scalar_space));
+    PetscCall(PetscObjectReference((PetscObject)scalar_dspace));
+    PetscCall(PetscObjectReference((PetscObject)q));
+    PetscCall(PetscObjectReference((PetscObject)fq));
+    PetscCall(PetscFECreateFromSpaces(scalar_space, scalar_dspace, q, fq, &scalar_fe));
+    PetscCall(PetscFECreateVector(scalar_fe, p_Ns, p_interleave_basis, p_interleave_components, fem));
+    PetscCall(PetscFEDestroy(&scalar_fe));
+  } else {
+    PetscCall(PetscFECreate(PetscObjectComm((PetscObject)P), fem));
+    PetscCall(PetscFESetType(*fem, PETSCFEBASIC));
+  }
   PetscCall(PetscSpaceGetNumComponents(P, &Nc));
   PetscCall(PetscFESetNumComponents(*fem, Nc));
+  PetscCall(PetscFESetBasisSpace(*fem, P));
+  PetscCall(PetscFESetDualSpace(*fem, Q));
+  PetscCall(PetscObjectGetOptionsPrefix((PetscObject)P, &prefix));
+  PetscCall(PetscObjectSetOptionsPrefix((PetscObject)*fem, prefix));
   PetscCall(PetscFESetUp(*fem));
   PetscCall(PetscSpaceDestroy(&P));
   PetscCall(PetscDualSpaceDestroy(&Q));
@@ -1927,10 +1991,11 @@ static PetscErrorCode PetscFECreate_Internal(MPI_Comm comm, PetscInt dim, PetscI
     if (ct == DM_POLYTOPE_TRI_PRISM || ct == DM_POLYTOPE_TRI_PRISM_TENSOR) {
       PetscSpace Pend, Pside;
 
+      PetscCall(PetscSpaceSetNumComponents(P, 1));
       PetscCall(PetscSpaceCreate(comm, &Pend));
       PetscCall(PetscSpaceSetType(Pend, PETSCSPACEPOLYNOMIAL));
       PetscCall(PetscSpacePolynomialSetTensor(Pend, PETSC_FALSE));
-      PetscCall(PetscSpaceSetNumComponents(Pend, Nc));
+      PetscCall(PetscSpaceSetNumComponents(Pend, 1));
       PetscCall(PetscSpaceSetNumVariables(Pend, dim - 1));
       PetscCall(PetscSpaceSetDegree(Pend, degree, PETSC_DETERMINE));
       PetscCall(PetscSpaceCreate(comm, &Pside));
@@ -1945,6 +2010,20 @@ static PetscErrorCode PetscFECreate_Internal(MPI_Comm comm, PetscInt dim, PetscI
       PetscCall(PetscSpaceTensorSetSubspace(P, 1, Pside));
       PetscCall(PetscSpaceDestroy(&Pend));
       PetscCall(PetscSpaceDestroy(&Pside));
+
+      if (Nc > 1) {
+        PetscSpace scalar_P = P;
+
+        PetscCall(PetscSpaceCreate(comm, &P));
+        PetscCall(PetscSpaceSetNumVariables(P, dim));
+        PetscCall(PetscSpaceSetNumComponents(P, Nc));
+        PetscCall(PetscSpaceSetType(P, PETSCSPACESUM));
+        PetscCall(PetscSpaceSumSetNumSubspaces(P, Nc));
+        PetscCall(PetscSpaceSumSetConcatenate(P, PETSC_TRUE));
+        PetscCall(PetscSpaceSumSetInterleave(P, PETSC_TRUE, PETSC_FALSE));
+        for (PetscInt i = 0; i < Nc; i++) PetscCall(PetscSpaceSumSetSubspace(P, i, scalar_P));
+        PetscCall(PetscSpaceDestroy(&scalar_P));
+      }
     }
   }
   if (setFromOptions) PetscCall(PetscSpaceSetFromOptions(P));
@@ -1961,7 +2040,6 @@ static PetscErrorCode PetscFECreate_Internal(MPI_Comm comm, PetscInt dim, PetscI
   PetscCall(DMDestroy(&K));
   PetscCall(PetscDualSpaceSetNumComponents(Q, Nc));
   PetscCall(PetscDualSpaceSetOrder(Q, degree));
-  /* TODO For some reason, we need a tensor dualspace with wedges */
   PetscCall(PetscDualSpaceLagrangeSetTensor(Q, (tensor || (ct == DM_POLYTOPE_TRI_PRISM)) ? PETSC_TRUE : PETSC_FALSE));
   if (setFromOptions) PetscCall(PetscDualSpaceSetFromOptions(Q));
   PetscCall(PetscDualSpaceSetUp(Q));

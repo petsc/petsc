@@ -147,6 +147,16 @@ PETSC_EXTERN PetscErrorCode PetscGaussLobattoLegendreElementAdvectionDestroy(Pet
 PETSC_EXTERN PetscErrorCode PetscGaussLobattoLegendreElementMassCreate(PetscInt, PetscReal *, PetscReal *, PetscReal ***);
 PETSC_EXTERN PetscErrorCode PetscGaussLobattoLegendreElementMassDestroy(PetscInt, PetscReal *, PetscReal *, PetscReal ***);
 
+/*MC
+  PETSC_FORM_DEGREE_UNDEFINED - Indicates that a field does not have
+  a well-defined form degree in exterior calculus.
+
+  Level: advanced
+
+.seealso: `PetscDTAltV`, `PetscDualSpaceGetFormDegree()`
+M*/
+#define PETSC_FORM_DEGREE_UNDEFINED PETSC_INT_MIN
+
 PETSC_EXTERN PetscErrorCode PetscDTAltVApply(PetscInt, PetscInt, const PetscReal *, const PetscReal *, PetscReal *);
 PETSC_EXTERN PetscErrorCode PetscDTAltVWedge(PetscInt, PetscInt, PetscInt, const PetscReal *, const PetscReal *, PetscReal *);
 PETSC_EXTERN PetscErrorCode PetscDTAltVWedgeMatrix(PetscInt, PetscInt, PetscInt, const PetscReal *, PetscReal *);

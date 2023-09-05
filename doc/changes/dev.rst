@@ -200,6 +200,22 @@ Changes: Development
 
 .. rubric:: DT:
 
+- Add ``PETSCFEVECTOR`` for making a finite element that is a vector of copies of another finite element
+- Add ``PetscFECreateVector()``
+- Add ``PETSCDUALSPACESUM`` for a finite element dual basis that is the sum of other dual bases
+- Add ``PetscDualSpaceCreateSum()``
+- Add ``PetscDualSpaceSumSetNumSubspaces()``
+- Add ``PetscDualSpaceSumGetNumSubspaces()``
+- Add ``PetscDualSpaceSumSetSubspace()``
+- Add ``PetscDualSpaceSumGetSubspace()``
+- Add ``PetscDualSpaceSumSetConcatenate()``
+- Add ``PetscDualSpaceSumGetConcatenate()``
+- Add ``PetscDualSpaceSumSetInterleave()``
+- Add ``PetscDualSpaceSumGetInterleave()``
+- Add ``PetscSpaceSumSetInterleave()``
+- Add ``PetscSpaceSumGetInterleave()``
+- Add ``PetscDualSpaceGetInteriorSection()``
+
 .. rubric:: Fortran:
 
 - Add ``PetscCheck()`` and ``PetscCheckA()`` for Fortran

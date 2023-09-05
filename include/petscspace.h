@@ -96,7 +96,9 @@ PETSC_EXTERN PetscErrorCode PetscSpaceSumSetSubspace(PetscSpace, PetscInt, Petsc
 PETSC_EXTERN PetscErrorCode PetscSpaceSumGetSubspace(PetscSpace, PetscInt, PetscSpace *);
 PETSC_EXTERN PetscErrorCode PetscSpaceSumSetConcatenate(PetscSpace, PetscBool);
 PETSC_EXTERN PetscErrorCode PetscSpaceSumGetConcatenate(PetscSpace, PetscBool *);
-PETSC_EXTERN PetscErrorCode PetscSpaceCreateSum(PetscInt numSubspaces, const PetscSpace subspaces[], PetscBool concatenate, PetscSpace *sumSpace);
+PETSC_EXTERN PetscErrorCode PetscSpaceSumSetInterleave(PetscSpace, PetscBool, PetscBool);
+PETSC_EXTERN PetscErrorCode PetscSpaceSumGetInterleave(PetscSpace, PetscBool *, PetscBool *);
+PETSC_EXTERN PetscErrorCode PetscSpaceCreateSum(PetscInt, const PetscSpace[], PetscBool, PetscSpace *);
 
 PETSC_EXTERN PetscErrorCode PetscSpacePointGetPoints(PetscSpace, PetscQuadrature *);
 PETSC_EXTERN PetscErrorCode PetscSpacePointSetPoints(PetscSpace, PetscQuadrature);

@@ -68,6 +68,7 @@ static PetscErrorCode PetscSpaceSetUp_Polynomial(PetscSpace sp)
 
     PetscCall(PetscSpaceSetType(sp, PETSCSPACESUM));
     PetscCall(PetscSpaceSumSetNumSubspaces(sp, Nc));
+    PetscCall(PetscSpaceSumSetInterleave(sp, PETSC_TRUE, PETSC_FALSE));
     PetscCall(PetscSpaceCreate(PetscObjectComm((PetscObject)sp), &subsp));
     PetscCall(PetscObjectGetOptionsPrefix((PetscObject)sp, &prefix));
     PetscCall(PetscObjectSetOptionsPrefix((PetscObject)subsp, prefix));

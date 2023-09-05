@@ -13,6 +13,7 @@ typedef struct {
   PetscReal     *Ju_alloc;
   PetscReal     *Q;
   PetscInt       Nb;
+  PetscBool      setupcalled;
 } PetscSpace_Subspace;
 
 static PetscErrorCode PetscSpaceDestroy_Subspace(PetscSpace sp)
@@ -280,16 +281,17 @@ static PetscErrorCode PetscSpaceSetUp_Subspace(PetscSpace sp)
   PetscInt             origDim, subDim, origNc, subNc, origNb, subNb, f, i, j, numPoints, offset;
   PetscReal           *allPoints, *allWeights, *B, *V;
   DM                   dm;
-  PetscSpace_Subspace *subsp;
+  PetscSpace_Subspace *subsp = (PetscSpace_Subspace *)sp->data;
 
   PetscFunctionBegin;
-  subsp        = (PetscSpace_Subspace *)sp->data;
-  x            = subsp->x;
-  Jx           = subsp->Jx;
-  u            = subsp->u;
-  Ju           = subsp->Ju;
-  origSpace    = subsp->origSpace;
-  dualSubspace = subsp->dualSubspace;
+  if (subsp->setupcalled) PetscFunctionReturn(PETSC_SUCCESS);
+  subsp->setupcalled = PETSC_TRUE;
+  x                  = subsp->x;
+  Jx                 = subsp->Jx;
+  u                  = subsp->u;
+  Ju                 = subsp->Ju;
+  origSpace          = subsp->origSpace;
+  dualSubspace       = subsp->dualSubspace;
   PetscCall(PetscSpaceGetNumComponents(origSpace, &origNc));
   PetscCall(PetscSpaceGetNumVariables(origSpace, &origDim));
   PetscCall(PetscDualSpaceGetDM(dualSubspace, &dm));

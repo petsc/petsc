@@ -243,31 +243,39 @@ Discrete System with 2 fields
         type: sum
         Space in 2 variables with 3 components, size 9
         Sum space of 3 concatenated subspaces (all identical)
-          PetscSpace Object: sum component 1 MPI process
+          PetscSpace Object: P1 1 MPI process
             type: poly
             Space in 2 variables with 1 components, size 3
             Polynomial space of degree 1
       PetscDualSpace Object: displacement 1 MPI process
-        type: lagrange
+        type: sum
         Dual space with 3 components, size 9
-        Continuous Lagrange dual space
+        Sum dual space of 3 concatenated subspaces (all identical)
+          PetscDualSpace Object: 1 MPI process
+            type: lagrange
+            Dual space with 1 components, size 3
+            Continuous Lagrange dual space
         Quadrature on a triangle of order 2 on 3 points (dim 2)
   Field fault traction FEM 3 components (implicit) (Nq 3 Nqc 1) 1-jet
     PetscFE Object: fault traction (faulttraction_) 1 MPI process
-      type: basic
-      Basic Finite Element in 2 dimensions with 3 components
+      type: vector
+      Vector Finite Element in 2 dimensions with 3 components
       PetscSpace Object: fault traction (faulttraction_) 1 MPI process
         type: sum
         Space in 2 variables with 3 components, size 9
         Sum space of 3 concatenated subspaces (all identical)
-          PetscSpace Object: sum component (faulttraction_sumcomp_) 1 MPI process
+          PetscSpace Object: P1 (faulttraction_sumcomp_) 1 MPI process
             type: poly
             Space in 2 variables with 1 components, size 3
             Polynomial space of degree 1
       PetscDualSpace Object: fault traction (faulttraction_) 1 MPI process
-        type: lagrange
+        type: sum
         Dual space with 3 components, size 9
-        Continuous Lagrange dual space
+        Sum dual space of 3 concatenated subspaces (all identical)
+          PetscDualSpace Object: P1 1 MPI process
+            type: lagrange
+            Dual space with 1 components, size 3
+            Continuous Lagrange dual space
         Quadrature on a triangle of order 2 on 3 points (dim 2)
   Weak Form System with 2 fields
     boundary_residual_f0
@@ -310,14 +318,14 @@ Vec Object: Local Residual 1 MPI process
 -0.0833333
 0.
 -0.0833333
--3.08395e-18
-0.666667
+-1.23358e-17
+0.5
 0.75
 0.
 0.333333
 0.5
--1.23358e-17
-0.666667
+-3.08395e-18
+0.833333
 0.75
 -3.08395e-18
 0.333333

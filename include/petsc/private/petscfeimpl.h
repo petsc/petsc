@@ -71,6 +71,8 @@ typedef struct {
   PetscBool   uniform;
   PetscBool   concatenate;
   PetscBool   setupCalled;
+  PetscBool   interleave_basis;
+  PetscBool   interleave_components;
   PetscSpace *heightsubspaces; /* Height subspaces */
 } PetscSpace_Sum;
 
@@ -122,6 +124,7 @@ struct _p_PetscDualSpace {
   PetscBool        setupcalled;
   PetscBool        setfromoptionscalled;
   PetscSection     pointSection;
+  PetscSection     intPointSection;
   PetscDualSpace  *pointSpaces;
   PetscDualSpace  *heightSpaces;
   PetscInt        *numDof;
@@ -170,6 +173,28 @@ typedef struct {
 } PetscDualSpace_Lag;
 
 typedef struct {
+  PetscDualSpace         *sumspaces;
+  PetscInt                numSumSpaces;
+  PetscBool               uniform;
+  PetscBool               uniform_all_points;
+  PetscBool               uniform_interior_points;
+  PetscBool               concatenate;
+  PetscBool               setupCalled;
+  PetscBool               interleave_basis;
+  PetscBool               interleave_components;
+  ISLocalToGlobalMapping *all_rows;
+  ISLocalToGlobalMapping *all_cols;
+  ISLocalToGlobalMapping *int_rows;
+  ISLocalToGlobalMapping *int_cols;
+
+  PetscInt    ***symperms;
+  PetscScalar ***symflips;
+  PetscInt       numSelfSym;
+  PetscInt       selfSymOff;
+  PetscBool      symComputed;
+} PetscDualSpace_Sum;
+
+typedef struct {
   PetscInt  dim;
   PetscInt *numDof;
 } PetscDualSpace_Simple;
@@ -181,6 +206,7 @@ struct _PetscFEOps {
   PetscErrorCode (*view)(PetscFE, PetscViewer);
   PetscErrorCode (*destroy)(PetscFE);
   PetscErrorCode (*getdimension)(PetscFE, PetscInt *);
+  PetscErrorCode (*createpointtrace)(PetscFE, PetscInt, PetscFE *);
   PetscErrorCode (*createtabulation)(PetscFE, PetscInt, const PetscReal *, PetscInt, PetscTabulation);
   /* Element integration */
   PetscErrorCode (*integrate)(PetscDS, PetscInt, PetscInt, PetscFEGeom *, const PetscScalar[], PetscDS, const PetscScalar[], PetscScalar[]);
@@ -412,6 +438,8 @@ static inline PetscErrorCode PetscFEInterpolateFieldAndGradient_Static(PetscFE f
 
 PETSC_INTERN PetscErrorCode PetscDualSpaceLatticePointLexicographic_Internal(PetscInt, PetscInt, PetscInt[]);
 PETSC_INTERN PetscErrorCode PetscDualSpaceTensorPointLexicographic_Internal(PetscInt, PetscInt, PetscInt[]);
+PETSC_INTERN PetscErrorCode PetscDualSpaceComputeFunctionalsFromAllData(PetscDualSpace);
+PETSC_INTERN PetscErrorCode PetscDualSpaceGetBoundarySymmetries_Internal(PetscDualSpace, PetscInt ***, PetscScalar ***);
 
 PETSC_INTERN PetscErrorCode PetscDualSpaceSectionCreate_Internal(PetscDualSpace, PetscSection *);
 PETSC_INTERN PetscErrorCode PetscDualSpaceSectionSetUp_Internal(PetscDualSpace, PetscSection);
