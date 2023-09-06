@@ -1,8 +1,23 @@
-#include <../src/vec/is/sf/impls/basic/sfpack.h>
+#pragma once
+
+#include "sfcupm.hpp"
+#include <../src/sys/objects/device/impls/cupm/kernels.hpp>
 #include <petsc/private/cupmatomics.hpp>
 
+namespace Petsc
+{
+
+namespace sf
+{
+
+namespace cupm
+{
+
+namespace kernels
+{
+
 /* Map a thread id to an index in root/leaf space through a series of 3D subdomains. See PetscSFPackOpt. */
-__device__ static inline PetscInt MapTidToIndex(const PetscInt *opt, PetscInt tid)
+PETSC_NODISCARD static PETSC_DEVICE_INLINE_DECL PetscInt MapTidToIndex(const PetscInt *opt, PetscInt tid) noexcept
 {
   PetscInt        i, j, k, m, n, r;
   const PetscInt *offset, *start, *dx, *dy, *X, *Y;
@@ -26,7 +41,7 @@ __device__ static inline PetscInt MapTidToIndex(const PetscInt *opt, PetscInt ti
 }
 
 /*====================================================================================*/
-/*  Templated CUDA kernels for pack/unpack. The Op can be regular or atomic           */
+/*  Templated CUPM kernels for pack/unpack. The Op can be regular or atomic           */
 /*====================================================================================*/
 
 /* Suppose user calls PetscSFReduce(sf,unit,...) and <unit> is an MPI data type made of 16 PetscReals, then
@@ -39,75 +54,68 @@ __device__ static inline PetscInt MapTidToIndex(const PetscInt *opt, PetscInt ti
   For the common case in VecScatter, bs=1, BS=1, EQ=1, MBS=1, the inner for-loops below will be totally unrolled.
 */
 template <class Type, PetscInt BS, PetscInt EQ>
-__global__ static void d_Pack(PetscInt bs, PetscInt count, PetscInt start, const PetscInt *opt, const PetscInt *idx, const Type *data, Type *buf)
+PETSC_KERNEL_DECL static void d_Pack(PetscInt bs, PetscInt count, PetscInt start, const PetscInt *opt, const PetscInt *idx, const Type *data, Type *buf)
 {
-  PetscInt       i, s, t, tid = blockIdx.x * blockDim.x + threadIdx.x;
-  const PetscInt grid_size = gridDim.x * blockDim.x;
-  const PetscInt M         = (EQ) ? 1 : bs / BS; /* If EQ, then M=1 enables compiler's const-propagation */
-  const PetscInt MBS       = M * BS;             /* MBS=bs. We turn MBS into a compile-time const when EQ=1. */
+  const PetscInt M   = (EQ) ? 1 : bs / BS; /* If EQ, then M=1 enables compiler's const-propagation */
+  const PetscInt MBS = M * BS;             /* MBS=bs. We turn MBS into a compile-time const when EQ=1. */
 
-  for (; tid < count; tid += grid_size) {
-    /* opt != NULL ==> idx == NULL, i.e., the indices have patterns but not contiguous;
-       opt == NULL && idx == NULL ==> the indices are contiguous;
-     */
-    t = (opt ? MapTidToIndex(opt, tid) : (idx ? idx[tid] : start + tid)) * MBS;
-    s = tid * MBS;
-    for (i = 0; i < MBS; i++) buf[s + i] = data[t + i];
-  }
+  ::Petsc::device::cupm::kernels::util::grid_stride_1D(count, [&](PetscInt tid) {
+    PetscInt t = (opt ? MapTidToIndex(opt, tid) : (idx ? idx[tid] : start + tid)) * MBS;
+    PetscInt s = tid * MBS;
+    for (PetscInt i = 0; i < MBS; i++) buf[s + i] = data[t + i];
+  });
 }
 
 template <class Type, class Op, PetscInt BS, PetscInt EQ>
-__global__ static void d_UnpackAndOp(PetscInt bs, PetscInt count, PetscInt start, const PetscInt *opt, const PetscInt *idx, Type *data, const Type *buf)
+PETSC_KERNEL_DECL static void d_UnpackAndOp(PetscInt bs, PetscInt count, PetscInt start, const PetscInt *opt, const PetscInt *idx, Type *data, const Type *buf)
 {
-  PetscInt       i, s, t, tid = blockIdx.x * blockDim.x + threadIdx.x;
-  const PetscInt grid_size = gridDim.x * blockDim.x;
   const PetscInt M = (EQ) ? 1 : bs / BS, MBS = M * BS;
   Op             op;
 
-  for (; tid < count; tid += grid_size) {
-    t = (opt ? MapTidToIndex(opt, tid) : (idx ? idx[tid] : start + tid)) * MBS;
-    s = tid * MBS;
-    for (i = 0; i < MBS; i++) op(data[t + i], buf[s + i]);
-  }
+  ::Petsc::device::cupm::kernels::util::grid_stride_1D(count, [&](PetscInt tid) {
+    PetscInt t = (opt ? MapTidToIndex(opt, tid) : (idx ? idx[tid] : start + tid)) * MBS;
+    PetscInt s = tid * MBS;
+    for (PetscInt i = 0; i < MBS; i++) op(data[t + i], buf[s + i]);
+  });
 }
 
 template <class Type, class Op, PetscInt BS, PetscInt EQ>
-__global__ static void d_FetchAndOp(PetscInt bs, PetscInt count, PetscInt rootstart, const PetscInt *rootopt, const PetscInt *rootidx, Type *rootdata, Type *leafbuf)
+PETSC_KERNEL_DECL static void d_FetchAndOp(PetscInt bs, PetscInt count, PetscInt rootstart, const PetscInt *rootopt, const PetscInt *rootidx, Type *rootdata, Type *leafbuf)
 {
-  PetscInt       i, l, r, tid = blockIdx.x * blockDim.x + threadIdx.x;
-  const PetscInt grid_size = gridDim.x * blockDim.x;
   const PetscInt M = (EQ) ? 1 : bs / BS, MBS = M * BS;
   Op             op;
 
-  for (; tid < count; tid += grid_size) {
-    r = (rootopt ? MapTidToIndex(rootopt, tid) : (rootidx ? rootidx[tid] : rootstart + tid)) * MBS;
-    l = tid * MBS;
-    for (i = 0; i < MBS; i++) leafbuf[l + i] = op(rootdata[r + i], leafbuf[l + i]);
-  }
+  ::Petsc::device::cupm::kernels::util::grid_stride_1D(count, [&](PetscInt tid) {
+    PetscInt r = (rootopt ? MapTidToIndex(rootopt, tid) : (rootidx ? rootidx[tid] : rootstart + tid)) * MBS;
+    PetscInt l = tid * MBS;
+    for (PetscInt i = 0; i < MBS; i++) leafbuf[l + i] = op(rootdata[r + i], leafbuf[l + i]);
+  });
 }
 
 template <class Type, class Op, PetscInt BS, PetscInt EQ>
-__global__ static void d_ScatterAndOp(PetscInt bs, PetscInt count, PetscInt srcx, PetscInt srcy, PetscInt srcX, PetscInt srcY, PetscInt srcStart, const PetscInt *srcIdx, const Type *src, PetscInt dstx, PetscInt dsty, PetscInt dstX, PetscInt dstY, PetscInt dstStart, const PetscInt *dstIdx, Type *dst)
+PETSC_KERNEL_DECL static void d_ScatterAndOp(PetscInt bs, PetscInt count, PetscInt srcx, PetscInt srcy, PetscInt srcX, PetscInt srcY, PetscInt srcStart, const PetscInt *srcIdx, const Type *src, PetscInt dstx, PetscInt dsty, PetscInt dstX, PetscInt dstY, PetscInt dstStart, const PetscInt *dstIdx, Type *dst)
 {
-  PetscInt       i, j, k, s, t, tid = blockIdx.x * blockDim.x + threadIdx.x;
-  const PetscInt grid_size = gridDim.x * blockDim.x;
   const PetscInt M = (EQ) ? 1 : bs / BS, MBS = M * BS;
   Op             op;
 
-  for (; tid < count; tid += grid_size) {
+  ::Petsc::device::cupm::kernels::util::grid_stride_1D(count, [&](PetscInt tid) {
+    PetscInt s, t;
+
     if (!srcIdx) { /* src is either contiguous or 3D */
-      k = tid / (srcx * srcy);
-      j = (tid - k * srcx * srcy) / srcx;
-      i = tid - k * srcx * srcy - j * srcx;
+      PetscInt k = tid / (srcx * srcy);
+      PetscInt j = (tid - k * srcx * srcy) / srcx;
+      PetscInt i = tid - k * srcx * srcy - j * srcx;
+
       s = srcStart + k * srcX * srcY + j * srcX + i;
     } else {
       s = srcIdx[tid];
     }
 
     if (!dstIdx) { /* dst is either contiguous or 3D */
-      k = tid / (dstx * dsty);
-      j = (tid - k * dstx * dsty) / dstx;
-      i = tid - k * dstx * dsty - j * dstx;
+      PetscInt k = tid / (dstx * dsty);
+      PetscInt j = (tid - k * dstx * dsty) / dstx;
+      PetscInt i = tid - k * dstx * dsty - j * dstx;
+
       t = dstStart + k * dstX * dstY + j * dstX + i;
     } else {
       t = dstIdx[tid];
@@ -115,23 +123,21 @@ __global__ static void d_ScatterAndOp(PetscInt bs, PetscInt count, PetscInt srcx
 
     s *= MBS;
     t *= MBS;
-    for (i = 0; i < MBS; i++) op(dst[t + i], src[s + i]);
-  }
+    for (PetscInt i = 0; i < MBS; i++) op(dst[t + i], src[s + i]);
+  });
 }
 
 template <class Type, class Op, PetscInt BS, PetscInt EQ>
-__global__ static void d_FetchAndOpLocal(PetscInt bs, PetscInt count, PetscInt rootstart, const PetscInt *rootopt, const PetscInt *rootidx, Type *rootdata, PetscInt leafstart, const PetscInt *leafopt, const PetscInt *leafidx, const Type *leafdata, Type *leafupdate)
+PETSC_KERNEL_DECL static void d_FetchAndOpLocal(PetscInt bs, PetscInt count, PetscInt rootstart, const PetscInt *rootopt, const PetscInt *rootidx, Type *rootdata, PetscInt leafstart, const PetscInt *leafopt, const PetscInt *leafidx, const Type *leafdata, Type *leafupdate)
 {
-  PetscInt       i, l, r, tid = blockIdx.x * blockDim.x + threadIdx.x;
-  const PetscInt grid_size = gridDim.x * blockDim.x;
   const PetscInt M = (EQ) ? 1 : bs / BS, MBS = M * BS;
   Op             op;
 
-  for (; tid < count; tid += grid_size) {
-    r = (rootopt ? MapTidToIndex(rootopt, tid) : (rootidx ? rootidx[tid] : rootstart + tid)) * MBS;
-    l = (leafopt ? MapTidToIndex(leafopt, tid) : (leafidx ? leafidx[tid] : leafstart + tid)) * MBS;
-    for (i = 0; i < MBS; i++) leafupdate[l + i] = op(rootdata[r + i], leafdata[l + i]);
-  }
+  ::Petsc::device::cupm::kernels::util::grid_stride_1D(count, [&](PetscInt tid) {
+    PetscInt r = (rootopt ? MapTidToIndex(rootopt, tid) : (rootidx ? rootidx[tid] : rootstart + tid)) * MBS;
+    PetscInt l = (leafopt ? MapTidToIndex(leafopt, tid) : (leafidx ? leafidx[tid] : leafstart + tid)) * MBS;
+    for (PetscInt i = 0; i < MBS; i++) leafupdate[l + i] = op(rootdata[r + i], leafdata[l + i]);
+  });
 }
 
 /*====================================================================================*/
@@ -139,7 +145,7 @@ __global__ static void d_FetchAndOpLocal(PetscInt bs, PetscInt count, PetscInt r
 /*====================================================================================*/
 template <typename Type>
 struct Insert {
-  __device__ Type operator()(Type &x, Type y) const
+  PETSC_DEVICE_DECL Type operator()(Type &x, Type y) const
   {
     Type old = x;
     x        = y;
@@ -148,7 +154,7 @@ struct Insert {
 };
 template <typename Type>
 struct Add {
-  __device__ Type operator()(Type &x, Type y) const
+  PETSC_DEVICE_DECL Type operator()(Type &x, Type y) const
   {
     Type old = x;
     x += y;
@@ -157,7 +163,7 @@ struct Add {
 };
 template <typename Type>
 struct Mult {
-  __device__ Type operator()(Type &x, Type y) const
+  PETSC_DEVICE_DECL Type operator()(Type &x, Type y) const
   {
     Type old = x;
     x *= y;
@@ -166,7 +172,7 @@ struct Mult {
 };
 template <typename Type>
 struct Min {
-  __device__ Type operator()(Type &x, Type y) const
+  PETSC_DEVICE_DECL Type operator()(Type &x, Type y) const
   {
     Type old = x;
     x        = PetscMin(x, y);
@@ -175,7 +181,7 @@ struct Min {
 };
 template <typename Type>
 struct Max {
-  __device__ Type operator()(Type &x, Type y) const
+  PETSC_DEVICE_DECL Type operator()(Type &x, Type y) const
   {
     Type old = x;
     x        = PetscMax(x, y);
@@ -184,7 +190,7 @@ struct Max {
 };
 template <typename Type>
 struct LAND {
-  __device__ Type operator()(Type &x, Type y) const
+  PETSC_DEVICE_DECL Type operator()(Type &x, Type y) const
   {
     Type old = x;
     x        = x && y;
@@ -193,7 +199,7 @@ struct LAND {
 };
 template <typename Type>
 struct LOR {
-  __device__ Type operator()(Type &x, Type y) const
+  PETSC_DEVICE_DECL Type operator()(Type &x, Type y) const
   {
     Type old = x;
     x        = x || y;
@@ -202,7 +208,7 @@ struct LOR {
 };
 template <typename Type>
 struct LXOR {
-  __device__ Type operator()(Type &x, Type y) const
+  PETSC_DEVICE_DECL Type operator()(Type &x, Type y) const
   {
     Type old = x;
     x        = !x != !y;
@@ -211,7 +217,7 @@ struct LXOR {
 };
 template <typename Type>
 struct BAND {
-  __device__ Type operator()(Type &x, Type y) const
+  PETSC_DEVICE_DECL Type operator()(Type &x, Type y) const
   {
     Type old = x;
     x        = x & y;
@@ -220,7 +226,7 @@ struct BAND {
 };
 template <typename Type>
 struct BOR {
-  __device__ Type operator()(Type &x, Type y) const
+  PETSC_DEVICE_DECL Type operator()(Type &x, Type y) const
   {
     Type old = x;
     x        = x | y;
@@ -229,7 +235,7 @@ struct BOR {
 };
 template <typename Type>
 struct BXOR {
-  __device__ Type operator()(Type &x, Type y) const
+  PETSC_DEVICE_DECL Type operator()(Type &x, Type y) const
   {
     Type old = x;
     x        = x ^ y;
@@ -238,7 +244,7 @@ struct BXOR {
 };
 template <typename Type>
 struct Minloc {
-  __device__ Type operator()(Type &x, Type y) const
+  PETSC_DEVICE_DECL Type operator()(Type &x, Type y) const
   {
     Type old = x;
     if (y.a < x.a) x = y;
@@ -248,7 +254,7 @@ struct Minloc {
 };
 template <typename Type>
 struct Maxloc {
-  __device__ Type operator()(Type &x, Type y) const
+  PETSC_DEVICE_DECL Type operator()(Type &x, Type y) const
   {
     Type old = x;
     if (y.a > x.a) x = y;
@@ -257,82 +263,61 @@ struct Maxloc {
   }
 };
 
-/*====================================================================================*/
-/*  Wrapper functions of cuda kernels. Function pointers are stored in 'link'         */
-/*====================================================================================*/
-template <typename Type, PetscInt BS, PetscInt EQ>
-static PetscErrorCode Pack(PetscSFLink link, PetscInt count, PetscInt start, PetscSFPackOpt opt, const PetscInt *idx, const void *data, void *buf)
+} // namespace kernels
+
+namespace impl
 {
-  PetscInt        nthreads = 256;
-  PetscInt        nblocks  = (count + nthreads - 1) / nthreads;
-  const PetscInt *iarray   = opt ? opt->array : NULL;
+
+/*====================================================================================*/
+/*  Wrapper functions of cupm kernels. Function pointers are stored in 'link'         */
+/*====================================================================================*/
+template <device::cupm::DeviceType T>
+template <typename Type, PetscInt BS, PetscInt EQ>
+inline PetscErrorCode SfInterface<T>::Pack(PetscSFLink link, PetscInt count, PetscInt start, PetscSFPackOpt opt, const PetscInt *idx, const void *data, void *buf) noexcept
+{
+  const PetscInt *iarray = opt ? opt->array : NULL;
 
   PetscFunctionBegin;
   if (!count) PetscFunctionReturn(PETSC_SUCCESS);
-  if (!opt && !idx) { /* It is a 'CUDA data to nvshmem buf' memory copy */
-    PetscCallCUDA(cudaMemcpyAsync(buf, (char *)data + start * link->unitbytes, count * link->unitbytes, cudaMemcpyDeviceToDevice, link->stream));
+  if (PetscDefined(USING_NVCC) && !opt && !idx) { /* It is a 'CUDA data to nvshmem buf' memory copy */
+    PetscCallCUPM(cupmMemcpyAsync(buf, (char *)data + start * link->unitbytes, count * link->unitbytes, cupmMemcpyDeviceToDevice, link->stream));
   } else {
-    nblocks = PetscMin(nblocks, link->maxResidentThreadsPerGPU / nthreads);
-    d_Pack<Type, BS, EQ><<<nblocks, nthreads, 0, link->stream>>>(link->bs, count, start, iarray, idx, (const Type *)data, (Type *)buf);
-    PetscCallCUDA(cudaGetLastError());
+    PetscCall(PetscCUPMLaunchKernel1D(count, 0, link->stream, kernels::d_Pack<Type, BS, EQ>, link->bs, count, start, iarray, idx, (const Type *)data, (Type *)buf));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* To specialize UnpackAndOp for the cudaMemcpyAsync() below. Usually if this is a contiguous memcpy, we use root/leafdirect and do
-   not need UnpackAndOp. Only with nvshmem, we need this 'nvshmem buf to CUDA data' memory copy
-*/
-template <typename Type, PetscInt BS, PetscInt EQ>
-static PetscErrorCode Unpack(PetscSFLink link, PetscInt count, PetscInt start, PetscSFPackOpt opt, const PetscInt *idx, void *data, const void *buf)
+template <device::cupm::DeviceType T>
+template <typename Type, class Op, PetscInt BS, PetscInt EQ>
+inline PetscErrorCode SfInterface<T>::UnpackAndOp(PetscSFLink link, PetscInt count, PetscInt start, PetscSFPackOpt opt, const PetscInt *idx, void *data, const void *buf) noexcept
 {
-  PetscInt        nthreads = 256;
-  PetscInt        nblocks  = (count + nthreads - 1) / nthreads;
-  const PetscInt *iarray   = opt ? opt->array : NULL;
+  const PetscInt *iarray = opt ? opt->array : NULL;
 
   PetscFunctionBegin;
   if (!count) PetscFunctionReturn(PETSC_SUCCESS);
-  if (!opt && !idx) { /* It is a 'nvshmem buf to CUDA data' memory copy */
-    PetscCallCUDA(cudaMemcpyAsync((char *)data + start * link->unitbytes, buf, count * link->unitbytes, cudaMemcpyDeviceToDevice, link->stream));
+  if (PetscDefined(USING_NVCC) && std::is_same<Op, kernels::Insert<Type>>::value && !opt && !idx) { /* It is a 'nvshmem buf to CUDA data' memory copy */
+    PetscCallCUPM(cupmMemcpyAsync((char *)data + start * link->unitbytes, buf, count * link->unitbytes, cupmMemcpyDeviceToDevice, link->stream));
   } else {
-    nblocks = PetscMin(nblocks, link->maxResidentThreadsPerGPU / nthreads);
-    d_UnpackAndOp<Type, Insert<Type>, BS, EQ><<<nblocks, nthreads, 0, link->stream>>>(link->bs, count, start, iarray, idx, (Type *)data, (const Type *)buf);
-    PetscCallCUDA(cudaGetLastError());
+    PetscCall(PetscCUPMLaunchKernel1D(count, 0, link->stream, kernels::d_UnpackAndOp<Type, Op, BS, EQ>, link->bs, count, start, iarray, idx, (Type *)data, (const Type *)buf));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+template <device::cupm::DeviceType T>
 template <typename Type, class Op, PetscInt BS, PetscInt EQ>
-static PetscErrorCode UnpackAndOp(PetscSFLink link, PetscInt count, PetscInt start, PetscSFPackOpt opt, const PetscInt *idx, void *data, const void *buf)
+inline PetscErrorCode SfInterface<T>::FetchAndOp(PetscSFLink link, PetscInt count, PetscInt start, PetscSFPackOpt opt, const PetscInt *idx, void *data, void *buf) noexcept
 {
-  PetscInt        nthreads = 256;
-  PetscInt        nblocks  = (count + nthreads - 1) / nthreads;
-  const PetscInt *iarray   = opt ? opt->array : NULL;
+  const PetscInt *iarray = opt ? opt->array : NULL;
 
   PetscFunctionBegin;
   if (!count) PetscFunctionReturn(PETSC_SUCCESS);
-  nblocks = PetscMin(nblocks, link->maxResidentThreadsPerGPU / nthreads);
-  d_UnpackAndOp<Type, Op, BS, EQ><<<nblocks, nthreads, 0, link->stream>>>(link->bs, count, start, iarray, idx, (Type *)data, (const Type *)buf);
-  PetscCallCUDA(cudaGetLastError());
+  PetscCall(PetscCUPMLaunchKernel1D(count, 0, link->stream, kernels::d_FetchAndOp<Type, Op, BS, EQ>, link->bs, count, start, iarray, idx, (Type *)data, (const Type *)buf));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+template <device::cupm::DeviceType T>
 template <typename Type, class Op, PetscInt BS, PetscInt EQ>
-static PetscErrorCode FetchAndOp(PetscSFLink link, PetscInt count, PetscInt start, PetscSFPackOpt opt, const PetscInt *idx, void *data, void *buf)
-{
-  PetscInt        nthreads = 256;
-  PetscInt        nblocks  = (count + nthreads - 1) / nthreads;
-  const PetscInt *iarray   = opt ? opt->array : NULL;
-
-  PetscFunctionBegin;
-  if (!count) PetscFunctionReturn(PETSC_SUCCESS);
-  nblocks = PetscMin(nblocks, link->maxResidentThreadsPerGPU / nthreads);
-  d_FetchAndOp<Type, Op, BS, EQ><<<nblocks, nthreads, 0, link->stream>>>(link->bs, count, start, iarray, idx, (Type *)data, (Type *)buf);
-  PetscCallCUDA(cudaGetLastError());
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-template <typename Type, class Op, PetscInt BS, PetscInt EQ>
-static PetscErrorCode ScatterAndOp(PetscSFLink link, PetscInt count, PetscInt srcStart, PetscSFPackOpt srcOpt, const PetscInt *srcIdx, const void *src, PetscInt dstStart, PetscSFPackOpt dstOpt, const PetscInt *dstIdx, void *dst)
+inline PetscErrorCode SfInterface<T>::ScatterAndOp(PetscSFLink link, PetscInt count, PetscInt srcStart, PetscSFPackOpt srcOpt, const PetscInt *srcIdx, const void *src, PetscInt dstStart, PetscSFPackOpt dstOpt, const PetscInt *dstIdx, void *dst) noexcept
 {
   PetscInt nthreads = 256;
   PetscInt nblocks  = (count + nthreads - 1) / nthreads;
@@ -342,7 +327,7 @@ static PetscErrorCode ScatterAndOp(PetscSFLink link, PetscInt count, PetscInt sr
   if (!count) PetscFunctionReturn(PETSC_SUCCESS);
   nblocks = PetscMin(nblocks, link->maxResidentThreadsPerGPU / nthreads);
 
-  /* The 3D shape of source subdomain may be different than that of the destination, which makes it difficult to use CUDA 3D grid and block */
+  /* The 3D shape of source subdomain may be different than that of the destination, which makes it difficult to use 3D grid and block */
   if (srcOpt) {
     srcx     = srcOpt->dx[0];
     srcy     = srcOpt->dy[0];
@@ -367,64 +352,62 @@ static PetscErrorCode ScatterAndOp(PetscSFLink link, PetscInt count, PetscInt sr
     dsty = dstY = 1;
   }
 
-  d_ScatterAndOp<Type, Op, BS, EQ><<<nblocks, nthreads, 0, link->stream>>>(link->bs, count, srcx, srcy, srcX, srcY, srcStart, srcIdx, (const Type *)src, dstx, dsty, dstX, dstY, dstStart, dstIdx, (Type *)dst);
-  PetscCallCUDA(cudaGetLastError());
+  PetscCall(PetscCUPMLaunchKernel1D(count, 0, link->stream, kernels::d_ScatterAndOp<Type, Op, BS, EQ>, link->bs, count, srcx, srcy, srcX, srcY, srcStart, srcIdx, (const Type *)src, dstx, dsty, dstX, dstY, dstStart, dstIdx, (Type *)dst));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* Specialization for Insert since we may use cudaMemcpyAsync */
+template <device::cupm::DeviceType T>
+/* Specialization for Insert since we may use cupmMemcpyAsync */
 template <typename Type, PetscInt BS, PetscInt EQ>
-static PetscErrorCode ScatterAndInsert(PetscSFLink link, PetscInt count, PetscInt srcStart, PetscSFPackOpt srcOpt, const PetscInt *srcIdx, const void *src, PetscInt dstStart, PetscSFPackOpt dstOpt, const PetscInt *dstIdx, void *dst)
+inline PetscErrorCode SfInterface<T>::ScatterAndInsert(PetscSFLink link, PetscInt count, PetscInt srcStart, PetscSFPackOpt srcOpt, const PetscInt *srcIdx, const void *src, PetscInt dstStart, PetscSFPackOpt dstOpt, const PetscInt *dstIdx, void *dst) noexcept
 {
   PetscFunctionBegin;
   if (!count) PetscFunctionReturn(PETSC_SUCCESS);
   /*src and dst are contiguous */
   if ((!srcOpt && !srcIdx) && (!dstOpt && !dstIdx) && src != dst) {
-    PetscCallCUDA(cudaMemcpyAsync((Type *)dst + dstStart * link->bs, (const Type *)src + srcStart * link->bs, count * link->unitbytes, cudaMemcpyDeviceToDevice, link->stream));
+    PetscCallCUPM(cupmMemcpyAsync((Type *)dst + dstStart * link->bs, (const Type *)src + srcStart * link->bs, count * link->unitbytes, cupmMemcpyDeviceToDevice, link->stream));
   } else {
-    PetscCall(ScatterAndOp<Type, Insert<Type>, BS, EQ>(link, count, srcStart, srcOpt, srcIdx, src, dstStart, dstOpt, dstIdx, dst));
+    PetscCall(ScatterAndOp<Type, kernels::Insert<Type>, BS, EQ>(link, count, srcStart, srcOpt, srcIdx, src, dstStart, dstOpt, dstIdx, dst));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+template <device::cupm::DeviceType T>
 template <typename Type, class Op, PetscInt BS, PetscInt EQ>
-static PetscErrorCode FetchAndOpLocal(PetscSFLink link, PetscInt count, PetscInt rootstart, PetscSFPackOpt rootopt, const PetscInt *rootidx, void *rootdata, PetscInt leafstart, PetscSFPackOpt leafopt, const PetscInt *leafidx, const void *leafdata, void *leafupdate)
+inline PetscErrorCode SfInterface<T>::FetchAndOpLocal(PetscSFLink link, PetscInt count, PetscInt rootstart, PetscSFPackOpt rootopt, const PetscInt *rootidx, void *rootdata, PetscInt leafstart, PetscSFPackOpt leafopt, const PetscInt *leafidx, const void *leafdata, void *leafupdate) noexcept
 {
-  PetscInt        nthreads = 256;
-  PetscInt        nblocks  = (count + nthreads - 1) / nthreads;
-  const PetscInt *rarray   = rootopt ? rootopt->array : NULL;
-  const PetscInt *larray   = leafopt ? leafopt->array : NULL;
+  const PetscInt *rarray = rootopt ? rootopt->array : NULL;
+  const PetscInt *larray = leafopt ? leafopt->array : NULL;
 
   PetscFunctionBegin;
   if (!count) PetscFunctionReturn(PETSC_SUCCESS);
-  nblocks = PetscMin(nblocks, link->maxResidentThreadsPerGPU / nthreads);
-  d_FetchAndOpLocal<Type, Op, BS, EQ><<<nblocks, nthreads, 0, link->stream>>>(link->bs, count, rootstart, rarray, rootidx, (Type *)rootdata, leafstart, larray, leafidx, (const Type *)leafdata, (Type *)leafupdate);
-  PetscCallCUDA(cudaGetLastError());
+  PetscCall(PetscCUPMLaunchKernel1D(count, 0, link->stream, kernels::d_FetchAndOpLocal<Type, Op, BS, EQ>, link->bs, count, rootstart, rarray, rootidx, (Type *)rootdata, leafstart, larray, leafidx, (const Type *)leafdata, (Type *)leafupdate));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*====================================================================================*/
 /*  Init various types and instantiate pack/unpack function pointers                  */
 /*====================================================================================*/
+template <device::cupm::DeviceType T>
 template <typename Type, PetscInt BS, PetscInt EQ>
-static void PackInit_RealType(PetscSFLink link)
+inline void SfInterface<T>::PackInit_RealType(PetscSFLink link) noexcept
 {
   /* Pack/unpack for remote communication */
   link->d_Pack            = Pack<Type, BS, EQ>;
-  link->d_UnpackAndInsert = Unpack<Type, BS, EQ>;
-  link->d_UnpackAndAdd    = UnpackAndOp<Type, Add<Type>, BS, EQ>;
-  link->d_UnpackAndMult   = UnpackAndOp<Type, Mult<Type>, BS, EQ>;
-  link->d_UnpackAndMin    = UnpackAndOp<Type, Min<Type>, BS, EQ>;
-  link->d_UnpackAndMax    = UnpackAndOp<Type, Max<Type>, BS, EQ>;
-  link->d_FetchAndAdd     = FetchAndOp<Type, Add<Type>, BS, EQ>;
+  link->d_UnpackAndInsert = UnpackAndOp<Type, kernels::Insert<Type>, BS, EQ>;
+  link->d_UnpackAndAdd    = UnpackAndOp<Type, kernels::Add<Type>, BS, EQ>;
+  link->d_UnpackAndMult   = UnpackAndOp<Type, kernels::Mult<Type>, BS, EQ>;
+  link->d_UnpackAndMin    = UnpackAndOp<Type, kernels::Min<Type>, BS, EQ>;
+  link->d_UnpackAndMax    = UnpackAndOp<Type, kernels::Max<Type>, BS, EQ>;
+  link->d_FetchAndAdd     = FetchAndOp<Type, kernels::Add<Type>, BS, EQ>;
 
   /* Scatter for local communication */
   link->d_ScatterAndInsert = ScatterAndInsert<Type, BS, EQ>; /* Has special optimizations */
-  link->d_ScatterAndAdd    = ScatterAndOp<Type, Add<Type>, BS, EQ>;
-  link->d_ScatterAndMult   = ScatterAndOp<Type, Mult<Type>, BS, EQ>;
-  link->d_ScatterAndMin    = ScatterAndOp<Type, Min<Type>, BS, EQ>;
-  link->d_ScatterAndMax    = ScatterAndOp<Type, Max<Type>, BS, EQ>;
-  link->d_FetchAndAddLocal = FetchAndOpLocal<Type, Add<Type>, BS, EQ>;
+  link->d_ScatterAndAdd    = ScatterAndOp<Type, kernels::Add<Type>, BS, EQ>;
+  link->d_ScatterAndMult   = ScatterAndOp<Type, kernels::Mult<Type>, BS, EQ>;
+  link->d_ScatterAndMin    = ScatterAndOp<Type, kernels::Min<Type>, BS, EQ>;
+  link->d_ScatterAndMax    = ScatterAndOp<Type, kernels::Max<Type>, BS, EQ>;
+  link->d_FetchAndAddLocal = FetchAndOpLocal<Type, kernels::Add<Type>, BS, EQ>;
 
   /* Atomic versions when there are data-race possibilities */
   link->da_UnpackAndInsert = UnpackAndOp<Type, AtomicInsert<Type>, BS, EQ>;
@@ -443,9 +426,10 @@ static void PackInit_RealType(PetscSFLink link)
 }
 
 /* Have this templated class to specialize for char integers */
+template <device::cupm::DeviceType T>
 template <typename Type, PetscInt BS, PetscInt EQ, PetscInt size /*sizeof(Type)*/>
-struct PackInit_IntegerType_Atomic {
-  static void Init(PetscSFLink link)
+struct SfInterface<T>::PackInit_IntegerType_Atomic {
+  static inline void Init(PetscSFLink link) noexcept
   {
     link->da_UnpackAndInsert = UnpackAndOp<Type, AtomicInsert<Type>, BS, EQ>;
     link->da_UnpackAndAdd    = UnpackAndOp<Type, AtomicAdd<Type>, BS, EQ>;
@@ -476,59 +460,62 @@ struct PackInit_IntegerType_Atomic {
 };
 
 /* CUDA does not support atomics on chars. It is TBD in PETSc. */
+template <device::cupm::DeviceType T>
 template <typename Type, PetscInt BS, PetscInt EQ>
-struct PackInit_IntegerType_Atomic<Type, BS, EQ, 1> {
-  static void Init(PetscSFLink)
+struct SfInterface<T>::PackInit_IntegerType_Atomic<Type, BS, EQ, 1> {
+  static inline void Init(PetscSFLink)
   { /* Nothing to leave function pointers NULL */
   }
 };
 
+template <device::cupm::DeviceType T>
 template <typename Type, PetscInt BS, PetscInt EQ>
-static void PackInit_IntegerType(PetscSFLink link)
+inline void SfInterface<T>::PackInit_IntegerType(PetscSFLink link) noexcept
 {
   link->d_Pack            = Pack<Type, BS, EQ>;
-  link->d_UnpackAndInsert = Unpack<Type, BS, EQ>;
-  link->d_UnpackAndAdd    = UnpackAndOp<Type, Add<Type>, BS, EQ>;
-  link->d_UnpackAndMult   = UnpackAndOp<Type, Mult<Type>, BS, EQ>;
-  link->d_UnpackAndMin    = UnpackAndOp<Type, Min<Type>, BS, EQ>;
-  link->d_UnpackAndMax    = UnpackAndOp<Type, Max<Type>, BS, EQ>;
-  link->d_UnpackAndLAND   = UnpackAndOp<Type, LAND<Type>, BS, EQ>;
-  link->d_UnpackAndLOR    = UnpackAndOp<Type, LOR<Type>, BS, EQ>;
-  link->d_UnpackAndLXOR   = UnpackAndOp<Type, LXOR<Type>, BS, EQ>;
-  link->d_UnpackAndBAND   = UnpackAndOp<Type, BAND<Type>, BS, EQ>;
-  link->d_UnpackAndBOR    = UnpackAndOp<Type, BOR<Type>, BS, EQ>;
-  link->d_UnpackAndBXOR   = UnpackAndOp<Type, BXOR<Type>, BS, EQ>;
-  link->d_FetchAndAdd     = FetchAndOp<Type, Add<Type>, BS, EQ>;
+  link->d_UnpackAndInsert = UnpackAndOp<Type, kernels::Insert<Type>, BS, EQ>;
+  link->d_UnpackAndAdd    = UnpackAndOp<Type, kernels::Add<Type>, BS, EQ>;
+  link->d_UnpackAndMult   = UnpackAndOp<Type, kernels::Mult<Type>, BS, EQ>;
+  link->d_UnpackAndMin    = UnpackAndOp<Type, kernels::Min<Type>, BS, EQ>;
+  link->d_UnpackAndMax    = UnpackAndOp<Type, kernels::Max<Type>, BS, EQ>;
+  link->d_UnpackAndLAND   = UnpackAndOp<Type, kernels::LAND<Type>, BS, EQ>;
+  link->d_UnpackAndLOR    = UnpackAndOp<Type, kernels::LOR<Type>, BS, EQ>;
+  link->d_UnpackAndLXOR   = UnpackAndOp<Type, kernels::LXOR<Type>, BS, EQ>;
+  link->d_UnpackAndBAND   = UnpackAndOp<Type, kernels::BAND<Type>, BS, EQ>;
+  link->d_UnpackAndBOR    = UnpackAndOp<Type, kernels::BOR<Type>, BS, EQ>;
+  link->d_UnpackAndBXOR   = UnpackAndOp<Type, kernels::BXOR<Type>, BS, EQ>;
+  link->d_FetchAndAdd     = FetchAndOp<Type, kernels::Add<Type>, BS, EQ>;
 
   link->d_ScatterAndInsert = ScatterAndInsert<Type, BS, EQ>;
-  link->d_ScatterAndAdd    = ScatterAndOp<Type, Add<Type>, BS, EQ>;
-  link->d_ScatterAndMult   = ScatterAndOp<Type, Mult<Type>, BS, EQ>;
-  link->d_ScatterAndMin    = ScatterAndOp<Type, Min<Type>, BS, EQ>;
-  link->d_ScatterAndMax    = ScatterAndOp<Type, Max<Type>, BS, EQ>;
-  link->d_ScatterAndLAND   = ScatterAndOp<Type, LAND<Type>, BS, EQ>;
-  link->d_ScatterAndLOR    = ScatterAndOp<Type, LOR<Type>, BS, EQ>;
-  link->d_ScatterAndLXOR   = ScatterAndOp<Type, LXOR<Type>, BS, EQ>;
-  link->d_ScatterAndBAND   = ScatterAndOp<Type, BAND<Type>, BS, EQ>;
-  link->d_ScatterAndBOR    = ScatterAndOp<Type, BOR<Type>, BS, EQ>;
-  link->d_ScatterAndBXOR   = ScatterAndOp<Type, BXOR<Type>, BS, EQ>;
-  link->d_FetchAndAddLocal = FetchAndOpLocal<Type, Add<Type>, BS, EQ>;
+  link->d_ScatterAndAdd    = ScatterAndOp<Type, kernels::Add<Type>, BS, EQ>;
+  link->d_ScatterAndMult   = ScatterAndOp<Type, kernels::Mult<Type>, BS, EQ>;
+  link->d_ScatterAndMin    = ScatterAndOp<Type, kernels::Min<Type>, BS, EQ>;
+  link->d_ScatterAndMax    = ScatterAndOp<Type, kernels::Max<Type>, BS, EQ>;
+  link->d_ScatterAndLAND   = ScatterAndOp<Type, kernels::LAND<Type>, BS, EQ>;
+  link->d_ScatterAndLOR    = ScatterAndOp<Type, kernels::LOR<Type>, BS, EQ>;
+  link->d_ScatterAndLXOR   = ScatterAndOp<Type, kernels::LXOR<Type>, BS, EQ>;
+  link->d_ScatterAndBAND   = ScatterAndOp<Type, kernels::BAND<Type>, BS, EQ>;
+  link->d_ScatterAndBOR    = ScatterAndOp<Type, kernels::BOR<Type>, BS, EQ>;
+  link->d_ScatterAndBXOR   = ScatterAndOp<Type, kernels::BXOR<Type>, BS, EQ>;
+  link->d_FetchAndAddLocal = FetchAndOpLocal<Type, kernels::Add<Type>, BS, EQ>;
   PackInit_IntegerType_Atomic<Type, BS, EQ, sizeof(Type)>::Init(link);
 }
 
 #if defined(PETSC_HAVE_COMPLEX)
+template <device::cupm::DeviceType T>
 template <typename Type, PetscInt BS, PetscInt EQ>
-static void PackInit_ComplexType(PetscSFLink link)
+inline void SfInterface<T>::PackInit_ComplexType(PetscSFLink link) noexcept
 {
   link->d_Pack            = Pack<Type, BS, EQ>;
-  link->d_UnpackAndInsert = Unpack<Type, BS, EQ>;
-  link->d_UnpackAndAdd    = UnpackAndOp<Type, Add<Type>, BS, EQ>;
-  link->d_UnpackAndMult   = UnpackAndOp<Type, Mult<Type>, BS, EQ>;
-  link->d_FetchAndAdd     = FetchAndOp<Type, Add<Type>, BS, EQ>;
+  link->d_UnpackAndInsert = UnpackAndOp<Type, kernels::Insert<Type>, BS, EQ>;
+  link->d_UnpackAndAdd    = UnpackAndOp<Type, kernels::Add<Type>, BS, EQ>;
+  link->d_UnpackAndMult   = UnpackAndOp<Type, kernels::Mult<Type>, BS, EQ>;
+  link->d_FetchAndAdd     = FetchAndOp<Type, kernels::Add<Type>, BS, EQ>;
 
   link->d_ScatterAndInsert = ScatterAndInsert<Type, BS, EQ>;
-  link->d_ScatterAndAdd    = ScatterAndOp<Type, Add<Type>, BS, EQ>;
-  link->d_ScatterAndMult   = ScatterAndOp<Type, Mult<Type>, BS, EQ>;
-  link->d_FetchAndAddLocal = FetchAndOpLocal<Type, Add<Type>, BS, EQ>;
+  link->d_ScatterAndAdd    = ScatterAndOp<Type, kernels::Add<Type>, BS, EQ>;
+  link->d_ScatterAndMult   = ScatterAndOp<Type, kernels::Mult<Type>, BS, EQ>;
+  link->d_FetchAndAddLocal = FetchAndOpLocal<Type, kernels::Add<Type>, BS, EQ>;
 
   link->da_UnpackAndInsert = UnpackAndOp<Type, AtomicInsert<Type>, BS, EQ>;
   link->da_UnpackAndAdd    = UnpackAndOp<Type, AtomicAdd<Type>, BS, EQ>;
@@ -551,97 +538,110 @@ typedef struct {
   PetscInt b;
 } PairPetscInt;
 
+template <device::cupm::DeviceType T>
 template <typename Type>
-static void PackInit_PairType(PetscSFLink link)
+inline void SfInterface<T>::PackInit_PairType(PetscSFLink link) noexcept
 {
   link->d_Pack            = Pack<Type, 1, 1>;
-  link->d_UnpackAndInsert = Unpack<Type, 1, 1>;
-  link->d_UnpackAndMaxloc = UnpackAndOp<Type, Maxloc<Type>, 1, 1>;
-  link->d_UnpackAndMinloc = UnpackAndOp<Type, Minloc<Type>, 1, 1>;
+  link->d_UnpackAndInsert = UnpackAndOp<Type, kernels::Insert<Type>, 1, 1>;
+  link->d_UnpackAndMaxloc = UnpackAndOp<Type, kernels::Maxloc<Type>, 1, 1>;
+  link->d_UnpackAndMinloc = UnpackAndOp<Type, kernels::Minloc<Type>, 1, 1>;
 
-  link->d_ScatterAndInsert = ScatterAndOp<Type, Insert<Type>, 1, 1>;
-  link->d_ScatterAndMaxloc = ScatterAndOp<Type, Maxloc<Type>, 1, 1>;
-  link->d_ScatterAndMinloc = ScatterAndOp<Type, Minloc<Type>, 1, 1>;
+  link->d_ScatterAndInsert = ScatterAndOp<Type, kernels::Insert<Type>, 1, 1>;
+  link->d_ScatterAndMaxloc = ScatterAndOp<Type, kernels::Maxloc<Type>, 1, 1>;
+  link->d_ScatterAndMinloc = ScatterAndOp<Type, kernels::Minloc<Type>, 1, 1>;
   /* Atomics for pair types are not implemented yet */
 }
 
+template <device::cupm::DeviceType T>
 template <typename Type, PetscInt BS, PetscInt EQ>
-static void PackInit_DumbType(PetscSFLink link)
+inline void SfInterface<T>::PackInit_DumbType(PetscSFLink link) noexcept
 {
   link->d_Pack             = Pack<Type, BS, EQ>;
-  link->d_UnpackAndInsert  = Unpack<Type, BS, EQ>;
+  link->d_UnpackAndInsert  = UnpackAndOp<Type, kernels::Insert<Type>, BS, EQ>;
   link->d_ScatterAndInsert = ScatterAndInsert<Type, BS, EQ>;
   /* Atomics for dumb types are not implemented yet */
 }
 
 /* Some device-specific utilities */
-static PetscErrorCode PetscSFLinkSyncDevice_CUDA(PetscSFLink)
+template <device::cupm::DeviceType T>
+inline PetscErrorCode SfInterface<T>::LinkSyncDevice(PetscSFLink link) noexcept
 {
   PetscFunctionBegin;
-  PetscCallCUDA(cudaDeviceSynchronize());
+  PetscCallCUPM(cupmDeviceSynchronize());
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode PetscSFLinkSyncStream_CUDA(PetscSFLink link)
+template <device::cupm::DeviceType T>
+inline PetscErrorCode SfInterface<T>::LinkSyncStream(PetscSFLink link) noexcept
 {
   PetscFunctionBegin;
-  PetscCallCUDA(cudaStreamSynchronize(link->stream));
+  PetscCallCUPM(cupmStreamSynchronize(link->stream));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode PetscSFLinkMemcpy_CUDA(PetscSFLink link, PetscMemType dstmtype, void *dst, PetscMemType srcmtype, const void *src, size_t n)
+template <device::cupm::DeviceType T>
+inline PetscErrorCode SfInterface<T>::LinkMemcpy(PetscSFLink link, PetscMemType dstmtype, void *dst, PetscMemType srcmtype, const void *src, size_t n) noexcept
 {
   PetscFunctionBegin;
-  enum cudaMemcpyKind kinds[2][2] = {
-    {cudaMemcpyHostToHost,   cudaMemcpyHostToDevice  },
-    {cudaMemcpyDeviceToHost, cudaMemcpyDeviceToDevice}
+  cupmMemcpyKind_t kinds[2][2] = {
+    {cupmMemcpyHostToHost,   cupmMemcpyHostToDevice  },
+    {cupmMemcpyDeviceToHost, cupmMemcpyDeviceToDevice}
   };
 
   if (n) {
-    if (PetscMemTypeHost(dstmtype) && PetscMemTypeHost(srcmtype)) { /* Separate HostToHost so that pure-cpu code won't call cuda runtime */
+    if (PetscMemTypeHost(dstmtype) && PetscMemTypeHost(srcmtype)) { /* Separate HostToHost so that pure-cpu code won't call cupm runtime */
       PetscCall(PetscMemcpy(dst, src, n));
     } else {
       int stype = PetscMemTypeDevice(srcmtype) ? 1 : 0;
       int dtype = PetscMemTypeDevice(dstmtype) ? 1 : 0;
-      PetscCallCUDA(cudaMemcpyAsync(dst, src, n, kinds[stype][dtype], link->stream));
+      PetscCallCUPM(cupmMemcpyAsync(dst, src, n, kinds[stype][dtype], link->stream));
     }
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PetscSFMalloc_CUDA(PetscMemType mtype, size_t size, void **ptr)
+template <device::cupm::DeviceType T>
+inline PetscErrorCode SfInterface<T>::Malloc(PetscMemType mtype, size_t size, void **ptr) noexcept
 {
   PetscFunctionBegin;
   if (PetscMemTypeHost(mtype)) PetscCall(PetscMalloc(size, ptr));
   else if (PetscMemTypeDevice(mtype)) {
-    PetscCall(PetscDeviceInitialize(PETSC_DEVICE_CUDA));
-    PetscCallCUDA(cudaMalloc(ptr, size));
+    PetscCall(PetscDeviceInitialize(PETSC_DEVICE_CUPM()));
+    PetscCallCUPM(cupmMalloc(ptr, size));
   } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Wrong PetscMemType %d", (int)mtype);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PetscSFFree_CUDA(PetscMemType mtype, void *ptr)
+template <device::cupm::DeviceType T>
+inline PetscErrorCode SfInterface<T>::Free(PetscMemType mtype, void *ptr) noexcept
 {
   PetscFunctionBegin;
   if (PetscMemTypeHost(mtype)) PetscCall(PetscFree(ptr));
-  else if (PetscMemTypeDevice(mtype)) PetscCallCUDA(cudaFree(ptr));
+  else if (PetscMemTypeDevice(mtype)) PetscCallCUPM(cupmFree(ptr));
   else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Wrong PetscMemType %d", (int)mtype);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* Destructor when the link uses MPI for communication on CUDA device */
-static PetscErrorCode PetscSFLinkDestroy_MPI_CUDA(PetscSF, PetscSFLink link)
+/* Destructor when the link uses MPI for communication on CUPM device */
+template <device::cupm::DeviceType T>
+inline PetscErrorCode SfInterface<T>::LinkDestroy_MPI(PetscSF, PetscSFLink link) noexcept
 {
   PetscFunctionBegin;
   for (int i = PETSCSF_LOCAL; i <= PETSCSF_REMOTE; i++) {
-    PetscCallCUDA(cudaFree(link->rootbuf_alloc[i][PETSC_MEMTYPE_DEVICE]));
-    PetscCallCUDA(cudaFree(link->leafbuf_alloc[i][PETSC_MEMTYPE_DEVICE]));
+    PetscCallCUPM(cupmFree(link->rootbuf_alloc[i][PETSC_MEMTYPE_DEVICE]));
+    PetscCallCUPM(cupmFree(link->leafbuf_alloc[i][PETSC_MEMTYPE_DEVICE]));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*====================================================================================*/
+/*                Main driver to init MPI datatype on device                          */
+/*====================================================================================*/
+
 /* Some fields of link are initialized by PetscSFPackSetUp_Host. This routine only does what needed on device */
-PetscErrorCode PetscSFLinkSetUp_CUDA(PetscSF sf, PetscSFLink link, MPI_Datatype unit)
+template <device::cupm::DeviceType T>
+inline PetscErrorCode SfInterface<T>::LinkSetUp(PetscSF sf, PetscSFLink link, MPI_Datatype unit) noexcept
 {
   PetscInt  nSignedChar = 0, nUnsignedChar = 0, nInt = 0, nPetscInt = 0, nPetscReal = 0;
   PetscBool is2Int, is2PetscInt;
@@ -772,19 +772,34 @@ PetscErrorCode PetscSFLinkSetUp_CUDA(PetscSF sf, PetscSFLink link, MPI_Datatype 
   }
 
   if (!sf->maxResidentThreadsPerGPU) { /* Not initialized */
-    int                   device;
-    struct cudaDeviceProp props;
-    PetscCallCUDA(cudaGetDevice(&device));
-    PetscCallCUDA(cudaGetDeviceProperties(&props, device));
+    int              device;
+    cupmDeviceProp_t props;
+    PetscCallCUPM(cupmGetDevice(&device));
+    PetscCallCUPM(cupmGetDeviceProperties(&props, device));
     sf->maxResidentThreadsPerGPU = props.maxThreadsPerMultiProcessor * props.multiProcessorCount;
   }
   link->maxResidentThreadsPerGPU = sf->maxResidentThreadsPerGPU;
 
-  link->stream       = PetscDefaultCudaStream;
-  link->Destroy      = PetscSFLinkDestroy_MPI_CUDA;
-  link->SyncDevice   = PetscSFLinkSyncDevice_CUDA;
-  link->SyncStream   = PetscSFLinkSyncStream_CUDA;
-  link->Memcpy       = PetscSFLinkMemcpy_CUDA;
+  {
+    cupmStream_t      *stream;
+    PetscDeviceContext dctx;
+
+    PetscCall(PetscDeviceContextGetCurrentContextAssertType_Internal(&dctx, PETSC_DEVICE_CUPM()));
+    PetscCall(PetscDeviceContextGetStreamHandle(dctx, (void **)&stream));
+    link->stream = *stream;
+  }
+  link->Destroy      = LinkDestroy_MPI;
+  link->SyncDevice   = LinkSyncDevice;
+  link->SyncStream   = LinkSyncStream;
+  link->Memcpy       = LinkMemcpy;
   link->deviceinited = PETSC_TRUE;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
+
+} // namespace impl
+
+} // namespace cupm
+
+} // namespace sf
+
+} // namespace Petsc
