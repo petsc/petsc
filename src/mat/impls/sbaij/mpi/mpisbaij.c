@@ -1385,26 +1385,63 @@ static PetscErrorCode ISEqual_private(IS isrow, IS iscol_local, PetscBool *flg)
 
 static PetscErrorCode MatCreateSubMatrix_MPISBAIJ(Mat mat, IS isrow, IS iscol, MatReuse call, Mat *newmat)
 {
-  IS       iscol_local;
-  PetscInt csize;
+  Mat       C[2];
+  IS        iscol_local, isrow_local;
+  PetscInt  csize, csize_local, rsize;
+  PetscBool isequal, issorted, isidentity = PETSC_FALSE;
 
   PetscFunctionBegin;
   PetscCall(ISGetLocalSize(iscol, &csize));
+  PetscCall(ISGetLocalSize(isrow, &rsize));
   if (call == MAT_REUSE_MATRIX) {
     PetscCall(PetscObjectQuery((PetscObject)*newmat, "ISAllGather", (PetscObject *)&iscol_local));
     PetscCheck(iscol_local, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Submatrix passed in was not used before, cannot reuse");
   } else {
-    PetscBool issorted, isequal;
-
     PetscCall(ISAllGather(iscol, &iscol_local));
-    PetscCall(ISEqual_private(isrow, iscol_local, &isequal));
     PetscCall(ISSorted(iscol_local, &issorted));
-    PetscCheck(isequal && issorted, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "For symmetric format, iscol must equal isrow and be sorted");
+    PetscCheck(issorted, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "For symmetric format, iscol must be sorted");
   }
-
+  PetscCall(ISEqual_private(isrow, iscol_local, &isequal));
+  if (!isequal) {
+    PetscCall(ISGetLocalSize(iscol_local, &csize_local));
+    isidentity = (PetscBool)(mat->cmap->N == csize_local);
+    if (!isidentity) {
+      if (call == MAT_REUSE_MATRIX) {
+        PetscCall(PetscObjectQuery((PetscObject)*newmat, "ISAllGather_other", (PetscObject *)&isrow_local));
+        PetscCheck(isrow_local, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Submatrix passed in was not used before, cannot reuse");
+      } else {
+        PetscCall(ISAllGather(isrow, &isrow_local));
+        PetscCall(ISSorted(isrow_local, &issorted));
+        PetscCheck(issorted, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "For symmetric format, isrow must be sorted");
+      }
+    }
+  }
   /* now call MatCreateSubMatrix_MPIBAIJ() */
-  PetscCall(MatCreateSubMatrix_MPIBAIJ_Private(mat, isrow, iscol_local, csize, call, newmat));
+  PetscCall(MatCreateSubMatrix_MPIBAIJ_Private(mat, isrow, iscol_local, csize, isequal || isidentity ? call : MAT_INITIAL_MATRIX, isequal || isidentity ? newmat : C, (PetscBool)(isequal || isidentity)));
+  if (!isequal && !isidentity) {
+    if (call == MAT_INITIAL_MATRIX) {
+      IS       intersect;
+      PetscInt ni;
+
+      PetscCall(ISIntersect(isrow_local, iscol_local, &intersect));
+      PetscCall(ISGetLocalSize(intersect, &ni));
+      PetscCall(ISDestroy(&intersect));
+      PetscCheck(ni == 0, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cannot create such a submatrix: for symmetric format, when requesting an off-diagonal submatrix, isrow and iscol should have an empty intersection (number of common indices is %" PetscInt_FMT ")", ni);
+    }
+    PetscCall(MatCreateSubMatrix_MPIBAIJ_Private(mat, iscol, isrow_local, rsize, MAT_INITIAL_MATRIX, C + 1, PETSC_FALSE));
+    PetscCall(MatTranspose(C[1], MAT_INPLACE_MATRIX, C + 1));
+    PetscCall(MatAXPY(C[0], 1.0, C[1], DIFFERENT_NONZERO_PATTERN));
+    if (call == MAT_REUSE_MATRIX) PetscCall(MatCopy(C[0], *newmat, SAME_NONZERO_PATTERN));
+    else if (mat->rmap->bs == 1) PetscCall(MatConvert(C[0], MATAIJ, MAT_INITIAL_MATRIX, newmat));
+    else PetscCall(MatCopy(C[0], *newmat, SAME_NONZERO_PATTERN));
+    PetscCall(MatDestroy(C));
+    PetscCall(MatDestroy(C + 1));
+  }
   if (call == MAT_INITIAL_MATRIX) {
+    if (!isequal && !isidentity) {
+      PetscCall(PetscObjectCompose((PetscObject)*newmat, "ISAllGather_other", (PetscObject)isrow_local));
+      PetscCall(ISDestroy(&isrow_local));
+    }
     PetscCall(PetscObjectCompose((PetscObject)*newmat, "ISAllGather", (PetscObject)iscol_local));
     PetscCall(ISDestroy(&iscol_local));
   }

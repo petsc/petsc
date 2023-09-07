@@ -1907,7 +1907,7 @@ static PetscErrorCode MatCreateSubMatrix_MPIBAIJ(Mat mat, IS isrow, IS iscol, Ma
   } else {
     PetscCall(ISAllGather(iscol, &iscol_local));
   }
-  PetscCall(MatCreateSubMatrix_MPIBAIJ_Private(mat, isrow, iscol_local, csize, call, newmat));
+  PetscCall(MatCreateSubMatrix_MPIBAIJ_Private(mat, isrow, iscol_local, csize, call, newmat, PETSC_FALSE));
   if (call == MAT_INITIAL_MATRIX) {
     PetscCall(PetscObjectCompose((PetscObject)*newmat, "ISAllGather", (PetscObject)iscol_local));
     PetscCall(ISDestroy(&iscol_local));
@@ -1921,7 +1921,7 @@ static PetscErrorCode MatCreateSubMatrix_MPIBAIJ(Mat mat, IS isrow, IS iscol, Ma
   Writing it directly would be much like MatCreateSubMatrices_MPIBAIJ().
   This routine is used for BAIJ and SBAIJ matrices (unfortunate dependency).
 */
-PetscErrorCode MatCreateSubMatrix_MPIBAIJ_Private(Mat mat, IS isrow, IS iscol, PetscInt csize, MatReuse call, Mat *newmat)
+PetscErrorCode MatCreateSubMatrix_MPIBAIJ_Private(Mat mat, IS isrow, IS iscol, PetscInt csize, MatReuse call, Mat *newmat, PetscBool sym)
 {
   PetscMPIInt  rank, size;
   PetscInt     i, m, n, rstart, row, rend, nz, *cwork, j, bs;
@@ -1947,9 +1947,9 @@ PetscErrorCode MatCreateSubMatrix_MPIBAIJ_Private(Mat mat, IS isrow, IS iscol, P
   if (call == MAT_REUSE_MATRIX) {
     PetscCall(PetscObjectQuery((PetscObject)*newmat, "SubMatrix", (PetscObject *)&Mreuse));
     PetscCheck(Mreuse, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Submatrix passed in was not used before, cannot reuse");
-    PetscCall(MatCreateSubMatrices_MPIBAIJ_local(mat, 1, &isrow_new, &iscol_new, MAT_REUSE_MATRIX, &Mreuse));
+    PetscCall(MatCreateSubMatrices_MPIBAIJ_local(mat, 1, &isrow_new, &iscol_new, MAT_REUSE_MATRIX, &Mreuse, sym));
   } else {
-    PetscCall(MatCreateSubMatrices_MPIBAIJ_local(mat, 1, &isrow_new, &iscol_new, MAT_INITIAL_MATRIX, &Mreuse));
+    PetscCall(MatCreateSubMatrices_MPIBAIJ_local(mat, 1, &isrow_new, &iscol_new, MAT_INITIAL_MATRIX, &Mreuse, sym));
   }
   PetscCall(ISDestroy(&isrow_new));
   PetscCall(ISDestroy(&iscol_new));
@@ -2004,7 +2004,7 @@ PetscErrorCode MatCreateSubMatrix_MPIBAIJ_Private(Mat mat, IS isrow, IS iscol, P
     }
     PetscCall(MatCreate(comm, &M));
     PetscCall(MatSetSizes(M, bs * m, bs * nlocal, PETSC_DECIDE, bs * n));
-    PetscCall(MatSetType(M, ((PetscObject)mat)->type_name));
+    PetscCall(MatSetType(M, sym ? ((PetscObject)mat)->type_name : MATMPIBAIJ));
     PetscCall(MatMPIBAIJSetPreallocation(M, bs, 0, dlens, 0, olens));
     PetscCall(MatMPISBAIJSetPreallocation(M, bs, 0, dlens, 0, olens));
     PetscCall(PetscFree2(dlens, olens));
@@ -2082,7 +2082,7 @@ static PetscErrorCode MatPermute_MPIBAIJ(Mat A, IS rowp, IS colp, Mat *B)
   PetscCall(ISSetPermutation(lcolp));
   /* now we just get the submatrix */
   PetscCall(MatGetLocalSize(A, NULL, &clocal_size));
-  PetscCall(MatCreateSubMatrix_MPIBAIJ_Private(A, crowp, lcolp, clocal_size, MAT_INITIAL_MATRIX, B));
+  PetscCall(MatCreateSubMatrix_MPIBAIJ_Private(A, crowp, lcolp, clocal_size, MAT_INITIAL_MATRIX, B, PETSC_FALSE));
   /* clean up */
   if (pcomm != comm) PetscCall(ISDestroy(&crowp));
   if (size > 1) PetscCall(ISDestroy(&lcolp));
