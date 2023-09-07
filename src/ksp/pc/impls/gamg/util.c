@@ -23,13 +23,15 @@
 PetscErrorCode PCGAMGGetDataWithGhosts(Mat Gmat, PetscInt data_sz, PetscReal data_in[], PetscInt *a_stride, PetscReal **a_data_out)
 {
   Vec          tmp_crds;
-  Mat_MPIAIJ  *mpimat = (Mat_MPIAIJ *)Gmat->data;
+  Mat_MPIAIJ  *mpimat;
   PetscInt     nnodes, num_ghosts, dir, kk, jj, my0, Iend, nloc;
   PetscScalar *data_arr;
   PetscReal   *datas;
   PetscBool    isMPIAIJ;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(Gmat, MAT_CLASSID, 1);
+  mpimat = (Mat_MPIAIJ *)Gmat->data;
   PetscCall(PetscObjectBaseTypeCompare((PetscObject)Gmat, MATMPIAIJ, &isMPIAIJ));
   PetscCall(MatGetOwnershipRange(Gmat, &my0, &Iend));
   nloc = Iend - my0;
