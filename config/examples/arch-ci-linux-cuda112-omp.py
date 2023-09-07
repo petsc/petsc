@@ -22,6 +22,7 @@ if __name__ == '__main__':
     '--download-hypre',
     '--download-hypre-configure-arguments=--enable-unified-memory',
     '--with-strict-petscerrorcode',
+    '--download-mpich=1',
     #'--with-coverage',
   ]
 
