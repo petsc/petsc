@@ -126,7 +126,7 @@ static PetscErrorCode PetscEventPerfInfoToc(PetscEventPerfInfo *eventInfo, Petsc
 static PetscErrorCode PetscEventPerfInfoPause(PetscEventPerfInfo *eventInfo, PetscLogDouble time, PetscBool logMemory, int event)
 {
   PetscFunctionBegin;
-  PetscCall(PetscEventPerfInfoToc_Internal(eventInfo, time, logMemory, event, PETSC_FALSE));
+  PetscCall(PetscEventPerfInfoToc_Internal(eventInfo, time, logMemory, event, PETSC_TRUE));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

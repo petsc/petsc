@@ -54,13 +54,13 @@ int main(int argc, char **argv)
 
   PetscCall(PetscLogStagePush(unrelated_stage));
   PetscCall(PetscLogEventBegin(unrelated_event, NULL, NULL, NULL, NULL));
-
+  PetscCall(PetscSleep(0.2));
   PetscCall(PetscLogEventsPause());
   PetscCall(PetscLogEventBegin(runtime_event, NULL, NULL, NULL, NULL));
   PetscCall(PetscSleep(0.2));
   PetscCall(PetscLogEventEnd(runtime_event, NULL, NULL, NULL, NULL));
   PetscCall(PetscLogEventsResume());
-
+  PetscCall(PetscSleep(0.2));
   PetscCall(PetscLogEventEnd(unrelated_event, NULL, NULL, NULL, NULL));
   PetscCall(PetscLogStagePop());
   { // test of PetscLogStageGetPerfInfo()
