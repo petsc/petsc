@@ -1639,7 +1639,7 @@ cg:
   PetscCall(DMGetCoordinateDM(dm, &cdm));
   PetscCall(DMGetCoordinateSection(dm, &cs));
   PetscCall(DMGetCoordinatesLocalNoncollective(dm, &coordinates));
-  PetscCall(DMPlexVecGetClosure(cdm, cs, coordinates, cell, Nc, coords));
+  PetscCall(DMPlexVecGetOrientedClosure_Internal(cdm, cs, PETSC_FALSE, coordinates, cell, 0, Nc, coords));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
