@@ -854,7 +854,7 @@ PetscErrorCode PCDestroy_GAMG(PC pc)
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCGAMGSetUseSAEstEig_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCGAMGSetReuseInterpolation_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCGAMGASMSetUseAggs_C", NULL));
-  PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCGAMGSetUseParallelCoarseGridSolve_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCGAMGSetParallelCoarseGridSolve_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCGAMGSetCpuPinCoarseGrids_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCGAMGSetCoarseGridLayoutType_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCGAMGSetThreshold_C", NULL));
@@ -1133,7 +1133,7 @@ static PetscErrorCode PCGAMGASMSetUseAggs_GAMG(PC pc, PetscBool flg)
 }
 
 /*@
-  PCGAMGSetUseParallelCoarseGridSolve - allow a parallel coarse grid solver
+  PCGAMGSetParallelCoarseGridSolve - allow a parallel coarse grid solver
 
   Collective
 
@@ -1142,21 +1142,21 @@ static PetscErrorCode PCGAMGASMSetUseAggs_GAMG(PC pc, PetscBool flg)
 - flg - `PETSC_TRUE` to not force coarse grid onto one processor
 
   Options Database Key:
-. -pc_gamg_use_parallel_coarse_grid_solver - use a parallel coarse grid direct solver
+. -pc_gamg_parallel_coarse_grid_solver - use a parallel coarse grid direct solver
 
   Level: intermediate
 
 .seealso: `PCGAMG`, `PCGAMGSetCoarseGridLayoutType()`, `PCGAMGSetCpuPinCoarseGrids()`
 @*/
-PetscErrorCode PCGAMGSetUseParallelCoarseGridSolve(PC pc, PetscBool flg)
+PetscErrorCode PCGAMGSetParallelCoarseGridSolve(PC pc, PetscBool flg)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
-  PetscTryMethod(pc, "PCGAMGSetUseParallelCoarseGridSolve_C", (PC, PetscBool), (pc, flg));
+  PetscTryMethod(pc, "PCGAMGSetParallelCoarseGridSolve_C", (PC, PetscBool), (pc, flg));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode PCGAMGSetUseParallelCoarseGridSolve_GAMG(PC pc, PetscBool flg)
+static PetscErrorCode PCGAMGSetParallelCoarseGridSolve_GAMG(PC pc, PetscBool flg)
 {
   PC_MG   *mg      = (PC_MG *)pc->data;
   PC_GAMG *pc_gamg = (PC_GAMG *)mg->innerctx;
@@ -1180,7 +1180,7 @@ static PetscErrorCode PCGAMGSetUseParallelCoarseGridSolve_GAMG(PC pc, PetscBool 
 
   Level: intermediate
 
-.seealso: `PCGAMG`, `PCGAMGSetCoarseGridLayoutType()`, `PCGAMGSetUseParallelCoarseGridSolve()`
+.seealso: `PCGAMG`, `PCGAMGSetCoarseGridLayoutType()`, `PCGAMGSetParallelCoarseGridSolve()`
 @*/
 PetscErrorCode PCGAMGSetCpuPinCoarseGrids(PC pc, PetscBool flg)
 {
@@ -1214,7 +1214,7 @@ static PetscErrorCode PCGAMGSetCpuPinCoarseGrids_GAMG(PC pc, PetscBool flg)
 
   Level: intermediate
 
-.seealso: `PCGAMG`, `PCGAMGSetUseParallelCoarseGridSolve()`, `PCGAMGSetCpuPinCoarseGrids()`, `PCGAMGLayoutType`, `PCGAMG_LAYOUT_COMPACT`, `PCGAMG_LAYOUT_SPREAD`
+.seealso: `PCGAMG`, `PCGAMGSetParallelCoarseGridSolve()`, `PCGAMGSetCpuPinCoarseGrids()`, `PCGAMGLayoutType`, `PCGAMG_LAYOUT_COMPACT`, `PCGAMG_LAYOUT_SPREAD`
 @*/
 PetscErrorCode PCGAMGSetCoarseGridLayoutType(PC pc, PCGAMGLayoutType flg)
 {
@@ -1294,7 +1294,7 @@ static PetscErrorCode PCGAMGSetNlevels_GAMG(PC pc, PetscInt n)
   In this case, `PCGAMGSetThresholdScale()` must be called before `PCGAMGSetThreshold()`.
   If `n` is greater than the total number of levels, the excess entries in threshold will not be used.
 
-.seealso: `PCGAMG`, `PCGAMGSetAggressiveLevels()`, `PCGAMGSetThresholdScale()`
+.seealso: `PCGAMG`, `PCGAMGSetAggressiveLevels()`, `PCGAMGMISkSetAggressive()`, `PCGAMGSetMinDegreeOrderingMISk()`, `PCGAMGSetThresholdScale()`
 @*/
 PetscErrorCode PCGAMGSetThreshold(PC pc, PetscReal v[], PetscInt n)
 {
@@ -1514,7 +1514,7 @@ static PetscErrorCode PCSetFromOptions_GAMG(PC pc, PetscOptionItems *PetscOption
   PetscCall(PetscOptionsBool("-pc_gamg_use_sa_esteig", "Use eigen estimate from smoothed aggregation for smoother", "PCGAMGSetUseSAEstEig", pc_gamg->use_sa_esteig, &pc_gamg->use_sa_esteig, NULL));
   PetscCall(PetscOptionsBool("-pc_gamg_reuse_interpolation", "Reuse prolongation operator", "PCGAMGReuseInterpolation", pc_gamg->reuse_prol, &pc_gamg->reuse_prol, NULL));
   PetscCall(PetscOptionsBool("-pc_gamg_asm_use_agg", "Use aggregation aggregates for ASM smoother", "PCGAMGASMSetUseAggs", pc_gamg->use_aggs_in_asm, &pc_gamg->use_aggs_in_asm, NULL));
-  PetscCall(PetscOptionsBool("-pc_gamg_use_parallel_coarse_grid_solver", "Use parallel coarse grid solver (otherwise put last grid on one process)", "PCGAMGSetUseParallelCoarseGridSolve", pc_gamg->use_parallel_coarse_grid_solver, &pc_gamg->use_parallel_coarse_grid_solver, NULL));
+  PetscCall(PetscOptionsBool("-pc_gamg_parallel_coarse_grid_solver", "Use parallel coarse grid solver (otherwise put last grid on one process)", "PCGAMGSetParallelCoarseGridSolve", pc_gamg->use_parallel_coarse_grid_solver, &pc_gamg->use_parallel_coarse_grid_solver, NULL));
   PetscCall(PetscOptionsBool("-pc_gamg_cpu_pin_coarse_grids", "Pin coarse grids to the CPU", "PCGAMGSetCpuPinCoarseGrids", pc_gamg->cpu_pin_coarse_grids, &pc_gamg->cpu_pin_coarse_grids, NULL));
   PetscCall(PetscOptionsEnum("-pc_gamg_coarse_grid_layout_type", "compact: place reduced grids on processes in natural order; spread: distribute to whole machine for more memory bandwidth", "PCGAMGSetCoarseGridLayoutType", LayoutTypes,
                              (PetscEnum)pc_gamg->layout_type, (PetscEnum *)&pc_gamg->layout_type, NULL));
@@ -1557,29 +1557,31 @@ static PetscErrorCode PCSetFromOptions_GAMG(PC pc, PetscOptionItems *PetscOption
 }
 
 /*MC
-     PCGAMG - Geometric algebraic multigrid (AMG) preconditioner
+  PCGAMG - Geometric algebraic multigrid (AMG) preconditioner
 
-   Options Database Keys:
-+   -pc_gamg_type <type,default=agg> - one of agg, geo, or classical (only smoothed aggregation, agg, supported)
-.   -pc_gamg_repartition  <bool,default=false> - repartition the degrees of freedom across the coarse grids as they are determined
-.   -pc_gamg_asm_use_agg <bool,default=false> - use the aggregates from the coasening process to defined the subdomains on each level for the PCASM smoother
-.   -pc_gamg_process_eq_limit <limit, default=50> - `PCGAMG` will reduce the number of MPI ranks used directly on the coarse grids so that there are around <limit>
+  Options Database Keys:
++ -pc_gamg_type <type,default=agg> - one of agg, geo, or classical (only smoothed aggregation, agg, supported)
+. -pc_gamg_repartition  <bool,default=false> - repartition the degrees of freedom across the coarse grids as they are determined
+. -pc_gamg_asm_use_agg <bool,default=false> - use the aggregates from the coasening process to defined the subdomains on each level for the PCASM smoother
+. -pc_gamg_process_eq_limit <limit, default=50> - `PCGAMG` will reduce the number of MPI ranks used directly on the coarse grids so that there are around <limit>
                                         equations on each process that has degrees of freedom
-.   -pc_gamg_coarse_eq_limit <limit, default=50> - Set maximum number of equations on coarsest grid to aim for.
-.   -pc_gamg_reuse_interpolation <bool,default=true> - when rebuilding the algebraic multigrid preconditioner reuse the previously computed interpolations (should always be true)
-.   -pc_gamg_threshold[] <thresh,default=[-1,...]> - Before aggregating the graph `PCGAMG` will remove small values from the graph on each level (< 0 does no filtering)
--   -pc_gamg_threshold_scale <scale,default=1> - Scaling of threshold on each coarser grid if not specified
+. -pc_gamg_coarse_eq_limit <limit, default=50> - Set maximum number of equations on coarsest grid to aim for.
+. -pc_gamg_reuse_interpolation <bool,default=true> - when rebuilding the algebraic multigrid preconditioner reuse the previously computed interpolations (should always be true)
+. -pc_gamg_threshold[] <thresh,default=[-1,...]> - Before aggregating the graph `PCGAMG` will remove small values from the graph on each level (< 0 does no filtering)
+- -pc_gamg_threshold_scale <scale,default=1> - Scaling of threshold on each coarser grid if not specified
 
-   Options Database Keys for Aggregation:
-+  -pc_gamg_agg_nsmooths <nsmooth, default=1> - number of smoothing steps to use with smooth aggregation
-.  -pc_gamg_square_graph <n,default=1> - alias for pc_gamg_aggressive_coarsening (deprecated)
--  -pc_gamg_aggressive_coarsening <n,default=1> - number of aggressive coarsening (MIS-2) levels from finest.
+  Options Database Keys for Aggregation:
++ -pc_gamg_agg_nsmooths <nsmooth, default=1> - number of smoothing steps to use with smooth aggregation
+. -pc_gamg_aggressive_coarsening <n,default=1> - number of aggressive coarsening (MIS-2) levels from finest.
+. -pc_gamg_aggressive_square_graph <bool,default=false> - Use square graph (A'A) or MIS-k (k=2) for aggressive coarsening
+. -pc_gamg_mis_k_minimum_degree_ordering <bool,default=true> - Use minimum degree ordering in greedy MIS algorithm
+- -pc_gamg_aggressive_mis_k <n,default=2> - Number (k) distance in MIS coarsening (>2 is 'aggressive')
 
-   Options Database Keys for Multigrid:
-+  -pc_mg_cycle_type <v> - v or w, see `PCMGSetCycleType()`
-.  -pc_mg_distinct_smoothup - configure the up and down (pre and post) smoothers separately, see PCMGSetDistinctSmoothUp()
-.  -pc_mg_type <multiplicative> - (one of) additive multiplicative full kascade
--  -pc_mg_levels <levels> - Number of levels of multigrid to use. GAMG has a heuristic so pc_mg_levels is not usually used with GAMG
+  Options Database Keys for Multigrid:
++ -pc_mg_cycle_type <v> - v or w, see `PCMGSetCycleType()`
+. -pc_mg_distinct_smoothup - configure the up and down (pre and post) smoothers separately, see PCMGSetDistinctSmoothUp()
+. -pc_mg_type <multiplicative> - (one of) additive multiplicative full kascade
+- -pc_mg_levels <levels> - Number of levels of multigrid to use. GAMG has a heuristic so pc_mg_levels is not usually used with GAMG
 
   Level: intermediate
 
@@ -1593,9 +1595,8 @@ static PetscErrorCode PCSetFromOptions_GAMG(PC pc, PetscOptionItems *PetscOption
   See [the Users Manual section on PCGAMG](sec_amg) and [the Users Manual section on PCMG](sec_mg)for more details.
 
 .seealso: `PCCreate()`, `PCSetType()`, `MatSetBlockSize()`, `PCMGType`, `PCSetCoordinates()`, `MatSetNearNullSpace()`, `PCGAMGSetType()`, `PCGAMGAGG`, `PCGAMGGEO`, `PCGAMGCLASSICAL`, `PCGAMGSetProcEqLim()`,
-          `PCGAMGSetCoarseEqLim()`, `PCGAMGSetRepartition()`, `PCGAMGRegister()`, `PCGAMGSetReuseInterpolation()`, `PCGAMGASMSetUseAggs()`, `PCGAMGSetUseParallelCoarseGridSolve()`, `PCGAMGSetNlevels()`, `PCGAMGSetThreshold()`, `PCGAMGGetType()`, `PCGAMGSetReuseInterpolation()`, `PCGAMGSetUseSAEstEig()`
+          `PCGAMGSetCoarseEqLim()`, `PCGAMGSetRepartition()`, `PCGAMGRegister()`, `PCGAMGSetReuseInterpolation()`, `PCGAMGASMSetUseAggs()`, `PCGAMGSetParallelCoarseGridSolve()`, `PCGAMGSetNlevels()`, `PCGAMGSetThreshold()`, `PCGAMGGetType()`, `PCGAMGSetUseSAEstEig()`
 M*/
-
 PETSC_EXTERN PetscErrorCode PCCreate_GAMG(PC pc)
 {
   PC_GAMG *pc_gamg;
@@ -1635,7 +1636,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_GAMG(PC pc)
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCGAMGSetUseSAEstEig_C", PCGAMGSetUseSAEstEig_GAMG));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCGAMGSetReuseInterpolation_C", PCGAMGSetReuseInterpolation_GAMG));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCGAMGASMSetUseAggs_C", PCGAMGASMSetUseAggs_GAMG));
-  PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCGAMGSetUseParallelCoarseGridSolve_C", PCGAMGSetUseParallelCoarseGridSolve_GAMG));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCGAMGSetParallelCoarseGridSolve_C", PCGAMGSetParallelCoarseGridSolve_GAMG));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCGAMGSetCpuPinCoarseGrids_C", PCGAMGSetCpuPinCoarseGrids_GAMG));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCGAMGSetCoarseGridLayoutType_C", PCGAMGSetCoarseGridLayoutType_GAMG));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCGAMGSetThreshold_C", PCGAMGSetThreshold_GAMG));

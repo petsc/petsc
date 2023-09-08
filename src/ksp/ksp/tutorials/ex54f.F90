@@ -435,10 +435,6 @@
 !   args: -ne 39 -theta 30.0 -epsilon 1.e-1 -blob_center 0.,0. -ksp_type cg -pc_type gamg -pc_gamg_type agg -ksp_rtol 1e-4 -pc_gamg_square_graph 0 -ksp_monitor_short -ksp_norm_type unpreconditioned
 !   requires: !single
 !   test:
-!      suffix: hem
-!      args: -mat_coarsen_type hem -ksp_monitor_short
-!      output_file: output/ex54f_hem.out
-!   test:
 !      suffix: misk
 !      args: -mat_coarsen_type misk -pc_gamg_aggressive_coarsening 0
 !      output_file: output/ex54f_mis.out

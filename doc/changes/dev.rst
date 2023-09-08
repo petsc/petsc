@@ -150,6 +150,10 @@ Changes: Development
 - Refactor ``PCMPI`` to be a private system used automatically when ``-mpi_linear_solver_server`` is used. The ``KSP`` and ``PC`` objects that solve the system now inherit any prefix provided
   initially with ``KSPSetPrefix()`` and do not require the previously required ``mpi_`` prefix
 - Add option ``-fieldsplit_1_pc_hpddm_schur_precondition`` to use ``PCHPDDM`` on the Schur complements from ``PCFIELDSPLIT``
+- Add ``PCGAMGSetAggressiveSquareGraph()`` to use square graph method for aggressive coarsening that was the previous default coarsening approach before release 3.19
+- Add ``PCGAMGSetAggressiveMISk()`` to set the number of levels (k) of aggressive MIS-k coarseing (2 is very common)
+- Add ``PCGAMGSetMinDegreeOrderingMISk()`` to use a minimum degree ordering for the (greedy) MIS-k algorithm
+- Change ``PCGAMGSetUseParallelCoarseGridSolve()`` to ``PCGAMGSetParallelCoarseGridSolve()``
 
 .. rubric:: KSP:
 
