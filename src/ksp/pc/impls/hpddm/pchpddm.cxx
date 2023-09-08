@@ -1298,7 +1298,7 @@ static PetscErrorCode KSPPreSolve_SchurCorrection(KSP, Vec b, Vec, void *context
 {
   std::tuple<PC[2], Mat[2], PCSide, Vec[3]> *ctx = reinterpret_cast<std::tuple<PC[2], Mat[2], PCSide, Vec[3]> *>(context);
 
-  PetscFunctionBeginUser;
+  PetscFunctionBegin;
   if (std::get<2>(*ctx) == PC_LEFT || std::get<2>(*ctx) == PC_SIDE_DEFAULT) {
     PetscCall(PCApply(std::get<0>(*ctx)[1], b, std::get<3>(*ctx)[2]));
     std::swap(*b, *std::get<3>(*ctx)[2]); /* replace b by M^-1 b, but need to keep a copy of the original RHS, so swap it with the work Vec */
@@ -1310,7 +1310,7 @@ static PetscErrorCode KSPPostSolve_SchurCorrection(KSP, Vec b, Vec x, void *cont
 {
   std::tuple<PC[2], Mat[2], PCSide, Vec[3]> *ctx = reinterpret_cast<std::tuple<PC[2], Mat[2], PCSide, Vec[3]> *>(context);
 
-  PetscFunctionBeginUser;
+  PetscFunctionBegin;
   if (std::get<2>(*ctx) == PC_LEFT || std::get<2>(*ctx) == PC_SIDE_DEFAULT) std::swap(*b, *std::get<3>(*ctx)[2]); /* put back the original RHS where it belongs */
   else {
     PetscCall(PCApply(std::get<0>(*ctx)[1], x, std::get<3>(*ctx)[2]));

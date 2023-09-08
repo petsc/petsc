@@ -309,8 +309,30 @@ int main(int argc, char **args)
   if (solve_normal) {
     PetscCall(KSPSolve(ksp, Ab, x));
   } else if (solve_augmented) {
-    Vec view;
+    KSP      *subksp;
+    PC        pc;
+    Vec       view;
+    PetscBool flg;
 
+    PetscCall(KSPGetPC(ksp, &pc));
+    PetscCall(PetscObjectTypeCompare((PetscObject)pc, PCFIELDSPLIT, &flg));
+    if (flg) {
+      PetscCall(PCFieldSplitGetSubKSP(pc, NULL, &subksp));
+      PetscCall(KSPGetPC(subksp[1], &pc));
+      PetscCall(PetscObjectTypeCompare((PetscObject)pc, PCHPDDM, &flg));
+      if (flg) {
+#if defined(PETSC_HAVE_HPDDM) && defined(PETSC_HAVE_DYNAMIC_LIBRARIES) && defined(PETSC_USE_SHARED_LIBRARIES)
+        Mat aux;
+        IS  is;
+        PetscCall(MatCreate(PETSC_COMM_SELF, &aux));
+        PetscCall(ISCreate(PETSC_COMM_SELF, &is));
+        PetscCall(PCHPDDMSetAuxiliaryMat(pc, is, aux, NULL, NULL)); /* dummy objects just to cover corner cases in PCSetUp() */
+        PetscCall(ISDestroy(&is));
+        PetscCall(MatDestroy(&aux));
+#endif
+      }
+      PetscCall(PetscFree(subksp));
+    }
     PetscCall(KSPSolve(ksp, v[0], v[1]));
     if (!sbaij) {
       PetscCall(VecNestGetSubVec(v[1], 1, &view));
@@ -456,7 +478,7 @@ int main(int argc, char **args)
         requires: hpddm slepc defined(PETSC_HAVE_DYNAMIC_LIBRARIES) defined(PETSC_USE_SHARED_LIBRARIES)
         args: -solve_augmented -ksp_type gmres
         args: -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_precondition self -fieldsplit_0_pc_type jacobi -fieldsplit_ksp_type preonly
-        args: -prefix_push fieldsplit_1_ -pc_type hpddm -pc_hpddm_define_subdomains -pc_hpddm_levels_1_eps_nev 20 -pc_hpddm_levels_1_st_share_sub_ksp -pc_hpddm_levels_1_sub_pc_type cholesky -prefix_pop -fieldsplit_1_mat_schur_complement_ainv_type {{diag lump}shared output}
+        args: -prefix_push fieldsplit_1_ -pc_type hpddm -pc_hpddm_schur_precondition least_squares -pc_hpddm_define_subdomains -pc_hpddm_levels_1_eps_nev 20 -pc_hpddm_levels_1_st_share_sub_ksp -pc_hpddm_levels_1_sub_pc_type cholesky -prefix_pop -fieldsplit_1_mat_schur_complement_ainv_type {{diag lump}shared output}
      test:
         suffix: 4f
         nsize: 4
@@ -464,14 +486,14 @@ int main(int argc, char **args)
         filter: sed -e "s/(1,0) : type=mpiaij/(1,0) : type=transpose/g" -e "s/hermitiantranspose/transpose/g"
         args: -solve_augmented -ksp_type gmres -ksp_view -explicit_transpose {{false true}shared output}
         args: -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_precondition self -fieldsplit_0_pc_type jacobi -fieldsplit_ksp_type preonly
-        args: -prefix_push fieldsplit_1_ -pc_type hpddm -pc_hpddm_define_subdomains -pc_hpddm_levels_1_eps_nev 20 -pc_hpddm_levels_1_st_share_sub_ksp -pc_hpddm_levels_1_sub_pc_type qr -prefix_pop
+        args: -prefix_push fieldsplit_1_ -pc_type hpddm -pc_hpddm_schur_precondition least_squares -pc_hpddm_define_subdomains -pc_hpddm_levels_1_eps_nev 20 -pc_hpddm_levels_1_st_share_sub_ksp -pc_hpddm_levels_1_sub_pc_type qr -prefix_pop
      test:
         suffix: 4f_nonzero
         nsize: 4
         requires: hpddm slepc suitesparse defined(PETSC_HAVE_DYNAMIC_LIBRARIES) defined(PETSC_USE_SHARED_LIBRARIES)
         args: -solve_augmented -nonzero_A11 {{0.0 1e-14}shared output} -ksp_type gmres
         args: -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_precondition self -fieldsplit_0_pc_type jacobi -fieldsplit_ksp_type preonly
-        args: -prefix_push fieldsplit_1_ -pc_type hpddm -pc_hpddm_define_subdomains -pc_hpddm_levels_1_eps_nev 20 -pc_hpddm_levels_1_st_share_sub_ksp -pc_hpddm_levels_1_sub_pc_type qr -prefix_pop
+        args: -prefix_push fieldsplit_1_ -pc_type hpddm -pc_hpddm_schur_precondition least_squares -pc_hpddm_define_subdomains -pc_hpddm_levels_1_eps_nev 20 -pc_hpddm_levels_1_st_share_sub_ksp -pc_hpddm_levels_1_sub_pc_type qr -prefix_pop
      test:
         suffix: 4f_nonzero_shift
         nsize: 4
@@ -480,7 +502,7 @@ int main(int argc, char **args)
         filter: sed -e "s/Number of iterations =   6/Number of iterations =   5/g"
         args: -solve_augmented -nonzero_A11 {{0.0 1e-6}shared output} -ksp_type gmres
         args: -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_precondition self -fieldsplit_0_pc_type jacobi -fieldsplit_ksp_type preonly
-        args: -prefix_push fieldsplit_1_ -pc_type hpddm -pc_hpddm_define_subdomains -pc_hpddm_levels_1_eps_nev 20 -pc_hpddm_levels_1_st_share_sub_ksp -pc_hpddm_levels_1_sub_pc_type cholesky -pc_hpddm_levels_1_eps_gen_non_hermitian -prefix_pop
+        args: -prefix_push fieldsplit_1_ -pc_type hpddm -pc_hpddm_schur_precondition least_squares -pc_hpddm_define_subdomains -pc_hpddm_levels_1_eps_nev 20 -pc_hpddm_levels_1_st_share_sub_ksp -pc_hpddm_levels_1_sub_pc_type cholesky -pc_hpddm_levels_1_eps_gen_non_hermitian -prefix_pop
      test:
         suffix: 4g
         nsize: 4
