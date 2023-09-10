@@ -305,6 +305,7 @@ PetscErrorCode DMRefine_Plex(DM dm, MPI_Comm comm, DM *rdm)
     DMPlexTransformType trType;
     const char         *prefix;
     PetscOptions        options;
+    PetscBool           useCeed;
 
     PetscCall(DMPlexTransformCreate(PetscObjectComm((PetscObject)dm), &tr));
     PetscCall(DMPlexTransformSetDM(tr, dm));
@@ -320,11 +321,19 @@ PetscErrorCode DMRefine_Plex(DM dm, MPI_Comm comm, DM *rdm)
     PetscCall(PetscObjectViewFromOptions((PetscObject)tr, NULL, "-dm_plex_transform_view"));
     PetscCall(DMPlexTransformApply(tr, dm, rdm));
     PetscCall(DMPlexSetRegularRefinement(*rdm, PETSC_TRUE));
+    PetscCall(DMPlexGetUseCeed(dm, &useCeed));
+    PetscCall(DMPlexSetUseCeed(*rdm, useCeed));
     PetscCall(DMSetMatType((*rdm), dm->mattype));
     PetscCall(DMCopyDisc(dm, *rdm));
     PetscCall(DMGetCoordinateDM(dm, &cdm));
     PetscCall(DMGetCoordinateDM(*rdm, &rcdm));
     PetscCall(DMCopyDisc(cdm, rcdm));
+    PetscCall(DMPlexGetUseCeed(cdm, &useCeed));
+    PetscCall(DMPlexSetUseCeed(rcdm, useCeed));
+    if (useCeed) {
+      PetscCall(DMPlexSetUseMatClosurePermutation(rcdm, PETSC_FALSE));
+      PetscCall(DMUseTensorOrder(rcdm, PETSC_TRUE));
+    }
     PetscCall(DMPlexTransformCreateDiscLabels(tr, *rdm));
     PetscCall(DMPlexTransformDestroy(&tr));
   } else {
@@ -342,7 +351,7 @@ PetscErrorCode DMRefineHierarchy_Plex(DM dm, PetscInt nlevels, DM rdm[])
 {
   DM        cdm = dm;
   PetscInt  r;
-  PetscBool isUniform, localized;
+  PetscBool isUniform, localized, useCeed;
 
   PetscFunctionBegin;
   PetscCall(DMPlexGetRefinementUniform(dm, &isUniform));
@@ -363,10 +372,18 @@ PetscErrorCode DMRefineHierarchy_Plex(DM dm, PetscInt nlevels, DM rdm[])
       PetscCall(DMSetCoarsenLevel(rdm[r], cdm->leveldown));
       PetscCall(DMSetRefineLevel(rdm[r], cdm->levelup + 1));
       PetscCall(DMSetMatType(rdm[r], dm->mattype));
+      PetscCall(DMPlexGetUseCeed(dm, &useCeed));
+      PetscCall(DMPlexSetUseCeed(rdm[r], useCeed));
       PetscCall(DMCopyDisc(cdm, rdm[r]));
       PetscCall(DMGetCoordinateDM(dm, &codm));
       PetscCall(DMGetCoordinateDM(rdm[r], &rcodm));
       PetscCall(DMCopyDisc(codm, rcodm));
+      PetscCall(DMPlexGetUseCeed(codm, &useCeed));
+      PetscCall(DMPlexSetUseCeed(rcodm, useCeed));
+      if (useCeed) {
+        PetscCall(DMPlexSetUseMatClosurePermutation(rcodm, PETSC_FALSE));
+        PetscCall(DMUseTensorOrder(rcodm, PETSC_TRUE));
+      }
       PetscCall(DMPlexTransformCreateDiscLabels(tr, rdm[r]));
       PetscCall(DMSetCoarseDM(rdm[r], cdm));
       PetscCall(DMPlexSetRegularRefinement(rdm[r], PETSC_TRUE));
@@ -380,6 +397,8 @@ PetscErrorCode DMRefineHierarchy_Plex(DM dm, PetscInt nlevels, DM rdm[])
   } else {
     for (r = 0; r < nlevels; ++r) {
       PetscCall(DMRefine(cdm, PetscObjectComm((PetscObject)dm), &rdm[r]));
+      PetscCall(DMPlexGetUseCeed(dm, &useCeed));
+      PetscCall(DMPlexSetUseCeed(rdm[r], useCeed));
       PetscCall(DMCopyDisc(cdm, rdm[r]));
       if (localized) PetscCall(DMLocalizeCoordinates(rdm[r]));
       PetscCall(DMSetCoarseDM(rdm[r], cdm));

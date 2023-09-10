@@ -147,3 +147,50 @@ PETSC_EXTERN PetscErrorCode PetscFECreatePointTrace(PetscFE, PetscInt, PetscFE *
 
 PETSC_EXTERN PetscErrorCode PetscFEOpenCLSetRealType(PetscFE, PetscDataType);
 PETSC_EXTERN PetscErrorCode PetscFEOpenCLGetRealType(PetscFE, PetscDataType *);
+
+#ifdef PETSC_HAVE_LIBCEED
+
+  // clang-format off
+  #ifndef PLEXFE_QFUNCTION
+    #define PLEXFE_QFUNCTION(fname, f0_name, f1_name) \
+      CEED_QFUNCTION(PlexQFunction##fname)(void *ctx, const CeedInt Q, const CeedScalar *const *in, CeedScalar *const *out) \
+      { \
+        const CeedScalar *u = in[0], *du = in[1], *qdata = in[2]; \
+        CeedScalar       *v = out[0], *dv = out[1]; \
+        const PetscInt    Nc   = 1; \
+        const PetscInt    cdim = 2; \
+\
+        CeedPragmaSIMD for (CeedInt i = 0; i < Q; ++i) \
+        { \
+          const PetscInt   uOff[2]       = {0, Nc}; \
+          const PetscInt   uOff_x[2]     = {0, Nc * cdim}; \
+          const CeedScalar x[2]          = {qdata[i+Q*1], qdata[i+Q*2]}; \
+          const CeedScalar invJ[2][2]    = { \
+            {qdata[i+Q*3], qdata[i+Q*5]}, \
+            {qdata[i+Q*4], qdata[i+Q*6]} \
+          }; \
+          const CeedScalar u_x[2]        = {invJ[0][0] * du[i+Q*0] + invJ[1][0] * du[i+Q*1], invJ[0][1] * du[i+Q*0] + invJ[1][1] * du[i+Q*1]}; \
+          PetscScalar      f0[Nc]; \
+          PetscScalar      f1[Nc * cdim]; \
+\
+          for (PetscInt k = 0; k < Nc; ++k) f0[k] = 0; \
+          for (PetscInt k = 0; k < Nc * cdim; ++k) f1[k] = 0; \
+          f0_name(2, 1, 0, uOff, uOff_x, u, NULL, u_x, NULL, NULL, NULL, NULL, NULL, 0.0, x, 0, NULL, f0); \
+          f1_name(2, 1, 0, uOff, uOff_x, u, NULL, u_x, NULL, NULL, NULL, NULL, NULL, 0.0, x, 0, NULL, f1); \
+\
+          dv[i + Q * 0] = qdata[i + Q * 0] * (invJ[0][0] * f1[0] + invJ[0][1] * f1[1]); \
+          dv[i + Q * 1] = qdata[i + Q * 0] * (invJ[1][0] * f1[0] + invJ[1][1] * f1[1]); \
+          v[i]          = qdata[i + Q * 0] * f0[0]; \
+        } \
+        return CEED_ERROR_SUCCESS; \
+      }
+  #endif
+// clang-format on
+
+#else
+
+  #ifndef PLEXFE_QFUNCTION
+    #define PLEXFE_QFUNCTION(fname, f0_name, f1_name)
+  #endif
+
+#endif

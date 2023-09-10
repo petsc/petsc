@@ -181,6 +181,8 @@ Changes: Development
 - Add support for ``DMDAGetElements()`` for Fortran
 - Add support for clearing named vectors with ``DMClearNamedGlobalVectors()`` and ``DMClearNamedLocalVectors()``
 - Add ``DMPrintCellIndices()`` for debugging
+- Add ``DMUseTensorOrder()``
+- Add ``DMCeedCreate()``, ``DMCeedComputeGeometry()``, and ``DMCeedDestroy()``
 
 .. rubric:: DMSwarm:
 
@@ -192,8 +194,12 @@ Changes: Development
 - Add ``DMPlexTransformExtrudeGetPeriodic()`` and ``DMPlexTransformExtrudeSetPeriodic()``
 - Replace ``DMPlexGetGhostCellStratum()`` with ``DMPlexGetCellTypeStratum()``
 - Add ``DMPlexSetUseMatClosurePermutation()`` and ``DMPlexGetUseMatClosurePermutation()``
+- Add ``DMPlexGetUseCeed()``, ``DMPlexSetUseCeed()``, and ``DMPlexSNESComputeResidualCEED()``
+- Add ``DMPlexSNESComputeResidualDS()``
 
 .. rubric:: FE/FV:
+
+- Add ``PLEXFE_QFUNCTION`` macro to create CEED QFunctions from Plex pointwise functions
 
 .. rubric:: DMNetwork:
 
