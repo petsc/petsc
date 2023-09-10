@@ -573,7 +573,7 @@ PetscErrorCode MatSetValuesCOO_Basic(Mat A, const PetscScalar coo_v[], InsertMod
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatSetPreallocationCOO_Basic(Mat A, PetscCount ncoo, const PetscInt coo_i[], const PetscInt coo_j[])
+PetscErrorCode MatSetPreallocationCOO_Basic(Mat A, PetscCount ncoo, PetscInt coo_i[], PetscInt coo_j[])
 {
   Mat         preallocator;
   IS          is_coo_i, is_coo_j;
@@ -634,7 +634,7 @@ PetscErrorCode MatSetPreallocationCOO_Basic(Mat A, PetscCount ncoo, const PetscI
 @*/
 PetscErrorCode MatSetPreallocationCOO(Mat A, PetscCount ncoo, PetscInt coo_i[], PetscInt coo_j[])
 {
-  PetscErrorCode (*f)(Mat, PetscCount, const PetscInt[], const PetscInt[]) = NULL;
+  PetscErrorCode (*f)(Mat, PetscCount, PetscInt[], PetscInt[]) = NULL;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
