@@ -926,7 +926,7 @@ static PetscErrorCode MatConvert_ScaLAPACK_Dense(Mat A, MatType newtype, MatReus
   Mat_ScaLAPACK     *a = (Mat_ScaLAPACK *)A->data;
   Mat                Bmpi;
   MPI_Comm           comm;
-  PetscInt           i, M = A->rmap->N, N = A->cmap->N, m, n, rstart, rend, nz;
+  PetscInt           i, M = A->rmap->N, N = A->cmap->N, m, n, rstart, rend, nz, ldb;
   const PetscInt    *ranges, *branges, *cwork;
   const PetscScalar *vwork;
   PetscBLASInt       bdesc[9], bmb, zero = 0, one = 1, lld, info;
@@ -960,7 +960,8 @@ static PetscErrorCode MatConvert_ScaLAPACK_Dense(Mat A, MatType newtype, MatReus
 
     /* create ScaLAPACK descriptor for B (1d block distribution) */
     PetscCall(PetscBLASIntCast(ranges[1], &bmb)); /* row block size */
-    lld = PetscMax(A->rmap->n, 1);                /* local leading dimension */
+    PetscCall(MatDenseGetLDA(Bmpi, &ldb));
+    lld = PetscMax(ldb, 1); /* local leading dimension */
     PetscCallBLAS("SCALAPACKdescinit", SCALAPACKdescinit_(bdesc, &a->M, &a->N, &bmb, &a->N, &zero, &zero, &a->grid->ictxcol, &lld, &info));
     PetscCheckScaLapackInfo("descinit", info);
 
@@ -998,7 +999,8 @@ static PetscErrorCode MatConvert_ScaLAPACK_Dense(Mat A, MatType newtype, MatReus
 
     /* create ScaLAPACK descriptor for B (1d block distribution) */
     PetscCall(PetscBLASIntCast(ranges[1], &bmb)); /* row block size */
-    lld = PetscMax(A->rmap->n, 1);                /* local leading dimension */
+    PetscCall(MatDenseGetLDA(Bmpi, &ldb));
+    lld = PetscMax(ldb, 1); /* local leading dimension */
     PetscCallBLAS("SCALAPACKdescinit", SCALAPACKdescinit_(bdesc, &a->M, &a->N, &bmb, &a->N, &zero, &zero, &a->grid->ictxcol, &lld, &info));
     PetscCheckScaLapackInfo("descinit", info);
 
