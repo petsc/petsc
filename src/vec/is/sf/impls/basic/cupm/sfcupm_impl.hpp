@@ -565,7 +565,7 @@ inline void SfInterface<T>::PackInit_DumbType(PetscSFLink link) noexcept
 
 /* Some device-specific utilities */
 template <device::cupm::DeviceType T>
-inline PetscErrorCode SfInterface<T>::LinkSyncDevice(PetscSFLink link) noexcept
+inline PetscErrorCode SfInterface<T>::LinkSyncDevice(PetscSFLink) noexcept
 {
   PetscFunctionBegin;
   PetscCallCUPM(cupmDeviceSynchronize());
