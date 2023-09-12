@@ -240,4 +240,9 @@ int main(int argc, char **args)
       requires: triangle
       output_file: output/ex54_0.out
 
+   test:
+      requires: !single !__float128
+      nsize: 4
+      suffix: hem
+      args: -ne 39 -ksp_type cg -pc_type gamg -pc_gamg_type agg -ksp_rtol 1e-4 -pc_gamg_square_graph 0 -ksp_monitor_short -ksp_norm_type unpreconditioned -mat_coarsen_type hem -ksp_monitor_short -pc_gamg_aggressive_coarsening 0
 TEST*/

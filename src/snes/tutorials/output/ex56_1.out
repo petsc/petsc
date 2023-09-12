@@ -1,4 +1,4 @@
-  Linear solve converged due to CONVERGED_RTOL iterations 5
+  Linear solve converged due to CONVERGED_RTOL iterations 6
 DM Object: box 4 MPI processes
   type: plex
 box in 3 dimensions:
@@ -29,6 +29,6 @@ Labels:
   boundary: 1 strata with value/size (1 (77))
 Field deformation:
   adjacency FEM
-  Linear solve converged due to CONVERGED_RTOL iterations 9
+  Linear solve converged due to CONVERGED_RTOL iterations 8
 [0] 0) N=           9, max displ=2.5713786e+01, error=9.564e+00
 [0] 1) N=         147, max displ=3.1758769e+01, disp diff= 6.04e+00, error=3.519e+00, rate=1.4
