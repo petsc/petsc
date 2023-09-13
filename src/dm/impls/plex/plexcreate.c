@@ -4159,10 +4159,10 @@ static PetscErrorCode DMSetFromOptions_Plex(DM dm, PetscOptionItems *PetscOption
 {
   PetscFunctionList        ordlist;
   char                     oname[256];
+  DMPlexReorderDefaultFlag reorder;
   PetscReal                volume    = -1.0;
   PetscInt                 prerefine = 0, refine = 0, r, coarsen = 0, overlap = 0, extLayers = 0, dim;
-  PetscBool                uniformOrig, created = PETSC_FALSE, uniform = PETSC_TRUE, distribute, interpolate = PETSC_TRUE, coordSpace = PETSC_TRUE, remap = PETSC_TRUE, ghostCells = PETSC_FALSE, isHierarchy, ignoreModel = PETSC_FALSE, flg;
-  DMPlexReorderDefaultFlag reorder;
+  PetscBool uniformOrig = PETSC_FALSE, created = PETSC_FALSE, uniform = PETSC_TRUE, distribute, saveSF = PETSC_FALSE, interpolate = PETSC_TRUE, coordSpace = PETSC_TRUE, remap = PETSC_TRUE, ghostCells = PETSC_FALSE, isHierarchy, ignoreModel = PETSC_FALSE, flg;
 
   PetscFunctionBegin;
   PetscOptionsHeadBegin(PetscOptionsObject, "DMPlex Options");
@@ -4250,15 +4250,19 @@ static PetscErrorCode DMSetFromOptions_Plex(DM dm, PetscOptionItems *PetscOption
   /* Handle DMPlex distribution */
   PetscCall(DMPlexDistributeGetDefault(dm, &distribute));
   PetscCall(PetscOptionsBool("-dm_distribute", "Flag to redistribute a mesh among processes", "DMPlexDistribute", distribute, &distribute, NULL));
+  PetscCall(PetscOptionsBool("-dm_distribute_save_sf", "Flag to save the migration SF", "DMPlexSetMigrationSF", saveSF, &saveSF, NULL));
   PetscCall(DMSetFromOptions_Overlap_Plex(dm, PetscOptionsObject, &overlap));
   if (distribute) {
     DM               pdm = NULL;
     PetscPartitioner part;
+    PetscSF          sfMigration;
 
     PetscCall(DMPlexGetPartitioner(dm, &part));
     PetscCall(PetscPartitionerSetFromOptions(part));
-    PetscCall(DMPlexDistribute(dm, overlap, NULL, &pdm));
+    PetscCall(DMPlexDistribute(dm, overlap, &sfMigration, &pdm));
     if (pdm) PetscCall(DMPlexReplace_Internal(dm, &pdm));
+    if (saveSF) PetscCall(DMPlexSetMigrationSF(dm, sfMigration));
+    PetscCall(PetscSFDestroy(&sfMigration));
   }
   /* Must check CEED options before creating function space for coordinates */
   {
