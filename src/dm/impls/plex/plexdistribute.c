@@ -1698,6 +1698,7 @@ PetscErrorCode DMPlexDistribute(DM dm, PetscInt overlap, PetscSF *sf, DM *dmPara
   DM               dmCoord;
   DMLabel          lblPartition, lblMigration;
   PetscSF          sfMigration, sfStratified, sfPoint;
+  VecType          vec_type;
   PetscBool        flg, balance;
   PetscMPIInt      rank, size;
 
@@ -1832,6 +1833,8 @@ PetscErrorCode DMPlexDistribute(DM dm, PetscInt overlap, PetscSF *sf, DM *dmPara
   PetscCall(ISDestroy(&cellPart));
   /* Copy discretization */
   PetscCall(DMCopyDisc(dm, *dmParallel));
+  PetscCall(DMGetVecType(dm, &vec_type));
+  PetscCall(DMSetVecType(*dmParallel, vec_type));
   /* Create sfNatural */
   if (dm->useNatural) {
     PetscSection section;
