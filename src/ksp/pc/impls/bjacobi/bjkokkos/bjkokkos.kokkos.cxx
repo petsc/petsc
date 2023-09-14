@@ -723,7 +723,7 @@ static PetscErrorCode PCApply_BJKOKKOS(PC pc, Vec bin, Vec xout)
         if (0 == rank) {
           if (batch_sz != 1)
             PetscCall(PetscPrintf(PETSC_COMM_SELF, "[%d] Linear solve converged due to %s iterations %d, batch %" PetscInt_FMT ", species %" PetscInt_FMT " (max)\n", out[1], KSPConvergedReasons[h_metadata[mbid].reason], out[0], mbid % batch_sz, mbid / batch_sz));
-          else PetscCall(PetscPrintf(PETSC_COMM_SELF, "[%d] Linear solve converged due to %s iterations %d, block %d (max)\n", out[1], KSPConvergedReasons[h_metadata[mbid].reason], out[0], mbid));
+          else PetscCall(PetscPrintf(PETSC_COMM_SELF, "[%d] Linear solve converged due to %s iterations %d, block %" PetscInt_FMT " (max)\n", out[1], KSPConvergedReasons[h_metadata[mbid].reason], out[0], mbid));
         }
       }
       for (int blkID = 0; blkID < nBlk; blkID++) {
