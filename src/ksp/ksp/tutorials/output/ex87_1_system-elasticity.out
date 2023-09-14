@@ -41,26 +41,16 @@ PC Object: 4 MPI processes
               linear system matrix followed by preconditioner matrix:
               Mat Object: 4 MPI processes
                 type: shell
-                rows=1000, cols=1000
               Mat Object: (fieldsplit_1_) 4 MPI processes
                 type: schurcomplement
-                rows=1000, cols=1000
                   Schur complement A11 - A10 inv(A00) A01
                   A11
                     Mat Object: (fieldsplit_1_) 4 MPI processes
-                      type: mpiaij
-                      rows=1000, cols=1000
-                      total number of mallocs used during MatSetValues calls=0
                   A10
                     Mat Object: 4 MPI processes
-                      type: mpiaij
-                      rows=1000, cols=4242
-                      total number of mallocs used during MatSetValues calls=0
                   KSP solver for A00 block viewable with the additional option -fieldsplit_0_ksp_view
                   A01
                     Mat Object: 4 MPI processes
-                      type: hermitiantranspose
-                      rows=4242, cols=1000
             PC Object: (fieldsplit_1_pc_hpddm_levels_1_) 4 MPI processes
               type: asm
                 total subdomain blocks = 4, user-defined overlap
@@ -87,58 +77,33 @@ PC Object: 4 MPI processes
                     linear system matrix = precond matrix:
                     Mat Object: 1 MPI process
                       type: nest
-                      rows=1491, cols=1491
                         Matrix object:
                           type=nest, rows=2, cols=2
                           MatNest structure:
-                          (0,0) : prefix="fieldsplit_0_pc_hpddm_levels_1_sub_", type=seqaij, rows=1196, cols=1196
-                          (0,1) : type=seqaij, rows=1196, cols=295
-                          (1,0) : type=seqaij, rows=295, cols=1196
-                          (1,1) : type=seqaij, rows=295, cols=295
                 linear system matrix = precond matrix:
                 Mat Object: (fieldsplit_1_pc_hpddm_levels_1_sub_) 1 MPI process
                   type: schurcomplement
-                  rows=295, cols=295
                     Schur complement A11 - A10 inv(A00) A01
                     A11
                       Mat Object: 1 MPI process
-                        type: seqaij
-                        rows=295, cols=295
-                        total number of mallocs used during MatSetValues calls=0
                     A10
                       Mat Object: 1 MPI process
-                        type: seqaij
-                        rows=295, cols=1196
-                        total number of mallocs used during MatSetValues calls=0
                     KSP solver for A00 block viewable with the additional option -fieldsplit_0_pc_hpddm_levels_1_sub_ksp_view
                     A01
                       Mat Object: 1 MPI process
-                        type: seqaij
-                        rows=1196, cols=295
-                        total number of mallocs used during MatSetValues calls=0
               linear system matrix followed by preconditioner matrix:
               Mat Object: 4 MPI processes
                 type: shell
-                rows=1000, cols=1000
               Mat Object: (fieldsplit_1_) 4 MPI processes
                 type: schurcomplement
-                rows=1000, cols=1000
                   Schur complement A11 - A10 inv(A00) A01
                   A11
                     Mat Object: (fieldsplit_1_) 4 MPI processes
-                      type: mpiaij
-                      rows=1000, cols=1000
-                      total number of mallocs used during MatSetValues calls=0
                   A10
                     Mat Object: 4 MPI processes
-                      type: mpiaij
-                      rows=1000, cols=4242
-                      total number of mallocs used during MatSetValues calls=0
                   KSP solver for A00 block viewable with the additional option -fieldsplit_0_ksp_view
                   A01
                     Mat Object: 4 MPI processes
-                      type: hermitiantranspose
-                      rows=4242, cols=1000
               KSP Object: (fieldsplit_1_pc_hpddm_coarse_) 2 MPI processes
                 type: preonly
                 maximum iterations=10000, initial guess is zero
@@ -150,9 +115,6 @@ PC Object: 4 MPI processes
                   First (color=0) of 2 PCs follows
                 linear system matrix = precond matrix:
                 Mat Object: (fieldsplit_1_pc_hpddm_coarse_) 2 MPI processes
-                  type: mpisbaij
-                  rows=40, cols=40, bs=10
-                  total number of mallocs used during MatSetValues calls=0
             linear system matrix = precond matrix:
             Mat Object: (fieldsplit_1_) 4 MPI processes
               type: schurcomplement
@@ -160,19 +122,11 @@ PC Object: 4 MPI processes
                 Schur complement A11 - A10 inv(A00) A01
                 A11
                   Mat Object: (fieldsplit_1_) 4 MPI processes
-                    type: mpiaij
-                    rows=1000, cols=1000
-                    total number of mallocs used during MatSetValues calls=0
                 A10
                   Mat Object: 4 MPI processes
-                    type: mpiaij
-                    rows=1000, cols=4242
-                    total number of mallocs used during MatSetValues calls=0
                 KSP solver for A00 block viewable with the additional option -fieldsplit_0_ksp_view
                 A01
                   Mat Object: 4 MPI processes
-                    type: hermitiantranspose
-                    rows=4242, cols=1000
     ---------------------------------
   linear system matrix = precond matrix:
   Mat Object: (fieldsplit_1_) 4 MPI processes
@@ -181,16 +135,11 @@ PC Object: 4 MPI processes
       Schur complement A11 - A10 inv(A00) A01
       A11
         Mat Object: (fieldsplit_1_) 4 MPI processes
-          type: mpiaij
           rows=1000, cols=1000
-          total number of mallocs used during MatSetValues calls=0
       A10
         Mat Object: 4 MPI processes
-          type: mpiaij
           rows=1000, cols=4242
-          total number of mallocs used during MatSetValues calls=0
       KSP solver for A00 block viewable with the additional option -fieldsplit_0_ksp_view
       A01
         Mat Object: 4 MPI processes
-          type: hermitiantranspose
           rows=4242, cols=1000
