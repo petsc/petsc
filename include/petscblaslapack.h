@@ -95,6 +95,7 @@ BLAS_EXTERN void LAPACKstein_(const PetscBLASInt *, const PetscReal *, const Pet
 #endif
 BLAS_EXTERN void LAPACKgesv_(const PetscBLASInt *, const PetscBLASInt *, PetscScalar *, const PetscBLASInt *, PetscBLASInt *, PetscScalar *, const PetscBLASInt *, PetscBLASInt *);
 
+BLAS_EXTERN void LAPACKtrtri_(const char *, const char *, const PetscBLASInt *, PetscScalar *, const PetscBLASInt *, PetscBLASInt *);
 BLAS_EXTERN void LAPACKpotrf_(const char *, const PetscBLASInt *, PetscScalar *, const PetscBLASInt *, PetscBLASInt *);
 BLAS_EXTERN void LAPACKpotri_(const char *, const PetscBLASInt *, PetscScalar *, const PetscBLASInt *, PetscBLASInt *);
 BLAS_EXTERN void LAPACKpotrs_(const char *, const PetscBLASInt *, const PetscBLASInt *, const PetscScalar *, const PetscBLASInt *, PetscScalar *, const PetscBLASInt *, PetscBLASInt *);

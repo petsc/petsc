@@ -1,4 +1,7 @@
 #include <petsc/private/kspimpl.h> /*I "petscksp.h" I*/
+#include <petscblaslapack.h>
+PETSC_INTERN PetscErrorCode KSPComputeExtremeSingularValues_MINRES(KSP, PetscReal *, PetscReal *);
+PETSC_INTERN PetscErrorCode KSPComputeEigenvalues_MINRES(KSP, PetscInt, PetscReal *, PetscReal *, PetscInt *);
 
 PetscBool  QLPcite       = PETSC_FALSE;
 const char QLPCitation[] = "@article{choi2011minres,\n"
@@ -19,12 +22,28 @@ typedef struct {
   PetscBool         monitor;
   PetscViewer       viewer;
   PetscViewerFormat viewer_fmt;
+  // The following arrays are of size ksp->maxit
+  PetscScalar *e, *d;
+  PetscReal   *ee, *dd; /* work space for Lanczos algorithm */
 } KSP_MINRES;
 
 static PetscErrorCode KSPSetUp_MINRES(KSP ksp)
 {
   PetscFunctionBegin;
   PetscCall(KSPSetWorkVecs(ksp, 9));
+  /*
+     If user requested computations of eigenvalues then allocate
+     work space needed
+  */
+  if (ksp->calc_sings) {
+    KSP_MINRES *minres = (KSP_MINRES *)ksp->data;
+    PetscInt    maxit  = ksp->max_it;
+    PetscCall(PetscFree4(minres->e, minres->d, minres->ee, minres->dd));
+    PetscCall(PetscMalloc4(maxit, &minres->e, maxit, &minres->d, maxit, &minres->ee, maxit, &minres->dd));
+
+    ksp->ops->computeextremesingularvalues = KSPComputeExtremeSingularValues_MINRES;
+    ksp->ops->computeeigenvalues           = KSPComputeEigenvalues_MINRES;
+  }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -74,27 +93,36 @@ static inline void SymOrtho(PetscReal a, PetscReal b, PetscReal *c, PetscReal *s
 */
 static PetscErrorCode KSPSolve_MINRES(KSP ksp)
 {
-  KSP_MINRES *minres = (KSP_MINRES *)ksp->data;
-  Mat         Amat;
-  Vec         X, B, R1, R2, R3, V, W, WL, WL2, XL2, RN;
-  PetscReal   alpha, beta, beta1, betan, betal;
-  PetscBool   diagonalscale;
-  PetscReal   zero = 0.0, dbar, dltan = 0.0, dlta, cs = -1.0, sn = 0.0, epln, eplnn = 0.0, gbar, dlta_QLP;
-  PetscReal   gamal3 = 0.0, gamal2 = 0.0, gamal = 0.0, gama = 0.0, gama_tmp;
-  PetscReal   taul2 = 0.0, taul = 0.0, tau = 0.0, phi, phi0, phir;
-  PetscReal   Axnorm, xnorm, xnorm_tmp, xl2norm = 0.0, pnorm, Anorm = 0.0, gmin = 0.0, gminl = 0.0, gminl2 = 0.0;
-  PetscReal   Acond = 1.0, Acondl = 0.0, rnorml, rnorm, rootl, relAresl, relres, relresl, Arnorml, Anorml = 0.0, xnorml = 0.0;
-  PetscReal   epsx, realmin = PETSC_REAL_MIN, eps = PETSC_MACHINE_EPSILON;
-  PetscReal   veplnl2 = 0.0, veplnl = 0.0, vepln = 0.0, etal2 = 0.0, etal = 0.0, eta = 0.0;
-  PetscReal   dlta_tmp, sr2 = 0.0, cr2 = -1.0, cr1 = -1.0, sr1 = 0.0;
-  PetscReal   ul4 = 0.0, ul3 = 0.0, ul2 = 0.0, ul = 0.0, u = 0.0, ul_QLP = 0.0, u_QLP = 0.0;
-  PetscReal   vepln_QLP = 0.0, gamal_QLP = 0.0, gama_QLP = 0.0, gamal_tmp, abs_gama;
-  PetscInt    flag = -2, flag0 = -2, QLPiter = 0;
+  KSP_MINRES  *minres = (KSP_MINRES *)ksp->data;
+  Mat          Amat;
+  Vec          X, B, R1, R2, R3, V, W, WL, WL2, XL2, RN;
+  PetscReal    alpha, beta, beta1, betan, betal;
+  PetscBool    diagonalscale;
+  PetscReal    zero = 0.0, dbar, dltan = 0.0, dlta, cs = -1.0, sn = 0.0, epln, eplnn = 0.0, gbar, dlta_QLP;
+  PetscReal    gamal3 = 0.0, gamal2 = 0.0, gamal = 0.0, gama = 0.0, gama_tmp;
+  PetscReal    taul2 = 0.0, taul = 0.0, tau = 0.0, phi, phi0, phir;
+  PetscReal    Axnorm, xnorm, xnorm_tmp, xl2norm = 0.0, pnorm, Anorm = 0.0, gmin = 0.0, gminl = 0.0, gminl2 = 0.0;
+  PetscReal    Acond = 1.0, Acondl = 0.0, rnorml, rnorm, rootl, relAresl, relres, relresl, Arnorml, Anorml = 0.0, xnorml = 0.0;
+  PetscReal    epsx, realmin = PETSC_REAL_MIN, eps = PETSC_MACHINE_EPSILON;
+  PetscReal    veplnl2 = 0.0, veplnl = 0.0, vepln = 0.0, etal2 = 0.0, etal = 0.0, eta = 0.0;
+  PetscReal    dlta_tmp, sr2 = 0.0, cr2 = -1.0, cr1 = -1.0, sr1 = 0.0;
+  PetscReal    ul4 = 0.0, ul3 = 0.0, ul2 = 0.0, ul = 0.0, u = 0.0, ul_QLP = 0.0, u_QLP = 0.0;
+  PetscReal    vepln_QLP = 0.0, gamal_QLP = 0.0, gama_QLP = 0.0, gamal_tmp, abs_gama;
+  PetscInt     flag = -2, flag0 = -2, QLPiter = 0;
+  PetscInt     stored_max_it, eigs;
+  PetscScalar *e = NULL, *d = NULL;
 
   PetscFunctionBegin;
   PetscCall(PetscCitationsRegister(QLPCitation, &QLPcite));
   PetscCall(PCGetDiagonalScale(ksp->pc, &diagonalscale));
   PetscCheck(!diagonalscale, PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "Krylov method %s does not support diagonal scaling", ((PetscObject)ksp)->type_name);
+
+  eigs          = ksp->calc_sings;
+  stored_max_it = ksp->max_it;
+  if (eigs) {
+    e = minres->e;
+    d = minres->d;
+  }
 
   X   = ksp->vec_sol;
   B   = ksp->vec_rhs;
@@ -121,8 +149,8 @@ static PetscErrorCode KSPSolve_MINRES(KSP ksp)
     Axnorm = 0.0;
     xnorm  = 0.0;
   }
-  if (ksp->converged_neg_curve) PetscCall(VecCopy(R2, RN));
   PetscCall(KSP_PCApply(ksp, R2, R3));
+  if (ksp->converged_neg_curve) PetscCall(VecCopy(R3, RN));
   PetscCall(VecDotRealPart(R3, R2, &beta1));
   KSPCheckDot(ksp, beta1);
   if (beta1 < 0.0) {
@@ -156,6 +184,11 @@ static PetscErrorCode KSPSolve_MINRES(KSP ksp)
     PetscCall(VecDotRealPart(R3, V, &alpha));
     PetscCall(VecAXPY(R3, -alpha / beta, R2));
     KSPMinresSwap3(R1, R2, R3);
+    if (eigs) {
+      PetscCheck(ksp->max_it == stored_max_it, PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "Cannot change maxit AND calculate eigenvalues");
+      d[ksp->its - 1] = alpha;
+      e[ksp->its - 1] = beta;
+    }
 
     PetscCall(KSP_PCApply(ksp, R2, R3));
     PetscCall(VecDotRealPart(R3, R2, &betan));
@@ -447,6 +480,8 @@ static PetscErrorCode KSPSolve_MINRES_OLD(KSP ksp)
   Mat               Amat;
   KSP_MINRES       *minres = (KSP_MINRES *)ksp->data;
   PetscBool         diagonalscale;
+  PetscInt          stored_max_it, eigs;
+  PetscScalar      *e = NULL, *d = NULL;
 
   PetscFunctionBegin;
   PetscCall(PCGetDiagonalScale(ksp->pc, &diagonalscale));
@@ -466,7 +501,13 @@ static PetscErrorCode KSPSolve_MINRES_OLD(KSP ksp)
 
   PetscCall(PCGetOperators(ksp->pc, &Amat, NULL));
 
-  ksp->its = 0;
+  ksp->its      = 0;
+  eigs          = ksp->calc_sings;
+  stored_max_it = ksp->max_it;
+  if (eigs) {
+    e = minres->e;
+    d = minres->d;
+  }
 
   if (!ksp->guess_zero) {
     PetscCall(KSP_MatMult(ksp, Amat, X, R)); /*     r <- b - A*x    */
@@ -510,6 +551,11 @@ static PetscErrorCode KSPSolve_MINRES_OLD(KSP ksp)
     PetscCall(KSP_MatMult(ksp, Amat, U, R)); /*      r <- A*u   */
     PetscCall(VecDot(U, R, &alpha));         /*  alpha <- r'*u  */
     PetscCall(KSP_PCApply(ksp, R, Z));       /*      z <- B*r   */
+    if (eigs) {
+      PetscCheck(ksp->max_it == stored_max_it, PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "Cannot change maxit AND calculate eigenvalues");
+      d[i] = alpha;
+      e[i] = beta;
+    }
 
     if (ksp->its > 1) {
       Vec         T[2];
@@ -621,6 +667,7 @@ static PetscErrorCode KSPDestroy_MINRES(KSP ksp)
   KSP_MINRES *minres = (KSP_MINRES *)ksp->data;
 
   PetscFunctionBegin;
+  PetscCall(PetscFree4(minres->e, minres->d, minres->ee, minres->dd));
   PetscCall(PetscViewerDestroy(&minres->viewer));
   PetscCall(PetscFree(ksp->data));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPMINRESSetRadius_C", NULL));
@@ -811,5 +858,74 @@ PETSC_EXTERN PetscErrorCode KSPCreate_MINRES(KSP ksp)
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPMINRESSetRadius_C", KSPMINRESSetRadius_MINRES));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPMINRESSetUseQLP_C", KSPMINRESSetUseQLP_MINRES));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPMINRESGetUseQLP_C", KSPMINRESGetUseQLP_MINRES));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+PetscErrorCode KSPComputeEigenvalues_MINRES(KSP ksp, PetscInt nmax, PetscReal *r, PetscReal *c, PetscInt *neig)
+{
+  KSP_MINRES  *minres = (KSP_MINRES *)ksp->data;
+  PetscScalar *d, *e;
+  PetscReal   *ee;
+  PetscInt     n = ksp->its;
+  PetscBLASInt bn, lierr = 0, ldz = 1;
+
+  PetscFunctionBegin;
+  PetscCheck(nmax >= n, PetscObjectComm((PetscObject)ksp), PETSC_ERR_ARG_SIZ, "Not enough room in work space r and c for eigenvalues");
+  *neig = n;
+
+  PetscCall(PetscArrayzero(c, nmax));
+  if (!n) PetscFunctionReturn(PETSC_SUCCESS);
+  d  = minres->d;
+  e  = minres->e;
+  ee = minres->ee;
+
+  /* copy tridiagonal matrix to work space */
+  for (PetscInt j = 0; j < n; j++) {
+    r[j]  = PetscRealPart(d[j]);
+    ee[j] = PetscRealPart(e[j]);
+  }
+
+  PetscCall(PetscBLASIntCast(n, &bn));
+  PetscCall(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
+  PetscCallBLAS("LAPACKREALstev", LAPACKREALstev_("N", &bn, r, &ee[1], NULL, &ldz, NULL, &lierr));
+  PetscCheck(!lierr, PETSC_COMM_SELF, PETSC_ERR_PLIB, "xSTEV error");
+  PetscCall(PetscFPTrapPop());
+  PetscCall(PetscSortReal(n, r));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+PetscErrorCode KSPComputeExtremeSingularValues_MINRES(KSP ksp, PetscReal *emax, PetscReal *emin)
+{
+  KSP_MINRES  *minres = (KSP_MINRES *)ksp->data;
+  PetscScalar *d, *e;
+  PetscReal   *dd, *ee;
+  PetscInt     n = ksp->its;
+  PetscBLASInt bn, lierr = 0, ldz = 1;
+
+  PetscFunctionBegin;
+  if (!n) {
+    *emax = *emin = 1.0;
+    PetscFunctionReturn(PETSC_SUCCESS);
+  }
+  d  = minres->d;
+  e  = minres->e;
+  dd = minres->dd;
+  ee = minres->ee;
+
+  /* copy tridiagonal matrix to work space */
+  for (PetscInt j = 0; j < n; j++) {
+    dd[j] = PetscRealPart(d[j]);
+    ee[j] = PetscRealPart(e[j]);
+  }
+
+  PetscCall(PetscBLASIntCast(n, &bn));
+  PetscCall(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
+  PetscCallBLAS("LAPACKREALstev", LAPACKREALstev_("N", &bn, dd, &ee[1], NULL, &ldz, NULL, &lierr));
+  PetscCheck(!lierr, PETSC_COMM_SELF, PETSC_ERR_PLIB, "xSTEV error");
+  PetscCall(PetscFPTrapPop());
+  for (PetscInt j = 0; j < n; j++) dd[j] = PetscAbsReal(dd[j]);
+  PetscCall(PetscSortReal(n, dd));
+  *emin = dd[0];
+  *emax = dd[n - 1];
   PetscFunctionReturn(PETSC_SUCCESS);
 }

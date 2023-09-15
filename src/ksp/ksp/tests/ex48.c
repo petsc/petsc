@@ -1,4 +1,3 @@
-
 static char help[] = "Solves a tridiagonal linear system with KSP.\n\n";
 
 /*
@@ -18,7 +17,7 @@ int main(int argc, char **args)
   PetscReal   norm;
   PetscInt    i, n = 2, col[3], its;
   PetscMPIInt size;
-  PetscScalar one          = 1.0, value[3];
+  PetscScalar one = 1.0, value[3], shift = 0.0;
   PetscBool   nonzeroguess = PETSC_FALSE;
 
   PetscFunctionBeginUser;
@@ -27,6 +26,7 @@ int main(int argc, char **args)
   PetscCheck(size == 1, PETSC_COMM_WORLD, PETSC_ERR_WRONG_MPI_SIZE, "This is a uniprocessor example only!");
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-n", &n, NULL));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-nonzero_guess", &nonzeroguess, NULL));
+  PetscCall(PetscOptionsGetScalar(NULL, NULL, "-shift", &shift, NULL));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
          Compute the matrix and right-hand-side vector that define
@@ -81,6 +81,7 @@ int main(int argc, char **args)
   PetscCall(MatSetValues(A, 1, &i, 2, col, value, INSERT_VALUES));
   PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
+  PetscCall(MatShift(A, -shift));
 
   /*
      Set constant right-hand-side vector.
@@ -182,5 +183,9 @@ int main(int argc, char **args)
 
    test:
       args: -ksp_monitor_short -ksp_converged_reason -ksp_type minres -pc_type jacobi -ksp_error_if_not_converged
+
+   test:
+      suffix: 2
+      args: -ksp_monitor_short -ksp_converged_reason -ksp_type minres -pc_type jacobi -ksp_view_eigenvalues -ksp_view_singularvalues -shift 1.5 -ksp_rtol 0 -ksp_atol 0 -n 5 -ksp_max_it 5
 
 TEST*/
