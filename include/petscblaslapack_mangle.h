@@ -149,6 +149,7 @@
   #define LAPACKtgsen_ PETSCBLAS(tgsen, TGSEN)
 #endif
 /* character-string arguments: */
+#define LAPACKtrtri_ PETSCBLAS(trtri, TRTRI)
 #define LAPACKpotrf_ PETSCBLAS(potrf, POTRF)
 #define LAPACKpotri_ PETSCBLAS(potri, POTRI)
 #define LAPACKpotrs_ PETSCBLAS(potrs, POTRS)
