@@ -14,6 +14,12 @@ struct _EH {
   EH    previous;
 };
 
+/* This is here to allow the traceback error handler (or potentially other error handlers)
+   to certify that PETSCABORT is being called on all MPI processes, and that it should be possible to call
+   MPI_Finalize() and exit().  This should only be used when `PetscCIEnabledPortabeErrorOutput == PETSC_TRUE`
+   to allow testing of error messages.  Do not rely on this for clean exit in production. */
+PetscBool petscabortmpifinalize = PETSC_FALSE;
+
 static EH eh = NULL;
 
 /*@C
