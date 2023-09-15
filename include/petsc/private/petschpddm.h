@@ -51,6 +51,14 @@ struct KSP_HPDDM {
   KSPHPDDMPrecision     precision;
 };
 
+typedef struct _n_Harmonic *Harmonic;
+struct _n_Harmonic {
+  KSP  ksp;
+  Mat *A;
+  Vec  v;
+  IS  *is;
+};
+
 PETSC_EXTERN PetscLogEvent  PC_HPDDM_PtAP;
 PETSC_EXTERN PetscLogEvent  PC_HPDDM_PtBP;
 PETSC_EXTERN PetscLogEvent  PC_HPDDM_Next;

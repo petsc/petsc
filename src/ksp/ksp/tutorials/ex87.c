@@ -94,8 +94,7 @@ int main(int argc, char **args)
   PetscCall(KSPGetPC(subksp[1], &pc));
   /* inner preconditioner associated to Schur complement, which will be set internally to a PCKSP */
   PetscCall(PCSetType(pc, PCHPDDM));
-  if (flg[0]) PetscCall(MatDestroy(aux + 1));
-  PetscCall(PCHPDDMSetAuxiliaryMat(pc, is[1], aux[1], NULL, NULL));
+  if (!flg[0]) PetscCall(PCHPDDMSetAuxiliaryMat(pc, is[1], aux[1], NULL, NULL));
   PetscCall(PCSetFromOptions(pc));
   PetscCall(PetscFree(subksp));
   PetscCall(KSPSetFromOptions(ksp));
@@ -168,20 +167,20 @@ PetscErrorCode MatAndISLoad(const char *prefix, const char *identifier, Mat A, I
         requires: mumps
         suffix: 1
         args: -viewer -system {{elasticity stokes}separate output} -fieldsplit_1_pc_hpddm_ksp_pc_side left
-        filter: grep -v -e "action of " -e "                            " -e "block size" -e "total: nonzeros=" -e "using I-node"
+        filter: grep -v -e "action of " -e "                            " -e "block size" -e "total: nonzeros=" -e "using I-node" -e "aij" -e "transpose" -e "total number of" -e "                rows="
       test:
         requires: mumps
         suffix: 2
         output_file: output/ex87_1_system-stokes.out
-        args: -viewer -system stokes -empty_A11 -fieldsplit_1_pc_hpddm_ksp_pc_side right -fieldsplit_1_pc_hpddm_coarse_mat_type baij
-        filter: grep -v -e "action of " -e "                            " -e "block size" -e "total: nonzeros=" -e "using I-node" | sed -e "s/      right preconditioning/      left preconditioning/g" -e "s/      using UNPRECONDITIONED/      using PRECONDITIONED/g" -e "s/^                  type: mpibaij/                  type: mpisbaij/g"
+        args: -viewer -system stokes -empty_A11 -transpose {{false true}shared output} -permute {{false true}shared output} -fieldsplit_1_pc_hpddm_ksp_pc_side right -fieldsplit_1_pc_hpddm_coarse_mat_type baij
+        filter: grep -v -e "action of " -e "                            " -e "block size" -e "total: nonzeros=" -e "using I-node" -e "aij" -e "transpose" -e "total number of" -e "                rows=" | sed -e "s/      right preconditioning/      left preconditioning/g" -e "s/      using UNPRECONDITIONED/      using PRECONDITIONED/g"
       test:
         suffix: 1_petsc
         args: -system {{elasticity stokes}separate output} -fieldsplit_1_pc_hpddm_ksp_pc_side left -fieldsplit_1_pc_hpddm_levels_1_sub_pc_factor_mat_solver_type petsc -fieldsplit_1_pc_hpddm_levels_1_eps_threshold 0.3 -permute
       test:
         suffix: 2_petsc
         output_file: output/ex87_1_petsc_system-stokes.out
-        args: -system stokes -empty_A11 -transpose -fieldsplit_1_pc_hpddm_ksp_pc_side right -fieldsplit_1_pc_hpddm_levels_1_sub_pc_factor_mat_solver_type petsc -fieldsplit_1_pc_hpddm_coarse_mat_type baij -fieldsplit_1_pc_hpddm_levels_1_eps_threshold 0.3
+        args: -system stokes -empty_A11 -transpose -fieldsplit_1_pc_hpddm_ksp_pc_side right -fieldsplit_1_pc_hpddm_levels_1_sub_pc_factor_mat_solver_type petsc -fieldsplit_1_pc_hpddm_coarse_mat_type baij -fieldsplit_1_pc_hpddm_levels_1_eps_threshold 0.3 -fieldsplit_1_pc_hpddm_levels_1_sub_pc_factor_shift_type inblocks
         filter: sed -e "s/type: transpose/type: hermitiantranspose/g"
       test:
         suffix: threshold
