@@ -36,10 +36,11 @@ typedef enum {
   PCMPI_DESTROY /* destroy a KSP that is no longer needed */
 } PCMPICommand;
 
-static MPI_Comm  PCMPIComms[PC_MPI_MAX_RANKS];
-static PetscBool PCMPICommSet = PETSC_FALSE;
-static PetscInt  PCMPISolveCounts[PC_MPI_MAX_RANKS], PCMPIKSPCounts[PC_MPI_MAX_RANKS], PCMPIMatCounts[PC_MPI_MAX_RANKS], PCMPISolveCountsSeq = 0, PCMPIKSPCountsSeq = 0;
-static PetscInt  PCMPIIterations[PC_MPI_MAX_RANKS], PCMPISizes[PC_MPI_MAX_RANKS], PCMPIIterationsSeq = 0, PCMPISizesSeq = 0;
+static MPI_Comm      PCMPIComms[PC_MPI_MAX_RANKS];
+static PetscBool     PCMPICommSet = PETSC_FALSE;
+static PetscInt      PCMPISolveCounts[PC_MPI_MAX_RANKS], PCMPIKSPCounts[PC_MPI_MAX_RANKS], PCMPIMatCounts[PC_MPI_MAX_RANKS], PCMPISolveCountsSeq = 0, PCMPIKSPCountsSeq = 0;
+static PetscInt      PCMPIIterations[PC_MPI_MAX_RANKS], PCMPISizes[PC_MPI_MAX_RANKS], PCMPIIterationsSeq = 0, PCMPISizesSeq = 0;
+static PetscLogEvent EventServerDist;
 
 static PetscErrorCode PCMPICommsCreate(void)
 {
@@ -161,6 +162,7 @@ static PetscErrorCode PCMPISetMat(PC pc)
   PetscFunctionBegin;
   PetscCallMPI(MPI_Scatter(pc ? km->ksps : NULL, 1, MPI_AINT, &ksp, 1, MPI_AINT, 0, comm));
   if (!ksp) PetscFunctionReturn(PETSC_SUCCESS);
+  PetscCall(PetscLogEventBegin(EventServerDist, NULL, NULL, NULL, NULL));
   PetscCall(PetscObjectGetComm((PetscObject)ksp, &comm));
   if (pc) {
     PetscBool   isset, issymmetric, ishermitian, isspd, isstructurallysymmetric;
@@ -270,6 +272,7 @@ static PetscErrorCode PCMPISetMat(PC pc)
     }
   }
   PetscCall(MatDestroy(&A));
+  PetscCall(PetscLogEventEnd(EventServerDist, NULL, NULL, NULL, NULL));
   PetscCall(KSPSetFromOptions(ksp));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -293,6 +296,7 @@ static PetscErrorCode PCMPIUpdateMatValues(PC pc)
   }
   PetscCallMPI(MPI_Scatter(pc ? km->ksps : NULL, 1, MPI_AINT, &ksp, 1, MPI_AINT, 0, comm));
   if (!ksp) PetscFunctionReturn(PETSC_SUCCESS);
+  PetscCall(PetscLogEventBegin(EventServerDist, NULL, NULL, NULL, NULL));
   PetscCall(PetscObjectGetComm((PetscObject)ksp, &comm));
   PetscCallMPI(MPI_Comm_size(comm, &size));
   PCMPIMatCounts[size - 1]++;
@@ -322,6 +326,7 @@ static PetscErrorCode PCMPIUpdateMatValues(PC pc)
   if (matproperties[1]) PetscCall(MatSetOption(A, MAT_HERMITIAN, matproperties[1] == 1 ? PETSC_TRUE : PETSC_FALSE));
   if (matproperties[2]) PetscCall(MatSetOption(A, MAT_SPD, matproperties[2] == 1 ? PETSC_TRUE : PETSC_FALSE));
   if (matproperties[3]) PetscCall(MatSetOption(A, MAT_STRUCTURALLY_SYMMETRIC, matproperties[3] == 1 ? PETSC_TRUE : PETSC_FALSE));
+  PetscCall(PetscLogEventEnd(EventServerDist, NULL, NULL, NULL, NULL));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -338,6 +343,7 @@ static PetscErrorCode PCMPISolve(PC pc, Vec B, Vec X)
   PetscFunctionBegin;
   PetscCallMPI(MPI_Scatter(pc ? km->ksps : &ksp, 1, MPI_AINT, &ksp, 1, MPI_AINT, 0, comm));
   if (!ksp) PetscFunctionReturn(PETSC_SUCCESS);
+  PetscCall(PetscLogEventBegin(EventServerDist, NULL, NULL, NULL, NULL));
   PetscCall(PetscObjectGetComm((PetscObject)ksp, &comm));
 
   /* TODO: optimize code to not require building counts/displ every time */
@@ -358,9 +364,11 @@ static PetscErrorCode PCMPISolve(PC pc, Vec B, Vec X)
   PetscCall(VecRestoreArray(ksp->vec_rhs, &b));
   if (pc) PetscCall(VecRestoreArrayRead(B, &sb));
 
+  PetscCall(PetscLogEventEnd(EventServerDist, NULL, NULL, NULL, NULL));
   PetscCall(PetscLogStagePush(PCMPIStage));
   PetscCall(KSPSolve(ksp, NULL, NULL));
   PetscCall(PetscLogStagePop());
+  PetscCall(PetscLogEventBegin(EventServerDist, NULL, NULL, NULL, NULL));
   PetscCall(KSPGetIterationNumber(ksp, &its));
   PCMPIIterations[size - 1] += its;
 
@@ -370,6 +378,7 @@ static PetscErrorCode PCMPISolve(PC pc, Vec B, Vec X)
   PetscCallMPI(MPI_Gatherv(x, n, MPIU_SCALAR, sx, pc ? km->sendcount : NULL, pc ? km->displ : NULL, MPIU_SCALAR, 0, comm));
   if (pc) PetscCall(VecRestoreArray(X, &sx));
   PetscCall(VecRestoreArrayRead(ksp->vec_sol, &x));
+  PetscCall(PetscLogEventEnd(EventServerDist, NULL, NULL, NULL, NULL));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -446,6 +455,7 @@ PetscErrorCode PCMPIServerBegin(void)
     PetscCall(TaoInitializePackage());
   }
   PetscCall(PetscLogStageRegister("PCMPI", &PCMPIStage));
+  PetscCall(PetscLogEventRegister("ServerDist", PC_CLASSID, &EventServerDist));
 
   PetscCallMPI(MPI_Comm_rank(PC_MPI_COMM_WORLD, &rank));
   if (rank == 0) {
