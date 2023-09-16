@@ -65,8 +65,8 @@ static PetscErrorCode KSPChebyshevSetEigenvalues_Chebyshev(KSP ksp, PetscReal em
   KSP_Chebyshev *chebyshevP = (KSP_Chebyshev *)ksp->data;
 
   PetscFunctionBegin;
-  PetscCheck(emax > emin, PetscObjectComm((PetscObject)ksp), PETSC_ERR_ARG_INCOMP, "Maximum eigenvalue must be larger than minimum: max %g min %g", (double)emax, (double)emin);
-  PetscCheck(emax * emin > 0.0, PetscObjectComm((PetscObject)ksp), PETSC_ERR_ARG_INCOMP, "Both eigenvalues must be of the same sign: max %g min %g", (double)emax, (double)emin);
+  PetscCheck(emax > emin || (emax == 0 && emin == 0) || (emax == -1 && emin == -1), PetscObjectComm((PetscObject)ksp), PETSC_ERR_ARG_INCOMP, "Maximum eigenvalue must be larger than minimum: max %g min %g", (double)emax, (double)emin);
+  PetscCheck(emax * emin > 0.0 || (emax == 0 && emin == 0), PetscObjectComm((PetscObject)ksp), PETSC_ERR_ARG_INCOMP, "Both eigenvalues must be of the same sign: max %g min %g", (double)emax, (double)emin);
   chebyshevP->emax = emax;
   chebyshevP->emin = emin;
 
@@ -88,11 +88,11 @@ static PetscErrorCode KSPChebyshevEstEigSet_Chebyshev(KSP ksp, PetscReal a, Pets
       PetscCall(PetscObjectSetOptionsPrefix((PetscObject)cheb->kspest, ((PetscObject)ksp)->prefix));
       PetscCall(PetscObjectAppendOptionsPrefix((PetscObject)cheb->kspest, "esteig_"));
       PetscCall(KSPSetSkipPCSetFromOptions(cheb->kspest, PETSC_TRUE));
-
       PetscCall(KSPSetComputeEigenvalues(cheb->kspest, PETSC_TRUE));
 
       /* We cannot turn off convergence testing because GMRES will break down if you attempt to keep iterating after a zero norm is obtained */
       PetscCall(KSPSetTolerances(cheb->kspest, 1.e-12, PETSC_DEFAULT, PETSC_DEFAULT, cheb->eststeps));
+      PetscCall(PetscInfo(ksp, "Created eigen estimator KSP\n"));
     }
     if (a >= 0) cheb->tform[0] = a;
     if (b >= 0) cheb->tform[1] = b;

@@ -560,6 +560,20 @@ static PetscErrorCode PCSetUp_GAMG(PC pc)
           PetscCall(PetscLogEventEnd(petsc_gamg_setup_matmat_events[gl][1], 0, 0, 0, 0));
           if (reuse == MAT_INITIAL_MATRIX) mglevels[level]->A = B;
           PetscCall(KSPSetOperators(mglevels[level]->smoothd, B, B));
+          // check for redoing eigen estimates
+          if (pc_gamg->recompute_esteig) {
+            PetscBool ischeb;
+            KSP       smoother;
+            PetscCall(PCMGGetSmoother(pc, level + 1, &smoother));
+            PetscCall(PetscObjectTypeCompare((PetscObject)smoother, KSPCHEBYSHEV, &ischeb));
+            if (ischeb) {
+              KSP_Chebyshev *cheb = (KSP_Chebyshev *)smoother->data;
+              cheb->emin_provided = 0;
+              cheb->emax_provided = 0;
+            }
+            /* we could call PetscCall(KSPChebyshevSetEigenvalues(smoother, 0, 0)); but the logic does not work properly */
+          }
+          // inc
           dB = B;
 #if defined(GAMG_STAGES)
           PetscCall(PetscLogStagePop());
@@ -852,6 +866,7 @@ PetscErrorCode PCDestroy_GAMG(PC pc)
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCGAMGSetRepartition_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCGAMGSetEigenvalues_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCGAMGSetUseSAEstEig_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCGAMGSetRecomputeEstEig_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCGAMGSetReuseInterpolation_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCGAMGASMSetUseAggs_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCGAMGSetParallelCoarseGridSolve_C", NULL));
@@ -987,7 +1002,7 @@ static PetscErrorCode PCGAMGSetRepartition_GAMG(PC pc, PetscBool n)
 
   Input Parameters:
 + pc - the preconditioner context
-- n  - number of its
+- b  - flag
 
   Options Database Key:
 . -pc_gamg_use_sa_esteig <true,false> - use the eigen estimate
@@ -1001,23 +1016,57 @@ static PetscErrorCode PCGAMGSetRepartition_GAMG(PC pc, PetscBool n)
   This option is only used when the smoother uses Jacobi, and should be turned off if a different `PCJacobiType` is used.
   It became default in PETSc 3.17.
 
-.seealso: `PCGAMG`, `KSPChebyshevSetEigenvalues()`, `KSPChebyshevEstEigSet()`
+.seealso: `PCGAMG`, `KSPChebyshevSetEigenvalues()`, `KSPChebyshevEstEigSet()`, `PCGAMGSetRecomputeEstEig()`
 @*/
-PetscErrorCode PCGAMGSetUseSAEstEig(PC pc, PetscBool n)
+PetscErrorCode PCGAMGSetUseSAEstEig(PC pc, PetscBool b)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
-  PetscTryMethod(pc, "PCGAMGSetUseSAEstEig_C", (PC, PetscBool), (pc, n));
+  PetscTryMethod(pc, "PCGAMGSetUseSAEstEig_C", (PC, PetscBool), (pc, b));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode PCGAMGSetUseSAEstEig_GAMG(PC pc, PetscBool n)
+static PetscErrorCode PCGAMGSetUseSAEstEig_GAMG(PC pc, PetscBool b)
 {
   PC_MG   *mg      = (PC_MG *)pc->data;
   PC_GAMG *pc_gamg = (PC_GAMG *)mg->innerctx;
 
   PetscFunctionBegin;
-  pc_gamg->use_sa_esteig = n;
+  pc_gamg->use_sa_esteig = b;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  PCGAMGSetRecomputeEstEig - Set flag for Chebyshev smoothers to recompute the eigen estimates
+
+  Collective
+
+  Input Parameters:
++ pc - the preconditioner context
+- b  - flag
+
+  Options Database Key:
+. -pc_gamg_recompute_esteig <true> - use the eigen estimate
+
+  Level: advanced
+
+.seealso: `PCGAMG`, `KSPChebyshevSetEigenvalues()`, `KSPChebyshevEstEigSet()`
+@*/
+PetscErrorCode PCGAMGSetRecomputeEstEig(PC pc, PetscBool b)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
+  PetscTryMethod(pc, "PCGAMGSetRecomputeEstEig_C", (PC, PetscBool), (pc, b));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode PCGAMGSetRecomputeEstEig_GAMG(PC pc, PetscBool b)
+{
+  PC_MG   *mg      = (PC_MG *)pc->data;
+  PC_GAMG *pc_gamg = (PC_GAMG *)mg->innerctx;
+
+  PetscFunctionBegin;
+  pc_gamg->recompute_esteig = b;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1512,6 +1561,7 @@ static PetscErrorCode PCSetFromOptions_GAMG(PC pc, PetscOptionItems *PetscOption
   if (flag) PetscCall(PCGAMGSetType(pc, tname));
   PetscCall(PetscOptionsBool("-pc_gamg_repartition", "Repartion coarse grids", "PCGAMGSetRepartition", pc_gamg->repart, &pc_gamg->repart, NULL));
   PetscCall(PetscOptionsBool("-pc_gamg_use_sa_esteig", "Use eigen estimate from smoothed aggregation for smoother", "PCGAMGSetUseSAEstEig", pc_gamg->use_sa_esteig, &pc_gamg->use_sa_esteig, NULL));
+  PetscCall(PetscOptionsBool("-pc_gamg_recompute_esteig", "Set flag to recompute eigen estimates for Chebyshev when matrix changes", "PCGAMGSetRecomputeEstEig", pc_gamg->recompute_esteig, &pc_gamg->recompute_esteig, NULL));
   PetscCall(PetscOptionsBool("-pc_gamg_reuse_interpolation", "Reuse prolongation operator", "PCGAMGReuseInterpolation", pc_gamg->reuse_prol, &pc_gamg->reuse_prol, NULL));
   PetscCall(PetscOptionsBool("-pc_gamg_asm_use_agg", "Use aggregation aggregates for ASM smoother", "PCGAMGASMSetUseAggs", pc_gamg->use_aggs_in_asm, &pc_gamg->use_aggs_in_asm, NULL));
   PetscCall(PetscOptionsBool("-pc_gamg_parallel_coarse_grid_solver", "Use parallel coarse grid solver (otherwise put last grid on one process)", "PCGAMGSetParallelCoarseGridSolve", pc_gamg->use_parallel_coarse_grid_solver, &pc_gamg->use_parallel_coarse_grid_solver, NULL));
@@ -1634,6 +1684,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_GAMG(PC pc)
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCGAMGSetRepartition_C", PCGAMGSetRepartition_GAMG));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCGAMGSetEigenvalues_C", PCGAMGSetEigenvalues_GAMG));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCGAMGSetUseSAEstEig_C", PCGAMGSetUseSAEstEig_GAMG));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCGAMGSetRecomputeEstEig_C", PCGAMGSetRecomputeEstEig_GAMG));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCGAMGSetReuseInterpolation_C", PCGAMGSetReuseInterpolation_GAMG));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCGAMGASMSetUseAggs_C", PCGAMGASMSetUseAggs_GAMG));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCGAMGSetParallelCoarseGridSolve_C", PCGAMGSetParallelCoarseGridSolve_GAMG));
@@ -1654,12 +1705,13 @@ PETSC_EXTERN PetscErrorCode PCCreate_GAMG(PC pc)
   pc_gamg->min_eq_proc                     = 50;
   pc_gamg->coarse_eq_limit                 = 50;
   for (int i = 0; i < PETSC_MG_MAXLEVELS; i++) pc_gamg->threshold[i] = -1;
-  pc_gamg->threshold_scale = 1.;
-  pc_gamg->Nlevels         = PETSC_MG_MAXLEVELS;
-  pc_gamg->current_level   = 0; /* don't need to init really */
-  pc_gamg->use_sa_esteig   = PETSC_TRUE;
-  pc_gamg->emin            = 0;
-  pc_gamg->emax            = 0;
+  pc_gamg->threshold_scale  = 1.;
+  pc_gamg->Nlevels          = PETSC_MG_MAXLEVELS;
+  pc_gamg->current_level    = 0; /* don't need to init really */
+  pc_gamg->use_sa_esteig    = PETSC_TRUE;
+  pc_gamg->recompute_esteig = PETSC_TRUE;
+  pc_gamg->emin             = 0;
+  pc_gamg->emax             = 0;
 
   pc_gamg->ops->createlevel = PCGAMGCreateLevel_GAMG;
 

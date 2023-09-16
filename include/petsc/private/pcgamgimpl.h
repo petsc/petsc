@@ -47,6 +47,7 @@ typedef struct gamg_TAG {
 
   PetscBool use_sa_esteig;
   PetscReal emin, emax;
+  PetscBool recompute_esteig;
 } PC_GAMG;
 
 PetscErrorCode PCReset_MG(PC);

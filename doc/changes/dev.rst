@@ -154,6 +154,7 @@ Changes: Development
 - Add ``PCGAMGSetAggressiveMISk()`` to set the number of levels (k) of aggressive MIS-k coarseing (2 is very common)
 - Add ``PCGAMGSetMinDegreeOrderingMISk()`` to use a minimum degree ordering for the (greedy) MIS-k algorithm
 - Change ``PCGAMGSetUseParallelCoarseGridSolve()`` to ``PCGAMGSetParallelCoarseGridSolve()``
+- Add ``PCGAMGSetRecomputeEstEig()`` to set flag to have Chebyshev recompute its eigen estimates (default set to true)
 
 .. rubric:: KSP:
 
