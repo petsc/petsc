@@ -245,6 +245,7 @@ typedef struct {
   DMPlexMetricCtx *metricCtx;
 
   /* FEM */
+  PetscBool useCeed;      /* This should convert to a registration system when there are more FEM backends */
   PetscBool useMatClPerm; /* Use the closure permutation when assembling matrices */
 
   /* Debugging */
@@ -371,6 +372,8 @@ PETSC_INTERN PetscErrorCode DMPlexDistributeGetDefault_Plex(DM, PetscBool *);
 PETSC_INTERN PetscErrorCode DMPlexDistributeSetDefault_Plex(DM, PetscBool);
 PETSC_INTERN PetscErrorCode DMPlexReorderGetDefault_Plex(DM, DMPlexReorderDefaultFlag *);
 PETSC_INTERN PetscErrorCode DMPlexReorderSetDefault_Plex(DM, DMPlexReorderDefaultFlag);
+PETSC_INTERN PetscErrorCode DMPlexGetUseCeed_Plex(DM, PetscBool *);
+PETSC_INTERN PetscErrorCode DMPlexSetUseCeed_Plex(DM, PetscBool);
 
 #if 1
 static inline PetscInt DihedralInvert(PetscInt N, PetscInt a)

@@ -3,6 +3,7 @@
 #include <petsc/private/dmlabelimpl.h> /*I      "petscdmlabel.h"     I*/
 #include <petsc/private/petscdsimpl.h> /*I      "petscds.h"     I*/
 #include <petscdmplex.h>
+#include <petscdmceed.h>
 #include <petscdmfield.h>
 #include <petscsf.h>
 #include <petscds.h>
@@ -775,6 +776,7 @@ PetscErrorCode DMDestroy(DM *dm)
 
   if ((*dm)->ops->destroy) PetscCall((*(*dm)->ops->destroy)(*dm));
   PetscCall(DMMonitorCancel(*dm));
+  PetscCall(DMCeedDestroy(&(*dm)->dmceed));
 #ifdef PETSC_HAVE_LIBCEED
   PetscCallCEED(CeedElemRestrictionDestroy(&(*dm)->ceedERestrict));
   PetscCallCEED(CeedDestroy(&(*dm)->ceed));
@@ -858,6 +860,7 @@ PetscErrorCode DMSetUp(DM dm)
 . -dm_distribute_overlap <n>                         - The size of the overlap halo
 . -dm_plex_adj_cone <bool>                           - Set adjacency direction
 . -dm_plex_adj_closure <bool>                        - Set adjacency size
+. -dm_plex_use_ceed <bool>                           - Use LibCEED as the FEM backend
 . -dm_plex_check_symmetry                            - Check that the adjacency information in the mesh is symmetric - `DMPlexCheckSymmetry()`
 . -dm_plex_check_skeleton                            - Check that each cell has the correct number of vertices (only for homogeneous simplex or tensor meshes) - `DMPlexCheckSkeleton()`
 . -dm_plex_check_faces                               - Check that the faces of each cell give a vertex order this is consistent with what we expect from the cell type - `DMPlexCheckFaces()`
@@ -6020,6 +6023,51 @@ PetscErrorCode DMCreateDS(DM dm)
       PetscCall(PetscDSSetUp(dm->probs[s].ds));
       if (dm->probs[s].dsIn) PetscCall(PetscDSSetUp(dm->probs[s].dsIn));
     }
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  DMUseTensorOrder - Use a tensor product closure ordering for the default section
+
+  Input Parameters:
++ dm     - The DM
+- tensor - Flag for tensor order
+
+  Level: developer
+
+.seealso: `DMPlexSetClosurePermutationTensor()`, `PetscSectionResetClosurePermutation()`
+@*/
+PetscErrorCode DMUseTensorOrder(DM dm, PetscBool tensor)
+{
+  PetscInt  Nf;
+  PetscBool reorder = PETSC_TRUE, isPlex;
+
+  PetscFunctionBegin;
+  PetscCall(PetscObjectTypeCompare((PetscObject)dm, DMPLEX, &isPlex));
+  PetscCall(DMGetNumFields(dm, &Nf));
+  for (PetscInt f = 0; f < Nf; ++f) {
+    PetscObject  obj;
+    PetscClassId id;
+
+    PetscCall(DMGetField(dm, f, NULL, &obj));
+    PetscCall(PetscObjectGetClassId(obj, &id));
+    if (id == PETSCFE_CLASSID) {
+      PetscSpace sp;
+      PetscBool  tensor;
+
+      PetscCall(PetscFEGetBasisSpace((PetscFE)obj, &sp));
+      PetscCall(PetscSpacePolynomialGetTensor(sp, &tensor));
+      reorder = reorder && tensor ? PETSC_TRUE : PETSC_FALSE;
+    } else reorder = PETSC_FALSE;
+  }
+  if (tensor) {
+    if (reorder && isPlex) PetscCall(DMPlexSetClosurePermutationTensor(dm, PETSC_DETERMINE, NULL));
+  } else {
+    PetscSection s;
+
+    PetscCall(DMGetLocalSection(dm, &s));
+    if (s) PetscCall(PetscSectionResetClosurePermutation(s));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }

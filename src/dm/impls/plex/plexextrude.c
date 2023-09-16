@@ -56,6 +56,7 @@ PetscErrorCode DMPlexExtrude(DM dm, PetscInt layers, PetscReal thickness, PetscB
   PetscClassId    id;
   const char     *prefix;
   PetscOptions    options;
+  PetscBool       useCeed;
 
   PetscFunctionBegin;
   PetscCall(DMPlexTransformCreate(PetscObjectComm((PetscObject)dm), &tr));
@@ -77,6 +78,8 @@ PetscErrorCode DMPlexExtrude(DM dm, PetscInt layers, PetscReal thickness, PetscB
   PetscCall(DMPlexTransformSetUp(tr));
   PetscCall(PetscObjectViewFromOptions((PetscObject)tr, NULL, "-dm_plex_transform_view"));
   PetscCall(DMPlexTransformApply(tr, dm, edm));
+  PetscCall(DMPlexGetUseCeed(dm, &useCeed));
+  PetscCall(DMPlexSetUseCeed(*edm, useCeed));
   PetscCall(DMCopyDisc(dm, *edm));
   // It is too hard to raise the dimension of a discretization, so just remake it
   PetscCall(DMGetCoordinateDM(dm, &cdm));

@@ -434,6 +434,8 @@ PETSC_EXTERN PetscErrorCode DMPlexCreateRigidBodies(DM, PetscInt, DMLabel, const
 PETSC_EXTERN PetscErrorCode DMPlexSetSNESLocalFEM(DM, void *, void *, void *);
 PETSC_EXTERN PetscErrorCode DMPlexSNESComputeBoundaryFEM(DM, Vec, void *);
 PETSC_EXTERN PetscErrorCode DMPlexSNESComputeResidualFEM(DM, Vec, Vec, void *);
+PETSC_EXTERN PetscErrorCode DMPlexSNESComputeResidualCEED(DM, Vec, Vec, void *);
+PETSC_EXTERN PetscErrorCode DMPlexSNESComputeResidualDS(DM, Vec, Vec, void *);
 PETSC_EXTERN PetscErrorCode DMPlexSNESComputeJacobianFEM(DM, Vec, Mat, Mat, void *);
 PETSC_EXTERN PetscErrorCode DMPlexComputeBdResidualSingle(DM, PetscReal, PetscWeakForm, PetscFormKey, Vec, Vec, Vec);
 PETSC_EXTERN PetscErrorCode DMPlexComputeBdJacobianSingle(DM, PetscReal, PetscWeakForm, DMLabel, PetscInt, const PetscInt[], PetscInt, Vec, Vec, PetscReal, Mat, Mat);
@@ -446,6 +448,8 @@ PETSC_EXTERN PetscErrorCode DMPlexTSComputeRHSFunctionFEM(DM, PetscReal, Vec, Ve
 
 PETSC_EXTERN PetscErrorCode DMPlexReconstructGradientsFVM(DM, Vec, Vec);
 
+PETSC_EXTERN PetscErrorCode DMPlexGetUseCeed(DM, PetscBool *);
+PETSC_EXTERN PetscErrorCode DMPlexSetUseCeed(DM, PetscBool);
 PETSC_EXTERN PetscErrorCode DMPlexGetUseMatClosurePermutation(DM, PetscBool *);
 PETSC_EXTERN PetscErrorCode DMPlexSetUseMatClosurePermutation(DM, PetscBool);
 

@@ -52,7 +52,8 @@ typedef struct _PetscFormKey {
 . BDF0, BDF1                 - Boundary Residual forms
 . BDG0, BDG1, BDG2, BDG3     - Jacobian forms
 . BDGP0, BDGP1, BDGP2, BDGP3 - Jacobian preconditioner matrix forms
-- R                          - Riemann solver
+. R                          - Riemann solver
+- CEED                       - libCEED QFunction
 
   Level: beginner
 
@@ -86,6 +87,7 @@ typedef enum {
   PETSC_WF_BDGP2,
   PETSC_WF_BDGP3,
   PETSC_WF_R,
+  PETSC_WF_CEED,
   PETSC_NUM_WF
 } PetscWeakFormKind;
 PETSC_EXTERN const char *const PetscWeakFormKinds[];

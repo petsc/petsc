@@ -629,5 +629,15 @@ PetscErrorCode DMCreateLocalSection_Plex(DM dm)
   PetscCall(PetscFree3(bcFields, bcPoints, bcComps));
   PetscCall(PetscFree3(labels, numComp, numDof));
   PetscCall(PetscFree(isFE));
+  /* Checking for CEED usage */
+  {
+    PetscBool useCeed;
+
+    PetscCall(DMPlexGetUseCeed(dm, &useCeed));
+    if (useCeed) {
+      PetscCall(DMPlexSetUseMatClosurePermutation(dm, PETSC_FALSE));
+      PetscCall(DMUseTensorOrder(dm, PETSC_TRUE));
+    }
+  }
   PetscFunctionReturn(PETSC_SUCCESS);
 }

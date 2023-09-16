@@ -5,6 +5,7 @@ This example supports automatic convergence estimation\n\
 and eventually adaptivity.\n\n\n";
 
 #include <petscdmplex.h>
+#include <petscdmceed.h>
 #include <petscsnes.h>
 #include <petscds.h>
 #include <petscconvest.h>
@@ -89,6 +90,8 @@ static void g3_uu(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff
   PetscInt d;
   for (d = 0; d < dim; ++d) g3[d * dim + d] = 1.0;
 }
+
+PLEXFE_QFUNCTION(Laplace, f0_trig_inhomogeneous_u, f1_u)
 
 static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 {
@@ -230,6 +233,11 @@ static PetscErrorCode SetupDiscretization(DM dm, const char name[], PetscErrorCo
     PetscCall(DMGetCoarseDM(cdm, &cdm));
   }
   PetscCall(PetscFEDestroy(&fe));
+#ifdef PETSC_HAVE_LIBCEED
+  PetscBool useCeed;
+  PetscCall(DMPlexGetUseCeed(dm, &useCeed));
+  if (useCeed) PetscCall(DMCeedCreate(dm, PETSC_TRUE, PlexQFunctionLaplace, PlexQFunctionLaplace_loc));
+#endif
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -414,7 +422,7 @@ static PetscErrorCode ComputeAdjoint(Vec u, AppCtx *user)
     PetscCall(VecISCopy(uErr, subis[0], SCATTER_FORWARD, u));
     PetscCall(VecISCopy(uErr, subis[1], SCATTER_FORWARD, uAdjProj));
     PetscCall(DMRestoreGlobalVector(dm, &uAdjProj));
-    for (i = 0; i < 2; ++i) { PetscCall(ISDestroy(&subis[i])); }
+    for (i = 0; i < 2; ++i) PetscCall(ISDestroy(&subis[i]));
     PetscCall(PetscFree(subis));
     PetscCall(DMGetLocalVector(dmErrAux, &uErrLoc));
     PetscCall(DMGlobalToLocalBegin(dm, uErr, INSERT_VALUES, uErrLoc));
@@ -535,6 +543,23 @@ int main(int argc, char **argv)
     # Using -dm_refine 2 -convest_num_refine 3 we get L_2 convergence rate: 3.9
     suffix: 2d_q3_conv
     args: -dm_plex_simplex 0 -potential_petscspace_degree 3 -snes_convergence_estimate -convest_num_refine 2
+  test:
+    # Using -dm_refine 2 -convest_num_refine 3 we get L_2 convergence rate: 1.9
+    suffix: 2d_q1_ceed_conv
+    requires: libceed
+    args: -dm_plex_use_ceed -dm_plex_simplex 0 -potential_petscspace_degree 1 -snes_convergence_estimate -convest_num_refine 2
+  test:
+    # Using -dm_refine 2 -convest_num_refine 3 we get L_2 convergence rate: 2.9
+    suffix: 2d_q2_ceed_conv
+    requires: libceed
+    args: -dm_plex_use_ceed -dm_plex_simplex 0 -potential_petscspace_degree 2 -cdm_default_quadrature_order 2 \
+          -snes_convergence_estimate -convest_num_refine 2
+  test:
+    # Using -dm_refine 2 -convest_num_refine 3 we get L_2 convergence rate: 3.9
+    suffix: 2d_q3_ceed_conv
+    requires: libceed
+    args: -dm_plex_use_ceed -dm_plex_simplex 0 -potential_petscspace_degree 3 -cdm_default_quadrature_order 3 \
+          -snes_convergence_estimate -convest_num_refine 2
   test:
     # Using -dm_refine 2 -convest_num_refine 3 we get L_2 convergence rate: 1.9
     suffix: 2d_q1_shear_conv

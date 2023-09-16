@@ -4,6 +4,11 @@
 #include <petsc/private/petscimpl.h>
 #include <petsc/private/petscfeimpl.h>
 
+#ifdef PETSC_HAVE_LIBCEED
+  #include <petscdmceed.h>
+  #include <petscdmplexceed.h>
+#endif
+
 static void pressure_Private(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar p[])
 {
   p[0] = u[uOff[1]];
@@ -1220,17 +1225,6 @@ PetscErrorCode SNESMonitorFields(SNES snes, PetscInt its, PetscReal fgnorm, Pets
 
 /********************* Residual Computation **************************/
 
-PetscErrorCode DMPlexGetAllCells_Internal(DM plex, IS *cellIS)
-{
-  PetscInt depth;
-
-  PetscFunctionBegin;
-  PetscCall(DMPlexGetDepth(plex, &depth));
-  PetscCall(DMGetStratumIS(plex, "dim", depth, cellIS));
-  if (!*cellIS) PetscCall(DMGetStratumIS(plex, "depth", depth, cellIS));
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
 /*@
   DMPlexSNESComputeResidualFEM - Sums the local residual into vector F from the local input X using pointwise functions specified by the user
 
@@ -1286,6 +1280,133 @@ PetscErrorCode DMPlexSNESComputeResidualFEM(DM dm, Vec X, Vec F, void *user)
   PetscCall(DMDestroy(&plex));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
+
+/*@
+  DMPlexSNESComputeResidualDS - Sums the local residual into vector F from the local input X using all pointwise functions with unique keys in the DS
+
+  Input Parameters:
++ dm   - The mesh
+. X    - Local solution
+- user - The user context
+
+  Output Parameter:
+. F - Local output vector
+
+  Level: developer
+
+  Note:
+  The residual is summed into F; the caller is responsible for using `VecZeroEntries()` or otherwise ensuring that any data in F is intentional.
+
+.seealso: `DM`, `DMPlexComputeJacobianAction()`
+@*/
+PetscErrorCode DMPlexSNESComputeResidualDS(DM dm, Vec X, Vec F, void *user)
+{
+  DM       plex;
+  IS       allcellIS;
+  PetscInt Nds, s;
+
+  PetscFunctionBegin;
+  PetscCall(DMSNESConvertPlex(dm, &plex, PETSC_TRUE));
+  PetscCall(DMPlexGetAllCells_Internal(plex, &allcellIS));
+  PetscCall(DMGetNumDS(dm, &Nds));
+  for (s = 0; s < Nds; ++s) {
+    PetscDS ds;
+    DMLabel label;
+    IS      cellIS;
+
+    PetscCall(DMGetRegionNumDS(dm, s, &label, NULL, &ds, NULL));
+    {
+      PetscWeakFormKind resmap[2] = {PETSC_WF_F0, PETSC_WF_F1};
+      PetscWeakForm     wf;
+      PetscInt          Nm = 2, m, Nk = 0, k, kp, off = 0;
+      PetscFormKey     *reskeys;
+
+      /* Get unique residual keys */
+      for (m = 0; m < Nm; ++m) {
+        PetscInt Nkm;
+        PetscCall(PetscHMapFormGetSize(ds->wf->form[resmap[m]], &Nkm));
+        Nk += Nkm;
+      }
+      PetscCall(PetscMalloc1(Nk, &reskeys));
+      for (m = 0; m < Nm; ++m) PetscCall(PetscHMapFormGetKeys(ds->wf->form[resmap[m]], &off, reskeys));
+      PetscCheck(off == Nk, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Number of keys %" PetscInt_FMT " should be %" PetscInt_FMT, off, Nk);
+      PetscCall(PetscFormKeySort(Nk, reskeys));
+      for (k = 0, kp = 1; kp < Nk; ++kp) {
+        if ((reskeys[k].label != reskeys[kp].label) || (reskeys[k].value != reskeys[kp].value)) {
+          ++k;
+          if (kp != k) reskeys[k] = reskeys[kp];
+        }
+      }
+      Nk = k;
+
+      PetscCall(PetscDSGetWeakForm(ds, &wf));
+      for (k = 0; k < Nk; ++k) {
+        DMLabel  label = reskeys[k].label;
+        PetscInt val   = reskeys[k].value;
+
+        if (!label) {
+          PetscCall(PetscObjectReference((PetscObject)allcellIS));
+          cellIS = allcellIS;
+        } else {
+          IS pointIS;
+
+          PetscCall(DMLabelGetStratumIS(label, val, &pointIS));
+          PetscCall(ISIntersect_Caching_Internal(allcellIS, pointIS, &cellIS));
+          PetscCall(ISDestroy(&pointIS));
+        }
+        PetscCall(DMPlexComputeResidual_Internal(plex, reskeys[k], cellIS, PETSC_MIN_REAL, X, NULL, 0.0, F, user));
+        PetscCall(ISDestroy(&cellIS));
+      }
+      PetscCall(PetscFree(reskeys));
+    }
+  }
+  PetscCall(ISDestroy(&allcellIS));
+  PetscCall(DMDestroy(&plex));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+#ifdef PETSC_HAVE_LIBCEED
+PetscErrorCode DMPlexSNESComputeResidualCEED(DM dm, Vec locX, Vec locF, void *user)
+{
+  Ceed       ceed;
+  DMCeed     sd = dm->dmceed;
+  CeedVector clocX, clocF;
+
+  PetscFunctionBegin;
+  PetscCall(DMGetCeed(dm, &ceed));
+  PetscCheck(sd, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONGSTATE, "This DM has no CEED data. Call DMCeedCreate() before computing the residual.");
+  PetscCall(DMCeedComputeGeometry(dm, sd));
+
+  PetscCall(VecGetCeedVectorRead(locX, ceed, &clocX));
+  PetscCall(VecGetCeedVector(locF, ceed, &clocF));
+  PetscCallCEED(CeedOperatorApplyAdd(sd->op, clocX, clocF, CEED_REQUEST_IMMEDIATE));
+  PetscCall(VecRestoreCeedVectorRead(locX, &clocX));
+  PetscCall(VecRestoreCeedVector(locF, &clocF));
+
+  {
+    DM_Plex *mesh = (DM_Plex *)dm->data;
+
+    if (mesh->printFEM) {
+      PetscSection section;
+      Vec          locFbc;
+      PetscInt     pStart, pEnd, p, maxDof;
+      PetscScalar *zeroes;
+
+      PetscCall(DMGetLocalSection(dm, &section));
+      PetscCall(VecDuplicate(locF, &locFbc));
+      PetscCall(VecCopy(locF, locFbc));
+      PetscCall(PetscSectionGetChart(section, &pStart, &pEnd));
+      PetscCall(PetscSectionGetMaxDof(section, &maxDof));
+      PetscCall(PetscCalloc1(maxDof, &zeroes));
+      for (p = pStart; p < pEnd; ++p) PetscCall(VecSetValuesSection(locFbc, section, p, zeroes, INSERT_BC_VALUES));
+      PetscCall(PetscFree(zeroes));
+      PetscCall(DMPrintLocalVec(dm, "Residual", mesh->printTol, locFbc));
+      PetscCall(VecDestroy(&locFbc));
+    }
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+#endif
 
 /*@
   DMPlexSNESComputeBoundaryFEM - Form the boundary values for the local input X
@@ -1609,9 +1730,18 @@ static PetscErrorCode MatComputeNeumannOverlap_Plex(Mat J, PetscReal t, Vec X, V
 @*/
 PetscErrorCode DMPlexSetSNESLocalFEM(DM dm, void *boundaryctx, void *residualctx, void *jacobianctx)
 {
+  PetscBool useCeed;
+
   PetscFunctionBegin;
+  PetscCall(DMPlexGetUseCeed(dm, &useCeed));
   PetscCall(DMSNESSetBoundaryLocal(dm, DMPlexSNESComputeBoundaryFEM, boundaryctx));
-  PetscCall(DMSNESSetFunctionLocal(dm, DMPlexSNESComputeResidualFEM, residualctx));
+  if (useCeed) {
+#ifdef PETSC_HAVE_LIBCEED
+    PetscCall(DMSNESSetFunctionLocal(dm, DMPlexSNESComputeResidualCEED, residualctx));
+#else
+    SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Cannot use CEED traversals without LibCEED. Rerun configure with --download-ceed");
+#endif
+  } else PetscCall(DMSNESSetFunctionLocal(dm, DMPlexSNESComputeResidualFEM, residualctx));
   PetscCall(DMSNESSetJacobianLocal(dm, DMPlexSNESComputeJacobianFEM, jacobianctx));
   PetscCall(PetscObjectComposeFunction((PetscObject)dm, "MatComputeNeumannOverlap_C", MatComputeNeumannOverlap_Plex));
   PetscFunctionReturn(PETSC_SUCCESS);

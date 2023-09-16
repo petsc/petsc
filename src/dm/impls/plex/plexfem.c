@@ -136,6 +136,70 @@ PetscErrorCode DMPlexSetScale(DM dm, PetscUnit unit, PetscReal scale)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+PetscErrorCode DMPlexGetUseCeed_Plex(DM dm, PetscBool *useCeed)
+{
+  DM_Plex *mesh = (DM_Plex *)dm->data;
+
+  PetscFunctionBegin;
+  *useCeed = mesh->useCeed;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+PetscErrorCode DMPlexSetUseCeed_Plex(DM dm, PetscBool useCeed)
+{
+  DM_Plex *mesh = (DM_Plex *)dm->data;
+
+  PetscFunctionBegin;
+  mesh->useCeed = useCeed;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  DMPlexGetUseCeed - Get flag for using the LibCEED backend
+
+  Not collective
+
+  Input Parameter:
+. dm - The `DM`
+
+  Output Parameter:
+. useCeed - The flag
+
+  Level: intermediate
+
+.seealso: `DMPlexSetUseCeed()`
+@*/
+PetscErrorCode DMPlexGetUseCeed(DM dm, PetscBool *useCeed)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscAssertPointer(useCeed, 2);
+  *useCeed = PETSC_FALSE;
+  PetscTryMethod(dm, "DMPlexGetUseCeed_C", (DM, PetscBool *), (dm, useCeed));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  DMPlexSetUseCeed - Set flag for using the LibCEED backend
+
+  Not collective
+
+  Input Parameters:
++ dm      - The `DM`
+- useCeed - The flag
+
+  Level: intermediate
+
+.seealso: `DMPlexGetUseCeed()``
+@*/
+PetscErrorCode DMPlexSetUseCeed(DM dm, PetscBool useCeed)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidLogicalCollectiveBool(dm, useCeed, 2);
+  PetscUseMethod(dm, "DMPlexSetUseCeed_C", (DM, PetscBool), (dm, useCeed));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 /*@
   DMPlexGetUseMatClosurePermutation - Get flag for using a closure permutation for matrix insertion
 

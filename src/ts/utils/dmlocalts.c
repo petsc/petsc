@@ -243,16 +243,13 @@ PetscErrorCode DMTSSetBoundaryLocal(DM dm, PetscErrorCode (*func)(DM, PetscReal,
 @*/
 PetscErrorCode DMTSGetIFunctionLocal(DM dm, PetscErrorCode (**func)(DM, PetscReal, Vec, Vec, Vec, void *), void **ctx)
 {
-  DMTS           tdm;
-  DMTS_Local    *dmlocalts;
-  PetscErrorCode ierr;
+  DMTS        tdm;
+  DMTS_Local *dmlocalts;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  ierr = DMGetDMTS(dm, &tdm);
-  CHKERRQ(ierr);
-  ierr = DMLocalTSGetContext(dm, tdm, &dmlocalts);
-  CHKERRQ(ierr);
+  PetscCall(DMGetDMTS(dm, &tdm));
+  PetscCall(DMLocalTSGetContext(dm, tdm, &dmlocalts));
   if (func) {
     PetscAssertPointer(func, 2);
     *func = dmlocalts->ifunctionlocal;
@@ -318,16 +315,13 @@ PetscErrorCode DMTSSetIFunctionLocal(DM dm, PetscErrorCode (*func)(DM, PetscReal
 @*/
 PetscErrorCode DMTSGetIJacobianLocal(DM dm, PetscErrorCode (**func)(DM, PetscReal, Vec, Vec, PetscReal, Mat, Mat, void *), void **ctx)
 {
-  DMTS           tdm;
-  DMTS_Local    *dmlocalts;
-  PetscErrorCode ierr;
+  DMTS        tdm;
+  DMTS_Local *dmlocalts;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  ierr = DMGetDMTS(dm, &tdm);
-  CHKERRQ(ierr);
-  ierr = DMLocalTSGetContext(dm, tdm, &dmlocalts);
-  CHKERRQ(ierr);
+  PetscCall(DMGetDMTS(dm, &tdm));
+  PetscCall(DMLocalTSGetContext(dm, tdm, &dmlocalts));
   if (func) {
     PetscAssertPointer(func, 2);
     *func = dmlocalts->ijacobianlocal;
@@ -390,16 +384,13 @@ PetscErrorCode DMTSSetIJacobianLocal(DM dm, PetscErrorCode (*func)(DM, PetscReal
 @*/
 PetscErrorCode DMTSGetRHSFunctionLocal(DM dm, PetscErrorCode (**func)(DM, PetscReal, Vec, Vec, void *), void **ctx)
 {
-  DMTS           tdm;
-  DMTS_Local    *dmlocalts;
-  PetscErrorCode ierr;
+  DMTS        tdm;
+  DMTS_Local *dmlocalts;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  ierr = DMGetDMTS(dm, &tdm);
-  CHKERRQ(ierr);
-  ierr = DMLocalTSGetContext(dm, tdm, &dmlocalts);
-  CHKERRQ(ierr);
+  PetscCall(DMGetDMTS(dm, &tdm));
+  PetscCall(DMLocalTSGetContext(dm, tdm, &dmlocalts));
   if (func) {
     PetscAssertPointer(func, 2);
     *func = dmlocalts->rhsfunctionlocal;

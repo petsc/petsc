@@ -2538,6 +2538,8 @@ PetscErrorCode DMDestroy_Plex(DM dm)
   PetscCall(PetscObjectComposeFunction((PetscObject)dm, "DMPlexReorderSetDefault_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)dm, "DMPlexGetOverlap_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)dm, "DMPlexSetOverlap_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)dm, "DMPlexGetUseCeed_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)dm, "DMPlexSetUseCeed_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)dm, "DMGetIsoperiodicPointSF_C", NULL));
   if (--mesh->refct > 0) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscSectionDestroy(&mesh->coneSection));
@@ -5439,6 +5441,17 @@ PetscErrorCode DMPlexGetConeOrientations(DM dm, PetscInt *coneOrientations[])
 }
 
 /******************************** FEM Support **********************************/
+
+PetscErrorCode DMPlexGetAllCells_Internal(DM plex, IS *cellIS)
+{
+  PetscInt depth;
+
+  PetscFunctionBegin;
+  PetscCall(DMPlexGetDepth(plex, &depth));
+  PetscCall(DMGetStratumIS(plex, "dim", depth, cellIS));
+  if (!*cellIS) PetscCall(DMGetStratumIS(plex, "depth", depth, cellIS));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
 
 /*
  Returns number of components and tensor degree for the field.  For interpolated meshes, line should be a point
