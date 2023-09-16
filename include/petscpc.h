@@ -320,6 +320,7 @@ PETSC_EXTERN PetscErrorCode PCGAMGSetProcEqLim(PC, PetscInt);
 
 PETSC_EXTERN PetscErrorCode PCGAMGSetRepartition(PC, PetscBool);
 PETSC_EXTERN PetscErrorCode PCGAMGSetUseSAEstEig(PC, PetscBool);
+PETSC_EXTERN PetscErrorCode PCGAMGSetRecomputeEstEig(PC, PetscBool);
 PETSC_EXTERN PetscErrorCode PCGAMGSetEigenvalues(PC, PetscReal, PetscReal);
 PETSC_EXTERN PetscErrorCode PCGAMGASMSetUseAggs(PC, PetscBool);
 PETSC_EXTERN PetscErrorCode PCGAMGSetParallelCoarseGridSolve(PC, PetscBool);
