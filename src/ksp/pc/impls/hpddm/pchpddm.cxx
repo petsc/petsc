@@ -1275,7 +1275,7 @@ static PetscErrorCode PCApply_Nest(PC pc, Vec x, Vec y)
   PetscCall(PCFactorGetMatSolverType(p->first, &type));
   PetscCall(PCFactorGetMatrix(p->first, &A));
   PetscCall(PetscStrcmp(type, MATSOLVERMUMPS, &flg));
-  if (flg) {
+  if (flg && A->schur) {
 #if PetscDefined(HAVE_MUMPS)
     PetscCall(MatMumpsSetIcntl(A, 26, 1)); /* reduction/condensation phase followed by Schur complement solve */
 #endif
@@ -2267,8 +2267,12 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
           PetscCall(PCSetOperators(s, N, N));
           PetscCall(PCFactorGetMatrix(s, &T));
           PetscCall(MatSetOptionsPrefix(T, ((PetscObject)s)->prefix));
-          PetscCall(MatNestGetISs(N, is, nullptr));
-          PetscCall(MatFactorSetSchurIS(T, is[1]));
+          n = -1;
+          PetscCall(PetscOptionsGetInt(nullptr, ((PetscObject)s)->prefix, "-mat_mumps_icntl_26", &n, nullptr));
+          if (n == 1) {
+            PetscCall(MatNestGetISs(N, is, nullptr)); /* allocates a square MatDense of size is[1]->map->n, so one */
+            PetscCall(MatFactorSetSchurIS(T, is[1])); /*  needs to be able to deactivate this path when dealing    */
+          }                                           /*  with a large constraint space in order to avoid OOM      */
         } else {
           PetscCall(MatConvert(N, MATAIJ, MAT_INITIAL_MATRIX, &T));
           PetscCall(PCSetOperators(s, N, T));
