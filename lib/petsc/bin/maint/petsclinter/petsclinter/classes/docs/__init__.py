@@ -4,7 +4,5 @@
 # @author: Jacob Faibussowitsch
 """
 from ._doc_str import PetscDocString
-
-__export_symbols__ = [
-  'PetscDocString'
-]
+from . import _doc_section_base
+from . import _doc_section

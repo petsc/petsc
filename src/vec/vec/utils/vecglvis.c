@@ -24,22 +24,22 @@ PetscErrorCode VecView_GLVis(Vec U, PetscViewer viewer)
   PetscBool              pause = PETSC_FALSE;
 
   PetscFunctionBegin;
-  PetscCall(PetscViewerGLVisGetStatus_Private(viewer, &sockstatus));
+  PetscCall(PetscViewerGLVisGetStatus_Internal(viewer, &sockstatus));
   if (sockstatus == PETSCVIEWERGLVIS_DISABLED) PetscFunctionReturn(PETSC_SUCCESS);
   /* if the user did not customize the viewer through the API, we need extra data that can be attached to the Vec */
-  PetscCall(PetscViewerGLVisGetFields_Private(viewer, &nfields, NULL, NULL, NULL, NULL, NULL));
+  PetscCall(PetscViewerGLVisGetFields_Internal(viewer, &nfields, NULL, NULL, NULL, NULL, NULL));
   if (!nfields) {
     PetscObject dm;
 
     PetscCall(PetscObjectQuery((PetscObject)U, "__PETSc_dm", &dm));
     if (dm) {
-      PetscCall(PetscViewerGLVisSetDM_Private(viewer, dm));
+      PetscCall(PetscViewerGLVisSetDM_Internal(viewer, dm));
     } else SETERRQ(PetscObjectComm((PetscObject)U), PETSC_ERR_SUP, "You need to provide a DM or use PetscViewerGLVisSetFields()");
   }
-  PetscCall(PetscViewerGLVisGetFields_Private(viewer, &nfields, &fec_type, &spacedim, &g2lfields, (PetscObject **)&Ufield, &userctx));
+  PetscCall(PetscViewerGLVisGetFields_Internal(viewer, &nfields, &fec_type, &spacedim, &g2lfields, (PetscObject **)&Ufield, &userctx));
   if (!nfields) PetscFunctionReturn(PETSC_SUCCESS);
 
-  PetscCall(PetscViewerGLVisGetType_Private(viewer, &socktype));
+  PetscCall(PetscViewerGLVisGetType_Internal(viewer, &socktype));
 
   for (i = 0; i < nfields; i++) {
     PetscObject    fdm;
@@ -63,7 +63,7 @@ PetscErrorCode VecView_GLVis(Vec U, PetscViewer viewer)
     if (!fdm) {
       PetscObject dm;
 
-      PetscCall(PetscViewerGLVisGetDM_Private(viewer, &dm));
+      PetscCall(PetscViewerGLVisGetDM_Internal(viewer, &dm));
       if (!dm) PetscCall(PetscObjectQuery((PetscObject)U, "__PETSc_dm", &dm));
       PetscCheck(dm, PetscObjectComm((PetscObject)U), PETSC_ERR_SUP, "Mesh not present");
       PetscCall(PetscObjectCompose((PetscObject)Ufield[i], "__PETSc_dm", dm));
@@ -84,7 +84,7 @@ PetscErrorCode VecView_GLVis(Vec U, PetscViewer viewer)
     PetscViewer view;
 
     PetscCall(PetscObjectQuery((PetscObject)Ufield[i], "__PETSc_dm", &dm));
-    PetscCall(PetscViewerGLVisGetWindow_Private(viewer, i, &view));
+    PetscCall(PetscViewerGLVisGetWindow_Internal(viewer, i, &view));
     if (!view) continue; /* socket window has been closed */
     if (socktype == PETSC_VIEWER_GLVIS_SOCKET) {
       PetscMPIInt size, rank;
@@ -98,15 +98,15 @@ PetscErrorCode VecView_GLVis(Vec U, PetscViewer viewer)
       PetscCall(PetscViewerASCIIPrintf(view, "parallel %d %d\nsolution\n", size, rank));
       PetscCall(PetscObjectView(dm, view));
       PetscCall(VecView(Ufield[i], view));
-      PetscCall(PetscViewerGLVisInitWindow_Private(view, PETSC_FALSE, spacedim[i], name));
+      PetscCall(PetscViewerGLVisInitWindow_Internal(view, PETSC_FALSE, spacedim[i], name));
       PetscCall(PetscGLVisCollectiveEnd(PetscObjectComm(dm), &view));
       if (view) pause = PETSC_TRUE; /* at least one window is connected */
     } else {
       PetscCall(PetscObjectView(dm, view));
       PetscCall(VecView(Ufield[i], view));
     }
-    PetscCall(PetscViewerGLVisRestoreWindow_Private(viewer, i, &view));
+    PetscCall(PetscViewerGLVisRestoreWindow_Internal(viewer, i, &view));
   }
-  if (pause) PetscCall(PetscViewerGLVisPause_Private(viewer));
+  if (pause) PetscCall(PetscViewerGLVisPause_Internal(viewer));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

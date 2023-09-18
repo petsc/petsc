@@ -1,12 +1,11 @@
-#ifndef PETSC_CUPMEVENT_HPP
-#define PETSC_CUPMEVENT_HPP
+#pragma once
 
 #include <petsc/private/cupminterface.hpp>
 #include <petsc/private/cpp/memory.hpp>
 #include <petsc/private/cpp/object_pool.hpp>
 
-#if defined(__cplusplus)
-  #include <stack>
+#include <stack>
+
 namespace Petsc
 {
 
@@ -48,7 +47,7 @@ template <DeviceType T, unsigned long flags>
 inline PetscErrorCode CUPMEventPool<T, flags>::allocate(cupmEvent_t *event) noexcept
 {
   PetscFunctionBegin;
-  PetscValidPointer(event, 1);
+  PetscAssertPointer(event, 1);
   if (pool_.empty()) {
     PetscCall(this->register_finalize());
     PetscCallCUPM(cupmEventCreateWithFlags(event, flags));
@@ -63,7 +62,7 @@ template <DeviceType T, unsigned long flags>
 inline PetscErrorCode CUPMEventPool<T, flags>::deallocate(cupmEvent_t *in_event) noexcept
 {
   PetscFunctionBegin;
-  PetscValidPointer(in_event, 1);
+  PetscAssertPointer(in_event, 1);
   if (auto event = std::exchange(*in_event, cupmEvent_t{})) {
     if (this->registered()) {
       PetscCallCXX(pool_.push(std::move(event)));
@@ -99,8 +98,8 @@ inline auto cupm_timer_event_pool() noexcept -> decltype(cupm_event_pool<T, impl
 // event-stream pairing for the async allocator. It is also used as the data member of
 // PetscEvent.
 template <DeviceType T>
-class CUPMEvent : impl::Interface<T>, public memory::PoolAllocated<CUPMEvent<T>> {
-  using pool_type = memory::PoolAllocated<CUPMEvent<T>>;
+class CUPMEvent : impl::Interface<T>, public memory::PoolAllocated {
+  using pool_type = memory::PoolAllocated;
 
 public:
   PETSC_CUPM_INHERIT_INTERFACE_TYPEDEFS_USING(T);
@@ -177,6 +176,3 @@ inline CUPMEvent<T>::operator bool() const noexcept
 } // namespace device
 
 } // namespace Petsc
-#endif // __cplusplus
-
-#endif // PETSC_CUPMEVENT_HPP

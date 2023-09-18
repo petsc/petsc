@@ -4,16 +4,17 @@ import os
 class Configure(config.package.CMakePackage):
   def __init__(self, framework):
     config.package.CMakePackage.__init__(self, framework)
-    self.version          = '5.3.0'
+    self.version          = '6.0.1'
     self.minversion       = '5.2.1' # bugs in 5.2.0 prevent it from functioning
     self.versionname      = 'SUPERLU_MAJOR_VERSION.SUPERLU_MINOR_VERSION.SUPERLU_PATCH_VERSION'
-    self.gitcommit        = 'v'+self.version
+    # self.gitcommit        = 'v'+self.version
+    self.gitcommit        = 'baeea941129895a3718b558a2b8f2c65df1be15f' # master, may-7-2023
     self.download         = ['git://https://github.com/xiaoyeli/superlu','https://github.com/xiaoyeli/superlu/archive/'+self.gitcommit+'.tar.gz']
     self.functions        = ['set_default_options']
     self.includes         = ['slu_ddefs.h']
     self.liblist          = [['libsuperlu.a']]
-    # SuperLU has NO support for 64 bit integers, use SuperLU_Dist if you need that
-    self.requires32bitint = 1;  # 1 means that the package will not work with 64 bit integers
+    # SuperLU has NO support for 64-bit integers, use SuperLU_Dist if you need that
+    self.requires32bitint = 1;  # 1 means that the package will not work with 64-bit integers
     self.excludedDirs     = ['superlu_dist','superlu_mt']
     # SuperLU does not work with --download-fblaslapack with Compaqf90 compiler on windows.
     # However it should work with intel ifort.

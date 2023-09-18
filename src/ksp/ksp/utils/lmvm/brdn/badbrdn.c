@@ -1,7 +1,5 @@
 #include <../src/ksp/ksp/utils/lmvm/brdn/brdn.h> /*I "petscksp.h" I*/
 
-/*------------------------------------------------------------*/
-
 /*
   The solution method is the matrix-free implementation of the inverse Hessian in
   Equation 6 on page 312 of Griewank "Broyden Updating, The Good and The Bad!"
@@ -50,8 +48,6 @@ static PetscErrorCode MatSolve_LMVMBadBrdn(Mat B, Vec F, Vec dX)
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-
-/*------------------------------------------------------------*/
 
 /*
   The forward product is the matrix-free implementation of the direct update in
@@ -103,8 +99,6 @@ static PetscErrorCode MatMult_LMVMBadBrdn(Mat B, Vec X, Vec Z)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*------------------------------------------------------------*/
-
 static PetscErrorCode MatUpdate_LMVMBadBrdn(Mat B, Vec X, Vec F)
 {
   Mat_LMVM   *lmvm = (Mat_LMVM *)B->data;
@@ -144,8 +138,6 @@ static PetscErrorCode MatUpdate_LMVMBadBrdn(Mat B, Vec X, Vec F)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*------------------------------------------------------------*/
-
 static PetscErrorCode MatCopy_LMVMBadBrdn(Mat B, Mat M, MatStructure str)
 {
   Mat_LMVM *bdata = (Mat_LMVM *)B->data;
@@ -166,8 +158,6 @@ static PetscErrorCode MatCopy_LMVMBadBrdn(Mat B, Mat M, MatStructure str)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*------------------------------------------------------------*/
-
 static PetscErrorCode MatReset_LMVMBadBrdn(Mat B, PetscBool destructive)
 {
   Mat_LMVM *lmvm = (Mat_LMVM *)B->data;
@@ -184,8 +174,6 @@ static PetscErrorCode MatReset_LMVMBadBrdn(Mat B, PetscBool destructive)
   PetscCall(MatReset_LMVM(B, destructive));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-
-/*------------------------------------------------------------*/
 
 static PetscErrorCode MatAllocate_LMVMBadBrdn(Mat B, Vec X, Vec F)
 {
@@ -205,8 +193,6 @@ static PetscErrorCode MatAllocate_LMVMBadBrdn(Mat B, Vec X, Vec F)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*------------------------------------------------------------*/
-
 static PetscErrorCode MatDestroy_LMVMBadBrdn(Mat B)
 {
   Mat_LMVM *lmvm = (Mat_LMVM *)B->data;
@@ -223,8 +209,6 @@ static PetscErrorCode MatDestroy_LMVMBadBrdn(Mat B)
   PetscCall(MatDestroy_LMVM(B));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-
-/*------------------------------------------------------------*/
 
 static PetscErrorCode MatSetUp_LMVMBadBrdn(Mat B)
 {
@@ -243,8 +227,6 @@ static PetscErrorCode MatSetUp_LMVMBadBrdn(Mat B)
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-
-/*------------------------------------------------------------*/
 
 PetscErrorCode MatCreate_LMVMBadBrdn(Mat B)
 {
@@ -273,43 +255,41 @@ PetscErrorCode MatCreate_LMVMBadBrdn(Mat B)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*------------------------------------------------------------*/
-
 /*@
-   MatCreateLMVMBadBroyden - Creates a limited-memory modified (aka "bad") Broyden-type
-   approximation matrix used for a Jacobian. L-BadBrdn is not guaranteed to be
-   symmetric or positive-definite.
+  MatCreateLMVMBadBroyden - Creates a limited-memory modified (aka "bad") Broyden-type
+  approximation matrix used for a Jacobian. L-BadBrdn is not guaranteed to be
+  symmetric or positive-definite.
 
-   To use the L-BadBrdn matrix with other vector types, the matrix must be
-   created using `MatCreate()` and `MatSetType()`, followed by `MatLMVMAllocate()`.
-   This ensures that the internal storage and work vectors are duplicated from the
-   correct type of vector.
+  To use the L-BadBrdn matrix with other vector types, the matrix must be
+  created using `MatCreate()` and `MatSetType()`, followed by `MatLMVMAllocate()`.
+  This ensures that the internal storage and work vectors are duplicated from the
+  correct type of vector.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  comm - MPI communicator
-.  n - number of local rows for storage vectors
--  N - global size of the storage vectors
+  Input Parameters:
++ comm - MPI communicator
+. n    - number of local rows for storage vectors
+- N    - global size of the storage vectors
 
-   Output Parameter:
-.  B - the matrix
+  Output Parameter:
+. B - the matrix
 
-   Options Database Keys:
-+   -mat_lmvm_scale_type - (developer) type of scaling applied to J0 (none, scalar, diagonal)
-.   -mat_lmvm_theta - (developer) convex ratio between BFGS and DFP components of the diagonal J0 scaling
-.   -mat_lmvm_rho - (developer) update limiter for the J0 scaling
-.   -mat_lmvm_alpha - (developer) coefficient factor for the quadratic subproblem in J0 scaling
-.   -mat_lmvm_beta - (developer) exponential factor for the diagonal J0 scaling
--   -mat_lmvm_sigma_hist - (developer) number of past updates to use in J0 scaling
+  Options Database Keys:
++ -mat_lmvm_scale_type - (developer) type of scaling applied to J0 (none, scalar, diagonal)
+. -mat_lmvm_theta      - (developer) convex ratio between BFGS and DFP components of the diagonal J0 scaling
+. -mat_lmvm_rho        - (developer) update limiter for the J0 scaling
+. -mat_lmvm_alpha      - (developer) coefficient factor for the quadratic subproblem in J0 scaling
+. -mat_lmvm_beta       - (developer) exponential factor for the diagonal J0 scaling
+- -mat_lmvm_sigma_hist - (developer) number of past updates to use in J0 scaling
 
-   Level: intermediate
+  Level: intermediate
 
-   Note:
-   It is recommended that one use the `MatCreate()`, `MatSetType()` and/or `MatSetFromOptions()`
-   paradigm instead of this routine directly.
+  Note:
+  It is recommended that one use the `MatCreate()`, `MatSetType()` and/or `MatSetFromOptions()`
+  paradigm instead of this routine directly.
 
-.seealso: [](chapter_ksp), `MatCreate()`, `MATLMVM`, `MATLMVMBADBRDN`, `MatCreateLMVMDFP()`, `MatCreateLMVMSR1()`,
+.seealso: [](ch_ksp), `MatCreate()`, `MATLMVM`, `MATLMVMBADBRDN`, `MatCreateLMVMDFP()`, `MatCreateLMVMSR1()`,
           `MatCreateLMVMBFGS()`, `MatCreateLMVMBrdn()`, `MatCreateLMVMSymBrdn()`
 @*/
 PetscErrorCode MatCreateLMVMBadBroyden(MPI_Comm comm, PetscInt n, PetscInt N, Mat *B)

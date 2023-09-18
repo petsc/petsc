@@ -98,7 +98,7 @@ class Configure(config.package.Package):
   def generateLibList(self, directory):
     if self.setCompilers.usedMPICompilers:
       self.liblist = []
-      self.libdir  = ''
+      self.libDirs = ['']
     return config.package.Package.generateLibList(self,directory)
 
   # search many obscure locations for MPI
@@ -549,7 +549,9 @@ Unable to run hostname to check the network')
       if (MPI_Recv_c(buf,count,MPI_INT,source,tag,MPI_COMM_WORLD,&stat)) return 1;
       if (MPI_Recv_init_c(buf,count,MPI_INT,source,tag,MPI_COMM_WORLD,&req)) return 1;
       if (MPI_Irecv_c(buf,count,MPI_INT,source,tag,MPI_COMM_WORLD,&req)) return 1;
-    '''):
+      if (MPI_Neighbor_alltoallv_c(0,0,0,MPI_INT,0,0,0,MPI_INT,MPI_COMM_WORLD)) return 1;
+      if (MPI_Ineighbor_alltoallv_c(0,0,0,MPI_INT,0,0,0,MPI_INT,MPI_COMM_WORLD,&req)) return 1;
+    ''' + ('if (MPI_Reduce_local_c(0,0,0,MPI_INT,MPI_SUM)) return 1;\n' if self.haveReduceLocal == 1 else '')):
       self.addDefine('HAVE_MPI_LARGE_COUNT', 1)
 
     self.compilers.CPPFLAGS = oldFlags
@@ -588,6 +590,16 @@ Unable to run hostname to check the network')
         MPIX_Wait_enqueue(&req, &stat);
       '''):
         self.addDefine('HAVE_MPIX_STREAM', 1)
+
+      if self.checkLink('#include <mpi.h>\n',
+      '''
+        MPI_Comm comm = MPI_COMM_WORLD; // fake
+        MPIX_Threadcomm_start(comm);
+        MPIX_Threadcomm_finish(comm);
+        MPIX_Threadcomm_free(&comm);
+      '''):
+        self.addDefine('HAVE_MPIX_THREADCOMM', 1)
+
       self.compilers.CPPFLAGS = oldFlags
       self.compilers.LIBS = oldLibs
       self.logWrite(self.framework.restoreLog())

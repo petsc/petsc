@@ -5,8 +5,8 @@
   MatCreateLaplacian - Create the matrix Laplacian, with all values in the matrix less than the tolerance set to zero
 
   Input Parameters:
-+ A   - The matrix
-. tol - The zero tolerance
++ A        - The matrix
+. tol      - The zero tolerance
 - weighted - Flag for using edge weights
 
   Output Parameter:
@@ -14,7 +14,7 @@
 
   Level: intermediate
 
-.seealso: `MatChop()`, `MatGetGraph()`
+.seealso: `MatFilter()`, `MatGetGraph()`
  @*/
 PetscErrorCode MatCreateLaplacian(Mat A, PetscReal tol, PetscBool weighted, Mat *L)
 {

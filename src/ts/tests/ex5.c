@@ -363,7 +363,7 @@ PetscErrorCode calcfluxa(PetscScalar sfctemp, PetscScalar airtemp, PetscScalar e
 PetscErrorCode sensibleflux(PetscScalar sfctemp, PetscScalar airtemp, PetscScalar wind, PetscScalar *sheat)
 {
   PetscScalar density = 1;    /* air density */
-  PetscScalar Cp      = 1005; /* heat capicity for dry air */
+  PetscScalar Cp      = 1005; /* heat capacity for dry air */
   PetscScalar wndmix;         /* temperature change from wind mixing: wind*Ch */
 
   PetscFunctionBeginUser;

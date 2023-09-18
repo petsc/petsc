@@ -1,11 +1,9 @@
-#ifndef PETSC_CPP_TYPE_TRAITS_HPP
-#define PETSC_CPP_TYPE_TRAITS_HPP
+#pragma once
 
-#if defined(__cplusplus)
-  #include <petsc/private/petscimpl.h> // _p_PetscObject
-  #include <petsc/private/cpp/macros.hpp>
+#include <petsc/private/petscimpl.h> // _p_PetscObject
+#include <petsc/private/cpp/macros.hpp>
 
-  #include <type_traits>
+#include <type_traits>
 
 namespace Petsc
 {
@@ -13,7 +11,7 @@ namespace Petsc
 namespace util
 {
 
-  #if PETSC_CPP_VERSION >= 14
+#if PETSC_CPP_VERSION >= 14
 using std::add_const_t;
 using std::add_pointer_t;
 using std::conditional_t;
@@ -25,7 +23,8 @@ using std::remove_extent_t;
 using std::remove_pointer_t;
 using std::remove_reference_t;
 using std::underlying_type_t;
-  #else  // C++14
+using std::common_type_t;
+#else  // C++14
 template <bool B, class T = void>
 using enable_if_t = typename std::enable_if<B, T>::type;
 template <bool B, class T, class F>
@@ -48,27 +47,50 @@ template <class T>
 using remove_reference_t = typename std::remove_reference<T>::type;
 template <class T>
 using remove_extent_t = typename std::remove_extent<T>::type;
-  #endif // C++14
+template <class... T>
+using common_type_t = typename std::common_type<T...>::type;
+#endif // C++14
 
-  #if PETSC_CPP_VERSION >= 17
+#if PETSC_CPP_VERSION >= 17
 using std::void_t;
-  #else
+using std::invoke_result_t;
+using std::disjunction;
+using std::conjunction;
+#else
 template <class...>
 using void_t = void;
-  #endif
 
-  #if PETSC_CPP_VERSION >= 20
+template <class F, class... Args>
+using invoke_result_t = typename std::result_of<F && (Args && ...)>::type;
+
+template <class...>
+struct disjunction : std::false_type { };
+template <class B1>
+struct disjunction<B1> : B1 { };
+template <class B1, class... Bn>
+struct disjunction<B1, Bn...> : conditional_t<bool(B1::value), B1, disjunction<Bn...>> { };
+
+template <class...>
+struct conjunction : std::true_type { };
+template <class B1>
+struct conjunction<B1> : B1 { };
+template <class B1, class... Bn>
+struct conjunction<B1, Bn...> : conditional_t<bool(B1::value), conjunction<Bn...>, B1> { };
+#endif
+
+#if PETSC_CPP_VERSION >= 20
+using std::remove_cvref;
 using std::remove_cvref_t;
 using std::type_identity;
 using std::type_identity_t;
-  #else
-namespace detail
-{
+#else
 template <class T>
 struct remove_cvref {
-  using type = util::remove_cv_t<util::remove_reference_t<T>>;
+  using type = remove_cv_t<remove_reference_t<T>>;
 };
-} // namespace detail
+
+template <class T>
+using remove_cvref_t = typename remove_cvref<T>::type;
 
 template <class T>
 struct type_identity {
@@ -76,14 +98,12 @@ struct type_identity {
 };
 
 template <class T>
-using remove_cvref_t = typename detail::remove_cvref<T>::type;
-template <class T>
 using type_identity_t = typename type_identity<T>::type;
-  #endif // C++20
+#endif // C++20
 
-  #if PETSC_CPP_VERSION >= 23
+#if PETSC_CPP_VERSION >= 23
 using std::to_underlying;
-  #else
+#else
 template <typename T>
 static inline constexpr underlying_type_t<T> to_underlying(T value) noexcept
 {
@@ -91,7 +111,7 @@ static inline constexpr underlying_type_t<T> to_underlying(T value) noexcept
   return static_cast<underlying_type_t<T>>(value);
 }
 
-  #endif
+#endif
 
 template <typename... T>
 struct always_false : std::false_type { };
@@ -106,9 +126,6 @@ template <typename T>
 struct is_derived_petsc_object_impl<T, decltype(T::hdr)> : conditional_t<std::is_class<T>::value && std::is_standard_layout<T>::value, std::true_type, std::false_type> { };
 
 namespace test
-{
-
-namespace
 {
 
 struct Empty { };
@@ -141,8 +158,6 @@ static_assert(::Petsc::util::detail::is_derived_petsc_object_impl<CPetscObject>:
 static_assert(::Petsc::util::detail::is_derived_petsc_object_impl<CxxPetscObject>::value, "");
 static_assert(::Petsc::util::detail::is_derived_petsc_object_impl<CxxDerivedPetscObject>::value, "");
 
-} // anonymous namespace
-
 } // namespace test
 
 } // namespace detail
@@ -150,12 +165,27 @@ static_assert(::Petsc::util::detail::is_derived_petsc_object_impl<CxxDerivedPets
 template <typename T>
 using is_derived_petsc_object = detail::is_derived_petsc_object_impl<remove_pointer_t<decay_t<T>>>;
 
+template <class, template <class> class>
+struct is_instance : public std::false_type { };
+
+template <class T, template <class> class U>
+struct is_instance<U<T>, U> : public std::true_type { };
+
+namespace detail
+{
+template <template <class> class B, class E>
+struct is_crtp_base_of_impl : std::is_base_of<B<E>, E> { };
+
+template <template <class> class B, class E, template <class> class F>
+struct is_crtp_base_of_impl<B, F<E>> : disjunction<std::is_base_of<B<E>, F<E>>, std::is_base_of<B<F<E>>, F<E>>> { };
+} // namespace detail
+
+template <template <class> class B, class E>
+using is_crtp_base_of = detail::is_crtp_base_of_impl<B, decay_t<E>>;
+
 } // namespace util
 
 } // namespace Petsc
-
-namespace
-{
 
 template <typename T>
 PETSC_NODISCARD inline constexpr Petsc::util::remove_const_t<T> &PetscRemoveConstCast(T &object) noexcept
@@ -203,9 +233,9 @@ PETSC_NODISCARD inline constexpr Petsc::util::add_const_t<T> *&PetscAddConstCast
 //
 //   not available from Fortran
 template <typename T>
-PETSC_NODISCARD inline constexpr PetscObject PetscObjectCast(const T &object) noexcept
+PETSC_NODISCARD inline constexpr PetscObject PetscObjectCast(T &&object) noexcept
 {
-  static_assert(Petsc::util::is_derived_petsc_object<T>::value, "If this is a PetscObject then the private definition of the struct must be visible for this to work");
+  static_assert(Petsc::util::is_derived_petsc_object<Petsc::util::decay_t<T>>::value, "If this is a PetscObject then the private definition of the struct must be visible for this to work");
   return (PetscObject)object;
 }
 
@@ -214,12 +244,8 @@ PETSC_NODISCARD inline constexpr PetscObject PetscObjectCast(PetscObject object)
   return object;
 }
 
-} // anonymous namespace
-
-#else // __cplusplus
-
-  #define PetscObjectCast(...) ((PetscObject)(__VA_ARGS__))
-
-#endif // __cplusplus
-
-#endif // PETSC_CPP_TYPE_TRAITS_HPP
+template <typename T>
+PETSC_NODISCARD inline constexpr auto PetscObjectComm(T &&obj) noexcept -> Petsc::util::enable_if_t<!std::is_same<Petsc::util::decay_t<T>, PetscObject>::value, MPI_Comm>
+{
+  return PetscObjectComm(PetscObjectCast(std::forward<T>(obj)));
+}

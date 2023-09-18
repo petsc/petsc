@@ -1,26 +1,26 @@
 /*
    Defines the interface functions for the Krylov subspace accelerators.
 */
-#ifndef PETSCKSP_H
-#define PETSCKSP_H
+#pragma once
 
 #include <petscpc.h>
 
 /* SUBMANSEC = KSP */
 
 PETSC_EXTERN PetscErrorCode KSPInitializePackage(void);
+PETSC_EXTERN PetscErrorCode KSPFinalizePackage(void);
 
 /*S
      KSP - Abstract PETSc object that manages all Krylov methods. This is the object that manages the
-         linear solves in PETSc (even those such as direct solvers that do no use Krylov accelerators).
+         linear solves in PETSc (even those such as direct factorization-based solvers that do no use Krylov accelerators).
 
    Level: beginner
 
    Note:
     When a direct solver is used, but no Krylov solver is used, the `KSP` object is still used but with a
-    `KSPType` of `KSPPREONLY`, meaning that only application of the preconditioner is used as the linear solver.
+    `KSPType` of `KSPPREONLY` (or equivalently `KSPNONE`), meaning that only application of the preconditioner is used as the linear solver.
 
-.seealso: [](chapter_ksp), `KSPCreate()`, `KSPSetType()`, `KSPType`, `SNES`, `TS`, `PC`, `KSP`, `KSPDestroy()`, `KSPCG`, `KSPGMRES`
+.seealso: [](doc_linsolve), [](ch_ksp), `KSPCreate()`, `KSPSetType()`, `KSPType`, `SNES`, `TS`, `PC`, `KSP`, `KSPDestroy()`, `KSPCG`, `KSPGMRES`
 S*/
 typedef struct _p_KSP *KSP;
 
@@ -29,7 +29,7 @@ typedef struct _p_KSP *KSP;
 
    Level: beginner
 
-.seealso: [](chapter_ksp), `KSPSetType()`, `KSP`, `KSPRegister()`, `KSPCreate()`, `KSPSetFromOptions()`
+.seealso: [](doc_linsolve), [](ch_ksp), `KSPSetType()`, `KSP`, `KSPRegister()`, `KSPCreate()`, `KSPSetFromOptions()`
 J*/
 typedef const char *KSPType;
 #define KSPRICHARDSON "richardson"
@@ -45,9 +45,9 @@ typedef const char *KSPType;
 #define KSPNASH       "nash"
 #define KSPSTCG       "stcg"
 #define KSPGLTR       "gltr"
-#define KSPCGNASH     PETSC_DEPRECATED_MACRO("GCC warning \"KSPCGNASH macro is deprecated use KSPNASH (since version 3.11)\"") "nash"
-#define KSPCGSTCG     PETSC_DEPRECATED_MACRO("GCC warning \"KSPCGSTCG macro is deprecated use KSPSTCG (since version 3.11)\"") "stcg"
-#define KSPCGGLTR     PETSC_DEPRECATED_MACRO("GCC warning \"KSPCGGLTR macro is deprecated use KSPSGLTR (since version 3.11)\"") "gltr"
+#define KSPCGNASH     PETSC_DEPRECATED_MACRO(3, 11, 0, "KSPNASH", ) "nash"
+#define KSPCGSTCG     PETSC_DEPRECATED_MACRO(3, 11, 0, "KSPSTCG", ) "stcg"
+#define KSPCGGLTR     PETSC_DEPRECATED_MACRO(3, 11, 0, "KSPSGLTR", ) "gltr"
 #define KSPFCG        "fcg"
 #define KSPPIPEFCG    "pipefcg"
 #define KSPGMRES      "gmres"
@@ -100,12 +100,12 @@ PETSC_EXTERN PetscErrorCode KSPSetUseExplicitTranspose(KSP, PetscBool);
 PETSC_EXTERN PetscErrorCode KSPMatSolve(KSP, Mat, Mat);
 PETSC_EXTERN PetscErrorCode KSPMatSolveTranspose(KSP, Mat, Mat);
 PETSC_EXTERN PetscErrorCode KSPSetMatSolveBatchSize(KSP, PetscInt);
-PETSC_DEPRECATED_FUNCTION("Use KSPSetMatSolveBatchSize() (since version 3.15)") static inline PetscErrorCode KSPSetMatSolveBlockSize(KSP ksp, PetscInt n)
+PETSC_DEPRECATED_FUNCTION(3, 15, 0, "KSPSetMatSolveBatchSize()", ) static inline PetscErrorCode KSPSetMatSolveBlockSize(KSP ksp, PetscInt n)
 {
   return KSPSetMatSolveBatchSize(ksp, n);
 }
 PETSC_EXTERN PetscErrorCode KSPGetMatSolveBatchSize(KSP, PetscInt *);
-PETSC_DEPRECATED_FUNCTION("Use KSPGetMatSolveBatchSize() (since version 3.15)") static inline PetscErrorCode KSPGetMatSolveBlockSize(KSP ksp, PetscInt *n)
+PETSC_DEPRECATED_FUNCTION(3, 15, 0, "KSPGetMatSolveBatchSize()", ) static inline PetscErrorCode KSPGetMatSolveBlockSize(KSP ksp, PetscInt *n)
 {
   return KSPGetMatSolveBatchSize(ksp, n);
 }
@@ -129,6 +129,8 @@ PETSC_EXTERN PetscErrorCode KSPSetPCSide(KSP, PCSide);
 PETSC_EXTERN PetscErrorCode KSPGetPCSide(KSP, PCSide *);
 PETSC_EXTERN PetscErrorCode KSPSetTolerances(KSP, PetscReal, PetscReal, PetscReal, PetscInt);
 PETSC_EXTERN PetscErrorCode KSPGetTolerances(KSP, PetscReal *, PetscReal *, PetscReal *, PetscInt *);
+PETSC_EXTERN PetscErrorCode KSPSetMinimumIterations(KSP, PetscInt);
+PETSC_EXTERN PetscErrorCode KSPGetMinimumIterations(KSP, PetscInt *);
 PETSC_EXTERN PetscErrorCode KSPSetInitialGuessNonzero(KSP, PetscBool);
 PETSC_EXTERN PetscErrorCode KSPGetInitialGuessNonzero(KSP, PetscBool *);
 PETSC_EXTERN PetscErrorCode KSPSetErrorIfNotConverged(KSP, PetscBool);
@@ -144,7 +146,7 @@ PETSC_EXTERN PetscErrorCode KSPGetResidualNorm(KSP, PetscReal *);
 PETSC_EXTERN PetscErrorCode KSPGetIterationNumber(KSP, PetscInt *);
 PETSC_EXTERN PetscErrorCode KSPGetTotalIterations(KSP, PetscInt *);
 PETSC_EXTERN PetscErrorCode KSPCreateVecs(KSP, PetscInt, Vec **, PetscInt, Vec **);
-PETSC_DEPRECATED_FUNCTION("Use KSPCreateVecs() (since version 3.6)") static inline PetscErrorCode KSPGetVecs(KSP ksp, PetscInt n, Vec **x, PetscInt m, Vec **y)
+PETSC_DEPRECATED_FUNCTION(3, 6, 0, "KSPCreateVecs()", ) static inline PetscErrorCode KSPGetVecs(KSP ksp, PetscInt n, Vec **x, PetscInt m, Vec **y)
 {
   return KSPCreateVecs(ksp, n, x, m, y);
 }
@@ -154,6 +156,8 @@ PETSC_EXTERN PetscErrorCode KSPSetPostSolve(KSP, PetscErrorCode (*)(KSP, Vec, Ve
 
 PETSC_EXTERN PetscErrorCode KSPSetPC(KSP, PC);
 PETSC_EXTERN PetscErrorCode KSPGetPC(KSP, PC *);
+PETSC_EXTERN PetscErrorCode KSPSetNestLevel(KSP, PetscInt);
+PETSC_EXTERN PetscErrorCode KSPGetNestLevel(KSP, PetscInt *);
 
 PETSC_EXTERN PetscErrorCode KSPMonitor(KSP, PetscInt, PetscReal);
 PETSC_EXTERN PetscErrorCode KSPMonitorSet(KSP, PetscErrorCode (*)(KSP, PetscInt, PetscReal, void *), void *, PetscErrorCode (*)(void **));
@@ -194,7 +198,7 @@ PETSC_EXTERN PetscErrorCode KSPBuildSolution(KSP, Vec, Vec *);
 PETSC_EXTERN PetscErrorCode KSPBuildResidual(KSP, Vec, Vec, Vec *);
 
 /*E
-  KSPChebyshevKind - Which Chebyshev polynomial to use
+  KSPChebyshevKind - Which kind of Chebyshev polynomial to use
 
   Values:
 + `KSP_CHEBYSHEV_FIRST`      - "classic" first-kind Chebyshev polynomial
@@ -203,7 +207,7 @@ PETSC_EXTERN PetscErrorCode KSPBuildResidual(KSP, Vec, Vec, Vec *);
 
   Level: intermediate
 
-.seealso: [](chapter_ksp), `KSPCHEBYSHEV`, `KSPChebyshevSetKind`
+.seealso: [](ch_ksp), `KSPCHEBYSHEV`, `KSPChebyshevSetKind()`, `KSPChebyshevGetKind()`
 E*/
 typedef enum {
   KSP_CHEBYSHEV_FIRST,
@@ -217,6 +221,7 @@ PETSC_EXTERN PetscErrorCode KSPChebyshevSetEigenvalues(KSP, PetscReal, PetscReal
 PETSC_EXTERN PetscErrorCode KSPChebyshevEstEigSet(KSP, PetscReal, PetscReal, PetscReal, PetscReal);
 PETSC_EXTERN PetscErrorCode KSPChebyshevEstEigSetUseNoisy(KSP, PetscBool);
 PETSC_EXTERN PetscErrorCode KSPChebyshevSetKind(KSP, KSPChebyshevKind);
+PETSC_EXTERN PetscErrorCode KSPChebyshevGetKind(KSP, KSPChebyshevKind *);
 PETSC_EXTERN PetscErrorCode KSPChebyshevEstEigGetKSP(KSP, KSP *);
 PETSC_EXTERN PetscErrorCode KSPComputeExtremeSingularValues(KSP, PetscReal *, PetscReal *);
 PETSC_EXTERN PetscErrorCode KSPComputeEigenvalues(KSP, PetscInt, PetscReal[], PetscReal[], PetscInt *);
@@ -233,7 +238,7 @@ PETSC_EXTERN PetscErrorCode KSPComputeRitz(KSP, PetscBool, PetscBool, PetscInt *
 
    Level: intermediate
 
-.seealso: [](chapter_ksp), `KSP`, `KSPFCG`, `KSPPIPEFCG`, `KSPPIPEGCR`, `KSPFCGSetTruncationType()`, `KSPFCGGetTruncationType()`
+.seealso: [](ch_ksp), `KSP`, `KSPFCG`, `KSPPIPEFCG`, `KSPPIPEGCR`, `KSPFCGSetTruncationType()`, `KSPFCGGetTruncationType()`
 E*/
 typedef enum {
   KSP_FCD_TRUNC_TYPE_STANDARD,
@@ -263,6 +268,7 @@ PETSC_EXTERN PetscErrorCode KSPPIPEGCRSetTruncationType(KSP, KSPFCDTruncationTyp
 PETSC_EXTERN PetscErrorCode KSPPIPEGCRGetTruncationType(KSP, KSPFCDTruncationType *);
 PETSC_EXTERN PetscErrorCode KSPPIPEGCRSetUnrollW(KSP, PetscBool);
 PETSC_EXTERN PetscErrorCode KSPPIPEGCRGetUnrollW(KSP, PetscBool *);
+PETSC_EXTERN PetscErrorCode KSPPIPEGCRSetModifyPC(KSP, PetscErrorCode (*)(KSP, PetscInt, PetscReal, void *), void *, PetscErrorCode (*)(void *));
 
 PETSC_EXTERN PetscErrorCode KSPGMRESSetRestart(KSP, PetscInt);
 PETSC_EXTERN PetscErrorCode KSPGMRESGetRestart(KSP, PetscInt *);
@@ -296,23 +302,21 @@ PETSC_EXTERN PetscErrorCode KSPFETIDPSetPressureOperator(KSP, Mat);
 PETSC_EXTERN PetscErrorCode KSPHPDDMSetDeflationMat(KSP, Mat);
 PETSC_EXTERN PetscErrorCode KSPHPDDMGetDeflationMat(KSP, Mat *);
 #if PetscDefined(HAVE_HPDDM)
-PETSC_DEPRECATED_FUNCTION("Use KSPHPDDMSetDeflationMat() (since version 3.18)") static inline PetscErrorCode KSPHPDDMSetDeflationSpace(KSP ksp, Mat U)
+PETSC_DEPRECATED_FUNCTION(3, 18, 0, "KSPHPDDMSetDeflationMat()", ) static inline PetscErrorCode KSPHPDDMSetDeflationSpace(KSP ksp, Mat U)
 {
   return KSPHPDDMSetDeflationMat(ksp, U);
 }
-PETSC_DEPRECATED_FUNCTION("Use KSPHPDDMGetDeflationMat() (since version 3.18)") static inline PetscErrorCode KSPHPDDMGetDeflationSpace(KSP ksp, Mat *U)
+PETSC_DEPRECATED_FUNCTION(3, 18, 0, "KSPHPDDMGetDeflationMat()", ) static inline PetscErrorCode KSPHPDDMGetDeflationSpace(KSP ksp, Mat *U)
 {
   return KSPHPDDMGetDeflationMat(ksp, U);
 }
 #endif
-PETSC_DEPRECATED_FUNCTION("Use KSPMatSolve() (since version 3.14)") static inline PetscErrorCode KSPHPDDMMatSolve(KSP ksp, Mat B, Mat X)
+PETSC_DEPRECATED_FUNCTION(3, 14, 0, "KSPMatSolve()", ) static inline PetscErrorCode KSPHPDDMMatSolve(KSP ksp, Mat B, Mat X)
 {
   return KSPMatSolve(ksp, B, X);
 }
 /*E
     KSPHPDDMType - Type of Krylov method used by `KSPHPDDM`
-
-    Level: intermediate
 
     Values:
 +   `KSP_HPDDM_TYPE_GMRES` (default) - Generalized Minimal Residual method
@@ -324,7 +328,9 @@ PETSC_DEPRECATED_FUNCTION("Use KSPMatSolve() (since version 3.14)") static inlin
 .   `KSP_HPDDM_TYPE_BFBCG` - breakdown-free BCG
 -   `KSP_HPDDM_TYPE_PREONLY` - apply the preconditioner only
 
-.seealso: [](chapter_ksp), `KSPHPDDM`, `KSPHPDDMSetType()`
+    Level: intermediate
+
+.seealso: [](ch_ksp), `KSPHPDDM`, `KSPHPDDMSetType()`
 E*/
 typedef enum {
   KSP_HPDDM_TYPE_GMRES   = 0,
@@ -341,15 +347,15 @@ PETSC_EXTERN const char *const KSPHPDDMTypes[];
 /*E
     KSPHPDDMPrecision - Precision of Krylov bases used by `KSPHPDDM`
 
-    Level: intermediate
-
     Values:
 +   `KSP_HPDDM_PRECISION_HALF` - default when PETSc is configured `--with-precision=__fp16`
 .   `KSP_HPDDM_PRECISION_SINGLE` - default when PETSc is configured `--with-precision=single`
 .   `KSP_HPDDM_PRECISION_DOUBLE` - default when PETSc is configured `--with-precision=double`
 -   `KSP_HPDDM_PRECISION_QUADRUPLE` - default when PETSc is configured `--with-precision=__float128`
 
-.seealso: [](chapter_ksp), `KSP`, `KSPHPDDM`
+    Level: intermediate
+
+.seealso: [](ch_ksp), `KSP`, `KSPHPDDM`
 E*/
 typedef enum {
   KSP_HPDDM_PRECISION_HALF      = 0,
@@ -361,16 +367,16 @@ PETSC_EXTERN PetscErrorCode KSPHPDDMSetType(KSP, KSPHPDDMType);
 PETSC_EXTERN PetscErrorCode KSPHPDDMGetType(KSP, KSPHPDDMType *);
 
 /*E
-    KSPGMRESCGSRefinementType - How the classical (unmodified) Gram-Schmidt is performed.
-
-   Level: advanced
+    KSPGMRESCGSRefinementType - How the classical (unmodified) Gram-Schmidt is performed in the GMRES solvers
 
     Values:
 +   `KSP_GMRES_CGS_REFINE_NEVER` - one step of classical Gram-Schmidt
 .   `KSP_GMRES_CGS_REFINE_IFNEEDED` - a second step is performed if the first step does not satisfy some criteria
 -   `KSP_GMRES_CGS_REFINE_ALWAYS` - always perform two steps
 
-.seealso: [](chapter_ksp), `KSP`, `KSPGMRESClassicalGramSchmidtOrthogonalization()`, `KSPGMRESSetOrthogonalization()`,
+   Level: advanced
+
+.seealso: [](ch_ksp), `KSP`, `KSPGMRESClassicalGramSchmidtOrthogonalization()`, `KSPGMRESSetOrthogonalization()`,
           `KSPGMRESGetOrthogonalization()`,
           `KSPGMRESSetCGSRefinementType()`, `KSPGMRESGetCGSRefinementType()`, `KSPGMRESModifiedGramSchmidtOrthogonalization()`
 E*/
@@ -380,6 +386,7 @@ typedef enum {
   KSP_GMRES_CGS_REFINE_ALWAYS
 } KSPGMRESCGSRefinementType;
 PETSC_EXTERN const char *const KSPGMRESCGSRefinementTypes[];
+
 /*MC
     KSP_GMRES_CGS_REFINE_NEVER - Do the classical (unmodified) Gram-Schmidt process
 
@@ -388,7 +395,7 @@ PETSC_EXTERN const char *const KSPGMRESCGSRefinementTypes[];
    Note:
    Possibly unstable, but the fastest to compute
 
-.seealso: [](chapter_ksp), `KSPGMRESCGSRefinementType`, `KSPGMRESClassicalGramSchmidtOrthogonalization()`, `KSPGMRESSetOrthogonalization()`,
+.seealso: [](ch_ksp), `KSPGMRESCGSRefinementType`, `KSPGMRESClassicalGramSchmidtOrthogonalization()`, `KSPGMRESSetOrthogonalization()`,
           `KSP`, `KSPGMRESGetOrthogonalization()`,
           `KSPGMRESSetCGSRefinementType()`, `KSPGMRESGetCGSRefinementType()`, `KSP_GMRES_CGS_REFINE_IFNEEDED`, `KSP_GMRES_CGS_REFINE_ALWAYS`,
           `KSPGMRESModifiedGramSchmidtOrthogonalization()`
@@ -405,14 +412,14 @@ M*/
    This is slower than `KSP_GMRES_CGS_REFINE_NEVER` because it requires an extra norm computation to
    estimate the orthogonality but is more stable.
 
-.seealso: [](chapter_ksp), `KSPGMRESCGSRefinementType`, `KSPGMRESClassicalGramSchmidtOrthogonalization()`, `KSPGMRESSetOrthogonalization()`,
+.seealso: [](ch_ksp), `KSPGMRESCGSRefinementType`, `KSPGMRESClassicalGramSchmidtOrthogonalization()`, `KSPGMRESSetOrthogonalization()`,
           `KSP`, `KSPGMRESGetOrthogonalization()`,
           `KSPGMRESSetCGSRefinementType()`, `KSPGMRESGetCGSRefinementType()`, `KSP_GMRES_CGS_REFINE_NEVER`, `KSP_GMRES_CGS_REFINE_ALWAYS`,
           `KSPGMRESModifiedGramSchmidtOrthogonalization()`
 M*/
 
 /*MC
-    KSP_GMRES_CGS_REFINE_NEVER - Do two steps of the classical (unmodified) Gram-Schmidt process.
+    KSP_GMRES_CGS_REFINE_ALWAYS - Do two steps of the classical (unmodified) Gram-Schmidt process.
 
    Level: advanced
 
@@ -422,7 +429,7 @@ M*/
 
    You should only use this if you absolutely know that the iterative refinement is needed.
 
-.seealso: [](chapter_ksp), `KSPGMRESCGSRefinementType`, `KSPGMRESClassicalGramSchmidtOrthogonalization()`, `KSPGMRESSetOrthogonalization()`,
+.seealso: [](ch_ksp), `KSPGMRESCGSRefinementType`, `KSPGMRESClassicalGramSchmidtOrthogonalization()`, `KSPGMRESSetOrthogonalization()`,
           `KSP`, `KSPGMRESGetOrthogonalization()`,
           `KSPGMRESSetCGSRefinementType()`, `KSPGMRESGetCGSRefinementType()`, `KSP_GMRES_CGS_REFINE_IFNEEDED`, `KSP_GMRES_CGS_REFINE_ALWAYS`,
           `KSPGMRESModifiedGramSchmidtOrthogonalization()`
@@ -446,7 +453,6 @@ PETSC_EXTERN PetscErrorCode KSPBCGSLSetUsePseudoinverse(KSP, PetscBool);
 
 PETSC_EXTERN PetscErrorCode KSPSetFromOptions(KSP);
 PETSC_EXTERN PetscErrorCode KSPResetFromOptions(KSP);
-PETSC_EXTERN PetscErrorCode KSPAddOptionsChecker(PetscErrorCode (*)(KSP));
 
 PETSC_EXTERN PetscErrorCode KSPMonitorSetFromOptions(KSP, const char[], const char[], void *);
 PETSC_EXTERN PetscErrorCode KSPMonitorLGCreate(MPI_Comm, const char[], const char[], const char[], PetscInt, const char *[], int, int, int, int, PetscDrawLG *);
@@ -471,15 +477,15 @@ PETSC_EXTERN PetscErrorCode KSPMonitorSolutionDrawLG(KSP, PetscInt, PetscReal, P
 PETSC_EXTERN PetscErrorCode KSPMonitorSolutionDrawLGCreate(PetscViewer, PetscViewerFormat, void *, PetscViewerAndFormat **);
 PETSC_EXTERN PetscErrorCode KSPMonitorSingularValue(KSP, PetscInt, PetscReal, PetscViewerAndFormat *);
 PETSC_EXTERN PetscErrorCode KSPMonitorSingularValueCreate(PetscViewer, PetscViewerFormat, void *, PetscViewerAndFormat **);
-PETSC_DEPRECATED_FUNCTION("Use KSPMonitorResidual() (since version 3.15)") static inline PetscErrorCode KSPMonitorDefault(KSP ksp, PetscInt n, PetscReal rnorm, PetscViewerAndFormat *vf)
+PETSC_DEPRECATED_FUNCTION(3, 15, 0, "KSPMonitorResidual()", ) static inline PetscErrorCode KSPMonitorDefault(KSP ksp, PetscInt n, PetscReal rnorm, PetscViewerAndFormat *vf)
 {
   return KSPMonitorResidual(ksp, n, rnorm, vf);
 }
-PETSC_DEPRECATED_FUNCTION("Use KSPMonitorTrueResidual() (since version 3.15)") static inline PetscErrorCode KSPMonitorTrueResidualNorm(KSP ksp, PetscInt n, PetscReal rnorm, PetscViewerAndFormat *vf)
+PETSC_DEPRECATED_FUNCTION(3, 15, 0, "KSPMonitorTrueResidual()", ) static inline PetscErrorCode KSPMonitorTrueResidualNorm(KSP ksp, PetscInt n, PetscReal rnorm, PetscViewerAndFormat *vf)
 {
   return KSPMonitorTrueResidual(ksp, n, rnorm, vf);
 }
-PETSC_DEPRECATED_FUNCTION("Use KSPMonitorTrueResidualMax() (since version 3.15)") static inline PetscErrorCode KSPMonitorTrueResidualMaxNorm(KSP ksp, PetscInt n, PetscReal rnorm, PetscViewerAndFormat *vf)
+PETSC_DEPRECATED_FUNCTION(3, 15, 0, "KSPMonitorTrueResidualMax()", ) static inline PetscErrorCode KSPMonitorTrueResidualMaxNorm(KSP ksp, PetscInt n, PetscReal rnorm, PetscViewerAndFormat *vf)
 {
   return KSPMonitorTrueResidualMax(ksp, n, rnorm, vf);
 }
@@ -517,11 +523,11 @@ PETSC_EXTERN PetscErrorCode KSPConvergedReasonViewFromOptions(KSP);
 PETSC_EXTERN PetscErrorCode KSPConvergedReasonViewCancel(KSP);
 PETSC_EXTERN PetscErrorCode KSPConvergedRateView(KSP, PetscViewer);
 
-PETSC_DEPRECATED_FUNCTION("Use KSPConvergedReasonView() (since version 3.14)") static inline PetscErrorCode KSPReasonView(KSP ksp, PetscViewer v)
+PETSC_DEPRECATED_FUNCTION(3, 14, 0, "KSPConvergedReasonView()", ) static inline PetscErrorCode KSPReasonView(KSP ksp, PetscViewer v)
 {
   return KSPConvergedReasonView(ksp, v);
 }
-PETSC_DEPRECATED_FUNCTION("Use KSPConvergedReasonViewFromOptions() (since version 3.14)") static inline PetscErrorCode KSPReasonViewFromOptions(KSP ksp)
+PETSC_DEPRECATED_FUNCTION(3, 14, 0, "KSPConvergedReasonViewFromOptions()", ) static inline PetscErrorCode KSPReasonViewFromOptions(KSP ksp)
 {
   return KSPConvergedReasonViewFromOptions(ksp);
 }
@@ -555,12 +561,12 @@ PETSC_EXTERN PetscErrorCode PCTelescopeGetKSP(PC, KSP *);
 
    Note:
    Each solver only supports a subset of these and some may support different ones
-   depending on left or right preconditioning, see `KSPSetPCSide()`
+   depending on whether left or right preconditioning is used, see `KSPSetPCSide()`
 
    Developer Note:
    This must match the values in petsc/finclude/petscksp.h
 
-.seealso: [](chapter_ksp), `KSP`, `PCSide`, `KSPSolve()`, `KSPGetConvergedReason()`, `KSPSetNormType()`,
+.seealso: [](ch_ksp), `KSP`, `PCSide`, `KSPSolve()`, `KSPGetConvergedReason()`, `KSPSetNormType()`,
           `KSPSetConvergenceTest()`, `KSPSetPCSide()`
 E*/
 typedef enum {
@@ -583,7 +589,7 @@ PETSC_EXTERN const char *const *const KSPNormTypes;
     Note:
     Some Krylov methods need to compute a residual norm (such as `KPSGMRES`) and then this option is ignored
 
-.seealso: [](chapter_ksp), `KSPNormType`, `KSP`, `KSPSetNormType()`, `KSP_NORM_PRECONDITIONED`, `KSP_NORM_UNPRECONDITIONED`, `KSP_NORM_NATURAL`
+.seealso: [](ch_ksp), `KSPNormType`, `KSP`, `KSPSetNormType()`, `KSP_NORM_PRECONDITIONED`, `KSP_NORM_UNPRECONDITIONED`, `KSP_NORM_NATURAL`
 M*/
 
 /*MC
@@ -592,7 +598,7 @@ M*/
 
    Level: advanced
 
-.seealso: [](chapter_ksp), `KSPNormType`, `KSP`, `KSPSetNormType()`, `KSP_NORM_NONE`, `KSP_NORM_UNPRECONDITIONED`, `KSP_NORM_NATURAL`, `KSPSetConvergenceTest()`
+.seealso: [](ch_ksp), `KSPNormType`, `KSP`, `KSPSetNormType()`, `KSP_NORM_NONE`, `KSP_NORM_UNPRECONDITIONED`, `KSP_NORM_NATURAL`, `KSPSetConvergenceTest()`
 M*/
 
 /*MC
@@ -601,7 +607,7 @@ M*/
 
    Level: advanced
 
-.seealso: [](chapter_ksp), `KSPNormType`, `KSP`, `KSPSetNormType()`, `KSP_NORM_NONE`, `KSP_NORM_PRECONDITIONED`, `KSP_NORM_NATURAL`, `KSPSetConvergenceTest()`
+.seealso: [](ch_ksp), `KSPNormType`, `KSP`, `KSPSetNormType()`, `KSP_NORM_NONE`, `KSP_NORM_PRECONDITIONED`, `KSP_NORM_NATURAL`, `KSPSetConvergenceTest()`
 M*/
 
 /*MC
@@ -610,7 +616,7 @@ M*/
 
    Level: advanced
 
-.seealso: [](chapter_ksp), `KSPNormType`, `KSP`, `KSPSetNormType()`, `KSP_NORM_NONE`, `KSP_NORM_PRECONDITIONED`, `KSP_NORM_UNPRECONDITIONED`, `KSPSetConvergenceTest()`
+.seealso: [](ch_ksp), `KSPNormType`, `KSP`, `KSPSetNormType()`, `KSP_NORM_NONE`, `KSP_NORM_PRECONDITIONED`, `KSP_NORM_UNPRECONDITIONED`, `KSPSetConvergenceTest()`
 M*/
 
 PETSC_EXTERN PetscErrorCode KSPSetNormType(KSP, KSPNormType);
@@ -619,13 +625,11 @@ PETSC_EXTERN PetscErrorCode KSPSetSupportedNorm(KSP ksp, KSPNormType, PCSide, Pe
 PETSC_EXTERN PetscErrorCode KSPSetCheckNormIteration(KSP, PetscInt);
 PETSC_EXTERN PetscErrorCode KSPSetLagNorm(KSP, PetscBool);
 
-#define KSP_CONVERGED_CG_NEG_CURVE_DEPRECATED   KSP_CONVERGED_CG_NEG_CURVE PETSC_DEPRECATED_ENUM("Use KSP_CONVERGED_NEG_CURVE (since version 3.19)")
-#define KSP_CONVERGED_CG_CONSTRAINED_DEPRECATED KSP_CONVERGED_CG_CONSTRAINED PETSC_DEPRECATED_ENUM("Use KSP_CONVERGED_STEP_LENGTH (since version 3.19)")
-#define KSP_DIVERGED_PCSETUP_FAILED_DEPRECATED  KSP_DIVERGED_PCSETUP_FAILED PETSC_DEPRECATED_ENUM("Use KSP_DIVERGED_PC_FAILED (since version 3.11)")
+#define KSP_CONVERGED_CG_NEG_CURVE_DEPRECATED   KSP_CONVERGED_CG_NEG_CURVE PETSC_DEPRECATED_ENUM(3, 19, 0, "KSP_CONVERGED_NEG_CURVE", )
+#define KSP_CONVERGED_CG_CONSTRAINED_DEPRECATED KSP_CONVERGED_CG_CONSTRAINED PETSC_DEPRECATED_ENUM(3, 19, 0, "KSP_CONVERGED_STEP_LENGTH", )
+#define KSP_DIVERGED_PCSETUP_FAILED_DEPRECATED  KSP_DIVERGED_PCSETUP_FAILED PETSC_DEPRECATED_ENUM(3, 11, 0, "KSP_DIVERGED_PC_FAILED", )
 /*E
     KSPConvergedReason - reason a Krylov method was determined to have converged or diverged
-
-   Level: beginner
 
    Values:
 +  `KSP_CONVERGED_RTOL_NORMAL` - requested decrease in the residual for the normal equations
@@ -635,7 +639,7 @@ PETSC_EXTERN PetscErrorCode KSPSetLagNorm(KSP, PetscBool);
 .  `KSP_CONVERGED_ITS` - requested number of iterations
 .  `KSP_CONVERGED_NEG_CURVE` - see note below
 .  `KSP_CONVERGED_STEP_LENGTH` - see note below
-.  `KSP_CONVERGED_HAPPY_BREAKDOWN` - happy breakdown (meaning early convergence of the `KSPType` occurred.
+.  `KSP_CONVERGED_HAPPY_BREAKDOWN` - happy breakdown (meaning early convergence of the `KSPType` occurred).
 .  `KSP_DIVERGED_NULL` - breakdown when solving the Hessenberg system within GMRES
 .  `KSP_DIVERGED_ITS` - requested number of iterations
 .  `KSP_DIVERGED_DTOL` - large increase in the residual norm
@@ -647,9 +651,11 @@ PETSC_EXTERN PetscErrorCode KSPSetLagNorm(KSP, PetscBool);
 .  `KSP_DIVERGED_INDEFINITE_MAT` - the operator was indefinite for a `KSPType` that requires it be definite
 -  `KSP_DIVERGED_PC_FAILED` - the action of the preconditioner failed for some reason
 
+   Level: beginner
+
    Note:
-   The values  `KSP_CONVERGED_NEG_CURVE`, and `KSP_CONVERGED_STEP_LENGTH` are returned only by the special `KSPNASH`,
-   `KSPSTCG`, and `KSPGLTR` solvers which are used by the `SNESNEWTONTR` (trust region) solver.
+   The values `KSP_CONVERGED_NEG_CURVE`, and `KSP_CONVERGED_STEP_LENGTH` are returned only by `KSPCG`, `KSPMINRES` and by
+   the special `KSPNASH`, `KSPSTCG`, and `KSPGLTR` solvers which are used by the `SNESNEWTONTR` (trust region) solver.
 
    Developer Notes:
    This must match the values in petsc/finclude/petscksp.h
@@ -657,7 +663,7 @@ PETSC_EXTERN PetscErrorCode KSPSetLagNorm(KSP, PetscBool);
    The string versions of these are `KSPConvergedReasons`; if you change
    any of the values here also change them that array of names.
 
-.seealso: [](chapter_ksp), `KSP`, `KSPSolve()`, `KSPGetConvergedReason()`, `KSPSetTolerances()`, `KSPConvergedReasonView()`
+.seealso: [](ch_ksp), `KSP`, `KSPSolve()`, `KSPGetConvergedReason()`, `KSPSetTolerances()`, `KSPConvergedReasonView()`
 E*/
 typedef enum { /* converged */
   KSP_CONVERGED_RTOL_NORMAL               = 1,
@@ -698,8 +704,7 @@ PETSC_EXTERN const char *const *KSPConvergedReasons;
 
    See also `KSP_CONVERGED_ATOL` which may apply before this tolerance.
 
-.seealso: [](chapter_ksp), `KSPNormType`, `KSP_CONVERGED_ATOL`, `KSP_DIVERGED_DTOL`, `KSPSolve()`, `KSPGetConvergedReason()`, `KSPConvergedReason`, `KSPSetTolerances()`
-
+.seealso: [](ch_ksp), `KSPNormType`, `KSP_CONVERGED_ATOL`, `KSP_DIVERGED_DTOL`, `KSPSolve()`, `KSPGetConvergedReason()`, `KSPConvergedReason`, `KSPSetTolerances()`
 M*/
 
 /*MC
@@ -713,8 +718,7 @@ M*/
 
    See also `KSP_CONVERGED_RTOL` which may apply before this tolerance.
 
-.seealso: [](chapter_ksp), `KSPNormType`, `KSP_CONVERGED_RTOL`, `KSP_DIVERGED_DTOL`, `KSPSolve()`, `KSPGetConvergedReason()`, `KSPConvergedReason`, `KSPSetTolerances()`
-
+.seealso: [](ch_ksp), `KSPNormType`, `KSP_CONVERGED_RTOL`, `KSP_DIVERGED_DTOL`, `KSPSolve()`, `KSPGetConvergedReason()`, `KSPConvergedReason`, `KSPSetTolerances()`
 M*/
 
 /*MC
@@ -728,8 +732,7 @@ M*/
 
    Level: beginner
 
-.seealso: [](chapter_ksp), `KSPNormType`, `KSP_CONVERGED_ATOL`, `KSP_DIVERGED_RTOL`, `KSPSolve()`, `KSPGetConvergedReason()`, `KSPConvergedReason`, `KSPSetTolerances()`
-
+.seealso: [](ch_ksp), `KSPNormType`, `KSP_CONVERGED_ATOL`, `KSP_DIVERGED_RTOL`, `KSPSolve()`, `KSPGetConvergedReason()`, `KSPConvergedReason`, `KSPSetTolerances()`
 M*/
 
 /*MC
@@ -738,8 +741,7 @@ M*/
 
    Level: beginner
 
-.seealso: [](chapter_ksp), `KSPSolve()`, `KSPGetConvergedReason()`, `KSPConvergedReason`, `KSPSetTolerances()`
-
+.seealso: [](ch_ksp), `KSPSolve()`, `KSPGetConvergedReason()`, `KSPConvergedReason`, `KSPSetTolerances()`
 M*/
 
 /*MC
@@ -749,8 +751,7 @@ M*/
 
    Level: beginner
 
-.seealso: [](chapter_ksp), `KSPSolve()`, `KSPGetConvergedReason()`, `KSPConvergedReason`, `KSPSetTolerances()`
-
+.seealso: [](ch_ksp), `KSPSolve()`, `KSPGetConvergedReason()`, `KSPConvergedReason`, `KSPSetTolerances()`
 M*/
 
 /*MC
@@ -761,8 +762,7 @@ M*/
 
    Level: beginner
 
-.seealso: [](chapter_ksp), `KSPSolve()`, `KSPGetConvergedReason()`, `KSPConvergedReason`, `KSPSetTolerances()`
-
+.seealso: [](ch_ksp), `KSPSolve()`, `KSPGetConvergedReason()`, `KSPConvergedReason`, `KSPSetTolerances()`
 M*/
 
 /*MC
@@ -771,8 +771,7 @@ M*/
 
    Level: beginner
 
-.seealso: [](chapter_ksp), `KSPSolve()`, `KSPGetConvergedReason()`, `KSPConvergedReason`, `KSPSetTolerances()`
-
+.seealso: [](ch_ksp), `KSPSolve()`, `KSPGetConvergedReason()`, `KSPConvergedReason`, `KSPSetTolerances()`
 M*/
 
 /*MC
@@ -781,8 +780,7 @@ M*/
 
    Level: beginner
 
-.seealso: [](chapter_ksp), `KSPSolve()`, `KSPGetConvergedReason()`, `KSPConvergedReason`, `KSPSetTolerances()`
-
+.seealso: [](ch_ksp), `KSPSolve()`, `KSPGetConvergedReason()`, `KSPConvergedReason`, `KSPSetTolerances()`
 M*/
 
 /*MC
@@ -796,8 +794,7 @@ M*/
     This can happen with the `PCICC` preconditioner, use the options database option `-pc_factor_shift_positive_definite` to force
   the `PCICC` preconditioner to generate a positive definite preconditioner
 
-.seealso: [](chapter_ksp), `KSPSolve()`, `KSPGetConvergedReason()`, `KSPConvergedReason`, `KSPSetTolerances()`
-
+.seealso: [](ch_ksp), `KSPSolve()`, `KSPGetConvergedReason()`, `KSPConvergedReason`, `KSPSetTolerances()`
 M*/
 
 /*MC
@@ -810,8 +807,7 @@ M*/
     Note:
     Run with `-ksp_error_if_not_converged` to stop the program when the error is detected and print an error message with details.
 
-.seealso: [](chapter_ksp), `KSPSolve()`, `KSPGetConvergedReason()`, `KSPConvergedReason`, `KSPSetTolerances()`
-
+.seealso: [](ch_ksp), `KSPSolve()`, `KSPGetConvergedReason()`, `KSPConvergedReason`, `KSPSetTolerances()`
 M*/
 
 /*MC
@@ -820,8 +816,7 @@ M*/
 
    Level: beginner
 
-.seealso: [](chapter_ksp), `KSPSolve()`, `KSPGetConvergedReason()`, `KSPConvergedReason`, `KSPSetTolerances()`
-
+.seealso: [](ch_ksp), `KSPSolve()`, `KSPGetConvergedReason()`, `KSPConvergedReason`, `KSPSetTolerances()`
 M*/
 
 PETSC_EXTERN PetscErrorCode KSPSetConvergenceTest(KSP, PetscErrorCode (*)(KSP, PetscInt, PetscReal, KSPConvergedReason *, void *), void *, PetscErrorCode (*)(void *));
@@ -842,47 +837,47 @@ PETSC_EXTERN PetscErrorCode KSPComputeConvergenceRate(KSP, PetscReal *, PetscRea
 PETSC_EXTERN PetscErrorCode KSPSetConvergedNegativeCurvature(KSP, PetscBool);
 PETSC_EXTERN PetscErrorCode KSPGetConvergedNegativeCurvature(KSP, PetscBool *);
 
-PETSC_DEPRECATED_FUNCTION("Use KSPConvergedDefault() (since version 3.5)") static inline void KSPDefaultConverged(void)
+PETSC_DEPRECATED_FUNCTION(3, 5, 0, "KSPConvergedDefault()", ) static inline void KSPDefaultConverged(void)
 { /* never called */
 }
 #define KSPDefaultConverged (KSPDefaultConverged, KSPConvergedDefault)
-PETSC_DEPRECATED_FUNCTION("Use KSPConvergedDefaultDestroy() (since version 3.5)") static inline void KSPDefaultConvergedDestroy(void)
+PETSC_DEPRECATED_FUNCTION(3, 5, 0, "KSPConvergedDefaultDestroy()", ) static inline void KSPDefaultConvergedDestroy(void)
 { /* never called */
 }
 #define KSPDefaultConvergedDestroy (KSPDefaultConvergedDestroy, KSPConvergedDefaultDestroy)
-PETSC_DEPRECATED_FUNCTION("Use KSPConvergedDefaultCreate() (since version 3.5)") static inline void KSPDefaultConvergedCreate(void)
+PETSC_DEPRECATED_FUNCTION(3, 5, 0, "KSPConvergedDefaultCreate()", ) static inline void KSPDefaultConvergedCreate(void)
 { /* never called */
 }
 #define KSPDefaultConvergedCreate (KSPDefaultConvergedCreate, KSPConvergedDefaultCreate)
-PETSC_DEPRECATED_FUNCTION("Use KSPConvergedDefaultSetUIRNorm() (since version 3.5)") static inline void KSPDefaultConvergedSetUIRNorm(void)
+PETSC_DEPRECATED_FUNCTION(3, 5, 0, "KSPConvergedDefaultSetUIRNorm()", ) static inline void KSPDefaultConvergedSetUIRNorm(void)
 { /* never called */
 }
 #define KSPDefaultConvergedSetUIRNorm (KSPDefaultConvergedSetUIRNorm, KSPConvergedDefaultSetUIRNorm)
-PETSC_DEPRECATED_FUNCTION("Use KSPConvergedDefaultSetUMIRNorm() (since version 3.5)") static inline void KSPDefaultConvergedSetUMIRNorm(void)
+PETSC_DEPRECATED_FUNCTION(3, 5, 0, "KSPConvergedDefaultSetUMIRNorm()", ) static inline void KSPDefaultConvergedSetUMIRNorm(void)
 { /* never called */
 }
 #define KSPDefaultConvergedSetUMIRNorm (KSPDefaultConvergedSetUMIRNorm, KSPConvergedDefaultSetUMIRNorm)
-PETSC_DEPRECATED_FUNCTION("Use KSPConvergedSkip() (since version 3.5)") static inline void KSPSkipConverged(void)
+PETSC_DEPRECATED_FUNCTION(3, 5, 0, "KSPConvergedSkip()", ) static inline void KSPSkipConverged(void)
 { /* never called */
 }
 #define KSPSkipConverged (KSPSkipConverged, KSPConvergedSkip)
 
 PETSC_EXTERN PetscErrorCode KSPComputeOperator(KSP, MatType, Mat *);
-PETSC_DEPRECATED_FUNCTION("Use KSPComputeOperator() (since version 3.12)") static inline PetscErrorCode KSPComputeExplicitOperator(KSP A, Mat *B)
+PETSC_DEPRECATED_FUNCTION(3, 12, 0, "KSPComputeOperator()", ) static inline PetscErrorCode KSPComputeExplicitOperator(KSP A, Mat *B)
 {
-  return KSPComputeOperator(A, NULL, B);
+  return KSPComputeOperator(A, PETSC_NULLPTR, B);
 }
 
 /*E
     KSPCGType - Determines what type of `KSPCG` to use
 
-   Level: beginner
-
    Values:
  + `KSP_CG_SYMMETRIC` - the matrix is complex symmetric
  - `KSP_CG_HERMITIAN` - the matrix is complex Hermitian
 
-.seealso: [](chapter_ksp), `KSP`, `KSPCGSetType()`
+   Level: beginner
+
+.seealso: [](ch_ksp), `KSPCG`, `KSP`, `KSPCGSetType()`
 E*/
 typedef enum {
   KSP_CG_SYMMETRIC = 0,
@@ -900,11 +895,11 @@ PETSC_EXTERN PetscErrorCode KSPCGGetObjFcn(KSP, PetscReal *);
 
 PETSC_EXTERN PetscErrorCode KSPGLTRGetMinEig(KSP, PetscReal *);
 PETSC_EXTERN PetscErrorCode KSPGLTRGetLambda(KSP, PetscReal *);
-PETSC_DEPRECATED_FUNCTION("Use KSPGLTRGetMinEig (since v3.12)") static inline PetscErrorCode KSPCGGLTRGetMinEig(KSP ksp, PetscReal *x)
+PETSC_DEPRECATED_FUNCTION(3, 12, 0, "KSPGLTRGetMinEig()", ) static inline PetscErrorCode KSPCGGLTRGetMinEig(KSP ksp, PetscReal *x)
 {
   return KSPGLTRGetMinEig(ksp, x);
 }
-PETSC_DEPRECATED_FUNCTION("Use KSPGLTRGetLambda (since v3.12)") static inline PetscErrorCode KSPCGGLTRGetLambda(KSP ksp, PetscReal *x)
+PETSC_DEPRECATED_FUNCTION(3, 12, 0, "KSPGLTRGetLambda()", ) static inline PetscErrorCode KSPCGGLTRGetLambda(KSP ksp, PetscReal *x)
 {
   return KSPGLTRGetLambda(ksp, x);
 }
@@ -927,19 +922,20 @@ PETSC_EXTERN PetscErrorCode PCShellSetPostSolve(PC, PetscErrorCode (*)(PC, KSP, 
 
    Level: intermediate
 
-.seealso: [](chapter_ksp), `KSPCreate()`, `KSPSetGuessType()`, `KSPGuessType`
+.seealso: [](ch_ksp), `KSPCreate()`, `KSPSetGuessType()`, `KSPGuessType`
 S*/
 typedef struct _p_KSPGuess *KSPGuess;
+
 /*J
     KSPGuessType - String with the name of a PETSc initial guess approach for Krylov methods.
-
-   Level: intermediate
 
    Values:
  + `KSPGUESSFISCHER` - methodology developed by Paul Fischer
  - `KSPGUESSPOD` - methodology based on proper orthogonal decomposition
 
-.seealso: [](chapter_ksp), `KSP`, `KSPGuess`
+   Level: intermediate
+
+.seealso: [](ch_ksp), `KSP`, `KSPGuess`
 J*/
 typedef const char *KSPGuessType;
 #define KSPGUESSFISCHER "fischer"
@@ -1048,7 +1044,10 @@ PETSC_EXTERN PetscErrorCode DMKSPGetComputeInitialGuess(DM, PetscErrorCode (**)(
 
 PETSC_EXTERN PetscErrorCode DMGlobalToLocalSolve(DM, Vec, Vec);
 PETSC_EXTERN PetscErrorCode DMProjectField(DM, PetscReal, Vec, void (**)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]), InsertMode, Vec);
+PETSC_EXTERN PetscErrorCode DMSwarmProjectFields(DM, PetscInt, const char **, Vec[], ScatterMode mode);
 
 PETSC_EXTERN PetscErrorCode DMAdaptInterpolator(DM, DM, Mat, KSP, Mat, Mat, Mat *, void *);
 PETSC_EXTERN PetscErrorCode DMCheckInterpolator(DM, Mat, Mat, Mat, PetscReal);
-#endif
+
+PETSC_EXTERN PetscErrorCode PCBJKOKKOSSetKSP(PC, KSP);
+PETSC_EXTERN PetscErrorCode PCBJKOKKOSGetKSP(PC, KSP *);

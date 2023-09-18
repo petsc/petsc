@@ -33,7 +33,7 @@ int main(int argc, char **argv)
   n = 64; /* long enough to trigger memcpy optimizations both in local scatter and remote scatter */
 
   /* create two MPI vectors x, y of length n=64, N=128 */
-  PetscCall(VecCreateMPI(PETSC_COMM_WORLD, n, PETSC_DECIDE, &x));
+  PetscCall(VecCreateFromOptions(PETSC_COMM_WORLD, NULL, 1, n, PETSC_DECIDE, &x));
   PetscCall(VecDuplicate(x, &y));
 
   /* Initialize x as {0~127} */
@@ -106,7 +106,7 @@ int main(int argc, char **argv)
   n = 64; /* long enough to trigger memcpy optimizations in local scatter */
 
   /* create two seq vectors x, y of length n */
-  PetscCall(VecCreateSeq(PETSC_COMM_SELF, n, &x));
+  PetscCall(VecCreateFromOptions(PETSC_COMM_SELF, NULL, 1, n, n, &x));
   PetscCall(VecDuplicate(x, &y));
 
   /* Initialize x as {0~63} */
@@ -164,8 +164,8 @@ int main(int argc, char **argv)
   n = 64; /* long enough to trigger memcpy optimizations in local scatter */
 
   /* create two seq vectors x of length n, and y of length n/2 */
-  PetscCall(VecCreateSeq(PETSC_COMM_SELF, n, &x));
-  PetscCall(VecCreateSeq(PETSC_COMM_SELF, n / 2, &y));
+  PetscCall(VecCreateFromOptions(PETSC_COMM_SELF, NULL, 1, n, n, &x));
+  PetscCall(VecCreateFromOptions(PETSC_COMM_SELF, NULL, 1, n / 2, n / 2, &y));
 
   /* Initialize x as {0~63} */
   for (i = 0; i < n; i++) PetscCall(VecSetValue(x, i, (PetscScalar)i, INSERT_VALUES));

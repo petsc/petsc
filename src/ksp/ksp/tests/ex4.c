@@ -205,4 +205,10 @@ int main(int argc, char **args)
       nsize: {{1 2}}
       args: -usezerorows 0 -mat_type hypre -pc_type hypre -m 25 -ksp_type cg -ksp_norm_type natural
 
+    test:
+      requires: hypre defined(PETSC_HAVE_HYPRE_DEVICE)
+      suffix: dev
+      nsize: 2
+      args: -m 25 -mat_type hypre -pc_type hypre -pc_hypre_type boomeramg -pc_hypre_boomeramg_coarsen_type PMIS
+
 TEST*/

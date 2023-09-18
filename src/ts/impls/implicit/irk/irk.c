@@ -45,24 +45,24 @@ typedef struct {
 } TS_IRK;
 
 /*@C
-   TSIRKTableauCreate - create the tableau for `TSIRK` and provide the entries
+  TSIRKTableauCreate - create the tableau for `TSIRK` and provide the entries
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  ts - timestepping context
-.  nstages - number of stages, this is the dimension of the matrices below
-.  A - stage coefficients (dimension nstages*nstages, row-major)
-.  b - step completion table (dimension nstages)
-.  c - abscissa (dimension nstages)
-.  binterp - coefficients of the interpolation formula (dimension nstages)
-.  A_inv - inverse of A (dimension nstages*nstages, row-major)
-.  A_inv_rowsum - row sum of the inverse of A (dimension nstages)
--  I_s - identity matrix (dimension nstages*nstages)
+  Input Parameters:
++ ts           - timestepping context
+. nstages      - number of stages, this is the dimension of the matrices below
+. A            - stage coefficients (dimension nstages*nstages, row-major)
+. b            - step completion table (dimension nstages)
+. c            - abscissa (dimension nstages)
+. binterp      - coefficients of the interpolation formula (dimension nstages)
+. A_inv        - inverse of A (dimension nstages*nstages, row-major)
+. A_inv_rowsum - row sum of the inverse of A (dimension nstages)
+- I_s          - identity matrix (dimension nstages*nstages)
 
-   Level: advanced
+  Level: advanced
 
-.seealso: [](chapter_ts), `TSIRK`, `TSIRKRegister()`
+.seealso: [](ch_ts), `TSIRK`, `TSIRKRegister()`
 @*/
 PetscErrorCode TSIRKTableauCreate(TS ts, PetscInt nstages, const PetscReal *A, const PetscReal *b, const PetscReal *c, const PetscReal *binterp, const PetscScalar *A_inv, const PetscScalar *A_inv_rowsum, const PetscScalar *I_s)
 {
@@ -157,30 +157,30 @@ static PetscErrorCode TSIRKCreate_Gauss(TS ts)
 }
 
 /*@C
-   TSIRKRegister -  adds a `TSIRK` implementation
+  TSIRKRegister -  adds a `TSIRK` implementation
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  sname - name of user-defined IRK scheme
--  function - function to create method context
+  Input Parameters:
++ sname    - name of user-defined IRK scheme
+- function - function to create method context
 
-   Level: advanced
+  Level: advanced
 
-   Note:
-   `TSIRKRegister()` may be called multiple times to add several user-defined families.
+  Note:
+  `TSIRKRegister()` may be called multiple times to add several user-defined families.
 
-   Sample usage:
+  Example Usage:
 .vb
-   TSIRKRegister("my_scheme",MySchemeCreate);
+   TSIRKRegister("my_scheme", MySchemeCreate);
 .ve
 
-   Then, your scheme can be chosen with the procedural interface via
-$     TSIRKSetType(ts,"my_scheme")
-   or at runtime via the option
+  Then, your scheme can be chosen with the procedural interface via
+$     TSIRKSetType(ts, "my_scheme")
+  or at runtime via the option
 $     -ts_irk_type my_scheme
 
-.seealso: [](chapter_ts), `TSIRK`, `TSIRKRegisterAll()`
+.seealso: [](ch_ts), `TSIRK`, `TSIRKRegisterAll()`
 @*/
 PetscErrorCode TSIRKRegister(const char sname[], PetscErrorCode (*function)(TS))
 {
@@ -197,7 +197,7 @@ PetscErrorCode TSIRKRegister(const char sname[], PetscErrorCode (*function)(TS))
 
   Level: advanced
 
-.seealso: [](chapter_ts), `TSIRK`, `TSIRKRegisterDestroy()`
+.seealso: [](ch_ts), `TSIRK`, `TSIRKRegisterDestroy()`
 @*/
 PetscErrorCode TSIRKRegisterAll(void)
 {
@@ -210,13 +210,13 @@ PetscErrorCode TSIRKRegisterAll(void)
 }
 
 /*@C
-   TSIRKRegisterDestroy - Frees the list of schemes that were registered by `TSIRKRegister()`.
+  TSIRKRegisterDestroy - Frees the list of schemes that were registered by `TSIRKRegister()`.
 
-   Not Collective
+  Not Collective
 
-   Level: advanced
+  Level: advanced
 
-.seealso: [](chapter_ts), `TSIRK`, `TSIRKRegister()`, `TSIRKRegisterAll()`
+.seealso: [](ch_ts), `TSIRK`, `TSIRKRegister()`, `TSIRKRegisterAll()`
 @*/
 PetscErrorCode TSIRKRegisterDestroy(void)
 {
@@ -231,7 +231,7 @@ PetscErrorCode TSIRKRegisterDestroy(void)
 
   Level: developer
 
-.seealso: [](chapter_ts), `TSIRK`, `PetscInitialize()`, `TSIRKFinalizePackage()`, `TSInitializePackage()`
+.seealso: [](ch_ts), `TSIRK`, `PetscInitialize()`, `TSIRKFinalizePackage()`, `TSInitializePackage()`
 @*/
 PetscErrorCode TSIRKInitializePackage(void)
 {
@@ -249,7 +249,7 @@ PetscErrorCode TSIRKInitializePackage(void)
 
   Level: developer
 
-.seealso: [](chapter_ts), `TSIRK`, `PetscFinalize()`, `TSIRKFinalizePackage()`, `TSInitializePackage()`
+.seealso: [](ch_ts), `TSIRK`, `PetscFinalize()`, `TSInitializePackage()`
 @*/
 PetscErrorCode TSIRKFinalizePackage(void)
 {
@@ -667,21 +667,21 @@ static PetscErrorCode TSLoad_IRK(TS ts, PetscViewer viewer)
   Logically Collective
 
   Input Parameters:
-+  ts - timestepping context
--  irktype - type of `TSIRK` scheme
++ ts      - timestepping context
+- irktype - type of `TSIRK` scheme
 
   Options Database Key:
-.  -ts_irk_type <gauss> - set irk type
+. -ts_irk_type <gauss> - set irk type
 
   Level: intermediate
 
-.seealso: [](chapter_ts), `TSIRKGetType()`, `TSIRK`, `TSIRKType`, `TSIRKGAUSS`
+.seealso: [](ch_ts), `TSIRKGetType()`, `TSIRK`, `TSIRKType`, `TSIRKGAUSS`
 @*/
 PetscErrorCode TSIRKSetType(TS ts, TSIRKType irktype)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
-  PetscValidCharPointer(irktype, 2);
+  PetscAssertPointer(irktype, 2);
   PetscTryMethod(ts, "TSIRKSetType_C", (TS, TSIRKType), (ts, irktype));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -692,14 +692,14 @@ PetscErrorCode TSIRKSetType(TS ts, TSIRKType irktype)
   Logically Collective
 
   Input Parameter:
-.  ts - timestepping context
+. ts - timestepping context
 
   Output Parameter:
-.  irktype - type of `TSIRK` IMEX scheme
+. irktype - type of `TSIRK` IMEX scheme
 
   Level: intermediate
 
-.seealso: [](chapter_ts), `TSIRKGetType()`, `TSIRK`, `TSIRKType`, `TSIRKGAUSS`
+.seealso: [](ch_ts), `TSIRK`, `TSIRKType`, `TSIRKGAUSS`
 @*/
 PetscErrorCode TSIRKGetType(TS ts, TSIRKType *irktype)
 {
@@ -715,15 +715,15 @@ PetscErrorCode TSIRKGetType(TS ts, TSIRKType *irktype)
   Logically Collective
 
   Input Parameters:
-+  ts - timestepping context
--  nstages - number of stages of `TSIRK` scheme
++ ts      - timestepping context
+- nstages - number of stages of `TSIRK` scheme
 
   Options Database Key:
-.  -ts_irk_nstages <int> - set number of stages
+. -ts_irk_nstages <int> - set number of stages
 
   Level: intermediate
 
-.seealso: [](chapter_ts), `TSIRKGetNumStages()`, `TSIRK`
+.seealso: [](ch_ts), `TSIRKGetNumStages()`, `TSIRK`
 @*/
 PetscErrorCode TSIRKSetNumStages(TS ts, PetscInt nstages)
 {
@@ -739,18 +739,18 @@ PetscErrorCode TSIRKSetNumStages(TS ts, PetscInt nstages)
   Logically Collective
 
   Input Parameters:
-+  ts - timestepping context
--  nstages - number of stages of `TSIRK` scheme
++ ts      - timestepping context
+- nstages - number of stages of `TSIRK` scheme
 
   Level: intermediate
 
-.seealso: [](chapter_ts), `TSIRKSetNumStages()`, `TSIRK`
+.seealso: [](ch_ts), `TSIRKSetNumStages()`, `TSIRK`
 @*/
 PetscErrorCode TSIRKGetNumStages(TS ts, PetscInt *nstages)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
-  PetscValidIntPointer(nstages, 2);
+  PetscAssertPointer(nstages, 2);
   PetscTryMethod(ts, "TSIRKGetNumStages_C", (TS, PetscInt *), (ts, nstages));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -775,7 +775,7 @@ static PetscErrorCode TSIRKSetType_IRK(TS ts, TSIRKType irktype)
     PetscCall(TSIRKTableauReset(ts));
   }
   PetscCall(PetscFunctionListFind(TSIRKList, irktype, &irkcreate));
-  PetscCheck(irkcreate, PETSC_COMM_SELF, PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown TSIRK type \"%s\" given", irktype);
+  PetscCheck(irkcreate, PetscObjectComm((PetscObject)ts), PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown TSIRK type \"%s\" given", irktype);
   PetscCall((*irkcreate)(ts));
   PetscCall(PetscStrallocpy(irktype, &irk->method_name));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -796,7 +796,7 @@ static PetscErrorCode TSIRKGetNumStages_IRK(TS ts, PetscInt *nstages)
   TS_IRK *irk = (TS_IRK *)ts->data;
 
   PetscFunctionBegin;
-  PetscValidIntPointer(nstages, 2);
+  PetscAssertPointer(nstages, 2);
   *nstages = irk->nstages;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -829,7 +829,7 @@ static PetscErrorCode TSDestroy_IRK(TS ts)
   when using s stages. The default method uses three stages and thus has an order of six. The number of stages (thus order) can be set with
   -ts_irk_nstages or `TSIRKSetNumStages()`.
 
-.seealso: [](chapter_ts), `TSCreate()`, `TS`, `TSSetType()`, `TSIRKSetType()`, `TSIRKGetType()`, `TSIRKGAUSS`, `TSIRKRegister()`, `TSIRKSetNumStages()`, `TSType`
+.seealso: [](ch_ts), `TSCreate()`, `TS`, `TSSetType()`, `TSIRKSetType()`, `TSIRKGetType()`, `TSIRKGAUSS`, `TSIRKRegister()`, `TSIRKSetNumStages()`, `TSType`
 M*/
 PETSC_EXTERN PetscErrorCode TSCreate_IRK(TS ts)
 {

@@ -1,3 +1,4 @@
+#pragma once
 static const unsigned char PetscDrawCmap_parula[256 - PETSC_DRAW_BASIC_COLORS][3] = {
   {53,  42,  134},
   {53,  43,  138},

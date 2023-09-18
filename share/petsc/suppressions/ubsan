@@ -1,0 +1,14 @@
+fun:*Destroy
+fun:*Monitor*
+fun:*View
+fun:MPIU_MaxSum_Local
+fun:MatDense*ArrayRead_MPIDense
+fun:MatGetColumnReductions_SeqDense
+fun:PetscSFDistributeSection
+fun:PetscFEIntegrateResidual_Basic
+fun:PetscFEIntegrateJacobian_Basic
+fun:PetscSFSetUp_Basic
+fun:PetscSortRealWithPermutation_Private
+src:bitmap.c
+src:src/mpi/coll/*
+src:src/mpid/ch3/*

@@ -444,9 +444,14 @@ class Configure(script.Script):
       codeStr += '#include "conffix.h"\n'+includes
       if not body is None:
         if codeBegin is None:
-          codeBegin = '\nint main() {\n'
+          codeBegin = '\nint main(void) {\n'
         if codeEnd is None:
-          codeEnd   = ';\n  return 0;\n}\n'
+          if len(body) == 0:
+            codeEnd = '  return 0;\n}\n'
+          elif body.strip().endswith(';') or body.strip().endswith('}') or body.strip().endswith('\n#endif'):
+            codeEnd = '\n  return 0;\n}\n'
+          else:
+            codeEnd = ';\n  return 0;\n}\n'
         codeStr += codeBegin+body+codeEnd
     elif language == 'FC':
       if not includes is None and body is None:
@@ -518,8 +523,8 @@ class Configure(script.Script):
     '''Return the name of the argument which holds the preprocessor flags for the current language'''
     return self.getPreprocessorFlagsName(self.language[-1])
 
-  def filterCompileOutput(self, output,flag=''):
-    return self.framework.filterCompileOutput(output,flag=flag)
+  def filterCompileOutput(self, output, flag = '', filterAlways = 0):
+    return self.framework.filterCompileOutput(output, flag = flag, filterAlways = filterAlways)
 
   def outputCompile(self, includes = '', body = '', cleanup = 1, codeBegin = None, codeEnd = None):
     '''Return the error output from this compile and the return code'''
@@ -575,8 +580,8 @@ class Configure(script.Script):
     '''Return the name of the argument which holds the compiler flags for the current language'''
     return self.getCompilerFlagsName(self.language[-1], compilerOnly)
 
-  def filterLinkOutput(self, output):
-    return self.framework.filterLinkOutput(output)
+  def filterLinkOutput(self, output, filterAlways = 0):
+    return self.framework.filterLinkOutput(output, filterAlways = filterAlways)
 
   def outputLink(self, includes, body, cleanup = 1, codeBegin = None, codeEnd = None, shared = 0, linkLanguage=None, examineOutput=lambda ret,out,err:None,flag=''):
     import sys

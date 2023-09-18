@@ -58,7 +58,7 @@ static PetscErrorCode DMCreateGlobalVector_Redundant(DM dm, Vec *gvec)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(gvec, 2);
+  PetscAssertPointer(gvec, 2);
   *gvec = NULL;
   PetscCall(VecCreate(PetscObjectComm((PetscObject)dm), gvec));
   PetscCall(VecSetSizes(*gvec, red->n, red->N));
@@ -75,7 +75,7 @@ static PetscErrorCode DMCreateLocalVector_Redundant(DM dm, Vec *lvec)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(lvec, 2);
+  PetscAssertPointer(lvec, 2);
   *lvec = NULL;
   PetscCall(VecCreate(PETSC_COMM_SELF, lvec));
   PetscCall(VecSetSizes(*lvec, red->N, red->N));
@@ -251,18 +251,18 @@ static PetscErrorCode DMCreateInterpolation_Redundant(DM dmc, DM dmf, Mat *P, Ve
 }
 
 /*@
-    DMRedundantSetSize - Sets the size of a densely coupled redundant object
+  DMRedundantSetSize - Sets the size of a densely coupled redundant object
 
-    Collective
+  Collective
 
-    Input Parameters:
-+   dm - `DM` object of type `DMREDUNDANT`
-.   rank - rank of process to own the redundant degrees of freedom
--   N - total number of redundant degrees of freedom
+  Input Parameters:
++ dm   - `DM` object of type `DMREDUNDANT`
+. rank - rank of process to own the redundant degrees of freedom
+- N    - total number of redundant degrees of freedom
 
-    Level: advanced
+  Level: advanced
 
-.seealso `DM`, `DMREDUNDANT`, `DMDestroy()`, `DMCreateGlobalVector()`, `DMRedundantCreate()`, `DMRedundantGetSize()`
+.seealso: `DM`, `DMREDUNDANT`, `DMDestroy()`, `DMCreateGlobalVector()`, `DMRedundantCreate()`, `DMRedundantGetSize()`
 @*/
 PetscErrorCode DMRedundantSetSize(DM dm, PetscMPIInt rank, PetscInt N)
 {
@@ -276,20 +276,20 @@ PetscErrorCode DMRedundantSetSize(DM dm, PetscMPIInt rank, PetscInt N)
 }
 
 /*@
-    DMRedundantGetSize - Gets the size of a densely coupled redundant object
+  DMRedundantGetSize - Gets the size of a densely coupled redundant object
 
-    Not Collective
+  Not Collective
 
-    Input Parameter:
-.   dm - `DM` object of type `DMREDUNDANT`
+  Input Parameter:
+. dm - `DM` object of type `DMREDUNDANT`
 
-    Output Parameters:
-+   rank - rank of process to own the redundant degrees of freedom (or `NULL`)
--   N - total number of redundant degrees of freedom (or `NULL`)
+  Output Parameters:
++ rank - rank of process to own the redundant degrees of freedom (or `NULL`)
+- N    - total number of redundant degrees of freedom (or `NULL`)
 
-    Level: advanced
+  Level: advanced
 
-.seealso `DM`, `DMREDUNDANT`, `DMDestroy()`, `DMCreateGlobalVector()`, `DMRedundantCreate()`, `DMRedundantSetSize()`
+.seealso: `DM`, `DMREDUNDANT`, `DMDestroy()`, `DMCreateGlobalVector()`, `DMRedundantCreate()`, `DMRedundantSetSize()`
 @*/
 PetscErrorCode DMRedundantGetSize(DM dm, PetscMPIInt *rank, PetscInt *N)
 {
@@ -379,27 +379,26 @@ PETSC_EXTERN PetscErrorCode DMCreate_Redundant(DM dm)
 }
 
 /*@C
-    DMRedundantCreate - Creates a `DM` object, used to manage data for dense globally coupled variables
+  DMRedundantCreate - Creates a `DM` object, used to manage data for dense globally coupled variables
 
-    Collective
+  Collective
 
-    Input Parameters:
-+   comm - the processors that will share the global vector
-.   rank - the MPI rank to own the redundant values
--   N - total number of degrees of freedom
+  Input Parameters:
++ comm - the processors that will share the global vector
+. rank - the MPI rank to own the redundant values
+- N    - total number of degrees of freedom
 
-    Output Parameter:
-.   dm - the `DM` object of type `DMREDUNDANT`
+  Output Parameter:
+. dm - the `DM` object of type `DMREDUNDANT`
 
-    Level: advanced
+  Level: advanced
 
-.seealso `DM`, `DMREDUNDANT`, `DMDestroy()`, `DMCreateGlobalVector()`, `DMCreateMatrix()`, `DMCompositeAddDM()`, `DMREDUNDANT`, `DMSetType()`, `DMRedundantSetSize()`, `DMRedundantGetSize()`
-
+.seealso: `DM`, `DMREDUNDANT`, `DMDestroy()`, `DMCreateGlobalVector()`, `DMCreateMatrix()`, `DMCompositeAddDM()`, `DMSetType()`, `DMRedundantSetSize()`, `DMRedundantGetSize()`
 @*/
 PetscErrorCode DMRedundantCreate(MPI_Comm comm, PetscMPIInt rank, PetscInt N, DM *dm)
 {
   PetscFunctionBegin;
-  PetscValidPointer(dm, 4);
+  PetscAssertPointer(dm, 4);
   PetscCall(DMCreate(comm, dm));
   PetscCall(DMSetType(*dm, DMREDUNDANT));
   PetscCall(DMRedundantSetSize(*dm, rank, N));

@@ -10,26 +10,26 @@ The important PETSc classes include
 -  index sets (``IS``),  for indexing into
    vectors, renumbering, permuting, etc;
 
--  vectors (``Vec``); :any:`chapter_vectors`
+-  vectors (``Vec``); :any:`ch_vectors`
 
--  matrices (``Mat``) (generally sparse); :any:`chapter_matrices`
+-  matrices (``Mat``) (generally sparse); :any:`ch_matrices`
 
--  Krylov subspace methods (``KSP``); :any:`chapter_ksp`
+-  Krylov subspace methods (``KSP``); :any:`ch_ksp`
 
 -  preconditioners, including multigrid, block solvers, patch solvers, and
    sparse direct solvers (``PC``);
 
--  nonlinear solvers (``SNES``); :any:`chapter_snes`
+-  nonlinear solvers (``SNES``); :any:`ch_snes`
 
 -  timesteppers for solving time-dependent (nonlinear) PDEs, including
    support for differential algebraic equations, and the computation of
-   adjoints (sensitivities/gradients of the solutions) (``TS``); :any:`chapter_ts`
+   adjoints (sensitivities/gradients of the solutions) (``TS``); :any:`ch_ts`
 
 -  scalable optimization algorithms including a rich set of gradient-based optimizers,
-   Newton-based optimizers and optimization with constraints (``Tao``). :any:`chapter_tao`
+   Newton-based optimizers and optimization with constraints (``Tao``). :any:`ch_tao`
 
 -  code for managing interactions between mesh data structures and vectors,
-   matrices, and solvers (``DM``); :any:`chapter_dmbase`
+   matrices, and solvers (``DM``); :any:`ch_dmbase`
 
 Each class consist of an abstract interface (simply a set of calling
 sequences; an abstract base class in C++) and an implementation for each algorithm and data structure.
@@ -108,7 +108,7 @@ and a frequently asked questions (FAQ) list.
 for the C/C++ family of programming languages. However, Fortran
 programmers can use all of the functionality of PETSc from Fortran,
 with only minor differences in the user interface.
-:any:`chapter_fortran` provides a discussion of the differences between
+:any:`ch_fortran` provides a discussion of the differences between
 using PETSc from Fortran and C, as well as several complete Fortran
 examples. 
 
@@ -145,7 +145,7 @@ subdirectories give the possible values for ``$PETSC_ARCH``.
 See :any:`handson` to immediately jump in and run PETSc code.
 
 All PETSc programs use the MPI (Message Passing Interface) standard for
-message-passing communication :cite:`MPI-final`. Thus, to
+message-passing communication :cite:`mpi-final`. Thus, to
 execute PETSc programs, users must know the procedure for beginning MPI
 jobs on their selected computer system(s). For instance, when using the
 `MPICH <https://www.mpich.org/>`__ implementation of MPI and many
@@ -372,7 +372,7 @@ respectively set all the components of a vector to a particular scalar
 value and assign a different value to each component. More detailed
 information about PETSc vectors, including their basic operations,
 scattering/gathering, index sets, and distributed arrays, is discussed
-in Chapter :any:`chapter_vectors`.
+in Chapter :any:`ch_vectors`.
 
 Note the use of the PETSc variable type ``PetscScalar`` in this example.
 The ``PetscScalar`` is simply defined to be ``double`` in C/C++ (or
@@ -427,7 +427,7 @@ processed with the pair of commands
    MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);
    MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);
 
-:any:`chapter_matrices` discusses various matrix formats as
+:any:`ch_matrices` discusses various matrix formats as
 well as the details of some basic matrix manipulation routines.
 
 Linear Solvers
@@ -457,7 +457,7 @@ user not only can select an iterative method and preconditioner, but
 also can prescribe the convergence tolerance, set various monitoring
 routines, etc. (see, e.g., :any:`sec_profiling_programs`).
 
-:any:`chapter_ksp` describes in detail the ``KSP`` package,
+:any:`ch_ksp` describes in detail the ``KSP`` package,
 including the ``PC`` and ``KSP`` packages for preconditioners and Krylov
 subspace methods.
 
@@ -466,7 +466,7 @@ Nonlinear Solvers
 
 Most PDE problems of interest are inherently nonlinear. PETSc provides
 an interface to tackle the nonlinear problems directly called ``SNES``.
-:any:`chapter_snes` describes the nonlinear
+:any:`ch_snes` describes the nonlinear
 solvers in detail. We highly recommend most PETSc users work directly with
 ``SNES``, rather than using PETSc for the linear problem and writing their own
 nonlinear solver.
@@ -655,7 +655,7 @@ number of threads being used. The default number is often absurdly high for the 
 Users can also put OpenMP pragmas into their own code. However since standard PETSc is not thread-safe, they should not, in general,
 call PETSc routines from inside the parallel regions.
 
-PETSc MPI based linear solvers may be accessed from a sequential or OpenMP program with the ``PCMPI`` solver wrapper, see :any:`sec_pcmpi`.
+PETSc's MPI based linear solvers may be accessed from a sequential or non-MPI OpenMP program, see :any:`sec_pcmpi`.
 
 
 There is an OpenMP thread-safe subset of PETSc that may be configured for using ``--with-threadsafety [--with-openmp or

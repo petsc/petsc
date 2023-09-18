@@ -3,23 +3,27 @@
 # Created: Mon Jun 20 19:42:53 2022 (-0400)
 # @author: Jacob Faibussowitsch
 """
+from __future__ import annotations
+
 import functools
 
-def verbose_print(*args, **kwargs):
-    """
-    filter predicate for show_ast: show all
-    """
-    return True
+from .._typing import *
 
-def no_system_includes(cursor, level, **kwargs):
-    """
-    filter predicate for show_ast: filter out verbose stuff from system include files
-    """
-    return level != 1 or (
-      cursor.location.file is not None and not cursor.location.file.name.startswith('/usr/include')
-    )
+from ..util._color import Color
 
-def only_files(cursor, level, **kwargs):
+def verbose_print(*args, **kwargs) -> bool:
+  """filter predicate for show_ast: show all"""
+  return True
+
+def no_system_includes(cursor: CursorLike, level: IndentLevel, **kwargs) -> bool:
+  """
+  filter predicate for show_ast: filter out verbose stuff from system include files
+  """
+  return level != 1 or (
+    cursor.location.file is not None and not cursor.location.file.name.startswith('/usr/include')
+  )
+
+def only_files(cursor: CursorLike, level: IndentLevel, **kwargs) -> bool:
   """
   filter predicate to only show ast defined in file
   """
@@ -28,48 +32,48 @@ def only_files(cursor, level, **kwargs):
 
 # A function show(level, *args) would have been simpler but less fun
 # and you'd need a separate parameter for the AST walkers if you want it to be exchangeable.
-class Level(int):
+class IndentLevel(int):
   """
   represent currently visited level of a tree
   """
-  def view(self, *args):
+  def view(self, *args) -> str:
     """
     pretty print an indented line
     """
     return '  '*self+' '.join(map(str, args))
 
-  def __add__(self, inc):
+  def __add__(self, inc: int) -> IndentLevel:
     """
     increase number of tabs and newlines
     """
-    return Level(super().__add__(inc))
+    return IndentLevel(super().__add__(inc))
 
-def check_valid_type(t):
-  import clang.cindex as clx
+def check_valid_type(t: clx.Type) -> bool:
+  import clang.cindex as clx # type: ignore[import]
 
-  return t.kind != clx.TypeKind.INVALID
+  return not t.kind == clx.TypeKind.INVALID
 
-def fully_qualify(t):
-  q = set()
-  if t.is_const_qualified(): q.add('const')
-  if t.is_volatile_qualified(): q.add('volatile')
-  if t.is_restrict_qualified(): q.add('restrict')
+def fully_qualify(t: clx.Type) -> list[str]:
+  q = []
+  if t.is_const_qualified(): q.append('const')
+  if t.is_volatile_qualified(): q.append('volatile')
+  if t.is_restrict_qualified(): q.append('restrict')
   return q
 
-def view_type(t, level, title):
+def view_type(t: clx.Type, level: IndentLevel, title: str) -> list[str]:
   """
   pretty print type AST
   """
-  retList = [level.view(title, str(t.kind), ' '.join(fully_qualify(t)))]
+  ret_list = [level.view(title, str(t.kind), ' '.join(fully_qualify(t)))]
   if check_valid_type(t.get_pointee()):
-    retList.extend(view_type(t.get_pointee(), level + 1, 'points to:'))
-  return retList
+    ret_list.extend(view_type(t.get_pointee(), level + 1, 'points to:'))
+  return ret_list
 
-def view_ast_from_cursor(cursor, pred=verbose_print, level=Level(), max_depth=-1, **kwargs):
+def view_ast_from_cursor(cursor: CursorLike, pred: Callable[..., bool] = verbose_print, level: IndentLevel = IndentLevel(), max_depth: int = -1, **kwargs) -> list[str]:
   """
   pretty print cursor AST
   """
-  ret_list = []
+  ret_list: list[str] = []
   if max_depth >= 0:
     if int(level) > max_depth:
       return ret_list
@@ -88,11 +92,12 @@ def view_ast_from_cursor(cursor, pred=verbose_print, level=Level(), max_depth=-1
 # constructing the error messages and diagnostics and hence we make about a 8x performance
 # improvement by caching the files read
 @functools.lru_cache
-def read_file_lines_cached(*args, **kwargs):
+def read_file_lines_cached(*args, **kwargs) -> list[str]:
   with open(*args, **kwargs) as fd:
-    return fd.readlines()
+    ret: list[str] = fd.readlines()
+  return ret
 
-def get_raw_source_from_source_range(source_range, num_before_context=0, num_after_context=0, num_context=0, trim=False, tight=False):
+def get_raw_source_from_source_range(source_range: SourceRangeLike, num_before_context: int = 0, num_after_context: int = 0, num_context: int = 0, trim: bool = False, tight: bool = False) -> str:
   num_before_context   = num_before_context if num_before_context else num_context
   num_after_context    = num_after_context  if num_after_context  else num_context
   rstart, rend         = source_range.start, source_range.end
@@ -121,10 +126,10 @@ def get_raw_source_from_source_range(source_range, num_before_context=0, num_aft
     return '\n'.join([s[min_spaces:].rstrip() for s in line_list])
   return ''.join(line_list)
 
-def get_raw_source_from_cursor(cursor, **kwargs):
+def get_raw_source_from_cursor(cursor: CursorLike, **kwargs) -> str:
   return get_raw_source_from_source_range(cursor.extent, **kwargs)
 
-def get_formatted_source_from_source_range(source_range, num_before_context=0, num_after_context=0, num_context=0, view=False, highlight=True, trim=True):
+def get_formatted_source_from_source_range(source_range: SourceRangeLike, num_before_context: int = 0, num_after_context: int = 0, num_context: int = 0, view: bool = False, highlight: bool = True, trim: bool = True) -> str:
   num_before_context   = num_before_context if num_before_context else num_context
   num_after_context    = num_after_context  if num_after_context  else num_context
   begin, end           = source_range.start, source_range.end
@@ -139,16 +144,21 @@ def get_formatted_source_from_source_range(source_range, num_before_context=0, n
     symbol_end    = end.column - 1
     begin_offset  = max(symbol_begin, 0)
     len_underline = max(abs(max(symbol_end, 1) - begin_offset), 1)
-    underline     = begin_offset * ' ' + len_underline * '^'
+    underline     = begin_offset * ' ' + Color.bright_yellow() + len_underline * '^' + Color.reset()
 
   line_list = []
   raw_lines = read_file_lines_cached(begin.file.name, 'r')[lo_bound - 1:hi_bound]
   for line_file, line in enumerate(raw_lines, start=lo_bound):
     indicator = '>' if (line_begin <= line_file <= line_end) else ' '
     prefix    = f'{indicator} {line_file: <{max_width}}: '
-    line_list.append((prefix, line))
     if highlight and (line_file == line_begin):
-      line_list.append((' ' * len(prefix), underline))
+      line = f'{line[:symbol_begin]}{Color.bright_yellow()}{line[symbol_begin:symbol_end]}{Color.reset()}{line[symbol_end:]}'
+      line_list.extend([
+        (prefix, line),
+        (' ' * len(prefix), underline)
+      ])
+    else:
+      line_list.append((prefix, line))
   # Find number of spaces to remove from beginning of line based on lowest.
   # This keeps indentation between lines, but doesn't start the string halfway
   # across the screen
@@ -164,10 +174,10 @@ def get_formatted_source_from_source_range(source_range, num_before_context=0, n
     print(src_str)
   return src_str
 
-def get_formatted_source_from_cursor(cursor, **kwargs):
+def get_formatted_source_from_cursor(cursor: CursorLike, **kwargs) -> str:
   return get_formatted_source_from_source_range(cursor.extent, **kwargs)
 
-def view_cursor_full(cursor, **kwargs):
+def view_cursor_full(cursor: CursorLike, **kwargs) -> list[str]:
   ret = [
     f'Spelling:        {cursor.spelling}',
     f'Type:            {cursor.type.spelling}',

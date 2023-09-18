@@ -949,26 +949,24 @@ PetscErrorCode AlgFunction(SNES snes, Vec X, Vec F, void *ctx)
 
 int main(int argc, char **argv)
 {
-  PetscInt    i, j, *edgelist = NULL, eStart, eEnd, vStart, vEnd;
-  PetscInt    genj, excj, loadj, componentkey[5];
-  PetscInt    nc = 1; /* No. of copies (default = 1) */
-  PetscMPIInt size, rank;
-  Vec         X, F_alg;
-  TS          ts;
-  SNES        snes_alg, snes;
-  Bus        *bus;
-  Branch     *branch;
-  Gen        *gen;
-  Exc        *exc;
-  Load       *load;
-  DM          networkdm;
-#if defined(PETSC_USE_LOG)
+  PetscInt      i, j, *edgelist = NULL, eStart, eEnd, vStart, vEnd;
+  PetscInt      genj, excj, loadj, componentkey[5];
+  PetscInt      nc = 1; /* No. of copies (default = 1) */
+  PetscMPIInt   size, rank;
+  Vec           X, F_alg;
+  TS            ts;
+  SNES          snes_alg, snes;
+  Bus          *bus;
+  Branch       *branch;
+  Gen          *gen;
+  Exc          *exc;
+  Load         *load;
+  DM            networkdm;
   PetscLogStage stage1;
-#endif
-  Userctx  user;
-  KSP      ksp;
-  PC       pc;
-  PetscInt numEdges = 0;
+  Userctx       user;
+  KSP           ksp;
+  PC            pc;
+  PetscInt      numEdges = 0;
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, "ex9busnetworkops", help));

@@ -14,7 +14,7 @@
 /*
   SYByteSwapInt - Swap bytes in an integer
 */
-void SYByteSwapInt(int *buff, int n)
+static void SYByteSwapInt(int *buff, int n)
 {
   int   i, j, tmp;
   char *ptr1, *ptr2 = (char *)&tmp;
@@ -27,7 +27,7 @@ void SYByteSwapInt(int *buff, int n)
 /*
   SYByteSwapShort - Swap bytes in a short
 */
-void SYByteSwapShort(short *buff, int n)
+static void SYByteSwapShort(short *buff, int n)
 {
   int   i, j;
   short tmp;
@@ -42,7 +42,7 @@ void SYByteSwapShort(short *buff, int n)
   SYByteSwapScalar - Swap bytes in a double
   Complex is dealt with as if array of double twice as long.
 */
-void SYByteSwapScalar(PetscScalar *buff, int n)
+static void SYByteSwapScalar(PetscScalar *buff, int n)
 {
   int    i, j;
   double tmp, *buff1 = (double *)buff;
@@ -63,19 +63,20 @@ void SYByteSwapScalar(PetscScalar *buff, int n)
     return PETSC_ERR_SYS; \
   }
 
+// PetscClangLinter pragma disable: -fdoc.*
 /*
-    PetscBinaryRead - Reads from a socket, called from MATLAB
+  PetscBinaryRead - Reads from a socket, called from MATLAB
 
   Input Parameters:
-+   fd - the file
-.   n  - the number of items to read
--   type - the type of items to read (PETSC_INT or PETSC_SCALAR)
++ fd   - the file
+. n    - the number of items to read
+- type - the type of items to read (PETSC_INT or PETSC_SCALAR)
 
   Output Parameter:
-.   p - the buffer
+. p - the buffer
 
   Notes:
-    does byte swapping to work on all machines.
+  does byte swapping to work on all machines.
 */
 PetscErrorCode PetscBinaryRead(int fd, void *p, int n, int *dummy, PetscDataType type)
 {
@@ -94,9 +95,7 @@ PetscErrorCode PetscBinaryRead(int fd, void *p, int n, int *dummy, PetscDataType
   while (n) {
     wsize = (n < maxblock) ? n : maxblock;
     err   = read(fd, pp, wsize);
-#if !defined(PETSC_MISSING_ERRNO_EINTR)
     if (err < 0 && errno == EINTR) continue;
-#endif
     if (!err && wsize > 0) return 1;
     if (err < 0) PETSC_MEX_ERROR("Error reading from socket\n");
     n -= err;
@@ -147,9 +146,7 @@ PetscErrorCode PetscBinaryWrite(int fd, const void *p, int n, PetscDataType type
   while (n) {
     wsize = (n < maxblock) ? n : maxblock;
     err   = write(fd, pp, wsize);
-#if !defined(PETSC_MISSING_ERRNO_EINTR)
     if (err < 0 && errno == EINTR) continue;
-#endif
     if (!err && wsize > 0) {
       retv = 1;
       break;

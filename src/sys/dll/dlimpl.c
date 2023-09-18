@@ -30,20 +30,21 @@ typedef void *dlsymbol_t;
 #endif
 
 /*@C
-   PetscDLOpen - opens a dynamic library
+  PetscDLOpen - opens a dynamic library
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+    name - name of library
--    mode - options on how to open library
+  Input Parameters:
++ name - name of library
+- mode - options on how to open library
 
-   Output Parameter:
-.    handle - opaque pointer to be used with `PetscDLSym()`
+  Output Parameter:
+. handle - opaque pointer to be used with `PetscDLSym()`
 
-   Level: developer
+  Level: developer
 
-.seealso: `PetscDLClose()`, `PetscDLSym()`, `PetscDLAddr()`
+.seealso: `PetscDLClose()`, `PetscDLSym()`, `PetscDLAddr()`, `PetscDLLibrary`, `PetscLoadDynamicLibrary()`, `PetscDLLibraryAppend()`,
+          `PetscDLLibraryRetrieve()`, `PetscDLLibraryOpen()`, `PetscDLLibraryClose()`, `PetscDLLibrarySym()`
 @*/
 PetscErrorCode PetscDLOpen(const char name[], PetscDLMode mode, PetscDLHandle *handle)
 {
@@ -51,8 +52,8 @@ PetscErrorCode PetscDLOpen(const char name[], PetscDLMode mode, PetscDLHandle *h
   dlhandle_t       dlhandle;
 
   PetscFunctionBegin;
-  PetscValidCharPointer(name, 1);
-  PetscValidPointer(handle, 3);
+  PetscAssertPointer(name, 1);
+  PetscAssertPointer(handle, 3);
 
   dlflags1 = 0;
   dlflags2 = 0;
@@ -125,12 +126,12 @@ PetscErrorCode PetscDLOpen(const char name[], PetscDLMode mode, PetscDLHandle *h
 }
 
 /*@C
-   PetscDLClose -  closes a dynamic library
+  PetscDLClose -  closes a dynamic library
 
-   Not Collective
+  Not Collective
 
   Input Parameter:
-.   handle - the handle for the library obtained with `PetscDLOpen()`
+. handle - the handle for the library obtained with `PetscDLOpen()`
 
   Level: developer
 
@@ -139,7 +140,7 @@ PetscErrorCode PetscDLOpen(const char name[], PetscDLMode mode, PetscDLHandle *h
 PetscErrorCode PetscDLClose(PetscDLHandle *handle)
 {
   PetscFunctionBegin;
-  PetscValidPointer(handle, 1);
+  PetscAssertPointer(handle, 1);
 
   /*
      --- FreeLibrary ---
@@ -191,25 +192,26 @@ PetscErrorCode PetscDLClose(PetscDLHandle *handle)
 // clang-format off
 
 /*@C
-   PetscDLSym - finds a symbol in a dynamic library
+  PetscDLSym - finds a symbol in a dynamic library
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+   handle - obtained with `PetscDLOpen()` or NULL
--   symbol - name of symbol
+  Input Parameters:
++ handle - obtained with `PetscDLOpen()` or `NULL`
+- symbol - name of symbol
 
-   Output Parameter:
-.   value - pointer to the function, NULL if not found
+  Output Parameter:
+. value - pointer to the function, `NULL` if not found
 
-   Level: developer
+  Level: developer
 
   Note:
-   If handle is NULL, the symbol is looked for in the main executable's dynamic symbol table.
-   In order to be dynamically loadable, the symbol has to be exported as such.  On many UNIX-like
-   systems this requires platform-specific linker flags.
+  If handle is `NULL`, the symbol is looked for in the main executable's dynamic symbol table.
+  In order to be dynamically loadable, the symbol has to be exported as such.  On many UNIX-like
+  systems this requires platform-specific linker flags.
 
-.seealso: `PetscDLClose()`, `PetscDLOpen()`, `PetscDLAddr()`
+.seealso: `PetscDLClose()`, `PetscDLOpen()`, `PetscDLAddr()`, `PetscDLLibrary`, `PetscLoadDynamicLibrary()`, `PetscDLLibraryAppend()`,
+          `PetscDLLibraryRetrieve()`, `PetscDLLibraryOpen()`, `PetscDLLibraryClose()`, `PetscDLLibrarySym()`
 @*/
 PetscErrorCode PetscDLSym(PetscDLHandle handle, const char symbol[], void **value)
 {
@@ -217,8 +219,8 @@ PetscErrorCode PetscDLSym(PetscDLHandle handle, const char symbol[], void **valu
   dlsymbol_t              dlsymbol;
 
   PetscFunctionBegin;
-  PetscValidCharPointer(symbol, 2);
-  PetscValidPointer(value, 3);
+  PetscAssertPointer(symbol, 2);
+  PetscAssertPointer(value, 3);
 
   dlhandle = (dlhandle_t)0;
   dlsymbol = (dlsymbol_t)0;
@@ -247,23 +249,25 @@ PetscErrorCode PetscDLSym(PetscDLHandle handle, const char symbol[], void **valu
         #if defined(PETSC_HAVE_DLOPEN)
           /* Attempt to retrieve the main executable's dlhandle. */
           {
+            #if !defined(PETSC_HAVE_RTLD_DEFAULT)
             int dlflags1 = 0, dlflags2 = 0;
-            #if defined(PETSC_HAVE_RTLD_LAZY)
+              #if defined(PETSC_HAVE_RTLD_LAZY)
               dlflags1 = RTLD_LAZY;
-            #endif /* PETSC_HAVE_RTLD_LAZY */
-            #if defined(PETSC_HAVE_RTLD_NOW)
+              #endif /* PETSC_HAVE_RTLD_LAZY */
+              #if defined(PETSC_HAVE_RTLD_NOW)
               if (!dlflags1) {
                 dlflags1 = RTLD_NOW;
               }
-            #endif /* PETSC_HAVE_RTLD_NOW */
-            #if defined(PETSC_HAVE_RTLD_LOCAL)
+              #endif /* PETSC_HAVE_RTLD_NOW */
+              #if defined(PETSC_HAVE_RTLD_LOCAL)
               dlflags2 = RTLD_LOCAL;
-            #endif /* PETSC_HAVE_RTLD_LOCAL */
-            #if defined(PETSC_HAVE_RTLD_GLOBAL)
+              #endif /* PETSC_HAVE_RTLD_LOCAL */
+              #if defined(PETSC_HAVE_RTLD_GLOBAL)
               if (!dlflags2) {
                 dlflags2 = RTLD_GLOBAL;
               }
-            #endif /* PETSC_HAVE_RTLD_GLOBAL */
+              #endif /* PETSC_HAVE_RTLD_GLOBAL */
+            #endif /* !PETSC_HAVE_RTLD_DEFAULT */
             #if defined(PETSC_HAVE_DLERROR)
               if (!(PETSC_RUNNING_ON_VALGRIND)) { dlerror(); /* clear any previous error; valgrind does not like this */ }
             #endif /* PETSC_HAVE_DLERROR */
@@ -278,7 +282,7 @@ PetscErrorCode PetscDLSym(PetscDLHandle handle, const char symbol[], void **valu
                   PetscCheck(!e, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Error opening main executable as a dynamic library:\n  Error message from dlopen(): '%s'", e);
                 }
               #endif /* PETSC_HAVE_DLERROR */
-            #endif /* PETSC_HAVE_RTLD_DEFAULT */
+            #endif /* !PETSC_HAVE_RTLD_DEFAULT */
           }
         #endif /* PETSC_HAVE_DLOPEN */
       }
@@ -308,11 +312,10 @@ PetscErrorCode PetscDLSym(PetscDLHandle handle, const char symbol[], void **valu
   Not Collective
 
   Input Parameters:
-+ handle - obtained with `PetscDLOpen()` or NULL
-- func   - pointer to the function, NULL if not found
+. func - pointer to the function, `NULL` if not found
 
   Output Parameter:
-. name   - name of symbol, or NULL if name lookup is not supported.
+. name - name of symbol, or `NULL` if name lookup is not supported.
 
   Level: developer
 
@@ -322,12 +325,13 @@ PetscErrorCode PetscDLSym(PetscDLHandle handle, const char symbol[], void **valu
   In order to be dynamically loadable, the symbol has to be exported as such.  On many UNIX-like
   systems this requires platform-specific linker flags.
 
-.seealso: `PetscDLClose()`, `PetscDLSym()`, `PetscDLOpen()`
+.seealso: `PetscDLClose()`, `PetscDLSym()`, `PetscDLOpen()`, `PetscDLLibrary`, `PetscLoadDynamicLibrary()`, `PetscDLLibraryAppend()`,
+          `PetscDLLibraryRetrieve()`, `PetscDLLibraryOpen()`, `PetscDLLibraryClose()`, `PetscDLLibrarySym()`
 @*/
 PetscErrorCode PetscDLAddr(void (*func)(void), char **name)
 {
   PetscFunctionBegin;
-  PetscValidPointer(name, 2);
+  PetscAssertPointer(name, 2);
   *name = NULL;
 #if defined(PETSC_HAVE_DLADDR) && !(defined(__cray__) && defined(__clang__))
   dlerror(); /* clear any previous error */

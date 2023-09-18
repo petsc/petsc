@@ -123,6 +123,8 @@ cdef extern from * nogil:
     PetscErrorCode DMGetRefineLevel(PetscDM,PetscInt*)
     PetscErrorCode DMSetRefineLevel(PetscDM,PetscInt)
     PetscErrorCode DMGetCoarsenLevel(PetscDM,PetscInt*)
+    PetscErrorCode DMGetCoarseDM(PetscDM,PetscDM*)
+    PetscErrorCode DMSetCoarseDM(PetscDM,PetscDM)
 
     PetscErrorCode DMAdaptLabel(PetscDM,PetscDMLabel,PetscDM*)
     PetscErrorCode DMAdaptMetric(PetscDM,PetscVec,PetscDMLabel,PetscDMLabel,PetscDM*)
@@ -247,7 +249,7 @@ cdef inline object toBoundary(PetscInt dim,
 cdef inline DM ref_DM(PetscDM dm):
     cdef DM ob = <DM> DM()
     ob.dm = dm
-    PetscINCREF(ob.obj)
+    CHKERR( PetscINCREF(ob.obj) )
     return ob
 
 # --------------------------------------------------------------------

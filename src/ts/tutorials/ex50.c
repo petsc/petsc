@@ -242,7 +242,7 @@ int main(int argc, char **argv)
      Always call PetscFinalize() before exiting a program.  This routine
        - finalizes the PETSc libraries as well as MPI
        - provides summary and diagnostic information if certain runtime
-         options are chosen (e.g., -log_summary).
+         options are chosen (e.g., -log_view).
   */
   PetscCall(PetscFinalize());
   return 0;
@@ -552,11 +552,11 @@ PetscErrorCode RHSMatrixAdvectiongllDM(TS ts, PetscReal t, Vec X, Mat A, Mat BB,
     test:
       suffix: 3
       requires: !single
-      args: -ts_view  -ts_type beuler -gll_mf -pc_type none -ts_max_steps 5 -ts_monitor_error
+      args: -ts_view -ts_type beuler -gll_mf -pc_type none -ts_max_steps 5 -ts_monitor_error
 
     test:
       suffix: 4
       requires: !single
-      args: -ts_view  -ts_type beuler  -pc_type none -ts_max_steps 5 -ts_monitor_error
+      args: -ts_view -ts_type beuler -pc_type none -ts_max_steps 5 -ts_monitor_error
 
 TEST*/

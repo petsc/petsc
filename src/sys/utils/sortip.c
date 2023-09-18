@@ -9,11 +9,11 @@
 #include <petscsys.h> /*I  "petscsys.h"  I*/
 
 #define SWAP(a, b, t) \
-  { \
+  do { \
     t = a; \
     a = b; \
     b = t; \
-  }
+  } while (0)
 
 static PetscErrorCode PetscSortIntWithPermutation_Private(const PetscInt v[], PetscInt vdx[], PetscInt right)
 {
@@ -42,20 +42,20 @@ static PetscErrorCode PetscSortIntWithPermutation_Private(const PetscInt v[], Pe
 }
 
 /*@
-   PetscSortIntWithPermutation - Computes the permutation of `PetscInt` that gives
-   a sorted sequence.
+  PetscSortIntWithPermutation - Computes the permutation of `PetscInt` that gives
+  a sorted sequence.
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  n  - number of values to sort
-.  i  - values to sort
--  idx - permutation array.  Must be initialized to 0:n-1 on input.
+  Input Parameters:
++ n   - number of values to sort
+. i   - values to sort
+- idx - permutation array.  Must be initialized to 0:n-1 on input.
 
-   Level: intermediate
+  Level: intermediate
 
-   Note:
-   On output i is unchanged and idx[i] is the position of the i-th smallest index in i.
+  Note:
+  On output i is unchanged and idx[i] is the position of the i-th smallest index in i.
 
 .seealso: `PetscSortInt()`, `PetscSortRealWithPermutation()`, `PetscSortIntWithArray()`
  @*/
@@ -110,20 +110,20 @@ static PetscErrorCode PetscSortRealWithPermutation_Private(const PetscReal v[], 
 }
 
 /*@
-   PetscSortRealWithPermutation - Computes the permutation of `PetscReal` that gives
-   a sorted sequence.
+  PetscSortRealWithPermutation - Computes the permutation of `PetscReal` that gives
+  a sorted sequence.
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  n  - number of values to sort
-.  i  - values to sort
--  idx - permutation array.  Must be initialized to 0:n-1 on input.
+  Input Parameters:
++ n   - number of values to sort
+. i   - values to sort
+- idx - permutation array.  Must be initialized to 0:n-1 on input.
 
-   Level: intermediate
+  Level: intermediate
 
-   Note:
-   i is unchanged on output.
+  Note:
+  i is unchanged on output.
 
 .seealso: `PetscSortReal()`, `PetscSortIntWithPermutation()`
  @*/
@@ -180,20 +180,20 @@ static PetscErrorCode PetscSortStrWithPermutation_Private(const char *v[], Petsc
 }
 
 /*@C
-   PetscSortStrWithPermutation - Computes the permutation of strings that gives
-   a sorted sequence.
+  PetscSortStrWithPermutation - Computes the permutation of strings that gives
+  a sorted sequence.
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  n  - number of values to sort
-.  i  - values to sort
--  idx - permutation array.  Must be initialized to 0:n-1 on input.
+  Input Parameters:
++ n   - number of values to sort
+. i   - values to sort
+- idx - permutation array.  Must be initialized to 0:n-1 on input.
 
-   Level: intermediate
+  Level: intermediate
 
-   Note:
-   i is unchanged on output.
+  Note:
+  i is unchanged on output.
 
 .seealso: `PetscSortInt()`, `PetscSortRealWithPermutation()`
  @*/

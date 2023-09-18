@@ -1,5 +1,5 @@
-# Matrix colorings (MatColoring), orderings (MatOrdering), and partitionings (MatPartitioning)
+# Matrix colorings (MatColoring), orderings (MatOrdering), partitionings (MatPartitioning), and coarsening (MatCoarsen)
 
-These tools compute reorderings (for sparse matrix factorizations), colorings
-(for computing Jacobians via finite differences) and partitionings (for parallel
-decomposition of data).
+These tools compute reorderings (`MatOrdering`) (for sparse matrix factorizations), colorings (`MatColoring`)
+(for computing Jacobians via finite differences),  partitionings (`MatPartitioning`) (for parallel
+decomposition of data), and coarsening (`MatCoarsen`) (for algebraic multigrid methods).

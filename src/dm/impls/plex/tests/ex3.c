@@ -584,7 +584,7 @@ static PetscErrorCode TestFVGrad(DM dm, AppCtx *user)
   PetscCall(VecGetArrayRead(cellgeom, &cgeom));
   PetscCall(DMGetGlobalVector(dmgrad, &grad));
   PetscCall(DMGetLocalVector(dmgrad, &locGrad));
-  PetscCall(DMPlexGetGhostCellStratum(dmgrad, &cEndInterior, NULL));
+  PetscCall(DMPlexGetCellTypeStratum(dmgrad, DM_POLYTOPE_FV_GHOST, &cEndInterior, NULL));
   cEndInterior = (cEndInterior < 0) ? cEnd : cEndInterior;
   for (v = 0; v < nvecs; v++) {
     Vec                locX;
@@ -639,7 +639,7 @@ static PetscErrorCode TestFVGrad(DM dm, AppCtx *user)
       FrobDiff = PetscSqrtReal(FrobDiff);
       maxDiff  = PetscMax(maxDiff, FrobDiff);
     }
-    PetscCallMPI(MPI_Allreduce(&maxDiff, &maxDiffGlob, 1, MPIU_REAL, MPIU_MAX, comm));
+    PetscCall(MPIU_Allreduce(&maxDiff, &maxDiffGlob, 1, MPIU_REAL, MPIU_MAX, comm));
     allVecMaxDiff = PetscMax(allVecMaxDiff, maxDiffGlob);
     PetscCall(VecRestoreArrayRead(locGrad, &gradArray));
     PetscCall(DMRestoreLocalVector(dmfv, &locX));

@@ -14,20 +14,20 @@ typedef struct {
 } DM_Shell;
 
 /*@
-   DMGlobalToLocalBeginDefaultShell - Uses the GlobalToLocal `VecScatter` context set by the user to begin a global to local scatter
+  DMGlobalToLocalBeginDefaultShell - Uses the GlobalToLocal `VecScatter` context set by the user to begin a global to local scatter
 
   Collective
 
-   Input Parameters:
-+  dm - `DMSHELL`
-.  g - global vector
-.  mode - `InsertMode`
--  l - local vector
+  Input Parameters:
++ dm   - `DMSHELL`
+. g    - global vector
+. mode - `InsertMode`
+- l    - local vector
 
-   Level: advanced
+  Level: advanced
 
-   Note:
-   This is not normally called directly by user code, generally user code calls `DMGlobalToLocalBegin()` and `DMGlobalToLocalEnd()`. If the user provides their own custom routines to `DMShellSetLocalToGlobal()` then those routines might have reason to call this function.
+  Note:
+  This is not normally called directly by user code, generally user code calls `DMGlobalToLocalBegin()` and `DMGlobalToLocalEnd()`. If the user provides their own custom routines to `DMShellSetLocalToGlobal()` then those routines might have reason to call this function.
 
 .seealso: `DM`, `DMSHELL`, `DMGlobalToLocalEndDefaultShell()`
 @*/
@@ -42,16 +42,16 @@ PetscErrorCode DMGlobalToLocalBeginDefaultShell(DM dm, Vec g, InsertMode mode, V
 }
 
 /*@
-   DMGlobalToLocalEndDefaultShell - Uses the GlobalToLocal `VecScatter` context set by the user to end a global to local scatter
-   Collective
+  DMGlobalToLocalEndDefaultShell - Uses the GlobalToLocal `VecScatter` context set by the user to end a global to local scatter
+  Collective
 
-   Input Parameters:
-+  dm - `DMSHELL`
-.  g - global vector
-.  mode - `InsertMode`
--  l - local vector
+  Input Parameters:
++ dm   - `DMSHELL`
+. g    - global vector
+. mode - `InsertMode`
+- l    - local vector
 
-   Level: advanced
+  Level: advanced
 
 .seealso: `DM`, `DMSHELL`, `DMGlobalToLocalBeginDefaultShell()`
 @*/
@@ -66,19 +66,19 @@ PetscErrorCode DMGlobalToLocalEndDefaultShell(DM dm, Vec g, InsertMode mode, Vec
 }
 
 /*@
-   DMLocalToGlobalBeginDefaultShell - Uses the LocalToGlobal `VecScatter` context set by the user to begin a local to global scatter
-   Collective
+  DMLocalToGlobalBeginDefaultShell - Uses the LocalToGlobal `VecScatter` context set by the user to begin a local to global scatter
+  Collective
 
-   Input Parameters:
-+  dm - `DMSHELL`
-.  l - local vector
-.  mode - `InsertMode`
--  g - global vector
+  Input Parameters:
++ dm   - `DMSHELL`
+. l    - local vector
+. mode - `InsertMode`
+- g    - global vector
 
-   Level: advanced
+  Level: advanced
 
-   Note:
-   This is not normally called directly by user code, generally user code calls `DMLocalToGlobalBegin()` and `DMLocalToGlobalEnd()`. If the user provides their own custom routines to `DMShellSetLocalToGlobal()` then those routines might have reason to call this function.
+  Note:
+  This is not normally called directly by user code, generally user code calls `DMLocalToGlobalBegin()` and `DMLocalToGlobalEnd()`. If the user provides their own custom routines to `DMShellSetLocalToGlobal()` then those routines might have reason to call this function.
 
 .seealso: `DM`, `DMSHELL`, `DMLocalToGlobalEndDefaultShell()`
 @*/
@@ -93,16 +93,16 @@ PetscErrorCode DMLocalToGlobalBeginDefaultShell(DM dm, Vec l, InsertMode mode, V
 }
 
 /*@
-   DMLocalToGlobalEndDefaultShell - Uses the LocalToGlobal `VecScatter` context set by the user to end a local to global scatter
-   Collective
+  DMLocalToGlobalEndDefaultShell - Uses the LocalToGlobal `VecScatter` context set by the user to end a local to global scatter
+  Collective
 
-   Input Parameters:
-+  dm - `DMSHELL`
-.  l - local vector
-.  mode - `InsertMode`
--  g - global vector
+  Input Parameters:
++ dm   - `DMSHELL`
+. l    - local vector
+. mode - `InsertMode`
+- g    - global vector
 
-   Level: advanced
+  Level: advanced
 
 .seealso: `DM`, `DMSHELL`, `DMLocalToGlobalBeginDefaultShell()`
 @*/
@@ -117,21 +117,21 @@ PetscErrorCode DMLocalToGlobalEndDefaultShell(DM dm, Vec l, InsertMode mode, Vec
 }
 
 /*@
-   DMLocalToLocalBeginDefaultShell - Uses the LocalToLocal `VecScatter` context set by the user to begin a local to local scatter
-   Collective
+  DMLocalToLocalBeginDefaultShell - Uses the LocalToLocal `VecScatter` context set by the user to begin a local to local scatter
+  Collective
 
-   Input Parameters:
-+  dm - `DMSHELL`
-.  g - the original local vector
--  mode - `InsertMode`
+  Input Parameters:
++ dm   - `DMSHELL`
+. g    - the original local vector
+- mode - `InsertMode`
 
-   Output Parameter:
-.  l  - the local vector with correct ghost values
+  Output Parameter:
+. l - the local vector with correct ghost values
 
-   Level: advanced
+  Level: advanced
 
-   Note:
-   This is not normally called directly by user code, generally user code calls `DMLocalToLocalBegin()` and `DMLocalToLocalEnd()`. If the user provides their own custom routines to `DMShellSetLocalToLocal()` then those routines might have reason to call this function.
+  Note:
+  This is not normally called directly by user code, generally user code calls `DMLocalToLocalBegin()` and `DMLocalToLocalEnd()`. If the user provides their own custom routines to `DMShellSetLocalToLocal()` then those routines might have reason to call this function.
 
 .seealso: `DM`, `DMSHELL`, `DMLocalToLocalEndDefaultShell()`
 @*/
@@ -146,18 +146,18 @@ PetscErrorCode DMLocalToLocalBeginDefaultShell(DM dm, Vec g, InsertMode mode, Ve
 }
 
 /*@
-   DMLocalToLocalEndDefaultShell - Uses the LocalToLocal `VecScatter` context set by the user to end a local to local scatter
-   Collective
+  DMLocalToLocalEndDefaultShell - Uses the LocalToLocal `VecScatter` context set by the user to end a local to local scatter
+  Collective
 
-   Input Parameters:
-+  dm - `DMSHELL`
-.  g - the original local vector
--  mode - `InsertMode`
+  Input Parameters:
++ dm   - `DMSHELL`
+. g    - the original local vector
+- mode - `InsertMode`
 
-   Output Parameter:
-.  l  - the local vector with correct ghost values
+  Output Parameter:
+. l - the local vector with correct ghost values
 
-   Level: advanced
+  Level: advanced
 
 .seealso: `DM`, `DMSHELL`, `DMLocalToLocalBeginDefaultShell()`
 @*/
@@ -178,7 +178,7 @@ static PetscErrorCode DMCreateMatrix_Shell(DM dm, Mat *J)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(J, 2);
+  PetscAssertPointer(J, 2);
   if (!shell->A) {
     if (shell->Xglobal) {
       PetscInt m, M;
@@ -197,14 +197,14 @@ static PetscErrorCode DMCreateMatrix_Shell(DM dm, Mat *J)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode DMCreateGlobalVector_Shell(DM dm, Vec *gvec)
+static PetscErrorCode DMCreateGlobalVector_Shell(DM dm, Vec *gvec)
 {
   DM_Shell *shell = (DM_Shell *)dm->data;
   Vec       X;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(gvec, 2);
+  PetscAssertPointer(gvec, 2);
   *gvec = NULL;
   X     = shell->Xglobal;
   PetscCheck(X, PetscObjectComm((PetscObject)dm), PETSC_ERR_USER, "Must call DMShellSetGlobalVector() or DMShellSetCreateGlobalVector()");
@@ -215,14 +215,14 @@ PetscErrorCode DMCreateGlobalVector_Shell(DM dm, Vec *gvec)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode DMCreateLocalVector_Shell(DM dm, Vec *gvec)
+static PetscErrorCode DMCreateLocalVector_Shell(DM dm, Vec *gvec)
 {
   DM_Shell *shell = (DM_Shell *)dm->data;
   Vec       X;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(gvec, 2);
+  PetscAssertPointer(gvec, 2);
   *gvec = NULL;
   X     = shell->Xlocal;
   PetscCheck(X, PetscObjectComm((PetscObject)dm), PETSC_ERR_USER, "Must call DMShellSetLocalVector() or DMShellSetCreateLocalVector()");
@@ -233,16 +233,16 @@ PetscErrorCode DMCreateLocalVector_Shell(DM dm, Vec *gvec)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@
-   DMShellSetDestroyContext - set a function that destroys the context provided with `DMShellSetContext()`
+/*@C
+  DMShellSetDestroyContext - set a function that destroys the context provided with `DMShellSetContext()`
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  dm - the `DM` to attach the `destroyctx()` function to
--  destroyctx - the function that destroys the context
+  Input Parameters:
++ dm         - the `DM` to attach the `destroyctx()` function to
+- destroyctx - the function that destroys the context
 
-   Level: advanced
+  Level: advanced
 
 .seealso: `DM`, `DMSHELL`, `DMShellSetContext()`, `DMShellGetContext()`
 @*/
@@ -260,15 +260,15 @@ PetscErrorCode DMShellSetDestroyContext(DM dm, PetscErrorCode (*destroyctx)(void
 }
 
 /*@
-   DMShellSetContext - set some data to be usable by this `DMSHELL`
+  DMShellSetContext - set some data to be usable by this `DMSHELL`
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  dm - `DMSHELL`
--  ctx - the context
+  Input Parameters:
++ dm  - `DMSHELL`
+- ctx - the context
 
-   Level: advanced
+  Level: advanced
 
 .seealso: `DM`, `DMSHELL`, `DMCreateMatrix()`, `DMShellGetContext()`
 @*/
@@ -286,17 +286,17 @@ PetscErrorCode DMShellSetContext(DM dm, void *ctx)
 }
 
 /*@
-   DMShellGetContext - Returns the user-provided context associated to the `DMSHELL`
+  DMShellGetContext - Returns the user-provided context associated to the `DMSHELL`
 
-   Collective
+  Collective
 
-   Input Parameter:
-.  dm - `DMSHELL`
+  Input Parameter:
+. dm - `DMSHELL`
 
-   Output Parameter:
-.  ctx - the context
+  Output Parameter:
+. ctx - the context
 
-   Level: advanced
+  Level: advanced
 
 .seealso: `DM`, `DMSHELL`, `DMCreateMatrix()`, `DMShellSetContext()`
 @*/
@@ -314,18 +314,18 @@ PetscErrorCode DMShellGetContext(DM dm, void *ctx)
 }
 
 /*@
-   DMShellSetMatrix - sets a template matrix associated with the `DMSHELL`
+  DMShellSetMatrix - sets a template matrix associated with the `DMSHELL`
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  dm - `DMSHELL`
--  J - template matrix
+  Input Parameters:
++ dm - `DMSHELL`
+- J  - template matrix
 
-   Level: advanced
+  Level: advanced
 
-   Developer Note:
-    To avoid circular references, if `J` is already associated to the same `DM`, then `MatDuplicate`(`SHARE_NONZERO_PATTERN`) is called, followed by removing the `DM` reference from the private template.
+  Developer Notes:
+  To avoid circular references, if `J` is already associated to the same `DM`, then `MatDuplicate`(`SHARE_NONZERO_PATTERN`) is called, followed by removing the `DM` reference from the private template.
 
 .seealso: `DM`, `DMSHELL`, `DMCreateMatrix()`, `DMShellSetCreateMatrix()`, `DMShellSetContext()`, `DMShellGetContext()`
 @*/
@@ -352,15 +352,15 @@ PetscErrorCode DMShellSetMatrix(DM dm, Mat J)
 }
 
 /*@C
-   DMShellSetCreateMatrix - sets the routine to create a matrix associated with the `DMSHELL`
+  DMShellSetCreateMatrix - sets the routine to create a matrix associated with the `DMSHELL`
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  dm - the `DMSHELL`
--  func - the function to create a matrix
+  Input Parameters:
++ dm   - the `DMSHELL`
+- func - the function to create a matrix
 
-   Level: advanced
+  Level: advanced
 
 .seealso: `DM`, `DMSHELL`, `DMCreateMatrix()`, `DMShellSetMatrix()`, `DMShellSetContext()`, `DMShellGetContext()`
 @*/
@@ -373,15 +373,15 @@ PetscErrorCode DMShellSetCreateMatrix(DM dm, PetscErrorCode (*func)(DM, Mat *))
 }
 
 /*@
-   DMShellSetGlobalVector - sets a template global vector associated with the `DMSHELL`
+  DMShellSetGlobalVector - sets a template global vector associated with the `DMSHELL`
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  dm - `DMSHELL`
--  X - template vector
+  Input Parameters:
++ dm - `DMSHELL`
+- X  - template vector
 
-   Level: advanced
+  Level: advanced
 
 .seealso: `DM`, `DMSHELL`, `DMCreateGlobalVector()`, `DMShellSetMatrix()`, `DMShellSetCreateGlobalVector()`
 @*/
@@ -411,19 +411,21 @@ PetscErrorCode DMShellSetGlobalVector(DM dm, Vec X)
   PetscCall(PetscObjectReference((PetscObject)X));
   PetscCall(VecDestroy(&shell->Xglobal));
   shell->Xglobal = X;
+  PetscCall(DMClearGlobalVectors(dm));
+  PetscCall(DMClearNamedGlobalVectors(dm));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
   DMShellGetGlobalVector - Returns the template global vector associated with the `DMSHELL`, or `NULL` if it was not set
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  dm - `DMSHELL`
--  X - template vector
+  Input Parameters:
++ dm - `DMSHELL`
+- X  - template vector
 
-   Level: advanced
+  Level: advanced
 
 .seealso: `DM`, `DMSHELL`, `DMShellSetGlobalVector()`, `DMShellSetCreateGlobalVector()`, `DMCreateGlobalVector()`
 @*/
@@ -434,7 +436,7 @@ PetscErrorCode DMShellGetGlobalVector(DM dm, Vec *X)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(X, 2);
+  PetscAssertPointer(X, 2);
   PetscCall(PetscObjectTypeCompare((PetscObject)dm, DMSHELL, &isshell));
   if (!isshell) PetscFunctionReturn(PETSC_SUCCESS);
   *X = shell->Xglobal;
@@ -442,15 +444,15 @@ PetscErrorCode DMShellGetGlobalVector(DM dm, Vec *X)
 }
 
 /*@C
-   DMShellSetCreateGlobalVector - sets the routine to create a global vector associated with the `DMSHELL`
+  DMShellSetCreateGlobalVector - sets the routine to create a global vector associated with the `DMSHELL`
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  dm - the `DMSHELL`
--  func - the creation routine
+  Input Parameters:
++ dm   - the `DMSHELL`
+- func - the creation routine
 
-   Level: advanced
+  Level: advanced
 
 .seealso: `DM`, `DMSHELL`, `DMShellSetGlobalVector()`, `DMShellSetCreateMatrix()`, `DMShellSetContext()`, `DMShellGetContext()`
 @*/
@@ -463,15 +465,15 @@ PetscErrorCode DMShellSetCreateGlobalVector(DM dm, PetscErrorCode (*func)(DM, Ve
 }
 
 /*@
-   DMShellSetLocalVector - sets a template local vector associated with the `DMSHELL`
+  DMShellSetLocalVector - sets a template local vector associated with the `DMSHELL`
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  dm - `DMSHELL`
--  X - template vector
+  Input Parameters:
++ dm - `DMSHELL`
+- X  - template vector
 
-   Level: advanced
+  Level: advanced
 
 .seealso: `DM`, `DMSHELL`, `DMCreateLocalVector()`, `DMShellSetMatrix()`, `DMShellSetCreateLocalVector()`
 @*/
@@ -501,19 +503,21 @@ PetscErrorCode DMShellSetLocalVector(DM dm, Vec X)
   PetscCall(PetscObjectReference((PetscObject)X));
   PetscCall(VecDestroy(&shell->Xlocal));
   shell->Xlocal = X;
+  PetscCall(DMClearLocalVectors(dm));
+  PetscCall(DMClearNamedLocalVectors(dm));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
-   DMShellSetCreateLocalVector - sets the routine to create a local vector associated with the `DMSHELL`
+  DMShellSetCreateLocalVector - sets the routine to create a local vector associated with the `DMSHELL`
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  dm - the `DMSHELL`
--  func - the creation routine
+  Input Parameters:
++ dm   - the `DMSHELL`
+- func - the creation routine
 
-   Level: advanced
+  Level: advanced
 
 .seealso: `DM`, `DMSHELL`, `DMShellSetLocalVector()`, `DMShellSetCreateMatrix()`, `DMShellSetContext()`, `DMShellGetContext()`
 @*/
@@ -526,20 +530,20 @@ PetscErrorCode DMShellSetCreateLocalVector(DM dm, PetscErrorCode (*func)(DM, Vec
 }
 
 /*@C
-   DMShellSetGlobalToLocal - Sets the routines used to perform a global to local scatter
+  DMShellSetGlobalToLocal - Sets the routines used to perform a global to local scatter
 
-   Logically Collective on dm
+  Logically Collective on dm
 
-   Input Parameters
-+  dm - the `DMSHELL`
-.  begin - the routine that begins the global to local scatter
--  end - the routine that ends the global to local scatter
+  Input Parameters:
++ dm    - the `DMSHELL`
+. begin - the routine that begins the global to local scatter
+- end   - the routine that ends the global to local scatter
 
-   Level: advanced
+  Level: advanced
 
-   Note:
-    If these functions are not provided but `DMShellSetGlobalToLocalVecScatter()` is called then
-   `DMGlobalToLocalBeginDefaultShell()`/`DMGlobalToLocalEndDefaultShell()` are used to to perform the transfers
+  Note:
+  If these functions are not provided but `DMShellSetGlobalToLocalVecScatter()` is called then
+  `DMGlobalToLocalBeginDefaultShell()`/`DMGlobalToLocalEndDefaultShell()` are used to to perform the transfers
 
 .seealso: `DM`, `DMSHELL`, `DMShellSetLocalToGlobal()`, `DMGlobalToLocalBeginDefaultShell()`, `DMGlobalToLocalEndDefaultShell()`
 @*/
@@ -553,20 +557,20 @@ PetscErrorCode DMShellSetGlobalToLocal(DM dm, PetscErrorCode (*begin)(DM, Vec, I
 }
 
 /*@C
-   DMShellSetLocalToGlobal - Sets the routines used to perform a local to global scatter
+  DMShellSetLocalToGlobal - Sets the routines used to perform a local to global scatter
 
-   Logically Collective on dm
+  Logically Collective on dm
 
-   Input Parameters
-+  dm - the `DMSHELL`
-.  begin - the routine that begins the local to global scatter
--  end - the routine that ends the local to global scatter
+  Input Parameters:
++ dm    - the `DMSHELL`
+. begin - the routine that begins the local to global scatter
+- end   - the routine that ends the local to global scatter
 
-   Level: advanced
+  Level: advanced
 
-   Note:
-    If these functions are not provided but `DMShellSetLocalToGlobalVecScatter()` is called then
-   `DMLocalToGlobalBeginDefaultShell()`/`DMLocalToGlobalEndDefaultShell()` are used to to perform the transfers
+  Note:
+  If these functions are not provided but `DMShellSetLocalToGlobalVecScatter()` is called then
+  `DMLocalToGlobalBeginDefaultShell()`/`DMLocalToGlobalEndDefaultShell()` are used to to perform the transfers
 
 .seealso: `DM`, `DMSHELL`, `DMShellSetGlobalToLocal()`
 @*/
@@ -580,20 +584,20 @@ PetscErrorCode DMShellSetLocalToGlobal(DM dm, PetscErrorCode (*begin)(DM, Vec, I
 }
 
 /*@C
-   DMShellSetLocalToLocal - Sets the routines used to perform a local to local scatter
+  DMShellSetLocalToLocal - Sets the routines used to perform a local to local scatter
 
-   Logically Collective on dm
+  Logically Collective on dm
 
-   Input Parameters
-+  dm - the `DMSHELL`
-.  begin - the routine that begins the local to local scatter
--  end - the routine that ends the local to local scatter
+  Input Parameters:
++ dm    - the `DMSHELL`
+. begin - the routine that begins the local to local scatter
+- end   - the routine that ends the local to local scatter
 
-   Level: advanced
+  Level: advanced
 
-   Note:
-    If these functions are not provided but `DMShellSetLocalToLocalVecScatter()` is called then
-   `DMLocalToLocalBeginDefaultShell()`/`DMLocalToLocalEndDefaultShell()` are used to to perform the transfers
+  Note:
+  If these functions are not provided but `DMShellSetLocalToLocalVecScatter()` is called then
+  `DMLocalToLocalBeginDefaultShell()`/`DMLocalToLocalEndDefaultShell()` are used to to perform the transfers
 
 .seealso: `DM`, `DMSHELL`, `DMShellSetGlobalToLocal()`, `DMLocalToLocalBeginDefaultShell()`, `DMLocalToLocalEndDefaultShell()`
 @*/
@@ -607,15 +611,15 @@ PetscErrorCode DMShellSetLocalToLocal(DM dm, PetscErrorCode (*begin)(DM, Vec, In
 }
 
 /*@
-   DMShellSetGlobalToLocalVecScatter - Sets a `VecScatter` context for global to local communication
+  DMShellSetGlobalToLocalVecScatter - Sets a `VecScatter` context for global to local communication
 
-   Logically Collective on dm
+  Logically Collective on dm
 
-   Input Parameters
-+  dm - the `DMSHELL`
--  gtol - the global to local `VecScatter` context
+  Input Parameters:
++ dm   - the `DMSHELL`
+- gtol - the global to local `VecScatter` context
 
-   Level: advanced
+  Level: advanced
 
 .seealso: `DM`, `DMSHELL`, `DMShellSetGlobalToLocal()`, `DMGlobalToLocalBeginDefaultShell()`, `DMGlobalToLocalEndDefaultShell()`
 @*/
@@ -633,15 +637,15 @@ PetscErrorCode DMShellSetGlobalToLocalVecScatter(DM dm, VecScatter gtol)
 }
 
 /*@
-   DMShellSetLocalToGlobalVecScatter - Sets a` VecScatter` context for local to global communication
+  DMShellSetLocalToGlobalVecScatter - Sets a` VecScatter` context for local to global communication
 
-   Logically Collective on dm
+  Logically Collective on dm
 
-   Input Parameters
-+  dm - the `DMSHELL`
--  ltog - the local to global `VecScatter` context
+  Input Parameters:
++ dm   - the `DMSHELL`
+- ltog - the local to global `VecScatter` context
 
-   Level: advanced
+  Level: advanced
 
 .seealso: `DM`, `DMSHELL`, `DMShellSetLocalToGlobal()`, `DMLocalToGlobalBeginDefaultShell()`, `DMLocalToGlobalEndDefaultShell()`
 @*/
@@ -659,15 +663,15 @@ PetscErrorCode DMShellSetLocalToGlobalVecScatter(DM dm, VecScatter ltog)
 }
 
 /*@
-   DMShellSetLocalToLocalVecScatter - Sets a `VecScatter` context for local to local communication
+  DMShellSetLocalToLocalVecScatter - Sets a `VecScatter` context for local to local communication
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters
-+  dm - the `DMSHELL`
--  ltol - the local to local `VecScatter` context
+  Input Parameters:
++ dm   - the `DMSHELL`
+- ltol - the local to local `VecScatter` context
 
-   Level: advanced
+  Level: advanced
 
 .seealso: `DM`, `DMSHELL`, `DMShellSetLocalToLocal()`, `DMLocalToLocalBeginDefaultShell()`, `DMLocalToLocalEndDefaultShell()`
 @*/
@@ -685,15 +689,15 @@ PetscErrorCode DMShellSetLocalToLocalVecScatter(DM dm, VecScatter ltol)
 }
 
 /*@C
-   DMShellSetCoarsen - Set the routine used to coarsen the `DMSHELL`
+  DMShellSetCoarsen - Set the routine used to coarsen the `DMSHELL`
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters
-+  dm - the `DMSHELL`
--  coarsen - the routine that coarsens the `DM`
+  Input Parameters:
++ dm      - the `DMSHELL`
+- coarsen - the routine that coarsens the `DM`
 
-   Level: advanced
+  Level: advanced
 
 .seealso: `DM`, `DMSHELL`, `DMShellSetRefine()`, `DMCoarsen()`, `DMShellGetCoarsen()`, `DMShellSetContext()`, `DMShellGetContext()`
 @*/
@@ -710,17 +714,17 @@ PetscErrorCode DMShellSetCoarsen(DM dm, PetscErrorCode (*coarsen)(DM, MPI_Comm, 
 }
 
 /*@C
-   DMShellGetCoarsen - Get the routine used to coarsen the `DMSHELL`
+  DMShellGetCoarsen - Get the routine used to coarsen the `DMSHELL`
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameter:
-.  dm - the `DMSHELL`
+  Input Parameter:
+. dm - the `DMSHELL`
 
-   Output Parameter:
-.  coarsen - the routine that coarsens the `DM`
+  Output Parameter:
+. coarsen - the routine that coarsens the `DM`
 
-   Level: advanced
+  Level: advanced
 
 .seealso: `DM`, `DMSHELL`, `DMShellSetCoarsen()`, `DMCoarsen()`, `DMShellSetRefine()`, `DMRefine()`
 @*/
@@ -737,15 +741,15 @@ PetscErrorCode DMShellGetCoarsen(DM dm, PetscErrorCode (**coarsen)(DM, MPI_Comm,
 }
 
 /*@C
-   DMShellSetRefine - Set the routine used to refine the `DMSHELL`
+  DMShellSetRefine - Set the routine used to refine the `DMSHELL`
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters
-+  dm - the `DMSHELL`
--  refine - the routine that refines the `DM`
+  Input Parameters:
++ dm     - the `DMSHELL`
+- refine - the routine that refines the `DM`
 
-   Level: advanced
+  Level: advanced
 
 .seealso: `DM`, `DMSHELL`, `DMShellSetCoarsen()`, `DMRefine()`, `DMShellGetRefine()`, `DMShellSetContext()`, `DMShellGetContext()`
 @*/
@@ -762,17 +766,17 @@ PetscErrorCode DMShellSetRefine(DM dm, PetscErrorCode (*refine)(DM, MPI_Comm, DM
 }
 
 /*@C
-   DMShellGetRefine - Get the routine used to refine the `DMSHELL`
+  DMShellGetRefine - Get the routine used to refine the `DMSHELL`
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameter:
-.  dm - the `DMSHELL`
+  Input Parameter:
+. dm - the `DMSHELL`
 
-   Output Parameter:
-.  refine - the routine that refines the `DM`
+  Output Parameter:
+. refine - the routine that refines the `DM`
 
-   Level: advanced
+  Level: advanced
 
 .seealso: `DM`, `DMSHELL`, `DMShellSetCoarsen()`, `DMCoarsen()`, `DMShellSetRefine()`, `DMRefine()`
 @*/
@@ -789,15 +793,15 @@ PetscErrorCode DMShellGetRefine(DM dm, PetscErrorCode (**refine)(DM, MPI_Comm, D
 }
 
 /*@C
-   DMShellSetCreateInterpolation - Set the routine used to create the interpolation operator
+  DMShellSetCreateInterpolation - Set the routine used to create the interpolation operator
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters
-+  dm - the `DMSHELL`
--  interp - the routine to create the interpolation
+  Input Parameters:
++ dm     - the `DMSHELL`
+- interp - the routine to create the interpolation
 
-   Level: advanced
+  Level: advanced
 
 .seealso: `DM`, `DMSHELL`, `DMShellSetCreateInjection()`, `DMCreateInterpolation()`, `DMShellGetCreateInterpolation()`, `DMShellSetCreateRestriction()`, `DMShellSetContext()`, `DMShellGetContext()`
 @*/
@@ -814,17 +818,17 @@ PetscErrorCode DMShellSetCreateInterpolation(DM dm, PetscErrorCode (*interp)(DM,
 }
 
 /*@C
-   DMShellGetCreateInterpolation - Get the routine used to create the interpolation operator
+  DMShellGetCreateInterpolation - Get the routine used to create the interpolation operator
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameter:
-.  dm - the `DMSHELL`
+  Input Parameter:
+. dm - the `DMSHELL`
 
-   Output Parameter:
-.  interp - the routine to create the interpolation
+  Output Parameter:
+. interp - the routine to create the interpolation
 
-   Level: advanced
+  Level: advanced
 
 .seealso: `DM`, `DMSHELL`, `DMShellGetCreateInjection()`, `DMCreateInterpolation()`, `DMShellGetCreateRestriction()`, `DMShellSetContext()`, `DMShellGetContext()`
 @*/
@@ -841,15 +845,15 @@ PetscErrorCode DMShellGetCreateInterpolation(DM dm, PetscErrorCode (**interp)(DM
 }
 
 /*@C
-   DMShellSetCreateRestriction - Set the routine used to create the restriction operator
+  DMShellSetCreateRestriction - Set the routine used to create the restriction operator
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters
-+  dm - the `DMSHELL`
--  striction- the routine to create the restriction
+  Input Parameters:
++ dm          - the `DMSHELL`
+- restriction - the routine to create the restriction
 
-   Level: advanced
+  Level: advanced
 
 .seealso: `DM`, `DMSHELL`, `DMShellSetCreateInjection()`, `DMCreateInterpolation()`, `DMShellGetCreateRestriction()`, `DMShellSetContext()`, `DMShellGetContext()`
 @*/
@@ -866,17 +870,17 @@ PetscErrorCode DMShellSetCreateRestriction(DM dm, PetscErrorCode (*restriction)(
 }
 
 /*@C
-   DMShellGetCreateRestriction - Get the routine used to create the restriction operator
+  DMShellGetCreateRestriction - Get the routine used to create the restriction operator
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameter:
-.  dm - the `DMSHELL`
+  Input Parameter:
+. dm - the `DMSHELL`
 
-   Output Parameter:
-.  restriction - the routine to create the restriction
+  Output Parameter:
+. restriction - the routine to create the restriction
 
-   Level: advanced
+  Level: advanced
 
 .seealso: `DM`, `DMSHELL`, `DMShellSetCreateInjection()`, `DMCreateInterpolation()`, `DMShellSetContext()`, `DMShellGetContext()`
 @*/
@@ -893,15 +897,15 @@ PetscErrorCode DMShellGetCreateRestriction(DM dm, PetscErrorCode (**restriction)
 }
 
 /*@C
-   DMShellSetCreateInjection - Set the routine used to create the injection operator
+  DMShellSetCreateInjection - Set the routine used to create the injection operator
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  dm - the `DMSHELL`
--  inject - the routine to create the injection
+  Input Parameters:
++ dm     - the `DMSHELL`
+- inject - the routine to create the injection
 
-   Level: advanced
+  Level: advanced
 
 .seealso: `DM`, `DMSHELL`, `DMShellSetCreateInterpolation()`, `DMCreateInjection()`, `DMShellGetCreateInjection()`, `DMShellSetContext()`, `DMShellGetContext()`
 @*/
@@ -918,17 +922,17 @@ PetscErrorCode DMShellSetCreateInjection(DM dm, PetscErrorCode (*inject)(DM, DM,
 }
 
 /*@C
-   DMShellGetCreateInjection - Get the routine used to create the injection operator
+  DMShellGetCreateInjection - Get the routine used to create the injection operator
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameter:
-.  dm - the `DMSHELL`
+  Input Parameter:
+. dm - the `DMSHELL`
 
-   Output Parameter:
-.  inject - the routine to create the injection
+  Output Parameter:
+. inject - the routine to create the injection
 
-   Level: advanced
+  Level: advanced
 
 .seealso: `DM`, `DMSHELL`, `DMShellGetCreateInterpolation()`, `DMCreateInjection()`, `DMShellSetContext()`, `DMShellGetContext()`
 @*/
@@ -945,15 +949,15 @@ PetscErrorCode DMShellGetCreateInjection(DM dm, PetscErrorCode (**inject)(DM, DM
 }
 
 /*@C
-   DMShellSetCreateFieldDecomposition - Set the routine used to create a decomposition of fields for the `DMSHELL`
+  DMShellSetCreateFieldDecomposition - Set the routine used to create a decomposition of fields for the `DMSHELL`
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  dm - the `DMSHELL`
--  decomp - the routine to create the decomposition
+  Input Parameters:
++ dm     - the `DMSHELL`
+- decomp - the routine to create the decomposition
 
-   Level: advanced
+  Level: advanced
 
 .seealso: `DM`, `DMSHELL`, `DMCreateFieldDecomposition()`, `DMShellSetContext()`, `DMShellGetContext()`
 @*/
@@ -970,15 +974,15 @@ PetscErrorCode DMShellSetCreateFieldDecomposition(DM dm, PetscErrorCode (*decomp
 }
 
 /*@C
-   DMShellSetCreateDomainDecomposition - Set the routine used to create a domain decomposition for the `DMSHELL`
+  DMShellSetCreateDomainDecomposition - Set the routine used to create a domain decomposition for the `DMSHELL`
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  dm - the `DMSHELL`
--  decomp - the routine to create the decomposition
+  Input Parameters:
++ dm     - the `DMSHELL`
+- decomp - the routine to create the decomposition
 
-   Level: advanced
+  Level: advanced
 
 .seealso: `DM`, `DMSHELL`, `DMCreateDomainDecomposition()`, `DMShellSetContext()`, `DMShellGetContext()`
 @*/
@@ -995,15 +999,15 @@ PetscErrorCode DMShellSetCreateDomainDecomposition(DM dm, PetscErrorCode (*decom
 }
 
 /*@C
-   DMShellSetCreateDomainDecompositionScatters - Set the routine used to create the scatter contexts for domain decomposition with a `DMSHELL`
+  DMShellSetCreateDomainDecompositionScatters - Set the routine used to create the scatter contexts for domain decomposition with a `DMSHELL`
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  dm - the `DMSHELL`
--  scatter - the routine to create the scatters
+  Input Parameters:
++ dm      - the `DMSHELL`
+- scatter - the routine to create the scatters
 
-   Level: advanced
+  Level: advanced
 
 .seealso: `DM`, `DMSHELL`, `DMCreateDomainDecompositionScatters()`, `DMShellSetContext()`, `DMShellGetContext()`
 @*/
@@ -1020,15 +1024,15 @@ PetscErrorCode DMShellSetCreateDomainDecompositionScatters(DM dm, PetscErrorCode
 }
 
 /*@C
-   DMShellSetCreateSubDM - Set the routine used to create a sub `DM` from the `DMSHELL`
+  DMShellSetCreateSubDM - Set the routine used to create a sub `DM` from the `DMSHELL`
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  dm - the `DMSHELL`
--  subdm - the routine to create the decomposition
+  Input Parameters:
++ dm    - the `DMSHELL`
+- subdm - the routine to create the decomposition
 
-   Level: advanced
+  Level: advanced
 
 .seealso: `DM`, `DMSHELL`, `DMCreateSubDM()`, `DMShellGetCreateSubDM()`, `DMShellSetContext()`, `DMShellGetContext()`
 @*/
@@ -1045,17 +1049,17 @@ PetscErrorCode DMShellSetCreateSubDM(DM dm, PetscErrorCode (*subdm)(DM, PetscInt
 }
 
 /*@C
-   DMShellGetCreateSubDM - Get the routine used to create a sub DM from the `DMSHELL`
+  DMShellGetCreateSubDM - Get the routine used to create a sub DM from the `DMSHELL`
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameter:
-.  dm - the `DMSHELL`
+  Input Parameter:
+. dm - the `DMSHELL`
 
-   Output Parameter:
-.  subdm - the routine to create the decomposition
+  Output Parameter:
+. subdm - the routine to create the decomposition
 
-   Level: advanced
+  Level: advanced
 
 .seealso: `DM`, `DMSHELL`, `DMCreateSubDM()`, `DMShellSetCreateSubDM()`, `DMShellSetContext()`, `DMShellGetContext()`
 @*/
@@ -1107,7 +1111,7 @@ static PetscErrorCode DMLoad_Shell(DM dm, PetscViewer v)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode DMCreateSubDM_Shell(DM dm, PetscInt numFields, const PetscInt fields[], IS *is, DM *subdm)
+static PetscErrorCode DMCreateSubDM_Shell(DM dm, PetscInt numFields, const PetscInt fields[], IS *is, DM *subdm)
 {
   PetscFunctionBegin;
   if (subdm) PetscCall(DMShellCreate(PetscObjectComm((PetscObject)dm), subdm));
@@ -1141,24 +1145,24 @@ PETSC_EXTERN PetscErrorCode DMCreate_Shell(DM dm)
 }
 
 /*@
-    DMShellCreate - Creates a `DMSHELL` object, used to manage user-defined problem data
+  DMShellCreate - Creates a `DMSHELL` object, used to manage user-defined problem data
 
-    Collective
+  Collective
 
-    Input Parameter:
-.   comm - the processors that will share the global vector
+  Input Parameter:
+. comm - the processors that will share the global vector
 
-    Output Parameter:
-.   shell - the `DMSHELL`
+  Output Parameter:
+. dm - the `DMSHELL`
 
-    Level: advanced
+  Level: advanced
 
-.seealso `DMDestroy()`, `DMCreateGlobalVector()`, `DMCreateLocalVector()`, `DMShellSetContext()`, `DMShellGetContext()`
+.seealso: `DMDestroy()`, `DMCreateGlobalVector()`, `DMCreateLocalVector()`, `DMShellSetContext()`, `DMShellGetContext()`
 @*/
 PetscErrorCode DMShellCreate(MPI_Comm comm, DM *dm)
 {
   PetscFunctionBegin;
-  PetscValidPointer(dm, 2);
+  PetscAssertPointer(dm, 2);
   PetscCall(DMCreate(comm, dm));
   PetscCall(DMSetType(*dm, DMSHELL));
   PetscCall(DMSetUp(*dm));

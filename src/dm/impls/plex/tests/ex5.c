@@ -1061,46 +1061,47 @@ static PetscErrorCode phi(PetscInt dim, PetscReal time, const PetscReal x[], Pet
 }
 
 /* \lambda \cdot (\psi_u^- - \psi_u^+) */
-static void f0_bd_u(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], const PetscReal n[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
+static void f0_bd_u_neg(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], const PetscReal n[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
 {
-  const PetscInt Nc = uOff[1] - uOff[0];
-  PetscInt       c;
-  for (c = 0; c < Nc; ++c) {
-    f0[c]      = u[Nc * 2 + c] + x[Nc - c - 1];
-    f0[Nc + c] = -(u[Nc * 2 + c] + x[Nc - c - 1]);
-  }
+  const PetscInt Nc = dim + 1;
+  for (PetscInt c = 0; c < Nc; ++c) f0[c] = -u[uOff[1] + c];
+}
+
+static void f0_bd_u_pos(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], const PetscReal n[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
+{
+  const PetscInt Nc = dim + 1;
+  for (PetscInt c = 0; c < Nc; ++c) f0[c] = u[uOff[1] + c];
 }
 
 /* (d - u^+ + u^-) \cdot \psi_\lambda */
 static void f0_bd_l(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], const PetscReal n[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
 {
   const PetscInt Nc = uOff[2] - uOff[1];
-  PetscInt       c;
 
-  for (c = 0; c < Nc; ++c) f0[c] = (c > 0 ? 1.0 : 0.0) + u[c] - u[Nc + c];
+  for (PetscInt c = 0; c < Nc; ++c) f0[c] = (c > 0 ? 1.0 : 0.0) + u[c] - u[Nc + c];
 }
 
 /* \psi_lambda \cdot (\psi_u^- - \psi_u^+) */
-static void g0_bd_ul(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], const PetscReal n[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g0[])
+static void g0_bd_ul_neg(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], const PetscReal n[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g0[])
 {
-  const PetscInt Nc = uOff[1] - uOff[0];
-  PetscInt       c;
+  const PetscInt Nc = dim + 1;
+  for (PetscInt c = 0; c < Nc; ++c) g0[c * Nc + c] = -1.0;
+}
 
-  for (c = 0; c < Nc; ++c) {
-    g0[(0 + c) * Nc + c]  = 1.0;
-    g0[(Nc + c) * Nc + c] = -1.0;
-  }
+static void g0_bd_ul_pos(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], const PetscReal n[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g0[])
+{
+  const PetscInt Nc = dim + 1;
+  for (PetscInt c = 0; c < Nc; ++c) g0[c * Nc + c] = 1.0;
 }
 
 /* (-\psi_u^+ + \psi_u^-) \cdot \psi_\lambda */
 static void g0_bd_lu(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], const PetscReal n[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g0[])
 {
   const PetscInt Nc = uOff[2] - uOff[1];
-  PetscInt       c;
 
-  for (c = 0; c < Nc; ++c) {
-    g0[c * Nc * 2 + c]      = 1.0;
-    g0[c * Nc * 2 + Nc + c] = -1.0;
+  for (PetscInt c = 0; c < Nc; ++c) {
+    g0[c * Nc + c]           = -1.0;
+    g0[Nc * Nc + c * Nc + c] = 1.0;
   }
 }
 
@@ -1150,18 +1151,18 @@ static PetscErrorCode TestAssembly(DM dm, AppCtx *user)
   PetscCall(DMGetCellDS(dm, cMax, &probh, NULL));
   PetscCall(PetscDSGetWeakForm(probh, &wf));
   PetscCall(PetscDSGetNumFields(probh, &Nf));
-  PetscCall(PetscWeakFormSetIndexBdResidual(wf, material, 1, 0, 0, 0, f0_bd_u, 0, NULL));
-  PetscCall(PetscWeakFormSetIndexBdResidual(wf, material, 2, 0, 0, 0, f0_bd_u, 0, NULL));
-  PetscCall(PetscWeakFormSetIndexBdJacobian(wf, material, 1, 0, 1, 0, 0, g0_bd_ul, 0, NULL, 0, NULL, 0, NULL));
-  PetscCall(PetscWeakFormSetIndexBdJacobian(wf, material, 2, 0, 1, 0, 0, g0_bd_ul, 0, NULL, 0, NULL, 0, NULL));
+  PetscCall(PetscWeakFormSetIndexBdResidual(wf, material, 1, 0, 0, 0, f0_bd_u_neg, 0, NULL));
+  PetscCall(PetscWeakFormSetIndexBdResidual(wf, material, 2, 0, 0, 0, f0_bd_u_pos, 0, NULL));
+  PetscCall(PetscWeakFormSetIndexBdJacobian(wf, material, 1, 0, 1, 0, 0, g0_bd_ul_neg, 0, NULL, 0, NULL, 0, NULL));
+  PetscCall(PetscWeakFormSetIndexBdJacobian(wf, material, 2, 0, 1, 0, 0, g0_bd_ul_pos, 0, NULL, 0, NULL, 0, NULL));
   if (Nf > 1) {
     PetscCall(PetscWeakFormSetIndexBdResidual(wf, fault, 1, 1, 0, 0, f0_bd_l, 0, NULL));
     PetscCall(PetscWeakFormSetIndexBdJacobian(wf, fault, 1, 1, 0, 0, 0, g0_bd_lu, 0, NULL, 0, NULL, 0, NULL));
   }
   if (rank == 0) PetscCall(PetscDSView(probh, NULL));
 
-  keys[0].label = NULL;
-  keys[0].value = 0;
+  keys[0].label = material;
+  keys[0].value = 1;
   keys[0].field = 0;
   keys[0].part  = 0;
   keys[1].label = material;
@@ -1230,27 +1231,30 @@ int main(int argc, char **argv)
     test:
       suffix: tri_0
       args: -dim 2
-      filter: sed -e "s/_start//g" -e "s/f0_bd_u//g" -e "s/f0_bd_l//g" -e "s/g0_bd_ul//g" -e "s/g0_bd_lu//g"
+      filter: sed -e "s/_start//g" -e "s/f0_bd_u_neg//g" -e "s/f0_bd_u_pos//g" -e "s/f0_bd_l//g" -e "s/g0_bd_ul_neg//g" -e "s/g0_bd_ul_pos//g" -e "s/g0_bd_lu//g" -e "s~_ZL.*~~g"
     test:
       suffix: tri_t1_0
       args: -dim 2 -test_num 1
-      filter: sed -e "s/_start//g" -e "s/f0_bd_u//g" -e "s/f0_bd_l//g" -e "s/g0_bd_ul//g" -e "s/g0_bd_lu//g"
+      filter: sed -e "s/_start//g" -e "s/f0_bd_u_neg//g" -e "s/f0_bd_u_pos//g" -e "s/f0_bd_l//g" -e "s/g0_bd_ul_neg//g" -e "s/g0_bd_ul_pos//g" -e "s/g0_bd_lu//g" -e "s~_ZL.*~~g"
     test:
       suffix: tri_t2_0
       args: -dim 2 -test_num 2
-      filter: sed -e "s/_start//g" -e "s/f0_bd_u//g" -e "s/f0_bd_l//g" -e "s/g0_bd_ul//g" -e "s/g0_bd_lu//g"
+      filter: sed -e "s/_start//g" -e "s/f0_bd_u_neg//g" -e "s/f0_bd_u_pos//g" -e "s/f0_bd_l//g" -e "s/g0_bd_ul_neg//g" -e "s/g0_bd_ul_pos//g" -e "s/g0_bd_lu//g" -e "s~_ZL.*~~g"
+
     test:
       suffix: tri_t5_0
       args: -dim 2 -test_num 5
-      filter: sed -e "s/_start//g" -e "s/f0_bd_u//g" -e "s/f0_bd_l//g" -e "s/g0_bd_ul//g" -e "s/g0_bd_lu//g"
+      filter: sed -e "s/_start//g" -e "s/f0_bd_u_neg//g" -e "s/f0_bd_u_pos//g" -e "s/f0_bd_l//g" -e "s/g0_bd_ul_neg//g" -e "s/g0_bd_ul_pos//g" -e "s/g0_bd_lu//g" -e "s~_ZL.*~~g"
+
     test:
       suffix: tet_0
       args: -dim 3
-      filter: sed -e "s/_start//g" -e "s/f0_bd_u//g" -e "s/f0_bd_l//g" -e "s/g0_bd_ul//g" -e "s/g0_bd_lu//g"
+      filter: sed -e "s/_start//g" -e "s/f0_bd_u_neg//g" -e "s/f0_bd_u_pos//g" -e "s/f0_bd_l//g" -e "s/g0_bd_ul_neg//g" -e "s/g0_bd_ul_pos//g" -e "s/g0_bd_lu//g" -e "s~_ZL.*~~g"
+
     test:
       suffix: tet_t1_0
       args: -dim 3 -test_num 1
-      filter: sed -e "s/_start//g" -e "s/f0_bd_u//g" -e "s/f0_bd_l//g" -e "s/g0_bd_ul//g" -e "s/g0_bd_lu//g"
+      filter: sed -e "s/_start//g" -e "s/f0_bd_u_neg//g" -e "s/f0_bd_u_pos//g" -e "s/f0_bd_l//g" -e "s/g0_bd_ul_neg//g" -e "s/g0_bd_ul_pos//g" -e "s/g0_bd_lu//g" -e "s~_ZL.*~~g"
 
   testset:
     args: -orig_dm_plex_check_all -dm_plex_check_all \
@@ -1259,22 +1263,25 @@ int main(int argc, char **argv)
       suffix: tet_1
       nsize: 2
       args: -dim 3
-      filter: sed -e "s/_start//g" -e "s/f0_bd_u//g" -e "s/f0_bd_l//g" -e "s/g0_bd_ul//g" -e "s/g0_bd_lu//g"
+      filter: sed -e "s/_start//g" -e "s/f0_bd_u_neg//g" -e "s/f0_bd_u_pos//g" -e "s/f0_bd_l//g" -e "s/g0_bd_ul_neg//g" -e "s/g0_bd_ul_pos//g" -e "s/g0_bd_lu//g" -e "s~_ZL.*~~g"
+
     test:
       suffix: tri_1
       nsize: 2
       args: -dim 2
-      filter: sed -e "s/_start//g" -e "s/f0_bd_u//g" -e "s/f0_bd_l//g" -e "s/g0_bd_ul//g" -e "s/g0_bd_lu//g"
+      filter: sed -e "s/_start//g" -e "s/f0_bd_u_neg//g" -e "s/f0_bd_u_pos//g" -e "s/f0_bd_l//g" -e "s/g0_bd_ul_neg//g" -e "s/g0_bd_ul_pos//g" -e "s/g0_bd_lu//g" -e "s~_ZL.*~~g"
+
     test:
       suffix: tri_t3_0
       nsize: 2
       args: -dim 2 -test_num 3
-      filter: sed -e "s/_start//g" -e "s/f0_bd_u//g" -e "s/f0_bd_l//g" -e "s/g0_bd_ul//g" -e "s/g0_bd_lu//g"
+      filter: sed -e "s/_start//g" -e "s/f0_bd_u_neg//g" -e "s/f0_bd_u_pos//g" -e "s/f0_bd_l//g" -e "s/g0_bd_ul_neg//g" -e "s/g0_bd_ul_pos//g" -e "s/g0_bd_lu//g" -e "s~_ZL.*~~g"
+
     test:
       suffix: tri_t4_0
       nsize: 6
       args: -dim 2 -test_num 4
-      filter: sed -e "s/_start//g" -e "s/f0_bd_u//g" -e "s/f0_bd_l//g" -e "s/g0_bd_ul//g" -e "s/g0_bd_lu//g"
+      filter: sed -e "s/_start//g" -e "s/f0_bd_u_neg//g" -e "s/f0_bd_u_pos//g" -e "s/f0_bd_l//g" -e "s/g0_bd_ul_neg//g" -e "s/g0_bd_ul_pos//g" -e "s/g0_bd_lu//g" -e "s~_ZL.*~~g"
 
   testset:
     args: -orig_dm_plex_check_all -dm_plex_check_all \
@@ -1283,44 +1290,49 @@ int main(int argc, char **argv)
     test:
       suffix: quad_0
       args: -dim 2 -cell_simplex 0
-      filter: sed -e "s/_start//g" -e "s/f0_bd_u//g" -e "s/f0_bd_l//g" -e "s/g0_bd_ul//g" -e "s/g0_bd_lu//g"
+      filter: sed -e "s/_start//g" -e "s/f0_bd_u_neg//g" -e "s/f0_bd_u_pos//g" -e "s/f0_bd_l//g" -e "s/g0_bd_ul_neg//g" -e "s/g0_bd_ul_pos//g" -e "s/g0_bd_lu//g" -e "s~_ZL.*~~g"
+
     test:
       suffix: quad_1
       nsize: 2
       args: -dim 2 -cell_simplex 0
-      filter: sed -e "s/_start//g" -e "s/f0_bd_u//g" -e "s/f0_bd_l//g" -e "s/g0_bd_ul//g" -e "s/g0_bd_lu//g"
+      filter: sed -e "s/_start//g" -e "s/f0_bd_u_neg//g" -e "s/f0_bd_u_pos//g" -e "s/f0_bd_l//g" -e "s/g0_bd_ul_neg//g" -e "s/g0_bd_ul_pos//g" -e "s/g0_bd_lu//g" -e "s~_ZL.*~~g"
+
     test:
       suffix: quad_t1_0
       args: -dim 2 -cell_simplex 0 -test_num 1 -faulted_dm_plex_check_all
-      filter: sed -e "s/_start//g" -e "s/f0_bd_u//g" -e "s/f0_bd_l//g" -e "s/g0_bd_ul//g" -e "s/g0_bd_lu//g"
+      filter: sed -e "s/_start//g" -e "s/f0_bd_u_neg//g" -e "s/f0_bd_u_pos//g" -e "s/f0_bd_l//g" -e "s/g0_bd_ul_neg//g" -e "s/g0_bd_ul_pos//g" -e "s/g0_bd_lu//g" -e "s~_ZL.*~~g"
+
     test:
       suffix: quad_t2_0
       nsize: 2
       args: -dim 2 -cell_simplex 0 -test_num 2
-      filter: sed -e "s/_start//g" -e "s/f0_bd_u//g" -e "s/f0_bd_l//g" -e "s/g0_bd_ul//g" -e "s/g0_bd_lu//g"
+      filter: sed -e "s/_start//g" -e "s/f0_bd_u_neg//g" -e "s/f0_bd_u_pos//g" -e "s/f0_bd_l//g" -e "s/g0_bd_ul_neg//g" -e "s/g0_bd_ul_pos//g" -e "s/g0_bd_lu//g" -e "s~_ZL.*~~g"
+
     test:
       # TODO: The PetscSF is wrong here (connects to wrong side of split)
       suffix: quad_t3_0
       nsize: 2
       args: -dim 2 -cell_simplex 0 -test_num 3
-      filter: sed -e "s/_start//g" -e "s/f0_bd_u//g" -e "s/f0_bd_l//g" -e "s/g0_bd_ul//g" -e "s/g0_bd_lu//g"
+      filter: sed -e "s/_start//g" -e "s/f0_bd_u_neg//g" -e "s/f0_bd_u_pos//g" -e "s/f0_bd_l//g" -e "s/g0_bd_ul_neg//g" -e "s/g0_bd_ul_pos//g" -e "s/g0_bd_lu//g" -e "s~_ZL.*~~g"
+
     # 3D Hex
     test:
       suffix: hex_0
       args: -dim 3 -cell_simplex 0
-      filter: sed -e "s/_start//g" -e "s/f0_bd_u//g" -e "s/f0_bd_l//g" -e "s/g0_bd_ul//g" -e "s/g0_bd_lu//g"
+      filter: sed -e "s/_start//g" -e "s/f0_bd_u_neg//g" -e "s/f0_bd_u_pos//g" -e "s/f0_bd_l//g" -e "s/g0_bd_ul_neg//g" -e "s/g0_bd_ul_pos//g" -e "s/g0_bd_lu//g" -e "s~_ZL.*~~g"
     test:
       suffix: hex_1
       nsize: 2
       args: -dim 3 -cell_simplex 0
-      filter: sed -e "s/_start//g" -e "s/f0_bd_u//g" -e "s/f0_bd_l//g" -e "s/g0_bd_ul//g" -e "s/g0_bd_lu//g"
+      filter: sed -e "s/_start//g" -e "s/f0_bd_u_neg//g" -e "s/f0_bd_u_pos//g" -e "s/f0_bd_l//g" -e "s/g0_bd_ul_neg//g" -e "s/g0_bd_ul_pos//g" -e "s/g0_bd_lu//g" -e "s~_ZL.*~~g"
     test:
       suffix: hex_t1_0
       args: -dim 3 -cell_simplex 0 -test_num 1
-      filter: sed -e "s/_start//g" -e "s/f0_bd_u//g" -e "s/f0_bd_l//g" -e "s/g0_bd_ul//g" -e "s/g0_bd_lu//g"
+      filter: sed -e "s/_start//g" -e "s/f0_bd_u_neg//g" -e "s/f0_bd_u_pos//g" -e "s/f0_bd_l//g" -e "s/g0_bd_ul_neg//g" -e "s/g0_bd_ul_pos//g" -e "s/g0_bd_lu//g" -e "s~_ZL.*~~g"
     test:
       suffix: hex_t2_0
       args: -dim 3 -cell_simplex 0 -test_num 2
-      filter: sed -e "s/_start//g" -e "s/f0_bd_u//g" -e "s/f0_bd_l//g" -e "s/g0_bd_ul//g" -e "s/g0_bd_lu//g"
+      filter: sed -e "s/_start//g" -e "s/f0_bd_u_neg//g" -e "s/f0_bd_u_pos//g" -e "s/f0_bd_l//g" -e "s/g0_bd_ul_neg//g" -e "s/g0_bd_ul_pos//g" -e "s/g0_bd_lu//g" -e "s~_ZL.*~~g"
 
 TEST*/

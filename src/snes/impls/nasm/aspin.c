@@ -1,7 +1,7 @@
 #include <petsc/private/snesimpl.h> /*I   "petscsnes.h"   I*/
 #include <petscdm.h>
 
-PetscErrorCode MatMultASPIN(Mat m, Vec X, Vec Y)
+static PetscErrorCode MatMultASPIN(Mat m, Vec X, Vec Y)
 {
   void       *ctx;
   SNES        snes;

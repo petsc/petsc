@@ -2,8 +2,7 @@
     Private data structure for Chebyshev Iteration
 */
 
-#ifndef PETSC_CHEBYSHEVIMPL_H
-#define PETSC_CHEBYSHEVIMPL_H
+#pragma once
 
 #include <petsc/private/kspimpl.h>
 
@@ -26,5 +25,3 @@ typedef struct {
 
 /* given the polynomial order, return tabulated beta coefficients for use in opt. 4th-kind Chebyshev smoother */
 PETSC_INTERN PetscErrorCode KSPChebyshevGetBetas_Private(KSP);
-
-#endif // PETSC_CHEBYSHEVIMPL_H

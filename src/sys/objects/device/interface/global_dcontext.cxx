@@ -80,7 +80,7 @@ static PetscErrorCode PetscDeviceContextSetupGlobalContext_Private() noexcept
 PetscErrorCode PetscDeviceContextGetCurrentContext(PetscDeviceContext *dctx)
 {
   PetscFunctionBegin;
-  PetscValidPointer(dctx, 1);
+  PetscAssertPointer(dctx, 1);
   PetscCall(PetscDeviceContextSetupGlobalContext_Private());
   /* while the static analyzer can find global variables, it will throw a warning about not
    * being able to connect this back to the function arguments */

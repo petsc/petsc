@@ -9,27 +9,28 @@ PETSC_EXTERN int gettimeofday(struct timeval *, struct timezone *);
 #endif
 
 /*@C
-    PetscGetDate - Gets the current date.
+  PetscGetDate - Gets the current date.
 
-   Not Collective
+  Not Collective
 
   Input Parameter:
-.  len - length of string to hold date
+. len - length of string to hold date
 
   Output Parameter:
-.  date - the date
+. date - the date
 
   Level: beginner
 
   Note:
   This function makes a system call and thus SHOULD NOT be called from an error handler.
 
-  Developer Note:
+  Developer Notes:
   This function is called once during `PetscInitialize()`.
   It stashes the timestamp, and uses it when needed. This is so that
   error handlers may report the date without generating possible
   additional system errors during the call to get the date.
 
+.seealso: `PetscGetHostName()`
 @*/
 PetscErrorCode PetscGetDate(char date[], size_t len)
 {

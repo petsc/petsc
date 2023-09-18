@@ -7,11 +7,11 @@ static PetscBool VecTaggerPackageInitialized = PETSC_FALSE;
 PetscBool VecTaggerRegisterAllCalled;
 
 /*@C
-   VecTaggerInitializePackage - Initialize VecTagger package
+  VecTaggerInitializePackage - Initialize VecTagger package
 
-   Logically Collective
+  Logically Collective
 
-   Level: developer
+  Level: developer
 
 .seealso: `VecTaggerFinalizePackage()`
 @*/
@@ -28,11 +28,11 @@ PetscErrorCode VecTaggerInitializePackage(void)
 }
 
 /*@C
-   VecTaggerFinalizePackage - Finalize VecTagger package, it is called from PetscFinalize()
+  VecTaggerFinalizePackage - Finalize VecTagger package, it is called from PetscFinalize()
 
-   Logically Collective
+  Logically Collective
 
-   Level: developer
+  Level: developer
 
 .seealso: `VecTaggerInitializePackage()`
 @*/

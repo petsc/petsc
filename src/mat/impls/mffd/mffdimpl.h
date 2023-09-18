@@ -8,8 +8,7 @@
           F'(u)a  ~=  ----------------
                             h
 */
-#ifndef PETSC_MFFDIMPL_H
-#define PETSC_MFFDIMPL_H
+#pragma once
 
 #include <petscmat.h> /*I  "petscmat.h"   I*/
 #include <petsc/private/petscimpl.h>
@@ -40,7 +39,7 @@ struct _p_MatMFFD {
   PetscErrorCode (*checkh)(void *, Vec, Vec, PetscScalar *);
   void *checkhctx; /* optional context used by MatMFFDSetCheckh() */
 
-  PetscErrorCode (*func)(void *, Vec, Vec); /* function used for matrix free */
+  PetscErrorCode (*func)(void *, Vec, Vec); /* function used for matrix-free */
   void     *funcctx;                        /* the context for the function */
   Vec       current_f;                      /* location of F(u); used with F(u+h) */
   PetscBool current_f_allocated;
@@ -58,5 +57,3 @@ struct _p_MatMFFD {
 PETSC_EXTERN PetscFunctionList MatMFFDList;
 PETSC_EXTERN PetscBool         MatMFFDRegisterAllCalled;
 PETSC_EXTERN PetscErrorCode    MatMFFDRegisterAll(void);
-
-#endif // PETSC_MFFDIMPL_H

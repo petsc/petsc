@@ -3,22 +3,22 @@
   2 KSP Residual norm 0.284905 
   3 KSP Residual norm 0.139317 
   4 KSP Residual norm 0.0192523 
-  5 KSP Residual norm 0.00651144 
+  5 KSP Residual norm 0.00651145 
   6 KSP Residual norm 0.00059631 
   7 KSP Residual norm 3.67561e-05 
-  8 KSP Residual norm 9.0696e-07 
+  8 KSP Residual norm 9.06958e-07 
 KSP Object: 1 MPI process
   type: gmres
     restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with one step of iterative refinement
     happy breakdown tolerance 1e-30
   maximum iterations=10000, initial guess is zero
-  tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+  tolerances:  relative=1e-05, absolute=1e-25, divergence=10000.
   left preconditioning
   using PRECONDITIONED norm type for convergence test
 PC Object: 1 MPI process
   type: eisenstat
-  omega = 1.
-  Using diagonal scaling (default)
+    omega = 1.
+    Using diagonal scaling (default)
   linear system matrix = precond matrix:
   Mat Object: 1 MPI process
     type: seqaijcusparse
@@ -26,9 +26,28 @@ PC Object: 1 MPI process
     total: nonzeros=28, allocated nonzeros=28
     total number of mallocs used during MatSetValues calls=0
       not using I-node routines
-Norm of error 4.28168e-07, Iterations 8
-0 KSP Residual norm 1.43759
-1 KSP Residual norm 0.0531118
-2 KSP Residual norm 0.00135003
-3 KSP Residual norm 2.87687e-05
-4 KSP Residual norm 5.25494e-07
+Norm of error 9.83025e-07, Iterations 8
+  0 KSP Residual norm 1.43759 
+  1 KSP Residual norm 0.0531118 
+  2 KSP Residual norm 0.00135003 
+  3 KSP Residual norm 2.87686e-05 
+  4 KSP Residual norm 5.25494e-07 
+KSP Object: 1 MPI process
+  type: gmres
+    restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with one step of iterative refinement
+    happy breakdown tolerance 1e-30
+  maximum iterations=10000, initial guess is zero
+  tolerances:  relative=1e-05, absolute=1e-25, divergence=10000.
+  left preconditioning
+  using PRECONDITIONED norm type for convergence test
+PC Object: 1 MPI process
+  type: eisenstat
+    omega = 1.
+    Using diagonal scaling (default)
+  linear system matrix = precond matrix:
+  Mat Object: 1 MPI process
+    type: seqaijcusparse
+    rows=10, cols=10
+    total: nonzeros=28, allocated nonzeros=28
+    total number of mallocs used during MatSetValues calls=0
+      not using I-node routines

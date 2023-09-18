@@ -20,11 +20,11 @@ PetscErrorCode VecTaggerGetSubs_AndOr(VecTagger tagger, PetscInt *nsubs, VecTagg
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tagger, VEC_TAGGER_CLASSID, 1);
   if (nsubs) {
-    PetscValidIntPointer(nsubs, 2);
+    PetscAssertPointer(nsubs, 2);
     *nsubs = andOr->nsubs;
   }
   if (subs) {
-    PetscValidPointer(subs, 3);
+    PetscAssertPointer(subs, 3);
     *subs = andOr->subs;
   }
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -37,7 +37,7 @@ PetscErrorCode VecTaggerSetSubs_AndOr(VecTagger tagger, PetscInt nsubs, VecTagge
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tagger, VEC_TAGGER_CLASSID, 1);
-  if (subs) PetscValidPointer(subs, 3);
+  if (subs) PetscAssertPointer(subs, 3);
   if (nsubs == andOr->nsubs && subs == andOr->subs && mode != PETSC_COPY_VALUES) PetscFunctionReturn(PETSC_SUCCESS);
   if (subs) {
     for (i = 0; i < nsubs; i++) PetscCall(PetscObjectReference((PetscObject)subs[i]));

@@ -1,8 +1,7 @@
 /*
     Contains all error handling interfaces for PETSc.
 */
-#ifndef PETSCERROR_H
-#define PETSCERROR_H
+#pragma once
 
 #include <petscmacros.h>
 #include <petscsystypes.h>
@@ -13,15 +12,15 @@
 
 /* SUBMANSEC = Sys */
 
-#define SETERRQ1(...) PETSC_DEPRECATED_MACRO("GCC warning \"Use SETERRQ() (since version 3.17)\"") SETERRQ(__VA_ARGS__)
-#define SETERRQ2(...) PETSC_DEPRECATED_MACRO("GCC warning \"Use SETERRQ() (since version 3.17)\"") SETERRQ(__VA_ARGS__)
-#define SETERRQ3(...) PETSC_DEPRECATED_MACRO("GCC warning \"Use SETERRQ() (since version 3.17)\"") SETERRQ(__VA_ARGS__)
-#define SETERRQ4(...) PETSC_DEPRECATED_MACRO("GCC warning \"Use SETERRQ() (since version 3.17)\"") SETERRQ(__VA_ARGS__)
-#define SETERRQ5(...) PETSC_DEPRECATED_MACRO("GCC warning \"Use SETERRQ() (since version 3.17)\"") SETERRQ(__VA_ARGS__)
-#define SETERRQ6(...) PETSC_DEPRECATED_MACRO("GCC warning \"Use SETERRQ() (since version 3.17)\"") SETERRQ(__VA_ARGS__)
-#define SETERRQ7(...) PETSC_DEPRECATED_MACRO("GCC warning \"Use SETERRQ() (since version 3.17)\"") SETERRQ(__VA_ARGS__)
-#define SETERRQ8(...) PETSC_DEPRECATED_MACRO("GCC warning \"Use SETERRQ() (since version 3.17)\"") SETERRQ(__VA_ARGS__)
-#define SETERRQ9(...) PETSC_DEPRECATED_MACRO("GCC warning \"Use SETERRQ() (since version 3.17)\"") SETERRQ(__VA_ARGS__)
+#define SETERRQ1(...) PETSC_DEPRECATED_MACRO(3, 17, 0, "SETERRQ", ) SETERRQ(__VA_ARGS__)
+#define SETERRQ2(...) PETSC_DEPRECATED_MACRO(3, 17, 0, "SETERRQ", ) SETERRQ(__VA_ARGS__)
+#define SETERRQ3(...) PETSC_DEPRECATED_MACRO(3, 17, 0, "SETERRQ", ) SETERRQ(__VA_ARGS__)
+#define SETERRQ4(...) PETSC_DEPRECATED_MACRO(3, 17, 0, "SETERRQ", ) SETERRQ(__VA_ARGS__)
+#define SETERRQ5(...) PETSC_DEPRECATED_MACRO(3, 17, 0, "SETERRQ", ) SETERRQ(__VA_ARGS__)
+#define SETERRQ6(...) PETSC_DEPRECATED_MACRO(3, 17, 0, "SETERRQ", ) SETERRQ(__VA_ARGS__)
+#define SETERRQ7(...) PETSC_DEPRECATED_MACRO(3, 17, 0, "SETERRQ", ) SETERRQ(__VA_ARGS__)
+#define SETERRQ8(...) PETSC_DEPRECATED_MACRO(3, 17, 0, "SETERRQ", ) SETERRQ(__VA_ARGS__)
+#define SETERRQ9(...) PETSC_DEPRECATED_MACRO(3, 17, 0, "SETERRQ", ) SETERRQ(__VA_ARGS__)
 
 /*MC
    SETERRQ - Macro to be called when an error has been detected,
@@ -45,7 +44,7 @@
 
     Experienced users can set the error handler with `PetscPushErrorHandler()`.
 
-   Fortran Notes:
+   Fortran Note:
    `SETERRQ()` may be called from Fortran subroutines but `SETERRA()` must be called from the
    Fortran main program.
 
@@ -155,13 +154,11 @@ M*/
 /*MC
   PetscCheck - Check that a particular condition is true
 
-  No Fortran Support
-
   Synopsis:
   #include <petscerror.h>
   void PetscCheck(bool cond, MPI_Comm comm, PetscErrorCode ierr, const char *message, ...)
 
-  Collective
+  Collective; No Fortran Support
 
   Input Parameters:
 + cond    - The boolean condition
@@ -187,13 +184,11 @@ M*/
 /*MC
   PetscCheckAbort - Check that a particular condition is true, otherwise prints error and aborts
 
-  No Fortran Support
-
   Synopsis:
   #include <petscerror.h>
   void PetscCheckAbort(bool cond, MPI_Comm comm, PetscErrorCode ierr, const char *message, ...)
 
-  Collective
+  Collective; No Fortran Support
 
   Input Parameters:
 + cond    - The boolean condition
@@ -219,13 +214,11 @@ M*/
 /*MC
   PetscAssert - Assert that a particular condition is true
 
-  No Fortran Support
-
   Synopsis:
   #include <petscerror.h>
   void PetscAssert(bool cond, MPI_Comm comm, PetscErrorCode ierr, const char *message, ...)
 
-  Collective
+  Collective; No Fortran Support
 
   Input Parameters:
 + cond    - The boolean condition
@@ -253,13 +246,11 @@ M*/
 /*MC
   PetscAssertAbort - Assert that a particular condition is true, otherwise prints error and aborts
 
-  No Fortran Support
-
   Synopsis:
   #include <petscerror.h>
   void PetscAssertAbort(bool cond, MPI_Comm comm, PetscErrorCode ierr, const char *message, ...)
 
-  Collective
+  Collective; No Fortran Support
 
   Input Parameters:
 + cond    - The boolean condition
@@ -379,13 +370,11 @@ M*/
   PetscCallBack - Calls a user provided PETSc callback function and then checks the resulting error code, if it is non-zero it calls the error
   handler and returns from the current function with the error code.
 
-  No Fortran Support
-
   Synopsis:
   #include <petscerror.h>
   void PetscCallBack(const char *functionname,PetscFunction(args))
 
-  Not Collective
+  Not Collective; No Fortran Support
 
   Input Parameters:
 + functionname - the name of the function being called, this can be a string with spaces that describes the meaning of the callback
@@ -411,13 +400,11 @@ M*/
 /*MC
   PetscCallVoid - Like `PetscCall()` but for functions returning `void`
 
-  No Fortran Support
-
   Synopsis:
   #include <petscerror.h>
   void PetscCall(PetscFunction(args))
 
-  Not Collective
+  Not Collective; No Fortran Support
 
   Input Parameter:
 . PetscFunction - any PETSc function that returns an error code
@@ -786,17 +773,16 @@ M*/
 
 PETSC_EXTERN PetscBool petscwaitonerrorflg;
 PETSC_EXTERN PetscBool petscindebugger;
+PETSC_EXTERN PetscBool petscabortmpifinalize;
 
 /*MC
    PETSCABORT - Call `MPI_Abort()` with an informative error code
-
-   No Fortran Support
 
    Synopsis:
    #include <petscsys.h>
    PETSCABORT(MPI_Comm comm, PetscErrorCode ierr)
 
-   Collective
+   Collective; No Fortran Support
 
    Input Parameters:
 +  comm - A communicator, so that the error can be collective
@@ -834,7 +820,7 @@ void PETSCABORT(MPI_Comm, PetscErrorCode);
         PetscMPIInt size_; \
         ierr_petsc_abort_ = __VA_ARGS__; \
         MPI_Comm_size(comm, &size_); \
-        if (PetscCIEnabledPortableErrorOutput && size_ == PetscGlobalSize && ierr_petsc_abort_ != PETSC_ERR_SIG) { \
+        if (PetscCIEnabledPortableErrorOutput && (size_ == PetscGlobalSize || petscabortmpifinalize) && ierr_petsc_abort_ != PETSC_ERR_SIG) { \
           MPI_Finalize(); \
           exit(0); \
         } else if (PetscCIEnabledPortableErrorOutput && PetscGlobalSize == 1) { \
@@ -1151,7 +1137,7 @@ PETSC_EXTERN PetscErrorCode PetscPushSignalHandler(PetscErrorCode (*)(int, void 
 PETSC_EXTERN PetscErrorCode PetscPopSignalHandler(void);
 PETSC_EXTERN PetscErrorCode PetscCheckPointerSetIntensity(PetscInt);
 PETSC_EXTERN void           PetscSignalSegvCheckPointerOrMpi(void);
-PETSC_DEPRECATED_FUNCTION("Use PetscSignalSegvCheckPointerOrMpi() (since version 3.13)") static inline void PetscSignalSegvCheckPointer(void)
+PETSC_DEPRECATED_FUNCTION(3, 13, 0, "PetscSignalSegvCheckPointerOrMpi()", ) static inline void PetscSignalSegvCheckPointer(void)
 {
   PetscSignalSegvCheckPointerOrMpi();
 }
@@ -1159,11 +1145,11 @@ PETSC_DEPRECATED_FUNCTION("Use PetscSignalSegvCheckPointerOrMpi() (since version
 /*MC
     PetscErrorPrintf - Prints error messages.
 
-    Not Collective; No Fortran Support
-
    Synopsis:
     #include <petscsys.h>
      PetscErrorCode (*PetscErrorPrintf)(const char format[],...);
+
+    Not Collective; No Fortran Support
 
     Input Parameter:
 .   format - the usual `printf()` format string
@@ -1201,7 +1187,7 @@ PETSC_EXTERN PetscErrorCode (*PetscErrorPrintf)(const char[], ...) PETSC_ATTRIBU
 
      Level: intermediate
 
-.seealso: `PetscSetFPTrap()`, `PetscPushFPTrap()`
+.seealso: `PetscSetFPTrap()`, `PetscFPTrapPush()`
  E*/
 typedef enum {
   PETSC_FP_TRAP_OFF      = 0,
@@ -1307,11 +1293,11 @@ PETSC_EXTERN PetscStack petscstack;
    PetscStackPushNoCheck - Pushes a new function name and line number onto the PETSc default stack that tracks where the running program is
    currently in the source code.
 
-   Not Collective
-
    Synopsis:
    #include <petscsys.h>
    void PetscStackPushNoCheck(char *funct,int petsc_routine,PetscBool hot);
+
+   Not Collective
 
    Input Parameters:
 +  funct - the function name
@@ -1346,11 +1332,11 @@ M*/
    PetscStackUpdateLine - in a function that has a `PetscFunctionBegin` or `PetscFunctionBeginUser` updates the stack line number to the
    current line number.
 
-   Not Collective
-
    Synopsis:
    #include <petscsys.h>
    void PetscStackUpdateLine
+
+   Not Collective
 
    Level: developer
 
@@ -1377,11 +1363,11 @@ M*/
    currently in the source code. Does not include the filename or line number since this is called by the calling routine
    for non-PETSc or user functions.
 
-   Not Collective
-
    Synopsis:
    #include <petscsys.h>
    void PetscStackPushExternal(char *funct);
+
+   Not Collective
 
    Input Parameter:
 .  funct - the function name
@@ -1408,17 +1394,17 @@ M*/
     do { \
       PetscStackUpdateLine; \
       PetscStackPushNoCheck(funct, 0, PETSC_TRUE); \
-    } while (0);
+    } while (0)
 
   /*MC
    PetscStackPopNoCheck - Pops a function name from the PETSc default stack that tracks where the running program is
    currently in the source code.
 
-   Not Collective
-
    Synopsis:
    #include <petscsys.h>
    void PetscStackPopNoCheck(char *funct);
+
+   Not Collective
 
    Input Parameter:
 .   funct - the function name
@@ -1557,11 +1543,11 @@ M*/
    PetscStackPush - Pushes a new function name and line number onto the PETSc default stack that tracks where the running program is
    currently in the source code and verifies the memory is not corrupted.
 
-   Not Collective
-
    Synopsis:
    #include <petscsys.h>
    void PetscStackPush(char *funct)
+
+   Not Collective
 
    Input Parameter:
 .  funct - the function name
@@ -1588,11 +1574,11 @@ M*/
    PetscStackPop - Pops a function name from the PETSc default stack that tracks where the running program is
    currently in the source code and verifies the memory is not corrupted.
 
-   Not Collective
-
    Synopsis:
    #include <petscsys.h>
    void PetscStackPop
+
+   Not Collective
 
    Level: developer
 
@@ -1748,7 +1734,7 @@ void PetscCallExternal(F, Args...);
 @*/
   #define PetscStackCallExternalVoid(name, ...) \
     do { \
-      PetscStackPush(name); \
+      PetscStackPushExternal(name); \
       __VA_ARGS__; \
       PetscStackPop; \
     } while (0)
@@ -1782,5 +1768,3 @@ M*/
       PetscCheck(ierr_petsc_call_external_ == 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in %s(): error code %d", PetscStringize(func), ierr_petsc_call_external_); \
     } while (0)
 #endif /* PETSC_CLANG_STATIC_ANALYZER */
-
-#endif

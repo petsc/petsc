@@ -25,7 +25,7 @@ typedef struct {
   PetscBool CleanUpESSL;
 } Mat_Essl;
 
-PetscErrorCode MatDestroy_Essl(Mat A)
+static PetscErrorCode MatDestroy_Essl(Mat A)
 {
   Mat_Essl *essl = (Mat_Essl *)A->data;
 
@@ -35,7 +35,7 @@ PetscErrorCode MatDestroy_Essl(Mat A)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatSolve_Essl(Mat A, Vec b, Vec x)
+static PetscErrorCode MatSolve_Essl(Mat A, Vec b, Vec x)
 {
   Mat_Essl    *essl = (Mat_Essl *)A->data;
   PetscScalar *xx;
@@ -50,7 +50,7 @@ PetscErrorCode MatSolve_Essl(Mat A, Vec b, Vec x)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatLUFactorNumeric_Essl(Mat F, Mat A, const MatFactorInfo *info)
+static PetscErrorCode MatLUFactorNumeric_Essl(Mat F, Mat A, const MatFactorInfo *info)
 {
   Mat_SeqAIJ *aa   = (Mat_SeqAIJ *)(A)->data;
   Mat_Essl   *essl = (Mat_Essl *)(F)->data;
@@ -82,7 +82,7 @@ PetscErrorCode MatLUFactorNumeric_Essl(Mat F, Mat A, const MatFactorInfo *info)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatLUFactorSymbolic_Essl(Mat B, Mat A, IS r, IS c, const MatFactorInfo *info)
+static PetscErrorCode MatLUFactorSymbolic_Essl(Mat B, Mat A, IS r, IS c, const MatFactorInfo *info)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ *)A->data;
   Mat_Essl   *essl;
@@ -106,7 +106,7 @@ PetscErrorCode MatLUFactorSymbolic_Essl(Mat B, Mat A, IS r, IS c, const MatFacto
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatFactorGetSolverType_essl(Mat A, MatSolverType *type)
+static PetscErrorCode MatFactorGetSolverType_essl(Mat A, MatSolverType *type)
 {
   PetscFunctionBegin;
   *type = MATSOLVERESSL;
@@ -120,7 +120,7 @@ PetscErrorCode MatFactorGetSolverType_essl(Mat A, MatSolverType *type)
 
    Level: beginner
 
-.seealso: [](chapter_matrices), `Mat`, `PCLU`, `PCFactorSetMatSolverType()`, `MatSolverType`
+.seealso: [](ch_matrices), `Mat`, `PCLU`, `PCFactorSetMatSolverType()`, `MatSolverType`
 M*/
 
 PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_essl(Mat A, MatFactorType ftype, Mat *F)

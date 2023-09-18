@@ -1,5 +1,4 @@
-#ifndef PETSC_SEGMENTEDMEMPOOL_HPP
-#define PETSC_SEGMENTEDMEMPOOL_HPP
+#pragma once
 
 #include <petsc/private/deviceimpl.h>
 
@@ -803,8 +802,8 @@ inline PetscErrorCode SegmentedMemoryPool<MemType, StreamType, AllocType, Defaul
 
   PetscFunctionBegin;
   PetscAssert(req_size >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Requested memory amount (%" PetscInt_FMT ") must be >= 0", req_size);
-  PetscValidPointer(ptr, 2);
-  PetscValidPointer(stream, 3);
+  PetscAssertPointer(ptr, 2);
+  PetscAssertPointer(stream, 3);
   if (req_size) {
     const auto size         = static_cast<size_type>(req_size);
     auto       aligned_size = alignment == alignof(char) ? size : size + alignment;
@@ -836,8 +835,8 @@ template <typename MemType, typename StreamType, typename AllocType, std::size_t
 inline PetscErrorCode SegmentedMemoryPool<MemType, StreamType, AllocType, DefaultChunkSize>::deallocate(value_type **ptr, const stream_type *stream) noexcept
 {
   PetscFunctionBegin;
-  PetscValidPointer(ptr, 1);
-  PetscValidPointer(stream, 2);
+  PetscAssertPointer(ptr, 1);
+  PetscAssertPointer(stream, 2);
   // nobody owns a nullptr, and if they do then they have bigger problems
   if (!*ptr) PetscFunctionReturn(PETSC_SUCCESS);
   for (auto &block : pool_) {
@@ -876,8 +875,8 @@ inline PetscErrorCode SegmentedMemoryPool<MemType, StreamType, AllocType, Defaul
 
   PetscFunctionBegin;
   PetscAssert(new_req_size >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Requested memory amount (%" PetscInt_FMT ") must be >= 0", new_req_size);
-  PetscValidPointer(ptr, 2);
-  PetscValidPointer(stream, 3);
+  PetscAssertPointer(ptr, 2);
+  PetscAssertPointer(stream, 3);
 
   // if reallocating to zero, just free
   if (PetscUnlikely(new_size == 0)) {
@@ -908,5 +907,3 @@ inline PetscErrorCode SegmentedMemoryPool<MemType, StreamType, AllocType, Defaul
 } // namespace memory
 
 } // namespace Petsc
-
-#endif // PETSC_SEGMENTEDMEMPOOL_HPP

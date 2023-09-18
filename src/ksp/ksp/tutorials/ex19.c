@@ -13,15 +13,15 @@ Input parameters include:\n\
 
 int main(int argc, char **args)
 {
-  Vec         x, b, u; /* approx solution, RHS, exact solution */
-  Mat         A, Pmat; /* linear system matrix */
-  KSP         ksp;     /* linear solver context */
-  PetscReal   norm;    /* norm of solution error */
+  Vec         x, b, u;           /* approx solution, RHS, exact solution */
+  Mat         A, Pmat, Aseq, AA; /* linear system matrix */
+  KSP         ksp;               /* linear solver context */
+  PetscReal   norm, norm0;       /* norm of solution error */
   PetscInt    i, j, Ii, J, Istart, Iend, n = 7, m = 8, its, nblocks = 2;
-  PetscBool   flg;
+  PetscBool   flg, ismpi;
   PetscScalar v;
   PetscMPIInt size, rank;
-  IS         *is_loc = NULL;
+  IS         *loc_blocks = NULL;
   PC          pc;
 
   PetscFunctionBeginUser;
@@ -40,12 +40,6 @@ int main(int argc, char **args)
   PetscCall(MatSetFromOptions(A));
   PetscCall(MatSeqAIJSetPreallocation(A, 5, NULL));
   PetscCall(MatMPIAIJSetPreallocation(A, 5, NULL, 3, NULL));
-  // MatDuplicate keeps the zero
-  PetscCall(MatCreate(PETSC_COMM_WORLD, &Pmat));
-  PetscCall(MatSetSizes(Pmat, PETSC_DECIDE, PETSC_DECIDE, n * m, n * m));
-  PetscCall(MatSetFromOptions(Pmat));
-  PetscCall(MatSeqAIJSetPreallocation(Pmat, 5, NULL));
-  PetscCall(MatMPIAIJSetPreallocation(Pmat, 5, NULL, 3, NULL));
   /*
      Currently, all PETSc parallel matrix formats are partitioned by
      contiguous chunks of rows across the processors.  Determine which
@@ -53,8 +47,8 @@ int main(int argc, char **args)
   */
   PetscCall(MatGetOwnershipRange(A, &Istart, &Iend));
   /*
-     Set matrix elements for the 2-D, five-point stencil.
-   */
+    Set matrix elements for the 2-D, five-point stencil.
+    */
   for (Ii = Istart; Ii < Iend; Ii++) {
     v = -1.0;
     i = Ii / n;
@@ -80,6 +74,52 @@ int main(int argc, char **args)
   }
   PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+                Setup ASM solver and batched KSP solver data
+     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+  /* make explicit block matrix for batch solver */
+  PetscCall(PetscObjectBaseTypeCompare((PetscObject)A, MATMPIAIJ, &ismpi));
+  if (!ismpi) {
+    Aseq = A;
+  } else {
+    PetscCall(MatMPIAIJGetSeqAIJ(A, &Aseq, NULL, NULL));
+  }
+  PetscCall(PCASMCreateSubdomains(Aseq, nblocks, &loc_blocks)); // A
+  Mat nest, arrray[10000];
+  for (Ii = 0; Ii < 10000; Ii++) arrray[Ii] = NULL;
+  for (PetscInt bid = 0; bid < nblocks; bid++) {
+    Mat matblock;
+    PetscCall(MatCreateSubMatrix(Aseq, loc_blocks[bid], loc_blocks[bid], MAT_INITIAL_MATRIX, &matblock));
+    //PetscCall(MatViewFromOptions(matblock, NULL, "-view_b"));
+    arrray[bid * nblocks + bid] = matblock;
+  }
+  PetscCall(MatCreate(PETSC_COMM_SELF, &nest));
+  PetscCall(MatSetFromOptions(nest));
+  PetscCall(MatSetType(nest, MATNEST));
+  PetscCall(MatNestSetSubMats(nest, nblocks, NULL, nblocks, NULL, arrray));
+  PetscCall(MatSetUp(nest));
+  PetscCall(MatConvert(nest, MATAIJKOKKOS, MAT_INITIAL_MATRIX, &AA));
+  PetscCall(MatDestroy(&nest));
+  for (PetscInt bid = 0; bid < nblocks; bid++) PetscCall(MatDestroy(&arrray[bid * nblocks + bid]));
+  if (ismpi) {
+    Mat AAseq;
+    PetscCall(MatCreate(PETSC_COMM_WORLD, &Pmat));
+    PetscCall(MatSetSizes(Pmat, Iend - Istart, Iend - Istart, n * m, n * m));
+    PetscCall(MatSetFromOptions(Pmat));
+    PetscCall(MatSeqAIJSetPreallocation(Pmat, 5, NULL));
+    PetscCall(MatMPIAIJSetPreallocation(Pmat, 5, NULL, 3, NULL));
+    PetscCall(MatAssemblyBegin(Pmat, MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyEnd(Pmat, MAT_FINAL_ASSEMBLY));
+    PetscCall(MatMPIAIJGetSeqAIJ(Pmat, &AAseq, NULL, NULL));
+    PetscCheck(AAseq, PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "No A mat");
+    PetscCall(MatAXPY(AAseq, 1.0, AA, DIFFERENT_NONZERO_PATTERN));
+    PetscCall(MatDestroy(&AA));
+  } else {
+    Pmat = AA;
+  }
+  PetscCall(MatViewFromOptions(Pmat, NULL, "-view_p"));
+  PetscCall(MatViewFromOptions(A, NULL, "-view_a"));
+
   /* A is symmetric. Set symmetric flag to enable ICC/Cholesky preconditioner */
   PetscCall(MatSetOption(A, MAT_SYMMETRIC, PETSC_TRUE));
   PetscCall(MatCreateVecs(A, &u, &b));
@@ -97,53 +137,7 @@ int main(int argc, char **args)
   flg = PETSC_FALSE;
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-view_exact_sol", &flg, NULL));
   if (flg) PetscCall(VecView(u, PETSC_VIEWER_STDOUT_WORLD));
-  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-                Setup ASM solver and batched KSP solver data
-     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  PetscCall(PCASMCreateSubdomains(A, nblocks, &is_loc));
-  {
-    MatScalar *AA;
-    PetscInt  *AJ, maxcols = 0, ncols;
-    for (PetscInt row = Istart; row < Iend; row++) {
-      PetscCall(MatGetRow(A, row, &ncols, NULL, NULL));
-      if (ncols > maxcols) maxcols = ncols;
-      PetscCall(MatRestoreRow(A, row, &ncols, NULL, NULL));
-    }
-    PetscCall(PetscMalloc2(maxcols, &AA, maxcols, &AJ));
-    /* make explicit block matrix for batch solver */
-    //if (rank==1) PetscCall(PetscPrintf(PETSC_COMM_SELF, "[%d] nblocks = %d\n", rank, nblocks));
-    for (PetscInt bid = 0; bid < nblocks; bid++) {
-      IS blk_is = is_loc[bid];
-      //if (rank==1) PetscCall(ISView(blk_is, PETSC_VIEWER_STDOUT_SELF));
-      const PetscInt *subdom, *cols;
-      PetscInt        n, ncol_row, jj;
-      PetscCall(ISGetIndices(blk_is, &subdom));
-      PetscCall(ISGetSize(blk_is, &n));
-      //if (rank==1) PetscCall(PetscPrintf(PETSC_COMM_SELF, "\t[%d] n[%d] = %d\n",rank,bid,n));
-      for (PetscInt ii = 0; ii < n; ii++) {
-        const MatScalar *vals;
-        //if (rank==1) PetscCall(PetscPrintf(PETSC_COMM_SELF, "\t\t[%d] subdom[%d] = %d\n",rank,ii,subdom[ii]));
-        PetscInt rowB = subdom[ii]; // global
-        PetscCall(MatGetRow(A, rowB, &ncols, &cols, &vals));
-        for (jj = ncol_row = 0; jj < ncols; jj++) {
-          PetscInt idx, colj = cols[jj];
-          PetscCall(ISLocate(blk_is, colj, &idx));
-          if (idx >= 0) {
-            AJ[ncol_row] = cols[jj];
-            AA[ncol_row] = vals[jj];
-            ncol_row++;
-          }
-        }
-        PetscCall(MatRestoreRow(A, rowB, &ncols, &cols, &vals));
-        PetscCall(MatSetValues(Pmat, 1, &rowB, ncol_row, AJ, AA, INSERT_VALUES));
-      }
-      PetscCall(ISRestoreIndices(blk_is, &subdom));
-    }
-    PetscCall(PetscFree2(AA, AJ));
-    PetscCall(MatAssemblyBegin(Pmat, MAT_FINAL_ASSEMBLY));
-    PetscCall(MatAssemblyEnd(Pmat, MAT_FINAL_ASSEMBLY));
-    PetscCall(MatViewFromOptions(Pmat, NULL, "-view_c"));
-  }
+
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
                 Create the linear solver and set various options
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -155,7 +149,18 @@ int main(int argc, char **args)
     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   PetscCall(KSPGetPC(ksp, &pc));
   PetscCall(PetscObjectTypeCompare((PetscObject)pc, PCASM, &flg));
-  if (flg && nblocks > 0) { PetscCall(PCASMSetLocalSubdomains(pc, nblocks, is_loc, NULL)); }
+  if (flg && nblocks > 0) {
+    for (PetscInt bid = 0, gid0 = Istart; bid < nblocks; bid++) {
+      PetscInt nn;
+      IS       new_loc_blocks;
+      PetscCall(ISGetSize(loc_blocks[bid], &nn)); // size only
+      PetscCall(ISCreateStride(PETSC_COMM_SELF, nn, gid0, 1, &new_loc_blocks));
+      PetscCall(ISDestroy(&loc_blocks[bid]));
+      loc_blocks[bid] = new_loc_blocks;
+      gid0 += nn; // start of next block
+    }
+    PetscCall(PCASMSetLocalSubdomains(pc, nblocks, loc_blocks, NULL));
+  }
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
                       Solve the linear system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -165,21 +170,22 @@ int main(int argc, char **args)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   PetscCall(VecAXPY(x, -1.0, u));
   PetscCall(VecNorm(x, NORM_2, &norm));
+  PetscCall(VecNorm(b, NORM_2, &norm0));
   PetscCall(KSPGetIterationNumber(ksp, &its));
   /*
      Print convergence information.
   */
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Norm of error %g iterations %" PetscInt_FMT "\n", (double)norm, its));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Relative norm of error %g iterations %" PetscInt_FMT "\n", (double)norm / norm0, its));
   /*
     cleanup
   */
   PetscCall(KSPDestroy(&ksp));
-  if (is_loc) {
+  if (loc_blocks) {
     if (0) {
-      for (PetscInt bid = 0; bid < nblocks; bid++) PetscCall(ISDestroy(&is_loc[bid]));
-      PetscCall(PetscFree(is_loc));
+      for (PetscInt bid = 0; bid < nblocks; bid++) PetscCall(ISDestroy(&loc_blocks[bid]));
+      PetscCall(PetscFree(loc_blocks));
     } else {
-      PetscCall(PCASMDestroySubdomains(nblocks, is_loc, NULL));
+      PetscCall(PCASMDestroySubdomains(nblocks, loc_blocks, NULL));
     }
   }
   PetscCall(VecDestroy(&u));
@@ -193,16 +199,30 @@ int main(int argc, char **args)
 
 /*TEST
   build:
-    requires: parmetis kokkos_kernels
+    requires: kokkos_kernels
   testset:
+    requires: parmetis
     args: -ksp_converged_reason -ksp_norm_type unpreconditioned -ksp_rtol 1e-4 -m 37 -n 23 -num_local_blocks 4
     nsize: 4
     output_file: output/ex19_0.out
     test:
       suffix: batch
-      args: -ksp_type cg -pc_type bjkokkos -pc_bjkokkos_ksp_max_it 60 -pc_bjkokkos_ksp_rtol 1e-1 -pc_bjkokkos_ksp_type tfqmr -pc_bjkokkos_pc_type jacobi -pc_bjkokkos_ksp_rtol 1e-3 -mat_type aijkokkos
+      args: -ksp_type cg -pc_type bjkokkos -pc_bjkokkos_ksp_max_it 60 -pc_bjkokkos_ksp_type tfqmr -pc_bjkokkos_pc_type jacobi -pc_bjkokkos_ksp_rtol 1e-3 -mat_type aijkokkos
     test:
       suffix: asm
       args: -ksp_type cg -pc_type asm -sub_pc_type jacobi -sub_ksp_type tfqmr -sub_ksp_rtol 1e-3
+    test:
+      suffix: batch_bicg
+      args:  -ksp_type cg -pc_type bjkokkos -pc_bjkokkos_ksp_max_it 60 -pc_bjkokkos_ksp_type bicg -pc_bjkokkos_pc_type jacobi -pc_bjkokkos_ksp_rtol 1e-3 -mat_type aijkokkos
+
+  test:
+    nsize: 4
+    suffix: no_metis_batch
+    args: -ksp_converged_reason -ksp_norm_type unpreconditioned -ksp_rtol 1e-6 -m 37 -n 23 -num_local_blocks 4 -ksp_type cg -pc_type bjkokkos -pc_bjkokkos_ksp_max_it 60 -pc_bjkokkos_ksp_type tfqmr -pc_bjkokkos_pc_type jacobi -pc_bjkokkos_ksp_rtol 1e-3 -mat_type aijkokkos
+
+  test:
+    nsize: 1
+    suffix: serial_batch
+    args: -ksp_monitor -ksp_converged_reason -ksp_norm_type unpreconditioned -ksp_rtol 1e-4 -m 37 -n 23 -num_local_blocks 16 -ksp_type cg -pc_type bjkokkos -pc_bjkokkos_ksp_max_it 60 -pc_bjkokkos_ksp_type tfqmr -pc_bjkokkos_pc_type jacobi -pc_bjkokkos_ksp_rtol 1e-6 -mat_type aijkokkos -pc_bjkokkos_ksp_converged_reason
 
  TEST*/

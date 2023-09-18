@@ -44,20 +44,20 @@ static PetscErrorCode DMRefineHook_DMKSP(DM dm, DM dmc, void *ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
-   DMKSPCopy - copies the information in a `DMKSP` to another `DMKSP`
+/*
+  DMKSPCopy - copies the information in a `DMKSP` to another `DMKSP`
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  kdm - Original `DMKSP`
--  nkdm - `DMKSP` to receive the data, created with `DMKSPCreate()`
+  Input Parameters:
++ kdm  - Original `DMKSP`
+- nkdm - `DMKSP` to receive the data, created with `DMKSPCreate()`
 
-   Level: developer
+  Level: developer
 
-.seealso: [](chapter_ksp), `DMKSPCreate()`, `DMKSPDestroy()`
-@*/
-PetscErrorCode DMKSPCopy(DMKSP kdm, DMKSP nkdm)
+.seealso: [](ch_ksp), `DMKSPCreate()`, `DMKSPDestroy()`
+*/
+static PetscErrorCode DMKSPCopy(DMKSP kdm, DMKSP nkdm)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(kdm, DMKSP_CLASSID, 1);
@@ -84,22 +84,22 @@ PetscErrorCode DMKSPCopy(DMKSP kdm, DMKSP nkdm)
 }
 
 /*@C
-   DMGetDMKSP - get read-only private `DMKSP` context from a `DM`
+  DMGetDMKSP - get read-only private `DMKSP` context from a `DM`
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameter:
-.  dm - `DM` used with a `KSP`
+  Input Parameter:
+. dm - `DM` used with a `KSP`
 
-   Output Parameter:
-.  snesdm - private `DMKSP` context
+  Output Parameter:
+. kspdm - private `DMKSP` context
 
-   Level: developer
+  Level: developer
 
-   Note:
-   Use `DMGetDMKSPWrite()` if write access is needed. The DMKSPSetXXX API should be used wherever possible.
+  Note:
+  Use `DMGetDMKSPWrite()` if write access is needed. The DMKSPSetXXX API should be used wherever possible.
 
-.seealso: [](chapter_ksp), `DMKSP`, `DM`, `KSP`, `DMGetDMKSPWrite()`
+.seealso: [](ch_ksp), `DMKSP`, `DM`, `KSP`, `DMGetDMKSPWrite()`
 @*/
 PetscErrorCode DMGetDMKSP(DM dm, DMKSP *kspdm)
 {
@@ -118,19 +118,19 @@ PetscErrorCode DMGetDMKSP(DM dm, DMKSP *kspdm)
 }
 
 /*@C
-   DMGetDMKSPWrite - get write access to private `DMKSP` context from a `DM`
+  DMGetDMKSPWrite - get write access to private `DMKSP` context from a `DM`
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameter:
-.  dm - `DM` used with a `KSP`
+  Input Parameter:
+. dm - `DM` used with a `KSP`
 
-   Output Parameter:
-.  kspdm - private `DMKSP` context
+  Output Parameter:
+. kspdm - private `DMKSP` context
 
-   Level: developer
+  Level: developer
 
-.seealso: [](chapter_ksp), `DMKSP`, `DM`, `KSP`, `DMGetDMKSP()`
+.seealso: [](ch_ksp), `DMKSP`, `DM`, `KSP`, `DMGetDMKSP()`
 @*/
 PetscErrorCode DMGetDMKSPWrite(DM dm, DMKSP *kspdm)
 {
@@ -154,20 +154,20 @@ PetscErrorCode DMGetDMKSPWrite(DM dm, DMKSP *kspdm)
 }
 
 /*@C
-   DMCopyDMKSP - copies a `DM` `DMKSP` context to a new `DM`
+  DMCopyDMKSP - copies a `DM` `DMKSP` context to a new `DM`
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  dmsrc - `DM` to obtain context from
--  dmdest - `DM` to add context to
+  Input Parameters:
++ dmsrc  - `DM` to obtain context from
+- dmdest - `DM` to add context to
 
-   Level: developer
+  Level: developer
 
-   Note:
-   The context is copied by reference. This function does not ensure that a context exists.
+  Note:
+  The context is copied by reference. This function does not ensure that a context exists.
 
-.seealso: [](chapter_ksp), `DMKSP`, `DM`, `KSP`, `DMGetDMKSP()`, `KSPSetDM()`
+.seealso: [](ch_ksp), `DMKSP`, `DM`, `KSP`, `DMGetDMKSP()`, `KSPSetDM()`
 @*/
 PetscErrorCode DMCopyDMKSP(DM dmsrc, DM dmdest)
 {
@@ -183,26 +183,26 @@ PetscErrorCode DMCopyDMKSP(DM dmsrc, DM dmdest)
 }
 
 /*@C
-   DMKSPSetComputeOperators - set `KSP` matrix evaluation function
+  DMKSPSetComputeOperators - set `KSP` matrix evaluation function
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  dm - `DM` to be used with `KSP`
-.  func - matrix evaluation function,  for calling sequence see `KSPSetComputeOperators()`
--  ctx - context for matrix evaluation
+  Input Parameters:
++ dm   - `DM` to be used with `KSP`
+. func - matrix evaluation function,  for calling sequence see `KSPSetComputeOperators()`
+- ctx  - context for matrix evaluation
 
-   Level: developer
+  Level: developer
 
-   Note:
-   `KSPSetComputeOperators()` is normally used, but it calls this function internally because the user context is actually
-   associated with the `DM`.  This makes the interface consistent regardless of whether the user interacts with a `DM` or
-   not.
+  Note:
+  `KSPSetComputeOperators()` is normally used, but it calls this function internally because the user context is actually
+  associated with the `DM`.  This makes the interface consistent regardless of whether the user interacts with a `DM` or
+  not.
 
-   Developer Note:
-   If `DM` took a more central role at some later date, this could become the primary method of setting the matrix.
+  Developer Notes:
+  If `DM` took a more central role at some later date, this could become the primary method of setting the matrix.
 
-.seealso: [](chapter_ksp), `DMKSP`, `DM`, `KSP`, `DMKSPSetContext()`, `DMKSPGetComputeOperators()`, `KSPSetOperators()`
+.seealso: [](ch_ksp), `DMKSP`, `DM`, `KSP`, `DMKSPSetContext()`, `DMKSPGetComputeOperators()`, `KSPSetOperators()`
 @*/
 PetscErrorCode DMKSPSetComputeOperators(DM dm, PetscErrorCode (*func)(KSP, Mat, Mat, void *), void *ctx)
 {
@@ -217,20 +217,20 @@ PetscErrorCode DMKSPSetComputeOperators(DM dm, PetscErrorCode (*func)(KSP, Mat, 
 }
 
 /*@C
-   DMKSPGetComputeOperators - get `KSP` matrix evaluation function
+  DMKSPGetComputeOperators - get `KSP` matrix evaluation function
 
-   Not Collective
+  Not Collective
 
-   Input Parameter:
-.  dm - `DM` used with a `KSP`
+  Input Parameter:
+. dm - `DM` used with a `KSP`
 
-   Output Parameters:
-+  func - matrix evaluation function,  for calling sequence see `KSPSetComputeOperators()`
--  ctx - context for matrix evaluation
+  Output Parameters:
++ func - matrix evaluation function,  for calling sequence see `KSPSetComputeOperators()`
+- ctx  - context for matrix evaluation
 
-   Level: developer
+  Level: developer
 
-.seealso: [](chapter_ksp), `DMKSP`, `DM`, `KSP`, `DMKSPSetContext()`, `KSPSetComputeOperators()`, `DMKSPSetComputeOperators()`
+.seealso: [](ch_ksp), `DMKSP`, `DM`, `KSP`, `DMKSPSetContext()`, `KSPSetComputeOperators()`, `DMKSPSetComputeOperators()`
 @*/
 PetscErrorCode DMKSPGetComputeOperators(DM dm, PetscErrorCode (**func)(KSP, Mat, Mat, void *), void *ctx)
 {
@@ -245,26 +245,26 @@ PetscErrorCode DMKSPGetComputeOperators(DM dm, PetscErrorCode (**func)(KSP, Mat,
 }
 
 /*@C
-   DMKSPSetComputeRHS - set `KSP` right hand side evaluation function
+  DMKSPSetComputeRHS - set `KSP` right hand side evaluation function
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  dm - `DM` used with a `KSP`
-.  func - right hand side evaluation function,  for calling sequence see `KSPSetComputeRHS()`
--  ctx - context for right hand side evaluation
+  Input Parameters:
++ dm   - `DM` used with a `KSP`
+. func - right hand side evaluation function,  for calling sequence see `KSPSetComputeRHS()`
+- ctx  - context for right hand side evaluation
 
-   Level: developer
+  Level: developer
 
-   Note:
-   `KSPSetComputeRHS()` is normally used, but it calls this function internally because the user context is actually
-   associated with the `DM`.  This makes the interface consistent regardless of whether the user interacts with a `DM` or
-   not.
+  Note:
+  `KSPSetComputeRHS()` is normally used, but it calls this function internally because the user context is actually
+  associated with the `DM`.  This makes the interface consistent regardless of whether the user interacts with a `DM` or
+  not.
 
-   Developer Note:
-   If `DM` took a more central role at some later date, this could become the primary method of setting the matrix.
+  Developer Notes:
+  If `DM` took a more central role at some later date, this could become the primary method of setting the matrix.
 
-.seealso: [](chapter_ksp), `DMKSP`, `DM`, `KSP`, `DMKSPSetContext()`, `DMKSPGetComputeRHS()`, `KSPSetRHS()`
+.seealso: [](ch_ksp), `DMKSP`, `DM`, `KSP`, `DMKSPSetContext()`, `DMKSPGetComputeRHS()`, `KSPSetRHS()`
 @*/
 PetscErrorCode DMKSPSetComputeRHS(DM dm, PetscErrorCode (*func)(KSP, Vec, void *), void *ctx)
 {
@@ -279,22 +279,22 @@ PetscErrorCode DMKSPSetComputeRHS(DM dm, PetscErrorCode (*func)(KSP, Vec, void *
 }
 
 /*@C
-   DMKSPSetComputeInitialGuess - set `KSP` initial guess evaluation function
+  DMKSPSetComputeInitialGuess - set `KSP` initial guess evaluation function
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  dm - `DM` to be used with `KSP`
-.  func - initial guess evaluation function,  for calling sequence see `KSPSetComputeInitialGuess()`
--  ctx - context for right hand side evaluation
+  Input Parameters:
++ dm   - `DM` to be used with `KSP`
+. func - initial guess evaluation function,  for calling sequence see `KSPSetComputeInitialGuess()`
+- ctx  - context for right hand side evaluation
 
-   Level: developer
+  Level: developer
 
-   Note:
-   `KSPSetComputeInitialGuess()` is normally used, but it calls this function internally because the user context is actually
-   associated with the `DM`.
+  Note:
+  `KSPSetComputeInitialGuess()` is normally used, but it calls this function internally because the user context is actually
+  associated with the `DM`.
 
-.seealso: [](chapter_ksp), `DMKSP`, `DM`, `KSP`, `DMKSPSetContext()`, `DMKSPGetComputeRHS()`, `KSPSetRHS()`
+.seealso: [](ch_ksp), `DMKSP`, `DM`, `KSP`, `DMKSPSetContext()`, `DMKSPGetComputeRHS()`, `KSPSetRHS()`
 @*/
 PetscErrorCode DMKSPSetComputeInitialGuess(DM dm, PetscErrorCode (*func)(KSP, Vec, void *), void *ctx)
 {
@@ -309,20 +309,20 @@ PetscErrorCode DMKSPSetComputeInitialGuess(DM dm, PetscErrorCode (*func)(KSP, Ve
 }
 
 /*@C
-   DMKSPGetComputeRHS - get `KSP` right hand side evaluation function
+  DMKSPGetComputeRHS - get `KSP` right hand side evaluation function
 
-   Not Collective
+  Not Collective
 
-   Input Parameter:
-.  dm - `DM` to be used with `KSP`
+  Input Parameter:
+. dm - `DM` to be used with `KSP`
 
-   Output Parameters:
-+  func - right hand side evaluation function,  for calling sequence see `KSPSetComputeRHS()`
--  ctx - context for right hand side evaluation
+  Output Parameters:
++ func - right hand side evaluation function,  for calling sequence see `KSPSetComputeRHS()`
+- ctx  - context for right hand side evaluation
 
-   Level: advanced
+  Level: advanced
 
-.seealso: [](chapter_ksp), `DMKSP`, `DM`, `KSP`, `DMKSPSetContext()`, `KSPSetComputeRHS()`, `DMKSPSetComputeRHS()`
+.seealso: [](ch_ksp), `DMKSP`, `DM`, `KSP`, `DMKSPSetContext()`, `KSPSetComputeRHS()`, `DMKSPSetComputeRHS()`
 @*/
 PetscErrorCode DMKSPGetComputeRHS(DM dm, PetscErrorCode (**func)(KSP, Vec, void *), void *ctx)
 {
@@ -337,20 +337,20 @@ PetscErrorCode DMKSPGetComputeRHS(DM dm, PetscErrorCode (**func)(KSP, Vec, void 
 }
 
 /*@C
-   DMKSPGetComputeInitialGuess - get `KSP` initial guess evaluation function
+  DMKSPGetComputeInitialGuess - get `KSP` initial guess evaluation function
 
-   Not Collective
+  Not Collective
 
-   Input Parameter:
-.  dm - `DM` used with a `KSP`
+  Input Parameter:
+. dm - `DM` used with a `KSP`
 
-   Output Parameters:
-+  func - initial guess evaluation function,  for calling sequence see `KSPSetComputeInitialGuess()`
--  ctx - context for right hand side evaluation
+  Output Parameters:
++ func - initial guess evaluation function,  for calling sequence see `KSPSetComputeInitialGuess()`
+- ctx  - context for right hand side evaluation
 
-   Level: advanced
+  Level: advanced
 
-.seealso: [](chapter_ksp), `DMKSP`, `DM`, `KSP`, `DMKSPSetContext()`, `KSPSetComputeRHS()`, `DMKSPSetComputeRHS()`
+.seealso: [](ch_ksp), `DMKSP`, `DM`, `KSP`, `DMKSPSetContext()`, `KSPSetComputeRHS()`, `DMKSPSetComputeRHS()`
 @*/
 PetscErrorCode DMKSPGetComputeInitialGuess(DM dm, PetscErrorCode (**func)(KSP, Vec, void *), void *ctx)
 {

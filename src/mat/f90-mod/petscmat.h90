@@ -79,6 +79,21 @@
        end subroutine
       End Interface
 
+      Interface
+      subroutine MatCreateFromOptions(a,b,c,d,e,f,g,h,z)
+      import tMat
+       MPI_Comm a
+       character(*) b
+       PetscInt c
+       PetscInt d
+       PetscInt e
+       PetscInt f
+       PetscInt g
+       Mat h
+       PetscErrorCode z
+       end subroutine
+      End Interface
+
       interface MatNullSpaceCreate
       subroutine MatNullSpaceCreate1(a,b,c,d,e,z)
        import tVec,tMatNullSpace

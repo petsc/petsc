@@ -30,6 +30,7 @@ static PetscErrorCode SNESSolve_KSPONLY(SNES snes)
   if (snes->numbermonitors) {
     PetscReal fnorm;
     PetscCall(VecNorm(F, NORM_2, &fnorm));
+    SNESCheckFunctionNorm(snes, fnorm);
     PetscCall(SNESMonitor(snes, 0, fnorm));
   }
 
@@ -60,6 +61,7 @@ static PetscErrorCode SNESSolve_KSPONLY(SNES snes)
     PetscReal fnorm;
     PetscCall(SNESComputeFunction(snes, X, F));
     PetscCall(VecNorm(F, NORM_2, &fnorm));
+    SNESCheckFunctionNorm(snes, fnorm);
     PetscCall(SNESMonitor(snes, 1, fnorm));
   }
   PetscFunctionReturn(PETSC_SUCCESS);

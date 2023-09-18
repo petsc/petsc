@@ -1,28 +1,32 @@
 PetscFE Object: solution 1 MPI process
-  type: basic
-  Basic Finite Element in 1 dimensions with 3 components
+  type: vector
+  Vector Finite Element in 1 dimensions with 3 components
   PetscSpace Object: solution 1 MPI process
-    type: subspace
+    type: sum
     Space in 1 variables with 3 components, size 6
-    Subspace-to-space domain shift:
+    Sum space of 3 concatenated subspaces (all identical)
+      PetscSpace Object: P1 1 MPI process
+        type: subspace
+        Space in 1 variables with 1 components, size 2
+        Subspace-to-space domain shift:
 
-     0.
-     -1.
-    Subspace-to-space domain transform:
+         0.
+         -1.
+        Subspace-to-space domain transform:
 
-     1.
-     0.
-    Original space:
-      PetscSpace Object: solution 1 MPI process
-        type: sum
-        Space in 2 variables with 3 components, size 9
-        Sum space of 3 concatenated subspaces (all identical)
-          PetscSpace Object: sum component (sumcomp_) 1 MPI process
+         1.
+         0.
+        Original space:
+          PetscSpace Object: P1 (sumcomp_) 1 MPI process
             type: poly
             Space in 2 variables with 1 components, size 3
             Polynomial space of degree 1
   PetscDualSpace Object: solution 1 MPI process
-    type: lagrange
+    type: sum
     Dual space with 3 components, size 6
-    Continuous Lagrange dual space
+    Sum dual space of 3 concatenated subspaces (all identical)
+      PetscDualSpace Object: P1 1 MPI process
+        type: lagrange
+        Dual space with 1 components, size 2
+        Continuous Lagrange dual space
     Quadrature on a segment of order 3 on 2 points (dim 1)

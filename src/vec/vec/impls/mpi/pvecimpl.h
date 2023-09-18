@@ -1,5 +1,4 @@
-#ifndef PETSC_PVECIMPL_H
-#define PETSC_PVECIMPL_H
+#pragma once
 
 #include <../src/vec/vec/impls/dvecimpl.h>
 
@@ -170,4 +169,42 @@ static inline PetscErrorCode VecNorm_MPI_Default(Vec xin, NormType type, PetscRe
   if (type == NORM_2 || type == NORM_FROBENIUS || type == NORM_1_AND_2) z[type == NORM_1_AND_2] = PetscSqrtReal(z[type == NORM_1_AND_2]);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-#endif // PETSC_PVECIMPL_H
+
+static inline PetscErrorCode VecErrorWeightedNorms_MPI_Default(Vec U, Vec Y, Vec E, NormType wnormtype, PetscReal atol, Vec vatol, PetscReal rtol, Vec vrtol, PetscReal ignore_max, PetscReal *norm, PetscInt *norm_loc, PetscReal *norma, PetscInt *norma_loc, PetscReal *normr, PetscInt *normr_loc, PetscErrorCode (*SeqFn)(Vec, Vec, Vec, NormType, PetscReal, Vec, PetscReal, Vec, PetscReal, PetscReal *, PetscInt *, PetscReal *, PetscInt *, PetscReal *, PetscInt *))
+{
+  PetscReal loc[6];
+
+  PetscFunctionBegin;
+  PetscCall(SeqFn(U, Y, E, wnormtype, atol, vatol, rtol, vrtol, ignore_max, norm, norm_loc, norma, norma_loc, normr, normr_loc));
+  if (wnormtype == NORM_2) {
+    loc[0] = PetscSqr(*norm);
+    loc[1] = PetscSqr(*norma);
+    loc[2] = PetscSqr(*normr);
+  } else {
+    loc[0] = *norm;
+    loc[1] = *norma;
+    loc[2] = *normr;
+  }
+  loc[3] = (PetscReal)*norm_loc;
+  loc[4] = (PetscReal)*norma_loc;
+  loc[5] = (PetscReal)*normr_loc;
+  if (wnormtype == NORM_2) {
+    PetscCall(MPIU_Allreduce(MPI_IN_PLACE, loc, 6, MPIU_REAL, MPIU_SUM, PetscObjectComm((PetscObject)U)));
+  } else {
+    PetscCall(MPIU_Allreduce(MPI_IN_PLACE, loc, 3, MPIU_REAL, MPIU_MAX, PetscObjectComm((PetscObject)U)));
+    PetscCall(MPIU_Allreduce(MPI_IN_PLACE, loc + 3, 3, MPIU_REAL, MPIU_SUM, PetscObjectComm((PetscObject)U)));
+  }
+  if (wnormtype == NORM_2) {
+    *norm  = PetscSqrtReal(loc[0]);
+    *norma = PetscSqrtReal(loc[1]);
+    *normr = PetscSqrtReal(loc[2]);
+  } else {
+    *norm  = loc[0];
+    *norma = loc[1];
+    *normr = loc[2];
+  }
+  *norm_loc  = loc[3];
+  *norma_loc = loc[4];
+  *normr_loc = loc[5];
+  PetscFunctionReturn(PETSC_SUCCESS);
+}

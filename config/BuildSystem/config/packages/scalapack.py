@@ -1,4 +1,5 @@
 import config.package
+import os
 
 class Configure(config.package.CMakePackage):
   def __init__(self, framework):
@@ -18,6 +19,7 @@ class Configure(config.package.CMakePackage):
     self.downloadonWindows= 1
     self.makerulename     = 'scalapack'
     self.minCmakeVersion  = (3,2,0)
+    self.libDirs          = ['lib',os.path.join('lib','intel64')]
     return
 
   def setupDependencies(self, framework):
@@ -37,4 +39,10 @@ class Configure(config.package.CMakePackage):
 def getSearchDirectories(self):
   '''Generate list of possible locations of ScaLAPACK'''
   yield ''
-  if os.getenv('MKLROOT'): yield os.getenv('MKLROOT')
+  if 'with-'+self.package+'-dir' in self.argDB:
+    d = self.argDB['with-'+self.package+'-dir']
+    for libdir in self.libDirs:
+      yield os.path.join(d,libdir)
+  if os.getenv('MKLROOT'):
+    for libdir in self.libDirs:
+      yield os.path.join(os.getenv('MKLROOT'),libdir)

@@ -1,34 +1,46 @@
 #include "petscdevice_interface_internal.hpp" /*I <petscdevice.h> I*/
 #include <petsc/private/petscadvancedmacros.h>
 
-#include "../impls/host/hostdevice.hpp"
-#include "../impls/cupm/cupmdevice.hpp"
-#include "../impls/sycl/sycldevice.hpp"
+#include <petsc/private/cpp/register_finalize.hpp>
 
-#include <limits>  // std::numeric_limits
+#include "../impls/host/hostdevice.hpp"
+#if PetscDefined(HAVE_CUPM)
+  #include "../impls/cupm/cupmdevice.hpp"
+#endif
+#if PetscDefined(HAVE_SYCL)
+  #include "../impls/sycl/sycldevice.hpp"
+#endif
+
 #include <utility> // std::make_pair
 
 using namespace Petsc::device;
+
+namespace
+{
 
 /*
   note to anyone adding more classes, the name must be ALL_CAPS_SHORT_NAME + Device exactly to
   be picked up by the switch-case macros below
 */
-static host::Device HOSTDevice{PetscDeviceContextCreate_HOST};
+host::Device HOSTDevice{PetscDeviceContextCreate_HOST};
 #if PetscDefined(HAVE_CUDA)
-static cupm::Device<cupm::DeviceType::CUDA> CUDADevice{PetscDeviceContextCreate_CUDA};
+cupm::Device<cupm::DeviceType::CUDA> CUDADevice{PetscDeviceContextCreate_CUDA};
 #endif
 #if PetscDefined(HAVE_HIP)
-static cupm::Device<cupm::DeviceType::HIP> HIPDevice{PetscDeviceContextCreate_HIP};
+cupm::Device<cupm::DeviceType::HIP> HIPDevice{PetscDeviceContextCreate_HIP};
 #endif
 #if PetscDefined(HAVE_SYCL)
-static sycl::Device SYCLDevice{PetscDeviceContextCreate_SYCL};
+sycl::Device SYCLDevice{PetscDeviceContextCreate_SYCL};
 #endif
+
+} // namespace
 
 #define PETSC_DEVICE_CASE(IMPLS, func, ...) \
   case PetscConcat_(PETSC_DEVICE_, IMPLS): { \
     PetscCall(PetscConcat_(IMPLS, Device).func(__VA_ARGS__)); \
   } break
+
+#define PETSC_VOID_0(...) ((void)0)
 
 /*
   Suppose you have:
@@ -57,7 +69,7 @@ static sycl::Device SYCLDevice{PetscDeviceContextCreate_SYCL};
 
   if PetscDefined(HAVE_CUDA) evaluates to 1, and expand to nothing otherwise
 */
-#define PETSC_DEVICE_CASE_IF_PETSC_DEFINED(IMPLS, func, ...) PetscIfPetscDefined(PetscConcat_(HAVE_, IMPLS), PETSC_DEVICE_CASE, PetscExpandToNothing)(IMPLS, func, __VA_ARGS__)
+#define PETSC_DEVICE_CASE_IF_PETSC_DEFINED(IMPLS, func, ...) PetscIfPetscDefined(PetscConcat_(HAVE_, IMPLS), PETSC_DEVICE_CASE, PETSC_VOID_0)(IMPLS, func, __VA_ARGS__)
 
 /*@C
   PetscDeviceCreate - Get a new handle for a particular device (often a GPU) type
@@ -89,14 +101,14 @@ PetscErrorCode PetscDeviceCreate(PetscDeviceType type, PetscInt devid, PetscDevi
 
   PetscFunctionBegin;
   PetscValidDeviceType(type, 1);
-  PetscValidPointer(device, 3);
+  PetscAssertPointer(device, 3);
   PetscCall(PetscDeviceInitializePackage());
   PetscCall(PetscNew(device));
   (*device)->id     = PetscDeviceCounter++;
   (*device)->type   = type;
   (*device)->refcnt = 1;
   /*
-    if you are adding a device, you also need to add it's initialization in
+    if you are adding a device, you also need to add its initialization in
     PetscDeviceInitializeTypeFromOptions_Private() below
   */
   switch (type) {
@@ -128,7 +140,7 @@ PetscErrorCode PetscDeviceCreate(PetscDeviceType type, PetscInt devid, PetscDevi
 PetscErrorCode PetscDeviceDestroy(PetscDevice *device)
 {
   PetscFunctionBegin;
-  PetscValidPointer(device, 1);
+  PetscAssertPointer(device, 1);
   if (!*device) PetscFunctionReturn(PETSC_SUCCESS);
   PetscValidDevice(*device, 1);
   PetscCall(PetscDeviceDereference_Internal(*device));
@@ -265,7 +277,7 @@ PetscErrorCode PetscDeviceGetType(PetscDevice device, PetscDeviceType *type)
 {
   PetscFunctionBegin;
   PetscValidDevice(device, 1);
-  PetscValidPointer(type, 2);
+  PetscAssertPointer(type, 2);
   *type = device->type;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -294,10 +306,13 @@ PetscErrorCode PetscDeviceGetDeviceId(PetscDevice device, PetscInt *id)
 {
   PetscFunctionBegin;
   PetscValidDevice(device, 1);
-  PetscValidIntPointer(id, 2);
+  PetscAssertPointer(id, 2);
   *id = device->deviceId;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
+
+namespace
+{
 
 struct DefaultDeviceType : public Petsc::RegisterFinalizeable<DefaultDeviceType> {
   PetscDeviceType type = PETSC_DEVICE_HARDWARE_DEFAULT_TYPE;
@@ -310,7 +325,9 @@ struct DefaultDeviceType : public Petsc::RegisterFinalizeable<DefaultDeviceType>
   }
 };
 
-static auto default_device_type = DefaultDeviceType();
+auto default_device_type = DefaultDeviceType();
+
+} // namespace
 
 /*@C
   PETSC_DEVICE_DEFAULT - Retrieve the current default `PetscDeviceType`
@@ -357,13 +374,16 @@ PetscErrorCode PetscDeviceSetDefaultDeviceType(PetscDeviceType type)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static std::array<std::pair<PetscDevice, bool>, PETSC_DEVICE_MAX> defaultDevices = {};
+namespace
+{
+
+std::array<std::pair<PetscDevice, bool>, PETSC_DEVICE_MAX> defaultDevices = {};
 
 /*
   Actual initialization function; any functions claiming to initialize PetscDevice or
   PetscDeviceContext will have to run through this one
 */
-static PetscErrorCode PetscDeviceInitializeDefaultDevice_Internal(PetscDeviceType type, PetscInt defaultDeviceId)
+PetscErrorCode PetscDeviceInitializeDefaultDevice_Internal(PetscDeviceType type, PetscInt defaultDeviceId)
 {
   PetscFunctionBegin;
   PetscValidDeviceType(type, 1);
@@ -378,6 +398,8 @@ static PetscErrorCode PetscDeviceInitializeDefaultDevice_Internal(PetscDeviceTyp
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
+
+} // namespace
 
 /*@C
   PetscDeviceInitialize - Initialize `PetscDevice`
@@ -433,7 +455,7 @@ PetscBool PetscDeviceInitialized(PetscDeviceType type)
 PetscErrorCode PetscDeviceGetDefaultForType_Internal(PetscDeviceType type, PetscDevice *device)
 {
   PetscFunctionBegin;
-  PetscValidPointer(device, 2);
+  PetscAssertPointer(device, 2);
   PetscCall(PetscDeviceInitialize(type));
   *device = defaultDevices[type].first;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -466,12 +488,15 @@ PetscErrorCode PetscDeviceGetAttribute(PetscDevice device, PetscDeviceAttribute 
   PetscFunctionBegin;
   PetscValidDevice(device, 1);
   PetscValidDeviceAttribute(attr, 2);
-  PetscValidPointer(value, 3);
+  PetscAssertPointer(value, 3);
   PetscUseTypeMethod(device, getattribute, attr, value);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode PetscDeviceInitializeTypeFromOptions_Private(MPI_Comm comm, PetscDeviceType type, PetscInt defaultDeviceId, PetscBool defaultView, PetscDeviceInitType *defaultInitType)
+namespace
+{
+
+PetscErrorCode PetscDeviceInitializeTypeFromOptions_Private(MPI_Comm comm, PetscDeviceType type, PetscInt defaultDeviceId, PetscBool defaultView, PetscDeviceInitType *defaultInitType)
 {
   PetscFunctionBegin;
   if (!PetscDeviceConfiguredFor_Internal(type)) {
@@ -502,7 +527,7 @@ static PetscErrorCode PetscDeviceInitializeTypeFromOptions_Private(MPI_Comm comm
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode PetscDeviceInitializeQueryOptions_Private(MPI_Comm comm, PetscDeviceType *deviceContextInitDevice, PetscDeviceInitType *defaultInitType, PetscInt *defaultDevice, PetscBool *defaultDeviceSet, PetscBool *defaultView)
+PetscErrorCode PetscDeviceInitializeQueryOptions_Private(MPI_Comm comm, PetscDeviceType *deviceContextInitDevice, PetscDeviceInitType *defaultInitType, PetscInt *defaultDevice, PetscBool *defaultDeviceSet, PetscBool *defaultView)
 {
   PetscInt initIdx       = PETSC_DEVICE_INIT_LAZY;
   auto     initDeviceIdx = static_cast<PetscInt>(*deviceContextInitDevice);
@@ -534,19 +559,10 @@ static PetscErrorCode PetscDeviceInitializeQueryOptions_Private(MPI_Comm comm, P
 }
 
 /* called from PetscFinalize() do not call yourself! */
-static PetscErrorCode PetscDeviceFinalize_Private()
+PetscErrorCode PetscDeviceFinalize_Private()
 {
   PetscFunctionBegin;
   if (PetscDefined(USE_DEBUG)) {
-    const auto PetscDeviceCheckAllDestroyedAfterFinalize = [] {
-      PetscFunctionBegin;
-      for (auto &&device : defaultDevices) {
-        const auto dev = device.first;
-
-        PetscCheck(!dev, PETSC_COMM_WORLD, PETSC_ERR_COR, "Device of type '%s' had reference count %" PetscInt_FMT " and was not fully destroyed during PetscFinalize()", PetscDeviceTypes[dev->type], dev->refcnt);
-      }
-      PetscFunctionReturn(PETSC_SUCCESS);
-    };
     /*
       you might be thinking, why on earth are you registered yet another finalizer in a
       function already called during PetscRegisterFinalizeAll()? If this seems stupid it's
@@ -564,7 +580,15 @@ static PetscErrorCode PetscDeviceFinalize_Private()
          required, which actually destroys the held device.
       3. Our newly added finalizer runs and checks that all is well.
     */
-    PetscCall(PetscRegisterFinalize(std::move(PetscDeviceCheckAllDestroyedAfterFinalize)));
+    PetscCall(PetscRegisterFinalize([] {
+      PetscFunctionBegin;
+      for (auto &&device : defaultDevices) {
+        const auto dev = device.first;
+
+        PetscCheck(!dev, PETSC_COMM_WORLD, PETSC_ERR_COR, "Device of type '%s' had reference count %" PetscInt_FMT " and was not fully destroyed during PetscFinalize()", PetscDeviceTypes[dev->type], dev->refcnt);
+      }
+      PetscFunctionReturn(PETSC_SUCCESS);
+    }));
   }
   for (auto &&device : defaultDevices) {
     PetscCall(PetscDeviceDestroy(&device.first));
@@ -572,6 +596,8 @@ static PetscErrorCode PetscDeviceFinalize_Private()
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
+
+} // namespace
 
 /*
   Begins the init proceeedings for the entire PetscDevice stack. there are 3 stages of

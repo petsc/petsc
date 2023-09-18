@@ -1,3 +1,10 @@
+@@ -4,5 +4,5 @@
+ #include <petsc/private/petscimpl.h>
+ 
+-PetscErrorCode testTypes(PetscRandom r, PetscViewer v, PetscObject o, PetscFunctionList f)
++static PetscErrorCode testTypes(PetscRandom r, PetscViewer v, PetscObject o, PetscFunctionList f)
+ {
+   /* incorrect */
 @@ -7,5 +7,5 @@
  {
    /* incorrect */

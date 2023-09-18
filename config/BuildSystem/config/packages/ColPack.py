@@ -4,7 +4,7 @@ class Configure(config.package.CMakePackage):
   def __init__(self, framework):
     config.package.CMakePackage.__init__(self, framework)
     self.gitcommit       = '043e3cd'
-    self.download        = ['git://https://github.com/caidao22/ColPack.git']
+    self.download        = ['git://https://github.com/caidao22/ColPack.git','https://github.com/caidao22/ColPack/archive/'+self.gitcommit+'.tar.gz']
     self.includes        = ['ColPack/ColPackHeaders.h']
     self.liblist         = [['libColPack.a']]
     self.functionsCxx    = [1,'void current_time();','current_time()']

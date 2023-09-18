@@ -1,10 +1,13 @@
-#include <Kokkos_Core.hpp>
-#include <petscdmda_kokkos.hpp>
+#include <petscconf.h>
 
-#include <petscdm.h>
-#include <petscdmda.h>
-#include <petscsnes.h>
-#include "ex55.h"
+#if defined(PETSC_HAVE_KOKKOS_KERNELS)
+  #include <Kokkos_Core.hpp>
+  #include <petscdmda_kokkos.hpp>
+
+  #include <petscdm.h>
+  #include <petscdmda.h>
+  #include <petscsnes.h>
+  #include "ex55.h"
 
 using DefaultMemorySpace                 = Kokkos::DefaultExecutionSpace::memory_space;
 using ConstPetscScalarKokkosOffsetView2D = Kokkos::Experimental::OffsetView<const PetscScalar **, Kokkos::LayoutRight, DefaultMemorySpace>;
@@ -161,7 +164,7 @@ PetscErrorCode FormObjectiveLocalVec(DMDALocalInfo *info, Vec x, PetscReal *obj,
 
   PetscCall(DMDAVecRestoreKokkosOffsetView(info->da, x, &xv));
   PetscCall(PetscLogFlops(12.0 * info->ym * info->xm));
-  PetscCallMPI(MPI_Allreduce(&lobj, obj, 1, MPIU_REAL, MPIU_SUM, comm));
+  PetscCall(MPIU_Allreduce(&lobj, obj, 1, MPIU_REAL, MPIU_SUM, comm));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -193,61 +196,63 @@ PetscErrorCode FormJacobianLocalVec(DMDALocalInfo *info, Vec x, Mat jac, Mat jac
   /* ----------------------------------------- */
   /*  MatSetPreallocationCOO()                 */
   /* ----------------------------------------- */
-  PetscCount ncoo = ((PetscCount)xm) * ((PetscCount)ym) * 5;
-  PetscInt  *coo_i, *coo_j, *ip, *jp;
-  PetscCall(PetscMalloc2(ncoo, &coo_i, ncoo, &coo_j)); /* 5-point stencil such that each row has at most 5 nonzeros */
+  if (!user->ncoo) {
+    PetscCount ncoo = ((PetscCount)xm) * ((PetscCount)ym) * 5;
+    PetscInt  *coo_i, *coo_j, *ip, *jp;
+    PetscCall(PetscMalloc2(ncoo, &coo_i, ncoo, &coo_j)); /* 5-point stencil such that each row has at most 5 nonzeros */
 
-  ip = coo_i;
-  jp = coo_j;
-  for (j = ys; j < ys + ym; j++) {
-    for (i = xs; i < xs + xm; i++) {
-      row.j = j;
-      row.i = i;
-      /* Initialize neighbors with negative indices */
-      col[0].j = col[1].j = col[3].j = col[4].j = -1;
-      /* boundary points */
-      if (i == 0 || j == 0 || i == mx - 1 || j == my - 1) {
-        col[2].j = row.j;
-        col[2].i = row.i;
-      } else {
-        /* interior grid points */
-        if (j - 1 != 0) {
-          col[0].j = j - 1;
-          col[0].i = i;
+    ip = coo_i;
+    jp = coo_j;
+    for (j = ys; j < ys + ym; j++) {
+      for (i = xs; i < xs + xm; i++) {
+        row.j = j;
+        row.i = i;
+        /* Initialize neighbors with negative indices */
+        col[0].j = col[1].j = col[3].j = col[4].j = -1;
+        /* boundary points */
+        if (i == 0 || j == 0 || i == mx - 1 || j == my - 1) {
+          col[2].j = row.j;
+          col[2].i = row.i;
+        } else {
+          /* interior grid points */
+          if (j - 1 != 0) {
+            col[0].j = j - 1;
+            col[0].i = i;
+          }
+
+          if (i - 1 != 0) {
+            col[1].j = j;
+            col[1].i = i - 1;
+          }
+
+          col[2].j = row.j;
+          col[2].i = row.i;
+
+          if (i + 1 != mx - 1) {
+            col[3].j = j;
+            col[3].i = i + 1;
+          }
+
+          if (j + 1 != mx - 1) {
+            col[4].j = j + 1;
+            col[4].i = i;
+          }
         }
-
-        if (i - 1 != 0) {
-          col[1].j = j;
-          col[1].i = i - 1;
-        }
-
-        col[2].j = row.j;
-        col[2].i = row.i;
-
-        if (i + 1 != mx - 1) {
-          col[3].j = j;
-          col[3].i = i + 1;
-        }
-
-        if (j + 1 != mx - 1) {
-          col[4].j = j + 1;
-          col[4].i = i;
-        }
+        PetscCall(DMDAMapMatStencilToGlobal(info->da, 5, col, jp));
+        for (PetscInt k = 0; k < 5; k++) ip[k] = jp[2];
+        ip += 5;
+        jp += 5;
       }
-      PetscCall(DMDAMapMatStencilToGlobal(info->da, 5, col, jp));
-      for (PetscInt k = 0; k < 5; k++) ip[k] = jp[2];
-      ip += 5;
-      jp += 5;
     }
+    PetscCall(MatSetPreallocationCOO(jacpre, ncoo, coo_i, coo_j));
+    PetscCall(PetscFree2(coo_i, coo_j));
+    user->ncoo = ncoo;
   }
-
-  PetscCall(MatSetPreallocationCOO(jacpre, ncoo, coo_i, coo_j));
-  PetscCall(PetscFree2(coo_i, coo_j));
 
   /* ----------------------------------------- */
   /*  MatSetValuesCOO()                        */
   /* ----------------------------------------- */
-  PetscScalarKokkosView              coo_v("coo_v", ncoo);
+  PetscScalarKokkosView              coo_v("coo_v", user->ncoo);
   ConstPetscScalarKokkosOffsetView2D xv;
 
   PetscCall(DMDAVecGetKokkosOffsetView(info->da, x, &xv));
@@ -273,3 +278,28 @@ PetscErrorCode FormJacobianLocalVec(DMDALocalInfo *info, Vec x, Mat jac, Mat jac
   PetscCall(DMDAVecRestoreKokkosOffsetView(info->da, x, &xv));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
+
+#else
+  #include "ex55.h"
+
+PetscErrorCode FormObjectiveLocalVec(DMDALocalInfo *info, Vec x, PetscReal *obj, AppCtx *user)
+{
+  PetscFunctionBeginUser;
+  PetscCheck(PETSC_FALSE, PETSC_COMM_SELF, PETSC_ERR_SUP, "Need to reconfigure with --download-kokkos-kernels");
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+PetscErrorCode FormFunctionLocalVec(DMDALocalInfo *info, Vec x, Vec f, AppCtx *user)
+{
+  PetscFunctionBeginUser;
+  PetscCheck(PETSC_FALSE, PETSC_COMM_SELF, PETSC_ERR_SUP, "Need to reconfigure with --download-kokkos-kernels");
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+PetscErrorCode FormJacobianLocalVec(DMDALocalInfo *info, Vec x, Mat jac, Mat jacpre, AppCtx *user)
+{
+  PetscFunctionBeginUser;
+  PetscCheck(PETSC_FALSE, PETSC_COMM_SELF, PETSC_ERR_SUP, "Need to reconfigure with --download-kokkos-kernels");
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+#endif

@@ -120,7 +120,7 @@ int main(int argc, char **args)
 
   /* move the vector rows to the new processes they have been assigned to */
   PetscCall(MatGetLocalSize(B, &m, &n));
-  PetscCall(VecCreateMPI(PETSC_COMM_WORLD, m, PETSC_DECIDE, &xout));
+  PetscCall(VecCreateFromOptions(PETSC_COMM_WORLD, NULL, 1, m, PETSC_DECIDE, &xout));
   PetscCall(VecScatterCreate(xin, is, xout, NULL, &scat));
   PetscCall(VecScatterBegin(scat, xin, xout, INSERT_VALUES, SCATTER_FORWARD));
   PetscCall(VecScatterEnd(scat, xin, xout, INSERT_VALUES, SCATTER_FORWARD));

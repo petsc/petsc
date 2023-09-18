@@ -1,3 +1,10 @@
+@@ -4,5 +4,5 @@
+ #include <petsc/private/viewerimpl.h>
+ 
+-PetscErrorCode testValidLogicalCollective(PetscInt a, PetscMPIInt b, PetscInt c, PetscBool d, PetscScalar e, PetscReal f)
++static PetscErrorCode testValidLogicalCollective(PetscInt a, PetscMPIInt b, PetscInt c, PetscBool d, PetscScalar e, PetscReal f)
+ {
+   PetscViewer v; /* dummy variable to satisfy the PetscObject for the following */
 @@ -9,5 +9,5 @@
  
    /* incorrect */

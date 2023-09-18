@@ -1,10 +1,10 @@
-.. _chapter_fortran:
+.. _ch_fortran:
 
 PETSc for Fortran Users
 -----------------------
 
-Most of the functionality of PETSc can be obtained by people who program
-purely in Fortran.
+Most of the functionality of PETSc can be obtained from Fortran programs.
+Make sure the suffix of all your Fortran files is .F90, not .f or .f90.
 
 .. _sec_fortran_includes:
 
@@ -44,33 +44,9 @@ PETSc types like ``PetscInt`` and ``PetscReal`` are simply aliases for basic For
 
 
 The Fortran include files for PETSc are located in the directory
-``$PETSC_DIR/include/petsc/finclude`` and should be used via
-statements such as the following:
+``$PETSC_DIR/include/petsc/finclude`` and the module files are located in ``$PETSC_DIR/$PETSC_ARCH/include``
 
-.. code-block:: fortran
-
-   #include <petsc/finclude/petscXXX.h>
-
-for example,
-
-.. code-block:: fortran
-
-   #include <petsc/finclude/petscksp.h>
-
-You must also use the appropriate Fortran module which is done with
-
-.. code-block:: fortran
-
-   use petscXXX
-
-for example,
-
-.. code-block:: fortran
-
-   use petscksp
-
-The few differences between the C and Fortran PETSc interfaces
-are due to Fortran syntax differences. All Fortran routines have the
+Most Fortran routines have the
 same names as the corresponding C versions, and PETSc command line
 options are fully supported. The routine arguments follow the usual
 Fortran conventions; the user need not worry about passing pointers or
@@ -84,9 +60,8 @@ make sure you have them marked as double precision (e.g., pass in ``10.d0``
 instead of ``10.0`` or declare them as PETSc variables, e.g.
 ``PetscScalar one = 1.0``). Otherwise, the compiler interprets the input as a single
 precision number, which can cause crashes or other mysterious problems.
-Make sure to declare all variables (do not use the implicit feature of
-Fortran). In fact, we **highly** recommend using the **implicit none**
-option at the beginning of each Fortran subroutine you write.
+We **highly** recommend using the ``implicit none``
+option at the beginning of each Fortran subroutine and declare all variables.
 
 .. _sec_fortran_errors:
 
@@ -101,16 +76,16 @@ respectively, below, where ``ierr`` denotes the ``PetscErrorCode`` error variabl
 
 .. code-block:: fortran
 
-   call KSPSolve(ksp,b,x,ierr) ! Fortran
-   ierr = KSPSolve(ksp,b,x);   // C
+   call KSPSolve(ksp, b, x, ierr) ! Fortran
+   ierr = KSPSolve(ksp, b, x);    // C
 
 For proper error handling one should not use the above syntax instead one should use
 
 .. code-block:: fortran
 
-   PetscCall(KSPSolve(ksp,b,x,ierr))   ! Fortran subroutines
-   PetscCallA(KSPSolve(ksp,b,x,ierr))  ! Fortran main program
-   PetscCall(KSPSolve(ksp,b,x))        // C
+   PetscCall(KSPSolve(ksp, b, x, ierr))   ! Fortran subroutines
+   PetscCallA(KSPSolve(ksp, b, x, ierr))  ! Fortran main program
+   PetscCall(KSPSolve(ksp, b, x))         // C
 
 
 
@@ -146,7 +121,7 @@ for example, as follows:
 Passing Null Pointers
 ^^^^^^^^^^^^^^^^^^^^^
 
-Many PETSc C functions have the option of passing a NULL
+Many PETSc C functions have the option of passing a ``NULL``
 argument (for example, the fifth argument of ``MatCreateSeqAIJ()``).
 From Fortran, users *must* pass ``PETSC_NULL_XXX`` to indicate a null
 argument (where ``XXX`` is ``INTEGER``, ``DOUBLE``, ``CHARACTER``,
@@ -157,57 +132,26 @@ command in Fortran:
 
 .. code-block:: fortran
 
-   call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,PETSC_NULL_CHARACTER,'-name',N,flg,ierr)
-
-.. _sec_fortvecd:
-
-Duplicating Multiple Vectors
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-The Fortran interface to ``VecDuplicateVecs()`` differs slightly from
-the C/C++ variant because Fortran does not allow conventional arrays to
-be returned in routine arguments. To create ``n`` vectors of the same
-format as an existing vector, the user must declare a vector array,
-``v_new`` of size ``n``. Then, after ``VecDuplicateVecs()`` has been
-called, ``v_new`` will contain (pointers to) the new PETSc vector
-objects. When finished with the vectors, the user should destroy them by
-calling ``VecDestroyVecs()``. For example, the following code fragment
-duplicates ``v_old`` to form two new vectors, ``v_new(1)`` and
-``v_new(2)``.
-
-.. code-block:: fortran
-
-   Vec          v_old, v_new(2)
-   PetscInt     ierr
-   PetscScalar  alpha
-   ....
-   call VecDuplicateVecs(v_old,2,v_new,ierr)
-   alpha = 4.3
-   call VecSet(v_new(1),alpha,ierr)
-   alpha = 6.0
-   call VecSet(v_new(2),alpha,ierr)
-   ....
-   call VecDestroyVecs(2,v_new,ierr)
+   PetscCall(PetscOptionsGetInt(PETSC_NULL_OPTIONS, PETSC_NULL_CHARACTER, PETSC_NULL_CHARACTER, '-name', N, flg, ierr))
 
 Matrix, Vector and IS Indices
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 All matrices, vectors and ``IS`` in PETSc use zero-based indexing,
-regardless of whether C or Fortran is being used. The interface
-routines, such as ``MatSetValues()`` and ``VecSetValues()``, always use
+regardless of whether C or Fortran is being used. For example,
+``MatSetValues()`` and ``VecSetValues()`` always use
 zero indexing. See :any:`sec_matoptions` for further
 details.
 
 Setting Routines
 ^^^^^^^^^^^^^^^^
 
-When a function pointer is passed as an argument to a PETSc function,
-such as the test in ``KSPSetConvergenceTest()``, it is assumed that this
-pointer references a routine written in the same language as the PETSc
+When a function pointer (declared as external in Fortran) is passed as an argument to a PETSc function,
+such as the test function in ``KSPSetConvergenceTest()``, it is assumed that this
+function references a routine written in the same language as the PETSc
 interface function that was called. For instance, if
-``KSPSetConvergenceTest()`` is called from C, the test argument is
-assumed to be a C function. Likewise, if it is called from Fortran, the
-test is assumed to be written in Fortran.
+``KSPSetConvergenceTest()`` is called from C, the test function must be a C function. Likewise, if it is called from Fortran, the
+test function must be (a subroutine) written in Fortran.
 
 .. _sec_fortcompile:
 
@@ -234,21 +178,50 @@ The following functions are not supported in Fortran:
 
 .. code-block:: fortran
 
-   PetscFClose(), PetscFOpen(), PetscFPrintf(), PetscPrintf()
-   PetscPopErrorHandler(), PetscPushErrorHandler()
-   PetscInfo()
-   PetscSetDebugger()
-   VecGetArrays(), VecRestoreArrays()
-   PetscViewerASCIIGetPointer(), PetscViewerBinaryGetDescriptor()
-   PetscViewerStringOpen(), PetscViewerStringSPrintf()
+   PetscFClose(), PetscFOpen(), PetscFPrintf(), PetscPrintf(),
+   PetscPopErrorHandler(), PetscPushErrorHandler(), PetscInfo(),
+   PetscSetDebugger(), VecGetArrays(), VecRestoreArrays(),
+   PetscViewerASCIIGetPointer(), PetscViewerBinaryGetDescriptor(),
+   PetscViewerStringOpen(), PetscViewerStringSPrintf(),
    PetscOptionsGetStringArray()
+
+.. _sec_fortvecd:
+
+Duplicating Multiple Vectors
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The Fortran interface to ``VecDuplicateVecs()`` differs slightly from
+the C/C++ variant. To create ``n`` vectors of the same
+format as an existing vector, the user must declare a vector array,
+``v_new`` of size ``n``. Then, after ``VecDuplicateVecs()`` has been
+called, ``v_new`` will contain (pointers to) the new PETSc vector
+objects. When finished with the vectors, the user should destroy them by
+calling ``VecDestroyVecs()``. For example, the following code fragment
+duplicates ``v_old`` to form two new vectors, ``v_new(1)`` and
+``v_new(2)``.
+
+.. code-block:: fortran
+
+   Vec          v_old, v_new(2)
+   PetscInt     ierr
+   PetscScalar  alpha
+   ....
+   PetscCall(VecDuplicateVecs(v_old, 2, v_new, ierr))
+   alpha = 4.3
+   PetscCall(VecSet(v_new(1), alpha, ierr))
+   alpha = 6.0
+   PetscCall(VecSet(v_new(2), alpha, ierr))
+   ....
+   PetscCall(VecDestroyVecs(2, v_new, ierr))
 
 .. _sec_fortranarrays:
 
 Routines that Return Fortran Allocatable Arrays
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-PETSc includes support for direct use of Fortran allocatable arrays.
+Many PETSc functions that return an array of values in C in an argument (such as ``ISGetIndices()``)
+return an allocatable array in Fortran. The Fortran function names for these are suffixed with ``F90`` as indicated below.
+A few routines, such as ``VecDuplicateVecs()`` discussed above, do not return a Fortran allocatable array; a large enough array must be explicitly declared before use.
 
 .. list-table::
    :header-rows: 1
@@ -318,9 +291,9 @@ Sample Fortran Programs
 
 Sample programs that illustrate the PETSc interface for Fortran are
 given below, corresponding to
-`Vec Test ex19f <PETSC_DOC_OUT_ROOT_PLACEHOLDER/src/vec/vec/tests/ex19f.F.html>`__,
-`Vec Tutorial ex4f <PETSC_DOC_OUT_ROOT_PLACEHOLDER/src/vec/vec/tutorials/ex4f.F.html>`__,
-`Draw Test ex5f <PETSC_DOC_OUT_ROOT_PLACEHOLDER/src/sys/classes/draw/tests/ex5f.F.html>`__,
+`Vec Test ex19f <PETSC_DOC_OUT_ROOT_PLACEHOLDER/src/vec/vec/tests/ex19f.F90.html>`__,
+`Vec Tutorial ex4f <PETSC_DOC_OUT_ROOT_PLACEHOLDER/src/vec/vec/tutorials/ex4f.F90.html>`__,
+`Draw Test ex5f <PETSC_DOC_OUT_ROOT_PLACEHOLDER/src/sys/classes/draw/tests/ex5f.F90.html>`__,
 and
 `SNES Tutorial ex1f <PETSC_DOC_OUT_ROOT_PLACEHOLDER/src/snes/tutorials/ex1f.F90.html>`__,
 respectively. We also refer Fortran programmers to the C examples listed

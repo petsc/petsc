@@ -88,7 +88,7 @@ static PetscErrorCode MatGetInfo_ScaLAPACK(Mat A, MatInfoType flag, MatInfo *inf
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatSetOption_ScaLAPACK(Mat A, MatOption op, PetscBool flg)
+static PetscErrorCode MatSetOption_ScaLAPACK(Mat A, MatOption op, PetscBool flg)
 {
   Mat_ScaLAPACK *a = (Mat_ScaLAPACK *)A->data;
 
@@ -820,7 +820,7 @@ static PetscErrorCode MatCholeskyFactorSymbolic_ScaLAPACK(Mat F, Mat A, IS perm,
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatFactorGetSolverType_scalapack_scalapack(Mat A, MatSolverType *type)
+static PetscErrorCode MatFactorGetSolverType_scalapack_scalapack(Mat A, MatSolverType *type)
 {
   PetscFunctionBegin;
   *type = MATSOLVERSCALAPACK;
@@ -926,7 +926,7 @@ static PetscErrorCode MatConvert_ScaLAPACK_Dense(Mat A, MatType newtype, MatReus
   Mat_ScaLAPACK     *a = (Mat_ScaLAPACK *)A->data;
   Mat                Bmpi;
   MPI_Comm           comm;
-  PetscInt           i, M = A->rmap->N, N = A->cmap->N, m, n, rstart, rend, nz;
+  PetscInt           i, M = A->rmap->N, N = A->cmap->N, m, n, rstart, rend, nz, ldb;
   const PetscInt    *ranges, *branges, *cwork;
   const PetscScalar *vwork;
   PetscBLASInt       bdesc[9], bmb, zero = 0, one = 1, lld, info;
@@ -960,7 +960,8 @@ static PetscErrorCode MatConvert_ScaLAPACK_Dense(Mat A, MatType newtype, MatReus
 
     /* create ScaLAPACK descriptor for B (1d block distribution) */
     PetscCall(PetscBLASIntCast(ranges[1], &bmb)); /* row block size */
-    lld = PetscMax(A->rmap->n, 1);                /* local leading dimension */
+    PetscCall(MatDenseGetLDA(Bmpi, &ldb));
+    lld = PetscMax(ldb, 1); /* local leading dimension */
     PetscCallBLAS("SCALAPACKdescinit", SCALAPACKdescinit_(bdesc, &a->M, &a->N, &bmb, &a->N, &zero, &zero, &a->grid->ictxcol, &lld, &info));
     PetscCheckScaLapackInfo("descinit", info);
 
@@ -998,7 +999,8 @@ static PetscErrorCode MatConvert_ScaLAPACK_Dense(Mat A, MatType newtype, MatReus
 
     /* create ScaLAPACK descriptor for B (1d block distribution) */
     PetscCall(PetscBLASIntCast(ranges[1], &bmb)); /* row block size */
-    lld = PetscMax(A->rmap->n, 1);                /* local leading dimension */
+    PetscCall(MatDenseGetLDA(Bmpi, &ldb));
+    lld = PetscMax(ldb, 1); /* local leading dimension */
     PetscCallBLAS("SCALAPACKdescinit", SCALAPACKdescinit_(bdesc, &a->M, &a->N, &bmb, &a->N, &zero, &zero, &a->grid->ictxcol, &lld, &info));
     PetscCheckScaLapackInfo("descinit", info);
 
@@ -1223,7 +1225,7 @@ static PetscErrorCode MatDestroy_ScaLAPACK(Mat A)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatSetUp_ScaLAPACK(Mat A)
+static PetscErrorCode MatSetUp_ScaLAPACK(Mat A)
 {
   Mat_ScaLAPACK *a    = (Mat_ScaLAPACK *)A->data;
   PetscBLASInt   info = 0;
@@ -1255,7 +1257,7 @@ PetscErrorCode MatSetUp_ScaLAPACK(Mat A)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatAssemblyBegin_ScaLAPACK(Mat A, MatAssemblyType type)
+static PetscErrorCode MatAssemblyBegin_ScaLAPACK(Mat A, MatAssemblyType type)
 {
   PetscInt nstash, reallocs;
 
@@ -1267,7 +1269,7 @@ PetscErrorCode MatAssemblyBegin_ScaLAPACK(Mat A, MatAssemblyType type)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatAssemblyEnd_ScaLAPACK(Mat A, MatAssemblyType type)
+static PetscErrorCode MatAssemblyEnd_ScaLAPACK(Mat A, MatAssemblyType type)
 {
   Mat_ScaLAPACK *a = (Mat_ScaLAPACK *)A->data;
   PetscMPIInt    n;
@@ -1301,7 +1303,7 @@ PetscErrorCode MatAssemblyEnd_ScaLAPACK(Mat A, MatAssemblyType type)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatLoad_ScaLAPACK(Mat newMat, PetscViewer viewer)
+static PetscErrorCode MatLoad_ScaLAPACK(Mat newMat, PetscViewer viewer)
 {
   Mat      Adense, As;
   MPI_Comm comm;
@@ -1637,22 +1639,22 @@ static PetscErrorCode MatScaLAPACKSetBlockSizes_ScaLAPACK(Mat A, PetscInt mb, Pe
 }
 
 /*@
-   MatScaLAPACKSetBlockSizes - Sets the block sizes to be used for the distribution of
-   the `MATSCALAPACK` matrix
+  MatScaLAPACKSetBlockSizes - Sets the block sizes to be used for the distribution of
+  the `MATSCALAPACK` matrix
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  A  - a `MATSCALAPACK` matrix
-.  mb - the row block size
--  nb - the column block size
+  Input Parameters:
++ A  - a `MATSCALAPACK` matrix
+. mb - the row block size
+- nb - the column block size
 
-   Level: intermediate
+  Level: intermediate
 
-   Note:
-   This block size has a different meaning from the block size associated with `MatSetBlockSize()` used for sparse matrices
+  Note:
+  This block size has a different meaning from the block size associated with `MatSetBlockSize()` used for sparse matrices
 
-.seealso: [](chapter_matrices), `Mat`, `MATSCALAPACK`, `MatCreateScaLAPACK()`, `MatScaLAPACKGetBlockSizes()`
+.seealso: [](ch_matrices), `Mat`, `MATSCALAPACK`, `MatCreateScaLAPACK()`, `MatScaLAPACKGetBlockSizes()`
 @*/
 PetscErrorCode MatScaLAPACKSetBlockSizes(Mat A, PetscInt mb, PetscInt nb)
 {
@@ -1675,24 +1677,24 @@ static PetscErrorCode MatScaLAPACKGetBlockSizes_ScaLAPACK(Mat A, PetscInt *mb, P
 }
 
 /*@
-   MatScaLAPACKGetBlockSizes - Gets the block sizes used in the distribution of
-   the `MATSCALAPACK` matrix
+  MatScaLAPACKGetBlockSizes - Gets the block sizes used in the distribution of
+  the `MATSCALAPACK` matrix
 
-   Not Collective
+  Not Collective
 
-   Input Parameter:
-.  A  - a `MATSCALAPACK` matrix
+  Input Parameter:
+. A - a `MATSCALAPACK` matrix
 
-   Output Parameters:
-+  mb - the row block size
--  nb - the column block size
+  Output Parameters:
++ mb - the row block size
+- nb - the column block size
 
-   Level: intermediate
+  Level: intermediate
 
-   Note:
-   This block size has a different meaning from the block size associated with `MatSetBlockSize()` used for sparse matrices
+  Note:
+  This block size has a different meaning from the block size associated with `MatSetBlockSize()` used for sparse matrices
 
-.seealso: [](chapter_matrices), `Mat`, `MATSCALAPACK`, `MatCreateScaLAPACK()`, `MatScaLAPACKSetBlockSizes()`
+.seealso: [](ch_matrices), `Mat`, `MATSCALAPACK`, `MatCreateScaLAPACK()`, `MatScaLAPACKSetBlockSizes()`
 @*/
 PetscErrorCode MatScaLAPACKGetBlockSizes(Mat A, PetscInt *mb, PetscInt *nb)
 {
@@ -1723,7 +1725,7 @@ PETSC_INTERN PetscErrorCode MatStashScatterEnd_Ref(MatStash *);
    range of rows on an MPI rank. Use `MatGetOwnershipIS()` to determine what values are stored on
    the given rank.
 
-.seealso: [](chapter_matrices), `Mat`, `MATSCALAPACK`, `MATDENSE`, `MATELEMENTAL`, `MatGetOwnershipIS()`, `MatCreateScaLAPACK()`
+.seealso: [](ch_matrices), `Mat`, `MATSCALAPACK`, `MATDENSE`, `MATELEMENTAL`, `MatGetOwnershipIS()`, `MatCreateScaLAPACK()`
 M*/
 
 PETSC_EXTERN PetscErrorCode MatCreate_ScaLAPACK(Mat A)
@@ -1737,7 +1739,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_ScaLAPACK(Mat A)
   PetscMPIInt         size;
 
   PetscFunctionBegin;
-  PetscCall(PetscMemcpy(A->ops, &MatOps_Values, sizeof(struct _MatOps)));
+  A->ops[0]     = MatOps_Values;
   A->insertmode = NOT_SET_VALUES;
 
   PetscCall(MatStashCreate_Private(PetscObjectComm((PetscObject)A), 1, &A->stash));
@@ -1813,41 +1815,41 @@ PETSC_EXTERN PetscErrorCode MatCreate_ScaLAPACK(Mat A)
 }
 
 /*@C
-   MatCreateScaLAPACK - Creates a dense parallel matrix in ScaLAPACK format
-   (2D block cyclic distribution) for a `MATSCALAPACK` matrix
+  MatCreateScaLAPACK - Creates a dense parallel matrix in ScaLAPACK format
+  (2D block cyclic distribution) for a `MATSCALAPACK` matrix
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  comm - MPI communicator
-.  mb   - row block size (or `PETSC_DECIDE` to have it set)
-.  nb   - column block size (or `PETSC_DECIDE` to have it set)
-.  M    - number of global rows
-.  N    - number of global columns
-.  rsrc - coordinate of process that owns the first row of the distributed matrix
--  csrc - coordinate of process that owns the first column of the distributed matrix
+  Input Parameters:
++ comm - MPI communicator
+. mb   - row block size (or `PETSC_DECIDE` to have it set)
+. nb   - column block size (or `PETSC_DECIDE` to have it set)
+. M    - number of global rows
+. N    - number of global columns
+. rsrc - coordinate of process that owns the first row of the distributed matrix
+- csrc - coordinate of process that owns the first column of the distributed matrix
 
-   Output Parameter:
-.  A - the matrix
+  Output Parameter:
+. A - the matrix
 
-   Options Database Key:
-.  -mat_scalapack_block_sizes - size of the blocks to use (one or two integers separated by comma)
+  Options Database Key:
+. -mat_scalapack_block_sizes - size of the blocks to use (one or two integers separated by comma)
 
-   Level: intermediate
+  Level: intermediate
 
-   Notes:
-   If `PETSC_DECIDE` is used for the block sizes, then an appropriate value is chosen
+  Notes:
+  If `PETSC_DECIDE` is used for the block sizes, then an appropriate value is chosen
 
-   It is recommended that one use the `MatCreate()`, `MatSetType()` and/or `MatSetFromOptions()`,
-   MatXXXXSetPreallocation() paradigm instead of this routine directly.
-   [MatXXXXSetPreallocation() is, for example, `MatSeqAIJSetPreallocation()`]
+  It is recommended that one use the `MatCreate()`, `MatSetType()` and/or `MatSetFromOptions()`,
+  MatXXXXSetPreallocation() paradigm instead of this routine directly.
+  [MatXXXXSetPreallocation() is, for example, `MatSeqAIJSetPreallocation()`]
 
-   Storate is completely managed by ScaLAPACK, so this requires PETSc to be
-   configured with ScaLAPACK. In particular, PETSc's local sizes lose
-   significance and are thus ignored. The block sizes refer to the values
-   used for the distributed matrix, not the same meaning as in `MATBAIJ`.
+  Storate is completely managed by ScaLAPACK, so this requires PETSc to be
+  configured with ScaLAPACK. In particular, PETSc's local sizes lose
+  significance and are thus ignored. The block sizes refer to the values
+  used for the distributed matrix, not the same meaning as in `MATBAIJ`.
 
-.seealso: [](chapter_matrices), `Mat`, `MATSCALAPACK`, `MATDENSE`, `MATELEMENTAL`, `MatCreate()`, `MatCreateDense()`, `MatSetValues()`
+.seealso: [](ch_matrices), `Mat`, `MATSCALAPACK`, `MATDENSE`, `MATELEMENTAL`, `MatCreate()`, `MatCreateDense()`, `MatSetValues()`
 @*/
 PetscErrorCode MatCreateScaLAPACK(MPI_Comm comm, PetscInt mb, PetscInt nb, PetscInt M, PetscInt N, PetscInt rsrc, PetscInt csrc, Mat *A)
 {

@@ -1,5 +1,4 @@
-#ifndef PETSCDSIMPL_H
-#define PETSCDSIMPL_H
+#pragma once
 
 #include <petscds.h>
 #include <petsc/private/petscimpl.h>
@@ -143,5 +142,3 @@ typedef struct {
 } PetscDS_Basic;
 
 PETSC_INTERN PetscErrorCode PetscDSGetDiscType_Internal(PetscDS, PetscInt, PetscDiscType *);
-
-#endif

@@ -85,15 +85,11 @@ program ex62f90
 
     PetscCallMPIA(MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr))
     PetscCallMPIA(MPI_Comm_size(PETSC_COMM_WORLD,numProc,ierr))
-    PetscCallA(PetscOptionsGetString(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,"-i",ifilename,flg,ierr))
-    if (.not. flg) then
-        SETERRA(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"missing input file name -i <input file name>")
-    end if
-    PetscCallA(PetscOptionsGetString(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,"-o",ofilename,flg,ierr))
-    if (.not. flg) then
-        SETERRA(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"missing output file name -o <output file name>")
-    end if
-    PetscCallA(PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,"-order",order,flg,ierr))
+    PetscCallA(PetscOptionsGetString(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-i',ifilename,flg,ierr))
+    PetscCheckA(flg,PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,'missing input file name -i <input file name>')
+    PetscCallA(PetscOptionsGetString(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-o',ofilename,flg,ierr))
+    PetscCheckA(flg,PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,'missing output file name -o <output file name>')
+    PetscCallA(PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-order',order,flg,ierr))
     if ((order > 2) .or. (order < 1)) then
         write(IOBuffer,'("Unsupported polynomial order ", I2, " not in [1,2]")') order
         SETERRA(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,IOBuffer)
@@ -104,7 +100,7 @@ program ex62f90
     PetscCallA(DMPlexDistributeSetDefault(dm,PETSC_FALSE,ierr));
     PetscCallA(DMSetFromOptions(dm,ierr));
     PetscCallA(DMGetDimension(dm, sdim,ierr))
-    PetscCallA(DMViewFromOptions(dm, PETSC_NULL_OPTIONS,"-dm_view",ierr));
+    PetscCallA(DMViewFromOptions(dm, PETSC_NULL_OPTIONS,'-dm_view',ierr));
 
     ! Create the exodus result file
 
@@ -134,26 +130,26 @@ program ex62f90
     !
     !    Note how the exodus file is now open
     !
-    ! "Format" the exodus result file, i.e. allocate space for nodal and zonal variables
+    ! 'Format' the exodus result file, i.e. allocate space for nodal and zonal variables
     select case(sdim)
     case(2)
         numNodalVar = 3
-        nodalVarName(1:numNodalVar) = ["U_x  ","U_y  ","Alpha"]
+        nodalVarName(1:numNodalVar) = ['U_x  ','U_y  ','Alpha']
         numZonalVar = 3
-        zonalVarName(1:numZonalVar) = ["Sigma_11","Sigma_22","Sigma_12"]
+        zonalVarName(1:numZonalVar) = ['Sigma_11','Sigma_22','Sigma_12']
     case(3)
         numNodalVar = 4
-        nodalVarName(1:numNodalVar) = ["U_x  ","U_y  ","U_z  ","Alpha"]
+        nodalVarName(1:numNodalVar) = ['U_x  ','U_y  ','U_z  ','Alpha']
         numZonalVar = 6
-        zonalVarName(1:numZonalVar) = ["Sigma_11","Sigma_22","Sigma_33","Sigma_23","Sigma_13","Sigma_12"]
+        zonalVarName(1:numZonalVar) = ['Sigma_11','Sigma_22','Sigma_33','Sigma_23','Sigma_13','Sigma_12']
     case default
         write(IOBuffer,'("No layout for dimension ",I2)') sdim
     end select
     PetscCallA(PetscViewerExodusIIGetId(viewer,exoid,ierr))
-    PetscCallA(expvp(exoid, "E", numZonalVar,ierr))
-    PetscCallA(expvan(exoid, "E", numZonalVar, zonalVarName,ierr))
-    PetscCallA(expvp(exoid, "N", numNodalVar,ierr))
-    PetscCallA(expvan(exoid, "N", numNodalVar, nodalVarName,ierr))
+    PetscCallA(expvp(exoid, 'E', numZonalVar,ierr))
+    PetscCallA(expvan(exoid, 'E', numZonalVar, zonalVarName,ierr))
+    PetscCallA(expvp(exoid, 'N', numNodalVar,ierr))
+    PetscCallA(expvan(exoid, 'N', numNodalVar, nodalVarName,ierr))
     PetscCallA(exinq(exoid, EX_INQ_ELEM_BLK,numCS,PETSC_NULL_REAL,sjunk,ierr))
 
     !    An exodusII truth table specifies which fields are saved at which time step
@@ -171,9 +167,9 @@ program ex62f90
     PetscCallA(PetscObjectGetComm(dm,comm,ierr))
     PetscCallA(PetscSectionCreate(comm, section,ierr))
     PetscCallA(PetscSectionSetNumFields(section, 3_kPI,ierr))
-    PetscCallA(PetscSectionSetFieldName(section, fieldU, "U",ierr))
-    PetscCallA(PetscSectionSetFieldName(section, fieldA, "Alpha",ierr))
-    PetscCallA(PetscSectionSetFieldName(section, fieldS, "Sigma",ierr))
+    PetscCallA(PetscSectionSetFieldName(section, fieldU, 'U',ierr))
+    PetscCallA(PetscSectionSetFieldName(section, fieldA, 'Alpha',ierr))
+    PetscCallA(PetscSectionSetFieldName(section, fieldS, 'Sigma',ierr))
     PetscCallA(DMPlexGetChart(dm, pStart, pEnd,ierr))
     PetscCallA(PetscSectionSetChart(section, pStart, pEnd,ierr))
 
@@ -189,16 +185,16 @@ program ex62f90
     PetscCallA(PetscSectionSetFieldComponents(section, fieldS, sdim*(sdim+1)/2,ierr));
 
     ! Going through cell sets then cells, and setting up storage for the sections
-    PetscCallA(DMGetLabelSize(dm, "Cell Sets", numCS, ierr))
-    PetscCallA(DMGetLabelIdIS(dm, "Cell Sets", csIS, ierr))
+    PetscCallA(DMGetLabelSize(dm, 'Cell Sets', numCS, ierr))
+    PetscCallA(DMGetLabelIdIS(dm, 'Cell Sets', csIS, ierr))
     PetscCallA(ISGetIndicesF90(csIS, csID, ierr))
     do set = 1,numCS
         !!! This is pointless but will avoid a warning with gfortran and -Werror=maybe-uninitialized
         nullify(dofA)
         nullify(dofU)
         nullify(dofS)
-        PetscCallA(DMGetStratumSize(dm, "Cell Sets", csID(set), numCells,ierr))
-        PetscCallA(DMGetStratumIS(dm, "Cell Sets", csID(set), cellIS,ierr))
+        PetscCallA(DMGetStratumSize(dm, 'Cell Sets', csID(set), numCells,ierr))
+        PetscCallA(DMGetStratumIS(dm, 'Cell Sets', csID(set), cellIS,ierr))
         if (numCells > 0) then
             select case(sdim)
             case(2)
@@ -277,7 +273,7 @@ program ex62f90
     PetscCallA(ISDestroy(csIS,ierr))
     PetscCallA(PetscSectionSetUp(section,ierr))
     PetscCallA(DMSetLocalSection(dm, section,ierr))
-    PetscCallA(PetscObjectViewFromOptions(section, PETSC_NULL_SECTION, "-dm_section_view",ierr))
+    PetscCallA(PetscObjectViewFromOptions(section, PETSC_NULL_SECTION, '-dm_section_view',ierr))
     PetscCallA(PetscSectionDestroy(section,ierr))
 
     PetscCallA(DMSetUseNatural(dm,PETSC_TRUE,ierr))
@@ -291,7 +287,7 @@ program ex62f90
     else
         pdm = dm
     end if
-    PetscCallA(DMViewFromOptions(pdm,PETSC_NULL_OPTIONS,"-dm_view",ierr))
+    PetscCallA(DMViewFromOptions(pdm,PETSC_NULL_OPTIONS,'-dm_view',ierr))
 
     ! Get DM and IS for each field of dm
     PetscCallA(DMCreateSubDM(pdm, 1_kPI, fieldU,  isU,  dmU,ierr))
@@ -313,11 +309,11 @@ program ex62f90
     PetscCallA(DMGetGlobalVector(dmUA, UA,ierr))
     PetscCallA(DMGetGlobalVector(dmUA2, UA2,ierr))
 
-    PetscCallA(PetscObjectSetName(U,  "U",ierr))
-    PetscCallA(PetscObjectSetName(A,  "Alpha",ierr))
-    PetscCallA(PetscObjectSetName(S,  "Sigma",ierr))
-    PetscCallA(PetscObjectSetName(UA, "UAlpha",ierr))
-    PetscCallA(PetscObjectSetName(UA2, "UAlpha2",ierr))
+    PetscCallA(PetscObjectSetName(U,  'U',ierr))
+    PetscCallA(PetscObjectSetName(A,  'Alpha',ierr))
+    PetscCallA(PetscObjectSetName(S,  'Sigma',ierr))
+    PetscCallA(PetscObjectSetName(UA, 'UAlpha',ierr))
+    PetscCallA(PetscObjectSetName(UA2, 'UAlpha2',ierr))
     PetscCallA(VecSet(X, -111.0_kPR,ierr))
 
     ! Setting u to [x,y,z]  and alpha to x^2+y^2+z^2 by writing in UAlpha then restricting to U and Alpha */
@@ -355,12 +351,12 @@ program ex62f90
     ! Restrict to U and Alpha
     PetscCallA(VecISCopy(X, isU, SCATTER_REVERSE, U,ierr))
     PetscCallA(VecISCopy(X, isA, SCATTER_REVERSE, A,ierr))
-    PetscCallA(VecViewFromOptions(UA, PETSC_NULL_OPTIONS, "-ua_vec_view",ierr))
-    PetscCallA(VecViewFromOptions(U, PETSC_NULL_OPTIONS, "-u_vec_view",ierr))
-    PetscCallA(VecViewFromOptions(A, PETSC_NULL_OPTIONS, "-a_vec_view",ierr))
+    PetscCallA(VecViewFromOptions(UA, PETSC_NULL_OPTIONS, '-ua_vec_view',ierr))
+    PetscCallA(VecViewFromOptions(U, PETSC_NULL_OPTIONS, '-u_vec_view',ierr))
+    PetscCallA(VecViewFromOptions(A, PETSC_NULL_OPTIONS, '-a_vec_view',ierr))
     ! restrict to UA2
     PetscCallA(VecISCopy(X, isUA, SCATTER_REVERSE, UA2,ierr))
-    PetscCallA(VecViewFromOptions(UA2, PETSC_NULL_OPTIONS, "-ua2_vec_view",ierr))
+    PetscCallA(VecViewFromOptions(UA2, PETSC_NULL_OPTIONS, '-ua2_vec_view',ierr))
 
     ! Getting Natural Vec
     PetscCallA(DMSetOutputSequenceNumber(dmU, 0_kPI, time, ierr))
@@ -376,7 +372,7 @@ program ex62f90
     PetscCallA(DMSetOutputSequenceNumber(dmUA,1_kPI,time,ierr))
     PetscCallA(DMGetGlobalVector(dmUA, tmpVec,ierr))
     PetscCallA(VecCopy(UA, tmpVec,ierr))
-    PetscCallA(PetscObjectSetName(tmpVec, "U",ierr))
+    PetscCallA(PetscObjectSetName(tmpVec, 'U',ierr))
     PetscCallA(VecView(tmpVec, viewer,ierr))
 
     ! Reading nodal variables in Exodus file
@@ -392,7 +388,7 @@ program ex62f90
     ! same thing with the UA2 Vec obtained from the superDM
     PetscCallA(DMGetGlobalVector(dmUA2, tmpVec,ierr))
     PetscCallA(VecCopy(UA2, tmpVec,ierr))
-    PetscCallA(PetscObjectSetName(tmpVec, "U",ierr))
+    PetscCallA(PetscObjectSetName(tmpVec, 'U',ierr))
     PetscCallA(DMSetOutputSequenceNumber(dmUA2,2_kPI,time,ierr))
     PetscCallA(VecView(tmpVec, viewer,ierr))
 
@@ -412,12 +408,12 @@ program ex62f90
     !          sigma_2 = x_coordinate of the cell center of mass
     PetscCallA(DMGetCoordinateSection(dmS, coordSection,ierr))
     PetscCallA(DMGetCoordinatesLocal(dmS, coord,ierr))
-    PetscCallA(DMGetLabelIdIS(dmS, "Cell Sets", csIS,ierr))
-    PetscCallA(DMGetLabelSize(dmS, "Cell Sets",numCS,ierr))
+    PetscCallA(DMGetLabelIdIS(dmS, 'Cell Sets', csIS,ierr))
+    PetscCallA(DMGetLabelSize(dmS, 'Cell Sets',numCS,ierr))
     PetscCallA(ISGetIndicesF90(csIS, csID,ierr))
 
     do set = 1, numCS
-        PetscCallA(DMGetStratumIS(dmS, "Cell Sets", csID(set), cellIS,ierr))
+        PetscCallA(DMGetStratumIS(dmS, 'Cell Sets', csID(set), cellIS,ierr))
         PetscCallA(ISGetIndicesF90(cellIS, cellID,ierr))
         PetscCallA(ISGetSize(cellIS, numCells,ierr))
         do cell = 1,numCells
@@ -439,7 +435,7 @@ program ex62f90
     end do
     PetscCallA(ISRestoreIndicesF90(csIS, csID,ierr))
     PetscCallA(ISDestroy(csIS,ierr))
-    PetscCallA(VecViewFromOptions(S, PETSC_NULL_OPTIONS, "-s_vec_view",ierr))
+    PetscCallA(VecViewFromOptions(S, PETSC_NULL_OPTIONS, '-s_vec_view',ierr))
 
     ! Writing zonal variables in Exodus file
     PetscCallA(DMSetOutputSequenceNumber(dmS,0_kPI,time,ierr))
@@ -448,7 +444,7 @@ program ex62f90
     ! Reading zonal variables in Exodus file */
     PetscCallA(DMGetGlobalVector(dmS, tmpVec,ierr))
     PetscCallA(VecSet(tmpVec, -1000.0_kPR,ierr))
-    PetscCallA(PetscObjectSetName(tmpVec, "Sigma",ierr))
+    PetscCallA(PetscObjectSetName(tmpVec, 'Sigma',ierr))
     PetscCallA(VecLoad(tmpVec,viewer,ierr))
     PetscCallA(VecAXPY(S, -1.0_kPR, tmpVec,ierr))
     PetscCallA(VecNorm(S, NORM_INFINITY,norm,ierr))
@@ -534,7 +530,7 @@ end program ex62f90
 !   nsize: 2
 !   args: -i ${wPETSC_DIR}/share/petsc/datafiles/meshes/FourSquareQ-large.exo -o FourSquareQ-large_out.exo -dm_view -dm_section_view -petscpartitioner_type simple -order 2
 ! test:
-!   # Something is now broken with parallel read/write for wahtever shape H is
+!   # Something is now broken with parallel read/write for whatever shape H is
 !   TODO: broken
 !   suffix: 11
 !   nsize: 2

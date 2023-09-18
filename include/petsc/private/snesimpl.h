@@ -1,5 +1,4 @@
-#ifndef __SNESIMPL_H
-#define __SNESIMPL_H
+#pragma once
 
 #include <petscsnes.h>
 #include <petsc/private/petscimpl.h>
@@ -261,14 +260,12 @@ PETSC_INTERN PetscErrorCode SNESVISetComputeVariableBounds_VI(SNES, SNESVIComput
 PETSC_INTERN PetscErrorCode SNESVISetVariableBounds_VI(SNES, Vec, Vec);
 PETSC_INTERN PetscErrorCode SNESConvergedDefault_VI(SNES, PetscInt, PetscReal, PetscReal, PetscReal, SNESConvergedReason *, void *);
 
-PetscErrorCode              SNESScaleStep_Private(SNES, Vec, PetscReal *, PetscReal *, PetscReal *, PetscReal *);
 PETSC_EXTERN PetscErrorCode DMSNESUnsetFunctionContext_Internal(DM);
 PETSC_EXTERN PetscErrorCode DMSNESUnsetJacobianContext_Internal(DM);
 PETSC_EXTERN PetscErrorCode DMSNESCheck_Internal(SNES, DM, Vec);
 
 PETSC_EXTERN PetscLogEvent SNES_Solve;
 PETSC_EXTERN PetscLogEvent SNES_SetUp;
-PETSC_EXTERN PetscLogEvent SNES_LineSearch;
 PETSC_EXTERN PetscLogEvent SNES_FunctionEval;
 PETSC_EXTERN PetscLogEvent SNES_JacobianEval;
 PETSC_EXTERN PetscLogEvent SNES_NGSEval;
@@ -280,8 +277,8 @@ PETSC_INTERN PetscBool  SNEScite;
 PETSC_INTERN const char SNESCitation[];
 
 /* Used by TAOBNK solvers */
-PETSC_EXTERN PetscErrorCode KSPPostSolve_SNESEW(KSP, Vec, Vec, SNES);
-PETSC_EXTERN PetscErrorCode KSPPreSolve_SNESEW(KSP, Vec, Vec, SNES);
+PETSC_EXTERN PetscErrorCode KSPPostSolve_SNESEW(KSP, Vec, Vec, void *);
+PETSC_EXTERN PetscErrorCode KSPPreSolve_SNESEW(KSP, Vec, Vec, void *);
 PETSC_EXTERN PetscErrorCode SNESEWSetFromOptions_Private(SNESKSPEW *, PetscBool, MPI_Comm, const char *);
 
 /*
@@ -310,7 +307,8 @@ PETSC_EXTERN PetscErrorCode SNESEWSetFromOptions_Private(SNESKSPEW *, PetscBool,
       PetscBool domainerror; \
       PetscCall(MPIU_Allreduce(&snes->jacobiandomainerror, &domainerror, 1, MPIU_BOOL, MPI_LOR, PetscObjectComm((PetscObject)snes))); \
       if (domainerror) { \
-        snes->reason = SNES_DIVERGED_JACOBIAN_DOMAIN; \
+        snes->reason              = SNES_DIVERGED_JACOBIAN_DOMAIN; \
+        snes->jacobiandomainerror = PETSC_FALSE; \
         PetscCheck(!snes->errorifnotconverged, PetscObjectComm((PetscObject)snes), PETSC_ERR_NOT_CONVERGED, "SNESSolve has not converged due to Jacobian domain error"); \
         PetscFunctionReturn(PETSC_SUCCESS); \
       } \
@@ -341,4 +339,6 @@ PETSC_EXTERN PetscErrorCode SNESEWSetFromOptions_Private(SNESKSPEW *, PetscBool,
     } \
   } while (0)
 
-#endif
+#define SNESNeedNorm_Private(snes, iter) \
+  (((iter) == (snes)->max_its && ((snes)->normschedule == SNES_NORM_FINAL_ONLY || (snes)->normschedule == SNES_NORM_INITIAL_FINAL_ONLY)) || ((iter) == 0 && ((snes)->normschedule == SNES_NORM_INITIAL_ONLY || (snes)->normschedule == SNES_NORM_INITIAL_FINAL_ONLY)) || \
+   (snes)->normschedule == SNES_NORM_ALWAYS)

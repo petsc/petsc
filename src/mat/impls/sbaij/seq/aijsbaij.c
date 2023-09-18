@@ -126,32 +126,41 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqSBAIJ_SeqAIJ(Mat A, MatType newtype, M
 
 PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqSBAIJ_Preallocate(Mat A, PetscInt **nnz)
 {
-  PetscInt    m, n, bs = PetscAbs(A->rmap->bs);
-  PetscInt   *ii;
-  Mat_SeqAIJ *Aa = (Mat_SeqAIJ *)A->data;
+  Mat_SeqAIJ     *Aa = (Mat_SeqAIJ *)A->data;
+  PetscInt        m, n, bs = PetscAbs(A->rmap->bs);
+  const PetscInt *ai = Aa->i, *aj = Aa->j;
 
   PetscFunctionBegin;
   PetscCall(MatGetSize(A, &m, &n));
-  PetscCall(PetscCalloc1(m / bs, nnz));
-  PetscCall(PetscMalloc1(bs, &ii));
 
-  /* loop over all potential blocks in the matrix to see if the potential block has a nonzero */
-  for (PetscInt i = 0; i < m / bs; i++) {
-    for (PetscInt k = 0; k < bs; k++) ii[k] = Aa->i[i * bs + k];
-    for (PetscInt j = 0; j < n / bs; j++) {
-      for (PetscInt k = 0; k < bs; k++) {
-        for (; ii[k] < Aa->i[i * bs + k + 1] && Aa->j[ii[k]] < (j + 1) * bs; ii[k]++) {
-          if (j >= i && Aa->j[ii[k]] >= j * bs) {
-            /* found a nonzero in the potential block so allocate for that block and jump to check the next potential block */
-            (*nnz)[i]++;
-            goto theend;
-          }
-        }
-      }
-    theend:;
+  if (bs == 1) {
+    const PetscInt *adiag = Aa->diag;
+
+    PetscCall(PetscMalloc1(m, nnz));
+    for (PetscInt i = 0; i < m; i++) {
+      if (adiag[i] == ai[i + 1]) {
+        (*nnz)[i] = 0;
+        for (PetscInt j = ai[i]; j < ai[i + 1]; j++) (*nnz)[i] += (aj[j] > i);
+      } else (*nnz)[i] = ai[i + 1] - adiag[i];
     }
+  } else {
+    PetscHSetIJ    ht;
+    PetscHashIJKey key;
+    PetscBool      missing;
+
+    PetscCall(PetscHSetIJCreate(&ht));
+    PetscCall(PetscCalloc1(m / bs, nnz));
+    for (PetscInt i = 0; i < m; i++) {
+      key.i = i / bs;
+      for (PetscInt k = ai[i]; k < ai[i + 1]; k++) {
+        key.j = aj[k] / bs;
+        if (key.j < key.i) continue;
+        PetscCall(PetscHSetIJQueryAdd(ht, key, &missing));
+        if (missing) (*nnz)[key.i]++;
+      }
+    }
+    PetscCall(PetscHSetIJDestroy(&ht));
   }
-  PetscCall(PetscFree(ii));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

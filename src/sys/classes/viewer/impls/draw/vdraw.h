@@ -1,12 +1,9 @@
-/*
-     Data structure for the PetscDraw version of the viewer
-*/
-
-#ifndef __VDRAW_H
-#define __VDRAW_H
+#pragma once
 
 #include <petscdraw.h>
 #include <petsc/private/viewerimpl.h>
+
+/* Data structure for the PetscDraw version of the viewer */
 typedef struct {
   PetscInt       draw_max;
   PetscInt       draw_base;
@@ -23,5 +20,3 @@ typedef struct {
   PetscReal      pause;
   PetscDrawType  drawtype;
 } PetscViewer_Draw;
-
-#endif

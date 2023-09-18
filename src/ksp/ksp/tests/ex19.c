@@ -92,7 +92,7 @@ int main(int argc, char **argv)
   PetscCall(VecGetLocalSize(user.fine.x, &nlocal));
   PetscCall(DMCreateLocalVector(user.fine.da, &user.fine.localX));
   PetscCall(VecDuplicate(user.fine.localX, &user.fine.localF));
-  PetscCall(MatCreateAIJ(PETSC_COMM_WORLD, nlocal, nlocal, n, n, 5, NULL, 3, NULL, &user.fine.J));
+  PetscCall(MatCreateFromOptions(PETSC_COMM_WORLD, NULL, 1, nlocal, nlocal, n, n, &user.fine.J));
 
   /* Set up distributed array for coarse grid */
   PetscCall(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DMDA_STENCIL_STAR, user.coarse.mx, user.coarse.my, Nx, Ny, 1, 1, NULL, NULL, &user.coarse.da));
@@ -103,7 +103,7 @@ int main(int argc, char **argv)
   PetscCall(VecGetLocalSize(user.coarse.x, &Nlocal));
   PetscCall(DMCreateLocalVector(user.coarse.da, &user.coarse.localX));
   PetscCall(VecDuplicate(user.coarse.localX, &user.coarse.localF));
-  PetscCall(MatCreateAIJ(PETSC_COMM_WORLD, Nlocal, Nlocal, N, N, 5, NULL, 3, NULL, &user.coarse.J));
+  PetscCall(MatCreateFromOptions(PETSC_COMM_WORLD, NULL, 1, Nlocal, Nlocal, N, N, &user.coarse.J));
 
   /* Create linear solver */
   PetscCall(KSPCreate(PETSC_COMM_WORLD, &ksp));

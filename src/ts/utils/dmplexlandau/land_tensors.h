@@ -1,3 +1,5 @@
+#pragma once
+
 #define LANDAU_INVSQRT(q) (1. / PetscSqrtReal(q))
 
 #if defined(__CUDA_ARCH__)
@@ -5,7 +7,7 @@
 #elif defined(KOKKOS_INLINE_FUNCTION)
   #define PETSC_DEVICE_FUNC_DECL KOKKOS_INLINE_FUNCTION
 #else
-  #define PETSC_DEVICE_FUNC_DECL static
+  #define PETSC_DEVICE_FUNC_DECL
 #endif
 
 #if LANDAU_DIM == 2
@@ -106,7 +108,7 @@ PETSC_DEVICE_FUNC_DECL void LandauTensor2D(const PetscReal x[], const PetscReal 
 /* since the tensor diverges for x==y but when integrated */
 /* the divergent part is antisymmetric and vanishes. This is not  */
 /* trivial, but can be proven. */
-PETSC_DEVICE_FUNC_DECL void LandauTensor3D(const PetscReal x1[], const PetscReal xp, const PetscReal yp, const PetscReal zp, PetscReal U[][3], PetscReal mask)
+static PETSC_DEVICE_FUNC_DECL void LandauTensor3D(const PetscReal x1[], const PetscReal xp, const PetscReal yp, const PetscReal zp, PetscReal U[][3], PetscReal mask)
 {
   PetscReal dx[3], inorm3, inorm, inorm2, norm2, x2[] = {xp, yp, zp};
   PetscInt  d;
@@ -124,7 +126,7 @@ PETSC_DEVICE_FUNC_DECL void LandauTensor3D(const PetscReal x1[], const PetscReal
 }
   /* Relativistic form */
   #define GAMMA3(_x, _c02) PetscSqrtReal(1.0 + ((_x[0] * _x[0]) + (_x[1] * _x[1]) + (_x[2] * _x[2])) / (_c02))
-PETSC_DEVICE_FUNC_DECL void LandauTensor3DRelativistic(const PetscReal a_x1[], const PetscReal xp, const PetscReal yp, const PetscReal zp, PetscReal U[][3], PetscReal mask, PetscReal c0)
+static PETSC_DEVICE_FUNC_DECL void LandauTensor3DRelativistic(const PetscReal a_x1[], const PetscReal xp, const PetscReal yp, const PetscReal zp, PetscReal U[][3], PetscReal mask, PetscReal c0)
 {
   const PetscReal x2[3] = {xp, yp, zp}, x1[3] = {a_x1[0], a_x1[1], a_x1[2]}, c02 = c0 * c0, g1 = GAMMA3(x1, c02), g2 = GAMMA3(x2, c02);
   PetscReal       fact, u1u2, diff[3], udiff2, u12, u22, wsq, rsq, tt;

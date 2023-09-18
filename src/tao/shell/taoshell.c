@@ -8,19 +8,19 @@ struct _n_TaoShell {
 };
 
 /*@C
-   TaoShellSetSolve - Sets routine to apply as solver
+  TaoShellSetSolve - Sets routine to apply as solver
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  tao - the nonlinear solver context
--  solve - the application-provided solver routine
+  Input Parameters:
++ tao   - the nonlinear solver context
+- solve - the application-provided solver routine
 
-   Calling sequence of `solve`:
+  Calling sequence of `solve`:
 $   PetscErrorCode solve(Tao tao)
-.  tao - the optimizer, get the application context with `TaoShellGetContext()`
+. tao - the optimizer, get the application context with `TaoShellGetContext()`
 
-   Level: advanced
+  Level: advanced
 
 .seealso: `Tao`, `TAOSHELL`, `TaoShellSetContext()`, `TaoShellGetContext()`
 @*/
@@ -35,20 +35,20 @@ PetscErrorCode TaoShellSetSolve(Tao tao, PetscErrorCode (*solve)(Tao))
 }
 
 /*@
-    TaoShellGetContext - Returns the user-provided context associated with a `TAOSHELL`
+  TaoShellGetContext - Returns the user-provided context associated with a `TAOSHELL`
 
-    Not Collective
+  Not Collective
 
-    Input Parameter:
-.   tao - should have been created with `TaoSetType`(tao,`TAOSHELL`);
+  Input Parameter:
+. tao - should have been created with `TaoSetType`(tao,`TAOSHELL`);
 
-    Output Parameter:
-.   ctx - the user provided context
+  Output Parameter:
+. ctx - the user provided context
 
-    Level: advanced
+  Level: advanced
 
-    Note:
-    This routine is intended for use within various shell routines
+  Note:
+  This routine is intended for use within various shell routines
 
 .seealso: `Tao`, `TAOSHELL`, `TaoCreateShell()`, `TaoShellSetContext()`
 @*/
@@ -58,7 +58,7 @@ PetscErrorCode TaoShellGetContext(Tao tao, void *ctx)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);
-  PetscValidPointer(ctx, 2);
+  PetscAssertPointer(ctx, 2);
   PetscCall(PetscObjectTypeCompare((PetscObject)tao, TAOSHELL, &flg));
   if (!flg) *(void **)ctx = NULL;
   else *(void **)ctx = ((Tao_Shell *)(tao->data))->ctx;
@@ -66,17 +66,17 @@ PetscErrorCode TaoShellGetContext(Tao tao, void *ctx)
 }
 
 /*@
-    TaoShellSetContext - sets the context for a `TAOSHELL`
+  TaoShellSetContext - sets the context for a `TAOSHELL`
 
-   Logically Collective
+  Logically Collective
 
-    Input Parameters:
-+   tao - the shell Tao
--   ctx - the context
+  Input Parameters:
++ tao - the shell Tao
+- ctx - the context
 
-   Level: advanced
+  Level: advanced
 
-   Fortran Note:
+  Fortran Notes:
   The context can only be an integer or a `PetscObject`
 
 .seealso: `Tao`, `TAOSHELL`, `TaoCreateShell()`, `TaoShellGetContext()`
@@ -104,26 +104,26 @@ static PetscErrorCode TaoSolve_Shell(Tao tao)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode TaoDestroy_Shell(Tao tao)
+static PetscErrorCode TaoDestroy_Shell(Tao tao)
 {
   PetscFunctionBegin;
   PetscCall(PetscFree(tao->data));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode TaoSetUp_Shell(Tao tao)
+static PetscErrorCode TaoSetUp_Shell(Tao tao)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode TaoSetFromOptions_Shell(Tao tao, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode TaoSetFromOptions_Shell(Tao tao, PetscOptionItems *PetscOptionsObject)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode TaoView_Shell(Tao tao, PetscViewer viewer)
+static PetscErrorCode TaoView_Shell(Tao tao, PetscViewer viewer)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(PETSC_SUCCESS);

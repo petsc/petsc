@@ -3,30 +3,30 @@
 #include <petscviewersaws.h>
 
 /*@C
-    PetscViewerSAWsOpen - Opens an SAWs `PetscViewer`.
+  PetscViewerSAWsOpen - Opens an SAWs `PetscViewer`.
 
-    Collective; No Fortran Support
+  Collective; No Fortran Support
 
-    Input Parameter:
-.   comm - the MPI communicator
+  Input Parameter:
+. comm - the MPI communicator
 
-    Output Parameter:
-.   lab - the `PetscViewer`
+  Output Parameter:
+. lab - the `PetscViewer`
 
-    Options Database Keys:
-+   -saws_port <port number> - port number where you are running SAWs client
-.   -xxx_view saws - publish the object xxx
--   -xxx_saws_block - blocks the program at the end of a critical point (for `KSP` and `SNES` it is the end of a solve) until
+  Options Database Keys:
++ -saws_port <port number> - port number where you are running SAWs client
+. -xxx_view saws           - publish the object xxx
+- -xxx_saws_block          - blocks the program at the end of a critical point (for `KSP` and `SNES` it is the end of a solve) until
                     the user unblocks the problem with an external tool that access the object with SAWS
 
-    Level: advanced
+  Level: advanced
 
-    Notes:
-    Unlike other viewers that only access the object being viewed on the call to XXXView(object,viewer) the SAWs viewer allows
-    one to view the object asynchronously as the program continues to run. One can remove SAWs access to the object with a call to
-    `PetscObjectSAWsViewOff()`.
+  Notes:
+  Unlike other viewers that only access the object being viewed on the call to `XXXView`(object,viewer) the SAWs viewer allows
+  one to view the object asynchronously as the program continues to run. One can remove SAWs access to the object with a call to
+  `PetscObjectSAWsViewOff()`.
 
-    Information about the SAWs is available via https://bitbucket.org/saws/saws
+  Information about the SAWs is available via https://bitbucket.org/saws/saws
 
 .seealso: [](sec_viewers), `PetscViewerDestroy()`, `PetscViewerStringSPrintf()`, `PETSC_VIEWER_SAWS_()`, `PetscObjectSAWsBlock()`,
           `PetscObjectSAWsViewOff()`, `PetscObjectSAWsTakeAccess()`, `PetscObjectSAWsGrantAccess()`
@@ -40,22 +40,22 @@ PetscErrorCode PetscViewerSAWsOpen(MPI_Comm comm, PetscViewer *lab)
 }
 
 /*@C
-   PetscObjectViewSAWs - View the base portion of any object with an SAWs viewer
+  PetscObjectViewSAWs - View the base portion of any object with an SAWs viewer
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  obj - the `PetscObject` variable. Thus must be cast with a (`PetscObject`), for example, `PetscObjectSetName`((`PetscObject`)mat,name);
--  viewer - the SAWs viewer
+  Input Parameters:
++ obj    - the `PetscObject` variable. Thus must be cast with a (`PetscObject`), for example, `PetscObjectSetName`((`PetscObject`)mat,name);
+- viewer - the SAWs viewer
 
-   Level: advanced
+  Level: advanced
 
-   Note:
-   The object must have already been named before calling this routine since naming an
-   object can be collective.
+  Note:
+  The object must have already been named before calling this routine since naming an
+  object can be collective.
 
-   Developer Note:
-   Currently this is called only on rank zero of `PETSC_COMM_WORLD`
+  Developer Notes:
+  Currently this is called only on MPI rank 0 of `PETSC_COMM_WORLD`
 
 .seealso: [](sec_viewers), `PetscViewer`, `PetscObject`, `PetscObjectSetName()`, `PetscObjectSAWsViewOff()`
 @*/

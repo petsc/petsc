@@ -56,14 +56,14 @@ PetscErrorCode PetscADefTicks(PetscReal low, PetscReal high, int num, int *ntick
 
 #define EPS 1.e-6
 
-PetscErrorCode PetscExp10(PetscReal d, PetscReal *result)
+static PetscErrorCode PetscExp10(PetscReal d, PetscReal *result)
 {
   PetscFunctionBegin;
   *result = PetscPowReal((PetscReal)10.0, d);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PetscMod(PetscReal x, PetscReal y, PetscReal *result)
+static PetscErrorCode PetscMod(PetscReal x, PetscReal y, PetscReal *result)
 {
   int i;
 
@@ -79,7 +79,7 @@ PetscErrorCode PetscMod(PetscReal x, PetscReal y, PetscReal *result)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PetscCopysign(PetscReal a, PetscReal b, PetscReal *result)
+static PetscErrorCode PetscCopysign(PetscReal a, PetscReal b, PetscReal *result)
 {
   PetscFunctionBegin;
   if (b >= 0) *result = a;

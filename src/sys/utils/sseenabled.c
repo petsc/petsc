@@ -88,7 +88,7 @@ PetscErrorCode PetscSSEOSEnabledTest_TRUE(PetscBool *flag)
   #define PetscSSEHardwareTest(arg)  PetscSSEEnabledTest_FALSE(arg)
   #define PetscSSEOSEnabledTest(arg) PetscSSEEnabledTest_FALSE(arg)
 
-PetscErrorCode PetscSSEEnabledTest_FALSE(PetscBool *flag)
+static PetscErrorCode PetscSSEEnabledTest_FALSE(PetscBool *flag)
 {
   PetscFunctionBegin;
   if (flag) *flag = PETSC_FALSE;
@@ -102,26 +102,28 @@ static PetscBool petsc_sse_enabled_local      = PETSC_FALSE;
 static PetscBool petsc_sse_global_is_untested = PETSC_TRUE;
 static PetscBool petsc_sse_enabled_global     = PETSC_FALSE;
 /*@C
-     PetscSSEIsEnabled - Determines if Intel Streaming SIMD Extensions (SSE) to the x86 instruction
-     set can be used.  Some operating systems do not allow the use of these instructions despite
-     hardware availability.
+  PetscSSEIsEnabled - Determines if Intel Streaming SIMD Extensions (SSE) to the x86 instruction
+  set can be used.  Some operating systems do not allow the use of these instructions despite
+  hardware availability.
 
-     Collective
+  Collective
 
-     Input Parameter:
-.    comm - the MPI Communicator
+  Input Parameter:
+. comm - the MPI Communicator
 
-     Output Parameters:
-+    lflag - Local Flag  `PETSC_TRUE` if enabled in this process
--    gflag - Global Flag `PETSC_TRUE` if enabled for all processes in comm
+  Output Parameters:
++ lflag - Local Flag  `PETSC_TRUE` if enabled in this process
+- gflag - Global Flag `PETSC_TRUE` if enabled for all processes in comm
 
-     Options Database Key:
-.    -disable_sse - Disable use of hand tuned Intel SSE implementations
+  Options Database Key:
+. -disable_sse - Disable use of hand tuned Intel SSE implementations
 
-     Level: developer
+  Level: developer
 
-     Note:
-     `NULL` can be specified for `lflag` or `gflag` if either of these values are not desired.
+  Note:
+  `NULL` can be specified for `lflag` or `gflag` if either of these values are not desired.
+
+.seealso: [](ch_profiling)
 @*/
 PetscErrorCode PetscSSEIsEnabled(MPI_Comm comm, PetscBool *lflag, PetscBool *gflag)
 {

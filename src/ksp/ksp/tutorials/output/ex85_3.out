@@ -1,0 +1,9 @@
+Mat Object: 2 MPI processes
+  type: nest
+  Matrix object:
+    type=nest, rows=2, cols=2
+    MatNest structure:
+    (0,0) : type=mpiaij, rows=6, cols=6
+    (0,1) : type=mpiaij, rows=6, cols=4
+    (1,0) : type=mpiaij, rows=4, cols=6
+    (1,1) : type=mpiaij, rows=4, cols=4

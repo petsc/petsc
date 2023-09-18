@@ -183,8 +183,6 @@ static PetscErrorCode TSComputeIJacobian_DMLocal(TS ts, PetscReal time, Vec X, V
 
 /*@C
   DMTSSetBoundaryLocal - set the function for essential boundary data for a local implicit function evaluation.
-    It should set the essential boundary data for the local portion of the solution X, as well its time derivative X_t (if it is not NULL).
-    Vectors are initialized to zero before this function, so it is only needed for non homogeneous data.
 
   Logically Collective
 
@@ -195,12 +193,19 @@ static PetscErrorCode TSComputeIJacobian_DMLocal(TS ts, PetscReal time, Vec X, V
 
   Level: intermediate
 
-  Note:
-  This function is somewhat optional: boundary data could potentially be inserted by a function passed to
-  `DMTSSetIFunctionLocal()`.  The use case for this function is for discretizations with constraints (see
-  `DMGetDefaultConstraints()`): this function inserts boundary values before constraint interpolation.
+  Notes:
+  `func` should set the essential boundary data for the local portion of the solution, as
+  well its time derivative (if it is not `NULL`).
 
-.seealso: [](chapter_ts), `DM`, `TS`, `DMTSSetIFunction()`, `DMTSSetIJacobianLocal()`
+  Vectors are initialized to zero before this function, so it is only needed for non
+  homogeneous data.
+
+  This function is somewhat optional: boundary data could potentially be inserted by a function
+  passed to `DMTSSetIFunctionLocal()`. The use case for this function is for discretizations
+  with constraints (see `DMGetDefaultConstraints()`): this function inserts boundary values
+  before constraint interpolation.
+
+.seealso: [](ch_ts), `DM`, `TS`, `DMTSSetIFunction()`, `DMTSSetIJacobianLocal()`
 @*/
 PetscErrorCode DMTSSetBoundaryLocal(DM dm, PetscErrorCode (*func)(DM, PetscReal, Vec, Vec, void *), void *ctx)
 {
@@ -220,13 +225,13 @@ PetscErrorCode DMTSSetBoundaryLocal(DM dm, PetscErrorCode (*func)(DM, PetscReal,
 
 /*@C
   DMTSGetIFunctionLocal - get the local implicit function evaluation function. This function is called with local vector
-      containing the local vector information PLUS ghost point information. It should compute a result for all local
-      elements and `DM` will automatically accumulate the overlapping values.
+  containing the local vector information PLUS ghost point information. It should compute a result for all local
+  elements and `DM` will automatically accumulate the overlapping values.
 
   Logically Collective
 
   Input Parameter:
-. dm   - `DM` to associate callback with
+. dm - `DM` to associate callback with
 
   Output Parameters:
 + func - local function evaluation
@@ -234,26 +239,23 @@ PetscErrorCode DMTSSetBoundaryLocal(DM dm, PetscErrorCode (*func)(DM, PetscReal,
 
   Level: beginner
 
-.seealso: [](chapter_ts), `DM`, `DMTSSetIFunctionLocal()`, `DMTSSetIFunction()`, `DMTSSetIJacobianLocal()`
+.seealso: [](ch_ts), `DM`, `DMTSSetIFunctionLocal()`, `DMTSSetIFunction()`, `DMTSSetIJacobianLocal()`
 @*/
 PetscErrorCode DMTSGetIFunctionLocal(DM dm, PetscErrorCode (**func)(DM, PetscReal, Vec, Vec, Vec, void *), void **ctx)
 {
-  DMTS           tdm;
-  DMTS_Local    *dmlocalts;
-  PetscErrorCode ierr;
+  DMTS        tdm;
+  DMTS_Local *dmlocalts;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  ierr = DMGetDMTS(dm, &tdm);
-  CHKERRQ(ierr);
-  ierr = DMLocalTSGetContext(dm, tdm, &dmlocalts);
-  CHKERRQ(ierr);
+  PetscCall(DMGetDMTS(dm, &tdm));
+  PetscCall(DMLocalTSGetContext(dm, tdm, &dmlocalts));
   if (func) {
-    PetscValidPointer(func, 2);
+    PetscAssertPointer(func, 2);
     *func = dmlocalts->ifunctionlocal;
   }
   if (ctx) {
-    PetscValidPointer(ctx, 3);
+    PetscAssertPointer(ctx, 3);
     *ctx = dmlocalts->ifunctionlocalctx;
   }
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -261,8 +263,8 @@ PetscErrorCode DMTSGetIFunctionLocal(DM dm, PetscErrorCode (**func)(DM, PetscRea
 
 /*@C
   DMTSSetIFunctionLocal - set a local implicit function evaluation function. This function is called with local vector
-      containing the local vector information PLUS ghost point information. It should compute a result for all local
-      elements and `DM` will automatically accumulate the overlapping values.
+  containing the local vector information PLUS ghost point information. It should compute a result for all local
+  elements and `DM` will automatically accumulate the overlapping values.
 
   Logically Collective
 
@@ -273,7 +275,7 @@ PetscErrorCode DMTSGetIFunctionLocal(DM dm, PetscErrorCode (**func)(DM, PetscRea
 
   Level: beginner
 
-.seealso: [](chapter_ts), `DM`, `DMTSGetIFunctionLocal()`, `DMTSSetIFunction()`, `DMTSSetIJacobianLocal()`
+.seealso: [](ch_ts), `DM`, `DMTSGetIFunctionLocal()`, `DMTSSetIFunction()`, `DMTSSetIJacobianLocal()`
 @*/
 PetscErrorCode DMTSSetIFunctionLocal(DM dm, PetscErrorCode (*func)(DM, PetscReal, Vec, Vec, Vec, void *), void *ctx)
 {
@@ -305,30 +307,27 @@ PetscErrorCode DMTSSetIFunctionLocal(DM dm, PetscErrorCode (*func)(DM, PetscReal
 
   Output Parameters:
 + func - local Jacobian evaluation
-- ctx - optional context for local Jacobian evaluation
+- ctx  - optional context for local Jacobian evaluation
 
   Level: beginner
 
-.seealso: [](chapter_ts), `DM`, `DMTSSetIJacobianLocal()`, `DMTSSetIFunctionLocal()`, `DMTSSetIJacobian()`, `DMTSSetIFunction()`
+.seealso: [](ch_ts), `DM`, `DMTSSetIJacobianLocal()`, `DMTSSetIFunctionLocal()`, `DMTSSetIJacobian()`, `DMTSSetIFunction()`
 @*/
 PetscErrorCode DMTSGetIJacobianLocal(DM dm, PetscErrorCode (**func)(DM, PetscReal, Vec, Vec, PetscReal, Mat, Mat, void *), void **ctx)
 {
-  DMTS           tdm;
-  DMTS_Local    *dmlocalts;
-  PetscErrorCode ierr;
+  DMTS        tdm;
+  DMTS_Local *dmlocalts;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  ierr = DMGetDMTS(dm, &tdm);
-  CHKERRQ(ierr);
-  ierr = DMLocalTSGetContext(dm, tdm, &dmlocalts);
-  CHKERRQ(ierr);
+  PetscCall(DMGetDMTS(dm, &tdm));
+  PetscCall(DMLocalTSGetContext(dm, tdm, &dmlocalts));
   if (func) {
-    PetscValidPointer(func, 2);
+    PetscAssertPointer(func, 2);
     *func = dmlocalts->ijacobianlocal;
   }
   if (ctx) {
-    PetscValidPointer(ctx, 3);
+    PetscAssertPointer(ctx, 3);
     *ctx = dmlocalts->ijacobianlocalctx;
   }
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -340,13 +339,13 @@ PetscErrorCode DMTSGetIJacobianLocal(DM dm, PetscErrorCode (**func)(DM, PetscRea
   Logically Collective
 
   Input Parameters:
-+ dm - `DM` to associate callback with
++ dm   - `DM` to associate callback with
 . func - local Jacobian evaluation
-- ctx - optional context for local Jacobian evaluation
+- ctx  - optional context for local Jacobian evaluation
 
   Level: beginner
 
-.seealso: [](chapter_ts), `DM`, `DMTSGetIJacobianLocal()`, `DMTSSetIFunctionLocal()`, `DMTSSetIJacobian()`, `DMTSSetIFunction()`
+.seealso: [](ch_ts), `DM`, `DMTSGetIJacobianLocal()`, `DMTSSetIFunctionLocal()`, `DMTSSetIJacobian()`, `DMTSSetIFunction()`
 @*/
 PetscErrorCode DMTSSetIJacobianLocal(DM dm, PetscErrorCode (*func)(DM, PetscReal, Vec, Vec, PetscReal, Mat, Mat, void *), void *ctx)
 {
@@ -367,13 +366,13 @@ PetscErrorCode DMTSSetIJacobianLocal(DM dm, PetscErrorCode (*func)(DM, PetscReal
 
 /*@C
   DMTSGetRHSFunctionLocal - get a local rhs function evaluation function. This function is called with local vector
-      containing the local vector information PLUS ghost point information. It should compute a result for all local
-      elements and `DM` will automatically accumulate the overlapping values.
+  containing the local vector information PLUS ghost point information. It should compute a result for all local
+  elements and `DM` will automatically accumulate the overlapping values.
 
   Logically Collective
 
   Input Parameter:
-. dm   - `DM` to associate callback with
+. dm - `DM` to associate callback with
 
   Output Parameters:
 + func - local function evaluation
@@ -381,26 +380,23 @@ PetscErrorCode DMTSSetIJacobianLocal(DM dm, PetscErrorCode (*func)(DM, PetscReal
 
   Level: beginner
 
-.seealso: [](chapter_ts), `DM`, `DMTSSetRHSFunctionLocal()`, `DMTSSetRHSFunction()`, `DMTSSetIFunction()`, `DMTSSetIJacobianLocal()`
+.seealso: [](ch_ts), `DM`, `DMTSSetRHSFunctionLocal()`, `DMTSSetRHSFunction()`, `DMTSSetIFunction()`, `DMTSSetIJacobianLocal()`
 @*/
 PetscErrorCode DMTSGetRHSFunctionLocal(DM dm, PetscErrorCode (**func)(DM, PetscReal, Vec, Vec, void *), void **ctx)
 {
-  DMTS           tdm;
-  DMTS_Local    *dmlocalts;
-  PetscErrorCode ierr;
+  DMTS        tdm;
+  DMTS_Local *dmlocalts;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  ierr = DMGetDMTS(dm, &tdm);
-  CHKERRQ(ierr);
-  ierr = DMLocalTSGetContext(dm, tdm, &dmlocalts);
-  CHKERRQ(ierr);
+  PetscCall(DMGetDMTS(dm, &tdm));
+  PetscCall(DMLocalTSGetContext(dm, tdm, &dmlocalts));
   if (func) {
-    PetscValidPointer(func, 2);
+    PetscAssertPointer(func, 2);
     *func = dmlocalts->rhsfunctionlocal;
   }
   if (ctx) {
-    PetscValidPointer(ctx, 3);
+    PetscAssertPointer(ctx, 3);
     *ctx = dmlocalts->rhsfunctionlocalctx;
   }
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -408,8 +404,8 @@ PetscErrorCode DMTSGetRHSFunctionLocal(DM dm, PetscErrorCode (**func)(DM, PetscR
 
 /*@C
   DMTSSetRHSFunctionLocal - set a local rhs function evaluation function. This function is called with local vector
-      containing the local vector information PLUS ghost point information. It should compute a result for all local
-      elements and `DM` will automatically accumulate the overlapping values.
+  containing the local vector information PLUS ghost point information. It should compute a result for all local
+  elements and `DM` will automatically accumulate the overlapping values.
 
   Logically Collective
 
@@ -420,7 +416,7 @@ PetscErrorCode DMTSGetRHSFunctionLocal(DM dm, PetscErrorCode (**func)(DM, PetscR
 
   Level: beginner
 
-.seealso: [](chapter_ts), `DM`, `DMTSGetRHSFunctionLocal()`, `DMTSSetRHSFunction()`, `DMTSSetIFunction()`, `DMTSSetIJacobianLocal()`
+.seealso: [](ch_ts), `DM`, `DMTSGetRHSFunctionLocal()`, `DMTSSetRHSFunction()`, `DMTSSetIFunction()`, `DMTSSetIJacobianLocal()`
 @*/
 PetscErrorCode DMTSSetRHSFunctionLocal(DM dm, PetscErrorCode (*func)(DM, PetscReal, Vec, Vec, void *), void *ctx)
 {
@@ -445,14 +441,14 @@ PetscErrorCode DMTSSetRHSFunctionLocal(DM dm, PetscErrorCode (*func)(DM, PetscRe
   Collective
 
   Input Parameter:
-. dm   - `DM` providing the mass matrix
+. dm - `DM` providing the mass matrix
 
   Level: developer
 
   Note:
   The idea here is that an explicit system can be given a mass matrix, based on the `DM`, which is inverted on the RHS at each step.
 
-.seealso: [](chapter_ts), `DM`, `DMTSCreateRHSMassMatrixLumped()`, `DMTSDestroyRHSMassMatrix()`, `DMCreateMassMatrix()`, `DMTS`
+.seealso: [](ch_ts), `DM`, `DMTSCreateRHSMassMatrixLumped()`, `DMTSDestroyRHSMassMatrix()`, `DMCreateMassMatrix()`, `DMTS`
 @*/
 PetscErrorCode DMTSCreateRHSMassMatrix(DM dm)
 {
@@ -480,7 +476,7 @@ PetscErrorCode DMTSCreateRHSMassMatrix(DM dm)
   Collective
 
   Input Parameter:
-. dm   - `DM` providing the mass matrix
+. dm - `DM` providing the mass matrix
 
   Level: developer
 
@@ -488,7 +484,7 @@ PetscErrorCode DMTSCreateRHSMassMatrix(DM dm)
   The idea here is that an explicit system can be given a mass matrix, based on the `DM`, which is inverted on the RHS at each step.
   Since the matrix is lumped, inversion is trivial.
 
-.seealso: [](chapter_ts), `DM`, `DMTSCreateRHSMassMatrix()`, `DMTSDestroyRHSMassMatrix()`, `DMCreateMassMatrix()`, `DMTS`
+.seealso: [](ch_ts), `DM`, `DMTSCreateRHSMassMatrix()`, `DMTSDestroyRHSMassMatrix()`, `DMCreateMassMatrix()`, `DMTS`
 @*/
 PetscErrorCode DMTSCreateRHSMassMatrixLumped(DM dm)
 {
@@ -511,11 +507,11 @@ PetscErrorCode DMTSCreateRHSMassMatrixLumped(DM dm)
   Logically Collective
 
   Input Parameter:
-. dm   - `DM` providing the mass matrix
+. dm - `DM` providing the mass matrix
 
   Level: developer
 
-.seealso: [](chapter_ts), `DM`, `DMTSCreateRHSMassMatrixLumped()`, `DMCreateMassMatrix()`, `DMCreateMassMatrix()`, `DMTS`
+.seealso: [](ch_ts), `DM`, `DMTSCreateRHSMassMatrixLumped()`, `DMCreateMassMatrix()`, `DMTS`
 @*/
 PetscErrorCode DMTSDestroyRHSMassMatrix(DM dm)
 {

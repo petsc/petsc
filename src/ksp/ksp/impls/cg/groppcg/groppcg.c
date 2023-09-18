@@ -163,7 +163,7 @@ PETSC_INTERN PetscErrorCode KSPBuildResidual_CG(KSP, Vec, Vec, Vec *);
    Reference:
    http://www.cs.uiuc.edu/~wgropp/bib/talks/tdata/2012/icerm.pdf
 
-.seealso: [](chapter_ksp), [](sec_pipelineksp), [](doc_faq_pipelined), `KSPCreate()`, `KSPPIPECG2()`, `KSPSetType()`, `KSPPIPECG`, `KSPPIPECR`, `KSPPGMRES`, `KSPCG`, `KSPCGUseSingleReduction()`
+.seealso: [](ch_ksp), [](sec_pipelineksp), [](doc_faq_pipelined), `KSPCreate()`, `KSPPIPECG2()`, `KSPSetType()`, `KSPPIPECG`, `KSPPIPECR`, `KSPPGMRES`, `KSPCG`, `KSPCGUseSingleReduction()`
 M*/
 
 PETSC_EXTERN PetscErrorCode KSPCreate_GROPPCG(KSP ksp)

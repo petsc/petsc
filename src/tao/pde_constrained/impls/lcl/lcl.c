@@ -697,7 +697,7 @@ static PetscErrorCode LCLComputeAugmentedLagrangianAndGradient(TaoLineSearch ls,
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode LCLGather(TAO_LCL *lclP, Vec u, Vec v, Vec x)
+static PetscErrorCode LCLGather(TAO_LCL *lclP, Vec u, Vec v, Vec x)
 {
   PetscFunctionBegin;
   PetscCall(VecScatterBegin(lclP->state_scatter, u, x, INSERT_VALUES, SCATTER_REVERSE));
@@ -706,7 +706,7 @@ PetscErrorCode LCLGather(TAO_LCL *lclP, Vec u, Vec v, Vec x)
   PetscCall(VecScatterEnd(lclP->design_scatter, v, x, INSERT_VALUES, SCATTER_REVERSE));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-PetscErrorCode LCLScatter(TAO_LCL *lclP, Vec x, Vec u, Vec v)
+static PetscErrorCode LCLScatter(TAO_LCL *lclP, Vec x, Vec u, Vec v)
 {
   PetscFunctionBegin;
   PetscCall(VecScatterBegin(lclP->state_scatter, x, u, INSERT_VALUES, SCATTER_FORWARD));

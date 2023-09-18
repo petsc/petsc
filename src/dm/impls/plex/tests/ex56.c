@@ -116,8 +116,8 @@ static PetscErrorCode LoadMeshLowLevel(AppCtx *options, PetscViewer v, PetscBool
     }
   }
   if (mode == POST_DIST) {
-    PetscCall(DMPlexCoordinatesLoad(dm, v, sfXC));
     PetscCall(DMPlexLabelsLoad(dm, v, sfXC));
+    PetscCall(DMPlexCoordinatesLoad(dm, v, sfXC));
   }
   PetscCall(PetscSFDestroy(&sfXC));
   *newdm = dm;
@@ -186,11 +186,13 @@ static PetscErrorCode MarkBoundary(DM dm, const char name[], PetscInt value, Pet
   if (verticesOnly) {
     IS              points;
     const PetscInt *idx;
-    PetscInt        i, n;
+    PetscInt        i, n = 0;
 
     PetscCall(DMLabelGetStratumIS(l, value, &points));
-    PetscCall(ISGetLocalSize(points, &n));
-    PetscCall(ISGetIndices(points, &idx));
+    if (points) {
+      PetscCall(ISGetLocalSize(points, &n));
+      PetscCall(ISGetIndices(points, &idx));
+    }
     for (i = 0; i < n; i++) {
       const PetscInt p = idx[i];
       PetscInt       d;
@@ -198,7 +200,7 @@ static PetscErrorCode MarkBoundary(DM dm, const char name[], PetscInt value, Pet
       PetscCall(DMPlexGetPointDepth(dm, p, &d));
       if (d != 0) PetscCall(DMLabelClearValue(l, p, value));
     }
-    PetscCall(ISRestoreIndices(points, &idx));
+    if (points) PetscCall(ISRestoreIndices(points, &idx));
     PetscCall(ISDestroy(&points));
   }
   if (label) *label = l;
@@ -218,14 +220,14 @@ static PetscErrorCode VertexCoordinatesToAll(DM dm, IS vertices, Vec *allCoords)
   if (vertices) {
     PetscCall(DMGetCoordinatesLocalTuple(dm, vertices, NULL, &coords));
   } else {
-    PetscCall(VecCreateSeq(PETSC_COMM_SELF, 0, &coords));
+    PetscCall(VecCreateFromOptions(PETSC_COMM_SELF, NULL, 1, 0, 0, &coords));
   }
   {
     PetscInt n;
     Vec      mpivec;
 
     PetscCall(VecGetLocalSize(coords, &n));
-    PetscCall(VecCreateMPI(comm, n, PETSC_DECIDE, &mpivec));
+    PetscCall(VecCreateFromOptions(comm, NULL, 1, n, PETSC_DECIDE, &mpivec));
     PetscCall(VecCopy(coords, mpivec));
     PetscCall(VecDestroy(&coords));
     coords = mpivec;
@@ -300,7 +302,7 @@ static PetscErrorCode DMLabelCompareWithCoordinateRepresentation(DM dm, DMLabel 
   PetscCall(PetscSynchronizedFlush(comm, PETSC_STDERR));
   PetscCall(ISRestoreIndices(pointsIS, &points));
   PetscCall(ISDestroy(&pointsIS));
-  PetscCallMPI(MPI_Allreduce(MPI_IN_PLACE, &fail, 1, MPIU_BOOL, MPI_LOR, comm));
+  PetscCall(MPIU_Allreduce(MPI_IN_PLACE, &fail, 1, MPIU_BOOL, MPI_LOR, comm));
   PetscCheck(!fail, comm, PETSC_ERR_PLIB, "Label \"%s\" was not loaded correctly%s", labelName, verbose ? " - see details above" : "");
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -334,7 +336,7 @@ static PetscErrorCode CheckNumLabels(DM dm, AppCtx *ctx)
       PetscCall(PetscSynchronizedFlush(comm, PETSC_STDERR));
     }
   }
-  PetscCallMPI(MPI_Allreduce(MPI_IN_PLACE, &fail, 1, MPIU_BOOL, MPI_LOR, comm));
+  PetscCall(MPIU_Allreduce(MPI_IN_PLACE, &fail, 1, MPIU_BOOL, MPI_LOR, comm));
   PetscCheck(!fail, comm, PETSC_ERR_PLIB, "Wrong number of labels%s", ctx->verbose ? " - see details above" : "");
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -401,7 +403,7 @@ int main(int argc, char **argv)
     requires: !complex datafilespath
     args: -dm_plex_name plex
     args: -dm_plex_check_all -dm_plex_view_hdf5_storage_version 2.0.0
-    args: -dm_plex_interpolate
+    args: -dm_plex_interpolate -petscpartitioner_type simple
     args: -load_dm_plex_check_all
     args: -use_low_level_functions {{0 1}} -compare_boundary
     args: -num_labels 1
@@ -433,7 +435,7 @@ int main(int argc, char **argv)
     requires: !complex datafilespath
     args: -dm_plex_name plex
     args: -dm_plex_check_all -dm_plex_view_hdf5_storage_version 2.0.0
-    args: -dm_plex_interpolate
+    args: -dm_plex_interpolate -petscpartitioner_type simple
     args: -load_dm_plex_check_all
     args: -use_low_level_functions -load_dm_distribute 0 -distribute_after_topo_load -compare_boundary
     args: -num_labels 1
@@ -465,7 +467,7 @@ int main(int argc, char **argv)
     requires: !complex datafilespath
     args: -dm_plex_name plex
     args: -dm_plex_view_hdf5_storage_version 2.0.0
-    args: -dm_plex_interpolate -load_dm_distribute 0
+    args: -dm_plex_interpolate -load_dm_distribute 0 -petscpartitioner_type simple
     args: -use_low_level_functions -compare_pre_post
     args: -num_labels 1
     args: -outfile ex56_3.h5

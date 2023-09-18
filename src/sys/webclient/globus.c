@@ -4,8 +4,8 @@ PETSC_PRAGMA_DIAGNOSTIC_IGNORED_BEGIN("-Wdeprecated-declarations")
 /*
     Encodes and decodes from MIME Base64
 */
-static char encoding_table[] = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 'f',
-                                'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '+', '/'};
+static const char encoding_table[] = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 'f',
+                                      'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '+', '/'};
 
 static PetscErrorCode base64_encode(const unsigned char *data, unsigned char *encoded_data, size_t len)
 {
@@ -75,25 +75,25 @@ PETSC_UNUSED static PetscErrorCode base64_decode(const unsigned char *data, unsi
 #endif
 
 /*@C
-     PetscGlobusAuthorize - Get an access token allowing PETSc applications to make Globus file transfer requests
+  PetscGlobusAuthorize - Get an access token allowing PETSc applications to make Globus file transfer requests
 
-   Not Collective, only the first process in `MPI_Comm` does anything
+  Not Collective, only the first process in `MPI_Comm` does anything
 
-   Input Parameters:
-+  comm - the MPI communicator
--  tokensize - size of the token array
+  Input Parameters:
++ comm      - the MPI communicator
+- tokensize - size of the token array
 
-   Output Parameter:
-.  access_token - can be used with `PetscGlobusUpLoad()` for 30 days
+  Output Parameter:
+. access_token - can be used with `PetscGlobusUpLoad()` for 30 days
 
-   Level: intermediate
+  Level: intermediate
 
-   Notes:
-    This call requires `stdout` and `stdin` access from process 0 on the MPI communicator
+  Notes:
+  This call requires `stdout` and `stdin` access from process 0 on the MPI communicator
 
-   You can run src/sys/webclient/tutorials/globusobtainaccesstoken to get an access token
+  You can run src/sys/webclient/tutorials/globusobtainaccesstoken to get an access token
 
-.seealso: `PetscGoogleDriveRefresh()`, `PetscGoogleDriveUpload()`, `PetscURLShorten()`, `PetscGlobusUpload()`
+.seealso: `PetscGoogleDriveRefresh()`, `PetscGoogleDriveUpload()`, `PetscGlobusUpload()`
 @*/
 PetscErrorCode PetscGlobusAuthorize(MPI_Comm comm, char access_token[], size_t tokensize)
 {
@@ -141,22 +141,22 @@ PetscErrorCode PetscGlobusAuthorize(MPI_Comm comm, char access_token[], size_t t
 }
 
 /*@C
-     PetscGlobusGetTransfers - Get a record of current transfers requested from Globus
+  PetscGlobusGetTransfers - Get a record of current transfers requested from Globus
 
-   Not Collective, only the first process in `MPI_Comm` does anything
+  Not Collective, only the first process in `MPI_Comm` does anything
 
-   Input Parameters:
-+  comm - the MPI communicator
-.  access_token - Globus access token, if `NULL` will check in options database for -globus_access_token XXX otherwise
+  Input Parameters:
++ comm         - the MPI communicator
+. access_token - Globus access token, if `NULL` will check in options database for -globus_access_token XXX otherwise
                   will call `PetscGlobusAuthorize()`.
--  buffsize - size of the buffer
+- buffsize     - size of the buffer
 
-   Output Parameter:
-.  buff - location to put Globus information
+  Output Parameter:
+. buff - location to put Globus information
 
-   Level: intermediate
+  Level: intermediate
 
-.seealso: `PetscGoogleDriveRefresh()`, `PetscGoogleDriveUpload()`, `PetscURLShorten()`, `PetscGlobusUpload()`, `PetscGlobusAuthorize()`
+.seealso: `PetscGoogleDriveRefresh()`, `PetscGoogleDriveUpload()`, `PetscGlobusUpload()`, `PetscGlobusAuthorize()`
 @*/
 PetscErrorCode PetscGlobusGetTransfers(MPI_Comm comm, const char access_token[], char buff[], size_t buffsize)
 {
@@ -191,21 +191,21 @@ PetscErrorCode PetscGlobusGetTransfers(MPI_Comm comm, const char access_token[],
 }
 
 /*@C
-     PetscGlobusUpload - Loads a file to Globus
+  PetscGlobusUpload - Loads a file to Globus
 
-     Not Collective, only the first process in the `MPI_Comm` uploads the file
+  Not Collective, only the first process in the `MPI_Comm` uploads the file
 
   Input Parameters:
-+   comm - MPI communicator
-.   access_token - obtained with `PetscGlobusAuthorize()`, pass `NULL` to use `-globus_access_token XXX` from the PETSc database
--   filename - file to upload
++ comm         - MPI communicator
+. access_token - obtained with `PetscGlobusAuthorize()`, pass `NULL` to use `-globus_access_token XXX` from the PETSc database
+- filename     - file to upload
 
   Options Database Key:
-.  -globus_access_token XXX - the Globus token
+. -globus_access_token XXX - the Globus token
 
-   Level: intermediate
+  Level: intermediate
 
-.seealso: `PetscURLShorten()`, `PetscGoogleDriveAuthorize()`, `PetscGoogleDriveRefresh()`, `PetscGlobusAuthorize()`
+.seealso: `PetscGoogleDriveAuthorize()`, `PetscGoogleDriveRefresh()`, `PetscGlobusAuthorize()`
 @*/
 PetscErrorCode PetscGlobusUpload(MPI_Comm comm, const char access_token[], const char filename[])
 {

@@ -62,7 +62,8 @@ static PetscErrorCode PCSetUp_Cholesky(PC pc)
 
     if (!pc->setupcalled) {
       PetscBool canuseordering;
-      if (!((PC_Factor *)dir)->fact) { PetscCall(MatGetFactor(pc->pmat, ((PC_Factor *)dir)->solvertype, MAT_FACTOR_CHOLESKY, &((PC_Factor *)dir)->fact)); }
+
+      PetscCall(PCFactorSetUpMatSolverType(pc));
       PetscCall(MatFactorGetCanUseOrdering(((PC_Factor *)dir)->fact, &canuseordering));
       if (canuseordering) {
         PetscCall(PCFactorSetDefaultOrdering_Factor(pc));
@@ -88,8 +89,9 @@ static PetscErrorCode PCSetUp_Cholesky(PC pc)
     } else if (pc->flag != SAME_NONZERO_PATTERN) {
       if (!dir->hdr.reuseordering) {
         PetscBool canuseordering;
+
         PetscCall(MatDestroy(&((PC_Factor *)dir)->fact));
-        PetscCall(MatGetFactor(pc->pmat, ((PC_Factor *)dir)->solvertype, MAT_FACTOR_CHOLESKY, &((PC_Factor *)dir)->fact));
+        PetscCall(PCFactorSetUpMatSolverType(pc));
         PetscCall(MatFactorGetCanUseOrdering(((PC_Factor *)dir)->fact, &canuseordering));
         if (canuseordering) {
           PetscCall(ISDestroy(&dir->row));
@@ -228,20 +230,20 @@ static PetscErrorCode PCApplyTranspose_Cholesky(PC pc, Vec x, Vec y)
 }
 
 /*@
-   PCFactorSetReuseOrdering - When similar matrices are factored, this
-   causes the ordering computed in the first factor to be used for all
-   following factors.
+  PCFactorSetReuseOrdering - When similar matrices are factored, this
+  causes the ordering computed in the first factor to be used for all
+  following factors.
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  pc - the preconditioner context
--  flag - `PETSC_TRUE` to reuse else `PETSC_FALSE`
+  Input Parameters:
++ pc   - the preconditioner context
+- flag - `PETSC_TRUE` to reuse else `PETSC_FALSE`
 
-   Options Database Key:
-.  -pc_factor_reuse_ordering - Activate `PCFactorSetReuseOrdering()`
+  Options Database Key:
+. -pc_factor_reuse_ordering - Activate `PCFactorSetReuseOrdering()`
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `PCLU`, `PCCHOLESKY`, `PCFactorSetReuseFill()`
 @*/

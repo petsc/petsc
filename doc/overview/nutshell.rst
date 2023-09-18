@@ -13,9 +13,9 @@ PETSc/TAO is a tool for writing, analyzing, and optimizing large-scale numerical
 Algebraic objects
 =================
 
-* :any:`Vectors <chapter_vectors>` - containers for simulation solutions, right hand sides of linear systems, etc (``Vec``).
+* :any:`Vectors <ch_vectors>` - containers for simulation solutions, right hand sides of linear systems, etc (``Vec``).
 
-* :any:`Matrices <chapter_matrices>`  - contain Jacobians and operators that define linear systems (``Mat``).
+* :any:`Matrices <ch_matrices>`  - contain Jacobians and operators that define linear systems (``Mat``).
 
   * :any:`Multiple sparse and dense matrix storage formats<doc_matrix>`,
 
@@ -30,17 +30,17 @@ Algebraic objects
 Solvers
 =======
 
-* :any:`Linear solvers<chapter_ksp>` based on preconditioners (``PC``) and Krylov subspace methods (``KSP``).
+* :any:`Linear solvers<ch_ksp>` based on preconditioners (``PC``) and Krylov subspace methods (``KSP``).
 
-* :any:`Nonlinear solvers <chapter_snes>` (``SNES``).
+* :any:`Nonlinear solvers <ch_snes>` (``SNES``).
 
-* :any:`Time integrators <chapter_ts>`, (ODE/PDE), explicit, implicit, IMEX, (``TS``)
+* :any:`Time integrators <ch_ts>`, (ODE/PDE), explicit, implicit, IMEX, (``TS``)
 
   * Local and global error estimators
 
   * :any:`section_sa`.
 
-* :any:`Optimization <chapter_tao>` with equality and inequality constraints, first and second order (Newton) methods (``Tao``).
+* :any:`Optimization <ch_tao>` with equality and inequality constraints, first and second order (Newton) methods (``Tao``).
 
 * Eigenvalue/Eigenvectors and related algorithms in the package `SLEPc <https://slepc.upv.es>`__.
 
@@ -49,11 +49,11 @@ Model/Discretization Interfaces to Solvers
 
 * Simple structured grids, ``DMDA``.
 
-* Staggered grids, :any:`chapter_stag`, ``DMSTAG``.
+* Staggered grids, :any:`ch_stag`, ``DMSTAG``.
 
-* Unstructured grids, :any:`chapter_unstructured`, ``DMPLEX``.
+* Unstructured grids, :any:`ch_unstructured`, ``DMPLEX``.
 
-* Networks/graphs, for example the power grid, river networks, the nervous system, :any:`chapter_network`, ``DMNETWORK``.
+* Networks/graphs, for example the power grid, river networks, the nervous system, :any:`ch_network`, ``DMNETWORK``.
 
 * Quad or octree grids, ``DMFOREST``.
 

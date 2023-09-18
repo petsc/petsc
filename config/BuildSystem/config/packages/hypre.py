@@ -4,12 +4,13 @@ import os
 class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.GNUPackage.__init__(self, framework)
-    self.version         = '2.28.0'
+    self.version         = '2.29.0'
     self.minversion      = '2.14'
     self.versionname     = 'HYPRE_RELEASE_VERSION'
     self.versioninclude  = 'HYPRE_config.h'
     self.requiresversion = 1
     self.gitcommit       = 'v'+self.version
+    # self.gitcommit       = '5e0bf05b42d856022d0a4d5c9294dfbe64cd5675' # master, june-20-2023
     self.download        = ['git://https://github.com/hypre-space/hypre','https://github.com/hypre-space/hypre/archive/'+self.gitcommit+'.tar.gz']
     self.functions       = ['HYPRE_IJMatrixCreate']
     self.includes        = ['HYPRE.h']
@@ -105,8 +106,6 @@ class Configure(config.package.GNUPackage):
       devflags = devflags.replace('-fvisibility=hidden','')
       self.popLanguage()
     elif self.cuda.found:
-      if self.cuda.version_tuple[0] >= 12:
-        raise RuntimeError('Package '+self.PACKAGE+' cannot be used with CUDA 12 or higher')
       stdflag   = '-std=c++11'
       cudabuild = True
       args.append('CUDA_HOME="'+self.cuda.cudaDir+'"')
@@ -122,7 +121,7 @@ class Configure(config.package.GNUPackage):
       self.pushLanguage('CUDA')
       cucc = self.getCompiler()
       devflags += ' '.join(('','-expt-extended-lambda',stdflag,'-x','cu',''))
-      devflags += self.getCompilerFlags() + ' ' + self.setCompilers.CUDAPPFLAGS + ' ' + self.mpi.includepaths+ ' ' + self.headers.toString(self.dinclude)
+      devflags += self.updatePackageCUDAFlags(self.getCompilerFlags()) + ' ' + self.setCompilers.CUDAPPFLAGS + ' ' + self.mpi.includepaths+ ' ' + self.headers.toString(self.dinclude)
       self.popLanguage()
     elif self.openmp.found:
       args.append('--with-openmp')

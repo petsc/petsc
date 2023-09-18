@@ -1,4 +1,4 @@
-
+#pragma once
 #include <petsc/private/viewerimpl.h> /*I  "petscsys.h"  I*/
 
 /*

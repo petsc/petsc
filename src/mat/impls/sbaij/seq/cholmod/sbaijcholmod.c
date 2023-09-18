@@ -5,7 +5,7 @@
    When built with PETSC_USE_64BIT_INDICES this will use Suitesparse_long as the
    integer type in UMFPACK, otherwise it will use int. This means
    all integers in this file as simply declared as PetscInt. Also it means
-   that one cannot use 64BIT_INDICES on 32bit machines [as Suitesparse_long is 32bit only]
+   that one cannot use 64BIT_INDICES on 32-bit pointer systems [as Suitesparse_long is 32-bit only]
 
 */
 
@@ -529,7 +529,7 @@ PETSC_INTERN PetscErrorCode MatGetInfo_CHOLMOD(Mat F, MatInfoType flag, MatInfo 
    Note:
    CHOLMOD is part of SuiteSparse http://faculty.cse.tamu.edu/davis/suitesparse.html
 
-.seealso: [](chapter_matrices), `Mat`, `PCCHOLESKY`, `PCFactorSetMatSolverType()`, `MatSolverType`
+.seealso: [](ch_matrices), `Mat`, `PCCHOLESKY`, `PCFactorSetMatSolverType()`, `MatSolverType`
 M*/
 
 PETSC_INTERN PetscErrorCode MatGetFactor_seqsbaij_cholmod(Mat A, MatFactorType ftype, Mat *F)
@@ -540,9 +540,16 @@ PETSC_INTERN PetscErrorCode MatGetFactor_seqsbaij_cholmod(Mat A, MatFactorType f
 
   PetscFunctionBegin;
   PetscCall(MatGetBlockSize(A, &bs));
-  PetscCheck(bs == 1, PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "CHOLMOD only supports block size=1, given %" PetscInt_FMT, bs);
+  *F = NULL;
+  if (bs != 1) {
+    PetscCall(PetscInfo(A, "CHOLMOD only supports block size=1.\n"));
+    PetscFunctionReturn(PETSC_SUCCESS);
+  }
 #if defined(PETSC_USE_COMPLEX)
-  PetscCheck(A->hermitian == PETSC_BOOL3_TRUE, PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "Only for Hermitian matrices");
+  if (A->hermitian != PETSC_BOOL3_TRUE) {
+    PetscCall(PetscInfo(A, "Only for Hermitian matrices.\n"));
+    PetscFunctionReturn(PETSC_SUCCESS);
+  }
 #endif
   /* Create the factorization matrix F */
   PetscCall(MatCreate(PetscObjectComm((PetscObject)A), &B));

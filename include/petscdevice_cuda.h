@@ -1,5 +1,4 @@
-#ifndef PETSCDEVICE_CUDA_H
-#define PETSCDEVICE_CUDA_H
+#pragma once
 
 #include <petscdevice.h>
 #include <petscpkg_version.h>
@@ -158,6 +157,7 @@ PETSC_EXTERN const char *PetscCUFFTGetErrorName(cufftResult);
 PETSC_EXTERN cudaStream_t   PetscDefaultCudaStream; // The default stream used by PETSc
 PETSC_EXTERN PetscErrorCode PetscCUBLASGetHandle(cublasHandle_t *);
 PETSC_EXTERN PetscErrorCode PetscCUSOLVERDnGetHandle(cusolverDnHandle_t *);
+PETSC_EXTERN PetscErrorCode PetscGetCurrentCUDAStream(cudaStream_t *);
 
 #endif // PETSC_HAVE_CUDA
 
@@ -196,5 +196,3 @@ PETSC_EXTERN PetscErrorCode PetscCUSOLVERDnGetHandle(cusolverDnHandle_t *);
   #define PETSC_DEVICE_INLINE_DECL     PETSC_DEVICE_DECL PETSC_FORCEINLINE
   #define PETSC_HOSTDEVICE_INLINE_DECL PETSC_HOSTDEVICE_DECL PETSC_FORCEINLINE
 #endif
-
-#endif // PETSCDEVICE_CUDA_H

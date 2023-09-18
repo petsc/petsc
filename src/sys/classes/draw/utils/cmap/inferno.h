@@ -1,3 +1,4 @@
+#pragma once
 static const unsigned char PetscDrawCmap_inferno[256 - PETSC_DRAW_BASIC_COLORS][3] = {
   {0,   0,   3  },
   {0,   0,   4  },

@@ -2,8 +2,7 @@
    An index set is a generalization of a subset of integers.  Index sets
    are used for defining scatters and gathers.
 */
-#ifndef PETSCIS_H
-#define PETSCIS_H
+#pragma once
 
 #include <petscsys.h>
 #include <petscsftypes.h>
@@ -16,13 +15,20 @@
 PETSC_EXTERN PetscClassId IS_CLASSID;
 
 PETSC_EXTERN PetscErrorCode ISInitializePackage(void);
+PETSC_EXTERN PetscErrorCode ISFinalizePackage(void);
 
 /*J
     ISType - String with the name of a PETSc index set type
 
+   Values:
++  `ISGENERAL` - the values are stored with an array of indices and generally have no structure
+.  `ISSTRIDE` - the values have a simple structure of an initial offset and then a step size between values
+-  `ISBLOCK` - values are an array of indices, each representing a block of values
+
    Level: beginner
 
-.seealso: `ISSetType()`, `IS`, `ISCreate()`, `ISRegister()`
+.seealso: `ISSetType()`, `IS`, `ISCreateGeneral()`, `ISCreateStride()`, `ISCreateBlock()`, `ISCreate()`, `ISRegister()`,
+          `VecScatterCreate()`, `MatGetSubMatrices()`
 J*/
 typedef const char *ISType;
 #define ISGENERAL "general"
@@ -34,6 +40,7 @@ PETSC_EXTERN PetscFunctionList ISList;
 PETSC_EXTERN PetscErrorCode    ISSetType(IS, ISType);
 PETSC_EXTERN PetscErrorCode    ISGetType(IS, ISType *);
 PETSC_EXTERN PetscErrorCode    ISRegister(const char[], PetscErrorCode (*)(IS));
+PETSC_EXTERN PetscErrorCode    ISRegisterAll(void);
 PETSC_EXTERN PetscErrorCode    ISCreate(MPI_Comm, IS *);
 
 PETSC_EXTERN PetscErrorCode ISDestroy(IS *);
@@ -46,7 +53,7 @@ PETSC_EXTERN PetscErrorCode ISContiguousLocal(IS, PetscInt, PetscInt, PetscInt *
 /*E
     ISInfo - Info that may either be computed or set as known for an index set
 
-    Level: beginner
+    Level: intermediate
 
    Developer Notes:
    Entries that are negative need not be called collectively by all processes.
@@ -55,7 +62,7 @@ PETSC_EXTERN PetscErrorCode ISContiguousLocal(IS, PetscInt, PetscInt, PetscInt *
 
    Any additions/changes here must also be made in src/vec/vec/interface/dlregisvec.c in ISInfos[]
 
-.seealso: `ISSetInfo()`
+.seealso: `IS`, `ISType`, `ISSetInfo()`
 E*/
 typedef enum {
   IS_INFO_MIN    = -1,
@@ -143,19 +150,18 @@ PETSC_EXTERN PetscErrorCode ISCreateStride(MPI_Comm, PetscInt, PetscInt, PetscIn
 PETSC_EXTERN PetscErrorCode ISStrideSetStride(IS, PetscInt, PetscInt, PetscInt);
 PETSC_EXTERN PetscErrorCode ISStrideGetInfo(IS, PetscInt *, PetscInt *);
 
-/* --------------------------------------------------------------------------*/
 PETSC_EXTERN PetscClassId IS_LTOGM_CLASSID;
 
 /*E
     ISGlobalToLocalMappingMode - Indicates mapping behavior if global indices are missing
 
-   `IS_GTOLM_MASK` - missing global indices are masked by mapping them to a local index of -1
-   `IS_GTOLM_DROP` - missing global indices are dropped
+   Values:
++   `IS_GTOLM_MASK` - missing global indices are masked by mapping them to a local index of -1
+-   `IS_GTOLM_DROP` - missing global indices are dropped
 
    Level: beginner
 
 .seealso: `ISGlobalToLocalMappingApplyBlock()`, `ISGlobalToLocalMappingApply()`
-
 E*/
 typedef enum {
   IS_GTOLM_MASK,
@@ -165,9 +171,13 @@ typedef enum {
 /*J
     ISLocalToGlobalMappingType - String with the name of a mapping method
 
-   Level: beginner
+   Values:
++  `ISLOCALTOGLOBALMAPPINGBASIC` - a non-memory scalable way of storing `ISLocalToGlobalMapping` that allows applying `ISGlobalToLocalMappingApply()` efficiently
+-  `ISLOCALTOGLOBALMAPPINGHASH` - a memory scalable way of storing `ISLocalToGlobalMapping` that allows applying `ISGlobalToLocalMappingApply()` reasonably efficiently
 
-.seealso: `ISLocalToGlobalMappingSetType()`, `ISLocalToGlobalSetFromOptions()`
+  Level: beginner
+
+.seealso: `ISLocalToGlobalMapping`, `ISLocalToGlobalMappingSetType()`, `ISLocalToGlobalSetFromOptions()`, `ISGlobalToLocalMappingMode`
 J*/
 typedef const char *ISLocalToGlobalMappingType;
 #define ISLOCALTOGLOBALMAPPINGBASIC "basic"
@@ -208,22 +218,22 @@ PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingGetBlockSize(ISLocalToGlobalMa
 PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingSetBlockSize(ISLocalToGlobalMapping, PetscInt);
 PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingDuplicate(ISLocalToGlobalMapping, ISLocalToGlobalMapping *);
 
-/* --------------------------------------------------------------------------*/
 /*E
     ISColoringType - determines if the coloring is for the entire parallel grid/graph/matrix
                      or for just the local ghosted portion
 
-    Level: beginner
+    Values:
++   `IS_COLORING_GLOBAL` - does not include the colors for ghost points, this is used when the function
+                        is called synchronously in parallel. This requires generating a "parallel coloring".
+-   `IS_COLORING_LOCAL` - includes colors for ghost points, this is used when the function can be called
+                         separately on individual processes with the ghost points already filled in. Does not
+                         require a "parallel coloring", rather each process colors its local + ghost part.
+                         Using this can result in much less parallel communication. Currently only works
+                         with `DMDA` and if you call `MatFDColoringSetFunction()` with the local function.
 
-$   `IS_COLORING_GLOBAL` - does not include the colors for ghost points, this is used when the function
-$                        is called synchronously in parallel. This requires generating a "parallel coloring".
-$   `IS_COLORING_LOCAL` - includes colors for ghost points, this is used when the function can be called
-$                         separately on individual processes with the ghost points already filled in. Does not
-$                         require a "parallel coloring", rather each process colors its local + ghost part.
-$                         Using this can result in much less parallel communication. Currently only works
-$                         with DMDA and if you call MatFDColoringSetFunction() with the local function.
+   Level: beginner
 
-.seealso: `DMCreateColoring()`
+.seealso: `ISColoring`, `ISColoringSetType()`, `ISColoringGetType()`, `DMCreateColoring()`
 E*/
 typedef enum {
   IS_COLORING_GLOBAL,
@@ -246,13 +256,12 @@ PETSC_EXTERN PetscErrorCode ISColoringSetType(ISColoring, ISColoringType);
 PETSC_EXTERN PetscErrorCode ISColoringGetType(ISColoring, ISColoringType *);
 PETSC_EXTERN PetscErrorCode ISColoringGetColors(ISColoring, PetscInt *, PetscInt *, const ISColoringValue **);
 
-/* --------------------------------------------------------------------------*/
 PETSC_EXTERN PetscErrorCode ISBuildTwoSided(IS, IS, IS *);
 PETSC_EXTERN PetscErrorCode ISPartitioningToNumbering(IS, IS *);
 PETSC_EXTERN PetscErrorCode ISPartitioningCount(IS, PetscInt, PetscInt[]);
 
 PETSC_EXTERN PetscErrorCode ISCompressIndicesGeneral(PetscInt, PetscInt, PetscInt, PetscInt, const IS[], IS[]);
-PETSC_DEPRECATED_FUNCTION("Use ISCompressIndicesGeneral() (since version 3.19)") static inline PetscErrorCode ISCompressIndicesSorted(PetscInt n, PetscInt bs, PetscInt imax, const IS is_in[], IS is_out[])
+PETSC_DEPRECATED_FUNCTION(3, 19, 0, "ISCompressIndicesGeneral()", ) static inline PetscErrorCode ISCompressIndicesSorted(PetscInt n, PetscInt bs, PetscInt imax, const IS is_in[], IS is_out[])
 {
   return ISCompressIndicesGeneral(n, bs, n, imax, is_in, is_out);
 }
@@ -290,7 +299,7 @@ struct _n_PetscLayout {
 
    Level: developer
 
-.seealso: `PetscLayoutFindOwnerIndex()`
+.seealso: `PetscLayout`, `PetscLayoutFindOwnerIndex()`
 @*/
 static inline PetscErrorCode PetscLayoutFindOwner(PetscLayout map, PetscInt idx, PetscMPIInt *owner)
 {
@@ -313,7 +322,7 @@ static inline PetscErrorCode PetscLayoutFindOwner(PetscLayout map, PetscInt idx,
 }
 
 /*@C
-     PetscLayoutFindOwnerIndex - Find the owning rank and the local index for a global index
+     PetscLayoutFindOwnerIndex - Find the owning MPI rank and the local index on that rank for a global index
 
     Not Collective; No Fortran Support
 
@@ -323,12 +332,11 @@ static inline PetscErrorCode PetscLayoutFindOwner(PetscLayout map, PetscInt idx,
 
    Output Parameters:
 +    owner - the owning rank
--    lidx  - local index used by the owner for idx
+-    lidx  - local index used by the owner for `idx`
 
    Level: developer
 
-.seealso: `PetscLayoutFindOwner()`
-
+.seealso: `PetscLayout`, `PetscLayoutFindOwner()`
 @*/
 static inline PetscErrorCode PetscLayoutFindOwnerIndex(PetscLayout map, PetscInt idx, PetscMPIInt *owner, PetscInt *lidx)
 {
@@ -373,5 +381,3 @@ PETSC_EXTERN PetscErrorCode PetscParallelSortInt(PetscLayout, PetscLayout, Petsc
 
 PETSC_EXTERN PetscErrorCode ISGetLayout(IS, PetscLayout *);
 PETSC_EXTERN PetscErrorCode ISSetLayout(IS, PetscLayout);
-
-#endif

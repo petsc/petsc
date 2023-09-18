@@ -17,7 +17,7 @@ CreateStarGraphEdgeList - Create a k-Star Graph Edgelist on current processor
 
               User is responsible for deallocating this memory.
 */
-PetscErrorCode StarGraphCreateEdgeList(PetscInt k, PetscBool directin, PetscInt *ne, PetscInt *edgelist[])
+static PetscErrorCode StarGraphCreateEdgeList(PetscInt k, PetscBool directin, PetscInt *ne, PetscInt *edgelist[])
 {
   PetscInt i;
 
@@ -39,69 +39,26 @@ PetscErrorCode StarGraphCreateEdgeList(PetscInt k, PetscBool directin, PetscInt 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*
-CreateSimpleStarGraph - Create a Distributed k-Star Graph DMNetwork with a single PetscInt component on
-all edges and vertices, a selectable number of dofs on vertices and edges. Intended mostly to be used for testing purposes.
-
-  Input Parameters:
-. comm       - the communicator of the dm
-. numdofvert - number of degrees of freedom (dofs) on vertices
-. numdofedge - number of degrees of freedom (dofs) on edges
-. k          - order of the star graph (number of edges)
-. directin   - if true direction of edges is towards the center vertex, otherwise they are directed out of the center vertex
-
-  Output Parameter:
-. newdm       - The created and distributed simple Star Graph
-*/
-PetscErrorCode StarGraphCreate(MPI_Comm comm, PetscInt numdofvert, PetscInt numdofedge, PetscInt k, PetscBool directin, DM *newdm)
-{
-  DM          dm;
-  PetscMPIInt rank;
-  PetscInt    ne       = 0, compkey, eStart, eEnd, vStart, vEnd, e, v;
-  PetscInt   *edgelist = NULL, *compedge, *compvert;
-
-  PetscFunctionBegin;
-  PetscCall(DMNetworkCreate(comm, &dm));
-  PetscCall(DMNetworkSetNumSubNetworks(dm, PETSC_DECIDE, 1));
-  PetscCallMPI(MPI_Comm_rank(comm, &rank));
-  if (rank == 0) PetscCall(StarGraphCreateEdgeList(k, directin, &ne, &edgelist));
-  PetscCall(DMNetworkAddSubnetwork(dm, "Main", ne, edgelist, NULL));
-  PetscCall(DMNetworkRegisterComponent(dm, "dummy", sizeof(PetscInt), &compkey));
-  PetscCall(DMNetworkLayoutSetUp(dm));
-  PetscCall(PetscFree(edgelist));
-  PetscCall(DMNetworkGetEdgeRange(dm, &eStart, &eEnd));
-  PetscCall(DMNetworkGetVertexRange(dm, &vStart, &vEnd));
-  PetscCall(PetscMalloc2(eEnd - eStart, &compedge, vEnd - vStart, &compvert));
-  for (e = eStart; e < eEnd; e++) {
-    compedge[e - eStart] = e;
-    PetscCall(DMNetworkAddComponent(dm, e, compkey, &compedge[e - eStart], numdofedge));
-  }
-  for (v = vStart; v < vEnd; v++) {
-    compvert[v - vStart] = v;
-    PetscCall(DMNetworkAddComponent(dm, v, compkey, &compvert[v - vStart], numdofvert));
-  }
-  PetscCall(DMSetFromOptions(dm));
-  PetscCall(DMSetUp(dm));
-  PetscCall(PetscFree2(compedge, compvert));
-  *newdm = dm;
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
 /* Simple Circular embedding of the star graph */
-PetscErrorCode StarGraphSetCoordinates(DM dm)
+static PetscErrorCode StarGraphSetCoordinates(DM dm, PetscReal *vcolor)
 {
   DM           cdm;
   Vec          Coord;
   PetscScalar *coord;
-  PetscInt     vStart, vEnd, v, vglobal, compkey, off, NVert;
+  PetscInt     vStart, vEnd, v, vglobal, compkey = 0, off, NVert;
   PetscReal    theta;
 
   PetscFunctionBegin;
-  PetscCall(DMGetCoordinateDM(dm, &cdm));
   PetscCall(DMSetCoordinateDim(dm, 2));
+  PetscCall(DMGetCoordinateDM(dm, &cdm));
+
   PetscCall(DMNetworkGetVertexRange(cdm, &vStart, &vEnd));
-  PetscCall(DMNetworkRegisterComponent(cdm, "coordinates", 0, &compkey));
-  for (v = vStart; v < vEnd; v++) PetscCall(DMNetworkAddComponent(cdm, v, compkey, NULL, 2));
+  PetscCall(DMNetworkRegisterComponent(cdm, "coordinate", sizeof(PetscReal), &compkey));
+  for (v = vStart; v < vEnd; v++) {
+    PetscCall(DMNetworkGetGlobalVertexIndex(cdm, v, &vglobal));
+    vcolor[v - vStart] = vglobal;
+    PetscCall(DMNetworkAddComponent(cdm, v, compkey, &vcolor[v - vStart], 2));
+  }
   PetscCall(DMNetworkFinalizeComponents(cdm));
 
   PetscCall(DMCreateLocalVector(cdm, &Coord));
@@ -123,6 +80,59 @@ PetscErrorCode StarGraphSetCoordinates(DM dm)
   PetscCall(VecRestoreArray(Coord, &coord));
   PetscCall(DMSetCoordinatesLocal(dm, Coord));
   PetscCall(VecDestroy(&Coord));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*
+CreateSimpleStarGraph - Create a Distributed k-Star Graph DMNetwork with a single PetscInt component on
+all edges and vertices, a selectable number of dofs on vertices and edges. Intended mostly to be used for testing purposes.
+
+  Input Parameters:
+. comm       - the communicator of the dm
+. numdofvert - number of degrees of freedom (dofs) on vertices
+. numdofedge - number of degrees of freedom (dofs) on edges
+. k          - order of the star graph (number of edges)
+. directin   - if true direction of edges is towards the center vertex, otherwise they are directed out of the center vertex
+
+  Output Parameters:
+. newdm       - The created and distributed simple Star Graph
+*/
+static PetscErrorCode StarGraphCreate(MPI_Comm comm, PetscInt numdofvert, PetscInt numdofedge, PetscInt k, PetscBool directin, DM *newdm)
+{
+  DM          dm;
+  PetscMPIInt rank;
+  PetscInt    ne       = 0, compkey, eStart, eEnd, vStart, vEnd, e, v;
+  PetscInt   *edgelist = NULL, *compedge, *compvert;
+  PetscReal  *vcolor;
+
+  PetscFunctionBegin;
+  PetscCall(DMNetworkCreate(comm, &dm));
+  PetscCall(DMNetworkSetNumSubNetworks(dm, PETSC_DECIDE, 1));
+  PetscCallMPI(MPI_Comm_rank(comm, &rank));
+  if (rank == 0) PetscCall(StarGraphCreateEdgeList(k, directin, &ne, &edgelist));
+  PetscCall(DMNetworkAddSubnetwork(dm, "Main", ne, edgelist, NULL));
+  PetscCall(DMNetworkRegisterComponent(dm, "dummy", sizeof(PetscInt), &compkey));
+  PetscCall(DMNetworkLayoutSetUp(dm));
+  PetscCall(PetscFree(edgelist));
+  PetscCall(DMNetworkGetEdgeRange(dm, &eStart, &eEnd));
+  PetscCall(DMNetworkGetVertexRange(dm, &vStart, &vEnd));
+  PetscCall(PetscCalloc3(eEnd - eStart, &compedge, vEnd - vStart, &compvert, vEnd - vStart, &vcolor));
+  for (e = eStart; e < eEnd; e++) {
+    compedge[e - eStart] = e;
+    PetscCall(DMNetworkAddComponent(dm, e, compkey, &compedge[e - eStart], numdofedge));
+  }
+  for (v = vStart; v < vEnd; v++) {
+    compvert[v - vStart] = v;
+    PetscCall(DMNetworkAddComponent(dm, v, compkey, &compvert[v - vStart], numdofvert));
+  }
+
+  PetscCall(StarGraphSetCoordinates(dm, vcolor));
+
+  PetscCall(DMSetFromOptions(dm));
+  PetscCall(DMSetUp(dm));
+  PetscCall(PetscFree3(compedge, compvert, vcolor));
+
+  *newdm = dm;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -148,7 +158,7 @@ static PetscErrorCode CoordinatePrint(DM dm)
   PetscCall(VecGetArrayRead(coords, &carray));
 
   PetscCall(PetscPrintf(MPI_COMM_WORLD, "\nCoordinatePrint, cdim %" PetscInt_FMT ":\n", cdim));
-  PetscCall(PetscSynchronizedPrintf(MPI_COMM_WORLD, "[%i]\n", rank));
+  PetscCall(PetscSynchronizedPrintf(MPI_COMM_WORLD, "[%d]\n", rank));
   for (v = vStart; v < vEnd; v++) {
     PetscCall(DMNetworkGetLocalVecOffset(dmclone, v, 0, &off));
     PetscCall(DMNetworkGetGlobalVertexIndex(dmclone, v, &vglobal));
@@ -171,7 +181,7 @@ int main(int argc, char **argv)
   DM          dm;
   PetscInt    dofv = 1, dofe = 1, ne = 1;
   PetscMPIInt rank;
-  PetscBool   testdistribute = PETSC_FALSE;
+  PetscBool   viewCSV = PETSC_FALSE;
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
@@ -181,14 +191,17 @@ int main(int argc, char **argv)
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-dofv", &dofv, NULL));
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-dofe", &dofe, NULL));
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-ne", &ne, NULL));
-  PetscCall(PetscOptionsGetBool(NULL, NULL, "-testdistribute", &testdistribute, NULL));
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-viewCSV", &viewCSV, NULL));
+
+  /* create and setup a quick R^2 embedding of the star graph */
   PetscCall(StarGraphCreate(PETSC_COMM_WORLD, dofv, dofe, ne, PETSC_TRUE, &dm));
 
-  /* setup a quick R^2 embedding of the star graph */
-  PetscCall(StarGraphSetCoordinates(dm));
-
-  if (testdistribute) {
-    PetscCall(DMNetworkDistribute(&dm, 0));
+  PetscCall(DMNetworkDistribute(&dm, 0));
+  if (viewCSV) { /* CSV View of network with coordinates */
+    PetscCall(PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD, PETSC_VIEWER_ASCII_CSV));
+    PetscCall(DMView(dm, PETSC_VIEWER_STDOUT_WORLD));
+    PetscCall(PetscViewerPopFormat(PETSC_VIEWER_STDOUT_WORLD));
+  } else {
     PetscCall(DMView(dm, PETSC_VIEWER_STDOUT_WORLD));
   }
 
@@ -203,11 +216,11 @@ int main(int argc, char **argv)
 
   test:
     suffix: 0
-    args: -ne 4 -testdistribute
+    args: -ne 4
 
   test:
     suffix: 1
     nsize: 2
-    args: -ne 4 -testdistribute -petscpartitioner_type simple
+    args: -ne 4 -petscpartitioner_type simple
 
  TEST*/

@@ -2,6 +2,7 @@
 #include <petsc/private/randomimpl.h>
 
 static PetscBool PetscRandomPackageInitialized = PETSC_FALSE;
+
 /*@C
   PetscRandomFinalizePackage - This function destroys everything in the Petsc interface to the `PetscRandom` package. It is
   called from `PetscFinalize()`.

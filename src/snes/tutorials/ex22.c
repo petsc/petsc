@@ -50,7 +50,7 @@ extern PetscErrorCode Monitor(SNES, PetscInt, PetscReal, void *);
 
 /*
     Uses full multigrid preconditioner with GMRES (with no preconditioner inside the GMRES) as the
-  smoother on all levels. This is because (1) in the matrix free case no matrix entries are
+  smoother on all levels. This is because (1) in the matrix-free case no matrix entries are
   available for doing Jacobi or SOR preconditioning and (2) the explicit matrix case the diagonal
   entry for the control variable is zero which means default SOR will not work.
 
@@ -115,7 +115,7 @@ int main(int argc, char **argv)
   if (use_monitor) {
     /* create graphics windows */
     PetscCall(PetscViewerDrawOpen(PETSC_COMM_WORLD, 0, "u_lambda - state variables and Lagrange multipliers", -1, -1, -1, -1, &user.u_lambda_viewer));
-    PetscCall(PetscViewerDrawOpen(PETSC_COMM_WORLD, 0, "fu_lambda - derivate w.r.t. state variables and Lagrange multipliers", -1, -1, -1, -1, &user.fu_lambda_viewer));
+    PetscCall(PetscViewerDrawOpen(PETSC_COMM_WORLD, 0, "fu_lambda - derivative w.r.t. state variables and Lagrange multipliers", -1, -1, -1, -1, &user.fu_lambda_viewer));
     PetscCall(SNESMonitorSet(snes, Monitor, 0, 0));
   }
 

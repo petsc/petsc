@@ -54,7 +54,7 @@ int main(int argc, char **args)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   PetscCall(PetscOptionsHasName(NULL, NULL, "-use_c", &flg));
   if (flg) {
-    PetscCall(VecCreateMPI(PETSC_COMM_WORLD, PETSC_DECIDE, 3, &c));
+    PetscCall(VecCreateFromOptions(PETSC_COMM_WORLD, NULL, 1, PETSC_DECIDE, 3, &c));
     PetscCall(VecSetRandom(c, NULL));
   }
 

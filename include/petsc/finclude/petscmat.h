@@ -189,7 +189,6 @@
 #define MATSOLVERSTRUMPACK       'strumpack'
 #define MATSOLVERUMFPACK         'umfpack'
 #define MATSOLVERCHOLMOD         'cholmod'
-#define MATSOLVERSPARSEELEMENTAL 'sparseelemental'
 #define MATSOLVERKLU             'klu'
 #define MATSOLVERELEMENTAL       'elemental'
 #define MATSOLVERSCALAPACK       'scalapack'
@@ -203,13 +202,10 @@
 #define MATSOLVERPETSC           'petsc'
 #define MATSOLVERBAS             'bas'
 #define MATSOLVERCUSPARSE        'cusparse'
-#define MATSOLVERCUSPARSEBAND    'cusparseband'
 #define MATSOLVERCUDA            'cuda'
 #define MATSOLVERHIPSPARSE       'hipsparse'
-#define MATSOLVERHIPSPARSEBAND   'hipsparseband'
 #define MATSOLVERHIP             'hip'
 #define MATSOLVERKOKKOS          'kokkos'
-#define MATSOLVERKOKKOSDEVICE    'kokkosdevice'
 #define MATSOLVERSPQR            'spqr'
 
 !
@@ -228,5 +224,9 @@
 ! sparsity reducing ordering for STRUMPACK
 !
 #define MatSTRUMPACKReordering PetscEnum
+!
+! compression types for STRUMPACK
+!
+#define MatSTRUMPACKCompressionType PetscEnum
 
 #endif

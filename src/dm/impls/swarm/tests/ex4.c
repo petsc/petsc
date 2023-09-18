@@ -421,7 +421,7 @@ static PetscErrorCode ComputeError(TS ts, Vec U, Vec E)
     if (user->error) {
       const PetscReal en   = 0.5 * (v * v + PetscSqr(omega) * x * x);
       const PetscReal exen = 0.5 * PetscSqr(omega * x0);
-      PetscCall(PetscPrintf(comm, "p%" PetscInt_FMT " error [%.2g %.2g] sol [%.6lf %.6lf] exact [%.6lf %.6lf] energy/exact energy %g / %g (%.10lf%%)\n", p, (double)PetscAbsReal(x - ex), (double)PetscAbsReal(v - ev), (double)x, (double)v, (double)ex, (double)ev, (double)en, (double)exen, (double)(PetscAbsReal(exen - en) * 100. / exen)));
+      PetscCall(PetscPrintf(comm, "p%" PetscInt_FMT " error [%.2f %.2f] sol [%.6lf %.6lf] exact [%.6lf %.6lf] energy/exact energy %g / %g (%.10lf%%)\n", p, (double)PetscAbsReal(x - ex), (double)PetscAbsReal(v - ev), (double)x, (double)v, (double)ex, (double)ev, (double)en, (double)exen, (double)(PetscAbsReal(exen - en) * 100. / exen)));
     }
     for (d = 0; d < dim; ++d) {
       e[(p * 2 + 0) * dim + d] = u[(p * 2 + 0) * dim + d] - coords[p * dim + d] * ct;

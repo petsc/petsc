@@ -222,9 +222,7 @@ struct _n_PortableBoundary {
 };
 typedef struct _n_PortableBoundary *PortableBoundary;
 
-#if defined(PETSC_USE_LOG)
 static PetscLogStage stage[3];
-#endif
 
 static PetscErrorCode DMPlexCheckPointSFHeavy(DM, PortableBoundary);
 static PetscErrorCode DMPlexSetOrientInterface_Private(DM, PetscBool);
@@ -1148,7 +1146,7 @@ static PetscErrorCode DMPlexGetExpandedBoundary_Private(DM dm, PortableBoundary 
       PetscCall(ISDestroy(&is0));
     }
   } else {
-    PetscCall(VecCreateSeq(PETSC_COMM_SELF, 0, &bnd0->coordinates));
+    PetscCall(VecCreateFromOptions(PETSC_COMM_SELF, NULL, 1, 0, 0, &bnd0->coordinates));
   }
 
   {
@@ -1161,16 +1159,16 @@ static PetscErrorCode DMPlexGetExpandedBoundary_Private(DM dm, PortableBoundary 
     PetscCall(VecGetLocalSize(bnd0->coordinates, &n));
     PetscCallMPI(MPI_Bcast(&n, 1, MPIU_INT, rootrank, comm));
     if (rank == rootrank) {
-      PetscCall(VecCreateMPI(comm, n, n, &tmp));
+      PetscCall(VecCreateFromOptions(comm, NULL, 1, n, n, &tmp));
     } else {
-      PetscCall(VecCreateMPI(comm, 0, n, &tmp));
+      PetscCall(VecCreateFromOptions(comm, NULL, 1, 0, n, &tmp));
     }
     PetscCall(VecCopy(bnd0->coordinates, tmp));
     PetscCall(VecDestroy(&bnd0->coordinates));
     bnd0->coordinates = tmp;
 
     /* replicate coordinates from root rank to all ranks */
-    PetscCall(VecCreateMPI(comm, n, n * size, &bnd->coordinates));
+    PetscCall(VecCreateFromOptions(comm, NULL, 1, n, n * size, &bnd->coordinates));
     PetscCall(ISCreateStride(comm, n, 0, 1, &xis));
     PetscCall(VecScatterCreate(bnd0->coordinates, xis, bnd->coordinates, NULL, &sc));
     PetscCall(VecScatterBegin(sc, bnd0->coordinates, bnd->coordinates, INSERT_VALUES, SCATTER_FORWARD));
@@ -1414,7 +1412,7 @@ static PetscErrorCode DMPlexComparePointSFWithInterface_Private(DM ipdm, IS inte
 
   /* compare pointsf_is with interface_is */
   PetscCall(ISEqual(interface_is, pointsf_is, &flg));
-  PetscCallMPI(MPI_Allreduce(MPI_IN_PLACE, &flg, 1, MPIU_BOOL, MPI_LAND, comm));
+  PetscCall(MPIU_Allreduce(MPI_IN_PLACE, &flg, 1, MPIU_BOOL, MPI_LAND, comm));
   if (!flg) {
     IS          pointsf_extra_is, pointsf_missing_is;
     PetscViewer errv = PETSC_VIEWER_STDERR_(comm);

@@ -7,14 +7,12 @@ static char help[] = "Time vector operations on GPU\n";
 
 int main(int argc, char **argv)
 {
-  Vec         v, w, x;
-  PetscInt    n = 15;
-  PetscScalar val;
-  PetscReal   norm1, norm2;
-  PetscRandom rctx;
-#if defined(PETSC_USE_LOG)
+  Vec           v, w, x;
+  PetscInt      n = 15;
+  PetscScalar   val;
+  PetscReal     norm1, norm2;
+  PetscRandom   rctx;
   PetscLogStage stage;
-#endif
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));

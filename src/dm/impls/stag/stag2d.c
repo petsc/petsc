@@ -7,27 +7,32 @@
   Collective
 
   Input Parameters:
-+ comm - MPI communicator
-. bndx,bndy - boundary type: `DM_BOUNDARY_NONE`, `DM_BOUNDARY_PERIODIC`, or `DM_BOUNDARY_GHOSTED`
-. M,N - global number of elements in x,y directions
-. m,n - number of ranks in the x,y directions (may be `PETSC_DECIDE`)
-. dof0 - number of degrees of freedom per vertex/0-cell
-. dof1 - number of degrees of freedom per face/1-cell
-. dof2 - number of degrees of freedom per element/2-cell
-. stencilType - ghost/halo region type: `DMSTAG_STENCIL_NONE`, `DMSTAG_STENCIL_BOX`, or `DMSTAG_STENCIL_STAR`
++ comm         - MPI communicator
+. bndx         - x boundary type, `DM_BOUNDARY_NONE`, `DM_BOUNDARY_PERIODIC`, or
+`DM_BOUNDARY_GHOSTED`
+. bndy         - y boundary type, `DM_BOUNDARY_NONE`, `DM_BOUNDARY_PERIODIC`, or `DM_BOUNDARY_GHOSTED`
+. M            - global number of elements in x direction
+. N            - global number of elements in y direction
+. m            - number of ranks in the x direction (may be `PETSC_DECIDE`)
+. n            - number of ranks in the y direction (may be `PETSC_DECIDE`)
+. dof0         - number of degrees of freedom per vertex/0-cell
+. dof1         - number of degrees of freedom per face/1-cell
+. dof2         - number of degrees of freedom per element/2-cell
+. stencilType  - ghost/halo region type: `DMSTAG_STENCIL_NONE`, `DMSTAG_STENCIL_BOX`, or `DMSTAG_STENCIL_STAR`
 . stencilWidth - width, in elements, of halo/ghost region
-- lx,ly - arrays of local x,y element counts, of length equal to m,n, summing to M,N
+. lx           - array of local x element counts, of length equal to `m`, summing to `M`
+- ly           - array of local y element counts, of length equal to `n`, summing to `N`
 
   Output Parameter:
 . dm - the new `DMSTAG` object
 
   Options Database Keys:
-+ -dm_view - calls `DMViewFromOptions()` at the conclusion of `DMSetUp()`
-. -stag_grid_x <nx> - number of elements in the x direction
-. -stag_grid_y <ny> - number of elements in the y direction
-. -stag_ranks_x <rx> - number of ranks in the x direction
-. -stag_ranks_y <ry> - number of ranks in the y direction
-. -stag_ghost_stencil_width - width of ghost region, in elements
++ -dm_view                                      - calls `DMViewFromOptions()` at the conclusion of `DMSetUp()`
+. -stag_grid_x <nx>                             - number of elements in the x direction
+. -stag_grid_y <ny>                             - number of elements in the y direction
+. -stag_ranks_x <rx>                            - number of ranks in the x direction
+. -stag_ranks_y <ry>                            - number of ranks in the y direction
+. -stag_ghost_stencil_width                     - width of ghost region, in elements
 . -stag_boundary_type_x <none,ghosted,periodic> - `DMBoundaryType` value
 - -stag_boundary_type_y <none,ghosted,periodic> - `DMBoundaryType` value
 
@@ -38,7 +43,7 @@
   If you wish to use the options database (see the keys above) to change values in the `DMSTAG`, you must call
   `DMSetFromOptions()` after this function but before `DMSetUp()`.
 
-.seealso: [](chapter_stag), `DMSTAG`, `DMStagCreate1d()`, `DMStagCreate3d()`, `DMDestroy()`, `DMView()`, `DMCreateGlobalVector()`, `DMCreateLocalVector()`, `DMLocalToGlobalBegin()`, `DMDACreate2d()`
+.seealso: [](ch_stag), `DMSTAG`, `DMStagCreate1d()`, `DMStagCreate3d()`, `DMDestroy()`, `DMView()`, `DMCreateGlobalVector()`, `DMCreateLocalVector()`, `DMLocalToGlobalBegin()`, `DMDACreate2d()`
 @*/
 PETSC_EXTERN PetscErrorCode DMStagCreate2d(MPI_Comm comm, DMBoundaryType bndx, DMBoundaryType bndy, PetscInt M, PetscInt N, PetscInt m, PetscInt n, PetscInt dof0, PetscInt dof1, PetscInt dof2, DMStagStencilType stencilType, PetscInt stencilWidth, const PetscInt lx[], const PetscInt ly[], DM *dm)
 {
@@ -388,7 +393,10 @@ PETSC_INTERN PetscErrorCode DMSetUp_Stag_2d(DM dm)
       if (neighborRank >= 0) { /* note we copy the values for our own rank (neighbor 4) */
         nNeighbors[i][0] = stag->l[0][neighborRank % stag->nRanks[0]];
         nNeighbors[i][1] = stag->l[1][neighborRank / stag->nRanks[0]];
-      } /* else leave uninitialized - error if accessed */
+      } else {
+        nNeighbors[i][0] = 0;
+        nNeighbors[i][1] = 0;
+      }
     }
 
     /* These offsets should always be non-negative, and describe how many

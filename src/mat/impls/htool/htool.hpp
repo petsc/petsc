@@ -1,3 +1,5 @@
+#pragma once
+
 #include <petsc/private/matimpl.h>
 #include <htool/misc/petsc.hpp>
 

@@ -16,7 +16,7 @@ testex100: ex100.PETSc
            echo "Possible error running C/C++ Python src/ksp/ksp/tutorials/ex100 with 1 MPI process"; \
            echo "See https://petsc.org/release/faq/";\
            cat ex100_1.tmp;\
-           touch ${PETSC_DIR}/check_error;\
+           touch ../../../../check_error;\
          fi; \
          ${RM} -f ex100_1.tmp
 

@@ -1,0 +1,4 @@
+_build/
+reference/
+petsc_objects.inv
+demo/

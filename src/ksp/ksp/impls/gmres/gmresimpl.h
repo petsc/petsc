@@ -3,8 +3,7 @@
   must be identical to the beginning of the KSP_FGMRES data structure
   so if you CHANGE anything here you must also change it there.
 */
-#ifndef PETSC_GMRESIMPL_H
-#define PETSC_GMRESIMPL_H
+#pragma once
 
 #include <petsc/private/kspimpl.h> /*I "petscksp.h" I*/
 
@@ -88,5 +87,3 @@ PETSC_INTERN PetscErrorCode KSPGMRESGetCGSRefinementType_GMRES(KSP, KSPGMRESCGSR
   #define VEC_TEMP_MATOP gmres->vecs[1]
   #define VEC_VV(i)      gmres->vecs[VEC_OFFSET + i]
 #endif
-
-#endif // PETSC_GMRESIMPL_H

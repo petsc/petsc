@@ -1,11 +1,13 @@
-#ifndef PETSC_CPP_MEMORY_HPP
-#define PETSC_CPP_MEMORY_HPP
+#pragma once
 
-#include <petsc/private/cpp/type_traits.hpp> // remove_extent
+#include <petscmacros.h> // PETSC_CPP_VERSION
+
 #include <petsc/private/cpp/utility.hpp>
+#if PETSC_CPP_VERSION < 14
+  #include <petsc/private/cpp/type_traits.hpp> // remove_extent
+#endif
 
-#if defined(__cplusplus)
-  #include <memory>
+#include <memory>
 
 namespace Petsc
 {
@@ -13,9 +15,9 @@ namespace Petsc
 namespace util
 {
 
-  #if PETSC_CPP_VERSION >= 14
+#if PETSC_CPP_VERSION >= 14
 using std::make_unique;
-  #else
+#else
 namespace detail
 {
 
@@ -51,14 +53,14 @@ inline typename detail::unique_if<T>::unique_array_unknown_bound make_unique(std
 
 template <class T, class... Args>
 typename detail::unique_if<T>::unique_array_known_bound make_unique(Args &&...) = delete;
-  #endif // PETSC_CPP_VERSION >= 14
+#endif // PETSC_CPP_VERSION >= 14
 
-  #if PETSC_CPP_VERSION >= 20
+#if PETSC_CPP_VERSION >= 20
 // only use std::destroy_at from C++20 onwards (even though it was introduced in C++17) since
 // that makes the behavior more uniform for arrays.
 using std::destroy_at;
 using std::construct_at;
-  #else
+#else
 template <class T>
 inline enable_if_t<!std::is_array<T>::value> destroy_at(T *ptr) noexcept(std::is_nothrow_destructible<T>::value)
 {
@@ -76,12 +78,8 @@ inline constexpr T *construct_at(T *ptr, Args &&...args) noexcept(std::is_nothro
 {
   return ::new ((void *)ptr) T{std::forward<Args>(args)...};
 }
-  #endif
+#endif
 
 } // namespace util
 
 } // namespace Petsc
-
-#endif // __cplusplus
-
-#endif // PETSC_CPP_MEMORY_HPP

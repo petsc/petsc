@@ -82,8 +82,8 @@ static PetscErrorCode PetscChunkBufferEnlargeChunk(PetscChunkBuffer *buffer, Pet
   Not Collective
 
   Input Parameters:
-+ n - number of values
-- X - array of `PetscFormKey`
++ n   - number of values
+- arr - array of `PetscFormKey`
 
   Level: intermediate
 
@@ -93,12 +93,12 @@ PetscErrorCode PetscFormKeySort(PetscInt n, PetscFormKey arr[])
 {
   PetscFunctionBegin;
   if (n <= 1) PetscFunctionReturn(PETSC_SUCCESS);
-  PetscValidPointer(arr, 2);
+  PetscAssertPointer(arr, 2);
   PetscCall(PetscTimSort(n, arr, sizeof(PetscFormKey), Compare_PetscFormKey_Private, NULL));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PetscWeakFormGetFunction_Private(PetscWeakForm wf, PetscHMapForm ht, DMLabel label, PetscInt value, PetscInt f, PetscInt part, PetscInt *n, void (***func)(void))
+static PetscErrorCode PetscWeakFormGetFunction_Private(PetscWeakForm wf, PetscHMapForm ht, DMLabel label, PetscInt value, PetscInt f, PetscInt part, PetscInt *n, void (***func)(void))
 {
   PetscFormKey key;
   PetscChunk   chunk;
@@ -120,7 +120,7 @@ PetscErrorCode PetscWeakFormGetFunction_Private(PetscWeakForm wf, PetscHMapForm 
 }
 
 /* A NULL argument for func causes this to clear the key */
-PetscErrorCode PetscWeakFormSetFunction_Private(PetscWeakForm wf, PetscHMapForm ht, DMLabel label, PetscInt value, PetscInt f, PetscInt part, PetscInt n, void (**func)(void))
+static PetscErrorCode PetscWeakFormSetFunction_Private(PetscWeakForm wf, PetscHMapForm ht, DMLabel label, PetscInt value, PetscInt f, PetscInt part, PetscInt n, void (**func)(void))
 {
   PetscFormKey key;
   PetscChunk   chunk;
@@ -146,7 +146,7 @@ PetscErrorCode PetscWeakFormSetFunction_Private(PetscWeakForm wf, PetscHMapForm 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PetscWeakFormAddFunction_Private(PetscWeakForm wf, PetscHMapForm ht, DMLabel label, PetscInt value, PetscInt f, PetscInt part, void (*func)(void))
+static PetscErrorCode PetscWeakFormAddFunction_Private(PetscWeakForm wf, PetscHMapForm ht, DMLabel label, PetscInt value, PetscInt f, PetscInt part, void (*func)(void))
 {
   PetscFormKey key;
   PetscChunk   chunk;
@@ -170,7 +170,7 @@ PetscErrorCode PetscWeakFormAddFunction_Private(PetscWeakForm wf, PetscHMapForm 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PetscWeakFormGetIndexFunction_Private(PetscWeakForm wf, PetscHMapForm ht, DMLabel label, PetscInt value, PetscInt f, PetscInt part, PetscInt ind, void (**func)(void))
+static PetscErrorCode PetscWeakFormGetIndexFunction_Private(PetscWeakForm wf, PetscHMapForm ht, DMLabel label, PetscInt value, PetscInt f, PetscInt part, PetscInt ind, void (**func)(void))
 {
   PetscFormKey key;
   PetscChunk   chunk;
@@ -191,7 +191,7 @@ PetscErrorCode PetscWeakFormGetIndexFunction_Private(PetscWeakForm wf, PetscHMap
 }
 
 /* Ignore a NULL func */
-PetscErrorCode PetscWeakFormSetIndexFunction_Private(PetscWeakForm wf, PetscHMapForm ht, DMLabel label, PetscInt value, PetscInt f, PetscInt part, PetscInt ind, void (*func)(void))
+static PetscErrorCode PetscWeakFormSetIndexFunction_Private(PetscWeakForm wf, PetscHMapForm ht, DMLabel label, PetscInt value, PetscInt f, PetscInt part, PetscInt ind, void (*func)(void))
 {
   PetscFormKey key;
   PetscChunk   chunk;
@@ -214,7 +214,7 @@ PetscErrorCode PetscWeakFormSetIndexFunction_Private(PetscWeakForm wf, PetscHMap
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PetscWeakFormClearIndexFunction_Private(PetscWeakForm wf, PetscHMapForm ht, DMLabel label, PetscInt value, PetscInt f, PetscInt part, PetscInt ind)
+static PetscErrorCode PetscWeakFormClearIndexFunction_Private(PetscWeakForm wf, PetscHMapForm ht, DMLabel label, PetscInt value, PetscInt f, PetscInt part, PetscInt ind)
 {
   PetscFormKey key;
   PetscChunk   chunk;
@@ -544,7 +544,7 @@ PetscErrorCode PetscWeakFormHasJacobian(PetscWeakForm wf, PetscBool *hasJac)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(wf, PETSCWEAKFORM_CLASSID, 1);
-  PetscValidBoolPointer(hasJac, 2);
+  PetscAssertPointer(hasJac, 2);
   PetscCall(PetscHMapFormGetSize(wf->form[PETSC_WF_G0], &n0));
   PetscCall(PetscHMapFormGetSize(wf->form[PETSC_WF_G1], &n1));
   PetscCall(PetscHMapFormGetSize(wf->form[PETSC_WF_G2], &n2));
@@ -607,7 +607,7 @@ PetscErrorCode PetscWeakFormHasJacobianPreconditioner(PetscWeakForm wf, PetscBoo
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(wf, PETSCWEAKFORM_CLASSID, 1);
-  PetscValidBoolPointer(hasJacPre, 2);
+  PetscAssertPointer(hasJacPre, 2);
   PetscCall(PetscHMapFormGetSize(wf->form[PETSC_WF_GP0], &n0));
   PetscCall(PetscHMapFormGetSize(wf->form[PETSC_WF_GP1], &n1));
   PetscCall(PetscHMapFormGetSize(wf->form[PETSC_WF_GP2], &n2));
@@ -670,7 +670,7 @@ PetscErrorCode PetscWeakFormHasBdJacobian(PetscWeakForm wf, PetscBool *hasJac)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(wf, PETSCWEAKFORM_CLASSID, 1);
-  PetscValidBoolPointer(hasJac, 2);
+  PetscAssertPointer(hasJac, 2);
   PetscCall(PetscHMapFormGetSize(wf->form[PETSC_WF_BDG0], &n0));
   PetscCall(PetscHMapFormGetSize(wf->form[PETSC_WF_BDG1], &n1));
   PetscCall(PetscHMapFormGetSize(wf->form[PETSC_WF_BDG2], &n2));
@@ -733,7 +733,7 @@ PetscErrorCode PetscWeakFormHasBdJacobianPreconditioner(PetscWeakForm wf, PetscB
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(wf, PETSCWEAKFORM_CLASSID, 1);
-  PetscValidBoolPointer(hasJacPre, 2);
+  PetscAssertPointer(hasJacPre, 2);
   PetscCall(PetscHMapFormGetSize(wf->form[PETSC_WF_BDGP0], &n0));
   PetscCall(PetscHMapFormGetSize(wf->form[PETSC_WF_BDGP1], &n1));
   PetscCall(PetscHMapFormGetSize(wf->form[PETSC_WF_BDGP2], &n2));
@@ -796,7 +796,7 @@ PetscErrorCode PetscWeakFormHasDynamicJacobian(PetscWeakForm wf, PetscBool *hasD
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(wf, PETSCWEAKFORM_CLASSID, 1);
-  PetscValidBoolPointer(hasDynJac, 2);
+  PetscAssertPointer(hasDynJac, 2);
   PetscCall(PetscHMapFormGetSize(wf->form[PETSC_WF_GT0], &n0));
   PetscCall(PetscHMapFormGetSize(wf->form[PETSC_WF_GT1], &n1));
   PetscCall(PetscHMapFormGetSize(wf->form[PETSC_WF_GT2], &n2));
@@ -893,7 +893,7 @@ PetscErrorCode PetscWeakFormGetNumFields(PetscWeakForm wf, PetscInt *Nf)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(wf, PETSCWEAKFORM_CLASSID, 1);
-  PetscValidIntPointer(Nf, 2);
+  PetscAssertPointer(Nf, 2);
   *Nf = wf->Nf;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1023,12 +1023,12 @@ static PetscErrorCode PetscWeakFormViewTable_Ascii(PetscWeakForm wf, PetscViewer
           PetscCall(PetscViewerASCIIPrintf(viewer, "%s", fname));
         } else if (showPointer) {
 #if defined(__clang__)
-          PETSC_PRAGMA_DIAGNOSTIC_IGNORED_BEGIN("-Wformat-pedantic");
+          PETSC_PRAGMA_DIAGNOSTIC_IGNORED_BEGIN("-Wformat-pedantic")
 #elif defined(__GNUC__) || defined(__GNUG__)
-          PETSC_PRAGMA_DIAGNOSTIC_IGNORED_BEGIN("-Wformat");
+          PETSC_PRAGMA_DIAGNOSTIC_IGNORED_BEGIN("-Wformat")
 #endif
           PetscCall(PetscViewerASCIIPrintf(viewer, "%p", funcs[f]));
-          PETSC_PRAGMA_DIAGNOSTIC_IGNORED_END();
+          PETSC_PRAGMA_DIAGNOSTIC_IGNORED_END()
         }
         PetscCall(PetscFree(fname));
       }
@@ -1103,7 +1103,7 @@ PetscErrorCode PetscWeakFormCreate(MPI_Comm comm, PetscWeakForm *wf)
   PetscInt      f;
 
   PetscFunctionBegin;
-  PetscValidPointer(wf, 2);
+  PetscAssertPointer(wf, 2);
   *wf = NULL;
   PetscCall(PetscDSInitializePackage());
 

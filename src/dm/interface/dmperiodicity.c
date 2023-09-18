@@ -6,7 +6,7 @@
   DMGetPeriodicity - Get the description of mesh periodicity
 
   Input Parameter:
-. dm      - The `DM` object
+. dm - The `DM` object
 
   Output Parameters:
 + maxCell - Over distances greater than this, we can assume a point has crossed over to another sheet, when trying to localize cell coordinates
@@ -15,7 +15,7 @@
 
   Level: developer
 
-.seealso: `DM`, `DMGetPeriodicity()`
+.seealso: `DM`
 @*/
 PetscErrorCode DMGetPeriodicity(DM dm, const PetscReal **maxCell, const PetscReal **Lstart, const PetscReal **L)
 {
@@ -46,9 +46,9 @@ PetscErrorCode DMSetPeriodicity(DM dm, const PetscReal maxCell[], const PetscRea
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  if (maxCell) PetscValidRealPointer(maxCell, 2);
-  if (Lstart) PetscValidRealPointer(Lstart, 3);
-  if (L) PetscValidRealPointer(L, 4);
+  if (maxCell) PetscAssertPointer(maxCell, 2);
+  if (Lstart) PetscAssertPointer(Lstart, 3);
+  if (L) PetscAssertPointer(L, 4);
   PetscCall(DMGetDimension(dm, &dim));
   if (maxCell) {
     if (!dm->maxCell) PetscCall(PetscMalloc1(dim, &dm->maxCell));
@@ -79,8 +79,8 @@ PetscErrorCode DMSetPeriodicity(DM dm, const PetscReal maxCell[], const PetscRea
   DMLocalizeCoordinate - If a mesh is periodic (a torus with lengths L_i, some of which can be infinite), project the coordinate onto [0, L_i) in each dimension.
 
   Input Parameters:
-+ dm     - The `DM`
-. in     - The input coordinate point (dim numbers)
++ dm       - The `DM`
+. in       - The input coordinate point (dim numbers)
 - endpoint - Include the endpoint L_i
 
   Output Parameter:
@@ -225,7 +225,7 @@ PetscErrorCode DMLocalizeAddCoordinate_Internal(DM dm, PetscInt dim, const Petsc
 . dm - The `DM`
 
   Output Parameter:
-  areLocalized - `PETSC_TRUE` if localized
+. areLocalized - `PETSC_TRUE` if localized
 
   Level: developer
 
@@ -235,7 +235,7 @@ PetscErrorCode DMGetCoordinatesLocalizedLocal(DM dm, PetscBool *areLocalized)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidBoolPointer(areLocalized, 2);
+  PetscAssertPointer(areLocalized, 2);
   *areLocalized = dm->coordinates[1].dim < 0 ? PETSC_FALSE : PETSC_TRUE;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -249,7 +249,7 @@ PetscErrorCode DMGetCoordinatesLocalizedLocal(DM dm, PetscBool *areLocalized)
 . dm - The `DM`
 
   Output Parameter:
-  areLocalized - `PETSC_TRUE` if localized
+. areLocalized - `PETSC_TRUE` if localized
 
   Level: developer
 
@@ -261,7 +261,7 @@ PetscErrorCode DMGetCoordinatesLocalized(DM dm, PetscBool *areLocalized)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidBoolPointer(areLocalized, 2);
+  PetscAssertPointer(areLocalized, 2);
   PetscCall(DMGetCoordinatesLocalizedLocal(dm, &localized));
   PetscCall(MPIU_Allreduce(&localized, areLocalized, 1, MPIU_BOOL, MPI_LOR, PetscObjectComm((PetscObject)dm)));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -359,7 +359,7 @@ PetscErrorCode DMLocalizeCoordinates(DM dm)
       PetscCall(DMPlexVecRestoreClosure(cplex, cs, coordinates, c, &dof, &cellCoords));
     }
   }
-  PetscCallMPI(MPI_Allreduce(&useDG, &useDGGlobal, 1, MPIU_BOOL, MPI_LOR, comm));
+  PetscCall(MPIU_Allreduce(&useDG, &useDGGlobal, 1, MPIU_BOOL, MPI_LOR, comm));
   if (!useDGGlobal) goto end;
 
   PetscCall(PetscSectionSetUp(csDG));

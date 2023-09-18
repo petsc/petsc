@@ -2,8 +2,7 @@
   Context for a Newton trust region method (unconstrained minimization)
 */
 
-#ifndef __TAO_NTR_H
-#define __TAO_NTR_H
+#pragma once
 #include <petsc/private/taoimpl.h>
 
 typedef struct {
@@ -90,5 +89,3 @@ typedef struct {
   PetscInt init_type;   /*  Trust-region initialization method */
   PetscInt update_type; /*  Trust-region update method */
 } TAO_NTR;
-
-#endif /* if !defined(__TAO_NTR_H) */

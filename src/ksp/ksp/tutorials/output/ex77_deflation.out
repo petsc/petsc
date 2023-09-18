@@ -1,5 +1,5 @@
-[0] <ksp> KSPMatSolve_Private(): KSP type hpddm solving using batches of width at most 3
-[0] <ksp> KSPSolve_HPDDM_Private(): Forcing KSPConvergedDefaultSetUIRNorm() since KSPConvergedDefault() cannot handle multiple norms
-[0] <ksp> KSPMatSolve_Private(): KSP type hpddm solving using batches of width at most 3
-[0] <ksp> BGMRES(): HPDDM: Deflating 2 out of 3 RHS
-[0] <ksp> KSPConvergedDefault(): Linear solver has converged. Residual norm 1.435164067451e-19 is less than relative tolerance 1.000000000000e-05 times initial residual norm 1.926034675817e-05 at iteration 1
+[0] <ksp:hpddm> KSPMatSolve_Private(): KSP type hpddm solving using batches of width at most 3
+[0] <ksp:hpddm> KSPSolve_HPDDM_Private(): Forcing KSPConvergedDefaultSetUIRNorm() since KSPConvergedDefault() cannot handle multiple norms
+[0] <ksp:hpddm> KSPMatSolve_Private(): KSP type hpddm solving using batches of width at most 3
+[0] <ksp:hpddm> BGMRES(): HPDDM: Deflating 2 out of 3 RHS
+[0] <ksp:hpddm> KSPConvergedDefault(): Linear solver has converged. Residual norm 1.509277727490e-19 is less than relative tolerance 1.000000000000e-05 times initial residual norm 1.926034675817e-05 at iteration 1

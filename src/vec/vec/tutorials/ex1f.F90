@@ -1,7 +1,3 @@
-!
-!
-!
-! -----------------------------------------------------------------------
 
       program main
 #include <petsc/finclude/petscvec.h>
@@ -48,18 +44,6 @@
 !  the vector format (currently parallel
 !  or sequential) is determined at runtime.  Also, the parallel
 !  partitioning of the vector is determined by PETSc at runtime.
-!
-!  Routines for creating particular vector types directly are:
-!     VecCreateSeq() - uniprocessor vector
-!     VecCreateMPI() - distributed vector, where the user can
-!                      determine the parallel partitioning
-!     VecCreateShared() - parallel vector that uses shared memory
-!                         (available only on the SGI); otherwise,
-!                         is the same as VecCreateMPI()
-!
-!     VecCreate(), VecSetSizes() and VecSetFromOptions() allows one
-!                 to determine at runtime which version to use
-!                 with the options -vec_type mpi or -vec_type shared
 !
       PetscCallA(VecCreate(PETSC_COMM_WORLD,x,ierr))
       PetscCallA(VecSetSizes(x,PETSC_DECIDE,n,ierr))

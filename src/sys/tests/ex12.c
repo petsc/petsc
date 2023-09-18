@@ -5,14 +5,12 @@ static char help[] = "Tests timing PetscSortInt().\n\n";
 
 int main(int argc, char **argv)
 {
-  PetscInt i, n = 1000, *values;
-#if defined(PETSC_USE_LOG)
+  PetscInt      i, n = 1000, *values;
   PetscLogEvent event;
-#endif
-  PetscRandom rand;
-  PetscReal   value;
-  PetscBool   values_view = PETSC_FALSE;
-  PetscMPIInt rank;
+  PetscRandom   rand;
+  PetscReal     value;
+  PetscBool     values_view = PETSC_FALSE;
+  PetscMPIInt   rank;
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));

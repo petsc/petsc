@@ -7,6 +7,20 @@
 #include <algorithm> // std::find_if
 #include <cstring>   // std::memset
 
+#include <petsc/private/cpp/object_pool.hpp>
+
+namespace Petsc
+{
+
+namespace memory
+{
+
+typename PoolAllocated::allocator_type PoolAllocated::pool_{};
+
+} // namespace memory
+
+} // namespace Petsc
+
 const char *const PetscDeviceCopyModes[] = {"host_to_host", "device_to_host", "host_to_device", "device_to_device", "auto", "PetscDeviceCopyMode", "PETSC_DEVICE_COPY_", nullptr};
 static_assert(Petsc::util::to_underlying(PETSC_DEVICE_COPY_HTOH) == 0, "");
 static_assert(Petsc::util::to_underlying(PETSC_DEVICE_COPY_DTOH) == 1, "");
@@ -241,7 +255,7 @@ static PetscErrorCode PetscDeviceRegisterMemory_Private(const void *PETSC_RESTRI
 PetscErrorCode PetscDeviceRegisterMemory(const void *PETSC_RESTRICT ptr, PetscMemType mtype, std::size_t size)
 {
   PetscFunctionBegin;
-  if (PetscMemTypeHost(mtype)) PetscValidPointer(ptr, 1);
+  if (PetscMemTypeHost(mtype)) PetscAssertPointer(ptr, 1);
   if (PetscUnlikely(!size)) PetscFunctionReturn(PETSC_SUCCESS); // there is no point registering empty range
   PetscCall(PetscDeviceRegisterMemory_Private(ptr, mtype, size));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -319,7 +333,7 @@ PetscErrorCode PetscDeviceAllocate_Private(PetscDeviceContext dctx, PetscBool cl
     PetscCheck(alignment != 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Requested alignment %zu cannot be 0", alignment);
     PetscCheck(is_power_of_2(alignment), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Requested alignment %zu must be a power of 2", alignment);
   }
-  PetscValidPointer(ptr, 6);
+  PetscAssertPointer(ptr, 6);
   *ptr = nullptr;
   if (PetscUnlikely(!n)) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(memory_map.register_finalize());
@@ -414,6 +428,7 @@ PetscErrorCode PetscDeviceDeallocate_Private(PetscDeviceContext dctx, void *PETS
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+// PetscClangLinter pragma disable: -fdoc-section-header-unknown
 /*@C
   PetscDeviceMemcpy - Copy memory in a device-aware manner
 
@@ -485,16 +500,17 @@ PetscErrorCode PetscDeviceMemcpy(PetscDeviceContext dctx, void *PETSC_RESTRICT d
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+// PetscClangLinter pragma disable: -fdoc-section-header-unknown
 /*@C
   PetscDeviceMemset - Memset device-aware memory
 
   Not Collective, Asynchronous, Auto-dependency aware
 
   Input Parameters:
-+ dctx  - The `PetscDeviceContext` used to memset the memory
-. ptr   - The pointer to the memory
-. v     - The value to set
-- n     - The amount (in bytes) to set
++ dctx - The `PetscDeviceContext` used to memset the memory
+. ptr  - The pointer to the memory
+. v    - The value to set
+- n    - The amount (in bytes) to set
 
   Level: intermediate
 

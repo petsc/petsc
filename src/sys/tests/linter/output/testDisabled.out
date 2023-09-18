@@ -1,22 +1,24 @@
 <--- FIXED --->
---------------------------------------------------------------------------------------------
-ERROR 0: ./src/sys/tests/linter/testDisabled.c:6:53
-'2' of type 'int'
+[31m[1m./src/sys/tests/linter/testDisabled.c:3:1: error:[0m Function 'testDisabled()' does not appear to be used anywhere outside of testDisabled.c, and can be made static [-fstatic-function-candidate]:
+  1: #include <petsc/private/petscimpl.h>
+  2: 
+> 3: [33m[1mPetscErrorCode testDisabled(PetscRandom r)[0m
+     [33m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
   4: {
   5:   /* incorrect */
-> 6:   PetscValidHeaderSpecific(r, PETSC_RANDOM_CLASSID, 2);
-                                                         ^
+[31m[1m./src/sys/tests/linter/testDisabled.c:6:53: error:[0m Argument number doesn't match for 'r'. Expected '1', found '2' [-fmatching-arg-num]:
+  4: {
+  5:   /* incorrect */
+> 6:   PetscValidHeaderSpecific(r, PETSC_RANDOM_CLASSID, [33m[1m2[0m);
+                                                         [33m[1m^[0m
   7: 
   8:   /* correct by being disabled */
-
-Argument number doesn't match for 'r'. Expected '1', found '2' [-fmatching-arg-num]
 
 ./src/sys/tests/linter/testDisabled.c:3:29 Note: 'r' is traceable to argument #1 'r' in enclosing function here:
   1: #include <petsc/private/petscimpl.h>
   2: 
-> 3: PetscErrorCode testDisabled(PetscRandom r)
-                                 ^^^^^^^^^^^^^
+> 3: PetscErrorCode testDisabled([33m[1mPetscRandom r[0m)
+                                 [33m[1m^^^^^^^^^^^^^[0m
   4: {
   5:   /* incorrect */
---------------------------------------------------------------------------------------------
 <--- LEFT --->

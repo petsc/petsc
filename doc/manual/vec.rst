@@ -1,4 +1,4 @@
-.. _chapter_vectors:
+.. _ch_vectors:
 
 Vectors and Parallel Data
 -------------------------
@@ -92,7 +92,7 @@ object called the ``DM`` to help manage the vectors and matrices needed for such
 
    DMCreateGlobalVector(DM dm,Vec *v)
 
-The ``DM`` object, see :any:`sec_struct`, :any:`sec_stag`, and :any:`chapter_unstructured` for more details on ``DM`` for structured grids, staggered
+The ``DM`` object, see :any:`sec_struct`, :any:`sec_stag`, and :any:`ch_unstructured` for more details on ``DM`` for structured grids, staggered
 structured grids and for unstructured grids,
 manages creating the correctly sized parallel vectors efficiently. One controls the type of vector that ``DM`` creates by calling
 
@@ -198,7 +198,7 @@ DMStag - Creating vectors for staggered grids
 For structured grids with staggered data (living on elements, faces, edges,
 and/or vertices), the ``DMSTAG`` object is available. It behaves much
 like ``DMDA``.
-See :any:`chapter_stag` for discussion of creating vectors with ``DMSTAG``.
+See :any:`ch_stag` for discussion of creating vectors with ``DMSTAG``.
 
 
 .. _sec_unstruct:
@@ -206,14 +206,14 @@ See :any:`chapter_stag` for discussion of creating vectors with ``DMSTAG``.
 DMPLEX - Creating vectors for unstructured grids
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-See :any:`chapter_unstructured` for discussion of creating vectors with ``DMPLEX``.
+See :any:`ch_unstructured` for discussion of creating vectors with ``DMPLEX``.
 
 .. _sec_network:
 
 DMNETWORK - Creating vectors for networks
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-See :any:`chapter_network`  for discussion of creating vectors with ``DMNETWORK``.
+See :any:`ch_network`  for discussion of creating vectors with ``DMNETWORK``.
 
 
 One can examine (print out) a vector with the command
@@ -596,14 +596,14 @@ like ``DMDA``; see the ``DMSTAG`` manual page for more information.
 DMPLEX - Setting vector values
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-See :any:`chapter_unstructured` for discussion on setting vector values with ``DMPLEX``.
+See :any:`ch_unstructured` for discussion on setting vector values with ``DMPLEX``.
 
 .. _sec_network_set:
 
 DMNETWORK - Setting vector values
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-See :any:`chapter_network` for discussion on setting vector values with ``DMNETWORK``.
+See :any:`ch_network` for discussion on setting vector values with ``DMNETWORK``.
 
 
 .. _sec_vecbasic:
@@ -632,12 +632,14 @@ Basic Vector Operations
       +-----------------------------------------------------------+-----------------------------------+
       | ``VecAXPBY(Vec y,PetscScalar a,PetscScalar b,Vec x);``    | :math:`y = a*x + b*y`             |
       +-----------------------------------------------------------+-----------------------------------+
+      | ``VecAXPBYPCZ(Vec z,PetscScalar a,PetscScalar b,          | :math:`z = a*x + b*y + c*z`       |
+      | PetscScalar c,Vec x,Vec y);``                             |                                   |
+      +-----------------------------------------------------------+-----------------------------------+
       | ``VecScale(Vec x, PetscScalar a);``                       | :math:`x = a*x`                   |
       +-----------------------------------------------------------+-----------------------------------+
       | ``VecDot(Vec x, Vec y, PetscScalar *r);``                 | :math:`r = \bar{x}^T*y`           |
       +-----------------------------------------------------------+-----------------------------------+
-      | ``VecTDot(                                                | :math:`r = x'*y`                  |
-      | Vec x, Vec y, PetscScalar *r);``                          |                                   |
+      | ``VecTDot(Vec x, Vec y, PetscScalar *r);``                | :math:`r = x'*y`                  |
       +-----------------------------------------------------------+-----------------------------------+
       | ``VecNorm(Vec x, NormType type,  PetscReal *r);``         | :math:`r = ||x||_{type}`          |
       +-----------------------------------------------------------+-----------------------------------+
@@ -826,7 +828,7 @@ Low-level Vector Communication
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Most users of PETSc, who can utilize a ``DM`` will not need to utilize the lower-level routines discussed in the rest of this section
-and should skip ahead to :any:`chapter_matrices`.
+and should skip ahead to :any:`ch_matrices`.
 
 To facilitate creating general vector scatters and gathers used, for example, in
 updating ghost points for problems for which no ``DM`` currently exists
@@ -1030,9 +1032,9 @@ Local to global mappings
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
 When working with a global representation of a vector
-(usually on a vector obtained with ``DMCreateGlobalVecgtor()``) and a local
+(usually on a vector obtained with ``DMCreateGlobalVector()``) and a local
 representation of the same vector that includes ghost points required
-for local computation (obtained with ``DMCreateLocalVecgtor()``). PETSc provides routines to help map indices from
+for local computation (obtained with ``DMCreateLocalVector()``). PETSc provides routines to help map indices from
 a local numbering scheme to the PETSc global numbering scheme. This is
 done via the following routines
 
@@ -1131,7 +1133,7 @@ The example
 illustrates the use of a distributed array in the solution of a
 nonlinear problem. The analogous Fortran program is
 `SNES Tutorial ex5f90 <PETSC_DOC_OUT_ROOT_PLACEHOLDER/src/snes/tutorials/ex5f90.F90.html>`__;
-see :any:`chapter_snes` for a discussion of the
+see :any:`ch_snes` for a discussion of the
 nonlinear solvers.
 
 .. _sec_vecghost:

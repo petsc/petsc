@@ -1,0 +1,19 @@
+Mat Object: 1 MPI process
+  type: diagonal
+  Vec Object: 1 MPI process
+    type: seq
+  0.
+  0.
+  0.
+  0.
+  0.
+  0.
+  0.
+  0.
+  0.
+  0.
+Mat Object: 1 MPI process
+  type: diagonal
+  rows=10, cols=10
+  total: nonzeros=10, allocated nonzeros=10
+  total number of mallocs used during MatSetValues calls=0

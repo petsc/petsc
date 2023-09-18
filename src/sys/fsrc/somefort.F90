@@ -19,6 +19,19 @@
 !DEC$ ATTRIBUTES DLLEXPORT::MPIU_Abort
 #endif
 
+      subroutine PetscFortranPrintToUnit(unit,str,ierr)
+      implicit none
+      character(*) str
+      PetscInt unit
+      PetscErrorCode ierr
+      write(unit=unit, fmt="(A)", advance='no') str
+      ierr = 0
+      return
+      end
+#if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
+!DEC$ ATTRIBUTES DLLEXPORT::PetscFortranPrintToUnit
+#endif
+
 !  This uses F2003 feature - and is the preferred mode for accessing command line arguments
 #if defined(PETSC_HAVE_FORTRAN_GET_COMMAND_ARGUMENT)
       integer function PetscCommandArgumentCount()

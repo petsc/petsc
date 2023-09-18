@@ -1,13 +1,9 @@
-#ifndef PETSC_CPP_REGISTER_FINALIZE_HPP
-#define PETSC_CPP_REGISTER_FINALIZE_HPP
+#pragma once
 
 #include <petscsys.h>
 
-#if defined(__cplusplus)
-  #include <petsc/private/cpp/crtp.hpp>
-
-namespace
-{
+#include <petsc/private/cpp/crtp.hpp>
+#include <petsc/private/cpp/type_traits.hpp>
 
 template <typename T>
 inline PetscErrorCode PetscCxxObjectRegisterFinalize(T *obj, MPI_Comm comm = PETSC_COMM_SELF) noexcept
@@ -20,15 +16,13 @@ inline PetscErrorCode PetscCxxObjectRegisterFinalize(T *obj, MPI_Comm comm = PET
   };
 
   PetscFunctionBegin;
-  PetscValidPointer(obj, 1);
+  PetscAssertPointer(obj, 1);
   PetscCall(PetscContainerCreate(comm, &contain));
   PetscCall(PetscContainerSetPointer(contain, obj));
   PetscCall(PetscContainerSetUserDestroy(contain, std::move(finalizer)));
   PetscCall(PetscObjectRegisterDestroy(reinterpret_cast<PetscObject>(contain)));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-
-} // anonymous namespace
 
 namespace Petsc
 {
@@ -53,31 +47,72 @@ public:
   template <typename... Args>
   PetscErrorCode finalize(Args &&...) noexcept;
   template <typename... Args>
+  PetscErrorCode finalize(Args &&...) const noexcept;
+  template <typename... Args>
   PetscErrorCode register_finalize(Args &&...) noexcept;
+  template <typename... Args>
+  PetscErrorCode register_finalize(Args &&...) const noexcept;
 
 private:
-  RegisterFinalizeable() = default;
+  constexpr RegisterFinalizeable() noexcept = default;
   friend derived_type;
+
+  template <typename Self, typename... Args>
+  static PetscErrorCode do_finalize_(Self &&, Args &&...) noexcept;
+  template <typename Self, typename... Args>
+  static PetscErrorCode do_register_finalize_(Self &&, Args &&...) noexcept;
 
   // default implementations if the derived class does not want to implement them
   template <typename... Args>
-  static PetscErrorCode finalize_(Args &&...) noexcept;
+  static constexpr PetscErrorCode finalize_(Args &&...) noexcept;
   template <typename... Args>
-  static PetscErrorCode register_finalize_(Args &&...) noexcept;
+  static constexpr PetscErrorCode register_finalize_(Args &&...) noexcept;
 
-  bool registered_ = false;
+  mutable bool registered_ = false;
 };
 
 template <typename D>
+template <typename Self, typename... Args>
+inline PetscErrorCode RegisterFinalizeable<D>::do_finalize_(Self &&self, Args &&...args) noexcept
+{
+  PetscFunctionBegin;
+  // order of setting registered_ to false matters here, if the finalizer wants to re-register
+  // it should be able to
+  if (self.underlying().registered()) {
+    self.registered_ = false;
+    PetscCall(self.underlying().finalize_(std::forward<Args>(args)...));
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+template <typename D>
+template <typename Self, typename... Args>
+inline PetscErrorCode RegisterFinalizeable<D>::do_register_finalize_(Self &&self, Args &&...args) noexcept
+{
+  PetscFunctionBegin;
+  if (PetscLikely(self.underlying().registered())) PetscFunctionReturn(PETSC_SUCCESS);
+  self.registered_ = true;
+  PetscCall(self.underlying().register_finalize_(std::forward<Args>(args)...));
+  // Check if registered before we commit to actually register-finalizing. register_finalize_()
+  // is allowed to run its finalizer immediately
+  if (self.underlying().registered()) {
+    using decayed_type = util::decay_t<Self>;
+
+    PetscCall(PetscCxxObjectRegisterFinalize(const_cast<decayed_type *>(std::addressof(self))));
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+template <typename D>
 template <typename... Args>
-inline PetscErrorCode RegisterFinalizeable<D>::finalize_(Args &&...) noexcept
+inline constexpr PetscErrorCode RegisterFinalizeable<D>::finalize_(Args &&...) noexcept
 {
   return PETSC_SUCCESS;
 }
 
 template <typename D>
 template <typename... Args>
-inline PetscErrorCode RegisterFinalizeable<D>::register_finalize_(Args &&...) noexcept
+inline constexpr PetscErrorCode RegisterFinalizeable<D>::register_finalize_(Args &&...) noexcept
 {
   return PETSC_SUCCESS;
 }
@@ -116,12 +151,16 @@ template <typename... Args>
 inline PetscErrorCode RegisterFinalizeable<D>::finalize(Args &&...args) noexcept
 {
   PetscFunctionBegin;
-  // order of setting registered_ to false matters here, if the finalizer wants to re-register
-  // it should be able to
-  if (this->underlying().registered()) {
-    registered_ = false;
-    PetscCall(this->underlying().finalize_(std::forward<Args>(args)...));
-  }
+  PetscCall(do_finalize_(*this, std::forward<Args>(args)...));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+template <typename D>
+template <typename... Args>
+inline PetscErrorCode RegisterFinalizeable<D>::finalize(Args &&...args) const noexcept
+{
+  PetscFunctionBegin;
+  PetscCall(do_finalize_(*this, std::forward<Args>(args)...));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -149,17 +188,17 @@ template <typename... Args>
 inline PetscErrorCode RegisterFinalizeable<D>::register_finalize(Args &&...args) noexcept
 {
   PetscFunctionBegin;
-  if (PetscLikely(this->underlying().registered())) PetscFunctionReturn(PETSC_SUCCESS);
-  registered_ = true;
-  PetscCall(this->underlying().register_finalize_(std::forward<Args>(args)...));
-  // Check if registered before we commit to actually register-finalizing. register_finalize_()
-  // is allowed to run its finalizer immediately
-  if (this->underlying().registered()) PetscCall(PetscCxxObjectRegisterFinalize(this));
+  PetscCall(do_register_finalize_(*this, std::forward<Args>(args)...));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+template <typename D>
+template <typename... Args>
+inline PetscErrorCode RegisterFinalizeable<D>::register_finalize(Args &&...args) const noexcept
+{
+  PetscFunctionBegin;
+  PetscCall(do_register_finalize_(*this, std::forward<Args>(args)...));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 } // namespace Petsc
-
-#endif // __cplusplus
-
-#endif // PETSC_CPP_REGISTER_FINALIZE_HPP

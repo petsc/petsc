@@ -5,17 +5,19 @@
 #include <petsc/private/drawimpl.h> /*I "petscdraw.h" I*/
 
 /*@
-   PetscDrawSetCoordinates - Sets the application coordinates of the corners of
-   the window (or page).
+  PetscDrawSetCoordinates - Sets the application coordinates of the corners of
+  the window (or page).
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  draw - the drawing object
--  xl,yl,xr,yr - the coordinates of the lower left corner and upper
-                 right corner of the drawing region.
+  Input Parameters:
++ draw - the drawing object
+. xl   - the lower left x coordinate
+. yl   - the lower left y coordinate
+. xr   - the upper right x coordinate
+- yr   - the upper right y coordinate
 
-   Level: advanced
+  Level: advanced
 
 .seealso: `PetscDraw`, `PetscDrawGetCoordinates()`
 @*/
@@ -32,21 +34,21 @@ PetscErrorCode PetscDrawSetCoordinates(PetscDraw draw, PetscReal xl, PetscReal y
 }
 
 /*@
-   PetscDrawGetCoordinates - Gets the application coordinates of the corners of
-   the window (or page).
+  PetscDrawGetCoordinates - Gets the application coordinates of the corners of
+  the window (or page).
 
-   Not Collective
+  Not Collective
 
-   Input Parameter:
-.  draw - the drawing object
+  Input Parameter:
+. draw - the drawing object
 
-   Output Parameters:
-+  xl - the horizontal coordinate of the lower left corner of the drawing region.
-.  yl - the vertical coordinate of the lower left corner of the drawing region.
-.  xr - the horizontal coordinate of the upper right corner of the drawing region.
--  yr - the vertical coordinate of the upper right corner of the drawing region.
+  Output Parameters:
++ xl - the horizontal coordinate of the lower left corner of the drawing region.
+. yl - the vertical coordinate of the lower left corner of the drawing region.
+. xr - the horizontal coordinate of the upper right corner of the drawing region.
+- yr - the vertical coordinate of the upper right corner of the drawing region.
 
-   Level: advanced
+  Level: advanced
 
 .seealso: `PetscDraw`, `PetscDrawSetCoordinates()`
 @*/
@@ -54,10 +56,10 @@ PetscErrorCode PetscDrawGetCoordinates(PetscDraw draw, PetscReal *xl, PetscReal 
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw, PETSC_DRAW_CLASSID, 1);
-  PetscValidRealPointer(xl, 2);
-  PetscValidRealPointer(yl, 3);
-  PetscValidRealPointer(xr, 4);
-  PetscValidRealPointer(yr, 5);
+  PetscAssertPointer(xl, 2);
+  PetscAssertPointer(yl, 3);
+  PetscAssertPointer(xr, 4);
+  PetscAssertPointer(yr, 5);
   *xl = draw->coor_xl;
   *yl = draw->coor_yl;
   *xr = draw->coor_xr;

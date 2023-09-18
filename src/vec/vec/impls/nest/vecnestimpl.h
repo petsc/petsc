@@ -1,5 +1,4 @@
-#ifndef PETSC_VECNESTIMPL_H
-#define PETSC_VECNESTIMPL_H
+#pragma once
 
 #include <petsc/private/vecimpl.h>
 
@@ -15,10 +14,12 @@ typedef struct {
     do { \
       PetscValidHeaderSpecific(x, VEC_CLASSID, xarg); \
       PetscValidHeaderSpecific(y, VEC_CLASSID, yarg); \
+      PetscCheckTypeName(x, VECNEST); \
       PetscCheckSameComm(x, xarg, y, yarg); \
-      PetscCheck(((Vec_Nest *)x->data)->setup_called, PetscObjectComm((PetscObject)x), PETSC_ERR_ARG_WRONG, "Nest vector argument %d not setup.", xarg); \
-      PetscCheck(((Vec_Nest *)y->data)->setup_called, PetscObjectComm((PetscObject)x), PETSC_ERR_ARG_WRONG, "Nest vector argument %d not setup.", yarg); \
-      PetscCheck(((Vec_Nest *)x->data)->nb == ((Vec_Nest *)y->data)->nb, PetscObjectComm((PetscObject)x), PETSC_ERR_ARG_WRONG, "Nest vector arguments %d and %d have different numbers of blocks.", xarg, yarg); \
+      PetscCheckSameType(x, xarg, y, yarg); \
+      PetscCheck(((Vec_Nest *)(x)->data)->setup_called, PetscObjectComm((PetscObject)x), PETSC_ERR_ARG_WRONG, "Nest vector argument %d not setup.", xarg); \
+      PetscCheck(((Vec_Nest *)(y)->data)->setup_called, PetscObjectComm((PetscObject)y), PETSC_ERR_ARG_WRONG, "Nest vector argument %d not setup.", yarg); \
+      PetscCheck(((Vec_Nest *)(x)->data)->nb == ((Vec_Nest *)(y)->data)->nb, PetscObjectComm((PetscObject)(x)), PETSC_ERR_ARG_WRONG, "Nest vector arguments %d and %d have different numbers of blocks.", xarg, yarg); \
     } while (0)
 
   #define VecNestCheckCompatible3(x, xarg, y, yarg, z, zarg) \
@@ -26,19 +27,20 @@ typedef struct {
       PetscValidHeaderSpecific(x, VEC_CLASSID, xarg); \
       PetscValidHeaderSpecific(y, VEC_CLASSID, yarg); \
       PetscValidHeaderSpecific(z, VEC_CLASSID, zarg); \
+      PetscCheckTypeName(x, VECNEST); \
       PetscCheckSameComm(x, xarg, y, yarg); \
+      PetscCheckSameType(x, xarg, y, yarg); \
       PetscCheckSameComm(x, xarg, z, zarg); \
-      PetscCheck(((Vec_Nest *)x->data)->setup_called, PetscObjectComm((PetscObject)w), PETSC_ERR_ARG_WRONG, "Nest vector argument %d not setup.", xarg); \
-      PetscCheck(((Vec_Nest *)y->data)->setup_called, PetscObjectComm((PetscObject)w), PETSC_ERR_ARG_WRONG, "Nest vector argument %d not setup.", yarg); \
-      PetscCheck(((Vec_Nest *)z->data)->setup_called, PetscObjectComm((PetscObject)w), PETSC_ERR_ARG_WRONG, "Nest vector argument %d not setup.", zarg); \
-      PetscCheck(((Vec_Nest *)x->data)->nb == ((Vec_Nest *)y->data)->nb, PetscObjectComm((PetscObject)w), PETSC_ERR_ARG_WRONG, "Nest vector arguments %d and %d have different numbers of blocks.", xarg, yarg); \
-      PetscCheck(((Vec_Nest *)x->data)->nb == ((Vec_Nest *)z->data)->nb, PetscObjectComm((PetscObject)w), PETSC_ERR_ARG_WRONG, "Nest vector arguments %d and %d have different numbers of blocks.", xarg, zarg); \
+      PetscCheckSameType(x, xarg, z, zarg); \
+      PetscCheck(((Vec_Nest *)(x)->data)->setup_called, PetscObjectComm((PetscObject)(x)), PETSC_ERR_ARG_WRONG, "Nest vector argument %d not setup.", xarg); \
+      PetscCheck(((Vec_Nest *)(y)->data)->setup_called, PetscObjectComm((PetscObject)(y)), PETSC_ERR_ARG_WRONG, "Nest vector argument %d not setup.", yarg); \
+      PetscCheck(((Vec_Nest *)(z)->data)->setup_called, PetscObjectComm((PetscObject)(z)), PETSC_ERR_ARG_WRONG, "Nest vector argument %d not setup.", zarg); \
+      PetscCheck(((Vec_Nest *)(x)->data)->nb == ((Vec_Nest *)(y)->data)->nb, PetscObjectComm((PetscObject)(x)), PETSC_ERR_ARG_WRONG, "Nest vector arguments %d and %d have different numbers of blocks.", xarg, yarg); \
+      PetscCheck(((Vec_Nest *)(x)->data)->nb == ((Vec_Nest *)(z)->data)->nb, PetscObjectComm((PetscObject)(x)), PETSC_ERR_ARG_WRONG, "Nest vector arguments %d and %d have different numbers of blocks.", xarg, zarg); \
     } while (0)
 #else
 template <typename Tv>
-void VecNestCheckCompatible2(Tv, int, Tv, int);
+extern void VecNestCheckCompatible2(Tv, int, Tv, int);
 template <typename Tv>
-void VecNestCheckCompatible3(Tv, int, Tv, int, Tv, int);
+extern void VecNestCheckCompatible3(Tv, int, Tv, int, Tv, int);
 #endif
-
-#endif // PETSC_VECNESTIMPL_H

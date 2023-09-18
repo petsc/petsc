@@ -8,7 +8,7 @@
 #include <engine.h> /* MATLAB include file */
 #include <mex.h>    /* MATLAB include file */
 
-PETSC_EXTERN mxArray *MatSeqAIJToMatlab(Mat B)
+static mxArray *MatSeqAIJToMatlab(Mat B)
 {
   Mat_SeqAIJ *aij = (Mat_SeqAIJ *)B->data;
   mwIndex    *ii, *jj;
@@ -37,7 +37,7 @@ PETSC_EXTERN PetscErrorCode MatlabEnginePut_SeqAIJ(PetscObject obj, void *mengin
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PETSC_EXTERN PetscErrorCode MatSeqAIJFromMatlab(mxArray *mmat, Mat mat)
+static PetscErrorCode MatSeqAIJFromMatlab(mxArray *mmat, Mat mat)
 {
   PetscInt    nz, n, m, *i, *j, k;
   mwIndex     nnz, nn, nm, *ii, *jj;
@@ -96,7 +96,7 @@ PETSC_EXTERN PetscErrorCode MatlabEngineGet_SeqAIJ(PetscObject obj, void *mengin
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatSolve_Matlab(Mat A, Vec b, Vec x)
+static PetscErrorCode MatSolve_Matlab(Mat A, Vec b, Vec x)
 {
   const char *_A, *_b, *_x;
 
@@ -116,7 +116,7 @@ PetscErrorCode MatSolve_Matlab(Mat A, Vec b, Vec x)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatLUFactorNumeric_Matlab(Mat F, Mat A, const MatFactorInfo *info)
+static PetscErrorCode MatLUFactorNumeric_Matlab(Mat F, Mat A, const MatFactorInfo *info)
 {
   size_t    len;
   char     *_A, *name;
@@ -156,7 +156,7 @@ PetscErrorCode MatLUFactorNumeric_Matlab(Mat F, Mat A, const MatFactorInfo *info
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatLUFactorSymbolic_Matlab(Mat F, Mat A, IS r, IS c, const MatFactorInfo *info)
+static PetscErrorCode MatLUFactorSymbolic_Matlab(Mat F, Mat A, IS r, IS c, const MatFactorInfo *info)
 {
   PetscFunctionBegin;
   PetscCheck(A->cmap->N == A->rmap->N, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "matrix must be square");
@@ -165,14 +165,14 @@ PetscErrorCode MatLUFactorSymbolic_Matlab(Mat F, Mat A, IS r, IS c, const MatFac
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatFactorGetSolverType_seqaij_matlab(Mat A, MatSolverType *type)
+static PetscErrorCode MatFactorGetSolverType_seqaij_matlab(Mat A, MatSolverType *type)
 {
   PetscFunctionBegin;
   *type = MATSOLVERMATLAB;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatDestroy_matlab(Mat A)
+static PetscErrorCode MatDestroy_matlab(Mat A)
 {
   const char *_A;
 
@@ -183,7 +183,7 @@ PetscErrorCode MatDestroy_matlab(Mat A)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_matlab(Mat A, MatFactorType ftype, Mat *F)
+static PetscErrorCode MatGetFactor_seqaij_matlab(Mat A, MatFactorType ftype, Mat *F)
 {
   PetscFunctionBegin;
   PetscCheck(A->cmap->N == A->rmap->N, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "matrix must be square");
@@ -213,29 +213,6 @@ PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_Matlab(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatView_Info_Matlab(Mat A, PetscViewer viewer)
-{
-  PetscFunctionBegin;
-  PetscCall(PetscViewerASCIIPrintf(viewer, "MATLAB run parameters:  -- not written yet!\n"));
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-PetscErrorCode MatView_Matlab(Mat A, PetscViewer viewer)
-{
-  PetscBool iascii;
-
-  PetscFunctionBegin;
-  PetscCall(MatView_SeqAIJ(A, viewer));
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
-  if (iascii) {
-    PetscViewerFormat format;
-
-    PetscCall(PetscViewerGetFormat(viewer, &format));
-    if (format == PETSC_VIEWER_ASCII_FACTOR_INFO) PetscCall(MatView_Info_Matlab(A, viewer));
-  }
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
 /*MC
   MATSOLVERMATLAB - "matlab" - Providing direct solver LU for `MATSEQAIJ` matrix via the external package MATLAB.
 
@@ -246,5 +223,5 @@ PetscErrorCode MatView_Matlab(Mat A, PetscViewer viewer)
 
   Level: beginner
 
-.seealso: [](chapter_matrices), `Mat`, `PCLU`, `PCFactorSetMatSolverType()`, `MatSolverType`
+.seealso: [](ch_matrices), `Mat`, `PCLU`, `PCFactorSetMatSolverType()`, `MatSolverType`
 M*/

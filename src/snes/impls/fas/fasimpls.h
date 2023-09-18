@@ -1,5 +1,4 @@
-#ifndef PETSC_SNES_FASIMPLS_H
-#define PETSC_SNES_FASIMPLS_H
+#pragma once
 
 #include <petsc/private/snesimpl.h>
 #include <petsc/private/linesearchimpl.h>
@@ -47,5 +46,3 @@ typedef struct {
 } SNES_FAS;
 
 PETSC_INTERN PetscErrorCode SNESFASCycleCreateSmoother_Private(SNES, SNES *);
-
-#endif // PETSC_SNES_FASIMPLS_H

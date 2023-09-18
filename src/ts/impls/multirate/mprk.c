@@ -49,14 +49,14 @@ typedef struct {
   Vec         *Y; /* States computed during the step                           */
   Vec         *YdotRHS;
   Vec         *YdotRHS_slow;         /* Function evaluations by slow tableau for slow components  */
-  Vec         *YdotRHS_slowbuffer;   /* Function evaluations by slow tableau for slow components  */
-  Vec         *YdotRHS_medium;       /* Function evaluations by slow tableau for slow components  */
-  Vec         *YdotRHS_mediumbuffer; /* Function evaluations by slow tableau for slow components  */
+  Vec         *YdotRHS_slowbuffer;   /* Function evaluations by medium tableau for slow components  */
+  Vec         *YdotRHS_medium;       /* Function evaluations by medium tableau for medium components*/
+  Vec         *YdotRHS_mediumbuffer; /* Function evaluations by fast tableau for medium components  */
   Vec         *YdotRHS_fast;         /* Function evaluations by fast tableau for fast components  */
   PetscScalar *work_slow;            /* Scalar work_slow by slow tableau                          */
   PetscScalar *work_slowbuffer;      /* Scalar work_slow by slow tableau                          */
   PetscScalar *work_medium;          /* Scalar work_slow by medium tableau                        */
-  PetscScalar *work_mediumbuffer;    /* Scalar work_slow by medium tableau                        */
+  PetscScalar *work_mediumbuffer;    /* Scalar work_mediumbuffer by fast tableau                          */
   PetscScalar *work_fast;            /* Scalar work_fast by fast tableau                          */
   PetscReal    stage_time;
   TSStepStatus status;
@@ -136,7 +136,7 @@ static PetscErrorCode TSMPRKGenerateTableau3(PetscInt ratio, PetscInt s, const P
 
      Level: advanced
 
-.seealso: [](chapter_ts), `TSMPRK`, `TSMPRKType`, `TSMPRKSetType()`
+.seealso: [](ch_ts), `TSMPRK`, `TSMPRKType`, `TSMPRKSetType()`
 M*/
 /*MC
      TSMPRK2A23 - Second Order Multirate Partitioned Runge-Kutta scheme based on RK2A.
@@ -149,7 +149,7 @@ M*/
 
      Level: advanced
 
-.seealso: [](chapter_ts), `TSMPRK`, `TSMPRKType`, `TSMPRKSetType()`
+.seealso: [](ch_ts), `TSMPRK`, `TSMPRKType`, `TSMPRKSetType()`
 M*/
 /*MC
      TSMPRK2A32 - Second Order Multirate Partitioned Runge-Kutta scheme based on RK2A.
@@ -162,7 +162,7 @@ M*/
 
      Level: advanced
 
-.seealso: [](chapter_ts), `TSMPRK`, `TSMPRKType`, `TSMPRKSetType()`
+.seealso: [](ch_ts), `TSMPRK`, `TSMPRKType`, `TSMPRKSetType()`
 M*/
 /*MC
      TSMPRK2A33 - Second Order Multirate Partitioned Runge-Kutta scheme based on RK2A.
@@ -175,7 +175,7 @@ M*/
 
      Level: advanced
 
-.seealso: [](chapter_ts), `TSMPRK`, `TSMPRKType`, `TSMPRKSetType()`
+.seealso: [](ch_ts), `TSMPRK`, `TSMPRKType`, `TSMPRKSetType()`
 M*/
 /*MC
      TSMPRK3P2M - Third Order Multirate Partitioned Runge-Kutta scheme.
@@ -187,7 +187,7 @@ M*/
 
      Level: advanced
 
-.seealso: [](chapter_ts), `TSMPRK`, `TSMPRKType`, `TSMPRKSetType()`
+.seealso: [](ch_ts), `TSMPRK`, `TSMPRKType`, `TSMPRKSetType()`
 M*/
 /*MC
      TSMPRKP2 - Second Order Multirate Partitioned Runge-Kutta scheme.
@@ -199,7 +199,7 @@ M*/
 
      Level: advanced
 
-.seealso: [](chapter_ts), `TSMPRK`, `TSMPRKType`, `TSMPRKSetType()`
+.seealso: [](ch_ts), `TSMPRK`, `TSMPRKType`, `TSMPRKSetType()`
 M*/
 /*MC
      TSMPRKP3 - Third Order Multirate Partitioned Runge-Kutta scheme.
@@ -211,7 +211,7 @@ M*/
 
      Level: advanced
 
-.seealso: [](chapter_ts), `TSMPRK`, `TSMPRKType`, `TSMPRKSetType()`
+.seealso: [](ch_ts), `TSMPRK`, `TSMPRKType`, `TSMPRKSetType()`
 M*/
 
 /*@C
@@ -221,7 +221,7 @@ M*/
 
   Level: advanced
 
-.seealso: [](chapter_ts), `TSMPRK`, `TSMPRKRegisterDestroy()`
+.seealso: [](ch_ts), `TSMPRK`, `TSMPRKRegisterDestroy()`
 @*/
 PetscErrorCode TSMPRKRegisterAll(void)
 {
@@ -368,13 +368,13 @@ PetscErrorCode TSMPRKRegisterAll(void)
 }
 
 /*@C
-   TSMPRKRegisterDestroy - Frees the list of schemes that were registered by `TSMPRKRegister()`.
+  TSMPRKRegisterDestroy - Frees the list of schemes that were registered by `TSMPRKRegister()`.
 
-   Not Collective
+  Not Collective
 
-   Level: advanced
+  Level: advanced
 
-.seealso: [](chapter_ts), `TSMPRK`, `TSMPRKRegister()`, `TSMPRKRegisterAll()`
+.seealso: [](ch_ts), `TSMPRK`, `TSMPRKRegister()`, `TSMPRKRegisterAll()`
 @*/
 PetscErrorCode TSMPRKRegisterDestroy(void)
 {
@@ -403,7 +403,7 @@ PetscErrorCode TSMPRKRegisterDestroy(void)
 
   Level: developer
 
-.seealso: [](chapter_ts), `TSMPRK`, `PetscInitialize()`
+.seealso: [](ch_ts), `TSMPRK`, `PetscInitialize()`
 @*/
 PetscErrorCode TSMPRKInitializePackage(void)
 {
@@ -421,7 +421,7 @@ PetscErrorCode TSMPRKInitializePackage(void)
 
   Level: developer
 
-.seealso: [](chapter_ts), `TSMPRK`, `PetscFinalize()`
+.seealso: [](ch_ts), `TSMPRK`, `PetscFinalize()`
 @*/
 PetscErrorCode TSMPRKFinalizePackage(void)
 {
@@ -432,29 +432,34 @@ PetscErrorCode TSMPRKFinalizePackage(void)
 }
 
 /*@C
-   TSMPRKRegister - register a `TSMPRK` scheme by providing the entries in the Butcher tableau
+  TSMPRKRegister - register a `TSMPRK` scheme by providing the entries in the Butcher tableau
 
-   Not Collective, but the same schemes should be registered on all processes on which they will be used
+  Not Collective, but the same schemes should be registered on all processes on which they will be used
 
-   Input Parameters:
-+  name - identifier for method
-.  order - approximation order of method
-.  sbase  - number of stages in the base methods
-.  ratio1 - stepsize ratio at 1st level (e.g. slow/medium)
-.  ratio2 - stepsize ratio at 2nd level (e.g. medium/fast)
-.  Af - stage coefficients for fast components(dimension s*s, row-major)
-.  bf - step completion table for fast components(dimension s)
-.  cf - abscissa for fast components(dimension s)
-.  As - stage coefficients for slow components(dimension s*s, row-major)
-.  bs - step completion table for slow components(dimension s)
--  cs - abscissa for slow components(dimension s)
+  Input Parameters:
++ name   - identifier for method
+. order  - approximation order of method
+. sbase  - number of stages in the base methods
+. ratio1 - stepsize ratio at 1st level (e.g. slow/medium)
+. ratio2 - stepsize ratio at 2nd level (e.g. medium/fast)
+. Asb    - stage coefficients for slow components(dimension s*s, row-major)
+. bsb    - step completion table for slow components(dimension s)
+. csb    - abscissa for slow components(dimension s)
+. rsb    - array of flags for repeated stages for slow components (dimension s)
+. Amb    - stage coefficients for medium components(dimension s*s, row-major)
+. bmb    - step completion table for medium components(dimension s)
+. cmb    - abscissa for medium components(dimension s)
+. rmb    - array of flags for repeated stages for medium components (dimension s)
+. Af     - stage coefficients for fast components(dimension s*s, row-major)
+. bf     - step completion table for fast components(dimension s)
+- cf     - abscissa for fast components(dimension s)
 
-   Level: advanced
+  Level: advanced
 
-   Note:
-   Several `TSMPRK` methods are provided, this function is only needed to create new methods.
+  Note:
+  Several `TSMPRK` methods are provided, this function is only needed to create new methods.
 
-.seealso: [](chapter_ts), `TSMPRK`
+.seealso: [](ch_ts), `TSMPRK`
 @*/
 PetscErrorCode TSMPRKRegister(TSMPRKType name, PetscInt order, PetscInt sbase, PetscInt ratio1, PetscInt ratio2, const PetscReal Asb[], const PetscReal bsb[], const PetscReal csb[], const PetscInt rsb[], const PetscReal Amb[], const PetscReal bmb[], const PetscReal cmb[], const PetscInt rmb[], const PetscReal Af[], const PetscReal bf[], const PetscReal cf[])
 {
@@ -463,18 +468,18 @@ PetscErrorCode TSMPRKRegister(TSMPRKType name, PetscInt order, PetscInt sbase, P
   PetscInt        s, i, j;
 
   PetscFunctionBegin;
-  PetscValidCharPointer(name, 1);
-  PetscValidRealPointer(Asb, 6);
-  if (bsb) PetscValidRealPointer(bsb, 7);
-  if (csb) PetscValidRealPointer(csb, 8);
-  if (rsb) PetscValidIntPointer(rsb, 9);
-  if (Amb) PetscValidRealPointer(Amb, 10);
-  if (bmb) PetscValidRealPointer(bmb, 11);
-  if (cmb) PetscValidRealPointer(cmb, 12);
-  if (rmb) PetscValidIntPointer(rmb, 13);
-  PetscValidRealPointer(Af, 14);
-  if (bf) PetscValidRealPointer(bf, 15);
-  if (cf) PetscValidRealPointer(cf, 16);
+  PetscAssertPointer(name, 1);
+  PetscAssertPointer(Asb, 6);
+  if (bsb) PetscAssertPointer(bsb, 7);
+  if (csb) PetscAssertPointer(csb, 8);
+  if (rsb) PetscAssertPointer(rsb, 9);
+  if (Amb) PetscAssertPointer(Amb, 10);
+  if (bmb) PetscAssertPointer(bmb, 11);
+  if (cmb) PetscAssertPointer(cmb, 12);
+  if (rmb) PetscAssertPointer(rmb, 13);
+  PetscAssertPointer(Af, 14);
+  if (bf) PetscAssertPointer(bf, 15);
+  if (cf) PetscAssertPointer(cf, 16);
 
   PetscCall(PetscNew(&link));
   t = &link->tab;
@@ -1141,21 +1146,21 @@ static PetscErrorCode TSLoad_MPRK(TS ts, PetscViewer viewer)
   Not Collective
 
   Input Parameters:
-+  ts - timestepping context
--  mprktype - type of `TSMPRK` scheme
++ ts       - timestepping context
+- mprktype - type of `TSMPRK` scheme
 
   Options Database Key:
-.   -ts_mprk_type - <pm2,p2,p3> - select the specific scheme
+. -ts_mprk_type - <pm2,p2,p3> - select the specific scheme
 
   Level: intermediate
 
-.seealso: [](chapter_ts), `TSMPRKGetType()`, `TSMPRK`, `TSMPRKType`
+.seealso: [](ch_ts), `TSMPRKGetType()`, `TSMPRK`, `TSMPRKType`
 @*/
 PetscErrorCode TSMPRKSetType(TS ts, TSMPRKType mprktype)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
-  PetscValidCharPointer(mprktype, 2);
+  PetscAssertPointer(mprktype, 2);
   PetscTryMethod(ts, "TSMPRKSetType_C", (TS, TSMPRKType), (ts, mprktype));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1166,14 +1171,14 @@ PetscErrorCode TSMPRKSetType(TS ts, TSMPRKType mprktype)
   Not Collective
 
   Input Parameter:
-.  ts - timestepping context
+. ts - timestepping context
 
   Output Parameter:
-.  mprktype - type of `TSMPRK` scheme
+. mprktype - type of `TSMPRK` scheme
 
   Level: intermediate
 
-.seealso: [](chapter_ts), `TSMPRKGetType()`, `TSMPRK`
+.seealso: [](ch_ts), `TSMPRK`
 @*/
 PetscErrorCode TSMPRKGetType(TS ts, TSMPRKType *mprktype)
 {
@@ -1249,7 +1254,7 @@ static PetscErrorCode TSDestroy_MPRK(TS ts)
   Note:
   The default is `TSMPRKPM2`, it can be changed with `TSMPRKSetType()` or -ts_mprk_type
 
-.seealso: [](chapter_ts), `TSCreate()`, `TS`, `TSSetType()`, `TSMPRKSetType()`, `TSMPRKGetType()`, `TSMPRKType`, `TSMPRKRegister()`, `TSMPRKSetMultirateType()`
+.seealso: [](ch_ts), `TSCreate()`, `TS`, `TSSetType()`, `TSMPRKSetType()`, `TSMPRKGetType()`, `TSMPRKType`, `TSMPRKRegister()`, `TSMPRKSetMultirateType()`
           `TSMPRKM2`, `TSMPRKM3`, `TSMPRKRFSMR3`, `TSMPRKRFSMR2`, `TSType`
 M*/
 PETSC_EXTERN PetscErrorCode TSCreate_MPRK(TS ts)

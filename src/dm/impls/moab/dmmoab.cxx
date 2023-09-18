@@ -58,15 +58,16 @@ PETSC_EXTERN PetscErrorCode DMLocatePoints_Moab(DM dm, Vec v, IS *cellIS);
 . comm - The communicator for the DMMoab object
 
   Output Parameter:
-. dmb  - The DMMoab object
+. dmb - The DMMoab object
 
   Level: beginner
 
+.seealso: `DMMoabCreateMoab()`
 @*/
 PetscErrorCode DMMoabCreate(MPI_Comm comm, DM *dmb)
 {
   PetscFunctionBegin;
-  PetscValidPointer(dmb, 2);
+  PetscAssertPointer(dmb, 2);
   PetscCall(DMCreate(comm, dmb));
   PetscCall(DMSetType(*dmb, DMMOAB));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -78,17 +79,18 @@ PetscErrorCode DMMoabCreate(MPI_Comm comm, DM *dmb)
   Collective
 
   Input Parameters:
-+ comm - The communicator for the DMMoab object
-. mbiface - (ptr to) the MOAB Instance; if passed in NULL, MOAB instance is created inside PETSc, and destroyed
++ comm     - The communicator for the DMMoab object
+. mbiface  - (ptr to) the MOAB Instance; if passed in NULL, MOAB instance is created inside PETSc, and destroyed
          along with the DMMoab
 . ltog_tag - A tag to use to retrieve global id for an entity; if 0, will use GLOBAL_ID_TAG_NAME/tag
-- range - If non-NULL, contains range of entities to which DOFs will be assigned
+- range    - If non-NULL, contains range of entities to which DOFs will be assigned
 
   Output Parameter:
-. dmb  - The DMMoab object
+. dmb - The DMMoab object
 
   Level: intermediate
 
+.seealso: `DMMoabCreate()`
 @*/
 PetscErrorCode DMMoabCreateMoab(MPI_Comm comm, moab::Interface *mbiface, moab::Tag *ltog_tag, moab::Range *range, DM *dmb)
 {
@@ -97,7 +99,7 @@ PetscErrorCode DMMoabCreateMoab(MPI_Comm comm, moab::Interface *mbiface, moab::T
   DM_Moab        *dmmoab;
 
   PetscFunctionBegin;
-  PetscValidPointer(dmb, 6);
+  PetscAssertPointer(dmb, 6);
 
   PetscCall(DMMoabCreate(comm, &dmmb));
   dmmoab = (DM_Moab *)(dmmb)->data;
@@ -172,6 +174,7 @@ PetscErrorCode DMMoabCreateMoab(MPI_Comm comm, moab::Interface *mbiface, moab::T
 
   Level: beginner
 
+.seealso: `DMMoabSetInterface()`
 @*/
 PetscErrorCode DMMoabGetParallelComm(DM dm, moab::ParallelComm **pcomm)
 {
@@ -194,6 +197,7 @@ PetscErrorCode DMMoabGetParallelComm(DM dm, moab::ParallelComm **pcomm)
 
   Level: beginner
 
+.seealso: `DMMoabGetInterface()`
 @*/
 PetscErrorCode DMMoabSetInterface(DM dm, moab::Interface *mbiface)
 {
@@ -201,7 +205,7 @@ PetscErrorCode DMMoabSetInterface(DM dm, moab::Interface *mbiface)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(mbiface, 2);
+  PetscAssertPointer(mbiface, 2);
 #ifdef MOAB_HAVE_MPI
   dmmoab->pcomm = NULL;
 #endif
@@ -216,13 +220,14 @@ PetscErrorCode DMMoabSetInterface(DM dm, moab::Interface *mbiface)
   Collective
 
   Input Parameter:
-. dm      - The DMMoab object being set
+. dm - The DMMoab object being set
 
   Output Parameter:
 . mbiface - The MOAB instance set on this DMMoab
 
   Level: beginner
 
+.seealso: `DMMoabSetInterface()`
 @*/
 PetscErrorCode DMMoabGetInterface(DM dm, moab::Interface **mbiface)
 {
@@ -248,6 +253,7 @@ PetscErrorCode DMMoabGetInterface(DM dm, moab::Interface **mbiface)
 
   Level: beginner
 
+.seealso: `DMMoabGetAllVertices()`
 @*/
 PetscErrorCode DMMoabSetLocalVertices(DM dm, moab::Range *range)
 {
@@ -294,13 +300,14 @@ PetscErrorCode DMMoabSetLocalVertices(DM dm, moab::Range *range)
   Collective
 
   Input Parameter:
-. dm    - The DMMoab object being set
+. dm - The DMMoab object being set
 
   Output Parameter:
-. owned - The local vertex entities in this DMMoab = (owned+ghosted)
+. local - The local vertex entities in this DMMoab = (owned+ghosted)
 
   Level: beginner
 
+.seealso: `DMMoabGetLocalVertices()`
 @*/
 PetscErrorCode DMMoabGetAllVertices(DM dm, moab::Range *local)
 {
@@ -316,7 +323,7 @@ PetscErrorCode DMMoabGetAllVertices(DM dm, moab::Range *local)
   Collective
 
   Input Parameter:
-. dm    - The DMMoab object being set
+. dm - The DMMoab object being set
 
   Output Parameters:
 + owned - The owned vertex entities in this DMMoab
@@ -324,6 +331,7 @@ PetscErrorCode DMMoabGetAllVertices(DM dm, moab::Range *local)
 
   Level: beginner
 
+.seealso: `DMMoabGetAllVertices()`
 @*/
 PetscErrorCode DMMoabGetLocalVertices(DM dm, const moab::Range **owned, const moab::Range **ghost)
 {
@@ -340,13 +348,14 @@ PetscErrorCode DMMoabGetLocalVertices(DM dm, const moab::Range **owned, const mo
   Collective
 
   Input Parameter:
-. dm    - The DMMoab object being set
+. dm - The DMMoab object being set
 
   Output Parameter:
 . range - The entities owned locally
 
   Level: beginner
 
+.seealso: `DMMoabSetLocalElements()`
 @*/
 PetscErrorCode DMMoabGetLocalElements(DM dm, const moab::Range **range)
 {
@@ -367,6 +376,7 @@ PetscErrorCode DMMoabGetLocalElements(DM dm, const moab::Range **range)
 
   Level: beginner
 
+.seealso: `DMMoabGetLocalElements()`
 @*/
 PetscErrorCode DMMoabSetLocalElements(DM dm, moab::Range *range)
 {
@@ -405,6 +415,7 @@ PetscErrorCode DMMoabSetLocalElements(DM dm, moab::Range *range)
 
   Level: beginner
 
+.seealso: `DMMoabGetLocalToGlobalTag()`
 @*/
 PetscErrorCode DMMoabSetLocalToGlobalTag(DM dm, moab::Tag ltogtag)
 {
@@ -420,13 +431,14 @@ PetscErrorCode DMMoabSetLocalToGlobalTag(DM dm, moab::Tag ltogtag)
   Collective
 
   Input Parameter:
-. dm      - The DMMoab object being set
+. dm - The DMMoab object being set
 
   Output Parameter:
-. ltogtag - The MOAB tag used for local to global ids
+. ltog_tag - The MOAB tag used for local to global ids
 
   Level: beginner
 
+.seealso: `DMMoabSetLocalToGlobalTag()`
 @*/
 PetscErrorCode DMMoabGetLocalToGlobalTag(DM dm, moab::Tag *ltog_tag)
 {
@@ -447,6 +459,7 @@ PetscErrorCode DMMoabGetLocalToGlobalTag(DM dm, moab::Tag *ltog_tag)
 
   Level: beginner
 
+.seealso: `DMMoabGetBlockSize()`
 @*/
 PetscErrorCode DMMoabSetBlockSize(DM dm, PetscInt bs)
 {
@@ -469,6 +482,7 @@ PetscErrorCode DMMoabSetBlockSize(DM dm, PetscInt bs)
 
   Level: beginner
 
+.seealso: `DMMoabSetBlockSize()`
 @*/
 PetscErrorCode DMMoabGetBlockSize(DM dm, PetscInt *bs)
 {
@@ -492,6 +506,7 @@ PetscErrorCode DMMoabGetBlockSize(DM dm, PetscInt *bs)
 
   Level: beginner
 
+.seealso: `DMMoabGetLocalSize()`
 @*/
 PetscErrorCode DMMoabGetSize(DM dm, PetscInt *neg, PetscInt *nvg)
 {
@@ -518,6 +533,7 @@ PetscErrorCode DMMoabGetSize(DM dm, PetscInt *neg, PetscInt *nvg)
 
   Level: beginner
 
+.seealso: `DMMoabGetSize()`
 @*/
 PetscErrorCode DMMoabGetLocalSize(DM dm, PetscInt *nel, PetscInt *neg, PetscInt *nvl, PetscInt *nvg)
 {
@@ -543,6 +559,7 @@ PetscErrorCode DMMoabGetLocalSize(DM dm, PetscInt *nel, PetscInt *neg, PetscInt 
 
   Level: beginner
 
+.seealso: `DMMoabGetDimension()`
 @*/
 PetscErrorCode DMMoabGetOffset(DM dm, PetscInt *offset)
 {
@@ -565,6 +582,7 @@ PetscErrorCode DMMoabGetOffset(DM dm, PetscInt *offset)
 
   Level: beginner
 
+.seealso: `DMMoabGetOffset()`
 @*/
 PetscErrorCode DMMoabGetDimension(DM dm, PetscInt *dim)
 {
@@ -584,10 +602,11 @@ PetscErrorCode DMMoabGetDimension(DM dm, PetscInt *dim)
 . dm - The DMMoab object being set
 
   Output Parameter:
-. nvg - The current mesh hierarchy level
+. nlevel - The current mesh hierarchy level
 
   Level: beginner
 
+.seealso: `DMMoabGetMaterialBlock()`
 @*/
 PetscErrorCode DMMoabGetHierarchyLevel(DM dm, PetscInt *nlevel)
 {
@@ -603,7 +622,7 @@ PetscErrorCode DMMoabGetHierarchyLevel(DM dm, PetscInt *nlevel)
   Collective
 
   Input Parameters:
-+ dm - The DMMoab object
++ dm      - The DMMoab object
 - ehandle - The element entity handle
 
   Output Parameter:
@@ -611,6 +630,7 @@ PetscErrorCode DMMoabGetHierarchyLevel(DM dm, PetscInt *nlevel)
 
   Level: beginner
 
+.seealso: `DMMoabGetHierarchyLevel()`
 @*/
 PetscErrorCode DMMoabGetMaterialBlock(DM dm, const moab::EntityHandle ehandle, PetscInt *mat)
 {
@@ -631,9 +651,9 @@ PetscErrorCode DMMoabGetMaterialBlock(DM dm, const moab::EntityHandle ehandle, P
   Collective
 
   Input Parameters:
-+ dm - The DMMoab object
++ dm    - The DMMoab object
 . nconn - Number of entities whose coordinates are needed
-- conn - The vertex entity handles
+- conn  - The vertex entity handles
 
   Output Parameter:
 . vpos - The coordinates of the requested vertex entities
@@ -649,8 +669,8 @@ PetscErrorCode DMMoabGetVertexCoordinates(DM dm, PetscInt nconn, const moab::Ent
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(conn, 3);
-  PetscValidPointer(vpos, 4);
+  PetscAssertPointer(conn, 3);
+  PetscAssertPointer(vpos, 4);
   dmmoab = (DM_Moab *)(dm)->data;
 
   /* Get connectivity information in MOAB canonical ordering */
@@ -670,12 +690,12 @@ PetscErrorCode DMMoabGetVertexCoordinates(DM dm, PetscInt nconn, const moab::Ent
   Collective
 
   Input Parameters:
-+ dm - The DMMoab object
++ dm      - The DMMoab object
 - vhandle - Vertex entity handle
 
   Output Parameters:
 + nconn - Number of entities whose coordinates are needed
-- conn - The vertex entity handles
+- conn  - The vertex entity handles
 
   Level: beginner
 
@@ -689,7 +709,7 @@ PetscErrorCode DMMoabGetVertexConnectivity(DM dm, moab::EntityHandle vhandle, Pe
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(conn, 4);
+  PetscAssertPointer(conn, 4);
   dmmoab = (DM_Moab *)(dm)->data;
 
   /* Get connectivity information in MOAB canonical ordering */
@@ -712,10 +732,10 @@ PetscErrorCode DMMoabGetVertexConnectivity(DM dm, moab::EntityHandle vhandle, Pe
   Collective
 
   Input Parameters:
-+ dm - The DMMoab object
-. vhandle - Vertex entity handle
-. nconn - Number of entities whose coordinates are needed
-- conn - The vertex entity handles
++ dm      - The DMMoab object
+. ehandle - Vertex entity handle
+. nconn   - Number of entities whose coordinates are needed
+- conn    - The vertex entity handles
 
   Level: beginner
 
@@ -725,7 +745,7 @@ PetscErrorCode DMMoabRestoreVertexConnectivity(DM dm, moab::EntityHandle ehandle
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(conn, 4);
+  PetscAssertPointer(conn, 4);
 
   if (conn) PetscCall(PetscFree(*conn));
   if (nconn) *nconn = 0;
@@ -738,12 +758,12 @@ PetscErrorCode DMMoabRestoreVertexConnectivity(DM dm, moab::EntityHandle ehandle
   Collective
 
   Input Parameters:
-+ dm - The DMMoab object
++ dm      - The DMMoab object
 - ehandle - Vertex entity handle
 
   Output Parameters:
 + nconn - Number of entities whose coordinates are needed
-- conn - The vertex entity handles
+- conn  - The vertex entity handles
 
   Level: beginner
 
@@ -759,7 +779,7 @@ PetscErrorCode DMMoabGetElementConnectivity(DM dm, moab::EntityHandle ehandle, P
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(conn, 4);
+  PetscAssertPointer(conn, 4);
   dmmoab = (DM_Moab *)(dm)->data;
 
   /* Get connectivity information in MOAB canonical ordering */
@@ -776,7 +796,7 @@ PetscErrorCode DMMoabGetElementConnectivity(DM dm, moab::EntityHandle ehandle, P
   Collective
 
   Input Parameters:
-+ dm - The DMMoab object
++ dm  - The DMMoab object
 - ent - Entity handle
 
   Output Parameter:
@@ -794,7 +814,7 @@ PetscErrorCode DMMoabIsEntityOnBoundary(DM dm, const moab::EntityHandle ent, Pet
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(ent_on_boundary, 3);
+  PetscAssertPointer(ent_on_boundary, 3);
   dmmoab = (DM_Moab *)(dm)->data;
 
   /* get the entity type and handle accordingly */
@@ -821,9 +841,9 @@ PetscErrorCode DMMoabIsEntityOnBoundary(DM dm, const moab::EntityHandle ent, Pet
   DMMoabCheckBoundaryVertices - Check whether a given entity is on the boundary (vertex, edge, face, element)
 
   Input Parameters:
-+ dm - The DMMoab object
++ dm    - The DMMoab object
 . nconn - Number of handles
-- cnt - Array of entity handles
+- cnt   - Array of entity handles
 
   Output Parameter:
 . isbdvtx - Array of boundary markers - PETSC_TRUE if entity on boundary; PETSC_FALSE otherwise
@@ -839,8 +859,8 @@ PetscErrorCode DMMoabCheckBoundaryVertices(DM dm, PetscInt nconn, const moab::En
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(cnt, 3);
-  PetscValidPointer(isbdvtx, 4);
+  PetscAssertPointer(cnt, 3);
+  PetscAssertPointer(isbdvtx, 4);
   dmmoab = (DM_Moab *)(dm)->data;
 
   for (i = 0; i < nconn; ++i) isbdvtx[i] = (dmmoab->bndyvtx->index(cnt[i]) >= 0 ? PETSC_TRUE : PETSC_FALSE);
@@ -854,7 +874,7 @@ PetscErrorCode DMMoabCheckBoundaryVertices(DM dm, PetscInt nconn, const moab::En
 . dm - The DMMoab object
 
   Output Parameters:
-+ bdvtx - Boundary vertices
++ bdvtx   - Boundary vertices
 . bdelems - Boundary elements
 - bdfaces - Boundary faces
 
@@ -1204,7 +1224,7 @@ PETSC_EXTERN PetscErrorCode DMSetUp_Moab(DM dm)
     moab::Range msets;
     merr = dmmoab->mbiface->get_entities_by_type_and_tag(dmmoab->fileset, moab::MBENTITYSET, &dmmoab->material_tag, NULL, 1, msets, moab::Interface::UNION);
     MBERRNM(merr);
-    if (msets.size() == 0) PetscCall(PetscInfo(NULL, "No material sets found in the fileset."));
+    if (msets.size() == 0) PetscCall(PetscInfo(NULL, "No material sets found in the fileset.\n"));
 
     for (unsigned i = 0; i < msets.size(); ++i) {
       moab::Range msetelems;
@@ -1234,13 +1254,12 @@ PETSC_EXTERN PetscErrorCode DMSetUp_Moab(DM dm)
   Collective
 
   Input Parameters:
-+ dm - The DM object
-. type - The type of element to create and add (Edge/Tri/Quad/Tet/Hex/Prism/Pyramid/Polygon/Polyhedra)
-. conn - The connectivity of the element
++ dm     - The `DM` object
+. coords - The connectivity of the element
 - nverts - The number of vertices that form the element
 
   Output Parameter:
-. overts  - The list of vertices that were created (can be NULL)
+. overts - The list of vertices that were created (can be NULL)
 
   Level: beginner
 
@@ -1254,7 +1273,7 @@ PetscErrorCode DMMoabCreateVertices(DM dm, const PetscReal *coords, PetscInt nve
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(coords, 2);
+  PetscAssertPointer(coords, 2);
 
   dmmoab = (DM_Moab *)dm->data;
 
@@ -1274,13 +1293,13 @@ PetscErrorCode DMMoabCreateVertices(DM dm, const PetscReal *coords, PetscInt nve
   Collective
 
   Input Parameters:
-+ dm - The DM object
-. type - The type of element to create and add (Edge/Tri/Quad/Tet/Hex/Prism/Pyramid/Polygon/Polyhedra)
-. conn - The connectivity of the element
++ dm     - The DM object
+. type   - The type of element to create and add (Edge/Tri/Quad/Tet/Hex/Prism/Pyramid/Polygon/Polyhedra)
+. conn   - The connectivity of the element
 - nverts - The number of vertices that form the element
 
   Output Parameter:
-. oelem  - The handle to the element created and added to the DM object
+. oelem - The handle to the element created and added to the DM object
 
   Level: beginner
 
@@ -1294,7 +1313,7 @@ PetscErrorCode DMMoabCreateElement(DM dm, const moab::EntityType type, const moa
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(conn, 3);
+  PetscAssertPointer(conn, 3);
 
   dmmoab = (DM_Moab *)dm->data;
 
@@ -1319,7 +1338,7 @@ PetscErrorCode DMMoabCreateElement(DM dm, const moab::EntityType type, const moa
 . dm - The DM object
 
   Output Parameter:
-. newdm  - The sub DM object with updated set information
+. newdm - The sub DM object with updated set information
 
   Level: advanced
 

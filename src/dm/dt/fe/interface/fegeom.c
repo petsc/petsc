@@ -10,11 +10,11 @@
 - faceData - Flag to construct geometry data for the faces
 
   Output Parameter:
-. geom     - The `PetscFEGeom` object
+. geom - The `PetscFEGeom` object
 
   Level: beginner
 
-.seealso: `PetscFEGeom`, `PetscQuadrature`, `PetscFEGeom`, `PetscFEGeomDestroy()`, `PetscFEGeomComplete()`
+.seealso: `PetscFEGeom`, `PetscQuadrature`, `PetscFEGeomDestroy()`, `PetscFEGeomComplete()`
 @*/
 PetscErrorCode PetscFEGeomCreate(PetscQuadrature quad, PetscInt numCells, PetscInt dimEmbed, PetscBool faceData, PetscFEGeom **geom)
 {
@@ -88,8 +88,8 @@ PetscErrorCode PetscFEGeomGetChunk(PetscFEGeom *geom, PetscInt cStart, PetscInt 
   PetscInt dE;
 
   PetscFunctionBegin;
-  PetscValidPointer(geom, 1);
-  PetscValidPointer(chunkGeom, 4);
+  PetscAssertPointer(geom, 1);
+  PetscAssertPointer(chunkGeom, 4);
   if (!(*chunkGeom)) PetscCall(PetscNew(chunkGeom));
   Nq                        = geom->numPoints;
   dE                        = geom->dimEmbed;
@@ -189,9 +189,9 @@ PetscErrorCode PetscFEGeomGetPoint(PetscFEGeom *geom, PetscInt c, PetscInt p, co
   PetscFEGeomGetCellPoint - Get the cell geometry for face f at point p as a `PetscFEGeom`
 
   Input Parameters:
-+ geom    - `PetscFEGeom` object
-. f       - The face
-- p       - The point
++ geom - `PetscFEGeom` object
+. c    - The face
+- p    - The point
 
   Output Parameter:
 . pgeom - The cell geometry of face f at point p

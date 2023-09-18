@@ -1,0 +1,35 @@
+DM Object: box 4 MPI processes
+  type: plex
+box in 3 dimensions:
+  Number of 0-cells per rank: 125 125 125 125
+  Number of 1-cells per rank: 300 300 300 300
+  Number of 2-cells per rank: 240 240 240 240
+  Number of 3-cells per rank: 64 64 64 64
+Labels:
+  celltype: 4 strata with value/size (0 (125), 1 (300), 4 (240), 7 (64))
+  depth: 4 strata with value/size (0 (125), 1 (300), 2 (240), 3 (64))
+  marker: 1 strata with value/size (1 (281))
+  Face Sets: 4 strata with value/size (1 (49), 2 (49), 3 (49), 6 (49))
+Number equations N = 1575
+    0 KSP Residual norm 9.464430422668e+00 
+    1 KSP Residual norm 2.119555389121e+00 
+    2 KSP Residual norm 3.449574464593e-01 
+    3 KSP Residual norm 6.854715256451e-02 
+    4 KSP Residual norm 1.236247264833e-02 
+    5 KSP Residual norm 2.196340660191e-03 
+    6 KSP Residual norm 4.928951839821e-04 
+    7 KSP Residual norm 1.182431462421e-04 
+    8 KSP Residual norm 2.533711612586e-05 
+    9 KSP Residual norm 4.968254694338e-06 
+  Linear solve converged due to CONVERGED_RTOL iterations 9
+    0 KSP Residual norm 9.464430422668e+00 
+    1 KSP Residual norm 2.119555389121e+00 
+    2 KSP Residual norm 3.449574464593e-01 
+    3 KSP Residual norm 6.854715256451e-02 
+    4 KSP Residual norm 1.236247264833e-02 
+    5 KSP Residual norm 2.196340660191e-03 
+    6 KSP Residual norm 4.928951839821e-04 
+    7 KSP Residual norm 1.182431462421e-04 
+    8 KSP Residual norm 2.533711612586e-05 
+    9 KSP Residual norm 4.968254694338e-06 
+  Linear solve converged due to CONVERGED_RTOL iterations 9

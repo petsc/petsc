@@ -3,7 +3,7 @@
 
 #include <petsc/private/dmstagimpl.h>
 
-/*@C
+/*
   DMStagDuplicateWithoutSetup - duplicate a `DMSTAG` object without setting it up
 
   Collective
@@ -27,10 +27,8 @@
   don't usually seem to respect their "comm" arguments). This function could be
   pushed up to the general `DM` API (and perhaps given a different name).
 
-  This is an internal function but we provide a man page in case it's made public
-
-.seealso: [](chapter_stag), `DMSTAG`, `DM`, `DMClone()`, `DMStagCreateCompatibleDMStag()`, `DMCoarsen()`, `DMRefine()`
-@*/
+.seealso: [](ch_stag), `DMSTAG`, `DM`, `DMClone()`, `DMStagCreateCompatibleDMStag()`, `DMCoarsen()`, `DMRefine()`
+*/
 PetscErrorCode DMStagDuplicateWithoutSetup(DM dm, MPI_Comm comm, DM *newdm)
 {
   DM_Stag *const stag = (DM_Stag *)dm->data;

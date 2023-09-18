@@ -1,8 +1,7 @@
 /*
   DMFOREST, for parallel, hierarchically refined, distributed mesh problems.
 */
-#ifndef PETSCDMFOREST_H
-#define PETSCDMFOREST_H
+#pragma once
 
 #include <petscdm.h>
 
@@ -107,9 +106,6 @@ PETSC_EXTERN PetscErrorCode DMForestGetCellWeightFactor(DM, PetscReal *);
 PETSC_EXTERN PetscErrorCode DMForestSetWeightCapacity(DM, PetscReal);
 PETSC_EXTERN PetscErrorCode DMForestGetWeightCapacity(DM, PetscReal *);
 
-PETSC_EXTERN PetscErrorCode DMForestGetFineProjector(DM, Mat *);
-PETSC_EXTERN PetscErrorCode DMForestGetCoarseRestrictor(DM, Mat *);
-
 /* miscellaneous */
 PETSC_EXTERN PetscErrorCode DMForestTemplate(DM, MPI_Comm, DM *);
 
@@ -122,5 +118,3 @@ PETSC_EXTERN PetscErrorCode DMP4estGetPartitionForCoarsening(DM, PetscBool *);
 PETSC_EXTERN PetscErrorCode DMP4estSetPartitionForCoarsening(DM, PetscBool);
 PETSC_EXTERN PetscErrorCode DMP8estGetPartitionForCoarsening(DM, PetscBool *);
 PETSC_EXTERN PetscErrorCode DMP8estSetPartitionForCoarsening(DM, PetscBool);
-
-#endif

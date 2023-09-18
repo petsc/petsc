@@ -23,30 +23,30 @@ PETSC_EXTERN PetscErrorCode TSGLLEAdaptCreate_Size(TSGLLEAdapt);
 PETSC_EXTERN PetscErrorCode TSGLLEAdaptCreate_Both(TSGLLEAdapt);
 
 /*@C
-   TSGLLEAdaptRegister -  adds a `TSGLLEAdapt` implementation
+  TSGLLEAdaptRegister -  adds a `TSGLLEAdapt` implementation
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  sname - name of user-defined adaptivity scheme
--  function - routine to create method context
+  Input Parameters:
++ sname    - name of user-defined adaptivity scheme
+- function - routine to create method context
 
-   Level: advanced
+  Level: advanced
 
-   Note:
-   `TSGLLEAdaptRegister()` may be called multiple times to add several user-defined families.
+  Note:
+  `TSGLLEAdaptRegister()` may be called multiple times to add several user-defined families.
 
-   Sample usage:
+  Example Usage:
 .vb
-   TSGLLEAdaptRegister("my_scheme",MySchemeCreate);
+   TSGLLEAdaptRegister("my_scheme", MySchemeCreate);
 .ve
 
-   Then, your scheme can be chosen with the procedural interface via
-$     TSGLLEAdaptSetType(ts,"my_scheme")
-   or at runtime via the option
+  Then, your scheme can be chosen with the procedural interface via
+$     TSGLLEAdaptSetType(ts, "my_scheme")
+  or at runtime via the option
 $     -ts_adapt_type my_scheme
 
-.seealso: [](chapter_ts), `TSGLLE`, `TSGLLEAdapt`, `TSGLLEAdaptRegisterAll()`
+.seealso: [](ch_ts), `TSGLLE`, `TSGLLEAdapt`, `TSGLLEAdaptRegisterAll()`
 @*/
 PetscErrorCode TSGLLEAdaptRegister(const char sname[], PetscErrorCode (*function)(TSGLLEAdapt))
 {
@@ -63,7 +63,7 @@ PetscErrorCode TSGLLEAdaptRegister(const char sname[], PetscErrorCode (*function
 
   Level: advanced
 
-.seealso: [](chapter_ts), `TSGLLEAdapt`, `TSGLLE`, `TSGLLEAdaptRegisterDestroy()`
+.seealso: [](ch_ts), `TSGLLEAdapt`, `TSGLLE`, `TSGLLEAdaptRegisterDestroy()`
 @*/
 PetscErrorCode TSGLLEAdaptRegisterAll(void)
 {
@@ -77,12 +77,12 @@ PetscErrorCode TSGLLEAdaptRegisterAll(void)
 }
 
 /*@C
-  TSGLLEFinalizePackage - This function destroys everything in the `TSGLLE` package. It is
+  TSGLLEAdaptFinalizePackage - This function destroys everything in the `TSGLLE` package. It is
   called from `PetscFinalize()`.
 
   Level: developer
 
-.seealso: [](chapter_ts), `PetscFinalize()`, `TSGLLEAdapt`, `TSGLLEAdaptInitializePackage()`
+.seealso: [](ch_ts), `PetscFinalize()`, `TSGLLEAdapt`, `TSGLLEAdaptInitializePackage()`
 @*/
 PetscErrorCode TSGLLEAdaptFinalizePackage(void)
 {
@@ -99,7 +99,7 @@ PetscErrorCode TSGLLEAdaptFinalizePackage(void)
 
   Level: developer
 
-.seealso: [](chapter_ts), `PetscInitialize()`, `TSGLLEAdapt`, `TSGLLEAdaptFinalizePackage()`
+.seealso: [](ch_ts), `PetscInitialize()`, `TSGLLEAdapt`, `TSGLLEAdaptFinalizePackage()`
 @*/
 PetscErrorCode TSGLLEAdaptInitializePackage(void)
 {
@@ -183,12 +183,12 @@ PetscErrorCode TSGLLEAdaptChoose(TSGLLEAdapt adapt, PetscInt n, const PetscInt o
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(adapt, TSGLLEADAPT_CLASSID, 1);
-  PetscValidIntPointer(orders, 3);
-  PetscValidRealPointer(errors, 4);
-  PetscValidRealPointer(cost, 5);
-  PetscValidIntPointer(next_sc, 9);
-  PetscValidRealPointer(next_h, 10);
-  PetscValidBoolPointer(finish, 11);
+  PetscAssertPointer(orders, 3);
+  PetscAssertPointer(errors, 4);
+  PetscAssertPointer(cost, 5);
+  PetscAssertPointer(next_sc, 9);
+  PetscAssertPointer(next_h, 10);
+  PetscAssertPointer(finish, 11);
   PetscUseTypeMethod(adapt, choose, n, orders, errors, cost, cur, h, tleft, next_sc, next_h, finish);
   PetscFunctionReturn(PETSC_SUCCESS);
 }

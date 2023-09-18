@@ -101,7 +101,7 @@ static PetscErrorCode ISL2GCompose(IS is, ISLocalToGlobalMapping ltog, ISLocalTo
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is, IS_CLASSID, 1);
   PetscValidHeaderSpecific(ltog, IS_LTOGM_CLASSID, 2);
-  PetscValidPointer(cltog, 3);
+  PetscAssertPointer(cltog, 3);
   PetscCall(PetscObjectTypeCompare((PetscObject)is, ISBLOCK, &isblock));
   if (isblock) {
     PetscInt lbs;
@@ -141,7 +141,7 @@ static PetscErrorCode ISL2GComposeBlock(IS is, ISLocalToGlobalMapping ltog, ISLo
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is, IS_CLASSID, 1);
   PetscValidHeaderSpecific(ltog, IS_LTOGM_CLASSID, 2);
-  PetscValidPointer(cltog, 3);
+  PetscAssertPointer(cltog, 3);
   PetscCall(ISBlockGetLocalSize(is, &m));
   PetscCall(ISBlockGetIndices(is, &idx));
   PetscCall(ISLocalToGlobalMappingGetBlockSize(ltog, &bs));
@@ -164,28 +164,28 @@ static PetscErrorCode MatDestroy_LocalRef(Mat B)
 }
 
 /*@
-   MatCreateLocalRef - Gets a logical reference to a local submatrix, for use in assembly, that is to set values into the matrix
+  MatCreateLocalRef - Gets a logical reference to a local submatrix, for use in assembly, that is to set values into the matrix
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  A - full matrix, generally parallel
-.  isrow - Local index set for the rows
--  iscol - Local index set for the columns
+  Input Parameters:
++ A     - full matrix, generally parallel
+. isrow - Local index set for the rows
+- iscol - Local index set for the columns
 
-   Output Parameter:
+  Output Parameter:
 . newmat - new serial `Mat`
 
-   Level: developer
+  Level: developer
 
-   Notes:
-   Most will use `MatGetLocalSubMatrix()` which returns a real matrix corresponding to the local
-   block if it available, such as with matrix formats that store these blocks separately.
+  Notes:
+  Most will use `MatGetLocalSubMatrix()` which returns a real matrix corresponding to the local
+  block if it available, such as with matrix formats that store these blocks separately.
 
-   The new matrix forwards `MatSetValuesLocal()` and `MatSetValuesBlockedLocal()` to the global system.
-   In general, it does not define `MatMult()` or any other functions.  Local submatrices can be nested.
+  The new matrix forwards `MatSetValuesLocal()` and `MatSetValuesBlockedLocal()` to the global system.
+  In general, it does not define `MatMult()` or any other functions.  Local submatrices can be nested.
 
-.seealso: [](chapter_matrices), `Mat`, MATSUBMATRIX`, `MatCreateSubMatrixVirtual()`, `MatSetValuesLocal()`, `MatSetValuesBlockedLocal()`, `MatGetLocalSubMatrix()`, `MatCreateSubMatrix()`
+.seealso: [](ch_matrices), `Mat`, `MATSUBMATRIX`, `MatCreateSubMatrixVirtual()`, `MatSetValuesLocal()`, `MatSetValuesBlockedLocal()`, `MatGetLocalSubMatrix()`, `MatCreateSubMatrix()`
 @*/
 PetscErrorCode MatCreateLocalRef(Mat A, IS isrow, IS iscol, Mat *newmat)
 {
@@ -198,7 +198,7 @@ PetscErrorCode MatCreateLocalRef(Mat A, IS isrow, IS iscol, Mat *newmat)
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
   PetscValidHeaderSpecific(isrow, IS_CLASSID, 2);
   PetscValidHeaderSpecific(iscol, IS_CLASSID, 3);
-  PetscValidPointer(newmat, 4);
+  PetscAssertPointer(newmat, 4);
   PetscCheck(A->rmap->mapping, PetscObjectComm((PetscObject)A), PETSC_ERR_ARG_WRONGSTATE, "Matrix must have local to global mapping provided before this call");
   *newmat = NULL;
 

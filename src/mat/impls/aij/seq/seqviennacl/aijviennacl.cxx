@@ -174,7 +174,7 @@ PetscErrorCode MatViennaCLCopyFromGPU(Mat A, const ViennaCLAIJMatrix *Agpu)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatMult_SeqAIJViennaCL(Mat A, Vec xx, Vec yy)
+static PetscErrorCode MatMult_SeqAIJViennaCL(Mat A, Vec xx, Vec yy)
 {
   Mat_SeqAIJ           *a              = (Mat_SeqAIJ *)A->data;
   Mat_SeqAIJViennaCL   *viennaclstruct = (Mat_SeqAIJViennaCL *)A->spptr;
@@ -208,7 +208,7 @@ PetscErrorCode MatMult_SeqAIJViennaCL(Mat A, Vec xx, Vec yy)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatMultAdd_SeqAIJViennaCL(Mat A, Vec xx, Vec yy, Vec zz)
+static PetscErrorCode MatMultAdd_SeqAIJViennaCL(Mat A, Vec xx, Vec yy, Vec zz)
 {
   Mat_SeqAIJ           *a              = (Mat_SeqAIJ *)A->data;
   Mat_SeqAIJViennaCL   *viennaclstruct = (Mat_SeqAIJViennaCL *)A->spptr;
@@ -244,7 +244,7 @@ PetscErrorCode MatMultAdd_SeqAIJViennaCL(Mat A, Vec xx, Vec yy, Vec zz)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatAssemblyEnd_SeqAIJViennaCL(Mat A, MatAssemblyType mode)
+static PetscErrorCode MatAssemblyEnd_SeqAIJViennaCL(Mat A, MatAssemblyType mode)
 {
   PetscFunctionBegin;
   PetscCall(MatAssemblyEnd_SeqAIJ(A, mode));
@@ -255,39 +255,39 @@ PetscErrorCode MatAssemblyEnd_SeqAIJViennaCL(Mat A, MatAssemblyType mode)
 
 /* --------------------------------------------------------------------------------*/
 /*@C
-   MatCreateSeqAIJViennaCL - Creates a sparse matrix in `MATSEQAIJVIENNACL` (compressed row) format
-   (the default parallel PETSc format).  This matrix will ultimately be pushed down
-   to GPUs and use the ViennaCL library for calculations.
+  MatCreateSeqAIJViennaCL - Creates a sparse matrix in `MATSEQAIJVIENNACL` (compressed row) format
+  (the default parallel PETSc format).  This matrix will ultimately be pushed down
+  to GPUs and use the ViennaCL library for calculations.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  comm - MPI communicator, set to `PETSC_COMM_SELF`
-.  m - number of rows
-.  n - number of columns
-.  nz - number of nonzeros per row (same for all rows), ignored if `nnz` is set
--  nnz - array containing the number of nonzeros in the various rows (possibly different for each row) or `NULL`
+  Input Parameters:
++ comm - MPI communicator, set to `PETSC_COMM_SELF`
+. m    - number of rows
+. n    - number of columns
+. nz   - number of nonzeros per row (same for all rows), ignored if `nnz` is set
+- nnz  - array containing the number of nonzeros in the various rows (possibly different for each row) or `NULL`
 
-   Output Parameter:
-.  A - the matrix
+  Output Parameter:
+. A - the matrix
 
    It is recommended that one use the `MatCreate()`, `MatSetType()` and/or `MatSetFromOptions()`,
    MatXXXXSetPreallocation() paradigm instead of this routine directly.
    [MatXXXXSetPreallocation() is, for example, `MatSeqAIJSetPreallocation()`]
 
-   Notes:
-   The AIJ format, also called
-   compressed row storage, is fully compatible with standard Fortran
-   storage.  That is, the stored row and column indices can begin at
-   either one (as in Fortran) or zero.
+  Notes:
+  The AIJ format, also called
+  compressed row storage, is fully compatible with standard Fortran
+  storage.  That is, the stored row and column indices can begin at
+  either one (as in Fortran) or zero.
 
-   Specify the preallocated storage with either `nz` or `nnz` (not both).
-   Set `nz` = `PETSC_DEFAULT` and `nnz` = `NULL` for PETSc to control dynamic memory
-   allocation.
+  Specify the preallocated storage with either `nz` or `nnz` (not both).
+  Set `nz` = `PETSC_DEFAULT` and `nnz` = `NULL` for PETSc to control dynamic memory
+  allocation.
 
-   Level: intermediate
+  Level: intermediate
 
-.seealso: `MATSEQAIJVIENNACL`, `MatCreate()`, `MatCreateAIJ()`, `MatCreateAIJCUSPARSE()`, `MatSetValues()`, `MatSeqAIJSetColumnIndices()`, `MatCreateSeqAIJWithArrays()`, `MatCreateAIJ()`
+.seealso: `MATSEQAIJVIENNACL`, `MatCreate()`, `MatCreateAIJ()`, `MatCreateAIJCUSPARSE()`, `MatSetValues()`, `MatSeqAIJSetColumnIndices()`, `MatCreateSeqAIJWithArrays()`
 @*/
 PetscErrorCode MatCreateSeqAIJViennaCL(MPI_Comm comm, PetscInt m, PetscInt n, PetscInt nz, const PetscInt nnz[], Mat *A)
 {
@@ -299,7 +299,7 @@ PetscErrorCode MatCreateSeqAIJViennaCL(MPI_Comm comm, PetscInt m, PetscInt n, Pe
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatDestroy_SeqAIJViennaCL(Mat A)
+static PetscErrorCode MatDestroy_SeqAIJViennaCL(Mat A)
 {
   Mat_SeqAIJViennaCL *viennaclcontainer = (Mat_SeqAIJViennaCL *)A->spptr;
 

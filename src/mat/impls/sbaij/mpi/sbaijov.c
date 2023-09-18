@@ -74,7 +74,7 @@ PetscErrorCode MatIncreaseOverlap_MPISBAIJ(Mat C, PetscInt is_max, IS is[], Pets
           else max_no = is_max - pos;
           c->ijonly = PETSC_TRUE; /* only matrix data structures are requested */
 
-          PetscCall(MatCreateSubMatrices_MPIBAIJ_local(C, max_no, is_row + pos, is_new + pos, MAT_INITIAL_MATRIX, submats + pos));
+          PetscCall(MatCreateSubMatrices_MPIBAIJ_local(C, max_no, is_row + pos, is_new + pos, MAT_INITIAL_MATRIX, submats + pos, PETSC_TRUE));
           pos += max_no;
         }
         PetscCall(PetscStrncpy(obj->type_name, MATSEQSBAIJ, max_len));

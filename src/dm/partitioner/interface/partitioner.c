@@ -66,25 +66,25 @@ PetscErrorCode PetscPartitionerGetType(PetscPartitioner part, PetscPartitionerTy
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part, PETSCPARTITIONER_CLASSID, 1);
-  PetscValidPointer(name, 2);
+  PetscAssertPointer(name, 2);
   *name = ((PetscObject)part)->type_name;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
-   PetscPartitionerViewFromOptions - View a `PetscPartitioner` object based on options in the options database
+  PetscPartitionerViewFromOptions - View a `PetscPartitioner` object based on options in the options database
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  A - the `PetscPartitioner` object
-.  obj - Optional `PetscObject` that provides the options prefix
--  name - command line option
+  Input Parameters:
++ A    - the `PetscPartitioner` object
+. obj  - Optional `PetscObject` that provides the options prefix
+- name - command line option
 
-   Level: intermediate
+  Level: intermediate
 
-   Note:
-   See `PetscObjectViewFromOptions()` for the various forms of viewers that may be used
+  Note:
+  See `PetscObjectViewFromOptions()` for the various forms of viewers that may be used
 
 .seealso: `PetscPartitionerView()`, `PetscObjectViewFromOptions()`
 @*/
@@ -161,9 +161,9 @@ static PetscErrorCode PetscPartitionerGetDefaultType(MPI_Comm comm, const char *
 . part - the `PetscPartitioner` object to set options for
 
   Options Database Keys:
-+  -petscpartitioner_type <type> - Sets the `PetscPartitioner` type; use -help for a list of available types
-.  -petscpartitioner_use_vertex_weights - Uses weights associated with the graph vertices
--  -petscpartitioner_view_graph - View the graph each time PetscPartitionerPartition is called. Viewer can be customized, see `PetscOptionsGetViewer()`
++ -petscpartitioner_type <type>        - Sets the `PetscPartitioner` type; use -help for a list of available types
+. -petscpartitioner_use_vertex_weights - Uses weights associated with the graph vertices
+- -petscpartitioner_view_graph         - View the graph each time PetscPartitionerPartition is called. Viewer can be customized, see `PetscOptionsGetViewer()`
 
   Level: developer
 
@@ -272,29 +272,29 @@ PetscErrorCode PetscPartitionerDestroy(PetscPartitioner *part)
   Collective
 
   Input Parameters:
-+ part    - The `PetscPartitioner`
-. nparts  - Number of partitions
-. numVertices - Number of vertices in the local part of the graph
-. start - row pointers for the local part of the graph (CSR style)
-. adjacency - adjacency list (CSR style)
++ part          - The `PetscPartitioner`
+. nparts        - Number of partitions
+. numVertices   - Number of vertices in the local part of the graph
+. start         - row pointers for the local part of the graph (CSR style)
+. adjacency     - adjacency list (CSR style)
 . vertexSection - PetscSection describing the absolute weight of each local vertex (can be NULL)
 - targetSection - PetscSection describing the absolute weight of each partition (can be NULL)
 
   Output Parameters:
-+ partSection     - The `PetscSection` giving the division of points by partition
-- partition       - The list of points by partition
++ partSection - The `PetscSection` giving the division of points by partition
+- partition   - The list of points by partition
 
   Options Databasen Keys:
-+ -petscpartitioner_view - View the partitioner information
++ -petscpartitioner_view       - View the partitioner information
 - -petscpartitioner_view_graph - View the graph we are partitioning
 
   Level: developer
 
   Notes:
-    The chart of the vertexSection (if present) must contain [0,numVertices), with the number of dofs in the section specifying the absolute weight for each vertex.
-    The chart of the targetSection (if present) must contain [0,nparts), with the number of dofs in the section specifying the absolute weight for each partition. This information must be the same across processes, PETSc does not check it.
+  The chart of the vertexSection (if present) must contain [0,numVertices), with the number of dofs in the section specifying the absolute weight for each vertex.
+  The chart of the targetSection (if present) must contain [0,nparts), with the number of dofs in the section specifying the absolute weight for each partition. This information must be the same across processes, PETSc does not check it.
 
-.seealso `PetscPartitionerCreate()`, `PetscPartitionerSetType()`, `PetscSectionCreate()`, `PetscSectionSetChart()`, `PetscSectionSetDof()`
+.seealso: `PetscPartitionerCreate()`, `PetscPartitionerSetType()`, `PetscSectionCreate()`, `PetscSectionSetChart()`, `PetscSectionSetDof()`
 @*/
 PetscErrorCode PetscPartitionerPartition(PetscPartitioner part, PetscInt nparts, PetscInt numVertices, PetscInt start[], PetscInt adjacency[], PetscSection vertexSection, PetscSection targetSection, PetscSection partSection, IS *partition)
 {
@@ -304,9 +304,9 @@ PetscErrorCode PetscPartitionerPartition(PetscPartitioner part, PetscInt nparts,
   PetscCheck(nparts > 0, PetscObjectComm((PetscObject)part), PETSC_ERR_ARG_OUTOFRANGE, "Number of parts must be positive");
   PetscCheck(numVertices >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Number of vertices must be non-negative");
   if (numVertices && !part->noGraph) {
-    PetscValidIntPointer(start, 4);
-    PetscValidIntPointer(start + numVertices, 4);
-    if (start[numVertices]) PetscValidIntPointer(adjacency, 5);
+    PetscAssertPointer(start, 4);
+    PetscAssertPointer(start + numVertices, 4);
+    if (start[numVertices]) PetscAssertPointer(adjacency, 5);
   }
   if (vertexSection) {
     PetscInt s, e;
@@ -323,7 +323,7 @@ PetscErrorCode PetscPartitionerPartition(PetscPartitioner part, PetscInt nparts,
     PetscCheck(s <= 0 && e >= nparts, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid targetSection chart [%" PetscInt_FMT ",%" PetscInt_FMT ")", s, e);
   }
   PetscValidHeaderSpecific(partSection, PETSC_SECTION_CLASSID, 8);
-  PetscValidPointer(partition, 9);
+  PetscAssertPointer(partition, 9);
 
   PetscCall(PetscSectionReset(partSection));
   PetscCall(PetscSectionSetChart(partSection, 0, nparts));
@@ -380,7 +380,7 @@ PetscErrorCode PetscPartitionerCreate(MPI_Comm comm, PetscPartitioner *part)
   const char      *partitionerType = NULL;
 
   PetscFunctionBegin;
-  PetscValidPointer(part, 2);
+  PetscAssertPointer(part, 2);
   *part = NULL;
   PetscCall(PetscPartitionerInitializePackage());
 

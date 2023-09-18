@@ -1,5 +1,4 @@
-#ifndef PETSC_PCGAMGIMPL_H
-#define PETSC_PCGAMGIMPL_H
+#pragma once
 #include <petscksp.h>
 #include <petsc/private/pcimpl.h>
 #include <petsc/private/pcmgimpl.h> /*I "petscksp.h" I*/
@@ -48,6 +47,7 @@ typedef struct gamg_TAG {
 
   PetscBool use_sa_esteig;
   PetscReal emin, emax;
+  PetscBool recompute_esteig;
 } PC_GAMG;
 
 PetscErrorCode PCReset_MG(PC);
@@ -117,5 +117,3 @@ static inline PetscErrorCode PCGAMGHashTableFind(PCGAMGHashTable *a_tab, PetscIn
   PetscCheck(kk != a_tab->size, PETSC_COMM_SELF, PETSC_ERR_USER, "key %" PetscInt_FMT " not found in table", a_key);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-
-#endif // PETSC_PCGAMGIMPL_H

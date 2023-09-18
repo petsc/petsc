@@ -6,7 +6,7 @@ static char help[] = "Tests MatCreateConstantDiagonal().\n"
 int main(int argc, char **args)
 {
   Vec       X, Y;
-  Mat       A, B, Af;
+  Mat       A, Adup, B, Af;
   PetscBool flg;
   PetscReal xnorm, ynorm, anorm;
 
@@ -38,6 +38,10 @@ int main(int argc, char **args)
   if (!flg) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Error MatMultTranspose\n"));
   PetscCall(MatMultTransposeAddEqual(A, B, 10, &flg));
   if (!flg) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Error MatMultTransposeAdd\n"));
+  PetscCall(MatMultHermitianTransposeEqual(A, B, 10, &flg));
+  if (!flg) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Error MatMultHermitianTranspose\n"));
+  PetscCall(MatMultHermitianTransposeAddEqual(A, B, 10, &flg));
+  if (!flg) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Error MatMultHermitianTransposeAdd\n"));
 
   PetscCall(MatGetDiagonal(A, Y));
   PetscCall(MatGetFactor(A, MATSOLVERPETSC, MAT_FACTOR_LU, &Af));
@@ -47,6 +51,21 @@ int main(int argc, char **args)
   PetscCall(VecNorm(Y, NORM_2, &ynorm));
   PetscCheck(PetscAbsReal(ynorm - xnorm / 4) <= PETSC_SMALL, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Expected norm %g actual norm %g", (double)(.25 * xnorm), (double)ynorm);
 
+  // Solve can be called without factorization
+  PetscCall(MatSolve(A, X, Y));
+  PetscCall(VecNorm(Y, NORM_2, &ynorm));
+  PetscCheck(PetscAbsReal(ynorm - xnorm / 4) <= PETSC_SMALL, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Expected norm %g actual norm %g", (double)(.25 * xnorm), (double)ynorm);
+
+  // For a scalar multiple of the identity  smoothing is equivalent to solving
+  PetscCall(MatSOR(A, X, 1.5, SOR_FORWARD_SWEEP, 0.0, 1, 1, Y));
+  PetscCall(VecNorm(Y, NORM_2, &ynorm));
+  PetscCheck(PetscAbsReal(ynorm - xnorm / 4) <= PETSC_SMALL, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Expected norm %g actual norm %g", (double)(.25 * xnorm), (double)ynorm);
+
+  PetscCall(MatDuplicate(A, MAT_COPY_VALUES, &Adup));
+  PetscCall(MatEqual(A, Adup, &flg));
+  PetscCheck(flg, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "MatEqual after copy failure");
+
+  PetscCall(MatDestroy(&Adup));
   PetscCall(MatDestroy(&A));
   PetscCall(MatDestroy(&B));
   PetscCall(MatDestroy(&Af));

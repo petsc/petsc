@@ -525,7 +525,7 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
   }
 
   PetscCall(DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd));
-  PetscCall(DMPlexGetGhostCellStratum(dm, &p, NULL));
+  PetscCall(DMPlexGetCellTypeStratum(dm, DM_POLYTOPE_FV_GHOST, &p, NULL));
   if (p >= 0) cEnd = p;
   PetscCall(DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd));
   PetscCall(DMGetCoordinatesLocalized(dm, &localized));

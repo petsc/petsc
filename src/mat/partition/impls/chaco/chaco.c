@@ -170,7 +170,7 @@ static PetscErrorCode MatPartitioningApply_Chaco(MatPartitioning part, IS *parti
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatPartitioningView_Chaco(MatPartitioning part, PetscViewer viewer)
+static PetscErrorCode MatPartitioningView_Chaco(MatPartitioning part, PetscViewer viewer)
 {
   MatPartitioning_Chaco *chaco = (MatPartitioning_Chaco *)part->data;
   PetscBool              isascii;
@@ -189,23 +189,23 @@ PetscErrorCode MatPartitioningView_Chaco(MatPartitioning part, PetscViewer viewe
 }
 
 /*@
-   MatPartitioningChacoSetGlobal - Set the global method for Chaco partitioner.
+  MatPartitioningChacoSetGlobal - Set the global method for Chaco partitioner.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  part - the partitioning context
--  method - one of `MP_CHACO_MULTILEVEL`, `MP_CHACO_SPECTRAL`, `MP_CHACO_LINEAR`,
+  Input Parameters:
++ part   - the partitioning context
+- method - one of `MP_CHACO_MULTILEVEL`, `MP_CHACO_SPECTRAL`, `MP_CHACO_LINEAR`,
             `MP_CHACO_RANDOM` or `MP_CHACO_SCATTERED`
 
-   Options Database Key:
-.  -mat_partitioning_chaco_global <method> - the global method
+  Options Database Key:
+. -mat_partitioning_chaco_global <method> - the global method
 
-   Level: advanced
+  Level: advanced
 
-   Note:
-   The default is the multi-level method. See Chaco documentation for
-   additional details.
+  Note:
+  The default is the multi-level method. See Chaco documentation for
+  additional details.
 
 .seealso: `MatPartitioning`, `MatPartioningSetType()`, `MatPartitioningType`, `MATPARTITIONINGCHACO`, `MatPartitioningChacoSetLocal()`, `MatPartitioningChacoGetGlobal()`
 @*/
@@ -218,7 +218,7 @@ PetscErrorCode MatPartitioningChacoSetGlobal(MatPartitioning part, MPChacoGlobal
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatPartitioningChacoSetGlobal_Chaco(MatPartitioning part, MPChacoGlobalType method)
+static PetscErrorCode MatPartitioningChacoSetGlobal_Chaco(MatPartitioning part, MPChacoGlobalType method)
 {
   MatPartitioning_Chaco *chaco = (MatPartitioning_Chaco *)part->data;
 
@@ -238,30 +238,30 @@ PetscErrorCode MatPartitioningChacoSetGlobal_Chaco(MatPartitioning part, MPChaco
 }
 
 /*@
-   MatPartitioningChacoGetGlobal - Get the global method used by the Chaco partitioner.
+  MatPartitioningChacoGetGlobal - Get the global method used by the Chaco partitioner.
 
-   Not Collective
+  Not Collective
 
-   Input Parameter:
-.  part - the partitioning context
+  Input Parameter:
+. part - the partitioning context
 
-   Output Parameter:
-.  method - the method
+  Output Parameter:
+. method - the method
 
-   Level: advanced
+  Level: advanced
 
-.seealso:  `MatPartitioningType`, `MATPARTITIONINGCHACO`, `MatPartitioningChacoSetGlobal()`
+.seealso: `MatPartitioningType`, `MATPARTITIONINGCHACO`, `MatPartitioningChacoSetGlobal()`
 @*/
 PetscErrorCode MatPartitioningChacoGetGlobal(MatPartitioning part, MPChacoGlobalType *method)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part, MAT_PARTITIONING_CLASSID, 1);
-  PetscValidPointer(method, 2);
+  PetscAssertPointer(method, 2);
   PetscTryMethod(part, "MatPartitioningChacoGetGlobal_C", (MatPartitioning, MPChacoGlobalType *), (part, method));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatPartitioningChacoGetGlobal_Chaco(MatPartitioning part, MPChacoGlobalType *method)
+static PetscErrorCode MatPartitioningChacoGetGlobal_Chaco(MatPartitioning part, MPChacoGlobalType *method)
 {
   MatPartitioning_Chaco *chaco = (MatPartitioning_Chaco *)part->data;
 
@@ -271,22 +271,22 @@ PetscErrorCode MatPartitioningChacoGetGlobal_Chaco(MatPartitioning part, MPChaco
 }
 
 /*@
-   MatPartitioningChacoSetLocal - Set the local method for the Chaco partitioner.
+  MatPartitioningChacoSetLocal - Set the local method for the Chaco partitioner.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  part - the partitioning context
--  method - one of `MP_CHACO_KERNIGHAN` or `MP_CHACO_NONE`
+  Input Parameters:
++ part   - the partitioning context
+- method - one of `MP_CHACO_KERNIGHAN` or `MP_CHACO_NONE`
 
-   Options Database Key:
-.  -mat_partitioning_chaco_local <method> - the local method
+  Options Database Key:
+. -mat_partitioning_chaco_local <method> - the local method
 
-   Level: advanced
+  Level: advanced
 
-   Note:
-   The default is to apply the Kernighan-Lin heuristic. See Chaco documentation
-   for additional details.
+  Note:
+  The default is to apply the Kernighan-Lin heuristic. See Chaco documentation
+  for additional details.
 
 .seealso: `MatPartitioningType`, `MATPARTITIONINGCHACO`, `MatPartitioningChacoSetGlobal()`, `MatPartitioningChacoGetLocal()`
 @*/
@@ -299,7 +299,7 @@ PetscErrorCode MatPartitioningChacoSetLocal(MatPartitioning part, MPChacoLocalTy
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatPartitioningChacoSetLocal_Chaco(MatPartitioning part, MPChacoLocalType method)
+static PetscErrorCode MatPartitioningChacoSetLocal_Chaco(MatPartitioning part, MPChacoLocalType method)
 {
   MatPartitioning_Chaco *chaco = (MatPartitioning_Chaco *)part->data;
 
@@ -316,17 +316,17 @@ PetscErrorCode MatPartitioningChacoSetLocal_Chaco(MatPartitioning part, MPChacoL
 }
 
 /*@
-   MatPartitioningChacoGetLocal - Get local method used by the Chaco partitioner.
+  MatPartitioningChacoGetLocal - Get local method used by the Chaco partitioner.
 
-   Not Collective
+  Not Collective
 
-   Input Parameter:
-.  part - the partitioning context
+  Input Parameter:
+. part - the partitioning context
 
-   Output Parameter:
-.  method - the method
+  Output Parameter:
+. method - the method
 
-   Level: advanced
+  Level: advanced
 
 .seealso: `MatPartitioningType`, `MATPARTITIONINGCHACO`, `MatPartitioningChacoSetLocal()`
 @*/
@@ -334,12 +334,12 @@ PetscErrorCode MatPartitioningChacoGetLocal(MatPartitioning part, MPChacoLocalTy
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part, MAT_PARTITIONING_CLASSID, 1);
-  PetscValidPointer(method, 2);
+  PetscAssertPointer(method, 2);
   PetscUseMethod(part, "MatPartitioningChacoGetLocal_C", (MatPartitioning, MPChacoLocalType *), (part, method));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatPartitioningChacoGetLocal_Chaco(MatPartitioning part, MPChacoLocalType *method)
+static PetscErrorCode MatPartitioningChacoGetLocal_Chaco(MatPartitioning part, MPChacoLocalType *method)
 {
   MatPartitioning_Chaco *chaco = (MatPartitioning_Chaco *)part->data;
 
@@ -349,19 +349,19 @@ PetscErrorCode MatPartitioningChacoGetLocal_Chaco(MatPartitioning part, MPChacoL
 }
 
 /*@
-   MatPartitioningChacoSetCoarseLevel - Set the coarse level parameter for the
-   Chaco partitioner.
+  MatPartitioningChacoSetCoarseLevel - Set the coarse level parameter for the
+  Chaco partitioner.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  part - the partitioning context
--  level - the coarse level in range [0.0,1.0]
+  Input Parameters:
++ part  - the partitioning context
+- level - the coarse level in range [0.0,1.0]
 
-   Options Database Key:
-.  -mat_partitioning_chaco_coarse <l> - Coarse level
+  Options Database Key:
+. -mat_partitioning_chaco_coarse <l> - Coarse level
 
-   Level: advanced
+  Level: advanced
 
 .seealso: `MatPartitioningType`, `MatPartitioning`, `MATPARTITIONINGCHACO`
 @*/
@@ -374,7 +374,7 @@ PetscErrorCode MatPartitioningChacoSetCoarseLevel(MatPartitioning part, PetscRea
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatPartitioningChacoSetCoarseLevel_Chaco(MatPartitioning part, PetscReal level)
+static PetscErrorCode MatPartitioningChacoSetCoarseLevel_Chaco(MatPartitioning part, PetscReal level)
 {
   MatPartitioning_Chaco *chaco = (MatPartitioning_Chaco *)part->data;
 
@@ -386,21 +386,21 @@ PetscErrorCode MatPartitioningChacoSetCoarseLevel_Chaco(MatPartitioning part, Pe
 }
 
 /*@
-   MatPartitioningChacoSetEigenSolver - Set the eigensolver method for Chaco partitioner.
+  MatPartitioningChacoSetEigenSolver - Set the eigensolver method for Chaco partitioner.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  part - the partitioning context
--  method - one of `MP_CHACO_LANCZOS` or `MP_CHACO_RQI`
+  Input Parameters:
++ part   - the partitioning context
+- method - one of `MP_CHACO_LANCZOS` or `MP_CHACO_RQI`
 
-   Options Database Key:
-.  -mat_partitioning_chaco_eigen_solver <method> - the eigensolver
+  Options Database Key:
+. -mat_partitioning_chaco_eigen_solver <method> - the eigensolver
 
-   Level: advanced
+  Level: advanced
 
-   Note:
-   The default is to use a Lanczos method. See Chaco documentation for details.
+  Note:
+  The default is to use a Lanczos method. See Chaco documentation for details.
 
 .seealso: `MatPartitioningType`, `MatPartitioning`, `MATPARTITIONINGCHACO`, `MatPartitioningChacoSetEigenTol()`, `MatPartitioningChacoSetEigenNumber()`,
           `MatPartitioningChacoGetEigenSolver()`
@@ -414,7 +414,7 @@ PetscErrorCode MatPartitioningChacoSetEigenSolver(MatPartitioning part, MPChacoE
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatPartitioningChacoSetEigenSolver_Chaco(MatPartitioning part, MPChacoEigenType method)
+static PetscErrorCode MatPartitioningChacoSetEigenSolver_Chaco(MatPartitioning part, MPChacoEigenType method)
 {
   MatPartitioning_Chaco *chaco = (MatPartitioning_Chaco *)part->data;
 
@@ -431,17 +431,17 @@ PetscErrorCode MatPartitioningChacoSetEigenSolver_Chaco(MatPartitioning part, MP
 }
 
 /*@
-   MatPartitioningChacoGetEigenSolver - Get the eigensolver used by the Chaco partitioner.
+  MatPartitioningChacoGetEigenSolver - Get the eigensolver used by the Chaco partitioner.
 
-   Not Collective
+  Not Collective
 
-   Input Parameter:
-.  part - the partitioning context
+  Input Parameter:
+. part - the partitioning context
 
-   Output Parameter:
-.  method - the method
+  Output Parameter:
+. method - the method
 
-   Level: advanced
+  Level: advanced
 
 .seealso: `MatPartitioningType`, `MatPartitioning`, `MATPARTITIONINGCHACO`, `MatPartitioningChacoSetEigenSolver()`
 @*/
@@ -449,12 +449,12 @@ PetscErrorCode MatPartitioningChacoGetEigenSolver(MatPartitioning part, MPChacoE
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part, MAT_PARTITIONING_CLASSID, 1);
-  PetscValidPointer(method, 2);
+  PetscAssertPointer(method, 2);
   PetscUseMethod(part, "MatPartitioningChacoGetEigenSolver_C", (MatPartitioning, MPChacoEigenType *), (part, method));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatPartitioningChacoGetEigenSolver_Chaco(MatPartitioning part, MPChacoEigenType *method)
+static PetscErrorCode MatPartitioningChacoGetEigenSolver_Chaco(MatPartitioning part, MPChacoEigenType *method)
 {
   MatPartitioning_Chaco *chaco = (MatPartitioning_Chaco *)part->data;
 
@@ -464,21 +464,21 @@ PetscErrorCode MatPartitioningChacoGetEigenSolver_Chaco(MatPartitioning part, MP
 }
 
 /*@
-   MatPartitioningChacoSetEigenTol - Sets the tolerance for the eigensolver used by Chaco
+  MatPartitioningChacoSetEigenTol - Sets the tolerance for the eigensolver used by Chaco
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  part - the partitioning context
--  tol  - the tolerance
+  Input Parameters:
++ part - the partitioning context
+- tol  - the tolerance
 
-   Options Database Key:
-.  -mat_partitioning_chaco_eigen_tol <tol> - Tolerance for eigensolver
+  Options Database Key:
+. -mat_partitioning_chaco_eigen_tol <tol> - Tolerance for eigensolver
 
-   Note:
-   Must be positive. The default value is 0.001.
+  Note:
+  Must be positive. The default value is 0.001.
 
-   Level: advanced
+  Level: advanced
 
 .seealso: `MatPartitioningType`, `MatPartitioning`, `MATPARTITIONINGCHACO`, `MatPartitioningChacoSetEigenSolver()`, `MatPartitioningChacoGetEigenTol()`
 @*/
@@ -491,7 +491,7 @@ PetscErrorCode MatPartitioningChacoSetEigenTol(MatPartitioning part, PetscReal t
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatPartitioningChacoSetEigenTol_Chaco(MatPartitioning part, PetscReal tol)
+static PetscErrorCode MatPartitioningChacoSetEigenTol_Chaco(MatPartitioning part, PetscReal tol)
 {
   MatPartitioning_Chaco *chaco = (MatPartitioning_Chaco *)part->data;
 
@@ -505,17 +505,17 @@ PetscErrorCode MatPartitioningChacoSetEigenTol_Chaco(MatPartitioning part, Petsc
 }
 
 /*@
-   MatPartitioningChacoGetEigenTol - Gets the eigensolver tolerance used by Chaco
+  MatPartitioningChacoGetEigenTol - Gets the eigensolver tolerance used by Chaco
 
-   Not Collective
+  Not Collective
 
-   Input Parameter:
-.  part - the partitioning context
+  Input Parameter:
+. part - the partitioning context
 
-   Output Parameter:
-.  tol  - the tolerance
+  Output Parameter:
+. tol - the tolerance
 
-   Level: advanced
+  Level: advanced
 
 .seealso: `MatPartitioningType`, `MatPartitioning`, `MATPARTITIONINGCHACO`, `MatPartitioningChacoSetEigenTol()`
 @*/
@@ -523,12 +523,12 @@ PetscErrorCode MatPartitioningChacoGetEigenTol(MatPartitioning part, PetscReal *
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part, MAT_PARTITIONING_CLASSID, 1);
-  PetscValidRealPointer(tol, 2);
+  PetscAssertPointer(tol, 2);
   PetscUseMethod(part, "MatPartitioningChacoGetEigenTol_C", (MatPartitioning, PetscReal *), (part, tol));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatPartitioningChacoGetEigenTol_Chaco(MatPartitioning part, PetscReal *tol)
+static PetscErrorCode MatPartitioningChacoGetEigenTol_Chaco(MatPartitioning part, PetscReal *tol)
 {
   MatPartitioning_Chaco *chaco = (MatPartitioning_Chaco *)part->data;
 
@@ -538,23 +538,23 @@ PetscErrorCode MatPartitioningChacoGetEigenTol_Chaco(MatPartitioning part, Petsc
 }
 
 /*@
-   MatPartitioningChacoSetEigenNumber - Sets the number of eigenvectors to compute by Chaco during partitioning
-   during partitioning.
+  MatPartitioningChacoSetEigenNumber - Sets the number of eigenvectors to compute by Chaco during partitioning
+  during partitioning.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  part - the partitioning context
--  num  - the number of eigenvectors
+  Input Parameters:
++ part - the partitioning context
+- num  - the number of eigenvectors
 
-   Options Database Key:
-.  -mat_partitioning_chaco_eigen_number <n> - Number of eigenvectors
+  Options Database Key:
+. -mat_partitioning_chaco_eigen_number <n> - Number of eigenvectors
 
-   Note:
-   Accepted values are 1, 2 or 3, indicating partitioning by bisection,
-   quadrisection, or octosection.
+  Note:
+  Accepted values are 1, 2 or 3, indicating partitioning by bisection,
+  quadrisection, or octosection.
 
-   Level: advanced
+  Level: advanced
 
 .seealso: `MatPartitioningType`, `MatPartitioning`, `MATPARTITIONINGCHACO`, `MatPartitioningChacoSetEigenSolver()`, `MatPartitioningChacoGetEigenTol()`
 @*/
@@ -567,7 +567,7 @@ PetscErrorCode MatPartitioningChacoSetEigenNumber(MatPartitioning part, PetscInt
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatPartitioningChacoSetEigenNumber_Chaco(MatPartitioning part, PetscInt num)
+static PetscErrorCode MatPartitioningChacoSetEigenNumber_Chaco(MatPartitioning part, PetscInt num)
 {
   MatPartitioning_Chaco *chaco = (MatPartitioning_Chaco *)part->data;
 
@@ -581,17 +581,17 @@ PetscErrorCode MatPartitioningChacoSetEigenNumber_Chaco(MatPartitioning part, Pe
 }
 
 /*@
-   MatPartitioningChacoGetEigenNumber - Gets the number of eigenvectors used by Chaco.
+  MatPartitioningChacoGetEigenNumber - Gets the number of eigenvectors used by Chaco.
 
-   Not Collective
+  Not Collective
 
-   Input Parameter:
-.  part - the partitioning context
+  Input Parameter:
+. part - the partitioning context
 
-   Output Parameter:
-.  num  - number of eigenvectors
+  Output Parameter:
+. num - number of eigenvectors
 
-   Level: advanced
+  Level: advanced
 
 .seealso: `MatPartitioningType`, `MatPartitioning`, `MATPARTITIONINGCHACO`, `MatPartitioningChacoSetEigenNumber()`
 @*/
@@ -599,12 +599,12 @@ PetscErrorCode MatPartitioningChacoGetEigenNumber(MatPartitioning part, PetscInt
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part, MAT_PARTITIONING_CLASSID, 1);
-  PetscValidIntPointer(num, 2);
+  PetscAssertPointer(num, 2);
   PetscUseMethod(part, "MatPartitioningChacoGetEigenNumber_C", (MatPartitioning, PetscInt *), (part, num));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatPartitioningChacoGetEigenNumber_Chaco(MatPartitioning part, PetscInt *num)
+static PetscErrorCode MatPartitioningChacoGetEigenNumber_Chaco(MatPartitioning part, PetscInt *num)
 {
   MatPartitioning_Chaco *chaco = (MatPartitioning_Chaco *)part->data;
 
@@ -613,7 +613,7 @@ PetscErrorCode MatPartitioningChacoGetEigenNumber_Chaco(MatPartitioning part, Pe
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatPartitioningSetFromOptions_Chaco(MatPartitioning part, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode MatPartitioningSetFromOptions_Chaco(MatPartitioning part, PetscOptionItems *PetscOptionsObject)
 {
   PetscInt               i;
   PetscReal              r;
@@ -642,7 +642,7 @@ PetscErrorCode MatPartitioningSetFromOptions_Chaco(MatPartitioning part, PetscOp
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatPartitioningDestroy_Chaco(MatPartitioning part)
+static PetscErrorCode MatPartitioningDestroy_Chaco(MatPartitioning part)
 {
   MatPartitioning_Chaco *chaco = (MatPartitioning_Chaco *)part->data;
 

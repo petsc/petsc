@@ -206,7 +206,7 @@ class Help(Info):
                 self.argDB.insertArgs([self.clArgs[k]])
             break
         if not found:
-          print(i + ' ' + str(self.argDB.dlist[i]))
+          print(i + ' ' + str(self.argDB.dlist[i]).replace("git://","git clone "))
     if missing:
       print('\nThen run the script again\n')
       sys.exit(10)

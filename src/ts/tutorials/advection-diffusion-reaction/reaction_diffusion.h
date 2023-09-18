@@ -1,3 +1,5 @@
+#pragma once
+
 #include <petscts.h>
 
 /* Simple C struct that allows us to access the two velocity (x and y directions) values easily in the code */

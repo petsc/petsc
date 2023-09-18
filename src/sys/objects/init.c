@@ -6,6 +6,7 @@
   what malloc is being used until it has already processed the input.
 */
 #include <petsc/private/petscimpl.h> /*I  "petscsys.h"   I*/
+#include <petsc/private/logimpl.h>
 
 #if defined(PETSC_HAVE_UNISTD_H)
   #include <unistd.h>
@@ -86,14 +87,13 @@ PetscErrorCode (*PetscErrorPrintf)(const char[], ...)          = PetscErrorPrint
 PetscErrorCode (*PetscHelpPrintf)(MPI_Comm, const char[], ...) = PetscHelpPrintfDefault;
 PetscErrorCode (*PetscVFPrintf)(FILE *, const char[], va_list) = PetscVFPrintfDefault;
 
-/* ------------------------------------------------------------------------------*/
 /*
    Optional file where all PETSc output from various prints is saved
 */
 PETSC_INTERN FILE *petsc_history;
 FILE              *petsc_history = NULL;
 
-PetscErrorCode PetscOpenHistoryFile(const char filename[], FILE **fd)
+static PetscErrorCode PetscOpenHistoryFile(const char filename[], FILE **fd)
 {
   PetscMPIInt rank, size;
   char        pfile[PETSC_MAX_PATH_LEN], pname[PETSC_MAX_PATH_LEN], fname[PETSC_MAX_PATH_LEN], date[64];
@@ -151,8 +151,6 @@ PETSC_INTERN PetscErrorCode PetscCloseHistoryFile(FILE **fd)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* ------------------------------------------------------------------------------*/
-
 /*
    This is ugly and probably belongs somewhere else, but I want to
   be able to put a true MPI abort error handler with command line args.
@@ -162,14 +160,14 @@ PETSC_INTERN PetscErrorCode PetscCloseHistoryFile(FILE **fd)
   in the debugger hence we call abort() instead of MPI_Abort().
 */
 
-void Petsc_MPI_AbortOnError(PETSC_UNUSED MPI_Comm *comm, PetscMPIInt *flag, ...)
+static void Petsc_MPI_AbortOnError(PETSC_UNUSED MPI_Comm *comm, PetscMPIInt *flag, ...)
 {
   PetscFunctionBegin;
   PetscCallContinue((*PetscErrorPrintf)("MPI error %d\n", *flag));
   abort();
 }
 
-void Petsc_MPI_DebuggerOnError(MPI_Comm *comm, PetscMPIInt *flag, ...)
+static void Petsc_MPI_DebuggerOnError(MPI_Comm *comm, PetscMPIInt *flag, ...)
 {
   PetscFunctionBegin;
   PetscCallContinue((*PetscErrorPrintf)("MPI error %d\n", *flag));
@@ -177,17 +175,15 @@ void Petsc_MPI_DebuggerOnError(MPI_Comm *comm, PetscMPIInt *flag, ...)
 }
 
 /*@C
-   PetscEnd - Calls `PetscFinalize()` and then ends the program. This is useful if one
-     wishes a clean exit somewhere deep in the program.
+  PetscEnd - Calls `PetscFinalize()` and then ends the program. This is useful if one
+  wishes a clean exit somewhere deep in the program.
 
-   Collective on `PETSC_COMM_WORLD`
+  Collective on `PETSC_COMM_WORLD`
 
-   Options Database Keys are the same as for `PetscFinalize()`
+  Level: advanced
 
-   Level: advanced
-
-   Note:
-   See `PetscInitialize()` for more general runtime options.
+  Note:
+  See `PetscInitialize()` for more general runtime options.
 
 .seealso: `PetscInitialize()`, `PetscOptionsView()`, `PetscMallocDump()`, `PetscMPIDump()`, `PetscFinalize()`
 @*/
@@ -207,21 +203,25 @@ static char                 emacsmachinename[256];
 PetscErrorCode (*PetscExternalVersionFunction)(MPI_Comm) = NULL;
 PetscErrorCode (*PetscExternalHelpFunction)(MPI_Comm)    = NULL;
 
-#if PetscDefined(USE_LOG)
-  #include <petscviewer.h>
-#endif
+#include <petscviewer.h>
 
 /*@C
-   PetscSetHelpVersionFunctions - Sets functions that print help and version information
-   before the PETSc help and version information is printed. Must call BEFORE `PetscInitialize()`.
-   This routine enables a "higher-level" package that uses PETSc to print its messages first.
+  PetscSetHelpVersionFunctions - Sets functions that print help and version information
+  before the PETSc help and version information is printed.
 
-   Input Parameters:
-+  help - the help function (may be NULL)
--  version - the version function (may be NULL)
+  Input Parameters:
++ help    - the help function (may be `NULL`)
+- version - the version function (may be `NULL`)
 
-   Level: developer
+  Level: developer
 
+  Notes:
+  Must call BEFORE `PetscInitialize()`.
+
+  This routine enables a "higher-level" package that uses PETSc to print its messages first and
+  control how the PETSc help messages are printed.
+
+.seealso: `PetscInitialize()`
 @*/
 PetscErrorCode PetscSetHelpVersionFunctions(PetscErrorCode (*help)(MPI_Comm), PetscErrorCode (*version)(MPI_Comm))
 {
@@ -231,26 +231,19 @@ PetscErrorCode PetscSetHelpVersionFunctions(PetscErrorCode (*help)(MPI_Comm), Pe
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-#if defined(PETSC_USE_LOG)
 PETSC_INTERN PetscBool PetscObjectsLog;
-#endif
 
 PETSC_INTERN PetscErrorCode PetscOptionsCheckInitial_Private(const char help[])
 {
   char        string[64];
   MPI_Comm    comm = PETSC_COMM_WORLD;
-  PetscBool   flg1 = PETSC_FALSE, flg2 = PETSC_FALSE, flg3 = PETSC_FALSE, flag, hasHelp;
+  PetscBool   flg1 = PETSC_FALSE, flg2 = PETSC_FALSE, flag, hasHelp;
   PetscBool   checkstack = PETSC_FALSE;
   PetscReal   si;
   PetscInt    intensity;
   int         i;
   PetscMPIInt rank;
   char        version[256];
-#if defined(PETSC_USE_LOG)
-  char              mname[PETSC_MAX_PATH_LEN];
-  PetscViewerFormat format;
-  PetscBool         flg4 = PETSC_FALSE;
-#endif
 
   PetscFunctionBegin;
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
@@ -267,6 +260,7 @@ PETSC_INTERN PetscErrorCode PetscOptionsCheckInitial_Private(const char help[])
       Setup the memory management; support for tracing malloc() usage
     */
     PetscBool mdebug = PETSC_FALSE, eachcall = PETSC_FALSE, initializenan = PETSC_FALSE, mlog = PETSC_FALSE;
+    PetscBool flg3 = PETSC_FALSE;
 
     if (PetscDefined(USE_DEBUG)) {
       mdebug        = PETSC_TRUE;
@@ -294,7 +288,6 @@ PETSC_INTERN PetscErrorCode PetscOptionsCheckInitial_Private(const char help[])
     PetscCall(PetscOptionsHasName(NULL, NULL, "-malloc_view", &mlog));
     if (mlog) mdebug = PETSC_TRUE;
     /* the next line is deprecated */
-    PetscCall(PetscOptionsGetBool(NULL, NULL, "-malloc", &mdebug, NULL));
     PetscCall(PetscOptionsGetBool(NULL, NULL, "-malloc_dump", &mdebug, NULL));
     PetscCall(PetscOptionsGetBool(NULL, NULL, "-log_view_memory", &mdebug, NULL));
     if (mdebug) PetscCall(PetscMallocSetDebug(eachcall, initializenan));
@@ -303,9 +296,7 @@ PETSC_INTERN PetscErrorCode PetscOptionsCheckInitial_Private(const char help[])
       PetscCall(PetscOptionsGetReal(NULL, NULL, "-malloc_view_threshold", &logthreshold, NULL));
       PetscCall(PetscMallocViewSet(logthreshold));
     }
-  #if defined(PETSC_USE_LOG)
     PetscCall(PetscOptionsGetBool(NULL, NULL, "-log_view_memory", &PetscLogMemory, NULL));
-  #endif
   }
 
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-malloc_coalesce", &flg1, &flg2));
@@ -316,17 +307,11 @@ PETSC_INTERN PetscErrorCode PetscOptionsCheckInitial_Private(const char help[])
   if (flg1 && !petscsetmallocvisited) PetscCall(PetscSetUseHBWMalloc_Private());
 
   flg1 = PETSC_FALSE;
-  PetscCall(PetscOptionsGetBool(NULL, NULL, "-malloc_info", &flg1, NULL));
-  if (!flg1) {
-    flg1 = PETSC_FALSE;
-    PetscCall(PetscOptionsGetBool(NULL, NULL, "-memory_view", &flg1, NULL));
-  }
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-memory_view", &flg1, NULL));
   if (flg1) PetscCall(PetscMemorySetGetMaximumUsage());
 #endif
 
-#if defined(PETSC_USE_LOG)
   PetscCall(PetscOptionsHasName(NULL, NULL, "-objects_dump", &PetscObjectsLog));
-#endif
 
   /*
       Set the display variable for graphics
@@ -353,12 +338,12 @@ PETSC_INTERN PetscErrorCode PetscOptionsCheckInitial_Private(const char help[])
     if (PetscExternalVersionFunction) PetscCall((*PetscExternalVersionFunction)(comm));
 
     PetscCall(PetscGetVersion(version, 256));
-    PetscCall((*PetscHelpPrintf)(comm, "%s\n", version));
+    if (!PetscCIEnabledPortableErrorOutput) PetscCall((*PetscHelpPrintf)(comm, "%s\n", version));
     PetscCall((*PetscHelpPrintf)(comm, "%s", PETSC_AUTHOR_INFO));
     PetscCall((*PetscHelpPrintf)(comm, "See https://petsc.org/release/changes for recent updates.\n"));
     PetscCall((*PetscHelpPrintf)(comm, "See https://petsc.org/release/faq for problems.\n"));
     PetscCall((*PetscHelpPrintf)(comm, "See https://petsc.org/release/manualpages for help. \n"));
-    PetscCall((*PetscHelpPrintf)(comm, "Libraries linked from %s\n", PETSC_LIB_DIR));
+    if (!PetscCIEnabledPortableErrorOutput) PetscCall((*PetscHelpPrintf)(comm, "Libraries linked from %s\n", PETSC_LIB_DIR));
     PetscCall((*PetscHelpPrintf)(comm, "----------------------------------------\n"));
   }
 
@@ -491,72 +476,82 @@ PETSC_INTERN PetscErrorCode PetscOptionsCheckInitial_Private(const char help[])
   PetscCall(PetscOptionsGetString(NULL, NULL, "-on_error_emacs", emacsmachinename, sizeof(emacsmachinename), &flg1));
   if (flg1 && rank == 0) PetscCall(PetscPushErrorHandler(PetscEmacsClientErrorHandler, emacsmachinename));
 
-    /*
+  /*
         Setup profiling and logging
   */
-#if defined(PETSC_USE_INFO)
-  {
-    PetscCall(PetscInfoSetFromOptions(NULL));
-  }
-#endif
+  if (PetscDefined(USE_LOG)) { PetscCall(PetscInfoSetFromOptions(NULL)); }
   PetscCall(PetscDetermineInitialFPTrap());
   flg1 = PETSC_FALSE;
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-fp_trap", &flg1, &flag));
   if (flag) PetscCall(PetscSetFPTrap(flg1 ? PETSC_FP_TRAP_ON : PETSC_FP_TRAP_OFF));
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-check_pointer_intensity", &intensity, &flag));
   if (flag) PetscCall(PetscCheckPointerSetIntensity(intensity));
-#if defined(PETSC_USE_LOG)
-  mname[0] = 0;
-  PetscCall(PetscOptionsGetString(NULL, NULL, "-history", mname, sizeof(mname), &flg1));
-  if (flg1) {
-    if (mname[0]) {
-      PetscCall(PetscOpenHistoryFile(mname, &petsc_history));
-    } else {
-      PetscCall(PetscOpenHistoryFile(NULL, &petsc_history));
+  if (PetscDefined(USE_LOG)) {
+    char              mname[PETSC_MAX_PATH_LEN];
+    PetscInt          n_max = PETSC_LOG_VIEW_FROM_OPTIONS_MAX;
+    PetscViewerFormat format[PETSC_LOG_VIEW_FROM_OPTIONS_MAX];
+
+    mname[0] = 0;
+    PetscCall(PetscOptionsGetString(NULL, NULL, "-history", mname, sizeof(mname), &flg1));
+    if (flg1) {
+      if (mname[0]) {
+        PetscCall(PetscOpenHistoryFile(mname, &petsc_history));
+      } else {
+        PetscCall(PetscOpenHistoryFile(NULL, &petsc_history));
+      }
+    }
+
+    PetscCall(PetscOptionsGetBool(NULL, NULL, "-log_sync", &PetscLogSyncOn, NULL));
+
+    if (PetscDefined(HAVE_MPE)) {
+      flg1 = PETSC_FALSE;
+      PetscCall(PetscOptionsHasName(NULL, NULL, "-log_mpe", &flg1));
+      if (flg1) PetscCall(PetscLogMPEBegin());
+    }
+    if (PetscDefined(HAVE_TAU_PERFSTUBS)) {
+      flg1 = PETSC_FALSE;
+      PetscCall(PetscOptionsHasName(NULL, NULL, "-log_perfstubs", &flg1));
+      if (flg1) PetscCall(PetscLogPerfstubsBegin());
+    }
+    flg1 = PETSC_FALSE;
+    PetscCall(PetscOptionsGetBool(NULL, NULL, "-log_all", &flg1, NULL));
+    PetscCall(PetscOptionsGetBool(NULL, NULL, "-log", &flg2, NULL));
+    if (flg1 || flg2) PetscCall(PetscLogDefaultBegin());
+
+    PetscCall(PetscOptionsGetString(NULL, NULL, "-log_trace", mname, sizeof(mname), &flg1));
+    if (flg1) {
+      char  name[PETSC_MAX_PATH_LEN], fname[PETSC_MAX_PATH_LEN];
+      FILE *file;
+      if (mname[0]) {
+        PetscCall(PetscSNPrintf(name, PETSC_MAX_PATH_LEN, "%s.%d", mname, rank));
+        PetscCall(PetscFixFilename(name, fname));
+        file = fopen(fname, "w");
+        PetscCheck(file, PETSC_COMM_SELF, PETSC_ERR_FILE_OPEN, "Unable to open trace file: %s", fname);
+      } else file = PETSC_STDOUT;
+      PetscCall(PetscLogTraceBegin(file));
+    }
+
+    PetscCall(PetscOptionsGetViewers(comm, NULL, NULL, "-log_view", &n_max, NULL, format, NULL));
+    if (n_max > 0) {
+      PetscBool any_nested  = PETSC_FALSE;
+      PetscBool any_default = PETSC_FALSE;
+
+      for (PetscInt i = 0; i < n_max; i++) {
+        if (format[i] == PETSC_VIEWER_ASCII_XML || format[i] == PETSC_VIEWER_ASCII_FLAMEGRAPH) {
+          any_nested = PETSC_TRUE;
+        } else {
+          any_default = PETSC_TRUE;
+        }
+      }
+      if (any_default) { PetscCall(PetscLogDefaultBegin()); }
+      if (any_nested) {
+        PetscCall(PetscLogNestedBegin());
+        PetscReal threshold = PetscRealConstant(0.01);
+        PetscCall(PetscOptionsGetReal(NULL, NULL, "-log_threshold", &threshold, &flg1));
+        if (flg1) PetscCall(PetscLogSetThreshold((PetscLogDouble)threshold, NULL));
+      }
     }
   }
-
-  PetscCall(PetscOptionsGetBool(NULL, NULL, "-log_sync", &PetscLogSyncOn, NULL));
-
-  #if defined(PETSC_HAVE_MPE)
-  flg1 = PETSC_FALSE;
-  PetscCall(PetscOptionsHasName(NULL, NULL, "-log_mpe", &flg1));
-  if (flg1) PetscCall(PetscLogMPEBegin());
-  #endif
-  flg1 = PETSC_FALSE;
-  flg3 = PETSC_FALSE;
-  PetscCall(PetscOptionsGetBool(NULL, NULL, "-log_all", &flg1, NULL));
-  PetscCall(PetscOptionsHasName(NULL, NULL, "-log_summary", &flg3));
-  if (flg1) PetscCall(PetscLogAllBegin());
-  else if (flg3) PetscCall(PetscLogDefaultBegin());
-
-  PetscCall(PetscOptionsGetString(NULL, NULL, "-log_trace", mname, sizeof(mname), &flg1));
-  if (flg1) {
-    char  name[PETSC_MAX_PATH_LEN], fname[PETSC_MAX_PATH_LEN];
-    FILE *file;
-    if (mname[0]) {
-      PetscCall(PetscSNPrintf(name, PETSC_MAX_PATH_LEN, "%s.%d", mname, rank));
-      PetscCall(PetscFixFilename(name, fname));
-      file = fopen(fname, "w");
-      PetscCheck(file, PETSC_COMM_SELF, PETSC_ERR_FILE_OPEN, "Unable to open trace file: %s", fname);
-    } else file = PETSC_STDOUT;
-    PetscCall(PetscLogTraceBegin(file));
-  }
-
-  PetscCall(PetscOptionsGetViewer(comm, NULL, NULL, "-log_view", NULL, &format, &flg4));
-  if (flg4) {
-    if (format == PETSC_VIEWER_ASCII_XML || format == PETSC_VIEWER_ASCII_FLAMEGRAPH) {
-      PetscCall(PetscLogNestedBegin());
-    } else {
-      PetscCall(PetscLogDefaultBegin());
-    }
-  }
-  if (flg4 && (format == PETSC_VIEWER_ASCII_XML || format == PETSC_VIEWER_ASCII_FLAMEGRAPH)) {
-    PetscReal threshold = PetscRealConstant(0.01);
-    PetscCall(PetscOptionsGetReal(NULL, NULL, "-log_threshold", &threshold, &flg1));
-    if (flg1) PetscCall(PetscLogSetThreshold((PetscLogDouble)threshold, NULL));
-  }
-#endif
 
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-saws_options", &PetscOptionsPublish, NULL));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-use_gpu_aware_mpi", &use_gpu_aware_mpi, &flg1));
@@ -589,9 +584,7 @@ PETSC_INTERN PetscErrorCode PetscOptionsCheckInitial_Private(const char help[])
     PetscCall((*PetscHelpPrintf)(comm, " -fp_trap: stop on floating point exceptions\n"));
     PetscCall((*PetscHelpPrintf)(comm, "           note on IBM RS6000 this slows run greatly\n"));
     PetscCall((*PetscHelpPrintf)(comm, " -malloc_dump <optional filename>: dump list of unfreed memory at conclusion\n"));
-    PetscCall((*PetscHelpPrintf)(comm, " -malloc: use PETSc error checking malloc (deprecated, use -malloc_debug)\n"));
-    PetscCall((*PetscHelpPrintf)(comm, " -malloc no: don't use PETSc error checking malloc (deprecated, use -malloc_debug no)\n"));
-    PetscCall((*PetscHelpPrintf)(comm, " -malloc_info: prints total memory usage\n"));
+    PetscCall((*PetscHelpPrintf)(comm, " -on_error_malloc_dump <optional filename>: dump list of unfreed memory on memory error\n"));
     PetscCall((*PetscHelpPrintf)(comm, " -malloc_view <optional filename>: keeps log of all memory allocations, displays in PetscFinalize()\n"));
     PetscCall((*PetscHelpPrintf)(comm, " -malloc_debug <true or false>: enables or disables extended checking for memory corruption\n"));
     PetscCall((*PetscHelpPrintf)(comm, " -options_view: dump list of options inputted\n"));

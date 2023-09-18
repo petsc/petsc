@@ -1,5 +1,4 @@
-#ifndef PETSCLAYOUTHDF5_H
-#define PETSCLAYOUTHDF5_H
+#pragma once
 
 #include <petscviewerhdf5.h>
 #include <petscis.h>
@@ -8,6 +7,4 @@
   #include <H5Ipublic.h>
 PETSC_EXTERN PetscErrorCode PetscViewerHDF5ReadSizes(PetscViewer, const char[], PetscInt *, PetscInt *);
 PETSC_EXTERN PetscErrorCode PetscViewerHDF5Load(PetscViewer, const char *, PetscLayout, hid_t, void **);
-#endif
-
 #endif

@@ -1,5 +1,7 @@
-# Staggered, Structured Grids (DMStag)
+# Staggered, Structured Grids (DMSTAG)
 
-<A HREF="PETSC_DIRsrc/dm/impls/stag/tutorials/index.html">Examples</A></BR>
+The `DMSTAG` subclass of `DM` encapsulates a Cartesian structured mesh, with "staggered" data living on elements, faces, edges, and vertices.
+Users guide chapter [](/manual/dmstag).
 
-The DMSTAG class encapsulates a Cartesian structured mesh, with "staggered" data living on elements, faces, edges, and vertices. See the [manual chapter on DMSTAG](/manual/dmstag).
+<A HREF="PETSC_DOC_OUT_ROOT_PLACEHOLDER/src/dm/impls/stag/tutorials/index.html">Examples</A></BR>
+

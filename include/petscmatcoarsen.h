@@ -1,5 +1,4 @@
-#ifndef PETSCMATCOARSEN_H
-#define PETSCMATCOARSEN_H
+#pragma once
 
 #include <petscmat.h>
 
@@ -15,7 +14,7 @@ PETSC_EXTERN PetscFunctionList MatCoarsenList;
   Note:
     This is used by the `PCGAMG` to generate coarser representations of an algebraic problem
 
-.seealso: [](chapter_matrices), [](sec_graph), `Mat`, `MatCoarsenCreate()`, `MatCoarsenType`, `MatColoringType`, `MatPartitioningType`, `MatOrderingType`
+.seealso: [](ch_matrices), [](sec_graph), `Mat`, `MatCoarsenCreate()`, `MatCoarsenType`, `MatColoringType`, `MatPartitioningType`, `MatOrderingType`
           `MatColoring`, `MatPartitioning`
 S*/
 typedef struct _p_MatCoarsen *MatCoarsen;
@@ -25,7 +24,7 @@ typedef struct _p_MatCoarsen *MatCoarsen;
 
    Level: beginner
 
-.seealso: [](chapter_matrices), [](sec_graph), `Mat`, `MatCoarsenCreate()`, `MatCoarsen`, `MatColoringType`, `MatPartitioningType`, `MatOrderingType`
+.seealso: [](ch_matrices), [](sec_graph), `Mat`, `MatCoarsenCreate()`, `MatCoarsen`, `MatColoringType`, `MatPartitioningType`, `MatOrderingType`
 J*/
 typedef const char *MatCoarsenType;
 #define MATCOARSENMIS  "mis"
@@ -44,7 +43,7 @@ typedef struct _PetscCDArrNd {
   struct _PetscCDIntNd *array;
 } PetscCDArrNd;
 
-/* linked list data structure that encodes aggragates and C-F points with array[idx] == NULL for F point and array of indices in an aggrate or C point (first index is always global index my0 + idx */
+/* linked list data structure that encodes aggregates and C-F points with array[idx] == NULL for F point and array of indices in an aggregate or C point (first index is always global index my0 + idx */
 typedef struct _PetscCoarsenData {
   PetscCDArrNd   pool_list; /* node pool */
   PetscCDIntNd  *new_node;
@@ -93,4 +92,3 @@ PETSC_EXTERN PetscErrorCode PetscCDGetASMBlocks(const PetscCoarsenData *, const 
 
 PETSC_EXTERN PetscErrorCode MatCoarsenMISKSetDistance(MatCoarsen, PetscInt);
 PETSC_EXTERN PetscErrorCode MatCoarsenMISKGetDistance(MatCoarsen, PetscInt *);
-#endif

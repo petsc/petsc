@@ -54,18 +54,18 @@ static void PetscSignalHandler_Private(int sig)
 }
 
 /*@
-   PetscSignalHandlerDefault - Default signal handler.
+  PetscSignalHandlerDefault - Default signal handler.
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  sig - signal value
--  ptr - unused pointer
+  Input Parameters:
++ sig - signal value
+- ptr - unused pointer
 
-   Level: advanced
+  Level: advanced
 
-   Developer Note:
-   This does not call `PetscError()`, handles the entire error process directly
+  Developer Notes:
+  This does not call `PetscError()`, handles the entire error process directly
 
 .seealso: `PetscPushSignalHandler()`
 @*/
@@ -179,18 +179,22 @@ PetscErrorCode PetscSignalHandlerDefault(int sig, void *ptr)
 #endif
 
 /*@C
-   PetscPushSignalHandler - Catches the usual fatal errors and
-   calls a user-provided routine.
+  PetscPushSignalHandler - Catches the usual fatal errors and
+  calls a user-provided routine.
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  routine - routine to call when a signal is received
--  ctx - optional context needed by the routine
+  Input Parameters:
++ routine - routine to call when a signal is received
+- ctx     - optional context needed by the routine
 
   Level: developer
 
-.seealso: `PetscPopSignalHandler()`, `PetscSignalHandlerDefault()`, `PetscPushErrorHandler()`
+  Note:
+  There is no way to return to a signal handler that was set directly by the user with the UNIX signal handler API or by
+  the loader. That information is lost with the first call to `PetscPushSignalHandler()`
+
+.seealso: [](sec_errors), `PetscPopSignalHandler()`, `PetscSignalHandlerDefault()`, `PetscPushErrorHandler()`
 @*/
 PetscErrorCode PetscPushSignalHandler(PetscErrorCode (*routine)(int, void *), void *ctx)
 {
@@ -220,7 +224,7 @@ PetscErrorCode PetscPushSignalHandler(PetscErrorCode (*routine)(int, void *), vo
       struct sigaction action;
       sigaction(SIGHUP, NULL, &action);
       if (action.sa_handler == SIG_IGN) {
-        PetscCall(PetscInfo(NULL, "SIGHUP previously set to ignore, therefor not changing its signal handler\n"));
+        PetscCall(PetscInfo(NULL, "SIGHUP previously set to ignore, therefore not changing its signal handler\n"));
       } else {
         signal(SIGHUP, PETSC_SIGNAL_CAST PetscSignalHandler_Private);
       }
@@ -334,15 +338,19 @@ PetscErrorCode PetscPushSignalHandler(PetscErrorCode (*routine)(int, void *), vo
 }
 
 /*@
-   PetscPopSignalHandler - Removes the most last signal handler that was pushed.
-       If no signal handlers are left on the stack it will remove the PETSc signal handler.
-       (That is PETSc will no longer catch signals).
+  PetscPopSignalHandler - Removes the last signal handler that was pushed.
+  If no signal handlers are left on the stack it will remove the PETSc signal handler.
+  (That is PETSc will no longer catch signals).
 
-   Not Collective
+  Not Collective
 
   Level: developer
 
-.seealso: `PetscPushSignalHandler()`
+  Note:
+  There is no way to return to a signal handler that was set directly by the user with the UNIX signal handler API or by
+  the loader. That information is lost with the first call to `PetscPushSignalHandler()`
+
+.seealso: [](sec_errors), `PetscPushSignalHandler()`
 @*/
 PetscErrorCode PetscPopSignalHandler(void)
 {

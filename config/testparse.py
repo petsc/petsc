@@ -50,7 +50,7 @@ sys.path.insert(0,maintdir)
 # These are special keys describing build
 buildkeys="requires TODO SKIP depends".split()
 
-acceptedkeys=set("test nsize requires command suffix diff_args args filter filter_output localrunfiles comments TODO SKIP output_file timeoutfactor env".split())
+acceptedkeys=set("test nsize requires command suffix diff_args args filter filter_output localrunfiles comments TODO SKIP output_file timeoutfactor env temporaries".split())
 appendlist="args diff_args requires comments env".split()
 
 import re
@@ -419,11 +419,13 @@ def parseTest(testStr,srcfile,verbosity):
     if comment: comments.append(comment)
     if not line.strip(): continue
     lsplit=line.split(':')
-    if len(lsplit)==0: raise Exception("Missing : in line: "+line)
+    if len(lsplit)==0:
+      raise Exception("\n\nError in test harness parsing file: "+srcfile+"\nMissing : in line: "+line)
     indentcount=lsplit[0].count(" ")
     var=lsplit[0].strip()
     val=line[line.find(':')+1:].strip()
-    if not var in acceptedkeys: raise Exception("Keyword: "+var+" from: "+line+" is not valid")
+    if not var in acceptedkeys:
+      raise Exception("\n\nError in test harness parsing file: "+srcfile+"\n"+var+" from: "+line+" is not a valid keyword")
     # Start by seeing if we are in a subtest
     if line.startswith(" "):
       if var in subdict[subtestname]:
@@ -446,15 +448,14 @@ def parseTest(testStr,srcfile,verbosity):
         if var in appendlist:
           subdict[var]+=" "+val
         else:
-          raise Exception(var+" entered twice: "+line)
+          raise Exception("\n\nError in test harness parsing file: "+srcfile+"\n"+var+" entered twice: "+line)
       else:
         subdict[var]=val
       if var=="suffix":
         if len(val)>0:
           testname+="_"+val
       if var == "env" and len(val) == 0:
-        mess = "value for {}: directive cannot be empty!".format(var)
-        raise Exception(mess)
+        raise Exception("\n\nError in test harness parsing file: "+srcfile+"\nvalue for {}: directive cannot be empty!".format(var))
 
   if len(comments): subdict['comments']="\n".join(comments).lstrip("\n")
 

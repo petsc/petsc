@@ -1,10 +1,15 @@
   0 SNES Function norm < 1.e-11
     0 SNES Function norm < 1.e-11
+    1 SNES Function norm < 1.e-11
       0 SNES Function norm < 1.e-11
+      1 SNES Function norm < 1.e-11
         0 SNES Function norm < 1.e-11
         1 SNES Function norm < 1.e-11
+      Nonlinear fas_coarse_ solve converged due to CONVERGED_SNORM_RELATIVE iterations 1
       0 SNES Function norm < 1.e-11
+      1 SNES Function norm < 1.e-11
     0 SNES Function norm < 1.e-11
+    1 SNES Function norm < 1.e-11
   1 SNES Function norm < 1.e-11
 L_2 Error: < 1.0e-11
 Nonlinear solve did not converge due to DIVERGED_MAX_IT iterations 1
@@ -19,6 +24,7 @@ SNES Object: 4 MPI processes
       tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
       total number of linear solver iterations=1
       total number of function evaluations=1
+      norm schedule ALWAYS
       SNESLineSearch Object: (fas_coarse_) 4 MPI processes
         type: basic
         maxstep=1.000000e+08, minlambda=1.000000e-12
@@ -44,13 +50,11 @@ SNES Object: 4 MPI processes
       type: newtonls
       maximum iterations=1, maximum function evaluations=30000
       tolerances: relative=0., absolute=1e-10, solution=0.
-      total number of linear solver iterations=0
-      total number of function evaluations=1
+      total number of linear solver iterations=1
+      total number of function evaluations=2
       norm schedule FINALONLY
       SNESLineSearch Object: (fas_levels_1_) 4 MPI processes
-        type: bt
-          interpolation: cubic
-          alpha=1.000000e-04
+        type: basic
         maxstep=1.000000e+08, minlambda=1.000000e-12
         tolerances: relative=1.000000e-08, absolute=1.000000e-15, lambda=1.000000e-08
         maximum iterations=40
@@ -59,23 +63,27 @@ SNES Object: 4 MPI processes
         maximum iterations=10000, initial guess is zero
         tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
-        using DEFAULT norm type for convergence test
+        using NONE norm type for convergence test
       PC Object: (fas_levels_1_) 4 MPI processes
         type: none
-        PC has not been set up so information may be incomplete
+        linear system matrix = precond matrix:
+        Mat Object: 4 MPI processes
+          type: mpiaij
+          rows=49, cols=49
+          total: nonzeros=529, allocated nonzeros=529
+          total number of mallocs used during MatSetValues calls=0
+            not using I-node (on process 0) routines
     Up solver (post-smoother) same as down solver (pre-smoother)
     Down solver (pre-smoother) on level 2 -------------------------------
     SNES Object: (fas_levels_2_) 4 MPI processes
       type: newtonls
       maximum iterations=1, maximum function evaluations=30000
       tolerances: relative=0., absolute=1e-10, solution=0.
-      total number of linear solver iterations=0
-      total number of function evaluations=1
+      total number of linear solver iterations=1
+      total number of function evaluations=2
       norm schedule FINALONLY
       SNESLineSearch Object: (fas_levels_2_) 4 MPI processes
-        type: bt
-          interpolation: cubic
-          alpha=1.000000e-04
+        type: basic
         maxstep=1.000000e+08, minlambda=1.000000e-12
         tolerances: relative=1.000000e-08, absolute=1.000000e-15, lambda=1.000000e-08
         maximum iterations=40
@@ -84,10 +92,16 @@ SNES Object: 4 MPI processes
         maximum iterations=10000, initial guess is zero
         tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
-        using DEFAULT norm type for convergence test
+        using NONE norm type for convergence test
       PC Object: (fas_levels_2_) 4 MPI processes
         type: none
-        PC has not been set up so information may be incomplete
+        linear system matrix = precond matrix:
+        Mat Object: 4 MPI processes
+          type: mpiaij
+          rows=225, cols=225
+          total: nonzeros=3025, allocated nonzeros=3025
+          total number of mallocs used during MatSetValues calls=0
+            not using I-node (on process 0) routines
     Up solver (post-smoother) same as down solver (pre-smoother)
   maximum iterations=1, maximum function evaluations=30000
   tolerances: relative=1e-08, absolute=1e-50, solution=1e-08

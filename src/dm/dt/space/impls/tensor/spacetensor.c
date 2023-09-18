@@ -428,13 +428,16 @@ static PetscErrorCode PetscSpaceEvaluate_Tensor(PetscSpace sp, PetscInt npoints,
 }
 
 /*@
-  PetscSpaceTensorSetNumSubspaces - Set the number of spaces in the tensor product
+  PetscSpaceTensorSetNumSubspaces - Set the number of spaces in the tensor product space
 
   Input Parameters:
-+ sp  - the function space object
++ sp            - the function space object
 - numTensSpaces - the number of spaces
 
   Level: intermediate
+
+  Note:
+  The name NumSubspaces is misleading because it is actually setting the number of defining spaces of the tensor product space, not a number of Subspaces of it
 
 .seealso: `PETSCSPACETENSOR`, `PetscSpace`, `PetscSpaceTensorGetNumSubspaces()`, `PetscSpaceSetDegree()`, `PetscSpaceSetNumVariables()`
 @*/
@@ -447,15 +450,18 @@ PetscErrorCode PetscSpaceTensorSetNumSubspaces(PetscSpace sp, PetscInt numTensSp
 }
 
 /*@
-  PetscSpaceTensorGetNumSubspaces - Get the number of spaces in the tensor product
+  PetscSpaceTensorGetNumSubspaces - Get the number of spaces in the tensor product space
 
   Input Parameter:
-. sp  - the function space object
+. sp - the function space object
 
   Output Parameter:
 . numTensSpaces - the number of spaces
 
   Level: intermediate
+
+  Note:
+  The name NumSubspaces is misleading because it is actually getting the number of defining spaces of the tensor product space, not a number of Subspaces of it
 
 .seealso: `PETSCSPACETENSOR`, `PetscSpace`, `PetscSpaceTensorSetNumSubspaces()`, `PetscSpaceSetDegree()`, `PetscSpaceSetNumVariables()`
 @*/
@@ -463,13 +469,13 @@ PetscErrorCode PetscSpaceTensorGetNumSubspaces(PetscSpace sp, PetscInt *numTensS
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
-  PetscValidIntPointer(numTensSpaces, 2);
+  PetscAssertPointer(numTensSpaces, 2);
   PetscTryMethod(sp, "PetscSpaceTensorGetNumSubspaces_C", (PetscSpace, PetscInt *), (sp, numTensSpaces));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
-  PetscSpaceTensorSetSubspace - Set a space in the tensor product
+  PetscSpaceTensorSetSubspace - Set a space in the tensor product space
 
   Input Parameters:
 + sp    - the function space object
@@ -477,6 +483,9 @@ PetscErrorCode PetscSpaceTensorGetNumSubspaces(PetscSpace sp, PetscInt *numTensS
 - subsp - the number of spaces
 
   Level: intermediate
+
+  Note:
+  The name SetSubspace is misleading because it is actually setting one of the defining spaces of the tensor product space, not a Subspace of it
 
 .seealso: `PETSCSPACETENSOR`, `PetscSpace`, `PetscSpaceTensorGetSubspace()`, `PetscSpaceSetDegree()`, `PetscSpaceSetNumVariables()`
 @*/
@@ -490,16 +499,19 @@ PetscErrorCode PetscSpaceTensorSetSubspace(PetscSpace sp, PetscInt s, PetscSpace
 }
 
 /*@
-  PetscSpaceTensorGetSubspace - Get a space in the tensor product
+  PetscSpaceTensorGetSubspace - Get a space in the tensor product space
 
   Input Parameters:
 + sp - the function space object
 - s  - The space number
 
   Output Parameter:
-. subsp - the PetscSpace
+. subsp - the `PetscSpace`
 
   Level: intermediate
+
+  Note:
+  The name GetSubspace is misleading because it is actually getting one of the defining spaces of the tensor product space, not a Subspace of it
 
 .seealso: `PETSCSPACETENSOR`, `PetscSpace`, `PetscSpaceTensorSetSubspace()`, `PetscSpaceSetDegree()`, `PetscSpaceSetNumVariables()`
 @*/
@@ -507,7 +519,7 @@ PetscErrorCode PetscSpaceTensorGetSubspace(PetscSpace sp, PetscInt s, PetscSpace
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
-  PetscValidPointer(subsp, 3);
+  PetscAssertPointer(subsp, 3);
   PetscTryMethod(sp, "PetscSpaceTensorGetSubspace_C", (PetscSpace, PetscInt, PetscSpace *), (sp, s, subsp));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -631,7 +643,8 @@ static PetscErrorCode PetscSpaceInitialize_Tensor(PetscSpace sp)
 
   Level: intermediate
 
-.seealso: `PetscSpace`, `PetscSpaceType`, `PetscSpaceCreate()`, `PetscSpaceSetType()`
+.seealso: `PetscSpace`, `PetscSpaceType`, `PetscSpaceCreate()`, `PetscSpaceSetType()`, `PetscSpaceTensorGetSubspace()`, `PetscSpaceTensorSetSubspace()`,
+          `PetscSpaceTensorGetNumSubspaces()`, `PetscSpaceTensorSetNumSubspaces()`
 M*/
 
 PETSC_EXTERN PetscErrorCode PetscSpaceCreate_Tensor(PetscSpace sp)

@@ -1,5 +1,4 @@
-#ifndef PETSC_PCBDDCSTRUCTSIMPL_H
-#define PETSC_PCBDDCSTRUCTSIMPL_H
+#pragma once
 
 #include <petscksp.h>
 #include <petscbt.h>
@@ -254,5 +253,3 @@ struct _BDDCIPC_ctx {
   PC         bddc;
 };
 typedef struct _BDDCIPC_ctx *BDDCIPC_ctx;
-
-#endif // PETSC_PCBDDCSTRUCTSIMPL_H

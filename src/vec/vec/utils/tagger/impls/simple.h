@@ -1,16 +1,12 @@
-#ifndef VECTAGGERSIMPLE_H
-#define VECTAGGERSIMPLE_H
+#pragma once
 #include <petsc/private/vecimpl.h>
 
 typedef struct {
   VecTaggerBox *box;
 } VecTagger_Simple;
 
-PETSC_EXTERN PetscErrorCode VecTaggerDestroy_Simple(VecTagger);
-PETSC_EXTERN PetscErrorCode VecTaggerSetFromOptions_Simple(VecTagger, PetscOptionItems *);
-PETSC_EXTERN PetscErrorCode VecTaggerSetUp_Simple(VecTagger);
-PETSC_EXTERN PetscErrorCode VecTaggerView_Simple(VecTagger, PetscViewer);
-PETSC_EXTERN PetscErrorCode VecTaggerSetBox_Simple(VecTagger, VecTaggerBox *);
-PETSC_EXTERN PetscErrorCode VecTaggerGetBox_Simple(VecTagger, const VecTaggerBox **);
-PETSC_EXTERN PetscErrorCode VecTaggerCreate_Simple(VecTagger);
-#endif
+PETSC_INTERN PetscErrorCode VecTaggerSetFromOptions_Simple(VecTagger, PetscOptionItems *);
+PETSC_INTERN PetscErrorCode VecTaggerView_Simple(VecTagger, PetscViewer);
+PETSC_INTERN PetscErrorCode VecTaggerSetBox_Simple(VecTagger, VecTaggerBox *);
+PETSC_INTERN PetscErrorCode VecTaggerGetBox_Simple(VecTagger, const VecTaggerBox **);
+PETSC_INTERN PetscErrorCode VecTaggerCreate_Simple(VecTagger);

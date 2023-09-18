@@ -6,17 +6,17 @@ typedef struct {
 } SNESMonitor_SAWs;
 
 /*@C
-   SNESMonitorSAWsCreate - create an SAWs monitor context for `SNES`
+  SNESMonitorSAWsCreate - create an SAWs monitor context for `SNES`
 
-   Collective
+  Collective
 
-   Input Parameter:
-.  snes - `SNES` to monitor
+  Input Parameter:
+. snes - `SNES` to monitor
 
-   Output Parameter:
-.  ctx - context for monitor
+  Output Parameter:
+. ctx - context for monitor
 
-   Level: developer
+  Level: developer
 
 .seealso: `SNESSetMonitor()`, `SNES`, `SNESMonitorSAWs()`, `SNESMonitorSAWsDestroy()`
 @*/
@@ -33,14 +33,14 @@ PetscErrorCode SNESMonitorSAWsCreate(SNES snes, void **ctx)
 }
 
 /*@C
-   SNESMonitorSAWsDestroy - destroy a monitor context created with `SNESMonitorSAWsCreate()`
+  SNESMonitorSAWsDestroy - destroy a monitor context created with `SNESMonitorSAWsCreate()`
 
-   Collective
+  Collective
 
-   Input Parameter:
-.  ctx - monitor context
+  Input Parameter:
+. ctx - monitor context
 
-   Level: developer
+  Level: developer
 
 .seealso: `SNESMonitorSAWsCreate()`
 @*/
@@ -52,17 +52,17 @@ PetscErrorCode SNESMonitorSAWsDestroy(void **ctx)
 }
 
 /*@C
-   SNESMonitorSAWs - monitor solution process of `SNES` using SAWs
+  SNESMonitorSAWs - monitor solution process of `SNES` using SAWs
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  snes   - iterative context
-.  n     - iteration number
-.  rnorm - 2-norm (preconditioned) residual value (may be estimated).
--  ctx -  `PetscViewer` of type `PETSCVIEWERSAWS`
+  Input Parameters:
++ snes  - iterative context
+. n     - iteration number
+. rnorm - 2-norm (preconditioned) residual value (may be estimated).
+- ctx   - `PetscViewer` of type `PETSCVIEWERSAWS`
 
-   Level: advanced
+  Level: advanced
 
 .seealso: `PetscViewerSAWsOpen()`, `SNESMonitorSAWsDestroy()`, `SNESMonitorSAWsCreate()`
 @*/

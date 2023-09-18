@@ -43,7 +43,7 @@ static PetscErrorCode ISCopy_General(IS is, IS isy)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode ISShift_General(IS is, PetscInt shift, IS isy)
+static PetscErrorCode ISShift_General(IS is, PetscInt shift, IS isy)
 {
   IS_General *is_general = (IS_General *)is->data, *isy_general = (IS_General *)isy->data;
   PetscInt    i, n;
@@ -435,21 +435,44 @@ static PetscErrorCode ISSorted_General(IS is, PetscBool *flg)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode ISToGeneral_General(IS is)
+static PetscErrorCode ISToGeneral_General(IS is)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static struct _ISOps myops = {ISGetIndices_General, ISRestoreIndices_General, ISInvertPermutation_General, ISSort_General, ISSortRemoveDups_General, ISSorted_General, ISDuplicate_General, ISDestroy_General, ISView_General, ISLoad_Default, ISCopy_General, ISToGeneral_General, ISOnComm_General, ISSetBlockSize_General, ISContiguousLocal_General, ISLocate_General,
-                              /* no specializations of {sorted,unique,perm,interval}{local,global}
-                                * because the default checks in ISGetInfo_XXX in index.c are exactly
-                                * what we would do for ISGeneral */
-                              NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
+// clang-format off
+static const struct _ISOps myops = {
+  PetscDesignatedInitializer(getindices, ISGetIndices_General),
+  PetscDesignatedInitializer(restoreindices, ISRestoreIndices_General),
+  PetscDesignatedInitializer(invertpermutation, ISInvertPermutation_General),
+  PetscDesignatedInitializer(sort, ISSort_General),
+  PetscDesignatedInitializer(sortremovedups, ISSortRemoveDups_General),
+  PetscDesignatedInitializer(sorted, ISSorted_General),
+  PetscDesignatedInitializer(duplicate, ISDuplicate_General),
+  PetscDesignatedInitializer(destroy, ISDestroy_General),
+  PetscDesignatedInitializer(view, ISView_General),
+  PetscDesignatedInitializer(load, ISLoad_Default),
+  PetscDesignatedInitializer(copy, ISCopy_General),
+  PetscDesignatedInitializer(togeneral, ISToGeneral_General),
+  PetscDesignatedInitializer(oncomm, ISOnComm_General),
+  PetscDesignatedInitializer(setblocksize, ISSetBlockSize_General),
+  PetscDesignatedInitializer(contiguous, ISContiguousLocal_General),
+  PetscDesignatedInitializer(locate, ISLocate_General),
+  /* no specializations of {sorted,unique,perm,interval}{local,global} because the default
+   * checks in ISGetInfo_XXX in index.c are exactly what we would do for ISGeneral */
+  PetscDesignatedInitializer(sortedlocal, NULL),
+  PetscDesignatedInitializer(sortedglobal, NULL),
+  PetscDesignatedInitializer(uniquelocal, NULL),
+  PetscDesignatedInitializer(uniqueglobal, NULL),
+  PetscDesignatedInitializer(permlocal, NULL),
+  PetscDesignatedInitializer(permglobal, NULL),
+  PetscDesignatedInitializer(intervallocal, NULL),
+  PetscDesignatedInitializer(intervalglobal, NULL)
+};
+// clang-format on
 
-PETSC_INTERN PetscErrorCode ISSetUp_General(IS);
-
-PetscErrorCode ISSetUp_General(IS is)
+PETSC_INTERN PetscErrorCode ISSetUp_General(IS is)
 {
   IS_General     *sub = (IS_General *)is->data;
   const PetscInt *idx = sub->idx;
@@ -474,28 +497,28 @@ PetscErrorCode ISSetUp_General(IS is)
 }
 
 /*@
-   ISCreateGeneral - Creates a data structure for an index set containing a list of integers.
+  ISCreateGeneral - Creates a data structure for an index set containing a list of integers.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  comm - the MPI communicator
-.  n - the length of the index set
-.  idx - the list of integers
--  mode - `PETSC_COPY_VALUES`, `PETSC_OWN_POINTER`, or `PETSC_USE_POINTER`; see `PetscCopyMode` for meaning of this flag.
+  Input Parameters:
++ comm - the MPI communicator
+. n    - the length of the index set
+. idx  - the list of integers
+- mode - `PETSC_COPY_VALUES`, `PETSC_OWN_POINTER`, or `PETSC_USE_POINTER`; see `PetscCopyMode` for meaning of this flag.
 
-   Output Parameter:
-.  is - the new index set
+  Output Parameter:
+. is - the new index set
 
-   Level: beginner
+  Level: beginner
 
-   Notes:
-   When the communicator is not `MPI_COMM_SELF`, the operations on IS are NOT
-   conceptually the same as `MPI_Group` operations. The `IS` are then
-   distributed sets of indices and thus certain operations on them are
-   collective.
+  Notes:
+  When the communicator is not `MPI_COMM_SELF`, the operations on IS are NOT
+  conceptually the same as `MPI_Group` operations. The `IS` are then
+  distributed sets of indices and thus certain operations on them are
+  collective.
 
-   Use `ISGeneralSetIndices()` to provide indices to an already existing `IS` of `ISType` `ISGENERAL`
+  Use `ISGeneralSetIndices()` to provide indices to an already existing `IS` of `ISType` `ISGENERAL`
 
 .seealso: [](sec_scatter), `IS`, `ISGENERAL`, `ISCreateStride()`, `ISCreateBlock()`, `ISAllGather()`, `PETSC_COPY_VALUES`, `PETSC_OWN_POINTER`,
           `PETSC_USE_POINTER`, `PetscCopyMode`, `ISGeneralSetIndicesFromMask()`
@@ -510,20 +533,20 @@ PetscErrorCode ISCreateGeneral(MPI_Comm comm, PetscInt n, const PetscInt idx[], 
 }
 
 /*@
-   ISGeneralSetIndices - Sets the indices for an `ISGENERAL` index set
+  ISGeneralSetIndices - Sets the indices for an `ISGENERAL` index set
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  is - the index set
-.  n - the length of the index set
-.  idx - the list of integers
--  mode - see `PetscCopyMode` for meaning of this flag.
+  Input Parameters:
++ is   - the index set
+. n    - the length of the index set
+. idx  - the list of integers
+- mode - see `PetscCopyMode` for meaning of this flag.
 
-   Level: beginner
+  Level: beginner
 
-   Note:
-   Use `ISCreateGeneral()` to create the `IS` and set its indices in a single function call
+  Note:
+  Use `ISCreateGeneral()` to create the `IS` and set its indices in a single function call
 
 .seealso: [](sec_scatter), `IS`, `ISBLOCK`, `ISCreateGeneral()`, `ISGeneralSetIndicesFromMask()`, `ISBlockSetIndices()`, `ISGENERAL`, `PetscCopyMode`
 @*/
@@ -531,20 +554,20 @@ PetscErrorCode ISGeneralSetIndices(IS is, PetscInt n, const PetscInt idx[], Pets
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is, IS_CLASSID, 1);
-  if (n) PetscValidIntPointer(idx, 3);
+  if (n) PetscAssertPointer(idx, 3);
   PetscCall(ISClearInfoCache(is, PETSC_FALSE));
   PetscUseMethod(is, "ISGeneralSetIndices_C", (IS, PetscInt, const PetscInt[], PetscCopyMode), (is, n, idx, mode));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode ISGeneralSetIndices_General(IS is, PetscInt n, const PetscInt idx[], PetscCopyMode mode)
+static PetscErrorCode ISGeneralSetIndices_General(IS is, PetscInt n, const PetscInt idx[], PetscCopyMode mode)
 {
   PetscLayout map;
   IS_General *sub = (IS_General *)is->data;
 
   PetscFunctionBegin;
   PetscCheck(n >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "length < 0");
-  if (n) PetscValidIntPointer(idx, 3);
+  if (n) PetscAssertPointer(idx, 3);
 
   PetscCall(PetscLayoutCreateFromSizes(PetscObjectComm((PetscObject)is), n, PETSC_DECIDE, is->map->bs, &map));
   PetscCall(PetscLayoutDestroy(&is->map));
@@ -569,27 +592,27 @@ PetscErrorCode ISGeneralSetIndices_General(IS is, PetscInt n, const PetscInt idx
 }
 
 /*@
-   ISGeneralSetIndicesFromMask - Sets the indices for an `ISGENERAL` index set using a boolean mask
+  ISGeneralSetIndicesFromMask - Sets the indices for an `ISGENERAL` index set using a boolean mask
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  is - the index set
-.  rstart - the range start index (inclusive)
-.  rend - the range end index (exclusive)
--  mask - the boolean mask array of length rend-rstart, indices will be set for each `PETSC_TRUE` value in the array
+  Input Parameters:
++ is     - the index set
+. rstart - the range start index (inclusive)
+. rend   - the range end index (exclusive)
+- mask   - the boolean mask array of length rend-rstart, indices will be set for each `PETSC_TRUE` value in the array
 
-   Level: beginner
+  Level: beginner
 
-   Note:
-   The mask array may be freed by the user after this call.
+  Note:
+  The mask array may be freed by the user after this call.
 
-   Example:
+  Example:
 .vb
    PetscBool mask[] = {PETSC_FALSE, PETSC_TRUE, PETSC_FALSE, PETSC_FALSE, PETSC_TRUE};
    ISGeneralSetIndicesFromMask(is,10,15,mask);
 .ve
-   will feed the `IS` with indices
+  will feed the `IS` with indices
 .vb
   {11, 14}
 .ve
@@ -601,13 +624,13 @@ PetscErrorCode ISGeneralSetIndicesFromMask(IS is, PetscInt rstart, PetscInt rend
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is, IS_CLASSID, 1);
-  if (rend - rstart) PetscValidBoolPointer(mask, 4);
+  if (rend - rstart) PetscAssertPointer(mask, 4);
   PetscCall(ISClearInfoCache(is, PETSC_FALSE));
   PetscUseMethod(is, "ISGeneralSetIndicesFromMask_C", (IS, PetscInt, PetscInt, const PetscBool[]), (is, rstart, rend, mask));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode ISGeneralSetIndicesFromMask_General(IS is, PetscInt rstart, PetscInt rend, const PetscBool mask[])
+static PetscErrorCode ISGeneralSetIndicesFromMask_General(IS is, PetscInt rstart, PetscInt rend, const PetscBool mask[])
 {
   PetscInt  i, nidx;
   PetscInt *idx;
@@ -644,16 +667,16 @@ static PetscErrorCode ISGeneralFilter_General(IS is, PetscInt start, PetscInt en
 }
 
 /*@
-   ISGeneralFilter - Remove all indices outside of [start, end) from an `ISGENERAL`
+  ISGeneralFilter - Remove all indices outside of [start, end) from an `ISGENERAL`
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  is - the index set
-.  start - the lowest index kept
--  end - one more than the highest index kept
+  Input Parameters:
++ is    - the index set
+. start - the lowest index kept
+- end   - one more than the highest index kept
 
-   Level: beginner
+  Level: beginner
 
 .seealso: [](sec_scatter), `IS`, `ISGENERAL`, `ISCreateGeneral()`, `ISGeneralSetIndices()`
 @*/
@@ -666,14 +689,14 @@ PetscErrorCode ISGeneralFilter(IS is, PetscInt start, PetscInt end)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PETSC_EXTERN PetscErrorCode ISCreate_General(IS is)
+PETSC_INTERN PetscErrorCode ISCreate_General(IS is)
 {
   IS_General *sub;
 
   PetscFunctionBegin;
   PetscCall(PetscNew(&sub));
-  is->data = (void *)sub;
-  PetscCall(PetscMemcpy(is->ops, &myops, sizeof(myops)));
+  is->data   = (void *)sub;
+  is->ops[0] = myops;
   PetscCall(PetscObjectComposeFunction((PetscObject)is, "ISGeneralSetIndices_C", ISGeneralSetIndices_General));
   PetscCall(PetscObjectComposeFunction((PetscObject)is, "ISGeneralSetIndicesFromMask_C", ISGeneralSetIndicesFromMask_General));
   PetscCall(PetscObjectComposeFunction((PetscObject)is, "ISGeneralFilter_C", ISGeneralFilter_General));

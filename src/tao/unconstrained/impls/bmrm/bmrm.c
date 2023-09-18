@@ -268,7 +268,7 @@ PETSC_EXTERN PetscErrorCode TaoCreate_BMRM(Tao tao)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode init_df_solver(TAO_DF *df)
+static PetscErrorCode init_df_solver(TAO_DF *df)
 {
   PetscInt i, n = INCRE_DIM;
 
@@ -306,7 +306,7 @@ PetscErrorCode init_df_solver(TAO_DF *df)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode ensure_df_space(PetscInt dim, TAO_DF *df)
+static PetscErrorCode ensure_df_space(PetscInt dim, TAO_DF *df)
 {
   PetscReal *tmp, **tmp_Q;
   PetscInt   i, n, old_n;
@@ -398,7 +398,7 @@ PetscErrorCode ensure_df_space(PetscInt dim, TAO_DF *df)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode destroy_df_solver(TAO_DF *df)
+static PetscErrorCode destroy_df_solver(TAO_DF *df)
 {
   PetscInt i;
 
@@ -428,7 +428,7 @@ PetscErrorCode destroy_df_solver(TAO_DF *df)
 }
 
 /* Piecewise linear monotone target function for the Dai-Fletcher projector */
-PetscReal phi(PetscReal *x, PetscInt n, PetscReal lambda, PetscReal *a, PetscReal b, PetscReal *c, PetscReal *l, PetscReal *u)
+static PetscReal phi(PetscReal *x, PetscInt n, PetscReal lambda, PetscReal *a, PetscReal b, PetscReal *c, PetscReal *l, PetscReal *u)
 {
   PetscReal r = 0.0;
   PetscInt  i;
@@ -450,7 +450,7 @@ PetscReal phi(PetscReal *x, PetscInt n, PetscReal lambda, PetscReal *a, PetscRea
  *
  *  \param c The point to be projected onto feasible set
  */
-PetscInt project(PetscInt n, PetscReal *a, PetscReal b, PetscReal *c, PetscReal *l, PetscReal *u, PetscReal *x, PetscReal *lam_ext, TAO_DF *df)
+static PetscInt project(PetscInt n, PetscReal *a, PetscReal b, PetscReal *c, PetscReal *l, PetscReal *u, PetscReal *x, PetscReal *lam_ext, TAO_DF *df)
 {
   PetscReal lambda, lambdal, lambdau, dlambda, lambda_new;
   PetscReal r, rl, ru, s;

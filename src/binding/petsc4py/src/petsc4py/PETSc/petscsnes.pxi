@@ -133,7 +133,7 @@ cdef extern from * nogil:
     PetscErrorCode SNESSetSolution(PetscSNES,PetscVec)
     PetscErrorCode SNESGetSolutionUpdate(PetscSNES,PetscVec*)
 
-    PetscErrorCode SNESSetInitialGuess"SNESSetComputeInitialGuess"(PetscSNES,PetscSNESInitialGuessFunction,void*)
+    PetscErrorCode SNESSetComputeInitialGuess(PetscSNES,PetscSNESInitialGuessFunction,void*)
     PetscErrorCode SNESSetFunction(PetscSNES,PetscVec,PetscSNESFunctionFunction,void*)
     PetscErrorCode SNESGetFunction(PetscSNES,PetscVec*,void*,void**)
     PetscErrorCode SNESSetUpdate(PetscSNES,PetscSNESUpdateFunction)
@@ -160,6 +160,7 @@ cdef extern from * nogil:
     PetscErrorCode SNESSetTolerances(PetscSNES,PetscReal,PetscReal,PetscReal,PetscInt,PetscInt)
     PetscErrorCode SNESGetTolerances(PetscSNES,PetscReal*,PetscReal*,PetscReal*,PetscInt*,PetscInt*)
 
+    PetscErrorCode SNESConverged(PetscSNES,PetscInt,PetscReal,PetscReal,PetscReal)
     PetscErrorCode SNESSetConvergenceTest(PetscSNES,PetscSNESConvergedFunction,void*,PetscSNESCtxDel*)
     PetscErrorCode SNESConvergedDefault(PetscSNES,PetscInt,PetscReal,PetscReal,PetscReal,
                              PetscSNESConvergedReason*,void*) except PETSC_ERR_PYTHON
@@ -262,7 +263,7 @@ cdef extern from * nogil: # custom.h
 cdef inline SNES ref_SNES(PetscSNES snes):
     cdef SNES ob = <SNES> SNES()
     ob.snes = snes
-    PetscINCREF(ob.obj)
+    CHKERR( PetscINCREF(ob.obj) )
     return ob
 
 # -----------------------------------------------------------------------------

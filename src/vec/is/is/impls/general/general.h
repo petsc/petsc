@@ -1,6 +1,4 @@
-
-#ifndef __GENERAL_H
-#define __GENERAL_H
+#pragma once
 
 /*
     Defines the data structure used for the general index set
@@ -12,5 +10,3 @@ typedef struct {
   PetscBool allocated; /* did we allocate the index array ourselves? */
   PetscInt *idx;
 } IS_General;
-
-#endif

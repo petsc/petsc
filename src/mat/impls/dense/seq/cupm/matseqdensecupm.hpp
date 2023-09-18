@@ -1,20 +1,18 @@
-#ifndef PETSCMATSEQDENSECUPM_HPP
-#define PETSCMATSEQDENSECUPM_HPP
+#pragma once
 
 #include <petsc/private/matdensecupmimpl.h> /*I <petscmat.h> I*/
 #include <../src/mat/impls/dense/seq/dense.h>
 
-#if defined(__cplusplus)
-  #include <petsc/private/deviceimpl.h> // PetscDeviceContextGetOptionalNullContext_Internal()
-  #include <petsc/private/randomimpl.h> // _p_PetscRandom
-  #include <petsc/private/vecimpl.h>    // _p_Vec
-  #include <petsc/private/cupmobject.hpp>
-  #include <petsc/private/cupmsolverinterface.hpp>
+#include <petsc/private/deviceimpl.h> // PetscDeviceContextGetOptionalNullContext_Internal()
+#include <petsc/private/randomimpl.h> // _p_PetscRandom
+#include <petsc/private/vecimpl.h>    // _p_Vec
+#include <petsc/private/cupmobject.hpp>
+#include <petsc/private/cupmsolverinterface.hpp>
 
-  #include <petsc/private/cpp/type_traits.hpp> // PetscObjectCast()
-  #include <petsc/private/cpp/utility.hpp>     // util::exchange()
+#include <petsc/private/cpp/type_traits.hpp> // PetscObjectCast()
+#include <petsc/private/cpp/utility.hpp>     // util::exchange()
 
-  #include <../src/vec/vec/impls/seq/cupm/vecseqcupm.hpp> // for VecSeq_CUPM
+#include <../src/vec/vec/impls/seq/cupm/vecseqcupm.hpp> // for VecSeq_CUPM
 
 namespace Petsc
 {
@@ -155,7 +153,6 @@ public:
   static PetscErrorCode Copy(Mat, Mat, MatStructure) noexcept;
   static PetscErrorCode ZeroEntries(Mat) noexcept;
   static PetscErrorCode Scale(Mat, PetscScalar) noexcept;
-  static PetscErrorCode Shift(Mat, PetscScalar) noexcept;
   static PetscErrorCode AXPY(Mat, PetscScalar, Mat, MatStructure) noexcept;
   static PetscErrorCode Duplicate(Mat, MatDuplicateOption, Mat *) noexcept;
   static PetscErrorCode SetRandom(Mat, PetscRandom) noexcept;
@@ -244,7 +241,7 @@ inline PetscErrorCode MatDense_Seq_CUPM<T>::HostToDevice_(Mat m, PetscDeviceCont
     cupmStream_t stream;
 
     // Allocate GPU memory if not present
-    if (!mcu->d_v) PetscCall(SetPreallocation(m, dctx));
+    if (!mcu->d_v) PetscCall(SetPreallocation(m, dctx, nullptr));
     PetscCall(GetHandlesFrom_(dctx, &stream));
     PetscCall(PetscLogEventBegin(MAT_DenseCopyToGPU, m, 0, 0, 0));
     {
@@ -413,7 +410,6 @@ struct MatDense_Seq_CUPM<T>::SolveLU : SolveCommon<SolveLU> {
     const auto         mcu       = MatCUPMCast(A);
     const auto         fact_info = mcu->d_fact_info;
     const auto         fact_ipiv = mcu->d_fact_ipiv;
-    const auto         lda       = static_cast<cupmBlasInt_t>(MatIMPLCast(A)->lda);
     cupmSolverHandle_t handle;
 
     PetscFunctionBegin;
@@ -491,7 +487,7 @@ struct MatDense_Seq_CUPM<T>::SolveCholesky : SolveCommon<SolveCholesky> {
     }
     PetscCall(PetscLogGpuFlops(1.0 * n * n * n / 3.0));
 
-  #if 0
+#if 0
     // At the time of writing this interface (cuda 10.0), cusolverDn does not implement *sytrs
     // and *hetr* routines. The code below should work, and it can be activated when *sytrs
     // routines will be available
@@ -504,7 +500,7 @@ struct MatDense_Seq_CUPM<T>::SolveCholesky : SolveCommon<SolveCholesky> {
     PetscCall(PetscLogGpuTimeBegin());
     PetscCallCUPMSOLVER(cupmSolverXsytrf(handle, CUPMSOLVER_FILL_MODE_LOWER, n, da, lda, mcu->d_fact_ipiv, mcu->d_fact_work, mcu->d_fact_lwork, mcu->d_fact_info));
     PetscCall(PetscLogGpuTimeEnd());
-  #endif
+#endif
     PetscFunctionReturn(PETSC_SUCCESS);
   }
 
@@ -873,6 +869,7 @@ inline PetscErrorCode MatDense_Seq_CUPM<T>::Convert_Dispatch_(Mat M, MatType typ
     MatComposeOp_CUPM(to_host, pobj, MatDenseCUPMResetArray_C(), nullptr, ResetArray);
     MatComposeOp_CUPM(to_host, pobj, MatDenseCUPMReplaceArray_C(), nullptr, ReplaceArray);
     MatComposeOp_CUPM(to_host, pobj, MatProductSetFromOptions_seqaij_seqdensecupm_C(), nullptr, MatProductSetFromOptions_SeqAIJ_SeqDense);
+    MatComposeOp_CUPM(to_host, pobj, MatDenseCUPMSetPreallocation_C(), nullptr, SetPreallocation);
 
     if (to_host) {
       B->offloadmask = PETSC_OFFLOAD_CPU;
@@ -960,7 +957,7 @@ inline PetscErrorCode MatDense_Seq_CUPM<T>::SetUp(Mat A) noexcept
     PetscDeviceContext dctx;
 
     PetscCall(GetHandles_(&dctx));
-    PetscCall(SetPreallocation(A, dctx));
+    PetscCall(SetPreallocation(A, dctx, nullptr));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1062,6 +1059,7 @@ inline PetscErrorCode MatDense_Seq_CUPM<T>::BindToCPU(Mat A, PetscBool to_host) 
   MatSetOp_CUPM(to_host, A, zeroentries, MatZeroEntries_SeqDense, ZeroEntries);
   MatSetOp_CUPM(to_host, A, setup, MatSetUp_SeqDense, SetUp);
   MatSetOp_CUPM(to_host, A, setrandom, MatSetRandom_SeqDense, SetRandom);
+  MatSetOp_CUPM(to_host, A, getdiagonal, MatGetDiagonal_SeqDense, GetDiagonal);
   // seemingly always the same
   A->ops->productsetfromoptions = MatProductSetFromOptions_SeqDense;
 
@@ -1431,20 +1429,6 @@ inline PetscErrorCode MatDense_Seq_CUPM<T>::Scale(Mat A, PetscScalar alpha) noex
 }
 
 template <device::cupm::DeviceType T>
-inline PetscErrorCode MatDense_Seq_CUPM<T>::Shift(Mat A, PetscScalar alpha) noexcept
-{
-  const auto         m = A->rmap->n;
-  const auto         n = A->cmap->n;
-  PetscDeviceContext dctx;
-
-  PetscFunctionBegin;
-  PetscCall(GetHandles_(&dctx));
-  PetscCall(PetscInfo(A, "Performing Shift %" PetscInt_FMT " x %" PetscInt_FMT " on backend\n", m, n));
-  PetscCall(DiagonalUnaryTransform(A, 0, m, n, dctx, device::cupm::functors::make_plus_equals(alpha)));
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-template <device::cupm::DeviceType T>
 inline PetscErrorCode MatDense_Seq_CUPM<T>::AXPY(Mat Y, PetscScalar alpha, Mat X, MatStructure) noexcept
 {
   const auto         m_x = X->rmap->n, m_y = Y->rmap->n;
@@ -1506,7 +1490,7 @@ inline PetscErrorCode MatDense_Seq_CUPM<T>::Duplicate(Mat A, MatDuplicateOption 
   PetscCall(MatDuplicateNoCreate_SeqDense(*B, A, hopt));
   if (opt == MAT_COPY_VALUES && hopt != MAT_COPY_VALUES) PetscCall(Copy(A, *B, SAME_NONZERO_PATTERN));
   // allocate memory if needed
-  if (opt != MAT_COPY_VALUES && !MatCUPMCast(*B)->d_v) PetscCall(SetPreallocation(*B, dctx));
+  if (opt != MAT_COPY_VALUES && !MatCUPMCast(*B)->d_v) PetscCall(SetPreallocation(*B, dctx, nullptr));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1594,13 +1578,9 @@ inline PetscErrorCode MatDense_Seq_CUPM<T>::GetColumnVec(Mat A, PetscInt col, Ve
   PetscCheck(!mimpl->vecinuse, PETSC_COMM_SELF, PETSC_ERR_ORDER, "Need to call MatDenseRestoreColumnVec() first");
   PetscCheck(!mimpl->matinuse, PETSC_COMM_SELF, PETSC_ERR_ORDER, "Need to call MatDenseRestoreSubMatrix() first");
   mimpl->vecinuse = col + 1;
+  if (!mimpl->cvec) PetscCall(MatDenseCreateColumnVec_Private(A, &mimpl->cvec));
   PetscCall(GetHandles_(&dctx));
   PetscCall(GetArray<PETSC_MEMTYPE_DEVICE, access>(A, const_cast<PetscScalar **>(&mimpl->ptrinuse), dctx));
-  if (!mimpl->cvec) {
-    // we pass the data of A, to prevent allocating needless GPU memory the first time
-    // VecCUPMPlaceArray is called
-    PetscCall(VecCreateSeqCUPMWithArraysAsync<T>(PetscObjectComm(PetscObjectCast(A)), A->rmap->bs, A->rmap->n, nullptr, mimpl->ptrinuse, &mimpl->cvec));
-  }
   PetscCall(VecCUPMPlaceArrayAsync<T>(mimpl->cvec, mimpl->ptrinuse + static_cast<std::size_t>(col) * static_cast<std::size_t>(mimpl->lda)));
   if (access == PETSC_MEMORY_ACCESS_READ) PetscCall(VecLockReadPush(mimpl->cvec));
   *v = mimpl->cvec;
@@ -1681,10 +1661,10 @@ inline PetscErrorCode MatDense_Seq_CUPM<T>::InvertFactors(Mat A) noexcept
   cupmStream_t       stream;
 
   PetscFunctionBegin;
-  #if PetscDefined(HAVE_CUDA) && PetscDefined(USING_NVCC)
+#if PetscDefined(HAVE_CUDA) && PetscDefined(USING_NVCC)
   // HIP appears to have this by default??
   PetscCheck(PETSC_PKG_CUDA_VERSION_GE(10, 1, 0), PETSC_COMM_SELF, PETSC_ERR_SUP, "Upgrade to CUDA version 10.1.0 or higher");
-  #endif
+#endif
   if (!n || !A->rmap->n) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCheck(A->factortype == MAT_FACTOR_CHOLESKY, PETSC_COMM_SELF, PETSC_ERR_LIB, "Factor type %s not implemented", MatFactorTypes[A->factortype]);
   // spd
@@ -1846,7 +1826,3 @@ inline PetscErrorCode MatSolverTypeRegister_DENSECUPM() noexcept
 } // namespace mat
 
 } // namespace Petsc
-
-#endif // __cplusplus
-
-#endif // PETSCMATSEQDENSECUPM_HPP

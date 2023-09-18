@@ -4,11 +4,11 @@ class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
     self.gitcommit              = 'c75d74cc96d728c11b7bf0f291ba71dc369a89f4' # Thu Apr 28, 2022
-    self.download               = ['git://https://github.com/ecrc/h2opus']
+    self.download               = ['git://https://github.com/ecrc/h2opus','https://github.com/ecrc/h2opus/archive/'+self.gitcommit+'.tar.gz']
     self.precisions             = ['single','double']
     self.skippackagewithoptions = 1
     self.buildLanguages         = ['Cxx']
-    self.requirescxx14          = 1
+    self.minCxxVersion          = 'c++14'
     self.liblist                = [['libh2opus.a']]
     self.includes               = ['h2opusconf.h']
     self.functionsCxx           = [1,'','h2opusCreateHandle']
@@ -48,7 +48,7 @@ class Configure(config.package.Package):
 
     self.pushLanguage('Cxx')
     cxx = self.getCompiler()
-    cxxflags = self.getCompilerFlags()
+    cxxflags = self.updatePackageCxxFlags(self.getCompilerFlags())
     cxxflags = cxxflags.replace('-fvisibility=hidden','')
     cxxflags = cxxflags.replace('-std=gnu++14','-std=c++14')
     ldflags = self.setCompilers.LIBS + ' ' + self.setCompilers.LDFLAGS
@@ -64,7 +64,7 @@ class Configure(config.package.Package):
     if with_gpu:
       self.pushLanguage('CUDA')
       nvcc = self.getCompiler()
-      nvopts = self.getCompilerFlags()
+      nvopts = self.updatePackageCUDAFlags(self.getCompilerFlags())
       self.popLanguage()
       self.getExecutable(nvcc,getFullPath=1,resultName='systemNvcc',setMakeMacro=0)
       if hasattr(self,'systemNvcc'):
@@ -118,14 +118,14 @@ class Configure(config.package.Package):
         g.write('H2OPUS_USE_MAGMA_POTRF = 1\n')
         g.write('NVCC = '+nvcc+'\n')
         g.write('NVCCFLAGS = '+nvopts+' --expt-relaxed-constexpr\n')
-        if self.cuda.cudaArch:
+        if hasattr(self.cuda, 'cudaArch'):
           g.write('GENCODE_FLAGS = '+self.cuda.nvccArchFlags()+'\n')
         g.write('CXXCPPFLAGS += '+self.headers.toString(self.cuda.include)+'\n')
         g.write('CXXCPPFLAGS += '+self.headers.toString(self.magma.include)+'\n')
         g.write('CXXCPPFLAGS += '+self.headers.toString(self.kblas.include)+'\n')
-        g.write('CUDA_LIBS = '+self.libraries.toString(self.cuda.dlib)+'\n')
-        g.write('MAGMA_LIBS = '+self.libraries.toString(self.magma.dlib)+'\n')
-        g.write('KBLAS_LIBS = '+self.libraries.toString(self.kblas.dlib)+'\n')
+        g.write('CUDA_LIBS = '+self.libraries.toString(self.cuda.lib)+'\n')
+        g.write('MAGMA_LIBS = '+self.libraries.toString(self.magma.lib)+'\n')
+        g.write('KBLAS_LIBS = '+self.libraries.toString(self.kblas.lib)+'\n')
       else:
         if self.thrust.found:
           g.write('CXXCPPFLAGS += '+self.headers.toString(self.thrust.include)+'\n')
@@ -140,7 +140,7 @@ class Configure(config.package.Package):
       if not self.mpi.usingMPIUni:
         g.write('H2OPUS_USE_MPI = 1\n')
 
-      g.write('LDFLAGS = '+ldflags+' '+ self.libraries.toString(self.math.dlib)+'\n')
+      g.write('LDFLAGS = '+ldflags+' '+ self.libraries.toString(self.math.lib)+'\n')
 
       if not self.argDB['with-shared-libraries']:
         g.write('H2OPUS_DISABLE_SHARED = 1\n')

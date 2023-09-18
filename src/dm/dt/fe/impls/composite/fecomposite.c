@@ -241,10 +241,10 @@ PETSC_EXTERN PetscErrorCode PetscFECreate_Composite(PetscFE fem)
 . fem - The `PetscFE` object
 
   Output Parameters:
-+ blockSize - The number of elements in a block
-. numBlocks - The number of blocks in a batch
-. batchSize - The number of elements in a batch
-- numBatches - The number of batches in a chunk
++ numSubelements - The number of sub elements
+. v0             - The affine transformation for each element
+. jac            - The Jacobian for each element
+- invjac         - The inverse of the Jacobian
 
   Level: intermediate
 
@@ -257,19 +257,19 @@ PetscErrorCode PetscFECompositeGetMapping(PetscFE fem, PetscInt *numSubelements,
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fem, PETSCFE_CLASSID, 1);
   if (numSubelements) {
-    PetscValidIntPointer(numSubelements, 2);
+    PetscAssertPointer(numSubelements, 2);
     *numSubelements = cmp->numSubelements;
   }
   if (v0) {
-    PetscValidPointer(v0, 3);
+    PetscAssertPointer(v0, 3);
     *v0 = cmp->v0;
   }
   if (jac) {
-    PetscValidPointer(jac, 4);
+    PetscAssertPointer(jac, 4);
     *jac = cmp->jac;
   }
   if (invjac) {
-    PetscValidPointer(invjac, 5);
+    PetscAssertPointer(invjac, 5);
     *invjac = cmp->invjac;
   }
   PetscFunctionReturn(PETSC_SUCCESS);

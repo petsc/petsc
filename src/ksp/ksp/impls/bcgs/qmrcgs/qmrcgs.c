@@ -55,7 +55,6 @@ static PetscErrorCode KSPSolve_QMRCGS(KSP ksp)
 
   /* Compute initial residual */
   PetscCall(KSPGetPC(ksp, &pc));
-  PetscCall(PCSetUp(pc));
   PetscCall(PCGetOperators(pc, &mat, NULL));
   if (!ksp->guess_zero) {
     PetscCall(KSP_MatMult(ksp, mat, X, S2));
@@ -224,7 +223,7 @@ static PetscErrorCode KSPSolve_QMRCGS(KSP ksp)
 + * - Chan, Gallopoulos, Simoncini, Szeto, and Tong (SISC 1994)
 - * - Ghai, Lu, and Jiao (NLAA 2019)
 
-.seealso: [](chapter_ksp), `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPBICG`, `KSPFBICGS`, `KSPBCGSL`, `KSPSetPCSide()`
+.seealso: [](ch_ksp), `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPBICG`, `KSPFBICGS`, `KSPBCGSL`, `KSPSetPCSide()`
 M*/
 PETSC_EXTERN PetscErrorCode KSPCreate_QMRCGS(KSP ksp)
 {

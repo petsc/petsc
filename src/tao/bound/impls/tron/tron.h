@@ -1,5 +1,4 @@
-#ifndef __TAO_TRON_H
-#define __TAO_TRON_H
+#pragma once
 
 #include <petsc/private/taoimpl.h>
 #include <petscis.h>
@@ -48,5 +47,3 @@ typedef struct {
   PetscInt n_free_last;
 
 } TAO_TRON;
-
-#endif

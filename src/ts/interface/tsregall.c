@@ -13,6 +13,7 @@ PETSC_EXTERN PetscErrorCode TSCreate_GLLE(TS);
 PETSC_EXTERN PetscErrorCode TSCreate_SSP(TS);
 PETSC_EXTERN PetscErrorCode TSCreate_RK(TS);
 PETSC_EXTERN PetscErrorCode TSCreate_ARKIMEX(TS);
+PETSC_EXTERN PetscErrorCode TSCreate_DIRK(TS);
 PETSC_EXTERN PetscErrorCode TSCreate_RosW(TS);
 PETSC_EXTERN PetscErrorCode TSCreate_EIMEX(TS);
 PETSC_EXTERN PetscErrorCode TSCreate_Mimex(TS);
@@ -28,12 +29,9 @@ PETSC_EXTERN PetscErrorCode TSCreate_IRK(TS);
 
   Not Collective
 
-  Input parameter:
-. path - The dynamic library path
-
   Level: advanced
 
-.seealso: [](chapter_ts), `TS`, `TSCreate()`, `TSRegister()`, `TSRegisterDestroy()`
+.seealso: [](ch_ts), `TS`, `TSCreate()`, `TSRegister()`, `TSRegisterDestroy()`
 @*/
 PetscErrorCode TSRegisterAll(void)
 {
@@ -59,6 +57,7 @@ PetscErrorCode TSRegisterAll(void)
   PetscCall(TSRegister(TSRK, TSCreate_RK));
   PetscCall(TSRegister(TSGLEE, TSCreate_GLEE));
   PetscCall(TSRegister(TSARKIMEX, TSCreate_ARKIMEX));
+  PetscCall(TSRegister(TSDIRK, TSCreate_DIRK));
   PetscCall(TSRegister(TSROSW, TSCreate_RosW));
   PetscCall(TSRegister(TSEIMEX, TSCreate_EIMEX));
   PetscCall(TSRegister(TSMIMEX, TSCreate_Mimex));

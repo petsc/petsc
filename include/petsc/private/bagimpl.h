@@ -1,9 +1,9 @@
-#if !defined(__BAGIMPL)
-  #define __BAGIMPL
-  #include <petscbag.h>
+#pragma once
 
-  #define PETSC_BAG_NAME_LENGTH 64
-  #define PETSC_BAG_HELP_LENGTH 128
+#include <petscbag.h>
+
+#define PETSC_BAG_NAME_LENGTH 64
+#define PETSC_BAG_HELP_LENGTH 128
 
 struct _n_PetscBagItem {
   PetscDataType dtype;
@@ -25,5 +25,3 @@ struct _n_PetscBag {
   char        *bagprefix;
   PetscBagItem bagitems;
 };
-
-#endif

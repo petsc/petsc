@@ -5,26 +5,26 @@
 #include <petsc/private/petscimpl.h> /*I   "petscsys.h"    I*/
 
 /*@C
-   PetscObjectStateGet - Gets the state of any `PetscObject`,
-   regardless of the type.
+  PetscObjectStateGet - Gets the state of any `PetscObject`,
+  regardless of the type.
 
-   Not Collective
+  Not Collective
 
-   Input Parameter:
-.  obj - any PETSc object, for example a `Vec`, `Mat` or `KSP`. This must be
+  Input Parameter:
+. obj - any PETSc object, for example a `Vec`, `Mat` or `KSP`. This must be
          cast with a (`PetscObject`), for example,
          `PetscObjectStateGet`((`PetscObject`)mat,&state);
 
-   Output Parameter:
-.  state - the object state
+  Output Parameter:
+. state - the object state
 
-   Note:
-   Object state is an integer which gets increased every time
-   the object is changed. By saving and later querying the object state
-   one can determine whether information about the object is still current.
-   Currently, state is maintained for `Vec` and `Mat` objects.
+  Level: advanced
 
-   Level: advanced
+  Note:
+  Object state is an integer which gets increased every time
+  the object is changed. By saving and later querying the object state
+  one can determine whether information about the object is still current.
+  Currently, state is maintained for `Vec` and `Mat` objects.
 
 .seealso: `PetscObjectStateIncrease()`, `PetscObjectStateSet()`
 @*/
@@ -32,30 +32,30 @@ PetscErrorCode PetscObjectStateGet(PetscObject obj, PetscObjectState *state)
 {
   PetscFunctionBegin;
   PetscValidHeader(obj, 1);
-  PetscValidIntPointer(state, 2);
+  PetscAssertPointer(state, 2);
   *state = obj->state;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
-   PetscObjectStateSet - Sets the state of any `PetscObject`,
-   regardless of the type.
+  PetscObjectStateSet - Sets the state of any `PetscObject`,
+  regardless of the type.
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  obj - any PETSc object, for example a `Vec`, `Mat` or `KSP`. This must be
+  Input Parameters:
++ obj   - any PETSc object, for example a `Vec`, `Mat` or `KSP`. This must be
          cast with a (`PetscObject`), for example,
          `PetscObjectStateSet`((`PetscObject`)mat,state);
--  state - the object state
+- state - the object state
 
-   Level: advanced
+  Level: advanced
 
-   Note:
-    This function should be used with extreme caution. There is
-   essentially only one use for it: if the user calls Mat(Vec)GetRow(Array),
-   which increases the state, but does not alter the data, then this
-   routine can be used to reset the state.  Such a reset must be collective.
+  Note:
+  This function should be used with extreme caution. There is
+  essentially only one use for it: if the user calls `Mat`(`Vec`)GetRow(Array),
+  which increases the state, but does not alter the data, then this
+  routine can be used to reset the state.  Such a reset must be collective.
 
 .seealso: `PetscObjectStateGet()`, `PetscObjectStateIncrease()`
 @*/
@@ -70,156 +70,148 @@ PetscErrorCode PetscObjectStateSet(PetscObject obj, PetscObjectState state)
 PetscInt PetscObjectComposedDataMax = 10;
 
 /*@C
-   PetscObjectComposedDataRegister - Get an available id for composing data with a `PetscObject`
+  PetscObjectComposedDataRegister - Get an available id for composing data with a `PetscObject`
 
-   Not Collective
+  Not Collective
 
-   Output parameter:
-.  id - an identifier under which data can be stored
+  Output Parameter:
+. id - an identifier under which data can be stored
 
-   Level: developer
+  Level: developer
 
-   Notes:
-   You must keep this value (for example in a global variable) in order to attach the data to an object or access in an object.
+  Notes:
+  You must keep this value (for example in a global variable) in order to attach the data to an object or access in an object.
 
-   `PetscObjectCompose()` and  `PetscObjectQuery()` provide a way to attach any data to an object
+  `PetscObjectCompose()` and  `PetscObjectQuery()` provide a way to attach any data to an object
 
 .seealso: `PetscObjectComposedDataSetInt()`, `PetscObjectComposedDataSetReal()`, `PetscObjectComposedDataGetReal()`, `PetscObjectComposedDataSetIntstar()`,
-          `PetscObjectComposedDataSetIntstar()`, `PetscObjectComposedDataGetInt()`, `PetscObject`,
+          `PetscObjectComposedDataGetInt()`, `PetscObject`,
           `PetscObjectCompose()`, `PetscObjectQuery()`, `PetscObjectComposedDataSetRealstar()`, `PetscObjectComposedDataGetScalarstar()`,
-          `PetscObjectComposedDataSetScalarstar()`, `PetscObjectComposedDataSetScalarstar()`
+          `PetscObjectComposedDataSetScalarstar()`
 @*/
 PetscErrorCode PetscObjectComposedDataRegister(PetscInt *id)
 {
   static PetscInt globalcurrentstate = 0;
 
   PetscFunctionBegin;
+  PetscAssertPointer(id, 1);
   *id = globalcurrentstate++;
   if (globalcurrentstate > PetscObjectComposedDataMax) PetscObjectComposedDataMax += 10;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PetscObjectComposedDataIncreaseInt(PetscObject obj)
+static PetscErrorCode PetscObjectComposedDataIncrease_(PetscInt *id_max, char **composed, PetscObjectState **composed_state, size_t obj_size)
 {
-  PetscInt         *ar = obj->intcomposeddata, *new_ar, n = obj->int_idmax, new_n;
-  PetscObjectState *ir = obj->intcomposedstate, *new_ir;
+  // must use char here since PetscCalloc2() and PetscMemcpy() use sizeof(**ptr), so if
+  // composed is void ** (to match PetscObjectComposedDataStarIncrease_()) that would expand to
+  // sizeof(void) which is illegal.
+  const char             *ar = *composed;
+  const PetscObjectState *ir = *composed_state;
+  const PetscInt          n = *id_max, new_n = PetscObjectComposedDataMax;
+  char                   *new_ar;
+  PetscObjectState       *new_ir;
 
   PetscFunctionBegin;
-  new_n = PetscObjectComposedDataMax;
-  PetscCall(PetscCalloc2(new_n, &new_ar, new_n, &new_ir));
-  PetscCall(PetscMemcpy(new_ar, ar, n * sizeof(PetscInt)));
-  PetscCall(PetscMemcpy(new_ir, ir, n * sizeof(PetscObjectState)));
+  PetscAssert(n >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Number of composed data ids: %" PetscInt_FMT " < 0", n);
+  PetscCall(PetscCalloc2(new_n * obj_size, &new_ar, new_n, &new_ir));
+  PetscCall(PetscMemcpy(new_ar, ar, n * obj_size));
+  PetscCall(PetscArraycpy(new_ir, ir, n));
   PetscCall(PetscFree2(ar, ir));
-  obj->int_idmax        = new_n;
-  obj->intcomposeddata  = new_ar;
-  obj->intcomposedstate = new_ir;
+  *id_max         = new_n;
+  *composed       = new_ar;
+  *composed_state = new_ir;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+#define PetscObjectComposedDataIncrease(id_max, composed, composed_state) PetscObjectComposedDataIncrease_(id_max, (char **)(composed), composed_state, sizeof(**(composed)))
+
+static PetscErrorCode PetscObjectComposedDataStarIncrease_(PetscInt *id_max, void ***composed, PetscObjectState **composed_state, size_t obj_size)
+{
+  void                  **ar = *composed;
+  const PetscObjectState *ir = *composed_state;
+  const PetscInt          n = *id_max, new_n = PetscObjectComposedDataMax;
+  void                  **new_ar;
+  PetscObjectState       *new_ir;
+
+  PetscFunctionBegin;
+  PetscAssert(n >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Number of composed star data ids: %" PetscInt_FMT " < 0", n);
+  PetscCall(PetscCalloc2(new_n, &new_ar, new_n, &new_ir));
+  PetscCall(PetscMemcpy(new_ar, ar, n * obj_size));
+  PetscCall(PetscArraycpy(new_ir, ir, n));
+  PetscCall(PetscFree2(ar, ir));
+  *id_max         = new_n;
+  *composed       = new_ar;
+  *composed_state = new_ir;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+#define PetscObjectComposedDataStarIncrease(id_max, composed, composed_state) PetscObjectComposedDataStarIncrease_(id_max, (void ***)(composed), composed_state, sizeof(**(composed)))
+
+PetscErrorCode PetscObjectComposedDataIncreaseInt(PetscObject obj)
+{
+  PetscFunctionBegin;
+  PetscCall(PetscObjectComposedDataIncrease(&obj->int_idmax, &obj->intcomposeddata, &obj->intcomposedstate));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PetscObjectComposedDataIncreaseIntstar(PetscObject obj)
 {
-  PetscInt        **ar = obj->intstarcomposeddata, **new_ar, n = obj->intstar_idmax, new_n;
-  PetscObjectState *ir = obj->intstarcomposedstate, *new_ir;
-
   PetscFunctionBegin;
-  new_n = PetscObjectComposedDataMax;
-  PetscCall(PetscCalloc2(new_n, &new_ar, new_n, &new_ir));
-  PetscCall(PetscMemcpy(new_ar, ar, n * sizeof(PetscInt *)));
-  PetscCall(PetscMemcpy(new_ir, ir, n * sizeof(PetscObjectState)));
-  PetscCall(PetscFree2(ar, ir));
-  obj->intstar_idmax        = new_n;
-  obj->intstarcomposeddata  = new_ar;
-  obj->intstarcomposedstate = new_ir;
+  PetscCall(PetscObjectComposedDataStarIncrease(&obj->intstar_idmax, &obj->intstarcomposeddata, &obj->intstarcomposedstate));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PetscObjectComposedDataIncreaseReal(PetscObject obj)
 {
-  PetscReal        *ar = obj->realcomposeddata, *new_ar;
-  PetscObjectState *ir = obj->realcomposedstate, *new_ir;
-  PetscInt          n  = obj->real_idmax, new_n;
-
   PetscFunctionBegin;
-  new_n = PetscObjectComposedDataMax;
-  PetscCall(PetscCalloc2(new_n, &new_ar, new_n, &new_ir));
-  PetscCall(PetscMemcpy(new_ar, ar, n * sizeof(PetscReal)));
-  PetscCall(PetscMemcpy(new_ir, ir, n * sizeof(PetscObjectState)));
-  PetscCall(PetscFree2(ar, ir));
-  obj->real_idmax        = new_n;
-  obj->realcomposeddata  = new_ar;
-  obj->realcomposedstate = new_ir;
+  PetscCall(PetscObjectComposedDataIncrease(&obj->real_idmax, &obj->realcomposeddata, &obj->realcomposedstate));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PetscObjectComposedDataIncreaseRealstar(PetscObject obj)
 {
-  PetscReal       **ar = obj->realstarcomposeddata, **new_ar;
-  PetscObjectState *ir = obj->realstarcomposedstate, *new_ir;
-  PetscInt          n  = obj->realstar_idmax, new_n;
-
   PetscFunctionBegin;
-  new_n = PetscObjectComposedDataMax;
-  PetscCall(PetscCalloc2(new_n, &new_ar, new_n, &new_ir));
-  PetscCall(PetscMemcpy(new_ar, ar, n * sizeof(PetscReal *)));
-  PetscCall(PetscMemcpy(new_ir, ir, n * sizeof(PetscObjectState)));
-  PetscCall(PetscFree2(ar, ir));
-  obj->realstar_idmax        = new_n;
-  obj->realstarcomposeddata  = new_ar;
-  obj->realstarcomposedstate = new_ir;
+  PetscCall(PetscObjectComposedDataStarIncrease(&obj->realstar_idmax, &obj->realstarcomposeddata, &obj->realstarcomposedstate));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PetscObjectComposedDataIncreaseScalar(PetscObject obj)
 {
-  PetscScalar      *ar = obj->scalarcomposeddata, *new_ar;
-  PetscObjectState *ir = obj->scalarcomposedstate, *new_ir;
-  PetscInt          n  = obj->scalar_idmax, new_n;
-
   PetscFunctionBegin;
-  new_n = PetscObjectComposedDataMax;
-  PetscCall(PetscCalloc2(new_n, &new_ar, new_n, &new_ir));
-  PetscCall(PetscMemcpy(new_ar, ar, n * sizeof(PetscScalar)));
-  PetscCall(PetscMemcpy(new_ir, ir, n * sizeof(PetscObjectState)));
-  PetscCall(PetscFree2(ar, ir));
-  obj->scalar_idmax        = new_n;
-  obj->scalarcomposeddata  = new_ar;
-  obj->scalarcomposedstate = new_ir;
+#if PetscDefined(USE_COMPLEX)
+  PetscCall(PetscObjectComposedDataIncrease(&obj->scalar_idmax, &obj->scalarcomposeddata, &obj->scalarcomposedstate));
+#else
+  PetscCall(PetscObjectComposedDataIncreaseReal(obj));
+#endif
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PetscObjectComposedDataIncreaseScalarstar(PetscObject obj)
 {
-  PetscScalar     **ar = obj->scalarstarcomposeddata, **new_ar;
-  PetscObjectState *ir = obj->scalarstarcomposedstate, *new_ir;
-  PetscInt          n  = obj->scalarstar_idmax, new_n;
-
   PetscFunctionBegin;
-  new_n = PetscObjectComposedDataMax;
-  PetscCall(PetscCalloc2(new_n, &new_ar, new_n, &new_ir));
-  PetscCall(PetscMemcpy(new_ar, ar, n * sizeof(PetscScalar *)));
-  PetscCall(PetscMemcpy(new_ir, ir, n * sizeof(PetscObjectState)));
-  PetscCall(PetscFree2(ar, ir));
-  obj->scalarstar_idmax        = new_n;
-  obj->scalarstarcomposeddata  = new_ar;
-  obj->scalarstarcomposedstate = new_ir;
+#if PetscDefined(USE_COMPLEX)
+  PetscCall(PetscObjectComposedDataStarIncrease(&obj->scalarstar_idmax, &obj->scalarstarcomposeddata, &obj->scalarstarcomposedstate));
+#else
+  PetscCall(PetscObjectComposedDataIncreaseRealstar(obj));
+#endif
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
-   PetscObjectGetId - get a unique object ID for the `PetscObject`
+  PetscObjectGetId - get a unique object ID for the `PetscObject`
 
-   Not Collective
+  Not Collective
 
-   Input Parameter:
-.  obj - object
+  Input Parameter:
+. obj - object
 
-   Output Parameter:
-.  id - integer ID
+  Output Parameter:
+. id - integer ID
 
-   Level: developer
+  Level: developer
 
-   Note:
-   The object ID may be different on different processes, but object IDs are never reused so local equality implies global equality.
+  Note:
+  The object ID may be different on different processes, but object IDs are never reused so local equality implies global equality.
 
 .seealso: `PetscObjectStateGet()`, `PetscObjectCompareId()`
 @*/
@@ -227,27 +219,28 @@ PetscErrorCode PetscObjectGetId(PetscObject obj, PetscObjectId *id)
 {
   PetscFunctionBegin;
   PetscValidHeader(obj, 1);
-  PetscValidIntPointer(id, 2);
+  PetscAssertPointer(id, 2);
   *id = obj->id;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
-   PetscObjectCompareId - compares the objects ID with a given id
+  PetscObjectCompareId - compares the objects ID with a given id
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  obj - object
--  id - integer ID
+  Input Parameters:
++ obj - object
+- id  - integer ID
 
-   Output Parameter;
-.  eq - the ids are equal
+  Output Parameter:
+. eq - the ids are equal
 
-   Level: developer
+  Level: developer
 
-   Note:
-   The object ID may be different on different processes, but object IDs are never reused so local equality implies global equality.
+  Note:
+  The object ID may be different on different processes, but object IDs are never reused so
+  local equality implies global equality.
 
 .seealso: `PetscObjectStateGet()`, `PetscObjectGetId()`
 @*/
@@ -257,7 +250,7 @@ PetscErrorCode PetscObjectCompareId(PetscObject obj, PetscObjectId id, PetscBool
 
   PetscFunctionBegin;
   PetscValidHeader(obj, 1);
-  PetscValidBoolPointer(eq, 3);
+  PetscAssertPointer(eq, 3);
   PetscCall(PetscObjectGetId(obj, &oid));
   *eq = (id == oid) ? PETSC_TRUE : PETSC_FALSE;
   PetscFunctionReturn(PETSC_SUCCESS);

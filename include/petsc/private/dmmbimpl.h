@@ -1,5 +1,4 @@
-#ifndef _DMMBIMPL_H
-#define _DMMBIMPL_H
+#pragma once
 
 #include <petscdmmoab.h> /*I      "petscdmmoab.h"    I*/
 #include "petsc/private/dmimpl.h"
@@ -97,5 +96,3 @@ typedef struct {
   PetscInt            nhlevels, hlevel;
   moab::EntityHandle *hsets;
 } SubDM_MOAB;
-
-#endif /* _DMMBIMPL_H */

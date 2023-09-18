@@ -297,7 +297,7 @@ PetscErrorCode TSDAESimpleSetUp_Full(TSDAESimple tsdae)
 
   PetscCall(VecGetLocalSize(tsdae->U, &nU));
   PetscCall(VecGetLocalSize(tsdae->V, &nV));
-  PetscCall(VecCreateMPI(tsdae->comm, nU + nV, PETSC_DETERMINE, &tsrhs));
+  PetscCall(VecCreateFromOptions(tsdae->comm, NULL, nU + nV, PETSC_DETERMINE, &tsrhs));
   PetscCall(VecDuplicate(tsrhs, &full->UV));
 
   PetscCall(VecGetOwnershipRange(tsrhs, &UVstart, NULL));
@@ -347,8 +347,8 @@ int main(int argc, char **argv)
   PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
   PetscCall(TSDAESimpleCreate(PETSC_COMM_WORLD, &tsdae));
 
-  PetscCall(VecCreateMPI(PETSC_COMM_WORLD, 1, PETSC_DETERMINE, &U));
-  PetscCall(VecCreateMPI(PETSC_COMM_WORLD, 1, PETSC_DETERMINE, &V));
+  PetscCall(VecCreateFromOptions(PETSC_COMM_WORLD, NULL, 1, 1, PETSC_DETERMINE, &U));
+  PetscCall(VecCreateFromOptions(PETSC_COMM_WORLD, NULL, 1, 1, PETSC_DETERMINE, &V));
   PetscCall(TSDAESimpleSetRHSFunction(tsdae, U, f, NULL));
   PetscCall(TSDAESimpleSetIFunction(tsdae, V, F, NULL));
 

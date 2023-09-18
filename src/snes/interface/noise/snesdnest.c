@@ -258,7 +258,7 @@ PetscErrorCode SNESNoise_dnest_(PetscInt *nf, double *fval, double *h__, double 
     else *info = 3;
     PetscFunctionReturn(PETSC_SUCCESS);
   }
-  /*     If there is cancelllation on the third and fourth column */
+  /*     If there is cancellation on the third and fourth column */
   /*     then h is too small */
   *info = 2;
   PetscFunctionReturn(PETSC_SUCCESS);

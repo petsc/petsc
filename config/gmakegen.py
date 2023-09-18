@@ -10,14 +10,14 @@ from collections import defaultdict
 AUTODIRS = set('ftn-auto ftn-custom f90-custom ftn-auto-interfaces'.split()) # Automatically recurse into these, if they exist
 SKIPDIRS = set('benchmarks build mex-scripts tests tutorials'.split())       # Skip these during the build
 
-def pathsplit(petsc_dir, path):
+def pathsplit(pkg_dir, path):
     """Recursively split a path, returns a tuple"""
     stem, basename = os.path.split(path)
-    if stem == '' or stem == petsc_dir:
+    if stem == '' or stem == pkg_dir:
         return (basename,)
     if stem == path: # fixed point, likely '/'
         return (None,)
-    return pathsplit(petsc_dir, stem) + (basename,)
+    return pathsplit(pkg_dir, stem) + (basename,)
 
 def getlangext(name):
     """Returns everything after the first . in the filename, including the ."""
@@ -42,7 +42,7 @@ class Mistakes(object):
     def compareDirLists(self,root, mdirs, dirs):
         if SKIPDIRS.intersection(pathsplit(None, root)):
             return
-        smdirs = set(mdirs)
+        smdirs = set(mdirs).difference(AUTODIRS)
         sdirs  = set(dirs).difference(AUTODIRS)
         if not smdirs.issubset(sdirs):
             self.mistakes.append('%s/makefile contains a directory not on the filesystem: %r' % (root, sorted(smdirs - sdirs)))
@@ -108,7 +108,9 @@ class Petsc(object):
           self.pkg_arch = self.petsc_arch
         self.pkg_pkgs = PetscPKGS
         if pkg_pkgs is not None:
-          self.pkg_pkgs += list(set(pkg_pkgs.split(','))-set(self.pkg_pkgs))
+          if pkg_pkgs.find(',') > 0: npkgs = set(pkg_pkgs.split(','))
+          else: npkgs = set(pkg_pkgs.split(' '))
+          self.pkg_pkgs += list(npkgs - set(self.pkg_pkgs))
         self.read_conf()
         try:
             logging.basicConfig(filename=self.pkg_arch_path('lib',self.pkg_name,'conf', 'gmake.log'), level=logging.DEBUG)
@@ -151,7 +153,7 @@ class Petsc(object):
             f = self.pkg_arch_path('lib',self.pkg_name,'conf', self.pkg_name + 'variables')
             if os.path.isfile(f):
                 self.conf.update(parse_makefile(self.pkg_arch_path('lib',self.pkg_name,'conf', self.pkg_name + 'variables')))
-        self.have_fortran = int(self.conf.get('PETSC_HAVE_FORTRAN', '0'))
+        self.have_fortran = int(self.conf.get('PETSC_USE_FORTRAN_BINDINGS', '0'))
 
     def inconf(self, key, val):
         if key in ['package', 'function', 'define']:
@@ -176,34 +178,34 @@ class Petsc(object):
         return source
 
     def gen_pkg(self, pkg):
+        from itertools import chain
         pkgsrcs = dict()
         for lang in LANGS:
             pkgsrcs[lang] = []
-        for root, dirs, files in os.walk(os.path.join(self.pkg_dir, 'src', pkg)):
-            if SKIPDIRS.intersection(pathsplit(self.petsc_dir, root)): continue
+        for root, dirs, files in chain.from_iterable(os.walk(path) for path in [os.path.join(self.pkg_dir, 'src', pkg),os.path.join(self.pkg_dir, self.pkg_arch, 'src', pkg)]):
+            if SKIPDIRS.intersection(pathsplit(self.pkg_dir, root)): continue
             dirs.sort()
             files.sort()
             makefile = os.path.join(root,'makefile')
-            if not os.path.exists(makefile):
-                dirs[:] = []
-                continue
-            with open(makefile) as mklines:
+            if os.path.isfile(makefile):
+              with open(makefile) as mklines:
                 conditions = set(tuple(stripsplit(line)) for line in mklines if line.startswith('#requires'))
-            if not all(self.inconf(key, val) for key, val in conditions):
+              if not all(self.inconf(key, val) for key, val in conditions):
                 dirs[:] = []
                 continue
-            makevars = parse_makefile(makefile)
-            mdirs = makevars.get('DIRS','').split() # Directories specified in the makefile
-            self.mistakes.compareDirLists(root, mdirs, dirs) # diagnostic output to find unused directories
-            candidates = set(mdirs).union(AUTODIRS).difference(SKIPDIRS)
-            dirs[:] = list(candidates.intersection(dirs))
+              makevars = parse_makefile(makefile)
+              mdirs = makevars.get('DIRS','').split() # Directories specified in the makefile
+              self.mistakes.compareDirLists(root, mdirs, dirs) # diagnostic output to find unused directories
+              candidates = set(mdirs).union(AUTODIRS).difference(SKIPDIRS)
+              dirs[:] = list(candidates.intersection(dirs))
             allsource = []
             def mkrel(src):
                 return self.relpath(root, src)
-            source = self.get_sources_from_files(files)
-            for lang, s in source.items():
-                pkgsrcs[lang] += [mkrel(t) for t in s]
-            self.gendeps.append(self.relpath(root, 'makefile'))
+            if files:
+              source = self.get_sources_from_files(files)
+              for lang, s in source.items():
+                  pkgsrcs[lang] += [mkrel(t) for t in s]
+              if os.path.isfile(makefile): self.gendeps.append(self.relpath(root, 'makefile'))
         return pkgsrcs
 
     def gen_gnumake(self, fd):

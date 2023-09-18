@@ -1,5 +1,4 @@
-#ifndef PETSC_VIEWER_ADIOS_IMPL_H
-#define PETSC_VIEWER_ADIOS_IMPL_H
+#pragma once
 
 typedef struct {
   char         *filename;
@@ -8,5 +7,3 @@ typedef struct {
   int64_t       adios_handle;
   ADIOS_FILE   *adios_fp;
 } PetscViewer_ADIOS;
-
-#endif

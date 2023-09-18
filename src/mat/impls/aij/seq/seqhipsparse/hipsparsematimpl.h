@@ -1,11 +1,11 @@
 /* Portions of this code are under:
    Copyright (c) 2022 Advanced Micro Devices, Inc. All rights reserved.
 */
-#ifndef PETSC_HIPSPARSEMATIMPL_H
-#define PETSC_HIPSPARSEMATIMPL_H
+#pragma once
 
 #include <petscpkg_version.h>
 #include <../src/vec/vec/impls/seq/cupm/vecseqcupm.hpp> /* for VecSeq_CUPM */
+#include <../src/sys/objects/device/impls/cupm/cupmthrustutility.hpp>
 #include <petsc/private/petsclegacycupmblas.h>
 
 #if PETSC_PKG_HIP_VERSION_GE(5, 2, 0)
@@ -204,10 +204,8 @@ struct Mat_SeqAIJHIPSPARSETriFactors {
   THRUSTINTARRAY                     *rpermIndices;            /* indices used for any reordering */
   THRUSTINTARRAY                     *cpermIndices;            /* indices used for any reordering */
   THRUSTARRAY                        *workVector;
-  hipsparseHandle_t                   handle;   /* a handle to the hipsparse library */
-  PetscInt                            nnz;      /* number of nonzeros ... need this for accurate logging between ICC and ILU */
-  PetscScalar                        *a_band_d; /* GPU data for banded CSR LU factorization matrix diag(L)=1 */
-  int                                *i_band_d; /* this could be optimized away */
+  hipsparseHandle_t                   handle; /* a handle to the hipsparse library */
+  PetscInt                            nnz;    /* number of nonzeros ... need this for accurate logging between ICC and ILU */
   hipDeviceProp_t                     dev_prop;
   PetscBool                           init_dev_prop;
 
@@ -286,26 +284,15 @@ struct Mat_SeqAIJHIPSPARSE {
   size_t                         csr2cscBufferSize; /* stuff used to compute the matTranspose above */
   void                          *csr2cscBuffer;     /* This is used as a C struct and is calloc'ed by PetscNewLog() */
                                                     //  hipsparseCsr2CscAlg_t         csr2cscAlg; /* algorithms can be selected from command line options */
-  hipsparseSpMVAlg_t         spmvAlg;
-  hipsparseSpMMAlg_t         spmmAlg;
-  THRUSTINTARRAY            *csr2csc_i;
-  PetscSplitCSRDataStructure deviceMat; /* Matrix on device for, eg, assembly */
-  THRUSTINTARRAY            *cooPerm;   /* permutation array that sorts the input coo entris by row and col */
-  THRUSTINTARRAY            *cooPerm_a; /* ordered array that indicate i-th nonzero (after sorting) is the j-th unique nonzero */
-
-  /* Stuff for extended COO support */
-  PetscBool   use_extended_coo; /* Use extended COO format */
-  PetscCount *jmap_d;           /* perm[disp+jmap[i]..disp+jmap[i+1]) gives indices of entries in v[] associated with i-th nonzero of the matrix */
-  PetscCount *perm_d;
-
-  Mat_SeqAIJHIPSPARSE() : use_extended_coo(PETSC_FALSE), jmap_d(NULL), perm_d(NULL) { }
+  hipsparseSpMVAlg_t spmvAlg;
+  hipsparseSpMMAlg_t spmmAlg;
+  THRUSTINTARRAY    *csr2csc_i;
+  THRUSTINTARRAY    *coords; /* permutation array used in MatSeqAIJHIPSPARSEMergeMats */
 };
 
 typedef struct Mat_SeqAIJHIPSPARSETriFactors *Mat_SeqAIJHIPSPARSETriFactors_p;
 
 PETSC_INTERN PetscErrorCode MatSeqAIJHIPSPARSECopyToGPU(Mat);
-PETSC_INTERN PetscErrorCode MatSetPreallocationCOO_SeqAIJHIPSPARSE_Basic(Mat, PetscCount, PetscInt[], PetscInt[]);
-PETSC_INTERN PetscErrorCode MatSetValuesCOO_SeqAIJHIPSPARSE_Basic(Mat, const PetscScalar[], InsertMode);
 PETSC_INTERN PetscErrorCode MatSeqAIJHIPSPARSEMergeMats(Mat, Mat, MatReuse, Mat *);
 PETSC_INTERN PetscErrorCode MatSeqAIJHIPSPARSETriFactors_Reset(Mat_SeqAIJHIPSPARSETriFactors_p *);
 
@@ -320,5 +307,3 @@ static inline bool isHipMem(const void *data)
   PetscCallAbort(PETSC_COMM_SELF, impl::Interface<DeviceType::HIP>::PetscCUPMGetMemType(data, &mtype));
   PetscFunctionReturn(PetscMemTypeDevice(mtype));
 }
-
-#endif // PETSC_HIPSPARSEIMPL_H

@@ -15,8 +15,10 @@ public:
   {
     PetscFunctionBegin;
     PetscCall(PetscArrayzero(dctx, 1));
-    PetscCall(PetscHeaderInitialize_Private(dctx, PETSC_DEVICE_CONTEXT_CLASSID, "PetscDeviceContext", "PetscDeviceContext", "Sys", PETSC_COMM_SELF, PetscDeviceContextDestroy, PetscDeviceContextView));
-    PetscCallCXX(PetscObjectCast(dctx)->cpp = new CxxData());
+    PetscCall(PetscHeaderCreate_Private((PetscObject)dctx, PETSC_DEVICE_CONTEXT_CLASSID, "PetscDeviceContext", "PetscDeviceContext", "Sys", PETSC_COMM_SELF, (PetscObjectDestroyFunction)PetscDeviceContextDestroy, (PetscObjectViewFunction)PetscDeviceContextView));
+    PetscCall(PetscLogObjectCreate((PetscObject)dctx));
+
+    PetscCallCXX(PetscObjectCast(dctx)->cpp = new CxxData{dctx});
     PetscCall(underlying().reset(dctx, false));
     PetscFunctionReturn(PETSC_SUCCESS);
   }
@@ -50,16 +52,23 @@ public:
       // don't deallocate the child array, rather just zero it out
       PetscCall(PetscArrayzero(dctx->childIDs, dctx->maxNumChildren));
       PetscCall(CxxDataCast(dctx)->clear());
+      PetscCall(CxxDataCast(dctx)->reset_self(dctx));
     }
     dctx->streamType = PETSC_STREAM_DEFAULT_BLOCKING;
     PetscFunctionReturn(PETSC_SUCCESS);
   }
 
-  static PetscErrorCode invalidate_(PetscDeviceContext) noexcept { return PETSC_SUCCESS; }
+  static PetscErrorCode invalidate_(PetscDeviceContext dctx) noexcept
+  {
+    PetscFunctionBegin;
+    PetscCall(CxxDataCast(dctx)->reset_self(dctx));
+    PetscFunctionReturn(PETSC_SUCCESS);
+  }
 };
 
 static Petsc::ObjectPool<_p_PetscDeviceContext, PetscDeviceContextConstructor> contextPool;
 
+// PetscClangLinter pragma disable: -fdoc-section-header-unknown
 /*@C
   PetscDeviceContextCreate - Creates a `PetscDeviceContext`
 
@@ -92,7 +101,7 @@ static Petsc::ObjectPool<_p_PetscDeviceContext, PetscDeviceContextConstructor> c
 PetscErrorCode PetscDeviceContextCreate(PetscDeviceContext *dctx)
 {
   PetscFunctionBegin;
-  PetscValidPointer(dctx, 1);
+  PetscAssertPointer(dctx, 1);
   PetscCall(PetscDeviceInitializePackage());
   PetscCall(PetscLogEventBegin(DCONTEXT_Create, nullptr, nullptr, nullptr, nullptr));
   PetscCall(contextPool.allocate(dctx));
@@ -100,6 +109,7 @@ PetscErrorCode PetscDeviceContextCreate(PetscDeviceContext *dctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+// PetscClangLinter pragma disable: -fdoc-section-header-unknown
 /*@C
   PetscDeviceContextDestroy - Frees a `PetscDeviceContext`
 
@@ -136,7 +146,7 @@ PetscErrorCode PetscDeviceContextCreate(PetscDeviceContext *dctx)
 PetscErrorCode PetscDeviceContextDestroy(PetscDeviceContext *dctx)
 {
   PetscFunctionBegin;
-  PetscValidPointer(dctx, 1);
+  PetscAssertPointer(dctx, 1);
   if (!*dctx) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscLogEventBegin(DCONTEXT_Destroy, nullptr, nullptr, nullptr, nullptr));
   if (--(PetscObjectCast(*dctx)->refct) <= 0) {
@@ -211,7 +221,7 @@ PetscErrorCode PetscDeviceContextGetStreamType(PetscDeviceContext dctx, PetscStr
 {
   PetscFunctionBegin;
   PetscCall(PetscDeviceContextGetOptionalNullContext_Internal(&dctx));
-  PetscValidIntPointer(type, 2);
+  PetscAssertPointer(type, 2);
   *type = dctx->streamType;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -314,7 +324,7 @@ PetscErrorCode PetscDeviceContextGetDevice(PetscDeviceContext dctx, PetscDevice 
 {
   PetscFunctionBegin;
   PetscCall(PetscDeviceContextGetOptionalNullContext_Internal(&dctx));
-  PetscValidPointer(device, 2);
+  PetscAssertPointer(device, 2);
   PetscAssert(dctx->device, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "PetscDeviceContext %" PetscInt64_FMT " has no attached PetscDevice to get", PetscObjectCast(dctx)->id);
   *device = dctx->device;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -345,7 +355,7 @@ PetscErrorCode PetscDeviceContextGetDeviceType(PetscDeviceContext dctx, PetscDev
 
   PetscFunctionBegin;
   PetscCall(PetscDeviceContextGetOptionalNullContext_Internal(&dctx));
-  PetscValidPointer(type, 2);
+  PetscAssertPointer(type, 2);
   PetscCall(PetscDeviceContextGetDevice(dctx, &device));
   PetscCall(PetscDeviceGetType(device, type));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -361,7 +371,7 @@ PetscErrorCode PetscDeviceContextGetDeviceType(PetscDeviceContext dctx, PetscDev
 
   Level: beginner
 
-  Developer Note:
+  Developer Notes:
   This routine is usually the stage where a `PetscDeviceContext` acquires device-side data
   structures such as streams, events, and (possibly) handles.
 
@@ -398,6 +408,7 @@ static PetscErrorCode PetscDeviceContextDuplicate_Private(PetscDeviceContext dct
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+// PetscClangLinter pragma disable: -fdoc-section-header-unknown
 /*@C
   PetscDeviceContextDuplicate - Duplicates a `PetscDeviceContext` object
 
@@ -435,7 +446,7 @@ PetscErrorCode PetscDeviceContextDuplicate(PetscDeviceContext dctx, PetscDeviceC
 
   PetscFunctionBegin;
   PetscCall(PetscDeviceContextGetOptionalNullContext_Internal(&dctx));
-  PetscValidPointer(dctxdup, 2);
+  PetscAssertPointer(dctxdup, 2);
   PetscCall(PetscDeviceContextGetStreamType(dctx, &stype));
   PetscCall(PetscDeviceContextDuplicate_Private(dctx, stype, dctxdup));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -465,7 +476,7 @@ PetscErrorCode PetscDeviceContextQueryIdle(PetscDeviceContext dctx, PetscBool *i
 {
   PetscFunctionBegin;
   PetscCall(PetscDeviceContextGetOptionalNullContext_Internal(&dctx));
-  PetscValidBoolPointer(idle, 2);
+  PetscAssertPointer(idle, 2);
   PetscCall(PetscLogEventBegin(DCONTEXT_QueryIdle, dctx, nullptr, nullptr, nullptr));
   PetscUseTypeMethod(dctx, query, idle);
   PetscCall(PetscLogEventEnd(DCONTEXT_QueryIdle, dctx, nullptr, nullptr, nullptr));
@@ -473,6 +484,7 @@ PetscErrorCode PetscDeviceContextQueryIdle(PetscDeviceContext dctx, PetscBool *i
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+// PetscClangLinter pragma disable: -fdoc-section-header-unknown
 /*@C
   PetscDeviceContextWaitForContext - Make one context wait for another context to finish
 
@@ -507,23 +519,24 @@ PetscErrorCode PetscDeviceContextQueryIdle(PetscDeviceContext dctx, PetscBool *i
 @*/
 PetscErrorCode PetscDeviceContextWaitForContext(PetscDeviceContext dctxa, PetscDeviceContext dctxb)
 {
-  PetscObject aobj;
+  PetscObjectId bid;
 
   PetscFunctionBegin;
   PetscCall(PetscDeviceContextGetOptionalNullContext_Internal(&dctxa));
   PetscCall(PetscDeviceContextGetOptionalNullContext_Internal(&dctxb));
   PetscCheckCompatibleDeviceContexts(dctxa, 1, dctxb, 2);
   if (dctxa == dctxb) PetscFunctionReturn(PETSC_SUCCESS);
-  aobj = PetscObjectCast(dctxa);
+  bid = PetscObjectCast(dctxb)->id;
   PetscCall(PetscLogEventBegin(DCONTEXT_WaitForCtx, dctxa, dctxb, nullptr, nullptr));
   PetscUseTypeMethod(dctxa, waitforcontext, dctxb);
-  PetscCallCXX(CxxDataCast(dctxa)->upstream[dctxb] = CxxDataParent(dctxb));
+  PetscCallCXX(CxxDataCast(dctxa)->upstream()[bid] = CxxDataCast(dctxb)->weak_snapshot());
   PetscCall(PetscLogEventEnd(DCONTEXT_WaitForCtx, dctxa, dctxb, nullptr, nullptr));
-  PetscCall(PetscInfo(dctxa, "dctx %" PetscInt64_FMT " waiting on dctx %" PetscInt64_FMT "\n", aobj->id, PetscObjectCast(dctxb)->id));
-  PetscCall(PetscObjectStateIncrease(aobj));
+  PetscCall(PetscInfo(dctxa, "dctx %" PetscInt64_FMT " waiting on dctx %" PetscInt64_FMT "\n", PetscObjectCast(dctxa)->id, bid));
+  PetscCall(PetscObjectStateIncrease(PetscObjectCast(dctxa)));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+// PetscClangLinter pragma disable: -fdoc-section-header-unknown
 /*@C
   PetscDeviceContextForkWithStreamType - Create a set of dependent child contexts from a parent
   context with a prescribed `PetscStreamType`
@@ -580,7 +593,7 @@ PetscErrorCode PetscDeviceContextForkWithStreamType(PetscDeviceContext dctx, Pet
   PetscFunctionBegin;
   PetscCall(PetscDeviceContextGetOptionalNullContext_Internal(&dctx));
   PetscAssert(n >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Number of contexts requested %" PetscInt_FMT " < 0", n);
-  PetscValidPointer(dsub, 4);
+  PetscAssertPointer(dsub, 4);
   *dsub = nullptr;
   /* reserve 4 chars per id, 2 for number and 2 for ', ' separator */
   if (PetscDefined(USE_DEBUG_AND_INFO)) PetscCallCXX(idList.reserve(4 * n));
@@ -673,16 +686,17 @@ PetscErrorCode PetscDeviceContextFork(PetscDeviceContext dctx, PetscInt n, Petsc
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+// PetscClangLinter pragma disable: -fdoc-section-header-unknown
 /*@C
   PetscDeviceContextJoin - Converge a set of child contexts
 
   Not Collective, Asynchronous
 
   Input Parameters:
-+ dctx         - A `PetscDeviceContext` to converge on
-. n            - The number of sub contexts to converge
-. joinMode     - The type of join to perform
-- dsub         - The sub contexts to converge
++ dctx     - A `PetscDeviceContext` to converge on
+. n        - The number of sub contexts to converge
+. joinMode - The type of join to perform
+- dsub     - The sub contexts to converge
 
   Level: beginner
 
@@ -746,7 +760,7 @@ PetscErrorCode PetscDeviceContextJoin(PetscDeviceContext dctx, PetscInt n, Petsc
   PetscFunctionBegin;
   PetscCall(PetscDeviceContextGetOptionalNullContext_Internal(&dctx));
   /* validity of dctx is checked in the wait-for loop */
-  PetscValidPointer(dsub, 4);
+  PetscAssertPointer(dsub, 4);
   PetscAssert(n >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Number of contexts merged %" PetscInt_FMT " < 0", n);
   /* reserve 4 chars per id, 2 for number and 2 for ', ' separator */
   if (PetscDefined(USE_DEBUG_AND_INFO)) PetscCallCXX(idList.reserve(4 * n));
@@ -798,6 +812,7 @@ PetscErrorCode PetscDeviceContextJoin(PetscDeviceContext dctx, PetscInt n, Petsc
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+// PetscClangLinter pragma disable: -fdoc-section-header-unknown
 /*@C
   PetscDeviceContextSynchronize - Block the host until all work queued on a
   `PetscDeviceContext` has finished
@@ -850,9 +865,10 @@ static PetscErrorCode PetscDeviceContextGetNullContextForDevice_Private(PetscBoo
 
   PetscFunctionBegin;
   PetscValidDevice(device, 2);
-  PetscValidPointer(dctx, 3);
+  PetscAssertPointer(dctx, 3);
   if (PetscUnlikely(!nullContextsFinalizer)) {
-    const auto finalizer = [] {
+    nullContextsFinalizer = true;
+    PetscCall(PetscRegisterFinalize([] {
       PetscFunctionBegin;
       for (auto &&dvec : nullContexts) {
         for (auto &&dctx : dvec) PetscCall(PetscDeviceContextDestroy(&dctx));
@@ -860,10 +876,7 @@ static PetscErrorCode PetscDeviceContextGetNullContextForDevice_Private(PetscBoo
       }
       nullContextsFinalizer = false;
       PetscFunctionReturn(PETSC_SUCCESS);
-    };
-
-    nullContextsFinalizer = true;
-    PetscCall(PetscRegisterFinalize(std::move(finalizer)));
+    }));
   }
   PetscCall(PetscDeviceGetDeviceId(device, &devid));
   PetscCall(PetscDeviceGetType(device, &dtype));
@@ -907,7 +920,7 @@ PetscErrorCode PetscDeviceContextGetNullContext_Internal(PetscDeviceContext *dct
   PetscDevice        gdev = nullptr;
 
   PetscFunctionBegin;
-  PetscValidPointer(dctx, 1);
+  PetscAssertPointer(dctx, 1);
   PetscCall(PetscDeviceContextGetCurrentContext(&gctx));
   PetscCall(PetscDeviceContextGetDevice(gctx, &gdev));
   PetscCall(PetscDeviceContextGetNullContextForDevice_Private(gctx->usersetdevice, gdev, dctx));
@@ -979,7 +992,7 @@ PetscErrorCode PetscDeviceContextSetFromOptions(MPI_Comm comm, PetscDeviceContex
   Collective on `viewer`
 
   Input Parameters:
-+ dctx - The `PetscDeviceContext`
++ dctx   - The `PetscDeviceContext`
 - viewer - The `PetscViewer` to view `dctx` with (may be `NULL`)
 
   Level: beginner
@@ -1046,7 +1059,73 @@ PetscErrorCode PetscDeviceContextViewFromOptions(PetscDeviceContext dctx, PetscO
   PetscFunctionBegin;
   PetscCall(PetscDeviceContextGetOptionalNullContext_Internal(&dctx));
   if (obj) PetscValidHeader(obj, 2);
-  PetscValidCharPointer(name, 3);
+  PetscAssertPointer(name, 3);
   PetscCall(PetscObjectViewFromOptions(PetscObjectCast(dctx), obj, name));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@C
+  PetscDeviceContextGetStreamHandle - Return a handle to the underlying stream of the current device context
+
+  Input Parameter:
+. dctx - The `PetscDeviceContext` to get the stream from
+
+  Output Parameter:
+. handle - A pointer to the handle to the stream
+
+  Level: developer
+
+  Note:
+  This routine is dangerous. It exists only for the most experienced users and
+  internal PETSc developement.
+
+  There is no way for PETSc's auto-dependency system to track what the caller does with the
+  stream.
+
+  If the user uses the stream to copy memory that was previously modified by PETSc, or launches
+  kernels that modify memory with the stream, it is the users responsibility to inform PETSc of
+  their actions via `PetscDeviceContextMarkIntentFromID()`. Failure to do so may introduce a
+  race condition. This race condition may manifest in nondeterministic ways.
+
+  Alternatively, the user may synchronize the stream immediately before and after use. This is
+  the safest option.
+
+  Example Usage:
+.vb
+  PetscDeviceContext dctx;
+  PetscDeviceType    type;
+  void               *handle;
+
+  PetscDeviceContextGetCurrentContext(&dctx);
+  PetscDeviceContextGetStreamHandle(dctx, &handle);
+  PetscDeviceContextGetDeviceType(dctx, &type);
+
+  if (type == PETSC_DEVICE_CUDA) {
+    cudaStream_t stream = *(cudaStream_t *)handle;
+
+    my_cuda_kernel<<<1, 2, 3, stream>>>();
+  }
+.ve
+  Alternatively, if type of `PetscDeviceContext` is known (for example `PETSC_DEVICE_HIP`), the
+  user may pass in a pointer to stream handle directly\:
+.vb
+  hipStream_t *stream;
+
+  // note the cast to void **
+  PetscDeviceContextGetStreamHandle(dctx, (void **)&stream);
+  // note the dereference
+  my_hip_kernel<<<1, 2, 3, *stream>>>();
+.ve
+
+.N ASYNC_API
+
+.seealso: `PetscDeviceContext`
+@*/
+PetscErrorCode PetscDeviceContextGetStreamHandle(PetscDeviceContext dctx, void **handle)
+{
+  PetscFunctionBegin;
+  PetscCall(PetscDeviceContextGetOptionalNullContext_Internal(&dctx));
+  PetscAssertPointer(handle, 2);
+  PetscCall(PetscDeviceContextGetStreamHandle_Internal(dctx, handle));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

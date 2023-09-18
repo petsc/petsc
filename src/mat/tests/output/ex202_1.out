@@ -1,14 +1,14 @@
 Mat Object: 1 MPI process
   type: nest
-  Matrix object: 
-    type=nest, rows=2, cols=3 
-    MatNest structure: 
-    (0,0) : type=seqdense, rows=2, cols=3 
-    (0,1) : type=seqdense, rows=2, cols=2 
-    (0,2) : type=seqdense, rows=2, cols=4 
-    (1,0) : type=seqdense, rows=3, cols=3 
-    (1,1) : type=seqdense, rows=3, cols=2 
-    (1,2) : type=seqdense, rows=3, cols=4 
+  Matrix object:
+    type=nest, rows=2, cols=3
+    MatNest structure:
+    (0,0) : type=seqdense, rows=2, cols=3
+    (0,1) : type=seqdense, rows=2, cols=2
+    (0,2) : type=seqdense, rows=2, cols=4
+    (1,0) : type=seqdense, rows=3, cols=3
+    (1,1) : type=seqdense, rows=3, cols=2
+    (1,2) : type=seqdense, rows=3, cols=4
 Mat Object: 1 MPI process
   type: seqdense
 7.2003197397953400e-01 1.0022337819588500e-02 3.9777780919128602e-01 
@@ -38,15 +38,15 @@ Mat Object: 1 MPI process
 5.4370953186577964e-01 4.7371062302860523e-01 8.5073034482763887e-01 6.3752342702592912e-01 
 Mat Object: 1 MPI process
   type: nest
-  Matrix object: 
-    type=nest, rows=3, cols=2 
-    MatNest structure: 
-    (0,0) : type=seqdense, rows=3, cols=2 
-    (0,1) : type=seqdense, rows=3, cols=3 
-    (1,0) : type=seqdense, rows=2, cols=2 
-    (1,1) : type=seqdense, rows=2, cols=3 
-    (2,0) : type=seqdense, rows=4, cols=2 
-    (2,1) : type=seqdense, rows=4, cols=3 
+  Matrix object:
+    type=nest, rows=3, cols=2
+    MatNest structure:
+    (0,0) : type=seqdense, rows=3, cols=2
+    (0,1) : type=seqdense, rows=3, cols=3
+    (1,0) : type=seqdense, rows=2, cols=2
+    (1,1) : type=seqdense, rows=2, cols=3
+    (2,0) : type=seqdense, rows=4, cols=2
+    (2,1) : type=seqdense, rows=4, cols=3
 Mat Object: 1 MPI process
   type: seqdense
 7.2003197397953400e-01 6.1793966542126100e-02 
@@ -99,13 +99,13 @@ Mat Object: 1 MPI process
 <x, A^Ty> = 3.59347
 Mat Object: 1 MPI process
   type: nest
-  Matrix object: 
-    type=nest, rows=2, cols=2 
-    MatNest structure: 
-    (0,0) : type=seqdense, rows=2, cols=2 
-    (0,1) : type=seqdense, rows=2, cols=2 
-    (1,0) : type=seqdense, rows=2, cols=2 
-    (1,1) : type=seqdense, rows=2, cols=2 
+  Matrix object:
+    type=nest, rows=2, cols=2
+    MatNest structure:
+    (0,0) : type=seqdense, rows=2, cols=2
+    (0,1) : type=seqdense, rows=2, cols=2
+    (1,0) : type=seqdense, rows=2, cols=2
+    (1,1) : type=seqdense, rows=2, cols=2
 Mat Object: 1 MPI process
   type: seqdense
 7.2003197397953400e-01 1.0022337819588500e-02 
@@ -124,13 +124,13 @@ Mat Object: 1 MPI process
 9.9650445216117589e-01 9.8905332488367748e-01 
 Mat Object: 1 MPI process
   type: nest
-  Matrix object: 
-    type=nest, rows=2, cols=2 
-    MatNest structure: 
-    (0,0) : type=seqdense, rows=2, cols=2 
-    (0,1) : type=seqdense, rows=2, cols=2 
-    (1,0) : type=seqdense, rows=2, cols=2 
-    (1,1) : type=seqdense, rows=2, cols=2 
+  Matrix object:
+    type=nest, rows=2, cols=2
+    MatNest structure:
+    (0,0) : type=seqdense, rows=2, cols=2
+    (0,1) : type=seqdense, rows=2, cols=2
+    (1,0) : type=seqdense, rows=2, cols=2
+    (1,1) : type=seqdense, rows=2, cols=2
 Mat Object: 1 MPI process
   type: seqdense
 7.2003197397953400e-01 6.1793966542126100e-02 

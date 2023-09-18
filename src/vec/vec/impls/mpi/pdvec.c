@@ -29,9 +29,7 @@ PetscErrorCode VecDestroy_MPI(Vec v)
   Vec_MPI *x = (Vec_MPI *)v->data;
 
   PetscFunctionBegin;
-#if defined(PETSC_USE_LOG)
   PetscCall(PetscLogObjectState((PetscObject)v, "Length=%" PetscInt_FMT, v->map->N));
-#endif
   if (!x) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscFree(x->array_allocated));
 
@@ -53,7 +51,7 @@ PetscErrorCode VecDestroy_MPI(Vec v)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode VecView_MPI_ASCII(Vec xin, PetscViewer viewer)
+static PetscErrorCode VecView_MPI_ASCII(Vec xin, PetscViewer viewer)
 {
   PetscInt           i, work = xin->map->n, cnt, len, nLen;
   PetscMPIInt        j, n = 0, size, rank, tag = ((PetscObject)viewer)->tag;
@@ -431,7 +429,7 @@ PetscErrorCode VecView_MPI_Draw_LG(Vec xin, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode VecView_MPI_Draw(Vec xin, PetscViewer viewer)
+PETSC_INTERN PetscErrorCode VecView_MPI_Draw(Vec xin, PetscViewer viewer)
 {
   PetscMPIInt        rank, size, tag = ((PetscObject)viewer)->tag;
   PetscInt           i, start, end;

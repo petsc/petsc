@@ -1,5 +1,4 @@
-#ifndef TAO_MFQNLS_H
-#define TAO_MFQNLS_H
+#pragma once
 #include <petsc/private/taoimpl.h>
 #include <petscblaslapack.h>
 
@@ -86,5 +85,3 @@ typedef struct {
 } TAO_POUNDERS;
 
 PetscErrorCode gqt(PetscInt, PetscReal *, PetscInt, PetscReal *, PetscReal, PetscReal, PetscReal, PetscInt, PetscReal *, PetscReal *, PetscReal *, PetscInt *, PetscInt *, PetscReal *, PetscReal *, PetscReal *);
-
-#endif /* ifndef TAO_MFQNLS */

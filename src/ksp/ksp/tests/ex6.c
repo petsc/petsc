@@ -24,17 +24,15 @@ static PetscErrorCode KSPTestResidualMonitor(KSP ksp, PetscInt i, PetscReal r, v
 
 int main(int argc, char **args)
 {
-  PetscInt its;
-#if defined(PETSC_USE_LOG)
+  PetscInt      its;
   PetscLogStage stage1, stage2;
-#endif
-  PetscReal   norm;
-  Vec         x, b, u;
-  Mat         A;
-  char        file[PETSC_MAX_PATH_LEN];
-  PetscViewer fd;
-  PetscBool   table = PETSC_FALSE, flg, test_residual = PETSC_FALSE, b_in_f = PETSC_TRUE;
-  KSP         ksp;
+  PetscReal     norm;
+  Vec           x, b, u;
+  Mat           A;
+  char          file[PETSC_MAX_PATH_LEN];
+  PetscViewer   fd;
+  PetscBool     table = PETSC_FALSE, flg, test_residual = PETSC_FALSE, b_in_f = PETSC_TRUE;
+  KSP           ksp;
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &args, (char *)0, help));

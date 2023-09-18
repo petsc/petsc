@@ -718,14 +718,12 @@ static PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
   PetscFE   fe, feAux = NULL;
   PetscBool simplex;
   PetscInt  dim;
-  MPI_Comm  comm;
 
   PetscFunctionBeginUser;
   PetscCall(DMGetDimension(dm, &dim));
   PetscCall(DMConvert(dm, DMPLEX, &plex));
   PetscCall(DMPlexIsSimplex(plex, &simplex));
   PetscCall(DMDestroy(&plex));
-  PetscCall(PetscObjectGetComm((PetscObject)dm, &comm));
   PetscCall(PetscFECreateDefault(PETSC_COMM_SELF, dim, 1, simplex, NULL, -1, &fe));
   PetscCall(PetscObjectSetName((PetscObject)fe, "potential"));
   if (user->variableCoefficient == COEFF_FIELD || user->variableCoefficient == COEFF_CHECKERBOARD_0) {
@@ -856,7 +854,7 @@ int main(int argc, char **argv)
 
     if (user.showSolution) {
       PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Solution\n"));
-      PetscCall(VecChop(u, 3.0e-9));
+      PetscCall(VecFilter(u, 3.0e-9));
       PetscCall(VecView(u, PETSC_VIEWER_STDOUT_WORLD));
     }
   } else if (user.runType == RUN_PERF) {
@@ -866,7 +864,7 @@ int main(int argc, char **argv)
     PetscCall(SNESGetFunction(snes, &r, NULL, NULL));
     PetscCall(SNESComputeFunction(snes, u, r));
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Initial Residual\n"));
-    PetscCall(VecChop(r, 1.0e-10));
+    PetscCall(VecFilter(r, 1.0e-10));
     PetscCall(VecNorm(r, NORM_2, &res));
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, "L_2 Residual: %g\n", (double)res));
   } else {
@@ -883,7 +881,7 @@ int main(int argc, char **argv)
     /* Check residual */
     PetscCall(SNESComputeFunction(snes, u, r));
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Initial Residual\n"));
-    PetscCall(VecChop(r, 1.0e-10));
+    PetscCall(VecFilter(r, 1.0e-10));
     if (!user.quiet) PetscCall(VecView(r, PETSC_VIEWER_STDOUT_WORLD));
     PetscCall(VecNorm(r, NORM_2, &res));
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, "L_2 Residual: %g\n", (double)res));
@@ -898,7 +896,7 @@ int main(int argc, char **argv)
       PetscCall(MatMult(A, u, r));
       PetscCall(VecAXPY(r, 1.0, b));
       PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Au - b = Au + F(0)\n"));
-      PetscCall(VecChop(r, 1.0e-10));
+      PetscCall(VecFilter(r, 1.0e-10));
       if (!user.quiet) PetscCall(VecView(r, PETSC_VIEWER_STDOUT_WORLD));
       PetscCall(VecNorm(r, NORM_2, &res));
       PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Linear L_2 Residual: %g\n", (double)res));
@@ -1466,7 +1464,7 @@ int main(int argc, char **argv)
     suffix: p4est_exact_q2_conformal_parallel_parmetis
     requires: parmetis p4est !single
     nsize: 4
-    args: -run_type exact -petscspace_degree 2 -fas_levels_snes_atol 1.e-10 -snes_max_it 1 -snes_type fas -snes_fas_levels 3 -fas_coarse_pc_type none -fas_coarse_ksp_type preonly -fas_coarse_snes_monitor_short -snes_monitor_short -fas_coarse_snes_linesearch_type basic -snes_converged_reason ::ascii_info_detail -snes_view -fas_levels_snes_type newtonls -fas_levels_pc_type none -fas_levels_ksp_type preonly -fas_levels_snes_monitor_short -dm_plex_simplex 0 -dm_plex_convert_type p4est -dm_forest_minimum_refinement 0 -dm_forest_initial_refinement 2 -petscpartitioner_type parmetis
+    args: -run_type exact -petscspace_degree 2 -fas_levels_snes_linesearch_type basic -fas_levels_snes_atol 1.e-10 -snes_max_it 1 -snes_type fas -snes_fas_levels 3 -fas_coarse_snes_converged_reason -fas_coarse_pc_type none -fas_coarse_ksp_type preonly -fas_coarse_snes_monitor_short -snes_monitor_short -fas_coarse_snes_linesearch_type basic -snes_converged_reason ::ascii_info_detail -snes_view -fas_levels_snes_type newtonls -fas_levels_pc_type none -fas_levels_ksp_type preonly -fas_levels_snes_monitor_short -dm_plex_simplex 0 -dm_plex_convert_type p4est -dm_forest_minimum_refinement 0 -dm_forest_initial_refinement 2 -petscpartitioner_type parmetis
 
   test:
     suffix: p4est_exact_q2_nonconformal_serial
@@ -1612,7 +1610,7 @@ int main(int argc, char **argv)
 
   test:
     suffix: tri_p2_adapt_uniform_mmg
-    requires: mmg tetgen
+    requires: mmg tetgen broken
     args: -run_type full -dm_plex_box_faces 4,4,4 -bc_type dirichlet -petscspace_degree 2 -variable_coefficient none -snes_converged_reason ::ascii_info_detail -ksp_type cg -pc_type sor -snes_adapt_sequence 1 -adaptor_target_num 400 -dm_plex_metric_h_max 0.5 -dm_plex_dim 3 -dm_adaptor mmg
     timeoutfactor: 1
 
@@ -1701,10 +1699,10 @@ int main(int argc, char **argv)
     args: -quiet -run_type test -bc_type dirichlet -petscspace_degree 2 -vec_view glvis: -dm_plex_simplex 0 -dm_plex_convert_type p4est -dm_forest_minimum_refinement 0 -dm_forest_initial_refinement 1 -dm_forest_maximum_refinement 4 -dm_p4est_refine_pattern hash -viewer_glvis_dm_plex_enable_ncmesh
   test:
     suffix: glvis_2d_tet_p0
-    args: -run_type exact -guess_vec_view glvis: -nonzero_initial_guess 1 -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square_periodic.msh -dm_plex_boundary_label marker -petscspace_degree 0 -dm_coord_space 0
+    args: -run_type exact -guess_vec_view glvis: -nonzero_initial_guess 1 -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square_periodic.msh -dm_plex_boundary_label marker -petscspace_degree 0 -dm_coord_space 0 -pc_type jacobi
   test:
     suffix: glvis_2d_hex_p0
-    args: -run_type exact -guess_vec_view glvis: -nonzero_initial_guess 1 -dm_plex_box_faces 5,7 -dm_plex_simplex 0 -petscspace_degree 0 -dm_coord_space 0
+    args: -run_type exact -guess_vec_view glvis: -nonzero_initial_guess 1 -dm_plex_box_faces 5,7 -dm_plex_simplex 0 -petscspace_degree 0 -dm_coord_space 0 -pc_type jacobi
 
   # PCHPDDM tests
   testset:
@@ -1756,7 +1754,7 @@ int main(int argc, char **argv)
     nsize: 4
     requires: hpddm slepc parmetis !single defined(PETSC_HAVE_DYNAMIC_LIBRARIES) defined(PETSC_USE_SHARED_LIBRARIES)
     filter: sed -e "s/linear solver iterations=17/linear solver iterations=16/g"
-    args: -run_type full -petscpartitioner_type parmetis -dm_refine 3 -bc_type dirichlet -petscspace_degree 1 -ksp_type gmres -ksp_gmres_restart 100 -pc_type hpddm -snes_monitor_short -snes_converged_reason ::ascii_info_detail -snes_view -show_solution 0 -pc_type hpddm -pc_hpddm_levels_1_sub_pc_type icc -pc_hpddm_levels_1_eps_nev 20 -pc_hpddm_coarse_p 2 -pc_hpddm_coarse_pc_type redundant -ksp_rtol 1.e-10 -dm_plex_filename ${PETSC_DIR}/share/petsc/datafiles/meshes/square_periodic.msh -dm_plex_boundary_label marker -pc_hpddm_levels_1_sub_pc_factor_levels 3 -variable_coefficient ball -dm_plex_gmsh_periodic 0
+    args: -run_type full -petscpartitioner_type parmetis -dm_refine 3 -bc_type dirichlet -petscspace_degree 1 -ksp_type gmres -ksp_gmres_restart 100 -pc_type hpddm -snes_monitor_short -snes_converged_reason ::ascii_info_detail -snes_view -show_solution 0 -pc_type hpddm -pc_hpddm_levels_1_sub_pc_type icc -pc_hpddm_levels_1_eps_nev 20 -pc_hpddm_coarse_p 2 -pc_hpddm_coarse_pc_type redundant -ksp_rtol 1.e-10 -dm_plex_filename ${PETSC_DIR}/share/petsc/datafiles/meshes/square_periodic.msh -dm_plex_boundary_label marker -pc_hpddm_levels_1_sub_pc_factor_levels 3 -variable_coefficient ball -dm_plex_gmsh_periodic 0 -fp_trap 0
     test:
       args: -pc_hpddm_coarse_mat_type baij -options_left no
       filter: grep -v "      total: nonzeros=" | grep -v "      rows=" | sed -e "s/total number of linear solver iterations=[1-2][4-7]/total number of linear solver iterations=16/g"

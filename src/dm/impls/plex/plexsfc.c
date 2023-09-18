@@ -166,7 +166,7 @@ static PetscInt ZLayoutElementsOnRank(const ZLayout *layout, PetscMPIInt rank)
   return remote_elem;
 }
 
-PetscInt ZCodeFind(ZCode key, PetscInt n, const ZCode X[])
+static PetscInt ZCodeFind(ZCode key, PetscInt n, const ZCode X[])
 {
   PetscInt lo = 0, hi = n;
 
@@ -664,7 +664,7 @@ PetscErrorCode DMPlexCreateBoxMesh_Tensor_SFC_Internal(DM dm, PetscInt dim, cons
   const PetscInt *const face_orient_dim[] = {NULL, face_orient_1, face_orient_2, face_orient_3};
 
   PetscFunctionBegin;
-  PetscValidPointer(dm, 1);
+  PetscAssertPointer(dm, 1);
   PetscValidLogicalCollectiveInt(dm, dim, 2);
   PetscCall(DMSetDimension(dm, dim));
   PetscMPIInt rank, size;
@@ -902,7 +902,7 @@ PetscErrorCode DMPlexCreateBoxMesh_Tensor_SFC_Internal(DM dm, PetscInt dim, cons
   Logically Collective
 
   Input Parameters:
-+ dm - The `DMPLEX` on which to set periodicity
++ dm      - The `DMPLEX` on which to set periodicity
 - face_sf - `PetscSF` in which roots are (owned) donor faces and leaves are faces that must be matched to a (possibly remote) donor face.
 
   Level: advanced
@@ -911,7 +911,7 @@ PetscErrorCode DMPlexCreateBoxMesh_Tensor_SFC_Internal(DM dm, PetscInt dim, cons
   One can use `-dm_plex_shape zbox` to use this mode of periodicity, wherein the periodic points are distinct both globally
   and locally, but are paired when creating a global dof space.
 
-.seealso: [](chapter_unstructured), `DMPLEX`, `DMGetGlobalSection()`, `DMPlexGetIsoperiodicFaceSF()`
+.seealso: [](ch_unstructured), `DMPLEX`, `DMGetGlobalSection()`, `DMPlexGetIsoperiodicFaceSF()`
 @*/
 PetscErrorCode DMPlexSetIsoperiodicFaceSF(DM dm, PetscSF face_sf)
 {
@@ -944,7 +944,7 @@ PetscErrorCode DMPlexSetIsoperiodicFaceSF(DM dm, PetscSF face_sf)
 
   Level: advanced
 
-.seealso: [](chapter_unstructured), `DMPLEX`, `DMGetGlobalSection()`, `DMPlexSetIsoperiodicFaceSF()`
+.seealso: [](ch_unstructured), `DMPLEX`, `DMGetGlobalSection()`, `DMPlexSetIsoperiodicFaceSF()`
 @*/
 PetscErrorCode DMPlexGetIsoperiodicFaceSF(DM dm, PetscSF *face_sf)
 {
@@ -960,9 +960,9 @@ PetscErrorCode DMPlexGetIsoperiodicFaceSF(DM dm, PetscSF *face_sf)
 
   Logically Collective
 
-  Input Arguments:
+  Input Parameters:
 + dm - `DMPLEX` that has been configured with `DMPlexSetIsoperiodicFaceSF()`
-- t - 4x4 affine transformation basis.
+- t  - 4x4 affine transformation basis.
 
   Level: advanced
 
@@ -974,11 +974,11 @@ PetscErrorCode DMPlexGetIsoperiodicFaceSF(DM dm, PetscSF *face_sf)
 
   Although the interface accepts a general affine transform, only affine translation is supported at present.
 
-  Developer Note:
+  Developer Notes:
   This interface should be replaced by making BasisTransform public, expanding it to support affine representations, and
   adding GPU implementations to apply the G2L/L2G transforms.
 
-.seealso: [](chapter_unstructured), `DMPLEX`, `DMGetGlobalSection()`, `DMPlexSetIsoperiodicFaceSF()`
+.seealso: [](ch_unstructured), `DMPLEX`, `DMGetGlobalSection()`, `DMPlexSetIsoperiodicFaceSF()`
 @*/
 PetscErrorCode DMPlexSetIsoperiodicFaceTransform(DM dm, const PetscScalar t[])
 {

@@ -17,7 +17,7 @@ cdef extern from* nogil:
     PetscErrorCode DMLabelAddStrataIS(PetscDMLabel,PetscIS)
     PetscErrorCode DMLabelInsertIS(PetscDMLabel,PetscIS,PetscInt)
     PetscErrorCode DMLabelGetNumValues(PetscDMLabel,PetscInt*)
-    
+
     PetscErrorCode DMLabelGetStratumBounds(PetscDMLabel,PetscInt,PetscInt*,PetscInt*)
     PetscErrorCode DMLabelGetValueIS(PetscDMLabel,PetscIS*)
     PetscErrorCode DMLabelStratumHasPoint(PetscDMLabel,PetscInt,PetscInt,PetscBool*)

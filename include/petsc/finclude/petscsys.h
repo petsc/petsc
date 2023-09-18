@@ -168,8 +168,8 @@
 !
 !     Macros for error checking
 !
-#define SETERRQ(c,ierr,s)  call PetscError(c,ierr,0,s); return
-#define SETERRA(c,ierr,s)  call PetscError(c,ierr,0,s); call MPIU_Abort(c,ierr)
+#define SETERRQ(c, ierr, s)  call PetscError(c, ierr, 0, s); return
+#define SETERRA(c, ierr, s)  call PetscError(c, ierr, 0, s); call MPIU_Abort(c, ierr)
 #if defined(PETSC_HAVE_FORTRAN_FREE_LINE_LENGTH_NONE)
 #define CHKERRQ(ierr) if (ierr .ne. 0) then;call PetscErrorF(ierr,__LINE__,__FILE__);return;endif
 #define CHKERRA(ierr) if (ierr .ne. 0) then;call PetscErrorF(ierr,__LINE__,__FILE__);call MPIU_Abort(PETSC_COMM_SELF,ierr);endif
@@ -186,6 +186,8 @@
 #define PetscCallMPI(func) call func; CHKERRMPI(ierr)
 #define PetscCallA(func) call func; CHKERRA(ierr)
 #define PetscCallMPIA(func) call func; CHKERRMPIA(ierr)
+#define PetscCheckA(err, c, ierr, s) if (.not.(err)) then; SETERRA(c, ierr, s); endif
+#define PetscCheck(err, c, ierr, s) if (.not.(err)) then; SETERRQ(c, ierr, s); endif
 
 #define PetscMatlabEngine PetscFortranAddr
 

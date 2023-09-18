@@ -8,35 +8,25 @@
 
 #include <petsc/private/petscfeimpl.h> /* For CoordinatesRefToReal() */
 
-/*
- Error checking to ensure the swarm type is correct and that a cell DM has been set
-*/
-#define DMSWARMPICVALID(dm) \
-  do { \
-    DM_Swarm *_swarm = (DM_Swarm *)(dm)->data; \
-    PetscCheck(_swarm->swarm_type == DMSWARM_PIC, PetscObjectComm((PetscObject)(dm)), PETSC_ERR_SUP, "Valid only for DMSwarm-PIC. You must call DMSwarmSetType(dm,DMSWARM_PIC)"); \
-    PetscCheck(_swarm->dmcell, PetscObjectComm((PetscObject)(dm)), PETSC_ERR_SUP, "Valid only for DMSwarmPIC if the cell DM is set. You must call DMSwarmSetCellDM(dm,celldm)"); \
-  } while (0)
-
 /* Coordinate insertition/addition API */
 /*@C
-   DMSwarmSetPointsUniformCoordinates - Set point coordinates in a `DMSWARM` on a regular (ijk) grid
+  DMSwarmSetPointsUniformCoordinates - Set point coordinates in a `DMSWARM` on a regular (ijk) grid
 
-   Collective
+  Collective
 
-   Input parameters:
-+  dm - the `DMSWARM`
-.  min - minimum coordinate values in the x, y, z directions (array of length dim)
-.  max - maximum coordinate values in the x, y, z directions (array of length dim)
-.  npoints - number of points in each spatial direction (array of length dim)
--  mode - indicates whether to append points to the swarm (`ADD_VALUES`), or over-ride existing points (`INSERT_VALUES`)
+  Input Parameters:
++ dm      - the `DMSWARM`
+. min     - minimum coordinate values in the x, y, z directions (array of length dim)
+. max     - maximum coordinate values in the x, y, z directions (array of length dim)
+. npoints - number of points in each spatial direction (array of length dim)
+- mode    - indicates whether to append points to the swarm (`ADD_VALUES`), or over-ride existing points (`INSERT_VALUES`)
 
-   Level: beginner
+  Level: beginner
 
-   Notes:
-   When using mode = `INSERT_VALUES`, this method will reset the number of particles in the `DMSWARM`
-   to be npoints[0]*npoints[1] (2D) or npoints[0]*npoints[1]*npoints[2] (3D). When using mode = `ADD_VALUES`,
-   new points will be appended to any already existing in the `DMSWARM`
+  Notes:
+  When using mode = `INSERT_VALUES`, this method will reset the number of particles in the `DMSWARM`
+  to be npoints[0]*npoints[1] (2D) or npoints[0]*npoints[1]*npoints[2] (3D). When using mode = `ADD_VALUES`,
+  new points will be appended to any already existing in the `DMSWARM`
 
 .seealso: `DM`, `DMSWARM`, `DMSwarmSetType()`, `DMSwarmSetCellDM()`, `DMSwarmType`
 @*/
@@ -178,23 +168,23 @@ PETSC_EXTERN PetscErrorCode DMSwarmSetPointsUniformCoordinates(DM dm, PetscReal 
 }
 
 /*@C
-   DMSwarmSetPointCoordinates - Set point coordinates in a `DMSWARM` from a user defined list
+  DMSwarmSetPointCoordinates - Set point coordinates in a `DMSWARM` from a user defined list
 
-   Collective
+  Collective
 
-   Input parameters:
-+  dm - the `DMSWARM`
-.  npoints - the number of points to insert
-.  coor - the coordinate values
-.  redundant - if set to `PETSC_TRUE`, it is assumed that `npoints` and `coor` are only valid on rank 0 and should be broadcast to other ranks
--  mode - indicates whether to append points to the swarm (`ADD_VALUES`), or over-ride existing points (`INSERT_VALUES`)
+  Input Parameters:
++ dm        - the `DMSWARM`
+. npoints   - the number of points to insert
+. coor      - the coordinate values
+. redundant - if set to `PETSC_TRUE`, it is assumed that `npoints` and `coor` are only valid on rank 0 and should be broadcast to other ranks
+- mode      - indicates whether to append points to the swarm (`ADD_VALUES`), or over-ride existing points (`INSERT_VALUES`)
 
-   Level: beginner
+  Level: beginner
 
-   Notes:
-   If the user has specified `redundant` as `PETSC_FALSE`, the cell `DM` will attempt to locate the coordinates provided by `coor` within
-   its sub-domain. If they any values within `coor` are not located in the sub-domain, they will be ignored and will not get
-   added to the `DMSWARM`.
+  Notes:
+  If the user has specified `redundant` as `PETSC_FALSE`, the cell `DM` will attempt to locate the coordinates provided by `coor` within
+  its sub-domain. If they any values within `coor` are not located in the sub-domain, they will be ignored and will not get
+  added to the `DMSWARM`.
 
 .seealso: `DMSWARM`, `DMSwarmSetType()`, `DMSwarmSetCellDM()`, `DMSwarmType`, `DMSwarmSetPointsUniformCoordinates()`
 @*/
@@ -335,23 +325,23 @@ extern PetscErrorCode private_DMSwarmInsertPointsUsingCellDM_DA(DM, DM, DMSwarmP
 extern PetscErrorCode private_DMSwarmInsertPointsUsingCellDM_PLEX(DM, DM, DMSwarmPICLayoutType, PetscInt);
 
 /*@C
-   DMSwarmInsertPointsUsingCellDM - Insert point coordinates within each cell
+  DMSwarmInsertPointsUsingCellDM - Insert point coordinates within each cell
 
-   Not Collective
+  Not Collective
 
-   Input parameters:
-+  dm - the `DMSWARM`
-.  layout_type - method used to fill each cell with the cell `DM`
--  fill_param - parameter controlling how many points per cell are added (the meaning of this parameter is dependent on the layout type)
+  Input Parameters:
++ dm          - the `DMSWARM`
+. layout_type - method used to fill each cell with the cell `DM`
+- fill_param  - parameter controlling how many points per cell are added (the meaning of this parameter is dependent on the layout type)
 
-   Level: beginner
+  Level: beginner
 
-   Notes:
-   The insert method will reset any previous defined points within the `DMSWARM`.
+  Notes:
+  The insert method will reset any previous defined points within the `DMSWARM`.
 
-   When using a `DMDA` both 2D and 3D are supported for all layout types provided you are using `DMDA_ELEMENT_Q1`.
+  When using a `DMDA` both 2D and 3D are supported for all layout types provided you are using `DMDA_ELEMENT_Q1`.
 
-   When using a `DMPLEX` the following case are supported:
+  When using a `DMPLEX` the following case are supported\:
 .vb
    (i) DMSWARMPIC_LAYOUT_REGULAR: 2D (triangle),
    (ii) DMSWARMPIC_LAYOUT_GAUSS: 2D and 3D provided the cell is a tri/tet or a quad/hex,
@@ -381,22 +371,21 @@ PETSC_EXTERN PetscErrorCode DMSwarmInsertPointsUsingCellDM(DM dm, DMSwarmPICLayo
 extern PetscErrorCode private_DMSwarmSetPointCoordinatesCellwise_PLEX(DM, DM, PetscInt, PetscReal *);
 
 /*@C
-   DMSwarmSetPointCoordinatesCellwise - Insert point coordinates (defined over the reference cell) within each cell
+  DMSwarmSetPointCoordinatesCellwise - Insert point coordinates (defined over the reference cell) within each cell
 
-   Not Collective
+  Not Collective
 
-   Input parameters:
-+  dm - the `DMSWARM`
-.  celldm - the cell `DM`
-.  npoints - the number of points to insert in each cell
--  xi - the coordinates (defined in the local coordinate system for each cell) to insert
+  Input Parameters:
++ dm      - the `DMSWARM`
+. npoints - the number of points to insert in each cell
+- xi      - the coordinates (defined in the local coordinate system for each cell) to insert
 
- Level: beginner
+  Level: beginner
 
- Notes:
- The method will reset any previous defined points within the `DMSWARM`.
- Only supported for `DMPLEX`. If you are using a `DMDA` it is recommended to either use
- `DMSwarmInsertPointsUsingCellDM()`, or extract and set the coordinates yourself the following code
+  Notes:
+  The method will reset any previous defined points within the `DMSWARM`.
+  Only supported for `DMPLEX`. If you are using a `DMDA` it is recommended to either use
+  `DMSwarmInsertPointsUsingCellDM()`, or extract and set the coordinates yourself the following code
 .vb
     PetscReal *coor;
     DMSwarmGetField(dm,DMSwarmPICField_coor,NULL,NULL,(void**)&coor);
@@ -423,105 +412,22 @@ PETSC_EXTERN PetscErrorCode DMSwarmSetPointCoordinatesCellwise(DM dm, PetscInt n
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* Field projection API */
-extern PetscErrorCode private_DMSwarmProjectFields_DA(DM swarm, DM celldm, PetscInt project_type, PetscInt nfields, DMSwarmDataField dfield[], Vec vecs[]);
-extern PetscErrorCode private_DMSwarmProjectFields_PLEX(DM swarm, DM celldm, PetscInt project_type, PetscInt nfields, DMSwarmDataField dfield[], Vec vecs[]);
-
 /*@C
-   DMSwarmProjectFields - Project a set of swarm fields onto the cell `DM`
+  DMSwarmCreatePointPerCellCount - Count the number of points within all cells in the cell DM
 
-   Collective
+  Not Collective
 
-   Input parameters:
-+  dm - the `DMSWARM`
-.  nfields - the number of swarm fields to project
-.  fieldnames - the textual names of the swarm fields to project
-.  fields - an array of Vec's of length nfields
--  reuse - flag indicating whether the array and contents of fields should be re-used or internally allocated
+  Input Parameter:
+. dm - the `DMSWARM`
 
-   Level: beginner
+  Output Parameters:
++ ncells - the number of cells in the cell `DM` (optional argument, pass `NULL` to ignore)
+- count  - array of length ncells containing the number of points per cell
 
-   Notes:
-   Currently, the only available projection method consists of
-.vb
-     phi_i = \sum_{p=0}^{np} N_i(x_p) phi_p dJ / \sum_{p=0}^{np} N_i(x_p) dJ
-   where phi_p is the swarm field at point p,
-     N_i() is the cell DM basis function at vertex i,
-     dJ is the determinant of the cell Jacobian and
-     phi_i is the projected vertex value of the field phi.
-.ve
+  Level: beginner
 
-   If `reuse` is `PETSC_FALSE`, this function will allocate the array of `Vec`'s, and each individual `Vec`.
-     The user is responsible for destroying both the array and the individual `Vec` objects.
-
-   Only swarm fields registered with data type of `PETSC_REAL` can be projected onto the cell `DM`.
-
-   Only swarm fields of block size = 1 can currently be projected.
-
-   The only projection methods currently only support the `DMDA` (2D) and `DMPLEX` (triangles 2D).
-
-.seealso: `DMSWARM`, `DMSwarmSetType()`, `DMSwarmSetCellDM()`, `DMSwarmType`
-@*/
-PETSC_EXTERN PetscErrorCode DMSwarmProjectFields(DM dm, PetscInt nfields, const char *fieldnames[], Vec **fields, PetscBool reuse)
-{
-  DM_Swarm         *swarm = (DM_Swarm *)dm->data;
-  DMSwarmDataField *gfield;
-  DM                celldm;
-  PetscBool         isDA, isPLEX;
-  Vec              *vecs;
-  PetscInt          f, nvecs;
-  PetscInt          project_type = 0;
-
-  PetscFunctionBegin;
-  DMSWARMPICVALID(dm);
-  PetscCall(DMSwarmGetCellDM(dm, &celldm));
-  PetscCall(PetscMalloc1(nfields, &gfield));
-  nvecs = 0;
-  for (f = 0; f < nfields; f++) {
-    PetscCall(DMSwarmDataBucketGetDMSwarmDataFieldByName(swarm->db, fieldnames[f], &gfield[f]));
-    PetscCheck(gfield[f]->petsc_type == PETSC_REAL, PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Projection only valid for fields using a data type = PETSC_REAL");
-    PetscCheck(gfield[f]->bs == 1, PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Projection only valid for fields with block size = 1");
-    nvecs += gfield[f]->bs;
-  }
-  if (!reuse) {
-    PetscCall(PetscMalloc1(nvecs, &vecs));
-    for (f = 0; f < nvecs; f++) {
-      PetscCall(DMCreateGlobalVector(celldm, &vecs[f]));
-      PetscCall(PetscObjectSetName((PetscObject)vecs[f], gfield[f]->name));
-    }
-  } else {
-    vecs = *fields;
-  }
-
-  PetscCall(PetscObjectTypeCompare((PetscObject)celldm, DMDA, &isDA));
-  PetscCall(PetscObjectTypeCompare((PetscObject)celldm, DMPLEX, &isPLEX));
-  if (isDA) {
-    PetscCall(private_DMSwarmProjectFields_DA(dm, celldm, project_type, nfields, gfield, vecs));
-  } else if (isPLEX) {
-    PetscCall(private_DMSwarmProjectFields_PLEX(dm, celldm, project_type, nfields, gfield, vecs));
-  } else SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Only supported for cell DMs of type DMDA and DMPLEX");
-
-  PetscCall(PetscFree(gfield));
-  if (!reuse) *fields = vecs;
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-/*@C
-   DMSwarmCreatePointPerCellCount - Count the number of points within all cells in the cell DM
-
-   Not Collective
-
-   Input parameter:
-.  dm - the `DMSWARM`
-
-   Output parameters:
-+  ncells - the number of cells in the cell `DM` (optional argument, pass `NULL` to ignore)
--  count - array of length ncells containing the number of points per cell
-
-   Level: beginner
-
-   Notes:
-   The array count is allocated internally and must be free'd by the user.
+  Notes:
+  The array count is allocated internally and must be free'd by the user.
 
 .seealso: `DMSWARM`, `DMSwarmSetType()`, `DMSwarmSetCellDM()`, `DMSwarmType`
 @*/
@@ -593,10 +499,10 @@ PETSC_EXTERN PetscErrorCode DMSwarmCreatePointPerCellCount(DM dm, PetscInt *ncel
 
   Not Collective
 
-  Input parameter:
-. dm - the `DMSWARM`
+  Input Parameter:
+. sw - the `DMSWARM`
 
-  Output parameters:
+  Output Parameters:
 . Ns - the number of species
 
   Level: intermediate
@@ -617,8 +523,8 @@ PetscErrorCode DMSwarmGetNumSpecies(DM sw, PetscInt *Ns)
 
   Not Collective
 
-  Input parameter:
-+ dm - the `DMSWARM`
+  Input Parameters:
++ sw - the `DMSWARM`
 - Ns - the number of species
 
   Level: intermediate
@@ -639,8 +545,8 @@ PetscErrorCode DMSwarmSetNumSpecies(DM sw, PetscInt Ns)
 
   Not Collective
 
-  Input parameter:
-. dm - the `DMSWARM`
+  Input Parameter:
+. sw - the `DMSWARM`
 
   Output Parameter:
 . coordFunc - the function setting initial particle positions, or `NULL`
@@ -655,7 +561,7 @@ PetscErrorCode DMSwarmGetCoordinateFunction(DM sw, PetscSimplePointFunc *coordFu
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sw, DM_CLASSID, 1);
-  PetscValidPointer(coordFunc, 2);
+  PetscAssertPointer(coordFunc, 2);
   *coordFunc = swarm->coordFunc;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -665,8 +571,8 @@ PetscErrorCode DMSwarmGetCoordinateFunction(DM sw, PetscSimplePointFunc *coordFu
 
   Not Collective
 
-  Input parameters:
-+ dm - the `DMSWARM`
+  Input Parameters:
++ sw        - the `DMSWARM`
 - coordFunc - the function setting initial particle positions
 
   Level: intermediate
@@ -685,12 +591,12 @@ PetscErrorCode DMSwarmSetCoordinateFunction(DM sw, PetscSimplePointFunc coordFun
 }
 
 /*@C
-  DMSwarmGetCoordinateFunction - Get the function setting initial particle velocities, if it exists
+  DMSwarmGetVelocityFunction - Get the function setting initial particle velocities, if it exists
 
   Not Collective
 
-  Input parameter:
-. dm - the `DMSWARM`
+  Input Parameter:
+. sw - the `DMSWARM`
 
   Output Parameter:
 . velFunc - the function setting initial particle velocities, or `NULL`
@@ -705,7 +611,7 @@ PetscErrorCode DMSwarmGetVelocityFunction(DM sw, PetscSimplePointFunc *velFunc)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sw, DM_CLASSID, 1);
-  PetscValidPointer(velFunc, 2);
+  PetscAssertPointer(velFunc, 2);
   *velFunc = swarm->velFunc;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -715,9 +621,9 @@ PetscErrorCode DMSwarmGetVelocityFunction(DM sw, PetscSimplePointFunc *velFunc)
 
   Not Collective
 
-  Input parameters:
-+ dm - the `DMSWARM`
-- coordFunc - the function setting initial particle velocities
+  Input Parameters:
++ sw      - the `DMSWARM`
+- velFunc - the function setting initial particle velocities
 
   Level: intermediate
 
@@ -1026,8 +932,8 @@ PetscErrorCode DMSwarmInitializeVelocities(DM sw, PetscProbFunc sampler, const P
   Collective
 
   Input Parameters:
-+ sw      - The `DMSWARM` object
-- v0      - The velocity scale for nondimensionalization for each species
++ sw - The `DMSWARM` object
+- v0 - The velocity scale for nondimensionalization for each species
 
   Level: advanced
 

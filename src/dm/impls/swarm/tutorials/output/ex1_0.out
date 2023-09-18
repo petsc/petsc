@@ -15,4 +15,4 @@ DM Object: Particle Grid 1 MPI process
   type: swarm
 Particle Grid in 2 dimensions:
   Number of particles per rank: 50
-Total number =   5.000000000000e+01. energy =   5.000000000000e+01 error =   2.842170943040e-16
+Energy =   5.000000000000e+01 error =  -1.989519660128e-15

@@ -5,40 +5,41 @@
 #include <petsc/private/petscimpl.h> /*I   "petscsys.h"    I*/
 #include <petscviewer.h>
 
-PetscErrorCode PetscComposedQuantitiesDestroy(PetscObject obj)
+static PetscErrorCode DestroyComposedData(void ***composed_star, PetscObjectState **state_star, PetscInt *count_star, void **composed, PetscObjectState **state)
 {
-  PetscInt i;
+  void **tmp_star = *composed_star;
 
   PetscFunctionBegin;
-  if (obj->intstar_idmax > 0) {
-    for (i = 0; i < obj->intstar_idmax; i++) PetscCall(PetscFree(obj->intstarcomposeddata[i]));
-    PetscCall(PetscFree2(obj->intstarcomposeddata, obj->intstarcomposedstate));
-  }
-  if (obj->realstar_idmax > 0) {
-    for (i = 0; i < obj->realstar_idmax; i++) PetscCall(PetscFree(obj->realstarcomposeddata[i]));
-    PetscCall(PetscFree2(obj->realstarcomposeddata, obj->realstarcomposedstate));
-  }
-  if (obj->scalarstar_idmax > 0) {
-    for (i = 0; i < obj->scalarstar_idmax; i++) PetscCall(PetscFree(obj->scalarstarcomposeddata[i]));
-    PetscCall(PetscFree2(obj->scalarstarcomposeddata, obj->scalarstarcomposedstate));
-  }
-  PetscCall(PetscFree2(obj->intcomposeddata, obj->intcomposedstate));
-  PetscCall(PetscFree2(obj->realcomposeddata, obj->realcomposedstate));
-  PetscCall(PetscFree2(obj->scalarcomposeddata, obj->scalarcomposedstate));
+  for (PetscInt i = 0, imax = *count_star; i < imax; ++i) PetscCall(PetscFree(tmp_star[i]));
+  PetscCall(PetscFree2(*composed_star, *state_star));
+  PetscCall(PetscFree2(*composed, *state));
+  *count_star = 0;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+PetscErrorCode PetscComposedQuantitiesDestroy(PetscObject obj)
+{
+  PetscFunctionBegin;
+  PetscValidHeader(obj, 1);
+  PetscCall(DestroyComposedData((void ***)&obj->intstarcomposeddata, &obj->intstarcomposedstate, &obj->intstar_idmax, (void **)&obj->intcomposeddata, &obj->intcomposedstate));
+  PetscCall(DestroyComposedData((void ***)&obj->realstarcomposeddata, &obj->realstarcomposedstate, &obj->realstar_idmax, (void **)&obj->realcomposeddata, &obj->realcomposedstate));
+#if PetscDefined(USE_COMPLEX)
+  PetscCall(DestroyComposedData((void ***)&obj->scalarstarcomposeddata, &obj->scalarstarcomposedstate, &obj->scalarstar_idmax, (void **)&obj->scalarcomposeddata, &obj->scalarcomposedstate));
+#endif
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
-   PetscObjectDestroy - Destroys any `PetscObject`, regardless of the type.
+  PetscObjectDestroy - Destroys any `PetscObject`, regardless of the type.
 
-   Collective
+  Collective
 
-   Input Parameter:
-.  obj - any PETSc object, for example a `Vec`, `Mat` or `KSP`.
+  Input Parameter:
+. obj - any PETSc object, for example a `Vec`, `Mat` or `KSP`.
          This must be cast with a (`PetscObject`*), for example,
          `PetscObjectDestroy`((`PetscObject`*)&mat);
 
-   Level: beginner
+  Level: beginner
 
 .seealso: `PetscObject`
 @*/
@@ -53,17 +54,17 @@ PetscErrorCode PetscObjectDestroy(PetscObject *obj)
 }
 
 /*@C
-   PetscObjectView - Views any `PetscObject`, regardless of the type.
+  PetscObjectView - Views any `PetscObject`, regardless of the type.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  obj - any PETSc object, for example a `Vec`, `Mat` or `KSP`.
+  Input Parameters:
++ obj    - any PETSc object, for example a `Vec`, `Mat` or `KSP`.
          This must be cast with a (`PetscObject`), for example,
          `PetscObjectView`((`PetscObject`)mat,viewer);
--  viewer - any PETSc viewer
+- viewer - any PETSc viewer
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `PetscObject`, `PetscObjectViewFromOptions()`
 @*/
@@ -85,12 +86,14 @@ PetscErrorCode PetscObjectView(PetscObject obj, PetscViewer viewer)
   Collective
 
   Input Parameters:
-+ obj   - the object
-. bobj  - optional other object that provides prefix (if NULL then the prefix in obj is used)
++ obj        - the object
+. bobj       - optional other object that provides prefix (if `NULL` then the prefix in `obj` is used)
 - optionname - option string that is used to activate viewing
 
   Options Database Key:
-.  -optionname_view [viewertype]:... - option name and values. In actual usage this would be something like -mat_coarse_view
+. -optionname_view [viewertype]:... - option name and values. In actual usage this would be something like `-mat_coarse_view`
+
+  Level: developer
 
   Notes:
 .vb
@@ -104,9 +107,7 @@ PetscErrorCode PetscObjectView(PetscObject obj, PetscViewer viewer)
        saws[:communicatorname]                    publishes object to the Scientific Application Webserver (SAWs)
 .ve
 
-  This is not called directly but is called by, for example, `MatCoarseViewFromOptions()`
-
-  Level: developer
+  This is not called directly but is called by, for example, `MatViewFromOptions()`
 
 .seealso: `PetscObject`, `PetscObjectView()`, `PetscOptionsGetViewer()`
 @*/
@@ -119,6 +120,8 @@ PetscErrorCode PetscObjectViewFromOptions(PetscObject obj, PetscObject bobj, con
   const char       *prefix;
 
   PetscFunctionBegin;
+  PetscValidHeader(obj, 1);
+  if (bobj) PetscValidHeader(bobj, 2);
   if (incall) PetscFunctionReturn(PETSC_SUCCESS);
   incall = PETSC_TRUE;
   prefix = bobj ? bobj->prefix : obj->prefix;
@@ -135,51 +138,52 @@ PetscErrorCode PetscObjectViewFromOptions(PetscObject obj, PetscObject bobj, con
 }
 
 /*@C
-   PetscObjectTypeCompare - Determines whether a PETSc object is of a particular type.
+  PetscObjectTypeCompare - Determines whether a PETSc object is of a particular type.
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  obj - any PETSc object, for example a `Vec`, `Mat` or `KSP`.
+  Input Parameters:
++ obj       - any PETSc object, for example a `Vec`, `Mat` or `KSP`.
          This must be cast with a (`PetscObject`), for example,
          `PetscObjectTypeCompare`((`PetscObject`)mat);
--  type_name - string containing a type name
+- type_name - string containing a type name
 
-   Output Parameter:
-.  same - `PETSC_TRUE` if they are the same, else `PETSC_FALSE`
+  Output Parameter:
+. same - `PETSC_TRUE` if the type of `obj` and `type_name` are the same or both `NULL`, else `PETSC_FALSE`
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `PetscObject`, `VecGetType()`, `KSPGetType()`, `PCGetType()`, `SNESGetType()`, `PetscObjectBaseTypeCompare()`, `PetscObjectTypeCompareAny()`, `PetscObjectBaseTypeCompareAny()`, `PetscObjectObjectTypeCompare()`
 @*/
 PetscErrorCode PetscObjectTypeCompare(PetscObject obj, const char type_name[], PetscBool *same)
 {
   PetscFunctionBegin;
-  PetscValidBoolPointer(same, 3);
-  if (!obj) *same = PETSC_FALSE;
-  else if (!type_name && !obj->type_name) *same = PETSC_TRUE;
-  else if (!type_name || !obj->type_name) *same = PETSC_FALSE;
+  PetscAssertPointer(same, 3);
+  if (!obj) *same = (PetscBool)!type_name;
   else {
     PetscValidHeader(obj, 1);
-    PetscValidCharPointer(type_name, 2);
-    PetscCall(PetscStrcmp((char *)(obj->type_name), type_name, same));
+    if (!type_name || !obj->type_name) *same = (PetscBool)(!obj->type_name == !type_name);
+    else {
+      PetscAssertPointer(type_name, 2);
+      PetscCall(PetscStrcmp(obj->type_name, type_name, same));
+    }
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
-   PetscObjectObjectTypeCompare - Determines whether two PETSc objects are of the same type
+  PetscObjectObjectTypeCompare - Determines whether two PETSc objects are of the same type
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  obj1 - any PETSc object, for example a Vec, Mat or KSP.
--  obj2 - another PETSc object
+  Input Parameters:
++ obj1 - any PETSc object, for example a `Vec`, `Mat` or `KSP`.
+- obj2 - another PETSc object
 
-   Output Parameter:
-.  same - PETSC_TRUE if they are the same, else PETSC_FALSE
+  Output Parameter:
+. same - `PETSC_TRUE` if they are the same or both unset, else `PETSC_FALSE`
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `PetscObjectTypeCompare()`, `VecGetType()`, `KSPGetType()`, `PCGetType()`, `SNESGetType()`, `PetscObjectBaseTypeCompare()`, `PetscObjectTypeCompareAny()`, `PetscObjectBaseTypeCompareAny()`
 
@@ -187,58 +191,59 @@ PetscErrorCode PetscObjectTypeCompare(PetscObject obj, const char type_name[], P
 PetscErrorCode PetscObjectObjectTypeCompare(PetscObject obj1, PetscObject obj2, PetscBool *same)
 {
   PetscFunctionBegin;
-  PetscValidBoolPointer(same, 3);
   PetscValidHeader(obj1, 1);
   PetscValidHeader(obj2, 2);
-  PetscCall(PetscStrcmp((char *)(obj1->type_name), (char *)(obj2->type_name), same));
+  PetscAssertPointer(same, 3);
+  PetscCall(PetscStrcmp(obj1->type_name, obj2->type_name, same));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
-   PetscObjectBaseTypeCompare - Determines whether a `PetscObject` is of a given base type. For example the base type of `MATSEQAIJPERM` is `MATSEQAIJ`
+  PetscObjectBaseTypeCompare - Determines whether a `PetscObject` is of a given base type. For example the base type of `MATSEQAIJPERM` is `MATSEQAIJ`
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  mat - the matrix
--  type_name - string containing a type name
+  Input Parameters:
++ obj       - the matrix
+- type_name - string containing a type name
 
-   Output Parameter:
-.  same - `PETSC_TRUE` if it is of the same base type
+  Output Parameter:
+. same - `PETSC_TRUE` if the object is of the same base type identified by `type_name` or both `NULL`, `PETSC_FALSE` otherwise
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `PetscObject`, `PetscObjectTypeCompare()`, `PetscObjectTypeCompareAny()`, `PetscObjectBaseTypeCompareAny()`
 @*/
 PetscErrorCode PetscObjectBaseTypeCompare(PetscObject obj, const char type_name[], PetscBool *same)
 {
   PetscFunctionBegin;
-  PetscValidBoolPointer(same, 3);
-  if (!obj) *same = PETSC_FALSE;
-  else if (!type_name && !obj->type_name) *same = PETSC_TRUE;
-  else if (!type_name || !obj->type_name) *same = PETSC_FALSE;
+  PetscAssertPointer(same, 3);
+  if (!obj) *same = (PetscBool)!type_name;
   else {
     PetscValidHeader(obj, 1);
-    PetscValidCharPointer(type_name, 2);
-    PetscCall(PetscStrbeginswith((char *)(obj->type_name), type_name, same));
+    if (!type_name || !obj->type_name) *same = (PetscBool)(!obj->type_name == !type_name);
+    else {
+      PetscAssertPointer(type_name, 2);
+      PetscCall(PetscStrbeginswith(obj->type_name, type_name, same));
+    }
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
-   PetscObjectTypeCompareAny - Determines whether a PETSc object is of any of a list of types.
+  PetscObjectTypeCompareAny - Determines whether a PETSc object is of any of a list of types.
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  obj - any PETSc object, for example a `Vec`, `Mat` or `KSP`.
+  Input Parameters:
++ obj       - any PETSc object, for example a `Vec`, `Mat` or `KSP`.
          This must be cast with a (`PetscObject`), for example, `PetscObjectTypeCompareAny`((`PetscObject`)mat,...);
--  type_name - array of strings containing type names, pass the empty string "" to terminate the list
+- type_name - array of strings containing type names, pass the empty string "" to terminate the list
 
-   Output Parameter:
-.  match - `PETSC_TRUE` if the type of obj matches any in the list, else `PETSC_FALSE`
+  Output Parameter:
+. match - `PETSC_TRUE` if the type of `obj` matches any in the list, else `PETSC_FALSE`
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `VecGetType()`, `KSPGetType()`, `PCGetType()`, `SNESGetType()`, `PetscObjectTypeCompare()`, `PetscObjectBaseTypeCompare()`
 @*/
@@ -247,7 +252,7 @@ PetscErrorCode PetscObjectTypeCompareAny(PetscObject obj, PetscBool *match, cons
   va_list Argp;
 
   PetscFunctionBegin;
-  PetscValidBoolPointer(match, 2);
+  PetscAssertPointer(match, 2);
   *match = PETSC_FALSE;
   if (!obj) PetscFunctionReturn(PETSC_SUCCESS);
   va_start(Argp, type_name);
@@ -265,19 +270,19 @@ PetscErrorCode PetscObjectTypeCompareAny(PetscObject obj, PetscBool *match, cons
 }
 
 /*@C
-   PetscObjectBaseTypeCompareAny - Determines whether a PETSc object has the base type of any of a list of types.
+  PetscObjectBaseTypeCompareAny - Determines whether a PETSc object has the base type of any of a list of types.
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  obj - any PETSc object, for example a `Vec`, `Mat` or `KSP`.
+  Input Parameters:
++ obj       - any PETSc object, for example a `Vec`, `Mat` or `KSP`.
          This must be cast with a (`PetscObject`), for example, `PetscObjectBaseTypeCompareAny`((`PetscObject`)mat,...);
--  type_name - array of strings containing type names, pass the empty string "" to terminate the list
+- type_name - array of strings containing type names, pass the empty string "" to terminate the list
 
-   Output Parameter:
-.  match - `PETSC_TRUE` if the type of obj matches any in the list, else `PETSC_FALSE`
+  Output Parameter:
+. match - `PETSC_TRUE` if the type of `obj` matches any in the list, else `PETSC_FALSE`
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `VecGetType()`, `KSPGetType()`, `PCGetType()`, `SNESGetType()`, `PetscObjectTypeCompare()`, `PetscObjectBaseTypeCompare()`, `PetscObjectTypeCompareAny()`
 @*/
@@ -286,7 +291,7 @@ PetscErrorCode PetscObjectBaseTypeCompareAny(PetscObject obj, PetscBool *match, 
   va_list Argp;
 
   PetscFunctionBegin;
-  PetscValidBoolPointer(match, 2);
+  PetscAssertPointer(match, 2);
   *match = PETSC_FALSE;
   va_start(Argp, type_name);
   while (type_name && type_name[0]) {
@@ -302,99 +307,182 @@ PetscErrorCode PetscObjectBaseTypeCompareAny(PetscObject obj, PetscBool *match, 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-#define MAXREGDESOBJS 256
-static int         PetscObjectRegisterDestroy_Count = 0;
-static PetscObject PetscObjectRegisterDestroy_Objects[MAXREGDESOBJS];
+typedef struct {
+  PetscErrorCode (*func)(void);
+} PetscFinalizeFunction;
+
+typedef struct {
+  PetscErrorCode (*func)(void *);
+  void *ctx;
+} PetscFinalizeFunctionWithCtx;
+
+typedef enum {
+  PETSC_FINALIZE_EMPTY,
+  PETSC_FINALIZE_OBJECT,
+  PETSC_FINALIZE_FUNC,
+  PETSC_FINALIZE_FUNC_WITH_CTX
+} PetscFinalizeType;
+
+static const char *const PetscFinalizeTypes[] = {"PETSC_FINALIZE_EMPTY", "PETSC_FINALIZE_OBJECT", "PETSC_FINALIZE_FUNC", "PETSC_FINALIZE_FUNC_WITH_CTX", PETSC_NULLPTR};
+
+typedef struct {
+  union ThunkUnion
+  {
+    PetscObject                  obj;
+    PetscFinalizeFunction        fn;
+    PetscFinalizeFunctionWithCtx fnctx;
+  } thunk;
+  PetscFinalizeType type;
+} PetscFinalizerContainer;
+
+#define PETSC_MAX_REGISTERED_FINALIZERS 256
+static int                     reg_count = 0;
+static PetscFinalizerContainer regfin[PETSC_MAX_REGISTERED_FINALIZERS];
+
+static PetscErrorCode PetscRunRegisteredFinalizers(void)
+{
+  PetscFunctionBegin;
+  while (reg_count) {
+    PetscFinalizerContainer top = regfin[--reg_count];
+
+    regfin[reg_count].type = PETSC_FINALIZE_EMPTY;
+    PetscCall(PetscArrayzero(&regfin[reg_count].thunk, 1));
+    switch (top.type) {
+    case PETSC_FINALIZE_OBJECT:
+      top.thunk.obj->persistent = PETSC_FALSE;
+      PetscCall(PetscObjectDestroy(&top.thunk.obj));
+      break;
+    case PETSC_FINALIZE_FUNC:
+      PetscCall((*top.thunk.fn.func)());
+      break;
+    case PETSC_FINALIZE_FUNC_WITH_CTX:
+      PetscCall((*top.thunk.fnctx.func)(top.thunk.fnctx.ctx));
+      break;
+    case PETSC_FINALIZE_EMPTY:
+      SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Finalizer at position %d is empty, yet registration count %d != 0", reg_count, reg_count);
+      break;
+    }
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static int PetscFinalizerContainerEqual(const PetscFinalizerContainer *a, const PetscFinalizerContainer *b)
+{
+  if (a->type != b->type) return 0;
+  switch (a->type) {
+  case PETSC_FINALIZE_EMPTY:
+    break;
+  case PETSC_FINALIZE_OBJECT:
+    return a->thunk.obj == b->thunk.obj;
+  case PETSC_FINALIZE_FUNC:
+    return a->thunk.fn.func == b->thunk.fn.func;
+  case PETSC_FINALIZE_FUNC_WITH_CTX:
+    return a->thunk.fnctx.func == b->thunk.fnctx.func && a->thunk.fnctx.ctx == b->thunk.fnctx.ctx;
+  }
+  return 1;
+}
+
+static PetscErrorCode RegisterFinalizer(PetscFinalizerContainer container)
+{
+  PetscFunctionBegin;
+  PetscAssert(reg_count < (int)PETSC_STATIC_ARRAY_LENGTH(regfin), PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "No more room in array, limit %zu, recompile %s with larger value for " PetscStringize(regfin), PETSC_STATIC_ARRAY_LENGTH(regfin), __FILE__);
+  PetscAssert(regfin[reg_count].type == PETSC_FINALIZE_EMPTY, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Finalizer type (%s) at position %d is not PETSC_FINALIZE_EMPTY!", PetscFinalizeTypes[regfin[reg_count].type], reg_count);
+  if (PetscDefined(USE_DEBUG)) {
+    for (int i = 0; i < reg_count; ++i) PetscCheck(!PetscFinalizerContainerEqual(regfin + i, &container), PETSC_COMM_SELF, PETSC_ERR_ORDER, "Finalizer (of type %s) already registered!", PetscFinalizeTypes[container.type]);
+  }
+  regfin[reg_count++] = container;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
 
 /*@C
-   PetscObjectRegisterDestroy - Registers a PETSc object to be destroyed when
-     `PetscFinalize()` is called.
+  PetscObjectRegisterDestroy - Registers a PETSc object to be destroyed when
+  `PetscFinalize()` is called.
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameter:
-.  obj - any PETSc object, for example a `Vec`, `Mat` or `KSP`.
+  Input Parameter:
+. obj - any PETSc object, for example a `Vec`, `Mat` or `KSP`.
          This must be cast with a (`PetscObject`), for example,
          `PetscObjectRegisterDestroy`((`PetscObject`)mat);
 
-   Level: developer
+  Level: developer
 
-   Note:
-      This is used by, for example, PETSC_VIEWER_XXX_() routines to free the viewer
-    when PETSc ends.
+  Note:
+  This is used by, for example, `PETSC_VIEWER_XXX_()` routines to free the viewer
+  when PETSc ends.
 
 .seealso: `PetscObjectRegisterDestroyAll()`
 @*/
 PetscErrorCode PetscObjectRegisterDestroy(PetscObject obj)
 {
+  PetscFinalizerContainer container;
+
   PetscFunctionBegin;
   PetscValidHeader(obj, 1);
-  PetscCheck(PetscObjectRegisterDestroy_Count < (int)PETSC_STATIC_ARRAY_LENGTH(PetscObjectRegisterDestroy_Objects), PETSC_COMM_SELF, PETSC_ERR_PLIB, "No more room in array, limit %zu \n recompile %s with larger value for " PetscStringize_(MAXREGDESOBJS), PETSC_STATIC_ARRAY_LENGTH(PetscObjectRegisterDestroy_Objects), __FILE__);
-  PetscObjectRegisterDestroy_Objects[PetscObjectRegisterDestroy_Count++] = obj;
+  container.thunk.obj = obj;
+  container.type      = PETSC_FINALIZE_OBJECT;
+  PetscCall(RegisterFinalizer(container));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
-   PetscObjectRegisterDestroyAll - Frees all the PETSc objects that have been registered
-     with `PetscObjectRegisterDestroy()`. Called by `PetscFinalize()`
+  PetscObjectRegisterDestroyAll - Frees all the PETSc objects that have been registered
+  with `PetscObjectRegisterDestroy()`. Called by `PetscFinalize()`
 
-   Logically Collective on the individual `PetscObject`s that are being processed
+  Logically Collective on the individual `PetscObject`s that are being processed
 
-   Level: developer
+  Level: developer
 
 .seealso: `PetscObjectRegisterDestroy()`
 @*/
 PetscErrorCode PetscObjectRegisterDestroyAll(void)
 {
   PetscFunctionBegin;
-  for (PetscInt i = 0; i < PetscObjectRegisterDestroy_Count; i++) PetscCall(PetscObjectDestroy(&PetscObjectRegisterDestroy_Objects[i]));
-  PetscObjectRegisterDestroy_Count = 0;
+  PetscCall(PetscRunRegisteredFinalizers());
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-#define MAXREGFIN 256
-static int PetscRegisterFinalize_Count = 0;
-static PetscErrorCode (*PetscRegisterFinalize_Functions[MAXREGFIN])(void);
-
 /*@C
-   PetscRegisterFinalize - Registers a function that is to be called in `PetscFinalize()`
+  PetscRegisterFinalize - Registers a function that is to be called in `PetscFinalize()`
 
-   Not Collective
+  Not Collective
 
-   Input Parameter:
-.  PetscErrorCode (*fun)(void) -
+  Input Parameter:
+. f - function to be called
 
-   Level: developer
+  Level: developer
 
-   Note:
-      This is used by, for example, `DMInitializePackage()` to have `DMFinalizePackage()` called
+  Notes:
+  This is used by, for example, `DMInitializePackage()` to have `DMFinalizePackage()` called
 
-.seealso: `PetscRegisterFinalizeAll()`
+  Use `PetscObjectRegisterDestroy()` to register the destruction of an object in `PetscFinalize()`
+
+.seealso: `PetscRegisterFinalizeAll()`, `PetscObjectRegisterDestroy()`
 @*/
 PetscErrorCode PetscRegisterFinalize(PetscErrorCode (*f)(void))
 {
+  PetscFinalizerContainer container;
+
   PetscFunctionBegin;
-  for (PetscInt i = 0; i < PetscRegisterFinalize_Count; i++) {
-    if (f == PetscRegisterFinalize_Functions[i]) PetscFunctionReturn(PETSC_SUCCESS);
-  }
-  PetscCheck(PetscRegisterFinalize_Count < (int)PETSC_STATIC_ARRAY_LENGTH(PetscRegisterFinalize_Functions), PETSC_COMM_SELF, PETSC_ERR_PLIB, "No more room in array, limit %zu \n recompile %s with larger value for " PetscStringize_(MAXREGFIN), PETSC_STATIC_ARRAY_LENGTH(PetscRegisterFinalize_Functions), __FILE__);
-  PetscRegisterFinalize_Functions[PetscRegisterFinalize_Count++] = f;
+  PetscValidFunction(f, 1);
+  container.thunk.fn.func = f;
+  container.type          = PETSC_FINALIZE_FUNC;
+  PetscCall(RegisterFinalizer(container));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
-   PetscRegisterFinalizeAll - Runs all the finalize functions set with `PetscRegisterFinalize()`
+  PetscRegisterFinalizeAll - Runs all the finalize functions set with `PetscRegisterFinalize()`
 
-   Not Collective unless registered functions are collective
+  Not Collective unless registered functions are collective
 
-   Level: developer
+  Level: developer
 
-.seealso: `PetscRegisterFinalize()`
+.seealso: `PetscRegisterFinalize()`, `PetscObjectRegisterDestroyAll()`
 @*/
 PetscErrorCode PetscRegisterFinalizeAll(void)
 {
   PetscFunctionBegin;
-  for (PetscInt i = 0; i < PetscRegisterFinalize_Count; i++) PetscCall((*PetscRegisterFinalize_Functions[i])());
-  PetscRegisterFinalize_Count = 0;
+  PetscCall(PetscRunRegisteredFinalizers());
   PetscFunctionReturn(PETSC_SUCCESS);
 }

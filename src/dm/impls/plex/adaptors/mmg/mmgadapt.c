@@ -158,38 +158,38 @@ PETSC_EXTERN PetscErrorCode DMAdaptMetric_Mmg_Plex(DM dm, Vec vertexMetric, DMLa
   PetscCall(DMPlexMetricNoSurf(dm, &noSurf));
   switch (dim) {
   case 2:
-    PetscCallMMG_NONSTANDARD(MMG2D_Init_mesh(MMG5_ARG_start, MMG5_ARG_ppMesh, &mmg_mesh, MMG5_ARG_ppMet, &mmg_metric, MMG5_ARG_end));
-    PetscCallMMG_NONSTANDARD(MMG2D_Set_iparameter(mmg_mesh, mmg_metric, MMG2D_IPARAM_noinsert, noInsert));
-    PetscCallMMG_NONSTANDARD(MMG2D_Set_iparameter(mmg_mesh, mmg_metric, MMG2D_IPARAM_noswap, noSwap));
-    PetscCallMMG_NONSTANDARD(MMG2D_Set_iparameter(mmg_mesh, mmg_metric, MMG2D_IPARAM_nomove, noMove));
-    PetscCallMMG_NONSTANDARD(MMG2D_Set_iparameter(mmg_mesh, mmg_metric, MMG2D_IPARAM_nosurf, noSurf));
-    PetscCallMMG_NONSTANDARD(MMG2D_Set_iparameter(mmg_mesh, mmg_metric, MMG2D_IPARAM_verbose, verbosity));
-    PetscCallMMG_NONSTANDARD(MMG2D_Set_dparameter(mmg_mesh, mmg_metric, MMG2D_DPARAM_hgrad, gradationFactor));
-    PetscCallMMG_NONSTANDARD(MMG2D_Set_dparameter(mmg_mesh, mmg_metric, MMG2D_DPARAM_hausd, hausdorffNumber));
-    PetscCallMMG_NONSTANDARD(MMG2D_Set_meshSize(mmg_mesh, numVertices, numCells, 0, numFaceTags));
-    PetscCallMMG_NONSTANDARD(MMG2D_Set_vertices(mmg_mesh, vertices, verTags));
-    PetscCallMMG_NONSTANDARD(MMG2D_Set_triangles(mmg_mesh, cells, cellTags));
-    PetscCallMMG_NONSTANDARD(MMG2D_Set_edges(mmg_mesh, bdFaces, faceTags));
-    PetscCallMMG_NONSTANDARD(MMG2D_Set_solSize(mmg_mesh, mmg_metric, MMG5_Vertex, numVertices, MMG5_Tensor));
-    PetscCallMMG_NONSTANDARD(MMG2D_Set_tensorSols(mmg_metric, metric));
-    PetscCallMMG(MMG2D_mmg2dlib(mmg_mesh, mmg_metric));
+    PetscCallMMG_NONSTANDARD(MMG2D_Init_mesh, MMG5_ARG_start, MMG5_ARG_ppMesh, &mmg_mesh, MMG5_ARG_ppMet, &mmg_metric, MMG5_ARG_end);
+    PetscCallMMG_NONSTANDARD(MMG2D_Set_iparameter, mmg_mesh, mmg_metric, MMG2D_IPARAM_noinsert, noInsert);
+    PetscCallMMG_NONSTANDARD(MMG2D_Set_iparameter, mmg_mesh, mmg_metric, MMG2D_IPARAM_noswap, noSwap);
+    PetscCallMMG_NONSTANDARD(MMG2D_Set_iparameter, mmg_mesh, mmg_metric, MMG2D_IPARAM_nomove, noMove);
+    PetscCallMMG_NONSTANDARD(MMG2D_Set_iparameter, mmg_mesh, mmg_metric, MMG2D_IPARAM_nosurf, noSurf);
+    PetscCallMMG_NONSTANDARD(MMG2D_Set_iparameter, mmg_mesh, mmg_metric, MMG2D_IPARAM_verbose, verbosity);
+    PetscCallMMG_NONSTANDARD(MMG2D_Set_dparameter, mmg_mesh, mmg_metric, MMG2D_DPARAM_hgrad, gradationFactor);
+    PetscCallMMG_NONSTANDARD(MMG2D_Set_dparameter, mmg_mesh, mmg_metric, MMG2D_DPARAM_hausd, hausdorffNumber);
+    PetscCallMMG_NONSTANDARD(MMG2D_Set_meshSize, mmg_mesh, numVertices, numCells, 0, numFaceTags);
+    PetscCallMMG_NONSTANDARD(MMG2D_Set_vertices, mmg_mesh, vertices, verTags);
+    PetscCallMMG_NONSTANDARD(MMG2D_Set_triangles, mmg_mesh, cells, cellTags);
+    PetscCallMMG_NONSTANDARD(MMG2D_Set_edges, mmg_mesh, bdFaces, faceTags);
+    PetscCallMMG_NONSTANDARD(MMG2D_Set_solSize, mmg_mesh, mmg_metric, MMG5_Vertex, numVertices, MMG5_Tensor);
+    PetscCallMMG_NONSTANDARD(MMG2D_Set_tensorSols, mmg_metric, metric);
+    PetscCallMMG(MMG2D_mmg2dlib, mmg_mesh, mmg_metric);
     break;
   case 3:
-    PetscCallMMG_NONSTANDARD(MMG3D_Init_mesh(MMG5_ARG_start, MMG5_ARG_ppMesh, &mmg_mesh, MMG5_ARG_ppMet, &mmg_metric, MMG5_ARG_end));
-    PetscCallMMG_NONSTANDARD(MMG3D_Set_iparameter(mmg_mesh, mmg_metric, MMG3D_IPARAM_noinsert, noInsert));
-    PetscCallMMG_NONSTANDARD(MMG3D_Set_iparameter(mmg_mesh, mmg_metric, MMG3D_IPARAM_noswap, noSwap));
-    PetscCallMMG_NONSTANDARD(MMG3D_Set_iparameter(mmg_mesh, mmg_metric, MMG3D_IPARAM_nomove, noMove));
-    PetscCallMMG_NONSTANDARD(MMG3D_Set_iparameter(mmg_mesh, mmg_metric, MMG3D_IPARAM_nosurf, noSurf));
-    PetscCallMMG_NONSTANDARD(MMG3D_Set_iparameter(mmg_mesh, mmg_metric, MMG3D_IPARAM_verbose, verbosity));
-    PetscCallMMG_NONSTANDARD(MMG3D_Set_dparameter(mmg_mesh, mmg_metric, MMG3D_DPARAM_hgrad, gradationFactor));
-    PetscCallMMG_NONSTANDARD(MMG3D_Set_dparameter(mmg_mesh, mmg_metric, MMG3D_DPARAM_hausd, hausdorffNumber));
-    PetscCallMMG_NONSTANDARD(MMG3D_Set_meshSize(mmg_mesh, numVertices, numCells, 0, numFaceTags, 0, 0));
-    PetscCallMMG_NONSTANDARD(MMG3D_Set_vertices(mmg_mesh, vertices, verTags));
-    PetscCallMMG_NONSTANDARD(MMG3D_Set_tetrahedra(mmg_mesh, cells, cellTags));
-    PetscCallMMG_NONSTANDARD(MMG3D_Set_triangles(mmg_mesh, bdFaces, faceTags));
-    PetscCallMMG_NONSTANDARD(MMG3D_Set_solSize(mmg_mesh, mmg_metric, MMG5_Vertex, numVertices, MMG5_Tensor));
-    PetscCallMMG_NONSTANDARD(MMG3D_Set_tensorSols(mmg_metric, metric));
-    PetscCallMMG(MMG3D_mmg3dlib(mmg_mesh, mmg_metric));
+    PetscCallMMG_NONSTANDARD(MMG3D_Init_mesh, MMG5_ARG_start, MMG5_ARG_ppMesh, &mmg_mesh, MMG5_ARG_ppMet, &mmg_metric, MMG5_ARG_end);
+    PetscCallMMG_NONSTANDARD(MMG3D_Set_iparameter, mmg_mesh, mmg_metric, MMG3D_IPARAM_noinsert, noInsert);
+    PetscCallMMG_NONSTANDARD(MMG3D_Set_iparameter, mmg_mesh, mmg_metric, MMG3D_IPARAM_noswap, noSwap);
+    PetscCallMMG_NONSTANDARD(MMG3D_Set_iparameter, mmg_mesh, mmg_metric, MMG3D_IPARAM_nomove, noMove);
+    PetscCallMMG_NONSTANDARD(MMG3D_Set_iparameter, mmg_mesh, mmg_metric, MMG3D_IPARAM_nosurf, noSurf);
+    PetscCallMMG_NONSTANDARD(MMG3D_Set_iparameter, mmg_mesh, mmg_metric, MMG3D_IPARAM_verbose, verbosity);
+    PetscCallMMG_NONSTANDARD(MMG3D_Set_dparameter, mmg_mesh, mmg_metric, MMG3D_DPARAM_hgrad, gradationFactor);
+    PetscCallMMG_NONSTANDARD(MMG3D_Set_dparameter, mmg_mesh, mmg_metric, MMG3D_DPARAM_hausd, hausdorffNumber);
+    PetscCallMMG_NONSTANDARD(MMG3D_Set_meshSize, mmg_mesh, numVertices, numCells, 0, numFaceTags, 0, 0);
+    PetscCallMMG_NONSTANDARD(MMG3D_Set_vertices, mmg_mesh, vertices, verTags);
+    PetscCallMMG_NONSTANDARD(MMG3D_Set_tetrahedra, mmg_mesh, cells, cellTags);
+    PetscCallMMG_NONSTANDARD(MMG3D_Set_triangles, mmg_mesh, bdFaces, faceTags);
+    PetscCallMMG_NONSTANDARD(MMG3D_Set_solSize, mmg_mesh, mmg_metric, MMG5_Vertex, numVertices, MMG5_Tensor);
+    PetscCallMMG_NONSTANDARD(MMG3D_Set_tensorSols, mmg_metric, metric);
+    PetscCallMMG(MMG3D_mmg3dlib, mmg_mesh, mmg_metric);
     break;
   default:
     SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "No Mmg adaptation defined for dimension %" PetscInt_FMT, dim);
@@ -203,23 +203,23 @@ PETSC_EXTERN PetscErrorCode DMAdaptMetric_Mmg_Plex(DM dm, Vec vertexMetric, DMLa
   switch (dim) {
   case 2:
     numCornersNew = 3;
-    PetscCallMMG_NONSTANDARD(MMG2D_Get_meshSize(mmg_mesh, &numVerticesNew, &numCellsNew, 0, &numFacesNew));
+    PetscCallMMG_NONSTANDARD(MMG2D_Get_meshSize, mmg_mesh, &numVerticesNew, &numCellsNew, 0, &numFacesNew);
     PetscCall(PetscMalloc4(2 * numVerticesNew, &verticesNew, numVerticesNew, &verTagsNew, numVerticesNew, &corners, numVerticesNew, &requiredVer));
     PetscCall(PetscMalloc3(3 * numCellsNew, &cellsNew, numCellsNew, &cellTagsNew, numCellsNew, &requiredCells));
     PetscCall(PetscMalloc4(2 * numFacesNew, &facesNew, numFacesNew, &faceTagsNew, numFacesNew, &ridges, numFacesNew, &requiredFaces));
-    PetscCallMMG_NONSTANDARD(MMG2D_Get_vertices(mmg_mesh, verticesNew, verTagsNew, corners, requiredVer));
-    PetscCallMMG_NONSTANDARD(MMG2D_Get_triangles(mmg_mesh, cellsNew, cellTagsNew, requiredCells));
-    PetscCallMMG_NONSTANDARD(MMG2D_Get_edges(mmg_mesh, facesNew, faceTagsNew, ridges, requiredFaces));
+    PetscCallMMG_NONSTANDARD(MMG2D_Get_vertices, mmg_mesh, verticesNew, verTagsNew, corners, requiredVer);
+    PetscCallMMG_NONSTANDARD(MMG2D_Get_triangles, mmg_mesh, cellsNew, cellTagsNew, requiredCells);
+    PetscCallMMG_NONSTANDARD(MMG2D_Get_edges, mmg_mesh, facesNew, faceTagsNew, ridges, requiredFaces);
     break;
   case 3:
     numCornersNew = 4;
-    PetscCallMMG_NONSTANDARD(MMG3D_Get_meshSize(mmg_mesh, &numVerticesNew, &numCellsNew, 0, &numFacesNew, 0, 0));
+    PetscCallMMG_NONSTANDARD(MMG3D_Get_meshSize, mmg_mesh, &numVerticesNew, &numCellsNew, 0, &numFacesNew, 0, 0);
     PetscCall(PetscMalloc4(3 * numVerticesNew, &verticesNew, numVerticesNew, &verTagsNew, numVerticesNew, &corners, numVerticesNew, &requiredVer));
     PetscCall(PetscMalloc3(4 * numCellsNew, &cellsNew, numCellsNew, &cellTagsNew, numCellsNew, &requiredCells));
     PetscCall(PetscMalloc4(3 * numFacesNew, &facesNew, numFacesNew, &faceTagsNew, numFacesNew, &ridges, numFacesNew, &requiredFaces));
-    PetscCallMMG_NONSTANDARD(MMG3D_Get_vertices(mmg_mesh, verticesNew, verTagsNew, corners, requiredVer));
-    PetscCallMMG_NONSTANDARD(MMG3D_Get_tetrahedra(mmg_mesh, cellsNew, cellTagsNew, requiredCells));
-    PetscCallMMG_NONSTANDARD(MMG3D_Get_triangles(mmg_mesh, facesNew, faceTagsNew, requiredFaces));
+    PetscCallMMG_NONSTANDARD(MMG3D_Get_vertices, mmg_mesh, verticesNew, verTagsNew, corners, requiredVer);
+    PetscCallMMG_NONSTANDARD(MMG3D_Get_tetrahedra, mmg_mesh, cellsNew, cellTagsNew, requiredCells);
+    PetscCallMMG_NONSTANDARD(MMG3D_Get_triangles, mmg_mesh, facesNew, faceTagsNew, requiredFaces);
 
     /* Reorder for consistency with DMPlex */
     for (i = 0; i < numCellsNew; ++i) PetscCall(DMPlexInvertCell(DM_POLYTOPE_TETRAHEDRON, &cellsNew[4 * i]));
@@ -235,10 +235,10 @@ PETSC_EXTERN PetscErrorCode DMAdaptMetric_Mmg_Plex(DM dm, Vec vertexMetric, DMLa
   PetscCall(DMPlexCreateFromCellListParallelPetsc(comm, dim, numCellsNew, numVerticesNew, PETSC_DECIDE, numCornersNew, PETSC_TRUE, cellsNew, dim, verticesNew, NULL, NULL, dmNew));
   switch (dim) {
   case 2:
-    PetscCallMMG_NONSTANDARD(MMG2D_Free_all(MMG5_ARG_start, MMG5_ARG_ppMesh, &mmg_mesh, MMG5_ARG_ppMet, &mmg_metric, MMG5_ARG_end));
+    PetscCallMMG_NONSTANDARD(MMG2D_Free_all, MMG5_ARG_start, MMG5_ARG_ppMesh, &mmg_mesh, MMG5_ARG_ppMet, &mmg_metric, MMG5_ARG_end);
     break;
   case 3:
-    PetscCallMMG_NONSTANDARD(MMG3D_Free_all(MMG5_ARG_start, MMG5_ARG_ppMesh, &mmg_mesh, MMG5_ARG_ppMet, &mmg_metric, MMG5_ARG_end));
+    PetscCallMMG_NONSTANDARD(MMG3D_Free_all, MMG5_ARG_start, MMG5_ARG_ppMesh, &mmg_mesh, MMG5_ARG_ppMet, &mmg_metric, MMG5_ARG_end);
     break;
   default:
     SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "No Mmg adaptation defined for dimension %" PetscInt_FMT, dim);

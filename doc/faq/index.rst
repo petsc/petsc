@@ -267,7 +267,7 @@ Quick summary of usage with CUDA:
 
 - The ``MatType`` ``MATSEQAIJCUSPARSE``, ``MATMPIAIJCUSPARSE``, or ``MATAIJCUSPARSE``
   maybe used with ``MatSetType()`` or ``-mat_type seqaijcusparse``, ``mpiaijcusparse``, or
-  ``aijcusparse`` when ``MatSetOptions()`` is used.
+  ``aijcusparse`` when ``MatSetFromOptions()`` is used.
 
 - If you are creating the vectors and matrices with a ``DM``, you can use ``-dm_vec_type
   cuda`` and ``-dm_mat_type aijcusparse``.
@@ -280,7 +280,7 @@ Quick summary of usage with OpenCL (provided by the ViennaCL library):
 
 - The ``MatType`` ``MATSEQAIJVIENNACL``, ``MATMPIAIJVIENNACL``, or ``MATAIJVIENNACL``
   maybe used with ``MatSetType()`` or ``-mat_type seqaijviennacl``, ``mpiaijviennacl``, or
-  ``aijviennacl`` when ``MatSetOptions()`` is used.
+  ``aijviennacl`` when ``MatSetFromOptions()`` is used.
 
 - If you are creating the vectors and matrices with a ``DM``, you can use ``-dm_vec_type
   viennacl`` and ``-dm_mat_type aijviennacl``.
@@ -419,7 +419,7 @@ When should/can I use the ``configure`` option ``--with-64-bit-indices``?
 -------------------------------------------------------------------------
 
 By default the type that PETSc uses to index into arrays and keep sizes of arrays is a
-``PetscInt`` defined to be a 32 bit ``int``. If your problem:
+``PetscInt`` defined to be a 32-bit ``int``. If your problem:
 
 - Involves more than 2^31 - 1 unknowns (around 2 billion).
 
@@ -427,8 +427,8 @@ By default the type that PETSc uses to index into arrays and keep sizes of array
 
 Then you need to use this option. Otherwise you will get strange crashes.
 
-This option can be used when you are using either 32 bit or 64 bit pointers. You do not
-need to use this option if you are using 64 bit pointers unless the two conditions above
+This option can be used when you are using either 32 or 64-bit pointers. You do not
+need to use this option if you are using 64-bit pointers unless the two conditions above
 hold.
 
 What if I get an internal compiler error?
@@ -485,8 +485,8 @@ This happens for generally one of two reasons:
 
 .. _mpi-network-misconfigure:
 
-What does it mean when ``make check`` errors on ``PetscOptionsInsertFile()``?
------------------------------------------------------------------------------
+What does it mean when ``make check`` hangs or errors on ``PetscOptionsInsertFile()``?
+--------------------------------------------------------------------------------------
 
 For example:
 
@@ -498,18 +498,34 @@ For example:
    [0]PETSC ERROR: #2 PetscOptionsInsert() line 720 in /Users/barrysmith/Src/PETSc/src/sys/objects/options.c
    [0]PETSC ERROR: #3 PetscInitialize() line 828 in /Users/barrysmith/Src/PETSc/src/sys/objects/pinit.c
 
-- You may be using the wrong ``mpiexec`` for the MPI you have linked PETSc with.
+or
 
-- You have VPN enabled on your machine whose network settings may not play well with MPI.
+.. code-block:: none
 
-The machine has a funky network configuration and for some reason MPICH is unable to
-communicate between processes with the socket connections it has established. This can
-happen even if you are running MPICH on just one machine. Often you will find that ``ping
-hostname`` fails with this network configuration; that is, processes on the machine cannot
-even connect to the same machine. You can try completely disconnecting your machine from
-the network and see if ``make check`` then works or speaking with your system
-administrator. You can also try the ``configure`` options ``--download-mpich`` or
-``--download-mpich-device=ch3:nemesis``.
+   $ make check
+   Running check examples to verify correct installation
+   Using PETSC_DIR=/Users/barrysmith/Src/petsc and PETSC_ARCH=arch-fix-mpiexec-hang-2-ranks
+   C/C++ example src/snes/tutorials/ex19 run successfully with 1 MPI process
+   PROGRAM SEEMS TO BE HANGING HERE
+
+This usually occurs when network settings are misconfigured (perhaps due to VPN) resulting in a failure or hang in system call ``gethostbyname()``.
+
+- Verify you are using the correct ``mpiexec`` for the MPI you have linked PETSc with.
+
+- If you have a VPN enabled on your machine, try turning it off and then running ``make check`` to
+  verify that it is not the VPN playing poorly with MPI.
+
+- If ``ping `hostname` `` (``/sbin/ping`` on macOS) fails or hangs do:
+
+  .. code-block:: none
+
+     echo 127.0.0.1 `hostname` | sudo tee -a /etc/hosts
+
+  and try ``make check`` again.
+
+- Try completely disconnecting your machine from the network and see if ``make check`` then works
+
+- Try the PETSc ``configure`` option ``--download-mpich-device=ch3:nemesis`` with ``--download-mpich``.
 
 --------------------------------------------------
 
@@ -684,7 +700,7 @@ How do I access the values of a remote parallel PETSc Vec?
 For example, assuming we have distributed a vector ``vecGlobal`` of size :math:`N` to
 :math:`R` ranks and each remote rank holds :math:`N/R = m` values (similarly assume that
 :math:`N` is cleanly divisible by :math:`R`). We want each rank :math:`r` to gather the
-first :math:`n` (also assume :math:`n \leq m`) values from it's immediately superior neighbor
+first :math:`n` (also assume :math:`n \leq m`) values from its immediately superior neighbor
 :math:`r+1` (final rank will retrieve from rank 0).
 
 .. code-block::
@@ -706,8 +722,8 @@ first :math:`n` (also assume :math:`n \leq m`) values from it's immediately supe
    /* Compute the global indices */
    PetscCall(VecGetSize(vecGlobal, &N));
    PetscCall(PetscObjectGetComm((PetscObject) vecGlobal, &comm));
-   CHKERRMPI(MPI_Comm_rank(comm, &r));
-   CHKERRMPI(MPI_Comm_size(comm, &R));
+   PetscCallMPI(MPI_Comm_rank(comm, &r));
+   PetscCallMPI(MPI_Comm_size(comm, &R));
    firstGlobalIndex = r == R-1 ? 0 : (N/R)*(r+1);
 
    /* Create IS that describes where we want to scatter from */
@@ -922,7 +938,7 @@ Computing the Jacobian or preconditioner is time consuming. Is there any way to 
 
 PETSc has a variety of ways of lagging the computation of the Jacobian or the
 preconditioner. They are documented in the manual page for ``SNESComputeJacobian()``
-and in the :ref:`users manual <chapter_snes>`:
+and in the :ref:`users manual <ch_snes>`:
 
 -snes_lag_jacobian  (``SNESSetLagJacobian()``) How often Jacobian is rebuilt (use -1 to
                     never rebuild, use -2 to rebuild the next time requested and then
@@ -946,7 +962,7 @@ and in the :ref:`users manual <chapter_snes>`:
 .. note::
 
    These are often (but does not need to be) used in combination with
-   ``-snes_mf_operator`` which applies the fresh Jacobian matrix free for every
+   ``-snes_mf_operator`` which applies the fresh Jacobian matrix-free for every
    matrix-vector product. Otherwise the out-of-date matrix vector product, computed with
    the lagged Jacobian will be used.
 
@@ -1159,7 +1175,7 @@ provided by Rolf Kuiper:
    PetscMPIInt MPI_Rank, NewRank;
 
    // get rank from MPI ordering:
-   CHKERRMPI(MPI_Comm_rank(MPI_COMM_WORLD, &MPI_Rank));
+   PetscCallMPI(MPI_Comm_rank(MPI_COMM_WORLD, &MPI_Rank));
 
    // calculate coordinates of cpus in MPI ordering:
    x = MPI_rank / (z_procs*y_procs);
@@ -1170,7 +1186,7 @@ provided by Rolf Kuiper:
    NewRank = z*y_procs*x_procs + y*x_procs + x;
 
    // create communicator with new ranks according to PETSc ordering
-   CHKERRMPI(MPI_Comm_split(PETSC_COMM_WORLD, 1, NewRank, &NewComm));
+   PetscCallMPI(MPI_Comm_split(PETSC_COMM_WORLD, 1, NewRank, &NewComm));
 
    // override the default communicator (was MPI_COMM_WORLD as default)
    PETSC_COMM_WORLD = NewComm;
@@ -1290,7 +1306,7 @@ solution or state to your routines.
 
 If it occurs for DAEs, it is important to insure the algebraic constraints are well
 satisfied, which can prevent "breakdown" later. Thus, one can try using a tight tolerance
-for ``SNES``, using a direct solver when possible, and reducing the timestep (or
+for ``SNES``, using a direct linear solver (``PCType`` of ``PCLU``) when possible, and reducing the timestep (or
 tightening ``TS`` tolerances for adaptive time stepping).
 
 Can PETSc work with Hermitian matrices?
@@ -2009,20 +2025,10 @@ to determine exactly what line is causing the problem.
 
 If ``-malloc_debug`` does not help: on NVIDIA CUDA systems you can use https://docs.nvidia.com/cuda/cuda-memcheck/index.html
 
-If ``-malloc_debug`` does not help: on GNU/Linux and (supported) macOS machines - you can
+If ``-malloc_debug`` does not help: on GNU/Linux (not macOS machines) - you can
 use `valgrind <http://valgrind.org>`__. Follow the below instructions:
 
-#. ``configure`` PETSc with ``--download-mpich --with-debugging``.
-
-#. On macOS you need to:
-
-   #. use valgrind from https://github.com/LouisBrunner/valgrind-macos. Follow the Usage
-      instructions in the README.md on that page (no need to clone the repository).
-
-   #. use the additional ``configure`` options ``--download-fblaslapack`` or
-      ``--download-f2cblaslapack``
-
-   #. use the additional valgrind option ``--dsymutil=yes``
+#. ``configure`` PETSc with ``--download-mpich --with-debugging`` (You can use other MPI implementations but most produce spurious Valgrind messages)
 
 #. Compile your application code with this build of PETSc.
 
@@ -2037,7 +2043,7 @@ use `valgrind <http://valgrind.org>`__. Follow the below instructions:
    .. code-block:: console
 
       $ mpiexec -n NPROC valgrind --tool=memcheck -q --num-callers=20 \
-      --suppressions=$PETSC_DIR/share/petsc/valgrind/petsc-val.supp \
+      --suppressions=$PETSC_DIR/share/petsc/suppressions/valgrind \
       --log-file=valgrind.log.%p PETSCPROGRAMNAME -malloc off PROGRAMOPTIONS
 
 .. note::

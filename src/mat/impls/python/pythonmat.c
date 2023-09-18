@@ -14,13 +14,13 @@
 
    Level: intermediate
 
-.seealso: [](chapter_matrices), `Mat`, `MatType`, `MatCreate()`, `MatSetType()`, `MATPYTHON`, `PetscPythonInitialize()`
+.seealso: [](ch_matrices), `Mat`, `MatType`, `MatCreate()`, `MatSetType()`, `MATPYTHON`, `PetscPythonInitialize()`
 @*/
 PetscErrorCode MatPythonSetType(Mat mat, const char pyname[])
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
-  PetscValidCharPointer(pyname, 2);
+  PetscAssertPointer(pyname, 2);
   PetscTryMethod(mat, "MatPythonSetType_C", (Mat, const char[]), (mat, pyname));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -38,13 +38,13 @@ PetscErrorCode MatPythonSetType(Mat mat, const char pyname[])
 
    Level: intermediate
 
-.seealso: [](chapter_matrices), `Mat`, `MatType`, `MatCreate()`, `MatSetType()`, `MATPYTHON`, `PetscPythonInitialize()`, `MatPythonSetType()`
+.seealso: [](ch_matrices), `Mat`, `MatType`, `MatCreate()`, `MatSetType()`, `MATPYTHON`, `PetscPythonInitialize()`, `MatPythonSetType()`
 @*/
 PetscErrorCode MatPythonGetType(Mat mat, const char *pyname[])
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
-  PetscValidPointer(pyname, 2);
+  PetscAssertPointer(pyname, 2);
   PetscUseMethod(mat, "MatPythonGetType_C", (Mat, const char *[]), (mat, pyname));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -67,13 +67,13 @@ PetscErrorCode MatPythonGetType(Mat mat, const char *pyname[])
 
    Level: intermediate
 
-.seealso: [](chapter_matrices), `Mat`, `MatType`, `MATPYTHON`, `MatPythonSetType()`, `PetscPythonInitialize()`
+.seealso: [](ch_matrices), `Mat`, `MatType`, `MATPYTHON`, `MatPythonSetType()`, `PetscPythonInitialize()`
 @*/
 PetscErrorCode MatPythonCreate(MPI_Comm comm, PetscInt m, PetscInt n, PetscInt M, PetscInt N, const char pyname[], Mat *A)
 {
   PetscFunctionBegin;
-  PetscValidCharPointer(pyname, 6);
-  PetscValidPointer(A, 6);
+  PetscAssertPointer(pyname, 6);
+  PetscAssertPointer(A, 6);
   PetscCall(MatCreate(comm, A));
   PetscCall(MatSetSizes(*A, m, n, M, N));
   PetscCall(MatSetType(*A, MATPYTHON));

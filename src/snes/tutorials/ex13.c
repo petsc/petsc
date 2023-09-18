@@ -5,6 +5,7 @@ This example supports automatic convergence estimation\n\
 and eventually adaptivity.\n\n\n";
 
 #include <petscdmplex.h>
+#include <petscdmceed.h>
 #include <petscsnes.h>
 #include <petscds.h>
 #include <petscconvest.h>
@@ -89,6 +90,8 @@ static void g3_uu(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff
   PetscInt d;
   for (d = 0; d < dim; ++d) g3[d * dim + d] = 1.0;
 }
+
+PLEXFE_QFUNCTION(Laplace, f0_trig_inhomogeneous_u, f1_u)
 
 static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 {
@@ -230,12 +233,18 @@ static PetscErrorCode SetupDiscretization(DM dm, const char name[], PetscErrorCo
     PetscCall(DMGetCoarseDM(cdm, &cdm));
   }
   PetscCall(PetscFEDestroy(&fe));
+#ifdef PETSC_HAVE_LIBCEED
+  PetscBool useCeed;
+  PetscCall(DMPlexGetUseCeed(dm, &useCeed));
+  if (useCeed) PetscCall(DMCeedCreate(dm, PETSC_TRUE, PlexQFunctionLaplace, PlexQFunctionLaplace_loc));
+#endif
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode ComputeSpectral(DM dm, Vec u, PetscInt numPlanes, const PetscInt planeDir[], const PetscReal planeCoord[], AppCtx *user)
+static PetscErrorCode ComputeSpectral(Vec u, PetscInt numPlanes, const PetscInt planeDir[], const PetscReal planeCoord[], AppCtx *user)
 {
   MPI_Comm           comm;
+  DM                 dm;
   PetscSection       coordSection, section;
   Vec                coordinates, uloc;
   const PetscScalar *coords, *array;
@@ -243,6 +252,8 @@ static PetscErrorCode ComputeSpectral(DM dm, Vec u, PetscInt numPlanes, const Pe
   PetscMPIInt        size, rank;
 
   PetscFunctionBeginUser;
+  if (!user->spectral) PetscFunctionReturn(PETSC_SUCCESS);
+  PetscCall(VecGetDM(u, &dm));
   PetscCall(PetscObjectGetComm((PetscObject)dm, &comm));
   PetscCallMPI(MPI_Comm_size(comm, &size));
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
@@ -323,7 +334,7 @@ static PetscErrorCode ComputeSpectral(DM dm, Vec u, PetscInt numPlanes, const Pe
       /* Do FFT along the ray */
       PetscCall(MatMult(F, x, y));
       /* Chop FFT */
-      PetscCall(VecChop(y, PETSC_SMALL));
+      PetscCall(VecFilter(y, PETSC_SMALL));
       PetscCall(VecViewFromOptions(x, NULL, "-real_view"));
       PetscCall(VecViewFromOptions(y, NULL, "-fft_view"));
       PetscCall(VecDestroy(&x));
@@ -340,12 +351,141 @@ static PetscErrorCode ComputeSpectral(DM dm, Vec u, PetscInt numPlanes, const Pe
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+static PetscErrorCode ComputeAdjoint(Vec u, AppCtx *user)
+{
+  PetscFunctionBegin;
+  if (!user->adjoint) PetscFunctionReturn(PETSC_SUCCESS);
+  DM   dm, dmAdj;
+  SNES snesAdj;
+  Vec  uAdj;
+
+  PetscCall(VecGetDM(u, &dm));
+  PetscCall(SNESCreate(PETSC_COMM_WORLD, &snesAdj));
+  PetscCall(PetscObjectSetOptionsPrefix((PetscObject)snesAdj, "adjoint_"));
+  PetscCall(DMClone(dm, &dmAdj));
+  PetscCall(SNESSetDM(snesAdj, dmAdj));
+  PetscCall(SetupDiscretization(dmAdj, "adjoint", SetupAdjointProblem, user));
+  PetscCall(DMCreateGlobalVector(dmAdj, &uAdj));
+  PetscCall(VecSet(uAdj, 0.0));
+  PetscCall(PetscObjectSetName((PetscObject)uAdj, "adjoint"));
+  PetscCall(DMPlexSetSNESLocalFEM(dmAdj, user, user, user));
+  PetscCall(SNESSetFromOptions(snesAdj));
+  PetscCall(SNESSolve(snesAdj, NULL, uAdj));
+  PetscCall(SNESGetSolution(snesAdj, &uAdj));
+  PetscCall(VecViewFromOptions(uAdj, NULL, "-adjoint_view"));
+  /* Error representation */
+  {
+    DM        dmErr, dmErrAux, dms[2];
+    Vec       errorEst, errorL2, uErr, uErrLoc, uAdjLoc, uAdjProj;
+    IS       *subis;
+    PetscReal errorEstTot, errorL2Norm, errorL2Tot;
+    PetscInt  N, i;
+    PetscErrorCode (*funcs[1])(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar *, void *) = {user->homogeneous ? trig_homogeneous_u : trig_inhomogeneous_u};
+    void (*identity[1])(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]) = {f0_identityaux_u};
+    void *ctxs[1] = {0};
+
+    ctxs[0] = user;
+    PetscCall(DMClone(dm, &dmErr));
+    PetscCall(SetupDiscretization(dmErr, "error", SetupErrorProblem, user));
+    PetscCall(DMGetGlobalVector(dmErr, &errorEst));
+    PetscCall(DMGetGlobalVector(dmErr, &errorL2));
+    /*   Compute auxiliary data (solution and projection of adjoint solution) */
+    PetscCall(DMGetLocalVector(dmAdj, &uAdjLoc));
+    PetscCall(DMGlobalToLocalBegin(dmAdj, uAdj, INSERT_VALUES, uAdjLoc));
+    PetscCall(DMGlobalToLocalEnd(dmAdj, uAdj, INSERT_VALUES, uAdjLoc));
+    PetscCall(DMGetGlobalVector(dm, &uAdjProj));
+    PetscCall(DMSetAuxiliaryVec(dm, NULL, 0, 0, uAdjLoc));
+    PetscCall(DMProjectField(dm, 0.0, u, identity, INSERT_VALUES, uAdjProj));
+    PetscCall(DMSetAuxiliaryVec(dm, NULL, 0, 0, NULL));
+    PetscCall(DMRestoreLocalVector(dmAdj, &uAdjLoc));
+    /*   Attach auxiliary data */
+    dms[0] = dm;
+    dms[1] = dm;
+    PetscCall(DMCreateSuperDM(dms, 2, &subis, &dmErrAux));
+    if (0) {
+      PetscSection sec;
+
+      PetscCall(DMGetLocalSection(dms[0], &sec));
+      PetscCall(PetscSectionView(sec, PETSC_VIEWER_STDOUT_WORLD));
+      PetscCall(DMGetLocalSection(dms[1], &sec));
+      PetscCall(PetscSectionView(sec, PETSC_VIEWER_STDOUT_WORLD));
+      PetscCall(DMGetLocalSection(dmErrAux, &sec));
+      PetscCall(PetscSectionView(sec, PETSC_VIEWER_STDOUT_WORLD));
+    }
+    PetscCall(DMViewFromOptions(dmErrAux, NULL, "-dm_err_view"));
+    PetscCall(ISViewFromOptions(subis[0], NULL, "-super_is_view"));
+    PetscCall(ISViewFromOptions(subis[1], NULL, "-super_is_view"));
+    PetscCall(DMGetGlobalVector(dmErrAux, &uErr));
+    PetscCall(VecViewFromOptions(u, NULL, "-map_vec_view"));
+    PetscCall(VecViewFromOptions(uAdjProj, NULL, "-map_vec_view"));
+    PetscCall(VecViewFromOptions(uErr, NULL, "-map_vec_view"));
+    PetscCall(VecISCopy(uErr, subis[0], SCATTER_FORWARD, u));
+    PetscCall(VecISCopy(uErr, subis[1], SCATTER_FORWARD, uAdjProj));
+    PetscCall(DMRestoreGlobalVector(dm, &uAdjProj));
+    for (i = 0; i < 2; ++i) PetscCall(ISDestroy(&subis[i]));
+    PetscCall(PetscFree(subis));
+    PetscCall(DMGetLocalVector(dmErrAux, &uErrLoc));
+    PetscCall(DMGlobalToLocalBegin(dm, uErr, INSERT_VALUES, uErrLoc));
+    PetscCall(DMGlobalToLocalEnd(dm, uErr, INSERT_VALUES, uErrLoc));
+    PetscCall(DMRestoreGlobalVector(dmErrAux, &uErr));
+    PetscCall(DMSetAuxiliaryVec(dmAdj, NULL, 0, 0, uErrLoc));
+    /*   Compute cellwise error estimate */
+    PetscCall(VecSet(errorEst, 0.0));
+    PetscCall(DMPlexComputeCellwiseIntegralFEM(dmAdj, uAdj, errorEst, user));
+    PetscCall(DMSetAuxiliaryVec(dmAdj, NULL, 0, 0, NULL));
+    PetscCall(DMRestoreLocalVector(dmErrAux, &uErrLoc));
+    PetscCall(DMDestroy(&dmErrAux));
+    /*   Plot cellwise error vector */
+    PetscCall(VecViewFromOptions(errorEst, NULL, "-error_view"));
+    /*   Compute ratio of estimate (sum over cells) with actual L_2 error */
+    PetscCall(DMComputeL2Diff(dm, 0.0, funcs, ctxs, u, &errorL2Norm));
+    PetscCall(DMPlexComputeL2DiffVec(dm, 0.0, funcs, ctxs, u, errorL2));
+    PetscCall(VecViewFromOptions(errorL2, NULL, "-l2_error_view"));
+    PetscCall(VecNorm(errorL2, NORM_INFINITY, &errorL2Tot));
+    PetscCall(VecNorm(errorEst, NORM_INFINITY, &errorEstTot));
+    PetscCall(VecGetSize(errorEst, &N));
+    PetscCall(VecPointwiseDivide(errorEst, errorEst, errorL2));
+    PetscCall(PetscObjectSetName((PetscObject)errorEst, "Error ratio"));
+    PetscCall(VecViewFromOptions(errorEst, NULL, "-error_ratio_view"));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "N: %" PetscInt_FMT " L2 error: %g Error Ratio: %g/%g = %g\n", N, (double)errorL2Norm, (double)errorEstTot, (double)PetscSqrtReal(errorL2Tot), (double)(errorEstTot / PetscSqrtReal(errorL2Tot))));
+    PetscCall(DMRestoreGlobalVector(dmErr, &errorEst));
+    PetscCall(DMRestoreGlobalVector(dmErr, &errorL2));
+    PetscCall(DMDestroy(&dmErr));
+  }
+  PetscCall(DMDestroy(&dmAdj));
+  PetscCall(VecDestroy(&uAdj));
+  PetscCall(SNESDestroy(&snesAdj));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode ErrorView(Vec u, AppCtx *user)
+{
+  PetscErrorCode (*sol)(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar[], void *);
+  void     *ctx;
+  DM        dm;
+  PetscDS   ds;
+  PetscReal error;
+  PetscInt  N;
+
+  PetscFunctionBegin;
+  if (!user->viewError) PetscFunctionReturn(PETSC_SUCCESS);
+  PetscCall(VecGetDM(u, &dm));
+  PetscCall(DMGetDS(dm, &ds));
+  PetscCall(PetscDSGetExactSolution(ds, 0, &sol, &ctx));
+  PetscCall(VecGetSize(u, &N));
+  PetscCall(DMComputeL2Diff(dm, 0.0, &sol, &ctx, u, &error));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "N: %" PetscInt_FMT " L2 error: %g\n", N, (double)error));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 int main(int argc, char **argv)
 {
-  DM     dm;   /* Problem specification */
-  SNES   snes; /* Nonlinear solver */
-  Vec    u;    /* Solutions */
-  AppCtx user; /* User-defined work context */
+  DM        dm;   /* Problem specification */
+  SNES      snes; /* Nonlinear solver */
+  Vec       u;    /* Solutions */
+  AppCtx    user; /* User-defined work context */
+  PetscInt  planeDir[2]   = {0, 1};
+  PetscReal planeCoord[2] = {0., 1.};
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
@@ -363,127 +503,9 @@ int main(int argc, char **argv)
   PetscCall(SNESSolve(snes, NULL, u));
   PetscCall(SNESGetSolution(snes, &u));
   PetscCall(VecViewFromOptions(u, NULL, "-potential_view"));
-  if (user.viewError) {
-    PetscErrorCode (*sol)(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar[], void *);
-    void     *ctx;
-    PetscDS   ds;
-    PetscReal error;
-    PetscInt  N;
-
-    PetscCall(DMGetDS(dm, &ds));
-    PetscCall(PetscDSGetExactSolution(ds, 0, &sol, &ctx));
-    PetscCall(VecGetSize(u, &N));
-    PetscCall(DMComputeL2Diff(dm, 0.0, &sol, &ctx, u, &error));
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "N: %" PetscInt_FMT " L2 error: %g\n", N, (double)error));
-  }
-  if (user.spectral) {
-    PetscInt  planeDir[2]   = {0, 1};
-    PetscReal planeCoord[2] = {0., 1.};
-
-    PetscCall(ComputeSpectral(dm, u, 2, planeDir, planeCoord, &user));
-  }
-  /* Adjoint system */
-  if (user.adjoint) {
-    DM   dmAdj;
-    SNES snesAdj;
-    Vec  uAdj;
-
-    PetscCall(SNESCreate(PETSC_COMM_WORLD, &snesAdj));
-    PetscCall(PetscObjectSetOptionsPrefix((PetscObject)snesAdj, "adjoint_"));
-    PetscCall(DMClone(dm, &dmAdj));
-    PetscCall(SNESSetDM(snesAdj, dmAdj));
-    PetscCall(SetupDiscretization(dmAdj, "adjoint", SetupAdjointProblem, &user));
-    PetscCall(DMCreateGlobalVector(dmAdj, &uAdj));
-    PetscCall(VecSet(uAdj, 0.0));
-    PetscCall(PetscObjectSetName((PetscObject)uAdj, "adjoint"));
-    PetscCall(DMPlexSetSNESLocalFEM(dmAdj, &user, &user, &user));
-    PetscCall(SNESSetFromOptions(snesAdj));
-    PetscCall(SNESSolve(snesAdj, NULL, uAdj));
-    PetscCall(SNESGetSolution(snesAdj, &uAdj));
-    PetscCall(VecViewFromOptions(uAdj, NULL, "-adjoint_view"));
-    /* Error representation */
-    {
-      DM        dmErr, dmErrAux, dms[2];
-      Vec       errorEst, errorL2, uErr, uErrLoc, uAdjLoc, uAdjProj;
-      IS       *subis;
-      PetscReal errorEstTot, errorL2Norm, errorL2Tot;
-      PetscInt  N, i;
-      PetscErrorCode (*funcs[1])(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar *, void *) = {user.homogeneous ? trig_homogeneous_u : trig_inhomogeneous_u};
-      void (*identity[1])(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]) = {f0_identityaux_u};
-      void *ctxs[1] = {0};
-
-      ctxs[0] = &user;
-      PetscCall(DMClone(dm, &dmErr));
-      PetscCall(SetupDiscretization(dmErr, "error", SetupErrorProblem, &user));
-      PetscCall(DMGetGlobalVector(dmErr, &errorEst));
-      PetscCall(DMGetGlobalVector(dmErr, &errorL2));
-      /*   Compute auxiliary data (solution and projection of adjoint solution) */
-      PetscCall(DMGetLocalVector(dmAdj, &uAdjLoc));
-      PetscCall(DMGlobalToLocalBegin(dmAdj, uAdj, INSERT_VALUES, uAdjLoc));
-      PetscCall(DMGlobalToLocalEnd(dmAdj, uAdj, INSERT_VALUES, uAdjLoc));
-      PetscCall(DMGetGlobalVector(dm, &uAdjProj));
-      PetscCall(DMSetAuxiliaryVec(dm, NULL, 0, 0, uAdjLoc));
-      PetscCall(DMProjectField(dm, 0.0, u, identity, INSERT_VALUES, uAdjProj));
-      PetscCall(DMSetAuxiliaryVec(dm, NULL, 0, 0, NULL));
-      PetscCall(DMRestoreLocalVector(dmAdj, &uAdjLoc));
-      /*   Attach auxiliary data */
-      dms[0] = dm;
-      dms[1] = dm;
-      PetscCall(DMCreateSuperDM(dms, 2, &subis, &dmErrAux));
-      if (0) {
-        PetscSection sec;
-
-        PetscCall(DMGetLocalSection(dms[0], &sec));
-        PetscCall(PetscSectionView(sec, PETSC_VIEWER_STDOUT_WORLD));
-        PetscCall(DMGetLocalSection(dms[1], &sec));
-        PetscCall(PetscSectionView(sec, PETSC_VIEWER_STDOUT_WORLD));
-        PetscCall(DMGetLocalSection(dmErrAux, &sec));
-        PetscCall(PetscSectionView(sec, PETSC_VIEWER_STDOUT_WORLD));
-      }
-      PetscCall(DMViewFromOptions(dmErrAux, NULL, "-dm_err_view"));
-      PetscCall(ISViewFromOptions(subis[0], NULL, "-super_is_view"));
-      PetscCall(ISViewFromOptions(subis[1], NULL, "-super_is_view"));
-      PetscCall(DMGetGlobalVector(dmErrAux, &uErr));
-      PetscCall(VecViewFromOptions(u, NULL, "-map_vec_view"));
-      PetscCall(VecViewFromOptions(uAdjProj, NULL, "-map_vec_view"));
-      PetscCall(VecViewFromOptions(uErr, NULL, "-map_vec_view"));
-      PetscCall(VecISCopy(uErr, subis[0], SCATTER_FORWARD, u));
-      PetscCall(VecISCopy(uErr, subis[1], SCATTER_FORWARD, uAdjProj));
-      PetscCall(DMRestoreGlobalVector(dm, &uAdjProj));
-      for (i = 0; i < 2; ++i) PetscCall(ISDestroy(&subis[i]));
-      PetscCall(PetscFree(subis));
-      PetscCall(DMGetLocalVector(dmErrAux, &uErrLoc));
-      PetscCall(DMGlobalToLocalBegin(dm, uErr, INSERT_VALUES, uErrLoc));
-      PetscCall(DMGlobalToLocalEnd(dm, uErr, INSERT_VALUES, uErrLoc));
-      PetscCall(DMRestoreGlobalVector(dmErrAux, &uErr));
-      PetscCall(DMSetAuxiliaryVec(dmAdj, NULL, 0, 0, uErrLoc));
-      /*   Compute cellwise error estimate */
-      PetscCall(VecSet(errorEst, 0.0));
-      PetscCall(DMPlexComputeCellwiseIntegralFEM(dmAdj, uAdj, errorEst, &user));
-      PetscCall(DMSetAuxiliaryVec(dmAdj, NULL, 0, 0, NULL));
-      PetscCall(DMRestoreLocalVector(dmErrAux, &uErrLoc));
-      PetscCall(DMDestroy(&dmErrAux));
-      /*   Plot cellwise error vector */
-      PetscCall(VecViewFromOptions(errorEst, NULL, "-error_view"));
-      /*   Compute ratio of estimate (sum over cells) with actual L_2 error */
-      PetscCall(DMComputeL2Diff(dm, 0.0, funcs, ctxs, u, &errorL2Norm));
-      PetscCall(DMPlexComputeL2DiffVec(dm, 0.0, funcs, ctxs, u, errorL2));
-      PetscCall(VecViewFromOptions(errorL2, NULL, "-l2_error_view"));
-      PetscCall(VecNorm(errorL2, NORM_INFINITY, &errorL2Tot));
-      PetscCall(VecNorm(errorEst, NORM_INFINITY, &errorEstTot));
-      PetscCall(VecGetSize(errorEst, &N));
-      PetscCall(VecPointwiseDivide(errorEst, errorEst, errorL2));
-      PetscCall(PetscObjectSetName((PetscObject)errorEst, "Error ratio"));
-      PetscCall(VecViewFromOptions(errorEst, NULL, "-error_ratio_view"));
-      PetscCall(PetscPrintf(PETSC_COMM_WORLD, "N: %" PetscInt_FMT " L2 error: %g Error Ratio: %g/%g = %g\n", N, (double)errorL2Norm, (double)errorEstTot, (double)PetscSqrtReal(errorL2Tot), (double)(errorEstTot / PetscSqrtReal(errorL2Tot))));
-      PetscCall(DMRestoreGlobalVector(dmErr, &errorEst));
-      PetscCall(DMRestoreGlobalVector(dmErr, &errorL2));
-      PetscCall(DMDestroy(&dmErr));
-    }
-    PetscCall(DMDestroy(&dmAdj));
-    PetscCall(VecDestroy(&uAdj));
-    PetscCall(SNESDestroy(&snesAdj));
-  }
+  PetscCall(ErrorView(u, &user));
+  PetscCall(ComputeSpectral(u, 2, planeDir, planeCoord, &user));
+  PetscCall(ComputeAdjoint(u, &user));
   /* Cleanup */
   PetscCall(VecDestroy(&u));
   PetscCall(SNESDestroy(&snes));
@@ -521,6 +543,23 @@ int main(int argc, char **argv)
     # Using -dm_refine 2 -convest_num_refine 3 we get L_2 convergence rate: 3.9
     suffix: 2d_q3_conv
     args: -dm_plex_simplex 0 -potential_petscspace_degree 3 -snes_convergence_estimate -convest_num_refine 2
+  test:
+    # Using -dm_refine 2 -convest_num_refine 3 we get L_2 convergence rate: 1.9
+    suffix: 2d_q1_ceed_conv
+    requires: libceed
+    args: -dm_plex_use_ceed -dm_plex_simplex 0 -potential_petscspace_degree 1 -snes_convergence_estimate -convest_num_refine 2
+  test:
+    # Using -dm_refine 2 -convest_num_refine 3 we get L_2 convergence rate: 2.9
+    suffix: 2d_q2_ceed_conv
+    requires: libceed
+    args: -dm_plex_use_ceed -dm_plex_simplex 0 -potential_petscspace_degree 2 -cdm_default_quadrature_order 2 \
+          -snes_convergence_estimate -convest_num_refine 2
+  test:
+    # Using -dm_refine 2 -convest_num_refine 3 we get L_2 convergence rate: 3.9
+    suffix: 2d_q3_ceed_conv
+    requires: libceed
+    args: -dm_plex_use_ceed -dm_plex_simplex 0 -potential_petscspace_degree 3 -cdm_default_quadrature_order 3 \
+          -snes_convergence_estimate -convest_num_refine 2
   test:
     # Using -dm_refine 2 -convest_num_refine 3 we get L_2 convergence rate: 1.9
     suffix: 2d_q1_shear_conv

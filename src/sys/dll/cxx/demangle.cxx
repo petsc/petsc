@@ -1,4 +1,6 @@
-#define PETSC_SKIP_COMPLEX
+#if !defined(PETSC_SKIP_COMPLEX)
+  #define PETSC_SKIP_COMPLEX
+#endif
 #include <petscsys.h>
 
 #if defined(PETSC_HAVE_CXXABI_H)

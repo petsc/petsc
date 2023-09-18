@@ -1,5 +1,4 @@
-#ifndef PETSC_KERNELS_BLOCKMATMULT_H
-#define PETSC_KERNELS_BLOCKMATMULT_H
+#pragma once
 
 #include <petscsys.h>
 
@@ -88,5 +87,3 @@
 #define PetscKernel_v_gets_v_minus_A_times_w_5(v, A, w) PetscKernel_v_gets_A_times_w_5_exp(v, A, w, -=)
 #define PetscKernel_v_gets_v_minus_A_times_w_6(v, A, w) PetscKernel_v_gets_A_times_w_6_exp(v, A, w, -=)
 #define PetscKernel_v_gets_v_minus_A_times_w_7(v, A, w) PetscKernel_v_gets_A_times_w_7_exp(v, A, w, -=)
-
-#endif // PETSC_KERNELS_BLOCKMATMULT_H

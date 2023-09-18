@@ -263,12 +263,10 @@ int main(int argc, char **argv)
   PetscCall(GenerateOBs(appctx.ts, appctx.U, &appctx));
 
   if (!forwardonly) {
-    Tao tao;
-    Vec P;
-    Vec lambda[1];
-#if defined(PETSC_USE_LOG)
+    Tao           tao;
+    Vec           P;
+    Vec           lambda[1];
     PetscLogStage opt_stage;
-#endif
 
     PetscCall(PetscLogStageRegister("Optimization", &opt_stage));
     PetscCall(PetscLogStagePush(opt_stage));

@@ -1,6 +1,4 @@
-
-#ifndef __MPRINT_H
-#define __MPRINT_H
+#pragma once
 
 #include <petscsys.h> /*I    "petscsys.h"   I*/
 #include <petsc/private/petscimpl.h>
@@ -16,5 +14,3 @@ struct _PrintfQueue {
 PETSC_INTERN PrintfQueue petsc_printfqueue;
 PETSC_INTERN PrintfQueue petsc_printfqueuebase;
 PETSC_INTERN int         petsc_printfqueuelength;
-
-#endif

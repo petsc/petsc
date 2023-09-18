@@ -27,7 +27,7 @@
       indices(4) = rank + 4
       indices(5) = rank + 5
 
-!     if using 64bit integers cannot pass 5 into routine expecting an integer*8
+!     if using 64-bit integers cannot pass 5 into routine expecting an integer*8
       n = 5
       PetscCallA(ISCreateGeneral(PETSC_COMM_SELF,n,indices,PETSC_COPY_VALUES,is,ierr))
 

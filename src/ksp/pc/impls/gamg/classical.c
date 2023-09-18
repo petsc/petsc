@@ -11,19 +11,20 @@ typedef struct {
 } PC_GAMG_Classical;
 
 /*@C
-   PCGAMGClassicalSetType - Sets the type of classical interpolation to use with `PCGAMG`
+  PCGAMGClassicalSetType - Sets the type of classical interpolation to use with `PCGAMG`
 
-   Collective
+  Collective
 
-   Input Parameter:
-.  pc - the preconditioner context
+  Input Parameters:
++ pc   - the preconditioner context
+- type - the interpolation to use, see `PCGAMGClassicalType()`
 
-   Options Database Key:
-.  -pc_gamg_classical_type <direct,standard> - set type of classical AMG prolongation
+  Options Database Key:
+. -pc_gamg_classical_type <direct,standard> - set type of classical AMG prolongation
 
-   Level: intermediate
+  Level: intermediate
 
-.seealso: `PCGAMG`
+.seealso: `PCGAMG`, `PCGAMGClassicalType`, `PCGAMGClassicalGetType()`
 @*/
 PetscErrorCode PCGAMGClassicalSetType(PC pc, PCGAMGClassicalType type)
 {
@@ -34,19 +35,19 @@ PetscErrorCode PCGAMGClassicalSetType(PC pc, PCGAMGClassicalType type)
 }
 
 /*@C
-   PCGAMGClassicalGetType - Gets the type of classical interpolation to use with `PCGAMG`
+  PCGAMGClassicalGetType - Gets the type of classical interpolation to use with `PCGAMG`
 
-   Collective
+  Collective
 
-   Input Parameter:
-.  pc - the preconditioner context
+  Input Parameter:
+. pc - the preconditioner context
 
-   Output Parameter:
-.  type - the type used
+  Output Parameter:
+. type - the type used, see `PCGAMGClassicalType()`
 
-   Level: intermediate
+  Level: intermediate
 
-.seealso: `PCGAMG`
+.seealso: `PCGAMG`, `PCGAMGClassicalType`, `PCGAMGClassicalSetType()`
 @*/
 PetscErrorCode PCGAMGClassicalGetType(PC pc, PCGAMGClassicalType *type)
 {
@@ -922,10 +923,6 @@ static PetscErrorCode PCGAMGClassicalInitializePackage(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*
-   PCCreateGAMG_Classical
-
-*/
 PetscErrorCode PCCreateGAMG_Classical(PC pc)
 {
   PC_MG             *mg      = (PC_MG *)pc->data;

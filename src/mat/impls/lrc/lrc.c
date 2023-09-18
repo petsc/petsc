@@ -115,6 +115,7 @@ static PetscErrorCode MatDestroy_LRC(Mat N)
   PetscCall(VecDestroy(&Na->yl));
   PetscCall(PetscFree(N->data));
   PetscCall(PetscObjectComposeFunction((PetscObject)N, "MatLRCGetMats_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)N, "MatLRCSetMats_C", NULL));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -130,28 +131,48 @@ static PetscErrorCode MatLRCGetMats_LRC(Mat N, Mat *A, Mat *U, Vec *c, Mat *V)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+static PetscErrorCode MatLRCSetMats_LRC(Mat N, Mat A, Mat U, Vec c, Mat V)
+{
+  Mat_LRC *Na = (Mat_LRC *)N->data;
+
+  PetscFunctionBegin;
+  PetscCall(PetscObjectReference((PetscObject)A));
+  PetscCall(PetscObjectReference((PetscObject)U));
+  PetscCall(PetscObjectReference((PetscObject)V));
+  PetscCall(PetscObjectReference((PetscObject)c));
+  PetscCall(MatDestroy(&Na->A));
+  PetscCall(MatDestroy(&Na->U));
+  PetscCall(MatDestroy(&Na->V));
+  PetscCall(VecDestroy(&Na->c));
+  Na->A = A;
+  Na->U = U;
+  Na->c = c;
+  Na->V = V;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 /*@
-   MatLRCGetMats - Returns the constituents of an LRC matrix
+  MatLRCGetMats - Returns the constituents of an LRC matrix
 
-   Collective
+  Not collective
 
-   Input Parameter:
-.  N - matrix of type `MATLRC`
+  Input Parameter:
+. N - matrix of type `MATLRC`
 
-   Output Parameters:
-+  A - the (sparse) matrix
-.  U - first dense rectangular (tall and skinny) matrix
-.  c - a sequential vector containing the diagonal of C
--  V - second dense rectangular (tall and skinny) matrix
+  Output Parameters:
++ A - the (sparse) matrix
+. U - first dense rectangular (tall and skinny) matrix
+. c - a sequential vector containing the diagonal of C
+- V - second dense rectangular (tall and skinny) matrix
 
-   Level: intermediate
+  Level: intermediate
 
-   Notes:
-   The returned matrices need not be destroyed by the caller.
+  Notes:
+  The returned matrices should not be destroyed by the caller.
 
-   `U`, `c`, `V` may be `NULL` if not needed
+  `U`, `c`, `V` may be `NULL` if not needed
 
-.seealso: [](chapter_matrices), `Mat`, `MATLRC`, `MatCreateLRC()`
+.seealso: [](ch_matrices), `MatLRCSetMats()`, `Mat`, `MATLRC`, `MatCreateLRC()`
 @*/
 PetscErrorCode MatLRCGetMats(Mat N, Mat *A, Mat *U, Vec *c, Mat *V)
 {
@@ -160,70 +181,39 @@ PetscErrorCode MatLRCGetMats(Mat N, Mat *A, Mat *U, Vec *c, Mat *V)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*MC
-  MATLRC -  "lrc" - a matrix object that behaves like A + U*C*V'
+/*@
+  MatLRCSetMats - Sets the constituents of an LRC matrix
+
+  Logically collective
+
+  Input Parameters:
++ N - matrix of type `MATLRC`
+. A - the (sparse) matrix
+. U - first dense rectangular (tall and skinny) matrix
+. c - a sequential vector containing the diagonal of C
+- V - second dense rectangular (tall and skinny) matrix
+
+  Level: intermediate
 
   Note:
-   The matrix A + U*C*V' is not formed! Rather the matrix  object performs the matrix-vector product `MatMult()`, by first multiplying by
-   A and then adding the other term.
+  If `V` is `NULL`, then it is assumed to be identical to `U`.
 
-  Level: advanced
-
-.seealso: [](chapter_matrices), `Mat`, `MatCreateLRC()`, `MatMult()`, `MatLRCGetMats()`
-M*/
-
-/*@
-   MatCreateLRC - Creates a new matrix object that behaves like A + U*C*V' of type `MATLRC`
-
-   Collective
-
-   Input Parameters:
-+  A    - the (sparse) matrix (can be `NULL`)
-.  U    - dense rectangular (tall and skinny) matrix
-.  V    - dense rectangular (tall and skinny) matrix
--  c    - a vector containing the diagonal of C (can be `NULL`)
-
-   Output Parameter:
-.  N    - the matrix that represents A + U*C*V'
-
-   Level: intermediate
-
-   Notes:
-   The matrix A + U*C*V' is not formed! Rather the new matrix
-   object performs the matrix-vector product `MatMult()`, by first multiplying by
-   A and then adding the other term.
-
-   `C` is a diagonal matrix (represented as a vector) of order k,
-   where k is the number of columns of both `U` and `V`.
-
-   If `A` is `NULL` then the new object behaves like a low-rank matrix U*C*V'.
-
-   Use `V`=`U` (or `V`=`NULL`) for a symmetric low-rank correction, A + U*C*U'.
-
-   If `c` is `NULL` then the low-rank correction is just U*V'.
-   If a sequential `c` vector is used for a parallel matrix,
-   PETSc assumes that the values of the vector are consistently set across processors.
-
-.seealso: [](chapter_matrices), `Mat`, `MATLRC`, `MatLRCGetMats()`
+.seealso: [](ch_matrices), `MatLRCGetMats()`, `Mat`, `MATLRC`, `MatCreateLRC()`
 @*/
-PetscErrorCode MatCreateLRC(Mat A, Mat U, Vec c, Mat V, Mat *N)
+PetscErrorCode MatLRCSetMats(Mat N, Mat A, Mat U, Vec c, Mat V)
 {
-  PetscBool   match;
-  PetscInt    m, n, k, m1, n1, k1;
-  Mat_LRC    *Na;
-  Mat         Uloc;
-  PetscMPIInt size, csize = 0;
+  PetscInt  k, k1, m, n, m1, n1;
+  PetscBool match;
 
   PetscFunctionBegin;
-  if (A) PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
-  PetscValidHeaderSpecific(U, MAT_CLASSID, 2);
-  if (c) PetscValidHeaderSpecific(c, VEC_CLASSID, 3);
+  if (A) PetscValidHeaderSpecific(A, MAT_CLASSID, 2);
+  PetscValidHeaderSpecific(U, MAT_CLASSID, 3);
+  if (c) PetscValidHeaderSpecific(c, VEC_CLASSID, 4);
   if (V) {
-    PetscValidHeaderSpecific(V, MAT_CLASSID, 4);
-    PetscCheckSameComm(U, 2, V, 4);
+    PetscValidHeaderSpecific(V, MAT_CLASSID, 5);
+    PetscCheckSameComm(U, 3, V, 5);
   }
-  if (A) PetscCheckSameComm(A, 1, U, 2);
-
+  if (A) PetscCheckSameComm(A, 2, U, 3);
   if (!V) V = U;
   PetscCall(PetscObjectBaseTypeCompareAny((PetscObject)U, &match, MATSEQDENSE, MATMPIDENSE, ""));
   PetscCheck(match, PetscObjectComm((PetscObject)U), PETSC_ERR_SUP, "Matrix U must be of type dense, found %s", ((PetscObject)U)->type_name);
@@ -235,8 +225,6 @@ PetscErrorCode MatCreateLRC(Mat A, Mat U, Vec c, Mat V, Mat *N)
     PetscCall(PetscStrcmp(A->defaultvectype, U->defaultvectype, &match));
     PetscCheck(match, PetscObjectComm((PetscObject)U), PETSC_ERR_ARG_WRONG, "Matrix A and U must have the same VecType %s != %s", A->defaultvectype, U->defaultvectype);
   }
-
-  PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)U), &size));
   PetscCall(MatGetSize(U, NULL, &k));
   PetscCall(MatGetSize(V, NULL, &k1));
   PetscCheck(k == k1, PetscObjectComm((PetscObject)U), PETSC_ERR_ARG_INCOMP, "U and V have different number of columns (%" PetscInt_FMT " vs %" PetscInt_FMT ")", k, k1);
@@ -248,33 +236,39 @@ PetscErrorCode MatCreateLRC(Mat A, Mat U, Vec c, Mat V, Mat *N)
     PetscCheck(n == n1, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Local dimensions of V %" PetscInt_FMT " and A %" PetscInt_FMT " do not match", n, n1);
   }
   if (c) {
+    PetscMPIInt size, csize;
+
+    PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)U), &size));
     PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)c), &csize));
     PetscCall(VecGetSize(c, &k1));
     PetscCheck(k == k1, PetscObjectComm((PetscObject)c), PETSC_ERR_ARG_INCOMP, "The length of c %" PetscInt_FMT " does not match the number of columns of U and V (%" PetscInt_FMT ")", k1, k);
     PetscCheck(csize == 1 || csize == size, PetscObjectComm((PetscObject)c), PETSC_ERR_ARG_INCOMP, "U and c must have the same communicator size %d != %d", size, csize);
   }
+  PetscCall(MatSetSizes(N, m, n, PETSC_DECIDE, PETSC_DECIDE));
 
-  PetscCall(MatCreate(PetscObjectComm((PetscObject)U), N));
-  PetscCall(MatSetSizes(*N, m, n, PETSC_DECIDE, PETSC_DECIDE));
-  PetscCall(MatSetVecType(*N, U->defaultvectype));
-  PetscCall(PetscObjectChangeTypeName((PetscObject)*N, MATLRC));
-  /* Flag matrix as symmetric if A is symmetric and U == V */
-  PetscCall(MatSetOption(*N, MAT_SYMMETRIC, (PetscBool)((A ? A->symmetric == PETSC_BOOL3_TRUE : PETSC_TRUE) && U == V)));
+  PetscUseMethod(N, "MatLRCSetMats_C", (Mat, Mat, Mat, Vec, Mat), (N, A, U, c, V));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
 
-  PetscCall(PetscNew(&Na));
-  (*N)->data = (void *)Na;
-  Na->A      = A;
-  Na->U      = U;
-  Na->c      = c;
-  Na->V      = V;
+static PetscErrorCode MatSetUp_LRC(Mat N)
+{
+  Mat_LRC    *Na = (Mat_LRC *)N->data;
+  Mat         A  = Na->A;
+  Mat         U  = Na->U;
+  Mat         V  = Na->V;
+  Vec         c  = Na->c;
+  Mat         Uloc;
+  PetscMPIInt size, csize = 0;
 
-  PetscCall(PetscObjectReference((PetscObject)A));
-  PetscCall(PetscObjectReference((PetscObject)Na->U));
-  PetscCall(PetscObjectReference((PetscObject)Na->V));
-  PetscCall(PetscObjectReference((PetscObject)c));
-
+  PetscFunctionBegin;
+  PetscCall(MatSetVecType(N, U->defaultvectype));
+  // Flag matrix as symmetric if A is symmetric and U == V
+  PetscCall(MatSetOption(N, MAT_SYMMETRIC, (PetscBool)((A ? A->symmetric == PETSC_BOOL3_TRUE : PETSC_TRUE) && U == V)));
   PetscCall(MatDenseGetLocalMatrix(Na->U, &Uloc));
   PetscCall(MatCreateVecs(Uloc, &Na->work1, NULL));
+
+  PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)U), &size));
+  if (c) PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)c), &csize));
   if (size != 1) {
     Mat Vloc;
 
@@ -293,10 +287,10 @@ PetscErrorCode MatCreateLRC(Mat A, Mat U, Vec c, Mat V, Mat *N)
     PetscCall(MatCreateVecs(Vloc, NULL, &Na->xl));
     PetscCall(MatCreateVecs(Uloc, NULL, &Na->yl));
   }
-
-  /* Internally create a scaling vector if roottypes do not match */
+  // Internally create a scaling vector if roottypes do not match
   if (Na->c) {
-    VecType rt1, rt2;
+    VecType   rt1, rt2;
+    PetscBool match;
 
     PetscCall(VecGetRootType_Private(Na->work1, &rt1));
     PetscCall(VecGetRootType_Private(Na->c, &rt2));
@@ -308,15 +302,81 @@ PetscErrorCode MatCreateLRC(Mat A, Mat U, Vec c, Mat V, Mat *N)
       Na->c = c;
     }
   }
+  N->assembled    = PETSC_TRUE;
+  N->preallocated = PETSC_TRUE;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
 
-  (*N)->ops->destroy       = MatDestroy_LRC;
-  (*N)->ops->mult          = MatMult_LRC;
-  (*N)->ops->multtranspose = MatMultTranspose_LRC;
+PETSC_EXTERN PetscErrorCode MatCreate_LRC(Mat N)
+{
+  Mat_LRC *Na;
 
-  (*N)->assembled    = PETSC_TRUE;
-  (*N)->preallocated = PETSC_TRUE;
+  PetscFunctionBegin;
+  PetscCall(PetscObjectChangeTypeName((PetscObject)N, MATLRC));
+  PetscCall(PetscNew(&Na));
+  N->data               = (void *)Na;
+  N->ops->destroy       = MatDestroy_LRC;
+  N->ops->setup         = MatSetUp_LRC;
+  N->ops->mult          = MatMult_LRC;
+  N->ops->multtranspose = MatMultTranspose_LRC;
 
-  PetscCall(PetscObjectComposeFunction((PetscObject)(*N), "MatLRCGetMats_C", MatLRCGetMats_LRC));
+  PetscCall(PetscObjectComposeFunction((PetscObject)N, "MatLRCGetMats_C", MatLRCGetMats_LRC));
+  PetscCall(PetscObjectComposeFunction((PetscObject)N, "MatLRCSetMats_C", MatLRCSetMats_LRC));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*MC
+  MATLRC -  "lrc" - a matrix object that behaves like A + U*C*V'
+
+  Note:
+   The matrix A + U*C*V' is not formed! Rather the matrix  object performs the matrix-vector product `MatMult()`, by first multiplying by
+   A and then adding the other term.
+
+  Level: advanced
+
+.seealso: [](ch_matrices), `Mat`, `MatCreateLRC()`, `MatMult()`, `MatLRCGetMats()`, `MatLRCSetMats()`
+M*/
+
+/*@
+  MatCreateLRC - Creates a new matrix object that behaves like A + U*C*V' of type `MATLRC`
+
+  Collective
+
+  Input Parameters:
++ A - the (sparse) matrix (can be `NULL`)
+. U - dense rectangular (tall and skinny) matrix
+. V - dense rectangular (tall and skinny) matrix
+- c - a vector containing the diagonal of C (can be `NULL`)
+
+  Output Parameter:
+. N - the matrix that represents A + U*C*V'
+
+  Level: intermediate
+
+  Notes:
+  The matrix A + U*C*V' is not formed! Rather the new matrix
+  object performs the matrix-vector product `MatMult()`, by first multiplying by
+  A and then adding the other term.
+
+  `C` is a diagonal matrix (represented as a vector) of order k,
+  where k is the number of columns of both `U` and `V`.
+
+  If `A` is `NULL` then the new object behaves like a low-rank matrix U*C*V'.
+
+  Use `V`=`U` (or `V`=`NULL`) for a symmetric low-rank correction, A + U*C*U'.
+
+  If `c` is `NULL` then the low-rank correction is just U*V'.
+  If a sequential `c` vector is used for a parallel matrix,
+  PETSc assumes that the values of the vector are consistently set across processors.
+
+.seealso: [](ch_matrices), `Mat`, `MATLRC`, `MatLRCGetMats()`
+@*/
+PetscErrorCode MatCreateLRC(Mat A, Mat U, Vec c, Mat V, Mat *N)
+{
+  PetscFunctionBegin;
+  PetscCall(MatCreate(PetscObjectComm((PetscObject)U), N));
+  PetscCall(MatSetType(*N, MATLRC));
+  PetscCall(MatLRCSetMats(*N, A, U, c, V));
   PetscCall(MatSetUp(*N));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -1,0 +1,13 @@
+  Residual norms for fc_ solve.
+  0 KSP Residual norm 3.318956929128e-07 
+    Residual norms for fc_fieldsplit_pressure_ solve.
+    0 KSP Residual norm 1.945627691614e-01 
+    1 KSP Residual norm 3.707976320850e-02 
+    2 KSP Residual norm 3.546423032371e-03 
+    3 KSP Residual norm 5.898425615913e-04 
+    4 KSP Residual norm 4.654246231796e-05 
+    5 KSP Residual norm 1.042633152113e-05 
+    6 KSP Residual norm 1.360501891224e-06 
+  Linear fc_fieldsplit_pressure_ solve converged due to CONVERGED_RTOL iterations 6
+  1 KSP Residual norm 4.515447160058e-13 
+Linear fc_ solve converged due to CONVERGED_RTOL iterations 1

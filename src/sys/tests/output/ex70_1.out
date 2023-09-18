@@ -1,0 +1,9 @@
+[0]PETSC ERROR: --------------------- Error Message --------------------------------------------------------------
+[0]PETSC ERROR: Object is in wrong state
+[0]PETSC ERROR: Cannot destroy this object, it is destroyed automatically in PetscFinalize()
+[0]PETSC ERROR: See https://petsc.org/release/faq/ for trouble shooting.
+[0]PETSC ERROR: #1 PetscHeaderDestroy_Private() at inherit.c:0
+[0]PETSC ERROR: #2 PetscHeaderDestroy_Function() at inherit.c:0
+[0]PETSC ERROR: #3 PetscViewerDestroy() at view.c:0
+[0]PETSC ERROR: #4 main() at ex70.c:0
+[0]PETSC ERROR: ----------------End of Error Message -------send entire error message to petsc-maint@mcs.anl.gov----------

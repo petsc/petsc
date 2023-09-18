@@ -152,9 +152,7 @@ static PetscErrorCode KSPSolve_InnerLoop_PIPELCG(KSP ksp)
   PetscCall(PCGetOperators(ksp->pc, &A, &Pmat));
 
   for (it = 0; it < max_it + l; ++it) {
-    /* ----------------------------------- */
     /* Multiplication  z_{it+1} =  Az_{it} */
-    /* ----------------------------------- */
     /* Shift the U vector pointers */
     temp = U[2];
     for (i = 2; i > 0; i--) U[i] = U[i - 1];
@@ -175,9 +173,7 @@ static PetscErrorCode KSPSolve_InnerLoop_PIPELCG(KSP ksp)
       PetscCall(KSP_PCApply(ksp, U[0], Z[0]));
     }
 
-    /* ----------------------------------- */
     /* Adjust the G matrix */
-    /* ----------------------------------- */
     if (it >= l) {
       if (it == l) {
         /* MPI_Wait for G(0,0),scale V0 and Z and U and Q vectors with 1/beta */
@@ -235,9 +231,7 @@ static PetscErrorCode KSPSolve_InnerLoop_PIPELCG(KSP ksp)
         delta(it - l) = (G(it - l + 1, it - l + 1) * delta(it - 2 * l)) / G(it - l, it - l);
       }
 
-      /* -------------------------------------------------- */
       /* Recursively compute the next V, Q, Z and U vectors */
-      /* -------------------------------------------------- */
       /* Shift the V vector pointers */
       temp = V[2];
       for (i = 2; i > 0; i--) V[i] = V[i - 1];
@@ -294,9 +288,7 @@ static PetscErrorCode KSPSolve_InnerLoop_PIPELCG(KSP ksp)
       PetscCall(VecScale(U[0], 1.0 / delta(it - l)));
     }
 
-    /* ---------------------------------------- */
     /* Compute and communicate the dot products */
-    /* ---------------------------------------- */
     if (it < l) {
       for (j = 0; j < it + 2; ++j) { PetscCall((*U[0]->ops->dot_local)(U[0], Z[l - j], &G(j, it + 1))); /* dot-products (U[0],Z[j]) */ }
       PetscCall(MPIPetsc_Iallreduce(MPI_IN_PLACE, &G(0, it + 1), it + 2, MPIU_SCALAR, MPIU_SUM, comm, &req(it + 1)));
@@ -308,9 +300,7 @@ static PetscErrorCode KSPSolve_InnerLoop_PIPELCG(KSP ksp)
       PetscCall(MPIPetsc_Iallreduce(MPI_IN_PLACE, &G(it - l + 1, it + 1), l + 1, MPIU_SCALAR, MPIU_SUM, comm, &req(it + 1)));
     }
 
-    /* ----------------------------------------- */
     /* Compute solution vector and residual norm */
-    /* ----------------------------------------- */
     if (it >= l) {
       if (it == l) {
         if (ksp->its != 0) ++ksp->its;
@@ -477,7 +467,7 @@ static PetscErrorCode KSPSolve_PIPELCG(KSP ksp)
         "Numerically Stable Recurrence Relations for the Communication Hiding Pipelined Conjugate Gradient Method"
         Submitted to IEEE Transactions on Parallel and Distributed Systems, 2019.
 
-.seealso: [](chapter_ksp), [](sec_pipelineksp), [](doc_faq_pipelined), `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSPCG`, `KSPPIPECG`, `KSPPIPECGRR`, `KSPPGMRES`,
+.seealso: [](ch_ksp), [](sec_pipelineksp), [](doc_faq_pipelined), `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSPCG`, `KSPPIPECG`, `KSPPIPECGRR`, `KSPPGMRES`,
           `KSPPIPEBCGS`, `KSPSetPCSide()`, `KSPGROPPCG`
 M*/
 PETSC_EXTERN PetscErrorCode KSPCreate_PIPELCG(KSP ksp)

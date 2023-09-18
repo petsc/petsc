@@ -46,18 +46,18 @@ PetscErrorCode DMDAGetNatural_Private(DM da, PetscInt *outNlocal, IS *isnatural)
 }
 
 /*@C
-   DMDASetAOType - Sets the type of application ordering for a distributed array.
+  DMDASetAOType - Sets the type of application ordering for a distributed array.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  da - the distributed array
--  aotype - type of `AO`
+  Input Parameters:
++ da     - the distributed array
+- aotype - type of `AO`
 
-   Level: intermediate
+  Level: intermediate
 
-   Note:
-   It will generate and error if an `AO` has already been obtained with a call to `DMDAGetAO()` and the user sets a different `AOType`
+  Note:
+  It will generate and error if an `AO` has already been obtained with a call to `DMDAGetAO()` and the user sets a different `AOType`
 
 .seealso: `DM`, `DMDA`, `DMDACreate2d()`, `DMDAGetAO()`, `DMDAGetGhostCorners()`, `DMDAGetCorners()`, `DMLocalToGlobal()`
           `DMGlobalToLocalBegin()`, `DMGlobalToLocalEnd()`, `DMLocalToLocalBegin()`, `DMLocalToLocalEnd()`, `DMDAGetGlobalIndices()`, `DMDAGetOwnershipRanges()`,
@@ -86,26 +86,26 @@ PetscErrorCode DMDASetAOType(DM da, AOType aotype)
 }
 
 /*@
-   DMDAGetAO - Gets the application ordering context for a distributed array.
+  DMDAGetAO - Gets the application ordering context for a distributed array.
 
-   Collective
+  Collective
 
-   Input Parameter:
-.  da - the distributed array
+  Input Parameter:
+. da - the distributed array
 
-   Output Parameter:
-.  ao - the application ordering context for `DMDA`
+  Output Parameter:
+. ao - the application ordering context for `DMDA`
 
-   Level: intermediate
+  Level: intermediate
 
-   Notes:
-   In this case, the `AO` maps to the natural grid ordering that would be used
-   for the `DMDA` if only 1 processor were employed (ordering most rapidly in the
-   x-direction, then y, then z).  Multiple degrees of freedom are numbered
-   for each node (rather than 1 component for the whole grid, then the next
-   component, etc.)
+  Notes:
+  In this case, the `AO` maps to the natural grid ordering that would be used
+  for the `DMDA` if only 1 processor were employed (ordering most rapidly in the
+  x-direction, then y, then z).  Multiple degrees of freedom are numbered
+  for each node (rather than 1 component for the whole grid, then the next
+  component, etc.)
 
-   Do NOT call `AODestroy()` on the ao returned by this function.
+  Do NOT call `AODestroy()` on the ao returned by this function.
 
 .seealso: `DM`, `DMDA`, `DMDACreate2d()`, `DMDASetAOType()`, `DMDAGetGhostCorners()`, `DMDAGetCorners()`, `DMLocalToGlobal()`
           `DMGlobalToLocalBegin()`, `DMGlobalToLocalEnd()`, `DMLocalToLocalBegin()`, `DMLocalToLocalEnd()`, `DMDAGetOwnershipRanges()`,
@@ -118,7 +118,7 @@ PetscErrorCode DMDAGetAO(DM da, AO *ao)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(da, DM_CLASSID, 1, DMDA);
-  PetscValidPointer(ao, 2);
+  PetscAssertPointer(ao, 2);
   PetscCall(PetscObjectTypeCompare((PetscObject)da, DMDA, &isdmda));
   PetscCheck(isdmda, PetscObjectComm((PetscObject)da), PETSC_ERR_SUP, "Requires a DMDA as input");
   /* now we can safely dereference */

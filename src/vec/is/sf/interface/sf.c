@@ -13,10 +13,10 @@
 #endif
 
 #if defined(PETSC_CLANG_STATIC_ANALYZER)
-void PetscSFCheckGraphSet(PetscSF, int);
+extern void PetscSFCheckGraphSet(PetscSF, int);
 #else
   #if defined(PETSC_USE_DEBUG)
-    #define PetscSFCheckGraphSet(sf, arg) PetscCheck((sf)->graphset, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Must call PetscSFSetGraph() or PetscSFSetGraphWithPattern() on argument %d \"%s\" before %s()", (arg), #sf, PETSC_FUNCTION_NAME);
+    #define PetscSFCheckGraphSet(sf, arg) PetscCheck((sf)->graphset, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Must call PetscSFSetGraph() or PetscSFSetGraphWithPattern() on argument %d \"%s\" before %s()", (arg), #sf, PETSC_FUNCTION_NAME)
   #else
     #define PetscSFCheckGraphSet(sf, arg) \
       do { \
@@ -28,39 +28,39 @@ const char *const PetscSFDuplicateOptions[]     = {"CONFONLY", "RANKS", "GRAPH",
 const char *const PetscSFConcatenateRootModes[] = {"local", "shared", "global", "PetscSFConcatenateRootMode", "PETSCSF_CONCATENATE_ROOTMODE_", NULL};
 
 /*@
-   PetscSFCreate - create a star forest communication context
+  PetscSFCreate - create a star forest communication context
 
-   Collective
+  Collective
 
-   Input Parameter:
-.  comm - communicator on which the star forest will operate
+  Input Parameter:
+. comm - communicator on which the star forest will operate
 
-   Output Parameter:
-.  sf - new star forest context
+  Output Parameter:
+. sf - new star forest context
 
-   Options Database Key:
-.  -sf_type type - value of type may be
+  Options Database Key:
+. -sf_type type - value of type may be
 .vb
     basic     -Use MPI persistent Isend/Irecv for communication (Default)
     window    -Use MPI-3 one-sided window for communication
     neighbor  -Use MPI-3 neighborhood collectives for communication
 .ve
 
-   Level: intermediate
+  Level: intermediate
 
-   Note:
-   When one knows the communication graph is one of the predefined graph, such as `MPI_Alltoall()`, `MPI_Allgatherv()`,
-   `MPI_Gatherv()`, one can create a `PetscSF` and then set its graph with `PetscSFSetGraphWithPattern()`. These special
-   `SF`s are optimized and they have better performance than the general `SF`s.
+  Note:
+  When one knows the communication graph is one of the predefined graph, such as `MPI_Alltoall()`, `MPI_Allgatherv()`,
+  `MPI_Gatherv()`, one can create a `PetscSF` and then set its graph with `PetscSFSetGraphWithPattern()`. These special
+  `SF`s are optimized and they have better performance than the general `SF`s.
 
-.seealso: `PetscSF`, `PetscSFSetType`, PetscSFSetGraph()`, `PetscSFSetGraphWithPattern()`, `PetscSFDestroy()`
+.seealso: `PetscSF`, `PetscSFSetType`, `PetscSFSetGraph()`, `PetscSFSetGraphWithPattern()`, `PetscSFDestroy()`
 @*/
 PetscErrorCode PetscSFCreate(MPI_Comm comm, PetscSF *sf)
 {
   PetscSF b;
 
   PetscFunctionBegin;
-  PetscValidPointer(sf, 2);
+  PetscAssertPointer(sf, 2);
   PetscCall(PetscSFInitializePackage());
 
   PetscCall(PetscHeaderCreate(b, PETSCSF_CLASSID, "PetscSF", "Star Forest", "PetscSF", comm, PetscSFDestroy, PetscSFView));
@@ -101,14 +101,14 @@ PetscErrorCode PetscSFCreate(MPI_Comm comm, PetscSF *sf)
 }
 
 /*@
-   PetscSFReset - Reset a star forest so that different sizes or neighbors can be used
+  PetscSFReset - Reset a star forest so that different sizes or neighbors can be used
 
-   Collective
+  Collective
 
-   Input Parameter:
-.  sf - star forest
+  Input Parameter:
+. sf - star forest
 
-   Level: advanced
+  Level: advanced
 
 .seealso: `PetscSF`, `PetscSFCreate()`, `PetscSFSetGraph()`, `PetscSFDestroy()`
 @*/
@@ -145,25 +145,25 @@ PetscErrorCode PetscSFReset(PetscSF sf)
 }
 
 /*@C
-   PetscSFSetType - Set the `PetscSF` communication implementation
+  PetscSFSetType - Set the `PetscSF` communication implementation
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  sf - the `PetscSF` context
--  type - a known method
+  Input Parameters:
++ sf   - the `PetscSF` context
+- type - a known method
 .vb
     PETSCSFWINDOW - MPI-2/3 one-sided
     PETSCSFBASIC - basic implementation using MPI-1 two-sided
 .ve
 
-   Options Database Key:
-.  -sf_type <type> - Sets the method; for example `basic` or `window` use -help for a list of available methods
+  Options Database Key:
+. -sf_type <type> - Sets the method; for example `basic` or `window` use -help for a list of available methods
 
   Level: intermediate
 
-   Notes:
-   See `PetscSFType` for possible values
+  Notes:
+  See `PetscSFType` for possible values
 
 .seealso: `PetscSF`, `PetscSFType`, `PetscSFCreate()`
 @*/
@@ -174,13 +174,13 @@ PetscErrorCode PetscSFSetType(PetscSF sf, PetscSFType type)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sf, PETSCSF_CLASSID, 1);
-  PetscValidCharPointer(type, 2);
+  PetscAssertPointer(type, 2);
 
   PetscCall(PetscObjectTypeCompare((PetscObject)sf, type, &match));
   if (match) PetscFunctionReturn(PETSC_SUCCESS);
 
   PetscCall(PetscFunctionListFind(PetscSFList, type, &r));
-  PetscCheck(r, PETSC_COMM_SELF, PETSC_ERR_ARG_UNKNOWN_TYPE, "Unable to find requested PetscSF type %s", type);
+  PetscCheck(r, PetscObjectComm((PetscObject)sf), PETSC_ERR_ARG_UNKNOWN_TYPE, "Unable to find requested PetscSF type %s", type);
   /* Destroy the previous PetscSF implementation context */
   PetscTryTypeMethod(sf, Destroy);
   PetscCall(PetscMemzero(sf->ops, sizeof(*sf->ops)));
@@ -195,7 +195,7 @@ PetscErrorCode PetscSFSetType(PetscSF sf, PetscSFType type)
   Not Collective
 
   Input Parameter:
-. sf  - the `PetscSF` context
+. sf - the `PetscSF` context
 
   Output Parameter:
 . type - the `PetscSF` type name
@@ -208,20 +208,20 @@ PetscErrorCode PetscSFGetType(PetscSF sf, PetscSFType *type)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sf, PETSCSF_CLASSID, 1);
-  PetscValidPointer(type, 2);
+  PetscAssertPointer(type, 2);
   *type = ((PetscObject)sf)->type_name;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
-   PetscSFDestroy - destroy a star forest
+  PetscSFDestroy - destroy a star forest
 
-   Collective
+  Collective
 
-   Input Parameter:
-.  sf - address of star forest
+  Input Parameter:
+. sf - address of star forest
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `PetscSF`, `PetscSFType`, `PetscSFCreate()`, `PetscSFReset()`
 @*/
@@ -271,14 +271,14 @@ static PetscErrorCode PetscSFCheckGraphValid_Private(PetscSF sf)
 }
 
 /*@
-   PetscSFSetUp - set up communication structures for a `PetscSF`, after this is done it may be used to perform communication
+  PetscSFSetUp - set up communication structures for a `PetscSF`, after this is done it may be used to perform communication
 
-   Collective
+  Collective
 
-   Input Parameter:
-.  sf - star forest communication object
+  Input Parameter:
+. sf - star forest communication object
 
-   Level: beginner
+  Level: beginner
 
 .seealso: `PetscSF`, `PetscSFType`, `PetscSFSetFromOptions()`, `PetscSFSetType()`
 @*/
@@ -317,27 +317,27 @@ PetscErrorCode PetscSFSetUp(PetscSF sf)
 }
 
 /*@
-   PetscSFSetFromOptions - set `PetscSF` options using the options database
+  PetscSFSetFromOptions - set `PetscSF` options using the options database
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameter:
-.  sf - star forest
+  Input Parameter:
+. sf - star forest
 
-   Options Database Keys:
-+  -sf_type               - implementation type, see `PetscSFSetType()`
-.  -sf_rank_order         - sort composite points for gathers and scatters in rank order, gathers are non-deterministic otherwise
-.  -sf_use_default_stream - Assume callers of `PetscSF` computed the input root/leafdata with the default CUDA stream. `PetscSF` will also
+  Options Database Keys:
++ -sf_type                                                                                                         - implementation type, see `PetscSFSetType()`
+. -sf_rank_order                                                                                                   - sort composite points for gathers and scatters in rank order, gathers are non-deterministic otherwise
+. -sf_use_default_stream                                                                                           - Assume callers of `PetscSF` computed the input root/leafdata with the default CUDA stream. `PetscSF` will also
                             use the default stream to process data. Therefore, no stream synchronization is needed between `PetscSF` and its caller (default: true).
                             If true, this option only works with `-use_gpu_aware_mpi 1`.
-.  -sf_use_stream_aware_mpi  - Assume the underlying MPI is CUDA-stream aware and `PetscSF` won't sync streams for send/recv buffers passed to MPI (default: false).
+. -sf_use_stream_aware_mpi                                                                                         - Assume the underlying MPI is CUDA-stream aware and `PetscSF` won't sync streams for send/recv buffers passed to MPI (default: false).
                                If true, this option only works with `-use_gpu_aware_mpi 1`.
 
--  -sf_backend cuda | hip | kokkos -Select the device backend SF uses. Currently `PetscSF` has these backends: cuda, hip and Kokkos.
+- -sf_backend cuda | hip | kokkos -Select the device backend SF uses. Currently `PetscSF` has these backends: cuda - hip and Kokkos.
                               On CUDA (HIP) devices, one can choose cuda (hip) or kokkos with the default being kokkos. On other devices,
                               the only available is kokkos.
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `PetscSF`, `PetscSFCreate()`, `PetscSFSetType()`
 @*/
@@ -394,15 +394,15 @@ PetscErrorCode PetscSFSetFromOptions(PetscSF sf)
 }
 
 /*@
-   PetscSFSetRankOrder - sort multi-points for gathers and scatters by rank order
+  PetscSFSetRankOrder - sort multi-points for gathers and scatters by rank order
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  sf - star forest
--  flg - `PETSC_TRUE` to sort, `PETSC_FALSE` to skip sorting (lower setup cost, but non-deterministic)
+  Input Parameters:
++ sf  - star forest
+- flg - `PETSC_TRUE` to sort, `PETSC_FALSE` to skip sorting (lower setup cost, but non-deterministic)
 
-   Level: advanced
+  Level: advanced
 
 .seealso: `PetscSF`, `PetscSFType`, `PetscSFGatherBegin()`, `PetscSFScatterBegin()`
 @*/
@@ -417,38 +417,38 @@ PetscErrorCode PetscSFSetRankOrder(PetscSF sf, PetscBool flg)
 }
 
 /*@C
-   PetscSFSetGraph - Set a parallel star forest
+  PetscSFSetGraph - Set a parallel star forest
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  sf - star forest
-.  nroots - number of root vertices on the current process (these are possible targets for other process to attach leaves)
-.  nleaves - number of leaf vertices on the current process, each of these references a root on any process
-.  ilocal - locations of leaves in leafdata buffers, pass `NULL` for contiguous storage (locations must be >= 0, enforced
+  Input Parameters:
++ sf         - star forest
+. nroots     - number of root vertices on the current process (these are possible targets for other process to attach leaves)
+. nleaves    - number of leaf vertices on the current process, each of these references a root on any process
+. ilocal     - locations of leaves in leafdata buffers, pass `NULL` for contiguous storage (locations must be >= 0, enforced
 during setup in debug mode)
-.  localmode - copy mode for `ilocal`
-.  iremote - remote locations of root vertices for each leaf on the current process (locations must be >= 0, enforced
+. localmode  - copy mode for `ilocal`
+. iremote    - remote locations of root vertices for each leaf on the current process (locations must be >= 0, enforced
 during setup in debug mode)
--  remotemode - copy mode for `iremote`
+- remotemode - copy mode for `iremote`
 
-   Level: intermediate
+  Level: intermediate
 
-   Notes:
-   Leaf indices in `ilocal` must be unique, otherwise an error occurs.
+  Notes:
+  Leaf indices in `ilocal` must be unique, otherwise an error occurs.
 
-   Input arrays `ilocal` and `iremote` follow the `PetscCopyMode` semantics.
-   In particular, if `localmode` or `remotemode` is `PETSC_OWN_POINTER` or `PETSC_USE_POINTER`,
-   PETSc might modify the respective array;
-   if `PETSC_USE_POINTER`, the user must delete the array after `PetscSFDestroy()`.
-   Only if `PETSC_COPY_VALUES` is used, the respective array is guaranteed to stay intact and a const array can be passed (but a cast to non-const is needed).
+  Input arrays `ilocal` and `iremote` follow the `PetscCopyMode` semantics.
+  In particular, if `localmode` or `remotemode` is `PETSC_OWN_POINTER` or `PETSC_USE_POINTER`,
+  PETSc might modify the respective array;
+  if `PETSC_USE_POINTER`, the user must delete the array after `PetscSFDestroy()`.
+  Only if `PETSC_COPY_VALUES` is used, the respective array is guaranteed to stay intact and a const array can be passed (but a cast to non-const is needed).
 
-   Fortran Note:
-   In Fortran you must use `PETSC_COPY_VALUES` for `localmode` and `remotemode`.
+  Fortran Notes:
+  In Fortran you must use `PETSC_COPY_VALUES` for `localmode` and `remotemode`.
 
-   Developer Note:
-   We sort leaves to check for duplicates and contiguousness and to find minleaf/maxleaf.
-   This also allows to compare leaf sets of two `PetscSF`s easily.
+  Developer Notes:
+  We sort leaves to check for duplicates and contiguousness and to find minleaf/maxleaf.
+  This also allows to compare leaf sets of two `PetscSF`s easily.
 
 .seealso: `PetscSF`, `PetscSFType`, `PetscSFCreate()`, `PetscSFView()`, `PetscSFGetGraph()`
 @*/
@@ -458,8 +458,8 @@ PetscErrorCode PetscSFSetGraph(PetscSF sf, PetscInt nroots, PetscInt nleaves, Pe
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sf, PETSCSF_CLASSID, 1);
-  if (nleaves > 0 && ilocal) PetscValidIntPointer(ilocal, 4);
-  if (nleaves > 0) PetscValidPointer(iremote, 6);
+  if (nleaves > 0 && ilocal) PetscAssertPointer(ilocal, 4);
+  if (nleaves > 0) PetscAssertPointer(iremote, 6);
   PetscCheck(nroots >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "nroots %" PetscInt_FMT ", cannot be negative", nroots);
   PetscCheck(nleaves >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "nleaves %" PetscInt_FMT ", cannot be negative", nleaves);
   /* enums may be handled as unsigned by some compilers, NVHPC for example, the int cast
@@ -575,7 +575,7 @@ PetscErrorCode PetscSFSetGraphWithPattern(PetscSF sf, PetscLayout map, PetscSFPa
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sf, PETSCSF_CLASSID, 1);
-  if (pattern != PETSCSF_PATTERN_ALLTOALL) PetscValidPointer(map, 2);
+  if (pattern != PETSCSF_PATTERN_ALLTOALL) PetscAssertPointer(map, 2);
   PetscCall(PetscObjectGetComm((PetscObject)sf, &comm));
   PetscCheck(pattern >= PETSCSF_PATTERN_ALLGATHER && pattern <= PETSCSF_PATTERN_ALLTOALL, comm, PETSC_ERR_ARG_OUTOFRANGE, "Unsupported PetscSFPattern %d", pattern);
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
@@ -634,22 +634,22 @@ PetscErrorCode PetscSFSetGraphWithPattern(PetscSF sf, PetscLayout map, PetscSFPa
 }
 
 /*@
-   PetscSFCreateInverseSF - given a `PetscSF` in which all vertices have degree 1, creates the inverse map
+  PetscSFCreateInverseSF - given a `PetscSF` in which all vertices have degree 1, creates the inverse map
 
-   Collective
+  Collective
 
-   Input Parameter:
-.  sf - star forest to invert
+  Input Parameter:
+. sf - star forest to invert
 
-   Output Parameter:
-.  isf - inverse of `sf`
+  Output Parameter:
+. isf - inverse of `sf`
 
-   Level: advanced
+  Level: advanced
 
-   Notes:
-   All roots must have degree 1.
+  Notes:
+  All roots must have degree 1.
 
-   The local space may be a permutation, but cannot be sparse.
+  The local space may be a permutation, but cannot be sparse.
 
 .seealso: `PetscSF`, `PetscSFType`, `PetscSFSetGraph()`
 @*/
@@ -663,7 +663,7 @@ PetscErrorCode PetscSFCreateInverseSF(PetscSF sf, PetscSF *isf)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sf, PETSCSF_CLASSID, 1);
   PetscSFCheckGraphSet(sf, 1);
-  PetscValidPointer(isf, 2);
+  PetscAssertPointer(isf, 2);
 
   PetscCall(PetscSFGetGraph(sf, &nroots, &nleaves, &ilocal, NULL));
   maxlocal = sf->maxleaf + 1; /* TODO: We should use PetscSFGetLeafRange() */
@@ -703,18 +703,18 @@ PetscErrorCode PetscSFCreateInverseSF(PetscSF sf, PetscSF *isf)
 }
 
 /*@
-   PetscSFDuplicate - duplicate a `PetscSF`, optionally preserving rank connectivity and graph
+  PetscSFDuplicate - duplicate a `PetscSF`, optionally preserving rank connectivity and graph
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  sf - communication object to duplicate
--  opt - `PETSCSF_DUPLICATE_CONFONLY`, `PETSCSF_DUPLICATE_RANKS`, or `PETSCSF_DUPLICATE_GRAPH` (see `PetscSFDuplicateOption`)
+  Input Parameters:
++ sf  - communication object to duplicate
+- opt - `PETSCSF_DUPLICATE_CONFONLY`, `PETSCSF_DUPLICATE_RANKS`, or `PETSCSF_DUPLICATE_GRAPH` (see `PetscSFDuplicateOption`)
 
-   Output Parameter:
-.  newsf - new communication object
+  Output Parameter:
+. newsf - new communication object
 
-   Level: beginner
+  Level: beginner
 
 .seealso: `PetscSF`, `PetscSFType`, `PetscSFCreate()`, `PetscSFSetType()`, `PetscSFSetGraph()`
 @*/
@@ -726,7 +726,7 @@ PetscErrorCode PetscSFDuplicate(PetscSF sf, PetscSFDuplicateOption opt, PetscSF 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sf, PETSCSF_CLASSID, 1);
   PetscValidLogicalCollectiveEnum(sf, opt, 2);
-  PetscValidPointer(newsf, 3);
+  PetscAssertPointer(newsf, 3);
   PetscCall(PetscSFCreate(PetscObjectComm((PetscObject)sf), newsf));
   PetscCall(PetscSFGetType(sf, &type));
   if (type) PetscCall(PetscSFSetType(*newsf, type));
@@ -763,31 +763,31 @@ PetscErrorCode PetscSFDuplicate(PetscSF sf, PetscSFDuplicateOption opt, PetscSF 
 }
 
 /*@C
-   PetscSFGetGraph - Get the graph specifying a parallel star forest
+  PetscSFGetGraph - Get the graph specifying a parallel star forest
 
-   Not Collective
+  Not Collective
 
-   Input Parameter:
-.  sf - star forest
+  Input Parameter:
+. sf - star forest
 
-   Output Parameters:
-+  nroots - number of root vertices on the current process (these are possible targets for other process to attach leaves)
-.  nleaves - number of leaf vertices on the current process, each of these references a root on any process
-.  ilocal - locations of leaves in leafdata buffers (if returned value is `NULL`, it means leaves are in contiguous storage)
--  iremote - remote locations of root vertices for each leaf on the current process
+  Output Parameters:
++ nroots  - number of root vertices on the current process (these are possible targets for other process to attach leaves)
+. nleaves - number of leaf vertices on the current process, each of these references a root on any process
+. ilocal  - locations of leaves in leafdata buffers (if returned value is `NULL`, it means leaves are in contiguous storage)
+- iremote - remote locations of root vertices for each leaf on the current process
 
-   Level: intermediate
+  Level: intermediate
 
-   Notes:
-     We are not currently requiring that the graph is set, thus returning `nroots` = -1 if it has not been set yet
+  Notes:
+  We are not currently requiring that the graph is set, thus returning `nroots` = -1 if it has not been set yet
 
-     The returned `ilocal` and `iremote` might contain values in different order than the input ones in `PetscSFSetGraph()`
+  The returned `ilocal` and `iremote` might contain values in different order than the input ones in `PetscSFSetGraph()`
 
-   Fortran Notes:
-     The returned `iremote` array is a copy and must be deallocated after use. Consequently, if you
-     want to update the graph, you must call `PetscSFSetGraph()` after modifying the `iremote` array.
+  Fortran Notes:
+  The returned `iremote` array is a copy and must be deallocated after use. Consequently, if you
+  want to update the graph, you must call `PetscSFSetGraph()` after modifying the `iremote` array.
 
-     To check for a `NULL` `ilocal` use
+  To check for a `NULL` `ilocal` use
 $      if (loc(ilocal) == loc(PETSC_NULL_INTEGER)) then
 
 .seealso: `PetscSF`, `PetscSFType`, `PetscSFCreate()`, `PetscSFView()`, `PetscSFSetGraph()`
@@ -808,18 +808,18 @@ PetscErrorCode PetscSFGetGraph(PetscSF sf, PetscInt *nroots, PetscInt *nleaves, 
 }
 
 /*@
-   PetscSFGetLeafRange - Get the active leaf ranges
+  PetscSFGetLeafRange - Get the active leaf ranges
 
-   Not Collective
+  Not Collective
 
-   Input Parameter:
-.  sf - star forest
+  Input Parameter:
+. sf - star forest
 
-   Output Parameters:
-+  minleaf - minimum active leaf on this process. Returns 0 if there are no leaves.
--  maxleaf - maximum active leaf on this process. Returns -1 if there are no leaves.
+  Output Parameters:
++ minleaf - minimum active leaf on this process. Returns 0 if there are no leaves.
+- maxleaf - maximum active leaf on this process. Returns -1 if there are no leaves.
 
-   Level: developer
+  Level: developer
 
 .seealso: `PetscSF`, `PetscSFType`, `PetscSFCreate()`, `PetscSFView()`, `PetscSFSetGraph()`, `PetscSFGetGraph()`
 @*/
@@ -834,16 +834,16 @@ PetscErrorCode PetscSFGetLeafRange(PetscSF sf, PetscInt *minleaf, PetscInt *maxl
 }
 
 /*@C
-   PetscSFViewFromOptions - View a `PetscSF` based on arguments in the options database
+  PetscSFViewFromOptions - View a `PetscSF` based on arguments in the options database
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  A - the star forest
-.  obj - Optional object that provides the prefix for the option names
--  name - command line option
+  Input Parameters:
++ A    - the star forest
+. obj  - Optional object that provides the prefix for the option names
+- name - command line option
 
-   Level: intermediate
+  Level: intermediate
 
   Note:
   See `PetscObjectViewFromOptions()` for possible `PetscViewer` and `PetscViewerFormat`
@@ -859,15 +859,15 @@ PetscErrorCode PetscSFViewFromOptions(PetscSF A, PetscObject obj, const char nam
 }
 
 /*@C
-   PetscSFView - view a star forest
+  PetscSFView - view a star forest
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  sf - star forest
--  viewer - viewer to display graph, for example `PETSC_VIEWER_STDOUT_WORLD`
+  Input Parameters:
++ sf     - star forest
+- viewer - viewer to display graph, for example `PETSC_VIEWER_STDOUT_WORLD`
 
-   Level: beginner
+  Level: beginner
 
 .seealso: `PetscSF`, `PetscViewer`, `PetscSFCreate()`, `PetscSFSetGraph()`
 @*/
@@ -925,21 +925,21 @@ PetscErrorCode PetscSFView(PetscSF sf, PetscViewer viewer)
 }
 
 /*@C
-   PetscSFGetRootRanks - Get root ranks and number of vertices referenced by leaves on this process
+  PetscSFGetRootRanks - Get root ranks and number of vertices referenced by leaves on this process
 
-   Not Collective
+  Not Collective
 
-   Input Parameter:
-.  sf - star forest
+  Input Parameter:
+. sf - star forest
 
-   Output Parameters:
-+  nranks - number of ranks referenced by local part
-.  ranks - [`nranks`] array of ranks
-.  roffset - [`nranks`+1] offset in `rmine`/`rremote` for each rank
-.  rmine - [`roffset`[`nranks`]] concatenated array holding local indices referencing each remote rank
--  rremote - [`roffset`[`nranks`]] concatenated array holding remote indices referenced for each remote rank
+  Output Parameters:
++ nranks  - number of ranks referenced by local part
+. ranks   - [`nranks`] array of ranks
+. roffset - [`nranks`+1] offset in `rmine`/`rremote` for each rank
+. rmine   - [`roffset`[`nranks`]] concatenated array holding local indices referencing each remote rank
+- rremote - [`roffset`[`nranks`]] concatenated array holding remote indices referenced for each remote rank
 
-   Level: developer
+  Level: developer
 
 .seealso: `PetscSF`, `PetscSFGetLeafRanks()`
 @*/
@@ -962,20 +962,20 @@ PetscErrorCode PetscSFGetRootRanks(PetscSF sf, PetscInt *nranks, const PetscMPII
 }
 
 /*@C
-   PetscSFGetLeafRanks - Get leaf ranks referencing roots on this process
+  PetscSFGetLeafRanks - Get leaf ranks referencing roots on this process
 
-   Not Collective
+  Not Collective
 
-   Input Parameter:
-.  sf - star forest
+  Input Parameter:
+. sf - star forest
 
-   Output Parameters:
-+  niranks - number of leaf ranks referencing roots on this process
-.  iranks - [`niranks`] array of ranks
-.  ioffset - [`niranks`+1] offset in `irootloc` for each rank
--  irootloc - [`ioffset`[`niranks`]] concatenated array holding local indices of roots referenced by each leaf rank
+  Output Parameters:
++ niranks  - number of leaf ranks referencing roots on this process
+. iranks   - [`niranks`] array of ranks
+. ioffset  - [`niranks`+1] offset in `irootloc` for each rank
+- irootloc - [`ioffset`[`niranks`]] concatenated array holding local indices of roots referenced by each leaf rank
 
-   Level: developer
+  Level: developer
 
 .seealso: `PetscSF`, `PetscSFGetRootRanks()`
 @*/
@@ -1004,15 +1004,15 @@ static PetscBool InList(PetscMPIInt needle, PetscMPIInt n, const PetscMPIInt *li
 }
 
 /*@C
-   PetscSFSetUpRanks - Set up data structures associated with ranks; this is for internal use by `PetscSF` implementations.
+  PetscSFSetUpRanks - Set up data structures associated with ranks; this is for internal use by `PetscSF` implementations.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  sf - `PetscSF` to set up; `PetscSFSetGraph()` must have been called
--  dgroup - `MPI_Group` of ranks to be distinguished (e.g., for self or shared memory exchange)
+  Input Parameters:
++ sf     - `PetscSF` to set up; `PetscSFSetGraph()` must have been called
+- dgroup - `MPI_Group` of ranks to be distinguished (e.g., for self or shared memory exchange)
 
-   Level: developer
+  Level: developer
 
 .seealso: `PetscSF`, `PetscSFGetRootRanks()`
 @*/
@@ -1081,7 +1081,7 @@ PetscErrorCode PetscSFSetUpRanks(PetscSF sf, MPI_Group dgroup)
   }
   PetscCall(PetscFree(groupranks));
   PetscCall(PetscSortIntWithArray(sf->ndranks, ranks, rcount));
-  PetscCall(PetscSortIntWithArray(sf->nranks - sf->ndranks, ranks + sf->ndranks, rcount + sf->ndranks));
+  if (rcount) PetscCall(PetscSortIntWithArray(sf->nranks - sf->ndranks, ranks + sf->ndranks, rcount + sf->ndranks));
   sf->roffset[0] = 0;
   for (i = 0; i < sf->nranks; i++) {
     PetscCall(PetscMPIIntCast(ranks[i], sf->ranks + i));
@@ -1109,18 +1109,18 @@ PetscErrorCode PetscSFSetUpRanks(PetscSF sf, MPI_Group dgroup)
 }
 
 /*@C
-   PetscSFGetGroups - gets incoming and outgoing process groups
+  PetscSFGetGroups - gets incoming and outgoing process groups
 
-   Collective
+  Collective
 
-   Input Parameter:
-.  sf - star forest
+  Input Parameter:
+. sf - star forest
 
-   Output Parameters:
-+  incoming - group of origin processes for incoming edges (leaves that reference my roots)
--  outgoing - group of destination processes for outgoing edges (roots that I reference)
+  Output Parameters:
++ incoming - group of origin processes for incoming edges (leaves that reference my roots)
+- outgoing - group of destination processes for outgoing edges (roots that I reference)
 
-   Level: developer
+  Level: developer
 
 .seealso: `PetscSF`, `PetscSFGetWindow()`, `PetscSFRestoreWindow()`
 @*/
@@ -1171,22 +1171,22 @@ PetscErrorCode PetscSFGetGroups(PetscSF sf, MPI_Group *incoming, MPI_Group *outg
 }
 
 /*@
-   PetscSFGetMultiSF - gets the inner `PetscSF` implementing gathers and scatters
+  PetscSFGetMultiSF - gets the inner `PetscSF` implementing gathers and scatters
 
-   Collective
+  Collective
 
-   Input Parameter:
-.  sf - star forest that may contain roots with 0 or with more than 1 vertex
+  Input Parameter:
+. sf - star forest that may contain roots with 0 or with more than 1 vertex
 
-   Output Parameter:
-.  multi - star forest with split roots, such that each root has degree exactly 1
+  Output Parameter:
+. multi - star forest with split roots, such that each root has degree exactly 1
 
-   Level: developer
+  Level: developer
 
-   Note:
-   In most cases, users should use `PetscSFGatherBegin()` and `PetscSFScatterBegin()` instead of manipulating multi
-   directly. Since multi satisfies the stronger condition that each entry in the global space has exactly one incoming
-   edge, it is a candidate for future optimization that might involve its removal.
+  Note:
+  In most cases, users should use `PetscSFGatherBegin()` and `PetscSFScatterBegin()` instead of manipulating multi
+  directly. Since multi satisfies the stronger condition that each entry in the global space has exactly one incoming
+  edge, it is a candidate for future optimization that might involve its removal.
 
 .seealso: `PetscSF`, `PetscSFSetGraph()`, `PetscSFGatherBegin()`, `PetscSFScatterBegin()`, `PetscSFComputeMultiRootOriginalNumbering()`
 @*/
@@ -1194,7 +1194,7 @@ PetscErrorCode PetscSFGetMultiSF(PetscSF sf, PetscSF *multi)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sf, PETSCSF_CLASSID, 1);
-  PetscValidPointer(multi, 2);
+  PetscAssertPointer(multi, 2);
   if (sf->nroots < 0) { /* Graph has not been set yet; why do we need this? */
     PetscCall(PetscSFDuplicate(sf, PETSCSF_DUPLICATE_RANKS, &sf->multi));
     *multi           = sf->multi;
@@ -1240,7 +1240,7 @@ PetscErrorCode PetscSFGetMultiSF(PetscSF sf, PetscSF *multi)
       for (i = 0; i < sf->nroots; i++) {
         PetscInt j;
         for (j = 0; j < indegree[i]; j++) tmpoffset[j] = j;
-        PetscCall(PetscSortIntWithArray(indegree[i], inranks + inoffset[i], tmpoffset));
+        if (inranks) PetscCall(PetscSortIntWithArray(indegree[i], inranks + inoffset[i], tmpoffset));
         for (j = 0; j < indegree[i]; j++) newoffset[inoffset[i] + tmpoffset[j]] = inoffset[i] + j;
       }
       PetscCall(PetscSFBcastBegin(sf->multi, MPIU_INT, newoffset, newoutoffset, MPI_REPLACE));
@@ -1260,23 +1260,23 @@ PetscErrorCode PetscSFGetMultiSF(PetscSF sf, PetscSF *multi)
 }
 
 /*@C
-   PetscSFCreateEmbeddedRootSF - removes edges from all but the selected roots of a `PetscSF`, does not remap indices
+  PetscSFCreateEmbeddedRootSF - removes edges from all but the selected roots of a `PetscSF`, does not remap indices
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  sf - original star forest
-.  nselected  - number of selected roots on this process
--  selected   - indices of the selected roots on this process
+  Input Parameters:
++ sf        - original star forest
+. nselected - number of selected roots on this process
+- selected  - indices of the selected roots on this process
 
-   Output Parameter:
-.  esf - new star forest
+  Output Parameter:
+. esf - new star forest
 
-   Level: advanced
+  Level: advanced
 
-   Note:
-   To use the new `PetscSF`, it may be necessary to know the indices of the leaves that are still participating. This can
-   be done by calling PetscSFGetGraph().
+  Note:
+  To use the new `PetscSF`, it may be necessary to know the indices of the leaves that are still participating. This can
+  be done by calling PetscSFGetGraph().
 
 .seealso: `PetscSF`, `PetscSFSetGraph()`, `PetscSFGetGraph()`
 @*/
@@ -1292,8 +1292,8 @@ PetscErrorCode PetscSFCreateEmbeddedRootSF(PetscSF sf, PetscInt nselected, const
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sf, PETSCSF_CLASSID, 1);
   PetscSFCheckGraphSet(sf, 1);
-  if (nselected) PetscValidIntPointer(selected, 3);
-  PetscValidPointer(esf, 4);
+  if (nselected) PetscAssertPointer(selected, 3);
+  PetscAssertPointer(esf, 4);
 
   PetscCall(PetscSFSetUp(sf));
   PetscCall(PetscLogEventBegin(PETSCSF_EmbedSF, sf, 0, 0, 0));
@@ -1354,12 +1354,12 @@ PetscErrorCode PetscSFCreateEmbeddedRootSF(PetscSF sf, PetscInt nselected, const
   Collective
 
   Input Parameters:
-+ sf - original star forest
-. nselected  - number of selected leaves on this process
-- selected   - indices of the selected leaves on this process
++ sf        - original star forest
+. nselected - number of selected leaves on this process
+- selected  - indices of the selected leaves on this process
 
   Output Parameter:
-.  newsf - new star forest
+. newsf - new star forest
 
   Level: advanced
 
@@ -1376,8 +1376,8 @@ PetscErrorCode PetscSFCreateEmbeddedLeafSF(PetscSF sf, PetscInt nselected, const
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sf, PETSCSF_CLASSID, 1);
   PetscSFCheckGraphSet(sf, 1);
-  if (nselected) PetscValidIntPointer(selected, 3);
-  PetscValidPointer(newsf, 4);
+  if (nselected) PetscAssertPointer(selected, 3);
+  PetscAssertPointer(newsf, 4);
 
   /* Uniq selected[] and put results in leaves[] */
   PetscCall(PetscObjectGetComm((PetscObject)sf, &comm));
@@ -1406,25 +1406,25 @@ PetscErrorCode PetscSFCreateEmbeddedLeafSF(PetscSF sf, PetscInt nselected, const
 }
 
 /*@C
-   PetscSFBcastBegin - begin pointwise broadcast with root value being reduced to leaf value, to be concluded with call to `PetscSFBcastEnd()`
+  PetscSFBcastBegin - begin pointwise broadcast with root value being reduced to leaf value, to be concluded with call to `PetscSFBcastEnd()`
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  sf - star forest on which to communicate
-.  unit - data type associated with each node
-.  rootdata - buffer to broadcast
--  op - operation to use for reduction
+  Input Parameters:
++ sf       - star forest on which to communicate
+. unit     - data type associated with each node
+. rootdata - buffer to broadcast
+- op       - operation to use for reduction
 
-   Output Parameter:
-.  leafdata - buffer to be reduced with values from each leaf's respective root
+  Output Parameter:
+. leafdata - buffer to be reduced with values from each leaf's respective root
 
-   Level: intermediate
+  Level: intermediate
 
-   Note:
-    When PETSc is configured with device support, it will use its own mechanism to figure out whether the given data pointers
-    are host pointers or device pointers, which may incur a noticeable cost. If you already knew the info, you should
-    use `PetscSFBcastWithMemTypeBegin()` instead.
+  Note:
+  When PETSc is configured with device support, it will use its own mechanism to figure out whether the given data pointers
+  are host pointers or device pointers, which may incur a noticeable cost. If you already knew the info, you should
+  use `PetscSFBcastWithMemTypeBegin()` instead.
 
 .seealso: `PetscSF`, `PetscSFBcastEnd()`, `PetscSFBcastWithMemTypeBegin()`
 @*/
@@ -1444,23 +1444,23 @@ PetscErrorCode PetscSFBcastBegin(PetscSF sf, MPI_Datatype unit, const void *root
 }
 
 /*@C
-   PetscSFBcastWithMemTypeBegin - begin pointwise broadcast with root value being reduced to leaf value with explicit memory types, to be concluded with call
-   to `PetscSFBcastEnd()`
+  PetscSFBcastWithMemTypeBegin - begin pointwise broadcast with root value being reduced to leaf value with explicit memory types, to be concluded with call
+  to `PetscSFBcastEnd()`
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  sf - star forest on which to communicate
-.  unit - data type associated with each node
-.  rootmtype - memory type of rootdata
-.  rootdata - buffer to broadcast
-.  leafmtype - memory type of leafdata
--  op - operation to use for reduction
+  Input Parameters:
++ sf        - star forest on which to communicate
+. unit      - data type associated with each node
+. rootmtype - memory type of rootdata
+. rootdata  - buffer to broadcast
+. leafmtype - memory type of leafdata
+- op        - operation to use for reduction
 
-   Output Parameter:
-.  leafdata - buffer to be reduced with values from each leaf's respective root
+  Output Parameter:
+. leafdata - buffer to be reduced with values from each leaf's respective root
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `PetscSF`, `PetscSFBcastEnd()`, `PetscSFBcastBegin()`
 @*/
@@ -1476,20 +1476,20 @@ PetscErrorCode PetscSFBcastWithMemTypeBegin(PetscSF sf, MPI_Datatype unit, Petsc
 }
 
 /*@C
-   PetscSFBcastEnd - end a broadcast and reduce operation started with `PetscSFBcastBegin()` or `PetscSFBcastWithMemTypeBegin()`
+  PetscSFBcastEnd - end a broadcast and reduce operation started with `PetscSFBcastBegin()` or `PetscSFBcastWithMemTypeBegin()`
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  sf - star forest
-.  unit - data type
-.  rootdata - buffer to broadcast
--  op - operation to use for reduction
+  Input Parameters:
++ sf       - star forest
+. unit     - data type
+. rootdata - buffer to broadcast
+- op       - operation to use for reduction
 
-   Output Parameter:
-.  leafdata - buffer to be reduced with values from each leaf's respective root
+  Output Parameter:
+. leafdata - buffer to be reduced with values from each leaf's respective root
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `PetscSF`, `PetscSFSetGraph()`, `PetscSFReduceEnd()`
 @*/
@@ -1504,25 +1504,25 @@ PetscErrorCode PetscSFBcastEnd(PetscSF sf, MPI_Datatype unit, const void *rootda
 }
 
 /*@C
-   PetscSFReduceBegin - begin reduction of leafdata into rootdata, to be completed with call to `PetscSFReduceEnd()`
+  PetscSFReduceBegin - begin reduction of leafdata into rootdata, to be completed with call to `PetscSFReduceEnd()`
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  sf - star forest
-.  unit - data type
-.  leafdata - values to reduce
--  op - reduction operation
+  Input Parameters:
++ sf       - star forest
+. unit     - data type
+. leafdata - values to reduce
+- op       - reduction operation
 
-   Output Parameter:
-.  rootdata - result of reduction of values from all leaves of each root
+  Output Parameter:
+. rootdata - result of reduction of values from all leaves of each root
 
-   Level: intermediate
+  Level: intermediate
 
-   Note:
-    When PETSc is configured with device support, it will use its own mechanism to figure out whether the given data pointers
-    are host pointers or device pointers, which may incur a noticeable cost. If you already knew the info, you should
-    use `PetscSFReduceWithMemTypeBegin()` instead.
+  Note:
+  When PETSc is configured with device support, it will use its own mechanism to figure out whether the given data pointers
+  are host pointers or device pointers, which may incur a noticeable cost. If you already knew the info, you should
+  use `PetscSFReduceWithMemTypeBegin()` instead.
 
 .seealso: `PetscSF`, `PetscSFBcastBegin()`, `PetscSFReduceWithMemTypeBegin()`, `PetscSFReduceEnd()`
 @*/
@@ -1542,22 +1542,22 @@ PetscErrorCode PetscSFReduceBegin(PetscSF sf, MPI_Datatype unit, const void *lea
 }
 
 /*@C
-   PetscSFReduceWithMemTypeBegin - begin reduction of leafdata into rootdata with explicit memory types, to be completed with call to `PetscSFReduceEnd()`
+  PetscSFReduceWithMemTypeBegin - begin reduction of leafdata into rootdata with explicit memory types, to be completed with call to `PetscSFReduceEnd()`
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  sf - star forest
-.  unit - data type
-.  leafmtype - memory type of leafdata
-.  leafdata - values to reduce
-.  rootmtype - memory type of rootdata
--  op - reduction operation
+  Input Parameters:
++ sf        - star forest
+. unit      - data type
+. leafmtype - memory type of leafdata
+. leafdata  - values to reduce
+. rootmtype - memory type of rootdata
+- op        - reduction operation
 
-   Output Parameter:
-.  rootdata - result of reduction of values from all leaves of each root
+  Output Parameter:
+. rootdata - result of reduction of values from all leaves of each root
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `PetscSF`, `PetscSFBcastBegin()`, `PetscSFReduceBegin()`, `PetscSFReduceEnd()`
 @*/
@@ -1573,20 +1573,20 @@ PetscErrorCode PetscSFReduceWithMemTypeBegin(PetscSF sf, MPI_Datatype unit, Pets
 }
 
 /*@C
-   PetscSFReduceEnd - end a reduction operation started with `PetscSFReduceBegin()` or `PetscSFReduceWithMemTypeBegin()`
+  PetscSFReduceEnd - end a reduction operation started with `PetscSFReduceBegin()` or `PetscSFReduceWithMemTypeBegin()`
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  sf - star forest
-.  unit - data type
-.  leafdata - values to reduce
--  op - reduction operation
+  Input Parameters:
++ sf       - star forest
+. unit     - data type
+. leafdata - values to reduce
+- op       - reduction operation
 
-   Output Parameter:
-.  rootdata - result of reduction of values from all leaves of each root
+  Output Parameter:
+. rootdata - result of reduction of values from all leaves of each root
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `PetscSF`, `PetscSFSetGraph()`, `PetscSFBcastEnd()`, `PetscSFReduceBegin()`, `PetscSFReduceWithMemTypeBegin()`
 @*/
@@ -1601,28 +1601,28 @@ PetscErrorCode PetscSFReduceEnd(PetscSF sf, MPI_Datatype unit, const void *leafd
 }
 
 /*@C
-   PetscSFFetchAndOpBegin - begin operation that fetches values from root and updates atomically by applying operation using my leaf value,
-   to be completed with `PetscSFFetchAndOpEnd()`
+  PetscSFFetchAndOpBegin - begin operation that fetches values from root and updates atomically by applying operation using my leaf value,
+  to be completed with `PetscSFFetchAndOpEnd()`
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  sf - star forest
-.  unit - data type
-.  leafdata - leaf values to use in reduction
--  op - operation to use for reduction
+  Input Parameters:
++ sf       - star forest
+. unit     - data type
+. leafdata - leaf values to use in reduction
+- op       - operation to use for reduction
 
-   Output Parameters:
-+  rootdata - root values to be updated, input state is seen by first process to perform an update
--  leafupdate - state at each leaf's respective root immediately prior to my atomic update
+  Output Parameters:
++ rootdata   - root values to be updated, input state is seen by first process to perform an update
+- leafupdate - state at each leaf's respective root immediately prior to my atomic update
 
-   Level: advanced
+  Level: advanced
 
-   Note:
-   The update is only atomic at the granularity provided by the hardware. Different roots referenced by the same process
-   might be updated in a different order. Furthermore, if a composite type is used for the unit datatype, atomicity is
-   not guaranteed across the whole vertex. Therefore, this function is mostly only used with primitive types such as
-   integers.
+  Note:
+  The update is only atomic at the granularity provided by the hardware. Different roots referenced by the same process
+  might be updated in a different order. Furthermore, if a composite type is used for the unit datatype, atomicity is
+  not guaranteed across the whole vertex. Therefore, this function is mostly only used with primitive types such as
+  integers.
 
 .seealso: `PetscSF`, `PetscSFComputeDegreeBegin()`, `PetscSFReduceBegin()`, `PetscSFSetGraph()`
 @*/
@@ -1644,28 +1644,28 @@ PetscErrorCode PetscSFFetchAndOpBegin(PetscSF sf, MPI_Datatype unit, void *rootd
 }
 
 /*@C
-   PetscSFFetchAndOpWithMemTypeBegin - begin operation with explicit memory types that fetches values from root and updates atomically by
-   applying operation using my leaf value, to be completed with `PetscSFFetchAndOpEnd()`
+  PetscSFFetchAndOpWithMemTypeBegin - begin operation with explicit memory types that fetches values from root and updates atomically by
+  applying operation using my leaf value, to be completed with `PetscSFFetchAndOpEnd()`
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  sf - star forest
-.  unit - data type
-.  rootmtype - memory type of rootdata
-.  leafmtype - memory type of leafdata
-.  leafdata - leaf values to use in reduction
-.  leafupdatemtype - memory type of leafupdate
--  op - operation to use for reduction
+  Input Parameters:
++ sf              - star forest
+. unit            - data type
+. rootmtype       - memory type of rootdata
+. leafmtype       - memory type of leafdata
+. leafdata        - leaf values to use in reduction
+. leafupdatemtype - memory type of leafupdate
+- op              - operation to use for reduction
 
-   Output Parameters:
-+  rootdata - root values to be updated, input state is seen by first process to perform an update
--  leafupdate - state at each leaf's respective root immediately prior to my atomic update
+  Output Parameters:
++ rootdata   - root values to be updated, input state is seen by first process to perform an update
+- leafupdate - state at each leaf's respective root immediately prior to my atomic update
 
-   Level: advanced
+  Level: advanced
 
-   Note:
-   See `PetscSFFetchAndOpBegin()` for more details.
+  Note:
+  See `PetscSFFetchAndOpBegin()` for more details.
 
 .seealso: `PetscSF`, `PetscSFFetchAndOpBegin()`, `PetscSFComputeDegreeBegin()`, `PetscSFReduceBegin()`, `PetscSFSetGraph()`, `PetscSFFetchAndOpEnd()`
 @*/
@@ -1682,22 +1682,22 @@ PetscErrorCode PetscSFFetchAndOpWithMemTypeBegin(PetscSF sf, MPI_Datatype unit, 
 }
 
 /*@C
-   PetscSFFetchAndOpEnd - end operation started in matching call to `PetscSFFetchAndOpBegin()` or `PetscSFFetchAndOpWithMemTypeBegin()`
-   to fetch values from roots and update atomically by applying operation using my leaf value
+  PetscSFFetchAndOpEnd - end operation started in matching call to `PetscSFFetchAndOpBegin()` or `PetscSFFetchAndOpWithMemTypeBegin()`
+  to fetch values from roots and update atomically by applying operation using my leaf value
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  sf - star forest
-.  unit - data type
-.  leafdata - leaf values to use in reduction
--  op - operation to use for reduction
+  Input Parameters:
++ sf       - star forest
+. unit     - data type
+. leafdata - leaf values to use in reduction
+- op       - operation to use for reduction
 
-   Output Parameters:
-+  rootdata - root values to be updated, input state is seen by first process to perform an update
--  leafupdate - state at each leaf's respective root immediately prior to my atomic update
+  Output Parameters:
++ rootdata   - root values to be updated, input state is seen by first process to perform an update
+- leafupdate - state at each leaf's respective root immediately prior to my atomic update
 
-   Level: advanced
+  Level: advanced
 
 .seealso: `PetscSF`, `PetscSFComputeDegreeEnd()`, `PetscSFReduceEnd()`, `PetscSFSetGraph()`, `PetscSFFetchAndOpBegin()`, `PetscSFFetchAndOpWithMemTypeBegin()`
 @*/
@@ -1712,20 +1712,20 @@ PetscErrorCode PetscSFFetchAndOpEnd(PetscSF sf, MPI_Datatype unit, void *rootdat
 }
 
 /*@C
-   PetscSFComputeDegreeBegin - begin computation of degree for each root vertex, to be completed with `PetscSFComputeDegreeEnd()`
+  PetscSFComputeDegreeBegin - begin computation of degree for each root vertex, to be completed with `PetscSFComputeDegreeEnd()`
 
-   Collective
+  Collective
 
-   Input Parameter:
-.  sf - star forest
+  Input Parameter:
+. sf - star forest
 
-   Output Parameter:
-.  degree - degree of each root vertex
+  Output Parameter:
+. degree - degree of each root vertex
 
-   Level: advanced
+  Level: advanced
 
-   Note:
-   The returned array is owned by `PetscSF` and automatically freed by `PetscSFDestroy()`. Hence there is no need to call `PetscFree()` on it.
+  Note:
+  The returned array is owned by `PetscSF` and automatically freed by `PetscSFDestroy()`. Hence there is no need to call `PetscFree()` on it.
 
 .seealso: `PetscSF`, `PetscSFGatherBegin()`, `PetscSFComputeDegreeEnd()`
 @*/
@@ -1734,7 +1734,7 @@ PetscErrorCode PetscSFComputeDegreeBegin(PetscSF sf, const PetscInt **degree)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sf, PETSCSF_CLASSID, 1);
   PetscSFCheckGraphSet(sf, 1);
-  PetscValidPointer(degree, 2);
+  PetscAssertPointer(degree, 2);
   if (!sf->degreeknown) {
     PetscInt i, nroots = sf->nroots, maxlocal;
     PetscCheck(!sf->degree, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Calls to PetscSFComputeDegreeBegin() cannot be nested.");
@@ -1750,20 +1750,20 @@ PetscErrorCode PetscSFComputeDegreeBegin(PetscSF sf, const PetscInt **degree)
 }
 
 /*@C
-   PetscSFComputeDegreeEnd - complete computation of degree for each root vertex, started with `PetscSFComputeDegreeBegin()`
+  PetscSFComputeDegreeEnd - complete computation of degree for each root vertex, started with `PetscSFComputeDegreeBegin()`
 
-   Collective
+  Collective
 
-   Input Parameter:
-.  sf - star forest
+  Input Parameter:
+. sf - star forest
 
-   Output Parameter:
-.  degree - degree of each root vertex
+  Output Parameter:
+. degree - degree of each root vertex
 
-   Level: developer
+  Level: developer
 
-   Note:
-   The returned array is owned by `PetscSF` and automatically freed by `PetscSFDestroy()`. Hence there is no need to call `PetscFree()` on it.
+  Note:
+  The returned array is owned by `PetscSF` and automatically freed by `PetscSFDestroy()`. Hence there is no need to call `PetscFree()` on it.
 
 .seealso: `PetscSF`, `PetscSFGatherBegin()`, `PetscSFComputeDegreeBegin()`
 @*/
@@ -1772,7 +1772,7 @@ PetscErrorCode PetscSFComputeDegreeEnd(PetscSF sf, const PetscInt **degree)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sf, PETSCSF_CLASSID, 1);
   PetscSFCheckGraphSet(sf, 1);
-  PetscValidPointer(degree, 2);
+  PetscAssertPointer(degree, 2);
   if (!sf->degreeknown) {
     PetscCheck(sf->degreetmp, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Must call PetscSFComputeDegreeBegin() before PetscSFComputeDegreeEnd()");
     PetscCall(PetscSFReduceEnd(sf, MPIU_INT, sf->degreetmp - sf->minleaf, sf->degree, MPI_SUM));
@@ -1784,23 +1784,23 @@ PetscErrorCode PetscSFComputeDegreeEnd(PetscSF sf, const PetscInt **degree)
 }
 
 /*@C
-   PetscSFComputeMultiRootOriginalNumbering - Returns original numbering of multi-roots (roots of multi-`PetscSF` returned by `PetscSFGetMultiSF()`).
-   Each multi-root is assigned index of the corresponding original root.
+  PetscSFComputeMultiRootOriginalNumbering - Returns original numbering of multi-roots (roots of multi-`PetscSF` returned by `PetscSFGetMultiSF()`).
+  Each multi-root is assigned index of the corresponding original root.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  sf - star forest
--  degree - degree of each root vertex, computed with `PetscSFComputeDegreeBegin()`/`PetscSFComputeDegreeEnd()`
+  Input Parameters:
++ sf     - star forest
+- degree - degree of each root vertex, computed with `PetscSFComputeDegreeBegin()`/`PetscSFComputeDegreeEnd()`
 
-   Output Parameters:
-+  nMultiRoots - (optional) number of multi-roots (roots of multi-`PetscSF`)
--  multiRootsOrigNumbering - original indices of multi-roots; length of this array is `nMultiRoots`
+  Output Parameters:
++ nMultiRoots             - (optional) number of multi-roots (roots of multi-`PetscSF`)
+- multiRootsOrigNumbering - original indices of multi-roots; length of this array is `nMultiRoots`
 
-   Level: developer
+  Level: developer
 
-   Note:
-   The returned array `multiRootsOrigNumbering` is newly allocated and should be destroyed with `PetscFree()` when no longer needed.
+  Note:
+  The returned array `multiRootsOrigNumbering` is newly allocated and should be destroyed with `PetscFree()` when no longer needed.
 
 .seealso: `PetscSF`, `PetscSFComputeDegreeBegin()`, `PetscSFComputeDegreeEnd()`, `PetscSFGetMultiSF()`
 @*/
@@ -1812,9 +1812,9 @@ PetscErrorCode PetscSFComputeMultiRootOriginalNumbering(PetscSF sf, const PetscI
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sf, PETSCSF_CLASSID, 1);
   PetscCall(PetscSFGetGraph(sf, &nroots, NULL, NULL, NULL));
-  if (nroots) PetscValidIntPointer(degree, 2);
-  if (nMultiRoots) PetscValidIntPointer(nMultiRoots, 3);
-  PetscValidPointer(multiRootsOrigNumbering, 4);
+  if (nroots) PetscAssertPointer(degree, 2);
+  if (nMultiRoots) PetscAssertPointer(nMultiRoots, 3);
+  PetscAssertPointer(multiRootsOrigNumbering, 4);
   PetscCall(PetscSFGetMultiSF(sf, &msf));
   PetscCall(PetscSFGetGraph(msf, &nmroots, NULL, NULL, NULL));
   PetscCall(PetscMalloc1(nmroots, multiRootsOrigNumbering));
@@ -1828,19 +1828,19 @@ PetscErrorCode PetscSFComputeMultiRootOriginalNumbering(PetscSF sf, const PetscI
 }
 
 /*@C
-   PetscSFGatherBegin - begin pointwise gather of all leaves into multi-roots, to be completed with `PetscSFGatherEnd()`
+  PetscSFGatherBegin - begin pointwise gather of all leaves into multi-roots, to be completed with `PetscSFGatherEnd()`
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  sf - star forest
-.  unit - data type
--  leafdata - leaf data to gather to roots
+  Input Parameters:
++ sf       - star forest
+. unit     - data type
+- leafdata - leaf data to gather to roots
 
-   Output Parameter:
-.  multirootdata - root buffer to gather into, amount of space per root is equal to its degree
+  Output Parameter:
+. multirootdata - root buffer to gather into, amount of space per root is equal to its degree
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `PetscSF`, `PetscSFComputeDegreeBegin()`, `PetscSFScatterBegin()`
 @*/
@@ -1857,19 +1857,19 @@ PetscErrorCode PetscSFGatherBegin(PetscSF sf, MPI_Datatype unit, const void *lea
 }
 
 /*@C
-   PetscSFGatherEnd - ends pointwise gather operation that was started with `PetscSFGatherBegin()`
+  PetscSFGatherEnd - ends pointwise gather operation that was started with `PetscSFGatherBegin()`
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  sf - star forest
-.  unit - data type
--  leafdata - leaf data to gather to roots
+  Input Parameters:
++ sf       - star forest
+. unit     - data type
+- leafdata - leaf data to gather to roots
 
-   Output Parameter:
-.  multirootdata - root buffer to gather into, amount of space per root is equal to its degree
+  Output Parameter:
+. multirootdata - root buffer to gather into, amount of space per root is equal to its degree
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `PetscSF`, `PetscSFComputeDegreeEnd()`, `PetscSFScatterEnd()`
 @*/
@@ -1885,19 +1885,19 @@ PetscErrorCode PetscSFGatherEnd(PetscSF sf, MPI_Datatype unit, const void *leafd
 }
 
 /*@C
-   PetscSFScatterBegin - begin pointwise scatter operation from multi-roots to leaves, to be completed with `PetscSFScatterEnd()`
+  PetscSFScatterBegin - begin pointwise scatter operation from multi-roots to leaves, to be completed with `PetscSFScatterEnd()`
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  sf - star forest
-.  unit - data type
--  multirootdata - root buffer to send to each leaf, one unit of data per leaf
+  Input Parameters:
++ sf            - star forest
+. unit          - data type
+- multirootdata - root buffer to send to each leaf, one unit of data per leaf
 
-   Output Parameter:
-.  leafdata - leaf data to be update with personal data from each respective root
+  Output Parameter:
+. leafdata - leaf data to be update with personal data from each respective root
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `PetscSF`, `PetscSFComputeDegreeBegin()`, `PetscSFScatterEnd()`
 @*/
@@ -1914,19 +1914,19 @@ PetscErrorCode PetscSFScatterBegin(PetscSF sf, MPI_Datatype unit, const void *mu
 }
 
 /*@C
-   PetscSFScatterEnd - ends pointwise scatter operation that was started with `PetscSFScatterBegin()`
+  PetscSFScatterEnd - ends pointwise scatter operation that was started with `PetscSFScatterBegin()`
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  sf - star forest
-.  unit - data type
--  multirootdata - root buffer to send to each leaf, one unit of data per leaf
+  Input Parameters:
++ sf            - star forest
+. unit          - data type
+- multirootdata - root buffer to send to each leaf, one unit of data per leaf
 
-   Output Parameter:
-.  leafdata - leaf data to be update with personal data from each respective root
+  Output Parameter:
+. leafdata - leaf data to be update with personal data from each respective root
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `PetscSF`, `PetscSFComputeDegreeEnd()`, `PetscSFScatterBegin()`
 @*/
@@ -2000,7 +2000,7 @@ PetscErrorCode PetscSFCompose(PetscSF sfA, PetscSF sfB, PetscSF *sfBA)
   PetscValidHeaderSpecific(sfB, PETSCSF_CLASSID, 2);
   PetscSFCheckGraphSet(sfB, 2);
   PetscCheckSameComm(sfA, 1, sfB, 2);
-  PetscValidPointer(sfBA, 3);
+  PetscAssertPointer(sfBA, 3);
   PetscCall(PetscSFCheckLeavesUnique_Private(sfA));
   PetscCall(PetscSFCheckLeavesUnique_Private(sfB));
 
@@ -2108,7 +2108,7 @@ PetscErrorCode PetscSFComposeInverse(PetscSF sfA, PetscSF sfB, PetscSF *sfBA)
   PetscValidHeaderSpecific(sfB, PETSCSF_CLASSID, 2);
   PetscSFCheckGraphSet(sfB, 2);
   PetscCheckSameComm(sfA, 1, sfB, 2);
-  PetscValidPointer(sfBA, 3);
+  PetscAssertPointer(sfBA, 3);
   PetscCall(PetscSFCheckLeavesUnique_Private(sfA));
   PetscCall(PetscSFCheckLeavesUnique_Private(sfB));
 
@@ -2243,10 +2243,10 @@ PetscErrorCode PetscSFBcastToZero_Private(PetscSF sf, MPI_Datatype unit, const v
   PetscSFConcatenate - concatenate multiple `PetscSF` into one
 
   Input Parameters:
-+ comm - the communicator
-. nsfs - the number of input `PetscSF`
-. sfs  - the array of input `PetscSF`
-. rootMode - the root mode specifying how roots are handled
++ comm        - the communicator
+. nsfs        - the number of input `PetscSF`
+. sfs         - the array of input `PetscSF`
+. rootMode    - the root mode specifying how roots are handled
 - leafOffsets - the array of local leaf offsets, one for each input `PetscSF`, or `NULL` for contiguous storage
 
   Output Parameter:
@@ -2276,22 +2276,22 @@ PetscErrorCode PetscSFBcastToZero_Private(PetscSF sf, MPI_Datatype unit, const v
   `PETSCSF_CONCATENATE_ROOTMODE_LOCAL` joins the root spaces locally;
   roots of sfs[0], sfs[1], sfs[2], ... are joined on each rank separately, ordered by input `PetscSF` and original local index, and renumbered contiguously.
   `PETSCSF_CONCATENATE_ROOTMODE_GLOBAL` joins the root spaces globally;
-  roots of sfs[0], sfs[1], sfs[2, ... are joined globally, ordered by input `PetscSF` index and original global index, and renumbered contiguously;
+  roots of sfs[0], sfs[1], sfs[2], ... are joined globally, ordered by input `PetscSF` index and original global index, and renumbered contiguously;
   the original root ranks are ignored.
   For both `PETSCSF_CONCATENATE_ROOTMODE_LOCAL` and `PETSCSF_CONCATENATE_ROOTMODE_GLOBAL`,
   the output `PetscSF`'s root layout is such that the local number of roots is a sum of the input `PetscSF`'s local numbers of roots on each rank
   to keep the load balancing.
   However, for `PETSCSF_CONCATENATE_ROOTMODE_GLOBAL`, roots can move to different ranks.
 
-   Example:
-   We can use src/vec/is/sf/tests/ex18.c to compare the root modes. By running
+  Example:
+  We can use src/vec/is/sf/tests/ex18.c to compare the root modes. By running
 .vb
   make -C $PETSC_DIR/src/vec/is/sf/tests ex18
   for m in {local,global,shared}; do
     mpirun -n 2 $PETSC_DIR/src/vec/is/sf/tests/ex18 -nsfs 2 -n 2 -root_mode $m -sf_view
   done
 .ve
-   we generate two identical `PetscSF`s sf_0 and sf_1,
+  we generate two identical `PetscSF`s sf_0 and sf_1,
 .vb
   PetscSF Object: sf_0 2 MPI processes
     type: basic
@@ -2308,7 +2308,7 @@ PetscErrorCode PetscSFBcastToZero_Private(PetscSF sf, MPI_Datatype unit, const v
     ( 1,  2) <- ( 1,  0)  =   2
     ( 1,  3) <- ( 1,  1)  =   3
 .ve
-   and pass them to `PetscSFConcatenate()` along with different choices of `rootMode`, yielding different result_sf:
+  and pass them to `PetscSFConcatenate()` along with different choices of `rootMode`, yielding different result_sf\:
 .vb
   rootMode = local:
   PetscSF Object: result_sf 2 MPI processes
@@ -2402,14 +2402,14 @@ PetscErrorCode PetscSFConcatenate(MPI_Comm comm, PetscInt nsfs, PetscSF sfs[], P
 
     PetscCall(PetscSFCreate(comm, &dummy));
     PetscValidLogicalCollectiveInt(dummy, nsfs, 2);
-    PetscValidPointer(sfs, 3);
+    PetscAssertPointer(sfs, 3);
     for (i = 0; i < nsfs; i++) {
       PetscValidHeaderSpecific(sfs[i], PETSCSF_CLASSID, 3);
       PetscCheckSameComm(dummy, 1, sfs[i], 3);
     }
     PetscValidLogicalCollectiveEnum(dummy, rootMode, 4);
-    if (leafOffsets) PetscValidIntPointer(leafOffsets, 5);
-    PetscValidPointer(newsf, 6);
+    if (leafOffsets) PetscAssertPointer(leafOffsets, 5);
+    PetscAssertPointer(newsf, 6);
     PetscCall(PetscSFDestroy(&dummy));
   }
   if (!nsfs) {

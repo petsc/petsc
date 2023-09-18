@@ -4,7 +4,7 @@ class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
     self.gitcommit  = 'e55b6ad4234066617ef198cbf080f0d07d151823' #master jul-02-2018
-    self.download   = ['git://https://xgitlab.cels.anl.gov/schanen/adblaslapack.git']
+    self.download   = ['git://https://gitlab.com/petsc/pkg-adblaslapack.git']
     self.functions  = []
     self.includes   = []
     self.liblist    = [['libadblaslapack.a']]
@@ -35,7 +35,7 @@ class Configure(config.package.Package):
     if self.installNeeded('Makefile.inc'):
       self.logPrintBox('Configuring, compiling and installing adblaslapack; this may take several seconds')
       output1,err1,ret1  = config.package.Package.executeShellCommand(self.make.make_jnp_list + ['clean', 'all'], cwd=os.path.join(self.packageDir,'src'), timeout=60, log = self.log)
-      libdir = os.path.join(self.installDir, 'lib')
+      libdir = self.libDir
       includedir = os.path.join(self.installDir, 'lib')
       output2,err2,ret2  = config.package.Package.executeShellCommandSeq([
         ['mkdir', '-p', libdir, includedir],

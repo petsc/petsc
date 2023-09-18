@@ -45,9 +45,9 @@ static PetscErrorCode TaoShellSolve_SoftThreshold(Tao tao)
   PetscCall(TaoADMMGetMisfitSubsolver(admm_tao, &misfit));
   PetscCall(TaoADMMGetSpectralPenalty(admm_tao, &mu));
   PetscCall(TaoShellGetContext(tao, &user));
+  PetscCall(TaoADMMGetRegularizerCoefficient(admm_tao, &lambda));
 
-  lambda = user->lambda;
-  work   = user->workN;
+  work = user->workN;
   PetscCall(TaoGetSolution(tao, &out));
   PetscCall(TaoGetSolution(misfit, &x));
   PetscCall(TaoADMMGetDualVector(admm_tao, &y));
@@ -84,7 +84,9 @@ PetscErrorCode MisfitObjectiveAndGradient(Tao tao, Vec X, PetscReal *f, Vec g, v
 
 PetscErrorCode RegularizerObjectiveAndGradient1(Tao tao, Vec X, PetscReal *f_reg, Vec G_reg, void *ptr)
 {
-  AppCtx *user = (AppCtx *)ptr;
+  AppCtx   *user = (AppCtx *)ptr;
+  PetscReal lambda;
+  Tao       admm_tao;
 
   PetscFunctionBegin;
   /* compute regularizer objective
@@ -96,10 +98,12 @@ PetscErrorCode RegularizerObjectiveAndGradient1(Tao tao, Vec X, PetscReal *f_reg
   PetscCall(VecCopy(user->workN2, user->workN3));
   PetscCall(VecShift(user->workN2, -user->eps));
   PetscCall(VecSum(user->workN2, f_reg));
-  *f_reg *= user->lambda;
+  PetscCall(TaoGetADMMParentTao(tao, &admm_tao));
+  PetscCall(TaoADMMGetRegularizerCoefficient(admm_tao, &lambda));
+  *f_reg *= lambda;
   /* compute regularizer gradient = lambda*x */
   PetscCall(VecPointwiseDivide(G_reg, X, user->workN3));
-  PetscCall(VecScale(G_reg, user->lambda));
+  PetscCall(VecScale(G_reg, lambda));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -107,16 +111,18 @@ PetscErrorCode RegularizerObjectiveAndGradient1(Tao tao, Vec X, PetscReal *f_reg
 
 PetscErrorCode RegularizerObjectiveAndGradient2(Tao tao, Vec X, PetscReal *f_reg, Vec G_reg, void *ptr)
 {
-  AppCtx   *user = (AppCtx *)ptr;
-  PetscReal temp;
+  PetscReal temp, lambda;
+  Tao       admm_tao;
 
   PetscFunctionBegin;
   /* compute regularizer objective = lambda*|z|_2^2 */
   PetscCall(VecDot(X, X, &temp));
-  *f_reg = 0.5 * user->lambda * temp;
+  PetscCall(TaoGetADMMParentTao(tao, &admm_tao));
+  PetscCall(TaoADMMGetRegularizerCoefficient(admm_tao, &lambda));
+  *f_reg = 0.5 * lambda * temp;
   /* compute regularizer gradient = lambda*z */
   PetscCall(VecCopy(X, G_reg));
-  PetscCall(VecScale(G_reg, user->lambda));
+  PetscCall(VecScale(G_reg, lambda));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -151,21 +157,32 @@ static PetscErrorCode HessianReg(Tao tao, Vec x, Mat H, Mat Hpre, void *ptr)
 PetscErrorCode FullObjGrad(Tao tao, Vec X, PetscReal *f, Vec g, void *ptr)
 {
   AppCtx   *user = (AppCtx *)ptr;
-  PetscReal f_reg;
+  PetscReal f_reg, lambda;
+  PetscBool is_admm;
 
   PetscFunctionBegin;
-  /* Objective  0.5*||Ax-b||_2^2 + lambda*||x||_2^2*/
+  /* Objective  0.5*||Ax-b||_2^2 + lambda*||x||_{1,2}^2*/
   PetscCall(MatMult(user->A, X, user->workM));
   PetscCall(VecAXPY(user->workM, -1, user->b));
   PetscCall(VecDot(user->workM, user->workM, f));
-  PetscCall(VecNorm(X, NORM_2, &f_reg));
+  if (user->reg == 1) {
+    PetscCall(VecNorm(X, NORM_1, &f_reg));
+  } else {
+    PetscCall(VecNorm(X, NORM_2, &f_reg));
+  }
+  PetscCall(PetscObjectTypeCompare((PetscObject)tao, TAOADMM, &is_admm));
+  if (is_admm) {
+    PetscCall(TaoADMMGetRegularizerCoefficient(tao, &lambda));
+  } else {
+    lambda = user->lambda;
+  }
   *f *= 0.5;
-  *f += user->lambda * f_reg * f_reg;
+  *f += lambda * f_reg * f_reg;
   /* Gradient. ATAx-ATb + 2*lambda*x */
   PetscCall(MatMult(user->ATA, X, user->workN));
   PetscCall(MatMultTranspose(user->A, user->b, user->workN2));
   PetscCall(VecWAXPY(g, -1., user->workN2, user->workN));
-  PetscCall(VecAXPY(g, 2 * user->lambda, X));
+  PetscCall(VecAXPY(g, 2 * lambda, X));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 /*------------------------------------------------------------*/

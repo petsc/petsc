@@ -6,8 +6,6 @@
   the forward product and inverse application of a Jacobian.
  */
 
-/*------------------------------------------------------------*/
-
 /*
   The solution method (approximate inverse Jacobian application) is
   matrix-vector product version of the recursive formula given in
@@ -71,8 +69,6 @@ PetscErrorCode MatSolve_LMVMDFP(Mat B, Vec F, Vec dX)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*------------------------------------------------------------*/
-
 /*
   The forward product for the approximate Jacobian is the matrix-free
   implementation of the recursive formula given in Equation 6.13 of
@@ -129,8 +125,6 @@ PetscErrorCode MatMult_LMVMDFP(Mat B, Vec X, Vec Z)
   PetscCall(PetscFree(alpha));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-
-/*------------------------------------------------------------*/
 
 static PetscErrorCode MatUpdate_LMVMDFP(Mat B, Vec X, Vec F)
 {
@@ -213,8 +207,6 @@ static PetscErrorCode MatUpdate_LMVMDFP(Mat B, Vec X, Vec F)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*------------------------------------------------------------*/
-
 static PetscErrorCode MatCopy_LMVMDFP(Mat B, Mat M, MatStructure str)
 {
   Mat_LMVM    *bdata = (Mat_LMVM *)B->data;
@@ -252,8 +244,6 @@ static PetscErrorCode MatCopy_LMVMDFP(Mat B, Mat M, MatStructure str)
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-
-/*------------------------------------------------------------*/
 
 static PetscErrorCode MatReset_LMVMDFP(Mat B, PetscBool destructive)
 {
@@ -301,8 +291,6 @@ static PetscErrorCode MatReset_LMVMDFP(Mat B, PetscBool destructive)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*------------------------------------------------------------*/
-
 static PetscErrorCode MatAllocate_LMVMDFP(Mat B, Vec X, Vec F)
 {
   Mat_LMVM    *lmvm = (Mat_LMVM *)B->data;
@@ -326,8 +314,6 @@ static PetscErrorCode MatAllocate_LMVMDFP(Mat B, Vec X, Vec F)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*------------------------------------------------------------*/
-
 static PetscErrorCode MatDestroy_LMVMDFP(Mat B)
 {
   Mat_LMVM    *lmvm = (Mat_LMVM *)B->data;
@@ -345,8 +331,6 @@ static PetscErrorCode MatDestroy_LMVMDFP(Mat B)
   PetscCall(MatDestroy_LMVM(B));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-
-/*------------------------------------------------------------*/
 
 static PetscErrorCode MatSetUp_LMVMDFP(Mat B)
 {
@@ -375,8 +359,6 @@ static PetscErrorCode MatSetUp_LMVMDFP(Mat B)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*------------------------------------------------------------*/
-
 static PetscErrorCode MatSetFromOptions_LMVMDFP(Mat B, PetscOptionItems *PetscOptionsObject)
 {
   PetscFunctionBegin;
@@ -386,8 +368,6 @@ static PetscErrorCode MatSetFromOptions_LMVMDFP(Mat B, PetscOptionItems *PetscOp
   PetscOptionsHeadEnd();
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-
-/*------------------------------------------------------------*/
 
 PetscErrorCode MatCreate_LMVMDFP(Mat B)
 {
@@ -415,43 +395,41 @@ PetscErrorCode MatCreate_LMVMDFP(Mat B)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*------------------------------------------------------------*/
-
 /*@
-   MatCreateLMVMDFP - Creates a limited-memory Davidon-Fletcher-Powell (DFP) matrix
-   used for approximating Jacobians. L-DFP is symmetric positive-definite by
-   construction, and is the dual of L-BFGS where Y and S vectors swap roles.
+  MatCreateLMVMDFP - Creates a limited-memory Davidon-Fletcher-Powell (DFP) matrix
+  used for approximating Jacobians. L-DFP is symmetric positive-definite by
+  construction, and is the dual of L-BFGS where Y and S vectors swap roles.
 
-   To use the L-DFP matrix with other vector types, the matrix must be
-   created using `MatCreate()` and `MatSetType()`, followed by `MatLMVMAllocate()`.
-   This ensures that the internal storage and work vectors are duplicated from the
-   correct type of vector.
+  To use the L-DFP matrix with other vector types, the matrix must be
+  created using `MatCreate()` and `MatSetType()`, followed by `MatLMVMAllocate()`.
+  This ensures that the internal storage and work vectors are duplicated from the
+  correct type of vector.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  comm - MPI communicator
-.  n - number of local rows for storage vectors
--  N - global size of the storage vectors
+  Input Parameters:
++ comm - MPI communicator
+. n    - number of local rows for storage vectors
+- N    - global size of the storage vectors
 
-   Output Parameter:
-.  B - the matrix
+  Output Parameter:
+. B - the matrix
 
-   Options Database Keys:
-+   -mat_lmvm_scale_type - (developer) type of scaling applied to J0 (none, scalar, diagonal)
-.   -mat_lmvm_theta - (developer) convex ratio between BFGS and DFP components of the diagonal J0 scaling
-.   -mat_lmvm_rho - (developer) update limiter for the J0 scaling
-.   -mat_lmvm_alpha - (developer) coefficient factor for the quadratic subproblem in J0 scaling
-.   -mat_lmvm_beta - (developer) exponential factor for the diagonal J0 scaling
--   -mat_lmvm_sigma_hist - (developer) number of past updates to use in J0 scaling
+  Options Database Keys:
++ -mat_lmvm_scale_type - (developer) type of scaling applied to J0 (none, scalar, diagonal)
+. -mat_lmvm_theta      - (developer) convex ratio between BFGS and DFP components of the diagonal J0 scaling
+. -mat_lmvm_rho        - (developer) update limiter for the J0 scaling
+. -mat_lmvm_alpha      - (developer) coefficient factor for the quadratic subproblem in J0 scaling
+. -mat_lmvm_beta       - (developer) exponential factor for the diagonal J0 scaling
+- -mat_lmvm_sigma_hist - (developer) number of past updates to use in J0 scaling
 
-   Level: intermediate
+  Level: intermediate
 
-   Note:
-   It is recommended that one use the `MatCreate()`, `MatSetType()` and/or `MatSetFromOptions()`
-   paradigm instead of this routine directly.
+  Note:
+  It is recommended that one use the `MatCreate()`, `MatSetType()` and/or `MatSetFromOptions()`
+  paradigm instead of this routine directly.
 
-.seealso: [](chapter_ksp), `MatCreate()`, `MATLMVM`, `MATLMVMDFP`, `MatCreateLMVMBFGS()`, `MatCreateLMVMSR1()`,
+.seealso: [](ch_ksp), `MatCreate()`, `MATLMVM`, `MATLMVMDFP`, `MatCreateLMVMBFGS()`, `MatCreateLMVMSR1()`,
           `MatCreateLMVMBrdn()`, `MatCreateLMVMBadBrdn()`, `MatCreateLMVMSymBrdn()`
 @*/
 PetscErrorCode MatCreateLMVMDFP(MPI_Comm comm, PetscInt n, PetscInt N, Mat *B)

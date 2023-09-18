@@ -72,15 +72,13 @@ int main(int argc, char **argv)
   PetscInt      i;
   DM            networkdm;
   UserCtx_Power User;
-#if defined(PETSC_USE_LOG)
   PetscLogStage stage1, stage2;
-#endif
-  PetscMPIInt rank;
-  PetscInt    eStart, eEnd, vStart, vEnd, j;
-  PetscInt    genj, loadj;
-  Vec         X, F;
-  Mat         J;
-  SNES        snes;
+  PetscMPIInt   rank;
+  PetscInt      eStart, eEnd, vStart, vEnd, j;
+  PetscInt      genj, loadj;
+  Vec           X, F;
+  Mat           J;
+  SNES          snes;
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, "poweroptions", help));

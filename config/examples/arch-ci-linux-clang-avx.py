@@ -10,6 +10,7 @@ if __name__ == '__main__':
   import configure
   configure_options = [
     '--package-prefix-hash='+petsc_hash_pkgs,
+    '--with-cudac=0',
     '--download-f2cblaslapack',
     '--download-blis',
     '--download-mpich',

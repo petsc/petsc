@@ -28,7 +28,7 @@ int main(int argc, char **args)
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
 
   /* Get a partition range based on the vector size */
-  PetscCall(VecCreateMPI(PETSC_COMM_WORLD, PETSC_DECIDE, N, &v));
+  PetscCall(VecCreateFromOptions(PETSC_COMM_WORLD, NULL, 1, PETSC_DECIDE, N, &v));
   PetscCall(VecGetLocalSize(v, &n));
   PetscCall(VecGetOwnershipRange(v, &rstart, &rend));
   PetscCall(VecDestroy(&v));

@@ -1,4 +1,3 @@
-
 #include <petsc/private/matimpl.h> /*I   "petscmat.h"  I*/
 
 static PetscErrorCode MatTransposeAXPY_Private(Mat Y, PetscScalar a, Mat X, MatStructure str, Mat T)
@@ -21,11 +20,11 @@ static PetscErrorCode MatTransposeAXPY_Private(Mat Y, PetscScalar a, Mat X, MatS
   } else {
     PetscCall(MatHermitianTransposeGetMat(T, &A));
     if (T == X) {
-      PetscCall(PetscInfo(NULL, "Explicitly Hermitian transposing X of type MATHERITIANTRANSPOSEVIRTUAL to perform MatAXPY()\n"));
+      PetscCall(PetscInfo(NULL, "Explicitly Hermitian transposing X of type MATHERMITIANTRANSPOSEVIRTUAL to perform MatAXPY()\n"));
       PetscCall(MatHermitianTranspose(A, MAT_INITIAL_MATRIX, &F));
       A = Y;
     } else {
-      PetscCall(PetscInfo(NULL, "Hermitian transposing X because Y of type MATHERITIANTRANSPOSEVIRTUAL to perform MatAXPY()\n"));
+      PetscCall(PetscInfo(NULL, "Hermitian transposing X because Y of type MATHERMITIANTRANSPOSEVIRTUAL to perform MatAXPY()\n"));
       PetscCall(MatHermitianTranspose(X, MAT_INITIAL_MATRIX, &F));
     }
   }
@@ -35,19 +34,19 @@ static PetscErrorCode MatTransposeAXPY_Private(Mat Y, PetscScalar a, Mat X, MatS
 }
 
 /*@
-   MatAXPY - Computes Y = a*X + Y.
+  MatAXPY - Computes Y = a*X + Y.
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  a - the scalar multiplier
-.  X - the first matrix
-.  Y - the second matrix
--  str - either `SAME_NONZERO_PATTERN`, `DIFFERENT_NONZERO_PATTERN`, `UNKNOWN_NONZERO_PATTERN`, or `SUBSET_NONZERO_PATTERN` (nonzeros of `X` is a subset of `Y`'s)
+  Input Parameters:
++ a   - the scalar multiplier
+. X   - the first matrix
+. Y   - the second matrix
+- str - either `SAME_NONZERO_PATTERN`, `DIFFERENT_NONZERO_PATTERN`, `UNKNOWN_NONZERO_PATTERN`, or `SUBSET_NONZERO_PATTERN` (nonzeros of `X` is a subset of `Y`'s)
 
-   Level: intermediate
+  Level: intermediate
 
-.seealso: [](chapter_matrices), `Mat`, `MatAYPX()`
+.seealso: [](ch_matrices), `Mat`, `MatAYPX()`
  @*/
 PetscErrorCode MatAXPY(Mat Y, PetscScalar a, Mat X, MatStructure str)
 {
@@ -263,26 +262,26 @@ PetscErrorCode MatAXPY_BasicWithPreallocation(Mat B, Mat Y, PetscScalar a, Mat X
 }
 
 /*@
-   MatShift - Computes `Y =  Y + a I`, where `a` is a `PetscScalar`
+  MatShift - Computes `Y =  Y + a I`, where `a` is a `PetscScalar`
 
-   Neighbor-wise Collective
+  Neighbor-wise Collective
 
-   Input Parameters:
-+  Y - the matrix
--  a - the `PetscScalar`
+  Input Parameters:
++ Y - the matrix
+- a - the `PetscScalar`
 
-   Level: intermediate
+  Level: intermediate
 
-   Notes:
-    If `Y` is a rectangular matrix, the shift is done on the main diagonal of the matrix (https://en.wikipedia.org/wiki/Main_diagonal)
+  Notes:
+  If `Y` is a rectangular matrix, the shift is done on the main diagonal of the matrix (https://en.wikipedia.org/wiki/Main_diagonal)
 
-    If the matrix `Y` is missing some diagonal entries this routine can be very slow. To make it fast one should initially
-   fill the matrix so that all diagonal entries have a value (with a value of zero for those locations that would not have an
-   entry). No operation is performed when a is zero.
+  If the matrix `Y` is missing some diagonal entries this routine can be very slow. To make it fast one should initially
+  fill the matrix so that all diagonal entries have a value (with a value of zero for those locations that would not have an
+  entry). No operation is performed when a is zero.
 
-   To form Y = Y + diag(V) use `MatDiagonalSet()`
+  To form Y = Y + diag(V) use `MatDiagonalSet()`
 
-.seealso: [](chapter_matrices), `Mat`, `MatDiagonalSet()`, `MatScale()`, `MatDiagonalScale()`
+.seealso: [](ch_matrices), `Mat`, `MatDiagonalSet()`, `MatScale()`, `MatDiagonalScale()`
  @*/
 PetscErrorCode MatShift(Mat Y, PetscScalar a)
 {
@@ -316,25 +315,25 @@ PetscErrorCode MatDiagonalSet_Default(Mat Y, Vec D, InsertMode is)
 }
 
 /*@
-   MatDiagonalSet - Computes `Y` = `Y` + `D`, where `D` is a diagonal matrix
-   that is represented as a vector. Or Y[i,i] = D[i] if `InsertMode` is
-   `INSERT_VALUES`.
+  MatDiagonalSet - Computes `Y` = `Y` + `D`, where `D` is a diagonal matrix
+  that is represented as a vector. Or Y[i,i] = D[i] if `InsertMode` is
+  `INSERT_VALUES`.
 
-   Neighbor-wise Collective
+  Neighbor-wise Collective
 
-   Input Parameters:
-+  Y - the input matrix
-.  D - the diagonal matrix, represented as a vector
--  i - `INSERT_VALUES` or `ADD_VALUES`
+  Input Parameters:
++ Y  - the input matrix
+. D  - the diagonal matrix, represented as a vector
+- is - `INSERT_VALUES` or `ADD_VALUES`
 
-   Level: intermediate
+  Level: intermediate
 
-   Note:
-    If the matrix `Y` is missing some diagonal entries this routine can be very slow. To make it fast one should initially
-   fill the matrix so that all diagonal entries have a value (with a value of zero for those locations that would not have an
-   entry).
+  Note:
+  If the matrix `Y` is missing some diagonal entries this routine can be very slow. To make it fast one should initially
+  fill the matrix so that all diagonal entries have a value (with a value of zero for those locations that would not have an
+  entry).
 
-.seealso: [](chapter_matrices), `Mat`, `MatShift()`, `MatScale()`, `MatDiagonalScale()`
+.seealso: [](ch_matrices), `Mat`, `MatShift()`, `MatScale()`, `MatDiagonalScale()`
 @*/
 PetscErrorCode MatDiagonalSet(Mat Y, Vec D, InsertMode is)
 {
@@ -353,19 +352,19 @@ PetscErrorCode MatDiagonalSet(Mat Y, Vec D, InsertMode is)
 }
 
 /*@
-   MatAYPX - Computes Y = a*Y + X.
+  MatAYPX - Computes Y = a*Y + X.
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  a - the `PetscScalar` multiplier
-.  Y - the first matrix
-.  X - the second matrix
--  str - either `SAME_NONZERO_PATTERN`, `DIFFERENT_NONZERO_PATTERN`, `UNKNOWN_NONZERO_PATTERN`, or `SUBSET_NONZERO_PATTERN` (nonzeros of `X` is a subset of `Y`'s)
+  Input Parameters:
++ a   - the `PetscScalar` multiplier
+. Y   - the first matrix
+. X   - the second matrix
+- str - either `SAME_NONZERO_PATTERN`, `DIFFERENT_NONZERO_PATTERN`, `UNKNOWN_NONZERO_PATTERN`, or `SUBSET_NONZERO_PATTERN` (nonzeros of `X` is a subset of `Y`'s)
 
-   Level: intermediate
+  Level: intermediate
 
-.seealso: [](chapter_matrices), `Mat`, `MatAXPY()`
+.seealso: [](ch_matrices), `Mat`, `MatAXPY()`
  @*/
 PetscErrorCode MatAYPX(Mat Y, PetscScalar a, Mat X, MatStructure str)
 {
@@ -375,57 +374,57 @@ PetscErrorCode MatAYPX(Mat Y, PetscScalar a, Mat X, MatStructure str)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@
-    MatComputeOperator - Computes the explicit matrix
+/*@C
+  MatComputeOperator - Computes the explicit matrix
 
-    Collective
+  Collective
 
-    Input Parameters:
-+   inmat - the matrix
--   mattype - the matrix type for the explicit operator
+  Input Parameters:
++ inmat   - the matrix
+- mattype - the matrix type for the explicit operator
 
-    Output Parameter:
-.   mat - the explicit  operator
+  Output Parameter:
+. mat - the explicit  operator
 
-    Level: advanced
+  Level: advanced
 
-    Note:
-    This computation is done by applying the operators to columns of the identity matrix.
-    This routine is costly in general, and is recommended for use only with relatively small systems.
-    Currently, this routine uses a dense matrix format if `mattype` == `NULL`.
+  Note:
+  This computation is done by applying the operators to columns of the identity matrix.
+  This routine is costly in general, and is recommended for use only with relatively small systems.
+  Currently, this routine uses a dense matrix format if `mattype` == `NULL`.
 
-.seealso: [](chapter_matrices), `Mat`, `MatConvert()`, `MatMult()`, `MatComputeOperatorTranspose()`
+.seealso: [](ch_matrices), `Mat`, `MatConvert()`, `MatMult()`, `MatComputeOperatorTranspose()`
 @*/
 PetscErrorCode MatComputeOperator(Mat inmat, MatType mattype, Mat *mat)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(inmat, MAT_CLASSID, 1);
-  PetscValidPointer(mat, 3);
+  PetscAssertPointer(mat, 3);
   PetscCall(MatConvert_Shell(inmat, mattype ? mattype : MATDENSE, MAT_INITIAL_MATRIX, mat));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@
-    MatComputeOperatorTranspose - Computes the explicit matrix representation of
-        a give matrix that can apply `MatMultTranspose()`
+/*@C
+  MatComputeOperatorTranspose - Computes the explicit matrix representation of
+  a give matrix that can apply `MatMultTranspose()`
 
-    Collective
+  Collective
 
-    Input Parameters:
-+   inmat - the matrix
--   mattype - the matrix type for the explicit operator
+  Input Parameters:
++ inmat   - the matrix
+- mattype - the matrix type for the explicit operator
 
-    Output Parameter:
-.   mat - the explicit  operator transposed
+  Output Parameter:
+. mat - the explicit  operator transposed
 
-    Level: advanced
+  Level: advanced
 
-    Note:
-    This computation is done by applying the transpose of the operator to columns of the identity matrix.
-    This routine is costly in general, and is recommended for use only with relatively small systems.
-    Currently, this routine uses a dense matrix format if `mattype` == `NULL`.
+  Note:
+  This computation is done by applying the transpose of the operator to columns of the identity matrix.
+  This routine is costly in general, and is recommended for use only with relatively small systems.
+  Currently, this routine uses a dense matrix format if `mattype` == `NULL`.
 
-.seealso: [](chapter_matrices), `Mat`, `MatConvert()`, `MatMult()`, `MatComputeOperator()`
+.seealso: [](ch_matrices), `Mat`, `MatConvert()`, `MatMult()`, `MatComputeOperator()`
 @*/
 PetscErrorCode MatComputeOperatorTranspose(Mat inmat, MatType mattype, Mat *mat)
 {
@@ -433,7 +432,7 @@ PetscErrorCode MatComputeOperatorTranspose(Mat inmat, MatType mattype, Mat *mat)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(inmat, MAT_CLASSID, 1);
-  PetscValidPointer(mat, 3);
+  PetscAssertPointer(mat, 3);
   PetscCall(MatCreateTranspose(inmat, &A));
   PetscCall(MatConvert_Shell(A, mattype ? mattype : MATDENSE, MAT_INITIAL_MATRIX, mat));
   PetscCall(MatDestroy(&A));
@@ -441,21 +440,23 @@ PetscErrorCode MatComputeOperatorTranspose(Mat inmat, MatType mattype, Mat *mat)
 }
 
 /*@
-  MatChop - Set all values in the matrix less than the tolerance to zero
+  MatFilter - Set all values in the matrix with an absolute value less than or equal to the tolerance to zero, and optionally compress the underlying storage
 
   Input Parameters:
-+ A   - The matrix
-- tol - The zero tolerance
++ A        - The matrix
+. tol      - The zero tolerance
+. compress - Whether the storage from the input matrix `A` should be compressed once values less than or equal to `tol` are set to zero
+- keep     - If `compress` is true and for a given row of `A`, the diagonal coefficient is less than or equal to `tol`, indicates whether it should be left in the structure or eliminated as well
 
   Level: intermediate
 
-.seealso: [](chapter_matrices), `Mat`, `MatCreate()`, `MatZeroEntries()`
+.seealso: [](ch_matrices), `Mat`, `MatCreate()`, `MatZeroEntries()`, `MatRemoveZeros()`, `VecFilter()`
  @*/
-PetscErrorCode MatChop(Mat A, PetscReal tol)
+PetscErrorCode MatFilter(Mat A, PetscReal tol, PetscBool compress, PetscBool keep)
 {
   Mat          a;
   PetscScalar *newVals;
-  PetscInt    *newCols, rStart, rEnd, numRows, maxRows, r, colMax = 0;
+  PetscInt    *newCols, rStart, rEnd, maxRows, r, colMax = 0, nnz0 = 0, nnz1 = 0;
   PetscBool    flg;
 
   PetscFunctionBegin;
@@ -466,11 +467,18 @@ PetscErrorCode MatChop(Mat A, PetscReal tol)
     PetscCall(MatGetSize(a, &rStart, &rEnd));
     PetscCall(MatDenseGetArray(a, &newVals));
     for (; colMax < rEnd; ++colMax) {
-      for (maxRows = 0; maxRows < rStart; ++maxRows) newVals[maxRows + colMax * r] = PetscAbsScalar(newVals[maxRows + colMax * r]) < tol ? 0.0 : newVals[maxRows + colMax * r];
+      for (maxRows = 0; maxRows < rStart; ++maxRows) newVals[maxRows + colMax * r] = PetscAbsScalar(newVals[maxRows + colMax * r]) <= tol ? 0.0 : newVals[maxRows + colMax * r];
     }
     PetscCall(MatDenseRestoreArray(a, &newVals));
   } else {
-    PetscCall(MatGetOwnershipRange(A, &rStart, &rEnd));
+    const PetscInt *ranges;
+    PetscMPIInt     rank, size;
+
+    PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)A), &rank));
+    PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)A), &size));
+    PetscCall(MatGetOwnershipRanges(A, &ranges));
+    rStart = ranges[rank];
+    rEnd   = ranges[rank + 1];
     PetscCall(MatGetRowUpperTriangular(A));
     for (r = rStart; r < rEnd; ++r) {
       PetscInt ncols;
@@ -479,25 +487,25 @@ PetscErrorCode MatChop(Mat A, PetscReal tol)
       colMax = PetscMax(colMax, ncols);
       PetscCall(MatRestoreRow(A, r, &ncols, NULL, NULL));
     }
-    numRows = rEnd - rStart;
-    PetscCall(MPIU_Allreduce(&numRows, &maxRows, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)A)));
-    PetscCall(PetscMalloc2(colMax, &newCols, colMax, &newVals));
+    maxRows = 0;
+    for (r = 0; r < size; ++r) maxRows = PetscMax(maxRows, ranges[r + 1] - ranges[r]);
+    PetscCall(PetscCalloc2(colMax, &newCols, colMax, &newVals));
     PetscCall(MatGetOption(A, MAT_NO_OFF_PROC_ENTRIES, &flg)); /* cache user-defined value */
     PetscCall(MatSetOption(A, MAT_NO_OFF_PROC_ENTRIES, PETSC_TRUE));
     /* short-circuit code in MatAssemblyBegin() and MatAssemblyEnd()             */
     /* that are potentially called many times depending on the distribution of A */
     for (r = rStart; r < rStart + maxRows; ++r) {
-      const PetscScalar *vals;
-      const PetscInt    *cols;
-      PetscInt           ncols, newcols, c;
-
       if (r < rEnd) {
+        const PetscScalar *vals;
+        const PetscInt    *cols;
+        PetscInt           ncols, newcols = 0, c;
+
         PetscCall(MatGetRow(A, r, &ncols, &cols, &vals));
+        nnz0 += ncols - 1;
         for (c = 0; c < ncols; ++c) {
-          newCols[c] = cols[c];
-          newVals[c] = PetscAbsScalar(vals[c]) < tol ? 0.0 : vals[c];
+          if (PetscUnlikely(PetscAbsScalar(vals[c]) <= tol)) newCols[newcols++] = cols[c];
         }
-        newcols = ncols;
+        nnz1 += ncols - newcols - 1;
         PetscCall(MatRestoreRow(A, r, &ncols, &cols, &vals));
         PetscCall(MatSetValues(A, 1, &r, newcols, newCols, newVals, INSERT_VALUES));
       }
@@ -507,6 +515,19 @@ PetscErrorCode MatChop(Mat A, PetscReal tol)
     PetscCall(MatRestoreRowUpperTriangular(A));
     PetscCall(PetscFree2(newCols, newVals));
     PetscCall(MatSetOption(A, MAT_NO_OFF_PROC_ENTRIES, flg)); /* reset option to its user-defined value */
+    if (nnz0 > 0) PetscCall(PetscInfo(NULL, "Filtering left %g %% edges in graph\n", 100 * (double)nnz1 / (double)nnz0));
+    else PetscCall(PetscInfo(NULL, "Warning: %d edges to filter with %d rows\n", (int)nnz0, (int)maxRows));
+  }
+  if (compress && A->ops->eliminatezeros) {
+    Mat       B;
+    PetscBool flg;
+
+    PetscCall(PetscObjectTypeCompareAny((PetscObject)A, &flg, MATSEQAIJHIPSPARSE, MATMPIAIJHIPSPARSE, ""));
+    if (!flg) {
+      PetscCall(MatEliminateZeros(A, keep));
+      PetscCall(MatDuplicate(A, MAT_COPY_VALUES, &B));
+      PetscCall(MatHeaderReplace(A, &B));
+    }
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -12,4 +12,4 @@ Labels:
 DM Object: Swarm 1 MPI process
   type: swarm
 Swarm in 2 dimensions:
-  Number of particles per rank: 144
+  Number of particles per rank: 192

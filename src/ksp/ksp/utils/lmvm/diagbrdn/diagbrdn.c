@@ -1,7 +1,5 @@
 #include <../src/ksp/ksp/utils/lmvm/diagbrdn/diagbrdn.h> /*I "petscksp.h" I*/
 
-/*------------------------------------------------------------*/
-
 static PetscErrorCode MatSolve_DiagBrdn(Mat B, Vec F, Vec dX)
 {
   Mat_LMVM     *lmvm = (Mat_LMVM *)B->data;
@@ -12,8 +10,6 @@ static PetscErrorCode MatSolve_DiagBrdn(Mat B, Vec F, Vec dX)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*------------------------------------------------------------*/
-
 static PetscErrorCode MatMult_DiagBrdn(Mat B, Vec X, Vec Z)
 {
   Mat_LMVM     *lmvm = (Mat_LMVM *)B->data;
@@ -23,8 +19,6 @@ static PetscErrorCode MatMult_DiagBrdn(Mat B, Vec X, Vec Z)
   PetscCall(VecPointwiseDivide(Z, X, ldb->invD));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-
-/*------------------------------------------------------------*/
 
 static PetscErrorCode MatUpdate_DiagBrdn(Mat B, Vec X, Vec F)
 {
@@ -307,8 +301,6 @@ static PetscErrorCode MatUpdate_DiagBrdn(Mat B, Vec X, Vec F)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*------------------------------------------------------------*/
-
 static PetscErrorCode MatCopy_DiagBrdn(Mat B, Mat M, MatStructure str)
 {
   Mat_LMVM     *bdata = (Mat_LMVM *)B->data;
@@ -338,8 +330,6 @@ static PetscErrorCode MatCopy_DiagBrdn(Mat B, Mat M, MatStructure str)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*------------------------------------------------------------*/
-
 static PetscErrorCode MatView_DiagBrdn(Mat B, PetscViewer pv)
 {
   Mat_LMVM     *lmvm = (Mat_LMVM *)B->data;
@@ -356,8 +346,6 @@ static PetscErrorCode MatView_DiagBrdn(Mat B, PetscViewer pv)
   PetscCall(MatView_LMVM(B, pv));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-
-/*------------------------------------------------------------*/
 
 static PetscErrorCode MatSetFromOptions_DiagBrdn(Mat B, PetscOptionItems *PetscOptionsObject)
 {
@@ -382,8 +370,6 @@ static PetscErrorCode MatSetFromOptions_DiagBrdn(Mat B, PetscOptionItems *PetscO
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*------------------------------------------------------------*/
-
 static PetscErrorCode MatReset_DiagBrdn(Mat B, PetscBool destructive)
 {
   Mat_LMVM     *lmvm = (Mat_LMVM *)B->data;
@@ -406,8 +392,6 @@ static PetscErrorCode MatReset_DiagBrdn(Mat B, PetscBool destructive)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*------------------------------------------------------------*/
-
 static PetscErrorCode MatAllocate_DiagBrdn(Mat B, Vec X, Vec F)
 {
   Mat_LMVM     *lmvm = (Mat_LMVM *)B->data;
@@ -428,8 +412,6 @@ static PetscErrorCode MatAllocate_DiagBrdn(Mat B, Vec X, Vec F)
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-
-/*------------------------------------------------------------*/
 
 static PetscErrorCode MatDestroy_DiagBrdn(Mat B)
 {
@@ -453,8 +435,6 @@ static PetscErrorCode MatDestroy_DiagBrdn(Mat B)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*------------------------------------------------------------*/
-
 static PetscErrorCode MatSetUp_DiagBrdn(Mat B)
 {
   Mat_LMVM     *lmvm = (Mat_LMVM *)B->data;
@@ -475,8 +455,6 @@ static PetscErrorCode MatSetUp_DiagBrdn(Mat B)
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-
-/*------------------------------------------------------------*/
 
 PetscErrorCode MatCreate_LMVMDiagBrdn(Mat B)
 {
@@ -518,52 +496,52 @@ PetscErrorCode MatCreate_LMVMDiagBrdn(Mat B)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*------------------------------------------------------------*/
-
 /*@
-   MatCreateLMVMDiagBroyden - DiagBrdn creates a symmetric Broyden-type diagonal matrix used
-   for approximating Hessians. It consists of a convex combination of DFP and BFGS
-   diagonal approximation schemes, such that DiagBrdn = (1-theta)*BFGS + theta*DFP.
-   To preserve symmetric positive-definiteness, we restrict theta to be in [0, 1].
-   We also ensure positive definiteness by taking the `VecAbs()` of the final vector.
+  MatCreateLMVMDiagBroyden - DiagBrdn creates a symmetric Broyden-type diagonal matrix used
+  for approximating Hessians.
 
-   There are two ways of approximating the diagonal: using the forward (B) update
-   schemes for BFGS and DFP and then taking the inverse, or directly working with
-   the inverse (H) update schemes for the BFGS and DFP updates, derived using the
-   Sherman-Morrison-Woodbury formula. We have implemented both, controlled by a
-   parameter below.
+  Collective
 
-   In order to use the DiagBrdn matrix with other vector types, i.e. doing matrix-vector products
-   and matrix solves, the matrix must first be created using `MatCreate()` and `MatSetType()`,
-   followed by `MatLMVMAllocate()`. Then it will be available for updating
-   (via `MatLMVMUpdate()`) in one's favored solver implementation.
+  Input Parameters:
++ comm - MPI communicator
+. n    - number of local rows for storage vectors
+- N    - global size of the storage vectors
 
-   Collective
+  Output Parameter:
+. B - the matrix
 
-   Input Parameters:
-+  comm - MPI communicator
-.  n - number of local rows for storage vectors
--  N - global size of the storage vectors
+  Options Database Keys:
++ -mat_lmvm_theta      - (developer) convex ratio between BFGS and DFP components of the diagonal J0 scaling
+. -mat_lmvm_rho        - (developer) update limiter for the J0 scaling
+. -mat_lmvm_alpha      - (developer) coefficient factor for the quadratic subproblem in J0 scaling
+. -mat_lmvm_beta       - (developer) exponential factor for the diagonal J0 scaling
+. -mat_lmvm_sigma_hist - (developer) number of past updates to use in J0 scaling.
+. -mat_lmvm_tol        - (developer) tolerance for bounding the denominator of the rescaling away from 0.
+- -mat_lmvm_forward    - (developer) whether or not to use the forward or backward Broyden update to the diagonal
 
-   Output Parameter:
-.  B - the matrix
+  Level: intermediate
 
-   Options Database Keys:
-+   -mat_lmvm_theta - (developer) convex ratio between BFGS and DFP components of the diagonal J0 scaling
-.   -mat_lmvm_rho - (developer) update limiter for the J0 scaling
-.   -mat_lmvm_alpha - (developer) coefficient factor for the quadratic subproblem in J0 scaling
-.   -mat_lmvm_beta - (developer) exponential factor for the diagonal J0 scaling
-.   -mat_lmvm_sigma_hist - (developer) number of past updates to use in J0 scaling.
-.   -mat_lmvm_tol - (developer) tolerance for bounding the denominator of the rescaling away from 0.
--   -mat_lmvm_forward - (developer) whether or not to use the forward or backward Broyden update to the diagonal
+  Notes:
+  It is recommended that one use the `MatCreate()`, `MatSetType()` and/or `MatSetFromOptions()`
+  paradigm instead of this routine directly.
 
-   Level: intermediate
+  It consists of a convex combination of DFP and BFGS
+  diagonal approximation schemes, such that DiagBrdn = (1-theta)*BFGS + theta*DFP.
+  To preserve symmetric positive-definiteness, we restrict theta to be in [0, 1].
+  We also ensure positive definiteness by taking the `VecAbs()` of the final vector.
 
-   Note:
-   It is recommended that one use the `MatCreate()`, `MatSetType()` and/or `MatSetFromOptions()`
-   paradigm instead of this routine directly.
+  There are two ways of approximating the diagonal: using the forward (B) update
+  schemes for BFGS and DFP and then taking the inverse, or directly working with
+  the inverse (H) update schemes for the BFGS and DFP updates, derived using the
+  Sherman-Morrison-Woodbury formula. We have implemented both, controlled by a
+  parameter below.
 
-.seealso: [](chapter_ksp), `MatCreate()`, `MATLMVM`, `MATLMVMDIAGBRDN`, `MatCreateLMVMDFP()`, `MatCreateLMVMSR1()`,
+  In order to use the DiagBrdn matrix with other vector types, i.e. doing matrix-vector products
+  and matrix solves, the matrix must first be created using `MatCreate()` and `MatSetType()`,
+  followed by `MatLMVMAllocate()`. Then it will be available for updating
+  (via `MatLMVMUpdate()`) in one's favored solver implementation.
+
+.seealso: [](ch_ksp), `MatCreate()`, `MATLMVM`, `MATLMVMDIAGBRDN`, `MatCreateLMVMDFP()`, `MatCreateLMVMSR1()`,
           `MatCreateLMVMBFGS()`, `MatCreateLMVMBrdn()`, `MatCreateLMVMSymBrdn()`
 @*/
 PetscErrorCode MatCreateLMVMDiagBroyden(MPI_Comm comm, PetscInt n, PetscInt N, Mat *B)

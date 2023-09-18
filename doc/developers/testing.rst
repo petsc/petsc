@@ -6,470 +6,23 @@ PETSc Testing System
 
 The PETSc test system consists of
 
-* A language at the bottom of the tutorials and test source files that describes the tests to be run.
-* The *test generator* (``config/gmakegentest.py``) that parses the example source files and generates the makefiles and shell scripts. This is run
+* Formatted comments at the bottom of the tutorials and test source files that describes the tests to be run.
+* The *test generator* (``config/gmakegentest.py``) that parses the tutorial and test source files and generates the makefiles and shell scripts. This is run
   automatically by the make system and rarely is run directly.
 * The *PETSc test harness* that consists of makefile and shell scripts that runs the executables with several logging and reporting features.
 
-Details on using the harness may be found in the :ref:`user's manual <sec_runningtests>`. The testing system is used by :doc:`pipelines`.
-
-The make rules for running tests are contained in ``gmakefile.test`` in the PETSc root directory. They can usually be accessed by
-simply using commands such as
-
-.. code-block:: console
-
-   $ make test
-
-or, for a list of test options,
-
-.. code-block:: console
-
-   $ make help-test
-
-
-Determining the failed jobs of a given run
-------------------------------------------
-
-The running of the test harness will show which tests fail, but you may not have
-logged the output or run without showing the full error.  The best way of
-examining the errors is with this command:
-
-.. code-block:: console
-
-   $ $EDITOR $PETSC_DIR/$PETSC_ARCH/tests/test*err.log
-
-This method can also be used for the PETSc continuous integration (CI) pipeline jobs. For failed jobs you can download the
-log files from the **artifacts download** tab on the right side:
-
-.. figure:: /images/developers/test-artifacts.png
-   :alt: Test Artifacts at Gitlab
-
-   Test artifacts can be downloaded from GitLab.
-
-To see the list of all tests that failed from the last run, you can also run this command:
-
-.. code-block:: console
-
-    $ make print-test test-fail=1
-
-To print it out in a column format:
-
-.. code-block:: console
-
-    $ make print-test test-fail=1 | tr ' ' '\n' | sort
-
-Once you know which tests failed, the question is how to debug them.
-
-Introduction to debugging workflows
------------------------------------
-
-Here, two different workflows on developing with the test harness are presented,
-and then the language for adding a new test is described.  Before describing the
-workflow, we first discuss the output of the test harness and how it maps onto
-makefile targets and shell scripts.
-
-Consider this line from running the PETSc test system:
-
-::
-
-    TEST arch-ci-linux-uni-pkgs/tests/counts/vec_is_sf_tests-ex1_basic_1.counts
-
-The string ``vec_is_sf_tests-ex1_basic_1`` gives the following information:
-
-* The file generating the tests is found in ``$PETSC_DIR/src/vec/is/sf/tests/ex1.c``
-* The makefile target for the *test* is ``vec_is_sf_tests-ex1_basic_1``
-* The makefile target for the *executable* is ``$PETSC_ARCH/tests/vec/is/sf/tests/ex1``
-* The shell script running the test is located at: ``$PETSC_DIR/$PETSC_ARCH/tests/vec/is/sf/tests/runex1_basic_1.sh``
-
-Let's say that you want to debug a single test as part of development.  There
-are two basic methods of doing this:  1)  use shell script directly in test
-directory, or 2) use makefile from the top level directory.  We present both
-workflows.   There are many permutations of this and a developer should always
-find the method that makes them the most productive.
-
-Debugging a PETSc test using shell scripts
-------------------------------------------
-
-First, suggest looking at the working directory and look at the options to the
-scripts:
-
-.. code-block:: console
-
-      $ cd $PETSC_ARCH/tests/vec/is/sf/tests
-      $ ./runex1_basic_1.sh -h
-      Usage: ./runex1_basic_1.sh [options]
-
-      OPTIONS
-        -a <args> ......... Override default arguments
-        -c ................ Cleanup (remove generated files)
-        -C ................ Compile
-        -d ................ Launch in debugger
-        -e <args> ......... Add extra arguments to default
-        -f ................ force attempt to run test that would otherwise be skipped
-        -h ................ help: print this message
-        -n <integer> ...... Override the number of processors to use
-        -j ................ Pass -j to petscdiff (just use diff)
-        -J <arg> .......... Pass -J to petscdiff (just use diff with arg)
-        -m ................ Update results using petscdiff
-        -M ................ Update alt files using petscdiff
-        -o <arg> .......... Output format: 'interactive', 'err_only'
-        -p ................ Print command:  Print first command and exit
-        -t ................ Override the default timeout (default=60 sec)
-        -U ................ run cUda-memcheck
-        -V ................ run Valgrind
-        -v ................ Verbose: Print commands
-
-
-We will be using the ``-C``, ``-V``, and ``-p`` flags.
-
-A basic workflow is something similar to:
-
-.. code-block:: console
-
-     $ <edit>
-     $ runex1_basic_1.sh -C
-     $ <edit>
-     $ ...
-     $ runex1_basic_1.sh -m  # If need to update results
-     $ ...
-     $ runex1_basic_1.sh -V  # Make sure valgrind clean
-     $ cd $PETSC_DIR
-     $ git commit -a
-
-For loops sometimes can become onerous to run the whole test.
-In this case, you can use the ``-p`` flag to print just the first
-command.  It will print a command suitable for running from
-``$PETSC_DIR``, but it is easy to modify for execution in the test
-directory:
-
-.. code-block:: console
-
-     $ runex1_basic_1.sh -p
-
-Debugging a single PETSc test using makefile
----------------------------------------------
-
-First recall how to find help for the options:
-
-.. code-block:: console
-
-   $ make help-test
-
-
-To compile the test and run it:
-
-.. code-block:: console
-
-   $ make test search=vec_is_sf_tests-ex1_basic_1
-
-This can consist of your basic workflow.  However,
-for the normal compile and edit, running the entire harness with search can be
-cumbersome.  So first get the command:
-
-.. code-block:: console
-
-     $ make vec_is_sf_tests-ex1_basic_1 PRINTONLY=1
-     <copy command>
-     <edit>
-     $ make $PETSC_ARCH/tests/vec/is/sf/tests/ex1
-     $ /scratch/kruger/contrib/petsc-mpich-cxx/bin/mpiexec -n 1 arch-mpich-cxx-py3/tests/vec/is/sf/tests/ex1
-     ...
-     $ cd $PETSC_DIR
-     $ git commit -a
-
-
-Advanced searching
-------------------
-
-For forming a search, it is recommended to always use ``print-test`` instead of
-``test`` to make sure it is returning the values that you want.
-
-The three basic and recommended arguments are:
-
-+ ``search`` (or ``s``)
-
-  -  Searches based on name of test target (see above)
-  -  Use the familiar glob syntax (like the Unix ``ls`` command). Example:
-
-     .. code-block:: console
-
-        $ make print-test search='vec_is*ex1*basic*1'
-
-     Equivalently:
-
-     .. code-block:: console
-
-        $ make print-test s='vec_is*ex1*basic*1'
-
-  -  It also takes full paths. Examples:
-
-     .. code-block:: console
-
-        $ make print-test s='src/vec/is/tests/ex1.c'
-
-     .. code-block:: console
-
-        $ make print-test s='src/dm/impls/plex/tests/'
-
-     .. code-block:: console
-
-        $ make print-test s='src/dm/impls/plex/tests/ex1.c'
-
-
-+ ``query`` and ``queryval`` (or ``q`` and ``qv``)
-
-  -  ``query`` corresponds to test harness keyword, ``queryval`` to the value. Example:
-
-     .. code-block:: console
-
-        $ make print-test query='suffix' queryval='basic_1'
-
-  -  Invokes ``config/query_tests.py`` to query the tests (see
-     ``config/query_tests.py --help`` for more information).
-  -  See below for how to use as it has many features
-
-+ ``searchin`` (or ``i``)
-
-  -  Filters results of above searches. Example:
-
-     .. code-block:: console
-
-        $ make print-test s='src/dm/impls/plex/tests/ex1.c' i='*refine_overlap_2d*'
-
-Searching using gmake's native regexp functionality is kept for people who like it, but most developers will likely prefer the above methods:
-
-+ ``gmakesearch``
-
-  -  Use gmake's own filter capability.
-  -  Fast, but requires knowing gmake regex syntax which uses ``%`` instead of ``*``
-  -  Also very limited (cannot use two ``%``'s for example)
-  -  Example:
-
-     .. code-block:: console
-
-        $ make test gmakesearch='vec_is%ex1_basic_1'
-
-+ ``gmakesearchin``
-
-  -  Use gmake's own filter capability to search in previous results. Example:
-
-     .. code-block:: console
-
-        $ make test gmakesearch='vec_is%1' gmakesearchin='basic'
-
-+ ``argsearch``
-
-  -  search on arguments using gmake.  This is deprecated in favor of the query/queryval method as described below. Example:
-
-     .. code-block:: console
-
-        $ make test argsearch='sf_type'
-
-  - Not very powerful
-
-Query-based searching
-~~~~~~~~~~~~~~~~~~~~~
-
-Basic examples.  Note the the use of glob style matching is also accepted in the value field:
-
-.. code-block:: console
-
-   $ make print-test query='suffix' queryval='basic_1'
-
-.. code-block:: console
-
-   $ make print-test query='requires' queryval='cuda'
-
-.. code-block:: console
-
-   $ make print-test query='requires' queryval='defined(PETSC_HAVE_MPI_GPU_AWARE)'
-
-.. code-block:: console
-
-   $ make print-test query='requires' queryval='*GPU_AWARE*'
-
-Using the ``name`` field is equivalent to the search above:
-
--  Example:
-
-   .. code-block:: console
-
-      $ make print-test query='name' queryval='vec_is*ex1*basic*1'
-
--  Useful because this can be combined with union/intersect queries as discussed below
-
-Arguments are tricky to search for.  Consider
-
-.. code-block:: none
-
-  args:  -ksp_monitor_short -pc_type ml -ksp_max_it 3
-
-Search terms are
-
-.. code-block:: none
-
-    ksp_monitor, pc_type ml, ksp_max_it
-
-Certain items are ignored:
-
-+ Numbers (see ``ksp_max_it`` above), but floats are ignored as well.
-+ Loops: ``args: -pc_fieldsplit_diag_use_amat {{0 1}}`` gives ``pc_fieldsplit_diag_use_amat`` as the search term
-+ Input files: ``-f *``
-
-Examples of argument searching:
-
-.. code-block:: console
-
-   $ make print-test query='args' queryval='ksp_monitor'
-
-.. code-block:: console
-
-   $ make print-test query='args' queryval='*monitor*'
-
-.. code-block:: console
-
-   $ make print-test query='args' queryval='pc_type ml'
-
-
-Multiple simultaneous queries can be performed with union (``,``), and intersection
-(``|``) operators in the ``query`` field. One may also use their alternate spellings
-(``%AND%`` and ``%OR%`` respectively). The alternate spellings are useful in cases where
-one cannot avoid (possibly multiple) shell expansions that might otherwise interpret the
-``|`` operator as a shell pipe.  Examples:
-
--  All examples using ``cuda`` and all examples using ``hip``:
-
-   .. code-block:: console
-
-      $ make print-test query='requires,requires' queryval='cuda,hip'
-      # equivalently
-      $ make print-test query='requires%AND%requires' queryval='cuda%AND%hip'
-
--  Examples that require both triangle and ctetgen (intersection of tests)
-
-   .. code-block:: console
-
-      $ make print-test query='requires|requires' queryval='ctetgen,triangle'
-      # equivalently
-      $ make print-test query='requires%OR%requires' queryval='ctetgen%AND%triangle'
-
--  Tests that require either ``ctetgen`` or ``triangle``
-
-   .. code-block:: console
-
-      $ make print-test query='requires,requires' queryval='ctetgen,triangle'
-      # equivalently
-      $ make print-test query='requires%AND%requires' queryval='ctetgen%AND%triangle'
-
--  Find ``cuda`` examples in the ``dm`` package.
-
-   .. code-block:: console
-
-      $ make print-test query='requires|name' queryval='cuda,dm*'
-      # equivalently
-      $ make print-test query='requires%OR%name' queryval='cuda%AND%dm*'
-
-
-Here is a way of getting a feel for how the union and intersect operators work:
-
-.. code-block:: console
-
-      $ make print-test query='requires' queryval='ctetgen' | tr ' ' '\n' | wc -l
-      170
-      $ make print-test query='requires' queryval='triangle' | tr ' ' '\n' | wc -l
-      330
-      $ make print-test query='requires,requires' queryval='ctetgen,triangle' | tr ' ' '\n' | wc -l
-      478
-      $ make print-test query='requires|requires' queryval='ctetgen,triangle' | tr ' ' '\n' | wc -l
-      22
-
-The total number of tests for running only ctetgen or triangle is 500.  They have 22 tests in common, and 478 that
-run independently of each other.
-
-The union and intersection have fixed grouping.  So this string argument
-
-.. code-block:: none
-
-    query='requires,requires|args' queryval='cuda,hip,*log*'
-    # equivalently
-    query='requires%AND%requires%OR%args' queryval='cuda%AND%hip%AND%*log*'
-
-will can be read as
-
-.. code-block:: none
-
-   requires:cuda && (requires:hip || args:*log*)
-
-which is probably not what is intended.
-
-
-``query/queryval`` also support negation (``!``, alternate ```%NEG%``), but is limited.
-The negation only applies to tests that have a related field in it. So for example, the
-arguments of
-
-.. code-block:: console
-
-  query=requires queryval='!cuda'
-  # equivalently
-  query=requires queryval='%NEG%cuda'
-
-will only match if they explicitly have::
-
-     requires: !cuda
-
-It does not match all cases that do not require cuda.
-
-
-Debugging for loops
---------------------
-
-One of the more difficult issues is how to debug for loops when a subset of the
-arguments are the ones that cause a code crash.  The default naming scheme is
-not always helpful for figuring out the argument combination.
-
-For example:
-
-.. code-block:: console
-
-      $ make test s='src/ksp/ksp/tests/ex9.c' i='*1'
-      Using MAKEFLAGS: i=*1 s=src/ksp/ksp/tests/ex9.c
-              TEST arch-osx-pkgs-opt-new/tests/counts/ksp_ksp_tests-ex9_1.counts
-       ok ksp_ksp_tests-ex9_1+pc_fieldsplit_diag_use_amat-0_pc_fieldsplit_diag_use_amat-0_pc_fieldsplit_type-additive
-       not ok diff-ksp_ksp_tests-ex9_1+pc_fieldsplit_diag_use_amat-0_pc_fieldsplit_diag_use_amat-0_pc_fieldsplit_type-additive
-       ok ksp_ksp_tests-ex9_1+pc_fieldsplit_diag_use_amat-0_pc_fieldsplit_diag_use_amat-0_pc_fieldsplit_type-multiplicative
-       ...
-
-
-In this case, the trick is to use the verbose option, ``V=1`` (or for the shell script workflows, ``-v``) to have it show the commands:
-
-.. code-block:: console
-
-      $ make test s='src/ksp/ksp/tests/ex9.c' i='*1' V=1
-      Using MAKEFLAGS: V=1 i=*1 s=src/ksp/ksp/tests/ex9.c
-      arch-osx-pkgs-opt-new/tests/ksp/ksp/tests/runex9_1.sh  -v
-       ok ksp_ksp_tests-ex9_1+pc_fieldsplit_diag_use_amat-0_pc_fieldsplit_diag_use_amat-0_pc_fieldsplit_type-additive # mpiexec  -n 1 ../ex9 -ksp_converged_reason -ksp_error_if_not_converged  -pc_fieldsplit_diag_use_amat 0 -pc_fieldsplit_diag_use_amat 0 -pc_fieldsplit_type additive > ex9_1.tmp 2> runex9_1.err
-      ...
-
-This can still be hard to read and pick out what you want.  So use the fact that you want ``not ok``
-combined with the fact that ``#`` is the delimiter:
-
-.. code-block:: console
-
-      $ make test s='src/ksp/ksp/tests/ex9.c' i='*1' v=1 | grep 'not ok' | cut -d# -f2
-      mpiexec  -n 1 ../ex9 -ksp_converged_reason -ksp_error_if_not_converged  -pc_fieldsplit_diag_use_amat 0 -pc_fieldsplit_diag_use_amat 0 -pc_fieldsplit_type multiplicative > ex9_1.tmp 2> runex9_1.err
-
-
+Details on using the harness may be found in the :ref:`user's manual <sec_runningtests>`. The testing system is used by :any:`pipelines`.
 
 PETSc Test Description Language
 -------------------------------
 
-PETSc tests and tutorials contain within their file a simple language to
+PETSc tests and tutorials contain at the bottom of the their source files a simple language to
 describe tests and subtests required to run executables associated with
 compilation of that file. The general skeleton of the file is
 
 .. code-block::
 
-    static char help[] = "A simple MOAB example\n\
+    static const char help[] = "A simple MOAB example\n";
 
     ...
     <source code>
@@ -493,11 +46,11 @@ For our language, a *test* is associated with the following
 
 * A single shell script
 * A single makefile
-* A single output file that represents the *expected results*
-* Two or more command tests, usually: 
+* An output file that represents the *expected results*. It is also possible -- though unusual -- to have multiple output files for a single test
+* Two or more command tests, usually:
 
-  - one or more mpiexec tests that run the executable
-  - one or more diff tests to compare output with the expected result
+  - one or more ``mpiexec`` tests that run the executable
+  - one or more ``diff`` tests to compare output with the expected result
 
 Our language also supports a *testset* that specifies either a new test
 entirely or multiple executable/diff tests within a single test. At the
@@ -511,8 +64,7 @@ this:
 
 In practice, we want to do various logging and counting by the test
 harness; as are explained further below. The input language supports
-simple yet flexible test control, and we begin by describing this
-language.
+simple yet flexible test control.
 
 Runtime Language Options
 ~~~~~~~~~~~~~~~~~~~~~~~~
@@ -581,9 +133,9 @@ With this background, these keywords are as follows.
 -  **filter**: (*Optional*; *Default:* ``""``)
 
    -  Sometimes only a subset of the output is meant to be tested
-      against the expected result. If this keyword is used, it processes
-      the executable output and puts it into the file to be actually
-      compared with ``output_file``.
+      against the expected result. If this keyword is used, it filters
+      the executable output to
+      compare with ``output_file``.
 
    -  The value of this is the command to be run, for example,
       ``grep foo`` or ``sort -nr``.
@@ -604,14 +156,22 @@ With this background, these keywords are as follows.
 
 -  **localrunfiles**: (*Optional*; *Default:* ``""``)
 
-   -  The tests are run under ``$PETSC_ARCH/tests``, but some tests
+   -  Some tests
       require runtime files that are maintained in the source tree.
-      Files in this (space-delimited) list will be copied over. If you
+      Files in this (space-delimited) list will be copied over to the
+      testing directory so they will be found by the executable. If you
       list a directory instead of files, it will copy the entire
       directory (this is limited currently to a single directory)
 
    -  The copying is done by the test generator and not by creating
       makefile dependencies.
+
+-  **temporaries**: (*Optional*; *Default:* ``""``)
+
+   -  Some tests produce temporary files that are read by the filter
+      to compare to expected results.
+      Files in this (space-delimited) list will cleared before
+      the test is run to ensure that stale temporary files are not read.
 
 -  **requires**: (*Optional*; *Default:* ``""``)
 
@@ -625,7 +185,10 @@ With this background, these keywords are as follows.
       the requirements list.
 
    -  Inputs sometimes require external matrices that are found in the
-      DATAFILES path. For these tests ``requires: datafilespath`` can be
+      directory given by the environmental variable ``DATAFILESPATH``.
+      The repository `datafiles <https://gitlab.com/petsc/datafiles>`__
+      contains all the test files needed for the test suite.
+      For these tests ``requires: datafilespath`` can be
       specifed.
 
    -  Packages are indicated with lower-case specification, for example,
@@ -666,7 +229,9 @@ With this background, these keywords are as follows.
 
          test:
            env: FOO=1 BAR=1
-           # equivalently
+
+         # equivalently
+         test:
            env: FOO=1
            env: BAR=1
 
@@ -684,9 +249,6 @@ With this background, these keywords are as follows.
 
          test:
            env: FOO='hello' BAR=${FOO}
-           # equivalently
-           env: FOO='hello'
-           env: BAR=${FOO}
 
       results in
 
@@ -702,9 +264,6 @@ With this background, these keywords are as follows.
 
          test:
            env: FOO=1 FOO=0
-           # equivalently
-           env: FOO=1
-           env: FOO=0
 
       results in
 
@@ -724,22 +283,20 @@ supported.
    ::
 
        nsize: {{1 2 4}}
-       args: -matload_block_size {{2 3}}
+       args: -matload_block_size {{2 3}shared output}
 
-   Here the output for each ``-matload_block_size`` value is assumed to give
-   the same output so that only one output file is needed.
+   Here the output for each ``-matload_block_size`` value is assumed to be
+   the same so that only one output file is needed.
 
-   If the loop causes a different output, then separate output needs to be used:
+   If the loop causes different output for each loop iteration, then ``separate output`` needs to be used:
    ::
 
        args: -matload_block_size {{2 3}separate output}
 
    In this case, each loop value generates a separate script,
-   and a separate output file is needed.
+   and uses a separate output file for comparison.
 
-   Note that ``{{...}shared output}`` is equivalent to ``{{...}}``.
-
-   See examples below for how it works in practice.
+   Note that ``{{...}}`` is equivalent to ``{{...}shared output}``.
 
 .. _sec_testing_error_testing:
 
@@ -784,6 +341,15 @@ These arguments have the following effect:
 Using both options in tandem allows one to use the normal ``output:`` mechanism to compare
 expected and actual error outputs.
 
+When writing ASCII output that may be not portable, so one wants `-petsc_ci_portable_error_output` to
+cause the output to be skipped, enclose the output with code such as
+
+.. code-block::
+
+   if (!PetscCIEnabledPortableErrorOutput)
+
+to prevent it from being output when the CI test harness is running.
+
 Test Block Examples
 ~~~~~~~~~~~~~~~~~~~
 
@@ -797,7 +363,7 @@ The following is the simplest test block:
 
 If this block is in ``src/a/b/examples/tutorials/ex1.c``, then it will
 create ``a_b_tutorials-ex1`` test that requires only one
-processor/thread, with no arguments, and diff the resultant output with
+process, with no arguments, and diff the resultant output with
 ``src/a/b/examples/tutorials/output/ex1.out``.
 
 For Fortran, the equivalent is
@@ -949,6 +515,444 @@ A typical example for compiling for only real numbers is
       test:
     TEST*/
 
+Running the tests
+-----------------
+
+The make rules for running tests are contained in ``gmakefile.test`` in the PETSc root directory. They can usually be accessed by
+simply using commands such as
+
+.. code-block:: console
+
+   $ make test
+
+or, for a list of test options,
+
+.. code-block:: console
+
+   $ make help-test
+
+
+Determining the failed jobs of a given run
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The running of the test harness will show which tests fail, but you may not have
+logged the output or run without showing the full error.  The best way of
+examining the errors is with this command:
+
+.. code-block:: console
+
+   $ $EDITOR $PETSC_DIR/$PETSC_ARCH/tests/test*err.log
+
+This method can also be used for the PETSc continuous integration (CI) pipeline jobs. For failed jobs you can download the
+log files from the ``artifacts download`` tab on the right side:
+
+.. figure:: /images/developers/test-artifacts.png
+   :alt: Test Artifacts at Gitlab
+
+   Test artifacts can be downloaded from GitLab.
+
+To see the list of all tests that failed from the last run, you can also run this command:
+
+.. code-block:: console
+
+    $ make print-test test-fail=1
+
+To print it out in a column format:
+
+.. code-block:: console
+
+    $ make print-test test-fail=1 | tr ' ' '\n' | sort
+
+Once you know which tests failed, the question is how to debug them.
+
+Introduction to debugging workflows
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Here, two different workflows on developing with the test harness are presented,
+and then the language for adding a new test is described.  Before describing the
+workflow, we first discuss the output of the test harness and how it maps onto
+makefile targets and shell scripts.
+
+Consider this line from running the PETSc test system:
+
+::
+
+    TEST arch-ci-linux-uni-pkgs/tests/counts/vec_is_sf_tests-ex1_basic_1.counts
+
+The string ``vec_is_sf_tests-ex1_basic_1`` gives the following information:
+
+* The file generating the tests is found in ``$PETSC_DIR/src/vec/is/sf/tests/ex1.c``
+* The makefile target for the *test* is ``vec_is_sf_tests-ex1_basic_1``
+* The makefile target for the *executable* is ``$PETSC_ARCH/tests/vec/is/sf/tests/ex1``
+* The shell script running the test is located at: ``$PETSC_DIR/$PETSC_ARCH/tests/vec/is/sf/tests/runex1_basic_1.sh``
+
+Let's say that you want to debug a single test as part of development.  There
+are two basic methods of doing this:  1)  use shell script directly in test
+directory, or 2) use the gmakefile.test from the top level directory.  We present both
+workflows. 
+
+Debugging a test using shell the generated scripts
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+First, look at the working directory and the options for the
+scripts:
+
+.. code-block:: console
+
+      $ cd $PETSC_ARCH/tests/vec/is/sf/tests
+      $ ./runex1_basic_1.sh -h
+      Usage: ./runex1_basic_1.sh [options]
+
+      OPTIONS
+        -a <args> ......... Override default arguments
+        -c ................ Cleanup (remove generated files)
+        -C ................ Compile
+        -d ................ Launch in debugger
+        -e <args> ......... Add extra arguments to default
+        -f ................ force attempt to run test that would otherwise be skipped
+        -h ................ help: print this message
+        -n <integer> ...... Override the number of processors to use
+        -j ................ Pass -j to petscdiff (just use diff)
+        -J <arg> .......... Pass -J to petscdiff (just use diff with arg)
+        -m ................ Update results using petscdiff
+        -M ................ Update alt files using petscdiff
+        -o <arg> .......... Output format: 'interactive', 'err_only'
+        -p ................ Print command:  Print first command and exit
+        -t ................ Override the default timeout (default=60 sec)
+        -U ................ run cUda-memcheck
+        -V ................ run Valgrind
+        -v ................ Verbose: Print commands
+
+
+We will be using the ``-C``, ``-V``, and ``-p`` flags.
+
+A basic workflow is something similar to:
+
+.. code-block:: console
+
+     $ <edit>
+     $ runex1_basic_1.sh -C
+     $ <edit>
+     $ ...
+     $ runex1_basic_1.sh -m  # If need to update results
+     $ ...
+     $ runex1_basic_1.sh -V  # Make sure valgrind clean
+     $ cd $PETSC_DIR
+     $ git commit -a
+
+For loops it sometimes can become onerous to run the whole test.
+In this case, you can use the ``-p`` flag to print just the first
+command.  It will print a command suitable for running from
+``$PETSC_DIR``, but it is easy to modify for execution in the test
+directory:
+
+.. code-block:: console
+
+     $ runex1_basic_1.sh -p
+
+Debugging a PETSc test using the gmakefile.test
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+First recall how to find help for the options:
+
+.. code-block:: console
+
+   $ make help-test
+
+
+To compile the test and run it:
+
+.. code-block:: console
+
+   $ make test search=vec_is_sf_tests-ex1_basic_1
+
+This can consist of your basic workflow.  However,
+for the normal compile and edit, running the entire harness with search can be
+cumbersome.  So first get the command:
+
+.. code-block:: console
+
+     $ make vec_is_sf_tests-ex1_basic_1 PRINTONLY=1
+     <copy command>
+     <edit>
+     $ make $PETSC_ARCH/tests/vec/is/sf/tests/ex1
+     $ /scratch/kruger/contrib/petsc-mpich-cxx/bin/mpiexec -n 1 arch-mpich-cxx-py3/tests/vec/is/sf/tests/ex1
+     ...
+     $ cd $PETSC_DIR
+     $ git commit -a
+
+
+Advanced searching
+~~~~~~~~~~~~~~~~~~
+
+For forming a search, it is recommended to always use ``print-test`` instead of
+``test`` to make sure it is returning the values that you want.
+
+The three basic and recommended arguments are:
+
++ ``search`` (or ``s``)
+
+  -  Searches based on name of test target (see above)
+  -  Use the familiar glob syntax (like the Unix ``ls`` command). Example:
+
+     .. code-block:: console
+
+        $ make print-test search='vec_is*ex1*basic*1'
+
+     Equivalently:
+
+     .. code-block:: console
+
+        $ make print-test s='vec_is*ex1*basic*1'
+
+  -  It also takes full paths. Examples:
+
+     .. code-block:: console
+
+        $ make print-test s='src/vec/is/tests/ex1.c'
+
+     .. code-block:: console
+
+        $ make print-test s='src/dm/impls/plex/tests/'
+
+     .. code-block:: console
+
+        $ make print-test s='src/dm/impls/plex/tests/ex1.c'
+
+
++ ``query`` and ``queryval`` (or ``q`` and ``qv``)
+
+  -  ``query`` corresponds to test harness keyword, ``queryval`` to the value. Example:
+
+     .. code-block:: console
+
+        $ make print-test query='suffix' queryval='basic_1'
+
+  -  Invokes ``config/query_tests.py`` to query the tests (see
+     ``config/query_tests.py --help`` for more information).
+  -  See below for how to use as it has many features
+
++ ``searchin`` (or ``i``)
+
+  -  Filters results of above searches. Example:
+
+     .. code-block:: console
+
+        $ make print-test s='src/dm/impls/plex/tests/ex1.c' i='*refine_overlap_2d*'
+
+Searching using GNU make's native regexp functionality is kept for people who like it, but most developers will likely prefer the above methods:
+
++ ``gmakesearch``
+
+  -  Use GNU make's own filter capability.
+  -  Fast, but requires knowing GNU make regex syntax which uses ``%`` instead of ``*``
+  -  Also very limited (cannot use two ``%``'s for example)
+  -  Example:
+
+     .. code-block:: console
+
+        $ make test gmakesearch='vec_is%ex1_basic_1'
+
++ ``gmakesearchin``
+
+  -  Use GNU make's own filter capability to search in previous results. Example:
+
+     .. code-block:: console
+
+        $ make test gmakesearch='vec_is%1' gmakesearchin='basic'
+
+Query-based searching
+~~~~~~~~~~~~~~~~~~~~~
+
+Note the the use of glob style matching is also accepted in the value field:
+
+.. code-block:: console
+
+   $ make print-test query='suffix' queryval='basic_1'
+
+.. code-block:: console
+
+   $ make print-test query='requires' queryval='cuda'
+
+.. code-block:: console
+
+   $ make print-test query='requires' queryval='defined(PETSC_HAVE_MPI_GPU_AWARE)'
+
+.. code-block:: console
+
+   $ make print-test query='requires' queryval='*GPU_AWARE*'
+
+Using the ``name`` field is equivalent to the search above:
+
+-  Example:
+
+   .. code-block:: console
+
+      $ make print-test query='name' queryval='vec_is*ex1*basic*1'
+
+-  This can be combined with union/intersect queries as discussed below
+
+Arguments are tricky to search for.  Consider
+
+.. code-block:: none
+
+  args:  -ksp_monitor_short -pc_type ml -ksp_max_it 3
+
+Search terms are
+
+.. code-block:: none
+
+    ksp_monitor, pc_type ml, ksp_max_it
+
+Certain items are ignored:
+
++ Numbers (see ``ksp_max_it`` above), but floats are ignored as well.
++ Loops: ``args: -pc_fieldsplit_diag_use_amat {{0 1}}`` gives ``pc_fieldsplit_diag_use_amat`` as the search term
++ Input files: ``-f *``
+
+Examples of argument searching:
+
+.. code-block:: console
+
+   $ make print-test query='args' queryval='ksp_monitor'
+
+.. code-block:: console
+
+   $ make print-test query='args' queryval='*monitor*'
+
+.. code-block:: console
+
+   $ make print-test query='args' queryval='pc_type ml'
+
+
+Multiple simultaneous queries can be performed with union (``,``), and intersection
+(``|``) operators in the ``query`` field. One may also use their alternate spellings
+(``%AND%`` and ``%OR%`` respectively). The alternate spellings are useful in cases where
+one cannot avoid (possibly multiple) shell expansions that might otherwise interpret the
+``|`` operator as a shell pipe.  Examples:
+
+-  All examples using ``cuda`` and all examples using ``hip``:
+
+   .. code-block:: console
+
+      $ make print-test query='requires,requires' queryval='cuda,hip'
+      # equivalently
+      $ make print-test query='requires%AND%requires' queryval='cuda%AND%hip'
+
+-  Examples that require both triangle and ctetgen (intersection of tests)
+
+   .. code-block:: console
+
+      $ make print-test query='requires|requires' queryval='ctetgen,triangle'
+      # equivalently
+      $ make print-test query='requires%OR%requires' queryval='ctetgen%AND%triangle'
+
+-  Tests that require either ``ctetgen`` or ``triangle``
+
+   .. code-block:: console
+
+      $ make print-test query='requires,requires' queryval='ctetgen,triangle'
+      # equivalently
+      $ make print-test query='requires%AND%requires' queryval='ctetgen%AND%triangle'
+
+-  Find ``cuda`` examples in the ``dm`` package.
+
+   .. code-block:: console
+
+      $ make print-test query='requires|name' queryval='cuda,dm*'
+      # equivalently
+      $ make print-test query='requires%OR%name' queryval='cuda%AND%dm*'
+
+
+Here is a way of getting a feel for how the union and intersect operators work:
+
+.. code-block:: console
+
+      $ make print-test query='requires' queryval='ctetgen' | tr ' ' '\n' | wc -l
+      170
+      $ make print-test query='requires' queryval='triangle' | tr ' ' '\n' | wc -l
+      330
+      $ make print-test query='requires,requires' queryval='ctetgen,triangle' | tr ' ' '\n' | wc -l
+      478
+      $ make print-test query='requires|requires' queryval='ctetgen,triangle' | tr ' ' '\n' | wc -l
+      22
+
+The total number of tests for running only ctetgen or triangle is 500.  They have 22 tests in common, and 478 that
+run independently of each other.
+
+The union and intersection have fixed grouping.  So this string argument
+
+.. code-block:: none
+
+    query='requires,requires|args' queryval='cuda,hip,*log*'
+    # equivalently
+    query='requires%AND%requires%OR%args' queryval='cuda%AND%hip%AND%*log*'
+
+will can be read as
+
+.. code-block:: none
+
+   requires:cuda && (requires:hip || args:*log*)
+
+which is probably not what is intended.
+
+
+``query/queryval`` also support negation (``!``, alternate ``%NEG%``), but is limited.
+The negation only applies to tests that have a related field in it. So for example, the
+arguments of
+
+.. code-block:: console
+
+  query=requires queryval='!cuda'
+  # equivalently
+  query=requires queryval='%NEG%cuda'
+
+will only match if they explicitly have::
+
+     requires: !cuda
+
+It does not match all cases that do not require cuda.
+
+
+Debugging for loops
+~~~~~~~~~~~~~~~~~~~
+
+One of the more difficult issues is how to debug for loops when a subset of the
+arguments are the ones that cause a code crash.  The default naming scheme is
+not always helpful for figuring out the argument combination.
+
+For example:
+
+.. code-block:: console
+
+      $ make test s='src/ksp/ksp/tests/ex9.c' i='*1'
+      Using MAKEFLAGS: i=*1 s=src/ksp/ksp/tests/ex9.c
+              TEST arch-osx-pkgs-opt-new/tests/counts/ksp_ksp_tests-ex9_1.counts
+       ok ksp_ksp_tests-ex9_1+pc_fieldsplit_diag_use_amat-0_pc_fieldsplit_diag_use_amat-0_pc_fieldsplit_type-additive
+       not ok diff-ksp_ksp_tests-ex9_1+pc_fieldsplit_diag_use_amat-0_pc_fieldsplit_diag_use_amat-0_pc_fieldsplit_type-additive
+       ok ksp_ksp_tests-ex9_1+pc_fieldsplit_diag_use_amat-0_pc_fieldsplit_diag_use_amat-0_pc_fieldsplit_type-multiplicative
+       ...
+
+
+In this case, the trick is to use the verbose option, ``V=1`` (or for the shell script workflows, ``-v``) to have it show the commands:
+
+.. code-block:: console
+
+      $ make test s='src/ksp/ksp/tests/ex9.c' i='*1' V=1
+      Using MAKEFLAGS: V=1 i=*1 s=src/ksp/ksp/tests/ex9.c
+      arch-osx-pkgs-opt-new/tests/ksp/ksp/tests/runex9_1.sh  -v
+       ok ksp_ksp_tests-ex9_1+pc_fieldsplit_diag_use_amat-0_pc_fieldsplit_diag_use_amat-0_pc_fieldsplit_type-additive # mpiexec  -n 1 ../ex9 -ksp_converged_reason -ksp_error_if_not_converged  -pc_fieldsplit_diag_use_amat 0 -pc_fieldsplit_diag_use_amat 0 -pc_fieldsplit_type additive > ex9_1.tmp 2> runex9_1.err
+      ...
+
+This can still be hard to read and pick out what you want.  So use the fact that you want ``not ok``
+combined with the fact that ``#`` is the delimiter:
+
+.. code-block:: console
+
+      $ make test s='src/ksp/ksp/tests/ex9.c' i='*1' v=1 | grep 'not ok' | cut -d# -f2
+      mpiexec  -n 1 ../ex9 -ksp_converged_reason -ksp_error_if_not_converged  -pc_fieldsplit_diag_use_amat 0 -pc_fieldsplit_diag_use_amat 0 -pc_fieldsplit_type multiplicative > ex9_1.tmp 2> runex9_1.err
+
+
 PETSC Test Harness
 ------------------
 
@@ -980,7 +984,7 @@ The PETSc test system is designed to be compliant with the `Test Anything Protoc
 
 This is a simple standard designed to allow testing tools to work
 together easily. There are libraries to enable the output to be used
-easily, including sharness, which is used by the git team. However, the
+easily, including sharness, which is used by the Git team. However, the
 simplicity of the PETSc tests and TAP specification means that we use
 our own simple harness given by a single shell script that each file
 sources: ``$PETSC_DIR/config/petsc_harness.sh``.

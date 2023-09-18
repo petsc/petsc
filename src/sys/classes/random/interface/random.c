@@ -15,30 +15,30 @@
 #include <petsc/private/randomimpl.h> /*I "petscsys.h" I*/
 
 /*@
-   PetscRandomGetValue - Generates a random number.  Call this after first calling
-   `PetscRandomCreate()`.
+  PetscRandomGetValue - Generates a random number.  Call this after first calling
+  `PetscRandomCreate()`.
 
-   Not Collective
+  Not Collective
 
-   Input Parameter:
-.  r  - the random number generator context
+  Input Parameter:
+. r - the random number generator context
 
-   Output Parameter:
-.  val - the value
+  Output Parameter:
+. val - the value
 
-   Level: intermediate
+  Level: intermediate
 
-   Notes:
-   Use `VecSetRandom()` to set the elements of a vector to random numbers.
+  Notes:
+  Use `VecSetRandom()` to set the elements of a vector to random numbers.
 
-   When PETSc is compiled for complex numbers this returns a complex number with random real and complex parts.
-   Use `PetscRandomGetValueReal()` to get a random real number.
+  When PETSc is compiled for complex numbers this returns a complex number with random real and complex parts.
+  Use `PetscRandomGetValueReal()` to get a random real number.
 
-   To get a complex number with only a random real part, first call `PetscRandomSetInterval()` with a equal
-   low and high imaginary part. Similarly to get a complex number with only a random imaginary part call
-   `PetscRandomSetInterval()` with a equal low and high real part.
+  To get a complex number with only a random real part, first call `PetscRandomSetInterval()` with a equal
+  low and high imaginary part. Similarly to get a complex number with only a random imaginary part call
+  `PetscRandomSetInterval()` with a equal low and high real part.
 
-   Example of Usage:
+  Example of Usage:
 .vb
       PetscRandomCreate(PETSC_COMM_WORLD,&r);
       PetscRandomGetValue(r,&value1);
@@ -61,23 +61,23 @@ PetscErrorCode PetscRandomGetValue(PetscRandom r, PetscScalar *val)
 }
 
 /*@
-   PetscRandomGetValueReal - Generates a real random number.  Call this after first calling
-   `PetscRandomCreate()`.
+  PetscRandomGetValueReal - Generates a real random number.  Call this after first calling
+  `PetscRandomCreate()`.
 
-   Not Collective
+  Not Collective
 
-   Input Parameter:
-.  r  - the random number generator context
+  Input Parameter:
+. r - the random number generator context
 
-   Output Parameter:
-.  val - the value
+  Output Parameter:
+. val - the value
 
-   Level: intermediate
+  Level: intermediate
 
-   Note:
-   Use `VecSetRandom()` to set the elements of a vector to random numbers.
+  Note:
+  Use `VecSetRandom()` to set the elements of a vector to random numbers.
 
-   Example of Usage:
+  Example of Usage:
 .vb
       PetscRandomCreate(PETSC_COMM_WORLD,&r);
       PetscRandomGetValueReal(r,&value1);
@@ -100,25 +100,25 @@ PetscErrorCode PetscRandomGetValueReal(PetscRandom r, PetscReal *val)
 }
 
 /*@
-   PetscRandomGetValues - Generates a sequence of random numbers.  Call this after first calling
-   `PetscRandomCreate()`.
+  PetscRandomGetValues - Generates a sequence of random numbers.  Call this after first calling
+  `PetscRandomCreate()`.
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  r  - the random number generator context
--  n  - number of random numbers to generate
+  Input Parameters:
++ r - the random number generator context
+- n - number of random numbers to generate
 
-   Output Parameter:
-.  val - the array to hold the values
+  Output Parameter:
+. val - the array to hold the values
 
-   Level: intermediate
+  Level: intermediate
 
-   Notes:
-   Use `VecSetRandom()` to set the elements of a vector to random numbers.
+  Notes:
+  Use `VecSetRandom()` to set the elements of a vector to random numbers.
 
-   When PETSc is compiled for complex numbers this returns an array of complex numbers with random real and complex parts.
-   Use `PetscRandomGetValuesReal()` to get an array of random real numbers.
+  When PETSc is compiled for complex numbers this returns an array of complex numbers with random real and complex parts.
+  Use `PetscRandomGetValuesReal()` to get an array of random real numbers.
 
 .seealso: `PetscRandom`, `PetscRandomCreate()`, `PetscRandomDestroy()`, `VecSetRandom()`, `PetscRandomGetValue()`
 @*/
@@ -137,22 +137,22 @@ PetscErrorCode PetscRandomGetValues(PetscRandom r, PetscInt n, PetscScalar *val)
 }
 
 /*@
-   PetscRandomGetValuesReal - Generates a sequence of real random numbers.  Call this after first calling
-   `PetscRandomCreate()`.
+  PetscRandomGetValuesReal - Generates a sequence of real random numbers.  Call this after first calling
+  `PetscRandomCreate()`.
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  r  - the random number generator context
--  n  - number of random numbers to generate
+  Input Parameters:
++ r - the random number generator context
+- n - number of random numbers to generate
 
-   Output Parameter:
-.  val - the array to hold the values
+  Output Parameter:
+. val - the array to hold the values
 
-   Level: intermediate
+  Level: intermediate
 
-   Note:
-   Use `VecSetRandom()` to set the elements of a vector to random numbers.
+  Note:
+  Use `VecSetRandom()` to set the elements of a vector to random numbers.
 
 .seealso: `PetscRandom`, `PetscRandomCreate()`, `PetscRandomDestroy()`, `VecSetRandom()`, `PetscRandomGetValues()`
 @*/
@@ -170,19 +170,19 @@ PetscErrorCode PetscRandomGetValuesReal(PetscRandom r, PetscInt n, PetscReal *va
 }
 
 /*@
-   PetscRandomGetInterval - Gets the interval over which the random numbers
-   will be distributed.  By default, this interval is [0,1).
+  PetscRandomGetInterval - Gets the interval over which the random numbers
+  will be distributed.  By default, this interval is [0,1).
 
-   Not Collective
+  Not Collective
 
-   Input Parameter:
-.  r  - the random number generator context
+  Input Parameter:
+. r - the random number generator context
 
-   Output Parameters:
-+  low - The lower bound of the interval
--  high - The upper bound of the interval
+  Output Parameters:
++ low  - The lower bound of the interval
+- high - The upper bound of the interval
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `PetscRandom`, `PetscRandomCreate()`, `PetscRandomSetInterval()`
 @*/
@@ -191,33 +191,33 @@ PetscErrorCode PetscRandomGetInterval(PetscRandom r, PetscScalar *low, PetscScal
   PetscFunctionBegin;
   PetscValidHeaderSpecific(r, PETSC_RANDOM_CLASSID, 1);
   if (low) {
-    PetscValidScalarPointer(low, 2);
+    PetscAssertPointer(low, 2);
     *low = r->low;
   }
   if (high) {
-    PetscValidScalarPointer(high, 3);
+    PetscAssertPointer(high, 3);
     *high = r->low + r->width;
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
-   PetscRandomSetInterval - Sets the interval over which the random numbers
-   will be distributed.  By default, this interval is [0,1).
+  PetscRandomSetInterval - Sets the interval over which the random numbers
+  will be distributed.  By default, this interval is [0,1).
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  r  - the random number generator context
-.  low - The lower bound of the interval
--  high - The upper bound of the interval
+  Input Parameters:
++ r    - the random number generator context
+. low  - The lower bound of the interval
+- high - The upper bound of the interval
 
-   Level: intermediate
+  Level: intermediate
 
-   Notes:
-    for complex numbers either the real part or the imaginary part of high must be greater than its low part; or both of them can be greater.
+  Notes:
+  for complex numbers either the real part or the imaginary part of high must be greater than its low part; or both of them can be greater.
 
-    If the real or imaginary part of low and high are the same then that value is always returned in the real or imaginary part.
+  If the real or imaginary part of low and high are the same then that value is always returned in the real or imaginary part.
 
 .seealso: `PetscRandomCreate()`, `PetscRandomGetInterval()`
 @*/

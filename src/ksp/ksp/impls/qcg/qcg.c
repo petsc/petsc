@@ -1,22 +1,58 @@
 
 #include <../src/ksp/ksp/impls/qcg/qcgimpl.h> /*I "petscksp.h" I*/
 
-static PetscErrorCode KSPQCGQuadraticRoots(Vec, Vec, PetscReal, PetscReal *, PetscReal *);
+/*
+  KSPQCGQuadraticRoots - Computes the roots of the quadratic,
+         ||s + step*p|| - delta = 0
+   such that step1 >= 0 >= step2.
+   where
+      delta:
+        On entry delta must contain scalar delta.
+        On exit delta is unchanged.
+      step1:
+        On entry step1 need not be specified.
+        On exit step1 contains the non-negative root.
+      step2:
+        On entry step2 need not be specified.
+        On exit step2 contains the non-positive root.
+   C code is translated from the Fortran version of the MINPACK-2 Project,
+   Argonne National Laboratory, Brett M. Averick and Richard G. Carter.
+*/
+static PetscErrorCode KSPQCGQuadraticRoots(Vec s, Vec p, PetscReal delta, PetscReal *step1, PetscReal *step2)
+{
+  PetscReal dsq, ptp, pts, rad, sts;
+
+  PetscFunctionBegin;
+  PetscCall(VecDotRealPart(p, s, &pts));
+  PetscCall(VecDotRealPart(p, p, &ptp));
+  PetscCall(VecDotRealPart(s, s, &sts));
+  dsq = delta * delta;
+  rad = PetscSqrtReal((pts * pts) - ptp * (sts - dsq));
+  if (pts > 0.0) {
+    *step2 = -(pts + rad) / ptp;
+    *step1 = (sts - dsq) / (ptp * *step2);
+  } else {
+    *step1 = -(pts - rad) / ptp;
+    *step2 = (sts - dsq) / (ptp * *step1);
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
 
 /*@
-    KSPQCGSetTrustRegionRadius - Sets the radius of the trust region for `KSPQCG`
+  KSPQCGSetTrustRegionRadius - Sets the radius of the trust region for `KSPQCG`
 
-    Logically Collective
+  Logically Collective
 
-    Input Parameters:
-+   ksp   - the iterative context
--   delta - the trust region radius (Infinity is the default)
+  Input Parameters:
++ ksp   - the iterative context
+- delta - the trust region radius (Infinity is the default)
 
-    Options Database Key:
-.   -ksp_qcg_trustregionradius <delta> - trust region radius
+  Options Database Key:
+. -ksp_qcg_trustregionradius <delta> - trust region radius
 
-    Level: advanced
+  Level: advanced
 
+.seealso: `KSPQCG`
 @*/
 PetscErrorCode KSPQCGSetTrustRegionRadius(KSP ksp, PetscReal delta)
 {
@@ -28,18 +64,20 @@ PetscErrorCode KSPQCGSetTrustRegionRadius(KSP ksp, PetscReal delta)
 }
 
 /*@
-    KSPQCGGetTrialStepNorm - Gets the norm of a trial step vector in `KSPQCG`.  The WCG step may be
-    constrained, so this is not necessarily the length of the ultimate step taken in `KSPQCG`.
+  KSPQCGGetTrialStepNorm - Gets the norm of a trial step vector in `KSPQCG`.  The WCG step may be
+  constrained, so this is not necessarily the length of the ultimate step taken in `KSPQCG`.
 
-    Not Collective
+  Not Collective
 
-    Input Parameter:
-.   ksp - the iterative context
+  Input Parameter:
+. ksp - the iterative context
 
-    Output Parameter:
-.   tsnorm - the norm
+  Output Parameter:
+. tsnorm - the norm
 
-    Level: advanced
+  Level: advanced
+
+.seealso: `KSPQCG`
 @*/
 PetscErrorCode KSPQCGGetTrialStepNorm(KSP ksp, PetscReal *tsnorm)
 {
@@ -50,32 +88,32 @@ PetscErrorCode KSPQCGGetTrialStepNorm(KSP ksp, PetscReal *tsnorm)
 }
 
 /*@
-    KSPQCGGetQuadratic - Gets the value of the quadratic function, evaluated at the new iterate:
+  KSPQCGGetQuadratic - Gets the value of the quadratic function, evaluated at the new iterate
 
-       q(s) = g^T * s + 0.5 * s^T * H * s
+  Collective
 
-    which satisfies the Euclidean Norm trust region constraint
+  Input Parameter:
+. ksp - the iterative context
 
-       || D * s || <= delta,
+  Output Parameter:
+. quadratic - the quadratic function evaluated at the new iterate
 
-    where
+  Level: advanced
 
-     delta is the trust region radius,
-     g is the gradient vector, and
-     H is Hessian matrix,
-     D is a scaling matrix.
+  Note:
+  $ q(s) = g^T * s + 0.5 * s^T * H * s $ which satisfies the Euclidean Norm trust region constraint
+.vb
+  || D * s || <= delta,
+.ve
+  where
+.vb
+  delta is the trust region radius,
+  g is the gradient vector, and
+  H is Hessian matrix,
+  D is a scaling matrix.
+.ve
 
-    Collective
-
-    Input Parameter:
-.   ksp - the iterative context
-
-    Output Parameter:
-.   quadratic - the quadratic function evaluated at the new iterate
-
-    Level: advanced
-
-.seealso: [](chapter_ksp), `KSPQCG`
+.seealso: [](ch_ksp), `KSPQCG`
 @*/
 PetscErrorCode KSPQCGGetQuadratic(KSP ksp, PetscReal *quadratic)
 {
@@ -85,7 +123,7 @@ PetscErrorCode KSPQCGGetQuadratic(KSP ksp, PetscReal *quadratic)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode KSPSolve_QCG(KSP ksp)
+static PetscErrorCode KSPSolve_QCG(KSP ksp)
 {
   /*
    Correpondence with documentation above:
@@ -265,7 +303,7 @@ PetscErrorCode KSPSolve_QCG(KSP ksp)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode KSPSetUp_QCG(KSP ksp)
+static PetscErrorCode KSPSetUp_QCG(KSP ksp)
 {
   PetscFunctionBegin;
   /* Get work vectors from user code */
@@ -273,7 +311,7 @@ PetscErrorCode KSPSetUp_QCG(KSP ksp)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode KSPDestroy_QCG(KSP ksp)
+static PetscErrorCode KSPDestroy_QCG(KSP ksp)
 {
   PetscFunctionBegin;
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPQCGGetQuadratic_C", NULL));
@@ -310,7 +348,7 @@ static PetscErrorCode KSPQCGGetQuadratic_QCG(KSP ksp, PetscReal *quadratic)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode KSPSetFromOptions_QCG(KSP ksp, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode KSPSetFromOptions_QCG(KSP ksp, PetscOptionItems *PetscOptionsObject)
 {
   PetscReal delta;
   KSP_QCG  *cgP = (KSP_QCG *)ksp->data;
@@ -336,20 +374,17 @@ PetscErrorCode KSPSetFromOptions_QCG(KSP ksp, PetscOptionItems *PetscOptionsObje
     This is rarely used directly, ir is used in Trust Region methods for nonlinear equations, `SNESNEWTONTR`
 
     Uses preconditioned conjugate gradient to compute
-      an approximate minimizer of the quadratic function
-
-            q(s) = g^T * s + .5 * s^T * H * s
-
-   subject to the Euclidean norm trust region constraint
-
+      an approximate minimizer of the quadratic function $ q(s) = g^T * s + .5 * s^T * H * s $   subject to the Euclidean norm trust region constraint
+.vb
             || D * s || <= delta,
-
+.ve
    where
-
+.vb
      delta is the trust region radius,
      g is the gradient vector, and
      H is Hessian matrix,
      D is a scaling matrix.
+.ve
 
    `KSPConvergedReason` may be
 .vb
@@ -370,7 +405,7 @@ PetscErrorCode KSPSetFromOptions_QCG(KSP ksp, PetscOptionItems *PetscOptionsObje
 . * - Trond Steihaug, The Conjugate Gradient Method and Trust Regions in Large Scale Optimization,
    SIAM Journal on Numerical Analysis, Vol. 20, No. 3 (Jun., 1983).
 
-.seealso: [](chapter_ksp), 'KSPNASH`, `KSPGLTR`, `KSPSTCG`, `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPQCGSetTrustRegionRadius()`
+.seealso: [](ch_ksp), 'KSPNASH`, `KSPGLTR`, `KSPSTCG`, `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPQCGSetTrustRegionRadius()`
           `KSPQCGGetTrialStepNorm()`, `KSPQCGGetQuadratic()`
 M*/
 
@@ -397,43 +432,5 @@ PETSC_EXTERN PetscErrorCode KSPCreate_QCG(KSP ksp)
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPQCGGetTrialStepNorm_C", KSPQCGGetTrialStepNorm_QCG));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPQCGSetTrustRegionRadius_C", KSPQCGSetTrustRegionRadius_QCG));
   cgP->delta = PETSC_MAX_REAL; /* default trust region radius is infinite */
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-/* ---------------------------------------------------------- */
-/*
-  KSPQCGQuadraticRoots - Computes the roots of the quadratic,
-         ||s + step*p|| - delta = 0
-   such that step1 >= 0 >= step2.
-   where
-      delta:
-        On entry delta must contain scalar delta.
-        On exit delta is unchanged.
-      step1:
-        On entry step1 need not be specified.
-        On exit step1 contains the non-negative root.
-      step2:
-        On entry step2 need not be specified.
-        On exit step2 contains the non-positive root.
-   C code is translated from the Fortran version of the MINPACK-2 Project,
-   Argonne National Laboratory, Brett M. Averick and Richard G. Carter.
-*/
-static PetscErrorCode KSPQCGQuadraticRoots(Vec s, Vec p, PetscReal delta, PetscReal *step1, PetscReal *step2)
-{
-  PetscReal dsq, ptp, pts, rad, sts;
-
-  PetscFunctionBegin;
-  PetscCall(VecDotRealPart(p, s, &pts));
-  PetscCall(VecDotRealPart(p, p, &ptp));
-  PetscCall(VecDotRealPart(s, s, &sts));
-  dsq = delta * delta;
-  rad = PetscSqrtReal((pts * pts) - ptp * (sts - dsq));
-  if (pts > 0.0) {
-    *step2 = -(pts + rad) / ptp;
-    *step1 = (sts - dsq) / (ptp * *step2);
-  } else {
-    *step1 = -(pts - rad) / ptp;
-    *step2 = (sts - dsq) / (ptp * *step1);
-  }
   PetscFunctionReturn(PETSC_SUCCESS);
 }

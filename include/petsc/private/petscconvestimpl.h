@@ -1,5 +1,4 @@
-#ifndef PETSCCEIMPL_H
-#define PETSCCEIMPL_H
+#pragma once
 
 #include <petscconvest.h>
 #include <petsc/private/petscimpl.h>
@@ -34,5 +33,3 @@ struct _p_PetscConvEst {
   PetscInt     *dofs;
   PetscReal    *errors;
 };
-
-#endif

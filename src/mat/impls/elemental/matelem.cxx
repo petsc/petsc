@@ -89,7 +89,7 @@ static PetscErrorCode MatGetInfo_Elemental(Mat A, MatInfoType flag, MatInfo *inf
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatSetOption_Elemental(Mat A, MatOption op, PetscBool flg)
+static PetscErrorCode MatSetOption_Elemental(Mat A, MatOption op, PetscBool flg)
 {
   Mat_Elemental *a = (Mat_Elemental *)A->data;
 
@@ -388,7 +388,7 @@ PETSC_INTERN PetscErrorCode MatProductSetFromOptions_Elemental(Mat C)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatMatMultNumeric_Elemental_MPIDense(Mat A, Mat B, Mat C)
+static PetscErrorCode MatMatMultNumeric_Elemental_MPIDense(Mat A, Mat B, Mat C)
 {
   Mat Be, Ce;
 
@@ -401,7 +401,7 @@ PetscErrorCode MatMatMultNumeric_Elemental_MPIDense(Mat A, Mat B, Mat C)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatMatMultSymbolic_Elemental_MPIDense(Mat A, Mat B, PetscReal, Mat C)
+static PetscErrorCode MatMatMultSymbolic_Elemental_MPIDense(Mat A, Mat B, PetscReal, Mat C)
 {
   PetscFunctionBegin;
   PetscCall(MatSetSizes(C, A->rmap->n, B->cmap->n, PETSC_DECIDE, PETSC_DECIDE));
@@ -411,7 +411,7 @@ PetscErrorCode MatMatMultSymbolic_Elemental_MPIDense(Mat A, Mat B, PetscReal, Ma
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatProductSetFromOptions_Elemental_MPIDense_AB(Mat C)
+static PetscErrorCode MatProductSetFromOptions_Elemental_MPIDense_AB(Mat C)
 {
   PetscFunctionBegin;
   C->ops->matmultsymbolic = MatMatMultSymbolic_Elemental_MPIDense;
@@ -419,7 +419,7 @@ PetscErrorCode MatProductSetFromOptions_Elemental_MPIDense_AB(Mat C)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatProductSetFromOptions_Elemental_MPIDense(Mat C)
+static PetscErrorCode MatProductSetFromOptions_Elemental_MPIDense(Mat C)
 {
   Mat_Product *product = C->product;
 
@@ -707,7 +707,7 @@ static PetscErrorCode MatLUFactorNumeric_Elemental(Mat F, Mat A, const MatFactor
 {
   PetscFunctionBegin;
   PetscCall(MatCopy(A, F, SAME_NONZERO_PATTERN));
-  PetscCall(MatLUFactor_Elemental(F, 0, 0, info));
+  PetscCall(MatLUFactor_Elemental(F, nullptr, nullptr, info));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -737,7 +737,7 @@ static PetscErrorCode MatCholeskyFactorNumeric_Elemental(Mat F, Mat A, const Mat
 {
   PetscFunctionBegin;
   PetscCall(MatCopy(A, F, SAME_NONZERO_PATTERN));
-  PetscCall(MatCholeskyFactor_Elemental(F, 0, info));
+  PetscCall(MatCholeskyFactor_Elemental(F, nullptr, info));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -748,7 +748,7 @@ static PetscErrorCode MatCholeskyFactorSymbolic_Elemental(Mat, Mat, IS, const Ma
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatFactorGetSolverType_elemental_elemental(Mat, MatSolverType *type)
+static PetscErrorCode MatFactorGetSolverType_elemental_elemental(Mat, MatSolverType *type)
 {
   PetscFunctionBegin;
   *type = MATSOLVERELEMENTAL;
@@ -1088,7 +1088,7 @@ static PetscErrorCode MatDestroy_Elemental(Mat A)
   delete a->Q;
 
   El::mpi::Comm cxxcomm(PetscObjectComm((PetscObject)A));
-  PetscCall(PetscCommDuplicate(cxxcomm.comm, &icomm, NULL));
+  PetscCall(PetscCommDuplicate(cxxcomm.comm, &icomm, nullptr));
   PetscCallMPI(MPI_Comm_get_attr(icomm, Petsc_Elemental_keyval, (void **)&commgrid, (int *)&flg));
   if (--commgrid->grid_refct == 0) {
     delete commgrid->grid;
@@ -1096,14 +1096,14 @@ static PetscErrorCode MatDestroy_Elemental(Mat A)
     PetscCallMPI(MPI_Comm_free_keyval(&Petsc_Elemental_keyval));
   }
   PetscCall(PetscCommDestroy(&icomm));
-  PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatGetOwnershipIS_C", NULL));
-  PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatFactorGetSolverType_C", NULL));
-  PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatProductSetFromOptions_elemental_mpidense_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatGetOwnershipIS_C", nullptr));
+  PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatFactorGetSolverType_C", nullptr));
+  PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatProductSetFromOptions_elemental_mpidense_C", nullptr));
   PetscCall(PetscFree(A->data));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatSetUp_Elemental(Mat A)
+static PetscErrorCode MatSetUp_Elemental(Mat A)
 {
   Mat_Elemental *a = (Mat_Elemental *)A->data;
   MPI_Comm       comm;
@@ -1143,7 +1143,7 @@ PetscErrorCode MatSetUp_Elemental(Mat A)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatAssemblyBegin_Elemental(Mat A, MatAssemblyType)
+static PetscErrorCode MatAssemblyBegin_Elemental(Mat A, MatAssemblyType)
 {
   Mat_Elemental *a = (Mat_Elemental *)A->data;
 
@@ -1154,14 +1154,14 @@ PetscErrorCode MatAssemblyBegin_Elemental(Mat A, MatAssemblyType)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatAssemblyEnd_Elemental(Mat, MatAssemblyType)
+static PetscErrorCode MatAssemblyEnd_Elemental(Mat, MatAssemblyType)
 {
   PetscFunctionBegin;
   /* Currently does nothing */
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatLoad_Elemental(Mat newMat, PetscViewer viewer)
+static PetscErrorCode MatLoad_Elemental(Mat newMat, PetscViewer viewer)
 {
   Mat      Adense, Ae;
   MPI_Comm comm;
@@ -1178,22 +1178,22 @@ PetscErrorCode MatLoad_Elemental(Mat newMat, PetscViewer viewer)
 }
 
 static struct _MatOps MatOps_Values = {MatSetValues_Elemental,
-                                       0,
-                                       0,
+                                       nullptr,
+                                       nullptr,
                                        MatMult_Elemental,
                                        /* 4*/ MatMultAdd_Elemental,
                                        MatMultTranspose_Elemental,
                                        MatMultTransposeAdd_Elemental,
                                        MatSolve_Elemental,
                                        MatSolveAdd_Elemental,
-                                       0,
-                                       /*10*/ 0,
+                                       nullptr,
+                                       /*10*/ nullptr,
                                        MatLUFactor_Elemental,
                                        MatCholeskyFactor_Elemental,
-                                       0,
+                                       nullptr,
                                        MatTranspose_Elemental,
                                        /*15*/ MatGetInfo_Elemental,
-                                       0,
+                                       nullptr,
                                        MatGetDiagonal_Elemental,
                                        MatDiagonalScale_Elemental,
                                        MatNorm_Elemental,
@@ -1201,134 +1201,134 @@ static struct _MatOps MatOps_Values = {MatSetValues_Elemental,
                                        MatAssemblyEnd_Elemental,
                                        MatSetOption_Elemental,
                                        MatZeroEntries_Elemental,
-                                       /*24*/ 0,
+                                       /*24*/ nullptr,
                                        MatLUFactorSymbolic_Elemental,
                                        MatLUFactorNumeric_Elemental,
                                        MatCholeskyFactorSymbolic_Elemental,
                                        MatCholeskyFactorNumeric_Elemental,
                                        /*29*/ MatSetUp_Elemental,
-                                       0,
-                                       0,
-                                       0,
-                                       0,
+                                       nullptr,
+                                       nullptr,
+                                       nullptr,
+                                       nullptr,
                                        /*34*/ MatDuplicate_Elemental,
-                                       0,
-                                       0,
-                                       0,
-                                       0,
+                                       nullptr,
+                                       nullptr,
+                                       nullptr,
+                                       nullptr,
                                        /*39*/ MatAXPY_Elemental,
-                                       0,
-                                       0,
-                                       0,
+                                       nullptr,
+                                       nullptr,
+                                       nullptr,
                                        MatCopy_Elemental,
-                                       /*44*/ 0,
+                                       /*44*/ nullptr,
                                        MatScale_Elemental,
                                        MatShift_Basic,
-                                       0,
-                                       0,
-                                       /*49*/ 0,
-                                       0,
-                                       0,
-                                       0,
-                                       0,
-                                       /*54*/ 0,
-                                       0,
-                                       0,
-                                       0,
-                                       0,
-                                       /*59*/ 0,
+                                       nullptr,
+                                       nullptr,
+                                       /*49*/ nullptr,
+                                       nullptr,
+                                       nullptr,
+                                       nullptr,
+                                       nullptr,
+                                       /*54*/ nullptr,
+                                       nullptr,
+                                       nullptr,
+                                       nullptr,
+                                       nullptr,
+                                       /*59*/ nullptr,
                                        MatDestroy_Elemental,
                                        MatView_Elemental,
-                                       0,
-                                       0,
-                                       /*64*/ 0,
-                                       0,
-                                       0,
-                                       0,
-                                       0,
-                                       /*69*/ 0,
-                                       0,
+                                       nullptr,
+                                       nullptr,
+                                       /*64*/ nullptr,
+                                       nullptr,
+                                       nullptr,
+                                       nullptr,
+                                       nullptr,
+                                       /*69*/ nullptr,
+                                       nullptr,
                                        MatConvert_Elemental_Dense,
-                                       0,
-                                       0,
-                                       /*74*/ 0,
-                                       0,
-                                       0,
-                                       0,
-                                       0,
-                                       /*79*/ 0,
-                                       0,
-                                       0,
-                                       0,
+                                       nullptr,
+                                       nullptr,
+                                       /*74*/ nullptr,
+                                       nullptr,
+                                       nullptr,
+                                       nullptr,
+                                       nullptr,
+                                       /*79*/ nullptr,
+                                       nullptr,
+                                       nullptr,
+                                       nullptr,
                                        MatLoad_Elemental,
-                                       /*84*/ 0,
-                                       0,
-                                       0,
-                                       0,
-                                       0,
-                                       /*89*/ 0,
-                                       0,
+                                       /*84*/ nullptr,
+                                       nullptr,
+                                       nullptr,
+                                       nullptr,
+                                       nullptr,
+                                       /*89*/ nullptr,
+                                       nullptr,
                                        MatMatMultNumeric_Elemental,
-                                       0,
-                                       0,
-                                       /*94*/ 0,
-                                       0,
-                                       0,
+                                       nullptr,
+                                       nullptr,
+                                       /*94*/ nullptr,
+                                       nullptr,
+                                       nullptr,
                                        MatMatTransposeMultNumeric_Elemental,
-                                       0,
+                                       nullptr,
                                        /*99*/ MatProductSetFromOptions_Elemental,
-                                       0,
-                                       0,
+                                       nullptr,
+                                       nullptr,
                                        MatConjugate_Elemental,
-                                       0,
-                                       /*104*/ 0,
-                                       0,
-                                       0,
-                                       0,
-                                       0,
+                                       nullptr,
+                                       /*104*/ nullptr,
+                                       nullptr,
+                                       nullptr,
+                                       nullptr,
+                                       nullptr,
                                        /*109*/ MatMatSolve_Elemental,
-                                       0,
-                                       0,
-                                       0,
+                                       nullptr,
+                                       nullptr,
+                                       nullptr,
                                        MatMissingDiagonal_Elemental,
-                                       /*114*/ 0,
-                                       0,
-                                       0,
-                                       0,
-                                       0,
-                                       /*119*/ 0,
+                                       /*114*/ nullptr,
+                                       nullptr,
+                                       nullptr,
+                                       nullptr,
+                                       nullptr,
+                                       /*119*/ nullptr,
                                        MatHermitianTranspose_Elemental,
-                                       0,
-                                       0,
-                                       0,
-                                       /*124*/ 0,
-                                       0,
-                                       0,
-                                       0,
-                                       0,
-                                       /*129*/ 0,
-                                       0,
-                                       0,
-                                       0,
-                                       0,
-                                       /*134*/ 0,
-                                       0,
-                                       0,
-                                       0,
-                                       0,
-                                       0,
-                                       /*140*/ 0,
-                                       0,
-                                       0,
-                                       0,
-                                       0,
-                                       /*145*/ 0,
-                                       0,
-                                       0,
-                                       0,
-                                       0,
-                                       /*150*/ 0,
-                                       0};
+                                       nullptr,
+                                       nullptr,
+                                       nullptr,
+                                       /*124*/ nullptr,
+                                       nullptr,
+                                       nullptr,
+                                       nullptr,
+                                       nullptr,
+                                       /*129*/ nullptr,
+                                       nullptr,
+                                       nullptr,
+                                       nullptr,
+                                       nullptr,
+                                       /*134*/ nullptr,
+                                       nullptr,
+                                       nullptr,
+                                       nullptr,
+                                       nullptr,
+                                       nullptr,
+                                       /*140*/ nullptr,
+                                       nullptr,
+                                       nullptr,
+                                       nullptr,
+                                       nullptr,
+                                       /*145*/ nullptr,
+                                       nullptr,
+                                       nullptr,
+                                       nullptr,
+                                       nullptr,
+                                       /*150*/ nullptr,
+                                       nullptr};
 
 /*MC
    MATELEMENTAL = "elemental" - A matrix type for dense matrices using the Elemental package
@@ -1349,7 +1349,10 @@ static struct _MatOps MatOps_Values = {MatSetValues_Elemental,
 
 .seealso: `MATDENSE`, `MATSCALAPACK`, `MatGetOwnershipIS()`
 M*/
-
+#if defined(__clang__)
+  #pragma clang diagnostic push
+  #pragma clang diagnostic ignored "-Wzero-as-null-pointer-constant"
+#endif
 PETSC_EXTERN PetscErrorCode MatCreate_Elemental(Mat A)
 {
   Mat_Elemental      *a;
@@ -1359,7 +1362,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_Elemental(Mat A)
   PetscInt            optv1;
 
   PetscFunctionBegin;
-  PetscCall(PetscMemcpy(A->ops, &MatOps_Values, sizeof(struct _MatOps)));
+  A->ops[0]     = MatOps_Values;
   A->insertmode = NOT_SET_VALUES;
 
   PetscCall(PetscNew(&a));
@@ -1408,3 +1411,6 @@ PETSC_EXTERN PetscErrorCode MatCreate_Elemental(Mat A)
   PetscCall(PetscObjectChangeTypeName((PetscObject)A, MATELEMENTAL));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
+#if defined(__clang__)
+  #pragma clang diagnostic pop
+#endif

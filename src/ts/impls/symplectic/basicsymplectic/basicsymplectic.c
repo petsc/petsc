@@ -34,7 +34,7 @@ typedef struct {
 
   Level: intermediate
 
-.seealso: [](chapter_ts), `TSBASICSYMPLECTIC`
+.seealso: [](ch_ts), `TSBASICSYMPLECTIC`
 M*/
 
 /*MC
@@ -42,7 +42,7 @@ M*/
 
 Level: intermediate
 
-.seealso: [](chapter_ts), `TSBASICSYMPLECTIC`
+.seealso: [](ch_ts), `TSBASICSYMPLECTIC`
 M*/
 
 /*@C
@@ -52,7 +52,7 @@ M*/
 
   Level: advanced
 
-.seealso: [](chapter_ts), `TSBASICSYMPLECTIC`, `TSBasicSymplecticRegisterDestroy()`
+.seealso: [](ch_ts), `TSBASICSYMPLECTIC`, `TSBasicSymplecticRegisterDestroy()`
 @*/
 PetscErrorCode TSBasicSymplecticRegisterAll(void)
 {
@@ -80,13 +80,13 @@ PetscErrorCode TSBasicSymplecticRegisterAll(void)
 }
 
 /*@C
-   TSBasicSymplecticRegisterDestroy - Frees the list of schemes that were registered by `TSBasicSymplecticRegister()`.
+  TSBasicSymplecticRegisterDestroy - Frees the list of schemes that were registered by `TSBasicSymplecticRegister()`.
 
-   Not Collective
+  Not Collective
 
-   Level: advanced
+  Level: advanced
 
-.seealso: [](chapter_ts), `TSBasicSymplecticRegister()`, `TSBasicSymplecticRegisterAll()`, `TSBASICSYMPLECTIC`
+.seealso: [](ch_ts), `TSBasicSymplecticRegister()`, `TSBasicSymplecticRegisterAll()`, `TSBASICSYMPLECTIC`
 @*/
 PetscErrorCode TSBasicSymplecticRegisterDestroy(void)
 {
@@ -110,7 +110,7 @@ PetscErrorCode TSBasicSymplecticRegisterDestroy(void)
 
   Level: developer
 
-.seealso: [](chapter_ts), `PetscInitialize()`, `TSBASICSYMPLECTIC`
+.seealso: [](ch_ts), `PetscInitialize()`, `TSBASICSYMPLECTIC`
 @*/
 PetscErrorCode TSBasicSymplecticInitializePackage(void)
 {
@@ -128,7 +128,7 @@ PetscErrorCode TSBasicSymplecticInitializePackage(void)
 
   Level: developer
 
-.seealso: [](chapter_ts), `PetscFinalize()`, `TSBASICSYMPLECTIC`
+.seealso: [](ch_ts), `PetscFinalize()`, `TSBASICSYMPLECTIC`
 @*/
 PetscErrorCode TSBasicSymplecticFinalizePackage(void)
 {
@@ -139,23 +139,23 @@ PetscErrorCode TSBasicSymplecticFinalizePackage(void)
 }
 
 /*@C
-   TSBasicSymplecticRegister - register a basic symplectic integration scheme by providing the coefficients.
+  TSBasicSymplecticRegister - register a basic symplectic integration scheme by providing the coefficients.
 
-   Not Collective, but the same schemes should be registered on all processes on which they will be used
+  Not Collective, but the same schemes should be registered on all processes on which they will be used
 
-   Input Parameters:
-+  name - identifier for method
-.  order - approximation order of method
-.  s - number of stages, this is the dimension of the matrices below
-.  c - coefficients for updating generalized position (dimension s)
--  d - coefficients for updating generalized momentum (dimension s)
+  Input Parameters:
++ name  - identifier for method
+. order - approximation order of method
+. s     - number of stages, this is the dimension of the matrices below
+. c     - coefficients for updating generalized position (dimension s)
+- d     - coefficients for updating generalized momentum (dimension s)
 
-   Level: advanced
+  Level: advanced
 
-   Notes:
-   Several symplectic methods are provided, this function is only needed to create new methods.
+  Notes:
+  Several symplectic methods are provided, this function is only needed to create new methods.
 
-.seealso: [](chapter_ts), `TSBASICSYMPLECTIC`
+.seealso: [](ch_ts), `TSBASICSYMPLECTIC`
 @*/
 PetscErrorCode TSBasicSymplecticRegister(TSRosWType name, PetscInt order, PetscInt s, PetscReal c[], PetscReal d[])
 {
@@ -163,9 +163,9 @@ PetscErrorCode TSBasicSymplecticRegister(TSRosWType name, PetscInt order, PetscI
   BasicSymplecticScheme     scheme;
 
   PetscFunctionBegin;
-  PetscValidCharPointer(name, 1);
-  PetscValidRealPointer(c, 4);
-  PetscValidRealPointer(d, 5);
+  PetscAssertPointer(name, 1);
+  PetscAssertPointer(c, 4);
+  PetscAssertPointer(d, 5);
 
   PetscCall(TSBasicSymplecticInitializePackage());
   PetscCall(PetscNew(&link));
@@ -184,17 +184,20 @@ PetscErrorCode TSBasicSymplecticRegister(TSRosWType name, PetscInt order, PetscI
 /*
 The simplified form of the equations are:
 
-$ p_{i+1} = p_i + c_i*g(q_i)*h
-$ q_{i+1} = q_i + d_i*f(p_{i+1},t_{i+1})*h
+.vb
+ q_{i+1} = q_i + c_i*g(p_i)*h
+ p_{i+1} = p_i + d_i*f(q_{i+1})*h
+.ve
 
 Several symplectic integrators are given below. An illustrative way to use them is to consider a particle with position q and velocity p.
 
 To apply a timestep with values c_{1,2},d_{1,2} to the particle, carry out the following steps:
-
-- Update the velocity of the particle by adding to it its acceleration multiplied by c_1
-- Update the position of the particle by adding to it its (updated) velocity multiplied by d_1
-- Update the velocity of the particle by adding to it its acceleration (at the updated position) multiplied by c_2
-- Update the position of the particle by adding to it its (double-updated) velocity multiplied by d_2
+.vb
+- Update the position of the particle by adding to it its velocity multiplied by c_1
+- Update the velocity of the particle by adding to it its acceleration (at the updated position) multiplied by d_1
+- Update the position of the particle by adding to it its (updated) velocity multiplied by c_2
+- Update the velocity of the particle by adding to it its acceleration (at the updated position) multiplied by d_2
+.ve
 
 */
 static PetscErrorCode TSStep_BasicSymplectic(TS ts)
@@ -204,45 +207,40 @@ static PetscErrorCode TSStep_BasicSymplectic(TS ts)
   Vec                   solution = ts->vec_sol, update = bsymp->update, q, p, q_update, p_update;
   IS                    is_q = bsymp->is_q, is_p = bsymp->is_p;
   TS                    subts_q = bsymp->subts_q, subts_p = bsymp->subts_p;
-  PetscBool             stageok;
-  PetscReal             next_time_step = ts->time_step;
+  PetscBool             stageok = PETSC_TRUE;
+  PetscReal             ptime = ts->ptime, next_time_step = ts->time_step;
   PetscInt              iter;
 
   PetscFunctionBegin;
-  PetscCall(VecGetSubVector(solution, is_q, &q));
-  PetscCall(VecGetSubVector(solution, is_p, &p));
   PetscCall(VecGetSubVector(update, is_q, &q_update));
   PetscCall(VecGetSubVector(update, is_p, &p_update));
-
   for (iter = 0; iter < scheme->s; iter++) {
-    PetscCall(TSPreStage(ts, ts->ptime));
-    /* update velocity p */
-    if (scheme->c[iter]) {
-      PetscCall(TSComputeRHSFunction(subts_p, ts->ptime, q, p_update));
-      PetscCall(VecAXPY(p, scheme->c[iter] * ts->time_step, p_update));
-    }
+    PetscCall(TSPreStage(ts, ptime));
+    PetscCall(VecGetSubVector(solution, is_q, &q));
+    PetscCall(VecGetSubVector(solution, is_p, &p));
     /* update position q */
+    if (scheme->c[iter]) {
+      PetscCall(TSComputeRHSFunction(subts_q, ptime, p, q_update));
+      PetscCall(VecAXPY(q, scheme->c[iter] * ts->time_step, q_update));
+    }
+    /* update velocity p */
     if (scheme->d[iter]) {
-      PetscCall(TSComputeRHSFunction(subts_q, ts->ptime, p, q_update));
-      PetscCall(VecAXPY(q, scheme->d[iter] * ts->time_step, q_update));
-      ts->ptime = ts->ptime + scheme->d[iter] * ts->time_step;
+      ptime = ptime + scheme->d[iter] * ts->time_step;
+      PetscCall(TSComputeRHSFunction(subts_p, ptime, q, p_update));
+      PetscCall(VecAXPY(p, scheme->d[iter] * ts->time_step, p_update));
     }
-    PetscCall(TSPostStage(ts, ts->ptime, 0, &solution));
-    PetscCall(TSAdaptCheckStage(ts->adapt, ts, ts->ptime, solution, &stageok));
-    if (!stageok) {
-      ts->reason = TS_DIVERGED_STEP_REJECTED;
-      PetscFunctionReturn(PETSC_SUCCESS);
-    }
-    PetscCall(TSFunctionDomainError(ts, ts->ptime + ts->time_step, update, &stageok));
-    if (!stageok) {
-      ts->reason = TS_DIVERGED_STEP_REJECTED;
-      PetscFunctionReturn(PETSC_SUCCESS);
-    }
+    PetscCall(VecRestoreSubVector(solution, is_q, &q));
+    PetscCall(VecRestoreSubVector(solution, is_p, &p));
+    PetscCall(TSPostStage(ts, ptime, 0, &solution));
+    PetscCall(TSAdaptCheckStage(ts->adapt, ts, ptime, solution, &stageok));
+    if (!stageok) goto finally;
+    PetscCall(TSFunctionDomainError(ts, ptime, solution, &stageok));
+    if (!stageok) goto finally;
   }
 
-  ts->time_step = next_time_step;
-  PetscCall(VecRestoreSubVector(solution, is_q, &q));
-  PetscCall(VecRestoreSubVector(solution, is_p, &p));
+finally:
+  if (!stageok) ts->reason = TS_DIVERGED_STEP_REJECTED;
+  else ts->ptime += next_time_step;
   PetscCall(VecRestoreSubVector(update, is_q, &q_update));
   PetscCall(VecRestoreSubVector(update, is_p, &p_update));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -372,19 +370,19 @@ static PetscErrorCode TSComputeLinearStability_BasicSymplectic(TS ts, PetscReal 
   Logically Collective
 
   Input Parameters:
-+  ts - timestepping context
--  bsymptype - type of the symplectic scheme
++ ts        - timestepping context
+- bsymptype - type of the symplectic scheme
 
   Options Database Key:
-.  -ts_basicsymplectic_type <scheme> - select the scheme
+. -ts_basicsymplectic_type <scheme> - select the scheme
 
   Level: intermediate
 
   Note:
-    The symplectic solver always expects a two-way splitting with the split names being "position" and "momentum". Each split is associated with an `IS` object and a sub-`TS`
-    that is intended to store the user-provided RHS function.
+  The symplectic solver always expects a two-way splitting with the split names being "position" and "momentum". Each split is associated with an `IS` object and a sub-`TS`
+  that is intended to store the user-provided RHS function.
 
-.seealso: [](chapter_ts), `TSBASICSYMPLECTIC`, `TSBasicSymplecticType`, `TSBasicSymplecticSetType()`
+.seealso: [](ch_ts), `TSBASICSYMPLECTIC`, `TSBasicSymplecticType`
 @*/
 PetscErrorCode TSBasicSymplecticSetType(TS ts, TSBasicSymplecticType bsymptype)
 {
@@ -400,12 +398,12 @@ PetscErrorCode TSBasicSymplecticSetType(TS ts, TSBasicSymplecticType bsymptype)
   Logically Collective
 
   Input Parameters:
-+  ts - timestepping context
--  bsymptype - type of the basic symplectic scheme
++ ts        - timestepping context
+- bsymptype - type of the basic symplectic scheme
 
   Level: intermediate
 
-.seealso: [](chapter_ts), `TSBASICSYMPLECTIC`, `TSBasicSymplecticType`, `TSBasicSymplecticSetType()`
+.seealso: [](ch_ts), `TSBASICSYMPLECTIC`, `TSBasicSymplecticType`, `TSBasicSymplecticSetType()`
 @*/
 PetscErrorCode TSBasicSymplecticGetType(TS ts, TSBasicSymplecticType *bsymptype)
 {
@@ -459,7 +457,7 @@ static PetscErrorCode TSBasicSymplecticGetType_BasicSymplectic(TS ts, TSBasicSym
   H(q,p,t) = T(p,t) + V(q,t).
 .ve
 
-  As a result, the system can be genearlly represented by
+  As a result, the system can be generally represented by
 .vb
   qdot = f(p,t) = dT(p,t)/dp
   pdot = g(q,t) = -dV(q,t)/dq
@@ -482,7 +480,7 @@ static PetscErrorCode TSBasicSymplecticGetType_BasicSymplectic(TS ts, TSBasicSym
   Reference:
 . * -  wikipedia (https://en.wikipedia.org/wiki/Symplectic_integrator)
 
-.seealso: [](chapter_ts), `TSCreate()`, `TSSetType()`, `TSRHSSplitSetIS()`, `TSRHSSplitSetRHSFunction()`, `TSType`
+.seealso: [](ch_ts), `TSCreate()`, `TSSetType()`, `TSRHSSplitSetIS()`, `TSRHSSplitSetRHSFunction()`, `TSType`
 M*/
 PETSC_EXTERN PetscErrorCode TSCreate_BasicSymplectic(TS ts)
 {

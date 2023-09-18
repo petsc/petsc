@@ -258,12 +258,12 @@ PETSC_EXTERN PetscErrorCode TaoCreate_BLMVM(Tao tao)
   TaoLMVMRecycle - Enable/disable recycling of the QN history between subsequent `TaoSolve()` calls.
 
   Input Parameters:
-+  tao  - the `Tao` solver context
--  flg - Boolean flag for recycling (`PETSC_TRUE` or `PETSC_FALSE`)
++ tao - the `Tao` solver context
+- flg - Boolean flag for recycling (`PETSC_TRUE` or `PETSC_FALSE`)
 
   Level: intermediate
 
-seealso: `Tao`, `TAOLMVM`, `TAOBLMVM`
+.seealso: `Tao`, `TAOLMVM`, `TAOBLMVM`
 @*/
 PetscErrorCode TaoLMVMRecycle(Tao tao, PetscBool flg)
 {
@@ -288,8 +288,8 @@ PetscErrorCode TaoLMVMRecycle(Tao tao, PetscBool flg)
   TaoLMVMSetH0 - Set the initial Hessian for the QN approximation
 
   Input Parameters:
-+  tao  - the `Tao` solver context
--  H0 - `Mat` object for the initial Hessian
++ tao - the `Tao` solver context
+- H0  - `Mat` object for the initial Hessian
 
   Level: advanced
 
@@ -320,10 +320,10 @@ PetscErrorCode TaoLMVMSetH0(Tao tao, Mat H0)
   TaoLMVMGetH0 - Get the matrix object for the QN initial Hessian
 
   Input Parameter:
-.  tao  - the `Tao` solver context
+. tao - the `Tao` solver context
 
   Output Parameter:
-.  H0 - `Mat` object for the initial Hessian
+. H0 - `Mat` object for the initial Hessian
 
   Level: advanced
 
@@ -354,14 +354,14 @@ PetscErrorCode TaoLMVMGetH0(Tao tao, Mat *H0)
   TaoLMVMGetH0KSP - Get the iterative solver for applying the inverse of the QN initial Hessian
 
   Input Parameter:
-.  tao  - the `Tao` solver context
+. tao - the `Tao` solver context
 
   Output Parameter:
-.  ksp - `KSP` solver context for the initial Hessian
+. ksp - `KSP` solver context for the initial Hessian
 
   Level: advanced
 
-.seealso: `Tao`, `TAOLMVM`, `TAOBLMVM``TaoLMVMGetH0()`, `TaoLMVMGetH0KSP()`
+.seealso: `Tao`, `TAOLMVM`, `TAOBLMVM``TaoLMVMGetH0()`
 @*/
 PetscErrorCode TaoLMVMGetH0KSP(Tao tao, KSP *ksp)
 {

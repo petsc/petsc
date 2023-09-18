@@ -61,7 +61,7 @@ PetscErrorCode VecView_Binary(Vec vec, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode VecLoad_Binary(Vec vec, PetscViewer viewer)
+static PetscErrorCode VecLoad_Binary(Vec vec, PetscViewer viewer)
 {
   PetscBool    skipHeader, flg;
   PetscInt     tr[2], rows, N, n, s, bs;
@@ -109,7 +109,7 @@ PetscErrorCode VecLoad_Binary(Vec vec, PetscViewer viewer)
 }
 
 #if defined(PETSC_HAVE_HDF5)
-PetscErrorCode VecLoad_HDF5(Vec xin, PetscViewer viewer)
+static PetscErrorCode VecLoad_HDF5(Vec xin, PetscViewer viewer)
 {
   hid_t        scalartype; /* scalar type (H5T_NATIVE_FLOAT or H5T_NATIVE_DOUBLE) */
   PetscScalar *x, *arr;
@@ -147,7 +147,7 @@ PetscErrorCode VecLoad_HDF5(Vec xin, PetscViewer viewer)
   #include <petsc/private/vieweradiosimpl.h>
   #include <petsc/private/viewerimpl.h>
 
-PetscErrorCode VecLoad_ADIOS(Vec xin, PetscViewer viewer)
+static PetscErrorCode VecLoad_ADIOS(Vec xin, PetscViewer viewer)
 {
   PetscViewer_ADIOS *adios = (PetscViewer_ADIOS *)viewer->data;
   PetscScalar       *x;
@@ -229,28 +229,28 @@ PetscErrorCode VecLoad_Default(Vec newvec, PetscViewer viewer)
 }
 
 /*@
-  VecChop - Set all values in the vector with an absolute value less than the tolerance to zero
+  VecFilter - Set all values in the vector with an absolute value less than or equal to the tolerance to zero
 
   Input Parameters:
 + v   - The vector
 - tol - The zero tolerance
 
   Output Parameter:
-. v - The chopped vector
+. v - The filtered vector
 
   Level: intermediate
 
-.seealso: `VecCreate()`, `VecSet()`
+.seealso: `VecCreate()`, `VecSet()`, `MatFilter()`
 @*/
-PetscErrorCode VecChop(Vec v, PetscReal tol)
+PetscErrorCode VecFilter(Vec v, PetscReal tol)
 {
   PetscScalar *a;
-  PetscInt     n, i;
+  PetscInt     n;
 
   PetscFunctionBegin;
   PetscCall(VecGetLocalSize(v, &n));
   PetscCall(VecGetArray(v, &a));
-  for (i = 0; i < n; ++i) {
+  for (PetscInt i = 0; i < n; ++i) {
     if (PetscAbsScalar(a[i]) < tol) a[i] = 0.0;
   }
   PetscCall(VecRestoreArray(v, &a));

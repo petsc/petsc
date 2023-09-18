@@ -17,7 +17,7 @@ PetscErrorCode MatDumpSPAI(Mat A, FILE *file)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
-  PetscValidPointer(file, 2);
+  PetscAssertPointer(file, 2);
   PetscCall(PetscObjectGetComm((PetscObject)A, &comm));
   PetscCallMPI(MPI_Comm_size(comm, &size));
   PetscCheck(size == 1, comm, PETSC_ERR_SUP, "Only single processor dumps");
@@ -43,7 +43,7 @@ PetscErrorCode VecDumpSPAI(Vec b, FILE *file)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(b, VEC_CLASSID, 1);
-  PetscValidPointer(file, 2);
+  PetscAssertPointer(file, 2);
   PetscCall(VecGetSize(b, &n));
   PetscCall(VecGetArrayRead(b, &array));
   fprintf(file, "%" PetscInt_FMT "\n", n);

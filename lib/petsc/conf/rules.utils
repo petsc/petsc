@@ -1,4 +1,4 @@
-# -*- mode: makefile -*-
+# -*- mode: makefile-gmake -*-
 #
 #    Contains rules that are shared between SLEPc and PETSc
 #
@@ -45,10 +45,16 @@ getblaslapacklibs:
 getautoconfargs:
 	-@echo CC='"${CC}"' CXX='"${CXX}"'  FC='"${FC}"' CFLAGS='"${CC_FLAGS}"' CXXFLAGS='"${CXX_FLAGS}"' FCFLAGS='"${FC_FLAGS}"' LIBS='"${C_SH_LIB_PATH} ${PETSC_TS_LIB}"'
 
-#********* Rules for make clangformat and checking violation of coding standards **************************************************************
+#********* Rules for checking the PETSc source code, and comments do not violate PETSc standards. And for properly formatting source code and manual pages
 
-# Format all the source code in the given directory and down according to the file .clang_format
-clangformat:
+# Check the version of clang-format matches PETSc requirement
+checkclangformatversion:
+	@version=`clang-format --version | cut -d" " -f3 | cut -d"." -f 1` ;\
+         if [ "$$version" == "version" ]; then version=`clang-format --version | cut -d" " -f4 | cut -d"." -f 1`; fi;\
+         if [ $$version != 16 ]; then echo "Require clang-format version 16! Currently used clang-format version is $$version" ;false ; fi
+
+# Format all the source code in the given directory and down according to the file $PETSC_DIR/.clang_format
+clangformat: checkclangformatversion
 	-@git --no-pager ls-files -z ${GITCFSRC} | xargs -0 -P $(MAKE_NP) -L 10 clang-format -i
 
 GITSRC = '*.[chF]' '*.F90' '*.hpp' '*.cpp' '*.cxx' '*.cu' ${GITSRCEXCL}
@@ -66,39 +72,22 @@ GITCFSRCEXCL = \
 ':!systems/*' \
 ':!*benchmarks/*' \
 ':!*binding/*' \
-':!*-custom/*' \
 ':!*f90-mod/*'
 
+# Check that copies of external source code that live in the PETSc repository have not been changed by developer
 checkbadFileChange:
 	@git diff --stat --exit-code `lib/petsc/bin/maint/check-merge-branch.sh`..HEAD -- src/sys/yaml/src src/sys/yaml/include src/sys/yaml/License include/petsc/private/valgrind include/petsc/private/kash
 
 vermin:
-	@vermin -vvv -t=3.4- ${VERMIN_OPTIONS} ${PETSC_DIR}/config
+	@vermin --violations -t=3.4- ${VERMIN_OPTIONS} ${PETSC_DIR}/config
 
-lint:
-	${PYTHON} ${PETSC_DIR}/lib/petsc/bin/maint/petsclinter --verbose=${V} --apply-patches=${REPLACE} $(LINTER_OPTIONS)
-
-help-lint:
-	@${PYTHON} ${PETSC_DIR}/lib/petsc/bin/maint/petsclinter --help
-	-@echo "Basic usage:"
-	-@echo "   make lint      <options>"
-	-@echo "   make test-lint <options> <test only options>"
-	-@echo
-	-@echo "Options:"
-	-@echo "  V=[1,0]                                Enable or disable verbose output"
-	-@echo "  LINTER_OPTIONS=\"--opt1 --opt2 ...\"     See above for available options"
-	-@echo
-	-@echo "Test Only Options:"
-	-@echo "  REPLACE=[1,0]                          Enable or disable replacing test output"
-	-@echo
-
-test-lint:
-	${PYTHON} ${PETSC_DIR}/lib/petsc/bin/maint/petsclinter ${PETSC_DIR}/src/sys/tests/linter --test -j0 --werror --replace=${REPLACE} --verbose=${V} $(LINTER_OPTIONS)
-
+# Check that source code does not violate basic PETSc coding standards
 checkbadSource:
 	@git --no-pager grep -n -P 'self\.gitcommit' -- config/BuildSystem/config/packages | grep 'origin/' ; if [[ "$$?" == "0" ]]; then echo "Error: Do not use a branch name in a configure package file"; false; fi
 	-@${RM} -f checkbadSource.out
-	-@echo "------Double blank lines in file -----------------------------------" > checkbadSource.out
+	-@touch checkbadSource.out
+	-@${PYTHON} ${PETSC_DIR}/lib/petsc/bin/maint/check_header_guard.py --action=check --kind=pragma_once -- ./src ./include >> checkbadSource.out
+	-@echo "------Double blank lines in file -----------------------------------" >> checkbadSource.out
 	-@git --no-pager grep -n -P '^$$' -- ${GITSRC} > doublelinecheck.out
 	-@${PYTHON} ${PETSC_DIR}/lib/petsc/bin/maint/doublelinecheck.py doublelinecheck.out >> checkbadSource.out
 	-@${RM} -f doublelinecheck.out
@@ -109,7 +98,7 @@ checkbadSource:
 	-@echo "------Two ;; -------------------------------------------------------" >> checkbadSource.out
 	-@git --no-pager grep -n -P -e ';;' -- ${GITSRC} | grep -v ' for (' >> checkbadSource.out;true
 	-@echo "------PetscCall for an MPI error code ------------------------------" >> checkbadSource.out
-	-@git --no-pager grep -n -P -e '= MPI[U]*_\w*\(.*PetscCall' -- ${GITSRC} | grep -v MPIU_File >> checkbadSource.out;true
+	-@git --no-pager grep -n -P -e 'PetscCall\(MPI[U]*_\w*\(.*\)\);' -- ${GITSRC} | grep -Ev 'MPIU_Allreduce|MPIU_File' >> checkbadSource.out;true
 	-@echo "------Missing if (ierr) return ierr; -------------------------------" >> checkbadSource.out
 	-@git --no-pager grep -n -P -e 'ierr = PetscInitialize\(' -- '*.[ch]' '*.cpp' '*.cxx' '*.cu' | grep -v 'if (ierr) return ierr;' | grep -E "(test|tutorial)" >> checkbadSource.out;true
 	-@echo "------DOS file (with DOS newlines) ---------------------------------" >> checkbadSource.out
@@ -119,15 +108,13 @@ checkbadSource:
 	-@echo "------PetscCall following SETERRQ ----------------------------------" >> checkbadSource.out
 	-@git --no-pager grep -n -P 'SETERRQ' -- ${GITSRC} | grep ";PetscCall" >> checkbadSource.out;true
 	-@echo "------SETERRQ() without defined error code -------------------------" >> checkbadSource.out
-	-@git --no-pager grep -n -P 'SETERRQ\((?!\))' -- ${GITSRC} | grep -v PETSC_ERR  | grep " if " | grep -v "__VA_ARGS__" | grep -v flow.c >> checkbadSource.out;true
+	-@git --no-pager grep -n -P 'SETERRQ\((?!\))' -- ${GITSRC} | grep -v PETSC_ERR  | grep " if " | grep -v "__VA_ARGS__" | grep -v "then;" | grep -v flow.c >> checkbadSource.out;true
 	-@echo "------SETERRQ() with trailing newline ------------------------------" >> checkbadSource.out
 	-@git --no-pager grep -n -P "SETERRQ[1-9]?.*\\\n\"" -- ${GITSRC} >> checkbadSource.out;true
 	-@echo "------Define keyword used in test definition -----------------------" >> checkbadSource.out
 	-@git --no-pager grep -n -P -e 'requires:.*define\(' -- ${GITSRC} >> checkbadSource.out;true
-	-@echo "------No new line at end of file -----------------------------------" >> checkbadSource.out
-	-@git --no-pager grep -n -P '[^\n]\z' -- ${GITSRC} >> checkbadSource.out;true
 	-@echo "------Using if (condition) SETERRQ(...) instead of PetscCheck() ----" >> checkbadSource.out
-	-@git --no-pager grep -n -P ' if +(.*) *SETERRQ' -- ${GITSRC} | grep -v 'PetscUnlikelyDebug' | grep -v 'petscerror.h' >> checkbadSource.out;true
+	-@git --no-pager grep -n -P ' if +(.*) *SETERRQ' -- ${GITSRC} | grep -v 'PetscUnlikelyDebug' | grep -v 'petscerror.h' | grep -v "then;" | grep -v "__VA_ARGS__"  >> checkbadSource.out;true
 	-@echo "------Using if (PetscUnlikelyDebug(condition)) SETERRQ(...) instead of PetscAssert()" >> checkbadSource.out
 	-@git --no-pager grep -n -P -E ' if +\(PetscUnlikelyDebug.*\) *SETERRQ' -- ${GITSRC} | grep -v petscerror.h >> checkbadSource.out;true
 	-@echo "------Using PetscFunctionReturn(ierr) ------------------------------" >> checkbadSource.out
@@ -136,7 +123,13 @@ checkbadSource:
 	-@git --no-pager grep -n -P 'define .*\w+;\s+do' -- ${GITSRC} | grep -E -v '(PetscMacroReturns|PetscDrawCollectiveBegin|MatPreallocateBegin|PetscOptionsBegin|PetscObjectOptionsBegin|PetscOptionsHeadEnd)' >> checkbadSource.out;true
 	-@echo "------Defining an error checking macro using CHKERR style ----------" >> checkbadSource.out
 	-@git --no-pager grep -n -P 'define\s+CHKERR\w*\(.*\)\s*do\s+{' -- ${GITSRC} >> checkbadSource.out;true
-	@a=`cat checkbadSource.out | wc -l`; l=`expr $$a - 18` ;\
+	-@echo "------Using Petsc[Array|Mem]cpy() for ops instead of assignment ----" >> checkbadSource.out
+	-@git --no-pager grep -n -P 'cpy\(.*(.|->)ops, .*\)' -- ${GITSRC} >> checkbadSource.out;true
+	-@echo "------Extra spaces in test harness rules ---------------------------" >> checkbadSource.out
+	-@git --no-pager grep -n -P '^[ ]*(suffix|output_file|nsize|requires|args): [-.!0-9a-zA-Z()_{}]*  [ ]*' -- ${GITSRC} >> checkbadSource.out;true
+	-@echo "------Using PetscInfo() without carriage return --------------------" >> checkbadSource.out
+	-@git --no-pager grep -n -P 'PetscCall\(PetscInfo\(' -- ${GITSRC} | grep -v '\\n' >> checkbadSource.out;true
+	@a=`cat checkbadSource.out | wc -l`; l=`expr $$a - 20` ;\
          if [ $$l -gt 0 ] ; then \
            echo $$l " files with errors detected in source code formatting" ;\
            cat checkbadSource.out ;\
@@ -153,6 +146,50 @@ checkbadSource:
 	   ${RM} -f badSourceChar.out;\
          fi
 	@test ! -s badSourceChar.out
+
+#  Run a linter to check (and fix) the formatting of PETSc manual pages
+lint:
+	${PYTHON} ${PETSC_DIR}/lib/petsc/bin/maint/petsclinter --verbose=${V} --apply-patches=${REPLACE} $(LINTER_OPTIONS) ${DIRECTORY}
+
+help-lint:
+	@${PYTHON} ${PETSC_DIR}/lib/petsc/bin/maint/petsclinter --help
+	-@echo "Basic usage:"
+	-@echo "   make lint      <options> [DIRECTORY=directory]"
+	-@echo "   make test-lint <options> <test only options>"
+	-@echo
+	-@echo "Options:"
+	-@echo "  V=[0, 1, 2, 3]                        Enable increasingly verbose output"
+	-@echo "  LINTER_OPTIONS=\"--opt1 --opt2 ...\"  See above for available options"
+	-@echo
+	-@echo "Test Only Options:"
+	-@echo "  LINTER_SKIP_MYPY=[1, 0]               Enable or disable mypy checks"
+	-@echo "  REPLACE=[1, 0]                        Enable or disable replacing test output"
+	-@echo
+
+checkvermin_exist:
+	@ret=`which vermin > /dev/null`; \
+	if [ $$? -ne 0 ]; then \
+          echo "vermin is required, please install: python3 -m pip install vermin"; \
+          false; \
+        fi
+
+checkmypy_exist:
+	@ret=`which mypy > /dev/null`; \
+	if [ $$? -ne 0 ]; then \
+          echo "MyPy is required, please install: python3 -m pip install mypy"; \
+          false; \
+        fi
+
+LINTER_SKIP_MYPY ?= 0
+
+test-lint: checkvermin_exist checkmypy_exist
+	vermin --config-file ${PETSC_DIR}/lib/petsc/bin/maint/petsclinter/pyproject.toml -- ${PETSC_DIR}/lib/petsc/bin/maint/petsclinter
+	if [[ "$(LINTER_SKIP_MYPY)" == "0" ]]; then \
+          cd ${PETSC_DIR}/lib/petsc/bin/maint/petsclinter && mypy . ; \
+        fi
+	${PYTHON} ${PETSC_DIR}/lib/petsc/bin/maint/petsclinter/petsclinter/pkg_consistency_checks.py
+	${PYTHON} ${PETSC_DIR}/lib/petsc/bin/maint/petsclinter ${PETSC_DIR}/src/sys/tests/linter --test -j0 --werror --replace=${REPLACE} --verbose=${V} $(LINTER_OPTIONS)
+
 
 #  Lists all the URLs in the PETSc repository that are unaccessible, nonexistent, or permanently moved (301)
 #  REPLACE=1 locations marked as permanently moved (301) are replaced in the repository

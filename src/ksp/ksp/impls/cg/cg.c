@@ -188,7 +188,7 @@ static PetscErrorCode KSPSolve_CG(KSP ksp)
   PetscCall(VecXDot(B, X, &a));
   cg->obj -= 0.5 * PetscRealPart(a);
 
-  PetscCall(PetscInfo(ksp, "it %" PetscInt_FMT " obj %g\n", ksp->its, (double)cg->obj));
+  if (testobj) PetscCall(PetscInfo(ksp, "it %" PetscInt_FMT " obj %g\n", ksp->its, (double)cg->obj));
   PetscCall(KSPLogResidualHistory(ksp, dp));
   PetscCall(KSPMonitor(ksp, ksp->its, dp));
   ksp->rnorm = dp;
@@ -267,7 +267,7 @@ static PetscErrorCode KSPSolve_CG(KSP ksp)
         PetscCall(VecAXPY(X, a, P)); /*     x <- x + ap                      */
         cg->obj += PetscRealPart(a * (0.5 * a * dpi - betaold));
       }
-      PetscCall(PetscInfo(ksp, "it %" PetscInt_FMT " N obj %g\n", i + 1, (double)cg->obj));
+      if (testobj) PetscCall(PetscInfo(ksp, "it %" PetscInt_FMT " N obj %g\n", i + 1, (double)cg->obj));
       if (ksp->converged_neg_curve) {
         PetscCall(PetscInfo(ksp, "converged due to negative curvature: %g\n", (double)(PetscRealPart(dpi))));
         ksp->reason = KSP_CONVERGED_NEG_CURVE;
@@ -290,7 +290,7 @@ static PetscErrorCode KSPSolve_CG(KSP ksp)
           PetscCall(VecAXPY(X, dp, P)); /*     x <- x + ap                      */
           cg->obj += PetscRealPart(dp * (0.5 * dp * dpi - beta));
         }
-        PetscCall(PetscInfo(ksp, "it %" PetscInt_FMT " R obj %g\n", i + 1, (double)cg->obj));
+        if (testobj) PetscCall(PetscInfo(ksp, "it %" PetscInt_FMT " R obj %g\n", i + 1, (double)cg->obj));
         break;
       }
     }
@@ -312,7 +312,7 @@ static PetscErrorCode KSPSolve_CG(KSP ksp)
       dp = 0.0;
     }
     cg->obj -= PetscRealPart(0.5 * a * betaold);
-    PetscCall(PetscInfo(ksp, "it %" PetscInt_FMT " obj %g\n", i + 1, (double)cg->obj));
+    if (testobj) PetscCall(PetscInfo(ksp, "it %" PetscInt_FMT " obj %g\n", i + 1, (double)cg->obj));
 
     ksp->rnorm = dp;
     PetscCall(KSPLogResidualHistory(ksp, dp));
@@ -665,7 +665,7 @@ PETSC_INTERN PetscErrorCode KSPBuildResidual_CG(KSP ksp, Vec t, Vec v, Vec *V)
 -  * - Josef Malek and Zdenek Strakos, Preconditioning and the Conjugate Gradient Method in the Context of Solving PDEs,
     SIAM, 2014.
 
-.seealso: [](chapter_ksp), `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPSetComputeEigenvalues()`, `KSPComputeEigenvalues()`
+.seealso: [](ch_ksp), `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPSetComputeEigenvalues()`, `KSPComputeEigenvalues()`
           `KSPCGSetType()`, `KSPCGUseSingleReduction()`, `KSPPIPECG`, `KSPGROPPCG`
 M*/
 

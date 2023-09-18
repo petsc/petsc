@@ -31,7 +31,7 @@ static PetscErrorCode TestNestedPetscDeviceContextForkJoin(PetscDeviceContext pa
   PetscDeviceContext *subsub;
 
   PetscFunctionBegin;
-  PetscValidPointer(sub, 2);
+  PetscAssertPointer(sub, 2);
   PetscCall(AssertPetscDeviceContextsValidAndEqual(parCtx, sub[0], "Current global context does not match expected global context"));
   /* create some children from an active child */
   PetscCall(DoFork(sub[1], nsub, &subsub));

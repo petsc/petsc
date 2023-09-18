@@ -38,7 +38,8 @@ static PetscErrorCode DMPlexApplyLimiter_Internal(DM dm, DM dmCell, PetscLimiter
     for (d = 0; d < dof; ++d) {
       /* We use the symmetric slope limited form of Berger, Aftosmis, and Murman 2005 */
       PetscReal denom = DMPlex_DotD_Internal(dim, &cgrad[d * dim], v);
-      PetscReal phi, flim = 0.5 * PetscRealPart(ncx[d] - cx[d]) / denom;
+      PetscReal fact  = denom == 0 ? 1.0e+30 : 1 / denom;
+      PetscReal phi, flim = 0.5 * PetscRealPart(ncx[d] - cx[d]) * fact;
 
       PetscCall(PetscLimiterLimit(lim, flim, &phi));
       cellPhi[d] = PetscMin(cellPhi[d], phi);
@@ -147,7 +148,7 @@ PetscErrorCode DMPlexReconstructGradients_Internal(DM dm, PetscFV fvm, PetscInt 
   DMPlexReconstructGradientsFVM - reconstruct the gradient of a vector using a finite volume method.
 
   Input Parameters:
-+ dm - the mesh
++ dm   - the mesh
 - locX - the local representation of the vector
 
   Output Parameter:
@@ -155,7 +156,7 @@ PetscErrorCode DMPlexReconstructGradients_Internal(DM dm, PetscFV fvm, PetscInt 
 
   Level: developer
 
-.seealso: [](chapter_unstructured), `DM`, `Vec`, `DMPlexGetGradientDM()`
+.seealso: [](ch_unstructured), `DM`, `Vec`, `DMPlexGetGradientDM()`
 @*/
 PetscErrorCode DMPlexReconstructGradientsFVM(DM dm, Vec locX, Vec grad)
 {

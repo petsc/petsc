@@ -666,7 +666,7 @@ PetscErrorCode PCTFS_rvec_min_abs(PetscScalar *arg1, PetscScalar *arg2, PetscInt
 }
 
 /*********************************ivec.c*************************************/
-PetscErrorCode PCTFS_rvec_exists(PetscScalar *arg1, PetscScalar *arg2, PetscInt n)
+static PetscErrorCode PCTFS_rvec_exists(PetscScalar *arg1, PetscScalar *arg2, PetscInt n)
 {
   PetscFunctionBegin;
   while (n--) {
@@ -678,7 +678,7 @@ PetscErrorCode PCTFS_rvec_exists(PetscScalar *arg1, PetscScalar *arg2, PetscInt 
 }
 
 /***********************************ivec.c*************************************/
-PetscErrorCode PCTFS_rvec_non_uniform(PetscScalar *arg1, PetscScalar *arg2, PetscInt n, PetscInt *arg3)
+static PetscErrorCode PCTFS_rvec_non_uniform(PetscScalar *arg1, PetscScalar *arg2, PetscInt n, PetscInt *arg3)
 {
   PetscInt i, j, type;
 

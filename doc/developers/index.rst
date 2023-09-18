@@ -10,10 +10,10 @@ Information for PETSc developers and those interested in contributing.
    :maxdepth: 1
 
    communication
-   contributing
+   contributing/index
+   mrmanagement
+   development
    style
-   integration
-   pipelines
    buildsystem
    testing
    documentation

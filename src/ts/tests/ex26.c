@@ -5,25 +5,23 @@ static char help[] = "Solves the trivial ODE 2 du/dt = 1, u(0) = 0. \n\n";
 
 PetscErrorCode IFunction(TS, PetscReal, Vec, Vec, Vec, void *);
 PetscErrorCode IJacobian(TS, PetscReal, Vec, Vec, PetscReal, Mat, Mat, void *);
+PetscErrorCode RHSFunction(TS, PetscReal, Vec, Vec, void *);
 
 int main(int argc, char **argv)
 {
-  TS  ts;
-  Vec x;
-  Vec f;
-  Mat A;
+  TS        ts;
+  Vec       x;
+  Mat       A;
+  PetscBool flg = PETSC_FALSE, usingimex;
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
 
   PetscCall(TSCreate(PETSC_COMM_WORLD, &ts));
-  PetscCall(TSSetEquationType(ts, TS_EQ_ODE_IMPLICIT));
-  PetscCall(VecCreate(PETSC_COMM_WORLD, &f));
-  PetscCall(VecSetSizes(f, 1, PETSC_DECIDE));
-  PetscCall(VecSetFromOptions(f));
-  PetscCall(VecSetUp(f));
-  PetscCall(TSSetIFunction(ts, f, IFunction, NULL));
-  PetscCall(VecDestroy(&f));
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-set_implicit", &flg, NULL));
+  if (flg) PetscCall(TSSetEquationType(ts, TS_EQ_ODE_IMPLICIT));
+  PetscCall(TSSetIFunction(ts, NULL, IFunction, NULL));
+  PetscCall(TSSetRHSFunction(ts, NULL, RHSFunction, &usingimex));
 
   PetscCall(MatCreate(PETSC_COMM_WORLD, &A));
   PetscCall(MatSetSizes(A, 1, 1, PETSC_DECIDE, PETSC_DECIDE));
@@ -31,9 +29,6 @@ int main(int argc, char **argv)
   PetscCall(MatSetUp(A));
   PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
-  /* ensure that the Jacobian matrix has diagonal entries since that is required by TS */
-  PetscCall(MatShift(A, (PetscReal)1));
-  PetscCall(MatShift(A, (PetscReal)-1));
   PetscCall(TSSetIJacobian(ts, A, A, IJacobian, NULL));
   PetscCall(MatDestroy(&A));
 
@@ -45,16 +40,19 @@ int main(int argc, char **argv)
   PetscCall(VecDestroy(&x));
   PetscCall(TSSetFromOptions(ts));
 
+  /* Need to know if we are using an IMEX scheme to decide on the form
+     of the RHS function */
+  PetscCall(PetscObjectTypeCompare((PetscObject)ts, TSARKIMEX, &usingimex));
+  if (usingimex) {
+    PetscCall(TSARKIMEXGetFullyImplicit(ts, &flg));
+    if (flg) usingimex = PETSC_FALSE;
+  }
   PetscCall(TSSetStepNumber(ts, 0));
   PetscCall(TSSetTimeStep(ts, 1));
   PetscCall(TSSetTime(ts, 0));
   PetscCall(TSSetMaxTime(ts, PETSC_MAX_REAL));
   PetscCall(TSSetMaxSteps(ts, 3));
 
-  /*
-      When an ARKIMEX scheme with an explicit stage is used this will error with a message informing the user it is not possible to use
-      a non-trivial mass matrix with ARKIMEX schemes with explicit stages.
-  */
   PetscCall(TSSolve(ts, NULL));
 
   PetscCall(TSDestroy(&ts));
@@ -62,12 +60,20 @@ int main(int argc, char **argv)
   return 0;
 }
 
+PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec x, Vec f, void *ctx)
+{
+  PetscBool usingimex = *(PetscBool *)ctx;
+
+  PetscFunctionBeginUser;
+  PetscCall(VecSet(f, usingimex ? 0.5 : 1));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 PetscErrorCode IFunction(TS ts, PetscReal t, Vec x, Vec xdot, Vec f, void *ctx)
 {
   PetscFunctionBeginUser;
   PetscCall(VecCopy(xdot, f));
   PetscCall(VecScale(f, 2.0));
-  PetscCall(VecShift(f, -1.0));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -88,11 +94,11 @@ PetscErrorCode IJacobian(TS ts, PetscReal t, Vec x, Vec xdot, PetscReal shift, M
     test:
       suffix: arkimex_explicit_stage
       requires: !defined(PETSCTEST_VALGRIND) defined(PETSC_USE_DEBUG)
-      args: -ts_type arkimex -petsc_ci_portable_error_output -error_output_stdout
-      filter: grep -E -v "(options_left|memory block|leaked context|not freed before MPI_Finalize|Could be the program crashed)"
+      args: -ts_type arkimex -petsc_ci_portable_error_output -error_output_stdout -set_implicit
+      filter: grep -E -v "(memory block|leaked context|not freed before MPI_Finalize|Could be the program crashed)"
 
     test:
       suffix: arkimex_implicit_stage
-      args: -ts_type arkimex -ts_arkimex_type l2 -ts_monitor_solution -ts_monitor
+      args: -ts_type arkimex -ts_arkimex_type {{3 l2}} -ts_monitor_solution -ts_monitor
 
 TEST*/

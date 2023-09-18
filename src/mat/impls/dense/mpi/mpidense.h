@@ -1,3 +1,4 @@
+#pragma once
 
 #include <../src/mat/impls/dense/seq/dense.h>
 #include <petscsf.h>
@@ -69,6 +70,7 @@ PETSC_INTERN PetscErrorCode MatDenseRestoreColumnVecRead_MPIDense(Mat, PetscInt,
 PETSC_INTERN PetscErrorCode MatDenseRestoreColumnVec_MPIDense(Mat, PetscInt, Vec *);
 
 PETSC_INTERN PetscErrorCode MatCreate_MPIDense(Mat);
+PETSC_INTERN PetscErrorCode MatGetDiagonal_MPIDense(Mat, Vec);
 
 #if PetscDefined(HAVE_CUDA)
 PETSC_INTERN PetscErrorCode MatConvert_MPIDense_MPIDenseCUDA(Mat, MatType, MatReuse, Mat *);

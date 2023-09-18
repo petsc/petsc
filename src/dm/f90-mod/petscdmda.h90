@@ -12,6 +12,26 @@
         DM ::        da
       end type DMDALocalInfof90
 
+      Interface
+        Subroutine DMDAGetElements(dm,nen,nel,e,ierr)
+          import tDM
+          PetscInt nen,nel
+          PetscInt, pointer :: e(:)
+          PetscErrorCode ierr
+          DM dm
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine DMDARestoreElements(dm,nen,nel,e,ierr)
+          import tDM
+          PetscInt nen,nel
+          PetscInt, pointer :: e(:)
+          PetscErrorCode ierr
+          DM dm
+        End Subroutine
+      End Interface
+
       Interface DMDAVecGetArrayF90
         Subroutine DMDAVecGetArrayF901(da1, v,d1,ierr)
           import tDM,tVec

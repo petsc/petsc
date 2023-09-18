@@ -1,5 +1,4 @@
-#ifndef _SFALLGATHERV_H
-#define _SFALLGATHERV_H
+#pragma once
 
 #include <petsc/private/sfimpl.h> /*I "petscsf.h" I*/
 #include <../src/vec/is/sf/impls/basic/sfpack.h>
@@ -24,4 +23,3 @@ PETSC_INTERN PetscErrorCode PetscSFGetLeafRanks_Allgatherv(PetscSF, PetscInt *, 
 PETSC_INTERN PetscErrorCode PetscSFCreateLocalSF_Allgatherv(PetscSF, PetscSF *);
 PETSC_INTERN PetscErrorCode PetscSFGetGraph_Allgatherv(PetscSF, PetscInt *, PetscInt *, const PetscInt **, const PetscSFNode **);
 PETSC_INTERN PetscErrorCode PetscSFReduceEnd_Allgatherv(PetscSF, MPI_Datatype, const void *, void *, MPI_Op);
-#endif

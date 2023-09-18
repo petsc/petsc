@@ -248,7 +248,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_ExodusII(PetscViewer v)
 
 .seealso: `EXOGetVarIndex()`, `DMPlexView_ExodusII_Internal()`, `VecViewPlex_ExodusII_Nodal_Internal()`, `VecLoadNodal_PlexEXO()`, `VecLoadZonal_PlexEXO()`
 */
-PetscErrorCode EXOGetVarIndex_Internal(int exoid, ex_entity_type obj_type, const char name[], int *varIndex)
+static PetscErrorCode EXOGetVarIndex_Internal(int exoid, ex_entity_type obj_type, const char name[], int *varIndex)
 {
   int       num_vars, i, j;
   char      ext_name[MAX_STR_LENGTH + 1], var_name[MAX_STR_LENGTH + 1];
@@ -283,8 +283,8 @@ PetscErrorCode EXOGetVarIndex_Internal(int exoid, ex_entity_type obj_type, const
   Collective
 
   Input Parameters:
-+ dm  - The dm to be written
-. viewer - an exodusII viewer
++ dm     - The dm to be written
+- viewer - an exodusII viewer
 
   Level: beginner
 
@@ -307,6 +307,7 @@ PetscErrorCode EXOGetVarIndex_Internal(int exoid, ex_entity_type obj_type, const
 PetscErrorCode DMView_PlexExodusII(DM dm, PetscViewer viewer)
 {
   enum ElemType {
+    SEGMENT,
     TRI,
     QUAD,
     TET,
@@ -333,6 +334,8 @@ PetscErrorCode DMView_PlexExodusII(DM dm, PetscViewer viewer)
   PetscInt     num_vs, num_fs;
   PetscMPIInt  rank, size;
   const char  *dmName;
+  PetscInt     nodesLineP1[4] = {2, 0, 0, 0};
+  PetscInt     nodesLineP2[4] = {2, 0, 0, 1};
   PetscInt     nodesTriP1[4]  = {3, 0, 0, 0};
   PetscInt     nodesTriP2[4]  = {3, 3, 0, 0};
   PetscInt     nodesQuadP1[4] = {4, 0, 0, 0};
@@ -430,6 +433,10 @@ PetscErrorCode DMView_PlexExodusII(DM dm, PetscViewer viewer)
       PetscCall(ISGetSize(stratumIS, &csSize));
       PetscCall(DMPlexVecGetClosure(cdm, NULL, coord, cells[0], &closureSize, &xyz));
       switch (dim) {
+      case 1:
+        if (closureSize == 2 * dim) {
+          type[cs] = SEGMENT;
+        } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Number of vertices %" PetscInt_FMT " in dimension %" PetscInt_FMT " has no ExodusII type", closureSize / dim, dim);
       case 2:
         if (closureSize == 3 * dim) {
           type[cs] = TRI;
@@ -447,6 +454,7 @@ PetscErrorCode DMView_PlexExodusII(DM dm, PetscViewer viewer)
       default:
         SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Dimension %" PetscInt_FMT " not handled by ExodusII viewer", dim);
       }
+      if ((degree == 2) && (type[cs] == SEGMENT)) numNodes += csSize;
       if ((degree == 2) && (type[cs] == QUAD)) numNodes += csSize;
       if ((degree == 2) && (type[cs] == HEX)) {
         numNodes += csSize;
@@ -454,7 +462,10 @@ PetscErrorCode DMView_PlexExodusII(DM dm, PetscViewer viewer)
       }
       PetscCall(DMPlexVecRestoreClosure(cdm, NULL, coord, cells[0], &closureSize, &xyz));
       /* Set nodes and Element type */
-      if (type[cs] == TRI) {
+      if (type[cs] == SEGMENT) {
+        if (degree == 1) nodes[cs] = nodesLineP1;
+        else if (degree == 2) nodes[cs] = nodesLineP2;
+      } else if (type[cs] == TRI) {
         if (degree == 1) nodes[cs] = nodesTriP1;
         else if (degree == 2) nodes[cs] = nodesTriP2;
       } else if (type[cs] == QUAD) {
@@ -482,6 +493,7 @@ PetscErrorCode DMView_PlexExodusII(DM dm, PetscViewer viewer)
       PetscInt        edgesInClosure = 0, facesInClosure = 0, verticesInClosure = 0;
       PetscInt        csSize, c, connectSize, closureSize;
       char           *elem_type        = NULL;
+      char            elem_type_bar2[] = "BAR2", elem_type_bar3[] = "BAR3";
       char            elem_type_tri3[] = "TRI3", elem_type_quad4[] = "QUAD4";
       char            elem_type_tri6[] = "TRI6", elem_type_quad9[] = "QUAD9";
       char            elem_type_tet4[] = "TET4", elem_type_hex8[] = "HEX8";
@@ -491,7 +503,10 @@ PetscErrorCode DMView_PlexExodusII(DM dm, PetscViewer viewer)
       PetscCall(ISGetIndices(stratumIS, &cells));
       PetscCall(ISGetSize(stratumIS, &csSize));
       /* Set Element type */
-      if (type[cs] == TRI) {
+      if (type[cs] == SEGMENT) {
+        if (degree == 1) elem_type = elem_type_bar2;
+        else if (degree == 2) elem_type = elem_type_bar3;
+      } else if (type[cs] == TRI) {
         if (degree == 1) elem_type = elem_type_tri3;
         else if (degree == 2) elem_type = elem_type_tri6;
       } else if (type[cs] == QUAD) {
@@ -796,6 +811,11 @@ PetscErrorCode DMView_PlexExodusII(DM dm, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+static PetscErrorCode VecViewPlex_ExodusII_Nodal_Internal(Vec v, int exoid, int step, int offset);
+static PetscErrorCode VecViewPlex_ExodusII_Zonal_Internal(Vec v, int exoid, int step, int offset);
+static PetscErrorCode VecLoadPlex_ExodusII_Nodal_Internal(Vec v, int exoid, int step, int offset);
+static PetscErrorCode VecLoadPlex_ExodusII_Zonal_Internal(Vec v, int exoid, int step, int offset);
+
 /*
   VecView_PlexExodusII_Internal - Write a Vec corresponding in an exodus file
 
@@ -915,7 +935,7 @@ PetscErrorCode VecLoad_PlexExodusII_Internal(Vec v, PetscViewer viewer)
 
 .seealso: `EXOGetVarIndex_Internal()`, `DMPlexView_ExodusII_Internal()`, `VecLoadNodal_PlexEXO()`, `VecViewZonal_PlexEXO()`, `VecLoadZonal_PlexEXO()`
 @*/
-PetscErrorCode VecViewPlex_ExodusII_Nodal_Internal(Vec v, int exoid, int step, int offset)
+static PetscErrorCode VecViewPlex_ExodusII_Nodal_Internal(Vec v, int exoid, int step, int offset)
 {
   MPI_Comm           comm;
   PetscMPIInt        size;
@@ -988,7 +1008,7 @@ PetscErrorCode VecViewPlex_ExodusII_Nodal_Internal(Vec v, int exoid, int step, i
 
 .seealso: `EXOGetVarIndex_Internal()`, `DMPlexView_ExodusII_Internal()`, `VecViewPlex_ExodusII_Nodal_Internal()`, `VecViewZonal_PlexEXO()`, `VecLoadZonal_PlexEXO()`
 */
-PetscErrorCode VecLoadPlex_ExodusII_Nodal_Internal(Vec v, int exoid, int step, int offset)
+static PetscErrorCode VecLoadPlex_ExodusII_Nodal_Internal(Vec v, int exoid, int step, int offset)
 {
   MPI_Comm     comm;
   PetscMPIInt  size;
@@ -1058,7 +1078,7 @@ PetscErrorCode VecLoadPlex_ExodusII_Nodal_Internal(Vec v, int exoid, int step, i
 
 .seealso: `EXOGetVarIndex_Internal()`, `DMPlexView_ExodusII_Internal()`, `VecViewPlex_ExodusII_Nodal_Internal()`, `VecLoadPlex_ExodusII_Nodal_Internal()`, `VecLoadPlex_ExodusII_Zonal_Internal()`
 */
-PetscErrorCode VecViewPlex_ExodusII_Zonal_Internal(Vec v, int exoid, int step, int offset)
+static PetscErrorCode VecViewPlex_ExodusII_Zonal_Internal(Vec v, int exoid, int step, int offset)
 {
   MPI_Comm           comm;
   PetscMPIInt        size;
@@ -1155,7 +1175,7 @@ PetscErrorCode VecViewPlex_ExodusII_Zonal_Internal(Vec v, int exoid, int step, i
 
 .seealso: `EXOGetVarIndex_Internal()`, `DMPlexView_ExodusII_Internal()`, `VecViewPlex_ExodusII_Nodal_Internal()`, `VecLoadPlex_ExodusII_Nodal_Internal()`, `VecLoadPlex_ExodusII_Zonal_Internal()`
 */
-PetscErrorCode VecLoadPlex_ExodusII_Zonal_Internal(Vec v, int exoid, int step, int offset)
+static PetscErrorCode VecLoadPlex_ExodusII_Zonal_Internal(Vec v, int exoid, int step, int offset)
 {
   MPI_Comm     comm;
   PetscMPIInt  size;
@@ -1237,10 +1257,10 @@ PetscErrorCode VecLoadPlex_ExodusII_Zonal_Internal(Vec v, int exoid, int step, i
   Logically Collective
 
   Input Parameter:
-.  viewer - the `PetscViewer`
+. viewer - the `PetscViewer`
 
   Output Parameter:
-.  exoid - The ExodusII file id
+. exoid - The ExodusII file id
 
   Level: intermediate
 
@@ -1255,19 +1275,19 @@ PetscErrorCode PetscViewerExodusIIGetId(PetscViewer viewer, int *exoid)
 }
 
 /*@
-   PetscViewerExodusIISetOrder - Set the elements order in the exodusII file.
+  PetscViewerExodusIISetOrder - Set the elements order in the exodusII file.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  viewer - the `PETSCVIEWEREXODUSII` viewer
--  order - elements order
+  Input Parameters:
++ viewer - the `PETSCVIEWEREXODUSII` viewer
+- order  - elements order
 
-   Output Parameter:
+  Output Parameter:
 
-   Level: beginner
+  Level: beginner
 
-.seealso: `PETSCVIEWEREXODUSII`, `PetscViewer`, `PetscViewerExodusIIGetId()`, `PetscViewerExodusIIGetOrder()`, `PetscViewerExodusIISetOrder()`
+.seealso: `PETSCVIEWEREXODUSII`, `PetscViewer`, `PetscViewerExodusIIGetId()`, `PetscViewerExodusIIGetOrder()`
 @*/
 PetscErrorCode PetscViewerExodusIISetOrder(PetscViewer viewer, PetscInt order)
 {
@@ -1278,19 +1298,19 @@ PetscErrorCode PetscViewerExodusIISetOrder(PetscViewer viewer, PetscInt order)
 }
 
 /*@
-   PetscViewerExodusIIGetOrder - Get the elements order in the exodusII file.
+  PetscViewerExodusIIGetOrder - Get the elements order in the exodusII file.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  viewer - the `PETSCVIEWEREXODUSII` viewer
--  order - elements order
+  Input Parameters:
++ viewer - the `PETSCVIEWEREXODUSII` viewer
+- order  - elements order
 
-   Output Parameter:
+  Output Parameter:
 
-   Level: beginner
+  Level: beginner
 
-.seealso: `PETSCVIEWEREXODUSII`, `PetscViewer`, `PetscViewerExodusIIGetId()`, `PetscViewerExodusIIGetOrder()`, `PetscViewerExodusIISetOrder()`
+.seealso: `PETSCVIEWEREXODUSII`, `PetscViewer`, `PetscViewerExodusIIGetId()`, `PetscViewerExodusIISetOrder()`
 @*/
 PetscErrorCode PetscViewerExodusIIGetOrder(PetscViewer viewer, PetscInt *order)
 {
@@ -1301,27 +1321,27 @@ PetscErrorCode PetscViewerExodusIIGetOrder(PetscViewer viewer, PetscInt *order)
 }
 
 /*@C
-   PetscViewerExodusIIOpen - Opens a file for ExodusII input/output.
+  PetscViewerExodusIIOpen - Opens a file for ExodusII input/output.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  comm - MPI communicator
-.  name - name of file
--  type - type of file
+  Input Parameters:
++ comm - MPI communicator
+. name - name of file
+- type - type of file
 .vb
     FILE_MODE_WRITE - create new file for binary output
     FILE_MODE_READ - open existing file for binary input
     FILE_MODE_APPEND - open existing file for binary output
 .ve
 
-   Output Parameter:
-.  exo - `PETSCVIEWEREXODUSII` `PetscViewer` for Exodus II input/output to use with the specified file
+  Output Parameter:
+. exo - `PETSCVIEWEREXODUSII` `PetscViewer` for Exodus II input/output to use with the specified file
 
-   Level: beginner
+  Level: beginner
 
 .seealso: `PETSCVIEWEREXODUSII`, `PetscViewer`, `PetscViewerPushFormat()`, `PetscViewerDestroy()`,
-          `DMLoad()`, `PetscFileMode`, `PetscViewer`, `PetscViewerSetType()`, `PetscViewerFileSetMode()`, `PetscViewerFileSetName()`
+          `DMLoad()`, `PetscFileMode`, `PetscViewerSetType()`, `PetscViewerFileSetMode()`, `PetscViewerFileSetName()`
 @*/
 PetscErrorCode PetscViewerExodusIIOpen(MPI_Comm comm, const char name[], PetscFileMode type, PetscViewer *exo)
 {
@@ -1340,16 +1360,16 @@ PetscErrorCode PetscViewerExodusIIOpen(MPI_Comm comm, const char name[], PetscFi
   Collective
 
   Input Parameters:
-+ comm  - The MPI communicator
-. filename - The name of the ExodusII file
++ comm        - The MPI communicator
+. filename    - The name of the ExodusII file
 - interpolate - Create faces and edges in the mesh
 
   Output Parameter:
-. dm  - The `DM` object representing the mesh
+. dm - The `DM` object representing the mesh
 
   Level: beginner
 
-.seealso: [](chapter_unstructured), `DM`, `PETSCVIEWEREXODUSII`, `DMPLEX`, `DMCreate()`, `DMPlexCreateExodus()`
+.seealso: [](ch_unstructured), `DM`, `PETSCVIEWEREXODUSII`, `DMPLEX`, `DMCreate()`, `DMPlexCreateExodus()`
 @*/
 PetscErrorCode DMPlexCreateExodusFromFile(MPI_Comm comm, const char filename[], PetscBool interpolate, DM *dm)
 {
@@ -1360,7 +1380,7 @@ PetscErrorCode DMPlexCreateExodusFromFile(MPI_Comm comm, const char filename[], 
 #endif
 
   PetscFunctionBegin;
-  PetscValidCharPointer(filename, 2);
+  PetscAssertPointer(filename, 2);
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
 #if defined(PETSC_HAVE_EXODUSII)
   if (rank == 0) {
@@ -1382,6 +1402,16 @@ static PetscErrorCode ExodusGetCellType_Internal(const char *elem_type, DMPolyto
 
   PetscFunctionBegin;
   *ct = DM_POLYTOPE_UNKNOWN;
+  PetscCall(PetscStrcmp(elem_type, "BAR2", &flg));
+  if (flg) {
+    *ct = DM_POLYTOPE_SEGMENT;
+    goto done;
+  }
+  PetscCall(PetscStrcmp(elem_type, "BAR3", &flg));
+  if (flg) {
+    *ct = DM_POLYTOPE_SEGMENT;
+    goto done;
+  }
   PetscCall(PetscStrcmp(elem_type, "TRI", &flg));
   if (flg) {
     *ct = DM_POLYTOPE_TRIANGLE;
@@ -1449,16 +1479,16 @@ done:
   Collective
 
   Input Parameters:
-+ comm  - The MPI communicator
-. exoid - The ExodusII id associated with a exodus file and obtained using ex_open
++ comm        - The MPI communicator
+. exoid       - The ExodusII id associated with a exodus file and obtained using ex_open
 - interpolate - Create faces and edges in the mesh
 
   Output Parameter:
-. dm  - The `DM` object representing the mesh
+. dm - The `DM` object representing the mesh
 
   Level: beginner
 
-.seealso: [](chapter_unstructured), `DM`, `PETSCVIEWEREXODUSII`, `DMPLEX`, `DMPLEX`, `DMCreate()`
+.seealso: [](ch_unstructured), `DM`, `PETSCVIEWEREXODUSII`, `DMPLEX`, `DMCreate()`
 @*/
 PetscErrorCode DMPlexCreateExodus(MPI_Comm comm, PetscInt exoid, PetscBool interpolate, DM *dm)
 {
@@ -1661,6 +1691,7 @@ PetscErrorCode DMPlexCreateExodus(MPI_Comm comm, PetscInt exoid, PetscBool inter
     /* Get side set ids */
     PetscCall(PetscMalloc1(num_fs, &fs_id));
     PetscCallExternal(ex_get_ids, exoid, EX_SIDE_SET, fs_id);
+    // Ids 1 and 2 are reserved by ExodusII for indicating things in 3D
     for (fs = 0; fs < num_fs; ++fs) {
       PetscCallExternal(ex_get_set_param, exoid, EX_SIDE_SET, fs_id[fs], &num_side_in_set, NULL);
       PetscCall(PetscMalloc2(num_side_in_set, &fs_vertex_count_list, num_side_in_set * 4, &fs_vertex_list));
@@ -1671,6 +1702,7 @@ PetscErrorCode DMPlexCreateExodus(MPI_Comm comm, PetscInt exoid, PetscBool inter
         PetscCall(PetscStrlen(fs_name, &fs_name_len));
         if (fs_name_len == 0) PetscCall(PetscStrncpy(fs_name, "Face Sets", MAX_STR_LENGTH));
       }
+      PetscCheck(fs_id[fs] != 1 && fs_id[fs] != 2, comm, PETSC_ERR_ARG_WRONG, "Side set %s marker cannot be %d since this is reserved by ExodusII", fs_name, fs_id[fs]);
       for (f = 0, voff = 0; f < num_side_in_set; ++f) {
         const PetscInt *faces    = NULL;
         PetscInt        faceSize = fs_vertex_count_list[f], numFaces;

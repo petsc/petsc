@@ -1,5 +1,4 @@
-#ifndef __DEFLATION_H
-#define __DEFLATION_H
+#pragma once
 
 #include <petsc/private/pcimpl.h> /*I "petscpc.h" I*/
 #include <petscksp.h>
@@ -25,5 +24,3 @@ typedef struct {
 } PC_Deflation;
 
 PETSC_INTERN PetscErrorCode PCDeflationComputeSpace(PC);
-
-#endif

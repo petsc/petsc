@@ -54,7 +54,7 @@ static PetscErrorCode PCDeflationCreateSpaceWave(MPI_Comm comm, PetscInt m, Pets
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PCDeflationGetSpaceHaar(PC pc, Mat *W, PetscInt size)
+static PetscErrorCode PCDeflationGetSpaceHaar(PC pc, Mat *W, PetscInt size)
 {
   Mat          A, defl;
   PetscInt     i, j, len, ilo, ihi, *Iidx, m, M;
@@ -99,7 +99,7 @@ PetscErrorCode PCDeflationGetSpaceHaar(PC pc, Mat *W, PetscInt size)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PCDeflationGetSpaceWave(PC pc, Mat *W, PetscInt size, PetscInt ncoeffs, PetscScalar *coeffs, PetscBool trunc)
+static PetscErrorCode PCDeflationGetSpaceWave(PC pc, Mat *W, PetscInt size, PetscInt ncoeffs, PetscScalar *coeffs, PetscBool trunc)
 {
   Mat      A, *H, defl;
   PetscInt i, m, M, Mdefl, Ndefl;
@@ -131,7 +131,7 @@ PetscErrorCode PCDeflationGetSpaceWave(PC pc, Mat *W, PetscInt size, PetscInt nc
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PCDeflationGetSpaceAggregation(PC pc, Mat *W)
+static PetscErrorCode PCDeflationGetSpaceAggregation(PC pc, Mat *W)
 {
   Mat          A, defl;
   PetscInt     i, ilo, ihi, *Iidx, M;

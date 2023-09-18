@@ -67,9 +67,9 @@
 #define TSRK5F    '5f'
 #define TSRK5DP   '5dp'
 #define TSRK5BS   '5bs'
-#define TSRK6VR   "6vr"
-#define TSRK7VR   "7vr"
-#define TSRK8VR   "8vr"
+#define TSRK6VR   '6vr'
+#define TSRK7VR   '7vr'
+#define TSRK8VR   '8vr'
 
 #define TSMPRKType   character*(80)
 #define TSMPRKPM2     'pm2'
@@ -90,6 +90,24 @@
 #define TSARKIMEXARS443 'ars443'
 #define TSARKIMEX4      '4'
 #define TSARKIMEX5      '5'
+
+#define TSDIRKType character*(80)
+#define TSDIRKS212      's212'
+#define TSDIRKES122SAL  'es122sal'
+#define TSDIRKES213SAL  'es213sal'
+#define TSDIRKES324SAL  'es324sal'
+#define TSDIRKES325SAL  'es325sal'
+#define TSDIRK657A      '657a'
+#define TSDIRKES648SA   'es648sa'
+#define TSDIRK658A      '658a'
+#define TSDIRKS659A     's659a'
+#define TSDIRK7510SAL   '7510sal'
+#define TSDIRKES7510SA  'es7510sa'
+#define TSDIRK759A      '759a'
+#define TSDIRKS7511SAL  's7511sal'
+#define TSDIRK8614A     '8614a'
+#define TSDIRK8616SAL   '8616sal'
+#define TSDIRKES8516SAL 'es8516sal'
 
 #define TSROSWType character*(80)
 #define TSROSW2M          '2m'

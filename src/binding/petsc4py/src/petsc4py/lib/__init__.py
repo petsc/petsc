@@ -13,7 +13,7 @@ an environmental variable named ``PETSC_ARCH``.
 
 This package is a holds all the available variants of the PETSc
 extension module built against specific PETSc configurations. It also
-provides a convenience function using of the builtin ``imp`` module
+provides a convenience function using of the ``importlib`` module
 for easily importing any of the available extension modules depending
 on the value of a user-provided configuration name, the ``PETSC_ARCH``
 environmental variable, or a configuration file.
@@ -48,20 +48,37 @@ def Import(pkg, name, path, arch):
     import os
     import sys
     import warnings
-    # TODO: use 'importlib' module under Python 3
-    with warnings.catch_warnings():
-        warnings.filterwarnings("ignore")
+
+    try:
+        import importlib.machinery
+        import importlib.util
+    except ImportError:
+        importlib = None
         import imp
+
     def get_ext_suffix():
-        return imp.get_suffixes()[0][0]
+        if importlib:
+            return importlib.machinery.EXTENSION_SUFFIXES[0]
+        else:
+            return imp.get_suffixes()[0][0]
+
     def import_module(pkg, name, path, arch):
-        fullname = '%s.%s' % (pkg, name)
+        fullname = '{}.{}'.format(pkg, name)
         pathlist = [os.path.join(path, arch)]
-        f, fn, info = imp.find_module(name, pathlist)
-        with f:
-            return imp.load_module(fullname, f, fn, info)
+        if importlib:
+            finder = importlib.machinery.PathFinder()
+            spec = finder.find_spec(fullname, pathlist)
+            module = importlib.util.module_from_spec(spec)
+            sys.modules[fullname] = module
+            spec.loader.exec_module(module)
+            return module
+        else:
+            f, fn, info = imp.find_module(name, pathlist)
+            with f:
+                return imp.load_module(fullname, f, fn, info)
+
     # test if extension module was already imported
-    module = sys.modules.get('%s.%s' % (pkg, name))
+    module = sys.modules.get('{}.{}'.format(pkg, name))
     filename = getattr(module, '__file__', '')
     if filename.endswith(get_ext_suffix()):
         # if 'arch' is None, do nothing; otherwise this
@@ -70,6 +87,7 @@ def Import(pkg, name, path, arch):
         if arch is not None and arch != module.__arch__:
             raise ImportError("%s already imported" % module)
         return module
+
     # silence annoying Cython warning
     warnings.filterwarnings("ignore", message="numpy.dtype size changed")
     warnings.filterwarnings("ignore", message="numpy.ndarray size changed")
@@ -130,6 +148,8 @@ def getPathArch(path, arch, rcvar='PETSC_ARCH', rcfile='petsc.cfg'):
     configrc = parse_rc(rcfile)
     arch_cfg = arch_list(configrc.get(rcvar, ''))
     for arch in arch_cfg:
+        if arch.startswith('%(') and arch.endswith(')s'):
+            arch = arch % os.environ
         if os.path.isdir(os.path.join(path, arch)):
             if arch_env:
                 warnings.warn(

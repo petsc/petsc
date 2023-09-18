@@ -1,229 +1,211 @@
 <--- FIXED --->
---------------------------------------------------------------------------------------------
-ERROR 0: ./src/sys/tests/linter/testReferences.c:18:26
-'-1' of type 'int'
+[31m[1m./src/sys/tests/linter/testReferences.c:7:1: error:[0m Function 'testOutOfLineReference()' does not appear to be used anywhere outside of testReferences.c, and can be made static [-fstatic-function-candidate]:
+  5: extern void extractFunc(PetscViewer, void **);
+  6: 
+> 7: [33m[1mPetscErrorCode testOutOfLineReference(PetscViewer v, PetscViewer v2)[0m
+     [33m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  8: {
+  9:   /* linter should be able to connect all of these to v */
+[31m[1m./src/sys/tests/linter/testReferences.c:18:27: error:[0m Argument number doesn't match for 'foo'. Expected '1', found '-1' [-fmatching-arg-num]:
   16: 
   17: /* incorrect */
-> 18: PetscValidPointer(foo, -1);
-                             ^^
-  19: PetscValidPointer(bar, -2);
-  20: PetscValidPointer(baz, -3);
-
-Argument number doesn't match for 'foo'. Expected '1', found '-1' [-fmatching-arg-num]
+> 18: PetscAssertPointer(foo, [33m[1m-1[0m);
+                              [33m[1m^^[0m
+  19: PetscAssertPointer(bar, -2);
+  20: PetscAssertPointer(baz, -3);
 
 ./src/sys/tests/linter/testReferences.c:7:39 Note: 'foo' is traceable to argument #1 'v' in enclosing function here:
-  5: void extractFunc(PetscViewer, void **);
+  5: extern void extractFunc(PetscViewer, void **);
   6: 
-> 7: PetscErrorCode testOutOfLineReference(PetscViewer v, PetscViewer v2)
-                                           ^^^^^^^^^^^^^
+> 7: PetscErrorCode testOutOfLineReference([33m[1mPetscViewer v[0m, PetscViewer v2)
+                                           [33m[1m^^^^^^^^^^^^^[0m
   8: {
   9:   /* linter should be able to connect all of these to v */
 
-./src/sys/tests/linter/testReferences.c:18:21 Note: starting with 'foo' of type 'void *'
+./src/sys/tests/linter/testReferences.c:18:22 Note: starting with 'foo' of type 'void *'
   16: 
   17: /* incorrect */
-> 18: PetscValidPointer(foo, -1);
-                        ^^^
-  19: PetscValidPointer(bar, -2);
-  20: PetscValidPointer(baz, -3);
+> 18: PetscAssertPointer([33m[1mfoo[0m, -1);
+                         [33m[1m^^^[0m
+  19: PetscAssertPointer(bar, -2);
+  20: PetscAssertPointer(baz, -3);
 
 ./src/sys/tests/linter/testReferences.c:10:17 Note: via 'v' of type 'PetscViewer' (a.k.a. '_p_PetscViewer *')
   8 : {
   9 :   /* linter should be able to connect all of these to v */
-> 10:   void  *foo  = v->data, *bar, *baz, *blop;
-                      ^
+> 10:   void  *foo  = [33m[1mv[0m->data, *bar, *baz, *blop;
+                      [33m[1m^[0m
   11:   void **blip = &v->data;
   12:
-
-ERROR 1: ./src/sys/tests/linter/testReferences.c:19:26
-'-2' of type 'int'
+[31m[1m./src/sys/tests/linter/testReferences.c:19:27: error:[0m Argument number doesn't match for 'bar'. Expected '1', found '-2' [-fmatching-arg-num]:
   17: /* incorrect */
-  18: PetscValidPointer(foo, -1);
-> 19: PetscValidPointer(bar, -2);
-                             ^^
-  20: PetscValidPointer(baz, -3);
-  21: PetscValidPointer((void *)v->data, -4);
-
-Argument number doesn't match for 'bar'. Expected '1', found '-2' [-fmatching-arg-num]
+  18: PetscAssertPointer(foo, -1);
+> 19: PetscAssertPointer(bar, [33m[1m-2[0m);
+                              [33m[1m^^[0m
+  20: PetscAssertPointer(baz, -3);
+  21: PetscAssertPointer((void *)v->data, -4);
 
 ./src/sys/tests/linter/testReferences.c:7:39 Note: 'bar' is traceable to argument #1 'v' in enclosing function here:
-  5: void extractFunc(PetscViewer, void **);
+  5: extern void extractFunc(PetscViewer, void **);
   6: 
-> 7: PetscErrorCode testOutOfLineReference(PetscViewer v, PetscViewer v2)
-                                           ^^^^^^^^^^^^^
+> 7: PetscErrorCode testOutOfLineReference([33m[1mPetscViewer v[0m, PetscViewer v2)
+                                           [33m[1m^^^^^^^^^^^^^[0m
   8: {
   9:   /* linter should be able to connect all of these to v */
 
-./src/sys/tests/linter/testReferences.c:19:21 Note: starting with 'bar' of type 'void *'
+./src/sys/tests/linter/testReferences.c:19:22 Note: starting with 'bar' of type 'void *'
   17: /* incorrect */
-  18: PetscValidPointer(foo, -1);
-> 19: PetscValidPointer(bar, -2);
-                        ^^^
-  20: PetscValidPointer(baz, -3);
-  21: PetscValidPointer((void *)v->data, -4);
+  18: PetscAssertPointer(foo, -1);
+> 19: PetscAssertPointer([33m[1mbar[0m, -2);
+                         [33m[1m^^^[0m
+  20: PetscAssertPointer(baz, -3);
+  21: PetscAssertPointer((void *)v->data, -4);
 
 ./src/sys/tests/linter/testReferences.c:13:10 Note: via 'v' of type 'PetscViewer' (a.k.a. '_p_PetscViewer *')
   11: void **blip = &v->data;
   12: 
-> 13: bar  = v->data;
-             ^
+> 13: bar  = [33m[1mv[0m->data;
+             [33m[1m^[0m
   14: blop = blip[0];
   15: extractFunc(v, &baz);
-
-ERROR 2: ./src/sys/tests/linter/testReferences.c:20:26
-'-3' of type 'int'
-  18: PetscValidPointer(foo, -1);
-  19: PetscValidPointer(bar, -2);
-> 20: PetscValidPointer(baz, -3);
-                             ^^
-  21: PetscValidPointer((void *)v->data, -4);
-  22: PetscValidPointer(*blip, -5);
-
-Argument number doesn't match for 'baz'. Expected '1', found '-3' [-fmatching-arg-num]
+[31m[1m./src/sys/tests/linter/testReferences.c:20:27: error:[0m Argument number doesn't match for 'baz'. Expected '1', found '-3' [-fmatching-arg-num]:
+  18: PetscAssertPointer(foo, -1);
+  19: PetscAssertPointer(bar, -2);
+> 20: PetscAssertPointer(baz, [33m[1m-3[0m);
+                              [33m[1m^^[0m
+  21: PetscAssertPointer((void *)v->data, -4);
+  22: PetscAssertPointer(*blip, -5);
 
 ./src/sys/tests/linter/testReferences.c:7:39 Note: 'baz' is traceable to argument #1 'v' in enclosing function here:
-  5: void extractFunc(PetscViewer, void **);
+  5: extern void extractFunc(PetscViewer, void **);
   6: 
-> 7: PetscErrorCode testOutOfLineReference(PetscViewer v, PetscViewer v2)
-                                           ^^^^^^^^^^^^^
+> 7: PetscErrorCode testOutOfLineReference([33m[1mPetscViewer v[0m, PetscViewer v2)
+                                           [33m[1m^^^^^^^^^^^^^[0m
   8: {
   9:   /* linter should be able to connect all of these to v */
 
-./src/sys/tests/linter/testReferences.c:20:21 Note: starting with 'baz' of type 'void *'
-  18: PetscValidPointer(foo, -1);
-  19: PetscValidPointer(bar, -2);
-> 20: PetscValidPointer(baz, -3);
-                        ^^^
-  21: PetscValidPointer((void *)v->data, -4);
-  22: PetscValidPointer(*blip, -5);
+./src/sys/tests/linter/testReferences.c:20:22 Note: starting with 'baz' of type 'void *'
+  18: PetscAssertPointer(foo, -1);
+  19: PetscAssertPointer(bar, -2);
+> 20: PetscAssertPointer([33m[1mbaz[0m, -3);
+                         [33m[1m^^^[0m
+  21: PetscAssertPointer((void *)v->data, -4);
+  22: PetscAssertPointer(*blip, -5);
 
 ./src/sys/tests/linter/testReferences.c:15:15 Note: via 'v' of type 'PetscViewer' (a.k.a. '_p_PetscViewer *')
   13: bar  = v->data;
   14: blop = blip[0];
-> 15: extractFunc(v, &baz);
-                  ^
+> 15: extractFunc([33m[1mv[0m, &baz);
+                  [33m[1m^[0m
   16: 
   17: /* incorrect */
-
-ERROR 3: ./src/sys/tests/linter/testReferences.c:21:38
-'-4' of type 'int'
-  19: PetscValidPointer(bar, -2);
-  20: PetscValidPointer(baz, -3);
-> 21: PetscValidPointer((void *)v->data, -4);
-                                         ^^
-  22: PetscValidPointer(*blip, -5);
-  23: PetscValidPointer(blop, -6);
-
-Argument number doesn't match for 'data'. Expected '1', found '-4' [-fmatching-arg-num]
+[31m[1m./src/sys/tests/linter/testReferences.c:21:39: error:[0m Argument number doesn't match for 'data'. Expected '1', found '-4' [-fmatching-arg-num]:
+  19: PetscAssertPointer(bar, -2);
+  20: PetscAssertPointer(baz, -3);
+> 21: PetscAssertPointer((void *)v->data, [33m[1m-4[0m);
+                                          [33m[1m^^[0m
+  22: PetscAssertPointer(*blip, -5);
+  23: PetscAssertPointer(blop, -6);
 
 ./src/sys/tests/linter/testReferences.c:7:39 Note: 'data' is traceable to argument #1 'v' in enclosing function here:
-  5: void extractFunc(PetscViewer, void **);
+  5: extern void extractFunc(PetscViewer, void **);
   6: 
-> 7: PetscErrorCode testOutOfLineReference(PetscViewer v, PetscViewer v2)
-                                           ^^^^^^^^^^^^^
+> 7: PetscErrorCode testOutOfLineReference([33m[1mPetscViewer v[0m, PetscViewer v2)
+                                           [33m[1m^^^^^^^^^^^^^[0m
   8: {
   9:   /* linter should be able to connect all of these to v */
 
-./src/sys/tests/linter/testReferences.c:21:21 Note: starting with 'data' of type 'void *'
-  19: PetscValidPointer(bar, -2);
-  20: PetscValidPointer(baz, -3);
-> 21: PetscValidPointer((void *)v->data, -4);
-                        ^^^^^^^^^^^^^^^
-  22: PetscValidPointer(*blip, -5);
-  23: PetscValidPointer(blop, -6);
+./src/sys/tests/linter/testReferences.c:21:22 Note: starting with 'data' of type 'void *'
+  19: PetscAssertPointer(bar, -2);
+  20: PetscAssertPointer(baz, -3);
+> 21: PetscAssertPointer([33m[1m(void *)v->data[0m, -4);
+                         [33m[1m^^^^^^^^^^^^^^^[0m
+  22: PetscAssertPointer(*blip, -5);
+  23: PetscAssertPointer(blop, -6);
 
-./src/sys/tests/linter/testReferences.c:21:29 Note: via 'v' of type 'PetscViewer' (a.k.a. '_p_PetscViewer *')
-  19: PetscValidPointer(bar, -2);
-  20: PetscValidPointer(baz, -3);
-> 21: PetscValidPointer((void *)v->data, -4);
-                                ^
-  22: PetscValidPointer(*blip, -5);
-  23: PetscValidPointer(blop, -6);
-
-ERROR 4: ./src/sys/tests/linter/testReferences.c:22:28
-'-5' of type 'int'
-  20: PetscValidPointer(baz, -3);
-  21: PetscValidPointer((void *)v->data, -4);
-> 22: PetscValidPointer(*blip, -5);
-                               ^^
-  23: PetscValidPointer(blop, -6);
+./src/sys/tests/linter/testReferences.c:21:30 Note: via 'v' of type 'PetscViewer' (a.k.a. '_p_PetscViewer *')
+  19: PetscAssertPointer(bar, -2);
+  20: PetscAssertPointer(baz, -3);
+> 21: PetscAssertPointer((void *)[33m[1mv[0m->data, -4);
+                                 [33m[1m^[0m
+  22: PetscAssertPointer(*blip, -5);
+  23: PetscAssertPointer(blop, -6);
+[31m[1m./src/sys/tests/linter/testReferences.c:22:29: error:[0m Argument number doesn't match for 'blip'. Expected '1', found '-5' [-fmatching-arg-num]:
+  20: PetscAssertPointer(baz, -3);
+  21: PetscAssertPointer((void *)v->data, -4);
+> 22: PetscAssertPointer(*blip, [33m[1m-5[0m);
+                                [33m[1m^^[0m
+  23: PetscAssertPointer(blop, -6);
   24: 
 
-Argument number doesn't match for 'blip'. Expected '1', found '-5' [-fmatching-arg-num]
-
 ./src/sys/tests/linter/testReferences.c:7:39 Note: 'blip' is traceable to argument #1 'v' in enclosing function here:
-  5: void extractFunc(PetscViewer, void **);
+  5: extern void extractFunc(PetscViewer, void **);
   6: 
-> 7: PetscErrorCode testOutOfLineReference(PetscViewer v, PetscViewer v2)
-                                           ^^^^^^^^^^^^^
+> 7: PetscErrorCode testOutOfLineReference([33m[1mPetscViewer v[0m, PetscViewer v2)
+                                           [33m[1m^^^^^^^^^^^^^[0m
   8: {
   9:   /* linter should be able to connect all of these to v */
 
-./src/sys/tests/linter/testReferences.c:22:21 Note: starting with 'blip' of type 'void *'
-  20: PetscValidPointer(baz, -3);
-  21: PetscValidPointer((void *)v->data, -4);
-> 22: PetscValidPointer(*blip, -5);
-                        ^^^^^
-  23: PetscValidPointer(blop, -6);
+./src/sys/tests/linter/testReferences.c:22:22 Note: starting with 'blip' of type 'void *'
+  20: PetscAssertPointer(baz, -3);
+  21: PetscAssertPointer((void *)v->data, -4);
+> 22: PetscAssertPointer([33m[1m*blip[0m, -5);
+                         [33m[1m^^^^^[0m
+  23: PetscAssertPointer(blop, -6);
   24:
 
-./src/sys/tests/linter/testReferences.c:22:22 Note: via 'blip' of type 'void **'
-  20: PetscValidPointer(baz, -3);
-  21: PetscValidPointer((void *)v->data, -4);
-> 22: PetscValidPointer(*blip, -5);
-                         ^^^^
-  23: PetscValidPointer(blop, -6);
+./src/sys/tests/linter/testReferences.c:22:23 Note: via 'blip' of type 'void **'
+  20: PetscAssertPointer(baz, -3);
+  21: PetscAssertPointer((void *)v->data, -4);
+> 22: PetscAssertPointer(*[33m[1mblip[0m, -5);
+                          [33m[1m^^^^[0m
+  23: PetscAssertPointer(blop, -6);
   24:
 
 ./src/sys/tests/linter/testReferences.c:11:18 Note: via 'v' of type 'PetscViewer' (a.k.a. '_p_PetscViewer *')
   9 : /* linter should be able to connect all of these to v */
   10: void  *foo  = v->data, *bar, *baz, *blop;
-> 11: void **blip = &v->data;
-                     ^
+> 11: void **blip = &[33m[1mv[0m->data;
+                     [33m[1m^[0m
   12: 
   13: bar  = v->data;
-
-ERROR 5: ./src/sys/tests/linter/testReferences.c:23:27
-'-6' of type 'int'
-  21: PetscValidPointer((void *)v->data, -4);
-  22: PetscValidPointer(*blip, -5);
-> 23: PetscValidPointer(blop, -6);
-                              ^^
+[31m[1m./src/sys/tests/linter/testReferences.c:23:28: error:[0m Argument number doesn't match for 'blop'. Expected '1', found '-6' [-fmatching-arg-num]:
+  21: PetscAssertPointer((void *)v->data, -4);
+  22: PetscAssertPointer(*blip, -5);
+> 23: PetscAssertPointer(blop, [33m[1m-6[0m);
+                               [33m[1m^^[0m
   24: 
   25: /* correct */
 
-Argument number doesn't match for 'blop'. Expected '1', found '-6' [-fmatching-arg-num]
-
 ./src/sys/tests/linter/testReferences.c:7:39 Note: 'blop' is traceable to argument #1 'v' in enclosing function here:
-  5: void extractFunc(PetscViewer, void **);
+  5: extern void extractFunc(PetscViewer, void **);
   6: 
-> 7: PetscErrorCode testOutOfLineReference(PetscViewer v, PetscViewer v2)
-                                           ^^^^^^^^^^^^^
+> 7: PetscErrorCode testOutOfLineReference([33m[1mPetscViewer v[0m, PetscViewer v2)
+                                           [33m[1m^^^^^^^^^^^^^[0m
   8: {
   9:   /* linter should be able to connect all of these to v */
 
-./src/sys/tests/linter/testReferences.c:23:21 Note: starting with 'blop' of type 'void *'
-  21: PetscValidPointer((void *)v->data, -4);
-  22: PetscValidPointer(*blip, -5);
-> 23: PetscValidPointer(blop, -6);
-                        ^^^^
+./src/sys/tests/linter/testReferences.c:23:22 Note: starting with 'blop' of type 'void *'
+  21: PetscAssertPointer((void *)v->data, -4);
+  22: PetscAssertPointer(*blip, -5);
+> 23: PetscAssertPointer([33m[1mblop[0m, -6);
+                         [33m[1m^^^^[0m
   24: 
   25: /* correct */
 
 ./src/sys/tests/linter/testReferences.c:14:10 Note: via 'blip' of type 'void **'
   12: 
   13: bar  = v->data;
-> 14: blop = blip[0];
-             ^^^^
+> 14: blop = [33m[1mblip[0m[0];
+             [33m[1m^^^^[0m
   15: extractFunc(v, &baz);
   16:
 
 ./src/sys/tests/linter/testReferences.c:11:18 Note: via 'v' of type 'PetscViewer' (a.k.a. '_p_PetscViewer *')
   9 : /* linter should be able to connect all of these to v */
   10: void  *foo  = v->data, *bar, *baz, *blop;
-> 11: void **blip = &v->data;
-                     ^
+> 11: void **blip = &[33m[1mv[0m->data;
+                     [33m[1m^[0m
   12: 
   13: bar  = v->data;
---------------------------------------------------------------------------------------------
 <--- LEFT --->

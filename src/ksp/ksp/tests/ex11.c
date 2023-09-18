@@ -150,11 +150,13 @@ PetscErrorCode port_lsd_bfbt(void)
   KSP       ksp_A;
   PC        pc_A;
   IS        isu, isp;
-  PetscBool test_fs = PETSC_FALSE;
+  PetscBool test_fs = PETSC_FALSE, set_symmetry = PETSC_FALSE, test_sbaij = PETSC_FALSE;
 
   PetscFunctionBeginUser;
   PetscCall(LoadTestMatrices(&A, &x, &b, &isu, &isp));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-test_fs", &test_fs, NULL));
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-set_symmetry", &set_symmetry, NULL));
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-test_sbaij", &test_sbaij, NULL));
   if (!test_fs) {
     PetscCall(PetscObjectReference((PetscObject)A));
     P = A;
@@ -167,10 +169,14 @@ PetscErrorCode port_lsd_bfbt(void)
 
   PetscCall(KSPSetFromOptions(ksp_A));
   PetscCall(KSPGetPC(ksp_A, &pc_A));
-  PetscCall(PetscObjectTypeCompare((PetscObject)pc_A, PCLU, &test_fs));
-  if (test_fs) {
+  PetscCall(PetscObjectTypeCompare((PetscObject)pc_A, PCFIELDSPLIT, &test_fs));
+  if (!test_fs) {
     PetscCall(MatDestroy(&P));
     PetscCall(MatConvert(A, MATAIJ, MAT_INITIAL_MATRIX, &P));
+    if (set_symmetry || test_sbaij) {
+      PetscCall(MatSetOption(P, MAT_SYMMETRIC, PETSC_TRUE));
+      if (test_sbaij) PetscCall(MatConvert(P, MATSBAIJ, MAT_INPLACE_MATRIX, &P));
+    }
     PetscCall(KSPSetOperators(ksp_A, A, P));
     PetscCall(KSPSetFromOptions(ksp_A));
     PetscCall(KSPSolve(ksp_A, b, x));
@@ -287,5 +293,18 @@ int main(int argc, char **argv)
       nsize: 2
       args: -f ${DATAFILESPATH}/matrices/underworld32.gz -fc_ksp_view_pre -fc_pc_type lu
       requires: datafilespath mumps double !complex !defined(PETSC_USE_64BIT_INDICES)
+
+    testset:
+      requires: hpddm slepc datafilespath double !complex !defined(PETSC_USE_64BIT_INDICES) defined(PETSC_HAVE_DYNAMIC_LIBRARIES) defined(PETSC_USE_SHARED_LIBRARIES)
+      nsize: 4
+      args: -f ${DATAFILESPATH}/matrices/underworld32.gz -test_fs false -prefix_push fc_ -ksp_converged_reason -ksp_max_it 100 -ksp_pc_side right -pc_type hpddm -pc_hpddm_levels_1_svd_nsv 100 -pc_hpddm_levels_1_svd_relative_threshold 1e-6 -pc_hpddm_levels_1_sub_pc_type cholesky -pc_hpddm_coarse_pc_type cholesky -pc_hpddm_levels_1_sub_pc_factor_shift_type inblocks -prefix_pop
+      test:
+        suffix: harmonic_overlap_1
+        filter: grep -v "WARNING! " | grep -v "There are 2 unused database options" | grep -v "Option left: name:-fc_pc_hpddm_levels_1_svd_pc_"
+        args: -prefix_push fc_ -pc_hpddm_harmonic_overlap 1 -pc_hpddm_levels_1_svd_pc_type cholesky -pc_hpddm_levels_1_svd_pc_factor_shift_type inblocks -prefix_pop -fc_pc_hpddm_levels_1_st_share_sub_ksp {{true false}shared output} -test_sbaij {{true false}shared output}
+      test:
+        suffix: harmonic_overlap_1_define_false
+        output_file: output/ex11_harmonic_overlap_1.out
+        args: -prefix_push fc_ -pc_hpddm_harmonic_overlap 1 -pc_hpddm_define_subdomains false -pc_hpddm_levels_1_svd_pc_type cholesky -pc_hpddm_levels_1_svd_pc_factor_shift_type inblocks -pc_hpddm_levels_1_svd_pc_factor_shift_type inblocks -pc_hpddm_levels_1_pc_type asm -pc_hpddm_levels_1_sub_pc_type cholesky -prefix_pop
 
 TEST*/

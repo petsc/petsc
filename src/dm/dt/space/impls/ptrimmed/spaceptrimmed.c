@@ -265,7 +265,7 @@ PetscErrorCode PetscSpacePTrimmedSetFormDegree(PetscSpace sp, PetscInt formDegre
 . sp - the function space object
 
   Output Parameter:
-. formDegee - the form degree
+. formDegree - the form degree
 
   Level: intermediate
 
@@ -275,7 +275,7 @@ PetscErrorCode PetscSpacePTrimmedGetFormDegree(PetscSpace sp, PetscInt *formDegr
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
-  PetscValidIntPointer(formDegree, 2);
+  PetscAssertPointer(formDegree, 2);
   PetscTryMethod(sp, "PetscSpacePTrimmedGetFormDegree_C", (PetscSpace, PetscInt *), (sp, formDegree));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -295,7 +295,7 @@ static PetscErrorCode PetscSpacePTrimmedGetFormDegree_Ptrimmed(PetscSpace sp, Pe
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
-  PetscValidIntPointer(formDegree, 2);
+  PetscAssertPointer(formDegree, 2);
   *formDegree = pt->formDegree;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -358,6 +358,9 @@ static PetscErrorCode PetscSpaceInitialize_Ptrimmed(PetscSpace sp)
   PETSCSPACEPTRIMMED = "ptrimmed" - A `PetscSpace` object that encapsulates a trimmed polynomial space.
 
   Level: intermediate
+
+  Developer Note:
+  Need a good easy to understand reference for trimmed poynomial spaces
 
 .seealso: `PetscSpace`, `PetscSpaceType`, `PetscSpaceCreate()`, `PetscSpaceSetType()`, `PetscDTPTrimmedEvalJet()`
 M*/

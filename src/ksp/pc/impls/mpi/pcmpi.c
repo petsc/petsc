@@ -86,8 +86,8 @@ static PetscErrorCode PCMPICreate(PC pc)
   PetscInt    N[2], mincntperrank = 0;
   PetscMPIInt size;
   Mat         sA;
-  char       *prefix;
-  PetscMPIInt len = 0;
+  char       *cprefix = NULL;
+  PetscMPIInt len     = 0;
 
   PetscFunctionBegin;
   if (!PCMPICommSet) PetscCall(PCMPICommsCreate());
@@ -109,24 +109,34 @@ static PetscErrorCode PCMPICreate(PC pc)
   }
   PetscCall(PetscLogStagePush(PCMPIStage));
   PetscCall(KSPCreate(comm, &ksp));
+  PetscCall(KSPSetNestLevel(ksp, 1));
+  PetscCall(PetscObjectSetTabLevel((PetscObject)ksp, 1));
   PetscCall(PetscLogStagePop());
   PetscCallMPI(MPI_Gather(&ksp, 1, MPI_AINT, pc ? km->ksps : NULL, 1, MPI_AINT, 0, comm));
   if (pc) {
-    size_t slen;
+    size_t      slen;
+    const char *prefix = NULL;
+    char       *found  = NULL;
 
     PetscCallMPI(MPI_Comm_size(comm, &size));
     PCMPIKSPCounts[size - 1]++;
-    PetscCall(PCGetOptionsPrefix(pc, (const char **)&prefix));
-    PetscCall(PetscStrlen(prefix, &slen));
+    /* Created KSP gets prefix of PC minus the mpi_linear_solver_server_ portion */
+    PetscCall(PCGetOptionsPrefix(pc, &prefix));
+    PetscCheck(prefix, PETSC_COMM_SELF, PETSC_ERR_PLIB, "PCMPI missing required prefix");
+    PetscCall(PetscStrallocpy(prefix, &cprefix));
+    PetscCall(PetscStrstr(cprefix, "mpi_linear_solver_server_", &found));
+    PetscCheck(found, PETSC_COMM_SELF, PETSC_ERR_PLIB, "PCMPI missing mpi_linear_solver_server_ portion of prefix");
+    *found = 0;
+    PetscCall(PetscStrlen(cprefix, &slen));
     len = (PetscMPIInt)slen;
   }
   PetscCallMPI(MPI_Bcast(&len, 1, MPI_INT, 0, comm));
   if (len) {
-    if (!pc) PetscCall(PetscMalloc1(len + 1, &prefix));
-    PetscCallMPI(MPI_Bcast(prefix, len + 1, MPI_CHAR, 0, comm));
-    PetscCall(KSPSetOptionsPrefix(ksp, prefix));
+    if (!pc) PetscCall(PetscMalloc1(len + 1, &cprefix));
+    PetscCallMPI(MPI_Bcast(cprefix, len + 1, MPI_CHAR, 0, comm));
+    PetscCall(KSPSetOptionsPrefix(ksp, cprefix));
   }
-  PetscCall(KSPAppendOptionsPrefix(ksp, "mpi_"));
+  PetscCall(PetscFree(cprefix));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -144,14 +154,17 @@ static PetscErrorCode PCMPISetMat(PC pc)
   PetscMPIInt       *NZ = NULL, sendcounti[PC_MPI_MAX_RANKS], displi[PC_MPI_MAX_RANKS], *NZdispl = NULL, nz, size, i;
   PetscScalar       *a;
   const PetscScalar *sa               = NULL;
-  PetscInt           matproperties[7] = {0, 0, 0, 0, 0, 0, 0};
+  PetscInt           matproperties[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+  char              *cprefix;
 
   PetscFunctionBegin;
   PetscCallMPI(MPI_Scatter(pc ? km->ksps : NULL, 1, MPI_AINT, &ksp, 1, MPI_AINT, 0, comm));
   if (!ksp) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscObjectGetComm((PetscObject)ksp, &comm));
   if (pc) {
-    PetscBool isset, issymmetric, ishermitian, isspd, isstructurallysymmetric;
+    PetscBool   isset, issymmetric, ishermitian, isspd, isstructurallysymmetric;
+    const char *prefix;
+    size_t      clen;
 
     PetscCallMPI(MPI_Comm_size(comm, &size));
     PCMPIMatCounts[size - 1]++;
@@ -167,8 +180,13 @@ static PetscErrorCode PCMPISetMat(PC pc)
     matproperties[5] = !isset ? 0 : (isspd ? 1 : 2);
     PetscCall(MatIsStructurallySymmetricKnown(sA, &isset, &isstructurallysymmetric));
     matproperties[6] = !isset ? 0 : (isstructurallysymmetric ? 1 : 2);
+    /* Created Mat gets prefix of input Mat PLUS the mpi_linear_solver_server_ portion */
+    PetscCall(MatGetOptionsPrefix(sA, &prefix));
+    PetscCall(PetscStrallocpy(prefix, &cprefix));
+    PetscCall(PetscStrlen(cprefix, &clen));
+    matproperties[7] = (PetscInt)clen;
   }
-  PetscCallMPI(MPI_Bcast(matproperties, 7, MPIU_INT, 0, comm));
+  PetscCallMPI(MPI_Bcast(matproperties, PETSC_STATIC_ARRAY_LENGTH(matproperties), MPIU_INT, 0, comm));
 
   /* determine ownership ranges of matrix columns */
   PetscCall(PetscLayoutCreate(comm, &layout));
@@ -219,9 +237,19 @@ static PetscErrorCode PCMPISetMat(PC pc)
   for (j = 1; j < n + 1; j++) ia[j] -= ia[0];
   ia[0] = 0;
   PetscCall(PetscLogStagePush(PCMPIStage));
-  PetscCall(MatCreateMPIAIJWithArrays(comm, m, n, matproperties[0], matproperties[1], ia, ja, a, &A));
+  PetscCall(MatCreate(comm, &A));
+  if (matproperties[7] > 0) {
+    if (!pc) PetscCall(PetscMalloc1(matproperties[7] + 1, &cprefix));
+    PetscCallMPI(MPI_Bcast(cprefix, matproperties[7] + 1, MPI_CHAR, 0, comm));
+    PetscCall(MatSetOptionsPrefix(A, cprefix));
+    PetscCall(PetscFree(cprefix));
+  }
+  PetscCall(MatAppendOptionsPrefix(A, "mpi_linear_solver_server_"));
+  PetscCall(MatSetSizes(A, m, n, matproperties[0], matproperties[1]));
+  PetscCall(MatSetType(A, MATMPIAIJ));
+  PetscCall(MatMPIAIJSetPreallocationCSR(A, ia, ja, a));
   PetscCall(MatSetBlockSize(A, matproperties[2]));
-  PetscCall(MatSetOptionsPrefix(A, "mpi_"));
+
   if (matproperties[3]) PetscCall(MatSetOption(A, MAT_SYMMETRIC, matproperties[3] == 1 ? PETSC_TRUE : PETSC_FALSE));
   if (matproperties[4]) PetscCall(MatSetOption(A, MAT_HERMITIAN, matproperties[4] == 1 ? PETSC_TRUE : PETSC_FALSE));
   if (matproperties[5]) PetscCall(MatSetOption(A, MAT_SPD, matproperties[5] == 1 ? PETSC_TRUE : PETSC_FALSE));
@@ -320,7 +348,6 @@ static PetscErrorCode PCMPISolve(PC pc, Vec B, Vec X)
 
     PCMPISolveCounts[size - 1]++;
     PetscCall(MatGetSize(pc->pmat, &N, NULL));
-    ;
     PCMPISizes[size - 1] += N;
     PetscCall(VecGetArrayRead(B, &sb));
   }
@@ -358,36 +385,53 @@ static PetscErrorCode PCMPIDestroy(PC pc)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+PetscBool PCMPIServerActive = PETSC_FALSE;
+
 /*@C
-     PCMPIServerBegin - starts a server that runs on the rank != 0 MPI processes waiting to process requests for
-     parallel `KSP` solves and management of parallel `KSP` objects.
+  PCMPIServerBegin - starts a server that runs on the `rank != 0` MPI processes waiting to process requests for
+  parallel `KSP` solves and management of parallel `KSP` objects.
 
-     Logically Collective on all MPI ranks except 0
+  Logically Collective on all MPI processes except rank 0
 
-   Options Database Keys:
-+   -mpi_linear_solver_server - causes the PETSc program to start in MPI linear solver server mode where only the first MPI rank runs user code
--   -mpi_linear_solver_server_view - displays information about the linear systems solved by the MPI linear solver server
+  Options Database Keys:
++ -mpi_linear_solver_server      - causes the PETSc program to start in MPI linear solver server mode where only the first MPI rank runs user code
+- -mpi_linear_solver_server_view - displays information about all the linear systems solved by the MPI linear solver server at the conclusion of the program
 
-     Level: developer
+  Level: developer
 
-     Note:
-      This is normally started automatically in `PetscInitialize()` when the option is provided
+  Note:
+  This is normally started automatically in `PetscInitialize()` when the option is provided
 
-     Developer Notes:
-       When called on rank zero this sets `PETSC_COMM_WORLD` to `PETSC_COMM_SELF` to allow a main program
-       written with `PETSC_COMM_WORLD` to run correctly on the single rank while all the ranks
-       (that would normally be sharing `PETSC_COMM_WORLD`) to run the solver server.
+  See `PCMPI` for information on using the solver with a `KSP` object
 
-       Can this be integrated into the `PetscDevice` abstraction that is currently being developed?
+  Developer Notes:
+  When called on MPI rank 0 this sets `PETSC_COMM_WORLD` to `PETSC_COMM_SELF` to allow a main program
+  written with `PETSC_COMM_WORLD` to run correctly on the single rank while all the ranks
+  (that would normally be sharing `PETSC_COMM_WORLD`) to run the solver server.
 
-.seealso: `PCMPIServerEnd()`, `PCMPI`
+  Can this be integrated into the `PetscDevice` abstraction that is currently being developed?
+
+  Conceivably `PCREDISTRIBUTE` could be organized in a similar manner to simplify its usage
+
+  This could be implemented directly at the `KSP` level instead of using the `PCMPI` wrapper object
+
+  The code could be extended to allow an MPI + OpenMP application to use the linear solver server concept accross all shared-memory
+  nodes with a single MPI process per node for the user application but multiple MPI processes per node for the linear solver.
+
+  The concept could also be extended for users's callbacks for `SNES`, `TS`, and `Tao` where the `SNESSolve()` for example, runs on
+  all MPI processes but the user callback only runs on one MPI process per node.
+
+  PETSc could also be extended with an MPI-less API that provides access to PETSc's solvers without any reference to MPI, essentially remove
+  the `MPI_Comm` argument from PETSc calls.
+
+.seealso: [](sec_pcmpi), `PCMPIServerEnd()`, `PCMPI`, `KSPCheckPCMPI()`
 @*/
 PetscErrorCode PCMPIServerBegin(void)
 {
   PetscMPIInt rank;
 
   PetscFunctionBegin;
-  PetscCall(PetscInfo(NULL, "Starting MPI Linear Solver Server"));
+  PetscCall(PetscInfo(NULL, "Starting MPI Linear Solver Server\n"));
   if (PetscDefined(USE_SINGLE_LIBRARY)) {
     PetscCall(VecInitializePackage());
     PetscCall(MatInitializePackage());
@@ -401,7 +445,8 @@ PetscErrorCode PCMPIServerBegin(void)
 
   PetscCallMPI(MPI_Comm_rank(PC_MPI_COMM_WORLD, &rank));
   if (rank == 0) {
-    PETSC_COMM_WORLD = PETSC_COMM_SELF;
+    PETSC_COMM_WORLD  = PETSC_COMM_SELF;
+    PCMPIServerActive = PETSC_TRUE;
     PetscFunctionReturn(PETSC_SUCCESS);
   }
 
@@ -439,17 +484,17 @@ PetscErrorCode PCMPIServerBegin(void)
 }
 
 /*@C
-     PCMPIServerEnd - ends a server that runs on the rank != 0 MPI processes waiting to process requests for
-     parallel KSP solves and management of parallel `KSP` objects.
+  PCMPIServerEnd - ends a server that runs on the rank != 0 MPI processes waiting to process requests for
+  parallel KSP solves and management of parallel `KSP` objects.
 
-     Logically Collective on all MPI ranks except 0
+  Logically Collective on all MPI ranks except 0
 
-     Level: developer
+  Level: developer
 
-     Note:
-      This is normally ended automatically in `PetscFinalize()` when the option is provided
+  Note:
+  This is normally ended automatically in `PetscFinalize()` when the option is provided
 
-.seealso: `PCMPIServerBegin()`, `PCMPI`
+.seealso: [](sec_pcmpi), `PCMPIServerBegin()`, `PCMPI`, `KSPCheckPCMPI()`
 @*/
 PetscErrorCode PCMPIServerEnd(void)
 {
@@ -489,6 +534,7 @@ PetscErrorCode PCMPIServerEnd(void)
     }
   }
   PetscCall(PCMPICommsDestroy());
+  PCMPIServerActive = PETSC_FALSE;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -501,13 +547,25 @@ static PetscErrorCode PCSetUp_Seq(PC pc)
   PC_MPI     *km = (PC_MPI *)pc->data;
   Mat         sA;
   const char *prefix;
+  char       *found = NULL, *cprefix;
 
   PetscFunctionBegin;
   PetscCall(PCGetOperators(pc, NULL, &sA));
   PetscCall(PCGetOptionsPrefix(pc, &prefix));
   PetscCall(KSPCreate(PETSC_COMM_SELF, &km->ksps[0]));
-  PetscCall(KSPSetOptionsPrefix(km->ksps[0], prefix));
-  PetscCall(KSPAppendOptionsPrefix(km->ksps[0], "mpi_"));
+  PetscCall(KSPSetNestLevel(km->ksps[0], 1));
+  PetscCall(PetscObjectSetTabLevel((PetscObject)km->ksps[0], 1));
+
+  /* Created KSP gets prefix of PC minus the mpi_linear_solver_server_ portion */
+  PetscCall(PCGetOptionsPrefix(pc, &prefix));
+  PetscCheck(prefix, PETSC_COMM_SELF, PETSC_ERR_PLIB, "PCMPI missing required prefix");
+  PetscCall(PetscStrallocpy(prefix, &cprefix));
+  PetscCall(PetscStrstr(cprefix, "mpi_linear_solver_server_", &found));
+  PetscCheck(found, PETSC_COMM_SELF, PETSC_ERR_PLIB, "PCMPI missing mpi_linear_solver_server_ portion of prefix");
+  *found = 0;
+  PetscCall(KSPSetOptionsPrefix(km->ksps[0], cprefix));
+  PetscCall(PetscFree(cprefix));
+
   PetscCall(KSPSetOperators(km->ksps[0], sA, sA));
   PetscCall(KSPSetFromOptions(km->ksps[0]));
   PetscCall(KSPSetUp(km->ksps[0]));
@@ -535,15 +593,11 @@ static PetscErrorCode PCApply_Seq(PC pc, Vec b, Vec x)
 
 static PetscErrorCode PCView_Seq(PC pc, PetscViewer viewer)
 {
-  PC_MPI     *km = (PC_MPI *)pc->data;
-  const char *prefix;
+  PC_MPI *km = (PC_MPI *)pc->data;
 
   PetscFunctionBegin;
   PetscCall(PetscViewerASCIIPrintf(viewer, "Running MPI linear solver server directly on rank 0 due to its small size\n"));
   PetscCall(PetscViewerASCIIPrintf(viewer, "Desired minimum number of nonzeros per rank for MPI parallel solve %d\n", (int)km->mincntperrank));
-  PetscCall(PCGetOptionsPrefix(pc, &prefix));
-  if (prefix) PetscCall(PetscViewerASCIIPrintf(viewer, "*** Use -%smpi_ksp_view to see the MPI KSP parameters ***\n", prefix));
-  else PetscCall(PetscViewerASCIIPrintf(viewer, "*** Use -mpi_ksp_view to see the MPI KSP parameters ***\n"));
   PetscCall(PetscViewerASCIIPrintf(viewer, "*** Use -mpi_linear_solver_server_view to statistics on all the solves ***\n"));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -604,7 +658,7 @@ static PetscErrorCode PCSetUp_MPI(PC pc)
     PetscCallMPI(MPI_Bcast(&request, 1, MPIU_ENUM, 0, MPI_COMM_WORLD));
     PetscCall(PCMPISetMat(pc));
   } else {
-    PetscCall(PetscInfo((PetscObject)pc, "Matrix has only changed nozero values\n"));
+    PetscCall(PetscInfo((PetscObject)pc, "Matrix has only changed nonzero values\n"));
     request = PCMPI_UPDATE_MAT_VALUES;
     PetscCallMPI(MPI_Bcast(&request, 1, MPIU_ENUM, 0, MPI_COMM_WORLD));
     PetscCall(PCMPIUpdateMatValues(pc));
@@ -622,7 +676,7 @@ static PetscErrorCode PCApply_MPI(PC pc, Vec b, Vec x)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PCDestroy_MPI(PC pc)
+static PetscErrorCode PCDestroy_MPI(PC pc)
 {
   PCMPICommand request = PCMPI_DESTROY;
 
@@ -636,33 +690,29 @@ PetscErrorCode PCDestroy_MPI(PC pc)
 /*
      PCView_MPI - Cannot call view on the MPI parallel KSP because other ranks do not have access to the viewer
 */
-PetscErrorCode PCView_MPI(PC pc, PetscViewer viewer)
+static PetscErrorCode PCView_MPI(PC pc, PetscViewer viewer)
 {
   PC_MPI     *km = (PC_MPI *)pc->data;
   MPI_Comm    comm;
   PetscMPIInt size;
-  const char *prefix;
 
   PetscFunctionBegin;
   PetscCall(PetscObjectGetComm((PetscObject)km->ksps[0], &comm));
   PetscCallMPI(MPI_Comm_size(comm, &size));
   PetscCall(PetscViewerASCIIPrintf(viewer, "Size of MPI communicator used for MPI parallel KSP solve %d\n", size));
   PetscCall(PetscViewerASCIIPrintf(viewer, "Desired minimum number of nonzeros per rank for MPI parallel solve %d\n", (int)km->mincntperrank));
-  PetscCall(PCGetOptionsPrefix(pc, &prefix));
-  if (prefix) PetscCall(PetscViewerASCIIPrintf(viewer, "*** Use -%smpi_ksp_view to see the MPI KSP parameters ***\n", prefix));
-  else PetscCall(PetscViewerASCIIPrintf(viewer, "*** Use -mpi_ksp_view to see the MPI KSP parameters ***\n"));
   PetscCall(PetscViewerASCIIPrintf(viewer, "*** Use -mpi_linear_solver_server_view to statistics on all the solves ***\n"));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PCSetFromOptions_MPI(PC pc, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode PCSetFromOptions_MPI(PC pc, PetscOptionItems *PetscOptionsObject)
 {
   PC_MPI *km = (PC_MPI *)pc->data;
 
   PetscFunctionBegin;
   PetscOptionsHeadBegin(PetscOptionsObject, "MPI linear solver server options");
-  PetscCall(PetscOptionsInt("-pc_mpi_minimum_count_per_rank", "Desired minimum number of nonzeros per rank", "None", km->mincntperrank, &km->mincntperrank, NULL));
-  PetscCall(PetscOptionsBool("-pc_mpi_always_use_server", "Use the server even if only one rank is used for the solve (for debugging)", "None", km->alwaysuseserver, &km->alwaysuseserver, NULL));
+  PetscCall(PetscOptionsInt("-minimum_count_per_rank", "Desired minimum number of nonzeros per rank", "None", km->mincntperrank, &km->mincntperrank, NULL));
+  PetscCall(PetscOptionsBool("-always_use_server", "Use the server even if only one rank is used for the solve (for debugging)", "None", km->alwaysuseserver, &km->alwaysuseserver, NULL));
   PetscOptionsHeadEnd();
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -670,38 +720,56 @@ PetscErrorCode PCSetFromOptions_MPI(PC pc, PetscOptionItems *PetscOptionsObject)
 /*MC
      PCMPI - Calls an MPI parallel `KSP` to solve a linear system from user code running on one process
 
-   Options Database Keys:
+   Options Database Keys for the Server:
 +  -mpi_linear_solver_server - causes the PETSc program to start in MPI linear solver server mode where only the first MPI rank runs user code
-.  -mpi_linear_solver_server_view - displays information about the linear systems solved by the MPI linear solver server
-.  -pc_mpi_minimum_count_per_rank - sets the minimum size of the linear system per MPI rank that the solver will strive for
--  -pc_mpi_always_use_server - use the server solver code even if the particular system is only solved on the process, this option is only for debugging and testing purposes
+-  -mpi_linear_solver_server_view - displays information about all the linear systems solved by the MPI linear solver server
 
-   Level: beginner
+   Options Database Keys for a specific `KSP` object
++  -[any_ksp_prefix]_mpi_linear_solver_server_minimum_count_per_rank - sets the minimum size of the linear system per MPI rank that the solver will strive for
+-  -[any_ksp_prefix]_mpi_linear_solver_server_always_use_server - use the server solver code even if the particular system is only solved on the process (for debugging and testing purposes)
+
+   Level: developer
 
    Notes:
-   The options database prefix for the MPI parallel `KSP` and `PC` is -mpi_
-
-   The MPI linear solver server will not support scaling user code to utilize extremely large numbers of MPI ranks but should give reasonable speedup for
-   potentially 4 to 8 MPI ranks depending on the linear system being solved, solver algorithm, and the hardware.
+   The options database prefix for the actual solver is any prefix provided before use to the origjnal `KSP` with `KSPSetOptionsPrefix()`, mostly commonly no prefix is used.
 
    It can be particularly useful for user OpenMP code or potentially user GPU code.
 
-   When the program is running with a single MPI rank then this directly uses the provided matrix and right hand side (still in a `KSP` with the options prefix of -mpi)
-   and does not need to distribute the matrix and vector to the various MPI ranks; thus it incurs no extra overhead over just using the `KSP` directly.
+   When the program is running with a single MPI process then it directly uses the provided matrix and right hand side
+   and does not need to distribute the matrix and vector to the various MPI processes; thus it incurs no extra overhead over just using the `KSP` directly.
 
-   The solver options for `KSP` and `PC` must be controlled via the options database, calls to set options directly on the user level `KSP` and `PC` have no effect
+   The solver options for actual solving `KSP` and `PC` must be controlled via the options database, calls to set options directly on the user level `KSP` and `PC` have no effect
    because they are not the actual solver objects.
 
    When `-log_view` is used with this solver the events within the parallel solve are logging in their own stage. Some of the logging in the other
    stages will be confusing since the event times are only recorded on the 0th MPI rank, thus the percent of time in the events will be misleading.
 
-.seealso: `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `PC`, `PCMPIServerBegin()`, `PCMPIServerEnd()`
+   Developer Note:
+   This `PCType` is never directly selected by the user, it is set when the option `-mpi_linear_solver_server` is used and the `PC` is at the outer most nesting of
+   a `KSP`. The outer most `KSP` object is automatically set to `KSPPREONLY` and thus is not directly visible to the user.
+
+.seealso: [](sec_pcmpi), `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `PC`, `PCMPIServerBegin()`, `PCMPIServerEnd()`, `KSPCheckPCMPI()`
 M*/
 PETSC_EXTERN PetscErrorCode PCCreate_MPI(PC pc)
 {
   PC_MPI *km;
+  char   *found = NULL;
 
   PetscFunctionBegin;
+  PetscCall(PetscStrstr(((PetscObject)pc)->prefix, "mpi_linear_solver_server_", &found));
+  PetscCheck(found, PETSC_COMM_SELF, PETSC_ERR_PLIB, "PCMPI object prefix does not have mpi_linear_solver_server_");
+
+  /* material from PCSetType() */
+  PetscTryTypeMethod(pc, destroy);
+  pc->ops->destroy = NULL;
+  pc->data         = NULL;
+
+  PetscCall(PetscFunctionListDestroy(&((PetscObject)pc)->qlist));
+  PetscCall(PetscMemzero(pc->ops, sizeof(struct _PCOps)));
+  pc->modifysubmatrices  = NULL;
+  pc->modifysubmatricesP = NULL;
+  pc->setupcalled        = 0;
+
   PetscCall(PetscNew(&km));
   pc->data = (void *)km;
 
@@ -712,5 +780,6 @@ PETSC_EXTERN PetscErrorCode PCCreate_MPI(PC pc)
   pc->ops->destroy        = PCDestroy_MPI;
   pc->ops->view           = PCView_MPI;
   pc->ops->setfromoptions = PCSetFromOptions_MPI;
+  PetscCall(PetscObjectChangeTypeName((PetscObject)pc, PCMPI));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

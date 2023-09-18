@@ -7,6 +7,18 @@
 #include <petscds.h>
 #include <../src/mat/impls/dense/seq/dense.h> /*I "petscmat.h" I*/
 
+PetscBool  PCPatchcite       = PETSC_FALSE;
+const char PCPatchCitation[] = "@article{FarrellKnepleyWechsungMitchell2020,\n"
+                               "title   = {{PCPATCH}: software for the topological construction of multigrid relaxation methods},\n"
+                               "author  = {Patrick E Farrell and Matthew G Knepley and Lawrence Mitchell and Florian Wechsung},\n"
+                               "journal = {ACM Transaction on Mathematical Software},\n"
+                               "eprint  = {http://arxiv.org/abs/1912.08516},\n"
+                               "volume  = {47},\n"
+                               "number  = {3},\n"
+                               "pages   = {1--22},\n"
+                               "year    = {2021},\n"
+                               "petsc_uses={KSP,DMPlex}\n}\n";
+
 PetscLogEvent PC_Patch_CreatePatches, PC_Patch_ComputeOp, PC_Patch_Solve, PC_Patch_Apply, PC_Patch_Prealloc;
 
 static inline PetscErrorCode ObjectView(PetscObject obj, PetscViewer viewer, PetscViewerFormat format)
@@ -294,33 +306,8 @@ static PetscErrorCode PCPatchCreateDefaultSF_Private(PC pc, PetscInt n, const Pe
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PCPatchSetDenseInverse(PC pc, PetscBool flg)
-{
-  PC_PATCH *patch = (PC_PATCH *)pc->data;
-  PetscFunctionBegin;
-  patch->denseinverse = flg;
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-PetscErrorCode PCPatchGetDenseInverse(PC pc, PetscBool *flg)
-{
-  PC_PATCH *patch = (PC_PATCH *)pc->data;
-  PetscFunctionBegin;
-  *flg = patch->denseinverse;
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
 /* TODO: Docs */
-PetscErrorCode PCPatchSetIgnoreDim(PC pc, PetscInt dim)
-{
-  PC_PATCH *patch = (PC_PATCH *)pc->data;
-  PetscFunctionBegin;
-  patch->ignoredim = dim;
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-/* TODO: Docs */
-PetscErrorCode PCPatchGetIgnoreDim(PC pc, PetscInt *dim)
+static PetscErrorCode PCPatchGetIgnoreDim(PC pc, PetscInt *dim)
 {
   PC_PATCH *patch = (PC_PATCH *)pc->data;
   PetscFunctionBegin;
@@ -383,21 +370,12 @@ PetscErrorCode PCPatchGetPartitionOfUnity(PC pc, PetscBool *flg)
 }
 
 /* TODO: Docs */
-PetscErrorCode PCPatchSetLocalComposition(PC pc, PCCompositeType type)
+static PetscErrorCode PCPatchSetLocalComposition(PC pc, PCCompositeType type)
 {
   PC_PATCH *patch = (PC_PATCH *)pc->data;
   PetscFunctionBegin;
   PetscCheck(type == PC_COMPOSITE_ADDITIVE || type == PC_COMPOSITE_MULTIPLICATIVE, PetscObjectComm((PetscObject)pc), PETSC_ERR_SUP, "Only supports additive or multiplicative as the local type");
   patch->local_composition_type = type;
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-/* TODO: Docs */
-PetscErrorCode PCPatchGetLocalComposition(PC pc, PCCompositeType *type)
-{
-  PC_PATCH *patch = (PC_PATCH *)pc->data;
-  PetscFunctionBegin;
-  *type = patch->local_composition_type;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -543,7 +521,7 @@ PetscErrorCode PCPatchSetDiscretisationInfo(PC pc, PetscInt nsubspaces, DM *dms,
 }
 
 /* TODO: Docs */
-PetscErrorCode PCPatchSetDiscretisationInfoCombined(PC pc, DM dm, PetscInt *nodesPerCell, const PetscInt **cellNodeMap, PetscInt numGhostBcs, const PetscInt *ghostBcNodes, PetscInt numGlobalBcs, const PetscInt *globalBcNodes)
+static PetscErrorCode PCPatchSetDiscretisationInfoCombined(PC pc, DM dm, PetscInt *nodesPerCell, const PetscInt **cellNodeMap, PetscInt numGhostBcs, const PetscInt *ghostBcNodes, PetscInt numGlobalBcs, const PetscInt *globalBcNodes)
 {
   PC_PATCH *patch = (PC_PATCH *)pc->data;
   PetscInt  cStart, cEnd, i, j;
@@ -576,36 +554,34 @@ PetscErrorCode PCPatchSetDiscretisationInfoCombined(PC pc, DM dm, PetscInt *node
 }
 
 /*@C
-
-  PCPatchSetComputeFunction - Set the callback used to compute patch residuals
+  PCPatchSetComputeFunction - Set the callback function used to compute patch residuals
 
   Logically Collective
 
   Input Parameters:
 + pc   - The `PC`
-. func - The callback
+. func - The callback function
 - ctx  - The user context
 
   Calling sequence of `func`:
-$ PetscErrorCode func(PC pc, PetscInt point, Vec x, Vec f, IS cellIS, PetscInt n, const PetscInt* dofsArray, const PetscInt* dofsArrayWithAll, void* ctx)
-+  pc               - The `PC`
-.  point            - The point
-.  x                - The input solution (not used in linear problems)
-.  f                - The patch residual vector
-.  cellIS           - An array of the cell numbers
-.  n                - The size of `dofsArray`
-.  dofsArray        - The dofmap for the dofs to be solved for
-.  dofsArrayWithAll - The dofmap for all dofs on the patch
--  ctx              - The user context
++ pc               - The `PC`
+. point            - The point
+. x                - The input solution (not used in linear problems)
+. f                - The patch residual vector
+. cellIS           - An array of the cell numbers
+. n                - The size of `dofsArray`
+. dofsArray        - The dofmap for the dofs to be solved for
+. dofsArrayWithAll - The dofmap for all dofs on the patch
+- ctx              - The user context
 
   Level: advanced
 
   Note:
-  The entries of F (the output residual vector) have been set to zero before the call.
+  The entries of `f` (the output residual vector) have been set to zero before the call.
 
 .seealso: `PCPatchSetComputeOperator()`, `PCPatchGetComputeOperator()`, `PCPatchSetDiscretisationInfo()`, `PCPatchSetComputeFunctionInteriorFacets()`
 @*/
-PetscErrorCode PCPatchSetComputeFunction(PC pc, PetscErrorCode (*func)(PC, PetscInt, Vec, Vec, IS, PetscInt, const PetscInt *, const PetscInt *, void *), void *ctx)
+PetscErrorCode PCPatchSetComputeFunction(PC pc, PetscErrorCode (*func)(PC pc, PetscInt point, Vec x, Vec f, IS cellIS, PetscInt n, const PetscInt *dofsArray, const PetscInt *dofsArrayWithAll, void *ctx), void *ctx)
 {
   PC_PATCH *patch = (PC_PATCH *)pc->data;
 
@@ -616,36 +592,34 @@ PetscErrorCode PCPatchSetComputeFunction(PC pc, PetscErrorCode (*func)(PC, Petsc
 }
 
 /*@C
-
-  PCPatchSetComputeFunctionInteriorFacets - Set the callback used to compute facet integrals for patch residuals
+  PCPatchSetComputeFunctionInteriorFacets - Set the callback function used to compute facet integrals for patch residuals
 
   Logically Collective
 
   Input Parameters:
 + pc   - The `PC`
-. func - The callback
+. func - The callback function
 - ctx  - The user context
 
   Calling sequence of `func`:
-$  PetscErrorCode func(PC pc, PetscInt point, Vec x, Vec f, IS facetIS, PetscInt n, const PetscInt* dofsArray, const PetscInt* dofsArrayWithAll, void* ctx)
-+  pc               - The `PC`
-.  point            - The point
-.  x                - The input solution (not used in linear problems)
-.  f                - The patch residual vector
-.  facetIS          - An array of the facet numbers
-.  n                - The size of `dofsArray`
-.  dofsArray        - The dofmap for the dofs to be solved for
-.  dofsArrayWithAll - The dofmap for all dofs on the patch
--  ctx              - The user context
++ pc               - The `PC`
+. point            - The point
+. x                - The input solution (not used in linear problems)
+. f                - The patch residual vector
+. facetIS          - An array of the facet numbers
+. n                - The size of `dofsArray`
+. dofsArray        - The dofmap for the dofs to be solved for
+. dofsArrayWithAll - The dofmap for all dofs on the patch
+- ctx              - The user context
 
   Level: advanced
 
   Note:
-  The entries of F (the output residual vector) have been set to zero before the call.
+  The entries of `f` (the output residual vector) have been set to zero before the call.
 
 .seealso: `PCPatchSetComputeOperator()`, `PCPatchGetComputeOperator()`, `PCPatchSetDiscretisationInfo()`, `PCPatchSetComputeFunction()`
 @*/
-PetscErrorCode PCPatchSetComputeFunctionInteriorFacets(PC pc, PetscErrorCode (*func)(PC, PetscInt, Vec, Vec, IS, PetscInt, const PetscInt *, const PetscInt *, void *), void *ctx)
+PetscErrorCode PCPatchSetComputeFunctionInteriorFacets(PC pc, PetscErrorCode (*func)(PC pc, PetscInt point, Vec x, Vec f, IS facetIS, PetscInt n, const PetscInt *dofsArray, const PetscInt *dofsArrayWithAll, void *ctx), void *ctx)
 {
   PC_PATCH *patch = (PC_PATCH *)pc->data;
 
@@ -656,27 +630,25 @@ PetscErrorCode PCPatchSetComputeFunctionInteriorFacets(PC pc, PetscErrorCode (*f
 }
 
 /*@C
-
-  PCPatchSetComputeOperator - Set the callback used to compute patch matrices
+  PCPatchSetComputeOperator - Set the callback function used to compute patch matrices
 
   Logically Collective
 
   Input Parameters:
 + pc   - The `PC`
-. func - The callback
+. func - The callback function
 - ctx  - The user context
 
   Calling sequence of `func`:
-$ PetscErrorCode func(PC pc, PetscInt point, Vec x, Mat mat, IS facetIS, PetscInt n, const PetscInt* dofsArray, const PetscInt* dofsArrayWithAll, void* ctx)
-+  pc               - The `PC`
-.  point            - The point
-.  x                - The input solution (not used in linear problems)
-.  mat              - The patch matrix
-.  cellIS           - An array of the cell numbers
-.  n                - The size of `dofsArray`
-.  dofsArray        - The dofmap for the dofs to be solved for
-.  dofsArrayWithAll - The dofmap for all dofs on the patch
--  ctx              - The user context
++ pc               - The `PC`
+. point            - The point
+. x                - The input solution (not used in linear problems)
+. mat              - The patch matrix
+. facetIS          - An array of the cell numbers
+. n                - The size of `dofsArray`
+. dofsArray        - The dofmap for the dofs to be solved for
+. dofsArrayWithAll - The dofmap for all dofs on the patch
+- ctx              - The user context
 
   Level: advanced
 
@@ -685,7 +657,7 @@ $ PetscErrorCode func(PC pc, PetscInt point, Vec x, Mat mat, IS facetIS, PetscIn
 
 .seealso: `PCPatchGetComputeOperator()`, `PCPatchSetComputeFunction()`, `PCPatchSetDiscretisationInfo()`
 @*/
-PetscErrorCode PCPatchSetComputeOperator(PC pc, PetscErrorCode (*func)(PC, PetscInt, Vec, Mat, IS, PetscInt, const PetscInt *, const PetscInt *, void *), void *ctx)
+PetscErrorCode PCPatchSetComputeOperator(PC pc, PetscErrorCode (*func)(PC pc, PetscInt point, Vec x, Mat mat, IS facetIS, PetscInt n, const PetscInt *dofsArray, const PetscInt *dofsArrayWithAll, void *ctx), void *ctx)
 {
   PC_PATCH *patch = (PC_PATCH *)pc->data;
 
@@ -697,26 +669,25 @@ PetscErrorCode PCPatchSetComputeOperator(PC pc, PetscErrorCode (*func)(PC, Petsc
 
 /*@C
 
-  PCPatchSetComputeOperatorInteriorFacets - Set the callback used to compute facet integrals for patch matrices
+  PCPatchSetComputeOperatorInteriorFacets - Set the callback function used to compute facet integrals for patch matrices
 
   Logically Collective
 
   Input Parameters:
 + pc   - The `PC`
-. func - The callback
+. func - The callback function
 - ctx  - The user context
 
   Calling sequence of `func`:
-$  PetscErrorCode func(PC pc, PetscInt point, Vec x, Mat mat, IS facetIS, PetscInt n, const PetscInt* dofsArray, const PetscInt* dofsArrayWithAll, void* ctx)
-+  pc               - The `PC`
-.  point            - The point
-.  x                - The input solution (not used in linear problems)
-.  mat              - The patch matrix
-.  facetIS          - An array of the facet numbers
-.  n                - The size of `dofsArray`
-.  dofsArray        - The dofmap for the dofs to be solved for
-.  dofsArrayWithAll - The dofmap for all dofs on the patch
--  ctx              - The user context
++ pc               - The `PC`
+. point            - The point
+. x                - The input solution (not used in linear problems)
+. mat              - The patch matrix
+. facetIS          - An array of the facet numbers
+. n                - The size of `dofsArray`
+. dofsArray        - The dofmap for the dofs to be solved for
+. dofsArrayWithAll - The dofmap for all dofs on the patch
+- ctx              - The user context
 
   Level: advanced
 
@@ -725,7 +696,7 @@ $  PetscErrorCode func(PC pc, PetscInt point, Vec x, Mat mat, IS facetIS, PetscI
 
 .seealso: `PCPatchGetComputeOperator()`, `PCPatchSetComputeFunction()`, `PCPatchSetDiscretisationInfo()`
 @*/
-PetscErrorCode PCPatchSetComputeOperatorInteriorFacets(PC pc, PetscErrorCode (*func)(PC, PetscInt, Vec, Mat, IS, PetscInt, const PetscInt *, const PetscInt *, void *), void *ctx)
+PetscErrorCode PCPatchSetComputeOperatorInteriorFacets(PC pc, PetscErrorCode (*func)(PC pc, PetscInt point, Vec x, Mat mat, IS facetIS, PetscInt n, const PetscInt *dofsArray, const PetscInt *dofsArrayWithAll, void *ctx), void *ctx)
 {
   PC_PATCH *patch = (PC_PATCH *)pc->data;
 
@@ -908,6 +879,7 @@ static PetscErrorCode PCPatchComputeSetDifference_Private(PetscHSetI A, PetscHSe
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+// PetscClangLinter pragma disable: -fdoc-sowing-chars
 /*
   PCPatchCreateCellPatches - create patches.
 
@@ -2406,6 +2378,7 @@ static PetscErrorCode PCSetUp_PATCH_Linear(PC pc)
         PC  subpc;
 
         PetscCall(KSPCreate(PETSC_COMM_SELF, &ksp));
+        PetscCall(KSPSetNestLevel(ksp, pc->kspnestlevel));
         PetscCall(KSPSetErrorIfNotConverged(ksp, pc->erroriffailure));
         PetscCall(KSPSetOptionsPrefix(ksp, prefix));
         PetscCall(KSPAppendOptionsPrefix(ksp, "sub_"));
@@ -3186,6 +3159,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_Patch(PC pc)
   PC_PATCH *patch;
 
   PetscFunctionBegin;
+  PetscCall(PetscCitationsRegister(PCPatchCitation, &PCPatchcite));
   PetscCall(PetscNew(&patch));
 
   if (patch->subspaces_to_exclude) PetscCall(PetscHSetIDestroy(&patch->subspaces_to_exclude));

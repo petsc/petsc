@@ -7,6 +7,7 @@
   This initial implementation makes the assumption that the produced points have unique parents. If this is
   not satisfied, hash tables can be introduced to ensure produced points are unique.
 */
+static PetscErrorCode DMLabelInitialize_Ephemeral(DMLabel);
 
 static PetscErrorCode DMLabelEphemeralComputeStratumSize_Private(DMLabel label, PetscInt value)
 {
@@ -161,11 +162,14 @@ static PetscErrorCode DMLabelView_Ephemeral(DMLabel label, PetscViewer viewer)
 
 static PetscErrorCode DMLabelDuplicate_Ephemeral(DMLabel label, DMLabel *labelnew)
 {
-  PetscObject olabel;
+  PetscObject obj;
 
   PetscFunctionBegin;
-  PetscCall(PetscObjectQuery((PetscObject)label, "__original_label__", &olabel));
-  PetscCall(PetscObjectCompose((PetscObject)*labelnew, "__original_label__", olabel));
+  PetscCall(PetscObjectQuery((PetscObject)label, "__original_label__", &obj));
+  PetscCall(PetscObjectCompose((PetscObject)*labelnew, "__original_label__", obj));
+  PetscCall(PetscObjectQuery((PetscObject)label, "__transform__", &obj));
+  PetscCall(PetscObjectCompose((PetscObject)*labelnew, "__transform__", obj));
+  PetscCall(DMLabelInitialize_Ephemeral(*labelnew));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -231,7 +235,7 @@ PetscErrorCode DMLabelEphemeralGetLabel(DMLabel label, DMLabel *olabel)
   Not Collective
 
   Input Parameters:
-+ label - the `DMLabel`
++ label  - the `DMLabel`
 - olabel - the base label for this ephemeral label
 
   Level: intermediate

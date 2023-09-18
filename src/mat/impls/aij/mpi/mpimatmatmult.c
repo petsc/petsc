@@ -386,7 +386,7 @@ typedef struct {
   PetscInt      blda;
 } MPIAIJ_MPIDense;
 
-PetscErrorCode MatMPIAIJ_MPIDenseDestroy(void *ctx)
+static PetscErrorCode MatMPIAIJ_MPIDenseDestroy(void *ctx)
 {
   MPIAIJ_MPIDense *contents = (MPIAIJ_MPIDense *)ctx;
   PetscInt         i;
@@ -441,7 +441,7 @@ static PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIDense(Mat A, Mat B, PetscReal
   bs   = PetscAbs(B->cmap->bs);
   Bbn1 = Bbn1 / bs * bs; /* Bbn1 is a multiple of bs */
   if (Bbn1 > BN) Bbn1 = BN;
-  PetscCallMPI(MPI_Allreduce(&Bbn1, &Bbn, 1, MPIU_INT, MPI_MAX, comm));
+  PetscCall(MPIU_Allreduce(&Bbn1, &Bbn, 1, MPIU_INT, MPI_MAX, comm));
 
   /* Enable runtime option for Bbn */
   PetscOptionsBegin(comm, ((PetscObject)C)->prefix, "MatMatMult", "Mat");
@@ -518,7 +518,7 @@ PETSC_INTERN PetscErrorCode MatMatMultNumericAdd_SeqAIJ_SeqDense(Mat, Mat, Mat, 
     Input: If Bbidx = 0, uses B = Bb, else B = Bb1, see MatMatMultSymbolic_MPIAIJ_MPIDense()
 */
 
-PetscErrorCode MatMPIDenseScatter(Mat A, Mat B, PetscInt Bbidx, Mat C, Mat *outworkB)
+static PetscErrorCode MatMPIDenseScatter(Mat A, Mat B, PetscInt Bbidx, Mat C, Mat *outworkB)
 {
   Mat_MPIAIJ        *aij = (Mat_MPIAIJ *)A->data;
   const PetscScalar *b;
@@ -1398,7 +1398,7 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(Mat P, Mat 
   PetscCall(PetscFree(buf_s));
 
   /* (5) compute the local portion of C      */
-  /* set initial free space to be Crmax, sufficient for holding nozeros in each row of C */
+  /* set initial free space to be Crmax, sufficient for holding nonzeros in each row of C */
   PetscCall(PetscFreeSpaceGet(Crmax, &free_space));
   current_space = free_space;
 

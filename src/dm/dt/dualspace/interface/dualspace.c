@@ -78,10 +78,10 @@ PetscErrorCode PetscDualSpaceTensorPointLexicographic_Internal(PetscInt len, Pet
   Not Collective
 
   Input Parameters:
-+ sname - The name of a new user-defined creation routine
++ sname    - The name of a new user-defined creation routine
 - function - The creation routine
 
-  Sample usage:
+  Example Usage:
 .vb
     PetscDualSpaceRegister("my_space", MyPetscDualSpaceCreate);
 .ve
@@ -91,7 +91,7 @@ PetscErrorCode PetscDualSpaceTensorPointLexicographic_Internal(PetscInt len, Pet
     PetscDualSpaceCreate(MPI_Comm, PetscDualSpace *);
     PetscDualSpaceSetType(PetscDualSpace, "my_dual_space");
 .ve
-   or at runtime via the option
+  or at runtime via the option
 .vb
     -petscdualspace_type my_dual_space
 .ve
@@ -154,7 +154,7 @@ PetscErrorCode PetscDualSpaceSetType(PetscDualSpace sp, PetscDualSpaceType name)
   Not Collective
 
   Input Parameter:
-. sp  - The `PetscDualSpace`
+. sp - The `PetscDualSpace`
 
   Output Parameter:
 . name - The `PetscDualSpaceType` name
@@ -167,7 +167,7 @@ PetscErrorCode PetscDualSpaceGetType(PetscDualSpace sp, PetscDualSpaceType *name
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);
-  PetscValidPointer(name, 2);
+  PetscAssertPointer(name, 2);
   if (!PetscDualSpaceRegisterAllCalled) PetscCall(PetscDualSpaceRegisterAll());
   *name = ((PetscObject)sp)->type_name;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -182,7 +182,7 @@ static PetscErrorCode PetscDualSpaceView_ASCII(PetscDualSpace sp, PetscViewer v)
   PetscCall(PetscDualSpaceGetDimension(sp, &pdim));
   PetscCall(PetscObjectPrintClassNamePrefixType((PetscObject)sp, v));
   PetscCall(PetscViewerASCIIPushTab(v));
-  if (sp->k) {
+  if (sp->k != 0 && sp->k != PETSC_FORM_DEGREE_UNDEFINED) {
     PetscCall(PetscViewerASCIIPrintf(v, "Dual space for %" PetscInt_FMT "-forms %swith %" PetscInt_FMT " components, size %" PetscInt_FMT "\n", PetscAbsInt(sp->k), sp->k < 0 ? "(stored in dual form) " : "", sp->Nc, pdim));
   } else {
     PetscCall(PetscViewerASCIIPrintf(v, "Dual space with %" PetscInt_FMT " components, size %" PetscInt_FMT "\n", sp->Nc, pdim));
@@ -204,19 +204,19 @@ static PetscErrorCode PetscDualSpaceView_ASCII(PetscDualSpace sp, PetscViewer v)
 }
 
 /*@C
-   PetscDualSpaceViewFromOptions - View a `PetscDualSpace` based on values in the options database
+  PetscDualSpaceViewFromOptions - View a `PetscDualSpace` based on values in the options database
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  A - the `PetscDualSpace` object
-.  obj - Optional object, provides the options prefix
--  name - command line option name
+  Input Parameters:
++ A    - the `PetscDualSpace` object
+. obj  - Optional object, provides the options prefix
+- name - command line option name
 
-   Level: intermediate
+  Level: intermediate
 
-   Note:
-   See `PetscObjectViewFromOptions()` for possible command line values
+  Note:
+  See `PetscObjectViewFromOptions()` for possible command line values
 
 .seealso: `PetscDualSpace`, `PetscDualSpaceView()`, `PetscObjectViewFromOptions()`, `PetscDualSpaceCreate()`
 @*/
@@ -263,10 +263,10 @@ PetscErrorCode PetscDualSpaceView(PetscDualSpace sp, PetscViewer v)
 . sp - the `PetscDualSpace` object to set options for
 
   Options Database Keys:
-+ -petscdualspace_order <order>      - the approximation order of the space
-. -petscdualspace_form_degree <deg>  - the form degree, say 0 for point evaluations, or 2 for area integrals
-. -petscdualspace_components <c>     - the number of components, say d for a vector field
-. -petscdualspace_refcell <celltype> - Reference cell type name
++ -petscdualspace_order <order>                 - the approximation order of the space
+. -petscdualspace_form_degree <deg>             - the form degree, say 0 for point evaluations, or 2 for area integrals
+. -petscdualspace_components <c>                - the number of components, say d for a vector field
+. -petscdualspace_refcell <celltype>            - Reference cell type name
 . -petscdualspace_lagrange_continuity           - Flag for continuous element
 . -petscdualspace_lagrange_tensor               - Flag for tensor dual space
 . -petscdualspace_lagrange_trimmed              - Flag for trimmed dual space
@@ -372,6 +372,7 @@ static PetscErrorCode PetscDualSpaceClearDMData_Internal(PetscDualSpace sp, DM d
   PetscCall(PetscFree(sp->heightSpaces));
 
   PetscCall(PetscSectionDestroy(&(sp->pointSection)));
+  PetscCall(PetscSectionDestroy(&(sp->intPointSection)));
   PetscCall(PetscQuadratureDestroy(&(sp->intNodes)));
   PetscCall(VecDestroy(&(sp->intDofValues)));
   PetscCall(VecDestroy(&(sp->intNodeValues)));
@@ -444,7 +445,7 @@ PetscErrorCode PetscDualSpaceCreate(MPI_Comm comm, PetscDualSpace *sp)
   PetscDualSpace s;
 
   PetscFunctionBegin;
-  PetscValidPointer(sp, 2);
+  PetscAssertPointer(sp, 2);
   PetscCall(PetscCitationsRegister(FECitation, &FEcite));
   *sp = NULL;
   PetscCall(PetscFEInitializePackage());
@@ -486,10 +487,10 @@ PetscErrorCode PetscDualSpaceDuplicate(PetscDualSpace sp, PetscDualSpace *spNew)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);
-  PetscValidPointer(spNew, 2);
+  PetscAssertPointer(spNew, 2);
   PetscCall(PetscDualSpaceCreate(PetscObjectComm((PetscObject)sp), spNew));
-  PetscCall(PetscObjectGetName((PetscObject)sp, &name));
-  PetscCall(PetscObjectSetName((PetscObject)*spNew, name));
+  name = ((PetscObject)sp)->name;
+  if (name) { PetscCall(PetscObjectSetName((PetscObject)*spNew, name)); }
   PetscCall(PetscDualSpaceGetType(sp, &type));
   PetscCall(PetscDualSpaceSetType(*spNew, type));
   PetscCall(PetscDualSpaceGetDM(sp, &dm));
@@ -522,7 +523,7 @@ PetscErrorCode PetscDualSpaceGetDM(PetscDualSpace sp, DM *dm)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);
-  PetscValidPointer(dm, 2);
+  PetscAssertPointer(dm, 2);
   *dm = sp->dm;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -572,7 +573,7 @@ PetscErrorCode PetscDualSpaceGetOrder(PetscDualSpace sp, PetscInt *order)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);
-  PetscValidIntPointer(order, 2);
+  PetscAssertPointer(order, 2);
   *order = sp->order;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -583,7 +584,7 @@ PetscErrorCode PetscDualSpaceGetOrder(PetscDualSpace sp, PetscInt *order)
   Not Collective
 
   Input Parameters:
-+ sp - The `PetscDualSpace`
++ sp    - The `PetscDualSpace`
 - order - The order
 
   Level: intermediate
@@ -619,7 +620,7 @@ PetscErrorCode PetscDualSpaceGetNumComponents(PetscDualSpace sp, PetscInt *Nc)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);
-  PetscValidIntPointer(Nc, 2);
+  PetscAssertPointer(Nc, 2);
   *Nc = sp->Nc;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -629,7 +630,7 @@ PetscErrorCode PetscDualSpaceGetNumComponents(PetscDualSpace sp, PetscInt *Nc)
 
   Input Parameters:
 + sp - The `PetscDualSpace`
-- order - The number of components
+- Nc - The number of components
 
   Level: intermediate
 
@@ -666,7 +667,7 @@ PetscErrorCode PetscDualSpaceGetFunctional(PetscDualSpace sp, PetscInt i, PetscQ
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);
-  PetscValidPointer(functional, 3);
+  PetscAssertPointer(functional, 3);
   PetscCall(PetscDualSpaceGetDimension(sp, &dim));
   PetscCheck(!(i < 0) && !(i >= dim), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Functional index %" PetscInt_FMT " must be in [0, %" PetscInt_FMT ")", i, dim);
   *functional = sp->functional[i];
@@ -692,7 +693,7 @@ PetscErrorCode PetscDualSpaceGetDimension(PetscDualSpace sp, PetscInt *dim)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);
-  PetscValidIntPointer(dim, 2);
+  PetscAssertPointer(dim, 2);
   if (sp->spdim < 0) {
     PetscSection section;
 
@@ -714,7 +715,7 @@ PetscErrorCode PetscDualSpaceGetDimension(PetscDualSpace sp, PetscInt *dim)
 . sp - The `PetscDualSpace`
 
   Output Parameter:
-. dim - The dimension
+. intdim - The dimension
 
   Level: intermediate
 
@@ -724,7 +725,7 @@ PetscErrorCode PetscDualSpaceGetInteriorDimension(PetscDualSpace sp, PetscInt *i
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);
-  PetscValidIntPointer(intdim, 2);
+  PetscAssertPointer(intdim, 2);
   if (sp->spintdim < 0) {
     PetscSection section;
 
@@ -738,22 +739,22 @@ PetscErrorCode PetscDualSpaceGetInteriorDimension(PetscDualSpace sp, PetscInt *i
 }
 
 /*@
-   PetscDualSpaceGetUniform - Whether this dual space is uniform
+  PetscDualSpaceGetUniform - Whether this dual space is uniform
 
-   Not Collective
+  Not Collective
 
-   Input Parameter:
-.  sp - A dual space
+  Input Parameter:
+. sp - A dual space
 
-   Output Parameter:
-.  uniform - `PETSC_TRUE` if (a) the dual space is the same for each point in a stratum of the reference `DMPLEX`, and
+  Output Parameter:
+. uniform - `PETSC_TRUE` if (a) the dual space is the same for each point in a stratum of the reference `DMPLEX`, and
              (b) every symmetry of each point in the reference `DMPLEX` is also a symmetry of the point's dual space.
 
-   Level: advanced
+  Level: advanced
 
-   Note:
-   All of the usual spaces on simplex or tensor-product elements will be uniform, only reference cells
-   with non-uniform strata (like trianguar-prisms) or anisotropic hp dual spaces will not be uniform.
+  Note:
+  All of the usual spaces on simplex or tensor-product elements will be uniform, only reference cells
+  with non-uniform strata (like trianguar-prisms) or anisotropic hp dual spaces will not be uniform.
 
 .seealso: `PetscDualSpace`, `PetscDualSpaceGetPointSubspace()`, `PetscDualSpaceGetSymmetries()`
 @*/
@@ -761,7 +762,7 @@ PetscErrorCode PetscDualSpaceGetUniform(PetscDualSpace sp, PetscBool *uniform)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);
-  PetscValidBoolPointer(uniform, 2);
+  PetscAssertPointer(uniform, 2);
   *uniform = sp->uniform;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -785,7 +786,7 @@ PetscErrorCode PetscDualSpaceGetNumDof(PetscDualSpace sp, const PetscInt **numDo
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);
-  PetscValidPointer(numDof, 2);
+  PetscAssertPointer(numDof, 2);
   PetscCheck(sp->uniform, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "A non-uniform space does not have a fixed number of dofs for each height");
   if (!sp->numDof) {
     DM           dm;
@@ -896,7 +897,7 @@ PetscErrorCode PetscDualSpaceSectionSetUp_Internal(PetscDualSpace sp, PetscSecti
   Collective
 
   Input Parameter:
-. sp      - The `PetscDualSpace`
+. sp - The `PetscDualSpace`
 
   Output Parameter:
 . section - The section
@@ -932,6 +933,56 @@ PetscErrorCode PetscDualSpaceGetSection(PetscDualSpace sp, PetscSection *section
     PetscCall(PetscDualSpaceSectionSetUp_Internal(sp, sp->pointSection));
   }
   *section = sp->pointSection;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  PetscDualSpaceGetInteriorSection - Create a `PetscSection` over the reference cell with the layout from this space
+  for interior degrees of freedom
+
+  Collective
+
+  Input Parameter:
+. sp - The `PetscDualSpace`
+
+  Output Parameter:
+. section - The interior section
+
+  Level: advanced
+
+  Note:
+  Most reference domains have one cell, in which case the only cell will have
+  all of the interior degrees of freedom in the interior section.  But
+  for `PETSCDUALSPACEREFINED` there may be other mesh points in the interior,
+  and this section describes their layout.
+
+.seealso: `PetscDualSpace`, `PetscSection`, `PetscDualSpaceCreate()`, `DMPLEX`
+@*/
+PetscErrorCode PetscDualSpaceGetInteriorSection(PetscDualSpace sp, PetscSection *section)
+{
+  PetscInt pStart, pEnd, p;
+
+  PetscFunctionBegin;
+  if (!sp->dm) {
+    *section = NULL;
+    PetscFunctionReturn(PETSC_SUCCESS);
+  }
+  if (!sp->intPointSection) {
+    PetscSection full_section;
+
+    PetscCall(PetscDualSpaceGetSection(sp, &full_section));
+    PetscCall(PetscDualSpaceSectionCreate_Internal(sp, &(sp->intPointSection)));
+    PetscCall(PetscSectionGetChart(full_section, &pStart, &pEnd));
+    for (p = pStart; p < pEnd; p++) {
+      PetscInt dof, cdof;
+
+      PetscCall(PetscSectionGetDof(full_section, p, &dof));
+      PetscCall(PetscSectionGetConstraintDof(full_section, p, &cdof));
+      PetscCall(PetscSectionSetDof(sp->intPointSection, p, dof - cdof));
+    }
+    PetscCall(PetscDualSpaceSectionSetUp_Internal(sp, sp->intPointSection));
+  }
+  *section = sp->intPointSection;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -993,9 +1044,9 @@ PetscErrorCode PetscDualSpacePushForwardSubspaces_Internal(PetscDualSpace sp, Pe
 - ctx     - A context for the function
 
   Output Parameter:
-. value   - numComp output values
+. value - numComp output values
 
-  Calling Sequence of `func`:
+  Calling sequence:
 .vb
   PetscErrorCode func(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt numComponents, PetscScalar values[], void *ctx)
 .ve
@@ -1008,8 +1059,8 @@ PetscErrorCode PetscDualSpaceApply(PetscDualSpace sp, PetscInt f, PetscReal time
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);
-  PetscValidPointer(cgeom, 4);
-  PetscValidScalarPointer(value, 8);
+  PetscAssertPointer(cgeom, 4);
+  PetscAssertPointer(value, 8);
   PetscUseTypeMethod(sp, apply, f, time, cgeom, numComp, func, ctx, value);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1022,7 +1073,7 @@ PetscErrorCode PetscDualSpaceApply(PetscDualSpace sp, PetscInt f, PetscReal time
 - pointEval - Evaluation at the points returned by `PetscDualSpaceGetAllData()`
 
   Output Parameter:
-. spValue   - The values of all dual space functionals
+. spValue - The values of all dual space functionals
 
   Level: advanced
 
@@ -1044,7 +1095,7 @@ PetscErrorCode PetscDualSpaceApplyAll(PetscDualSpace sp, const PetscScalar *poin
 - pointEval - Evaluation at the points returned by `PetscDualSpaceGetInteriorData()`
 
   Output Parameter:
-. spValue   - The values of interior dual space functionals
+. spValue - The values of interior dual space functionals
 
   Level: advanced
 
@@ -1071,9 +1122,9 @@ PetscErrorCode PetscDualSpaceApplyInterior(PetscDualSpace sp, const PetscScalar 
 - ctx   - A context for the function
 
   Output Parameter:
-. value   - The output value
+. value - The output value
 
-  Calling Sequence of `func`:
+  Calling sequence:
 .vb
    PetscErrorCode func(PetscInt dim, PetscReal time, const PetscReal x[],PetscInt numComponents, PetscScalar values[], void *ctx)
 .ve
@@ -1097,7 +1148,7 @@ PetscErrorCode PetscDualSpaceApplyDefault(PetscDualSpace sp, PetscInt f, PetscRe
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);
-  PetscValidScalarPointer(value, 8);
+  PetscAssertPointer(value, 8);
   PetscCall(PetscDualSpaceGetDM(sp, &dm));
   PetscCall(PetscDualSpaceGetFunctional(sp, f, &n));
   PetscCall(PetscQuadratureGetData(n, &dim, &qNc, &Nq, &points, &weights));
@@ -1128,11 +1179,11 @@ PetscErrorCode PetscDualSpaceApplyDefault(PetscDualSpace sp, PetscInt f, PetscRe
 - pointEval - Evaluation at the points returned by `PetscDualSpaceGetAllData()`
 
   Output Parameter:
-. spValue   - The values of all dual space functionals
+. spValue - The values of all dual space functionals
 
   Level: advanced
 
-.seealso:  `PetscDualSpace`, `PetscDualSpaceCreate()`
+.seealso: `PetscDualSpace`, `PetscDualSpaceCreate()`
 @*/
 PetscErrorCode PetscDualSpaceApplyAllDefault(PetscDualSpace sp, const PetscScalar *pointEval, PetscScalar *spValue)
 {
@@ -1141,8 +1192,8 @@ PetscErrorCode PetscDualSpaceApplyAllDefault(PetscDualSpace sp, const PetscScala
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);
-  PetscValidScalarPointer(pointEval, 2);
-  PetscValidScalarPointer(spValue, 3);
+  PetscAssertPointer(pointEval, 2);
+  PetscAssertPointer(spValue, 3);
   PetscCall(PetscDualSpaceGetAllData(sp, NULL, &allMat));
   if (!(sp->allNodeValues)) PetscCall(MatCreateVecs(allMat, &(sp->allNodeValues), NULL));
   pointValues = sp->allNodeValues;
@@ -1164,7 +1215,7 @@ PetscErrorCode PetscDualSpaceApplyAllDefault(PetscDualSpace sp, const PetscScala
 - pointEval - Evaluation at the points returned by `PetscDualSpaceGetInteriorData()`
 
   Output Parameter:
-. spValue   - The values of interior dual space functionals
+. spValue - The values of interior dual space functionals
 
   Level: advanced
 
@@ -1177,8 +1228,8 @@ PetscErrorCode PetscDualSpaceApplyInteriorDefault(PetscDualSpace sp, const Petsc
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);
-  PetscValidScalarPointer(pointEval, 2);
-  PetscValidScalarPointer(spValue, 3);
+  PetscAssertPointer(pointEval, 2);
+  PetscAssertPointer(spValue, 3);
   PetscCall(PetscDualSpaceGetInteriorData(sp, NULL, &intMat));
   if (!(sp->intNodeValues)) PetscCall(MatCreateVecs(intMat, &(sp->intNodeValues), NULL));
   pointValues = sp->intNodeValues;
@@ -1200,7 +1251,7 @@ PetscErrorCode PetscDualSpaceApplyInteriorDefault(PetscDualSpace sp, const Petsc
 
   Output Parameters:
 + allNodes - A `PetscQuadrature` object containing all evaluation nodes
-- allMat - A `Mat` for the node-to-dof transformation
+- allMat   - A `Mat` for the node-to-dof transformation
 
   Level: advanced
 
@@ -1210,8 +1261,8 @@ PetscErrorCode PetscDualSpaceGetAllData(PetscDualSpace sp, PetscQuadrature *allN
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);
-  if (allNodes) PetscValidPointer(allNodes, 2);
-  if (allMat) PetscValidPointer(allMat, 3);
+  if (allNodes) PetscAssertPointer(allNodes, 2);
+  if (allMat) PetscAssertPointer(allMat, 3);
   if ((!sp->allNodes || !sp->allMat) && sp->ops->createalldata) {
     PetscQuadrature qpoints;
     Mat             amat;
@@ -1235,7 +1286,7 @@ PetscErrorCode PetscDualSpaceGetAllData(PetscDualSpace sp, PetscQuadrature *allN
 
   Output Parameters:
 + allNodes - A `PetscQuadrature` object containing all evaluation nodes
-- allMat - A `Mat` for the node-to-dof transformation
+- allMat   - A `Mat` for the node-to-dof transformation
 
   Level: advanced
 
@@ -1296,10 +1347,8 @@ PetscErrorCode PetscDualSpaceCreateAllDataDefault(PetscDualSpace sp, PetscQuadra
 
 /*@
   PetscDualSpaceGetInteriorData - Get all quadrature points necessary to compute the interior degrees of freedom from
-  this space, as well as the matrix that computes the degrees of freedom from the quadrature values.  Degrees of
-  freedom are interior degrees of freedom if they belong (by `PetscDualSpaceGetSection()`) to interior points in the
-  reference `DMPLEX`: complementary boundary degrees of freedom are marked as constrained in the section returned by
-  `PetscDualSpaceGetSection()`).
+  this space, as well as the matrix that computes the degrees of freedom from the quadrature
+  values.
 
   Input Parameter:
 . sp - The dualspace
@@ -1312,14 +1361,20 @@ PetscErrorCode PetscDualSpaceCreateAllDataDefault(PetscDualSpace sp, PetscQuadra
 
   Level: advanced
 
+  Notes:
+  Degrees of freedom are interior degrees of freedom if they belong (by
+  `PetscDualSpaceGetSection()`) to interior points in the references, complementary boundary
+  degrees of freedom are marked as constrained in the section returned by
+  `PetscDualSpaceGetSection()`).
+
 .seealso: `PetscDualSpace`, `PetscQuadrature`, `Mat`, `PetscDualSpaceCreate()`, `PetscDualSpaceGetDimension()`, `PetscDualSpaceGetNumComponents()`, `PetscQuadratureGetData()`
 @*/
 PetscErrorCode PetscDualSpaceGetInteriorData(PetscDualSpace sp, PetscQuadrature *intNodes, Mat *intMat)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);
-  if (intNodes) PetscValidPointer(intNodes, 2);
-  if (intMat) PetscValidPointer(intMat, 3);
+  if (intNodes) PetscAssertPointer(intNodes, 2);
+  if (intMat) PetscAssertPointer(intMat, 3);
   if ((!sp->intNodes || !sp->intMat) && sp->ops->createintdata) {
     PetscQuadrature qpoints;
     Mat             imat;
@@ -1343,7 +1398,7 @@ PetscErrorCode PetscDualSpaceGetInteriorData(PetscDualSpace sp, PetscQuadrature 
 
   Output Parameters:
 + intNodes - A `PetscQuadrature` object containing all evaluation points needed to evaluate interior degrees of freedom
-- intMat    - A matrix that computes dual space values from point values: size [spdim0 x (npoints * nc)], where spdim0 is
+- intMat   - A matrix that computes dual space values from point values: size [spdim0 x (npoints * nc)], where spdim0 is
               the size of the constrained layout (`PetscSectionGetConstrainStorageSize()`) of the dual space section,
               npoints is the number of points in allNodes and nc is `PetscDualSpaceGetNumComponents()`.
 
@@ -1430,8 +1485,8 @@ PetscErrorCode PetscDualSpaceCreateInteriorDataDefault(PetscDualSpace sp, PetscQ
   PetscDualSpaceEqual - Determine if two dual spaces are equivalent
 
   Input Parameters:
-+ A    - A `PetscDualSpace` object
-- B    - Another `PetscDualSpace` object
++ A - A `PetscDualSpace` object
+- B - Another `PetscDualSpace` object
 
   Output Parameter:
 . equal - `PETSC_TRUE` if the dual spaces are equivalent
@@ -1450,7 +1505,7 @@ PetscErrorCode PetscDualSpaceEqual(PetscDualSpace A, PetscDualSpace B, PetscBool
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, PETSCDUALSPACE_CLASSID, 1);
   PetscValidHeaderSpecific(B, PETSCDUALSPACE_CLASSID, 2);
-  PetscValidBoolPointer(equal, 3);
+  PetscAssertPointer(equal, 3);
   *equal = PETSC_FALSE;
   PetscCall(PetscDualSpaceGetDimension(A, &sizeA));
   PetscCall(PetscDualSpaceGetDimension(B, &sizeB));
@@ -1494,7 +1549,7 @@ PetscErrorCode PetscDualSpaceEqual(PetscDualSpace A, PetscDualSpace B, PetscBool
   Output Parameter:
 . value - The output value (scalar)
 
-  Calling Sequence of `func`:
+  Calling sequence:
 .vb
   PetscErrorCode func(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt numComponents, PetscScalar values[], void *ctx)
 .ve
@@ -1516,7 +1571,7 @@ PetscErrorCode PetscDualSpaceApplyFVM(PetscDualSpace sp, PetscInt f, PetscReal t
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);
-  PetscValidScalarPointer(value, 8);
+  PetscAssertPointer(value, 8);
   PetscCall(PetscDualSpaceGetDM(sp, &dm));
   PetscCall(DMGetCoordinateDim(dm, &dimEmbed));
   PetscCall(PetscDualSpaceGetFunctional(sp, f, &n));
@@ -1539,7 +1594,7 @@ PetscErrorCode PetscDualSpaceApplyFVM(PetscDualSpace sp, PetscInt f, PetscReal t
   Not Collective
 
   Input Parameters:
-+ sp - the `PetscDualSpace` object
++ sp     - the `PetscDualSpace` object
 - height - the height of the mesh point for which the subspace is desired
 
   Output Parameter:
@@ -1555,7 +1610,7 @@ PetscErrorCode PetscDualSpaceApplyFVM(PetscDualSpace sp, PetscInt f, PetscReal t
 
   This does not increment the reference count on the returned dual space, and the user should not destroy it.
 
-.seealso: `PetscDualSpace`, `PetscSpaceGetHeightSubspace()`, `PetscDualSpace`, `PetscDualSpaceGetPointSubspace()`
+.seealso: `PetscDualSpace`, `PetscSpaceGetHeightSubspace()`, `PetscDualSpaceGetPointSubspace()`
 @*/
 PetscErrorCode PetscDualSpaceGetHeightSubspace(PetscDualSpace sp, PetscInt height, PetscDualSpace *subsp)
 {
@@ -1564,7 +1619,7 @@ PetscErrorCode PetscDualSpaceGetHeightSubspace(PetscDualSpace sp, PetscInt heigh
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);
-  PetscValidPointer(subsp, 3);
+  PetscAssertPointer(subsp, 3);
   PetscCheck((sp->uniform), PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "A non-uniform dual space does not have a single dual space at each height");
   *subsp = NULL;
   dm     = sp->dm;
@@ -1609,19 +1664,21 @@ PetscErrorCode PetscDualSpaceGetHeightSubspace(PetscDualSpace sp, PetscInt heigh
   Not Collective
 
   Input Parameters:
-+ sp - the `PetscDualSpace` object
++ sp    - the `PetscDualSpace` object
 - point - the point (in the dual space's DM) for which the subspace is desired
 
   Output Parameters:
-  bdsp - the subspace. The functionals in the subspace are with respect to the intrinsic geometry of the
-  point, which will be of lesser dimension if height > 0.
+. bdsp - the subspace.
 
   Level: advanced
 
   Notes:
+  The functionals in the subspace are with respect to the intrinsic geometry of the point,
+  which will be of lesser dimension if height > 0.
+
   If the dual space is not defined on the mesh point (e.g. if the space is discontinuous and pointwise values are not
   defined on the element boundaries), or if the implementation of `PetscDualSpace` does not support extracting
-  subspaces, then NULL is returned.
+  subspaces, then `NULL` is returned.
 
   This does not increment the reference count on the returned dual space, and the user should not destroy it.
 
@@ -1634,7 +1691,7 @@ PetscErrorCode PetscDualSpaceGetPointSubspace(PetscDualSpace sp, PetscInt point,
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);
-  PetscValidPointer(bdsp, 3);
+  PetscAssertPointer(bdsp, 3);
   *bdsp = NULL;
   dm    = sp->dm;
   PetscCall(DMPlexGetChart(dm, &pStart, &pEnd));
@@ -1696,11 +1753,11 @@ PetscErrorCode PetscDualSpaceGetSymmetries(PetscDualSpace sp, const PetscInt ***
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);
   if (perms) {
-    PetscValidPointer(perms, 2);
+    PetscAssertPointer(perms, 2);
     *perms = NULL;
   }
   if (flips) {
-    PetscValidPointer(flips, 3);
+    PetscAssertPointer(flips, 3);
     *flips = NULL;
   }
   if (sp->ops->getsymmetries) PetscCall((sp->ops->getsymmetries)(sp, perms, flips));
@@ -1715,7 +1772,7 @@ PetscErrorCode PetscDualSpaceGetSymmetries(PetscDualSpace sp, const PetscInt ***
 . dsp - The `PetscDualSpace`
 
   Output Parameter:
-. k   - The *signed* degree k of the k.  If k >= 0, this means that the degrees of freedom are k-forms, and are stored
+. k - The *signed* degree k of the k.  If k >= 0, this means that the degrees of freedom are k-forms, and are stored
         in lexicographic order according to the basis of k-forms constructed from the wedge product of 1-forms.  So for example,
         the 1-form basis in 3-D is (dx, dy, dz), and the 2-form basis in 3-D is (dx wedge dy, dx wedge dz, dy wedge dz).
         If k < 0, this means that the degrees transform as k-forms, but are stored as (N-k) forms according to the
@@ -1730,7 +1787,7 @@ PetscErrorCode PetscDualSpaceGetFormDegree(PetscDualSpace dsp, PetscInt *k)
 {
   PetscFunctionBeginHot;
   PetscValidHeaderSpecific(dsp, PETSCDUALSPACE_CLASSID, 1);
-  PetscValidIntPointer(k, 2);
+  PetscAssertPointer(k, 2);
   *k = dsp->k;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1760,7 +1817,7 @@ PetscErrorCode PetscDualSpaceSetFormDegree(PetscDualSpace dsp, PetscInt k)
   PetscValidHeaderSpecific(dsp, PETSCDUALSPACE_CLASSID, 1);
   PetscCheck(!dsp->setupcalled, PetscObjectComm((PetscObject)dsp), PETSC_ERR_ARG_WRONGSTATE, "Cannot change number of components after dualspace is set up");
   dim = dsp->dm->dim;
-  PetscCheck(k >= -dim && k <= dim, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Unsupported %" PetscInt_FMT "-form on %" PetscInt_FMT "-dimensional reference cell", PetscAbsInt(k), dim);
+  PetscCheck((k >= -dim && k <= dim) || k == PETSC_FORM_DEGREE_UNDEFINED, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Unsupported %" PetscInt_FMT "-form on %" PetscInt_FMT "-dimensional reference cell", PetscAbsInt(k), dim);
   dsp->k = k;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1772,7 +1829,7 @@ PetscErrorCode PetscDualSpaceSetFormDegree(PetscDualSpace dsp, PetscInt k)
 . dsp - The `PetscDualSpace`
 
   Output Parameter:
-. k   - The simplex dimension
+. k - The simplex dimension
 
   Level: developer
 
@@ -1793,7 +1850,7 @@ PetscErrorCode PetscDualSpaceGetDeRahm(PetscDualSpace dsp, PetscInt *k)
 
   PetscFunctionBeginHot;
   PetscValidHeaderSpecific(dsp, PETSCDUALSPACE_CLASSID, 1);
-  PetscValidIntPointer(k, 2);
+  PetscAssertPointer(k, 2);
   dim = dsp->dm->dim;
   if (!dsp->k) *k = IDENTITY_TRANSFORM;
   else if (dsp->k == 1) *k = COVARIANT_PIOLA_TRANSFORM;
@@ -1815,7 +1872,7 @@ PetscErrorCode PetscDualSpaceGetDeRahm(PetscDualSpace dsp, PetscInt *k)
 - vals      - The function values
 
   Output Parameter:
-. vals      - The transformed function values
+. vals - The transformed function values
 
   Level: intermediate
 
@@ -1831,8 +1888,8 @@ PetscErrorCode PetscDualSpaceTransform(PetscDualSpace dsp, PetscDualSpaceTransfo
 
   PetscFunctionBeginHot;
   PetscValidHeaderSpecific(dsp, PETSCDUALSPACE_CLASSID, 1);
-  PetscValidPointer(fegeom, 4);
-  PetscValidScalarPointer(vals, 7);
+  PetscAssertPointer(fegeom, 4);
+  PetscAssertPointer(vals, 7);
   /* TODO: not handling dimEmbed != dim right now */
   dim = dsp->dm->dim;
   /* No change needed for 0-forms */
@@ -1871,7 +1928,7 @@ PetscErrorCode PetscDualSpaceTransform(PetscDualSpace dsp, PetscDualSpaceTransfo
 - vals      - The function gradient values
 
   Output Parameter:
-. vals      - The transformed function gradient values
+. vals - The transformed function gradient values
 
   Level: intermediate
 
@@ -1887,8 +1944,8 @@ PetscErrorCode PetscDualSpaceTransformGradient(PetscDualSpace dsp, PetscDualSpac
 
   PetscFunctionBeginHot;
   PetscValidHeaderSpecific(dsp, PETSCDUALSPACE_CLASSID, 1);
-  PetscValidPointer(fegeom, 4);
-  PetscValidScalarPointer(vals, 7);
+  PetscAssertPointer(fegeom, 4);
+  PetscAssertPointer(vals, 7);
 #ifdef PETSC_USE_DEBUG
   PetscCheck(dE > 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid embedding dimension %" PetscInt_FMT, dE);
 #endif
@@ -2006,7 +2063,7 @@ PetscErrorCode PetscDualSpaceTransformGradient(PetscDualSpace dsp, PetscDualSpac
 - vals      - The function gradient values
 
   Output Parameter:
-. vals      - The transformed function Hessian values
+. vals - The transformed function Hessian values
 
   Level: intermediate
 
@@ -2022,8 +2079,8 @@ PetscErrorCode PetscDualSpaceTransformHessian(PetscDualSpace dsp, PetscDualSpace
 
   PetscFunctionBeginHot;
   PetscValidHeaderSpecific(dsp, PETSCDUALSPACE_CLASSID, 1);
-  PetscValidPointer(fegeom, 4);
-  PetscValidScalarPointer(vals, 7);
+  PetscAssertPointer(fegeom, 4);
+  PetscAssertPointer(vals, 7);
 #ifdef PETSC_USE_DEBUG
   PetscCheck(dE > 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid embedding dimension %" PetscInt_FMT, dE);
 #endif
@@ -2068,14 +2125,14 @@ PetscErrorCode PetscDualSpaceTransformHessian(PetscDualSpace dsp, PetscDualSpace
   PetscDualSpacePullback - Transform the given functional so that it operates on real space, rather than the reference element. Operationally, this means that we map the function evaluations depending on continuity requirements of our finite element method.
 
   Input Parameters:
-+ dsp        - The `PetscDualSpace`
-. fegeom     - The geometry for this cell
-. Nq         - The number of function samples
-. Nc         - The number of function components
-- pointEval  - The function values
++ dsp       - The `PetscDualSpace`
+. fegeom    - The geometry for this cell
+. Nq        - The number of function samples
+. Nc        - The number of function components
+- pointEval - The function values
 
   Output Parameter:
-. pointEval  - The transformed function values
+. pointEval - The transformed function values
 
   Level: advanced
 
@@ -2093,8 +2150,8 @@ PetscErrorCode PetscDualSpacePullback(PetscDualSpace dsp, PetscFEGeom *fegeom, P
 
   PetscFunctionBeginHot;
   PetscValidHeaderSpecific(dsp, PETSCDUALSPACE_CLASSID, 1);
-  PetscValidPointer(fegeom, 2);
-  PetscValidScalarPointer(pointEval, 5);
+  PetscAssertPointer(fegeom, 2);
+  PetscAssertPointer(pointEval, 5);
   /* The dualspace dofs correspond to some simplex in the DeRahm complex, which we label by k.
      This determines their transformation properties. */
   PetscCall(PetscDualSpaceGetDeRahm(dsp, &k));
@@ -2120,14 +2177,14 @@ PetscErrorCode PetscDualSpacePullback(PetscDualSpace dsp, PetscFEGeom *fegeom, P
   PetscDualSpacePushforward - Transform the given function so that it operates on real space, rather than the reference element. Operationally, this means that we map the function evaluations depending on continuity requirements of our finite element method.
 
   Input Parameters:
-+ dsp        - The `PetscDualSpace`
-. fegeom     - The geometry for this cell
-. Nq         - The number of function samples
-. Nc         - The number of function components
-- pointEval  - The function values
++ dsp       - The `PetscDualSpace`
+. fegeom    - The geometry for this cell
+. Nq        - The number of function samples
+. Nc        - The number of function components
+- pointEval - The function values
 
   Output Parameter:
-. pointEval  - The transformed function values
+. pointEval - The transformed function values
 
   Level: advanced
 
@@ -2145,8 +2202,8 @@ PetscErrorCode PetscDualSpacePushforward(PetscDualSpace dsp, PetscFEGeom *fegeom
 
   PetscFunctionBeginHot;
   PetscValidHeaderSpecific(dsp, PETSCDUALSPACE_CLASSID, 1);
-  PetscValidPointer(fegeom, 2);
-  PetscValidScalarPointer(pointEval, 5);
+  PetscAssertPointer(fegeom, 2);
+  PetscAssertPointer(pointEval, 5);
   /* The dualspace dofs correspond to some simplex in the DeRahm complex, which we label by k.
      This determines their transformation properties. */
   PetscCall(PetscDualSpaceGetDeRahm(dsp, &k));
@@ -2172,14 +2229,14 @@ PetscErrorCode PetscDualSpacePushforward(PetscDualSpace dsp, PetscFEGeom *fegeom
   PetscDualSpacePushforwardGradient - Transform the given function gradient so that it operates on real space, rather than the reference element. Operationally, this means that we map the function evaluations depending on continuity requirements of our finite element method.
 
   Input Parameters:
-+ dsp        - The `PetscDualSpace`
-. fegeom     - The geometry for this cell
-. Nq         - The number of function gradient samples
-. Nc         - The number of function components
-- pointEval  - The function gradient values
++ dsp       - The `PetscDualSpace`
+. fegeom    - The geometry for this cell
+. Nq        - The number of function gradient samples
+. Nc        - The number of function components
+- pointEval - The function gradient values
 
   Output Parameter:
-. pointEval  - The transformed function gradient values
+. pointEval - The transformed function gradient values
 
   Level: advanced
 
@@ -2197,8 +2254,8 @@ PetscErrorCode PetscDualSpacePushforwardGradient(PetscDualSpace dsp, PetscFEGeom
 
   PetscFunctionBeginHot;
   PetscValidHeaderSpecific(dsp, PETSCDUALSPACE_CLASSID, 1);
-  PetscValidPointer(fegeom, 2);
-  PetscValidScalarPointer(pointEval, 5);
+  PetscAssertPointer(fegeom, 2);
+  PetscAssertPointer(pointEval, 5);
   /* The dualspace dofs correspond to some simplex in the DeRahm complex, which we label by k.
      This determines their transformation properties. */
   PetscCall(PetscDualSpaceGetDeRahm(dsp, &k));
@@ -2224,14 +2281,14 @@ PetscErrorCode PetscDualSpacePushforwardGradient(PetscDualSpace dsp, PetscFEGeom
   PetscDualSpacePushforwardHessian - Transform the given function Hessian so that it operates on real space, rather than the reference element. Operationally, this means that we map the function evaluations depending on continuity requirements of our finite element method.
 
   Input Parameters:
-+ dsp        - The `PetscDualSpace`
-. fegeom     - The geometry for this cell
-. Nq         - The number of function Hessian samples
-. Nc         - The number of function components
-- pointEval  - The function gradient values
++ dsp       - The `PetscDualSpace`
+. fegeom    - The geometry for this cell
+. Nq        - The number of function Hessian samples
+. Nc        - The number of function components
+- pointEval - The function gradient values
 
   Output Parameter:
-. pointEval  - The transformed function Hessian values
+. pointEval - The transformed function Hessian values
 
   Level: advanced
 
@@ -2249,8 +2306,8 @@ PetscErrorCode PetscDualSpacePushforwardHessian(PetscDualSpace dsp, PetscFEGeom 
 
   PetscFunctionBeginHot;
   PetscValidHeaderSpecific(dsp, PETSCDUALSPACE_CLASSID, 1);
-  PetscValidPointer(fegeom, 2);
-  PetscValidScalarPointer(pointEval, 5);
+  PetscAssertPointer(fegeom, 2);
+  PetscAssertPointer(pointEval, 5);
   /* The dualspace dofs correspond to some simplex in the DeRahm complex, which we label by k.
      This determines their transformation properties. */
   PetscCall(PetscDualSpaceGetDeRahm(dsp, &k));

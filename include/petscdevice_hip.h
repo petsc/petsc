@@ -1,5 +1,4 @@
-#ifndef PETSCDEVICE_HIP_H
-#define PETSCDEVICE_HIP_H
+#pragma once
 
 #include <petscdevice.h>
 #include <petscpkg_version.h>
@@ -168,6 +167,7 @@ static inline hipsolverStatus_t hipsolverSetStream(hipsolverHandle_t handle, hip
 PETSC_EXTERN hipStream_t    PetscDefaultHipStream; // The default stream used by PETSc
 PETSC_EXTERN PetscErrorCode PetscHIPBLASGetHandle(hipblasHandle_t *);
 PETSC_EXTERN PetscErrorCode PetscHIPSOLVERGetHandle(hipsolverHandle_t *);
+PETSC_EXTERN PetscErrorCode PetscGetCurrentHIPStream(hipStream_t *);
 
 #endif // PETSC_HAVE_HIP
 
@@ -206,5 +206,3 @@ PETSC_EXTERN PetscErrorCode PetscHIPSOLVERGetHandle(hipsolverHandle_t *);
   #define PETSC_DEVICE_INLINE_DECL     PETSC_DEVICE_DECL PETSC_FORCEINLINE
   #define PETSC_HOSTDEVICE_INLINE_DECL PETSC_HOSTDEVICE_DECL PETSC_FORCEINLINE
 #endif
-
-#endif // PETSCDEVICE_HIP_H

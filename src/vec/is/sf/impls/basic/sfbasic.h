@@ -1,5 +1,4 @@
-#ifndef __SFBASIC_H
-#define __SFBASIC_H
+#pragma once
 
 #include <petsc/private/sfimpl.h> /*I "petscsf.h" I*/
 
@@ -77,6 +76,4 @@ PETSC_INTERN PetscErrorCode PetscSFGetLeafRanks_Basic(PetscSF, PetscInt *, const
 
 #if defined(PETSC_HAVE_NVSHMEM)
 PETSC_INTERN PetscErrorCode PetscSFReset_Basic_NVSHMEM(PetscSF);
-#endif
-
 #endif

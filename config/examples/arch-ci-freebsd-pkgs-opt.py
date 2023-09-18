@@ -8,7 +8,7 @@ configure_options = [
   '--with-debugging=0',
 
   '--useThreads=0', # for some reason cmake hangs when invoked from configure on bsd?
-  #'-download-fblaslapack=1',
+  '--download-netlib-lapack=1',
   '--download-mpich=1',
   '--download-mpich-device=ch3:sock',
   '--download-cmake=1',
@@ -30,6 +30,7 @@ configure_options = [
   '--download-concurrencykit=1',
   '--download-revolve=1',
   '--with-strict-petscerrorcode',
+  '--with-fortran-bindings-inplace',
   ]
 
 if __name__ == '__main__':

@@ -97,7 +97,7 @@ int main(int argc, char **argv)
   qsort(X, n - 1, sizeof(PetscInt64), PetscInt64Compare);
   for (i = 0, Y = 0; i < n - 2; i++) Y += (X[i + 1] == X[i]);
 
-  PetscCallMPI(MPI_Allreduce(MPI_IN_PLACE, &Y, 1, MPIU_INT, MPI_SUM, MPI_COMM_WORLD));
+  PetscCall(MPIU_Allreduce(MPI_IN_PLACE, &Y, 1, MPIU_INT, MPI_SUM, MPI_COMM_WORLD));
   PetscCall(PoissonTailProbability(N * lambda, Y, &p));
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "%" PetscInt_FMT " total collisions counted: that many or more should occur with probability %g.\n", Y, (double)p));
 

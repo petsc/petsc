@@ -529,22 +529,6 @@ Aggressive aggregation of data may result in inflexible datastructures
 and code that is hard to maintain. We advise users to keep these
 competing goals in mind and not blindly optimize for performance only.
 
-.. _sec_perf_memory:
-
-Memory Allocation for Sparse Matrix Assembly
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-Since the process of dynamic memory allocation for sparse matrices is
-inherently very expensive, accurate preallocation of memory is crucial
-for efficient sparse matrix assembly. One should use the matrix creation
-routines for particular data structures, such as ``MatCreateSeqAIJ()``
-and ``MatCreateAIJ()`` for compressed, sparse row formats, instead of
-the generic ``MatCreate()`` routine. For problems with multiple degrees
-of freedom per node, the block, compressed, sparse row formats, created
-by ``MatCreateSeqBAIJ()`` and ``MatCreateBAIJ()``, can significantly
-enhance performance. :any:`sec_matsparse` includes
-extensive details and examples regarding preallocation.
-
 .. _sec_symbolfactor:
 
 Memory Allocation for Sparse Matrix Factorization
@@ -576,41 +560,44 @@ the factorization.
 
 .. _detecting-memory-problems:
 
-Detecting Memory Allocation Problems
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Detecting Memory Allocation Problems and Memory Usage
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-PETSc provides a number of tools to aid in detection of problems with
-memory allocation, including leaks and use of uninitialized space. We
-briefly describe these below.
+PETSc provides tools to aid in understanding PETSc memory usage and detecting problems with
+memory allocation, including leaks and use of uninitialized space.  Internally, PETSc uses
+the routines ``PetscMalloc()`` and ``PetscFree()`` for memory allocation; instead of directly calling ``malloc()`` and ``free()``.
+This allows PETSc to track its memory usage and perform error checking. Users are urged to use these routines as well when
+appropriate.
 
--  The PETSc memory allocation (which collects statistics and performs
-   error checking), is employed by default for codes compiled in a
-   debug-mode (configured with ``--with-debugging=1``). PETSc memory
-   allocation can be activated for optimized-mode (configured with
-   ``--with-debugging=0``) using the option ``-malloc_debug``. The option
-   ``-malloc_debug 0`` forces the use of conventional memory allocation when
-   debugging is enabled. When running timing tests, one should build
-   libraries in optimized mode.
+-  The option ``-malloc_debug`` turns on PETSc's extensive runtime error checking of memory for corruption.
+   This checking can be expensive, so should not be used for
+   production runs. The option ``-malloc_test`` is equivalent to ``-malloc_debug``
+   but only works when PETSc is configured with ``--with-debugging`` (the default configuration).
+   We suggest setting the environmental variable ``PETSC_OPTIONS=-malloc_test``
+   in your shell startup file to automatically enable runtime check memory for developing code but not
+   running optimized code. Using ``-malloc_debug`` or ``-malloc_test`` for large runs can slow them significantly, thus we
+   recommend turning them off if you code is painfully slow and you don't need the testing. In addition, you can use
+   ``-check_pointer_intensity 0`` for long run debug runs that do not need extensive memory corruption testing. This option
+   is occasionally added to the ``PETSC_OPTIONS`` environmental variable by some users.
 
--  When the PETSc memory allocation routines are used, the option
-   ``-malloc_dump`` will print a list of unfreed memory at the
-   conclusion of a program. If all memory has been freed, only a message
-   stating the maximum allocated space will be printed. However, if some
-   memory remains unfreed, this information will be printed. Note that
+-  The option
+   ``-malloc_dump`` will print a list of memory locations that have not been freed at the
+   conclusion of a program. If all memory has been freed no message
+   is printed. Note that
    the option ``-malloc_dump`` activates a call to
-   ``PetscMallocDump()`` during ``PetscFinalize()`` the user can also
+   ``PetscMallocDump()`` during ``PetscFinalize()``. The user can also
    call ``PetscMallocDump()`` elsewhere in a program.
 
--  Another useful option for use with PETSc memory allocation routines
-   is ``-malloc_view``, which activates logging of all calls to malloc
-   and reports memory usage, including all Fortran arrays. This option
-   provides a more complete picture than ``-malloc_dump`` for codes that
-   employ Fortran with hardwired arrays. The option ``-malloc_view``
+-  Another useful option
+   is ``-malloc_view``, which reports memory usage in all routines at the conclusion of the program.
+   Note that this option
    activates logging by calling ``PetscMallocViewSet()`` in
    ``PetscInitialize()`` and then prints the log by calling
    ``PetscMallocView()`` in ``PetscFinalize()``. The user can also call
-   these routines elsewhere in a program. When finer granularity is
-   desired, the user should call ``PetscMallocGetCurrentUsage()`` and
+   these routines elsewhere in a program.
+
+-  When finer granularity is
+   desired, the user can call ``PetscMallocGetCurrentUsage()`` and
    ``PetscMallocGetMaximumUsage()`` for memory allocated by PETSc, or
    ``PetscMemoryGetCurrentUsage()`` and ``PetscMemoryGetMaximumUsage()``
    for the total memory used by the program. Note that
@@ -618,10 +605,15 @@ briefly describe these below.
    ``PetscMemoryGetMaximumUsage()`` (typically at the beginning of the
    program).
 
--  When running with `-log_view` the additional option `-log_view_memory`
+-  The option ``-memory_view`` provides a high-level view of all memory usage,
+   not just the memory used by ``PetscMalloc()``, at the conclusion of the program.
+
+-  When running with ``-log_view``, the additional option ``-log_view_memory``
    causes the display of additional columns of information about how much
    memory was allocated and freed during each logged event. This is useful
    to understand what phases of a computation require the most memory.
+
+One can also use `Valgrind <http://valgrind.org>`__ to track memory usage and find bugs, see :any:`FAQ: Valgrind usage<valgrind>`.
 
 .. _sec_dsreuse:
 
@@ -679,7 +671,7 @@ the solvers accordingly.
 Tips for Efficient Use of Linear Solvers
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-As discussed in :any:`chapter_ksp`, the default linear
+As discussed in :any:`ch_ksp`, the default linear
 solvers are
 
 -  | uniprocess: GMRES(30) with ILU(0) preconditioning
@@ -700,7 +692,7 @@ solvers, as discussed throughout the manual.
 
 In particular, note that the default restart parameter for GMRES is 30,
 which may be too small for some large-scale problems. One can alter this
-parameter with the option ``-ksp_gmres_restar <restart>`` or by calling
+parameter with the option ``-ksp_gmres_restart <restart>`` or by calling
 ``KSPGMRESSetRestart()``. :any:`sec_ksp` gives
 information on setting alternative GMRES orthogonalization routines,
 which may provide much better parallel performance.

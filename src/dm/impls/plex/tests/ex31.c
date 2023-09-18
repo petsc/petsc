@@ -96,9 +96,9 @@ int main(int argc, char **argv)
     PetscCall(PetscSectionGetStorageSize(gsection, &gSizeBefore));
     minBefore = gSizeBefore;
     maxBefore = gSizeBefore;
-    PetscCallMPI(MPI_Allreduce(MPI_IN_PLACE, &gSizeBefore, 1, MPIU_INT, MPI_SUM, comm));
-    PetscCallMPI(MPI_Allreduce(MPI_IN_PLACE, &minBefore, 1, MPIU_INT, MPI_MIN, comm));
-    PetscCallMPI(MPI_Allreduce(MPI_IN_PLACE, &maxBefore, 1, MPIU_INT, MPI_MAX, comm));
+    PetscCall(MPIU_Allreduce(MPI_IN_PLACE, &gSizeBefore, 1, MPIU_INT, MPI_SUM, comm));
+    PetscCall(MPIU_Allreduce(MPI_IN_PLACE, &minBefore, 1, MPIU_INT, MPI_MIN, comm));
+    PetscCall(MPIU_Allreduce(MPI_IN_PLACE, &maxBefore, 1, MPIU_INT, MPI_MAX, comm));
     PetscCall(PetscSectionDestroy(&gsection));
   }
 
@@ -109,9 +109,9 @@ int main(int argc, char **argv)
     PetscCall(PetscSectionGetStorageSize(gsection, &gSizeAfter));
     minAfter = gSizeAfter;
     maxAfter = gSizeAfter;
-    PetscCallMPI(MPI_Allreduce(MPI_IN_PLACE, &gSizeAfter, 1, MPIU_INT, MPI_SUM, comm));
-    PetscCallMPI(MPI_Allreduce(MPI_IN_PLACE, &minAfter, 1, MPIU_INT, MPI_MIN, comm));
-    PetscCallMPI(MPI_Allreduce(MPI_IN_PLACE, &maxAfter, 1, MPIU_INT, MPI_MAX, comm));
+    PetscCall(MPIU_Allreduce(MPI_IN_PLACE, &gSizeAfter, 1, MPIU_INT, MPI_SUM, comm));
+    PetscCall(MPIU_Allreduce(MPI_IN_PLACE, &minAfter, 1, MPIU_INT, MPI_MIN, comm));
+    PetscCall(MPIU_Allreduce(MPI_IN_PLACE, &maxAfter, 1, MPIU_INT, MPI_MAX, comm));
     PetscCheck(gSizeAfter == gSizeBefore, comm, PETSC_ERR_PLIB, "Global section has not the same size before and after.");
     PetscCheck(minAfter >= minBefore && maxAfter <= maxBefore && (minAfter > minBefore || maxAfter < maxBefore), comm, PETSC_ERR_PLIB, "DMPlexRebalanceSharedPoints did not improve mesh point balance.");
     PetscCall(PetscSectionDestroy(&gsection));

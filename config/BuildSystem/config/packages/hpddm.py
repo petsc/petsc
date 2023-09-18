@@ -3,8 +3,8 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self,framework):
     config.package.Package.__init__(self,framework)
-    self.version                = '2.2.3'
-    self.gitcommit              = 'v'+self.version # main mar-26-2023
+    # self.version                = '2.2.3'
+    self.gitcommit              = '73e22aeecde71e65a30686b0b1f2be44c2171fe6' # harmonic sep-15-2023
     self.download               = ['git://https://github.com/hpddm/hpddm','https://github.com/hpddm/hpddm/archive/'+self.gitcommit+'.tar.gz']
     self.minversion             = '2.2.1'
     self.versionname            = 'HPDDM_VERSION'
@@ -50,7 +50,7 @@ class Configure(config.package.Package):
       PETSC_ARCH = self.arch
       prefix     = os.path.join(self.petscdir.dir,self.arch)
     incDir = os.path.join(prefix,'include')
-    libDir = os.path.join(prefix,'lib')
+    libDir = os.path.join(prefix,self.libDirs[0])
     self.addMakeMacro('HPDDM','yes')
     self.include = [incDir]
     if not hasattr(self.framework,'packages'):
@@ -65,7 +65,10 @@ class Configure(config.package.Package):
     if self.checkSharedLibrariesEnabled():
       ldflags = ' '.join(self.setCompilers.sharedLibraryFlags)
       cxxflags += ' '+self.headers.toStringNoDupes(self.dinclude+[os.path.join(PETSC_DIR,'include'),incDir])
-      ldflags += ' '+self.libraries.toStringNoDupes(self.dlib+[os.path.join(libDir,'libpetsc.'+self.setCompilers.sharedLibraryExt)])
+      if self.argDB['with-single-library']:
+        ldflags += ' '+self.libraries.toStringNoDupes(self.dlib+[os.path.join(libDir,'libpetsc')])
+      else:
+        ldflags += ' '+self.libraries.toStringNoDupes(self.dlib+[os.path.join(libDir,'libpetsctao'),'-lpetscts -lpetscsnes -lpetscksp -lpetscdm -lpetscmat -lpetscvec -lpetscsys'])
       slepcbuilddep = 'slepc-install slepc-build'
       oldFlags = self.compilers.CXXPPFLAGS
       self.compilers.CXXPPFLAGS += ' -I'+incDir

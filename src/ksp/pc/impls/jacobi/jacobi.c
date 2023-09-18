@@ -1,6 +1,5 @@
 
-/*  --------------------------------------------------------------------
-
+/*
      This file implements a Jacobi preconditioner in PETSc as part of PC.
      You can use this as a starting point for implementing your own
      preconditioner that is not provided with PETSc. (You might also consider
@@ -40,8 +39,7 @@
      right symmetric preconditioner application via PCApplySymmetricLeft()
      and PCApplySymmetricRight().  The Jacobi implementation is
      PCApplySymmetricLeftOrRight_Jacobi().
-
-    -------------------------------------------------------------------- */
+*/
 
 /*
    Include files needed for the Jacobi preconditioner:
@@ -474,22 +472,22 @@ PETSC_EXTERN PetscErrorCode PCCreate_Jacobi(PC pc)
 }
 
 /*@
-   PCJacobiSetUseAbs - Causes the Jacobi preconditioner `PCJACOBI` to use the
-      absolute values of the diagonal divisors in the preconditioner
+  PCJacobiSetUseAbs - Causes the Jacobi preconditioner `PCJACOBI` to use the
+  absolute values of the diagonal divisors in the preconditioner
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  pc - the preconditioner context
--  flg - whether to use absolute values or not
+  Input Parameters:
++ pc  - the preconditioner context
+- flg - whether to use absolute values or not
 
-   Options Database Key:
-.  -pc_jacobi_abs <bool> - use absolute values
+  Options Database Key:
+. -pc_jacobi_abs <bool> - use absolute values
 
-   Note:
-    This takes affect at the next construction of the preconditioner
+  Note:
+  This takes affect at the next construction of the preconditioner
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `PCJACOBI`, `PCJacobiaSetType()`, `PCJacobiGetUseAbs()`
 @*/
@@ -502,18 +500,18 @@ PetscErrorCode PCJacobiSetUseAbs(PC pc, PetscBool flg)
 }
 
 /*@
-   PCJacobiGetUseAbs - Determines if the Jacobi preconditioner `PCJACOBI` uses the
-      absolute values of the diagonal divisors in the preconditioner
+  PCJacobiGetUseAbs - Determines if the Jacobi preconditioner `PCJACOBI` uses the
+  absolute values of the diagonal divisors in the preconditioner
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameter:
-.  pc - the preconditioner context
+  Input Parameter:
+. pc - the preconditioner context
 
-   Output Parameter:
-.  flg - whether to use absolute values or not
+  Output Parameter:
+. flg - whether to use absolute values or not
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `PCJACOBI`, `PCJacobiaSetType()`, `PCJacobiSetUseAbs()`, `PCJacobiGetType()`
 @*/
@@ -526,21 +524,21 @@ PetscErrorCode PCJacobiGetUseAbs(PC pc, PetscBool *flg)
 }
 
 /*@
-   PCJacobiSetFixDiagonal - Check for zero values on the diagonal and replace them with 1.0
+  PCJacobiSetFixDiagonal - Check for zero values on the diagonal and replace them with 1.0
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  pc - the preconditioner context
--  flg - the boolean flag
+  Input Parameters:
++ pc  - the preconditioner context
+- flg - the boolean flag
 
-   Options Database Key:
-.  -pc_jacobi_fixdiagonal <bool> - check for zero values on the diagonal
+  Options Database Key:
+. -pc_jacobi_fixdiagonal <bool> - check for zero values on the diagonal
 
-   Note:
-   This takes affect at the next construction of the preconditioner
+  Note:
+  This takes affect at the next construction of the preconditioner
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `PCJACOBI`, `PCJacobiSetType()`, `PCJacobiGetFixDiagonal()`, `PCJacobiSetUseAbs()`
 @*/
@@ -553,20 +551,20 @@ PetscErrorCode PCJacobiSetFixDiagonal(PC pc, PetscBool flg)
 }
 
 /*@
-   PCJacobiGetFixDiagonal - Determines if the Jacobi preconditioner `PCJACOBI` checks for zero diagonal terms
+  PCJacobiGetFixDiagonal - Determines if the Jacobi preconditioner `PCJACOBI` checks for zero diagonal terms
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameter:
-.  pc - the preconditioner context
+  Input Parameter:
+. pc - the preconditioner context
 
-   Output Parameter:
-.  flg - the boolean flag
+  Output Parameter:
+. flg - the boolean flag
 
-   Options Database Key:
-.  -pc_jacobi_fixdiagonal <bool> - Fix 0 terms on diagonal by using 1
+  Options Database Key:
+. -pc_jacobi_fixdiagonal <bool> - Fix 0 terms on diagonal by using 1
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `PCJACOBI`, `PCJacobiSetType()`, `PCJacobiSetFixDiagonal()`
 @*/
@@ -579,22 +577,22 @@ PetscErrorCode PCJacobiGetFixDiagonal(PC pc, PetscBool *flg)
 }
 
 /*@
-   PCJacobiSetType - Causes the Jacobi preconditioner to use either the diagonal, the maximum entry in each row,
-      of the sum of rows entries for the diagonal preconditioner
+  PCJacobiSetType - Causes the Jacobi preconditioner to use either the diagonal, the maximum entry in each row,
+  of the sum of rows entries for the diagonal preconditioner
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  pc - the preconditioner context
--  type - `PC_JACOBI_DIAGONAL`, `PC_JACOBI_ROWMAX`, `PC_JACOBI_ROWSUM`
+  Input Parameters:
++ pc   - the preconditioner context
+- type - `PC_JACOBI_DIAGONAL`, `PC_JACOBI_ROWMAX`, `PC_JACOBI_ROWSUM`
 
-   Options Database Key:
-.  -pc_jacobi_type <diagonal,rowmax,rowsum> - the type of diagonal matrix to use for Jacobi
+  Options Database Key:
+. -pc_jacobi_type <diagonal,rowmax,rowsum> - the type of diagonal matrix to use for Jacobi
 
-   Level: intermediate
+  Level: intermediate
 
-   Developer Note:
-   Why is there a separate function for using the absolute value?
+  Developer Notes:
+  Why is there a separate function for using the absolute value?
 
 .seealso: `PCJACOBI`, `PCJacobiSetUseAbs()`, `PCJacobiGetType()`
 @*/
@@ -607,17 +605,17 @@ PetscErrorCode PCJacobiSetType(PC pc, PCJacobiType type)
 }
 
 /*@
-   PCJacobiGetType - Gets how the diagonal matrix is produced for the preconditioner
+  PCJacobiGetType - Gets how the diagonal matrix is produced for the preconditioner
 
-   Not Collective
+  Not Collective
 
-   Input Parameter:
-.  pc - the preconditioner context
+  Input Parameter:
+. pc - the preconditioner context
 
-   Output Parameter:
-.  type - `PC_JACOBI_DIAGONAL`, `PC_JACOBI_ROWMAX`, `PC_JACOBI_ROWSUM`
+  Output Parameter:
+. type - `PC_JACOBI_DIAGONAL`, `PC_JACOBI_ROWMAX`, `PC_JACOBI_ROWSUM`
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `PCJACOBI`, `PCJacobiaUseAbs()`, `PCJacobiSetType()`
 @*/

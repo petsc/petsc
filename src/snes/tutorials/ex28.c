@@ -362,28 +362,28 @@ int main(int argc, char *argv[])
   PetscCall(SNESCreate(PETSC_COMM_WORLD, &snes));
   switch (user->ptype) {
   case 0:
-    PetscCall(DMCompositeGetAccess(pack, X, &Xu, 0));
-    PetscCall(DMCompositeGetAccess(pack, F, &Fu, 0));
+    PetscCall(DMCompositeGetAccess(pack, X, &Xu, PETSC_NULLPTR));
+    PetscCall(DMCompositeGetAccess(pack, F, &Fu, PETSC_NULLPTR));
     PetscCall(DMCreateMatrix(dau, &B));
     PetscCall(SNESSetFunction(snes, Fu, FormFunction_All, user));
     PetscCall(SNESSetJacobian(snes, B, B, FormJacobian_All, user));
     PetscCall(SNESSetFromOptions(snes));
     PetscCall(SNESSetDM(snes, dau));
     PetscCall(SNESSolve(snes, NULL, Xu));
-    PetscCall(DMCompositeRestoreAccess(pack, X, &Xu, 0));
-    PetscCall(DMCompositeRestoreAccess(pack, F, &Fu, 0));
+    PetscCall(DMCompositeRestoreAccess(pack, X, &Xu, PETSC_NULLPTR));
+    PetscCall(DMCompositeRestoreAccess(pack, F, &Fu, PETSC_NULLPTR));
     break;
   case 1:
-    PetscCall(DMCompositeGetAccess(pack, X, 0, &Xk));
-    PetscCall(DMCompositeGetAccess(pack, F, 0, &Fk));
+    PetscCall(DMCompositeGetAccess(pack, X, PETSC_NULLPTR, &Xk));
+    PetscCall(DMCompositeGetAccess(pack, F, PETSC_NULLPTR, &Fk));
     PetscCall(DMCreateMatrix(dak, &B));
     PetscCall(SNESSetFunction(snes, Fk, FormFunction_All, user));
     PetscCall(SNESSetJacobian(snes, B, B, FormJacobian_All, user));
     PetscCall(SNESSetFromOptions(snes));
     PetscCall(SNESSetDM(snes, dak));
     PetscCall(SNESSolve(snes, NULL, Xk));
-    PetscCall(DMCompositeRestoreAccess(pack, X, 0, &Xk));
-    PetscCall(DMCompositeRestoreAccess(pack, F, 0, &Fk));
+    PetscCall(DMCompositeRestoreAccess(pack, X, PETSC_NULLPTR, &Xk));
+    PetscCall(DMCompositeRestoreAccess(pack, F, PETSC_NULLPTR, &Fk));
     break;
   case 2:
     PetscCall(DMCreateMatrix(pack, &B));
@@ -494,6 +494,13 @@ int main(int argc, char *argv[])
         suffix: kok
         requires: kokkos_kernels
         args: -pack_dm_mat_type aijkokkos -pack_dm_vec_type kokkos
+
+   test:
+      requires: mumps
+      suffix: 3_nest_lu
+      nsize: {{1 3}}
+      output_file: output/ex28_3.out
+      args: -pack_dm_mat_type nest -u_da_grid_x 20 -snes_converged_reason -snes_monitor_short -ksp_monitor_short -problem_type 2 -snes_mf_operator  -pc_type lu -pc_factor_mat_solver_type mumps
 
    test:
       suffix: 4

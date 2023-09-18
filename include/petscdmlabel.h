@@ -1,5 +1,4 @@
-#ifndef PETSCDMLABEL_H
-#define PETSCDMLABEL_H
+#pragma once
 #include <petscis.h>
 
 PETSC_EXTERN PetscClassId DMLABEL_CLASSID;
@@ -86,5 +85,3 @@ PETSC_EXTERN PetscErrorCode PetscSectionSymCreateLabel(MPI_Comm, DMLabel, PetscS
 PETSC_EXTERN PetscErrorCode PetscSectionSymLabelSetLabel(PetscSectionSym, DMLabel);
 PETSC_EXTERN PetscErrorCode PetscSectionSymLabelGetStratum(PetscSectionSym, PetscInt, PetscInt *, PetscInt *, PetscInt *, const PetscInt ***, const PetscScalar ***);
 PETSC_EXTERN PetscErrorCode PetscSectionSymLabelSetStratum(PetscSectionSym, PetscInt, PetscInt, PetscInt, PetscInt, PetscCopyMode, const PetscInt **, const PetscScalar **);
-
-#endif

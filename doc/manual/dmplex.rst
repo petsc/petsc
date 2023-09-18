@@ -1,11 +1,11 @@
-.. _chapter_unstructured:
+.. _ch_unstructured:
 
-DMPlex: Unstructured Grids in PETSc
------------------------------------
+DMPlex: Unstructured Grids
+--------------------------
 
 This chapter introduces the ``DMPLEX`` subclass of ``DM``, which allows
 the user to handle unstructured grids using the generic ``DM`` interface
-for hierarchy and multi-physics. DMPlex was created to remedy a huge
+for hierarchy and multi-physics. ``DMPLEX`` was created to remedy a huge
 problem in all current PDE simulation codes, namely that the
 discretization was so closely tied to the data layout and solver that
 switching discretizations in the same code was not possible. Not only
@@ -16,20 +16,19 @@ application) development impossible.
 Representing Unstructured Grids
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The main advantage of DMPlex in representing topology is that it
+The main advantage of ``DMPLEX`` in representing topology is that it
 treats all the different pieces of a mesh, e.g. cells, faces, edges, and
-vertices, in exactly the same way. This allows the interface to be very
+vertices, in the same way. This allows the interface to be
 small and simple, while remaining flexible and general. This also allows
 “dimension independent programming”, which means that the same algorithm
 can be used unchanged for meshes of different shapes and dimensions.
 
-All pieces of the mesh (vertices, edges, faces, and cells) are treated as *points*, which are identified by
-``PetscInt``\ s. A mesh is built by relating points to other points, in
+All pieces of the mesh (vertices, edges, faces, and cells) are treated as *points*, which are each identified by a
+``PetscInt``. A mesh is built by relating points to other points, in
 particular specifying a “covering” relation among the points. For
 example, an edge is defined by being covered by two vertices, and a
 triangle can be defined by being covered by three edges (or even by
-three vertices). In fact, this structure has been known for a long time.
-It is a `Hasse Diagram <http://en.wikipedia.org/wiki/Hasse_diagram>`__, which is a
+three vertices). This structure is known as a `Hasse Diagram <http://en.wikipedia.org/wiki/Hasse_diagram>`__, which is a
 Directed Acyclic Graph (DAG) representing a cell complex using the
 covering relation. The graph edges represent the relation, which also
 encodes a partially ordered set (poset).
@@ -68,7 +67,7 @@ Note that a *chart* here corresponds to a semi-closed interval (e.g
 :math:`[0,11) = \{0,1,\ldots,10\}`) specifying the range of indices we’d
 like to use to define points on the current rank. We then define the
 covering relation, which we call the *cone*, which are also the in-edges
-in the DAG. In order to preallocate correctly, we first setup sizes,
+in the DAG. In order to preallocate correctly, we first provide sizes,
 
 .. code-block::
 
@@ -82,7 +81,7 @@ in the DAG. In order to preallocate correctly, we first setup sizes,
    DMPlexSetConeSize(dm, 10, 2);
    DMSetUp(dm);
 
-and then point values,
+and then point values (recall each point is an integer that represents a single geometric entity, a cell, face, edge, or vertex),
 
 .. code-block::
 
@@ -95,15 +94,15 @@ and then point values,
    DMPlexSetCone(dm, 9, [4, 5]);
    DMPlexSetCone(dm, 10, [5, 3]);
 
-There is also an API for the dual relation, using
+There is also an API for providing the dual relation, using
 ``DMPlexSetSupportSize()`` and ``DMPlexSetSupport()``, but this can be
-calculated automatically by calling
+calculated automatically using the provided ``DMPlexSetConeSize()`` and ``DMPlexSetCone()`` information and then calling
 
 .. code-block::
 
    DMPlexSymmetrize(dm);
 
-The "symmetrization" in the sense of the DAG. Each point knows its covering (cone) and each point knows what it covers (support).
+The "symmetrization" is in the sense of the DAG. Each point knows its covering (cone) and each point knows what it covers (support). Note that when using automatic symmetrization, cones will be ordered but supports will not. The user can enforce an ordering on supports by rewriting them after symmetrization using ``DMPlexSetSupport()``.
 
 In order to support efficient queries, we construct fast
 search structures and indices for the different types of points using
@@ -111,8 +110,6 @@ search structures and indices for the different types of points using
 .. code-block::
 
    DMPlexStratify(dm);
-
-.. _sec_petscsection:
 
 Dealing with Periodicity
 ~~~~~~~~~~~~~~~~~~~~~~~~
@@ -141,44 +138,102 @@ For the default scheme, a call to `DMLocalizeCoordinates()` (which usually happe
   PetscCall(PetscPrintf(PETSC_COMM_SELF, "\n"));
   PetscCall(DMPlexRestoreCellCoordinates(dm, cell, &isDG, &numCoords, &array, &coords));
 
-Data on Unstructured Grids (PetscSection)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.. _sec_petscsection:
+
+Connecting Data on Grids to its Location in arrays or Vec (PetscSection)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The strongest links between solvers and discretizations are
 
--  the layout of data over the mesh,
+-  the relationship between the layout of data (unknowns) over a mesh (or similar structure) and the data layout in arrays and ``Vec`` used for computation,
 
--  problem partitioning, and
+-  data (unknowns) partitioning, and
 
--  ordering of unknowns.
+-  ordering of data (unknowns).
 
 To enable modularity, we encode the operations above in simple data
-structures that can be understood by the linear algebra engine in PETSc
-without any reference to the mesh (topology) or discretization
-(analysis).
+structures that can be understood by the linear algebra (``Vec``, ``Mat``, ``KSP``, ``PC``, ``SNES``), time integrator (``TS``), and optimization (``Tao``) engines in PETSc
+without explicit reference to the mesh (topology) or discretization (analysis).
 
 Data Layout by Hand
 ^^^^^^^^^^^^^^^^^^^
 
-Data are associated with a mesh using the ``PetscSection`` object.
+..
+  TODO: This text needs additional work so it can be understood without a detailed (or any) understanding of ``DMPLEX`` because the ``PetscSection`` concept is below ``DM`` in the
 
-A ``PetscSection``, associates a set of degrees of freedom (dof), (a small space
+..
+  We may want to even move this introductory ``PetscSection`` material to its own pride of place in the user guide and not inside the ``DMPLEX`` discussion.
+
+Specific entries (or collections of entries) in a ``Vec`` (or a simple array) can be associated with a "location" on a mesh (or other types of data structure) using the ``PetscSection`` object.
+A **point** is a ``PetscInt`` that serves as an abstract "index" into arrays from iteratable sets, such as points on a mesh.
+
+``PetscSection`` has two modes of operation.
+
+Mode 1:
+
+A ``PetscSection`` associates a set of degrees of freedom (dof), (a small space
 :math:`\{e_k\} 0 < k < d_p`), with every point. The number of dof and their meaning may be different for different points. For example, the dof on a cell point may represent pressure
-while a dof on a face point may represent velocity. A reminder that though points must be
+while a dof on a face point may represent velocity. Though points must be
 contiguously numbered, they can be in any range
-:math:`[\mathrm{pStart}, \mathrm{pEnd})`. A ``PetscSection`` may be thought of as defining a two dimensional array indexed by point in the outer dimension with
+:math:`[\mathrm{pStart}, \mathrm{pEnd})`, which is called a **chart**. A ``PetscSection`` in mode 1 may be thought of as defining a two dimensional array indexed by point in the outer dimension with
 a variable length inner dimension indexed by the dof at that point, :math:`v[pStart <= point < pEnd][0 <= dof <d_p]` [#petscsection_footnote]_.
 
-The sequence for setting up any ``PetscSection`` is the following:
+The sequence for constructing a ``PetscSection`` in mode 1 is the following:
 
-#. Specify the range of points, or chart,
+#. Specify the range of points, or chart, with ``PetscSectionSetChart()``.
 
-#. Specify the number of dofs per point, and
+#. Specify the number of dofs per point, with ``PetscSectionSetDof()``. Any values not set will be zero.
 
-#. Set up the ``PetscSection``.
+#. Set up the ``PetscSection`` with ``PetscSectionSetUp()``.
 
-For example, using the mesh from
-:numref:`fig_doubletMesh`, we can lay out data for
+Below we demonstrate such a process used by ``DMPLEX`` but first we introduce the second mode for working with ``PetscSection``.
+
+Mode 2:
+
+A ``PetscSection`` consists of one more **fields** each of which is represented (internally) by a ``PetscSection``.
+A ``PetscSection`` in mode 2 may be thought of as defining a three dimensional array indexed by point and field in the outer dimensions with
+a variable length inner dimension indexed by the dof at that point. The actual order the values in the array are stored can be set with
+``PetscSectionSetPointMajor``\(``PetscSection``\, ``PETSC_TRUE``\, ``PETSC_FALSE``\). In **point major** order all the degrees of freedom for each point for all fields are stored contiguously, otherwise
+all degrees of freedom for each field are stored  are stored contiguously. With point major order the fields are said to be **interlaced**.
+
+Consider a ``PetscSection`` with 2 fields and 3 points (from 0 to 2) with 1 dof for each point. In point major order the array has the storage
+(values for all the fields at point 0, values for all the fields at point 1, values for all the fields at point 2) while in field major order it is
+(values for all points in field 0, values for all points in field 1).
+
+The sequence for constructing such a ``PetscSection`` is the following:
+
+#. Specify the range of points, or chart, with ``PetscSectionSetChart()``\. All fields share the same chart.
+
+#. Specify the number of fields with ``PetscSectionSetNumFields()``.
+
+#. Optionally provide a name for the fields with ``PetscSectionSetFieldName()``.
+
+#. Set the number of dof for each point on each field with ``PetscSectionSetFieldDof()``. Again, values not set will be zero.
+
+#. Set the **total** number of dof for each point with ``PetscSectionSetDof()``. Thus value must be greater than or equal to the sum of the values set with
+   ``PetscSectionSetFieldDof()`` at that point. Again, values not set will be zero.
+
+#. Set up the ``PetscSection`` with ``PetscSectionSetUp()``.
+
+Once a ``PetscSection`` has been created one can use ``PetscSectionGetStorageSize``\(``PetscSection``\, ``PetscInt`` ``*``) to determine the total number of entries that can be stored in an array or ``Vec``
+accessible by the ``PetscSection``. The memory locations in the associated array are found using an **offset** which can be obtained with:
+
+Mode 1:
+
+.. code-block::
+
+   PetscSectionGetOffset(PetscSection, PetscInt point, PetscInt &offset);
+
+Mode 2:
+
+.. code-block::
+
+   PetscSectionGetFieldOffset(PetscSection, PetscInt point, PetscInt field, PetscInt &offset);
+
+The value in the array is then accessed with ``array[offset]``. If there are multiple dof at a point (and field in mode 2) then ``array[offset + 1]``, etc give access to each of those dof.
+
+Using the mesh from
+:numref:`fig_doubletMesh`, we provide an example of creating a ``PetscSection`` using mode 1. We can lay out data for
 a continuous Galerkin :math:`P_3` finite element method,
 
 .. code-block::
@@ -220,8 +275,7 @@ Now a PETSc local vector can be created manually using this layout,
    VecSetSizes(localVec, n, PETSC_DETERMINE);
    VecSetFromOptions(localVec);
 
-though it is usually easier to use the ``DM`` directly, which also
-provides global vectors,
+When working with ``DMPLEX`` and ``PetscFE`` (see below) one can simply get the sections (and related vectors) with
 
 .. code-block::
 
@@ -229,16 +283,25 @@ provides global vectors,
    DMGetLocalVector(dm, &localVec);
    DMGetGlobalVector(dm, &globalVec);
 
+..
+  TODO: This text needs additional work explaining the "constrained dof" business.
+
 A global vector is missing both the shared dofs which are not owned by this process, as well as *constrained* dofs. These constraints represent essential (Dirichlet)
 boundary conditions. They are dofs that have a given fixed value, so they are present in local vectors for assembly purposes, but absent
 from global vectors since they are never solved for during algebraic solves.
 
 We can indicate constraints in a local section using ``PetscSectionSetConstraintDof()``, to set the number of constrained dofs for a given point, and ``PetscSectionSetConstraintIndices()`` which indicates which dofs on the given point are constrained. Once we have this information, a global section can be created using ``PetscSectionCreateGlobalSection()``, and this is done automatically by the ``DM``. A global section returns :math:`-(dof+1)` for the number of dofs on an unowned point, and :math:`-(off+1)` for its offset on the owning process. This can be used to create global vectors, just as the local section is used to create local vectors.
 
-Data Layout using PetscFE
-^^^^^^^^^^^^^^^^^^^^^^^^^
+..
+  TODO: This text needs additional work introducing the concept of *fields* in ``PetscSection``. It is unfair to users to not introduce it immediately with ``PetscSection`` since they are ubiquitous.
 
-A ``DM`` can automatically create the local section if given a description of the discretization, for example using a ``PetscFE`` object. Below we create a ``PetscFE`` that can be configured from the command line. It is a single, scalar field, and is added to the ``DM`` using ``DMSetField()``. When a local or global vector is requested, the ``DM`` builds the local and global sections automatically.
+
+Data Layout using DMPLEX and PetscFE
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+A ``DM`` can automatically create the local section if given a description of the discretization, for example using a ``PetscFE`` object. We demonstrate this by creating
+a ``PetscFE`` that can be configured from the command line. It is a single, scalar field, and is added to the ``DM`` using ``DMSetField()``.
+When a local or global vector is requested, the ``DM`` builds the local and global sections automatically.
 
 .. code-block::
 
@@ -273,7 +336,7 @@ automatically creates the properly preallocated Jacobian matrix. In
 *adjacency*, depends only on the stencil since the topology is Cartesian
 and the discretization is implicitly finite difference.
 
-In DMPlex,
+In ``DMPLEX``,
 we allow the user to specify the adjacency topologically, while
 maintaining good defaults. The pattern is controlled by two flags. The first flag, ``useCone``,
 indicates whether variables couple first to their boundary [#boundary_footnote]_
@@ -312,7 +375,7 @@ the following general form:
 DMPlex separates these different concerns by passing sets of points  from mesh traversal routines to data
 extraction routines and back. In this way, the ``PetscSection`` which
 structures the data inside a ``Vec`` does not need to know anything
-about the mesh inside a DMPlex.
+about the mesh inside a ``DMPLEX``.
 
 The most common mesh traversal is the transitive closure of a point,
 which is exactly the transitive closure of a point in the DAG using the
@@ -391,7 +454,7 @@ This kind of calculation is used in
 Saving and Loading DMPlex Data with HDF5
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-PETSc allows users to save/load DMPlexs representing meshes,
+PETSc allows users to save/load ``DMPLEX``\ s representing meshes,
 ``PetscSection``\ s representing data layouts on the meshes, and
 ``Vec``\ s defined on the data layouts to/from an HDF5 file in
 parallel, where one can use different number of processes for saving
@@ -400,7 +463,7 @@ and for loading.
 Saving
 ^^^^^^
 
-The simplest way to save DM data is to use options for configuration.
+The simplest way to save ``DM`` data is to use options for configuration.
 This requires only the code
 
 .. code-block::
@@ -424,7 +487,7 @@ To save data to "example.h5" file, we can first create a ``PetscViewer`` of type
 
    PetscViewerHDF5Open(PETSC_COMM_WORLD, "example.h5", FILE_MODE_WRITE, &viewer);
 
-As ``dm`` is a DMPlex object representing a mesh, we first give it a *mesh name*, "plexA", and save it as:
+As ``dm`` is a ``DMPLEX`` object representing a mesh, we first give it a *mesh name*, "plexA", and save it as:
 
 .. code-block::
 
@@ -582,7 +645,7 @@ of type ``PETSCVIEWERHDF5`` in ``FILE_MODE_READ`` mode as:
 
    PetscViewerHDF5Open(PETSC_COMM_WORLD, "example.h5", FILE_MODE_READ, &viewer);
 
-We then create a DMPlex object, give it a *mesh name*, "plexA", and load
+We then create a ``DMPLEX`` object, give it a *mesh name*, "plexA", and load
 the mesh as:
 
 .. code-block::
@@ -613,7 +676,7 @@ The object returned by ``DMPlexTopologyLoad()``, ``sfO``, is a
 ``dm``; this ``PetscSF`` is constructed with the global point
 number tags that we saved along with the mesh points.
 
-As the DMPlex mesh just loaded might not have a desired distribution,
+As the ``DMPLEX`` mesh just loaded might not have a desired distribution,
 it is common to redistribute the mesh for a better distribution using
 ``DMPlexDistribute()``, e.g., as:
 
@@ -633,7 +696,7 @@ it is common to redistribute the mesh for a better distribution using
     PetscSFDestroy(&sfO);
     PetscSFDestroy(&sfDist);
 
-Note that the new DMPlex does not automatically inherit the *mesh name*,
+Note that the new ``DMPLEX`` does not automatically inherit the *mesh name*,
 so we need to name it "plexA" once again. ``sfDist`` is a ``PetscSF``
 that pushes forward the loaded mesh to the redistributed mesh, so, composed
 with ``sfO``, it makes the ``PetscSF`` that pushes forward :math:`X`
@@ -713,11 +776,11 @@ the shape and orientation of elements in the adapted mesh, as well as their
 size. This can be particularly useful for advection-dominated and
 directionally-dependent problems.
 
-See :cite:`Alauzet2010` for further details on metric-based anisotropic mesh
+See :cite:`alauzet2010` for further details on metric-based anisotropic mesh
 adaptation.
 
 The two main ingredients for metric-based mesh adaptation are an input mesh
-(i.e. the DMPlex) and a Riemannian metric. The implementation in PETSc assumes
+(i.e. the ``DMPLEX``) and a Riemannian metric. The implementation in PETSc assumes
 that the metric is piecewise linear and continuous across elemental boundaries.
 Such an object can be created using the routine
 

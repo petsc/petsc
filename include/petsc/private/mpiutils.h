@@ -1,5 +1,4 @@
-#ifndef MPIUTILS_H
-#define MPIUTILS_H
+#pragma once
 
 #include <petscsys.h>
 
@@ -8,7 +7,7 @@ PETSC_EXTERN PetscErrorCode PetscGatherMessageLengths_Private(MPI_Comm, PetscMPI
 
 #if !defined(PETSC_HAVE_MPI_LARGE_COUNT) /* No matter PetscInt is 32-bit or 64-bit, without MPI large count we always do casting before MPI calls */
 /* Cast PetscInt <a> to PetscMPIInt <b>, where <a> is likely used for the 'count' argument in MPI routines.
-    It is similar to PetscMPIIntCast() execept that here it returns an MPI error code.
+    It is similar to PetscMPIIntCast() except that here it returns an MPI error code.
   */
 static inline PetscMPIInt PetscMPIIntCast_Internal(PetscInt a, PetscMPIInt *b)
 {
@@ -117,6 +116,4 @@ static inline PetscMPIInt MPIU_Reduce_local(const void *inbuf, void *inoutbuf, P
 #else
   #define MPIU_Neighbor_alltoallv(a, b, c, d, e, f, g, h, i)     MPI_Neighbor_alltoallv(a, b, c, d, e, f, g, h, i)
   #define MPIU_Ineighbor_alltoallv(a, b, c, d, e, f, g, h, i, j) MPI_Ineighbor_alltoallv(a, b, c, d, e, f, g, h, i, j)
-#endif
-
 #endif

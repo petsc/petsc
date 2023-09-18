@@ -11,7 +11,7 @@
       Vec x, y
       PetscErrorCode ierr
 
-      print*, "Called MatMult"
+      print*, 'Called MatMult'
       return
       end
 
@@ -22,7 +22,7 @@
       Vec x, y, z
       PetscErrorCode ierr
 
-      print*, "Called MatMultAdd"
+      print*, 'Called MatMultAdd'
       return
       end
 
@@ -33,7 +33,7 @@
       Vec x, y
       PetscErrorCode ierr
 
-      print*, "Called MatMultTranspose"
+      print*, 'Called MatMultTranspose'
       return
       end
 
@@ -44,7 +44,7 @@
       Vec x, y, z
       PetscErrorCode ierr
 
-      print*, "Called MatMultTransposeAdd"
+      print*, 'Called MatMultTransposeAdd'
       return
       end
 
@@ -62,7 +62,7 @@
       PetscCallA(MatAssemblyBegin(B, MAT_FINAL_ASSEMBLY, ierr))
       PetscCallA(MatAssemblyEnd(B, MAT_FINAL_ASSEMBLY, ierr))
 
-      print*, "Called MatTranspose"
+      print*, 'Called MatTranspose'
       return
       end
 
@@ -73,7 +73,7 @@
       Vec x
       PetscErrorCode ierr
 
-      print*, "Called MatGetDiagonal"
+      print*, 'Called MatGetDiagonal'
       return
       end
 
@@ -84,7 +84,7 @@
       Vec x, y
       PetscErrorCode ierr
 
-      print*, "Called MatDiagonalScale"
+      print*, 'Called MatDiagonalScale'
       return
       end
 
@@ -94,7 +94,7 @@
       Mat A
       PetscErrorCode ierr
 
-      print*, "Called MatZeroEntries"
+      print*, 'Called MatZeroEntries'
       return
       end
 
@@ -106,7 +106,7 @@
       MatStructure str
       PetscErrorCode ierr
 
-      print*, "Called MatAXPY"
+      print*, 'Called MatAXPY'
       return
       end
 
@@ -117,7 +117,7 @@
       PetscScalar alpha
       PetscErrorCode ierr
 
-      print*, "Called MatShift"
+      print*, 'Called MatShift'
       return
       end
 
@@ -129,7 +129,7 @@
       InsertMode ins
       PetscErrorCode ierr
 
-      print*, "Called MatDiagonalSet"
+      print*, 'Called MatDiagonalSet'
       return
       end
 
@@ -139,7 +139,7 @@
       Mat A
       PetscErrorCode ierr
 
-      print*, "Called MatDestroy"
+      print*, 'Called MatDestroy'
       return
       end
 
@@ -150,7 +150,7 @@
       PetscViewer viewer
       PetscErrorCode ierr
 
-      print*, "Called MatView"
+      print*, 'Called MatView'
       return
       end
 
@@ -161,7 +161,7 @@
       Vec x, y
       PetscErrorCode ierr
 
-      print*, "Called MatCreateVecs"
+      print*, 'Called MatCreateVecs'
       return
       end
 

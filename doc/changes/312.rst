@@ -25,7 +25,7 @@ Changes: 3.12
    so the manually optimized AVX-512 kernels are used by default
 -  The order ./configure tests compilers has changed so there may be
    a different compiler selected if you do not provide them
--  Added --with-64-bit-blas-indices that will switch to 64 bit
+-  Added --with-64-bit-blas-indices that will switch to 64-bit
    indices when using MKL libraries for BLAS/LAPACK and build
    OpenBLAS with this support
 -  Changed PETSC_DEPRECATED() to PETSC_DEPRECATED_FUNCTION() and

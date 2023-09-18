@@ -24,7 +24,7 @@ program main
       PetscErrorCode  :: ierr
       PetscInt        :: i,j,Ii,JJ,n
       PetscInt        :: m
-      PetscMPIInt     :: myRank,mySize
+      PetscMPIInt     :: rank,size
       PetscInt        :: its,nlocal,first,Istart,Iend
       PetscScalar     :: v
       PetscScalar, parameter :: &
@@ -39,8 +39,8 @@ program main
       PetscCallA(PetscInitialize(ierr))
       m = 4
       PetscCallA(PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-m',m,flg,ierr))
-      PetscCallMPIA(MPI_Comm_rank(PETSC_COMM_WORLD,myRank,ierr))
-      PetscCallMPIA(MPI_Comm_size(PETSC_COMM_WORLD,mySize,ierr))
+      PetscCallMPIA(MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr))
+      PetscCallMPIA(MPI_Comm_size(PETSC_COMM_WORLD,size,ierr))
       n=m+2
 
       !-------------------------------------------------------------------
@@ -177,7 +177,7 @@ program main
 
           PetscCallA(KSPGetPC(subksp(i+1),subpc,ierr))
 
-          if (myRank>0) then
+          if (rank>0) then
 
             if (mod(i,2)==1) then
               PetscCallA(PCSetType(subpc,PCILU,ierr))

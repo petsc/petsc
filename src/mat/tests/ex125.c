@@ -13,14 +13,43 @@ Example: mpiexec -n <np> ./ex125 -f <matrix binary file> -nrhs 4 -mat_solver_typ
 
 #include <petscmat.h>
 
+PetscErrorCode CreateRandom(PetscInt n, PetscInt m, Mat *A)
+{
+  PetscFunctionBeginUser;
+  PetscCall(MatCreate(PETSC_COMM_WORLD, A));
+  PetscCall(MatSetType(*A, MATAIJ));
+  PetscCall(MatSetFromOptions(*A));
+  PetscCall(MatSetSizes(*A, PETSC_DECIDE, PETSC_DECIDE, n, m));
+  PetscCall(MatSeqAIJSetPreallocation(*A, 5, NULL));
+  PetscCall(MatMPIAIJSetPreallocation(*A, 5, NULL, 5, NULL));
+  PetscCall(MatSetRandom(*A, NULL));
+  PetscCall(MatAssemblyBegin(*A, MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(*A, MAT_FINAL_ASSEMBLY));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+PetscErrorCode CreateIdentity(PetscInt n, Mat *A)
+{
+  PetscFunctionBeginUser;
+  PetscCall(MatCreate(PETSC_COMM_WORLD, A));
+  PetscCall(MatSetType(*A, MATAIJ));
+  PetscCall(MatSetFromOptions(*A));
+  PetscCall(MatSetSizes(*A, PETSC_DECIDE, PETSC_DECIDE, n, n));
+  PetscCall(MatSetUp(*A));
+  PetscCall(MatAssemblyBegin(*A, MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(*A, MAT_FINAL_ASSEMBLY));
+  PetscCall(MatShift(*A, 1.0));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 int main(int argc, char **args)
 {
-  Mat           A, RHS = NULL, RHS1 = NULL, C, F, X;
+  Mat           A, Ae, RHS = NULL, RHS1 = NULL, C, F, X;
   Vec           u, x, b;
   PetscMPIInt   size;
   PetscInt      m, n, nfact, nsolve, nrhs, ipack = 5;
-  PetscReal     norm, tol = 1.e-10;
-  IS            perm, iperm;
+  PetscReal     norm, tol = 10 * PETSC_SQRT_MACHINE_EPSILON;
+  IS            perm = NULL, iperm = NULL;
   MatFactorInfo info;
   PetscRandom   rand;
   PetscBool     flg, symm, testMatSolve = PETSC_TRUE, testMatMatSolve = PETSC_TRUE, testMatMatSolveTranspose = PETSC_TRUE, testMatSolveTranspose = PETSC_TRUE, match = PETSC_FALSE;
@@ -56,14 +85,79 @@ int main(int argc, char **args)
     PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
     PetscCall(MatShift(A, 1.0));
   }
-  PetscCall(MatGetLocalSize(A, &m, &n));
-  PetscCheck(m == n, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "This example is not intended for rectangular matrices (%" PetscInt_FMT ", %" PetscInt_FMT ")", m, n);
 
   /* if A is symmetric, set its flag -- required by MatGetInertia() */
   PetscCall(MatIsSymmetric(A, 0.0, &symm));
   PetscCall(MatSetOption(A, MAT_SYMMETRIC, symm));
 
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-cholesky", &chol, NULL));
+
+  /* test MATNEST support */
+  flg = PETSC_FALSE;
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-test_nest", &flg, NULL));
+  if (flg) {
+    Mat B;
+
+    flg = PETSC_FALSE;
+    PetscCall(PetscOptionsGetBool(NULL, NULL, "-test_nest_bordered", &flg, NULL));
+    if (!flg) {
+      Mat mats[9] = {NULL, NULL, A, NULL, A, NULL, A, NULL, NULL};
+
+      /* Create a nested matrix representing
+              | 0 0 A |
+              | 0 A 0 |
+              | A 0 0 |
+      */
+      PetscCall(MatCreateNest(PETSC_COMM_WORLD, 3, NULL, 3, NULL, mats, &B));
+    } else {
+      Mat mats[4];
+
+      /* Create a nested matrix representing
+              | Id  R |
+              | R^t A |
+      */
+      PetscCall(MatGetSize(A, NULL, &n));
+      m = n + 12;
+      PetscCall(PetscOptionsGetInt(NULL, NULL, "-m", &m, NULL));
+      PetscCall(CreateIdentity(m, &mats[0]));
+      PetscCall(CreateRandom(m, n, &mats[1]));
+      mats[3] = A;
+
+      /* use CreateTranspose/CreateHermitianTranspose or explicit matrix for debugging purposes */
+      flg = PETSC_FALSE;
+      PetscCall(PetscOptionsGetBool(NULL, NULL, "-expl", &flg, NULL));
+      if (PetscDefined(USE_COMPLEX)) {
+        if (chol) { /* Hermitian transpose not supported by MUMPS Cholesky factor */
+          if (!flg) PetscCall(MatCreateTranspose(mats[1], &mats[2]));
+          else PetscCall(MatTranspose(mats[1], MAT_INITIAL_MATRIX, &mats[2]));
+        } else {
+          if (!flg) PetscCall(MatCreateHermitianTranspose(mats[1], &mats[2]));
+          else PetscCall(MatHermitianTranspose(mats[1], MAT_INITIAL_MATRIX, &mats[2]));
+        }
+      } else {
+        if (!flg) PetscCall(MatCreateTranspose(mats[1], &mats[2]));
+        else PetscCall(MatTranspose(mats[1], MAT_INITIAL_MATRIX, &mats[2]));
+      }
+      PetscCall(MatCreateNest(PETSC_COMM_WORLD, 2, NULL, 2, NULL, mats, &B));
+      PetscCall(MatDestroy(&mats[0]));
+      PetscCall(MatDestroy(&mats[1]));
+      PetscCall(MatDestroy(&mats[2]));
+    }
+    PetscCall(MatDestroy(&A));
+    A = B;
+    PetscCall(MatSetOption(A, MAT_SYMMETRIC, symm));
+
+    /* not all the combinations of MatMat operations are supported by MATNEST. */
+    PetscCall(MatComputeOperator(A, MATAIJ, &Ae));
+  } else {
+    PetscCall(PetscObjectReference((PetscObject)A));
+    Ae = A;
+  }
+  PetscCall(MatGetLocalSize(A, &m, &n));
+  PetscCheck(m == n, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "This example is not intended for rectangular matrices (%" PetscInt_FMT ", %" PetscInt_FMT ")", m, n);
+
   PetscCall(MatViewFromOptions(A, NULL, "-A_view"));
+  PetscCall(MatViewFromOptions(Ae, NULL, "-A_view_expl"));
 
   /* Create dense matrix C and X; C holds true solution with identical columns */
   nrhs = 2;
@@ -80,7 +174,6 @@ int main(int argc, char **args)
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-test_matmatsolve", &testMatMatSolve, NULL));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-test_matmatsolvetranspose", &testMatMatSolveTranspose, NULL));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-test_matsolvetranspose", &testMatSolveTranspose, NULL));
-  PetscCall(PetscOptionsGetBool(NULL, NULL, "-cholesky", &chol, NULL));
 #if defined(PETSC_HAVE_MUMPS)
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-test_mumps_opts", &test_mumps_opts, NULL));
 #endif
@@ -264,9 +357,9 @@ skipoptions:
     /* Test MatMatSolve(), A X = B, where B can be dense or sparse */
     if (testMatMatSolve) {
       if (!nfact) {
-        PetscCall(MatMatMult(A, C, MAT_INITIAL_MATRIX, 2.0, &RHS));
+        PetscCall(MatMatMult(Ae, C, MAT_INITIAL_MATRIX, 2.0, &RHS));
       } else {
-        PetscCall(MatMatMult(A, C, MAT_REUSE_MATRIX, 2.0, &RHS));
+        PetscCall(MatMatMult(Ae, C, MAT_REUSE_MATRIX, 2.0, &RHS));
       }
       for (nsolve = 0; nsolve < 2; nsolve++) {
         PetscCall(PetscPrintf(PETSC_COMM_WORLD, "   %" PetscInt_FMT "-the MatMatSolve \n", nsolve));
@@ -312,9 +405,9 @@ skipoptions:
     /* Test testMatMatSolveTranspose(), A^T X = B, where B can be dense or sparse */
     if (testMatMatSolveTranspose) {
       if (!nfact) {
-        PetscCall(MatTransposeMatMult(A, C, MAT_INITIAL_MATRIX, 2.0, &RHS1));
+        PetscCall(MatTransposeMatMult(Ae, C, MAT_INITIAL_MATRIX, 2.0, &RHS1));
       } else {
-        PetscCall(MatTransposeMatMult(A, C, MAT_REUSE_MATRIX, 2.0, &RHS1));
+        PetscCall(MatTransposeMatMult(Ae, C, MAT_REUSE_MATRIX, 2.0, &RHS1));
       }
 
       for (nsolve = 0; nsolve < 2; nsolve++) {
@@ -352,7 +445,7 @@ skipoptions:
       for (nsolve = 0; nsolve < 2; nsolve++) {
         PetscCall(VecSetRandom(x, rand));
         PetscCall(VecCopy(x, u));
-        PetscCall(MatMult(A, x, b));
+        PetscCall(MatMult(Ae, x, b));
 
         PetscCall(PetscPrintf(PETSC_COMM_WORLD, "   %" PetscInt_FMT "-the MatSolve \n", nsolve));
         PetscCall(MatSolve(F, b, x));
@@ -362,7 +455,7 @@ skipoptions:
         PetscCall(VecNorm(u, NORM_2, &norm));
         if (norm > tol) {
           PetscReal resi;
-          PetscCall(MatMult(A, x, u));    /* u = A*x */
+          PetscCall(MatMult(Ae, x, u));   /* u = A*x */
           PetscCall(VecAXPY(u, -1.0, b)); /* u <- (-1.0)b + u */
           PetscCall(VecNorm(u, NORM_2, &resi));
           PetscCall(PetscPrintf(PETSC_COMM_WORLD, "MatSolve: Norm of error %g, resi %g, numfact %" PetscInt_FMT "\n", (double)norm, (double)resi, nfact));
@@ -375,7 +468,7 @@ skipoptions:
       for (nsolve = 0; nsolve < 2; nsolve++) {
         PetscCall(VecSetRandom(x, rand));
         PetscCall(VecCopy(x, u));
-        PetscCall(MatMultTranspose(A, x, b));
+        PetscCall(MatMultTranspose(Ae, x, b));
 
         PetscCall(PetscPrintf(PETSC_COMM_WORLD, "   %" PetscInt_FMT "-the MatSolveTranspose\n", nsolve));
         PetscCall(MatSolveTranspose(F, b, x));
@@ -385,7 +478,8 @@ skipoptions:
         PetscCall(VecNorm(u, NORM_2, &norm));
         if (norm > tol) {
           PetscReal resi;
-          PetscCall(VecAXPY(u, -1.0, b)); /* u <- (-1.0)b + u */
+          PetscCall(MatMultTranspose(Ae, x, u)); /* u = A*x */
+          PetscCall(VecAXPY(u, -1.0, b));        /* u <- (-1.0)b + u */
           PetscCall(VecNorm(u, NORM_2, &resi));
           PetscCall(PetscPrintf(PETSC_COMM_WORLD, "MatSolveTranspose: Norm of error %g, resi %g, numfact %" PetscInt_FMT "\n", (double)norm, (double)resi, nfact));
         }
@@ -394,6 +488,7 @@ skipoptions:
   }
 
   /* Free data structures */
+  PetscCall(MatDestroy(&Ae));
   PetscCall(MatDestroy(&A));
   PetscCall(MatDestroy(&C));
   PetscCall(MatDestroy(&F));
@@ -441,6 +536,12 @@ skipoptions:
       output_file: output/ex125_mumps_seq.out
 
    test:
+      suffix: mumps_nest
+      requires: mumps datafilespath !complex double !defined(PETSC_USE_64BIT_INDICES)
+      args: -f ${DATAFILESPATH}/matrices/small -mat_solver_type mumps -test_nest -test_nest_bordered {{0 1}}
+      output_file: output/ex125_mumps_seq.out
+
+   test:
       suffix: mumps_2
       nsize: 3
       requires: mumps datafilespath !complex double !defined(PETSC_USE_64BIT_INDICES)
@@ -448,9 +549,22 @@ skipoptions:
       output_file: output/ex125_mumps_par.out
 
    test:
+      suffix: mumps_2_nest
+      nsize: 3
+      requires: mumps datafilespath !complex double !defined(PETSC_USE_64BIT_INDICES)
+      args: -f ${DATAFILESPATH}/matrices/small -mat_solver_type mumps -test_nest -test_nest_bordered {{0 1}}
+      output_file: output/ex125_mumps_par.out
+
+   test:
       suffix: mumps_3
       requires: mumps
       args: -mat_solver_type mumps
+      output_file: output/ex125_mumps_seq.out
+
+   test:
+      suffix: mumps_3_nest
+      requires: mumps
+      args: -mat_solver_type mumps -test_nest -test_nest_bordered {{0 1}}
       output_file: output/ex125_mumps_seq.out
 
    test:
@@ -461,10 +575,24 @@ skipoptions:
       output_file: output/ex125_mumps_par.out
 
    test:
+      suffix: mumps_4_nest
+      nsize: 3
+      requires: mumps
+      args: -mat_solver_type mumps -test_nest -test_nest_bordered {{0 1}}
+      output_file: output/ex125_mumps_par.out
+
+   test:
       suffix: mumps_5
       nsize: 3
       requires: mumps
       args: -mat_solver_type mumps -cholesky
+      output_file: output/ex125_mumps_par_cholesky.out
+
+   test:
+      suffix: mumps_5_nest
+      nsize: 3
+      requires: mumps
+      args: -mat_solver_type mumps -cholesky -test_nest -test_nest_bordered {{0 1}}
       output_file: output/ex125_mumps_par_cholesky.out
 
    test:

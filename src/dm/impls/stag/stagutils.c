@@ -19,7 +19,7 @@ PetscErrorCode DMRestrictHook_Coordinates(DM, DM, void *);
 
   Level: intermediate
 
-.seealso: [](chapter_stag), `DMSTAG`, `DMBoundaryType``
+.seealso: [](ch_stag), `DMSTAG`, `DMBoundaryType``
 @*/
 PetscErrorCode DMStagGetBoundaryTypes(DM dm, DMBoundaryType *boundaryTypeX, DMBoundaryType *boundaryTypeY, DMBoundaryType *boundaryTypeZ)
 {
@@ -122,7 +122,7 @@ static PetscErrorCode DMStagGetProductCoordinateArrays_Private(DM dm, void *arrX
   checks that the coordinate array is a suitable product of 1-dimensional
   `DMSTAG` objects.
 
-.seealso: [](chapter_stag), `DMSTAG`, `DMPRODUCT`, `DMStagGetProductCoordinateArraysRead()`, `DMStagSetUniformCoordinates()`, `DMStagSetUniformCoordinatesProduct()`, `DMStagGetProductCoordinateLocationSlot()`
+.seealso: [](ch_stag), `DMSTAG`, `DMPRODUCT`, `DMStagGetProductCoordinateArraysRead()`, `DMStagSetUniformCoordinates()`, `DMStagSetUniformCoordinatesProduct()`, `DMStagGetProductCoordinateLocationSlot()`
 @*/
 PetscErrorCode DMStagGetProductCoordinateArrays(DM dm, void *arrX, void *arrY, void *arrZ)
 {
@@ -149,7 +149,7 @@ PetscErrorCode DMStagGetProductCoordinateArrays(DM dm, void *arrX, void *arrY, v
   Note:
   See `DMStagGetProductCoordinateArrays()` for more information.
 
-.seealso: [](chapter_stag), `DMSTAG`, `DMPRODUCT`, `DMStagGetProductCoordinateArrays()`, `DMStagSetUniformCoordinates()`, `DMStagSetUniformCoordinatesProduct()`, `DMStagGetProductCoordinateLocationSlot()`
+.seealso: [](ch_stag), `DMSTAG`, `DMPRODUCT`, `DMStagGetProductCoordinateArrays()`, `DMStagSetUniformCoordinates()`, `DMStagSetUniformCoordinatesProduct()`, `DMStagGetProductCoordinateLocationSlot()`
 @*/
 PetscErrorCode DMStagGetProductCoordinateArraysRead(DM dm, void *arrX, void *arrY, void *arrZ)
 {
@@ -164,7 +164,7 @@ PetscErrorCode DMStagGetProductCoordinateArraysRead(DM dm, void *arrX, void *arr
   Not Collective
 
   Input Parameters:
-+ dm - the `DMSTAG` object
++ dm  - the `DMSTAG` object
 - loc - the grid location
 
   Output Parameter:
@@ -184,7 +184,7 @@ PetscErrorCode DMStagGetProductCoordinateArraysRead(DM dm, void *arrX, void *arr
   This function checks that the coordinates are actually set up so that using the
   slots from any of the 1D coordinate sub-`DM`s are valid for all the 1D coordinate sub-`DM`s.
 
-.seealso: [](chapter_stag), `DMSTAG`, `DMPRODUCT`, `DMStagGetProductCoordinateArrays()`, `DMStagGetProductCoordinateArraysRead()`, `DMStagSetUniformCoordinates()`
+.seealso: [](ch_stag), `DMSTAG`, `DMPRODUCT`, `DMStagGetProductCoordinateArrays()`, `DMStagGetProductCoordinateArraysRead()`, `DMStagSetUniformCoordinates()`
 @*/
 PETSC_EXTERN PetscErrorCode DMStagGetProductCoordinateLocationSlot(DM dm, DMStagStencilLocation loc, PetscInt *slot)
 {
@@ -237,12 +237,12 @@ PETSC_EXTERN PetscErrorCode DMStagGetProductCoordinateLocationSlot(DM dm, DMStag
 . dm - the `DMSTAG` object
 
   Output Parameters:
-+ x     - starting element index in first direction
-. y     - starting element index in second direction
-. z     - starting element index in third direction
-. m     - element width in first direction
-. n     - element width in second direction
-. p     - element width in third direction
++ x       - starting element index in first direction
+. y       - starting element index in second direction
+. z       - starting element index in third direction
+. m       - element width in first direction
+. n       - element width in second direction
+. p       - element width in third direction
 . nExtrax - number of extra partial elements in first direction
 . nExtray - number of extra partial elements in second direction
 - nExtraz - number of extra partial elements in third direction
@@ -256,7 +256,7 @@ PETSC_EXTERN PetscErrorCode DMStagGetProductCoordinateLocationSlot(DM dm, DMStag
   The value is 1 on right, top, and front non-periodic domain ("physical") boundaries,
   in the x, y, and z directions respectively, and otherwise 0.
 
-.seealso: [](chapter_stag), `DMSTAG`, `DMStagGetGhostCorners()`, `DMDAGetCorners()`
+.seealso: [](ch_stag), `DMSTAG`, `DMStagGetGhostCorners()`, `DMDAGetCorners()`
 @*/
 PetscErrorCode DMStagGetCorners(DM dm, PetscInt *x, PetscInt *y, PetscInt *z, PetscInt *m, PetscInt *n, PetscInt *p, PetscInt *nExtrax, PetscInt *nExtray, PetscInt *nExtraz)
 {
@@ -292,7 +292,7 @@ PetscErrorCode DMStagGetCorners(DM dm, PetscInt *x, PetscInt *y, PetscInt *z, Pe
 
   Level: beginner
 
-.seealso: [](chapter_stag), `DMSTAG`, `DMStagGetCorners()`, `DMStagGetGhostCorners()`, `DMStagGetGlobalSizes()`, `DMStagGetStencilWidth()`, `DMStagGetBoundaryTypes()`, `DMStagGetLocationDOF()`, `DMDAGetDof()`
+.seealso: [](ch_stag), `DMSTAG`, `DMStagGetCorners()`, `DMStagGetGhostCorners()`, `DMStagGetGlobalSizes()`, `DMStagGetStencilWidth()`, `DMStagGetBoundaryTypes()`, `DMStagGetLocationDOF()`, `DMDAGetDof()`
 @*/
 PetscErrorCode DMStagGetDOF(DM dm, PetscInt *dof0, PetscInt *dof1, PetscInt *dof2, PetscInt *dof3)
 {
@@ -328,7 +328,7 @@ PetscErrorCode DMStagGetDOF(DM dm, PetscInt *dof0, PetscInt *dof1, PetscInt *dof
   Note:
   Arguments corresponding to higher dimensions are ignored for 1D and 2D grids. These arguments may be set to `NULL` in this case.
 
-.seealso: [](chapter_stag), `DMSTAG`, `DMStagGetCorners()`, `DMDAGetGhostCorners()`
+.seealso: [](ch_stag), `DMSTAG`, `DMStagGetCorners()`, `DMDAGetGhostCorners()`
 @*/
 PetscErrorCode DMStagGetGhostCorners(DM dm, PetscInt *x, PetscInt *y, PetscInt *z, PetscInt *m, PetscInt *n, PetscInt *p)
 {
@@ -363,7 +363,7 @@ PetscErrorCode DMStagGetGhostCorners(DM dm, PetscInt *x, PetscInt *y, PetscInt *
   Note:
   Arguments corresponding to higher dimensions are ignored for 1D and 2D grids. These arguments may be set to `NULL` in this case.
 
-.seealso: [](chapter_stag), `DMSTAG`, `DMStagGetLocalSizes()`, `DMDAGetInfo()`
+.seealso: [](ch_stag), `DMSTAG`, `DMStagGetLocalSizes()`, `DMDAGetInfo()`
 @*/
 PetscErrorCode DMStagGetGlobalSizes(DM dm, PetscInt *M, PetscInt *N, PetscInt *P)
 {
@@ -395,7 +395,7 @@ PetscErrorCode DMStagGetGlobalSizes(DM dm, PetscInt *M, PetscInt *N, PetscInt *P
   Note:
   Arguments corresponding to higher dimensions are ignored for 1D and 2D grids. These arguments may be set to `NULL` in this case.
 
-.seealso: [](chapter_stag), `DMSTAG`, `DMStagGetIsLastRank()`
+.seealso: [](ch_stag), `DMSTAG`, `DMStagGetIsLastRank()`
 @*/
 PetscErrorCode DMStagGetIsFirstRank(DM dm, PetscBool *isFirstRank0, PetscBool *isFirstRank1, PetscBool *isFirstRank2)
 {
@@ -418,16 +418,16 @@ PetscErrorCode DMStagGetIsFirstRank(DM dm, PetscBool *isFirstRank0, PetscBool *i
 . dm - the `DMSTAG` object
 
   Output Parameters:
-+ isFirstRank0 - whether this rank is last in the x direction
-. isFirstRank1 - whether this rank is last in the y direction
-- isFirstRank2 - whether this rank is last in the z direction
++ isLastRank0 - whether this rank is last in the x direction
+. isLastRank1 - whether this rank is last in the y direction
+- isLastRank2 - whether this rank is last in the z direction
 
   Level: intermediate
 
   Note:
   Arguments corresponding to higher dimensions are ignored for 1D and 2D grids. These arguments may be set to `NULL` in this case.
 
-.seealso: [](chapter_stag), `DMSTAG`, `DMStagGetIsFirstRank()`
+.seealso: [](ch_stag), `DMSTAG`, `DMStagGetIsFirstRank()`
 @*/
 PetscErrorCode DMStagGetIsLastRank(DM dm, PetscBool *isLastRank0, PetscBool *isLastRank1, PetscBool *isLastRank2)
 {
@@ -459,7 +459,7 @@ PetscErrorCode DMStagGetIsLastRank(DM dm, PetscBool *isLastRank0, PetscBool *isL
   Note:
   Arguments corresponding to higher dimensions are ignored for 1D and 2D grids. These arguments may be set to `NULL` in this case.
 
-.seealso: [](chapter_stag), `DMSTAG`, `DMStagGetGlobalSizes()`, `DMStagGetDOF()`, `DMStagGetNumRanks()`, `DMDAGetLocalInfo()`
+.seealso: [](ch_stag), `DMSTAG`, `DMStagGetGlobalSizes()`, `DMStagGetDOF()`, `DMStagGetNumRanks()`, `DMDAGetLocalInfo()`
 @*/
 PetscErrorCode DMStagGetLocalSizes(DM dm, PetscInt *m, PetscInt *n, PetscInt *p)
 {
@@ -486,9 +486,9 @@ PetscErrorCode DMStagGetLocalSizes(DM dm, PetscInt *m, PetscInt *n, PetscInt *p)
 . nRanks1 - number of ranks in the y direction in the grid decomposition
 - nRanks2 - number of ranks in the z direction in the grid decomposition
 
- Level: intermediate
+  Level: intermediate
 
-.seealso: [](chapter_stag), `DMSTAG`, `DMStagGetGlobalSizes()`, `DMStagGetLocalSize()`, `DMStagSetNumRanks()`, `DMDAGetInfo()`
+.seealso: [](ch_stag), `DMSTAG`, `DMStagGetGlobalSizes()`, `DMStagGetLocalSize()`, `DMStagSetNumRanks()`, `DMDAGetInfo()`
 @*/
 PetscErrorCode DMStagGetNumRanks(DM dm, PetscInt *nRanks0, PetscInt *nRanks1, PetscInt *nRanks2)
 {
@@ -521,7 +521,7 @@ PetscErrorCode DMStagGetNumRanks(DM dm, PetscInt *nRanks0, PetscInt *nRanks1, Pe
   `DMCreateGlobalVector(dm,&vec) is used to create a `Vec`. Users would typically
   use these functions.
 
-.seealso: [](chapter_stag), `DMSTAG`, `DMStagGetDOF()`, `DMStagGetEntriesLocal()`, `DMStagGetEntriesPerElement()`, `DMCreateLocalVector()`
+.seealso: [](ch_stag), `DMSTAG`, `DMStagGetDOF()`, `DMStagGetEntriesLocal()`, `DMStagGetEntriesPerElement()`, `DMCreateLocalVector()`
 @*/
 PetscErrorCode DMStagGetEntries(DM dm, PetscInt *entries)
 {
@@ -552,7 +552,7 @@ PetscErrorCode DMStagGetEntries(DM dm, PetscInt *entries)
   `VecGetLocalSize(vec,&size)` when `DMCreateLocalVector(dm,&vec)` is used to
   create a `Vec`. Users would typically use these functions.
 
-.seealso: [](chapter_stag), DMSTAG, DMStagGetDOF(), DMStagGetEntries(), DMStagGetEntriesPerElement(), DMCreateLocalVector()
+.seealso: [](ch_stag), `DMSTAG`, `DMStagGetDOF()`, `DMStagGetEntries()`, `DMStagGetEntriesPerElement()`, `DMCreateLocalVector()`
 @*/
 PetscErrorCode DMStagGetEntriesLocal(DM dm, PetscInt *entries)
 {
@@ -581,7 +581,7 @@ PetscErrorCode DMStagGetEntriesLocal(DM dm, PetscInt *entries)
   This is the natural block size for most local operations. In 1D it is equal to `dof0` $+$ `dof1`,
   in 2D it is equal to `dof0` $+ 2$`dof1` $+$ `dof2`, and in 3D it is equal to `dof0` $+ 3$`dof1` $+ 3$`dof2` $+$ `dof3`
 
-.seealso: [](chapter_stag), `DMSTAG`, `DMStagGetDOF()`
+.seealso: [](ch_stag), `DMSTAG`, `DMStagGetDOF()`
 @*/
 PetscErrorCode DMStagGetEntriesPerElement(DM dm, PetscInt *entriesPerElement)
 {
@@ -606,7 +606,7 @@ PetscErrorCode DMStagGetEntriesPerElement(DM dm, PetscInt *entriesPerElement)
 
   Level: beginner
 
-.seealso: [](chapter_stag), `DMSTAG`, `DMStagSetStencilType()`, `DMStagGetStencilWidth`, `DMStagStencilType`
+.seealso: [](ch_stag), `DMSTAG`, `DMStagSetStencilType()`, `DMStagGetStencilWidth`, `DMStagStencilType`
 @*/
 PetscErrorCode DMStagGetStencilType(DM dm, DMStagStencilType *stencilType)
 {
@@ -631,7 +631,7 @@ PetscErrorCode DMStagGetStencilType(DM dm, DMStagStencilType *stencilType)
 
   Level: beginner
 
-.seealso: [](chapter_stag), `DMSTAG`, `DMStagSetStencilWidth()`, `DMStagGetStencilType()`, `DMDAGetStencilType()`
+.seealso: [](ch_stag), `DMSTAG`, `DMStagSetStencilWidth()`, `DMStagGetStencilType()`, `DMDAGetStencilType()`
 @*/
 PetscErrorCode DMStagGetStencilWidth(DM dm, PetscInt *stencilWidth)
 {
@@ -649,12 +649,12 @@ PetscErrorCode DMStagGetStencilWidth(DM dm, PetscInt *stencilWidth)
   Not Collective
 
   Input Parameter:
-.     dm - the `DMSTAG` object
+. dm - the `DMSTAG` object
 
   Output Parameters:
-+     lx - ownership along x direction (optional)
-.     ly - ownership along y direction (optional)
--     lz - ownership along z direction (optional)
++ lx - ownership along x direction (optional)
+. ly - ownership along y direction (optional)
+- lz - ownership along z direction (optional)
 
   Level: intermediate
 
@@ -666,7 +666,7 @@ PetscErrorCode DMStagGetStencilWidth(DM dm, PetscInt *stencilWidth)
   In C you should not free these arrays, nor change the values in them.
   They will only have valid values while the `DMSTAG` they came from still exists (has not been destroyed).
 
-.seealso: [](chapter_stag), `DMSTAG`, `DMStagSetGlobalSizes()`, `DMStagSetOwnershipRanges()`, `DMStagCreate1d()`, `DMStagCreate2d()`, `DMStagCreate3d()`, `DMDAGetOwnershipRanges()`
+.seealso: [](ch_stag), `DMSTAG`, `DMStagSetGlobalSizes()`, `DMStagSetOwnershipRanges()`, `DMStagCreate1d()`, `DMStagCreate2d()`, `DMStagCreate3d()`, `DMDAGetOwnershipRanges()`
 @*/
 PetscErrorCode DMStagGetOwnershipRanges(DM dm, const PetscInt *lx[], const PetscInt *ly[], const PetscInt *lz[])
 {
@@ -686,7 +686,7 @@ PetscErrorCode DMStagGetOwnershipRanges(DM dm, const PetscInt *lx[], const Petsc
   Collective
 
   Input Parameters:
-+ dm - the `DMSTAG` object
++ dm   - the `DMSTAG` object
 . dof0 - number of dof on the first stratum in the new `DMSTAG`
 . dof1 - number of dof on the second stratum in the new `DMSTAG`
 . dof2 - number of dof on the third stratum in the new `DMSTAG`
@@ -704,7 +704,7 @@ PetscErrorCode DMStagGetOwnershipRanges(DM dm, const PetscInt *lx[], const Petsc
 
   In contrast to `DMDACreateCompatibleDMDA()`, coordinates are not reused.
 
-.seealso: [](chapter_stag), `DMSTAG`, `DMDACreateCompatibleDMDA()`, `DMGetCompatibility()`, `DMStagMigrateVec()`
+.seealso: [](ch_stag), `DMSTAG`, `DMDACreateCompatibleDMDA()`, `DMGetCompatibility()`, `DMStagMigrateVec()`
 @*/
 PetscErrorCode DMStagCreateCompatibleDMStag(DM dm, PetscInt dof0, PetscInt dof1, PetscInt dof2, PetscInt dof3, DM *newdm)
 {
@@ -722,9 +722,9 @@ PetscErrorCode DMStagCreateCompatibleDMStag(DM dm, PetscInt dof0, PetscInt dof1,
   Not Collective
 
   Input Parameters:
-+ dm - the `DMSTAG` object
++ dm  - the `DMSTAG` object
 . loc - location relative to an element
-- c - component
+- c   - component
 
   Output Parameter:
 . slot - index to use
@@ -736,7 +736,7 @@ PetscErrorCode DMStagCreateCompatibleDMStag(DM dm, PetscInt dof0, PetscInt dof1,
   This is required so that the user doesn't need to know about the ordering of
   dof associated with each local element.
 
-.seealso: [](chapter_stag), `DMSTAG`, `DMStagVecGetArray()`, `DMStagVecGetArrayRead()`, `DMStagGetDOF()`, `DMStagGetEntriesPerElement()`
+.seealso: [](ch_stag), `DMSTAG`, `DMStagVecGetArray()`, `DMStagVecGetArrayRead()`, `DMStagGetDOF()`, `DMStagGetEntriesPerElement()`
 @*/
 PetscErrorCode DMStagGetLocationSlot(DM dm, DMStagStencilLocation loc, PetscInt c, PetscInt *slot)
 {
@@ -760,9 +760,9 @@ PetscErrorCode DMStagGetLocationSlot(DM dm, DMStagStencilLocation loc, PetscInt 
   Collective
 
   Input Parameters:
-+ dm - the source `DMSTAG` object
-. vec - the source vector, compatible with `dm`
-. dmTo - the compatible destination `DMSTAG` object
++ dm    - the source `DMSTAG` object
+. vec   - the source vector, compatible with `dm`
+. dmTo  - the compatible destination `DMSTAG` object
 - vecTo - the destination vector, compatible with `dmTo`
 
   Level: advanced
@@ -772,7 +772,7 @@ PetscErrorCode DMStagGetLocationSlot(DM dm, DMStagStencilLocation loc, PetscInt 
   Currently only implemented to migrate global vectors to global vectors.
   For the definition of compatibility of `DM`s, see `DMGetCompatibility()`.
 
-.seealso: [](chapter_stag), `DMSTAG`, `DMStagCreateCompatibleDMStag()`, `DMGetCompatibility()`, `DMStagVecSplitToDMDA()`
+.seealso: [](ch_stag), `DMSTAG`, `DMStagCreateCompatibleDMStag()`, `DMGetCompatibility()`, `DMStagVecSplitToDMDA()`
 @*/
 PetscErrorCode DMStagMigrateVec(DM dm, Vec vec, DM dmTo, Vec vecTo)
 {
@@ -904,7 +904,7 @@ PetscErrorCode DMStagMigrateVec(DM dm, Vec vec, DM dmTo, Vec vecTo)
   for example, `DMDA` to support `DMLocalToGlobal()` with `INSERT_VALUES`,
   even in the single-rank periodic case.
 
-.seealso: [](chapter_stag), `DMSTAG`, `DMLocalToGlobal()`, `VecScatter`
+.seealso: [](ch_stag), `DMSTAG`, `DMLocalToGlobal()`, `VecScatter`
 @*/
 PetscErrorCode DMStagPopulateLocalToGlobalInjective(DM dm)
 {
@@ -980,24 +980,23 @@ static PetscErrorCode DMStagRestoreProductCoordinateArrays_Private(DM dm, void *
 
   Notes:
   This function does not automatically perform a local->global scatter to populate global coordinates from the local coordinates.
-  Thus, it may be required to explicitly perform these operations in some situations, as in the following partial example:
-
-  ```
-  PetscCall(DMGetCoordinateDM(dm,&cdm));
-  for (d=0; d<3; ++d) {
+  Thus, it may be required to explicitly perform these operations in some situations, as in the following partial example\:
+.vb
+  PetscCall(DMGetCoordinateDM(dm, &cdm));
+  for (PetscInt d = 0; d < 3; ++d) {
     DM  subdm;
-    Vec coor,coor_local;
+    Vec coor, coor_local;
 
-    PetscCall(DMProductGetDM(cdm,d,&subdm));
-    PetscCall(DMGetCoordinates(subdm,&coor));
-    PetscCall(DMGetCoordinatesLocal(subdm,&coor_local));
-    PetscCall(DMLocalToGlobal(subdm,coor_local,INSERT_VALUES,coor));
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Coordinates dim %" PetscInt_FMT ":\n",d));
-    PetscCall(VecView(coor,PETSC_VIEWER_STDOUT_WORLD));
+    PetscCall(DMProductGetDM(cdm, d, &subdm));
+    PetscCall(DMGetCoordinates(subdm, &coor));
+    PetscCall(DMGetCoordinatesLocal(subdm, &coor_local));
+    PetscCall(DMLocalToGlobal(subdm, coor_local, INSERT_VALUES, coor));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Coordinates dim %" PetscInt_FMT ":\n", d));
+    PetscCall(VecView(coor, PETSC_VIEWER_STDOUT_WORLD));
   }
-   ```
+.ve
 
-.seealso: [](chapter_stag), `DMSTAG`, `DMStagGetProductCoordinateArrays()`, `DMStagGetProductCoordinateArraysRead()`
+.seealso: [](ch_stag), `DMSTAG`, `DMStagGetProductCoordinateArrays()`, `DMStagGetProductCoordinateArraysRead()`
 @*/
 PetscErrorCode DMStagRestoreProductCoordinateArrays(DM dm, void *arrX, void *arrY, void *arrZ)
 {
@@ -1012,14 +1011,14 @@ PetscErrorCode DMStagRestoreProductCoordinateArrays(DM dm, void *arrX, void *arr
   Logically Collective
 
   Input Parameters:
-+ dm - the `DMSTAG` object
++ dm   - the `DMSTAG` object
 . arrX - local 1D coordinate arrays for x direction
 . arrY - local 1D coordinate arrays for y direction
 - arrZ - local 1D coordinate arrays for z direction
 
   Level: intermediate
 
-.seealso: [](chapter_stag), `DMSTAG`, `DMStagGetProductCoordinateArrays()`, `DMStagGetProductCoordinateArraysRead()`
+.seealso: [](ch_stag), `DMSTAG`, `DMStagGetProductCoordinateArrays()`, `DMStagGetProductCoordinateArraysRead()`
 @*/
 PetscErrorCode DMStagRestoreProductCoordinateArraysRead(DM dm, void *arrX, void *arrY, void *arrZ)
 {
@@ -1034,17 +1033,17 @@ PetscErrorCode DMStagRestoreProductCoordinateArraysRead(DM dm, void *arrX, void 
   Logically Collective; boundaryType0, boundaryType1, and boundaryType2 must contain common values
 
   Input Parameters:
-+ dm - the `DMSTAG` object
-. boundaryTypeX - boundary type for x direction
-. boundaryTypeY - boundary type for y direction, not set for one dimensional problems
-- boundaryTypeZ - boundary type for z direction, not set for one and two dimensional problems
++ dm            - the `DMSTAG` object
+. boundaryType2 - boundary type for x direction
+. boundaryType1 - boundary type for y direction, not set for one dimensional problems
+- boundaryType0 - boundary type for z direction, not set for one and two dimensional problems
 
   Level: advanced
 
   Note:
   Arguments corresponding to higher dimensions are ignored for 1D and 2D grids.
 
-.seealso: [](chapter_stag), `DMSTAG`, `DMBoundaryType`, `DMStagCreate1d()`, `DMStagCreate2d()`, `DMStagCreate3d()`, `DMDASetBoundaryType()`
+.seealso: [](ch_stag), `DMSTAG`, `DMBoundaryType`, `DMStagCreate1d()`, `DMStagCreate2d()`, `DMStagCreate3d()`, `DMDASetBoundaryType()`
 @*/
 PetscErrorCode DMStagSetBoundaryTypes(DM dm, DMBoundaryType boundaryType0, DMBoundaryType boundaryType1, DMBoundaryType boundaryType2)
 {
@@ -1070,12 +1069,12 @@ PetscErrorCode DMStagSetBoundaryTypes(DM dm, DMBoundaryType boundaryType0, DMBou
   Logically Collective; `dmtype` must contain common value
 
   Input Parameters:
-+ dm - the `DMSTAG` object
++ dm     - the `DMSTAG` object
 - dmtype - DMtype for coordinates, either `DMSTAG` or `DMPRODUCT`
 
   Level: advanced
 
-.seealso: [](chapter_stag), `DMSTAG`, `DMPRODUCT`, `DMGetCoordinateDM()`, `DMStagSetUniformCoordinates()`, `DMStagSetUniformCoordinatesExplicit()`, `DMStagSetUniformCoordinatesProduct()`, `DMType`
+.seealso: [](ch_stag), `DMSTAG`, `DMPRODUCT`, `DMGetCoordinateDM()`, `DMStagSetUniformCoordinates()`, `DMStagSetUniformCoordinatesExplicit()`, `DMStagSetUniformCoordinatesProduct()`, `DMType`
 @*/
 PetscErrorCode DMStagSetCoordinateDMType(DM dm, DMType dmtype)
 {
@@ -1094,7 +1093,7 @@ PetscErrorCode DMStagSetCoordinateDMType(DM dm, DMType dmtype)
   Logically Collective; `dof0`, `dof1`, `dof2`, and `dof3` must contain common values
 
   Input Parameters:
-+ dm - the `DMSTAG` object
++ dm   - the `DMSTAG` object
 . dof0 - the number of points per 0-cell (vertex/node)
 . dof1 - the number of points per 1-cell (element in 1D, edge in 2D and 3D)
 . dof2 - the number of points per 2-cell (element in 2D, face in 3D)
@@ -1105,7 +1104,7 @@ PetscErrorCode DMStagSetCoordinateDMType(DM dm, DMType dmtype)
   Note:
   Arguments corresponding to higher dimensions are ignored for 1D and 2D grids.
 
-.seealso: [](chapter_stag), `DMSTAG`, `DMDASetDof()`
+.seealso: [](ch_stag), `DMSTAG`, `DMDASetDof()`
 @*/
 PetscErrorCode DMStagSetDOF(DM dm, PetscInt dof0, PetscInt dof1, PetscInt dof2, PetscInt dof3)
 {
@@ -1137,7 +1136,7 @@ PetscErrorCode DMStagSetDOF(DM dm, PetscInt dof0, PetscInt dof1, PetscInt dof2, 
   Logically Collective; `nRanks0`, `nRanks1`, and `nRanks2` must contain common values
 
   Input Parameters:
-+ dm - the `DMSTAG` object
++ dm      - the `DMSTAG` object
 . nRanks0 - number of ranks in the x direction
 . nRanks1 - number of ranks in the y direction
 - nRanks2 - number of ranks in the z direction
@@ -1147,7 +1146,7 @@ PetscErrorCode DMStagSetDOF(DM dm, PetscInt dof0, PetscInt dof1, PetscInt dof2, 
   Note:
   Arguments corresponding to higher dimensions are ignored for 1D and 2D grids.
 
-.seealso: [](chapter_stag), `DMSTAG`, `DMDASetNumProcs()`
+.seealso: [](ch_stag), `DMSTAG`, `DMDASetNumProcs()`
 @*/
 PetscErrorCode DMStagSetNumRanks(DM dm, PetscInt nRanks0, PetscInt nRanks1, PetscInt nRanks2)
 {
@@ -1176,12 +1175,12 @@ PetscErrorCode DMStagSetNumRanks(DM dm, PetscInt nRanks0, PetscInt nRanks1, Pets
   Logically Collective; `stencilType` must contain common value
 
   Input Parameters:
-+ dm - the `DMSTAG` object
++ dm          - the `DMSTAG` object
 - stencilType - the elementwise ghost stencil type: `DMSTAG_STENCIL_BOX`, `DMSTAG_STENCIL_STAR`, or `DMSTAG_STENCIL_NONE`
 
   Level: beginner
 
-.seealso: [](chapter_stag), `DMSTAG`, `DMStagGetStencilType()`, `DMStagSetStencilWidth()`, `DMStagStencilType`
+.seealso: [](ch_stag), `DMSTAG`, `DMStagGetStencilType()`, `DMStagSetStencilWidth()`, `DMStagStencilType`
 @*/
 PetscErrorCode DMStagSetStencilType(DM dm, DMStagStencilType stencilType)
 {
@@ -1201,7 +1200,7 @@ PetscErrorCode DMStagSetStencilType(DM dm, DMStagStencilType stencilType)
   Logically Collective; `stencilWidth` must contain common value
 
   Input Parameters:
-+ dm - the `DMSTAG` object
++ dm           - the `DMSTAG` object
 - stencilWidth - stencil/halo/ghost width in elements
 
   Level: beginner
@@ -1209,7 +1208,7 @@ PetscErrorCode DMStagSetStencilType(DM dm, DMStagStencilType stencilType)
   Note:
   The width value is not used when `DMSTAG_STENCIL_NONE` is specified.
 
-.seealso: [](chapter_stag), `DMSTAG`, `DMStagGetStencilWidth()`, `DMStagGetStencilType()`, `DMStagStencilType`
+.seealso: [](ch_stag), `DMSTAG`, `DMStagGetStencilWidth()`, `DMStagGetStencilType()`, `DMStagStencilType`
 @*/
 PetscErrorCode DMStagSetStencilWidth(DM dm, PetscInt stencilWidth)
 {
@@ -1240,7 +1239,7 @@ PetscErrorCode DMStagSetStencilWidth(DM dm, PetscInt stencilWidth)
   Note:
   Arguments corresponding to higher dimensions are ignored for 1D and 2D grids.
 
-.seealso: [](chapter_stag), `DMSTAG`, `DMStagGetGlobalSizes()`, `DMDASetSizes()`
+.seealso: [](ch_stag), `DMSTAG`, `DMStagGetGlobalSizes()`, `DMDASetSizes()`
 @*/
 PetscErrorCode DMStagSetGlobalSizes(DM dm, PetscInt N0, PetscInt N1, PetscInt N2)
 {
@@ -1276,7 +1275,7 @@ PetscErrorCode DMStagSetGlobalSizes(DM dm, PetscInt N0, PetscInt N1, PetscInt N2
   Note:
   Arguments corresponding to higher dimensions are ignored for 1D and 2D grids. These arguments may be set to `NULL` in this case.
 
-.seealso: [](chapter_stag), `DMSTAG`, `DMStagSetGlobalSizes()`, `DMStagGetOwnershipRanges()`, `DMDASetOwnershipRanges()`
+.seealso: [](ch_stag), `DMSTAG`, `DMStagSetGlobalSizes()`, `DMStagGetOwnershipRanges()`, `DMDASetOwnershipRanges()`
 @*/
 PetscErrorCode DMStagSetOwnershipRanges(DM dm, PetscInt const *lx, PetscInt const *ly, PetscInt const *lz)
 {
@@ -1307,7 +1306,7 @@ PetscErrorCode DMStagSetOwnershipRanges(DM dm, PetscInt const *lx, PetscInt cons
   Collective
 
   Input Parameters:
-+ dm - the `DMSTAG` object
++ dm   - the `DMSTAG` object
 . xmin - minimum global coordinate value in the x direction
 . xmax - maximum global coordinate values in the x direction
 . ymin - minimum global coordinate value in the y direction
@@ -1329,7 +1328,7 @@ PetscErrorCode DMStagSetOwnershipRanges(DM dm, PetscInt const *lx, PetscInt cons
   i.e. two points are equivalent if their difference is a multiple of $($`xmax` $-$ `xmin` $)$
   in the x direction, $($ `ymax` $-$ `ymin` $)$ in the y direction, and $($ `zmax` $-$ `zmin` $)$ in the z direction.
 
-.seealso: [](chapter_stag), `DMSTAG`, `DMPRODUCT`, `DMStagSetUniformCoordinatesExplicit()`, `DMStagSetUniformCoordinatesProduct()`, `DMStagSetCoordinateDMType()`, `DMGetCoordinateDM()`, `DMGetCoordinates()`, `DMDASetUniformCoordinates()`, `DMBoundaryType`
+.seealso: [](ch_stag), `DMSTAG`, `DMPRODUCT`, `DMStagSetUniformCoordinatesExplicit()`, `DMStagSetUniformCoordinatesProduct()`, `DMStagSetCoordinateDMType()`, `DMGetCoordinateDM()`, `DMGetCoordinates()`, `DMDASetUniformCoordinates()`, `DMBoundaryType`
 @*/
 PetscErrorCode DMStagSetUniformCoordinates(DM dm, PetscReal xmin, PetscReal xmax, PetscReal ymin, PetscReal ymax, PetscReal zmin, PetscReal zmax)
 {
@@ -1356,7 +1355,7 @@ PetscErrorCode DMStagSetUniformCoordinates(DM dm, PetscReal xmin, PetscReal xmax
   Collective
 
   Input Parameters:
-+ dm - the `DMSTAG` object
++ dm   - the `DMSTAG` object
 . xmin - minimum global coordinate value in the x direction
 . xmax - maximum global coordinate values in the x direction
 . ymin - minimum global coordinate value in the y direction
@@ -1375,7 +1374,7 @@ PetscErrorCode DMStagSetUniformCoordinates(DM dm, PetscReal xmin, PetscReal xmax
   See the manual page for `DMStagSetUniformCoordinates()` for information on how
   coordinates for dummy cells outside the physical domain boundary are populated.
 
-.seealso: [](chapter_stag), `DMSTAG`, `DMStagSetUniformCoordinates()`, `DMStagSetUniformCoordinatesProduct()`, `DMStagSetCoordinateDMType()`
+.seealso: [](ch_stag), `DMSTAG`, `DMStagSetUniformCoordinates()`, `DMStagSetUniformCoordinatesProduct()`, `DMStagSetCoordinateDMType()`
 @*/
 PetscErrorCode DMStagSetUniformCoordinatesExplicit(DM dm, PetscReal xmin, PetscReal xmax, PetscReal ymin, PetscReal ymax, PetscReal zmin, PetscReal zmax)
 {
@@ -1415,7 +1414,7 @@ PetscErrorCode DMStagSetUniformCoordinatesExplicit(DM dm, PetscReal xmin, PetscR
   Collective
 
   Input Parameters:
-+ dm - the `DMSTAG` object
++ dm   - the `DMSTAG` object
 . xmin - minimum global coordinate value in the x direction
 . xmax - maximum global coordinate values in the x direction
 . ymin - minimum global coordinate value in the y direction
@@ -1435,7 +1434,7 @@ PetscErrorCode DMStagSetUniformCoordinatesExplicit(DM dm, PetscReal xmin, PetscR
   See the manual page for `DMStagSetUniformCoordinates()` for information on how
   coordinates for dummy cells outside the physical domain boundary are populated.
 
-.seealso: [](chapter_stag), `DMSTAG`, `DMPRODUCT`, `DMStagSetUniformCoordinates()`, `DMStagSetUniformCoordinatesExplicit()`, `DMStagSetCoordinateDMType()`
+.seealso: [](ch_stag), `DMSTAG`, `DMPRODUCT`, `DMStagSetUniformCoordinates()`, `DMStagSetUniformCoordinatesExplicit()`, `DMStagSetCoordinateDMType()`
 @*/
 PetscErrorCode DMStagSetUniformCoordinatesProduct(DM dm, PetscReal xmin, PetscReal xmax, PetscReal ymin, PetscReal ymax, PetscReal zmin, PetscReal zmax)
 {
@@ -1514,7 +1513,7 @@ PetscErrorCode DMStagSetUniformCoordinatesProduct(DM dm, PetscReal xmin, PetscRe
   Logically Collective
 
   Input Parameters:
-+ dm - the `DMSTAG` object
++ dm  - the `DMSTAG` object
 - vec - the `Vec` object
 
   Output Parameter:
@@ -1543,7 +1542,7 @@ PetscErrorCode DMStagSetUniformCoordinatesProduct(DM dm, PetscReal xmin, PetscRe
 
   `DMStagVecRestoreArray()` must be called, once finished with the array
 
-.seealso: [](chapter_stag), `DMSTAG`, `DMStagVecGetArrayRead()`, `DMStagGetLocationSlot()`, `DMGetLocalVector()`, `DMCreateLocalVector()`, `DMGetGlobalVector()`, `DMCreateGlobalVector()`, `DMDAVecGetArray()`, `DMDAVecGetArrayDOF()`
+.seealso: [](ch_stag), `DMSTAG`, `DMStagVecGetArrayRead()`, `DMStagGetLocationSlot()`, `DMGetLocalVector()`, `DMCreateLocalVector()`, `DMGetGlobalVector()`, `DMCreateGlobalVector()`, `DMDAVecGetArray()`, `DMDAVecGetArrayDOF()`
 @*/
 PetscErrorCode DMStagVecGetArray(DM dm, Vec vec, void *array)
 {
@@ -1581,7 +1580,7 @@ PetscErrorCode DMStagVecGetArray(DM dm, Vec vec, void *array)
   See the man page for `DMStagVecGetArray()` for more information.
 
   Input Parameters:
-+ dm - the `DMSTAG` object
++ dm  - the `DMSTAG` object
 - vec - the `Vec` object
 
   Output Parameter:
@@ -1592,7 +1591,7 @@ PetscErrorCode DMStagVecGetArray(DM dm, Vec vec, void *array)
   Note:
   `DMStagVecRestoreArrayRead()` must be called, once finished with the array
 
-.seealso: [](chapter_stag), `DMSTAG`, `DMStagVecGetArrayRead()`, `DMStagGetLocationSlot()`, `DMGetLocalVector()`, `DMCreateLocalVector()`, `DMGetGlobalVector()`, `DMCreateGlobalVector()`, `DMDAVecGetArrayRead()`, `DMDAVecGetArrayDOFRead()`
+.seealso: [](ch_stag), `DMSTAG`, `DMStagGetLocationSlot()`, `DMGetLocalVector()`, `DMCreateLocalVector()`, `DMGetGlobalVector()`, `DMCreateGlobalVector()`, `DMDAVecGetArrayRead()`, `DMDAVecGetArrayDOFRead()`
 @*/
 PetscErrorCode DMStagVecGetArrayRead(DM dm, Vec vec, void *array)
 {
@@ -1628,7 +1627,7 @@ PetscErrorCode DMStagVecGetArrayRead(DM dm, Vec vec, void *array)
   Logically Collective
 
   Input Parameters:
-+ dm - the `DMSTAG` object
++ dm  - the `DMSTAG` object
 - vec - the `Vec` object
 
   Output Parameter:
@@ -1636,7 +1635,7 @@ PetscErrorCode DMStagVecGetArrayRead(DM dm, Vec vec, void *array)
 
   Level: beginner
 
-.seealso: [](chapter_stag), `DMSTAG`, `DMStagVecGetArray()`, `DMDAVecRestoreArray()`, `DMDAVecRestoreArrayDOF()`
+.seealso: [](ch_stag), `DMSTAG`, `DMStagVecGetArray()`, `DMDAVecRestoreArray()`, `DMDAVecRestoreArrayDOF()`
 @*/
 PetscErrorCode DMStagVecRestoreArray(DM dm, Vec vec, void *array)
 {
@@ -1672,7 +1671,7 @@ PetscErrorCode DMStagVecRestoreArray(DM dm, Vec vec, void *array)
   Logically Collective
 
   Input Parameters:
-+ dm - the `DMSTAG` object
++ dm  - the `DMSTAG` object
 - vec - the Vec object
 
   Output Parameter:
@@ -1680,7 +1679,7 @@ PetscErrorCode DMStagVecRestoreArray(DM dm, Vec vec, void *array)
 
   Level: beginner
 
-.seealso: [](chapter_stag), `DMSTAG`, `DMStagVecGetArrayRead()`, `DMDAVecRestoreArrayRead()`, `DMDAVecRestoreArrayDOFRead()`
+.seealso: [](ch_stag), `DMSTAG`, `DMStagVecGetArrayRead()`, `DMDAVecRestoreArrayRead()`, `DMDAVecRestoreArrayDOFRead()`
 @*/
 PetscErrorCode DMStagVecRestoreArrayRead(DM dm, Vec vec, void *array)
 {

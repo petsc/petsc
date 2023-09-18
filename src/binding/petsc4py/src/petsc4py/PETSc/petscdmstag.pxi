@@ -57,7 +57,7 @@ cdef extern from * nogil:
     PetscErrorCode DMStagGetOwnershipRanges(PetscDM,const PetscInt*[],const PetscInt*[],const PetscInt*[])
 
     PetscErrorCode DMStagSetDOF(PetscDM,PetscInt,PetscInt,PetscInt,PetscInt)
-    PetscErrorCode DMStagSetNumRanks(PetscDM,PetscInt,PetscInt,PetscInt)    
+    PetscErrorCode DMStagSetNumRanks(PetscDM,PetscInt,PetscInt,PetscInt)
     PetscErrorCode DMStagSetGlobalSizes(PetscDM,PetscInt,PetscInt,PetscInt)
     PetscErrorCode DMStagSetBoundaryTypes(PetscDM,PetscDMBoundaryType,PetscDMBoundaryType,PetscDMBoundaryType)
     PetscErrorCode DMStagSetStencilWidth(PetscDM,PetscInt)
@@ -70,12 +70,12 @@ cdef extern from * nogil:
 
     PetscErrorCode DMStagGetIsFirstRank(PetscDM,PetscBool*,PetscBool*,PetscBool*)
     PetscErrorCode DMStagGetIsLastRank(PetscDM,PetscBool*,PetscBool*,PetscBool*)
-    
+
     PetscErrorCode DMStagSetUniformCoordinatesExplicit(PetscDM,PetscReal,PetscReal,PetscReal,PetscReal,PetscReal,PetscReal)
     PetscErrorCode DMStagSetUniformCoordinatesProduct(PetscDM,PetscReal,PetscReal,PetscReal,PetscReal,PetscReal,PetscReal)
     PetscErrorCode DMStagSetCoordinateDMType(PetscDM,PetscDMType)
     PetscErrorCode DMStagSetUniformCoordinates(PetscDM,PetscReal,PetscReal,PetscReal,PetscReal,PetscReal,PetscReal)
-        
+
     PetscErrorCode DMStagCreateCompatibleDMStag(PetscDM,PetscInt,PetscInt,PetscInt,PetscInt,PetscDM*)
     PetscErrorCode DMStagVecSplitToDMDA(PetscDM,PetscVec,PetscDMStagStencilLocation,PetscInt,PetscDM*,PetscVec*)
     PetscErrorCode DMStagMigrateVec(PetscDM,PetscVec,PetscDM,PetscVec)
@@ -174,7 +174,7 @@ cdef inline PetscInt asDofs(dofs,
     if ndofs >= 3: _dof2[0] = asInt(dof2)
     if ndofs >= 4: _dof3[0] = asInt(dof3)
     return ndofs
-    
+
 cdef inline tuple toDofs(PetscInt ndofs,
                          PetscInt dof0,
                          PetscInt dof1,
@@ -197,7 +197,7 @@ cdef inline tuple asStagOwnershipRanges(object ownership_ranges,
     elif dim != rdim: raise ValueError(
         "number of dimensions %d and number ownership ranges %d" %
         (toInt(dim), toInt(rdim)))
-    if dim >= 1: 
+    if dim >= 1:
         ranges[0] = iarray_i(ranges[0], &nlx, _x)
         if m[0] == PETSC_DECIDE: m[0] = nlx
         elif m[0] != nlx: raise ValueError(
@@ -235,7 +235,7 @@ cdef inline object toStagBoundary(PetscDMBoundaryType btype):
     if   btype == DM_BOUNDARY_NONE:       return "none"
     elif btype == DM_BOUNDARY_PERIODIC:   return "periodic"
     elif btype == DM_BOUNDARY_GHOSTED:    return "ghosted"
-    
+
 cdef inline tuple toStagBoundaryTypes(PetscInt dim, PetscDMBoundaryType btx, PetscDMBoundaryType bty, PetscDMBoundaryType btz):
     if dim == 1: return (toStagBoundary(btx), )
     if dim == 2: return (toStagBoundary(btx), toStagBoundary(bty))

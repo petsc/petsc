@@ -8,7 +8,7 @@
 #include <../src/mat/impls/aij/mpi/mpiaij.h>
 #include <../src/mat/impls/dense/mpi/mpidense.h>
 
-PetscErrorCode MatDestroy_MPIDense_MatTransMatMult(void *data)
+static PetscErrorCode MatDestroy_MPIDense_MatTransMatMult(void *data)
 {
   Mat_MatTransMatMult *atb = (Mat_MatTransMatMult *)data;
 

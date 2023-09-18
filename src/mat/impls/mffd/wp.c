@@ -14,7 +14,7 @@
    || U || does not change between linear iterations so is reused
 
    In `KSPGMRES` || a || == 1 and so does not need to ever be computed except at restart
-    when it is recomputed.  Thus equires no global collectives when used with `KSPGMRES`
+    when it is recomputed.  Thus requires no global collectives when used with `KSPGMRES`
 
    Formula used:
      F'(u)*a = [F(u+h*a) - F(u)]/h where
@@ -47,7 +47,7 @@ typedef struct {
    computing h with matrix-free finite differences.
 
   Input Parameters:
-+   ctx - the matrix free context
++   ctx - the matrix-free context
 .   U - the location at which you want the Jacobian
 -   a - the direction you want the derivative
 
@@ -82,11 +82,11 @@ static PetscErrorCode MatMFFDCompute_WP(MatMFFD ctx, Vec U, Vec a, PetscScalar *
 /*
    MatMFFDView_WP - Prints information about this particular
      method for computing h. Note that this does not print the general
-     information about the matrix free, that is printed by the calling
+     information about the matrix-free, that is printed by the calling
      routine.
 
   Input Parameters:
-+   ctx - the matrix free context
++   ctx - the matrix-free context
 -   viewer - the PETSc viewer
 
 */
@@ -112,7 +112,7 @@ static PetscErrorCode MatMFFDView_WP(MatMFFD ctx, PetscViewer viewer)
      any options appropriate for this method
 
   Input Parameter:
-.  ctx - the matrix free context
+.  ctx - the matrix-free context
 
 */
 static PetscErrorCode MatMFFDSetFromOptions_WP(MatMFFD ctx, PetscOptionItems *PetscOptionsObject)
@@ -134,7 +134,7 @@ static PetscErrorCode MatMFFDDestroy_WP(MatMFFD ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatMFFDWPSetComputeNormU_P(Mat mat, PetscBool flag)
+static PetscErrorCode MatMFFDWPSetComputeNormU_P(Mat mat, PetscBool flag)
 {
   MatMFFD     ctx  = (MatMFFD)mat->data;
   MatMFFD_WP *hctx = (MatMFFD_WP *)ctx->hctx;
@@ -145,23 +145,23 @@ PetscErrorCode MatMFFDWPSetComputeNormU_P(Mat mat, PetscBool flag)
 }
 
 /*@
-    MatMFFDWPSetComputeNormU - Sets whether it computes the ||U|| used by the Walker-Pernice
-             PETSc routine for computing h. With any Krylov solver this need only
-             be computed during the first iteration and kept for later.
+  MatMFFDWPSetComputeNormU - Sets whether it computes the ||U|| used by the Walker-Pernice
+  PETSc routine for computing h. With any Krylov solver this need only
+  be computed during the first iteration and kept for later.
 
   Input Parameters:
-+   A - the `MATMFFD` matrix
--   flag - `PETSC_TRUE` causes it to compute ||U||, `PETSC_FALSE` uses the previous value
++ A    - the `MATMFFD` matrix
+- flag - `PETSC_TRUE` causes it to compute ||U||, `PETSC_FALSE` uses the previous value
 
   Options Database Key:
-.   -mat_mffd_compute_normu <true,false> - true by default, false can save calculations but you
+. -mat_mffd_compute_normu <true,false> - true by default, false can save calculations but you
               must be sure that ||U|| has not changed in the mean time.
 
   Level: advanced
 
   Note:
-   See the manual page for `MATMFFD_WP` for a complete description of the
-   algorithm used to compute h.
+  See the manual page for `MATMFFD_WP` for a complete description of the
+  algorithm used to compute h.
 
 .seealso: `MATMFFD_WP`, `MATMFFD`, `MatMFFDSetFunctionError()`, `MatCreateSNESMF()`
 @*/
@@ -178,7 +178,7 @@ PetscErrorCode MatMFFDWPSetComputeNormU(Mat A, PetscBool flag)
    computing h with matrix-free finite differences.
 
    Input Parameter:
-.  ctx - the matrix free context created by MatCreateMFFD()
+.  ctx - the matrix-free context created by MatCreateMFFD()
 
 */
 PETSC_EXTERN PetscErrorCode MatCreateMFFD_WP(MatMFFD ctx)

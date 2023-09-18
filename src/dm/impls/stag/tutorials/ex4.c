@@ -124,7 +124,7 @@ int main(int argc, char **argv)
     PetscCall(DMStagGetGlobalSizes(ctx->levels[level]->dm_stokes, &N[0], &N[1], &N[2]));
     ctx->levels[level]->hx_characteristic = (ctx->xmax - ctx->xmin) / N[0];
     ctx->levels[level]->hy_characteristic = (ctx->ymax - ctx->ymin) / N[1];
-    ctx->levels[level]->hz_characteristic = (ctx->zmax - ctx->zmin) / N[2];
+    if (N[2]) ctx->levels[level]->hz_characteristic = (ctx->zmax - ctx->zmin) / N[2];
     if (ctx->dim == 2) {
       hx_avg_inv = 2.0 / (ctx->levels[level]->hx_characteristic + ctx->levels[level]->hy_characteristic);
     } else if (ctx->dim == 3) {

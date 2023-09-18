@@ -374,6 +374,7 @@ cdef PetscErrorCode MatPythonGetType_PYTHON(PetscMat mat, const char *name[]) \
     name[0] = PyMat(mat).getname()
     return FunctionEnd()
 
+#FIXME: view and setFromOptions?
 cdef dict dMatOps = {   3 : 'mult',
                         4 : 'multAdd',
                         5 : 'multTranspose',
@@ -395,7 +396,7 @@ cdef dict dMatOps = {   3 : 'mult',
                        47 : 'setDiagonal',
                        48 : 'zeroRowsColumns',
                        59 : 'createSubMatrix',
-                       88 : 'getVecs',
+                       88 : 'getVecs', #FIXME -> createVecs
                       102 : 'conjugate',
                       105 : 'realPart',
                       106 : 'imagPart',
@@ -489,7 +490,7 @@ cdef inline PetscErrorCode MatDestroy_Python_inner(
 cdef PetscErrorCode MatDestroy_Python(
     PetscMat mat,
     ) \
-    nogil except PETSC_ERR_PYTHON:
+    except PETSC_ERR_PYTHON nogil:
 
     FunctionBegin(b"MatDestroy_Python")
     CHKERR( PetscObjectComposeFunction(
@@ -1330,7 +1331,7 @@ cdef inline PetscErrorCode PCDestroy_Python_inner(
 cdef PetscErrorCode PCDestroy_Python(
     PetscPC pc,
     ) \
-    nogil except PETSC_ERR_PYTHON:
+    except PETSC_ERR_PYTHON nogil:
     FunctionBegin(b"PCDestroy_Python")
     CHKERR( PetscObjectComposeFunction(
             <PetscObject>pc, b"PCPythonSetType_C",
@@ -1390,7 +1391,7 @@ cdef inline PetscErrorCode PCReset_Python_inner(
 cdef PetscErrorCode PCReset_Python(
     PetscPC pc,
     ) \
-    nogil except PETSC_ERR_PYTHON:
+    except PETSC_ERR_PYTHON nogil:
     if getRef(pc) == 0: return PETSC_SUCCESS
     FunctionBegin(b"PCReset_Python")
     if Py_IsInitialized(): PCReset_Python_inner(pc)
@@ -1636,7 +1637,7 @@ cdef inline PetscErrorCode KSPDestroy_Python_inner(
 cdef PetscErrorCode KSPDestroy_Python(
     PetscKSP ksp,
     ) \
-    nogil except PETSC_ERR_PYTHON:
+    except PETSC_ERR_PYTHON nogil:
     FunctionBegin(b"KSPDestroy_Python")
     CHKERR( PetscObjectComposeFunction(
             <PetscObject>ksp, b"KSPPythonSetType_C",
@@ -1686,7 +1687,7 @@ cdef inline PetscErrorCode KSPReset_Python_inner(
 cdef PetscErrorCode KSPReset_Python(
     PetscKSP ksp,
     ) \
-    nogil except PETSC_ERR_PYTHON:
+    except PETSC_ERR_PYTHON nogil:
     if getRef(ksp) == 0: return PETSC_SUCCESS
     FunctionBegin(b"KSPReset_Python")
     CHKERR( PetscObjectCompose(<PetscObject>ksp, b"@ksp.vec_work_sol", NULL) )
@@ -1828,7 +1829,7 @@ cdef PetscErrorCode KSPSolve_Python_default(
         if ksp.reason: break
         KSPPreStep_Python(ksp)
         #
-        KSPStep_Python(ksp, B, X)
+        KSPStep_Python(ksp, B, X) # FIXME? B?
         CHKERR( KSPBuildResidual(ksp, t, v, &R) )
         CHKERR( VecNorm(R, PETSC_NORM_2, &rnorm) )
         ksp.iter += 1
@@ -1902,7 +1903,6 @@ cdef extern from * nogil:
         PetscKSP ksp
 
 cdef extern from * nogil: # custom.h
-    PetscErrorCode SNESConverged(PetscSNES,PetscInt,PetscReal,PetscReal,PetscReal,PetscSNESConvergedReason*)
     PetscErrorCode SNESLogHistory(PetscSNES,PetscReal,PetscInt)
 
 
@@ -1988,7 +1988,7 @@ cdef inline PetscErrorCode SNESDestroy_Python_inner(
 cdef PetscErrorCode SNESDestroy_Python(
     PetscSNES snes,
     ) \
-    nogil except PETSC_ERR_PYTHON:
+    except PETSC_ERR_PYTHON nogil:
     FunctionBegin(b"SNESDestroy_Python")
     CHKERR( PetscObjectComposeFunction(
             <PetscObject>snes, b"SNESPythonSetType_C",
@@ -2040,7 +2040,7 @@ cdef inline PetscErrorCode SNESReset_Python_inner(
 cdef PetscErrorCode SNESReset_Python(
     PetscSNES snes,
     ) \
-    nogil except PETSC_ERR_PYTHON:
+    except PETSC_ERR_PYTHON nogil:
     if getRef(snes) == 0: return PETSC_SUCCESS
     FunctionBegin(b"SNESReset_Python")
     if Py_IsInitialized(): SNESReset_Python_inner(snes)
@@ -2089,7 +2089,6 @@ cdef PetscErrorCode SNESSolve_Python(
     CHKERR( SNESGetSolution(snes, &x) )
     #
     snes.iter = 0
-    snes.reason = SNES_CONVERGED_ITERATING
     #
     cdef solve = PySNES(snes).solve
     if solve is not None:
@@ -2121,14 +2120,15 @@ cdef PetscErrorCode SNESSolve_Python_default(
     CHKERR( VecNorm(X, PETSC_NORM_2, &xnorm) )
     CHKERR( VecNorm(F, PETSC_NORM_2, &fnorm) )
     #
-    CHKERR( SNESConverged(snes, snes.iter, xnorm, ynorm, fnorm, &snes.reason) )
     CHKERR( SNESLogHistory(snes, snes.norm, lits) )
+    CHKERR( SNESConverged(snes, snes.iter, xnorm, ynorm, fnorm) )
     CHKERR( SNESMonitor(snes, snes.iter, snes.norm) )
+    if snes.reason:
+        return FunctionEnd()
 
     cdef PetscObjectState ostate = -1
     cdef PetscObjectState nstate = -1
     for its from 0 <= its < snes.max_its:
-        if snes.reason: break
         CHKERR( PetscObjectStateGet(<PetscObject>X, &ostate) )
         SNESPreStep_Python(snes)
         CHKERR( PetscObjectStateGet(<PetscObject>X, &nstate) )
@@ -2145,12 +2145,10 @@ cdef PetscErrorCode SNESSolve_Python_default(
         snes.iter += 1
         #
         SNESPostStep_Python(snes)
-        CHKERR( SNESConverged(snes, snes.iter, xnorm, ynorm, fnorm, &snes.reason) )
         CHKERR( SNESLogHistory(snes, snes.norm, lits) )
+        CHKERR( SNESConverged(snes, snes.iter, xnorm, ynorm, fnorm) )
         CHKERR( SNESMonitor(snes, snes.iter, snes.norm) )
-    if snes.iter == snes.max_its:
-        if snes.reason == SNES_CONVERGED_ITERATING:
-            snes.reason = SNES_DIVERGED_MAX_IT
+        if snes.reason: break
     #
     return FunctionEnd()
 
@@ -2341,7 +2339,7 @@ cdef inline PetscErrorCode TSDestroy_Python_inner(
 cdef PetscErrorCode TSDestroy_Python(
     PetscTS ts,
     ) \
-    nogil except PETSC_ERR_PYTHON:
+    except PETSC_ERR_PYTHON nogil:
     FunctionBegin(b"TSDestroy_Python")
     CHKERR( PetscObjectComposeFunction(
             <PetscObject>ts, b"TSPythonSetType_C",
@@ -2404,7 +2402,7 @@ cdef inline PetscErrorCode TSReset_Python_inner(
 cdef PetscErrorCode TSReset_Python(
     PetscTS ts,
     ) \
-    nogil except PETSC_ERR_PYTHON:
+    except PETSC_ERR_PYTHON nogil:
     if getRef(ts) == 0: return PETSC_SUCCESS
     FunctionBegin(b"TSReset_Python")
     CHKERR( PetscObjectCompose(<PetscObject>ts, b"@ts.vec_update", NULL) )
@@ -2757,7 +2755,7 @@ cdef inline PetscErrorCode TaoDestroy_Python_inner(
 cdef PetscErrorCode TaoDestroy_Python(
     PetscTAO tao,
     ) \
-    nogil except PETSC_ERR_PYTHON:
+    except PETSC_ERR_PYTHON nogil:
     FunctionBegin(b"TaoDestroy_Python")
     CHKERR( PetscObjectComposeFunction(
             <PetscObject>tao, b"TaoPythonSetType_C",

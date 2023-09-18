@@ -1,4 +1,3 @@
-
 static char help[] = "Solves the trivial ODE du/dt = 1, u(0) = 0. \n\n";
 
 #include <petscts.h>
@@ -12,11 +11,13 @@ static PetscErrorCode PostStep(TS);
 static PetscErrorCode Monitor(TS, PetscInt, PetscReal, Vec, void *);
 static PetscErrorCode Event(TS, PetscReal, Vec, PetscScalar *, void *);
 static PetscErrorCode PostEvent(TS, PetscInt, PetscInt[], PetscReal, Vec, PetscBool, void *);
+static PetscErrorCode TransferSetUp(TS, PetscInt, PetscReal, Vec, PetscBool *, void *);
+static PetscErrorCode Transfer(TS, PetscInt, Vec[], Vec[], void *);
 
 int main(int argc, char **argv)
 {
   TS              ts;
-  PetscInt        n;
+  PetscInt        n, ntransfer = 2;
   const PetscInt  n_end = 11;
   PetscReal       t;
   const PetscReal t_end = 11;
@@ -76,6 +77,7 @@ int main(int argc, char **argv)
     PetscCall(TSSetEventHandler(ts, 3, direction, terminate, Event, PostEvent, NULL));
   }
   PetscCall(TSSetExactFinalTime(ts, TS_EXACTFINALTIME_STEPOVER));
+  PetscCall(TSSetResize(ts, TransferSetUp, Transfer, &ntransfer));
   PetscCall(TSSetFromOptions(ts));
 
   /* --- First Solve --- */
@@ -215,55 +217,88 @@ PetscErrorCode PostEvent(TS ts, PetscInt nevents, PetscInt event_list[], PetscRe
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+PetscErrorCode TransferSetUp(TS ts, PetscInt n, PetscReal t, Vec x, PetscBool *flg, void *ctx)
+{
+  PetscInt *nt = (PetscInt *)ctx;
+
+  PetscFunctionBeginUser;
+  *flg = (PetscBool)(*nt && n && n % (*nt) == 0);
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+PetscErrorCode Transfer(TS ts, PetscInt nv, Vec vin[], Vec vout[], void *ctx)
+{
+  PetscInt i;
+
+  PetscFunctionBeginUser;
+  PetscCall(TSGetStepNumber(ts, &i));
+  PetscCall(PetscPrintf(PetscObjectComm((PetscObject)ts), "%-10s-> step %" PetscInt_FMT " nv %" PetscInt_FMT "\n", PETSC_FUNCTION_NAME, i, nv));
+  for (i = 0; i < nv; i++) {
+    PetscCall(VecDuplicate(vin[i], &vout[i]));
+    PetscCall(VecCopy(vin[i], vout[i]));
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 /*TEST
 
     test:
       suffix: euler
+      diff_args: -j
       args: -ts_type euler
       output_file: output/ex1.out
 
     test:
       suffix: ssp
-      args:   -ts_type ssp
+      diff_args: -j
+      args: -ts_type ssp
       output_file: output/ex1.out
 
     test:
       suffix: rk
+      diff_args: -j
       args: -ts_type rk
       output_file: output/ex1.out
 
     test:
       suffix: beuler
+      diff_args: -j
       args: -ts_type beuler
       output_file: output/ex1.out
 
     test:
       suffix: cn
+      diff_args: -j
       args: -ts_type cn
       output_file: output/ex1.out
 
     test:
       suffix: theta
       args: -ts_type theta
+      diff_args: -j
       output_file: output/ex1.out
 
     test:
       suffix: bdf
+      diff_args: -j
       args: -ts_type bdf
-      output_file: output/ex1.out
+      output_file: output/ex1_bdf.out
 
     test:
       suffix: alpha
+      diff_args: -j
       args: -ts_type alpha
       output_file: output/ex1.out
 
     test:
       suffix: rosw
+      diff_args: -j
       args: -ts_type rosw
       output_file: output/ex1.out
 
     test:
       suffix: arkimex
+      diff_args: -j
       args: -ts_type arkimex
       output_file: output/ex1.out
 

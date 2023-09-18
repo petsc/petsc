@@ -1376,16 +1376,17 @@ static PetscErrorCode GmshCreateFE(MPI_Comm comm, const char prefix[], PetscBool
 /*@C
   DMPlexCreateGmshFromFile - Create a `DMPLEX` mesh from a Gmsh file
 
+  Input Parameters:
 + comm        - The MPI communicator
 . filename    - Name of the Gmsh file
 - interpolate - Create faces and edges in the mesh
 
   Output Parameter:
-. dm  - The `DM` object representing the mesh
+. dm - The `DM` object representing the mesh
 
   Level: beginner
 
-.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexCreateFromFile()`, `DMPlexCreateGmsh()`, `DMPlexCreate()`
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexCreateFromFile()`, `DMPlexCreateGmsh()`, `DMPlexCreate()`
 @*/
 PetscErrorCode DMPlexCreateGmshFromFile(MPI_Comm comm, const char filename[], PetscBool interpolate, DM *dm)
 {
@@ -1441,12 +1442,12 @@ PetscErrorCode DMPlexCreateGmshFromFile(MPI_Comm comm, const char filename[], Pe
   Collective
 
   Input Parameters:
-+ comm  - The MPI communicator
-. viewer - The `PetscViewer` associated with a Gmsh file
++ comm        - The MPI communicator
+. viewer      - The `PetscViewer` associated with a Gmsh file
 - interpolate - Create faces and edges in the mesh
 
   Output Parameter:
-. dm  - The `DM` object representing the mesh
+. dm - The `DM` object representing the mesh
 
   Options Database Keys:
 + -dm_plex_gmsh_hybrid        - Force triangular prisms to use tensor order
@@ -1465,7 +1466,7 @@ PetscErrorCode DMPlexCreateGmshFromFile(MPI_Comm comm, const char filename[], Pe
 
   Level: beginner
 
-.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMCreate()`
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMCreate()`
 @*/
 PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool interpolate, DM *dm)
 {
@@ -1688,7 +1689,7 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
       }
 
       /* Create face sets */
-      if (interpolate && elem->dim == dim - 1) {
+      if (elem->numTags && interpolate && elem->dim == dim - 1) {
         PetscInt        joinSize;
         const PetscInt *join = NULL;
         PetscInt        Nt   = elem->numTags, t, r;
@@ -1714,19 +1715,44 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
         PetscCall(DMPlexRestoreJoin(*dm, elem->numVerts, cone, &joinSize, &join));
       }
 
-      /* Create vertex sets */
-      if (elem->dim == 0 && markvertices) {
-        if (elem->numTags > 0) {
-          const PetscInt nn  = elem->nodes[0];
-          const PetscInt vv  = mesh->vertexMap[nn];
-          const PetscInt tag = elem->tags[0];
-          PetscInt       r;
+      /* Create edge sets */
+      if (elem->numTags && interpolate && dim > 2 && elem->dim == 1) {
+        PetscInt        joinSize;
+        const PetscInt *join = NULL;
+        PetscInt        Nt   = elem->numTags, t, r;
 
-          if (!Nr) PetscCall(DMSetLabelValue_Fast(*dm, &vertSets, "Vertex Sets", vStart + vv, tag));
+        /* Find the relevant edge with vertex joins */
+        for (v = 0; v < elem->numVerts; ++v) {
+          const PetscInt nn = elem->nodes[v];
+          const PetscInt vv = mesh->vertexMap[nn];
+          cone[v]           = vStart + vv;
+        }
+        PetscCall(DMPlexGetJoin(*dm, elem->numVerts, cone, &joinSize, &join));
+        PetscCheck(joinSize == 1, PETSC_COMM_SELF, PETSC_ERR_SUP, "Could not determine Plex edge for Gmsh element %" PetscInt_FMT " (Plex cell %" PetscInt_FMT ")", elem->id, e);
+        for (t = 0; t < Nt; ++t) {
+          const PetscInt  tag     = elem->tags[t];
+          const PetscBool generic = !Nr && (!t || multipleTags) ? PETSC_TRUE : PETSC_FALSE;
+
+          if (generic) PetscCall(DMSetLabelValue_Fast(*dm, &faceSets, "Edge Sets", join[0], tag));
           for (r = 0; r < Nr; ++r) {
-            if (mesh->regionDims[r] != 0) continue;
-            if (mesh->regionTags[r] == tag) PetscCall(DMSetLabelValue_Fast(*dm, &regionSets[r], mesh->regionNames[r], vStart + vv, tag));
+            if (mesh->regionDims[r] != 1) continue;
+            if (mesh->regionTags[r] == tag) PetscCall(DMSetLabelValue_Fast(*dm, &regionSets[r], mesh->regionNames[r], join[0], tag));
           }
+        }
+        PetscCall(DMPlexRestoreJoin(*dm, elem->numVerts, cone, &joinSize, &join));
+      }
+
+      /* Create vertex sets */
+      if (elem->numTags && elem->dim == 0 && markvertices) {
+        const PetscInt nn  = elem->nodes[0];
+        const PetscInt vv  = mesh->vertexMap[nn];
+        const PetscInt tag = elem->tags[0];
+        PetscInt       r;
+
+        if (!Nr) PetscCall(DMSetLabelValue_Fast(*dm, &vertSets, "Vertex Sets", vStart + vv, tag));
+        for (r = 0; r < Nr; ++r) {
+          if (mesh->regionDims[r] != 0) continue;
+          if (mesh->regionTags[r] == tag) PetscCall(DMSetLabelValue_Fast(*dm, &regionSets[r], mesh->regionNames[r], vStart + vv, tag));
         }
       }
     }

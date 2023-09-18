@@ -1,13 +1,13 @@
   Residual norms for elas_ solve.
-  0 KSP Residual norm 4.58717
-  1 KSP Residual norm 0.229768
-  2 KSP Residual norm 0.0358361
-  3 KSP Residual norm 0.0181252
-  4 KSP Residual norm 0.0125751
-  5 KSP Residual norm 0.00228289
-  6 KSP Residual norm 0.000466295
-  7 KSP Residual norm 0.00010782
-  8 KSP Residual norm 1.60974e-05
+  0 KSP Residual norm 4.58717 
+  1 KSP Residual norm 0.229768 
+  2 KSP Residual norm 0.0358361 
+  3 KSP Residual norm 0.0181252 
+  4 KSP Residual norm 0.0125751 
+  5 KSP Residual norm 0.00228289 
+  6 KSP Residual norm 0.000466295 
+  7 KSP Residual norm 0.00010782 
+  8 KSP Residual norm 1.60974e-05 
 Linear elas_ solve converged due to CONVERGED_RTOL iterations 8
 KSP Object: (elas_) 1 MPI process
   type: cg
@@ -36,6 +36,8 @@ PC Object: (elas_) 1 MPI process
       Relax on coarse     Gaussian-elimination
       Relax weight  (all)      1.
       Outer relax weight (all) 1.
+      Maximum size of coarsest grid 9
+      Minimum size of coarsest grid 1
       Using CF-relaxation
       Not using more complex smoothers.
       Measure type        local
@@ -45,6 +47,7 @@ PC Object: (elas_) 1 MPI process
       HYPRE_BoomerAMGSetInterpVecVariant() 3
       HYPRE_BoomerAMGSetInterpVecQMax() 0
       HYPRE_BoomerAMGSetSmoothInterpVectors() 0
+      SpGEMM type         hypre
   linear system matrix = precond matrix:
   Mat Object: 1 MPI process
     type: seqaij

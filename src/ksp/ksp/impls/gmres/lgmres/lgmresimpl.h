@@ -1,10 +1,8 @@
-/* A. Baker */
 /*
    Private data structure used by the LGMRES method.
 */
 
-#ifndef PETSC_LGMRESIMPL_H
-#define PETSC_LGMRESIMPL_H
+#pragma once
 
 #define KSPGMRES_NO_MACROS
 #include <../src/ksp/ksp/impls/gmres/gmresimpl.h>
@@ -14,25 +12,17 @@ typedef struct {
 
   /* LGMRES_MOD - make these for the z vectors - new storage for lgmres */
   Vec  *augvecs;           /* holds the error approximation vectors for lgmres. */
-  Vec **augvecs_user_work; /* same purpose as user_work above, but this one is
-                                         for our error approx vectors */
+  Vec **augvecs_user_work; /* same purpose as user_work above, but this one is for our error approx vectors */
   /* currently only augvecs_user_work[0] is used, not sure if this will be */
   /* extended in the future to use more, or if this is a design bug */
-  PetscInt     aug_vv_allocated;   /* aug_vv_allocated is the number of allocated lgmres
-                                          augmentation vectors */
-  PetscInt     aug_vecs_allocated; /* aug_vecs_allocated is the total number of augmentation vecs
-                                          available - used to simplify the dynamic
-                                       allocation of vectors */
+  PetscInt     aug_vv_allocated;   /* aug_vv_allocated is the number of allocated lgmres augmentation vectors */
+  PetscInt     aug_vecs_allocated; /* aug_vecs_allocated is the total number of augmentation vecs available */
   PetscScalar *hwork;              /* work array to hold Hessenberg product */
 
-  PetscInt augwork_alloc; /*size of chunk allocated for augmentation vectors */
-
-  PetscInt aug_dim; /* max number of augmented directions to add */
-
-  PetscInt aug_ct; /* number of aug. vectors available */
-
-  PetscInt *aug_order; /*keeps track of order to use aug. vectors*/
-
+  PetscInt  augwork_alloc;   /*size of chunk allocated for augmentation vectors */
+  PetscInt  aug_dim;         /* max number of augmented directions to add */
+  PetscInt  aug_ct;          /* number of aug. vectors available */
+  PetscInt *aug_order;       /*keeps track of order to use aug. vectors*/
   PetscBool approx_constant; /* = 1 then the approx space at each restart will
                                   be  size max_k .  Therefore, more than (max_k - aug_dim)
                                   krylov vectors may be used if less than aug_dim error
@@ -54,11 +44,9 @@ typedef struct {
 
 /* vector names */
 #define VEC_OFFSET     2
-#define VEC_TEMP       lgmres->vecs[0] /* work space */
-#define VEC_TEMP_MATOP lgmres->vecs[1] /* work space */
-#define VEC_VV(i) \
-  lgmres->vecs[VEC_OFFSET + i] /* use to access
-                                                        othog basis vectors */
+#define VEC_TEMP       lgmres->vecs[0]              /* work space */
+#define VEC_TEMP_MATOP lgmres->vecs[1]              /* work space */
+#define VEC_VV(i)      lgmres->vecs[VEC_OFFSET + i] /* use to access othog basis vectors */
 /*LGMRES_MOD */
 #define AUG_OFFSET   1
 #define AUGVEC(i)    lgmres->augvecs[AUG_OFFSET + i]                   /*error approx vectors */
@@ -66,4 +54,6 @@ typedef struct {
 #define A_AUGVEC(i)  lgmres->augvecs[AUG_OFFSET + i + lgmres->aug_dim] /*A times error vector */
 #define AUG_TEMP     lgmres->augvecs[0]                                /* work vector */
 
-#endif // PETSC_LGMRESIMPL_H
+#define LGMRES_DELTA_DIRECTIONS 10
+#define LGMRES_DEFAULT_MAXK     30
+#define LGMRES_DEFAULT_AUGDIM   2 /*default number of augmentation vectors */

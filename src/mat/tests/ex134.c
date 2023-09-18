@@ -14,7 +14,7 @@ PetscErrorCode Assemble(MPI_Comm comm, PetscInt bs, MatType mtype)
   PetscRandom   rdm;
   Vec           b, x, y;
   PetscInt      i, j;
-  PetscReal     norm2, tol = 100 * PETSC_SMALL;
+  PetscReal     norm2, tol = 10 * PETSC_SQRT_MACHINE_EPSILON;
   PetscBool     issbaij;
 #endif
   PetscViewer viewer;
@@ -50,7 +50,10 @@ PetscErrorCode Assemble(MPI_Comm comm, PetscInt bs, MatType mtype)
     if (j == 0) continue;
   #endif
   #if defined(PETSC_HAVE_MKL_CPARDISO)
-    if (j == 1) stype = MATSOLVERMKL_CPARDISO;
+    if (j == 1) {
+      if (issbaij && PetscDefined(USE_COMPLEX)) continue;
+      stype = MATSOLVERMKL_CPARDISO;
+    }
   #else
     if (j == 1) continue;
   #endif

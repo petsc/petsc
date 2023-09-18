@@ -1,5 +1,4 @@
-#ifndef __TAOLINESEARCH_ARMIJO_H
-#define __TAOLINESEARCH_ARMIJO_H
+#pragma once
 
 /* Context for an Armijo (nonmonotone) linesearch for unconstrained
    minimization.
@@ -82,5 +81,3 @@ typedef struct {
   Vec x; /* Maintain reference to variable vector to check for changes */
   Vec work;
 } TaoLineSearch_ARMIJO;
-
-#endif

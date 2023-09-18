@@ -209,11 +209,15 @@ PETSC_ARCH from environment does not match command-line or name of script. Using
       print('Your configure options and state has not changed; no need to run configure')
       print('However you can force a configure run using the option: --force')
 
+      import logger
       from config.packages.make import getMakeUserPath
-      print('xxx=========================================================================xxx')
+      banner_ends   = 'xxx'
+      banner_middle = '=' * (logger.get_global_divider_length() - 2 * len(banner_ends))
+      banner_line   = banner_middle.join((banner_ends, banner_ends))
+      print(banner_line)
       print(' Build PETSc libraries with:')
       print('   %s PETSC_DIR=%s PETSC_ARCH=%s all' % (getMakeUserPath(self.arch), self.petscdir.dir, self.arch))
-      print('xxx=========================================================================xxx')
+      print(banner_line)
       sys.exit()
     self.logPrint('configure hash file: '+hashfile+' does not match, need to run configure')
     self.makeDependency(hash,hashfile,hashfilepackages)

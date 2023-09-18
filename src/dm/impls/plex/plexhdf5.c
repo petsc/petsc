@@ -85,9 +85,9 @@ static PetscErrorCode PetscViewerCheckVersion_Private(PetscViewer viewer, DMPlex
       case 0:
         valid = PETSC_TRUE;
         break;
-      };
+      }
       break;
-    };
+    }
     break;
   case 2:
     switch (version->minor) {
@@ -96,16 +96,16 @@ static PetscErrorCode PetscViewerCheckVersion_Private(PetscViewer viewer, DMPlex
       case 0:
         valid = PETSC_TRUE;
         break;
-      };
+      }
       break;
     case 1:
       switch (version->subminor) {
       case 0:
         valid = PETSC_TRUE;
         break;
-      };
+      }
       break;
-    };
+    }
     break;
   case 3:
     switch (version->minor) {
@@ -114,9 +114,9 @@ static PetscErrorCode PetscViewerCheckVersion_Private(PetscViewer viewer, DMPlex
       case 0:
         valid = PETSC_TRUE;
         break;
-      };
+      }
       break;
-    };
+    }
     break;
   }
   PetscCheck(valid, PetscObjectComm((PetscObject)viewer), PETSC_ERR_SUP, "DMPlexStorageVersion %d.%d.%d not supported", version->major, version->minor, version->subminor);
@@ -136,7 +136,7 @@ PetscErrorCode PetscViewerHDF5GetDMPlexStorageVersionWriting(PetscViewer viewer,
 
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(viewer, PETSC_VIEWER_CLASSID, 1, PETSCVIEWERHDF5);
-  PetscValidPointer(version, 2);
+  PetscAssertPointer(version, 2);
   PetscCall(PetscViewerGetAttachedVersion_Private(viewer, DMPLEX_STORAGE_VERSION_WRITING_KEY, version));
   if (*version) PetscFunctionReturn(PETSC_SUCCESS);
 
@@ -175,7 +175,7 @@ PetscErrorCode PetscViewerHDF5GetDMPlexStorageVersionReading(PetscViewer viewer,
 
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(viewer, PETSC_VIEWER_CLASSID, 1, PETSCVIEWERHDF5);
-  PetscValidPointer(version, 2);
+  PetscAssertPointer(version, 2);
   PetscCall(PetscViewerGetAttachedVersion_Private(viewer, DMPLEX_STORAGE_VERSION_READING_KEY, version));
   if (*version) PetscFunctionReturn(PETSC_SUCCESS);
 
@@ -709,7 +709,7 @@ static PetscErrorCode RenumberGlobalPointNumbersPerStratum_Private(DM dm, IS glo
       if (gpn[p] >= 0 && gpn[p] < offsets[d]) offsets[d] = gpn[p];
     }
   }
-  PetscCallMPI(MPI_Allreduce(MPI_IN_PLACE, offsets, depth + 1, MPIU_INT, MPI_MIN, comm));
+  PetscCall(MPIU_Allreduce(MPI_IN_PLACE, offsets, depth + 1, MPIU_INT, MPI_MIN, comm));
   for (d = 0; d <= depth; d++) {
     PetscInt pStart, pEnd;
 
@@ -960,7 +960,7 @@ static PetscErrorCode DMPlexTopologyView_HDF5_XDMF_Private(DM dm, IS globalCellN
       PetscCall(DMLabelGetValue(depthLabel, pStart, &dep));
       if (dep == depth - cellHeight) output = PETSC_TRUE;
     }
-    PetscCallMPI(MPI_Allreduce(&output, &doOutput, 1, MPIU_BOOL, MPI_LOR, PetscObjectComm((PetscObject)dm)));
+    PetscCall(MPIU_Allreduce(&output, &doOutput, 1, MPIU_BOOL, MPI_LOR, PetscObjectComm((PetscObject)dm)));
     if (!doOutput) continue;
     PetscCall(CreateConesIS_Private(dm, pStart, pEnd, globalCellNumbers, &numCorners, &cellIS));
     if (!n) {
@@ -2132,7 +2132,7 @@ static PetscErrorCode PlexLayerCreateSFs_Private(PlexLayer layer, PetscSF *verte
     for (i = 0; i < n; i++)
       if (cvd[i] > NVerticesInCells) NVerticesInCells = cvd[i];
     ++NVerticesInCells;
-    PetscCallMPI(MPI_Allreduce(MPI_IN_PLACE, &NVerticesInCells, 1, MPIU_INT, MPI_MAX, comm));
+    PetscCall(MPIU_Allreduce(MPI_IN_PLACE, &NVerticesInCells, 1, MPIU_INT, MPI_MAX, comm));
 
     if (vertexLayout->n == PETSC_DECIDE && vertexLayout->N == PETSC_DECIDE) vertexLayout->N = NVerticesInCells;
     else
@@ -2653,7 +2653,7 @@ PetscErrorCode DMPlexSectionLoad_HDF5_Internal(DM dm, PetscViewer viewer, DM sec
     PetscInt N, N1;
 
     PetscCall(PetscViewerHDF5ReadSizes(viewer, "order", NULL, &N1));
-    PetscCallMPI(MPI_Allreduce(&n, &N, 1, MPIU_INT, MPI_SUM, comm));
+    PetscCall(MPIU_Allreduce(&n, &N, 1, MPIU_INT, MPI_SUM, comm));
     PetscCheck(N1 == N, comm, PETSC_ERR_ARG_SIZ, "Mismatching sizes: on-disk order array size (%" PetscInt_FMT ") != number of loaded section points (%" PetscInt_FMT ")", N1, N);
   }
   #endif
@@ -2732,7 +2732,7 @@ PetscErrorCode DMPlexSectionLoad_HDF5_Internal(DM dm, PetscViewer viewer, DM sec
     PetscCall(PetscSectionGetIncludesConstraints(sectionA, &includesConstraintsA));
     if (includesConstraintsA) PetscCall(PetscSectionGetStorageSize(sectionA, &m));
     else PetscCall(PetscSectionGetConstrainedStorageSize(sectionA, &m));
-    PetscCallMPI(MPI_Allreduce(&m, &M, 1, MPIU_INT, MPI_SUM, comm));
+    PetscCall(MPIU_Allreduce(&m, &M, 1, MPIU_INT, MPI_SUM, comm));
     PetscCall(PetscLayoutCreate(comm, &layout));
     PetscCall(PetscLayoutSetSize(layout, M));
     PetscCall(PetscLayoutSetUp(layout));

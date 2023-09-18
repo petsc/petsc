@@ -33,9 +33,7 @@ int main(int argc, char **args)
   PetscBool     flg = PETSC_FALSE, unsym = PETSC_TRUE;
   PetscScalar   v;
   PetscMPIInt   rank, size;
-#if defined(PETSC_USE_LOG)
   PetscLogStage stages[3];
-#endif
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &args, (char *)0, help));

@@ -32,7 +32,7 @@ The command line options include:\n\
 F*/
 
 /*
-      mpiexec -n 2 ./ex15 -snes_monitor -ksp_monitor log_summary
+      mpiexec -n 2 ./ex15 -snes_monitor -ksp_monitor log_view
 */
 
 /*

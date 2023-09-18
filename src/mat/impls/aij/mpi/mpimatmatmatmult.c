@@ -91,7 +91,7 @@ PetscErrorCode MatMatMatMultNumeric_MPIAIJ_MPIAIJ_MPIAIJ(Mat A, Mat B, Mat C, Ma
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatDestroy_MPIAIJ_RARt(void *data)
+static PetscErrorCode MatDestroy_MPIAIJ_RARt(void *data)
 {
   Mat_RARt *rart = (Mat_RARt *)data;
 

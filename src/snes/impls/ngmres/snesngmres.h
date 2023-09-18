@@ -1,5 +1,4 @@
-#ifndef _SNESNGMRES_H
-#define _SNESNGMRES_H
+#pragma once
 
 #include <petsc/private/snesimpl.h>
 
@@ -72,5 +71,3 @@ PETSC_INTERN PetscErrorCode SNESDestroy_NGMRES(SNES);
 PETSC_INTERN PetscErrorCode SNESReset_NGMRES(SNES);
 PETSC_INTERN PetscErrorCode SNESSetUp_NGMRES(SNES);
 PETSC_INTERN PetscErrorCode SNESView_NGMRES(SNES, PetscViewer);
-
-#endif

@@ -34,17 +34,17 @@ static PetscErrorCode DMTSConvertPlex(DM dm, DM *plex, PetscBool copy)
   DMPlexTSComputeRHSFunctionFVM - Form the forcing `F` from the local input `locX` using pointwise functions specified by the user
 
   Input Parameters:
-+ dm - The mesh
-. t - The time
-. locX  - Local solution
++ dm   - The mesh
+. time - The time
+. locX - Local solution
 - user - The user context
 
   Output Parameter:
-. F  - Global output vector
+. F - Global output vector
 
   Level: developer
 
-.seealso: [](chapter_ts), `DMPLEX`, `TS`, `DMPlexComputeJacobianActionFEM()`
+.seealso: [](ch_ts), `DMPLEX`, `TS`, `DMPlexComputeJacobianActionFEM()`
 @*/
 PetscErrorCode DMPlexTSComputeRHSFunctionFVM(DM dm, PetscReal time, Vec locX, Vec F, void *user)
 {
@@ -74,15 +74,15 @@ PetscErrorCode DMPlexTSComputeRHSFunctionFVM(DM dm, PetscReal time, Vec locX, Ve
   DMPlexTSComputeBoundary - Insert the essential boundary values into the local input `locX` and/or its time derivative `locX_t` using pointwise functions specified by the user
 
   Input Parameters:
-+ dm - The mesh
-. t - The time
-. locX  - Local solution
++ dm     - The mesh
+. time   - The time
+. locX   - Local solution
 . locX_t - Local solution time derivative, or `NULL`
-- user - The user context
+- user   - The user context
 
   Level: developer
 
-.seealso: [](chapter_ts), `DMPLEX`, `TS`, `DMPlexComputeJacobianActionFEM()`
+.seealso: [](ch_ts), `DMPLEX`, `TS`, `DMPlexComputeJacobianActionFEM()`
 @*/
 PetscErrorCode DMPlexTSComputeBoundary(DM dm, PetscReal time, Vec locX, Vec locX_t, void *user)
 {
@@ -117,18 +117,18 @@ PetscErrorCode DMPlexTSComputeBoundary(DM dm, PetscReal time, Vec locX, Vec locX
   DMPlexTSComputeIFunctionFEM - Form the local residual `locF` from the local input `locX` using pointwise functions specified by the user
 
   Input Parameters:
-+ dm - The mesh
-. t - The time
-. locX  - Local solution
++ dm     - The mesh
+. time   - The time
+. locX   - Local solution
 . locX_t - Local solution time derivative, or `NULL`
-- user - The user context
+- user   - The user context
 
   Output Parameter:
-. locF  - Local output vector
+. locF - Local output vector
 
   Level: developer
 
-.seealso: [](chapter_ts), `DMPLEX`, `TS`, `DMPlexTSComputeIFunctionFEM()`, `DMPlexTSComputeRHSFunctionFEM()`
+.seealso: [](ch_ts), `DMPLEX`, `TS`, `DMPlexTSComputeRHSFunctionFEM()`
 @*/
 PetscErrorCode DMPlexTSComputeIFunctionFEM(DM dm, PetscReal time, Vec locX, Vec locX_t, Vec locF, void *user)
 {
@@ -172,20 +172,20 @@ PetscErrorCode DMPlexTSComputeIFunctionFEM(DM dm, PetscReal time, Vec locX, Vec 
   DMPlexTSComputeIJacobianFEM - Form the Jacobian `Jac` from the local input `locX` using pointwise functions specified by the user
 
   Input Parameters:
-+ dm - The mesh
-. t - The time
-. locX  - Local solution
-. locX_t - Local solution time derivative, or `NULL`
++ dm       - The mesh
+. time     - The time
+. locX     - Local solution
+. locX_t   - Local solution time derivative, or `NULL`
 . X_tShift - The multiplicative parameter for dF/du_t
-- user - The user context
+- user     - The user context
 
   Output Parameters:
-+ Jac - the Jacobian
++ Jac  - the Jacobian
 - JacP - an additional approximation for the Jacobian to be used to compute the preconditioner (often is `Jac`)
 
   Level: developer
 
-.seealso: [](chapter_ts), `TS`, `DM`, `DMPlexTSComputeIFunctionFEM()`, `DMPlexTSComputeRHSFunctionFEM()`
+.seealso: [](ch_ts), `TS`, `DM`, `DMPlexTSComputeIFunctionFEM()`, `DMPlexTSComputeRHSFunctionFEM()`
 @*/
 PetscErrorCode DMPlexTSComputeIJacobianFEM(DM dm, PetscReal time, Vec locX, Vec locX_t, PetscReal X_tShift, Mat Jac, Mat JacP, void *user)
 {
@@ -236,17 +236,17 @@ PetscErrorCode DMPlexTSComputeIJacobianFEM(DM dm, PetscReal time, Vec locX, Vec 
   DMPlexTSComputeRHSFunctionFEM - Form the local residual `locG` from the local input `locX` using pointwise functions specified by the user
 
   Input Parameters:
-+ dm - The mesh
-. t - The time
-. locX  - Local solution
++ dm   - The mesh
+. time - The time
+. locX - Local solution
 - user - The user context
 
   Output Parameter:
-. locG  - Local output vector
+. locG - Local output vector
 
   Level: developer
 
-.seealso: [](chapter_ts), `TS`, `DM`, `DMPlexTSComputeIFunctionFEM()`, `DMPlexTSComputeIJacobianFEM()`
+.seealso: [](ch_ts), `TS`, `DM`, `DMPlexTSComputeIFunctionFEM()`, `DMPlexTSComputeIJacobianFEM()`
 @*/
 PetscErrorCode DMPlexTSComputeRHSFunctionFEM(DM dm, PetscReal time, Vec locX, Vec locG, void *user)
 {
@@ -302,7 +302,7 @@ PetscErrorCode DMPlexTSComputeRHSFunctionFEM(DM dm, PetscReal time, Vec locX, Ve
 
   Level: developer
 
-.seealso: [](chapter_ts), `DM`, `DMTSCheckFromOptions()`, `DMTSCheckJacobian()`, `DNSNESCheckFromOptions()`, `DMSNESCheckDiscretization()`, `DMSNESCheckJacobian()`
+.seealso: [](ch_ts), `DM`, `DMTSCheckFromOptions()`, `DMTSCheckJacobian()`, `DNSNESCheckFromOptions()`, `DMSNESCheckDiscretization()`, `DMSNESCheckJacobian()`
 @*/
 PetscErrorCode DMTSCheckResidual(TS ts, DM dm, PetscReal t, Vec u, Vec u_t, PetscReal tol, PetscReal *residual)
 {
@@ -314,7 +314,7 @@ PetscErrorCode DMTSCheckResidual(TS ts, DM dm, PetscReal t, Vec u, Vec u_t, Pets
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscValidHeaderSpecific(dm, DM_CLASSID, 2);
   PetscValidHeaderSpecific(u, VEC_CLASSID, 4);
-  if (residual) PetscValidRealPointer(residual, 7);
+  if (residual) PetscAssertPointer(residual, 7);
   PetscCall(PetscObjectGetComm((PetscObject)ts, &comm));
   PetscCall(DMComputeExactSolution(dm, t, u, u_t));
   PetscCall(VecDuplicate(u, &r));
@@ -326,7 +326,7 @@ PetscErrorCode DMTSCheckResidual(TS ts, DM dm, PetscReal t, Vec u, Vec u_t, Pets
     *residual = res;
   } else {
     PetscCall(PetscPrintf(comm, "L_2 Residual: %g\n", (double)res));
-    PetscCall(VecChop(r, 1.0e-10));
+    PetscCall(VecFilter(r, 1.0e-10));
     PetscCall(PetscObjectCompose((PetscObject)r, "__Vec_bc_zero__", (PetscObject)dm));
     PetscCall(PetscObjectSetName((PetscObject)r, "Initial Residual"));
     PetscCall(PetscObjectSetOptionsPrefix((PetscObject)r, "res_"));
@@ -354,7 +354,7 @@ PetscErrorCode DMTSCheckResidual(TS ts, DM dm, PetscReal t, Vec u, Vec u_t, Pets
 
   Level: developer
 
-.seealso: [](chapter_ts), `DNTSCheckFromOptions()`, `DMTSCheckResidual()`, `DNSNESCheckFromOptions()`, `DMSNESCheckDiscretization()`, `DMSNESCheckResidual()`
+.seealso: [](ch_ts), `DNTSCheckFromOptions()`, `DMTSCheckResidual()`, `DNSNESCheckFromOptions()`, `DMSNESCheckDiscretization()`, `DMSNESCheckResidual()`
 @*/
 PetscErrorCode DMTSCheckJacobian(TS ts, DM dm, PetscReal t, Vec u, Vec u_t, PetscReal tol, PetscBool *isLinear, PetscReal *convRate)
 {
@@ -369,8 +369,8 @@ PetscErrorCode DMTSCheckJacobian(TS ts, DM dm, PetscReal t, Vec u, Vec u_t, Pets
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscValidHeaderSpecific(dm, DM_CLASSID, 2);
   PetscValidHeaderSpecific(u, VEC_CLASSID, 4);
-  if (isLinear) PetscValidBoolPointer(isLinear, 7);
-  if (convRate) PetscValidRealPointer(convRate, 8);
+  if (isLinear) PetscAssertPointer(isLinear, 7);
+  if (convRate) PetscAssertPointer(convRate, 8);
   PetscCall(PetscObjectGetComm((PetscObject)ts, &comm));
   PetscCall(DMComputeExactSolution(dm, t, u, u_t));
   /* Create and view matrices */
@@ -478,7 +478,7 @@ PetscErrorCode DMTSCheckJacobian(TS ts, DM dm, PetscReal t, Vec u, Vec u_t, Pets
   Note:
   The user must call `PetscDSSetExactSolution()` beforehand
 
-  Developer Note:
+  Developer Notes:
   What is the purpose of `u`, does it need to already have a solution or some other value in it?
 
 .seealso: `DMTS`

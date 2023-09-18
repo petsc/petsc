@@ -213,9 +213,7 @@ int main(int argc, char **args)
   PetscInt              *e_glo = NULL; /* Global indices of element nodes (in local element order) */
   PetscInt               nodes[3];
   PetscBool              ismatis;
-#if defined(PETSC_USE_LOG)
-  PetscLogStage stages[2];
-#endif
+  PetscLogStage          stages[2];
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &args, (char *)0, help));

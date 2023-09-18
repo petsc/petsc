@@ -112,9 +112,7 @@ Compilers
 
 .. important::
 
-   It's best to use MPI compilers as this will avoid the situation where MPI is compiled
-   with one set of compilers (like ``gcc``/``gfortran``) and the user specified incompatible
-   compilers to PETSc (perhaps ``icc``/``ifort``). This can be done by either specifying
+   It's best to use MPI compiler wrappers [#]_. This can be done by either specifying
    ``--with-cc=mpicc`` or ``--with-mpi-dir`` (and not ``--with-cc=gcc``)
 
    .. code-block:: console
@@ -127,7 +125,10 @@ Compilers
 
       $ ./configure --with-mpi-dir=/opt/mpich2-1.1
 
-* If a fortran compiler is not available or not needed - disable using:
+   See :any:`doc_config_mpi` for details on how to select specific MPI compiler wrappers or the
+   specific compiler used by the MPI compiler wrapper.
+
+* If a Fortran compiler is not available or not needed - disable using:
 
   .. code-block:: console
 
@@ -326,14 +327,14 @@ to use `ESSL`_, see https://www.pdc.kth.se/hpc-services.
 
 .. _doc_config_mpi:
 
-MPI Problems/I Don't Want MPI
-=============================
+MPI
+===
 
 The Message Passing Interface (MPI) provides the parallel functionality for PETSc.
 
-``configure`` will automatically look for MPI compilers ``mpicc``/``mpif90`` etc and use
-them if found in your PATH. One can use the following options to let ``configure``
-download/install MPI automatically:
+MPI might already be installed. IBM, Intel, NVIDIA, and Cray provide their own and Linux and macOS package
+managers also provide open source versions called MPICH and OpenMPI. If MPI is not already installed use
+the following options to let PETSc's ``configure`` download and install MPI.
 
 - For `MPICH`_:
 
@@ -347,46 +348,99 @@ download/install MPI automatically:
 
      $ ./configure --download-openmpi
 
-Using MPI Compilers
-^^^^^^^^^^^^^^^^^^^
-
-It's best to install PETSc with MPI compiler wrappers (often called ``mpicc``,
-``mpicxx``, ``mpif90``) - this way, the SAME compilers used to build MPI are used to
-build PETSc. See the section on :ref:`compilers <doc_config_compilers>` above for more
-details.
-
-- Vendor provided MPI might already be installed. IBM, Intel, NVIDIA, and Cray provide their own:
+- To not use MPI:
 
   .. code-block:: console
 
-     $ ./configure --with-cc=vendor_mpicc --with-fc=vendor_mpif90
+     $ ./configure --with-mpi=0
 
-- If using `MPICH`_ which is already installed (perhaps using myrinet/gm) then use
-  (without specifying ``--with-cc=gcc`` etc. so that ``configure`` picks up ``mpicc``
-  from mpi-dir):
+- To use an installed version of MPI
 
   .. code-block:: console
 
-     $  ./configure --with-mpi-dir=/absolute/path/to/mpich/install
+     $ ./configure --with-cc=mpicc --with-cxx=mpicxx --with-fc=mpif90
 
-Installing Without MPI
-^^^^^^^^^^^^^^^^^^^^^^
+- The Intel MPI library provides MPI compiler wrappers with compiler specific names.
 
-You can build (sequential) PETSc without MPI. This is useful for quickly installing PETSc:
+  GNU compilers: ``gcc``, ``g++``, ``gfortran``:
 
-.. code-block:: console
+  .. code-block:: console
 
-   $ ./configure --with-mpi=0
+     $ ./configure --with-cc=mpigcc --with-cxx=mpigxx --with-fc=mpif90
 
-However - if there is any MPI code in user application, then its best to install a full
-MPI implementation - even if the usage is currently limited to uniprocessor mode:
+  "Old" Intel compilers: ``icc``, ``icpc``, and ``ifort``: 
+
+  .. code-block:: console
+
+     $ ./configure --with-cc=mpiicc --with-cxx=mpiicpc --with-fc=mpiifort
+
+  they might not work with some Intel MPI library versions. In those cases, use
+
+  .. code-block:: console
+
+     $ export I_MPI_CC=icc && export I_MPI_CXX=icpc && export I_MPI_F90=ifort
+     $ ./configure --with-cc=mpicc --with-cxx=mpicxx --with-fc=mpif90
+
+- "New" oneAPI Intel compilers: ``icx``, ``icpx``, and ``ifx``:
+
+  .. code-block:: console
+
+     $ ./configure --with-cc=mpiicx --with-cxx=mpiicpx --with-fc=mpiifx
+
+  they might not work with some Intel MPI library versions. In those cases, use
+
+  .. code-block:: console
+
+     $ export I_MPI_CC=icx && export I_MPI_CXX=icpx && export I_MPI_F90=ifx
+     $ ./configure --with-cc=mpicc --with-cxx=mpicxx --with-fc=mpif90
+
+- On Cray systems, after loading the appropriate MPI module, the regular compilers ``cc``, ``CC``, and ``ftn``
+  automatically become MPI compiler wrappers.
+
+  .. code-block:: console
+
+     $ ./configure --with-cc=cc --with-cxx=CC --with-fc=ftn
+
+- Instead of providing the MPI compiler wrappers, one can provide the MPI installation directory, where the MPI compiler wrappers are available in the bin directory,
+  (without additionally specifying ``--with-cc`` etc.) using
+
+  .. code-block:: console
+
+     $  ./configure --with-mpi-dir=/absolute/path/to/mpi/install/directory
+
+- To control the compilers selected by ``mpicc``, ``mpicxx``, and ``mpif90`` one may use environmental
+  variables appropriate for the MPI libraries. For Intel MPI, MPICH, and OpenMPI they are
+
+  .. code-block:: console
+
+     $ export I_MPI_CC=c_compiler && export I_MPI_CXX=c++_compiler && export I_MPI_F90=fortran_compiler
+     $ export MPICH_CC=c_compiler && export MPICH_CXX=c++_compiler && export MPICH_FC=fortran_compiler
+     $ export OMPI_CC=c_compiler && export OMPI_CXX=c++_compiler && export OMPI_FC=fortran_compiler
+
+  Then, use
+
+  .. code-block:: console
+
+     $ ./configure --with-cc=mpicc --with-fc=mpif90 --with-cxx=mpicxx
+
+  We recommend avoiding these environmental variables unless absolutely necessary.
+  They are easy to forget or they may be set and then forgotten, thus resulting in unexpected behavior.
+
+  And avoid using the syntax ``--with-cc="mpicc -cc=icx"`` - this can break some builds (for example: external packages that use CMake)
+
+  .. note::
+
+     The Intel environmental variables ``I_MPI_CC``, ``I_MPI_CXX``, and ``I_MPI_F90`` also changing the
+     behavior of the compiler-specific MPI compiler wrappers ``mpigcc, ``mpigxx``, ``mpif90``, ``mpiicx``,
+     ``mpiicpx``, ``mpiifx``, ``mpiicc``, ``mpiicpc``, and ``mpiifort``. These variables may be automatically
+     set by certain modules. So one must be careful to ensure they are using the desired compilers.
 
 
 Installing With Open MPI With Shared MPI Libraries
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 `OpenMPI`_ defaults to building shared libraries for MPI. However, the binaries generated
-by MPI wrappers ``mpicc``/``mpif90`` etc. require ``$LD_LIBRARY_PATH`` to be set to the
+by MPI compiler wrappers ``mpicc``/``mpif90`` etc. require ``$LD_LIBRARY_PATH`` to be set to the
 location of these libraries.
 
 Due to this `OpenMPI`_ restriction one has to set ``$LD_LIBRARY_PATH`` correctly (per `OpenMPI`_ `installation instructions`_), before running PETSc ``configure``. If you do not set this environmental variables you will get messages when running ``configure`` such as:
@@ -416,7 +470,7 @@ For development on macOS we recommend installing **both** the Apple Xcode GUI de
 
    $ xcode-select --install
 
-The Apple compilers are ``clang`` and ``clang++`` [#]_. Apple also provides ``/usr/bin/gcc``, which is, confusingly, a wrapper to the ``clang`` compiler, not the GNU compiler.
+The Apple compilers are ``clang`` and ``clang++`` [#]_. Apple also provides ``/usr/bin/gcc``, which is, confusingly, a link to the ``clang`` compiler, not the GNU compiler.
 
 We also recommend installing the package manager `homebrew <https://brew.sh/>`__.  To install ``gfortran`` one can use
 
@@ -714,6 +768,7 @@ systems.  Also note the configuration examples in ``config/examples``.
 
 .. rubric:: Footnotes
 
+.. [#] All MPI implementations provide convenience scripts for compiling MPI codes that internally call regular compilers, they are commonly named ``mpicc``, ``mpicxx``, and ``mpif90``. We call these "MPI compiler wrappers".
 .. [#] The two packages provide slightly different (though largely overlapping) functionality which can only be fully used if both packages are installed.
 .. [#] Apple provides customized ``clang`` and ``clang++`` for its system. To use the unmodified LLVM project ``clang`` and ``clang++``
        install them with brew.

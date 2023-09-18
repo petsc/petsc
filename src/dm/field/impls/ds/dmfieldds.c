@@ -82,7 +82,7 @@ static PetscErrorCode DMFieldDSGetHeightDisc(DMField field, PetscInt height, Pet
 /*
   Since this is used for coordinates, we need to allow for the possibility that values come from multiple sections/Vecs, so that we can have DG version of the coordinates for periodicity. This reproduces DMPlexGetCellCoordinates_Internal().
 */
-PetscErrorCode DMFieldGetClosure_Internal(DMField field, PetscInt cell, PetscBool *isDG, PetscInt *Nc, const PetscScalar *array[], PetscScalar *values[])
+static PetscErrorCode DMFieldGetClosure_Internal(DMField field, PetscInt cell, PetscBool *isDG, PetscInt *Nc, const PetscScalar *array[], PetscScalar *values[])
 {
   DMField_DS        *dsfield = (DMField_DS *)field->data;
   DM                 fdm     = dsfield->dmDG;
@@ -123,7 +123,7 @@ cg:
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode DMFieldRestoreClosure_Internal(DMField field, PetscInt cell, PetscBool *isDG, PetscInt *Nc, const PetscScalar *array[], PetscScalar *values[])
+static PetscErrorCode DMFieldRestoreClosure_Internal(DMField field, PetscInt cell, PetscBool *isDG, PetscInt *Nc, const PetscScalar *array[], PetscScalar *values[])
 {
   DMField_DS  *dsfield = (DMField_DS *)field->data;
   DM           fdm;
@@ -781,10 +781,10 @@ static PetscErrorCode DMFieldComputeFaceData_DS(DMField field, IS pointIS, Petsc
       PetscCall(DMPlexGetOrientedCone(dm, supp[s], &cone, &ornt));
       for (c = 0; c < coneSize; ++c)
         if (cone[c] == point) break;
-      PetscCall(DMPlexRestoreOrientedCone(dm, supp[s], &cone, &ornt));
-      PetscCheck(c != coneSize, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid connectivity: point %" PetscInt_FMT " not found in cone of support point %" PetscInt_FMT, point, supp[s]);
       geom->face[p][s * 2 + 0] = c;
       geom->face[p][s * 2 + 1] = ornt[c];
+      PetscCall(DMPlexRestoreOrientedCone(dm, supp[s], &cone, &ornt));
+      PetscCheck(c != coneSize, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid connectivity: point %" PetscInt_FMT " not found in cone of support point %" PetscInt_FMT, point, supp[s]);
     }
     if (geom->face[p][1] < 0) {
       PetscInt Np = geom->numPoints, q, dE = geom->dimEmbed, d;

@@ -25,21 +25,6 @@ PETSC_INTERN PetscErrorCode MatFDColoringDegreeSequence_Minpack(PetscInt m, cons
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*
-    MatFDColoringMinimumNumberofColors_Private - For a given sparse
-        matrix computes the minimum number of colors needed.
-
-*/
-PetscErrorCode MatFDColoringMinimumNumberofColors_Private(PetscInt m, PetscInt *ia, PetscInt *minc)
-{
-  PetscInt i, c = 0;
-
-  PetscFunctionBegin;
-  for (i = 0; i < m; i++) c = PetscMax(c, ia[i + 1] - ia[i]);
-  *minc = c;
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
 static PetscErrorCode MatColoringApply_SL(MatColoring mc, ISColoring *iscoloring)
 {
   PetscInt        *list, *work, clique, *seq, *coloring, n;

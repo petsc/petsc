@@ -2,8 +2,7 @@
   Private data structure used for bqpip method
 */
 
-#ifndef __TAO_BQPIP_H
-#define __TAO_BQPIP_H
+#pragma once
 
 #include <petsc/private/taoimpl.h>
 
@@ -55,5 +54,3 @@ typedef struct {
   Vec       C;
   PetscReal d;
 } TAO_BQPIP;
-
-#endif /* if !defined(__TAO_BQPIP_H) */

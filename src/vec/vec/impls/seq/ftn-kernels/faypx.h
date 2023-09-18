@@ -1,6 +1,4 @@
-
-#ifndef __FAYPX_H
-#define __FAYPX_H
+#pragma once
 
 #include <petscsys.h>
 #if defined(PETSC_USE_FORTRAN_KERNEL_AYPX)
@@ -10,5 +8,4 @@
     #define fortranaypx_ fortranaypx
   #endif
 PETSC_EXTERN void fortranaypx_(const PetscInt *, const PetscScalar *, const PetscScalar *, PetscScalar *);
-#endif
 #endif

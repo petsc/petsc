@@ -1,6 +1,5 @@
 /* "Unintrusive" multi-physics DM */
-#ifndef PETSCDMCOMPOSITE_H
-#define PETSCDMCOMPOSITE_H
+#pragma once
 
 #include <petscdm.h>
 
@@ -26,5 +25,3 @@ PETSC_EXTERN PetscErrorCode DMCompositeRestoreLocalVectors(DM, ...);
 PETSC_EXTERN PetscErrorCode DMCompositeGetGlobalISs(DM, IS *[]);
 PETSC_EXTERN PetscErrorCode DMCompositeGetLocalISs(DM, IS **);
 PETSC_EXTERN PetscErrorCode DMCompositeGetISLocalToGlobalMappings(DM, ISLocalToGlobalMapping **);
-
-#endif

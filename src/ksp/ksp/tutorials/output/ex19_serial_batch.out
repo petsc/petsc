@@ -1,0 +1,51 @@
+  0 KSP Residual norm 1.131370849898e+01 
+[0] Linear solve converged due to CONVERGED_RTOL_NORMAL iterations 16, block 1 (max)
+  1 KSP Residual norm 4.287096329878e+00 
+[0] Linear solve converged due to CONVERGED_RTOL_NORMAL iterations 13, block 4 (max)
+  2 KSP Residual norm 3.548904346482e+00 
+[0] Linear solve converged due to CONVERGED_RTOL_NORMAL iterations 13, block 7 (max)
+  3 KSP Residual norm 2.165470292705e+00 
+[0] Linear solve converged due to CONVERGED_RTOL_NORMAL iterations 12, block 0 (max)
+  4 KSP Residual norm 1.863043400337e+00 
+[0] Linear solve converged due to CONVERGED_RTOL_NORMAL iterations 13, block 5 (max)
+  5 KSP Residual norm 1.416881947836e+00 
+[0] Linear solve converged due to CONVERGED_RTOL_NORMAL iterations 15, block 5 (max)
+  6 KSP Residual norm 1.392370059392e+00 
+[0] Linear solve converged due to CONVERGED_RTOL_NORMAL iterations 14, block 8 (max)
+  7 KSP Residual norm 1.187844234811e+00 
+[0] Linear solve converged due to CONVERGED_RTOL_NORMAL iterations 14, block 8 (max)
+  8 KSP Residual norm 1.256483540070e+00 
+[0] Linear solve converged due to CONVERGED_RTOL_NORMAL iterations 13, block 0 (max)
+  9 KSP Residual norm 1.055938797171e+00 
+[0] Linear solve converged due to CONVERGED_RTOL_NORMAL iterations 13, block 5 (max)
+ 10 KSP Residual norm 8.454730167420e-01 
+[0] Linear solve converged due to CONVERGED_RTOL_NORMAL iterations 13, block 7 (max)
+ 11 KSP Residual norm 5.622985652701e-01 
+[0] Linear solve converged due to CONVERGED_RTOL_NORMAL iterations 14, block 14 (max)
+ 12 KSP Residual norm 4.634369252025e-01 
+[0] Linear solve converged due to CONVERGED_RTOL_NORMAL iterations 13, block 5 (max)
+ 13 KSP Residual norm 4.075043735841e-01 
+[0] Linear solve converged due to CONVERGED_RTOL_NORMAL iterations 12, block 1 (max)
+ 14 KSP Residual norm 3.066584482595e-01 
+[0] Linear solve converged due to CONVERGED_RTOL_NORMAL iterations 13, block 11 (max)
+ 15 KSP Residual norm 1.702448309906e-01 
+[0] Linear solve converged due to CONVERGED_RTOL_NORMAL iterations 13, block 11 (max)
+ 16 KSP Residual norm 1.088277432705e-01 
+[0] Linear solve converged due to CONVERGED_RTOL_NORMAL iterations 13, block 2 (max)
+ 17 KSP Residual norm 7.743585279754e-02 
+[0] Linear solve converged due to CONVERGED_RTOL_NORMAL iterations 13, block 1 (max)
+ 18 KSP Residual norm 5.386593733414e-02 
+[0] Linear solve converged due to CONVERGED_RTOL_NORMAL iterations 14, block 2 (max)
+ 19 KSP Residual norm 2.494428469247e-02 
+[0] Linear solve converged due to CONVERGED_RTOL_NORMAL iterations 13, block 4 (max)
+ 20 KSP Residual norm 1.466900976905e-02 
+[0] Linear solve converged due to CONVERGED_RTOL_NORMAL iterations 13, block 1 (max)
+ 21 KSP Residual norm 6.819164991417e-03 
+[0] Linear solve converged due to CONVERGED_RTOL_NORMAL iterations 13, block 11 (max)
+ 22 KSP Residual norm 3.428727643435e-03 
+[0] Linear solve converged due to CONVERGED_RTOL_NORMAL iterations 13, block 8 (max)
+ 23 KSP Residual norm 1.543975585500e-03 
+[0] Linear solve converged due to CONVERGED_RTOL_NORMAL iterations 13, block 11 (max)
+ 24 KSP Residual norm 1.086763357489e-03 
+Linear solve converged due to CONVERGED_RTOL iterations 24
+Relative norm of error 0.000279251 iterations 24

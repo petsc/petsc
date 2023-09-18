@@ -1,8 +1,7 @@
 /*
    Defines the interface functions for the method of characteristics solvers
 */
-#ifndef PETSCCHARACTERISTICS_H
-#define PETSCCHARACTERISTICS_H
+#pragma once
 
 #include <petscvec.h>
 #include <petscdmdatypes.h>
@@ -10,6 +9,7 @@
 /* SUBMANSEC = Characteristic */
 
 PETSC_EXTERN PetscErrorCode CharacteristicInitializePackage(void);
+PETSC_EXTERN PetscErrorCode CharacteristicFinalizePackage(void);
 
 /*S
      Characteristic - Abstract PETSc object that manages method of characteristics solves
@@ -43,5 +43,3 @@ PETSC_EXTERN PetscErrorCode CharacteristicDestroy(Characteristic *);
 PETSC_EXTERN PetscFunctionList CharacteristicList;
 
 PETSC_EXTERN PetscErrorCode CharacteristicRegister(const char[], PetscErrorCode (*)(Characteristic));
-
-#endif /* PETSCCHARACTERISTICS_H */

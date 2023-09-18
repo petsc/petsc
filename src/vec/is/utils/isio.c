@@ -36,7 +36,7 @@ PetscErrorCode ISView_Binary(IS is, PetscViewer viewer)
      This should handle properly the cases where PetscInt is 32 or 64 and hsize_t is 32 or 64. These means properly casting with
    checks back and forth between the two types of variables.
 */
-PetscErrorCode ISLoad_HDF5(IS is, PetscViewer viewer)
+static PetscErrorCode ISLoad_HDF5(IS is, PetscViewer viewer)
 {
   hid_t       inttype; /* int type (H5T_NATIVE_INT or H5T_NATIVE_LLONG) */
   PetscInt   *ind;
@@ -56,7 +56,7 @@ PetscErrorCode ISLoad_HDF5(IS is, PetscViewer viewer)
 }
 #endif
 
-PetscErrorCode ISLoad_Binary(IS is, PetscViewer viewer)
+static PetscErrorCode ISLoad_Binary(IS is, PetscViewer viewer)
 {
   PetscBool   isgeneral, skipHeader;
   PetscInt    tr[2], rows, N, n, s, *idx;

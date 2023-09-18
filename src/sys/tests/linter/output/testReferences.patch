@@ -1,42 +1,49 @@
+@@ -8,5 +8,5 @@
+ extern void extractFunc(PetscViewer, void **);
+ 
+-PetscErrorCode testOutOfLineReference(PetscViewer v, PetscViewer v2)
++static PetscErrorCode testOutOfLineReference(PetscViewer v, PetscViewer v2)
+ {
+   /* linter should be able to connect all of these to v */
 @@ -19,5 +19,5 @@
  
    /* incorrect */
--  PetscValidPointer(foo, -1);
-+  PetscValidPointer(foo, 1);
-   PetscValidPointer(bar, -2);
-   PetscValidPointer(baz, -3);
+-  PetscAssertPointer(foo, -1);
++  PetscAssertPointer(foo, 1);
+   PetscAssertPointer(bar, -2);
+   PetscAssertPointer(baz, -3);
 @@ -20,5 +20,5 @@
    /* incorrect */
-   PetscValidPointer(foo, -1);
--  PetscValidPointer(bar, -2);
-+  PetscValidPointer(bar, 1);
-   PetscValidPointer(baz, -3);
-   PetscValidPointer((void *)v->data, -4);
+   PetscAssertPointer(foo, -1);
+-  PetscAssertPointer(bar, -2);
++  PetscAssertPointer(bar, 1);
+   PetscAssertPointer(baz, -3);
+   PetscAssertPointer((void *)v->data, -4);
 @@ -21,5 +21,5 @@
-   PetscValidPointer(foo, -1);
-   PetscValidPointer(bar, -2);
--  PetscValidPointer(baz, -3);
-+  PetscValidPointer(baz, 1);
-   PetscValidPointer((void *)v->data, -4);
-   PetscValidPointer(*blip, -5);
+   PetscAssertPointer(foo, -1);
+   PetscAssertPointer(bar, -2);
+-  PetscAssertPointer(baz, -3);
++  PetscAssertPointer(baz, 1);
+   PetscAssertPointer((void *)v->data, -4);
+   PetscAssertPointer(*blip, -5);
 @@ -22,5 +22,5 @@
-   PetscValidPointer(bar, -2);
-   PetscValidPointer(baz, -3);
--  PetscValidPointer((void *)v->data, -4);
-+  PetscValidPointer((void *)v->data, 1);
-   PetscValidPointer(*blip, -5);
-   PetscValidPointer(blop, -6);
+   PetscAssertPointer(bar, -2);
+   PetscAssertPointer(baz, -3);
+-  PetscAssertPointer((void *)v->data, -4);
++  PetscAssertPointer((void *)v->data, 1);
+   PetscAssertPointer(*blip, -5);
+   PetscAssertPointer(blop, -6);
 @@ -23,5 +23,5 @@
-   PetscValidPointer(baz, -3);
-   PetscValidPointer((void *)v->data, -4);
--  PetscValidPointer(*blip, -5);
-+  PetscValidPointer(*blip, 1);
-   PetscValidPointer(blop, -6);
+   PetscAssertPointer(baz, -3);
+   PetscAssertPointer((void *)v->data, -4);
+-  PetscAssertPointer(*blip, -5);
++  PetscAssertPointer(*blip, 1);
+   PetscAssertPointer(blop, -6);
  
 @@ -24,5 +24,5 @@
-   PetscValidPointer((void *)v->data, -4);
-   PetscValidPointer(*blip, -5);
--  PetscValidPointer(blop, -6);
-+  PetscValidPointer(blop, 1);
+   PetscAssertPointer((void *)v->data, -4);
+   PetscAssertPointer(*blip, -5);
+-  PetscAssertPointer(blop, -6);
++  PetscAssertPointer(blop, 1);
  
    /* correct */

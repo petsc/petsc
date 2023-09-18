@@ -4,7 +4,7 @@
      div(grad p) = f,  0 < x,y < 1
      with
        forcing function f = -cos(m*pi*x)*cos(n*pi*y),
-       Neuman boundary conditions
+       Neumann boundary conditions
         dp/dx = 0 for x = 0, x = 1.
         dp/dy = 0 for y = 0, y = 1.
 

@@ -47,19 +47,19 @@ cdef extern from "<petsc/private/garbagecollector.h>" nogil:
 
 # --------------------------------------------------------------------
 
-cdef inline PetscErrorCode PetscINCREF(PetscObject *obj) nogil:
+cdef inline PetscErrorCode PetscINCREF(PetscObject *obj) noexcept nogil:
     if obj    == NULL: return PETSC_SUCCESS
     if obj[0] == NULL: return PETSC_SUCCESS
     return PetscObjectReference(obj[0])
 
-cdef inline PetscErrorCode PetscCLEAR(PetscObject* obj) nogil:
+cdef inline PetscErrorCode PetscCLEAR(PetscObject* obj) noexcept nogil:
     if obj    == NULL: return PETSC_SUCCESS
     if obj[0] == NULL: return PETSC_SUCCESS
     cdef PetscObject tmp
     tmp = obj[0]; obj[0] = NULL
     return PetscObjectDestroy(&tmp)
 
-cdef inline PetscErrorCode PetscDEALLOC(PetscObject* obj) nogil:
+cdef inline PetscErrorCode PetscDEALLOC(PetscObject* obj) noexcept nogil:
     if obj    == NULL: return PETSC_SUCCESS
     if obj[0] == NULL: return PETSC_SUCCESS
     cdef PetscObject tmp
@@ -68,7 +68,7 @@ cdef inline PetscErrorCode PetscDEALLOC(PetscObject* obj) nogil:
     if     (<int>PetscFinalizeCalled):   return PETSC_SUCCESS
     return PetscObjectDelayedDestroy(&tmp)
 
-cdef inline PetscErrorCode PetscINCSTATE(PetscObject *obj) nogil:
+cdef inline PetscErrorCode PetscINCSTATE(PetscObject *obj) noexcept nogil:
     if obj    == NULL: return PETSC_SUCCESS
     if obj[0] == NULL: return PETSC_SUCCESS
     return PetscObjectStateIncrease(obj[0])
@@ -89,12 +89,12 @@ cdef extern from * nogil:
         const char *prefix
         PetscInt refct
         void *python_context
-        PetscErrorCode (*python_destroy)(void*)
+        PetscErrorCode (*python_destroy)(void*) noexcept nogil
 
-cdef inline void Py_DecRef(PyObject *ob) with gil:
+cdef inline void Py_DecRef(PyObject *ob) noexcept with gil:
     _Py_DecRef(ob)
 
-cdef PetscErrorCode PetscDelPyDict(void* ptr) nogil:
+cdef PetscErrorCode PetscDelPyDict(void* ptr) noexcept nogil:
     if ptr != NULL and Py_IsInitialized():
         Py_DecRef(<PyObject*>ptr)
     return PETSC_SUCCESS
@@ -108,7 +108,7 @@ cdef object PetscGetPyDict(PetscObject obj, bint create):
         return <object>obj.python_context
     return None
 
-cdef object PetscGetPyObj(PetscObject o, char name[]):
+cdef inline object PetscGetPyObj(PetscObject o, char name[]):
     cdef object dct = PetscGetPyDict(o, False)
     if dct is None: return None
     cdef object key = bytes2str(name)
@@ -119,7 +119,7 @@ cdef object PetscGetPyObj(PetscObject o, char name[]):
     if v != NULL: return <object>v
     return None
 
-cdef object PetscSetPyObj(PetscObject o, char name[], object p):
+cdef inline object PetscSetPyObj(PetscObject o, char name[], object p):
     cdef object dct
     if p is not None:
         dct = PetscGetPyDict(o, True)

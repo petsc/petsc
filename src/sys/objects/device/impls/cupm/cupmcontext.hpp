@@ -1,5 +1,4 @@
-#ifndef PETSCDEVICECONTEXTCUPM_HPP
-#define PETSCDEVICECONTEXTCUPM_HPP
+#pragma once
 
 #include <petsc/private/deviceimpl.h>
 #include <petsc/private/cupmsolverinterface.hpp>
@@ -11,8 +10,6 @@
 #include "cupmallocator.hpp"
 #include "cupmstream.hpp"
 #include "cupmevent.hpp"
-
-#if defined(__cplusplus)
 
 namespace Petsc
 {
@@ -49,24 +46,24 @@ public:
   // header, but since we are using the power of templates it must be declared part of
   // this class to have easy access the same typedefs. Technically one can make a
   // templated struct outside the class but it's more code for the same result.
-  struct PetscDeviceContext_IMPLS : memory::PoolAllocated<PetscDeviceContext_IMPLS> {
+  struct PetscDeviceContext_IMPLS {
     stream_type stream{};
     cupmEvent_t event{};
     cupmEvent_t begin{}; // timer-only
     cupmEvent_t end{};   // timer-only
-  #if PetscDefined(USE_DEBUG)
+#if PetscDefined(USE_DEBUG)
     PetscBool timerInUse{};
-  #endif
+#endif
     cupmBlasHandle_t   blas{};
     cupmSolverHandle_t solver{};
 
     constexpr PetscDeviceContext_IMPLS() noexcept = default;
 
-    PETSC_NODISCARD cupmStream_t get(stream_tag) const noexcept { return this->stream.get_stream(); }
+    PETSC_NODISCARD const cupmStream_t &get(stream_tag) const noexcept { return this->stream.get_stream(); }
 
-    PETSC_NODISCARD cupmBlasHandle_t get(blas_tag) const noexcept { return this->blas; }
+    PETSC_NODISCARD const cupmBlasHandle_t &get(blas_tag) const noexcept { return this->blas; }
 
-    PETSC_NODISCARD cupmSolverHandle_t get(solver_tag) const noexcept { return this->solver; }
+    PETSC_NODISCARD const cupmSolverHandle_t &get(solver_tag) const noexcept { return this->solver; }
   };
 
 private:
@@ -94,9 +91,7 @@ private:
 
     PetscFunctionBegin;
     if (!handle) {
-      PetscLogEvent event;
-
-      PetscCall(PetscLogPauseCurrentEvent_Internal(&event));
+      PetscCall(PetscLogEventsPause());
       PetscCall(PetscLogEventBegin(CUPMBLAS_HANDLE_CREATE(), 0, 0, 0, 0));
       for (auto i = 0; i < 3; ++i) {
         const auto cberr = cupmBlasCreate(handle.ptr_to());
@@ -109,7 +104,7 @@ private:
         PetscCheck(cberr == CUPMBLAS_STATUS_SUCCESS, PETSC_COMM_SELF, PETSC_ERR_GPU_RESOURCE, "Unable to initialize %s", cupmBlasName());
       }
       PetscCall(PetscLogEventEnd(CUPMBLAS_HANDLE_CREATE(), 0, 0, 0, 0));
-      PetscCall(PetscLogEventResume_Internal(event));
+      PetscCall(PetscLogEventsResume());
     }
     PetscCallCUPMBLAS(cupmBlasSetStream(handle, dci->stream.get_stream()));
     dci->blas = handle;
@@ -123,9 +118,7 @@ private:
 
     PetscFunctionBegin;
     if (!handle) {
-      PetscLogEvent event;
-
-      PetscCall(PetscLogPauseCurrentEvent_Internal(&event));
+      PetscCall(PetscLogEventsPause());
       PetscCall(PetscLogEventBegin(CUPMSOLVER_HANDLE_CREATE(), 0, 0, 0, 0));
       for (auto i = 0; i < 3; ++i) {
         const auto cerr = cupmSolverCreate(&handle);
@@ -138,7 +131,7 @@ private:
         PetscCheck(cerr == CUPMSOLVER_STATUS_SUCCESS, PETSC_COMM_SELF, PETSC_ERR_GPU_RESOURCE, "Unable to initialize %s", cupmSolverName());
       }
       PetscCall(PetscLogEventEnd(CUPMSOLVER_HANDLE_CREATE(), 0, 0, 0, 0));
-      PetscCall(PetscLogEventResume_Internal(event));
+      PetscCall(PetscLogEventsResume());
     }
     PetscCallCUPMSOLVER(cupmSolverSetStream(handle, dci->stream.get_stream()));
     dci->solver = handle;
@@ -169,7 +162,6 @@ private:
         handle = nullptr;
       }
     }
-
     for (auto &&handle : solverhandles_) {
       if (handle) {
         PetscCallCUPMSOLVER(cupmSolverDestroy(handle));
@@ -205,6 +197,8 @@ public:
   static PetscErrorCode synchronize(PetscDeviceContext) noexcept;
   template <typename Handle_t>
   static PetscErrorCode getHandle(PetscDeviceContext, void *) noexcept;
+  template <typename Handle_t>
+  static PetscErrorCode getHandlePtr(PetscDeviceContext, void **) noexcept;
   static PetscErrorCode beginTimer(PetscDeviceContext) noexcept;
   static PetscErrorCode endTimer(PetscDeviceContext, PetscLogDouble *) noexcept;
   static PetscErrorCode memAlloc(PetscDeviceContext, PetscBool, PetscMemType, std::size_t, std::size_t, void **) noexcept;
@@ -228,7 +222,7 @@ public:
     PetscDesignatedInitializer(synchronize, synchronize),
     PetscDesignatedInitializer(getblashandle, getHandle<blas_tag>),
     PetscDesignatedInitializer(getsolverhandle, getHandle<solver_tag>),
-    PetscDesignatedInitializer(getstreamhandle, getHandle<stream_tag>),
+    PetscDesignatedInitializer(getstreamhandle, getHandlePtr<stream_tag>),
     PetscDesignatedInitializer(begintimer, beginTimer),
     PetscDesignatedInitializer(endtimer, endTimer),
     PetscDesignatedInitializer(memalloc, memAlloc),
@@ -299,9 +293,9 @@ inline PetscErrorCode DeviceContext<T>::setUp(PetscDeviceContext dctx) noexcept
   PetscCall(check_current_device_(dctx));
   PetscCall(dci->stream.change_type(dctx->streamType));
   if (!event) PetscCall(cupm_fast_event_pool<T>().allocate(&event));
-  #if PetscDefined(USE_DEBUG)
+#if PetscDefined(USE_DEBUG)
   dci->timerInUse = PETSC_FALSE;
-  #endif
+#endif
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -362,16 +356,28 @@ inline PetscErrorCode DeviceContext<T>::getHandle(PetscDeviceContext dctx, void 
 }
 
 template <DeviceType T>
+template <typename handle_t>
+inline PetscErrorCode DeviceContext<T>::getHandlePtr(PetscDeviceContext dctx, void **handle) noexcept
+{
+  using handle_type = typename handle_t::type;
+
+  PetscFunctionBegin;
+  PetscCall(initialize_handle_(handle_t{}, dctx));
+  *reinterpret_cast<handle_type **>(handle) = const_cast<handle_type *>(std::addressof(impls_cast_(dctx)->get(handle_t{})));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+template <DeviceType T>
 inline PetscErrorCode DeviceContext<T>::beginTimer(PetscDeviceContext dctx) noexcept
 {
   const auto dci = impls_cast_(dctx);
 
   PetscFunctionBegin;
   PetscCall(check_current_device_(dctx));
-  #if PetscDefined(USE_DEBUG)
+#if PetscDefined(USE_DEBUG)
   PetscCheck(!dci->timerInUse, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Forgot to call PetscLogGpuTimeEnd()?");
   dci->timerInUse = PETSC_TRUE;
-  #endif
+#endif
   if (!dci->begin) {
     PetscAssert(!dci->end, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Don't have a 'begin' event, but somehow have an end event");
     PetscCallCUPM(cupmEventCreate(&dci->begin));
@@ -390,10 +396,10 @@ inline PetscErrorCode DeviceContext<T>::endTimer(PetscDeviceContext dctx, PetscL
 
   PetscFunctionBegin;
   PetscCall(check_current_device_(dctx));
-  #if PetscDefined(USE_DEBUG)
+#if PetscDefined(USE_DEBUG)
   PetscCheck(dci->timerInUse, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Forgot to call PetscLogGpuTimeBegin()?");
   dci->timerInUse = PETSC_FALSE;
-  #endif
+#endif
   PetscCallCUPM(cupmEventRecord(end, dci->stream.get_stream()));
   PetscCallCUPM(cupmEventSynchronize(end));
   PetscCallCUPM(cupmEventElapsedTime(&gtime, dci->begin, end));
@@ -488,7 +494,7 @@ template <DeviceType T>
 inline PetscErrorCode DeviceContext<T>::createEvent(PetscDeviceContext, PetscEvent event) noexcept
 {
   PetscFunctionBegin;
-  PetscCallCXX(event->data = new event_type());
+  PetscCallCXX(event->data = new event_type{});
   event->destroy = [](PetscEvent event) {
     PetscFunctionBegin;
     delete event_cast_(event);
@@ -533,15 +539,11 @@ constexpr _DeviceContextOps DeviceContext<T>::ops;
 using CUPMContextCuda = impl::DeviceContext<DeviceType::CUDA>;
 using CUPMContextHip  = impl::DeviceContext<DeviceType::HIP>;
 
-  // shorthand for what is an EXTREMELY long name
-  #define PetscDeviceContext_(IMPLS) ::Petsc::device::cupm::impl::DeviceContext<::Petsc::device::cupm::DeviceType::IMPLS>::PetscDeviceContext_IMPLS
+// shorthand for what is an EXTREMELY long name
+#define PetscDeviceContext_(IMPLS) ::Petsc::device::cupm::impl::DeviceContext<::Petsc::device::cupm::DeviceType::IMPLS>::PetscDeviceContext_IMPLS
 
 } // namespace cupm
 
 } // namespace device
 
 } // namespace Petsc
-
-#endif // __cplusplus
-
-#endif // PETSCDEVICECONTEXTCUDA_HPP

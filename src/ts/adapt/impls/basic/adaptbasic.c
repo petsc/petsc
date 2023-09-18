@@ -74,7 +74,7 @@ static PetscErrorCode TSAdaptChoose_Basic(TSAdapt adapt, TS ts, PetscReal h, Pet
 
    Level: intermediate
 
-.seealso: [](chapter_ts), `TS`, `TSAdapt`, `TSGetAdapt()`, `TSAdaptType`
+.seealso: [](ch_ts), `TS`, `TSAdapt`, `TSGetAdapt()`, `TSAdaptType`
 M*/
 PETSC_EXTERN PetscErrorCode TSAdaptCreate_Basic(TSAdapt adapt)
 {

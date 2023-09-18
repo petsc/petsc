@@ -10,7 +10,7 @@ class Configure(config.package.Package):
     self.requiresversion   = 1
     self.functions         = ['cublasInit','cufftDestroy']
     self.includes          = ['cublas.h','cufft.h','cusparse.h','cusolverDn.h','curand.h','thrust/version.h']
-    self.basicliblist      = [['libcudart.a','libnvToolsExt.a'],['libcudart.a','libnvToolsExt.a','-lstdc++'],
+    self.basicliblist      = [['libcudart.a','libnvToolsExt.a'],
                               ['cudart.lib','nvToolsExt.lib']]
     self.mathliblist       = [['libcufft.a', 'libcublas.a','libcusparse.a','libcusolver.a','libcurand.a'],
                               ['cufft.lib','cublas.lib','cusparse.lib','cusolver.lib','curand.lib']]
@@ -310,7 +310,6 @@ class Configure(config.package.Package):
     if not hasattr(self, 'cudaDir'):
       raise RuntimeError('CUDA directory not found!')
 
-
   def configureLibrary(self):
     import re
 
@@ -458,4 +457,53 @@ class Configure(config.package.Package):
     else:
       self.addMakeMacro('CUDA_HOSTFLAGS','$(CXXCPPFLAGS) $(CUDA_CXXFLAGS) $(CUDA_DEPFLAGS) $(PETSC_CC_INCLUDES)')
       self.addMakeMacro('CUDA_PETSC_GENDEPS','true')
+    return
+
+  def checkKnownBadCUDAHostCompilerCombo(self):
+    """
+    Check for nvcc + host compiler combinations that are unable to compile or have some other known
+    defect and prints a warning to the user. Has no other effect.
+
+    For example:
+    1. CUDA 11.5 + gcc 11.3.0 produces
+
+    /usr/include/c++/11/bits/std_function.h:435:145: error: parameter packs not expanded with '...':
+  435 |         function(_Functor&& __f)
+      |         ^
+
+    """
+    if not self.argDB['with-cuda']:
+      return
+
+    assert self.version_tuple
+    assert isinstance(self.version_tuple, tuple)
+    assert isinstance(self.version_tuple[0], int)
+    if self.version_tuple[:2] == (11, 5):
+      # CUDA 11.5.X
+      cxx = self.setCompilers.CXX
+      if self.setCompilers.isGNU(cxx, self.log):
+        output, _, _      = self.executeShellCommand(cxx + ' -dumpfullversion', log=self.log)
+        gcc_version       = output.strip().split('.')
+        gcc_version_tuple = tuple(map(int, gcc_version))
+        if gcc_version_tuple[:3] == (11, 3, 0):
+          mess = """
+          You appear to be using CUDA {} and GCC {}. If you get compile errors along the lines of:
+
+          /usr/include/c++/11/bits/std_function.h:435:145: error: parameter packs not expanded with '...':
+          435 |         function(_Functor&& __f)
+
+          This is a bug that crops up with exactly the combination of CUDA 11.5.X + GCC 11.3.0.
+          It is a bug in nvcc itself, and the file (C++ standard header <function>) originates from
+          within CUDA headers. There is no way to work around it in software.
+
+          Your only options are:
+          - Use a newer nvcc version
+          - Use an older gcc version
+          """.format('.'.join(map(str, self.version_tuple)), gcc_version)
+          self.logPrintWarning(mess)
+    return
+
+  def configure(self, *args, **kwargs):
+    super().configure(*args, **kwargs)
+    self.executeTest(self.checkKnownBadCUDAHostCompilerCombo)
     return

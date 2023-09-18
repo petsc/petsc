@@ -170,6 +170,8 @@ builtin and then its argument prototype would still apply. */
     self.executeTest(self.checkFreeReturnType)
     self.executeTest(self.checkVariableArgumentLists)
     self.executeTest(self.checkClassify, set(self.functions))
+    if 'HAVE_GETPAGESIZE' in self.defines and self.compilers.setCompilers.isMINGW(self.framework.getCompiler(), self.log):
+      self.delDefine('HAVE_GETPAGESIZE')
     self.executeTest(self.checkMmap)
     self.executeTest(self.checkMkstemp)
     self.executeTest(self.checkTmpnam_s)

@@ -304,9 +304,9 @@ PetscErrorCode DMSwarmDataBucketGetSizes(DMSwarmDataBucket db, PetscInt *L, Pets
 PetscErrorCode DMSwarmDataBucketGetGlobalSizes(MPI_Comm comm, DMSwarmDataBucket db, PetscInt *L, PetscInt *buffer, PetscInt *allocated)
 {
   PetscFunctionBegin;
-  if (L) PetscCallMPI(MPI_Allreduce(&db->L, L, 1, MPIU_INT, MPI_SUM, comm));
-  if (buffer) PetscCallMPI(MPI_Allreduce(&db->buffer, buffer, 1, MPIU_INT, MPI_SUM, comm));
-  if (allocated) PetscCallMPI(MPI_Allreduce(&db->allocated, allocated, 1, MPIU_INT, MPI_SUM, comm));
+  if (L) PetscCall(MPIU_Allreduce(&db->L, L, 1, MPIU_INT, MPI_SUM, comm));
+  if (buffer) PetscCall(MPIU_Allreduce(&db->buffer, buffer, 1, MPIU_INT, MPI_SUM, comm));
+  if (allocated) PetscCall(MPIU_Allreduce(&db->allocated, allocated, 1, MPIU_INT, MPI_SUM, comm));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -544,7 +544,7 @@ PetscErrorCode DMSwarmDataBucketRemovePoint(DMSwarmDataBucket db)
 }
 
 /*  Should be redone to user PetscViewer */
-PetscErrorCode DMSwarmDataBucketView_stdout(MPI_Comm comm, DMSwarmDataBucket db)
+static PetscErrorCode DMSwarmDataBucketView_stdout(MPI_Comm comm, DMSwarmDataBucket db)
 {
   PetscInt f;
   double   memory_usage_total, memory_usage_total_local = 0.0;
@@ -577,7 +577,7 @@ PetscErrorCode DMSwarmDataBucketView_stdout(MPI_Comm comm, DMSwarmDataBucket db)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode DMSwarmDataBucketView_Seq(MPI_Comm comm, DMSwarmDataBucket db, const char filename[], DMSwarmDataBucketViewType type)
+static PetscErrorCode DMSwarmDataBucketView_Seq(MPI_Comm comm, DMSwarmDataBucket db, const char filename[], DMSwarmDataBucketViewType type)
 {
   PetscFunctionBegin;
   switch (type) {
@@ -596,7 +596,7 @@ PetscErrorCode DMSwarmDataBucketView_Seq(MPI_Comm comm, DMSwarmDataBucket db, co
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode DMSwarmDataBucketView_MPI(MPI_Comm comm, DMSwarmDataBucket db, const char filename[], DMSwarmDataBucketViewType type)
+static PetscErrorCode DMSwarmDataBucketView_MPI(MPI_Comm comm, DMSwarmDataBucket db, const char filename[], DMSwarmDataBucketViewType type)
 {
   PetscFunctionBegin;
   switch (type) {

@@ -6,13 +6,13 @@
   Collective
 
   Input Parameters:
-+  da - the `DMDA`
-.  lower - a matstencil with i, j and k corresponding to the lower corner of the patch
-.  upper - a matstencil with i, j and k corresponding to the upper corner of the patch
--  offproc - indicate whether the returned IS will contain off process indices
++ da      - the `DMDA`
+. lower   - a matstencil with i, j and k corresponding to the lower corner of the patch
+. upper   - a matstencil with i, j and k corresponding to the upper corner of the patch
+- offproc - indicate whether the returned IS will contain off process indices
 
   Output Parameter:
-.  is - the `IS` corresponding to the patch
+. is - the `IS` corresponding to the patch
 
   Level: developer
 
@@ -258,7 +258,7 @@ createis:
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode DMDASubDomainDA_Private(DM dm, PetscInt *nlocal, DM **sdm)
+static PetscErrorCode DMDASubDomainDA_Private(DM dm, PetscInt *nlocal, DM **sdm)
 {
   DM           *da;
   PetscInt      dim, size, i, j, k, idx;
@@ -496,7 +496,7 @@ PetscErrorCode DMCreateDomainDecompositionScatters_DA(DM dm, PetscInt nsubdms, D
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode DMDASubDomainIS_Private(DM dm, PetscInt n, DM *subdm, IS **iis, IS **ois)
+static PetscErrorCode DMDASubDomainIS_Private(DM dm, PetscInt n, DM *subdm, IS **iis, IS **ois)
 {
   PetscInt      i;
   DMDALocalInfo info, subinfo;
@@ -537,8 +537,8 @@ PetscErrorCode DMDASubDomainIS_Private(DM dm, PetscInt n, DM *subdm, IS **iis, I
 
 PetscErrorCode DMCreateDomainDecomposition_DA(DM dm, PetscInt *len, char ***names, IS **iis, IS **ois, DM **subdm)
 {
-  DM      *sdm;
-  PetscInt n, i;
+  DM      *sdm = NULL;
+  PetscInt n   = 0, i;
 
   PetscFunctionBegin;
   PetscCall(DMDASubDomainDA_Private(dm, &n, &sdm));

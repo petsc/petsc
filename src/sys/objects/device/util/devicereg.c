@@ -103,7 +103,7 @@ static PetscErrorCode PetscDeviceRegisterEvent_Private(const char name[], PetscC
   PetscDeviceFinalizePackage - This function cleans up all components of the `PetscDevice`
   package. It is called from `PetscFinalize()`.
 
-  Developer Note:
+  Developer Notes:
   This function is automatically registered to be called during `PetscFinalize()` by
   `PetscDeviceInitializePackage()` so there should be no need to call it yourself.
 

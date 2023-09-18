@@ -88,6 +88,7 @@ static PetscErrorCode PCMGGDSWSetUp(PC pc, PetscInt l, DM dm, KSP smooth, PetscI
   sG[0]    = ipcis->is_B_global;
 
   PetscCall(KSPCreate(PetscObjectComm((PetscObject)ipcis->A_II), &sksp[0]));
+  PetscCall(KSPSetNestLevel(sksp[0], pc->kspnestlevel));
   PetscCall(KSPSetOperators(sksp[0], ipcis->A_II, ipcis->pA_II));
   PetscCall(KSPSetOptionsPrefix(sksp[0], prefix));
   PetscCall(KSPAppendOptionsPrefix(sksp[0], "gdsw_"));

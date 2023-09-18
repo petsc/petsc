@@ -19,7 +19,7 @@ testex5f: ex5f.PETSc
           echo "Possible error running Fortran example src/snes/tutorials/ex5f with 1 MPI process"; \
           echo "See https://petsc.org/release/faq/";\
           cat ex5f_1.tmp; \
-          touch ${PETSC_DIR}/check_error;\
+          touch ../../../check_error;\
         fi;  \
         ${RM} -f ex5f_1.tmp ;\
         ${MAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} ex5f.rm;
@@ -31,7 +31,7 @@ testex19: ex19.PETSc
           echo "Possible error running C/C++ src/snes/tutorials/ex19 with 1 MPI process"; \
           echo "See https://petsc.org/release/faq/";\
           cat ex19_1.tmp;\
-          touch ${PETSC_DIR}/check_error;\
+          touch ../../../check_error;\
         fi;\
         ${RM} -f ex19_1.tmp;
 testex19_mpi:
@@ -42,7 +42,7 @@ testex19_mpi:
           echo "Possible error running C/C++ src/snes/tutorials/ex19 with 2 MPI processes"; \
           echo "See https://petsc.org/release/faq/";\
           cat ex19_1.tmp; \
-          touch ${PETSC_DIR}/check_error;\
+          touch ../../../check_error;\
         fi;\
         ${RM} -f ex19_1.tmp;
 #use unpreconditioned norm because HYPRE device installations use different AMG parameters
@@ -52,7 +52,7 @@ runex19_hypre:
             echo "C/C++ example src/snes/tutorials/ex19 run successfully with hypre"; \
           else  \
             printf "${PWD}\nPossible problem with ex19 running with hypre, diffs above\n=========================================\n";\
-            touch ${PETSC_DIR}/check_error;\
+            touch ../../../check_error;\
           fi; \
           ${RM} -f ex19_1.tmp
 runex19_hypre_cuda:
@@ -61,7 +61,7 @@ runex19_hypre_cuda:
            echo "C/C++ example src/snes/tutorials/ex19 run successfully with hypre/cuda"; \
            else  \
              printf "${PWD}\nPossible problem with ex19 running with hypre/cuda, diffs above\n=========================================\n"; \
-             touch ${PETSC_DIR}/check_error;\
+             touch ../../../check_error;\
              fi; \
 	   ${RM} -f ex19_1.tmp
 runex19_hypre_hip:
@@ -70,7 +70,7 @@ runex19_hypre_hip:
            echo "C/C++ example src/snes/tutorials/ex19 run successfully with hypre/hip"; \
            else \
              printf "${PWD}\nPossible problem with ex19 running with hypre/hip, diffs above\n=========================================\n";\
-             touch ${PETSC_DIR}/check_error;\
+             touch ../../../check_error;\
            fi; \
 	   ${RM} -f ex19_1.tmp
 runex19_cuda:
@@ -79,7 +79,7 @@ runex19_cuda:
            echo "C/C++ example src/snes/tutorials/ex19 run successfully with cuda"; \
            else  \
              printf "${PWD}\nPossible problem with ex19 running with cuda, diffs above\n=========================================\n"; \
-             touch ${PETSC_DIR}/check_error;\
+             touch ../../../check_error;\
            fi; \
 	   ${RM} -f ex19_1.tmp
 runex19_ml:
@@ -88,7 +88,7 @@ runex19_ml:
            echo "C/C++ example src/snes/tutorials/ex19 run successfully with ml"; \
            else \
              printf "${PWD}\nPossible problem with ex19 running with ml, diffs above\n=========================================\n"; \
-             touch ${PETSC_DIR}/check_error;\
+             touch ../../../check_error;\
            fi; \
            ${RM} -f ex19_1.tmp
 runex19_fieldsplit_mumps:
@@ -97,7 +97,7 @@ runex19_fieldsplit_mumps:
            echo "C/C++ example src/snes/tutorials/ex19 run successfully with mumps"; \
            else  \
              printf "${PWD}\nPossible problem with ex19 running with mumps, diffs above\n=========================================\n";\
-             touch ${PETSC_DIR}/check_error;\
+             touch ../../../check_error;\
            fi; \
            ${RM} -f ex19_6.tmp
 runex19_superlu_dist:
@@ -106,7 +106,7 @@ runex19_superlu_dist:
            echo "C/C++ example src/snes/tutorials/ex19 run successfully with superlu_dist"; \
            else  \
              printf "${PWD}\nPossible problem with ex19 running with superlu_dist, diffs above\n=========================================\n"; \
-             touch ${PETSC_DIR}/check_error;\
+             touch ../../../check_error;\
            fi; \
 	   ${RM} -f ex19.tmp
 runex19_suitesparse:
@@ -115,7 +115,7 @@ runex19_suitesparse:
            echo "C/C++ example src/snes/tutorials/ex19 run successfully with suitesparse"; \
            else \
              printf "${PWD}\nPossible problem with ex19 running with suitesparse, diffs above\n=========================================\n"; \
-             touch ${PETSC_DIR}/check_error;\
+             touch ../../../check_error;\
            fi; \
 	   ${RM} -f ex19_1.tmp
 runex3k_kokkos: ex3k.PETSc
@@ -124,7 +124,7 @@ runex3k_kokkos: ex3k.PETSc
           echo "C/C++ example src/snes/tutorials/ex3k run successfully with kokkos-kernels"; \
         else \
           printf "${PWD}\nPossible problem with ex3k running with kokkos-kernels, diffs above\n=========================================\n"; \
-          touch ${PETSC_DIR}/check_error;\
+          touch ../../../check_error;\
         fi; \
 	${RM} -f ex3k_1.tmp
 

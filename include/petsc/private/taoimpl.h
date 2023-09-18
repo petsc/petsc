@@ -1,5 +1,4 @@
-#ifndef __TAO_IMPL_H
-#define __TAO_IMPL_H
+#pragma once
 
 #include <petsctao.h>
 #include <petsctaolinesearch.h>
@@ -214,12 +213,3 @@ static inline PetscErrorCode TaoLogConvergenceHistory(Tao tao, PetscReal obj, Pe
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-
-PETSC_INTERN PetscErrorCode TaoVecGetSubVec(Vec, IS, TaoSubsetType, PetscReal, Vec *);
-PETSC_INTERN PetscErrorCode TaoMatGetSubMat(Mat, IS, Vec, TaoSubsetType, Mat *);
-PETSC_INTERN PetscErrorCode TaoGradientNorm(Tao, Vec, NormType, PetscReal *);
-PETSC_INTERN PetscErrorCode TaoEstimateActiveBounds(Vec, Vec, Vec, Vec, Vec, Vec, PetscReal, PetscReal *, IS *, IS *, IS *, IS *, IS *);
-PETSC_INTERN PetscErrorCode TaoBoundStep(Vec, Vec, Vec, IS, IS, IS, PetscReal, Vec);
-PETSC_INTERN PetscErrorCode TaoBoundSolution(Vec, Vec, Vec, PetscReal, PetscInt *, Vec);
-
-#endif

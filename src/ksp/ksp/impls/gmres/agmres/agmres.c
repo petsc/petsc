@@ -3,14 +3,9 @@
 
 #include <../src/ksp/ksp/impls/gmres/agmres/agmresimpl.h>
 
-#define AGMRES_DEFAULT_MAXK     30
-#define AGMRES_DELTA_DIRECTIONS 10
 static PetscErrorCode KSPAGMRESBuildSoln(KSP, PetscInt);
 static PetscErrorCode KSPAGMRESBuildBasis(KSP);
 static PetscErrorCode KSPAGMRESBuildHessenberg(KSP);
-
-PetscLogEvent KSP_AGMRESComputeDeflationData, KSP_AGMRESBuildBasis, KSP_AGMRESComputeShifts, KSP_AGMRESRoddec;
-
 extern PetscErrorCode KSPSetUp_DGMRES(KSP);
 extern PetscErrorCode KSPBuildSolution_DGMRES(KSP, Vec, Vec *);
 extern PetscErrorCode KSPSolve_DGMRES(KSP);
@@ -20,10 +15,13 @@ extern PetscErrorCode KSPDGMRESApplyDeflation_DGMRES(KSP, Vec, Vec);
 extern PetscErrorCode KSPDestroy_DGMRES(KSP);
 extern PetscErrorCode KSPSetFromOptions_DGMRES(KSP, PetscOptionItems *);
 extern PetscErrorCode KSPDGMRESSetEigen_DGMRES(KSP, PetscInt);
+
+PetscLogEvent KSP_AGMRESComputeDeflationData, KSP_AGMRESBuildBasis, KSP_AGMRESComputeShifts, KSP_AGMRESRoddec;
+
 /*
    This function allocates  data for the Newton basis GMRES implementation.
-   Note that most data are allocated in KSPSetUp_DGMRES and KSPSetUp_GMRES, including the space for the basis vectors, the various Hessenberg matrices and the Givens rotations coefficients
-
+   Note that most data are allocated in KSPSetUp_DGMRES and KSPSetUp_GMRES, including the space for the basis vectors,
+   the various Hessenberg matrices and the Givens rotations coefficients
 */
 static PetscErrorCode KSPSetUp_AGMRES(KSP ksp)
 {
@@ -88,67 +86,6 @@ static PetscErrorCode KSPBuildSolution_AGMRES(KSP ksp, Vec ptr, Vec *result)
     PetscCall(VecCopy(ksp->vec_sol, ptr));
   }
   if (result) *result = ptr;
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-/* Computes the shifts  needed to generate stable basis vectors (through the Newton polynomials)
-   At input, the operators (matrix and preconditioners) are used to create a new GMRES KSP.
-   One cycle of GMRES with the Arnoldi process is performed and the eigenvalues of the induced Hessenberg matrix (the Ritz values) are computed.
-   NOTE: This function is not currently used; the next function is rather used when  the eigenvectors are needed next to augment the basis
-*/
-PetscErrorCode KSPComputeShifts_GMRES(KSP ksp)
-{
-  KSP_AGMRES    *agmres = (KSP_AGMRES *)(ksp->data);
-  KSP            kspgmres;
-  Mat            Amat, Pmat;
-  const PetscInt max_k = agmres->max_k;
-  PC             pc;
-  PetscInt       m;
-  PetscScalar   *Rshift, *Ishift;
-  PetscBool      flg;
-
-  PetscFunctionBegin;
-  /* Perform one cycle of classical GMRES (with the Arnoldi process) to get the Hessenberg matrix
-   We assume here that the ksp is AGMRES and that the operators for the
-   linear system have been set in this ksp */
-  PetscCall(KSPCreate(PetscObjectComm((PetscObject)ksp), &kspgmres));
-  if (!ksp->pc) PetscCall(KSPGetPC(ksp, &ksp->pc));
-  PetscCall(PCGetOperators(ksp->pc, &Amat, &Pmat));
-  PetscCall(KSPSetOperators(kspgmres, Amat, Pmat));
-  PetscCall(KSPSetFromOptions(kspgmres));
-  PetscCall(PetscOptionsHasName(NULL, ((PetscObject)ksp)->prefix, "-ksp_view", &flg));
-  if (flg) PetscCall(PetscOptionsClearValue(NULL, "-ksp_view"));
-  PetscCall(KSPSetType(kspgmres, KSPGMRES));
-  PetscCall(KSPGMRESSetRestart(kspgmres, max_k));
-  PetscCall(KSPGetPC(ksp, &pc));
-  PetscCall(KSPSetPC(kspgmres, pc));
-  /* Copy common options */
-  kspgmres->pc_side = ksp->pc_side;
-  /* Setup KSP context */
-  PetscCall(KSPSetComputeEigenvalues(kspgmres, PETSC_TRUE));
-  PetscCall(KSPSetUp(kspgmres));
-
-  kspgmres->max_it = max_k; /* Restrict the maximum number of iterations to one cycle of GMRES */
-  kspgmres->rtol   = ksp->rtol;
-
-  PetscCall(KSPSolve(kspgmres, ksp->vec_rhs, ksp->vec_sol));
-
-  ksp->guess_zero = PETSC_FALSE;
-  ksp->rnorm      = kspgmres->rnorm;
-  ksp->its        = kspgmres->its;
-  if (kspgmres->reason == KSP_CONVERGED_RTOL) {
-    ksp->reason = KSP_CONVERGED_RTOL;
-    PetscFunctionReturn(PETSC_SUCCESS);
-  } else ksp->reason = KSP_CONVERGED_ITERATING;
-  /* Now, compute the Shifts values */
-  PetscCall(PetscMalloc2(max_k, &Rshift, max_k, &Ishift));
-  PetscCall(KSPComputeEigenvalues(kspgmres, max_k, Rshift, Ishift, &m));
-  PetscCheck(m >= max_k, PetscObjectComm((PetscObject)ksp), PETSC_ERR_PLIB, "Unable to compute the Shifts for the Newton basis");
-  PetscCall(KSPAGMRESLejaOrdering(Rshift, Ishift, agmres->Rshift, agmres->Ishift, max_k));
-
-  agmres->HasShifts = PETSC_TRUE;
-  /* Restore KSP view options */
-  if (flg) PetscCall(PetscOptionsSetValue(NULL, "-ksp_view", ""));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -433,8 +370,7 @@ static PetscErrorCode KSPAGMRESBuildSoln(KSP ksp, PetscInt it)
   PetscCallBLAS("LAPACKtrtrs", LAPACKtrtrs_("U", "N", "N", &KspSize, &nrhs, agmres->hh_origin, &ldH, agmres->nrs, &N, &info));
   PetscCheck(!info, PetscObjectComm((PetscObject)ksp), PETSC_ERR_LIB, "Error in LAPACK routine XTRTRS INFO=%" PetscBLASInt_FMT, info);
   /* Accumulate the correction to the solution of the preconditioned problem in VEC_TMP */
-  PetscCall(VecZeroEntries(VEC_TMP));
-  PetscCall(VecMAXPY(VEC_TMP, max_k, agmres->nrs, &VEC_V(0)));
+  PetscCall(VecMAXPBY(VEC_TMP, max_k, agmres->nrs, 0, &VEC_V(0)));
   if (!agmres->DeflPrecond) PetscCall(VecMAXPY(VEC_TMP, r, &agmres->nrs[max_k], agmres->U));
 
   if ((ksp->pc_side == PC_RIGHT) && agmres->r && agmres->DeflPrecond) {
@@ -647,36 +583,37 @@ The techniques used are best described in [1]. The contribution of this work is 
 There are  many ongoing work that aim at avoiding (or minimizing) the communication in Krylov subspace methods. This code can be used as an experimental framework to combine several techniques in the particular case of GMRES. For instance, the computation of the shifts can be improved with techniques described in [3]. The orthogonalization technique can be replaced by TSQR [4]. The generation of the basis can be done using s-steps approaches[5].
 
  Options Database Keys:
- +   -ksp_gmres_restart <restart> -  the number of Krylov directions
- .   -ksp_gmres_krylov_monitor - plot the Krylov space generated
- .   -ksp_agmres_eigen <neig> - Number of eigenvalues to deflate (Number of vectors to augment)
- .   -ksp_agmres_maxeigen <max_neig> - Maximum number of eigenvalues to deflate
- .   -ksp_agmres_MinRatio <1> - Relaxation parameter in the adaptive strategy; smallest multiple of the remaining number of steps allowed
- .   -ksp_agmres_MaxRatio <1> - Relaxation parameter in the adaptive strategy; Largest multiple of the remaining number of steps allowed
- .   -ksp_agmres_DeflPrecond - Apply deflation as a preconditioner, this is similar to `KSPDGMRES` but it rather builds a Newton basis.  This is an experimental option.
- -   -ksp_dgmres_force <0, 1> - Force the deflation at each restart.
++   -ksp_gmres_restart <restart> -  the number of Krylov directions
+.   -ksp_gmres_krylov_monitor - plot the Krylov space generated
+.   -ksp_agmres_eigen <neig> - Number of eigenvalues to deflate (Number of vectors to augment)
+.   -ksp_agmres_maxeigen <max_neig> - Maximum number of eigenvalues to deflate
+.   -ksp_agmres_MinRatio <1> - Relaxation parameter in the adaptive strategy; smallest multiple of the remaining number of steps allowed
+.   -ksp_agmres_MaxRatio <1> - Relaxation parameter in the adaptive strategy; Largest multiple of the remaining number of steps allowed
+.   -ksp_agmres_DeflPrecond - Apply deflation as a preconditioner, this is similar to `KSPDGMRES` but it rather builds a Newton basis.
+-   -ksp_dgmres_force <0, 1> - Force the deflation at each restart.
 
  Level: intermediate
 
  Note:
-    Left and right preconditioning are supported, but not symmetric preconditioning. Complex arithmetic is not supported
+ Left and right preconditioning are supported, but not symmetric preconditioning. Complex arithmetic is not supported
 
  Developer Note:
-    This object is subclassed off of `KSPDGMRES`
+ This object is subclassed off of `KSPDGMRES`, see the source code in src/ksp/ksp/impls/gmres for comments on the structure of the code
 
  Contributed by:
  Desire NUENTSA WAKAM, INRIA <desire.nuentsa_wakam@inria.fr> with inputs from Guy Atenekeng <atenekeng@yahoo.com> and R.B. Sidje <roger.b.sidje@ua.edu>
 
- References :
- +   [1] D. Nuentsa Wakam and J. Erhel, Parallelism and robustness in GMRES with the Newton basis and the deflated restarting. Research report INRIA RR-7787, November 2011,https://hal.inria.fr/inria-00638247/en,  in revision for ETNA.
- .  [2] D. NUENTSA WAKAM and F. PACULL, Memory Efficient Hybrid Algebraic Solvers for Linear Systems Arising from Compressible Flows, Computers and Fluids, In Press, http://dx.doi.org/10.1016/j.compfluid.2012.03.023
- .  [3] B. Philippe and L. Reichel, On the generation of Krylov subspace bases, Applied Numerical
+ References:
++   [1] - D. Nuentsa Wakam and J. Erhel, Parallelism and robustness in GMRES with the Newton basis and the deflated restarting. Research report INRIA RR-7787, November 2011,https://hal.inria.fr/inria-00638247/en,  in revision for ETNA.
+.  [2] - D. NUENTSA WAKAM and F. PACULL, Memory Efficient Hybrid Algebraic Solvers for Linear Systems Arising from Compressible Flows, Computers and Fluids, In Press, http://dx.doi.org/10.1016/j.compfluid.2012.03.023
+.  [3] - B. Philippe and L. Reichel, On the generation of Krylov subspace bases, Applied Numerical
 Mathematics, 62(9), pp. 1171-1186, 2012
- .  [4] J. Demmel, L. Grigori, M. F. Hoemmen, and J. Langou, Communication-optimal parallel and sequential QR and LU factorizations, SIAM journal on Scientific Computing, 34(1), A206-A239, 2012
- .  [5] M. Mohiyuddin, M. Hoemmen, J. Demmel, and K. Yelick, Minimizing communication in sparse matrix solvers, in SC '09: Proceedings of the Conference on High Performance Computing Networking, Storage and Analysis, New York, NY, USA, 2009, ACM, pp. 1154-1171.
- .    Sidje, Roger B. Alternatives for parallel Krylov subspace basis computation. Numer. Linear Algebra Appl. 4 (1997), no. 4, 305-331
+.  [4] - J. Demmel, L. Grigori, M. F. Hoemmen, and J. Langou, Communication-optimal parallel and sequential QR and LU factorizations, SIAM journal on Scientific Computing, 34(1), A206-A239, 2012
+.  [5] - M. Mohiyuddin, M. Hoemmen, J. Demmel, and K. Yelick, Minimizing communication in sparse matrix solvers, in SC '09: Proceedings of the Conference on High Performance Computing Networking, Storage and Analysis, New York, NY, USA, 2009, ACM, pp. 1154-1171.
+.  [6] - Sidje, Roger B. Alternatives for parallel Krylov subspace basis computation. Numer. Linear Algebra Appl. 4 (1997), no. 4, 305-331
+-  [7] - Bai, Zhaojun and  Hu, D. and Reichel, L. A Newton basis GMRES implementation. IMA J. Numer. Anal. 14 (1994), no. 4, 563-581.
 
- .seealso: [](chapter_ksp), `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPDGMRES`, `KSPPGMRES`,
+.seealso: [](ch_ksp), `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPDGMRES`, `KSPPGMRES`,
            `KSPGMRESSetRestart()`, `KSPGMRESSetHapTol()`, `KSPGMRESSetPreAllocateVectors()`, `KSPGMRESSetOrthogonalization()`, `KSPGMRESGetOrthogonalization()`,
            `KSPGMRESClassicalGramSchmidtOrthogonalization()`, `KSPGMRESModifiedGramSchmidtOrthogonalization()`,
            `KSPGMRESCGSRefinementType`, `KSPGMRESSetCGSRefinementType()`, `KSPGMRESGetCGSRefinementType()`, `KSPGMRESMonitorKrylov()`, `KSPSetPCSide()`

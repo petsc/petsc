@@ -241,70 +241,70 @@
   } while (0)
 
 /*@
-   PetscSortedInt - Determines whether the `PetscInt` array is sorted.
+  PetscSortedInt - Determines whether the `PetscInt` array is sorted.
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  n  - number of values
--  X  - array of integers
+  Input Parameters:
++ n - number of values
+- X - array of integers
 
-   Output Parameter:
-.  sorted - flag whether the array is sorted
+  Output Parameter:
+. sorted - flag whether the array is sorted
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `PetscSortInt()`, `PetscSortedMPIInt()`, `PetscSortedReal()`
 @*/
 PetscErrorCode PetscSortedInt(PetscInt n, const PetscInt X[], PetscBool *sorted)
 {
   PetscFunctionBegin;
-  if (n) PetscValidIntPointer(X, 2);
-  PetscValidBoolPointer(sorted, 3);
+  if (n) PetscAssertPointer(X, 2);
+  PetscAssertPointer(sorted, 3);
   PetscSorted(n, X, *sorted);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
-   PetscSortedInt64 - Determines whether the `PetscInt64` array is sorted.
+  PetscSortedInt64 - Determines whether the `PetscInt64` array is sorted.
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  n  - number of values
--  X  - array of integers
+  Input Parameters:
++ n - number of values
+- X - array of integers
 
-   Output Parameter:
-.  sorted - flag whether the array is sorted
+  Output Parameter:
+. sorted - flag whether the array is sorted
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `PetscSortInt64()`, `PetscSortInt()`, `PetscSortedMPIInt()`, `PetscSortedReal()`
 @*/
 PetscErrorCode PetscSortedInt64(PetscInt n, const PetscInt64 X[], PetscBool *sorted)
 {
   PetscFunctionBegin;
-  if (n) PetscValidInt64Pointer(X, 2);
-  PetscValidBoolPointer(sorted, 3);
+  if (n) PetscAssertPointer(X, 2);
+  PetscAssertPointer(sorted, 3);
   PetscSorted(n, X, *sorted);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
-   PetscSortInt - Sorts an array of `PetscInt` in place in increasing order.
+  PetscSortInt - Sorts an array of `PetscInt` in place in increasing order.
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  n  - number of values
--  X  - array of integers
+  Input Parameters:
++ n - number of values
+- X - array of integers
 
-   Note:
-   This function serves as an alternative to `PetscIntSortSemiOrdered()`, and may perform faster especially if the array
-   is completely random. There are exceptions to this and so it is __highly__ recommended that the user benchmark their
-   code to see which routine is fastest.
+  Note:
+  This function serves as an alternative to `PetscIntSortSemiOrdered()`, and may perform faster especially if the array
+  is completely random. There are exceptions to this and so it is __highly__ recommended that the user benchmark their
+  code to see which routine is fastest.
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `PetscIntSortSemiOrdered()`, `PetscSortReal()`, `PetscSortIntWithPermutation()`
 @*/
@@ -313,24 +313,24 @@ PetscErrorCode PetscSortInt(PetscInt n, PetscInt X[])
   PetscInt pivot, t1;
 
   PetscFunctionBegin;
-  if (n) PetscValidIntPointer(X, 2);
+  if (n) PetscAssertPointer(X, 2);
   QuickSort1(PetscSortInt, X, n, pivot, t1);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
-   PetscSortInt64 - Sorts an array of `PetscInt64` in place in increasing order.
+  PetscSortInt64 - Sorts an array of `PetscInt64` in place in increasing order.
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  n  - number of values
--  X  - array of integers
+  Input Parameters:
++ n - number of values
+- X - array of integers
 
-   Notes:
-   This function sorts `PetscCount`s assumed to be in completely random order
+  Notes:
+  This function sorts `PetscCount`s assumed to be in completely random order
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `PetscSortInt()`
 @*/
@@ -339,24 +339,24 @@ PetscErrorCode PetscSortInt64(PetscInt n, PetscInt64 X[])
   PetscCount pivot, t1;
 
   PetscFunctionBegin;
-  if (n) PetscValidInt64Pointer(X, 2);
+  if (n) PetscAssertPointer(X, 2);
   QuickSort1(PetscSortInt64, X, n, pivot, t1);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
-   PetscSortCount - Sorts an array of integers in place in increasing order.
+  PetscSortCount - Sorts an array of integers in place in increasing order.
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  n  - number of values
--  X  - array of integers
+  Input Parameters:
++ n - number of values
+- X - array of integers
 
-   Notes:
-   This function sorts `PetscCount`s assumed to be in completely random order
+  Notes:
+  This function sorts `PetscCount`s assumed to be in completely random order
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `PetscSortInt()`
 @*/
@@ -365,21 +365,21 @@ PetscErrorCode PetscSortCount(PetscInt n, PetscCount X[])
   PetscCount pivot, t1;
 
   PetscFunctionBegin;
-  if (n) PetscValidCountPointer(X, 2);
+  if (n) PetscAssertPointer(X, 2);
   QuickSort1(PetscSortCount, X, n, pivot, t1);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
-   PetscSortReverseInt - Sorts an array of integers in place in decreasing order.
+  PetscSortReverseInt - Sorts an array of integers in place in decreasing order.
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  n  - number of values
--  X  - array of integers
+  Input Parameters:
++ n - number of values
+- X - array of integers
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `PetscIntSortSemiOrdered()`, `PetscSortInt()`, `PetscSortIntWithPermutation()`
 @*/
@@ -388,24 +388,24 @@ PetscErrorCode PetscSortReverseInt(PetscInt n, PetscInt X[])
   PetscInt pivot, t1;
 
   PetscFunctionBegin;
-  if (n) PetscValidIntPointer(X, 2);
+  if (n) PetscAssertPointer(X, 2);
   QuickSortReverse1(PetscSortReverseInt, X, n, pivot, t1);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
-   PetscSortedRemoveDupsInt - Removes all duplicate entries of a sorted `PetscInt` array
+  PetscSortedRemoveDupsInt - Removes all duplicate entries of a sorted `PetscInt` array
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  n  - number of values
--  X  - sorted array of integers
+  Input Parameters:
++ n - number of values
+- X - sorted array of integers
 
-   Output Parameter:
-.  n - number of non-redundant values
+  Output Parameter:
+. n - number of non-redundant values
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `PetscSortInt()`
 @*/
@@ -414,7 +414,7 @@ PetscErrorCode PetscSortedRemoveDupsInt(PetscInt *n, PetscInt X[])
   PetscInt i, s = 0, N = *n, b = 0;
 
   PetscFunctionBegin;
-  PetscValidIntPointer(n, 1);
+  PetscAssertPointer(n, 1);
   PetscCheckSorted(*n, X);
   for (i = 0; i < N - 1; i++) {
     if (X[b + s + 1] != X[b]) {
@@ -427,18 +427,18 @@ PetscErrorCode PetscSortedRemoveDupsInt(PetscInt *n, PetscInt X[])
 }
 
 /*@
-   PetscSortedCheckDupsInt - Checks if a sorted `PetscInt` array has duplicates
+  PetscSortedCheckDupsInt - Checks if a sorted `PetscInt` array has duplicates
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  n  - number of values
--  X  - sorted array of integers
+  Input Parameters:
++ n - number of values
+- X - sorted array of integers
 
-   Output Parameter:
-.  dups - True if the array has dups, otherwise false
+  Output Parameter:
+. flg - True if the array has dups, otherwise false
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `PetscSortInt()`, `PetscCheckDupsInt()`, `PetscSortRemoveDupsInt()`, `PetscSortedRemoveDupsInt()`
 @*/
@@ -459,44 +459,44 @@ PetscErrorCode PetscSortedCheckDupsInt(PetscInt n, const PetscInt X[], PetscBool
 }
 
 /*@
-   PetscSortRemoveDupsInt - Sorts an array of `PetscInt` in place in increasing order removes all duplicate entries
+  PetscSortRemoveDupsInt - Sorts an array of `PetscInt` in place in increasing order removes all duplicate entries
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  n  - number of values
--  X  - array of integers
+  Input Parameters:
++ n - number of values
+- X - array of integers
 
-   Output Parameter:
-.  n - number of non-redundant values
+  Output Parameter:
+. n - number of non-redundant values
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `PetscIntSortSemiOrdered()`, `PetscSortReal()`, `PetscSortIntWithPermutation()`, `PetscSortInt()`, `PetscSortedRemoveDupsInt()`
 @*/
 PetscErrorCode PetscSortRemoveDupsInt(PetscInt *n, PetscInt X[])
 {
   PetscFunctionBegin;
-  PetscValidIntPointer(n, 1);
+  PetscAssertPointer(n, 1);
   PetscCall(PetscSortInt(*n, X));
   PetscCall(PetscSortedRemoveDupsInt(n, X));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
- PetscFindInt - Finds `PetscInt` in a sorted array of `PetscInt`
+  PetscFindInt - Finds `PetscInt` in a sorted array of `PetscInt`
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  key - the integer to locate
-.  n   - number of values in the array
--  X  - array of integers
+  Input Parameters:
++ key - the integer to locate
+. n   - number of values in the array
+- X   - array of integers
 
-   Output Parameter:
-.  loc - the location if found, otherwise -(slot+1) where slot is the place the value would go
+  Output Parameter:
+. loc - the location if found, otherwise -(slot+1) where slot is the place the value would go
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `PetscIntSortSemiOrdered()`, `PetscSortInt()`, `PetscSortIntWithArray()`, `PetscSortRemoveDupsInt()`
 @*/
@@ -505,12 +505,12 @@ PetscErrorCode PetscFindInt(PetscInt key, PetscInt n, const PetscInt X[], PetscI
   PetscInt lo = 0, hi = n;
 
   PetscFunctionBegin;
-  PetscValidIntPointer(loc, 4);
+  PetscAssertPointer(loc, 4);
   if (!n) {
     *loc = -1;
     PetscFunctionReturn(PETSC_SUCCESS);
   }
-  PetscValidIntPointer(X, 3);
+  PetscAssertPointer(X, 3);
   PetscCheckSorted(n, X);
   while (hi - lo > 1) {
     PetscInt mid = lo + (hi - lo) / 2;
@@ -524,16 +524,16 @@ PetscErrorCode PetscFindInt(PetscInt key, PetscInt n, const PetscInt X[], PetscI
 /*@
   PetscCheckDupsInt - Checks if an `PetscInt` array has duplicates
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  n  - number of values in the array
--  X  - array of integers
+  Input Parameters:
++ n - number of values in the array
+- X - array of integers
 
-   Output Parameter:
-.  dups - True if the array has dups, otherwise false
+  Output Parameter:
+. dups - True if the array has dups, otherwise false
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `PetscSortRemoveDupsInt()`, `PetscSortedCheckDupsInt()`
 @*/
@@ -544,8 +544,8 @@ PetscErrorCode PetscCheckDupsInt(PetscInt n, const PetscInt X[], PetscBool *dups
   PetscBool  missing;
 
   PetscFunctionBegin;
-  if (n) PetscValidIntPointer(X, 2);
-  PetscValidBoolPointer(dups, 3);
+  if (n) PetscAssertPointer(X, 2);
+  PetscAssertPointer(dups, 3);
   *dups = PETSC_FALSE;
   if (n > 1) {
     PetscCall(PetscHSetICreate(&ht));
@@ -565,17 +565,17 @@ PetscErrorCode PetscCheckDupsInt(PetscInt n, const PetscInt X[], PetscBool *dups
 /*@
   PetscFindMPIInt - Finds `PetscMPIInt` in a sorted array of `PetscMPIInt`
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  key - the integer to locate
-.  n   - number of values in the array
--  X   - array of integers
+  Input Parameters:
++ key - the integer to locate
+. n   - number of values in the array
+- X   - array of integers
 
-   Output Parameter:
-.  loc - the location if found, otherwise -(slot+1) where slot is the place the value would go
+  Output Parameter:
+. loc - the location if found, otherwise -(slot+1) where slot is the place the value would go
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `PetscMPIIntSortSemiOrdered()`, `PetscSortInt()`, `PetscSortIntWithArray()`, `PetscSortRemoveDupsInt()`
 @*/
@@ -584,12 +584,12 @@ PetscErrorCode PetscFindMPIInt(PetscMPIInt key, PetscInt n, const PetscMPIInt X[
   PetscInt lo = 0, hi = n;
 
   PetscFunctionBegin;
-  PetscValidIntPointer(loc, 4);
+  PetscAssertPointer(loc, 4);
   if (!n) {
     *loc = -1;
     PetscFunctionReturn(PETSC_SUCCESS);
   }
-  PetscValidIntPointer(X, 3);
+  PetscAssertPointer(X, 3);
   PetscCheckSorted(n, X);
   while (hi - lo > 1) {
     PetscInt mid = lo + (hi - lo) / 2;
@@ -601,17 +601,17 @@ PetscErrorCode PetscFindMPIInt(PetscMPIInt key, PetscInt n, const PetscMPIInt X[
 }
 
 /*@
-   PetscSortIntWithArray - Sorts an array of `PetscInt` in place in increasing order;
-       changes a second array of `PetscInt` to match the sorted first array.
+  PetscSortIntWithArray - Sorts an array of `PetscInt` in place in increasing order;
+  changes a second array of `PetscInt` to match the sorted first array.
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  n  - number of values
-.  X  - array of integers
--  Y  - second array of integers
+  Input Parameters:
++ n - number of values
+. X - array of integers
+- Y - second array of integers
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `PetscIntSortSemiOrderedWithArray()`, `PetscSortReal()`, `PetscSortIntWithPermutation()`, `PetscSortInt()`, `PetscSortIntWithCountArray()`
 @*/
@@ -625,18 +625,18 @@ PetscErrorCode PetscSortIntWithArray(PetscInt n, PetscInt X[], PetscInt Y[])
 }
 
 /*@
-   PetscSortIntWithArrayPair - Sorts an array of `PetscInt` in place in increasing order;
-       changes a pair of `PetscInt` arrays to match the sorted first array.
+  PetscSortIntWithArrayPair - Sorts an array of `PetscInt` in place in increasing order;
+  changes a pair of `PetscInt` arrays to match the sorted first array.
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  n  - number of values
-.  X  - array of integers
-.  Y  - second array of integers (first array of the pair)
--  Z  - third array of integers  (second array of the pair)
+  Input Parameters:
++ n - number of values
+. X - array of integers
+. Y - second array of integers (first array of the pair)
+- Z - third array of integers  (second array of the pair)
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `PetscSortReal()`, `PetscSortIntWithPermutation()`, `PetscSortIntWithArray()`, `PetscIntSortSemiOrdered()`, `PetscSortIntWithIntCountArrayPair()`
 @*/
@@ -650,17 +650,17 @@ PetscErrorCode PetscSortIntWithArrayPair(PetscInt n, PetscInt X[], PetscInt Y[],
 }
 
 /*@
-   PetscSortIntWithCountArray - Sorts an array of `PetscInt` in place in increasing order;
-       changes a second array of `PetscCount` to match the sorted first array.
+  PetscSortIntWithCountArray - Sorts an array of `PetscInt` in place in increasing order;
+  changes a second array of `PetscCount` to match the sorted first array.
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  n  - number of values
-.  X  - array of integers
--  Y  - second array of PetscCounts (signed integers)
+  Input Parameters:
++ n - number of values
+. X - array of integers
+- Y - second array of PetscCounts (signed integers)
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `PetscIntSortSemiOrderedWithArray()`, `PetscSortReal()`, `PetscSortIntPermutation()`, `PetscSortInt()`, `PetscSortIntWithArray()`
 @*/
@@ -675,21 +675,21 @@ PetscErrorCode PetscSortIntWithCountArray(PetscCount n, PetscInt X[], PetscCount
 }
 
 /*@
-   PetscSortIntWithIntCountArrayPair - Sorts an array of `PetscInt` in place in increasing order;
-       changes a `PetscInt`  array and a `PetscCount` array to match the sorted first array.
+  PetscSortIntWithIntCountArrayPair - Sorts an array of `PetscInt` in place in increasing order;
+  changes a `PetscInt`  array and a `PetscCount` array to match the sorted first array.
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  n  - number of values
-.  X  - array of integers
-.  Y  - second array of integers (first array of the pair)
--  Z  - third array of PetscCounts  (second array of the pair)
+  Input Parameters:
++ n - number of values
+. X - array of integers
+. Y - second array of integers (first array of the pair)
+- Z - third array of PetscCounts  (second array of the pair)
 
-   Level: intermediate
+  Level: intermediate
 
-   Note:
-    Usually X, Y are matrix row/column indices, and Z is a permutation array and therefore Z's type is PetscCount to allow 2B+ nonzeros even with 32-bit PetscInt.
+  Note:
+  Usually X, Y are matrix row/column indices, and Z is a permutation array and therefore Z's type is PetscCount to allow 2B+ nonzeros even with 32-bit PetscInt.
 
 .seealso: `PetscSortReal()`, `PetscSortIntPermutation()`, `PetscSortIntWithArray()`, `PetscIntSortSemiOrdered()`, `PetscSortIntWithArrayPair()`
 @*/
@@ -706,16 +706,16 @@ PetscErrorCode PetscSortIntWithIntCountArrayPair(PetscCount n, PetscInt X[], Pet
 /*@
   PetscSortedMPIInt - Determines whether the `PetscMPIInt` array is sorted.
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  n  - number of values
--  X  - array of integers
+  Input Parameters:
++ n - number of values
+- X - array of integers
 
-   Output Parameter:
-.  sorted - flag whether the array is sorted
+  Output Parameter:
+. sorted - flag whether the array is sorted
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `PetscMPIIntSortSemiOrdered()`, `PetscSortMPIInt()`, `PetscSortedInt()`, `PetscSortedReal()`
 @*/
@@ -727,20 +727,20 @@ PetscErrorCode PetscSortedMPIInt(PetscInt n, const PetscMPIInt X[], PetscBool *s
 }
 
 /*@
-   PetscSortMPIInt - Sorts an array of `PetscMPIInt` in place in increasing order.
+  PetscSortMPIInt - Sorts an array of `PetscMPIInt` in place in increasing order.
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  n  - number of values
--  X  - array of integers
+  Input Parameters:
++ n - number of values
+- X - array of integers
 
-   Level: intermediate
+  Level: intermediate
 
-   Note:
-   This function serves as an alternative to PetscMPIIntSortSemiOrdered(), and may perform faster especially if the array
-   is completely random. There are exceptions to this and so it is __highly__ recommended that the user benchmark their
-   code to see which routine is fastest.
+  Note:
+  This function serves as an alternative to PetscMPIIntSortSemiOrdered(), and may perform faster especially if the array
+  is completely random. There are exceptions to this and so it is __highly__ recommended that the user benchmark their
+  code to see which routine is fastest.
 
 .seealso: `PetscMPIIntSortSemiOrdered()`, `PetscSortReal()`, `PetscSortIntWithPermutation()`
 @*/
@@ -754,18 +754,18 @@ PetscErrorCode PetscSortMPIInt(PetscInt n, PetscMPIInt X[])
 }
 
 /*@
-   PetscSortRemoveDupsMPIInt - Sorts an array of `PetscMPIInt` in place in increasing order removes all duplicate entries
+  PetscSortRemoveDupsMPIInt - Sorts an array of `PetscMPIInt` in place in increasing order removes all duplicate entries
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  n  - number of values
--  X  - array of integers
+  Input Parameters:
++ n - number of values
+- X - array of integers
 
-   Output Parameter:
-.  n - number of non-redundant values
+  Output Parameter:
+. n - number of non-redundant values
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `PetscSortReal()`, `PetscSortIntWithPermutation()`, `PetscSortInt()`
 @*/
@@ -786,17 +786,17 @@ PetscErrorCode PetscSortRemoveDupsMPIInt(PetscInt *n, PetscMPIInt X[])
 }
 
 /*@
-   PetscSortMPIIntWithArray - Sorts an array of `PetscMPIInt` in place in increasing order;
-       changes a second `PetscMPIInt` array to match the sorted first array.
+  PetscSortMPIIntWithArray - Sorts an array of `PetscMPIInt` in place in increasing order;
+  changes a second `PetscMPIInt` array to match the sorted first array.
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  n  - number of values
-.  X  - array of integers
--  Y  - second array of integers
+  Input Parameters:
++ n - number of values
+. X - array of integers
+- Y - second array of integers
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `PetscMPIIntSortSemiOrderedWithArray()`, `PetscSortReal()`, `PetscSortIntWithPermutation()`, `PetscSortInt()`
 @*/
@@ -810,20 +810,20 @@ PetscErrorCode PetscSortMPIIntWithArray(PetscMPIInt n, PetscMPIInt X[], PetscMPI
 }
 
 /*@
-   PetscSortMPIIntWithIntArray - Sorts an array of `PetscMPIInt` in place in increasing order;
-       changes a second array of `PetscInt` to match the sorted first array.
+  PetscSortMPIIntWithIntArray - Sorts an array of `PetscMPIInt` in place in increasing order;
+  changes a second array of `PetscInt` to match the sorted first array.
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  n  - number of values
-.  X  - array of MPI integers
--  Y  - second array of Petsc integers
+  Input Parameters:
++ n - number of values
+. X - array of MPI integers
+- Y - second array of Petsc integers
 
-   Level: intermediate
+  Level: intermediate
 
-   Note:
-   This routine is useful when one needs to sort MPI ranks with other integer arrays.
+  Note:
+  This routine is useful when one needs to sort MPI ranks with other integer arrays.
 
 .seealso: `PetscSortMPIIntWithArray()`, `PetscIntSortSemiOrderedWithArray()`, `PetscTimSortWithArray()`
 @*/
@@ -838,17 +838,17 @@ PetscErrorCode PetscSortMPIIntWithIntArray(PetscMPIInt n, PetscMPIInt X[], Petsc
 }
 
 /*@
-   PetscSortIntWithScalarArray - Sorts an array of `PetscInt` in place in increasing order;
-       changes a second `PetscScalar` array to match the sorted first array.
+  PetscSortIntWithScalarArray - Sorts an array of `PetscInt` in place in increasing order;
+  changes a second `PetscScalar` array to match the sorted first array.
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  n  - number of values
-.  X  - array of integers
--  Y  - second array of scalars
+  Input Parameters:
++ n - number of values
+. X - array of integers
+- Y - second array of scalars
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `PetscTimSortWithArray()`, `PetscSortReal()`, `PetscSortIntWithPermutation()`, `PetscSortInt()`, `PetscSortIntWithArray()`
 @*/
@@ -863,20 +863,20 @@ PetscErrorCode PetscSortIntWithScalarArray(PetscInt n, PetscInt X[], PetscScalar
 }
 
 /*@C
-   PetscSortIntWithDataArray - Sorts an array of `PetscInt` in place in increasing order;
-       changes a second array to match the sorted first INTEGER array.  Unlike other sort routines, the user must
-       provide workspace (the size of an element in the data array) to use when sorting.
+  PetscSortIntWithDataArray - Sorts an array of `PetscInt` in place in increasing order;
+  changes a second array to match the sorted first INTEGER array.  Unlike other sort routines, the user must
+  provide workspace (the size of an element in the data array) to use when sorting.
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  n  - number of values
-.  X  - array of integers
-.  Y  - second array of data
-.  size - sizeof elements in the data array in bytes
--  t2   - workspace of "size" bytes used when sorting
+  Input Parameters:
++ n    - number of values
+. X    - array of integers
+. Y    - second array of data
+. size - sizeof elements in the data array in bytes
+- t2   - workspace of "size" bytes used when sorting
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `PetscTimSortWithArray()`, `PetscSortReal()`, `PetscSortIntWithPermutation()`, `PetscSortInt()`, `PetscSortIntWithArray()`
 @*/
@@ -919,21 +919,21 @@ PetscErrorCode PetscSortIntWithDataArray(PetscInt n, PetscInt X[], void *Y, size
 }
 
 /*@
-   PetscMergeIntArray -     Merges two SORTED `PetscInt` arrays, removes duplicate elements.
+  PetscMergeIntArray -     Merges two SORTED `PetscInt` arrays, removes duplicate elements.
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  an  - number of values in the first array
-.  aI  - first sorted array of integers
-.  bn  - number of values in the second array
--  bI  - second array of integers
+  Input Parameters:
++ an - number of values in the first array
+. aI - first sorted array of integers
+. bn - number of values in the second array
+- bI - second array of integers
 
-   Output Parameters:
-+  n   - number of values in the merged array
--  L   - merged sorted array, this is allocated if an array is not provided
+  Output Parameters:
++ n - number of values in the merged array
+- L - merged sorted array, this is allocated if an array is not provided
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `PetscSortReal()`, `PetscSortIntWithPermutation()`, `PetscSortInt()`, `PetscSortIntWithArray()`
 @*/
@@ -976,29 +976,29 @@ PetscErrorCode PetscMergeIntArray(PetscInt an, const PetscInt aI[], PetscInt bn,
 }
 
 /*@
-   PetscMergeIntArrayPair -     Merges two SORTED `PetscInt` arrays that share NO common values along with an additional array of `PetscInt`.
-                                The additional arrays are the same length as sorted arrays and are merged
-                                in the order determined by the merging of the sorted pair.
+  PetscMergeIntArrayPair -     Merges two SORTED `PetscInt` arrays that share NO common values along with an additional array of `PetscInt`.
+  The additional arrays are the same length as sorted arrays and are merged
+  in the order determined by the merging of the sorted pair.
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  an  - number of values in the first array
-.  aI  - first sorted array of integers
-.  aJ  - first additional array of integers
-.  bn  - number of values in the second array
-.  bI  - second array of integers
--  bJ  - second additional of integers
+  Input Parameters:
++ an - number of values in the first array
+. aI - first sorted array of integers
+. aJ - first additional array of integers
+. bn - number of values in the second array
+. bI - second array of integers
+- bJ - second additional of integers
 
-   Output Parameters:
-+  n   - number of values in the merged array (== an + bn)
-.  L   - merged sorted array
--  J   - merged additional array
+  Output Parameters:
++ n - number of values in the merged array (== an + bn)
+. L - merged sorted array
+- J - merged additional array
 
-   Note:
-    if L or J point to non-null arrays then this routine will assume they are of the appropriate size and use them, otherwise this routine will allocate space for them
+  Note:
+  if L or J point to non-null arrays then this routine will assume they are of the appropriate size and use them, otherwise this routine will allocate space for them
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `PetscIntSortSemiOrdered()`, `PetscSortReal()`, `PetscSortIntWithPermutation()`, `PetscSortInt()`, `PetscSortIntWithArray()`
 @*/
@@ -1007,8 +1007,8 @@ PetscErrorCode PetscMergeIntArrayPair(PetscInt an, const PetscInt aI[], const Pe
   PetscInt n_, *L_, *J_, ak, bk, k;
 
   PetscFunctionBegin;
-  PetscValidPointer(L, 8);
-  PetscValidPointer(J, 9);
+  PetscAssertPointer(L, 8);
+  PetscAssertPointer(J, 9);
   n_ = an + bn;
   *n = n_;
   if (!*L) PetscCall(PetscMalloc1(n_, L));
@@ -1042,21 +1042,21 @@ PetscErrorCode PetscMergeIntArrayPair(PetscInt an, const PetscInt aI[], const Pe
 }
 
 /*@
-   PetscMergeMPIIntArray -     Merges two SORTED `PetscMPIInt` arrays.
+  PetscMergeMPIIntArray -     Merges two SORTED `PetscMPIInt` arrays.
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  an  - number of values in the first array
-.  aI  - first sorted array of integers
-.  bn  - number of values in the second array
--  bI  - second array of integers
+  Input Parameters:
++ an - number of values in the first array
+. aI - first sorted array of integers
+. bn - number of values in the second array
+- bI - second array of integers
 
-   Output Parameters:
-+  n   - number of values in the merged array (<= an + bn)
--  L   - merged sorted array, allocated if address of NULL pointer is passed
+  Output Parameters:
++ n - number of values in the merged array (<= an + bn)
+- L - merged sorted array, allocated if address of NULL pointer is passed
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `PetscIntSortSemiOrdered()`, `PetscSortReal()`, `PetscSortIntWithPermutation()`, `PetscSortInt()`, `PetscSortIntWithArray()`
 @*/
@@ -1080,26 +1080,26 @@ PetscErrorCode PetscMergeMPIIntArray(PetscInt an, const PetscMPIInt aI[], PetscI
 }
 
 /*@C
-   PetscProcessTree - Prepares tree data to be displayed graphically
+  PetscProcessTree - Prepares tree data to be displayed graphically
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  n  - number of values
-.  mask - indicates those entries in the tree, location 0 is always masked
--  parentid - indicates the parent of each entry
+  Input Parameters:
++ n        - number of values
+. mask     - indicates those entries in the tree, location 0 is always masked
+- parentid - indicates the parent of each entry
 
-   Output Parameters:
-+  Nlevels - the number of levels
-.  Level - for each node tells its level
-.  Levelcnts - the number of nodes on each level
-.  Idbylevel - a list of ids on each of the levels, first level followed by second etc
--  Column - for each id tells its column index
+  Output Parameters:
++ Nlevels   - the number of levels
+. Level     - for each node tells its level
+. Levelcnt  - the number of nodes on each level
+. Idbylevel - a list of ids on each of the levels, first level followed by second etc
+- Column    - for each id tells its column index
 
-   Level: developer
+  Level: developer
 
-   Note:
-    This code is not currently used
+  Note:
+  This code is not currently used
 
 .seealso: `PetscSortReal()`, `PetscSortIntWithPermutation()`
 @*/
@@ -1189,7 +1189,7 @@ PetscErrorCode PetscProcessTree(PetscInt n, const PetscBool mask[], const PetscI
 
   Input Parameters:
 + comm - the MPI communicator
-. n - the local number of integers
+. n    - the local number of integers
 - keys - the local array of integers
 
   Output Parameters:
@@ -1224,6 +1224,6 @@ PetscErrorCode PetscParallelSortedInt(MPI_Comm comm, PetscInt n, const PetscInt 
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
   if (rank == 0) prevmax = PETSC_MIN_INT;
   if (prevmax > min) sorted = PETSC_FALSE;
-  PetscCallMPI(MPI_Allreduce(&sorted, is_sorted, 1, MPIU_BOOL, MPI_LAND, comm));
+  PetscCall(MPIU_Allreduce(&sorted, is_sorted, 1, MPIU_BOOL, MPI_LAND, comm));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -22,10 +22,10 @@ const char LimiterCitation[] = "@article{BergerAftosmisMurman2005,\n"
   Not Collective
 
   Input Parameters:
-+ sname - The name of a new user-defined creation routine
++ sname    - The name of a new user-defined creation routine
 - function - The creation routine
 
-  Sample usage:
+  Example Usage:
 .vb
     PetscLimiterRegister("my_lim", MyPetscLimiterCreate);
 .ve
@@ -35,7 +35,7 @@ const char LimiterCitation[] = "@article{BergerAftosmisMurman2005,\n"
     PetscLimiterCreate(MPI_Comm, PetscLimiter *);
     PetscLimiterSetType(PetscLimiter, "my_lim");
 .ve
-   or at runtime via the option
+  or at runtime via the option
 .vb
     -petsclimiter_type my_lim
 .ve
@@ -99,7 +99,7 @@ PetscErrorCode PetscLimiterSetType(PetscLimiter lim, PetscLimiterType name)
   Not Collective
 
   Input Parameter:
-. lim  - The `PetscLimiter`
+. lim - The `PetscLimiter`
 
   Output Parameter:
 . name - The `PetscLimiterType`
@@ -112,23 +112,23 @@ PetscErrorCode PetscLimiterGetType(PetscLimiter lim, PetscLimiterType *name)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(lim, PETSCLIMITER_CLASSID, 1);
-  PetscValidPointer(name, 2);
+  PetscAssertPointer(name, 2);
   PetscCall(PetscLimiterRegisterAll());
   *name = ((PetscObject)lim)->type_name;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
-   PetscLimiterViewFromOptions - View a `PetscLimiter` based on values in the options database
+  PetscLimiterViewFromOptions - View a `PetscLimiter` based on values in the options database
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  A - the `PetscLimiter` object to view
-.  obj - Optional object that provides the options prefix to use
--  name - command line option name
+  Input Parameters:
++ A    - the `PetscLimiter` object to view
+. obj  - Optional object that provides the options prefix to use
+- name - command line option name
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `PetscLimiter`, `PetscLimiterView()`, `PetscObjectViewFromOptions()`, `PetscLimiterCreate()`
 @*/
@@ -263,14 +263,14 @@ PetscErrorCode PetscLimiterDestroy(PetscLimiter *lim)
 
   Level: beginner
 
-.seealso: `PetscLimiter`, PetscLimiterType`, `PetscLimiterSetType()`, `PETSCLIMITERSIN`
+.seealso: `PetscLimiter`, `PetscLimiterType`, `PetscLimiterSetType()`, `PETSCLIMITERSIN`
 @*/
 PetscErrorCode PetscLimiterCreate(MPI_Comm comm, PetscLimiter *lim)
 {
   PetscLimiter l;
 
   PetscFunctionBegin;
-  PetscValidPointer(lim, 2);
+  PetscAssertPointer(lim, 2);
   PetscCall(PetscCitationsRegister(LimiterCitation, &Limitercite));
   *lim = NULL;
   PetscCall(PetscFVInitializePackage());
@@ -289,7 +289,7 @@ PetscErrorCode PetscLimiterCreate(MPI_Comm comm, PetscLimiter *lim)
 - flim - The input field
 
   Output Parameter:
-. phi  - The limited field
+. phi - The limited field
 
   Level: beginner
 
@@ -336,7 +336,7 @@ PetscErrorCode PetscLimiterLimit(PetscLimiter lim, PetscReal flim, PetscReal *ph
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(lim, PETSCLIMITER_CLASSID, 1);
-  PetscValidRealPointer(phi, 3);
+  PetscAssertPointer(phi, 3);
   PetscUseTypeMethod(lim, limit, flim, phi);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -897,10 +897,10 @@ PetscBool         PetscFVRegisterAllCalled = PETSC_FALSE;
   Not Collective
 
   Input Parameters:
-+ sname - The name of a new user-defined creation routine
++ sname    - The name of a new user-defined creation routine
 - function - The creation routine itself
 
-  Sample usage:
+  Example Usage:
 .vb
     PetscFVRegister("my_fv", MyPetscFVCreate);
 .ve
@@ -910,7 +910,7 @@ PetscBool         PetscFVRegisterAllCalled = PETSC_FALSE;
     PetscFVCreate(MPI_Comm, PetscFV *);
     PetscFVSetType(PetscFV, "my_fv");
 .ve
-   or at runtime via the option
+  or at runtime via the option
 .vb
     -petscfv_type my_fv
 .ve
@@ -973,7 +973,7 @@ PetscErrorCode PetscFVSetType(PetscFV fvm, PetscFVType name)
   Not Collective
 
   Input Parameter:
-. fvm  - The `PetscFV`
+. fvm - The `PetscFV`
 
   Output Parameter:
 . name - The `PetscFVType` name
@@ -986,23 +986,23 @@ PetscErrorCode PetscFVGetType(PetscFV fvm, PetscFVType *name)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fvm, PETSCFV_CLASSID, 1);
-  PetscValidPointer(name, 2);
+  PetscAssertPointer(name, 2);
   PetscCall(PetscFVRegisterAll());
   *name = ((PetscObject)fvm)->type_name;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
-   PetscFVViewFromOptions - View a `PetscFV` based on values in the options database
+  PetscFVViewFromOptions - View a `PetscFV` based on values in the options database
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  A - the `PetscFV` object
-.  obj - Optional object that provides the options prefix
--  name - command line option name
+  Input Parameters:
++ A    - the `PetscFV` object
+. obj  - Optional object that provides the options prefix
+- name - command line option name
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `PetscFV`, `PetscFVView()`, `PetscObjectViewFromOptions()`, `PetscFVCreate()`
 @*/
@@ -1160,7 +1160,7 @@ PetscErrorCode PetscFVCreate(MPI_Comm comm, PetscFV *fvm)
   PetscFV f;
 
   PetscFunctionBegin;
-  PetscValidPointer(fvm, 2);
+  PetscAssertPointer(fvm, 2);
   *fvm = NULL;
   PetscCall(PetscFVInitializePackage());
 
@@ -1221,7 +1221,7 @@ PetscErrorCode PetscFVGetLimiter(PetscFV fvm, PetscLimiter *lim)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fvm, PETSCFV_CLASSID, 1);
-  PetscValidPointer(lim, 2);
+  PetscAssertPointer(lim, 2);
   *lim = fvm->limiter;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1232,7 +1232,7 @@ PetscErrorCode PetscFVGetLimiter(PetscFV fvm, PetscLimiter *lim)
   Logically Collective
 
   Input Parameters:
-+ fvm - the `PetscFV` object
++ fvm  - the `PetscFV` object
 - comp - The number of components
 
   Level: intermediate
@@ -1265,7 +1265,7 @@ PetscErrorCode PetscFVSetNumComponents(PetscFV fvm, PetscInt comp)
 . fvm - the `PetscFV` object
 
   Output Parameter:
-, comp - The number of components
+. comp - The number of components
 
   Level: intermediate
 
@@ -1275,7 +1275,7 @@ PetscErrorCode PetscFVGetNumComponents(PetscFV fvm, PetscInt *comp)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fvm, PETSCFV_CLASSID, 1);
-  PetscValidIntPointer(comp, 2);
+  PetscAssertPointer(comp, 2);
   *comp = fvm->numComponents;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1286,7 +1286,7 @@ PetscErrorCode PetscFVGetNumComponents(PetscFV fvm, PetscInt *comp)
   Logically Collective
 
   Input Parameters:
-+ fvm - the `PetscFV` object
++ fvm  - the `PetscFV` object
 . comp - the component number
 - name - the component name
 
@@ -1306,8 +1306,9 @@ PetscErrorCode PetscFVSetComponentName(PetscFV fvm, PetscInt comp, const char *n
   PetscFVGetComponentName - Get the name of a component (used in output and viewing) in a `PetscFV`
 
   Logically Collective
+
   Input Parameters:
-+ fvm - the `PetscFV` object
++ fvm  - the `PetscFV` object
 - comp - the component number
 
   Output Parameter:
@@ -1364,18 +1365,18 @@ PetscErrorCode PetscFVGetSpatialDimension(PetscFV fvm, PetscInt *dim)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fvm, PETSCFV_CLASSID, 1);
-  PetscValidIntPointer(dim, 2);
+  PetscAssertPointer(dim, 2);
   *dim = fvm->dim;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
- PetscFVSetComputeGradients - Toggle computation of cell gradients on a `PetscFV`
+  PetscFVSetComputeGradients - Toggle computation of cell gradients on a `PetscFV`
 
   Logically Collective
 
   Input Parameters:
-+ fvm - the `PetscFV` object
++ fvm              - the `PetscFV` object
 - computeGradients - Flag to compute cell gradients
 
   Level: intermediate
@@ -1409,7 +1410,7 @@ PetscErrorCode PetscFVGetComputeGradients(PetscFV fvm, PetscBool *computeGradien
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fvm, PETSCFV_CLASSID, 1);
-  PetscValidBoolPointer(computeGradients, 2);
+  PetscAssertPointer(computeGradients, 2);
   *computeGradients = fvm->computeGradients;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1421,7 +1422,7 @@ PetscErrorCode PetscFVGetComputeGradients(PetscFV fvm, PetscBool *computeGradien
 
   Input Parameters:
 + fvm - the `PetscFV` object
-- q - The `PetscQuadrature`
+- q   - The `PetscQuadrature`
 
   Level: intermediate
 
@@ -1446,7 +1447,7 @@ PetscErrorCode PetscFVSetQuadrature(PetscFV fvm, PetscQuadrature q)
 . fvm - the `PetscFV` object
 
   Output Parameter:
-. lim - The `PetscQuadrature`
+. q - The `PetscQuadrature`
 
   Level: intermediate
 
@@ -1456,7 +1457,7 @@ PetscErrorCode PetscFVGetQuadrature(PetscFV fvm, PetscQuadrature *q)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fvm, PETSCFV_CLASSID, 1);
-  PetscValidPointer(q, 2);
+  PetscAssertPointer(q, 2);
   if (!fvm->quadrature) {
     /* Create default 1-point quadrature */
     PetscReal *points, *weights;
@@ -1484,7 +1485,7 @@ PetscErrorCode PetscFVGetQuadrature(PetscFV fvm, PetscQuadrature *q)
 
   Level: intermediate
 
-  Developer Note:
+  Developer Notes:
   There is overlap between the methods of `PetscFE` and `PetscFV`, they should probably share a common parent class
 
 .seealso: `PetscDualSpace`, `PetscFV`, `PetscFVCreate()`
@@ -1493,7 +1494,7 @@ PetscErrorCode PetscFVGetDualSpace(PetscFV fvm, PetscDualSpace *sp)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fvm, PETSCFV_CLASSID, 1);
-  PetscValidPointer(sp, 2);
+  PetscAssertPointer(sp, 2);
   if (!fvm->dualSpace) {
     DM       K;
     PetscInt dim, Nc, c;
@@ -1582,7 +1583,7 @@ PetscErrorCode PetscFVGetCellTabulation(PetscFV fvm, PetscTabulation *T)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fvm, PETSCFV_CLASSID, 1);
-  PetscValidPointer(T, 2);
+  PetscAssertPointer(T, 2);
   PetscCall(PetscQuadratureGetData(fvm->quadrature, NULL, NULL, &npoints, &points, NULL));
   if (!fvm->T) PetscCall(PetscFVCreateTabulation(fvm, 1, npoints, points, 1, &fvm->T));
   *T = fvm->T;
@@ -1628,8 +1629,8 @@ PetscErrorCode PetscFVCreateTabulation(PetscFV fvm, PetscInt nrepl, PetscInt npo
     PetscFunctionReturn(PETSC_SUCCESS);
   }
   PetscValidHeaderSpecific(fvm, PETSCFV_CLASSID, 1);
-  PetscValidRealPointer(points, 4);
-  PetscValidPointer(T, 6);
+  PetscAssertPointer(points, 4);
+  PetscAssertPointer(T, 6);
   PetscCall(PetscFVGetSpatialDimension(fvm, &cdim));
   PetscCall(PetscFVGetNumComponents(fvm, &Nc));
   PetscCall(PetscMalloc1(1, T));
@@ -1669,6 +1670,9 @@ PetscErrorCode PetscFVCreateTabulation(PetscFV fvm, PetscInt nrepl, PetscInt npo
 . numFaces - The number of cell faces which are not constrained
 - dx       - The vector from the cell centroid to the neighboring cell centroid for each face
 
+  Output Parameter:
+. grad - the gradient
+
   Level: advanced
 
 .seealso: `PetscFV`, `PetscFVCreate()`
@@ -1687,18 +1691,18 @@ PetscErrorCode PetscFVComputeGradient(PetscFV fvm, PetscInt numFaces, PetscScala
   Not Collective
 
   Input Parameters:
-+ fvm          - The `PetscFV` object for the field being integrated
-. prob         - The `PetscDS` specifying the discretizations and continuum functions
-. field        - The field being integrated
-. Nf           - The number of faces in the chunk
-. fgeom        - The face geometry for each face in the chunk
-. neighborVol  - The volume for each pair of cells in the chunk
-. uL           - The state from the cell on the left
-- uR           - The state from the cell on the right
++ fvm         - The `PetscFV` object for the field being integrated
+. prob        - The `PetscDS` specifying the discretizations and continuum functions
+. field       - The field being integrated
+. Nf          - The number of faces in the chunk
+. fgeom       - The face geometry for each face in the chunk
+. neighborVol - The volume for each pair of cells in the chunk
+. uL          - The state from the cell on the left
+- uR          - The state from the cell on the right
 
   Output Parameters:
-+ fluxL        - the left fluxes for each face
-- fluxR        - the right fluxes for each face
++ fluxL - the left fluxes for each face
+- fluxR - the right fluxes for each face
 
   Level: developer
 
@@ -1713,9 +1717,8 @@ PetscErrorCode PetscFVIntegrateRHSFunction(PetscFV fvm, PetscDS prob, PetscInt f
 }
 
 /*@
-  PetscFVRefine - Create a "refined" `PetscFV` object that refines the reference cell into smaller copies. This is typically used
-  to precondition a higher order method with a lower order method on a refined mesh having the same number of dofs (but more
-  sparsity). It is also used to create an interpolation between regularly refined meshes.
+  PetscFVRefine - Create a "refined" `PetscFV` object that refines the reference cell into
+  smaller copies.
 
   Input Parameter:
 . fv - The initial `PetscFV`
@@ -1724,6 +1727,11 @@ PetscErrorCode PetscFVIntegrateRHSFunction(PetscFV fvm, PetscDS prob, PetscInt f
 . fvRef - The refined `PetscFV`
 
   Level: advanced
+
+  Notes:
+  This is typically used to generate a preconditioner for a high order method from a lower order method on a
+  refined mesh having the same number of dofs (but more sparsity). It is also used to create an
+  interpolation between regularly refined meshes.
 
 .seealso: `PetscFV`, `PetscFVType`, `PetscFVCreate()`, `PetscFVSetType()`
 @*/
@@ -2164,7 +2172,7 @@ static PetscErrorCode PetscFVLeastSquaresSetMaxFaces_LS(PetscFV fvm, PetscInt ma
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PetscFVInitialize_LeastSquares(PetscFV fvm)
+static PetscErrorCode PetscFVInitialize_LeastSquares(PetscFV fvm)
 {
   PetscFunctionBegin;
   fvm->ops->setfromoptions       = NULL;
@@ -2211,7 +2219,7 @@ PETSC_EXTERN PetscErrorCode PetscFVCreate_LeastSquares(PetscFV fvm)
 
   Not Collective
 
-  Input parameters:
+  Input Parameters:
 + fvm      - The `PetscFV` object
 - maxFaces - The maximum number of cell faces
 

@@ -737,7 +737,7 @@ static PetscErrorCode KSPSolve_PIPECG2(KSP ksp)
    Developer Note:
    The implementation code contains a good amount of hand tuned fusion of multiple inner products and similar computations on multiple vectors
 
-.seealso: [](chapter_ksp), [](doc_faq_pipelined), [](sec_pipelineksp), `KSPCreate()`, `KSPSetType()`, `KSPCG`, `KSPPIPECG`, `KSPGROPPCG`
+.seealso: [](ch_ksp), [](doc_faq_pipelined), [](sec_pipelineksp), `KSPCreate()`, `KSPSetType()`, `KSPCG`, `KSPPIPECG`, `KSPGROPPCG`
 M*/
 PETSC_EXTERN PetscErrorCode KSPCreate_PIPECG2(KSP ksp)
 {

@@ -1,5 +1,4 @@
-#ifndef MY_EB_H_
-#define MY_EB_H_
+#pragma once
 
 #include <AMReX_Array.H>
 #include <AMReX_EB2_IF_Base.H>
@@ -56,5 +55,3 @@ protected:
     //
     amrex::Real      m_sign;
 };
-
-#endif

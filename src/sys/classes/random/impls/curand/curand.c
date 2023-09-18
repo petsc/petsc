@@ -7,7 +7,7 @@ typedef struct {
   curandGenerator_t gen;
 } PetscRandom_CURAND;
 
-PetscErrorCode PetscRandomSeed_CURAND(PetscRandom r)
+static PetscErrorCode PetscRandomSeed_CURAND(PetscRandom r)
 {
   PetscRandom_CURAND *curand = (PetscRandom_CURAND *)r->data;
 
@@ -18,10 +18,10 @@ PetscErrorCode PetscRandomSeed_CURAND(PetscRandom r)
 
 PETSC_INTERN PetscErrorCode PetscRandomCurandScale_Private(PetscRandom, size_t, PetscReal *, PetscBool);
 
-PetscErrorCode PetscRandomGetValuesReal_CURAND(PetscRandom r, PetscInt n, PetscReal *val)
+static PetscErrorCode PetscRandomGetValuesReal_CURAND(PetscRandom r, PetscInt n, PetscReal *val)
 {
   PetscRandom_CURAND *curand = (PetscRandom_CURAND *)r->data;
-  size_t              nn     = n < 0 ? (size_t)(-2 * n) : n; /* handle complex case */
+  size_t              nn     = n < 0 ? (size_t)(-2 * n) : (size_t)n; /* handle complex case */
 
   PetscFunctionBegin;
 #if defined(PETSC_USE_REAL_SINGLE)
@@ -33,7 +33,7 @@ PetscErrorCode PetscRandomGetValuesReal_CURAND(PetscRandom r, PetscInt n, PetscR
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PetscRandomGetValues_CURAND(PetscRandom r, PetscInt n, PetscScalar *val)
+static PetscErrorCode PetscRandomGetValues_CURAND(PetscRandom r, PetscInt n, PetscScalar *val)
 {
   PetscFunctionBegin;
 #if defined(PETSC_USE_COMPLEX)
@@ -45,7 +45,7 @@ PetscErrorCode PetscRandomGetValues_CURAND(PetscRandom r, PetscInt n, PetscScala
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PetscRandomDestroy_CURAND(PetscRandom r)
+static PetscErrorCode PetscRandomDestroy_CURAND(PetscRandom r)
 {
   PetscRandom_CURAND *curand = (PetscRandom_CURAND *)r->data;
 
@@ -84,7 +84,7 @@ PETSC_EXTERN PetscErrorCode PetscRandomCreate_CURAND(PetscRandom r)
   PetscCallCURAND(curandCreateGenerator(&curand->gen, CURAND_RNG_PSEUDO_DEFAULT));
   /* https://docs.nvidia.com/cuda/curand/host-api-overview.html#performance-notes2 */
   PetscCallCURAND(curandSetGeneratorOrdering(curand->gen, CURAND_ORDERING_PSEUDO_SEEDED));
-  PetscCall(PetscMemcpy(r->ops, &PetscRandomOps_Values, sizeof(PetscRandomOps_Values)));
+  r->ops[0] = PetscRandomOps_Values;
   PetscCall(PetscObjectChangeTypeName((PetscObject)r, PETSCCURAND));
   r->data = curand;
   PetscCall(PetscRandomSeed_CURAND(r));

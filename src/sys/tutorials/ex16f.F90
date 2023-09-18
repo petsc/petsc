@@ -12,7 +12,7 @@ program main
 
       ! Every PETSc routine should begin with the PetscInitialize() routine.
 
-      PetscCallA(PetscOptionsSetValue(PETSC_NULL_OPTIONS,"-no_signal_handler","true",ierr))
+      PetscCallA(PetscOptionsSetValue(PETSC_NULL_OPTIONS,'-no_signal_handler','true',ierr))
       PetscCallA(PetscInitialize(ierr))
 
       ! We can now change the communicator universe for PETSc
@@ -30,6 +30,6 @@ end program main
 !      requires: defined(PETSC_USE_LOG)
 !      nsize: 2
 !      args: -options_view -get_total_flops
-!      filter: grep -E -v "(Total flops|options_left)"
+!      filter: grep -E -v "(Total flops)"
 !
 !TEST*/

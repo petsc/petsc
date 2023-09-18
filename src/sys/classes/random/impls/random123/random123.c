@@ -16,7 +16,7 @@ R123_ULONG_LONG PETSCR123_SEED_1 = R123_64BIT(0xAFF6369B3EE9FE96);
 R123_ULONG_LONG PETSCR123_SEED_2 = R123_64BIT(0x5956EBC717B60E07);
 R123_ULONG_LONG PETSCR123_SEED_3 = R123_64BIT(0xEE8612A0CBEABFF1);
 
-PetscErrorCode PetscRandomSeed_Random123(PetscRandom r)
+static PetscErrorCode PetscRandomSeed_Random123(PetscRandom r)
 {
   threefry4x64_ukey_t ukey;
   PetscRandom123     *r123 = (PetscRandom123 *)r->data;
@@ -58,7 +58,7 @@ static PetscReal PetscRandom123Step(PetscRandom123 *r123)
   return ret;
 }
 
-PetscErrorCode PetscRandomGetValue_Random123(PetscRandom r, PetscScalar *val)
+static PetscErrorCode PetscRandomGetValue_Random123(PetscRandom r, PetscScalar *val)
 {
   PetscRandom123 *r123 = (PetscRandom123 *)r->data;
   PetscScalar     rscal;
@@ -84,7 +84,7 @@ PetscErrorCode PetscRandomGetValue_Random123(PetscRandom r, PetscScalar *val)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PetscRandomGetValueReal_Random123(PetscRandom r, PetscReal *val)
+static PetscErrorCode PetscRandomGetValueReal_Random123(PetscRandom r, PetscReal *val)
 {
   PetscRandom123 *r123 = (PetscRandom123 *)r->data;
   PetscReal       rreal;
@@ -96,7 +96,7 @@ PetscErrorCode PetscRandomGetValueReal_Random123(PetscRandom r, PetscReal *val)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PetscRandomDestroy_Random123(PetscRandom r)
+static PetscErrorCode PetscRandomDestroy_Random123(PetscRandom r)
 {
   PetscFunctionBegin;
   PetscCall(PetscFree(r->data));
@@ -132,8 +132,8 @@ PETSC_EXTERN PetscErrorCode PetscRandomCreate_Random123(PetscRandom r)
 
   PetscFunctionBegin;
   PetscCall(PetscNew(&r123));
-  r->data = r123;
-  PetscCall(PetscMemcpy(r->ops, &PetscRandomOps_Values, sizeof(PetscRandomOps_Values)));
+  r->data   = r123;
+  r->ops[0] = PetscRandomOps_Values;
   PetscCall(PetscObjectChangeTypeName((PetscObject)r, PETSCRANDOM123));
   PetscCall(PetscRandomSeed(r));
   PetscFunctionReturn(PETSC_SUCCESS);

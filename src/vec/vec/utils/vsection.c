@@ -111,8 +111,8 @@ PetscErrorCode PetscSectionVecView(PetscSection s, Vec v, PetscViewer viewer)
   Not Collective
 
   Input Parameters:
-+ v - the `Vec`
-. s - the organizing `PetscSection`
++ v     - the `Vec`
+. s     - the organizing `PetscSection`
 - point - the point
 
   Output Parameter:
@@ -142,21 +142,21 @@ PetscErrorCode VecGetValuesSection(Vec v, PetscSection s, PetscInt point, PetscS
   Not Collective
 
   Input Parameters:
-+ v - the `Vec`
-. s - the organizing `PetscSection`
-. point - the point
++ v      - the `Vec`
+. s      - the organizing `PetscSection`
+. point  - the point
 . values - the array of input values
-- mode - the insertion mode, either `ADD_VALUES` or `INSERT_VALUES`
+- mode   - the insertion mode, either `ADD_VALUES` or `INSERT_VALUES`
 
   Level: developer
 
-  Fortran Note:
-  This is similar to MatSetValuesStencil(). The binding is
+  Fortran Notes:
+  This is similar to `MatSetValuesStencil()`. The binding is
 $   VecSetValuesSectionF90(vec, section, point, values, mode, ierr)
 
 .seealso: `PetscSection`, `PetscSectionCreate()`, `VecGetValuesSection()`
 @*/
-PetscErrorCode VecSetValuesSection(Vec v, PetscSection s, PetscInt point, PetscScalar values[], InsertMode mode)
+PetscErrorCode VecSetValuesSection(Vec v, PetscSection s, PetscInt point, const PetscScalar values[], InsertMode mode)
 {
   PetscScalar    *baseArray, *array;
   const PetscBool doInsert    = mode == INSERT_VALUES || mode == INSERT_ALL_VALUES || mode == INSERT_BC_VALUES ? PETSC_TRUE : PETSC_FALSE;
@@ -305,7 +305,7 @@ PetscErrorCode PetscSectionRestoreField_Internal(PetscSection section, PetscSect
 - type - one of `NORM_1`, `NORM_2`, `NORM_INFINITY`.
 
   Output Parameter:
-. val  - the array of norms
+. val - the array of norms
 
   Level: intermediate
 
@@ -319,7 +319,7 @@ PetscErrorCode PetscSectionVecNorm(PetscSection s, PetscSection gs, Vec x, NormT
   PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
   PetscValidHeaderSpecific(gs, PETSC_SECTION_CLASSID, 2);
   PetscValidHeaderSpecific(x, VEC_CLASSID, 3);
-  PetscValidRealPointer(val, 5);
+  PetscAssertPointer(val, 5);
   PetscCall(PetscSectionGetNumFields(s, &Nf));
   if (Nf < 2) PetscCall(VecNorm(x, type, val));
   else {

@@ -4,7 +4,7 @@
 */
 #include <../src/mat/impls/aij/seq/aij.h> /*I "petscmat.h" I*/
 
-PetscErrorCode MatDestroy_SeqAIJ_MatMatMatMult(void *data)
+static PetscErrorCode MatDestroy_SeqAIJ_MatMatMatMult(void *data)
 {
   Mat_MatMatMatMult *matmatmatmult = (Mat_MatMatMatMult *)data;
 

@@ -45,28 +45,28 @@ PETSC_INTERN PetscErrorCode PetscSequentialPhaseEnd_Private(MPI_Comm comm, int n
 PetscMPIInt Petsc_Seq_keyval = MPI_KEYVAL_INVALID;
 
 /*@
-   PetscSequentialPhaseBegin - Begins a sequential section of code.
+  PetscSequentialPhaseBegin - Begins a sequential section of code.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  comm - Communicator to sequentialize over
--  ng   - Number in processor group.  This many processes are allowed to execute
+  Input Parameters:
++ comm - Communicator to sequentialize over
+- ng   - Number in processor group.  This many processes are allowed to execute
    at the same time (usually 1)
 
-   Level: intermediate
+  Level: intermediate
 
-   Notes:
-   `PetscSequentialPhaseBegin()` and `PetscSequentialPhaseEnd()` provide a
-   way to force a section of code to be executed by the processes in
-   rank order.  Typically, this is done with
+  Notes:
+  `PetscSequentialPhaseBegin()` and `PetscSequentialPhaseEnd()` provide a
+  way to force a section of code to be executed by the processes in
+  rank order.  Typically, this is done with
 .vb
       PetscSequentialPhaseBegin(comm, 1);
       <code to be executed sequentially>
       PetscSequentialPhaseEnd(comm, 1);
 .ve
 
-   You should use `PetscSynchronizedPrintf()` to ensure output between MPI ranks is properly order and not these routines.
+  You should use `PetscSynchronizedPrintf()` to ensure output between MPI ranks is properly order and not these routines.
 
 .seealso: `PetscSequentialPhaseEnd()`, `PetscSynchronizedPrintf()`
 @*/
@@ -94,19 +94,19 @@ PetscErrorCode PetscSequentialPhaseBegin(MPI_Comm comm, int ng)
 }
 
 /*@
-   PetscSequentialPhaseEnd - Ends a sequential section of code.
+  PetscSequentialPhaseEnd - Ends a sequential section of code.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  comm - Communicator to sequentialize.
--  ng   - Number in processor group.  This many processes are allowed to execute
+  Input Parameters:
++ comm - Communicator to sequentialize.
+- ng   - Number in processor group.  This many processes are allowed to execute
    at the same time (usually 1)
 
-   Level: intermediate
+  Level: intermediate
 
-   Note:
-   See `PetscSequentialPhaseBegin()` for more details.
+  Note:
+  See `PetscSequentialPhaseBegin()` for more details.
 
 .seealso: `PetscSequentialPhaseBegin()`
 @*/
@@ -136,8 +136,9 @@ PetscErrorCode PetscSequentialPhaseEnd(MPI_Comm comm, int ng)
 
   Collective
 
-  Input Parameter:
-. minMaxVal - An array with the local min and max
+  Input Parameters:
++ comm      - The MPI communicator to reduce with
+- minMaxVal - An array with the local min and max
 
   Output Parameter:
 . minMaxValGlobal - An array with the global min and max
@@ -154,7 +155,7 @@ PetscErrorCode PetscGlobalMinMaxInt(MPI_Comm comm, const PetscInt minMaxVal[2], 
   sendbuf[0] = -minMaxVal[0]; /* Note that -PETSC_MIN_INT = PETSC_MIN_INT */
   sendbuf[1] = minMaxVal[1];
   sendbuf[2] = (minMaxVal[0] == PETSC_MIN_INT) ? 1 : 0; /* Are there PETSC_MIN_INT in minMaxVal[0]? */
-  PetscCallMPI(MPI_Allreduce(sendbuf, recvbuf, 3, MPIU_INT, MPI_MAX, comm));
+  PetscCall(MPIU_Allreduce(sendbuf, recvbuf, 3, MPIU_INT, MPI_MAX, comm));
   minMaxValGlobal[0] = recvbuf[2] ? PETSC_MIN_INT : -recvbuf[0];
   minMaxValGlobal[1] = recvbuf[1];
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -165,8 +166,9 @@ PetscErrorCode PetscGlobalMinMaxInt(MPI_Comm comm, const PetscInt minMaxVal[2], 
 
   Collective
 
-  Input Parameter:
-. minMaxVal - An array with the local min and max
+  Input Parameters:
++ comm      - The MPI communicator to reduce with
+- minMaxVal - An array with the local min and max
 
   Output Parameter:
 . minMaxValGlobal - An array with the global min and max

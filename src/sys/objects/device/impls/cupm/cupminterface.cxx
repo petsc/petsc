@@ -98,6 +98,7 @@ PETSC_CUPM_DEFINE_STATIC_VARIABLE_VIA_CLASS_TYPENAME(cupmMemPoolAttr, cupmMemPoo
 #if PetscDefined(HAVE_CUDA)
 template struct Interface<DeviceType::CUDA>;
 #endif
+
 #if PetscDefined(HAVE_HIP)
 template struct Interface<DeviceType::HIP>;
 #endif

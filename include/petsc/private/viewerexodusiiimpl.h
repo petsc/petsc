@@ -1,5 +1,4 @@
-#ifndef __VIEWEREXODUSIIIMPL_H
-#define __VIEWEREXODUSIIIMPL_H
+#pragma once
 
 #include <petscviewerexodusii.h>
 
@@ -12,5 +11,4 @@ typedef struct {
   PetscInt      order; /* the "order" of the mesh, used to construct tri6, tetra10 cells */
 } PetscViewer_ExodusII;
 
-#endif
 #endif

@@ -91,7 +91,7 @@ Discrete System with 2 fields
         type: sum
         Space in 2 variables with 3 components, size 12
         Sum space of 3 concatenated subspaces (all identical)
-          PetscSpace Object: sum component 1 MPI process
+          PetscSpace Object: Q1 1 MPI process
             type: tensor
             Space in 2 variables with 1 components, size 4
             Tensor space of 2 subspaces (all identical)
@@ -100,19 +100,23 @@ Discrete System with 2 fields
                 Space in 1 variables with 1 components, size 2
                 Polynomial space of degree 1
       PetscDualSpace Object: displacement 1 MPI process
-        type: lagrange
+        type: sum
         Dual space with 3 components, size 12
-        Continuous tensor Lagrange dual space
+        Sum dual space of 3 concatenated subspaces (all identical)
+          PetscDualSpace Object: 1 MPI process
+            type: lagrange
+            Dual space with 1 components, size 4
+            Continuous tensor Lagrange dual space
         Quadrature on a quadrilateral of order 3 on 4 points (dim 2)
   Field fault traction FEM 3 components (implicit) (Nq 4 Nqc 1) 1-jet
     PetscFE Object: fault traction (faulttraction_) 1 MPI process
-      type: basic
-      Basic Finite Element in 2 dimensions with 3 components
+      type: vector
+      Vector Finite Element in 2 dimensions with 3 components
       PetscSpace Object: fault traction (faulttraction_) 1 MPI process
         type: sum
         Space in 2 variables with 3 components, size 12
         Sum space of 3 concatenated subspaces (all identical)
-          PetscSpace Object: sum component (faulttraction_sumcomp_) 1 MPI process
+          PetscSpace Object: Q1 (faulttraction_sumcomp_) 1 MPI process
             type: tensor
             Space in 2 variables with 1 components, size 4
             Tensor space of 2 subspaces (all identical)
@@ -121,9 +125,13 @@ Discrete System with 2 fields
                 Space in 1 variables with 1 components, size 2
                 Polynomial space of degree 1
       PetscDualSpace Object: fault traction (faulttraction_) 1 MPI process
-        type: lagrange
+        type: sum
         Dual space with 3 components, size 12
-        Continuous tensor Lagrange dual space
+        Sum dual space of 3 concatenated subspaces (all identical)
+          PetscDualSpace Object: Q1 1 MPI process
+            type: lagrange
+            Dual space with 1 components, size 4
+            Continuous tensor Lagrange dual space
         Quadrature on a quadrilateral of order 3 on 4 points (dim 2)
   Weak Form System with 2 fields
     boundary_residual_f0

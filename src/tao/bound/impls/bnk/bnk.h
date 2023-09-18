@@ -2,8 +2,7 @@
 Context for bounded Newton-Krylov type optimization algorithms
 */
 
-#ifndef __TAO_BNK_H
-#define __TAO_BNK_H
+#pragma once
 #include <petsc/private/taoimpl.h>
 #include <../src/tao/bound/impls/bncg/bncg.h>
 
@@ -249,5 +248,3 @@ PETSC_INTERN PetscErrorCode TaoBNKSafeguardStep(Tao, KSPConvergedReason, PetscIn
 PETSC_INTERN PetscErrorCode TaoBNKPerformLineSearch(Tao, PetscInt *, PetscReal *, TaoLineSearchConvergedReason *);
 PETSC_INTERN PetscErrorCode TaoBNKUpdateTrustRadius(Tao, PetscReal, PetscReal, PetscInt, PetscInt, PetscBool *);
 PETSC_INTERN PetscErrorCode TaoBNKAddStepCounts(Tao, PetscInt);
-
-#endif /* if !defined(__TAO_BNK_H) */

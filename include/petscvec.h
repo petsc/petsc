@@ -3,8 +3,7 @@
   degrees of freedom for finite element/finite difference functions
   on a grid. They have more mathematical structure then simple arrays.
 */
-#ifndef PETSCVEC_H
-#define PETSCVEC_H
+#pragma once
 
 #include <petscsys.h>
 #include <petscsftypes.h> /* for VecScatter, VecScatterType */
@@ -19,14 +18,12 @@
 
    Level: beginner
 
-.seealso: [](chapter_vectors), `VecCreate()`, `VecType`, `VecSetType()`
+.seealso: [](doc_vector), [](ch_vectors), `VecCreate()`, `VecType`, `VecSetType()`
 S*/
 typedef struct _p_Vec *Vec;
 
 /*E
   ScatterMode - Determines the direction of a scatter
-
-  Level: beginner
 
   Values:
 +  `SCATTER_FORWARD` - Scatters the values as dictated by the `VecScatterCreate()` call
@@ -35,7 +32,9 @@ typedef struct _p_Vec *Vec;
 -  `SCATTER_REVERSE_LOCAL` - Moves the values in the opposite direction than the directions indicated in the `VecScatterCreate()` call
                              except NO MPI communication is done
 
-.seealso: [](chapter_vectors), `VecScatter`, `VecScatterBegin()`, `VecScatterEnd()`, `SCATTER_FORWARD`, `SCATTER_REVERSE`, `SCATTER_FORWARD_LOCAL`, `SCATTER_REVERSE_LOCAL`
+  Level: beginner
+
+.seealso: [](ch_vectors), `VecScatter`, `VecScatterBegin()`, `VecScatterEnd()`, `SCATTER_FORWARD`, `SCATTER_REVERSE`, `SCATTER_FORWARD_LOCAL`, `SCATTER_REVERSE_LOCAL`
 E*/
 typedef enum {
   SCATTER_FORWARD       = 0,
@@ -49,7 +48,7 @@ typedef enum {
 
     Level: beginner
 
-.seealso: [](chapter_vectors), `VecScatter`, `ScatterMode`, `VecScatterCreate()`, `VecScatterBegin()`, `VecScatterEnd()`, `SCATTER_REVERSE`, `SCATTER_FORWARD_LOCAL`,
+.seealso: [](ch_vectors), `VecScatter`, `ScatterMode`, `VecScatterCreate()`, `VecScatterBegin()`, `VecScatterEnd()`, `SCATTER_REVERSE`, `SCATTER_FORWARD_LOCAL`,
           `SCATTER_REVERSE_LOCAL`
 M*/
 
@@ -59,7 +58,7 @@ M*/
 
     Level: beginner
 
-.seealso: [](chapter_vectors), `VecScatter`, `ScatterMode`, `VecScatterCreate()`, `VecScatterBegin()`, `VecScatterEnd()`, `SCATTER_FORWARD`, `SCATTER_FORWARD_LOCAL`,
+.seealso: [](ch_vectors), `VecScatter`, `ScatterMode`, `VecScatterCreate()`, `VecScatterBegin()`, `VecScatterEnd()`, `SCATTER_FORWARD`, `SCATTER_FORWARD_LOCAL`,
           `SCATTER_REVERSE_LOCAL`
 M*/
 
@@ -69,7 +68,7 @@ M*/
 
     Level: developer
 
-.seealso: [](chapter_vectors), `VecScatter`, `ScatterMode`, `VecScatterCreate()`, `VecScatterBegin()`, `VecScatterEnd()`, `SCATTER_REVERSE`, `SCATTER_FORWARD`,
+.seealso: [](ch_vectors), `VecScatter`, `ScatterMode`, `VecScatterCreate()`, `VecScatterBegin()`, `VecScatterEnd()`, `SCATTER_REVERSE`, `SCATTER_FORWARD`,
           `SCATTER_REVERSE_LOCAL`
 M*/
 
@@ -80,7 +79,7 @@ M*/
 
     Level: developer
 
-.seealso: [](chapter_vectors), `VecScatter`, `ScatterMode`, `VecScatterCreate()`, `VecScatterBegin()`, `VecScatterEnd()`, `SCATTER_FORWARD`, `SCATTER_FORWARD_LOCAL`,
+.seealso: [](ch_vectors), `VecScatter`, `ScatterMode`, `VecScatterCreate()`, `VecScatterBegin()`, `VecScatterEnd()`, `SCATTER_FORWARD`, `SCATTER_FORWARD_LOCAL`,
           `SCATTER_REVERSE`
 M*/
 
@@ -89,7 +88,7 @@ M*/
 
    Level: beginner
 
-.seealso: [](chapter_vectors), `VecSetType()`, `Vec`, `VecCreate()`, `VecDestroy()`
+.seealso: [](doc_vector), [](ch_vectors), `VecSetType()`, `Vec`, `VecCreate()`, `VecDestroy()`
 J*/
 typedef const char *VecType;
 #define VECSEQ         "seq"
@@ -127,12 +126,12 @@ PETSC_EXTERN PetscErrorCode VecInitializePackage(void);
 PETSC_EXTERN PetscErrorCode VecFinalizePackage(void);
 
 PETSC_EXTERN PetscErrorCode VecCreate(MPI_Comm, Vec *);
+PETSC_EXTERN PetscErrorCode VecCreateFromOptions(MPI_Comm, const char *, PetscInt, PetscInt, PetscInt, Vec *);
 PETSC_EXTERN PetscErrorCode VecCreateSeq(MPI_Comm, PetscInt, Vec *);
 PETSC_EXTERN PetscErrorCode VecCreateMPI(MPI_Comm, PetscInt, PetscInt, Vec *);
 PETSC_EXTERN PetscErrorCode VecCreateSeqWithArray(MPI_Comm, PetscInt, PetscInt, const PetscScalar[], Vec *);
 PETSC_EXTERN PetscErrorCode VecCreateMPIWithArray(MPI_Comm, PetscInt, PetscInt, PetscInt, const PetscScalar[], Vec *);
 PETSC_EXTERN PetscErrorCode VecCreateShared(MPI_Comm, PetscInt, PetscInt, Vec *);
-PETSC_EXTERN PetscErrorCode VecCreateNode(MPI_Comm, PetscInt, PetscInt, Vec *);
 
 PETSC_EXTERN PetscErrorCode VecSetFromOptions(Vec);
 PETSC_EXTERN PetscErrorCode VecViewFromOptions(Vec, PetscObject, const char[]);
@@ -159,8 +158,6 @@ PETSC_EXTERN PetscErrorCode VecConcatenate(PetscInt, const Vec[], Vec *, IS *[])
 /*E
     NormType - determines what type of norm to compute
 
-    Level: beginner
-
     Values:
 +    `NORM_1` - the one norm, ||v|| = sum_i | v_i |. ||A|| = max_j || v_*j ||, maximum column sum
 .    `NORM_2` - the two norm, ||v|| = sqrt(sum_i |v_i|^2) (vectors only)
@@ -168,10 +165,12 @@ PETSC_EXTERN PetscErrorCode VecConcatenate(PetscInt, const Vec[], Vec *, IS *[])
 .    `NORM_INFINITY` - ||v|| = max_i |v_i|. ||A|| = max_i || v_i* ||, maximum row sum
 -    `NORM_1_AND_2` - computes both the 1 and 2 norm of a vector
 
+    Level: beginner
+
   Note:
   The `v` above represents a `Vec` while the `A` represents a `Mat`
 
-.seealso: [](chapter_vectors), `Vec`, `Mat`, `VecNorm()`, `VecNormBegin()`, `VecNormEnd()`, `MatNorm()`, `NORM_1`,
+.seealso: [](ch_vectors), `Vec`, `Mat`, `VecNorm()`, `VecNormBegin()`, `VecNormEnd()`, `MatNorm()`, `NORM_1`,
           `NORM_2`, `NORM_FROBENIUS`, `NORM_INFINITY`, `NORM_1_AND_2`
 E*/
 typedef enum {
@@ -189,7 +188,7 @@ PETSC_EXTERN const char *const NormTypes[];
 
    Level: beginner
 
-.seealso: [](chapter_vectors), `NormType`, `MatNorm()`, `VecNorm()`, `VecNormBegin()`, `VecNormEnd()`, `NORM_2`, `NORM_FROBENIUS`,
+.seealso: [](ch_vectors), `NormType`, `MatNorm()`, `VecNorm()`, `VecNormBegin()`, `VecNormEnd()`, `NORM_2`, `NORM_FROBENIUS`,
           `NORM_INFINITY`, `NORM_1_AND_2`
 M*/
 
@@ -198,7 +197,7 @@ M*/
 
    Level: beginner
 
-.seealso: [](chapter_vectors), `NormType`, `MatNorm()`, `VecNorm()`, `VecNormBegin()`, `VecNormEnd()`, `NORM_1`, `NORM_FROBENIUS`,
+.seealso: [](ch_vectors), `NormType`, `MatNorm()`, `VecNorm()`, `VecNormBegin()`, `VecNormEnd()`, `NORM_1`, `NORM_FROBENIUS`,
           `NORM_INFINITY`, `NORM_1_AND_2`
 M*/
 
@@ -207,7 +206,7 @@ M*/
 
    Level: beginner
 
-.seealso: [](chapter_vectors), `NormType`, `MatNorm()`, `VecNorm()`, `VecNormBegin()`, `VecNormEnd()`, `NORM_1`, `NORM_2`,
+.seealso: [](ch_vectors), `NormType`, `MatNorm()`, `VecNorm()`, `VecNormBegin()`, `VecNormEnd()`, `NORM_1`, `NORM_2`,
           `NORM_INFINITY`, `NORM_1_AND_2`
 M*/
 
@@ -216,7 +215,7 @@ M*/
 
    Level: beginner
 
-.seealso: [](chapter_vectors), `NormType`, `MatNorm()`, `VecNorm()`, `VecNormBegin()`, `VecNormEnd()`, `NORM_1`, `NORM_2`,
+.seealso: [](ch_vectors), `NormType`, `MatNorm()`, `VecNorm()`, `VecNormBegin()`, `VecNormEnd()`, `NORM_1`, `NORM_2`,
           `NORM_FROBENIUS`, `NORM_1_AND_2`
 M*/
 
@@ -225,7 +224,7 @@ M*/
 
    Level: beginner
 
-.seealso: [](chapter_vectors), `NormType`, `MatNorm()`, `VecNorm()`, `VecNormBegin()`, `VecNormEnd()`, `NORM_1`, `NORM_2`,
+.seealso: [](ch_vectors), `NormType`, `MatNorm()`, `VecNorm()`, `VecNormBegin()`, `VecNormEnd()`, `NORM_1`, `NORM_2`,
           `NORM_FROBENIUS`, `NORM_INFINITY`
 M*/
 
@@ -238,20 +237,20 @@ M*/
 /*E
     ReductionType - determines what type of column reduction (one that is not a type of norm defined in `NormType`) to compute
 
-    Level: beginner
-
     Values:
 +  `REDUCTION_SUM_REALPART` - sum of real part of each matrix column
 .  `REDUCTION_SUM_IMAGINARYPART` - sum of imaginary part of each matrix column
 .  `REDUCTION_MEAN_REALPART` - arithmetic mean of real part of each matrix column
 -  `REDUCTION_MEAN_IMAGINARYPART` - arithmetic mean of imaginary part of each matrix column
 
+    Level: beginner
+
     Developer Note:
   The constants defined in `ReductionType` MUST BE DISTINCT from those defined in `NormType`.
   This is because `MatGetColumnReductions()` is used to compute both norms and other types of reductions,
   and the constants defined in both `NormType` and `ReductionType` are used to designate the desired operation.
 
-.seealso: [](chapter_vectors), `MatGetColumnReductions()`, `MatGetColumnNorms()`, `NormType`, `REDUCTION_SUM_REALPART`,
+.seealso: [](ch_vectors), `MatGetColumnReductions()`, `MatGetColumnNorms()`, `NormType`, `REDUCTION_SUM_REALPART`,
           `REDUCTION_SUM_IMAGINARYPART`, `REDUCTION_MEAN_REALPART`, `REDUCTION_NORM_1`, `REDUCTION_NORM_2`, `REDUCTION_NORM_FROBENIUS`, `REDUCTION_NORM_INFINITY`
 E*/
 typedef enum {
@@ -266,7 +265,7 @@ typedef enum {
 
    Level: beginner
 
-.seealso: [](chapter_vectors), `ReductionType`, `MatGetColumnReductions()`, `REDUCTION_SUM_IMAGINARYPART`, `REDUCTION_MEAN_REALPART`, `REDUCTION_NORM_1`,
+.seealso: [](ch_vectors), `ReductionType`, `MatGetColumnReductions()`, `REDUCTION_SUM_IMAGINARYPART`, `REDUCTION_MEAN_REALPART`, `REDUCTION_NORM_1`,
           `REDUCTION_NORM_2`, `REDUCTION_NORM_FROBENIUS`, `REDUCTION_NORM_INFINITY`
 M*/
 
@@ -275,7 +274,7 @@ M*/
 
    Level: beginner
 
-.seealso: [](chapter_vectors), `ReductionType`, `MatGetColumnReductions()`, `REDUCTION_SUM_REALPART`, `REDUCTION_MEAN_IMAGINARYPART`, `REDUCTION_NORM_1`,
+.seealso: [](ch_vectors), `ReductionType`, `MatGetColumnReductions()`, `REDUCTION_SUM_REALPART`, `REDUCTION_MEAN_IMAGINARYPART`, `REDUCTION_NORM_1`,
           `REDUCTION_NORM_2`, `REDUCTION_NORM_FROBENIUS`, `REDUCTION_NORM_INFINITY`
 M*/
 
@@ -284,7 +283,7 @@ M*/
 
    Level: beginner
 
-.seealso: [](chapter_vectors), `ReductionType`, `MatGetColumnReductions()`, `REDUCTION_MEAN_IMAGINARYPART`, `REDUCTION_SUM_REALPART`, `REDUCTION_NORM_1`,
+.seealso: [](ch_vectors), `ReductionType`, `MatGetColumnReductions()`, `REDUCTION_MEAN_IMAGINARYPART`, `REDUCTION_SUM_REALPART`, `REDUCTION_NORM_1`,
           `REDUCTION_NORM_2`, `REDUCTION_NORM_FROBENIUS`, `REDUCTION_NORM_INFINITY`
 M*/
 
@@ -293,7 +292,7 @@ M*/
 
    Level: beginner
 
-.seealso: [](chapter_vectors), `ReductionType`, `MatGetColumnReductions()`, `REDUCTION_MEAN_REALPART`, `REDUCTION_SUM_IMAGINARYPART`, `REDUCTION_NORM_1`,
+.seealso: [](ch_vectors), `ReductionType`, `MatGetColumnReductions()`, `REDUCTION_MEAN_REALPART`, `REDUCTION_SUM_IMAGINARYPART`, `REDUCTION_NORM_1`,
           `REDUCTION_NORM_2`, `REDUCTION_NORM_FROBENIUS`, `REDUCTION_NORM_INFINITY`
 M*/
 
@@ -313,6 +312,7 @@ PETSC_EXTERN PetscErrorCode VecSwap(Vec, Vec);
 PETSC_EXTERN PetscErrorCode VecAXPY(Vec, PetscScalar, Vec);
 PETSC_EXTERN PetscErrorCode VecAXPBY(Vec, PetscScalar, PetscScalar, Vec);
 PETSC_EXTERN PetscErrorCode VecMAXPY(Vec, PetscInt, const PetscScalar[], Vec[]);
+PETSC_EXTERN PetscErrorCode VecMAXPBY(Vec, PetscInt, const PetscScalar[], PetscScalar, Vec[]);
 PETSC_EXTERN PetscErrorCode VecAYPX(Vec, PetscScalar, Vec);
 PETSC_EXTERN PetscErrorCode VecWAXPY(Vec, PetscScalar, Vec, Vec);
 PETSC_EXTERN PetscErrorCode VecAXPBYPCZ(Vec, PetscScalar, PetscScalar, PetscScalar, Vec, Vec);
@@ -393,7 +393,7 @@ PETSC_EXTERN PetscErrorCode VecSetValuesCOO(Vec, const PetscScalar[], InsertMode
 
    `VecSetValue()` uses 0-based indices in Fortran as well as in C.
 
-.seealso: [](chapter_vectors), `VecSetValues()`, `VecAssemblyBegin()`, `VecAssemblyEnd()`, `VecSetValuesBlockedLocal()`, `VecSetValueLocal()`
+.seealso: [](ch_vectors), `VecSetValues()`, `VecAssemblyBegin()`, `VecAssemblyEnd()`, `VecSetValuesBlockedLocal()`, `VecSetValueLocal()`
 M*/
 static inline PetscErrorCode VecSetValue(Vec v, PetscInt i, PetscScalar va, InsertMode mode)
 {
@@ -409,6 +409,7 @@ PETSC_EXTERN PetscFunctionList VecList;
 PETSC_EXTERN PetscErrorCode    VecSetType(Vec, VecType);
 PETSC_EXTERN PetscErrorCode    VecGetType(Vec, VecType *);
 PETSC_EXTERN PetscErrorCode    VecRegister(const char[], PetscErrorCode (*)(Vec));
+PETSC_EXTERN PetscErrorCode    VecRegisterAll(void);
 
 PETSC_EXTERN PetscErrorCode VecScatterBegin(VecScatter, Vec, Vec, InsertMode, ScatterMode);
 PETSC_EXTERN PetscErrorCode VecScatterEnd(VecScatter, Vec, Vec, InsertMode, ScatterMode);
@@ -502,7 +503,7 @@ PETSC_EXTERN PetscErrorCode VecViennaCLRestoreCLMem(Vec);
 
    `VecSetValues()` uses 0-based indices in Fortran as well as in C.
 
-.seealso: [](chapter_vectors), `VecSetValuesLocal()`, `VecSetValues()`, `VecAssemblyBegin()`, `VecAssemblyEnd()`, `VecSetValuesBlockedLocal()`, `VecSetValue()`
+.seealso: [](ch_vectors), `VecSetValuesLocal()`, `VecSetValues()`, `VecAssemblyBegin()`, `VecAssemblyEnd()`, `VecSetValuesBlockedLocal()`, `VecSetValue()`
 M*/
 static inline PetscErrorCode VecSetValueLocal(Vec v, PetscInt i, PetscScalar va, InsertMode mode)
 {
@@ -526,9 +527,9 @@ static inline PetscErrorCode VecSetValueLocal(Vec v, PetscInt i, PetscScalar va,
    Note:
    After calls to `VecSetValues()` and related routines on must call ``VecAssemblyBegin()` and `VecAssemblyEnd()` before using the vector
 
-.seealso: [](chapter_vectors), `Vec`, `VecSetValues()`, `VecAssemblyBegin()`, `VecAssemblyEnd()`, `MatAssemblyBegin()`, `MatAssemblyEnd()`
+.seealso: [](ch_vectors), `Vec`, `VecSetValues()`, `VecAssemblyBegin()`, `VecAssemblyEnd()`, `MatAssemblyBegin()`, `MatAssemblyEnd()`
 M*/
-#define VecCheckAssembled(v) PetscCheck(v->stash.insertmode == NOT_SET_VALUES, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Not for unassembled vector, did you call VecAssemblyBegin()/VecAssemblyEnd()?");
+#define VecCheckAssembled(v) PetscCheck(v->stash.insertmode == NOT_SET_VALUES, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Not for unassembled vector, did you call VecAssemblyBegin()/VecAssemblyEnd()?")
 
 PETSC_EXTERN PetscErrorCode VecSetValuesBlockedLocal(Vec, PetscInt, const PetscInt[], const PetscScalar[], InsertMode);
 PETSC_EXTERN PetscErrorCode VecGetLocalToGlobalMapping(Vec, ISLocalToGlobalMapping *);
@@ -539,6 +540,7 @@ PETSC_EXTERN PetscErrorCode VecTDotBegin(Vec, Vec, PetscScalar *);
 PETSC_EXTERN PetscErrorCode VecTDotEnd(Vec, Vec, PetscScalar *);
 PETSC_EXTERN PetscErrorCode VecNormBegin(Vec, NormType, PetscReal *);
 PETSC_EXTERN PetscErrorCode VecNormEnd(Vec, NormType, PetscReal *);
+PETSC_EXTERN PetscErrorCode VecErrorWeightedNorms(Vec, Vec, Vec, NormType, PetscReal, Vec, PetscReal, Vec, PetscReal, PetscReal *, PetscInt *, PetscReal *, PetscInt *, PetscReal *, PetscInt *);
 
 PETSC_EXTERN PetscErrorCode VecMDotBegin(Vec, PetscInt, const Vec[], PetscScalar[]);
 PETSC_EXTERN PetscErrorCode VecMDotEnd(Vec, PetscInt, const Vec[], PetscScalar[]);
@@ -547,7 +549,7 @@ PETSC_EXTERN PetscErrorCode VecMTDotEnd(Vec, PetscInt, const Vec[], PetscScalar[
 PETSC_EXTERN PetscErrorCode PetscCommSplitReductionBegin(MPI_Comm);
 
 PETSC_EXTERN PetscErrorCode VecBindToCPU(Vec, PetscBool);
-PETSC_DEPRECATED_FUNCTION("Use VecBindToCPU (since v3.13)") static inline PetscErrorCode VecPinToCPU(Vec v, PetscBool flg)
+PETSC_DEPRECATED_FUNCTION(3, 13, 0, "VecBindToCPU()", ) static inline PetscErrorCode VecPinToCPU(Vec v, PetscBool flg)
 {
   return VecBindToCPU(v, flg);
 }
@@ -599,7 +601,7 @@ PETSC_EXTERN PetscErrorCode VecRestoreArrayWriteAndMemType(Vec, PetscScalar **);
 
    Level: developer
 
-.seealso: [](chapter_vectors), `VecGetArray()`, `VecGetArrayRead()`, `VecRestoreArrayPair()`
+.seealso: [](ch_vectors), `VecGetArray()`, `VecGetArrayRead()`, `VecRestoreArrayPair()`
 @*/
 static inline PetscErrorCode VecGetArrayPair(Vec x, Vec y, PetscScalar **xv, PetscScalar **yv)
 {
@@ -623,7 +625,7 @@ static inline PetscErrorCode VecGetArrayPair(Vec x, Vec y, PetscScalar **xv, Pet
 
    Level: developer
 
-.seealso: [](chapter_vectors), `VecGetArray()`, `VecGetArrayRead()`, `VecGetArrayPair()`
+.seealso: [](ch_vectors), `VecGetArray()`, `VecGetArrayRead()`, `VecGetArrayPair()`
 @*/
 static inline PetscErrorCode VecRestoreArrayPair(Vec x, Vec y, PetscScalar **xv, PetscScalar **yv)
 {
@@ -633,7 +635,7 @@ static inline PetscErrorCode VecRestoreArrayPair(Vec x, Vec y, PetscScalar **xv,
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-#if defined(PETSC_USE_DEBUG)
+#if PetscDefined(USE_DEBUG)
 PETSC_EXTERN PetscErrorCode  VecLockReadPush(Vec);
 PETSC_EXTERN PetscErrorCode  VecLockReadPop(Vec);
 PETSC_EXTERN PetscErrorCode  VecLockWriteSet(Vec, PetscBool);
@@ -656,9 +658,9 @@ static inline PetscErrorCode VecSetErrorIfLocked(Vec x, PetscInt arg)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 /* The three are deprecated */
-PETSC_EXTERN PETSC_DEPRECATED_FUNCTION("Use VecLockReadPush() (since version 3.11)") PetscErrorCode VecLockPush(Vec);
-PETSC_EXTERN PETSC_DEPRECATED_FUNCTION("Use VecLockReadPop() (since version 3.11)") PetscErrorCode VecLockPop(Vec);
-  #define VecLocked(x, arg) VecSetErrorIfLocked(x, arg) PETSC_DEPRECATED_MACRO("GCC warning \"Use VecSetErrorIfLocked() (since version 3.11)\"")
+PETSC_EXTERN PETSC_DEPRECATED_FUNCTION(3, 11, 0, "VecLockReadPush()", ) PetscErrorCode VecLockPush(Vec);
+PETSC_EXTERN PETSC_DEPRECATED_FUNCTION(3, 11, 0, "VecLockReadPop()", ) PetscErrorCode VecLockPop(Vec);
+  #define VecLocked(x, arg) VecSetErrorIfLocked(x, arg) PETSC_DEPRECATED_MACRO(3, 11, 0, "VecSetErrorIfLocked()", )
 #else
   #define VecLockReadPush(x)          PETSC_SUCCESS
   #define VecLockReadPop(x)           PETSC_SUCCESS
@@ -692,7 +694,7 @@ PETSC_EXTERN PETSC_DEPRECATED_FUNCTION("Use VecLockReadPop() (since version 3.11
   Entries to `VecOperation` are added as needed so if you do not see the operation listed which
   you'd like to replace, please send mail to `petsc-maint@mcs.anl.gov`!
 
-.seealso: [](chapter_vectors), `Vec`, `VecSetOperation()`
+.seealso: [](ch_vectors), `Vec`, `VecSetOperation()`
 E*/
 typedef enum {
   VECOP_DUPLICATE  = 0,
@@ -769,20 +771,18 @@ PETSC_EXTERN PetscErrorCode VecsCreateSeq(MPI_Comm, PetscInt, PetscInt, Vecs *);
 PETSC_EXTERN PetscErrorCode VecsCreateSeqWithArray(MPI_Comm, PetscInt, PetscInt, PetscScalar *, Vecs *);
 PETSC_EXTERN PetscErrorCode VecsDuplicate(Vecs, Vecs *);
 
-#if defined(PETSC_HAVE_VIENNACL)
+#if PetscDefined(HAVE_VIENNACL)
 typedef struct _p_PetscViennaCLIndices *PetscViennaCLIndices;
-PETSC_EXTERN PetscErrorCode             PetscViennaCLIndicesCreate(PetscInt, PetscInt *, PetscInt, PetscInt *, PetscViennaCLIndices *);
-PETSC_EXTERN PetscErrorCode             PetscViennaCLIndicesDestroy(PetscViennaCLIndices *);
 PETSC_EXTERN PetscErrorCode             VecViennaCLCopyToGPUSome_Public(Vec, PetscViennaCLIndices);
 PETSC_EXTERN PetscErrorCode             VecViennaCLCopyFromGPUSome_Public(Vec, PetscViennaCLIndices);
 PETSC_EXTERN PetscErrorCode             VecCreateSeqViennaCL(MPI_Comm, PetscInt, Vec *);
 PETSC_EXTERN PetscErrorCode             VecCreateMPIViennaCL(MPI_Comm, PetscInt, PetscInt, Vec *);
 #endif
-#if defined(PETSC_HAVE_CUDA) || defined(PETSC_HAVE_HIP)
+#if PetscDefined(HAVE_CUDA) || PetscDefined(HAVE_HIP)
 PETSC_EXTERN PetscErrorCode VecScatterInitializeForGPU(VecScatter, Vec);
 PETSC_EXTERN PetscErrorCode VecScatterFinalizeForGPU(VecScatter);
 #endif
-#if defined(PETSC_HAVE_KOKKOS_KERNELS)
+#if PetscDefined(HAVE_KOKKOS_KERNELS)
 PETSC_EXTERN PetscErrorCode VecCreateSeqKokkos(MPI_Comm, PetscInt, Vec *);
 PETSC_EXTERN PetscErrorCode VecCreateSeqKokkosWithArray(MPI_Comm, PetscInt, PetscInt, const PetscScalar *, Vec *);
 PETSC_EXTERN PetscErrorCode VecCreateMPIKokkos(MPI_Comm, PetscInt, PetscInt, Vec *);
@@ -797,14 +797,18 @@ PETSC_EXTERN PetscErrorCode VecCreateNest(MPI_Comm, PetscInt, IS *, Vec *, Vec *
 PETSC_EXTERN PetscErrorCode VecNestGetSize(Vec, PetscInt *);
 
 PETSC_EXTERN PetscErrorCode PetscOptionsGetVec(PetscOptions, const char[], const char[], Vec, PetscBool *);
-PETSC_EXTERN PetscErrorCode VecChop(Vec, PetscReal);
+PETSC_EXTERN PetscErrorCode VecFilter(Vec, PetscReal);
+PETSC_DEPRECATED_FUNCTION(3, 20, 0, "VecFilter()", ) static inline PetscErrorCode VecChop(Vec v, PetscReal tol)
+{
+  return VecFilter(v, tol);
+}
 
 PETSC_EXTERN PetscErrorCode VecGetLayout(Vec, PetscLayout *);
 PETSC_EXTERN PetscErrorCode VecSetLayout(Vec, PetscLayout);
 
 PETSC_EXTERN PetscErrorCode PetscSectionVecView(PetscSection, Vec, PetscViewer);
 PETSC_EXTERN PetscErrorCode VecGetValuesSection(Vec, PetscSection, PetscInt, PetscScalar **);
-PETSC_EXTERN PetscErrorCode VecSetValuesSection(Vec, PetscSection, PetscInt, PetscScalar[], InsertMode);
+PETSC_EXTERN PetscErrorCode VecSetValuesSection(Vec, PetscSection, PetscInt, const PetscScalar[], InsertMode);
 PETSC_EXTERN PetscErrorCode PetscSectionVecNorm(PetscSection, PetscSection, Vec, NormType, PetscReal[]);
 
 /*S
@@ -812,19 +816,19 @@ PETSC_EXTERN PetscErrorCode PetscSectionVecNorm(PetscSection, PetscSection, Vec,
               motivating application is the selection of cells for refinement or coarsening based on vector containing
               the values in an error indicator metric.
 
-  Level: advanced
-
   Values:
-+  `VECTAGGERABSOLUTE` - "absolute" values are in a box of explicitly defined values
-.  `VECTAGGERRELATIVE` - "relative" values are in a box of values relative to the set of all values in the vector
++  `VECTAGGERABSOLUTE` - "absolute" values are in a interval (box for complex values) of explicitly defined values
+.  `VECTAGGERRELATIVE` - "relative" values are in a interval (box for complex values) of values relative to the set of all values in the vector
 .  `VECTAGGERCDF` - "cdf" values are in a relative range of the *cumulative distribution* of values in the vector
 .  `VECTAGGEROR` - "or" values are in the union of other tags
 -  `VECTAGGERAND` - "and" values are in the intersection of other tags
 
+  Level: advanced
+
   Developer Note:
   Why not use a `DMLabel` or similar object
 
-.seealso: [](chapter_vectors), `Vec`, `VecTaggerType`, `VecTaggerCreate()`
+.seealso: [](ch_vectors), `Vec`, `VecTaggerType`, `VecTaggerCreate()`
 S*/
 typedef struct _p_VecTagger *VecTagger;
 
@@ -833,7 +837,7 @@ typedef struct _p_VecTagger *VecTagger;
 
   Level: advanced
 
-.seealso: [](chapter_vectors), `Vec`, `VecTagger`, `VecTaggerCreate()`
+.seealso: [](ch_vectors), `Vec`, `VecTagger`, `VecTaggerCreate()`
 J*/
 typedef const char *VecTaggerType;
 #define VECTAGGERABSOLUTE "absolute"
@@ -845,6 +849,7 @@ typedef const char *VecTaggerType;
 PETSC_EXTERN PetscClassId      VEC_TAGGER_CLASSID;
 PETSC_EXTERN PetscFunctionList VecTaggerList;
 PETSC_EXTERN PetscErrorCode    VecTaggerRegister(const char[], PetscErrorCode (*)(VecTagger));
+PETSC_EXTERN PetscErrorCode    VecTaggerRegisterAll(void);
 
 PETSC_EXTERN PetscErrorCode VecTaggerCreate(MPI_Comm, VecTagger *);
 PETSC_EXTERN PetscErrorCode VecTaggerSetBlockSize(VecTagger, PetscInt);
@@ -860,12 +865,12 @@ PETSC_EXTERN PetscErrorCode VecTaggerComputeIS(VecTagger, Vec, IS *, PetscBool *
 PETSC_EXTERN PetscErrorCode VecTaggerDestroy(VecTagger *);
 
 /*S
-   VecTaggerBox - A box range used to tag values.  For real scalars, this is just a closed interval; for complex scalars, the box is the closed region in the complex plane
-   such that real(min) <= real(z) <= real(max) and imag(min) <= imag(z) <= imag(max).  `INF` is an acceptable endpoint.
+   VecTaggerBox - A interval (box for complex numbers) range used to tag values.  For real scalars, this is just a closed interval; for complex scalars,
+   the box is the closed region in the complex plane such that real(min) <= real(z) <= real(max) and imag(min) <= imag(z) <= imag(max).  `INF` is an acceptable endpoint.
 
    Level: beginner
 
-.seealso: [](chapter_vectors), `Vec`, `VecTagger`, `VecTaggerType`, `VecTaggerCreate()`, `VecTaggerComputeIntervals()`
+.seealso: [](ch_vectors), `Vec`, `VecTagger`, `VecTaggerType`, `VecTaggerCreate()`, `VecTaggerComputeIntervals()`
 S*/
 typedef struct {
   PetscScalar min;
@@ -885,16 +890,16 @@ PETSC_EXTERN PetscErrorCode VecTaggerCDFGetBox(VecTagger, const VecTaggerBox **)
 /*E
   VecTaggerCDFMethod - Determines what method is used to compute absolute values from cumulative distribution values (e.g., what value is the preimage of .95 in the cdf).
 
-  Level: advanced
-
    Values:
 +  `VECTAGGER_CDF_GATHER` - gather results to rank 0, perform the computation and broadcast the result
 -  `VECTAGGER_CDF_ITERATIVE` - compute the results on all ranks iteratively using `MPI_Allreduce()`
 
+  Level: advanced
+
   Note:
   Relevant only in parallel: in serial it is directly computed.
 
-.seealso: [](chapter_vectors), `Vec`, `VecTagger`, `VecTaggerType`, `VecTaggerCreate()`, `VecTaggerCDFSetMethod()`, `VecTaggerCDFMethods`
+.seealso: [](ch_vectors), `Vec`, `VecTagger`, `VecTaggerType`, `VecTaggerCreate()`, `VecTaggerCDFSetMethod()`, `VecTaggerCDFMethods`
 E*/
 typedef enum {
   VECTAGGER_CDF_GATHER,
@@ -997,5 +1002,3 @@ VEC_HIP__DECL_OR_STUB(PetscErrorCode VecHIPResetArray(Vec a), (void)a)
 #undef VEC_CUPM_NOT_CONFIGURED
 #undef VEC_CUDA_DECL_OR_STUB
 #undef VEC_HIP__DECL_OR_STUB
-
-#endif

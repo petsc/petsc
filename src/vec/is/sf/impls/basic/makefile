@@ -1,7 +1,7 @@
 -include ../../../../../../petscdir.mk
 
 LIBBASE       = libpetscvec
-DIRS          = allgatherv allgather gatherv gather alltoall neighbor cuda hip kokkos nvshmem
+DIRS          = allgatherv allgather gatherv gather alltoall neighbor kokkos nvshmem cupm
 MANSEC        = Vec
 SUBMANSEC     = PetscSF
 

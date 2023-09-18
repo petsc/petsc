@@ -21,19 +21,19 @@ static PetscErrorCode PetscBagRegister_Private(PetscBag bag, PetscBagItem item, 
 }
 
 /*@C
-   PetscBagRegisterEnum - add an enum value to a `PetscBag`
+  PetscBagRegisterEnum - add an enum value to a `PetscBag`
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  bag - the bag of values
-.  addr - location of enum in struct, for example `&params->dt`
-.  list - array of strings containing names of enum values followed by enum name followed by enum prefix
-.  mdefault - the initial value, cast with (`PetscEnum`)
-.  name - the name of the item
--  help - longer string with more information about the value
+  Input Parameters:
++ bag      - the bag of values
+. addr     - location of enum in struct, for example `&params->dt`
+. list     - array of strings containing names of enum values followed by enum name followed by enum prefix
+. mdefault - the initial value, cast with (`PetscEnum`)
+. name     - the name of the item
+- help     - longer string with more information about the value
 
-   Level: beginner
+  Level: beginner
 
 .seealso: `PetscBag`, `PetscBagSetName()`, `PetscBagView()`, `PetscBagLoad()`, `PetscBagGetData()`
           `PetscBagRegisterInt()`, `PetscBagRegisterBool()`, `PetscBagRegisterScalar()`
@@ -47,11 +47,11 @@ PetscErrorCode PetscBagRegisterEnum(PetscBag bag, void *addr, const char *const 
   PetscInt     i = 0;
 
   PetscFunctionBegin;
-  PetscValidPointer(bag, 1);
-  PetscValidPointer(addr, 2);
-  PetscValidPointer(list, 3);
-  PetscValidCharPointer(name, 5);
-  PetscValidCharPointer(help, 6);
+  PetscAssertPointer(bag, 1);
+  PetscAssertPointer(addr, 2);
+  PetscAssertPointer(list, 3);
+  PetscAssertPointer(name, 5);
+  PetscAssertPointer(help, 6);
   nname[0] = '-';
   nname[1] = 0;
   PetscCall(PetscStrlcat(nname, name, PETSC_BAG_NAME_LENGTH));
@@ -78,18 +78,18 @@ PetscErrorCode PetscBagRegisterEnum(PetscBag bag, void *addr, const char *const 
 }
 
 /*@C
-   PetscBagRegisterIntArray - add a `PetscInt` array to a `PetscBag`
+  PetscBagRegisterIntArray - add a `PetscInt` array to a `PetscBag`
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  bag - the bag of values
-.  addr - location of integer in struct, for example `&params->i`
-.  msize - number of entries in array
-.  name - name of the array
--  help - longer string with more information about the value
+  Input Parameters:
++ bag   - the bag of values
+. addr  - location of integer in struct, for example `&params->i`
+. msize - number of entries in array
+. name  - name of the array
+- help  - longer string with more information about the value
 
-   Level: beginner
+  Level: beginner
 
 .seealso: `PetscBag`, `PetscBagSetName()`, `PetscBagView()`, `PetscBagLoad()`, `PetscBagGetData()`
           `PetscBagRegisterInt()`, `PetscBagRegisterBool()`, `PetscBagRegisterScalar()`
@@ -103,10 +103,10 @@ PetscErrorCode PetscBagRegisterIntArray(PetscBag bag, void *addr, PetscInt msize
   PetscInt     i, tmp = msize;
 
   PetscFunctionBegin;
-  PetscValidPointer(bag, 1);
-  PetscValidPointer(addr, 2);
-  PetscValidCharPointer(name, 4);
-  PetscValidCharPointer(help, 5);
+  PetscAssertPointer(bag, 1);
+  PetscAssertPointer(addr, 2);
+  PetscAssertPointer(name, 4);
+  PetscAssertPointer(help, 5);
   nname[0] = '-';
   nname[1] = 0;
   PetscCall(PetscStrlcat(nname, name, PETSC_BAG_NAME_LENGTH));
@@ -129,18 +129,18 @@ PetscErrorCode PetscBagRegisterIntArray(PetscBag bag, void *addr, PetscInt msize
 }
 
 /*@C
-   PetscBagRegisterRealArray - add a `PetscReal` array to a `PetscBag`
+  PetscBagRegisterRealArray - add a `PetscReal` array to a `PetscBag`
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  bag - the bag of values
-.  addr - location of real array in struct, for example `&params->d`
-.  msize - number of entries in the array
-.  name - name of the array
--  help - longer string with more information about the value
+  Input Parameters:
++ bag   - the bag of values
+. addr  - location of real array in struct, for example `&params->d`
+. msize - number of entries in the array
+. name  - name of the array
+- help  - longer string with more information about the value
 
-   Level: beginner
+  Level: beginner
 
 .seealso: `PetscBag`, `PetscBagSetName()`, `PetscBagView()`, `PetscBagLoad()`, `PetscBagGetData()`
           `PetscBagRegisterInt()`, `PetscBagRegisterBool()`, `PetscBagRegisterScalar()`
@@ -154,10 +154,10 @@ PetscErrorCode PetscBagRegisterRealArray(PetscBag bag, void *addr, PetscInt msiz
   PetscInt     i, tmp = msize;
 
   PetscFunctionBegin;
-  PetscValidPointer(bag, 1);
-  PetscValidPointer(addr, 2);
-  PetscValidCharPointer(name, 4);
-  PetscValidCharPointer(help, 5);
+  PetscAssertPointer(bag, 1);
+  PetscAssertPointer(addr, 2);
+  PetscAssertPointer(name, 4);
+  PetscAssertPointer(help, 5);
   nname[0] = '-';
   nname[1] = 0;
   PetscCall(PetscStrlcat(nname, name, PETSC_BAG_NAME_LENGTH));
@@ -180,18 +180,18 @@ PetscErrorCode PetscBagRegisterRealArray(PetscBag bag, void *addr, PetscInt msiz
 }
 
 /*@C
-   PetscBagRegisterInt - add a `PetscInt` value to a `PetscBag`
+  PetscBagRegisterInt - add a `PetscInt` value to a `PetscBag`
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  bag - the bag of values
-.  addr - location of integer in struct, for example `&params->i`
-.  mdefault - the initial value
-.  name - name of the integer
--  help - longer string with more information about the value
+  Input Parameters:
++ bag      - the bag of values
+. addr     - location of integer in struct, for example `&params->i`
+. mdefault - the initial value
+. name     - name of the integer
+- help     - longer string with more information about the value
 
-   Level: beginner
+  Level: beginner
 
 .seealso: `PetscBag`, `PetscBagSetName()`, `PetscBagView()`, `PetscBagLoad()`, `PetscBagGetData()`
           `PetscBagRegisterInt64()`, `PetscBagRegisterBool()`, `PetscBagRegisterScalar()`
@@ -204,10 +204,10 @@ PetscErrorCode PetscBagRegisterInt(PetscBag bag, void *addr, PetscInt mdefault, 
   PetscBool    printhelp;
 
   PetscFunctionBegin;
-  PetscValidPointer(bag, 1);
-  PetscValidPointer(addr, 2);
-  PetscValidCharPointer(name, 4);
-  PetscValidCharPointer(help, 5);
+  PetscAssertPointer(bag, 1);
+  PetscAssertPointer(addr, 2);
+  PetscAssertPointer(name, 4);
+  PetscAssertPointer(help, 5);
   nname[0] = '-';
   nname[1] = 0;
   PetscCall(PetscStrlcat(nname, name, PETSC_BAG_NAME_LENGTH));
@@ -227,18 +227,18 @@ PetscErrorCode PetscBagRegisterInt(PetscBag bag, void *addr, PetscInt mdefault, 
 }
 
 /*@C
-   PetscBagRegisterInt64 - add a `PetscInt64` value to a `PetscBag`
+  PetscBagRegisterInt64 - add a `PetscInt64` value to a `PetscBag`
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  bag - the bag of values
-.  addr - location of integer in struct, for example `&params->i`
-.  mdefault - the initial value
-.  name - name of the integer
--  help - longer string with more information about the value
+  Input Parameters:
++ bag      - the bag of values
+. addr     - location of integer in struct, for example `&params->i`
+. mdefault - the initial value
+. name     - name of the integer
+- help     - longer string with more information about the value
 
-   Level: beginner
+  Level: beginner
 
 .seealso: `PetscBag`, `PetscBagSetName()`, `PetscBagView()`, `PetscBagLoad()`, `PetscBagGetData()`
           `PetscBagRegisterInt()`, `PetscBagRegisterBool()`, `PetscBagRegisterScalar()`
@@ -273,18 +273,18 @@ PetscErrorCode PetscBagRegisterInt64(PetscBag bag, void *addr, PetscInt64 mdefau
 }
 
 /*@C
-   PetscBagRegisterBoolArray - add a n `PetscBool` values to a `PetscBag`
+  PetscBagRegisterBoolArray - add a n `PetscBool` values to a `PetscBag`
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  bag - the bag of values
-.  addr - location of boolean array in struct, for example `&params->b`
-.  msize - number of entries in array
-.  name - name of the boolean array
--  help - longer string with more information about the value
+  Input Parameters:
++ bag   - the bag of values
+. addr  - location of boolean array in struct, for example `&params->b`
+. msize - number of entries in array
+. name  - name of the boolean array
+- help  - longer string with more information about the value
 
-   Level: beginner
+  Level: beginner
 
 .seealso: `PetscBag`, `PetscBagSetName()`, `PetscBagView()`, `PetscBagLoad()`, `PetscBagGetData()`
           `PetscBagRegisterInt()`, `PetscBagRegisterBool()`, `PetscBagRegisterScalar()`
@@ -298,10 +298,10 @@ PetscErrorCode PetscBagRegisterBoolArray(PetscBag bag, void *addr, PetscInt msiz
   PetscInt     i, tmp = msize;
 
   PetscFunctionBegin;
-  PetscValidPointer(bag, 1);
-  PetscValidPointer(addr, 2);
-  PetscValidCharPointer(name, 4);
-  PetscValidCharPointer(help, 5);
+  PetscAssertPointer(bag, 1);
+  PetscAssertPointer(addr, 2);
+  PetscAssertPointer(name, 4);
+  PetscAssertPointer(help, 5);
   nname[0] = '-';
   nname[1] = 0;
   PetscCall(PetscStrlcat(nname, name, PETSC_BAG_NAME_LENGTH));
@@ -324,22 +324,22 @@ PetscErrorCode PetscBagRegisterBoolArray(PetscBag bag, void *addr, PetscInt msiz
 }
 
 /*@C
-   PetscBagRegisterString - add a string value to a `PetscBag`
+  PetscBagRegisterString - add a string value to a `PetscBag`
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  bag - the bag of values
-.  addr - location of start of string in struct, for example `&params->mystring`
-.  msize - length of the string space in the struct
-.  mdefault - the initial value
-.  name - name of the string
--  help - longer string with more information about the value
+  Input Parameters:
++ bag      - the bag of values
+. addr     - location of start of string in struct, for example `&params->mystring`
+. msize    - length of the string space in the struct
+. mdefault - the initial value
+. name     - name of the string
+- help     - longer string with more information about the value
 
-   Level: beginner
+  Level: beginner
 
-   Note:
-   The struct must have the field char mystring[`msize`]; not char *mystring
+  Note:
+  The struct must have the field char mystring[`msize`]; not char *mystring
 
 .seealso: `PetscBag`, `PetscBagSetName()`, `PetscBagView()`, `PetscBagLoad()`, `PetscBagGetData()`
           `PetscBagRegisterInt()`, `PetscBagRegisterBool()`, `PetscBagRegisterScalar()`
@@ -352,11 +352,11 @@ PetscErrorCode PetscBagRegisterString(PetscBag bag, void *addr, PetscInt msize, 
   PetscBool    printhelp;
 
   PetscFunctionBegin;
-  PetscValidPointer(bag, 1);
-  PetscValidPointer(addr, 2);
-  PetscValidCharPointer(mdefault, 4);
-  PetscValidCharPointer(name, 5);
-  PetscValidCharPointer(help, 6);
+  PetscAssertPointer(bag, 1);
+  PetscAssertPointer(addr, 2);
+  PetscAssertPointer(mdefault, 4);
+  PetscAssertPointer(name, 5);
+  PetscAssertPointer(help, 6);
   nname[0] = '-';
   nname[1] = 0;
   PetscCall(PetscStrlcat(nname, name, PETSC_BAG_NAME_LENGTH));
@@ -376,18 +376,18 @@ PetscErrorCode PetscBagRegisterString(PetscBag bag, void *addr, PetscInt msize, 
 }
 
 /*@C
-   PetscBagRegisterReal - add a `PetscReal` value to a `PetscBag`
+  PetscBagRegisterReal - add a `PetscReal` value to a `PetscBag`
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  bag - the bag of values
-.  addr - location of `PetscReal` in struct, for example `&params->r`
-.  mdefault - the initial value
-.  name - name of the variable
--  help - longer string with more information about the value
+  Input Parameters:
++ bag      - the bag of values
+. addr     - location of `PetscReal` in struct, for example `&params->r`
+. mdefault - the initial value
+. name     - name of the variable
+- help     - longer string with more information about the value
 
-   Level: beginner
+  Level: beginner
 
 .seealso: `PetscBag`, `PetscBagSetName()`, `PetscBagView()`, `PetscBagLoad()`, `PetscBagGetData()`
           `PetscBagRegisterInt()`, `PetscBagRegisterBool()`, `PetscBagRegisterScalar()`
@@ -400,10 +400,10 @@ PetscErrorCode PetscBagRegisterReal(PetscBag bag, void *addr, PetscReal mdefault
   PetscBool    printhelp;
 
   PetscFunctionBegin;
-  PetscValidPointer(bag, 1);
-  PetscValidPointer(addr, 2);
-  PetscValidCharPointer(name, 4);
-  PetscValidCharPointer(help, 5);
+  PetscAssertPointer(bag, 1);
+  PetscAssertPointer(addr, 2);
+  PetscAssertPointer(name, 4);
+  PetscAssertPointer(help, 5);
   nname[0] = '-';
   nname[1] = 0;
   PetscCall(PetscStrlcat(nname, name, PETSC_BAG_NAME_LENGTH));
@@ -423,22 +423,22 @@ PetscErrorCode PetscBagRegisterReal(PetscBag bag, void *addr, PetscReal mdefault
 }
 
 /*@C
-   PetscBagRegisterScalar - add a `PetscScalar` value to a `PetscBag`
+  PetscBagRegisterScalar - add a `PetscScalar` value to a `PetscBag`
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  bag - the bag of values
-.  addr - location of `PetscScalar` in struct, for example `&params->c`
-.  mdefault - the initial value
-.  name - name of the variable
--  help - longer string with more information about the value
+  Input Parameters:
++ bag      - the bag of values
+. addr     - location of `PetscScalar` in struct, for example `&params->c`
+. mdefault - the initial value
+. name     - name of the variable
+- help     - longer string with more information about the value
 
-   Level: beginner
+  Level: beginner
 
 .seealso: `PetscBag`, `PetscBagSetName()`, `PetscBagView()`, `PetscBagLoad()`, `PetscBagGetData()`
-          `PetscBagRegisterInt()`, `PetscBagRegisterBool()`, `PetscBagRegisterScalar()`
-          `PetscBagSetFromOptions()`, `PetscBagCreate()`, `PetscBagGetName()`, `PetscBagRegisterEnum()`
+          `PetscBagRegisterInt()`, `PetscBagRegisterBool()`, `PetscBagSetFromOptions()`,
+          `PetscBagCreate()`, `PetscBagGetName()`, `PetscBagRegisterEnum()`
 @*/
 PetscErrorCode PetscBagRegisterScalar(PetscBag bag, void *addr, PetscScalar mdefault, const char *name, const char *help)
 {
@@ -447,10 +447,10 @@ PetscErrorCode PetscBagRegisterScalar(PetscBag bag, void *addr, PetscScalar mdef
   PetscBool    printhelp;
 
   PetscFunctionBegin;
-  PetscValidPointer(bag, 1);
-  PetscValidPointer(addr, 2);
-  PetscValidCharPointer(name, 4);
-  PetscValidCharPointer(help, 5);
+  PetscAssertPointer(bag, 1);
+  PetscAssertPointer(addr, 2);
+  PetscAssertPointer(name, 4);
+  PetscAssertPointer(help, 5);
   nname[0] = '-';
   nname[1] = 0;
   PetscCall(PetscStrlcat(nname, name, PETSC_BAG_NAME_LENGTH));
@@ -470,21 +470,21 @@ PetscErrorCode PetscBagRegisterScalar(PetscBag bag, void *addr, PetscScalar mdef
 }
 
 /*@C
-   PetscBagRegisterBool - add a `PetscBool` to a `PetscBag`
+  PetscBagRegisterBool - add a `PetscBool` to a `PetscBag`
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  bag - the bag of values
-.  addr - location of `PetscBool` in struct, for example `&params->b`
-.  mdefault - the initial value, either `PETSC_FALSE` or `PETSC_TRUE`
-.  name - name of the variable
--  help - longer string with more information about the value
+  Input Parameters:
++ bag      - the bag of values
+. addr     - location of `PetscBool` in struct, for example `&params->b`
+. mdefault - the initial value, either `PETSC_FALSE` or `PETSC_TRUE`
+. name     - name of the variable
+- help     - longer string with more information about the value
 
-   Level: beginner
+  Level: beginner
 
 .seealso: `PetscBag`, `PetscBagSetName()`, `PetscBagView()`, `PetscBagLoad()`, `PetscBagGetData()`
-          `PetscBagRegisterInt()`, `PetscBagRegisterBool()`, `PetscBagRegisterScalar()`
+          `PetscBagRegisterInt()`, `PetscBagRegisterScalar()`
           `PetscBagSetFromOptions()`, `PetscBagCreate()`, `PetscBagGetName()`, `PetscBagRegisterEnum()`
 @*/
 PetscErrorCode PetscBagRegisterBool(PetscBag bag, void *addr, PetscBool mdefault, const char *name, const char *help)
@@ -494,10 +494,10 @@ PetscErrorCode PetscBagRegisterBool(PetscBag bag, void *addr, PetscBool mdefault
   PetscBool    printhelp;
 
   PetscFunctionBegin;
-  PetscValidPointer(bag, 1);
-  PetscValidPointer(addr, 2);
-  PetscValidCharPointer(name, 4);
-  PetscValidCharPointer(help, 5);
+  PetscAssertPointer(bag, 1);
+  PetscAssertPointer(addr, 2);
+  PetscAssertPointer(name, 4);
+  PetscAssertPointer(help, 5);
   /* the checks here with != PETSC_FALSE and PETSC_TRUE is a special case; here we truly demand that the value be 0 or 1 */
   PetscCheck(mdefault == PETSC_FALSE || mdefault == PETSC_TRUE, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Boolean %s %s must be boolean; integer value %d", name, help, (int)mdefault);
   nname[0] = '-';
@@ -519,14 +519,14 @@ PetscErrorCode PetscBagRegisterBool(PetscBag bag, void *addr, PetscBool mdefault
 }
 
 /*@C
-   PetscBagDestroy - Destroys a `PetscBag`
+  PetscBagDestroy - Destroys a `PetscBag`
 
-   Collective
+  Collective
 
-   Input Parameter:
-.  bag - the bag of values
+  Input Parameter:
+. bag - the bag of values
 
-   Level: beginner
+  Level: beginner
 
 .seealso: `PetscBag`, `PetscBagSetName()`, `PetscBagView()`, `PetscBagLoad()`, `PetscBagGetData()`
           `PetscBagRegisterReal()`, `PetscBagRegisterInt()`, `PetscBagRegisterBool()`, `PetscBagRegisterScalar()`
@@ -538,7 +538,7 @@ PetscErrorCode PetscBagDestroy(PetscBag *bag)
 
   PetscFunctionBegin;
   if (!*bag) PetscFunctionReturn(PETSC_SUCCESS);
-  PetscValidPointer(*bag, 1);
+  PetscAssertPointer(*bag, 1);
   nitem = (*bag)->bagitems;
   while (nitem) {
     PetscBagItem item = nitem->next;
@@ -553,21 +553,21 @@ PetscErrorCode PetscBagDestroy(PetscBag *bag)
 }
 
 /*@
-   PetscBagSetFromOptions - Allows setting entries to a `PetscBag` using the options database
+  PetscBagSetFromOptions - Allows setting entries to a `PetscBag` using the options database
 
-   Collective
+  Collective
 
-   Input Parameter:
-.  bag - the bag of values
+  Input Parameter:
+. bag - the bag of values
 
-   Level: beginner
+  Level: beginner
 
-   Note:
-   The options database keys for the entries are of the form `-[bagprefix]_name value`
+  Note:
+  The options database keys for the entries are of the form `-[bagprefix]_name value`
 
 .seealso: `PetscBag`, `PetscBagSetName()`, `PetscBagDestroy()`, `PetscBagLoad()`, `PetscBagGetData()`
           `PetscBagRegisterReal()`, `PetscBagRegisterInt()`, `PetscBagRegisterBool()`, `PetscBagRegisterScalar()`
-          `PetscBagSetFromOptions()`, `PetscBagCreate()`, `PetscBagGetName()`, `PetscBagView()`, `PetscBagRegisterEnum()`
+          `PetscBagCreate()`, `PetscBagGetName()`, `PetscBagView()`, `PetscBagRegisterEnum()`
 @*/
 PetscErrorCode PetscBagSetFromOptions(PetscBag bag)
 {
@@ -576,7 +576,7 @@ PetscErrorCode PetscBagSetFromOptions(PetscBag bag)
   PetscInt     n;
 
   PetscFunctionBegin;
-  PetscValidPointer(bag, 1);
+  PetscAssertPointer(bag, 1);
   PetscCall(PetscStrncpy(helpname, bag->bagname, sizeof(helpname)));
   PetscCall(PetscStrlcat(helpname, " ", sizeof(helpname)));
   PetscCall(PetscStrlcat(helpname, bag->baghelp, sizeof(helpname)));
@@ -629,19 +629,19 @@ PetscErrorCode PetscBagSetFromOptions(PetscBag bag)
 }
 
 /*@C
-   PetscBagView - Views a bag of values as either ASCII text or a binary file
+  PetscBagView - Views a bag of values as either ASCII text or a binary file
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  bag - the bag of values
--  viewer - location to view the values
+  Input Parameters:
++ bag  - the bag of values
+- view - location to view the values
 
-   Level: beginner
+  Level: beginner
 
-   Note:
-   Currently PETSc bags saved in a binary file can only be read back
-   in on a machine with the same binary format.
+  Note:
+  Currently PETSc bags saved in a binary file can only be read back
+  in on a machine with the same binary format.
 
 .seealso: `PetscBag`, `PetscBagSetName()`, `PetscBagDestroy()`, `PetscBagLoad()`, `PetscBagGetData()`
           `PetscBagRegisterReal()`, `PetscBagRegisterInt()`, `PetscBagRegisterBool()`, `PetscBagRegisterScalar()`, `PetscBagRegisterEnum()`
@@ -653,7 +653,7 @@ PetscErrorCode PetscBagView(PetscBag bag, PetscViewer view)
   PetscBagItem nitem = bag->bagitems;
 
   PetscFunctionBegin;
-  PetscValidPointer(bag, 1);
+  PetscAssertPointer(bag, 1);
   PetscValidHeaderSpecific(view, PETSC_VIEWER_CLASSID, 2);
   PetscCall(PetscObjectTypeCompare((PetscObject)view, PETSCVIEWERASCII, &isascii));
   PetscCall(PetscObjectTypeCompare((PetscObject)view, PETSCVIEWERBINARY, &isbinary));
@@ -756,8 +756,8 @@ PetscErrorCode PetscBagView(PetscBag bag, PetscViewer view)
   Collective
 
   Input Parameters:
-+ obj   - the object
-. bobj  - optional other object that provides prefix (if `NULL` then the prefix in obj is used)
++ bag        - the object
+. bobj       - optional other object that provides prefix (if `NULL` then the prefix in obj is used)
 - optionname - option to activate viewing
 
   Level: intermediate
@@ -775,7 +775,7 @@ PetscErrorCode PetscBagViewFromOptions(PetscBag bag, PetscObject bobj, const cha
   PetscFunctionBegin;
   if (incall) PetscFunctionReturn(PETSC_SUCCESS);
   incall = PETSC_TRUE;
-  PetscValidPointer(bag, 1);
+  PetscAssertPointer(bag, 1);
   if (bobj) PetscCall(PetscObjectGetOptionsPrefix(bobj, &bprefix));
   prefix = bobj ? bprefix : bag->bagprefix;
   PetscCall(PetscOptionsGetViewer(bag->bagcomm, NULL, prefix, optionname, &viewer, &format, &flg));
@@ -791,18 +791,18 @@ PetscErrorCode PetscBagViewFromOptions(PetscBag bag, PetscObject bobj, const cha
 }
 
 /*@C
-   PetscBagLoad - Loads a bag of values from a binary file
+  PetscBagLoad - Loads a bag of values from a binary file
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  viewer - file to load values from
--  bag - the bag of values
+  Input Parameters:
++ view - file to load values from
+- bag  - the bag of values
 
-   Level: beginner
+  Level: beginner
 
-   Note:
-    You must have created and registered all the fields in the bag before loading into it. This only loads values.
+  Note:
+  You must have created and registered all the fields in the bag before loading into it. This only loads values.
 
 .seealso: `PetscBag`, `PetscBagSetName()`, `PetscBagDestroy()`, `PetscBagView()`, `PetscBagGetData()`
           `PetscBagRegisterReal()`, `PetscBagRegisterInt()`, `PetscBagRegisterBool()`, `PetscBagRegisterScalar()`
@@ -819,7 +819,7 @@ PetscErrorCode PetscBagLoad(PetscViewer view, PetscBag bag)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(view, PETSC_VIEWER_CLASSID, 1);
-  PetscValidPointer(bag, 2);
+  PetscAssertPointer(bag, 2);
   PetscCall(PetscObjectGetComm((PetscObject)view, &comm));
   PetscCallMPI(MPI_Comm_compare(comm, bag->bagcomm, &flag));
   PetscCheck(flag == MPI_CONGRUENT || flag == MPI_IDENT, PETSC_COMM_SELF, PETSC_ERR_ARG_NOTSAMECOMM, "Different communicators in the viewer and bag");
@@ -865,37 +865,37 @@ PetscErrorCode PetscBagLoad(PetscViewer view, PetscBag bag)
 }
 
 /*@C
-    PetscBagCreate - Create a bag of values. A `PetscBag` is a representation of a C struct that can be saved to and read from files,
-    can have values set from the options database
+  PetscBagCreate - Create a bag of values. A `PetscBag` is a representation of a C struct that can be saved to and read from files,
+  can have values set from the options database
 
   Collective
 
   Input Parameters:
-+  comm - communicator to share bag
--  bagsize - size of the C structure holding the values, for example sizeof(mystruct)
++ comm    - communicator to share bag
+- bagsize - size of the C structure holding the values, for example sizeof(mystruct)
 
   Output Parameter:
-.   bag - the bag of values
+. bag - the bag of values
 
-  Level: Intermediate
+  Level: intermediate
 
-   Notes:
-   After creating the bag, for each entry in the C struct call the appropriate `PetscBagRegisterInt()` etc to define the C structs layout
+  Notes:
+  After creating the bag, for each entry in the C struct call the appropriate `PetscBagRegisterInt()` etc to define the C structs layout
 
-   The size of the A struct must be small enough to fit in a `PetscInt`; by default
-   `PetscInt` is 4 bytes; this means a bag cannot be larger than 2 gigabytes in length.
-   The warning about casting to a shorter length can be ignored below unless your A struct is too large
+  The size of the A struct must be small enough to fit in a `PetscInt`; by default
+  `PetscInt` is 4 bytes; this means a bag cannot be larger than 2 gigabytes in length.
+  The warning about casting to a shorter length can be ignored below unless your A struct is too large
 
 .seealso: `PetscBag`, `PetscBagGetName()`, `PetscBagView()`, `PetscBagLoad()`, `PetscBagGetData()`
           `PetscBagRegisterReal()`, `PetscBagRegisterInt()`, `PetscBagRegisterBool()`, `PetscBagRegisterScalar()`
-          `PetscBagSetFromOptions()`, `PetscBagCreate()`, `PetscBagDestroy()`, `PetscBagRegisterEnum()`
+          `PetscBagSetFromOptions()`, `PetscBagDestroy()`, `PetscBagRegisterEnum()`
 @*/
 PetscErrorCode PetscBagCreate(MPI_Comm comm, size_t bagsize, PetscBag *bag)
 {
   const size_t totalsize = bagsize + sizeof(struct _n_PetscBag) + sizeof(PetscScalar);
 
   PetscFunctionBegin;
-  PetscValidPointer(bag, 3);
+  PetscAssertPointer(bag, 3);
   PetscCall(PetscInfo(NULL, "Creating Bag with total size %d\n", (int)totalsize));
   PetscCall(PetscCalloc(totalsize, bag));
 
@@ -907,16 +907,16 @@ PetscErrorCode PetscBagCreate(MPI_Comm comm, size_t bagsize, PetscBag *bag)
 }
 
 /*@C
-    PetscBagSetName - Sets the name of a bag of values
+  PetscBagSetName - Sets the name of a bag of values
 
   Not Collective
 
-  Level: Intermediate
+  Level: intermediate
 
   Input Parameters:
-+   bag - the bag of values
-.   name - the name assigned to the bag
--   help - help message for bag
++ bag  - the bag of values
+. name - the name assigned to the bag
+- help - help message for bag
 
 .seealso: `PetscBag`, `PetscBagGetName()`, `PetscBagView()`, `PetscBagLoad()`, `PetscBagGetData()`
           `PetscBagRegisterReal()`, `PetscBagRegisterInt()`, `PetscBagRegisterBool()`, `PetscBagRegisterScalar()`
@@ -925,26 +925,26 @@ PetscErrorCode PetscBagCreate(MPI_Comm comm, size_t bagsize, PetscBag *bag)
 PetscErrorCode PetscBagSetName(PetscBag bag, const char *name, const char *help)
 {
   PetscFunctionBegin;
-  PetscValidPointer(bag, 1);
-  PetscValidCharPointer(name, 2);
-  PetscValidCharPointer(help, 3);
+  PetscAssertPointer(bag, 1);
+  PetscAssertPointer(name, 2);
+  PetscAssertPointer(help, 3);
   PetscCall(PetscStrncpy(bag->bagname, name, PETSC_BAG_NAME_LENGTH - 1));
   PetscCall(PetscStrncpy(bag->baghelp, help, PETSC_BAG_HELP_LENGTH - 1));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
-    PetscBagGetName - Gets the name of a bag of values
+  PetscBagGetName - Gets the name of a bag of values
 
   Not Collective
 
-  Level: Intermediate
+  Level: intermediate
 
   Input Parameter:
-.   bag - the bag of values
+. bag - the bag of values
 
   Output Parameter:
-.   name - the name assigned to the bag
+. name - the name assigned to the bag
 
 .seealso: `PetscBag`, `PetscBagSetName()`, `PetscBagView()`, `PetscBagLoad()`, `PetscBagGetData()`
           `PetscBagRegisterReal()`, `PetscBagRegisterInt()`, `PetscBagRegisterBool()`, `PetscBagRegisterScalar()`
@@ -953,26 +953,26 @@ PetscErrorCode PetscBagSetName(PetscBag bag, const char *name, const char *help)
 PetscErrorCode PetscBagGetName(PetscBag bag, char **name)
 {
   PetscFunctionBegin;
-  PetscValidPointer(bag, 1);
-  PetscValidPointer(name, 2);
+  PetscAssertPointer(bag, 1);
+  PetscAssertPointer(name, 2);
   *name = bag->bagname;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
-    PetscBagGetData - Gives back the user - access to memory that
-    can be used for storing user-data-structure
+  PetscBagGetData - Gives back the user - access to memory that
+  can be used for storing user-data-structure
 
   Not Collective
 
   Input Parameter:
-.   bag - the bag of values
+. bag - the bag of values
 
   Output Parameter:
-.   data - pointer to memory that will have user-data-structure, this can be cast to a pointer of the type the C struct used in
+. data - pointer to memory that will have user-data-structure, this can be cast to a pointer of the type the C struct used in
     defining the bag
 
-  Level: Intermediate
+  Level: intermediate
 
 .seealso: `PetscBag`, `PetscBagSetName()`, `PetscBagView()`, `PetscBagLoad()`
           `PetscBagRegisterReal()`, `PetscBagRegisterInt()`, `PetscBagRegisterBool()`, `PetscBagRegisterScalar()`
@@ -981,8 +981,8 @@ PetscErrorCode PetscBagGetName(PetscBag bag, char **name)
 PetscErrorCode PetscBagGetData(PetscBag bag, void **data)
 {
   PetscFunctionBegin;
-  PetscValidPointer(bag, 1);
-  PetscValidPointer(data, 2);
+  PetscAssertPointer(bag, 1);
+  PetscAssertPointer(data, 2);
   *data = bag->structlocation;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -993,11 +993,11 @@ PetscErrorCode PetscBagGetData(PetscBag bag, void **data)
 
   Logically Collective
 
-  Level: Intermediate
+  Level: intermediate
 
   Input Parameters:
-+   bag - the bag of values
--   prefix - the prefix to prepend all Bag item names with.
++ bag - the bag of values
+- pre - the prefix to prepend all Bag item names with.
 
   Note:
   Must be called prior to registering any of the bag items.
@@ -1005,13 +1005,12 @@ PetscErrorCode PetscBagGetData(PetscBag bag, void **data)
 .seealso: `PetscBag`, `PetscBagRegisterReal()`, `PetscBagRegisterInt()`, `PetscBagRegisterBool()`, `PetscBagRegisterScalar()`
           `PetscBagSetFromOptions()`, `PetscBagCreate()`, `PetscBagDestroy()`, `PetscBagRegisterEnum()`
 @*/
-
 PetscErrorCode PetscBagSetOptionsPrefix(PetscBag bag, const char pre[])
 {
   PetscFunctionBegin;
-  PetscValidPointer(bag, 1);
+  PetscAssertPointer(bag, 1);
   if (pre) {
-    PetscValidCharPointer(pre, 2);
+    PetscAssertPointer(pre, 2);
     PetscCheck(pre[0] != '-', PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Options prefix should not begin with a hyphen");
     PetscCall(PetscFree(bag->bagprefix));
     PetscCall(PetscStrallocpy(pre, &(bag->bagprefix)));
@@ -1025,7 +1024,7 @@ PetscErrorCode PetscBagSetOptionsPrefix(PetscBag bag, const char pre[])
   Not Collective
 
   Input Parameter:
-. bag   - the bag of values
+. bag - the bag of values
 
   Output Parameter:
 . names - array of char pointers for names
@@ -1040,8 +1039,8 @@ PetscErrorCode PetscBagGetNames(PetscBag bag, const char *names[])
   PetscBagItem nitem = bag->bagitems;
 
   PetscFunctionBegin;
-  PetscValidPointer(bag, 1);
-  PetscValidPointer(names, 2);
+  PetscAssertPointer(bag, 1);
+  PetscAssertPointer(names, 2);
   for (PetscInt n = 0; nitem; ++n, nitem = nitem->next) names[n] = nitem->name;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

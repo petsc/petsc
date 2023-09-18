@@ -19,7 +19,7 @@ PetscErrorCode PetscCUBLASGetHandle(cublasHandle_t *handle)
   PetscDeviceContext dctx;
 
   PetscFunctionBegin;
-  PetscValidPointer(handle, 1);
+  PetscAssertPointer(handle, 1);
   PetscCall(PetscDeviceContextGetCurrentContextAssertType_Internal(&dctx, PETSC_DEVICE_CUDA));
   PetscCall(PetscDeviceContextGetBLASHandle_Internal(dctx, handle));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -30,8 +30,21 @@ PetscErrorCode PetscCUSOLVERDnGetHandle(cusolverDnHandle_t *handle)
   PetscDeviceContext dctx;
 
   PetscFunctionBegin;
-  PetscValidPointer(handle, 1);
+  PetscAssertPointer(handle, 1);
   PetscCall(PetscDeviceContextGetCurrentContextAssertType_Internal(&dctx, PETSC_DEVICE_CUDA));
   PetscCall(PetscDeviceContextGetSOLVERHandle_Internal(dctx, handle));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+PetscErrorCode PetscGetCurrentCUDAStream(cudaStream_t *stream)
+{
+  PetscDeviceContext dctx;
+  void              *handle;
+
+  PetscFunctionBegin;
+  PetscAssertPointer(stream, 1);
+  PetscCall(PetscDeviceContextGetCurrentContextAssertType_Internal(&dctx, PETSC_DEVICE_CUDA));
+  PetscCall(PetscDeviceContextGetStreamHandle(dctx, &handle));
+  *stream = *(cudaStream_t *)handle;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

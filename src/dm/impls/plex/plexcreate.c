@@ -7,7 +7,7 @@
 #include <petsc/private/kernels/blockmatmult.h>
 #include <petsc/private/kernels/blockinvert.h>
 
-PetscLogEvent DMPLEX_CreateFromFile, DMPLEX_BuildFromCellList, DMPLEX_BuildCoordinatesFromCellList;
+PetscLogEvent DMPLEX_CreateFromFile, DMPLEX_CreateFromOptions, DMPLEX_BuildFromCellList, DMPLEX_BuildCoordinatesFromCellList;
 
 /* External function declarations here */
 static PetscErrorCode DMInitialize_Plex(DM dm);
@@ -180,13 +180,13 @@ PetscErrorCode DMPlexInterpolateInPlace_Internal(DM dm)
   Collective
 
   Input Parameters:
-+ DM        - The `DMPLEX`
++ dm        - The `DMPLEX`
 . degree    - The degree of the finite element or `PETSC_DECIDE`
 - coordFunc - An optional function to map new points from refinement to the surface
 
   Level: advanced
 
-.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `PetscPointFunc`, `PetscFECreateLagrange()`, `DMGetCoordinateDM()`
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `PetscPointFunc`, `PetscFECreateLagrange()`, `DMGetCoordinateDM()`
 @*/
 PetscErrorCode DMPlexCreateCoordinateSpace(DM dm, PetscInt degree, PetscPointFunc coordFunc)
 {
@@ -220,7 +220,7 @@ PetscErrorCode DMPlexCreateCoordinateSpace(DM dm, PetscInt degree, PetscPointFun
       if (cEnd > cStart) PetscCall(DMPlexGetCellType(dm, cStart, &ct));
       else ct = DM_POLYTOPE_UNKNOWN;
       ctTmp = (PetscInt)ct;
-      PetscCallMPI(MPI_Allreduce(MPI_IN_PLACE, &ctTmp, 1, MPIU_INT, MPI_MIN, PetscObjectComm((PetscObject)dm)));
+      PetscCall(MPIU_Allreduce(MPI_IN_PLACE, &ctTmp, 1, MPIU_INT, MPI_MIN, PetscObjectComm((PetscObject)dm)));
       ct = (DMPolytopeType)ctTmp;
       // Work around current bug
       if (ct == DM_POLYTOPE_SEG_PRISM_TENSOR || ct == DM_POLYTOPE_TRI_PRISM_TENSOR || ct == DM_POLYTOPE_QUAD_PRISM_TENSOR) fe = NULL;
@@ -239,18 +239,18 @@ PetscErrorCode DMPlexCreateCoordinateSpace(DM dm, PetscInt degree, PetscPointFun
   Collective
 
   Input Parameters:
-+ comm - The communicator for the `DM` object
-. dim - The spatial dimension
-. simplex - Flag for simplicial cells, otherwise they are tensor product cells
-. interpolate - Flag to create intermediate mesh pieces (edges, faces)
++ comm            - The communicator for the `DM` object
+. dim             - The spatial dimension
+. simplex         - Flag for simplicial cells, otherwise they are tensor product cells
+. interpolate     - Flag to create intermediate mesh pieces (edges, faces)
 - refinementLimit - A nonzero number indicates the largest admissible volume for a refined cell
 
   Output Parameter:
-. dm - The `DM` object
+. newdm - The `DM` object
 
   Level: beginner
 
-.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMSetType()`, `DMCreate()`
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMSetType()`, `DMCreate()`
 @*/
 PetscErrorCode DMPlexCreateDoublet(MPI_Comm comm, PetscInt dim, PetscBool simplex, PetscBool interpolate, PetscReal refinementLimit, DM *newdm)
 {
@@ -740,11 +740,11 @@ static PetscErrorCode DMPlexCreateBoxSurfaceMesh_Internal(DM dm, PetscInt dim, c
 - interpolate - Flag to create intermediate mesh pieces (edges, faces)
 
   Output Parameter:
-. dm  - The `DM` object
+. dm - The `DM` object
 
   Level: beginner
 
-.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMSetFromOptions()`, `DMPlexCreateBoxMesh()`, `DMPlexCreateFromFile()`, `DMSetType()`, `DMCreate()`
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMSetFromOptions()`, `DMPlexCreateBoxMesh()`, `DMPlexCreateFromFile()`, `DMSetType()`, `DMCreate()`
 @*/
 PetscErrorCode DMPlexCreateBoxSurfaceMesh(MPI_Comm comm, PetscInt dim, const PetscInt faces[], const PetscReal lower[], const PetscReal upper[], PetscBool interpolate, DM *dm)
 {
@@ -772,7 +772,7 @@ static PetscErrorCode DMPlexCreateLineMesh_Internal(DM dm, PetscInt segments, Pe
   PetscMPIInt  rank;
 
   PetscFunctionBegin;
-  PetscValidPointer(dm, 1);
+  PetscAssertPointer(dm, 1);
 
   PetscCall(DMSetDimension(dm, 1));
   PetscCall(DMCreateLabel(dm, "marker"));
@@ -823,7 +823,7 @@ static PetscErrorCode DMPlexCreateBoxMesh_Simplex_Internal(DM dm, PetscInt dim, 
   DMLabel bdlabel;
 
   PetscFunctionBegin;
-  PetscValidPointer(dm, 1);
+  PetscAssertPointer(dm, 1);
   for (PetscInt i = 0; i < dim; ++i) PetscCheck(periodicity[i] == DM_BOUNDARY_NONE, PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Periodicity is not supported for simplex meshes");
   PetscCall(DMCreate(PetscObjectComm((PetscObject)dm), &boundary));
   PetscCall(DMSetType(boundary, DMPLEX));
@@ -1268,7 +1268,7 @@ static PetscErrorCode DMPlexCreateBoxMesh_Tensor_Internal(DM dm, PetscInt dim, c
   PetscInt       fac[3] = {0, 0, 0}, d;
 
   PetscFunctionBegin;
-  PetscValidPointer(dm, 1);
+  PetscAssertPointer(dm, 1);
   PetscValidLogicalCollectiveInt(dm, dim, 2);
   PetscCall(DMSetDimension(dm, dim));
   for (d = 0; d < dim; ++d) {
@@ -1327,20 +1327,20 @@ static PetscErrorCode DMPlexCreateBoxMesh_Internal(DM dm, DMPlexShape shape, Pet
 - interpolate - Flag to create intermediate mesh pieces (edges, faces)
 
   Output Parameter:
-. dm  - The `DM` object
+. dm - The `DM` object
 
   Level: beginner
 
   Note:
-   To customize this mesh using options, use
+  To customize this mesh using options, use
 .vb
   DMCreate(comm, &dm);
   DMSetType(dm, DMPLEX);
   DMSetFromOptions(dm);
 .ve
-and use the options in `DMSetFromOptions()`.
+  and use the options in `DMSetFromOptions()`.
 
-  Here is the numbering returned for 2 faces in each direction for tensor cells:
+  Here is the numbering returned for 2 faces in each direction for tensor cells\:
 .vb
  10---17---11---18----12
   |         |         |
@@ -1356,7 +1356,7 @@ and use the options in `DMSetFromOptions()`.
   |         |         |
   4---13----5---14----6
 .ve
-and for simplicial cells
+  and for simplicial cells
 .vb
  14----8---15----9----16
   |\     5  |\      7 |
@@ -1373,7 +1373,7 @@ and for simplicial cells
   8----4----9----5----10
 .ve
 
-.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMSetFromOptions()`, `DMPlexCreateFromFile()`, `DMPlexCreateHexCylinderMesh()`, `DMSetType()`, `DMCreate()`
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMSetFromOptions()`, `DMPlexCreateFromFile()`, `DMPlexCreateHexCylinderMesh()`, `DMSetType()`, `DMCreate()`
 @*/
 PetscErrorCode DMPlexCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscBool simplex, const PetscInt faces[], const PetscReal lower[], const PetscReal upper[], const DMBoundaryType periodicity[], PetscBool interpolate, DM *dm)
 {
@@ -1396,13 +1396,14 @@ static PetscErrorCode DMPlexCreateWedgeBoxMesh_Internal(DM dm, const PetscInt fa
   PetscInt i;
 
   PetscFunctionBegin;
+  // TODO Now we can support periodicity
   for (i = 0; i < 3; ++i) PetscCheck(periodicity[i] == DM_BOUNDARY_NONE, PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Periodicity not yet supported");
   PetscCall(DMCreate(PetscObjectComm((PetscObject)dm), &bdm));
   PetscCall(DMSetType(bdm, DMPLEX));
   PetscCall(DMSetDimension(bdm, 2));
   PetscCall(PetscLogEventBegin(DMPLEX_Generate, bdm, 0, 0, 0));
   PetscCall(DMPlexCreateBoxMesh_Simplex_Internal(bdm, 2, faces, lower, upper, periodicity, PETSC_TRUE));
-  PetscCall(DMPlexExtrude(bdm, faces[2], upper[2] - lower[2], PETSC_TRUE, PETSC_FALSE, NULL, NULL, &vol));
+  PetscCall(DMPlexExtrude(bdm, faces[2], upper[2] - lower[2], PETSC_TRUE, PETSC_FALSE, PETSC_FALSE, NULL, NULL, &vol));
   PetscCall(PetscLogEventEnd(DMPLEX_Generate, bdm, 0, 0, 0));
   PetscCall(DMDestroy(&bdm));
   PetscCall(DMPlexReplace_Internal(dm, &vol));
@@ -1438,11 +1439,11 @@ static PetscErrorCode DMPlexCreateWedgeBoxMesh_Internal(DM dm, const PetscInt fa
 - interpolate - Flag to create intermediate mesh pieces (edges, faces)
 
   Output Parameter:
-. dm  - The `DM` object
+. dm - The `DM` object
 
   Level: beginner
 
-.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexCreateHexCylinderMesh()`, `DMPlexCreateWedgeCylinderMesh()`, `DMExtrude()`, `DMPlexCreateBoxMesh()`, `DMSetType()`, `DMCreate()`
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexCreateHexCylinderMesh()`, `DMPlexCreateWedgeCylinderMesh()`, `DMExtrude()`, `DMPlexCreateBoxMesh()`, `DMSetType()`, `DMCreate()`
 @*/
 PetscErrorCode DMPlexCreateWedgeBoxMesh(MPI_Comm comm, const PetscInt faces[], const PetscReal lower[], const PetscReal upper[], const DMBoundaryType periodicity[], PetscBool orderHeight, PetscBool interpolate, DM *dm)
 {
@@ -1641,14 +1642,14 @@ static PetscErrorCode DMPlexCreateHypercubicMesh_Internal(DM dm, PetscInt dim, c
   Collective
 
   Input Parameters:
-+ comm        - The communicator for the DM object
-. dim         - The spatial dimension
-. edges       - Number of edges per dimension, or `NULL` for (1,) in 1D and (2, 2) in 2D and (1, 1, 1) in 3D
-. lower       - The lower left corner, or `NULL` for (0, 0, 0)
-- upper       - The upper right corner, or `NULL` for (1, 1, 1)
++ comm  - The communicator for the DM object
+. dim   - The spatial dimension
+. edges - Number of edges per dimension, or `NULL` for (1,) in 1D and (2, 2) in 2D and (1, 1, 1) in 3D
+. lower - The lower left corner, or `NULL` for (0, 0, 0)
+- upper - The upper right corner, or `NULL` for (1, 1, 1)
 
   Output Parameter:
-. dm  - The DM object
+. dm - The DM object
 
   Level: beginner
 
@@ -1678,7 +1679,7 @@ static PetscErrorCode DMPlexCreateHypercubicMesh_Internal(DM dm, PetscInt dim, c
  18--0-19--2-20--4-18
 .ve
 
-.seealso: DMSetFromOptions(), DMPlexCreateFromFile(), DMPlexCreateHexCylinderMesh(), DMSetType(), DMCreate()
+.seealso: `DMSetFromOptions()`, `DMPlexCreateFromFile()`, `DMPlexCreateHexCylinderMesh()`, `DMSetType()`, `DMCreate()`
 @*/
 PetscErrorCode DMPlexCreateHypercubicMesh(MPI_Comm comm, PetscInt dim, const PetscInt edges[], const PetscReal lower[], const PetscReal upper[], DM *dm)
 {
@@ -1708,7 +1709,7 @@ PetscErrorCode DMPlexCreateHypercubicMesh(MPI_Comm comm, PetscInt dim, const Pet
   Logically Collective
 
   Input Parameters:
-+ dm - the `DM` context
++ dm     - the `DM` context
 - prefix - the prefix to prepend to all option names
 
   Level: advanced
@@ -1717,7 +1718,7 @@ PetscErrorCode DMPlexCreateHypercubicMesh(MPI_Comm comm, PetscInt dim, const Pet
   A hyphen (-) must NOT be given at the beginning of the prefix name.
   The first character of all runtime options is AUTOMATICALLY the hyphen.
 
-.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `SNESSetFromOptions()`
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `SNESSetFromOptions()`
 @*/
 PetscErrorCode DMPlexSetOptionsPrefix(DM dm, const char prefix[])
 {
@@ -2139,12 +2140,12 @@ static PetscErrorCode DMPlexCreateHexCylinderMesh_Internal(DM dm, DMBoundaryType
 - periodicZ - The boundary type for the Z direction
 
   Output Parameter:
-. dm  - The `DM` object
+. dm - The `DM` object
 
   Level: beginner
 
   Note:
-  Here is the output numbering looking from the bottom of the cylinder:
+  Here is the output numbering looking from the bottom of the cylinder\:
 .vb
        17-----14
         |     |
@@ -2177,12 +2178,12 @@ static PetscErrorCode DMPlexCreateHexCylinderMesh_Internal(DM dm, DMBoundaryType
        20-----15
 .ve
 
-.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexCreateBoxMesh()`, `DMSetType()`, `DMCreate()`
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexCreateBoxMesh()`, `DMSetType()`, `DMCreate()`
 @*/
 PetscErrorCode DMPlexCreateHexCylinderMesh(MPI_Comm comm, DMBoundaryType periodicZ, DM *dm)
 {
   PetscFunctionBegin;
-  PetscValidPointer(dm, 3);
+  PetscAssertPointer(dm, 3);
   PetscCall(DMCreate(comm, dm));
   PetscCall(DMSetType(*dm, DMPLEX));
   PetscCall(DMPlexCreateHexCylinderMesh_Internal(*dm, periodicZ));
@@ -2281,21 +2282,21 @@ static PetscErrorCode DMPlexCreateWedgeCylinderMesh_Internal(DM dm, PetscInt n, 
   Collective
 
   Input Parameters:
-+ comm - The communicator for the `DM` object
-. n    - The number of wedges around the origin
++ comm        - The communicator for the `DM` object
+. n           - The number of wedges around the origin
 - interpolate - Create edges and faces
 
   Output Parameter:
-. dm  - The `DM` object
+. dm - The `DM` object
 
   Level: beginner
 
-.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexCreateHexCylinderMesh()`, `DMPlexCreateBoxMesh()`, `DMSetType()`, `DMCreate()`
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexCreateHexCylinderMesh()`, `DMPlexCreateBoxMesh()`, `DMSetType()`, `DMCreate()`
 @*/
 PetscErrorCode DMPlexCreateWedgeCylinderMesh(MPI_Comm comm, PetscInt n, PetscBool interpolate, DM *dm)
 {
   PetscFunctionBegin;
-  PetscValidPointer(dm, 4);
+  PetscAssertPointer(dm, 4);
   PetscCall(DMCreate(comm, dm));
   PetscCall(DMSetType(*dm, DMPLEX));
   PetscCall(DMPlexCreateWedgeCylinderMesh_Internal(*dm, n, interpolate));
@@ -3495,17 +3496,17 @@ static PetscErrorCode DMPlexCreateTPSMesh_Internal(DM dm, DMPlexTPSType tpstype,
   Collective
 
   Input Parameters:
-+ comm   - The communicator for the `DM` object
-. tpstype - Type of triply-periodic surface
-. extent - Array of length 3 containing number of periods in each direction
-. periodic - array of length 3 with periodicity, or `NULL` for non-periodic
++ comm           - The communicator for the `DM` object
+. tpstype        - Type of triply-periodic surface
+. extent         - Array of length 3 containing number of periods in each direction
+. periodic       - array of length 3 with periodicity, or `NULL` for non-periodic
 . tps_distribute - Distribute 2D manifold mesh prior to refinement and extrusion (more scalable)
-. refinements - Number of factor-of-2 refinements of 2D manifold mesh
-. layers - Number of cell layers extruded in normal direction
-- thickness - Thickness in normal direction
+. refinements    - Number of factor-of-2 refinements of 2D manifold mesh
+. layers         - Number of cell layers extruded in normal direction
+- thickness      - Thickness in normal direction
 
   Output Parameter:
-. dm  - The `DM` object
+. dm - The `DM` object
 
   Level: beginner
 
@@ -3520,14 +3521,14 @@ static PetscErrorCode DMPlexCreateTPSMesh_Internal(DM dm, DMPlexTPSType tpstype,
   The face (edge) sets for the Schwarz P surface are numbered 1(-x), 2(+x), 3(-y), 4(+y), 5(-z), 6(+z).
   When the mesh is refined, "Face Sets" contain the new vertices (created during refinement).  Use `DMPlexLabelComplete()` to propagate to coarse-level vertices.
 
-  Developer Note:
+  Developer Notes:
   The Gyroid mesh does not currently mark boundary sets.
 
   References:
 . * - Maskery et al, Insights into the mechanical properties of several triply periodic minimal surface lattice structures made by polymer additive manufacturing, 2017.
-    https://doi.org/10.1016/j.polymer.2017.11.049
+  https://doi.org/10.1016/j.polymer.2017.11.049
 
-.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexCreateSphereMesh()`, `DMSetType()`, `DMCreate()`
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexCreateSphereMesh()`, `DMSetType()`, `DMCreate()`
 @*/
 PetscErrorCode DMPlexCreateTPSMesh(MPI_Comm comm, DMPlexTPSType tpstype, const PetscInt extent[], const DMBoundaryType periodic[], PetscBool tps_distribute, PetscInt refinements, PetscInt layers, PetscReal thickness, DM *dm)
 {
@@ -3550,16 +3551,16 @@ PetscErrorCode DMPlexCreateTPSMesh(MPI_Comm comm, DMPlexTPSType tpstype, const P
 - R       - The radius
 
   Output Parameter:
-. dm  - The `DM` object
+. dm - The `DM` object
 
   Level: beginner
 
-.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexCreateBallMesh()`, `DMPlexCreateBoxMesh()`, `DMSetType()`, `DMCreate()`
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexCreateBallMesh()`, `DMPlexCreateBoxMesh()`, `DMSetType()`, `DMCreate()`
 @*/
 PetscErrorCode DMPlexCreateSphereMesh(MPI_Comm comm, PetscInt dim, PetscBool simplex, PetscReal R, DM *dm)
 {
   PetscFunctionBegin;
-  PetscValidPointer(dm, 5);
+  PetscAssertPointer(dm, 5);
   PetscCall(DMCreate(comm, dm));
   PetscCall(DMSetType(*dm, DMPLEX));
   PetscCall(DMPlexCreateSphereMesh_Internal(*dm, dim, simplex, R));
@@ -3594,19 +3595,19 @@ static PetscErrorCode DMPlexCreateBallMesh_Internal(DM dm, PetscInt dim, PetscRe
   Collective
 
   Input Parameters:
-+ comm  - The communicator for the `DM` object
-. dim   - The dimension
-- R     - The radius
++ comm - The communicator for the `DM` object
+. dim  - The dimension
+- R    - The radius
 
   Output Parameter:
-. dm  - The `DM` object
+. dm - The `DM` object
 
   Options Database Key:
-- bd_dm_refine - This will refine the surface mesh preserving the sphere geometry
+. bd_dm_refine - This will refine the surface mesh preserving the sphere geometry
 
   Level: beginner
 
-.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexCreateSphereMesh()`, `DMPlexCreateBoxMesh()`, `DMSetType()`, `DMCreate()`
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexCreateSphereMesh()`, `DMPlexCreateBoxMesh()`, `DMSetType()`, `DMCreate()`
 @*/
 PetscErrorCode DMPlexCreateBallMesh(MPI_Comm comm, PetscInt dim, PetscReal R, DM *dm)
 {
@@ -3772,7 +3773,7 @@ static PetscErrorCode DMPlexCreateReferenceCell_Internal(DM rdm, DMPolytopeType 
 
   Level: intermediate
 
-.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexCreateReferenceCell()`, `DMPlexCreateBoxMesh()`
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexCreateBoxMesh()`
 @*/
 PetscErrorCode DMPlexCreateReferenceCell(MPI_Comm comm, DMPolytopeType ct, DM *refdm)
 {
@@ -3832,6 +3833,7 @@ static PetscErrorCode DMPlexCreateFromOptions_Internal(PetscOptionItems *PetscOp
   char           plexname[PETSC_MAX_PATH_LEN]   = "";
 
   PetscFunctionBegin;
+  PetscCall(PetscLogEventBegin(DMPLEX_CreateFromOptions, dm, 0, 0, 0));
   PetscCall(PetscObjectGetComm((PetscObject)dm, &comm));
   /* TODO Turn this into a registration interface */
   PetscCall(PetscOptionsString("-dm_plex_filename", "File containing a mesh", "DMPlexCreateFromFile", filename, filename, sizeof(filename), &fflg));
@@ -4044,6 +4046,7 @@ static PetscErrorCode DMPlexCreateFromOptions_Internal(PetscOptionItems *PetscOp
   }
   PetscCall(DMPlexSetRefinementUniform(dm, PETSC_TRUE));
   if (!((PetscObject)dm)->name && nameflg) PetscCall(PetscObjectSetName((PetscObject)dm, plexname));
+  PetscCall(PetscLogEventEnd(DMPLEX_CreateFromOptions, dm, 0, 0, 0));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -4256,6 +4259,13 @@ static PetscErrorCode DMSetFromOptions_Plex(DM dm, PetscOptionItems *PetscOption
     PetscCall(PetscPartitionerSetFromOptions(part));
     PetscCall(DMPlexDistribute(dm, overlap, NULL, &pdm));
     if (pdm) PetscCall(DMPlexReplace_Internal(dm, &pdm));
+  }
+  /* Must check CEED options before creating function space for coordinates */
+  {
+    PetscBool useCeed = PETSC_FALSE, flg;
+
+    PetscCall(PetscOptionsBool("-dm_plex_use_ceed", "Use LibCEED as the FEM backend", "DMPlexSetUseCeed", useCeed, &useCeed, &flg));
+    if (flg) PetscCall(DMPlexSetUseCeed(dm, useCeed));
   }
   /* Create coordinate space */
   if (created) {
@@ -4543,6 +4553,8 @@ static PetscErrorCode DMInitialize_Plex(DM dm)
   PetscCall(PetscObjectComposeFunction((PetscObject)dm, "DMInterpolateSolution_C", DMInterpolateSolution_Plex));
   PetscCall(PetscObjectComposeFunction((PetscObject)dm, "DMPlexGetOverlap_C", DMPlexGetOverlap_Plex));
   PetscCall(PetscObjectComposeFunction((PetscObject)dm, "DMPlexSetOverlap_C", DMPlexSetOverlap_Plex));
+  PetscCall(PetscObjectComposeFunction((PetscObject)dm, "DMPlexGetUseCeed_C", DMPlexGetUseCeed_Plex));
+  PetscCall(PetscObjectComposeFunction((PetscObject)dm, "DMPlexSetUseCeed_C", DMPlexSetUseCeed_Plex));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -4591,7 +4603,7 @@ PETSC_INTERN PetscErrorCode DMClone_Plex(DM dm, DM *newdm)
 
   Level: intermediate
 
-.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMType`, `DMPlexCreate()`, `DMCreate()`, `DMSetType()`, `PetscSection`
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMType`, `DMPlexCreate()`, `DMCreate()`, `DMSetType()`, `PetscSection`
 M*/
 
 PETSC_EXTERN PetscErrorCode DMCreate_Plex(DM dm)
@@ -4600,6 +4612,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_Plex(DM dm)
   PetscInt unit;
 
   PetscFunctionBegin;
+  PetscCall(PetscCitationsRegister(PlexCitation, &Plexcite));
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscCall(PetscNew(&mesh));
   dm->data = mesh;
@@ -4637,16 +4650,16 @@ PETSC_EXTERN PetscErrorCode DMCreate_Plex(DM dm)
 . comm - The communicator for the `DMPLEX` object
 
   Output Parameter:
-. mesh  - The `DMPLEX` object
+. mesh - The `DMPLEX` object
 
   Level: beginner
 
-.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMType`, `DMPlexCreate()`, `DMCreate()`, `DMSetType()`
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMType`, `DMCreate()`, `DMSetType()`
 @*/
 PetscErrorCode DMPlexCreate(MPI_Comm comm, DM *mesh)
 {
   PetscFunctionBegin;
-  PetscValidPointer(mesh, 2);
+  PetscAssertPointer(mesh, 2);
   PetscCall(DMCreate(comm, mesh));
   PetscCall(DMSetType(*mesh, DMPLEX));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -4658,15 +4671,15 @@ PetscErrorCode DMPlexCreate(MPI_Comm comm, DM *mesh)
   Collective; No Fortran Support
 
   Input Parameters:
-+ dm - The `DM`
-. numCells - The number of cells owned by this process
++ dm          - The `DM`
+. numCells    - The number of cells owned by this process
 . numVertices - The number of vertices to be owned by this process, or `PETSC_DECIDE`
-. NVertices - The global number of vertices, or `PETSC_DETERMINE`
-. numCorners - The number of vertices for each cell
-- cells - An array of numCells*numCorners numbers, the global vertex numbers for each cell
+. NVertices   - The global number of vertices, or `PETSC_DETERMINE`
+. numCorners  - The number of vertices for each cell
+- cells       - An array of numCells*numCorners numbers, the global vertex numbers for each cell
 
   Output Parameters:
-+ vertexSF - (Optional) `PetscSF` describing complete vertex ownership
++ vertexSF         - (Optional) `PetscSF` describing complete vertex ownership
 - verticesAdjSaved - (Optional) vertex adjacency array
 
   Level: advanced
@@ -4685,12 +4698,12 @@ PetscErrorCode DMPlexCreate(MPI_Comm comm, DM *mesh)
       \ | /
         1
 .ve
-would have input
+  would have input
 .vb
   numCells = 2, numVertices = 4
   cells = [0 1 2  1 3 2]
 .ve
-which would result in the `DMPLEX`
+  which would result in the `DMPLEX`
 .vb
 
         4
@@ -4712,7 +4725,7 @@ which would result in the `DMPLEX`
 
   The cell distribution is arbitrary non-overlapping, independent of the vertex distribution.
 
-.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexBuildFromCellList()`, `DMPlexCreateFromCellListParallelPetsc()`, `DMPlexBuildCoordinatesFromCellListParallel()`,
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexBuildFromCellList()`, `DMPlexCreateFromCellListParallelPetsc()`, `DMPlexBuildCoordinatesFromCellListParallel()`,
           `PetscSF`
 @*/
 PetscErrorCode DMPlexBuildFromCellListParallel(DM dm, PetscInt numCells, PetscInt numVertices, PetscInt NVertices, PetscInt numCorners, const PetscInt cells[], PetscSF *vertexSF, PetscInt **verticesAdjSaved)
@@ -4734,7 +4747,7 @@ PetscErrorCode DMPlexBuildFromCellListParallel(DM dm, PetscInt numCells, PetscIn
     for (i = 0; i < len; i++)
       if (cells[i] > NVerticesInCells) NVerticesInCells = cells[i];
     ++NVerticesInCells;
-    PetscCallMPI(MPI_Allreduce(MPI_IN_PLACE, &NVerticesInCells, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)dm)));
+    PetscCall(MPIU_Allreduce(MPI_IN_PLACE, &NVerticesInCells, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)dm)));
 
     if (numVertices == PETSC_DECIDE && NVertices == PETSC_DECIDE) NVertices = NVerticesInCells;
     else
@@ -4805,14 +4818,14 @@ PetscErrorCode DMPlexBuildFromCellListParallel(DM dm, PetscInt numCells, PetscIn
   Collective; No Fortran Support
 
   Input Parameters:
-+ dm - The `DM`
-. spaceDim - The spatial dimension used for coordinates
-. sfVert - `PetscSF` describing complete vertex ownership
++ dm           - The `DM`
+. spaceDim     - The spatial dimension used for coordinates
+. sfVert       - `PetscSF` describing complete vertex ownership
 - vertexCoords - An array of numVertices*spaceDim numbers, the coordinates of each vertex
 
   Level: advanced
 
-.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexBuildCoordinatesFromCellList()`, `DMPlexCreateFromCellListParallelPetsc()`, `DMPlexBuildFromCellListParallel()`
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexBuildCoordinatesFromCellList()`, `DMPlexCreateFromCellListParallelPetsc()`, `DMPlexBuildFromCellListParallel()`
 @*/
 PetscErrorCode DMPlexBuildCoordinatesFromCellListParallel(DM dm, PetscInt spaceDim, PetscSF sfVert, const PetscReal vertexCoords[])
 {
@@ -4879,21 +4892,21 @@ PetscErrorCode DMPlexBuildCoordinatesFromCellListParallel(DM dm, PetscInt spaceD
   Collective
 
   Input Parameters:
-+ comm - The communicator
-. dim - The topological dimension of the mesh
-. numCells - The number of cells owned by this process
-. numVertices - The number of vertices owned by this process, or `PETSC_DECIDE`
-. NVertices - The global number of vertices, or `PETSC_DECIDE`
-. numCorners - The number of vertices for each cell
-. interpolate - Flag indicating that intermediate mesh entities (faces, edges) should be created automatically
-. cells - An array of numCells*numCorners numbers, the global vertex numbers for each cell
-. spaceDim - The spatial dimension used for coordinates
++ comm         - The communicator
+. dim          - The topological dimension of the mesh
+. numCells     - The number of cells owned by this process
+. numVertices  - The number of vertices owned by this process, or `PETSC_DECIDE`
+. NVertices    - The global number of vertices, or `PETSC_DECIDE`
+. numCorners   - The number of vertices for each cell
+. interpolate  - Flag indicating that intermediate mesh entities (faces, edges) should be created automatically
+. cells        - An array of numCells*numCorners numbers, the global vertex numbers for each cell
+. spaceDim     - The spatial dimension used for coordinates
 - vertexCoords - An array of numVertices*spaceDim numbers, the coordinates of each vertex
 
   Output Parameters:
-+ dm - The `DM`
-. vertexSF - (Optional) `PetscSF` describing complete vertex ownership
-- verticesAdjSaved - (Optional) vertex adjacency array
++ dm          - The `DM`
+. vertexSF    - (Optional) `PetscSF` describing complete vertex ownership
+- verticesAdj - (Optional) vertex adjacency array
 
   Level: intermediate
 
@@ -4905,7 +4918,7 @@ PetscErrorCode DMPlexBuildCoordinatesFromCellListParallel(DM dm, PetscInt spaceD
 
   See `DMPlexBuildCoordinatesFromCellListParallel()` for details about the geometry-related parameters.
 
-.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexCreateFromCellListPetsc()`, `DMPlexBuildFromCellListParallel()`, `DMPlexBuildCoordinatesFromCellListParallel()`, `DMPlexCreateFromDAG()`, `DMPlexCreate()`
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexCreateFromCellListPetsc()`, `DMPlexBuildFromCellListParallel()`, `DMPlexBuildCoordinatesFromCellListParallel()`, `DMPlexCreateFromDAG()`, `DMPlexCreate()`
 @*/
 PetscErrorCode DMPlexCreateFromCellListParallelPetsc(MPI_Comm comm, PetscInt dim, PetscInt numCells, PetscInt numVertices, PetscInt NVertices, PetscInt numCorners, PetscBool interpolate, const PetscInt cells[], PetscInt spaceDim, const PetscReal vertexCoords[], PetscSF *vertexSF, PetscInt **verticesAdj, DM *dm)
 {
@@ -4937,11 +4950,11 @@ PetscErrorCode DMPlexCreateFromCellListParallelPetsc(MPI_Comm comm, PetscInt dim
   Collective; No Fortran Support
 
   Input Parameters:
-+ dm - The `DM`
-. numCells - The number of cells owned by this process
++ dm          - The `DM`
+. numCells    - The number of cells owned by this process
 . numVertices - The number of vertices owned by this process, or `PETSC_DETERMINE`
-. numCorners - The number of vertices for each cell
-- cells - An array of numCells*numCorners numbers, the global vertex numbers for each cell
+. numCorners  - The number of vertices for each cell
+- cells       - An array of numCells*numCorners numbers, the global vertex numbers for each cell
 
   Level: advanced
 
@@ -4959,12 +4972,12 @@ PetscErrorCode DMPlexCreateFromCellListParallelPetsc(MPI_Comm comm, PetscInt dim
       \ | /
         1
 .ve
-would have input
+  would have input
 .vb
   numCells = 2, numVertices = 4
   cells = [0 1 2  1 3 2]
 .ve
-which would result in the `DMPLEX`
+  which would result in the `DMPLEX`
 .vb
 
         4
@@ -4980,7 +4993,7 @@ which would result in the `DMPLEX`
 
   If numVertices is `PETSC_DETERMINE`, it is computed by PETSc as the maximum vertex index in cells + 1.
 
-.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexBuildFromCellListParallel()`, `DMPlexBuildCoordinatesFromCellList()`, `DMPlexCreateFromCellListPetsc()`
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexBuildFromCellListParallel()`, `DMPlexBuildCoordinatesFromCellList()`, `DMPlexCreateFromCellListPetsc()`
 @*/
 PetscErrorCode DMPlexBuildFromCellList(DM dm, PetscInt numCells, PetscInt numVertices, PetscInt numCorners, const PetscInt cells[])
 {
@@ -5023,13 +5036,13 @@ PetscErrorCode DMPlexBuildFromCellList(DM dm, PetscInt numCells, PetscInt numVer
   Collective; No Fortran Support
 
   Input Parameters:
-+ dm - The `DM`
-. spaceDim - The spatial dimension used for coordinates
++ dm           - The `DM`
+. spaceDim     - The spatial dimension used for coordinates
 - vertexCoords - An array of numVertices*spaceDim numbers, the coordinates of each vertex
 
   Level: advanced
 
-.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexBuildCoordinatesFromCellListParallel()`, `DMPlexCreateFromCellListPetsc()`, `DMPlexBuildFromCellList()`
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexBuildCoordinatesFromCellListParallel()`, `DMPlexCreateFromCellListPetsc()`, `DMPlexBuildFromCellList()`
 @*/
 PetscErrorCode DMPlexBuildCoordinatesFromCellList(DM dm, PetscInt spaceDim, const PetscReal vertexCoords[])
 {
@@ -5075,14 +5088,14 @@ PetscErrorCode DMPlexBuildCoordinatesFromCellList(DM dm, PetscInt spaceDim, cons
   Collective
 
   Input Parameters:
-+ comm - The communicator
-. dim - The topological dimension of the mesh
-. numCells - The number of cells, only on process 0
-. numVertices - The number of vertices owned by this process, or `PETSC_DECIDE`, only on process 0
-. numCorners - The number of vertices for each cell, only on process 0
-. interpolate - Flag indicating that intermediate mesh entities (faces, edges) should be created automatically
-. cells - An array of numCells*numCorners numbers, the vertices for each cell, only on process 0
-. spaceDim - The spatial dimension used for coordinates
++ comm         - The communicator
+. dim          - The topological dimension of the mesh
+. numCells     - The number of cells, only on process 0
+. numVertices  - The number of vertices owned by this process, or `PETSC_DECIDE`, only on process 0
+. numCorners   - The number of vertices for each cell, only on process 0
+. interpolate  - Flag indicating that intermediate mesh entities (faces, edges) should be created automatically
+. cells        - An array of numCells*numCorners numbers, the vertices for each cell, only on process 0
+. spaceDim     - The spatial dimension used for coordinates
 - vertexCoords - An array of numVertices*spaceDim numbers, the coordinates of each vertex, only on process 0
 
   Output Parameter:
@@ -5098,7 +5111,7 @@ PetscErrorCode DMPlexBuildCoordinatesFromCellList(DM dm, PetscInt spaceDim, cons
   See `DMPlexBuildCoordinatesFromCellList()` for details about the geometry-related parameters.
   See `DMPlexCreateFromCellListParallelPetsc()` for parallel input
 
-.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexCreateFromCellListParallelPetsc()`, `DMPlexBuildFromCellList()`, `DMPlexBuildCoordinatesFromCellList()`, `DMPlexCreateFromDAG()`, `DMPlexCreate()`
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexCreateFromCellListParallelPetsc()`, `DMPlexBuildFromCellList()`, `DMPlexBuildCoordinatesFromCellList()`, `DMPlexCreateFromDAG()`, `DMPlexCreate()`
 @*/
 PetscErrorCode DMPlexCreateFromCellListPetsc(MPI_Comm comm, PetscInt dim, PetscInt numCells, PetscInt numVertices, PetscInt numCorners, PetscBool interpolate, const PetscInt cells[], PetscInt spaceDim, const PetscReal vertexCoords[], DM *dm)
 {
@@ -5128,13 +5141,13 @@ PetscErrorCode DMPlexCreateFromCellListPetsc(MPI_Comm comm, PetscInt dim, PetscI
   DMPlexCreateFromDAG - This takes as input the adjacency-list representation of the Directed Acyclic Graph (Hasse Diagram) encoding a mesh, and produces a `DM`
 
   Input Parameters:
-+ dm - The empty `DM` object, usually from `DMCreate()` and `DMSetDimension()`
-. depth - The depth of the DAG
-. numPoints - Array of size depth + 1 containing the number of points at each `depth`
-. coneSize - The cone size of each point
-. cones - The concatenation of the cone points for each point, the cone list must be oriented correctly for each point
++ dm               - The empty `DM` object, usually from `DMCreate()` and `DMSetDimension()`
+. depth            - The depth of the DAG
+. numPoints        - Array of size depth + 1 containing the number of points at each `depth`
+. coneSize         - The cone size of each point
+. cones            - The concatenation of the cone points for each point, the cone list must be oriented correctly for each point
 . coneOrientations - The orientation of each cone point
-- vertexCoords - An array of `numPoints`[0]*spacedim numbers representing the coordinates of each vertex, with spacedim the value set via `DMSetCoordinateDim()`
+- vertexCoords     - An array of `numPoints`[0]*spacedim numbers representing the coordinates of each vertex, with spacedim the value set via `DMSetCoordinateDim()`
 
   Output Parameter:
 . dm - The `DM`
@@ -5148,7 +5161,7 @@ PetscErrorCode DMPlexCreateFromCellListPetsc(MPI_Comm comm, PetscInt dim, PetscI
   cones = [2 3 4  3 5 4], coneOrientations = [0 0 0  0 0 0]
  vertexCoords = [-1.0 0.0  0.0 -1.0  0.0 1.0  1.0 0.0]
 .ve
-which would result in the DMPlex
+  which would result in the DMPlex
 .vb
         4
       / | \
@@ -5160,9 +5173,9 @@ which would result in the DMPlex
       \ | /
         3
 .ve
- Notice that all points are numbered consecutively, unlike `DMPlexCreateFromCellListPetsc()`
+  Notice that all points are numbered consecutively, unlike `DMPlexCreateFromCellListPetsc()`
 
-.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexCreateFromCellListPetsc()`, `DMPlexCreate()`
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexCreateFromCellListPetsc()`, `DMPlexCreate()`
 @*/
 PetscErrorCode DMPlexCreateFromDAG(DM dm, PetscInt depth, const PetscInt numPoints[], const PetscInt coneSize[], const PetscInt cones[], const PetscInt coneOrientations[], const PetscScalar vertexCoords[])
 {
@@ -5220,7 +5233,7 @@ PetscErrorCode DMPlexCreateFromDAG(DM dm, PetscInt depth, const PetscInt numPoin
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*
   DMPlexCreateCellVertexFromFile - Create a `DMPLEX` mesh from a simple cell-vertex file.
 
   Collective
@@ -5246,8 +5259,8 @@ PetscErrorCode DMPlexCreateFromDAG(DM dm, PetscInt depth, const PetscInt numPoin
   Developer Note:
   Should use a `PetscViewer` not a filename
 
-.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexCreateFromFile()`, `DMPlexCreateMedFromFile()`, `DMPlexCreateGmsh()`, `DMPlexCreate()`
-@*/
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexCreateFromFile()`, `DMPlexCreateMedFromFile()`, `DMPlexCreateGmsh()`, `DMPlexCreate()`
+*/
 static PetscErrorCode DMPlexCreateCellVertexFromFile(MPI_Comm comm, const char filename[], PetscBool interpolate, DM *dm)
 {
   DMLabel      marker;
@@ -5411,9 +5424,9 @@ static PetscErrorCode DMPlexCreateCellVertexFromFile(MPI_Comm comm, const char f
   Collective
 
   Input Parameters:
-+ comm - The communicator
-. filename - A file name
-. plexname - The object name of the resulting `DM`, also used for intra-datafile lookup by some formats
++ comm        - The communicator
+. filename    - A file name
+. plexname    - The object name of the resulting `DM`, also used for intra-datafile lookup by some formats
 - interpolate - Flag to create intermediate mesh pieces (edges, faces)
 
   Output Parameter:
@@ -5422,7 +5435,7 @@ static PetscErrorCode DMPlexCreateCellVertexFromFile(MPI_Comm comm, const char f
   Options Database Key:
 . -dm_plex_create_from_hdf5_xdmf - use the `PETSC_VIEWER_HDF5_XDMF` format for reading HDF5
 
-  Use -dm_plex_create_ prefix to pass options to the internal PetscViewer, e.g.
+  Use `-dm_plex_create_ prefix` to pass options to the internal `PetscViewer`, e.g.
 $ -dm_plex_create_viewer_hdf5_collective
 
   Level: beginner
@@ -5434,7 +5447,7 @@ $ -dm_plex_create_viewer_hdf5_collective
   The input parameter name is thus used to name the `DMPLEX` object when `DMPlexCreateFromFile()` internally
   calls `DMLoad()`. Currently, name is ignored for other viewer types and/or formats.
 
-.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexCreateFromDAG()`, `DMPlexCreateFromCellListPetsc()`, `DMPlexCreate()`, `PetscObjectSetName()`, `DMView()`, `DMLoad()`
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexCreateFromDAG()`, `DMPlexCreateFromCellListPetsc()`, `DMPlexCreate()`, `PetscObjectSetName()`, `DMView()`, `DMLoad()`
 @*/
 PetscErrorCode DMPlexCreateFromFile(MPI_Comm comm, const char filename[], const char plexname[], PetscBool interpolate, DM *dm)
 {
@@ -5460,9 +5473,9 @@ PetscErrorCode DMPlexCreateFromFile(MPI_Comm comm, const char filename[], const 
   PetscMPIInt rank;
 
   PetscFunctionBegin;
-  PetscValidCharPointer(filename, 2);
-  if (plexname) PetscValidCharPointer(plexname, 3);
-  PetscValidPointer(dm, 5);
+  PetscAssertPointer(filename, 2);
+  if (plexname) PetscAssertPointer(plexname, 3);
+  PetscAssertPointer(dm, 5);
   PetscCall(DMInitializePackage());
   PetscCall(PetscLogEventBegin(DMPLEX_CreateFromFile, 0, 0, 0, 0));
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
@@ -5558,11 +5571,13 @@ PetscErrorCode DMPlexCreateFromFile(MPI_Comm comm, const char filename[], const 
   PetscCall(PetscLogEventEnd(DMPLEX_CreateFromFile, 0, 0, 0, 0));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
+
 /*@C
   DMPlexCreateEphemeral - This takes a `DMPlexTransform` and a base `DMPlex` and produces an ephemeral `DM`, meaning one that is created on the fly in response to queries.
 
-  Input Parameter:
-. tr - The `DMPlexTransform`
+  Input Parameters:
++ tr     - The `DMPlexTransform`
+- prefix - An options prefix, or NULL
 
   Output Parameter:
 . dm - The `DM`
@@ -5574,21 +5589,42 @@ PetscErrorCode DMPlexCreateFromFile(MPI_Comm comm, const char filename[], const 
 
 .seealso: `DMPlexCreateFromFile`, `DMPlexCreateFromDAG()`, `DMPlexCreateFromCellListPetsc()`, `DMPlexCreate()`
 @*/
-PetscErrorCode DMPlexCreateEphemeral(DMPlexTransform tr, DM *dm)
+PetscErrorCode DMPlexCreateEphemeral(DMPlexTransform tr, const char prefix[], DM *dm)
 {
-  DM       bdm;
-  PetscInt Nl;
+  DM           bdm, bcdm, cdm;
+  Vec          coordinates, coordinatesNew;
+  PetscSection cs;
+  PetscInt     dim, cdim, Nl;
 
   PetscFunctionBegin;
   PetscCall(DMCreate(PetscObjectComm((PetscObject)tr), dm));
   PetscCall(DMSetType(*dm, DMPLEX));
-  PetscCall(DMSetFromOptions(*dm));
+  ((DM_Plex *)(*dm)->data)->interpolated = DMPLEX_INTERPOLATED_FULL;
+  // Handle coordinates
+  PetscCall(DMPlexTransformGetDM(tr, &bdm));
+  PetscCall(DMGetCoordinateDim(bdm, &cdim));
+  PetscCall(DMSetCoordinateDim(*dm, cdim));
+  PetscCall(DMGetDimension(bdm, &dim));
+  PetscCall(DMSetDimension(*dm, dim));
+  PetscCall(DMGetCoordinateDM(bdm, &bcdm));
+  PetscCall(DMGetCoordinateDM(*dm, &cdm));
+  PetscCall(DMCopyDisc(bcdm, cdm));
+  PetscCall(DMGetLocalSection(cdm, &cs));
+  PetscCall(PetscSectionSetNumFields(cs, 1));
+  PetscCall(PetscSectionSetFieldComponents(cs, 0, cdim));
+  PetscCall(DMGetCoordinatesLocal(bdm, &coordinates));
+  PetscCall(VecDuplicate(coordinates, &coordinatesNew));
+  PetscCall(VecCopy(coordinates, coordinatesNew));
+  PetscCall(DMSetCoordinatesLocal(*dm, coordinatesNew));
+  PetscCall(VecDestroy(&coordinatesNew));
 
   PetscCall(PetscObjectReference((PetscObject)tr));
   PetscCall(DMPlexTransformDestroy(&((DM_Plex *)(*dm)->data)->tr));
   ((DM_Plex *)(*dm)->data)->tr = tr;
+  PetscCall(DMPlexDistributeSetDefault(*dm, PETSC_FALSE));
+  PetscCall(PetscObjectSetOptionsPrefix((PetscObject)*dm, prefix));
+  PetscCall(DMSetFromOptions(*dm));
 
-  PetscCall(DMPlexTransformGetDM(tr, &bdm));
   PetscCall(DMGetNumLabels(bdm, &Nl));
   for (PetscInt l = 0; l < Nl; ++l) {
     DMLabel     label, labelNew;

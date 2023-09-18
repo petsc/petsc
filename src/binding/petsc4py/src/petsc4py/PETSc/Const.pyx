@@ -1,18 +1,56 @@
-# --------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 
 DECIDE    = PETSC_DECIDE
 DEFAULT   = PETSC_DEFAULT
 DETERMINE = PETSC_DETERMINE
 
-# --------------------------------------------------------------------
+__doc__ += """
+Basic constants:
+
+`DECIDE`
+    Use a default value for an `int` or `float` parameter.
+`DEFAULT`
+    Use a default value for an `int` or `float` parameter.
+`DETERMINE`
+    Compute a default value for an `int` or `float` parameter.
+"""
+
+# ------------------------------------------------------------------------------
 
 INFINITY  = toReal(PETSC_INFINITY)
 NINFINITY = toReal(PETSC_NINFINITY)
 PINFINITY = toReal(PETSC_INFINITY)
 
-# --------------------------------------------------------------------
+__doc__ += """
+More constants:
+
+`INFINITY`
+    Very large real value.
+`NINFINITY`
+    Very large negative real value.
+`PINFINITY`
+    Very large positive real value, same as `INFINITY`.
+"""
+
+# ------------------------------------------------------------------------------
 
 class InsertMode(object):
+    """Insertion mode.
+
+    Most commonly used insertion modes are:
+
+    `INSERT`
+        Insert provided value/s discarding previous value/s.
+    `ADD`
+        Add provided value/s to current value/s.
+    `MAX`
+        Insert the maximum of provided value/s and current value/s.
+
+    See Also
+    --------
+    petsc.InsertMode
+
+    """
     # native
     NOT_SET_VALUES    = PETSC_NOT_SET_VALUES
     INSERT_VALUES     = PETSC_INSERT_VALUES
@@ -31,9 +69,24 @@ class InsertMode(object):
     INSERT_BC  = INSERT_BC_VALUES
     ADD_BC     = ADD_BC_VALUES
 
-# --------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 
 class ScatterMode(object):
+    """Scatter mode.
+
+    Most commonly used scatter modes are:
+
+    `FORWARD`
+        Scatter values in the forward direction.
+    `REVERSE`
+        Scatter values in the reverse direction.
+
+    See Also
+    --------
+    Scatter.create, Scatter.begin, Scatter.end
+    petsc.ScatterMode
+
+    """
     # native
     SCATTER_FORWARD       = PETSC_SCATTER_FORWARD
     SCATTER_REVERSE       = PETSC_SCATTER_REVERSE
@@ -45,9 +98,27 @@ class ScatterMode(object):
     FORWARD_LOCAL = SCATTER_FORWARD_LOCAL
     REVERSE_LOCAL = SCATTER_REVERSE_LOCAL
 
-# --------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 
 class NormType(object):
+    """Norm type.
+
+    Commonly used norm types:
+
+    `N1`
+        The one norm.
+    `N2`
+        The two norm.
+    `FROBENIUS`
+        The Frobenius norm.
+    `INFINITY`
+        The infinity norm.
+
+    See Also
+    --------
+    petsc.NormType
+
+    """
     # native
     NORM_1         = PETSC_NORM_1
     NORM_2         = PETSC_NORM_2
@@ -66,4 +137,4 @@ class NormType(object):
     FRB = FROBENIUS
     INF = INFINITY
 
-# --------------------------------------------------------------------
+# ------------------------------------------------------------------------------

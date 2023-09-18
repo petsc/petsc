@@ -12,7 +12,7 @@ typedef struct _UserCtx {
   PetscInt    m;       /* The row dimension of F */
   PetscInt    n;       /* The column dimension of F */
   PetscInt    matops;  /* Matrix format. 0 for stencil, 1 for random */
-  PetscInt    iter;    /* Numer of iterations for ADMM */
+  PetscInt    iter;    /* Number of iterations for ADMM */
   PetscReal   hStart;  /* Starting point for Taylor test */
   PetscReal   hFactor; /* Taylor test step factor */
   PetscReal   hMin;    /* Taylor test end goal */
@@ -47,10 +47,8 @@ static PetscErrorCode CreateRHS(UserCtx ctx)
 
 static PetscErrorCode CreateMatrix(UserCtx ctx)
 {
-  PetscInt Istart, Iend, i, j, Ii, gridN, I_n, I_s, I_e, I_w;
-#if defined(PETSC_USE_LOG)
+  PetscInt      Istart, Iend, i, j, Ii, gridN, I_n, I_s, I_e, I_w;
   PetscLogStage stage;
-#endif
 
   PetscFunctionBegin;
   /* build the matrix F in ctx */

@@ -84,7 +84,7 @@ int main(int argc, char **argv)
   PetscCall(VecDuplicate(x, &r));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    Create matrix free context and specify usage of PETSc-ADOL-C drivers
+    Create matrix-free context and specify usage of PETSc-ADOL-C drivers
     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   PetscCall(DMSetMatType(da, MATSHELL));
   PetscCall(DMCreateMatrix(da, &A));

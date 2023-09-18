@@ -23,16 +23,16 @@ static PetscErrorCode (*PetscReallocOld)(size_t, int, const char[], const char[]
 static PetscErrorCode (*PetscFreeOld)(void *, int, const char[], const char[]);
 
 /*@C
-   PetscMallocSetCUDAHost - Set `PetscMalloc()` to use `CUDAHostMalloc()`
-     Switch the current malloc and free routines to the CUDA malloc and free routines
+  PetscMallocSetCUDAHost - Set `PetscMalloc()` to use `CUDAHostMalloc()`
+  Switch the current malloc and free routines to the CUDA malloc and free routines
 
-   Not Collective
+  Not Collective
 
-   Level: developer
+  Level: developer
 
-   Note:
-     This provides a way to use the CUDA malloc and free routines temporarily. One
-     can switch back to the previous choice by calling `PetscMallocResetCUDAHost()`.
+  Note:
+  This provides a way to use the CUDA malloc and free routines temporarily. One
+  can switch back to the previous choice by calling `PetscMallocResetCUDAHost()`.
 
 .seealso: `PetscCUDAHostMalloc()`, `PetscMallocResetCUDAHost()`, `PetscMallocSetHIPHost()`
 @*/
@@ -50,11 +50,11 @@ PetscErrorCode PetscMallocSetCUDAHost(void)
 }
 
 /*@C
-   PetscMallocResetCUDAHost - Reset the changes made by `PetscMallocSetCUDAHost()`
+  PetscMallocResetCUDAHost - Reset the changes made by `PetscMallocSetCUDAHost()`
 
-   Not Collective
+  Not Collective
 
-   Level: developer
+  Level: developer
 
 .seealso: `PetscCUDAHostMalloc()`, `PetscMallocSetCUDAHost()`
 @*/

@@ -6,9 +6,9 @@
 */
 typedef PetscEnum PetscViewerFormat;
 
-PETSC_EXTERN PetscErrorCode PetscViewerSetFormat(PetscViewer,PetscViewerFormat);
+PETSC_EXTERN PetscErrorCode PetscViewerSetFormat(PetscViewer, PetscViewerFormat);
 
-PETSC_EXTERN PetscErrorCode PetscViewerSetFormatDeprecated(PetscViewer v,PetscViewerFormat f)
+PETSC_EXTERN PetscErrorCode PetscViewerSetFormatDeprecated(PetscViewer v, PetscViewerFormat f)
 {
-  return PetscViewerSetFormat(v,f);
+  return PetscViewerSetFormat(v, f);
 }

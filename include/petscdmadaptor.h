@@ -1,8 +1,7 @@
 /*
       Objects which encapsulate mesh adaptation operation
 */
-#ifndef PETSCDMADAPTOR_H
-#define PETSCDMADAPTOR_H
+#pragma once
 
 #include <petscdm.h>
 #include <petscconvest.h>
@@ -14,7 +13,7 @@
 
   Level: developer
 
-.seealso: `DMAdaptorCreate()`, `DMAdaptorSetSolver()`, `DMAdaptorGetSolver()`, `DMAdaptorSetSequenceLength()`, `DMAdaptorGetSequenceLength()`, `DMAdaptorSetFromOptions()`,
+.seealso: `DM`, `DMAdaptorCreate()`, `DMAdaptorSetSolver()`, `DMAdaptorGetSolver()`, `DMAdaptorSetSequenceLength()`, `DMAdaptorGetSequenceLength()`, `DMAdaptorSetFromOptions()`,
           `DMAdaptorSetUp()`, `DMAdaptorAdapt()`, `DMAdaptorDestroy()`, `DMAdaptorGetTransferFunction()`, `PetscConvEstCreate()`, `PetscConvEstDestroy()`
 S*/
 typedef struct _p_DMAdaptor *DMAdaptor;
@@ -31,5 +30,3 @@ PETSC_EXTERN PetscErrorCode DMAdaptorSetUp(DMAdaptor);
 PETSC_EXTERN PetscErrorCode DMAdaptorGetTransferFunction(DMAdaptor, PetscErrorCode (**)(DMAdaptor, DM, Vec, DM, Vec, void *));
 PETSC_EXTERN PetscErrorCode DMAdaptorSetTransferFunction(DMAdaptor, PetscErrorCode (*)(DMAdaptor, DM, Vec, DM, Vec, void *));
 PETSC_EXTERN PetscErrorCode DMAdaptorAdapt(DMAdaptor, Vec, DMAdaptationStrategy, DM *, Vec *);
-
-#endif

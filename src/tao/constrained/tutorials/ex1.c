@@ -273,7 +273,7 @@ PetscErrorCode FormFunctionGradient(Tao tao, Vec X, PetscReal *f, Vec G, void *c
     fin = (x[0] - 2.0) * (x[0] - 2.0) + (x[1] - 2.0) * (x[1] - 2.0) - 2.0 * (x[0] + x[1]);
     PetscCall(VecRestoreArrayRead(Xseq, &x));
   }
-  PetscCallMPI(MPI_Allreduce(&fin, f, 1, MPIU_REAL, MPIU_SUM, comm));
+  PetscCall(MPIU_Allreduce(&fin, f, 1, MPIU_REAL, MPIU_SUM, comm));
 
   /* G = 2*X - 6 */
   PetscCall(VecSet(G, -6.0));

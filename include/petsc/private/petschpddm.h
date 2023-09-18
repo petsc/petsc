@@ -1,5 +1,4 @@
-#ifndef PETSCHPDDM_H
-#define PETSCHPDDM_H
+#pragma once
 
 #include <petsc/private/kspimpl.h>
 
@@ -52,6 +51,14 @@ struct KSP_HPDDM {
   KSPHPDDMPrecision     precision;
 };
 
+typedef struct _n_Harmonic *Harmonic;
+struct _n_Harmonic {
+  KSP  ksp;
+  Mat *A;
+  Vec  v;
+  IS  *is;
+};
+
 PETSC_EXTERN PetscLogEvent  PC_HPDDM_PtAP;
 PETSC_EXTERN PetscLogEvent  PC_HPDDM_PtBP;
 PETSC_EXTERN PetscLogEvent  PC_HPDDM_Next;
@@ -63,5 +70,3 @@ PETSC_INTERN PetscErrorCode KSPSolve_HPDDM_CUDA_Private(KSP_HPDDM *, const Petsc
 #endif
 
 #include <HPDDM.hpp>
-
-#endif /* PETSCHPDDM_H */

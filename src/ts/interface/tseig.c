@@ -14,36 +14,36 @@ struct _n_TSMonitorSPEigCtx {
 };
 
 /*@C
-   TSMonitorSPEigCtxCreate - Creates a context for use with `TS` to monitor the eigenvalues of the linearized operator
+  TSMonitorSPEigCtxCreate - Creates a context for use with `TS` to monitor the eigenvalues of the linearized operator
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  comm - the communicator to share the monitor
-.  host - the X display to open, or `NULL` for the local machine
-.  label - the title to put in the title bar
-.  x - the horizontal screen coordinates of the upper left coordinate of the window
-.  y - the vertical coordinates of the upper left coordinate of the window
-.  m - the screen width in pixels
-.  n - the screen height in pixels
--  howoften - if positive then determines the frequency of the plotting, if -1 then only at the final time
+  Input Parameters:
++ comm     - the communicator to share the monitor
+. host     - the X display to open, or `NULL` for the local machine
+. label    - the title to put in the title bar
+. x        - the horizontal screen coordinates of the upper left coordinate of the window
+. y        - the vertical coordinates of the upper left coordinate of the window
+. m        - the screen width in pixels
+. n        - the screen height in pixels
+- howoften - if positive then determines the frequency of the plotting, if -1 then only at the final time
 
-   Output Parameter:
-.  ctx - the context
+  Output Parameter:
+. ctx - the context
 
-   Options Database Key:
-.  -ts_monitor_sp_eig - plot egienvalues of linearized right hand side
+  Options Database Key:
+. -ts_monitor_sp_eig - plot egienvalues of linearized right hand side
 
-   Level: intermediate
+  Level: intermediate
 
-   Notes:
-   Use `TSMonitorSPEigCtxDestroy()` to destroy the context
+  Notes:
+  Use `TSMonitorSPEigCtxDestroy()` to destroy the context
 
-   Currently only works if the Jacobian is provided explicitly.
+  Currently only works if the Jacobian is provided explicitly.
 
-   Currently only works for ODEs u_t - F(t,u) = 0; that is with no mass matrix.
+  Currently only works for ODEs u_t - F(t,u) = 0; that is with no mass matrix.
 
-.seealso: [](chapter_ts), `TSMonitorSPEigTimeStep()`, `TSMonitorSet()`, `TSMonitorLGSolution()`, `TSMonitorLGError()`
+.seealso: [](ch_ts), `TSMonitorSPEigTimeStep()`, `TSMonitorSet()`, `TSMonitorLGSolution()`, `TSMonitorLGError()`
 @*/
 PetscErrorCode TSMonitorSPEigCtxCreate(MPI_Comm comm, const char host[], const char label[], int x, int y, int m, int n, PetscInt howoften, TSMonitorSPEigCtx *ctx)
 {
@@ -176,19 +176,19 @@ PetscErrorCode TSMonitorSPEig(TS ts, PetscInt step, PetscReal ptime, Vec v, void
 }
 
 /*@C
-   TSMonitorSPEigCtxDestroy - Destroys a scatter plot context that was created with `TSMonitorSPEigCtxCreate()`.
+  TSMonitorSPEigCtxDestroy - Destroys a scatter plot context that was created with `TSMonitorSPEigCtxCreate()`.
 
-   Collective
+  Collective
 
-   Input Parameter:
-.  ctx - the monitor context
+  Input Parameter:
+. ctx - the monitor context
 
-   Level: intermediate
+  Level: intermediate
 
-   Note:
-   Should be passed to `TSMonitorSet()` along with `TSMonitorSPEig()` an the context created with `TSMonitorSPEigCtxCreate()`
+  Note:
+  Should be passed to `TSMonitorSet()` along with `TSMonitorSPEig()` an the context created with `TSMonitorSPEigCtxCreate()`
 
-.seealso: [](chapter_ts), `TSMonitorSPEigCtxCreate()`, `TSMonitorSet()`, `TSMonitorSPEig();`
+.seealso: [](ch_ts), `TSMonitorSPEigCtxCreate()`, `TSMonitorSet()`, `TSMonitorSPEig();`
 @*/
 PetscErrorCode TSMonitorSPEigCtxDestroy(TSMonitorSPEigCtx *ctx)
 {

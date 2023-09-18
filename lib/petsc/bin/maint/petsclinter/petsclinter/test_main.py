@@ -3,46 +3,86 @@
 # Created: Tue Jun 21 09:25:37 2022 (-0400)
 # @author: Jacob Faibussowitsch
 """
+from __future__ import annotations
+
 import shutil
 import difflib
 import tempfile
 import traceback
 import petsclinter as pl
 
-from .classes import Path
+from .main          import ReturnCode
+from .classes._path import Path
+from .util._utility import traceback_format_exception
+
+from ._typing import *
 
 class TemporaryCopy:
   __slots__ = 'fname', 'tmp', 'temp_path'
 
-  def __init__(self, fname):
-    self.fname = Path(fname).resolve(strict=True)
+  def __init__(self, fname: Path) -> None:
+    self.fname = fname.resolve(strict=True)
     return
 
-  def __enter__(self):
+  def __enter__(self) -> TemporaryCopy:
     self.tmp       = tempfile.NamedTemporaryFile(suffix=self.fname.suffix)
     self.temp_path = Path(self.tmp.name).resolve(strict=True)
     shutil.copy2(str(self.fname), str(self.temp_path))
     return self
 
-  def __exit__(self, *args, **kwargs):
-    Path.unlink(self.orig_file(), missing_ok=True)
-    Path.unlink(self.rej_file(), missing_ok=True)
+  def __exit__(self, *args, **kwargs) -> None:
+    self.orig_file().unlink(missing_ok=True)
+    self.rej_file().unlink(missing_ok=True)
     del self.tmp
+    del self.temp_path
     return
 
-  def orig_file(self):
+  def orig_file(self) -> Path:
     return self.temp_path.append_suffix('.orig')
 
-  def rej_file(self):
+  def rej_file(self) -> Path:
     return self.temp_path.append_suffix('.rej')
 
-def test_main(petsc_dir, test_path, output_dir, patches, errors_fixed, errors_left, replace=False, verbose=False):
-  def test(generated_output, reference_file):
+def test_main(
+    petsc_dir:    Path,
+    test_path:    Path,
+    output_dir:   Path,
+    patch_list:   list[PathDiffPair],
+    errors_fixed: list[CondensedDiags],
+    errors_left:  list[CondensedDiags],
+    replace:      bool = False,
+) -> ReturnCode:
+  r"""The "main" function for testing
+
+  Parameters
+  ----------
+  petsc_dir :
+    the path to $PETSC_DIR
+  test_path :
+    the path to test files
+  output_dir :
+    the path containing all of the output against which the generated output is compared to
+  patch_list :
+    the list of generated patches
+  errors_fixed :
+    the set of generated (but fixed) errors
+  errors_left :
+    the set of generated (and not fixed) errors
+  replace :
+    should the output be replaced?
+
+  Returns
+  -------
+  ret :
+    `ReturnCode.ERROR_TEST_FAILED` if generated output does not match expected, and `ReturnCode.SUCCESS`
+    otherwise
+  """
+  def test(generated_output: list[str], reference_file: Path) -> str:
     short_ref_name = reference_file.relative_to(petsc_dir)
     if replace:
       pl.sync_print('\tREPLACE', short_ref_name)
       reference_file.write_text(''.join(generated_output))
-      return
+      return ''
     if not reference_file.exists():
       return f'Missing reference file \'{reference_file}\'\n'
     return ''.join(
@@ -53,30 +93,46 @@ def test_main(petsc_dir, test_path, output_dir, patches, errors_fixed, errors_le
     )
 
   # sanitize the output so that it will be equal across systems
-  def sanitize_output_file(text):
+  def sanitize_output_file(text: Optional[str]) -> list[str]:
     return [] if text is None else [l.replace(str(petsc_dir), '.') for l in text.splitlines(True)]
 
-  def sanitize_patch_file(text):
+  def sanitize_patch_file(text: Optional[str]) -> list[str]:
     # skip the diff header with file names
     return [] if text is None else text.splitlines(True)[2:]
 
-  def rename_patch_file_target(text, new_path):
+  def rename_patch_file_target(text: str, new_path: Path) -> str:
     lines    = text.splitlines(True)
     out_file = lines[0].split()[1]
     lines[0] = lines[0].replace(out_file, str(new_path))
     lines[1] = lines[1].replace(out_file, str(new_path))
     return ''.join(lines)
 
-
+  FIXED_MARKER = '<--- FIXED --->'
+  LEFT_MARKER  = '<--- LEFT --->'
   patch_error = {}
   root_dir    = f'--directory={petsc_dir.anchor}'
-  patches     = dict(patches)
-  output      = {p : ['<--- FIXED --->', s ,'<--- LEFT --->'] for p, s in errors_fixed}
-  for path, string in errors_left:
-    if path not in output:
-      output[path] = ['<--- FIXED --->\n<--- LEFT --->']
-    output[path].append(string)
-  output = {key : '\n'.join(val if len(val) == 4 else val + ['']) for key, val in output.items()}
+  patches     = dict(patch_list)
+
+  tmp_output      = {
+    p : [FIXED_MARKER, '\n'.join(s), LEFT_MARKER]
+    for diags in errors_fixed
+      for p, s in diags.items()
+  }
+  for diags in errors_left:
+    for path, strlist in diags.items():
+      if path not in tmp_output:
+        tmp_output[path] = [f'{FIXED_MARKER}\n{LEFT_MARKER}']
+      tmp_output[path].extend(strlist)
+
+  # ensure that each output ends with a newline
+  output = {
+    path : '\n'.join(strlist if strlist[-1].endswith('\n') else strlist + [''])
+    for path, strlist in tmp_output.items()
+  }
+  # output = {
+  #   path : '\n'.join(strlist if len(strlist) == 4 else strlist + ['']) for path, strlist in tmp_output.items()
+  # }
+  #output = {key : '\n'.join(val if len(val) == 4 else val + ['']) for key, val in output.items()}
   if test_path.is_dir():
     c_suffixes = (r'*.c', r'*.cxx', r'*.cpp', r'*.cc', r'*.CC')
     file_list  = [item for sublist in map(test_path.glob, c_suffixes) for item in sublist]
@@ -102,13 +158,12 @@ def test_main(petsc_dir, test_path, output_dir, patches, errors_fixed, errors_le
            tempfile.NamedTemporaryFile(delete=True, suffix='.patch') as temp_patch:
         tmp_patch_path = Path(temp_patch.name).resolve(strict=True)
         try:
-          tmp_patch_path.write_text(rename_patch_file_target(patches.get(test_file), tmp_src.temp_path))
-          pl.util.subprocess_run(
-            ['patch', root_dir, '--strip=0', '--unified', f'--input={tmp_patch_path}'],
-            check=True, universal_newlines=True, capture_output=True
+          tmp_patch_path.write_text(rename_patch_file_target(patches[test_file], tmp_src.temp_path))
+          pl.util.subprocess_capture_output(
+            ['patch', root_dir, '--strip=0', '--unified', f'--input={tmp_patch_path}']
           )
-        except Exception as re:
-          exception = ''.join(traceback.format_exception(re, chain=True))
+        except Exception as exc:
+          exception = ''.join(traceback_format_exception(exc))
           emess     = f'Application of patch based on {test_file} failed:\n{exception}\n'
           rej       = tmp_src.rej_file()
           if rej.exists():
@@ -122,9 +177,9 @@ def test_main(petsc_dir, test_path, output_dir, patches, errors_fixed, errors_le
     else:
       pl.sync_print('\tOK     ', short_name)
   if patch_error:
-    err_bars = f"[ERROR] {85 * '-'} [ERROR]"
-    err_bars = (err_bars + '\n', err_bars)
+    err_str  = f"[ERROR] {85 * '-'} [ERROR]"
+    err_bars = (err_str + '\n', err_str)
     for err_file in patch_error:
       pl.sync_print(patch_error[err_file].join(err_bars))
-    return 21
-  return 0
+    return ReturnCode.ERROR_TEST_FAILED
+  return ReturnCode.SUCCESS

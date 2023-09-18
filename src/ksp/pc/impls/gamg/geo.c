@@ -24,13 +24,14 @@ static inline int petsc_geo_mg_compare(const void *a, const void *b)
   return (((GAMGNode *)a)->degree - ((GAMGNode *)b)->degree);
 }
 
+// PetscClangLinter pragma disable: -fdoc-sowing-chars
 /*
    PCSetCoordinates_GEO
 
    Input Parameter:
    .  pc - the preconditioner context
 */
-PetscErrorCode PCSetCoordinates_GEO(PC pc, PetscInt ndm, PetscInt a_nloc, PetscReal *coords)
+static PetscErrorCode PCSetCoordinates_GEO(PC pc, PetscInt ndm, PetscInt a_nloc, PetscReal *coords)
 {
   PC_MG   *mg      = (PC_MG *)pc->data;
   PC_GAMG *pc_gamg = (PC_GAMG *)mg->innerctx;
@@ -74,25 +75,20 @@ PetscErrorCode PCSetCoordinates_GEO(PC pc, PetscInt ndm, PetscInt a_nloc, PetscR
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+// PetscClangLinter pragma disable: -fdoc-sowing-chars
 /*
    PCSetData_GEO
 
   Input Parameter:
    . pc -
 */
-PetscErrorCode PCSetData_GEO(PC pc, Mat m)
+static PetscErrorCode PCSetData_GEO(PC pc, Mat m)
 {
   PetscFunctionBegin;
   SETERRQ(PetscObjectComm((PetscObject)pc), PETSC_ERR_PLIB, "GEO MG needs coordinates");
 }
 
-/*
-   PCSetFromOptions_GEO
-
-  Input Parameter:
-   . pc -
-*/
-PetscErrorCode PCSetFromOptions_GEO(PC pc, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode PCSetFromOptions_GEO(PC pc, PetscOptionItems *PetscOptionsObject)
 {
   PetscFunctionBegin;
   PetscOptionsHeadBegin(PetscOptionsObject, "GAMG-GEO options");
@@ -110,6 +106,7 @@ PetscErrorCode PCSetFromOptions_GEO(PC pc, PetscOptionItems *PetscOptionsObject)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+// PetscClangLinter pragma disable: -fdoc-sowing-chars
 /*
  triangulateAndFormProl
 
@@ -415,6 +412,7 @@ static PetscErrorCode triangulateAndFormProl(IS selected_2, PetscInt data_stride
 #endif
 }
 
+// PetscClangLinter pragma disable: -fdoc-sowing-chars
 /*
    getGIDsOnSquareGraph - square graph, get
 
@@ -517,7 +515,7 @@ static PetscErrorCode getGIDsOnSquareGraph(PC pc, PetscInt nselected_1, const Pe
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PCGAMGCreateGraph_GEO(PC pc, Mat Amat, Mat *a_Gmat)
+static PetscErrorCode PCGAMGCreateGraph_GEO(PC pc, Mat Amat, Mat *a_Gmat)
 {
   PC_MG          *mg      = (PC_MG *)pc->data;
   PC_GAMG        *pc_gamg = (PC_GAMG *)mg->innerctx;
@@ -528,16 +526,7 @@ PetscErrorCode PCGAMGCreateGraph_GEO(PC pc, Mat Amat, Mat *a_Gmat)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*
-   PCGAMGCoarsen_GEO
-
-  Input Parameter:
-   . a_pc - this
-   . a_Gmat - graph
-  Output Parameter:
-   . a_llist_parent - linked list from selected indices for data locality only
-*/
-PetscErrorCode PCGAMGCoarsen_GEO(PC a_pc, Mat *a_Gmat, PetscCoarsenData **a_llist_parent)
+static PetscErrorCode PCGAMGCoarsen_GEO(PC a_pc, Mat *a_Gmat, PetscCoarsenData **a_llist_parent)
 {
   PetscInt   Istart, Iend, nloc, kk, Ii, ncols;
   IS         perm;
@@ -611,19 +600,7 @@ PetscErrorCode PCGAMGCoarsen_GEO(PC a_pc, Mat *a_Gmat, PetscCoarsenData **a_llis
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*
- PCGAMGProlongator_GEO
-
- Input Parameter:
- . pc - this
- . Amat - matrix on this fine level
- . Graph - used to get ghost data for nodes in
- . selected_1 - [nselected]
- . agg_lists - [nselected]
- Output Parameter:
- . a_P_out - prolongation operator to the next level
- */
-PetscErrorCode PCGAMGProlongator_GEO(PC pc, Mat Amat, Mat Gmat, PetscCoarsenData *agg_lists, Mat *a_P_out)
+static PetscErrorCode PCGAMGProlongator_GEO(PC pc, Mat Amat, Mat Gmat, PetscCoarsenData *agg_lists, Mat *a_P_out)
 {
   PC_MG          *mg      = (PC_MG *)pc->data;
   PC_GAMG        *pc_gamg = (PC_GAMG *)mg->innerctx;
@@ -749,12 +726,6 @@ static PetscErrorCode PCDestroy_GAMG_GEO(PC pc)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*
- PCCreateGAMG_GEO
-
-  Input Parameter:
-   . pc -
-*/
 PetscErrorCode PCCreateGAMG_GEO(PC pc)
 {
   PC_MG   *mg      = (PC_MG *)pc->data;

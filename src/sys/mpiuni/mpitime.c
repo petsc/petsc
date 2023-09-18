@@ -26,7 +26,7 @@ double MPI_Wtime(void)
   if (flag) {
     if (!QueryPerformanceCounter(&StartTime)) PETSCABORT(MPI_COMM_WORLD, PETSC_ERR_LIB);
     if (!QueryPerformanceFrequency(&PerfFreq)) PETSCABORT(MPI_COMM_WORLD, PETSC_ERR_LIB);
-      /* Explicitly convert the higher 32 bits, and add the lower 32 bits from the counter */
+      /* Explicitly convert the higher 32-bits, and add the lower 32-bits from the counter */
       /* works on non-pentium CPUs ? */
   #if defined(PETSC_HAVE_LARGE_INTEGER_U)
     SecInTick = 1.0 / ((double)PerfFreq.u.HighPart * FACTOR + (double)PerfFreq.u.LowPart);

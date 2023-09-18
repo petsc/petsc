@@ -6,13 +6,13 @@ typedef struct {
 } SNESLineSearch_BT;
 
 /*@
-   SNESLineSearchBTSetAlpha - Sets the descent parameter, alpha, in the `SNESLINESEARCHBT` variant.
+  SNESLineSearchBTSetAlpha - Sets the descent parameter, alpha, in the `SNESLINESEARCHBT` variant.
 
-   Input Parameters:
-+  linesearch - linesearch context
--  alpha - The descent parameter
+  Input Parameters:
++ linesearch - linesearch context
+- alpha      - The descent parameter
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `SNESLineSearch`, `SNESLineSearchSetLambda()`, `SNESLineSearchGetTolerances()`, `SNESLINESEARCHBT`, `SNESLineSearchBTGetAlpha()`
 @*/
@@ -27,17 +27,17 @@ PetscErrorCode SNESLineSearchBTSetAlpha(SNESLineSearch linesearch, PetscReal alp
 }
 
 /*@
-   SNESLineSearchBTGetAlpha - Gets the descent parameter, alpha, in the `SNESLINESEARCHBT` variant.
+  SNESLineSearchBTGetAlpha - Gets the descent parameter, alpha, in the `SNESLINESEARCHBT` variant.
 
-   Input Parameter:
-.  linesearch - linesearch context
+  Input Parameter:
+. linesearch - linesearch context
 
-   Output Parameter:
-.  alpha - The descent parameter
+  Output Parameter:
+. alpha - The descent parameter
 
-   Level: intermediate
+  Level: intermediate
 
-.seealso: `SNESLineSearchGetLambda()`, `SNESLineSearchGetTolerances()` `SNESLINESEARCHBT`, `SNESLineSearchBTGetAlpha()`
+.seealso: `SNESLineSearchGetLambda()`, `SNESLineSearchGetTolerances()` `SNESLINESEARCHBT`
 @*/
 PetscErrorCode SNESLineSearchBTGetAlpha(SNESLineSearch linesearch, PetscReal *alpha)
 {
@@ -68,7 +68,7 @@ static PetscErrorCode SNESLineSearchApply_BT(SNESLineSearch linesearch)
 
   PetscFunctionBegin;
   PetscCall(SNESLineSearchGetVecs(linesearch, &X, &F, &Y, &W, &G));
-  PetscCall(SNESLineSearchGetNorms(linesearch, &xnorm, &fnorm, &ynorm));
+  PetscCall(SNESLineSearchGetNorms(linesearch, NULL, &fnorm, NULL));
   PetscCall(SNESLineSearchGetLambda(linesearch, &lambda));
   PetscCall(SNESLineSearchGetSNES(linesearch, &snes));
   PetscCall(SNESLineSearchGetDefaultMonitor(linesearch, &monitor));
@@ -176,8 +176,8 @@ static PetscErrorCode SNESLineSearchApply_BT(SNESLineSearch linesearch)
       PetscCall(PetscViewerASCIISubtractTab(monitor, ((PetscObject)linesearch)->tablevel));
     }
   } else {
-    /* Since the full step didn't work and the step is tiny, quit */
     if (stol * xnorm > ynorm) {
+      /* Since the full step didn't give sufficient decrease and the step is tiny, exit */
       PetscCall(SNESLineSearchSetNorms(linesearch, xnorm, fnorm, ynorm));
       PetscCall(SNESLineSearchSetReason(linesearch, SNES_LINESEARCH_SUCCEEDED));
       if (monitor) {
@@ -359,7 +359,7 @@ static PetscErrorCode SNESLineSearchApply_BT(SNESLineSearch linesearch)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode SNESLineSearchView_BT(SNESLineSearch linesearch, PetscViewer viewer)
+static PetscErrorCode SNESLineSearchView_BT(SNESLineSearch linesearch, PetscViewer viewer)
 {
   PetscBool          iascii;
   SNESLineSearch_BT *bt = (SNESLineSearch_BT *)linesearch->data;

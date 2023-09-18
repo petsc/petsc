@@ -1,181 +1,115 @@
 <--- FIXED --->
---------------------------------------------------------------------------------------------
-ERROR 0: ./src/sys/tests/linter/testValidEnumDocstrings.c:14:9
-'WellFormedEnum' of type 'WellFormedEnum'
-  12: .seealso: Lorem
-  13: E*/
-> 14: typedef enum {
-              ^^^^^^^
-> 15:   LOREM,
-> 16:   IPSUM,
-> 17:   DOLOR
-> 18: } WellFormedEnum;
-  19: 
-  20: /*E
-
-seealso symbol 'Lorem' not enclosed with '`' [-fdoc-inline-list-seealso-backticks]:
+[31m[1m./src/sys/tests/linter/testValidEnumDocstrings.c:12:11: error:[0m seealso symbol 'Lorem' not enclosed with '`' [-fdoc-inline-list-seealso-backticks]:
   10:   Level: advanced
   11: 
-> 12: .seealso: Lorem
-                ^^^^^
+> 12: .seealso: [33m[1mLorem[0m
+                [33m[1m^^^^^[0m
   13: E*/
   14: typedef enum {
-
-ERROR 1: ./src/sys/tests/linter/testValidEnumDocstrings.c:29:9
-'IllFormedEnum' of type 'IllFormedEnum'
-  27: Level: advanced
-  28: */
-> 29: typedef enum {
-              ^^^^^^^
-> 30:   SIT,
-> 31:   AMET,
-> 32:   CONSECTETUR,
-> 33:   ADAPISCING
-> 34: } IllFormedEnum;
-  35: 
-  36: /*E
-
-Invalid indentation (0), all regular (non-empty, non-parameter, non-seealso) text must be indented to 2 columns [-fdoc-indentation]:
+[31m[1m./src/sys/tests/linter/testValidEnumDocstrings.c:27:1: error:[0m Invalid indentation (0), all regular (non-empty, non-parameter, non-seealso) text must be indented to 2 columns [-fdoc-indentation]:
   25:  $ AMET - An amet
   26: $ADAPISCING - an adapiscing
-> 27: Level: advanced
-      ^
+> 27: [33m[1m[0mLevel: advanced
+      [33m[1m^[0m
   28: */
   29: typedef enum {
-
-Missing empty line between sections, must have one before this section [-fdoc-section-spacing]:
+[31m[1m./src/sys/tests/linter/testValidEnumDocstrings.c:27:1: error:[0m Missing empty line between sections, must have one before this section [-fdoc-section-spacing]:
   25:  $ AMET - An amet
   26: $ADAPISCING - an adapiscing
 > 27: Level: advanced
   28: */
   29: typedef enum {
-
-ERROR 2: ./src/sys/tests/linter/testValidEnumDocstrings.c:48:9
-'BadSpellingEnum' of type 'BadSpellingEnum'
-  46: .seealso:                         IllFormedEnum,WellFormedEnum,WellFormedEnum,WellFormedEnum,BadSpellingEnum,BadSpellingEnum
-  47: */
-> 48: typedef enum {
-              ^^^^^^^
-> 49:   FOO
-> 50: } BadSpellingEnum;
-
-Docstring name 'bdSpllingenUm' does not match symbol. Assuming you meant 'BadSpellingEnum' [-fdoc-synopsis-matching-symbol-name]:
+[31m[1m./src/sys/tests/linter/testValidEnumDocstrings.c:37:3: error:[0m Docstring name 'bdSpllingenUm' does not match symbol. Assuming you meant 'BadSpellingEnum' [-fdoc-synopsis-matching-symbol-name]:
   35: 
   36: /*E
-> 37:   bdSpllingenUm - Lorem ipsum dolor
-        ^^^^^^^^^^^^^
+> 37:   [33m[1mbdSpllingenUm[0m - Lorem ipsum dolor
+        [33m[1m^^^^^^^^^^^^^[0m
   38: 
   39:   Not Collective
-
-seealso values must be (1) space away from colon not (25) [-fdoc-inline-list-formatting]:
+[31m[1m./src/sys/tests/linter/testValidEnumDocstrings.c:46:11: error:[0m seealso values must be (1) space away from colon not (25) [-fdoc-inline-list-formatting]:
   44:   a note
   45: 
-> 46: .seealso:                         IllFormedEnum,WellFormedEnum,WellFormedEnum,WellFormedEnum,BadSpellingEnum,BadSpellingEnum
-                ^^^^^^^^^^^^^^^^^^^^^^^^
+> 46: .seealso: [33m[1m                        [0mIllFormedEnum,WellFormedEnum,WellFormedEnum,WellFormedEnum,BadSpellingEnum,BadSpellingEnum
+                [33m[1m^^^^^^^^^^^^^^^^^^^^^^^^[0m
   47: */
   48: typedef enum {
-
-Found self-referential seealso entry 'BadSpellingEnum'; your documentation may be good but it's not *that* good [-fdoc-inline-list-seealso-self-reference]:
+[31m[1m./src/sys/tests/linter/testValidEnumDocstrings.c:46:94: error:[0m Found self-referential seealso entry 'BadSpellingEnum'; your documentation may be good but it's not *that* good [-fdoc-inline-list-seealso-self-reference]:
   44:   a note
   45: 
-> 46: .seealso:                         IllFormedEnum,WellFormedEnum,WellFormedEnum,WellFormedEnum,BadSpellingEnum,BadSpellingEnum
-                                                                                                   ^^^^^^^^^^^^^^^
+> 46: .seealso:                         IllFormedEnum,WellFormedEnum,WellFormedEnum,WellFormedEnum,[33m[1mBadSpellingEnum[0m,BadSpellingEnum
+                                                                                                   [33m[1m^^^^^^^^^^^^^^^[0m
   47: */
   48: typedef enum {
-
-Found self-referential seealso entry 'BadSpellingEnum'; your documentation may be good but it's not *that* good [-fdoc-inline-list-seealso-self-reference]:
+[31m[1m./src/sys/tests/linter/testValidEnumDocstrings.c:46:110: error:[0m Found self-referential seealso entry 'BadSpellingEnum'; your documentation may be good but it's not *that* good [-fdoc-inline-list-seealso-self-reference]:
   44:   a note
   45: 
-> 46: .seealso:                         IllFormedEnum,WellFormedEnum,WellFormedEnum,WellFormedEnum,BadSpellingEnum,BadSpellingEnum
-                                                                                                                   ^^^^^^^^^^^^^^^
+> 46: .seealso:                         IllFormedEnum,WellFormedEnum,WellFormedEnum,WellFormedEnum,BadSpellingEnum,[33m[1mBadSpellingEnum[0m
+                                                                                                                   [33m[1m^^^^^^^^^^^^^^^[0m
   47: */
   48: typedef enum {
-
-seealso symbol 'IllFormedEnum' not enclosed with '`' [-fdoc-inline-list-seealso-backticks]:
+[31m[1m./src/sys/tests/linter/testValidEnumDocstrings.c:46:35: error:[0m seealso symbol 'IllFormedEnum' not enclosed with '`' [-fdoc-inline-list-seealso-backticks]:
   44:   a note
   45: 
-> 46: .seealso:                         IllFormedEnum,WellFormedEnum,WellFormedEnum,WellFormedEnum,BadSpellingEnum,BadSpellingEnum
-                                        ^^^^^^^^^^^^^
+> 46: .seealso:                         [33m[1mIllFormedEnum[0m,WellFormedEnum,WellFormedEnum,WellFormedEnum,BadSpellingEnum,BadSpellingEnum
+                                        [33m[1m^^^^^^^^^^^^^[0m
   47: */
   48: typedef enum {
-
-seealso symbol 'WellFormedEnum' not enclosed with '`' [-fdoc-inline-list-seealso-backticks]:
+[31m[1m./src/sys/tests/linter/testValidEnumDocstrings.c:46:49: error:[0m seealso symbol 'WellFormedEnum' not enclosed with '`' [-fdoc-inline-list-seealso-backticks]:
   44:   a note
   45: 
-> 46: .seealso:                         IllFormedEnum,WellFormedEnum,WellFormedEnum,WellFormedEnum,BadSpellingEnum,BadSpellingEnum
-                                                      ^^^^^^^^^^^^^^
+> 46: .seealso:                         IllFormedEnum,[33m[1mWellFormedEnum[0m,WellFormedEnum,WellFormedEnum,BadSpellingEnum,BadSpellingEnum
+                                                      [33m[1m^^^^^^^^^^^^^^[0m
   47: */
   48: typedef enum {
-
-seealso symbol 'WellFormedEnum' not enclosed with '`' [-fdoc-inline-list-seealso-backticks]:
+[31m[1m./src/sys/tests/linter/testValidEnumDocstrings.c:46:64: error:[0m seealso symbol 'WellFormedEnum' not enclosed with '`' [-fdoc-inline-list-seealso-backticks]:
   44:   a note
   45: 
-> 46: .seealso:                         IllFormedEnum,WellFormedEnum,WellFormedEnum,WellFormedEnum,BadSpellingEnum,BadSpellingEnum
-                                                                     ^^^^^^^^^^^^^^
+> 46: .seealso:                         IllFormedEnum,WellFormedEnum,[33m[1mWellFormedEnum[0m,WellFormedEnum,BadSpellingEnum,BadSpellingEnum
+                                                                     [33m[1m^^^^^^^^^^^^^^[0m
   47: */
   48: typedef enum {
-
-seealso symbol 'WellFormedEnum' not enclosed with '`' [-fdoc-inline-list-seealso-backticks]:
+[31m[1m./src/sys/tests/linter/testValidEnumDocstrings.c:46:79: error:[0m seealso symbol 'WellFormedEnum' not enclosed with '`' [-fdoc-inline-list-seealso-backticks]:
   44:   a note
   45: 
-> 46: .seealso:                         IllFormedEnum,WellFormedEnum,WellFormedEnum,WellFormedEnum,BadSpellingEnum,BadSpellingEnum
-                                                                                    ^^^^^^^^^^^^^^
+> 46: .seealso:                         IllFormedEnum,WellFormedEnum,WellFormedEnum,[33m[1mWellFormedEnum[0m,BadSpellingEnum,BadSpellingEnum
+                                                                                    [33m[1m^^^^^^^^^^^^^^[0m
   47: */
   48: typedef enum {
-
-Seealso entry 'WellFormedEnum' is duplicate [-fdoc-inline-list-seealso-duplicate]:
+[31m[1m./src/sys/tests/linter/testValidEnumDocstrings.c:46:64: error:[0m Seealso entry 'WellFormedEnum' is duplicate [-fdoc-inline-list-seealso-duplicate]:
   44:   a note
   45: 
-> 46: .seealso:                         IllFormedEnum,WellFormedEnum,WellFormedEnum,WellFormedEnum,BadSpellingEnum,BadSpellingEnum
-                                                                     ^^^^^^^^^^^^^^
+> 46: .seealso:                         IllFormedEnum,WellFormedEnum,[33m[1mWellFormedEnum[0m,WellFormedEnum,BadSpellingEnum,BadSpellingEnum
+                                                                     [33m[1m^^^^^^^^^^^^^^[0m
   47: */
   48: typedef enum {
 
 ./src/sys/tests/linter/testValidEnumDocstrings.c:46:49 Note: first instance found here:
   45: 
-> 46: .seealso:                         IllFormedEnum,WellFormedEnum,WellFormedEnum,WellFormedEnum,BadSpellingEnum,BadSpellingEnum
-                                                      ^^^^^^^^^^^^^^
+> 46: .seealso:                         IllFormedEnum,[33m[1mWellFormedEnum[0m,WellFormedEnum,WellFormedEnum,BadSpellingEnum,BadSpellingEnum
+                                                      [33m[1m^^^^^^^^^^^^^^[0m
   47: */
-
-Seealso entry 'WellFormedEnum' is duplicate [-fdoc-inline-list-seealso-duplicate]:
+[31m[1m./src/sys/tests/linter/testValidEnumDocstrings.c:46:79: error:[0m Seealso entry 'WellFormedEnum' is duplicate [-fdoc-inline-list-seealso-duplicate]:
   44:   a note
   45: 
-> 46: .seealso:                         IllFormedEnum,WellFormedEnum,WellFormedEnum,WellFormedEnum,BadSpellingEnum,BadSpellingEnum
-                                                                                    ^^^^^^^^^^^^^^
+> 46: .seealso:                         IllFormedEnum,WellFormedEnum,WellFormedEnum,[33m[1mWellFormedEnum[0m,BadSpellingEnum,BadSpellingEnum
+                                                                                    [33m[1m^^^^^^^^^^^^^^[0m
   47: */
   48: typedef enum {
 
 ./src/sys/tests/linter/testValidEnumDocstrings.c:46:49 Note: first instance found here:
   45: 
-> 46: .seealso:                         IllFormedEnum,WellFormedEnum,WellFormedEnum,WellFormedEnum,BadSpellingEnum,BadSpellingEnum
-                                                      ^^^^^^^^^^^^^^
+> 46: .seealso:                         IllFormedEnum,[33m[1mWellFormedEnum[0m,WellFormedEnum,WellFormedEnum,BadSpellingEnum,BadSpellingEnum
+                                                      [33m[1m^^^^^^^^^^^^^^[0m
   47: */
---------------------------------------------------------------------------------------------
 <--- LEFT --->
---------------------------------------------------------------------------------------------
-ERROR 1: ./src/sys/tests/linter/testValidEnumDocstrings.c:29:9
-'IllFormedEnum' of type 'IllFormedEnum'
-  27: Level: advanced
-  28: */
-> 29: typedef enum {
-              ^^^^^^^
-> 30:   SIT,
-> 31:   AMET,
-> 32:   CONSECTETUR,
-> 33:   ADAPISCING
-> 34: } IllFormedEnum;
-  35: 
-  36: /*E
-
-Synopsis seems to be missing a description separator; I suspect you may be using ' ' as a separator instead of '-'. Expected 'IllFormedEnum - -' [-fdoc-synopsis-wrong-description-separator]:
+[31m[1m./src/sys/tests/linter/testValidEnumDocstrings.c:21:1: error:[0m Synopsis seems to be missing a description separator; I suspect you may be using ' ' as a separator instead of '-'. Expected 'IllFormedEnum - -' [-fdoc-synopsis-wrong-description-separator]:
   19: 
   20: /*E
-> 21:   IllFormedEnum -
-      ^^^^^^^^^^^^^^^^^
+> 21: [33m[1m  IllFormedEnum -[0m
+      [33m[1m^^^^^^^^^^^^^^^^^[0m
   22: 
   23: $ SIT- A sit
-
-Required section '.seealso' not found [-fdoc-section-header-missing]:
+[31m[1m./src/sys/tests/linter/testValidEnumDocstrings.c:20:1: error:[0m Required section '.seealso' not found [-fdoc-section-header-missing]:
   18: } WellFormedEnum;
   19: 
 > 20: /*E
@@ -189,17 +123,7 @@ Required section '.seealso' not found [-fdoc-section-header-missing]:
 > 28: */
   29: typedef enum {
   30:   SIT,
-
-ERROR 2: ./src/sys/tests/linter/testValidEnumDocstrings.c:48:9
-'BadSpellingEnum' of type 'BadSpellingEnum'
-  46: .seealso:                         IllFormedEnum,WellFormedEnum,WellFormedEnum,WellFormedEnum,BadSpellingEnum,BadSpellingEnum
-  47: */
-> 48: typedef enum {
-              ^^^^^^^
-> 49:   FOO
-> 50: } BadSpellingEnum;
-
-Required section 'Level' not found [-fdoc-section-header-missing]:
+[31m[1m./src/sys/tests/linter/testValidEnumDocstrings.c:36:1: error:[0m Required section 'Level' not found [-fdoc-section-header-missing]:
   34: } IllFormedEnum;
   35: 
 > 36: /*E
@@ -216,4 +140,3 @@ Required section 'Level' not found [-fdoc-section-header-missing]:
 > 47: */
   48: typedef enum {
   49:   FOO
---------------------------------------------------------------------------------------------

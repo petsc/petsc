@@ -1,11 +1,12 @@
-
-#ifndef _SWARMIMPL_H
-#define _SWARMIMPL_H
+#pragma once
 
 #include <petscvec.h>     /*I "petscvec.h" I*/
 #include <petscmat.h>     /*I      "petscmat.h"          I*/
 #include <petscdmswarm.h> /*I      "petscdmswarm.h"    I*/
 #include <petsc/private/dmimpl.h>
+
+PETSC_EXTERN PetscBool  SwarmProjcite;
+PETSC_EXTERN const char SwarmProjCitation[];
 
 PETSC_EXTERN PetscLogEvent DMSWARM_Migrate;
 PETSC_EXTERN PetscLogEvent DMSWARM_SetSizes;
@@ -18,9 +19,15 @@ PETSC_EXTERN PetscLogEvent DMSWARM_DataExchangerEnd;
 PETSC_EXTERN PetscLogEvent DMSWARM_DataExchangerSendCount;
 PETSC_EXTERN PetscLogEvent DMSWARM_DataExchangerPack;
 
-typedef struct _p_DMSwarmDataField  *DMSwarmDataField;
-typedef struct _p_DMSwarmDataBucket *DMSwarmDataBucket;
-typedef struct _p_DMSwarmSort       *DMSwarmSort;
+/*
+ Error checking to ensure the swarm type is correct and that a cell DM has been set
+*/
+#define DMSWARMPICVALID(dm) \
+  do { \
+    DM_Swarm *_swarm = (DM_Swarm *)(dm)->data; \
+    PetscCheck(_swarm->swarm_type == DMSWARM_PIC, PetscObjectComm((PetscObject)(dm)), PETSC_ERR_SUP, "Valid only for DMSwarm-PIC. You must call DMSwarmSetType(dm,DMSWARM_PIC)"); \
+    PetscCheck(_swarm->dmcell, PetscObjectComm((PetscObject)(dm)), PETSC_ERR_SUP, "Valid only for DMSwarmPIC if the cell DM is set. You must call DMSwarmSetCellDM(dm,celldm)"); \
+  } while (0)
 
 typedef struct {
   DMSwarmDataBucket db;
@@ -71,5 +78,3 @@ struct _p_DMSwarmSort {
 PETSC_INTERN PetscErrorCode DMSwarmMigrate_Push_Basic(DM, PetscBool);
 PETSC_INTERN PetscErrorCode DMSwarmMigrate_CellDMScatter(DM, PetscBool);
 PETSC_INTERN PetscErrorCode DMSwarmMigrate_CellDMExact(DM, PetscBool);
-
-#endif /* _SWARMIMPL_H */

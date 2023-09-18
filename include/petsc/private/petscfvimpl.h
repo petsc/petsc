@@ -1,5 +1,4 @@
-#ifndef PETSCFVIMPL_H
-#define PETSCFVIMPL_H
+#pragma once
 
 #include <petscfv.h>
 #ifdef PETSC_HAVE_LIBCEED
@@ -105,5 +104,3 @@ static inline PetscErrorCode PetscFVInterpolate_Static(PetscFV fv, const PetscSc
   PetscCall(PetscArraycpy(interpolant, x, Nc));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-
-#endif

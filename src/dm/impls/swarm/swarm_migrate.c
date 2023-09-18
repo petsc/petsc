@@ -92,7 +92,7 @@ PetscErrorCode DMSwarmMigrate_Push_Basic(DM dm, PetscBool remove_sent_points)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode DMSwarmMigrate_DMNeighborScatter(DM dm, DM dmcell, PetscBool remove_sent_points, PetscInt *npoints_prior_migration)
+static PetscErrorCode DMSwarmMigrate_DMNeighborScatter(DM dm, DM dmcell, PetscBool remove_sent_points, PetscInt *npoints_prior_migration)
 {
   DM_Swarm          *swarm = (DM_Swarm *)dm->data;
   DMSwarmDataEx      de;
@@ -670,21 +670,21 @@ PETSC_EXTERN PetscErrorCode DMSwarmCollect_General(DM dm, PetscErrorCode (*colle
 
   Logically Collective
 
-  Input parameter:
-. dm    - the `DMSWARM`
+  Input Parameter:
+. dm - the `DMSWARM`
 
-  Output parameter:
+  Output Parameter:
 . mtype - The migration type, see `DMSwarmMigrateType`
 
   Level: intermediate
 
-.seealso: `DM`, `DMSWARM`, `DMSwarmMigrateType`, `DMSwarmGetMigrateType()`, `DMSwarmMigrateType`, `DMSwarmMigrate()`
+.seealso: `DM`, `DMSWARM`, `DMSwarmMigrateType`, `DMSwarmMigrate()`
 @*/
 PetscErrorCode DMSwarmGetMigrateType(DM dm, DMSwarmMigrateType *mtype)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidIntPointer(mtype, 2);
+  PetscAssertPointer(mtype, 2);
   *mtype = ((DM_Swarm *)dm->data)->migrate_type;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -694,13 +694,13 @@ PetscErrorCode DMSwarmGetMigrateType(DM dm, DMSwarmMigrateType *mtype)
 
   Logically Collective
 
-  Input parameters:
+  Input Parameters:
 + dm    - the `DMSWARM`
 - mtype - The migration type, see `DMSwarmMigrateType`
 
   Level: intermediate
 
-.seealso: `DM`, `DMSWARM`, `DMSwarmMigrateType`, `DMSwarmGetMigrateType()`, `DMSwarmMigrateType`, `DMSwarmMigrate()`
+.seealso: `DM`, `DMSWARM`, `DMSwarmMigrateType`, `DMSwarmGetMigrateType()`, `DMSwarmMigrate()`
 @*/
 PetscErrorCode DMSwarmSetMigrateType(DM dm, DMSwarmMigrateType mtype)
 {

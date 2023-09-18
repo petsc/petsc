@@ -1,5 +1,4 @@
-#ifndef __TAO_IPM_H
-#define __TAO_IPM_H
+#pragma once
 #include <petsc/private/taoimpl.h>
 
 /*
@@ -46,5 +45,3 @@ typedef struct {
   VecScatter  step1, step2, step3, step4;
   VecScatter  rhs1, rhs2, rhs3, rhs4;
 } TAO_IPM;
-
-#endif /* ifndef __TAO_IPM_H */

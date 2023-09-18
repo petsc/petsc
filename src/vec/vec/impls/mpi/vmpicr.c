@@ -6,25 +6,27 @@
 #include <petscvec.h> /*I  "petscvec.h"   I*/
 
 /*@
-   VecCreateMPI - Creates a parallel vector.
+  VecCreateMPI - Creates a parallel vector.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  comm - the MPI communicator to use
-.  n - local vector length (or `PETSC_DECIDE` to have calculated if `N` is given)
--  N - global vector length (or `PETSC_DETERMINE` to have calculated if `n` is given)
+  Input Parameters:
++ comm - the MPI communicator to use
+. n    - local vector length (or `PETSC_DECIDE` to have calculated if `N` is given)
+- N    - global vector length (or `PETSC_DETERMINE` to have calculated if `n` is given)
 
-   Output Parameter:
-.  vv - the vector
+  Output Parameter:
+. v - the vector
 
-   Level: intermediate
+  Level: intermediate
 
-   Notes:
-   Use `VecDuplicate()` or `VecDuplicateVecs()` to form additional vectors of the
-   same type as an existing vector.
+  Notes:
+  It is recommended to use `VecCreateFromOptions()` instead of this routine
 
-.seealso: [](chapter_vectors), `Vec`, `VecType`, `VecCreateSeq()`, `VecCreate()`, `VecDuplicate()`, `VecDuplicateVecs()`, `VecCreateGhost()`,
+  Use `VecDuplicate()` or `VecDuplicateVecs()` to form additional vectors of the
+  same type as an existing vector.
+
+.seealso: [](ch_vectors), `Vec`, `VecType`, `VecCreateSeq()`, `VecCreate()`, `VecDuplicate()`, `VecDuplicateVecs()`, `VecCreateGhost()`,
           `VecCreateMPIWithArray()`, `VecCreateGhostWithArray()`, `VecMPISetGhost()`
 @*/
 PetscErrorCode VecCreateMPI(MPI_Comm comm, PetscInt n, PetscInt N, Vec *v)

@@ -12,14 +12,13 @@
   PETSC_BLASLAPACK_CAPS BLAS/LAPACK function names are all in capital letters
   PETSC_BLASLAPACK_C BLAS/LAPACK function names have no mangling
 
-  PETSC_BLASLAPACK_SINGLEISDOUBLE - for Cray systems where the BLAS/LAPACK single precision (i.e. Fortran single precision is actually 64 bits)
+  PETSC_BLASLAPACK_SINGLEISDOUBLE - for Cray systems where the BLAS/LAPACK single precision (i.e. Fortran single precision is actually 64-bits)
                                     old Cray vector machines used to be this way, it is is not clear if any exist now.
 
-  PetscBLASInt is almost always 32 bit integers but can be 64 bit integers for certain usages of MKL and OpenBLAS BLAS/LAPACK libraries
+  PetscBLASInt is almost always 32-bit integers but can be 64-bit integers for certain usages of MKL and OpenBLAS BLAS/LAPACK libraries
 
 */
-#ifndef _BLASLAPACK_H
-#define _BLASLAPACK_H
+#pragma once
 
 #include <petscsys.h>
 #if defined(__cplusplus)
@@ -31,13 +30,13 @@
 /* SUBMANSEC = Sys */
 
 /*MC
-    PetscCallBLAS - Calls a BLAS or LAPACK routine with error check handling
-
-    Not Collective
+    PetscCallBLAS - Calls a BLAS or LAPACK routine and catches exceptions
 
     Synopsis:
    #include <petscsys.h>
    void PetscCallBLAS(char *name,routine)
+
+    Not Collective
 
   Input Parameters:
 +   name - string that gives the name of the function being called
@@ -46,7 +45,7 @@
    Level: developer
 
    Developer Note:
-   This is so that when a user or external library routine results in a crash or corrupts memory, they get blamed instead of PETSc.
+   This is so that when a BLAS/LAPACK routine results in a crash or corrupts memory, they get blamed instead of PETSc.
 
 .seealso: `PetscCall()`, `PetscStackPushNoCheck()`, `PetscStackPush()`, `PetscCallExternal()`, `PetscStackCallExternalVoid()`
 M*/
@@ -96,6 +95,7 @@ BLAS_EXTERN void LAPACKstein_(const PetscBLASInt *, const PetscReal *, const Pet
 #endif
 BLAS_EXTERN void LAPACKgesv_(const PetscBLASInt *, const PetscBLASInt *, PetscScalar *, const PetscBLASInt *, PetscBLASInt *, PetscScalar *, const PetscBLASInt *, PetscBLASInt *);
 
+BLAS_EXTERN void LAPACKtrtri_(const char *, const char *, const PetscBLASInt *, PetscScalar *, const PetscBLASInt *, PetscBLASInt *);
 BLAS_EXTERN void LAPACKpotrf_(const char *, const PetscBLASInt *, PetscScalar *, const PetscBLASInt *, PetscBLASInt *);
 BLAS_EXTERN void LAPACKpotri_(const char *, const PetscBLASInt *, PetscScalar *, const PetscBLASInt *, PetscBLASInt *);
 BLAS_EXTERN void LAPACKpotrs_(const char *, const PetscBLASInt *, const PetscBLASInt *, const PetscScalar *, const PetscBLASInt *, PetscScalar *, const PetscBLASInt *, PetscBLASInt *);
@@ -131,6 +131,13 @@ BLAS_EXTERN void LAPACKREALsteqr_(const char *, const PetscBLASInt *, PetscReal 
 #else
   #define LAPACKsteqr_(a, b, c, d, e, f, g, h)     PetscMissingLapack("STEQR", a, b, c, d, e, f, g, h)
   #define LAPACKREALsteqr_(a, b, c, d, e, f, g, h) PetscMissingLapack("STEQR", a, b, c, d, e, f, g, h)
+#endif
+#if !defined(PETSC_MISSING_LAPACK_STEV)
+BLAS_EXTERN void LAPACKstev_(const char *, const PetscBLASInt *, PetscReal *, PetscReal *, PetscScalar *, const PetscBLASInt *, PetscReal *, PetscBLASInt *);
+BLAS_EXTERN void LAPACKREALstev_(const char *, const PetscBLASInt *, PetscReal *, PetscReal *, PetscReal *, const PetscBLASInt *, PetscReal *, PetscBLASInt *);
+#else
+  #define LAPACKstev_(a, b, c, d, e, f, g, h)     PetscMissingLapack("STEV", a, b, c, d, e, f, g, h)
+  #define LAPACKREALstev_(a, b, c, d, e, f, g, h) PetscMissingLapack("STEV", a, b, c, d, e, f, g, h)
 #endif
 #if !defined(PETSC_MISSING_LAPACK_HGEQZ)
 BLAS_EXTERN void LAPACKhgeqz_(const char *, const char *, const char *, PetscBLASInt *, PetscBLASInt *, PetscBLASInt *, PetscScalar *, PetscBLASInt *, PetscScalar *, PetscBLASInt *, PetscScalar *, PetscScalar *, PetscScalar *, PetscScalar *, PetscBLASInt *, PetscScalar *, PetscBLASInt *, PetscScalar *, PetscBLASInt *, PetscBLASInt *);
@@ -270,6 +277,4 @@ BLAS_EXTERN void LAPACKgesvd_(const char *, const char *, const PetscBLASInt *, 
 #else
 BLAS_EXTERN void LAPACKgeev_(const char *, const char *, const PetscBLASInt *, PetscScalar *, const PetscBLASInt *, PetscReal *, PetscReal *, PetscScalar *, const PetscBLASInt *, PetscScalar *, const PetscBLASInt *, PetscScalar *, const PetscBLASInt *, PetscBLASInt *);
 BLAS_EXTERN void LAPACKgesvd_(const char *, const char *, const PetscBLASInt *, const PetscBLASInt *, PetscScalar *, const PetscBLASInt *, PetscReal *, PetscScalar *, const PetscBLASInt *, PetscScalar *, const PetscBLASInt *, PetscScalar *, const PetscBLASInt *, PetscBLASInt *);
-#endif
-
 #endif

@@ -717,22 +717,19 @@ static PetscErrorCode mandel_initial_u(PetscInt dim, PetscReal time, const Petsc
     PetscScalar G     = param->mu;                             /* Pa */
     PetscScalar P_0   = param->P_0;                            /* Pa */
     PetscScalar kappa = param->k / param->mu_f;                /* m^2 / (Pa s) */
-    PetscScalar a     = 0.5 * (user->xmax[0] - user->xmin[0]); /* m */
+    PetscReal   a     = 0.5 * (user->xmax[0] - user->xmin[0]); /* m */
     PetscInt    N     = user->niter, n;
 
     PetscScalar K_d  = K_u - alpha * alpha * M;                             /* Pa,      Cheng (B.5)  */
     PetscScalar nu   = (3.0 * K_d - 2.0 * G) / (2.0 * (3.0 * K_d + G));     /* -,       Cheng (B.8)  */
     PetscScalar nu_u = (3.0 * K_u - 2.0 * G) / (2.0 * (3.0 * K_u + G));     /* -,       Cheng (B.9)  */
     PetscScalar S    = (3.0 * K_u + 4.0 * G) / (M * (3.0 * K_d + 4.0 * G)); /* Pa^{-1}, Cheng (B.14) */
-    PetscScalar c    = kappa / S;                                           /* m^2 / s, Cheng (B.16) */
+    PetscReal   c    = PetscRealPart(kappa / S);                            /* m^2 / s, Cheng (B.16) */
 
-    PetscScalar A_s     = 0.0;
-    PetscScalar B_s     = 0.0;
-    PetscScalar time    = 0.0;
-    PetscScalar alpha_n = 0.0;
-
+    PetscReal A_s = 0.0;
+    PetscReal B_s = 0.0;
     for (n = 1; n < N + 1; ++n) {
-      alpha_n = user->zeroArray[n - 1];
+      PetscReal alpha_n = user->zeroArray[n - 1];
       A_s += ((PetscSinReal(alpha_n) * PetscCosReal(alpha_n)) / (alpha_n - PetscSinReal(alpha_n) * PetscCosReal(alpha_n))) * PetscExpReal(-1 * (alpha_n * alpha_n * c * time) / (a * a));
       B_s += (PetscCosReal(alpha_n) / (alpha_n - PetscSinReal(alpha_n) * PetscCosReal(alpha_n))) * PetscSinReal((alpha_n * x[0]) / a) * PetscExpReal(-1 * (alpha_n * alpha_n * c * time) / (a * a));
     }
@@ -850,13 +847,13 @@ static PetscErrorCode mandel_2d_eps(PetscInt dim, PetscReal time, const PetscRea
     //const PetscScalar B = (alpha*M)/(K_d + alpha*alpha * M);
 
     //const PetscScalar b = (YMAX - YMIN) / 2.0;
-    PetscScalar a = (user->xmax[0] - user->xmin[0]) / 2.0;
-    PetscReal   c = PetscRealPart(((2.0 * kappa * G) * (1.0 - nu) * (nu_u - nu)) / (alpha * alpha * (1.0 - 2.0 * nu) * (1.0 - nu_u)));
+    PetscReal a = (user->xmax[0] - user->xmin[0]) / 2.0;
+    PetscReal c = PetscRealPart(((2.0 * kappa * G) * (1.0 - nu) * (nu_u - nu)) / (alpha * alpha * (1.0 - 2.0 * nu) * (1.0 - nu_u)));
 
     // Series term
-    PetscScalar eps_A = 0.0;
-    PetscScalar eps_B = 0.0;
-    PetscScalar eps_C = 0.0;
+    PetscReal eps_A = 0.0;
+    PetscReal eps_B = 0.0;
+    PetscReal eps_C = 0.0;
 
     for (PetscInt n = 1; n < NITER + 1; n++) {
       PetscReal aa = user->zeroArray[n - 1];
@@ -906,11 +903,10 @@ static PetscErrorCode mandel_2d_p(PetscInt dim, PetscReal time, const PetscReal 
     //PetscScalar A2 = (alpha * (1.0 - 2.0*nu)) / (1.0 - nu);
 
     // Series term
-    PetscScalar aa = 0.0;
-    PetscScalar p  = 0.0;
+    PetscReal p = 0.0;
 
     for (PetscInt n = 1; n < NITER + 1; n++) {
-      aa = user->zeroArray[n - 1];
+      PetscReal aa = user->zeroArray[n - 1];
       p += (PetscSinReal(aa) / (aa - PetscSinReal(aa) * PetscCosReal(aa))) * (PetscCosReal((aa * x[0]) / a) - PetscCosReal(aa)) * PetscExpReal(-1.0 * (aa * aa * c * time) / (a * a));
     }
     u[0] = ((2.0 * F) / (a * A1)) * p;
@@ -1136,12 +1132,15 @@ static PetscErrorCode cryer_3d_u(PetscInt dim, PetscReal time, const PetscReal x
       const PetscReal E_n = PetscRealPart(PetscSqr(1 - nu) * PetscSqr(1 + nu_u) * x_n - 18.0 * (1 + nu) * (nu_u - nu) * (1 - nu_u));
 
       /* m , Cheng (7.404) */
-      A_n += PetscRealPart((12.0 * (1.0 + nu) * (nu_u - nu)) / ((1.0 - 2.0 * nu) * E_n * PetscSqr(R_star) * x_n * PetscSinReal(PetscSqrtReal(x_n))) * (3.0 * (nu_u - nu) * (PetscSinReal(R_star * PetscSqrtReal(x_n)) - R_star * PetscSqrtReal(x_n) * PetscCosReal(R_star * PetscSqrtReal(x_n))) + (1.0 - nu) * (1.0 - 2.0 * nu) * PetscPowRealInt(R_star, 3) * x_n * PetscSinReal(PetscSqrtReal(x_n))) * PetscExpReal(-x_n * tstar));
+      if (R_star != 0) {
+        A_n += PetscRealPart((12.0 * (1.0 + nu) * (nu_u - nu)) / ((1.0 - 2.0 * nu) * E_n * PetscSqr(R_star) * x_n * PetscSinReal(PetscSqrtReal(x_n))) * (3.0 * (nu_u - nu) * (PetscSinReal(R_star * PetscSqrtReal(x_n)) - R_star * PetscSqrtReal(x_n) * PetscCosReal(R_star * PetscSqrtReal(x_n))) + (1.0 - nu) * (1.0 - 2.0 * nu) * PetscPowRealInt(R_star, 3) * x_n * PetscSinReal(PetscSqrtReal(x_n))) * PetscExpReal(-x_n * tstar));
+      }
     }
-    u_sc = PetscRealPart(u_inf) * (R_star - A_n);
-    u[0] = u_sc * x[0] / R;
-    u[1] = u_sc * x[1] / R;
-    u[2] = u_sc * x[2] / R;
+    if (R_star != 0) u_sc = PetscRealPart(u_inf) * (R_star - A_n) / R;
+    else u_sc = PetscRealPart(u_inf) / R_0;
+    u[0] = u_sc * x[0];
+    u[1] = u_sc * x[1];
+    u[2] = u_sc * x[2];
   }
   return PETSC_SUCCESS;
 }
@@ -1223,11 +1222,11 @@ static PetscErrorCode cryer_3d_p(PetscInt dim, PetscReal time, const PetscReal x
     PetscScalar nu_u = (3.0 * K_u - 2.0 * G) / (2.0 * (3.0 * K_u + G));     /* -,       Cheng (B.9)  */
     PetscScalar S    = (3.0 * K_u + 4.0 * G) / (M * (3.0 * K_d + 4.0 * G)); /* Pa^{-1}, Cheng (B.14) */
     PetscScalar c    = kappa / S;                                           /* m^2 / s, Cheng (B.16) */
-    PetscScalar R    = PetscSqrtReal(x[0] * x[0] + x[1] * x[1] + x[2] * x[2]);
+    PetscReal   R    = PetscSqrtReal(x[0] * x[0] + x[1] * x[1] + x[2] * x[2]);
 
-    PetscScalar R_star = R / R_0;
-    PetscScalar t_star = PetscRealPart(c * time) / PetscSqr(R_0);
-    PetscReal   A_x    = 0.0;
+    PetscReal R_star = R / R_0;
+    PetscReal t_star = PetscRealPart(c * time) / PetscSqr(R_0);
+    PetscReal A_x    = 0.0;
 
     for (n = 1; n < N + 1; ++n) {
       const PetscReal x_n = user->zeroArray[n - 1];

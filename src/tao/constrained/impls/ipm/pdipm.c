@@ -187,7 +187,7 @@ static PetscErrorCode TaoPDIPMSetUpBounds(Tao tao)
   sendbuf[3] = pdipm->nxbox;
   sendbuf[4] = pdipm->nxfree;
 
-  PetscCallMPI(MPI_Allreduce(sendbuf, recvbuf, 5, MPIU_INT, MPI_SUM, comm));
+  PetscCall(MPIU_Allreduce(sendbuf, recvbuf, 5, MPIU_INT, MPI_SUM, comm));
   pdipm->Nxlb    = recvbuf[0];
   pdipm->Nxub    = recvbuf[1];
   pdipm->Nxfixed = recvbuf[2];
@@ -682,7 +682,7 @@ static PetscErrorCode KKTAddShifts(Tao tao, SNES snes, Vec X)
 /*
   PCPreSolve_PDIPM -- called between MatFactorNumeric() and MatSolve()
 */
-PetscErrorCode PCPreSolve_PDIPM(PC pc, KSP ksp)
+static PetscErrorCode PCPreSolve_PDIPM(PC pc, KSP ksp)
 {
   Tao        tao;
   TAO_PDIPM *pdipm;
@@ -747,7 +747,7 @@ static PetscErrorCode SNESLineSearch_PDIPM(SNESLineSearch linesearch, void *ctx)
   PetscCall(VecRestoreArrayWrite(X, &Xarr));
 
   /* alpha = min(alpha) over all processes */
-  PetscCallMPI(MPI_Allreduce(alpha, alpha + 2, 2, MPIU_REAL, MPIU_MIN, PetscObjectComm((PetscObject)tao)));
+  PetscCall(MPIU_Allreduce(alpha, alpha + 2, 2, MPIU_REAL, MPIU_MIN, PetscObjectComm((PetscObject)tao)));
 
   alpha_p = alpha[2];
   alpha_d = alpha[3];
@@ -789,7 +789,7 @@ static PetscErrorCode SNESLineSearch_PDIPM(SNESLineSearch linesearch, void *ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode TaoSolve_PDIPM(Tao tao)
+static PetscErrorCode TaoSolve_PDIPM(Tao tao)
 {
   TAO_PDIPM     *pdipm = (TAO_PDIPM *)tao->data;
   SNESLineSearch linesearch; /* SNESLineSearch context */
@@ -833,7 +833,7 @@ PetscErrorCode TaoSolve_PDIPM(Tao tao)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode TaoView_PDIPM(Tao tao, PetscViewer viewer)
+static PetscErrorCode TaoView_PDIPM(Tao tao, PetscViewer viewer)
 {
   TAO_PDIPM *pdipm = (TAO_PDIPM *)tao->data;
 
@@ -846,7 +846,7 @@ PetscErrorCode TaoView_PDIPM(Tao tao, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode TaoSetup_PDIPM(Tao tao)
+static PetscErrorCode TaoSetup_PDIPM(Tao tao)
 {
   TAO_PDIPM         *pdipm = (TAO_PDIPM *)tao->data;
   MPI_Comm           comm;
@@ -1353,7 +1353,7 @@ PetscErrorCode TaoSetup_PDIPM(Tao tao)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode TaoDestroy_PDIPM(Tao tao)
+static PetscErrorCode TaoDestroy_PDIPM(Tao tao)
 {
   TAO_PDIPM *pdipm = (TAO_PDIPM *)tao->data;
 
@@ -1409,7 +1409,7 @@ PetscErrorCode TaoDestroy_PDIPM(Tao tao)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode TaoSetFromOptions_PDIPM(Tao tao, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode TaoSetFromOptions_PDIPM(Tao tao, PetscOptionItems *PetscOptionsObject)
 {
   TAO_PDIPM *pdipm = (TAO_PDIPM *)tao->data;
 

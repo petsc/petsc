@@ -23,9 +23,7 @@ int main(int argc, char **args)
   PetscBool isadios = PETSC_FALSE;
 #endif
   PetscScalar const *values;
-#if defined(PETSC_USE_LOG)
-  PetscLogEvent VECTOR_GENERATE, VECTOR_READ;
-#endif
+  PetscLogEvent      VECTOR_GENERATE, VECTOR_READ;
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &args, (char *)0, help));

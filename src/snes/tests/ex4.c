@@ -143,9 +143,13 @@ PetscErrorCode FormObjective(SNES snes, Vec x, PetscReal *f, void *dummy)
 {
   Vec             F;
   static PetscInt cnt = 0;
-  const PetscReal one = 1.0, zero = 0.0, inf = one / zero;
+  const PetscReal one = 1.0, zero = 0.0;
+  PetscReal       inf;
 
   PetscFunctionBeginUser;
+  PetscCall(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
+  inf = one / zero;
+  PetscCall(PetscFPTrapPop());
   if (cnt++ == infatcount) *f = inf;
   else {
     PetscCall(VecDuplicate(x, &F));

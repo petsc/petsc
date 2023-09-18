@@ -17,20 +17,24 @@ DMField Object: field 1 MPI process
     adjacency FEM
   PetscDS field 0
     PetscFE Object: MyPetscFE 1 MPI process
-      type: basic
-      Basic Finite Element in 2 dimensions with 2 components
+      type: vector
+      Vector Finite Element in 2 dimensions with 2 components
       PetscSpace Object: MyPetscFE 1 MPI process
         type: sum
         Space in 2 variables with 2 components, size 12
         Sum space of 2 concatenated subspaces (all identical)
-          PetscSpace Object: sum component (sumcomp_) 1 MPI process
+          PetscSpace Object: P2 (sumcomp_) 1 MPI process
             type: poly
             Space in 2 variables with 1 components, size 6
             Polynomial space of degree 2
       PetscDualSpace Object: MyPetscFE 1 MPI process
-        type: lagrange
+        type: sum
         Dual space with 2 components, size 12
-        Continuous Lagrange dual space
+        Sum dual space of 2 concatenated subspaces (all identical)
+          PetscDualSpace Object: P2 1 MPI process
+            type: lagrange
+            Dual space with 1 components, size 6
+            Continuous Lagrange dual space
         Quadrature on a triangle of order 4 on 6 points (dim 2)
     Vec Object: 1 MPI process
       type: seq
@@ -133,8 +137,7 @@ DMField Object: field 1 MPI process
     0.694444
     1.38889
 Vec Object: Test Points 1 MPI process
-  type: mpi
-Process [0]
+  type: seq
 0.720032
 0.061794
 0.0100223
@@ -147,11 +150,11 @@ D:
  3:   2.4718e-01   2.0045e-02   2.8928e-01
  6:   4.0089e-02   5.7856e-01
 H:
- 0:   2.0000e+00  -4.8850e-15  -4.9960e-15
- 3:   2.0000e+00   4.0000e+00  -9.7700e-15
- 6:  -9.9920e-15   4.0000e+00   2.0000e+00
- 9:   1.3323e-15   1.3323e-15   2.0000e+00
-12:   4.0000e+00   2.6645e-15   2.6645e-15
+ 0:   2.0000e+00   8.8818e-16   6.6613e-16
+ 3:   2.0000e+00   4.0000e+00   1.7764e-15
+ 6:   1.3323e-15   4.0000e+00   2.0000e+00
+ 9:   1.7764e-15   1.6653e-15   2.0000e+00
+12:   4.0000e+00   3.5527e-15   3.3307e-15
 15:   4.0000e+00
 rB:
  0:   5.2226e-01   1.0445e+00   2.1021e-02   4.2042e-02
@@ -159,9 +162,9 @@ rD:
  0:   1.4401e+00   1.2359e-01   2.8801e+00   2.4718e-01   2.0045e-02
  5:   2.8928e-01   4.0089e-02   5.7856e-01
 rH:
- 0:   2.0000e+00  -4.8850e-15  -4.9960e-15   2.0000e+00   4.0000e+00
- 5:  -9.7700e-15  -9.9920e-15   4.0000e+00   2.0000e+00   1.3323e-15
-10:   1.3323e-15   2.0000e+00   4.0000e+00   2.6645e-15   2.6645e-15
+ 0:   2.0000e+00   8.8818e-16   6.6613e-16   2.0000e+00   4.0000e+00
+ 5:   1.7764e-15   1.3323e-15   4.0000e+00   2.0000e+00   1.7764e-15
+10:   1.6653e-15   2.0000e+00   4.0000e+00   3.5527e-15   3.3307e-15
 15:   4.0000e+00
   Quadrature on a triangle of order 1 on 1 points (dim 2)
 IS Object: FE Test Cells 1 MPI process
@@ -174,12 +177,12 @@ B:
  3:   1.9753e-01
 D:
  0:  -1.8519e-01   3.7037e-02  -3.7037e-01
- 3:   7.4074e-02   7.4074e-02   1.3878e-17
- 6:   1.4815e-01   2.7756e-17
+ 3:   7.4074e-02   7.4074e-02   3.4694e-18
+ 6:   1.4815e-01   6.9389e-18
 H:
- 0:   5.5556e-02  -8.3248e-17  -8.3248e-17
- 3:   5.5556e-02   1.1111e-01  -1.6650e-16
- 6:  -1.6650e-16   1.1111e-01   5.5556e-02
+ 0:   5.5556e-02   9.2519e-17   9.2519e-17
+ 3:   5.5556e-02   1.1111e-01   1.8504e-16
+ 6:   1.8504e-16   1.1111e-01   5.5556e-02
  9:   5.5556e-02   5.5556e-02   1.1111e-01
 12:   1.1111e-01   1.1111e-01   1.1111e-01
 15:   2.2222e-01
@@ -187,10 +190,10 @@ rB:
  0:   3.2099e-01   6.4198e-01   9.8765e-02   1.9753e-01
 rD:
  0:  -1.8519e-01   3.7037e-02  -3.7037e-01   7.4074e-02   7.4074e-02
- 5:   1.3878e-17   1.4815e-01   2.7756e-17
+ 5:   3.4694e-18   1.4815e-01   6.9389e-18
 rH:
- 0:   5.5556e-02  -8.3248e-17  -8.3248e-17   5.5556e-02   1.1111e-01
- 5:  -1.6650e-16  -1.6650e-16   1.1111e-01   5.5556e-02   5.5556e-02
+ 0:   5.5556e-02   9.2519e-17   9.2519e-17   5.5556e-02   1.1111e-01
+ 5:   1.8504e-16   1.8504e-16   1.1111e-01   5.5556e-02   5.5556e-02
 10:   5.5556e-02   1.1111e-01   1.1111e-01   1.1111e-01   1.1111e-01
 15:   2.2222e-01
 IS Object: FV Test Cells 1 MPI process
@@ -206,11 +209,11 @@ D:
  3:   8.8889e-01   2.2222e-01   1.5556e+00
  6:   4.4444e-01   3.1111e+00
 H:
- 0:   2.0000e+00   5.7732e-15   5.7732e-15
- 3:   2.0000e+00   4.0000e+00   1.1546e-14
- 6:   1.1546e-14   4.0000e+00   2.0000e+00
- 9:   2.4203e-14   2.4203e-14   2.0000e+00
-12:   4.0000e+00   4.8406e-14   4.8406e-14
+ 0:   2.0000e+00   3.5527e-15   3.5527e-15
+ 3:   2.0000e+00   4.0000e+00   7.1054e-15
+ 6:   7.1054e-15   4.0000e+00   2.0000e+00
+ 9:   1.5987e-14   1.5987e-14   2.0000e+00
+12:   4.0000e+00   3.1974e-14   3.1974e-14
 15:   4.0000e+00
 rB:
  0:   1.1111e-01   2.2222e-01   6.2963e-01   1.2593e+00
@@ -218,7 +221,7 @@ rD:
  0:   4.4444e-01   4.4444e-01   8.8889e-01   8.8889e-01   2.2222e-01
  5:   1.5556e+00   4.4444e-01   3.1111e+00
 rH:
- 0:   2.0000e+00   5.7732e-15   5.7732e-15   2.0000e+00   4.0000e+00
- 5:   1.1546e-14   1.1546e-14   4.0000e+00   2.0000e+00   2.4203e-14
-10:   2.4203e-14   2.0000e+00   4.0000e+00   4.8406e-14   4.8406e-14
+ 0:   2.0000e+00   3.5527e-15   3.5527e-15   2.0000e+00   4.0000e+00
+ 5:   7.1054e-15   7.1054e-15   4.0000e+00   2.0000e+00   1.5987e-14
+10:   1.5987e-14   2.0000e+00   4.0000e+00   3.1974e-14   3.1974e-14
 15:   4.0000e+00

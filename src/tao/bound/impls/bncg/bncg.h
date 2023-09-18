@@ -1,11 +1,10 @@
+#pragma once
+
 /*
     Context for bound-constrained nonlinear conjugate gradient method
  */
 
-#ifndef __TAO_BNCG_H
-  #define __TAO_BNCG_H
-
-  #include <petsc/private/taoimpl.h>
+#include <petsc/private/taoimpl.h>
 
 typedef struct {
   Mat B;
@@ -31,11 +30,11 @@ typedef struct {
   PetscReal epsilon; /* Machine precision unless changed by user */
   PetscReal eps_23;  /*  Two-thirds power of machine precision */
 
-  PetscInt cg_type;         /*  Formula to use */
-  PetscInt min_restart_num; /* Restarts every x*n iterations, where n is the dimension */
-  PetscInt ls_fails, resets, descent_error, skipped_updates, pure_gd_steps;
-  PetscInt iter_quad, min_quad; /* Dynamic restart variables in Dai-Kou, SIAM J. Optim. Vol 23, pp. 296-320, Algorithm 4.1 */
-  PetscInt as_type;
+  TaoBNCGType cg_type;         /*  Formula to use */
+  PetscInt    min_restart_num; /* Restarts every x*n iterations, where n is the dimension */
+  PetscInt    ls_fails, resets, descent_error, skipped_updates, pure_gd_steps;
+  PetscInt    iter_quad, min_quad; /* Dynamic restart variables in Dai-Kou, SIAM J. Optim. Vol 23, pp. 296-320, Algorithm 4.1 */
+  PetscInt    as_type;
 
   PetscBool inv_sig;
   PetscReal tol_quad;        /* tolerance for Dai-Kou dynamic restart */
@@ -48,8 +47,6 @@ typedef struct {
   PetscBool no_scaling;
 
 } TAO_BNCG;
-
-#endif /* ifndef __TAO_BNCG_H */
 
 PETSC_INTERN PetscErrorCode TaoBNCGEstimateActiveSet(Tao, PetscInt);
 PETSC_INTERN PetscErrorCode TaoBNCGBoundStep(Tao, PetscInt, Vec);

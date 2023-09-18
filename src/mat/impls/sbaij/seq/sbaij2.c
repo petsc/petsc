@@ -85,7 +85,7 @@ PetscErrorCode MatIncreaseOverlap_SeqSBAIJ(Mat A, PetscInt is_max, IS is[], Pets
 }
 
 /* Bseq is non-symmetric SBAIJ matrix, only used internally by PETSc.
-        Zero some ops' to avoid invalid usse */
+        Zero some ops' to avoid invalid use */
 PetscErrorCode MatSeqSBAIJZeroOps_Private(Mat Bseq)
 {
   PetscFunctionBegin;
@@ -103,9 +103,10 @@ PetscErrorCode MatSeqSBAIJZeroOps_Private(Mat Bseq)
 }
 
 /* same as MatCreateSubMatrices_SeqBAIJ(), except cast Mat_SeqSBAIJ */
-PetscErrorCode MatCreateSubMatrix_SeqSBAIJ_Private(Mat A, IS isrow, IS iscol, MatReuse scall, Mat *B)
+static PetscErrorCode MatCreateSubMatrix_SeqSBAIJ_Private(Mat A, IS isrow, IS iscol, MatReuse scall, Mat *B, PetscBool sym)
 {
-  Mat_SeqSBAIJ   *a = (Mat_SeqSBAIJ *)A->data, *c;
+  Mat_SeqSBAIJ   *a = (Mat_SeqSBAIJ *)A->data, *c = NULL;
+  Mat_SeqBAIJ    *d = NULL;
   PetscInt       *smap, i, k, kstart, kend, oldcols = a->nbs, *lens;
   PetscInt        row, mat_i, *mat_j, tcol, *mat_ilen;
   const PetscInt *irow, *icol;
@@ -137,28 +138,50 @@ PetscErrorCode MatCreateSubMatrix_SeqSBAIJ_Private(Mat A, IS isrow, IS iscol, Ma
   }
   /* Create and fill new matrix */
   if (scall == MAT_REUSE_MATRIX) {
-    c = (Mat_SeqSBAIJ *)((*B)->data);
+    if (sym) {
+      c = (Mat_SeqSBAIJ *)((*B)->data);
 
-    PetscCheck(c->mbs == nrows && c->nbs == ncols && (*B)->rmap->bs == bs, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Submatrix wrong size");
-    PetscCall(PetscArraycmp(c->ilen, lens, c->mbs, &flag));
-    PetscCheck(flag, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Cannot reuse matrix. wrong no of nonzeros");
-    PetscCall(PetscArrayzero(c->ilen, c->mbs));
+      PetscCheck(c->mbs == nrows && c->nbs == ncols && (*B)->rmap->bs == bs, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Submatrix wrong size");
+      PetscCall(PetscArraycmp(c->ilen, lens, c->mbs, &flag));
+      PetscCheck(flag, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Cannot reuse matrix. wrong number of nonzeros");
+      PetscCall(PetscArrayzero(c->ilen, c->mbs));
+    } else {
+      d = (Mat_SeqBAIJ *)((*B)->data);
+
+      PetscCheck(d->mbs == nrows && d->nbs == ncols && (*B)->rmap->bs == bs, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Submatrix wrong size");
+      PetscCall(PetscArraycmp(d->ilen, lens, d->mbs, &flag));
+      PetscCheck(flag, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Cannot reuse matrix. wrong number of nonzeros");
+      PetscCall(PetscArrayzero(d->ilen, d->mbs));
+    }
     C = *B;
   } else {
     PetscCall(MatCreate(PetscObjectComm((PetscObject)A), &C));
     PetscCall(MatSetSizes(C, nrows * bs, ncols * bs, PETSC_DETERMINE, PETSC_DETERMINE));
-    PetscCall(MatSetType(C, ((PetscObject)A)->type_name));
-    PetscCall(MatSeqSBAIJSetPreallocation(C, bs, 0, lens));
+    if (sym) {
+      PetscCall(MatSetType(C, ((PetscObject)A)->type_name));
+      PetscCall(MatSeqSBAIJSetPreallocation(C, bs, 0, lens));
+    } else {
+      PetscCall(MatSetType(C, MATSEQBAIJ));
+      PetscCall(MatSeqBAIJSetPreallocation(C, bs, 0, lens));
+    }
   }
-  c = (Mat_SeqSBAIJ *)(C->data);
+  if (sym) c = (Mat_SeqSBAIJ *)(C->data);
+  else d = (Mat_SeqBAIJ *)(C->data);
   for (i = 0; i < nrows; i++) {
-    row      = irow[i];
-    kstart   = ai[row];
-    kend     = kstart + a->ilen[row];
-    mat_i    = c->i[i];
-    mat_j    = c->j + mat_i;
-    mat_a    = c->a + mat_i * bs2;
-    mat_ilen = c->ilen + i;
+    row    = irow[i];
+    kstart = ai[row];
+    kend   = kstart + a->ilen[row];
+    if (sym) {
+      mat_i    = c->i[i];
+      mat_j    = c->j + mat_i;
+      mat_a    = c->a + mat_i * bs2;
+      mat_ilen = c->ilen + i;
+    } else {
+      mat_i    = d->i[i];
+      mat_j    = d->j + mat_i;
+      mat_a    = d->a + mat_i * bs2;
+      mat_ilen = d->ilen + i;
+    }
     for (k = kstart; k < kend; k++) {
       if ((tcol = ssmap[a->j[k]])) {
         *mat_j++ = tcol - 1;
@@ -175,10 +198,17 @@ PetscErrorCode MatCreateSubMatrix_SeqSBAIJ_Private(Mat A, IS isrow, IS iscol, Ma
     PetscCall(PetscMalloc1(bs2, &work));
     for (i = 0; i < nrows; i++) {
       PetscInt ilen;
-      mat_i = c->i[i];
-      mat_j = c->j + mat_i;
-      mat_a = c->a + mat_i * bs2;
-      ilen  = c->ilen[i];
+      if (sym) {
+        mat_i = c->i[i];
+        mat_j = c->j + mat_i;
+        mat_a = c->a + mat_i * bs2;
+        ilen  = c->ilen[i];
+      } else {
+        mat_i = d->i[i];
+        mat_j = d->j + mat_i;
+        mat_a = d->a + mat_i * bs2;
+        ilen  = d->ilen[i];
+      }
       PetscCall(PetscSortIntWithDataArray(ilen, mat_j, mat_a, bs2 * sizeof(MatScalar), work));
     }
     PetscCall(PetscFree(work));
@@ -198,19 +228,45 @@ PetscErrorCode MatCreateSubMatrix_SeqSBAIJ_Private(Mat A, IS isrow, IS iscol, Ma
 
 PetscErrorCode MatCreateSubMatrix_SeqSBAIJ(Mat A, IS isrow, IS iscol, MatReuse scall, Mat *B)
 {
-  IS is1, is2;
+  Mat       C[2];
+  IS        is1, is2, intersect = NULL;
+  PetscInt  n1, n2, ni;
+  PetscBool sym = PETSC_TRUE;
 
   PetscFunctionBegin;
   PetscCall(ISCompressIndicesGeneral(A->rmap->N, A->rmap->n, A->rmap->bs, 1, &isrow, &is1));
   if (isrow == iscol) {
     is2 = is1;
     PetscCall(PetscObjectReference((PetscObject)is2));
-  } else PetscCall(ISCompressIndicesGeneral(A->cmap->N, A->cmap->n, A->cmap->bs, 1, &iscol, &is2));
-  PetscCall(MatCreateSubMatrix_SeqSBAIJ_Private(A, is1, is2, scall, B));
+  } else {
+    PetscCall(ISCompressIndicesGeneral(A->cmap->N, A->cmap->n, A->cmap->bs, 1, &iscol, &is2));
+    PetscCall(ISIntersect(is1, is2, &intersect));
+    PetscCall(ISGetLocalSize(intersect, &ni));
+    PetscCall(ISDestroy(&intersect));
+    if (ni == 0) sym = PETSC_FALSE;
+    else if (PetscDefined(USE_DEBUG)) {
+      PetscCall(ISGetLocalSize(is1, &n1));
+      PetscCall(ISGetLocalSize(is2, &n2));
+      PetscCheck(ni == n1 && ni == n2, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cannot create such a submatrix");
+    }
+  }
+  if (sym) PetscCall(MatCreateSubMatrix_SeqSBAIJ_Private(A, is1, is2, scall, B, sym));
+  else {
+    PetscCall(MatCreateSubMatrix_SeqSBAIJ_Private(A, is1, is2, MAT_INITIAL_MATRIX, C, sym));
+    PetscCall(MatCreateSubMatrix_SeqSBAIJ_Private(A, is2, is1, MAT_INITIAL_MATRIX, C + 1, sym));
+    PetscCall(MatTranspose(C[1], MAT_INPLACE_MATRIX, C + 1));
+    PetscCall(MatAXPY(C[0], 1.0, C[1], DIFFERENT_NONZERO_PATTERN));
+    PetscCheck(scall != MAT_INPLACE_MATRIX, PETSC_COMM_SELF, PETSC_ERR_SUP, "MAT_INPLACE_MATRIX not supported");
+    if (scall == MAT_REUSE_MATRIX) PetscCall(MatCopy(C[0], *B, SAME_NONZERO_PATTERN));
+    else if (A->rmap->bs == 1) PetscCall(MatConvert(C[0], MATAIJ, MAT_INITIAL_MATRIX, B));
+    else PetscCall(MatCopy(C[0], *B, SAME_NONZERO_PATTERN));
+    PetscCall(MatDestroy(C));
+    PetscCall(MatDestroy(C + 1));
+  }
   PetscCall(ISDestroy(&is1));
   PetscCall(ISDestroy(&is2));
 
-  if (isrow != iscol) {
+  if (sym && isrow != iscol) {
     PetscBool isequal;
     PetscCall(ISEqual(isrow, iscol, &isequal));
     if (!isequal) PetscCall(MatSeqSBAIJZeroOps_Private(*B));
@@ -223,7 +279,7 @@ PetscErrorCode MatCreateSubMatrices_SeqSBAIJ(Mat A, PetscInt n, const IS irow[],
   PetscInt i;
 
   PetscFunctionBegin;
-  if (scall == MAT_INITIAL_MATRIX) PetscCall(PetscCalloc1(n + 1, B));
+  if (scall == MAT_INITIAL_MATRIX) PetscCall(PetscCalloc1(n, B));
 
   for (i = 0; i < n; i++) PetscCall(MatCreateSubMatrix_SeqSBAIJ(A, irow[i], icol[i], scall, &(*B)[i]));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -1265,7 +1321,7 @@ PetscErrorCode MatNorm_SeqSBAIJ(Mat A, NormType type, PetscReal *norm)
       for (j = 0; j < bs; j++) sum[j] = 0.0;
       /*-- col sum --*/
       i = jl[k]; /* first |A(i,k)| to be added */
-      /* jl[k]=i: first nozero element in row i for submatrix A(1:k,k:n) (active window)
+      /* jl[k]=i: first nonzero element in row i for submatrix A(1:k,k:n) (active window)
                   at step k */
       while (i < mbs) {
         nexti = jl[i]; /* next block row to be added */
@@ -1517,7 +1573,7 @@ PetscErrorCode MatMatMultSymbolic_SeqSBAIJ_SeqDense(Mat A, Mat B, PetscReal fill
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatMatMult_SeqSBAIJ_1_Private(Mat A, PetscScalar *b, PetscInt bm, PetscScalar *c, PetscInt cm, PetscInt cn)
+static PetscErrorCode MatMatMult_SeqSBAIJ_1_Private(Mat A, PetscScalar *b, PetscInt bm, PetscScalar *c, PetscInt cm, PetscInt cn)
 {
   Mat_SeqSBAIJ      *a = (Mat_SeqSBAIJ *)A->data;
   PetscScalar       *z = c;
@@ -1556,7 +1612,7 @@ PetscErrorCode MatMatMult_SeqSBAIJ_1_Private(Mat A, PetscScalar *b, PetscInt bm,
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatMatMult_SeqSBAIJ_2_Private(Mat A, PetscScalar *b, PetscInt bm, PetscScalar *c, PetscInt cm, PetscInt cn)
+static PetscErrorCode MatMatMult_SeqSBAIJ_2_Private(Mat A, PetscScalar *b, PetscInt bm, PetscScalar *c, PetscInt cm, PetscInt cn)
 {
   Mat_SeqSBAIJ      *a = (Mat_SeqSBAIJ *)A->data;
   PetscScalar       *z = c;
@@ -1595,7 +1651,7 @@ PetscErrorCode MatMatMult_SeqSBAIJ_2_Private(Mat A, PetscScalar *b, PetscInt bm,
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatMatMult_SeqSBAIJ_3_Private(Mat A, PetscScalar *b, PetscInt bm, PetscScalar *c, PetscInt cm, PetscInt cn)
+static PetscErrorCode MatMatMult_SeqSBAIJ_3_Private(Mat A, PetscScalar *b, PetscInt bm, PetscScalar *c, PetscInt cm, PetscInt cn)
 {
   Mat_SeqSBAIJ      *a = (Mat_SeqSBAIJ *)A->data;
   PetscScalar       *z = c;
@@ -1637,7 +1693,7 @@ PetscErrorCode MatMatMult_SeqSBAIJ_3_Private(Mat A, PetscScalar *b, PetscInt bm,
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatMatMult_SeqSBAIJ_4_Private(Mat A, PetscScalar *b, PetscInt bm, PetscScalar *c, PetscInt cm, PetscInt cn)
+static PetscErrorCode MatMatMult_SeqSBAIJ_4_Private(Mat A, PetscScalar *b, PetscInt bm, PetscScalar *c, PetscInt cm, PetscInt cn)
 {
   Mat_SeqSBAIJ      *a = (Mat_SeqSBAIJ *)A->data;
   PetscScalar       *z = c;
@@ -1682,7 +1738,7 @@ PetscErrorCode MatMatMult_SeqSBAIJ_4_Private(Mat A, PetscScalar *b, PetscInt bm,
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatMatMult_SeqSBAIJ_5_Private(Mat A, PetscScalar *b, PetscInt bm, PetscScalar *c, PetscInt cm, PetscInt cn)
+static PetscErrorCode MatMatMult_SeqSBAIJ_5_Private(Mat A, PetscScalar *b, PetscInt bm, PetscScalar *c, PetscInt cm, PetscInt cn)
 {
   Mat_SeqSBAIJ      *a = (Mat_SeqSBAIJ *)A->data;
   PetscScalar       *z = c;

@@ -73,7 +73,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJMKL_SeqAIJ(Mat A, MatType type, Mat
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatDestroy_SeqAIJMKL(Mat A)
+static PetscErrorCode MatDestroy_SeqAIJMKL(Mat A)
 {
   Mat_SeqAIJMKL *aijmkl = (Mat_SeqAIJMKL *)A->spptr;
 
@@ -301,7 +301,7 @@ PETSC_INTERN PetscErrorCode MatSeqAIJMKL_view_mkl_handle(Mat A, PetscViewer view
 }
 #endif /* PETSC_HAVE_MKL_SPARSE_OPTIMIZE */
 
-PetscErrorCode MatDuplicate_SeqAIJMKL(Mat A, MatDuplicateOption op, Mat *M)
+static PetscErrorCode MatDuplicate_SeqAIJMKL(Mat A, MatDuplicateOption op, Mat *M)
 {
   Mat_SeqAIJMKL *aijmkl = (Mat_SeqAIJMKL *)A->spptr;
   Mat_SeqAIJMKL *aijmkl_dest;
@@ -315,7 +315,7 @@ PetscErrorCode MatDuplicate_SeqAIJMKL(Mat A, MatDuplicateOption op, Mat *M)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatAssemblyEnd_SeqAIJMKL(Mat A, MatAssemblyType mode)
+static PetscErrorCode MatAssemblyEnd_SeqAIJMKL(Mat A, MatAssemblyType mode)
 {
   Mat_SeqAIJ    *a = (Mat_SeqAIJ *)A->data;
   Mat_SeqAIJMKL *aijmkl;
@@ -340,7 +340,7 @@ PetscErrorCode MatAssemblyEnd_SeqAIJMKL(Mat A, MatAssemblyType mode)
 }
 
 #if !defined(PETSC_MKL_SPBLAS_DEPRECATED)
-PetscErrorCode MatMult_SeqAIJMKL(Mat A, Vec xx, Vec yy)
+static PetscErrorCode MatMult_SeqAIJMKL(Mat A, Vec xx, Vec yy)
 {
   Mat_SeqAIJ        *a = (Mat_SeqAIJ *)A->data;
   const PetscScalar *x;
@@ -414,7 +414,7 @@ PetscErrorCode MatMult_SeqAIJMKL_SpMV2(Mat A, Vec xx, Vec yy)
 #endif /* PETSC_HAVE_MKL_SPARSE_OPTIMIZE */
 
 #if !defined(PETSC_MKL_SPBLAS_DEPRECATED)
-PetscErrorCode MatMultTranspose_SeqAIJMKL(Mat A, Vec xx, Vec yy)
+static PetscErrorCode MatMultTranspose_SeqAIJMKL(Mat A, Vec xx, Vec yy)
 {
   Mat_SeqAIJ        *a = (Mat_SeqAIJ *)A->data;
   const PetscScalar *x;
@@ -488,7 +488,7 @@ PetscErrorCode MatMultTranspose_SeqAIJMKL_SpMV2(Mat A, Vec xx, Vec yy)
 #endif /* PETSC_HAVE_MKL_SPARSE_OPTIMIZE */
 
 #if !defined(PETSC_MKL_SPBLAS_DEPRECATED)
-PetscErrorCode MatMultAdd_SeqAIJMKL(Mat A, Vec xx, Vec yy, Vec zz)
+static PetscErrorCode MatMultAdd_SeqAIJMKL(Mat A, Vec xx, Vec yy, Vec zz)
 {
   Mat_SeqAIJ        *a = (Mat_SeqAIJ *)A->data;
   const PetscScalar *x;
@@ -587,7 +587,7 @@ PetscErrorCode MatMultAdd_SeqAIJMKL_SpMV2(Mat A, Vec xx, Vec yy, Vec zz)
 #endif /* PETSC_HAVE_MKL_SPARSE_OPTIMIZE */
 
 #if !defined(PETSC_MKL_SPBLAS_DEPRECATED)
-PetscErrorCode MatMultTransposeAdd_SeqAIJMKL(Mat A, Vec xx, Vec yy, Vec zz)
+static PetscErrorCode MatMultTransposeAdd_SeqAIJMKL(Mat A, Vec xx, Vec yy, Vec zz)
 {
   Mat_SeqAIJ        *a = (Mat_SeqAIJ *)A->data;
   const PetscScalar *x;
@@ -1081,42 +1081,42 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJMKL(Mat A, MatType type, Mat
 }
 
 /*@C
-   MatCreateSeqAIJMKL - Creates a sparse matrix of type `MATSEQAIJMKL`.
+  MatCreateSeqAIJMKL - Creates a sparse matrix of type `MATSEQAIJMKL`.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  comm - MPI communicator, set to `PETSC_COMM_SELF`
-.  m - number of rows
-.  n - number of columns
-.  nz - number of nonzeros per row (same for all rows)
--  nnz - array containing the number of nonzeros in the various rows
+  Input Parameters:
++ comm - MPI communicator, set to `PETSC_COMM_SELF`
+. m    - number of rows
+. n    - number of columns
+. nz   - number of nonzeros per row (same for all rows)
+- nnz  - array containing the number of nonzeros in the various rows
          (possibly different for each row) or `NULL`
 
-   Output Parameter:
-.  A - the matrix
+  Output Parameter:
+. A - the matrix
 
-   Options Database Keys:
-+  -mat_aijmkl_no_spmv2 - disable use of the SpMV2 inspector-executor routines
--  -mat_aijmkl_eager_inspection - perform MKL "inspection" phase upon matrix assembly; default is to do "lazy" inspection,
+  Options Database Keys:
++ -mat_aijmkl_no_spmv2         - disable use of the SpMV2 inspector-executor routines
+- -mat_aijmkl_eager_inspection - perform MKL "inspection" phase upon matrix assembly; default is to do "lazy" inspection,
                                   performing this step the first time the matrix is applied
 
-   Level: intermediate
+  Level: intermediate
 
-   Notes:
-   If `nnz` is given then `nz` is ignored
+  Notes:
+  If `nnz` is given then `nz` is ignored
 
-   This type inherits from `MATSEQAIJ` and is largely identical, but uses sparse BLAS
-   routines from Intel MKL whenever possible.
+  This type inherits from `MATSEQAIJ` and is largely identical, but uses sparse BLAS
+  routines from Intel MKL whenever possible.
 
   If the installed version of MKL supports the "SpMV2" sparse
-   inspector-executor routines, then those are used by default.
+  inspector-executor routines, then those are used by default.
 
   `MatMult()`, `MatMultAdd()`, `MatMultTranspose()`, `MatMultTransposeAdd()`, `MatMatMult()`, `MatTransposeMatMult()`, and `MatPtAP()`
-   (for symmetric A) operations are currently supported.
-   MKL version 18, update 2 or later is required for `MatPtAP()`, `MatPtAPNumeric()` and `MatMatMultNumeric()`.
+  (for symmetric A) operations are currently supported.
+  MKL version 18, update 2 or later is required for `MatPtAP()`, `MatPtAPNumeric()` and `MatMatMultNumeric()`.
 
-.seealso: [](chapter_matrices), `Mat`, `MatCreate()`, `MatCreateMPIAIJMKL()`, `MatSetValues()`
+.seealso: [](ch_matrices), `Mat`, `MatCreate()`, `MatCreateMPIAIJMKL()`, `MatSetValues()`
 @*/
 PetscErrorCode MatCreateSeqAIJMKL(MPI_Comm comm, PetscInt m, PetscInt n, PetscInt nz, const PetscInt nnz[], Mat *A)
 {

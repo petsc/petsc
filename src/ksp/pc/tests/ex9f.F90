@@ -25,7 +25,7 @@
 
       PetscCallA(PetscInitialize(ierr))
       PetscCallMPIA(MPI_Comm_size(PETSC_COMM_WORLD,size,ierr))
-      if (size .ne. 1) then; SETERRA(PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,'This is a uniprocessor example only'); endif
+      PetscCheckA(size .eq. 1,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,'This is a uniprocessor example only')
       none = -1.0
       one  = 1.0
       n    = 10
@@ -113,9 +113,9 @@
       izero = 0
       ione  = 1
       PetscCallA(ISCreateStride(PETSC_COMM_SELF,n,izero,ione,isin,ierr))
-      PetscCallA(PCFieldSplitSetIS(pc,"splitname",isin,ierr))
-      PetscCallA(PCFieldSplitGetIS(pc,"splitname",isout,ierr))
-      if (isin .ne. isout) then ; SETERRA(PETSC_COMM_SELF,PETSC_ERR_PLIB,"PCFieldSplitGetIS() failed"); endif
+      PetscCallA(PCFieldSplitSetIS(pc,'splitname',isin,ierr))
+      PetscCallA(PCFieldSplitGetIS(pc,'splitname',isout,ierr))
+      PetscCheckA(isin .eq. isout,PETSC_COMM_SELF,PETSC_ERR_PLIB,'PCFieldSplitGetIS() failed')
 
 !  Set runtime options, e.g.,
 !      -ksp_type <type> -pc_type <type> -ksp_monitor -ksp_rtol <rtol>
@@ -130,7 +130,6 @@
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
       PetscCallA(KSPSolve(ksp,b,x,ierr))
-      PetscCallA(PetscLogStagePop(ierr))
 
 !  View solver info; we could instead use the option -ksp_view
 

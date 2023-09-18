@@ -1,0 +1,145 @@
+  0 KSP Residual norm 1.276932087292e+01 
+  1 KSP Residual norm 1.377026454827e-02 
+  2 KSP Residual norm 1.323253225902e-02 
+  3 KSP Residual norm 2.743244389968e-03 
+  4 KSP Residual norm 1.344914988772e-05 
+PC Object: 4 MPI processes
+  type: ksp
+    KSP and PC on KSP preconditioner follow
+    ---------------------------------
+    KSP Object: (fieldsplit_1_pc_hpddm_) 4 MPI processes
+      type: gmres
+        restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+        happy breakdown tolerance 1e-30
+      maximum iterations=10000, initial guess is zero
+      tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+      left preconditioning
+      using PRECONDITIONED norm type for convergence test
+    PC Object: 4 MPI processes
+      type: none
+      linear system matrix = precond matrix:
+      Mat Object: 4 MPI processes
+        type: shell
+        rows=1000, cols=1000
+          PC Object: (fieldsplit_1_) 4 MPI processes
+            type: hpddm
+            levels: 2
+            Neumann matrix attached? TRUE
+            shared subdomain KSP between SLEPc and PETSc? TRUE
+            coarse correction: BALANCED
+            on process #0, value (+ threshold if available) for selecting deflation vectors: 10
+            grid and operator complexities: 1.04 1.0009
+            KSP Object: (fieldsplit_1_pc_hpddm_levels_1_) 4 MPI processes
+              type: preonly
+              maximum iterations=10000, initial guess is zero
+              tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+              left preconditioning
+              using NONE norm type for convergence test
+            PC Object: (fieldsplit_1_pc_hpddm_levels_1_) 4 MPI processes
+              type: shell
+                no name
+              linear system matrix followed by preconditioner matrix:
+              Mat Object: 4 MPI processes
+                type: shell
+              Mat Object: (fieldsplit_1_) 4 MPI processes
+                type: schurcomplement
+                  Schur complement A11 - A10 inv(A00) A01
+                  A11
+                    Mat Object: (fieldsplit_1_) 4 MPI processes
+                  A10
+                    Mat Object: 4 MPI processes
+                  KSP solver for A00 block viewable with the additional option -fieldsplit_0_ksp_view
+                  A01
+                    Mat Object: 4 MPI processes
+            PC Object: (fieldsplit_1_pc_hpddm_levels_1_) 4 MPI processes
+              type: asm
+                total subdomain blocks = 4, user-defined overlap
+                restriction/interpolation type - NONE
+                Local solver information for first block is in the following KSP and PC objects on rank 0:
+                Use -fieldsplit_1_pc_hpddm_levels_1_ksp_view ::ascii_info_detail to display information for all blocks
+              KSP Object: (fieldsplit_1_pc_hpddm_levels_1_sub_) 1 MPI process
+                type: preonly
+                maximum iterations=10000, initial guess is zero
+                tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+                left preconditioning
+                using NONE norm type for convergence test
+              PC Object: 1 MPI process
+                type: shell
+                  no name
+                  PC Object: (fieldsplit_1_pc_hpddm_levels_1_sub_) 1 MPI process
+                    type: lu
+                      out-of-place factorization
+                      tolerance for zero pivot 2.22045e-14
+                      matrix ordering: external
+                      factor fill ratio given 0., needed 0.
+                        Factored matrix follows:
+                          Mat Object: (fieldsplit_1_pc_hpddm_levels_1_sub_) 1 MPI process
+                    linear system matrix = precond matrix:
+                    Mat Object: 1 MPI process
+                      type: nest
+                        Matrix object:
+                          type=nest, rows=2, cols=2
+                          MatNest structure:
+                linear system matrix = precond matrix:
+                Mat Object: (fieldsplit_1_pc_hpddm_levels_1_sub_) 1 MPI process
+                  type: schurcomplement
+                    Schur complement A11 - A10 inv(A00) A01
+                    A11
+                      Mat Object: 1 MPI process
+                    A10
+                      Mat Object: 1 MPI process
+                    KSP solver for A00 block viewable with the additional option -fieldsplit_0_pc_hpddm_levels_1_sub_ksp_view
+                    A01
+                      Mat Object: 1 MPI process
+              linear system matrix followed by preconditioner matrix:
+              Mat Object: 4 MPI processes
+                type: shell
+              Mat Object: (fieldsplit_1_) 4 MPI processes
+                type: schurcomplement
+                  Schur complement A11 - A10 inv(A00) A01
+                  A11
+                    Mat Object: (fieldsplit_1_) 4 MPI processes
+                  A10
+                    Mat Object: 4 MPI processes
+                  KSP solver for A00 block viewable with the additional option -fieldsplit_0_ksp_view
+                  A01
+                    Mat Object: 4 MPI processes
+              KSP Object: (fieldsplit_1_pc_hpddm_coarse_) 2 MPI processes
+                type: preonly
+                maximum iterations=10000, initial guess is zero
+                tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+                left preconditioning
+                using NONE norm type for convergence test
+              PC Object: (fieldsplit_1_pc_hpddm_coarse_) 2 MPI processes
+                type: redundant
+                  First (color=0) of 2 PCs follows
+                linear system matrix = precond matrix:
+                Mat Object: (fieldsplit_1_pc_hpddm_coarse_) 2 MPI processes
+            linear system matrix = precond matrix:
+            Mat Object: (fieldsplit_1_) 4 MPI processes
+              type: schurcomplement
+              rows=1000, cols=1000
+                Schur complement A11 - A10 inv(A00) A01
+                A11
+                  Mat Object: (fieldsplit_1_) 4 MPI processes
+                A10
+                  Mat Object: 4 MPI processes
+                KSP solver for A00 block viewable with the additional option -fieldsplit_0_ksp_view
+                A01
+                  Mat Object: 4 MPI processes
+    ---------------------------------
+  linear system matrix = precond matrix:
+  Mat Object: (fieldsplit_1_) 4 MPI processes
+    type: schurcomplement
+    rows=1000, cols=1000
+      Schur complement A11 - A10 inv(A00) A01
+      A11
+        Mat Object: (fieldsplit_1_) 4 MPI processes
+          rows=1000, cols=1000
+      A10
+        Mat Object: 4 MPI processes
+          rows=1000, cols=4242
+      KSP solver for A00 block viewable with the additional option -fieldsplit_0_ksp_view
+      A01
+        Mat Object: 4 MPI processes
+          rows=4242, cols=1000

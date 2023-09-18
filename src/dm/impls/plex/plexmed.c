@@ -10,19 +10,20 @@
 
   Collective
 
+  Input Parameters:
 + comm        - The MPI communicator
 . filename    - Name of the .med file
 - interpolate - Create faces and edges in the mesh
 
   Output Parameter:
-. dm  - The `DM` object representing the mesh
+. dm - The `DM` object representing the mesh
 
   Level: beginner
 
-  Reference:
+  References:
 . * -  https://www.salome-platform.org/user-section/about/med, http://docs.salome-platform.org/latest/MED_index.html
 
-.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexCreateFromFile()`, `DMPlexCreateGmsh()`, `DMPlexCreate()`
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexCreateFromFile()`, `DMPlexCreateGmsh()`, `DMPlexCreate()`
 @*/
 PetscErrorCode DMPlexCreateMedFromFile(MPI_Comm comm, const char filename[], PetscBool interpolate, DM *dm)
 {

@@ -68,10 +68,15 @@ static PetscErrorCode PTScotch_PartGraph_Seq(SCOTCH_Num strategy, double imbalan
   double       kbalval = imbalance;
 
   PetscFunctionBegin;
+  if (!n) PetscFunctionReturn(PETSC_SUCCESS);
   {
     PetscBool flg = PETSC_TRUE;
-    PetscCall(PetscOptionsDeprecatedNoObject("-petscpartititoner_ptscotch_vertex_weight", NULL, "3.13", "Use -petscpartitioner_use_vertex_weights"));
-    PetscCall(PetscOptionsGetBool(NULL, NULL, "-petscpartititoner_ptscotch_vertex_weight", &flg, NULL));
+    PetscCall(PetscOptionsDeprecatedNoObject("-petscpartititoner_ptscotch_vertex_weight", "-petscpartitioner_use_vertex_weights", "3.13", NULL));
+    /*
+       Cannot remove the PetscOptionsGetBool() below since the PetscOptionsDeprecatedNoObject() above is called after the non-deprecated version
+       has already been checked in PetscPartitionerSetFromOptions().
+    */
+    PetscCall(PetscOptionsGetBool(NULL, NULL, "-petscpartititoner_use_vertex_weight", &flg, NULL));
     if (!flg) velotab = NULL;
   }
   PetscCallPTSCOTCH(SCOTCH_graphInit(&grafdat));
@@ -80,9 +85,9 @@ static PetscErrorCode PTScotch_PartGraph_Seq(SCOTCH_Num strategy, double imbalan
   PetscCallPTSCOTCH(SCOTCH_stratGraphMapBuild(&stradat, flagval, nparts, kbalval));
   PetscCallPTSCOTCH(SCOTCH_archInit(&archdat));
   if (tpart) {
-    PetscCallPTSCOTCH(SCOTCH_archCmpltw(&archdat, nparts, tpart));
+    PetscCallPTSCOTCH(SCOTCH_archCmpltw(&archdat, PetscMin(nparts, n), tpart));
   } else {
-    PetscCallPTSCOTCH(SCOTCH_archCmplt(&archdat, nparts));
+    PetscCallPTSCOTCH(SCOTCH_archCmplt(&archdat, PetscMin(nparts, n)));
   }
   PetscCallPTSCOTCH(SCOTCH_graphMap(&grafdat, &archdat, &stradat, part));
   SCOTCH_archExit(&archdat);
@@ -109,8 +114,12 @@ static PetscErrorCode PTScotch_PartGraph_MPI(SCOTCH_Num strategy, double imbalan
   PetscFunctionBegin;
   {
     PetscBool flg = PETSC_TRUE;
-    PetscCall(PetscOptionsDeprecatedNoObject("-petscpartititoner_ptscotch_vertex_weight", NULL, "3.13", "Use -petscpartitioner_use_vertex_weights"));
-    PetscCall(PetscOptionsGetBool(NULL, NULL, "-petscpartititoner_ptscotch_vertex_weight", &flg, NULL));
+    PetscCall(PetscOptionsDeprecatedNoObject("-petscpartititoner_ptscotch_vertex_weight", "-petscpartitioner_use_vertex_weights", "3.13", NULL));
+    /*
+       Cannot remove the PetscOptionsGetBool() below since the PetscOptionsDeprecatedNoObject() above is called after the non-deprecated version
+       has already been checked in PetscPartitionerSetFromOptions().
+    */
+    PetscCall(PetscOptionsGetBool(NULL, NULL, "-petscpartititoner_use_vertex_weight", &flg, NULL));
     if (!flg) veloloctab = NULL;
   }
   PetscCallMPI(MPI_Comm_size(comm, &procglbnbr));
@@ -264,7 +273,7 @@ static PetscErrorCode PetscPartitionerPartition_PTScotch(PetscPartitioner part, 
             cnt++;
           }
         }
-      };
+      }
       if (nvtxs) PetscCall(PTScotch_PartGraph_MPI(strat, imbal, vtxdist, xadj, adjncy, vwgt, adjwgt, nparts, tpwgts, assignment, pcomm));
       if (hasempty) PetscCallMPI(MPI_Comm_free(&pcomm));
     }

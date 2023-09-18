@@ -187,7 +187,7 @@ int main(int argc, char **args)
       PetscCall(MatConvert(A, ctype, MAT_INITIAL_MATRIX, &C2));
       PetscCall(MatViewFromOptions(C2, NULL, "-view_conv_assembled"));
       PetscCall(MatAXPY(C2, -1., C, DIFFERENT_NONZERO_PATTERN));
-      PetscCall(MatChop(C2, PETSC_SMALL));
+      PetscCall(MatFilter(C2, PETSC_SMALL, PETSC_FALSE, PETSC_FALSE));
       PetscCall(MatViewFromOptions(C2, NULL, "-view_err"));
       PetscCall(MatDestroy(&C2));
       SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Error in conversion from BAIJ to MATIS");
@@ -201,7 +201,7 @@ int main(int argc, char **args)
       PetscCall(MatConvert(A, ctype, MAT_INITIAL_MATRIX, &C2));
       PetscCall(MatViewFromOptions(C2, NULL, "-view_conv_assembled"));
       PetscCall(MatAXPY(C2, -1., C, DIFFERENT_NONZERO_PATTERN));
-      PetscCall(MatChop(C2, PETSC_SMALL));
+      PetscCall(MatFilter(C2, PETSC_SMALL, PETSC_FALSE, PETSC_FALSE));
       PetscCall(MatViewFromOptions(C2, NULL, "-view_err"));
       PetscCall(MatDestroy(&C2));
       SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Error in conversion from BAIJ to MATIS");
@@ -218,7 +218,7 @@ int main(int argc, char **args)
       PetscCall(MatConvert(A, ctype, MAT_INITIAL_MATRIX, &C2));
       PetscCall(MatViewFromOptions(C2, NULL, "-view_conv_assembled"));
       PetscCall(MatAXPY(C2, -1., C, DIFFERENT_NONZERO_PATTERN));
-      PetscCall(MatChop(C2, PETSC_SMALL));
+      PetscCall(MatFilter(C2, PETSC_SMALL, PETSC_FALSE, PETSC_FALSE));
       PetscCall(MatViewFromOptions(C2, NULL, "-view_err"));
       PetscCall(MatDestroy(&C2));
       SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Error in conversion from BAIJ to MATIS");

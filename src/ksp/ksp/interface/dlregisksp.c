@@ -16,13 +16,14 @@ const char *const        PCFailedReasons_Shifted[] = {"SETUP_ERROR", "FACTOR_NOE
 const char *const *const PCFailedReasons           = PCFailedReasons_Shifted + 1;
 
 static PetscBool PCPackageInitialized = PETSC_FALSE;
+
 /*@C
   PCFinalizePackage - This function destroys everything in the `PC` package. It is
   called from `PetscFinalize()`.
 
   Level: developer
 
-.seealso: [](chapter_ksp), `PetscFinalize()`, `PCInitializePackage()`
+.seealso: [](ch_ksp), `PetscFinalize()`, `PCInitializePackage()`
 @*/
 PetscErrorCode PCFinalizePackage(void)
 {
@@ -41,7 +42,7 @@ PetscErrorCode PCFinalizePackage(void)
 
   Level: developer
 
-.seealso: [](chapter_ksp), `PetscInitialize()`, `PCFinalizePackage()`
+.seealso: [](ch_ksp), `PetscInitialize()`, `PCFinalizePackage()`
 @*/
 PetscErrorCode PCInitializePackage(void)
 {
@@ -119,13 +120,14 @@ const char *const *KSPConvergedReasons     = KSPConvergedReasons_Shifted + 11;
 const char *const  KSPFCDTruncationTypes[] = {"STANDARD", "NOTAY", "KSPFCDTruncationTypes", "KSP_FCD_TRUNC_TYPE_", NULL};
 
 static PetscBool KSPPackageInitialized = PETSC_FALSE;
+
 /*@C
   KSPFinalizePackage - This function destroys everything in the Petsc interface to the KSP package. It is
   called from PetscFinalize().
 
   Level: developer
 
-.seealso: [](chapter_ksp), `PetscFinalize()`, `KSPInitializePackage()`
+.seealso: [](ch_ksp), `PetscFinalize()`, `KSPInitializePackage()`
 @*/
 PetscErrorCode KSPFinalizePackage(void)
 {
@@ -148,7 +150,7 @@ PetscErrorCode KSPFinalizePackage(void)
 
   Level: developer
 
-.seealso: [](chapter_ksp), `PetscInitialize()`, `KSPFinalizePackage()`
+.seealso: [](ch_ksp), `PetscInitialize()`, `KSPFinalizePackage()`
 @*/
 PetscErrorCode KSPInitializePackage(void)
 {

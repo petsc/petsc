@@ -32,7 +32,7 @@ typedef struct {
   VecScatter   Mvctx;
 } Mat_Composite;
 
-PetscErrorCode MatDestroy_Composite(Mat mat)
+static PetscErrorCode MatDestroy_Composite(Mat mat)
 {
   Mat_Composite    *shell = (Mat_Composite *)mat->data;
   Mat_CompositeLink next  = shell->head, oldnext;
@@ -77,7 +77,7 @@ PetscErrorCode MatDestroy_Composite(Mat mat)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatMult_Composite_Multiplicative(Mat A, Vec x, Vec y)
+static PetscErrorCode MatMult_Composite_Multiplicative(Mat A, Vec x, Vec y)
 {
   Mat_Composite    *shell = (Mat_Composite *)A->data;
   Mat_CompositeLink next  = shell->head;
@@ -112,7 +112,7 @@ PetscErrorCode MatMult_Composite_Multiplicative(Mat A, Vec x, Vec y)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatMultTranspose_Composite_Multiplicative(Mat A, Vec x, Vec y)
+static PetscErrorCode MatMultTranspose_Composite_Multiplicative(Mat A, Vec x, Vec y)
 {
   Mat_Composite    *shell = (Mat_Composite *)A->data;
   Mat_CompositeLink tail  = shell->tail;
@@ -148,7 +148,7 @@ PetscErrorCode MatMultTranspose_Composite_Multiplicative(Mat A, Vec x, Vec y)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatMult_Composite(Mat mat, Vec x, Vec y)
+static PetscErrorCode MatMult_Composite(Mat mat, Vec x, Vec y)
 {
   Mat_Composite     *shell = (Mat_Composite *)mat->data;
   Mat_CompositeLink  cur   = shell->head;
@@ -300,7 +300,7 @@ skip_merge_mvctx:
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatMultTranspose_Composite(Mat A, Vec x, Vec y)
+static PetscErrorCode MatMultTranspose_Composite(Mat A, Vec x, Vec y)
 {
   Mat_Composite    *shell = (Mat_Composite *)A->data;
   Mat_CompositeLink next  = shell->head;
@@ -335,7 +335,7 @@ PetscErrorCode MatMultTranspose_Composite(Mat A, Vec x, Vec y)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatMultAdd_Composite(Mat A, Vec x, Vec y, Vec z)
+static PetscErrorCode MatMultAdd_Composite(Mat A, Vec x, Vec y, Vec z)
 {
   Mat_Composite *shell = (Mat_Composite *)A->data;
 
@@ -352,7 +352,7 @@ PetscErrorCode MatMultAdd_Composite(Mat A, Vec x, Vec y, Vec z)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatMultTransposeAdd_Composite(Mat A, Vec x, Vec y, Vec z)
+static PetscErrorCode MatMultTransposeAdd_Composite(Mat A, Vec x, Vec y, Vec z)
 {
   Mat_Composite *shell = (Mat_Composite *)A->data;
 
@@ -369,7 +369,7 @@ PetscErrorCode MatMultTransposeAdd_Composite(Mat A, Vec x, Vec y, Vec z)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatGetDiagonal_Composite(Mat A, Vec v)
+static PetscErrorCode MatGetDiagonal_Composite(Mat A, Vec v)
 {
   Mat_Composite    *shell = (Mat_Composite *)A->data;
   Mat_CompositeLink next  = shell->head;
@@ -392,7 +392,7 @@ PetscErrorCode MatGetDiagonal_Composite(Mat A, Vec v)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatAssemblyEnd_Composite(Mat Y, MatAssemblyType t)
+static PetscErrorCode MatAssemblyEnd_Composite(Mat Y, MatAssemblyType t)
 {
   Mat_Composite *shell = (Mat_Composite *)Y->data;
 
@@ -401,7 +401,7 @@ PetscErrorCode MatAssemblyEnd_Composite(Mat Y, MatAssemblyType t)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatScale_Composite(Mat inA, PetscScalar alpha)
+static PetscErrorCode MatScale_Composite(Mat inA, PetscScalar alpha)
 {
   Mat_Composite *a = (Mat_Composite *)inA->data;
 
@@ -410,7 +410,7 @@ PetscErrorCode MatScale_Composite(Mat inA, PetscScalar alpha)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatDiagonalScale_Composite(Mat inA, Vec left, Vec right)
+static PetscErrorCode MatDiagonalScale_Composite(Mat inA, Vec left, Vec right)
 {
   Mat_Composite *a = (Mat_Composite *)inA->data;
 
@@ -434,7 +434,7 @@ PetscErrorCode MatDiagonalScale_Composite(Mat inA, Vec left, Vec right)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatSetFromOptions_Composite(Mat A, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode MatSetFromOptions_Composite(Mat A, PetscOptionItems *PetscOptionsObject)
 {
   Mat_Composite *a = (Mat_Composite *)A->data;
 
@@ -448,27 +448,27 @@ PetscErrorCode MatSetFromOptions_Composite(Mat A, PetscOptionItems *PetscOptions
 }
 
 /*@
-   MatCreateComposite - Creates a matrix as the sum or product of one or more matrices
+  MatCreateComposite - Creates a matrix as the sum or product of one or more matrices
 
   Collective
 
-   Input Parameters:
-+  comm - MPI communicator
-.  nmat - number of matrices to put in
--  mats - the matrices
+  Input Parameters:
++ comm - MPI communicator
+. nmat - number of matrices to put in
+- mats - the matrices
 
-   Output Parameter:
-.  mat - the matrix
+  Output Parameter:
+. mat - the matrix
 
-   Options Database Keys:
-+  -mat_composite_merge         - merge in `MatAssemblyEnd()`
-.  -mat_composite_merge_mvctx   - merge Mvctx of component matrices to optimize communication in `MatMult()` for ADDITIVE matrices
--  -mat_composite_merge_type    - set merge direction
+  Options Database Keys:
++ -mat_composite_merge       - merge in `MatAssemblyEnd()`
+. -mat_composite_merge_mvctx - merge Mvctx of component matrices to optimize communication in `MatMult()` for ADDITIVE matrices
+- -mat_composite_merge_type  - set merge direction
 
-   Level: advanced
+  Level: advanced
 
-   Note:
-     Alternative construction
+  Note:
+  Alternative construction
 .vb
        MatCreate(comm,&mat);
        MatSetSizes(mat,m,n,M,N);
@@ -480,9 +480,9 @@ PetscErrorCode MatSetFromOptions_Composite(Mat A, PetscOptionItems *PetscOptions
        MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY);
 .ve
 
-     For the multiplicative form the product is mat[nmat-1]*mat[nmat-2]*....*mat[0]
+  For the multiplicative form the product is mat[nmat-1]*mat[nmat-2]*....*mat[0]
 
-.seealso: [](chapter_matrices), `Mat`, `MatDestroy()`, `MatMult()`, `MatCompositeAddMat()`, `MatCompositeGetMat()`, `MatCompositeMerge()`, `MatCompositeSetType()`,
+.seealso: [](ch_matrices), `Mat`, `MatDestroy()`, `MatMult()`, `MatCompositeAddMat()`, `MatCompositeGetMat()`, `MatCompositeMerge()`, `MatCompositeSetType()`,
           `MATCOMPOSITE`, `MatCompositeType`
 @*/
 PetscErrorCode MatCreateComposite(MPI_Comm comm, PetscInt nmat, const Mat *mats, Mat *mat)
@@ -491,7 +491,7 @@ PetscErrorCode MatCreateComposite(MPI_Comm comm, PetscInt nmat, const Mat *mats,
 
   PetscFunctionBegin;
   PetscCheck(nmat >= 1, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Must pass in at least one matrix");
-  PetscValidPointer(mat, 4);
+  PetscAssertPointer(mat, 4);
 
   PetscCall(MatGetLocalSize(mats[0], PETSC_IGNORE, &n));
   PetscCall(MatGetLocalSize(mats[nmat - 1], &m, PETSC_IGNORE));
@@ -535,17 +535,17 @@ static PetscErrorCode MatCompositeAddMat_Composite(Mat mat, Mat smat)
 }
 
 /*@
-    MatCompositeAddMat - Add another matrix to a composite matrix.
+  MatCompositeAddMat - Add another matrix to a composite matrix.
 
-   Collective
+  Collective
 
-    Input Parameters:
-+   mat - the composite matrix
--   smat - the partial matrix
+  Input Parameters:
++ mat  - the composite matrix
+- smat - the partial matrix
 
-   Level: advanced
+  Level: advanced
 
-.seealso: [](chapter_matrices), `Mat`, `MatCreateComposite()`, `MatCompositeGetMat()`, `MATCOMPOSITE`
+.seealso: [](ch_matrices), `Mat`, `MatCreateComposite()`, `MatCompositeGetMat()`, `MATCOMPOSITE`
 @*/
 PetscErrorCode MatCompositeAddMat(Mat mat, Mat smat)
 {
@@ -576,17 +576,17 @@ static PetscErrorCode MatCompositeSetType_Composite(Mat mat, MatCompositeType ty
 }
 
 /*@
-   MatCompositeSetType - Indicates if the matrix is defined as the sum of a set of matrices or the product.
+  MatCompositeSetType - Indicates if the matrix is defined as the sum of a set of matrices or the product.
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  mat - the composite matrix
--  type - the `MatCompositeType` to use for the matrix
+  Input Parameters:
++ mat  - the composite matrix
+- type - the `MatCompositeType` to use for the matrix
 
-   Level: advanced
+  Level: advanced
 
-.seealso: [](chapter_matrices), `Mat`, `MatDestroy()`, `MatMult()`, `MatCompositeAddMat()`, `MatCreateComposite()`, `MatCompositeGetType()`, `MATCOMPOSITE`,
+.seealso: [](ch_matrices), `Mat`, `MatDestroy()`, `MatMult()`, `MatCompositeAddMat()`, `MatCreateComposite()`, `MatCompositeGetType()`, `MATCOMPOSITE`,
           `MatCompositeType`
 @*/
 PetscErrorCode MatCompositeSetType(Mat mat, MatCompositeType type)
@@ -608,25 +608,25 @@ static PetscErrorCode MatCompositeGetType_Composite(Mat mat, MatCompositeType *t
 }
 
 /*@
-   MatCompositeGetType - Returns type of composite.
+  MatCompositeGetType - Returns type of composite.
 
-   Not Collective
+  Not Collective
 
-   Input Parameter:
-.  mat - the composite matrix
+  Input Parameter:
+. mat - the composite matrix
 
-   Output Parameter:
-.  type - type of composite
+  Output Parameter:
+. type - type of composite
 
-   Level: advanced
+  Level: advanced
 
-.seealso: [](chapter_matrices), `Mat`, `MatCreateComposite()`, `MatCompositeSetType()`, `MATCOMPOSITE`, `MatCompositeType`
+.seealso: [](ch_matrices), `Mat`, `MatCreateComposite()`, `MatCompositeSetType()`, `MATCOMPOSITE`, `MatCompositeType`
 @*/
 PetscErrorCode MatCompositeGetType(Mat mat, MatCompositeType *type)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
-  PetscValidPointer(type, 2);
+  PetscAssertPointer(type, 2);
   PetscUseMethod(mat, "MatCompositeGetType_C", (Mat, MatCompositeType *), (mat, type));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -641,20 +641,20 @@ static PetscErrorCode MatCompositeSetMatStructure_Composite(Mat mat, MatStructur
 }
 
 /*@
-   MatCompositeSetMatStructure - Indicates structure of matrices in the composite matrix.
+  MatCompositeSetMatStructure - Indicates structure of matrices in the composite matrix.
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  mat - the composite matrix
--  str - either `SAME_NONZERO_PATTERN`, `DIFFERENT_NONZERO_PATTERN` (default) or `SUBSET_NONZERO_PATTERN`
+  Input Parameters:
++ mat - the composite matrix
+- str - either `SAME_NONZERO_PATTERN`, `DIFFERENT_NONZERO_PATTERN` (default) or `SUBSET_NONZERO_PATTERN`
 
-   Level: advanced
+  Level: advanced
 
-   Note:
-    Information about the matrices structure is used in `MatCompositeMerge()` for additive composite matrix.
+  Note:
+  Information about the matrices structure is used in `MatCompositeMerge()` for additive composite matrix.
 
-.seealso: [](chapter_matrices), `Mat`, `MatAXPY()`, `MatCreateComposite()`, `MatCompositeMerge()` `MatCompositeGetMatStructure()`, `MATCOMPOSITE`
+.seealso: [](ch_matrices), `Mat`, `MatAXPY()`, `MatCreateComposite()`, `MatCompositeMerge()` `MatCompositeGetMatStructure()`, `MATCOMPOSITE`
 @*/
 PetscErrorCode MatCompositeSetMatStructure(Mat mat, MatStructure str)
 {
@@ -674,25 +674,25 @@ static PetscErrorCode MatCompositeGetMatStructure_Composite(Mat mat, MatStructur
 }
 
 /*@
-   MatCompositeGetMatStructure - Returns the structure of matrices in the composite matrix.
+  MatCompositeGetMatStructure - Returns the structure of matrices in the composite matrix.
 
-   Not Collective
+  Not Collective
 
-   Input Parameter:
-.  mat - the composite matrix
+  Input Parameter:
+. mat - the composite matrix
 
-   Output Parameter:
-.  str - structure of the matrices
+  Output Parameter:
+. str - structure of the matrices
 
-   Level: advanced
+  Level: advanced
 
-.seealso: [](chapter_matrices), `Mat`, `MatCreateComposite()`, `MatCompositeSetMatStructure()`, `MATCOMPOSITE`
+.seealso: [](ch_matrices), `Mat`, `MatCreateComposite()`, `MatCompositeSetMatStructure()`, `MATCOMPOSITE`
 @*/
 PetscErrorCode MatCompositeGetMatStructure(Mat mat, MatStructure *str)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
-  PetscValidPointer(str, 2);
+  PetscAssertPointer(str, 2);
   PetscUseMethod(mat, "MatCompositeGetMatStructure_C", (Mat, MatStructure *), (mat, str));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -707,23 +707,23 @@ static PetscErrorCode MatCompositeSetMergeType_Composite(Mat mat, MatCompositeMe
 }
 
 /*@
-   MatCompositeSetMergeType - Sets order of `MatCompositeMerge()`.
+  MatCompositeSetMergeType - Sets order of `MatCompositeMerge()`.
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  mat - the composite matrix
--  type - `MAT_COMPOSITE_MERGE RIGHT` (default) to start merge from right with the first added matrix (mat[0]),
+  Input Parameters:
++ mat  - the composite matrix
+- type - `MAT_COMPOSITE_MERGE RIGHT` (default) to start merge from right with the first added matrix (mat[0]),
           `MAT_COMPOSITE_MERGE_LEFT` to start merge from left with the last added matrix (mat[nmat-1])
 
-   Level: advanced
+  Level: advanced
 
-   Note:
-    The resulting matrix is the same regardless of the `MatCompositeMergeType`. Only the order of operation is changed.
-    If set to `MAT_COMPOSITE_MERGE_RIGHT` the order of the merge is mat[nmat-1]*(mat[nmat-2]*(...*(mat[1]*mat[0])))
-    otherwise the order is (((mat[nmat-1]*mat[nmat-2])*mat[nmat-3])*...)*mat[0].
+  Note:
+  The resulting matrix is the same regardless of the `MatCompositeMergeType`. Only the order of operation is changed.
+  If set to `MAT_COMPOSITE_MERGE_RIGHT` the order of the merge is mat[nmat-1]*(mat[nmat-2]*(...*(mat[1]*mat[0])))
+  otherwise the order is (((mat[nmat-1]*mat[nmat-2])*mat[nmat-3])*...)*mat[0].
 
-.seealso: [](chapter_matrices), `Mat`, `MatCreateComposite()`, `MatCompositeMerge()`, `MATCOMPOSITE`
+.seealso: [](ch_matrices), `Mat`, `MatCreateComposite()`, `MatCompositeMerge()`, `MATCOMPOSITE`
 @*/
 PetscErrorCode MatCompositeSetMergeType(Mat mat, MatCompositeMergeType type)
 {
@@ -792,24 +792,24 @@ static PetscErrorCode MatCompositeMerge_Composite(Mat mat)
 }
 
 /*@
-   MatCompositeMerge - Given a composite matrix, replaces it with a "regular" matrix
-     by summing or computing the product of all the matrices inside the composite matrix.
+  MatCompositeMerge - Given a composite matrix, replaces it with a "regular" matrix
+  by summing or computing the product of all the matrices inside the composite matrix.
 
   Collective
 
-   Input Parameter:
-.  mat - the composite matrix
+  Input Parameter:
+. mat - the composite matrix
 
-   Options Database Keys:
-+  -mat_composite_merge - merge in `MatAssemblyEnd()`
--  -mat_composite_merge_type - set merge direction
+  Options Database Keys:
++ -mat_composite_merge      - merge in `MatAssemblyEnd()`
+- -mat_composite_merge_type - set merge direction
 
-   Level: advanced
+  Level: advanced
 
-   Note:
-      The `MatType` of the resulting matrix will be the same as the `MatType` of the FIRST matrix in the composite matrix.
+  Note:
+  The `MatType` of the resulting matrix will be the same as the `MatType` of the FIRST matrix in the composite matrix.
 
-.seealso: [](chapter_matrices), `Mat`, `MatDestroy()`, `MatMult()`, `MatCompositeAddMat()`, `MatCreateComposite()`, `MatCompositeSetMatStructure()`, `MatCompositeSetMergeType()`, `MATCOMPOSITE`
+.seealso: [](ch_matrices), `Mat`, `MatDestroy()`, `MatMult()`, `MatCompositeAddMat()`, `MatCreateComposite()`, `MatCompositeSetMatStructure()`, `MatCompositeSetMergeType()`, `MATCOMPOSITE`
 @*/
 PetscErrorCode MatCompositeMerge(Mat mat)
 {
@@ -829,25 +829,25 @@ static PetscErrorCode MatCompositeGetNumberMat_Composite(Mat mat, PetscInt *nmat
 }
 
 /*@
-   MatCompositeGetNumberMat - Returns the number of matrices in the composite matrix.
+  MatCompositeGetNumberMat - Returns the number of matrices in the composite matrix.
 
-   Not Collective
+  Not Collective
 
-   Input Parameter:
-.  mat - the composite matrix
+  Input Parameter:
+. mat - the composite matrix
 
-   Output Parameter:
-.  nmat - number of matrices in the composite matrix
+  Output Parameter:
+. nmat - number of matrices in the composite matrix
 
-   Level: advanced
+  Level: advanced
 
-.seealso: [](chapter_matrices), `Mat`, `MatCreateComposite()`, `MatCompositeGetMat()`, `MATCOMPOSITE`
+.seealso: [](ch_matrices), `Mat`, `MatCreateComposite()`, `MatCompositeGetMat()`, `MATCOMPOSITE`
 @*/
 PetscErrorCode MatCompositeGetNumberMat(Mat mat, PetscInt *nmat)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
-  PetscValidIntPointer(nmat, 2);
+  PetscAssertPointer(nmat, 2);
   PetscUseMethod(mat, "MatCompositeGetNumberMat_C", (Mat, PetscInt *), (mat, nmat));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -867,32 +867,32 @@ static PetscErrorCode MatCompositeGetMat_Composite(Mat mat, PetscInt i, Mat *Ai)
 }
 
 /*@
-   MatCompositeGetMat - Returns the ith matrix from the composite matrix.
+  MatCompositeGetMat - Returns the ith matrix from the composite matrix.
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  mat - the composite matrix
--  i - the number of requested matrix
+  Input Parameters:
++ mat - the composite matrix
+- i   - the number of requested matrix
 
-   Output Parameter:
-.  Ai - ith matrix in composite
+  Output Parameter:
+. Ai - ith matrix in composite
 
-   Level: advanced
+  Level: advanced
 
-.seealso: [](chapter_matrices), `Mat`, `MatCreateComposite()`, `MatCompositeGetNumberMat()`, `MatCompositeAddMat()`, `MATCOMPOSITE`
+.seealso: [](ch_matrices), `Mat`, `MatCreateComposite()`, `MatCompositeGetNumberMat()`, `MatCompositeAddMat()`, `MATCOMPOSITE`
 @*/
 PetscErrorCode MatCompositeGetMat(Mat mat, PetscInt i, Mat *Ai)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
   PetscValidLogicalCollectiveInt(mat, i, 2);
-  PetscValidPointer(Ai, 3);
+  PetscAssertPointer(Ai, 3);
   PetscUseMethod(mat, "MatCompositeGetMat_C", (Mat, PetscInt, Mat *), (mat, i, Ai));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatCompositeSetScalings_Composite(Mat mat, const PetscScalar *scalings)
+static PetscErrorCode MatCompositeSetScalings_Composite(Mat mat, const PetscScalar *scalings)
 {
   Mat_Composite *shell = (Mat_Composite *)mat->data;
   PetscInt       nmat;
@@ -905,23 +905,23 @@ PetscErrorCode MatCompositeSetScalings_Composite(Mat mat, const PetscScalar *sca
 }
 
 /*@
-   MatCompositeSetScalings - Sets separate scaling factors for component matrices.
+  MatCompositeSetScalings - Sets separate scaling factors for component matrices.
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  mat      - the composite matrix
--  scalings - array of scaling factors with scalings[i] being factor of i-th matrix, for i in [0, nmat)
+  Input Parameters:
++ mat      - the composite matrix
+- scalings - array of scaling factors with scalings[i] being factor of i-th matrix, for i in [0, nmat)
 
-   Level: advanced
+  Level: advanced
 
-.seealso: [](chapter_matrices), `Mat`, `MatScale()`, `MatDiagonalScale()`, `MATCOMPOSITE`
+.seealso: [](ch_matrices), `Mat`, `MatScale()`, `MatDiagonalScale()`, `MATCOMPOSITE`
 @*/
 PetscErrorCode MatCompositeSetScalings(Mat mat, const PetscScalar *scalings)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
-  PetscValidScalarPointer(scalings, 2);
+  PetscAssertPointer(scalings, 2);
   PetscValidLogicalCollectiveScalar(mat, *scalings, 2);
   PetscUseMethod(mat, "MatCompositeSetScalings_C", (Mat, const PetscScalar *), (mat, scalings));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -1089,7 +1089,7 @@ static struct _MatOps MatOps_Values = {NULL,
    Note:
    To use the product of the matrices call `MatCompositeSetType`(mat,`MAT_COMPOSITE_MULTIPLICATIVE`);
 
-.seealso: [](chapter_matrices), `Mat`, `MatCreateComposite()`, `MatCompositeSetScalings()`, `MatCompositeAddMat()`, `MatSetType()`, `MatCompositeSetType()`, `MatCompositeGetType()`,
+.seealso: [](ch_matrices), `Mat`, `MatCreateComposite()`, `MatCompositeSetScalings()`, `MatCompositeAddMat()`, `MatSetType()`, `MatCompositeSetType()`, `MatCompositeGetType()`,
           `MatCompositeSetMatStructure()`, `MatCompositeGetMatStructure()`, `MatCompositeMerge()`, `MatCompositeSetMergeType()`, `MatCompositeGetNumberMat()`, `MatCompositeGetMat()`
 M*/
 
@@ -1099,8 +1099,8 @@ PETSC_EXTERN PetscErrorCode MatCreate_Composite(Mat A)
 
   PetscFunctionBegin;
   PetscCall(PetscNew(&b));
-  A->data = (void *)b;
-  PetscCall(PetscMemcpy(A->ops, &MatOps_Values, sizeof(struct _MatOps)));
+  A->data   = (void *)b;
+  A->ops[0] = MatOps_Values;
 
   PetscCall(PetscLayoutSetUp(A->rmap));
   PetscCall(PetscLayoutSetUp(A->cmap));

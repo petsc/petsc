@@ -1,5 +1,4 @@
-#ifndef PETSC_PFIMPL_H
-#define PETSC_PFIMPL_H
+#pragma once
 
 #include <petscpf.h>
 #include <petsc/private/petscimpl.h>
@@ -22,5 +21,3 @@ struct _p_PF {
   PetscInt dimin, dimout; /* dimension of input and output spaces */
   void    *data;
 };
-
-#endif // PETSC_PFIMPL_H

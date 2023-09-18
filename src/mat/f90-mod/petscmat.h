@@ -337,6 +337,32 @@
       PetscEnum, parameter :: MP_PTSCOTCH_BALANCE = 2
       PetscEnum, parameter :: MP_PTSCOTCH_SAFETY = 3
       PetscEnum, parameter :: MP_PTSCOTCH_SCALABILITY = 4
+!
+! MatSTRUMPACKReordering
+#if defined(PETSC_HAVE_STRUMPACK)
+      PetscEnum, parameter :: MAT_STRUMPACK_NATURAL = 0
+      PetscEnum, parameter :: MAT_STRUMPACK_METIS = 1
+      PetscEnum, parameter :: MAT_STRUMPACK_PARMETIS = 2
+      PetscEnum, parameter :: MAT_STRUMPACK_SCOTCH = 3
+      PetscEnum, parameter :: MAT_STRUMPACK_PTSCOTCH = 4
+      PetscEnum, parameter :: MAT_STRUMPACK_RCM = 5
+      PetscEnum, parameter :: MAT_STRUMPACK_GEOMETRIC = 6
+      PetscEnum, parameter :: MAT_STRUMPACK_AMD = 7
+      PetscEnum, parameter :: MAT_STRUMPACK_MMD = 8
+      PetscEnum, parameter :: MAT_STRUMPACK_AND = 9
+      PetscEnum, parameter :: MAT_STRUMPACK_MLF = 10
+      PetscEnum, parameter :: MAT_STRUMPACK_SPECTRAL = 11
+!
+! MatSTRUMPACKCompressionType
+      PetscEnum, parameter :: MAT_STRUMPACK_COMPRESSION_TYPE_NONE = 0
+      PetscEnum, parameter :: MAT_STRUMPACK_COMPRESSION_TYPE_HSS = 1
+      PetscEnum, parameter :: MAT_STRUMPACK_COMPRESSION_TYPE_BLR = 2
+      PetscEnum, parameter :: MAT_STRUMPACK_COMPRESSION_TYPE_HODLR = 3
+      PetscEnum, parameter :: MAT_STRUMPACK_COMPRESSION_TYPE_BLR_HODLR = 4
+      PetscEnum, parameter :: MAT_STRUMPACK_COMPRESSION_TYPE_ZFP_BLR_HODLR = 5
+      PetscEnum, parameter :: MAT_STRUMPACK_COMPRESSION_TYPE_LOSSLESS = 6
+      PetscEnum, parameter :: MAT_STRUMPACK_COMPRESSION_TYPE_LOSSY = 7
+#endif
 
 ! PetscScalarPrecision
       PetscEnum, parameter :: PETSC_SCALAR_DOUBLE=0

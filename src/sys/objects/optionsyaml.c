@@ -175,15 +175,15 @@ PetscErrorCode PetscOptionsInsertStringYAML_Private(PetscOptions options, const 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 /*@C
-   PetscOptionsInsertStringYAML - Inserts YAML-formatted options into the options database from a string
+  PetscOptionsInsertStringYAML - Inserts YAML-formatted options into the options database from a string
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  options - options database, use NULL for default global database
--  in_str - YAML-formatted string options
+  Input Parameters:
++ options - options database, use `NULL` for default global database
+- in_str  - YAML-formatted string options
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `PetscOptionsSetValue()`, `PetscOptionsView()`, `PetscOptionsHasName()`, `PetscOptionsGetInt()`,
           `PetscOptionsGetReal()`, `PetscOptionsGetString()`, `PetscOptionsGetIntArray()`, `PetscOptionsBool()`,
@@ -205,10 +205,10 @@ PetscErrorCode PetscOptionsInsertStringYAML(PetscOptions options, const char in_
   Collective
 
   Input Parameters:
-+   comm - the processes that will share the options (usually `PETSC_COMM_WORLD`)
-.   options - options database, use NULL for default global database
-.   file - name of file
--   require - if `PETSC_TRUE` will generate an error if the file does not exist
++ comm    - the processes that will share the options (usually `PETSC_COMM_WORLD`)
+. options - options database, use `NULL` for default global database
+. file    - name of file
+- require - if `PETSC_TRUE` will generate an error if the file does not exist
 
   Notes:
   PETSc will generate an error condition that stops the program if a YAML error

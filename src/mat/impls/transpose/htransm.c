@@ -107,7 +107,7 @@ PETSC_INTERN PetscErrorCode MatProductSetFromOptions_HermitianTranspose(Mat D)
   PetscCall(MatProductSetFromOptions(D));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-PetscErrorCode MatMult_HT(Mat N, Vec x, Vec y)
+static PetscErrorCode MatMult_HT(Mat N, Vec x, Vec y)
 {
   Mat_HT *Na = (Mat_HT *)N->data;
 
@@ -116,7 +116,7 @@ PetscErrorCode MatMult_HT(Mat N, Vec x, Vec y)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatMultAdd_HT(Mat N, Vec v1, Vec v2, Vec v3)
+static PetscErrorCode MatMultAdd_HT(Mat N, Vec v1, Vec v2, Vec v3)
 {
   Mat_HT *Na = (Mat_HT *)N->data;
 
@@ -125,7 +125,7 @@ PetscErrorCode MatMultAdd_HT(Mat N, Vec v1, Vec v2, Vec v3)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatMultHermitianTranspose_HT(Mat N, Vec x, Vec y)
+static PetscErrorCode MatMultHermitianTranspose_HT(Mat N, Vec x, Vec y)
 {
   Mat_HT *Na = (Mat_HT *)N->data;
 
@@ -134,7 +134,7 @@ PetscErrorCode MatMultHermitianTranspose_HT(Mat N, Vec x, Vec y)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatMultHermitianTransposeAdd_HT(Mat N, Vec v1, Vec v2, Vec v3)
+static PetscErrorCode MatMultHermitianTransposeAdd_HT(Mat N, Vec v1, Vec v2, Vec v3)
 {
   Mat_HT *Na = (Mat_HT *)N->data;
 
@@ -143,7 +143,7 @@ PetscErrorCode MatMultHermitianTransposeAdd_HT(Mat N, Vec v1, Vec v2, Vec v3)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatDestroy_HT(Mat N)
+static PetscErrorCode MatDestroy_HT(Mat N)
 {
   Mat_HT *Na = (Mat_HT *)N->data;
 
@@ -158,7 +158,7 @@ PetscErrorCode MatDestroy_HT(Mat N)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatDuplicate_HT(Mat N, MatDuplicateOption op, Mat *m)
+static PetscErrorCode MatDuplicate_HT(Mat N, MatDuplicateOption op, Mat *m)
 {
   Mat_HT *Na = (Mat_HT *)N->data;
 
@@ -172,7 +172,7 @@ PetscErrorCode MatDuplicate_HT(Mat N, MatDuplicateOption op, Mat *m)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatCreateVecs_HT(Mat N, Vec *r, Vec *l)
+static PetscErrorCode MatCreateVecs_HT(Mat N, Vec *r, Vec *l)
 {
   Mat_HT *Na = (Mat_HT *)N->data;
 
@@ -181,7 +181,7 @@ PetscErrorCode MatCreateVecs_HT(Mat N, Vec *r, Vec *l)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatAXPY_HT(Mat Y, PetscScalar a, Mat X, MatStructure str)
+static PetscErrorCode MatAXPY_HT(Mat Y, PetscScalar a, Mat X, MatStructure str)
 {
   Mat_HT *Ya = (Mat_HT *)Y->data;
   Mat_HT *Xa = (Mat_HT *)X->data;
@@ -193,7 +193,7 @@ PetscErrorCode MatAXPY_HT(Mat Y, PetscScalar a, Mat X, MatStructure str)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatHermitianTransposeGetMat_HT(Mat N, Mat *M)
+static PetscErrorCode MatHermitianTransposeGetMat_HT(Mat N, Mat *M)
 {
   Mat_HT *Na = (Mat_HT *)N->data;
 
@@ -203,33 +203,33 @@ PetscErrorCode MatHermitianTransposeGetMat_HT(Mat N, Mat *M)
 }
 
 /*@
-      MatHermitianTransposeGetMat - Gets the `Mat` object stored inside a `MATHERMITIANTRANSPOSEVIRTUAL`
+  MatHermitianTransposeGetMat - Gets the `Mat` object stored inside a `MATHERMITIANTRANSPOSEVIRTUAL`
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameter:
-.   A  - the `MATHERMITIANTRANSPOSEVIRTUAL` matrix
+  Input Parameter:
+. A - the `MATHERMITIANTRANSPOSEVIRTUAL` matrix
 
-   Output Parameter:
-.   M - the matrix object stored inside A
+  Output Parameter:
+. M - the matrix object stored inside A
 
-   Level: intermediate
+  Level: intermediate
 
-.seealso: [](chapter_matrices), `Mat`, `MATHERMITIANTRANSPOSEVIRTUAL`, `MatCreateHermitianTranspose()`
+.seealso: [](ch_matrices), `Mat`, `MATHERMITIANTRANSPOSEVIRTUAL`, `MatCreateHermitianTranspose()`
 @*/
 PetscErrorCode MatHermitianTransposeGetMat(Mat A, Mat *M)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
   PetscValidType(A, 1);
-  PetscValidPointer(M, 2);
+  PetscAssertPointer(M, 2);
   PetscUseMethod(A, "MatHermitianTransposeGetMat_C", (Mat, Mat *), (A, M));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_INTERN PetscErrorCode MatProductSetFromOptions_Transpose(Mat);
 
-PetscErrorCode MatGetDiagonal_HT(Mat A, Vec v)
+static PetscErrorCode MatGetDiagonal_HT(Mat A, Vec v)
 {
   Mat_HT *Na = (Mat_HT *)A->data;
 
@@ -239,7 +239,7 @@ PetscErrorCode MatGetDiagonal_HT(Mat A, Vec v)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatConvert_HT(Mat A, MatType newtype, MatReuse reuse, Mat *newmat)
+static PetscErrorCode MatConvert_HT(Mat A, MatType newtype, MatReuse reuse, Mat *newmat)
 {
   Mat_HT   *Na = (Mat_HT *)A->data;
   PetscBool flg;
@@ -268,42 +268,39 @@ PetscErrorCode MatConvert_HT(Mat A, MatType newtype, MatReuse reuse, Mat *newmat
 
   Level: advanced
 
-.seealso: [](chapter_matrices), `Mat`, `MATTRANSPOSEVIRTUAL`, `Mat`, `MatCreateHermitianTranspose()`, `MatCreateTranspose()`
+.seealso: [](ch_matrices), `Mat`, `MATTRANSPOSEVIRTUAL`, `Mat`, `MatCreateHermitianTranspose()`, `MatCreateTranspose()`
 M*/
 
 /*@
-      MatCreateHermitianTranspose - Creates a new matrix object of `MatType` `MATHERMITIANTRANSPOSEVIRTUAL` that behaves like A'*
+  MatCreateHermitianTranspose - Creates a new matrix object of `MatType` `MATHERMITIANTRANSPOSEVIRTUAL` that behaves like A'*
 
-   Collective
+  Collective
 
-   Input Parameter:
-.   A  - the (possibly rectangular) matrix
+  Input Parameter:
+. A - the (possibly rectangular) matrix
 
-   Output Parameter:
-.   N - the matrix that represents A'*
+  Output Parameter:
+. N - the matrix that represents A'*
 
-   Level: intermediate
+  Level: intermediate
 
-   Note:
-    The Hermitian transpose A' is NOT actually formed! Rather the new matrix
-          object performs the matrix-vector product, `MatMult()`, by using the `MatMultHermitianTranspose()` on
-          the original matrix
+  Note:
+  The Hermitian transpose A' is NOT actually formed! Rather the new matrix
+  object performs the matrix-vector product, `MatMult()`, by using the `MatMultHermitianTranspose()` on
+  the original matrix
 
-.seealso: [](chapter_matrices), `Mat`, `MatCreateNormal()`, `MatMult()`, `MatMultHermitianTranspose()`, `MatCreate()`,
+.seealso: [](ch_matrices), `Mat`, `MatCreateNormal()`, `MatMult()`, `MatMultHermitianTranspose()`, `MatCreate()`,
           `MATTRANSPOSEVIRTUAL`, `MatCreateTranspose()`, `MatHermitianTransposeGetMat()`, `MATNORMAL`, `MATNORMALHERMITIAN`
 @*/
 PetscErrorCode MatCreateHermitianTranspose(Mat A, Mat *N)
 {
-  PetscInt m, n;
-  Mat_HT  *Na;
-  VecType  vtype;
+  Mat_HT *Na;
+  VecType vtype;
 
   PetscFunctionBegin;
-  PetscCall(MatGetLocalSize(A, &m, &n));
   PetscCall(MatCreate(PetscObjectComm((PetscObject)A), N));
-  PetscCall(MatSetSizes(*N, n, m, PETSC_DECIDE, PETSC_DECIDE));
-  PetscCall(PetscLayoutSetUp((*N)->rmap));
-  PetscCall(PetscLayoutSetUp((*N)->cmap));
+  PetscCall(PetscLayoutReference(A->rmap, &((*N)->cmap)));
+  PetscCall(PetscLayoutReference(A->cmap, &((*N)->rmap)));
   PetscCall(PetscObjectChangeTypeName((PetscObject)*N, MATHERMITIANTRANSPOSEVIRTUAL));
 
   PetscCall(PetscNew(&Na));

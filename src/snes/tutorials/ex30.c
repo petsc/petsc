@@ -1420,7 +1420,7 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info, Field **x, Field **f, void
       requires: !complex erf
 
    test:
-      args: -ni 18
+      args: -ni 18 -fp_trap 0
       filter: grep -v Destination
       requires: !single
 

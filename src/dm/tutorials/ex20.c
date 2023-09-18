@@ -1,5 +1,5 @@
 
-static char help[] = "DMSwarm-PIC demonstator of inserting points into a cell DM \n\
+static char help[] = "DMSwarm-PIC demonstrator of inserting points into a cell DM \n\
 Options: \n\
 -mode {0,1} : 0 ==> DMDA, 1 ==> DMPLEX cell DM \n\
 -dim {2,3}  : spatial dimension\n";

@@ -1,7 +1,5 @@
 #include <../src/ksp/ksp/utils/lmvm/brdn/brdn.h> /*I "petscksp.h" I*/
 
-/*------------------------------------------------------------*/
-
 /*
   The solution method is the matrix-free implementation of the inverse Hessian
   representation in page 312 of Griewank "Broyden Updating, The Good and The Bad!"
@@ -53,8 +51,6 @@ static PetscErrorCode MatSolve_LMVMBrdn(Mat B, Vec F, Vec dX)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*------------------------------------------------------------*/
-
 /*
   The forward product is the matrix-free implementation of Equation 2 in
   page 302 of Griewank "Broyden Updating, The Good and The Bad!"
@@ -105,8 +101,6 @@ static PetscErrorCode MatMult_LMVMBrdn(Mat B, Vec X, Vec Z)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*------------------------------------------------------------*/
-
 static PetscErrorCode MatUpdate_LMVMBrdn(Mat B, Vec X, Vec F)
 {
   Mat_LMVM   *lmvm  = (Mat_LMVM *)B->data;
@@ -138,8 +132,6 @@ static PetscErrorCode MatUpdate_LMVMBrdn(Mat B, Vec X, Vec F)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*------------------------------------------------------------*/
-
 static PetscErrorCode MatCopy_LMVMBrdn(Mat B, Mat M, MatStructure str)
 {
   Mat_LMVM *bdata = (Mat_LMVM *)B->data;
@@ -160,8 +152,6 @@ static PetscErrorCode MatCopy_LMVMBrdn(Mat B, Mat M, MatStructure str)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*------------------------------------------------------------*/
-
 static PetscErrorCode MatReset_LMVMBrdn(Mat B, PetscBool destructive)
 {
   Mat_LMVM *lmvm  = (Mat_LMVM *)B->data;
@@ -178,8 +168,6 @@ static PetscErrorCode MatReset_LMVMBrdn(Mat B, PetscBool destructive)
   PetscCall(MatReset_LMVM(B, destructive));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-
-/*------------------------------------------------------------*/
 
 static PetscErrorCode MatAllocate_LMVMBrdn(Mat B, Vec X, Vec F)
 {
@@ -199,8 +187,6 @@ static PetscErrorCode MatAllocate_LMVMBrdn(Mat B, Vec X, Vec F)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*------------------------------------------------------------*/
-
 static PetscErrorCode MatDestroy_LMVMBrdn(Mat B)
 {
   Mat_LMVM *lmvm  = (Mat_LMVM *)B->data;
@@ -217,8 +203,6 @@ static PetscErrorCode MatDestroy_LMVMBrdn(Mat B)
   PetscCall(MatDestroy_LMVM(B));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-
-/*------------------------------------------------------------*/
 
 static PetscErrorCode MatSetUp_LMVMBrdn(Mat B)
 {
@@ -237,8 +221,6 @@ static PetscErrorCode MatSetUp_LMVMBrdn(Mat B)
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-
-/*------------------------------------------------------------*/
 
 PetscErrorCode MatCreate_LMVMBrdn(Mat B)
 {
@@ -267,35 +249,33 @@ PetscErrorCode MatCreate_LMVMBrdn(Mat B)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*------------------------------------------------------------*/
-
 /*@
-   MatCreateLMVMBroyden - Creates a limited-memory "good" Broyden-type approximation
-   matrix used for a Jacobian. L-Brdn is not guaranteed to be symmetric or
-   positive-definite.
+  MatCreateLMVMBroyden - Creates a limited-memory "good" Broyden-type approximation
+  matrix used for a Jacobian. L-Brdn is not guaranteed to be symmetric or
+  positive-definite.
 
-   To use the L-Brdn matrix with other vector types, the matrix must be
-   created using `MatCreate()` and `MatSetType()`, followed by `MatLMVMAllocate()`.
-   This ensures that the internal storage and work vectors are duplicated from the
-   correct type of vector.
+  To use the L-Brdn matrix with other vector types, the matrix must be
+  created using `MatCreate()` and `MatSetType()`, followed by `MatLMVMAllocate()`.
+  This ensures that the internal storage and work vectors are duplicated from the
+  correct type of vector.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  comm - MPI communicator
-.  n - number of local rows for storage vectors
--  N - global size of the storage vectors
+  Input Parameters:
++ comm - MPI communicator
+. n    - number of local rows for storage vectors
+- N    - global size of the storage vectors
 
-   Output Parameter:
-.  B - the matrix
+  Output Parameter:
+. B - the matrix
 
-   Level: intermediate
+  Level: intermediate
 
-   Note:
-   It is recommended that one use the `MatCreate()`, `MatSetType()` and/or `MatSetFromOptions()`
-   paradigm instead of this routine directly.
+  Note:
+  It is recommended that one use the `MatCreate()`, `MatSetType()` and/or `MatSetFromOptions()`
+  paradigm instead of this routine directly.
 
-.seealso: [](chapter_ksp), `MatCreate()`, `MATLMVM`, `MATLMVMBRDN`, `MatCreateLMVMDFP()`, `MatCreateLMVMSR1()`,
+.seealso: [](ch_ksp), `MatCreate()`, `MATLMVM`, `MATLMVMBRDN`, `MatCreateLMVMDFP()`, `MatCreateLMVMSR1()`,
           `MatCreateLMVMBFGS()`, `MatCreateLMVMBadBrdn()`, `MatCreateLMVMSymBrdn()`
 @*/
 PetscErrorCode MatCreateLMVMBroyden(MPI_Comm comm, PetscInt n, PetscInt N, Mat *B)

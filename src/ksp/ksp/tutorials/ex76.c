@@ -17,10 +17,6 @@ int main(int argc, char **args)
   char            dir[PETSC_MAX_PATH_LEN], name[PETSC_MAX_PATH_LEN], type[256];
   PetscBool3      share = PETSC_BOOL3_UNKNOWN;
   PetscBool       flg, set;
-#if defined(PETSC_USE_LOG)
-  PetscLogEvent event;
-#endif
-  PetscEventPerfInfo info1, info2;
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &args, NULL, help));
@@ -179,17 +175,23 @@ int main(int argc, char **args)
   if (flg) PetscCall(PCHPDDMGetSTShareSubKSP(pc, &flg));
 #endif
   if (flg && PetscDefined(USE_LOG)) {
-    PetscCall(PetscLogEventRegister("MatLUFactorSym", PC_CLASSID, &event));
-    PetscCall(PetscLogEventGetPerfInfo(PETSC_DETERMINE, event, &info1));
-    PetscCall(PetscLogEventRegister("MatLUFactorNum", PC_CLASSID, &event));
-    PetscCall(PetscLogEventGetPerfInfo(PETSC_DETERMINE, event, &info2));
-    if (!info1.count && !info2.count) {
-      PetscCall(PetscLogEventRegister("MatCholFctrSym", PC_CLASSID, &event));
+    PetscCall(PetscOptionsHasName(NULL, NULL, "-pc_hpddm_harmonic_overlap", &flg));
+    if (!flg) {
+      PetscLogEvent      event;
+      PetscEventPerfInfo info1, info2;
+
+      PetscCall(PetscLogEventRegister("MatLUFactorSym", PC_CLASSID, &event));
       PetscCall(PetscLogEventGetPerfInfo(PETSC_DETERMINE, event, &info1));
-      PetscCall(PetscLogEventRegister("MatCholFctrNum", PC_CLASSID, &event));
+      PetscCall(PetscLogEventRegister("MatLUFactorNum", PC_CLASSID, &event));
       PetscCall(PetscLogEventGetPerfInfo(PETSC_DETERMINE, event, &info2));
-      PetscCheck(info2.count > info1.count, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Cholesky numerical factorization (%d) not called more times than Cholesky symbolic factorization (%d), broken -pc_hpddm_levels_1_st_share_sub_ksp", info2.count, info1.count);
-    } else PetscCheck(info2.count > info1.count, PETSC_COMM_SELF, PETSC_ERR_PLIB, "LU numerical factorization (%d) not called more times than LU symbolic factorization (%d), broken -pc_hpddm_levels_1_st_share_sub_ksp", info2.count, info1.count);
+      if (!info1.count && !info2.count) {
+        PetscCall(PetscLogEventRegister("MatCholFctrSym", PC_CLASSID, &event));
+        PetscCall(PetscLogEventGetPerfInfo(PETSC_DETERMINE, event, &info1));
+        PetscCall(PetscLogEventRegister("MatCholFctrNum", PC_CLASSID, &event));
+        PetscCall(PetscLogEventGetPerfInfo(PETSC_DETERMINE, event, &info2));
+        PetscCheck(info2.count > info1.count, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Cholesky numerical factorization (%d) not called more times than Cholesky symbolic factorization (%d), broken -pc_hpddm_levels_1_st_share_sub_ksp", info2.count, info1.count);
+      } else PetscCheck(info2.count > info1.count, PETSC_COMM_SELF, PETSC_ERR_PLIB, "LU numerical factorization (%d) not called more times than LU symbolic factorization (%d), broken -pc_hpddm_levels_1_st_share_sub_ksp", info2.count, info1.count);
+    }
   }
 #if defined(PETSC_HAVE_HPDDM) && defined(PETSC_HAVE_DYNAMIC_LIBRARIES) && defined(PETSC_USE_SHARED_LIBRARIES)
   if (N == 1) {
@@ -209,6 +211,7 @@ int main(int argc, char **args)
         PetscCall(PetscSNPrintf(name, sizeof(name), "%s/is_%d_%d.dat", dir, rank, size));
         PetscCall(PetscViewerBinaryOpen(PETSC_COMM_SELF, name, FILE_MODE_READ, &viewer));
         PetscCall(ISLoad(is, viewer));
+        PetscCall(ISSetBlockSize(is, 2));
         PetscCall(PetscViewerDestroy(&viewer));
         PetscCall(PetscSNPrintf(name, sizeof(name), "%s/Neumann_%d_%d.dat", dir, rank, size));
         PetscCall(PetscViewerBinaryOpen(PETSC_COMM_SELF, name, FILE_MODE_READ, &viewer));
@@ -226,7 +229,7 @@ int main(int argc, char **args)
       PetscCall(KSPGetConvergedReason(ksp, reason + 1));
       PetscCall(KSPGetTotalIterations(ksp, iterations + 1));
       iterations[1] -= iterations[0];
-      PetscCheck(reason[0] == reason[1] && PetscAbs(iterations[0] - iterations[1]) <= 3, PetscObjectComm((PetscObject)ksp), PETSC_ERR_PLIB, "Successive calls to KSPSolve() did not converge for the same reason or with the same number of iterations (+/- 3)");
+      PetscCheck(reason[0] == reason[1] && PetscAbs(iterations[0] - iterations[1]) <= 3, PetscObjectComm((PetscObject)ksp), PETSC_ERR_PLIB, "Successive calls to KSPSolve() did not converge for the same reason (%s v. %s) or with the same number of iterations (+/- 3, %" PetscInt_FMT " v. %" PetscInt_FMT ")", KSPConvergedReasons[reason[0]], KSPConvergedReasons[reason[1]], iterations[0], iterations[1]);
       PetscCall(PetscObjectStateIncrease((PetscObject)A));
       if (!flg) PetscCall(PCHPDDMSetAuxiliaryMat(pc, is, aux, NULL, NULL));
       PetscCall(PCSetFromOptions(pc));
@@ -235,10 +238,29 @@ int main(int argc, char **args)
       PetscCall(KSPGetConvergedReason(ksp, reason + 1));
       PetscCall(KSPGetTotalIterations(ksp, iterations + 2));
       iterations[2] -= iterations[0] + iterations[1];
-      PetscCheck(reason[0] == reason[1] && PetscAbs(iterations[0] - iterations[2]) <= 3, PetscObjectComm((PetscObject)ksp), PETSC_ERR_PLIB, "Successive calls to KSPSolve() did not converge for the same reason or with the same number of iterations (+/- 3)");
+      PetscCheck(reason[0] == reason[1] && PetscAbs(iterations[0] - iterations[2]) <= 3, PetscObjectComm((PetscObject)ksp), PETSC_ERR_PLIB, "Successive calls to KSPSolve() did not converge for the same reason (%s v. %s) or with the same number of iterations (+/- 3, %" PetscInt_FMT " v. %" PetscInt_FMT ")", KSPConvergedReasons[reason[0]], KSPConvergedReasons[reason[1]], iterations[0], iterations[2]);
       PetscCall(VecDestroy(&b));
       PetscCall(ISDestroy(&is));
       PetscCall(MatDestroy(&aux));
+    }
+  }
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-viewer", &flg, NULL));
+  if (flg) {
+    PetscCall(PetscObjectTypeCompare((PetscObject)pc, PCHPDDM, &flg));
+    if (flg) {
+      PetscCall(PetscStrncpy(dir, "XXXXXX", sizeof(dir)));
+      if (rank == 0) PetscCall(PetscMkdtemp(dir));
+      PetscCallMPI(MPI_Bcast(dir, 6, MPI_CHAR, 0, PETSC_COMM_WORLD));
+      for (PetscInt i = 0; i < 2; ++i) {
+        PetscCall(PetscSNPrintf(name, sizeof(name), "%s/%s", dir, (i == 0 ? "A" : "A.dat")));
+        PetscCall(PetscViewerASCIIOpen(PETSC_COMM_WORLD, name, &viewer));
+        PetscCall(PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_INFO_DETAIL));
+        PetscCall(PCView(pc, viewer));
+        PetscCall(PetscViewerPopFormat(viewer));
+        PetscCall(PetscViewerDestroy(&viewer));
+      }
+      PetscCallMPI(MPI_Barrier(PETSC_COMM_WORLD));
+      if (rank == 0) PetscCall(PetscRMTree(dir));
     }
   }
 #endif
@@ -259,7 +281,7 @@ int main(int argc, char **args)
       requires: hpddm slepc datafilespath double !complex !defined(PETSC_USE_64BIT_INDICES) defined(PETSC_HAVE_DYNAMIC_LIBRARIES) defined(PETSC_USE_SHARED_LIBRARIES)
       suffix: define_subdomains
       nsize: 4
-      args: -ksp_rtol 1e-3 -ksp_converged_reason -pc_type {{asm hpddm}shared output} -pc_hpddm_coarse_sub_pc_type lu -sub_pc_type lu -pc_hpddm_define_subdomains -options_left no -load_dir ${DATAFILESPATH}/matrices/hpddm/GENEO
+      args: -ksp_rtol 1e-3 -ksp_converged_reason -pc_type {{asm hpddm}shared output} -pc_hpddm_coarse_sub_pc_type lu -sub_pc_type lu -pc_hpddm_define_subdomains -options_left no -load_dir ${DATAFILESPATH}/matrices/hpddm/GENEO -viewer
 
    testset:
       requires: hpddm slepc datafilespath double !complex !defined(PETSC_USE_64BIT_INDICES) defined(PETSC_HAVE_DYNAMIC_LIBRARIES) defined(PETSC_USE_SHARED_LIBRARIES)
@@ -277,6 +299,50 @@ int main(int argc, char **args)
         suffix: geneo_share
         output_file: output/ex76_geneo_pc_hpddm_levels_1_eps_nev-5.out
         args: -pc_hpddm_levels_1_st_pc_type cholesky -pc_hpddm_levels_1_eps_nev 5 -pc_hpddm_levels_1_st_share_sub_ksp -reset {{false true}shared output}
+      test:
+        suffix: harmonic_overlap_1_define_false
+        output_file: output/ex76_geneo_share.out
+        filter: sed -e "s/Linear solve converged due to CONVERGED_RTOL iterations 1[0-3]/Linear solve converged due to CONVERGED_RTOL iterations 15/g"
+        args: -pc_hpddm_harmonic_overlap 1 -pc_hpddm_levels_1_eps_nev 30 -pc_hpddm_levels_1_eps_relative_threshold 1e+1 -pc_hpddm_levels_1_st_pc_type lu -pc_hpddm_levels_1_eps_pc_type lu -pc_hpddm_define_subdomains false -pc_hpddm_levels_1_pc_type asm -pc_hpddm_levels_1_pc_asm_overlap 2 -mat_type baij
+      test:
+        suffix: harmonic_overlap_1
+        output_file: output/ex76_geneo_share.out
+        filter: sed -e "s/Linear solve converged due to CONVERGED_RTOL iterations 1[0-3]/Linear solve converged due to CONVERGED_RTOL iterations 15/g"
+        args: -pc_hpddm_harmonic_overlap 1 -pc_hpddm_levels_1_eps_nev 30 -pc_hpddm_levels_1_eps_relative_threshold 1e+1 -pc_hpddm_levels_1_st_pc_type lu -pc_hpddm_levels_1_eps_pc_type lu -mat_type baij
+      test:
+        suffix: harmonic_overlap_1_share_petsc
+        output_file: output/ex76_geneo_share.out
+        filter: sed -e "s/Linear solve converged due to CONVERGED_RTOL iterations 1[0-3]/Linear solve converged due to CONVERGED_RTOL iterations 15/g"
+        args: -pc_hpddm_harmonic_overlap 1 -pc_hpddm_levels_1_eps_nev 30 -pc_hpddm_levels_1_eps_relative_threshold 1e+1 -pc_hpddm_levels_1_st_pc_type lu -pc_hpddm_levels_1_st_share_sub_ksp -pc_hpddm_levels_1_sub_pc_factor_mat_solver_type petsc -pc_hpddm_levels_1_eps_pc_type lu -mat_type baij
+      test:
+        requires: mumps
+        suffix: harmonic_overlap_1_share_mumps
+        output_file: output/ex76_geneo_share.out
+        filter: sed -e "s/Linear solve converged due to CONVERGED_RTOL iterations 1[0-3]/Linear solve converged due to CONVERGED_RTOL iterations 15/g"
+        args: -pc_hpddm_harmonic_overlap 1 -pc_hpddm_levels_1_eps_nev 30 -pc_hpddm_levels_1_eps_relative_threshold 1e+1 -pc_hpddm_levels_1_st_share_sub_ksp -pc_hpddm_levels_1_sub_pc_factor_mat_solver_type mumps
+      test:
+        requires: mumps
+        suffix: harmonic_overlap_1_share_mumps_not_set_explicitly
+        output_file: output/ex76_geneo_share.out
+        filter: sed -e "s/Linear solve converged due to CONVERGED_RTOL iterations 1[0-3]/Linear solve converged due to CONVERGED_RTOL iterations 15/g"
+        args: -pc_hpddm_harmonic_overlap 1 -pc_hpddm_levels_1_eps_nev 30 -pc_hpddm_levels_1_eps_relative_threshold 1e+1 -pc_hpddm_levels_1_st_share_sub_ksp -pc_hpddm_levels_1_eps_mat_type baij
+      test:
+        requires: mkl_pardiso
+        suffix: harmonic_overlap_1_share_mkl_pardiso
+        output_file: output/ex76_geneo_share.out
+        filter: sed -e "s/Linear solve converged due to CONVERGED_RTOL iterations [12][0-3]/Linear solve converged due to CONVERGED_RTOL iterations 15/g"
+        args: -pc_hpddm_harmonic_overlap 1 -pc_hpddm_levels_1_eps_nev 30 -pc_hpddm_levels_1_eps_relative_threshold 1e+1 -pc_hpddm_levels_1_st_share_sub_ksp -pc_hpddm_levels_1_eps_mat_type shell -pc_hpddm_levels_1_sub_pc_factor_mat_solver_type mkl_pardiso
+      test:
+        requires: mkl_pardiso !mumps
+        suffix: harmonic_overlap_1_share_mkl_pardiso_no_set_explicitly
+        output_file: output/ex76_geneo_share.out
+        filter: sed -e "s/Linear solve converged due to CONVERGED_RTOL iterations [12][0-3]/Linear solve converged due to CONVERGED_RTOL iterations 15/g"
+        args: -pc_hpddm_harmonic_overlap 1 -pc_hpddm_levels_1_eps_nev 30 -pc_hpddm_levels_1_eps_relative_threshold 1e+1 -pc_hpddm_levels_1_st_share_sub_ksp -pc_hpddm_levels_1_eps_mat_type shell
+      test:
+        suffix: harmonic_overlap_2
+        output_file: output/ex76_geneo_share.out
+        filter: sed -e "s/Linear solve converged due to CONVERGED_RTOL iterations 8/Linear solve converged due to CONVERGED_RTOL iterations 15/g"
+        args: -pc_hpddm_harmonic_overlap 2 -pc_hpddm_levels_1_svd_nsv 30 -pc_hpddm_levels_1_svd_relative_threshold 1e-1 -pc_hpddm_levels_1_st_share_sub_ksp -mat_type sbaij
 
    testset:
       requires: hpddm slepc datafilespath double !complex !defined(PETSC_USE_64BIT_INDICES) defined(PETSC_HAVE_DYNAMIC_LIBRARIES) defined(PETSC_USE_SHARED_LIBRARIES)
@@ -303,7 +369,7 @@ int main(int argc, char **args)
         suffix: geneo_share_lu_matstructure
         output_file: output/ex76_geneo_share.out
         # extra -pc_factor_mat_solver_type mumps needed to avoid failures with PETSc LU
-        args: -pc_hpddm_levels_1_sub_pc_type lu -mat_type aij -pc_hpddm_levels_1_sub_pc_factor_mat_solver_type mumps -pc_hpddm_levels_1_st_share_sub_ksp -pc_hpddm_levels_1_st_matstructure {{same different}shared output} -pc_hpddm_levels_1_st_pc_type lu -pc_hpddm_levels_1_st_pc_factor_mat_solver_type mumps -successive_solves
+        args: -pc_hpddm_levels_1_sub_pc_type lu -mat_type aij -pc_hpddm_levels_1_sub_pc_factor_mat_solver_type mumps -pc_hpddm_levels_1_st_share_sub_ksp -pc_hpddm_levels_1_st_matstructure {{same different}shared output} -pc_hpddm_levels_1_st_pc_type lu -pc_hpddm_levels_1_st_pc_factor_mat_solver_type mumps -successive_solves -pc_hpddm_levels_1_eps_target 1e-5
       test:
         suffix: geneo_share_not_asm
         output_file: output/ex76_geneo_pc_hpddm_levels_1_eps_nev-5.out
@@ -349,7 +415,7 @@ int main(int argc, char **args)
       test:
         suffix: geneo_mumps_use_omp_threads_2
         output_file: output/ex76_geneo_mumps_use_omp_threads.out
-        args: -pc_hpddm_coarse_mat_type aij -pc_hpddm_levels_1_eps_threshold 0.3 -pc_hpddm_coarse_pc_type cholesky -pc_hpddm_coarse_mat_chop 1e-12
+        args: -pc_hpddm_coarse_mat_type aij -pc_hpddm_levels_1_eps_threshold 0.3 -pc_hpddm_coarse_pc_type cholesky -pc_hpddm_coarse_mat_filter 1e-12
 
    testset: # converge really poorly because of a tiny -pc_hpddm_levels_1_eps_threshold, but needed for proper code coverage where some subdomains don't call EPSSolve()
       requires: hpddm slepc datafilespath double !complex !defined(PETSC_USE_64BIT_INDICES) defined(PETSC_HAVE_DYNAMIC_LIBRARIES) defined(PETSC_USE_SHARED_LIBRARIES)

@@ -361,7 +361,7 @@ static PetscErrorCode PetscDrawStringVertical_Win32(PetscDraw draw, PetscReal x,
   r.right  = x1 + 1;
   r.top    = yone - 30;
 
-  logfont.lfEscapement     = 2700; /* Causes verticle text drawing */
+  logfont.lfEscapement     = 2700; /* Causes vertical text drawing */
   logfont.lfHeight         = windraw->stringheight;
   logfont.lfWidth          = windraw->stringwidth;
   logfont.lfOrientation    = 0;
@@ -514,64 +514,6 @@ static PetscErrorCode PetscDrawSetVisible_Win32(PetscDraw draw, PetscBool visibl
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-void PopMessageLoopThread_Win32(PetscDraw popdraw)
-{
-  PetscDraw_Win32 *pop = (PetscDraw_Win32 *)popdraw->data;
-  MSG              msg;
-  HWND             hWnd           = NULL;
-  const char       PopClassName[] = "PETSc Window Pop Class";
-  RECT             r;
-  int              width, height;
-  WNDCLASSEX       myclass;
-  LPVOID           lpMsgBuf;
-
-  PetscFunctionBegin;
-  /* initialize window class parameters */
-  myclass.cbSize        = sizeof(WNDCLASSEX);
-  myclass.style         = CS_OWNDC;
-  myclass.lpfnWndProc   = (WNDPROC)PetscWndProc;
-  myclass.cbClsExtra    = 0;
-  myclass.cbWndExtra    = 0;
-  myclass.hInstance     = NULL;
-  myclass.hIcon         = NULL;
-  myclass.hCursor       = LoadCursor(NULL, IDC_ARROW);
-  myclass.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
-  myclass.lpszMenuName  = NULL;
-  myclass.lpszClassName = PopClassName;
-  myclass.hIconSm       = NULL;
-
-  RegisterClassEx(&myclass);
-
-  SetRect(&r, 0, 0, 450, 450);
-
-  width  = (r.right - r.left) / 3;
-  height = (r.bottom - r.top) / 3;
-
-  hWnd   = CreateWindowEx(0, PopClassName, NULL, WS_POPUPWINDOW | WS_CAPTION, 0, 0, width, height, NULL, NULL, hInst, NULL);
-  pop->x = 0;
-  pop->y = 0;
-  pop->w = width;
-  pop->h = height;
-
-  if (!hWnd) {
-    lpMsgBuf = (LPVOID) "Window Not Successfully Created";
-    MessageBox(NULL, (LPCTSTR)lpMsgBuf, "Error", MB_OK | MB_ICONINFORMATION);
-    LocalFree(lpMsgBuf);
-    exit(0);
-  }
-  pop->hWnd = hWnd;
-  /* display and update new popup window */
-  ShowWindow(pop->hWnd, SW_SHOWNORMAL);
-  UpdateWindow(pop->hWnd);
-  SetEvent(pop->hReadyEvent);
-
-  while (GetMessage(&msg, pop->hWnd, 0, 0)) {
-    TranslateMessage(&msg);
-    DispatchMessage(&msg);
-  }
-  PetscFunctionReturnVoid();
-}
-
 static PetscErrorCode PetscDrawDestroy_Win32(PetscDraw draw)
 {
   PetscDraw_Win32 *windraw = (PetscDraw_Win32 *)draw->data;
@@ -582,7 +524,7 @@ static PetscErrorCode PetscDrawDestroy_Win32(PetscDraw draw)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-void MessageLoopThread_Win32(PetscDraw draw)
+static void MessageLoopThread_Win32(PetscDraw draw)
 {
   PetscDraw_Win32 *windraw = (PetscDraw_Win32 *)draw->data;
   MSG              msg;
@@ -658,7 +600,7 @@ PETSC_EXTERN PetscErrorCode PetscDrawCreate_Win32(PetscDraw draw)
 
   /* the following is temporary fix for initializing a global datastructure */
   if (!g_hWindowListMutex) g_hWindowListMutex = CreateMutex(NULL, FALSE, NULL);
-  PetscCall(PetscMemcpy(draw->ops, &DvOps, sizeof(DvOps)));
+  draw->ops[0] = DvOps;
 
   windraw->hReadyEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
   /* makes call to MessageLoopThread to creat window and attach a thread */

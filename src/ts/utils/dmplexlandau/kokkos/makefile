@@ -1,4 +1,4 @@
-#requirespackage 'PETSC_HAVE_KOKKOS_KERNELS'
+#requirespackage 'PETSC_HAVE_KOKKOS'
 -include ../../../../../petscdir.mk
 
 LIBBASE  = libpetscts

@@ -1,13 +1,19 @@
-.. _chapter_tao:
+.. _ch_tao:
 
 TAO: Optimization Solvers
 =========================
 
 The Toolkit for Advanced Optimization (TAO) focuses on algorithms for the
 solution of large-scale optimization problems on high-performance
-architectures.  Methods are available for unconstrained, bound-constrained and
-generally constrained optimization, nonlinear least squares problems,
-variational inequalities and complementarity constraints.
+architectures.  Methods are available for
+
+- :any:`sec_tao_leastsquares`
+- :any:`sec_tao_quadratic`
+- :any:`sec_tao_unconstrained`
+- :any:`sec_tao_bound`
+- :any:`sec_tao_constrained`
+- :any:`sec_tao_complementary`
+- :any:`sec_tao_pde_constrained`
 
 .. _sec_tao_getting_started:
 
@@ -28,7 +34,7 @@ defined by
 where :math:`n = 2m` is the number of variables. Note that while we use
 the C language to introduce the TAO software, the package is fully
 usable from C++ and Fortran.
-:any:`chapter_fortran` discusses additional
+:any:`ch_fortran` discusses additional
 issues concerning Fortran usage.
 
 The code in :any:`the example <tao-example1>` contains many of
@@ -72,12 +78,8 @@ is shown below.
       TaoCreate(MPI_Comm comm, Tao *tao);
       TaoSetType(Tao tao, TaoType type);
       TaoSetSolution(Tao tao, Vec x);
-      TaoSetObjectiveAndGradient(Tao tao, Vec g,
-           PetscErrorCode (*FormFGradient)(Tao,Vec,PetscReal*,Vec,void*),
-           void *user);
-      TaoSetHessian(Tao tao, Mat H, Mat Hpre,
-           PetscErrorCode (*FormHessian)(Tao,Vec,Mat,Mat,
-           void*), void *user);
+      TaoSetObjectiveAndGradient(Tao tao, Vec g, PetscErrorCode (*FormFGradient)(Tao, Vec, PetscReal*, Vec, void*), void *user);
+      TaoSetHessian(Tao tao, Mat H, Mat Hpre, PetscErrorCode (*FormHessian)(Tao, Vec, Mat, Mat, void*), void *user);
       TaoSolve(Tao tao);
       TaoDestroy(Tao tao);
 
@@ -235,7 +237,7 @@ application objects will never access this structure, so the application
 developer has complete freedom to define it. If no such structure or
 needed by the application then a NULL pointer can be used.
 
-.. _sec_fghj:
+.. _sec_tao_fghj:
 
 Objective Function and Gradient Routines
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -432,7 +434,7 @@ are provided in the :doc:`/manual/index`.
   Tao use of PETSc and callbacks
 
 
-.. _sec_bounds:
+.. _sec_tao_bounds:
 
 Constraints
 ^^^^^^^^^^^
@@ -537,7 +539,7 @@ Once the application and solver have been set up, the solver can be
 
 routine. We discuss several universal options below.
 
-.. _sec_customize:
+.. _sec_tao_customize:
 
 Convergence
 ^^^^^^^^^^^
@@ -634,6 +636,8 @@ Special Problem structures
 
 Certain special classes of problems solved with TAO utilize specialized
 code interfaces that are described below per problem type.
+
+.. _sec_tao_pde_constrained:
 
 PDE-constrained Optimization
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -742,7 +746,7 @@ function pointer, and the sixth argument is an optional user-defined
 context. Since no solve is performed with the design Jacobian, there is
 no need to provide preconditioner or inverse matrices.
 
-.. _sec_evalsof:
+.. _sec_tao_evalsof:
 
 Nonlinear Least Squares
 ^^^^^^^^^^^^^^^^^^^^^^^
@@ -780,6 +784,8 @@ and set with the
       TaoSetJacobianResidualRoutine(Tao, PetscErrorCode (*)(Tao,Vec,Mat,void*), void *);
 
 routine.
+
+.. _sec_tao_complementary:
 
 Complementarity
 ^^^^^^^^^^^^^^^
@@ -1268,7 +1274,7 @@ method. The method for initializing the trust-region radius is set with
 the command line argument
 ``-tao_nls_init_type <constant,direction,interpolation>``;
 ``interpolation``, which chooses an initial value based on the
-interpolation scheme found in :cite:`CGT`, is the default.
+interpolation scheme found in :cite:`cgt`, is the default.
 This scheme performs a number of function and gradient evaluations to
 determine a radius such that the reduction predicted by the quadratic
 model along the gradient direction coincides with the actual reduction
@@ -1515,7 +1521,7 @@ The method for computing an initial trust-region radius is set with the
 command line arguments
 ``-tao_ntr_init_type <constant,direction,interpolation>``;
 ``interpolation``, which chooses an initial value based on the
-interpolation scheme found in :cite:`CGT`, is the default.
+interpolation scheme found in :cite:`cgt`, is the default.
 This scheme performs a number of function and gradient evaluations to
 determine a radius such that the reduction predicted by the quadratic
 model along the gradient direction coincides with the actual reduction
@@ -1639,7 +1645,7 @@ should be performed simultaneously when using this algorithm.
 
 Five variations are currently supported by the TAO implementation: the
 Fletcher-Reeves method, the Polak-Ribiére method, the Polak-Ribiére-Plus
-method :cite:`NW99`, the Hestenes-Stiefel method, and the
+method :cite:`nw99`, the Hestenes-Stiefel method, and the
 Dai-Yuan method. These conjugate gradient methods can be specified by
 using the command line argument ``-tao_cg_type <fr,pr,prp,hs,dy>``,
 respectively. The default value is ``prp``.
@@ -1744,7 +1750,7 @@ operations used by all bound constrained algorithms.
       \end{array}
       \right.
 
-.. _sec_bnk:
+.. _sec_tao_bnk:
 
 Bounded Newton-Krylov Methods
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -1817,7 +1823,7 @@ in the BNCG solver. However, it may be useful for certain types of
 problems where the Hessian evaluation is disproportionately more
 expensive than the objective function or its gradient.
 
-.. _sec_bnls:
+.. _sec_tao_bnls:
 
 Bounded Newton Line Search (BNLS)
 """""""""""""""""""""""""""""""""
@@ -1835,7 +1841,7 @@ trust-region conjugate gradient method is used for the Hessian
 inversion, the trust radius is modified based on the line search step
 length.
 
-.. _sec_bntr:
+.. _sec_tao_bntr:
 
 Bounded Newton Trust Region (BNTR)
 """"""""""""""""""""""""""""""""""
@@ -1847,7 +1853,7 @@ The reduction check features a safeguard for numerical values below
 machine epsilon, scaled by the latest function value, where the full
 Newton step is accepted without modification.
 
-.. _sec_bntl:
+.. _sec_tao_bntl:
 
 Bounded Newton Trust Region with Line Search (BNTL)
 """""""""""""""""""""""""""""""""""""""""""""""""""
@@ -1859,7 +1865,7 @@ find a viable step length for the Newton step, it falls back onto a
 scaled gradient or a gradient descent step. The trust radius is then
 modified based on the line search step length.
 
-.. _sec_bqnls:
+.. _sec_tao_bqnls:
 
 Bounded Quasi-Newton Line Search (BQNLS)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -1871,7 +1877,7 @@ solution, and therefore the quasi-Newton method chosen must guarantee a
 positive-definite Hessian approximation. This algorithm is available via
 ``tao_type bqnls``.
 
-.. _sec_bqnk:
+.. _sec_tao_bqnk:
 
 Bounded Quasi-Newton-Krylov
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -1895,7 +1901,7 @@ three forms separated by the globalization technique: line search
 fall-back (BQNKTL). These algorithms are available via
 ``tao_type <bqnkls, bqnktr, bqnktl>``.
 
-.. _sec_bncg:
+.. _sec_tao_bncg:
 
 Bounded Nonlinear Conjugate Gradient (BNCG)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -1967,7 +1973,7 @@ user-defined ``Mat`` object that serves as a preconditioner. For an
 example of similar usage, see ``tao/tutorials/ex3.c``.
 
 The active set estimation uses the Bertsekas-based method described in
-:any:`sec_bnk`, which can be deactivated using
+:any:`sec_tao_bnk`, which can be deactivated using
 ``-tao_bncg_as_type none``, in which case the algorithm will use the
 current iterate to determine the bounded variables with no tolerances
 and no look-ahead step. As in the BNK algorithm, the initial bound
@@ -1990,6 +1996,8 @@ descent step. The flag is ``-tao_bncg_dynamic_restart``, disabled by
 default since the CG solver usually does better in those cases anyway.
 The minimum number of quadratic-like steps before a restart is set using
 ``-tao_bncg_min_quad`` and is 6 by default.
+
+.. _sec_tao_constrained:
 
 Generally Constrained Solvers
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -2207,7 +2215,7 @@ function and PDE constraints have been discretized so that we can treat
 the optimization problem as finite dimensional and
 :math:`\nabla_u g(u,v)` is invertible for all :math:`u` and :math:`v`.
 
-.. _sec_lcl:
+.. _sec_tao_lcl:
 
 Linearly-Constrained Augmented Lagrangian Method (LCL)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -2398,7 +2406,7 @@ limited-memory quasi-Newton approximation to the reduced Hessian matrix
 used in the next iteration of the code. The update is skipped if it
 cannot be performed.
 
-.. _sec_leastsquares:
+.. _sec_tao_leastsquares:
 
 Nonlinear Least-Squares
 ~~~~~~~~~~~~~~~~~~~~~~~
@@ -2414,7 +2422,7 @@ least-squares problem minimizes
 The nonlinear equations :math:`F` should be specified with the function
 ``TaoSetResidual()``.
 
-.. _sec_pounders:
+.. _sec_tao_pounders:
 
 Bound-constrained Regularized Gauss-Newton (BRGN)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -2480,10 +2488,10 @@ One algorithm for solving the least squares problem
 :math:`F` is unavailable is the model-based POUNDERS (Practical
 Optimization Using No Derivatives for sums of Squares) algorithm
 (``tao_pounders``). POUNDERS employs a derivative-free trust-region
-framework as described in :cite:`Dfobook` in order to
+framework as described in :cite:`dfobook` in order to
 converge to local minimizers. An example of this version of POUNDERS
 applied to a practical least-squares problem can be found in
-:cite:`UNEDF0`.
+:cite:`unedf0`.
 
 Derivative-Free Trust-Region Algorithm
 """"""""""""""""""""""""""""""""""""""
@@ -2508,7 +2516,7 @@ trust-region subproblem
 where :math:`\Delta_k` is the current trust-region radius. By default we
 use a trust-region norm with :math:`p=\infty` and solve
 (:eq:`eq_poundersp`) with the BLMVM method described in
-:any:`sec_blmvm`. While the subproblem is a
+:any:`sec_tao_blmvm`. While the subproblem is a
 bound-constrained quadratic program, it may not be convex and the BQPIP
 and GPCG methods may not solve the subproblem. Therefore, a bounded
 Newton-Krylov Method should be used; the default is the BNTR
@@ -2635,8 +2643,8 @@ command line or PETSc options file:
 Additionally, the user provides an initial solution vector, a vector for
 storing the separable objective function, and a routine for evaluating
 the residual vector :math:`F`. These are described in detail in
-:any:`sec_fghj` and
-:any:`sec_evalsof`. Here we remark that because gradient
+:any:`sec_tao_fghj` and
+:any:`sec_tao_evalsof`. Here we remark that because gradient
 information is not available for scaling purposes, it can be useful to
 ensure that the problem is reasonably well scaled. A simple way to do so
 is to rescale the decision variables :math:`x` so that their typical
@@ -2653,7 +2661,7 @@ reasonable approximation of the gradient of the objective. In practice,
 the typical grounds for termination for expensive derivative-free
 problems is the maximum number of function evaluations allowed.
 
-.. _sec_complementarity:
+.. _sec_tao_complementarity:
 
 Complementarity
 ~~~~~~~~~~~~~~~
@@ -2770,7 +2778,7 @@ direction. A standard Armijo search
 iteration. Nonmonotone searches
 :cite:`grippo.lampariello.ea:nonmonotone` are also available
 by setting appropriate runtime options. See
-:any:`sec_taolinesearch` for further details.
+:any:`sec_tao_linesearch` for further details.
 
 The first semismooth algorithm available in TAO is not guaranteed to
 remain feasible with respect to the bounds, :math:`[\ell, u]`, and is
@@ -2822,6 +2830,8 @@ An alternative is to remain feasible with respect to the bounds by using
 a projected Armijo line search. This method can be specified by using
 the ``tao_asfls`` solver.
 
+.. _sec_tao_quadratic:
+
 Quadratic Solvers
 ~~~~~~~~~~~~~~~~~
 
@@ -2840,7 +2850,7 @@ Gradient Projection Conjugate Gradient Method (GPCG)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The GPCG :cite:`more-toraldo` algorithm is much like the
-TRON algorithm, discussed in Section :any:`sec_tron`, except that
+TRON algorithm, discussed in Section :any:`sec_tao_tron`, except that
 it assumes that the objective function is quadratic and convex.
 Therefore, it evaluates the function, gradient, and Hessian only once.
 Since the objective function is quadratic, the algorithm does not use a
@@ -2848,7 +2858,7 @@ trust region. All the options that apply to TRON except for trust-region
 options also apply to GPCG. It can be set by using the TAO solver
 ``tao_gpcg`` or via the optio flag ``-tao_type gpcg``.
 
-.. _sec_bqpip:
+.. _sec_tao_bqpip:
 
 Interior-Point Newton’s Method (BQPIP)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -2887,7 +2897,7 @@ function, :math:`\lambda` is a positive weight parameter, and
 :math:`\sum_i |x_i|`. The algorithm only requires evaluating the value
 of :math:`f` and its gradient.
 
-.. _sec_tron:
+.. _sec_tao_tron:
 
 Trust-Region Newton Method (TRON)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -2916,7 +2926,7 @@ performance.
 This algorithm will be deprecated in the next version in favor of the
 Bounded Newton Trust Region (BNTR) algorithm.
 
-.. _sec_blmvm:
+.. _sec_tao_blmvm:
 
 Bound-constrained Limited-Memory Variable-Metric Method (BLMVM)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -2939,7 +2949,7 @@ This section discusses options and routines that apply to most TAO
 solvers and problem classes. In particular, we focus on linear solvers,
 convergence tests, and line searches.
 
-.. _sec_taolinearsolvers:
+.. _sec_tao_linearsolvers:
 
 Linear Solvers
 ~~~~~~~~~~~~~~
@@ -2978,13 +2988,13 @@ iteration of the optimization solver. Hence, the user can employ this
 routine for any application-specific computations that should be done
 after the solution update.
 
-.. _sec_taoconvergence:
+.. _sec_tao_convergence:
 
 Convergence Tests
 ~~~~~~~~~~~~~~~~~
 
 Convergence of a solver can be defined in many ways. The methods TAO
-uses by default are mentioned in :any:`sec_customize`.
+uses by default are mentioned in :any:`sec_tao_customize`.
 These methods include absolute and relative convergence tolerances as
 well as a maximum number of iterations of function evaluations. If these
 choices are not sufficient, the user can specify a customized test
@@ -3016,7 +3026,7 @@ be set by using the routine
 
       TaoSetConvergedReason(Tao, TaoConvergedReason);
 
-.. _sec_taolinesearch:
+.. _sec_tao_linesearch:
 
 Line Searches
 ~~~~~~~~~~~~~
@@ -3045,7 +3055,7 @@ One should run a TAO program with the option ``-help`` for details.
 Users may write their own customized line search codes by modeling them
 after one of the defaults provided.
 
-.. _sec_taorecyclehistory:
+.. _sec_tao_recyclehistory:
 
 Recycling History
 ~~~~~~~~~~~~~~~~~
@@ -3281,7 +3291,7 @@ provides several line searches and support for using them. The routine
 passes the current solution, gradient, and objective value to the line
 search and returns a new solution, gradient, and objective value. More
 details on line searches can be found in
-:any:`sec_taolinesearch`. The details of the
+:any:`sec_tao_linesearch`. The details of the
 line search applied are specified elsewhere, when the line search is
 created.
 

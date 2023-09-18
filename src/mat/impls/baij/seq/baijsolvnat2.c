@@ -1,6 +1,10 @@
 #include <../src/mat/impls/baij/seq/baij.h>
 #include <petsc/private/kernels/blockinvert.h>
 
+#if defined(PETSC_HAVE_XMMINTRIN_H)
+  #include <xmmintrin.h>
+#endif
+
 /*
       Special case where the matrix was ILU(0) factored in the natural
    ordering. This eliminates the need for the column and row permutation.

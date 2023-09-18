@@ -102,6 +102,11 @@ int main(int argc, char **argv)
 /*TEST
 
   test:
+    suffix: seg_periodic_0
+    args: -dm_plex_dim 1 -dm_plex_box_faces 3 -dm_plex_transform_extrude_periodic -dm_plex_transform_extrude_use_tensor 0 \
+          -dm_view -adapt_dm_view -dm_plex_check_all
+
+  test:
     suffix: tri_tensor_0
     requires: triangle
     args: -dm_plex_transform_extrude_use_tensor {{0 1}separate output} \
@@ -125,6 +130,16 @@ int main(int argc, char **argv)
   test:
     suffix: quad_symmetric_0
     args: -dm_plex_simplex 0 -dm_plex_transform_extrude_symmetric \
+          -dm_view -adapt_dm_view -dm_plex_check_all
+
+  test:
+    suffix: quad_label
+    args: -dm_plex_simplex 0 -dm_plex_transform_label_replica_inc {{0 100}separate output} \
+          -dm_view -adapt_dm_view -dm_plex_check_all
+
+  test:
+    suffix: quad_periodic_0
+    args: -dm_plex_simplex 0 -dm_plex_transform_extrude_periodic -dm_plex_transform_extrude_use_tensor 0 \
           -dm_view -adapt_dm_view -dm_plex_check_all
 
   testset:

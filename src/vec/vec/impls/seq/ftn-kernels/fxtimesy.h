@@ -1,6 +1,4 @@
-
-#ifndef __FMAXPY_H
-#define __FMAXPY_H
+#pragma once
 
 #include <petscsys.h>
 #if defined(PETSC_USE_FORTRAN_KERNEL_MAXPY)
@@ -10,5 +8,4 @@
     #define fortranxtimesy_ fortranxtimesy
   #endif
 PETSC_EXTERN void fortranxtimesy_(const void *, const void *, void *, const PetscInt *);
-#endif
 #endif

@@ -1,8 +1,7 @@
 /*
     User interface for the nonlinear solvers package.
 */
-#ifndef PETSCSNES_H
-#define PETSCSNES_H
+#pragma once
 
 #include <petscksp.h>
 #include <petscdmtypes.h>
@@ -12,20 +11,20 @@
 /* SUBMANSEC = SNES */
 
 /*S
-     SNES - Abstract PETSc object that manages all nonlinear solves
+     SNES - Abstract PETSc object that manages nonlinear solves
 
    Level: beginner
 
-.seealso: [](chapter_snes), `SNESCreate()`, `SNESSetType()`, `SNESType`, `TS`, `SNES`, `KSP`, `PC`, `SNESDestroy()`
+.seealso: [](doc_nonlinsolve), [](ch_snes), `SNESCreate()`, `SNESSetType()`, `SNESType`, `TS`, `SNES`, `KSP`, `PC`, `SNESDestroy()`
 S*/
 typedef struct _p_SNES *SNES;
 
 /*J
-    SNESType - String with the name of a PETSc SNES method.
+    SNESType - String with the name of a PETSc `SNES` method.
 
    Level: beginner
 
-.seealso: [](chapter_snes), `SNESSetType()`, `SNES`, `SNESCreate()`, `SNESDestroy()`, `SNESSetFromOptions()`
+.seealso: [](doc_nonlinsolve), [](ch_snes), `SNESSetType()`, `SNES`, `SNESCreate()`, `SNESDestroy()`, `SNESSetFromOptions()`
 J*/
 typedef const char *SNESType;
 #define SNESNEWTONLS         "newtonls"
@@ -55,6 +54,7 @@ PETSC_EXTERN PetscClassId SNES_CLASSID;
 PETSC_EXTERN PetscClassId DMSNES_CLASSID;
 
 PETSC_EXTERN PetscErrorCode SNESInitializePackage(void);
+PETSC_EXTERN PetscErrorCode SNESFinalizePackage(void);
 
 PETSC_EXTERN PetscErrorCode SNESCreate(MPI_Comm, SNES *);
 PETSC_EXTERN PetscErrorCode SNESReset(SNES);
@@ -73,6 +73,7 @@ PETSC_EXTERN PetscErrorCode SNESSetUp(SNES);
 PETSC_EXTERN PetscErrorCode SNESSolve(SNES, Vec, Vec);
 PETSC_EXTERN PetscErrorCode SNESSetErrorIfNotConverged(SNES, PetscBool);
 PETSC_EXTERN PetscErrorCode SNESGetErrorIfNotConverged(SNES, PetscBool *);
+PETSC_EXTERN PetscErrorCode SNESConverged(SNES, PetscInt, PetscReal, PetscReal, PetscReal);
 
 PETSC_EXTERN PetscErrorCode SNESSetWorkVecs(SNES, PetscInt);
 
@@ -96,11 +97,11 @@ PETSC_EXTERN PetscErrorCode SNESConvergedReasonView(SNES, PetscViewer);
 PETSC_EXTERN PetscErrorCode SNESConvergedReasonViewFromOptions(SNES);
 PETSC_EXTERN PetscErrorCode SNESConvergedReasonViewCancel(SNES);
 
-PETSC_DEPRECATED_FUNCTION("Use SNESConvergedReasonView() (since version 3.14)") static inline PetscErrorCode SNESReasonView(SNES snes, PetscViewer v)
+PETSC_DEPRECATED_FUNCTION(3, 14, 0, "SNESConvergedReasonView()", ) static inline PetscErrorCode SNESReasonView(SNES snes, PetscViewer v)
 {
   return SNESConvergedReasonView(snes, v);
 }
-PETSC_DEPRECATED_FUNCTION("Use SNESConvergedReasonViewFromOptions() (since version 3.14)") static inline PetscErrorCode SNESReasonViewFromOptions(SNES snes)
+PETSC_DEPRECATED_FUNCTION(3, 14, 0, "SNESConvergedReasonViewFromOptions()", ) static inline PetscErrorCode SNESReasonViewFromOptions(SNES snes)
 {
   return SNESConvergedReasonViewFromOptions(snes);
 }
@@ -154,12 +155,14 @@ PETSC_EXTERN PetscErrorCode SNESSetIterationNumber(SNES, PetscInt);
 /*E
     SNESNewtonTRFallbackType - type of fallback in case the solution of the trust-region subproblem is outside of the radius
 
-   Level: intermediate
-
    Values:
 +  `SNES_TR_FALLBACK_NEWTON` - use scaled Newton step
 .  `SNES_TR_FALLBACK_CAUCHY` - use Cauchy direction
 -  `SNES_TR_FALLBACK_DOGLEG` - use dogleg method
+
+   Level: intermediate
+
+.seealso: [](ch_snes), `SNES`, `SNESNEWTONTR`, `SNESNEWTONTRDC`
 E*/
 typedef enum {
   SNES_TR_FALLBACK_NEWTON,
@@ -226,11 +229,9 @@ PETSC_EXTERN PetscErrorCode SNESSetJacobianDomainError(SNES);
 PETSC_EXTERN PetscErrorCode SNESSetCheckJacobianDomainError(SNES, PetscBool);
 PETSC_EXTERN PetscErrorCode SNESGetCheckJacobianDomainError(SNES, PetscBool *);
 
-#define SNES_CONVERGED_TR_DELTA_DEPRECATED SNES_CONVERGED_TR_DELTA PETSC_DEPRECATED_ENUM("Use SNES_DIVERGED_TR_DELTA (since version 3.12)")
+#define SNES_CONVERGED_TR_DELTA_DEPRECATED SNES_CONVERGED_TR_DELTA PETSC_DEPRECATED_ENUM(3, 12, 0, "SNES_DIVERGED_TR_DELTA", )
 /*E
     SNESConvergedReason - reason a `SNESSolve()` was determined to have converged or diverged
-
-   Level: beginner
 
    Values:
 +  `SNES_CONVERGED_FNORM_ABS` - 2-norm(F) <= abstol
@@ -244,6 +245,8 @@ PETSC_EXTERN PetscErrorCode SNESGetCheckJacobianDomainError(SNES, PetscBool *);
 .  `SNES_DIVERGED_LINE_SEARCH` - The line search has failed. This only occurs for `SNES` solvers that use a line search
 .  `SNES_DIVERGED_LOCAL_MIN` - the algorithm seems to have stagnated at a local minimum that is not zero.
 -  `SNES_CONERGED_ITERATING` - this only occurs if `SNESGetConvergedReason()` is called during the `SNESSolve()`
+
+   Level: beginner
 
     Notes:
    The two most common reasons for divergence are an incorrectly coded or computed Jacobian or failure or lack of convergence in the linear system (in this case we recommend
@@ -277,7 +280,7 @@ PETSC_EXTERN PetscErrorCode SNESGetCheckJacobianDomainError(SNES, PetscBool *);
    convergence criteria. `SNES_CONVERGED_ITS` means that `SNESConvergedSkip()` was chosen as the convergence test;
    thus the usual convergence criteria have not been checked and may or may not be satisfied.
 
-.seealso: [](chapter_snes), `SNES`, `SNESSolve()`, `SNESGetConvergedReason()`, `KSPConvergedReason`, `SNESSetConvergenceTest()`, `SNESSetTolerances()`
+.seealso: [](ch_snes), `SNES`, `SNESSolve()`, `SNESGetConvergedReason()`, `KSPConvergedReason`, `SNESSetConvergenceTest()`, `SNESSetTolerances()`
 E*/
 typedef enum {                       /* converged */
   SNES_CONVERGED_FNORM_ABS      = 2, /* ||F|| < atol */
@@ -309,7 +312,7 @@ PETSC_EXTERN const char *const *SNESConvergedReasons;
 
    Level: beginner
 
-.seealso: [](chapter_snes), `SNES`, `SNESSolve()`, `SNESGetConvergedReason()`, `SNESConvergedReason`, `SNESSetTolerances()`
+.seealso: [](ch_snes), `SNES`, `SNESSolve()`, `SNESGetConvergedReason()`, `SNESConvergedReason`, `SNESSetTolerances()`
 M*/
 
 /*MC
@@ -317,7 +320,7 @@ M*/
 
    Level: beginner
 
-.seealso: [](chapter_snes), `SNES`, `SNESSolve()`, `SNESGetConvergedReason()`, `SNESConvergedReason`, `SNESSetTolerances()`
+.seealso: [](ch_snes), `SNES`, `SNESSolve()`, `SNESGetConvergedReason()`, `SNESConvergedReason`, `SNESSetTolerances()`
 M*/
 
 /*MC
@@ -329,7 +332,7 @@ M*/
 
    Level: beginner
 
-.seealso: [](chapter_snes), `SNES`, `SNESSolve()`, `SNESGetConvergedReason()`, `SNESConvergedReason`, `SNESSetTolerances()`
+.seealso: [](ch_snes), `SNES`, `SNESSolve()`, `SNESGetConvergedReason()`, `SNESConvergedReason`, `SNESSetTolerances()`
 M*/
 
 /*MC
@@ -338,7 +341,7 @@ M*/
 
    Level: beginner
 
-.seealso: [](chapter_snes), `SNES`, `SNESSolve()`, `SNESGetConvergedReason()`, `SNESConvergedReason`, `SNESSetTolerances()`
+.seealso: [](ch_snes), `SNES`, `SNESSolve()`, `SNESGetConvergedReason()`, `SNESConvergedReason`, `SNESSetTolerances()`
 M*/
 
 /*MC
@@ -346,7 +349,7 @@ M*/
 
    Level: beginner
 
-.seealso: [](chapter_snes), `SNES`, `SNESSolve()`, `SNESGetConvergedReason()`, `SNESConvergedReason`, `SNESSetTolerances()`, `SNESSetDivergenceTolerance()`
+.seealso: [](ch_snes), `SNES`, `SNESSolve()`, `SNESGetConvergedReason()`, `SNESConvergedReason`, `SNESSetTolerances()`, `SNESSetDivergenceTolerance()`
 M*/
 
 /*MC
@@ -355,7 +358,7 @@ M*/
 
    Level: beginner
 
-.seealso: [](chapter_snes), `SNES`, `SNESSolve()`, `SNESGetConvergedReason()`, `SNESConvergedReason`, `SNESSetTolerances()`
+.seealso: [](ch_snes), `SNES`, `SNESSolve()`, `SNESGetConvergedReason()`, `SNESConvergedReason`, `SNESSetTolerances()`
 M*/
 
 /*MC
@@ -363,7 +366,7 @@ M*/
 
    Level: beginner
 
-.seealso: [](chapter_snes), `SNES`, `SNESSolve()`, `SNESGetConvergedReason()`, `SNESConvergedReason`, `SNESSetTolerances()`
+.seealso: [](ch_snes), `SNES`, `SNESSolve()`, `SNESGetConvergedReason()`, `SNESConvergedReason`, `SNESSetTolerances()`
 M*/
 
 /*MC
@@ -371,7 +374,7 @@ M*/
 
    Level: beginner
 
-.seealso: [](chapter_snes), `SNES`, `SNESSolve()`, `SNESGetConvergedReason()`, `SNESConvergedReason`, `SNESSetTolerances()`, `SNESLineSearch`
+.seealso: [](ch_snes), `SNES`, `SNESSolve()`, `SNESGetConvergedReason()`, `SNESConvergedReason`, `SNESSetTolerances()`, `SNESLineSearch`
 M*/
 
 /*MC
@@ -380,7 +383,7 @@ M*/
 
    Level: beginner
 
-.seealso: [](chapter_snes), `SNES`, `SNESSolve()`, `SNESGetConvergedReason()`, `SNESConvergedReason`, `SNESSetTolerances()`
+.seealso: [](ch_snes), `SNES`, `SNESSolve()`, `SNESGetConvergedReason()`, `SNESConvergedReason`, `SNESSetTolerances()`
 M*/
 
 /*MC
@@ -388,7 +391,7 @@ M*/
 
    Level: beginner
 
-.seealso: [](chapter_snes), `SNES`, `SNESSolve()`, `SNESGetConvergedReason()`, `SNESConvergedReason`, `SNESSetTolerances()`
+.seealso: [](ch_snes), `SNES`, `SNESSolve()`, `SNESGetConvergedReason()`, `SNESConvergedReason`, `SNESSetTolerances()`
 M*/
 
 PETSC_EXTERN PetscErrorCode SNESSetConvergenceTest(SNES, PetscErrorCode (*)(SNES, PetscInt, PetscReal, PetscReal, PetscReal, SNESConvergedReason *, void *), void *, PetscErrorCode (*)(void *));
@@ -399,7 +402,7 @@ PETSC_EXTERN PetscErrorCode SNESGetConvergedReason(SNES, SNESConvergedReason *);
 PETSC_EXTERN PetscErrorCode SNESGetConvergedReasonString(SNES, const char **);
 PETSC_EXTERN PetscErrorCode SNESSetConvergedReason(SNES, SNESConvergedReason);
 
-PETSC_DEPRECATED_FUNCTION("Use SNESConvergedSkip() (since version 3.5)") static inline void SNESSkipConverged(void)
+PETSC_DEPRECATED_FUNCTION(3, 5, 0, "SNESConvergedSkip()", ) static inline void SNESSkipConverged(void)
 { /* never called */
 }
 #define SNESSkipConverged (SNESSkipConverged, SNESConvergedSkip)
@@ -429,9 +432,7 @@ PETSC_EXTERN PetscErrorCode SNESGetObjective(SNES, PetscErrorCode (**)(SNES, Vec
 PETSC_EXTERN PetscErrorCode SNESComputeObjective(SNES, Vec, PetscReal *);
 
 /*E
-    SNESNormSchedule - Frequency with which the norm is computed
-
-   Level: advanced
+    SNESNormSchedule - Frequency with which the norm is computed during a nonliner solve
 
    Values:
 +   `SNES_NORM_DEFAULT` - use the default behavior for the current `SNESType`
@@ -440,6 +441,8 @@ PETSC_EXTERN PetscErrorCode SNESComputeObjective(SNES, Vec, PetscReal *);
 .   `SNES_NORM_INITIAL_ONLY` - compute the norm only when the algorithm starts
 .   `SNES_NORM_FINAL_ONLY` - compute the norm only when the algorithm finishes
 -   `SNES_NORM_INITIAL_FINAL_ONLY` - compute the norm at the start and end of the algorithm
+
+   Level: advanced
 
    Notes:
    Support for these is highly dependent on the solver.
@@ -451,7 +454,7 @@ PETSC_EXTERN PetscErrorCode SNESComputeObjective(SNES, Vec, PetscReal *);
    This is primarily used to turn off extra norm and function computation
    when the solvers are composed.
 
-.seealso: [](chapter_snes), `SNES`, `SNESSolve()`, `SNESGetConvergedReason()`, `KSPSetNormType()`,
+.seealso: [](ch_snes), `SNES`, `SNESSolve()`, `SNESGetConvergedReason()`, `KSPSetNormType()`,
           `KSPSetConvergenceTest()`, `KSPSetPCSide()`
 E*/
 typedef enum {
@@ -465,14 +468,14 @@ typedef enum {
 PETSC_EXTERN const char *const *const SNESNormSchedules;
 
 /*MC
-    SNES_NORM_NONE - Don't compute function and its L2 norm.
+    SNES_NORM_NONE - Don't compute function and its L2 norm when possible
 
    Level: advanced
 
     Note:
     This is most useful for stationary solvers with a fixed number of iterations used as smoothers.
 
-.seealso: [](chapter_snes), `SNESNormSchedule`, `SNES`, `SNESSetNormSchedule()`, `SNES_NORM_DEFAULT`
+.seealso: [](ch_snes), `SNESNormSchedule`, `SNES`, `SNESSetNormSchedule()`, `SNES_NORM_DEFAULT`
 M*/
 
 /*MC
@@ -483,7 +486,7 @@ M*/
     Note:
     Most solvers will use this no matter what norm type is passed to them.
 
-.seealso: [](chapter_snes), `SNESNormSchedule`, `SNES`, `SNESSetNormSchedule()`, `SNES_NORM_NONE`
+.seealso: [](ch_snes), `SNESNormSchedule`, `SNES`, `SNESSetNormSchedule()`, `SNES_NORM_NONE`
 M*/
 
 /*MC
@@ -498,7 +501,7 @@ M*/
    For solvers that require the computation of the L2 norm of the function as part of the method, this merely cancels
    the norm computation at the last iteration (if possible).
 
-.seealso: [](chapter_snes), `SNESNormSchedule`, `SNES`, `SNESSetNormSchedule()`, `SNES_NORM_FINAL_ONLY`, `SNES_NORM_INITIAL_FINAL_ONLY`
+.seealso: [](ch_snes), `SNESNormSchedule`, `SNES`, `SNESSetNormSchedule()`, `SNES_NORM_FINAL_ONLY`, `SNES_NORM_INITIAL_FINAL_ONLY`
 M*/
 
 /*MC
@@ -512,7 +515,7 @@ M*/
    used in subsequent computation for methods that do not need the norm computed during the rest of the
    solution procedure.
 
-.seealso: [](chapter_snes), `SNESNormSchedule`, `SNES`, `SNESSetNormSchedule()`, `SNES_NORM_INITIAL_ONLY`, `SNES_NORM_INITIAL_FINAL_ONLY`
+.seealso: [](ch_snes), `SNESNormSchedule`, `SNES`, `SNESSetNormSchedule()`, `SNES_NORM_INITIAL_ONLY`, `SNES_NORM_INITIAL_FINAL_ONLY`
 M*/
 
 /*MC
@@ -523,7 +526,7 @@ M*/
    Note:
    This method combines the benefits of `SNES_NORM_INITIAL_ONLY` and `SNES_NORM_FINAL_ONLY`.
 
-.seealso: [](chapter_snes), `SNESNormSchedule`, `SNES`, `SNESSetNormSchedule()`, `SNES_NORM_SNES_NORM_INITIAL_ONLY`, `SNES_NORM_FINAL_ONLY`
+.seealso: [](ch_snes), `SNESNormSchedule`, `SNES`, `SNESSetNormSchedule()`, `SNES_NORM_SNES_NORM_INITIAL_ONLY`, `SNES_NORM_FINAL_ONLY`
 M*/
 
 PETSC_EXTERN PetscErrorCode SNESSetNormSchedule(SNES, SNESNormSchedule);
@@ -536,17 +539,17 @@ PETSC_EXTERN PetscErrorCode SNESGetSolutionNorm(SNES, PetscReal *);
 /*E
     SNESFunctionType - Type of function computed
 
-   Level: advanced
-
    Values:
 +  `SNES_FUNCTION_DEFAULT` - the default behavior for the current `SNESType`
 .  `SNES_FUNCTION_UNPRECONDITIONED` - the original function provided
 -  `SNES_FUNCTION_PRECONDITIONED` - the modification of the function by the preconditioner
 
+   Level: advanced
+
    Note:
    Support for these is dependent on the solver.
 
-.seealso: [](chapter_snes), `SNES`, `SNESSolve()`, `SNESGetConvergedReason()`, `KSPSetNormType()`,
+.seealso: [](ch_snes), `SNES`, `SNESSolve()`, `SNESGetConvergedReason()`, `KSPSetNormType()`,
           `KSPSetConvergenceTest()`, `KSPSetPCSide()`
 E*/
 typedef enum {
@@ -582,7 +585,7 @@ PETSC_EXTERN PetscErrorCode SNESShellSetSolve(SNES, PetscErrorCode (*)(SNES, Vec
 
    Level: beginner
 
-.seealso: [](chapter_snes), `SNESLineSearchType`, `SNESLineSearchCreate()`, `SNESLineSearchSetType()`, `SNES`
+.seealso: [](ch_snes), `SNESLineSearchType`, `SNESLineSearchCreate()`, `SNESLineSearchSetType()`, `SNES`
 S*/
 typedef struct _p_LineSearch *SNESLineSearch;
 
@@ -591,7 +594,15 @@ typedef struct _p_LineSearch *SNESLineSearch;
 
    Level: beginner
 
-.seealso: [](chapter_snes), `SNESLineSearch`, `SNESLineSearchSetType()`, `SNES`
+   Values:
++  `SNESLINESEARCHBASIC` - (or equivalently `SNESLINESEARCHNONE`) Simple damping line search, defaults to using the full Newton step
+.  `SNESLINESEARCHBT` - Backtracking line search over the L2 norm of the function
+.  `SNESLINESEARCHL2` - Secant line search over the L2 norm of the function
+.  `SNESLINESEARCHCP` - Critical point secant line search assuming F(x) = grad G(x) for some unknown G(x)
+.  `SNESLINESEARCHNLEQERR` - Affine-covariant error-oriented linesearch
+-  `SNESLINESEARCHSHELL` - User provided `SNESLineSearch` implementation
+
+.seealso: [](ch_snes), `SNESLineSearch`, `SNESLineSearchSetType()`, `SNES`
 J*/
 typedef const char *SNESLineSearchType;
 #define SNESLINESEARCHBT        "bt"
@@ -665,8 +676,6 @@ PETSC_EXTERN PetscErrorCode SNESLineSearchSetOrder(SNESLineSearch, PetscInt orde
 /*E
     SNESLineSearchReason - indication if the line search has succeeded or failed and why
 
-   Level: intermediate
-
   Values:
 +  `SNES_LINESEARCH_SUCCEEDED` - the line search succeeded
 .  `SNES_LINESEARCH_FAILED_NANORINF` - a not a number of infinity appeared in the computions
@@ -676,10 +685,12 @@ PETSC_EXTERN PetscErrorCode SNESLineSearchSetOrder(SNESLineSearch, PetscInt orde
 -  `SNES_LINESEARCH_FAILED_FUNCTION` - indicates the maximum number of function evaluations allowed has been surpassed, `SNESConvergedReason` is also
                                      set to `SNES_DIVERGED_FUNCTION_COUNT`
 
+   Level: intermediate
+
    Developer Note:
    Some of these reasons overlap with values of `SNESConvergedReason`
 
-.seealso: [](chapter_snes), `SNES`, `SNESSolve()`, `SNESGetConvergedReason()`, `KSPConvergedReason`, `SNESSetConvergenceTest()`,
+.seealso: [](ch_snes), `SNES`, `SNESSolve()`, `SNESGetConvergedReason()`, `KSPConvergedReason`, `SNESSetConvergenceTest()`,
           `SNESSetFunctionDomainError()` and `SNESSetJacobianDomainError()`
 E*/
 typedef enum {
@@ -706,7 +717,6 @@ PETSC_EXTERN PetscErrorCode SNESLineSearchMonitor(SNESLineSearch);
 PETSC_EXTERN PetscErrorCode SNESLineSearchMonitorSet(SNESLineSearch, PetscErrorCode (*)(SNESLineSearch, void *), void *, PetscErrorCode (*)(void **));
 PETSC_EXTERN PetscErrorCode SNESLineSearchMonitorSetFromOptions(SNESLineSearch, const char[], const char[], const char[], PetscErrorCode (*)(SNESLineSearch, PetscViewerAndFormat *), PetscErrorCode (*)(SNESLineSearch, PetscViewerAndFormat *));
 PETSC_EXTERN PetscErrorCode SNESLineSearchMonitorCancel(SNESLineSearch);
-PETSC_EXTERN PetscErrorCode SNESLineSearchMonitorUpdate(SNESLineSearch, PetscViewerAndFormat *);
 PETSC_EXTERN PetscErrorCode SNESLineSearchSetDefaultMonitor(SNESLineSearch, PetscViewer);
 PETSC_EXTERN PetscErrorCode SNESLineSearchGetDefaultMonitor(SNESLineSearch, PetscViewer *);
 PETSC_EXTERN PetscErrorCode SNESLineSearchMonitorSolutionUpdate(SNESLineSearch, PetscViewerAndFormat *);
@@ -756,13 +766,12 @@ PETSC_EXTERN PetscErrorCode SNESSetNPCSide(SNES, PCSide);
 PETSC_EXTERN PetscErrorCode SNESGetNPCSide(SNES, PCSide *);
 PETSC_EXTERN PetscErrorCode SNESSetLineSearch(SNES, SNESLineSearch);
 PETSC_EXTERN PetscErrorCode SNESGetLineSearch(SNES, SNESLineSearch *);
-PETSC_EXTERN PetscErrorCode SNESRestrictHookAdd(SNES, PetscErrorCode (*)(SNES, SNES, void *), void *);
 
-PETSC_DEPRECATED_FUNCTION("Use SNESGetLineSearch() (since version 3.4)") static inline PetscErrorCode SNESGetSNESLineSearch(SNES snes, SNESLineSearch *ls)
+PETSC_DEPRECATED_FUNCTION(3, 4, 0, "SNESGetLineSearch()", ) static inline PetscErrorCode SNESGetSNESLineSearch(SNES snes, SNESLineSearch *ls)
 {
   return SNESGetLineSearch(snes, ls);
 }
-PETSC_DEPRECATED_FUNCTION("Use SNESSetLineSearch() (since version 3.4)") static inline PetscErrorCode SNESSetSNESLineSearch(SNES snes, SNESLineSearch ls)
+PETSC_DEPRECATED_FUNCTION(3, 4, 0, "SNESSetLineSearch()", ) static inline PetscErrorCode SNESSetSNESLineSearch(SNES snes, SNESLineSearch ls)
 {
   return SNESSetLineSearch(snes, ls);
 }
@@ -812,13 +821,14 @@ PETSC_EXTERN PetscErrorCode SNESMultiblockSetFields(SNES, const char[], PetscInt
 PETSC_EXTERN PetscErrorCode SNESMultiblockSetIS(SNES, const char[], IS);
 PETSC_EXTERN PetscErrorCode SNESMultiblockSetBlockSize(SNES, PetscInt);
 PETSC_EXTERN PetscErrorCode SNESMultiblockSetType(SNES, PCCompositeType);
+PETSC_EXTERN PetscErrorCode SNESMultiblockGetSubSNES(SNES, PetscInt *, SNES *[]);
 
 /*J
     SNESMSType - String with the name of a PETSc `SNESMS` method.
 
    Level: intermediate
 
-.seealso: [](chapter_snes), `SNESMS`, `SNESMSGetType()`, `SNESMSSetType()`, `SNES`
+.seealso: [](ch_snes), `SNESMS`, `SNESMSGetType()`, `SNESMSSetType()`, `SNES`
 J*/
 typedef const char *SNESMSType;
 #define SNESMSM62       "m62"
@@ -832,6 +842,7 @@ typedef const char *SNESMSType;
 #define SNESMSVLTP61    "vltp61"
 
 PETSC_EXTERN PetscErrorCode SNESMSRegister(SNESMSType, PetscInt, PetscInt, PetscReal, const PetscReal[], const PetscReal[], const PetscReal[]);
+PETSC_EXTERN PetscErrorCode SNESMSRegisterAll(void);
 PETSC_EXTERN PetscErrorCode SNESMSGetType(SNES, SNESMSType *);
 PETSC_EXTERN PetscErrorCode SNESMSSetType(SNES, SNESMSType);
 PETSC_EXTERN PetscErrorCode SNESMSGetDamping(SNES, PetscReal *);
@@ -840,8 +851,23 @@ PETSC_EXTERN PetscErrorCode SNESMSFinalizePackage(void);
 PETSC_EXTERN PetscErrorCode SNESMSInitializePackage(void);
 PETSC_EXTERN PetscErrorCode SNESMSRegisterDestroy(void);
 
-/* routines for NGMRES solver */
+/*MC
+   SNESNGMRESRestartType - the restart approach used by `SNESNGMRES`
 
+   Level: intermediate
+
+  Values:
++   `SNES_NGMRES_RESTART_NONE` - never restart
+.   `SNES_NGMRES_RESTART_DIFFERENCE` - restart based upon difference criteria
+-   `SNES_NGMRES_RESTART_PERIODIC` - restart after a fixed number of iterations
+
+  Options Database Keys:
++ -snes_ngmres_restart_type<difference,periodic,none> - set the restart type
+- -snes_ngmres_restart[30]                            - sets the number of iterations before restart for periodic
+
+.seealso: `SNES, `SNESNGMRES`, `SNESNGMRESSetSelectType()`, `SNESNGMRESGetSelectType()`, `SNESNGMRESSetRestartType()`,
+          `SNESNGMRESGetRestartType()`, `SNESNGMRESSelectType`
+M*/
 typedef enum {
   SNES_NGMRES_RESTART_NONE       = 0,
   SNES_NGMRES_RESTART_PERIODIC   = 1,
@@ -849,6 +875,23 @@ typedef enum {
 } SNESNGMRESRestartType;
 PETSC_EXTERN const char *const SNESNGMRESRestartTypes[];
 
+/*MC
+   SNESNGMRESSelectType - the approach used by `SNESNGMRES` to determine how the candidate solution and
+  combined solution are used to create the next iterate.
+
+   Level: intermediate
+
+   Values:
++   `SNES_NGMRES_SELECT_NONE` - choose the combined solution all the time
+.   `SNES_NGMRES_SELECT_DIFFERENCE` - choose based upon the selection criteria
+-   `SNES_NGMRES_SELECT_LINESEARCH` - choose based upon line search combination
+
+  Options Database Key:
+. -snes_ngmres_select_type<difference,none,linesearch> - select type
+
+.seealso: `SNES, `SNESNGMRES`, `SNESNGMRESSetSelectType()`, `SNESNGMRESGetSelectType()`, `SNESNGMRESSetRestartType()`,
+          `SNESNGMRESGetRestartType()`, `SNESNGMRESRestartType`
+M*/
 typedef enum {
   SNES_NGMRES_SELECT_NONE       = 0,
   SNES_NGMRES_SELECT_DIFFERENCE = 1,
@@ -861,8 +904,23 @@ PETSC_EXTERN PetscErrorCode SNESNGMRESSetSelectType(SNES, SNESNGMRESSelectType);
 PETSC_EXTERN PetscErrorCode SNESNGMRESSetRestartFmRise(SNES, PetscBool);
 PETSC_EXTERN PetscErrorCode SNESNGMRESGetRestartFmRise(SNES, PetscBool *);
 
-/* routines for NCG solver */
+/*MC
+   SNESNCGType - the conjugate update approach for `SNESNCG`
 
+   Level: intermediate
+
+   Values:
++   `SNES_NCG_FR` - Fletcher-Reeves update
+.   `SNES_NCG_PRP` - Polak-Ribiere-Polyak update, the default and the only one that tolerates generalized search directions
+.   `SNES_NCG_HS` - Hestenes-Steifel update
+.   `SNES_NCG_DY` - Dai-Yuan update
+-   `SNES_NCG_CD` - Conjugate Descent update
+
+  Options Database Key:
+. -snes_ncg_type<fr,prp,hs,dy,cd> - select type
+
+.seealso: `SNES, `SNESNCG`, `SNESNCGSetType()`
+M*/
 typedef enum {
   SNES_NCG_FR  = 0,
   SNES_NCG_PRP = 1,
@@ -874,6 +932,23 @@ PETSC_EXTERN const char *const SNESNCGTypes[];
 
 PETSC_EXTERN PetscErrorCode SNESNCGSetType(SNES, SNESNCGType);
 
+/*MC
+   SNESQNScaleType - the scaling type used by `SNESQN`
+
+   Level: intermediate
+
+   Values:
++   `SNES_QN_SCALE_NONE` - don't scale the problem
+.   `SNES_QN_SCALE_SCALAR` - use Shanno scaling
+.   `SNES_QN_SCALE_DIAGONAL` - scale with a diagonalized BFGS formula (see Gilbert and Lemarechal 1989), available
+-   `SNES_QN_SCALE_JACOBIAN` - scale by solving a linear system coming from the Jacobian you provided with `SNESSetJacobian()`
+                               computed at the first iteration of `SNESQN` and at ever restart.
+
+    Options Database Key:
+. -snes_qn_scale_type <diagonal,none,scalar,jacobian> - Scaling type
+
+.seealso: `SNES, `SNESQN`, `SNESQNSetScaleType()`, `SNESQNType`, `SNESQNSetType()`, `SNESQNSetRestartType()`, `SNESQNRestartType`
+M*/
 typedef enum {
   SNES_QN_SCALE_DEFAULT  = 0,
   SNES_QN_SCALE_NONE     = 1,
@@ -882,6 +957,23 @@ typedef enum {
   SNES_QN_SCALE_JACOBIAN = 4
 } SNESQNScaleType;
 PETSC_EXTERN const char *const SNESQNScaleTypes[];
+
+/*MC
+   SNESQNRestartType - the restart approached used by `SNESQN`
+
+   Level: intermediate
+
+   Values:
++   `SNES_QN_RESTART_NONE` - never restart
+.   `SNES_QN_RESTART_POWELL` - restart based upon descent criteria
+-   `SNES_QN_RESTART_PERIODIC` - restart after a fixed number of iterations
+
+  Options Database Keys:
++ -snes_qn_restart_type <powell,periodic,none> - set the restart type
+- -snes_qn_m <m>                               - sets the number of stored updates and the restart period for periodic
+
+.seealso: `SNES, `SNESQN`, `SNESQNSetScaleType()`, `SNESQNType`, `SNESQNSetType()`, `SNESQNSetRestartType()`, `SNESQNScaleType`
+M*/
 typedef enum {
   SNES_QN_RESTART_DEFAULT  = 0,
   SNES_QN_RESTART_NONE     = 1,
@@ -889,6 +981,22 @@ typedef enum {
   SNES_QN_RESTART_PERIODIC = 3
 } SNESQNRestartType;
 PETSC_EXTERN const char *const SNESQNRestartTypes[];
+
+/*MC
+   SNESQNType - the type used by `SNESQN`
+
+   Level: intermediate
+
+  Values:
++   `SNES_QN_LBFGS` - LBFGS variant
+.   `SNES_QN_BROYDEN` - Broyden variant
+-   `SNES_QN_BADBROYDEN` - Bad Broyden variant
+
+  Options Database Key:
+. -snes_qn_type <lbfgs,broyden,badbroyden> - quasi-Newton type
+
+.seealso: `SNES, `SNESQN`, `SNESQNSetScaleType()`, `SNESQNSetType()`, `SNESQNScaleType`, `SNESQNRestartType`, `SNESQNSetRestartType()`
+M*/
 typedef enum {
   SNES_QN_LBFGS      = 0,
   SNES_QN_BROYDEN    = 1,
@@ -934,15 +1042,15 @@ PETSC_EXTERN PetscErrorCode SNESPatchSetCellNumbering(SNES, PetscSection);
 /*E
     SNESFASType - Determines the type of nonlinear multigrid method that is run.
 
-   Level: beginner
-
    Values:
 +  `SNES_FAS_MULTIPLICATIVE` (default) - traditional V or W cycle as determined by `SNESFASSetCycles()`
 .  `SNES_FAS_ADDITIVE`                 - additive FAS cycle
 .  `SNES_FAS_FULL`                     - full FAS cycle
 -  `SNES_FAS_KASKADE`                  - Kaskade FAS cycle
 
-.seealso: [](chapter_snes), `SNESFAS`, `PCMGSetType()`, `PCMGType`
+   Level: beginner
+
+.seealso: [](ch_snes), `SNESFAS`, `PCMGSetType()`, `PCMGType`
 E*/
 typedef enum {
   SNES_FAS_MULTIPLICATIVE,
@@ -1009,5 +1117,3 @@ PETSC_EXTERN PetscErrorCode DMSNESCheckJacobian(SNES, DM, Vec, PetscReal, PetscB
 PETSC_EXTERN PetscErrorCode DMSNESCheckFromOptions(SNES, Vec);
 PETSC_EXTERN PetscErrorCode DMSNESComputeJacobianAction(DM, Vec, Vec, Vec, void *);
 PETSC_EXTERN PetscErrorCode DMSNESCreateJacobianMF(DM, Vec, void *, Mat *);
-
-#endif

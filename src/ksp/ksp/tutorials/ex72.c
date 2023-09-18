@@ -521,7 +521,7 @@ int main(int argc, char **args)
       suffix: 9
       requires: datafilespath double !defined(PETSC_USE_64BIT_INDICES)
       args: -f0 ${DATAFILESPATH}/matrices/medium
-      args: -viewer_binary_skip_info  -matload_block_size {{1 2 3 4 5 6 7}separate output} -ksp_max_it 100 -ksp_gmres_cgs_refinement_type refine_always -ksp_rtol 1.0e-15 -ksp_monitor_short
+      args: -viewer_binary_skip_info -matload_block_size {{1 2 3 4 5 6 7}separate output} -ksp_max_it 100 -ksp_gmres_cgs_refinement_type refine_always -ksp_rtol 1.0e-15 -ksp_monitor_short
       test:
          suffix: a
          args: -mat_type seqbaij
@@ -626,11 +626,9 @@ int main(int argc, char **args)
       test:
          suffix: boomeramg_euclid
          args: -pc_hypre_boomeramg_smooth_type Euclid -pc_hypre_boomeramg_smooth_num_levels 2 -pc_hypre_boomeramg_eu_level 1 -pc_hypre_boomeramg_eu_droptolerance 0.01
-         TODO: Need to determine if deprecated
       test:
          suffix: boomeramg_euclid_bj
          args: -pc_hypre_boomeramg_smooth_type Euclid -pc_hypre_boomeramg_smooth_num_levels 2 -pc_hypre_boomeramg_eu_level 1 -pc_hypre_boomeramg_eu_droptolerance 0.01 -pc_hypre_boomeramg_eu_bj
-         TODO: Need to determine if deprecated
       test:
          suffix: boomeramg_parasails
          args: -pc_hypre_boomeramg_smooth_type ParaSails -pc_hypre_boomeramg_smooth_num_levels 2
@@ -804,8 +802,8 @@ int main(int argc, char **args)
 
    testset:
       suffix: zeropivot
-      requires: datafilespath double !defined(PETSC_USE_64BIT_INDICES) mumps
-      args: -f0 ${DATAFILESPATH}/matrices/small -test_zeropivot -ksp_converged_reason -ksp_type fgmres -pc_type ksp
+      requires: datafilespath double !defined(PETSC_USE_64BIT_INDICES)
+      args: -f0 ${DATAFILESPATH}/matrices/small -test_zeropivot -ksp_converged_reason -ksp_type fgmres -pc_type ksp -fp_trap 0
       test:
          nsize: 3
          args: -ksp_pc_type bjacobi

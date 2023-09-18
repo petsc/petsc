@@ -328,26 +328,26 @@ static PetscErrorCode PCPARMSSetGlobal_PARMS(PC pc, PCPARMSGlobalType type)
 }
 
 /*@
-   PCPARMSSetGlobal - Sets the global preconditioner to be used in `PCPARMS`.
+  PCPARMSSetGlobal - Sets the global preconditioner to be used in `PCPARMS`.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  pc - the preconditioner context
--  type - the global preconditioner type, one of
+  Input Parameters:
++ pc   - the preconditioner context
+- type - the global preconditioner type, one of
 .vb
      PC_PARMS_GLOBAL_RAS   - Restricted additive Schwarz
      PC_PARMS_GLOBAL_SCHUR - Schur complement
      PC_PARMS_GLOBAL_BJ    - Block Jacobi
 .ve
 
-   Options Database Key:
-.   -pc_parms_global [ras,schur,bj] - Sets global preconditioner
+  Options Database Key:
+. -pc_parms_global [ras,schur,bj] - Sets global preconditioner
 
-   Level: intermediate
+  Level: intermediate
 
-   Note:
-   See the pARMS function `parms_PCSetType()` for more information.
+  Note:
+  See the pARMS function `parms_PCSetType()` for more information.
 
 .seealso: `PCPARMS`, `PCPARMSSetLocal()`
 @*/
@@ -373,13 +373,13 @@ static PetscErrorCode PCPARMSSetLocal_PARMS(PC pc, PCPARMSLocalType type)
 }
 
 /*@
-   PCPARMSSetLocal - Sets the local preconditioner to be used in `PCPARMS`.
+  PCPARMSSetLocal - Sets the local preconditioner to be used in `PCPARMS`.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  pc - the preconditioner context
--  type - the local preconditioner type, one of
+  Input Parameters:
++ pc   - the preconditioner context
+- type - the local preconditioner type, one of
 .vb
      PC_PARMS_LOCAL_ILU0   - ILU0 preconditioner
      PC_PARMS_LOCAL_ILUK   - ILU(k) preconditioner
@@ -387,16 +387,16 @@ static PetscErrorCode PCPARMSSetLocal_PARMS(PC pc, PCPARMSLocalType type)
      PC_PARMS_LOCAL_ARMS   - ARMS preconditioner
 .ve
 
-   Options Database Keys:
-   -pc_parms_local [ilu0,iluk,ilut,arms] - Sets local preconditioner
+  Options Database Keys:
+. pc_parms_local [ilu0,iluk,ilut,arms] - Sets local preconditioner
 
-   Level: intermediate
+  Level: intermediate
 
-   Notes:
-   For the ARMS preconditioner, one can use either the symmetric ARMS or the non-symmetric
-   variant (ARMS-ddPQ) by setting the permutation type with PCPARMSSetNonsymPerm().
+  Notes:
+  For the ARMS preconditioner, one can use either the symmetric ARMS or the non-symmetric
+  variant (ARMS-ddPQ) by setting the permutation type with PCPARMSSetNonsymPerm().
 
-   See the pARMS function `parms_PCILUSetType()` for more information.
+  See the pARMS function `parms_PCILUSetType()` for more information.
 
 .seealso: `PCPARMS`, `PCPARMSSetGlobal()`, `PCPARMSSetNonsymPerm()`
 
@@ -427,24 +427,24 @@ static PetscErrorCode PCPARMSSetSolveTolerances_PARMS(PC pc, PetscReal tol, Pets
 }
 
 /*@
-   PCPARMSSetSolveTolerances - Sets the convergence tolerance and the maximum iterations for the
-   inner GMRES solver, when the Schur global preconditioner is used.
+  PCPARMSSetSolveTolerances - Sets the convergence tolerance and the maximum iterations for the
+  inner GMRES solver, when the Schur global preconditioner is used.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  pc - the preconditioner context
-.  tol - the convergence tolerance
--  maxits - the maximum number of iterations to use
+  Input Parameters:
++ pc     - the preconditioner context
+. tol    - the convergence tolerance
+- maxits - the maximum number of iterations to use
 
-   Options Database Keys:
-+  -pc_parms_solve_tol - set the tolerance for local solve
--  -pc_parms_max_it - set the maximum number of inner iterations
+  Options Database Keys:
++ -pc_parms_solve_tol - set the tolerance for local solve
+- -pc_parms_max_it    - set the maximum number of inner iterations
 
-   Level: intermediate
+  Level: intermediate
 
-   Note:
-   See the pARMS functions `parms_PCSetInnerEps()` and `parms_PCSetInnerMaxits()` for more information.
+  Note:
+  See the pARMS functions `parms_PCSetInnerEps()` and `parms_PCSetInnerMaxits()` for more information.
 
 .seealso: `PCPARMS`, `PCPARMSSetSolveRestart()`
 @*/
@@ -469,22 +469,22 @@ static PetscErrorCode PCPARMSSetSolveRestart_PARMS(PC pc, PetscInt restart)
 }
 
 /*@
-   PCPARMSSetSolveRestart - Sets the number of iterations at which the
-   inner GMRES solver restarts.
+  PCPARMSSetSolveRestart - Sets the number of iterations at which the
+  inner GMRES solver restarts.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  pc - the preconditioner context
--  restart - maximum dimension of the Krylov subspace
+  Input Parameters:
++ pc      - the preconditioner context
+- restart - maximum dimension of the Krylov subspace
 
-   Options Database Key:
-.  -pc_parms_max_dim - sets the inner Krylov dimension
+  Options Database Key:
+. -pc_parms_max_dim - sets the inner Krylov dimension
 
-   Level: intermediate
+  Level: intermediate
 
-   Note:
-   See the pARMS function parms_PCSetInnerKSize for more information.
+  Note:
+  See the pARMS function parms_PCSetInnerKSize for more information.
 
 .seealso: `PCPARMS`, `PCPARMSSetSolveTolerances()`
 @*/
@@ -509,23 +509,23 @@ static PetscErrorCode PCPARMSSetNonsymPerm_PARMS(PC pc, PetscBool nonsym)
 }
 
 /*@
-   PCPARMSSetNonsymPerm - Sets the type of permutation for the ARMS preconditioner: the standard
-   symmetric ARMS or the non-symmetric ARMS (ARMS-ddPQ).
+  PCPARMSSetNonsymPerm - Sets the type of permutation for the ARMS preconditioner: the standard
+  symmetric ARMS or the non-symmetric ARMS (ARMS-ddPQ).
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  pc - the preconditioner context
--  nonsym - `PETSC_TRUE` indicates the non-symmetric ARMS is used;
+  Input Parameters:
++ pc     - the preconditioner context
+- nonsym - `PETSC_TRUE` indicates the non-symmetric ARMS is used;
             `PETSC_FALSE` indicates the symmetric ARMS is used
 
-   Options Database Key:
-.  -pc_parms_nonsymmetric_perm - sets the use of nonsymmetric permutation
+  Options Database Key:
+. -pc_parms_nonsymmetric_perm - sets the use of nonsymmetric permutation
 
-   Level: intermediate
+  Level: intermediate
 
-   Note:
-   See the pARMS function `parms_PCSetPermType()` for more information.
+  Note:
+  See the pARMS function `parms_PCSetPermType()` for more information.
 
 .seealso: `PCPARMS`
 @*/
@@ -558,27 +558,27 @@ static PetscErrorCode PCPARMSSetFill_PARMS(PC pc, PetscInt lfil0, PetscInt lfil1
 }
 
 /*@
-   PCPARMSSetFill - Sets the fill-in parameters for ILUT, ILUK and ARMS preconditioners.
-   Consider the original matrix A = [B F; E C] and the approximate version
-   M = [LB 0; E/UB I]*[UB LB\F; 0 S].
+  PCPARMSSetFill - Sets the fill-in parameters for ILUT, ILUK and ARMS preconditioners.
+  Consider the original matrix A = [B F; E C] and the approximate version
+  M = [LB 0; E/UB I]*[UB LB\F; 0 S].
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  pc - the preconditioner context
-.  fil0 - the level of fill-in kept in LB, UB, E/UB and LB\F
-.  fil1 - the level of fill-in kept in S
--  fil2 - the level of fill-in kept in the L and U parts of the LU factorization of S
+  Input Parameters:
++ pc    - the preconditioner context
+. lfil0 - the level of fill-in kept in LB, UB, E/UB and LB\F
+. lfil1 - the level of fill-in kept in S
+- lfil2 - the level of fill-in kept in the L and U parts of the LU factorization of S
 
-   Options Database Keys:
-+  -pc_parms_lfil_ilu_arms - set the amount of fill-in for ilut, iluk and arms
-.  -pc_parms_lfil_schur - set the amount of fill-in for schur
--  -pc_parms_lfil_ilut_L_U - set the amount of fill-in for ILUT L and U
+  Options Database Keys:
++ -pc_parms_lfil_ilu_arms - set the amount of fill-in for ilut, iluk and arms
+. -pc_parms_lfil_schur    - set the amount of fill-in for schur
+- -pc_parms_lfil_ilut_L_U - set the amount of fill-in for ILUT L and U
 
-   Level: intermediate
+  Level: intermediate
 
-   Note:
-   See the pARMS function `parms_PCSetFill()` for more information.
+  Note:
+  See the pARMS function `parms_PCSetFill()` for more information.
 
 .seealso: `PCPARMS`
 @*/

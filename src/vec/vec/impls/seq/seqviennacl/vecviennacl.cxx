@@ -287,9 +287,7 @@ static PetscErrorCode VecDestroy_SeqViennaCL_Private(Vec v)
 
   PetscFunctionBegin;
   PetscCall(PetscObjectSAWsViewOff(v));
-#if defined(PETSC_USE_LOG)
   PetscCall(PetscLogObjectState((PetscObject)v, "Length=%" PetscInt_FMT, v->map->n));
-#endif
   if (vs->array_allocated) PetscCall(PetscFree(vs->array_allocated));
   PetscCall(PetscFree(vs));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -516,7 +514,7 @@ PetscErrorCode VecMDot_SeqViennaCL(Vec xin, PetscInt nv, const Vec yin[], PetscS
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode VecMTDot_SeqViennaCL(Vec xin, PetscInt nv, const Vec yin[], PetscScalar *z)
+static PetscErrorCode VecMTDot_SeqViennaCL(Vec xin, PetscInt nv, const Vec yin[], PetscScalar *z)
 {
   PetscFunctionBegin;
   /* Since complex case is not supported at the moment, this is the same as VecMDot_SeqViennaCL */
@@ -918,22 +916,22 @@ PetscErrorCode VecReplaceArray_SeqViennaCL(Vec vin, const PetscScalar *a)
 }
 
 /*@C
-   VecCreateSeqViennaCL - Creates a standard, sequential array-style vector.
+  VecCreateSeqViennaCL - Creates a standard, sequential array-style vector.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  comm - the communicator, should be PETSC_COMM_SELF
--  n - the vector length
+  Input Parameters:
++ comm - the communicator, should be PETSC_COMM_SELF
+- n    - the vector length
 
-   Output Parameter:
-.  V - the vector
+  Output Parameter:
+. v - the vector
 
-   Notes:
-   Use VecDuplicate() or VecDuplicateVecs() to form additional vectors of the
-   same type as an existing vector.
+  Notes:
+  Use VecDuplicate() or VecDuplicateVecs() to form additional vectors of the
+  same type as an existing vector.
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `VecCreateMPI()`, `VecCreate()`, `VecDuplicate()`, `VecDuplicateVecs()`, `VecCreateGhost()`
 @*/
@@ -947,31 +945,31 @@ PetscErrorCode VecCreateSeqViennaCL(MPI_Comm comm, PetscInt n, Vec *v)
 }
 
 /*@C
-   VecCreateSeqViennaCLWithArray - Creates a viennacl sequential array-style vector,
-   where the user provides the array space to store the vector values.
+  VecCreateSeqViennaCLWithArray - Creates a viennacl sequential array-style vector,
+  where the user provides the array space to store the vector values.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  comm - the communicator, should be PETSC_COMM_SELF
-.  bs - the block size
-.  n - the vector length
--  array - viennacl array where the vector elements are to be stored.
+  Input Parameters:
++ comm  - the communicator, should be PETSC_COMM_SELF
+. bs    - the block size
+. n     - the vector length
+- array - viennacl array where the vector elements are to be stored.
 
-   Output Parameter:
-.  V - the vector
+  Output Parameter:
+. V - the vector
 
-   Notes:
-   Use VecDuplicate() or VecDuplicateVecs() to form additional vectors of the
-   same type as an existing vector.
+  Notes:
+  Use VecDuplicate() or VecDuplicateVecs() to form additional vectors of the
+  same type as an existing vector.
 
-   If the user-provided array is NULL, then VecViennaCLPlaceArray() can be used
-   at a later stage to SET the array for storing the vector values.
+  If the user-provided array is NULL, then VecViennaCLPlaceArray() can be used
+  at a later stage to SET the array for storing the vector values.
 
-   PETSc does NOT free the array when the vector is destroyed via VecDestroy().
-   The user should not free the array until the vector is destroyed.
+  PETSc does NOT free the array when the vector is destroyed via VecDestroy().
+  The user should not free the array until the vector is destroyed.
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `VecCreateMPIViennaCLWithArray()`, `VecCreate()`, `VecDuplicate()`, `VecDuplicateVecs()`,
           `VecCreateGhost()`, `VecCreateSeq()`, `VecCUDAPlaceArray()`, `VecCreateSeqWithArray()`,
@@ -992,30 +990,30 @@ PETSC_EXTERN PetscErrorCode VecCreateSeqViennaCLWithArray(MPI_Comm comm, PetscIn
 }
 
 /*@C
-   VecCreateSeqViennaCLWithArrays - Creates a ViennaCL sequential vector, where
-   the user provides the array space to store the vector values.
+  VecCreateSeqViennaCLWithArrays - Creates a ViennaCL sequential vector, where
+  the user provides the array space to store the vector values.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  comm - the communicator, should be PETSC_COMM_SELF
-.  bs - the block size
-.  n - the vector length
--  cpuarray - CPU memory where the vector elements are to be stored.
--  viennaclvec - ViennaCL vector where the Vec entries are to be stored on the device.
+  Input Parameters:
++ comm        - the communicator, should be PETSC_COMM_SELF
+. bs          - the block size
+. n           - the vector length
+. cpuarray    - CPU memory where the vector elements are to be stored.
+- viennaclvec - ViennaCL vector where the Vec entries are to be stored on the device.
 
-   Output Parameter:
-.  V - the vector
+  Output Parameter:
+. V - the vector
 
-   Notes:
-   If both cpuarray and viennaclvec are provided, the caller must ensure that
-   the provided arrays have identical values.
+  Notes:
+  If both cpuarray and viennaclvec are provided, the caller must ensure that
+  the provided arrays have identical values.
 
-   PETSc does NOT free the provided arrays when the vector is destroyed via
-   VecDestroy(). The user should not free the array until the vector is
-   destroyed.
+  PETSc does NOT free the provided arrays when the vector is destroyed via
+  VecDestroy(). The user should not free the array until the vector is
+  destroyed.
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `VecCreateMPIViennaCLWithArrays()`, `VecCreate()`, `VecCreateSeqWithArray()`,
           `VecViennaCLPlaceArray()`, `VecPlaceArray()`, `VecCreateSeqCUDAWithArrays()`,
@@ -1051,21 +1049,21 @@ PetscErrorCode VecCreateSeqViennaCLWithArrays(MPI_Comm comm, PetscInt bs, PetscI
 }
 
 /*@C
-   VecViennaCLPlaceArray - Replace the viennacl vector in a Vec with
-   the one provided by the user. This is useful to avoid a copy.
+  VecViennaCLPlaceArray - Replace the viennacl vector in a Vec with
+  the one provided by the user. This is useful to avoid a copy.
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  vec - the vector
--  array - the ViennaCL vector
+  Input Parameters:
++ vin - the vector
+- a   - the ViennaCL vector
 
-   Notes:
-   You can return to the original viennacl vector with a call to
-   VecViennaCLResetArray() It is not possible to use VecViennaCLPlaceArray()
-   and VecPlaceArray() at the same time on the same vector.
+  Notes:
+  You can return to the original viennacl vector with a call to `VecViennaCLResetArray()`.
+  It is not possible to use `VecViennaCLPlaceArray()` and `VecPlaceArray()` at the same time on
+  the same vector.
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `VecPlaceArray()`, `VecSetValues()`, `VecViennaCLResetArray()`,
           `VecCUDAPlaceArray()`,
@@ -1085,15 +1083,15 @@ PETSC_EXTERN PetscErrorCode VecViennaCLPlaceArray(Vec vin, const ViennaCLVector 
 }
 
 /*@C
-   VecViennaCLResetArray - Resets a vector to use its default memory. Call this
-   after the use of VecViennaCLPlaceArray().
+  VecViennaCLResetArray - Resets a vector to use its default memory. Call this
+  after the use of VecViennaCLPlaceArray().
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-.  vec - the vector
+  Input Parameters:
+. vin - the vector
 
-   Level: developer
+  Level: developer
 
 .seealso: `VecViennaCLPlaceArray()`, `VecResetArray()`, `VecCUDAResetArray()`, `VecPlaceArray()`
 @*/
@@ -1272,10 +1270,10 @@ PETSC_EXTERN PetscErrorCode VecCreate_SeqViennaCL(Vec V)
   invoking clReleaseContext().
 
   Input Parameter:
-.  v    - the vector
+. v - the vector
 
   Output Parameter:
-.  ctx - pointer to the underlying CL context
+. ctx - pointer to the underlying CL context
 
   Level: intermediate
 
@@ -1312,10 +1310,10 @@ PETSC_EXTERN PetscErrorCode VecViennaCLGetCLContext(Vec v, PETSC_UINTPTR_T *ctx)
   responsible for invoking clReleaseCommandQueue().
 
   Input Parameter:
-.  v    - the vector
+. v - the vector
 
   Output Parameter:
-.  ctx - pointer to the CL command queue
+. queue - pointer to the CL command queue
 
   Level: intermediate
 
@@ -1351,10 +1349,10 @@ PETSC_EXTERN PetscErrorCode VecViennaCLGetCLQueue(Vec v, PETSC_UINTPTR_T *queue)
   invoking clReleaseMemObject().
 
   Input Parameter:
-.  v    - the vector
+. v - the vector
 
   Output Parameter:
-.  mem - pointer to the device buffer
+. mem - pointer to the device buffer
 
   Level: intermediate
 
@@ -1392,10 +1390,10 @@ PETSC_EXTERN PetscErrorCode VecViennaCLGetCLMemRead(Vec v, PETSC_UINTPTR_T *mem)
   will thus incur a data transfer from the device to the host.
 
   Input Parameter:
-.  v    - the vector
+. v - the vector
 
   Output Parameter:
-.  mem - pointer to the device buffer
+. mem - pointer to the device buffer
 
   Level: intermediate
 
@@ -1426,12 +1424,12 @@ PETSC_EXTERN PetscErrorCode VecViennaCLGetCLMemWrite(Vec v, PETSC_UINTPTR_T *mem
   VecViennaCLRestoreCLMemWrite - Restores a CL buffer pointer previously
   acquired with VecViennaCLGetCLMemWrite().
 
-   This marks the host data as out of date.  Subsequent access to the
-   vector data on the host side with for instance VecGetArray() incurs a
-   data transfer.
+  This marks the host data as out of date.  Subsequent access to the
+  vector data on the host side with for instance VecGetArray() incurs a
+  data transfer.
 
   Input Parameter:
-.  v    - the vector
+. v - the vector
 
   Level: intermediate
 
@@ -1462,10 +1460,10 @@ PETSC_EXTERN PetscErrorCode VecViennaCLRestoreCLMemWrite(Vec v)
   from the device to the host.
 
   Input Parameter:
-.  v    - the vector
+. v - the vector
 
   Output Parameter:
-.  mem - pointer to the device buffer
+. mem - pointer to the device buffer
 
   Level: intermediate
 
@@ -1496,12 +1494,12 @@ PETSC_EXTERN PetscErrorCode VecViennaCLGetCLMem(Vec v, PETSC_UINTPTR_T *mem)
   VecViennaCLRestoreCLMem - Restores a CL buffer pointer previously
   acquired with VecViennaCLGetCLMem().
 
-   This marks the host data as out of date. Subsequent access to the vector
-   data on the host side with for instance VecGetArray() incurs a data
-   transfer.
+  This marks the host data as out of date. Subsequent access to the vector
+  data on the host side with for instance VecGetArray() incurs a data
+  transfer.
 
   Input Parameter:
-.  v    - the vector
+. v - the vector
 
   Level: intermediate
 

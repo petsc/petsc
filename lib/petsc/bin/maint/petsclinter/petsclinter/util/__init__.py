@@ -6,5 +6,4 @@
 from ._utility import *
 from ._clang   import *
 from ._timeout import timeout
-
-__export_symbols__ = ['get_clang_function', 'timeout']
+from ._color   import Color

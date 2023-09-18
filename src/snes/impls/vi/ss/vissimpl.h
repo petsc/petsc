@@ -3,8 +3,7 @@
    system of mixed complementarity equations
  */
 
-#ifndef __SNES_VISS_H
-#define __SNES_VISS_H
+#pragma once
 
 #include <petsc/private/snesimpl.h>
 
@@ -26,5 +25,3 @@ typedef struct {
   /* user supplied function for checking redundant equations for SNESSolveVI_RS2 */
   PetscErrorCode (*checkredundancy)(SNES, IS, IS *, void *);
 } SNES_VINEWTONSSLS;
-
-#endif

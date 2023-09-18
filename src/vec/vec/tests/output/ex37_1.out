@@ -40,6 +40,22 @@ Vec Object: 1 MPI process
         5.
         2.5
         1.25
+Testing Wnorms 2: E? 0 A? 0 R? 0
+Testing Wnorms 2: E? 0 A? 0 R? 1
+Testing Wnorms 2: E? 0 A? 1 R? 0
+Testing Wnorms 2: E? 0 A? 1 R? 1
+Testing Wnorms 2: E? 1 A? 0 R? 0
+Testing Wnorms 2: E? 1 A? 0 R? 1
+Testing Wnorms 2: E? 1 A? 1 R? 0
+Testing Wnorms 2: E? 1 A? 1 R? 1
+Testing Wnorms inf: E? 0 A? 0 R? 0
+Testing Wnorms inf: E? 0 A? 0 R? 1
+Testing Wnorms inf: E? 0 A? 1 R? 0
+Testing Wnorms inf: E? 0 A? 1 R? 1
+Testing Wnorms inf: E? 1 A? 0 R? 0
+Testing Wnorms inf: E? 1 A? 0 R? 1
+Testing Wnorms inf: E? 1 A? 1 R? 0
+Testing Wnorms inf: E? 1 A? 1 R? 1
 
 
 ============== test_axpy_dot_max ==============

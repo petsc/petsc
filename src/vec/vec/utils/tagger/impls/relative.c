@@ -62,7 +62,7 @@ static PetscErrorCode VecTaggerComputeBoxes_Relative(VecTagger tagger, Vec vec, 
 
   Input Parameters:
 + tagger - the VecTagger context
-- box - a blocksize list of VecTaggerBox boxes
+- box    - a blocksize list of VecTaggerBox boxes
 
   Level: advanced
 

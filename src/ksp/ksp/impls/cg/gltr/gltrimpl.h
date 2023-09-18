@@ -15,8 +15,7 @@
 /*     9, pages 504-525, 1999.                                               */
 /*****************************************************************************/
 
-#ifndef PETSC_CG_GLTRIMPL_H
-#define PETSC_CG_GLTRIMPL_H
+#pragma once
 
 #include <petsc/private/kspimpl.h>
 
@@ -47,5 +46,3 @@ typedef struct {
   PetscInt max_newton_its;  /* Maximum newton iterations                 */
   PetscInt dtype;           /* Method used to measure the norm of step   */
 } KSPCG_GLTR;
-
-#endif // PETSC_CG_GLTRIMPL_H

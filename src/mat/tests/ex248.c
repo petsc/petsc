@@ -16,8 +16,8 @@ int main(int argc, char **argv)
   PetscCall(MatCreateDense(PETSC_COMM_SELF, p, q, p, q, NULL, &Bd));
   PetscCall(MatSetRandom(Ad, NULL));
   PetscCall(MatSetRandom(Bd, NULL));
-  PetscCall(MatChop(Ad, 0.2));
-  PetscCall(MatChop(Bd, 0.2));
+  PetscCall(MatFilter(Ad, 0.2, PETSC_FALSE, PETSC_FALSE));
+  PetscCall(MatFilter(Bd, 0.2, PETSC_FALSE, PETSC_FALSE));
   PetscCall(MatConvert(Ad, MATAIJ, MAT_INITIAL_MATRIX, &A));
   PetscCall(MatConvert(Bd, MATAIJ, MAT_INITIAL_MATRIX, &B));
   PetscCall(MatSeqAIJKron(A, B, MAT_INITIAL_MATRIX, &C));

@@ -8,8 +8,8 @@ def noCheck(command, status, output, error):
 class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.GNUPackage.__init__(self, framework)
-    self.minversion        = '1.1.26'
-    self.gitcommit         = 'v'+self.minversion+'-p7'
+    self.minversion        = '1.1.26.8'
+    self.gitcommit         = 'v1.1.26-p8'
     self.download          = ['git://https://bitbucket.org/petsc/pkg-sowing.git','https://bitbucket.org/petsc/pkg-sowing/get/'+self.gitcommit+'.tar.gz']
     self.downloaddirnames  = ['petsc-pkg-sowing']
     self.downloadonWindows = 1
@@ -25,6 +25,7 @@ class Configure(config.package.GNUPackage):
     help.addArgument('SOWING', '-download-sowing-cxx=<prog>',                    nargs.Arg(None, None, 'CXX compiler for sowing configure'))
     help.addArgument('SOWING', '-download-sowing-cpp=<prog>',                    nargs.Arg(None, None, 'CPP for sowing configure'))
     help.addArgument('SOWING', '-download-sowing-cxxpp=<prog>',                  nargs.Arg(None, None, 'CXX CPP for sowing configure'))
+    help.addArgument('SOWING', '-with-fortran-bindings-inplace=<bool>',          nargs.ArgBool(None, 0, 'Generate Fortran bindings in PETSc source tree'))
     return
 
   def setupDependencies(self, framework):
@@ -81,7 +82,7 @@ class Configure(config.package.GNUPackage):
       self.logPrint('In --with-batch mode with outstanding batch tests to be made; hence skipping sowing for this configure')
       return
 
-    if (self.petscclone.isClone and hasattr(self.compilers, 'FC') and self.framework.argDB['with-fortran-bindings']) or ('download-sowing' in self.framework.clArgDB and self.argDB['download-sowing']):
+    if (self.petscclone.isClone and hasattr(self.compilers, 'FC') and self.framework.argDB['with-fortran-bindings']) or ('download-sowing' in self.framework.clArgDB and self.argDB['download-sowing']) or ('with-sowing' in self.framework.clArgDB and self.argDB['with-sowing']):
       self.logPrint('PETSc clone, checking for Sowing \n')
       self.getExecutable('pdflatex', getFullPath = 1)
 
@@ -149,9 +150,13 @@ and run configure again\n')
           sys.path.insert(0, os.path.abspath(os.path.join('lib','petsc','bin','maint')))
           import generatefortranstubs
           del sys.path[0]
-          generatefortranstubs.main(self.petscdir.dir, self.bfort, self.petscdir.dir,0)
+          if self.framework.argDB['with-fortran-bindings-inplace']:
+            arch = ''
+          else:
+            arch = self.arch
+          generatefortranstubs.main(self.petscdir.dir, arch,self.bfort, os.path.join(self.petscdir.dir,'src'),0)
           if self.fortran.fortranIsF90:
-            generatefortranstubs.processf90interfaces(self.petscdir.dir,0)
+            generatefortranstubs.processf90interfaces(self.petscdir.dir,arch,0)
           self.framework.actions.addArgument('PETSc', 'File creation', 'Generated Fortran stubs')
         except RuntimeError as e:
           raise RuntimeError('*******Error generating Fortran stubs: '+str(e)+'*******\n')

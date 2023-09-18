@@ -2,6 +2,23 @@
 !   Description: Solves a tridiagonal linear system with KSP.
 !
 ! -----------------------------------------------------------------------
+!
+!  Demonstrate a custom KSP convergence test that calls the default convergence test
+!
+subroutine MyKSPConverged(ksp,n,rnorm,flag,defaultctx,ierr)
+#include <petsc/finclude/petscksp.h>
+      use petscksp
+
+       KSP ksp
+       PetscErrorCode ierr
+       PetscInt n
+       integer*8 defaultctx
+       KSPConvergedReason flag
+       PetscReal rnorm
+
+       ! Must call default convergence test on the 0th iteration
+       call KSPConvergedDefault(ksp, n, rnorm, flag, defaultctx, ierr)
+       end subroutine MyKSPConverged
 
       program main
 #include <petsc/finclude/petscksp.h>
@@ -32,7 +49,9 @@
       PetscBool  flg
       PetscMPIInt size
       PetscScalar      none,one,value(3)
-      PetscLogStage    stages(2);
+      PetscLogStage    stages(2)
+      integer*8 defaultctx
+      external kspconvergeddefaultdestroy,mykspconverged
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                 Beginning of program
@@ -40,7 +59,7 @@
 
       PetscCallA(PetscInitialize(ierr))
       PetscCallMPIA(MPI_Comm_size(PETSC_COMM_WORLD,size,ierr))
-      if (size .ne. 1) then; SETERRA(PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,'This is a uniprocessor example only'); endif
+      PetscCheckA(size .eq. 1,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,'This is a uniprocessor example only')
       none = -1.0
       one  = 1.0
       n    = 10
@@ -49,8 +68,8 @@
       i3 = 3
       PetscCallA(PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-n',n,flg,ierr))
 
-      PetscCallA(PetscLogStageRegister("MatVec Assembly",stages(1),ierr))
-      PetscCallA(PetscLogStageRegister("KSP Solve",stages(2),ierr))
+      PetscCallA(PetscLogStageRegister('MatVec Assembly',stages(1),ierr))
+      PetscCallA(PetscLogStageRegister('KSP Solve',stages(2),ierr))
       PetscCallA(PetscLogStagePush(stages(1),ierr))
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !         Compute the matrix and right-hand-side vector that define
@@ -117,6 +136,9 @@
 
 !  Set operators. Here the matrix that defines the linear system
 !  also serves as the preconditioning matrix.
+
+      call KSPConvergedDefaultCreate(defaultctx,ierr)
+      call KSPSetConvergenceTest(ksp, MyKSPConverged, defaultctx, KSPConvergedDefaultDestroy, ierr)
 
       PetscCallA(KSPSetOperators(ksp,A,A,ierr))
 

@@ -4,7 +4,7 @@ PETSc |version|
 PETSc, the Portable, Extensible Toolkit for Scientific Computation,
 pronounced PET-see (`/ˈpɛt-siː/ <https://en.wikipedia.org/wiki/Help:IPA/English#Key>`__), is
 for the scalable (parallel) solution of scientific
-applications modeled by partial differential equations. It has bindings for C, Fortran, and Python (via :any:`petsc4py<petsc4py_api>`).
+applications modeled by partial differential equations. It has bindings for C, Fortran, and Python (via petsc4py).
 PETSc also contains TAO, the Toolkit for Advanced Optimization, software library.
 It supports MPI, and GPUs through
 CUDA, HIP or OpenCL, as well as hybrid MPI-GPU parallelism; it also supports the NEC-SX Tsubasa Vector Engine.
@@ -14,20 +14,23 @@ PETSc is developed as :ref:`open-source <doc_license>`, requests and contributio
 
 News
 ====
-.. admonition:: News: PETSc 2023 Annual Meeting
 
-  Registration now open for :any:`The PETSc 2023 Annual Meeting<2023_meeting>`, June 5-7 on the campus of IIT in Chicago.
+.. admonition:: News: PETSc is now associated with `NumFOCUS <http://numfocus.org>`__, a 501(c)(3) nonprofit supporting open code and reproducible science,
+                through which you can help support PETSc.
 
-.. admonition:: News: New Book on PETSc
+  .. image:: /images/community/numfocus.png
+     :align: center
+
+.. admonition:: News: PETSc 2024 Annual Meeting
+
+  The :any:`PETSc 2024 Annual Meeting <meetings>` will take place May 23, 24 in Cologne, Germany
+
+.. admonition:: News: Book on numerical methods using PETSc
 
   **PETSc for Partial Differential Equations: Numerical Solutions in C and Python**, by Ed Bueler, is available.
 
   - `Book from SIAM Press <https://my.siam.org/Store/Product/viewproduct/?ProductId=32850137>`__
   - `Google Play E-book <https://play.google.com/store/books/details/Ed_Bueler_PETSc_for_Partial_Differential_Equations?id=tgMHEAAAQBAJ>`__
-
-.. admonition:: News: New paper on PETSc community
-
-  `The Community is the Infrastructure  <https://arxiv.org/abs/2201.00967>`__
 
 Main Topics
 ===========
@@ -40,7 +43,7 @@ Main Topics
    tutorials/index
    manual/index
    manualpages/index
-   petsc4py/petsc4py
+   petsc4py/index
    faq/index
    community/index
    developers/index
@@ -127,19 +130,19 @@ For general citations on PETSc please use the following:
 
 .. literalinclude:: /petsc.bib
    :language: none
-   :start-at: @misc{petsc-web-page
+   :start-at: petsc-web-page
    :end-at: year
    :append: }
 
 .. literalinclude:: /petsc.bib
    :language: none
-   :start-at: @techreport{petsc-user-ref
+   :start-at: petsc-user-ref
    :end-at: year
    :append: }
 
 .. literalinclude:: /petsc.bib
    :language: none
-   :start-at: @inproceedings{petsc-efficient
+   :start-at: petsc-efficient
    :end-at: year
    :append: }
 
@@ -147,7 +150,7 @@ For petsc4py usage please cite
 
 .. literalinclude:: /petsc.bib
    :language: none
-   :start-at: @article{DalcinPazKlerCosimo2011
+   :start-at: dalcinpazklercosimo2011
    :end-at: year
    :append: }
 
@@ -155,7 +158,7 @@ For PETSc usage on GPUs please cite
 
 .. literalinclude:: /petsc.bib
    :language: none
-   :start-at: @article{MILLS2021
+   :start-at: mills2021
    :end-at: author
    :append: }
 
@@ -163,7 +166,7 @@ For PetscSF -- parallel communication in PETSc -- please cite
 
 .. literalinclude:: /petsc.bib
    :language: none
-   :start-at: @article{PetscSF2022
+   :start-at: petscsf2022
    :end-at: pages
    :append: }
 
@@ -171,7 +174,7 @@ If you use the TS component of PETSc please cite the following:
 
 .. literalinclude:: petsc.bib
    :language: none
-   :start-at: @techreport{AbhyankarEtAl2018
+   :start-at: abhyankaretal2018
    :end-at: year
    :append: }
 
@@ -179,6 +182,6 @@ If you utilize the TS adjoint solver please cite
 
 .. literalinclude:: /petsc.bib
    :language: none
-   :start-at: @article{Zhang2022tsadjoint
+   :start-at: zhang2022tsadjoint
    :end-at: year
    :append: }

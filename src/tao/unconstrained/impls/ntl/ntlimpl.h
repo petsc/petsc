@@ -3,8 +3,7 @@
   minimization
 */
 
-#ifndef __TAO_NTL_H
-#define __TAO_NTL_H
+#pragma once
 #include <petsc/private/taoimpl.h>
 
 typedef struct {
@@ -120,5 +119,3 @@ typedef struct {
   PetscInt init_type;   /* Trust-region initialization method */
   PetscInt update_type; /* Trust-region update method */
 } TAO_NTL;
-
-#endif /* if !defined(__TAO_NTL_H) */

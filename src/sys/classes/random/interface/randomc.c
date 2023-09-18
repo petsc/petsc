@@ -19,15 +19,15 @@
 PetscClassId PETSC_RANDOM_CLASSID;
 
 /*@C
-   PetscRandomDestroy - Destroys a context that has been formed by
-   `PetscRandomCreate()`.
+  PetscRandomDestroy - Destroys a context that has been formed by
+  `PetscRandomCreate()`.
 
-   Collective
+  Collective
 
-   Input Parameter:
-.  r  - the random number generator context
+  Input Parameter:
+. r - the random number generator context
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `PetscRandom`, `PetscRandomGetValue()`, `PetscRandomCreate()`, `VecSetRandom()`
 @*/
@@ -46,17 +46,17 @@ PetscErrorCode PetscRandomDestroy(PetscRandom *r)
 }
 
 /*@C
-   PetscRandomGetSeed - Gets the random seed.
+  PetscRandomGetSeed - Gets the random seed.
 
-   Not collective
+  Not collective
 
-   Input Parameter:
-.  r - The random number generator context
+  Input Parameter:
+. r - The random number generator context
 
-   Output Parameter:
-.  seed - The random seed
+  Output Parameter:
+. seed - The random seed
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `PetscRandom`, `PetscRandomCreate()`, `PetscRandomSetSeed()`, `PetscRandomSeed()`
 @*/
@@ -65,24 +65,24 @@ PetscErrorCode PetscRandomGetSeed(PetscRandom r, unsigned long *seed)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(r, PETSC_RANDOM_CLASSID, 1);
   if (seed) {
-    PetscValidPointer(seed, 2);
+    PetscAssertPointer(seed, 2);
     *seed = r->seed;
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
-   PetscRandomSetSeed - Sets the random seed. You MUST call `PetscRandomSeed()` after this call to have the new seed used.
+  PetscRandomSetSeed - Sets the random seed. You MUST call `PetscRandomSeed()` after this call to have the new seed used.
 
-   Not collective
+  Not collective
 
-   Input Parameters:
-+  r  - The random number generator context
--  seed - The random seed
+  Input Parameters:
++ r    - The random number generator context
+- seed - The random seed
 
-   Level: intermediate
+  Level: intermediate
 
-   Usage:
+  Example Usage:
 .vb
       PetscRandomSetSeed(r,a positive integer);
       PetscRandomSeed(r);
@@ -148,7 +148,7 @@ static PetscErrorCode PetscRandomSetTypeFromOptions_Private(PetscRandom rnd, Pet
 . rnd - The random number generator context
 
   Options Database Keys:
-+ -random_seed <integer> - provide a seed to the random number generator
++ -random_seed <integer>    - provide a seed to the random number generator
 - -random_no_imaginary_part - makes the imaginary part of the random number zero, this is useful when you want the
                               same code to produce the same result when run with real numbers or complex numbers for regression testing purposes
 
@@ -201,16 +201,17 @@ PetscErrorCode PetscRandomSetFromOptions(PetscRandom rnd)
 #endif
 
 /*@C
-   PetscRandomViewFromOptions - View a `PetscRandom` object based on the options database
+  PetscRandomViewFromOptions - View a `PetscRandom` object based on the options database
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  A - the  random number generator context
-.  obj - Optional object
--  name - command line option
+  Input Parameters:
++ A    - the  random number generator context
+. obj  - Optional object
+- name - command line option
 
-   Level: intermediate
+  Level: intermediate
+
 .seealso: `PetscRandom`, `PetscRandomView`, `PetscObjectViewFromOptions()`, `PetscRandomCreate()`
 @*/
 PetscErrorCode PetscRandomViewFromOptions(PetscRandom A, PetscObject obj, const char name[])
@@ -222,23 +223,23 @@ PetscErrorCode PetscRandomViewFromOptions(PetscRandom A, PetscObject obj, const 
 }
 
 /*@C
-   PetscRandomView - Views a random number generator object.
+  PetscRandomView - Views a random number generator object.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  rnd - The random number generator context
--  viewer - an optional visualization context
+  Input Parameters:
++ rnd    - The random number generator context
+- viewer - an optional visualization context
 
-   Note:
-   The available visualization contexts include
+  Note:
+  The available visualization contexts include
 +     `PETSC_VIEWER_STDOUT_SELF` - standard output (default)
 -     `PETSC_VIEWER_STDOUT_WORLD` - synchronized standard
-         output where only the first processor opens
-         the file.  All other processors send their
-         data to the first processor to print.
+  output where only the first processor opens
+  the file.  All other processors send their
+  data to the first processor to print.
 
-   Level: beginner
+  Level: beginner
 
 .seealso: `PetscRandom`, `PetscRealView()`, `PetscScalarView()`, `PetscIntView()`
 @*/
@@ -287,34 +288,34 @@ PetscErrorCode PetscRandomView(PetscRandom rnd, PetscViewer viewer)
 }
 
 /*@
-   PetscRandomCreate - Creates a context for generating random numbers,
-   and initializes the random-number generator.
+  PetscRandomCreate - Creates a context for generating random numbers,
+  and initializes the random-number generator.
 
-   Collective
+  Collective
 
-   Input Parameter:
-.  comm - MPI communicator
+  Input Parameter:
+. comm - MPI communicator
 
-   Output Parameter:
-.  r  - the random number generator context
+  Output Parameter:
+. r - the random number generator context
 
-   Level: intermediate
+  Level: intermediate
 
-   Notes:
-   The random type has to be set by `PetscRandomSetType()`.
+  Notes:
+  The random type has to be set by `PetscRandomSetType()`.
 
-   This is only a primitive "parallel" random number generator, it should NOT
-   be used for sophisticated parallel Monte Carlo methods since it will very likely
-   not have the correct statistics across processors. You can provide your own
-   parallel generator using `PetscRandomRegister()`;
+  This is only a primitive "parallel" random number generator, it should NOT
+  be used for sophisticated parallel Monte Carlo methods since it will very likely
+  not have the correct statistics across processors. You can provide your own
+  parallel generator using `PetscRandomRegister()`;
 
-   If you create a `PetscRandom()` using `PETSC_COMM_SELF` on several processors then
-   the SAME random numbers will be generated on all those processors. Use `PETSC_COMM_WORLD`
-   or the appropriate parallel communicator to eliminate this issue.
+  If you create a `PetscRandom()` using `PETSC_COMM_SELF` on several processors then
+  the SAME random numbers will be generated on all those processors. Use `PETSC_COMM_WORLD`
+  or the appropriate parallel communicator to eliminate this issue.
 
-   Use `VecSetRandom()` to set the elements of a vector to random numbers.
+  Use `VecSetRandom()` to set the elements of a vector to random numbers.
 
-   Example of Usage:
+  Example of Usage:
 .vb
       PetscRandomCreate(PETSC_COMM_SELF,&r);
       PetscRandomSetType(r,PETSCRAND48);
@@ -332,7 +333,7 @@ PetscErrorCode PetscRandomCreate(MPI_Comm comm, PetscRandom *r)
   PetscMPIInt rank;
 
   PetscFunctionBegin;
-  PetscValidPointer(r, 2);
+  PetscAssertPointer(r, 2);
   *r = NULL;
   PetscCall(PetscRandomInitializePackage());
 
@@ -351,16 +352,16 @@ PetscErrorCode PetscRandomCreate(MPI_Comm comm, PetscRandom *r)
 }
 
 /*@
-   PetscRandomSeed - Seed the random number generator.
+  PetscRandomSeed - Seed the random number generator.
 
-   Not collective
+  Not collective
 
-   Input Parameter:
-.  r - The random number generator context
+  Input Parameter:
+. r - The random number generator context
 
-   Level: intermediate
+  Level: intermediate
 
-   Usage:
+  Example Usage:
 .vb
       PetscRandomSetSeed(r,a positive integer);
       PetscRandomSeed(r);

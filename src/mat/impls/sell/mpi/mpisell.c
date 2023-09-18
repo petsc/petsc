@@ -22,7 +22,7 @@
 .seealso: `Mat`, `MATAIJ`, `MATBAIJ`, `MATSBAIJ`, `MatCreateSELL()`, `MatCreateSeqSELL()`, `MATSEQSELL`, `MATMPISELL`
 M*/
 
-PetscErrorCode MatDiagonalSet_MPISELL(Mat Y, Vec D, InsertMode is)
+static PetscErrorCode MatDiagonalSet_MPISELL(Mat Y, Vec D, InsertMode is)
 {
   Mat_MPISELL *sell = (Mat_MPISELL *)Y->data;
 
@@ -66,14 +66,15 @@ PetscErrorCode MatCreateColmap_MPISELL_Private(Mat mat)
     lastcol1 = col; \
     while (high1 - low1 > 5) { \
       t = (low1 + high1) / 2; \
-      if (*(cp1 + 8 * t) > col) high1 = t; \
+      if (cp1[sliceheight * t] > col) high1 = t; \
       else low1 = t; \
     } \
     for (_i = low1; _i < high1; _i++) { \
-      if (*(cp1 + 8 * _i) > col) break; \
-      if (*(cp1 + 8 * _i) == col) { \
-        if (addv == ADD_VALUES) *(vp1 + 8 * _i) += value; \
-        else *(vp1 + 8 * _i) = value; \
+      if (cp1[sliceheight * _i] > col) break; \
+      if (cp1[sliceheight * _i] == col) { \
+        if (addv == ADD_VALUES) vp1[sliceheight * _i] += value; \
+        else vp1[sliceheight * _i] = value; \
+        inserted = PETSC_TRUE; \
         goto a_noinsert; \
       } \
     } \
@@ -88,14 +89,14 @@ PetscErrorCode MatCreateColmap_MPISELL_Private(Mat mat)
       goto a_noinsert; \
     } \
     PetscCheck(nonew != -1, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Inserting a new nonzero at global row/column (%" PetscInt_FMT ", %" PetscInt_FMT ") into matrix", orow, ocol); \
-    MatSeqXSELLReallocateSELL(A, am, 1, nrow1, a->sliidx, row / 8, row, col, a->colidx, a->val, cp1, vp1, nonew, MatScalar); \
+    MatSeqXSELLReallocateSELL(A, am, 1, nrow1, a->sliidx, a->sliceheight, row / sliceheight, row, col, a->colidx, a->val, cp1, vp1, nonew, MatScalar); \
     /* shift up all the later entries in this row */ \
     for (ii = nrow1 - 1; ii >= _i; ii--) { \
-      *(cp1 + 8 * (ii + 1)) = *(cp1 + 8 * ii); \
-      *(vp1 + 8 * (ii + 1)) = *(vp1 + 8 * ii); \
+      cp1[sliceheight * (ii + 1)] = cp1[sliceheight * ii]; \
+      vp1[sliceheight * (ii + 1)] = vp1[sliceheight * ii]; \
     } \
-    *(cp1 + 8 * _i) = col; \
-    *(vp1 + 8 * _i) = value; \
+    cp1[sliceheight * _i] = col; \
+    vp1[sliceheight * _i] = value; \
     a->nz++; \
     nrow1++; \
     A->nonzerostate++; \
@@ -110,14 +111,15 @@ PetscErrorCode MatCreateColmap_MPISELL_Private(Mat mat)
     lastcol2 = col; \
     while (high2 - low2 > 5) { \
       t = (low2 + high2) / 2; \
-      if (*(cp2 + 8 * t) > col) high2 = t; \
+      if (cp2[sliceheight * t] > col) high2 = t; \
       else low2 = t; \
     } \
     for (_i = low2; _i < high2; _i++) { \
-      if (*(cp2 + 8 * _i) > col) break; \
-      if (*(cp2 + 8 * _i) == col) { \
-        if (addv == ADD_VALUES) *(vp2 + 8 * _i) += value; \
-        else *(vp2 + 8 * _i) = value; \
+      if (cp2[sliceheight * _i] > col) break; \
+      if (cp2[sliceheight * _i] == col) { \
+        if (addv == ADD_VALUES) vp2[sliceheight * _i] += value; \
+        else vp2[sliceheight * _i] = value; \
+        inserted = PETSC_TRUE; \
         goto b_noinsert; \
       } \
     } \
@@ -132,14 +134,14 @@ PetscErrorCode MatCreateColmap_MPISELL_Private(Mat mat)
       goto b_noinsert; \
     } \
     PetscCheck(nonew != -1, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Inserting a new nonzero at global row/column (%" PetscInt_FMT ", %" PetscInt_FMT ") into matrix", orow, ocol); \
-    MatSeqXSELLReallocateSELL(B, bm, 1, nrow2, b->sliidx, row / 8, row, col, b->colidx, b->val, cp2, vp2, nonew, MatScalar); \
+    MatSeqXSELLReallocateSELL(B, bm, 1, nrow2, b->sliidx, b->sliceheight, row / sliceheight, row, col, b->colidx, b->val, cp2, vp2, nonew, MatScalar); \
     /* shift up all the later entries in this row */ \
     for (ii = nrow2 - 1; ii >= _i; ii--) { \
-      *(cp2 + 8 * (ii + 1)) = *(cp2 + 8 * ii); \
-      *(vp2 + 8 * (ii + 1)) = *(vp2 + 8 * ii); \
+      cp2[sliceheight * (ii + 1)] = cp2[sliceheight * ii]; \
+      vp2[sliceheight * (ii + 1)] = vp2[sliceheight * ii]; \
     } \
-    *(cp2 + 8 * _i) = col; \
-    *(vp2 + 8 * _i) = value; \
+    cp2[sliceheight * _i] = col; \
+    vp2[sliceheight * _i] = value; \
     b->nz++; \
     nrow2++; \
     B->nonzerostate++; \
@@ -147,7 +149,7 @@ PetscErrorCode MatCreateColmap_MPISELL_Private(Mat mat)
     b->rlen[row] = nrow2; \
   }
 
-PetscErrorCode MatSetValues_MPISELL(Mat mat, PetscInt m, const PetscInt im[], PetscInt n, const PetscInt in[], const PetscScalar v[], InsertMode addv)
+static PetscErrorCode MatSetValues_MPISELL(Mat mat, PetscInt m, const PetscInt im[], PetscInt n, const PetscInt in[], const PetscScalar v[], InsertMode addv)
 {
   Mat_MPISELL *sell = (Mat_MPISELL *)mat->data;
   PetscScalar  value;
@@ -161,7 +163,7 @@ PetscErrorCode MatSetValues_MPISELL(Mat mat, PetscInt m, const PetscInt im[], Pe
   PetscBool    ignorezeroentries = a->ignorezeroentries, found;
   Mat          B                 = sell->B;
   Mat_SeqSELL *b                 = (Mat_SeqSELL *)B->data;
-  PetscInt    *cp1, *cp2, ii, _i, nrow1, nrow2, low1, high1, low2, high2, t, lastcol1, lastcol2;
+  PetscInt    *cp1, *cp2, ii, _i, nrow1, nrow2, low1, high1, low2, high2, t, lastcol1, lastcol2, sliceheight = a->sliceheight;
   MatScalar   *vp1, *vp2;
 
   PetscFunctionBegin;
@@ -171,14 +173,14 @@ PetscErrorCode MatSetValues_MPISELL(Mat mat, PetscInt m, const PetscInt im[], Pe
     if (im[i] >= rstart && im[i] < rend) {
       row      = im[i] - rstart;
       lastcol1 = -1;
-      shift1   = a->sliidx[row >> 3] + (row & 0x07); /* starting index of the row */
+      shift1   = a->sliidx[row / sliceheight] + (row % sliceheight); /* starting index of the row */
       cp1      = a->colidx + shift1;
       vp1      = a->val + shift1;
       nrow1    = a->rlen[row];
       low1     = 0;
       high1    = nrow1;
       lastcol2 = -1;
-      shift2   = b->sliidx[row >> 3] + (row & 0x07); /* starting index of the row */
+      shift2   = b->sliidx[row / sliceheight] + (row % sliceheight); /* starting index of the row */
       cp2      = b->colidx + shift2;
       vp2      = b->val + shift2;
       nrow2    = b->rlen[row];
@@ -192,6 +194,9 @@ PetscErrorCode MatSetValues_MPISELL(Mat mat, PetscInt m, const PetscInt im[], Pe
         if (in[j] >= cstart && in[j] < cend) {
           col = in[j] - cstart;
           MatSetValue_SeqSELL_Private(A, row, col, value, addv, im[i], in[j], cp1, vp1, lastcol1, low1, high1); /* set one value */
+#if defined(PETSC_HAVE_CUDA)
+          if (A->offloadmask != PETSC_OFFLOAD_UNALLOCATED && found) A->offloadmask = PETSC_OFFLOAD_CPU;
+#endif
         } else if (in[j] < 0) {
           continue;
         } else {
@@ -210,17 +215,21 @@ PetscErrorCode MatSetValues_MPISELL(Mat mat, PetscInt m, const PetscInt im[], Pe
               /* Reinitialize the variables required by MatSetValues_SeqSELL_B_Private() */
               B      = sell->B;
               b      = (Mat_SeqSELL *)B->data;
-              shift2 = b->sliidx[row >> 3] + (row & 0x07); /* starting index of the row */
+              shift2 = b->sliidx[row / sliceheight] + (row % sliceheight); /* starting index of the row */
               cp2    = b->colidx + shift2;
               vp2    = b->val + shift2;
               nrow2  = b->rlen[row];
               low2   = 0;
               high2  = nrow2;
+              found  = PETSC_FALSE;
             } else {
               PetscCheck(col >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Inserting a new nonzero at global row/column (%" PetscInt_FMT ", %" PetscInt_FMT ") into matrix", im[i], in[j]);
             }
           } else col = in[j];
           MatSetValue_SeqSELL_Private(B, row, col, value, addv, im[i], in[j], cp2, vp2, lastcol2, low2, high2); /* set one value */
+#if defined(PETSC_HAVE_CUDA)
+          if (B->offloadmask != PETSC_OFFLOAD_UNALLOCATED && found) B->offloadmask = PETSC_OFFLOAD_CPU;
+#endif
         }
       }
     } else {
@@ -238,7 +247,7 @@ PetscErrorCode MatSetValues_MPISELL(Mat mat, PetscInt m, const PetscInt im[], Pe
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatGetValues_MPISELL(Mat mat, PetscInt m, const PetscInt idxm[], PetscInt n, const PetscInt idxn[], PetscScalar v[])
+static PetscErrorCode MatGetValues_MPISELL(Mat mat, PetscInt m, const PetscInt idxm[], PetscInt n, const PetscInt idxn[], PetscScalar v[])
 {
   Mat_MPISELL *sell = (Mat_MPISELL *)mat->data;
   PetscInt     i, j, rstart = mat->rmap->rstart, rend = mat->rmap->rend;
@@ -273,9 +282,7 @@ PetscErrorCode MatGetValues_MPISELL(Mat mat, PetscInt m, const PetscInt idxm[], 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-extern PetscErrorCode MatMultDiagonalBlock_MPISELL(Mat, Vec, Vec);
-
-PetscErrorCode MatAssemblyBegin_MPISELL(Mat mat, MatAssemblyType mode)
+static PetscErrorCode MatAssemblyBegin_MPISELL(Mat mat, MatAssemblyType mode)
 {
   Mat_MPISELL *sell = (Mat_MPISELL *)mat->data;
   PetscInt     nstash, reallocs;
@@ -310,6 +317,9 @@ PetscErrorCode MatAssemblyEnd_MPISELL(Mat mat, MatAssemblyType mode)
     }
     PetscCall(MatStashScatterEnd_Private(&mat->stash));
   }
+#if defined(PETSC_HAVE_CUDA)
+  if (mat->offloadmask == PETSC_OFFLOAD_CPU) sell->A->offloadmask = PETSC_OFFLOAD_CPU;
+#endif
   PetscCall(MatAssemblyBegin(sell->A, mode));
   PetscCall(MatAssemblyEnd(sell->A, mode));
 
@@ -323,12 +333,12 @@ PetscErrorCode MatAssemblyEnd_MPISELL(Mat mat, MatAssemblyType mode)
   */
   if (!((Mat_SeqSELL *)sell->B->data)->nonew) {
     PetscCall(MPIU_Allreduce(&mat->was_assembled, &other_disassembled, 1, MPIU_BOOL, MPI_LAND, PetscObjectComm((PetscObject)mat)));
-    PetscCheck(!mat->was_assembled || other_disassembled, PETSC_COMM_SELF, PETSC_ERR_SUP, "MatDisAssemble not implemented yet");
+    if (mat->was_assembled && !other_disassembled) PetscCall(MatDisAssemble_MPISELL(mat));
   }
   if (!mat->was_assembled && mode == MAT_FINAL_ASSEMBLY) PetscCall(MatSetUpMultiply_MPISELL(mat));
-  /*
-  PetscCall(MatSetOption(sell->B,MAT_USE_INODES,PETSC_FALSE));
-  */
+#if defined(PETSC_HAVE_CUDA)
+  if (mat->offloadmask == PETSC_OFFLOAD_CPU && sell->B->offloadmask != PETSC_OFFLOAD_UNALLOCATED) sell->B->offloadmask = PETSC_OFFLOAD_CPU;
+#endif
   PetscCall(MatAssemblyBegin(sell->B, mode));
   PetscCall(MatAssemblyEnd(sell->B, mode));
   PetscCall(PetscFree2(sell->rowvalues, sell->rowindices));
@@ -340,10 +350,13 @@ PetscErrorCode MatAssemblyEnd_MPISELL(Mat mat, MatAssemblyType mode)
     PetscObjectState state = sell->A->nonzerostate + sell->B->nonzerostate;
     PetscCall(MPIU_Allreduce(&state, &mat->nonzerostate, 1, MPIU_INT64, MPI_SUM, PetscObjectComm((PetscObject)mat)));
   }
+#if defined(PETSC_HAVE_CUDA)
+  mat->offloadmask = PETSC_OFFLOAD_BOTH;
+#endif
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatZeroEntries_MPISELL(Mat A)
+static PetscErrorCode MatZeroEntries_MPISELL(Mat A)
 {
   Mat_MPISELL *l = (Mat_MPISELL *)A->data;
 
@@ -353,7 +366,7 @@ PetscErrorCode MatZeroEntries_MPISELL(Mat A)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatMult_MPISELL(Mat A, Vec xx, Vec yy)
+static PetscErrorCode MatMult_MPISELL(Mat A, Vec xx, Vec yy)
 {
   Mat_MPISELL *a = (Mat_MPISELL *)A->data;
   PetscInt     nt;
@@ -368,7 +381,7 @@ PetscErrorCode MatMult_MPISELL(Mat A, Vec xx, Vec yy)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatMultDiagonalBlock_MPISELL(Mat A, Vec bb, Vec xx)
+static PetscErrorCode MatMultDiagonalBlock_MPISELL(Mat A, Vec bb, Vec xx)
 {
   Mat_MPISELL *a = (Mat_MPISELL *)A->data;
 
@@ -377,7 +390,7 @@ PetscErrorCode MatMultDiagonalBlock_MPISELL(Mat A, Vec bb, Vec xx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatMultAdd_MPISELL(Mat A, Vec xx, Vec yy, Vec zz)
+static PetscErrorCode MatMultAdd_MPISELL(Mat A, Vec xx, Vec yy, Vec zz)
 {
   Mat_MPISELL *a = (Mat_MPISELL *)A->data;
 
@@ -389,7 +402,7 @@ PetscErrorCode MatMultAdd_MPISELL(Mat A, Vec xx, Vec yy, Vec zz)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatMultTranspose_MPISELL(Mat A, Vec xx, Vec yy)
+static PetscErrorCode MatMultTranspose_MPISELL(Mat A, Vec xx, Vec yy)
 {
   Mat_MPISELL *a = (Mat_MPISELL *)A->data;
 
@@ -404,7 +417,7 @@ PetscErrorCode MatMultTranspose_MPISELL(Mat A, Vec xx, Vec yy)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatIsTranspose_MPISELL(Mat Amat, Mat Bmat, PetscReal tol, PetscBool *f)
+static PetscErrorCode MatIsTranspose_MPISELL(Mat Amat, Mat Bmat, PetscReal tol, PetscBool *f)
 {
   MPI_Comm     comm;
   Mat_MPISELL *Asell = (Mat_MPISELL *)Amat->data, *Bsell;
@@ -444,7 +457,7 @@ PetscErrorCode MatIsTranspose_MPISELL(Mat Amat, Mat Bmat, PetscReal tol, PetscBo
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatMultTransposeAdd_MPISELL(Mat A, Vec xx, Vec yy, Vec zz)
+static PetscErrorCode MatMultTransposeAdd_MPISELL(Mat A, Vec xx, Vec yy, Vec zz)
 {
   Mat_MPISELL *a = (Mat_MPISELL *)A->data;
 
@@ -463,7 +476,7 @@ PetscErrorCode MatMultTransposeAdd_MPISELL(Mat A, Vec xx, Vec yy, Vec zz)
   This only works correctly for square matrices where the subblock A->A is the
    diagonal block
 */
-PetscErrorCode MatGetDiagonal_MPISELL(Mat A, Vec v)
+static PetscErrorCode MatGetDiagonal_MPISELL(Mat A, Vec v)
 {
   Mat_MPISELL *a = (Mat_MPISELL *)A->data;
 
@@ -474,7 +487,7 @@ PetscErrorCode MatGetDiagonal_MPISELL(Mat A, Vec v)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatScale_MPISELL(Mat A, PetscScalar aa)
+static PetscErrorCode MatScale_MPISELL(Mat A, PetscScalar aa)
 {
   Mat_MPISELL *a = (Mat_MPISELL *)A->data;
 
@@ -489,9 +502,7 @@ PetscErrorCode MatDestroy_MPISELL(Mat mat)
   Mat_MPISELL *sell = (Mat_MPISELL *)mat->data;
 
   PetscFunctionBegin;
-#if defined(PETSC_USE_LOG)
   PetscCall(PetscLogObjectState((PetscObject)mat, "Rows=%" PetscInt_FMT ", Cols=%" PetscInt_FMT, mat->rmap->N, mat->cmap->N));
-#endif
   PetscCall(MatStashDestroy_Private(&mat->stash));
   PetscCall(VecDestroy(&sell->diag));
   PetscCall(MatDestroy(&sell->A));
@@ -514,12 +525,15 @@ PetscErrorCode MatDestroy_MPISELL(Mat mat)
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatIsTranspose_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatMPISELLSetPreallocation_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatConvert_mpisell_mpiaij_C", NULL));
+#if defined(PETSC_HAVE_CUDA)
+  PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatConvert_mpisell_mpisellcuda_C", NULL));
+#endif
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatDiagonalScaleLocal_C", NULL));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #include <petscdraw.h>
-PetscErrorCode MatView_MPISELL_ASCIIorDraworSocket(Mat mat, PetscViewer viewer)
+static PetscErrorCode MatView_MPISELL_ASCIIorDraworSocket(Mat mat, PetscViewer viewer)
 {
   Mat_MPISELL      *sell = (Mat_MPISELL *)mat->data;
   PetscMPIInt       rank = sell->rank, size = sell->size;
@@ -610,9 +624,9 @@ PetscErrorCode MatView_MPISELL_ASCIIorDraworSocket(Mat mat, PetscViewer viewer)
     aval    = Aloc->val;
     for (i = 0; i < Aloc->totalslices; i++) { /* loop over slices */
       for (j = Aloc->sliidx[i]; j < Aloc->sliidx[i + 1]; j++) {
-        isnonzero = (PetscBool)((j - Aloc->sliidx[i]) / 8 < Aloc->rlen[(i << 3) + (j & 0x07)]);
-        if (isnonzero) {                                   /* check the mask bit */
-          row = (i << 3) + (j & 0x07) + mat->rmap->rstart; /* i<<3 is the starting row of this slice */
+        isnonzero = (PetscBool)((j - Aloc->sliidx[i]) / Aloc->sliceheight < Aloc->rlen[i * Aloc->sliceheight + j % Aloc->sliceheight]);
+        if (isnonzero) { /* check the mask bit */
+          row = i * Aloc->sliceheight + j % Aloc->sliceheight + mat->rmap->rstart;
           col = *acolidx + mat->rmap->rstart;
           PetscCall(MatSetValues(A, 1, &row, 1, &col, aval, INSERT_VALUES));
         }
@@ -627,9 +641,9 @@ PetscErrorCode MatView_MPISELL_ASCIIorDraworSocket(Mat mat, PetscViewer viewer)
     aval    = Aloc->val;
     for (i = 0; i < Aloc->totalslices; i++) {
       for (j = Aloc->sliidx[i]; j < Aloc->sliidx[i + 1]; j++) {
-        isnonzero = (PetscBool)((j - Aloc->sliidx[i]) / 8 < Aloc->rlen[(i << 3) + (j & 0x07)]);
+        isnonzero = (PetscBool)((j - Aloc->sliidx[i]) / Aloc->sliceheight < Aloc->rlen[i * Aloc->sliceheight + j % Aloc->sliceheight]);
         if (isnonzero) {
-          row = (i << 3) + (j & 0x07) + mat->rmap->rstart;
+          row = i * Aloc->sliceheight + j % Aloc->sliceheight + mat->rmap->rstart;
           col = sell->garray[*acolidx];
           PetscCall(MatSetValues(A, 1, &row, 1, &col, aval, INSERT_VALUES));
         }
@@ -656,7 +670,7 @@ PetscErrorCode MatView_MPISELL_ASCIIorDraworSocket(Mat mat, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatView_MPISELL(Mat mat, PetscViewer viewer)
+static PetscErrorCode MatView_MPISELL(Mat mat, PetscViewer viewer)
 {
   PetscBool iascii, isdraw, issocket, isbinary;
 
@@ -669,7 +683,7 @@ PetscErrorCode MatView_MPISELL(Mat mat, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatGetGhosts_MPISELL(Mat mat, PetscInt *nghosts, const PetscInt *ghosts[])
+static PetscErrorCode MatGetGhosts_MPISELL(Mat mat, PetscInt *nghosts, const PetscInt *ghosts[])
 {
   Mat_MPISELL *sell = (Mat_MPISELL *)mat->data;
 
@@ -679,7 +693,7 @@ PetscErrorCode MatGetGhosts_MPISELL(Mat mat, PetscInt *nghosts, const PetscInt *
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatGetInfo_MPISELL(Mat matin, MatInfoType flag, MatInfo *info)
+static PetscErrorCode MatGetInfo_MPISELL(Mat matin, MatInfoType flag, MatInfo *info)
 {
   Mat_MPISELL   *mat = (Mat_MPISELL *)matin->data;
   Mat            A = mat->A, B = mat->B;
@@ -731,7 +745,7 @@ PetscErrorCode MatGetInfo_MPISELL(Mat matin, MatInfoType flag, MatInfo *info)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatSetOption_MPISELL(Mat A, MatOption op, PetscBool flg)
+static PetscErrorCode MatSetOption_MPISELL(Mat A, MatOption op, PetscBool flg)
 {
   Mat_MPISELL *a = (Mat_MPISELL *)A->data;
 
@@ -791,7 +805,7 @@ PetscErrorCode MatSetOption_MPISELL(Mat A, MatOption op, PetscBool flg)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatDiagonalScale_MPISELL(Mat mat, Vec ll, Vec rr)
+static PetscErrorCode MatDiagonalScale_MPISELL(Mat mat, Vec ll, Vec rr)
 {
   Mat_MPISELL *sell = (Mat_MPISELL *)mat->data;
   Mat          a = sell->A, b = sell->B;
@@ -821,7 +835,7 @@ PetscErrorCode MatDiagonalScale_MPISELL(Mat mat, Vec ll, Vec rr)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatSetUnfactored_MPISELL(Mat A)
+static PetscErrorCode MatSetUnfactored_MPISELL(Mat A)
 {
   Mat_MPISELL *a = (Mat_MPISELL *)A->data;
 
@@ -830,7 +844,7 @@ PetscErrorCode MatSetUnfactored_MPISELL(Mat A)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatEqual_MPISELL(Mat A, Mat B, PetscBool *flag)
+static PetscErrorCode MatEqual_MPISELL(Mat A, Mat B, PetscBool *flag)
 {
   Mat_MPISELL *matB = (Mat_MPISELL *)B->data, *matA = (Mat_MPISELL *)A->data;
   Mat          a, b, c, d;
@@ -848,7 +862,7 @@ PetscErrorCode MatEqual_MPISELL(Mat A, Mat B, PetscBool *flag)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatCopy_MPISELL(Mat A, Mat B, MatStructure str)
+static PetscErrorCode MatCopy_MPISELL(Mat A, Mat B, MatStructure str)
 {
   Mat_MPISELL *a = (Mat_MPISELL *)A->data;
   Mat_MPISELL *b = (Mat_MPISELL *)B->data;
@@ -869,16 +883,14 @@ PetscErrorCode MatCopy_MPISELL(Mat A, Mat B, MatStructure str)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatSetUp_MPISELL(Mat A)
+static PetscErrorCode MatSetUp_MPISELL(Mat A)
 {
   PetscFunctionBegin;
   PetscCall(MatMPISELLSetPreallocation(A, PETSC_DEFAULT, NULL, PETSC_DEFAULT, NULL));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-extern PetscErrorCode MatConjugate_SeqSELL(Mat);
-
-PetscErrorCode MatConjugate_MPISELL(Mat mat)
+static PetscErrorCode MatConjugate_MPISELL(Mat mat)
 {
   PetscFunctionBegin;
   if (PetscDefined(USE_COMPLEX)) {
@@ -890,7 +902,7 @@ PetscErrorCode MatConjugate_MPISELL(Mat mat)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatRealPart_MPISELL(Mat A)
+static PetscErrorCode MatRealPart_MPISELL(Mat A)
 {
   Mat_MPISELL *a = (Mat_MPISELL *)A->data;
 
@@ -900,7 +912,7 @@ PetscErrorCode MatRealPart_MPISELL(Mat A)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatImaginaryPart_MPISELL(Mat A)
+static PetscErrorCode MatImaginaryPart_MPISELL(Mat A)
 {
   Mat_MPISELL *a = (Mat_MPISELL *)A->data;
 
@@ -910,7 +922,7 @@ PetscErrorCode MatImaginaryPart_MPISELL(Mat A)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatInvertBlockDiagonal_MPISELL(Mat A, const PetscScalar **values)
+static PetscErrorCode MatInvertBlockDiagonal_MPISELL(Mat A, const PetscScalar **values)
 {
   Mat_MPISELL *a = (Mat_MPISELL *)A->data;
 
@@ -932,7 +944,7 @@ static PetscErrorCode MatSetRandom_MPISELL(Mat x, PetscRandom rctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatSetFromOptions_MPISELL(Mat A, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode MatSetFromOptions_MPISELL(Mat A, PetscOptionItems *PetscOptionsObject)
 {
   PetscFunctionBegin;
   PetscOptionsHeadBegin(PetscOptionsObject, "MPISELL options");
@@ -940,7 +952,7 @@ PetscErrorCode MatSetFromOptions_MPISELL(Mat A, PetscOptionItems *PetscOptionsOb
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatShift_MPISELL(Mat Y, PetscScalar a)
+static PetscErrorCode MatShift_MPISELL(Mat Y, PetscScalar a)
 {
   Mat_MPISELL *msell = (Mat_MPISELL *)Y->data;
   Mat_SeqSELL *sell  = (Mat_SeqSELL *)msell->A->data;
@@ -957,7 +969,7 @@ PetscErrorCode MatShift_MPISELL(Mat Y, PetscScalar a)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatMissingDiagonal_MPISELL(Mat A, PetscBool *missing, PetscInt *d)
+static PetscErrorCode MatMissingDiagonal_MPISELL(Mat A, PetscBool *missing, PetscInt *d)
 {
   Mat_MPISELL *a = (Mat_MPISELL *)A->data;
 
@@ -972,167 +984,14 @@ PetscErrorCode MatMissingDiagonal_MPISELL(Mat A, PetscBool *missing, PetscInt *d
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatGetDiagonalBlock_MPISELL(Mat A, Mat *a)
+static PetscErrorCode MatGetDiagonalBlock_MPISELL(Mat A, Mat *a)
 {
   PetscFunctionBegin;
   *a = ((Mat_MPISELL *)A->data)->A;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static struct _MatOps MatOps_Values = {MatSetValues_MPISELL,
-                                       NULL,
-                                       NULL,
-                                       MatMult_MPISELL,
-                                       /* 4*/ MatMultAdd_MPISELL,
-                                       MatMultTranspose_MPISELL,
-                                       MatMultTransposeAdd_MPISELL,
-                                       NULL,
-                                       NULL,
-                                       NULL,
-                                       /*10*/ NULL,
-                                       NULL,
-                                       NULL,
-                                       MatSOR_MPISELL,
-                                       NULL,
-                                       /*15*/ MatGetInfo_MPISELL,
-                                       MatEqual_MPISELL,
-                                       MatGetDiagonal_MPISELL,
-                                       MatDiagonalScale_MPISELL,
-                                       NULL,
-                                       /*20*/ MatAssemblyBegin_MPISELL,
-                                       MatAssemblyEnd_MPISELL,
-                                       MatSetOption_MPISELL,
-                                       MatZeroEntries_MPISELL,
-                                       /*24*/ NULL,
-                                       NULL,
-                                       NULL,
-                                       NULL,
-                                       NULL,
-                                       /*29*/ MatSetUp_MPISELL,
-                                       NULL,
-                                       NULL,
-                                       MatGetDiagonalBlock_MPISELL,
-                                       NULL,
-                                       /*34*/ MatDuplicate_MPISELL,
-                                       NULL,
-                                       NULL,
-                                       NULL,
-                                       NULL,
-                                       /*39*/ NULL,
-                                       NULL,
-                                       NULL,
-                                       MatGetValues_MPISELL,
-                                       MatCopy_MPISELL,
-                                       /*44*/ NULL,
-                                       MatScale_MPISELL,
-                                       MatShift_MPISELL,
-                                       MatDiagonalSet_MPISELL,
-                                       NULL,
-                                       /*49*/ MatSetRandom_MPISELL,
-                                       NULL,
-                                       NULL,
-                                       NULL,
-                                       NULL,
-                                       /*54*/ MatFDColoringCreate_MPIXAIJ,
-                                       NULL,
-                                       MatSetUnfactored_MPISELL,
-                                       NULL,
-                                       NULL,
-                                       /*59*/ NULL,
-                                       MatDestroy_MPISELL,
-                                       MatView_MPISELL,
-                                       NULL,
-                                       NULL,
-                                       /*64*/ NULL,
-                                       NULL,
-                                       NULL,
-                                       NULL,
-                                       NULL,
-                                       /*69*/ NULL,
-                                       NULL,
-                                       NULL,
-                                       NULL,
-                                       NULL,
-                                       NULL,
-                                       /*75*/ MatFDColoringApply_AIJ, /* reuse AIJ function */
-                                       MatSetFromOptions_MPISELL,
-                                       NULL,
-                                       NULL,
-                                       NULL,
-                                       /*80*/ NULL,
-                                       NULL,
-                                       NULL,
-                                       /*83*/ NULL,
-                                       NULL,
-                                       NULL,
-                                       NULL,
-                                       NULL,
-                                       NULL,
-                                       /*89*/ NULL,
-                                       NULL,
-                                       NULL,
-                                       NULL,
-                                       NULL,
-                                       /*94*/ NULL,
-                                       NULL,
-                                       NULL,
-                                       NULL,
-                                       NULL,
-                                       /*99*/ NULL,
-                                       NULL,
-                                       NULL,
-                                       MatConjugate_MPISELL,
-                                       NULL,
-                                       /*104*/ NULL,
-                                       MatRealPart_MPISELL,
-                                       MatImaginaryPart_MPISELL,
-                                       NULL,
-                                       NULL,
-                                       /*109*/ NULL,
-                                       NULL,
-                                       NULL,
-                                       NULL,
-                                       MatMissingDiagonal_MPISELL,
-                                       /*114*/ NULL,
-                                       NULL,
-                                       MatGetGhosts_MPISELL,
-                                       NULL,
-                                       NULL,
-                                       /*119*/ NULL,
-                                       NULL,
-                                       NULL,
-                                       NULL,
-                                       NULL,
-                                       /*124*/ NULL,
-                                       NULL,
-                                       MatInvertBlockDiagonal_MPISELL,
-                                       NULL,
-                                       NULL,
-                                       /*129*/ NULL,
-                                       NULL,
-                                       NULL,
-                                       NULL,
-                                       NULL,
-                                       /*134*/ NULL,
-                                       NULL,
-                                       NULL,
-                                       NULL,
-                                       NULL,
-                                       /*139*/ NULL,
-                                       NULL,
-                                       NULL,
-                                       MatFDColoringSetUp_MPIXAIJ,
-                                       NULL,
-                                       /*144*/ NULL,
-                                       NULL,
-                                       NULL,
-                                       NULL,
-                                       NULL,
-                                       NULL,
-                                       /*150*/ NULL,
-                                       NULL};
-
-PetscErrorCode MatStoreValues_MPISELL(Mat mat)
+static PetscErrorCode MatStoreValues_MPISELL(Mat mat)
 {
   Mat_MPISELL *sell = (Mat_MPISELL *)mat->data;
 
@@ -1142,7 +1001,7 @@ PetscErrorCode MatStoreValues_MPISELL(Mat mat)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatRetrieveValues_MPISELL(Mat mat)
+static PetscErrorCode MatRetrieveValues_MPISELL(Mat mat)
 {
   Mat_MPISELL *sell = (Mat_MPISELL *)mat->data;
 
@@ -1152,7 +1011,7 @@ PetscErrorCode MatRetrieveValues_MPISELL(Mat mat)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatMPISELLSetPreallocation_MPISELL(Mat B, PetscInt d_rlenmax, const PetscInt d_rlen[], PetscInt o_rlenmax, const PetscInt o_rlen[])
+static PetscErrorCode MatMPISELLSetPreallocation_MPISELL(Mat B, PetscInt d_rlenmax, const PetscInt d_rlen[], PetscInt o_rlenmax, const PetscInt o_rlen[])
 {
   Mat_MPISELL *b;
 
@@ -1186,7 +1045,7 @@ PetscErrorCode MatMPISELLSetPreallocation_MPISELL(Mat B, PetscInt d_rlenmax, con
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatDuplicate_MPISELL(Mat matin, MatDuplicateOption cpvalues, Mat *newmat)
+static PetscErrorCode MatDuplicate_MPISELL(Mat matin, MatDuplicateOption cpvalues, Mat *newmat)
 {
   Mat          mat;
   Mat_MPISELL *a, *oldmat = (Mat_MPISELL *)matin->data;
@@ -1239,36 +1098,189 @@ PetscErrorCode MatDuplicate_MPISELL(Mat matin, MatDuplicateOption cpvalues, Mat 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+static const struct _MatOps MatOps_Values = {MatSetValues_MPISELL,
+                                             NULL,
+                                             NULL,
+                                             MatMult_MPISELL,
+                                             /* 4*/ MatMultAdd_MPISELL,
+                                             MatMultTranspose_MPISELL,
+                                             MatMultTransposeAdd_MPISELL,
+                                             NULL,
+                                             NULL,
+                                             NULL,
+                                             /*10*/ NULL,
+                                             NULL,
+                                             NULL,
+                                             MatSOR_MPISELL,
+                                             NULL,
+                                             /*15*/ MatGetInfo_MPISELL,
+                                             MatEqual_MPISELL,
+                                             MatGetDiagonal_MPISELL,
+                                             MatDiagonalScale_MPISELL,
+                                             NULL,
+                                             /*20*/ MatAssemblyBegin_MPISELL,
+                                             MatAssemblyEnd_MPISELL,
+                                             MatSetOption_MPISELL,
+                                             MatZeroEntries_MPISELL,
+                                             /*24*/ NULL,
+                                             NULL,
+                                             NULL,
+                                             NULL,
+                                             NULL,
+                                             /*29*/ MatSetUp_MPISELL,
+                                             NULL,
+                                             NULL,
+                                             MatGetDiagonalBlock_MPISELL,
+                                             NULL,
+                                             /*34*/ MatDuplicate_MPISELL,
+                                             NULL,
+                                             NULL,
+                                             NULL,
+                                             NULL,
+                                             /*39*/ NULL,
+                                             NULL,
+                                             NULL,
+                                             MatGetValues_MPISELL,
+                                             MatCopy_MPISELL,
+                                             /*44*/ NULL,
+                                             MatScale_MPISELL,
+                                             MatShift_MPISELL,
+                                             MatDiagonalSet_MPISELL,
+                                             NULL,
+                                             /*49*/ MatSetRandom_MPISELL,
+                                             NULL,
+                                             NULL,
+                                             NULL,
+                                             NULL,
+                                             /*54*/ MatFDColoringCreate_MPIXAIJ,
+                                             NULL,
+                                             MatSetUnfactored_MPISELL,
+                                             NULL,
+                                             NULL,
+                                             /*59*/ NULL,
+                                             MatDestroy_MPISELL,
+                                             MatView_MPISELL,
+                                             NULL,
+                                             NULL,
+                                             /*64*/ NULL,
+                                             NULL,
+                                             NULL,
+                                             NULL,
+                                             NULL,
+                                             /*69*/ NULL,
+                                             NULL,
+                                             NULL,
+                                             NULL,
+                                             NULL,
+                                             NULL,
+                                             /*75*/ MatFDColoringApply_AIJ, /* reuse AIJ function */
+                                             MatSetFromOptions_MPISELL,
+                                             NULL,
+                                             NULL,
+                                             NULL,
+                                             /*80*/ NULL,
+                                             NULL,
+                                             NULL,
+                                             /*83*/ NULL,
+                                             NULL,
+                                             NULL,
+                                             NULL,
+                                             NULL,
+                                             NULL,
+                                             /*89*/ NULL,
+                                             NULL,
+                                             NULL,
+                                             NULL,
+                                             NULL,
+                                             /*94*/ NULL,
+                                             NULL,
+                                             NULL,
+                                             NULL,
+                                             NULL,
+                                             /*99*/ NULL,
+                                             NULL,
+                                             NULL,
+                                             MatConjugate_MPISELL,
+                                             NULL,
+                                             /*104*/ NULL,
+                                             MatRealPart_MPISELL,
+                                             MatImaginaryPart_MPISELL,
+                                             NULL,
+                                             NULL,
+                                             /*109*/ NULL,
+                                             NULL,
+                                             NULL,
+                                             NULL,
+                                             MatMissingDiagonal_MPISELL,
+                                             /*114*/ NULL,
+                                             NULL,
+                                             MatGetGhosts_MPISELL,
+                                             NULL,
+                                             NULL,
+                                             /*119*/ MatMultDiagonalBlock_MPISELL,
+                                             NULL,
+                                             NULL,
+                                             NULL,
+                                             NULL,
+                                             /*124*/ NULL,
+                                             NULL,
+                                             MatInvertBlockDiagonal_MPISELL,
+                                             NULL,
+                                             NULL,
+                                             /*129*/ NULL,
+                                             NULL,
+                                             NULL,
+                                             NULL,
+                                             NULL,
+                                             /*134*/ NULL,
+                                             NULL,
+                                             NULL,
+                                             NULL,
+                                             NULL,
+                                             /*139*/ NULL,
+                                             NULL,
+                                             NULL,
+                                             MatFDColoringSetUp_MPIXAIJ,
+                                             NULL,
+                                             /*144*/ NULL,
+                                             NULL,
+                                             NULL,
+                                             NULL,
+                                             NULL,
+                                             NULL,
+                                             /*150*/ NULL,
+                                             NULL};
+
 /*@C
-   MatMPISELLSetPreallocation - Preallocates memory for a `MATMPISELL` sparse parallel matrix in sell format.
-   For good matrix assembly performance the user should preallocate the matrix storage by
-   setting the parameters `d_nz` (or `d_nnz`) and `o_nz` (or `o_nnz`).
+  MatMPISELLSetPreallocation - Preallocates memory for a `MATMPISELL` sparse parallel matrix in sell format.
+  For good matrix assembly performance the user should preallocate the matrix storage by
+  setting the parameters `d_nz` (or `d_nnz`) and `o_nz` (or `o_nnz`).
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  B - the matrix
-.  d_nz  - number of nonzeros per row in DIAGONAL portion of local submatrix
+  Input Parameters:
++ B     - the matrix
+. d_nz  - number of nonzeros per row in DIAGONAL portion of local submatrix
            (same value is used for all local rows)
-.  d_nnz - array containing the number of nonzeros in the various rows of the
+. d_nnz - array containing the number of nonzeros in the various rows of the
            DIAGONAL portion of the local submatrix (possibly different for each row)
            or NULL (`PETSC_NULL_INTEGER` in Fortran), if `d_nz` is used to specify the nonzero structure.
            The size of this array is equal to the number of local rows, i.e 'm'.
            For matrices that will be factored, you must leave room for (and set)
            the diagonal entry even if it is zero.
-.  o_nz  - number of nonzeros per row in the OFF-DIAGONAL portion of local
+. o_nz  - number of nonzeros per row in the OFF-DIAGONAL portion of local
            submatrix (same value is used for all local rows).
--  o_nnz - array containing the number of nonzeros in the various rows of the
+- o_nnz - array containing the number of nonzeros in the various rows of the
            OFF-DIAGONAL portion of the local submatrix (possibly different for
            each row) or NULL (`PETSC_NULL_INTEGER` in Fortran), if `o_nz` is used to specify the nonzero
            structure. The size of this array is equal to the number
            of local rows, i.e 'm'.
 
-   Example usage:
-   Consider the following 8x8 matrix with 34 non-zero values, that is
-   assembled across 3 processors. Lets assume that proc0 owns 3 rows,
-   proc1 owns 3 rows, proc2 owns 2 rows. This division can be shown
-   as follows
+  Example usage:
+  Consider the following 8x8 matrix with 34 non-zero values, that is
+  assembled across 3 processors. Lets assume that proc0 owns 3 rows,
+  proc1 owns 3 rows, proc2 owns 2 rows. This division can be shown
+  as follows
 
 .vb
             1  2  0  |  0  3  0  |  0  4
@@ -1283,7 +1295,7 @@ PetscErrorCode MatDuplicate_MPISELL(Mat matin, MatDuplicateOption cpvalues, Mat 
            30  0  0  | 31 32 33  |  0 34
 .ve
 
-   This can be represented as a collection of submatrices as
+  This can be represented as a collection of submatrices as
 
 .vb
       A B C
@@ -1291,74 +1303,74 @@ PetscErrorCode MatDuplicate_MPISELL(Mat matin, MatDuplicateOption cpvalues, Mat 
       G H I
 .ve
 
-   Where the submatrices A,B,C are owned by proc0, D,E,F are
-   owned by proc1, G,H,I are owned by proc2.
+  Where the submatrices A,B,C are owned by proc0, D,E,F are
+  owned by proc1, G,H,I are owned by proc2.
 
-   The 'm' parameters for proc0,proc1,proc2 are 3,3,2 respectively.
-   The 'n' parameters for proc0,proc1,proc2 are 3,3,2 respectively.
-   The 'M','N' parameters are 8,8, and have the same values on all procs.
+  The 'm' parameters for proc0,proc1,proc2 are 3,3,2 respectively.
+  The 'n' parameters for proc0,proc1,proc2 are 3,3,2 respectively.
+  The 'M','N' parameters are 8,8, and have the same values on all procs.
 
-   The DIAGONAL submatrices corresponding to proc0,proc1,proc2 are
-   submatrices [A], [E], [I] respectively. The OFF-DIAGONAL submatrices
-   corresponding to proc0,proc1,proc2 are [BC], [DF], [GH] respectively.
-   Internally, each processor stores the DIAGONAL part, and the OFF-DIAGONAL
-   part as `MATSEQSELL` matrices. For example, proc1 will store [E] as a `MATSEQSELL`
-   matrix, ans [DF] as another SeqSELL matrix.
+  The DIAGONAL submatrices corresponding to proc0,proc1,proc2 are
+  submatrices [A], [E], [I] respectively. The OFF-DIAGONAL submatrices
+  corresponding to proc0,proc1,proc2 are [BC], [DF], [GH] respectively.
+  Internally, each processor stores the DIAGONAL part, and the OFF-DIAGONAL
+  part as `MATSEQSELL` matrices. For example, proc1 will store [E] as a `MATSEQSELL`
+  matrix, ans [DF] as another SeqSELL matrix.
 
-   When `d_nz`, `o_nz` parameters are specified, `d_nz` storage elements are
-   allocated for every row of the local diagonal submatrix, and o_nz
-   storage locations are allocated for every row of the OFF-DIAGONAL submat.
-   One way to choose `d_nz` and `o_nz` is to use the max nonzerors per local
-   rows for each of the local DIAGONAL, and the OFF-DIAGONAL submatrices.
-   In this case, the values of d_nz,o_nz are
+  When `d_nz`, `o_nz` parameters are specified, `d_nz` storage elements are
+  allocated for every row of the local diagonal submatrix, and o_nz
+  storage locations are allocated for every row of the OFF-DIAGONAL submat.
+  One way to choose `d_nz` and `o_nz` is to use the max nonzerors per local
+  rows for each of the local DIAGONAL, and the OFF-DIAGONAL submatrices.
+  In this case, the values of d_nz,o_nz are
 .vb
      proc0  dnz = 2, o_nz = 2
      proc1  dnz = 3, o_nz = 2
      proc2  dnz = 1, o_nz = 4
 .ve
-   We are allocating m*(d_nz+o_nz) storage locations for every proc. This
-   translates to 3*(2+2)=12 for proc0, 3*(3+2)=15 for proc1, 2*(1+4)=10
-   for proc3. i.e we are using 12+15+10=37 storage locations to store
-   34 values.
+  We are allocating m*(d_nz+o_nz) storage locations for every proc. This
+  translates to 3*(2+2)=12 for proc0, 3*(3+2)=15 for proc1, 2*(1+4)=10
+  for proc3. i.e we are using 12+15+10=37 storage locations to store
+  34 values.
 
-   When `d_nnz`, `o_nnz` parameters are specified, the storage is specified
-   for every row, corresponding to both DIAGONAL and OFF-DIAGONAL submatrices.
-   In the above case the values for d_nnz,o_nnz are
+  When `d_nnz`, `o_nnz` parameters are specified, the storage is specified
+  for every row, corresponding to both DIAGONAL and OFF-DIAGONAL submatrices.
+  In the above case the values for d_nnz,o_nnz are
 .vb
      proc0 d_nnz = [2,2,2] and o_nnz = [2,2,2]
      proc1 d_nnz = [3,3,2] and o_nnz = [2,1,1]
      proc2 d_nnz = [1,1]   and o_nnz = [4,4]
 .ve
-   Here the space allocated is according to nz (or maximum values in the nnz
-   if nnz is provided) for DIAGONAL and OFF-DIAGONAL submatrices, i.e (2+2+3+2)*3+(1+4)*2=37
+  Here the space allocated is according to nz (or maximum values in the nnz
+  if nnz is provided) for DIAGONAL and OFF-DIAGONAL submatrices, i.e (2+2+3+2)*3+(1+4)*2=37
 
-   Level: intermediate
+  Level: intermediate
 
-   Notes:
-   If the *_nnz parameter is given then the *_nz parameter is ignored
+  Notes:
+  If the *_nnz parameter is given then the *_nz parameter is ignored
 
-   The stored row and column indices begin with zero.
+  The stored row and column indices begin with zero.
 
-   The parallel matrix is partitioned such that the first m0 rows belong to
-   process 0, the next m1 rows belong to process 1, the next m2 rows belong
-   to process 2 etc.. where m0,m1,m2... are the input parameter 'm'.
+  The parallel matrix is partitioned such that the first m0 rows belong to
+  process 0, the next m1 rows belong to process 1, the next m2 rows belong
+  to process 2 etc.. where m0,m1,m2... are the input parameter 'm'.
 
-   The DIAGONAL portion of the local submatrix of a processor can be defined
-   as the submatrix which is obtained by extraction the part corresponding to
-   the rows r1-r2 and columns c1-c2 of the global matrix, where r1 is the
-   first row that belongs to the processor, r2 is the last row belonging to
-   the this processor, and c1-c2 is range of indices of the local part of a
-   vector suitable for applying the matrix to.  This is an mxn matrix.  In the
-   common case of a square matrix, the row and column ranges are the same and
-   the DIAGONAL part is also square. The remaining portion of the local
-   submatrix (mxN) constitute the OFF-DIAGONAL portion.
+  The DIAGONAL portion of the local submatrix of a processor can be defined
+  as the submatrix which is obtained by extraction the part corresponding to
+  the rows r1-r2 and columns c1-c2 of the global matrix, where r1 is the
+  first row that belongs to the processor, r2 is the last row belonging to
+  the this processor, and c1-c2 is range of indices of the local part of a
+  vector suitable for applying the matrix to.  This is an mxn matrix.  In the
+  common case of a square matrix, the row and column ranges are the same and
+  the DIAGONAL part is also square. The remaining portion of the local
+  submatrix (mxN) constitute the OFF-DIAGONAL portion.
 
-   If `o_nnz`, `d_nnz` are specified, then `o_nz`, and `d_nz` are ignored.
+  If `o_nnz`, `d_nnz` are specified, then `o_nz`, and `d_nz` are ignored.
 
-   You can call `MatGetInfo()` to get information on how effective the preallocation was;
-   for example the fields mallocs,nz_allocated,nz_used,nz_unneeded;
-   You can also run with the option -info and look for messages with the string
-   malloc in them to see if additional memory allocation was needed.
+  You can call `MatGetInfo()` to get information on how effective the preallocation was;
+  for example the fields mallocs,nz_allocated,nz_used,nz_unneeded;
+  You can also run with the option -info and look for messages with the string
+  malloc in them to see if additional memory allocation was needed.
 
 .seealso: `Mat`, `MatCreate()`, `MatCreateSeqSELL()`, `MatSetValues()`, `MatCreatesell()`,
           `MATMPISELL`, `MatGetInfo()`, `PetscSplitOwnership()`, `MATSELL`
@@ -1385,47 +1397,47 @@ PetscErrorCode MatMPISELLSetPreallocation(Mat B, PetscInt d_nz, const PetscInt d
 M*/
 
 /*@C
-   MatCreateSELL - Creates a sparse parallel matrix in `MATSELL` format.
+  MatCreateSELL - Creates a sparse parallel matrix in `MATSELL` format.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  comm - MPI communicator
-.  m - number of local rows (or `PETSC_DECIDE` to have calculated if M is given)
+  Input Parameters:
++ comm      - MPI communicator
+. m         - number of local rows (or `PETSC_DECIDE` to have calculated if M is given)
            This value should be the same as the local size used in creating the
            y vector for the matrix-vector product y = Ax.
-.  n - This value should be the same as the local size used in creating the
+. n         - This value should be the same as the local size used in creating the
        x vector for the matrix-vector product y = Ax. (or `PETSC_DECIDE` to have
        calculated if `N` is given) For square matrices n is almost always `m`.
-.  M - number of global rows (or `PETSC_DETERMINE` to have calculated if `m` is given)
-.  N - number of global columns (or `PETSC_DETERMINE` to have calculated if `n` is given)
-.  d_rlenmax - max number of nonzeros per row in DIAGONAL portion of local submatrix
+. M         - number of global rows (or `PETSC_DETERMINE` to have calculated if `m` is given)
+. N         - number of global columns (or `PETSC_DETERMINE` to have calculated if `n` is given)
+. d_rlenmax - max number of nonzeros per row in DIAGONAL portion of local submatrix
                (same value is used for all local rows)
-.  d_rlen - array containing the number of nonzeros in the various rows of the
+. d_rlen    - array containing the number of nonzeros in the various rows of the
             DIAGONAL portion of the local submatrix (possibly different for each row)
             or `NULL`, if d_rlenmax is used to specify the nonzero structure.
             The size of this array is equal to the number of local rows, i.e `m`.
-.  o_rlenmax - max number of nonzeros per row in the OFF-DIAGONAL portion of local
+. o_rlenmax - max number of nonzeros per row in the OFF-DIAGONAL portion of local
                submatrix (same value is used for all local rows).
--  o_rlen - array containing the number of nonzeros in the various rows of the
+- o_rlen    - array containing the number of nonzeros in the various rows of the
             OFF-DIAGONAL portion of the local submatrix (possibly different for
             each row) or `NULL`, if `o_rlenmax` is used to specify the nonzero
             structure. The size of this array is equal to the number
             of local rows, i.e `m`.
 
-   Output Parameter:
-.  A - the matrix
+  Output Parameter:
+. A - the matrix
 
-   Options Database Key:
--  -mat_sell_oneindex - Internally use indexing starting at 1
+  Options Database Key:
+. -mat_sell_oneindex - Internally use indexing starting at 1
         rather than 0.  When calling `MatSetValues()`,
         the user still MUST index entries starting at 0!
 
-   Example:
-   Consider the following 8x8 matrix with 34 non-zero values, that is
-   assembled across 3 processors. Lets assume that proc0 owns 3 rows,
-   proc1 owns 3 rows, proc2 owns 2 rows. This division can be shown
-   as follows
+  Example:
+  Consider the following 8x8 matrix with 34 non-zero values, that is
+  assembled across 3 processors. Lets assume that proc0 owns 3 rows,
+  proc1 owns 3 rows, proc2 owns 2 rows. This division can be shown
+  as follows
 
 .vb
             1  2  0  |  0  3  0  |  0  4
@@ -1440,102 +1452,102 @@ M*/
            30  0  0  | 31 32 33  |  0 34
 .ve
 
-   This can be represented as a collection of submatrices as
+  This can be represented as a collection of submatrices as
 .vb
       A B C
       D E F
       G H I
 .ve
 
-   Where the submatrices A,B,C are owned by proc0, D,E,F are
-   owned by proc1, G,H,I are owned by proc2.
+  Where the submatrices A,B,C are owned by proc0, D,E,F are
+  owned by proc1, G,H,I are owned by proc2.
 
-   The 'm' parameters for proc0,proc1,proc2 are 3,3,2 respectively.
-   The 'n' parameters for proc0,proc1,proc2 are 3,3,2 respectively.
-   The 'M','N' parameters are 8,8, and have the same values on all procs.
+  The 'm' parameters for proc0,proc1,proc2 are 3,3,2 respectively.
+  The 'n' parameters for proc0,proc1,proc2 are 3,3,2 respectively.
+  The 'M','N' parameters are 8,8, and have the same values on all procs.
 
-   The DIAGONAL submatrices corresponding to proc0,proc1,proc2 are
-   submatrices [A], [E], [I] respectively. The OFF-DIAGONAL submatrices
-   corresponding to proc0,proc1,proc2 are [BC], [DF], [GH] respectively.
-   Internally, each processor stores the DIAGONAL part, and the OFF-DIAGONAL
-   part as `MATSEQSELL` matrices. For example, proc1 will store [E] as a `MATSEQSELL`
-   matrix, ans [DF] as another `MATSEQSELL` matrix.
+  The DIAGONAL submatrices corresponding to proc0,proc1,proc2 are
+  submatrices [A], [E], [I] respectively. The OFF-DIAGONAL submatrices
+  corresponding to proc0,proc1,proc2 are [BC], [DF], [GH] respectively.
+  Internally, each processor stores the DIAGONAL part, and the OFF-DIAGONAL
+  part as `MATSEQSELL` matrices. For example, proc1 will store [E] as a `MATSEQSELL`
+  matrix, ans [DF] as another `MATSEQSELL` matrix.
 
-   When d_rlenmax, o_rlenmax parameters are specified, d_rlenmax storage elements are
-   allocated for every row of the local diagonal submatrix, and o_rlenmax
-   storage locations are allocated for every row of the OFF-DIAGONAL submat.
-   One way to choose d_rlenmax and o_rlenmax is to use the max nonzerors per local
-   rows for each of the local DIAGONAL, and the OFF-DIAGONAL submatrices.
-   In this case, the values of d_rlenmax,o_rlenmax are
+  When d_rlenmax, o_rlenmax parameters are specified, d_rlenmax storage elements are
+  allocated for every row of the local diagonal submatrix, and o_rlenmax
+  storage locations are allocated for every row of the OFF-DIAGONAL submat.
+  One way to choose d_rlenmax and o_rlenmax is to use the max nonzerors per local
+  rows for each of the local DIAGONAL, and the OFF-DIAGONAL submatrices.
+  In this case, the values of d_rlenmax,o_rlenmax are
 .vb
      proc0 - d_rlenmax = 2, o_rlenmax = 2
      proc1 - d_rlenmax = 3, o_rlenmax = 2
      proc2 - d_rlenmax = 1, o_rlenmax = 4
 .ve
-   We are allocating m*(d_rlenmax+o_rlenmax) storage locations for every proc. This
-   translates to 3*(2+2)=12 for proc0, 3*(3+2)=15 for proc1, 2*(1+4)=10
-   for proc3. i.e we are using 12+15+10=37 storage locations to store
-   34 values.
+  We are allocating m*(d_rlenmax+o_rlenmax) storage locations for every proc. This
+  translates to 3*(2+2)=12 for proc0, 3*(3+2)=15 for proc1, 2*(1+4)=10
+  for proc3. i.e we are using 12+15+10=37 storage locations to store
+  34 values.
 
-   When `d_rlen`, `o_rlen` parameters are specified, the storage is specified
-   for every row, corresponding to both DIAGONAL and OFF-DIAGONAL submatrices.
-   In the above case the values for `d_nnz`, `o_nnz` are
+  When `d_rlen`, `o_rlen` parameters are specified, the storage is specified
+  for every row, corresponding to both DIAGONAL and OFF-DIAGONAL submatrices.
+  In the above case the values for `d_nnz`, `o_nnz` are
 .vb
      proc0 - d_nnz = [2,2,2] and o_nnz = [2,2,2]
      proc1 - d_nnz = [3,3,2] and o_nnz = [2,1,1]
      proc2 - d_nnz = [1,1]   and o_nnz = [4,4]
 .ve
-   Here the space allocated is still 37 though there are 34 nonzeros because
-   the allocation is always done according to rlenmax.
+  Here the space allocated is still 37 though there are 34 nonzeros because
+  the allocation is always done according to rlenmax.
 
-   Level: intermediate
+  Level: intermediate
 
-   Notes:
-   It is recommended that one use the `MatCreate()`, `MatSetType()` and/or `MatSetFromOptions()`,
-   MatXXXXSetPreallocation() paradigm instead of this routine directly.
-   [MatXXXXSetPreallocation() is, for example, `MatSeqSELLSetPreallocation()`]
+  Notes:
+  It is recommended that one use the `MatCreate()`, `MatSetType()` and/or `MatSetFromOptions()`,
+  MatXXXXSetPreallocation() paradigm instead of this routine directly.
+  [MatXXXXSetPreallocation() is, for example, `MatSeqSELLSetPreallocation()`]
 
-   If the *_rlen parameter is given then the *_rlenmax parameter is ignored
+  If the *_rlen parameter is given then the *_rlenmax parameter is ignored
 
-   `m`, `n`, `M`, `N` parameters specify the size of the matrix, and its partitioning across
-   processors, while `d_rlenmax`, `d_rlen`, `o_rlenmax` , `o_rlen` parameters specify the approximate
-   storage requirements for this matrix.
+  `m`, `n`, `M`, `N` parameters specify the size of the matrix, and its partitioning across
+  processors, while `d_rlenmax`, `d_rlen`, `o_rlenmax` , `o_rlen` parameters specify the approximate
+  storage requirements for this matrix.
 
-   If `PETSC_DECIDE` or  `PETSC_DETERMINE` is used for a particular argument on one
-   processor than it must be used on all processors that share the object for
-   that argument.
+  If `PETSC_DECIDE` or  `PETSC_DETERMINE` is used for a particular argument on one
+  processor than it must be used on all processors that share the object for
+  that argument.
 
-   The user MUST specify either the local or global matrix dimensions
-   (possibly both).
+  The user MUST specify either the local or global matrix dimensions
+  (possibly both).
 
-   The parallel matrix is partitioned across processors such that the
-   first m0 rows belong to process 0, the next m1 rows belong to
-   process 1, the next m2 rows belong to process 2 etc.. where
-   m0,m1,m2,.. are the input parameter 'm'. i.e each processor stores
-   values corresponding to [`m` x `N`] submatrix.
+  The parallel matrix is partitioned across processors such that the
+  first m0 rows belong to process 0, the next m1 rows belong to
+  process 1, the next m2 rows belong to process 2 etc.. where
+  m0,m1,m2,.. are the input parameter 'm'. i.e each processor stores
+  values corresponding to [`m` x `N`] submatrix.
 
-   The columns are logically partitioned with the n0 columns belonging
-   to 0th partition, the next n1 columns belonging to the next
-   partition etc.. where n0,n1,n2... are the input parameter `n`.
+  The columns are logically partitioned with the n0 columns belonging
+  to 0th partition, the next n1 columns belonging to the next
+  partition etc.. where n0,n1,n2... are the input parameter `n`.
 
-   The DIAGONAL portion of the local submatrix on any given processor
-   is the submatrix corresponding to the rows and columns `m`, `n`
-   corresponding to the given processor. i.e diagonal matrix on
-   process 0 is [m0 x n0], diagonal matrix on process 1 is [m1 x n1]
-   etc. The remaining portion of the local submatrix [m x (N-n)]
-   constitute the OFF-DIAGONAL portion. The example below better
-   illustrates this concept.
+  The DIAGONAL portion of the local submatrix on any given processor
+  is the submatrix corresponding to the rows and columns `m`, `n`
+  corresponding to the given processor. i.e diagonal matrix on
+  process 0 is [m0 x n0], diagonal matrix on process 1 is [m1 x n1]
+  etc. The remaining portion of the local submatrix [m x (N-n)]
+  constitute the OFF-DIAGONAL portion. The example below better
+  illustrates this concept.
 
-   For a square global matrix we define each processor's diagonal portion
-   to be its local rows and the corresponding columns (a square submatrix);
-   each processor's off-diagonal portion encompasses the remainder of the
-   local matrix (a rectangular submatrix).
+  For a square global matrix we define each processor's diagonal portion
+  to be its local rows and the corresponding columns (a square submatrix);
+  each processor's off-diagonal portion encompasses the remainder of the
+  local matrix (a rectangular submatrix).
 
-   If `o_rlen`, `d_rlen` are specified, then `o_rlenmax`, and `d_rlenmax` are ignored.
+  If `o_rlen`, `d_rlen` are specified, then `o_rlenmax`, and `d_rlenmax` are ignored.
 
-   When calling this routine with a single process communicator, a matrix of
-   type `MATSEQSELL` is returned.  If a matrix of type `MATMPISELL` is desired for this
-   type of communicator, use the construction mechanism
+  When calling this routine with a single process communicator, a matrix of
+  type `MATSEQSELL` is returned.  If a matrix of type `MATMPISELL` is desired for this
+  type of communicator, use the construction mechanism
 .vb
    MatCreate(...,&A);
    MatSetType(A,MATMPISELL);
@@ -1564,6 +1576,23 @@ PetscErrorCode MatCreateSELL(MPI_Comm comm, PetscInt m, PetscInt n, PetscInt M, 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@C
+  MatMPISELLGetSeqSELL - Returns the local pieces of this distributed matrix
+
+  Not Collective
+
+  Input Parameter:
+. A - the `MATMPISELL` matrix
+
+  Output Parameters:
++ Ad     - The diagonal portion of `A`
+. Ao     - The off diagonal portion of `A`
+- colmap - An array mapping local column numbers of `Ao` to global column numbers of the parallel matrix
+
+  Level: advanced
+
+.seealso: `Mat`, `MATSEQSELL`, `MATMPISELL`
+@*/
 PetscErrorCode MatMPISELLGetSeqSELL(Mat A, Mat *Ad, Mat *Ao, const PetscInt *colmap[])
 {
   Mat_MPISELL *a = (Mat_MPISELL *)A->data;
@@ -1579,20 +1608,21 @@ PetscErrorCode MatMPISELLGetSeqSELL(Mat A, Mat *Ad, Mat *Ao, const PetscInt *col
 }
 
 /*@C
-     MatMPISELLGetLocalMatCondensed - Creates a `MATSEQSELL` matrix from an `MATMPISELL` matrix by taking all its local rows and NON-ZERO columns
+  MatMPISELLGetLocalMatCondensed - Creates a `MATSEQSELL` matrix from an `MATMPISELL` matrix by
+  taking all its local rows and NON-ZERO columns
 
-    Not Collective
+  Not Collective
 
-   Input Parameters:
-+    A - the matrix
-.    scall - either `MAT_INITIAL_MATRIX` or `MAT_REUSE_MATRIX`
-.    row - index sets of rows to extract (or `NULL`)
--    col - index sets of columns to extract (or `NULL`)
+  Input Parameters:
++ A     - the matrix
+. scall - either `MAT_INITIAL_MATRIX` or `MAT_REUSE_MATRIX`
+. row   - index sets of rows to extract (or `NULL`)
+- col   - index sets of columns to extract (or `NULL`)
 
-   Output Parameter:
-.    A_loc - the local sequential matrix generated
+  Output Parameter:
+. A_loc - the local sequential matrix generated
 
-    Level: developer
+  Level: advanced
 
 .seealso: `Mat`, `MATSEQSELL`, `MATMPISELL`, `MatGetOwnershipRange()`, `MatMPISELLGetLocalMat()`
 @*/
@@ -1704,12 +1734,23 @@ PetscErrorCode MatConvert_MPIAIJ_MPISELL(Mat A, MatType newtype, MatReuse reuse,
   if (reuse == MAT_REUSE_MATRIX) {
     B = *newmat;
   } else {
+    Mat_SeqAIJ *Aa = (Mat_SeqAIJ *)a->A->data, *Ba = (Mat_SeqAIJ *)a->B->data;
+    PetscInt    i, d_nz = 0, o_nz = 0, m = A->rmap->N, n = A->cmap->N, lm = A->rmap->n, ln = A->cmap->n;
+    PetscInt   *d_nnz, *o_nnz;
+    PetscCall(PetscMalloc2(lm, &d_nnz, lm, &o_nnz));
+    for (i = 0; i < lm; i++) {
+      d_nnz[i] = Aa->i[i + 1] - Aa->i[i];
+      o_nnz[i] = Ba->i[i + 1] - Ba->i[i];
+      if (d_nnz[i] > d_nz) d_nz = d_nnz[i];
+      if (o_nnz[i] > o_nz) o_nz = o_nnz[i];
+    }
     PetscCall(MatCreate(PetscObjectComm((PetscObject)A), &B));
     PetscCall(MatSetType(B, MATMPISELL));
-    PetscCall(MatSetSizes(B, A->rmap->n, A->cmap->n, A->rmap->N, A->cmap->N));
+    PetscCall(MatSetSizes(B, lm, ln, m, n));
     PetscCall(MatSetBlockSizes(B, A->rmap->bs, A->cmap->bs));
-    PetscCall(MatSeqAIJSetPreallocation(B, 0, NULL));
-    PetscCall(MatMPIAIJSetPreallocation(B, 0, NULL, 0, NULL));
+    PetscCall(MatSeqSELLSetPreallocation(B, d_nz, d_nnz));
+    PetscCall(MatMPISELLSetPreallocation(B, d_nz, d_nnz, o_nz, o_nnz));
+    PetscCall(PetscFree2(d_nnz, o_nnz));
   }
   b = (Mat_MPISELL *)B->data;
 
@@ -1719,13 +1760,12 @@ PetscErrorCode MatConvert_MPIAIJ_MPISELL(Mat A, MatType newtype, MatReuse reuse,
   } else {
     PetscCall(MatDestroy(&b->A));
     PetscCall(MatDestroy(&b->B));
-    PetscCall(MatDisAssemble_MPIAIJ(A));
     PetscCall(MatConvert_SeqAIJ_SeqSELL(a->A, MATSEQSELL, MAT_INITIAL_MATRIX, &b->A));
     PetscCall(MatConvert_SeqAIJ_SeqSELL(a->B, MATSEQSELL, MAT_INITIAL_MATRIX, &b->B));
-    PetscCall(MatAssemblyBegin(B, MAT_FINAL_ASSEMBLY));
-    PetscCall(MatAssemblyEnd(B, MAT_FINAL_ASSEMBLY));
     PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
     PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyBegin(B, MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyEnd(B, MAT_FINAL_ASSEMBLY));
   }
 
   if (reuse == MAT_INPLACE_MATRIX) {
@@ -1806,6 +1846,10 @@ PetscErrorCode MatSOR_MPISELL(Mat matin, Vec bb, PetscReal omega, MatSORType fla
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+#if defined(PETSC_HAVE_CUDA)
+PETSC_INTERN PetscErrorCode MatConvert_MPISELL_MPISELLCUDA(Mat, MatType, MatReuse, Mat *);
+#endif
+
 /*MC
    MATMPISELL - MATMPISELL = "MPISELL" - A matrix type to be used for parallel sparse matrices.
 
@@ -1824,8 +1868,8 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPISELL(Mat B)
   PetscFunctionBegin;
   PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)B), &size));
   PetscCall(PetscNew(&b));
-  B->data = (void *)b;
-  PetscCall(PetscMemcpy(B->ops, &MatOps_Values, sizeof(struct _MatOps)));
+  B->data       = (void *)b;
+  B->ops[0]     = MatOps_Values;
   B->assembled  = PETSC_FALSE;
   B->insertmode = NOT_SET_VALUES;
   b->size       = size;
@@ -1852,6 +1896,9 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPISELL(Mat B)
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatIsTranspose_C", MatIsTranspose_MPISELL));
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatMPISELLSetPreallocation_C", MatMPISELLSetPreallocation_MPISELL));
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatConvert_mpisell_mpiaij_C", MatConvert_MPISELL_MPIAIJ));
+#if defined(PETSC_HAVE_CUDA)
+  PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatConvert_mpisell_mpisellcuda_C", MatConvert_MPISELL_MPISELLCUDA));
+#endif
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatDiagonalScaleLocal_C", MatDiagonalScaleLocal_MPISELL));
   PetscCall(PetscObjectChangeTypeName((PetscObject)B, MATMPISELL));
   PetscFunctionReturn(PETSC_SUCCESS);

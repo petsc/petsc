@@ -4,20 +4,10 @@
 */
 
 #include <../src/ksp/ksp/impls/gmres/pgmres/pgmresimpl.h> /*I  "petscksp.h"  I*/
-#define PGMRES_DELTA_DIRECTIONS 10
-#define PGMRES_DEFAULT_MAXK     30
 
 static PetscErrorCode KSPPGMRESUpdateHessenberg(KSP, PetscInt, PetscBool *, PetscReal *);
 static PetscErrorCode KSPPGMRESBuildSoln(PetscScalar *, Vec, Vec, KSP, PetscInt);
 
-/*
-
-    KSPSetUp_PGMRES - Sets up the workspace needed by pgmres.
-
-    This is called once, usually automatically by KSPSolve() or KSPSetUp(),
-    but can be called directly by KSPSetUp().
-
-*/
 static PetscErrorCode KSPSetUp_PGMRES(KSP ksp)
 {
   PetscFunctionBegin;
@@ -25,23 +15,6 @@ static PetscErrorCode KSPSetUp_PGMRES(KSP ksp)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*
-
-    KSPPGMRESCycle - Run pgmres, possibly with restart.  Return residual
-                  history if requested.
-
-    input parameters:
-.        pgmres  - structure containing parameters and work areas
-
-    output parameters:
-.        itcount - number of iterations used.  If null, ignored.
-.        converged - 0 if not converged
-
-    Notes:
-    On entry, the value in vector VEC_VV(0) should be
-    the initial residual.
-
- */
 static PetscErrorCode KSPPGMRESCycle(PetscInt *itcount, KSP ksp)
 {
   KSP_PGMRES *pgmres = (KSP_PGMRES *)(ksp->data);
@@ -77,7 +50,7 @@ static PetscErrorCode KSPPGMRESCycle(PetscInt *itcount, KSP ksp)
     /* VEC_VV(it-1) is orthogonal, it will be normalized once the VecNorm arrives. */
     Zcur  = VEC_VV(it);     /* Zcur is not yet orthogonal, but the VecMDot to orthogonalize it has been started. */
     Znext = VEC_VV(it + 1); /* This iteration will compute Znext, update with a deferred correction once we know how
-                                 * Zcur relates to the previous vectors, and start the reduction to orthogonalize it. */
+                               Zcur relates to the previous vectors, and start the reduction to orthogonalize it. */
 
     if (it < pgmres->max_k + 1 && ksp->its + 1 < PetscMax(2, ksp->max_it)) { /* We don't know whether what we have computed is enough, so apply the matrix. */
       PetscCall(KSP_PCApplyBAorAB(ksp, Zcur, Znext, VEC_TEMP_MATOP));
@@ -109,7 +82,7 @@ static PetscErrorCode KSPPGMRESCycle(PetscInt *itcount, KSP ksp)
       if (ksp->reason) break;
       /* Catch error in happy breakdown and signal convergence and break from loop */
       if (hapend) {
-        PetscCheck(!ksp->errorifnotconverged, PetscObjectComm((PetscObject)ksp), PETSC_ERR_NOT_CONVERGED, "You reached the happy break down, but convergence was not indicated. Residual norm = %g", (double)res);
+        PetscCheck(!ksp->errorifnotconverged, PetscObjectComm((PetscObject)ksp), PETSC_ERR_NOT_CONVERGED, "Reached happy break down, but convergence was not indicated. Residual norm = %g", (double)res);
         ksp->reason = KSP_DIVERGED_BREAKDOWN;
         break;
       }
@@ -172,29 +145,17 @@ static PetscErrorCode KSPPGMRESCycle(PetscInt *itcount, KSP ksp)
     /* Start an asynchronous split-mode reduction, the result of the MDot and Norm will be collected on the next iteration. */
     PetscCall(PetscCommSplitReductionBegin(PetscObjectComm((PetscObject)Znext)));
   }
-
   if (itcount) *itcount = it - 1; /* Number of iterations actually completed. */
 
   /*
-    Down here we have to solve for the "best" coefficients of the Krylov
-    columns, add the solution values together, and possibly unwind the
-    preconditioning from the solution
+    Solve for the "best" coefficients of the Krylov
+    columns, add the solution values together, and possibly unwind the preconditioning from the solution
    */
   /* Form the solution (or the solution so far) */
   PetscCall(KSPPGMRESBuildSoln(RS(0), ksp->vec_sol, ksp->vec_sol, ksp, it - 2));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*
-    KSPSolve_PGMRES - This routine applies the PGMRES method.
-
-   Input Parameter:
-.     ksp - the Krylov space object that was set to use pgmres
-
-   Output Parameter:
-.     outits - number of iterations used
-
-*/
 static PetscErrorCode KSPSolve_PGMRES(KSP ksp)
 {
   PetscInt    its, itcount;
@@ -230,19 +191,6 @@ static PetscErrorCode KSPDestroy_PGMRES(KSP ksp)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*
-    KSPPGMRESBuildSoln - create the solution from the starting vector and the
-                      current iterates.
-
-    Input parameters:
-        nrs - work area of size it + 1.
-        vguess  - index of initial guess
-        vdest - index of result.  Note that vguess may == vdest (replace
-                guess with the solution).
-        it - HH upper triangular part is a block of size (it+1) x (it+1)
-
-     This is an internal routine that knows about the PGMRES internals.
- */
 static PetscErrorCode KSPPGMRESBuildSoln(PetscScalar *nrs, Vec vguess, Vec vdest, KSP ksp, PetscInt it)
 {
   PetscScalar tt;
@@ -269,8 +217,7 @@ static PetscErrorCode KSPPGMRESBuildSoln(PetscScalar *nrs, Vec vguess, Vec vdest
   }
 
   /* Accumulate the correction to the solution of the preconditioned problem in TEMP */
-  PetscCall(VecZeroEntries(VEC_TEMP));
-  PetscCall(VecMAXPY(VEC_TEMP, it + 1, nrs, &VEC_VV(0)));
+  PetscCall(VecMAXPBY(VEC_TEMP, it + 1, nrs, 0, &VEC_VV(0)));
   PetscCall(KSPUnwindPreconditioner(ksp, VEC_TEMP, VEC_TEMP_MATOP));
   /* add solution to previous solution */
   if (vdest == vguess) {
@@ -281,25 +228,6 @@ static PetscErrorCode KSPPGMRESBuildSoln(PetscScalar *nrs, Vec vguess, Vec vdest
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*
-
-    KSPPGMRESUpdateHessenberg - Do the scalar work for the orthogonalization.
-                            Return new residual.
-
-    input parameters:
-
-.        ksp -    Krylov space object
-.        it  -    plane rotations are applied to the (it+1)th column of the
-                  modified hessenberg (i.e. HH(:,it))
-.        hapend - PETSC_FALSE not happy breakdown ending.
-
-    output parameters:
-.        res - the new residual
-
- */
-/*
-.  it - column of the Hessenberg that is complete, PGMRES is actually computing two columns ahead of this
- */
 static PetscErrorCode KSPPGMRESUpdateHessenberg(KSP ksp, PetscInt it, PetscBool *hapend, PetscReal *res)
 {
   PetscScalar *hh, *cc, *ss, *rs;
@@ -323,8 +251,7 @@ static PetscErrorCode KSPPGMRESUpdateHessenberg(KSP ksp, PetscInt it, PetscBool 
     *hapend = PETSC_TRUE;
   }
 
-  /* Apply all the previously computed plane rotations to the new column
-     of the Hessenberg matrix */
+  /* Apply all the previously computed plane rotations to the new column of the Hessenberg matrix */
   /* Note: this uses the rotation [conj(c)  s ; -s   c], c= cos(theta), s= sin(theta),
      and some refs have [c   s ; -conj(s)  c] (don't be confused!) */
 
@@ -366,27 +293,12 @@ static PetscErrorCode KSPPGMRESUpdateHessenberg(KSP ksp, PetscInt it, PetscBool 
             but now the new sine rotation would be zero...so the residual should
             be zero...so we will multiply "zero" by the last residual.  This might
             not be exactly what we want to do here -could just return "zero". */
-
     *res = 0.0;
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*
-   KSPBuildSolution_PGMRES
-
-     Input Parameter:
-.     ksp - the Krylov space object
-.     ptr-
-
-   Output Parameter:
-.     result - the solution
-
-   Note: this calls KSPPGMRESBuildSoln - the same function that KSPPGMRESCycle
-   calls directly.
-
-*/
-PetscErrorCode KSPBuildSolution_PGMRES(KSP ksp, Vec ptr, Vec *result)
+static PetscErrorCode KSPBuildSolution_PGMRES(KSP ksp, Vec ptr, Vec *result)
 {
   KSP_PGMRES *pgmres = (KSP_PGMRES *)ksp->data;
 
@@ -405,7 +317,7 @@ PetscErrorCode KSPBuildSolution_PGMRES(KSP ksp, Vec ptr, Vec *result)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode KSPSetFromOptions_PGMRES(KSP ksp, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode KSPSetFromOptions_PGMRES(KSP ksp, PetscOptionItems *PetscOptionsObject)
 {
   PetscFunctionBegin;
   PetscCall(KSPSetFromOptions_GMRES(ksp, PetscOptionsObject));
@@ -414,7 +326,7 @@ PetscErrorCode KSPSetFromOptions_PGMRES(KSP ksp, PetscOptionItems *PetscOptionsO
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode KSPReset_PGMRES(KSP ksp)
+static PetscErrorCode KSPReset_PGMRES(KSP ksp)
 {
   PetscFunctionBegin;
   PetscCall(KSPReset_GMRES(ksp));
@@ -427,8 +339,7 @@ PetscErrorCode KSPReset_PGMRES(KSP ksp)
    Options Database Keys:
 +   -ksp_gmres_restart <restart> - the number of Krylov directions to orthogonalize against
 .   -ksp_gmres_haptol <tol> - sets the tolerance for "happy ending" (exact convergence)
-.   -ksp_gmres_preallocate - preallocate all the Krylov search directions initially (otherwise groups of
-                             vectors are allocated as needed)
+.   -ksp_gmres_preallocate - preallocate all the Krylov search directions initially (otherwise groups of vectors are allocated as needed)
 .   -ksp_gmres_classicalgramschmidt - use classical (unmodified) Gram-Schmidt to orthogonalize against the Krylov space (fast) (the default)
 .   -ksp_gmres_modifiedgramschmidt - use modified Gram-Schmidt in the orthogonalization (more stable, but slower)
 .   -ksp_gmres_cgs_refinement_type <refine_never,refine_ifneeded,refine_always> - determine if iterative refinement is used to increase the
@@ -441,13 +352,13 @@ PetscErrorCode KSPReset_PGMRES(KSP ksp)
    MPI configuration may be necessary for reductions to make asynchronous progress, which is important for performance of pipelined methods.
    See [](doc_faq_pipelined)
 
-   Reference:
-   Ghysels, Ashby, Meerbergen, Vanroose, Hiding global communication latencies in the GMRES algorithm on massively parallel machines, 2012.
+   References:
+.  * - Ghysels, Ashby, Meerbergen, Vanroose, Hiding global communication latencies in the GMRES algorithm on massively parallel machines, 2012.
 
    Developer Note:
-    This object is subclassed off of `KSPGMRES`
+   This object is subclassed off of `KSPGMRES`, see the source code in src/ksp/ksp/impls/gmres for comments on the structure of the code
 
-.seealso: [](chapter_ksp), [](sec_pipelineksp), [](doc_faq_pipelined), `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPGMRES`, `KSPLGMRES`, `KSPPIPECG`, `KSPPIPECR`,
+.seealso: [](ch_ksp), [](sec_pipelineksp), [](doc_faq_pipelined), `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPGMRES`, `KSPLGMRES`, `KSPPIPECG`, `KSPPIPECR`,
           `KSPGMRESSetRestart()`, `KSPGMRESSetHapTol()`, `KSPGMRESSetPreAllocateVectors()`, `KSPGMRESSetOrthogonalization()`, `KSPGMRESGetOrthogonalization()`,
           `KSPGMRESClassicalGramSchmidtOrthogonalization()`, `KSPGMRESModifiedGramSchmidtOrthogonalization()`,
           `KSPGMRESCGSRefinementType`, `KSPGMRESSetCGSRefinementType()`, `KSPGMRESGetCGSRefinementType()`, `KSPGMRESMonitorKrylov()`

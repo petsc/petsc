@@ -2,8 +2,7 @@
    Distributed arrays - communication tools for parallel, rectangular grids.
 */
 
-#ifndef _DAIMPL_H
-#define _DAIMPL_H
+#pragma once
 
 #include <petscdmda.h>
 #include <petsc/private/dmimpl.h>
@@ -95,6 +94,35 @@ PETSC_INTERN PetscErrorCode DMView_DA_Binary(DM, PetscViewer);
 PETSC_INTERN PetscErrorCode DMView_DA_VTK(DM, PetscViewer);
 PETSC_INTERN PetscErrorCode DMView_DA_GLVis(DM, PetscViewer);
 PETSC_EXTERN PetscErrorCode DMDAVTKWriteAll(PetscObject, PetscViewer);
-PETSC_EXTERN PetscErrorCode DMDASelectFields(DM, PetscInt *, PetscInt **);
+PETSC_INTERN PetscErrorCode DMDASelectFields(DM, PetscInt *, PetscInt **);
 
-#endif
+PETSC_INTERN PetscErrorCode DMCreateGlobalVector_DA(DM, Vec *);
+PETSC_INTERN PetscErrorCode DMCreateLocalVector_DA(DM, Vec *);
+PETSC_INTERN PetscErrorCode DMGlobalToLocalBegin_DA(DM, Vec, InsertMode, Vec);
+PETSC_INTERN PetscErrorCode DMGlobalToLocalEnd_DA(DM, Vec, InsertMode, Vec);
+PETSC_INTERN PetscErrorCode DMLocalToGlobalBegin_DA(DM, Vec, InsertMode, Vec);
+PETSC_INTERN PetscErrorCode DMLocalToGlobalEnd_DA(DM, Vec, InsertMode, Vec);
+PETSC_INTERN PetscErrorCode DMLocalToLocalBegin_DA(DM, Vec, InsertMode, Vec);
+PETSC_INTERN PetscErrorCode DMLocalToLocalEnd_DA(DM, Vec, InsertMode, Vec);
+PETSC_INTERN PetscErrorCode DMCreateInterpolation_DA(DM, DM, Mat *, Vec *);
+PETSC_INTERN PetscErrorCode DMCreateColoring_DA(DM, ISColoringType, ISColoring *);
+PETSC_INTERN PetscErrorCode DMCreateMatrix_DA(DM, Mat *);
+PETSC_INTERN PetscErrorCode DMCreateCoordinateDM_DA(DM, DM *);
+PETSC_INTERN PetscErrorCode DMRefine_DA(DM, MPI_Comm, DM *);
+PETSC_INTERN PetscErrorCode DMCoarsen_DA(DM, MPI_Comm, DM *);
+PETSC_INTERN PetscErrorCode DMRefineHierarchy_DA(DM, PetscInt, DM[]);
+PETSC_INTERN PetscErrorCode DMCoarsenHierarchy_DA(DM, PetscInt, DM[]);
+PETSC_INTERN PetscErrorCode DMCreateInjection_DA(DM, DM, Mat *);
+PETSC_INTERN PetscErrorCode DMView_DA(DM, PetscViewer);
+PETSC_INTERN PetscErrorCode DMSetUp_DA(DM);
+PETSC_INTERN PetscErrorCode DMDestroy_DA(DM);
+PETSC_INTERN PetscErrorCode DMCreateDomainDecomposition_DA(DM, PetscInt *, char ***, IS **, IS **, DM **);
+PETSC_INTERN PetscErrorCode DMCreateDomainDecompositionScatters_DA(DM, PetscInt, DM *, VecScatter **, VecScatter **, VecScatter **);
+PETSC_INTERN PetscErrorCode DMGetCompatibility_DA(DM, DM, PetscBool *, PetscBool *);
+PETSC_INTERN PetscErrorCode DMLocatePoints_DA_Regular(DM, Vec, DMPointLocationType, PetscSF);
+PETSC_INTERN PetscErrorCode DMSetUpGLVisViewer_DMDA(PetscObject, PetscViewer);
+PETSC_INTERN PetscErrorCode DMLocalToLocalCreate_DA(DM);
+PETSC_INTERN PetscErrorCode DMDAGetNatural_Private(DM, PetscInt *, IS *);
+PETSC_INTERN PetscErrorCode DMSetUp_DA_1D(DM);
+PETSC_INTERN PetscErrorCode DMSetUp_DA_2D(DM);
+PETSC_INTERN PetscErrorCode DMSetUp_DA_3D(DM);

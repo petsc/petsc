@@ -21,7 +21,7 @@ program main
 
   PetscCallA(PetscInitialize(ierr))
 
-  PetscCallA(PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,"-N",N,flg,ierr))
+  PetscCallA(PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-N',N,flg,ierr))
   PetscCallA(MatCreate(PETSC_COMM_WORLD, A,ierr))
   PetscCallA(MatSetSizes(A, PETSC_DECIDE, PETSC_DECIDE, N, N,ierr))
   PetscCallA(MatSetFromOptions(A,ierr))

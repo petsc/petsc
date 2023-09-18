@@ -258,17 +258,17 @@ static PetscErrorCode ISLocalToGlobalMappingDestroy_Hash(ISLocalToGlobalMapping 
 #include <../src/vec/is/utils/isltog.h>
 
 /*@
-    ISLocalToGlobalMappingDuplicate - Duplicates the local to global mapping object
+  ISLocalToGlobalMappingDuplicate - Duplicates the local to global mapping object
 
-    Not Collective
+  Not Collective
 
-    Input Parameter:
-.   ltog - local to global mapping
+  Input Parameter:
+. ltog - local to global mapping
 
-    Output Parameter:
-.   nltog - the duplicated local to global mapping
+  Output Parameter:
+. nltog - the duplicated local to global mapping
 
-    Level: advanced
+  Level: advanced
 
 .seealso: [](sec_scatter), `ISLocalToGlobalMapping`, `ISLocalToGlobalMappingDestroy()`, `ISLocalToGlobalMappingCreate()`
 @*/
@@ -285,17 +285,17 @@ PetscErrorCode ISLocalToGlobalMappingDuplicate(ISLocalToGlobalMapping ltog, ISLo
 }
 
 /*@
-    ISLocalToGlobalMappingGetSize - Gets the local size of a local to global mapping
+  ISLocalToGlobalMappingGetSize - Gets the local size of a local to global mapping
 
-    Not Collective
+  Not Collective
 
-    Input Parameter:
-.   ltog - local to global mapping
+  Input Parameter:
+. mapping - local to global mapping
 
-    Output Parameter:
-.   n - the number of entries in the local mapping, `ISLocalToGlobalMappingGetIndices()` returns an array of this length
+  Output Parameter:
+. n - the number of entries in the local mapping, `ISLocalToGlobalMappingGetIndices()` returns an array of this length
 
-    Level: advanced
+  Level: advanced
 
 .seealso: [](sec_scatter), `ISLocalToGlobalMapping`, `ISLocalToGlobalMappingDestroy()`, `ISLocalToGlobalMappingCreate()`
 @*/
@@ -303,25 +303,25 @@ PetscErrorCode ISLocalToGlobalMappingGetSize(ISLocalToGlobalMapping mapping, Pet
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mapping, IS_LTOGM_CLASSID, 1);
-  PetscValidIntPointer(n, 2);
+  PetscAssertPointer(n, 2);
   *n = mapping->bs * mapping->n;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
-   ISLocalToGlobalMappingViewFromOptions - View an `ISLocalToGlobalMapping` based on values in the options database
+  ISLocalToGlobalMappingViewFromOptions - View an `ISLocalToGlobalMapping` based on values in the options database
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  A - the local to global mapping object
-.  obj - Optional object that provides the options prefix used for the options database query
--  name - command line option
+  Input Parameters:
++ A    - the local to global mapping object
+. obj  - Optional object that provides the options prefix used for the options database query
+- name - command line option
 
-   Level: intermediate
+  Level: intermediate
 
-   Note:
-   See `PetscObjectViewFromOptions()` for the available `PetscViewer` and `PetscViewerFormat`
+  Note:
+  See `PetscObjectViewFromOptions()` for the available `PetscViewer` and `PetscViewerFormat`
 
 .seealso: [](sec_scatter), `PetscViewer`, ``ISLocalToGlobalMapping`, `ISLocalToGlobalMappingView`, `PetscObjectViewFromOptions()`, `ISLocalToGlobalMappingCreate()`
 @*/
@@ -334,15 +334,15 @@ PetscErrorCode ISLocalToGlobalMappingViewFromOptions(ISLocalToGlobalMapping A, P
 }
 
 /*@C
-    ISLocalToGlobalMappingView - View a local to global mapping
+  ISLocalToGlobalMappingView - View a local to global mapping
 
-    Not Collective
+  Not Collective
 
-    Input Parameters:
-+   ltog - local to global mapping
--   viewer - viewer
+  Input Parameters:
++ mapping - local to global mapping
+- viewer  - viewer
 
-    Level: advanced
+  Level: advanced
 
 .seealso: [](sec_scatter), `PetscViewer`, `ISLocalToGlobalMapping`, `ISLocalToGlobalMappingDestroy()`, `ISLocalToGlobalMappingCreate()`
 @*/
@@ -374,21 +374,21 @@ PetscErrorCode ISLocalToGlobalMappingView(ISLocalToGlobalMapping mapping, PetscV
 }
 
 /*@
-    ISLocalToGlobalMappingCreateIS - Creates a mapping between a local (0 to n)
-    ordering and a global parallel ordering.
+  ISLocalToGlobalMappingCreateIS - Creates a mapping between a local (0 to n)
+  ordering and a global parallel ordering.
 
-    Not Collective
+  Not Collective
 
-    Input Parameter:
-.   is - index set containing the global numbers for each local number
+  Input Parameter:
+. is - index set containing the global numbers for each local number
 
-    Output Parameter:
-.   mapping - new mapping data structure
+  Output Parameter:
+. mapping - new mapping data structure
 
-    Level: advanced
+  Level: advanced
 
-    Note:
-    the block size of the `IS` determines the block size of the mapping
+  Note:
+  the block size of the `IS` determines the block size of the mapping
 
 .seealso: [](sec_scatter), `ISLocalToGlobalMapping`, `ISLocalToGlobalMappingDestroy()`, `ISLocalToGlobalMappingCreate()`, `ISLocalToGlobalMappingSetFromOptions()`
 @*/
@@ -401,7 +401,7 @@ PetscErrorCode ISLocalToGlobalMappingCreateIS(IS is, ISLocalToGlobalMapping *map
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is, IS_CLASSID, 1);
-  PetscValidPointer(mapping, 2);
+  PetscAssertPointer(mapping, 2);
 
   PetscCall(PetscObjectGetComm((PetscObject)is, &comm));
   PetscCall(ISGetLocalSize(is, &n));
@@ -420,22 +420,22 @@ PetscErrorCode ISLocalToGlobalMappingCreateIS(IS is, ISLocalToGlobalMapping *map
 }
 
 /*@C
-    ISLocalToGlobalMappingCreateSF - Creates a mapping between a local (0 to n)
-    ordering and a global parallel ordering.
+  ISLocalToGlobalMappingCreateSF - Creates a mapping between a local (0 to n)
+  ordering and a global parallel ordering.
 
-    Collective
+  Collective
 
-    Input Parameters:
-+   sf - star forest mapping contiguous local indices to (rank, offset)
--   start - first global index on this process, or `PETSC_DECIDE` to compute contiguous global numbering automatically
+  Input Parameters:
++ sf    - star forest mapping contiguous local indices to (rank, offset)
+- start - first global index on this process, or `PETSC_DECIDE` to compute contiguous global numbering automatically
 
-    Output Parameter:
-.   mapping - new mapping data structure
+  Output Parameter:
+. mapping - new mapping data structure
 
-    Level: advanced
+  Level: advanced
 
-    Note:
-    If any processor calls this with `start` = `PETSC_DECIDE` then all processors must, otherwise the program will hang.
+  Note:
+  If any processor calls this with `start` = `PETSC_DECIDE` then all processors must, otherwise the program will hang.
 
 .seealso: [](sec_scatter), `PetscSF`, `ISLocalToGlobalMappingDestroy()`, `ISLocalToGlobalMappingCreate()`, `ISLocalToGlobalMappingCreateIS()`, `ISLocalToGlobalMappingSetFromOptions()`
 @*/
@@ -446,7 +446,7 @@ PetscErrorCode ISLocalToGlobalMappingCreateSF(PetscSF sf, PetscInt start, ISLoca
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sf, PETSCSF_CLASSID, 1);
-  PetscValidPointer(mapping, 3);
+  PetscAssertPointer(mapping, 3);
   PetscCall(PetscObjectGetComm((PetscObject)sf, &comm));
   PetscCall(PetscSFGetGraph(sf, &nroots, &nleaves, NULL, NULL));
   if (start == PETSC_DECIDE) {
@@ -467,15 +467,15 @@ PetscErrorCode ISLocalToGlobalMappingCreateSF(PetscSF sf, PetscInt start, ISLoca
 }
 
 /*@
-    ISLocalToGlobalMappingSetBlockSize - Sets the blocksize of the mapping
+  ISLocalToGlobalMappingSetBlockSize - Sets the blocksize of the mapping
 
-    Not Collective
+  Not Collective
 
-    Input Parameters:
-+   mapping - mapping data structure
--   bs - the blocksize
+  Input Parameters:
++ mapping - mapping data structure
+- bs      - the blocksize
 
-    Level: advanced
+  Level: advanced
 
 .seealso: [](sec_scatter), `ISLocalToGlobalMapping`, `ISLocalToGlobalMappingDestroy()`, `ISLocalToGlobalMappingCreateIS()`
 @*/
@@ -540,18 +540,18 @@ PetscErrorCode ISLocalToGlobalMappingSetBlockSize(ISLocalToGlobalMapping mapping
 }
 
 /*@
-    ISLocalToGlobalMappingGetBlockSize - Gets the blocksize of the mapping
-    ordering and a global parallel ordering.
+  ISLocalToGlobalMappingGetBlockSize - Gets the blocksize of the mapping
+  ordering and a global parallel ordering.
 
-    Not Collective
+  Not Collective
 
-    Input Parameter:
-.   mapping - mapping data structure
+  Input Parameter:
+. mapping - mapping data structure
 
-    Output Parameter:
-.   bs - the blocksize
+  Output Parameter:
+. bs - the blocksize
 
-    Level: advanced
+  Level: advanced
 
 .seealso: [](sec_scatter), `ISLocalToGlobalMapping`, `ISLocalToGlobalMappingDestroy()`, `ISLocalToGlobalMappingCreateIS()`
 @*/
@@ -564,32 +564,32 @@ PetscErrorCode ISLocalToGlobalMappingGetBlockSize(ISLocalToGlobalMapping mapping
 }
 
 /*@
-    ISLocalToGlobalMappingCreate - Creates a mapping between a local (0 to n)
-    ordering and a global parallel ordering.
+  ISLocalToGlobalMappingCreate - Creates a mapping between a local (0 to n)
+  ordering and a global parallel ordering.
 
-    Not Collective, but communicator may have more than one process
+  Not Collective, but communicator may have more than one process
 
-    Input Parameters:
-+   comm - MPI communicator
-.   bs - the block size
-.   n - the number of local elements divided by the block size, or equivalently the number of block indices
-.   indices - the global index for each local element, these do not need to be in increasing order (sorted), these values should not be scaled (i.e. multiplied) by the blocksize bs
--   mode - see PetscCopyMode
+  Input Parameters:
++ comm    - MPI communicator
+. bs      - the block size
+. n       - the number of local elements divided by the block size, or equivalently the number of block indices
+. indices - the global index for each local element, these do not need to be in increasing order (sorted), these values should not be scaled (i.e. multiplied) by the blocksize bs
+- mode    - see PetscCopyMode
 
-    Output Parameter:
-.   mapping - new mapping data structure
+  Output Parameter:
+. mapping - new mapping data structure
 
-    Level: advanced
+  Level: advanced
 
-    Notes:
-    There is one integer value in indices per block and it represents the actual indices bs*idx + j, where j=0,..,bs-1
+  Notes:
+  There is one integer value in indices per block and it represents the actual indices bs*idx + j, where j=0,..,bs-1
 
-    For "small" problems when using `ISGlobalToLocalMappingApply()` and `ISGlobalToLocalMappingApplyBlock()`, the `ISLocalToGlobalMappingType`
-    of `ISLOCALTOGLOBALMAPPINGBASIC` will be used; this uses more memory but is faster; this approach is not scalable for extremely large mappings.
+  For "small" problems when using `ISGlobalToLocalMappingApply()` and `ISGlobalToLocalMappingApplyBlock()`, the `ISLocalToGlobalMappingType`
+  of `ISLOCALTOGLOBALMAPPINGBASIC` will be used; this uses more memory but is faster; this approach is not scalable for extremely large mappings.
 
-    For large problems `ISLOCALTOGLOBALMAPPINGHASH` is used, this is scalable.
-    Use `ISLocalToGlobalMappingSetType()` or call `ISLocalToGlobalMappingSetFromOptions()` with the option
-    `-islocaltoglobalmapping_type` <`basic`,`hash`> to control which is used.
+  For large problems `ISLOCALTOGLOBALMAPPINGHASH` is used, this is scalable.
+  Use `ISLocalToGlobalMappingSetType()` or call `ISLocalToGlobalMappingSetFromOptions()` with the option
+  `-islocaltoglobalmapping_type` <`basic`,`hash`> to control which is used.
 
 .seealso: [](sec_scatter), `ISLocalToGlobalMapping`, `ISLocalToGlobalMappingDestroy()`, `ISLocalToGlobalMappingCreateIS()`, `ISLocalToGlobalMappingSetFromOptions()`,
           `ISLOCALTOGLOBALMAPPINGBASIC`, `ISLOCALTOGLOBALMAPPINGHASH`
@@ -600,8 +600,8 @@ PetscErrorCode ISLocalToGlobalMappingCreate(MPI_Comm comm, PetscInt bs, PetscInt
   PetscInt *in;
 
   PetscFunctionBegin;
-  if (n) PetscValidIntPointer(indices, 4);
-  PetscValidPointer(mapping, 6);
+  if (n) PetscAssertPointer(indices, 4);
+  PetscAssertPointer(mapping, 6);
 
   *mapping = NULL;
   PetscCall(ISInitializePackage());
@@ -626,21 +626,21 @@ PetscErrorCode ISLocalToGlobalMappingCreate(MPI_Comm comm, PetscInt bs, PetscInt
 PetscFunctionList ISLocalToGlobalMappingList = NULL;
 
 /*@
-   ISLocalToGlobalMappingSetFromOptions - Set mapping options from the options database.
+  ISLocalToGlobalMappingSetFromOptions - Set mapping options from the options database.
 
-   Not Collective
+  Not Collective
 
-   Input Parameter:
-.  mapping - mapping data structure
+  Input Parameter:
+. mapping - mapping data structure
 
-   Options Database Key:
-.  -islocaltoglobalmapping_type - <basic,hash> nonscalable and scalable versions
+  Options Database Key:
+. -islocaltoglobalmapping_type - <basic,hash> nonscalable and scalable versions
 
-   Level: advanced
+  Level: advanced
 
-.seealso: [](sec_scatter), `ISLocalToGlobalMapping`, `ISLocalToGlobalMappingDestroy()`, `ISLocalToGlobalMappingCreateIS()`, `ISLocalToGlobalMappingSetFromOptions()`,
-          `ISLOCALTOGLOBALMAPPINGBASIC`, `ISLOCALTOGLOBALMAPPINGHASH`
-          `ISLocalToGlobalMappingSetType()`, `ISLocalToGlobalMappingType`
+.seealso: [](sec_scatter), `ISLocalToGlobalMapping`, `ISLocalToGlobalMappingDestroy()`,
+`ISLocalToGlobalMappingCreateIS()`, `ISLOCALTOGLOBALMAPPINGBASIC`,
+`ISLOCALTOGLOBALMAPPINGHASH`, `ISLocalToGlobalMappingSetType()`, `ISLocalToGlobalMappingType`
 @*/
 PetscErrorCode ISLocalToGlobalMappingSetFromOptions(ISLocalToGlobalMapping mapping)
 {
@@ -659,15 +659,15 @@ PetscErrorCode ISLocalToGlobalMappingSetFromOptions(ISLocalToGlobalMapping mappi
 }
 
 /*@
-   ISLocalToGlobalMappingDestroy - Destroys a mapping between a local (0 to n)
-   ordering and a global parallel ordering.
+  ISLocalToGlobalMappingDestroy - Destroys a mapping between a local (0 to n)
+  ordering and a global parallel ordering.
 
-   Not Collective
+  Not Collective
 
-   Input Parameter:
-.  mapping - mapping data structure
+  Input Parameter:
+. mapping - mapping data structure
 
-   Level: advanced
+  Level: advanced
 
 .seealso: [](sec_scatter), `ISLocalToGlobalMapping`, `ISLocalToGlobalMappingCreate()`
 @*/
@@ -699,23 +699,23 @@ PetscErrorCode ISLocalToGlobalMappingDestroy(ISLocalToGlobalMapping *mapping)
 }
 
 /*@
-    ISLocalToGlobalMappingApplyIS - Creates from an `IS` in the local numbering
-    a new index set using the global numbering defined in an `ISLocalToGlobalMapping`
-    context.
+  ISLocalToGlobalMappingApplyIS - Creates from an `IS` in the local numbering
+  a new index set using the global numbering defined in an `ISLocalToGlobalMapping`
+  context.
 
-    Collective
+  Collective
 
-    Input Parameters:
-+   mapping - mapping between local and global numbering
--   is - index set in local numbering
+  Input Parameters:
++ mapping - mapping between local and global numbering
+- is      - index set in local numbering
 
-    Output Parameter:
-.   newis - index set in global numbering
+  Output Parameter:
+. newis - index set in global numbering
 
-    Level: advanced
+  Level: advanced
 
-    Note:
-    The output `IS` will have the same communicator as the input `IS`.
+  Note:
+  The output `IS` will have the same communicator as the input `IS`.
 
 .seealso: [](sec_scatter), `ISLocalToGlobalMappingApply()`, `ISLocalToGlobalMappingCreate()`,
           `ISLocalToGlobalMappingDestroy()`, `ISGlobalToLocalMappingApply()`
@@ -728,7 +728,7 @@ PetscErrorCode ISLocalToGlobalMappingApplyIS(ISLocalToGlobalMapping mapping, IS 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mapping, IS_LTOGM_CLASSID, 1);
   PetscValidHeaderSpecific(is, IS_CLASSID, 2);
-  PetscValidPointer(newis, 3);
+  PetscAssertPointer(newis, 3);
 
   PetscCall(ISGetLocalSize(is, &n));
   PetscCall(ISGetIndices(is, &idxin));
@@ -740,23 +740,23 @@ PetscErrorCode ISLocalToGlobalMappingApplyIS(ISLocalToGlobalMapping mapping, IS 
 }
 
 /*@
-   ISLocalToGlobalMappingApply - Takes a list of integers in a local numbering
-   and converts them to the global numbering.
+  ISLocalToGlobalMappingApply - Takes a list of integers in a local numbering
+  and converts them to the global numbering.
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  mapping - the local to global mapping context
-.  N - number of integers
--  in - input indices in local numbering
+  Input Parameters:
++ mapping - the local to global mapping context
+. N       - number of integers
+- in      - input indices in local numbering
 
-   Output Parameter:
-.  out - indices in global numbering
+  Output Parameter:
+. out - indices in global numbering
 
-   Level: advanced
+  Level: advanced
 
-   Note:
-   The `in` and `out` array parameters may be identical.
+  Note:
+  The `in` and `out` array parameters may be identical.
 
 .seealso: [](sec_scatter), `ISLocalToGlobalMapping`, `ISLocalToGlobalMappingApplyBlock()`, `ISLocalToGlobalMappingCreate()`, `ISLocalToGlobalMappingDestroy()`,
           `ISLocalToGlobalMappingApplyIS()`, `AOCreateBasic()`, `AOApplicationToPetsc()`,
@@ -795,26 +795,26 @@ PetscErrorCode ISLocalToGlobalMappingApply(ISLocalToGlobalMapping mapping, Petsc
 }
 
 /*@
-   ISLocalToGlobalMappingApplyBlock - Takes a list of integers in a local block numbering and converts them to the global block numbering
+  ISLocalToGlobalMappingApplyBlock - Takes a list of integers in a local block numbering and converts them to the global block numbering
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  mapping - the local to global mapping context
-.  N - number of integers
--  in - input indices in local block numbering
+  Input Parameters:
++ mapping - the local to global mapping context
+. N       - number of integers
+- in      - input indices in local block numbering
 
-   Output Parameter:
-.  out - indices in global block numbering
+  Output Parameter:
+. out - indices in global block numbering
 
-   Example:
-     If the index values are {0,1,6,7} set with a call to `ISLocalToGlobalMappingCreate`(`PETSC_COMM_SELF`,2,2,{0,3}) then the mapping applied to 0
-     (the first block) would produce 0 and the mapping applied to 1 (the second block) would produce 3.
+  Example:
+  If the index values are {0,1,6,7} set with a call to `ISLocalToGlobalMappingCreate`(`PETSC_COMM_SELF`,2,2,{0,3}) then the mapping applied to 0
+  (the first block) would produce 0 and the mapping applied to 1 (the second block) would produce 3.
 
-   Level: advanced
+  Level: advanced
 
-   Note:
-   The `in` and `out` array parameters may be identical.
+  Note:
+  The `in` and `out` array parameters may be identical.
 
 .seealso: [](sec_scatter), `ISLocalToGlobalMappingApply()`, `ISLocalToGlobalMappingCreate()`, `ISLocalToGlobalMappingDestroy()`,
           `ISLocalToGlobalMappingApplyIS()`, `AOCreateBasic()`, `AOApplicationToPetsc()`,
@@ -841,39 +841,39 @@ PetscErrorCode ISLocalToGlobalMappingApplyBlock(ISLocalToGlobalMapping mapping, 
 }
 
 /*@
-    ISGlobalToLocalMappingApply - Provides the local numbering for a list of integers
-    specified with a global numbering.
+  ISGlobalToLocalMappingApply - Provides the local numbering for a list of integers
+  specified with a global numbering.
 
-    Not Collective
+  Not Collective
 
-    Input Parameters:
-+   mapping - mapping between local and global numbering
-.   type - `IS_GTOLM_MASK` - maps global indices with no local value to -1 in the output list (i.e., mask them)
+  Input Parameters:
++ mapping - mapping between local and global numbering
+. type    - `IS_GTOLM_MASK` - maps global indices with no local value to -1 in the output list (i.e., mask them)
            `IS_GTOLM_DROP` - drops the indices with no local value from the output list
-.   n - number of global indices to map
--   idx - global indices to map
+. n       - number of global indices to map
+- idx     - global indices to map
 
-    Output Parameters:
-+   nout - number of indices in output array (if type == `IS_GTOLM_MASK` then nout = n)
--   idxout - local index of each global index, one must pass in an array long enough
+  Output Parameters:
++ nout   - number of indices in output array (if type == `IS_GTOLM_MASK` then nout = n)
+- idxout - local index of each global index, one must pass in an array long enough
              to hold all the indices. You can call `ISGlobalToLocalMappingApply()` with
              idxout == NULL to determine the required length (returned in nout)
              and then allocate the required space and call `ISGlobalToLocalMappingApply()`
              a second time to set the values.
 
-    Level: advanced
+  Level: advanced
 
-    Notes:
-    Either `nout` or `idxout` may be `NULL`. `idx` and `idxout` may be identical.
+  Notes:
+  Either `nout` or `idxout` may be `NULL`. `idx` and `idxout` may be identical.
 
-    For "small" problems when using `ISGlobalToLocalMappingApply()` and `ISGlobalToLocalMappingApplyBlock()`, the `ISLocalToGlobalMappingType` of
-    `ISLOCALTOGLOBALMAPPINGBASIC` will be used;
-    this uses more memory but is faster; this approach is not scalable for extremely large mappings. For large problems `ISLOCALTOGLOBALMAPPINGHASH` is used, this is scalable.
-    Use `ISLocalToGlobalMappingSetType()` or call `ISLocalToGlobalMappingSetFromOptions()` with the option -islocaltoglobalmapping_type <basic,hash> to control which is used.
+  For "small" problems when using `ISGlobalToLocalMappingApply()` and `ISGlobalToLocalMappingApplyBlock()`, the `ISLocalToGlobalMappingType` of
+  `ISLOCALTOGLOBALMAPPINGBASIC` will be used;
+  this uses more memory but is faster; this approach is not scalable for extremely large mappings. For large problems `ISLOCALTOGLOBALMAPPINGHASH` is used, this is scalable.
+  Use `ISLocalToGlobalMappingSetType()` or call `ISLocalToGlobalMappingSetFromOptions()` with the option -islocaltoglobalmapping_type <basic,hash> to control which is used.
 
-    Developer Note:
-    The manual page states that `idx` and `idxout` may be identical but the calling
-    sequence declares `idx` as const so it cannot be the same as `idxout`.
+  Developer Notes:
+  The manual page states that `idx` and `idxout` may be identical but the calling
+  sequence declares `idx` as const so it cannot be the same as `idxout`.
 
 .seealso: [](sec_scatter), `ISLocalToGlobalMapping`, `ISLocalToGlobalMappingApply()`, `ISGlobalToLocalMappingApplyBlock()`, `ISLocalToGlobalMappingCreate()`,
           `ISLocalToGlobalMappingDestroy()`
@@ -888,25 +888,25 @@ PetscErrorCode ISGlobalToLocalMappingApply(ISLocalToGlobalMapping mapping, ISGlo
 }
 
 /*@
-    ISGlobalToLocalMappingApplyIS - Creates from an `IS` in the global numbering
-    a new index set using the local numbering defined in an `ISLocalToGlobalMapping`
-    context.
+  ISGlobalToLocalMappingApplyIS - Creates from an `IS` in the global numbering
+  a new index set using the local numbering defined in an `ISLocalToGlobalMapping`
+  context.
 
-    Not Collective
+  Not Collective
 
-    Input Parameters:
-+   mapping - mapping between local and global numbering
-.   type - `IS_GTOLM_MASK` - maps global indices with no local value to -1 in the output list (i.e., mask them)
+  Input Parameters:
++ mapping - mapping between local and global numbering
+. type    - `IS_GTOLM_MASK` - maps global indices with no local value to -1 in the output list (i.e., mask them)
            `IS_GTOLM_DROP` - drops the indices with no local value from the output list
--   is - index set in global numbering
+- is      - index set in global numbering
 
-    Output Parameter:
-.   newis - index set in local numbering
+  Output Parameter:
+. newis - index set in local numbering
 
-    Level: advanced
+  Level: advanced
 
-    Note:
-    The output `IS` will be sequential, as it encodes a purely local operation
+  Note:
+  The output `IS` will be sequential, as it encodes a purely local operation
 
 .seealso: [](sec_scatter), `ISGlobalToLocalMapping`, `ISGlobalToLocalMappingApply()`, `ISLocalToGlobalMappingCreate()`,
           `ISLocalToGlobalMappingDestroy()`
@@ -919,7 +919,7 @@ PetscErrorCode ISGlobalToLocalMappingApplyIS(ISLocalToGlobalMapping mapping, ISG
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mapping, IS_LTOGM_CLASSID, 1);
   PetscValidHeaderSpecific(is, IS_CLASSID, 3);
-  PetscValidPointer(newis, 4);
+  PetscAssertPointer(newis, 4);
 
   PetscCall(ISGetLocalSize(is, &n));
   PetscCall(ISGetIndices(is, &idxin));
@@ -936,39 +936,39 @@ PetscErrorCode ISGlobalToLocalMappingApplyIS(ISLocalToGlobalMapping mapping, ISG
 }
 
 /*@
-    ISGlobalToLocalMappingApplyBlock - Provides the local block numbering for a list of integers
-    specified with a block global numbering.
+  ISGlobalToLocalMappingApplyBlock - Provides the local block numbering for a list of integers
+  specified with a block global numbering.
 
-    Not Collective
+  Not Collective
 
-    Input Parameters:
-+   mapping - mapping between local and global numbering
-.   type - `IS_GTOLM_MASK` - maps global indices with no local value to -1 in the output list (i.e., mask them)
+  Input Parameters:
++ mapping - mapping between local and global numbering
+. type    - `IS_GTOLM_MASK` - maps global indices with no local value to -1 in the output list (i.e., mask them)
            `IS_GTOLM_DROP` - drops the indices with no local value from the output list
-.   n - number of global indices to map
--   idx - global indices to map
+. n       - number of global indices to map
+- idx     - global indices to map
 
-    Output Parameters:
-+   nout - number of indices in output array (if type == `IS_GTOLM_MASK` then nout = n)
--   idxout - local index of each global index, one must pass in an array long enough
+  Output Parameters:
++ nout   - number of indices in output array (if type == `IS_GTOLM_MASK` then nout = n)
+- idxout - local index of each global index, one must pass in an array long enough
              to hold all the indices. You can call `ISGlobalToLocalMappingApplyBlock()` with
              idxout == NULL to determine the required length (returned in nout)
              and then allocate the required space and call `ISGlobalToLocalMappingApplyBlock()`
              a second time to set the values.
 
-    Level: advanced
+  Level: advanced
 
-    Notes:
-    Either `nout` or `idxout` may be `NULL`. `idx` and `idxout` may be identical.
+  Notes:
+  Either `nout` or `idxout` may be `NULL`. `idx` and `idxout` may be identical.
 
-    For "small" problems when using `ISGlobalToLocalMappingApply()` and `ISGlobalToLocalMappingApplyBlock()`, the `ISLocalToGlobalMappingType` of
-    `ISLOCALTOGLOBALMAPPINGBASIC` will be used;
-    this uses more memory but is faster; this approach is not scalable for extremely large mappings. For large problems `ISLOCALTOGLOBALMAPPINGHASH` is used, this is scalable.
-    Use `ISLocalToGlobalMappingSetType()` or call `ISLocalToGlobalMappingSetFromOptions()` with the option -islocaltoglobalmapping_type <basic,hash> to control which is used.
+  For "small" problems when using `ISGlobalToLocalMappingApply()` and `ISGlobalToLocalMappingApplyBlock()`, the `ISLocalToGlobalMappingType` of
+  `ISLOCALTOGLOBALMAPPINGBASIC` will be used;
+  this uses more memory but is faster; this approach is not scalable for extremely large mappings. For large problems `ISLOCALTOGLOBALMAPPINGHASH` is used, this is scalable.
+  Use `ISLocalToGlobalMappingSetType()` or call `ISLocalToGlobalMappingSetFromOptions()` with the option -islocaltoglobalmapping_type <basic,hash> to control which is used.
 
-    Developer Note:
-    The manual page states that `idx` and `idxout` may be identical but the calling
-    sequence declares `idx` as const so it cannot be the same as `idxout`.
+  Developer Notes:
+  The manual page states that `idx` and `idxout` may be identical but the calling
+  sequence declares `idx` as const so it cannot be the same as `idxout`.
 
 .seealso: [](sec_scatter), `ISLocalToGlobalMapping`, `ISLocalToGlobalMappingApply()`, `ISGlobalToLocalMappingApply()`, `ISLocalToGlobalMappingCreate()`,
           `ISLocalToGlobalMappingDestroy()`
@@ -983,32 +983,31 @@ PetscErrorCode ISGlobalToLocalMappingApplyBlock(ISLocalToGlobalMapping mapping, 
 }
 
 /*@C
-    ISLocalToGlobalMappingGetBlockInfo - Gets the neighbor information for each processor and
-     each index shared by more than one processor
+  ISLocalToGlobalMappingGetBlockInfo - Gets the neighbor information for each processor and
+  each index shared by more than one processor
 
-    Collective
+  Collective
 
-    Input Parameter:
-.   mapping - the mapping from local to global indexing
+  Input Parameter:
+. mapping - the mapping from local to global indexing
 
-    Output Parameters:
-+   nproc - number of processors that are connected to this one
-.   proc - neighboring processors
-.   numproc - number of indices for each subdomain (processor)
--   indices - indices of nodes (in local numbering) shared with neighbors (sorted by global numbering)
+  Output Parameters:
++ nproc    - number of processors that are connected to this one
+. procs    - neighboring processors
+. numprocs - number of indices for each subdomain (processor)
+- indices  - indices of nodes (in local numbering) shared with neighbors (sorted by global numbering)
 
-    Level: advanced
+  Level: advanced
 
-    Fortran Usage:
+  Fortran Notes:
+  There is no `ISLocalToGlobalMappingRestoreInfo()` in Fortran. You must make sure that
+  `procs`[], `numprocs`[] and `indices`[][] are large enough arrays, either by allocating them
+  dynamically or defining static ones large enough.
 .vb
-        PetscInt indices[nproc][numprocmax],ierr)
-        ISLocalToGlobalMpngGetInfoSize(ISLocalToGlobalMapping,PetscInt nproc,PetscInt numprocmax,ierr) followed by
-        ISLocalToGlobalMappingGetInfo(ISLocalToGlobalMapping,PetscInt nproc, PetscInt procs[nproc],PetscInt numprocs[nproc],
+  PetscInt indices[nproc][numprocmax],ierr)
+  ISLocalToGlobalMpngGetInfoSize(ISLocalToGlobalMapping,PetscInt nproc,PetscInt numprocmax,ierr) followed by
+  ISLocalToGlobalMappingGetInfo(ISLocalToGlobalMapping,PetscInt nproc, PetscInt procs[nproc],PetscInt numprocs[nproc],
 .ve
-
-   Fortran Note:
-        There is no `ISLocalToGlobalMappingRestoreInfo()` in Fortran. You must make sure that `procs`[], `numprocs`[] and
-        `indices`[][] are large enough arrays, either by allocating them dynamically or defining static ones large enough.
 
 .seealso: [](sec_scatter), `ISLocalToGlobalMappingDestroy()`, `ISLocalToGlobalMappingCreateIS()`, `ISLocalToGlobalMappingCreate()`,
           `ISLocalToGlobalMappingRestoreInfo()`
@@ -1423,20 +1422,20 @@ static PetscErrorCode ISLocalToGlobalMappingGetBlockInfo_Private(ISLocalToGlobal
 }
 
 /*@C
-    ISLocalToGlobalMappingRestoreBlockInfo - Frees the memory allocated by `ISLocalToGlobalMappingGetBlockInfo()`
+  ISLocalToGlobalMappingRestoreBlockInfo - Frees the memory allocated by `ISLocalToGlobalMappingGetBlockInfo()`
 
-    Collective
+  Collective
 
-    Input Parameter:
-.   mapping - the mapping from local to global indexing
+  Input Parameter:
+. mapping - the mapping from local to global indexing
 
-    Output Parameters:
-+   nproc - number of processors that are connected to this one
-.   proc - neighboring processors
-.   numproc - number of indices for each processor
--   indices - indices of local nodes shared with neighbor (sorted by global numbering)
+  Output Parameters:
++ nproc    - number of processors that are connected to this one
+. procs    - neighboring processors
+. numprocs - number of indices for each processor
+- indices  - indices of local nodes shared with neighbor (sorted by global numbering)
 
-    Level: advanced
+  Level: advanced
 
 .seealso: [](sec_scatter), `ISLocalToGlobalMappingDestroy()`, `ISLocalToGlobalMappingCreateIS()`, `ISLocalToGlobalMappingCreate()`,
           `ISLocalToGlobalMappingGetInfo()`
@@ -1463,35 +1462,35 @@ PetscErrorCode ISLocalToGlobalMappingRestoreBlockInfo(ISLocalToGlobalMapping map
 }
 
 /*@C
-    ISLocalToGlobalMappingGetInfo - Gets the neighbor information for each processor and
-     each index shared by more than one processor
+  ISLocalToGlobalMappingGetInfo - Gets the neighbor information for each processor and
+  each index shared by more than one processor
 
-    Collective
+  Collective
 
-    Input Parameter:
-.   mapping - the mapping from local to global indexing
+  Input Parameter:
+. mapping - the mapping from local to global indexing
 
-    Output Parameters:
-+   nproc - number of processors that are connected to this one
-.   proc - neighboring processors
-.   numproc - number of indices for each subdomain (processor)
--   indices - indices of nodes (in local numbering) shared with neighbors (sorted by global numbering)
+  Output Parameters:
++ nproc    - number of processors that are connected to this one
+. procs    - neighboring processors
+. numprocs - number of indices for each subdomain (processor)
+- indices  - indices of nodes (in local numbering) shared with neighbors (sorted by global numbering)
 
-    Level: advanced
+  Level: advanced
 
-    Note:
-    The user needs to call `ISLocalToGlobalMappingRestoreInfo()` when the data is no longer needed.
+  Note:
+  The user needs to call `ISLocalToGlobalMappingRestoreInfo()` when the data is no longer needed.
 
-    Fortran Usage:
+  Fortran Notes:
+  There is no `ISLocalToGlobalMappingRestoreInfo()` in Fortran. You must make sure that
+  `procs`[], `numprocs`[] and `indices`[][] are large enough arrays, either by allocating them
+  dynamically or defining static ones large enough.
+
 .vb
-        PetscInt indices[nproc][numprocmax],ierr)
-        ISLocalToGlobalMpngGetInfoSize(ISLocalToGlobalMapping,PetscInt nproc,PetscInt numprocmax,ierr) followed by
-        ISLocalToGlobalMappingGetInfo(ISLocalToGlobalMapping,PetscInt nproc, PetscInt procs[nproc],PetscInt numprocs[nproc],
+  PetscInt indices[nproc][numprocmax],ierr)
+  ISLocalToGlobalMpngGetInfoSize(ISLocalToGlobalMapping,PetscInt nproc,PetscInt numprocmax,ierr) followed by
+  ISLocalToGlobalMappingGetInfo(ISLocalToGlobalMapping,PetscInt nproc, PetscInt procs[nproc],PetscInt numprocs[nproc],
 .ve
-
-    Fortran Note:
-        There is no `ISLocalToGlobalMappingRestoreInfo()` in Fortran. You must make sure that `procs`[], `numprocs`[] and
-        `indices`[][] are large enough arrays, either by allocating them dynamically or defining static ones large enough.
 
 .seealso: [](sec_scatter), `ISLocalToGlobalMappingDestroy()`, `ISLocalToGlobalMappingCreateIS()`, `ISLocalToGlobalMappingCreate()`,
           `ISLocalToGlobalMappingRestoreInfo()`
@@ -1523,20 +1522,20 @@ PetscErrorCode ISLocalToGlobalMappingGetInfo(ISLocalToGlobalMapping mapping, Pet
 }
 
 /*@C
-    ISLocalToGlobalMappingRestoreInfo - Frees the memory allocated by `ISLocalToGlobalMappingGetInfo()`
+  ISLocalToGlobalMappingRestoreInfo - Frees the memory allocated by `ISLocalToGlobalMappingGetInfo()`
 
-    Collective
+  Collective
 
-    Input Parameter:
-.   mapping - the mapping from local to global indexing
+  Input Parameter:
+. mapping - the mapping from local to global indexing
 
-    Output Parameters:
-+   nproc - number of processors that are connected to this one
-.   proc - neighboring processors
-.   numproc - number of indices for each processor
--   indices - indices of local nodes shared with neighbor (sorted by global numbering)
+  Output Parameters:
++ nproc    - number of processors that are connected to this one
+. procs    - neighboring processors
+. numprocs - number of indices for each processor
+- indices  - indices of local nodes shared with neighbor (sorted by global numbering)
 
-    Level: advanced
+  Level: advanced
 
 .seealso: [](sec_scatter), `ISLocalToGlobalMappingDestroy()`, `ISLocalToGlobalMappingCreateIS()`, `ISLocalToGlobalMappingCreate()`,
           `ISLocalToGlobalMappingGetInfo()`
@@ -1549,22 +1548,22 @@ PetscErrorCode ISLocalToGlobalMappingRestoreInfo(ISLocalToGlobalMapping mapping,
 }
 
 /*@C
-    ISLocalToGlobalMappingGetNodeInfo - Gets the neighbor information for each MPI rank
+  ISLocalToGlobalMappingGetNodeInfo - Gets the neighbor information for each MPI rank
 
-    Collective
+  Collective
 
-    Input Parameter:
-.   mapping - the mapping from local to global indexing
+  Input Parameter:
+. mapping - the mapping from local to global indexing
 
-    Output Parameters:
-+   nnodes - number of local nodes (same `ISLocalToGlobalMappingGetSize()`)
-.   count - number of neighboring processors per node
--   indices - indices of processes sharing the node (sorted)
+  Output Parameters:
++ nnodes  - number of local nodes (same `ISLocalToGlobalMappingGetSize()`)
+. count   - number of neighboring processors per node
+- indices - indices of processes sharing the node (sorted)
 
-    Level: advanced
+  Level: advanced
 
-    Note:
-    The user needs to call `ISLocalToGlobalMappingRestoreInfo()` when the data is no longer needed.
+  Note:
+  The user needs to call `ISLocalToGlobalMappingRestoreInfo()` when the data is no longer needed.
 
 .seealso: [](sec_scatter), `ISLocalToGlobalMappingDestroy()`, `ISLocalToGlobalMappingCreateIS()`, `ISLocalToGlobalMappingCreate()`,
           `ISLocalToGlobalMappingGetInfo()`, `ISLocalToGlobalMappingRestoreNodeInfo()`
@@ -1617,19 +1616,19 @@ PetscErrorCode ISLocalToGlobalMappingGetNodeInfo(ISLocalToGlobalMapping mapping,
 }
 
 /*@C
-    ISLocalToGlobalMappingRestoreNodeInfo - Frees the memory allocated by `ISLocalToGlobalMappingGetNodeInfo()`
+  ISLocalToGlobalMappingRestoreNodeInfo - Frees the memory allocated by `ISLocalToGlobalMappingGetNodeInfo()`
 
-    Collective
+  Collective
 
-    Input Parameter:
-.   mapping - the mapping from local to global indexing
+  Input Parameter:
+. mapping - the mapping from local to global indexing
 
-    Output Parameters:
-+   nnodes - number of local nodes
-.   count - number of neighboring processors per node
--   indices - indices of processes sharing the node (sorted)
+  Output Parameters:
++ nnodes  - number of local nodes
+. count   - number of neighboring processors per node
+- indices - indices of processes sharing the node (sorted)
 
-    Level: advanced
+  Level: advanced
 
 .seealso: [](sec_scatter), `ISLocalToGlobalMappingDestroy()`, `ISLocalToGlobalMappingCreateIS()`, `ISLocalToGlobalMappingCreate()`,
           `ISLocalToGlobalMappingGetInfo()`
@@ -1686,20 +1685,20 @@ M*/
 M*/
 
 /*@C
-   ISLocalToGlobalMappingGetIndices - Get global indices for every local point that is mapped
+  ISLocalToGlobalMappingGetIndices - Get global indices for every local point that is mapped
 
-   Not Collective
+  Not Collective
 
-   Input Parameter:
+  Input Parameter:
 . ltog - local to global mapping
 
-   Output Parameter:
+  Output Parameter:
 . array - array of indices, the length of this array may be obtained with `ISLocalToGlobalMappingGetSize()`
 
-   Level: advanced
+  Level: advanced
 
-   Note:
-    `ISLocalToGlobalMappingGetSize()` returns the length the this array
+  Note:
+  `ISLocalToGlobalMappingGetSize()` returns the length the this array
 
 .seealso: [](sec_scatter), `ISLocalToGlobalMappingCreate()`, `ISLocalToGlobalMappingApply()`, `ISLocalToGlobalMappingRestoreIndices()`,
           `ISLocalToGlobalMappingGetBlockIndices()`, `ISLocalToGlobalMappingRestoreBlockIndices()`
@@ -1708,7 +1707,7 @@ PetscErrorCode ISLocalToGlobalMappingGetIndices(ISLocalToGlobalMapping ltog, con
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ltog, IS_LTOGM_CLASSID, 1);
-  PetscValidPointer(array, 2);
+  PetscAssertPointer(array, 2);
   if (ltog->bs == 1) {
     *array = ltog->indices;
   } else {
@@ -1726,15 +1725,15 @@ PetscErrorCode ISLocalToGlobalMappingGetIndices(ISLocalToGlobalMapping ltog, con
 }
 
 /*@C
-   ISLocalToGlobalMappingRestoreIndices - Restore indices obtained with `ISLocalToGlobalMappingGetIndices()`
+  ISLocalToGlobalMappingRestoreIndices - Restore indices obtained with `ISLocalToGlobalMappingGetIndices()`
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+ ltog - local to global mapping
+  Input Parameters:
++ ltog  - local to global mapping
 - array - array of indices
 
-   Level: advanced
+  Level: advanced
 
 .seealso: [](sec_scatter), `ISLocalToGlobalMappingCreate()`, `ISLocalToGlobalMappingApply()`, `ISLocalToGlobalMappingGetIndices()`
 @*/
@@ -1742,7 +1741,7 @@ PetscErrorCode ISLocalToGlobalMappingRestoreIndices(ISLocalToGlobalMapping ltog,
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ltog, IS_LTOGM_CLASSID, 1);
-  PetscValidPointer(array, 2);
+  PetscAssertPointer(array, 2);
   PetscCheck(ltog->bs != 1 || *array == ltog->indices, PETSC_COMM_SELF, PETSC_ERR_ARG_BADPTR, "Trying to return mismatched pointer");
 
   if (ltog->bs > 1) PetscCall(PetscFree(*(void **)array));
@@ -1750,17 +1749,17 @@ PetscErrorCode ISLocalToGlobalMappingRestoreIndices(ISLocalToGlobalMapping ltog,
 }
 
 /*@C
-   ISLocalToGlobalMappingGetBlockIndices - Get global indices for every local block
+  ISLocalToGlobalMappingGetBlockIndices - Get global indices for every local block
 
-   Not Collective
+  Not Collective
 
-   Input Parameter:
+  Input Parameter:
 . ltog - local to global mapping
 
-   Output Parameter:
+  Output Parameter:
 . array - array of indices
 
-   Level: advanced
+  Level: advanced
 
 .seealso: [](sec_scatter), `ISLocalToGlobalMappingCreate()`, `ISLocalToGlobalMappingApply()`, `ISLocalToGlobalMappingRestoreBlockIndices()`
 @*/
@@ -1768,21 +1767,21 @@ PetscErrorCode ISLocalToGlobalMappingGetBlockIndices(ISLocalToGlobalMapping ltog
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ltog, IS_LTOGM_CLASSID, 1);
-  PetscValidPointer(array, 2);
+  PetscAssertPointer(array, 2);
   *array = ltog->indices;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
-   ISLocalToGlobalMappingRestoreBlockIndices - Restore indices obtained with `ISLocalToGlobalMappingGetBlockIndices()`
+  ISLocalToGlobalMappingRestoreBlockIndices - Restore indices obtained with `ISLocalToGlobalMappingGetBlockIndices()`
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+ ltog - local to global mapping
+  Input Parameters:
++ ltog  - local to global mapping
 - array - array of indices
 
-   Level: advanced
+  Level: advanced
 
 .seealso: [](sec_scatter), `ISLocalToGlobalMappingCreate()`, `ISLocalToGlobalMappingApply()`, `ISLocalToGlobalMappingGetIndices()`
 @*/
@@ -1790,32 +1789,32 @@ PetscErrorCode ISLocalToGlobalMappingRestoreBlockIndices(ISLocalToGlobalMapping 
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ltog, IS_LTOGM_CLASSID, 1);
-  PetscValidPointer(array, 2);
+  PetscAssertPointer(array, 2);
   PetscCheck(*array == ltog->indices, PETSC_COMM_SELF, PETSC_ERR_ARG_BADPTR, "Trying to return mismatched pointer");
   *array = NULL;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
-   ISLocalToGlobalMappingConcatenate - Create a new mapping that concatenates a list of mappings
+  ISLocalToGlobalMappingConcatenate - Create a new mapping that concatenates a list of mappings
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+ comm - communicator for the new mapping, must contain the communicator of every mapping to concatenate
-. n - number of mappings to concatenate
+  Input Parameters:
++ comm  - communicator for the new mapping, must contain the communicator of every mapping to concatenate
+. n     - number of mappings to concatenate
 - ltogs - local to global mappings
 
-   Output Parameter:
+  Output Parameter:
 . ltogcat - new mapping
 
-   Level: advanced
+  Level: advanced
 
-   Note:
-   This currently always returns a mapping with block size of 1
+  Note:
+  This currently always returns a mapping with block size of 1
 
-   Developer Note:
-   If all the input mapping have the same block size we could easily handle that as a special case
+  Developer Notes:
+  If all the input mapping have the same block size we could easily handle that as a special case
 
 .seealso: [](sec_scatter), `ISLocalToGlobalMapping`, `ISLocalToGlobalMappingCreate()`
 @*/
@@ -1825,9 +1824,9 @@ PetscErrorCode ISLocalToGlobalMappingConcatenate(MPI_Comm comm, PetscInt n, cons
 
   PetscFunctionBegin;
   PetscCheck(n >= 0, comm, PETSC_ERR_ARG_OUTOFRANGE, "Must have a non-negative number of mappings, given %" PetscInt_FMT, n);
-  if (n > 0) PetscValidPointer(ltogs, 3);
+  if (n > 0) PetscAssertPointer(ltogs, 3);
   for (i = 0; i < n; i++) PetscValidHeaderSpecific(ltogs[i], IS_LTOGM_CLASSID, 3);
-  PetscValidPointer(ltogcat, 4);
+  PetscAssertPointer(ltogcat, 4);
   for (cnt = 0, i = 0; i < n; i++) {
     PetscCall(ISLocalToGlobalMappingGetSize(ltogs[i], &m));
     cnt += m;
@@ -1894,28 +1893,28 @@ PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingCreate_Hash(ISLocalToGlobalMap
 }
 
 /*@C
-    ISLocalToGlobalMappingRegister -  Registers a method for applying a global to local mapping with an `ISLocalToGlobalMapping`
+  ISLocalToGlobalMappingRegister -  Registers a method for applying a global to local mapping with an `ISLocalToGlobalMapping`
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  sname - name of a new method
--  function - routine to create method context
+  Input Parameters:
++ sname    - name of a new method
+- function - routine to create method context
 
-   Sample usage:
+  Example Usage:
 .vb
-   ISLocalToGlobalMappingRegister("my_mapper",MyCreate);
+   ISLocalToGlobalMappingRegister("my_mapper", MyCreate);
 .ve
 
-   Then, your mapping can be chosen with the procedural interface via
-$     ISLocalToGlobalMappingSetType(ltog,"my_mapper")
-   or at runtime via the option
+  Then, your mapping can be chosen with the procedural interface via
+$     ISLocalToGlobalMappingSetType(ltog, "my_mapper")
+  or at runtime via the option
 $     -islocaltoglobalmapping_type my_mapper
 
-   Level: advanced
+  Level: advanced
 
-   Note:
-   `ISLocalToGlobalMappingRegister()` may be called multiple times to add several user-defined mappings.
+  Note:
+  `ISLocalToGlobalMappingRegister()` may be called multiple times to add several user-defined mappings.
 
 .seealso: [](sec_scatter), `ISLocalToGlobalMappingRegisterAll()`, `ISLocalToGlobalMappingRegisterDestroy()`, `ISLOCALTOGLOBALMAPPINGBASIC`,
           `ISLOCALTOGLOBALMAPPINGHASH`, `ISLocalToGlobalMapping`, `ISLocalToGlobalMappingApply()`
@@ -1929,31 +1928,31 @@ PetscErrorCode ISLocalToGlobalMappingRegister(const char sname[], PetscErrorCode
 }
 
 /*@C
-   ISLocalToGlobalMappingSetType - Sets the implementation type `ISLocalToGlobalMapping` will use
+  ISLocalToGlobalMappingSetType - Sets the implementation type `ISLocalToGlobalMapping` will use
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  ltog - the `ISLocalToGlobalMapping` object
--  type - a known method
+  Input Parameters:
++ ltog - the `ISLocalToGlobalMapping` object
+- type - a known method
 
-   Options Database Key:
-.  -islocaltoglobalmapping_type  <method> - Sets the method; use -help for a list of available methods (for instance, basic or hash)
+  Options Database Key:
+. -islocaltoglobalmapping_type  <method> - Sets the method; use -help for a list of available methods (for instance, basic or hash)
 
   Level: intermediate
 
-   Notes:
-   See `ISLocalToGlobalMappingType` for available methods
+  Notes:
+  See `ISLocalToGlobalMappingType` for available methods
 
   Normally, it is best to use the `ISLocalToGlobalMappingSetFromOptions()` command and
   then set the `ISLocalToGlobalMappingType` from the options database rather than by using
   this routine.
 
-  Developer Note:
+  Developer Notes:
   `ISLocalToGlobalMappingRegister()` is used to add new types to `ISLocalToGlobalMappingList` from which they
   are accessed by `ISLocalToGlobalMappingSetType()`.
 
-.seealso: [](sec_scatter), `ISLocalToGlobalMappingType`, `ISLocalToGlobalMappingType`, `ISLocalToGlobalMappingRegister()`, `ISLocalToGlobalMappingCreate()`, `ISLocalToGlobalMappingGetType()`
+.seealso: [](sec_scatter), `ISLocalToGlobalMappingType`, `ISLocalToGlobalMappingRegister()`, `ISLocalToGlobalMappingCreate()`, `ISLocalToGlobalMappingGetType()`
 @*/
 PetscErrorCode ISLocalToGlobalMappingSetType(ISLocalToGlobalMapping ltog, ISLocalToGlobalMappingType type)
 {
@@ -1962,7 +1961,7 @@ PetscErrorCode ISLocalToGlobalMappingSetType(ISLocalToGlobalMapping ltog, ISLoca
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ltog, IS_LTOGM_CLASSID, 1);
-  if (type) PetscValidCharPointer(type, 2);
+  if (type) PetscAssertPointer(type, 2);
 
   PetscCall(PetscObjectTypeCompare((PetscObject)ltog, type, &match));
   if (match) PetscFunctionReturn(PETSC_SUCCESS);
@@ -1982,25 +1981,25 @@ PetscErrorCode ISLocalToGlobalMappingSetType(ISLocalToGlobalMapping ltog, ISLoca
 }
 
 /*@C
-   ISLocalToGlobalMappingGetType - Get the type of the `ISLocalToGlobalMapping`
+  ISLocalToGlobalMappingGetType - Get the type of the `ISLocalToGlobalMapping`
 
-   Not Collective
+  Not Collective
 
-   Input Parameter:
-.  ltog - the `ISLocalToGlobalMapping` object
+  Input Parameter:
+. ltog - the `ISLocalToGlobalMapping` object
 
-   Output Parameter:
-.  type - the type
+  Output Parameter:
+. type - the type
 
-   Level: intermediate
+  Level: intermediate
 
-.seealso: [](sec_scatter), `ISLocalToGlobalMappingType`, `ISLocalToGlobalMappingType`, `ISLocalToGlobalMappingRegister()`, `ISLocalToGlobalMappingCreate()`, `ISLocalToGlobalMappingSetType()`
+.seealso: [](sec_scatter), `ISLocalToGlobalMappingType`, `ISLocalToGlobalMappingRegister()`, `ISLocalToGlobalMappingCreate()`, `ISLocalToGlobalMappingSetType()`
 @*/
 PetscErrorCode ISLocalToGlobalMappingGetType(ISLocalToGlobalMapping ltog, ISLocalToGlobalMappingType *type)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ltog, IS_LTOGM_CLASSID, 1);
-  PetscValidPointer(type, 2);
+  PetscAssertPointer(type, 2);
   *type = ((PetscObject)ltog)->type_name;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

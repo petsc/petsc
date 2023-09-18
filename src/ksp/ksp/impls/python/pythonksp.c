@@ -14,13 +14,13 @@
 
    Level: intermediate
 
-.seealso: [](chapter_ksp), `KSPCreate()`, `KSPSetType()`, `KSPPYTHON`, `PetscPythonInitialize()`
+.seealso: [](ch_ksp), `KSPCreate()`, `KSPSetType()`, `KSPPYTHON`, `PetscPythonInitialize()`
 @*/
 PetscErrorCode KSPPythonSetType(KSP ksp, const char pyname[])
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
-  PetscValidCharPointer(pyname, 2);
+  PetscAssertPointer(pyname, 2);
   PetscTryMethod(ksp, "KSPPythonSetType_C", (KSP, const char[]), (ksp, pyname));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -38,13 +38,13 @@ PetscErrorCode KSPPythonSetType(KSP ksp, const char pyname[])
 
    Level: intermediate
 
-.seealso: [](chapter_ksp), `KSPCreate()`, `KSPSetType()`, `KSPPYTHON`, `PetscPythonInitialize()`, `KSPPythonSetType()`
+.seealso: [](ch_ksp), `KSPCreate()`, `KSPSetType()`, `KSPPYTHON`, `PetscPythonInitialize()`, `KSPPythonSetType()`
 @*/
 PetscErrorCode KSPPythonGetType(KSP ksp, const char *pyname[])
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
-  PetscValidPointer(pyname, 2);
+  PetscAssertPointer(pyname, 2);
   PetscUseMethod(ksp, "KSPPythonGetType_C", (KSP, const char *[]), (ksp, pyname));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

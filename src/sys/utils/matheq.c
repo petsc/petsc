@@ -1,18 +1,18 @@
 #include <petscsys.h>
 
 /*@C
-   PetscEqualReal - Returns whether the two `PetscReal` variables are equal
+  PetscEqualReal - Returns whether the two `PetscReal` variables are equal
 
-    Input Parameters:
-+     a - first real number
--     b - second real number
+  Input Parameters:
++ a - first real number
+- b - second real number
 
-    Level: developer
+  Level: developer
 
-    Note:
-    Equivalent to "a == b". Should be used to prevent compilers from
-    emitting floating point comparison warnings (e.g. GCC's -Wfloat-equal flag)
-    in PETSc header files or user code.
+  Note:
+  Equivalent to "a == b". Should be used to prevent compilers from
+  emitting floating point comparison warnings (e.g. GCC's -Wfloat-equal flag)
+  in PETSc header files or user code.
 
 .seealso: `PetscIsCloseAtTol()`, `PetscEqualScalar()`
 @*/
@@ -22,18 +22,18 @@ PetscBool PetscEqualReal(PetscReal a, PetscReal b)
 }
 
 /*@C
-    PetscEqualScalar - Returns whether the two `PetscScalar` values are equal.
+  PetscEqualScalar - Returns whether the two `PetscScalar` values are equal.
 
-    Input Parameters:
-+     a - first scalar value
--     b - second scalar value
+  Input Parameters:
++ a - first scalar value
+- b - second scalar value
 
-    Level: developer
+  Level: developer
 
-    Note:
-    Equivalent to "a == b". Should be used to prevent compilers from
-    emitting floating point comparison warnings (e.g. GCC's -Wfloat-equal flag)
-    in PETSc header files or user code.
+  Note:
+  Equivalent to "a == b". Should be used to prevent compilers from
+  emitting floating point comparison warnings (e.g. GCC's -Wfloat-equal flag)
+  in PETSc header files or user code.
 
 .seealso: `PetscIsCloseAtTol()`, `PetscEqualReal()`
 @*/

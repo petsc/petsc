@@ -912,7 +912,7 @@ static inline PetscErrorCode PetscSFLinkLogFlopsAfterUnpackLeafData(PetscSF sf, 
   +sf      - The StarForest
   .link    - The link
   .count   - Number of entries to unpack
-  .start   - The first index, significent when indices=NULL
+  .start   - The first index, significant when indices=NULL
   .indices - Indices of entries in <data>. If NULL, it means indices are contiguous and the first is given in <start>
   .buf     - A contiguous buffer to unpack from
   -op      - Operation after unpack
@@ -977,7 +977,7 @@ static inline PetscErrorCode PetscSFLinkScatterDataWithMPIReduceLocal(PetscSF sf
   When rootdata can be directly used as root buffer, the routine is almost a no-op. After the call, root data is
   in a place where the underlying MPI is ready to access (use_gpu_aware_mpi or not)
  */
-PetscErrorCode PetscSFLinkPackRootData_Private(PetscSF sf, PetscSFLink link, PetscSFScope scope, const void *rootdata)
+static PetscErrorCode PetscSFLinkPackRootData_Private(PetscSF sf, PetscSFLink link, PetscSFScope scope, const void *rootdata)
 {
   const PetscInt *rootindices = NULL;
   PetscInt        count, start;
@@ -997,7 +997,7 @@ PetscErrorCode PetscSFLinkPackRootData_Private(PetscSF sf, PetscSFLink link, Pet
 }
 
 /* Pack leafdata to leafbuf */
-PetscErrorCode PetscSFLinkPackLeafData_Private(PetscSF sf, PetscSFLink link, PetscSFScope scope, const void *leafdata)
+static PetscErrorCode PetscSFLinkPackLeafData_Private(PetscSF sf, PetscSFLink link, PetscSFScope scope, const void *leafdata)
 {
   const PetscInt *leafindices = NULL;
   PetscInt        count, start;
@@ -1045,7 +1045,7 @@ PetscErrorCode PetscSFLinkPackLeafData(PetscSF sf, PetscSFLink link, PetscSFScop
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PetscSFLinkUnpackRootData_Private(PetscSF sf, PetscSFLink link, PetscSFScope scope, void *rootdata, MPI_Op op)
+static PetscErrorCode PetscSFLinkUnpackRootData_Private(PetscSF sf, PetscSFLink link, PetscSFScope scope, void *rootdata, MPI_Op op)
 {
   const PetscInt *rootindices = NULL;
   PetscInt        count, start;
@@ -1069,7 +1069,7 @@ PetscErrorCode PetscSFLinkUnpackRootData_Private(PetscSF sf, PetscSFLink link, P
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PetscSFLinkUnpackLeafData_Private(PetscSF sf, PetscSFLink link, PetscSFScope scope, void *leafdata, MPI_Op op)
+static PetscErrorCode PetscSFLinkUnpackLeafData_Private(PetscSF sf, PetscSFLink link, PetscSFScope scope, void *leafdata, MPI_Op op)
 {
   const PetscInt *leafindices = NULL;
   PetscInt        count, start;
@@ -1240,7 +1240,7 @@ PetscErrorCode PetscSFLinkFetchAndOpLocal(PetscSF sf, PetscSFLink link, void *ro
    Output Parameters:
   +  opt     - Pack optimizations. NULL if no optimizations.
 */
-PetscErrorCode PetscSFCreatePackOpt(PetscInt n, const PetscInt *offset, const PetscInt *idx, PetscSFPackOpt *out)
+static PetscErrorCode PetscSFCreatePackOpt(PetscInt n, const PetscInt *offset, const PetscInt *idx, PetscSFPackOpt *out)
 {
   PetscInt       r, p, start, i, j, k, dx, dy, dz, dydz, m, X, Y;
   PetscBool      optimizable = PETSC_TRUE;

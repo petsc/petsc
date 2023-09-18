@@ -29,6 +29,38 @@ Labels:
   boundary: 1 strata with value/size (1 (77))
 Field deformation:
   adjacency FEM
-  Linear solve converged due to CONVERGED_RTOL iterations 13
-[0] 0) N=          27, max displ=4.1232123e+01, error=1.850e+01
-[0] 1) N=         441, max displ=5.3174288e+01, disp diff= 1.19e+01, error=6.557e+00, rate=1.5
+  Linear solve converged due to CONVERGED_RTOL iterations 12
+DM Object: Mesh 4 MPI processes
+  type: plex
+Mesh in 3 dimensions:
+  Number of 0-cells per rank: 27 27 27 27
+  Number of 1-cells per rank: 54 54 54 54
+  Number of 2-cells per rank: 36 36 36 36
+  Number of 3-cells per rank: 8 8 8 8
+Labels:
+  celltype: 4 strata with value/size (0 (27), 1 (54), 4 (36), 7 (8))
+  depth: 4 strata with value/size (0 (27), 1 (54), 2 (36), 3 (8))
+  marker: 1 strata with value/size (1 (77))
+  Face Sets: 4 strata with value/size (1 (9), 2 (9), 3 (9), 6 (9))
+  boundary: 1 strata with value/size (1 (77))
+Field deformation:
+  adjacency FEM
+DM Object: Mesh 4 MPI processes
+  type: plex
+Mesh in 3 dimensions:
+  Number of 0-cells per rank: 125 125 125 125
+  Number of 1-cells per rank: 300 300 300 300
+  Number of 2-cells per rank: 240 240 240 240
+  Number of 3-cells per rank: 64 64 64 64
+Labels:
+  celltype: 4 strata with value/size (0 (125), 1 (300), 4 (240), 7 (64))
+  depth: 4 strata with value/size (0 (125), 1 (300), 2 (240), 3 (64))
+  marker: 1 strata with value/size (1 (281))
+  Face Sets: 4 strata with value/size (1 (49), 2 (49), 3 (49), 6 (49))
+  boundary: 1 strata with value/size (1 (281))
+Field deformation:
+  adjacency FEM
+  Linear solve converged due to CONVERGED_RTOL iterations 19
+[0] 0) N=          27, max displ=4.1232123e+01, error=1.852e+01
+[0] 1) N=         441, max displ=5.3174288e+01, disp diff= 1.19e+01, error=6.579e+00, rate=1.5
+[0] 2) N=        4725, max displ=5.9063893e+01, disp diff= 5.89e+00, error=6.899e-01, rate=3.3

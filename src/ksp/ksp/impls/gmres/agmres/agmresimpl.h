@@ -1,10 +1,10 @@
 /*
-  * Private data structure used for the KSP AGMRES.
-  * It extends the definition of KSP_GMRES and KSP_DGMRES data structures. If you modify something there (located in gmresimpl.h and in dgmresimpl.h), you should  modify it here as well.
-  * In this KSP, KSPSIZE denotes the size of the basis (possibly augmented with Schur vectors) and MAXKSPSIZE denotes the maximum size of the augmented basis (with respect to the input
+  Private data structure used for the KSP AGMRES.
+  It extends the definition of KSP_GMRES and KSP_DGMRES data structures.
+  If you modify something there (located in gmresimpl.h and in dgmresimpl.h), you should  modify it here as well.
+  In this KSP, KSPSIZE denotes the size of the basis (possibly augmented with Schur vectors) and MAXKSPSIZE denotes the maximum size of the augmented basis
 */
-#ifndef PETSC_AGMRESIMPL_H
-#define PETSC_AGMRESIMPL_H
+#pragma once
 
 #include <../src/ksp/ksp/impls/gmres/dgmres/dgmresimpl.h>
 typedef struct {
@@ -54,4 +54,6 @@ PetscErrorCode KSPAGMRESRodvec(KSP, PetscInt, PetscScalar *, Vec);
 PetscErrorCode KSPAGMRESLejaOrdering(PetscScalar *, PetscScalar *, PetscScalar *, PetscScalar *, PetscInt);
 PetscErrorCode KSPAGMRESRoddecInitNeighboor(KSP);
 PetscErrorCode KSPAGMRESComputeDeflationData(KSP);
-#endif // PETSC_AGMRESIMPL_H
+
+#define AGMRES_DEFAULT_MAXK     30
+#define AGMRES_DELTA_DIRECTIONS 10

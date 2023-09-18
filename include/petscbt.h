@@ -1,36 +1,10 @@
-#ifndef PETSCBT_H
-#define PETSCBT_H
+#pragma once
 
-#include <petscviewer.h>
+#include <petscsystypes.h>
+#include <petscviewertypes.h>
+#include <petscstring.h>
 
 /* SUBMANSEC = Sys */
-
-/*S
-     PetscBT - PETSc bitarrays, efficient storage of arrays of boolean values
-
-     Level: advanced
-
-     Notes:
-     The following routines do not have their own manual pages
-
-.vb
-     PetscBTCreate(m,&bt)         - creates a bit array with enough room to hold m values
-     PetscBTDestroy(&bt)          - destroys the bit array
-     PetscBTMemzero(m,bt)         - zeros the entire bit array (sets all values to false)
-     PetscBTSet(bt,index)         - sets a particular entry as true
-     PetscBTClear(bt,index)       - sets a particular entry as false
-     PetscBTLookup(bt,index)      - returns the value
-     PetscBTLookupSet(bt,index)   - returns the value and then sets it true
-     PetscBTLookupClear(bt,index) - returns the value and then sets it false
-     PetscBTLength(m)             - returns number of bytes in array with m bits
-     PetscBTView(m,bt,viewer)     - prints all the entries in a bit array
-.ve
-
-    PETSc does not check error flags on `PetscBTLookup()`, `PetcBTLookupSet()`, `PetscBTLength()` because error checking
-    would cost hundreds more cycles then the operation.
-
-S*/
-typedef char *PetscBT;
 
 /* convert an index i to an index suitable for indexing a PetscBT, such that
  * bt[PetscBTIndex(i)] returns the i'th value of the bt */
@@ -104,15 +78,4 @@ static inline char PetscBTLookupClear(PetscBT array, PetscInt index)
   return ret;
 }
 
-static inline PetscErrorCode PetscBTView(PetscInt m, const PetscBT bt, PetscViewer viewer)
-{
-  PetscFunctionBegin;
-  if (m < 1) PetscFunctionReturn(PETSC_SUCCESS);
-  if (!viewer) PetscCall(PetscViewerASCIIGetStdout(PETSC_COMM_SELF, &viewer));
-  PetscCall(PetscViewerASCIIPushSynchronized(viewer));
-  for (PetscInt i = 0; i < m; ++i) PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "%" PetscInt_FMT " %d\n", i, (int)PetscBTLookup(bt, i)));
-  PetscCall(PetscViewerFlush(viewer));
-  PetscCall(PetscViewerASCIIPopSynchronized(viewer));
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-#endif /* PETSCBT_H */
+PETSC_EXTERN PetscErrorCode PetscBTView(PetscInt, const PetscBT, PetscViewer);

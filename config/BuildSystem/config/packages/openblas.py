@@ -3,7 +3,7 @@ import config.package
 #    We do not use CMAKE for OpenBLAS the cmake for OpenBLAS
 #       does not have an install rule https://github.com/xianyi/OpenBLAS/issues/957
 #       fails on mac due to argument list too long https://github.com/xianyi/OpenBLAS/issues/977
-#       does not support 64 bit integers with INTERFACE64
+#       does not support 64-bit integers with INTERFACE64
 
 # OpenBLAS is not always valgrind clean
 # dswap_k_SANDYBRIDGE (in /usr/lib/openblas-base/libblas.so.3)
@@ -30,7 +30,7 @@ class Configure(config.package.Package):
   def setupHelp(self, help):
     config.package.Package.setupHelp(self,help)
     import nargs
-    help.addArgument('OPENBLAS', '-download-openblas-64-bit-blas-indices', nargs.ArgBool(None, 0, 'Use 64 bit integers for OpenBLAS (deprecated: use --with-64-bit-blas-indices'))
+    help.addArgument('OPENBLAS', '-download-openblas-64-bit-blas-indices', nargs.ArgBool(None, 0, 'Use 64-bit integers for OpenBLAS (deprecated: use --with-64-bit-blas-indices'))
     help.addArgument('OPENBLAS', '-download-openblas-use-pthreads', nargs.ArgBool(None, 0, 'Use pthreads for OpenBLAS'))
     help.addArgument('OPENBLAS', '-download-openblas-make-options=<options>', nargs.Arg(None, None, 'additional options for building OpenBLAS'))
     return
@@ -51,10 +51,10 @@ class Configure(config.package.Package):
     if self.foundoptionalincludes:
       self.checkVersion()
     if self.found:
-      # TODO: Use openblas_get_config() or openblas_config.h to determine use of OpenMP and 64 bit indices for prebuilt OpenBLAS libraries
+      # TODO: Use openblas_get_config() or openblas_config.h to determine use of OpenMP and 64-bit indices for prebuilt OpenBLAS libraries
       if not hasattr(self,'usesopenmp'): self.usesopenmp = 'unknown'
       if self.directory:
-        self.libDir = os.path.join(self.directory,'lib')
+        self.libDir = os.path.join(self.directory,self.libDirs[0])
         self.include = [os.path.join(self.directory,'include')]
       else:
         self.libDir = None

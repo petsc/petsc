@@ -27,22 +27,22 @@ typedef struct {
 static inline PetscErrorCode PetscLogMPIMessages(PetscInt nsend, PetscSFCount *sendcnts, MPI_Datatype sendtype, PetscInt nrecv, PetscSFCount *recvcnts, MPI_Datatype recvtype)
 {
   PetscFunctionBegin;
-#if defined(PETSC_USE_LOG)
-  petsc_isend_ct += (PetscLogDouble)nsend;
-  petsc_irecv_ct += (PetscLogDouble)nrecv;
+  if (PetscDefined(USE_LOG)) {
+    petsc_isend_ct += (PetscLogDouble)nsend;
+    petsc_irecv_ct += (PetscLogDouble)nrecv;
 
-  if (sendtype != MPI_DATATYPE_NULL) {
-    PetscMPIInt i, typesize;
-    PetscCallMPI(MPI_Type_size(sendtype, &typesize));
-    for (i = 0; i < nsend; i++) petsc_isend_len += (PetscLogDouble)(sendcnts[i] * typesize);
-  }
+    if (sendtype != MPI_DATATYPE_NULL) {
+      PetscMPIInt i, typesize;
+      PetscCallMPI(MPI_Type_size(sendtype, &typesize));
+      for (i = 0; i < nsend; i++) petsc_isend_len += (PetscLogDouble)(sendcnts[i] * typesize);
+    }
 
-  if (recvtype != MPI_DATATYPE_NULL) {
-    PetscMPIInt i, typesize;
-    PetscCallMPI(MPI_Type_size(recvtype, &typesize));
-    for (i = 0; i < nrecv; i++) petsc_irecv_len += (PetscLogDouble)(recvcnts[i] * typesize);
+    if (recvtype != MPI_DATATYPE_NULL) {
+      PetscMPIInt i, typesize;
+      PetscCallMPI(MPI_Type_size(recvtype, &typesize));
+      for (i = 0; i < nrecv; i++) petsc_irecv_len += (PetscLogDouble)(recvcnts[i] * typesize);
+    }
   }
-#endif
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

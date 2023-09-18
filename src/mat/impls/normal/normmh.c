@@ -8,7 +8,7 @@ typedef struct {
   PetscScalar scale;
 } Mat_Normal;
 
-PetscErrorCode MatScale_NormalHermitian(Mat inA, PetscScalar scale)
+static PetscErrorCode MatScale_NormalHermitian(Mat inA, PetscScalar scale)
 {
   Mat_Normal *a = (Mat_Normal *)inA->data;
 
@@ -17,7 +17,7 @@ PetscErrorCode MatScale_NormalHermitian(Mat inA, PetscScalar scale)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatDiagonalScale_NormalHermitian(Mat inA, Vec left, Vec right)
+static PetscErrorCode MatDiagonalScale_NormalHermitian(Mat inA, Vec left, Vec right)
 {
   Mat_Normal *a = (Mat_Normal *)inA->data;
 
@@ -41,7 +41,7 @@ PetscErrorCode MatDiagonalScale_NormalHermitian(Mat inA, Vec left, Vec right)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatCreateSubMatrices_NormalHermitian(Mat mat, PetscInt n, const IS irow[], const IS icol[], MatReuse scall, Mat *submat[])
+static PetscErrorCode MatCreateSubMatrices_NormalHermitian(Mat mat, PetscInt n, const IS irow[], const IS icol[], MatReuse scall, Mat *submat[])
 {
   Mat_Normal *a = (Mat_Normal *)mat->data;
   Mat         B = a->A, *suba;
@@ -67,7 +67,7 @@ PetscErrorCode MatCreateSubMatrices_NormalHermitian(Mat mat, PetscInt n, const I
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatPermute_NormalHermitian(Mat A, IS rowp, IS colp, Mat *B)
+static PetscErrorCode MatPermute_NormalHermitian(Mat A, IS rowp, IS colp, Mat *B)
 {
   Mat_Normal *a = (Mat_Normal *)A->data;
   Mat         C, Aa = a->A;
@@ -84,7 +84,7 @@ PetscErrorCode MatPermute_NormalHermitian(Mat A, IS rowp, IS colp, Mat *B)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatDuplicate_NormalHermitian(Mat A, MatDuplicateOption op, Mat *B)
+static PetscErrorCode MatDuplicate_NormalHermitian(Mat A, MatDuplicateOption op, Mat *B)
 {
   Mat_Normal *a = (Mat_Normal *)A->data;
   Mat         C;
@@ -98,7 +98,7 @@ PetscErrorCode MatDuplicate_NormalHermitian(Mat A, MatDuplicateOption op, Mat *B
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatCopy_NormalHermitian(Mat A, Mat B, MatStructure str)
+static PetscErrorCode MatCopy_NormalHermitian(Mat A, Mat B, MatStructure str)
 {
   Mat_Normal *a = (Mat_Normal *)A->data, *b = (Mat_Normal *)B->data;
 
@@ -113,7 +113,7 @@ PetscErrorCode MatCopy_NormalHermitian(Mat A, Mat B, MatStructure str)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatMult_NormalHermitian(Mat N, Vec x, Vec y)
+static PetscErrorCode MatMult_NormalHermitian(Mat N, Vec x, Vec y)
 {
   Mat_Normal *Na = (Mat_Normal *)N->data;
   Vec         in;
@@ -132,7 +132,7 @@ PetscErrorCode MatMult_NormalHermitian(Mat N, Vec x, Vec y)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatMultHermitianAdd_Normal(Mat N, Vec v1, Vec v2, Vec v3)
+static PetscErrorCode MatMultHermitianAdd_Normal(Mat N, Vec v1, Vec v2, Vec v3)
 {
   Mat_Normal *Na = (Mat_Normal *)N->data;
   Vec         in;
@@ -156,7 +156,7 @@ PetscErrorCode MatMultHermitianAdd_Normal(Mat N, Vec v1, Vec v2, Vec v3)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatMultHermitianTranspose_Normal(Mat N, Vec x, Vec y)
+static PetscErrorCode MatMultHermitianTranspose_Normal(Mat N, Vec x, Vec y)
 {
   Mat_Normal *Na = (Mat_Normal *)N->data;
   Vec         in;
@@ -175,7 +175,7 @@ PetscErrorCode MatMultHermitianTranspose_Normal(Mat N, Vec x, Vec y)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatMultHermitianTransposeAdd_Normal(Mat N, Vec v1, Vec v2, Vec v3)
+static PetscErrorCode MatMultHermitianTransposeAdd_Normal(Mat N, Vec v1, Vec v2, Vec v3)
 {
   Mat_Normal *Na = (Mat_Normal *)N->data;
   Vec         in;
@@ -199,7 +199,7 @@ PetscErrorCode MatMultHermitianTransposeAdd_Normal(Mat N, Vec v1, Vec v2, Vec v3
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatDestroy_NormalHermitian(Mat N)
+static PetscErrorCode MatDestroy_NormalHermitian(Mat N)
 {
   Mat_Normal *Na = (Mat_Normal *)N->data;
 
@@ -224,7 +224,7 @@ PetscErrorCode MatDestroy_NormalHermitian(Mat N)
 /*
       Slow, nonscalable version
 */
-PetscErrorCode MatGetDiagonal_NormalHermitian(Mat N, Vec v)
+static PetscErrorCode MatGetDiagonal_NormalHermitian(Mat N, Vec v)
 {
   Mat_Normal        *Na = (Mat_Normal *)N->data;
   Mat                A  = Na->A;
@@ -253,7 +253,7 @@ PetscErrorCode MatGetDiagonal_NormalHermitian(Mat N, Vec v)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatGetDiagonalBlock_NormalHermitian(Mat N, Mat *D)
+static PetscErrorCode MatGetDiagonalBlock_NormalHermitian(Mat N, Mat *D)
 {
   Mat_Normal *Na = (Mat_Normal *)N->data;
   Mat         M, A = Na->A;
@@ -265,7 +265,7 @@ PetscErrorCode MatGetDiagonalBlock_NormalHermitian(Mat N, Mat *D)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatNormalGetMat_NormalHermitian(Mat A, Mat *M)
+static PetscErrorCode MatNormalGetMat_NormalHermitian(Mat A, Mat *M)
 {
   Mat_Normal *Aa = (Mat_Normal *)A->data;
 
@@ -275,31 +275,31 @@ PetscErrorCode MatNormalGetMat_NormalHermitian(Mat A, Mat *M)
 }
 
 /*@
-      MatNormalHermitianGetMat - Gets the `Mat` object stored inside a `MATNORMALHERMITIAN`
+  MatNormalHermitianGetMat - Gets the `Mat` object stored inside a `MATNORMALHERMITIAN`
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameter:
-.   A  - the `MATNORMALHERMITIAN` matrix
+  Input Parameter:
+. A - the `MATNORMALHERMITIAN` matrix
 
-   Output Parameter:
-.   M - the matrix object stored inside A
+  Output Parameter:
+. M - the matrix object stored inside A
 
-   Level: intermediate
+  Level: intermediate
 
-.seealso: [](chapter_matrices), `Mat`, `MATNORMALHERMITIAN`, `MatCreateNormalHermitian()`
+.seealso: [](ch_matrices), `Mat`, `MATNORMALHERMITIAN`, `MatCreateNormalHermitian()`
 @*/
 PetscErrorCode MatNormalHermitianGetMat(Mat A, Mat *M)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
   PetscValidType(A, 1);
-  PetscValidPointer(M, 2);
+  PetscAssertPointer(M, 2);
   PetscUseMethod(A, "MatNormalGetMatHermitian_C", (Mat, Mat *), (A, M));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatConvert_NormalHermitian_AIJ(Mat A, MatType newtype, MatReuse reuse, Mat *newmat)
+static PetscErrorCode MatConvert_NormalHermitian_AIJ(Mat A, MatType newtype, MatReuse reuse, Mat *newmat)
 {
   Mat_Normal *Aa = (Mat_Normal *)A->data;
   Mat         B, conjugate;
@@ -333,7 +333,7 @@ PetscErrorCode MatConvert_NormalHermitian_AIJ(Mat A, MatType newtype, MatReuse r
 }
 
 #if defined(PETSC_HAVE_HYPRE)
-PetscErrorCode MatConvert_NormalHermitian_HYPRE(Mat A, MatType type, MatReuse reuse, Mat *B)
+static PetscErrorCode MatConvert_NormalHermitian_HYPRE(Mat A, MatType type, MatReuse reuse, Mat *B)
 {
   PetscFunctionBegin;
   if (reuse == MAT_INITIAL_MATRIX) {
@@ -349,28 +349,28 @@ PetscErrorCode MatConvert_NormalHermitian_HYPRE(Mat A, MatType type, MatReuse re
 
   Level: intermediate
 
-.seealso: [](chapter_matrices), `Mat`, `MatCreateNormalHermitian()`, `MatMult()`, `MatNormalHermitianGetMat()`, `MATNORMAL`, `MatCreateNormal()`
+.seealso: [](ch_matrices), `Mat`, `MatCreateNormalHermitian()`, `MatMult()`, `MatNormalHermitianGetMat()`, `MATNORMAL`, `MatCreateNormal()`
 M*/
 
 /*@
-      MatCreateNormalHermitian - Creates a new matrix object `MATNORMALHERMITIAN` that behaves like (A*)'*A.
+  MatCreateNormalHermitian - Creates a new matrix object `MATNORMALHERMITIAN` that behaves like (A*)'*A.
 
-   Collective
+  Collective
 
-   Input Parameter:
-.   A  - the (possibly rectangular complex) matrix
+  Input Parameter:
+. A - the (possibly rectangular complex) matrix
 
-   Output Parameter:
-.   N - the matrix that represents (A*)'*A
+  Output Parameter:
+. N - the matrix that represents (A*)'*A
 
-   Level: intermediate
+  Level: intermediate
 
-   Note:
-    The product (A*)'*A is NOT actually formed! Rather the new matrix
-          object performs the matrix-vector product, `MatMult()`, by first multiplying by
-          A and then (A*)'
+  Note:
+  The product (A*)'*A is NOT actually formed! Rather the new matrix
+  object performs the matrix-vector product, `MatMult()`, by first multiplying by
+  A and then (A*)'
 
-.seealso: [](chapter_matrices), `Mat`, `MATNORMAL`, `MATNORMALHERMITIAN`, `MatNormalHermitianGetMat()`
+.seealso: [](ch_matrices), `Mat`, `MATNORMAL`, `MATNORMALHERMITIAN`, `MatNormalHermitianGetMat()`
 @*/
 PetscErrorCode MatCreateNormalHermitian(Mat A, Mat *N)
 {

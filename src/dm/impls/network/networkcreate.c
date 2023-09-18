@@ -2,7 +2,7 @@
 #include <petsc/private/dmnetworkimpl.h> /*I   "petscdmnetwork.h"   I*/
 #include <petsc/private/vecimpl.h>
 
-PetscErrorCode DMSetFromOptions_Network(DM dm, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode DMSetFromOptions_Network(DM dm, PetscOptionItems *PetscOptionsObject)
 {
   PetscFunctionBegin;
   PetscOptionsHeadBegin(PetscOptionsObject, "DMNetwork Options");
@@ -20,7 +20,6 @@ extern PetscErrorCode DMLocalToGlobalBegin_Network(DM, Vec, InsertMode, Vec);
 extern PetscErrorCode DMLocalToGlobalEnd_Network(DM, Vec, InsertMode, Vec);
 extern PetscErrorCode DMSetUp_Network(DM);
 extern PetscErrorCode DMClone_Network(DM, DM *);
-extern PetscErrorCode DMCreateCoordinateDM_Network(DM, DM *);
 
 static PetscErrorCode VecArrayPrint_private(PetscViewer viewer, PetscInt n, const PetscScalar *xv)
 {
@@ -108,7 +107,7 @@ static PetscErrorCode VecView_Network_MPI(DM networkdm, Vec X, PetscViewer viewe
   len_loc += 2 * (1 + eEnd - eStart + vEnd - vStart);
 
   /* values = [nedges, nvertices; id, nvar, xedge; ...; id, nvars, xvertex;...], to be sent to proc[0] */
-  PetscCallMPI(MPI_Allreduce(&len_loc, &len, 1, MPIU_INT, MPI_MAX, comm));
+  PetscCall(MPIU_Allreduce(&len_loc, &len, 1, MPIU_INT, MPI_MAX, comm));
   PetscCall(PetscCalloc1(len, &values));
 
   if (rank == 0) PetscCall(PetscViewerASCIIPrintf(viewer, "Process [%d]\n", rank));
@@ -196,7 +195,7 @@ static PetscErrorCode VecView_Network_MPI(DM networkdm, Vec X, PetscViewer viewe
 
 PETSC_EXTERN PetscErrorCode VecView_MPI(Vec, PetscViewer);
 
-PetscErrorCode VecView_Network(Vec v, PetscViewer viewer)
+static PetscErrorCode VecView_Network(Vec v, PetscViewer viewer)
 {
   DM        dm;
   PetscBool isseq;
@@ -314,7 +313,7 @@ PetscErrorCode DMNetworkInitializeToDefault(DM dm)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode DMInitialize_Network(DM dm)
+static PetscErrorCode DMInitialize_Network(DM dm)
 {
   PetscFunctionBegin;
   PetscCall(DMSetDimension(dm, 1));
@@ -448,15 +447,16 @@ PETSC_EXTERN PetscErrorCode DMCreate_Network(DM dm)
 . comm - The communicator for the DMNetwork object
 
   Output Parameter:
-. network  - The DMNetwork object
+. network - The DMNetwork object
 
   Level: beginner
 
+.seealso: `DMCreate()`
 @*/
 PetscErrorCode DMNetworkCreate(MPI_Comm comm, DM *network)
 {
   PetscFunctionBegin;
-  PetscValidPointer(network, 2);
+  PetscAssertPointer(network, 2);
   PetscCall(DMCreate(comm, network));
   PetscCall(DMSetType(*network, DMNETWORK));
   PetscFunctionReturn(PETSC_SUCCESS);

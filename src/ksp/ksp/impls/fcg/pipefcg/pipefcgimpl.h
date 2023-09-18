@@ -1,5 +1,4 @@
-#ifndef __KSP_PIPEFCG_H
-#define __KSP_PIPEFCG_H
+#pragma once
 
 #include <petsc/private/kspimpl.h> /*I "petscksp.h" I*/
 
@@ -19,5 +18,3 @@ typedef struct {
   Vec                 *redux;
   PetscBool            norm_breakdown;
 } KSP_PIPEFCG;
-
-#endif

@@ -18,19 +18,21 @@ static int password_cb(char *buf, int num, int rwflag, void *userdata)
 static void sigpipe_handle(int x) { }
 
 /*@C
-    PetscSSLInitializeContext - Set up an SSL context suitable for initiating HTTPS requests.
+  PetscSSLInitializeContext - Set up an SSL context suitable for initiating HTTPS requests.
 
-    Output Parameter:
-.   octx - the SSL_CTX to be passed to `PetscHTTPSConnect90`
+  Output Parameter:
+. octx - the SSL_CTX to be passed to `PetscHTTPSConnect90`
 
-    Level: advanced
+  Level: advanced
 
     If PETSc was ./configure -with-ssl-certificate requires the user have created a self-signed certificate with
-$    saws/CA.pl  -newcert  (using the passphrase of password)
-$    cat newkey.pem newcert.pem > sslclient.pem
+.vb
+    saws/CA.pl  -newcert  (using the passphrase of password)
+    cat newkey.pem newcert.pem > sslclient.pem
+.ve
 
-    and put the resulting file in either the current directory (with the application) or in the home directory. This seems kind of
-    silly but it was all I could figure out.
+  and put the resulting file in either the current directory (with the application) or in the home directory. This seems kind of
+  silly but it was all I could figure out.
 
 .seealso: `PetscSSLDestroyContext()`, `PetscHTTPSConnect()`, `PetscHTTPSRequest()`
 @*/
@@ -84,12 +86,12 @@ PetscErrorCode PetscSSLInitializeContext(SSL_CTX **octx)
 }
 
 /*@C
-     PetscSSLDestroyContext - frees a `SSL_CTX` obtained with `PetscSSLInitializeContext()`
+  PetscSSLDestroyContext - frees a `SSL_CTX` obtained with `PetscSSLInitializeContext()`
 
-     Input Parameter:
-.     ctx - the `SSL_CTX`
+  Input Parameter:
+. ctx - the `SSL_CTX`
 
-    Level: advanced
+  Level: advanced
 
 .seealso: `PetscSSLInitializeContext()`, `PetscHTTPSConnect()`
 @*/
@@ -154,21 +156,21 @@ static PetscErrorCode PetscHTTPBuildRequest(const char type[], const char url[],
 }
 
 /*@C
-     PetscHTTPSRequest - Send a request to an HTTPS server
+  PetscHTTPSRequest - Send a request to an HTTPS server
 
-   Input Parameters:
-+   type - either "POST" or "GET"
-.   url -  URL of request host/path
-.   header - additional header information, may be NULL
-.   ctype - data type of body, for example application/json
-.   body - data to send to server
-.   ssl - obtained with `PetscHTTPSConnect()`
--   buffsize - size of buffer
+  Input Parameters:
++ type     - either "POST" or "GET"
+. url      - URL of request host/path
+. header   - additional header information, may be NULL
+. ctype    - data type of body, for example application/json
+. body     - data to send to server
+. ssl      - obtained with `PetscHTTPSConnect()`
+- buffsize - size of buffer
 
-   Output Parameter:
-.   buff - everything returned from server
+  Output Parameter:
+. buff - everything returned from server
 
-    Level: advanced
+  Level: advanced
 
 .seealso: `PetscHTTPRequest()`, `PetscHTTPSConnect()`, `PetscSSLInitializeContext()`, `PetscSSLDestroyContext()`, `PetscPullJSONValue()`
 @*/
@@ -242,21 +244,21 @@ PetscErrorCode PetscHTTPSRequest(const char type[], const char url[], const char
 }
 
 /*@C
-     PetscHTTPRequest - Send a request to an HTTP server
+  PetscHTTPRequest - Send a request to an HTTP server
 
-   Input Parameters:
-+   type - either "POST" or "GET"
-.   url -  URL of request host/path
-.   header - additional header information, may be NULL
-.   ctype - data type of body, for example application/json
-.   body - data to send to server
-.   sock - obtained with `PetscOpenSocket()`
--   buffsize - size of buffer
+  Input Parameters:
++ type     - either "POST" or "GET"
+. url      - URL of request host/path
+. header   - additional header information, may be NULL
+. ctype    - data type of body, for example application/json
+. body     - data to send to server
+. sock     - obtained with `PetscOpenSocket()`
+- buffsize - size of buffer
 
-   Output Parameter:
-.   buff - everything returned from server
+  Output Parameter:
+. buff - everything returned from server
 
-    Level: advanced
+  Level: advanced
 
 .seealso: `PetscHTTPSRequest()`, `PetscOpenSocket()`, `PetscHTTPSConnect()`, `PetscPullJSONValue()`
 @*/
@@ -278,18 +280,18 @@ PetscErrorCode PetscHTTPRequest(const char type[], const char url[], const char 
 }
 
 /*@C
-      PetscHTTPSConnect - connect to a HTTPS server
+  PetscHTTPSConnect - connect to a HTTPS server
 
-    Input Parameters:
-+    host - the name of the machine hosting the HTTPS server
-.    port - the port number where the server is hosting, usually 443
--    ctx - value obtained with `PetscSSLInitializeContext()`
+  Input Parameters:
++ host - the name of the machine hosting the HTTPS server
+. port - the port number where the server is hosting, usually 443
+- ctx  - value obtained with `PetscSSLInitializeContext()`
 
-    Output Parameters:
-+    sock - socket to connect
--    ssl - the argument passed to `PetscHTTPSRequest()`
+  Output Parameters:
++ sock - socket to connect
+- ssl  - the argument passed to `PetscHTTPSRequest()`
 
-    Level: advanced
+  Level: advanced
 
 .seealso: `PetscOpenSocket()`, `PetscHTTPSRequest()`, `PetscSSLInitializeContext()`
 @*/
@@ -310,18 +312,18 @@ PetscErrorCode PetscHTTPSConnect(const char host[], int port, SSL_CTX *ctx, int 
 }
 
 /*@C
-     PetscPullJSONValue - Given a JSON response containing the substring with "key" : "value"  where there may or not be spaces around the : returns the value.
+  PetscPullJSONValue - Given a JSON response containing the substring with "key" : "value"  where there may or not be spaces around the : returns the value.
 
-    Input Parameters:
-+    buff - the char array containing the possible values
-.    key - the key of the requested value
--    valuelen - the length of the array to contain the value associated with the key
+  Input Parameters:
++ buff     - the char array containing the possible values
+. key      - the key of the requested value
+- valuelen - the length of the array to contain the value associated with the key
 
-    Output Parameters:
-+    value - the value obtained
--    found - flag indicating if the value was found in the buff
+  Output Parameters:
++ value - the value obtained
+- found - flag indicating if the value was found in the buff
 
-    Level: advanced
+  Level: advanced
 
 .seealso: `PetscOpenSocket()`, `PetscHTTPSRequest()`, `PetscSSLInitializeContext()`, `PetscPushJSONValue()`
 @*/
@@ -367,18 +369,18 @@ PetscErrorCode PetscPullJSONValue(const char buff[], const char key[], char valu
 #include <ctype.h>
 
 /*@C
-    PetscPushJSONValue -  Puts a "key" : "value" pair onto a string
+  PetscPushJSONValue -  Puts a "key" : "value" pair onto a string
 
-    Input Parameters:
-+   buffer - the char array where the value will be put
-.   key - the key value to be set
-.   value - the value associated with the key
--   bufflen - the size of the buffer (currently ignored)
+  Input Parameters:
++ buff    - the char array where the value will be put
+. key     - the key value to be set
+. value   - the value associated with the key
+- bufflen - the size of the buffer (currently ignored)
 
-    Level: advanced
+  Level: advanced
 
-    Note:
-    Ignores lengths so can cause buffer overflow
+  Note:
+  Ignores lengths so can cause buffer overflow
 
 .seealso: `PetscOpenSocket()`, `PetscHTTPSRequest()`, `PetscSSLInitializeContext()`, `PetscPullJSONValue()`
 @*/

@@ -11,14 +11,14 @@ static PetscErrorCode PetscSubcommCreate_contiguous(PetscSubcomm);
 static PetscErrorCode PetscSubcommCreate_interlaced(PetscSubcomm);
 
 /*@
-   PetscSubcommSetFromOptions - Allows setting options for a `PetscSubcomm`
+  PetscSubcommSetFromOptions - Allows setting options for a `PetscSubcomm`
 
-   Collective
+  Collective
 
-   Input Parameter:
-.  psubcomm - `PetscSubcomm` context
+  Input Parameter:
+. psubcomm - `PetscSubcomm` context
 
-   Level: beginner
+  Level: beginner
 
 .seealso: `PetscSubcomm`, `PetscSubcommCreate()`
 @*/
@@ -62,11 +62,11 @@ PetscErrorCode PetscSubcommSetFromOptions(PetscSubcomm psubcomm)
 
   Logically Collective
 
-  Level: Intermediate
+  Level: intermediate
 
   Input Parameters:
-+   psubcomm - `PetscSubcomm` context
--   prefix - the prefix to prepend all PetscSubcomm item names with.
++ psubcomm - `PetscSubcomm` context
+- pre      - the prefix to prepend all `PetscSubcomm` item names with.
 
 .seealso: `PetscSubcomm`, `PetscSubcommCreate()`
 @*/
@@ -84,15 +84,15 @@ PetscErrorCode PetscSubcommSetOptionsPrefix(PetscSubcomm psubcomm, const char pr
 }
 
 /*@C
-   PetscSubcommView - Views a `PetscSubcomm`
+  PetscSubcommView - Views a `PetscSubcomm`
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  psubcomm - `PetscSubcomm` context
--  viewer - `PetscViewer` to display the information
+  Input Parameters:
++ psubcomm - `PetscSubcomm` context
+- viewer   - `PetscViewer` to display the information
 
-   Level: beginner
+  Level: beginner
 
 .seealso: `PetscSubcomm`, `PetscSubcommCreate()`, `PetscViewer`
 @*/
@@ -127,13 +127,13 @@ PetscErrorCode PetscSubcommView(PetscSubcomm psubcomm, PetscViewer viewer)
 /*@
   PetscSubcommSetNumber - Set total number of subcommunicators desired in the given `PetscSubcomm`
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  psubcomm - `PetscSubcomm` context
--  nsubcomm - the total number of subcommunicators in psubcomm
+  Input Parameters:
++ psubcomm - `PetscSubcomm` context
+- nsubcomm - the total number of subcommunicators in psubcomm
 
-   Level: advanced
+  Level: advanced
 
 .seealso: `PetscSubcomm`, `PetscSubcommCreate()`, `PetscSubcommDestroy()`, `PetscSubcommSetType()`, `PetscSubcommSetTypeGeneral()`
 @*/
@@ -155,16 +155,16 @@ PetscErrorCode PetscSubcommSetNumber(PetscSubcomm psubcomm, PetscInt nsubcomm)
 /*@
   PetscSubcommSetType - Set the way the original MPI communicator is divided up in the `PetscSubcomm`
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  psubcomm - `PetscSubcomm` context
--  subcommtype - `PetscSubcommType` `PETSC_SUBCOMM_CONTIGUOUS` or `PETSC_SUBCOMM_INTERLACED`
+  Input Parameters:
++ psubcomm    - `PetscSubcomm` context
+- subcommtype - `PetscSubcommType` `PETSC_SUBCOMM_CONTIGUOUS` or `PETSC_SUBCOMM_INTERLACED`
 
-   Level: advanced
+  Level: advanced
 
 .seealso: `PetscSubcommType`, `PETSC_SUBCOMM_CONTIGUOUS`, `PETSC_SUBCOMM_INTERLACED`,
-          `PetscSubcommCreate()`, `PetscSubcommDestroy()`, `PetscSubcommSetNumber()`, `PetscSubcommSetTypeGeneral()`, `PetscSubcommType`
+          `PetscSubcommCreate()`, `PetscSubcommDestroy()`, `PetscSubcommSetNumber()`, `PetscSubcommSetTypeGeneral()`
 @*/
 PetscErrorCode PetscSubcommSetType(PetscSubcomm psubcomm, PetscSubcommType subcommtype)
 {
@@ -183,14 +183,14 @@ PetscErrorCode PetscSubcommSetType(PetscSubcomm psubcomm, PetscSubcommType subco
 /*@
   PetscSubcommSetTypeGeneral - Divides up a communicator based on a specific user's specification
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  psubcomm - `PetscSubcomm` context
-.  color   - control of subset assignment (nonnegative integer). Processes with the same color are in the same subcommunicator.
--  subrank - rank in the subcommunicator
+  Input Parameters:
++ psubcomm - `PetscSubcomm` context
+. color    - control of subset assignment (nonnegative integer). Processes with the same color are in the same subcommunicator.
+- subrank  - rank in the subcommunicator
 
-   Level: advanced
+  Level: advanced
 
 .seealso: `PetscSubcommType`, `PETSC_SUBCOMM_CONTIGUOUS`, `PETSC_SUBCOMM_INTERLACED`, `PetscSubcommCreate()`, `PetscSubcommDestroy()`, `PetscSubcommSetNumber()`, `PetscSubcommSetType()`
 @*/
@@ -247,12 +247,12 @@ PetscErrorCode PetscSubcommSetTypeGeneral(PetscSubcomm psubcomm, PetscMPIInt col
 /*@
   PetscSubcommDestroy - Destroys a `PetscSubcomm` object
 
-   Collective
+  Collective
 
-   Input Parameter:
-   .  psubcomm - the `PetscSubcomm` context
+  Input Parameter:
+. psubcomm - the `PetscSubcomm` context
 
-   Level: advanced
+  Level: advanced
 
 .seealso: `PetscSubcommCreate()`, `PetscSubcommSetType()`
 @*/
@@ -271,15 +271,15 @@ PetscErrorCode PetscSubcommDestroy(PetscSubcomm *psubcomm)
 /*@
   PetscSubcommCreate - Create a `PetscSubcomm` context. This object is used to manage the division of a `MPI_Comm` into subcommunicators
 
-   Collective
+  Collective
 
-   Input Parameter:
-.  comm - MPI communicator
+  Input Parameter:
+. comm - MPI communicator
 
-   Output Parameter:
-.  psubcomm - location to store the `PetscSubcomm` context
+  Output Parameter:
+. psubcomm - location to store the `PetscSubcomm` context
 
-   Level: advanced
+  Level: advanced
 
 .seealso: `PetscSubcomm`, `PetscSubcommDestroy()`, `PetscSubcommSetTypeGeneral()`, `PetscSubcommSetFromOptions()`, `PetscSubcommSetType()`,
           `PetscSubcommSetNumber()`
@@ -308,15 +308,15 @@ PetscErrorCode PetscSubcommCreate(MPI_Comm comm, PetscSubcomm *psubcomm)
 /*@C
   PetscSubcommGetParent - Gets the communicator that was used to create the `PetscSubcomm`
 
-   Collective
+  Collective
 
-   Input Parameter:
-.  scomm - the `PetscSubcomm`
+  Input Parameter:
+. scomm - the `PetscSubcomm`
 
-   Output Parameter:
-.  pcomm - location to store the parent communicator
+  Output Parameter:
+. pcomm - location to store the parent communicator
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `PetscSubcommDestroy()`, `PetscSubcommSetTypeGeneral()`, `PetscSubcommSetFromOptions()`, `PetscSubcommSetType()`,
           `PetscSubcommSetNumber()`, `PetscSubcommGetChild()`, `PetscSubcommContiguousParent()`
@@ -329,17 +329,17 @@ PetscErrorCode PetscSubcommGetParent(PetscSubcomm scomm, MPI_Comm *pcomm)
 
 /*@C
   PetscSubcommGetContiguousParent - Gets a communicator that that is a duplicate of the parent but has the ranks
-                                    reordered by the order they are in the children
+  reordered by the order they are in the children
 
-   Collective
+  Collective
 
-   Input Parameter:
-.  scomm - the `PetscSubcomm`
+  Input Parameter:
+. scomm - the `PetscSubcomm`
 
-   Output Parameter:
-.  pcomm - location to store the parent communicator
+  Output Parameter:
+. pcomm - location to store the parent communicator
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `PetscSubcommDestroy()`, `PetscSubcommSetTypeGeneral()`, `PetscSubcommSetFromOptions()`, `PetscSubcommSetType()`,
           `PetscSubcommSetNumber()`, `PetscSubcommGetChild()`, `PetscSubcommContiguousParent()`
@@ -353,15 +353,15 @@ PetscErrorCode PetscSubcommGetContiguousParent(PetscSubcomm scomm, MPI_Comm *pco
 /*@C
   PetscSubcommGetChild - Gets the communicator created by the `PetscSubcomm`. This is part of one of the subcommunicators created by the `PetscSubcomm`
 
-   Collective
+  Collective
 
-   Input Parameter:
-.  scomm - the `PetscSubcomm`
+  Input Parameter:
+. scomm - the `PetscSubcomm`
 
-   Output Parameter:
-.  ccomm - location to store the child communicator
+  Output Parameter:
+. ccomm - location to store the child communicator
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `PetscSubcommDestroy()`, `PetscSubcommSetTypeGeneral()`, `PetscSubcommSetFromOptions()`, `PetscSubcommSetType()`,
           `PetscSubcommSetNumber()`, `PetscSubcommGetParent()`, `PetscSubcommContiguousParent()`

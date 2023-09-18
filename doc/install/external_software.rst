@@ -4,17 +4,17 @@
 Supported External Software
 ***************************
 
-PETSc interfaces to the following optional external software. See :ref:`installing
+PETSc interfaces with many optional external software packages. See :ref:`installing
 packages <doc_config_externalpack>` for more information on downloading and installing
 these softwares, as well as the :doc:`linear solve table
 </overview/linear_solve_table>` for more
 information on the intended use-cases for each software.
 
-List Of Software
-================
+Partial List Of Software
+========================
 
 -   `AMD <http://www.cise.ufl.edu/research/sparse/amd/>`__  Approximate minimum degree orderings.
--   `BLAS/LAPACK <https://www.netlib.org/lapack/lug/node11.html>`__  Optimizes linear algebra kernels
+-   `BLAS/LAPACK <https://www.netlib.org/lapack/lug/node11.html>`__  Optimizes linear algebra kernels (always available).
 -   `CUDA <https://developer.nvidia.com/cuda-toolkit>`__  A parallel computing platform and application programming interface model created by NVIDIA.
 -   `Chaco <http://www.cs.sandia.gov/CRF/chac.html>`__ A graph partitioning package.
 -    `ESSL <https://www.ibm.com/support/knowledgecenter/en/SSFHY8/essl_welcome.html>`__ IBM's math library for fast sparse direct LU factorization.

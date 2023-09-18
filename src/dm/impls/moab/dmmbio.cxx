@@ -29,22 +29,26 @@ static PetscErrorCode DMMoab_GetWriteOptions_Private(PetscInt fsetid, PetscInt n
 
 /*@C
   DMMoabOutput - Output the solution vectors that are stored in the DMMoab object as tags
-  along with the complete mesh data structure in the native H5M or VTK format. The H5M output file
-  can be visualized directly with Paraview (if compiled with appropriate plugin) or converted
-  with MOAB/tools/mbconvert to a VTK or Exodus file.
-
-  This routine can also be used for check-pointing purposes to store a complete history of
-  the solution along with any other necessary data to restart computations.
+  along with the complete mesh data structure in the native H5M or VTK format.
 
   Collective
 
   Input Parameters:
-+ dm     - the discretization manager object containing solution in MOAB tags.
-.  filename - the name of the output file: e.g., poisson.h5m
--  usrwriteopts - the parallel write options needed for serializing a MOAB mesh database. Can be NULL.
-   Reference (Parallel Mesh Initialization: http://ftp.mcs.anl.gov/pub/fathom/moab-docs/contents.html#fivetwo)
++ dm           - the discretization manager object containing solution in MOAB tags.
+. filename     - the name of the output file: e.g., poisson.h5m
+- usrwriteopts - the parallel write options needed for serializing a MOAB mesh database. Can be NULL.
 
   Level: intermediate
+
+  Notes:
+  The H5M output file can be visualized directly with Paraview (if compiled with appropriate
+  plugin) or converted with MOAB/tools/mbconvert to a VTK or Exodus file.
+
+  This routine can also be used for check-pointing purposes to store a complete history of the
+  solution along with any other necessary data to restart computations.
+
+  References:
+. * - Parallel Mesh Initialization: http://ftp.mcs.anl.gov/pub/fathom/moab-docs/contents.html#fivetwo
 
 .seealso: `DMMoabLoadFromFile()`, `DMMoabSetGlobalFieldVector()`
 @*/

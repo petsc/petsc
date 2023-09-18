@@ -478,11 +478,11 @@ int main(int argc, char **argv)
    build:
      requires: triangle !single !complex
    test:
-     suffix: bsi1q3
+     suffix: bsiq3
      args: -particlesPerCell 200\
       -petscspace_degree 2\
       -petscfe_default_quadrature_order 3\
-      -ts_basicsymplectic_type 1\
+      -ts_basicsymplectic_type {{1 2 3}}\
       -pc_type svd\
       -uniform\
       -sigma 1.0e-8\
@@ -496,23 +496,5 @@ int main(int argc, char **argv)
       -dm_plex_box_upper 6.283185307179586,1\
       -dm_plex_box_bd periodic,none\
       -dm_plex_box_faces 4,1
-   test:
-     suffix: bsi2q3
-     args: -particlesPerCell 200\
-      -petscspace_degree 2\
-      -petscfe_default_quadrature_order 3\
-      -ts_basicsymplectic_type 2\
-      -pc_type svd\
-      -uniform\
-      -sigma 1.0e-8\
-      -timeScale 2.0e-14\
-      -stepSize 1.0e-2\
-      -ts_monitor_sp_swarm\
-      -steps 10\
-      -dm_view\
-      -dm_plex_simplex 0 -dm_plex_dim 2\
-      -dm_plex_box_lower 0,-1\
-      -dm_plex_box_upper 6.283185307179586,1\
-      -dm_plex_box_bd periodic,none\
-      -dm_plex_box_faces 4,1
+     output_file: output/ex2_bsiq3.out
 TEST*/

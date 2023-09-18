@@ -2,39 +2,39 @@
 #include <petscmat.h>
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
-#define matshellsetoperation_            MATSHELLSETOPERATION
-#define matcreateshell_                  MATCREATESHELL
+  #define matshellsetoperation_ MATSHELLSETOPERATION
+  #define matcreateshell_       MATCREATESHELL
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
-#define matcreateshell_                  matcreateshell
-#define matshellsetoperation_            matshellsetoperation
+  #define matcreateshell_       matcreateshell
+  #define matshellsetoperation_ matshellsetoperation
 #endif
 
 /**
  * Subset of MatOperation that is supported by the Fortran wrappers.
  */
 enum FortranMatOperation {
-  FORTRAN_MATOP_MULT = 0,
-  FORTRAN_MATOP_MULT_ADD = 1,
-  FORTRAN_MATOP_MULT_TRANSPOSE = 2,
+  FORTRAN_MATOP_MULT               = 0,
+  FORTRAN_MATOP_MULT_ADD           = 1,
+  FORTRAN_MATOP_MULT_TRANSPOSE     = 2,
   FORTRAN_MATOP_MULT_TRANSPOSE_ADD = 3,
-  FORTRAN_MATOP_SOR = 4,
-  FORTRAN_MATOP_TRANSPOSE = 5,
-  FORTRAN_MATOP_GET_DIAGONAL = 6,
-  FORTRAN_MATOP_DIAGONAL_SCALE = 7,
-  FORTRAN_MATOP_ZERO_ENTRIES = 8,
-  FORTRAN_MATOP_AXPY = 9,
-  FORTRAN_MATOP_SHIFT = 10,
-  FORTRAN_MATOP_DIAGONAL_SET = 11,
-  FORTRAN_MATOP_DESTROY = 12,
-  FORTRAN_MATOP_VIEW = 13,
-  FORTRAN_MATOP_CREATE_VECS = 14,
+  FORTRAN_MATOP_SOR                = 4,
+  FORTRAN_MATOP_TRANSPOSE          = 5,
+  FORTRAN_MATOP_GET_DIAGONAL       = 6,
+  FORTRAN_MATOP_DIAGONAL_SCALE     = 7,
+  FORTRAN_MATOP_ZERO_ENTRIES       = 8,
+  FORTRAN_MATOP_AXPY               = 9,
+  FORTRAN_MATOP_SHIFT              = 10,
+  FORTRAN_MATOP_DIAGONAL_SET       = 11,
+  FORTRAN_MATOP_DESTROY            = 12,
+  FORTRAN_MATOP_VIEW               = 13,
+  FORTRAN_MATOP_CREATE_VECS        = 14,
   FORTRAN_MATOP_GET_DIAGONAL_BLOCK = 15,
-  FORTRAN_MATOP_COPY = 16,
-  FORTRAN_MATOP_SCALE = 17,
-  FORTRAN_MATOP_SET_RANDOM = 18,
-  FORTRAN_MATOP_ASSEMBLY_BEGIN = 19,
-  FORTRAN_MATOP_ASSEMBLY_END = 20,
-  FORTRAN_MATOP_SIZE = 21
+  FORTRAN_MATOP_COPY               = 16,
+  FORTRAN_MATOP_SCALE              = 17,
+  FORTRAN_MATOP_SET_RANDOM         = 18,
+  FORTRAN_MATOP_ASSEMBLY_BEGIN     = 19,
+  FORTRAN_MATOP_ASSEMBLY_END       = 20,
+  FORTRAN_MATOP_SIZE               = 21
 };
 
 /*
@@ -42,9 +42,9 @@ enum FortranMatOperation {
   This C routine then calls the corresponding Fortran routine that was
   set by the user.
 */
-PETSC_EXTERN void matcreateshell_(MPI_Comm *comm,PetscInt *m,PetscInt *n,PetscInt *M,PetscInt *N,void *ctx,Mat *mat,PetscErrorCode *ierr)
+PETSC_EXTERN void matcreateshell_(MPI_Comm *comm, PetscInt *m, PetscInt *n, PetscInt *M, PetscInt *N, void *ctx, Mat *mat, PetscErrorCode *ierr)
 {
-  *ierr = MatCreateShell(MPI_Comm_f2c(*(MPI_Fint*)&*comm),*m,*n,*M,*N,ctx,mat);
+  *ierr = MatCreateShell(MPI_Comm_f2c(*(MPI_Fint *)&*comm), *m, *n, *M, *N, ctx, mat);
 }
 
 static PetscErrorCode ourmult(Mat mat, Vec x, Vec y)

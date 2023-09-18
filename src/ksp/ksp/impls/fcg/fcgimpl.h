@@ -1,5 +1,4 @@
-#ifndef __KSP_FCG_H
-#define __KSP_FCG_H
+#pragma once
 
 #include <petsc/private/kspimpl.h> /*I "petscksp.h" I*/
 
@@ -19,5 +18,3 @@ typedef struct {
   PetscInt             nchunks;                           /* Number of chunks */
   KSPFCDTruncationType truncstrat;
 } KSP_FCG;
-
-#endif

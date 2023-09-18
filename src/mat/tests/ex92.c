@@ -7,17 +7,15 @@ static char help[] = "Tests MatIncreaseOverlap(), MatCreateSubMatrices() for par
 
 int main(int argc, char **args)
 {
-  Mat          A, Atrans, sA, *submatA, *submatsA;
-  PetscMPIInt  size, rank;
-  PetscInt     bs = 1, mbs = 10, ov = 1, i, j, k, *rows, *cols, nd = 2, *idx, rstart, rend, sz, M, N, Mbs;
-  PetscScalar *vals, rval, one = 1.0;
-  IS          *is1, *is2;
-  PetscRandom  rand;
-  PetscBool    flg, TestOverlap, TestSubMat, TestAllcols, test_sorted = PETSC_FALSE;
-  PetscInt     vid = -1;
-#if defined(PETSC_USE_LOG)
+  Mat           A, Atrans, sA, *submatA, *submatsA;
+  PetscMPIInt   size, rank;
+  PetscInt      bs = 1, mbs = 10, ov = 1, i, j, k, *rows, *cols, nd = 2, *idx, rstart, rend, sz, M, N, Mbs;
+  PetscScalar  *vals, rval, one = 1.0;
+  IS           *is1, *is2;
+  PetscRandom   rand;
+  PetscBool     flg, TestOverlap, TestSubMat, TestAllcols, test_sorted = PETSC_FALSE;
+  PetscInt      vid = -1;
   PetscLogStage stages[2];
-#endif
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &args, (char *)0, help));

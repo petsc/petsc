@@ -8,19 +8,19 @@
 PetscClassId MAT_NULLSPACE_CLASSID;
 
 /*@C
-   MatNullSpaceSetFunction - set a function that removes a null space from a vector
-   out of null spaces.
+  MatNullSpaceSetFunction - set a function that removes a null space from a vector
+  out of null spaces.
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  sp - the `MatNullSpace` null space object
-.  rem - the function that removes the null space
--  ctx - context for the remove function
+  Input Parameters:
++ sp  - the `MatNullSpace` null space object
+. rem - the function that removes the null space
+- ctx - context for the remove function
 
-   Level: advanced
+  Level: advanced
 
-.seealso: [](chapter_matrices), `Mat`, `MatNullSpace`, `MatNullSpaceDestroy()`, `MatNullSpaceRemove()`, `MatSetNullSpace()`, `MatNullSpace`, `MatNullSpaceCreate()`
+.seealso: [](ch_matrices), `Mat`, `MatNullSpace`, `MatNullSpaceDestroy()`, `MatNullSpaceRemove()`, `MatSetNullSpace()`, `MatNullSpaceCreate()`
 @*/
 PetscErrorCode MatNullSpaceSetFunction(MatNullSpace sp, PetscErrorCode (*rem)(MatNullSpace, Vec, void *), void *ctx)
 {
@@ -32,24 +32,24 @@ PetscErrorCode MatNullSpaceSetFunction(MatNullSpace sp, PetscErrorCode (*rem)(Ma
 }
 
 /*@C
-   MatNullSpaceGetVecs - get the vectors defining the null space
+  MatNullSpaceGetVecs - get the vectors defining the null space
 
-   Not Collective
+  Not Collective
 
-   Input Parameter:
-.  sp - null space object
+  Input Parameter:
+. sp - null space object
 
-   Output Parameters:
-+  has_cnst - `PETSC_TRUE` if the null space contains the constant vector, otherwise `PETSC_FALSE`
-.  n - number of vectors (excluding constant vector) in the null space
--  vecs - orthonormal vectors that span the null space (excluding the constant vector), `NULL` if `n` is 0
+  Output Parameters:
++ has_const - `PETSC_TRUE` if the null space contains the constant vector, otherwise `PETSC_FALSE`
+. n         - number of vectors (excluding constant vector) in the null space
+- vecs      - orthonormal vectors that span the null space (excluding the constant vector), `NULL` if `n` is 0
 
-   Level: developer
+  Level: developer
 
-   Note:
-      These vectors and the array are owned by the `MatNullSpace` and should not be destroyed or freeded by the caller
+  Note:
+  These vectors and the array are owned by the `MatNullSpace` and should not be destroyed or freeded by the caller
 
-.seealso: [](chapter_matrices), `Mat`, `MatNullSpace`, `MatNullSpaceCreate()`, `MatGetNullSpace()`, `MatGetNearNullSpace()`
+.seealso: [](ch_matrices), `Mat`, `MatNullSpace`, `MatNullSpaceCreate()`, `MatGetNullSpace()`, `MatGetNearNullSpace()`
 @*/
 PetscErrorCode MatNullSpaceGetVecs(MatNullSpace sp, PetscBool *has_const, PetscInt *n, const Vec **vecs)
 {
@@ -62,26 +62,26 @@ PetscErrorCode MatNullSpaceGetVecs(MatNullSpace sp, PetscBool *has_const, PetscI
 }
 
 /*@
-   MatNullSpaceCreateRigidBody - create rigid body modes from coordinates
+  MatNullSpaceCreateRigidBody - create rigid body modes from coordinates
 
-   Collective
+  Collective
 
-   Input Parameter:
-.  coords - block of coordinates of each node, must have block size set
+  Input Parameter:
+. coords - block of coordinates of each node, must have block size set
 
-   Output Parameter:
-.  sp - the null space
+  Output Parameter:
+. sp - the null space
 
-   Level: advanced
+  Level: advanced
 
-   Notes:
-     If you are solving an elasticity problem you should likely use this, in conjunction with `MatSetNearNullSpace()`, to provide information that
-     the `PCGAMG` preconditioner can use to construct a much more efficient preconditioner.
+  Notes:
+  If you are solving an elasticity problem you should likely use this, in conjunction with `MatSetNearNullSpace()`, to provide information that
+  the `PCGAMG` preconditioner can use to construct a much more efficient preconditioner.
 
-     If you are solving an elasticity problem with pure Neumann boundary conditions you can use this in conjunction with `MatSetNullSpace()` to
-     provide this information to the linear solver so it can handle the null space appropriately in the linear solution.
+  If you are solving an elasticity problem with pure Neumann boundary conditions you can use this in conjunction with `MatSetNullSpace()` to
+  provide this information to the linear solver so it can handle the null space appropriately in the linear solution.
 
-.seealso: [](chapter_matrices), `Mat`, `MatNullSpace`, `MatNullSpaceCreate()`, `MatSetNearNullSpace()`, `MatSetNullSpace()`, `PCGAMG`
+.seealso: [](ch_matrices), `Mat`, `MatNullSpace`, `MatNullSpaceCreate()`, `MatSetNearNullSpace()`, `MatSetNullSpace()`, `PCGAMG`
 @*/
 PetscErrorCode MatNullSpaceCreateRigidBody(Vec coords, MatNullSpace *sp)
 {
@@ -159,17 +159,17 @@ PetscErrorCode MatNullSpaceCreateRigidBody(Vec coords, MatNullSpace *sp)
 }
 
 /*@C
-   MatNullSpaceView - Visualizes a null space object.
+  MatNullSpaceView - Visualizes a null space object.
 
-   Collective; No Fortran Support
+  Collective; No Fortran Support
 
-   Input Parameters:
-+  matnull - the null space
--  viewer - visualization context
+  Input Parameters:
++ sp     - the null space
+- viewer - visualization context
 
-   Level: advanced
+  Level: advanced
 
-.seealso: [](chapter_matrices), `Mat`, `MatNullSpace`, `PetscViewer`, `MatNullSpaceCreate()`, `PetscViewerASCIIOpen()`
+.seealso: [](ch_matrices), `Mat`, `MatNullSpace`, `PetscViewer`, `MatNullSpaceCreate()`, `PetscViewerASCIIOpen()`
 @*/
 PetscErrorCode MatNullSpaceView(MatNullSpace sp, PetscViewer viewer)
 {
@@ -199,31 +199,31 @@ PetscErrorCode MatNullSpaceView(MatNullSpace sp, PetscViewer viewer)
 }
 
 /*@C
-   MatNullSpaceCreate - Creates a `MatNullSpace` data structure used to project vectors out of null spaces.
+  MatNullSpaceCreate - Creates a `MatNullSpace` data structure used to project vectors out of null spaces.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  comm - the MPI communicator associated with the object
-.  has_cnst - `PETSC_TRUE` if the null space contains the constant vector; otherwise `PETSC_FALSE`
-.  n - number of vectors (excluding constant vector) in null space
--  vecs - the vectors that span the null space (excluding the constant vector);
+  Input Parameters:
++ comm     - the MPI communicator associated with the object
+. has_cnst - `PETSC_TRUE` if the null space contains the constant vector; otherwise `PETSC_FALSE`
+. n        - number of vectors (excluding constant vector) in null space
+- vecs     - the vectors that span the null space (excluding the constant vector);
           these vectors must be orthonormal. These vectors are NOT copied, so do not change them
           after this call. You should free the array that you pass in and destroy the vectors (this will reduce the reference count
           for them by one).
 
-   Output Parameter:
-.  SP - the null space context
+  Output Parameter:
+. SP - the null space context
 
-   Level: advanced
+  Level: advanced
 
-   Notes:
-    See `MatNullSpaceSetFunction()` as an alternative way of providing the null space information instead of providing the vectors.
+  Notes:
+  See `MatNullSpaceSetFunction()` as an alternative way of providing the null space information instead of providing the vectors.
 
-    If has_cnst is `PETSC_TRUE` you do not need to pass a constant vector in as a fourth argument to this routine, nor do you
-    need to pass in a function that eliminates the constant function into `MatNullSpaceSetFunction()`.
+  If has_cnst is `PETSC_TRUE` you do not need to pass a constant vector in as a fourth argument to this routine, nor do you
+  need to pass in a function that eliminates the constant function into `MatNullSpaceSetFunction()`.
 
-.seealso: [](chapter_matrices), `Mat`, `MatNullSpace`, `MatNullSpaceDestroy()`, `MatNullSpaceRemove()`, `MatSetNullSpace()`, `MatNullSpace`, `MatNullSpaceSetFunction()`
+.seealso: [](ch_matrices), `Mat`, `MatNullSpace`, `MatNullSpaceDestroy()`, `MatNullSpaceRemove()`, `MatSetNullSpace()`, `MatNullSpaceSetFunction()`
 @*/
 PetscErrorCode MatNullSpaceCreate(MPI_Comm comm, PetscBool has_cnst, PetscInt n, const Vec vecs[], MatNullSpace *SP)
 {
@@ -232,9 +232,9 @@ PetscErrorCode MatNullSpaceCreate(MPI_Comm comm, PetscBool has_cnst, PetscInt n,
 
   PetscFunctionBegin;
   PetscCheck(n >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Number of vectors (given %" PetscInt_FMT ") cannot be negative", n);
-  if (n) PetscValidPointer(vecs, 4);
+  if (n) PetscAssertPointer(vecs, 4);
   for (i = 0; i < n; i++) PetscValidHeaderSpecific(vecs[i], VEC_CLASSID, 4);
-  PetscValidPointer(SP, 5);
+  PetscAssertPointer(SP, 5);
   if (n) {
     for (i = 0; i < n; i++) {
       /* prevent the user from changes values in the vector */
@@ -292,16 +292,16 @@ PetscErrorCode MatNullSpaceCreate(MPI_Comm comm, PetscBool has_cnst, PetscInt n,
 }
 
 /*@
-   MatNullSpaceDestroy - Destroys a data structure used to project vectors out of null spaces.
+  MatNullSpaceDestroy - Destroys a data structure used to project vectors out of null spaces.
 
-   Collective
+  Collective
 
-   Input Parameter:
-.  sp - the null space context to be destroyed
+  Input Parameter:
+. sp - the null space context to be destroyed
 
-   Level: advanced
+  Level: advanced
 
-.seealso: [](chapter_matrices), `Mat`, `MatNullSpace`, `MatNullSpaceCreate()`, `MatNullSpaceRemove()`, `MatNullSpaceSetFunction()`
+.seealso: [](ch_matrices), `Mat`, `MatNullSpace`, `MatNullSpaceCreate()`, `MatNullSpaceRemove()`, `MatNullSpaceSetFunction()`
 @*/
 PetscErrorCode MatNullSpaceDestroy(MatNullSpace *sp)
 {
@@ -324,17 +324,17 @@ PetscErrorCode MatNullSpaceDestroy(MatNullSpace *sp)
 }
 
 /*@C
-   MatNullSpaceRemove - Removes all the components of a null space from a vector.
+  MatNullSpaceRemove - Removes all the components of a null space from a vector.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  sp - the null space context (if this is `NULL` then no null space is removed)
--  vec - the vector from which the null space is to be removed
+  Input Parameters:
++ sp  - the null space context (if this is `NULL` then no null space is removed)
+- vec - the vector from which the null space is to be removed
 
-   Level: advanced
+  Level: advanced
 
-.seealso: [](chapter_matrices), `Mat`, `MatNullSpace`, `MatNullSpaceCreate()`, `MatNullSpaceDestroy()`, `MatNullSpaceSetFunction()`
+.seealso: [](ch_matrices), `Mat`, `MatNullSpace`, `MatNullSpaceCreate()`, `MatNullSpaceDestroy()`, `MatNullSpaceSetFunction()`
 @*/
 PetscErrorCode MatNullSpaceRemove(MatNullSpace sp, Vec vec)
 {
@@ -366,20 +366,20 @@ PetscErrorCode MatNullSpaceRemove(MatNullSpace sp, Vec vec)
 }
 
 /*@
-   MatNullSpaceTest  - Tests if the claimed null space is really a null space of a matrix
+  MatNullSpaceTest  - Tests if the claimed null space is really a null space of a matrix
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  sp - the null space context
--  mat - the matrix
+  Input Parameters:
++ sp  - the null space context
+- mat - the matrix
 
-   Output Parameter:
-.  isNull - `PETSC_TRUE` if the nullspace is valid for this matrix
+  Output Parameter:
+. isNull - `PETSC_TRUE` if the nullspace is valid for this matrix
 
-   Level: advanced
+  Level: advanced
 
-.seealso: [](chapter_matrices), `Mat`, `MatNullSpace`, `MatNullSpaceCreate()`, `MatNullSpaceDestroy()`, `MatNullSpaceSetFunction()`
+.seealso: [](ch_matrices), `Mat`, `MatNullSpace`, `MatNullSpaceCreate()`, `MatNullSpaceDestroy()`, `MatNullSpaceSetFunction()`
 @*/
 PetscErrorCode MatNullSpaceTest(MatNullSpace sp, Mat mat, PetscBool *isNull)
 {

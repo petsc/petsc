@@ -1,2 +1,2 @@
-[0] <mat> MatAssemblyEnd_SeqSBAIJ(): Number of mallocs during MatSetValues is 0
-[0] <mat> MatAssemblyEnd_SeqSBAIJ(): Number of mallocs during MatSetValues is 0
+[0] <mat:seqsbaij> MatAssemblyEnd_SeqSBAIJ(): Number of mallocs during MatSetValues is 0
+[0] <mat:seqsbaij> MatAssemblyEnd_SeqSBAIJ(): Number of mallocs during MatSetValues is 0

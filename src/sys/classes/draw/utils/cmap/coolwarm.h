@@ -1,3 +1,4 @@
+#pragma once
 static const unsigned char PetscDrawCmap_coolwarm[256 - PETSC_DRAW_BASIC_COLORS][3] = {
   {59,  75,  192},
   {60,  78,  193},

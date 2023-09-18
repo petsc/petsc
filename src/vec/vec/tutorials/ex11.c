@@ -27,19 +27,6 @@ int main(int argc, char **argv)
      the vector format (currently parallel,
      shared, or sequential) is determined at runtime.  Also, the parallel
      partitioning of the vector is determined by PETSc at runtime.
-
-     Routines for creating particular vector types directly are:
-        VecCreateSeq() - uniprocessor vector
-        VecCreateMPI() - distributed vector, where the user can
-                         determine the parallel partitioning
-        VecCreateShared() - parallel vector that uses shared memory
-                            (available only on the SGI); otherwise,
-                            is the same as VecCreateMPI()
-
-     With VecCreate(), VecSetSizes() and VecSetFromOptions() the option
-     -vec_type mpi or -vec_type shared causes the
-     particular type of vector to be formed.
-
   */
   PetscCall(VecCreate(PETSC_COMM_WORLD, &x));
   PetscCall(VecSetSizes(x, PETSC_DECIDE, n));

@@ -31,6 +31,7 @@ if __name__ == '__main__':
     '--download-parmetis',
     '--download-triangle',
     '--download-p4est',
+    '--download-mfem',
     '--with-cuda',
     '--with-shared-libraries',
     '--download-magma',
@@ -41,9 +42,11 @@ if __name__ == '__main__':
     '--download-kokkos-kernels',
     '--download-hwloc',
     '--download-hypre',
-    '--download-hypre-configure-arguments=--enable-unified-memory',
     '--download-raja',
     '--download-amgx',
+    '--download-zfp',
+    '--download-butterflypack',
+    '--download-strumpack',
     '--with-strict-petscerrorcode',
   ]
 

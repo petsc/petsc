@@ -1,8 +1,7 @@
 /* Portions of this code are under:
    Copyright (c) 2022 Advanced Micro Devices, Inc. All rights reserved.
 */
-#ifndef __DENSE_H
-#define __DENSE_H
+#pragma once
 #include <petsc/private/matimpl.h>
 /* TODO REMOVE */
 #include <../src/mat/impls/aij/seq/aij.h> /* Mat_MatTransMatMult is defined here */
@@ -93,6 +92,7 @@ PETSC_INTERN PetscErrorCode MatCopy_SeqDense(Mat, Mat, MatStructure);
 PETSC_INTERN PetscErrorCode MatZeroEntries_SeqDense(Mat);
 PETSC_INTERN PetscErrorCode MatSetUp_SeqDense(Mat);
 PETSC_INTERN PetscErrorCode MatSetRandom_SeqDense(Mat, PetscRandom);
+PETSC_INTERN PetscErrorCode MatGetDiagonal_SeqDense(Mat, Vec);
 
 #if defined(PETSC_HAVE_CUDA)
 PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode MatSeqDenseCUDAInvertFactors_Internal(Mat);
@@ -114,4 +114,5 @@ PETSC_INTERN PetscErrorCode MatCreateMPIMatConcatenateSeqMat_MPIDense(MPI_Comm, 
 PETSC_INTERN PetscErrorCode MatView_Dense_Binary(Mat, PetscViewer);
 PETSC_INTERN PetscErrorCode MatLoad_Dense_Binary(Mat, PetscViewer);
 PETSC_INTERN PetscErrorCode MatLoad_Dense_HDF5(Mat, PetscViewer);
-#endif
+
+PETSC_INTERN PetscErrorCode MatDenseCreateColumnVec_Private(Mat, Vec *);

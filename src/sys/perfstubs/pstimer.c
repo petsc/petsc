@@ -105,7 +105,7 @@ PS_WEAK_PRE void ps_tool_free_metadata(ps_tool_metadata_t *) PS_WEAK_POST;
 
 #endif //PERFSTUBS_OFF
 
-void initialize_library() {
+void initialize_library(void) {
 #ifndef PERFSTUBS_OFF
 #ifdef PERFSTUBS_USE_STATIC
     /* The initialization function is the only required one */
@@ -251,6 +251,12 @@ void* ps_timer_create_(const char *timer_name) {
     return (void*)(objects);
     #else
     return NULL;
+    #endif
+}
+
+void ps_timer_destroy_(void *objects) {
+    #ifndef PERFSTUBS_OFF
+    free(objects);
     #endif
 }
 

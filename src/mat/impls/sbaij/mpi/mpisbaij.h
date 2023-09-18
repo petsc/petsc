@@ -1,6 +1,4 @@
-
-#ifndef __MPISBAIJ_H
-#define __MPISBAIJ_H
+#pragma once
 #include <../src/mat/impls/baij/seq/baij.h>
 #include <../src/mat/impls/sbaij/seq/sbaij.h>
 #include <../src/mat/impls/baij/mpi/mpibaij.h>
@@ -27,5 +25,3 @@ PETSC_INTERN PetscErrorCode MatDisAssemble_MPISBAIJ(Mat);
 PETSC_INTERN PetscErrorCode MatIncreaseOverlap_MPISBAIJ(Mat, PetscInt, IS[], PetscInt);
 PETSC_INTERN PetscErrorCode MatGetRowMaxAbs_MPISBAIJ(Mat, Vec, PetscInt[]);
 PETSC_INTERN PetscErrorCode MatSOR_MPISBAIJ(Mat, Vec, PetscReal, MatSORType, PetscReal, PetscInt, PetscInt, Vec);
-
-#endif

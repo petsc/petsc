@@ -1,11 +1,17 @@
-#ifndef PETSC_HASHTABLE_H
-#define PETSC_HASHTABLE_H
+#pragma once
 
 #include <petsc/private/petscimpl.h>
 
 #define kh_inline   inline
 #define klib_unused PETSC_UNUSED
+#if !defined(kh_foreach_value)
+  #define undef_kh_foreach_value
+#endif
 #include <petsc/private/khash/khash.h>
+#if defined(undef_kh_foreach_value)
+  #undef kh_foreach_value
+  #undef undef_kh_foreach_value
+#endif
 
 /* Required for khash <= 0.2.5 */
 #if !defined(kcalloc)
@@ -86,14 +92,14 @@
   @param  code  Block of code to execute
  */
   #define kh_foreach_value(h, vvar, code) \
-    { \
+    do { \
       khint_t __i; \
       for (__i = kh_begin(h); __i != kh_end(h); ++__i) { \
         if (!kh_exist(h, __i)) continue; \
         (vvar) = kh_val(h, __i); \
         code; \
       } \
-    }
+    } while (0)
 #endif /*kh_foreach_value*/
 
 /* --- Helper macro for error checking --- */
@@ -152,7 +158,7 @@ typedef khint32_t PetscHash32_t;
 typedef khint64_t PetscHash64_t;
 typedef khint_t   PetscHash_t;
 
-/* Thomas Wang's first version for 32bit integers */
+/* Thomas Wang's first version for 32-bit integers */
 static inline PetscHash_t PetscHash_UInt32_v0(PetscHash32_t key)
 {
   key += ~(key << 15);
@@ -164,7 +170,7 @@ static inline PetscHash_t PetscHash_UInt32_v0(PetscHash32_t key)
   return key;
 }
 
-/* Thomas Wang's second version for 32bit integers */
+/* Thomas Wang's second version for 32-bit integers */
 static inline PetscHash_t PetscHash_UInt32_v1(PetscHash32_t key)
 {
   key = ~key + (key << 15); /* key = (key << 15) - key - 1; */
@@ -181,7 +187,7 @@ static inline PetscHash_t PetscHash_UInt32(PetscHash32_t key)
   return PetscHash_UInt32_v1(key);
 }
 
-/* Thomas Wang's version for 64bit integer -> 32bit hash */
+/* Thomas Wang's version for 64-bit integer -> 32-bit hash */
 static inline PetscHash32_t PetscHash_UInt64_32(PetscHash64_t key)
 {
   key = ~key + (key << 18); /* key = (key << 18) - key - 1; */
@@ -193,7 +199,7 @@ static inline PetscHash32_t PetscHash_UInt64_32(PetscHash64_t key)
   return (PetscHash32_t)key;
 }
 
-/* Thomas Wang's version for 64bit integer -> 64bit hash */
+/* Thomas Wang's version for 64-bit integer -> 64-bit hash */
 static inline PetscHash64_t PetscHash_UInt64_64(PetscHash64_t key)
 {
   key = ~key + (key << 21); /* key = (key << 21) - key - 1; */
@@ -237,5 +243,3 @@ static inline PetscHash_t PetscHashCombine(PetscHash_t seed, PetscHash_t hash)
 }
 
 #define PetscHashEqual(a, b) ((a) == (b))
-
-#endif /* PETSC_HASHTABLE_H */

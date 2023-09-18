@@ -16,7 +16,7 @@ typedef struct {
        All processors ship the data to process 0 to be printed; note that this is not scalable because
        process 0 allocates space for all the orderings entry across all the processes
 */
-PetscErrorCode AOView_MemoryScalable(AO ao, PetscViewer viewer)
+static PetscErrorCode AOView_MemoryScalable(AO ao, PetscViewer viewer)
 {
   PetscMPIInt        rank, size;
   AO_MemoryScalable *aomems = (AO_MemoryScalable *)ao->data;
@@ -67,7 +67,7 @@ PetscErrorCode AOView_MemoryScalable(AO ao, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode AODestroy_MemoryScalable(AO ao)
+static PetscErrorCode AODestroy_MemoryScalable(AO ao)
 {
   AO_MemoryScalable *aomems = (AO_MemoryScalable *)ao->data;
 
@@ -88,7 +88,7 @@ PetscErrorCode AODestroy_MemoryScalable(AO ao)
    Output Parameter:
 .   ia - the mapped interges
  */
-PetscErrorCode AOMap_MemoryScalable_private(AO ao, PetscInt n, PetscInt *ia, const PetscInt *maploc)
+static PetscErrorCode AOMap_MemoryScalable_private(AO ao, PetscInt n, PetscInt *ia, const PetscInt *maploc)
 {
   AO_MemoryScalable *aomems = (AO_MemoryScalable *)ao->data;
   MPI_Comm           comm;
@@ -229,7 +229,7 @@ PetscErrorCode AOMap_MemoryScalable_private(AO ao, PetscInt n, PetscInt *ia, con
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode AOPetscToApplication_MemoryScalable(AO ao, PetscInt n, PetscInt *ia)
+static PetscErrorCode AOPetscToApplication_MemoryScalable(AO ao, PetscInt n, PetscInt *ia)
 {
   AO_MemoryScalable *aomems  = (AO_MemoryScalable *)ao->data;
   PetscInt          *app_loc = aomems->app_loc;
@@ -239,7 +239,7 @@ PetscErrorCode AOPetscToApplication_MemoryScalable(AO ao, PetscInt n, PetscInt *
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode AOApplicationToPetsc_MemoryScalable(AO ao, PetscInt n, PetscInt *ia)
+static PetscErrorCode AOApplicationToPetsc_MemoryScalable(AO ao, PetscInt n, PetscInt *ia)
 {
   AO_MemoryScalable *aomems    = (AO_MemoryScalable *)ao->data;
   PetscInt          *petsc_loc = aomems->petsc_loc;
@@ -249,14 +249,14 @@ PetscErrorCode AOApplicationToPetsc_MemoryScalable(AO ao, PetscInt n, PetscInt *
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static struct _AOOps AOOps_MemoryScalable = {
+static const struct _AOOps AOOps_MemoryScalable = {
   PetscDesignatedInitializer(view, AOView_MemoryScalable),
   PetscDesignatedInitializer(destroy, AODestroy_MemoryScalable),
   PetscDesignatedInitializer(petsctoapplication, AOPetscToApplication_MemoryScalable),
   PetscDesignatedInitializer(applicationtopetsc, AOApplicationToPetsc_MemoryScalable),
 };
 
-PetscErrorCode AOCreateMemoryScalable_private(MPI_Comm comm, PetscInt napp, const PetscInt from_array[], const PetscInt to_array[], AO ao, PetscInt *aomap_loc)
+static PetscErrorCode AOCreateMemoryScalable_private(MPI_Comm comm, PetscInt napp, const PetscInt from_array[], const PetscInt to_array[], AO ao, PetscInt *aomap_loc)
 {
   AO_MemoryScalable *aomems  = (AO_MemoryScalable *)ao->data;
   PetscLayout        map     = aomems->map;
@@ -370,7 +370,7 @@ PetscErrorCode AOCreateMemoryScalable_private(MPI_Comm comm, PetscInt napp, cons
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PETSC_EXTERN PetscErrorCode AOCreate_MemoryScalable(AO ao)
+PETSC_INTERN PetscErrorCode AOCreate_MemoryScalable(AO ao)
 {
   IS                 isapp = ao->isapp, ispetsc = ao->ispetsc;
   const PetscInt    *mypetsc, *myapp;
@@ -384,8 +384,8 @@ PETSC_EXTERN PetscErrorCode AOCreate_MemoryScalable(AO ao)
   PetscCheck(isapp, PetscObjectComm((PetscObject)ao), PETSC_ERR_ARG_WRONGSTATE, "AOSetIS() must be called before AOSetType()");
   /* create special struct aomems */
   PetscCall(PetscNew(&aomems));
-  ao->data = (void *)aomems;
-  PetscCall(PetscMemcpy(ao->ops, &AOOps_MemoryScalable, sizeof(struct _AOOps)));
+  ao->data   = (void *)aomems;
+  ao->ops[0] = AOOps_MemoryScalable;
   PetscCall(PetscObjectChangeTypeName((PetscObject)ao, AOMEMORYSCALABLE));
 
   /* transmit all local lengths of isapp to all processors */
@@ -447,26 +447,26 @@ PETSC_EXTERN PetscErrorCode AOCreate_MemoryScalable(AO ao)
 }
 
 /*@C
-   AOCreateMemoryScalable - Creates a memory scalable application ordering using two integer arrays.
+  AOCreateMemoryScalable - Creates a memory scalable application ordering using two integer arrays.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  comm - MPI communicator that is to share the `AO`
-.  napp - size of integer arrays
-.  myapp - integer array that defines an ordering
--  mypetsc - integer array that defines another ordering (may be NULL to
+  Input Parameters:
++ comm    - MPI communicator that is to share the `AO`
+. napp    - size of integer arrays
+. myapp   - integer array that defines an ordering
+- mypetsc - integer array that defines another ordering (may be NULL to
              indicate the natural ordering, that is 0,1,2,3,...)
 
-   Output Parameter:
-.  aoout - the new application ordering
+  Output Parameter:
+. aoout - the new application ordering
 
-   Level: beginner
+  Level: beginner
 
-    Note:
-    The arrays myapp and mypetsc must contain the all the integers 0 to napp-1 with no duplicates; that is there cannot be any "holes"
-    in the indices. Use `AOCreateMapping()` or `AOCreateMappingIS()` if you wish to have "holes" in the indices.
-    Comparing with `AOCreateBasic()`, this routine trades memory with message communication.
+  Note:
+  The arrays myapp and mypetsc must contain the all the integers 0 to napp-1 with no duplicates; that is there cannot be any "holes"
+  in the indices. Use `AOCreateMapping()` or `AOCreateMappingIS()` if you wish to have "holes" in the indices.
+  Comparing with `AOCreateBasic()`, this routine trades memory with message communication.
 
 .seealso: [](sec_ao), [](sec_scatter), `AO`, `AOCreateMemoryScalableIS()`, `AODestroy()`, `AOPetscToApplication()`, `AOApplicationToPetsc()`
 @*/
@@ -489,25 +489,25 @@ PetscErrorCode AOCreateMemoryScalable(MPI_Comm comm, PetscInt napp, const PetscI
 }
 
 /*@C
-   AOCreateMemoryScalableIS - Creates a memory scalable application ordering using two index sets.
+  AOCreateMemoryScalableIS - Creates a memory scalable application ordering using two index sets.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  isapp - index set that defines an ordering
--  ispetsc - index set that defines another ordering (may be NULL to use the
+  Input Parameters:
++ isapp   - index set that defines an ordering
+- ispetsc - index set that defines another ordering (may be NULL to use the
              natural ordering)
 
-   Output Parameter:
-.  aoout - the new application ordering
+  Output Parameter:
+. aoout - the new application ordering
 
-   Level: beginner
+  Level: beginner
 
-    Notes:
-    The index sets isapp and ispetsc must contain the all the integers 0 to napp-1 (where napp is the length of the index sets) with no duplicates;
-    that is there cannot be any "holes".
+  Notes:
+  The index sets isapp and ispetsc must contain the all the integers 0 to napp-1 (where napp is the length of the index sets) with no duplicates;
+  that is there cannot be any "holes".
 
-    Comparing with `AOCreateBasicIS()`, this routine trades memory with message communication.
+  Comparing with `AOCreateBasicIS()`, this routine trades memory with message communication.
 
 .seealso: [](sec_ao), [](sec_scatter), `AO`, `AOCreateBasicIS()`, `AOCreateMemoryScalable()`, `AODestroy()`
 @*/

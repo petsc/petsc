@@ -1,7 +1,7 @@
 
 #include <../src/ksp/ksp/impls/lcd/lcdimpl.h>
 
-PetscErrorCode KSPSetUp_LCD(KSP ksp)
+static PetscErrorCode KSPSetUp_LCD(KSP ksp)
 {
   KSP_LCD *lcd     = (KSP_LCD *)ksp->data;
   PetscInt restart = lcd->restart;
@@ -26,7 +26,7 @@ PetscErrorCode KSPSetUp_LCD(KSP ksp)
 .     its - number of iterations used
 
 */
-PetscErrorCode KSPSolve_LCD(KSP ksp)
+static PetscErrorCode KSPSolve_LCD(KSP ksp)
 {
   PetscInt    it, j, max_k;
   PetscScalar alfa, beta, num, den, mone;
@@ -122,7 +122,7 @@ PetscErrorCode KSPSolve_LCD(KSP ksp)
        KSPDestroy_LCD - Frees all memory space used by the Krylov method
 
 */
-PetscErrorCode KSPReset_LCD(KSP ksp)
+static PetscErrorCode KSPReset_LCD(KSP ksp)
 {
   KSP_LCD *lcd = (KSP_LCD *)ksp->data;
 
@@ -132,7 +132,7 @@ PetscErrorCode KSPReset_LCD(KSP ksp)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode KSPDestroy_LCD(KSP ksp)
+static PetscErrorCode KSPDestroy_LCD(KSP ksp)
 {
   PetscFunctionBegin;
   PetscCall(KSPReset_LCD(ksp));
@@ -148,7 +148,7 @@ PetscErrorCode KSPDestroy_LCD(KSP ksp)
       flags that information should be printed here.
 
 */
-PetscErrorCode KSPView_LCD(KSP ksp, PetscViewer viewer)
+static PetscErrorCode KSPView_LCD(KSP ksp, PetscViewer viewer)
 {
   KSP_LCD  *lcd = (KSP_LCD *)ksp->data;
   PetscBool iascii;
@@ -166,7 +166,7 @@ PetscErrorCode KSPView_LCD(KSP ksp, PetscViewer viewer)
     KSPSetFromOptions_LCD - Checks the options database for options related to the
                             LCD method.
 */
-PetscErrorCode KSPSetFromOptions_LCD(KSP ksp, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode KSPSetFromOptions_LCD(KSP ksp, PetscOptionItems *PetscOptionsObject)
 {
   PetscBool flg;
   KSP_LCD  *lcd = (KSP_LCD *)ksp->data;
@@ -212,7 +212,7 @@ PetscErrorCode KSPSetFromOptions_LCD(KSP ksp, PetscOptionItems *PetscOptionsObje
   Contributed by:
   Lucia Catabriga <luciac@ices.utexas.edu>
 
-.seealso: [](chapter_ksp), `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`,
+.seealso: [](ch_ksp), `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`,
           `KSPCGSetType()`, `KSPLCDSetRestart()`, `KSPLCDSetHapTol()`
 M*/
 

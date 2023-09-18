@@ -44,7 +44,6 @@ static PetscErrorCode KSPSolve_FBCGS(KSP ksp)
 
   /* Compute initial residual */
   PetscCall(KSPGetPC(ksp, &pc));
-  PetscCall(PCSetUp(pc));
   PetscCall(PCGetOperators(pc, &mat, NULL));
   if (!ksp->guess_zero) {
     PetscCall(KSP_MatMult(ksp, mat, X, S2));
@@ -161,7 +160,7 @@ static PetscErrorCode KSPSolve_FBCGS(KSP ksp)
 
    Only supportst right preconditioning
 
-.seealso: [](chapter_ksp),  [](sec_flexibleksp), `KSPFBCGSR`, `KSPPIPEBCGS`, `KSPBCGSL`, `KSPFBCGS`, `KSPCreate()`, `KSPFGMRES`, `KSPSetType()`, `KSPType`, `KSP`, `KSPBICG`, `KSPSetPCSide()`
+.seealso: [](ch_ksp),  [](sec_flexibleksp), `KSPFBCGSR`, `KSPPIPEBCGS`, `KSPBCGSL`, `KSPFBCGS`, `KSPCreate()`, `KSPFGMRES`, `KSPSetType()`, `KSPType`, `KSP`, `KSPBICG`, `KSPSetPCSide()`
 M*/
 PETSC_EXTERN PetscErrorCode KSPCreate_FBCGS(KSP ksp)
 {
