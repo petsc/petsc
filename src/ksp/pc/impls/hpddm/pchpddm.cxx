@@ -1665,10 +1665,7 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
               PetscCall(VecRestoreArrayRead(x, &read));
               PetscCall(VecRestoreArrayWrite(v, &write));
               PetscCall(VecDestroy(&x));
-              PetscCall(MatCreateSeqAIJ(PETSC_COMM_SELF, n, n, 1, nullptr, &data->aux));
-              PetscCall(MatSetOption(data->aux, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_FALSE));
-              PetscCall(MatDiagonalSet(data->aux, v, ADD_VALUES));
-              PetscCall(MatSetOption(data->aux, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_TRUE));
+              PetscCall(MatCreateDiagonal(v, &data->aux));
               PetscCall(VecDestroy(&v));
             }
             uis  = data->is;

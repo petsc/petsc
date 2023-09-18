@@ -1153,7 +1153,7 @@ static PetscErrorCode MatGetRow_SeqDense(Mat A, PetscInt row, PetscInt *ncols, P
   PetscInt      i;
 
   PetscFunctionBegin;
-  *ncols = A->cmap->n;
+  if (ncols) *ncols = A->cmap->n;
   if (cols) {
     PetscCall(PetscMalloc1(A->cmap->n, cols));
     for (i = 0; i < A->cmap->n; i++) (*cols)[i] = i;
