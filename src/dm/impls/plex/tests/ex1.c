@@ -389,7 +389,7 @@ int main(int argc, char **argv)
     test:
       suffix: exo_1
       requires: exodusii
-      args: -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/sevenside-quad-15.exo
+      args: -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/sevenside-quad-15.exo -exodusii_check_reserved 0
     test:
       suffix: exo_2
       requires: exodusii
@@ -397,15 +397,15 @@ int main(int argc, char **argv)
     test:
       suffix: exo_3
       requires: exodusii
-      args: -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/blockcylinder-50.exo
+      args: -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/blockcylinder-50.exo -exodusii_check_reserved 0
     test:
       suffix: exo_4
       requires: exodusii
-      args: -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/simpleblock-100.exo
+      args: -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/simpleblock-100.exo -exodusii_check_reserved 0
     test:
       suffix: exo_1d_0
       requires: exodusii
-      args: -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/1d-2elems.e
+      args: -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/1d-2elems.e -exodusii_check_reserved 0
 
   # Gmsh mesh reader tests
   testset:

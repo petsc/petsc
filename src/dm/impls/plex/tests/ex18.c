@@ -1685,7 +1685,7 @@ int main(int argc, char **argv)
   testset: # 7 EXODUS
     requires: exodusii
     args: -dm_plex_check_all
-    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/blockcylinder-50.exo
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/blockcylinder-50.exo -exodusii_check_reserved 0
     args: -distribute
     test: # seq load, simple partitioner
       suffix: 7_exo

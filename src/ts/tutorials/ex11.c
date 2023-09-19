@@ -2272,13 +2272,13 @@ int initLinearWave(EulerNode *ux, const PetscReal gamma, const PetscReal coord[]
       suffix: tut_1
       requires: exodusii
       nsize: 1
-      args: -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/sevenside.exo
+      args: -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/sevenside.exo -exodusii_check_reserved 0
 
     test:
       suffix: tut_2
       requires: exodusii
       nsize: 1
-      args: -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/sevenside.exo -ts_type rosw
+      args: -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/sevenside.exo -exodusii_check_reserved 0 -ts_type rosw
 
     test:
       suffix: tut_3
@@ -2299,7 +2299,7 @@ int initLinearWave(EulerNode *ux, const PetscReal gamma, const PetscReal coord[]
     test:
       suffix: 0
       requires: exodusii
-      args: -ufv_vtk_interval 0 -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/sevenside.exo
+      args: -ufv_vtk_interval 0 -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/sevenside.exo -exodusii_check_reserved 0
 
     test:
       suffix: 1
@@ -2310,7 +2310,7 @@ int initLinearWave(EulerNode *ux, const PetscReal gamma, const PetscReal coord[]
       suffix: 2
       requires: exodusii
       nsize: 2
-      args: -dm_distribute_overlap 1 -ufv_vtk_interval 0 -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/sevenside.exo
+      args: -dm_distribute_overlap 1 -ufv_vtk_interval 0 -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/sevenside.exo -exodusii_check_reserved 0
 
     test:
       suffix: 3
@@ -2327,7 +2327,7 @@ int initLinearWave(EulerNode *ux, const PetscReal gamma, const PetscReal coord[]
     test:
       suffix: 5
       requires: exodusii
-      args: -ufv_vtk_interval 0 -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/sevenside.exo -ts_type rosw -ts_adapt_reject_safety 1
+      args: -ufv_vtk_interval 0 -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/sevenside.exo -exodusii_check_reserved 0 -ts_type rosw -ts_adapt_reject_safety 1
 
     test:
       suffix: 7
@@ -2417,7 +2417,7 @@ int initLinearWave(EulerNode *ux, const PetscReal gamma, const PetscReal coord[]
     test:
       suffix: adv_0
       requires: exodusii
-      args: -ufv_vtk_interval 0 -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/blockcylinder-50.exo -bc_inflow 100,101,200 -bc_outflow 201
+      args: -ufv_vtk_interval 0 -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/blockcylinder-50.exo -exodusii_check_reserved 0 -bc_inflow 100,101,200 -bc_outflow 201
 
     test:
       suffix: shock_0

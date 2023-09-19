@@ -409,6 +409,6 @@ int main(int argc, char **argv)
     test:
       suffix: 11
       requires: exodusii
-      args: -use_generator -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/blockcylinder-50.exo -dm_view ascii::ascii_info_detail -dm_coord_space 0
+      args: -use_generator -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/blockcylinder-50.exo -exodusii_check_reserved 0 -dm_view ascii::ascii_info_detail -dm_coord_space 0
 
 TEST*/
