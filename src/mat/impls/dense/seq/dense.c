@@ -1176,7 +1176,6 @@ static PetscErrorCode MatGetRow_SeqDense(Mat A, PetscInt row, PetscInt *ncols, P
 static PetscErrorCode MatRestoreRow_SeqDense(Mat A, PetscInt row, PetscInt *ncols, PetscInt **cols, PetscScalar **vals)
 {
   PetscFunctionBegin;
-  if (ncols) *ncols = 0;
   if (cols) PetscCall(PetscFree(*cols));
   if (vals) PetscCall(PetscFree(*vals));
   PetscFunctionReturn(PETSC_SUCCESS);

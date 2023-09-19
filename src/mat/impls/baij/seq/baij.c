@@ -1705,7 +1705,6 @@ PetscErrorCode MatGetRow_SeqBAIJ(Mat A, PetscInt row, PetscInt *nz, PetscInt **i
 PetscErrorCode MatRestoreRow_SeqBAIJ(Mat A, PetscInt row, PetscInt *nz, PetscInt **idx, PetscScalar **v)
 {
   PetscFunctionBegin;
-  if (nz) *nz = 0;
   if (idx) PetscCall(PetscFree(*idx));
   if (v) PetscCall(PetscFree(*v));
   PetscFunctionReturn(PETSC_SUCCESS);

@@ -1237,7 +1237,6 @@ static PetscErrorCode MatGetRow_SeqKAIJ(Mat A, PetscInt row, PetscInt *ncols, Pe
 static PetscErrorCode MatRestoreRow_SeqKAIJ(Mat A, PetscInt row, PetscInt *nz, PetscInt **idx, PetscScalar **v)
 {
   PetscFunctionBegin;
-  if (nz) *nz = 0;
   PetscCall(PetscFree2(*idx, *v));
   ((Mat_SeqKAIJ *)A->data)->getrowactive = PETSC_FALSE;
   PetscFunctionReturn(PETSC_SUCCESS);
