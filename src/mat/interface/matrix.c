@@ -9643,10 +9643,14 @@ PetscErrorCode MatFactorGetSchurComplement(Mat F, Mat *S, MatFactorSchurStatus *
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(F, MAT_CLASSID, 1);
-  if (S) PetscAssertPointer(S, 2);
-  if (status) PetscAssertPointer(status, 3);
-  if (S) *S = F->schur;
-  if (status) *status = F->schur_status;
+  if (S) {
+    PetscAssertPointer(S, 2);
+    *S = F->schur;
+  }
+  if (status) {
+    PetscAssertPointer(status, 3);
+    *status = F->schur_status;
+  }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
