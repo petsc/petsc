@@ -166,13 +166,13 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqDense(Mat A, MatType newtype, M
     b = (Mat_SeqDense *)(B->data);
   } else {
     b = (Mat_SeqDense *)((*newmat)->data);
-    PetscCall(PetscArrayzero(b->v, m * n));
+    for (i = 0; i < n; i++) PetscCall(PetscArrayzero(b->v + i * b->lda, m));
   }
   PetscCall(MatSeqAIJGetArrayRead(A, &av));
   for (i = 0; i < m; i++) {
     PetscInt j;
     for (j = 0; j < ai[1] - ai[0]; j++) {
-      b->v[*aj * m + i] = *av;
+      b->v[*aj * b->lda + i] = *av;
       aj++;
       av++;
     }
