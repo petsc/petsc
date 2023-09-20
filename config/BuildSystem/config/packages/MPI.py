@@ -52,6 +52,7 @@ class Configure(config.package.Package):
     self.commc2f          = 0
     self.needBatchMPI     = 1
     self.alternativedownload = 'mpich'
+    self.haveReduceLocal  = 0
     # support MPI-3 process shared memory
     self.support_mpi3_shm = 0
     # support MPI-3 non-blocking collectives
