@@ -527,9 +527,6 @@ static PetscErrorCode PetscLogGetStageEventPerfInfo_threaded(PetscLogHandler_Def
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-#if defined(PETSC_HAVE_CUDA)
-  #include <nvToolsExt.h>
-#endif
 static PetscErrorCode PetscLogHandlerEventBegin_Default(PetscLogHandler h, PetscLogEvent event, PetscObject o1, PetscObject o2, PetscObject o3, PetscObject o4)
 {
   PetscLogHandler_Default def             = (PetscLogHandler_Default)h->data;
@@ -555,14 +552,6 @@ static PetscErrorCode PetscLogHandlerEventBegin_Default(PetscLogHandler h, Petsc
   event_perf_info->depth++;
   /* Check for double counting */
   if (event_perf_info->depth > 1) PetscFunctionReturn(PETSC_SUCCESS);
-#if defined(PETSC_HAVE_CUDA)
-  if (PetscDeviceInitialized(PETSC_DEVICE_CUDA)) {
-    PetscLogEventInfo event_reg_info;
-
-    PetscCall(PetscLogStateEventGetInfo(state, event, &event_reg_info));
-    nvtxRangePushA(event_reg_info.name);
-  }
-#endif
   PetscCall(PetscLogStateEventGetInfo(state, event, &event_info));
   /* Log the performance info */
   event_perf_info->count++;
@@ -640,9 +629,6 @@ static PetscErrorCode PetscLogHandlerEventEnd_Default(PetscLogHandler h, PetscLo
     PetscCall(PetscEventPerfInfoAdd_Internal(event_perf_info, event_perf_info_global));
     PetscCall(PetscSpinlockUnlock(&def->lock));
   }
-#if defined(PETSC_HAVE_CUDA)
-  if (PetscDeviceInitialized(PETSC_DEVICE_CUDA)) nvtxRangePop();
-#endif
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

@@ -417,7 +417,7 @@ PETSC_UNUSED static PetscErrorCode PetscLogEventEndIsActive(PetscBool *isActive)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode PetscLogTypeBegin(PetscLogHandlerType type)
+PETSC_INTERN PetscErrorCode PetscLogTypeBegin(PetscLogHandlerType type)
 {
   PetscLogHandler handler;
 

@@ -513,6 +513,16 @@ PETSC_INTERN PetscErrorCode PetscOptionsCheckInitial_Private(const char help[])
       PetscCall(PetscOptionsHasName(NULL, NULL, "-log_perfstubs", &flg1));
       if (flg1) PetscCall(PetscLogPerfstubsBegin());
     }
+    if (PetscDefined(USE_LOG) && PetscDefined(HAVE_CUDA)) {
+      char     *nsys_profiling_session_id = getenv("NSYS_PROFILING_SESSION_ID");
+      char     *nvprof_id                 = getenv("NVPROF_ID");
+      PetscBool start_log_nvtx            = ((nsys_profiling_session_id != NULL) || (nvprof_id != NULL)) ? PETSC_TRUE : PETSC_FALSE;
+
+      if (nsys_profiling_session_id && !PetscGlobalRank) PetscCall(PetscInfo(NULL, "Detected nsys profiling session id %s\n", nsys_profiling_session_id));
+      if (nvprof_id && !PetscGlobalRank) PetscCall(PetscInfo(NULL, "Detected nvprof session id %s\n", nvprof_id));
+      PetscCall(PetscOptionsGetBool(NULL, NULL, "-log_nvtx", &start_log_nvtx, NULL));
+      if (start_log_nvtx) PetscCall(PetscLogTypeBegin(PETSCLOGHANDLERNVTX));
+    }
     flg1 = PETSC_FALSE;
     PetscCall(PetscOptionsGetBool(NULL, NULL, "-log_all", &flg1, NULL));
     PetscCall(PetscOptionsGetBool(NULL, NULL, "-log", &flg2, NULL));
@@ -604,6 +614,9 @@ PETSC_INTERN PetscErrorCode PetscOptionsCheckInitial_Private(const char help[])
   #endif
   #if defined(PETSC_HAVE_MPE)
     PetscCall((*PetscHelpPrintf)(comm, " -log_mpe: Also create logfile viewable through Jumpshot\n"));
+  #endif
+  #if PetscDefined(HAVE_CUDA)
+    PetscCall((*PetscHelpPrintf)(comm, " -log_nvtx: Create nvtx event ranges for Nsight\n"));
   #endif
 #endif
 #if defined(PETSC_USE_INFO)
