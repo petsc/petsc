@@ -1188,6 +1188,7 @@ PETSC_INTERN PetscErrorCode PetscInitialize_Common(const char *prog, const char 
 . -log_all [filename]                                  - Same as `-log`.
 . -log_mpe [filename]                                  - Creates a logfile viewable by the utility Jumpshot (in MPICH distribution)
 . -log_perfstubs                                       - Starts a log handler with the perfstubs interface (which is used by TAU)
+. -log_nvtx                                            - Starts an nvtx log handler for use with Nsight
 . -viewfromoptions on,off                              - Enable or disable `XXXSetFromOptions()` calls, for applications with many small solves turn this off
 - -check_pointer_intensity 0,1,2                       - if pointers are checked for validity (debug version only), using 0 will result in faster code
 

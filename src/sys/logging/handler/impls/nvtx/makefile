@@ -1,9 +1,9 @@
--include ../../../../../petscdir.mk
+-include ../../../../../../petscdir.mk
+#requirespackage 'PETSC_HAVE_CUDA'
 
 MANSEC	  = Sys
 SUBMANSEC = Profiling
 LIBBASE	  = libpetscsys
-DIRS	  = default nested trace mpe perfstubs legacy nvtx
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules.doc
