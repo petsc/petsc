@@ -1111,7 +1111,7 @@ PetscErrorCode ISInvertPermutation(IS is, PetscInt nlocal, IS *isout)
 
   Level: beginner
 
-.seealso: `IS`, `ISSetSize()`
+.seealso: `IS`
 @*/
 PetscErrorCode ISGetSize(IS is, PetscInt *size)
 {

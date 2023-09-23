@@ -503,10 +503,12 @@ PetscErrorCode ISConcatenate(MPI_Comm comm, PetscInt len, const IS islist[], IS 
   for (i = 0; i < len; ++i) {
     if (islist[i]) {
       PetscCall(ISGetLocalSize(islist[i], &n));
-      PetscCall(ISGetIndices(islist[i], &iidx));
-      PetscCall(PetscArraycpy(idx + N, iidx, n));
-      PetscCall(ISRestoreIndices(islist[i], &iidx));
-      N += n;
+      if (n) {
+        PetscCall(ISGetIndices(islist[i], &iidx));
+        PetscCall(PetscArraycpy(idx + N, iidx, n));
+        PetscCall(ISRestoreIndices(islist[i], &iidx));
+        N += n;
+      }
     }
   }
   PetscCall(ISCreateGeneral(comm, N, idx, PETSC_OWN_POINTER, isout));
