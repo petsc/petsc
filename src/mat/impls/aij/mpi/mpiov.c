@@ -2768,8 +2768,8 @@ PetscErrorCode MatCreateSubMatrices_MPIAIJ_Local(Mat C, PetscInt ismax, const IS
 #endif
         ilen  = imat_ilen[row];
         mat_i = imat_i[row];
-        mat_a = imat_a + mat_i;
-        mat_j = imat_j + mat_i;
+        mat_a = imat_a ? imat_a + mat_i : NULL;
+        mat_j = imat_j ? imat_j + mat_i : NULL;
         max2  = rbuf2_i[ct1];
         if (!allcolumns[is_no]) {
           for (l = 0; l < max2; l++, ct2++) {
