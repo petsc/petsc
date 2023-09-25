@@ -6,6 +6,7 @@ Documentation for previous PETSc releases
 .. toctree::
   :maxdepth: 1
 
+   3.19 <https://web.cels.anl.gov/projects/petsc/vault/petsc-3.19/docs>
    3.18 <https://web.cels.anl.gov/projects/petsc/vault/petsc-3.18/docs>
    3.17 <https://web.cels.anl.gov/projects/petsc/vault/petsc-3.17/docs>
    3.16 <https://web.cels.anl.gov/projects/petsc/vault/petsc-3.16/docs>
