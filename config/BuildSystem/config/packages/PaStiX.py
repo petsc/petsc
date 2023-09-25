@@ -6,7 +6,7 @@ class Configure(config.package.Package):
     self.version          = '5.2.3'
     self.versionname      = 'PASTIX_MAJOR_VERSION.PASTIX_MEDIUM_VERSION.PASTIX_MINOR_VERSION'
     # 'https://gforge.inria.fr/frs/download.php/file/36212/pastix_'+self.version+'.tar.bz2',
-    self.download         = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/pastix_'+self.version+'.tar.bz2']
+    self.download         = ['https://web.cels.anl.gov/projects/petsc/download/externalpackages/pastix_'+self.version+'.tar.bz2']
     self.liblist          = [['libpastix.a'],
                             ['libpastix.a','libpthread.a','librt.a']]
     self.functions        = ['pastix']

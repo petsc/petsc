@@ -3,7 +3,7 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.download  = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/sprng-1.0.tar.gz']
+    self.download  = ['https://web.cels.anl.gov/projects/petsc/download/externalpackages/sprng-1.0.tar.gz']
     self.functions = ['make_new_seed_mpi']
     self.includes  = ['sprng.h']
     self.liblist   = [['liblcg.a']]

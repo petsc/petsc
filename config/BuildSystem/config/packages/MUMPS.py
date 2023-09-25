@@ -9,7 +9,7 @@ class Configure(config.package.Package):
     self.requiresversion  = 1
     self.gitcommit        = 'v'+self.version
     self.download         = ['https://graal.ens-lyon.fr/MUMPS/MUMPS_'+self.version+'.tar.gz',
-                             'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/MUMPS_'+self.version+'.tar.gz']
+                             'https://web.cels.anl.gov/projects/petsc/download/externalpackages/MUMPS_'+self.version+'.tar.gz']
     self.downloaddirnames = ['petsc-pkg-mumps','MUMPS']
     self.buildLanguages   = ['C','FC']
     self.precisions       = ['single','double']
