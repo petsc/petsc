@@ -102,7 +102,7 @@ Changes: 2.3.1
    code is in fixed form - there could be errors with lines exceeding
    72 char limit
 
-.. rubric:: `ExternalPackages <https://www.mcs.anl.gov/petsc/miscellaneous/external.html>`__:
+.. rubric:: ExternalPackages:
 
 -  PLAPACK support added
 -  BLOPEX support added

@@ -126,7 +126,7 @@ echo '
 ########################################################################################
 # f2cblaslapack: BLAS/LAPACK in C for being linked with PETSc.
 # Created by $PETSC_DIR/lib/petsc/bin/maint/petsc/toclapack.sh script
-# You may obtain PETSc at http://www.mcs.anl.gov/petsc
+# You may obtain PETSc at https://petsc.org
 ########################################################################################
 
 ALL: blas_lib lapack_lib

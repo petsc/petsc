@@ -157,7 +157,7 @@ Changes: 3.1
 -  use petsc and use petscdef are now use petscsys and use
    petscsysdef
 
-.. rubric:: `ExternalPackages <https://www.mcs.anl.gov/petsc/miscellaneous/external.html>`__:
+.. rubric:: ExternalPackages:
 
 -  Added MATORDERING_AMD for Tim Davis' Approximate Minimum Degree
    package.

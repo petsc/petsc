@@ -225,7 +225,7 @@ Changes: 3.3
 -  PETSC_NULL_TRUTH is now PETSC_NULL_BOOL
 -  PetscOptionsGetEnum() now available from Fortran
 
-.. rubric:: `ExternalPackages <https://www.mcs.anl.gov/petsc/miscellaneous/external.html>`__:
+.. rubric:: ExternalPackages:
 
 -  The Hypre interface was updated to 2.8.0b and now supports 64-bit
    integers.
