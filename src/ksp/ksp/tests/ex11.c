@@ -1,6 +1,6 @@
 static const char help[] = "Solves a Q1-P0 Stokes problem from Underworld.\n\
 \n\
-You can obtain a sample matrix from http://ftp.mcs.anl.gov/pub/petsc/Datafiles/matrices/underworld32.gz\n\
+You can obtain a sample matrix from https://web.cels.anl.gov/projects/petsc/download/Datafiles/matrices/underworld32.gz\n\
 and run with -f underworld32.gz\n\n";
 
 #include <petscksp.h>

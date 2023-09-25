@@ -20,14 +20,14 @@ RELEASE=${version_major}.${version_minor}
 VERSION=${version_major}.${version_minor}.${version_subminor}
 
 #Now copy the generated tarfiles over to the website
-scp ~/petsc-${VERSION}.tar.gz petsc@login.mcs.anl.gov:/mcs/ftp/pub/petsc/release-snapshots/
-scp ~/petsc4py-${VERSION}.tar.gz petsc@login.mcs.anl.gov:/mcs/ftp/pub/petsc/release-snapshots/
-scp ~/petsc-with-docs-${VERSION}.tar.gz petsc@login.mcs.anl.gov:/mcs/ftp/pub/petsc/release-snapshots/
-ssh petsc@login.mcs.anl.gov "cd /mcs/ftp/pub/petsc/release-snapshots; ln -s petsc-${VERSION}.tar.gz petsc-lite-${VERSION}.tar.gz"
+scp ~/petsc-${VERSION}.tar.gz svcpetsc@compute-01.cels.anl.gov:/nfs/pub_html/gce/projects/petsc/download/release-snapshots/
+scp ~/petsc4py-${VERSION}.tar.gz svcpetsc@compute-01.cels.anl.gov:/nfs/pub_html/gce/projects/petsc/download/release-snapshots/
+scp ~/petsc-with-docs-${VERSION}.tar.gz svcpetsc@compute-01.cels.anl.gov:/nfs/pub_html/gce/projects/petsc/download/release-snapshots/
+ssh svcpetsc@compute-01.cels.anl.gov "cd /nfs/pub_html/gce/projects/petsc/download/release-snapshots; ln -s petsc-${VERSION}.tar.gz petsc-lite-${VERSION}.tar.gz"
 
 # petsc.tar.gz/petsc-lite.tar.gz links are done manually
-ssh petsc@login.mcs.anl.gov " \
-  cd /mcs/ftp/pub/petsc/release-snapshots; \
+ssh svcpetsc@compute-01.cels.anl.gov " \
+  cd /nfs/pub_html/gce/projects/petsc/download/release-snapshots; \
   /bin/rm -f petsc-${RELEASE}.tar.gz petsc-lite-${RELEASE}.tar.gz petsc-with-docs-${RELEASE}.tar.gz petsc4py-${RELEASE}.tar.gz ; \
   /bin/ln -s petsc-${VERSION}.tar.gz petsc-${RELEASE}.tar.gz; \
   /bin/ln -s petsc4py-${VERSION}.tar.gz petsc4py-${RELEASE}.tar.gz; \
