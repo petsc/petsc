@@ -107,13 +107,13 @@ PC Object: (fc_) 1 MPI process
         linear system matrix followed by preconditioner matrix:
         Mat Object: (a11_) 1 MPI process
           type: seqaij
-          rows=2046, cols=2046
+          rows=2046, cols=2046, bs=2
           total: nonzeros=34952, allocated nonzeros=34952
           total number of mallocs used during MatSetValues calls=0
             using I-node routines: found 1085 nodes, limit used is 5
         Mat Object: (fc_fieldsplit_velocity_) 1 MPI process
           type: seqaij
-          rows=2046, cols=2046
+          rows=2046, cols=2046, bs=2
           total: nonzeros=34952, allocated nonzeros=34952
           total number of mallocs used during MatSetValues calls=0
             using I-node routines: found 1085 nodes, limit used is 5
@@ -302,13 +302,13 @@ PC Object: (fc_) 1 MPI process
         linear system matrix followed by preconditioner matrix:
         Mat Object: (a11_) 1 MPI process
           type: seqaij
-          rows=2046, cols=2046
+          rows=2046, cols=2046, bs=2
           total: nonzeros=34952, allocated nonzeros=34952
           total number of mallocs used during MatSetValues calls=0
             using I-node routines: found 1085 nodes, limit used is 5
         Mat Object: (fc_fieldsplit_velocity_) 1 MPI process
           type: seqaij
-          rows=2046, cols=2046
+          rows=2046, cols=2046, bs=2
           total: nonzeros=34952, allocated nonzeros=34952
           total number of mallocs used during MatSetValues calls=0
             using I-node routines: found 1085 nodes, limit used is 5
