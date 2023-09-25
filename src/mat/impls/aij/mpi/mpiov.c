@@ -1618,7 +1618,7 @@ PetscErrorCode MatCreateSubMatrices_MPIAIJ_SingleIS_Local(Mat C, PetscInt ismax,
 
     PetscCall(ISGetBlockSize(isrow[0], &i));
     PetscCall(ISGetBlockSize(iscol[0], &j));
-    PetscCall(MatSetBlockSizes(submat, i, j));
+    if (i > 1 || j > 1) PetscCall(MatSetBlockSizes(submat, i, j));
     PetscCall(MatSetType(submat, ((PetscObject)A)->type_name));
     PetscCall(MatSeqAIJSetPreallocation(submat, 0, lens));
 
@@ -2534,7 +2534,7 @@ PetscErrorCode MatCreateSubMatrices_MPIAIJ_Local(Mat C, PetscInt ismax, const IS
       PetscCall(MatCreate(PETSC_COMM_SELF, submats + i));
       PetscCall(MatSetSizes(submats[i], nrow[i], ncol[i], PETSC_DETERMINE, PETSC_DETERMINE));
 
-      PetscCall(MatSetBlockSizes(submats[i], rbs, cbs));
+      if (rbs > 1 || cbs > 1) PetscCall(MatSetBlockSizes(submats[i], rbs, cbs));
       PetscCall(MatSetType(submats[i], ((PetscObject)A)->type_name));
       PetscCall(MatSeqAIJSetPreallocation(submats[i], 0, lens[i]));
 
