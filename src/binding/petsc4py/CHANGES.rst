@@ -6,6 +6,12 @@ CHANGES: PETSc for Python
 :Contact: dalcinl@gmail.com
 
 
+Release 3.20.0
+==============
+
+- Update to PETSc 3.20 release.
+- Update Cython build, require ``Cython >= 3.0.0``.
+
 Release 3.19.0
 ==============
 
