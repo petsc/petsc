@@ -8,11 +8,12 @@ class Configure(config.package.Package):
     #self.version                = '4.0.0'
     #self.versionname            = 'MFEM_VERSION_STRING'
     #self.versioninclude         = 'mfem/config.hpp'
-    self.gitcommit              = 'v4.5.2'
+    self.gitcommit              = '6d81b467c22b6b40015aab7b50ea539840970c7f' # master sept-24-2023
     self.download               = ['git://https://github.com/mfem/mfem.git','https://github.com/mfem/mfem/archive/'+self.gitcommit+'.tar.gz']
     self.linkedbypetsc          = 0
     self.downloadonWindows      = 1
     self.buildLanguages         = ['Cxx']
+    self.maxCxxVersion          = 'c++17'
     self.skippackagewithoptions = 1
     self.builtafterpetsc        = 1
     self.noMPIUni               = 1
@@ -57,7 +58,7 @@ class Configure(config.package.Package):
     if not os.path.exists(configDir):
       os.makedirs(configDir)
 
-    if self.framework.argDB['prefix']:
+    if self.framework.argDB['prefix'] and not 'package-prefix-hash' in self.argDB:
       PETSC_DIR  = os.path.abspath(os.path.expanduser(self.argDB['prefix']))
       PETSC_ARCH = ''
       prefix     = os.path.abspath(os.path.expanduser(self.argDB['prefix']))
@@ -70,16 +71,8 @@ class Configure(config.package.Package):
 
     self.pushLanguage('Cxx')
     cxx = self.getCompiler()
-    cxxflags = self.getCompilerFlags()
+    cxxflags = self.updatePackageCxxFlags(self.getCompilerFlags())
     self.popLanguage()
-    cxxflags = cxxflags.replace('-fvisibility=hidden','') # MFEM is currently broken with -fvisibility=hidden
-    # MFEM uses the macro MFEM_BUILD_DIR that builds a path by combining the directory plus other stuff but if the
-    # directory name contains  "-linux" this is converted by CPP to the value 1 since that is defined in Linux header files
-    # unless the -std=C++11 or -std=C++14 flag is used; we want to support MFEM without this flag
-    if '-linux' in self.packageDir:
-      cxxflags += ' -Dlinux=linux'
-    # MFEM adds C++ standard flags automatically
-    cxxflags = re.sub(r'-std=([^\s]+) ','',cxxflags)
     if 'download-mfem-ghv-cxx' in self.argDB and self.argDB['download-mfem-ghv-cxx']:
       ghv = self.argDB['download-mfem-ghv-cxx']
     else:
@@ -158,7 +151,7 @@ class Configure(config.package.Package):
         slepclib = '-L'+prefix+'/lib -lslepc'
         slepcext = ''
         g.write('SLEPC_LIB = '+petscrpt+' '+slepclib+' '+slepcext+' $(PETSC_LIB)\n')
-        if self.argDB['prefix']:
+        if self.argDB['prefix'] and not 'package-prefix-hash' in self.argDB:
           makedepend = 'slepc-install'
         else:
           makedepend = 'slepc-build'
@@ -173,16 +166,17 @@ class Configure(config.package.Package):
       if self.cuda.found:
         self.pushLanguage('CUDA')
         petscNvcc = self.getCompiler()
-        cudaFlags = self.getCompilerFlags()
+        cudaFlags = self.updatePackageCUDAFlags(self.getCompilerFlags())
         self.popLanguage()
         cudaFlags = re.sub(r'-std=([^\s]+) ','',cudaFlags)
         g.write('MFEM_USE_CUDA = YES\n')
         g.write('CUDA_CXX = '+petscNvcc+'\n')
         g.write('CXXFLAGS := '+cudaFlags+' $(addprefix -Xcompiler ,$(CXXFLAGS))\n')
+        g.write('CUDA_ARCH = sm_' + self.cuda.cudaArchSingle() + '\n')
       if self.hip.found:
         self.pushLanguage('HIP')
         hipcc = self.getCompiler()
-        hipFlags = self.getCompilerFlags()
+        hipFlags = self.updatePackageCxxFlags(self.getCompilerFlags())
         self.popLanguage()
         hipFlags = re.sub(r'-std=([^\s]+) ','',hipFlags)
         g.write('MFEM_USE_HIP = YES\n')
@@ -193,13 +187,22 @@ class Configure(config.package.Package):
         g.write('MPI_LIB = '+self.mpi.libpaths+' '+self.mpi.mpilibs+'\n')
       g.close()
 
+    with open(os.path.join(configDir,'petsc.mk'),'w') as f:
+      f.write('''
+MAKEOVERRIDES := $(filter-out CXXFLAGS=%,$(MAKEOVERRIDES))
+unexport CXXFLAGS
+.PHONY: run-config
+run-config:
+\t$(MAKE) -f {mfile} config MFEM_DIR={mfemdir}
+'''.format(mfile=os.path.join(self.packageDir,'makefile'), mfemdir=self.packageDir))
+
     self.addDefine('HAVE_MFEM',1)
     self.addMakeMacro('MFEM','yes')
     self.addMakeRule('mfembuild',makedepend, \
                        ['@echo "*** Building MFEM ***"',\
                           '@${RM} ${PETSC_ARCH}/lib/petsc/conf/mfem.errorflg',\
                           '@(cd '+buildDir+' && \\\n\
-           ${OMAKE} -f '+self.packageDir+'/makefile config MFEM_DIR='+self.packageDir+' && \\\n\
+           ${OMAKE} -f '+configDir+'/petsc.mk run-config && \\\n\
            ${OMAKE} clean && \\\n\
            '+self.make.make_jnp+') > ${PETSC_ARCH}/lib/petsc/conf/mfem.log 2>&1 || \\\n\
              (echo "**************************ERROR*************************************" && \\\n\
@@ -216,7 +219,7 @@ class Configure(config.package.Package):
              echo "********************************************************************" && \\\n\
              exit 1)'])
 
-    if self.argDB['prefix']:
+    if self.argDB['prefix'] and not 'package-prefix-hash' in self.argDB:
       self.addMakeRule('mfem-build','')
       self.addMakeRule('mfem-install','mfembuild mfeminstall')
     else:
