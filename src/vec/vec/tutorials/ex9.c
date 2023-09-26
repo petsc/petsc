@@ -1,4 +1,3 @@
-
 static char help[] = "Demonstrates use of VecCreateGhost().\n\n";
 
 /*

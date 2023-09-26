@@ -1,4 +1,3 @@
-
 static char help[] = "Tests MatMPIBAIJ format in sequential run \n";
 
 #include <petscmat.h>

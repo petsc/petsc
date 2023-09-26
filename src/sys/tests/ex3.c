@@ -1,4 +1,3 @@
-
 static char help[] = "Tests catching of floating point exceptions.\n\n";
 
 #include <petscsys.h>

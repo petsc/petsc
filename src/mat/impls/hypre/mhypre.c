@@ -1,4 +1,3 @@
-
 /*
     Creates hypre ijmatrix from PETSc matrix
 */

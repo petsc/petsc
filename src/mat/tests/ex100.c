@@ -1,4 +1,3 @@
-
 static char help[] = "Tests various routines in MatMAIJ format.\n";
 
 #include <petscmat.h>

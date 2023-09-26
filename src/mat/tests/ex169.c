@@ -1,4 +1,3 @@
-
 static char help[] = "Test memory leak when duplicating a redundant matrix.\n\n";
 
 /*

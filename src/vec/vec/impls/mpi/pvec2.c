@@ -1,4 +1,3 @@
-
 /*
      Code for some of the parallel vector primitives.
 */

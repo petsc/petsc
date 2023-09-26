@@ -1,4 +1,3 @@
-
 static char help[] = "Tests converting a matrix to another format with MatConvert().\n\n";
 
 #include <petscmat.h>

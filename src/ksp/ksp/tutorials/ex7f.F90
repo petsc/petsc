@@ -1,4 +1,3 @@
-
 ! Block Jacobi preconditioner for solving a linear system in parallel with KSP
 ! The code indicates the procedures for setting the particular block sizes and
 ! for using different linear solvers on the individual blocks

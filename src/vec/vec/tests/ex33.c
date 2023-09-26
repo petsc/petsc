@@ -1,4 +1,3 @@
-
 static char help[] = "Tests the routines VecScatterCreateToAll(), VecScatterCreateToZero()\n\n";
 
 #include <petscvec.h>

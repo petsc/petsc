@@ -1,4 +1,3 @@
-
 #include <petsc/private/pcimpl.h> /*I "petscpc.h" I*/
 
 typedef enum {

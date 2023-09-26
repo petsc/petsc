@@ -1,4 +1,3 @@
-
 static char help[] = "Demonstrates creating a blocked index set.\n\n";
 
 #include <petscis.h>

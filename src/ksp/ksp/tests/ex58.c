@@ -1,4 +1,3 @@
-
 static char help[] = "Solves a tridiagonal linear system with KSP.\n\n";
 
 /*

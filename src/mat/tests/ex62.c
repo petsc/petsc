@@ -1,4 +1,3 @@
-
 static char help[] = "Test Matrix products for AIJ matrices\n\
 Input arguments are:\n\
   -fA <input_file> -fB <input_file> -fC <input_file>: file to load\n\n";

@@ -1,4 +1,3 @@
-
 static char help[] = "Tests repeated solving linear system on 2 by 2 matrix provided by MUMPS developer, Dec 17, 2012.\n\n";
 /*
 We have investigated the problem further, and we have

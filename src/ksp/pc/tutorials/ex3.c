@@ -1,4 +1,3 @@
-
 static char help[] = "Test PC redistribute on matrix with load imbalance. \n\
                       Modified from src/ksp/ksp/tutorials/ex2.c.\n\
 Input parameters include:\n\

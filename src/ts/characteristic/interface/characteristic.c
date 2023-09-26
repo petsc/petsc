@@ -1,4 +1,3 @@
-
 #include <petsc/private/characteristicimpl.h> /*I "petsccharacteristic.h" I*/
 #include <petscdmda.h>
 #include <petscviewer.h>

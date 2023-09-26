@@ -1,4 +1,3 @@
-
 static char help[] = "Demonstrates calling Trilinos and then PETSc in the same program.\n\n";
 
 /*

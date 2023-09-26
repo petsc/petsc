@@ -5,4 +5,3 @@
 !DEC$ ATTRIBUTES DLLEXPORT::MPI_IN_PLACE
 #endif
         end module
-

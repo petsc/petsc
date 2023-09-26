@@ -1,4 +1,3 @@
-
 static char help[] = "Tests PC and KSP on a tridiagonal matrix.  Note that most\n\
 users should employ the KSP interface instead of using PC directly.\n\n";
 

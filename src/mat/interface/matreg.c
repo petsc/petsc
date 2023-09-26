@@ -1,4 +1,3 @@
-
 /*
      Mechanism for register PETSc matrix types
 */

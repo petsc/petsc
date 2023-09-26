@@ -1,4 +1,3 @@
-
 /*
   Contains the data structure for plotting a bargraph in a window with an axis.
 */

@@ -1,4 +1,3 @@
-
 /*
   This file provides high performance routines for the Inode format (compressed sparse row)
   by taking advantage of rows with identical nonzero structure (I-nodes).

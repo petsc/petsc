@@ -1,4 +1,3 @@
-
 !    Description: A star forest is a simple tree with one root and zero or more leaves.
 !    Many common communication patterns can be expressed as updates of rootdata using leafdata and vice-versa.
 !     This example creates a star forest, communicates values using the graph  views the graph, then destroys it.

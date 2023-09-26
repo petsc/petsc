@@ -1,4 +1,3 @@
-
 static char help[] = "Demonstrates PetscOptionsGetViewer().\n\n";
 
 #include <petscviewer.h>

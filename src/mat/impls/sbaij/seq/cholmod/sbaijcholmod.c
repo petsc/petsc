@@ -1,4 +1,3 @@
-
 /*
    Provides an interface to the CHOLMOD sparse solver available through SuiteSparse version 4.2.1
 

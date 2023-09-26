@@ -1,4 +1,3 @@
-
 static char help[] = "Tests MatTranspose()\n\n";
 
 #include <petscmat.h>

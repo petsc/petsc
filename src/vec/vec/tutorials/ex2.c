@@ -1,4 +1,3 @@
-
 static char help[] = "Builds a parallel vector with 1 component on the first processor, 2 on the second, etc.\n\
   Then each processor adds one to all elements except the last rank.\n\n";
 

@@ -1,4 +1,3 @@
-
 /*
     Routines used for the orthogonalization of the Hessenberg matrix.
 

@@ -94,4 +94,3 @@
 
        MPIUNI_FInt MPI_MAX_PROCESSOR_NAME
        parameter (MPI_MAX_PROCESSOR_NAME=128-1)
-

@@ -1,4 +1,3 @@
-
 /*
    Factorization code for BAIJ format.
  */

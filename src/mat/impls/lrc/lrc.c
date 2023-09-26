@@ -1,4 +1,3 @@
-
 #include <petsc/private/matimpl.h> /*I "petscmat.h" I*/
 
 PETSC_EXTERN PetscErrorCode VecGetRootType_Private(Vec, VecType *);

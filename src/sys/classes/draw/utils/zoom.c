@@ -1,4 +1,3 @@
-
 #include <petscdraw.h> /*I "petscdraw.h"  I*/
 
 /*@C

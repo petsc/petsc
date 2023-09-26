@@ -1,4 +1,3 @@
-
 static char help[] = "Test MatAXPY()\n\n";
 
 #include <petscmat.h>

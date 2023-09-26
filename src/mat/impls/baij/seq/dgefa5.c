@@ -1,4 +1,3 @@
-
 /*
       Inverts 5 by 5 matrix using gaussian elimination with partial pivoting.
 

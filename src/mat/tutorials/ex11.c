@@ -1,4 +1,3 @@
-
 static char help[] = "Tests MatMeshToDual()\n\n";
 
 /*

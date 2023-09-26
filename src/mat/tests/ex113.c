@@ -1,4 +1,3 @@
-
 static char help[] = "Tests sequential and parallel MatMatMult() and MatAXPY(...,SUBSET_NONZERO_PATTERN) \n\
 Input arguments are:\n\
   -f <input_file>  : file to load\n\n";

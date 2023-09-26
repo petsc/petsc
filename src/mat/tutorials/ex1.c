@@ -1,4 +1,3 @@
-
 static char help[] = "Reads a PETSc matrix and vector from a file and reorders it.\n\
   -f0 <input_file> : first file to load (small system)\n\
   -f1 <input_file> : second file to load (larger system)\n\n";

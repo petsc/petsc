@@ -1,4 +1,3 @@
-
 static char help[] = "Newton's method to solve a two-variable system that comes from the Rosenbrock function.\n\n";
 
 /*

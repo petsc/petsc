@@ -1,4 +1,3 @@
-
 static char help[] = "Tests signal handling.\n\n";
 
 #include <petscsys.h>

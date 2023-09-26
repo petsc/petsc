@@ -1,4 +1,3 @@
-
 /*
     Creates hypre ijvector from PETSc vector
 */

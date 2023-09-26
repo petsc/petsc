@@ -1,4 +1,3 @@
-
 /*
     Note that for the complex numbers version, the VecDot() arguments
     within the code MUST remain in the order given for correct computation

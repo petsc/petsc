@@ -1,4 +1,3 @@
-
 static char help[] = "Tests reusing MPI parallel matrices and MatGetValues().\n\
 To test the parallel matrix assembly, this example intentionally lays out\n\
 the matrix across processors differently from the way it is assembled.\n\

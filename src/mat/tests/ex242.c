@@ -1,4 +1,3 @@
-
 static char help[] = "Tests ScaLAPACK interface.\n\n";
 
 #include <petscmat.h>

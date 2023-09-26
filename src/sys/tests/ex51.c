@@ -1,4 +1,3 @@
-
 static char help[] = "Demonstrates PetscFileRetrieve().\n\n";
 
 #include <petscsys.h>

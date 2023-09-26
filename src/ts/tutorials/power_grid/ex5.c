@@ -1,4 +1,3 @@
-
 static char help[] = "Basic equation for an induction generator driven by a wind turbine.\n";
 
 /*F

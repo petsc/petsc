@@ -1,4 +1,3 @@
-
 const char help[] = "Test DMPlexCoordinatesToReference().\n\n";
 
 #include <petscdm.h>

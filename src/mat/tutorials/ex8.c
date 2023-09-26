@@ -1,4 +1,3 @@
-
 static char help[] = "Shows how to add a new MatOperation to AIJ MatType\n\n";
 
 #include <petscmat.h>

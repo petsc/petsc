@@ -1,4 +1,3 @@
-
 #include <petscvec.h>
 #include <petsc/private/vecimpl.h>
 PETSC_EXTERN PetscErrorCode VecCreate_Seq(Vec);

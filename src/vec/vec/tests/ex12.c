@@ -1,4 +1,3 @@
-
 static char help[] = "Scatters from a sequential vector to a parallel vector.\n\
 This does case when we are merely selecting the local part of the\n\
 parallel vector.\n";

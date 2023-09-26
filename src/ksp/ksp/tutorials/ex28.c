@@ -1,4 +1,3 @@
-
 static char help[] = "Solves 1D wave equation using multigrid.\n\n";
 
 #include <petscdm.h>

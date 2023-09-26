@@ -1,4 +1,3 @@
-
 static char help[] = "Tests PetscGlobalMinMax\n\n";
 
 #include <petscsys.h>

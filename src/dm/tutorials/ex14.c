@@ -1,4 +1,3 @@
-
 static char help[] = "Tests DMCreateDomainDecomposition.\n\n";
 
 /*

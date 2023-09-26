@@ -1,4 +1,3 @@
-
 static char help[] = "Demonstrates PetscFOpens() and PetscSynchronizedFGets().\n\n";
 
 #include <petscsys.h>

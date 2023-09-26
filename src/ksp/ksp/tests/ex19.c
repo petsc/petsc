@@ -1,4 +1,3 @@
-
 static char help[] = "Solvers Laplacian with multigrid, bad way.\n\
   -mx <xg>, where <xg> = number of grid points in the x-direction\n\
   -my <yg>, where <yg> = number of grid points in the y-direction\n\

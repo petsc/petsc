@@ -1,4 +1,3 @@
-
 /*
    Basic functions for basic parallel dense matrices.
    Portions of this code are under:

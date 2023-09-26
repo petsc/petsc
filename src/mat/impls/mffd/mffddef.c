@@ -1,4 +1,3 @@
-
 /*
   Implements the DS PETSc approach for computing the h
   parameter used with the finite difference based matrix-free

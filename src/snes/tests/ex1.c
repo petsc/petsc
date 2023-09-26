@@ -1,4 +1,3 @@
-
 static char help[] = "Solves the nonlinear system, the Bratu (SFI - solid fuel ignition) problem in a 2D rectangular domain.\n\
 This example also illustrates the use of matrix coloring.  Runtime options include:\n\
   -par <parameter>, where <parameter> indicates the problem's nonlinearity\n\

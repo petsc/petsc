@@ -1,4 +1,3 @@
-
 #include <petsc/private/isimpl.h> /*I  "petscis.h"  I*/
 PETSC_INTERN PetscErrorCode ISCreate_General(IS);
 PETSC_INTERN PetscErrorCode ISCreate_Stride(IS);

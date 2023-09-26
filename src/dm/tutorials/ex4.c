@@ -1,4 +1,3 @@
-
 static char help[] = "Demonstrates various vector routines for DMDA.\n\n";
 
 /*

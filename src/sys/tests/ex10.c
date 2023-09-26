@@ -1,4 +1,3 @@
-
 static char help[] = "Tests PetscArraymove()/PetscMemmove()\n";
 
 #include <petscsys.h>

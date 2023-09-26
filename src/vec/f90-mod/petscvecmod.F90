@@ -1,4 +1,3 @@
-
         module petscisdefdummy
         use petscsysdef
 #include <../src/vec/f90-mod/petscis.h>

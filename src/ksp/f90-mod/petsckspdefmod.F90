@@ -1,4 +1,3 @@
-
         module petscpcdefdummy
         use petscdmdef
         use petscmatdef
@@ -73,4 +72,3 @@
           type(tKSP), intent(in) :: A,B
           kspequals = (A%v .eq. B%v)
         end function
-

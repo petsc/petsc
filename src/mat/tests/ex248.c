@@ -1,4 +1,3 @@
-
 static char help[] = "Tests MatSeqAIJKron.\n\n";
 
 #include <petscmat.h>

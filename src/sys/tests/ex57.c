@@ -1,4 +1,3 @@
-
 static char help[] = "Tests PetscCommGetComm().\n";
 
 #include <petscsys.h>

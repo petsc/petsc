@@ -1,4 +1,3 @@
-
 /*
     We define the memory operations here. The reason we just do not use
   the standard memory routines in the PETSc code is that on some machines

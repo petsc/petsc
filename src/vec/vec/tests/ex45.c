@@ -1,4 +1,3 @@
-
 static char help[] = "Demonstrates VecStrideSubSetScatter() and VecStrideSubSetGather().\n\n";
 
 /*

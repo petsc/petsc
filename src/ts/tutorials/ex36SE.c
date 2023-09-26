@@ -1,4 +1,3 @@
-
 static char help[] = "Transistor amplifier (semi-explicit).\n";
 
 /*F

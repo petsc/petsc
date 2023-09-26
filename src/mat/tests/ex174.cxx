@@ -1,4 +1,3 @@
-
 static char help[] = "Tests MatConvert(), MatLoad() for MATELEMENTAL interface.\n\n";
 /*
  Example:

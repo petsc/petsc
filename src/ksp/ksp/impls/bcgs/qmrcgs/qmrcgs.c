@@ -1,4 +1,3 @@
-
 /*
     This file implements QMRCGS (QMRCGStab).
 

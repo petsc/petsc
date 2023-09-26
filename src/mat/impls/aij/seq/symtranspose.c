@@ -1,4 +1,3 @@
-
 /*
   Defines transpose routines for SeqAIJ matrices.
 */

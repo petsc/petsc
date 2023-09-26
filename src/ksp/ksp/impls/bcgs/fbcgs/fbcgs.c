@@ -1,4 +1,3 @@
-
 /*
     This file implements flexible BiCGStab (FBiCGStab).
 */

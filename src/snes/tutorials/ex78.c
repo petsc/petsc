@@ -1,4 +1,3 @@
-
 static char help[] = "Newton methods to solve u''  = f in parallel with periodic boundary conditions.\n\n";
 
 /*

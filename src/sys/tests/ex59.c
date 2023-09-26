@@ -1,4 +1,3 @@
-
 static char help[] = "Tests not trapping an underflow\n\n";
 
 #include <petscsys.h>

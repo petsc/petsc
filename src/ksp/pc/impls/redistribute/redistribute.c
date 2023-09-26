@@ -1,4 +1,3 @@
-
 /*
   This file defines a "solve the problem redistributely on each subgroup of processor" preconditioner.
 */

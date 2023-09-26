@@ -1,4 +1,3 @@
-
 static char help[] = "Solves heat equation in 1d.\n";
 
 /*

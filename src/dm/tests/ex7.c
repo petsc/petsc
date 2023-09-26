@@ -1,4 +1,3 @@
-
 static char help[] = "Tests DMLocalToLocalxxx() for DMDA.\n\n";
 
 #include <petscdmda.h>

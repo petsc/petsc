@@ -1,4 +1,3 @@
-
 static char help[] = "Tests SNESLinesearch handling of Inf/Nan.\n\n";
 
 /*

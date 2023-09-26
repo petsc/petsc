@@ -1,4 +1,3 @@
-
 static char help[] = "Demonstrates creating a stride index set.\n\n";
 
 /*

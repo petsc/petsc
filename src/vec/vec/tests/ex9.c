@@ -1,4 +1,3 @@
-
 static char help[] = "Scatters from a parallel vector to a sequential vector.\n\n";
 
 #include <petscvec.h>

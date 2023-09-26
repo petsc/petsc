@@ -1,4 +1,3 @@
-
 static char help[] = "Tests PetscSortIntWithPermutation().\n\n";
 
 #include <petscsys.h>

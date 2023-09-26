@@ -1,4 +1,3 @@
-
 static char help[] = "Reaction Equation from Chemistry\n";
 
 /*

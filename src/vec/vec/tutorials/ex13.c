@@ -1,4 +1,3 @@
-
 static char help[] = "Demonstrates VecStrideSum().\n\n";
 
 /*

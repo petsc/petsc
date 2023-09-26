@@ -1,4 +1,3 @@
-
 !     Contributed by leonardo.mutti01@universitadipavia.it
       program main
 #include <petsc/finclude/petscsys.h>

@@ -1,4 +1,3 @@
-
 static char help[] = "Tests retrieving unused PETSc options.\n\n";
 
 #include <petscsys.h>

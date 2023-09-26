@@ -1,4 +1,3 @@
-
 static char help[] = "Tests PetscViewerHDF5 VecView()/VecLoad() function.\n\n";
 
 #include <petscviewer.h>

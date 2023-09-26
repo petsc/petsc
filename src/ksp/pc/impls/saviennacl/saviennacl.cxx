@@ -1,4 +1,3 @@
-
 /*
    Include files needed for the ViennaCL Smoothed Aggregation preconditioner:
      pcimpl.h - private include file intended for use by all preconditioners

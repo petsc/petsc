@@ -1,4 +1,3 @@
-
 static char help[] = "Tests MATSEQDENSECUDA\n\n";
 
 #include <petscmat.h>

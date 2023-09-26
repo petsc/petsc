@@ -1,4 +1,3 @@
-
 /*
      Provides the code that allows PETSc users to register their own
   sequential matrix Ordering routines.

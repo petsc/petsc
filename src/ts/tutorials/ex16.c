@@ -1,4 +1,3 @@
-
 static char help[] = "Solves the van der Pol equation and demonstrate IMEX.\n\
 Input parameters include:\n\
       -mu : stiffness parameter\n\n";

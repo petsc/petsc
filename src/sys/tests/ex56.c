@@ -1,4 +1,3 @@
-
 static char help[] = "Tests PetscHasExternalPackage().\n\n";
 
 #include <petscsys.h>

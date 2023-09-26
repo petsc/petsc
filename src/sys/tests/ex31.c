@@ -1,4 +1,3 @@
-
 static char help[] = "Tests PetscGetFullPath().\n\n";
 
 #include <petscsys.h>

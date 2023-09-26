@@ -1,4 +1,3 @@
-
 #include <../src/mat/utils/freespace.h>
 
 PetscErrorCode PetscFreeSpaceGet(PetscInt n, PetscFreeSpaceList *list)

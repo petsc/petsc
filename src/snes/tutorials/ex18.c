@@ -1,4 +1,3 @@
-
 static char help[] = "Nonlinear Radiative Transport PDE with multigrid in 2d.\n\
 Uses 2-dimensional distributed arrays.\n\
 A 2-dim simplified Radiative Transport test problem is used, with analytic Jacobian. \n\

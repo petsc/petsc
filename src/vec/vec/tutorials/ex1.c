@@ -1,4 +1,3 @@
-
 static char help[] = "Basic vector routines.\n\n";
 
 /*

@@ -1,4 +1,3 @@
-
 static char help[] = "Test MatCreate() with MAT_STRUCTURE_ONLY .\n\n";
 
 #include <petscmat.h>

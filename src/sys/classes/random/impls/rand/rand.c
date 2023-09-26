@@ -1,4 +1,3 @@
-
 #include <petsc/private/randomimpl.h>
 
 static PetscErrorCode PetscRandomSeed_Rand(PetscRandom r)

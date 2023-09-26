@@ -1,4 +1,3 @@
-
 #include <petsc/private/fortranimpl.h>
 #include <petscbag.h>
 

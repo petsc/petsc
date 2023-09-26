@@ -1,4 +1,3 @@
-
 static char help[] = "Power grid stability analysis of WECC 9 bus system.\n\
 This example is based on the 9-bus (node) example given in the book Power\n\
 Systems Dynamics and Stability (Chapter 7) by P. Sauer and M. A. Pai.\n\

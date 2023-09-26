@@ -1,4 +1,3 @@
-
 #include <petsc/private/tsimpl.h> /*I "petscts.h"  I*/
 
 static PetscErrorCode OutputBIN(MPI_Comm comm, const char *filename, PetscViewer *viewer)

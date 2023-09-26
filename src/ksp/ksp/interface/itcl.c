@@ -1,4 +1,3 @@
-
 /*
     Code for setting KSP options from the options database.
 */

@@ -1,4 +1,3 @@
-
 /*
    Defines a block Jacobi preconditioner.
 */

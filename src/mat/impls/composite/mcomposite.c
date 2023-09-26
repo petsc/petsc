@@ -1,4 +1,3 @@
-
 #include <petsc/private/matimpl.h> /*I "petscmat.h" I*/
 
 const char *const MatCompositeMergeTypes[] = {"left", "right", "MatCompositeMergeType", "MAT_COMPOSITE_", NULL};

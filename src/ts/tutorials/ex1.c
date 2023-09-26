@@ -1,4 +1,3 @@
-
 static char help[] = "Solves the time independent Bratu problem using pseudo-timestepping.";
 
 /* ------------------------------------------------------------------------

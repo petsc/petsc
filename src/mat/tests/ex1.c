@@ -1,4 +1,3 @@
-
 static char help[] = "Tests LU, Cholesky, and QR factorization and MatMatSolve() for a sequential dense matrix. \n\
                       For MATSEQDENSE matrix, the factorization is just a thin wrapper to LAPACK.       \n\
                       For MATSEQDENSECUDA, it uses cusolverDn routines \n\n";

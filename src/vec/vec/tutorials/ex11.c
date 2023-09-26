@@ -1,4 +1,3 @@
-
 static char help[] = "Demonstrates VecStrideNorm().\n\n";
 
 /*

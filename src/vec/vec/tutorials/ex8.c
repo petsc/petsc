@@ -1,4 +1,3 @@
-
 static char help[] = "Demonstrates using a local ordering to set values into a parallel vector.\n\n";
 
 /*

@@ -1,4 +1,3 @@
-
 static char help[] = "Extract submatrices using unsorted indices. For SEQSBAIJ either sort both rows and columns, or sort none.\n\n";
 /*
    Take a 4x4 grid and form a 5-point stencil graph Laplacian over it.

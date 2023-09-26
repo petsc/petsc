@@ -1,4 +1,3 @@
-
 #include <petsc/private/petscimpl.h>
 #include <petsc/private/loghandlerimpl.h>
 

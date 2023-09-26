@@ -1,4 +1,3 @@
-
 static char help[] = "Time-dependent PDE in 2d. Modified from ex13.c for illustrating how to solve DAEs. \n";
 /*
    u_t = uxx + uyy

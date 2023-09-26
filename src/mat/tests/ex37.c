@@ -1,4 +1,3 @@
-
 static char help[] = "Tests MatCopy() and MatStore/RetrieveValues().\n\n";
 
 #include <petscmat.h>

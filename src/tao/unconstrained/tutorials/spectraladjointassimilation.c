@@ -1,4 +1,3 @@
-
 static char help[] = "Solves a simple data assimilation problem with one dimensional advection diffusion equation using TSAdjoint\n\n";
 
 /*

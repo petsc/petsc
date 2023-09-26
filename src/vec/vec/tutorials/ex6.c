@@ -1,4 +1,3 @@
-
 static char help[] = "Writes an array to a file, then reads an array from a file, then forms a vector.\n\n";
 
 /*

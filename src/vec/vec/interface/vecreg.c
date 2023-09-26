@@ -1,4 +1,3 @@
-
 #include <petsc/private/vecimpl.h> /*I "petscvec.h"  I*/
 
 PetscFunctionList VecList = NULL;

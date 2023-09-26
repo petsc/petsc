@@ -1,4 +1,3 @@
-
 static char help[] = "Tests MatCreateSubMatrices() for SBAIJ matrices\n\n";
 
 #include <petscmat.h>

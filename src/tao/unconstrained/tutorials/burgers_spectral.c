@@ -1,4 +1,3 @@
-
 static char help[] = "Solves a simple data assimilation problem with one dimensional Burger's equation using TSAdjoint\n\n";
 
 /*

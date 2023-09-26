@@ -1,4 +1,3 @@
-
 static char help[] = "Tests copying and ordering uniprocessor row-based sparse matrices.\n\n";
 
 #include <petscmat.h>

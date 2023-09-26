@@ -1,4 +1,3 @@
-
 static char help[] = "Tests ISFilter().\n\n";
 
 #include <petscis.h>

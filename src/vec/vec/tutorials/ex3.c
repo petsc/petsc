@@ -1,4 +1,3 @@
-
 static char help[] = "Parallel vector layout.\n\n";
 
 /*

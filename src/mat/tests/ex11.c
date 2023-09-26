@@ -1,4 +1,3 @@
-
 static char help[] = "Tests the use of MatZeroRows() for uniprocessor matrices.\n\n";
 
 #include <petscmat.h>

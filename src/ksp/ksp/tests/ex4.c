@@ -1,4 +1,3 @@
-
 static char help[] = "Bilinear elements on the unit square for the Laplacian. Input arguments are:\n\
   -m <size> : problem size\n\n";
 

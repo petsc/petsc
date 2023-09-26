@@ -1,4 +1,3 @@
-
 static char help[] = "Tests parallel vector assembly.  Input arguments are\n\
   -n <length> : local vector length\n\n";
 

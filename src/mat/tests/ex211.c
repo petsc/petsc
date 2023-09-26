@@ -1,4 +1,3 @@
-
 static char help[] = "Tests MatCreateSubmatrix() in parallel.";
 
 #include <petscmat.h>

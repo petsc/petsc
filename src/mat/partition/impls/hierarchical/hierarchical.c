@@ -1,4 +1,3 @@
-
 #include <../src/mat/impls/adj/mpi/mpiadj.h> /*I "petscmat.h" I*/
 #include <petscsf.h>
 #include <petsc/private/matimpl.h>

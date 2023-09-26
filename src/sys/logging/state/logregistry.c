@@ -1,4 +1,3 @@
-
 #include <petsc/private/logimpl.h> /*I "petsclog.h" I*/
 
 #define PETSC_LOG_RESIZABLE_ARRAY_HAS_NAME(Container, Entry, Key, Equal) \

@@ -1,4 +1,3 @@
-
 /*
     This file implements FGMRES (a Generalized Minimal Residual) method.
     Reference:  Saad, 1993.

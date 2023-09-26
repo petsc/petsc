@@ -1,4 +1,3 @@
-
 static char help[] = "Tests automatic allocation of matrix storage space.\n\n";
 
 #include <petscmat.h>

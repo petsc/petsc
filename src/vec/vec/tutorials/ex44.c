@@ -1,4 +1,3 @@
-
 static char help[] = "Test VecConcatenate both in serial and parallel.\n";
 
 #include <petscvec.h>

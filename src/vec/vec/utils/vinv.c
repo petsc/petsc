@@ -1,4 +1,3 @@
-
 /*
      Some useful vector utility functions.
 */

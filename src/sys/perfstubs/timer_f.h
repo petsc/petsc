@@ -53,4 +53,3 @@
 
 ! // defined(PERFSTUBS_USE_TIMERS)
 #endif
-

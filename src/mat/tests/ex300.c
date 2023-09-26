@@ -1,4 +1,3 @@
-
 static char help[] = "Show MatShift BUG happening after copying a matrix with no rows on a process";
 /*
    Contributed by: Eric Chamberland

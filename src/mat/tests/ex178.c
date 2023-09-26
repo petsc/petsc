@@ -1,4 +1,3 @@
-
 static char help[] = "Tests MatInvertVariableBlockEnvelope()\n\n";
 
 #include <petscmat.h>

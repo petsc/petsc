@@ -1,4 +1,3 @@
-
       program main
 #include <petsc/finclude/petscvec.h>
       use petscvec

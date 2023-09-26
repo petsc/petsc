@@ -1,4 +1,3 @@
-
 static char help[] = "Tests MatIncreaseOverlap(), MatCreateSubMatrices() for parallel AIJ and BAIJ formats.\n";
 
 #include <petscmat.h>

@@ -1,4 +1,3 @@
-
 static char help[] = "Tests MatSetValuesBlockedStencil() in 3d.\n\n";
 
 #include <petscmat.h>
