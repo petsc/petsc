@@ -3,7 +3,7 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.download         = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/spai-3.0-p1.tar.gz']
+    self.download         = ['https://web.cels.anl.gov/projects/petsc/download/externalpackages/spai-3.0-p1.tar.gz']
     self.functions        = ['bspai']
     self.includes         = ['spai.h']
     self.liblist          = [['libspai.a']]

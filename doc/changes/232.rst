@@ -79,6 +79,6 @@ Changes: 2.3.2
 
 .. rubric:: Fortran:
 
-.. rubric:: `ExternalPackages <https://www.mcs.anl.gov/petsc/miscellaneous/external.html>`__:
+.. rubric:: ExternalPackages:
 
 -  SPRNG support added.

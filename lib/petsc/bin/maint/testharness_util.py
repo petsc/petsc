@@ -74,7 +74,7 @@ def walktree(top, action, datafilespath=None):
     if action == 'print_datafiles':
         print('\n'.join(alldatafiles))
     if action == 'gen_dl_path':
-        ftproot='http://ftp.mcs.anl.gov/pub/petsc/Datafiles/'
+        ftproot='https://web.cels.anl.gov/projects/petsc/download/Datafiles/'
         for dfile in alldatafiles:
            fulldfile=os.path.join(datafilespath,dfile)
            if not os.path.exists(fulldfile):

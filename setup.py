@@ -268,7 +268,7 @@ def version():
 def tarball():
     VERSION = version()
     if '.dev' in VERSION: return None
-    return ('https://ftp.mcs.anl.gov/pub/petsc/release-snapshots//'
+    return ('https://web.cels.anl.gov/projects/petsc/download/release-snapshots/'
             'petsc-%s.tar.gz#egg=petsc-%s' % (VERSION, VERSION))
 
 description = __doc__.split('\n')[1:-1]; del description[1:3]

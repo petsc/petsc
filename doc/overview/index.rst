@@ -25,3 +25,4 @@ managing parallel PDE discretizations including parallel matrix and vector assem
    ../manualpages/index
    ../changes/index
    ../manualpages/singleindex
+   previous_release_docs

@@ -5,7 +5,7 @@ class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.GNUPackage.__init__(self, framework)
     self.download          = ['http://concurrencykit.org/releases/ck-0.4.5.tar.gz',
-                              'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/ck-0.4.5.tar.gz']
+                              'https://web.cels.anl.gov/projects/petsc/download/externalpackages/ck-0.4.5.tar.gz']
     self.functions         = []
     self.includes          = ['ck_spinlock.h']
     self.liblist           = [['libck.a']]

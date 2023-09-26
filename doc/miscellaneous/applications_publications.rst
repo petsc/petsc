@@ -83,9 +83,9 @@ components.
   discussed at http://mdolab.engin.umich.edu
 
 * `Fast deformation
-  <ftp://ftp.mcs.anl.gov/pub/petsc/images/FoldingAndErosion_FastDeformation.mov>`__ and
+  <https://web.cels.anl.gov/projects/petsc/download/images/FoldingAndErosion_FastDeformation.mov>`__ and
   `slower deformation
-  <ftp://ftp.mcs.anl.gov/pub/petsc/images/FoldingAndErosion_SlowerDeformationSteeperInitialSlope.mov>`__
+  <https://web.cels.anl.gov/projects/petsc/download/images/FoldingAndErosion_SlowerDeformationSteeperInitialSlope.mov>`__
   from the code LaMEM developed by Boris Kaus, Johannes Gutenberg University of Mainz,
   Mainz, Germany.
 

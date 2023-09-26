@@ -8,7 +8,7 @@ class Configure(config.package.CMakePackage):
     self.gitcommit     = self.version
     self.download      = ['git://https://gitlab.com/libeigen/eigen.git',
                           'https://gitlab.com/libeigen/eigen/-/archive/'+self.gitcommit+'/eigen-'+self.gitcommit+'.tar.gz',
-                          'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/eigen-'+self.gitcommit+'.tar.gz']
+                          'https://web.cels.anl.gov/projects/petsc/download/externalpackages/eigen-'+self.gitcommit+'.tar.gz']
     self.functions     = []
     self.includes      = ['Eigen/Core']
     self.liblist       = []
