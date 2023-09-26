@@ -1,4 +1,3 @@
-
 static char help[] = "Tests late MatSetBlockSizes.\n\n";
 
 #include <petscmat.h>

@@ -1,4 +1,3 @@
-
 #include <petscconf.h>
 #include <petscdt.h>                /*I "petscdt.h" I*/
 #include <petsc/private/dmmbimpl.h> /*I  "petscdmmoab.h"   I*/

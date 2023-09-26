@@ -1,4 +1,3 @@
-
 static char help[] = "Tests setup PCFIELDSPLIT with blocked IS.\n\n";
 /*
  Contributed by Hoang Giang Bui, June 2017.

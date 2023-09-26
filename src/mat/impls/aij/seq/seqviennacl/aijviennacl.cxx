@@ -1,4 +1,3 @@
-
 /*
     Defines the basic matrix operations for the AIJ (compressed row)
   matrix storage format.

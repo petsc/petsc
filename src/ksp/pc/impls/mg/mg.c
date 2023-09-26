@@ -1,4 +1,3 @@
-
 /*
     Defines the multigrid preconditioner interface.
 */

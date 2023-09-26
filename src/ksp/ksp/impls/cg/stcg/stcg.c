@@ -1,4 +1,3 @@
-
 #include <../src/ksp/ksp/impls/cg/stcg/stcgimpl.h> /*I "petscksp.h" I*/
 
 #define STCG_PRECONDITIONED_DIRECTION   0

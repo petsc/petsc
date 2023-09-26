@@ -1,4 +1,3 @@
-
 static char help[] = "Solves a tridiagonal linear system.  Designed to compare SOR for different Mat impls.\n\n";
 
 #include <petscksp.h>

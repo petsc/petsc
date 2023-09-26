@@ -1,4 +1,3 @@
-
 /* Contributed by - Mark Adams */
 
 #define PETSC_SKIP_PETSCTABLE_DEPRECATION_WARNING

@@ -1,4 +1,3 @@
-
 static char help[] = "Tests PetscTreeProcess()";
 
 #include <petscsys.h>

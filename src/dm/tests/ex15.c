@@ -1,4 +1,3 @@
-
 static char help[] = "Tests DMDA interpolation.\n\n";
 
 #include <petscdm.h>

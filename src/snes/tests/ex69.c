@@ -1,4 +1,3 @@
-
 static char help[] = "Tests recovery from domain errors in MatMult() and PCApply()\n\n";
 
 /*

@@ -1,4 +1,3 @@
-
 static char help[] = "Appends to an ASCII file.\n\n";
 
 #include <petscviewer.h>

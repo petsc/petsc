@@ -1,4 +1,3 @@
-
 static char help[] = "Tests MatLoad() MatView() for MPIBAIJ.\n\n";
 
 #include <petscmat.h>

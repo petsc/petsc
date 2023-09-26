@@ -1,4 +1,3 @@
-
 static char help[] = "Solves the trivial ODE du/dt = 1, u(0) = 0. \n\n";
 /*
   This example tests TSEvent's capability to handle complicated cases.

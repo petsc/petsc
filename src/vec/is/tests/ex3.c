@@ -1,4 +1,3 @@
-
 static char help[] = "Tests ISSetBlockSize() on ISBlock().\n\n";
 
 #include <petscis.h>

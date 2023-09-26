@@ -1,4 +1,3 @@
-
 static char help[] = "Tests VecSetValues() and VecSetValuesBlocked() on MPI vectors.\n\
 Where at least a couple of mallocs will occur in the stash code.\n\n";
 

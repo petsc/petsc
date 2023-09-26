@@ -1,4 +1,3 @@
-
 static char help[] = "Tests dynamic loading of viewer.\n\n";
 
 #include <petscsys.h>

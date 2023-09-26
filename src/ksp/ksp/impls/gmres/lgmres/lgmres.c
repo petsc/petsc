@@ -1,4 +1,3 @@
-
 #include <../src/ksp/ksp/impls/gmres/lgmres/lgmresimpl.h> /*I "petscksp.h" I*/
 
 static PetscErrorCode KSPLGMRESGetNewVectors(KSP, PetscInt);

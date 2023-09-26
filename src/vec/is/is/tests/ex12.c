@@ -1,4 +1,3 @@
-
 static char help[] = "Tests HDF5 ISView() / ISLoad(), and ISSetLayout()\n\n";
 
 #include <petscis.h>

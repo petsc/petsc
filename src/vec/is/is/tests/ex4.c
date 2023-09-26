@@ -1,4 +1,3 @@
-
 static char help[] = "Tests ISToGeneral().\n\n";
 
 #include <petscis.h>

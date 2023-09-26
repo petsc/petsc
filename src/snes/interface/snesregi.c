@@ -1,4 +1,3 @@
-
 #include <petsc/private/snesimpl.h> /*I  "petscsnes.h"  I*/
 
 PETSC_EXTERN PetscErrorCode SNESCreate_NEWTONLS(SNES);

@@ -1,4 +1,3 @@
-
 static char help[] = "Creating a general index set.\n\n";
 
 /*

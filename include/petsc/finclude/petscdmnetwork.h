@@ -1,4 +1,3 @@
-
 !
 !  Include file for Fortran use of the DMNetwork
 !

@@ -1,4 +1,3 @@
-
 static char help[] = "Test MatAXPY and SUBSET_NONZERO_PATTERN [-different] [-skip]\n by default subset pattern is used \n\n";
 
 /* A test contributed by Jose E. Roman, Oct. 2014 */

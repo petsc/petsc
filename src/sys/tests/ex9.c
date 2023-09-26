@@ -1,4 +1,3 @@
-
 static char help[] = "Tests PetscSequentialPhaseBegin() and PetscSequentialPhaseEnd()\n";
 
 #include <petscsys.h>

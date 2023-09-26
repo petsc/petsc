@@ -1,4 +1,3 @@
-
 #include <petscmat.h>
 #include <petsc/private/matorderimpl.h>
 #include <amd.h>

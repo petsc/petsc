@@ -1,4 +1,3 @@
-
 #include <../src/mat/impls/aij/seq/aij.h>
 
 /*

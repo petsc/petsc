@@ -1,4 +1,3 @@
-
 static char help[] = "Makes a simple histogram.\n";
 
 #include <petscsys.h>

@@ -1,4 +1,3 @@
-
 static char help[] = "Demonstrates using ISLocalToGlobalMappings with block size.\n\n";
 
 #include <petscis.h>

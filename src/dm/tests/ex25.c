@@ -1,4 +1,3 @@
-
 static char help[] = "Tests DMLocalToGlobal() for dof > 1\n\n";
 
 #include <petscdm.h>

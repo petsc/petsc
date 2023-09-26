@@ -1,4 +1,3 @@
-
 static char help[] = "Tests ILU and ICC factorization with and without matrix ordering on seqaij format, and illustrates drawing of matrix sparsity structure with MatView().\n\
   Input parameters are:\n\
   -lf <level> : level of fill for ILU (default is 0)\n\

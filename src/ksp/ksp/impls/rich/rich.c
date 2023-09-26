@@ -1,4 +1,3 @@
-
 /*
             This implements Richardson Iteration.
 */

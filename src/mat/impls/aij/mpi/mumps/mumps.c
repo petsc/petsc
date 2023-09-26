@@ -1,4 +1,3 @@
-
 /*
     Provides an interface to the MUMPS sparse solver
 */

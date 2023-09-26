@@ -1,4 +1,3 @@
-
 /*
     Defines the basic matrix operations for the BAIJ (compressed row)
   matrix storage format.

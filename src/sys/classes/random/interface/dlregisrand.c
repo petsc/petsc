@@ -1,4 +1,3 @@
-
 #include <petsc/private/randomimpl.h>
 
 static PetscBool PetscRandomPackageInitialized = PETSC_FALSE;

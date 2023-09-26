@@ -1,4 +1,3 @@
-
 static char help[] = "Tests MatMult(), MatMultAdd(), MatMultTranspose().\n\
 Also MatMultTransposeAdd(), MatScale(), MatGetDiagonal(), MatDiagonalScale(), MatZeroEntries() and MatDuplicate().\n\n";
 

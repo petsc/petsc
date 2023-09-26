@@ -1,4 +1,3 @@
-
 static char help[] = "Tests MatGetColumnNorms()/Sums()/Means() for matrix read from file.";
 
 #include <petscmat.h>

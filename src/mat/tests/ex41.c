@@ -1,4 +1,3 @@
-
 static char help[] = "Tests MatIncreaseOverlap() - the parallel case. This example\n\
 is similar to ex40.c; here the index sets used are random. Input arguments are:\n\
   -f <input_file> : file to load.  For example see $PETSC_DIR/share/petsc/datafiles/matrices\n\

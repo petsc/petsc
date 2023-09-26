@@ -1,4 +1,3 @@
-
 static char help[] = "Tests PetscSynchronizedPrintf() and PetscSynchronizedFPrintf().\n\n";
 
 #include <petscsys.h>

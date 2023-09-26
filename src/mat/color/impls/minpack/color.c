@@ -1,4 +1,3 @@
-
 /*
      Routines that call the kernel minpack coloring subroutines
 */

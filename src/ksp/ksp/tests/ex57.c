@@ -1,4 +1,3 @@
-
 /*
     Tests PCFIELDSPLIT and hence VecGetRestoreArray_Nest() usage in VecScatter
 

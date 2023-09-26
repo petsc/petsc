@@ -1,4 +1,3 @@
-
 static char help[] = "Error handling for destroying PETSC_VIEWER_STDOUT_SELF.\n";
 
 #include <petscsys.h>

@@ -1,4 +1,3 @@
-
 #include <petsc/private/randomimpl.h> /*I "petscsys.h" I*/
 
 PetscFunctionList PetscRandomList              = NULL;

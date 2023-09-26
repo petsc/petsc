@@ -1,4 +1,3 @@
-
 /*
     This file contains routines for interfacing to random number generators.
     This provides more than just an interface to some system random number

@@ -1,4 +1,3 @@
-
 #include <../src/sys/classes/viewer/impls/ascii/asciiimpl.h> /*I "petscviewer.h" I*/
 
 #define QUEUESTRINGSIZE 8192

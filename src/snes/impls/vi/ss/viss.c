@@ -1,4 +1,3 @@
-
 #include <../src/snes/impls/vi/ss/vissimpl.h> /*I "petscsnes.h" I*/
 
 /*@

@@ -1,4 +1,3 @@
-
 #include <../src/snes/impls/vi/rs/virsimpl.h> /*I "petscsnes.h" I*/
 #include <petsc/private/dmimpl.h>
 #include <petsc/private/vecimpl.h>

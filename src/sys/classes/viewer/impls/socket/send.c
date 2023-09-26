@@ -1,4 +1,3 @@
-
 #include <petscsys.h>
 
 #if defined(PETSC_NEEDS_UTYPE_TYPEDEFS)

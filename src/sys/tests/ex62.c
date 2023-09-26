@@ -1,4 +1,3 @@
-
 static char help[] = "Tests `PetscGarbageKeySortedIntersect()`\n\n";
 
 #include <petscsys.h>

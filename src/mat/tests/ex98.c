@@ -1,4 +1,3 @@
-
 static char help[] = "Tests MatMPIAIJSetPreallocationCSR()\n\n";
 
 /*

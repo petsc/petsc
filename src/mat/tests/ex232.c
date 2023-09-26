@@ -1,4 +1,3 @@
-
 /* tests MatSeqSBAIJSetPreallocationCSR() and MatMPISBAIJSetPreallocationCSR() */
 
 #include <petsc.h>

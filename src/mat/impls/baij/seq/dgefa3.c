@@ -1,4 +1,3 @@
-
 /*
      Inverts 3 by 3 matrix using gaussian elimination with partial pivoting.
 

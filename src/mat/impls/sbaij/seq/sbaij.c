@@ -1,4 +1,3 @@
-
 /*
     Defines the basic matrix operations for the SBAIJ (compressed row)
   matrix storage format.

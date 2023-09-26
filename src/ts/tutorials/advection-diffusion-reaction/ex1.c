@@ -1,4 +1,3 @@
-
 static char help[] = "Nonlinear Reaction Problem from Chemistry.\n";
 
 /*F

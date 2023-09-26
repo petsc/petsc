@@ -1,4 +1,3 @@
-
 static char help[] = "Newton method to solve u'' + u^{2} = f, sequentially.\n\
 This example tests PCVPBJacobiSetBlocks().\n\n";
 

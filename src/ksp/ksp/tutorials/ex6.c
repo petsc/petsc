@@ -1,4 +1,3 @@
-
 static char help[] = "Solves a tridiagonal linear system with KSP. \n\
 It illustrates how to do one symbolic factorization and multiple numeric factorizations using same matrix structure. \n\n";
 

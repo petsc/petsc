@@ -1,4 +1,3 @@
-
 /*
     Provides an interface to the CUFFT package.
     Testing examples can be found in ~src/mat/tests

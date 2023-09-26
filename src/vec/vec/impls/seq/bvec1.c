@@ -1,4 +1,3 @@
-
 /*
    Defines the BLAS based vector operations. Code shared by parallel
   and sequential vectors.

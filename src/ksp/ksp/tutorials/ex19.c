@@ -1,4 +1,3 @@
-
 static char help[] = "Solve a 2D 5-point stencil in parallel with Kokkos batched KSP and ASM solvers.\n\
 Input parameters include:\n\
   -n                : number of mesh points in x direction\n\

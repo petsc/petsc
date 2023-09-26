@@ -1,4 +1,3 @@
-
 static char help[] = "Tests matrix ordering routines.\n\n";
 
 #include <petscmat.h>

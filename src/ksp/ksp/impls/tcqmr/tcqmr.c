@@ -1,4 +1,3 @@
-
 /*
     This file contains an implementation of Tony Chan's transpose-free QMR.
 

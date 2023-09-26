@@ -1,4 +1,3 @@
-
 static char help[] = "Demonstrates use of color map\n";
 
 #include <petscsys.h>

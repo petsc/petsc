@@ -1,4 +1,3 @@
-
 static char help[] = "Creates a matrix, inserts some values, and tests MatCreateSubMatrices() and MatZeroEntries().\n\n";
 
 #include <petscmat.h>

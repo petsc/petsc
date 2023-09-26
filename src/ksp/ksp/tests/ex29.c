@@ -1,4 +1,3 @@
-
 static char help[] = "Tests ML interface. Modified from ~src/ksp/ksp/tests/ex19.c \n\
   -mx <xg>, where <xg> = number of grid points in the x-direction\n\
   -my <yg>, where <yg> = number of grid points in the y-direction\n\

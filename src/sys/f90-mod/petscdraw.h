@@ -53,4 +53,3 @@
       PetscEnum, parameter :: PETSC_BUTTON_LEFT_SHIFT = 6
       PetscEnum, parameter :: PETSC_BUTTON_CENTER_SHIFT = 7
       PetscEnum, parameter :: PETSC_BUTTON_RIGHT_SHIFT = 8
-

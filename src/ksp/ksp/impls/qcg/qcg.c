@@ -1,4 +1,3 @@
-
 #include <../src/ksp/ksp/impls/qcg/qcgimpl.h> /*I "petscksp.h" I*/
 
 /*

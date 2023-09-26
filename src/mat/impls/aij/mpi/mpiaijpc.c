@@ -1,4 +1,3 @@
-
 #include <../src/mat/impls/aij/mpi/mpiaij.h>
 
 PetscErrorCode MatGetDiagonalBlock_MPIAIJ(Mat A, Mat *a)

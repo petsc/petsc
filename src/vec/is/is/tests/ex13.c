@@ -1,4 +1,3 @@
-
 static char help[] = "Tests ISDuplicate(), ISCopy(), ISShift(), ISEqualUnsorted(), ISEqual().\n\n";
 
 #include <petscis.h>

@@ -1,4 +1,3 @@
-
 static char help[] = "Demonstrates PetscMatlabEngineXXX()\n";
 
 #include <petscsys.h>

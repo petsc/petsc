@@ -1,4 +1,3 @@
-
 /*
    This file contains routines for Parallel vector operations.
  */

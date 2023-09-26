@@ -1,4 +1,3 @@
-
 static char help[] = "Demonstrates drawing primitives in a window\n";
 
 #include <petscdraw.h>

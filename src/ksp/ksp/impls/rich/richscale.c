@@ -1,4 +1,3 @@
-
 #include <../src/ksp/ksp/impls/rich/richardsonimpl.h> /*I "petscksp.h" I*/
 
 /*@

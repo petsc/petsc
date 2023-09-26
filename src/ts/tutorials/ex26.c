@@ -1,4 +1,3 @@
-
 static char help[] = "Transient nonlinear driven cavity in 2d.\n\
   \n\
 The 2D driven cavity problem is solved in a velocity-vorticity formulation.\n\

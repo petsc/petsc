@@ -1,4 +1,3 @@
-
 #include <petscsys.h>
 #include <errno.h>
 #if defined(PETSC_HAVE_PWD_H)

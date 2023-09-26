@@ -1,4 +1,3 @@
-
 static char help[] = "Tests options database monitoring and precedence.\n\n";
 
 #include <petscsys.h>

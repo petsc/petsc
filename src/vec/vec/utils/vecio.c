@@ -1,4 +1,3 @@
-
 /*
    This file contains simple binary input routines for vectors.  The
    analogous output routines are within each vector implementation's

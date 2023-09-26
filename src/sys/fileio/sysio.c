@@ -1,4 +1,3 @@
-
 /*
    This file contains simple binary read/write routines.
  */

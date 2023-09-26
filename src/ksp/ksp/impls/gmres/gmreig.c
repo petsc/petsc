@@ -1,4 +1,3 @@
-
 #include <../src/ksp/ksp/impls/gmres/gmresimpl.h>
 #include <petscblaslapack.h>
 

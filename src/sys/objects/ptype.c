@@ -1,4 +1,3 @@
-
 /*
      Provides utility routines for manipulating any type of PETSc object.
 */

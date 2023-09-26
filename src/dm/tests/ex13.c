@@ -1,4 +1,3 @@
-
 static char help[] = "Tests loading DM vector from file.\n\n";
 
 /*

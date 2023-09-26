@@ -1,4 +1,3 @@
-
 static char help[] = "Partition tiny grid using hierarchical partitioning and increase overlap using MatIncreaseOverlapSplit.\n\n";
 
 /*

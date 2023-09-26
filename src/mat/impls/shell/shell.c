@@ -1,4 +1,3 @@
-
 /*
    This provides a simple shell for Fortran (and C programmers) to
   create a very simple matrix class for use with KSP without coding

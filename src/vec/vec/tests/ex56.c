@@ -1,4 +1,3 @@
-
 static char help[] = "Update the data in a VECVIENNACL via a CL kernel.\n\n";
 
 #include <petscvec.h>

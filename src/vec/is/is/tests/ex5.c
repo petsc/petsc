@@ -1,4 +1,3 @@
-
 static char help[] = "Tests ISLocalToGlobalMappingGetInfo.()\n\n";
 
 #include <petscis.h>

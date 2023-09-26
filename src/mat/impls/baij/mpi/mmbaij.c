@@ -1,4 +1,3 @@
-
 /*
    Support for the parallel BAIJ matrix vector multiply
 */

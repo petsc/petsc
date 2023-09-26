@@ -1,4 +1,3 @@
-
 /*
 Laplacian in 2D. Modeled by the partial differential equation
 

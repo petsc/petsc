@@ -1,4 +1,3 @@
-
 #include <petscvec.h>
 
 PETSC_INTERN void fillupvector(Vec *v, PetscErrorCode *ierr)

@@ -1,4 +1,3 @@
-
 static char help[] = "Tests DMCreateMatrix for DMComposite.\n\n";
 
 #include <petscdmredundant.h>

@@ -1,4 +1,3 @@
-
 static char help[] = "Demonstrates scattering with the indices specified by a process that is not sender or receiver.\n\n";
 
 #include <petscvec.h>

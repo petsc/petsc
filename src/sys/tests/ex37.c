@@ -1,4 +1,3 @@
-
 static char help[] = "Test PetscFormatConvertGetSize().\n";
 
 #include <petscsys.h>

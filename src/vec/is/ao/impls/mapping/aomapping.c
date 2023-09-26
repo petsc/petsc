@@ -1,4 +1,3 @@
-
 /*
   These AO application ordering routines do not require that the input
   be a permutation, but merely a 1-1 mapping. This implementation still

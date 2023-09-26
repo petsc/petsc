@@ -1,4 +1,3 @@
-
 static char help[] = "Tests converting a SBAIJ matrix to BAIJ format with MatConvert. Modified from ex55.c\n\n";
 
 #include <petscmat.h>

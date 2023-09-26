@@ -1,4 +1,3 @@
-
 static char help[] = "Tests calling PetscOptionsSetValue() before PetscInitialize()\n\n";
 
 #include <petscsys.h>

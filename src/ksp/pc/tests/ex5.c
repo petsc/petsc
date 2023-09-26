@@ -1,4 +1,3 @@
-
 static char help[] = "Tests the multigrid code.  The input parameters are:\n\
   -x N              Use a mesh in the x direction of N.  \n\
   -c N              Use N V-cycles.  \n\

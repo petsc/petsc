@@ -1,4 +1,3 @@
-
 static char help[] = "Tests PetscOptionsGetScalar(), PetscOptionsScalarArray() for complex numbers\n";
 
 #include <petscsys.h>

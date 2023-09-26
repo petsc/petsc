@@ -1,4 +1,3 @@
-
 const char help[] = "Test MatCreateLocalRef()\n\n";
 
 #include <petscmat.h>

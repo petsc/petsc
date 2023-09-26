@@ -1,4 +1,3 @@
-
 #include <petscdt.h>
 #include <petscdraw.h>
 #include <petscviewer.h>

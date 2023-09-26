@@ -1,4 +1,3 @@
-
 #include <../src/vec/vec/impls/mpi/pvecimpl.h> /*I  "petscvec.h"   I*/
 
 /*

@@ -1,4 +1,3 @@
-
 static char help[] = "Tests `GarbageKeyAllReduceIntersect_Private()` in parallel\n\n";
 
 #include <petscsys.h>

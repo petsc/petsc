@@ -1,4 +1,3 @@
-
 static char help[] = "Reads a PETSc matrix and vector from a socket connection,  solves a linear system and sends the result back.\n";
 
 /*

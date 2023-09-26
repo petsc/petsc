@@ -1,4 +1,3 @@
-
 static char help[] = "A Chebyshev spectral method for the compressible Blasius boundary layer equations.\n\n";
 
 /*

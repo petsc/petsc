@@ -1,4 +1,3 @@
-
 /*
    This file contains routines for sorting integers. Values are sorted in place.
    One can use src/sys/tests/ex52.c for benchmarking.

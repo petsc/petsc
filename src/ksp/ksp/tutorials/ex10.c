@@ -1,4 +1,3 @@
-
 static char help[] = "Solve a small system and a large system through preloading\n\
   Input arguments are:\n\
   -permute <natural,rcm,nd,...> : solve system in permuted indexing\n\

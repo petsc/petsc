@@ -1,4 +1,3 @@
-
 static char help[] = "Test repeated LU factorizations. Used for checking memory leak\n\
   -m <size> : problem size\n\
   -mat_nonsym : use nonsymmetric matrix (default is symmetric)\n\n";

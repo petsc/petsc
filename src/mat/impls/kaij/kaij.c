@@ -1,4 +1,3 @@
-
 /*
   Defines the basic matrix operations for the KAIJ  matrix storage format.
   This format is used to evaluate matrices of the form:

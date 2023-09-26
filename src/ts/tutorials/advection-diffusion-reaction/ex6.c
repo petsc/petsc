@@ -1,4 +1,3 @@
-
 static char help[] = "Model Equations for Advection \n";
 
 /*

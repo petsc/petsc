@@ -1,4 +1,3 @@
-
 static char help[] = "Solves the van der Pol DAE.\n\
 Input parameters include:\n";
 

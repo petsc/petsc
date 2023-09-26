@@ -1,4 +1,3 @@
-
 static char help[] = "Time-dependent PDE in 2d for calculating joint PDF. \n";
 /*
    p_t = -x_t*p_x -y_t*p_y + f(t)*p_yy

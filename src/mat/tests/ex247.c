@@ -1,4 +1,3 @@
-
 static char help[] = "Tests MATCENTERING matrix type.\n\n";
 
 #include <petscmat.h>

@@ -1,4 +1,3 @@
-
 /*
   Defines matrix-matrix product routines for
           C = A^T * B and C = A * B^t

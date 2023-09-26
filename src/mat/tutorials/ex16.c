@@ -1,4 +1,3 @@
-
 static char help[] = "Reads a matrix from PETSc binary file. Use for view or investigating matrix data structure. \n\n";
 /*
  Example:

@@ -1,4 +1,3 @@
-
 /*
     This file implements PGMRES (a Pipelined Generalized Minimal Residual method)
 */

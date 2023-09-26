@@ -1,4 +1,3 @@
-
 static char help[] = "Solves a linear system in parallel with KSP.  Also\n\
 illustrates setting a user-defined shell preconditioner and using the\n\
 Input parameters include:\n\

@@ -1,4 +1,3 @@
-
 static char help[] = "Reads a PETSc matrix and vector from a file and solves a linear system.\n\
 Test MatMatSolve().  Input parameters include\n\
   -f <input_file> : file to load \n\n";

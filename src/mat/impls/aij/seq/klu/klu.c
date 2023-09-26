@@ -1,4 +1,3 @@
-
 /*
    Provides an interface to the KLUv1.2 sparse solver
 

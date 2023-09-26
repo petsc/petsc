@@ -1,4 +1,3 @@
-
 static char help[] = "Tests SeqSBAIJ factorizations for different block sizes\n\n";
 
 #include <petscksp.h>

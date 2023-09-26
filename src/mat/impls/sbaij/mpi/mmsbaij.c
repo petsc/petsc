@@ -1,4 +1,3 @@
-
 /*
    Support for the parallel SBAIJ matrix vector multiply
 */

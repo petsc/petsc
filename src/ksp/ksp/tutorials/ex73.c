@@ -1,4 +1,3 @@
-
 /*
 This example was derived from src/ksp/ksp/tutorials ex29.c
 

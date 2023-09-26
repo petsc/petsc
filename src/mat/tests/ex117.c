@@ -1,4 +1,3 @@
-
 static char help[] = "Tests Cholesky factorization for a SBAIJ matrix, (bs=2).\n";
 /*
   This code is modified from the code contributed by JUNWANG@uwm.edu on Apr 13, 2007

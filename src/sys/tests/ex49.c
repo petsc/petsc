@@ -1,4 +1,3 @@
-
 static char help[] = "Demonstrates PetscDataTypeFromString().\n\n";
 
 #include <petscsys.h>

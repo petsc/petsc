@@ -1,4 +1,3 @@
-
 static char help[] = "DMSwarm-PIC demonstrator of inserting points into a cell DM \n\
 Options: \n\
 -mode {0,1} : 0 ==> DMDA, 1 ==> DMPLEX cell DM \n\

@@ -1,4 +1,3 @@
-
 /*
     The memory scalable AO application ordering routines. These store the
   orderings on each processor for that processor's range of values

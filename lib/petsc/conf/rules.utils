@@ -129,7 +129,9 @@ checkbadSource:
 	-@git --no-pager grep -n -P '^[ ]*(suffix|output_file|nsize|requires|args): [-.!0-9a-zA-Z()_{}]*  [ ]*' -- ${GITSRC} >> checkbadSource.out;true
 	-@echo "------Using PetscInfo() without carriage return --------------------" >> checkbadSource.out
 	-@git --no-pager grep -n -P 'PetscCall\(PetscInfo\(' -- ${GITSRC} | grep -v '\\n' >> checkbadSource.out;true
-	@a=`cat checkbadSource.out | wc -l`; l=`expr $$a - 20` ;\
+	-@echo "------First blank line ---------------------------------------------" >> checkbadSource.out
+	@git --no-pager grep -n -P \^\$$ -- ${GITSRC} | grep ':1:' >> checkbadSource.out;true
+	@a=`cat checkbadSource.out | wc -l`; l=`expr $$a - 21` ;\
          if [ $$l -gt 0 ] ; then \
            echo $$l " files with errors detected in source code formatting" ;\
            cat checkbadSource.out ;\

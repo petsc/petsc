@@ -1,4 +1,3 @@
-
 static char help[] = "Tests MatGetRowIJ for SeqAIJ, SeqBAIJ and SeqSBAIJ\n\n";
 
 #include <petscmat.h>

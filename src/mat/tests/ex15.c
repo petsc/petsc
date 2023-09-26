@@ -1,4 +1,3 @@
-
 static char help[] = "Tests MatNorm(), MatLUFactor(), MatSolve() and MatSolveAdd().\n\n";
 
 #include <petscmat.h>

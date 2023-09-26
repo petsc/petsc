@@ -1,4 +1,3 @@
-
 /*
     This file implements the conjugate gradient method in PETSc as part of
     KSP. You can use this as a starting point for implementing your own

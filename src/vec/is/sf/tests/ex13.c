@@ -1,4 +1,3 @@
-
 static char help[] = "Scatters from a sequential vector to a parallel vector. \n\
 uses block index sets\n\n";
 

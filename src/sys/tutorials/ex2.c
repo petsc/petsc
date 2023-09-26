@@ -1,4 +1,3 @@
-
 static char help[] = "Synchronized printing.\n\n";
 
 #include <petscsys.h>

@@ -1,4 +1,3 @@
-
 static char help[] = "Test procedural KSPSetFromOptions() or at runtime; Test PCREDUNDANT.\n\n";
 
 #include <petscksp.h>

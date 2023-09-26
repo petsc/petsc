@@ -1,4 +1,3 @@
-
 static char help[] = "Demonstrates PETSc error handlers.\n";
 
 #include <petscsys.h>

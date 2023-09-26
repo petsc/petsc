@@ -1,4 +1,3 @@
-
 static char help[] = "Chemo-taxis Problems from Mathematical Biology.\n";
 
 /*

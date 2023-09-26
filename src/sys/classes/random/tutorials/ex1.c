@@ -1,4 +1,3 @@
-
 static char help[] = "Tests PetscRandom functions.\n\n";
 
 #include <petscsys.h>

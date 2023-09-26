@@ -1,4 +1,3 @@
-
 /*
   Defines projective product routines where A is a SeqAIJ matrix
           C = P^T * A * P

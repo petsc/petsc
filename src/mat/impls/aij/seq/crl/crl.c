@@ -1,4 +1,3 @@
-
 /*
   Defines a matrix-vector product for the MATSEQAIJCRL matrix class.
   This class is derived from the MATSEQAIJ class and retains the
