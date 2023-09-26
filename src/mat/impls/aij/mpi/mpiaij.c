@@ -3466,7 +3466,7 @@ PetscErrorCode MatCreateMPIAIJWithSeqAIJ(MPI_Comm comm, Mat A, Mat B, const Pets
   PetscCall(MatCreate(comm, mat));
   PetscCall(MatGetSize(A, &m, &n));
   PetscCheck(m == B->rmap->N, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Am %" PetscInt_FMT " != Bm %" PetscInt_FMT, m, B->rmap->N);
-  PetscCheck(A->rmap->bs == B->rmap->bs, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "A row bs %" PetscInt_FMT " != B row bs %" PetscInt_FMT, A->rmap->bs, B->rmap->bs);
+  PetscCheck(PetscAbs(A->rmap->bs) == PetscAbs(B->rmap->bs), PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "A row bs %" PetscInt_FMT " != B row bs %" PetscInt_FMT, A->rmap->bs, B->rmap->bs);
   /* remove check below; When B is created using iscol_o from ISGetSeqIS_SameColDist_Private(), its bs may not be same as A */
   /* PetscCheck(A->cmap->bs == B->cmap->bs,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"A column bs %" PetscInt_FMT " != B column bs %" PetscInt_FMT,A->cmap->bs,B->cmap->bs); */
 
@@ -3478,7 +3478,7 @@ PetscErrorCode MatCreateMPIAIJWithSeqAIJ(MPI_Comm comm, Mat A, Mat B, const Pets
   PetscCall(MatGetMPIMatType_Private(A, &mpi_mat_type));
   PetscCall(MatSetType(*mat, mpi_mat_type));
 
-  PetscCall(MatSetBlockSizes(*mat, A->rmap->bs, A->cmap->bs));
+  if (A->rmap->bs > 1 || A->cmap->bs > 1) PetscCall(MatSetBlockSizes(*mat, A->rmap->bs, A->cmap->bs));
   maij = (Mat_MPIAIJ *)(*mat)->data;
 
   (*mat)->preallocated = PETSC_TRUE;
