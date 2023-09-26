@@ -2314,10 +2314,10 @@ class Configure(config.base.Configure):
       yield (self.argDB['LD_SHARED'], [], 'so')
     if Configure.isDarwin(self.log):
       if 'with-shared-ld' in self.argDB:
-        yield (self.argDB['with-shared-ld'], ['-dynamiclib -single_module', '-undefined dynamic_lookup', '-multiply_defined suppress', '-no_compact_unwind'], 'dylib')
+        yield (self.argDB['with-shared-ld'], ['-dynamiclib', '-undefined dynamic_lookup', '-no_compact_unwind'], 'dylib')
       if hasattr(self, 'CXX') and self.mainLanguage == 'Cxx':
-        yield (self.CXX, ['-dynamiclib -single_module', '-undefined dynamic_lookup', '-multiply_defined suppress', '-no_compact_unwind'], 'dylib')
-      yield (self.CC, ['-dynamiclib -single_module', '-undefined dynamic_lookup', '-multiply_defined suppress', '-no_compact_unwind'], 'dylib')
+        yield (self.CXX, ['-dynamiclib', '-undefined dynamic_lookup', '-no_compact_unwind'], 'dylib')
+      yield (self.CC, ['-dynamiclib', '-undefined dynamic_lookup', '-no_compact_unwind'], 'dylib')
     if hasattr(self, 'CXX') and self.mainLanguage == 'Cxx':
       # C++ compiler default
       yield (self.CXX, ['-qmkshrobj'], 'so')
@@ -2435,7 +2435,7 @@ class Configure(config.base.Configure):
       languages.append('FC')
     for language in languages:
       self.pushLanguage(language)
-      for testFlag in ['-Wl,-bind_at_load','-Wl,-multiply_defined,suppress', '-Wl,-multiply_defined -Wl,suppress', '-Wl,-commons,use_dylibs', '-Wl,-search_paths_first', '-Wl,-no_compact_unwind']:
+      for testFlag in ['-Wl,-bind_at_load', '-Wl,-commons,use_dylibs', '-Wl,-search_paths_first', '-Wl,-no_compact_unwind']:
         if self.checkLinkerFlag(testFlag):
           # expand to CC_LINKER_FLAGS or CXX_LINKER_FLAGS or FC_LINKER_FLAGS
           linker_flag_var = langMap[language]+'_LINKER_FLAGS'
@@ -2534,10 +2534,10 @@ class Configure(config.base.Configure):
     # Mac OSX
     if Configure.isDarwin(self.log):
       if 'with-dynamic-ld' in self.argDB:
-        yield (self.argDB['with-dynamic-ld'], ['-dynamiclib -single_module -undefined dynamic_lookup -multiply_defined suppress'], 'dylib')
+        yield (self.argDB['with-dynamic-ld'], ['-dynamiclib -undefined dynamic_lookup'], 'dylib')
       if hasattr(self, 'CXX') and self.mainLanguage == 'Cxx':
-        yield (self.CXX, ['-dynamiclib -single_module -undefined dynamic_lookup -multiply_defined suppress'], 'dylib')
-      yield (self.CC, ['-dynamiclib -single_module -undefined dynamic_lookup -multiply_defined suppress'], 'dylib')
+        yield (self.CXX, ['-dynamiclib -undefined dynamic_lookup'], 'dylib')
+      yield (self.CC, ['-dynamiclib -undefined dynamic_lookup'], 'dylib')
     # Shared default
     if hasattr(self, 'sharedLinker'):
       yield (self.sharedLinker, self.sharedLibraryFlags, 'so')
