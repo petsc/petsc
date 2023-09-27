@@ -39,7 +39,8 @@ class Configure(config.package.CMakePackage):
     self.cuda                = framework.require('config.packages.cuda',self)
     self.hip                 = framework.require('config.packages.hip',self)
     self.sycl                = framework.require('config.packages.sycl',self)
-    self.odeps               = [self.cuda,self.hip,self.sycl]
+    self.blasLapack          = framework.require('config.packages.BlasLapack',self)
+    self.odeps               = [self.cuda,self.hip,self.sycl,self.blasLapack]
     return
 
   def versionToStandardForm(self,ver):
@@ -97,6 +98,11 @@ class Configure(config.package.CMakePackage):
     elif self.sycl.found:
       args = self.rmArgsStartsWith(args,'-DCMAKE_CXX_COMPILER=')
       args.append('-DCMAKE_CXX_COMPILER='+self.getCompiler('SYCL'))
+      if self.argDB['with-kokkos-kernels-tpl']:
+        if self.blasLapack.mkl: # KK uses them to find MKL
+          args.append('-DKokkosKernels_ENABLE_TPL_MKL=ON')
+        elif 'with-kokkos-kernels-tpl' in self.framework.clArgDB:
+          raise RuntimeError('Kokkos-Kernels TPL is explicitly required but could not find OneMKL')
 
     # These options will be taken from Kokkos configuration
     args = self.rmArgsStartsWith(args,'-DCMAKE_CXX_STANDARD=')
