@@ -4,11 +4,11 @@ class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
     #disable version checking
-    #self.minversion             = '4'
-    #self.version                = '4.0.0'
+    #self.minversion             = '4.6'
+    #self.version                = '4.6'
     #self.versionname            = 'MFEM_VERSION_STRING'
     #self.versioninclude         = 'mfem/config.hpp'
-    self.gitcommit              = '6d81b467c22b6b40015aab7b50ea539840970c7f' # master sept-24-2023
+    self.gitcommit              = 'v4.6'
     self.download               = ['git://https://github.com/mfem/mfem.git','https://github.com/mfem/mfem/archive/'+self.gitcommit+'.tar.gz']
     self.linkedbypetsc          = 0
     self.downloadonWindows      = 1
