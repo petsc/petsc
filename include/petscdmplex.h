@@ -354,6 +354,7 @@ PETSC_EXTERN PetscErrorCode DMPlexGetGeometryFVM(DM, Vec *, Vec *, PetscReal *);
 PETSC_EXTERN PetscErrorCode DMPlexGetGradientDM(DM, PetscFV, DM *);
 PETSC_EXTERN PetscErrorCode DMPlexInsertBoundaryValues(DM, PetscBool, Vec, PetscReal, Vec, Vec, Vec);
 PETSC_EXTERN PetscErrorCode DMPlexInsertTimeDerivativeBoundaryValues(DM, PetscBool, Vec, PetscReal, Vec, Vec, Vec);
+PETSC_EXTERN PetscErrorCode DMPlexInsertBoundaryValuesFVM(DM, PetscFV, Vec, PetscReal, Vec *);
 PETSC_EXTERN PetscErrorCode DMPlexInsertBoundaryValuesEssential(DM, PetscReal, PetscInt, PetscInt, const PetscInt[], DMLabel, PetscInt, const PetscInt[], PetscErrorCode (*)(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar *, void *), void *, Vec);
 PETSC_EXTERN PetscErrorCode DMPlexInsertBoundaryValuesEssentialField(DM, PetscReal, Vec, PetscInt, PetscInt, const PetscInt[], DMLabel, PetscInt, const PetscInt[], void (*)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]), void *, Vec);
 PETSC_EXTERN PetscErrorCode DMPlexInsertBoundaryValuesEssentialBdField(DM, PetscReal, Vec, PetscInt, PetscInt, const PetscInt[], DMLabel, PetscInt, const PetscInt[], void (*)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, const PetscReal[], const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]), void *, Vec);
@@ -443,6 +444,7 @@ PETSC_EXTERN PetscErrorCode DMPlexComputeBdJacobianSingle(DM, PetscReal, PetscWe
 
 PETSC_EXTERN PetscErrorCode DMPlexTSComputeBoundary(DM, PetscReal, Vec, Vec, void *);
 PETSC_EXTERN PetscErrorCode DMPlexTSComputeRHSFunctionFVM(DM, PetscReal, Vec, Vec, void *);
+PETSC_EXTERN PetscErrorCode DMPlexTSComputeRHSFunctionFVMCEED(DM, PetscReal, Vec, Vec, void *);
 PETSC_EXTERN PetscErrorCode DMPlexTSComputeIFunctionFEM(DM, PetscReal, Vec, Vec, Vec, void *);
 PETSC_EXTERN PetscErrorCode DMPlexTSComputeIJacobianFEM(DM, PetscReal, Vec, Vec, PetscReal, Mat, Mat, void *);
 PETSC_EXTERN PetscErrorCode DMPlexTSComputeRHSFunctionFEM(DM, PetscReal, Vec, Vec, void *);

@@ -24,10 +24,13 @@ PETSC_EXTERN PetscErrorCode VecRestoreCeedVector(Vec, CeedVector *);
 PETSC_EXTERN PetscErrorCode VecRestoreCeedVectorRead(Vec, CeedVector *);
 PETSC_INTERN PetscErrorCode DMCeedCreate_Internal(DM, IS, PetscBool, CeedQFunctionUser, const char *, DMCeed *);
 PETSC_EXTERN PetscErrorCode DMCeedCreate(DM, PetscBool, CeedQFunctionUser, const char *);
+PETSC_EXTERN PetscErrorCode DMCeedCreateFVM(DM, PetscBool, CeedQFunctionUser, const char *, CeedQFunctionContext);
 
 struct _PETSc_DMCEED {
   CeedBasis           basis;      // Basis for element function space
-  CeedElemRestriction er;         // Map from PETSc local vector to element vectors
+  CeedElemRestriction er;         // Map from PETSc local vector to FE element vectors
+  CeedElemRestriction erL;        // Map from PETSc local vector to FV left cell vectors
+  CeedElemRestriction erR;        // Map from PETSc local vector to FV right cell vectors
   CeedQFunctionUser   func;       // Plex Function for this operator
   char               *funcSource; // Plex Function source as text
   CeedQFunction       qf;         // QFunction expressing the operator action

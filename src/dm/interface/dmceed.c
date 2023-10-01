@@ -155,7 +155,7 @@ static PetscErrorCode DMCeedCreateGeometry(DM dm, IS cellIS, PetscInt *Nqdata, C
   PetscCall(CeedBasisGetNumQuadraturePoints(sd->basis, &Nq));
   PetscCall(DMPlexGetCeedRestriction(dm, NULL, 0, 0, 0, &sd->er));
 
-  *Nqdata = 1 + cdim + cdim * dim;
+  *Nqdata = 1 + cdim + cdim * dim; // |J| * w_q, x, J^{-1}
   PetscCallCEED(CeedElemRestrictionCreateStrided(ceed, Ncell, Nq, *Nqdata, Ncell * Nq * (*Nqdata), CEED_STRIDES_BACKEND, erq));
 
   switch (dim) {
@@ -267,6 +267,93 @@ PetscErrorCode DMCeedCreate(DM dm, PetscBool createGeometry, CeedQFunctionUser f
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+static PetscErrorCode DMCeedCreateGeometryFVM(DM dm, IS faceIS, PetscInt *Nqdata, CeedElemRestriction *erq, CeedVector *qd, DMCeed *soldata)
+{
+  Ceed            ceed;
+  DMCeed          sd;
+  const PetscInt *faces;
+  PetscInt        dim, cdim, fStart, fEnd, Nface, Nq = 1;
+
+  PetscFunctionBegin;
+  PetscCall(PetscCalloc1(1, &sd));
+  PetscCall(DMGetDimension(dm, &dim));
+  PetscCall(DMGetCoordinateDim(dm, &cdim));
+  PetscCall(DMGetCeed(dm, &ceed));
+  PetscCall(ISGetPointRange(faceIS, &fStart, &fEnd, &faces));
+  Nface = fEnd - fStart;
+
+  *Nqdata = cdim + 2; // face normal and support cell volumes
+  PetscCallCEED(CeedElemRestrictionCreateStrided(ceed, Nface, Nq, *Nqdata, Nface * Nq * (*Nqdata), CEED_STRIDES_BACKEND, erq));
+  PetscCallCEED(CeedElemRestrictionCreateVector(*erq, qd, NULL));
+  *soldata = sd;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+PetscErrorCode DMCeedCreateFVM_Internal(DM dm, IS faceIS, PetscBool createGeometry, CeedQFunctionUser func, const char *func_source, DMCeed *soldata, CeedQFunctionContext qfCtx)
+{
+  PetscDS  ds;
+  PetscFV  fv;
+  DMCeed   sd;
+  Ceed     ceed;
+  PetscInt dim, Nc, Nqdata = 0;
+
+  PetscFunctionBegin;
+  PetscCall(PetscCalloc1(1, &sd));
+  PetscCall(DMGetDimension(dm, &dim));
+  PetscCall(DMGetCeed(dm, &ceed));
+  PetscCall(DMGetDS(dm, &ds));
+  PetscCall(PetscDSGetDiscretization(ds, 0, (PetscObject *)&fv));
+  PetscCall(PetscFVGetNumComponents(fv, &Nc));
+  PetscCall(DMPlexCreateCeedRestrictionFVM(dm, &sd->erL, &sd->erR));
+
+  if (createGeometry) {
+    DM cdm;
+
+    PetscCall(DMGetCoordinateDM(dm, &cdm));
+    PetscCall(DMCeedCreateGeometryFVM(cdm, faceIS, &Nqdata, &sd->erq, &sd->qd, &sd->geom));
+  }
+
+  PetscCallCEED(CeedQFunctionCreateInterior(ceed, 1, func, func_source, &sd->qf));
+  PetscCallCEED(CeedQFunctionAddInput(sd->qf, "uL", Nc, CEED_EVAL_NONE));
+  PetscCallCEED(CeedQFunctionAddInput(sd->qf, "uR", Nc, CEED_EVAL_NONE));
+  PetscCallCEED(CeedQFunctionAddInput(sd->qf, "geom", Nqdata, CEED_EVAL_NONE));
+  PetscCallCEED(CeedQFunctionAddOutput(sd->qf, "cL", Nc, CEED_EVAL_NONE));
+  PetscCallCEED(CeedQFunctionAddOutput(sd->qf, "cR", Nc, CEED_EVAL_NONE));
+
+  PetscCallCEED(CeedQFunctionSetContext(sd->qf, qfCtx));
+
+  PetscCallCEED(CeedOperatorCreate(ceed, sd->qf, CEED_QFUNCTION_NONE, CEED_QFUNCTION_NONE, &sd->op));
+  PetscCallCEED(CeedOperatorSetField(sd->op, "uL", sd->erL, CEED_BASIS_COLLOCATED, CEED_VECTOR_ACTIVE));
+  PetscCallCEED(CeedOperatorSetField(sd->op, "uR", sd->erR, CEED_BASIS_COLLOCATED, CEED_VECTOR_ACTIVE));
+  PetscCallCEED(CeedOperatorSetField(sd->op, "geom", sd->erq, CEED_BASIS_COLLOCATED, sd->qd));
+  PetscCallCEED(CeedOperatorSetField(sd->op, "cL", sd->erL, CEED_BASIS_COLLOCATED, CEED_VECTOR_ACTIVE));
+  PetscCallCEED(CeedOperatorSetField(sd->op, "cR", sd->erR, CEED_BASIS_COLLOCATED, CEED_VECTOR_ACTIVE));
+
+  // Handle refinement
+  sd->func = func;
+  PetscCall(PetscStrallocpy(func_source, &sd->funcSource));
+  PetscCall(DMRefineHookAdd(dm, DMRefineHook_Ceed, NULL, NULL));
+
+  *soldata = sd;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+PetscErrorCode DMCeedCreateFVM(DM dm, PetscBool createGeometry, CeedQFunctionUser func, const char *func_source, CeedQFunctionContext qfCtx)
+{
+  DM plex;
+  IS faceIS;
+
+  PetscFunctionBegin;
+  PetscCall(DMConvert(dm, DMPLEX, &plex));
+  PetscCall(DMPlexGetAllFaces_Internal(plex, &faceIS));
+  #ifdef PETSC_HAVE_LIBCEED
+  PetscCall(DMCeedCreateFVM_Internal(dm, faceIS, createGeometry, func, func_source, &dm->dmceed, qfCtx));
+  #endif
+  PetscCall(ISDestroy(&faceIS));
+  PetscCall(DMDestroy(&plex));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 #endif
 
 PetscErrorCode DMCeedDestroy(DMCeed *pceed)
@@ -280,6 +367,8 @@ PetscErrorCode DMCeedDestroy(DMCeed *pceed)
   if (p->qd) PetscCallCEED(CeedVectorDestroy(&p->qd));
   if (p->op) PetscCallCEED(CeedOperatorDestroy(&p->op));
   if (p->qf) PetscCallCEED(CeedQFunctionDestroy(&p->qf));
+  if (p->erL) PetscCallCEED(CeedElemRestrictionDestroy(&p->erL));
+  if (p->erR) PetscCallCEED(CeedElemRestrictionDestroy(&p->erR));
   if (p->erq) PetscCallCEED(CeedElemRestrictionDestroy(&p->erq));
   PetscCall(DMCeedDestroy(&p->geom));
 #endif
@@ -301,7 +390,9 @@ PetscErrorCode DMCeedComputeGeometry(DM dm, DMCeed sd)
   PetscCall(DMGetCeed(dm, &ceed));
   PetscCall(DMGetCoordinatesLocal(dm, &coords));
   PetscCall(VecGetCeedVectorRead(coords, ceed, &ccoords));
-  PetscCallCEED(CeedOperatorApply(sd->geom->op, ccoords, sd->qd, CEED_REQUEST_IMMEDIATE));
+  if (sd->geom->op) PetscCallCEED(CeedOperatorApply(sd->geom->op, ccoords, sd->qd, CEED_REQUEST_IMMEDIATE));
+  else PetscCall(DMPlexCeedComputeGeometryFVM(dm, sd->qd));
+  //PetscCallCEED(CeedVectorView(sd->qd, "%g", stdout));
   PetscCall(VecRestoreCeedVectorRead(coords, &ccoords));
 #endif
   PetscFunctionReturn(PETSC_SUCCESS);

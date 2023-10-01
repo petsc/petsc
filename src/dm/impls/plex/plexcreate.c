@@ -16,7 +16,7 @@ static PetscErrorCode DMInitialize_Plex(DM dm);
 PetscErrorCode DMPlexCopy_Internal(DM dmin, PetscBool copyPeriodicity, PetscBool copyOverlap, DM dmout)
 {
   const PetscReal         *maxCell, *Lstart, *L;
-  PetscBool                dist;
+  PetscBool                dist, useCeed;
   DMPlexReorderDefaultFlag reorder;
 
   PetscFunctionBegin;
@@ -28,7 +28,15 @@ PetscErrorCode DMPlexCopy_Internal(DM dmin, PetscBool copyPeriodicity, PetscBool
   PetscCall(DMPlexDistributeSetDefault(dmout, dist));
   PetscCall(DMPlexReorderGetDefault(dmin, &reorder));
   PetscCall(DMPlexReorderSetDefault(dmout, reorder));
+  PetscCall(DMPlexGetUseCeed(dmin, &useCeed));
+  PetscCall(DMPlexSetUseCeed(dmout, useCeed));
   ((DM_Plex *)dmout->data)->useHashLocation = ((DM_Plex *)dmin->data)->useHashLocation;
+  ((DM_Plex *)dmout->data)->printSetValues  = ((DM_Plex *)dmin->data)->printSetValues;
+  ((DM_Plex *)dmout->data)->printFEM        = ((DM_Plex *)dmin->data)->printFEM;
+  ((DM_Plex *)dmout->data)->printFVM        = ((DM_Plex *)dmin->data)->printFVM;
+  ((DM_Plex *)dmout->data)->printL2         = ((DM_Plex *)dmin->data)->printL2;
+  ((DM_Plex *)dmout->data)->printLocate     = ((DM_Plex *)dmin->data)->printLocate;
+  ((DM_Plex *)dmout->data)->printTol        = ((DM_Plex *)dmin->data)->printTol;
   if (copyOverlap) PetscCall(DMPlexSetOverlap_Plex(dmout, dmin, 0));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -4061,7 +4069,8 @@ PetscErrorCode DMSetFromOptions_NonRefinement_Plex(DM dm, PetscOptionItems *Pets
   PetscFunctionBegin;
   /* Handle viewing */
   PetscCall(PetscOptionsBool("-dm_plex_print_set_values", "Output all set values info", "DMPlexMatSetClosure", PETSC_FALSE, &mesh->printSetValues, NULL));
-  PetscCall(PetscOptionsBoundedInt("-dm_plex_print_fem", "Debug output level all fem computations", "DMPlexSNESComputeResidualFEM", 0, &mesh->printFEM, NULL, 0));
+  PetscCall(PetscOptionsBoundedInt("-dm_plex_print_fem", "Debug output level for all fem computations", "DMPlexSNESComputeResidualFEM", 0, &mesh->printFEM, NULL, 0));
+  PetscCall(PetscOptionsBoundedInt("-dm_plex_print_fvm", "Debug output level for all fvm computations", "DMPlexSNESComputeResidualFVM", 0, &mesh->printFVM, NULL, 0));
   PetscCall(PetscOptionsReal("-dm_plex_print_tol", "Tolerance for FEM output", "DMPlexSNESComputeResidualFEM", mesh->printTol, &mesh->printTol, NULL));
   PetscCall(PetscOptionsBoundedInt("-dm_plex_print_l2", "Debug output level all L2 diff computations", "DMComputeL2Diff", 0, &mesh->printL2, NULL, 0));
   PetscCall(PetscOptionsBoundedInt("-dm_plex_print_locate", "Debug output level all point location computations", "DMLocatePoints", 0, &mesh->printLocate, NULL, 0));
@@ -4605,7 +4614,8 @@ PETSC_INTERN PetscErrorCode DMClone_Plex(DM dm, DM *newdm)
 . -dm_plex_check_geometry            - Check that cells have positive volume
 . -dm_view :mesh.tex:ascii_latex     - View the mesh in LaTeX/TikZ
 . -dm_plex_view_scale <num>          - Scale the TikZ
-- -dm_plex_print_fem <num>           - View FEM assembly information, such as element vectors and matrices
+. -dm_plex_print_fem <num>           - View FEM assembly information, such as element vectors and matrices
+- -dm_plex_print_fvm <num>           - View FVM assembly information, such as flux updates
 
   Level: intermediate
 

@@ -1303,6 +1303,42 @@ PetscErrorCode DMPlexInsertTimeDerivativeBoundaryValues(DM dm, PetscBool insertE
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+// Handle non-essential (e.g. outflow) boundary values
+PetscErrorCode DMPlexInsertBoundaryValuesFVM(DM dm, PetscFV fv, Vec locX, PetscReal time, Vec *locGradient)
+{
+  DM  dmGrad;
+  Vec cellGeometryFVM, faceGeometryFVM, locGrad = NULL;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidHeaderSpecific(fv, PETSCFV_CLASSID, 2);
+  PetscValidHeaderSpecific(locX, VEC_CLASSID, 3);
+  if (locGradient) {
+    PetscAssertPointer(locGradient, 5);
+    *locGradient = NULL;
+  }
+  PetscCall(DMPlexGetGeometryFVM(dm, &faceGeometryFVM, &cellGeometryFVM, NULL));
+  /* Reconstruct and limit cell gradients */
+  PetscCall(DMPlexGetGradientDM(dm, fv, &dmGrad));
+  if (dmGrad) {
+    Vec      grad;
+    PetscInt fStart, fEnd;
+
+    PetscCall(DMPlexGetHeightStratum(dm, 1, &fStart, &fEnd));
+    PetscCall(DMGetGlobalVector(dmGrad, &grad));
+    PetscCall(DMPlexReconstructGradients_Internal(dm, fv, fStart, fEnd, faceGeometryFVM, cellGeometryFVM, locX, grad));
+    /* Communicate gradient values */
+    PetscCall(DMGetLocalVector(dmGrad, &locGrad));
+    PetscCall(DMGlobalToLocalBegin(dmGrad, grad, INSERT_VALUES, locGrad));
+    PetscCall(DMGlobalToLocalEnd(dmGrad, grad, INSERT_VALUES, locGrad));
+    PetscCall(DMRestoreGlobalVector(dmGrad, &grad));
+  }
+  PetscCall(DMPlexInsertBoundaryValues(dm, PETSC_FALSE, locX, time, faceGeometryFVM, cellGeometryFVM, locGrad));
+  if (locGradient) *locGradient = locGrad;
+  else if (locGrad) PetscCall(DMRestoreLocalVector(dmGrad, &locGrad));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 PetscErrorCode DMComputeL2Diff_Plex(DM dm, PetscReal time, PetscErrorCode (**funcs)(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar *, void *), void **ctxs, Vec X, PetscReal *diff)
 {
   Vec localX;
@@ -4803,30 +4839,28 @@ static PetscErrorCode DMPlexComputeBdResidual_Internal(DM dm, Vec locX, Vec locX
 
 PetscErrorCode DMPlexComputeResidual_Internal(DM dm, PetscFormKey key, IS cellIS, PetscReal time, Vec locX, Vec locX_t, PetscReal t, Vec locF, void *user)
 {
-  DM_Plex         *mesh       = (DM_Plex *)dm->data;
-  const char      *name       = "Residual";
-  DM               dmAux      = NULL;
-  DM               dmGrad     = NULL;
-  DMLabel          ghostLabel = NULL;
-  PetscDS          ds         = NULL;
-  PetscDS          dsAux      = NULL;
-  PetscSection     section    = NULL;
-  PetscBool        useFEM     = PETSC_FALSE;
-  PetscBool        useFVM     = PETSC_FALSE;
-  PetscBool        isImplicit = (locX_t || time == PETSC_MIN_REAL) ? PETSC_TRUE : PETSC_FALSE;
-  PetscFV          fvm        = NULL;
-  PetscFVCellGeom *cgeomFVM   = NULL;
-  PetscFVFaceGeom *fgeomFVM   = NULL;
-  DMField          coordField = NULL;
-  Vec              locA, cellGeometryFVM = NULL, faceGeometryFVM = NULL, grad, locGrad = NULL;
-  PetscScalar     *u = NULL, *u_t, *a, *uL, *uR;
-  IS               chunkIS;
-  const PetscInt  *cells;
-  PetscInt         cStart, cEnd, numCells;
-  PetscInt         Nf, f, totDim, totDimAux, numChunks, cellChunkSize, faceChunkSize, chunk, fStart, fEnd;
-  PetscInt         maxDegree  = PETSC_MAX_INT;
-  PetscQuadrature  affineQuad = NULL, *quads = NULL;
-  PetscFEGeom     *affineGeom = NULL, **geoms = NULL;
+  DM_Plex        *mesh       = (DM_Plex *)dm->data;
+  const char     *name       = "Residual";
+  DM              dmAux      = NULL;
+  DM              dmGrad     = NULL;
+  DMLabel         ghostLabel = NULL;
+  PetscDS         ds         = NULL;
+  PetscDS         dsAux      = NULL;
+  PetscSection    section    = NULL;
+  PetscBool       useFEM     = PETSC_FALSE;
+  PetscBool       useFVM     = PETSC_FALSE;
+  PetscBool       isImplicit = (locX_t || time == PETSC_MIN_REAL) ? PETSC_TRUE : PETSC_FALSE;
+  PetscFV         fvm        = NULL;
+  DMField         coordField = NULL;
+  Vec             locA, cellGeometryFVM = NULL, faceGeometryFVM = NULL, locGrad = NULL;
+  PetscScalar    *u = NULL, *u_t, *a, *uL, *uR;
+  IS              chunkIS;
+  const PetscInt *cells;
+  PetscInt        cStart, cEnd, numCells;
+  PetscInt        Nf, f, totDim, totDimAux, numChunks, cellChunkSize, faceChunkSize, chunk, fStart, fEnd;
+  PetscInt        maxDegree  = PETSC_MAX_INT;
+  PetscQuadrature affineQuad = NULL, *quads = NULL;
+  PetscFEGeom    *affineGeom = NULL, **geoms = NULL;
 
   PetscFunctionBegin;
   if (!cellIS) PetscFunctionReturn(PETSC_SUCCESS);
@@ -4894,24 +4928,11 @@ PetscErrorCode DMPlexComputeResidual_Internal(DM dm, PetscFormKey key, IS cellIS
       }
     }
   }
+  // Handle non-essential (e.g. outflow) boundary values
   if (useFVM) {
+    PetscCall(DMPlexInsertBoundaryValuesFVM(dm, fvm, locX, time, &locGrad));
     PetscCall(DMPlexGetGeometryFVM(dm, &faceGeometryFVM, &cellGeometryFVM, NULL));
-    PetscCall(VecGetArrayRead(faceGeometryFVM, (const PetscScalar **)&fgeomFVM));
-    PetscCall(VecGetArrayRead(cellGeometryFVM, (const PetscScalar **)&cgeomFVM));
-    /* Reconstruct and limit cell gradients */
     PetscCall(DMPlexGetGradientDM(dm, fvm, &dmGrad));
-    if (dmGrad) {
-      PetscCall(DMPlexGetHeightStratum(dm, 1, &fStart, &fEnd));
-      PetscCall(DMGetGlobalVector(dmGrad, &grad));
-      PetscCall(DMPlexReconstructGradients_Internal(dm, fvm, fStart, fEnd, faceGeometryFVM, cellGeometryFVM, locX, grad));
-      /* Communicate gradient values */
-      PetscCall(DMGetLocalVector(dmGrad, &locGrad));
-      PetscCall(DMGlobalToLocalBegin(dmGrad, grad, INSERT_VALUES, locGrad));
-      PetscCall(DMGlobalToLocalEnd(dmGrad, grad, INSERT_VALUES, locGrad));
-      PetscCall(DMRestoreGlobalVector(dmGrad, &grad));
-    }
-    /* Handle non-essential (e.g. outflow) boundary values */
-    PetscCall(DMPlexInsertBoundaryValues(dm, PETSC_FALSE, locX, time, faceGeometryFVM, cellGeometryFVM, locGrad));
   }
   /* Loop over chunks */
   if (useFEM) PetscCall(ISCreate(PETSC_COMM_SELF, &chunkIS));
@@ -5014,8 +5035,9 @@ PetscErrorCode DMPlexComputeResidual_Internal(DM dm, PetscFormKey key, IS cellIS
         PetscFV      fv;
         PetscObject  obj;
         PetscClassId id;
-        PetscInt     foff, pdim;
+        PetscInt     cdim, foff, pdim;
 
+        PetscCall(DMGetCoordinateDim(dm, &cdim));
         PetscCall(PetscDSGetDiscretization(ds, f, &obj));
         PetscCall(PetscDSGetFieldOffset(ds, f, &foff));
         PetscCall(PetscObjectGetClassId(obj, &id));
@@ -5037,6 +5059,13 @@ PetscErrorCode DMPlexComputeResidual_Internal(DM dm, PetscFormKey key, IS cellIS
           if (ghost <= 0) PetscCall(DMPlexPointLocalFieldRef(dm, scells[0], f, fa, &fL));
           PetscCall(DMLabelGetValue(ghostLabel, scells[1], &ghost));
           if (ghost <= 0) PetscCall(DMPlexPointLocalFieldRef(dm, scells[1], f, fa, &fR));
+          if (mesh->printFVM > 1) {
+            PetscCall(DMPrintCellVectorReal(face, "Residual: normal", cdim, fgeom[iface].normal));
+            PetscCall(DMPrintCellVector(face, "Residual: left state", pdim, &uL[iface * totDim + foff]));
+            PetscCall(DMPrintCellVector(face, "Residual: right state", pdim, &uR[iface * totDim + foff]));
+            PetscCall(DMPrintCellVector(face, "Residual: left flux", pdim, &fluxL[iface * totDim + foff]));
+            PetscCall(DMPrintCellVector(face, "Residual: right flux", pdim, &fluxR[iface * totDim + foff]));
+          }
           for (d = 0; d < pdim; ++d) {
             if (fL) fL[d] -= fluxL[iface * totDim + foff + d];
             if (fR) fR[d] += fluxR[iface * totDim + foff + d];

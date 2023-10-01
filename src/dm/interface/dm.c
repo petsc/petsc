@@ -4154,6 +4154,16 @@ PetscErrorCode DMPrintCellVector(PetscInt c, const char name[], PetscInt len, co
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+PetscErrorCode DMPrintCellVectorReal(PetscInt c, const char name[], PetscInt len, const PetscReal x[])
+{
+  PetscInt f;
+
+  PetscFunctionBegin;
+  PetscCall(PetscPrintf(PETSC_COMM_SELF, "Cell %" PetscInt_FMT " Element %s\n", c, name));
+  for (f = 0; f < len; ++f) PetscCall(PetscPrintf(PETSC_COMM_SELF, "  | %g |\n", (double)x[f]));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 PetscErrorCode DMPrintCellMatrix(PetscInt c, const char name[], PetscInt rows, PetscInt cols, const PetscScalar A[])
 {
   PetscInt f, g;

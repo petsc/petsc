@@ -8,3 +8,6 @@
 #include <ceed.h>
 
 PETSC_EXTERN PetscErrorCode DMPlexGetCeedRestriction(DM, DMLabel, PetscInt, PetscInt, PetscInt, CeedElemRestriction *);
+PETSC_EXTERN PetscErrorCode DMPlexCreateCeedRestrictionFVM(DM, CeedElemRestriction *, CeedElemRestriction *);
+PETSC_EXTERN PetscErrorCode DMPlexCeedComputeGeometryFVM(DM, CeedVector);
+PETSC_EXTERN PetscErrorCode DMPlexTSComputeRHSFunctionFVMCEED(DM, PetscReal, Vec, Vec, void *);

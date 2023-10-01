@@ -5453,6 +5453,17 @@ PetscErrorCode DMPlexGetAllCells_Internal(DM plex, IS *cellIS)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+PetscErrorCode DMPlexGetAllFaces_Internal(DM plex, IS *faceIS)
+{
+  PetscInt depth;
+
+  PetscFunctionBegin;
+  PetscCall(DMPlexGetDepth(plex, &depth));
+  PetscCall(DMGetStratumIS(plex, "dim", depth - 1, faceIS));
+  if (!*faceIS) PetscCall(DMGetStratumIS(plex, "depth", depth - 1, faceIS));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 /*
  Returns number of components and tensor degree for the field.  For interpolated meshes, line should be a point
  representing a line in the section.
