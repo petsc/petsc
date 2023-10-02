@@ -346,8 +346,6 @@ static PetscErrorCode PCMPISolve(PC pc, Vec B, Vec X)
   PetscCall(PetscLogEventBegin(EventServerDist, NULL, NULL, NULL, NULL));
   PetscCall(PetscObjectGetComm((PetscObject)ksp, &comm));
 
-  /* TODO: optimize code to not require building counts/displ every time */
-
   /* scatterv rhs */
   PetscCallMPI(MPI_Comm_size(comm, &size));
   if (pc) {
