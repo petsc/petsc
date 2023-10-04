@@ -74,7 +74,7 @@ if __name__ == '__main__':
 #     # -std=c2x is a workaround for this hipsparse problem
 #     #   /opt/rocm-5.4.0/include/hipsparse/hipsparse.h:8741:28: error: expected '= constant-expression' or end of enumerator definition
 #     #      HIPSPARSE_ORDER_COLUMN [[deprecated("Please use HIPSPARSE_ORDER_COL instead")]] = 1,
-#     # -Wno-constant-logical-operand is a workaround to supress excessive warnings caused by -std=c2x in petsc source which we don't want to address, see MR !6287
+#     # -Wno-constant-logical-operand is a workaround to suppress excessive warnings caused by -std=c2x in petsc source which we don't want to address, see MR !6287
 #     '--CFLAGS=-std=c2x -Wno-constant-logical-operand',
 #     'LIBS={GTLDIR} {GTLLIBS}'.format(GTLDIR=os.environ['PE_MPICH_GTL_DIR_amd_gfx90a'], GTLLIBS=os.environ['PE_MPICH_GTL_LIBS_amd_gfx90a']),
 #     #'--with-openmp=1', # enable if using "craype-accel-amd-gfx90a" module

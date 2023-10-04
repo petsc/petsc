@@ -11,7 +11,7 @@ static PetscErrorCode CheckDiagonal(Mat A, Vec diag, PetscScalar dval)
 
   PetscFunctionBegin;
   PetscCall(MatGetOwnershipRange(A, &rstart, &rend));
-  // If matrix is AIJ, MatSetRandom() will have randomly choosen the locations of nonzeros,
+  // If matrix is AIJ, MatSetRandom() will have randomly chosen the locations of nonzeros,
   // which may not be on the diagonal. So a reallocation is not necessarily a bad thing here.
   if (first_time) PetscCall(MatSetOption(A, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_FALSE));
   for (PetscInt i = rstart; i < rend; ++i) PetscCall(MatSetValue(A, i, i, dval, INSERT_VALUES));

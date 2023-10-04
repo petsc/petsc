@@ -2,7 +2,7 @@
 
 static void evaluate_solCx(PetscReal pos[], PetscReal _eta_A, PetscReal _eta_B, /* Input parameters: density, viscosity A, viscosity B */
                            PetscReal _x_c, int _n,                              /* Input parameters: viscosity jump location, wavenumber in z */
-                           PetscReal vel[], PetscReal *presssure, PetscReal total_stress[], PetscReal strain_rate[])
+                           PetscReal vel[], PetscReal *pressure, PetscReal total_stress[], PetscReal strain_rate[])
 {
   PetscReal Z, u1, u2, u3, u4, u5, u6, ZA, ZB;
   PetscReal sum1, sum2, sum3, sum4, sum5, sum6, x, z, xc;
@@ -2254,7 +2254,7 @@ static void evaluate_solCx(PetscReal pos[], PetscReal _eta_A, PetscReal _eta_B, 
     vel[0] = sum1;
     vel[1] = sum2;
   }
-  if (presssure) (*presssure) = sum5;
+  if (pressure) (*pressure) = sum5;
 
   if (total_stress) {
     total_stress[0] = sum3;

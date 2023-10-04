@@ -1,4 +1,4 @@
-static char help[] = "A toy example for testing forward and adjoint sensitivity analysis of an implicit ODE with a paramerized mass matrice.\n";
+static char help[] = "A toy example for testing forward and adjoint sensitivity analysis of an implicit ODE with a parametrized mass matrice.\n";
 
 /*
   This example solves the simple ODE

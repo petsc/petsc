@@ -970,7 +970,7 @@ static PetscErrorCode KSPFETIDPSetUpOperators(KSP ksp)
         PetscCall(MatDestroy(&B));
         PetscCall(ISDestroy(&l2l));
       }
-      if (A != Ap) { /* user has provided a different Pmat, this always superseeds the setter (TODO: is it OK?) */
+      if (A != Ap) { /* user has provided a different Pmat, this always supersedes the setter (TODO: is it OK?) */
         /* use monolithic operator, we restrict later */
         PetscCall(KSPFETIDPSetPressureOperator(ksp, Ap));
       }

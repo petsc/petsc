@@ -8,7 +8,7 @@
 #include <unordered_map>
 #include <algorithm> // std::lower_bound
 
-// clang's unordered_set implementaiton outperforms the flat vector implementation in all
+// clang's unordered_set implementation outperforms the flat vector implementation in all
 // cases. GCC on the other hand only does so for n > 512, before which it is almost twice as
 // slow! Even when it does surpass the vector, the speedup is tiny (1.2x). So we use
 // unordered_set for clang and hand-rolled flat set for GCC...

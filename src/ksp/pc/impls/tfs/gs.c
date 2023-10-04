@@ -59,7 +59,7 @@ typedef struct gather_scatter_id {
   PetscInt num_loads;
 
   /* repeats == true -> local info */
-  PetscInt  nel;  /* number of unique elememts */
+  PetscInt  nel;  /* number of unique elements */
   PetscInt *elms; /* of size nel */
   PetscInt  nel_total;
   PetscInt *local_elms; /* of size nel_total */

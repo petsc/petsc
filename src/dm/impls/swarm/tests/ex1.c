@@ -141,7 +141,7 @@ static PetscErrorCode CheckPointInsertion(DM sw)
 /*
   Checks tie breaking works properly when a particle
   is located at a shared boundary. The higher rank should
-  recieve the particle while the lower rank deletes it.
+  receive the particle while the lower rank deletes it.
 
   TODO: Currently only works for 2 procs.
 */
@@ -181,7 +181,7 @@ static PetscErrorCode CheckPointInsertion_Boundary(DM sw)
   PetscCall(CheckMigrate(sw));
   PetscCall(DMSwarmGetLocalSize(sw, &Np_loc_post));
   if (rank == 0) PetscCheck(Np_loc_pre == (Np_loc_post + 1), PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Migration tie breaking failed on rank %d. Particle on boundary not sent.", rank);
-  if (rank == 1) PetscCheck(Np_loc_pre == (Np_loc_post - 1), PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Migration tie breaking failed on rank %d. Particle on boundary not recieved.", rank);
+  if (rank == 1) PetscCheck(Np_loc_pre == (Np_loc_post - 1), PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Migration tie breaking failed on rank %d. Particle on boundary not received.", rank);
   PetscCall(PetscPrintf(comm, "Rank boundary point insertion check passes.\n"));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

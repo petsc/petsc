@@ -291,7 +291,7 @@ PETSC_INTERN PetscErrorCode KSPCheckPCMPI(KSP);
 
   Options Database Keys:
 + -ksp_max_it                                                             - maximum number of linear iterations
-. -ksp_min_it                                                             - miminum number of linear iterations to use, defaults to zero
+. -ksp_min_it                                                             - minimum number of linear iterations to use, defaults to zero
 . -ksp_rtol rtol                                                          - relative tolerance used in default determination of convergence, i.e.
                 if residual norm decreases by this factor than convergence is declared
 . -ksp_atol abstol                                                        - absolute tolerance used in default convergence test, i.e. if residual

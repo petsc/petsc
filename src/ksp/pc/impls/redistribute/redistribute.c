@@ -454,7 +454,7 @@ PetscErrorCode PCRedistributeGetKSP(PC pc, KSP *innerksp)
      If you have used `MatZeroRows()` to eliminate (for example, Dirichlet) boundary conditions for a symmetric problem then you can use, for example, `-ksp_type preonly
      -pc_type redistribute -redistribute_ksp_type cg -redistribute_pc_type bjacobi -redistribute_sub_pc_type icc` to take advantage of the symmetry.
 
-     Supports the function `PCFieldSplitSetIS()`; passs the appropriate reduced field indices to an inner `PCFIELDSPLIT`, set with, for example
+     Supports the function `PCFieldSplitSetIS()`; pass the appropriate reduced field indices to an inner `PCFIELDSPLIT`, set with, for example
      `-ksp_type preonly -pc_type redistribute -redistribute_pc_type fieldsplit. Does not support the `PCFIELDSPLIT` options database keys.
 
      This does NOT call a partitioner to reorder rows to lower communication; the ordering of the rows in the original matrix and redistributed matrix is the same. Rows are moved
