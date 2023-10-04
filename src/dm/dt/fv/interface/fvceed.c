@@ -50,7 +50,7 @@ PetscErrorCode PetscFVGetCeedBasis(PetscFV fv, CeedBasis *basis)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fv, PETSCFV_CLASSID, 1);
-  PetscValidBoolPointer(basis, 2);
+  PetscAssertPointer(basis, 2);
   if (!fv->ceedBasis && fv->ceed) {
     PetscCall(PetscFVGetSpatialDimension(fv, &dim));
     PetscCall(PetscFVGetNumComponents(fv, &Nc));

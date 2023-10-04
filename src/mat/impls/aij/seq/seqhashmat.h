@@ -23,7 +23,7 @@ static PetscErrorCode MatAssemblyEnd_Seq_Hash(Mat A, MatAssemblyType type)
 #endif
   A->preallocated = PETSC_FALSE; /* this was set to true for the MatSetValues_Hash() to work */
 
-  PetscCall(PetscMemcpy(&A->ops, &a->cops, sizeof(*(A->ops))));
+  A->ops[0]      = a->cops;
   A->hash_active = PETSC_FALSE;
 
   /* move values from hash format to matrix type format */
@@ -125,8 +125,7 @@ static PetscErrorCode MatSetUp_Seq_Hash(Mat A)
 #endif
 
   /* keep a record of the operations so they can be reset when the hash handling is complete */
-  PetscCall(PetscMemcpy(&a->cops, &A->ops, sizeof(*(A->ops))));
-
+  a->cops               = A->ops[0];
   A->ops->assemblybegin = NULL;
   A->ops->assemblyend   = MatAssemblyEnd_Seq_Hash;
   A->ops->destroy       = MatDestroy_Seq_Hash;

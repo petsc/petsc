@@ -444,6 +444,11 @@ class generateExamples(Petsc):
     cmdLines=""
 
     # MPI is the default -- but we have a few odd commands
+    if subst['temporaries']:
+      if '*' in subst['temporaries']:
+        raise RuntimeError('{}/{}: list of temporary files to remove may not include wildcards'.format(subst['srcdir'], subst['execname']))
+      cmd=cmdindnt+self._substVars(subst,example_template.preclean)
+      cmdLines+=cmd+"\n"
     if not subst['command']:
       cmd=cmdindnt+self._substVars(subst,example_template.mpitest)
     else:
@@ -721,7 +726,7 @@ class generateExamples(Petsc):
         isNull=False
         if requirement.startswith("!"):
           requirement=requirement[1:]; isNull=True
-        # 32bit vs 64bit pointers
+        # 32-bit vs 64-bit pointers
         if requirement == "64bitptr":
           if self.conf['PETSC_SIZEOF_VOID_P']==8:
             if isNull:
@@ -851,6 +856,7 @@ class generateExamples(Petsc):
       for root in dataDict:
         relroot=self.srcrelpath(root)
         pkg=relroot.split("/")[1]
+        if not pkg in self.sources: continue
         fh.write(relroot+"\n")
         allSrcs=[]
         for lang in LANGS: allSrcs+=self.sources[pkg][lang]['srcs']
@@ -880,8 +886,6 @@ class generateExamples(Petsc):
      the examples based on the metadata contained in the source files
     """
     debug=False
-    # Use examplesAnalyze to get what the makefles think are sources
-    #self.examplesAnalyze(root,dirs,files,anlzDict)
 
     data = {}
     for exfile in files:

@@ -67,7 +67,7 @@ static PetscErrorCode PCApply_Kaczmarz(PC pc, Vec x, Vec y)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PCSetFromOptions_Kaczmarz(PC pc, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode PCSetFromOptions_Kaczmarz(PC pc, PetscOptionItems *PetscOptionsObject)
 {
   PC_Kaczmarz *jac = (PC_Kaczmarz *)pc->data;
 
@@ -79,7 +79,7 @@ PetscErrorCode PCSetFromOptions_Kaczmarz(PC pc, PetscOptionItems *PetscOptionsOb
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PCView_Kaczmarz(PC pc, PetscViewer viewer)
+static PetscErrorCode PCView_Kaczmarz(PC pc, PetscViewer viewer)
 {
   PC_Kaczmarz *jac = (PC_Kaczmarz *)pc->data;
   PetscBool    iascii;
@@ -91,10 +91,11 @@ PetscErrorCode PCView_Kaczmarz(PC pc, PetscViewer viewer)
 }
 
 /*MC
-     PCKaczmarz - Kaczmarz iteration
+     PCKACZMARZ - Kaczmarz iteration
 
-   Options Database Key:
-.  -pc_sor_lambda <1.0> - Sets damping parameter lambda
+   Options Database Keys:
++  -pc_kaczmarz_lambda <1.0> - Sets damping parameter lambda
+-  -pc_kaczmarz_symmetric - Apply row projections symmetrically
 
    Level: beginner
 

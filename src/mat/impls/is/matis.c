@@ -87,7 +87,7 @@ static PetscErrorCode MatGetNonzeroColumnsLocal_Private(Mat PT, IS *cis)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(PT, MAT_CLASSID, 1);
-  PetscValidPointer(cis, 2);
+  PetscAssertPointer(cis, 2);
   PetscCall(PetscObjectGetComm((PetscObject)PT, &comm));
   bs = 1;
   PetscCall(PetscObjectBaseTypeCompare((PetscObject)PT, MATMPIAIJ, &ismpiaij));
@@ -1527,17 +1527,17 @@ static PetscErrorCode MatISSetUpSF_IS(Mat B)
 }
 
 /*@
-   MatISStoreL2L - Store local-to-local operators during the Galerkin process of computing `MatPtAP()`
+  MatISStoreL2L - Store local-to-local operators during the Galerkin process of computing `MatPtAP()`
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  A - the matrix
--  store - the boolean flag
+  Input Parameters:
++ A     - the matrix
+- store - the boolean flag
 
-   Level: advanced
+  Level: advanced
 
-.seealso: [](chapter_matrices), `Mat`, `MatCreate()`, `MatCreateIS()`, `MatISSetPreallocation()`, `MatPtAP()`
+.seealso: [](ch_matrices), `Mat`, `MatCreate()`, `MatCreateIS()`, `MatISSetPreallocation()`, `MatPtAP()`
 @*/
 PetscErrorCode MatISStoreL2L(Mat A, PetscBool store)
 {
@@ -1560,20 +1560,20 @@ static PetscErrorCode MatISStoreL2L_IS(Mat A, PetscBool store)
 }
 
 /*@
-   MatISFixLocalEmpty - Compress out zero local rows from the local matrices
+  MatISFixLocalEmpty - Compress out zero local rows from the local matrices
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  A - the matrix
--  fix - the boolean flag
+  Input Parameters:
++ A   - the matrix
+- fix - the boolean flag
 
-   Level: advanced
+  Level: advanced
 
-   Note:
-   When `fix` is `PETSC_TRUE`, new local matrices and l2g maps are generated during the final assembly process.
+  Note:
+  When `fix` is `PETSC_TRUE`, new local matrices and l2g maps are generated during the final assembly process.
 
-.seealso: [](chapter_matrices), `Mat`, `MATIS`, `MatCreate()`, `MatCreateIS()`, `MatISSetPreallocation()`, `MatAssemblyEnd()`, `MAT_FINAL_ASSEMBLY`
+.seealso: [](ch_matrices), `Mat`, `MATIS`, `MatCreate()`, `MatCreateIS()`, `MatISSetPreallocation()`, `MatAssemblyEnd()`, `MAT_FINAL_ASSEMBLY`
 @*/
 PetscErrorCode MatISFixLocalEmpty(Mat A, PetscBool fix)
 {
@@ -1595,23 +1595,23 @@ static PetscErrorCode MatISFixLocalEmpty_IS(Mat A, PetscBool fix)
 }
 
 /*@
-   MatISSetPreallocation - Preallocates memory for a `MATIS` parallel matrix.
+  MatISSetPreallocation - Preallocates memory for a `MATIS` parallel matrix.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  B - the matrix
-.  d_nz  - number of nonzeros per row in DIAGONAL portion of local submatrix
+  Input Parameters:
++ B     - the matrix
+. d_nz  - number of nonzeros per row in DIAGONAL portion of local submatrix
            (same value is used for all local rows)
-.  d_nnz - array containing the number of nonzeros in the various rows of the
+. d_nnz - array containing the number of nonzeros in the various rows of the
            DIAGONAL portion of the local submatrix (possibly different for each row)
            or `NULL`, if `d_nz` is used to specify the nonzero structure.
            The size of this array is equal to the number of local rows, i.e `m`.
            For matrices that will be factored, you must leave room for (and set)
            the diagonal entry even if it is zero.
-.  o_nz  - number of nonzeros per row in the OFF-DIAGONAL portion of local
+. o_nz  - number of nonzeros per row in the OFF-DIAGONAL portion of local
            submatrix (same value is used for all local rows).
--  o_nnz - array containing the number of nonzeros in the various rows of the
+- o_nnz - array containing the number of nonzeros in the various rows of the
            OFF-DIAGONAL portion of the local submatrix (possibly different for
            each row) or `NULL`, if `o_nz` is used to specify the nonzero
            structure. The size of this array is equal to the number
@@ -1619,14 +1619,14 @@ static PetscErrorCode MatISFixLocalEmpty_IS(Mat A, PetscBool fix)
 
    If the *_nnz parameter is given then the *_nz parameter is ignored
 
-   Level: intermediate
+  Level: intermediate
 
-   Note:
-   This function has the same interface as the `MATMPIAIJ` preallocation routine in order to simplify the transition
-   from the asssembled format to the unassembled one. It overestimates the preallocation of `MATIS` local
-   matrices; for exact preallocation, the user should set the preallocation directly on local matrix objects.
+  Note:
+  This function has the same interface as the `MATMPIAIJ` preallocation routine in order to simplify the transition
+  from the asssembled format to the unassembled one. It overestimates the preallocation of `MATIS` local
+  matrices; for exact preallocation, the user should set the preallocation directly on local matrix objects.
 
-.seealso: [](chapter_matrices), `Mat`, `MatCreate()`, `MatCreateIS()`, `MatMPIAIJSetPreallocation()`, `MatISGetLocalMat()`, `MATIS`
+.seealso: [](ch_matrices), `Mat`, `MatCreate()`, `MatCreateIS()`, `MatMPIAIJSetPreallocation()`, `MatISGetLocalMat()`, `MATIS`
 @*/
 PetscErrorCode MatISSetPreallocation(Mat B, PetscInt d_nz, const PetscInt d_nnz[], PetscInt o_nz, const PetscInt o_nnz[])
 {
@@ -2048,28 +2048,28 @@ general_assembly:
 }
 
 /*@
-    MatISGetMPIXAIJ - Converts `MATIS` matrix into a parallel `MATAIJ` format
+  MatISGetMPIXAIJ - Converts `MATIS` matrix into a parallel `MATAIJ` format
 
   Input Parameters:
-+  mat - the matrix (should be of type `MATIS`)
--  reuse - either `MAT_INITIAL_MATRIX` or `MAT_REUSE_MATRIX`
++ mat   - the matrix (should be of type `MATIS`)
+- reuse - either `MAT_INITIAL_MATRIX` or `MAT_REUSE_MATRIX`
 
   Output Parameter:
-.  newmat - the matrix in `MATAIJ` format
+. newmat - the matrix in `MATAIJ` format
 
   Level: deprecated
 
   Note:
-    This function has been deprecated and it will be removed in future releases. Update your code to use the `MatConvert()` interface.
+  This function has been deprecated and it will be removed in future releases. Update your code to use the `MatConvert()` interface.
 
-.seealso: [](chapter_matrices), `Mat`, `MATIS`, `MatConvert()`
+.seealso: [](ch_matrices), `Mat`, `MATIS`, `MatConvert()`
 @*/
 PetscErrorCode MatISGetMPIXAIJ(Mat mat, MatReuse reuse, Mat *newmat)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
   PetscValidLogicalCollectiveEnum(mat, reuse, 2);
-  PetscValidPointer(newmat, 3);
+  PetscAssertPointer(newmat, 3);
   if (reuse == MAT_REUSE_MATRIX) {
     PetscValidHeaderSpecific(*newmat, MAT_CLASSID, 3);
     PetscCheckSameComm(mat, 1, *newmat, 3);
@@ -2741,13 +2741,13 @@ static PetscErrorCode MatAssemblyEnd_IS(Mat A, MatAssemblyType type)
     PetscCall(ISGetSize(nzc, &nnzc));
     if (nnzr != nr || nnzc != nc) { /* need new global l2g map */
       lnewl2g = PETSC_TRUE;
-      PetscCallMPI(MPI_Allreduce(&lnewl2g, &newl2g, 1, MPIU_BOOL, MPI_LOR, PetscObjectComm((PetscObject)A)));
+      PetscCall(MPIU_Allreduce(&lnewl2g, &newl2g, 1, MPIU_BOOL, MPI_LOR, PetscObjectComm((PetscObject)A)));
 
       /* extract valid submatrix */
       PetscCall(MatCreateSubMatrix(is->A, nzr, nzc, MAT_INITIAL_MATRIX, &newlA));
     } else { /* local matrix fully populated */
       lnewl2g = PETSC_FALSE;
-      PetscCallMPI(MPI_Allreduce(&lnewl2g, &newl2g, 1, MPIU_BOOL, MPI_LOR, PetscObjectComm((PetscObject)A)));
+      PetscCall(MPIU_Allreduce(&lnewl2g, &newl2g, 1, MPIU_BOOL, MPI_LOR, PetscObjectComm((PetscObject)A)));
       PetscCall(PetscObjectReference((PetscObject)is->A));
       newlA = is->A;
     }
@@ -2818,50 +2818,50 @@ static PetscErrorCode MatISRestoreLocalMat_IS(Mat mat, Mat *local)
 }
 
 /*@
-    MatISGetLocalMat - Gets the local matrix stored inside a `MATIS` matrix.
+  MatISGetLocalMat - Gets the local matrix stored inside a `MATIS` matrix.
 
   Input Parameter:
-.  mat - the matrix
+. mat - the matrix
 
   Output Parameter:
-.  local - the local matrix
+. local - the local matrix
 
   Level: advanced
 
   Notes:
-    This can be called if you have precomputed the nonzero structure of the
+  This can be called if you have precomputed the nonzero structure of the
   matrix and want to provide it to the inner matrix object to improve the performance
   of the `MatSetValues()` operation.
 
   Call `MatISRestoreLocalMat()` when finished with the local matrix.
 
-.seealso: [](chapter_matrices), `Mat`, `MATIS`, `MatISRestoreLocalMat()`
+.seealso: [](ch_matrices), `Mat`, `MATIS`, `MatISRestoreLocalMat()`
 @*/
 PetscErrorCode MatISGetLocalMat(Mat mat, Mat *local)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
-  PetscValidPointer(local, 2);
+  PetscAssertPointer(local, 2);
   PetscUseMethod(mat, "MatISGetLocalMat_C", (Mat, Mat *), (mat, local));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
-    MatISRestoreLocalMat - Restores the local matrix obtained with `MatISGetLocalMat()`
+  MatISRestoreLocalMat - Restores the local matrix obtained with `MatISGetLocalMat()`
 
   Input Parameters:
-+  mat - the matrix
--  local - the local matrix
++ mat   - the matrix
+- local - the local matrix
 
   Level: advanced
 
-.seealso: [](chapter_matrices), `Mat`, `MATIS`, `MatISGetLocalMat()`
+.seealso: [](ch_matrices), `Mat`, `MATIS`, `MatISGetLocalMat()`
 @*/
 PetscErrorCode MatISRestoreLocalMat(Mat mat, Mat *local)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
-  PetscValidPointer(local, 2);
+  PetscAssertPointer(local, 2);
   PetscUseMethod(mat, "MatISRestoreLocalMat_C", (Mat, Mat *), (mat, local));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -2877,16 +2877,16 @@ static PetscErrorCode MatISSetLocalMatType_IS(Mat mat, MatType mtype)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@
-    MatISSetLocalMatType - Specifies the type of local matrix inside the `MATIS`
+/*@C
+  MatISSetLocalMatType - Specifies the type of local matrix inside the `MATIS`
 
   Input Parameters:
-+  mat - the matrix
--  mtype - the local matrix type
++ mat   - the matrix
+- mtype - the local matrix type
 
   Level: advanced
 
-.seealso: [](chapter_matrices), `Mat`, `MATIS`, `MatSetType()`, `MatType`
+.seealso: [](ch_matrices), `Mat`, `MATIS`, `MatSetType()`, `MatType`
 @*/
 PetscErrorCode MatISSetLocalMatType(Mat mat, MatType mtype)
 {
@@ -2922,13 +2922,13 @@ static PetscErrorCode MatISSetLocalMat_IS(Mat mat, Mat local)
 }
 
 /*@
-    MatISSetLocalMat - Replace the local matrix stored inside a `MATIS` object.
+  MatISSetLocalMat - Replace the local matrix stored inside a `MATIS` object.
 
   Collective
 
   Input Parameters:
-+  mat - the matrix
--  local - the local matrix
++ mat   - the matrix
+- local - the local matrix
 
   Level: advanced
 
@@ -2938,7 +2938,7 @@ static PetscErrorCode MatISSetLocalMat_IS(Mat mat, Mat local)
   This can be called if you have precomputed the local matrix and
   want to provide it to the matrix object `MATIS`.
 
-.seealso: [](chapter_matrices), `Mat`, `MATIS`, `MatISSetLocalMatType`, `MatISGetLocalMat()`
+.seealso: [](ch_matrices), `Mat`, `MATIS`, `MatISSetLocalMatType`, `MatISGetLocalMat()`
 @*/
 PetscErrorCode MatISSetLocalMat(Mat mat, Mat local)
 {
@@ -3105,28 +3105,31 @@ static PetscErrorCode MatSetFromOptions_IS(Mat A, PetscOptionItems *PetscOptions
 }
 
 /*@
-    MatCreateIS - Creates a "process" unassembled matrix, `MATIS`, assembled on each
-       process but not across processes.
+  MatCreateIS - Creates a "process" unassembled matrix, `MATIS`, assembled on each
+  process but not across processes.
 
-   Input Parameters:
-+     comm    - MPI communicator that will share the matrix
-.     bs      - block size of the matrix
-.     m,n,M,N - local and/or global sizes of the left and right vector used in matrix vector products
-.     rmap    - local to global map for rows
--     cmap    - local to global map for cols
+  Input Parameters:
++ comm - MPI communicator that will share the matrix
+. bs   - block size of the matrix
+. m    - local size of left vector used in matrix vector products
+. n    - local size of right vector used in matrix vector products
+. M    - global size of left vector used in matrix vector products
+. N    - global size of right vector used in matrix vector products
+. rmap - local to global map for rows
+- cmap - local to global map for cols
 
-   Output Parameter:
-.    A - the resulting matrix
+  Output Parameter:
+. A - the resulting matrix
 
-   Level: advanced
+  Level: advanced
 
-   Notes:
-    `m` and `n` are NOT related to the size of the map; they represent the size of the local parts of the distributed vectors
-    used in `MatMult()` operations. The sizes of rmap and cmap define the size of the local matrices.
+  Notes:
+  `m` and `n` are NOT related to the size of the map; they represent the size of the local parts of the distributed vectors
+  used in `MatMult()` operations. The sizes of rmap and cmap define the size of the local matrices.
 
-    If `rmap` (`cmap`) is `NULL`, then the local row (column) spaces matches the global space.
+  If `rmap` (`cmap`) is `NULL`, then the local row (column) spaces matches the global space.
 
-.seealso: [](chapter_matrices), `Mat`, `MATIS`, `MatSetLocalToGlobalMapping()`
+.seealso: [](ch_matrices), `Mat`, `MATIS`, `MatSetLocalToGlobalMapping()`
 @*/
 PetscErrorCode MatCreateIS(MPI_Comm comm, PetscInt bs, PetscInt m, PetscInt n, PetscInt M, PetscInt N, ISLocalToGlobalMapping rmap, ISLocalToGlobalMapping cmap, Mat *A)
 {
@@ -3315,31 +3318,31 @@ static PetscErrorCode MatIncreaseOverlap_IS(Mat A, PetscInt n, IS is[], PetscInt
 }
 
 /*@
-   MatISGetLocalToGlobalMapping - Gets the local-to-global numbering of the `MATIS` object
+  MatISGetLocalToGlobalMapping - Gets the local-to-global numbering of the `MATIS` object
 
-   Not Collective
+  Not Collective
 
-   Input Parameter:
-.  A - the matrix
+  Input Parameter:
+. A - the matrix
 
-   Output Parameters:
-+  rmapping - row mapping
--  cmapping - column mapping
+  Output Parameters:
++ rmapping - row mapping
+- cmapping - column mapping
 
-   Level: advanced
+  Level: advanced
 
-   Note:
-   The returned map can be different from the one used to construct the `MATIS` object, since it will not contain negative or repeated indices.
+  Note:
+  The returned map can be different from the one used to construct the `MATIS` object, since it will not contain negative or repeated indices.
 
-.seealso: [](chapter_matrices), `Mat`, `MatIS`, `MatSetLocalToGlobalMapping()`
+.seealso: [](ch_matrices), `Mat`, `MatIS`, `MatSetLocalToGlobalMapping()`
 @*/
 PetscErrorCode MatISGetLocalToGlobalMapping(Mat A, ISLocalToGlobalMapping *rmapping, ISLocalToGlobalMapping *cmapping)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
   PetscValidType(A, 1);
-  if (rmapping) PetscValidPointer(rmapping, 2);
-  if (cmapping) PetscValidPointer(cmapping, 3);
+  if (rmapping) PetscAssertPointer(rmapping, 2);
+  if (cmapping) PetscAssertPointer(cmapping, 3);
   PetscUseMethod(A, "MatISGetLocalToGlobalMapping_C", (Mat, ISLocalToGlobalMapping *, ISLocalToGlobalMapping *), (A, rmapping, cmapping));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -3374,7 +3377,7 @@ static PetscErrorCode MatISGetLocalToGlobalMapping_IS(Mat A, ISLocalToGlobalMapp
    You can do matrix preallocation on the local matrix after you obtain it with
    `MatISGetLocalMat()`; otherwise, you could use `MatISSetPreallocation()`
 
-.seealso: [](chapter_matrices), `Mat`, `MATIS`, `Mat`, `MatISGetLocalMat()`, `MatSetLocalToGlobalMapping()`, `MatISSetPreallocation()`, `MatCreateIS()`, `PCBDDC`, `KSPFETIDP`
+.seealso: [](ch_matrices), `Mat`, `MATIS`, `Mat`, `MatISGetLocalMat()`, `MatSetLocalToGlobalMapping()`, `MatISSetPreallocation()`, `MatCreateIS()`, `PCBDDC`, `KSPFETIDP`
 M*/
 PETSC_EXTERN PetscErrorCode MatCreate_IS(Mat A)
 {

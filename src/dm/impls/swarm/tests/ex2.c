@@ -1,4 +1,4 @@
-static char help[] = "Tests L2 projection with DMSwarm using delta function particles.\n";
+static char help[] = "Tests L2 projection with DMSwarm using delta function particles and deposition of linear shape.\n";
 
 #include <petscdmplex.h>
 #include <petscfe.h>
@@ -13,7 +13,7 @@ typedef struct {
   PetscReal meshRelDx;        /* Relative vertex position perturbation compared to average cell diameter h */
   PetscInt  k;                /* Mode number for test function */
   PetscReal momentTol;        /* Tolerance for checking moment conservation */
-  PetscBool useBlockDiagPrec; /* Use the block diagonal of the normal equations as a preconditioner */
+  PetscBool shape;
   PetscErrorCode (*func)(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar *, void *);
 } AppCtx;
 
@@ -58,9 +58,10 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->particleRelDx    = 1.e-20;
   options->meshRelDx        = 1.e-20;
   options->momentTol        = 100. * PETSC_MACHINE_EPSILON;
-  options->useBlockDiagPrec = PETSC_FALSE;
+  options->shape            = PETSC_FALSE;
 
   PetscOptionsBegin(comm, "", "L2 Projection Options", "DMPLEX");
+  PetscCall(PetscOptionsBool("-shape", "Test linear function projection", "ex2.c", options->shape, &options->shape, NULL));
   PetscCall(PetscOptionsInt("-k", "Mode number of test", "ex2.c", options->k, &options->k, NULL));
   PetscCall(PetscOptionsInt("-particlesPerCell", "Number of particles per cell", "ex2.c", options->particlesPerCell, &options->particlesPerCell, NULL));
   PetscCall(PetscOptionsReal("-particle_perturbation", "Relative perturbation of particles (0,1)", "ex2.c", options->particleRelDx, &options->particleRelDx, NULL));
@@ -80,7 +81,6 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
     }
   }
   PetscCall(PetscOptionsReal("-moment_tol", "Tolerance for moment checks", "ex2.c", options->momentTol, &options->momentTol, NULL));
-  PetscCall(PetscOptionsBool("-block_diag_prec", "Use the block diagonal of the normal equations to precondition the particle projection", "ex2.c", options->useBlockDiagPrec, &options->useBlockDiagPrec, NULL));
   PetscOptionsEnd();
 
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -151,15 +151,13 @@ static PetscErrorCode CreateFEM(DM dm, AppCtx *user)
   PetscFE        fe;
   PetscDS        ds;
   DMPolytopeType ct;
-  PetscBool      simplex;
   PetscInt       dim, cStart;
 
   PetscFunctionBeginUser;
   PetscCall(DMGetDimension(dm, &dim));
   PetscCall(DMPlexGetHeightStratum(dm, 0, &cStart, NULL));
   PetscCall(DMPlexGetCellType(dm, cStart, &ct));
-  simplex = DMPolytopeTypeGetNumVertices(ct) == DMPolytopeTypeGetDim(ct) + 1 ? PETSC_TRUE : PETSC_FALSE;
-  PetscCall(PetscFECreateDefault(PetscObjectComm((PetscObject)dm), dim, 1, simplex, NULL, -1, &fe));
+  PetscCall(PetscFECreateByCell(PetscObjectComm((PetscObject)dm), dim, 1, ct, NULL, -1, &fe));
   PetscCall(PetscObjectSetName((PetscObject)fe, "fe"));
   PetscCall(DMSetField(dm, 0, NULL, (PetscObject)fe));
   PetscCall(DMCreateDS(dm));
@@ -255,6 +253,57 @@ static PetscErrorCode CreateParticles(DM dm, DM *sw, AppCtx *user)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+static PetscErrorCode CreateParticles_Shape(DM dm, DM *sw, AppCtx *user)
+{
+  PetscDS          prob;
+  PetscFE          fe;
+  PetscQuadrature  quad;
+  PetscScalar     *vals;
+  PetscReal       *v0, *J, *invJ, detJ, *coords, *xi0;
+  PetscInt        *cellid;
+  const PetscReal *qpoints, *qweights;
+  PetscInt         cStart, cEnd, c, Nq, q, dim;
+
+  PetscFunctionBeginUser;
+  PetscCall(DMGetDimension(dm, &dim));
+  PetscCall(DMGetDS(dm, &prob));
+  PetscCall(DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd));
+  PetscCall(PetscDSGetDiscretization(prob, 0, (PetscObject *)&fe));
+  PetscCall(PetscFEGetQuadrature(fe, &quad));
+  PetscCall(PetscQuadratureGetData(quad, NULL, NULL, &Nq, &qpoints, &qweights));
+  PetscCall(DMCreate(PetscObjectComm((PetscObject)dm), sw));
+  PetscCall(DMSetType(*sw, DMSWARM));
+  PetscCall(DMSetDimension(*sw, dim));
+  PetscCall(DMSwarmSetType(*sw, DMSWARM_PIC));
+  PetscCall(DMSwarmSetCellDM(*sw, dm));
+  PetscCall(DMSwarmRegisterPetscDatatypeField(*sw, "w_q", 1, PETSC_REAL));
+  PetscCall(DMSwarmFinalizeFieldRegister(*sw));
+  PetscCall(DMSwarmSetLocalSizes(*sw, (cEnd - cStart) * Nq, 0));
+  PetscCall(DMSetFromOptions(*sw));
+  PetscCall(PetscMalloc4(dim, &xi0, dim, &v0, dim * dim, &J, dim * dim, &invJ));
+  for (c = 0; c < dim; c++) xi0[c] = -1.;
+  PetscCall(DMSwarmGetField(*sw, DMSwarmPICField_coor, NULL, NULL, (void **)&coords));
+  PetscCall(DMSwarmGetField(*sw, DMSwarmPICField_cellid, NULL, NULL, (void **)&cellid));
+  PetscCall(DMSwarmGetField(*sw, "w_q", NULL, NULL, (void **)&vals));
+  for (c = cStart; c < cEnd; ++c) {
+    for (q = 0; q < Nq; ++q) {
+      PetscCall(DMPlexComputeCellGeometryFEM(dm, c, NULL, v0, J, invJ, &detJ));
+      cellid[c * Nq + q] = c;
+      CoordinatesRefToReal(dim, dim, xi0, v0, J, &qpoints[q * dim], &coords[(c * Nq + q) * dim]);
+      PetscCall(linear(dim, 0.0, &coords[(c * Nq + q) * dim], 1, &vals[c * Nq + q], (void *)user));
+      vals[c * Nq + q] *= qweights[q] * detJ;
+    }
+  }
+  PetscCall(DMSwarmRestoreField(*sw, DMSwarmPICField_coor, NULL, NULL, (void **)&coords));
+  PetscCall(DMSwarmRestoreField(*sw, DMSwarmPICField_cellid, NULL, NULL, (void **)&cellid));
+  PetscCall(DMSwarmRestoreField(*sw, "w_q", NULL, NULL, (void **)&vals));
+  PetscCall(PetscFree4(xi0, v0, J, invJ));
+  PetscCall(DMSwarmMigrate(*sw, PETSC_FALSE));
+  PetscCall(PetscObjectSetName((PetscObject)*sw, "Particles"));
+  PetscCall(DMViewFromOptions(*sw, NULL, "-sw_view"));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 static PetscErrorCode computeParticleMoments(DM sw, PetscReal moments[3], AppCtx *user)
 {
   DM                 dm;
@@ -288,7 +337,7 @@ static PetscErrorCode computeParticleMoments(DM sw, PetscReal moments[3], AppCtx
   PetscCall(DMSwarmRestoreField(sw, DMSwarmPICField_coor, NULL, NULL, (void **)&coords));
   PetscCall(DMSwarmRestoreField(sw, "w_q", NULL, NULL, (void **)&w));
   PetscCall(DMSwarmSortRestoreAccess(sw));
-  PetscCallMPI(MPI_Allreduce(mom, moments, 3, MPIU_REAL, MPI_SUM, PetscObjectComm((PetscObject)sw)));
+  PetscCall(MPIU_Allreduce(mom, moments, 3, MPIU_REAL, MPI_SUM, PetscObjectComm((PetscObject)sw)));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -329,122 +378,45 @@ static PetscErrorCode computeFEMMoments(DM dm, Vec u, PetscReal moments[3], AppC
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode TestL2ProjectionParticlesToField(DM dm, DM sw, AppCtx *user)
+static PetscErrorCode TestL2ProjectionParticlesToField(DM dm, DM sw, Vec fhat, AppCtx *user)
 {
-  MPI_Comm  comm;
-  KSP       ksp;
-  Mat       M;            /* FEM mass matrix */
-  Mat       M_p;          /* Particle mass matrix */
-  Vec       f, rhs, fhat; /* Particle field f, \int phi_i f, FEM field */
-  PetscReal pmoments[3];  /* \int f, \int x f, \int r^2 f */
-  PetscReal fmoments[3];  /* \int \hat f, \int x \hat f, \int r^2 \hat f */
-  PetscInt  m;
+  const char *fieldnames[1] = {"w_q"};
+  Vec         fields[1]     = {fhat};
+  PetscReal   pmoments[3]; // \int f, \int x f, \int r^2 f
+  PetscReal   fmoments[3]; // \int \hat f, \int x \hat f, \int r^2 \hat f
 
   PetscFunctionBeginUser;
-  PetscCall(PetscObjectGetComm((PetscObject)dm, &comm));
-  PetscCall(KSPCreate(comm, &ksp));
-  PetscCall(KSPSetOptionsPrefix(ksp, "ptof_"));
-  PetscCall(DMGetGlobalVector(dm, &fhat));
-  PetscCall(DMGetGlobalVector(dm, &rhs));
-
-  PetscCall(DMCreateMassMatrix(sw, dm, &M_p));
-  PetscCall(MatViewFromOptions(M_p, NULL, "-M_p_view"));
-
-  /* make particle weight vector */
-  PetscCall(DMSwarmCreateGlobalVectorFromField(sw, "w_q", &f));
-
-  /* create matrix RHS vector */
-  PetscCall(MatMultTranspose(M_p, f, rhs));
-  PetscCall(DMSwarmDestroyGlobalVectorFromField(sw, "w_q", &f));
-  PetscCall(PetscObjectSetName((PetscObject)rhs, "rhs"));
-  PetscCall(VecViewFromOptions(rhs, NULL, "-rhs_view"));
-
-  PetscCall(DMCreateMatrix(dm, &M));
-  PetscCall(DMPlexSNESComputeJacobianFEM(dm, fhat, M, M, user));
-  PetscCall(MatViewFromOptions(M, NULL, "-M_view"));
-  PetscCall(KSPSetOperators(ksp, M, M));
-  PetscCall(KSPSetFromOptions(ksp));
-  PetscCall(KSPSolve(ksp, rhs, fhat));
-  PetscCall(PetscObjectSetName((PetscObject)fhat, "fhat"));
-  PetscCall(VecViewFromOptions(fhat, NULL, "-fhat_view"));
+  PetscCall(DMSwarmProjectFields(sw, 1, fieldnames, fields, SCATTER_FORWARD));
 
   /* Check moments of field */
   PetscCall(computeParticleMoments(sw, pmoments, user));
   PetscCall(computeFEMMoments(dm, fhat, fmoments, user));
-  PetscCall(PetscPrintf(comm, "L2 projection mass: %20.10e, x-momentum: %20.10e, energy: %20.10e.\n", fmoments[0], fmoments[1], fmoments[2]));
-  for (m = 0; m < 3; ++m) {
-    PetscCheck(PetscAbsReal((fmoments[m] - pmoments[m]) / fmoments[m]) <= user->momentTol, comm, PETSC_ERR_ARG_WRONG, "Moment %" PetscInt_FMT " error too large %g > %g", m, PetscAbsReal((fmoments[m] - pmoments[m]) / fmoments[m]), user->momentTol);
+  PetscCall(PetscPrintf(PetscObjectComm((PetscObject)dm), "L2 projection mass: %20.10e, x-momentum: %20.10e, energy: %20.10e.\n", fmoments[0], fmoments[1], fmoments[2]));
+  for (PetscInt m = 0; m < 3; ++m) {
+    PetscCheck(PetscAbsReal((fmoments[m] - pmoments[m]) / fmoments[m]) <= user->momentTol, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Moment %" PetscInt_FMT " error too large %g > %g", m, PetscAbsReal((fmoments[m] - pmoments[m]) / fmoments[m]),
+               user->momentTol);
   }
-
-  PetscCall(KSPDestroy(&ksp));
-  PetscCall(MatDestroy(&M));
-  PetscCall(MatDestroy(&M_p));
-  PetscCall(DMRestoreGlobalVector(dm, &fhat));
-  PetscCall(DMRestoreGlobalVector(dm, &rhs));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode TestL2ProjectionFieldToParticles(DM dm, DM sw, AppCtx *user)
+static PetscErrorCode TestL2ProjectionFieldToParticles(DM dm, DM sw, Vec fhat, AppCtx *user)
 {
-  MPI_Comm  comm;
-  KSP       ksp;
-  Mat       M;            /* FEM mass matrix */
-  Mat       M_p, PM_p;    /* Particle mass matrix M_p, and the preconditioning matrix, e.g. M_p M^T_p */
-  Vec       f, rhs, fhat; /* Particle field f, \int phi_i fhat, FEM field */
-  PetscReal pmoments[3];  /* \int f, \int x f, \int r^2 f */
-  PetscReal fmoments[3];  /* \int \hat f, \int x \hat f, \int r^2 \hat f */
-  PetscInt  m;
+  const char *fieldnames[1] = {"w_q"};
+  Vec         fields[1]     = {fhat};
+  PetscReal   pmoments[3]; // \int f, \int x f, \int r^2 f
+  PetscReal   fmoments[3]; // \int \hat f, \int x \hat f, \int r^2 \hat f
 
   PetscFunctionBeginUser;
-  PetscCall(PetscObjectGetComm((PetscObject)dm, &comm));
-
-  PetscCall(KSPCreate(comm, &ksp));
-  PetscCall(KSPSetOptionsPrefix(ksp, "ftop_"));
-  PetscCall(KSPSetFromOptions(ksp));
-
-  PetscCall(DMGetGlobalVector(dm, &fhat));
-  PetscCall(DMGetGlobalVector(dm, &rhs));
-
-  PetscCall(DMCreateMassMatrix(sw, dm, &M_p));
-  PetscCall(MatViewFromOptions(M_p, NULL, "-M_p_view"));
-
-  /* make particle weight vector */
-  PetscCall(DMSwarmCreateGlobalVectorFromField(sw, "w_q", &f));
-
-  /* create matrix RHS vector, in this case the FEM field fhat with the coefficients vector #alpha */
-  PetscCall(PetscObjectSetName((PetscObject)rhs, "rhs"));
-  PetscCall(VecViewFromOptions(rhs, NULL, "-rhs_view"));
-  PetscCall(DMCreateMatrix(dm, &M));
-  PetscCall(DMPlexSNESComputeJacobianFEM(dm, fhat, M, M, user));
-  PetscCall(MatViewFromOptions(M, NULL, "-M_view"));
-  PetscCall(MatMultTranspose(M, fhat, rhs));
-  if (user->useBlockDiagPrec) PetscCall(DMSwarmCreateMassMatrixSquare(sw, dm, &PM_p));
-  else {
-    PetscCall(PetscObjectReference((PetscObject)M_p));
-    PM_p = M_p;
-  }
-
-  PetscCall(KSPSetOperators(ksp, M_p, PM_p));
-  PetscCall(KSPSolveTranspose(ksp, rhs, f));
-  PetscCall(PetscObjectSetName((PetscObject)fhat, "fhat"));
-  PetscCall(VecViewFromOptions(fhat, NULL, "-fhat_view"));
-
-  PetscCall(DMSwarmDestroyGlobalVectorFromField(sw, "w_q", &f));
+  PetscCall(DMSwarmProjectFields(sw, 1, fieldnames, fields, SCATTER_REVERSE));
 
   /* Check moments */
   PetscCall(computeParticleMoments(sw, pmoments, user));
   PetscCall(computeFEMMoments(dm, fhat, fmoments, user));
-  PetscCall(PetscPrintf(comm, "L2 projection mass: %20.10e, x-momentum: %20.10e, energy: %20.10e.\n", fmoments[0], fmoments[1], fmoments[2]));
-  for (m = 0; m < 3; ++m) {
-    PetscCheck(PetscAbsReal((fmoments[m] - pmoments[m]) / fmoments[m]) <= user->momentTol, comm, PETSC_ERR_ARG_WRONG, "Moment %" PetscInt_FMT " error too large %g > %g", m, PetscAbsReal((fmoments[m] - pmoments[m]) / fmoments[m]), user->momentTol);
+  PetscCall(PetscPrintf(PetscObjectComm((PetscObject)dm), "L2 projection mass: %20.10e, x-momentum: %20.10e, energy: %20.10e.\n", fmoments[0], fmoments[1], fmoments[2]));
+  for (PetscInt m = 0; m < 3; ++m) {
+    PetscCheck(PetscAbsReal((fmoments[m] - pmoments[m]) / fmoments[m]) <= user->momentTol, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Moment %" PetscInt_FMT " error too large %g > %g", m, PetscAbsReal((fmoments[m] - pmoments[m]) / fmoments[m]),
+               user->momentTol);
   }
-  PetscCall(KSPDestroy(&ksp));
-  PetscCall(MatDestroy(&M));
-  PetscCall(MatDestroy(&M_p));
-  PetscCall(MatDestroy(&PM_p));
-  PetscCall(DMRestoreGlobalVector(dm, &fhat));
-  PetscCall(DMRestoreGlobalVector(dm, &rhs));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -619,6 +591,46 @@ static PetscErrorCode TestFieldGradientProjection(DM dm, DM sw, AppCtx *user)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+static PetscErrorCode TestL2Projection_Shape(DM dm, DM sw, AppCtx *user)
+{
+  PetscErrorCode (*funcs[1])(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar *, void *);
+  KSP       ksp;
+  Mat       mass;
+  Vec       u, rhs, uproj;
+  void     *ctxs[1];
+  PetscReal error;
+
+  PetscFunctionBeginUser;
+  ctxs[0]  = (void *)user;
+  funcs[0] = linear;
+
+  PetscCall(DMSwarmCreateGlobalVectorFromField(sw, "w_q", &u));
+  PetscCall(VecViewFromOptions(u, NULL, "-f_view"));
+  PetscCall(DMGetGlobalVector(dm, &rhs));
+  PetscCall(DMCreateMassMatrix(sw, dm, &mass));
+  PetscCall(MatMultTranspose(mass, u, rhs));
+  PetscCall(VecViewFromOptions(rhs, NULL, "-rhs_view"));
+  PetscCall(MatDestroy(&mass));
+  PetscCall(DMSwarmDestroyGlobalVectorFromField(sw, "w_q", &u));
+  PetscCall(DMGetGlobalVector(dm, &uproj));
+  PetscCall(DMCreateMatrix(dm, &mass));
+  PetscCall(DMPlexSNESComputeJacobianFEM(dm, uproj, mass, mass, user));
+  PetscCall(MatViewFromOptions(mass, NULL, "-mass_mat_view"));
+  PetscCall(KSPCreate(PETSC_COMM_WORLD, &ksp));
+  PetscCall(KSPSetOperators(ksp, mass, mass));
+  PetscCall(KSPSetFromOptions(ksp));
+  PetscCall(KSPSolve(ksp, rhs, uproj));
+  PetscCall(KSPDestroy(&ksp));
+  PetscCall(PetscObjectSetName((PetscObject)uproj, "Full Projection"));
+  PetscCall(VecViewFromOptions(uproj, NULL, "-proj_vec_view"));
+  PetscCall(DMComputeL2Diff(dm, 0.0, funcs, ctxs, uproj, &error));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Projected L2 Error: %g\n", (double)error));
+  PetscCall(MatDestroy(&mass));
+  PetscCall(DMRestoreGlobalVector(dm, &rhs));
+  PetscCall(DMRestoreGlobalVector(dm, &uproj));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 int main(int argc, char *argv[])
 {
   MPI_Comm comm;
@@ -631,10 +643,19 @@ int main(int argc, char *argv[])
   PetscCall(ProcessOptions(comm, &user));
   PetscCall(CreateMesh(comm, &dm, &user));
   PetscCall(CreateFEM(dm, &user));
-  PetscCall(CreateParticles(dm, &sw, &user));
-  PetscCall(TestL2ProjectionParticlesToField(dm, sw, &user));
-  PetscCall(TestL2ProjectionFieldToParticles(dm, sw, &user));
-  PetscCall(TestFieldGradientProjection(dm, sw, &user));
+  if (!user.shape) {
+    Vec fhat;
+
+    PetscCall(CreateParticles(dm, &sw, &user));
+    PetscCall(DMGetGlobalVector(dm, &fhat));
+    PetscCall(TestL2ProjectionParticlesToField(dm, sw, fhat, &user));
+    PetscCall(TestL2ProjectionFieldToParticles(dm, sw, fhat, &user));
+    PetscCall(TestFieldGradientProjection(dm, sw, &user));
+    PetscCall(DMRestoreGlobalVector(dm, &fhat));
+  } else {
+    PetscCall(CreateParticles_Shape(dm, &sw, &user));
+    PetscCall(TestL2Projection_Shape(dm, sw, &user));
+  }
   PetscCall(DMDestroy(&dm));
   PetscCall(DMDestroy(&sw));
   PetscCall(PetscFinalize());
@@ -753,6 +774,34 @@ int main(int argc, char *argv[])
       -petscspace_degree 2 -petscfe_default_quadrature_order 3 \
       -particlesPerCell 200 \
       -ptof_pc_type lu  \
-      -ftop_ksp_rtol 1e-17 -ftop_ksp_type lsqr -ftop_pc_type lu -ftop_pc_factor_shift_type nonzero -block_diag_prec
-
+      -ftop_ksp_rtol 1e-17 -ftop_ksp_type lsqr -ftop_pc_type bjacobi -ftop_sub_pc_type lu -ftop_sub_pc_factor_shift_type nonzero
+  test:
+    suffix: proj_shape_linear_tri_2d
+    requires: ctetgen triangle
+    args: -shape -dm_plex_box_faces 2,2\
+          -dm_view -sw_view\
+          -petscspace_degree 1 -petscfe_default_quadrature_order 1\
+          -pc_type lu
+  test:
+    suffix: proj_shape_linear_quad_2d
+    requires: ctetgen triangle
+    args: -shape -dm_plex_simplex 0 -dm_plex_box_faces 2,2\
+          -dm_view -sw_view\
+          -petscspace_degree 1 -petscfe_default_quadrature_order 1\
+          -pc_type lu
+  test:
+    suffix: proj_shape_linear_tri_3d
+    requires: ctetgen triangle
+    args: -shape -dm_plex_dim 3 -dm_plex_box_faces 2,2,2\
+          -dm_view -sw_view\
+          -petscspace_degree 1 -petscfe_default_quadrature_order 1\
+          -pc_type lu
+  test:
+    suffix: proj_shape_linear_quad_3d
+    requires: ctetgen triangle
+    args: -shape -dm_plex_dim 3 -dm_plex_simplex 0\
+          -dm_plex_box_faces 2,2,2\
+          -dm_view -sw_view\
+          -petscspace_degree 1 -petscfe_default_quadrature_order 1\
+          -pc_type lu
 TEST*/

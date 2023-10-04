@@ -171,7 +171,7 @@ static void print_callback(const char *msg, int length)
 }
 
 // Outputs messages from the AmgX message buffer and clears it
-PetscErrorCode amgx_output_messages(PC_AMGX *amgx)
+static PetscErrorCode amgx_output_messages(PC_AMGX *amgx)
 {
   PetscFunctionBegin;
 
@@ -634,17 +634,17 @@ PETSC_EXTERN PetscErrorCode PCCreate_AMGX(PC pc)
 }
 
 /*@C
-   PCAmgXGetResources - get AMGx's internal resource object
+  PCAmgXGetResources - get AMGx's internal resource object
 
-    Not Collective
+  Not Collective
 
-   Input Parameter:
-.  pc - the PC
+  Input Parameter:
+. pc - the PC
 
-   Output Parameter:
-.  rsrc_out - pointer to the AMGx resource object
+  Output Parameter:
+. rsrc_out - pointer to the AMGx resource object
 
-   Level: advanced
+  Level: advanced
 
 .seealso: `PCAMGX`, `PC`, `PCGAMG`
 @*/

@@ -179,11 +179,9 @@ int main(int argc, char **argv)
   PetscCall(PetscTimeSubtract(&time));
   /* Benchmark system */
   if (user.nit) {
-    Vec      b;
-    PetscInt i;
-#if defined(PETSC_USE_LOG)
+    Vec           b;
+    PetscInt      i;
     PetscLogStage kspstage;
-#endif
     PetscCall(PetscLogStageRegister("Solve only", &kspstage));
     PetscCall(PetscLogStagePush(kspstage));
     PetscCall(SNESGetSolution(snes, &u));
@@ -209,7 +207,7 @@ int main(int argc, char **argv)
   test:
     suffix: strong
     requires: triangle
-    args: -dm_plex_dim 2 -dm_refine 1 -benchmark_it 0 -dmsnes_check -potential_petscspace_degree 2 -dm_ds_jet_degree 2 -strong
+    args: -dm_plex_dim 2 -dm_refine 1 -benchmark_it 0 -dmsnes_check -potential_petscspace_degree 2 -dm_ds_jet_degree 2 -strong -pc_type jacobi
 
   test:
     suffix: bench

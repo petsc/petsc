@@ -403,12 +403,11 @@ static PetscErrorCode TSDiscGradSetFormulation_DiscGrad(TS ts, PetscErrorCode (*
   Level: intermediate
 
   Notes:
-  This is the implicit midpoint rule, with an optional term that guarantees the discrete gradient property. This
-  timestepper applies to systems of the form
-$ u_t = S(u) grad F(u)
-  where S(u) is a linear operator, and F is a functional of u.
+  This is the implicit midpoint rule, with an optional term that guarantees the discrete
+  gradient property. This timestepper applies to systems of the form $u_t = S(u) \nabla F(u)$
+  where $S(u)$ is a linear operator, and $F$ is a functional of $u$.
 
-.seealso: [](chapter_ts), `TSCreate()`, `TSSetType()`, `TS`, `TSDISCGRAD`, `TSDiscGradSetFormulation()`
+.seealso: [](ch_ts), `TSCreate()`, `TSSetType()`, `TS`, `TSDISCGRAD`, `TSDiscGradSetFormulation()`
 M*/
 PETSC_EXTERN PetscErrorCode TSCreate_DiscGrad(TS ts)
 {
@@ -443,7 +442,8 @@ PETSC_EXTERN PetscErrorCode TSCreate_DiscGrad(TS ts)
 }
 
 /*@C
-  TSDiscGradGetFormulation - Get the construction method for S, F, and grad F from the formulation u_t = S grad F for `TSDISCGRAD`
+  TSDiscGradGetFormulation - Get the construction method for S, F, and grad F from the
+  formulation $u_t = S \nabla F$ for `TSDISCGRAD`
 
   Not Collective
 
@@ -467,21 +467,22 @@ $ PetscErrorCode Gfunc(TS ts, PetscReal time, Vec u, Vec G, void *ctx)
 
   Level: intermediate
 
-.seealso: [](chapter_ts), `TS`, `TSDISCGRAD`, `TSDiscGradSetFormulation()`
+.seealso: [](ch_ts), `TS`, `TSDISCGRAD`, `TSDiscGradSetFormulation()`
 @*/
 PetscErrorCode TSDiscGradGetFormulation(TS ts, PetscErrorCode (**Sfunc)(TS, PetscReal, Vec, Mat, void *), PetscErrorCode (**Ffunc)(TS, PetscReal, Vec, PetscScalar *, void *), PetscErrorCode (**Gfunc)(TS, PetscReal, Vec, Vec, void *), void *ctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
-  PetscValidPointer(Sfunc, 2);
-  PetscValidPointer(Ffunc, 3);
-  PetscValidPointer(Gfunc, 4);
+  PetscAssertPointer(Sfunc, 2);
+  PetscAssertPointer(Ffunc, 3);
+  PetscAssertPointer(Gfunc, 4);
   PetscUseMethod(ts, "TSDiscGradGetFormulation_C", (TS, PetscErrorCode(**Sfunc)(TS, PetscReal, Vec, Mat, void *), PetscErrorCode(**Ffunc)(TS, PetscReal, Vec, PetscScalar *, void *), PetscErrorCode(**Gfunc)(TS, PetscReal, Vec, Vec, void *), void *), (ts, Sfunc, Ffunc, Gfunc, ctx));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
-  TSDiscGradSetFormulation - Set the construction method for S, F, and grad F from the formulation u_t = S(u) grad F(u) for `TSDISCGRAD`
+  TSDiscGradSetFormulation - Set the construction method for S, F, and grad F from the
+  formulation $u_t = S(u) \nabla F(u)$ for `TSDISCGRAD`
 
   Not Collective
 
@@ -490,7 +491,7 @@ PetscErrorCode TSDiscGradGetFormulation(TS ts, PetscErrorCode (**Sfunc)(TS, Pets
 . Sfunc - constructor for the S matrix from the formulation
 . Ffunc - functional F from the formulation
 . Gfunc - constructor for the gradient of F from the formulation
-- ctx - optional context for the functions
+- ctx   - optional context for the functions
 
   Calling sequence of `Sfunc`:
 $ PetscErrorCode Sfunc(TS ts, PetscReal time, Vec u, Mat S, void *ctx)
@@ -501,9 +502,9 @@ $ PetscErrorCode Ffunc(TS ts, PetscReal time, Vec u, PetscScalar *F, void *ctx)
   Calling sequence of `Gfunc`:
 $ PetscErrorCode Gfunc(TS ts, PetscReal time, Vec u, Vec G, void *ctx)
 
-  Level: Intermediate
+  Level: intermediate
 
-.seealso: [](chapter_ts), `TSDISCGRAD`, `TSDiscGradGetFormulation()`
+.seealso: [](ch_ts), `TSDISCGRAD`, `TSDiscGradGetFormulation()`
 @*/
 PetscErrorCode TSDiscGradSetFormulation(TS ts, PetscErrorCode (*Sfunc)(TS, PetscReal, Vec, Mat, void *), PetscErrorCode (*Ffunc)(TS, PetscReal, Vec, PetscScalar *, void *), PetscErrorCode (*Gfunc)(TS, PetscReal, Vec, Vec, void *), void *ctx)
 {
@@ -517,45 +518,49 @@ PetscErrorCode TSDiscGradSetFormulation(TS ts, PetscErrorCode (*Sfunc)(TS, Petsc
 }
 
 /*@
-  TSDiscGradIsGonzalez - Checks flag for whether to use additional conservative terms in discrete gradient formulation for `TSDISCGRAD`
+  TSDiscGradIsGonzalez - Checks flag for whether to use additional conservative terms in
+  discrete gradient formulation for `TSDISCGRAD`
 
   Not Collective
 
   Input Parameter:
-.  ts - timestepping context
+. ts - timestepping context
 
   Output Parameter:
-.  gonzalez - `PETSC_TRUE` when using the Gonzalez term
+. gonzalez - `PETSC_TRUE` when using the Gonzalez term
 
-  Level: Advanced
+  Level: advanced
 
-.seealso: [](chapter_ts), `TSDISCGRAD`, `TSDiscGradUseGonzalez()`, `TSDISCGRAD`
+.seealso: [](ch_ts), `TSDISCGRAD`, `TSDiscGradUseGonzalez()`
 @*/
 PetscErrorCode TSDiscGradIsGonzalez(TS ts, PetscBool *gonzalez)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
-  PetscValidBoolPointer(gonzalez, 2);
+  PetscAssertPointer(gonzalez, 2);
   PetscUseMethod(ts, "TSDiscGradIsGonzalez_C", (TS, PetscBool *), (ts, gonzalez));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
-  TSDiscGradUseGonzalez - Sets discrete gradient formulation with or without additional conservative terms.
-  Without the flag, the discrete gradients timestepper is just backwards Euler
+  TSDiscGradUseGonzalez - Sets discrete gradient formulation with or without additional
+  conservative terms.
 
   Not Collective
 
   Input Parameters:
-+ ts - timestepping context
++ ts  - timestepping context
 - flg - `PETSC_TRUE` to use the Gonzalez term
 
   Options Database Key:
 . -ts_discgrad_gonzalez <flg> - use the Gonzalez term for the discrete gradient formulation
 
-  Level: Intermediate
+  Level: intermediate
 
-.seealso: [](chapter_ts), `TSDISCGRAD`
+  Notes:
+  Without `flg`, the discrete gradients timestepper is just backwards Euler.
+
+.seealso: [](ch_ts), `TSDISCGRAD`
 @*/
 PetscErrorCode TSDiscGradUseGonzalez(TS ts, PetscBool flg)
 {

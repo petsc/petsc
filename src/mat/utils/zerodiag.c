@@ -7,52 +7,52 @@
 #include <petsc/private/matimpl.h> /*I  "petscmat.h"  I*/
 
 #define SWAP(a, b) \
-  { \
+  do { \
     PetscInt _t; \
     _t = a; \
     a  = b; \
     b  = _t; \
-  }
+  } while (0)
 
 /*@
-    MatReorderForNonzeroDiagonal - Changes matrix ordering to remove
-    zeros from diagonal. This may help in the `PCLU` factorization to
-    prevent a zero pivot.
+  MatReorderForNonzeroDiagonal - Changes matrix ordering to remove
+  zeros from diagonal. This may help in the `PCLU` factorization to
+  prevent a zero pivot.
 
-    Collective
+  Collective
 
-    Input Parameters:
-+   mat  - matrix to reorder
-.   abstol - absolute tolerance, it attempts to move all values smaller off the diagonal
-.   ris - the row reordering
--   cis - the column reordering; this may be changed
+  Input Parameters:
++ mat    - matrix to reorder
+. abstol - absolute tolerance, it attempts to move all values smaller off the diagonal
+. ris    - the row reordering
+- cis    - the column reordering; this may be changed
 
-    Level: intermediate
+  Level: intermediate
 
-    Options Database Key:
-.   -pc_factor_nonzeros_along_diagonal - Reorder to remove zeros from diagonal
+  Options Database Key:
+. -pc_factor_nonzeros_along_diagonal - Reorder to remove zeros from diagonal
 
-    Notes:
-    This is not intended as a replacement for pivoting for matrices that
-    have ``bad'' structure. It is only a stop-gap measure.
+  Notes:
+  This is not intended as a replacement for pivoting for matrices that
+  have ``bad'' structure. It is only a stop-gap measure.
 
-    Should be called
-    after a call to `MatGetOrdering()`.
+  Should be called
+  after a call to `MatGetOrdering()`.
 
-    Only works for `MATSEQAIJ` matrices
+  Only works for `MATSEQAIJ` matrices
 
-    Developer Notes:
-    Column pivoting is used.
+  Developer Notes:
+  Column pivoting is used.
 
-    1) Choice of column is made by looking at the
-       non-zero elements in the troublesome row for columns that are not yet
-       included (moving from left to right).
+  1) Choice of column is made by looking at the
+  non-zero elements in the troublesome row for columns that are not yet
+  included (moving from left to right).
 
-    2) If (1) fails we check all the columns to the left of the current row
-       and see if one of them has could be swapped. It can be swapped if
-       its corresponding row has a non-zero in the column it is being
-       swapped with; to make sure the previous nonzero diagonal remains
-       nonzero
+  2) If (1) fails we check all the columns to the left of the current row
+  and see if one of them has could be swapped. It can be swapped if
+  its corresponding row has a non-zero in the column it is being
+  swapped with; to make sure the previous nonzero diagonal remains
+  nonzero
 
 .seealso: `Mat`, `MatGetFactor()`, `MatGetOrdering()`
 @*/

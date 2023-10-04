@@ -162,7 +162,7 @@ PetscErrorCode PetscSpacePointSetPoints(PetscSpace sp, PetscQuadrature q)
 . sp - The `PetscSpace`
 
   Output Parameter:
-. q  - The `PetscQuadrature` defining the points
+. q - The `PetscQuadrature` defining the points
 
   Level: intermediate
 
@@ -174,7 +174,7 @@ PetscErrorCode PetscSpacePointGetPoints(PetscSpace sp, PetscQuadrature *q)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
-  PetscValidPointer(q, 2);
+  PetscAssertPointer(q, 2);
   *q = pt->quad;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -1,9 +1,9 @@
-  0 KSP Residual norm 4.49058 
-  1 KSP Residual norm 0.198002 
-  2 KSP Residual norm 0.0177532 
-  3 KSP Residual norm 0.00119249 
-  4 KSP Residual norm 0.000116755 
-  5 KSP Residual norm 5.13466e-06 
+  0 KSP Residual norm 4.48952 
+  1 KSP Residual norm 0.19646 
+  2 KSP Residual norm 0.0175382 
+  3 KSP Residual norm 0.00113595 
+  4 KSP Residual norm 0.00011631 
+  5 KSP Residual norm 4.94976e-06 
 KSP Object: 2 MPI processes
   type: gmres
     restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
@@ -18,10 +18,12 @@ PC Object: 2 MPI processes
       Cycles per PCApply=1
       Using externally compute Galerkin coarse grid matrices
       GAMG specific options
-        Threshold for dropping small values in graph on each level =   0.   0.  
+        Threshold for dropping small values in graph on each level =   -1.   -1.  
         Threshold scaling factor for each level not specified = 1.
         AGG specific options
-          Number of levels to square graph 1
+          Number of levels of aggressive coarsening 1
+          MIS-k aggressive coarsening
+          MIS-2 coarsening on aggressive levels
           Number smoothing steps 1
         Complexity:    grid = 1.125    operator = 1.09
   Coarse grid solver -- level 0 -------------------------------
@@ -74,8 +76,8 @@ PC Object: 2 MPI processes
     KSP Object: (mg_levels_1_) 2 MPI processes
       type: chebyshev
         Chebyshev polynomial of first kind
-        eigenvalue targets used: min 0.185488, max 2.04037
-        eigenvalues provided (min 0.145059, max 1.85488) with transform: [0. 0.1; 0. 1.1]
+        eigenvalue targets used: min 0.186847, max 2.05532
+        eigenvalues provided (min 0.156686, max 1.86847) with transform: [0. 0.1; 0. 1.1]
       maximum iterations=2, nonzero initial guess
       tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
       left preconditioning
@@ -98,4 +100,4 @@ PC Object: 2 MPI processes
     total: nonzeros=100, allocated nonzeros=240
     total number of mallocs used during MatSetValues calls=0
       not using I-node (on process 0) routines
-Norm of error 5.81486e-06 iterations 5
+Norm of error 5.59099e-06 iterations 5

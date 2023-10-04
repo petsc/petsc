@@ -1,5 +1,4 @@
-#ifndef PETSCMATDENSECUPMIMPL_H
-#define PETSCMATDENSECUPMIMPL_H
+#pragma once
 
 #define PETSC_SKIP_IMMINTRIN_H_CUDAWORKAROUND 1
 #include <petsc/private/matimpl.h> /*I <petscmat.h> I*/
@@ -18,6 +17,7 @@
   #include <thrust/iterator/transform_iterator.h>
   #include <thrust/iterator/permutation_iterator.h>
   #include <thrust/transform.h>
+  #include <thrust/copy.h>
 
 namespace Petsc
 {
@@ -79,7 +79,8 @@ public:
   MatDenseCUPMComposedOpDecl(PlaceArray_C)
   MatDenseCUPMComposedOpDecl(ReplaceArray_C)
   MatDenseCUPMComposedOpDecl(ResetArray_C)
-    // clang-format on
+  MatDenseCUPMComposedOpDecl(SetPreallocation_C)
+  // clang-format on
 
   #undef MatDenseCUPMComposedOpDecl
 
@@ -133,7 +134,8 @@ inline constexpr MatSolverType MatDense_CUPM_Base<T>::MATSOLVERCUPM() noexcept
     using ::Petsc::mat::cupm::impl::MatDense_CUPM_Base<T>::MatDenseCUPMRestoreArrayWrite_C; \
     using ::Petsc::mat::cupm::impl::MatDense_CUPM_Base<T>::MatDenseCUPMPlaceArray_C; \
     using ::Petsc::mat::cupm::impl::MatDense_CUPM_Base<T>::MatDenseCUPMReplaceArray_C; \
-    using ::Petsc::mat::cupm::impl::MatDense_CUPM_Base<T>::MatDenseCUPMResetArray_C
+    using ::Petsc::mat::cupm::impl::MatDense_CUPM_Base<T>::MatDenseCUPMResetArray_C; \
+    using ::Petsc::mat::cupm::impl::MatDense_CUPM_Base<T>::MatDenseCUPMSetPreallocation_C
 
 // forward declare
 template <device::cupm::DeviceType>
@@ -151,6 +153,9 @@ class MatDense_MPI_CUPM;
 
 template <device::cupm::DeviceType T, typename Derived>
 class MatDense_CUPM : protected MatDense_CUPM_Base<T> {
+private:
+  static PetscErrorCode CheckSaneSequentialMatSizes_(Mat) noexcept;
+
 protected:
   MATDENSECUPM_BASE_HEADER(T);
 
@@ -163,10 +168,13 @@ protected:
   PETSC_NODISCARD static constexpr MatType MATIMPLCUPM() noexcept;
 
   static PetscErrorCode CreateIMPLDenseCUPM(MPI_Comm, PetscInt, PetscInt, PetscInt, PetscInt, PetscScalar *, Mat *, PetscDeviceContext, bool) noexcept;
-  static PetscErrorCode SetPreallocation(Mat, PetscDeviceContext, PetscScalar * = nullptr) noexcept;
+  static PetscErrorCode SetPreallocation(Mat, PetscDeviceContext, PetscScalar *) noexcept;
 
   template <typename F>
-  static PetscErrorCode DiagonalUnaryTransform(Mat, PetscInt, PetscInt, PetscInt, PetscDeviceContext, F &&) noexcept;
+  static PetscErrorCode DiagonalUnaryTransform(Mat, PetscDeviceContext, F &&) noexcept;
+
+  static PetscErrorCode Shift(Mat, PetscScalar) noexcept;
+  static PetscErrorCode GetDiagonal(Mat, Vec) noexcept;
 
   PETSC_NODISCARD static auto DeviceArrayRead(PetscDeviceContext dctx, Mat m) noexcept PETSC_DECLTYPE_AUTO_RETURNS(MatrixArray<PETSC_MEMTYPE_DEVICE, PETSC_MEMORY_ACCESS_READ>{dctx, m})
   PETSC_NODISCARD static auto DeviceArrayWrite(PetscDeviceContext dctx, Mat m) noexcept PETSC_DECLTYPE_AUTO_RETURNS(MatrixArray<PETSC_MEMTYPE_DEVICE, PETSC_MEMORY_ACCESS_WRITE>{dctx, m})
@@ -225,6 +233,29 @@ inline constexpr MatDense_CUPM<T, D>::MatrixArray<MT, MA>::MatrixArray(MatrixArr
 }
 
 // ==========================================================================================
+// MatDense_CUPM -- Private API
+// ==========================================================================================
+
+template <device::cupm::DeviceType T, typename D>
+inline PetscErrorCode MatDense_CUPM<T, D>::CheckSaneSequentialMatSizes_(Mat A) noexcept
+{
+  PetscFunctionBegin;
+  if (PetscDefined(USE_DEBUG)) {
+    PetscBool isseq;
+
+    PetscCall(PetscObjectTypeCompare(PetscObjectCast(A), D::MATSEQDENSECUPM(), &isseq));
+    if (isseq) {
+      // doing this check allows both sequential and parallel implementations to just pass in
+      // A, otherwise they would need to specify rstart, rend, and cols separately!
+      PetscCheck(A->rmap->rstart == 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Sequential matrix row start %" PetscInt_FMT " != 0?", A->rmap->rstart);
+      PetscCheck(A->rmap->rend == A->rmap->n, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Sequential matrix row end %" PetscInt_FMT " != number of rows %" PetscInt_FMT, A->rmap->rend, A->rmap->n);
+      PetscCheck(A->cmap->n == A->cmap->N, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Sequential matrix number of local columns %" PetscInt_FMT " != number of global columns %" PetscInt_FMT, A->cmap->n, A->cmap->n);
+    }
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+// ==========================================================================================
 // MatDense_CUPM -- Protected API
 // ==========================================================================================
 
@@ -241,7 +272,7 @@ inline PetscErrorCode MatDense_CUPM<T, D>::CreateIMPLDenseCUPM(MPI_Comm comm, Pe
   Mat mat;
 
   PetscFunctionBegin;
-  PetscValidPointer(A, 7);
+  PetscAssertPointer(A, 7);
   PetscCall(MatCreate(comm, &mat));
   PetscCall(MatSetSizes(mat, m, n, M, N));
   PetscCall(MatSetType(mat, D::MATIMPLCUPM()));
@@ -264,6 +295,7 @@ inline PetscErrorCode MatDense_CUPM<T, D>::SetPreallocation(Mat A, PetscDeviceCo
   PetscCheckTypeNames(A, D::MATSEQDENSECUPM(), D::MATMPIDENSECUPM());
   PetscCall(PetscLayoutSetUp(A->rmap));
   PetscCall(PetscLayoutSetUp(A->cmap));
+  PetscCall(PetscDeviceContextGetOptionalNullContext_Internal(&dctx));
   PetscCall(D::SetPreallocation_(A, dctx, device_array));
   A->preallocated = PETSC_TRUE;
   A->assembled    = PETSC_TRUE;
@@ -342,29 +374,40 @@ public:
   PETSC_NODISCARD iterator end() const noexcept { return this->begin() + (this->last - this->first + this->func.stride - 1) / this->func.stride; }
 };
 
+template <typename T>
+inline DiagonalIterator<typename thrust::device_vector<T>::iterator> MakeDiagonalIterator(T *data, PetscInt rstart, PetscInt rend, PetscInt cols, PetscInt lda) noexcept
+{
+  const auto        rend2 = std::min(rend, cols);
+  const std::size_t begin = rstart * lda;
+  const std::size_t end   = rend2 - rstart + rend2 * lda;
+  const auto        dptr  = thrust::device_pointer_cast(data);
+
+  return {dptr + begin, dptr + end, lda + 1};
+}
+
 } // namespace detail
 
 template <device::cupm::DeviceType T, typename D>
 template <typename F>
-inline PetscErrorCode MatDense_CUPM<T, D>::DiagonalUnaryTransform(Mat A, PetscInt rstart, PetscInt rend, PetscInt cols, PetscDeviceContext dctx, F &&functor) noexcept
+inline PetscErrorCode MatDense_CUPM<T, D>::DiagonalUnaryTransform(Mat A, PetscDeviceContext dctx, F &&functor) noexcept
 {
-  const auto rend2 = std::min(rend, cols);
+  const auto rstart = A->rmap->rstart;
+  const auto rend   = A->rmap->rend;
+  const auto gcols  = A->cmap->N;
+  const auto rend2  = std::min(rend, gcols);
 
   PetscFunctionBegin;
+  PetscCall(CheckSaneSequentialMatSizes_(A));
   if (rend2 > rstart) {
-    const auto da = D::DeviceArrayReadWrite(dctx, A);
-    PetscInt   lda;
+    const auto   da = D::DeviceArrayReadWrite(dctx, A);
+    cupmStream_t stream;
+    PetscInt     lda;
 
     PetscCall(MatDenseGetLDA(A, &lda));
+    PetscCall(D::GetHandlesFrom_(dctx, &stream));
     {
-      using DiagonalIterator  = detail::DiagonalIterator<thrust::device_vector<PetscScalar>::iterator>;
-      const auto        dptr  = thrust::device_pointer_cast(da.data());
-      const std::size_t begin = rstart * lda;
-      const std::size_t end   = rend2 - rstart + rend2 * lda;
-      DiagonalIterator  diagonal{dptr + begin, dptr + end, lda + 1};
-      cupmStream_t      stream;
+      auto diagonal = detail::MakeDiagonalIterator(da.data(), rstart, rend, gcols, lda);
 
-      PetscCall(D::GetHandlesFrom_(dctx, &stream));
       // clang-format off
       PetscCallThrust(
         THRUST_CALL(
@@ -377,6 +420,51 @@ inline PetscErrorCode MatDense_CUPM<T, D>::DiagonalUnaryTransform(Mat A, PetscIn
       // clang-format on
     }
     PetscCall(PetscLogGpuFlops(rend2 - rstart));
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+template <device::cupm::DeviceType T, typename D>
+inline PetscErrorCode MatDense_CUPM<T, D>::Shift(Mat A, PetscScalar alpha) noexcept
+{
+  PetscDeviceContext dctx;
+
+  PetscFunctionBegin;
+  PetscCall(GetHandles_(&dctx));
+  PetscCall(DiagonalUnaryTransform(A, dctx, device::cupm::functors::make_plus_equals(alpha)));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+template <device::cupm::DeviceType T, typename D>
+inline PetscErrorCode MatDense_CUPM<T, D>::GetDiagonal(Mat A, Vec v) noexcept
+{
+  const auto         rstart = A->rmap->rstart;
+  const auto         rend   = A->rmap->rend;
+  const auto         gcols  = A->cmap->N;
+  PetscInt           lda;
+  PetscDeviceContext dctx;
+
+  PetscFunctionBegin;
+  PetscCall(CheckSaneSequentialMatSizes_(A));
+  PetscCall(GetHandles_(&dctx));
+  PetscCall(MatDenseGetLDA(A, &lda));
+  {
+    auto dv       = VecSeq_CUPM::DeviceArrayWrite(dctx, v);
+    auto da       = D::DeviceArrayRead(dctx, A);
+    auto diagonal = detail::MakeDiagonalIterator(da.data(), rstart, rend, gcols, lda);
+    // We must have this cast outside of THRUST_CALL(). Without it, GCC 6.4 - 7.5, and 11.3.0
+    // throw spurious warnings:
+    //
+    // warning: 'MatDense_CUPM<...>::GetDiagonal(Mat, Vec)::<lambda()>' declared with greater
+    // visibility than the type of its field 'MatDense_CUPM<...>::GetDiagonal(Mat,
+    // Vec)::<lambda()>::<dv capture>' [-Wattributes]
+    // 460 |     PetscCallThrust(
+    //     |     ^~~~~~~~~~~~~~~~
+    auto         dvp = thrust::device_pointer_cast(dv.data());
+    cupmStream_t stream;
+
+    PetscCall(GetHandlesFrom_(dctx, &stream));
+    PetscCallThrust(THRUST_CALL(thrust::copy, stream, diagonal.begin(), diagonal.end(), dvp));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -412,19 +500,22 @@ inline PetscErrorCode MatDense_CUPM<T, D>::DiagonalUnaryTransform(Mat A, PetscIn
     using ::Petsc::mat::cupm::impl::MatDense_CUPM<T, __VA_ARGS__>::HostArrayRead; \
     using ::Petsc::mat::cupm::impl::MatDense_CUPM<T, __VA_ARGS__>::HostArrayWrite; \
     using ::Petsc::mat::cupm::impl::MatDense_CUPM<T, __VA_ARGS__>::HostArrayReadWrite; \
-    using ::Petsc::mat::cupm::impl::MatDense_CUPM<T, __VA_ARGS__>::DiagonalUnaryTransform
+    using ::Petsc::mat::cupm::impl::MatDense_CUPM<T, __VA_ARGS__>::DiagonalUnaryTransform; \
+    using ::Petsc::mat::cupm::impl::MatDense_CUPM<T, __VA_ARGS__>::Shift; \
+    using ::Petsc::mat::cupm::impl::MatDense_CUPM<T, __VA_ARGS__>::GetDiagonal
 
 } // namespace impl
 
-namespace
-{
+// ==========================================================================================
+// MatDense_CUPM -- Implementations
+// ==========================================================================================
 
 template <device::cupm::DeviceType T, PetscMemoryAccessMode access>
 inline PetscErrorCode MatDenseCUPMGetArray_Private(Mat A, PetscScalar **array) noexcept
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
-  PetscValidPointer(array, 2);
+  PetscAssertPointer(array, 2);
   switch (access) {
   case PETSC_MEMORY_ACCESS_READ:
     PetscUseMethod(A, impl::MatDense_CUPM_Base<T>::MatDenseCUPMGetArrayRead_C(), (Mat, PetscScalar **), (A, array));
@@ -445,7 +536,7 @@ inline PetscErrorCode MatDenseCUPMRestoreArray_Private(Mat A, PetscScalar **arra
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
-  if (array) PetscValidPointer(array, 2);
+  if (array) PetscAssertPointer(array, 2);
   switch (access) {
   case PETSC_MEMORY_ACCESS_READ:
     PetscUseMethod(A, impl::MatDense_CUPM_Base<T>::MatDenseCUPMRestoreArrayRead_C(), (Mat, PetscScalar **), (A, array));
@@ -545,7 +636,14 @@ inline PetscErrorCode MatDenseCUPMResetArray(Mat A) noexcept
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-} // anonymous namespace
+template <device::cupm::DeviceType T>
+inline PetscErrorCode MatDenseCUPMSetPreallocation(Mat A, PetscScalar *device_data, PetscDeviceContext dctx = nullptr) noexcept
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
+  PetscUseMethod(A, impl::MatDense_CUPM_Base<T>::MatDenseCUPMSetPreallocation_C(), (Mat, PetscDeviceContext, PetscScalar *), (A, dctx, device_data));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
 
 } // namespace cupm
 
@@ -554,5 +652,3 @@ inline PetscErrorCode MatDenseCUPMResetArray(Mat A) noexcept
 } // namespace Petsc
 
 #endif // __cplusplus
-
-#endif // PETSCMATDENSECUPMIMPL_H

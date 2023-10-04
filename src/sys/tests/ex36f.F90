@@ -27,7 +27,7 @@
 
       PetscCallA(PetscObjectCompose(r,'test',r2,ierr));
       PetscCallA(PetscObjectQuery(r,'test',q,ierr));
-      if (q .ne. r2) then; SETERRA(PETSC_COMM_SELF,PETSC_ERR_PLIB,'Object compose/query failed'); endif
+      PetscCheckA(q .eq. r2,PETSC_COMM_SELF,PETSC_ERR_PLIB,'Object compose/query failed')
 
       PetscCallA(PetscRandomDestroy(r,ierr))
       PetscCallA(PetscRandomDestroy(r2,ierr))

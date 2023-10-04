@@ -1,0 +1,356 @@
+Solves a linear system in parallel with KSP.
+Input parameters include:
+  -view_exact_sol   : write exact solution vector to stdout
+  -m <mesh_x>       : number of mesh points in x-direction
+  -n <mesh_y>       : number of mesh points in y-direction
+
+----------------------------------------
+       The PETSc Team
+    petsc-maint@mcs.anl.gov
+ https://petsc.org/
+See https://petsc.org/release/changes for recent updates.
+See https://petsc.org/release/faq for problems.
+See https://petsc.org/release/manualpages for help. 
+----------------------------------------
+Options for all PETSc programs:
+ -version: prints PETSc version
+ -help intro: prints example description and PETSc version, and exits
+ -help: prints example description, PETSc version, and available options for used routines
+ -on_error_abort: cause an abort when an error is detected. Useful 
+        only when run in the debugger
+ -on_error_attach_debugger [gdb,dbx,xxgdb,ups,noxterm]
+       start the debugger in new xterm
+       unless noxterm is given
+ -start_in_debugger [gdb,dbx,xxgdb,ups,noxterm]
+       start all processes in the debugger
+ -on_error_emacs <machinename>
+    emacs jumps to error file
+ -debugger_ranks [n1,n2,..] Ranks to start in debugger
+ -debugger_pause [m] : delay (in seconds) to attach debugger
+ -stop_for_debugger : prints message on how to attach debugger manually
+                      waits the delay for you to attach
+ -display display: Location where X window graphics and debuggers are displayed
+ -no_signal_handler: do not trap error signals
+ -mpi_return_on_error: MPI returns error code, rather than abort on internal error
+ -fp_trap: stop on floating point exceptions
+           note on IBM RS6000 this slows run greatly
+ -malloc_dump <optional filename>: dump list of unfreed memory at conclusion
+ -on_error_malloc_dump <optional filename>: dump list of unfreed memory on memory error
+ -malloc_view <optional filename>: keeps log of all memory allocations, displays in PetscFinalize()
+ -malloc_debug <true or false>: enables or disables extended checking for memory corruption
+ -options_view: dump list of options inputted
+ -options_left: dump list of unused options
+ -options_left no: don't dump list of unused options
+ -tmp tmpdir: alternative /tmp directory
+ -shared_tmp: tmp directory is shared by all processors
+ -not_shared_tmp: each processor has separate tmp directory
+ -memory_view: print memory usage at end of run
+ -get_total_flops: total flops over all processors
+ -log_view [:filename:[format]]: logging objects and events
+ -log_trace [filename]: prints trace of all PETSc calls
+ -log_exclude <list,of,classnames>: exclude given classes from logging
+ -info [filename][:[~]<list,of,classnames>[:[~]self]]: print verbose information
+ -options_file <file>: reads options from file
+ -options_monitor: monitor options to standard output, including that set previously e.g. in option files
+ -options_monitor_cancel: cancels all hardwired option monitors
+ -petsc_sleep n: sleeps n seconds before running program
+----------------------------------------
+PetscDevice Options:
+  -device_enable: <now lazy : formerly lazy> How (or whether) to initialize PetscDevices (choose one of) none lazy eager (PetscDeviceInitialize())
+  -default_device_type: <now host : formerly host> Set the PetscDeviceType returned by PETSC_DEVICE_DEFAULT() (choose one of) host cuda hip sycl (PetscDeviceSetDefaultDeviceType())
+  -device_select: <now -1 : formerly -1>: Which device to use. Pass (-1) to have PETSc decide or (given they exist) [0-128) for a specific device (PetscDeviceCreate())
+  -device_view: <now FALSE : formerly FALSE> Display device information and assignments (forces eager initialization) (PetscDeviceView())
+----------------------------------------
+PetscDevice host Options:
+  -device_view_host: <now FALSE : formerly FALSE> Display device information and assignments (forces eager initialization) (PetscDeviceView())
+----------------------------------------
+Root PetscDeviceContext Options:
+  -root_device_context_device_type: <now host : formerly host> Underlying PetscDevice (choose one of) host cuda hip sycl (PetscDeviceContextSetDevice)
+  -root_device_context_stream_type: <now global_blocking : formerly global_blocking> PetscDeviceContext PetscStreamType (choose one of) global_blocking default_blocking global_nonblocking (PetscDeviceContextSetStreamType)
+----------------------------------------
+Matrix (Mat) options:
+  -mat_block_size: <now -1 : formerly -1>: Set the blocksize used to store the matrix (MatSetBlockSize)
+  -mat_type <now aij : formerly aij>: Matrix type (one of) mpiaijcrl mpiadj seqaij mpibaij composite preallocator mpiaijperm seqsbaij seqmaij seqkaij mffd seqaijsell nest constantdiagonal mpimaij mpiaij mpikaij lrc seqdense dummy is mpisbaij mpiaijsell shell seqsell seqaijperm blockmat maij diagonal kaij mpisell mpidense seqaijcrl scatter seqbaij (MatSetType)
+----------------------------------------
+Options for SEQAIJ matrix:
+  -mat_no_unroll: <now FALSE : formerly FALSE> Do not optimize for inodes (slower) (None)
+  -mat_no_inode: <now FALSE : formerly FALSE> Do not optimize for inodes -slower- (None)
+  -mat_inode_limit: <now 5 : formerly 5>: Do not use inodes larger then this value (None)
+  -mat_is_symmetric: Checks if mat is symmetric on MatAssemblyEnd() (MatIsSymmetric)
+  -mat_is_symmetric: <now 0. : formerly 0.>: Checks if mat is symmetric on MatAssemblyEnd() (MatIsSymmetric)
+  -mat_null_space_test: <now FALSE : formerly FALSE> Checks if provided null space is correct in MatAssemblyEnd() (MatSetNullSpaceTest)
+  -mat_error_if_failure: <now FALSE : formerly FALSE> Generate an error if an error occurs when factoring the matrix (MatSetErrorIfFailure)
+  -mat_new_nonzero_location_err: <now FALSE : formerly FALSE> Generate an error if new nonzeros are created in the matrix structure (useful to test preallocation) (MatSetOption)
+  -mat_new_nonzero_allocation_err: <now FALSE : formerly FALSE> Generate an error if new nonzeros are allocated in the matrix structure (useful to test preallocation) (MatSetOption)
+  -mat_ignore_zero_entries: <now FALSE : formerly FALSE> For AIJ/IS matrices this will stop zero values from creating a zero location in the matrix (MatSetOption)
+  -mat_form_explicit_transpose: <now FALSE : formerly FALSE> Hint to form an explicit transpose for operations like MatMultTranspose (MatSetOption)
+  -mat_bind_below: <now 0 : formerly 0>: Set the size threshold (in local rows) below which the Mat is bound to the CPU (MatBindToCPU)
+----------------------------------------
+Viewer (-mat_view) options:
+  -mat_view ascii[:[filename][:[format][:append]]]: Prints object to stdout or ASCII file (PetscOptionsGetViewer)
+  -mat_view binary[:[filename][:[format][:append]]]: Saves object to a binary file (PetscOptionsGetViewer)
+  -mat_view draw[:[drawtype][:filename|format]] Draws object (PetscOptionsGetViewer)
+  -mat_view socket[:port]: Pushes object to a Unix socket (PetscOptionsGetViewer)
+  -mat_view saws[:communicatorname]: Publishes object to SAWs (PetscOptionsGetViewer)
+----------------------------------------
+Vector (Vec) options:
+  -vec_type <now seq : formerly seq>: Vector type (one of) shared standard mpi seq (VecSetType)
+  -vec_bind_below: <now 0 : formerly 0>: Set the size threshold (in local entries) below which the Vec is bound to the CPU (VecBindToCPU)
+----------------------------------------
+Preconditioner (PC) options:
+  -pc_type <now icc : formerly icc>: Preconditioner (one of) nn tfs hmg bddc composite ksp lu icc patch bjacobi eisenstat deflation vpbjacobi redistribute sor mg pbjacobi cholesky mat qr svd fieldsplit mpi kaczmarz jacobi telescope redundant cp shell galerkin ilu exotic gasm gamg none lmvm asm lsc (PCSetType)
+  -pc_use_amat: <now FALSE : formerly FALSE> use Amat (instead of Pmat) to define preconditioner in nested inner solves (PCSetUseAmat)
+  ICC Options
+  -pc_factor_in_place: <now FALSE : formerly FALSE> Form factored matrix in the same memory as the matrix (PCFactorSetUseInPlace)
+  -pc_factor_fill: <now 1. : formerly 1.>: Expected non-zeros in factored matrix (PCFactorSetFill)
+  -pc_factor_shift_type: <now POSITIVE_DEFINITE : formerly POSITIVE_DEFINITE> Type of shift to add to diagonal (choose one of) NONE NONZERO POSITIVE_DEFINITE INBLOCKS (PCFactorSetShiftType)
+  -pc_factor_shift_amount: <now 2.22045e-14 : formerly 2.22045e-14>: Shift added to diagonal (PCFactorSetShiftAmount)
+  -pc_factor_zeropivot: <now 2.22045e-14 : formerly 2.22045e-14>: Pivot is considered zero if less than (PCFactorSetZeroPivot)
+  -pc_factor_column_pivot: <now -2. : formerly -2.>: Column pivot tolerance (used only for some factorization) (PCFactorSetColumnPivot)
+  -pc_factor_pivot_in_blocks: <now TRUE : formerly TRUE> Pivot inside matrix dense blocks for BAIJ and SBAIJ (PCFactorSetPivotInBlocks)
+  -pc_factor_reuse_fill: <now FALSE : formerly FALSE> Use fill from previous factorization (PCFactorSetReuseFill)
+  -pc_factor_reuse_ordering: <now FALSE : formerly FALSE> Reuse ordering from previous factorization (PCFactorSetReuseOrdering)
+  -pc_factor_mat_solver_type: <now (null) : formerly (null)>: Specific direct solver to use (MatGetFactor)
+----------------------------------------
+Options for SEQSBAIJ matrix:
+  -mat_no_unroll: <now FALSE : formerly FALSE> Do not optimize for inodes (slower) (None)
+  -mat_no_inode: <now FALSE : formerly FALSE> Do not optimize for inodes (slower) (None)
+  -mat_inode_limit: <now 5 : formerly 5>: Do not use inodes larger then this value (None)
+  -pc_factor_mat_ordering_type <now natural : formerly natural>: Reordering to reduce nonzeros in factored matrix (one of) rowlength spectral nd qmd natural rcm 1wd (PCFactorSetMatOrderingType)
+  -pc_factor_levels: <now 0. : formerly 0.>: levels of fill (PCFactorSetLevels)
+----------------------------------------
+Krylov Method (KSP) options:
+  -ksp_type <now gmres : formerly gmres>: Krylov method (one of) fetidp pipefgmres stcg tsirm tcqmr groppcg nash fcg symmlq lcd minres cgs preonly lgmres pipecgrr fbcgs pipeprcg pipecg ibcgs fgmres qcg gcr cgne pipefcg pipecr pipebcgs bcgsl pipecg2 pipelcg gltr cg tfqmr pgmres lsqr pipegcr bicg cgls bcgs cr dgmres none qmrcgs gmres richardson chebyshev fbcgsr (KSPSetType)
+  -ksp_monitor_cancel: <now FALSE : formerly FALSE> Remove any hardwired monitor routines (KSPMonitorCancel)
+----------------------------------------
+Viewer (-ksp_monitor) options:
+  -ksp_monitor ascii[:[filename][:[format][:append]]]: Prints object to stdout or ASCII file (PetscOptionsGetViewer)
+  -ksp_monitor binary[:[filename][:[format][:append]]]: Saves object to a binary file (PetscOptionsGetViewer)
+  -ksp_monitor draw[:[drawtype][:filename|format]] Draws object (PetscOptionsGetViewer)
+  -ksp_monitor socket[:port]: Pushes object to a Unix socket (PetscOptionsGetViewer)
+  -ksp_monitor saws[:communicatorname]: Publishes object to SAWs (PetscOptionsGetViewer)
+----------------------------------------
+Viewer (-ksp_monitor_short) options:
+  -ksp_monitor_short ascii[:[filename][:[format][:append]]]: Prints object to stdout or ASCII file (PetscOptionsGetViewer)
+  -ksp_monitor_short binary[:[filename][:[format][:append]]]: Saves object to a binary file (PetscOptionsGetViewer)
+  -ksp_monitor_short draw[:[drawtype][:filename|format]] Draws object (PetscOptionsGetViewer)
+  -ksp_monitor_short socket[:port]: Pushes object to a Unix socket (PetscOptionsGetViewer)
+  -ksp_monitor_short saws[:communicatorname]: Publishes object to SAWs (PetscOptionsGetViewer)
+----------------------------------------
+Viewer (-all_ksp_monitor) options:
+  -all_ksp_monitor ascii[:[filename][:[format][:append]]]: Prints object to stdout or ASCII file (PetscOptionsGetViewer)
+  -all_ksp_monitor binary[:[filename][:[format][:append]]]: Saves object to a binary file (PetscOptionsGetViewer)
+  -all_ksp_monitor draw[:[drawtype][:filename|format]] Draws object (PetscOptionsGetViewer)
+  -all_ksp_monitor socket[:port]: Pushes object to a Unix socket (PetscOptionsGetViewer)
+  -all_ksp_monitor saws[:communicatorname]: Publishes object to SAWs (PetscOptionsGetViewer)
+----------------------------------------
+Viewer (-ksp_monitor_range) options:
+  -ksp_monitor_range ascii[:[filename][:[format][:append]]]: Prints object to stdout or ASCII file (PetscOptionsGetViewer)
+  -ksp_monitor_range binary[:[filename][:[format][:append]]]: Saves object to a binary file (PetscOptionsGetViewer)
+  -ksp_monitor_range draw[:[drawtype][:filename|format]] Draws object (PetscOptionsGetViewer)
+  -ksp_monitor_range socket[:port]: Pushes object to a Unix socket (PetscOptionsGetViewer)
+  -ksp_monitor_range saws[:communicatorname]: Publishes object to SAWs (PetscOptionsGetViewer)
+----------------------------------------
+Viewer (-ksp_monitor_true_residual) options:
+  -ksp_monitor_true_residual ascii[:[filename][:[format][:append]]]: Prints object to stdout or ASCII file (PetscOptionsGetViewer)
+  -ksp_monitor_true_residual binary[:[filename][:[format][:append]]]: Saves object to a binary file (PetscOptionsGetViewer)
+  -ksp_monitor_true_residual draw[:[drawtype][:filename|format]] Draws object (PetscOptionsGetViewer)
+  -ksp_monitor_true_residual socket[:port]: Pushes object to a Unix socket (PetscOptionsGetViewer)
+  -ksp_monitor_true_residual saws[:communicatorname]: Publishes object to SAWs (PetscOptionsGetViewer)
+----------------------------------------
+Viewer (-ksp_monitor_max) options:
+  -ksp_monitor_max ascii[:[filename][:[format][:append]]]: Prints object to stdout or ASCII file (PetscOptionsGetViewer)
+  -ksp_monitor_max binary[:[filename][:[format][:append]]]: Saves object to a binary file (PetscOptionsGetViewer)
+  -ksp_monitor_max draw[:[drawtype][:filename|format]] Draws object (PetscOptionsGetViewer)
+  -ksp_monitor_max socket[:port]: Pushes object to a Unix socket (PetscOptionsGetViewer)
+  -ksp_monitor_max saws[:communicatorname]: Publishes object to SAWs (PetscOptionsGetViewer)
+----------------------------------------
+Viewer (-ksp_monitor_solution) options:
+  -ksp_monitor_solution ascii[:[filename][:[format][:append]]]: Prints object to stdout or ASCII file (PetscOptionsGetViewer)
+  -ksp_monitor_solution binary[:[filename][:[format][:append]]]: Saves object to a binary file (PetscOptionsGetViewer)
+  -ksp_monitor_solution draw[:[drawtype][:filename|format]] Draws object (PetscOptionsGetViewer)
+  -ksp_monitor_solution socket[:port]: Pushes object to a Unix socket (PetscOptionsGetViewer)
+  -ksp_monitor_solution saws[:communicatorname]: Publishes object to SAWs (PetscOptionsGetViewer)
+----------------------------------------
+Viewer (-ksp_monitor_singular_value) options:
+  -ksp_monitor_singular_value ascii[:[filename][:[format][:append]]]: Prints object to stdout or ASCII file (PetscOptionsGetViewer)
+  -ksp_monitor_singular_value binary[:[filename][:[format][:append]]]: Saves object to a binary file (PetscOptionsGetViewer)
+  -ksp_monitor_singular_value draw[:[drawtype][:filename|format]] Draws object (PetscOptionsGetViewer)
+  -ksp_monitor_singular_value socket[:port]: Pushes object to a Unix socket (PetscOptionsGetViewer)
+  -ksp_monitor_singular_value saws[:communicatorname]: Publishes object to SAWs (PetscOptionsGetViewer)
+----------------------------------------
+Viewer (-ksp_monitor_error) options:
+  -ksp_monitor_error ascii[:[filename][:[format][:append]]]: Prints object to stdout or ASCII file (PetscOptionsGetViewer)
+  -ksp_monitor_error binary[:[filename][:[format][:append]]]: Saves object to a binary file (PetscOptionsGetViewer)
+  -ksp_monitor_error draw[:[drawtype][:filename|format]] Draws object (PetscOptionsGetViewer)
+  -ksp_monitor_error socket[:port]: Pushes object to a Unix socket (PetscOptionsGetViewer)
+  -ksp_monitor_error saws[:communicatorname]: Publishes object to SAWs (PetscOptionsGetViewer)
+  -ksp_monitor_pause_final: <now FALSE : formerly FALSE> Pauses all draw monitors at the final iterate (KSPMonitorPauseFinal_Internal)
+  -ksp_initial_guess_nonzero: <now FALSE : formerly FALSE> Use the contents of the solution vector for initial guess (KSPSetInitialNonzero)
+  -ksp_max_it: <now 10000 : formerly 10000>: Maximum number of iterations (KSPSetTolerances)
+  -ksp_min_it: <now 0 : formerly 0>: Minimum number of iterations (KSPSetMinimumIterations)
+  -ksp_rtol: <now 0.000138889 : formerly 0.000138889>: Relative decrease in residual norm (KSPSetTolerances)
+  -ksp_atol: <now 1e-50 : formerly 1e-50>: Absolute value of residual norm (KSPSetTolerances)
+  -ksp_divtol: <now 10000. : formerly 10000.>: Residual norm increase cause divergence (KSPSetTolerances)
+  -ksp_converged_use_initial_residual_norm: <now FALSE : formerly FALSE> Use initial residual norm for computing relative convergence (KSPConvergedDefaultSetUIRNorm)
+  -ksp_converged_use_min_initial_residual_norm: <now FALSE : formerly FALSE> Use minimum of initial residual norm and b for computing relative convergence (KSPConvergedDefaultSetUMIRNorm)
+  -ksp_converged_maxits: <now FALSE : formerly FALSE> Declare convergence if the maximum number of iterations is reached (KSPConvergedDefaultSetConvergedMaxits)
+  -ksp_converged_neg_curve: <now FALSE : formerly FALSE> Declare convergence if negative curvature is detected (KSPConvergedNegativeCurvature)
+  -ksp_reuse_preconditioner: <now FALSE : formerly FALSE> Use initial preconditioner and don't ever compute a new one (KSPReusePreconditioner)
+  -ksp_knoll: <now FALSE : formerly FALSE> Use preconditioner applied to b for initial guess (KSPSetInitialGuessKnoll)
+  -ksp_error_if_not_converged: <now FALSE : formerly FALSE> Generate error if solver does not converge (KSPSetErrorIfNotConverged)
+  -ksp_guess_type <now (null) : formerly (null)>: Initial guess in Krylov method (one of) pod fischer ((null))
+  -ksp_fischer_guess: <0>: Use Paul Fischer's algorithm or its variants for initial guess (KSPSetUseFischerGuess)
+  -ksp_convergence_test: <now default : formerly default> Convergence test (choose one of) default skip lsqr (KSPSetConvergenceTest)
+  -ksp_norm_type: <now PRECONDITIONED : formerly PRECONDITIONED> KSP Norm type (choose one of) NONE PRECONDITIONED UNPRECONDITIONED NATURAL (KSPSetNormType)
+  -ksp_check_norm_iteration: <now -1 : formerly -1>: First iteration to compute residual norm (KSPSetCheckNormIteration)
+  -ksp_lag_norm: <now FALSE : formerly FALSE> Lag the calculation of the residual norm (KSPSetLagNorm)
+  -ksp_diagonal_scale: <now FALSE : formerly FALSE> Diagonal scale matrix before building preconditioner (KSPSetDiagonalScale)
+  -ksp_diagonal_scale_fix: <now FALSE : formerly FALSE> Fix diagonally scaled matrix after solve (KSPSetDiagonalScaleFix)
+  -ksp_constant_null_space: <now FALSE : formerly FALSE> Add constant null space to Krylov solver matrix (MatSetNullSpace)
+  -ksp_monitor_python: <now (null) : formerly (null)>: Use Python function (KSPMonitorSet)
+  -ksp_monitor_lg_range: <now FALSE : formerly FALSE> Monitor graphically range of preconditioned residual norm (KSPMonitorSet)
+----------------------------------------
+Viewer (-ksp_view) options:
+  -ksp_view ascii[:[filename][:[format][:append]]]: Prints object to stdout or ASCII file (PetscOptionsGetViewer)
+  -ksp_view binary[:[filename][:[format][:append]]]: Saves object to a binary file (PetscOptionsGetViewer)
+  -ksp_view draw[:[drawtype][:filename|format]] Draws object (PetscOptionsGetViewer)
+  -ksp_view socket[:port]: Pushes object to a Unix socket (PetscOptionsGetViewer)
+  -ksp_view saws[:communicatorname]: Publishes object to SAWs (PetscOptionsGetViewer)
+----------------------------------------
+Viewer (-ksp_view_pre) options:
+  -ksp_view_pre ascii[:[filename][:[format][:append]]]: Prints object to stdout or ASCII file (PetscOptionsGetViewer)
+  -ksp_view_pre binary[:[filename][:[format][:append]]]: Saves object to a binary file (PetscOptionsGetViewer)
+  -ksp_view_pre draw[:[drawtype][:filename|format]] Draws object (PetscOptionsGetViewer)
+  -ksp_view_pre socket[:port]: Pushes object to a Unix socket (PetscOptionsGetViewer)
+  -ksp_view_pre saws[:communicatorname]: Publishes object to SAWs (PetscOptionsGetViewer)
+  -ksp_converged_reason_view_cancel: <now FALSE : formerly FALSE> Cancel all the converged reason view functions set using KSPConvergedReasonViewSet (KSPConvergedReasonViewCancel)
+----------------------------------------
+Viewer (-ksp_converged_rate) options:
+  -ksp_converged_rate ascii[:[filename][:[format][:append]]]: Prints object to stdout or ASCII file (PetscOptionsGetViewer)
+  -ksp_converged_rate binary[:[filename][:[format][:append]]]: Saves object to a binary file (PetscOptionsGetViewer)
+  -ksp_converged_rate draw[:[drawtype][:filename|format]] Draws object (PetscOptionsGetViewer)
+  -ksp_converged_rate socket[:port]: Pushes object to a Unix socket (PetscOptionsGetViewer)
+  -ksp_converged_rate saws[:communicatorname]: Publishes object to SAWs (PetscOptionsGetViewer)
+----------------------------------------
+Viewer (-ksp_view_mat) options:
+  -ksp_view_mat ascii[:[filename][:[format][:append]]]: Prints object to stdout or ASCII file (PetscOptionsGetViewer)
+  -ksp_view_mat binary[:[filename][:[format][:append]]]: Saves object to a binary file (PetscOptionsGetViewer)
+  -ksp_view_mat draw[:[drawtype][:filename|format]] Draws object (PetscOptionsGetViewer)
+  -ksp_view_mat socket[:port]: Pushes object to a Unix socket (PetscOptionsGetViewer)
+  -ksp_view_mat saws[:communicatorname]: Publishes object to SAWs (PetscOptionsGetViewer)
+----------------------------------------
+Viewer (-ksp_view_pmat) options:
+  -ksp_view_pmat ascii[:[filename][:[format][:append]]]: Prints object to stdout or ASCII file (PetscOptionsGetViewer)
+  -ksp_view_pmat binary[:[filename][:[format][:append]]]: Saves object to a binary file (PetscOptionsGetViewer)
+  -ksp_view_pmat draw[:[drawtype][:filename|format]] Draws object (PetscOptionsGetViewer)
+  -ksp_view_pmat socket[:port]: Pushes object to a Unix socket (PetscOptionsGetViewer)
+  -ksp_view_pmat saws[:communicatorname]: Publishes object to SAWs (PetscOptionsGetViewer)
+----------------------------------------
+Viewer (-ksp_view_rhs) options:
+  -ksp_view_rhs ascii[:[filename][:[format][:append]]]: Prints object to stdout or ASCII file (PetscOptionsGetViewer)
+  -ksp_view_rhs binary[:[filename][:[format][:append]]]: Saves object to a binary file (PetscOptionsGetViewer)
+  -ksp_view_rhs draw[:[drawtype][:filename|format]] Draws object (PetscOptionsGetViewer)
+  -ksp_view_rhs socket[:port]: Pushes object to a Unix socket (PetscOptionsGetViewer)
+  -ksp_view_rhs saws[:communicatorname]: Publishes object to SAWs (PetscOptionsGetViewer)
+----------------------------------------
+Viewer (-ksp_view_solution) options:
+  -ksp_view_solution ascii[:[filename][:[format][:append]]]: Prints object to stdout or ASCII file (PetscOptionsGetViewer)
+  -ksp_view_solution binary[:[filename][:[format][:append]]]: Saves object to a binary file (PetscOptionsGetViewer)
+  -ksp_view_solution draw[:[drawtype][:filename|format]] Draws object (PetscOptionsGetViewer)
+  -ksp_view_solution socket[:port]: Pushes object to a Unix socket (PetscOptionsGetViewer)
+  -ksp_view_solution saws[:communicatorname]: Publishes object to SAWs (PetscOptionsGetViewer)
+----------------------------------------
+Viewer (-ksp_view_mat_explicit) options:
+  -ksp_view_mat_explicit ascii[:[filename][:[format][:append]]]: Prints object to stdout or ASCII file (PetscOptionsGetViewer)
+  -ksp_view_mat_explicit binary[:[filename][:[format][:append]]]: Saves object to a binary file (PetscOptionsGetViewer)
+  -ksp_view_mat_explicit draw[:[drawtype][:filename|format]] Draws object (PetscOptionsGetViewer)
+  -ksp_view_mat_explicit socket[:port]: Pushes object to a Unix socket (PetscOptionsGetViewer)
+  -ksp_view_mat_explicit saws[:communicatorname]: Publishes object to SAWs (PetscOptionsGetViewer)
+----------------------------------------
+Viewer (-ksp_view_eigenvalues) options:
+  -ksp_view_eigenvalues ascii[:[filename][:[format][:append]]]: Prints object to stdout or ASCII file (PetscOptionsGetViewer)
+  -ksp_view_eigenvalues binary[:[filename][:[format][:append]]]: Saves object to a binary file (PetscOptionsGetViewer)
+  -ksp_view_eigenvalues draw[:[drawtype][:filename|format]] Draws object (PetscOptionsGetViewer)
+  -ksp_view_eigenvalues socket[:port]: Pushes object to a Unix socket (PetscOptionsGetViewer)
+  -ksp_view_eigenvalues saws[:communicatorname]: Publishes object to SAWs (PetscOptionsGetViewer)
+----------------------------------------
+Viewer (-ksp_view_singularvalues) options:
+  -ksp_view_singularvalues ascii[:[filename][:[format][:append]]]: Prints object to stdout or ASCII file (PetscOptionsGetViewer)
+  -ksp_view_singularvalues binary[:[filename][:[format][:append]]]: Saves object to a binary file (PetscOptionsGetViewer)
+  -ksp_view_singularvalues draw[:[drawtype][:filename|format]] Draws object (PetscOptionsGetViewer)
+  -ksp_view_singularvalues socket[:port]: Pushes object to a Unix socket (PetscOptionsGetViewer)
+  -ksp_view_singularvalues saws[:communicatorname]: Publishes object to SAWs (PetscOptionsGetViewer)
+----------------------------------------
+Viewer (-ksp_view_eigenvalues_explicit) options:
+  -ksp_view_eigenvalues_explicit ascii[:[filename][:[format][:append]]]: Prints object to stdout or ASCII file (PetscOptionsGetViewer)
+  -ksp_view_eigenvalues_explicit binary[:[filename][:[format][:append]]]: Saves object to a binary file (PetscOptionsGetViewer)
+  -ksp_view_eigenvalues_explicit draw[:[drawtype][:filename|format]] Draws object (PetscOptionsGetViewer)
+  -ksp_view_eigenvalues_explicit socket[:port]: Pushes object to a Unix socket (PetscOptionsGetViewer)
+  -ksp_view_eigenvalues_explicit saws[:communicatorname]: Publishes object to SAWs (PetscOptionsGetViewer)
+----------------------------------------
+Viewer (-ksp_view_final_residual) options:
+  -ksp_view_final_residual ascii[:[filename][:[format][:append]]]: Prints object to stdout or ASCII file (PetscOptionsGetViewer)
+  -ksp_view_final_residual binary[:[filename][:[format][:append]]]: Saves object to a binary file (PetscOptionsGetViewer)
+  -ksp_view_final_residual draw[:[drawtype][:filename|format]] Draws object (PetscOptionsGetViewer)
+  -ksp_view_final_residual socket[:port]: Pushes object to a Unix socket (PetscOptionsGetViewer)
+  -ksp_view_final_residual saws[:communicatorname]: Publishes object to SAWs (PetscOptionsGetViewer)
+----------------------------------------
+Viewer (-ksp_view_preconditioned_operator_explicit) options:
+  -ksp_view_preconditioned_operator_explicit ascii[:[filename][:[format][:append]]]: Prints object to stdout or ASCII file (PetscOptionsGetViewer)
+  -ksp_view_preconditioned_operator_explicit binary[:[filename][:[format][:append]]]: Saves object to a binary file (PetscOptionsGetViewer)
+  -ksp_view_preconditioned_operator_explicit draw[:[drawtype][:filename|format]] Draws object (PetscOptionsGetViewer)
+  -ksp_view_preconditioned_operator_explicit socket[:port]: Pushes object to a Unix socket (PetscOptionsGetViewer)
+  -ksp_view_preconditioned_operator_explicit saws[:communicatorname]: Publishes object to SAWs (PetscOptionsGetViewer)
+----------------------------------------
+Viewer (-ksp_view_diagonal_scale) options:
+  -ksp_view_diagonal_scale ascii[:[filename][:[format][:append]]]: Prints object to stdout or ASCII file (PetscOptionsGetViewer)
+  -ksp_view_diagonal_scale binary[:[filename][:[format][:append]]]: Saves object to a binary file (PetscOptionsGetViewer)
+  -ksp_view_diagonal_scale draw[:[drawtype][:filename|format]] Draws object (PetscOptionsGetViewer)
+  -ksp_view_diagonal_scale socket[:port]: Pushes object to a Unix socket (PetscOptionsGetViewer)
+  -ksp_view_diagonal_scale saws[:communicatorname]: Publishes object to SAWs (PetscOptionsGetViewer)
+  -ksp_plot_eigenvalues: [deprecated since PETSc 3.9; use -ksp_view_eigenvalues draw] (KSPView)
+  -ksp_plot_eigencontours: [deprecated since PETSc 3.9; use -ksp_view_eigenvalues draw::draw_contour] (KSPView)
+  -ksp_plot_eigenvalues_explicitly: [deprecated since PETSc 3.9; use -ksp_view_eigenvalues_explicit draw] (KSPView)
+  -ksp_pc_side: <now LEFT : formerly LEFT> KSP preconditioner side (choose one of) LEFT RIGHT SYMMETRIC (KSPSetPCSide)
+  -ksp_matsolve_batch_size: <now -1 : formerly -1>: Maximum number of columns treated simultaneously (KSPSetMatSolveBatchSize)
+  -ksp_use_explicittranspose: <now FALSE : formerly FALSE> Explicitly transpose the system in KSPSolveTranspose (KSPSetUseExplicitTranspose)
+  KSP GMRES Options
+  -ksp_gmres_restart: <now 30 : formerly 30>: Number of Krylov search directions (KSPGMRESSetRestart)
+  -ksp_gmres_haptol: <now 1e-30 : formerly 1e-30>: Tolerance for exact convergence (happy ending) (KSPGMRESSetHapTol)
+  -ksp_gmres_breakdown_tolerance: <now 0.1 : formerly 0.1>: Divergence breakdown tolerance during GMRES restart (KSPGMRESSetBreakdownTolerance)
+  -ksp_gmres_preallocate: <now FALSE : formerly FALSE> Preallocate Krylov vectors (KSPGMRESSetPreAllocateVectors)
+  Pick at most one of -------------
+    -ksp_gmres_classicalgramschmidt: Classical (unmodified) Gram-Schmidt (fast) (KSPGMRESSetOrthogonalization)
+    -ksp_gmres_modifiedgramschmidt: Modified Gram-Schmidt (slow,more stable) (KSPGMRESSetOrthogonalization)
+  -ksp_gmres_cgs_refinement_type: <now REFINE_NEVER : formerly REFINE_NEVER> Type of iterative refinement for classical (unmodified) Gram-Schmidt (choose one of) REFINE_NEVER REFINE_IFNEEDED REFINE_ALWAYS (KSPGMRESSetCGSRefinementType)
+  -ksp_gmres_krylov_monitor: <now FALSE : formerly FALSE> Plot the Krylov directions (KSPMonitorSet)
+----------------------------------------
+Viewer (-is_view) options:
+  -is_view ascii[:[filename][:[format][:append]]]: Prints object to stdout or ASCII file (PetscOptionsGetViewer)
+  -is_view binary[:[filename][:[format][:append]]]: Saves object to a binary file (PetscOptionsGetViewer)
+  -is_view draw[:[drawtype][:filename|format]] Draws object (PetscOptionsGetViewer)
+  -is_view socket[:port]: Pushes object to a Unix socket (PetscOptionsGetViewer)
+  -is_view saws[:communicatorname]: Publishes object to SAWs (PetscOptionsGetViewer)
+----------------------------------------
+Viewer (-mat_factor_view) options:
+  -mat_factor_view ascii[:[filename][:[format][:append]]]: Prints object to stdout or ASCII file (PetscOptionsGetViewer)
+  -mat_factor_view binary[:[filename][:[format][:append]]]: Saves object to a binary file (PetscOptionsGetViewer)
+  -mat_factor_view draw[:[drawtype][:filename|format]] Draws object (PetscOptionsGetViewer)
+  -mat_factor_view socket[:port]: Pushes object to a Unix socket (PetscOptionsGetViewer)
+  -mat_factor_view saws[:communicatorname]: Publishes object to SAWs (PetscOptionsGetViewer)
+  0 KSP Residual norm 3.811398540713e+00 
+  1 KSP Residual norm 1.444731352039e+00 
+  2 KSP Residual norm 4.712840878823e-01 
+  3 KSP Residual norm 6.943414362981e-02 
+  4 KSP Residual norm 9.502667693381e-03 
+  5 KSP Residual norm 7.905767061099e-04 
+  6 KSP Residual norm 1.108383257088e-04 
+----------------------------------------
+Viewer (-ksp_converged_reason) options:
+  -ksp_converged_reason ascii[:[filename][:[format][:append]]]: Prints object to stdout or ASCII file (PetscOptionsGetViewer)
+  -ksp_converged_reason binary[:[filename][:[format][:append]]]: Saves object to a binary file (PetscOptionsGetViewer)
+  -ksp_converged_reason draw[:[drawtype][:filename|format]] Draws object (PetscOptionsGetViewer)
+  -ksp_converged_reason socket[:port]: Pushes object to a Unix socket (PetscOptionsGetViewer)
+  -ksp_converged_reason saws[:communicatorname]: Publishes object to SAWs (PetscOptionsGetViewer)
+Norm of error 0.000156044 iterations 6

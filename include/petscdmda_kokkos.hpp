@@ -1,5 +1,4 @@
-#ifndef PETSCDMDA_KOKKOS_HPP
-#define PETSCDMDA_KOKKOS_HPP
+#pragma once
 
 #include <petscvec_kokkos.hpp>
 #include <petscdmda.h>
@@ -353,6 +352,4 @@ template <class MemorySpace>
 PetscErrorCode DMDAVecRestoreKokkosOffsetViewDOF(DM, Vec, Kokkos::Experimental::OffsetView<PetscScalar ****, Kokkos::LayoutRight, MemorySpace> *);
 template <class MemorySpace>
 PetscErrorCode DMDAVecRestoreKokkosOffsetViewDOFWrite(DM, Vec, Kokkos::Experimental::OffsetView<PetscScalar ****, Kokkos::LayoutRight, MemorySpace> *);
-#endif
-
 #endif

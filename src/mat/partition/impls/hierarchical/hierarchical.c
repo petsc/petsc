@@ -12,9 +12,9 @@
   of several small subdomains.
 */
 
-PetscErrorCode MatPartitioningHierarchical_DetermineDestination(MatPartitioning, IS, PetscInt, PetscInt, IS *);
-PetscErrorCode MatPartitioningHierarchical_AssembleSubdomain(Mat, IS, IS, IS *, Mat *, ISLocalToGlobalMapping *);
-PetscErrorCode MatPartitioningHierarchical_ReassembleFineparts(Mat, IS, ISLocalToGlobalMapping, IS *);
+static PetscErrorCode MatPartitioningHierarchical_DetermineDestination(MatPartitioning, IS, PetscInt, PetscInt, IS *);
+static PetscErrorCode MatPartitioningHierarchical_AssembleSubdomain(Mat, IS, IS, IS *, Mat *, ISLocalToGlobalMapping *);
+static PetscErrorCode MatPartitioningHierarchical_ReassembleFineparts(Mat, IS, ISLocalToGlobalMapping, IS *);
 
 typedef struct {
   char           *fineparttype;   /* partitioner on fine level */
@@ -240,7 +240,7 @@ static PetscErrorCode MatPartitioningApply_Hierarchical(MatPartitioning part, IS
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatPartitioningHierarchical_ReassembleFineparts(Mat adj, IS fineparts, ISLocalToGlobalMapping mapping, IS *sfineparts)
+static PetscErrorCode MatPartitioningHierarchical_ReassembleFineparts(Mat adj, IS fineparts, ISLocalToGlobalMapping mapping, IS *sfineparts)
 {
   PetscInt       *local_indices, *global_indices, *sfineparts_indices, localsize, i;
   const PetscInt *ranges, *fineparts_indices;
@@ -251,7 +251,7 @@ PetscErrorCode MatPartitioningHierarchical_ReassembleFineparts(Mat adj, IS finep
   PetscSF         sf;
 
   PetscFunctionBegin;
-  PetscValidPointer(sfineparts, 4);
+  PetscAssertPointer(sfineparts, 4);
   PetscCall(PetscObjectGetComm((PetscObject)adj, &comm));
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
   PetscCall(MatGetLayouts(adj, &rmap, NULL));
@@ -289,7 +289,7 @@ PetscErrorCode MatPartitioningHierarchical_ReassembleFineparts(Mat adj, IS finep
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatPartitioningHierarchical_AssembleSubdomain(Mat adj, IS vweights, IS destination, IS *svweights, Mat *sadj, ISLocalToGlobalMapping *mapping)
+static PetscErrorCode MatPartitioningHierarchical_AssembleSubdomain(Mat adj, IS vweights, IS destination, IS *svweights, Mat *sadj, ISLocalToGlobalMapping *mapping)
 {
   IS              irows, icols;
   PetscInt        irows_ln;
@@ -314,7 +314,7 @@ PetscErrorCode MatPartitioningHierarchical_AssembleSubdomain(Mat adj, IS vweight
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatPartitioningHierarchical_DetermineDestination(MatPartitioning part, IS partitioning, PetscInt pstart, PetscInt pend, IS *destination)
+static PetscErrorCode MatPartitioningHierarchical_DetermineDestination(MatPartitioning part, IS partitioning, PetscInt pstart, PetscInt pend, IS *destination)
 {
   MPI_Comm        comm;
   PetscMPIInt     rank, size, target;
@@ -341,7 +341,7 @@ PetscErrorCode MatPartitioningHierarchical_DetermineDestination(MatPartitioning 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatPartitioningView_Hierarchical(MatPartitioning part, PetscViewer viewer)
+static PetscErrorCode MatPartitioningView_Hierarchical(MatPartitioning part, PetscViewer viewer)
 {
   MatPartitioning_Hierarchical *hpart = (MatPartitioning_Hierarchical *)part->data;
   PetscMPIInt                   rank;
@@ -410,7 +410,7 @@ PetscErrorCode MatPartitioningHierarchicalSetNfineparts(MatPartitioning part, Pe
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatPartitioningSetFromOptions_Hierarchical(MatPartitioning part, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode MatPartitioningSetFromOptions_Hierarchical(MatPartitioning part, PetscOptionItems *PetscOptionsObject)
 {
   MatPartitioning_Hierarchical *hpart = (MatPartitioning_Hierarchical *)part->data;
   char                          value[1024];
@@ -434,7 +434,7 @@ PetscErrorCode MatPartitioningSetFromOptions_Hierarchical(MatPartitioning part, 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatPartitioningDestroy_Hierarchical(MatPartitioning part)
+static PetscErrorCode MatPartitioningDestroy_Hierarchical(MatPartitioning part)
 {
   MatPartitioning_Hierarchical *hpart = (MatPartitioning_Hierarchical *)part->data;
 

@@ -1,5 +1,4 @@
-#ifndef __DMFIELDIMPL_H
-#define __DMFIELDIMPL_H
+#pragma once
 
 #include <petscdmfield.h>
 #include <petsc/private/petscimpl.h>
@@ -31,4 +30,3 @@ struct _p_DMField {
 
 PETSC_INTERN PetscErrorCode DMFieldCreate(DM, PetscInt, DMFieldContinuity, DMField *);
 PETSC_INTERN PetscErrorCode DMFieldGetFVQuadrature_Internal(DMField, IS, PetscQuadrature *);
-#endif

@@ -36,7 +36,7 @@
 
       PetscCallA(PetscInitialize(ierr))
       PetscCallMPIA(MPI_Comm_size(PETSC_COMM_WORLD,size,ierr))
-      if (size .ne. 1) then; SETERRA(PETSC_COMM_WORLD,1,'requires one process'); endif
+      PetscCheckA(size .eq. 1,PETSC_COMM_WORLD,1,'requires one process')
 
       big  = 2.88
       big  = PETSC_INFINITY

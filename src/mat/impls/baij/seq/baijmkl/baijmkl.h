@@ -1,3 +1,5 @@
+#pragma once
+
 #define MKL_Complex16 PetscScalar
 #define MKL_Complex8  PetscScalar
 #define PetscCallMKL(stat) \

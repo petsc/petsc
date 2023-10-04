@@ -894,9 +894,9 @@ static PetscErrorCode THISurfaceStatistics(DM da, Vec X, PetscReal *min, PetscRe
     }
   }
   PetscCall(DMDAVecRestoreArray(da, X, &x));
-  PetscCallMPI(MPI_Allreduce(&umin, min, 1, MPIU_REAL, MPIU_MIN, PetscObjectComm((PetscObject)da)));
-  PetscCallMPI(MPI_Allreduce(&umax, max, 1, MPIU_REAL, MPIU_MAX, PetscObjectComm((PetscObject)da)));
-  PetscCallMPI(MPI_Allreduce(&usum, &gusum, 1, MPIU_SCALAR, MPIU_SUM, PetscObjectComm((PetscObject)da)));
+  PetscCall(MPIU_Allreduce(&umin, min, 1, MPIU_REAL, MPIU_MIN, PetscObjectComm((PetscObject)da)));
+  PetscCall(MPIU_Allreduce(&umax, max, 1, MPIU_REAL, MPIU_MAX, PetscObjectComm((PetscObject)da)));
+  PetscCall(MPIU_Allreduce(&usum, &gusum, 1, MPIU_SCALAR, MPIU_SUM, PetscObjectComm((PetscObject)da)));
   *mean = PetscRealPart(gusum) / (mx * my);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -937,8 +937,8 @@ static PetscErrorCode THISolveStatistics(THI thi, SNES snes, PetscInt coarsened,
       tmax[2] = PetscMax(c, tmax[2]);
     }
     PetscCall(VecRestoreArrayRead(X, &x));
-    PetscCallMPI(MPI_Allreduce(tmin, min, 3, MPIU_REAL, MPIU_MIN, PetscObjectComm((PetscObject)thi)));
-    PetscCallMPI(MPI_Allreduce(tmax, max, 3, MPIU_REAL, MPIU_MAX, PetscObjectComm((PetscObject)thi)));
+    PetscCall(MPIU_Allreduce(tmin, min, 3, MPIU_REAL, MPIU_MIN, PetscObjectComm((PetscObject)thi)));
+    PetscCall(MPIU_Allreduce(tmax, max, 3, MPIU_REAL, MPIU_MAX, PetscObjectComm((PetscObject)thi)));
     /* Dimensionalize to meters/year */
     nrm2 *= thi->units->year / thi->units->meter;
     for (j = 0; j < 3; j++) {
@@ -1289,8 +1289,8 @@ static PetscErrorCode DMCreateInterpolation_DA_THI(DM dac, DM daf, Mat *A, Vec *
   PetscFunctionBeginUser;
   PetscValidHeaderSpecific(dac, DM_CLASSID, 1);
   PetscValidHeaderSpecific(daf, DM_CLASSID, 2);
-  PetscValidPointer(A, 3);
-  if (scale) PetscValidPointer(scale, 4);
+  PetscAssertPointer(A, 3);
+  if (scale) PetscAssertPointer(scale, 4);
   PetscCall(DMDAGetInfo(daf, &dim, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0));
   if (dim == 2) {
     /* We are in the 2D problem and use normal DMDA interpolation */

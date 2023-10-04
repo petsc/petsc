@@ -13,20 +13,20 @@ PetscErrorCode ISColoringReference(ISColoring coloring)
 }
 
 /*@C
-   ISColoringSetType - indicates if the coloring is for the local representation (including ghost points) or the global representation of a `Mat`
+  ISColoringSetType - indicates if the coloring is for the local representation (including ghost points) or the global representation of a `Mat`
 
-   Collective
+  Collective
 
-   Input Parameters:
-+    coloring - the coloring object
--    type - either `IS_COLORING_LOCAL` or `IS_COLORING_GLOBAL`
+  Input Parameters:
++ coloring - the coloring object
+- type     - either `IS_COLORING_LOCAL` or `IS_COLORING_GLOBAL`
 
-   Level: intermediate
+  Level: intermediate
 
-   Notes:
-   `IS_COLORING_LOCAL` can lead to faster computations since parallel ghost point updates are not needed for each color
+  Notes:
+  `IS_COLORING_LOCAL` can lead to faster computations since parallel ghost point updates are not needed for each color
 
-   With `IS_COLORING_LOCAL` the coloring is in the numbering of the local vector, for `IS_COLORING_GLOBAL` it is in the numbering of the global vector
+  With `IS_COLORING_LOCAL` the coloring is in the numbering of the local vector, for `IS_COLORING_GLOBAL` it is in the numbering of the global vector
 
 .seealso: `MatFDColoringCreate()`, `ISColoring`, `ISColoringType`, `ISColoringCreate()`, `IS_COLORING_LOCAL`, `IS_COLORING_GLOBAL`, `ISColoringGetType()`
 @*/
@@ -39,17 +39,17 @@ PetscErrorCode ISColoringSetType(ISColoring coloring, ISColoringType type)
 
 /*@C
 
-    ISColoringGetType - gets if the coloring is for the local representation (including ghost points) or the global representation
+  ISColoringGetType - gets if the coloring is for the local representation (including ghost points) or the global representation
 
-   Collective
+  Collective
 
-   Input Parameter:
-.   coloring - the coloring object
+  Input Parameter:
+. coloring - the coloring object
 
-   Output Parameter:
-.    type - either `IS_COLORING_LOCAL` or `IS_COLORING_GLOBAL`
+  Output Parameter:
+. type - either `IS_COLORING_LOCAL` or `IS_COLORING_GLOBAL`
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `MatFDColoringCreate()`, `ISColoring`, `ISColoringType`, `ISColoringCreate()`, `IS_COLORING_LOCAL`, `IS_COLORING_GLOBAL`, `ISColoringSetType()`
 @*/
@@ -61,14 +61,14 @@ PetscErrorCode ISColoringGetType(ISColoring coloring, ISColoringType *type)
 }
 
 /*@
-   ISColoringDestroy - Destroys an `ISColoring` coloring context.
+  ISColoringDestroy - Destroys an `ISColoring` coloring context.
 
-   Collective
+  Collective
 
-   Input Parameter:
-.  iscoloring - the coloring context
+  Input Parameter:
+. iscoloring - the coloring context
 
-   Level: advanced
+  Level: advanced
 
 .seealso: `ISColoring`, `ISColoringView()`, `MatColoring`
 @*/
@@ -78,7 +78,7 @@ PetscErrorCode ISColoringDestroy(ISColoring *iscoloring)
 
   PetscFunctionBegin;
   if (!*iscoloring) PetscFunctionReturn(PETSC_SUCCESS);
-  PetscValidPointer((*iscoloring), 1);
+  PetscAssertPointer((*iscoloring), 1);
   if (--(*iscoloring)->refct > 0) {
     *iscoloring = NULL;
     PetscFunctionReturn(PETSC_SUCCESS);
@@ -100,13 +100,13 @@ PetscErrorCode ISColoringDestroy(ISColoring *iscoloring)
   Collective
 
   Input Parameters:
-+ obj   - the `ISColoring` object
-. prefix - prefix to use for viewing, or `NULL` to use prefix of `mat`
++ obj        - the `ISColoring` object
+. bobj       - prefix to use for viewing, or `NULL` to use prefix of `mat`
 - optionname - option to activate viewing
 
   Level: intermediate
 
-  Developer Note:
+  Developer Notes:
   This cannot use `PetscObjectViewFromOptions()` because `ISColoring` is not a `PetscObject`
 
 .seealso: `ISColoring`, `ISColoringView()`
@@ -131,15 +131,15 @@ PetscErrorCode ISColoringViewFromOptions(ISColoring obj, PetscObject bobj, const
 }
 
 /*@C
-   ISColoringView - Views an `ISColoring` coloring context.
+  ISColoringView - Views an `ISColoring` coloring context.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  iscoloring - the coloring context
--  viewer - the viewer
+  Input Parameters:
++ iscoloring - the coloring context
+- viewer     - the viewer
 
-   Level: advanced
+  Level: advanced
 
 .seealso: `ISColoring()`, `ISColoringViewFromOptions()`, `ISColoringDestroy()`, `ISColoringGetIS()`, `MatColoring`
 @*/
@@ -150,7 +150,7 @@ PetscErrorCode ISColoringView(ISColoring iscoloring, PetscViewer viewer)
   IS       *is;
 
   PetscFunctionBegin;
-  PetscValidPointer(iscoloring, 1);
+  PetscAssertPointer(iscoloring, 1);
   if (!viewer) PetscCall(PetscViewerASCIIGetStdout(iscoloring->comm, &viewer));
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
 
@@ -177,31 +177,31 @@ PetscErrorCode ISColoringView(ISColoring iscoloring, PetscViewer viewer)
 }
 
 /*@C
-   ISColoringGetColors - Returns an array with the color for each local node
+  ISColoringGetColors - Returns an array with the color for each local node
 
-   Not Collective
+  Not Collective
 
-   Input Parameter:
-.  iscoloring - the coloring context
+  Input Parameter:
+. iscoloring - the coloring context
 
-   Output Parameters:
-+  n - number of nodes
-.  nc - number of colors
--  colors - color for each node
+  Output Parameters:
++ n      - number of nodes
+. nc     - number of colors
+- colors - color for each node
 
-   Level: advanced
+  Level: advanced
 
-   Notes:
-   Do not free the `colors` array.
+  Notes:
+  Do not free the `colors` array.
 
-   The `colors` array will only be valid for the lifetime of the `ISColoring`
+  The `colors` array will only be valid for the lifetime of the `ISColoring`
 
 .seealso: `ISColoring`, `ISColoringValue`, `ISColoringRestoreIS()`, `ISColoringView()`, `ISColoringGetIS()`
 @*/
 PetscErrorCode ISColoringGetColors(ISColoring iscoloring, PetscInt *n, PetscInt *nc, const ISColoringValue **colors)
 {
   PetscFunctionBegin;
-  PetscValidPointer(iscoloring, 1);
+  PetscAssertPointer(iscoloring, 1);
 
   if (n) *n = iscoloring->N;
   if (nc) *nc = iscoloring->n;
@@ -210,29 +210,29 @@ PetscErrorCode ISColoringGetColors(ISColoring iscoloring, PetscInt *n, PetscInt 
 }
 
 /*@C
-   ISColoringGetIS - Extracts index sets from the coloring context. Each is contains the nodes of one color
+  ISColoringGetIS - Extracts index sets from the coloring context. Each is contains the nodes of one color
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  iscoloring - the coloring context
--  mode - if this value is `PETSC_OWN_POINTER` then the caller owns the pointer and must free the array of `IS` and each `IS` in the array
+  Input Parameters:
++ iscoloring - the coloring context
+- mode       - if this value is `PETSC_OWN_POINTER` then the caller owns the pointer and must free the array of `IS` and each `IS` in the array
 
-   Output Parameters:
-+  nn - number of index sets in the coloring context
--  is - array of index sets
+  Output Parameters:
++ nn   - number of index sets in the coloring context
+- isis - array of index sets
 
-   Level: advanced
+  Level: advanced
 
-   Note:
-   If mode is `PETSC_USE_POINTER` then `ISColoringRestoreIS()` must be called when the `IS` are no longer needed
+  Note:
+  If mode is `PETSC_USE_POINTER` then `ISColoringRestoreIS()` must be called when the `IS` are no longer needed
 
 .seealso: `ISColoring`, `IS`, `ISColoringRestoreIS()`, `ISColoringView()`, `ISColoringGetColoring()`, `ISColoringGetColors()`
 @*/
 PetscErrorCode ISColoringGetIS(ISColoring iscoloring, PetscCopyMode mode, PetscInt *nn, IS *isis[])
 {
   PetscFunctionBegin;
-  PetscValidPointer(iscoloring, 1);
+  PetscAssertPointer(iscoloring, 1);
 
   if (nn) *nn = iscoloring->n;
   if (isis) {
@@ -278,50 +278,50 @@ PetscErrorCode ISColoringGetIS(ISColoring iscoloring, PetscCopyMode mode, PetscI
 }
 
 /*@C
-   ISColoringRestoreIS - Restores the index sets extracted from the coloring context with `ISColoringGetIS()` using `PETSC_USE_POINTER`
+  ISColoringRestoreIS - Restores the index sets extracted from the coloring context with `ISColoringGetIS()` using `PETSC_USE_POINTER`
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  iscoloring - the coloring context
-.  mode - who retains ownership of the is
--  is - array of index sets
+  Input Parameters:
++ iscoloring - the coloring context
+. mode       - who retains ownership of the is
+- is         - array of index sets
 
-   Level: advanced
+  Level: advanced
 
 .seealso: `ISColoring()`, `IS`, `ISColoringGetIS()`, `ISColoringView()`, `PetscCopyMode`
 @*/
 PetscErrorCode ISColoringRestoreIS(ISColoring iscoloring, PetscCopyMode mode, IS *is[])
 {
   PetscFunctionBegin;
-  PetscValidPointer(iscoloring, 1);
+  PetscAssertPointer(iscoloring, 1);
 
   /* currently nothing is done here */
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
-    ISColoringCreate - Generates an `ISColoring` context from lists (provided by each MPI process) of colors for each node.
+  ISColoringCreate - Generates an `ISColoring` context from lists (provided by each MPI process) of colors for each node.
 
-    Collective
+  Collective
 
-    Input Parameters:
-+   comm - communicator for the processors creating the coloring
-.   ncolors - max color value
-.   n - number of nodes on this processor
-.   colors - array containing the colors for this MPI rank, color numbers begin at 0, for each local node
--   mode - see `PetscCopyMode` for meaning of this flag.
+  Input Parameters:
++ comm    - communicator for the processors creating the coloring
+. ncolors - max color value
+. n       - number of nodes on this processor
+. colors  - array containing the colors for this MPI rank, color numbers begin at 0, for each local node
+- mode    - see `PetscCopyMode` for meaning of this flag.
 
-    Output Parameter:
-.   iscoloring - the resulting coloring data structure
+  Output Parameter:
+. iscoloring - the resulting coloring data structure
 
-    Options Database Key:
-.   -is_coloring_view - Activates `ISColoringView()`
+  Options Database Key:
+. -is_coloring_view - Activates `ISColoringView()`
 
-   Level: advanced
+  Level: advanced
 
-    Notes:
-    By default sets coloring type to  `IS_COLORING_GLOBAL`
+  Notes:
+  By default sets coloring type to  `IS_COLORING_GLOBAL`
 
 .seealso: `ISColoring`, `ISColoringValue`, `MatColoringCreate()`, `ISColoringView()`, `ISColoringDestroy()`, `ISColoringSetType()`
 @*/
@@ -385,22 +385,22 @@ PetscErrorCode ISColoringCreate(MPI_Comm comm, PetscInt ncolors, PetscInt n, con
 }
 
 /*@
-    ISBuildTwoSided - Takes an `IS` that describes where each element will be mapped globally over all ranks.
-    Generates an `IS` that contains new numbers from remote or local on the `IS`.
+  ISBuildTwoSided - Takes an `IS` that describes where each element will be mapped globally over all ranks.
+  Generates an `IS` that contains new numbers from remote or local on the `IS`.
 
-    Collective
+  Collective
 
-    Input Parameters:
-+   ito - an `IS` describes where each entry will be mapped. Negative target rank will be ignored
--   toindx - an `IS` describes what indices should send. `NULL` means sending natural numbering
+  Input Parameters:
++ ito    - an `IS` describes where each entry will be mapped. Negative target rank will be ignored
+- toindx - an `IS` describes what indices should send. `NULL` means sending natural numbering
 
-    Output Parameter:
-.   rows - contains new numbers from remote or local
+  Output Parameter:
+. rows - contains new numbers from remote or local
 
-   Level: advanced
+  Level: advanced
 
-   Developer Note:
-   This manual page is incomprehensible and still needs to be fixed
+  Developer Notes:
+  This manual page is incomprehensible and still needs to be fixed
 
 .seealso: [](sec_scatter), `IS`, `MatPartitioningCreate()`, `ISPartitioningToNumbering()`, `ISPartitioningCount()`
 @*/
@@ -493,23 +493,23 @@ PetscErrorCode ISBuildTwoSided(IS ito, IS toindx, IS *rows)
 }
 
 /*@
-    ISPartitioningToNumbering - Takes an `IS' that represents a partitioning (the MPI rank that each local entry belongs to) and on each MPI process
-    generates an `IS` that contains a new global node number in the new ordering for each entry
+  ISPartitioningToNumbering - Takes an `IS' that represents a partitioning (the MPI rank that each local entry belongs to) and on each MPI process
+  generates an `IS` that contains a new global node number in the new ordering for each entry
 
-    Collective
+  Collective
 
-    Input Parameter:
-.   partitioning - a partitioning as generated by `MatPartitioningApply()` or `MatPartitioningApplyND()`
+  Input Parameter:
+. part - a partitioning as generated by `MatPartitioningApply()` or `MatPartitioningApplyND()`
 
-    Output Parameter:
-.   is - on each processor the index set that defines the global numbers
+  Output Parameter:
+. is - on each processor the index set that defines the global numbers
          (in the new numbering) for all the nodes currently (before the partitioning)
          on that processor
 
-   Level: advanced
+  Level: advanced
 
-   Note:
-   The resulting `IS` tells where each local entry is mapped to in a new global ordering
+  Note:
+  The resulting `IS` tells where each local entry is mapped to in a new global ordering
 
 .seealso: [](sec_scatter), `IS`, `MatPartitioningCreate()`, `AOCreateBasic()`, `ISPartitioningCount()`
 @*/
@@ -522,7 +522,7 @@ PetscErrorCode ISPartitioningToNumbering(IS part, IS *is)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part, IS_CLASSID, 1);
-  PetscValidPointer(is, 2);
+  PetscAssertPointer(is, 2);
   /* see if the partitioning comes from nested dissection */
   PetscCall(PetscObjectQuery((PetscObject)part, "_petsc_matpartitioning_ndorder", (PetscObject *)&ndorder));
   if (ndorder) {
@@ -570,30 +570,30 @@ PetscErrorCode ISPartitioningToNumbering(IS part, IS *is)
 }
 
 /*@
-    ISPartitioningCount - Takes a `IS` that represents a partitioning (the MPI rank that each local entry belongs to) and determines the number of
-    resulting elements on each (partition) rank
+  ISPartitioningCount - Takes a `IS` that represents a partitioning (the MPI rank that each local entry belongs to) and determines the number of
+  resulting elements on each (partition) rank
 
-    Collective
+  Collective
 
-    Input Parameters:
-+   partitioning - a partitioning as generated by `MatPartitioningApply()` or `MatPartitioningApplyND()`
--   len - length of the array count, this is the total number of partitions
+  Input Parameters:
++ part - a partitioning as generated by `MatPartitioningApply()` or `MatPartitioningApplyND()`
+- len  - length of the array count, this is the total number of partitions
 
-    Output Parameter:
-.   count - array of length size, to contain the number of elements assigned
+  Output Parameter:
+. count - array of length size, to contain the number of elements assigned
         to each partition, where size is the number of partitions generated
          (see notes below).
 
-   Level: advanced
+  Level: advanced
 
-    Notes:
-    By default the number of partitions generated (and thus the length
-    of count) is the size of the communicator associated with `IS`,
-    but it can be set by `MatPartitioningSetNParts()`.
+  Notes:
+  By default the number of partitions generated (and thus the length
+  of count) is the size of the communicator associated with `IS`,
+  but it can be set by `MatPartitioningSetNParts()`.
 
-    The resulting array of lengths can for instance serve as input of `PCBJacobiSetTotalBlocks()`.
+  The resulting array of lengths can for instance serve as input of `PCBJacobiSetTotalBlocks()`.
 
-    If the partitioning has been obtained by `MatPartitioningApplyND()`, the returned count does not include the separators.
+  If the partitioning has been obtained by `MatPartitioningApplyND()`, the returned count does not include the separators.
 
 .seealso: [](sec_scatter), `IS`, `MatPartitioningCreate()`, `AOCreateBasic()`, `ISPartitioningToNumbering()`,
           `MatPartitioningSetNParts()`, `MatPartitioningApply()`, `MatPartitioningApplyND()`
@@ -641,30 +641,30 @@ PetscErrorCode ISPartitioningCount(IS part, PetscInt len, PetscInt count[])
 }
 
 /*@
-    ISAllGather - Given an index set `IS` on each processor, generates a large
-    index set (same on each processor) by concatenating together each
-    processors index set.
+  ISAllGather - Given an index set `IS` on each processor, generates a large
+  index set (same on each processor) by concatenating together each
+  processors index set.
 
-    Collective
+  Collective
 
-    Input Parameter:
-.   is - the distributed index set
+  Input Parameter:
+. is - the distributed index set
 
-    Output Parameter:
-.   isout - the concatenated index set (same on all processors)
+  Output Parameter:
+. isout - the concatenated index set (same on all processors)
 
-    Level: intermediate
+  Level: intermediate
 
-    Notes:
-    `ISAllGather()` is clearly not scalable for large index sets.
+  Notes:
+  `ISAllGather()` is clearly not scalable for large index sets.
 
-    The `IS` created on each processor must be created with a common
-    communicator (e.g., `PETSC_COMM_WORLD`). If the index sets were created
-    with `PETSC_COMM_SELF`, this routine will not work as expected, since
-    each process will generate its own new `IS` that consists only of
-    itself.
+  The `IS` created on each processor must be created with a common
+  communicator (e.g., `PETSC_COMM_WORLD`). If the index sets were created
+  with `PETSC_COMM_SELF`, this routine will not work as expected, since
+  each process will generate its own new `IS` that consists only of
+  itself.
 
-    The communicator for this new `IS` is `PETSC_COMM_SELF`
+  The communicator for this new `IS` is `PETSC_COMM_SELF`
 
 .seealso: [](sec_scatter), `IS`, `ISCreateGeneral()`, `ISCreateStride()`, `ISCreateBlock()`
 @*/
@@ -678,7 +678,7 @@ PetscErrorCode ISAllGather(IS is, IS *isout)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is, IS_CLASSID, 1);
-  PetscValidPointer(isout, 2);
+  PetscAssertPointer(isout, 2);
 
   PetscCall(PetscObjectGetComm((PetscObject)is, &comm));
   PetscCallMPI(MPI_Comm_size(comm, &size));
@@ -711,24 +711,24 @@ PetscErrorCode ISAllGather(IS is, IS *isout)
 }
 
 /*@C
-    ISAllGatherColors - Given a a set of colors on each processor, generates a large
-    set (same on each processor) by concatenating together each processors colors
+  ISAllGatherColors - Given a a set of colors on each processor, generates a large
+  set (same on each processor) by concatenating together each processors colors
 
-    Collective
+  Collective
 
-    Input Parameters:
-+   comm - communicator to share the indices
-.   n - local size of set
--   lindices - local colors
+  Input Parameters:
++ comm     - communicator to share the indices
+. n        - local size of set
+- lindices - local colors
 
-    Output Parameters:
-+   outN - total number of indices
--   outindices - all of the colors
+  Output Parameters:
++ outN       - total number of indices
+- outindices - all of the colors
 
-    Level: intermediate
+  Level: intermediate
 
-    Note:
-    `ISAllGatherColors()` is clearly not scalable for large index sets.
+  Note:
+  `ISAllGatherColors()` is clearly not scalable for large index sets.
 
 .seealso: `ISCOloringValue`, `ISColoring()`, `ISCreateGeneral()`, `ISCreateStride()`, `ISCreateBlock()`, `ISAllGather()`
 @*/
@@ -757,28 +757,28 @@ PetscErrorCode ISAllGatherColors(MPI_Comm comm, PetscInt n, ISColoringValue *lin
 }
 
 /*@
-    ISComplement - Given an index set `IS` generates the complement index set. That is
-       all indices that are NOT in the given set.
+  ISComplement - Given an index set `IS` generates the complement index set. That is
+  all indices that are NOT in the given set.
 
-    Collective
+  Collective
 
-    Input Parameters:
-+   is - the index set
-.   nmin - the first index desired in the local part of the complement
--   nmax - the largest index desired in the local part of the complement (note that all indices in is must be greater or equal to nmin and less than nmax)
+  Input Parameters:
++ is   - the index set
+. nmin - the first index desired in the local part of the complement
+- nmax - the largest index desired in the local part of the complement (note that all indices in `is` must be greater or equal to `nmin` and less than `nmax`)
 
-    Output Parameter:
-.   isout - the complement
+  Output Parameter:
+. isout - the complement
 
-    Level: intermediate
+  Level: intermediate
 
-    Notes:
-    The communicator for `isout` is the same as for the input `is`
+  Notes:
+  The communicator for `isout` is the same as for the input `is`
 
-    For a parallel `is`, this will generate the local part of the complement on each process
+  For a parallel `is`, this will generate the local part of the complement on each process
 
-    To generate the entire complement (on each process) of a parallel `IS`, first call `ISAllGather()` and then
-    call this routine.
+  To generate the entire complement (on each process) of a parallel `is`, first call `ISAllGather()` and then
+  call this routine.
 
 .seealso: [](sec_scatter), `IS`, `ISCreateGeneral()`, `ISCreateStride()`, `ISCreateBlock()`, `ISAllGather()`
 @*/
@@ -790,7 +790,7 @@ PetscErrorCode ISComplement(IS is, PetscInt nmin, PetscInt nmax, IS *isout)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is, IS_CLASSID, 1);
-  PetscValidPointer(isout, 4);
+  PetscAssertPointer(isout, 4);
   PetscCheck(nmin >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "nmin %" PetscInt_FMT " cannot be negative", nmin);
   PetscCheck(nmin <= nmax, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "nmin %" PetscInt_FMT " cannot be greater than nmax %" PetscInt_FMT, nmin, nmax);
   PetscCall(ISSorted(is, &sorted));

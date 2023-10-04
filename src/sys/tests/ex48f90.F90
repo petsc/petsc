@@ -23,8 +23,6 @@
 !/*TEST
 !
 ! testset:
-!   filter: grep -E -v "(options_left)"
-!
 !   test:
 !      suffix: 1
 !      args: -f petsc.yml -options_left 0

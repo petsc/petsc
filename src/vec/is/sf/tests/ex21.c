@@ -31,7 +31,7 @@ int main(int argc, char *argv[])
   indices[3] = 3;
   PetscCall(ISCreateGeneral(PETSC_COMM_WORLD, n, indices, PETSC_COPY_VALUES, &is));
   PetscCall(PetscFree(indices));
-  PetscCall(VecCreateMPI(PETSC_COMM_WORLD, n, n, &vec));
+  PetscCall(VecCreateFromOptions(PETSC_COMM_WORLD, NULL, 1, n, n, &vec));
 
   n = 4;
   PetscCall(PetscMalloc1(n, &indices));
@@ -41,7 +41,7 @@ int main(int argc, char *argv[])
   indices[3] = 1;
   PetscCall(ISCreateGeneral(PETSC_COMM_WORLD, n, indices, PETSC_COPY_VALUES, &is2));
   PetscCall(PetscFree(indices));
-  PetscCall(VecCreateMPI(PETSC_COMM_WORLD, n / 2, n / 2, &vec2));
+  PetscCall(VecCreateFromOptions(PETSC_COMM_WORLD, NULL, 1, n / 2, n / 2, &vec2));
 
   PetscCall(VecScatterCreate(vec, is, vec2, is2, &scatter));
   PetscCall(ISDestroy(&is));

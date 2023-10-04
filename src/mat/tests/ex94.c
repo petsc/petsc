@@ -272,7 +272,7 @@ int main(int argc, char **args)
     PetscCall(MatGetLocalSize(A, &m, &n));
 
     PN  = M / 2;
-    nzp = (PetscInt)(0.1 * PN + 1); /* num of nozeros in each row of P */
+    nzp = (PetscInt)(0.1 * PN + 1); /* num of nonzeros in each row of P */
     PetscCall(MatCreate(PETSC_COMM_WORLD, &P));
     PetscCall(MatSetSizes(P, PETSC_DECIDE, PETSC_DECIDE, N, PN));
     PetscCall(MatSetType(P, mattype));

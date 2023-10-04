@@ -9,14 +9,12 @@ static char help[] = "Tests binary I/O of matrices and illustrates user-defined 
 
 int main(int argc, char **args)
 {
-  Mat         C;
-  PetscScalar v;
-  PetscInt    i, j, Ii, J, Istart, Iend, N, m = 4, n = 4;
-  PetscMPIInt rank, size;
-  PetscViewer viewer;
-#if defined(PETSC_USE_LOG)
+  Mat           C;
+  PetscScalar   v;
+  PetscInt      i, j, Ii, J, Istart, Iend, N, m = 4, n = 4;
+  PetscMPIInt   rank, size;
+  PetscViewer   viewer;
   PetscLogEvent MATRIX_GENERATE, MATRIX_READ;
-#endif
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &args, (char *)0, help));

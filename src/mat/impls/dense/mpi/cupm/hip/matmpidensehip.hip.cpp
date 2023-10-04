@@ -17,7 +17,7 @@ static constexpr impl::MatDense_MPI_CUPM<DeviceType::HIP> mat_cupm{};
 
   Level: beginner
 
-.seealso: [](chapter_matrices), `Mat`, `MATSEQDENSEHIP`, `MATMPIDENSEHIP`, `MATSEQDENSECUDA`,
+.seealso: [](ch_matrices), `Mat`, `MATSEQDENSEHIP`, `MATMPIDENSEHIP`, `MATSEQDENSECUDA`,
 `MATMPIDENSECUDA`, `MATDENSE`
 M*/
 
@@ -31,7 +31,7 @@ M*/
 
   Level: beginner
 
-.seealso: [](chapter_matrices), `Mat`, `MATDENSEHIP`, `MATMPIDENSE`, `MATSEQDENSE`,
+.seealso: [](ch_matrices), `Mat`, `MATDENSEHIP`, `MATMPIDENSE`, `MATSEQDENSE`,
 `MATSEQDENSEHIP`, `MATSEQDENSECUDA`
 M*/
 PETSC_INTERN PetscErrorCode MatCreate_MPIDenseHIP(Mat A)
@@ -59,7 +59,7 @@ PetscErrorCode MatConvert_MPIDense_MPIDenseHIP(Mat A, MatType type, MatReuse reu
 . n    - number of local columns (or `PETSC_DECIDE` to have calculated if `N` is given)
 . M    - number of global rows (or `PETSC_DECIDE` to have calculated if `m` is given)
 . N    - number of global columns (or `PETSC_DECIDE` to have calculated if `n` is given)
-- data - optional location of GPU matrix data. Pass`NULL` to have PETSc to control matrix
+- data - optional location of GPU matrix data. Pass `NULL` to have PETSc to control matrix
          memory allocation.
 
   Output Parameter:
@@ -190,7 +190,7 @@ PetscErrorCode MatDenseHIPGetArrayWrite(Mat A, PetscScalar **a)
   Not Collective
 
   Input Parameters:
-+ A     - the matrix
++ A - the matrix
 - a - the GPU array in column major order
 
   Level: developer
@@ -242,7 +242,7 @@ PetscErrorCode MatDenseHIPGetArrayRead(Mat A, const PetscScalar **a)
   Not Collective
 
   Input Parameters:
-+ A     - the matrix
++ A - the matrix
 - a - the GPU array in column major order
 
   Level: developer
@@ -300,7 +300,7 @@ PetscErrorCode MatDenseHIPGetArray(Mat A, PetscScalar **a)
   Level: developer
 
   Input Parameters:
-+ A     - the matrix
++ A - the matrix
 - a - the GPU array in column major order
 
 .seealso: `MATDENSEHIP`, `MatDenseHIPGetArray()`, `MatDenseHIPRestoreArrayWrite()`,
@@ -310,5 +310,27 @@ PetscErrorCode MatDenseHIPRestoreArray(Mat A, PetscScalar **a)
 {
   PetscFunctionBegin;
   PetscCall(MatDenseCUPMRestoreArray<DeviceType::HIP>(A, a));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@C
+  MatDenseHIPSetPreallocation - Set the device array used for storing the matrix elements of a
+  `MATDENSEHIP` matrix
+
+  Collective
+
+  Input Parameters:
++ A            - the matrix
+- device_array - the array (or `NULL`)
+
+  Level: intermediate
+
+.seealso: [](ch_matrices), `Mat`, `MATDENSEHIP`, `MatCreate()`, `MatCreateDenseHIP()`,
+`MatSetValues()`, `MatDenseSetLDA()`
+@*/
+PetscErrorCode MatDenseHIPSetPreallocation(Mat A, PetscScalar *device_array)
+{
+  PetscFunctionBegin;
+  PetscCall(MatDenseCUPMSetPreallocation<DeviceType::HIP>(A, device_array));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

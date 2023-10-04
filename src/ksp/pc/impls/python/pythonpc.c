@@ -20,7 +20,7 @@ PetscErrorCode PCPythonSetType(PC pc, const char pyname[])
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
-  PetscValidCharPointer(pyname, 2);
+  PetscAssertPointer(pyname, 2);
   PetscTryMethod(pc, "PCPythonSetType_C", (PC, const char[]), (pc, pyname));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -44,7 +44,7 @@ PetscErrorCode PCPythonGetType(PC pc, const char *pyname[])
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
-  PetscValidPointer(pyname, 2);
+  PetscAssertPointer(pyname, 2);
   PetscUseMethod(pc, "PCPythonGetType_C", (PC, const char *[]), (pc, pyname));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

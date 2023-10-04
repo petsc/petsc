@@ -1,5 +1,4 @@
-#ifndef PETSCSECTIONIMPL_H
-#define PETSCSECTIONIMPL_H
+#pragma once
 
 #include <petscsection.h>
 #include <petsc/private/petscimpl.h>
@@ -23,7 +22,7 @@ static inline int PetscSectionClosurePermEqual(PetscSectionClosurePermKey k1, Pe
   return k1.depth == k2.depth && k1.size == k2.size;
 }
 
-static PetscSectionClosurePermVal PetscSectionClosurePermVal_Empty = {NULL, NULL};
+static PetscSectionClosurePermVal PetscSectionClosurePermVal_Empty = {PETSC_NULLPTR, PETSC_NULLPTR};
 PETSC_HASH_MAP(ClPerm, PetscSectionClosurePermKey, PetscSectionClosurePermVal, PetscSectionClosurePermHash, PetscSectionClosurePermEqual, PetscSectionClosurePermVal_Empty)
 
 struct _p_PetscSection {
@@ -77,10 +76,9 @@ struct _p_PetscSectionSym {
   SymWorkLink workout;
 };
 
-PETSC_EXTERN PetscErrorCode PetscSectionSetClosurePermutation_Internal(PetscSection, PetscObject, PetscInt, PetscInt, PetscCopyMode, PetscInt *);
-PETSC_EXTERN PetscErrorCode PetscSectionGetClosurePermutation_Internal(PetscSection, PetscObject, PetscInt, PetscInt, const PetscInt *[]);
-PETSC_EXTERN PetscErrorCode PetscSectionGetClosureInversePermutation_Internal(PetscSection, PetscObject, PetscInt, PetscInt, const PetscInt *[]);
-PETSC_EXTERN PetscErrorCode ISIntersect_Caching_Internal(IS, IS, IS *);
+PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode PetscSectionSetClosurePermutation_Internal(PetscSection, PetscObject, PetscInt, PetscInt, PetscCopyMode, PetscInt *);
+PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode PetscSectionGetClosureInversePermutation_Internal(PetscSection, PetscObject, PetscInt, PetscInt, const PetscInt *[]);
+PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode ISIntersect_Caching_Internal(IS, IS, IS *);
 #if defined(PETSC_HAVE_HDF5)
 PETSC_INTERN PetscErrorCode PetscSectionView_HDF5_Internal(PetscSection, PetscViewer);
 PETSC_INTERN PetscErrorCode PetscSectionLoad_HDF5_Internal(PetscSection, PetscViewer);
@@ -99,9 +97,8 @@ static inline PetscErrorCode PetscSectionCheckConstraints_Private(PetscSection s
 /* Call this if you directly modify atlasDof so that maxDof gets recalculated on next PetscSectionGetMaxDof() */
 static inline PetscErrorCode PetscSectionInvalidateMaxDof_Internal(PetscSection s)
 {
-  PetscFunctionBegin;
   s->maxDof = PETSC_MIN_INT;
-  PetscFunctionReturn(PETSC_SUCCESS);
+  return PETSC_SUCCESS;
 }
 
 #if defined(PETSC_CLANG_STATIC_ANALYZER)
@@ -117,5 +114,3 @@ void PetscSectionCheckValidFieldComponent(PetscInt, PetscInt);
 
   #define PetscSectionCheckValidField(field, nfields) PetscSectionCheckValid_("field number", field, nfields)
 #endif /* PETSC_CLANG_STATIC_ANALYZER */
-
-#endif /* PETSCSECTIONIMPL_H */

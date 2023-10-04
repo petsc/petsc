@@ -91,7 +91,7 @@
       PetscCallA(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY,ierr))
 
 !  Create parallel vectors.
-      PetscCallA(VecCreateMPI(PETSC_COMM_WORLD,PETSC_DECIDE,m*n,u,ierr))
+      PetscCallA(VecCreateFromOptions(PETSC_COMM_WORLD,PETSC_NULL_CHARACTER,i1,PETSC_DECIDE,m*n,u,ierr))
       PetscCallA(VecDuplicate(u,b,ierr))
       PetscCallA(VecDuplicate(b,x,ierr))
 

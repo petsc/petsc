@@ -43,12 +43,13 @@ int main(int argc, char **args)
 #if defined(PETSC_HAVE_STRUMPACK)
   PetscBool flg_strumpack = PETSC_FALSE;
 #endif
-  PetscScalar v;
-  PetscMPIInt rank, size;
-#if defined(PETSC_USE_LOG)
+  PetscScalar   v;
+  PetscMPIInt   rank, size;
   PetscLogStage stage;
-#endif
 
+#if defined(PETSC_HAVE_STRUMPACK) && defined(PETSC_HAVE_SLATE)
+  PETSC_MPI_THREAD_REQUIRED = MPI_THREAD_MULTIPLE;
+#endif
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
@@ -188,7 +189,12 @@ int main(int argc, char **args)
     PetscCall(PCFactorSetMatSolverType(pc, MATSOLVERMUMPS));
     PetscCall(PCFactorSetUpMatSolverType(pc)); /* call MatGetFactor() to create F */
     PetscCall(PCFactorGetMatrix(pc, &F));
-
+    PetscCall(MatMumpsSetIcntl(F, 24, 1));
+    PetscCall(MatMumpsGetIcntl(F, 24, &ival));
+    PetscCheck(ival == 1, PetscObjectComm((PetscObject)F), PETSC_ERR_LIB, "ICNTL(24) = %" PetscInt_FMT " (!= 1)", ival);
+    PetscCall(MatMumpsSetCntl(F, 3, 1e-6));
+    PetscCall(MatMumpsGetCntl(F, 3, &val));
+    PetscCheck(PetscEqualReal(val, 1e-6), PetscObjectComm((PetscObject)F), PETSC_ERR_LIB, "CNTL(3) = %g (!= %g)", (double)val, 1e-6);
     if (flg_mumps) {
       /* Zero the first and last rows in the rank, they should then show up in corresponding null pivot rows output via
          MatMumpsGetNullPivots */
@@ -215,10 +221,11 @@ int main(int argc, char **args)
     PetscCall(MatMumpsSetIcntl(F, icntl, ival));
 
     /* threshold for row pivot detection */
-    PetscCall(MatMumpsSetIcntl(F, 24, 1));
+    PetscCall(MatMumpsGetIcntl(F, 24, &ival));
+    PetscCheck(ival == 1, PetscObjectComm((PetscObject)F), PETSC_ERR_LIB, "ICNTL(24) = %" PetscInt_FMT " (!= 1)", ival);
     icntl = 3;
-    val   = 1.e-6;
-    PetscCall(MatMumpsSetCntl(F, icntl, val));
+    PetscCall(MatMumpsGetCntl(F, icntl, &val));
+    PetscCheck(PetscEqualReal(val, 1e-6), PetscObjectComm((PetscObject)F), PETSC_ERR_LIB, "CNTL(3) = %g (!= %g)", (double)val, 1e-6);
 
     /* compute determinant of A */
     PetscCall(MatMumpsSetIcntl(F, 33, 1));
@@ -267,16 +274,17 @@ int main(int argc, char **args)
     Note: runtime options
           '-pc_type lu/ilu \
            -pc_factor_mat_solver_type strumpack \
-           -mat_strumpack_reordering METIS \
+           -mat_strumpack_reordering GEOMETRIC \
+           -mat_strumpack_geometric_xyz n,m \
            -mat_strumpack_colperm 0 \
-           -mat_strumpack_hss_rel_tol 1.e-3 \
-           -mat_strumpack_hss_min_sep_size 50 \
-           -mat_strumpack_max_rank 100 \
+           -mat_strumpack_compression_rel_tol 1.e-3 \
+           -mat_strumpack_compression_min_sep_size 15 \
            -mat_strumpack_leaf_size 4'
        are equivalent to these procedural calls
 
-    We refer to the STRUMPACK-sparse manual, section 5, for more info on
-    how to tune the preconditioner.
+    We refer to the STRUMPACK manual for more info on
+    how to tune the preconditioner, see for instance:
+     https://portal.nersc.gov/project/sparse/strumpack/master/prec.html
   */
 #if defined(PETSC_HAVE_STRUMPACK)
   flg_ilu       = PETSC_FALSE;
@@ -294,27 +302,43 @@ int main(int argc, char **args)
     PetscCall(PCFactorSetMatSolverType(pc, MATSOLVERSTRUMPACK));
     PetscCall(PCFactorSetUpMatSolverType(pc)); /* call MatGetFactor() to create F */
     PetscCall(PCFactorGetMatrix(pc, &F));
-  #if defined(PETSC_HAVE_STRUMPACK)
-    /* Set the fill-reducing reordering.                              */
-    PetscCall(MatSTRUMPACKSetReordering(F, MAT_STRUMPACK_METIS));
+
+    /* Set the fill-reducing reordering, MAT_STRUMPACK_METIS is       */
+    /* always supported, but is sequential. Parallel alternatives are */
+    /* MAT_STRUMPACK_PARMETIS and MAT_STRUMPACK_PTSCOTCH, but         */
+    /* strumpack needs to be configured with support for these.       */
+    /*PetscCall(MatSTRUMPACKSetReordering(F, MAT_STRUMPACK_METIS));   */
+    /* However, since this is a problem on a regular grid, we can use */
+    /* a simple geometric nested dissection implementation, which     */
+    /* requires passing the grid dimensions to strumpack.             */
+    PetscCall(MatSTRUMPACKSetReordering(F, MAT_STRUMPACK_GEOMETRIC));
+    PetscCall(MatSTRUMPACKSetGeometricNxyz(F, n, m, PETSC_DECIDE));
+    /* These are optional, defaults are 1                             */
+    PetscCall(MatSTRUMPACKSetGeometricComponents(F, 1));
+    PetscCall(MatSTRUMPACKSetGeometricWidth(F, 1));
+
     /* Since this is a simple discretization, the diagonal is always  */
     /* nonzero, and there is no need for the extra MC64 permutation.  */
     PetscCall(MatSTRUMPACKSetColPerm(F, PETSC_FALSE));
-    /* The compression tolerance used when doing low-rank compression */
-    /* in the preconditioner. This is problem specific!               */
-    PetscCall(MatSTRUMPACKSetHSSRelTol(F, 1.e-3));
-    /* Set minimum matrix size for HSS compression to 15 in order to  */
-    /* demonstrate preconditioner on small problems. For performance  */
-    /* a value of say 500 is better.                                  */
-    PetscCall(MatSTRUMPACKSetHSSMinSepSize(F, 15));
-    /* You can further limit the fill in the preconditioner by        */
-    /* setting a maximum rank                                         */
-    PetscCall(MatSTRUMPACKSetHSSMaxRank(F, 100));
-    /* Set the size of the diagonal blocks (the leafs) in the HSS     */
-    /* approximation. The default value should be better for real     */
-    /* problems. This is mostly for illustration on a small problem.  */
-    PetscCall(MatSTRUMPACKSetHSSLeafSize(F, 4));
-  #endif
+
+    if (flg_ilu) {
+      /* The compression tolerance used when doing low-rank compression */
+      /* in the preconditioner. This is problem specific!               */
+      PetscCall(MatSTRUMPACKSetCompRelTol(F, 1.e-3));
+
+      /* Set a small minimum (dense) matrix size for compression to     */
+      /* demonstrate the preconditioner on small problems.              */
+      /* For performance the default value should be better.            */
+      /* This size corresponds to the size of separators in the graph.  */
+      /* For instance on an m x n mesh, the top level separator is of   */
+      /* size m (if m <= n)                                             */
+      /*PetscCall(MatSTRUMPACKSetCompMinSepSize(F,15));*/
+
+      /* Set the size of the diagonal blocks (the leafs) in the HSS     */
+      /* approximation. The default value should be better for real     */
+      /* problems. This is mostly for illustration on a small problem.  */
+      /*PetscCall(MatSTRUMPACKSetCompLeafSize(F,4));*/
+    }
   }
 #endif
 

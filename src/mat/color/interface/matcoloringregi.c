@@ -17,11 +17,6 @@ PETSC_EXTERN PetscErrorCode MatColoringCreate_LF(MatColoring);
 
   Level: developer
 
-  Adding new methods:
-  To add a new method to the registry. Copy this routine and
-  modify it to incorporate a call to `MatColoringRegister()` for
-  the new method, after the current list.
-
 .seealso: `MatColoring`, `MatColoringRegister()`, `MatColoringRegisterDestroy()`
  @*/
 PetscErrorCode MatColoringRegisterAll(void)

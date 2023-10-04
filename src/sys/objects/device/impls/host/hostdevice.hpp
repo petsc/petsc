@@ -1,8 +1,6 @@
-#ifndef HOSTDEVICE_HPP
-#define HOSTDEVICE_HPP
+#pragma once
 
-#if defined(__cplusplus)
-  #include "../impldevicebase.hpp" /*I "petscdevice.h" I*/
+#include "../impldevicebase.hpp" /*I "petscdevice.h" I*/
 
 namespace Petsc
 {
@@ -30,7 +28,3 @@ private:
 } // namespace device
 
 } // namespace Petsc
-
-#endif // __cplusplus
-
-#endif // HOSTDEVICE_HPP

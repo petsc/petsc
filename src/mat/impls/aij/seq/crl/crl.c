@@ -11,7 +11,7 @@
 */
 #include <../src/mat/impls/aij/seq/crl/crl.h>
 
-PetscErrorCode MatDestroy_SeqAIJCRL(Mat A)
+static PetscErrorCode MatDestroy_SeqAIJCRL(Mat A)
 {
   Mat_AIJCRL *aijcrl = (Mat_AIJCRL *)A->spptr;
 
@@ -29,7 +29,7 @@ PetscErrorCode MatDuplicate_AIJCRL(Mat A, MatDuplicateOption op, Mat *M)
   SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Cannot duplicate AIJCRL matrices yet");
 }
 
-PetscErrorCode MatSeqAIJCRL_create_aijcrl(Mat A)
+static PetscErrorCode MatSeqAIJCRL_create_aijcrl(Mat A)
 {
   Mat_SeqAIJ  *a      = (Mat_SeqAIJ *)(A)->data;
   Mat_AIJCRL  *aijcrl = (Mat_AIJCRL *)A->spptr;
@@ -62,7 +62,7 @@ PetscErrorCode MatSeqAIJCRL_create_aijcrl(Mat A)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatAssemblyEnd_SeqAIJCRL(Mat A, MatAssemblyType mode)
+static PetscErrorCode MatAssemblyEnd_SeqAIJCRL(Mat A, MatAssemblyType mode)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ *)A->data;
 
@@ -169,30 +169,31 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJCRL(Mat A, MatType type, Mat
 }
 
 /*@C
-   MatCreateSeqAIJCRL - Creates a sparse matrix of type `MATSEQAIJCRL`.
-   This type inherits from `MATSEQAIJ`, but stores some additional
-   information that is used to allow better vectorization of
-   the matrix-vector product. At the cost of increased storage, the `MATSEQAIJ` formatted
-   matrix can be copied to a format in which pieces of the matrix are
-   stored in ELLPACK format, allowing the vectorized matrix multiply
-   routine to use stride-1 memory accesses.
+  MatCreateSeqAIJCRL - Creates a sparse matrix of type `MATSEQAIJCRL`.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  comm - MPI communicator, set to `PETSC_COMM_SELF`
-.  m - number of rows
-.  n - number of columns
-.  nz - number of nonzeros per row (same for all rows), ignored if `nnz` is given
--  nnz - array containing the number of nonzeros in the various rows
+  Input Parameters:
++ comm - MPI communicator, set to `PETSC_COMM_SELF`
+. m    - number of rows
+. n    - number of columns
+. nz   - number of nonzeros per row (same for all rows), ignored if `nnz` is given
+- nnz  - array containing the number of nonzeros in the various rows
          (possibly different for each row) or `NULL`
 
-   Output Parameter:
-.  A - the matrix
+  Output Parameter:
+. A - the matrix
 
-   Level: intermediate
+  Level: intermediate
 
-.seealso: [](chapter_matrices), `Mat`, `MatCreate()`, `MatCreateMPIAIJPERM()`, `MatSetValues()`
+  Notes:
+  This type inherits from `MATSEQAIJ`, but stores some additional information that is used to
+  allow better vectorization of the matrix-vector product. At the cost of increased storage,
+  the `MATSEQAIJ` formatted matrix can be copied to a format in which pieces of the matrix are
+  stored in ELLPACK format, allowing the vectorized matrix multiply routine to use stride-1
+  memory accesses.
+
+.seealso: [](ch_matrices), `Mat`, `MatCreate()`, `MatCreateMPIAIJPERM()`, `MatSetValues()`
 @*/
 PetscErrorCode MatCreateSeqAIJCRL(MPI_Comm comm, PetscInt m, PetscInt n, PetscInt nz, const PetscInt nnz[], Mat *A)
 {

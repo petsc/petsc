@@ -47,8 +47,7 @@ int main(int argc, char **argv)
     PetscCall(PetscSectionSetUp(targetSection));
   }
 
-#if defined(PETSC_USE_LOG)
-  { /* Test logging */
+  if (PetscDefined(USE_LOG)) { /* Test logging */
     PetscLogEvent event;
 
     PetscCall(PetscLogEventRegister("MyPartitionerEvent", PETSCPARTITIONER_CLASSID, &event));
@@ -65,7 +64,6 @@ int main(int argc, char **argv)
     PetscCall(PetscLogEventBegin(event, p, NULL, NULL, NULL));
     PetscCall(PetscLogEventEnd(event, p, NULL, NULL, NULL));
   }
-#endif
 
   /* test setup and reset */
   PetscCall(PetscPartitionerSetUp(p));
@@ -139,7 +137,7 @@ finally:
 
   testset:
     requires: defined(PETSC_USE_LOG)
-    args: -petscpartitioner_type simple -log_summary
+    args: -petscpartitioner_type simple -log_view
     filter: grep MyPartitionerEvent | cut -d " " -f 1
     test:
        suffix: log_include

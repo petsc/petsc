@@ -11,7 +11,7 @@ program main
       PetscBool                         ::  flg
 
       PetscCallA(PetscInitialize(ierr))
-      PetscCallA(PetscOptionsGetString(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,"-f",filename,flg,ierr))
+      PetscCallA(PetscOptionsGetString(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-f',filename,flg,ierr))
       if (flg) then
         PetscCallA(PetscOptionsInsertFileYAML(PETSC_COMM_WORLD,PETSC_NULL_OPTIONS,filename,PETSC_TRUE,ierr))
       end if
@@ -22,8 +22,6 @@ program main
 !/*TEST
 !
 ! testset:
-!   filter: grep -E -v "(options_left)"
-!
 !   test:
 !      suffix: 1
 !      args: -f petsc.yml -options_left 0

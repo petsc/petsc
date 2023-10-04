@@ -61,6 +61,7 @@ class Package(config.base.Configure):
     self.linkedbypetsc          = 1    # 1 indicates PETSc shared libraries (and PETSc executables) need to link against this library
     self.gitcommit              = None # Git commit to use for downloads
     self.gitcommitmain          = None # Git commit to use for petsc/main or similar non-release branches
+    self.gcommfile              = None # File within the git clone - that has the gitcommit for the current build - saved
     self.gitsubmodules          = []   # List of git submodues that should be cloned along with the repo
     self.download               = []   # list of URLs where repository or tarballs may be found (git is tested before tarballs)
     self.deps                   = []   # other packages whose dlib or include we depend on, usually we also use self.framework.require()
@@ -71,6 +72,7 @@ class Package(config.base.Configure):
     self.includes               = []   # headers to check for
     self.optionalincludes       = []   # headers to check for, do not error if not found
     self.foundoptionalincludes  = 0
+    self.macros                 = []   # optional macros we wish to check for in the headers
     self.functions              = []   # functions we wish to check for in the libraries
     self.functionsDefine        = []   # optional functions we wish to check for in the libraries that should generate a PETSC_HAVE_ define
     self.functionsFortran       = 0    # 1 means the symbols in self.functions are Fortran symbols, so name-mangling is done
@@ -79,8 +81,7 @@ class Package(config.base.Configure):
                                          # language, but can have multiple, such as ['FC', 'Cxx']. In PETSc's terminology, languages are C, Cxx, FC, CUDA, HIP, SYCL.
                                          # We use the first language in the list to check include headers, library functions and versions.
     self.noMPIUni               = 0    # 1 means requires a real MPI
-    self.libdir                 = 'lib'     # location of libraries in the package directory tree
-    self.altlibdir              = 'lib64'   # alternate location of libraries in the package directory tree
+    self.libDirs                = ['lib', 'lib64']   # search locations of libraries in the package directory tree; self.libDir is self.installDir + self.libDirs[0]
     self.includedir             = 'include' # location of includes in the package directory tree
     self.license                = None # optional license text
     self.excludedDirs           = []   # list of directory names that could be false positives, SuperLU_DIST when looking for SuperLU
@@ -93,8 +94,8 @@ class Package(config.base.Configure):
 
     self.precisions             = ['__fp16','single','double','__float128']; # Floating point precision package works with
     self.complex                = 1  # 0 means cannot use complex
-    self.requires32bitint       = 0  # 1 means that the package will not work with 64 bit integers
-    self.requires32bitintblas   = 1  # 1 means that the package will not work with 64 bit integer BLAS/LAPACK
+    self.requires32bitint       = 0  # 1 means that the package will not work with 64-bit integers
+    self.requires32bitintblas   = 1  # 1 means that the package will not work with 64-bit integer BLAS/LAPACK
     self.skippackagewithoptions = 0  # packages like fblaslapack and MPICH do not support --with-package* options so do not print them in help
     self.skippackagelibincludedirs = 0 # packages like make do not support --with-package-lib and --with-package-include so do not print them in help
     self.alternativedownload    = [] # Used by, for example mpi.py to print useful error messages, which does not support --download-mpi but one can use --download-mpich
@@ -179,7 +180,10 @@ class Package(config.base.Configure):
         help.addArgument(self.PACKAGE,'-with-'+self.package+'-lib=<libraries: e.g. [/Users/..../lib'+self.package+'.a,...]>',nargs.ArgLibrary(None,None,'Indicate the '+self.name+' libraries'))
     if self.download:
       help.addArgument(self.PACKAGE, '-download-'+self.package+'=<no,yes,filename,url>', nargs.ArgDownload(None, 0, 'Download and install '+self.name))
-      help.addArgument(self.PACKAGE, '-download-'+self.package+'-commit=commitid', nargs.ArgString(None, 0, 'The commit id from a git repository to use for the build of '+self.name))
+      if hasattr(self, 'download_git'):
+        help.addArgument(self.PACKAGE, '-download-'+self.package+'-commit=commitid', nargs.ArgString(None, 0, 'Switch from installing release tarballs to git repo - using the specified commit of '+self.name))
+      else:
+        help.addArgument(self.PACKAGE, '-download-'+self.package+'-commit=commitid', nargs.ArgString(None, 0, 'The commit id from a git repository to use for the build of '+self.name))
       help.addDownload(self.package,self.download)
     return
 
@@ -321,24 +325,55 @@ class Package(config.base.Configure):
     return keep
 
   def removeWarningFlags(self,flags):
-    outflags = []
-    for flag in flags:
-      if not flag in ['-Werror','-Wall','-Wwrite-strings','-Wno-strict-aliasing','-Wno-unknown-pragmas',
-                      '-Wno-unused-variable','-Wno-unused-dummy-argument','-fvisibility=hidden','-std=c89',
-                      '-pedantic','--coverage','-Mfree','-fdefault-integer-8','-fsanitize=address',
-                      '-fstack-protector']:
-        if flag == '-g3':
-          outflags.append('-g')
-        else:
-          outflags.append(flag)
-    return outflags
+    flags = self.rmArgs(
+      flags,
+      {
+        '-Werror', '-Wall', '-Wwrite-strings', '-Wno-strict-aliasing', '-Wno-unknown-pragmas',
+        '-Wno-unused-variable', '-Wno-unused-dummy-argument', '-std=c89', '-pedantic','--coverage',
+        '-Mfree', '-fdefault-integer-8', '-fsanitize=address', '-fstack-protector'
+      }
+    )
+    return ['-g' if f == '-g3' else f for f in flags]
 
-  def removeCoverageFlag(self, flags, is_pair = False, **kwargs):
+  def __remove_flag_pair(self, flags, flag_to_remove, pair_prefix):
+    """
+    Remove FLAG_TO_REMOVE from FLAGS
+
+    Parameters
+    ----------
+    - flags          - iterable (or string) of flags to remove from
+    - flag_to_remove - the flag to remove
+    - pair_prefix    - (Optional) if not None, indicates that FLAG_TO_REMOVE is in a pair, and
+                       is prefixed by str(pair_prefix). For example, pair_prefix='-Xcompiler' indicates
+                       that the flag is specificied as <COMPILER_NAME> -Xcompiler FLAG_TO_REMOVE
+
+    Return
+    ------
+    flags - list of post-processed flags
+    """
     if isinstance(flags, str):
       flags = flags.split()
 
-    rm_func = self.rmArgsPair if is_pair else self.rmArgs
-    return rm_func(flags, {'--coverage'}, **kwargs)
+    if pair_prefix is None:
+      return self.rmArgs(flags, {flag_to_remove})
+    assert isinstance(pair_prefix, str)
+    # deals with bare PAIR_PREFIX FLAG_TO_REMOVE
+    flag_str = ' '.join(self.rmArgsPair(flags, {flag_to_remove}, remove_ahead=False))
+    # handle PAIR_PREFIX -fsome_other_flag,FLAG_TO_REMOVE
+    flag_str = re.sub(r',{}\s'.format(flag_to_remove), ' ', flag_str)
+    # handle PAIR_PREFIX -fsome_other_flag,FLAG_TO_REMOVE,-fyet_another_flag
+    flag_str = re.sub(r',{},'.format(flag_to_remove), ',', flag_str)
+    # handle PAIR_PREFIX FLAG_TO_REMOVE,-fsome_another_flag
+    flag_str = re.sub(r'\s{},'.format(flag_to_remove), ' ', flag_str)
+    return flag_str.split()
+
+  def removeVisibilityFlag(self, flags, pair_prefix=None):
+    """Remove -fvisibility=hidden from flags."""
+    return self.__remove_flag_pair(flags, '-fvisibility=hidden', pair_prefix)
+
+  def removeCoverageFlag(self, flags, pair_prefix=None):
+    """Remove --coverage from flags."""
+    return self.__remove_flag_pair(flags, '--coverage', pair_prefix)
 
   def removeStdCxxFlag(self,flags):
     '''Remove the -std=[CXX_VERSION] flag from the list of flags, but only for CMake packages'''
@@ -371,18 +406,19 @@ class Package(config.base.Configure):
 
   def updatePackageCFlags(self,flags):
     '''To turn off various warnings or errors the compilers may produce with external packages, remove or add appropriate compiler flags'''
-    outflags = self.removeWarningFlags(flags.split())
+    outflags = self.removeVisibilityFlag(flags.split())
+    outflags = self.removeWarningFlags(outflags)
     outflags = self.removeCoverageFlag(outflags)
     with self.Language('C'):
       if config.setCompilers.Configure.isClang(self.getCompiler(), self.log):
+        outflags.append('-Wno-implicit-function-declaration')
         if config.setCompilers.Configure.isDarwin(self.log):
           outflags.append('-fno-common')
-        if config.setCompilers.Configure.isDarwinCatalina(self.log):
-          outflags.append('-Wno-implicit-function-declaration')
     return ' '.join(outflags)
 
   def updatePackageFFlags(self,flags):
-    outflags = self.removeWarningFlags(flags.split())
+    outflags = self.removeVisibilityFlag(flags.split())
+    outflags = self.removeWarningFlags(outflags)
     outflags = self.removeCoverageFlag(outflags)
     with self.Language('FC'):
       if config.setCompilers.Configure.isNAG(self.getLinker(), self.log):
@@ -392,14 +428,15 @@ class Package(config.base.Configure):
     return ' '.join(outflags)
 
   def updatePackageCxxFlags(self,flags):
-    outflags = self.removeWarningFlags(flags.split())
+    outflags = self.removeVisibilityFlag(flags.split())
+    outflags = self.removeWarningFlags(outflags)
     outflags = self.removeCoverageFlag(outflags)
     outflags = self.removeStdCxxFlag(outflags)
     return ' '.join(outflags)
 
   def updatePackageCUDAFlags(self, flags):
-    outflags = self.removeCoverageFlag(flags, is_pair=True, remove_ahead=False)
-    #outflags = self.removeCoverageFlag(flags)
+    outflags = self.removeVisibilityFlag(flags, pair_prefix='-Xcompiler')
+    outflags = self.removeCoverageFlag(outflags, pair_prefix='-Xcompiler')
     return ' '.join(outflags)
 
   def getDefaultLanguage(self):
@@ -488,7 +525,7 @@ Specified prefix-dir: %s is read-only! "%s" cannot install at this location! Sug
 Now rerun configure''' % (self.installDirProvider.dir, '--download-'+self.package, prefixdir, prefixdir)
       raise RuntimeError(msg)
     self.includeDir = os.path.join(self.installDir, 'include')
-    self.libDir     = os.path.join(self.installDir, 'lib')
+    self.libDir = os.path.join(self.installDir, self.libDirs[0])
     installDir = self.Install()
     if not installDir:
       raise RuntimeError(self.package+' forgot to return the install directory from the method Install()\n')
@@ -553,7 +590,7 @@ Now rerun configure''' % (self.installDirProvider.dir, '--download-'+self.packag
     if d:
       if not self.liblist or not self.liblist[0] or self.builtafterpetsc :
         yield('Download '+self.PACKAGE, d, [], self.getIncludeDirs(d, self.includedir))
-      for libdir in [self.libdir, self.altlibdir]:
+      for libdir in self.libDirs:
         libdirpath = os.path.join(d, libdir)
         if not os.path.isdir(libdirpath):
           self.logPrint(self.PACKAGE+': Downloaded DirPath not found.. skipping: '+libdirpath)
@@ -592,7 +629,7 @@ Now rerun configure''' % (self.installDirProvider.dir, '--download-'+self.packag
       if not self.liblist or not self.liblist[0]:
           yield('User specified root directory '+self.PACKAGE, d, [], self.getIncludeDirs(d, self.includedir))
 
-      for libdir in [self.libdir, self.altlibdir]:
+      for libdir in self.libDirs:
         libdirpath = os.path.join(d, libdir)
         if not os.path.isdir(libdirpath):
           self.logPrint(self.PACKAGE+': UserSpecified DirPath not found.. skipping: '+libdirpath)
@@ -646,7 +683,7 @@ Now rerun configure''' % (self.installDirProvider.dir, '--download-'+self.packag
           self.logPrint(self.PACKAGE+': SearchDir DirPath not found.. skipping: '+d)
           continue
         includedir = self.getIncludeDirs(d, self.includedir)
-        for libdir in [self.libdir, self.altlibdir]:
+        for libdir in self.libDirs:
           libdirpath = os.path.join(d, libdir)
           if not os.path.isdir(libdirpath):
             self.logPrint(self.PACKAGE+': DirPath not found.. skipping: '+libdirpath)
@@ -697,7 +734,6 @@ Now rerun configure''' % (self.installDirProvider.dir, '--download-'+self.packag
   def installNeeded(self, mkfile):
     makefile       = os.path.join(self.packageDir, mkfile)
     makefileSaved  = os.path.join(self.confDir, 'lib','petsc','conf','pkg.conf.'+self.package)
-    gcommfile      = os.path.join(self.packageDir, 'pkg.gitcommit')
     gcommfileSaved = os.path.join(self.confDir,'lib','petsc','conf', 'pkg.gitcommit.'+self.package)
     if self.downloaded:
       self.log.write(self.PACKAGE+' was just downloaded, forcing a rebuild because cannot determine if package has changed\n')
@@ -707,9 +743,9 @@ Now rerun configure''' % (self.installDirProvider.dir, '--download-'+self.packag
       return 1
     else:
       self.log.write('Makefile '+makefileSaved+' has correct checksum\n')
-    if os.path.isfile(gcommfile):
-      if not os.path.isfile(gcommfileSaved) or not (self.getChecksum(gcommfileSaved) == self.getChecksum(gcommfile)):
-        self.log.write('Have to rebuild '+self.PACKAGE+', '+gcommfile+' != '+gcommfileSaved+'\n')
+    if self.gcommfile and os.path.isfile(self.gcommfile):
+      if not os.path.isfile(gcommfileSaved) or not (self.getChecksum(gcommfileSaved) == self.getChecksum(self.gcommfile)):
+        self.log.write('Have to rebuild '+self.PACKAGE+', '+self.gcommfile+' != '+gcommfileSaved+'\n')
         return 1
       else:
         self.log.write('Commit file '+gcommfileSaved+' has correct checksum\n')
@@ -726,12 +762,11 @@ Now rerun configure''' % (self.installDirProvider.dir, '--download-'+self.packag
       os.makedirs(subconfDir)
     makefile       = os.path.join(self.packageDir, mkfile)
     makefileSaved  = os.path.join(subconfDir, 'pkg.conf.'+self.package)
-    gcommfile      = os.path.join(self.packageDir, 'pkg.gitcommit')
     gcommfileSaved = os.path.join(subconfDir, 'pkg.gitcommit.'+self.package)
     import shutil
     shutil.copyfile(makefile,makefileSaved)
-    if os.path.exists(gcommfile):
-      shutil.copyfile(gcommfile,gcommfileSaved)
+    if self.gcommfile and os.path.exists(self.gcommfile):
+      shutil.copyfile(self.gcommfile,gcommfileSaved)
     self.framework.actions.addArgument(self.PACKAGE, 'Install', 'Installed '+self.PACKAGE+' into '+self.installDir)
 
   def matchExcludeDir(self,dir):
@@ -755,7 +790,10 @@ Now rerun configure''' % (self.installDirProvider.dir, '--download-'+self.packag
     '''Checkout the correct gitcommit for the gitdir - and update pkg.gitcommit'''
     if hasattr(self.sourceControl, 'git') and (self.packageDir == os.path.join(self.externalPackagesDir,'git.'+self.package)):
       if not (hasattr(self, 'gitcommit') and self.gitcommit):
-        raise RuntimeError('Trying to update '+self.package+' package source directory '+self.packageDir+' which is supposed to be a git repository, but no gitcommit is set for this package.\n\
+        if hasattr(self, 'download_git'):
+          self.gitcommit = 'HEAD'
+        else:
+          raise RuntimeError('Trying to update '+self.package+' package source directory '+self.packageDir+' which is supposed to be a git repository, but no gitcommit is set for this package.\n\
 Try to delete '+self.packageDir+' and rerun configure.\n\
 If the problem persists, please send your configure.log to petsc-maint@mcs.anl.gov')
       # verify that packageDir is actually a git clone
@@ -816,9 +854,9 @@ To use currently downloaded (local) git snapshot - use: --download-'+self.packag
         except:
           raise RuntimeError('Unable to checkout commit: '+self.gitcommit+' in repository: '+self.packageDir+'.\nPerhaps its a git error!')
       # write a commit-tag file
-      fd = open(os.path.join(self.packageDir,'pkg.gitcommit'),'w')
-      fd.write(gitcommit_hash)
-      fd.close()
+      self.gcommfile = os.path.join(self.packageDir,'pkg.gitcommit')
+      with open(self.gcommfile,'w') as fd:
+        fd.write(gitcommit_hash)
     return
 
   def getDir(self):
@@ -891,10 +929,22 @@ To use currently downloaded (local) git snapshot - use: --download-'+self.packag
   def checkInclude(self, incl, hfiles, otherIncludes = [], timeout = 600.0):
     self.headers.pushLanguage(self.buildLanguages[0]) # default is to use the first language in checking
     self.headers.saveLog()
-    ret = self.executeTest(self.headers.checkInclude, [incl, hfiles],{'otherIncludes' : otherIncludes, 'timeout': timeout})
+    ret = self.executeTest(self.headers.checkInclude, [incl, hfiles], {'otherIncludes' : otherIncludes, 'macro' : None, 'timeout': timeout})
     self.logWrite(self.headers.restoreLog())
     self.headers.popLanguage()
     return ret
+
+  def checkMacros(self, timeout = 600.0):
+    if not len(self.macros):
+      return
+    self.headers.pushLanguage(self.buildLanguages[0]) # default is to use the first language in checking
+    self.logPrint('Checking for macros ' + str(self.macros) + ' in ' + str(self.includes))
+    self.headers.saveLog()
+    for macro in self.macros:
+      self.executeTest(self.headers.checkInclude, [self.include, self.includes], {'macro' : macro, 'timeout' : timeout})
+    self.logWrite(self.headers.restoreLog())
+    self.headers.popLanguage()
+    return
 
   def checkPackageLink(self, includes, body, cleanup = 1, codeBegin = None, codeEnd = None, shared = 0):
     flagsArg = self.getPreprocessorFlagsArg()
@@ -991,10 +1041,10 @@ To use currently downloaded (local) git snapshot - use: --download-'+self.packag
         self.logPrint('Checking for library in '+location+': '+str(lib))
         if directory:
           self.logPrint('Contents of '+directory+': '+str(os.listdir(directory)))
-          if os.path.isdir(os.path.join(directory, self.libdir)):
-            self.logPrint('Contents '+os.path.join(directory,self.libdir)+': '+str(os.listdir(os.path.join(directory,self.libdir))))
-          if os.path.isdir(os.path.join(directory, self.altlibdir)):
-            self.logPrint('Contents '+os.path.join(directory,self.altlibdir)+': '+str(os.listdir(os.path.join(directory,self.altlibdir))))
+          for libdir in self.libDirs:
+            flibdir = os.path.join(directory, libdir)
+            if os.path.isdir(flibdir):
+              self.logPrint('Contents '+flibdir+': '+str(os.listdir(flibdir)))
       else:
         self.logPrint('Not checking for library in '+location+': '+str(lib)+' because no functions given to check for')
 
@@ -1021,6 +1071,7 @@ To use currently downloaded (local) git snapshot - use: --download-'+self.packag
           dinc = []
           [dinc.append(inc) for inc in incl+self.dinclude if inc not in dinc]
           self.dinclude = dinc
+          self.checkMacros(timeout = 60.0)
           if not hasattr(self.framework, 'packages'):
             self.framework.packages = []
           self.directory = directory
@@ -1062,19 +1113,31 @@ To use currently downloaded (local) git snapshot - use: --download-'+self.packag
     cxxVersionConflict = not inVersionRange(cxxVersionRange,self.setCompilers.cxxDialectRange[self.getDefaultLanguage()])
     # if user did not request option, then turn it off if conflicts with configuration
     if self.lookforbydefault and 'with-'+self.package not in self.framework.clArgDB:
-      if ('Cxx' in self.buildLanguages and not hasattr(self.compilers, 'CXX')) or \
-         ('FC'  in self.buildLanguages and not hasattr(self.compilers, 'FC')) or \
-         (self.noMPIUni and self.mpi.usingMPIUni) or \
-         cxxVersionConflict or \
-         (not self.defaultPrecision.lower() in self.precisions) or \
-         (not self.complex and self.defaultScalarType.lower() == 'complex') or \
-         (self.defaultIndexSize == 64 and self.requires32bitint) or \
-         (blaslapackconflict):
-       self.argDB['with-'+self.package] = 0
+      mess = None
+      if 'Cxx' in self.buildLanguages and not hasattr(self.compilers, 'CXX'):
+        mess = 'requires C++ but C++ compiler not set'
+      if 'FC'  in self.buildLanguages and not hasattr(self.compilers, 'FC'):
+        mess = 'requires Fortran but Fortran compiler not set'
+      if self.noMPIUni and self.mpi.usingMPIUni:
+        mess = 'requires real MPI but MPIUNI is being used'
+      if cxxVersionConflict:
+        mess = 'cannot work with C++ version being used'
+      if not self.defaultPrecision.lower() in self.precisions:
+        mess = 'does not support the current precision '+ self.defaultPrecision.lower()
+      if not self.complex and self.defaultScalarType.lower() == 'complex':
+        mess = 'does not support complex numbers but PETSc being build with complex'
+      if self.defaultIndexSize == 64 and self.requires32bitint:
+        mess = 'does not support 64-bit indices which PETSc is configured for'
+      if blaslapackconflict:
+        mess = 'requires 32-bit BLAS/LAPACK indices but configure is building with 64-bit'
+
+      if mess:
+        self.logPrint('Turning off default package '+ self.package + ' because package ' + mess)
+        self.argDB['with-'+self.package] = 0
 
     if self.argDB['with-'+self.package]:
       if blaslapackconflict:
-        raise RuntimeError('Cannot use '+self.name+' with 64 bit BLAS/Lapack indices')
+        raise RuntimeError('Cannot use '+self.name+' with 64-bit BLAS/LAPACK indices')
       if 'Cxx' in self.buildLanguages and not hasattr(self.compilers, 'CXX'):
         raise RuntimeError('Cannot use '+self.name+' without C++, make sure you do NOT have --with-cxx=0')
       if 'FC'  in self.buildLanguages and not hasattr(self.compilers, 'FC'):
@@ -1090,7 +1153,7 @@ To use currently downloaded (local) git snapshot - use: --download-'+self.packag
       if not self.complex and self.defaultScalarType.lower() == 'complex':
         raise RuntimeError('Cannot use '+self.name+' with complex numbers it is not coded for this capability')
       if self.defaultIndexSize == 64 and self.requires32bitint:
-        raise RuntimeError('Cannot use '+self.name+' with 64 bit integers, it is not coded for this capability')
+        raise RuntimeError('Cannot use '+self.name+' with 64-bit integers, it is not coded for this capability')
     if not self.download and 'download-'+self.downloadname.lower() in self.argDB and self.argDB['download-'+self.downloadname.lower()]:
       raise RuntimeError('External package '+self.name+' does not support --download-'+self.downloadname.lower())
     return
@@ -1258,6 +1321,8 @@ char     *ver = "petscpkgver(" PetscXstr_({y}) ")";
         self.download = [downloadPackageVal]
     if self.download and self.argDB['download-'+self.downloadname.lower()+'-commit']:
       self.gitcommit = self.argDB['download-'+self.downloadname.lower()+'-commit']
+      if hasattr(self, 'download_git'):
+        self.download = self.download_git
     elif self.gitcommitmain and not self.petscdir.versionRelease:
       self.gitcommit = self.gitcommitmain
     if not 'with-'+self.package in self.argDB:
@@ -1459,7 +1524,7 @@ Brief overview of how BuildSystem\'s configuration of packages works.
 
     setupDependencies:
     -----------------
-    This is used to specify other conifigure objects that the package being configured depends on.
+    This is used to specify other configure objects that the package being configured depends on.
     This is done via the configure framework\'s "require" mechanism:
       self.framework.require(<dependentObject>, self)
     dependentObject is a string -- the name of the configure module this package depends on.
@@ -1539,7 +1604,7 @@ Brief overview of how BuildSystem\'s configuration of packages works.
             set the following instance variables, creating directories, if necessary:
             self.installDir   /* This is where the package will be installed, after it is built. */
             self.includeDir   /* subdir of self.installDir */
-            self.libDir       /* subdir of self.installDir */
+            self.libDir       /* subdir of self.installDir, defined as self.installDir + self.libDirs[0] */
             self.confDir      /* where packages private to the configure/build process are built, such as --download-make */
                               /* The subdirectory of this 'conf' is where where the configuration information will be stored for the package */
             self.packageDir = /* this dir is where the source is unpacked and built */
@@ -1664,7 +1729,7 @@ class GNUPackage(Package):
     ## prefix
     args.append('--prefix='+self.installDir)
     args.append('MAKE='+self.make.make)
-    args.append('--libdir='+os.path.join(self.installDir,self.libdir))
+    args.append('--libdir='+self.libDir)
     ## compiler args
     self.pushLanguage('C')
     if not self.installwithbatch and hasattr(self.setCompilers,'cross_cc'):
@@ -1857,7 +1922,7 @@ class CMakePackage(Package):
       pass
 
     args = ['-DCMAKE_INSTALL_PREFIX='+self.installDir]
-    args.append('-DCMAKE_INSTALL_NAME_DIR:STRING="'+os.path.join(self.installDir,self.libdir)+'"')
+    args.append('-DCMAKE_INSTALL_NAME_DIR:STRING="'+self.libDir+'"')
     args.append('-DCMAKE_INSTALL_LIBDIR:STRING="lib"')
     args.append('-DCMAKE_VERBOSE_MAKEFILE=1')
     if self.compilerFlags.debugging:
@@ -1975,6 +2040,13 @@ class CMakePackage(Package):
         output1,err1,ret1  = config.package.Package.executeShellCommand(self.cmake.cmake+' .. '+args, cwd=folder, timeout=900, log = self.log)
       except RuntimeError as e:
         self.logPrint('Error configuring '+self.PACKAGE+' with CMake '+str(e))
+        try:
+          with open(os.path.join(folder, 'CMakeFiles', 'CMakeOutput.log')) as fd:
+            conf = fd.read()
+            fd.close()
+            self.logPrint('Output in CMakeOutput.log for ' + self.PACKAGE+':\n'+conf)
+        except:
+          pass
         raise RuntimeError('Error configuring '+self.PACKAGE+' with CMake')
       try:
         self.logPrintBox('Compiling and installing '+self.PACKAGE+'; this may take several minutes')

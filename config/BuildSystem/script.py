@@ -132,13 +132,19 @@ class Script(logger.Logger):
   @staticmethod
   def getModule(root, name):
     '''Retrieve a specific module from the directory root, bypassing the usual paths'''
-    import imp
-
-    (fp, pathname, description) = imp.find_module(name, [root])
-    try:
-      return imp.load_module(name, fp, pathname, description)
-    finally:
-      if fp: fp.close()
+    if sys.version_info < (3,12):
+      import imp
+      (fp, pathname, description) = imp.find_module(name, [root])
+      try:
+        return imp.load_module(name, fp, pathname, description)
+      finally:
+        if fp: fp.close()
+    else:
+      import importlib.util
+      spec = importlib.util.spec_from_file_location(name, root)
+      module = importlib.util.module_from_spec(spec) # novermin
+      sys.modules[name] = module
+      spec.loader.exec_module(module)
 
   @staticmethod
   def importModule(moduleName):
@@ -184,8 +190,16 @@ class Script(logger.Logger):
 
   @staticmethod
   def defaultCheckCommand(command, status, output, error):
-    '''Raise an error if the exit status is nonzero'''
-    if status: raise RuntimeError('Could not execute "%s":\n%s' % (command,output+error))
+    '''Raise an error if the exit status is nonzero
+       Since output and error may be huge and the exception error message may be printed to the
+       screen we cannot print the entire output'''
+    if status:
+      mlen = 512//2
+      if len(output) > 2*mlen:
+        output = output[0:mlen]+'\n .... more output .....\n'+output[len(output)- mlen:]
+      if len(error) > 2*mlen:
+        error = error[0:mlen]+'\n .... more error .....\n'+error[len(error)- mlen:]
+      raise RuntimeError('Could not execute "%s":\n%s' % (command,output+error))
 
   @staticmethod
   def passCheckCommand(command, status, output, error):
@@ -245,6 +259,7 @@ class Script(logger.Logger):
 
     (output, error, status) = runInShell(commandseq, log, cwd, env)
     output = logOutput(log, output,logOutputflg)
+    logOutput(log, error,logOutputflg)
     checkCommand(commandseq, status, output, error)
     return (output, error, status)
 

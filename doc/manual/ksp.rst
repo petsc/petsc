@@ -1,4 +1,4 @@
-.. _chapter_ksp:
+.. _ch_ksp:
 
 KSP: Linear System Solvers
 --------------------------
@@ -21,7 +21,7 @@ techniques and their associated options can be selected at runtime.
 
 The combination of a Krylov subspace method and a preconditioner is at
 the center of most modern numerical codes for the iterative solution of
-linear systems. Many textbooks (e.g. :cite:`fgn` :cite:`VanDerVorst2003`, or :cite:`saad2003`) provide an
+linear systems. Many textbooks (e.g. :cite:`fgn` :cite:`vandervorst2003`, or :cite:`saad2003`) provide an
 overview of the theory of such methods.
 The ``KSP`` package, discussed in
 :any:`sec_ksp`, provides many popular Krylov subspace
@@ -325,7 +325,7 @@ can be used by the options database command
   * - Conjugate Gradient :cite:`hs:52`
     - ``KSPCG``
     - ``cg``
-  * - Pipelined Conjugate Gradients :cite:`GhyselsVanroose2014`
+  * - Pipelined Conjugate Gradients :cite:`ghyselsvanroose2014`
     - ``KSPPIPECG``
     - ``pipecg``
   * - Pipelined Conjugate Gradients (Gropp)
@@ -337,10 +337,10 @@ can be used by the options database command
   * - Conjugate Gradients for the Normal Equations
     - ``KSPCGNE``
     - ``cgne``
-  * - Flexible Conjugate Gradients :cite:`flexibleCG`
+  * - Flexible Conjugate Gradients :cite:`flexiblecg`
     - ``KSPFCG``
     - ``fcg``
-  * -  Pipelined, Flexible Conjugate Gradients :cite:`SananSchneppMay2016`
+  * -  Pipelined, Flexible Conjugate Gradients :cite:`sananschneppmay2016`
     - ``KSPPIPEFCG``
     - ``pipefcg``
   * - Conjugate Gradients for Least Squares
@@ -379,22 +379,22 @@ can be used by the options database command
   * - Enhanced BiCGSTAB(L)
     - ``KSPBCGSL``
     - ``bcgsl``
-  * - Minimal Residual Method :cite:`PaigeSaunders1975`
+  * - Minimal Residual Method :cite:`paigesaunders1975`
     - ``KSPMINRES``
     - ``minres``
   * - Generalized Minimal Residual :cite:`ss:86`
     - ``KSPGMRES``
     - ``gmres``
-  * - Flexible Generalized Minimal Residual :cite:`Saad1993`
+  * - Flexible Generalized Minimal Residual :cite:`saad1993`
     - ``KSPFGMRES``
     - ``fgmres``
   * - Deflated Generalized Minimal Residual
     - ``KSPDGMRES``
     - ``dgmres``
-  * - Pipelined Generalized Minimal Residual :cite:`GhyselsAshbyMeerbergenVanroose2013`
+  * - Pipelined Generalized Minimal Residual :cite:`ghyselsashbymeerbergenvanroose2013`
     - ``KSPPGMRES``
     - ``pgmres``
-  * - Pipelined, Flexible Generalized Minimal Residual :cite:`SananSchneppMay2016`
+  * - Pipelined, Flexible Generalized Minimal Residual :cite:`sananschneppmay2016`
     - ``KSPPIPEFGMRES``
     - ``pipefgmres``
   * - Generalized Minimal Residual with Accelerated Restart
@@ -409,7 +409,7 @@ can be used by the options database command
   * - Pipelined Conjugate Residual
     - ``KSPPIPECR``
     - ``pipecr``
-  * - Pipelined, Flexible Conjugate Residual :cite:`SananSchneppMay2016`
+  * - Pipelined, Flexible Conjugate Residual :cite:`sananschneppmay2016`
     - ``KSPPIPEGCR``
     - ``pipegcr``
   * - FETI-DP
@@ -427,7 +427,7 @@ can be used by the options database command
   * - Least Squares Method
     - ``KSPLSQR``
     - ``lsqr``
-  * - Symmetric LQ Method :cite:`PaigeSaunders1975`
+  * - Symmetric LQ Method :cite:`paigesaunders1975`
     - ``KSPSYMMLQ``
     - ``symmlq``
   * - TSIRM
@@ -1085,21 +1085,21 @@ matrix and then *hypre* is called to do the entire solve. *ML* is more
 modular in that PETSc only has *ML* generate the coarse grid spaces
 (columns of the prolongation operator), which is core of an AMG method,
 and then constructs a ``PCMG`` with Galerkin coarse grid operator
-construction. GAMG is designed from the beginning to be modular, to
+construction. ``PCGAMG`` is designed from the beginning to be modular, to
 allow for new components to be added easily and also populates a
 multigrid preconditioner ``PCMG`` so generic multigrid parameters are
-used. PETSc provides a fully supported (smoothed) aggregation AMG,
+used (see :any:`sec_mg`). PETSc provides a fully supported (smoothed) aggregation AMG, but supports the addition of new methods
 (``-pc_type gamg -pc_gamg_type agg`` or ``PCSetType(pc,PCGAMG)`` and
-``PCGAMGSetType(pc,PCGAMGAGG)``, as well as reference implementations of
-a classical AMG method (``-pc_gamg_type classical``), a hybrid geometric
-AMG method (``-pc_gamg_type geo``), and a 2.5D AMG method DofColumns
-:cite:`IsaacStadlerGhattas2015`. GAMG does require the use
-of (MPI)AIJ matrices. For instance, BAIJ matrices are not supported. One
-can use AIJ instead of BAIJ without changing any code other than the
+``PCGAMGSetType(pc,PCGAMGAGG)``. Examples of extension are a reference implementations of
+a classical AMG method (``-pc_gamg_type classical``), a (2D) hybrid geometric
+AMG method (``-pc_gamg_type geo``) that are not supported. A 2.5D AMG method DofColumns
+:cite:`isaacstadlerghattas2015` supports 2D coarsenings extruded in the third dimension. ``PCGAMG`` does require the use
+of ``MATAIJ`` matrices. For instance, ``MATBAIJ`` matrices are not supported. One
+can use ``MATAIJ`` instead of ``MATBAIJ`` without changing any code other than the
 constructor (or the ``-mat_type`` from the command line). For instance,
-``MatSetValuesBlocked`` works with AIJ matrices.
+``MatSetValuesBlocked`` works with ``MATAIJ`` matrices.
 
-GAMG provides unsmoothed aggregation (``-pc_gamg_agg_nsmooths 0``) and
+``PCGAMG`` provides unsmoothed aggregation (``-pc_gamg_agg_nsmooths 0``) and
 smoothed aggregation (``-pc_gamg_agg_nsmooths 1`` or
 ``PCGAMGSetNSmooths(pc,1)``). Smoothed aggregation (SA) is recommended
 for symmetric positive definite systems. Unsmoothed aggregation can be
@@ -1196,7 +1196,7 @@ or
 ``MatSetOption``(mat,``MAT_STRUCTURAL_SYMMETRY_ETERNAL``,``PETSC_TRUE`` (or ``PETSC_FALSE``)).
 Using this information allows the algorithm to skip the unnecessary computations.
 
-**Trouble shooting algebraic multigrid methods:** If *GAMG*, *ML*, *AMGx* or
+**Trouble shooting algebraic multigrid methods:** If ``PCGAMG``, *ML*, *AMGx* or
 *hypre* does not perform well the first thing to try is one of the other
 methods. Often the default parameters or just the strengths of different
 algorithms can fix performance problems or provide useful information to
@@ -1230,7 +1230,7 @@ expensive but potentially powerful preconditioner, and a low threshold
 (e.g., :math:`x=0.0`) will result in faster coarsening, fewer levels,
 cheaper solves, and generally worse convergence rates.
 
-One can run with ``-info`` and grep for “GAMG” to get some statistics on
+One can run with ``-info :pc`` and grep for ``PCGAMG`` to get statistics on
 each level, which can be used to see if you are coarsening at an
 appropriate rate. With smoothed aggregation you generally want to coarse
 at about a rate of 3:1 in each dimension. Coarsening too slow will
@@ -1257,7 +1257,7 @@ eigenvalue of your (diagonally preconditioned) operator, which is
 conceptually simple to compute. However, if this highest eigenvalue
 estimate is not accurate (too low) then the solvers can fail with and
 indefinite preconditioner message. One can run with ``-info`` and grep
-for “GAMG” to get these estimates or use ``-ksp_view``. These highest
+for ``PCGAMG`` to get these estimates or use ``-ksp_view``. These highest
 eigenvalues are generally between 1.5-3.0. For symmetric positive
 definite systems CG is a better eigenvalue estimator
 ``-mg_levels_esteig_ksp_type cg``. Indefinite matrix messages are often
@@ -1283,6 +1283,9 @@ PETSc’s AMG solver is constructed as a framework for developers to
 easily add AMG capabilities, like a new AMG methods or an AMG component
 like a matrix triple product. Contact us directly if you are interested
 in contributing.
+
+It is possible but not recommended to use algebraic multigrid as a "standalone" solver, that is not accelerating it with a Krylov method. Use a `KSPType` of `KSPRICHARDSON`
+(or equivalently `-ksp_type richardson`) to achieve this. Using `KSPPREONLY` will not work since it only applies a single cycle of multigrid.
 
 Adaptive Interpolation
 ``````````````````````
@@ -1336,7 +1339,7 @@ so that our discrete optimization problem is
 
 and we will treat each row of the interpolator as a separate optimization problem. We could allow an arbitrary sparsity pattern, or try to determine adaptively, as is done in sparse approximate inverse preconditioning. However, we know the supports of the basis functions in finite elements, and thus the naive sparsity pattern from local interpolation can be used.
 
-We note here that the BAMG framework of Brannick et al. :cite:`BrandtBrannickKahlLivshits2011` does not use fine and coarse functions spaces, but rather a fine point/coarse point division which we will not employ here. Our general PETSc routine should work for both since the input would be the checking set (fine basis coefficients or fine space points) and the approximation set (coarse basis coefficients in the support or coarse points in the sparsity pattern).
+We note here that the BAMG framework of Brannick et al. :cite:`brandtbrannickkahllivshits2011` does not use fine and coarse functions spaces, but rather a fine point/coarse point division which we will not employ here. Our general PETSc routine should work for both since the input would be the checking set (fine basis coefficients or fine space points) and the approximation set (coarse basis coefficients in the support or coarse points in the sparsity pattern).
 
 We can easily solve the above problem using QR factorization. However, there are many smooth functions from the coarse space that we want interpolated accurately, and a single :math:`f` would not constrain the values :math:`P_{ij}`` well. Therefore, we will use several functions :math:`\{f_k\}` in our minimization,
 
@@ -1789,7 +1792,7 @@ and
 to define the intergrid transfer operations. If only one of these is
 set, its transpose will be used for the other.
 
-It is possible for these interpolation operations to be matrix free (see
+It is possible for these interpolation operations to be matrix-free (see
 :any:`sec_matrixfree`); One should then make
 sure that these operations are defined for the (matrix-free) matrices
 passed in. Note that this system is arranged so that if the
@@ -1915,7 +1918,7 @@ diagonal blocks to be found, one associated with all rows/columns that
 have zeros on the diagonals and the rest.
 
 For simplicity in the rest of the section we restrict our matrices to
-two by two blocks. So the matrix is
+two-by-two blocks. So the matrix is
 
 .. math::
 
@@ -2037,7 +2040,7 @@ argument ``-pc_fieldsplit_diag_use_amat``. Similarly,
 ``-pc_fieldsplit_off_diag_use_amat`` will cause the off-diagonal blocks
 :math:`A_{01},A_{10}` etc. to be extracted out of ``Amat``.
 
-For two by two blocks only there are another family of solvers, based on
+For two-by-two blocks only, there is another family of solvers, based on
 Schur complements. The inverse of the Schur complement factorization is
 
 .. math::
@@ -2333,10 +2336,6 @@ To use these solvers, one may:
      - ``cholesky``
      - ``MATSOLVERCHOLMOD``
      - ``cholmod``
-   * - ``aij``
-     - ``lu``
-     - ``MATSOLVERSPARSEELEMENTAL``
-     - ``sparseelemental``
    * - ``seqaij``
      - ``lu``
      - ``MATSOLVERKLU``
@@ -2458,8 +2457,8 @@ or message.
 
 .. _sec_pcmpi:
 
-Using a MPI parallel linear solver from a non-MPI program
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Using PETSc's MPI parallel linear solvers from a non-MPI program
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Using PETSc's MPI linear solver server it is possible to use multiple MPI processes to solve a
 a linear system when the application code, including the matrix generation, is run on a single
@@ -2470,16 +2469,26 @@ The code may create multiple matrices and `KSP` objects and call `KSPSolve()`, s
 code may utilize the `SNES` nonlinear solvers, the `TS` ODE integrators, and the `TAO` optimization algorithms
 which use `KSP`.
 
+The program must then be launched using the standard approaches for launching MPI programs with the additional
+PETSc option ``-mpi_linear_solver_server``.  The linear solves are controlled via the options database in the usual manner (using any options prefix
+you may have provided via ``KSPSetOptionsPrefix()``, for example ``-ksp_type cg -ksp_monitor -pc_type bjacobi -ksp_view``. The solver options cannot be set via
+the functional interface, for example ``KSPSetType()`` etc.
+
+The option ``-mpi_linear_solver_server_view`` will print
+a summary of all the systems solved by the MPI linear solver server when the program completes. By default the linear solver server
+will only parallelize the linear solve to the extent that it believes is appropriate to obtain speedup for the parallel solve, for example, if the
+matrix has 1,000 rows and columns the solution will not be parallelized by default. One can use the option ``-mpi_linear_solver_server_minimum_count_per_rank 5000``
+to cause the linear solver server to allow as few as 5,000 unknowns per rank in the parallel solve.
+
+See ``PCMPI``, ``PCMPIServerBegin()``, and ``PCMPIServerEnd()`` for more details on the solvers.
+
+
 Amdahl's law makes clear that parallelizing only a portion of a numerical code can only provide a limited improvement
 in the computation time; thus it is crucial to understand what phases of a computation must be parallelized (via MPI, OpenMP, or some other model)
 to ensure a useful increase in performance. One of the crucial phases is likely the generation of the matrix entries; the
-use of `MatSetPreallocationCOO()` and `MatSetValuesCOO()` in an OpenMP code allows parallelizing the generation of the matrix.
+use of ``MatSetPreallocationCOO()`` and ``MatSetValuesCOO()`` in an OpenMP code allows parallelizing the generation of the matrix.
 
-The program must then be launched using the standard approaches for launching MPI programs with the
-option `-mpi_linear_solver_server` and options to utilize the `PCMPI` preconditioners; for example,
-`-ksp_type preonly` and `pc_type mpi`. Any standard solver options may be passed to the parallel solvers using the
-options prefix `-mpi_`; for example, `-mpi_ksp_type cg`. The option `-mpi_linear_solver_server_view` will print
-a summary of all the systems solved by the MPI linear solver server.
+
 
 .. rubric:: Footnotes
 

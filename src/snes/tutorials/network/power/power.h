@@ -1,5 +1,4 @@
-#ifndef PF_H
-#define PF_H
+#pragma once
 
 #include <petscsnes.h>
 #include <petscdmnetwork.h>
@@ -147,4 +146,3 @@ extern PetscErrorCode FormJacobian_Power(SNES, Vec, Mat, Mat, void *);
 extern PetscErrorCode FormJacobian_Power_private(DM, Vec, Mat, PetscInt, PetscInt, const PetscInt *, const PetscInt *, void *);
 extern PetscErrorCode FormFunction_Power(DM, Vec, Vec, PetscInt, PetscInt, const PetscInt *, const PetscInt *, void *);
 extern PetscErrorCode SetInitialGuess_Power(DM, Vec, PetscInt, PetscInt, const PetscInt *, const PetscInt *, void *);
-#endif

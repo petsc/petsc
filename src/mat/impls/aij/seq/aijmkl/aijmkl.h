@@ -1,3 +1,4 @@
+#pragma once
 /*
   Wrappers for mkl_cspblas_ routines.
   A more elegant way to do this would be to use an approach like that used in petsclbaslapack_mangle.h,

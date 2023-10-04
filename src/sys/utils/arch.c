@@ -2,24 +2,24 @@
 #include <petscsys.h> /*I  "petscsys.h"  I*/
 
 /*@C
-     PetscGetArchType - Returns the $PETSC_ARCH that was used for this configuration of PETSc
+  PetscGetArchType - Returns the $PETSC_ARCH that was used for this configuration of PETSc
 
-     Not Collective
+  Not Collective
 
-     Input Parameter:
-.    slen - length of string buffer
+  Input Parameter:
+. slen - length of string buffer
 
-     Output Parameter:
-.    str - string area to contain architecture name, should be at least
+  Output Parameter:
+. str - string area to contain architecture name, should be at least
            10 characters long. Name is truncated if string is not long enough.
 
-     Level: developer
+  Level: developer
 
-   Note:
-    This name is arbitrary and need not correspond to the physical hardware or the software running on the system.
+  Note:
+  This name is arbitrary and need not correspond to the physical hardware or the software running on the system.
 
-   Fortran Note:
-   This routine has the format
+  Fortran Notes:
+  This routine has the format
 .vb
        character*(10) str
        call PetscGetArchType(str,ierr)

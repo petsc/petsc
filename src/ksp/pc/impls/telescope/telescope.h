@@ -1,6 +1,4 @@
-
-#ifndef PETSCPC_TELESCOPE_H
-#define PETSCPC_TELESCOPE_H
+#pragma once
 
 /* Telescope */
 typedef enum {
@@ -67,5 +65,3 @@ PetscErrorCode PCTelescopeMatNullSpaceCreate_CoarseDM(PC, PC_Telescope, Mat);
 PetscErrorCode PCReset_Telescope_CoarseDM(PC);
 PetscErrorCode PCApplyRichardson_Telescope_CoarseDM(PC, Vec, Vec, Vec, PetscReal, PetscReal, PetscReal, PetscInt, PetscBool, PetscInt *, PCRichardsonConvergedReason *);
 PetscErrorCode DMView_DA_Short(DM, PetscViewer);
-
-#endif

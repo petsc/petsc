@@ -2,35 +2,34 @@
 #include <petscdm.h>
 
 /*@C
-   SNESVISetComputeVariableBounds - Sets a function that is called to compute the bounds on variable for
-   (differential) variable inequalities.
+  SNESVISetComputeVariableBounds - Sets a function that is called to compute the bounds on variable for
+  (differential) variable inequalities.
 
-   Input parameter:
-+  snes - the `SNES` context
--  compute - function that computes the bounds
+  Input Parameters:
++ snes    - the `SNES` context
+- compute - function that computes the bounds
 
-Calling Sequence of `compute`:
- $ PetscErrorCode compute(SNES snes, Vec lower, Vec higher)
-+ snes - the `SNES` context
-. lower - vector to hold lower bounds
+  Calling sequence of `compute`:
++ snes   - the `SNES` context
+. lower  - vector to hold lower bounds
 - higher - vector to hold upper bounds
 
-   Level: advanced
+  Level: advanced
 
-   Notes:
-   Problems with bound constraints can be solved with the reduced space, `SNESVINEWTONRSLS`, and semi-smooth `SNESVINEWTONSSLS` solvers.
+  Notes:
+  Problems with bound constraints can be solved with the reduced space, `SNESVINEWTONRSLS`, and semi-smooth `SNESVINEWTONSSLS` solvers.
 
-   For entries with no bounds you can set `PETSC_NINFINITY` or `PETSC_INFINITY`
+  For entries with no bounds you can set `PETSC_NINFINITY` or `PETSC_INFINITY`
 
-   You may use `SNESVISetVariableBounds()` to provide the bounds once if they will never change
+  You may use `SNESVISetVariableBounds()` to provide the bounds once if they will never change
 
-   If you have associated a `DM` with the `SNES` and provided a function to the `DM` via `DMSetVariableBounds()` that will be used automatically
-   to provide the bounds and you need not use this function.
+  If you have associated a `DM` with the `SNES` and provided a function to the `DM` via `DMSetVariableBounds()` that will be used automatically
+  to provide the bounds and you need not use this function.
 
 .seealso: [](sec_vi), `SNES`, `SNESVISetVariableBounds()`, `DMSetVariableBounds()`, `SNESSetFunctionDomainError()`, `SNESSetJacobianDomainError()`, `SNESVINEWTONRSLS`, `SNESVINEWTONSSLS`,
-          'SNESSetType()`
+          `'SNESSetType()`
 @*/
-PetscErrorCode SNESVISetComputeVariableBounds(SNES snes, PetscErrorCode (*compute)(SNES, Vec, Vec))
+PetscErrorCode SNESVISetComputeVariableBounds(SNES snes, PetscErrorCode (*compute)(SNES snes, Vec lower, Vec higher))
 {
   PetscErrorCode (*f)(SNES, PetscErrorCode (*)(SNES, Vec, Vec));
 
@@ -49,7 +48,7 @@ PetscErrorCode SNESVISetComputeVariableBounds_VI(SNES snes, SNESVIComputeVariabl
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode SNESVIMonitorResidual(SNES snes, PetscInt its, PetscReal fgnorm, void *dummy)
+static PetscErrorCode SNESVIMonitorResidual(SNES snes, PetscInt its, PetscReal fgnorm, void *dummy)
 {
   Vec         X, F, Finactive;
   IS          isactive;
@@ -68,7 +67,7 @@ PetscErrorCode SNESVIMonitorResidual(SNES snes, PetscInt its, PetscReal fgnorm, 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode SNESMonitorVI(SNES snes, PetscInt its, PetscReal fgnorm, void *dummy)
+static PetscErrorCode SNESMonitorVI(SNES snes, PetscInt its, PetscReal fgnorm, void *dummy)
 {
   PetscViewer        viewer = (PetscViewer)dummy;
   const PetscScalar *x, *xl, *xu, *f;
@@ -156,29 +155,6 @@ PetscErrorCode SNESVICheckLocalMin_Private(SNES snes, Mat A, Vec F, Vec W, Petsc
 }
 
 /*
-     Checks if J^T(F - J*X) = 0
-*/
-PetscErrorCode SNESVICheckResidual_Private(SNES snes, Mat A, Vec F, Vec X, Vec W1, Vec W2)
-{
-  PetscReal a1, a2;
-  PetscBool hastranspose;
-
-  PetscFunctionBegin;
-  PetscCall(MatHasOperation(A, MATOP_MULT_TRANSPOSE, &hastranspose));
-  if (hastranspose) {
-    PetscCall(MatMult(A, X, W1));
-    PetscCall(VecAXPY(W1, -1.0, F));
-
-    /* Compute || J^T W|| */
-    PetscCall(MatMultTranspose(A, W1, W2));
-    PetscCall(VecNorm(W1, NORM_2, &a1));
-    PetscCall(VecNorm(W2, NORM_2, &a2));
-    if (a1 != 0.0) PetscCall(PetscInfo(snes, "||J^T(F-Ax)||/||F-AX|| %g near zero implies inconsistent rhs\n", (double)(a2 / a1)));
-  }
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-/*
   SNESConvergedDefault_VI - Checks the convergence of the semismooth newton algorithm.
 
   Notes:
@@ -190,7 +166,7 @@ PetscErrorCode SNESConvergedDefault_VI(SNES snes, PetscInt it, PetscReal xnorm, 
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
-  PetscValidPointer(reason, 6);
+  PetscAssertPointer(reason, 6);
 
   *reason = SNES_CONVERGED_ITERATING;
 
@@ -251,17 +227,21 @@ PetscErrorCode SNESVIProjectOntoBounds(SNES snes, Vec X)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*
-   SNESVIGetActiveSetIndices - Gets the global indices for the active set variables
+/*@
+  SNESVIGetActiveSetIS - Gets the global indices for the active set variables
 
-   Input parameter:
-.  snes - the SNES context
-.  X    - the snes solution vector
-.  F    - the nonlinear function vector
+  Input Parameters:
++ snes - the `SNES` context
+. X    - the `snes` solution vector
+- F    - the nonlinear function vector
 
-   Output parameter:
-.  ISact - active set index set
- */
+  Output Parameter:
+. ISact - active set index set
+
+  Level: developer
+
+.seealso: `SNES`, `SNESVINEWTONRSLS`, `SNESVINEWTONSSLS`
+@*/
 PetscErrorCode SNESVIGetActiveSetIS(SNES snes, Vec X, Vec F, IS *ISact)
 {
   Vec                Xl = snes->xl, Xu = snes->xu;
@@ -298,17 +278,6 @@ PetscErrorCode SNESVIGetActiveSetIS(SNES snes, Vec X, Vec F, IS *ISact)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode SNESVICreateIndexSets_RS(SNES snes, Vec X, Vec F, IS *ISact, IS *ISinact)
-{
-  PetscInt rstart, rend;
-
-  PetscFunctionBegin;
-  PetscCall(SNESVIGetActiveSetIS(snes, X, F, ISact));
-  PetscCall(VecGetOwnershipRange(X, &rstart, &rend));
-  PetscCall(ISComplement(*ISact, rstart, rend, ISinact));
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
 PetscErrorCode SNESVIComputeInactiveSetFnorm(SNES snes, Vec F, Vec X, PetscReal *fnorm)
 {
   const PetscScalar *x, *xl, *xu, *f;
@@ -334,7 +303,7 @@ PetscErrorCode SNESVIComputeInactiveSetFnorm(SNES snes, Vec F, Vec X, PetscReal 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode SNESVIDMComputeVariableBounds(SNES snes, Vec xl, Vec xu)
+static PetscErrorCode SNESVIDMComputeVariableBounds(SNES snes, Vec xl, Vec xu)
 {
   PetscFunctionBegin;
   PetscCall(DMComputeVariableBounds(snes->dm, xl, xu));
@@ -420,28 +389,28 @@ PetscErrorCode SNESDestroy_VI(SNES snes)
 }
 
 /*@
-   SNESVISetVariableBounds - Sets the lower and upper bounds for the solution vector. xl <= x <= xu. This allows solving
-   (differential) variable inequalities.
+  SNESVISetVariableBounds - Sets the lower and upper bounds for the solution vector. xl <= x <= xu. This allows solving
+  (differential) variable inequalities.
 
-   Input Parameters:
-+  snes - the `SNES` context.
-.  xl   - lower bound.
--  xu   - upper bound.
+  Input Parameters:
++ snes - the `SNES` context.
+. xl   - lower bound.
+- xu   - upper bound.
 
-   Level: advanced
+  Level: advanced
 
-   Notes:
-   If this routine is not called then the lower and upper bounds are set to
-   `PETSC_NINFINITY` and `PETSC_INFINITY` respectively during `SNESSetUp()`.
+  Notes:
+  If this routine is not called then the lower and upper bounds are set to
+  `PETSC_NINFINITY` and `PETSC_INFINITY` respectively during `SNESSetUp()`.
 
-   Problems with bound constraints can be solved with the reduced space, `SNESVINEWTONRSLS`, and semi-smooth `SNESVINEWTONSSLS` solvers.
+  Problems with bound constraints can be solved with the reduced space, `SNESVINEWTONRSLS`, and semi-smooth `SNESVINEWTONSSLS` solvers.
 
-   For particular components that have no bounds you can use `PETSC_NINFINITY` or `PETSC_INFINITY`
+  For particular components that have no bounds you can use `PETSC_NINFINITY` or `PETSC_INFINITY`
 
-   `SNESVISetComputeVariableBounds()` can be used to provide a function that computes the bounds. This should be used if you are using, for example, grid
-   sequencing and need bounds set for a variety of vectors
+  `SNESVISetComputeVariableBounds()` can be used to provide a function that computes the bounds. This should be used if you are using, for example, grid
+  sequencing and need bounds set for a variety of vectors
 
-.seealso: [](sec_vi), `SNES`, `SNESVIGetVariableBounds()`, `SNESVISetComputeVariableBounds()`, `SNESSetFunctionDomainError()`, `SNESSetJacobianDomainError()`, `SNESVINEWTONRSLS`, `SNESVINEWTONSSLS`, 'SNESSetType()`
+.seealso: [](sec_vi), `SNES`, `SNESVIGetVariableBounds()`, `SNESVISetComputeVariableBounds()`, `SNESSetFunctionDomainError()`, `SNESSetJacobianDomainError()`, `SNESVINEWTONRSLS`, `SNESVINEWTONSSLS`, `'SNESSetType()`
 @*/
 PetscErrorCode SNESVISetVariableBounds(SNES snes, Vec xl, Vec xu)
 {
@@ -492,20 +461,20 @@ PetscErrorCode SNESVISetVariableBounds_VI(SNES snes, Vec xl, Vec xu)
 }
 
 /*@
-   SNESVIGetVariableBounds - Gets the lower and upper bounds for the solution vector. xl <= x <= xu. This allows solving
-   (differential) variable inequalities.
+  SNESVIGetVariableBounds - Gets the lower and upper bounds for the solution vector. xl <= x <= xu. This allows solving
+  (differential) variable inequalities.
 
-   Input Parameters:
-+  snes - the `SNES` context.
-.  xl   - lower bound (may be `NULL`)
--  xu   - upper bound (may be `NULL`)
+  Input Parameters:
++ snes - the `SNES` context.
+. xl   - lower bound (may be `NULL`)
+- xu   - upper bound (may be `NULL`)
 
-   Level: advanced
+  Level: advanced
 
-   Notes:
-   These vectors are owned by the `SNESVI` and should not be destroyed by the caller
+  Notes:
+  These vectors are owned by the `SNESVI` and should not be destroyed by the caller
 
-.seealso: [](sec_vi), `SNES`, `SNESVISetVariableBounds()`, `SNESVISetComputeVariableBounds()`, `SNESSetFunctionDomainError()`, `SNESSetJacobianDomainError()`, SNESVINEWTONRSLS, SNESVINEWTONSSLS, 'SNESSetType()`
+.seealso: [](sec_vi), `SNES`, `SNESVISetVariableBounds()`, `SNESVISetComputeVariableBounds()`, `SNESSetFunctionDomainError()`, `SNESSetJacobianDomainError()`, `SNESVINEWTONRSLS`, `SNESVINEWTONSSLS`, `'SNESSetType()`
 @*/
 PetscErrorCode SNESVIGetVariableBounds(SNES snes, Vec *xl, Vec *xu)
 {

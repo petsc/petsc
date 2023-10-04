@@ -35,7 +35,7 @@ static Colormap          gColormap = 0;
 static PetscDrawXiPixVal gCmapping[PETSC_DRAW_MAXCOLOR];
 static unsigned char     gCpalette[PETSC_DRAW_MAXCOLOR][3];
 
-PetscErrorCode PetscDrawSetUpColormap_Shared(Display *display, int screen, Visual *visual, Colormap colormap)
+static PetscErrorCode PetscDrawSetUpColormap_Shared(Display *display, int screen, Visual *visual, Colormap colormap)
 {
   int           i, k, ncolors = PETSC_DRAW_MAXCOLOR - PETSC_DRAW_BASIC_COLORS;
   unsigned char R[PETSC_DRAW_MAXCOLOR - PETSC_DRAW_BASIC_COLORS];
@@ -85,7 +85,7 @@ PetscErrorCode PetscDrawSetUpColormap_Shared(Display *display, int screen, Visua
 static PetscBool cmap_pixvalues_used[PETSC_DRAW_MAXCOLOR];
 static int       cmap_base = 0;
 
-PetscErrorCode PetscDrawSetUpColormap_Private(Display *display, int screen, Visual *visual, Colormap colormap)
+static PetscErrorCode PetscDrawSetUpColormap_Private(Display *display, int screen, Visual *visual, Colormap colormap)
 {
   int           found, i, k, ncolors = PETSC_DRAW_MAXCOLOR - PETSC_DRAW_BASIC_COLORS;
   unsigned char R[PETSC_DRAW_MAXCOLOR - PETSC_DRAW_BASIC_COLORS];
@@ -157,7 +157,7 @@ PetscErrorCode PetscDrawSetUpColormap_Private(Display *display, int screen, Visu
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PetscDrawSetUpColormap_X(Display *display, int screen, Visual *visual, Colormap colormap)
+static PetscErrorCode PetscDrawSetUpColormap_X(Display *display, int screen, Visual *visual, Colormap colormap)
 {
   PetscBool   sharedcolormap = PETSC_FALSE;
   XVisualInfo vinfo;
@@ -202,69 +202,4 @@ PetscErrorCode PetscDrawSetColormap_X(PetscDraw_X *XiWin, Colormap colormap)
 PetscErrorCode PetscDrawXiColormap(PetscDraw_X *XiWin)
 {
   return PetscDrawSetColormap_X(XiWin, (Colormap)0);
-}
-
-/*
-    Color in X is many-layered.  The first layer is the "visual",a
-    immutable attribute of a window set when the window is
-    created.
-
-    The next layer is the colormap.  The installation of colormaps is
-    the business of the window manager (in some distant later release).
-*/
-
-/*
-    This routine gets the visual class (PseudoColor, etc) and returns
-    it.  It finds the default visual.  Possible returns are
-        PseudoColor
-        StaticColor
-        DirectColor
-        TrueColor
-        GrayScale
-        StaticGray
- */
-PetscErrorCode PetscDrawXiSetVisualClass(PetscDraw_X *XiWin)
-{
-  XVisualInfo vinfo;
-
-  PetscFunctionBegin;
-  if (XMatchVisualInfo(XiWin->disp, XiWin->screen, 24, DirectColor, &vinfo)) {
-    XiWin->vis = vinfo.visual;
-  } else if (XMatchVisualInfo(XiWin->disp, XiWin->screen, 8, PseudoColor, &vinfo)) {
-    XiWin->vis = vinfo.visual;
-  } else if (XMatchVisualInfo(XiWin->disp, XiWin->screen, DefaultDepth(XiWin->disp, XiWin->screen), PseudoColor, &vinfo)) {
-    XiWin->vis = vinfo.visual;
-  } else {
-    XiWin->vis = DefaultVisual(XiWin->disp, XiWin->screen);
-  }
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-PetscErrorCode PetscDrawXiSetColormap(PetscDraw_X *XiWin)
-{
-  PetscFunctionBegin;
-  XSetWindowColormap(XiWin->disp, XiWin->win, XiWin->cmap);
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-/*
-   Get RGB color entries out of the X colormap
-*/
-PetscErrorCode PetscDrawXiGetPalette(PetscDraw_X *XiWin, unsigned char palette[PETSC_DRAW_MAXCOLOR][3])
-{
-  int    k;
-  XColor colordef[PETSC_DRAW_MAXCOLOR];
-
-  PetscFunctionBegin;
-  for (k = 0; k < PETSC_DRAW_MAXCOLOR; k++) {
-    colordef[k].pixel = XiWin->cmapping[k];
-    colordef[k].flags = DoRed | DoGreen | DoBlue;
-  }
-  XQueryColors(XiWin->disp, XiWin->cmap, colordef, PETSC_DRAW_MAXCOLOR);
-  for (k = 0; k < PETSC_DRAW_MAXCOLOR; k++) {
-    palette[k][0] = (unsigned char)(colordef[k].red >> 8);
-    palette[k][1] = (unsigned char)(colordef[k].green >> 8);
-    palette[k][2] = (unsigned char)(colordef[k].blue >> 8);
-  }
-  PetscFunctionReturn(PETSC_SUCCESS);
 }

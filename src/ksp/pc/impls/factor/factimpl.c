@@ -7,7 +7,9 @@ PetscErrorCode PCFactorSetUpMatSolverType_Factor(PC pc)
 
   PetscFunctionBegin;
   PetscCheck(pc->pmat, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONGSTATE, "You can only call this routine after the matrix object has been provided to the solver, for example with KSPSetOperators() or SNESSetJacobian()");
-  if (!pc->setupcalled && !((PC_Factor *)icc)->fact) PetscCall(MatGetFactor(pc->pmat, ((PC_Factor *)icc)->solvertype, ((PC_Factor *)icc)->factortype, &((PC_Factor *)icc)->fact));
+  if (!((PC_Factor *)icc)->fact) PetscCall(MatGetFactor(pc->pmat, ((PC_Factor *)icc)->solvertype, ((PC_Factor *)icc)->factortype, &((PC_Factor *)icc)->fact));
+  PetscCheck(((PC_Factor *)icc)->fact, PetscObjectComm((PetscObject)pc->pmat), PETSC_ERR_SUP, "MatFactor type %s not supported by this matrix instance of type %s and solver type %s. Rerun with \"-info :mat | grep MatGetFactor_\" for additional information.",
+             MatFactorTypes[((PC_Factor *)icc)->factortype], ((PetscObject)pc->pmat)->type_name, ((PC_Factor *)icc)->solvertype);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

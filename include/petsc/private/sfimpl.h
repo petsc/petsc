@@ -1,5 +1,4 @@
-#ifndef SFIMPL_H
-#define SFIMPL_H
+#pragma once
 
 #include <petscvec.h>
 #include <petscsf.h>
@@ -215,6 +214,4 @@ PETSC_EXTERN PetscErrorCode PetscSFFree_Kokkos(PetscMemType, void *);
   /* If pure host code, do with less indirection */
   #define PetscSFMalloc(sf, mtype, sz, ptr) PetscMalloc(sz, ptr)
   #define PetscSFFree(sf, mtype, ptr)       PetscFree(ptr)
-#endif
-
 #endif

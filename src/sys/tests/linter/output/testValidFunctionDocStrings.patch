@@ -1,3 +1,10 @@
+@@ -30,5 +30,5 @@
+ .seealso: `testIllFormedFunctionDocString()`, `testType`
+ C@*/
+-PetscErrorCode testWellFormedFunctionDocString(PetscViewer viewer, PetscInt x, PetscViewer viewer2, PetscScalar *y)
++static PetscErrorCode testWellFormedFunctionDocString(PetscViewer viewer, PetscInt x, PetscViewer viewer2, PetscScalar *y)
+ {
+   return 0;
 @@ -35,5 +35,6 @@
  }
  
@@ -66,7 +73,7 @@
  
  .seealso:                                                  testNonExistentFunction(), testNonExistentType,
 -testIllFormedFunctionDocString(), `testNonExistentFunction()`, testIllFormedMinimalDocString()
-+`testNonExistentFunction()`, `testIllFormedMinimalDocString()`
++`testIllFormedMinimalDocString()`
  @*/
  
 @@ -77,5 +77,4 @@
@@ -90,9 +97,16 @@
    Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
 -   .seealso: testNonExistentFunction(), testNonExistentType,`testNonExistentFunction()
 +
-+  .seealso: `testNonExistentFunction()`, `testNonExistentType`,`testNonExistentFunction()`
++  .seealso: `testNonExistentFunction()`, `testNonExistentType`
  */
  PetscErrorCode testIllFormedMinimalDocString(void)
+@@ -96,5 +96,5 @@
+    .seealso: testNonExistentFunction(), testNonExistentType,`testNonExistentFunction()
+ */
+-PetscErrorCode testIllFormedMinimalDocString(void)
++static PetscErrorCode testIllFormedMinimalDocString(void)
+ {
+   return 0;
 @@ -102,5 +102,5 @@
  
  /*@C
@@ -150,6 +164,13 @@
 +.seealso:
  C@*/
  PetscErrorCode testTerribleSpellingDocString(PetscViewer viewer, PetscInt x, PetscScalar *y)
+@@ -119,5 +119,5 @@
+ .zeeakso:
+ C@*/
+-PetscErrorCode testTerribleSpellingDocString(PetscViewer viewer, PetscInt x, PetscScalar *y)
++static PetscErrorCode testTerribleSpellingDocString(PetscViewer viewer, PetscInt x, PetscScalar *y)
+ {
+   return 0;
 @@ -124,5 +124,6 @@
  }
  
@@ -172,6 +193,20 @@
 +.seealso: `Lorem()`, `ipsum()`, `dolor()`, `sit()`, `amet()`, `consectetur()`, `adipiscing()`, `elit()`
  @*/
  PetscErrorCode testCustomFortranInterfaceDocString(char *******string, PetscErrorCode (*function_ptr)(PetscInt))
+@@ -135,5 +135,5 @@
+ .seealso: Lorem(), `ipsum()`, dolor(), `sit(), `amet()`, consectetur(), adipiscing(), elit()`
+ @*/
+-PetscErrorCode testCustomFortranInterfaceDocString(char *******string, PetscErrorCode (*function_ptr)(PetscInt))
++static PetscErrorCode testCustomFortranInterfaceDocString(char *******string, PetscErrorCode (*function_ptr)(PetscInt))
+ {
+   return 0;
+@@ -141,5 +141,5 @@
+ 
+ /* a random comment above a function */
+-void function() { }
++static void function() { }
+ 
+ PETSC_INTERN PetscErrorCode testInternFunction();
 @@ -172,5 +172,5 @@
    testAllParamsUndocumented - lorem
  
@@ -179,6 +214,13 @@
 +  Level: developer
  
    Example Usage:
+@@ -183,5 +183,5 @@
+ .seealso:
+ @*/
+-PetscErrorCode testAllParamsUndocumented(PetscInt a, PetscInt b)
++static PetscErrorCode testAllParamsUndocumented(PetscInt a, PetscInt b)
+ {
+   return testStaticFunction();
 @@ -191,5 +191,5 @@
    testParameterGrouping ipsum
  
@@ -214,6 +256,13 @@
 +.seealso: `testStaticFunction()`
  @*/
  PetscErrorCode testParameterGrouping(PetscInt a, PetscInt b, ...)
+@@ -200,5 +200,5 @@
+ .see also: testStaticFunction()
+ @*/
+-PetscErrorCode testParameterGrouping(PetscInt a, PetscInt b, ...)
++static PetscErrorCode testParameterGrouping(PetscInt a, PetscInt b, ...)
+ {
+   return 0;
 @@ -213,5 +213,5 @@
    int a_code_block;
  .ve
@@ -221,6 +270,13 @@
 +- beta  - a beta
  
    Level: beginner
+@@ -219,5 +219,5 @@
+ .seealso: `Foo()`
+ @*/
+-PetscErrorCode testScatteredVerbatimBlocks(PetscInt alpha, PetscInt beta)
++static PetscErrorCode testScatteredVerbatimBlocks(PetscInt alpha, PetscInt beta)
+ {
+   return 0;
 @@ -228,5 +228,5 @@
  
    Input Parameters:
@@ -242,6 +298,13 @@
 +.seealso: `Foo()`
  @*/
  PetscErrorCode testBadParamListDescrSep(PetscInt alpha, PetscInt beta)
+@@ -235,5 +235,5 @@
+ .seealso: Foo()
+ @*/
+-PetscErrorCode testBadParamListDescrSep(PetscInt alpha, PetscInt beta)
++static PetscErrorCode testBadParamListDescrSep(PetscInt alpha, PetscInt beta)
+ {
+   return 0;
 @@ -250,5 +250,5 @@
    Level: beginner
  
@@ -249,6 +312,20 @@
 +.seealso: `Foo()`
  @*/
  PetscErrorCode testBadMidSentenceColons(void)
+@@ -252,5 +252,5 @@
+ .seealso: `Foo()
+ @*/
+-PetscErrorCode testBadMidSentenceColons(void)
++static PetscErrorCode testBadMidSentenceColons(void)
+ {
+   return 0;
+@@ -265,5 +265,5 @@
+ MC*/
+ 
+-PetscErrorCode testFloatingDocstring(void)
++static PetscErrorCode testFloatingDocstring(void)
+ {
+   return 0;
 @@ -284,5 +284,5 @@
  
    Output Parameter:
@@ -256,6 +333,20 @@
 +. baz - a baz
  
    Level: beginner
+@@ -290,5 +290,5 @@
+ .seealso: `testExplicitSynopsisBad()`
+ M@*/
+-PetscErrorCode testExplicitSynopsis_Private(PetscScalar unknown, PetscInt foo, PetscReal bar, void *baz)
++static PetscErrorCode testExplicitSynopsis_Private(PetscScalar unknown, PetscInt foo, PetscReal bar, void *baz)
+ {
+   return 0;
+@@ -297,5 +297,5 @@
+ /* testBadDocString - asdadsasd
+ */
+-PetscErrorCode testBadDocString(PetscInt n)
++static PetscErrorCode testBadDocString(PetscInt n)
+ {
+   return 0;
 @@ -302,5 +302,6 @@
  }
  
@@ -264,6 +355,20 @@
 +  testBadDocStringMissingChar - asdadsasd
  
    Input Parameter:
+@@ -311,5 +311,5 @@
+ .seealso: `testBadDocString()`
+ */
+-PetscErrorCode testBadDocStringMissingChar(PetscInt n)
++static PetscErrorCode testBadDocStringMissingChar(PetscInt n)
+ {
+   return 0;
+@@ -326,5 +326,5 @@
+ .seealso: `testBadDocString()`
+ */
+-PetscErrorCode testBadDocStringCharOutOfOrder(PetscInt n)
++static PetscErrorCode testBadDocStringCharOutOfOrder(PetscInt n)
+ {
+   return 0;
 @@ -353,5 +353,5 @@
    testSingleFunctionArgNotFound - asdasdasdasd
  
@@ -292,6 +397,13 @@
 +.seealso: `testBadDocString()`
  
  @*/
+@@ -361,5 +361,5 @@
+ 
+ @*/
+-PetscErrorCode testSingleFunctionArgNotFound(PetscScalar some_function_arg)
++static PetscErrorCode testSingleFunctionArgNotFound(PetscScalar some_function_arg)
+ {
+   return 0;
 @@ -371,5 +371,5 @@
    testPredeclarationCursorIgnored - the cursor above this will be ignored!
  
@@ -309,12 +421,12 @@
 @@ -379,5 +379,5 @@
    Level: beg
  
--.seealso: testPredeclarationCursorIgnored()`
-+.seealso: `testPredeclarationCursorIgnored()`
+-.seealso: testPredeclarationCursorIgnored()`, foo()`, `Bar, baz()
++.seealso: `foo()`, `Bar`, `baz()`
  */
  
 @@ -381,5 +381,4 @@
- .seealso: testPredeclarationCursorIgnored()`
+ .seealso: testPredeclarationCursorIgnored()`, foo()`, `Bar, baz()
  */
 -
  PetscErrorCode testPredeclarationCursorIgnored(int arg, int *another_arg)
@@ -326,6 +438,20 @@
 +/*@C
    testFunctionPointerArguments - the first set of arguments are unnamed and should be errored
  
+@@ -420,5 +420,5 @@
+ .seealso: `testPredeclarationCursorIgnored()`
+ */
+-PetscErrorCode testFunctionPointerArguments(int (*foo)(int, double, float), int (*bar)(int bar_parm1, double bar_parm2, float bar_parm3), void (*baz)(int (*bop)(void), void (*blitz)(void (*)(void)), int baz_parm1, double baz_parm2, float baz_parm3))
++static PetscErrorCode testFunctionPointerArguments(int (*foo)(int, double, float), int (*bar)(int bar_parm1, double bar_parm2, float bar_parm3), void (*baz)(int (*bop)(void), void (*blitz)(void (*)(void)), int baz_parm1, double baz_parm2, float baz_parm3))
+ {
+   return 0;
+@@ -432,5 +432,5 @@
+ .seealso: `testIllFormedDeprecated()`
+ */
+-PetscErrorCode testDeprecated(void)
++static PetscErrorCode testDeprecated(void)
+ {
+   return PETSC_SUCCESS;
 @@ -440,8 +440,4 @@
    testIllFormedDeprecated - check that deprecated (since VERSION) works
  
@@ -341,4 +467,137 @@
 -  Level: dpcrtd (since 3.18.5)
 +  Level: deprecated (since 3.18.5)
  
- .seealso: `testDeprecated()`
+ .seealso: [](ch_matrices), `testDeprecated()`, [Matrix Factorization](sec_matfactor)
+@@ -449,5 +449,5 @@
+ .seealso: [](ch_matrices), `testDeprecated()`, [Matrix Factorization](sec_matfactor)
+ */
+-PetscErrorCode testIllFormedDeprecated(void)
++static PetscErrorCode testIllFormedDeprecated(void)
+ {
+   return PETSC_SUCCESS;
+@@ -467,5 +467,5 @@
+ .seealso: `testWellFormedFunctionDocString()`
+ */
+-PetscErrorCode testValidInOutParams(int *foo)
++static PetscErrorCode testValidInOutParams(int *foo)
+ {
+   return PETSC_SUCCESS;
+@@ -477,5 +477,5 @@
+   Input Parameter:
+ + foo - the input description for an in-out param
+-+ baz - asdasdasd
++. baz - asdasdasd
+ - foo              - a duplicate description
+ 
+@@ -478,5 +478,5 @@
+ + foo - the input description for an in-out param
+ + baz - asdasdasd
+-- foo              - a duplicate description
++- foo - a duplicate description
+ 
+   Output Parameters:
+@@ -481,5 +481,5 @@
+ 
+   Output Parameters:
+-. bop = asdas
+++ bop = asdas
+ - foo    - the output description for an in-out param
+ - foo - a duplicate description2
+@@ -482,5 +482,5 @@
+   Output Parameters:
+ . bop = asdas
+-- foo    - the output description for an in-out param
++. foo    - the output description for an in-out param
+ - foo - a duplicate description2
+ 
+@@ -489,5 +489,5 @@
+ .seealso: `testWellFormedFunctionDocString()`
+ */
+-PetscErrorCode testInvalidInOutParams(int *foo)
++static PetscErrorCode testInvalidInOutParams(int *foo)
+ {
+   return PETSC_SUCCESS;
+@@ -516,5 +516,5 @@
+ .seealso: [](ch_tao), `Tao`, `TaoSetObjective()`, `TaoSetJacobianRoutine()`
+ @*/
+-PetscErrorCode testFunctionParmsSameName(int tao, double res, PetscErrorCode (*func)(int tao, double x, double f, void *ctx), void *ctx)
++static PetscErrorCode testFunctionParmsSameName(int tao, double res, PetscErrorCode (*func)(int tao, double x, double f, void *ctx), void *ctx)
+ {
+   return PETSC_SUCCESS;
+@@ -546,5 +546,5 @@
+ .seealso: [](ch_tao), `Tao`, `TaoSetObjective()`, `TaoSetJacobianRoutine()`
+ @*/
+-PetscErrorCode testFunctionParmsSameNameInOut(int *tao, double res, PetscErrorCode (*func)(int tao, double x, double f, void *ctx), void *ctx)
++static PetscErrorCode testFunctionParmsSameNameInOut(int *tao, double res, PetscErrorCode (*func)(int tao, double x, double f, void *ctx), void *ctx)
+ {
+   return PETSC_SUCCESS;
+@@ -595,5 +595,5 @@
+ @*/
+ 
+-PetscErrorCode testBadDocStringIgnoreAll()
++static PetscErrorCode testBadDocStringIgnoreAll()
+ {
+   return PETSC_SUCCESS;
+@@ -616,5 +616,5 @@
+ .seealso: `testBadDocString()`
+ @*/
+-PetscErrorCode testIgnoringSpuriousComments()
++static PetscErrorCode testIgnoringSpuriousComments()
+ {
+   return PETSC_SUCCESS;
+@@ -628,5 +628,5 @@
+ . foo - a foo
+ 
+-    OutputParameter:
++  Output Parameter:
+     +     bar         -    a bar for
+     example this is not a heading
+@@ -629,5 +629,5 @@
+ 
+     OutputParameter:
+-    +     bar         -    a bar for
+++ bar - a bar for
+     example this is not a heading
+ 
+@@ -636,5 +636,5 @@
+ .seealso: `testBadDocString()`
+ @*/
+-PetscErrorCode testCheckingSectionIndentationAfterSwitch(int foo, double *bar)
++static PetscErrorCode testCheckingSectionIndentationAfterSwitch(int foo, double *bar)
+ {
+   return PETSC_SUCCESS;
+@@ -652,5 +652,5 @@
+ .seealso: `testBadDocString()`
+ @*/
+-PetscErrorCode testReferencesFalsePositive()
++static PetscErrorCode testReferencesFalsePositive()
+ {
+   return PETSC_SUCCESS;
+@@ -669,5 +669,5 @@
+ .seealso: `testBadDocString()`
+ @*/
+-PetscErrorCode testOptionsDatabaseFalsePositive()
++static PetscErrorCode testOptionsDatabaseFalsePositive()
+ {
+   return PETSC_SUCCESS;
+@@ -679,5 +679,5 @@
+   Level: beginner
+ 
+-.seealso:`thisShouldOnlyBeShiftedOverByOneSpace()`,
++.seealso: `thisShouldOnlyBeShiftedOverByOneSpace()`,
+ `andThisShouldBeLeftAlone()`
+ @*/
+@@ -682,5 +682,5 @@
+ `andThisShouldBeLeftAlone()`
+ @*/
+-PetscErrorCode testLeftFlushSeeAlsoFalsePositive()
++static PetscErrorCode testLeftFlushSeeAlsoFalsePositive()
+ {
+   return PETSC_SUCCESS;
+@@ -695,5 +695,5 @@
+ .seealso: `Foo`
+ @*/
+-PetscErrorCode testNoteFalsePositive()
++static PetscErrorCode testNoteFalsePositive()
+ {
+   return PETSC_SUCCESS;

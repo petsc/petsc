@@ -157,9 +157,9 @@ PETSC_EXTERN PetscErrorCode PetscPartitionerCreate_Shell(PetscPartitioner part)
   Level: developer
 
   Note:
-    It is safe to free the sizes and points arrays after use in this routine.
+  It is safe to free the sizes and points arrays after use in this routine.
 
-.seealso `DMPlexDistribute()`, `PetscPartitionerCreate()`
+.seealso: `DMPlexDistribute()`, `PetscPartitionerCreate()`
 @*/
 PetscErrorCode PetscPartitionerShellSetPartition(PetscPartitioner part, PetscInt size, const PetscInt sizes[], const PetscInt points[])
 {
@@ -168,8 +168,8 @@ PetscErrorCode PetscPartitionerShellSetPartition(PetscPartitioner part, PetscInt
 
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(part, PETSCPARTITIONER_CLASSID, 1, PETSCPARTITIONERSHELL);
-  if (sizes) PetscValidIntPointer(sizes, 3);
-  if (points) PetscValidIntPointer(points, 4);
+  if (sizes) PetscAssertPointer(sizes, 3);
+  if (points) PetscAssertPointer(points, 4);
   PetscCall(PetscSectionDestroy(&p->section));
   PetscCall(ISDestroy(&p->partition));
   PetscCall(PetscSectionCreate(PetscObjectComm((PetscObject)part), &p->section));
@@ -194,7 +194,7 @@ PetscErrorCode PetscPartitionerShellSetPartition(PetscPartitioner part, PetscInt
 
   Level: intermediate
 
-.seealso `PetscPartitionerShellGetRandom()`, `PetscPartitionerCreate()`
+.seealso: `PetscPartitionerShellGetRandom()`, `PetscPartitionerCreate()`
 @*/
 PetscErrorCode PetscPartitionerShellSetRandom(PetscPartitioner part, PetscBool random)
 {
@@ -212,14 +212,14 @@ PetscErrorCode PetscPartitionerShellSetRandom(PetscPartitioner part, PetscBool r
   Collective
 
   Input Parameter:
-. part   - The `PetscPartitioner`
+. part - The `PetscPartitioner`
 
   Output Parameter:
 . random - The flag to use a random partition
 
   Level: intermediate
 
-.seealso `PetscPartitionerShellSetRandom()`, `PetscPartitionerCreate()`
+.seealso: `PetscPartitionerShellSetRandom()`, `PetscPartitionerCreate()`
 @*/
 PetscErrorCode PetscPartitionerShellGetRandom(PetscPartitioner part, PetscBool *random)
 {
@@ -227,7 +227,7 @@ PetscErrorCode PetscPartitionerShellGetRandom(PetscPartitioner part, PetscBool *
 
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(part, PETSCPARTITIONER_CLASSID, 1, PETSCPARTITIONERSHELL);
-  PetscValidBoolPointer(random, 2);
+  PetscAssertPointer(random, 2);
   *random = p->random;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

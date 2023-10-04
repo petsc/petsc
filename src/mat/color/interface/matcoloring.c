@@ -5,24 +5,24 @@ PetscBool         MatColoringRegisterAllCalled = PETSC_FALSE;
 const char *const MatColoringWeightTypes[]     = {"RANDOM", "LEXICAL", "LF", "SL", "MatColoringWeightType", "MAT_COLORING_WEIGHT_", NULL};
 
 /*@C
-   MatColoringRegister - Adds a new sparse matrix coloring to the  matrix package.
+  MatColoringRegister - Adds a new sparse matrix coloring to the  matrix package.
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  sname - name of Coloring (for example `MATCOLORINGSL`)
--  function - function pointer that creates the coloring
+  Input Parameters:
++ sname    - name of Coloring (for example `MATCOLORINGSL`)
+- function - function pointer that creates the coloring
 
-   Level: developer
+  Level: developer
 
-   Sample usage:
+  Example Usage:
 .vb
-   MatColoringRegister("my_color",MyColor);
+   MatColoringRegister("my_color", MyColor);
 .ve
 
-   Then, your partitioner can be chosen with the procedural interface via
-$     MatColoringSetType(part,"my_color")
-   or at runtime via the option
+  Then, your partitioner can be chosen with the procedural interface via
+$     MatColoringSetType(part, "my_color")
+  or at runtime via the option
 $     -mat_coloring_type my_color
 
 .seealso: `MatColoringType`, `MatColoringRegisterDestroy()`, `MatColoringRegisterAll()`
@@ -36,35 +36,35 @@ PetscErrorCode MatColoringRegister(const char sname[], PetscErrorCode (*function
 }
 
 /*@
-   MatColoringCreate - Creates a matrix coloring context.
+  MatColoringCreate - Creates a matrix coloring context.
 
-   Collective
+  Collective
 
-   Input Parameter:
-.  comm - MPI communicator
+  Input Parameter:
+. m - MPI communicator
 
-   Output Parameter:
-.  mcptr - the new `MatColoring` context
+  Output Parameter:
+. mcptr - the new `MatColoring` context
 
-   Options Database Keys:
-+   -mat_coloring_type - the type of coloring algorithm used. See `MatColoringType`.
-.   -mat_coloring_maxcolors - the maximum number of relevant colors, all nodes not in a color are in maxcolors+1
-.   -mat_coloring_distance - compute a distance 1,2,... coloring.
-.   -mat_coloring_view - print information about the coloring and the produced index sets
-.   -mat_coloring_test - debugging option that prints all coloring incompatibilities
--   -mat_is_coloring_test - debugging option that throws an error if MatColoringApply() generates an incorrect iscoloring
+  Options Database Keys:
++ -mat_coloring_type      - the type of coloring algorithm used. See `MatColoringType`.
+. -mat_coloring_maxcolors - the maximum number of relevant colors, all nodes not in a color are in maxcolors+1
+. -mat_coloring_distance  - compute a distance 1,2,... coloring.
+. -mat_coloring_view      - print information about the coloring and the produced index sets
+. -mat_coloring_test      - debugging option that prints all coloring incompatibilities
+- -mat_is_coloring_test   - debugging option that throws an error if MatColoringApply() generates an incorrect iscoloring
 
-   Level: beginner
+  Level: beginner
 
-   Notes:
-   A distance one coloring is useful, for example, multi-color SOR.
+  Notes:
+  A distance one coloring is useful, for example, multi-color SOR.
 
-   A distance two coloring is for the finite difference computation of Jacobians (see `MatFDColoringCreate()`).
+  A distance two coloring is for the finite difference computation of Jacobians (see `MatFDColoringCreate()`).
 
-   Coloring of matrices can be computed directly from the sparse matrix nonzero structure via the `MatColoring` object or from the mesh from which the
-   matrix comes from with `DMCreateColoring()`. In general using the mesh produces a more optimal coloring (fewer colors).
+  Coloring of matrices can be computed directly from the sparse matrix nonzero structure via the `MatColoring` object or from the mesh from which the
+  matrix comes from with `DMCreateColoring()`. In general using the mesh produces a more optimal coloring (fewer colors).
 
-          Some coloring types only support distance two colorings
+  Some coloring types only support distance two colorings
 
 .seealso: `MatColoringSetFromOptions()`, `MatColoring`, `MatColoringApply()`, `MatFDColoringCreate()`, `DMCreateColoring()`, `MatColoringType`
 @*/
@@ -74,7 +74,7 @@ PetscErrorCode MatColoringCreate(Mat m, MatColoring *mcptr)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(m, MAT_CLASSID, 1);
-  PetscValidPointer(mcptr, 2);
+  PetscAssertPointer(mcptr, 2);
   *mcptr = NULL;
 
   PetscCall(MatInitializePackage());
@@ -92,14 +92,14 @@ PetscErrorCode MatColoringCreate(Mat m, MatColoring *mcptr)
 }
 
 /*@
-   MatColoringDestroy - Destroys the matrix coloring context
+  MatColoringDestroy - Destroys the matrix coloring context
 
-   Collective
+  Collective
 
-   Input Parameter:
-.  mc - the `MatColoring` context
+  Input Parameter:
+. mc - the `MatColoring` context
 
-   Level: beginner
+  Level: beginner
 
 .seealso: `MatColoring`, `MatColoringCreate()`, `MatColoringApply()`
 @*/
@@ -119,23 +119,23 @@ PetscErrorCode MatColoringDestroy(MatColoring *mc)
 }
 
 /*@C
-   MatColoringSetType - Sets the type of coloring algorithm used
+  MatColoringSetType - Sets the type of coloring algorithm used
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  mc - the `MatColoring` context
--  type - the type of coloring
+  Input Parameters:
++ mc   - the `MatColoring` context
+- type - the type of coloring
 
-   Options Database Key:
-.  -mat_coloring_type type - the name of the type
+  Options Database Key:
+. -mat_coloring_type type - the name of the type
 
-   Level: beginner
+  Level: beginner
 
-   Note:
-    Possible types include the sequential types `MATCOLORINGLF`,
-   `MATCOLORINGSL`, and `MATCOLORINGID` from the MINPACK package as well
-   as a parallel `MATCOLORINGGREEDY` algorithm.
+  Note:
+  Possible types include the sequential types `MATCOLORINGLF`,
+  `MATCOLORINGSL`, and `MATCOLORINGID` from the MINPACK package as well
+  as a parallel `MATCOLORINGGREEDY` algorithm.
 
 .seealso: `MatColoring`, `MatColoringSetFromOptions()`, `MatColoringType`, `MatColoringCreate()`, `MatColoringApply()`
 @*/
@@ -146,11 +146,11 @@ PetscErrorCode MatColoringSetType(MatColoring mc, MatColoringType type)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mc, MAT_COLORING_CLASSID, 1);
-  PetscValidCharPointer(type, 2);
+  PetscAssertPointer(type, 2);
   PetscCall(PetscObjectTypeCompare((PetscObject)mc, type, &match));
   if (match) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscFunctionListFind(MatColoringList, type, &r));
-  PetscCheck(r, PETSC_COMM_SELF, PETSC_ERR_ARG_UNKNOWN_TYPE, "Unable to find requested MatColoring type %s", type);
+  PetscCheck(r, PetscObjectComm((PetscObject)mc), PETSC_ERR_ARG_UNKNOWN_TYPE, "Unable to find requested MatColoring type %s", type);
   if (mc->ops->destroy) {
     PetscCall((*(mc)->ops->destroy)(mc));
     mc->ops->destroy = NULL;
@@ -166,22 +166,22 @@ PetscErrorCode MatColoringSetType(MatColoring mc, MatColoringType type)
 }
 
 /*@
-   MatColoringSetFromOptions - Sets `MatColoring` options from options database
+  MatColoringSetFromOptions - Sets `MatColoring` options from options database
 
-   Collective
+  Collective
 
-   Input Parameter:
-.  mc - `MatColoring` context
+  Input Parameter:
+. mc - `MatColoring` context
 
-   Options Database Keys:
-+   -mat_coloring_type - the type of coloring algorithm used. See `MatColoringType`.
-.   -mat_coloring_maxcolors - the maximum number of relevant colors, all nodes not in a color are in maxcolors+1
-.   -mat_coloring_distance - compute a distance 1,2,... coloring.
-.   -mat_coloring_view - print information about the coloring and the produced index sets
-.   -snes_fd_color - instruct SNES to using coloring and then `MatFDColoring` to compute the Jacobians
--   -snes_fd_color_use_mat - instruct `SNES` to color the matrix directly instead of the `DM` from which the matrix comes (the default)
+  Options Database Keys:
++ -mat_coloring_type      - the type of coloring algorithm used. See `MatColoringType`.
+. -mat_coloring_maxcolors - the maximum number of relevant colors, all nodes not in a color are in maxcolors+1
+. -mat_coloring_distance  - compute a distance 1,2,... coloring.
+. -mat_coloring_view      - print information about the coloring and the produced index sets
+. -snes_fd_color          - instruct SNES to using coloring and then `MatFDColoring` to compute the Jacobians
+- -snes_fd_color_use_mat  - instruct `SNES` to color the matrix directly instead of the `DM` from which the matrix comes (the default)
 
-   Level: beginner
+  Level: beginner
 
 .seealso: `MatColoring`, `MatColoringApply()`, `MatColoringSetDistance()`, `MatColoringSetType()`, `SNESComputeJacobianDefaultColor()`, `MatColoringType`
 @*/
@@ -221,25 +221,25 @@ PetscErrorCode MatColoringSetFromOptions(MatColoring mc)
 }
 
 /*@
-   MatColoringSetDistance - Sets the distance of the coloring
+  MatColoringSetDistance - Sets the distance of the coloring
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  mc - the `MatColoring` context
--  dist - the distance the coloring should compute
+  Input Parameters:
++ mc   - the `MatColoring` context
+- dist - the distance the coloring should compute
 
-   Options Database Key:
-.   -mat_coloring_type - the type of coloring algorithm used. See `MatColoringType`.
+  Options Database Key:
+. -mat_coloring_type - the type of coloring algorithm used. See `MatColoringType`.
 
-   Level: beginner
+  Level: beginner
 
-   Note:
-    The distance of the coloring denotes the minimum number
-   of edges in the graph induced by the matrix any two vertices
-   of the same color are.  Distance-1 colorings are the classical
-   coloring, where no two vertices of the same color are adjacent.
-   distance-2 colorings are useful for the computation of Jacobians.
+  Note:
+  The distance of the coloring denotes the minimum number
+  of edges in the graph induced by the matrix any two vertices
+  of the same color are.  Distance-1 colorings are the classical
+  coloring, where no two vertices of the same color are adjacent.
+  distance-2 colorings are useful for the computation of Jacobians.
 
 .seealso: `MatColoring`, `MatColoringSetFromOptions()`, `MatColoringGetDistance()`, `MatColoringApply()`
 @*/
@@ -252,24 +252,24 @@ PetscErrorCode MatColoringSetDistance(MatColoring mc, PetscInt dist)
 }
 
 /*@
-   MatColoringGetDistance - Gets the distance of the coloring
+  MatColoringGetDistance - Gets the distance of the coloring
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameter:
-.  mc - the `MatColoring` context
+  Input Parameter:
+. mc - the `MatColoring` context
 
-   Output Parameter:
-.  dist - the current distance being used for the coloring.
+  Output Parameter:
+. dist - the current distance being used for the coloring.
 
-   Level: beginner
+  Level: beginner
 
-   Note:
-    The distance of the coloring denotes the minimum number
-   of edges in the graph induced by the matrix any two vertices
-   of the same color are.  Distance-1 colorings are the classical
-   coloring, where no two vertices of the same color are adjacent.
-   distance-2 colorings are useful for the computation of Jacobians.
+  Note:
+  The distance of the coloring denotes the minimum number
+  of edges in the graph induced by the matrix any two vertices
+  of the same color are.  Distance-1 colorings are the classical
+  coloring, where no two vertices of the same color are adjacent.
+  distance-2 colorings are useful for the computation of Jacobians.
 
 .seealso: `MatColoring`, `MatColoringSetDistance()`, `MatColoringApply()`
 @*/
@@ -282,25 +282,25 @@ PetscErrorCode MatColoringGetDistance(MatColoring mc, PetscInt *dist)
 }
 
 /*@
-   MatColoringSetMaxColors - Sets the maximum number of colors to produce
+  MatColoringSetMaxColors - Sets the maximum number of colors to produce
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  mc - the `MatColoring` context
--  maxcolors - the maximum number of colors to produce
+  Input Parameters:
++ mc        - the `MatColoring` context
+- maxcolors - the maximum number of colors to produce
 
-   Level: beginner
+  Level: beginner
 
-   Notes:
-   Vertices not in an available color are set to have color maxcolors+1, which is not
-   a valid color as they may be adjacent.
+  Notes:
+  Vertices not in an available color are set to have color maxcolors+1, which is not
+  a valid color as they may be adjacent.
 
-   This works only for  `MATCOLORINGGREEDY` and `MATCOLORINGJP`
+  This works only for  `MATCOLORINGGREEDY` and `MATCOLORINGJP`
 
-   This may be used to compute a certain number of
-   independent sets from the graph.  For instance, while using
-   `MATCOLORINGGREEDY` and maxcolors = 1, one gets out an MIS.
+  This may be used to compute a certain number of
+  independent sets from the graph.  For instance, while using
+  `MATCOLORINGGREEDY` and maxcolors = 1, one gets out an MIS.
 
 .seealso: `MatColoring`, `MatColoringGetMaxColors()`, `MatColoringApply()`
 @*/
@@ -313,17 +313,17 @@ PetscErrorCode MatColoringSetMaxColors(MatColoring mc, PetscInt maxcolors)
 }
 
 /*@
-   MatColoringGetMaxColors - Gets the maximum number of colors
+  MatColoringGetMaxColors - Gets the maximum number of colors
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameter:
-.  mc - the `MatColoring` context
+  Input Parameter:
+. mc - the `MatColoring` context
 
-   Output Parameter:
-.  maxcolors - the current maximum number of colors to produce
+  Output Parameter:
+. maxcolors - the current maximum number of colors to produce
 
-   Level: beginner
+  Level: beginner
 
 .seealso: `MatColoring`, `MatColoringSetMaxColors()`, `MatColoringApply()`
 @*/
@@ -336,19 +336,19 @@ PetscErrorCode MatColoringGetMaxColors(MatColoring mc, PetscInt *maxcolors)
 }
 
 /*@
-   MatColoringApply - Apply the coloring to the matrix, producing index
-   sets corresponding to a number of independent sets in the induced
-   graph.
+  MatColoringApply - Apply the coloring to the matrix, producing index
+  sets corresponding to a number of independent sets in the induced
+  graph.
 
-   Collective
+  Collective
 
-   Input Parameter:
-.  mc - the `MatColoring` context
+  Input Parameter:
+. mc - the `MatColoring` context
 
-   Output Parameter:
-.  coloring - the `ISColoring` instance containing the coloring
+  Output Parameter:
+. coloring - the `ISColoring` instance containing the coloring
 
-   Level: beginner
+  Level: beginner
 
 .seealso: `ISColoring`, `MatColoring`, `MatColoringCreate()`
 @*/
@@ -361,7 +361,7 @@ PetscErrorCode MatColoringApply(MatColoring mc, ISColoring *coloring)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mc, MAT_COLORING_CLASSID, 1);
-  PetscValidPointer(coloring, 2);
+  PetscAssertPointer(coloring, 2);
   PetscCall(PetscLogEventBegin(MATCOLORING_Apply, mc, 0, 0, 0));
   PetscUseTypeMethod(mc, apply, coloring);
   PetscCall(PetscLogEventEnd(MATCOLORING_Apply, mc, 0, 0, 0));
@@ -387,15 +387,15 @@ PetscErrorCode MatColoringApply(MatColoring mc, ISColoring *coloring)
 }
 
 /*@
-   MatColoringView - Output details about the `MatColoring`.
+  MatColoringView - Output details about the `MatColoring`.
 
-   Collective
+  Collective
 
-   Input Parameters:
--  mc - the `MatColoring` context
-+  viewer - the Viewer context
+  Input Parameters:
++ mc     - the `MatColoring` context
+- viewer - the Viewer context
 
-   Level: beginner
+  Level: beginner
 
 .seealso: `PetscViewer`, `MatColoring`, `MatColoringApply()`
 @*/
@@ -423,15 +423,15 @@ PetscErrorCode MatColoringView(MatColoring mc, PetscViewer viewer)
 }
 
 /*@
-   MatColoringSetWeightType - Set the type of weight computation used while computing the coloring
+  MatColoringSetWeightType - Set the type of weight computation used while computing the coloring
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
--  mc - the `MatColoring` context
-+  wt - the weight type
+  Input Parameters:
++ mc - the `MatColoring` context
+- wt - the weight type
 
-   Level: beginner
+  Level: beginner
 
 .seealso: `MatColoring`, `MatColoringWeightType`, `MatColoringApply()`
 @*/

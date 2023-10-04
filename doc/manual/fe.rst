@@ -1,4 +1,4 @@
-.. _chapter_fe:
+.. _ch_fe:
 
 PetscFE: Finite Element Infrastructure in PETSc
 -----------------------------------------------
@@ -20,19 +20,19 @@ A finite element problem is presented to PETSc in a series of steps. This is bot
   DMAddField(dm, NULL, presDisc);
   DMAddField(dm, channelLabel, velDisc);
 
-The second argument is a ``DMLabel`` object indicating the support of the field on the mesh, with NULL indicating the entire domain. Once we have a set of fields, we calls
+The second argument is a ``DMLabel`` object indicating the support of the field on the mesh, with ``NULL`` indicating the entire domain. Once we have a set of fields, we calls
 
 .. code-block::
 
   DMCreateDS(dm);
 
-This divides the computational domain into subdomains, called *regions* in PETSc, each with a unique set of fields supported on it. These subdomain are identified by labels, and each one has a ``PetscDS`` object describing the discrete system (DS) on that subdomain. There are query functions to get the set of DS objects for the DM, but it is usually easiest to get the proper DS for a given cell using
+This divides the computational domain into subdomains, called *regions* in PETSc, each with a unique set of fields supported on it. These subdomain are identified by labels, and each one has a ``PetscDS`` object describing the discrete system on that subdomain. There are query functions to get the set of ``PetscDS`` objects for the ``DM``, but it is usually easiest to get the proper ``PetscDS`` for a given cell using
 
 .. code-block::
 
   DMGetCellDS(dm, cell, &ds, NULL);
 
-Each `PetscDS`` object has a set of fields, each with a ``PetscFE`` discretization. This allows it to calculate the size of the local discrete approximation, as well as allocate scratch space for all the associated computations. The final thing needed is specify the actual equations to be enforced on each region. The ``PetscDS`` contains a ``PetscWeakForm`` object that holds callback function pointers that define the equations. A simplified, top-level interface through ``PetscDS`` allows users to quickly define problems for a single region. For example, in `SNES Tutorial ex13 <PETSC_DOC_OUT_ROOT_PLACEHOLDER/src/snes/tutorials/ex13.c.html>`__, we define the Poisson problem using
+Each ``PetscDS`` object has a set of fields, each with a ``PetscFE`` or ``PetscFV`` discretization. This allows it to calculate the size of the local discrete approximation, as well as allocate scratch space for all the associated computations. The final thing needed is to specify the actual equations to be enforced on each region. The ``PetscDS`` contains a ``PetscWeakForm`` object that holds callback function pointers that define the equations. A simplified, top-level interface through ``PetscDS`` allows users to quickly define problems for a single region. For example, in `SNES Tutorial ex13 <PETSC_DOC_OUT_ROOT_PLACEHOLDER/src/snes/tutorials/ex13.c.html>`__, we define the Poisson problem using
 
 .. code-block::
 
@@ -86,7 +86,7 @@ where the pointwise functions are
 
 Notice that we set boundary conditions using ``DMAddBoundary``, which will be described later in this chapter. Also we set an exact solution for the field. This can be used to automatically calculate mesh convergence using the ``PetscConvEst`` object described later in this chapter.
 
-For more complex cases with multiple regions, we need to use the ``PetscWeakForm`` interface directly. The weak form object allows you to set any number of functions for a given field, and also allows functions to be associated with particular subsets of the mesh using labels and label values. We can reproduce the above problem using the *SetIndex* variants which only set a single function at the specified index, rather than a list of functions. We use a NULL label and value, meaning that the entire domain is used.
+For more complex cases with multiple regions, we need to use the ``PetscWeakForm`` interface directly. The weak form object allows you to set any number of functions for a given field, and also allows functions to be associated with particular subsets of the mesh using labels and label values. We can reproduce the above problem using the *SetIndex* variants which only set a single function at the specified index, rather than a list of functions. We use a ``NULL`` label and value, meaning that the entire domain is used.
 
 .. code-block::
 

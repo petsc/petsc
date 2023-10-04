@@ -2,36 +2,37 @@
 #include <petsc/private/kspimpl.h> /*I "petscksp.h" I*/
 
 /*@
-   KSPInitialResidual - Computes the residual. Either b - A*C*u = b - A*x with right
-     preconditioning or C*(b - A*x) with left preconditioning; the latter
-     residual is often called the "preconditioned residual".
+  KSPInitialResidual - Computes the residual. Either b - A*C*u = b - A*x with right
+  preconditioning or C*(b - A*x) with left preconditioning; the latter
+  residual is often called the "preconditioned residual".
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  vsoln    - solution to use in computing residual
-.  vt1, vt2 - temporary work vectors
--  vb       - right-hand-side vector
+  Input Parameters:
++ ksp   - the `KSP` solver object
+. vsoln - solution to use in computing residual
+. vt1   - temporary work vector
+. vt2   - temporary work vector
+- vb    - right-hand-side vector
 
-   Output Parameter:
-.  vres     - calculated residual
+  Output Parameter:
+. vres - calculated residual
 
-   Level: developer
+  Level: developer
 
-   Note:
-   This routine assumes that an iterative method, designed for
+  Note:
+  This routine assumes that an iterative method, designed for
 $     A x = b
-   will be used with a preconditioner, C, such that the actual problem is either
+  will be used with a preconditioner, C, such that the actual problem is either
 $     AC u = b (right preconditioning) or
 $     CA x = Cb (left preconditioning).
-   This means that the calculated residual will be scaled and/or preconditioned;
-   the true residual
+  This means that the calculated residual will be scaled and/or preconditioned;
+  the true residual
 $     b-Ax
-   is returned in the vt2 temporary.
+  is returned in the `vt2` temporary work vector.
 
-.seealso: [](chapter_ksp), `KSP`, `KSPSolve()`, `KSPMonitor()`
+.seealso: [](ch_ksp), `KSP`, `KSPSolve()`, `KSPMonitor()`
 @*/
-
 PetscErrorCode KSPInitialResidual(KSP ksp, Vec vsoln, Vec vt1, Vec vt2, Vec vres, Vec vb)
 {
   Mat Amat, Pmat;
@@ -73,28 +74,28 @@ PetscErrorCode KSPInitialResidual(KSP ksp, Vec vsoln, Vec vt1, Vec vt2, Vec vres
 }
 
 /*@
-   KSPUnwindPreconditioner - Unwinds the preconditioning in the solution. That is,
-     takes solution to the preconditioned problem and gets the solution to the
-     original problem from it.
+  KSPUnwindPreconditioner - Unwinds the preconditioning in the solution. That is,
+  takes solution to the preconditioned problem and gets the solution to the
+  original problem from it.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  ksp  - iterative context
-.  vsoln - solution vector
--  vt1   - temporary work vector
+  Input Parameters:
++ ksp   - iterative context
+. vsoln - solution vector
+- vt1   - temporary work vector
 
-   Output Parameter:
-.  vsoln - contains solution on output
+  Output Parameter:
+. vsoln - contains solution on output
 
-   Note:
-   If preconditioning either symmetrically or on the right, this routine solves
-   for the correction to the unpreconditioned problem.  If preconditioning on
-   the left, nothing is done.
+  Note:
+  If preconditioning either symmetrically or on the right, this routine solves
+  for the correction to the unpreconditioned problem.  If preconditioning on
+  the left, nothing is done.
 
-   Level: advanced
+  Level: advanced
 
-.seealso: [](chapter_ksp), `KSP`, `KSPSetPCSide()`
+.seealso: [](ch_ksp), `KSP`, `KSPSetPCSide()`
 @*/
 PetscErrorCode KSPUnwindPreconditioner(KSP ksp, Vec vsoln, Vec vt1)
 {

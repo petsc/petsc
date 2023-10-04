@@ -4,7 +4,7 @@ static char help[] = "Test MatSetPreallocationCOO and MatSetValuesCOO\n\n";
 
 int main(int argc, char **args)
 {
-  Mat                    A, At, AAt;
+  Mat                    A, At, AAt, T = NULL;
   Vec                    x, y, z;
   ISLocalToGlobalMapping rl2g, cl2g;
   IS                     is;
@@ -23,7 +23,7 @@ int main(int argc, char **args)
   PetscBool              locdiag  = PETSC_TRUE;
   PetscBool              localapi = PETSC_FALSE;
   PetscBool              neg      = PETSC_FALSE;
-  PetscBool              ismatis, ismpiaij;
+  PetscBool              ismatis, ismpiaij, ishypre;
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
@@ -51,6 +51,7 @@ int main(int argc, char **args)
   PetscCall(PetscLayoutGetSize(cmap, &N));
 
   PetscCall(PetscObjectTypeCompare((PetscObject)A, MATIS, &ismatis));
+  PetscCall(PetscObjectTypeCompare((PetscObject)A, MATHYPRE, &ishypre));
 
   /* create fake l2g maps to test the local API */
   PetscCall(ISCreateStride(PETSC_COMM_WORLD, M - rstart, rstart, 1, &is));
@@ -102,16 +103,19 @@ int main(int argc, char **args)
   PetscCall(MatMultAdd(A, x, y, y));
   PetscCall(MatView(A, NULL));
   PetscCall(VecView(y, NULL));
-  PetscCall(MatTranspose(A, MAT_INITIAL_MATRIX, &At));
+  T = A;
+  if (ishypre) PetscCall(MatConvert(A, MATAIJ, MAT_INITIAL_MATRIX, &T));
+  PetscCall(MatTranspose(T, MAT_INITIAL_MATRIX, &At));
   if (!ismatis) {
-    PetscCall(MatMatMult(A, At, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &AAt));
+    PetscCall(MatMatMult(T, At, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &AAt));
     PetscCall(MatView(AAt, NULL));
     PetscCall(MatDestroy(&AAt));
-    PetscCall(MatMatMult(At, A, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &AAt));
+    PetscCall(MatMatMult(At, T, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &AAt));
     PetscCall(MatView(AAt, NULL));
     PetscCall(MatDestroy(&AAt));
   }
   PetscCall(MatDestroy(&At));
+  if (ishypre) PetscCall(MatDestroy(&T));
 
   /* INSERT_VALUES will overwrite matrix entries but
      still perform the sum of the repeated entries */
@@ -149,21 +153,24 @@ int main(int argc, char **args)
   PetscCall(MatMultAdd(A, x, y, z));
   PetscCall(MatView(A, NULL));
   PetscCall(VecView(z, NULL));
-  PetscCall(MatTranspose(A, MAT_INITIAL_MATRIX, &At));
+  T = A;
+  if (ishypre) PetscCall(MatConvert(A, MATAIJ, MAT_INITIAL_MATRIX, &T));
+  PetscCall(MatTranspose(T, MAT_INITIAL_MATRIX, &At));
   if (!ismatis) {
-    PetscCall(MatMatMult(A, At, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &AAt));
+    PetscCall(MatMatMult(T, At, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &AAt));
     PetscCall(MatView(AAt, NULL));
     PetscCall(MatDestroy(&AAt));
-    PetscCall(MatMatMult(At, A, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &AAt));
+    PetscCall(MatMatMult(At, T, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &AAt));
     PetscCall(MatView(AAt, NULL));
     PetscCall(MatDestroy(&AAt));
   }
   PetscCall(MatDestroy(&At));
+  if (ishypre) PetscCall(MatDestroy(&T));
 
   /* test providing diagonal first, then offdiagonal */
   PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)A), &size));
   PetscCall(PetscObjectBaseTypeCompare((PetscObject)A, MATMPIAIJ, &ismpiaij));
-  if (ismpiaij && size > 1) {
+  if ((ismpiaij || ishypre) && size > 1) {
     Mat                lA, lB;
     const PetscInt    *garray, *iA, *jA, *iB, *jB;
     const PetscScalar *vA, *vB;
@@ -172,7 +179,9 @@ int main(int argc, char **args)
     PetscInt           i, j, nA, nB, nnz;
     PetscBool          flg;
 
-    PetscCall(MatMPIAIJGetSeqAIJ(A, &lA, &lB, &garray));
+    T = A;
+    if (ishypre) PetscCall(MatConvert(A, MATAIJ, MAT_INITIAL_MATRIX, &T));
+    PetscCall(MatMPIAIJGetSeqAIJ(T, &lA, &lB, &garray));
     PetscCall(MatSeqAIJGetArrayRead(lA, &vA));
     PetscCall(MatSeqAIJGetArrayRead(lB, &vB));
     PetscCall(MatGetRowIJ(lA, 0, PETSC_FALSE, PETSC_FALSE, &nA, &iA, &jA, &flg));
@@ -198,6 +207,7 @@ int main(int argc, char **args)
     PetscCall(MatRestoreRowIJ(lB, 0, PETSC_FALSE, PETSC_FALSE, &nB, &iB, &jB, &flg));
     PetscCall(MatSeqAIJRestoreArrayRead(lA, &vA));
     PetscCall(MatSeqAIJRestoreArrayRead(lB, &vB));
+    if (ishypre) PetscCall(MatDestroy(&T));
 
     PetscCall(MatSetPreallocationCOO(A, nnz, coo_i, coo_j));
     PetscCall(MatSetValuesCOO(A, coo_v, ADD_VALUES));
@@ -208,14 +218,18 @@ int main(int argc, char **args)
     PetscCall(MatMult(A, x, y));
     PetscCall(MatView(A, NULL));
     PetscCall(VecView(y, NULL));
-    PetscCall(MatTranspose(A, MAT_INITIAL_MATRIX, &At));
-    PetscCall(MatMatMult(A, At, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &AAt));
+
+    T = A;
+    if (ishypre) PetscCall(MatConvert(A, MATAIJ, MAT_INITIAL_MATRIX, &T));
+    PetscCall(MatTranspose(T, MAT_INITIAL_MATRIX, &At));
+    PetscCall(MatMatMult(T, At, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &AAt));
     PetscCall(MatView(AAt, NULL));
     PetscCall(MatDestroy(&AAt));
-    PetscCall(MatMatMult(At, A, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &AAt));
+    PetscCall(MatMatMult(At, T, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &AAt));
     PetscCall(MatView(AAt, NULL));
     PetscCall(MatDestroy(&AAt));
     PetscCall(MatDestroy(&At));
+    if (ishypre) PetscCall(MatDestroy(&T));
 
     PetscCall(PetscFree3(coo_i, coo_j, coo_v));
   }
@@ -232,14 +246,22 @@ int main(int argc, char **args)
 
    test:
      suffix: 1
-     filter: grep -v type
+     filter: grep -v type | grep -v "Mat Object"
      diff_args: -j
      args: -mat_type {{seqaij mpiaij}} -localapi {{0 1}} -neg {{0 1}}
 
    test:
+     requires: hypre
+     suffix: 1_hypre
+     filter: grep -v type | grep -v "Mat Object"
+     diff_args: -j
+     args: -mat_type hypre -localapi {{0 1}} -neg {{0 1}}
+     output_file: output/ex123_1.out
+
+   test:
      requires: cuda
      suffix: 1_cuda
-     filter: grep -v type
+     filter: grep -v type | grep -v "Mat Object"
      diff_args: -j
      args: -mat_type {{seqaijcusparse mpiaijcusparse}} -localapi {{0 1}} -neg {{0 1}}
      output_file: output/ex123_1.out
@@ -247,7 +269,7 @@ int main(int argc, char **args)
    test:
      requires: kokkos_kernels
      suffix: 1_kokkos
-     filter: grep -v type
+     filter: grep -v type | grep -v "Mat Object"
      diff_args: -j
      args: -mat_type {{seqaijkokkos mpiaijkokkos}} -localapi {{0 1}} -neg {{0 1}}
      output_file: output/ex123_1.out
@@ -255,15 +277,24 @@ int main(int argc, char **args)
    test:
      suffix: 2
      nsize: 7
-     filter: grep -v type
+     filter: grep -v type | grep -v "Mat Object"
      diff_args: -j
      args: -mat_type mpiaij -localapi {{0 1}} -neg {{0 1}}
+
+   test:
+     requires: hypre
+     suffix: 2_hypre
+     nsize: 7
+     filter: grep -v type | grep -v "Mat Object"
+     diff_args: -j
+     args: -mat_type hypre -localapi {{0 1}} -neg {{0 1}}
+     output_file: output/ex123_2.out
 
    test:
      requires: cuda
      suffix: 2_cuda
      nsize: 7
-     filter: grep -v type
+     filter: grep -v type | grep -v "Mat Object"
      diff_args: -j
      args: -mat_type mpiaijcusparse -localapi {{0 1}} -neg {{0 1}}
      output_file: output/ex123_2.out
@@ -272,7 +303,7 @@ int main(int argc, char **args)
      requires: kokkos_kernels
      suffix: 2_kokkos
      nsize: 7
-     filter: grep -v type
+     filter: grep -v type | grep -v "Mat Object"
      diff_args: -j
      args: -mat_type mpiaijkokkos -localapi {{0 1}} -neg {{0 1}}
      output_file: output/ex123_2.out
@@ -280,15 +311,24 @@ int main(int argc, char **args)
    test:
      suffix: 3
      nsize: 3
-     filter: grep -v type
+     filter: grep -v type | grep -v "Mat Object"
      diff_args: -j
      args: -mat_type mpiaij -loc -localapi {{0 1}} -neg {{0 1}}
+
+   test:
+     requires: hypre
+     suffix: 3_hypre
+     nsize: 3
+     filter: grep -v type | grep -v "Mat Object"
+     diff_args: -j
+     args: -mat_type hypre -loc -localapi {{0 1}} -neg {{0 1}}
+     output_file: output/ex123_3.out
 
    test:
      requires: cuda
      suffix: 3_cuda
      nsize: 3
-     filter: grep -v type
+     filter: grep -v type | grep -v "Mat Object"
      diff_args: -j
      args: -mat_type mpiaijcusparse -loc -localapi {{0 1}} -neg {{0 1}}
      output_file: output/ex123_3.out
@@ -297,7 +337,7 @@ int main(int argc, char **args)
      requires: kokkos_kernels
      suffix: 3_kokkos
      nsize: 3
-     filter: grep -v type
+     filter: grep -v type | grep -v "Mat Object"
      diff_args: -j
      args: -mat_type aijkokkos -loc -localapi {{0 1}} -neg {{0 1}}
      output_file: output/ex123_3.out
@@ -305,15 +345,24 @@ int main(int argc, char **args)
    test:
      suffix: 4
      nsize: 4
-     filter: grep -v type
+     filter: grep -v type | grep -v "Mat Object"
      diff_args: -j
      args: -mat_type mpiaij -loc -locdiag 0 -localapi {{0 1}} -neg {{0 1}}
+
+   test:
+     requires: hypre
+     suffix: 4_hypre
+     nsize: 4
+     filter: grep -v type | grep -v "Mat Object"
+     diff_args: -j
+     args: -mat_type hypre -loc -locdiag 0 -localapi {{0 1}} -neg {{0 1}}
+     output_file: output/ex123_4.out
 
    test:
      requires: cuda
      suffix: 4_cuda
      nsize: 4
-     filter: grep -v type
+     filter: grep -v type | grep -v "Mat Object"
      diff_args: -j
      args: -mat_type mpiaijcusparse -loc -locdiag 0 -localapi {{0 1}} -neg {{0 1}}
      output_file: output/ex123_4.out
@@ -322,7 +371,7 @@ int main(int argc, char **args)
      requires: kokkos_kernels
      suffix: 4_kokkos
      nsize: 4
-     filter: grep -v type
+     filter: grep -v type | grep -v "Mat Object"
      diff_args: -j
      args: -mat_type aijkokkos -loc -locdiag 0 -localapi {{0 1}} -neg {{0 1}}
      output_file: output/ex123_4.out
@@ -330,7 +379,7 @@ int main(int argc, char **args)
    test:
      suffix: matis
      nsize: 3
-     filter: grep -v type
+     filter: grep -v type | grep -v "Mat Object"
      diff_args: -j
      args: -mat_type is -localapi {{0 1}} -neg {{0 1}}
 

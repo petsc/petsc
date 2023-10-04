@@ -4,7 +4,7 @@
 */
 #include <../src/ksp/pc/impls/factor/ilu/ilu.h> /*I "petscpc.h"  I*/
 
-PetscErrorCode PCFactorReorderForNonzeroDiagonal_ILU(PC pc, PetscReal z)
+static PetscErrorCode PCFactorReorderForNonzeroDiagonal_ILU(PC pc, PetscReal z)
 {
   PC_ILU *ilu = (PC_ILU *)pc->data;
 
@@ -15,7 +15,7 @@ PetscErrorCode PCFactorReorderForNonzeroDiagonal_ILU(PC pc, PetscReal z)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PCReset_ILU(PC pc)
+static PetscErrorCode PCReset_ILU(PC pc)
 {
   PC_ILU *ilu = (PC_ILU *)pc->data;
 
@@ -124,7 +124,8 @@ static PetscErrorCode PCSetUp_ILU(PC pc)
     if (!pc->setupcalled) {
       /* first time in so compute reordering and symbolic factorization */
       PetscBool canuseordering;
-      if (!((PC_Factor *)ilu)->fact) { PetscCall(MatGetFactor(pc->pmat, ((PC_Factor *)ilu)->solvertype, MAT_FACTOR_ILU, &((PC_Factor *)ilu)->fact)); }
+
+      PetscCall(PCFactorSetUpMatSolverType(pc));
       PetscCall(MatFactorGetCanUseOrdering(((PC_Factor *)ilu)->fact, &canuseordering));
       if (canuseordering) {
         PetscCall(PCFactorSetDefaultOrdering_Factor(pc));
@@ -138,8 +139,9 @@ static PetscErrorCode PCSetUp_ILU(PC pc)
     } else if (pc->flag != SAME_NONZERO_PATTERN) {
       if (!ilu->hdr.reuseordering) {
         PetscBool canuseordering;
+
         PetscCall(MatDestroy(&((PC_Factor *)ilu)->fact));
-        PetscCall(MatGetFactor(pc->pmat, ((PC_Factor *)ilu)->solvertype, MAT_FACTOR_ILU, &((PC_Factor *)ilu)->fact));
+        PetscCall(PCFactorSetUpMatSolverType(pc));
         PetscCall(MatFactorGetCanUseOrdering(((PC_Factor *)ilu)->fact, &canuseordering));
         if (canuseordering) {
           /* compute a new ordering for the ILU */

@@ -4,15 +4,15 @@ Other PETSc Features
 PETSc on a process subset
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Users who wish to employ PETSc routines on only a subset of processes
+Users who wish to employ PETSc on only a subset of MPI processes
 within a larger parallel job, or who wish to use a “manager” process to
 coordinate the work of “worker” PETSc processes, should specify an
 alternative communicator for ``PETSC_COMM_WORLD`` by directly setting
-its value, for example to an existing ``MPI_COMM_WORLD``,
+its value, for example to use an existing MPI communicator ``comm``,
 
 .. code-block::
 
-   PETSC_COMM_WORLD=MPI_COMM_WORLD; /* To use an existing MPI_COMM_WORLD */
+   PETSC_COMM_WORLD = comm; /* To use a previously-defined MPI_Comm */
 
 *before* calling ``PetscInitialize()``, but, obviously, after calling
 ``MPI_Init()``.
@@ -37,11 +37,11 @@ that can be explicitly called from within a program to set compile-time
 defaults. For many applications it is natural to use a combination of
 compile-time and runtime choices. For example, when solving a linear
 system, one could explicitly specify use of the Krylov subspace
-technique BiCGStab by calling
+solver BiCGStab by calling
 
 .. code-block::
 
-   KSPSetType(ksp,KSPBCGS);
+   KSPSetType(ksp, KSPBCGS);
 
 One could then override this choice at runtime with the option
 
@@ -50,7 +50,7 @@ One could then override this choice at runtime with the option
    -ksp_type tfqmr
 
 to select the Transpose-Free QMR algorithm. (See
-:any:`chapter_ksp` for details.)
+:any:`ch_ksp` for details.)
 
 The remainder of this section discusses details of runtime options.
 
@@ -66,15 +66,15 @@ variants, respectively:
 
 .. code-block::
 
-   PetscInitialize(int *argc,char ***args,const char *file,const char *help); /* C */
+   PetscInitialize(int *argc, char ***args, const char *file, const char *help); // C
 
 .. code-block:: fortran
 
    call PetscInitialize(integer ierr) ! Fortran
 
 The arguments ``argc`` and ``args`` (in the C/C++ version only) are the
-addresses of usual command line arguments, while the ``file`` is a name
-of a file that can contain additional options. By default this file is
+addresses of the usual command line arguments, while the ``file`` is a name
+of an optional file that can contain additional options. By default this file is
 called ``.petscrc`` in the user’s home directory. The user can also
 specify options via the environmental variable ``PETSC_OPTIONS``. The
 options are processed in the following order:
@@ -99,7 +99,7 @@ The file format for specifying options is
 All of the option names must begin with a dash (-) and have no
 intervening spaces. Note that the option values cannot have intervening
 spaces either, and tab characters cannot be used between the option
-names and values. The user can employ any naming convention. For
+names and values. For
 uniformity throughout PETSc, we employ the format
 ``-[prefix_]package_option`` (for instance, ``-ksp_type``,
 ``-mat_view ::info``, or ``-mg_levels_ksp_type``).
@@ -140,7 +140,7 @@ Adding options from a file
 PETSc can load additional options from a file using ``PetscOptionsInsertFile()``,
 which can also be used from the command line, e.g. ``-options_file my_options.opts``.
 
-One can also use YAML files this way (relying on ``PetscOptionsInsertFileYAML()``).
+One can also use YAML files with ``PetscOptionsInsertFileYAML()``.
 For example, the following file:
 
 .. literalinclude:: /../src/sys/tests/ex47-options.yaml
@@ -185,20 +185,20 @@ the command
 
 .. code-block::
 
-   PetscOptionsSetValue(PetscOptions options,char *name,char *value);
+   PetscOptionsSetValue(PetscOptions options, char *name, char *value);
 
 though this is rarely done. To locate options in the database, one
 should use the commands
 
 .. code-block::
 
-   PetscOptionsHasName(PetscOptions options,char *pre,char *name,PetscBool *flg);
-   PetscOptionsGetInt(PetscOptions options,char *pre,char *name,PetscInt *value,PetscBool *flg);
-   PetscOptionsGetReal(PetscOptions options,char *pre,char *name,PetscReal *value,PetscBool *flg);
-   PetscOptionsGetString(PetscOptions options,char *pre,char *name,char *value,int maxlen,PetscBool  *flg);
-   PetscOptionsGetStringArray(PetscOptions options,char *pre,char *name,char **values,PetscInt *nmax,PetscBool *flg);
-   PetscOptionsGetIntArray(PetscOptions options,char *pre,char *name,int *value,PetscInt *nmax,PetscBool *flg);
-   PetscOptionsGetRealArray(PetscOptions options,char *pre,char *name,PetscReal *value, PetscInt *nmax,PetscBool *flg);
+   PetscOptionsHasName(PetscOptions options, char *pre, char *name, PetscBool *flg);
+   PetscOptionsGetInt(PetscOptions options, char *pre, char *name, PetscInt *value, PetscBool *flg);
+   PetscOptionsGetReal(PetscOptions options, char *pre, char *name, PetscReal *value, PetscBool *flg);
+   PetscOptionsGetString(PetscOptions options, char *pre, char *name, char *value, size_t maxlen, PetscBool  *flg);
+   PetscOptionsGetStringArray(PetscOptions options, char *pre, char *name, char **values, PetscInt *nmax, PetscBool *flg);
+   PetscOptionsGetIntArray(PetscOptions options, char *pre, char *name, PetscInt *value, PetscInt *nmax, PetscBool *flg);
+   PetscOptionsGetRealArray(PetscOptions options, char *pre, char *name, PetscReal *value, PetscInt *nmax, PetscBool *flg);
 
 All of these routines set ``flg=PETSC_TRUE`` if the corresponding option
 was found, ``flg=PETSC_FALSE`` if it was not found. The optional
@@ -234,9 +234,9 @@ objects through commands of the form
 
 .. code-block::
 
-   XXXView(XXX obj,PetscViewer viewer);
+   XXXView(XXX obj, PetscViewer viewer);
 
-Here ``obj`` is any PETSc object of type ``XXX``, where ``XXX`` is
+Here ``obj`` is a PETSc object of type ``XXX``, where ``XXX`` is
 ``Mat``, ``Vec``, ``SNES``, etc. There are several predefined viewers.
 
 -  Passing in a zero (``0``) for the viewer causes the object to be
@@ -262,20 +262,20 @@ Here ``obj`` is any PETSc object of type ``XXX``, where ``XXX`` is
 
 -  To save an object to a file in binary format, the user creates the
    viewer object with the command
-   ``PetscViewerBinaryOpen(MPI_Comm comm,char* file,PetscViewerBinaryType type, PetscViewer *viewer)``.
+   ``PetscViewerBinaryOpen(MPI_Comm comm, char* file, PetscViewerBinaryType type, PetscViewer *viewer)``.
    Details of binary I/O are discussed below.
 
 -  Vector and matrix objects can be passed to a running MATLAB process
    with a viewer created by
-   ``PetscViewerSocketOpen(MPI_Comm comm,char *machine,int port,PetscViewer *viewer)``.
-   For more, see :any:`sec_matlabsocket`.
+   ``PetscViewerSocketOpen(MPI_Comm comm, char *machine, int port, PetscViewer *viewer)``.
+   See :any:`sec_matlabsocket`.
 
 The user can control the format of ASCII printed objects with viewers
 created by ``PetscViewerASCIIOpen()`` by calling
 
 .. code-block::
 
-   PetscViewerPushFormat(PetscViewer viewer,PetscViewerFormat format);
+   PetscViewerPushFormat(PetscViewer viewer, PetscViewerFormat format);
 
 Formats include ``PETSC_VIEWER_DEFAULT``, ``PETSC_VIEWER_ASCII_MATLAB``,
 and ``PETSC_VIEWER_ASCII_IMPL``. The implementation-specific format,
@@ -286,7 +286,7 @@ The routines
 
 .. code-block::
 
-   PetscViewerPushFormat(PetscViewer viewer,PetscViewerFormat format);
+   PetscViewerPushFormat(PetscViewer viewer, PetscViewerFormat format);
    PetscViewerPopFormat(PetscViewer viewer);
 
 allow one to temporarily change the format of a viewer.
@@ -299,8 +299,8 @@ matrix and vector binary input is handled by the following routines:
 
 .. code-block::
 
-   MatLoad(PetscViewer viewer,MatType outtype,Mat *newmat);
-   VecLoad(PetscViewer viewer,VecType outtype,Vec *newvec);
+   MatLoad(Mat newmat, PetscViewer viewer);
+   VecLoad(Vec newvec, PetscViewer viewer);
 
 These routines generate parallel matrices and vectors if the viewer’s
 communicator has more than one process. The particular matrix and vector
@@ -320,7 +320,10 @@ can (currently) contain the following:
 The block size indicates the size of blocks to use if the matrix is read
 into a block oriented data structure (for example, ``MATMPIBAIJ``). The
 diagonal information ``s1,s2,s3,...`` indicates which (block) diagonals
-in the matrix have nonzero values.
+in the matrix have nonzero values. The info file is automatically created
+when ``VecView()`` or ``MatView()`` is used with a binary viewer; hence if you
+save a matrix with a given block size with ``MatView()``, then a ``MatLoad()``
+on that file will automatically use the saved block size.
 
 .. _sec_viewfromoptions:
 
@@ -343,7 +346,7 @@ options.
 Using Viewers to Check Load Imbalance
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The PetscViewer format ``PETSC_VIEWER_LOAD_BALANCE`` will cause certain
+The ``PetscViewer`` format ``PETSC_VIEWER_LOAD_BALANCE`` will cause certain
 objects to display simple measures of their imbalance. For example
 
 .. code-block:: none
@@ -375,8 +378,8 @@ Using SAWs with PETSc
 ~~~~~~~~~~~~~~~~~~~~~
 
 The Scientific Application Web server, SAWs [#saws]_, allows one to monitor
-running PETSc applications from a browser. ``configure`` PETSc with
-the additional option ``--download-saws``. Options to use SAWs include
+running PETSc applications from a browser. To use SAWs you must ``configure`` PETSc with
+the option ``--download-saws``. Options to use SAWs include
 
 -  ``-saws_options`` - allows setting values in the PETSc options
    database via the browser (works only on one process).
@@ -464,7 +467,7 @@ to print a traceback. A new error handler can be put on the stack with
 
 .. code-block::
 
-   PetscPushErrorHandler(PetscErrorCode (*HandlerFunction)(int line,char *dir,char *file,char *message,int number,void*),void *HandlerContext)
+   PetscPushErrorHandler(PetscErrorCode (*HandlerFunction)(int line, char *dir, char *file, char *message, int number, void*), void *HandlerContext)
 
 The arguments to ``HandlerFunction()`` are the line number where the
 error occurred, the file in which the error was detected, the
@@ -507,14 +510,35 @@ It is also possible to trap signals by using the command
 
 .. code-block::
 
-   PetscPushSignalHandler( PetscErrorCode (*Handler)(int,void *),void *ctx);
+   PetscPushSignalHandler(PetscErrorCode (*Handler)(int, void *), void *ctx);
 
 The default handler ``PetscSignalHandlerDefault()`` calls
 ``PetscError()`` and then terminates. In general, a signal in PETSc
 indicates a catastrophic failure. Any error handler that the user
 provides should try to clean up only before exiting. By default all
-PETSc programs use the default signal handler, although the user can
-turn this off at runtime with the option ``-no_signal_handler`` .
+PETSc programs turn on the default PETSc signal handler in ``PetscInitialize()``,
+this can be prevented with the option ``-no_signal_handler``  that can be provided on the command line,
+in the ~./petscrc file, or with the call
+
+.. code-block::
+
+   PetscCall(PetscOptionsSetValue(NULL, "-no_signal_handler", "true"));
+
+Once the first PETSc signal handler has been pushed it is impossible to go back to
+to a signal handler that was set directly by the user with the UNIX signal handler API or by
+the loader.
+
+Some Fortran compilers/loaders cause, by default, a traceback of the Fortran call stack when a
+segmentation violation occurs to be printed. This is handled by them setting a special signal handler
+when the program is started up. This feature is useful for debugging without needing to start up a debugger.
+If  ``PetscPushSignalHandler()`` has been called this traceback will not occur, hence if the Fortran traceback
+is desired one should put
+
+.. code-block::
+
+   PetscCallA(PetscOptionsSetValue(PETSC_NULL_OPTIONS,"-no_signal_handler","true",ierr))
+
+**before** the call to ``PetscInitialize()``. This prevents PETSc from defaulting to using a signal handler.
 
 There is a separate signal handler for floating-point exceptions. The
 option ``-fp_trap`` turns on the floating-point trap at runtime, and the
@@ -522,12 +546,18 @@ routine
 
 .. code-block::
 
-   PetscSetFPTrap(PetscFPTrap flag);
+   PetscFPTrapPush(PetscFPTrap flag);
 
-can be used in-line. A ``flag`` of ``PETSC_FP_TRAP_ON`` indicates that
+can be used within a program. A ``flag`` of ``PETSC_FP_TRAP_ON`` indicates that
 floating-point exceptions should be trapped, while a value of
 ``PETSC_FP_TRAP_OFF`` (the default) indicates that they should be
 ignored.
+
+.. code-block::
+
+   PetscFPTrapPop(void);
+
+should be used to revert to the previous handling of floating point exceptions before the call to ``PetscFPTrapPush()``.
 
 A small set of macros is used to make the error handling lightweight.
 These macros are used throughout the PETSc libraries and can be employed
@@ -536,7 +566,7 @@ one should set it by calling
 
 .. code-block::
 
-   SETERRQ(MPI_Comm comm,PetscErrorCode flag,,char *message);
+   SETERRQ(MPI_Comm comm, PetscErrorCode flag, char *message);
 
 The user should check the return codes for all PETSc routines (and
 possibly user-defined routines as well) with
@@ -549,7 +579,7 @@ Likewise, all memory allocations should be checked with
 
 .. code-block::
 
-   PetscCall(PetscMalloc1(n,&ptr));
+   PetscCall(PetscMalloc1(n, &ptr));
 
 If this procedure is followed throughout all of the user’s libraries and
 codes, any error will by default generate a clean traceback of the
@@ -612,7 +642,7 @@ Parallel Communication
 
 When used in a message-passing environment, all communication within
 PETSc is done through MPI, the message-passing interface standard
-:cite:`MPI-final`. Any file that includes ``petscsys.h`` (or
+:cite:`mpi-final`. Any file that includes ``petscsys.h`` (or
 any other PETSc include file) can freely use any MPI routine.
 
 .. _sec_graphics:
@@ -637,7 +667,7 @@ may first create a viewer using the command
 
 .. code-block::
 
-   PetscViewerDrawOpen(MPI_Comm comm,char *display,char *title,int x,int y,int w,int h,PetscViewer *viewer);
+   PetscViewerDrawOpen(MPI_Comm comm, char *display, char *title, int x, int y, int w, int h, PetscViewer *viewer);
 
 This viewer may be passed to any of the ``XXXView()`` routines.
 Alternately, one may use command-line options to quickly specify viewer
@@ -649,7 +679,7 @@ object with the command
 
 .. code-block::
 
-   PetscViewerDrawGetDraw(PetscViewer viewer,PetscDraw *draw);
+   PetscViewerDrawGetDraw(PetscViewer viewer, PetscDraw *draw);
 
 Then one can call any of the ``PetscDrawXXX()`` commands on the ``draw``
 object. If one obtains the ``draw`` object in this manner, one does not
@@ -675,12 +705,12 @@ Simple PetscDrawing
 ^^^^^^^^^^^^^^^^^^^
 
 With the default format, one can open a window that is not associated
-with a viewer directly under the X11 Window System or OpenGL with the
+with a viewer directly under the X11 Window System with the
 command
 
 .. code-block::
 
-   PetscDrawCreate(MPI_Comm comm,char *display,char *title,int x,int y,int w,int h,PetscDraw *win);
+   PetscDrawCreate(MPI_Comm comm, char *display, char *title, int x, int y, int w, int h, PetscDraw *win);
    PetscDrawSetFromOptions(win);
 
 All drawing routines are performed relative to the window’s coordinate
@@ -691,14 +721,14 @@ with the command
 
 .. code-block::
 
-   PetscDrawSetCoordinates(PetscDraw win,PetscReal xl,PetscReal yl,PetscReal xr,PetscReal yr);
+   PetscDrawSetCoordinates(PetscDraw win, PetscReal xl, PetscReal yl, PetscReal xr, PetscReal yr);
 
 By default, graphics will be drawn in the entire window. To restrict the
 drawing to a portion of the window, one may use the command
 
 .. code-block::
 
-   PetscDrawSetViewPort(PetscDraw win,PetscReal xl,PetscReal yl,PetscReal xr,PetscReal yr);
+   PetscDrawSetViewPort(PetscDraw win, PetscReal xl, PetscReal yl, PetscReal xr, PetscReal yr);
 
 These arguments, which indicate the fraction of the window in which the
 drawing should be done, must satisfy
@@ -709,7 +739,7 @@ To draw a line, one uses the command
 
 .. code-block::
 
-   PetscDrawLine(PetscDraw win,PetscReal xl,PetscReal yl,PetscReal xr,PetscReal yr,int cl);
+   PetscDrawLine(PetscDraw win, PetscReal xl, PetscReal yl, PetscReal xr, PetscReal yr, int cl);
 
 The argument ``cl`` indicates the color (which is an integer between 0
 and 255) of the line. A list of predefined colors may be found in
@@ -744,17 +774,17 @@ Text can be drawn with commands
 
 .. code-block::
 
-   PetscDrawString(PetscDraw win,PetscReal x,PetscReal y,int color,char *text);
-   PetscDrawStringVertical(PetscDraw win,PetscReal x,PetscReal y,int color,const char *text);
-   PetscDrawStringCentered(PetscDraw win,PetscReal x,PetscReal y,int color,const char *text);
-   PetscDrawStringBoxed(PetscDraw draw,PetscReal sxl,PetscReal syl,int sc,int bc,const char text[],PetscReal *w,PetscReal *h);
+   PetscDrawString(PetscDraw win, PetscReal x, PetscReal y, int color, char *text);
+   PetscDrawStringVertical(PetscDraw win, PetscReal x, PetscReal y, int color, const char *text);
+   PetscDrawStringCentered(PetscDraw win, PetscReal x, PetscReal y, int color, const char *text);
+   PetscDrawStringBoxed(PetscDraw draw, PetscReal sxl, PetscReal syl, int sc, int bc, const char text[], PetscReal *w, PetscReal *h);
 
 The user can set the text font size or determine it with the commands
 
 .. code-block::
 
-   PetscDrawStringSetSize(PetscDraw win,PetscReal width,PetscReal height);
-   PetscDrawStringGetSize(PetscDraw win,PetscReal *width,PetscReal *height);
+   PetscDrawStringSetSize(PetscDraw win, PetscReal width, PetscReal height);
+   PetscDrawStringGetSize(PetscDraw win, PetscReal *width, PetscReal *height);
 
 Line Graphs
 ^^^^^^^^^^^
@@ -768,21 +798,21 @@ graphs are created with the command
 
 .. code-block::
 
-   PetscDrawLGCreate(PetscDraw win,PetscInt ncurves,PetscDrawLG *ctx);
+   PetscDrawLGCreate(PetscDraw win, PetscInt ncurves, PetscDrawLG *ctx);
 
 The argument ``ncurves`` indicates how many curves are to be drawn.
 Points can be added to each of the curves with the command
 
 .. code-block::
 
-   PetscDrawLGAddPoint(PetscDrawLG ctx,PetscReal *x,PetscReal *y);
+   PetscDrawLGAddPoint(PetscDrawLG ctx, PetscReal *x, PetscReal *y);
 
 The arguments ``x`` and ``y`` are arrays containing the next point value
 for each curve. Several points for each curve may be added with
 
 .. code-block::
 
-   PetscDrawLGAddPoints(PetscDrawLG ctx,PetscInt n,PetscReal **x,PetscReal **y);
+   PetscDrawLGAddPoints(PetscDrawLG ctx, PetscInt n, PetscReal **x, PetscReal **y);
 
 The line graph is drawn (or redrawn) with the command
 
@@ -807,7 +837,7 @@ on the two axes. The user can change these defaults with the command
 
 .. code-block::
 
-   PetscDrawLGSetLimits(PetscDrawLG ctx,PetscReal xmin,PetscReal xmax,PetscReal ymin,PetscReal ymax);
+   PetscDrawLGSetLimits(PetscDrawLG ctx, PetscReal xmin, PetscReal xmax, PetscReal ymin, PetscReal ymax);
 
 It is also possible to change the display of the axes and to label them.
 This procedure is done by first obtaining the axes context with the
@@ -815,15 +845,15 @@ command
 
 .. code-block::
 
-   PetscDrawLGGetAxis(PetscDrawLG ctx,PetscDrawAxis *axis);
+   PetscDrawLGGetAxis(PetscDrawLG ctx, PetscDrawAxis *axis);
 
 One can set the axes’ colors and labels, respectively, by using the
 commands
 
 .. code-block::
 
-   PetscDrawAxisSetColors(PetscDrawAxis axis,int axis_lines,int ticks,int text);
-   PetscDrawAxisSetLabels(PetscDrawAxis axis,char *top,char *x,char *y);
+   PetscDrawAxisSetColors(PetscDrawAxis axis, int axis_lines, int ticks, int text);
+   PetscDrawAxisSetLabels(PetscDrawAxis axis, char *top, char *x, char *y);
 
 It is possible to turn off all graphics with the option ``-nox``. This
 will prevent any windows from being opened or any drawing actions to be
@@ -861,7 +891,7 @@ additional option ``--with-x=0``
 .. _sec-developer-environments:
 
 Developer Environments
-~~~~~~~~~~~~~~~~~~~~~~
+----------------------
 
 Emacs Users
 ~~~~~~~~~~~
@@ -923,10 +953,11 @@ file and line number where a desired PETSc function is defined. Any
 string in any of the PETSc files can be found with the command ``M-x tags-search``.
 To find repeated occurrences, one can simply use ``M-,`` to find the next occurrence.
 
-Visual Studio Code Users
-~~~~~~~~~~~~~~~~~~~~~~~~
+VS Code Users
+~~~~~~~~~~~~~
 `VS Code <https://code.visualstudio.com/>`_ (unlike :ref:`sec-visual-studio`, described below) is an open source editor with a rich extension ecosystem.
-It has `excellent integration <https://marketplace.visualstudio.com/items?itemName=llvm-vs-code-extensions.vscode-clangd>`_ with clangd and will automatically pick up ``compile_commands.json`` as produced by a command such as ``bear make -B`` (see :ref:`sec-developer-environments`).
+It has `excellent integration <https://marketplace.visualstudio.com/items?itemName=llvm-vs-code-extensions.vscode-clangd>`_ with clangd and will automatically pick up ``compile_commands.json``
+as produced by a command such as ``bear make -B`` (see :ref:`sec-developer-environments`).
 If you have no prior attachment to a specific code editor, we recommend trying VS Code.
 
 Vi and Vim Users
@@ -1032,9 +1063,6 @@ check for compilation errors in the background, and provide sophisticated tools
 for refactoring.  Like lsp-mode, they also rely on a compilation database, so
 ``bear -- make -B`` should be used as well to generate the file
 ``compile_commands.json``.
-
-Etc.
-^^^^
 
 See `online tutorials <http://www.yolinux.com/TUTORIALS/LinuxTutorialAdvanced_vi.html>`__
 for additional Vi/Vim options.
@@ -1257,7 +1285,7 @@ to https://www.qt.io/qt-features-libraries-apis-tools-and-ide/
 Visual Studio Users
 ~~~~~~~~~~~~~~~~~~~
 
-To use PETSc from MS Visual Studio, one would have to compile a PETSc
+To use PETSc from Microsoft Visual Studio, one would have to compile a PETSc
 example with its corresponding makefile and then transcribe all compiler
 and linker options used in this build into a Visual Studio project file,
 in the appropriate format in Visual Studio project settings.

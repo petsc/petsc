@@ -45,6 +45,7 @@ int main(int argc, char **argv)
 /*TEST
 
    test:
+      args: -fp_trap 0
       output_file: output/ex34.out
 
 TEST*/

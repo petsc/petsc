@@ -30,26 +30,26 @@ struct _p_PetscDrawHG {
 #define CHUNKSIZE 100
 
 /*@C
-   PetscDrawHGCreate - Creates a histogram data structure.
+  PetscDrawHGCreate - Creates a histogram data structure.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  draw  - The window where the graph will be made
--  bins - The number of bins to use
+  Input Parameters:
++ draw - The window where the graph will be made
+- bins - The number of bins to use
 
-   Output Parameter:
-.  hist - The histogram context
+  Output Parameter:
+. hist - The histogram context
 
-   Level: intermediate
+  Level: intermediate
 
-   Notes:
-    The difference between a bar chart, `PetscDrawBar`, and a histogram, `PetscDrawHG`, is explained here https://stattrek.com/statistics/charts/histogram.aspx?Tutorial=AP
+  Notes:
+  The difference between a bar chart, `PetscDrawBar`, and a histogram, `PetscDrawHG`, is explained here https://stattrek.com/statistics/charts/histogram.aspx?Tutorial=AP
 
-   The histogram is only displayed when `PetscDrawHGDraw()` is called.
+  The histogram is only displayed when `PetscDrawHGDraw()` is called.
 
-   The MPI communicator that owns the `PetscDraw` owns this `PetscDrawHG`, but the calls to set options and add data are ignored on all processes except the
-   zeroth MPI process in the communicator. All MPI ranks in the communicator must call `PetscDrawHGDraw()` to display the updated graph.
+  The MPI communicator that owns the `PetscDraw` owns this `PetscDrawHG`, but the calls to set options and add data are ignored on all processes except the
+  zeroth MPI process in the communicator. All MPI ranks in the communicator must call `PetscDrawHGDraw()` to display the updated graph.
 
 .seealso: `PetscDrawHGDestroy()`, `PetscDrawHG`, `PetscDrawBarCreate()`, `PetscDrawBar`, `PetscDrawLGCreate()`, `PetscDrawLG`, `PetscDrawSPCreate()`, `PetscDrawSP`,
           `PetscDrawHGSetNumberBins()`, `PetscDrawHGReset()`, `PetscDrawHGAddValue()`, `PetscDrawHGDraw()`, `PetscDrawHGSave()`, `PetscDrawHGView()`, `PetscDrawHGSetColor()`,
@@ -62,7 +62,7 @@ PetscErrorCode PetscDrawHGCreate(PetscDraw draw, int bins, PetscDrawHG *hist)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw, PETSC_DRAW_CLASSID, 1);
   PetscValidLogicalCollectiveInt(draw, bins, 2);
-  PetscValidPointer(hist, 3);
+  PetscAssertPointer(hist, 3);
 
   PetscCall(PetscHeaderCreate(h, PETSC_DRAWHG_CLASSID, "DrawHG", "Histogram", "Draw", PetscObjectComm((PetscObject)draw), PetscDrawHGDestroy, NULL));
 
@@ -94,15 +94,15 @@ PetscErrorCode PetscDrawHGCreate(PetscDraw draw, int bins, PetscDrawHG *hist)
 }
 
 /*@
-   PetscDrawHGSetNumberBins - Change the number of bins that are to be drawn in the histogram
+  PetscDrawHGSetNumberBins - Change the number of bins that are to be drawn in the histogram
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  hist - The histogram context.
--  bins  - The number of bins.
+  Input Parameters:
++ hist - The histogram context.
+- bins - The number of bins.
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `PetscDrawHGCreate()`, `PetscDrawHG`, `PetscDrawHGDraw()`, `PetscDrawHGIntegerBins()`
 @*/
@@ -187,7 +187,7 @@ PetscErrorCode PetscDrawHGDestroy(PetscDrawHG *hist)
 
   Level: intermediate
 
-.seealso: `PetscDrawHGCreate()`, `PetscDrawHG`, `PetscDrawHGDraw()`, `PetscDrawHGAddValue()`, `PetscDrawHGReset()`
+.seealso: `PetscDrawHGCreate()`, `PetscDrawHG`, `PetscDrawHGDraw()`, `PetscDrawHGReset()`
 @*/
 PetscErrorCode PetscDrawHGAddValue(PetscDrawHG hist, PetscReal value)
 {
@@ -244,7 +244,7 @@ PetscErrorCode PetscDrawHGAddValue(PetscDrawHG hist, PetscReal value)
 
   Level: intermediate
 
-.seealso: `PetscDrawHGCreate()`, `PetscDrawHG`, `PetscDrawHGDraw()`, `PetscDrawHGAddValue()`, `PetscDrawHGReset()`
+.seealso: `PetscDrawHGCreate()`, `PetscDrawHG`, `PetscDrawHGAddValue()`, `PetscDrawHGReset()`
 @*/
 PetscErrorCode PetscDrawHGDraw(PetscDrawHG hist)
 {
@@ -385,11 +385,11 @@ PetscErrorCode PetscDrawHGDraw(PetscDrawHG hist)
   Collective
 
   Input Parameter:
-. hist - The histogram context
+. hg - The histogram context
 
   Level: intermediate
 
-.seealso: `PetscDrawSave()`, `PetscDrawHGCreate()`, `PetscDrawHGGetDraw()`, `PetscDrawSetSave()`, `PetscDrawSave()`, `PetscDrawHGDraw()`
+.seealso: `PetscDrawSave()`, `PetscDrawHGCreate()`, `PetscDrawHGGetDraw()`, `PetscDrawSetSave()`, `PetscDrawHGDraw()`
 @*/
 PetscErrorCode PetscDrawHGSave(PetscDrawHG hg)
 {
@@ -404,8 +404,9 @@ PetscErrorCode PetscDrawHGSave(PetscDrawHG hg)
 
   Not Collective
 
-  Input Parameter:
-. hist - The histogram context
+  Input Parameters:
++ hist   - The histogram context
+- viewer - The viewer to view it with
 
   Level: beginner
 
@@ -495,7 +496,7 @@ PetscErrorCode PetscDrawHGView(PetscDrawHG hist, PetscViewer viewer)
   Logically Collective
 
   Input Parameters:
-+ hist - The histogram context
++ hist  - The histogram context
 - color - one of the colors defined in petscdraw.h or `PETSC_DRAW_ROTATE` to make each bar a different color
 
   Level: intermediate
@@ -519,7 +520,7 @@ PetscErrorCode PetscDrawHGSetColor(PetscDrawHG hist, int color)
   Logically Collective
 
   Input Parameters:
-+ hist - The histogram context
++ hist  - The histogram context
 . x_min - the horizontal lower limit
 . x_max - the horizontal upper limit
 . y_min - the vertical lower limit
@@ -601,13 +602,13 @@ PetscErrorCode PetscDrawHGIntegerBins(PetscDrawHG hist, PetscBool ints)
 
   Level: intermediate
 
-.seealso: `PetscDrawHG`, `PetscDrawAxis`, `PetscDrawHGCreate()`, `PetscDrawHGAddValue()`, `PetscDrawHGView()`, `PetscDrawHGDraw()`, `PetscDrawHGSetColor()`, `PetscDrawAxis`, `PetscDrawHGSetLimits()`
+.seealso: `PetscDrawHG`, `PetscDrawAxis`, `PetscDrawHGCreate()`, `PetscDrawHGAddValue()`, `PetscDrawHGView()`, `PetscDrawHGDraw()`, `PetscDrawHGSetColor()`, `PetscDrawHGSetLimits()`
 @*/
 PetscErrorCode PetscDrawHGGetAxis(PetscDrawHG hist, PetscDrawAxis *axis)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(hist, PETSC_DRAWHG_CLASSID, 1);
-  PetscValidPointer(axis, 2);
+  PetscAssertPointer(axis, 2);
   *axis = hist->axis;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -621,7 +622,7 @@ PetscErrorCode PetscDrawHGGetAxis(PetscDrawHG hist, PetscDrawAxis *axis)
 . hist - The histogram context
 
   Output Parameter:
-. draw  - The draw context
+. draw - The draw context
 
   Level: intermediate
 
@@ -631,7 +632,7 @@ PetscErrorCode PetscDrawHGGetDraw(PetscDrawHG hist, PetscDraw *draw)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(hist, PETSC_DRAWHG_CLASSID, 1);
-  PetscValidPointer(draw, 2);
+  PetscAssertPointer(draw, 2);
   *draw = hist->win;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

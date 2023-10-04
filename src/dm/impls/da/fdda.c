@@ -1,4 +1,3 @@
-
 #include <petsc/private/dmdaimpl.h> /*I      "petscdmda.h"     I*/
 #include <petscmat.h>
 #include <petscbt.h>
@@ -83,37 +82,37 @@ static PetscErrorCode DMDASetBlockFills_Private2(DM_DA *dd)
 }
 
 /*@
-    DMDASetBlockFills - Sets the fill pattern in each block for a multi-component problem
-    of the matrix returned by `DMCreateMatrix()`.
+  DMDASetBlockFills - Sets the fill pattern in each block for a multi-component problem
+  of the matrix returned by `DMCreateMatrix()`.
 
-    Logically Collective
+  Logically Collective
 
-    Input Parameters:
-+   da - the distributed array
-.   dfill - the fill pattern in the diagonal block (may be NULL, means use dense block)
--   ofill - the fill pattern in the off-diagonal blocks
+  Input Parameters:
++ da    - the distributed array
+. dfill - the fill pattern in the diagonal block (may be NULL, means use dense block)
+- ofill - the fill pattern in the off-diagonal blocks
 
-    Level: developer
+  Level: developer
 
-    Notes:
-    This only makes sense when you are doing multicomponent problems but using the
-       `MATMPIAIJ` matrix format
+  Notes:
+  This only makes sense when you are doing multicomponent problems but using the
+  `MATMPIAIJ` matrix format
 
-           The format for dfill and ofill is a 2 dimensional dof by dof matrix with 1 entries
-       representing coupling and 0 entries for missing coupling. For example
+  The format for dfill and ofill is a 2 dimensional dof by dof matrix with 1 entries
+  representing coupling and 0 entries for missing coupling. For example
 .vb
             dfill[9] = {1, 0, 0,
                         1, 1, 0,
                         0, 1, 1}
 .ve
-       means that row 0 is coupled with only itself in the diagonal block, row 1 is coupled with
-       itself and row 0 (in the diagonal block) and row 2 is coupled with itself and row 1 (in the
-       diagonal block).
+  means that row 0 is coupled with only itself in the diagonal block, row 1 is coupled with
+  itself and row 0 (in the diagonal block) and row 2 is coupled with itself and row 1 (in the
+  diagonal block).
 
-     `DMDASetGetMatrix()` allows you to provide general code for those more complicated nonzero patterns then
-     can be represented in the dfill, ofill format
+  `DMDASetGetMatrix()` allows you to provide general code for those more complicated nonzero patterns then
+  can be represented in the dfill, ofill format
 
-   Contributed by Glenn Hammond
+  Contributed by Glenn Hammond
 
 .seealso: `DM`, `DMDA`, `DMCreateMatrix()`, `DMDASetGetMatrix()`, `DMSetMatrixPreallocateOnly()`
 @*/
@@ -132,41 +131,41 @@ PetscErrorCode DMDASetBlockFills(DM da, const PetscInt *dfill, const PetscInt *o
 }
 
 /*@
-    DMDASetBlockFillsSparse - Sets the fill pattern in each block for a multi-component problem
-    of the matrix returned by `DMCreateMatrix()`, using sparse representations
-    of fill patterns.
+  DMDASetBlockFillsSparse - Sets the fill pattern in each block for a multi-component problem
+  of the matrix returned by `DMCreateMatrix()`, using sparse representations
+  of fill patterns.
 
-    Logically Collective
+  Logically Collective
 
-    Input Parameters:
-+   da - the distributed array
-.   dfill - the sparse fill pattern in the diagonal block (may be `NULL`, means use dense block)
--   ofill - the sparse fill pattern in the off-diagonal blocks
+  Input Parameters:
++ da          - the distributed array
+. dfillsparse - the sparse fill pattern in the diagonal block (may be `NULL`, means use dense block)
+- ofillsparse - the sparse fill pattern in the off-diagonal blocks
 
-    Level: developer
+  Level: developer
 
-    Notes:
-    This only makes sense when you are doing multicomponent problems but using the
-       `MATMPIAIJ` matrix format
+  Notes:
+  This only makes sense when you are doing multicomponent problems but using the
+  `MATMPIAIJ` matrix format
 
-           The format for `dfill` and `ofill` is a sparse representation of a
-           dof-by-dof matrix with 1 entries representing coupling and 0 entries
-           for missing coupling.  The sparse representation is a 1 dimensional
-           array of length nz + dof + 1, where nz is the number of non-zeros in
-           the matrix.  The first dof entries in the array give the
-           starting array indices of each row's items in the rest of the array,
-           the dof+1st item contains the value nz + dof + 1 (i.e. the entire length of the array)
-           and the remaining nz items give the column indices of each of
-           the 1s within the logical 2D matrix.  Each row's items within
-           the array are the column indices of the 1s within that row
-           of the 2D matrix.  PETSc developers may recognize that this is the
-           same format as that computed by the `DMDASetBlockFills_Private()`
-           function from a dense 2D matrix representation.
+  The format for `dfill` and `ofill` is a sparse representation of a
+  dof-by-dof matrix with 1 entries representing coupling and 0 entries
+  for missing coupling.  The sparse representation is a 1 dimensional
+  array of length nz + dof + 1, where nz is the number of non-zeros in
+  the matrix.  The first dof entries in the array give the
+  starting array indices of each row's items in the rest of the array,
+  the dof+1st item contains the value nz + dof + 1 (i.e. the entire length of the array)
+  and the remaining nz items give the column indices of each of
+  the 1s within the logical 2D matrix.  Each row's items within
+  the array are the column indices of the 1s within that row
+  of the 2D matrix.  PETSc developers may recognize that this is the
+  same format as that computed by the `DMDASetBlockFills_Private()`
+  function from a dense 2D matrix representation.
 
-     `DMDASetGetMatrix()` allows you to provide general code for those more complicated nonzero patterns then
-     can be represented in the `dfill`, `ofill` format
+  `DMDASetGetMatrix()` allows you to provide general code for those more complicated nonzero patterns then
+  can be represented in the `dfill`, `ofill` format
 
-   Contributed by Philip C. Roth
+  Contributed by Philip C. Roth
 
 .seealso: `DM`, `DMDA`, `DMDASetBlockFills()`, `DMCreateMatrix()`, `DMDASetGetMatrix()`, `DMSetMatrixPreallocateOnly()`
 @*/
@@ -526,38 +525,17 @@ extern PetscErrorCode DMCreateMatrix_DA_2d_MPISELL(DM, Mat);
 extern PetscErrorCode DMCreateMatrix_DA_3d_MPISELL(DM, Mat);
 extern PetscErrorCode DMCreateMatrix_DA_IS(DM, Mat);
 
-/*@C
-   MatSetupDM - Sets the `DMDA` that is to be used by the HYPRE_StructMatrix PETSc matrix
-
-   Logically Collective
-
-   Input Parameters:
-+  mat - the matrix
--  da - the da
-
-   Level: intermediate
-
-.seealso: `DMDA`, `Mat`, `MatSetUp()`
-@*/
-PetscErrorCode MatSetupDM(Mat mat, DM da)
-{
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
-  PetscValidHeaderSpecificType(da, DM_CLASSID, 2, DMDA);
-  PetscTryMethod(mat, "MatSetupDM_C", (Mat, DM), (mat, da));
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-PetscErrorCode MatView_MPI_DA(Mat A, PetscViewer viewer)
+static PetscErrorCode MatView_MPI_DA(Mat A, PetscViewer viewer)
 {
   DM                da;
   const char       *prefix;
-  Mat               Anatural;
+  Mat               AA, Anatural;
   AO                ao;
   PetscInt          rstart, rend, *petsc, i;
   IS                is;
   MPI_Comm          comm;
   PetscViewerFormat format;
+  PetscBool         flag;
 
   PetscFunctionBegin;
   /* Check whether we are just printing info, in which case MatView() already viewed everything we wanted to view */
@@ -576,6 +554,11 @@ PetscErrorCode MatView_MPI_DA(Mat A, PetscViewer viewer)
   PetscCall(ISCreateGeneral(comm, rend - rstart, petsc, PETSC_OWN_POINTER, &is));
 
   /* call viewer on natural ordering */
+  PetscCall(PetscObjectBaseTypeCompare((PetscObject)A, MATMPISELL, &flag));
+  if (flag) {
+    PetscCall(MatConvert(A, MATAIJ, MAT_INITIAL_MATRIX, &AA));
+    A = AA;
+  }
   PetscCall(MatCreateSubMatrix(A, is, is, MAT_INITIAL_MATRIX, &Anatural));
   PetscCall(ISDestroy(&is));
   PetscCall(PetscObjectGetOptionsPrefix((PetscObject)A, &prefix));
@@ -585,10 +568,11 @@ PetscErrorCode MatView_MPI_DA(Mat A, PetscViewer viewer)
   PetscCall(MatView(Anatural, viewer));
   ((PetscObject)Anatural)->donotPetscObjectPrintClassNamePrefixType = PETSC_FALSE;
   PetscCall(MatDestroy(&Anatural));
+  if (flag) PetscCall(MatDestroy(&AA));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatLoad_MPI_DA(Mat A, PetscViewer viewer)
+static PetscErrorCode MatLoad_MPI_DA(Mat A, PetscViewer viewer)
 {
   DM       da;
   Mat      Anatural, Aapp;

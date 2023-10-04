@@ -4,10 +4,10 @@ import os
 class Configure(config.package.CMakePackage):
   def __init__(self, framework):
     config.package.CMakePackage.__init__(self, framework)
-    self.gitcommit        = '4.0.00'
+    self.gitcommit        = '4.1.00'
     self.minversion       = '3.7.01'
     self.versionname      = 'KOKKOS_VERSION'
-    self.download         = ['git://https://github.com/kokkos/kokkos.git']
+    self.download         = ['git://https://github.com/kokkos/kokkos.git','https://github.com/kokkos/kokkos/archive/'+self.gitcommit+'.tar.gz']
     self.downloaddirnames = ['kokkos']
     self.excludedDirs     = ['kokkos-kernels'] # Do not wrongly think kokkos-kernels as kokkos-vernum
     self.includes         = ['Kokkos_Macros.hpp']
@@ -26,6 +26,7 @@ class Configure(config.package.CMakePackage):
     self.precisions       = ['single','double']
     self.devicePackage    = 1
     self.minCmakeVersion  = (3,16,0)
+    self.macros           = ['KOKKOS_ENABLE_CUDA', 'KOKKOS_ENABLE_HIP', 'KOKKOS_ENABLE_SYCL']
     return
 
   def __str__(self):
@@ -112,7 +113,6 @@ class Configure(config.package.CMakePackage):
     lang = 'cxx'
     deviceArchName = ''
     if self.cuda.found:
-      args.append('-DKokkos_ENABLE_LIBDL=OFF') # See MR !4890
       # lang is used below to get nvcc C++ dialect. In a case with nvhpc-21.7 and "nvcc -ccbin nvc++ -std=c++17",
       # nvcc complains the host compiler does not support c++17, even though it does. So we have to respect
       # what nvcc thinks, instead of taking the c++ dialect directly from the host compiler.

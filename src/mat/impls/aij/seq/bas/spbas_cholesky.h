@@ -1,11 +1,11 @@
-
+#pragma once
 /*
    spbas_cholesky_row_alloc:
       in the data arrays, find a place where another row may be stored.
       Return PETSC_ERR_MEM if there is insufficient space to store the
       row, so garbage collection and/or re-allocation may be done.
 */
-PetscBool spbas_cholesky_row_alloc(spbas_matrix retval, PetscInt k, PetscInt r_nnz, PetscInt *n_alloc_used)
+static PetscBool spbas_cholesky_row_alloc(spbas_matrix retval, PetscInt k, PetscInt r_nnz, PetscInt *n_alloc_used)
 {
   retval.icols[k]  = &retval.alloc_icol[*n_alloc_used];
   retval.values[k] = &retval.alloc_val[*n_alloc_used];
@@ -25,13 +25,13 @@ PetscBool spbas_cholesky_row_alloc(spbas_matrix retval, PetscInt k, PetscInt r_n
          PetscRealloc does not seem to exist.
 
 */
-PetscErrorCode spbas_cholesky_garbage_collect(spbas_matrix *result,         /* I/O: the Cholesky factor matrix being constructed.
+static PetscErrorCode spbas_cholesky_garbage_collect(spbas_matrix *result,         /* I/O: the Cholesky factor matrix being constructed.
                                                                                     Only the storage, not the contents of this matrix is changed in this function */
-                                              PetscInt      i_row,          /* I  : Number of rows for which the final contents are known */
-                                              PetscInt     *n_row_alloc_ok, /* I/O: Number of rows which are already in their final
+                                                     PetscInt      i_row,          /* I  : Number of rows for which the final contents are known */
+                                                     PetscInt     *n_row_alloc_ok, /* I/O: Number of rows which are already in their final
                                                                                     places in the arrays: they need not be moved any more */
-                                              PetscInt     *n_alloc_used,   /* I/O:  */
-                                              PetscInt     *max_row_nnz)        /* I  : Over-estimate of the number of nonzeros needed to store each row */
+                                                     PetscInt     *n_alloc_used,   /* I/O:  */
+                                                     PetscInt     *max_row_nnz)        /* I  : Over-estimate of the number of nonzeros needed to store each row */
 {
   /* PSEUDO-CODE:
   1. Choose the appropriate size for the arrays
@@ -89,7 +89,7 @@ PetscErrorCode spbas_cholesky_garbage_collect(spbas_matrix *result,         /* I
   if (n_alloc_max != n_alloc_est && n_alloc < result->n_alloc_icol) n_alloc = result->n_alloc_icol;
 
   /* Motivate dimension choice */
-  PetscCall(PetscInfo(NULL, "   Allocating %" PetscInt_FMT " nonzeros: ", n_alloc));
+  PetscCall(PetscInfo(NULL, "   Allocating %" PetscInt_FMT " nonzeros: ", n_alloc)); /* checkbadSource \n */
   if (n_alloc_max == n_alloc_est) {
     PetscCall(PetscInfo(NULL, "this is the correct size\n"));
   } else if (n_alloc_now >= n_alloc_est) {

@@ -1,16 +1,21 @@
 
 #include <petsc/private/dmimpl.h>
-#include <petscdm.h>     /*I "petscdm.h" I*/
-#include <petscdmplex.h> /*I "petscdmplex.h" I*/
-#include <petscksp.h>    /*I "petscksp.h" I*/
+#include <petscdm.h>      /*I "petscdm.h" I*/
+#include <petscdmda.h>    /*I "petscdmda.h" I*/
+#include <petscdmplex.h>  /*I "petscdmplex.h" I*/
+#include <petscdmswarm.h> /*I "petscdmswarm.h" I*/
+#include <petscksp.h>     /*I "petscksp.h" I*/
 #include <petscblaslapack.h>
+
+#include <petsc/private/dmswarmimpl.h>         // For the citation and check
+#include "../src/dm/impls/swarm/data_bucket.h" // For DataBucket internals
 
 typedef struct _projectConstraintsCtx {
   DM  dm;
   Vec mask;
 } projectConstraintsCtx;
 
-PetscErrorCode MatMult_GlobalToLocalNormal(Mat CtC, Vec x, Vec y)
+static PetscErrorCode MatMult_GlobalToLocalNormal(Mat CtC, Vec x, Vec y)
 {
   DM                     dm;
   Vec                    local, mask;
@@ -42,16 +47,14 @@ static PetscErrorCode DMGlobalToLocalSolve_project1(PetscInt dim, PetscReal time
 
 /*@
   DMGlobalToLocalSolve - Solve for the global vector that is mapped to a given local vector by `DMGlobalToLocalBegin()`/`DMGlobalToLocalEnd()` with mode
-  = `INSERT_VALUES`.  It is assumed that the sum of all the local vector sizes is greater than or equal to the global vector size, so the solution is
-  a least-squares solution.  It is also assumed that `DMLocalToGlobalBegin()`/`DMLocalToGlobalEnd()` with mode = `ADD_VALUES` is the adjoint of the
-  global-to-local map, so that the least-squares solution may be found by the normal equations.
+  `INSERT_VALUES`.
 
   Collective
 
   Input Parameters:
 + dm - The `DM` object
-. x - The local vector
-- y - The global vector: the input value of globalVec is used as an initial guess
+. x  - The local vector
+- y  - The global vector: the input value of globalVec is used as an initial guess
 
   Output Parameter:
 . y - The least-squares solution
@@ -59,11 +62,19 @@ static PetscErrorCode DMGlobalToLocalSolve_project1(PetscInt dim, PetscReal time
   Level: advanced
 
   Note:
-  If the `DM` is of type `DMPLEX`, then y is the solution of L' * D * L * y = L' * D * x, where D is a diagonal mask that is 1 for every point in
+  It is assumed that the sum of all the local vector sizes is greater than or equal to the global vector size, so the solution is
+  a least-squares solution.  It is also assumed that `DMLocalToGlobalBegin()`/`DMLocalToGlobalEnd()` with mode `ADD_VALUES` is the adjoint of the
+  global-to-local map, so that the least-squares solution may be found by the normal equations.
+
+  If the `DM` is of type `DMPLEX`, then `y` is the solution of L' * D * L * y = L' * D * x, where D is a diagonal mask that is 1 for every point in
   the union of the closures of the local cells and 0 otherwise.  This difference is only relevant if there are anchor points that are not in the
   closure of any local cell (see `DMPlexGetAnchors()`/`DMPlexSetAnchors()`).
 
-.seealso: [](chapter_ksp), `DM`, `DMGlobalToLocalBegin()`, `DMGlobalToLocalEnd()`, `DMLocalToGlobalBegin()`, `DMLocalToGlobalEnd()`, `DMPlexGetAnchors()`, `DMPlexSetAnchors()`
+  What is L?
+
+  If this solves for a global vector from a local vector why is not called `DMLocalToGlobalSolve()`?
+
+.seealso: [](ch_ksp), `DM`, `DMGlobalToLocalBegin()`, `DMGlobalToLocalEnd()`, `DMLocalToGlobalBegin()`, `DMLocalToGlobalEnd()`, `DMPlexGetAnchors()`, `DMPlexSetAnchors()`
 @*/
 PetscErrorCode DMGlobalToLocalSolve(DM dm, Vec x, Vec y)
 {
@@ -151,45 +162,39 @@ PetscErrorCode DMGlobalToLocalSolve(DM dm, Vec x, Vec y)
 }
 
 /*@C
-  DMProjectField - This projects the given function of the input fields into the function space provided, putting the coefficients in a global vector.
+  DMProjectField - This projects a given function of the input fields into the function space provided by a `DM`, putting the coefficients in a global vector.
 
   Collective
 
   Input Parameters:
-+ dm      - The `DM`
-. time    - The time
-. U       - The input field vector
-. funcs   - The functions to evaluate, one per field
-- mode    - The insertion mode for values
++ dm    - The `DM`
+. time  - The time
+. U     - The input field vector
+. funcs - The functions to evaluate, one per field
+- mode  - The insertion mode for values
 
   Output Parameter:
-. X       - The output vector
+. X - The output vector
 
-   Calling sequence of `func`:
-.vb
-   void funcs(PetscInt dim, PetscInt Nf, PetscInt NfAux,
-              const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
-              const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-              PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f[]);
-.ve
-+  dim          - The spatial dimension
-.  Nf           - The number of input fields
-.  NfAux        - The number of input auxiliary fields
-.  uOff         - The offset of each field in u[]
-.  uOff_x       - The offset of each field in u_x[]
-.  u            - The field values at this point in space
-.  u_t          - The field time derivative at this point in space (or `NULL`)
-.  u_x          - The field derivatives at this point in space
-.  aOff         - The offset of each auxiliary field in u[]
-.  aOff_x       - The offset of each auxiliary field in u_x[]
-.  a            - The auxiliary field values at this point in space
-.  a_t          - The auxiliary field time derivative at this point in space (or `NULL`)
-.  a_x          - The auxiliary field derivatives at this point in space
-.  t            - The current time
-.  x            - The coordinates of this point
-.  numConstants - The number of constants
-.  constants    - The value of each constant
--  f            - The value of the function at this point in space
+  Calling sequence of `funcs`:
++ dim          - The spatial dimension
+. Nf           - The number of input fields
+. NfAux        - The number of input auxiliary fields
+. uOff         - The offset of each field in u[]
+. uOff_x       - The offset of each field in u_x[]
+. u            - The field values at this point in space
+. u_t          - The field time derivative at this point in space (or `NULL`)
+. u_x          - The field derivatives at this point in space
+. aOff         - The offset of each auxiliary field in u[]
+. aOff_x       - The offset of each auxiliary field in u_x[]
+. a            - The auxiliary field values at this point in space
+. a_t          - The auxiliary field time derivative at this point in space (or `NULL`)
+. a_x          - The auxiliary field derivatives at this point in space
+. t            - The current time
+. x            - The coordinates of this point
+. numConstants - The number of constants
+. constants    - The value of each constant
+- f            - The value of the function at this point in space
 
   Level: advanced
 
@@ -199,9 +204,9 @@ PetscErrorCode DMGlobalToLocalSolve(DM dm, Vec x, Vec y)
   a subdomain. You can also output a different number of fields than the input, with different discretizations. Last the auxiliary `DM`, attached to the
   auxiliary field vector, which is attached to dm, can also be different. It can have a different topology, number of fields, and discretizations.
 
-.seealso: [](chapter_ksp), `DM`, `DMProjectFieldLocal()`, `DMProjectFieldLabelLocal()`, `DMProjectFunction()`, `DMComputeL2Diff()`
+.seealso: [](ch_ksp), `DM`, `DMProjectFieldLocal()`, `DMProjectFieldLabelLocal()`, `DMProjectFunction()`, `DMComputeL2Diff()`
 @*/
-PetscErrorCode DMProjectField(DM dm, PetscReal time, Vec U, void (**funcs)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]), InsertMode mode, Vec X)
+PetscErrorCode DMProjectField(DM dm, PetscReal time, Vec U, void (**funcs)(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f[]), InsertMode mode, Vec X)
 {
   Vec localX, localU;
   DM  dmIn;
@@ -432,5 +437,275 @@ PetscErrorCode DMCheckInterpolator(DM dmf, Mat In, Mat MC, Mat MF, PetscReal tol
   }
   PetscCall(DMRestoreGlobalVector(dmf, &tmp));
   PetscCheck(maxnorm2 <= tol, PetscObjectComm((PetscObject)dmf), PETSC_ERR_ARG_WRONG, "max_k ||vf_k - P vc_k||_2 %g > tol %g", (double)maxnorm2, (double)tol);
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+// Project particles to field
+//   M_f u_f = M_p u_p
+//   u_f = M^{-1}_f M_p u_p
+static PetscErrorCode DMSwarmProjectField_Conservative_PLEX(DM sw, DM dm, Vec u_p, Vec u_f)
+{
+  KSP         ksp;
+  Mat         M_f, M_p; // TODO Should cache these
+  Vec         rhs;
+  const char *prefix;
+
+  PetscFunctionBegin;
+  PetscCall(DMCreateMassMatrix(dm, dm, &M_f));
+  PetscCall(DMCreateMassMatrix(sw, dm, &M_p));
+  PetscCall(DMGetGlobalVector(dm, &rhs));
+  PetscCall(MatMultTranspose(M_p, u_p, rhs));
+
+  PetscCall(KSPCreate(PetscObjectComm((PetscObject)sw), &ksp));
+  PetscCall(PetscObjectGetOptionsPrefix((PetscObject)sw, &prefix));
+  PetscCall(KSPSetOptionsPrefix(ksp, prefix));
+  PetscCall(KSPAppendOptionsPrefix(ksp, "ptof_"));
+  PetscCall(KSPSetFromOptions(ksp));
+
+  PetscCall(KSPSetOperators(ksp, M_f, M_f));
+  PetscCall(KSPSolve(ksp, rhs, u_f));
+
+  PetscCall(DMRestoreGlobalVector(dm, &rhs));
+  PetscCall(KSPDestroy(&ksp));
+  PetscCall(MatDestroy(&M_f));
+  PetscCall(MatDestroy(&M_p));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+// Project field to particles
+//   M_p u_p = M_f u_f
+//   u_p = M^+_p M_f u_f
+static PetscErrorCode DMSwarmProjectParticles_Conservative_PLEX(DM sw, DM dm, Vec u_p, Vec u_f)
+{
+  KSP         ksp;
+  PC          pc;
+  Mat         M_f, M_p, PM_p;
+  Vec         rhs;
+  PetscBool   isBjacobi;
+  const char *prefix;
+
+  PetscFunctionBegin;
+  PetscCall(DMCreateMassMatrix(dm, dm, &M_f));
+  PetscCall(DMCreateMassMatrix(sw, dm, &M_p));
+  PetscCall(DMGetGlobalVector(dm, &rhs));
+  PetscCall(MatMultTranspose(M_f, u_f, rhs));
+
+  PetscCall(KSPCreate(PetscObjectComm((PetscObject)sw), &ksp));
+  PetscCall(PetscObjectGetOptionsPrefix((PetscObject)sw, &prefix));
+  PetscCall(KSPSetOptionsPrefix(ksp, prefix));
+  PetscCall(KSPAppendOptionsPrefix(ksp, "ftop_"));
+  PetscCall(KSPSetFromOptions(ksp));
+
+  PetscCall(KSPGetPC(ksp, &pc));
+  PetscCall(PetscObjectTypeCompare((PetscObject)pc, PCBJACOBI, &isBjacobi));
+  if (isBjacobi) {
+    PetscCall(DMSwarmCreateMassMatrixSquare(sw, dm, &PM_p));
+  } else {
+    PM_p = M_p;
+    PetscCall(PetscObjectReference((PetscObject)PM_p));
+  }
+  PetscCall(KSPSetOperators(ksp, M_p, PM_p));
+  PetscCall(KSPSolveTranspose(ksp, rhs, u_p));
+
+  PetscCall(DMRestoreGlobalVector(dm, &rhs));
+  PetscCall(KSPDestroy(&ksp));
+  PetscCall(MatDestroy(&M_f));
+  PetscCall(MatDestroy(&M_p));
+  PetscCall(MatDestroy(&PM_p));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode DMSwarmProjectFields_Plex_Internal(DM sw, DM dm, PetscInt Nf, const char *fieldnames[], Vec vec, ScatterMode mode)
+{
+  Vec u;
+
+  PetscFunctionBegin;
+  PetscCall(PetscCitationsRegister(SwarmProjCitation, &SwarmProjcite));
+  PetscCheck(Nf == 1, PetscObjectComm((PetscObject)sw), PETSC_ERR_SUP, "Currently supported only for a single field");
+  PetscCall(DMSwarmCreateGlobalVectorFromField(sw, fieldnames[0], &u));
+  if (mode == SCATTER_FORWARD) {
+    PetscCall(DMSwarmProjectField_Conservative_PLEX(sw, dm, u, vec));
+  } else {
+    PetscCall(DMSwarmProjectParticles_Conservative_PLEX(sw, dm, u, vec));
+  }
+  PetscCall(DMSwarmDestroyGlobalVectorFromField(sw, fieldnames[0], &u));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode DMSwarmProjectField_ApproxQ1_DA_2D(DM swarm, PetscReal *swarm_field, DM dm, Vec v_field)
+{
+  Vec                v_field_l, denom_l, coor_l, denom;
+  PetscScalar       *_field_l, *_denom_l;
+  PetscInt           k, p, e, npoints, nel, npe;
+  PetscInt          *mpfield_cell;
+  PetscReal         *mpfield_coor;
+  const PetscInt    *element_list;
+  const PetscInt    *element;
+  PetscScalar        xi_p[2], Ni[4];
+  const PetscScalar *_coor;
+
+  PetscFunctionBegin;
+  PetscCall(VecZeroEntries(v_field));
+
+  PetscCall(DMGetLocalVector(dm, &v_field_l));
+  PetscCall(DMGetGlobalVector(dm, &denom));
+  PetscCall(DMGetLocalVector(dm, &denom_l));
+  PetscCall(VecZeroEntries(v_field_l));
+  PetscCall(VecZeroEntries(denom));
+  PetscCall(VecZeroEntries(denom_l));
+
+  PetscCall(VecGetArray(v_field_l, &_field_l));
+  PetscCall(VecGetArray(denom_l, &_denom_l));
+
+  PetscCall(DMGetCoordinatesLocal(dm, &coor_l));
+  PetscCall(VecGetArrayRead(coor_l, &_coor));
+
+  PetscCall(DMDAGetElements(dm, &nel, &npe, &element_list));
+  PetscCall(DMSwarmGetLocalSize(swarm, &npoints));
+  PetscCall(DMSwarmGetField(swarm, DMSwarmPICField_coor, NULL, NULL, (void **)&mpfield_coor));
+  PetscCall(DMSwarmGetField(swarm, DMSwarmPICField_cellid, NULL, NULL, (void **)&mpfield_cell));
+
+  for (p = 0; p < npoints; p++) {
+    PetscReal         *coor_p;
+    const PetscScalar *x0;
+    const PetscScalar *x2;
+    PetscScalar        dx[2];
+
+    e       = mpfield_cell[p];
+    coor_p  = &mpfield_coor[2 * p];
+    element = &element_list[npe * e];
+
+    /* compute local coordinates: (xp-x0)/dx = (xip+1)/2 */
+    x0 = &_coor[2 * element[0]];
+    x2 = &_coor[2 * element[2]];
+
+    dx[0] = x2[0] - x0[0];
+    dx[1] = x2[1] - x0[1];
+
+    xi_p[0] = 2.0 * (coor_p[0] - x0[0]) / dx[0] - 1.0;
+    xi_p[1] = 2.0 * (coor_p[1] - x0[1]) / dx[1] - 1.0;
+
+    /* evaluate basis functions */
+    Ni[0] = 0.25 * (1.0 - xi_p[0]) * (1.0 - xi_p[1]);
+    Ni[1] = 0.25 * (1.0 + xi_p[0]) * (1.0 - xi_p[1]);
+    Ni[2] = 0.25 * (1.0 + xi_p[0]) * (1.0 + xi_p[1]);
+    Ni[3] = 0.25 * (1.0 - xi_p[0]) * (1.0 + xi_p[1]);
+
+    for (k = 0; k < npe; k++) {
+      _field_l[element[k]] += Ni[k] * swarm_field[p];
+      _denom_l[element[k]] += Ni[k];
+    }
+  }
+
+  PetscCall(DMSwarmRestoreField(swarm, DMSwarmPICField_cellid, NULL, NULL, (void **)&mpfield_cell));
+  PetscCall(DMSwarmRestoreField(swarm, DMSwarmPICField_coor, NULL, NULL, (void **)&mpfield_coor));
+  PetscCall(DMDARestoreElements(dm, &nel, &npe, &element_list));
+  PetscCall(VecRestoreArrayRead(coor_l, &_coor));
+  PetscCall(VecRestoreArray(v_field_l, &_field_l));
+  PetscCall(VecRestoreArray(denom_l, &_denom_l));
+
+  PetscCall(DMLocalToGlobalBegin(dm, v_field_l, ADD_VALUES, v_field));
+  PetscCall(DMLocalToGlobalEnd(dm, v_field_l, ADD_VALUES, v_field));
+  PetscCall(DMLocalToGlobalBegin(dm, denom_l, ADD_VALUES, denom));
+  PetscCall(DMLocalToGlobalEnd(dm, denom_l, ADD_VALUES, denom));
+
+  PetscCall(VecPointwiseDivide(v_field, v_field, denom));
+
+  PetscCall(DMRestoreLocalVector(dm, &v_field_l));
+  PetscCall(DMRestoreLocalVector(dm, &denom_l));
+  PetscCall(DMRestoreGlobalVector(dm, &denom));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode DMSwarmProjectFields_DA_Internal(DM swarm, DM celldm, PetscInt nfields, DMSwarmDataField dfield[], Vec vecs[], ScatterMode mode)
+{
+  PetscInt        f, dim;
+  DMDAElementType etype;
+
+  PetscFunctionBegin;
+  PetscCall(DMDAGetElementType(celldm, &etype));
+  PetscCheck(etype != DMDA_ELEMENT_P1, PetscObjectComm((PetscObject)swarm), PETSC_ERR_SUP, "Only Q1 DMDA supported");
+  PetscCheck(mode == SCATTER_FORWARD, PetscObjectComm((PetscObject)swarm), PETSC_ERR_SUP, "Mapping the continuum to particles is not currently supported for DMDA");
+
+  PetscCall(DMGetDimension(swarm, &dim));
+  switch (dim) {
+  case 2:
+    for (f = 0; f < nfields; f++) {
+      PetscReal *swarm_field;
+
+      PetscCall(DMSwarmDataFieldGetEntries(dfield[f], (void **)&swarm_field));
+      PetscCall(DMSwarmProjectField_ApproxQ1_DA_2D(swarm, swarm_field, celldm, vecs[f]));
+    }
+    break;
+  case 3:
+    SETERRQ(PetscObjectComm((PetscObject)swarm), PETSC_ERR_SUP, "No support for 3D");
+  default:
+    break;
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@C
+  DMSwarmProjectFields - Project a set of swarm fields onto the cell `DM`
+
+  Collective
+
+  Input Parameters:
++ dm         - the `DMSWARM`
+. nfields    - the number of swarm fields to project
+. fieldnames - the textual names of the swarm fields to project
+. fields     - an array of Vec's of length nfields
+- mode       - if SCATTER_FORWARD then map particles to the continuum, and if SCATTER_REVERSE map the continuum to particles
+
+  Level: beginner
+
+  Notes:
+  Currently, there two available projection methods. The first is conservative projection, used for a `DMPLEX` cell `DM`. The second is the averaging described below, which is used for a `DMDA` cell `DM`
+.vb
+     phi_i = \sum_{p=0}^{np} N_i(x_p) phi_p dJ / \sum_{p=0}^{np} N_i(x_p) dJ
+   where phi_p is the swarm field at point p,
+     N_i() is the cell DM basis function at vertex i,
+     dJ is the determinant of the cell Jacobian and
+     phi_i is the projected vertex value of the field phi.
+.ve
+
+  The user is responsible for destroying both the array and the individual `Vec` objects. For the `DMPLEX` case, there is only a single vector, so the field layout in the `DMPLEX` must match the requested fields from the `DMSwarm`.
+
+  For averaging projection, nly swarm fields registered with data type of `PETSC_REAL` can be projected onto the cell `DM`, and only swarm fields of block size = 1 can currently be projected.
+
+.seealso: `DMSWARM`, `DMSwarmSetType()`, `DMSwarmSetCellDM()`, `DMSwarmType`
+@*/
+PetscErrorCode DMSwarmProjectFields(DM dm, PetscInt nfields, const char *fieldnames[], Vec fields[], ScatterMode mode)
+{
+  DM_Swarm         *swarm = (DM_Swarm *)dm->data;
+  DMSwarmDataField *gfield;
+  DM                celldm;
+  PetscBool         isDA, isPlex;
+  MPI_Comm          comm;
+
+  PetscFunctionBegin;
+  DMSWARMPICVALID(dm);
+  PetscCall(PetscObjectGetComm((PetscObject)dm, &comm));
+  PetscCall(DMSwarmGetCellDM(dm, &celldm));
+  PetscCall(PetscObjectTypeCompare((PetscObject)celldm, DMDA, &isDA));
+  PetscCall(PetscObjectTypeCompare((PetscObject)celldm, DMPLEX, &isPlex));
+  PetscCall(PetscMalloc1(nfields, &gfield));
+  for (PetscInt f = 0; f < nfields; ++f) PetscCall(DMSwarmDataBucketGetDMSwarmDataFieldByName(swarm->db, fieldnames[f], &gfield[f]));
+
+  if (isDA) {
+    for (PetscInt f = 0; f < nfields; f++) {
+      PetscCheck(gfield[f]->petsc_type == PETSC_REAL, comm, PETSC_ERR_SUP, "Projection only valid for fields using a data type = PETSC_REAL");
+      PetscCheck(gfield[f]->bs == 1, comm, PETSC_ERR_SUP, "Projection only valid for fields with block size = 1");
+    }
+    PetscCall(DMSwarmProjectFields_DA_Internal(dm, celldm, nfields, gfield, fields, mode));
+  } else if (isPlex) {
+    PetscInt Nf;
+
+    PetscCall(DMGetNumFields(celldm, &Nf));
+    PetscCheck(Nf == nfields, comm, PETSC_ERR_ARG_WRONG, "Number of DM fields %" PetscInt_FMT " != %" PetscInt_FMT " number of requested Swarm fields", Nf, nfields);
+    PetscCall(DMSwarmProjectFields_Plex_Internal(dm, celldm, nfields, fieldnames, fields[0], mode));
+  } else SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Only supported for cell DMs of type DMDA and DMPLEX");
+
+  PetscCall(PetscFree(gfield));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

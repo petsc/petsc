@@ -1,6 +1,4 @@
-
-#ifndef PETSCVIEWERHDF5_H
-#define PETSCVIEWERHDF5_H
+#pragma once
 
 #include <petscviewer.h>
 
@@ -21,7 +19,7 @@
 
 PETSC_EXTERN PetscErrorCode PetscViewerHDF5GetFileId(PetscViewer, hid_t *);
 
-  /* On 32 bit systems HDF5 is limited by size of integer, because hsize_t is defined as size_t */
+  /* On 32-bit systems HDF5 is limited by size of integer, because hsize_t is defined as size_t */
   #define PETSC_HDF5_INT_MAX (~(hsize_t)0)
 
   /* As per https://portal.hdfgroup.org/display/HDF5/Chunking+in+HDF5, max. chunk size is 4GB */
@@ -86,4 +84,3 @@ PETSC_EXTERN PetscErrorCode PetscViewerHDF5GetSPOutput(PetscViewer, PetscBool *)
 PETSC_EXTERN PetscErrorCode PetscViewerHDF5SetCollective(PetscViewer, PetscBool);
 PETSC_EXTERN PetscErrorCode PetscViewerHDF5GetCollective(PetscViewer, PetscBool *);
 #endif /* defined(PETSC_HAVE_HDF5) */
-#endif

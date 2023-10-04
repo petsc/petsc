@@ -577,7 +577,7 @@ static void f0_conduct_pipe_v(PetscInt dim, PetscInt Nf, PetscInt NfAux, const P
 
 static void f0_conduct_bd_pipe_v(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal X[], const PetscReal n[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
 {
-  PetscReal sigma[4] = {X[0], 0.5 * (1. - 2. * X[1]), 0.5 * (1. - 2. * X[1]), X[0]};
+  PetscReal sigma[4] = {X[0], (PetscReal)(0.5 * (1. - 2. * X[1])), (PetscReal)(0.5 * (1. - 2. * X[1])), X[0]};
   PetscInt  d, e;
 
   for (d = 0; d < dim; ++d) {
@@ -696,7 +696,7 @@ static void f0_conduct_pipe_wiggly_v(PetscInt dim, PetscInt Nf, PetscInt NfAux, 
 static void f0_conduct_bd_pipe_wiggly_v(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal X[], const PetscReal n[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
 {
   const PetscReal eps      = PetscRealPart(constants[EPSILON]);
-  PetscReal       sigma[4] = {X[0], 0.5 * (1. - 2. * X[1]) + eps * 0.5 * PETSC_PI * PetscCosReal(PETSC_PI * X[1]), 0.5 * (1. - 2. * X[1]) + eps * 0.5 * PETSC_PI * PetscCosReal(PETSC_PI * X[1]), X[0]};
+  PetscReal       sigma[4] = {X[0], (PetscReal)(0.5 * (1. - 2. * X[1]) + eps * 0.5 * PETSC_PI * PetscCosReal(PETSC_PI * X[1])), (PetscReal)(0.5 * (1. - 2. * X[1]) + eps * 0.5 * PETSC_PI * PetscCosReal(PETSC_PI * X[1])), X[0]};
   PetscInt        d, e;
 
   for (d = 0; d < dim; ++d) {

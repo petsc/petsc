@@ -1,5 +1,4 @@
-#ifndef _VTKVIMPL_H
-#define _VTKVIMPL_H
+#pragma once
 
 #include <petsc/private/viewerimpl.h> /*I   "petscsys.h"   I*/
 
@@ -23,7 +22,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerVTKFWrite(PetscViewer, FILE *, const void
 
 #if defined(PETSC_HAVE_STDINT_H) /* The VTK format requires a 32-bit integer */
 typedef int32_t PetscVTKInt;
-#else /* Hope int is 32 bits */
+#else /* Hope int is 32-bits */
 typedef int PetscVTKInt;
 #endif
 typedef unsigned char PetscVTKType;
@@ -53,4 +52,3 @@ static inline PetscErrorCode PetscViewerVTKSanitizeName_Internal(char name[], si
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-#endif

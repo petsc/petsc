@@ -1,16 +1,16 @@
 
 #include <petsc/private/viewerimpl.h> /*I "petscviewer.h" I*/
 
-/*@
-   PetscViewerFlush - Flushes a `PetscViewer` (i.e. tries to dump all the
-   data that has been printed through a `PetscViewer`).
+/*@C
+  PetscViewerFlush - Flushes a `PetscViewer` (i.e. tries to dump all the
+  data that has been printed through a `PetscViewer`).
 
-   Collective
+  Collective
 
-   Input Parameter:
-.  viewer - the `PetscViewer` to be flushed
+  Input Parameter:
+. viewer - the `PetscViewer` to be flushed
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: [](sec_viewers), `PetscViewer`, `PetscViewerWriteable()`, `PetscViewerSocketOpen()`, `PetscViewerASCIIOpen()`, `PetscViewerDrawOpen()`, `PetscViewerCreate()`, `PetscViewerDestroy()`,
           `PetscViewerSetType()`

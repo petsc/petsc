@@ -59,12 +59,12 @@ PetscErrorCode VecHYPRE_IJVectorCopy(Vec v, VecHYPRE_IJVector ij)
   Allows use to get the data into a HYPRE vector without the cost of memcopies
 */
 #define VecHYPRE_ParVectorReplacePointer(b, newvalue, savedvalue) \
-  { \
+  do { \
     hypre_ParVector *par_vector   = (hypre_ParVector *)hypre_IJVectorObject(((hypre_IJVector *)b)); \
     hypre_Vector    *local_vector = hypre_ParVectorLocalVector(par_vector); \
     savedvalue                    = local_vector->data; \
     local_vector->data            = newvalue; \
-  }
+  } while (0)
 
 /*
   This routine access the pointer to the raw data of the "v" to be passed to HYPRE
@@ -73,7 +73,7 @@ PetscErrorCode VecHYPRE_IJVectorCopy(Vec v, VecHYPRE_IJVector ij)
    - the function returns a pointer to the data (ptr) and the corresponding restore
   Could be extended to VECKOKKOS if we had a way to access the raw pointer to device data.
 */
-static inline PetscErrorCode VecGetArrayForHYPRE(Vec v, int rw, HYPRE_MemoryLocation hmem, PetscScalar **ptr, PetscErrorCode (**res)(Vec, PetscScalar **))
+static PetscErrorCode VecGetArrayForHYPRE(Vec v, int rw, HYPRE_MemoryLocation hmem, PetscScalar **ptr, PetscErrorCode (**res)(Vec, PetscScalar **))
 {
   PetscMemType mtype;
   MPI_Comm     comm;

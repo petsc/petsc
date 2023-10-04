@@ -4,9 +4,9 @@
           Solves U_t=F(t,u)
           Where:
 
-                  [2*u1+u2
-          F(t,u)= [u1+2*u2+u3
-                  [   u2+2*u3
+                  [2*u1+u2   ]
+          F(t,u)= [u1+2*u2+u3]
+                  [   u2+2*u3]
        We can compare the solutions from euler, beuler and SUNDIALS to
        see what is the difference.
 
@@ -34,15 +34,33 @@ int main(int argc, char **argv)
   PetscReal dt, ftime;
   TS        ts;
   Mat       A = 0, S;
+  PetscBool nest;
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-time", &time_steps, NULL));
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-nest", &nest, NULL));
+
+  /* create vector to hold state */
+  if (nest) {
+    Vec g[3];
+
+    PetscCall(VecCreate(PETSC_COMM_WORLD, &g[0]));
+    PetscCall(VecSetSizes(g[0], PETSC_DECIDE, 1));
+    PetscCall(VecSetFromOptions(g[0]));
+    PetscCall(VecDuplicate(g[0], &g[1]));
+    PetscCall(VecDuplicate(g[0], &g[2]));
+    PetscCall(VecCreateNest(PETSC_COMM_WORLD, 3, NULL, g, &global));
+    PetscCall(VecDestroy(&g[0]));
+    PetscCall(VecDestroy(&g[1]));
+    PetscCall(VecDestroy(&g[2]));
+  } else {
+    PetscCall(VecCreate(PETSC_COMM_WORLD, &global));
+    PetscCall(VecSetSizes(global, PETSC_DECIDE, 3));
+    PetscCall(VecSetFromOptions(global));
+  }
 
   /* set initial conditions */
-  PetscCall(VecCreate(PETSC_COMM_WORLD, &global));
-  PetscCall(VecSetSizes(global, PETSC_DECIDE, 3));
-  PetscCall(VecSetFromOptions(global));
   PetscCall(Initial(global, NULL));
 
   /* make timestep context */
@@ -286,12 +304,17 @@ PetscReal solz(PetscReal t)
 
     test:
       suffix: euler
-      args: -ts_type euler
+      args: -ts_type euler -nest {{0 1}}
       requires: !single
 
     test:
       suffix: beuler
-      args:   -ts_type beuler
+      args: -ts_type beuler -nest {{0 1}}
+      requires: !single
+
+    test:
+      suffix: rk
+      args: -ts_type rk -nest {{0 1}} -ts_adapt_monitor
       requires: !single
 
 TEST*/

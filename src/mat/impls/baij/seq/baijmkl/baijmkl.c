@@ -432,54 +432,54 @@ static PetscErrorCode MatAssemblyEnd_SeqBAIJMKL(Mat A, MatAssemblyType mode)
 }
 
 /*@C
-   MatCreateSeqBAIJMKL - Creates a sparse matrix of type `MATSEQBAIJMKL`.
-   This type inherits from `MATSEQBAIJ` and is largely identical, but uses sparse BLAS
-   routines from Intel MKL whenever possible.
+  MatCreateSeqBAIJMKL - Creates a sparse matrix of type `MATSEQBAIJMKL`.
+  This type inherits from `MATSEQBAIJ` and is largely identical, but uses sparse BLAS
+  routines from Intel MKL whenever possible.
 
-   Input Parameters:
-+  comm - MPI communicator, set to `PETSC_COMM_SELF`
-.  bs - size of block, the blocks are ALWAYS square. One can use `MatSetBlockSizes()` to set a different row and column blocksize but the row
+  Input Parameters:
++ comm - MPI communicator, set to `PETSC_COMM_SELF`
+. bs   - size of block, the blocks are ALWAYS square. One can use `MatSetBlockSizes()` to set a different row and column blocksize but the row
           blocksize always defines the size of the blocks. The column blocksize sets the blocksize of the vectors obtained with `MatCreateVecs()`
-.  m - number of rows
-.  n - number of columns
-.  nz - number of nonzero blocks  per block row (same for all rows)
--  nnz - array containing the number of nonzero blocks in the various block rows
+. m    - number of rows
+. n    - number of columns
+. nz   - number of nonzero blocks  per block row (same for all rows)
+- nnz  - array containing the number of nonzero blocks in the various block rows
          (possibly different for each block row) or `NULL`
 
-   Output Parameter:
-.  A - the matrix
+  Output Parameter:
+. A - the matrix
 
    It is recommended that one use the `MatCreate()`, `MatSetType()` and/or `MatSetFromOptions()`,
    MatXXXXSetPreallocation() paradigm instead of this routine directly.
    [MatXXXXSetPreallocation() is, for example, `MatSeqBAIJSetPreallocation()`]
 
-   Options Database Keys:
-+   -mat_no_unroll - uses code that does not unroll the loops in the block calculations (much slower)
--   -mat_block_size - size of the blocks to use
+  Options Database Keys:
++ -mat_no_unroll  - uses code that does not unroll the loops in the block calculations (much slower)
+- -mat_block_size - size of the blocks to use
 
-   Level: intermediate
+  Level: intermediate
 
-   Notes:
-   The number of rows and columns must be divisible by blocksize.
+  Notes:
+  The number of rows and columns must be divisible by blocksize.
 
-   If the `nnz` parameter is given then the `nz` parameter is ignored
+  If the `nnz` parameter is given then the `nz` parameter is ignored
 
-   A nonzero block is any block that as 1 or more nonzeros in it
+  A nonzero block is any block that as 1 or more nonzeros in it
 
-   `MatMult()`, `MatMultAdd()`, `MatMultTranspose()`, and `MatMultTransposeAdd()`
-   operations are currently supported.
-   If the installed version of MKL supports the "SpMV2" sparse
-   inspector-executor routines, then those are used by default.
-   Default PETSc kernels are used otherwise.
+  `MatMult()`, `MatMultAdd()`, `MatMultTranspose()`, and `MatMultTransposeAdd()`
+  operations are currently supported.
+  If the installed version of MKL supports the "SpMV2" sparse
+  inspector-executor routines, then those are used by default.
+  Default PETSc kernels are used otherwise.
 
-   The `MATSEQBAIJ` format is fully compatible with standard Fortran
-   storage.  That is, the stored row and column indices can begin at
-   either one (as in Fortran) or zero.  See the users' manual for details.
+  The `MATSEQBAIJ` format is fully compatible with standard Fortran
+  storage.  That is, the stored row and column indices can begin at
+  either one (as in Fortran) or zero.  See the users' manual for details.
 
-   Specify the preallocated storage with either nz or nnz (not both).
-   Set nz = `PETSC_DEFAULT` and nnz = NULL for PETSc to control dynamic memory
-   allocation.  See [Sparse Matrices](sec_matsparse) for details.
-   matrices.
+  Specify the preallocated storage with either nz or nnz (not both).
+  Set nz = `PETSC_DEFAULT` and nnz = NULL for PETSc to control dynamic memory
+  allocation.  See [Sparse Matrices](sec_matsparse) for details.
+  matrices.
 
 .seealso: [Sparse Matrices](sec_matsparse), `MatCreate()`, `MatCreateSeqAIJ()`, `MatSetValues()`, `MatCreateBAIJ()`
 @*/

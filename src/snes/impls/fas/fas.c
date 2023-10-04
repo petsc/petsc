@@ -142,8 +142,8 @@ static PetscErrorCode SNESSetUp_FAS(SNES snes)
 
   /* sets the down (pre) smoother's default norm and sets it from options */
   if (fas->smoothd) {
-    if (fas->level == 0 && fas->levels != 1) {
-      PetscCall(SNESSetNormSchedule(fas->smoothd, SNES_NORM_NONE));
+    if (fas->level == 0) {
+      PetscCall(SNESSetNormSchedule(fas->smoothd, SNES_NORM_ALWAYS));
     } else {
       PetscCall(SNESSetNormSchedule(fas->smoothd, SNES_NORM_FINAL_ONLY));
     }
@@ -407,17 +407,17 @@ static PetscErrorCode SNESFASUpSmooth_Private(SNES snes, Vec B, Vec X, Vec F, Pe
 }
 
 /*@
-   SNESFASCreateCoarseVec - create `Vec` corresponding to a state vector on one level coarser than current level
+  SNESFASCreateCoarseVec - create `Vec` corresponding to a state vector on one level coarser than current level
 
-   Collective
+  Collective
 
-   Input Parameter:
-.  snes - `SNESFAS` object
+  Input Parameter:
+. snes - `SNESFAS` object
 
-   Output Parameter:
-.  Xcoarse - vector on level one coarser than snes
+  Output Parameter:
+. Xcoarse - vector on level one coarser than snes
 
-   Level: developer
+  Level: developer
 
 .seealso: `SNESFASSetRestriction()`, `SNESFASRestrict()`
 @*/
@@ -427,7 +427,7 @@ PetscErrorCode SNESFASCreateCoarseVec(SNES snes, Vec *Xcoarse)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(snes, SNES_CLASSID, 1, SNESFAS);
-  PetscValidPointer(Xcoarse, 2);
+  PetscAssertPointer(Xcoarse, 2);
   fas = (SNES_FAS *)snes->data;
   if (fas->rscale) {
     PetscCall(VecDuplicate(fas->rscale, Xcoarse));
@@ -438,18 +438,18 @@ PetscErrorCode SNESFASCreateCoarseVec(SNES snes, Vec *Xcoarse)
 }
 
 /*@
-   SNESFASRestrict - restrict a `Vec` to the next coarser level
+  SNESFASRestrict - restrict a `Vec` to the next coarser level
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  fine - `SNES` from which to restrict
--  Xfine - vector to restrict
+  Input Parameters:
++ fine  - `SNES` from which to restrict
+- Xfine - vector to restrict
 
-   Output Parameter:
-.  Xcoarse - result of restriction
+  Output Parameter:
+. Xcoarse - result of restriction
 
-   Level: developer
+  Level: developer
 
 .seealso: `SNES`, `SNESFAS`, `SNESFASSetRestriction()`, `SNESFASSetInjection()`
 @*/
@@ -542,7 +542,7 @@ coarse problem: F^c(x^c) = b^c
 b^c = F^c(Rx) - R(F(x) - b)
 
  */
-PetscErrorCode SNESFASCoarseCorrection(SNES snes, Vec X, Vec F, Vec X_new)
+static PetscErrorCode SNESFASCoarseCorrection(SNES snes, Vec X, Vec F, Vec X_new)
 {
   Vec                 X_c, Xo_c, F_c, B_c;
   SNESConvergedReason reason;
@@ -851,10 +851,10 @@ static PetscErrorCode SNESSolve_FAS(SNES snes)
   snes->norm = fnorm;
   PetscCall(PetscObjectSAWsGrantAccess((PetscObject)snes));
   PetscCall(SNESLogConvergenceHistory(snes, fnorm, 0));
-  PetscCall(SNESMonitor(snes, snes->iter, fnorm));
 
   /* test convergence */
-  PetscUseTypeMethod(snes, converged, 0, 0.0, 0.0, fnorm, &snes->reason, snes->cnvP);
+  PetscCall(SNESConverged(snes, 0, 0.0, 0.0, fnorm));
+  PetscCall(SNESMonitor(snes, snes->iter, fnorm));
   if (snes->reason) PetscFunctionReturn(PETSC_SUCCESS);
 
   if (isFine) {
@@ -890,16 +890,9 @@ static PetscErrorCode SNESSolve_FAS(SNES snes)
     snes->iter = i + 1;
     PetscCall(PetscObjectSAWsGrantAccess((PetscObject)snes));
     PetscCall(SNESLogConvergenceHistory(snes, snes->norm, 0));
+    PetscCall(SNESConverged(snes, snes->iter, 0.0, 0.0, snes->norm));
     PetscCall(SNESMonitor(snes, snes->iter, snes->norm));
-    /* Test for convergence */
-    if (isFine) {
-      PetscUseTypeMethod(snes, converged, snes->iter, 0.0, 0.0, snes->norm, &snes->reason, snes->cnvP);
-      if (snes->reason) break;
-    }
-  }
-  if (i == snes->max_its) {
-    PetscCall(PetscInfo(snes, "Maximum number of iterations has been reached: %" PetscInt_FMT "\n", i));
-    if (!snes->reason) snes->reason = SNES_DIVERGED_MAX_IT;
+    if (snes->reason) break;
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }

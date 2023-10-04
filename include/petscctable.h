@@ -1,12 +1,11 @@
-#ifndef PETSCCTABLE_H
-#define PETSCCTABLE_H
+#pragma once
 
 #include <petscsys.h>
 
 #if defined(PETSC_SKIP_PETSCTABLE_DEPRECATION_WARNING)
   #define PETSC_TABLE_DEPRECATION_WARNING(...)
 #else
-  #define PETSC_TABLE_DEPRECATION_WARNING(...) PETSC_DEPRECATED_FUNCTION(__VA_ARGS__ "(since version 3.19)")
+  #define PETSC_TABLE_DEPRECATION_WARNING(repl) PETSC_DEPRECATED_FUNCTION(3, 19, 0, repl, )
 #endif
 
 struct _n_PetscTable {
@@ -23,30 +22,30 @@ typedef PetscInt             *PetscTablePosition;
 
 #define PetscHashMacroImplToGetAroundDeprecationWarning_Private(ta, x) (((unsigned long)(x)) % ((unsigned long)((ta)->tablesize)))
 
-PETSC_TABLE_DEPRECATION_WARNING("") static inline unsigned long PetscHash(PetscTable ta, unsigned long x)
+PETSC_TABLE_DEPRECATION_WARNING("<no direct replacement!>") static inline unsigned long PetscHash(PetscTable ta, unsigned long x)
 {
   return PetscHashMacroImplToGetAroundDeprecationWarning_Private(ta, x);
 }
 
 #define PetscHashStepMacroImplToGetAroundDeprecationWarning_Private(ta, x) (1 + (((unsigned long)(x)) % ((unsigned long)((ta)->tablesize - 1))))
 
-PETSC_TABLE_DEPRECATION_WARNING("") static inline unsigned long PetscHashStep(PetscTable ta, unsigned long x)
+PETSC_TABLE_DEPRECATION_WARNING("<no direct replacement!>") static inline unsigned long PetscHashStep(PetscTable ta, unsigned long x)
 {
   return PetscHashStepMacroImplToGetAroundDeprecationWarning_Private(ta, x);
 }
 
-PETSC_TABLE_DEPRECATION_WARNING("Use PetscHMapICreateWithSize()") PETSC_EXTERN PetscErrorCode PetscTableCreate(PetscInt, PetscInt, PetscTable *);
-PETSC_TABLE_DEPRECATION_WARNING("Use PetscHMapIDuplicate()") PETSC_EXTERN PetscErrorCode PetscTableCreateCopy(PetscTable, PetscTable *);
-PETSC_TABLE_DEPRECATION_WARNING("Use PetscHMapIDestroy()") PETSC_EXTERN PetscErrorCode PetscTableDestroy(PetscTable *);
-PETSC_TABLE_DEPRECATION_WARNING("Use PetscHMapIGetSize()") PETSC_EXTERN PetscErrorCode PetscTableGetCount(PetscTable, PetscInt *);
-PETSC_TABLE_DEPRECATION_WARNING("Use PetscHMapIGetSize()") PETSC_EXTERN PetscErrorCode PetscTableIsEmpty(PetscTable, PetscInt *);
-PETSC_TABLE_DEPRECATION_WARNING("Use PetscHMapISetWithMode()") PETSC_EXTERN PetscErrorCode PetscTableAddExpand(PetscTable, PetscInt, PetscInt, InsertMode);
-PETSC_TABLE_DEPRECATION_WARNING("") PETSC_EXTERN PetscErrorCode PetscTableAddCountExpand(PetscTable, PetscInt);
-PETSC_TABLE_DEPRECATION_WARNING("Use PetscHashIterBegin()") PETSC_EXTERN PetscErrorCode PetscTableGetHeadPosition(PetscTable, PetscTablePosition *);
-PETSC_TABLE_DEPRECATION_WARNING("Use PetscHashIterNext(), PetscHashIterGetKey(), and PetscHashIterGetVal()") PETSC_EXTERN PetscErrorCode PetscTableGetNext(PetscTable, PetscTablePosition *, PetscInt *, PetscInt *);
-PETSC_TABLE_DEPRECATION_WARNING("Use PetscHMapIClear()") PETSC_EXTERN PetscErrorCode PetscTableRemoveAll(PetscTable);
+PETSC_TABLE_DEPRECATION_WARNING("PetscHMapICreateWithSize()") PETSC_EXTERN PetscErrorCode PetscTableCreate(PetscInt, PetscInt, PetscTable *);
+PETSC_TABLE_DEPRECATION_WARNING("PetscHMapIDuplicate()") PETSC_EXTERN PetscErrorCode PetscTableCreateCopy(PetscTable, PetscTable *);
+PETSC_TABLE_DEPRECATION_WARNING("PetscHMapIDestroy()") PETSC_EXTERN PetscErrorCode PetscTableDestroy(PetscTable *);
+PETSC_TABLE_DEPRECATION_WARNING("PetscHMapIGetSize()") PETSC_EXTERN PetscErrorCode PetscTableGetCount(PetscTable, PetscInt *);
+PETSC_TABLE_DEPRECATION_WARNING("PetscHMapIGetSize()") PETSC_EXTERN PetscErrorCode PetscTableIsEmpty(PetscTable, PetscInt *);
+PETSC_TABLE_DEPRECATION_WARNING("PetscHMapISetWithMode()") PETSC_EXTERN PetscErrorCode PetscTableAddExpand(PetscTable, PetscInt, PetscInt, InsertMode);
+PETSC_TABLE_DEPRECATION_WARNING("<no direct replacement!>") PETSC_EXTERN PetscErrorCode PetscTableAddCountExpand(PetscTable, PetscInt);
+PETSC_TABLE_DEPRECATION_WARNING("PetscHashIterBegin()") PETSC_EXTERN PetscErrorCode PetscTableGetHeadPosition(PetscTable, PetscTablePosition *);
+PETSC_TABLE_DEPRECATION_WARNING("PetscHashIterNext(), PetscHashIterGetKey(), and PetscHashIterGetVal()") PETSC_EXTERN PetscErrorCode PetscTableGetNext(PetscTable, PetscTablePosition *, PetscInt *, PetscInt *);
+PETSC_TABLE_DEPRECATION_WARNING("PetscHMapIClear()") PETSC_EXTERN PetscErrorCode PetscTableRemoveAll(PetscTable);
 
-PETSC_TABLE_DEPRECATION_WARNING("Use PetscHMapISetWithMode()") static inline PetscErrorCode PetscTableAdd(PetscTable ta, PetscInt key, PetscInt data, InsertMode imode)
+PETSC_TABLE_DEPRECATION_WARNING("PetscHMapISetWithMode()") static inline PetscErrorCode PetscTableAdd(PetscTable ta, PetscInt key, PetscInt data, InsertMode imode)
 {
   PetscInt i, hash = (PetscInt)PetscHashMacroImplToGetAroundDeprecationWarning_Private(ta, key);
   PetscInt hashstep = (PetscInt)PetscHashStepMacroImplToGetAroundDeprecationWarning_Private(ta, key);
@@ -93,7 +92,7 @@ PETSC_TABLE_DEPRECATION_WARNING("Use PetscHMapISetWithMode()") static inline Pet
   /* PetscFunctionReturn(PETSC_SUCCESS); */
 }
 
-PETSC_TABLE_DEPRECATION_WARNING("") static inline PetscErrorCode PetscTableAddCount(PetscTable ta, PetscInt key)
+PETSC_TABLE_DEPRECATION_WARNING("<no direct replacement!>") static inline PetscErrorCode PetscTableAddCount(PetscTable ta, PetscInt key)
 {
   PetscInt i, hash = (PetscInt)PetscHashMacroImplToGetAroundDeprecationWarning_Private(ta, key);
   PetscInt hashstep = (PetscInt)PetscHashStepMacroImplToGetAroundDeprecationWarning_Private(ta, key);
@@ -122,7 +121,7 @@ PETSC_TABLE_DEPRECATION_WARNING("") static inline PetscErrorCode PetscTableAddCo
 /*
     PetscTableFind - finds data in table from a given key, if the key is valid but not in the table returns 0
 */
-PETSC_TABLE_DEPRECATION_WARNING("Use PetscHMapIGetWithDefault()") static inline PetscErrorCode PetscTableFind(PetscTable ta, PetscInt key, PetscInt *data)
+PETSC_TABLE_DEPRECATION_WARNING("PetscHMapIGetWithDefault()") static inline PetscErrorCode PetscTableFind(PetscTable ta, PetscInt key, PetscInt *data)
 {
   PetscInt ii       = 0;
   PetscInt hash     = (PetscInt)PetscHashMacroImplToGetAroundDeprecationWarning_Private(ta, key);
@@ -147,5 +146,3 @@ PETSC_TABLE_DEPRECATION_WARNING("Use PetscHMapIGetWithDefault()") static inline 
 #undef PetscHashMacroImplToGetAroundDeprecationWarning_Private
 #undef PetscHashStepMacroImplToGetAroundDeprecationWarning_Private
 #undef PETSC_TABLE_DEPRECATION_WARNING
-
-#endif /* PETSCCTABLE_H */

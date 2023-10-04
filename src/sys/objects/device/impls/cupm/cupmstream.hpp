@@ -1,12 +1,10 @@
-#ifndef PETSC_CUPMSTREAM_HPP
-#define PETSC_CUPMSTREAM_HPP
+#pragma once
 
 #include <petsc/private/cupminterface.hpp>
 
 #include "../segmentedmempool.hpp"
 #include "cupmevent.hpp"
 
-#if defined(__cplusplus)
 namespace Petsc
 {
 
@@ -48,10 +46,10 @@ private:
   PETSC_NODISCARD static id_type new_id_() noexcept;
 
   // CRTP implementations
-  PETSC_NODISCARD stream_type get_stream_() const noexcept;
-  PETSC_NODISCARD id_type     get_id_() const noexcept;
-  PetscErrorCode              record_event_(event_type &) const noexcept;
-  PetscErrorCode              wait_for_(event_type &) const noexcept;
+  PETSC_NODISCARD const stream_type &get_stream_() const noexcept;
+  PETSC_NODISCARD id_type            get_id_() const noexcept;
+  PetscErrorCode                     record_event_(event_type &) const noexcept;
+  PetscErrorCode                     wait_for_(event_type &) const noexcept;
 };
 
 template <DeviceType T>
@@ -114,7 +112,7 @@ inline typename CUPMStream<T>::id_type CUPMStream<T>::new_id_() noexcept
 
 // CRTP implementations
 template <DeviceType T>
-inline typename CUPMStream<T>::stream_type CUPMStream<T>::get_stream_() const noexcept
+inline const typename CUPMStream<T>::stream_type &CUPMStream<T>::get_stream_() const noexcept
 {
   return stream_;
 }
@@ -146,6 +144,3 @@ inline PetscErrorCode CUPMStream<T>::wait_for_(event_type &event) const noexcept
 } // namespace device
 
 } // namespace Petsc
-#endif // __cplusplus
-
-#endif // PETSC_CUPMSTREAM_HPP

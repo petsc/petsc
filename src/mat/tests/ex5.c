@@ -1,6 +1,6 @@
 
 static char help[] = "Tests MatMult(), MatMultAdd(), MatMultTranspose().\n\
-Also MatMultTransposeAdd(), MatScale(), MatGetDiagonal(), and MatDiagonalScale().\n\n";
+Also MatMultTransposeAdd(), MatScale(), MatGetDiagonal(), MatDiagonalScale(), MatZeroEntries() and MatDuplicate().\n\n";
 
 #include <petscmat.h>
 
@@ -130,6 +130,15 @@ int main(int argc, char **args)
   if (flg) {
     PetscCall(MatDiagonalScale(C, x, y));
     PetscCall(MatView(C, PETSC_VIEWER_STDOUT_WORLD));
+  }
+  /* -------------------- Test () MatZeroEntries() and MatDuplicate() ------------------ */
+  PetscCall(PetscOptionsHasName(NULL, NULL, "-test_zeroentries", &flg));
+  if (flg) {
+    Mat D;
+    PetscCall(MatDuplicate(C, MAT_COPY_VALUES, &D));
+    PetscCall(MatZeroEntries(D));
+    PetscCall(MatView(D, PETSC_VIEWER_STDOUT_WORLD));
+    PetscCall(MatDestroy(&D));
   }
   /* Free data structures */
   PetscCall(VecDestroy(&u));
@@ -268,24 +277,43 @@ int main(int argc, char **args)
 
    test:
       suffix: sell_1
-      args: -mat_type sell
+      args: -mat_type sell -mat_sell_slice_height 8
       output_file: output/ex5_41.out
 
    test:
       suffix: sell_2
       nsize: 3
-      args: -mat_type sell
+      args: -mat_type sell -mat_sell_slice_height 8
       output_file: output/ex5_43.out
 
    test:
       suffix: sell_3
-      args: -mat_type sell -test_diagonalscale
+      args: -mat_type sell -test_diagonalscale -mat_sell_slice_height 8
       output_file: output/ex5_51.out
 
    test:
       suffix: sell_4
       nsize: 3
-      args: -mat_type sell -test_diagonalscale
+      args: -mat_type sell -test_diagonalscale -mat_sell_slice_height 8
       output_file: output/ex5_53.out
 
+   test:
+      suffix: sell_5
+      nsize: 3
+      args: -mat_type sellcuda -vec_type cuda -test_diagonalscale -test_zeroentries
+      output_file: output/ex5_55.out
+      requires: cuda !complex
+
+   test:
+      suffix: sell_6
+      nsize: 3
+      args: -mat_type sellcuda -vec_type cuda -mat_sell_spmv_cuda_kernel {{1 2 3 4 5 6}}
+      output_file: output/ex5_56.out
+      requires: cuda !complex
+
+   test:
+      suffix: sell_7
+      args: -m 32 -mat_type sellcuda -vec_type cuda -mat_sell_spmv_cuda_kernel {{0 7 9}} -mat_sell_spmv_cuda_blocky {{2 4 8 16 32}}
+      output_file: output/ex5_57.out
+      requires: cuda !complex !single
 TEST*/

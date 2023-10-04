@@ -7,7 +7,7 @@ PetscErrorCode TSEventInitialize(TSEvent event, TS ts, PetscReal t, Vec U)
 {
   PetscFunctionBegin;
   if (!event) PetscFunctionReturn(PETSC_SUCCESS);
-  PetscValidPointer(event, 1);
+  PetscAssertPointer(event, 1);
   PetscValidHeaderSpecific(ts, TS_CLASSID, 2);
   PetscValidHeaderSpecific(U, VEC_CLASSID, 4);
   event->ptime_prev = t;
@@ -21,7 +21,7 @@ PetscErrorCode TSEventDestroy(TSEvent *event)
   PetscInt i;
 
   PetscFunctionBegin;
-  PetscValidPointer(event, 1);
+  PetscAssertPointer(event, 1);
   if (!*event) PetscFunctionReturn(PETSC_SUCCESS);
   if (--(*event)->refct > 0) {
     *event = NULL;
@@ -59,12 +59,12 @@ PetscErrorCode TSEventDestroy(TSEvent *event)
 - dt - post event interval step
 
   Options Database Key:
-. -ts_event_post_eventinterval_step <dt> time-step after event interval
+. -ts_event_post_eventinterval_step <dt> - time-step after event interval
 
   Level: advanced
 
   Notes:
- `TSSetPostEventIntervalStep()` allows one to set a time-step that is used immediately following an event interval.
+  `TSSetPostEventIntervalStep()` allows one to set a time-step that is used immediately following an event interval.
 
   This function should be called from the postevent function set with `TSSetEventHandler()`.
 
@@ -72,7 +72,7 @@ PetscErrorCode TSEventDestroy(TSEvent *event)
   If the dynamics are stiff, a conservative (small) step should be used.
   If not, then a larger time-step can be used.
 
-.seealso: [](chapter_ts), `TS`, `TSEvent`, `TSSetEventHandler()`
+.seealso: [](ch_ts), `TS`, `TSEvent`, `TSSetEventHandler()`
 @*/
 PetscErrorCode TSSetPostEventIntervalStep(TS ts, PetscReal dt)
 {
@@ -82,29 +82,29 @@ PetscErrorCode TSSetPostEventIntervalStep(TS ts, PetscReal dt)
 }
 
 /*@
-   TSSetEventTolerances - Set tolerances for event zero crossings
+  TSSetEventTolerances - Set tolerances for event zero crossings
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  ts - time integration context
-.  tol - scalar tolerance, `PETSC_DECIDE` to leave current value
--  vtol - array of tolerances or `NULL`, used in preference to tol if present
+  Input Parameters:
++ ts   - time integration context
+. tol  - scalar tolerance, `PETSC_DECIDE` to leave current value
+- vtol - array of tolerances or `NULL`, used in preference to tol if present
 
-   Options Database Key:
-.  -ts_event_tol <tol> - tolerance for event zero crossing
+  Options Database Key:
+. -ts_event_tol <tol> - tolerance for event zero crossing
 
-   Level: beginner
+  Level: beginner
 
-   Notes:
-   Must call `TSSetEventHandler(`) before setting the tolerances.
+  Notes:
+  Must call `TSSetEventHandler(`) before setting the tolerances.
 
-   The size of `vtol` is equal to the number of events.
+  The size of `vtol` is equal to the number of events.
 
-   The tolerance is some measure of how close the event function is to zero for the event detector to stop
-   and declare the time of the event has been detected.
+  The tolerance is some measure of how close the event function is to zero for the event detector to stop
+  and declare the time of the event has been detected.
 
-.seealso: [](chapter_ts), `TS`, `TSEvent`, `TSSetEventHandler()`
+.seealso: [](ch_ts), `TS`, `TSEvent`, `TSSetEventHandler()`
 @*/
 PetscErrorCode TSSetEventTolerances(TS ts, PetscReal tol, PetscReal vtol[])
 {
@@ -113,7 +113,7 @@ PetscErrorCode TSSetEventTolerances(TS ts, PetscReal tol, PetscReal vtol[])
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
-  if (vtol) PetscValidRealPointer(vtol, 3);
+  if (vtol) PetscAssertPointer(vtol, 3);
   PetscCheck(ts->event, PetscObjectComm((PetscObject)ts), PETSC_ERR_USER, "Must set the events first by calling TSSetEventHandler()");
 
   event = ts->event;
@@ -128,50 +128,49 @@ PetscErrorCode TSSetEventTolerances(TS ts, PetscReal tol, PetscReal vtol[])
 }
 
 /*@C
-   TSSetEventHandler - Sets a function used for detecting events
+  TSSetEventHandler - Sets a function used for detecting events
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  ts - the `TS` context obtained from `TSCreate()`
-.  nevents - number of local events
-.  direction - direction of zero crossing to be detected. -1 => Zero crossing in negative direction,
-               +1 => Zero crossing in positive direction, 0 => both ways (one for each event)
-.  terminate - flag to indicate whether time stepping should be terminated after
-               event is detected (one for each event)
-.  eventhandler - a change in sign of this function (see `direction`) is used to determine an even has occurred
-.  postevent - [optional] post-event function, this function can change properties of the solution, ODE etc at the time of the event
--  ctx       - [optional] user-defined context for private data for the
+  Input Parameters:
++ ts           - the `TS` context obtained from `TSCreate()`
+. nevents      - number of local events
+. direction    - direction of zero crossing to be detected. -1 => Zero crossing in negative direction,
+                 0.1 => Zero crossing in positive direction, 0 => both ways (one for each event)
+. terminate    - flag to indicate whether time stepping should be terminated after
+                 event is detected (one for each event)
+. eventhandler - a change in sign of this function (see `direction`) is used to determine an
+                 even has occurred
+. postevent    - [optional] post-event function, this function can change properties of the solution, ODE etc at the time of the event
+- ctx          - [optional] user-defined context for private data for the
                event detector and post event routine (use `NULL` if no
                context is desired)
 
-   Calling sequence of `eventhandler`:
-$   PetscErrorCode eventhandler(TS ts, PetscReal t, Vec U, PetscScalar fvalue[], void* ctx)
-+  ts  - the `TS` context
-.  t   - current time
-.  U   - current iterate
-.  ctx - [optional] context passed with eventhandler
--  fvalue    - function value of events at time t
+  Calling sequence of `eventhandler`:
++ ts     - the `TS` context
+. t      - current time
+. U      - current iterate
+. fvalue - function value of events at time t
+- ctx    - [optional] context passed with eventhandler
 
-   Calling sequence of `postevent`:
-$   PetscErrorCode postevent(TS ts, PetscInt nevents_zero, PetscInt events_zero[], PetscReal t, Vec U, PetscBool forwardsolve, void *ctx)
-+  ts - the `TS` context
-.  nevents_zero - number of local events whose event function is zero
-.  events_zero  - indices of local events which have reached zero
-.  t            - current time
-.  U            - current solution
-.  forwardsolve - Flag to indicate whether `TS` is doing a forward solve (1) or adjoint solve (0)
--  ctx          - the context passed with eventhandler
+  Calling sequence of `postevent`:
++ ts           - the `TS` context
+. nevents_zero - number of local events whose event function has been marked as crossing 0
+. events_zero  - indices of local events which have been marked as crossing 0
+. t            - current time
+. U            - current solution
+. forwardsolve - Flag to indicate whether `TS` is doing a forward solve (1) or adjoint solve (0)
+- ctx          - the context passed with eventhandler
 
-   Level: intermediate
+  Level: intermediate
 
-   Note:
-   The `eventhandler` is actually the event detector function and the `postevent` function actually handles the desired changes that
-   should take place at the time of the event
+  Note:
+  The `eventhandler` is actually the event detector function and the `postevent` function actually handles the desired changes that
+  should take place at the time of the event
 
-.seealso: [](chapter_ts), `TSEvent`, `TSCreate()`, `TSSetTimeStep()`, `TSSetConvergedReason()`
+.seealso: [](ch_ts), `TSEvent`, `TSCreate()`, `TSSetTimeStep()`, `TSSetConvergedReason()`
 @*/
-PetscErrorCode TSSetEventHandler(TS ts, PetscInt nevents, PetscInt direction[], PetscBool terminate[], PetscErrorCode (*eventhandler)(TS, PetscReal, Vec, PetscScalar[], void *), PetscErrorCode (*postevent)(TS, PetscInt, PetscInt[], PetscReal, Vec, PetscBool, void *), void *ctx)
+PetscErrorCode TSSetEventHandler(TS ts, PetscInt nevents, PetscInt direction[], PetscBool terminate[], PetscErrorCode (*eventhandler)(TS ts, PetscReal t, Vec U, PetscScalar fvalue[], void *ctx), PetscErrorCode (*postevent)(TS ts, PetscInt nevents_zero, PetscInt events_zero[], PetscReal t, Vec U, PetscBool forwardsolve, void *ctx), void *ctx)
 {
   TSAdapt   adapt;
   PetscReal hmin;
@@ -187,8 +186,8 @@ PetscErrorCode TSSetEventHandler(TS ts, PetscInt nevents, PetscInt direction[], 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   if (nevents) {
-    PetscValidIntPointer(direction, 3);
-    PetscValidBoolPointer(terminate, 4);
+    PetscAssertPointer(direction, 3);
+    PetscAssertPointer(terminate, 4);
   }
 
   PetscCall(PetscNew(&event));
@@ -404,6 +403,7 @@ static PetscErrorCode TSEventDetection(TS ts)
 static PetscErrorCode TSEventLocation(TS ts, PetscReal *dt)
 {
   TSEvent   event = ts->event;
+  PetscReal diff  = PetscAbsReal((event->ptime_right - event->ptime_prev) / 2);
   PetscInt  i;
   PetscReal t;
   PetscInt  fvalue_sign, fvalueprev_sign;
@@ -414,7 +414,7 @@ static PetscErrorCode TSEventLocation(TS ts, PetscReal *dt)
   event->nevents_zero = 0;
   for (i = 0; i < event->nevents; i++) {
     if (event->zerocrossing[i]) {
-      if (PetscAbsScalar(event->fvalue[i]) < event->vtol[i] || *dt < event->timestep_min || PetscAbsReal((*dt) / ((event->ptime_right - event->ptime_prev) / 2)) < event->vtol[i]) { /* stopping criteria */
+      if (PetscAbsScalar(event->fvalue[i]) < event->vtol[i] || *dt < event->timestep_min || PetscAbsReal(*dt) < diff * event->vtol[i]) { /* stopping criteria */
         event->status          = TSEVENT_ZERO;
         event->fvalue_right[i] = event->fvalue[i];
         continue;
@@ -459,7 +459,7 @@ static PetscErrorCode TSEventLocation(TS ts, PetscReal *dt)
   if (event->status == TSEVENT_ZERO) {
     for (i = 0; i < event->nevents; i++) {
       if (event->zerocrossing[i]) {
-        if (PetscAbsScalar(event->fvalue[i]) < event->vtol[i] || *dt < event->timestep_min || PetscAbsReal((*dt) / ((event->ptime_right - event->ptime_prev) / 2)) < event->vtol[i]) { /* stopping criteria */
+        if (PetscAbsScalar(event->fvalue[i]) < event->vtol[i] || *dt < event->timestep_min || PetscAbsReal(*dt) < diff * event->vtol[i]) { /* stopping criteria */
           event->events_zero[event->nevents_zero++] = i;
           if (event->monitor) PetscCall(PetscViewerASCIIPrintf(event->monitor, "TSEvent: iter %" PetscInt_FMT " - Event %" PetscInt_FMT " zero crossing located at time %g\n", event->iterctr, i, (double)t));
           event->zerocrossing[i] = PETSC_FALSE;
@@ -600,7 +600,7 @@ PetscErrorCode TSAdjointEventHandler(TS ts)
 
   Level: intermediate
 
-.seealso: [](chapter_ts), `TSEvent`, `TSSetEventHandler()`
+.seealso: [](ch_ts), `TSEvent`, `TSSetEventHandler()`
 @*/
 PetscErrorCode TSGetNumEvents(TS ts, PetscInt *nevents)
 {

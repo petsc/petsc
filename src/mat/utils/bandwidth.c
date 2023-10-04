@@ -6,7 +6,7 @@
   Collective
 
   Input Parameters:
-+ A - The `Mat`
++ A        - The `Mat`
 - fraction - An optional percentage of the Frobenius norm of the matrix that the bandwidth should enclose
 
   Output Parameter:
@@ -24,7 +24,7 @@ PetscErrorCode MatComputeBandwidth(Mat A, PetscReal fraction, PetscInt *bw)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
   PetscValidLogicalCollectiveReal(A, fraction, 2);
-  PetscValidIntPointer(bw, 3);
+  PetscAssertPointer(bw, 3);
   PetscCheck(!(fraction > 0.0) || !(fraction < 1.0), PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "We do not yet support a fractional bandwidth");
   PetscCall(MatGetOwnershipRange(A, &rStart, &rEnd));
   for (r = rStart; r < rEnd; ++r) {

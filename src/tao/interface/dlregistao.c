@@ -7,6 +7,8 @@ static PetscBool TaoPackageInitialized = PETSC_FALSE;
   interface to the Tao package. It is called from `PetscFinalize()`.
 
   Level: developer
+
+.seealso: `TaoInitializePackage()`, `PetscFinalize()`, `TaoRegister()`, `TaoRegisterAll()`
 @*/
 PetscErrorCode TaoFinalizePackage(void)
 {
@@ -24,7 +26,7 @@ PetscErrorCode TaoFinalizePackage(void)
 
   Level: developer
 
-.seealso: `TaoCreate()`
+.seealso: `TaoCreate()`, `TaoFinalizePackage()`, `TaoRegister()`, `TaoRegisterAll()`
 @*/
 PetscErrorCode TaoInitializePackage(void)
 {

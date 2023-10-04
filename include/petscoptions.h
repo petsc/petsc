@@ -1,8 +1,7 @@
 /*
    Routines to determine options set in the options database.
 */
-#ifndef PETSCOPTIONS_H
-#define PETSCOPTIONS_H
+#pragma once
 
 #include <petscsys.h>
 #include <petscviewertypes.h>
@@ -141,7 +140,7 @@ PetscErrorCode           PetscOptionsEnd(void);
   /*MC
     PetscOptionsBegin - Begins a set of queries on the options database that are related and should be
      displayed on the same window of a GUI that allows the user to set the options interactively. Often one should
-     use PetscObjectOptionsBegin() rather than this call.
+     use `PetscObjectOptionsBegin()` rather than this call.
 
    Synopsis:
     #include <petscoptions.h>
@@ -165,18 +164,21 @@ PetscErrorCode           PetscOptionsEnd(void);
     One can add subheadings with `PetscOptionsHeadBegin()`.
 
   Developer Notes:
-      PetscOptionsPublish is set in PetscOptionsCheckInitial_Private() with -saws_options. When PetscOptionsPublish is set the
-      loop between PetscOptionsBegin() and PetscOptionsEnd() is run THREE times with PetscOptionsPublishCount of values -1,0,1.
-      Otherwise the loop is run ONCE with a PetscOptionsPublishCount of 1.
-+      \-1 - PetscOptionsInt() etc. just call PetscOptionsGetInt() etc.
-.      0  - The GUI objects are created in PetscOptionsInt() etc. and displayed in PetscOptionsEnd() and the options
-               database updated with user changes; PetscOptionsGetInt() etc. are also called.
--      1 - PetscOptionsInt() etc. again call PetscOptionsGetInt() etc. (possibly getting new values), in addition the help message and
+      `PetscOptionsPublish` is set in `PetscOptionsCheckInitial_Private()` with `-saws_options`. When `PetscOptionsPublish` is set the
+      loop between `PetscOptionsBegin()` and `PetscOptionsEnd()` is run THREE times with `PetscOptionsPublishCount` of values -1,0,1.
+      Otherwise the loop is run ONCE with a `PetscOptionsPublishCount` of 1.
++      \-1 - `PetscOptionsInt()` etc. just call `PetscOptionsGetInt()` etc.
+.      0  - The GUI objects are created in `PetscOptionsInt()` etc. and displayed in `PetscOptionsEnd()` and the options
+               database updated with user changes; `PetscOptionsGetInt()` etc. are also called.
+-      1 - `PetscOptionsInt()` etc. again call `PetscOptionsGetInt()` etc. (possibly getting new values), in addition the help message and
               default values are printed if -help was given.
-      When PetscOptionsObject.changedmethod is set this causes PetscOptionsPublishCount to be reset to -2 (so in the next loop iteration it is -1)
-      and the whole process is repeated. This is to handle when, for example, the KSPType is changed thus changing the list of
-      options available so they need to be redisplayed so the user can change the. Changing PetscOptionsObjects.changedmethod is never
+      When `PetscOptionsObject.changedmethod` is set this causes `PetscOptionsPublishCount` to be reset to -2 (so in the next loop iteration it is -1)
+      and the whole process is repeated. This is to handle when, for example, the `KSPType` is changed thus changing the list of
+      options available so they need to be redisplayed so the user can change the. Changing `PetscOptionsObjects.changedmethod` is never
       currently set.
+
+   Fortran Note:
+   Returns ierr error code per PETSc Fortran API
 
 .seealso: `PetscOptionsGetReal()`, `PetscOptionsHasName()`, `PetscOptionsGetString()`, `PetscOptionsGetInt()`,
           `PetscOptionsGetIntArray()`, `PetscOptionsGetRealArray()`, `PetscOptionsBool()`
@@ -185,7 +187,6 @@ PetscErrorCode           PetscOptionsEnd(void);
           `PetscOptionsStringArray()`, `PetscOptionsRealArray()`, `PetscOptionsScalar()`,
           `PetscOptionsBoolGroupBegin()`, `PetscOptionsBoolGroup()`, `PetscOptionsBoolGroupEnd()`,
           `PetscOptionsFList()`, `PetscOptionsEList()`, `PetscObjectOptionsBegin()`
-
 M*/
   #define PetscOptionsBegin(comm, prefix, mess, sec) \
     do { \
@@ -224,7 +225,6 @@ M*/
           `PetscOptionsStringArray()`, `PetscOptionsRealArray()`, `PetscOptionsScalar()`,
           `PetscOptionsBoolGroupBegin()`, `PetscOptionsBoolGroup()`, `PetscOptionsBoolGroupEnd()`,
           `PetscOptionsFList()`, `PetscOptionsEList()`
-
 M*/
   #define PetscObjectOptionsBegin(obj) \
     do { \
@@ -238,11 +238,11 @@ M*/
     PetscOptionsEnd - Ends a set of queries on the options database that are related and should be
      displayed on the same window of a GUI that allows the user to set the options interactively.
 
-    Collective on the comm used in `PetscOptionsBegin()` or obj used in `PetscObjectOptionsBegin()`
-
    Synopsis:
      #include <petscoptions.h>
      PetscErrorCode PetscOptionsEnd(void)
+
+    Collective on the comm used in `PetscOptionsBegin()` or obj used in `PetscObjectOptionsBegin()`
 
   Level: intermediate
 
@@ -251,6 +251,9 @@ M*/
 
     This is a macro that handles its own error checking, it does not return an error code.
 
+  Fortran Note:
+   Returns ierr error code per PETSc Fortran API
+
 .seealso: `PetscOptionsGetReal()`, `PetscOptionsHasName()`, `PetscOptionsGetString()`, `PetscOptionsGetInt()`,
           `PetscOptionsGetIntArray()`, `PetscOptionsGetRealArray()`, `PetscOptionsBool()`
           `PetscOptionsInt()`, `PetscOptionsString()`, `PetscOptionsReal()`, `PetscOptionsBool()`,
@@ -258,7 +261,6 @@ M*/
           `PetscOptionsStringArray()`, `PetscOptionsRealArray()`, `PetscOptionsScalar()`,
           `PetscOptionsBoolGroupBegin()`, `PetscOptionsBoolGroup()`, `PetscOptionsBoolGroupEnd()`,
           `PetscOptionsFList()`, `PetscOptionsEList()`, `PetscObjectOptionsBegin()`
-
 M*/
   #define PetscOptionsEnd() \
     PetscCall(PetscOptionsEnd_Private(PetscOptionsObject)); \
@@ -323,9 +325,9 @@ PetscErrorCode PetscOptionsDeprecatedNoObject(T...);
 #else
   /*MC
      PetscOptionsHeadBegin - Puts a heading before listing any more published options. Used, for example,
-            in KSPSetFromOptions_GMRES().
+            in `KSPSetFromOptions_GMRES()`.
 
-   Logically Collective on the communicator passed in PetscOptionsBegin()
+   Logically Collective on the communicator passed in `PetscOptionsBegin()`
 
    Input Parameter:
 .   head - the heading text
@@ -335,7 +337,7 @@ PetscErrorCode PetscOptionsDeprecatedNoObject(T...);
    Notes:
     Handles errors directly, hence does not return an error code
 
-    Must be between a `PetscOptionsBegin()` and a `PetscOptionsEnd()`, and PetscOptionsObject created in `PetscOptionsBegin()` should be the first argument
+    Must be between a `PetscOptionsBegin()` and a `PetscOptionsEnd()`, and `PetscOptionsObject` created in `PetscOptionsBegin()` should be the first argument
 
     Must be followed by a call to `PetscOptionsHeadEnd()` in the same function.
 
@@ -351,17 +353,17 @@ PetscErrorCode PetscOptionsDeprecatedNoObject(T...);
       if (PetscOptionsObject->printhelp && PetscOptionsObject->count == 1 && !PetscOptionsObject->alreadyprinted) PetscCall((*PetscHelpPrintf)(PetscOptionsObject->comm, "  %s\n", head)); \
     } while (0)
 
-  #define PetscOptionsHead(...) PETSC_DEPRECATED_MACRO("GCC warning \"Use PetscOptionsHeadBegin() (since version 3.18)\"") PetscOptionsHeadBegin(__VA_ARGS__)
+  #define PetscOptionsHead(...) PETSC_DEPRECATED_MACRO(3, 18, 0, "PetscOptionsHeadBegin()", ) PetscOptionsHeadBegin(__VA_ARGS__)
 
   /*MC
      PetscOptionsHeadEnd - Ends a section of options begun with `PetscOptionsHeadBegin()`
-            See, for example, KSPSetFromOptions_GMRES().
-
-    Collective on the comm used in `PetscOptionsBegin()` or obj used in `PetscObjectOptionsBegin()`
+            See, for example, `KSPSetFromOptions_GMRES()`.
 
    Synopsis:
      #include <petscoptions.h>
      PetscErrorCode PetscOptionsHeadEnd(void)
+
+    Collective on the comm used in `PetscOptionsBegin()` or obj used in `PetscObjectOptionsBegin()`
 
   Level: intermediate
 
@@ -371,7 +373,7 @@ PetscErrorCode PetscOptionsDeprecatedNoObject(T...);
     Must be preceded by a call to `PetscOptionsHeadBegin()` in the same function.
 
     This needs to be used only if the code below `PetscOptionsHeadEnd()` can be run ONLY once.
-    See, for example, `PCSetFromOptions_Composite()`. This is a return(0) in it for early exit
+    See, for example, `PCSetFromOptions_Composite()`. This is a `return(0)` in it for early exit
     from the function.
 
           This is only for use with the PETSc options GUI
@@ -388,7 +390,7 @@ M*/
       if (PetscOptionsObject->count != 1) PetscFunctionReturn(PETSC_SUCCESS); \
     } while (0)
 
-  #define PetscOptionsTail(...) PETSC_DEPRECATED_MACRO("GCC warning \"Use PetscOptionsHeadEnd() (since version 3.18)\"") PetscOptionsHeadEnd(__VA_ARGS__)
+  #define PetscOptionsTail(...) PETSC_DEPRECATED_MACRO(3, 18, 0, "PetscOptionsHeadEnd()", ) PetscOptionsHeadEnd(__VA_ARGS__)
 
   #define PetscOptionsEnum(a, b, c, d, e, f, g)        PetscOptionsEnum_Private(PetscOptionsObject, a, b, c, d, e, f, g)
   #define PetscOptionsInt(a, b, c, d, e, f)            PetscOptionsInt_Private(PetscOptionsObject, a, b, c, d, e, f, PETSC_MIN_INT, PETSC_MAX_INT)
@@ -441,4 +443,3 @@ PETSC_EXTERN PetscErrorCode PetscObjectProcessOptionsHandlers(PetscObject, Petsc
 PETSC_EXTERN PetscErrorCode PetscObjectDestroyOptionsHandlers(PetscObject);
 
 PETSC_EXTERN PetscErrorCode PetscOptionsLeftError(void);
-#endif

@@ -4,7 +4,7 @@ class Configure(config.package.CMakePackage):
   def __init__(self, framework):
     config.package.CMakePackage.__init__(self, framework)
     self.gitcommit       = 'f136d2a3ac89b3203affef1f04da6fde9d60bf7e'
-    self.download        = ['git://https://github.com/bldenton/oce.git']
+    self.download        = ['git://https://github.com/bldenton/oce.git','https://github.com/bldenton/oce/archive/'+self.gitcommit+'.tar.gz']
     self.version         = '7.5.0'
     self.minversion      = '7.5.0'
     self.versionname     = 'OCC_VERSION_COMPLETE'

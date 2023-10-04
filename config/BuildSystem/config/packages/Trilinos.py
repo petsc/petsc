@@ -120,9 +120,9 @@ class Configure(config.package.CMakePackage):
     if not self.hdf5.found:
       raise RuntimeError('Trilinos requires hdf5 so make sure you have --download-hdf5 or --with-hdf5-dir if you are building Trilinos')
 
-    # Check for 64bit pointers
+    # Check for 64-bit pointers
     if self.types.sizes['void-p'] != 8:
-      raise RuntimeError('Trilinos requires 64bit compilers, your compiler is using 32 bit pointers!')
+      raise RuntimeError('Trilinos requires 64-bit pointer compilers, your compiler is using 32-bit pointers!')
 
     args = config.package.CMakePackage.formCMakeConfigureArgs(self)
     args.append('-DUSE_XSDK_DEFAULTS=YES')

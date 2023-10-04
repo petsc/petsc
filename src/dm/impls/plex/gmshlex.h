@@ -1,3 +1,4 @@
+#pragma once
 /*
  S: simplex  B: box
  N: size     I: index  L: loop

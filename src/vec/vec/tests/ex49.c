@@ -38,7 +38,7 @@ int main(int argc, char **argv)
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "local lengths are:\n"));
   PetscCall(PetscIntView(1, &ln[rank], PETSC_VIEWER_STDOUT_WORLD));
   n = ln[rank];
-  PetscCall(VecCreateMPI(MPI_COMM_WORLD, n, PETSC_DECIDE, &v));
+  PetscCall(VecCreateFromOptions(MPI_COMM_WORLD, NULL, 1, n, PETSC_DECIDE, &v));
   PetscCall(VecGetOwnershipRange(v, &rstart, NULL));
 
   for (k = 0; k < 5; ++k) { /* 5 iterations of VecAssembly */

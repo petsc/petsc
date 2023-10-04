@@ -1,5 +1,4 @@
-#ifndef PETSC_STRING_H
-#define PETSC_STRING_H
+#pragma once
 
 #include <petscsystypes.h>
 #include <petscerror.h>
@@ -21,6 +20,7 @@ PETSC_EXTERN PetscErrorCode PetscStrArrayDestroy(char ***);
 PETSC_EXTERN PetscErrorCode PetscStrNArrayallocpy(PetscInt, const char *const *, char ***);
 PETSC_EXTERN PetscErrorCode PetscStrNArrayDestroy(PetscInt, char ***);
 PETSC_EXTERN PetscErrorCode PetscStrreplace(MPI_Comm, const char[], char[], size_t);
+PETSC_EXTERN PetscErrorCode PetscStrcmpAny(const char[], PetscBool *, const char[], ...);
 
 PETSC_EXTERN PetscErrorCode PetscTokenCreate(const char[], char, PetscToken *);
 PETSC_EXTERN PetscErrorCode PetscTokenFind(PetscToken, char *[]);
@@ -37,7 +37,7 @@ PETSC_EXTERN PetscErrorCode PetscStrcpy(char[], const char[]);
 #define PetscAssertPointer_Private(ptr, arg) PetscAssert((ptr), PETSC_COMM_SELF, PETSC_ERR_ARG_NULL, "Null Pointer: Parameter '" PetscStringize(ptr) "' # " PetscStringize(arg))
 
 /*@C
-  PetscStrtolower - Converts string to lower case
+  PetscStrtolower - Converts a string to lower case
 
   Not Collective, No Fortran Support
 
@@ -60,7 +60,7 @@ static inline PetscErrorCode PetscStrtolower(char a[])
 }
 
 /*@C
-  PetscStrtoupper - Converts string to upper case
+  PetscStrtoupper - Converts a string to upper case
 
   Not Collective, No Fortran Support
 
@@ -83,7 +83,7 @@ static inline PetscErrorCode PetscStrtoupper(char a[])
 }
 
 /*@C
-  PetscStrlen - Gets length of a string
+  PetscStrlen - Gets the length of a string
 
   Not Collective, No Fortran Support
 
@@ -117,7 +117,7 @@ static inline PetscErrorCode PetscStrlen(const char s[], size_t *len)
 }
 
 /*@C
-  PetscStrallocpy - Allocates space to hold a copy of a string then copies the string in the new space
+  PetscStrallocpy - Allocates space to hold a copy of a string then copies the string into the new space
 
   Not Collective, No Fortran Support
 
@@ -176,7 +176,7 @@ static inline void PetscStrcmpNoError(const char a[], const char b[], PetscBool 
 }
 
 /*@C
-  PetscStrcmp - Compares two strings,
+  PetscStrcmp - Compares two strings
 
   Not Collective, No Fortran Support
 
@@ -189,7 +189,7 @@ static inline void PetscStrcmpNoError(const char a[], const char b[], PetscBool 
 
   Level: intermediate
 
-.seealso: `PetscStrgrt()`, `PetscStrncmp()`, `PetscStrcasecmp()`
+.seealso: `PetscStrcmpAny()`, `PetscStrgrt()`, `PetscStrncmp()`, `PetscStrcasecmp()`
 @*/
 static inline PetscErrorCode PetscStrcmp(const char a[], const char b[], PetscBool *flg)
 {
@@ -318,7 +318,7 @@ static inline PetscErrorCode PetscStrlcat(char s[], const char t[], size_t n)
 
   Level: intermediate
 
-  Notes:
+  Note:
   If `n` is `0`, `t` is set to `PETSC_FALSE`. `a` and/or `b` may be `NULL` in this case.
 
 .seealso: `PetscStrgrt()`, `PetscStrcmp()`, `PetscStrcasecmp()`
@@ -568,7 +568,9 @@ static inline PetscErrorCode PetscStrendswith(const char a[], const char b[], Pe
 
   Notes:
   Both `a` and `b` may be `NULL` (in which case `flg` is set to `PETSC_FALSE`) but not
-  either. Both `a` and `b` may point to the same string.
+  either.
+
+  `a` and `b` may point to the same string.
 
 .seealso: `PetscStrendswithwhich()`, `PetscStrendswith()`, `PetscStrtoupper`,
           `PetscStrtolower()`, `PetscStrrchr()`, `PetscStrchr()`, `PetscStrncmp()`, `PetscStrlen()`,
@@ -590,8 +592,8 @@ static inline PetscErrorCode PetscStrbeginswith(const char a[], const char b[], 
 #undef PetscAssertPointer_Private
 
 /*@C
-   PetscMemmove - Copies n bytes, beginning at location b, to the space
-   beginning at location a. Copying  between regions that overlap will
+   PetscMemmove - Copies `n` bytes, beginning at location `b`, to the space
+   beginning at location `a`. Copying  between regions that overlap will
    take place correctly. Use `PetscMemcpy()` if the locations do not overlap
 
    Not Collective
@@ -607,9 +609,6 @@ static inline PetscErrorCode PetscStrbeginswith(const char a[], const char b[], 
    `PetscArraymove()` is preferred
 
    This routine is analogous to `memmove()`.
-
-   Developers Notes:
-   This is inlined for performance
 
 .seealso: `PetscMemcpy()`, `PetscMemcmp()`, `PetscArrayzero()`, `PetscMemzero()`, `PetscArraycmp()`, `PetscArraycpy()`, `PetscStrallocpy()`,
           `PetscArraymove()`
@@ -647,8 +646,8 @@ static inline PetscErrorCode PetscMemmove(void *a, const void *b, size_t n)
 }
 
 /*@C
-   PetscMemcpy - Copies n bytes, beginning at location b, to the space
-   beginning at location a. The two memory regions CANNOT overlap, use
+   PetscMemcpy - Copies `n` bytes, beginning at location `b`, to the space
+   beginning at location `a`. The two memory regions CANNOT overlap, use
    `PetscMemmove()` in that case.
 
    Not Collective
@@ -663,7 +662,7 @@ static inline PetscErrorCode PetscMemmove(void *a, const void *b, size_t n)
    Level: intermediate
 
    Compile Option:
-    `PETSC_PREFER_DCOPY_FOR_MEMCPY` will cause the BLAS dcopy() routine to be used
+    `PETSC_PREFER_DCOPY_FOR_MEMCPY` will cause the BLAS `dcopy()` routine to be used
                                   for memory copies on double precision values.
     `PETSC_PREFER_COPY_FOR_MEMCPY` will cause C code to be used
                                   for memory copies on double precision values.
@@ -674,9 +673,6 @@ static inline PetscErrorCode PetscMemmove(void *a, const void *b, size_t n)
    Prefer `PetscArraycpy()`
 
    This routine is analogous to `memcpy()`.
-
-   Developer Notes:
-   This is inlined for fastest performance
 
 .seealso: `PetscMemzero()`, `PetscMemcmp()`, `PetscArrayzero()`, `PetscArraycmp()`, `PetscArraycpy()`, `PetscMemmove()`, `PetscStrallocpy()`
 @*/
@@ -733,9 +729,6 @@ static inline PetscErrorCode PetscMemcpy(void *a, const void *b, size_t n)
 
    Notes:
    Prefer `PetscArrayzero()`
-
-   Developer Notes:
-   This is inlined for fastest performance
 
 .seealso: `PetscMemcpy()`, `PetscMemcmp()`, `PetscArrayzero()`, `PetscArraycmp()`, `PetscArraycpy()`, `PetscMemmove()`, `PetscStrallocpy()`
 @*/
@@ -871,5 +864,3 @@ M*/
 .seealso: `PetscMemcpy()`, `PetscMemcmp()`, `PetscMemzero()`, `PetscArraycmp()`, `PetscArraycpy()`, `PetscMemmove()`, `PetscStrallocpy()`, `PetscArraymove()`
 M*/
 #define PetscArrayzero(str1, cnt) PetscMemzero((str1), (size_t)(cnt) * sizeof(*(str1)))
-
-#endif // PETSC_STRING_H

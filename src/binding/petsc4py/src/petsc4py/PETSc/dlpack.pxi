@@ -53,24 +53,22 @@ cdef struct DLTensor:
     int64_t* strides
     uint64_t byte_offset
 
-ctypedef int (*dlpack_manager_del_obj)(void*) nogil
+ctypedef int (*dlpack_manager_del_obj)(void*) noexcept nogil
 
 cdef struct DLManagedTensor:
     DLTensor dl_tensor
     void* manager_ctx
-    void (*manager_deleter)(DLManagedTensor*) nogil
+    void (*manager_deleter)(DLManagedTensor*) noexcept nogil
     dlpack_manager_del_obj del_obj
 
-cdef void pycapsule_deleter(object dltensor):
+cdef void pycapsule_deleter(object dltensor) noexcept:
     cdef DLManagedTensor* dlm_tensor = NULL
-    try:
-        dlm_tensor = <DLManagedTensor *>PyCapsule_GetPointer(dltensor, 'used_dltensor')
-        return # we do not call a used capsule's deleter
-    except Exception:
-        dlm_tensor = <DLManagedTensor *>PyCapsule_GetPointer(dltensor, 'dltensor')
-    manager_deleter(dlm_tensor)
+    # we do not call a used capsule's deleter
+    if PyCapsule_IsValid(dltensor, b'dltensor'):
+        dlm_tensor = <DLManagedTensor *>PyCapsule_GetPointer(dltensor, b'dltensor')
+        manager_deleter(dlm_tensor)
 
-cdef void manager_deleter(DLManagedTensor* tensor) nogil:
+cdef void manager_deleter(DLManagedTensor* tensor) noexcept nogil:
     if tensor.manager_ctx is NULL:
         return
     free(tensor.dl_tensor.shape)

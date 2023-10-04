@@ -500,8 +500,7 @@ static PetscErrorCode TSAlpha2GetParams_Alpha(TS ts, PetscReal *alpha_m, PetscRe
 }
 
 /*MC
-      TSALPHA2 - ODE/DAE solver using the implicit Generalized-Alpha method
-                 for second-order systems
+  TSALPHA2 - ODE/DAE solver using the implicit Generalized-Alpha method for second-order systems
 
   Level: beginner
 
@@ -510,7 +509,7 @@ static PetscErrorCode TSAlpha2GetParams_Alpha(TS ts, PetscReal *alpha_m, PetscRe
   Dynamics with Improved Numerical Dissipation: The Generalized-alpha
   Method" ASME Journal of Applied Mechanics, 60, 371:375, 1993.
 
-.seealso: [](chapter_ts), `TS`, `TSCreate()`, `TSSetType()`, `TSAlpha2SetRadius()`, `TSAlpha2SetParams()`
+.seealso: [](ch_ts), `TS`, `TSCreate()`, `TSSetType()`, `TSAlpha2SetRadius()`, `TSAlpha2SetParams()`
 M*/
 PETSC_EXTERN PetscErrorCode TSCreate_Alpha2(TS ts)
 {
@@ -549,27 +548,30 @@ PETSC_EXTERN PetscErrorCode TSCreate_Alpha2(TS ts)
 
 /*@
   TSAlpha2SetRadius - sets the desired spectral radius of the method for `TSALPHA2`
-                      (i.e. high-frequency numerical damping)
+  (i.e. high-frequency numerical damping)
 
   Logically Collective
 
-  The algorithmic parameters \alpha_m and \alpha_f of the
-  generalized-\alpha method can be computed in terms of a specified
-  spectral radius \rho in [0,1] for infinite time step in order to
-  control high-frequency numerical damping:
-    \alpha_m = (2-\rho)/(1+\rho)
-    \alpha_f = 1/(1+\rho)
-
   Input Parameters:
-+  ts - timestepping context
--  radius - the desired spectral radius
++ ts     - timestepping context
+- radius - the desired spectral radius
 
   Options Database Key:
-.  -ts_alpha_radius <radius> - set the desired spectral radius
+. -ts_alpha_radius <radius> - set the desired spectral radius
 
   Level: intermediate
 
-.seealso: [](chapter_ts), `TS`, `TSALPHA2`, `TSAlpha2SetParams()`, `TSAlpha2GetParams()`
+  Notes:
+
+  The algorithmic parameters $\alpha_m$ and $\alpha_f$ of the generalized-$\alpha$ method can
+  be computed in terms of a specified spectral radius $\rho$ in `[0, 1]` for infinite time step
+  in order to control high-frequency numerical damping\:
+  $$
+  \alpha_m = (2-\rho)/(1+\rho)
+  \alpha_f = 1/(1+\rho)
+  $$
+
+.seealso: [](ch_ts), `TS`, `TSALPHA2`, `TSAlpha2SetParams()`, `TSAlpha2GetParams()`
 @*/
 PetscErrorCode TSAlpha2SetRadius(TS ts, PetscReal radius)
 {
@@ -586,15 +588,8 @@ PetscErrorCode TSAlpha2SetRadius(TS ts, PetscReal radius)
 
   Logically Collective
 
-  Second-order accuracy can be obtained so long as:
-    \gamma = 1/2 + alpha_m - alpha_f
-    \beta  = 1/4 (1 + alpha_m - alpha_f)^2
-
-  Unconditional stability requires:
-    \alpha_m >= \alpha_f >= 1/2
-
   Input Parameters:
-+ ts - timestepping context
++ ts      - timestepping context
 . alpha_m - algorithmic parameter
 . alpha_f - algorithmic parameter
 . gamma   - algorithmic parameter
@@ -603,19 +598,29 @@ PetscErrorCode TSAlpha2SetRadius(TS ts, PetscReal radius)
   Options Database Keys:
 + -ts_alpha_alpha_m <alpha_m> - set alpha_m
 . -ts_alpha_alpha_f <alpha_f> - set alpha_f
-. -ts_alpha_gamma   <gamma> - set gamma
-- -ts_alpha_beta    <beta> - set beta
+. -ts_alpha_gamma   <gamma>   - set gamma
+- -ts_alpha_beta    <beta>    - set beta
 
   Level: advanced
 
-  Note:
-  Use of this function is normally only required to hack `TSALPHA2` to
-  use a modified integration scheme. Users should call
-  `TSAlpha2SetRadius()` to set the desired spectral radius of the methods
-  (i.e. high-frequency damping) in order so select optimal values for
+  Notes:
+  Second-order accuracy can be obtained so long as\:
+  $$
+  \gamma = 1/2 + alpha_m - alpha_f
+  \beta  = 1/4 (1 + alpha_m - alpha_f)^2
+  $$
+
+  Unconditional stability requires\:
+  $$
+  \alpha_m >= \alpha_f >= 1/2
+  $$
+
+  Use of this function is normally only required to hack `TSALPHA2` to use a modified
+  integration scheme. Users should call `TSAlpha2SetRadius()` to set the desired spectral
+  radius of the methods (i.e. high-frequency damping) in order so select optimal values for
   these parameters.
 
-.seealso: [](chapter_ts), `TS`, `TSALPHA2`, `TSAlpha2SetRadius()`, `TSAlpha2GetParams()`
+.seealso: [](ch_ts), `TS`, `TSALPHA2`, `TSAlpha2SetRadius()`, `TSAlpha2GetParams()`
 @*/
 PetscErrorCode TSAlpha2SetParams(TS ts, PetscReal alpha_m, PetscReal alpha_f, PetscReal gamma, PetscReal beta)
 {
@@ -646,22 +651,20 @@ PetscErrorCode TSAlpha2SetParams(TS ts, PetscReal alpha_m, PetscReal alpha_f, Pe
   Level: advanced
 
   Note:
-  Use of this function is normally only required to hack `TSALPHA2` to
-  use a modified integration scheme. Users should call
-  `TSAlpha2SetRadius()` to set the high-frequency damping (i.e. spectral
-  radius of the method) in order so select optimal values for these
-  parameters.
+  Use of this function is normally only required to hack `TSALPHA2` to use a modified
+  integration scheme. Users should call `TSAlpha2SetRadius()` to set the high-frequency damping
+  (i.e. spectral radius of the method) in order so select optimal values for these parameters.
 
-.seealso: [](chapter_ts), `TS`, `TSALPHA2`, `TSAlpha2SetRadius()`, `TSAlpha2SetParams()`
+.seealso: [](ch_ts), `TS`, `TSALPHA2`, `TSAlpha2SetRadius()`, `TSAlpha2SetParams()`
 @*/
 PetscErrorCode TSAlpha2GetParams(TS ts, PetscReal *alpha_m, PetscReal *alpha_f, PetscReal *gamma, PetscReal *beta)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
-  if (alpha_m) PetscValidRealPointer(alpha_m, 2);
-  if (alpha_f) PetscValidRealPointer(alpha_f, 3);
-  if (gamma) PetscValidRealPointer(gamma, 4);
-  if (beta) PetscValidRealPointer(beta, 5);
+  if (alpha_m) PetscAssertPointer(alpha_m, 2);
+  if (alpha_f) PetscAssertPointer(alpha_f, 3);
+  if (gamma) PetscAssertPointer(gamma, 4);
+  if (beta) PetscAssertPointer(beta, 5);
   PetscUseMethod(ts, "TSAlpha2GetParams_C", (TS, PetscReal *, PetscReal *, PetscReal *, PetscReal *), (ts, alpha_m, alpha_f, gamma, beta));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -1,5 +1,4 @@
-#ifndef __KSP_PIPEGCR_H
-#define __KSP_PIPEGCR_H
+#pragma once
 
 #include <petsc/private/kspimpl.h> /*I "petscksp.h" I*/
 
@@ -22,5 +21,3 @@ typedef struct {
   PetscErrorCode (*modifypc)(KSP, PetscInt, PetscReal, void *); /* function to modify the preconditioner*/
   PetscErrorCode (*modifypc_destroy)(void *);                   /* function to destroy the user context for the modifypc function */
 } KSP_PIPEGCR;
-
-#endif

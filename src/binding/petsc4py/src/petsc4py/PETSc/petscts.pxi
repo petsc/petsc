@@ -16,6 +16,7 @@ cdef extern from * nogil:
     PetscTSType TSGLEE
     PetscTSType TSSSP
     PetscTSType TSARKIMEX
+    PetscTSType TSDIRK
     PetscTSType TSROSW
     PetscTSType TSEIMEX
     PetscTSType TSMIMEX
@@ -290,8 +291,8 @@ cdef extern from * nogil:
     PetscTSRKType TSRK7VR
     PetscTSRKType TSRK8VR
 
-    PetscErrorCode TSRKGetType(PetscTS ts,PetscTSRKType*)
-    PetscErrorCode TSRKSetType(PetscTS ts,PetscTSRKType)
+    PetscErrorCode TSRKGetType(PetscTS,PetscTSRKType*)
+    PetscErrorCode TSRKSetType(PetscTS,PetscTSRKType)
 
     ctypedef const char* PetscTSARKIMEXType "TSARKIMEXType"
     PetscTSARKIMEXType TSARKIMEX1BEE
@@ -308,9 +309,30 @@ cdef extern from * nogil:
     PetscTSARKIMEXType TSARKIMEX4
     PetscTSARKIMEXType TSARKIMEX5
 
-    PetscErrorCode TSARKIMEXGetType(PetscTS ts,PetscTSRKType*)
-    PetscErrorCode TSARKIMEXSetType(PetscTS ts,PetscTSRKType)
-    PetscErrorCode TSARKIMEXSetFullyImplicit(PetscTS ts,PetscBool)
+    PetscErrorCode TSARKIMEXGetType(PetscTS,PetscTSRKType*)
+    PetscErrorCode TSARKIMEXSetType(PetscTS,PetscTSRKType)
+    PetscErrorCode TSARKIMEXSetFullyImplicit(PetscTS,PetscBool)
+
+    ctypedef const char* PetscTSDIRKType "TSDIRKType"
+    PetscTSDIRKType TSDIRKS212
+    PetscTSDIRKType TSDIRKES122SAL
+    PetscTSDIRKType TSDIRKES213SAL
+    PetscTSDIRKType TSDIRKES324SAL
+    PetscTSDIRKType TSDIRKES325SAL
+    PetscTSDIRKType TSDIRK657A
+    PetscTSDIRKType TSDIRKES648SA
+    PetscTSDIRKType TSDIRK658A
+    PetscTSDIRKType TSDIRKS659A
+    PetscTSDIRKType TSDIRK7510SAL
+    PetscTSDIRKType TSDIRKES7510SA
+    PetscTSDIRKType TSDIRK759A
+    PetscTSDIRKType TSDIRKS7511SAL
+    PetscTSDIRKType TSDIRK8614A
+    PetscTSDIRKType TSDIRK8616SAL
+    PetscTSDIRKType TSDIRKES8516SAL
+
+    PetscErrorCode TSDIRKGetType(PetscTS,PetscTSDIRKType*)
+    PetscErrorCode TSDIRKSetType(PetscTS,PetscTSDIRKType)
 
     PetscErrorCode TSPythonSetType(PetscTS,char[])
     PetscErrorCode TSPythonGetType(PetscTS,char*[])
@@ -331,7 +353,7 @@ cdef extern from * nogil: # custom.h
 cdef inline TS ref_TS(PetscTS ts):
     cdef TS ob = <TS> TS()
     ob.ts = ts
-    PetscINCREF(ob.obj)
+    CHKERR( PetscINCREF(ob.obj) )
     return ob
 
 # -----------------------------------------------------------------------------
@@ -370,6 +392,23 @@ cdef PetscErrorCode TS_RHSJacobian(
     assert context is not None and type(context) is tuple # sanity check
     (jacobian, args, kargs) = context
     jacobian(Ts, toReal(t), Xvec, Jmat, Pmat, *args, **kargs)
+    return PETSC_SUCCESS
+
+cdef PetscErrorCode TS_RHSJacobianP(
+    PetscTS   ts,
+    PetscReal t,
+    PetscVec  x,
+    PetscMat  J,
+    void*     ctx,
+    ) except PETSC_ERR_PYTHON with gil:
+    cdef TS  Ts   = ref_TS(ts)
+    cdef Vec Xvec = ref_Vec(x)
+    cdef Mat Jmat = ref_Mat(J)
+    cdef object context = Ts.get_attr('__rhsjacobianp__')
+    if context is None and ctx != NULL: context = <object>ctx
+    assert context is not None and type(context) is tuple # sanity check
+    (jacobianp, args, kargs) = context
+    jacobianp(Ts, toReal(t), Xvec, Jmat, *args, **kargs)
     return PETSC_SUCCESS
 
 # -----------------------------------------------------------------------------
@@ -552,25 +591,6 @@ cdef PetscErrorCode TS_PostStep(
     cdef TS Ts = ref_TS(ts)
     (poststep, args, kargs) = Ts.get_attr('__poststep__')
     poststep(Ts, *args, **kargs)
-    return PETSC_SUCCESS
-
-# -----------------------------------------------------------------------------
-
-cdef PetscErrorCode TS_RHSJacobianP(
-    PetscTS   ts,
-    PetscReal t,
-    PetscVec  x,
-    PetscMat  J,
-    void*     ctx,
-    ) except PETSC_ERR_PYTHON with gil:
-    cdef TS  Ts   = ref_TS(ts)
-    cdef Vec Xvec = ref_Vec(x)
-    cdef Mat Jmat = ref_Mat(J)
-    cdef object context = Ts.get_attr('__rhsjacobianp__')
-    if context is None and ctx != NULL: context = <object>ctx
-    assert context is not None and type(context) is tuple # sanity check
-    (jacobianp, args, kargs) = context
-    jacobianp(Ts, toReal(t), Xvec, Jmat, *args, **kargs)
     return PETSC_SUCCESS
 
 # -----------------------------------------------------------------------------

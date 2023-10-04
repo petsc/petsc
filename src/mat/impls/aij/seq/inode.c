@@ -4,6 +4,9 @@
   by taking advantage of rows with identical nonzero structure (I-nodes).
 */
 #include <../src/mat/impls/aij/seq/aij.h>
+#if defined(PETSC_HAVE_XMMINTRIN_H)
+  #include <xmmintrin.h>
+#endif
 
 static PetscErrorCode MatCreateColInode_Private(Mat A, PetscInt *size, PetscInt **ns)
 {
@@ -790,7 +793,7 @@ static PetscErrorCode MatSolve_SeqAIJ_Inode_inplace(Mat A, Vec bb, Vec xx)
     nz  = ad[row] - aii;
     if (i < node_max - 1) {
       /* Prefetch the block after the current one, the prefetch itself can't cause a memory error,
-      * but our indexing to determine it's size could. */
+      * but our indexing to determine its size could. */
       PetscPrefetchBlock(aj + ai[row + nsz], ad[row + nsz] - ai[row + nsz], 0, PETSC_PREFETCH_HINT_NTA); /* indices */
       /* In my tests, it seems to be better to fetch entire rows instead of just the lower-triangular part */
       PetscPrefetchBlock(aa + ai[row + nsz], ad[row + nsz + ns[i + 1] - 1] - ai[row + nsz], 0, PETSC_PREFETCH_HINT_NTA);
@@ -2787,7 +2790,7 @@ PetscErrorCode MatSolve_SeqAIJ_Inode(Mat A, Vec bb, Vec xx)
 /*
      Makes a longer coloring[] array and calls the usual code with that
 */
-PetscErrorCode MatColoringPatch_SeqAIJ_Inode(Mat mat, PetscInt ncolors, PetscInt nin, ISColoringValue coloring[], ISColoring *iscoloring)
+static PetscErrorCode MatColoringPatch_SeqAIJ_Inode(Mat mat, PetscInt ncolors, PetscInt nin, ISColoringValue coloring[], ISColoring *iscoloring)
 {
   Mat_SeqAIJ      *a = (Mat_SeqAIJ *)mat->data;
   PetscInt         n = mat->cmap->n, m = a->inode.node_count, j, *ns = a->inode.size, row;
@@ -4565,26 +4568,26 @@ PetscErrorCode MatInodeAdjustForInodes_SeqAIJ_Inode(Mat A, IS *rperm, IS *cperm)
 }
 
 /*@C
-   MatInodeGetInodeSizes - Returns the inode information of a matrix with inodes
+  MatInodeGetInodeSizes - Returns the inode information of a matrix with inodes
 
-   Not Collective
+  Not Collective
 
-   Input Parameter:
-.  A - the Inode matrix or matrix derived from the Inode class -- e.g., `MATSEQAIJ`
+  Input Parameter:
+. A - the Inode matrix or matrix derived from the Inode class -- e.g., `MATSEQAIJ`
 
-   Output Parameters:
-+  node_count - no of inodes present in the matrix.
-.  sizes      - an array of size `node_count`, with the sizes of each inode.
--  limit      - the max size used to generate the inodes.
+  Output Parameters:
++ node_count - no of inodes present in the matrix.
+. sizes      - an array of size `node_count`, with the sizes of each inode.
+- limit      - the max size used to generate the inodes.
 
-   Level: advanced
+  Level: advanced
 
-   Note:
-   It should be called after the matrix is assembled.
-   The contents of the sizes[] array should not be changed.
-   `NULL` may be passed for information not needed
+  Note:
+  It should be called after the matrix is assembled.
+  The contents of the sizes[] array should not be changed.
+  `NULL` may be passed for information not needed
 
-.seealso: [](chapter_matrices), `Mat`, `MatGetInfo()`
+.seealso: [](ch_matrices), `Mat`, `MatGetInfo()`
 @*/
 PetscErrorCode MatInodeGetInodeSizes(Mat A, PetscInt *node_count, PetscInt *sizes[], PetscInt *limit)
 {

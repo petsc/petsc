@@ -33,7 +33,8 @@
 !     to put nearly an equal number of elements on each processor.
 
       N = rank + 1
-      PetscCallA(VecCreateMPI(PETSC_COMM_WORLD,N,PETSC_DECIDE,x,ierr))
+      ione = 1
+      PetscCallA(VecCreateFromOptions(PETSC_COMM_WORLD,PETSC_NULL_CHARACTER,ione,N,PETSC_DECIDE,x,ierr))
       PetscCallA(VecGetSize(x,N,ierr))
       PetscCallA(VecSet(x,one,ierr))
 

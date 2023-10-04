@@ -14,28 +14,28 @@
 PetscFunctionList PetscDrawList = NULL;
 
 /*@C
-   PetscDrawView - Prints the `PetscDraw` data structure.
+  PetscDrawView - Prints the `PetscDraw` data structure.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  indraw - the `PetscDraw` context
--  viewer - visualization context
+  Input Parameters:
++ indraw - the `PetscDraw` context
+- viewer - visualization context
 
    See PetscDrawSetFromOptions() for options database keys
 
-   Note:
-   The available visualization contexts include
+  Note:
+  The available visualization contexts include
 +     `PETSC_VIEWER_STDOUT_SELF` - standard output (default)
 -     `PETSC_VIEWER_STDOUT_WORLD` - synchronized standard
-         output where only the first processor opens
-         the file.  All other processors send their
-         data to the first processor to print.
+  output where only the first processor opens
+  the file.  All other processors send their
+  data to the first processor to print.
 
-   The user can open an alternative visualization context with
-   `PetscViewerASCIIOpen()` - output to a specified file.
+  The user can open an alternative visualization context with
+  `PetscViewerASCIIOpen()` - output to a specified file.
 
-   Level: beginner
+  Level: beginner
 
 .seealso: `PetscDraw`, `PetscViewerASCIIOpen()`, `PetscViewer`
 @*/
@@ -82,16 +82,17 @@ PetscErrorCode PetscDrawView(PetscDraw indraw, PetscViewer viewer)
 }
 
 /*@C
-   PetscDrawViewFromOptions - View a `PetscDraw` from the option database
+  PetscDrawViewFromOptions - View a `PetscDraw` from the option database
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  A - the `PetscDraw` context
-.  obj - Optional object
--  name - command line option
+  Input Parameters:
++ A    - the `PetscDraw` context
+. obj  - Optional object
+- name - command line option
 
-   Level: intermediate
+  Level: intermediate
+
 .seealso: `PetscDraw`, `PetscDrawView`, `PetscObjectViewFromOptions()`, `PetscDrawCreate()`
 @*/
 PetscErrorCode PetscDrawViewFromOptions(PetscDraw A, PetscObject obj, const char name[])
@@ -103,27 +104,27 @@ PetscErrorCode PetscDrawViewFromOptions(PetscDraw A, PetscObject obj, const char
 }
 
 /*@C
-   PetscDrawCreate - Creates a graphics context.
+  PetscDrawCreate - Creates a graphics context.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  comm - MPI communicator
-.  display - X display when using X Windows
-.  title - optional title added to top of window
-.  x - horizonatl coordinate of lower left corner of window or `PETSC_DECIDE`
-.  y - vertical coordinate of lower left corner of window or `PETSC_DECIDE`
-.  w - width of window, `PETSC_DECIDE`, `PETSC_DRAW_HALF_SIZE`, `PETSC_DRAW_FULL_SIZE`, `PETSC_DRAW_THIRD_SIZE` or `PETSC_DRAW_QUARTER_SIZE`
--  h - height of window, `PETSC_DECIDE`, `PETSC_DRAW_HALF_SIZE`, `PETSC_DRAW_FULL_SIZE`, `PETSC_DRAW_THIRD_SIZE` or `PETSC_DRAW_QUARTER_SIZE`
+  Input Parameters:
++ comm    - MPI communicator
+. display - X display when using X Windows
+. title   - optional title added to top of window
+. x       - horizonatl coordinate of lower left corner of window or `PETSC_DECIDE`
+. y       - vertical coordinate of lower left corner of window or `PETSC_DECIDE`
+. w       - width of window, `PETSC_DECIDE`, `PETSC_DRAW_HALF_SIZE`, `PETSC_DRAW_FULL_SIZE`, `PETSC_DRAW_THIRD_SIZE` or `PETSC_DRAW_QUARTER_SIZE`
+- h       - height of window, `PETSC_DECIDE`, `PETSC_DRAW_HALF_SIZE`, `PETSC_DRAW_FULL_SIZE`, `PETSC_DRAW_THIRD_SIZE` or `PETSC_DRAW_QUARTER_SIZE`
 
-   Output Parameter:
-.  draw - location to put the `PetscDraw` context
+  Output Parameter:
+. indraw - location to put the `PetscDraw` context
 
-   Level: beginner
+  Level: beginner
 
-.seealso: `PetscDrawSetType()`, `PetscDrawSetFromOptions()`, `PetscDrawDestroy()`, `PetscDrawSetType()`, `PetscDrawLGCreate()`, `PetscDrawSPCreate()`,
+.seealso: `PetscDrawSetType()`, `PetscDrawSetFromOptions()`, `PetscDrawDestroy()`, `PetscDrawLGCreate()`, `PetscDrawSPCreate()`,
           `PetscDrawViewPortsCreate()`, `PetscDrawViewPortsSet()`, `PetscDrawAxisCreate()`, `PetscDrawHGCreate()`, `PetscDrawBarCreate()`,
-          `PetscViewerDrawGetDraw()`, `PetscDrawSetFromOptions()`, `PetscDrawSetSave()`, `PetscDrawSetSaveMovie()`, `PetscDrawSetSaveFinalImage()`,
+          `PetscViewerDrawGetDraw()`, `PetscDrawSetSave()`, `PetscDrawSetSaveMovie()`, `PetscDrawSetSaveFinalImage()`,
           `PetscDrawOpenX()`, `PetscDrawOpenImage()`, `PetscDrawIsNull()`, `PetscDrawGetPopup()`, `PetscDrawCheckResizedWindow()`, `PetscDrawResizeWindow()`,
           `PetscDrawGetWindowSize()`, `PetscDrawLine()`, `PetscDrawArrow()`, `PetscDrawLineSetWidth()`, `PetscDrawLineGetWidth()`, `PetscDrawMarker()`,
           `PetscDrawPoint()`, `PetscDrawRectangle()`, `PetscDrawTriangle()`, `PetscDrawEllipse()`, `PetscDrawString()`, `PetscDrawStringCentered()`,
@@ -183,24 +184,24 @@ PetscErrorCode PetscDrawCreate(MPI_Comm comm, const char display[], const char t
 }
 
 /*@C
-   PetscDrawSetType - Builds graphics object for a particular implementation
+  PetscDrawSetType - Builds graphics object for a particular implementation
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  draw      - the graphics context
--  type      - for example, `PETSC_DRAW_X`
+  Input Parameters:
++ draw - the graphics context
+- type - for example, `PETSC_DRAW_X`
 
-   Options Database Key:
-.  -draw_type  <type> - Sets the type; use -help for a list of available methods (for instance, x)
+  Options Database Key:
+. -draw_type  <type> - Sets the type; use -help for a list of available methods (for instance, x)
 
-   Level: intermediate
+  Level: intermediate
 
-   Note:
-   See `PetscDrawSetFromOptions()` for additional options database keys
+  Note:
+  See `PetscDrawSetFromOptions()` for additional options database keys
 
-   See "petsc/include/petscdraw.h" for available methods (for instance,
-   `PETSC_DRAW_X`, `PETSC_DRAW_TIKZ` or `PETSC_DRAW_IMAGE`)
+  See "petsc/include/petscdraw.h" for available methods (for instance,
+  `PETSC_DRAW_X`, `PETSC_DRAW_TIKZ` or `PETSC_DRAW_IMAGE`)
 
 .seealso: `PetscDraw`, `PETSC_DRAW_X`, `PETSC_DRAW_TIKZ`, `PETSC_DRAW_IMAGE`, `PetscDrawSetFromOptions()`, `PetscDrawCreate()`, `PetscDrawDestroy()`, `PetscDrawType`
 @*/
@@ -212,7 +213,7 @@ PetscErrorCode PetscDrawSetType(PetscDraw draw, PetscDrawType type)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw, PETSC_DRAW_CLASSID, 1);
-  PetscValidCharPointer(type, 2);
+  PetscAssertPointer(type, 2);
 
   PetscCall(PetscObjectTypeCompare((PetscObject)draw, type, &match));
   if (match) PetscFunctionReturn(PETSC_SUCCESS);
@@ -251,7 +252,7 @@ PetscErrorCode PetscDrawSetType(PetscDraw draw, PetscDrawType type)
   }
 
   PetscCall(PetscFunctionListFind(PetscDrawList, type, &r));
-  PetscCheck(r, PETSC_COMM_SELF, PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown PetscDraw type given: %s", type);
+  PetscCheck(r, PetscObjectComm((PetscObject)draw), PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown PetscDraw type given: %s", type);
   PetscTryTypeMethod(draw, destroy);
   PetscCall(PetscMemzero(draw->ops, sizeof(struct _PetscDrawOps)));
   PetscCall(PetscObjectChangeTypeName((PetscObject)draw, type));
@@ -260,51 +261,51 @@ PetscErrorCode PetscDrawSetType(PetscDraw draw, PetscDrawType type)
 }
 
 /*@C
-   PetscDrawGetType - Gets the `PetscDraw` type as a string from the `PetscDraw` object.
+  PetscDrawGetType - Gets the `PetscDraw` type as a string from the `PetscDraw` object.
 
-   Not Collective
+  Not Collective
 
-   Input Parameter:
-.  draw - Krylov context
+  Input Parameter:
+. draw - Krylov context
 
-   Output Parameter:
-.  name - name of PetscDraw method
+  Output Parameter:
+. type - name of PetscDraw method
 
-   Level: advanced
+  Level: advanced
 
-.seealso: `PetscDraw`, `PetscDrawType`, `PetscDrawSetType()`, `PetscDrawCreate()
+.seealso: `PetscDraw`, `PetscDrawType`, `PetscDrawSetType()`, `PetscDrawCreate()`
 @*/
 PetscErrorCode PetscDrawGetType(PetscDraw draw, PetscDrawType *type)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw, PETSC_DRAW_CLASSID, 1);
-  PetscValidPointer(type, 2);
+  PetscAssertPointer(type, 2);
   *type = ((PetscObject)draw)->type_name;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
-   PetscDrawRegister - Adds a method to the graphics package.
+  PetscDrawRegister - Adds a method to the graphics package.
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  name_solver - name of a new user-defined graphics class
--  routine_create - routine to create method context
+  Input Parameters:
++ sname    - name of a new user-defined graphics class
+- function - routine to create method context
 
-   Level: developer
+  Level: developer
 
-   Note:
-   `PetscDrawRegister()` may be called multiple times to add several user-defined graphics classes
+  Note:
+  `PetscDrawRegister()` may be called multiple times to add several user-defined graphics classes
 
-   Sample usage:
+  Example Usage:
 .vb
    PetscDrawRegister("my_draw_type", MyDrawCreate);
 .ve
 
-   Then, your specific graphics package can be chosen with the procedural interface via
-$     PetscDrawSetType(ksp,"my_draw_type")
-   or at runtime via the option
+  Then, your specific graphics package can be chosen with the procedural interface via
+$     PetscDrawSetType(ksp, "my_draw_type")
+  or at runtime via the option
 $     -draw_type my_draw_type
 
 .seealso: `PetscDraw`, `PetscDrawRegisterAll()`, `PetscDrawRegisterDestroy()`, `PetscDrawType`, `PetscDrawSetType()`
@@ -318,16 +319,16 @@ PetscErrorCode PetscDrawRegister(const char *sname, PetscErrorCode (*function)(P
 }
 
 /*@C
-   PetscDrawSetOptionsPrefix - Sets the prefix used for searching for all
-   `PetscDraw` options in the database.
+  PetscDrawSetOptionsPrefix - Sets the prefix used for searching for all
+  `PetscDraw` options in the database.
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  draw - the draw context
--  prefix - the prefix to prepend to all option names
+  Input Parameters:
++ draw   - the draw context
+- prefix - the prefix to prepend to all option names
 
-   Level: advanced
+  Level: advanced
 
 .seealso: `PetscDraw`, `PetscDrawSetFromOptions()`, `PetscDrawCreate()`
 @*/
@@ -340,30 +341,30 @@ PetscErrorCode PetscDrawSetOptionsPrefix(PetscDraw draw, const char prefix[])
 }
 
 /*@
-   PetscDrawSetFromOptions - Sets the graphics type from the options database.
-      Defaults to a PETSc X Windows graphics.
+  PetscDrawSetFromOptions - Sets the graphics type from the options database.
+  Defaults to a PETSc X Windows graphics.
 
-   Collective
+  Collective
 
-   Input Parameter:
-.     draw - the graphics context
+  Input Parameter:
+. draw - the graphics context
 
-   Options Database Keys:
-+   -nox - do not use X graphics (ignore graphics calls, but run program correctly)
-.   -nox_warning - when X Windows support is not installed this prevents the warning message from being printed
-.   -draw_pause <pause amount> -- -1 indicates wait for mouse input, -2 indicates pause when window is to be destroyed
-.   -draw_marker_type - <x,point>
-.   -draw_save [optional filename] - (X Windows only) saves each image before it is cleared to a file
-.   -draw_save_final_image [optional filename] - (X Windows only) saves the final image displayed in a window
-.   -draw_save_movie - converts image files to a movie  at the end of the run. See PetscDrawSetSave()
-.   -draw_save_single_file - saves each new image in the same file, normally each new image is saved in a new file with 'filename/filename_%d.ext'
-.   -draw_save_on_clear - saves an image on each clear, mainly for debugging
--   -draw_save_on_flush - saves an image on each flush, mainly for debugging
+  Options Database Keys:
++ -nox                                       - do not use X graphics (ignore graphics calls, but run program correctly)
+. -nox_warning                               - when X Windows support is not installed this prevents the warning message from being printed
+. -draw_pause <pause amount>                 - - -1 indicates wait for mouse input, -2 indicates pause when window is to be destroyed
+. -draw_marker_type                          - <x,point>
+. -draw_save [optional filename]             - (X Windows only) saves each image before it is cleared to a file
+. -draw_save_final_image [optional filename] - (X Windows only) saves the final image displayed in a window
+. -draw_save_movie                           - converts image files to a movie  at the end of the run. See PetscDrawSetSave()
+. -draw_save_single_file                     - saves each new image in the same file, normally each new image is saved in a new file with 'filename/filename_%d.ext'
+. -draw_save_on_clear                        - saves an image on each clear, mainly for debugging
+- -draw_save_on_flush                        - saves an image on each flush, mainly for debugging
 
-   Level: intermediate
+  Level: intermediate
 
-   Note:
-    Must be called after `PetscDrawCreate()` before the `PetscDraw` is used.
+  Note:
+  Must be called after `PetscDrawCreate()` before the `PetscDraw` is used.
 
 .seealso: `PetscDraw`, `PetscDrawCreate()`, `PetscDrawSetType()`, `PetscDrawSetSave()`, `PetscDrawSetSaveFinalImage()`, `PetscDrawPause()`, `PetscDrawSetPause()`
 @*/

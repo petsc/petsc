@@ -384,10 +384,11 @@ class Logger(args.ArgumentProcessor):
           for ms in clean_msg.splitlines():
             f.write(ms[:self.linewidth])
         else:
-          if not debugSection is None and not debugSection == 'screen' and len(msg):
-            f.write(str(debugSection))
-            f.write(': ')
-          f.write(msg if writeAll else clean_msg)
+          if writeAll or not msg.startswith('TESTING:') or f.isatty():
+            if not debugSection is None and not debugSection == 'screen' and len(msg):
+              f.write(str(debugSection))
+              f.write(': ')
+            f.write(msg if writeAll else clean_msg)
         if hasattr(f, 'flush'):
           f.flush()
     return
@@ -400,7 +401,7 @@ class Logger(args.ArgumentProcessor):
     self.logWrite(msg, debugLevel, debugSection, forceScroll = forceScroll, rmDir = rmDir)
     for writeAll, f in enumerate([self.out, self.log]):
       if self.checkWrite(f, debugLevel, debugSection, writeAll):
-        if forceNewLine or writeAll or self.linewidth < 0:
+        if forceNewLine or writeAll:
           f.write('\n')
     return
 

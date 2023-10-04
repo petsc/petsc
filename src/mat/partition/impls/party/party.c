@@ -132,7 +132,7 @@ static PetscErrorCode MatPartitioningApply_Party(MatPartitioning part, IS *parti
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatPartitioningView_Party(MatPartitioning part, PetscViewer viewer)
+static PetscErrorCode MatPartitioningView_Party(MatPartitioning part, PetscViewer viewer)
 {
   MatPartitioning_Party *party = (MatPartitioning_Party *)part->data;
   PetscBool              isascii;
@@ -151,24 +151,24 @@ PetscErrorCode MatPartitioningView_Party(MatPartitioning part, PetscViewer viewe
 }
 
 /*@C
-   MatPartitioningPartySetGlobal - Set global method for Party partitioner.
+  MatPartitioningPartySetGlobal - Set global method for Party partitioner.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  part - the partitioning context
--  method - a string representing the method
+  Input Parameters:
++ part   - the partitioning context
+- global - a string representing the method
 
-   Options Database Key:
-.  -mat_partitioning_party_global <method> - the global method
+  Options Database Key:
+. -mat_partitioning_party_global <method> - the global method
 
-   Level: advanced
+  Level: advanced
 
-   Note:
-   The method may be one of `MP_PARTY_OPT`, `MP_PARTY_LIN`, `MP_PARTY_SCA`,
-   `MP_PARTY_RAN`, `MP_PARTY_GBF`, `MP_PARTY_GCF`, `MP_PARTY_BUB` or `MP_PARTY_DEF`, or
-   alternatively a string describing the method. Two or more methods can be
-   combined like "gbf,gcf". Check the Party Library Users Manual for details.
+  Note:
+  The method may be one of `MP_PARTY_OPT`, `MP_PARTY_LIN`, `MP_PARTY_SCA`,
+  `MP_PARTY_RAN`, `MP_PARTY_GBF`, `MP_PARTY_GCF`, `MP_PARTY_BUB` or `MP_PARTY_DEF`, or
+  alternatively a string describing the method. Two or more methods can be
+  combined like "gbf,gcf". Check the Party Library Users Manual for details.
 
 .seealso: `MATPARTITIONINGPARTY`, `MatPartitioningPartySetLocal()`
 @*/
@@ -180,7 +180,7 @@ PetscErrorCode MatPartitioningPartySetGlobal(MatPartitioning part, const char *g
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatPartitioningPartySetGlobal_Party(MatPartitioning part, const char *global)
+static PetscErrorCode MatPartitioningPartySetGlobal_Party(MatPartitioning part, const char *global)
 {
   MatPartitioning_Party *party = (MatPartitioning_Party *)part->data;
 
@@ -190,22 +190,22 @@ PetscErrorCode MatPartitioningPartySetGlobal_Party(MatPartitioning part, const c
 }
 
 /*@C
-   MatPartitioningPartySetLocal - Set local method used by the Party partitioner.
+  MatPartitioningPartySetLocal - Set local method used by the Party partitioner.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  part - the partitioning context
--  method - a string representing the method
+  Input Parameters:
++ part  - the partitioning context
+- local - a string representing the method
 
-   Options Database Key:
-.  -mat_partitioning_party_local <method> - the local method
+  Options Database Key:
+. -mat_partitioning_party_local <method> - the local method
 
-   Level: advanced
+  Level: advanced
 
-   Note:
-   The method may be one of `MP_PARTY_HELPFUL_SETS`, `MP_PARTY_KERNIGHAN_LIN`, or
-   `MP_PARTY_NONE`. Check the Party Library Users Manual for details.
+  Note:
+  The method may be one of `MP_PARTY_HELPFUL_SETS`, `MP_PARTY_KERNIGHAN_LIN`, or
+  `MP_PARTY_NONE`. Check the Party Library Users Manual for details.
 
 .seealso: `MATPARTITIONINGPARTY`, `MatPartitioningPartySetGlobal()`
 @*/
@@ -217,7 +217,7 @@ PetscErrorCode MatPartitioningPartySetLocal(MatPartitioning part, const char *lo
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatPartitioningPartySetLocal_Party(MatPartitioning part, const char *local)
+static PetscErrorCode MatPartitioningPartySetLocal_Party(MatPartitioning part, const char *local)
 
 {
   MatPartitioning_Party *party = (MatPartitioning_Party *)part->data;
@@ -228,19 +228,19 @@ PetscErrorCode MatPartitioningPartySetLocal_Party(MatPartitioning part, const ch
 }
 
 /*@
-   MatPartitioningPartySetCoarseLevel - Set the coarse level parameter for the
-   Party partitioner.
+  MatPartitioningPartySetCoarseLevel - Set the coarse level parameter for the
+  Party partitioner.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  part - the partitioning context
--  level - the coarse level in range [0.0,1.0]
+  Input Parameters:
++ part  - the partitioning context
+- level - the coarse level in range [0.0,1.0]
 
-   Options Database Key:
-.  -mat_partitioning_party_coarse <l> - Coarse level
+  Options Database Key:
+. -mat_partitioning_party_coarse <l> - Coarse level
 
-   Level: advanced
+  Level: advanced
 
 .seealso: `MATPARTITIONINGPARTY`
 @*/
@@ -253,7 +253,7 @@ PetscErrorCode MatPartitioningPartySetCoarseLevel(MatPartitioning part, PetscRea
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatPartitioningPartySetCoarseLevel_Party(MatPartitioning part, PetscReal level)
+static PetscErrorCode MatPartitioningPartySetCoarseLevel_Party(MatPartitioning part, PetscReal level)
 {
   MatPartitioning_Party *party = (MatPartitioning_Party *)part->data;
 
@@ -265,21 +265,21 @@ PetscErrorCode MatPartitioningPartySetCoarseLevel_Party(MatPartitioning part, Pe
 }
 
 /*@
-   MatPartitioningPartySetMatchOptimization - Activate matching optimization for
-   graph reduction.
+  MatPartitioningPartySetMatchOptimization - Activate matching optimization for
+  graph reduction.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  part - the partitioning context
--  opt - boolean flag
+  Input Parameters:
++ part - the partitioning context
+- opt  - boolean flag
 
-   Options Database Key:
-.  -mat_partitioning_party_match_optimization - Matching optimization on/off
+  Options Database Key:
+. -mat_partitioning_party_match_optimization - Matching optimization on/off
 
-   Level: advanced
+  Level: advanced
 
-.seealso:  `MATPARTITIONINGPARTY`
+.seealso: `MATPARTITIONINGPARTY`
 @*/
 PetscErrorCode MatPartitioningPartySetMatchOptimization(MatPartitioning part, PetscBool opt)
 {
@@ -290,7 +290,7 @@ PetscErrorCode MatPartitioningPartySetMatchOptimization(MatPartitioning part, Pe
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatPartitioningPartySetMatchOptimization_Party(MatPartitioning part, PetscBool opt)
+static PetscErrorCode MatPartitioningPartySetMatchOptimization_Party(MatPartitioning part, PetscBool opt)
 {
   MatPartitioning_Party *party = (MatPartitioning_Party *)part->data;
 
@@ -300,20 +300,20 @@ PetscErrorCode MatPartitioningPartySetMatchOptimization_Party(MatPartitioning pa
 }
 
 /*@
-   MatPartitioningPartySetBipart - Activate or deactivate recursive bisection in the Party partitioner
+  MatPartitioningPartySetBipart - Activate or deactivate recursive bisection in the Party partitioner
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  part - the partitioning context
--  bp - boolean flag
+  Input Parameters:
++ part - the partitioning context
+- bp   - boolean flag
 
-   Options Database Key:
--  -mat_partitioning_party_bipart - Bipartitioning option on/off
+  Options Database Key:
+. -mat_partitioning_party_bipart - Bipartitioning option on/off
 
-   Level: advanced
+  Level: advanced
 
-.seealso:  `MATPARTITIONINGPARTY`
+.seealso: `MATPARTITIONINGPARTY`
 @*/
 PetscErrorCode MatPartitioningPartySetBipart(MatPartitioning part, PetscBool bp)
 {
@@ -324,7 +324,7 @@ PetscErrorCode MatPartitioningPartySetBipart(MatPartitioning part, PetscBool bp)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatPartitioningPartySetBipart_Party(MatPartitioning part, PetscBool bp)
+static PetscErrorCode MatPartitioningPartySetBipart_Party(MatPartitioning part, PetscBool bp)
 {
   MatPartitioning_Party *party = (MatPartitioning_Party *)part->data;
 
@@ -333,7 +333,7 @@ PetscErrorCode MatPartitioningPartySetBipart_Party(MatPartitioning part, PetscBo
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatPartitioningSetFromOptions_Party(MatPartitioning part, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode MatPartitioningSetFromOptions_Party(MatPartitioning part, PetscOptionItems *PetscOptionsObject)
 {
   PetscBool              flag;
   char                   value[256];
@@ -355,7 +355,7 @@ PetscErrorCode MatPartitioningSetFromOptions_Party(MatPartitioning part, PetscOp
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatPartitioningDestroy_Party(MatPartitioning part)
+static PetscErrorCode MatPartitioningDestroy_Party(MatPartitioning part)
 {
   MatPartitioning_Party *party = (MatPartitioning_Party *)part->data;
 

@@ -5,7 +5,7 @@ class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.GNUPackage.__init__(self, framework)
     self.gitcommit         = 'openssl-3.0.8'
-    self.download          = ['git://https://github.com/openssl/openssl.git']
+    self.download          = ['git://https://github.com/openssl/openssl.git','https://github.com/openssl/openssl/archive/'+self.gitcommit+'.tar.gz']
     self.functions         = ['SSL_version']
     self.includes          = ['openssl/ssl.h']
     self.liblist           = [['libssl.a','libcrypto.a']]
@@ -32,7 +32,7 @@ class Configure(config.package.GNUPackage):
     ## prefix
     args.append('--prefix='+self.installDir)
     args.append('MAKE='+self.make.make)
-    args.append('--libdir='+os.path.join(self.installDir,self.libdir))
+    args.append('--libdir='+self.libDir)
     ## compiler args
     self.pushLanguage('C')
     if not self.installwithbatch and hasattr(self.setCompilers,'cross_cc'):

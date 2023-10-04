@@ -451,8 +451,8 @@ PETSC_EXTERN PetscErrorCode TaoCreate_BRGN(Tao tao)
   Collective
 
   Input Parameters:
-+  tao - the Tao solver context
--  subsolver - the `Tao` sub-solver context
++ tao       - the Tao solver context
+- subsolver - the `Tao` sub-solver context
 
   Level: advanced
 
@@ -473,8 +473,8 @@ PetscErrorCode TaoBRGNGetSubsolver(Tao tao, Tao *subsolver)
   Collective
 
   Input Parameters:
-+  tao - the `Tao` solver context
--  lambda - L1-norm regularizer weight
++ tao    - the `Tao` solver context
+- lambda - L1-norm regularizer weight
 
   Level: beginner
 
@@ -497,8 +497,8 @@ PetscErrorCode TaoBRGNSetRegularizerWeight(Tao tao, PetscReal lambda)
   Collective
 
   Input Parameters:
-+  tao - the `Tao` solver context
--  epsilon - L1-norm smooth approximation parameter
++ tao     - the `Tao` solver context
+- epsilon - L1-norm smooth approximation parameter
 
   Level: advanced
 
@@ -516,13 +516,13 @@ PetscErrorCode TaoBRGNSetL1SmoothEpsilon(Tao tao, PetscReal epsilon)
 }
 
 /*@
-   TaoBRGNSetDictionaryMatrix - bind the dictionary matrix from user application context to gn->D, for compressed sensing (with least-squares problem)
+  TaoBRGNSetDictionaryMatrix - bind the dictionary matrix from user application context to gn->D, for compressed sensing (with least-squares problem)
 
-   Input Parameters:
-+  tao  - the `Tao` context
--  dict - the user specified dictionary matrix.  We allow to set a `NULL` dictionary, which means identity matrix by default
+  Input Parameters:
++ tao  - the `Tao` context
+- dict - the user specified dictionary matrix.  We allow to set a `NULL` dictionary, which means identity matrix by default
 
-    Level: advanced
+  Level: advanced
 
 .seealso: `Tao`, `Mat`, `TAOBRGN`
 @*/
@@ -542,27 +542,26 @@ PetscErrorCode TaoBRGNSetDictionaryMatrix(Tao tao, Mat dict)
 }
 
 /*@C
-   TaoBRGNSetRegularizerObjectiveAndGradientRoutine - Sets the user-defined regularizer call-back
-   function into the algorithm.
+  TaoBRGNSetRegularizerObjectiveAndGradientRoutine - Sets the user-defined regularizer call-back
+  function into the algorithm.
 
-   Input Parameters:
-+ tao - the Tao context
+  Input Parameters:
++ tao  - the Tao context
 . func - function pointer for the regularizer value and gradient evaluation
-- ctx - user context for the regularizer
+- ctx  - user context for the regularizer
 
-   Calling Sequence of `func`:
-$  PetscErrorCode (*func)(Tao tao, Vec u, PetscReal val, Vec g, void *ctx)
-+  tao - the `Tao` context
-.  u - the location at which to compute the objective and gradient
-.  val - location to store objective function value
-.  g - location to store gradient
--  ctx - user context for the regularizer Hessian
+  Calling sequence:
++ tao - the `Tao` context
+. u   - the location at which to compute the objective and gradient
+. val - location to store objective function value
+. g   - location to store gradient
+- ctx - user context for the regularizer Hessian
 
-   Level: advanced
+  Level: advanced
 
 .seealso: `Tao`, `Mat`, `TAOBRGN`
 @*/
-PetscErrorCode TaoBRGNSetRegularizerObjectiveAndGradientRoutine(Tao tao, PetscErrorCode (*func)(Tao, Vec, PetscReal *, Vec, void *), void *ctx)
+PetscErrorCode TaoBRGNSetRegularizerObjectiveAndGradientRoutine(Tao tao, PetscErrorCode (*func)(Tao tao, Vec u, PetscReal *val, Vec g, void *ctx), void *ctx)
 {
   TAO_BRGN *gn = (TAO_BRGN *)tao->data;
 
@@ -574,27 +573,26 @@ PetscErrorCode TaoBRGNSetRegularizerObjectiveAndGradientRoutine(Tao tao, PetscEr
 }
 
 /*@C
-   TaoBRGNSetRegularizerHessianRoutine - Sets the user-defined regularizer call-back
-   function into the algorithm.
+  TaoBRGNSetRegularizerHessianRoutine - Sets the user-defined regularizer call-back
+  function into the algorithm.
 
-   Input Parameters:
-+  tao - the `Tao` context
-.  Hreg - user-created matrix for the Hessian of the regularization term
-.  func - function pointer for the regularizer Hessian evaluation
--  ctx - user context for the regularizer Hessian
+  Input Parameters:
++ tao  - the `Tao` context
+. Hreg - user-created matrix for the Hessian of the regularization term
+. func - function pointer for the regularizer Hessian evaluation
+- ctx  - user context for the regularizer Hessian
 
-   Calling Sequence of `func`:
-$  PetscErrorCode (*func)(Tao tao, Vec u, Mat H, void *ctx)
-+  tao - the `Tao` context
-.  u - the location at which to compute the Hessian
-.  Hreg - user-created matrix for the Hessian of the regularization term
--  ctx - user context for the regularizer Hessian
+  Calling sequence:
++ tao  - the `Tao` context
+. u    - the location at which to compute the Hessian
+. Hreg - user-created matrix for the Hessian of the regularization term
+- ctx  - user context for the regularizer Hessian
 
-   Level: advanced
+  Level: advanced
 
-  .seealso: `Tao`, `Mat`, `TAOBRGN`
+.seealso: `Tao`, `Mat`, `TAOBRGN`
 @*/
-PetscErrorCode TaoBRGNSetRegularizerHessianRoutine(Tao tao, Mat Hreg, PetscErrorCode (*func)(Tao, Vec, Mat, void *), void *ctx)
+PetscErrorCode TaoBRGNSetRegularizerHessianRoutine(Tao tao, Mat Hreg, PetscErrorCode (*func)(Tao tao, Vec u, Mat Hreg, void *ctx), void *ctx)
 {
   TAO_BRGN *gn = (TAO_BRGN *)tao->data;
 

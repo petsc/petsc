@@ -12,6 +12,7 @@ class Configure(config.package.GNUPackage):
     self.buildLanguages    = ['FC']    # 1 means requires fortran
     self.linkedbypetsc     = 0
     self.useddirectly      = 0
+    self.skippackagelibincludedirs = 1
     return
 
   def setupDependencies(self, framework):
@@ -32,10 +33,6 @@ class Configure(config.package.GNUPackage):
       raise RuntimeError('Pflotran does not support --with-pflotran; only --download-pflotran')
     if 'with-pflotran-dir' in self.framework.clArgDB:
       raise RuntimeError('Pflotran does not support --with-pflotran-dir; only --download-pflotran')
-    if 'with-pflotran-include' in self.framework.clArgDB:
-      raise RuntimeError('Pflotran does not support --with-pflotran-include; only --download-pflotran')
-    if 'with-pflotran-lib' in self.framework.clArgDB:
-      raise RuntimeError('Pflotran does not support --with-pflotran-lib; only --download-pflotran')
     if 'with-pflotran-shared' in self.framework.clArgDB:
       raise RuntimeError('Pflotran does not support --with-pflotran-shared')
 

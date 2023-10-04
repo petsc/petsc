@@ -18,9 +18,9 @@ General Guidelines
 Documentation with Sphinx
 =========================
 
-We use `Sphinx <https://www.sphinx-doc.org/en/master/>`__ to build our web page and documentation.  Most content is written using `reStructuredText <https://www.sphinx-doc.org/en/master/usage/restructuredtext/basics.html>`__, a simple markup language.
+We use `Sphinx <https://www.sphinx-doc.org/en/master/>`__ to build our web pages and documentation. Most content is written using `reStructuredText <https://www.sphinx-doc.org/en/master/usage/restructuredtext/basics.html>`__, a simple markup language.
 
-`These slides <https://gitlab.com/psanan/petsc-sphinx-slides>`__ contain an overview of Sphinx and how we use(d) it, as of October, 2020.
+`These slides <https://gitlab.com/psanan/petsc-sphinx-slides>`__ contain an overview of Sphinx and how we use(d) it, as of October 2020.
 
 
 .. _sec_local_html_docs:
@@ -28,37 +28,21 @@ We use `Sphinx <https://www.sphinx-doc.org/en/master/>`__ to build our web page 
 Building the HTML docs locally
 ------------------------------
 
-.. admonition:: Note
-
-    The documentation build with Sphinx involves configuring a minimal build
-    of PETSc and building some of the :any:`classic docs <classic_docs_build>`,
-    which requires local working ``flex``, ``gcc``, and  ``g++`` before
-    you follow the instructions below.
-
-We suggest using a `Python 3 virtual environment <https://docs.python.org/3/tutorial/venv.html>`__  [#venv_footnote]_.
+We use a a `Python 3 virtual environment <https://docs.python.org/3/tutorial/venv.html>`__  to build the documentation since not all developers can trivially install the needed Python modules directly.
 
 .. code-block:: console
 
    $ cd $PETSC_DIR
-   $ python3 -m venv petsc-doc-env
-   $ . petsc-doc-env/bin/activate
-   $ python3 -m pip install -r doc/requirements.txt
+   $ make docs
+   $ open doc/_build/html/index.html  # in a browser
 
-Then,
-
-.. code-block:: console
-
-   $ cd doc
-   $ make html                      # may take several minutes
-   $ browse _build/html/index.html  # or otherwise open in browser
-
-
-to turn off the Python virtual environment once you have built the documentation use
+or
 
 .. code-block:: console
 
-   $ deactivate
-
+   $ cd $PETSC_DIR/doc
+   $ make sphinxhtml
+   $ open _build/html/index.html
 
 .. _sec_local_docs_latex:
 
@@ -67,17 +51,17 @@ Building the manual locally as a PDF via LaTeX
 
 .. admonition:: Note
 
-   Before following these instructions, you should have a working
+   Before following these instructions, you need to have a working
    local LaTeX installation and the ability to install additional packages,
    if need be, to resolve LaTeX errors.
 
-Set up your local Python environment (e.g. :ref:`as above <sec_local_html_docs>`), then
+Set up your local Python environment (e.g., ref:`as above <sec_local_html_docs>`), then
 
 .. code-block:: console
 
    $ cd doc
-   $ make latexpdf
-   $ open _build/latex/manual.pdf  # or otherwise open in PDF viewer
+   $ make sphinxpdf
+   $ open _build/latex/manual.pdf  # in PDF viewer
 
 .. _sphinx_guidelines:
 
@@ -86,7 +70,7 @@ Sphinx Documentation Guidelines
 
 Refer to Sphinx's `own documentation <https://https://www.sphinx-doc.org>`__ for general information on how to use Sphinx, and note the following additional guidelines.
 
-* Use the `literalinclude directive <https://www.sphinx-doc.org/en/master/usage/restructuredtext/directives.html#directive-literalinclude>`__ to directly include pieces of source code. Use an "absolute" path, beginning with ``/``, which means relative to the root for the Sphinx docs (where ``conf.py`` is found).
+* Use the `literalinclude directive <https://www.sphinx-doc.org/en/master/usage/restructuredtext/directives.html#directive-literalinclude>`__ to directly include pieces of source code. Use a path beginning with ``/``, relative to the root for the Sphinx docs (where ``conf.py`` is found).
 
   .. code-block:: rst
 
@@ -95,19 +79,18 @@ Refer to Sphinx's `own documentation <https://https://www.sphinx-doc.org>`__ for
          :end-at: PetscFunctionReturn(PETSC_SUCCESS)
          :append: }
 
-  For robustness to changes in the source files, Use ``:start-at:`` and related options when possible, noting that you can also use (positive) values of ``:lines:`` relative to this. For languages other than C, use the ``:language:`` option to appropriately highlight.
+  For robustness to changes in the source files, Use ``:start-at:`` and related options when possible, noting that you can also use (positive) values of ``:lines:`` relative to this. Use the ``:language:`` option to appropriately highlight languages other than C.
 
 * Any invocable command line statements longer than a few words should be in
-  ``.. code-block::`` sections. Any such statements not in code-block statements must be
-  enclosed by double backticks "``". For example ``make all`` is acceptable but
+  ``.. code-block::`` sections. Double backticks must enclose any such statements not in code-block statements"``". For example ``make all`` is acceptable but
 
   .. code-block:: console
 
      $ make PETSC_DIR=/my/path/to/petsc PETSC_ARCH=my-petsc-arch all
 
-  should be in a block.
+  should be in a ``.. code-block::``.
 
-* All code blocks showing invocation of command line must use the "console" block
+* All code blocks showing command line invocation must use the "console" block
   directive. E.g.
 
   .. code-block:: rst
@@ -119,8 +102,8 @@ Refer to Sphinx's `own documentation <https://https://www.sphinx-doc.org>`__ for
         output1
         output2
 
-  The only exception of this is when displaying raw output, i.e. with no preceding
-  commands. Then one may use just the "::" directive to improve visibility E.g.
+  The only exception to this is when displaying raw output, i.e., with no preceding
+  commands. Then one may use just the "::" directive to improve visibility, e.g.,
 
   .. code-block:: rst
 
@@ -172,12 +155,12 @@ Refer to Sphinx's `own documentation <https://https://www.sphinx-doc.org>`__ for
 
 * We use the `sphinxcontrib-bibtex extension <https://sphinxcontrib-bibtex.readthedocs.io/en/latest/>`__
   to include citations from BibTeX files.
-  You must include ``.. bibliography::`` blocks at the bottom of a page including citations (`example <https://gitlab.com/petsc/petsc/-/raw/main/doc/manual/ksp.rst>`__).
-  To cite the same reference in more than one page, use `this workaround <https://sphinxcontrib-bibtex.readthedocs.io/en/latest/usage.html#key-prefixing>`__ on one of them (`example <https://gitlab.com/petsc/petsc/-/raw/main/doc/developers/articles.rst>`__) [#bibtex_footnote]_.
+  You must include ``.. bibliography::`` blocks at the bottom of a page, including citations (`example <https://gitlab.com/petsc/petsc/-/raw/main/doc/manual/ksp.rst>`__).
+  To cite the same reference on more than one page, use `this workaround <https://sphinxcontrib-bibtex.readthedocs.io/en/latest/usage.html#key-prefixing>`__ on one of them (`example <https://gitlab.com/petsc/petsc/-/raw/main/doc/developers/articles.rst>`__) [#bibtex_footnote]_.
 
 * See special instructions on :any:`docs_images`.
 
-* Prefer formatting styles that are easy to modify and maintain.  In particular, use of `list-table <https://docutils.sourceforge.io/docs/ref/rst/directives.html#list-table>`_ is recommended.
+* Prefer formatting styles that are easy to modify and maintain.  In particular, the use of `list-table <https://docutils.sourceforge.io/docs/ref/rst/directives.html#list-table>`_ is recommended.
 
 * When using external links with inline URLs, prefer to use `anonymous hyperlink references <https://docutils.sourceforge.io/docs/ref/rst/restructuredtext.html#anonymous-hyperlinks>`__ with two trailing underscores, e.g.
 
@@ -191,20 +174,30 @@ Refer to Sphinx's `own documentation <https://https://www.sphinx-doc.org>`__ for
 
       ``DM``\s
 
-* Use restraint in adding new Sphinx extensions, in particular those which aren't
-  widely-used and well-supported, or those with hidden system dependencies.
+* Use restraint in adding new Sphinx extensions, in particular, those which aren't
+  widely used and well-supported, or those with hidden system dependencies.
+
+.. _petsc_repositories:
+
+Other PETSc repositories
+========================
+
+In addition to the `PETSc repository  <https://gitlab.com/petsc/petsc>`__, there are three other PETSc repositories which contain large data files that are unnecessary for most PETSc usages and thus
+are not stored in the main repository. `Images  <https://gitlab.com/petsc/images>`__ contains images that are used in the PETSc documentation or have other uses. `Annual-Meetings  <https://gitlab.com/petsc/annual-meetings>`__ contains the slides etc. from the :any:`meetings`. `Datafiles  <https://gitlab.com/petsc/datafiles>`__ contains large matrices, meshes, and various other data files that are used in the :any:`PETSc CI<test_harness>`. Other repositories containing software PETSc uses are located at  `GitLab <https://gitlab.com/petsc/>`__ and `BitBucket <https://bitbucket.org/petsc/workspace/repositories>`__. The BitBucket location is used for historical reasons, there are many links on the web to these locations thus the repositories have not be migrated to GitLab.
 
 .. _docs_images:
 
 Images
 ======
 
-PETSc's documentation is tightly coupled to the source code and tests, and
+PETSc's documentation is tightly coupled to the source code and tests and
 is tracked in the primary PETSc Git repository. However, image files are
-too large to directly track this way (especially because they persist in the integration branches' histories).
+too large to track directly this way (especially because they persist in the integration branches' histories).
 
-Therefore, we store image files in a separate git repository and clone it when
-needed. Any new images required must be added to the currently-used branch of this repository.
+Therefore, we store image files in a separate Git repository, `Images  <https://gitlab.com/petsc/petsc>`__. This repository is automatically cloned if 
+not already available when building the documentation. It can also be cloned by running
+``make images`` in the ``doc/`` directory.
+Any new images required must be added to the currently-used branch of this repository.
 
 Image Guidelines
 ----------------
@@ -216,30 +209,22 @@ Image Guidelines
 Adding new images
 -----------------
 
-* Note the URL and currently-used branch (after ``-b``) for the upstream images repository, as used by the documentation build:
-
-.. literalinclude:: /../doc/makefile
-   :language: makefile
-   :start-at: images:
-   :lines: 2
-
-
-* Decide where in ``doc/images`` a new image should go. Use the structure of the ``doc/`` tree itself as a guide.
+* Decide where in ``doc/images`` a new image should go. Use the structure of the ``doc/`` tree as a guide.
 * Create a Merge Request to the currently-used branch of the upstream images repository, adding this image [#maintainer_fast_image_footnote]_.
-* Once this Merge Request is merged, you may make a :doc:`Merge Request to the primary PETSc repository </developers/integration>`, relying on the new image(s).
+* Once this Merge Request is merged, you may make a MR relying on the new image(s).
 
-It may be helpful to place working copies of new image(s) in your local ``doc/images``
-while iterating on documentation; just don't forget to update the upstream images repository.
+It may be helpful to place working copies of the new image(s) in your local ``doc/images``
+while iterating on documentation; don't forget to update the upstream images repository.
 
 
-Removing, renaming, moving or updating images
----------------------------------------------
+Removing, renaming, moving, or updating images
+----------------------------------------------
 
 Do not directly move, rename, or update images in the images repository.
 Simply add a logically-numbered new version of the image.
 
 If an image is not used in *any* :any:`integration branch <sec_integration_branches>` (``main`` or ``release``),
-add it to the the top-level list of files to delete, in the images repository.
+add it to the top-level list of files to delete in the images repository.
 
 .. _docs_images_cleanup:
 
@@ -251,7 +236,7 @@ If the size of the image repository grows too large,
 * Create a new branch ``main-X``, where ``X`` increments the current value
 * Create a new commit deleting all files in the to-delete list and clearing the list
 * Reset the new ``main-X`` to a single commit with this new, cleaned-up state
-* Set ``main-X`` as the "default" branch on GitLab (or wherever it is hosted).
+* Set ``main-X`` as the "default" branch on GitLab.
 * Update both ``release`` and ``main`` in the primary PETSc repository to clone this new branch
 
 .. _classic_docs_build:
@@ -259,40 +244,22 @@ If the size of the image repository grows too large,
 Building Classic Documentation
 ==============================
 
-Some of the documentation is built by a "classic" process as described below.
+Some of the documentation is built by a "classic" process as described below using the documentation tools listed below, which are
+automatically downloaded and installed if needed while building the PETSc documentation./
 
-The documentation tools listed below can be
-automatically downloaded and installed by ``configure``.
+* `Sowing <http://ftp.mcs.anl.gov/pub/sowing/sowing.tar.gz>`__: Developed by Bill Gropp, this produces the PETSc manual pages; see the `Sowing documentation <http://wgropp.cs.illinois.edu/projects/software/sowing/doctext/doctext.htm>`__ and :ref:`manual_page_format`.
+* `C2html <http://ftp.mcs.anl.gov/pub/petsc/c2html.tar.gz>`__: This generates the HTML versions of all the source code.
 
-* `Sowing <http://ftp.mcs.anl.gov/pub/sowing/sowing.tar.gz>`__: a text processing tool developed by Bill Gropp.  This produces the PETSc manual pages; see the `Sowing documentation <http://wgropp.cs.illinois.edu/projects/software/sowing/doctext/doctext.htm>`__ and :ref:`manual_page_format`.
-* `C2html <http://ftp.mcs.anl.gov/pub/petsc/c2html.tar.gz>`__: A text processing package. This generates the HTML versions of all the source code.
-
-Note that Sowing and C2html are build tools that do not use the compilers specified to PETSc's ``configure``, as they
+Sowing and C2html are build tools that do not use the compilers specified to PETSc's ``configure``, as they
 need to work in cross-compilation environments. Thus, they default to using ``gcc``, ``g++``, and ``flex`` from
-the user's environment (or ``configure`` options like ``--download-sowing-cxx``). Microsoft Windows users should install ``gcc``
-etc. from Cygwin as these tools don't build with MS compilers.
-
-One can run this process in-tree with
-
-.. code-block:: console
-
-    $ make alldoc12 LOC=${PETSC_DIR}
-
-For debugging, a quick preview of manual pages from a single source directory can be obtained, e.g.
-
-.. code-block:: console
-
-    $ cd $PETSC_DIR/src/snes/interface
-    $ make LOC=$PETSC_DIR manualpages_buildcite
-    $ browse $PETSC_DIR/manualpages/SNES/SNESCreate.html  # or otherwise open in browser
-
+the user's environment (or ``configure`` options like ``--download-sowing-cxx``). Microsoft Windows users must install ``gcc``
+etc., from Cygwin in order to be able to build the documentation.
 
 .. rubric:: Footnotes
-
-.. [#venv_footnote] This requires Python 3.3 or later, and you maybe need to install a package like ``python3-venv``.
 
 .. [#bibtex_footnote] The extensions's `development branch <https://github.com/mcmtroffaes/sphinxcontrib-bibtex>`__ `supports our use case better <https://github.com/mcmtroffaes/sphinxcontrib-bibtex/pull/185>`__ (``:footcite:``), which can be investigated if a release is ever made.
 
 .. [#svg_footnote] ``rsvg-convert`` is installable with your package manager, e.g., ``librsvg2-bin`` on Debian/Ubuntu systems).
 
 .. [#maintainer_fast_image_footnote] Maintainers may directly push commits.
+

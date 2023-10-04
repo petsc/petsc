@@ -6,31 +6,31 @@
 
 */
 #include <petsc/private/petscimpl.h> /*I  "petscsys.h"   I*/
-#include <petscbt.h>
+#include <petscviewer.h>
 #include <../src/sys/utils/ftn-kernels/fcopy.h>
 
 /*@
-   PetscMemcmp - Compares two byte streams in memory.
+  PetscMemcmp - Compares two byte streams in memory.
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  str1 - Pointer to the first byte stream
-.  str2 - Pointer to the second byte stream
--  len  - The length of the byte stream
+  Input Parameters:
++ str1 - Pointer to the first byte stream
+. str2 - Pointer to the second byte stream
+- len  - The length of the byte stream
          (both str1 and str2 are assumed to be of length len)
 
-   Output Parameter:
-.   e - `PETSC_TRUE` if equal else `PETSC_FALSE`.
+  Output Parameter:
+. e - `PETSC_TRUE` if equal else `PETSC_FALSE`.
 
-   Level: intermediate
+  Level: intermediate
 
-   Notes:
-   `PetscArraycmp()` is preferred
+  Notes:
+  `PetscArraycmp()` is preferred
 
-   This routine is analogous to `memcmp()` with additional error checking
+  This routine is analogous to `memcmp()` with additional error checking
 
-.seealso: `PetscMemcpy()`, `PetscMemcmp()`, `PetscArrayzero()`, `PetscMemzero()`, `PetscArraycmp()`, `PetscArraycpy()`, `PetscStrallocpy()`,
+.seealso: `PetscMemcpy()`, `PetscArrayzero()`, `PetscMemzero()`, `PetscArraycmp()`, `PetscArraycpy()`, `PetscStrallocpy()`,
           `PetscArraymove()`
 @*/
 PetscErrorCode PetscMemcmp(const void *str1, const void *str2, size_t len, PetscBool *e)
@@ -42,9 +42,9 @@ PetscErrorCode PetscMemcmp(const void *str1, const void *str2, size_t len, Petsc
   }
 
   PetscFunctionBegin;
-  PetscValidPointer(str1, 1);
-  PetscValidPointer(str2, 2);
-  PetscValidBoolPointer(e, 4);
+  PetscAssertPointer(str1, 1);
+  PetscAssertPointer(str2, 2);
+  PetscAssertPointer(e, 4);
   *e = memcmp((char *)str1, (char *)str2, len) ? PETSC_FALSE : PETSC_TRUE;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -1,5 +1,4 @@
-#ifndef _GLVISIMPL_H
-#define _GLVISIMPL_H
+#pragma once
 
 #include <petscviewer.h>
 #include <petscsys.h>
@@ -24,18 +23,17 @@ typedef enum {
   PETSCVIEWERGLVIS_DISABLED
 } PetscViewerGLVisStatus;
 
-PETSC_EXTERN PetscErrorCode PetscViewerGLVisPause_Private(PetscViewer);
-PETSC_EXTERN PetscErrorCode PetscViewerGLVisSetDM_Private(PetscViewer, PetscObject);
-PETSC_EXTERN PetscErrorCode PetscViewerGLVisGetDM_Private(PetscViewer, PetscObject *);
-PETSC_EXTERN PetscErrorCode PetscViewerGLVisInitWindow_Private(PetscViewer, PetscBool, PetscInt, const char *);
-PETSC_EXTERN PetscErrorCode PetscViewerGLVisGetStatus_Private(PetscViewer, PetscViewerGLVisStatus *);
-PETSC_EXTERN PetscErrorCode PetscViewerGLVisGetType_Private(PetscViewer, PetscViewerGLVisType *);
-PETSC_EXTERN PetscErrorCode PetscViewerGLVisGetWindow_Private(PetscViewer, PetscInt, PetscViewer *);
-PETSC_EXTERN PetscErrorCode PetscViewerGLVisRestoreWindow_Private(PetscViewer, PetscInt, PetscViewer *);
-PETSC_EXTERN PetscErrorCode PetscViewerGLVisGetFields_Private(PetscViewer, PetscInt *, const char **[], PetscInt *[], PetscErrorCode (**)(PetscObject, PetscInt, PetscObject[], void *), PetscObject *[], void **);
-PETSC_EXTERN PetscErrorCode PetscViewerGLVisGetDMWindow_Private(PetscViewer, PetscViewer *);
-PETSC_EXTERN PetscErrorCode PetscViewerGLVisRestoreDMWindow_Private(PetscViewer, PetscViewer *);
+PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode PetscViewerGLVisPause_Internal(PetscViewer);
+PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode PetscViewerGLVisSetDM_Internal(PetscViewer, PetscObject);
+PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode PetscViewerGLVisGetDM_Internal(PetscViewer, PetscObject *);
+PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode PetscViewerGLVisInitWindow_Internal(PetscViewer, PetscBool, PetscInt, const char *);
+PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode PetscViewerGLVisGetStatus_Internal(PetscViewer, PetscViewerGLVisStatus *);
+PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode PetscViewerGLVisGetType_Internal(PetscViewer, PetscViewerGLVisType *);
+PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode PetscViewerGLVisGetWindow_Internal(PetscViewer, PetscInt, PetscViewer *);
+PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode PetscViewerGLVisRestoreWindow_Internal(PetscViewer, PetscInt, PetscViewer *);
+PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode PetscViewerGLVisGetFields_Internal(PetscViewer, PetscInt *, const char **[], PetscInt *[], PetscErrorCode (**)(PetscObject, PetscInt, PetscObject[], void *), PetscObject *[], void **);
+PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode PetscViewerGLVisGetDMWindow_Internal(PetscViewer, PetscViewer *);
+PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode PetscViewerGLVisRestoreDMWindow_Internal(PetscViewer, PetscViewer *);
 
-PETSC_EXTERN PetscErrorCode PetscGLVisCollectiveBegin(MPI_Comm, PetscViewer *);
-PETSC_EXTERN PetscErrorCode PetscGLVisCollectiveEnd(MPI_Comm, PetscViewer *);
-#endif
+PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode PetscGLVisCollectiveBegin(MPI_Comm, PetscViewer *);
+PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode PetscGLVisCollectiveEnd(MPI_Comm, PetscViewer *);

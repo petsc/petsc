@@ -7,7 +7,7 @@
 */
 PetscErrorCode PCFactorSetDefaultOrdering_Factor(PC pc)
 {
-  PetscBool   foundmtype, flg;
+  PetscBool   foundmtype, flg, destroy = PETSC_FALSE;
   const char *prefix;
 
   PetscFunctionBegin;
@@ -18,8 +18,13 @@ PetscErrorCode PCFactorSetDefaultOrdering_Factor(PC pc)
     PetscCall(MatSolverTypeGet(fact->solvertype, ((PetscObject)pc->pmat)->type_name, fact->factortype, NULL, &foundmtype, NULL));
     if (foundmtype) {
       if (!fact->fact) {
+        /* factored matrix is not present at this point, we want to create it during PCSetUp.
+           Since this can be called from setfromoptions, we destroy it when we are done with it */
         PetscCall(MatGetFactor(pc->pmat, fact->solvertype, fact->factortype, &fact->fact));
-      } else if (!fact->fact->assembled) {
+        destroy = PETSC_TRUE;
+      }
+      if (!fact->fact) PetscFunctionReturn(PETSC_SUCCESS);
+      if (!fact->fact->assembled) {
         PetscCall(PetscStrcmp(fact->solvertype, fact->fact->solvertype, &flg));
         if (!flg) {
           Mat B;
@@ -37,6 +42,7 @@ PetscErrorCode PCFactorSetDefaultOrdering_Factor(PC pc)
         } else otype = MATORDERINGEXTERNAL;
         PetscCall(PetscStrallocpy(otype, (char **)&fact->ordering));
       }
+      if (destroy) PetscCall(MatDestroy(&fact->fact));
     }
   }
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -79,14 +85,15 @@ static PetscErrorCode PCFactorGetUseInPlace_Factor(PC pc, PetscBool *flg)
 }
 
 /*@
-    PCFactorSetUpMatSolverType - Can be called after `KSPSetOperators()` or `PCSetOperators()`, causes `MatGetFactor()` to be called so then one may
-       set the options for that particular factorization object.
+  PCFactorSetUpMatSolverType - Can be called after `KSPSetOperators()` or `PCSetOperators()`, causes `MatGetFactor()` to be called so then one may
+  set the options for that particular factorization object.
 
   Input Parameter:
-.  pc  - the preconditioner context
+. pc - the preconditioner context
 
   Note:
   After you have called this function (which has to be after the `KSPSetOperators()` or `PCSetOperators()`) you can call `PCFactorGetMatrix()` and then set factor options on that matrix.
+  This function raises an error if the requested combination of solver package and matrix type is not supported.
 
   Level: intermediate
 
@@ -101,18 +108,18 @@ PetscErrorCode PCFactorSetUpMatSolverType(PC pc)
 }
 
 /*@
-   PCFactorSetZeroPivot - Sets the size at which smaller pivots are declared to be zero
+  PCFactorSetZeroPivot - Sets the size at which smaller pivots are declared to be zero
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  pc - the preconditioner context
--  zero - all pivots smaller than this will be considered zero
+  Input Parameters:
++ pc   - the preconditioner context
+- zero - all pivots smaller than this will be considered zero
 
-   Options Database Key:
-.  -pc_factor_zeropivot <zero> - Sets tolerance for what is considered a zero pivot
+  Options Database Key:
+. -pc_factor_zeropivot <zero> - Sets tolerance for what is considered a zero pivot
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `PCCHOLESKY`, `PCLU`, `PCFactorSetShiftType()`, `PCFactorSetShiftAmount()`
 @*/
@@ -126,19 +133,19 @@ PetscErrorCode PCFactorSetZeroPivot(PC pc, PetscReal zero)
 }
 
 /*@
-   PCFactorSetShiftType - adds a particular type of quantity to the diagonal of the matrix during
-     numerical factorization, thus the matrix has nonzero pivots
+  PCFactorSetShiftType - adds a particular type of quantity to the diagonal of the matrix during
+  numerical factorization, thus the matrix has nonzero pivots
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  pc - the preconditioner context
--  shifttype - type of shift; one of `MAT_SHIFT_NONE`, `MAT_SHIFT_NONZERO`, `MAT_SHIFT_POSITIVE_DEFINITE`, `MAT_SHIFT_INBLOCKS`
+  Input Parameters:
++ pc        - the preconditioner context
+- shifttype - type of shift; one of `MAT_SHIFT_NONE`, `MAT_SHIFT_NONZERO`, `MAT_SHIFT_POSITIVE_DEFINITE`, `MAT_SHIFT_INBLOCKS`
 
-   Options Database Key:
-.  -pc_factor_shift_type <shifttype> - Sets shift type; use '-help' for a list of available types
+  Options Database Key:
+. -pc_factor_shift_type <shifttype> - Sets shift type; use '-help' for a list of available types
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `PCCHOLESKY`, `PCLU`, `PCFactorSetZeroPivot()`, `PCFactorSetShiftAmount()`
 @*/
@@ -152,19 +159,19 @@ PetscErrorCode PCFactorSetShiftType(PC pc, MatFactorShiftType shifttype)
 }
 
 /*@
-   PCFactorSetShiftAmount - adds a quantity to the diagonal of the matrix during
-     numerical factorization, thus the matrix has nonzero pivots
+  PCFactorSetShiftAmount - adds a quantity to the diagonal of the matrix during
+  numerical factorization, thus the matrix has nonzero pivots
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  pc - the preconditioner context
--  shiftamount - amount of shift or `PETSC_DECIDE` for the default
+  Input Parameters:
++ pc          - the preconditioner context
+- shiftamount - amount of shift or `PETSC_DECIDE` for the default
 
-   Options Database Key:
-.  -pc_factor_shift_amount <shiftamount> - Sets shift amount or -1 for the default
+  Options Database Key:
+. -pc_factor_shift_amount <shiftamount> - Sets shift amount or -1 for the default
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `PCCHOLESKY`, `PCLU`, ``PCFactorSetZeroPivot()`, `PCFactorSetShiftType()`
 @*/
@@ -178,26 +185,26 @@ PetscErrorCode PCFactorSetShiftAmount(PC pc, PetscReal shiftamount)
 }
 
 /*@
-   PCFactorSetDropTolerance - The preconditioner will use an `PCILU`
-   based on a drop tolerance.
+  PCFactorSetDropTolerance - The preconditioner will use an `PCILU`
+  based on a drop tolerance.
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  pc - the preconditioner context
-.  dt - the drop tolerance, try from 1.e-10 to .1
-.  dtcol - tolerance for column pivot, good values [0.1 to 0.01]
--  maxrowcount - the max number of nonzeros allowed in a row, best value
+  Input Parameters:
++ pc          - the preconditioner context
+. dt          - the drop tolerance, try from 1.e-10 to .1
+. dtcol       - tolerance for column pivot, good values [0.1 to 0.01]
+- maxrowcount - the max number of nonzeros allowed in a row, best value
                  depends on the number of nonzeros in row of original matrix
 
-   Options Database Key:
-.  -pc_factor_drop_tolerance <dt,dtcol,maxrowcount> - Sets drop tolerance
+  Options Database Key:
+. -pc_factor_drop_tolerance <dt,dtcol,maxrowcount> - Sets drop tolerance
 
-   Level: intermediate
+  Level: intermediate
 
-   Note:
-   There are NO default values for the 3 parameters, you must set them with reasonable values for your
-   matrix. We don't know how to compute reasonable values.
+  Note:
+  There are NO default values for the 3 parameters, you must set them with reasonable values for your
+  matrix. We don't know how to compute reasonable values.
 
 .seealso: `PCILU`
 @*/
@@ -212,17 +219,17 @@ PetscErrorCode PCFactorSetDropTolerance(PC pc, PetscReal dt, PetscReal dtcol, Pe
 }
 
 /*@
-   PCFactorGetZeroPivot - Gets the tolerance used to define a zero privot
+  PCFactorGetZeroPivot - Gets the tolerance used to define a zero privot
 
-   Not Collective
+  Not Collective
 
-   Input Parameter:
-.  pc - the preconditioner context
+  Input Parameter:
+. pc - the preconditioner context
 
-   Output Parameter:
-.  pivot - the tolerance
+  Output Parameter:
+. pivot - the tolerance
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `PCLU`, `PCCHOLESKY`, `PCFactorSetZeroPivot()`
 @*/
@@ -235,17 +242,17 @@ PetscErrorCode PCFactorGetZeroPivot(PC pc, PetscReal *pivot)
 }
 
 /*@
-   PCFactorGetShiftAmount - Gets the tolerance used to define a zero privot
+  PCFactorGetShiftAmount - Gets the tolerance used to define a zero privot
 
-   Not Collective
+  Not Collective
 
-   Input Parameter:
-.  pc - the preconditioner context
+  Input Parameter:
+. pc - the preconditioner context
 
-   Output Parameter:
-.  shift - how much to shift the diagonal entry
+  Output Parameter:
+. shift - how much to shift the diagonal entry
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `PCLU`, `PCCHOLESKY`, `PCFactorSetShiftAmount()`, `PCFactorSetShiftType()`, `PCFactorGetShiftType()`
 @*/
@@ -258,17 +265,17 @@ PetscErrorCode PCFactorGetShiftAmount(PC pc, PetscReal *shift)
 }
 
 /*@
-   PCFactorGetShiftType - Gets the type of shift, if any, done when a zero pivot is detected
+  PCFactorGetShiftType - Gets the type of shift, if any, done when a zero pivot is detected
 
-   Not Collective
+  Not Collective
 
-   Input Parameter:
-.  pc - the preconditioner context
+  Input Parameter:
+. pc - the preconditioner context
 
-   Output Parameter:
-.  type - one of `MAT_SHIFT_NONE`, `MAT_SHIFT_NONZERO`, `MAT_SHIFT_POSITIVE_DEFINITE`, or `MAT_SHIFT_INBLOCKS`
+  Output Parameter:
+. type - one of `MAT_SHIFT_NONE`, `MAT_SHIFT_NONZERO`, `MAT_SHIFT_POSITIVE_DEFINITE`, or `MAT_SHIFT_INBLOCKS`
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `PCLU`, `PCCHOLESKY`, `PCFactorSetShiftType()`, `MatFactorShiftType`, `PCFactorSetShiftAmount()`, `PCFactorGetShiftAmount()`
 @*/
@@ -281,17 +288,17 @@ PetscErrorCode PCFactorGetShiftType(PC pc, MatFactorShiftType *type)
 }
 
 /*@
-   PCFactorGetLevels - Gets the number of levels of fill to use.
+  PCFactorGetLevels - Gets the number of levels of fill to use.
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameter:
-.  pc - the preconditioner context
+  Input Parameter:
+. pc - the preconditioner context
 
-   Output Parameter:
-.  levels - number of levels of fill
+  Output Parameter:
+. levels - number of levels of fill
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `PCILU`, `PCICC`, `PCFactorSetLevels()`
 @*/
@@ -304,18 +311,18 @@ PetscErrorCode PCFactorGetLevels(PC pc, PetscInt *levels)
 }
 
 /*@
-   PCFactorSetLevels - Sets the number of levels of fill to use.
+  PCFactorSetLevels - Sets the number of levels of fill to use.
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  pc - the preconditioner context
--  levels - number of levels of fill
+  Input Parameters:
++ pc     - the preconditioner context
+- levels - number of levels of fill
 
-   Options Database Key:
-.  -pc_factor_levels <levels> - Sets fill level
+  Options Database Key:
+. -pc_factor_levels <levels> - Sets fill level
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `PCILU`, `PCICC`, `PCFactorGetLevels()`
 @*/
@@ -330,22 +337,22 @@ PetscErrorCode PCFactorSetLevels(PC pc, PetscInt levels)
 }
 
 /*@
-   PCFactorSetAllowDiagonalFill - Causes all diagonal matrix entries to be
-   treated as level 0 fill even if there is no non-zero location.
+  PCFactorSetAllowDiagonalFill - Causes all diagonal matrix entries to be
+  treated as level 0 fill even if there is no non-zero location.
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  pc - the preconditioner context
--  flg - `PETSC_TRUE` to turn on, `PETSC_FALSE` to turn off
+  Input Parameters:
++ pc  - the preconditioner context
+- flg - `PETSC_TRUE` to turn on, `PETSC_FALSE` to turn off
 
-   Options Database Key:
-.  -pc_factor_diagonal_fill <bool> - allow the diagonal fill
+  Options Database Key:
+. -pc_factor_diagonal_fill <bool> - allow the diagonal fill
 
-   Note:
-   Does not apply with 0 fill.
+  Note:
+  Does not apply with 0 fill.
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `PCILU`, `PCICC`, `PCFactorGetAllowDiagonalFill()`
 @*/
@@ -358,23 +365,23 @@ PetscErrorCode PCFactorSetAllowDiagonalFill(PC pc, PetscBool flg)
 }
 
 /*@
-   PCFactorGetAllowDiagonalFill - Determines if all diagonal matrix entries are
-       treated as level 0 fill even if there is no non-zero location.
+  PCFactorGetAllowDiagonalFill - Determines if all diagonal matrix entries are
+  treated as level 0 fill even if there is no non-zero location.
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameter:
-.  pc - the preconditioner context
+  Input Parameter:
+. pc - the preconditioner context
 
-   Output Parameter:
-.   flg - `PETSC_TRUE` to turn on, `PETSC_FALSE` to turn off
+  Output Parameter:
+. flg - `PETSC_TRUE` to turn on, `PETSC_FALSE` to turn off
 
-   Note:
-   Does not apply with 0 fill.
+  Note:
+  Does not apply with 0 fill.
 
-   Level: intermediate
+  Level: intermediate
 
-.seealso:  `PCILU`, `PCICC`, `PCFactorSetAllowDiagonalFill()`
+.seealso: `PCILU`, `PCICC`, `PCFactorSetAllowDiagonalFill()`
 @*/
 PetscErrorCode PCFactorGetAllowDiagonalFill(PC pc, PetscBool *flg)
 {
@@ -385,20 +392,20 @@ PetscErrorCode PCFactorGetAllowDiagonalFill(PC pc, PetscBool *flg)
 }
 
 /*@
-   PCFactorReorderForNonzeroDiagonal - reorders rows/columns of matrix to remove zeros from diagonal
+  PCFactorReorderForNonzeroDiagonal - reorders rows/columns of matrix to remove zeros from diagonal
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  pc - the preconditioner context
--  tol - diagonal entries smaller than this in absolute value are considered zero
+  Input Parameters:
++ pc   - the preconditioner context
+- rtol - diagonal entries smaller than this in absolute value are considered zero
 
-   Options Database Key:
-.  -pc_factor_nonzeros_along_diagonal <tol> - perform the reordering with the given tolerance
+  Options Database Key:
+. -pc_factor_nonzeros_along_diagonal <tol> - perform the reordering with the given tolerance
 
-   Level: intermediate
+  Level: intermediate
 
-.seealso:  `PCILU`, `PCICC`, `PCFactorSetFill()`, `PCFactorSetShiftNonzero()`, `PCFactorSetZeroPivot()`, `MatReorderForNonzeroDiagonal()`
+.seealso: `PCILU`, `PCICC`, `PCFactorSetFill()`, `PCFactorSetShiftNonzero()`, `PCFactorSetZeroPivot()`, `MatReorderForNonzeroDiagonal()`
 @*/
 PetscErrorCode PCFactorReorderForNonzeroDiagonal(PC pc, PetscReal rtol)
 {
@@ -410,23 +417,23 @@ PetscErrorCode PCFactorReorderForNonzeroDiagonal(PC pc, PetscReal rtol)
 }
 
 /*@C
-   PCFactorSetMatSolverType - sets the solver package that is used to perform the factorization
+  PCFactorSetMatSolverType - sets the solver package that is used to perform the factorization
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  pc - the preconditioner context
--  stype - for example, `MATSOLVERSUPERLU`, `MATSOLVERSUPERLU_DIST`, `MATSOLVERMUMPS`
+  Input Parameters:
++ pc    - the preconditioner context
+- stype - for example, `MATSOLVERSUPERLU`, `MATSOLVERSUPERLU_DIST`, `MATSOLVERMUMPS`
 
-   Options Database Key:
-.  -pc_factor_mat_solver_type <stype> - petsc, superlu, superlu_dist, mumps, cusparse
+  Options Database Key:
+. -pc_factor_mat_solver_type <stype> - petsc, superlu, superlu_dist, mumps, cusparse
 
-   Level: intermediate
+  Level: intermediate
 
-   Note:
-   By default this will use the PETSc factorization if it exists
+  Note:
+  By default this will use the PETSc factorization if it exists
 
-.seealso: `PCLU`, `PCCHOLESKY`, `MatGetFactor()`, `MatSolverType`, `PCFactorGetMatSolverType()`, `MatSolverType`,
+.seealso: `PCLU`, `PCCHOLESKY`, `MatGetFactor()`, `MatSolverType`, `PCFactorGetMatSolverType()`,
           `MATSOLVERSUPERLU`, `MATSOLVERSUPERLU_DIST`, `MATSOLVERMUMPS`
 @*/
 PetscErrorCode PCFactorSetMatSolverType(PC pc, MatSolverType stype)
@@ -438,20 +445,20 @@ PetscErrorCode PCFactorSetMatSolverType(PC pc, MatSolverType stype)
 }
 
 /*@C
-   PCFactorGetMatSolverType - gets the solver package that is used to perform the factorization
+  PCFactorGetMatSolverType - gets the solver package that is used to perform the factorization
 
-   Not Collective
+  Not Collective
 
-   Input Parameter:
-.  pc - the preconditioner context
+  Input Parameter:
+. pc - the preconditioner context
 
-   Output Parameter:
-.   stype - for example, `MATSOLVERSUPERLU`, `MATSOLVERSUPERLU_DIST`, `MATSOLVERMUMPS`
+  Output Parameter:
+. stype - for example, `MATSOLVERSUPERLU`, `MATSOLVERSUPERLU_DIST`, `MATSOLVERMUMPS`
 
-   Level: intermediate
+  Level: intermediate
 
-.seealso: `PCLU`, `PCCHOLESKY`, `MatGetFactor()`, `MatSolverType`, `PCFactorGetMatSolverType()`, `MatSolverType`,
-          `MATSOLVERSUPERLU`, `MATSOLVERSUPERLU_DIST`, `MATSOLVERMUMPS`
+.seealso: `PCLU`, `PCCHOLESKY`, `MatGetFactor()`, `MatSolverType`, `MATSOLVERSUPERLU`,
+`MATSOLVERSUPERLU_DIST`, `MATSOLVERMUMPS`
 @*/
 PetscErrorCode PCFactorGetMatSolverType(PC pc, MatSolverType *stype)
 {
@@ -459,7 +466,7 @@ PetscErrorCode PCFactorGetMatSolverType(PC pc, MatSolverType *stype)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
-  PetscValidPointer(stype, 2);
+  PetscAssertPointer(stype, 2);
   PetscCall(PetscObjectQueryFunction((PetscObject)pc, "PCFactorGetMatSolverType_C", &f));
   if (f) PetscCall((*f)(pc, stype));
   else *stype = NULL;
@@ -467,29 +474,29 @@ PetscErrorCode PCFactorGetMatSolverType(PC pc, MatSolverType *stype)
 }
 
 /*@
-   PCFactorSetFill - Indicate the amount of fill you expect in the factored matrix,
-   fill = number nonzeros in factor/number nonzeros in original matrix.
+  PCFactorSetFill - Indicate the amount of fill you expect in the factored matrix,
+  fill = number nonzeros in factor/number nonzeros in original matrix.
 
-   Not Collective, each process can expect a different amount of fill
+  Not Collective, each process can expect a different amount of fill
 
-   Input Parameters:
-+  pc - the preconditioner context
--  fill - amount of expected fill
+  Input Parameters:
++ pc   - the preconditioner context
+- fill - amount of expected fill
 
-   Options Database Key:
-.  -pc_factor_fill <fill> - Sets fill amount
+  Options Database Key:
+. -pc_factor_fill <fill> - Sets fill amount
 
-   Level: intermediate
+  Level: intermediate
 
-   Notes:
-   For sparse matrix factorizations it is difficult to predict how much
-   fill to expect. By running with the option -info PETSc will print the
-   actual amount of fill used; allowing you to set the value accurately for
-   future runs. Default PETSc uses a value of 5.0
+  Notes:
+  For sparse matrix factorizations it is difficult to predict how much
+  fill to expect. By running with the option -info PETSc will print the
+  actual amount of fill used; allowing you to set the value accurately for
+  future runs. Default PETSc uses a value of 5.0
 
-   This is ignored for most solver packages
+  This is ignored for most solver packages
 
-   This parameter has NOTHING to do with the levels-of-fill of ILU(). That is set with `PCFactorSetLevels()` or -pc_factor_levels.
+  This parameter has NOTHING to do with the levels-of-fill of ILU(). That is set with `PCFactorSetLevels()` or -pc_factor_levels.
 
 .seealso: `PCLU`, `PCCHOLESKY`, `PCILU`, `PCICC`, `PCFactorSetReuseFill()`
 @*/
@@ -503,33 +510,34 @@ PetscErrorCode PCFactorSetFill(PC pc, PetscReal fill)
 }
 
 /*@
-   PCFactorSetUseInPlace - Tells the system to do an in-place factorization.
-   For dense matrices, this enables the solution of much larger problems.
-   For sparse matrices the factorization cannot be done truly in-place
-   so this does not save memory during the factorization, but after the matrix
-   is factored, the original unfactored matrix is freed, thus recovering that
-   space. For ICC(0) and ILU(0) with the default natural ordering the factorization is done efficiently in-place.
+  PCFactorSetUseInPlace - Tells the preconditioner to do an in-place factorization.
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  pc - the preconditioner context
--  flg - `PETSC_TRUE` to enable, `PETSC_FALSE` to disable
+  Input Parameters:
++ pc  - the preconditioner context
+- flg - `PETSC_TRUE` to enable, `PETSC_FALSE` to disable
 
-   Options Database Key:
-.  -pc_factor_in_place <true,false>- Activate/deactivate in-place factorization
+  Options Database Key:
+. -pc_factor_in_place <true,false> - Activate/deactivate in-place factorization
 
-   Note:
-   `PCFactorSetUseInplace()` can only be used with the `KSP` method `KSPPREONLY` or when
-   a different matrix is provided for the multiply and the preconditioner in
-   a call to `KSPSetOperators()`.
-   This is because the Krylov space methods require an application of the
-   matrix multiplication, which is not possible here because the matrix has
-   been factored in-place, replacing the original matrix.
+  Note:
+  For dense matrices, this enables the solution of much larger problems.
+  For sparse matrices the factorization cannot be done truly in-place
+  so this does not save memory during the factorization, but after the matrix
+  is factored, the original unfactored matrix is freed, thus recovering that
+  space. For ICC(0) and ILU(0) with the default natural ordering the factorization is done efficiently in-place.
 
-   Level: intermediate
+  `PCFactorSetUseInplace()` can only be used with the `KSP` method `KSPPREONLY` or when
+  a different matrix is provided for the multiply and the preconditioner in
+  a call to `KSPSetOperators()`.
+  This is because the Krylov space methods require an application of the
+  matrix multiplication, which is not possible here because the matrix has
+  been factored in-place, replacing the original matrix.
 
-.seealso: `PCLU`, `PCCHOLESKY`, `PCILU`, `PCICC`, `PCFactorGetUseInPlace()`
+  Level: intermediate
+
+.seealso: `PC`, `Mat`, `PCLU`, `PCCHOLESKY`, `PCILU`, `PCICC`, `PCFactorGetUseInPlace()`
 @*/
 PetscErrorCode PCFactorSetUseInPlace(PC pc, PetscBool flg)
 {
@@ -540,17 +548,17 @@ PetscErrorCode PCFactorSetUseInPlace(PC pc, PetscBool flg)
 }
 
 /*@
-   PCFactorGetUseInPlace - Determines if an in-place factorization is being used.
+  PCFactorGetUseInPlace - Determines if an in-place factorization is being used.
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameter:
-.  pc - the preconditioner context
+  Input Parameter:
+. pc - the preconditioner context
 
-   Output Parameter:
-.  flg - `PETSC_TRUE` to enable, `PETSC_FALSE` to disable
+  Output Parameter:
+. flg - `PETSC_TRUE` to enable, `PETSC_FALSE` to disable
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `PCLU`, `PCCHOLESKY`, `PCILU`, `PCICC`, `PCFactorSetUseInPlace()`
 @*/
@@ -563,29 +571,29 @@ PetscErrorCode PCFactorGetUseInPlace(PC pc, PetscBool *flg)
 }
 
 /*@C
-    PCFactorSetMatOrderingType - Sets the ordering routine (to reduce fill) to
-    be used in the `PCLU`, `PCCHOLESKY`, `PCILU`,  or `PCICC` preconditioners
+  PCFactorSetMatOrderingType - Sets the ordering routine (to reduce fill) to
+  be used in the `PCLU`, `PCCHOLESKY`, `PCILU`,  or `PCICC` preconditioners
 
-    Logically Collective
+  Logically Collective
 
-    Input Parameters:
-+   pc - the preconditioner context
--   ordering - the matrix ordering name, for example, `MATORDERINGND` or `MATORDERINGRCM`
+  Input Parameters:
++ pc       - the preconditioner context
+- ordering - the matrix ordering name, for example, `MATORDERINGND` or `MATORDERINGRCM`
 
-    Options Database Key:
-.   -pc_factor_mat_ordering_type <nd,rcm,...,external> - Sets ordering routine
+  Options Database Key:
+. -pc_factor_mat_ordering_type <nd,rcm,...,external> - Sets ordering routine
 
-    Level: intermediate
+  Level: intermediate
 
-    Notes:
-      Nested dissection is used by default for some of PETSc's sparse matrix formats
+  Notes:
+  Nested dissection is used by default for some of PETSc's sparse matrix formats
 
-     For `PCCHOLESKY` and `PCICC` and the `MATSBAIJ` format the only reordering available is natural since only the upper half of the matrix is stored
-     and reordering this matrix is very expensive.
+  For `PCCHOLESKY` and `PCICC` and the `MATSBAIJ` format the only reordering available is natural since only the upper half of the matrix is stored
+  and reordering this matrix is very expensive.
 
-    You can use a `MATSEQAIJ` matrix with Cholesky and ICC and use any ordering.
+  You can use a `MATSEQAIJ` matrix with Cholesky and ICC and use any ordering.
 
-    `MATORDERINGEXTERNAL` means PETSc will not compute an ordering and the package will use its own ordering, usable with `MATSOLVERCHOLMOD`, `MATSOLVERUMFPACK`, and others.
+  `MATORDERINGEXTERNAL` means PETSc will not compute an ordering and the package will use its own ordering, usable with `MATSOLVERCHOLMOD`, `MATSOLVERUMFPACK`, and others.
 
 .seealso: `PCLU`, `PCCHOLESKY`, `PCILU`, `PCICC`, `MatOrderingType`, `MATORDERINGEXTERNAL`, `MATORDERINGND`, `MATORDERINGRCM`
 @*/
@@ -598,20 +606,20 @@ PetscErrorCode PCFactorSetMatOrderingType(PC pc, MatOrderingType ordering)
 }
 
 /*@
-    PCFactorSetColumnPivot - Determines when column pivoting is done during matrix factorization.
-      For PETSc dense matrices column pivoting is always done, for PETSc sparse matrices
-      it is never done. For the MATLAB and `MATSOLVERSUPERLU` factorization this is used.
+  PCFactorSetColumnPivot - Determines when column pivoting is done during matrix factorization.
+  For PETSc dense matrices column pivoting is always done, for PETSc sparse matrices
+  it is never done. For the MATLAB and `MATSOLVERSUPERLU` factorization this is used.
 
-    Logically Collective
+  Logically Collective
 
-    Input Parameters:
-+   pc - the preconditioner context
--   dtcol - 0.0 implies no pivoting, 1.0 complete pivoting (slower, requires more memory but more stable)
+  Input Parameters:
++ pc    - the preconditioner context
+- dtcol - 0.0 implies no pivoting, 1.0 complete pivoting (slower, requires more memory but more stable)
 
-    Options Database Key:
-.   -pc_factor_pivoting <dtcol> - perform the pivoting with the given tolerance
+  Options Database Key:
+. -pc_factor_pivoting <dtcol> - perform the pivoting with the given tolerance
 
-    Level: intermediate
+  Level: intermediate
 
 .seealso: `PCLU`, `PCCHOLESKY`, `PCILU`, `PCICC`, `PCILUSetMatOrdering()`, `PCFactorSetPivotInBlocks()`
 @*/
@@ -625,19 +633,19 @@ PetscErrorCode PCFactorSetColumnPivot(PC pc, PetscReal dtcol)
 }
 
 /*@
-    PCFactorSetPivotInBlocks - Determines if pivoting is done while factoring each block
-      with `MATBAIJ` or `MATSBAIJ` matrices
+  PCFactorSetPivotInBlocks - Determines if pivoting is done while factoring each block
+  with `MATBAIJ` or `MATSBAIJ` matrices
 
-    Logically Collective
+  Logically Collective
 
-    Input Parameters:
-+   pc - the preconditioner context
--   pivot - `PETSC_TRUE` or `PETSC_FALSE`
+  Input Parameters:
++ pc    - the preconditioner context
+- pivot - `PETSC_TRUE` or `PETSC_FALSE`
 
-    Options Database Key:
-.   -pc_factor_pivot_in_blocks <true,false> - Pivot inside matrix dense blocks for `MATBAIJ` and `MATSBAIJ`
+  Options Database Key:
+. -pc_factor_pivot_in_blocks <true,false> - Pivot inside matrix dense blocks for `MATBAIJ` and `MATSBAIJ`
 
-    Level: intermediate
+  Level: intermediate
 
 .seealso: `PCLU`, `PCCHOLESKY`, `PCILU`, `PCICC`, `PCILUSetMatOrdering()`, `PCFactorSetColumnPivot()`
 @*/
@@ -651,19 +659,19 @@ PetscErrorCode PCFactorSetPivotInBlocks(PC pc, PetscBool pivot)
 }
 
 /*@
-   PCFactorSetReuseFill - When matrices with different nonzero structure are factored,
-   this causes later ones to use the fill ratio computed in the initial factorization.
+  PCFactorSetReuseFill - When matrices with different nonzero structure are factored,
+  this causes later ones to use the fill ratio computed in the initial factorization.
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  pc - the preconditioner context
--  flag - `PETSC_TRUE` to reuse else `PETSC_FALSE`
+  Input Parameters:
++ pc   - the preconditioner context
+- flag - `PETSC_TRUE` to reuse else `PETSC_FALSE`
 
-   Options Database Key:
-.  -pc_factor_reuse_fill - Activates `PCFactorSetReuseFill()`
+  Options Database Key:
+. -pc_factor_reuse_fill - Activates `PCFactorSetReuseFill()`
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `PCLU`, `PCCHOLESKY`, `PCILU`, `PCICC`, `PCFactorSetReuseOrdering()`, `PCFactorSetFill()`
 @*/

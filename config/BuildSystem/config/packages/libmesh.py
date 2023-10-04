@@ -4,7 +4,7 @@ class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
     self.gitcommit              = '668c2e36991b0a2c39275949277e6ce817414f94'  #master sep-25-2020
-    self.download               = ['git://https://github.com/libMesh/libmesh.git']
+    self.download               = ['git://https://github.com/libMesh/libmesh.git','https://github.com/libMesh/libmesh/archive/'+self.gitcommit+'.tar.gz']
     self.functions              = []
     self.includes               = []
     self.skippackagewithoptions = 1

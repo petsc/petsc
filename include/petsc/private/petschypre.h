@@ -1,13 +1,12 @@
-#ifndef _PETSCHYPRE_H
-#define _PETSCHYPRE_H
+#pragma once
 
 #include <petscsys.h>
 #include <petscpkg_version.h>
 #include <HYPRE_config.h>
 #include <HYPRE_utilities.h>
 
-/* from version 2.16 on, HYPRE_BigInt is 64 bit for 64bit installations
-   and 32 bit for 32bit installations -> not the best name for a variable */
+/* from version 2.16 on, HYPRE_BigInt is 64-bit for 64-bit pointer installations
+   and 32-bit for 32-bit installations -> not the best name for a variable */
 #if PETSC_PKG_HYPRE_VERSION_LT(2, 16, 0)
 typedef PetscInt HYPRE_BigInt;
 #endif
@@ -41,10 +40,26 @@ static inline PetscErrorCode PetscHYPREScalarCast(PetscScalar a, HYPRE_Complex *
 #endif
   PetscFunctionReturn(PETSC_SUCCESS);
 }
+
+#if PETSC_PKG_HYPRE_VERSION_GT(2, 28, 0) || (PETSC_PKG_HYPRE_VERSION_EQ(2, 28, 0) && defined(HYPRE_DEVELOP_NUMBER) && HYPRE_DEVELOP_NUMBER >= 22)
+static inline PetscErrorCode PetscHYPREFinalize_Private(void)
+{
+  if (HYPRE_Initialized() && !HYPRE_Finalized()) PetscCallExternal(HYPRE_Finalize, );
+  return PETSC_SUCCESS;
+}
+  #define PetscHYPREInitialize() \
+    do { \
+      if (!HYPRE_Initialized()) { \
+        PetscCallExternal(HYPRE_Initialize, ); \
+        PetscCall(PetscRegisterFinalize(PetscHYPREFinalize_Private)); \
+      } \
+    } while (0)
+#else
+  #define PetscHYPREInitialize() (void)0
 #endif
 
 #if PETSC_PKG_HYPRE_VERSION_LT(2, 19, 0)
 typedef int HYPRE_MemoryLocation;
-#define hypre_IJVectorMemoryLocation(a) 0
-#define hypre_IJMatrixMemoryLocation(a) 0
+  #define hypre_IJVectorMemoryLocation(a) 0
+  #define hypre_IJMatrixMemoryLocation(a) 0
 #endif

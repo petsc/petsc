@@ -88,7 +88,7 @@ cdef extern from * nogil:
 
     PetscErrorCode VecDuplicate(PetscVec,PetscVec*)
     PetscErrorCode VecCopy(PetscVec,PetscVec)
-    PetscErrorCode VecChop(PetscVec,PetscReal)
+    PetscErrorCode VecFilter(PetscVec,PetscReal)
 
     PetscErrorCode VecDuplicateVecs(PetscVec,PetscInt,PetscVec*[])
     PetscErrorCode VecDestroyVecs(PetscInt,PetscVec*[])
@@ -121,6 +121,7 @@ cdef extern from * nogil:
     PetscErrorCode VecNorm(PetscVec,PetscNormType,PetscReal*)
     PetscErrorCode VecNormBegin(PetscVec,PetscNormType,PetscReal*)
     PetscErrorCode VecNormEnd(PetscVec,PetscNormType,PetscReal*)
+    PetscErrorCode VecDotNorm2(PetscVec,PetscVec,PetscScalar*,PetscReal*)
 
     PetscErrorCode VecAssemblyBegin(PetscVec)
     PetscErrorCode VecAssemblyEnd(PetscVec)
@@ -148,7 +149,7 @@ cdef extern from * nogil:
     PetscErrorCode VecPointwiseDivide(PetscVec,PetscVec,PetscVec)
     PetscErrorCode VecMaxPointwiseDivide(PetscVec,PetscVec,PetscReal*)
     PetscErrorCode VecShift(PetscVec,PetscScalar)
-    PetscErrorCode VecChop(PetscVec,PetscReal)
+    PetscErrorCode VecFilter(PetscVec,PetscReal)
     PetscErrorCode VecReciprocal(PetscVec)
     PetscErrorCode VecPermute(PetscVec,PetscIS,PetscBool)
     PetscErrorCode VecExp(PetscVec)
@@ -218,7 +219,7 @@ cdef extern from * nogil: # custom.h
 cdef inline Vec ref_Vec(PetscVec vec):
     cdef Vec ob = <Vec> Vec()
     ob.vec = vec
-    PetscINCREF(ob.obj)
+    CHKERR( PetscINCREF(ob.obj) )
     return ob
 
 # --------------------------------------------------------------------
@@ -249,7 +250,7 @@ cdef Vec vec_iadd(Vec self, other):
     if isinstance(other, Vec):
         alpha = 1; vec = other
         CHKERR( VecAXPY(self.vec, alpha, vec.vec) )
-    elif isinstance(other, tuple) or isinstance(other, list):
+    elif isinstance(other, (tuple, list)):
         other, vec = other
         alpha = asScalar(other)
         CHKERR( VecAXPY(self.vec, alpha, vec.vec) )
@@ -264,7 +265,7 @@ cdef Vec vec_isub(Vec self, other):
     if isinstance(other, Vec):
         alpha = 1; vec = other
         CHKERR( VecAXPY(self.vec, -alpha, vec.vec) )
-    elif isinstance(other, tuple) or isinstance(other, list):
+    elif isinstance(other, (tuple, list)):
         other, vec = other
         alpha = asScalar(other)
         CHKERR( VecAXPY(self.vec, -alpha, vec.vec) )
@@ -476,12 +477,12 @@ cdef vec_get_dlpack_ctx(Vec self):
 
 # --------------------------------------------------------------------
 
-cdef int Vec_AcquireArray(PetscVec v, PetscScalar *a[], int ro) nogil except -1:
+cdef int Vec_AcquireArray(PetscVec v, PetscScalar *a[], int ro) except -1 nogil:
     if ro: CHKERR( VecGetArrayRead(v, <const PetscScalar**>a) )
     else:  CHKERR( VecGetArray(v, a) )
     return 0
 
-cdef int Vec_ReleaseArray(PetscVec v, PetscScalar *a[], int ro) nogil except -1:
+cdef int Vec_ReleaseArray(PetscVec v, PetscScalar *a[], int ro) except -1 nogil:
     if ro: CHKERR( VecRestoreArrayRead(v, <const PetscScalar**>a) )
     else:  CHKERR( VecRestoreArray(v, a) )
     return 0
@@ -510,14 +511,14 @@ cdef class _Vec_buffer:
 
     #
 
-    cdef int acquire(self) nogil except -1:
+    cdef int acquire(self) except -1 nogil:
         if not self.hasarray and self.vec != NULL:
             CHKERR( VecGetLocalSize(self.vec, &self.size) )
             Vec_AcquireArray(self.vec, &self.data, self.readonly)
             self.hasarray = 1
         return 0
 
-    cdef int release(self) nogil except -1:
+    cdef int release(self) except -1 nogil:
         if self.hasarray and self.vec != NULL:
             self.size = 0
             Vec_ReleaseArray(self.vec, &self.data, self.readonly)

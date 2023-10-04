@@ -1,0 +1,42 @@
+@@ -4,5 +4,5 @@
+ #include "testheader.h"
+ 
+-void BareFunctionShouldGetStatic(void) { }
++static void BareFunctionShouldGetStatic(void) { }
+ 
+ extern void ExternFunctionShouldNotGetStatic(void) { }
+@@ -14,5 +14,5 @@
+ 
+ // this should get static!
+-void StaticFunctionPreDeclShouldNotGetStatic(void) { }
++static void StaticFunctionPreDeclShouldNotGetStatic(void) { }
+ 
+ extern void ExternFunctionPreDeclShouldNotGetStatic(void);
+@@ -20,5 +20,5 @@
+ void ExternFunctionPreDeclShouldNotGetStatic(void) { }
+ 
+-void BareFunctionPreDeclShouldGetStatic(void);
++static void BareFunctionPreDeclShouldGetStatic(void);
+ 
+ void BareFunctionPreDeclShouldGetStatic(void) { }
+@@ -22,5 +22,5 @@
+ void BareFunctionPreDeclShouldGetStatic(void);
+ 
+-void BareFunctionPreDeclShouldGetStatic(void) { }
++static void BareFunctionPreDeclShouldGetStatic(void) { }
+ 
+ // declaration in testheader has "extern"
+@@ -46,5 +46,5 @@
+ }
+ 
+-char *BarePointerShouldGetStatic()
++static char *BarePointerShouldGetStatic()
+ {
+   return nullptr;
+@@ -99,5 +99,5 @@
+ 
+ // ironically enough, this will get static
+-void silence_warnings(void)
++static void silence_warnings(void)
+ {
+   (void)StaticFunctionShouldNotGetStatic;

@@ -1,5 +1,4 @@
-#ifndef PETSC_HASHSET_H
-#define PETSC_HASHSET_H
+#pragma once
 
 #include <petsc/private/hashtable.h>
 
@@ -40,7 +39,7 @@ M*/
   static inline PETSC_UNUSED PetscErrorCode Petsc##HashT##Create(Petsc##HashT *ht) \
   { \
     PetscFunctionBegin; \
-    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidPointer(ht, 1)); \
+    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscAssertPointer(ht, 1)); \
     *ht = kh_init(HashT); \
     PetscFunctionReturn(PETSC_SUCCESS); \
   } \
@@ -48,7 +47,7 @@ M*/
   static inline PETSC_UNUSED PetscErrorCode Petsc##HashT##Destroy(Petsc##HashT *ht) \
   { \
     PetscFunctionBegin; \
-    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidPointer(ht, 1)); \
+    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscAssertPointer(ht, 1)); \
     if (!*ht) PetscFunctionReturn(PETSC_SUCCESS); \
     kh_destroy(HashT, *ht); \
     *ht = NULL; \
@@ -58,7 +57,7 @@ M*/
   static inline PETSC_UNUSED PetscErrorCode Petsc##HashT##Reset(Petsc##HashT ht) \
   { \
     PetscFunctionBegin; \
-    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidPointer(ht, 1)); \
+    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscAssertPointer(ht, 1)); \
     kh_reset(HashT, ht); \
     PetscFunctionReturn(PETSC_SUCCESS); \
   } \
@@ -68,8 +67,8 @@ M*/
     int     ret; \
     KeyType key; \
     PetscFunctionBegin; \
-    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidPointer(ht, 1)); \
-    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidPointer(hd, 2)); \
+    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscAssertPointer(ht, 1)); \
+    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscAssertPointer(hd, 2)); \
     *hd = kh_init(HashT); \
     ret = kh_resize(HashT, *hd, kh_size(ht)); \
     PetscHashAssert(ret == 0); \
@@ -84,8 +83,8 @@ M*/
     int     ret; \
     KeyType key; \
     PetscFunctionBegin; \
-    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidPointer(ht, 1)); \
-    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidPointer(hta, 2)); \
+    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscAssertPointer(ht, 1)); \
+    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscAssertPointer(hta, 2)); \
     kh_foreach_key(hta, key, { \
       kh_put(HashT, ht, key, &ret); \
       PetscHashAssert(ret >= 0); \
@@ -95,7 +94,7 @@ M*/
   static inline PETSC_UNUSED PetscErrorCode Petsc##HashT##Clear(Petsc##HashT ht) \
   { \
     PetscFunctionBegin; \
-    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidPointer(ht, 1)); \
+    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscAssertPointer(ht, 1)); \
     kh_clear(HashT, ht); \
     PetscFunctionReturn(PETSC_SUCCESS); \
   } \
@@ -104,7 +103,7 @@ M*/
   { \
     int ret; \
     PetscFunctionBegin; \
-    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidPointer(ht, 1)); \
+    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscAssertPointer(ht, 1)); \
     ret = kh_resize(HashT, ht, (khint_t)nb); \
     PetscHashAssert(ret == 0); \
     PetscFunctionReturn(PETSC_SUCCESS); \
@@ -113,8 +112,8 @@ M*/
   static inline PETSC_UNUSED PetscErrorCode Petsc##HashT##GetSize(Petsc##HashT ht, PetscInt *n) \
   { \
     PetscFunctionBegin; \
-    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidPointer(ht, 1)); \
-    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidIntPointer(n, 2)); \
+    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscAssertPointer(ht, 1)); \
+    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscAssertPointer(n, 2)); \
     *n = (PetscInt)kh_size(ht); \
     PetscFunctionReturn(PETSC_SUCCESS); \
   } \
@@ -122,8 +121,8 @@ M*/
   static inline PETSC_UNUSED PetscErrorCode Petsc##HashT##GetCapacity(Petsc##HashT ht, PetscInt *n) \
   { \
     PetscFunctionBegin; \
-    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidPointer(ht, 1)); \
-    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidIntPointer(n, 2)); \
+    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscAssertPointer(ht, 1)); \
+    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscAssertPointer(n, 2)); \
     *n = (PetscInt)kh_n_buckets(ht); \
     PetscFunctionReturn(PETSC_SUCCESS); \
   } \
@@ -132,8 +131,8 @@ M*/
   { \
     khiter_t iter; \
     PetscFunctionBeginHot; \
-    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidPointer(ht, 1)); \
-    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidPointer(has, 3)); \
+    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscAssertPointer(ht, 1)); \
+    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscAssertPointer(has, 3)); \
     iter = kh_get(HashT, ht, key); \
     *has = (iter != kh_end(ht)) ? PETSC_TRUE : PETSC_FALSE; \
     PetscFunctionReturn(PETSC_SUCCESS); \
@@ -144,7 +143,7 @@ M*/
     int                   ret; \
     PETSC_UNUSED khiter_t iter; \
     PetscFunctionBeginHot; \
-    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidPointer(ht, 1)); \
+    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscAssertPointer(ht, 1)); \
     iter = kh_put(HashT, ht, key, &ret); \
     (void)iter; \
     PetscHashAssert(ret >= 0); \
@@ -155,7 +154,7 @@ M*/
   { \
     khiter_t iter; \
     PetscFunctionBeginHot; \
-    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidPointer(ht, 1)); \
+    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscAssertPointer(ht, 1)); \
     iter = kh_get(HashT, ht, key); \
     kh_del(HashT, ht, iter); \
     PetscFunctionReturn(PETSC_SUCCESS); \
@@ -166,8 +165,8 @@ M*/
     int                   ret; \
     PETSC_UNUSED khiter_t iter; \
     PetscFunctionBeginHot; \
-    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidPointer(ht, 1)); \
-    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidPointer(missing, 3)); \
+    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscAssertPointer(ht, 1)); \
+    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscAssertPointer(missing, 3)); \
     iter = kh_put(HashT, ht, key, &ret); \
     (void)iter; \
     PetscHashAssert(ret >= 0); \
@@ -179,8 +178,8 @@ M*/
   { \
     khiter_t iter; \
     PetscFunctionBeginHot; \
-    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidPointer(ht, 1)); \
-    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidPointer(present, 3)); \
+    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscAssertPointer(ht, 1)); \
+    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscAssertPointer(present, 3)); \
     iter = kh_get(HashT, ht, key); \
     if (iter != kh_end(ht)) { \
       kh_del(HashT, ht, iter); \
@@ -196,12 +195,10 @@ M*/
     KeyType  key; \
     PetscInt pos; \
     PetscFunctionBegin; \
-    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidPointer(ht, 1)); \
-    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidIntPointer(off, 2)); \
+    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscAssertPointer(ht, 1)); \
+    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscAssertPointer(off, 2)); \
     pos = *off; \
     kh_foreach_key(ht, key, array[pos++] = key); \
     *off = pos; \
     PetscFunctionReturn(PETSC_SUCCESS); \
   }
-
-#endif /* PETSC_HASHSET_H */

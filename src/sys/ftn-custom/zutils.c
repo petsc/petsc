@@ -33,7 +33,7 @@ void *PETSC_NULL_BOOL_Fortran      = 0;
 EXTERN_C_BEGIN
 void (*PETSC_NULL_FUNCTION_Fortran)(void) = 0;
 EXTERN_C_END
-void *PETSC_NULL_MPI_COMM_Fortran   = 0;
+void *PETSC_NULL_MPI_COMM_Fortran = 0;
 
 size_t PetscIntAddressToFortran(const PetscInt *base, const PetscInt *addr)
 {
@@ -68,7 +68,7 @@ size_t PetscIntAddressToFortran(const PetscInt *base, const PetscInt *addr)
   return itmp2;
 }
 
-PetscInt *PetscIntAddressFromFortran(const PetscInt *base,size_t addr)
+PetscInt *PetscIntAddressFromFortran(const PetscInt *base, size_t addr)
 {
   return (PetscInt *)(base + addr);
 }
@@ -198,19 +198,19 @@ PetscErrorCode PetscScalarAddressFromFortran(PetscObject obj, PetscScalar *base,
 }
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
-#define petscisinfornanscalar_          PETSCISINFORNANSCALAR
-#define petscisinfornanreal_            PETSCISINFORNANREAL
+  #define petscisinfornanscalar_ PETSCISINFORNANSCALAR
+  #define petscisinfornanreal_   PETSCISINFORNANREAL
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
-#define petscisinfornanscalar_          petscisinfornanscalar
-#define petscisinfornanreal_            petscisinfornanreal
+  #define petscisinfornanscalar_ petscisinfornanscalar
+  #define petscisinfornanreal_   petscisinfornanreal
 #endif
 
 PETSC_EXTERN PetscBool petscisinfornanscalar_(PetscScalar *v)
 {
-  return (PetscBool) PetscIsInfOrNanScalar(*v);
+  return (PetscBool)PetscIsInfOrNanScalar(*v);
 }
 
 PETSC_EXTERN PetscBool petscisinfornanreal_(PetscReal *v)
 {
-  return (PetscBool) PetscIsInfOrNanReal(*v);
+  return (PetscBool)PetscIsInfOrNanReal(*v);
 }

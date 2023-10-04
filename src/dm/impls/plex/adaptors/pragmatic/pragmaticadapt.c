@@ -157,34 +157,36 @@ PETSC_EXTERN PetscErrorCode DMAdaptMetric_Pragmatic_Plex(DM dm, Vec vertexMetric
   PetscCall(DMDestroy(&dm));
 #endif
   /* Send to Pragmatic and remesh */
+  PetscCall(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
   switch (dim) {
   case 2:
-    pragmatic_2d_mpi_init(&numVertices, &numCells, cells, x, y, l2gv, numLocVertices, comm);
+    PetscStackCallExternalVoid("pragmatic_2d_mpi_init", pragmatic_2d_mpi_init(&numVertices, &numCells, cells, x, y, l2gv, numLocVertices, comm));
     break;
   case 3:
-    pragmatic_3d_mpi_init(&numVertices, &numCells, cells, x, y, z, l2gv, numLocVertices, comm);
+    PetscStackCallExternalVoid("pragmatic_3d_mpi_init", pragmatic_3d_mpi_init(&numVertices, &numCells, cells, x, y, z, l2gv, numLocVertices, comm));
     break;
   default:
     SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "No Pragmatic adaptation defined for dimension %" PetscInt_FMT, dim);
   }
-  pragmatic_set_boundary(&numBdFaces, bdFaces, bdFaceIds);
-  pragmatic_set_metric(metric);
-  pragmatic_adapt(((DM_Plex *)dm->data)->remeshBd ? 1 : 0);
+  PetscStackCallExternalVoid("pragmatic_set_boundary", pragmatic_set_boundary(&numBdFaces, bdFaces, bdFaceIds));
+  PetscStackCallExternalVoid("pragmatic_set_metric", pragmatic_set_metric(metric));
+  PetscStackCallExternalVoid("pragmatic_adapt", pragmatic_adapt(((DM_Plex *)dm->data)->remeshBd ? 1 : 0));
   PetscCall(PetscFree(l2gv));
+  PetscCall(PetscFPTrapPop());
 
   /* Retrieve mesh from Pragmatic and create new plex */
-  pragmatic_get_info_mpi(&numVerticesNew, &numCellsNew);
+  PetscStackCallExternalVoid("pragmatic_get_info_mpi", pragmatic_get_info_mpi(&numVerticesNew, &numCellsNew));
   PetscCall(PetscMalloc1(numVerticesNew * dim, &coordsNew));
   switch (dim) {
   case 2:
     numCornersNew = 3;
     PetscCall(PetscMalloc2(numVerticesNew, &xNew[0], numVerticesNew, &xNew[1]));
-    pragmatic_get_coords_2d_mpi(xNew[0], xNew[1]);
+    PetscStackCallExternalVoid("pragmatic_get_coords_2d_mpi", pragmatic_get_coords_2d_mpi(xNew[0], xNew[1]));
     break;
   case 3:
     numCornersNew = 4;
     PetscCall(PetscMalloc3(numVerticesNew, &xNew[0], numVerticesNew, &xNew[1], numVerticesNew, &xNew[2]));
-    pragmatic_get_coords_3d_mpi(xNew[0], xNew[1], xNew[2]);
+    PetscStackCallExternalVoid("pragmatic_get_coords_3d_mpi", pragmatic_get_coords_3d_mpi(xNew[0], xNew[1], xNew[2]));
     break;
   default:
     SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "No Pragmatic adaptation defined for dimension %" PetscInt_FMT, dim);
@@ -193,11 +195,11 @@ PETSC_EXTERN PetscErrorCode DMAdaptMetric_Pragmatic_Plex(DM dm, Vec vertexMetric
     for (d = 0; d < dim; ++d) coordsNew[v * dim + d] = xNew[d][v];
   }
   PetscCall(PetscMalloc1(numCellsNew * (dim + 1), &cellsNew));
-  pragmatic_get_elements(cellsNew);
+  PetscStackCallExternalVoid("pragmatic_get_elements", pragmatic_get_elements(cellsNew));
   PetscCall(DMPlexCreateFromCellListParallelPetsc(comm, dim, numCellsNew, numVerticesNew, PETSC_DECIDE, numCornersNew, PETSC_TRUE, cellsNew, dim, coordsNew, NULL, NULL, dmNew));
 
   /* Rebuild boundary label */
-  pragmatic_get_boundaryTags(&bdTags);
+  PetscStackCallExternalVoid("pragmatic_get_boundaryTags", pragmatic_get_boundaryTags(&bdTags));
   PetscCall(DMCreateLabel(*dmNew, bdLabel ? bdLabelName : bdName));
   PetscCall(DMGetLabel(*dmNew, bdLabel ? bdLabelName : bdName, &bdLabelNew));
   PetscCall(DMPlexGetHeightStratum(*dmNew, 0, &cStart, &cEnd));
@@ -238,6 +240,6 @@ PETSC_EXTERN PetscErrorCode DMAdaptMetric_Pragmatic_Plex(DM dm, Vec vertexMetric
   PetscCall(PetscFree5(x, y, z, metric, cells));
   PetscCall(PetscFree2(bdFaces, bdFaceIds));
   PetscCall(PetscFree(coordsNew));
-  pragmatic_finalize();
+  PetscStackCallExternalVoid("pragmatic_finalize", pragmatic_finalize());
   PetscFunctionReturn(PETSC_SUCCESS);
 }

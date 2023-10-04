@@ -1,8 +1,8 @@
 /*
       Code to handle PETSc starting up in debuggers,etc.
 */
-
-#include <petscsys.h> /*I   "petscsys.h"   I*/
+#define PETSC_DESIRE_FEATURE_TEST_MACROS /* for fileno() */
+#include <petscsys.h>                    /*I   "petscsys.h"   I*/
 #include <signal.h>
 #if defined(PETSC_HAVE_UNISTD_H)
   #include <unistd.h>
@@ -18,30 +18,30 @@ PetscBool        petscwaitonerrorflg = PETSC_FALSE;
 PetscBool        petscindebugger     = PETSC_FALSE;
 
 /*@C
-   PetscSetDebugTerminal - Sets the terminal to use for debugging.
+  PetscSetDebugTerminal - Sets the terminal to use for debugging.
 
-   Not Collective; No Fortran Support
+  Not Collective; No Fortran Support
 
-   Input Parameter:
-.  terminal - name of terminal and any flags required to execute a program.
-              For example xterm, "urxvt -e", "gnome-terminal -x".
-              On Apple MacOS you can use Terminal (note the capital T)
+  Input Parameter:
+. terminal - name of terminal and any flags required to execute a program.
+              For example "xterm", "urxvt -e", "gnome-terminal -x".
+              On Apple macOS you can use "Terminal} (note the capital T)
 
-   Options Database Key:
-   -debug_terminal terminal - use this terminal instead of the default
+  Options Database Key:
+. -debug_terminal terminal - use this terminal instead of the default
 
-   Level: developer
+  Level: developer
 
-   Notes:
-   You can start the debugger for all processes in the same GNU screen session.
+  Notes:
+  You can start the debugger for all processes in the same GNU screen session.
 
-     mpiexec -n 4 ./myapp -start_in_debugger -debug_terminal "screen -X -S debug screen"
+$     mpiexec -n 4 ./myapp -start_in_debugger -debug_terminal "screen -X -S debug screen"
 
-   will open 4 windows in the session named "debug".
+  will open 4 windows in the session named "debug".
 
-   The default on Apple is Terminal, on other systems the default is xterm
+  The default on Apple is Terminal, on other systems the default is xterm
 
-.seealso: `PetscSetDebugger()`
+.seealso: `PetscSetDebugger()`, `PetscAttachDebugger()`
 @*/
 PetscErrorCode PetscSetDebugTerminal(const char terminal[])
 {
@@ -55,21 +55,21 @@ PetscErrorCode PetscSetDebugTerminal(const char terminal[])
 }
 
 /*@C
-   PetscSetDebugger - Sets options associated with the debugger.
+  PetscSetDebugger - Sets options associated with the debugger.
 
-   Not Collective; No Fortran Support
+  Not Collective; No Fortran Support
 
-   Input Parameters:
-+  debugger - name of debugger, which should be in your path,
+  Input Parameters:
++ debugger         - name of debugger, which should be in your path,
               usually "lldb", "dbx", "gdb", "cuda-gdb", "idb", "xxgdb", "kdgb" or "ddd". Also, HP-UX
               supports "xdb", and IBM rs6000 supports "xldb".
 
--  usedebugterminal - flag to indicate debugger window, set to either PETSC_TRUE (to indicate
+- usedebugterminal - flag to indicate debugger window, set to either PETSC_TRUE (to indicate
             debugger should be started in a new terminal window) or PETSC_FALSE (to start debugger
             in initial window (the option PETSC_FALSE makes no sense when using more
             than one MPI process.)
 
-   Level: developer
+  Level: developer
 
 .seealso: `PetscAttachDebugger()`, `PetscAttachDebuggerErrorHandler()`, `PetscSetDebugTerminal()`
 @*/
@@ -82,13 +82,13 @@ PetscErrorCode PetscSetDebugger(const char debugger[], PetscBool usedebugtermina
 }
 
 /*@C
-    PetscSetDefaultDebugger - Causes PETSc to use its default debugger and output terminal
+  PetscSetDefaultDebugger - Causes PETSc to use its default debugger and output terminal
 
-   Not Collective
+  Not Collective
 
-    Level: developer
+  Level: developer
 
-.seealso: `PetscSetDebugger()`, `PetscSetDebuggerFromString()`
+.seealso: `PetscSetDebugger()`, `PetscSetDebuggerFromString()`, `PetscAttachDebugger()`
 @*/
 PetscErrorCode PetscSetDefaultDebugger(void)
 {
@@ -121,14 +121,17 @@ static PetscErrorCode PetscCheckDebugger_Private(const char defaultDbg[], const 
 }
 
 /*@C
-    PetscSetDebuggerFromString - Set the complete path for the
-       debugger for PETSc to use.
+  PetscSetDebuggerFromString - Set the complete path for the
+  debugger for PETSc to use.
 
-   Not Collective
+  Not Collective
 
-   Level: developer
+  Input Parameter:
+. string - the name of the debugger, for example "gdb"
 
-.seealso: `PetscSetDebugger()`, `PetscSetDefaultDebugger()`
+  Level: developer
+
+.seealso: `PetscSetDebugger()`, `PetscSetDefaultDebugger()`, `PetscAttachDebugger()`
 @*/
 PetscErrorCode PetscSetDebuggerFromString(const char *string)
 {
@@ -162,16 +165,16 @@ PetscErrorCode PetscSetDebuggerFromString(const char *string)
 }
 
 /*@
-   PetscWaitOnError - If an error is detected and the process would normally exit the main program with `MPI_Abort()` sleep instead
-                      of exiting.
+  PetscWaitOnError - If an error is detected and the process would normally exit the main program with `MPI_Abort()` sleep instead
+  of exiting.
 
-   Not Collective
+  Not Collective
 
-   Level: advanced
+  Level: advanced
 
-   Note:
-      When -start_in_debugger -debugger_ranks x,y,z is used this prevents the processes NOT listed in x,y,z from calling MPI_Abort and
-      killing the user's debugging sessions.
+  Note:
+  When `-start_in_debugger -debugger_ranks x,y,z` is used this prevents the processes NOT listed in x,y,z from calling `MPI_Abort()` and
+  killing the user's debugging sessions.
 
 .seealso: `PetscSetDebugger()`, `PetscAttachDebugger()`
 @*/
@@ -182,18 +185,24 @@ PetscErrorCode PetscWaitOnError(void)
 }
 
 /*@
-   PetscAttachDebugger - Attaches the debugger to the running process.
+  PetscAttachDebugger - Attaches the debugger to the running process.
 
-   Not Collective
+  Not Collective
 
-   Options Database Keys:
--  -start_in_debugger [noxterm,dbx,xxgdb,xdb,xldb,gdb] [-display name] [-debugger_ranks m,n] -debug_terminal xterm or Terminal (for Apple)
-.  -on_error_attach_debugger [noxterm,dbx,xxgdb,xdb,xldb,gdb] [-display name] - Activates debugger attachment
+  Options Database Keys:
++ -start_in_debugger [noxterm,dbx,xxgdb,xdb,xldb,gdb] [-display name] [-debugger_ranks m,n] - set debugger debug_terminal xterm or Terminal (for Apple)
+. -on_error_attach_debugger [noxterm,dbx,xxgdb,xdb,xldb,gdb] [-display name]                - Activates debugger attachment
+- -stop_for_debugger                                                                        - print a message on how to attach the process with a debugger and then wait for the user to attach
 
-   Level: advanced
+  Level: advanced
 
-   Developer Note:
-    Since this can be called by the error handler should it be calling `SETERRQ()` and `PetscCall()`?
+  Note:
+  If you get the message " stdin is not a tty, hence unable to attach debugger, see PetscAttachDebugger()", this means the application
+  is likely running in a batch system and you do not have terminal access to the process. You can try
+  running with `-start_in_debugger` without the `noxterm` argument or `-stop_for_debugger`
+
+  Developer Notes:
+  Since this can be called by the error handler, should it be calling `SETERRQ()` and `PetscCall()`?
 
 .seealso: `PetscSetDebugger()`, `PetscSetDefaultDebugger()`, `PetscSetDebugTerminal()`, `PetscAttachDebuggerErrorHandler()`, `PetscStopForDebugger()`
 @*/
@@ -213,20 +222,21 @@ PetscErrorCode PetscAttachDebugger(void)
   PETSCABORT(PETSC_COMM_WORLD, PETSC_ERR_SUP_SYS);
 #else
   if (PetscUnlikely(PetscGetDisplay(display, sizeof(display)))) {
-    ierr = (*PetscErrorPrintf)("Cannot determine display\n");
+    ierr = (*PetscErrorPrintf)("PetscAttachDebugger: Cannot determine display\n");
     return PETSC_ERR_SYS;
   }
   if (PetscUnlikely(PetscGetProgramName(program, sizeof(program)))) {
-    ierr = (*PetscErrorPrintf)("Cannot determine program name needed to attach debugger\n");
+    ierr = (*PetscErrorPrintf)("PetscAttachDebugger: Cannot determine program name needed to attach debugger\n");
     return PETSC_ERR_SYS;
   }
   if (PetscUnlikely(!program[0])) {
-    ierr = (*PetscErrorPrintf)("Cannot determine program name needed to attach debugger\n");
+    ierr = (*PetscErrorPrintf)("PetscAttachDebugger: Cannot determine program name needed to attach debugger\n");
     return PETSC_ERR_SYS;
   }
+  if (PetscUnlikely(!isatty(fileno(stdin))) && !UseDebugTerminal) { printf("If the debugger exits immediately or hangs, this indicates you cannot use PetscAttachDebugger() in this situation\n\n"); }
   child = (int)fork();
   if (PetscUnlikely(child < 0)) {
-    ierr = (*PetscErrorPrintf)("Error in fork() prior to attaching debugger\n");
+    ierr = (*PetscErrorPrintf)("PetscAttachDebugger: Error in fork() prior to attaching debugger\n");
     return PETSC_ERR_SYS;
   }
   petscindebugger = PETSC_TRUE;
@@ -449,39 +459,36 @@ PetscErrorCode PetscAttachDebugger(void)
 }
 
 /*@C
-   PetscAttachDebuggerErrorHandler - Error handler that attaches
-   a debugger to a running process when an error is detected.
-   This routine is useful for examining variables, etc.
+  PetscAttachDebuggerErrorHandler - Error handler that attaches
+  a debugger to a running process when an error is detected.
+  This routine is useful for examining variables, etc.
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  comm - communicator over which error occurred
-.  line - the line number of the error (indicated by __LINE__)
-.  file - the file in which the error was detected (indicated by __FILE__)
-.  message - an error text string, usually just printed to the screen
-.  number - the generic error number
-.  p - `PETSC_ERROR_INITIAL` if error just detected, otherwise `PETSC_ERROR_REPEAT`
--  ctx - error handler context
+  Input Parameters:
++ comm - communicator over which error occurred
+. line - the line number of the error (indicated by `__LINE__`)
+. fun  - the function name
+. file - the file in which the error was detected (indicated by `__FILE__`)
+. mess - an error text string, usually just printed to the screen
+. num  - the generic error number
+. p    - `PETSC_ERROR_INITIAL` if error just detected, otherwise `PETSC_ERROR_REPEAT`
+- ctx  - error handler context
 
-   Options Database Keys:
-+  -on_error_attach_debugger [noxterm,dbx,xxgdb,xdb,xldb,gdb] [-display name] - Activates debugger attachment
--  -start_in_debugger [noxterm,dbx,xxgdb,xdb,xldb,gdb] [-display name] [-debugger_ranks m,n]
+  Level: developer
 
-   Level: developer
+  Notes:
+  By default the Gnu debugger, gdb, is used.  Alternatives are cuda-gdb, lldb, dbx and
+  xxgdb,xldb (on IBM rs6000), xdb (on HP-UX).
 
-   Notes:
-   By default the GNU debugger, gdb, is used.  Alternatives are cuda-gdb, lldb, dbx and
-   xxgdb,xldb (on IBM rs6000), xdb (on HP-UX).
+  Most users need not directly employ this routine and the other error
+  handlers, but can instead use the simplified interface SETERR, which has
+  the calling sequence
+$     SETERRQ(PETSC_COMM_SELF, number, p, message)
 
-   Most users need not directly employ this routine and the other error
-   handlers, but can instead use the simplified interface SETERR, which has
-   the calling sequence
-$     SETERRQ(PETSC_COMM_SELF,number,p,message)
-
-   Notes for experienced users:
-   Use `PetscPushErrorHandler()` to set the desired error handler.  The
-   currently available PETSc error handlers are
+  Notes for experienced users:
+  Use `PetscPushErrorHandler()` to set the desired error handler.  The
+  currently available PETSc error handlers are
 .vb
     PetscTraceBackErrorHandler()
     PetscAttachDebuggerErrorHandler()
@@ -489,9 +496,9 @@ $     SETERRQ(PETSC_COMM_SELF,number,p,message)
 .ve
   or you may write your own.
 
-   Developer Note:
-     This routine calls abort instead of returning because if it returned then `MPI_Abort()` would get called which can generate an exception
-     causing the debugger to be attached again in a cycle.
+  Developer Notes:
+  This routine calls abort instead of returning because if it returned then `MPI_Abort()` would get called which can generate an exception
+  causing the debugger to be attached again in a cycle.
 
 .seealso: `PetscSetDebuggerFromString()`, `PetscSetDebugger()`, `PetscSetDefaultDebugger()`, `PetscError()`, `PetscPushErrorHandler()`, `PetscPopErrorHandler()`, `PetscTraceBackErrorHandler()`,
           `PetscAbortErrorHandler()`, `PetscMPIAbortErrorHandler()`, `PetscEmacsClientErrorHandler()`, `PetscReturnErrorHandler()`, `PetscSetDebugTermainal()`
@@ -499,6 +506,11 @@ $     SETERRQ(PETSC_COMM_SELF,number,p,message)
 PetscErrorCode PetscAttachDebuggerErrorHandler(MPI_Comm comm, int line, const char *fun, const char *file, PetscErrorCode num, PetscErrorType p, const char *mess, void *ctx)
 {
   PetscErrorCode ierr;
+
+  (void)comm;
+  (void)num;
+  (void)p;
+  (void)ctx;
   if (!mess) mess = " ";
 
   if (fun) ierr = (*PetscErrorPrintf)("%s() at %s:%d %s\n", fun, file, line, mess);
@@ -511,22 +523,22 @@ PetscErrorCode PetscAttachDebuggerErrorHandler(MPI_Comm comm, int line, const ch
 }
 
 /*@C
-   PetscStopForDebugger - Prints a message to the screen indicating how to
-         attach to the process with the debugger and then waits for the
-         debugger to attach.
+  PetscStopForDebugger - Prints a message to the screen indicating how to
+  attach to the process with the debugger and then waits for the
+  debugger to attach.
 
-   Not Collective
+  Not Collective
 
-   Options Database Key:
-.   -stop_for_debugger - will stop for you to attach the debugger when PetscInitialize() is called
+  Options Database Key:
+. -stop_for_debugger - will stop for you to attach the debugger when PetscInitialize() is called
 
-   Level: developer
+  Level: developer
 
-   Note:
-    This is likely never needed since `PetscAttachDebugger()` is easier to use and seems to always work.
+  Note:
+  This is likely never needed since `PetscAttachDebugger()` is easier to use and seems to always work.
 
-   Developer Note:
-    Since this can be called by the error handler, should it be calling `SETERRQ()` and `PetscCall()`?
+  Developer Notes:
+  Since this can be called by the error handler, should it be calling `SETERRQ()` and `PetscCall()`?
 
 .seealso: `PetscSetDebugger()`, `PetscAttachDebugger()`
 @*/

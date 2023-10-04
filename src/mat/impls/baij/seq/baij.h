@@ -1,11 +1,14 @@
-
-#ifndef __BAIJ_H
-#define __BAIJ_H
+#pragma once
 #include <petsc/private/matimpl.h>
 #include <../src/mat/impls/aij/seq/aij.h>
 #include <../src/mat/impls/baij/seq/ftn-kernels/fsolvebaij.h>
 #include <petsc/private/hashmapijv.h>
 #include <petsc/private/hashsetij.h>
+
+// This is sometimes needed for PETSC_Prefetch.
+#if defined(PETSC_HAVE_XMMINTRIN_H)
+  #include <xmmintrin.h>
+#endif
 
 /*
   MATSEQBAIJ format - Block compressed row storage. The i[] and j[]
@@ -37,7 +40,7 @@ typedef struct {
   SEQBAIJHEADER;
 } Mat_SeqBAIJ;
 
-PETSC_INTERN PetscErrorCode MatSeqBAIJSetPreallocation_SeqBAIJ(Mat B, PetscInt bs, PetscInt nz, PetscInt *nnz);
+PETSC_INTERN PetscErrorCode MatSeqBAIJSetPreallocation_SeqBAIJ(Mat B, PetscInt bs, PetscInt nz, const PetscInt nnz[]);
 PETSC_INTERN PetscErrorCode MatAXPY_SeqBAIJ(Mat Y, PetscScalar a, Mat X, MatStructure str);
 
 PETSC_INTERN PetscErrorCode MatGetColumnIJ_SeqBAIJ_Color(Mat, PetscInt, PetscBool, PetscBool, PetscInt *, const PetscInt *[], const PetscInt *[], PetscInt *[], PetscBool *);
@@ -189,7 +192,8 @@ PETSC_INTERN PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering(Mat, Ma
 #if defined(PETSC_HAVE_SSE)
 PETSC_INTERN PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE(Mat, Mat, const MatFactorInfo *);
 PETSC_INTERN PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE_usj(Mat, Mat, const MatFactorInfo *);
-#else
+PETSC_INTERN PetscErrorCode MatSetUnfactored_SeqBAIJ_4_NaturalOrdering_SSE(Mat);
+PETSC_INTERN PetscErrorCode MatSetUnfactored_SeqBAIJ_4_NaturalOrdering_SSE_usj(Mat);
 #endif
 PETSC_INTERN PetscErrorCode MatLUFactorNumeric_SeqBAIJ_5_inplace(Mat, Mat, const MatFactorInfo *);
 PETSC_INTERN PetscErrorCode MatLUFactorNumeric_SeqBAIJ_5(Mat, Mat, const MatFactorInfo *);
@@ -269,6 +273,8 @@ PETSC_INTERN PetscErrorCode MatZeroRows_SeqBAIJ(Mat, PetscInt, const PetscInt[],
 
 PETSC_INTERN PetscErrorCode MatDestroySubMatrix_SeqBAIJ(Mat);
 PETSC_INTERN PetscErrorCode MatDestroySubMatrices_SeqBAIJ(PetscInt, Mat *[]);
+
+PETSC_INTERN PetscErrorCode MatEliminateZeros_SeqBAIJ(Mat, PetscBool);
 
 /*
   PetscKernel_A_gets_A_times_B_2: A = A * B with size bs=2
@@ -2015,5 +2021,3 @@ static inline PetscErrorCode PetscKernel_A_gets_A_minus_B_times_C_15(PetscScalar
   A[224] -= B[14] * C[210] + B[29] * C[211] + B[44] * C[212] + B[59] * C[213] + B[74] * C[214] + B[89] * C[215] + B[104] * C[216] + B[119] * C[217] + B[134] * C[218] + B[149] * C[219] + B[164] * C[220] + B[179] * C[221] + B[194] * C[222] + B[209] * C[223] + B[224] * C[224];
   return PETSC_SUCCESS;
 }
-
-#endif

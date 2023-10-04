@@ -1,9 +1,14 @@
-static char help[] = "This example demonstrates the use of DMNetwork interface with subnetworks for solving a coupled nonlinear \n\
+static char help[] = "This example demonstrates the use of DMNetwork with subnetworks for solving a coupled nonlinear \n\
                       electric power grid and water pipe problem.\n\
                       The available solver options are in the ex1options file \n\
                       and the data files are in the datafiles of subdirectories.\n\
-                      This example shows the use of subnetwork feature in DMNetwork. \n\
                       Run this program: mpiexec -n <n> ./ex1 \n\\n";
+/*
+  Example:
+    mpiexec -n 3 ./ex1 -petscpartitioner_type parmetis -dmnetwork_view draw -dmnetwork_view_distributed draw -dmnetwork_view_rank_range 0,1,2
+    mpiexec -n 3 ./ex1 -petscpartitioner_type simple -dmnetwork_view_distributed draw -dmnetwork_view_zoomin_vertices 0 -dmnetwork_view_zoomin_vertices_padding 2 -dmnetwork_view_rank_range 0
+    mpiexec -n <n> ./ex1 -monitorIteration -monitorColor -power_snes_max_it 0 -water_snes_max_it 0 -coupled_snes_max_it 10 -draw_pause 5.0
+*/
 
 #include "power/power.h"
 #include "water/water.h"
@@ -14,33 +19,68 @@ typedef struct {
   PetscInt      subsnes_id; /* snes solver id */
   PetscInt      it;         /* iteration number */
   Vec           localXold;  /* store previous solution, used by FormFunction_Dummy() */
+  PetscBool     monitorColor;
 } UserCtx;
 
+/*
+  UserMonitor -- called at the end of every SNES iteration via option `-monitorIteration' or `-monitorColor'
+*/
 PetscErrorCode UserMonitor(SNES snes, PetscInt its, PetscReal fnorm, void *appctx)
 {
   UserCtx    *user = (UserCtx *)appctx;
-  Vec         X, localXold = user->localXold;
-  DM          networkdm;
   PetscMPIInt rank;
   MPI_Comm    comm;
+  PetscInt    it;
 
   PetscFunctionBegin;
   PetscCall(PetscObjectGetComm((PetscObject)snes, &comm));
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
-#if 0
+
+  PetscCall(SNESGetIterationNumber(snes, &it));
   if (rank == 0) {
-    PetscInt       subsnes_id = user->subsnes_id;
-    if (subsnes_id == 2) {
-      PetscCall(PetscPrintf(PETSC_COMM_SELF," it %" PetscInt_FMT ", subsnes_id %" PetscInt_FMT ", fnorm %g\n",user->it,user->subsnes_id,(double)fnorm));
+    PetscCall(SNESGetIterationNumber(snes, &it));
+    if (user->subsnes_id == 0 || user->subsnes_id == 1) {
+      PetscCall(PetscPrintf(PETSC_COMM_SELF, " subsnes_id %" PetscInt_FMT ", it %" PetscInt_FMT ", fnorm %g\n", user->subsnes_id, it, (double)fnorm));
     } else {
-      PetscCall(PetscPrintf(PETSC_COMM_SELF,"       subsnes_id %" PetscInt_FMT ", fnorm %g\n",user->subsnes_id,(double)fnorm));
+      PetscCall(PetscPrintf(PETSC_COMM_SELF, "   coupled_snes_it %" PetscInt_FMT ", total_snes_it %" PetscInt_FMT ", fnorm %g\n", it, user->it, (double)fnorm));
     }
   }
-#endif
-  PetscCall(SNESGetSolution(snes, &X));
-  PetscCall(SNESGetDM(snes, &networkdm));
-  PetscCall(DMGlobalToLocalBegin(networkdm, X, INSERT_VALUES, localXold));
-  PetscCall(DMGlobalToLocalEnd(networkdm, X, INSERT_VALUES, localXold));
+
+  if (user->monitorColor) {
+    DM           networkdm, dmcoords;
+    Vec          F;
+    PetscInt     v, vStart, vEnd, offset, gidx, rstart;
+    PetscReal   *color;
+    PetscScalar *farr;
+    PetscBool    ghost;
+
+    PetscCall(SNESGetDM(snes, &networkdm));
+    PetscCall(DMGetCoordinateDM(networkdm, &dmcoords));
+
+    PetscCall(SNESGetFunction(snes, &F, NULL, NULL));
+    PetscCall(VecGetOwnershipRange(F, &rstart, NULL));
+
+    PetscCall(VecGetArray(F, &farr));
+    PetscCall(DMNetworkGetVertexRange(dmcoords, &vStart, &vEnd));
+
+    PetscCall(PetscPrintf(MPI_COMM_WORLD, "\nColorPrint:\n"));
+    for (v = vStart; v < vEnd; v++) {
+      PetscCall(DMNetworkIsGhostVertex(networkdm, v, &ghost));
+      PetscCall(DMNetworkGetComponent(dmcoords, v, 0, NULL, (void **)&color, NULL));
+      PetscCall(DMNetworkGetGlobalVertexIndex(networkdm, v, &gidx));
+      if (!ghost) {
+        PetscCall(DMNetworkGetGlobalVecOffset(networkdm, v, 0, &offset));
+        *color = (PetscRealPart(farr[offset - rstart]));
+      }
+      PetscCall(PetscSynchronizedPrintf(MPI_COMM_WORLD, "[%d] v %" PetscInt_FMT ": color[%" PetscInt_FMT "] = %g\n", rank, gidx, offset - rstart, *color));
+    }
+    PetscCall(PetscSynchronizedFlush(MPI_COMM_WORLD, NULL));
+    PetscCall(VecRestoreArray(F, &farr));
+
+    PetscCall(PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD, PETSC_VIEWER_ASCII_CSV));
+    PetscCall(DMView(networkdm, PETSC_VIEWER_DRAW_WORLD));
+    PetscCall(PetscViewerPopFormat(PETSC_VIEWER_STDOUT_WORLD));
+  }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -284,22 +324,23 @@ PetscErrorCode SetInitialGuess(DM networkdm, Vec X, void *appctx)
 }
 
 /* Set coordinates */
-static PetscErrorCode CoordinateVecSetUp(DM dm, Vec coords)
+static PetscErrorCode CoordinateVecSetUp(DM dmcoords, Vec coords)
 {
-  DM              dmclone;
   PetscInt        i, gidx, offset, v, nv, Nsubnet;
   const PetscInt *vtx;
   PetscScalar    *carray;
+  PetscReal      *color;
 
   PetscFunctionBeginUser;
-  PetscCall(DMGetCoordinateDM(dm, &dmclone));
   PetscCall(VecGetArrayWrite(coords, &carray));
-  PetscCall(DMNetworkGetNumSubNetworks(dm, NULL, &Nsubnet));
+  PetscCall(DMNetworkGetNumSubNetworks(dmcoords, NULL, &Nsubnet));
   for (i = 0; i < Nsubnet; i++) {
-    PetscCall(DMNetworkGetSubnetwork(dm, i, &nv, NULL, &vtx, NULL));
+    PetscCall(DMNetworkGetSubnetwork(dmcoords, i, &nv, NULL, &vtx, NULL));
     for (v = 0; v < nv; v++) {
-      PetscCall(DMNetworkGetGlobalVertexIndex(dm, vtx[v], &gidx));
-      PetscCall(DMNetworkGetLocalVecOffset(dmclone, vtx[v], 0, &offset));
+      PetscCall(DMNetworkGetGlobalVertexIndex(dmcoords, vtx[v], &gidx));
+      PetscCall(DMNetworkGetLocalVecOffset(dmcoords, vtx[v], 0, &offset));
+      PetscCall(DMNetworkGetComponent(dmcoords, vtx[v], 0, NULL, (void **)&color, NULL));
+      *color = 0.0;
       switch (gidx) {
       case 0:
         carray[offset]     = -1.0;
@@ -372,7 +413,7 @@ static PetscErrorCode CoordinateVecSetUp(DM dm, Vec coords)
 
 static PetscErrorCode CoordinatePrint(DM dm)
 {
-  DM                 dmclone;
+  DM                 dmcoords;
   PetscInt           cdim, v, off, vglobal, vStart, vEnd;
   const PetscScalar *carray;
   Vec                coords;
@@ -380,21 +421,23 @@ static PetscErrorCode CoordinatePrint(DM dm)
   PetscMPIInt        rank;
 
   PetscFunctionBegin;
-  PetscCall(PetscObjectGetComm((PetscObject)dm, &comm));
-  PetscCallMPI(MPI_Comm_rank(comm, &rank));
-
-  PetscCall(DMGetCoordinateDM(dm, &dmclone));
-  PetscCall(DMNetworkGetVertexRange(dm, &vStart, &vEnd));
+  /* get info from dm */
+  PetscCall(DMGetCoordinateDim(dm, &cdim));
   PetscCall(DMGetCoordinatesLocal(dm, &coords));
 
-  PetscCall(DMGetCoordinateDim(dm, &cdim));
-  PetscCall(VecGetArrayRead(coords, &carray));
+  PetscCall(DMGetCoordinateDM(dm, &dmcoords));
+  PetscCall(PetscObjectGetComm((PetscObject)dmcoords, &comm));
+  PetscCallMPI(MPI_Comm_rank(comm, &rank));
 
+  /* print coordinates from dmcoords */
   PetscCall(PetscPrintf(MPI_COMM_WORLD, "\nCoordinatePrint, cdim %" PetscInt_FMT ":\n", cdim));
-  PetscCall(PetscSynchronizedPrintf(MPI_COMM_WORLD, "[%i]\n", rank));
+  PetscCall(PetscSynchronizedPrintf(MPI_COMM_WORLD, "[%d]\n", rank));
+
+  PetscCall(DMNetworkGetVertexRange(dmcoords, &vStart, &vEnd));
+  PetscCall(VecGetArrayRead(coords, &carray));
   for (v = vStart; v < vEnd; v++) {
-    PetscCall(DMNetworkGetLocalVecOffset(dmclone, v, 0, &off));
-    PetscCall(DMNetworkGetGlobalVertexIndex(dmclone, v, &vglobal));
+    PetscCall(DMNetworkGetLocalVecOffset(dmcoords, v, 0, &off));
+    PetscCall(DMNetworkGetGlobalVertexIndex(dmcoords, v, &vglobal));
     switch (cdim) {
     case 2:
       PetscCall(PetscSynchronizedPrintf(MPI_COMM_WORLD, "Vertex: %" PetscInt_FMT ", x =  %f y = %f \n", vglobal, (double)PetscRealPart(carray[off]), (double)PetscRealPart(carray[off + 1])));
@@ -411,20 +454,19 @@ static PetscErrorCode CoordinatePrint(DM dm)
 
 int main(int argc, char **argv)
 {
-  DM                  networkdm, dmclone;
+  DM                  networkdm, dmcoords;
   PetscMPIInt         rank, size;
   PetscInt            Nsubnet = 2, numVertices[2], numEdges[2], i, j, nv, ne, it_max = 10;
   PetscInt            vStart, vEnd, compkey;
   const PetscInt     *vtx, *edges;
+  PetscReal          *color;
   Vec                 X, F, coords;
   SNES                snes, snes_power, snes_water;
   Mat                 Jac;
-  PetscBool           ghost, viewJ = PETSC_FALSE, viewX = PETSC_FALSE, test = PETSC_FALSE, distribute = PETSC_TRUE, flg, printCoord = PETSC_FALSE, viewCSV = PETSC_FALSE;
+  PetscBool           ghost, viewJ = PETSC_FALSE, viewX = PETSC_FALSE, test = PETSC_FALSE, distribute = PETSC_TRUE, flg, printCoord = PETSC_FALSE, viewCSV = PETSC_FALSE, monitorIt = PETSC_FALSE;
   UserCtx             user;
   SNESConvergedReason reason;
-#if defined(PETSC_USE_LOG)
-  PetscLogStage stage[4];
-#endif
+  PetscLogStage       stage[4];
 
   /* Power subnetwork */
   UserCtx_Power *appctx_power                    = &user.appctx_power;
@@ -571,15 +613,17 @@ int main(int argc, char **argv)
 
   /* Set coordinates for visualization */
   PetscCall(DMSetCoordinateDim(networkdm, 2));
-  PetscCall(DMGetCoordinateDM(networkdm, &dmclone));
-  PetscCall(DMNetworkGetVertexRange(dmclone, &vStart, &vEnd));
-  PetscCall(DMNetworkRegisterComponent(dmclone, "coordinates", 0, &compkey));
-  for (i = vStart; i < vEnd; i++) PetscCall(DMNetworkAddComponent(dmclone, i, compkey, NULL, 2));
-  PetscCall(DMNetworkFinalizeComponents(dmclone));
+  PetscCall(DMGetCoordinateDM(networkdm, &dmcoords));
+  PetscCall(DMNetworkGetVertexRange(dmcoords, &vStart, &vEnd));
 
-  PetscCall(DMCreateLocalVector(dmclone, &coords));
+  PetscCall(PetscCalloc1(vEnd - vStart, &color));
+  PetscCall(DMNetworkRegisterComponent(dmcoords, "coordinate&color", sizeof(PetscReal), &compkey));
+  for (i = vStart; i < vEnd; i++) PetscCall(DMNetworkAddComponent(dmcoords, i, compkey, &color[i - vStart], 2));
+  PetscCall(DMNetworkFinalizeComponents(dmcoords));
+
+  PetscCall(DMCreateLocalVector(dmcoords, &coords));
   PetscCall(DMSetCoordinatesLocal(networkdm, coords)); /* set/get coords to/from networkdm */
-  PetscCall(CoordinateVecSetUp(networkdm, coords));
+  PetscCall(CoordinateVecSetUp(dmcoords, coords));
   if (printCoord) PetscCall(CoordinatePrint(networkdm));
 
   /* Set up DM for use */
@@ -660,7 +704,8 @@ int main(int argc, char **argv)
   PetscCall(SNESSetDM(snes, networkdm));
   PetscCall(SNESSetOptionsPrefix(snes, "coupled_"));
   PetscCall(SNESSetFunction(snes, F, FormFunction, &user));
-  PetscCall(SNESMonitorSet(snes, UserMonitor, &user, NULL));
+  /* set maxit=1 which can be changed via option '-coupled_snes_max_it <>', see ex1options */
+  PetscCall(SNESSetTolerances(snes, PETSC_DEFAULT, PETSC_DEFAULT, PETSC_DEFAULT, 1, PETSC_DEFAULT));
   PetscCall(SNESSetFromOptions(snes));
 
   if (viewJ) {
@@ -681,13 +726,13 @@ int main(int argc, char **argv)
 
   /* Create snes_power */
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "SNES_power setup ......\n"));
-
   user.subsnes_id = 0;
   PetscCall(SNESCreate(PETSC_COMM_WORLD, &snes_power));
   PetscCall(SNESSetDM(snes_power, networkdm));
   PetscCall(SNESSetOptionsPrefix(snes_power, "power_"));
   PetscCall(SNESSetFunction(snes_power, F, FormFunction, &user));
-  PetscCall(SNESMonitorSet(snes_power, UserMonitor, &user, NULL));
+  /* set maxit=1 which can be changed via option '-power_snes_max_it <>', see ex1options */
+  PetscCall(SNESSetTolerances(snes_power, PETSC_DEFAULT, PETSC_DEFAULT, PETSC_DEFAULT, 1, PETSC_DEFAULT));
 
   /* Use user-provide Jacobian */
   PetscCall(DMCreateMatrix(networkdm, &Jac));
@@ -702,7 +747,6 @@ int main(int argc, char **argv)
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Power Jac:\n"));
     PetscCall(SNESGetJacobian(snes_power, &Jac, NULL, NULL, NULL));
     PetscCall(MatView(Jac, PETSC_VIEWER_DRAW_WORLD));
-    /* PetscCall(MatView(Jac,PETSC_VIEWER_STDOUT_WORLD)); */
   }
 
   /* Create snes_water */
@@ -713,30 +757,50 @@ int main(int argc, char **argv)
   PetscCall(SNESSetDM(snes_water, networkdm));
   PetscCall(SNESSetOptionsPrefix(snes_water, "water_"));
   PetscCall(SNESSetFunction(snes_water, F, FormFunction, &user));
-  PetscCall(SNESMonitorSet(snes_water, UserMonitor, &user, NULL));
+  /* set maxit=1 which can be changed via option '-water_snes_max_it <>', see ex1options */
+  PetscCall(SNESSetTolerances(snes_water, PETSC_DEFAULT, PETSC_DEFAULT, PETSC_DEFAULT, 1, PETSC_DEFAULT));
   PetscCall(SNESSetFromOptions(snes_water));
 
   if (viewX) {
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Water Solution:\n"));
     PetscCall(VecView(X, PETSC_VIEWER_STDOUT_WORLD));
   }
+
+  /* Monitor snes, snes_power and snes_water iterations */
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-monitorIteration", &monitorIt, NULL));
+  user.monitorColor = PETSC_FALSE;
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-monitorColor", &user.monitorColor, NULL));
+  if (user.monitorColor) monitorIt = PETSC_TRUE; /* require installation of pandas and matplotlib */
+  if (monitorIt) {
+    PetscCall(SNESMonitorSet(snes_power, UserMonitor, &user, NULL));
+    PetscCall(SNESMonitorSet(snes_water, UserMonitor, &user, NULL));
+    PetscCall(SNESMonitorSet(snes, UserMonitor, &user, NULL));
+  }
   PetscCall(PetscLogStagePop());
 
-  /* (4) Solve */
+  /* (4) Solve: we must update user.localXold after each call of SNESSolve().
+         See "PETSc DMNetwork: A Library for Scalable Network PDE-Based Multiphysics Simulations",
+         https://dl.acm.org/doi/10.1145/3344587
+  */
   PetscCall(PetscLogStageRegister("SNES Solve", &stage[3]));
   PetscCall(PetscLogStagePush(stage[3]));
-  user.it = 0;
+  user.it = 0; /* total_snes_it */
   reason  = SNES_DIVERGED_DTOL;
   while (user.it < it_max && (PetscInt)reason < 0) {
-#if 0
     user.subsnes_id = 0;
-    PetscCall(SNESSolve(snes_power,NULL,X));
+    PetscCall(SNESSolve(snes_power, NULL, X));
+    PetscCall(DMGlobalToLocalBegin(networkdm, X, INSERT_VALUES, user.localXold));
+    PetscCall(DMGlobalToLocalEnd(networkdm, X, INSERT_VALUES, user.localXold));
 
     user.subsnes_id = 1;
-    PetscCall(SNESSolve(snes_water,NULL,X));
-#endif
+    PetscCall(SNESSolve(snes_water, NULL, X));
+    PetscCall(DMGlobalToLocalBegin(networkdm, X, INSERT_VALUES, user.localXold));
+    PetscCall(DMGlobalToLocalEnd(networkdm, X, INSERT_VALUES, user.localXold));
+
     user.subsnes_id = Nsubnet;
     PetscCall(SNESSolve(snes, NULL, X));
+    PetscCall(DMGlobalToLocalBegin(networkdm, X, INSERT_VALUES, user.localXold));
+    PetscCall(DMGlobalToLocalEnd(networkdm, X, INSERT_VALUES, user.localXold));
 
     PetscCall(SNESGetConvergedReason(snes, &reason));
     user.it++;
@@ -750,6 +814,7 @@ int main(int argc, char **argv)
 
   /* Free objects */
   /* -------------*/
+  PetscCall(PetscFree(color));
   PetscCall(VecDestroy(&X));
   PetscCall(VecDestroy(&F));
   PetscCall(DMRestoreLocalVector(networkdm, &user.localXold));
@@ -771,14 +836,14 @@ int main(int argc, char **argv)
      depends: power/PFReadData.c power/pffunctions.c water/waterreaddata.c water/waterfunctions.c
 
    test:
-      args: -coupled_snes_converged_reason -options_left no -dmnetwork_view
+      args: -options_left no -dmnetwork_view -fp_trap 0
       localrunfiles: ex1options power/case9.m water/sample1.inp
       output_file: output/ex1.out
 
    test:
       suffix: 2
       nsize: 3
-      args: -coupled_snes_converged_reason -options_left no -petscpartitioner_type parmetis
+      args: -options_left no -petscpartitioner_type parmetis -fp_trap 0
       localrunfiles: ex1options power/case9.m water/sample1.inp
       output_file: output/ex1_2.out
       requires: parmetis
@@ -786,27 +851,27 @@ int main(int argc, char **argv)
    test:
       suffix: 3
       nsize: 3
-      args: -coupled_snes_converged_reason -options_left no -distribute false
+      args: -options_left no -distribute false -fp_trap 0
       localrunfiles: ex1options power/case9.m water/sample1.inp
       output_file: output/ex1_2.out
 
    test:
       suffix: 4
       nsize: 4
-      args: -coupled_snes_converged_reason -options_left no -petscpartitioner_type simple -dmnetwork_view -dmnetwork_view_distributed
+      args: -options_left no -petscpartitioner_type simple -dmnetwork_view -dmnetwork_view_distributed -fp_trap 0
       localrunfiles: ex1options power/case9.m water/sample1.inp
       output_file: output/ex1_4.out
 
    test:
       suffix: 5
-      args: -coupled_snes_converged_reason -options_left no -viewCSV
+      args: -options_left no -viewCSV -fp_trap 0
       localrunfiles: ex1options power/case9.m water/sample1.inp
       output_file: output/ex1_5.out
 
    test:
       suffix: 6
       nsize: 3
-      args: -coupled_snes_converged_reason -options_left no -petscpartitioner_type parmetis -dmnetwork_view_distributed draw:null
+      args: -options_left no -petscpartitioner_type parmetis -dmnetwork_view_distributed draw:null -fp_trap 0
       localrunfiles: ex1options power/case9.m water/sample1.inp
       output_file: output/ex1_2.out
       requires: parmetis

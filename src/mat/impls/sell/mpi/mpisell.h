@@ -1,7 +1,5 @@
+#pragma once
 
-#ifndef __MPISELL_H
-  #define __MPISELL_H
-#endif
 #include <../src/mat/impls/sell/seq/sell.h>
 
 typedef struct {
@@ -39,20 +37,16 @@ typedef struct {
 } Mat_MPISELL;
 
 PETSC_EXTERN PetscErrorCode MatCreate_MPISELL(Mat);
-PETSC_INTERN PetscErrorCode MatSetUpMultiply_MPISELL(Mat);
 
+PETSC_INTERN PetscErrorCode MatAssemblyEnd_MPISELL(Mat, MatAssemblyType);
+
+PETSC_INTERN PetscErrorCode MatSetUpMultiply_MPISELL(Mat);
 PETSC_INTERN PetscErrorCode MatDisAssemble_MPISELL(Mat);
-PETSC_INTERN PetscErrorCode MatDuplicate_MPISELL(Mat, MatDuplicateOption, Mat *);
 
 PETSC_INTERN PetscErrorCode MatDestroy_MPISELL_PtAP(Mat);
 PETSC_INTERN PetscErrorCode MatDestroy_MPISELL(Mat);
 
-PETSC_INTERN PetscErrorCode MatSetValues_MPISELL(Mat, PetscInt, const PetscInt[], PetscInt, const PetscInt[], const PetscScalar[], InsertMode);
-PETSC_INTERN PetscErrorCode MatSetOption_MPISELL(Mat, MatOption, PetscBool);
 PETSC_INTERN PetscErrorCode MatGetSeqNonzeroStructure_MPISELL(Mat, Mat *);
-
-PETSC_INTERN PetscErrorCode MatSetFromOptions_MPISELL(Mat, PetscOptionItems *);
-PETSC_INTERN PetscErrorCode MatMPISELLSetPreallocation_MPISELL(Mat, PetscInt, const PetscInt[], PetscInt, const PetscInt[]);
 
 PETSC_INTERN PetscErrorCode MatConvert_MPISELL_MPIAIJ(Mat, MatType, MatReuse, Mat *);
 PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_MPISELL(Mat, MatType, MatReuse, Mat *);

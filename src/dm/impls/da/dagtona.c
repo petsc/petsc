@@ -10,18 +10,18 @@
 #include <petsc/private/dmdaimpl.h> /*I   "petscdmda.h"   I*/
 
 /*@
-   DMDAGlobalToNaturalAllCreate - Creates a scatter context that maps from the
-     global vector the entire vector to each processor in natural numbering
+  DMDAGlobalToNaturalAllCreate - Creates a scatter context that maps from the
+  global vector the entire vector to each processor in natural numbering
 
-   Collective
+  Collective
 
-   Input Parameter:
-.  da - the distributed array context
+  Input Parameter:
+. da - the distributed array context
 
-   Output Parameter:
-.  scatter - the scatter context
+  Output Parameter:
+. scatter - the scatter context
 
-   Level: advanced
+  Level: advanced
 
 .seealso: `DM`, `DMDA`, `DMDAGlobalToNaturalEnd()`, `DMLocalToGlobalBegin()`, `DMDACreate2d()`,
           `DMGlobalToLocalBegin()`, `DMGlobalToLocalEnd()`, `DMDACreateNaturalVector()`
@@ -36,7 +36,7 @@ PetscErrorCode DMDAGlobalToNaturalAllCreate(DM da, VecScatter *scatter)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(da, DM_CLASSID, 1, DMDA);
-  PetscValidPointer(scatter, 2);
+  PetscAssertPointer(scatter, 2);
   PetscCall(DMDAGetAO(da, &ao));
 
   /* create the scatter context */
@@ -55,18 +55,18 @@ PetscErrorCode DMDAGlobalToNaturalAllCreate(DM da, VecScatter *scatter)
 }
 
 /*@
-   DMDANaturalAllToGlobalCreate - Creates a scatter context that maps from a copy
-     of the entire vector on each processor to its local part in the global vector.
+  DMDANaturalAllToGlobalCreate - Creates a scatter context that maps from a copy
+  of the entire vector on each processor to its local part in the global vector.
 
-   Collective
+  Collective
 
-   Input Parameter:
-.  da - the distributed array context
+  Input Parameter:
+. da - the distributed array context
 
-   Output Parameter:
-.  scatter - the scatter context
+  Output Parameter:
+. scatter - the scatter context
 
-   Level: advanced
+  Level: advanced
 
 .seealso: `DM`, `DMDA`, `DMDAGlobalToNaturalEnd()`, `DMLocalToGlobalBegin()`, `DMDACreate2d()`,
           `DMGlobalToLocalBegin()`, `DMGlobalToLocalEnd()`, `DMDACreateNaturalVector()`
@@ -81,7 +81,7 @@ PetscErrorCode DMDANaturalAllToGlobalCreate(DM da, VecScatter *scatter)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(da, DM_CLASSID, 1, DMDA);
-  PetscValidPointer(scatter, 2);
+  PetscAssertPointer(scatter, 2);
   PetscCall(DMDAGetAO(da, &ao));
 
   /* create the scatter context */

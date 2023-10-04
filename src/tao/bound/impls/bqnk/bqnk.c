@@ -191,16 +191,16 @@ PETSC_INTERN PetscErrorCode TaoCreate_BQNK(Tao tao)
 }
 
 /*@
-   TaoGetLMVMMatrix - Returns a pointer to the internal LMVM matrix. Valid
-   only for quasi-Newton family of methods.
+  TaoGetLMVMMatrix - Returns a pointer to the internal LMVM matrix. Valid
+  only for quasi-Newton family of methods.
 
-   Input Parameter:
-.  tao - `Tao` solver context
+  Input Parameter:
+. tao - `Tao` solver context
 
-   Output Parameter:
-.  B - LMVM matrix
+  Output Parameter:
+. B - LMVM matrix
 
-   Level: advanced
+  Level: advanced
 
 .seealso: `TAOBQNLS`, `TAOBQNKLS`, `TAOBQNKTL`, `TAOBQNKTR`, `MATLMVM`, `TaoSetLMVMMatrix()`
 @*/
@@ -218,17 +218,17 @@ PetscErrorCode TaoGetLMVMMatrix(Tao tao, Mat *B)
 }
 
 /*@
-   TaoSetLMVMMatrix - Sets an external LMVM matrix into the Tao solver. Valid
-   only for quasi-Newton family of methods.
+  TaoSetLMVMMatrix - Sets an external LMVM matrix into the Tao solver. Valid
+  only for quasi-Newton family of methods.
 
-   QN family of methods create their own LMVM matrices and users who wish to
-   manipulate this matrix should use TaoGetLMVMMatrix() instead.
+  QN family of methods create their own LMVM matrices and users who wish to
+  manipulate this matrix should use TaoGetLMVMMatrix() instead.
 
-   Input Parameters:
-+  tao - Tao solver context
--  B - LMVM matrix
+  Input Parameters:
++ tao - Tao solver context
+- B   - LMVM matrix
 
-   Level: advanced
+  Level: advanced
 
 .seealso: `TAOBQNLS`, `TAOBQNKLS`, `TAOBQNKTL`, `TAOBQNKTR`, `MATLMVM`, `TaoGetLMVMMatrix()`
 @*/

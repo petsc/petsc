@@ -18,23 +18,22 @@ also uses multiple profiling stages.  Input arguments are\n\
 
 int main(int argc, char **args)
 {
-  KSP         ksp;         /* linear solver context */
-  Mat         C;           /* matrix */
-  Vec         x, u, b;     /* approx solution, RHS, exact solution */
-  PetscReal   norm, bnorm; /* norm of solution error */
-  PetscScalar v, none = -1.0;
-  PetscInt    Ii, J, ldim, low, high, iglobal, Istart, Iend;
-  PetscInt    i, j, m = 3, n = 2, its;
-  PetscMPIInt size, rank;
-  PetscBool   mat_nonsymmetric = PETSC_FALSE;
-  PetscBool   testnewC = PETSC_FALSE, testscaledMat = PETSC_FALSE;
-#if defined(PETSC_USE_LOG)
+  KSP           ksp;         /* linear solver context */
+  Mat           C;           /* matrix */
+  Vec           x, u, b;     /* approx solution, RHS, exact solution */
+  PetscReal     norm, bnorm; /* norm of solution error */
+  PetscScalar   v, none = -1.0;
+  PetscInt      Ii, J, ldim, low, high, iglobal, Istart, Iend;
+  PetscInt      i, j, m = 3, n = 2, its;
+  PetscMPIInt   size, rank;
+  PetscBool     mat_nonsymmetric = PETSC_FALSE;
+  PetscBool     testnewC = PETSC_FALSE, testscaledMat = PETSC_FALSE, single = PETSC_FALSE;
   PetscLogStage stages[2];
-#endif
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-m", &m, NULL));
+  PetscCall(PetscOptionsHasName(NULL, NULL, "-pc_precision", &single));
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
   n = 2 * size;
@@ -215,7 +214,7 @@ int main(int argc, char **args)
   PetscCall(VecNorm(x, NORM_2, &norm));
   PetscCall(VecNorm(b, NORM_2, &bnorm));
   PetscCall(KSPGetIterationNumber(ksp, &its));
-  if (!testscaledMat || norm / bnorm > 1.e-5) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Relative norm of the residual %g, Iterations %" PetscInt_FMT "\n", (double)norm / (double)bnorm, its));
+  if (!testscaledMat || (!single && norm / bnorm > 1.e-5)) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Relative norm of the residual %g, Iterations %" PetscInt_FMT "\n", (double)norm / (double)bnorm, its));
 
   /* -------------- Stage 1: Solve Second System ---------------------- */
   /*
@@ -343,7 +342,7 @@ int main(int argc, char **args)
   PetscCall(VecAXPY(x, none, u));
   PetscCall(VecNorm(x, NORM_2, &norm));
   PetscCall(KSPGetIterationNumber(ksp, &its));
-  if (!testscaledMat || norm / bnorm > PETSC_SMALL) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Relative norm of the residual %g, Iterations %" PetscInt_FMT "\n", (double)norm / (double)bnorm, its));
+  if (!testscaledMat || (!single && norm / bnorm > PETSC_SMALL)) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Relative norm of the residual %g, Iterations %" PetscInt_FMT "\n", (double)norm / (double)bnorm, its));
 
   /*
      Free work space.  All PETSc objects should be destroyed when they
@@ -432,6 +431,13 @@ int main(int argc, char **args)
       nsize: 15
       requires: superlu_dist
       args: -pc_type lu -pc_factor_mat_solver_type superlu_dist -mat_superlu_dist_equil false -m 500 -mat_superlu_dist_r 3 -mat_superlu_dist_c 5 -test_scaledMat -mat_superlu_dist_fact DOFACT
+      output_file: output/ex5_superlu_dist.out
+
+   test:
+      suffix: superlu_dist_3s
+      nsize: 15
+      requires: superlu_dist defined(PETSC_HAVE_SUPERLU_DIST_SINGLE)
+      args: -pc_type lu -pc_factor_mat_solver_type superlu_dist -mat_superlu_dist_equil false -m 500 -mat_superlu_dist_r 3 -mat_superlu_dist_c 5 -test_scaledMat -mat_superlu_dist_fact DOFACT -pc_precision single
       output_file: output/ex5_superlu_dist.out
 
    test:

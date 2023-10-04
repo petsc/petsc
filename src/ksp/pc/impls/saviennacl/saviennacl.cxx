@@ -147,12 +147,12 @@ static PetscErrorCode PCSetFromOptions_SAVIENNACL(PC pc, PetscOptionItems *Petsc
 }
 
 /*MC
-     PCSAViennaCL  - A smoothed agglomeration algorithm that can be used via the CUDA, OpenCL, and OpenMP backends of ViennaCL
+  PCSAVIENNACL  - A smoothed agglomeration algorithm that can be used via the CUDA, OpenCL, and OpenMP backends of ViennaCL
 
-   Level: advanced
+  Level: advanced
 
-   Developer Note:
-   This `PCType` does not appear to be registered
+  Developer Notes:
+  This `PCType` does not appear to be registered
 
 .seealso: `PCCreate()`, `PCSetType()`, `PCType`, `PC`
 M*/

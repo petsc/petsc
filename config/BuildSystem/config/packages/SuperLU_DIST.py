@@ -7,7 +7,8 @@ class Configure(config.package.CMakePackage):
     self.minversion       = '6.3.0'
     self.version          = '8.1.2'
     self.versionname      = 'SUPERLU_DIST_MAJOR_VERSION.SUPERLU_DIST_MINOR_VERSION.SUPERLU_DIST_PATCH_VERSION'
-    self.gitcommit        = 'v'+self.version
+    # self.gitcommit        = 'v'+self.version
+    self.gitcommit        = '02b7c0d71bc33e785d098b0f8e4c26414bb8e39a' # master, may-08-2023
     self.download         = ['git://https://github.com/xiaoyeli/superlu_dist','https://github.com/xiaoyeli/superlu_dist/archive/'+self.gitcommit+'.tar.gz']
     self.functions        = ['set_default_options_dist']
     self.includes         = ['superlu_ddefs.h']
@@ -23,6 +24,7 @@ class Configure(config.package.CMakePackage):
 
   def setupDependencies(self, framework):
     config.package.CMakePackage.setupDependencies(self, framework)
+    self.scalartypes    = framework.require('PETSc.options.scalarTypes',self)
     self.blasLapack     = framework.require('config.packages.BlasLapack',self)
     self.parmetis       = framework.require('config.packages.parmetis',self)
     self.mpi            = framework.require('config.packages.MPI',self)
@@ -95,11 +97,14 @@ class Configure(config.package.CMakePackage):
     self.compilers.CPPFLAGS += ' '+self.headers.toString(self.dinclude)
     if self.defaultIndexSize == 64:
       if not self.checkCompile('#include "superlu_ddefs.h"','#if !defined(_LONGINT)\n#error "No longint"\n#endif\n'):
-        raise RuntimeError('PETSc is being configured using --with-64-bit-indices but SuperLU_DIST library is built for 32 bit integers.\n\
+        raise RuntimeError('PETSc is being configured using --with-64-bit-indices but SuperLU_DIST library is built for 32-bit integers.\n\
 Suggest using --download-superlu_dist')
     else:
       if not self.checkCompile('#include "superlu_ddefs.h"','#if defined(_LONGINT)\n#error "longint is defined"\n#endif\n'):
-        raise RuntimeError('PETSc is being configured without using --with-64-bit-indices but SuperLU_DIST library is built for 64 bit integers.\n\
+        raise RuntimeError('PETSc is being configured without using --with-64-bit-indices but SuperLU_DIST library is built for 64-bit integers.\n\
 Suggest using --download-superlu_dist')
+
+    if self.executeTest(self.libraries.check,[self.lib, ['psgssvx']],{'otherLibs' : self.dlib}) and self.checkCompile('#include "superlu_sdefs.h"','') and self.scalartypes.scalartype == 'real' and self.scalartypes.precision == 'double':
+       self.addDefine('HAVE_SUPERLU_DIST_SINGLE',1)
     self.compilers.CPPFLAGS = oldFlags
     self.popLanguage()

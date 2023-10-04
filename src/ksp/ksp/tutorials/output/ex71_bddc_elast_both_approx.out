@@ -72,7 +72,9 @@ PC Object: 8 MPI processes
             Threshold for dropping small values in graph on each level =       -1.       -1.      
             Threshold scaling factor for each level not specified = 1.
             AGG specific options
-              Number of levels to square graph 1
+              Number of levels of aggressive coarsening 1
+              MIS-k aggressive coarsening
+              MIS-2 coarsening on aggressive levels
               Number smoothing steps 1
             Complexity:    grid = 1.04167    operator = 1.00571
       Coarse grid solver -- level 0 -------------------------------
@@ -125,8 +127,8 @@ PC Object: 8 MPI processes
         KSP Object: (pc_bddc_dirichlet_mg_levels_1_) 1 MPI process
           type: chebyshev
             Chebyshev polynomial of first kind
-            eigenvalue targets used: min 0.234693, max 2.58162
-            eigenvalues provided (min 0.273728, max 2.34693) with transform: [0. 0.1; 0. 1.1]
+            eigenvalue targets used: min 0.22894, max 2.51834
+            eigenvalues provided (min 0.248476, max 2.2894) with transform: [0. 0.1; 0. 1.1]
           maximum iterations=2, nonzero initial guess
           tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
           left preconditioning
@@ -167,7 +169,9 @@ PC Object: 8 MPI processes
             Threshold for dropping small values in graph on each level =       -1.       -1.      
             Threshold scaling factor for each level not specified = 1.
             AGG specific options
-              Number of levels to square graph 1
+              Number of levels of aggressive coarsening 1
+              MIS-k aggressive coarsening
+              MIS-2 coarsening on aggressive levels
               Number smoothing steps 1
             Complexity:    grid = 1.06452    operator = 1.02271
       Coarse grid solver -- level 0 -------------------------------
@@ -220,8 +224,8 @@ PC Object: 8 MPI processes
         KSP Object: (pc_bddc_neumann_mg_levels_1_) 1 MPI process
           type: chebyshev
             Chebyshev polynomial of first kind
-            eigenvalue targets used: min 0.262061, max 2.88267
-            eigenvalues provided (min 0.100732, max 2.62061) with transform: [0. 0.1; 0. 1.1]
+            eigenvalue targets used: min 0.25794, max 2.83734
+            eigenvalues provided (min 0.0950074, max 2.5794) with transform: [0. 0.1; 0. 1.1]
           maximum iterations=2, nonzero initial guess
           tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
           left preconditioning

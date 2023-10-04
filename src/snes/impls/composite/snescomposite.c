@@ -548,18 +548,18 @@ static PetscErrorCode SNESCompositeGetSNES_Composite(SNES snes, PetscInt n, SNES
 }
 
 /*@C
-   SNESCompositeSetType - Sets the type of composite preconditioner.
+  SNESCompositeSetType - Sets the type of composite preconditioner.
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  snes - the preconditioner context
--  type - `SNES_COMPOSITE_ADDITIVE` (default), `SNES_COMPOSITE_MULTIPLICATIVE`
+  Input Parameters:
++ snes - the preconditioner context
+- type - `SNES_COMPOSITE_ADDITIVE` (default), `SNES_COMPOSITE_MULTIPLICATIVE`
 
-   Options Database Key:
-.  -snes_composite_type <type: one of multiplicative, additive, special> - Sets composite preconditioner type
+  Options Database Key:
+. -snes_composite_type <type: one of multiplicative, additive, special> - Sets composite preconditioner type
 
-   Level: Developer
+  Level: developer
 
 .seealso: `SNES_COMPOSITE_ADDITIVE`, `SNES_COMPOSITE_MULTIPLICATIVE`, `SNESCompositeType`, `SNESCOMPOSITE`
 @*/
@@ -573,15 +573,15 @@ PetscErrorCode SNESCompositeSetType(SNES snes, SNESCompositeType type)
 }
 
 /*@C
-   SNESCompositeAddSNES - Adds another `SNES` to the `SNESCOMPOSITE`
+  SNESCompositeAddSNES - Adds another `SNES` to the `SNESCOMPOSITE`
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  snes - the snes context of type `SNESCOMPOSITE`
--  type - the type of the new solver
+  Input Parameters:
++ snes - the snes context of type `SNESCOMPOSITE`
+- type - the type of the new solver
 
-   Level: Developer
+  Level: developer
 
 .seealso: `SNES`, `SNESCOMPOSITE`, `SNESCompositeGetSNES()`
 @*/
@@ -594,18 +594,18 @@ PetscErrorCode SNESCompositeAddSNES(SNES snes, SNESType type)
 }
 
 /*@
-   SNESCompositeGetSNES - Gets one of the `SNES` objects in the composite  `SNESCOMPOSITE`
+  SNESCompositeGetSNES - Gets one of the `SNES` objects in the composite  `SNESCOMPOSITE`
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  snes - the snes context
--  n - the number of the composed snes requested
+  Input Parameters:
++ snes - the snes context
+- n    - the number of the composed snes requested
 
-   Output Parameter:
-.  subsnes - the `SNES` requested
+  Output Parameter:
+. subsnes - the `SNES` requested
 
-   Level: Developer
+  Level: developer
 
 .seealso: `SNES`, `SNESCOMPOSITE`, `SNESCompositeAddSNES()`
 @*/
@@ -613,23 +613,23 @@ PetscErrorCode SNESCompositeGetSNES(SNES snes, PetscInt n, SNES *subsnes)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
-  PetscValidPointer(subsnes, 3);
+  PetscAssertPointer(subsnes, 3);
   PetscUseMethod(snes, "SNESCompositeGetSNES_C", (SNES, PetscInt, SNES *), (snes, n, subsnes));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
-   SNESCompositeGetNumber - Get the number of subsolvers in the `SNESCOMPOSITE`
+  SNESCompositeGetNumber - Get the number of subsolvers in the `SNESCOMPOSITE`
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameter:
-.   snes - the snes context
+  Input Parameter:
+. snes - the snes context
 
-   Output Parameter:
-.   n - the number of subsolvers
+  Output Parameter:
+. n - the number of subsolvers
 
-   Level: Developer
+  Level: developer
 
 .seealso: `SNES`, `SNESCOMPOSITE`, `SNESCompositeAddSNES()`, `SNESCompositeGetSNES()`
 @*/
@@ -668,16 +668,16 @@ static PetscErrorCode SNESCompositeSetDamping_Composite(SNES snes, PetscInt n, P
 }
 
 /*@
-   SNESCompositeSetDamping - Sets the damping of a subsolver when using `SNES_COMPOSITE_ADDITIVE` `SNESCOMPOSITE`
+  SNESCompositeSetDamping - Sets the damping of a subsolver when using `SNES_COMPOSITE_ADDITIVE` `SNESCOMPOSITE`
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  snes - the snes context
-.  n - the number of the sub-`SNES` object requested
--  dmp - the damping
+  Input Parameters:
++ snes - the snes context
+. n    - the number of the sub-`SNES` object requested
+- dmp  - the damping
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `SNES`, `SNESCOMPOSITE`, `SNESCompositeAddSNES()`, `SNESCompositeGetSNES()`,
           `SNES_COMPOSITE_ADDITIVE`, `SNES_COMPOSITE_MULTIPLICATIVE`, `SNESCompositeType`, `SNESCompositeSetType()`
@@ -727,10 +727,10 @@ static PetscErrorCode SNESSolve_Composite(SNES snes)
     snes->norm = fnorm;
     PetscCall(PetscObjectSAWsGrantAccess((PetscObject)snes));
     PetscCall(SNESLogConvergenceHistory(snes, snes->norm, 0));
-    PetscCall(SNESMonitor(snes, 0, snes->norm));
 
     /* test convergence */
-    PetscUseTypeMethod(snes, converged, 0, 0.0, 0.0, fnorm, &snes->reason, snes->cnvP);
+    PetscCall(SNESConverged(snes, 0, 0.0, 0.0, fnorm));
+    PetscCall(SNESMonitor(snes, 0, snes->norm));
     if (snes->reason) PetscFunctionReturn(PETSC_SUCCESS);
   } else {
     PetscCall(PetscObjectSAWsGrantAccess((PetscObject)snes));
@@ -791,17 +791,11 @@ static PetscErrorCode SNESSolve_Composite(SNES snes)
     snes->ynorm = snorm;
     PetscCall(PetscObjectSAWsGrantAccess((PetscObject)snes));
     PetscCall(SNESLogConvergenceHistory(snes, snes->norm, 0));
-    PetscCall(SNESMonitor(snes, snes->iter, snes->norm));
     /* Test for convergence */
-    if (normtype == SNES_NORM_ALWAYS) PetscUseTypeMethod(snes, converged, snes->iter, xnorm, snorm, fnorm, &snes->reason, snes->cnvP);
+    PetscCall(SNESConverged(snes, snes->iter, xnorm, snorm, fnorm));
+    PetscCall(SNESMonitor(snes, snes->iter, snes->norm));
     if (snes->reason) break;
   }
-  if (normtype == SNES_NORM_ALWAYS) {
-    if (i == snes->max_its) {
-      PetscCall(PetscInfo(snes, "Maximum number of iterations has been reached: %" PetscInt_FMT "\n", snes->max_its));
-      if (!snes->reason) snes->reason = SNES_DIVERGED_MAX_IT;
-    }
-  } else if (!snes->reason) snes->reason = SNES_CONVERGED_ITS;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

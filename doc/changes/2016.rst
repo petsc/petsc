@@ -42,14 +42,14 @@ Changes: 2.0.16
    MatSetLocalToGlobalMapping() to enable the user to set values in a
    matrix using a local numbering of the nodes rather than a global
    numbering.
--  Added the option MAT_IGNORE_OFF_PROC_ENTRIES for MatSetOptions(),
+-  Added the option MAT_IGNORE_OFF_PROC_ENTRIES for MatSetOption(),
    which causes all entries on any processor destined to be stored on
    a different processor to be dropped instead. This is useful if you
    know that the "owning" processor is also always generating the
    correct entries, so PETSc need not ship over the duplicate entry
    generated on another processor. -
 -  Added options MAT_COLUMNS_UNSORTED and MAT_ROWS_UNSORTED for
-   MatSetOptions() to enable switching betwen sorted and unsorted
+   MatSetOption() to enable switching betwen sorted and unsorted
    input.
 
 .. rubric:: DA (Distributed Arrays):

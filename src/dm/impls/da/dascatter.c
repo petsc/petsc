@@ -4,26 +4,25 @@
 */
 
 #include <petsc/private/dmdaimpl.h> /*I   "petscdmda.h"   I*/
-extern PetscErrorCode DMLocalToLocalCreate_DA(DM);
 
 /*@C
-   DMDAGetScatter - Gets the global-to-local, and
-   local-to-local vector scatter contexts for a distributed array.
+  DMDAGetScatter - Gets the global-to-local, and
+  local-to-local vector scatter contexts for a distributed array.
 
-   Collective
+  Collective
 
-   Input Parameter:
-.  da - the distributed array
+  Input Parameter:
+. da - the distributed array
 
-   Output Parameters:
-+  gtol - global-to-local scatter context (may be `NULL`)
--  ltol - local-to-local scatter context (may be `NULL`)
+  Output Parameters:
++ gtol - global-to-local scatter context (may be `NULL`)
+- ltol - local-to-local scatter context (may be `NULL`)
 
-   Level: developer
+  Level: developer
 
-   Note:
-   The output contexts are valid only as long as the input `da` is valid.
-   If you delete the `da`, the scatter contexts will become invalid.
+  Note:
+  The output contexts are valid only as long as the input `da` is valid.
+  If you delete the `da`, the scatter contexts will become invalid.
 
 .seealso: `DM`, `DMDA`, `DMGlobalToLocalBegin()`, `DMGlobalToLocalEnd()`, `DMLocalToGlobalBegin()`
 @*/

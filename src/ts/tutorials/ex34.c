@@ -274,7 +274,7 @@ int main(int argc, char **argv)
 /*TEST
 
     build:
-      requires: !single  !complex
+      requires: !single !complex
 
     test:
       TODO: broken, was not nightly tested, SNES solve eventually fails, -snes_test_jacobian indicates Jacobian is wrong, but even -snes_mf_operator fails

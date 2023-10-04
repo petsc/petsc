@@ -1,0 +1,7 @@
+iter = 0, SNES Function norm 5.41468
+  converged = CONVERGED_ITERATING
+iter = 1, SNES Function norm 0.295258
+  converged = DIVERGED_MAX_IT
+number of SNES iterations = 1
+
+Norm of error 0.0267675, Iterations 1

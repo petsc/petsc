@@ -16,41 +16,41 @@ static PetscErrorCode SNESComputeMFFunctionCtx(SNES snes, Vec x, Vec f, void *ct
 }
 
 /*@C
-    SNESComputeJacobianDefaultColor - Computes the Jacobian using
-    finite differences and coloring to exploit matrix sparsity.
+  SNESComputeJacobianDefaultColor - Computes the Jacobian using
+  finite differences and coloring to exploit matrix sparsity.
 
-    Collective
+  Collective
 
-    Input Parameters:
-+   snes - nonlinear solver object
-.   x1 - location at which to evaluate Jacobian
--   ctx - `MatFDColoring` context or `NULL`
+  Input Parameters:
++ snes - nonlinear solver object
+. x1   - location at which to evaluate Jacobian
+- ctx  - `MatFDColoring` context or `NULL`
 
-    Output Parameters:
-+   J - Jacobian matrix (not altered in this routine)
--   B - newly computed Jacobian matrix to use with preconditioner (generally the same as `J`)
+  Output Parameters:
++ J - Jacobian matrix (not altered in this routine)
+- B - newly computed Jacobian matrix to use with preconditioner (generally the same as `J`)
 
-    Level: intermediate
+  Level: intermediate
 
-   Options Database Keys:
-+  -snes_fd_color_use_mat - use a matrix coloring from the explicit matrix nonzero pattern instead of from the `DM` providing the matrix
-.  -snes_fd_color - Activates `SNESComputeJacobianDefaultColor()` in `SNESSetFromOptions()`
-.  -mat_fd_coloring_err <err> - Sets <err> (square root of relative error in the function)
-.  -mat_fd_coloring_umin <umin> - Sets umin, the minimum allowable u-value magnitude
-.  -mat_fd_type - Either wp or ds (see `MATMFFD_WP` or `MATMFFD_DS`)
-.  -snes_mf_operator - Use matrix free application of Jacobian
--  -snes_mf - Use matrix free Jacobian with no explicit Jacobian representation
+  Options Database Keys:
++ -snes_fd_color_use_mat       - use a matrix coloring from the explicit matrix nonzero pattern instead of from the `DM` providing the matrix
+. -snes_fd_color               - Activates `SNESComputeJacobianDefaultColor()` in `SNESSetFromOptions()`
+. -mat_fd_coloring_err <err>   - Sets <err> (square root of relative error in the function)
+. -mat_fd_coloring_umin <umin> - Sets umin, the minimum allowable u-value magnitude
+. -mat_fd_type                 - Either wp or ds (see `MATMFFD_WP` or `MATMFFD_DS`)
+. -snes_mf_operator            - Use matrix-free application of Jacobian
+- -snes_mf                     - Use matrix-free Jacobian with no explicit Jacobian representation
 
-    Notes:
-    If the coloring is not provided through the context, this will first try to get the
-    coloring from the `DM`.  If the `DM` has no coloring routine, then it will try to
-    get the coloring from the matrix.  This requires that the matrix have its nonzero locations already provided.
+  Notes:
+  If the coloring is not provided through the context, this will first try to get the
+  coloring from the `DM`.  If the `DM` has no coloring routine, then it will try to
+  get the coloring from the matrix.  This requires that the matrix have its nonzero locations already provided.
 
-    `SNES` supports three approaches for computing (approximate) Jacobians: user provided via `SNESSetJacobian()`, matrix-free via `SNESSetUseMatrixFree()`,
-    and computing explicitly with finite differences and coloring using `MatFDColoring`. It is also possible to use automatic differentiation
-    and the `MatFDColoring` object, see src/ts/tutorials/autodiff/ex16adj_tl.cxx
+  `SNES` supports three approaches for computing (approximate) Jacobians: user provided via `SNESSetJacobian()`, matrix-free via `SNESSetUseMatrixFree()`,
+  and computing explicitly with finite differences and coloring using `MatFDColoring`. It is also possible to use automatic differentiation
+  and the `MatFDColoring` object, see src/ts/tutorials/autodiff/ex16adj_tl.cxx
 
-   This function can be provided to `SNESSetJacobian()` along with an appropriate sparse matrix to hold the Jacobian
+  This function can be provided to `SNESSetJacobian()` along with an appropriate sparse matrix to hold the Jacobian
 
 .seealso: `SNES`, `SNESSetJacobian()`, `SNESTestJacobian()`, `SNESComputeJacobianDefault()`, `SNESSetUseMatrixFree()`,
           `MatFDColoringCreate()`, `MatFDColoringSetFunction()`
@@ -120,8 +120,8 @@ PetscErrorCode SNESComputeJacobianDefaultColor(SNES snes, Vec x1, Mat J, Mat B, 
 
   Input Parameters:
 + snes - the `SNES` context
-. J - Jacobian matrix (not altered in this routine)
-- B - newly computed Jacobian matrix to use with preconditioner (generally the same as `J`)
+. J    - Jacobian matrix (not altered in this routine)
+- B    - newly computed Jacobian matrix to use with preconditioner (generally the same as `J`)
 
   Level: intermediate
 
@@ -147,7 +147,7 @@ PetscErrorCode SNESPruneJacobianColor(SNES snes, Mat J, Mat B)
 
   PetscFunctionBegin;
   /* Generate new coloring after eliminating zeros in the matrix */
-  PetscCall(MatEliminateZeros(B));
+  PetscCall(MatEliminateZeros(B, PETSC_TRUE));
   PetscCall(MatColoringCreate(B, &mc));
   PetscCall(MatColoringSetDistance(mc, 2));
   PetscCall(MatColoringSetType(mc, MATCOLORINGSL));

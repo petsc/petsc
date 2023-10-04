@@ -1,5 +1,4 @@
-#ifndef _PLEXTRANSFORMIMPL_H
-#define _PLEXTRANSFORMIMPL_H
+#pragma once
 
 #include <petsc/private/dmpleximpl.h>
 #include <petscdmplextransform.h>
@@ -39,6 +38,9 @@ struct _p_DMPlexTransform {
   PetscInt  ****trSubVerts;    /* The indices for vertices of subcell (rct, r) in a cell of each type */
   PetscFE      *coordFE;       /* Finite element for each cell type, used for localized coordinate interpolation */
   PetscFEGeom **refGeom;       /* Geometry of the reference cell for each cell type */
+  /* Label construction */
+  PetscBool labelMatchStrata; /* Flag to restrict labeled points to the same cell type as parents */
+  PetscInt  labelReplicaInc;  /* Multiplier to create new label values for replicas v = oldv + r * repInc */
 };
 
 typedef struct {
@@ -59,6 +61,7 @@ typedef struct {
   PetscReal            normal[3];   /* Surface normal from input */
   PetscSimplePointFunc normalFunc;  /* A function returning the normal at a given point */
   PetscBool            symmetric;   /* Extrude layers symmetrically about the surface */
+  PetscBool            periodic;    /* Connect the extruded layer periodically to the beginning */
   /* Calculated quantities */
   PetscReal       *layerPos; /* The position of each layer relative to the original surface, along the local normal direction */
   PetscInt        *Nt;       /* The array of the number of target types */
@@ -105,5 +108,3 @@ PetscErrorCode DMPlexTransformSetDimensions_Internal(DMPlexTransform, DM, DM);
 PetscErrorCode DMPlexTransformMapCoordinatesBarycenter_Internal(DMPlexTransform, DMPolytopeType, DMPolytopeType, PetscInt, PetscInt, PetscInt, PetscInt, const PetscScalar[], PetscScalar[]);
 PetscErrorCode DMPlexTransformGetSubcellOrientation_Regular(DMPlexTransform, DMPolytopeType, PetscInt, PetscInt, DMPolytopeType, PetscInt, PetscInt, PetscInt *, PetscInt *);
 PetscErrorCode DMPlexTransformCellRefine_Regular(DMPlexTransform, DMPolytopeType, PetscInt, PetscInt *, PetscInt *, DMPolytopeType *[], PetscInt *[], PetscInt *[], PetscInt *[]);
-
-#endif

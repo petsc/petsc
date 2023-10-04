@@ -26,7 +26,7 @@ static PetscErrorCode DMAdaptorTransferSolution_Exact_Private(DMAdaptor adaptor,
 . comm - The communicator for the `DMAdaptor` object
 
   Output Parameter:
-. adaptor   - The `DMAdaptor` object
+. adaptor - The `DMAdaptor` object
 
   Level: beginner
 
@@ -37,7 +37,7 @@ PetscErrorCode DMAdaptorCreate(MPI_Comm comm, DMAdaptor *adaptor)
   VecTaggerBox refineBox, coarsenBox;
 
   PetscFunctionBegin;
-  PetscValidPointer(adaptor, 2);
+  PetscAssertPointer(adaptor, 2);
   PetscCall(PetscSysInitializePackage());
   PetscCall(PetscHeaderCreate(*adaptor, DM_CLASSID, "DMAdaptor", "DM Adaptor", "SNES", comm, DMAdaptorDestroy, DMAdaptorView));
 
@@ -121,13 +121,13 @@ PetscErrorCode DMAdaptorSetFromOptions(DMAdaptor adaptor)
 }
 
 /*@
-   DMAdaptorView - Views a `DMAdaptor` object
+  DMAdaptorView - Views a `DMAdaptor` object
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  adaptor - The `DMAdaptor` object
--  viewer - The `PetscViewer` object
+  Input Parameters:
++ adaptor - The `DMAdaptor` object
+- viewer  - The `PetscViewer` object
 
   Level: beginner
 
@@ -150,7 +150,7 @@ PetscErrorCode DMAdaptorView(DMAdaptor adaptor, PetscViewer viewer)
   Not Collective
 
   Input Parameter:
-. adaptor   - The `DMAdaptor` object
+. adaptor - The `DMAdaptor` object
 
   Output Parameter:
 . snes - The solver
@@ -163,7 +163,7 @@ PetscErrorCode DMAdaptorGetSolver(DMAdaptor adaptor, SNES *snes)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(adaptor, DM_CLASSID, 1);
-  PetscValidPointer(snes, 2);
+  PetscAssertPointer(snes, 2);
   *snes = adaptor->snes;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -174,8 +174,8 @@ PetscErrorCode DMAdaptorGetSolver(DMAdaptor adaptor, SNES *snes)
   Not Collective
 
   Input Parameters:
-+ adaptor   - The `DMAdaptor` object
-- snes - The solver
++ adaptor - The `DMAdaptor` object
+- snes    - The solver
 
   Level: intermediate
 
@@ -213,7 +213,7 @@ PetscErrorCode DMAdaptorGetSequenceLength(DMAdaptor adaptor, PetscInt *num)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(adaptor, DM_CLASSID, 1);
-  PetscValidIntPointer(num, 2);
+  PetscAssertPointer(num, 2);
   *num = adaptor->numSeq;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -225,7 +225,7 @@ PetscErrorCode DMAdaptorGetSequenceLength(DMAdaptor adaptor, PetscInt *num)
 
   Input Parameters:
 + adaptor - The `DMAdaptor` object
-- num - The number of adaptations
+- num     - The number of adaptations
 
   Level: intermediate
 
@@ -284,7 +284,7 @@ PetscErrorCode DMAdaptorSetTransferFunction(DMAdaptor adaptor, PetscErrorCode (*
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode DMAdaptorPreAdapt(DMAdaptor adaptor, Vec locX)
+static PetscErrorCode DMAdaptorPreAdapt(DMAdaptor adaptor, Vec locX)
 {
   DM           plex;
   PetscDS      prob;
@@ -360,7 +360,7 @@ PetscErrorCode DMAdaptorPreAdapt(DMAdaptor adaptor, Vec locX)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode DMAdaptorTransferSolution(DMAdaptor adaptor, DM dm, Vec x, DM adm, Vec ax)
+static PetscErrorCode DMAdaptorTransferSolution(DMAdaptor adaptor, DM dm, Vec x, DM adm, Vec ax)
 {
   PetscReal time = 0.0;
   Mat       interp;
@@ -388,7 +388,7 @@ PetscErrorCode DMAdaptorTransferSolution(DMAdaptor adaptor, DM dm, Vec x, DM adm
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode DMAdaptorPostAdapt(DMAdaptor adaptor)
+static PetscErrorCode DMAdaptorPostAdapt(DMAdaptor adaptor)
 {
   PetscDS      prob;
   PetscObject  obj;
@@ -491,7 +491,7 @@ static PetscErrorCode DMAdaptorComputeErrorIndicator_Private(DMAdaptor adaptor, 
     PetscCall(PetscFEGetDimension((PetscFE)obj, &Nb));
     PetscCall(PetscFEGetNumComponents((PetscFE)obj, &Nc));
     PetscCall(PetscQuadratureGetData(quad, NULL, &qNc, &Nq, NULL, &quadWeights));
-    PetscCall(PetscMalloc6(Nc, &field, cdim * Nc, &gradient, cdim * Nq, &coords, Nq, &fegeom.detJ, cdim * cdim * Nq, &fegeom.J, cdim * cdim * Nq, &fegeom.invJ));
+    PetscCall(PetscCalloc6(Nc, &field, cdim * Nc, &gradient, cdim * Nq, &coords, Nq, &fegeom.detJ, cdim * cdim * Nq, &fegeom.J, cdim * cdim * Nq, &fegeom.invJ));
     PetscCall(PetscMalloc2(Nc, &interpolant, cdim * Nc, &interpolantGrad));
     PetscCall(DMPlexComputeCellGeometryFEM(plex, cell, quad, coords, fegeom.J, fegeom.invJ, fegeom.detJ));
     PetscCall(DMPlexComputeCellGeometryFVM(plex, cell, &cg.volume, NULL, NULL));
@@ -777,27 +777,21 @@ static PetscErrorCode DMAdaptorAdapt_Sequence_Private(DMAdaptor adaptor, Vec inx
   Input Parameters:
 + adaptor  - The `DMAdaptor` object
 . x        - The global approximate solution
-- strategy - The adaptation strategy
+- strategy - The adaptation strategy, see `DMAdaptationStrategy`
 
   Output Parameters:
 + adm - The adapted `DM`
 - ax  - The adapted solution
 
-  Options database Keys:
+  Options Database Keys:
 + -snes_adapt <strategy> - initial, sequential, multigrid
-. -adapt_gradient_view - View the Clement interpolant of the solution gradient
-. -adapt_hessian_view - View the Clement interpolant of the solution Hessian
-- -adapt_metric_view - View the metric tensor for adaptive mesh refinement
+. -adapt_gradient_view   - View the Clement interpolant of the solution gradient
+. -adapt_hessian_view    - View the Clement interpolant of the solution Hessian
+- -adapt_metric_view     - View the metric tensor for adaptive mesh refinement
 
   Level: intermediate
 
-  Note:
-  The available adaptation strategies are:
-+ * - Adapt the initial mesh until a quality metric, e.g., a priori error bound, is satisfied
-. * - Solve the problem on a series of adapted meshes until a quality metric, e.g. a posteriori error bound, is satisfied
-- * - Solve the problem on a hierarchy of adapted meshes generated to satisfy a quality metric using multigrid
-
-.seealso: `DMAdaptor`, `DMAdaptorSetSolver()`, `DMAdaptorCreate()`, `DMAdaptorAdapt()`
+.seealso: `DMAdaptor`, `DMAdaptationStrategy`, `DMAdaptorSetSolver()`, `DMAdaptorCreate()`
 @*/
 PetscErrorCode DMAdaptorAdapt(DMAdaptor adaptor, Vec x, DMAdaptationStrategy strategy, DM *adm, Vec *ax)
 {

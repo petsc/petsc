@@ -14,7 +14,7 @@
   #include <unistd.h>
 #endif
 
-PetscErrorCode PetscPathJoin(const char dname[], const char fname[], size_t n, char fullname[])
+static PetscErrorCode PetscPathJoin(const char dname[], const char fname[], size_t n, char fullname[])
 {
   size_t l1, l2;
   PetscFunctionBegin;
@@ -27,6 +27,18 @@ PetscErrorCode PetscPathJoin(const char dname[], const char fname[], size_t n, c
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@C
+  PetscMkdir - Create a directory
+
+  Not Collective
+
+  Input Parameter:
+. dir - the directory name
+
+  Level: advanced
+
+.seealso: `PetscMktemp()`, `PetscRMTree()`
+@*/
 PetscErrorCode PetscMkdir(const char dir[])
 {
   int       err;
@@ -45,16 +57,14 @@ PetscErrorCode PetscMkdir(const char dir[])
 }
 
 /*@C
-  PetscMkdtemp - Create a folder with a unique name given a filename template.
-
-  Not Collective
+  PetscMkdtemp - Create a directory with a unique name given a name template.
 
   Input Parameter:
 . dir - file name template, the last six characters must be 'XXXXXX', and they will be modified upon return
 
-  Level: developer
+  Level: advanced
 
-.seealso: `PetscMkdir()`
+.seealso: `PetscMkdir()`, `PetscRMTree()`
 @*/
 PetscErrorCode PetscMkdtemp(char dir[])
 {
@@ -125,6 +135,18 @@ PetscErrorCode PetscRMTree(const char dir[])
 #else
   #include <dirent.h>
   #include <unistd.h>
+  #include <errno.h>
+
+/*@C
+  PetscRMTree - delete a directory and all of its children
+
+  Input Parameter:
+. dir - the name of the directory
+
+  Level: advanced
+
+.seealso: `PetscMkdtemp()`, `PetscMkdir()`
+@*/
 PetscErrorCode PetscRMTree(const char dir[])
 {
   struct dirent *data;
@@ -148,15 +170,15 @@ PetscErrorCode PetscRMTree(const char dir[])
     PetscCall(PetscStrcmp(data->d_name, "..", &flg2));
     if (flg1 || flg2) continue;
     PetscCall(PetscPathJoin(dir, data->d_name, PETSC_MAX_PATH_LEN, loc));
-    PetscCheck(lstat(loc, &statbuf) >= 0, PETSC_COMM_SELF, PETSC_ERR_FILE_UNEXPECTED, "cannot run lstat() on: %s", loc);
+    PetscCheck(lstat(loc, &statbuf) >= 0, PETSC_COMM_SELF, PETSC_ERR_FILE_UNEXPECTED, "cannot run lstat() on: %s due to \"%s\"", loc, strerror(errno));
     if (S_ISDIR(statbuf.st_mode)) {
       PetscCall(PetscRMTree(loc));
     } else {
-      PetscCheck(!unlink(loc), PETSC_COMM_SELF, PETSC_ERR_FILE_UNEXPECTED, "Could not delete file: %s", loc);
+      PetscCheck(!unlink(loc), PETSC_COMM_SELF, PETSC_ERR_FILE_UNEXPECTED, "Could not delete file: %s due to \"%s\"", loc, strerror(errno));
     }
   }
   closedir(dirp);
-  PetscCheck(!rmdir(dir), PETSC_COMM_SELF, PETSC_ERR_FILE_UNEXPECTED, "Could not delete dir: %s", dir);
+  PetscCheck(!rmdir(dir), PETSC_COMM_SELF, PETSC_ERR_FILE_UNEXPECTED, "Could not delete dir: %s due to \"%s\"", dir, strerror(errno));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 #endif

@@ -1,5 +1,4 @@
-#ifndef __TAO_BMRM_H
-#define __TAO_BMRM_H
+#pragma once
 
 #include <petsc/private/taoimpl.h>
 #include <petscmath.h>
@@ -60,5 +59,3 @@ typedef struct {
   /* Tolerance for optimization error */
   PetscReal tol;
 } TAO_DF;
-
-#endif

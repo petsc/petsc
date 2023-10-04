@@ -46,7 +46,7 @@ PetscErrorCode DMNetworkMonitorCreate(DM network, DMNetworkMonitor *monitorptr)
 
   Level: intermediate
 
-.seealso: `DM`, `DMNETWORK`, `DMNetworkMonitor`, `DMNetworkMonitorCreate`, `DMNetworkMonitorAdd()`
+.seealso: `DM`, `DMNETWORK`, `DMNetworkMonitor`, `DMNetworkMonitorCreate()`, `DMNetworkMonitorAdd()`
 @*/
 PetscErrorCode DMNetworkMonitorDestroy(DMNetworkMonitor *monitor)
 {
@@ -93,17 +93,17 @@ PetscErrorCode DMNetworkMonitorPop(DMNetworkMonitor monitor)
   Collective
 
   Input Parameters:
-+ monitor - the monitor
-. name - name of viewer
-. element - vertex / edge number
-. nodes - number of nodes
-. start - variable starting offset
++ monitor   - the monitor
+. name      - name of viewer
+. element   - vertex / edge number
+. nodes     - number of nodes
+. start     - variable starting offset
 . blocksize - variable blocksize
-. xmin - xmin (or `PETSC_DECIDE`) for viewer
-. xmax - xmax (or `PETSC_DECIDE`) for viewer
-. ymin - ymin for viewer
-. ymax - ymax for viewer
-- hold - determines if plot limits should be held
+. xmin      - xmin (or `PETSC_DECIDE`) for viewer
+. xmax      - xmax (or `PETSC_DECIDE`) for viewer
+. ymin      - ymin for viewer
+. ymax      - ymax for viewer
+- hold      - determines if plot limits should be held
 
   Level: intermediate
 
@@ -173,13 +173,12 @@ PetscErrorCode DMNetworkMonitorAdd(DMNetworkMonitor monitor, const char *name, P
 
   Input Parameters:
 + monitor - `DMNetworkMonitor` object
-- x - `TS` solution vector
+- x       - `TS` solution vector
 
   Level: intermediate
 
 .seealso: `DM`, `DMNETWORK`, `DMNetworkMonitorCreate()`, `DMNetworkMonitorDestroy()`, `DMNetworkMonitorAdd()`
 @*/
-
 PetscErrorCode DMNetworkMonitorView(DMNetworkMonitor monitor, Vec x)
 {
   PetscInt             varoffset, i, start;

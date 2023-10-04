@@ -17,17 +17,17 @@ PetscErrorCode PetscGetUserName(char name[], size_t nlen)
 
 #else
 /*@C
-    PetscGetUserName - Returns the name of the user.
+  PetscGetUserName - Returns the name of the user.
 
-    Not Collective
+  Not Collective
 
-    Input Parameter:
-    nlen - length of name
+  Input Parameter:
+. nlen - length of name
 
-    Output Parameter:
-.   name - contains user name.  Must be long enough to hold the name
+  Output Parameter:
+. name - contains user name. Must be long enough to hold the name
 
-    Level: developer
+  Level: developer
 
 .seealso: `PetscGetHostName()`
 @*/

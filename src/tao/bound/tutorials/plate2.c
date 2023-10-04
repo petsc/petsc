@@ -42,7 +42,7 @@ static PetscErrorCode MSA_Plate(Vec, Vec, void *);
 PetscErrorCode        FormFunctionGradient(Tao, Vec, PetscReal *, Vec, void *);
 PetscErrorCode        FormHessian(Tao, Vec, Mat, Mat, void *);
 
-/* For testing matrix free submatrices */
+/* For testing matrix-free submatrices */
 PetscErrorCode MatrixFreeHessian(Tao, Vec, Mat, Mat, void *);
 PetscErrorCode MyMatMult(Mat, Vec, Vec);
 
@@ -126,7 +126,7 @@ int main(int argc, char **argv)
   PetscCall(TaoSetObjectiveAndGradient(tao, NULL, FormFunctionGradient, (void *)&user));
 
   PetscCall(VecGetLocalSize(x, &m));
-  PetscCall(MatCreateAIJ(MPI_COMM_WORLD, m, m, N, N, 7, NULL, 3, NULL, &(user.H)));
+  PetscCall(DMCreateMatrix(user.dm, &user.H));
   PetscCall(MatSetOption(user.H, MAT_SYMMETRIC, PETSC_TRUE));
 
   PetscCall(DMGetLocalToGlobalMapping(user.dm, &isltog));
@@ -356,7 +356,7 @@ PetscErrorCode FormFunctionGradient(Tao tao, Vec X, PetscReal *fcn, Vec G, void 
   }
 
   ft = ft * area;
-  PetscCallMPI(MPI_Allreduce(&ft, fcn, 1, MPIU_REAL, MPIU_SUM, MPI_COMM_WORLD));
+  PetscCall(MPIU_Allreduce(&ft, fcn, 1, MPIU_REAL, MPIU_SUM, MPI_COMM_WORLD));
 
   /* Restore vectors */
   PetscCall(VecRestoreArray(localX, &x));
@@ -842,7 +842,7 @@ static PetscErrorCode MSA_InitialPoint(AppCtx *user, Vec X)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* For testing matrix free submatrices */
+/* For testing matrix-free submatrices */
 PetscErrorCode MatrixFreeHessian(Tao tao, Vec x, Mat H, Mat Hpre, void *ptr)
 {
   AppCtx *user = (AppCtx *)ptr;

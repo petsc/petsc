@@ -786,7 +786,7 @@ Otherwise you need a different combination of C, C++, and Fortran compilers")
         mess = '  See https://petsc.org/release/faq/#macos-gfortran'
       else:
         mess = ''
-      raise RuntimeError('Unknown Fortran name mangling: Are you sure the C and Fortran compilers are compatible?\n  Perhaps one is 64 bit and one is 32 bit?\n'+mess)
+      raise RuntimeError('Unknown Fortran name mangling: Are you sure the C and Fortran compilers are compatible?\n  Perhaps one is 64-bit and one is 32-bit?\n'+mess)
     self.logPrint('Fortran name mangling is '+self.fortranMangling, 4, 'compilers')
     if self.fortranMangling == 'underscore':
       self.addDefine('HAVE_FORTRAN_UNDERSCORE', 1)
@@ -919,7 +919,7 @@ Otherwise you need a different combination of C, C++, and Fortran compilers")
     self.setCompilers.LDFLAGS += ' -v'
     (output, returnCode) = self.outputLink('', '')
     if returnCode: raise RuntimeError('Unable to run linker to determine needed Fortran libraries')
-    output = self.filterLinkOutput(output)
+    output = self.filterLinkOutput(output, filterAlways = 1)
     self.setCompilers.LDFLAGS = oldFlags
     self.popLanguage()
 
@@ -1382,6 +1382,17 @@ Otherwise you need a different combination of C, C++, and Fortran compilers")
       self.logWrite(self.setCompilers.restoreLog())
     return
 
+  def checkLinux(self):
+    '''Check for __linux__'''
+    includes = """
+    #if !defined(__linux__)
+    #error "__linux__ not defined"
+    #endif
+    """
+    body = ""
+    if self.checkCompile(includes, body):
+      self.addDefine('HAVE_LINUX', 1)
+
   def checkC99Flag(self):
     '''Check for -std=c99 or equivalent flag'''
     includes = "#include <float.h>"
@@ -1441,6 +1452,7 @@ Otherwise you need a different combination of C, C++, and Fortran compilers")
     import config.setCompilers
     if hasattr(self.setCompilers, 'CC'):
       self.isGCC = config.setCompilers.Configure.isGNU(self.setCompilers.CC, self.log)
+      self.executeTest(self.checkLinux)
       self.executeTest(self.checkC99Flag)
       self.executeTest(self.checkCFormatting)
       self.executeTest(self.checkDynamicLoadFlag)

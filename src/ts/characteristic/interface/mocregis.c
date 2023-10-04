@@ -9,7 +9,7 @@ PETSC_EXTERN PetscErrorCode CharacteristicCreate_DA(Characteristic);
 
   Level: advanced
 
-.seealso: [](chapter_ts), `CharacteristicRegisterDestroy()`
+.seealso: [](ch_ts), `CharacteristicRegisterDestroy()`
 @*/
 PetscErrorCode CharacteristicRegisterAll(void)
 {

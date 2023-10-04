@@ -128,7 +128,7 @@ static PetscErrorCode KSPSolve_BiCG(KSP ksp)
 
    See `KSPBCGS` for the famous stabilized variant of this algorithm
 
-.seealso: [](chapter_ksp), `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPBCGS`, `KSPCGNE`
+.seealso: [](ch_ksp), `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPBCGS`, `KSPCGNE`
 M*/
 PETSC_EXTERN PetscErrorCode KSPCreate_BiCG(KSP ksp)
 {

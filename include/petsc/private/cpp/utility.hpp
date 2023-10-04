@@ -1,12 +1,10 @@
-#ifndef PETSC_CPP_UTILITY_HPP
-#define PETSC_CPP_UTILITY_HPP
+#pragma once
 
-#if defined(__cplusplus)
-  #include <petsc/private/cpp/macros.hpp>
-  #include <petsc/private/cpp/type_traits.hpp>
+#include <petsc/private/cpp/macros.hpp>
+#include <petsc/private/cpp/type_traits.hpp>
 
-  #include <utility>
-  #include <cstdint> // std::uint32_t
+#include <utility>
+#include <cstdint> // std::uint32_t
 
 namespace Petsc
 {
@@ -14,11 +12,11 @@ namespace Petsc
 namespace util
 {
 
-  #if PETSC_CPP_VERSION >= 14 // C++14
+#if PETSC_CPP_VERSION >= 14 // C++14
 using std::exchange;
 using std::integer_sequence;
 using std::make_integer_sequence;
-  #else
+#else
 template <class T, class U = T>
 inline T exchange(T &orig, U &&new_value)
 {
@@ -36,17 +34,17 @@ struct integer_sequence {
   static constexpr std::size_t size() noexcept { return sizeof...(idx); }
 };
 
-    #ifndef __has_builtin
-      #define __has_builtin(x) 0
-    #endif
+  #ifndef __has_builtin
+    #define __has_builtin(x) 0
+  #endif
 
-    #if __has_builtin(__make_integer_seq)    // clang, MSVC
+  #if __has_builtin(__make_integer_seq)    // clang, MSVC
 template <class T, T N>
 using make_integer_sequence = __make_integer_seq<integer_sequence, T, N>;
-    #elif defined(__GNUC__) && __GNUC__ >= 8 // gcc
+  #elif defined(__GNUC__) && __GNUC__ >= 8 // gcc
 template <class T, T N>
 using make_integer_sequence = integer_sequence<T, __integer_pack(N)...>;
-    #else                                    // __slow__ version
+  #else                                    // __slow__ version
 namespace detail
 {
 
@@ -62,8 +60,8 @@ struct make_sequence<T, 0, idx...> {
 
 template <class T, T N>
 using make_integer_sequence = typename detail::make_sequence<T, int(N)>::type;
-    #endif                                   // __has_builtin(__make_integer_seq)
-  #endif                                     // C++14
+  #endif                                   // __has_builtin(__make_integer_seq)
+#endif                                     // C++14
 
 template <std::size_t... idx>
 using index_sequence = integer_sequence<std::size_t, idx...>;
@@ -236,13 +234,10 @@ public:
   using base_type::base_type;
 };
 
-  // intel compilers don't implement empty base optimization, so these tests fail
-  #if !defined(__INTEL_COMPILER) && !defined(__ICL)
+// intel compilers don't implement empty base optimization, so these tests fail
+#if !defined(__INTEL_COMPILER) && !defined(__ICL)
 
 namespace compressed_pair_test
-{
-
-namespace
 {
 
 struct Empty { };
@@ -295,16 +290,10 @@ static_assert(sizeof(compressed_pair<EmptyMember, NotEmpty>) >= (sizeof(EmptyMem
 static_assert(!std::is_empty<compressed_pair<NotEmpty, EmptyMember>>::value, "");
 static_assert(sizeof(compressed_pair<NotEmpty, EmptyMember>) >= (sizeof(NotEmpty) + sizeof(EmptyMember)), "");
 
-} // anonymous namespace
-
 } // namespace compressed_pair_test
 
-  #endif
+#endif
 
 } // namespace util
 
 } // namespace Petsc
-
-#endif // __cplusplus
-
-#endif // PETSC_CPP_UTILITY_HPP

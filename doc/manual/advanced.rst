@@ -55,7 +55,7 @@ The routine
    MatCreateRedundantMatrix(Mat A,PetscInt nsubcomm,MPI_Comm subcomm,MatReuse reuse,Mat *matredundant);
 
 where ``nsubcomm`` copies of the entire matrix are stored, one on each ``subcomm``. The routine ``PetscSubcommCreate()`` and its
-``PetscSubComm`` object may, but need not be, used to construct the ``subcomm``.
+``PetscSubcomm`` object may, but need not be, used to construct the ``subcomm``.
 
 The routine
 
@@ -71,7 +71,7 @@ Matrix Factorization
 ~~~~~~~~~~~~~~~~~~~~
 
 Normally, PETSc users will access the matrix solvers through the ``KSP``
-interface, as discussed in :any:`chapter_ksp`, but the
+interface, as discussed in :any:`ch_ksp`, but the
 underlying factorization and triangular solve routines are also directly
 accessible to the user.
 
@@ -134,8 +134,8 @@ user should provide the ``ordname`` as the second input argument of
 
 PETSc matrices interface to a variety of external factorization/solver packages via the ``MatSolverType`` which can be
 ``MATSOLVERSUPERLU_DIST``, ``MATSOLVERMUMPS``, ``MATSOLVERPASTIX``, ``MATSOLVERMKL_PARDISO``, ``MATSOLVERMKL_CPARDISO``,
-``MATSOLVERUMFPACK``, ``MATSOLVERCHOLMOD``, ``MATSOLVERKLU``, ``MATSOLVERCUSPARSE``, ``MATSOLVERCUSPARSEBAND``, ``MATSOLVERCUDA``,
-and ``MATSOLVERKOKKOSDEVICE``.
+``MATSOLVERUMFPACK``, ``MATSOLVERCHOLMOD``, ``MATSOLVERKLU``,
+``MATSOLVERCUSPARSE``, and ``MATSOLVERCUDA``.
 The last three of which can run on GPUs, while ``MATSOLVERSUPERLU_DIST`` can partially run on GPUs.
 See :any:`doc_linsolve` for a table of the factorization based solvers in PETSc.
 

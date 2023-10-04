@@ -1,5 +1,4 @@
-#ifndef __TAO_GPCGLINESEARCH_H
-#define __TAO_GPCGLINESEARCH_H
+#pragma once
 
 #include <petscvec.h>
 
@@ -15,5 +14,3 @@ typedef struct {
   Vec Gold;
 
 } TaoLineSearch_GPCG;
-
-#endif

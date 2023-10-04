@@ -115,7 +115,7 @@ metadata.update({
 })
 
 metadata_extra = {
-    'long_description_content_type': 'text/rst',
+    'long_description_content_type': 'text/x-rst',
 }
 
 # --------------------------------------------------------------------
@@ -196,7 +196,7 @@ def extensions():
 def get_release():
     suffix = os.path.join('src', 'binding', F('{pyname}'))
     if not topdir.endswith(os.path.join(os.path.sep, suffix)):
-        return False
+        return True
     release = 1
     rootdir = os.path.abspath(os.path.join(topdir, *[os.path.pardir]*3))
     version_h = os.path.join(rootdir, 'include', F('{name}version.h'))
@@ -247,6 +247,9 @@ def run_setup():
                 F('{Name}*.h'),
                 F('include/{pyname}/*.h'),
                 F('include/{pyname}/*.i'),
+                'py.typed',
+                '*.pyi',
+                '*/*.pyi',
             ],
             F('{pyname}.lib'): [
                 F('{name}.cfg'),

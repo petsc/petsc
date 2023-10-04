@@ -4,10 +4,10 @@ import os
 class Configure(config.package.CMakePackage):
   def __init__(self, framework):
     config.package.CMakePackage.__init__(self, framework)
-    self.gitcommit        = '4.0.00'
+    self.gitcommit        = '4.1.00'
     self.minversion       = '3.7.01'
     self.versionname      = 'KOKKOSKERNELS_VERSION'
-    self.download         = ['git://https://github.com/kokkos/kokkos-kernels.git']
+    self.download         = ['git://https://github.com/kokkos/kokkos-kernels.git','https://github.com/kokkos/kokkos-kernels/archive/'+self.gitcommit+'.tar.gz']
     self.includes         = ['KokkosBlas.hpp','KokkosSparse_CrsMatrix.hpp']
     self.liblist          = [['libkokkoskernels.a']]
     self.functions        = ['']
@@ -65,7 +65,6 @@ class Configure(config.package.CMakePackage):
       elif self.scalarTypes.precision == 'single':
         args.append('-DKokkosKernels_INST_COMPLEX_FLOAT=ON')
 
-    # By default it installs in lib64, change it to lib
     if self.checkSharedLibrariesEnabled():
       args.append('-DCMAKE_INSTALL_RPATH_USE_LINK_PATH:BOOL=ON')
       args.append('-DCMAKE_BUILD_WITH_INSTALL_RPATH:BOOL=ON')
@@ -86,7 +85,9 @@ class Configure(config.package.CMakePackage):
       if self.argDB['with-kokkos-kernels-tpl'] and os.path.isdir(self.hip.rocBlasDir) and os.path.isdir(self.hip.rocSparseDir): # TPL is required either by default or by users
         args.append('-DKokkosKernels_ENABLE_TPL_ROCBLAS=ON')
         args.append('-DKokkosKernels_ENABLE_TPL_ROCSPARSE=ON')
-        args.append('-DKokkosKernels_ROCBLAS_ROOT='+self.hip.rocBlasDir)
+        args.append('-DROCBLAS_ROOT='+self.hip.rocBlasDir) # KK-4.0.1 and higher only support these
+        args.append('-DROCSPARSE_ROOT='+self.hip.rocSparseDir)
+        args.append('-DKokkosKernels_ROCBLAS_ROOT='+self.hip.rocBlasDir) # KK-4.0.0 and lower support these; remove the two lines once self.miniversion >= 4.0.1
         args.append('-DKokkosKernels_ROCSPARSE_ROOT='+self.hip.rocSparseDir)
       elif 'with-kokkos-kernels-tpl' in self.framework.clArgDB and self.argDB['with-kokkos-kernels-tpl']: # TPL is explicitly required by users
         raise RuntimeError('Kokkos-Kernels TPL is required but {x} and {y} do not exist! If not needed, use --with-kokkos-kernels-tpl=0'.format(x=self.hip.rocBlasDir,y=self.hip.rocSparseDir))

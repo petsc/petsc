@@ -16,10 +16,13 @@ class Configure(config.package.Package):
     self.required            = 1
     self.alternativedownload = 'f2cblaslapack'
     self.missingRoutines     = []
+    self.libDirs             = [os.path.join('lib','64'),os.path.join('lib','ia64'),os.path.join('lib','em64t'),os.path.join('lib','intel64'),'lib','64',\
+                                'ia64','em64t','intel64', os.path.join('lib','32'),os.path.join('lib','ia32'),'32','ia32','']
 
   def setupDependencies(self, framework):
     config.package.Package.setupDependencies(self, framework)
     self.f2cblaslapack = framework.require('config.packages.f2cblaslapack', self)
+    self.netliblapack  = framework.require('config.packages.netlib-lapack', self)
     self.fblaslapack   = framework.require('config.packages.fblaslapack', self)
     self.blis          = framework.require('config.packages.blis', self)
     self.openblas      = framework.require('config.packages.openblas', self)
@@ -45,8 +48,8 @@ class Configure(config.package.Package):
     help.addArgument('BLAS/LAPACK', '-with-blas-lib=<libraries: e.g. [/Users/..../libblas.a,...]>',    nargs.ArgLibrary(None, None, 'Indicate the library(s) containing BLAS'))
     help.addArgument('BLAS/LAPACK', '-with-lapack-lib=<libraries: e.g. [/Users/..../liblapack.a,...]>',nargs.ArgLibrary(None, None, 'Indicate the library(s) containing LAPACK'))
     help.addArgument('BLAS/LAPACK', '-with-blaslapack-suffix=<string>',nargs.ArgLibrary(None, None, 'Indicate a suffix for BLAS/LAPACK subroutine names.'))
-    help.addArgument('BLAS/LAPACK', '-with-64-bit-blas-indices', nargs.ArgBool(None, 0, 'Try to use 64 bit integers for BLAS/LAPACK; will error if not available'))
-    help.addArgument('BLAS/LAPACK', '-known-64-bit-blas-indices=<bool>', nargs.ArgBool(None, None, 'Indicate if using 64 bit integer BLAS'))
+    help.addArgument('BLAS/LAPACK', '-with-64-bit-blas-indices', nargs.ArgBool(None, 0, 'Try to use 64-bit integers for BLAS/LAPACK; will error if not available'))
+    help.addArgument('BLAS/LAPACK', '-known-64-bit-blas-indices=<bool>', nargs.ArgBool(None, None, 'Indicate if using 64-bit integer BLAS'))
     help.addArgument('BLAS/LAPACK', '-known-snrm2-returns-double=<bool>', nargs.ArgBool(None, None, 'Indicate if BLAS snrm2() returns a double'))
     help.addArgument('BLAS/LAPACK', '-known-sdot-returns-double=<bool>', nargs.ArgBool(None, None, 'Indicate if BLAS sdot() returns a double'))        
     return
@@ -171,6 +174,12 @@ class Configure(config.package.Package):
       yield ('f2cblaslapack', f2cBlas, f2cLapack, '32','no')
       yield ('f2cblaslapack', f2cBlas+['-lquadmath'], f2cLapack, '32','no')
       raise RuntimeError('--download-f2cblaslapack libraries cannot be used')
+    if self.netliblapack.found:
+      self.f2c = 0
+      # TODO: use self.netliblapack.libDir directly
+      libDir = os.path.join(self.netliblapack.directory,'lib')
+      yield ('netliblapack', os.path.join(libDir,'libnblas.a'), os.path.join(libDir,'libnlapack.a'), '32', 'no')
+      raise RuntimeError('--download-netlib-lapack libraries cannot be used')
     if self.fblaslapack.found:
       self.f2c = 0
       # TODO: use self.fblaslapack.libDir directly
@@ -288,8 +297,7 @@ class Configure(config.package.Package):
         mkl_blacs_32=[[]]
       if useCPardiso or usePardiso:
         self.logPrintBox('BLASLAPACK: Looking for Multithreaded MKL for C/Pardiso')
-        for libdir in [os.path.join('lib','64'),os.path.join('lib','ia64'),os.path.join('lib','em64t'),os.path.join('lib','intel64'),'lib','64','ia64','em64t','intel64',
-                       os.path.join('lib','32'),os.path.join('lib','ia32'),'32','ia32','']:
+        for libdir in self.libDirs:
           if not os.path.exists(os.path.join(dir,libdir)):
             self.logPrint('MKL Path not found.. skipping: '+os.path.join(dir,libdir))
           else:
@@ -316,7 +324,7 @@ class Configure(config.package.Package):
       for ITHREAD in ITHREADS:
         yield ('User specified MKL11/12 and later', None, [os.path.join(dir,'libmkl_intel'+ILP64+'.a'),'mkl_core','mkl_'+ITHREAD,'pthread'],known,ompthread)
       # Some new MKL 11/12 variations
-      for libdir in [os.path.join('lib','intel64'),os.path.join('lib','32'),os.path.join('lib','ia32'),'32','ia32','']:
+      for libdir in self.libDirs:
         if not os.path.exists(os.path.join(dir,libdir)):
           self.logPrint('MKL Path not found.. skipping: '+os.path.join(dir,libdir))
         else:
@@ -324,7 +332,7 @@ class Configure(config.package.Package):
           for ITHREAD in ITHREADS:
             yield ('User specified MKL11/12 Linux32', None, [os.path.join(dir,libdir,'libmkl_intel'+ILP64+'.a'),'mkl_core','mkl_'+ITHREAD,'pthread'],known,ompthread)
             yield ('User specified MKL11/12 Linux32 for static linking (Cray)', None, ['-Wl,--start-group',os.path.join(dir,libdir,'libmkl_intel'+ILP64+'.a'),'mkl_core','mkl_'+ITHREAD,'-Wl,--end-group','pthread'],known,ompthread)
-      for libdir in [os.path.join('lib','intel64'),os.path.join('lib','64'),os.path.join('lib','ia64'),os.path.join('lib','em64t'),os.path.join('lib','intel64'),'lib','64','ia64','em64t','intel64','']:
+      for libdir in self.libDirs:
         if not os.path.exists(os.path.join(dir,libdir)):
           self.logPrint('MKL Path not found.. skipping: '+os.path.join(dir,libdir))
         else:
@@ -334,7 +342,7 @@ class Configure(config.package.Package):
             yield ('User specified MKL11+ Mac-64', None, [os.path.join(dir,libdir,'libmkl_intel'+ILP64+'.a'),'mkl_core','mkl_'+ITHREAD,'pthread'],known,ompthread)
       # Older Linux MKL checks
       yield ('User specified MKL Linux lib dir', None, [os.path.join(dir, 'libmkl_lapack.a'), 'mkl', 'guide', 'pthread'],'32','no')
-      for libdir in ['32','64','em64t']:
+      for libdir in self.libDirs:
         if not os.path.exists(os.path.join(dir,libdir)):
           self.logPrint('MKL Path not found.. skipping: '+os.path.join(dir,libdir))
         else:
@@ -406,6 +414,7 @@ class Configure(config.package.Package):
       for libdir in ['lib64','lib','']:
         if os.path.exists(os.path.join(dir,libdir)):
           yield ('User specified installation root (F2CBLASLAPACK)', os.path.join(dir,libdir,'libf2cblas.a'), os.path.join(dir,libdir,'libf2clapack.a'),'32','no')
+      yield ('User specified installation root(NETLIB-LAPACK)', os.path.join(dir, 'libnblas.a'), os.path.join(dir, 'libnlapack.a'),'32','no')
       yield ('User specified installation root(FBLASLAPACK)', os.path.join(dir, 'libfblas.a'),   os.path.join(dir, 'libflapack.a'),'32','no')
       for lib in ['','lib64']:
         yield ('User specified installation root IBM ESSL', None, os.path.join(dir, lib, 'libessl.a'),'32','unknown')
@@ -559,7 +568,7 @@ class Configure(config.package.Package):
       self.compilers.LIBS = oldLibs
 
     self.found = 1
-    if not self.f2cblaslapack.found and not self.fblaslapack.found:
+    if not self.f2cblaslapack.found and not self.netliblapack.found and not self.fblaslapack.found:
       self.executeTest(self.checkMKL)
       if not self.mkl:
         self.executeTest(self.checkESSL)
@@ -578,7 +587,7 @@ class Configure(config.package.Package):
     if self.mkl and self.has64bitindices:
       self.addDefine('HAVE_MKL_INTEL_ILP64',1)
     if self.argDB['with-64-bit-blas-indices'] and not self.has64bitindices:
-      raise RuntimeError('You requested 64 bit integer BLAS/LAPACK using --with-64-bit-blas-indices but they are not available given your other BLAS/LAPACK options')
+      raise RuntimeError('You requested 64-bit integer BLAS/LAPACK using --with-64-bit-blas-indices but they are not available given your other BLAS/LAPACK options')
 
   def checkMKL(self):
     '''Check for Intel MKL library'''
@@ -680,7 +689,7 @@ class Configure(config.package.Package):
     if self.foundLapack:
       mangleFunc = hasattr(self.compilers, 'FC') and not self.f2c
     routines = ['gelss','gerfs','gges','hgeqz','hseqr','orgqr','ormqr','stebz',
-                'stegr','stein','steqr','sytri','tgsen','trsen','trtrs','geqp3']
+                'stegr','stein','steqr','stev','sytri','tgsen','trsen','trtrs','geqp3']
     self.libraries.saveLog()
     oldLibs = self.compilers.LIBS
     found, missing = self.libraries.checkClassify(self.lapackLibrary, map(self.mangleBlas,routines), otherLibs = self.getOtherLibs(), fortranMangle = mangleFunc)
@@ -751,13 +760,13 @@ class Configure(config.package.Package):
       return result
 
   def checkRuntimeIssues(self):
-    '''Determines if BLAS/LAPACK routines use 32 or 64 bit integers'''
+    '''Determines if BLAS/LAPACK routines use 32 or 64-bit integers'''
     if self.known64 == '64':
       self.addDefine('HAVE_64BIT_BLAS_INDICES', 1)
       self.has64bitindices = 1
-      self.log.write('64 bit blas indices based on the BLAS/LAPACK library being used\n')
+      self.log.write('64-bit BLAS indices based on the BLAS/LAPACK library being used\n')
     elif self.known64 == '32':
-      self.log.write('32 bit blas indices based on the BLAS/LAPACK library being used\n')
+      self.log.write('32-bit BLAS indices based on the BLAS/LAPACK library being used\n')
     elif 'known-64-bit-blas-indices' in self.argDB:
       if self.argDB['known-64-bit-blas-indices']:
         self.addDefine('HAVE_64BIT_BLAS_INDICES', 1)
@@ -765,12 +774,12 @@ class Configure(config.package.Package):
       else:
         self.has64bitindices = 0
     elif self.argDB['with-batch']:
-      self.logPrintWarning('Cannot determine if BLAS/LAPACK uses 32 bit or 64 bit integers \
-in batch-mode! Assuming 32 bit integers. Run with --known-64-bit-blas-indices \
-if you know they are 64 bit. Run with --known-64-bit-blas-indices=0 to remove \
+      self.logPrintWarning('Cannot determine if BLAS/LAPACK uses 32 or 64-bit integers \
+in batch-mode! Assuming 32-bit integers. Run with --known-64-bit-blas-indices \
+if you know they are 64-bit. Run with --known-64-bit-blas-indices=0 to remove \
 this warning message')
       self.has64bitindices = 0
-      self.log.write('In batch mode with unknown size of BLAS/LAPACK defaulting to 32 bit\n')
+      self.log.write('In batch mode with unknown size of BLAS/LAPACK defaulting to 32-bit\n')
     else:
       includes = '''#include <sys/types.h>\n#include <stdlib.h>\n#include <stdio.h>\n#include <stddef.h>\n\n'''
       t = self.getType()
@@ -782,11 +791,11 @@ this warning message')
                   fprintf(output, "-known-64-bit-blas-indices=%d",dotresultmkl != 34);'''
       result = self.runTimeTest('known-64-bit-blas-indices',includes,body,self.dlib,nobatch=1)
       if result is not None:
-        self.log.write('Checking for 64 bit blas indices: result ' +str(result)+'\n')
+        self.log.write('Checking for 64-bit BLAS/LAPACK indices: result ' +str(result)+'\n')
         result = int(result)
         if result:
           if self.defaultPrecision == 'single':
-            self.log.write('Checking for 64 bit blas indices: special check for Apple single precision\n')
+            self.log.write('Checking for 64-bit BLAS/LAPACK indices: special check for Apple single precision\n')
             # On Apple single precision sdot() returns a double so we need to test that case
             body     = '''extern double '''+self.getPrefix()+self.mangleBlasNoPrefix('dot')+'''(const int*,const '''+t+'''*,const int *,const '''+t+'''*,const int*);
                   '''+t+''' x1mkl[4] = {3.0,5.0,7.0,9.0};
@@ -799,11 +808,11 @@ this warning message')
         if result:
           self.addDefine('HAVE_64BIT_BLAS_INDICES', 1)
           self.has64bitindices = 1
-          self.log.write('Checking for 64 bit blas indices: result not equal to 1 so assuming 64 bit blas indices\n')
+          self.log.write('Checking for 64-bit BLAS/LAPACK indices: result not equal to 1 so assuming 64-bit BLAS/LAPACK indices\n')
       else:
         self.addDefine('HAVE_64BIT_BLAS_INDICES', 1)
         self.has64bitindices = 1
-        self.log.write('Checking for 64 bit blas indices: program did not return therefore assuming 64 bit blas indices\n')
+        self.log.write('Checking for 64-bit BLAS/LAPACK indices: program did not return therefore assuming 64-bit BLAS/LAPACK indices\n')
     self.log.write('Checking if sdot() returns a float or a double\n')
     if 'known-sdot-returns-double' in self.argDB:
       if self.argDB['known-sdot-returns-double']:

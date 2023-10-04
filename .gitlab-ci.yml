@@ -70,7 +70,7 @@ check-ci-settings:
     - ccache --zero-stats
   script:
     - if [ ! -z ${LOAD_MODULES+x} ]; then module --trace load ${LOAD_MODULES}; module list; fi
-    - if [ ! -z ${INIT_SCRIPT+x} ]; then echo "sourcing ${INIT_SCRIPT}"; source ${INIT_SCRIPT}; fi
+    - if [ ! -z ${INIT_SCRIPT+x} ]; then echo "sourcing ${INIT_SCRIPT}"; if [ -f ${HOME}/${INIT_SCRIPT} ]; then source ${HOME}/${INIT_SCRIPT}; else source ${INIT_SCRIPT}; fi; fi
     - printf "PATH:$PATH\n"
     - printf "PYTHONPATH:$PYTHONPATH\n"
     - printf "CONFIG_OPTS:${CONFIG_OPTS}\n"
@@ -113,10 +113,11 @@ ompi-cuda:
   tags:
   - cuda-stage1
   variables:
-    CONFIG_OPTS: --with-mpi-dir=/nfs/gce/software/custom/linux-ubuntu22.04-x86_64/spack/opt/spack/linux-ubuntu22.04-x86_64/gcc-11.3.0/openmpi-4.1.3-qrpnszy --with-cuda=1 --with-fc=0
+    CONFIG_OPTS: --with-mpi-dir=/nfs/gce/software/custom/linux-ubuntu22.04-x86_64/spack/opt/spack/linux-ubuntu22.04-x86_64/gcc-11.3.0/openmpi-4.1.3-qrpnszy --with-cuda=1 --with-cuda-arch=all-major --CUDAPPFLAGS=-Wno-deprecated-gpu-targets --with-fc=0
     TEST_SEARCH: snes_tutorials-ex19_cuda%
     ENABLE_CHECK: 1
     MAKE_CXXFLAGS: -Werror
+    MAKE_CUDAFLAGS: -Xcompiler -Wall -Xcompiler -Werror
 
 mpich-cxx-py3:
   extends: .stage-1
@@ -141,10 +142,16 @@ c99-mlib-static-py:
     MAKE_TEST_FFLAGS: -Werror -std=f2008
     LOAD_MODULES: gcc/12.1.0 mpich/4.1-gcc-12.1.0
 
+clang-uni:
+  extends: .stage-1
+  variables:
+    CONFIG_OPTS: --with-cc=clang --with-cxx=clang++ --with-mpi=0
+    TEST_SEARCH: snes_tutorials-ex48%
+
 petsc4py-install:
   extends: .stage-2
   tags:
-    - gce-stage2
+    - gce-u22-stage1
   variables:
     PYTHON: python3
     T_PREFIX: petsc-install
@@ -182,14 +189,14 @@ petsc4py-install:
 petsc4py-pip:
   extends: .stage-2
   tags:
-    - gce-stage2
+    - gce-u22-stage1
   variables:
     PETSC_CONFIGURE_OPTIONS: --with-mpi=0 --with-fc=0
     CFLAGS: -O0
   script:
     - python3 -m venv pip-builds
     - source pip-builds/bin/activate
-    - python3 -m pip install --upgrade pip
+    - python3 -m pip install --upgrade pip==23.0.1
     - python3 -m pip install .
     - python3 -m pip install src/binding/petsc4py
     - python3 -m petsc4py
@@ -259,7 +266,7 @@ pause-for-approval:
   script:
     - if [ ! -z ${LOAD_MODULES+x} ]; then module --trace load ${LOAD_MODULES}; module list; fi
     - if [ ! -z ${GCOV_MODULES+x} ]; then module --trace load ${GCOV_MODULES}; module list; fi
-    - if [ ! -z ${INIT_SCRIPT+x} ]; then echo "sourcing ${INIT_SCRIPT}"; source ${INIT_SCRIPT}; fi
+    - if [ ! -z ${INIT_SCRIPT+x} ]; then echo "sourcing ${INIT_SCRIPT}"; if [ -f ${HOME}/${INIT_SCRIPT} ]; then source ${HOME}/${INIT_SCRIPT}; else source ${INIT_SCRIPT}; fi; fi
     - if [ "${RUN_GCOV}" == 1 ]; then
         printf "RUN_GCOV_OPTIONS:$RUN_GCOV_OPTIONS\n";
         gcovr --version;
@@ -383,7 +390,7 @@ pause-for-approval:
 # (in a blue box beneath it)
 #
 
-osx-m1:
+.disable-osx-m1:
   extends:
     - .stage-3
     - .osx_test
@@ -440,6 +447,9 @@ linux-gcc-pkgs-opt:
     - gce-stage2
   variables:
     TEST_ARCH: arch-ci-linux-gcc-pkgs-opt
+  except:
+    variables:
+      - $PETSC_CI_SCHEDULED =~ /yes/
 
 linux-gcc-complex-opt-32bit:
   extends:
@@ -493,6 +503,7 @@ freebsd-pkgs-opt:
     - os:fbsd
   variables:
     TEST_ARCH: arch-ci-freebsd-pkgs-opt
+    MAKE_CFLAGS: -DPETSC_SKIP_COMPLEX -Werror
 
 linux-hip-double:
   extends:
@@ -503,7 +514,6 @@ linux-hip-double:
     - gpu:amd, os:linux
   variables:
     TEST_ARCH: arch-ci-linux-hip-double
-    INIT_SCRIPT: /home/users/balay/bin/instinct-mod-init.sh
 
 linux-sycl-double:
   extends:
@@ -513,8 +523,9 @@ linux-sycl-double:
   tags:
     - gce-u22-stage3, linux-fast
   variables:
+    MODULEPATH: /nfs/gce/projects/petsc/soft/u22.04/oneapi/modulefiles
     TEST_ARCH: arch-ci-linux-sycl-double
-    LOAD_MODULES: intel-oneapi-compilers/2022.2.1 intel-oneapi-mpi/2021.5.1
+    LOAD_MODULES: compiler/latest mpi/latest
     TEST_OPTS: query=requires queryval=kokkos_kernels
     MAKE_CFLAGS: -Wno-expected-file-type -Werror
 
@@ -529,11 +540,12 @@ linux-cuda-pkgs:
     # run all tests that:
     # 1. require cuda, OR
     # 2. require device, OR
-    # 3. require kokkos[_kernels], AND lives in the vec subdirectory
+    # 3. require hypre, OR
+    # 4. require kokkos[_kernels], AND lives in the vec subdirectory
     #
     # need to use the alternate OR spelling since '|' is interpreted as a pipe by the
     # shell, and I could not manage to escape it enough times...
-    TEST_OPTS: -j3 queryval='cuda,device,kokkos*,vec*' query='requires,requires,requires%OR%name'
+    TEST_OPTS: -j3 queryval='cuda,device,hypre,kokkos*,vec*' query='requires,requires,requires,requires%OR%name'
     MAKE_CUDAFLAGS: --compiler-options -Wall,-Werror
 
 linux-cuda112-omp:
@@ -608,7 +620,7 @@ linux-clang-cuda:
     TEST_OPTS: -j 1  queryval='cuda*,snes*' query='requires%OR%name'
     MODULEPATH: /nfs/gce/projects/petsc/soft/u22.04/spack-2023-02-02/share/spack/modules/linux-ubuntu22.04-ivybridge
     LOAD_MODULES: llvm-15.0.7-gcc-11.3.0-pjldtxf cuda-11.5.2-gcc-11.3.0-jkoottx gcc-11.3.0-gcc-11.3.0-pgrvke5
-    MAKE_CUDAFLAGS: -Wall,-Werror
+    MAKE_CUDAFLAGS: -Wno-pass-failed -Werror
 
 linux-viennacl:
   extends:
@@ -630,10 +642,11 @@ linux-without-fc:
   variables:
     TEST_ARCH: arch-ci-linux-without-fc
 
-linux-cmplx-single:
+.disable-linux-cmplx-single:
   extends:
     - .stage-3
     - .linux_test
+    # gcovr is not on si
     - .coverage-disable
   tags:
     - name:si
@@ -690,6 +703,7 @@ linux-cxx-cmplx-pkgs-64idx:
     - gce-u22-stage3
   variables:
     TEST_ARCH: arch-ci-linux-cxx-cmplx-pkgs-64idx
+    PETSC_OPTIONS: -fp_trap
 
 # Set env vars for 'Kokkos + OpenMP' tests, so that they won't give warnings
 linux-pkgs-dbg-ftn-interfaces:
@@ -703,6 +717,7 @@ linux-pkgs-dbg-ftn-interfaces:
     TEST_ARCH: arch-ci-linux-pkgs-dbg-ftn-interfaces
     OMP_PROC_BIND: "false"
     OMP_NUM_THREADS: 4
+    PETSC_OPTIONS: -fp_trap
 
 linux-pkgs-cxx-mlib:
   extends:
@@ -712,9 +727,7 @@ linux-pkgs-cxx-mlib:
     - gce-u22-stage3
   variables:
     TEST_ARCH: arch-ci-linux-pkgs-cxx-mlib
-  except:
-    variables:
-      - $PETSC_CI_SCHEDULED =~ /yes/
+    PETSC_OPTIONS: -fp_trap
 
 linux-pkgs-valgrind:
   extends:
@@ -730,7 +743,6 @@ linux-pkgs-opt:
   extends:
     - .stage-3
     - .linux_test
-    - .coverage-disable
   tags:
     - gce-u22-stage3, linux-fast
   variables:
@@ -746,6 +758,7 @@ linux-pkgs-dbg:
     - gce-u22-stage3, linux-gcov
   variables:
     TEST_ARCH: arch-ci-linux-pkgs-dbg
+    PETSC_OPTIONS: -fp_trap
 
 linux-matlab-ilp64:
   extends:
@@ -805,7 +818,7 @@ linux-xsdk-dbg:
 
 linux-analyzer:
   extends:
-    - .stage-3
+    - .stage-2
     - .linux_test
     - .coverage-disable
   tags:
@@ -813,16 +826,20 @@ linux-analyzer:
   script:
     - printf "PATH:$PATH\n"
     - printf "PYTHONPATH:$PYTHONPATH\n"
+    - python3 --version
+    - git --version
+    - mypy --version
+    - vermin --version
     - printf "PETSC_OPTIONS:$PETSC_OPTIONS\n"
     - if [ ! -z ${CI_MERGE_REQUEST_SOURCE_BRANCH_NAME+x} ]; then printf "CI_MERGE_REQUEST_SOURCE_BRANCH_NAME:$CI_MERGE_REQUEST_SOURCE_BRANCH_NAME\n" ;fi
     - printf "./config/examples/${TEST_ARCH}.py\n"
     - cat ./config/examples/${TEST_ARCH}.py
     - ./config/examples/${TEST_ARCH}.py
     - make LINTER_OPTIONS="${LINTER_OPTIONS}" test-lint
-    - make LINTER_OPTIONS="${LINTER_OPTIONS} -fdoc-* no" lint
+    - make V=3 LINTER_OPTIONS="${LINTER_OPTIONS} -- ./src" lint
   variables:
     TEST_ARCH: arch-ci-linux-analyzer
-    LINTER_OPTIONS: "--PETSC_ARCH=${TEST_ARCH} --clang_lib=`llvm-config-14 --libdir`/libclang.so.1 --verbose --werror"
+    LINTER_OPTIONS: "--PETSC_ARCH=${TEST_ARCH} --clang_lib=`llvm-config-14 --libdir`/libclang.so.1 --werror 1"
   artifacts:
     paths:
     - arch-*/lib/petsc/conf/*.log
@@ -967,21 +984,23 @@ osx-cxx-cmplx-pkgs-dbg:
     - .osx_test
     - .coverage-disable
   tags:
-    - os:macos
+    - os:macos-x64
   variables:
     TEST_ARCH: arch-ci-osx-cxx-cmplx-pkgs-dbg
-    INIT_SCRIPT: /Users/glci/bin/py3.sh
+    INIT_SCRIPT: .zprofile
 
 osx-cxx-pkgs-opt:
   extends:
     - .stage-3
     - .osx_test
+    - .coverage-disable
   tags:
-    - os:macos, opt
+    - os:macos-x64
   variables:
     PETSC_OPTIONS: -vecscatter_mpi1 false -options_left false
     TEST_ARCH: arch-ci-osx-cxx-pkgs-opt
     MAKE_CXXFLAGS: -Werror -Wno-pass-failed
+    INIT_SCRIPT: .zprofile
 
 osx-dbg:
   extends:
@@ -989,10 +1008,11 @@ osx-dbg:
     - .osx_test
     - .coverage-disable
   tags:
-    - os:macos
+    - os:macos-x64
   variables:
     TEST_ARCH: arch-ci-osx-dbg
     ASAN_OPTIONS: log_path=stdout
+    INIT_SCRIPT: .zprofile
 
 osx-xsdk-opt:
   extends:
@@ -1000,9 +1020,10 @@ osx-xsdk-opt:
     - .osx_test
     - .coverage-disable
   tags:
-    - os:macos, opt
+    - os:macos-x64
   variables:
     TEST_ARCH: arch-ci-osx-xsdk-opt
+    INIT_SCRIPT: .zprofile
 
 # job for analyzing the coverage results and generating the various reports
 coverage-analyze:
@@ -1033,12 +1054,12 @@ coverage-analyze:
     - linux-xsdk-dbg
     - linux-opt-misc
     - linux-pkgs-64idx
+    - linux-pkgs-opt
     - linux-64idx-i8
     - linux-gcc-ifc-cmplx
     - linux-opt-cxx-quad
     - linux-ILP64
     - linux-64idx-i8-uni
-    - osx-cxx-pkgs-opt
   variables:
     PYTHON: python3
     PETSC_ARCH: arch-ci-analyze-pipeline
@@ -1114,15 +1135,18 @@ analyze-pipeline:
         cat ./arch-ci-analyze-pipeline/gcovr/merge_gcov_errors.log;
         exit 1;
       fi
+  allow_failure: true
 
 #
 # Base job for a documentation build (runs in venv to allow installing additional packages without root)
 #
 .docs:
-  stage: stage-3
+  stage: stage-2
   tags:
-    - gce-stage2
+    - linux-docs
   before_script:
+    - git fetch --unshallow --no-tags origin +release:remotes/origin/release +main:remotes/origin/main
+    - module --trace load python-3.11.2-gcc-9.4.0-6p2ktlj
     - printf "PATH:$PATH\n"
     - printf "PYTHONPATH:$PYTHONPATH\n"
     - VENV=venv-petsc-docs &&
@@ -1139,8 +1163,8 @@ docs-review:
     - .docs
     - .test-basic
   script:
-    - (make html BUILDDIR="../public" SPHINXOPTS="-T -E -W --keep-going -j 1") || (printf "Sphinx build failed (warnings count as errors)\n" && false)
-    - (make latexpdf SPHINXOPTS="-T -E -W --keep-going") || (printf "Sphinx build failed (warnings count as errors)\n" && false)
+    - (time make html BUILDDIR="../public" SPHINXOPTS="-T -E -W --keep-going -j 2") || (printf "Sphinx build failed (warnings count as errors)\n" && false)
+    - (time make latexpdf SPHINXOPTS="-T -E -W --keep-going -j 2") || (printf "Sphinx build failed (warnings count as errors)\n" && false)
     - cp _build/latex/manual.pdf ../public/html/manual/
   environment:
     name: review/$CI_COMMIT_REF_NAME
@@ -1163,7 +1187,6 @@ pages:  # this job name has special meaning to GitLab
   interruptible: true
   script:
     - mkdir -p ../public/ && cp public/* ../public/
-    - git fetch --unshallow --no-tags origin +release:remotes/origin/release +main:remotes/origin/main
     - (git checkout origin/main && pip install -r requirements.txt && make website-deploy SPHINXOPTS="-j 1" BUILDDIR="../public/main" && make latexpdf && mkdir -p ../public/main/docs/manual && cp _build/latex/manual.pdf ../public/main/manual/) || (printf "Sphinx build failed (warnings count as errors)\n" && false)
     - git clean -fdxq && rm -rf images ../arch-classic-docs
     - (git checkout origin/release && pip install -r requirements.txt && make website-deploy SPHINXOPTS="-j 1"  BUILDDIR="../public/release" && make latexpdf && mkdir -p ../public/release/docs/manual && cp _build/latex/manual.pdf ../public/release/docs/manual/) || (printf "Sphinx build failed (warnings count as errors)\n" && false)

@@ -206,7 +206,7 @@ theend:
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode JacMatMultCompare(SNES snes, Vec x, Vec p, double hopt)
+static PetscErrorCode JacMatMultCompare(SNES snes, Vec x, Vec p, double hopt)
 {
   Vec         yy1, yy2; /* work vectors */
   PetscViewer view2;    /* viewer */
@@ -275,20 +275,5 @@ PetscErrorCode JacMatMultCompare(SNES snes, Vec x, Vec p, double hopt)
     PetscCall(PetscFPrintf(comm, stdout, "h = %g: relative error = %g\n", (double)h, (double)enorm));
     h *= 10.0;
   }
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-static PetscInt lin_its_total = 0;
-
-PetscErrorCode SNESNoiseMonitor(SNES snes, PetscInt its, double fnorm, void *dummy)
-{
-  PetscInt lin_its;
-
-  PetscFunctionBegin;
-  PetscCall(SNESGetLinearSolveIterations(snes, &lin_its));
-  lin_its_total += lin_its;
-  PetscCall(PetscPrintf(PetscObjectComm((PetscObject)snes), "iter = %" PetscInt_FMT ", SNES Function norm = %g, lin_its = %" PetscInt_FMT ", total_lin_its = %" PetscInt_FMT "\n", its, (double)fnorm, lin_its, lin_its_total));
-
-  PetscCall(SNESUnSetMatrixFreeParameter(snes));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

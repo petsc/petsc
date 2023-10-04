@@ -77,8 +77,8 @@ int main(int argc, char **argv)
   /* create graphics windows */
   PetscCall(PetscViewerDrawOpen(PETSC_COMM_WORLD, 0, "u - state variables", -1, -1, -1, -1, &user.u_viewer));
   PetscCall(PetscViewerDrawOpen(PETSC_COMM_WORLD, 0, "lambda - Lagrange multipliers", -1, -1, -1, -1, &user.lambda_viewer));
-  PetscCall(PetscViewerDrawOpen(PETSC_COMM_WORLD, 0, "fu - derivate w.r.t. state variables", -1, -1, -1, -1, &user.fu_viewer));
-  PetscCall(PetscViewerDrawOpen(PETSC_COMM_WORLD, 0, "flambda - derivate w.r.t. Lagrange multipliers", -1, -1, -1, -1, &user.flambda_viewer));
+  PetscCall(PetscViewerDrawOpen(PETSC_COMM_WORLD, 0, "fu - derivative w.r.t. state variables", -1, -1, -1, -1, &user.fu_viewer));
+  PetscCall(PetscViewerDrawOpen(PETSC_COMM_WORLD, 0, "flambda - derivative w.r.t. Lagrange multipliers", -1, -1, -1, -1, &user.flambda_viewer));
 
   /* create nonlinear solver */
   PetscCall(SNESCreate(PETSC_COMM_WORLD, &snes));

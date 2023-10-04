@@ -11,18 +11,19 @@
 #endif
 
 /*@
-   PetscSleep - Sleeps some number of seconds.
+  PetscSleep - Sleeps some number of seconds.
 
-   Not Collective
+  Not Collective
 
-   Input Parameter:
-.  s - number of seconds to sleep
+  Input Parameter:
+. s - number of seconds to sleep
 
-   Level: intermediate
+  Level: intermediate
 
-   Note:
-   If s is negative waits for keyboard input
+  Note:
+  If `s` is negative waits for keyboard input
 
+.seealso: `PetscTime()`
 @*/
 PetscErrorCode PetscSleep(PetscReal s)
 {

@@ -1,5 +1,45 @@
-# -*- mode: makefile -*-
+# -*- mode: makefile-gmake -*-
 #
+#  This turns off any environmental variables for flags to not be used during the build process.
+#  Put them in the makefile or use make CFLAGS=xxx yyy
+#
+ifeq ($(origin CFLAGS),environment)
+CFLAGS =
+endif
+ifeq ($(origin CPPFLAGS),environment)
+CPPFLAGS =
+endif
+ifeq ($(origin CXXFLAGS),environment)
+CXXFLAGS =
+endif
+ifeq ($(origin CXXPPFLAGS),environment)
+CXXPPFLAGS =
+endif
+ifeq ($(origin FFLAGS),environment)
+FFLAGS =
+endif
+ifeq ($(origin CUDAFLAGS),environment)
+CUDAFLAGS =
+endif
+ifeq ($(origin CUDAPPFLAGS),environment)
+CUDAPPFLAGS =
+endif
+ifeq ($(origin HIPFLAGS),environment)
+HIPFLAGS =
+endif
+ifeq ($(origin HIPPPFLAGS),environment)
+HIPPFLAGS =
+endif
+ifeq ($(origin SYCLFLAGS),environment)
+SYCLFLAGS =
+endif
+ifeq ($(origin SYCLPPFLAGS),environment)
+SYCLPPFLAGS =
+endif
+ifeq ($(origin LDFLAGS),environment)
+LDFLAGS =
+endif
+
 # The following variables specify PETSc related compiler info
 #
 # It may be included in users makefiles (with include ${PETSC_DIR}/lib/petsc/conf/variables)
@@ -44,7 +84,7 @@ F_SH_LIB_PATH	= ${PETSC_F_SH_LIB_PATH}
 # The following variables define PETSc compile procedures
 #
 PETSC_COMPILE_SINGLE    = ${PCC} -o $*.o -c ${PCC_FLAGS} ${${CLANGUAGE}FLAGS} ${CCPPFLAGS}
-PETSC_CCOMPILE_SINGLE   = ${CC} -o $*.o -c ${CC_FLAGS} ${FLAGS} ${CPPFLAGS}
+PETSC_CCOMPILE_SINGLE   = ${CC} -o $*.o -c ${CC_FLAGS} ${CFLAGS} ${CPPFLAGS}
 PETSC_CXXCOMPILE_SINGLE = ${CXX} -o $*.o -c ${CXX_FLAGS} ${CXXFLAGS} ${CXXCPPFLAGS}
 PETSC_FCOMPILE_SINGLE   = ${FC} -o $*.o -c ${FC_FLAGS} ${FFLAGS} ${FCPPFLAGS}
 PETSC_CUCOMPILE_SINGLE  = ${CUDAC} -o $*.o -c $(MPICXX_INCLUDES) ${CUDAC_FLAGS} ${CUDAFLAGS} ${CUDAC_HOSTFLAGS} ${CUDACPPFLAGS} ${CXXCPPFLAGS}

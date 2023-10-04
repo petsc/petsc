@@ -1,10 +1,9 @@
 /*
       This file deals with the BLAS/LAPACK naming convention on
-      non-Microsoft systems, which may append an underscore, use
+      non-Microsoft Windows systems, which may append an underscore, use
       upper or lower case, and/or use a configurable symbol suffix.
 */
-#ifndef _BLASLAPACK_MANGLE_H
-#define _BLASLAPACK_MANGLE_H
+#pragma once
 
 /****************************************************************************/
 /* macros to mangle BLAS/LAPACK names as needed for linking */
@@ -150,6 +149,7 @@
   #define LAPACKtgsen_ PETSCBLAS(tgsen, TGSEN)
 #endif
 /* character-string arguments: */
+#define LAPACKtrtri_ PETSCBLAS(trtri, TRTRI)
 #define LAPACKpotrf_ PETSCBLAS(potrf, POTRF)
 #define LAPACKpotri_ PETSCBLAS(potri, POTRI)
 #define LAPACKpotrs_ PETSCBLAS(potrs, POTRS)
@@ -176,6 +176,10 @@
 #if !defined(PETSC_MISSING_LAPACK_STEQR)
   #define LAPACKsteqr_     PETSCBLAS(steqr, STEQR) /* eigenvalues and eigenvectors of symm tridiagonal */
   #define LAPACKREALsteqr_ PETSCBLASREAL(steqr, STEQR)
+#endif
+#if !defined(PETSC_MISSING_LAPACK_STEV)
+  #define LAPACKstev_     PETSCBLAS(stev, STEV) /* eigenvalues and eigenvectors of symm tridiagonal */
+  #define LAPACKREALstev_ PETSCBLASREAL(stev, STEV)
 #endif
 #if !defined(PETSC_MISSING_LAPACK_HSEQR)
   #define LAPACKhseqr_ PETSCBLAS(hseqr, HSEQR)
@@ -224,12 +228,10 @@
   #if !defined(PETSC_MISSING_LAPACK_ORMQR)
     #define LAPACKormqr_ PETSCBLAS(unmqr, UNMQR)
   #endif
-  /* note: dot and dotu are handled separately for complex data */
+/* note: dot and dotu are handled separately for complex data */
 
   #define LAPACKsyev_  PETSCBLAS(heev, HEEV)   /* eigenvalues and eigenvectors of a symm matrix */
   #define LAPACKsyevx_ PETSCBLAS(heevx, HEEVX) /* selected eigenvalues and eigenvectors of a symm matrix */
   #define LAPACKsygv_  PETSCBLAS(hegv, HEGV)
   #define LAPACKsygvx_ PETSCBLAS(hegvx, HEGVX)
-#endif
-
 #endif

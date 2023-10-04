@@ -1,3 +1,4 @@
+#pragma once
 
 #include <petsc/private/viewerimpl.h> /*I     "petscsys.h"   I*/
 #include <../src/sys/fileio/mprint.h> /* defines the queue datastructures and variables */
@@ -17,6 +18,8 @@ typedef struct {
 
   PrintfQueue petsc_printfqueue, petsc_printfqueuebase;
   int         petsc_printfqueuelength;
+
+  PetscInt fileunit; /* indicates the output is printed with Fortran IO */
 } PetscViewer_ASCII;
 
 typedef struct PetscViewerLink_t PetscViewerLink;

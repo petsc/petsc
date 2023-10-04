@@ -7,30 +7,40 @@
   Collective
 
   Input Parameters:
-+ comm - MPI communicator
-. bndx,bndy,bndz - boundary type: `DM_BOUNDARY_NONE`, `DM_BOUNDARY_PERIODIC`, or `DM_BOUNDARY_GHOSTED`
-. M,N,P - global number of elements in x,y,z directions
-. m,n,p - number of ranks in the x,y,z directions (may be `PETSC_DECIDE`)
-. dof0 - number of degrees of freedom per vertex/0-cell
-. dof1 - number of degrees of freedom per edge/1-cell
-. dof2 - number of degrees of freedom per face/2-cell
-. dof3 - number of degrees of freedom per element/3-cell
-. stencilType - ghost/halo region type: `DMSTAG_STENCIL_NONE`, `DMSTAG_STENCIL_BOX`, or `DMSTAG_STENCIL_STAR`
++ comm         - MPI communicator
+. bndx         - x boundary type, `DM_BOUNDARY_NONE`, `DM_BOUNDARY_PERIODIC`, or
+`DM_BOUNDARY_GHOSTED`
+. bndy         - y boundary type, `DM_BOUNDARY_NONE`, `DM_BOUNDARY_PERIODIC`, or
+`DM_BOUNDARY_GHOSTED`
+. bndz         - z boundary type, `DM_BOUNDARY_NONE`, `DM_BOUNDARY_PERIODIC`, or `DM_BOUNDARY_GHOSTED`
+. M            - global number of elements in x direction
+. N            - global number of elements in y direction
+. P            - global number of elements in z direction
+. m            - number of ranks in the x direction (may be `PETSC_DECIDE`)
+. n            - number of ranks in the y direction (may be `PETSC_DECIDE`)
+. p            - number of ranks in the z direction (may be `PETSC_DECIDE`)
+. dof0         - number of degrees of freedom per vertex/0-cell
+. dof1         - number of degrees of freedom per edge/1-cell
+. dof2         - number of degrees of freedom per face/2-cell
+. dof3         - number of degrees of freedom per element/3-cell
+. stencilType  - ghost/halo region type: `DMSTAG_STENCIL_NONE`, `DMSTAG_STENCIL_BOX`, or `DMSTAG_STENCIL_STAR`
 . stencilWidth - width, in elements, of halo/ghost region
-- lx,ly,lz - arrays of local x,y,z element counts, of length equal to m,n,p, summing to M,N,P
+. lx           - array of local x  element counts, of length equal to `m`, summing to `M`
+. ly           - arrays of local y element counts, of length equal to `n`, summing to `N`
+- lz           - arrays of local z element counts, of length equal to `p`, summing to `P`
 
   Output Parameter:
 . dm - the new `DMSTAG` object
 
   Options Database Keys:
-+ -dm_view - calls `DMViewFromOptions()` at the conclusion of `DMSetUp()`
-. -stag_grid_x <nx> - number of elements in the x direction
-. -stag_grid_y <ny> - number of elements in the y direction
-. -stag_grid_z <nz> - number of elements in the z direction
-. -stag_ranks_x <rx> - number of ranks in the x direction
-. -stag_ranks_y <ry> - number of ranks in the y direction
-. -stag_ranks_z <rz> - number of ranks in the z direction
-. -stag_ghost_stencil_width - width of ghost region, in elements
++ -dm_view                                      - calls `DMViewFromOptions()` at the conclusion of `DMSetUp()`
+. -stag_grid_x <nx>                             - number of elements in the x direction
+. -stag_grid_y <ny>                             - number of elements in the y direction
+. -stag_grid_z <nz>                             - number of elements in the z direction
+. -stag_ranks_x <rx>                            - number of ranks in the x direction
+. -stag_ranks_y <ry>                            - number of ranks in the y direction
+. -stag_ranks_z <rz>                            - number of ranks in the z direction
+. -stag_ghost_stencil_width                     - width of ghost region, in elements
 . -stag_boundary_type x <none,ghosted,periodic> - `DMBoundaryType` value
 . -stag_boundary_type y <none,ghosted,periodic> - `DMBoundaryType` value
 - -stag_boundary_type z <none,ghosted,periodic> - `DMBoundaryType` value
@@ -42,7 +52,7 @@
   If you wish to use the options database (see the keys above) to change values in the `DMSTAG`, you must call
   `DMSetFromOptions()` after this function but before `DMSetUp()`.
 
-.seealso: [](chapter_stag), `DMSTAG`, `DMStagCreate1d()`, `DMStagCreate2d()`, `DMDestroy()`, `DMView()`, `DMCreateGlobalVector()`, `DMCreateLocalVector()`, `DMLocalToGlobalBegin()`, `DMDACreate3d()`
+.seealso: [](ch_stag), `DMSTAG`, `DMStagCreate1d()`, `DMStagCreate2d()`, `DMDestroy()`, `DMView()`, `DMCreateGlobalVector()`, `DMCreateLocalVector()`, `DMLocalToGlobalBegin()`, `DMDACreate3d()`
 @*/
 PETSC_EXTERN PetscErrorCode DMStagCreate3d(MPI_Comm comm, DMBoundaryType bndx, DMBoundaryType bndy, DMBoundaryType bndz, PetscInt M, PetscInt N, PetscInt P, PetscInt m, PetscInt n, PetscInt p, PetscInt dof0, PetscInt dof1, PetscInt dof2, PetscInt dof3, DMStagStencilType stencilType, PetscInt stencilWidth, const PetscInt lx[], const PetscInt ly[], const PetscInt lz[], DM *dm)
 {
@@ -317,9 +327,9 @@ PETSC_INTERN PetscErrorCode DMSetUp_Stag_3d(DM dm)
     stag->entries = stag->n[2] * entriesPerElementLayer + (dummyEnd[2] ? stag->n[0] * stag->n[1] * entriesPerFace : 0) + (dummyEnd[2] && dummyEnd[0] ? stag->n[1] * entriesPerEdge : 0) + (dummyEnd[2] && dummyEnd[1] ? stag->n[0] * entriesPerEdge : 0) + (dummyEnd[2] && dummyEnd[1] && dummyEnd[0] ? entriesPerCorner : 0);
   }
 
-  /* Check that we will not overflow 32 bit indices (slightly overconservative) */
+  /* Check that we will not overflow 32-bit indices (slightly overconservative) */
   if (!PetscDefined(USE_64BIT_INDICES)) {
-    PetscCheck(((PetscInt64)stag->n[0]) * ((PetscInt64)stag->n[1]) * ((PetscInt64)stag->n[2]) * ((PetscInt64)stag->entriesPerElement) <= (PetscInt64)PETSC_MPI_INT_MAX, PetscObjectComm((PetscObject)dm), PETSC_ERR_INT_OVERFLOW, "Mesh of %" PetscInt_FMT " x %" PetscInt_FMT " x %" PetscInt_FMT " with %" PetscInt_FMT " entries per (interior) element is likely too large for 32 bit indices",
+    PetscCheck(((PetscInt64)stag->n[0]) * ((PetscInt64)stag->n[1]) * ((PetscInt64)stag->n[2]) * ((PetscInt64)stag->entriesPerElement) <= (PetscInt64)PETSC_MPI_INT_MAX, PetscObjectComm((PetscObject)dm), PETSC_ERR_INT_OVERFLOW, "Mesh of %" PetscInt_FMT " x %" PetscInt_FMT " x %" PetscInt_FMT " with %" PetscInt_FMT " entries per (interior) element is likely too large for 32-bit indices",
                stag->n[0], stag->n[1], stag->n[2], stag->entriesPerElement);
   }
 

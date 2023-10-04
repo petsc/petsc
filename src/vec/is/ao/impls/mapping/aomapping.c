@@ -15,7 +15,7 @@ typedef struct {
   PetscInt *petscPerm;
 } AO_Mapping;
 
-PetscErrorCode AODestroy_Mapping(AO ao)
+static PetscErrorCode AODestroy_Mapping(AO ao)
 {
   AO_Mapping *aomap = (AO_Mapping *)ao->data;
 
@@ -25,7 +25,7 @@ PetscErrorCode AODestroy_Mapping(AO ao)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode AOView_Mapping(AO ao, PetscViewer viewer)
+static PetscErrorCode AOView_Mapping(AO ao, PetscViewer viewer)
 {
   AO_Mapping *aomap = (AO_Mapping *)ao->data;
   PetscMPIInt rank;
@@ -44,7 +44,7 @@ PetscErrorCode AOView_Mapping(AO ao, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode AOPetscToApplication_Mapping(AO ao, PetscInt n, PetscInt *ia)
+static PetscErrorCode AOPetscToApplication_Mapping(AO ao, PetscInt n, PetscInt *ia)
 {
   AO_Mapping *aomap = (AO_Mapping *)ao->data;
   PetscInt   *app   = aomap->app;
@@ -79,7 +79,7 @@ PetscErrorCode AOPetscToApplication_Mapping(AO ao, PetscInt n, PetscInt *ia)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode AOApplicationToPetsc_Mapping(AO ao, PetscInt n, PetscInt *ia)
+static PetscErrorCode AOApplicationToPetsc_Mapping(AO ao, PetscInt n, PetscInt *ia)
 {
   AO_Mapping *aomap = (AO_Mapping *)ao->data;
   PetscInt   *app   = aomap->app;
@@ -114,7 +114,7 @@ PetscErrorCode AOApplicationToPetsc_Mapping(AO ao, PetscInt n, PetscInt *ia)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static struct _AOOps AOps = {
+static const struct _AOOps AOps = {
   PetscDesignatedInitializer(view, AOView_Mapping),
   PetscDesignatedInitializer(destroy, AODestroy_Mapping),
   PetscDesignatedInitializer(petsctoapplication, AOPetscToApplication_Mapping),
@@ -127,15 +127,15 @@ static struct _AOOps AOps = {
   Not Collective
 
   Input Parameters:
-+ ao       - The `AO`
-- index    - The application index
++ ao   - The `AO`
+- idex - The application index
 
   Output Parameter:
 . hasIndex - Flag is `PETSC_TRUE` if the index exists
 
   Level: intermediate
 
-  Developer Note:
+  Developer Notes:
   The name of the function is wrong, it should be `AOHasApplicationIndex`
 
 .seealso: [](sec_ao), `AOMappingHasPetscIndex()`, `AOCreateMapping()`, `AO`
@@ -148,7 +148,7 @@ PetscErrorCode AOMappingHasApplicationIndex(AO ao, PetscInt idex, PetscBool *has
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ao, AO_CLASSID, 1);
-  PetscValidBoolPointer(hasIndex, 3);
+  PetscAssertPointer(hasIndex, 3);
   aomap = (AO_Mapping *)ao->data;
   app   = aomap->app;
   /* Use bisection since the array is sorted */
@@ -171,15 +171,15 @@ PetscErrorCode AOMappingHasApplicationIndex(AO ao, PetscInt idex, PetscBool *has
   Not Collective
 
   Input Parameters:
-+ ao       - The `AO`
-- index    - The petsc index
++ ao   - The `AO`
+- idex - The petsc index
 
   Output Parameter:
 . hasIndex - Flag is `PETSC_TRUE` if the index exists
 
   Level: intermediate
 
-  Developer Note:
+  Developer Notes:
   The name of the function is wrong, it should be `AOHasPetscIndex`
 
 .seealso: [](sec_ao), `AOMappingHasApplicationIndex()`, `AOCreateMapping()`
@@ -192,7 +192,7 @@ PetscErrorCode AOMappingHasPetscIndex(AO ao, PetscInt idex, PetscBool *hasIndex)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ao, AO_CLASSID, 1);
-  PetscValidBoolPointer(hasIndex, 3);
+  PetscAssertPointer(hasIndex, 3);
   aomap = (AO_Mapping *)ao->data;
   petsc = aomap->petsc;
   /* Use bisection since the array is sorted */
@@ -219,18 +219,18 @@ PetscErrorCode AOMappingHasPetscIndex(AO ao, PetscInt idex, PetscBool *hasIndex)
 - mypetsc - integer array that defines another ordering (may be NULL to indicate the identity ordering)
 
   Output Parameter:
-. aoout   - the new application mapping
+. aoout - the new application mapping
 
   Options Database Key:
 . -ao_view - call `AOView()` at the conclusion of `AOCreateMapping()`
 
   Level: beginner
 
-    Note:
-    The arrays myapp and mypetsc need NOT contain the all the integers 0 to napp-1, that is there CAN be "holes"  in the indices.
-    Use `AOCreateBasic()` or `AOCreateBasicIS()` if they do not have holes for better performance.
+  Note:
+  The arrays myapp and mypetsc need NOT contain the all the integers 0 to napp-1, that is there CAN be "holes"  in the indices.
+  Use `AOCreateBasic()` or `AOCreateBasicIS()` if they do not have holes for better performance.
 
-.seealso: [](sec_ao), `AOCreateBasic()`, `AOCreateBasic()`, `AOCreateMappingIS()`, `AODestroy()`
+.seealso: [](sec_ao), `AOCreateBasic()`, `AOCreateMappingIS()`, `AODestroy()`
 @*/
 PetscErrorCode AOCreateMapping(MPI_Comm comm, PetscInt napp, const PetscInt myapp[], const PetscInt mypetsc[], AO *aoout)
 {
@@ -244,14 +244,14 @@ PetscErrorCode AOCreateMapping(MPI_Comm comm, PetscInt napp, const PetscInt myap
   PetscInt    i;
 
   PetscFunctionBegin;
-  PetscValidPointer(aoout, 5);
+  PetscAssertPointer(aoout, 5);
   *aoout = NULL;
   PetscCall(AOInitializePackage());
 
   PetscCall(PetscHeaderCreate(ao, AO_CLASSID, "AO", "Application Ordering", "AO", comm, AODestroy, AOView));
   PetscCall(PetscNew(&aomap));
-  PetscCall(PetscMemcpy(ao->ops, &AOps, sizeof(AOps)));
-  ao->data = (void *)aomap;
+  ao->ops[0] = AOps;
+  ao->data   = (void *)aomap;
 
   /* transmit all lengths to all processors */
   PetscCallMPI(MPI_Comm_size(comm, &size));
@@ -326,12 +326,11 @@ PetscErrorCode AOCreateMapping(MPI_Comm comm, PetscInt napp, const PetscInt myap
   AOCreateMappingIS - Creates an application mapping using two index sets.
 
   Input Parameters:
-+ comm    - MPI communicator that is to share `AO`
-. isapp   - index set that defines an ordering
++ isapp   - index set that defines an ordering
 - ispetsc - index set that defines another ordering, maybe NULL for identity `IS`
 
   Output Parameter:
-. aoout   - the new application ordering
+. aoout - the new application ordering
 
   Options Database Key:
 . -ao_view - call `AOView()` at the conclusion of `AOCreateMappingIS()`
@@ -339,7 +338,7 @@ PetscErrorCode AOCreateMapping(MPI_Comm comm, PetscInt napp, const PetscInt myap
   Level: beginner
 
   Note:
-  The index sets isapp and ispetsc need NOT contain the all the integers 0 to N-1, that is there CAN be "holes"  in the indices.
+  The index sets `isapp` and `ispetsc` need NOT contain the all the integers 0 to N-1, that is there CAN be "holes"  in the indices.
   Use `AOCreateBasic()` or `AOCreateBasicIS()` if they do not have holes for better performance.
 
 .seealso: [](sec_ao), [](sec_scatter), `AOCreateBasic()`, `AOCreateMapping()`, `AODestroy()`

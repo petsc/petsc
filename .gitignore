@@ -42,6 +42,7 @@ make_log_*
 test_log_*
 src/python/*
 *.o
+*.L
 *.pch
 *.pyc
 *~
@@ -186,7 +187,7 @@ compile_commands.json
 .clangd/
 .cache/
 .vscode/
-include/petsc/private/generated_hashset.txt
+include/petsc/private/generated_*
 configtest.mod
 *gcovr-report.json
 arch-*/gcovr/*

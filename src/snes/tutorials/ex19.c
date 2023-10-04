@@ -1025,6 +1025,20 @@ PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ctx)
       args: -da_grid_x 20 -da_grid_y 20 -pc_type lu -pc_factor_mat_solver_type superlu_dist -mat_superlu_dist_3d -mat_superlu_dist_d 2 -snes_view -snes_monitor -ksp_monitor
 
    test:
+      suffix: superlu_dist_2s
+      nsize: 2
+      requires: superlu_dist defined(PETSC_HAVE_SUPERLU_DIST_SINGLE)
+      args: -da_grid_x 20 -da_grid_y 20 -pc_type lu -pc_factor_mat_solver_type superlu_dist -pc_precision single
+      output_file: output/ex19_superlu.out
+
+   test:
+      suffix: superlu_dist_3ds
+      nsize: 4
+      requires: superlu_dist !defined(PETSCTEST_VALGRIND) defined(PETSC_HAVE_SUPERLU_DIST_SINGLE)
+      filter: grep -v iam | grep -v openMP
+      args: -da_grid_x 20 -da_grid_y 20 -pc_type lu -pc_factor_mat_solver_type superlu_dist -mat_superlu_dist_3d -mat_superlu_dist_d 2 -snes_view -snes_monitor -ksp_monitor -pc_precision single
+
+   test:
       suffix: superlu_equil
       requires: superlu
       args: -da_grid_x 20 -da_grid_y 20 -{snes,ksp}_monitor_short -pc_type lu -pc_factor_mat_solver_type superlu -mat_superlu_equil
@@ -1067,7 +1081,13 @@ PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ctx)
       suffix: tut_3
       nsize: 4
       requires: hypre !single !complex !defined(PETSC_HAVE_HYPRE_DEVICE)
-      args: -da_refine 5 -snes_monitor -ksp_monitor -snes_view -pc_type hypre
+      args: -da_refine 5 -snes_monitor -snes_converged_reason -pc_type hypre -dm_mat_type {{aij baij}}
+
+   test:
+      suffix: tut_3_seq
+      nsize: 1
+      requires: hypre !single !complex !defined(PETSC_HAVE_HYPRE_DEVICE)
+      args: -da_refine 1 -snes_monitor -snes_converged_reason -pc_type hypre -dm_mat_type {{seqaij mpiaij seqbaij mpibaij}}
 
    test:
       suffix: tut_8
@@ -1111,13 +1131,13 @@ PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ctx)
       suffix: cuda_1
       nsize: 1
       requires: cuda
-      args: -snes_monitor -dm_mat_type seqaijcusparse -dm_vec_type seqcuda -pc_type gamg -pc_gamg_esteig_ksp_max_it 10 -ksp_monitor -mg_levels_ksp_max_it 3
+      args: -snes_monitor -dm_mat_type seqaijcusparse -dm_vec_type seqcuda -pc_type gamg -pc_gamg_esteig_ksp_max_it 10 -ksp_monitor -mg_levels_ksp_max_it 3 -pc_gamg_mis_k_minimum_degree_ordering true
 
    test:
       suffix: cuda_2
       nsize: 3
       requires: cuda !single
-      args: -snes_monitor -dm_mat_type mpiaijcusparse -dm_vec_type mpicuda -pc_type gamg -pc_gamg_esteig_ksp_max_it 10 -ksp_monitor  -mg_levels_ksp_max_it 3
+      args: -snes_monitor -dm_mat_type mpiaijcusparse -dm_vec_type mpicuda -pc_type gamg -pc_gamg_esteig_ksp_max_it 10 -ksp_monitor  -mg_levels_ksp_max_it 3 -pc_gamg_mis_k_minimum_degree_ordering true
 
    test:
       suffix: cuda_dm_bind_below
@@ -1207,7 +1227,7 @@ PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ctx)
       nsize: 1
       requires: !defined(PETSC_USE_64BIT_INDICES) !defined(PETSCTEST_VALGRIND)
       args: -da_refine 100 -petsc_ci_portable_error_output -error_output_stdout
-      filter: grep -E -v "(options_left|memory block|leaked context|not freed before MPI_Finalize|Could be the program crashed)"
+      filter: grep -E -v "(memory block|leaked context|not freed before MPI_Finalize|Could be the program crashed)"
 
    testset:
       requires: hpddm cuda

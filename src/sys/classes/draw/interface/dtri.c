@@ -2,23 +2,23 @@
 #include <petsc/private/drawimpl.h> /*I "petscdraw.h" I*/
 
 /*@
-   PetscDrawTriangle - draws a triangle  onto a drawable.
+  PetscDrawTriangle - draws a triangle  onto a drawable.
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  draw - the drawing context
-.  x1 - coordinate of the first vertex
-.  y1 - coordinate of the first vertex
-.  x2 - coordinate of the second vertex
-.  y2 - coordinate of the second vertex
-.  x3 - coordinate of the third vertex
-.  y3 - coordinate of the third vertex
-.  c1 - color of the first vertex
-.  c2 - color of the second vertex
--  c3 - color of the third vertext
+  Input Parameters:
++ draw - the drawing context
+. x1   - coordinate of the first vertex
+. y_1  - coordinate of the first vertex
+. x2   - coordinate of the second vertex
+. y2   - coordinate of the second vertex
+. x3   - coordinate of the third vertex
+. y3   - coordinate of the third vertex
+. c1   - color of the first vertex
+. c2   - color of the second vertex
+- c3   - color of the third vertext
 
-   Level: beginner
+  Level: beginner
 
 .seealso: `PetscDraw`, `PetscDrawLine()`, `PetscDrawRectangle()`, `PetscDrawEllipse()`, `PetscDrawMarker()`, `PetscDrawPoint()`, `PetscDrawArrow()`
 @*/
@@ -31,19 +31,19 @@ PetscErrorCode PetscDrawTriangle(PetscDraw draw, PetscReal x1, PetscReal y_1, Pe
 }
 
 /*@
-   PetscDrawScalePopup - draws a contour scale window.
+  PetscDrawScalePopup - draws a contour scale window.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  popup - the window (often a window obtained via `PetscDrawGetPopup()`
-.  min - minimum value being plotted
--  max - maximum value being plotted
+  Input Parameters:
++ popup - the window (often a window obtained via `PetscDrawGetPopup()`
+. min   - minimum value being plotted
+- max   - maximum value being plotted
 
-   Level: intermediate
+  Level: intermediate
 
-   Note:
-    All processors that share the draw MUST call this routine
+  Note:
+  All processors that share the draw MUST call this routine
 
 .seealso: `PetscDraw`, `PetscDrawGetPopup()`, `PetscDrawTensorContour()`
 @*/
@@ -108,22 +108,23 @@ static PetscErrorCode PetscDrawTensorContour_Zoom(PetscDraw win, void *dctx)
 }
 
 /*@C
-   PetscDrawTensorContour - draws a contour plot for a two-dimensional array
+  PetscDrawTensorContour - draws a contour plot for a two-dimensional array
 
-   Collective on draw, but draw must be sequential
+  Collective on draw, but draw must be sequential
 
-   Input Parameters:
-+   draw  - the draw context
-.   m,n   - the global number of mesh points in the x and y directions
-.   xi    - the locations of the global mesh points in the horizontal direction (optional, use `NULL` to indicate uniform spacing on [0,1])
-.   yi    - the locations of the global mesh points in the vertical direction (optional, use `NULL` to indicate uniform spacing on [0,1])
--   V     - the values
+  Input Parameters:
++ draw - the draw context
+. m    - the number of local mesh points in the x direction
+. n    - the number of local mesh points in the y direction
+. xi   - the locations of the global mesh points in the horizontal direction (optional, use `NULL` to indicate uniform spacing on [0,1])
+. yi   - the locations of the global mesh points in the vertical direction (optional, use `NULL` to indicate uniform spacing on [0,1])
+- v    - the values
 
-   Options Database Keys:
-+  -draw_x_shared_colormap - Indicates use of private colormap
--  -draw_contour_grid - draws grid contour
+  Options Database Keys:
++ -draw_x_shared_colormap - Indicates use of private colormap
+- -draw_contour_grid      - draws grid contour
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `PetscDraw`, `PetscDrawTensorContourPatch()`, `PetscDrawScalePopup()`
 @*/
@@ -190,28 +191,29 @@ PetscErrorCode PetscDrawTensorContour(PetscDraw draw, int m, int n, const PetscR
 }
 
 /*@
-   PetscDrawTensorContourPatch - draws a rectangular patch of a contour plot
-   for a two-dimensional array.
+  PetscDrawTensorContourPatch - draws a rectangular patch of a contour plot
+  for a two-dimensional array.
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  draw - the draw context
-.  m,n - the number of local mesh points in the x and y direction
-.  x - the horizontal locations of the local mesh points
-.  y - the vertical locations of the local mesh points
-.  min - the minimum value in the entire contour
-.  max - the maximum value in the entire contour
--  v - the data
+  Input Parameters:
++ draw - the draw context
+. m    - the number of local mesh points in the x direction
+. n    - the number of local mesh points in the y direction
+. x    - the horizontal locations of the local mesh points
+. y    - the vertical locations of the local mesh points
+. min  - the minimum value in the entire contour
+. max  - the maximum value in the entire contour
+- v    - the data
 
-   Options Database Key:
-.  -draw_x_shared_colormap - Activates private colormap
+  Options Database Key:
+. -draw_x_shared_colormap - Activates private colormap
 
-   Level: advanced
+  Level: advanced
 
-   Note:
-   This is a lower level support routine, usually the user will call
-   `PetscDrawTensorContour()`.
+  Note:
+  This is a lower level support routine, usually the user will call
+  `PetscDrawTensorContour()`.
 
 .seealso: `PetscDraw`, `PetscDrawTensorContour()`
 @*/

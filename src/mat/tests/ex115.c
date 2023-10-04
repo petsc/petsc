@@ -6,13 +6,14 @@ static char help[] = "Tests MatHYPRE\n";
 int main(int argc, char **args)
 {
   Mat                 A, B, C, D;
-  Mat                 pAB, CD, CAB;
+  Mat                 pAB, CD;
   hypre_ParCSRMatrix *parcsr;
   PetscReal           err;
   PetscInt            i, j, N = 6, M = 6;
   PetscBool           flg, testptap = PETSC_TRUE, testmatmatmult = PETSC_TRUE;
   PetscReal           norm;
   char                file[256];
+  MatType             mtype = MATAIJ;
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
@@ -25,6 +26,14 @@ int main(int argc, char **args)
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-ptap", &testptap, NULL));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-matmatmult", &testmatmatmult, NULL));
   PetscCall(MatCreate(PETSC_COMM_WORLD, &A));
+#if PetscDefined(HAVE_HYPRE_DEVICE)
+  #if PetscDefined(HAVE_HIP)
+  mtype = MATAIJHIPSPARSE;
+  #elif PetscDefined(HAVE_CUDA)
+  mtype = MATAIJCUSPARSE;
+  #endif
+#endif
+
   if (!flg) { /* Create a matrix and test MatSetValues */
     PetscMPIInt size;
 
@@ -32,12 +41,18 @@ int main(int argc, char **args)
     PetscCall(PetscOptionsGetInt(NULL, NULL, "-M", &M, NULL));
     PetscCall(PetscOptionsGetInt(NULL, NULL, "-N", &N, NULL));
     PetscCall(MatSetSizes(A, PETSC_DECIDE, PETSC_DECIDE, M, N));
-    PetscCall(MatSetType(A, MATAIJ));
+    PetscCall(MatSetType(A, mtype));
     PetscCall(MatSeqAIJSetPreallocation(A, 9, NULL));
     PetscCall(MatMPIAIJSetPreallocation(A, 9, NULL, 9, NULL));
     PetscCall(MatCreate(PETSC_COMM_WORLD, &B));
     PetscCall(MatSetSizes(B, PETSC_DECIDE, PETSC_DECIDE, M, N));
+#if PetscDefined(HAVE_HYPRE_DEVICE)
+    PetscCall(MatSetType(B, mtype));
+#else
     PetscCall(MatSetType(B, MATHYPRE));
+#endif
+    PetscCall(MatSeqAIJSetPreallocation(B, 9, NULL));
+    PetscCall(MatMPIAIJSetPreallocation(B, 9, NULL, 9, NULL));
     if (M == N) {
       PetscCall(MatHYPRESetPreallocation(B, 9, NULL, 9, NULL));
     } else {
@@ -91,6 +106,9 @@ int main(int argc, char **args)
     PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
     PetscCall(MatAssemblyBegin(B, MAT_FINAL_ASSEMBLY));
     PetscCall(MatAssemblyEnd(B, MAT_FINAL_ASSEMBLY));
+#if PetscDefined(HAVE_HYPRE_DEVICE)
+    PetscCall(MatConvert(B, MATHYPRE, MAT_INPLACE_MATRIX, &B));
+#endif
 
 #if defined(PETSC_USE_COMPLEX)
     /* make the matrix imaginary */
@@ -98,28 +116,36 @@ int main(int argc, char **args)
     PetscCall(MatScale(B, PETSC_i));
 #endif
 
+#if !PetscDefined(HAVE_HYPRE_DEVICE)
     /* MatAXPY further exercises MatSetValues_HYPRE */
     PetscCall(MatAXPY(B, -1., A, DIFFERENT_NONZERO_PATTERN));
     PetscCall(MatConvert(B, MATMPIAIJ, MAT_INITIAL_MATRIX, &C));
     PetscCall(MatNorm(C, NORM_INFINITY, &err));
     PetscCheck(err <= PETSC_SMALL, PetscObjectComm((PetscObject)A), PETSC_ERR_PLIB, "Error MatSetValues %g", err);
-    PetscCall(MatDestroy(&B));
     PetscCall(MatDestroy(&C));
+#endif
+    PetscCall(MatDestroy(&B));
   } else {
     PetscViewer viewer;
 
     PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD, file, FILE_MODE_READ, &viewer));
     PetscCall(MatSetFromOptions(A));
     PetscCall(MatLoad(A, viewer));
+    PetscCall(MatSetType(A, mtype));
     PetscCall(PetscViewerDestroy(&viewer));
     PetscCall(MatGetSize(A, &M, &N));
   }
 
   /* check conversion routines */
+  PetscCall(MatViewFromOptions(A, NULL, "-view_A"));
   PetscCall(MatConvert(A, MATHYPRE, MAT_INITIAL_MATRIX, &B));
-  PetscCall(MatConvert(A, MATHYPRE, MAT_REUSE_MATRIX, &B));
+  PetscCall(MatViewFromOptions(B, NULL, "-view_convert"));
   PetscCall(MatMultEqual(B, A, 4, &flg));
-  PetscCheck(flg, PetscObjectComm((PetscObject)A), PETSC_ERR_PLIB, "Error Mat HYPRE");
+  PetscCheck(flg, PetscObjectComm((PetscObject)A), PETSC_ERR_PLIB, "Error Mat HYPRE init");
+  PetscCall(MatConvert(A, MATHYPRE, MAT_REUSE_MATRIX, &B));
+  PetscCall(MatViewFromOptions(B, NULL, "-view_convert"));
+  PetscCall(MatMultEqual(B, A, 4, &flg));
+  PetscCheck(flg, PetscObjectComm((PetscObject)A), PETSC_ERR_PLIB, "Error Mat HYPRE reuse");
   PetscCall(MatConvert(B, MATIS, MAT_INITIAL_MATRIX, &D));
   PetscCall(MatConvert(B, MATIS, MAT_REUSE_MATRIX, &D));
   PetscCall(MatMultEqual(D, A, 4, &flg));
@@ -182,6 +208,7 @@ int main(int argc, char **args)
     PetscCheck(flg, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Error in MatPtAP_HYPRE_HYPRE");
 
     /* Test MatAXPY_Basic() */
+#if !PetscDefined(HAVE_HYPRE_DEVICE)
     PetscCall(MatAXPY(hP, -1., pP, DIFFERENT_NONZERO_PATTERN));
     PetscCall(MatHasOperation(hP, MATOP_NORM, &flg));
     if (!flg) { /* TODO add MatNorm_HYPRE */
@@ -189,15 +216,18 @@ int main(int argc, char **args)
     }
     PetscCall(MatNorm(hP, NORM_INFINITY, &err));
     PetscCheck(err / norm <= PETSC_SMALL, PetscObjectComm((PetscObject)hP), PETSC_ERR_PLIB, "Error MatPtAP %g %g", err, norm);
+#endif
     PetscCall(MatDestroy(&pP));
     PetscCall(MatDestroy(&hP));
 
     /* MatPtAP_AIJ_HYPRE -> output can be decided at runtime with -matptap_hypre_outtype */
+#if !PetscDefined(HAVE_HYPRE_DEVICE)
     PetscCall(MatPtAP(A, B, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &hP));
     PetscCall(MatPtAP(A, B, MAT_REUSE_MATRIX, PETSC_DEFAULT, &hP));
     PetscCall(MatPtAPMultEqual(A, B, hP, 10, &flg));
     PetscCheck(flg, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Error in MatPtAP_AIJ_HYPRE");
     PetscCall(MatDestroy(&hP));
+#endif
   }
   PetscCall(MatDestroy(&C));
   PetscCall(MatDestroy(&B));
@@ -223,6 +253,7 @@ int main(int argc, char **args)
     PetscCheck(flg, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Error in MatMatMult_HYPRE_HYPRE");
 
     /* Test MatAXPY_Basic() */
+#if !PetscDefined(HAVE_HYPRE_DEVICE)
     PetscCall(MatAXPY(CD, -1., pAB, DIFFERENT_NONZERO_PATTERN));
 
     PetscCall(MatHasOperation(CD, MATOP_NORM, &flg));
@@ -231,6 +262,7 @@ int main(int argc, char **args)
     }
     PetscCall(MatNorm(CD, NORM_INFINITY, &err));
     PetscCheck((err / norm) <= PETSC_SMALL, PetscObjectComm((PetscObject)CD), PETSC_ERR_PLIB, "Error MatMatMult %g %g", err, norm);
+#endif
 
     PetscCall(MatDestroy(&C));
     PetscCall(MatDestroy(&D));
@@ -238,6 +270,8 @@ int main(int argc, char **args)
     PetscCall(MatDestroy(&CD));
 
     /* When configured with HYPRE, MatMatMatMult is available for the triplet transpose(aij)-aij-aij */
+#if !PetscDefined(HAVE_HYPRE_DEVICE)
+    Mat CAB;
     PetscCall(MatCreateTranspose(A, &C));
     PetscCall(MatMatMatMult(C, A, B, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &CAB));
     PetscCall(MatDestroy(&C));
@@ -252,11 +286,11 @@ int main(int argc, char **args)
     PetscCall(MatDestroy(&C));
     PetscCall(MatDestroy(&D));
     PetscCall(MatDestroy(&CAB));
+#endif
     PetscCall(MatDestroy(&B));
   }
 
   /* Check MatView */
-  PetscCall(MatViewFromOptions(A, NULL, "-view_A"));
   PetscCall(MatConvert(A, MATHYPRE, MAT_INITIAL_MATRIX, &B));
   PetscCall(MatViewFromOptions(B, NULL, "-view_B"));
 
@@ -284,12 +318,17 @@ int main(int argc, char **args)
         PetscCall(MatCopy(B, D, str));
       }
       /* AXPY with AIJ and HYPRE */
+#if !PetscDefined(HAVE_HYPRE_DEVICE)
       PetscCall(MatAXPY(C, -1.0, D, str));
       PetscCall(MatNorm(C, NORM_INFINITY, &err));
+#else
+      err = 0.0;
+#endif
       if (err > PETSC_SMALL) {
         PetscCall(MatViewFromOptions(A, NULL, "-view_duplicate_diff"));
         PetscCall(MatViewFromOptions(B, NULL, "-view_duplicate_diff"));
         PetscCall(MatViewFromOptions(C, NULL, "-view_duplicate_diff"));
+        PetscCall(MatViewFromOptions(D, NULL, "-view_duplicate_diff"));
         SETERRQ(PetscObjectComm((PetscObject)A), PETSC_ERR_PLIB, "Error test 1 MatDuplicate/MatCopy %g (%" PetscInt_FMT ",%" PetscInt_FMT ")", err, j, i);
       }
       /* AXPY with HYPRE and HYPRE */
@@ -300,6 +339,7 @@ int main(int argc, char **args)
         PetscCall(MatViewFromOptions(D, NULL, "-view_duplicate_diff"));
         SETERRQ(PetscObjectComm((PetscObject)A), PETSC_ERR_PLIB, "Error test 2 MatDuplicate/MatCopy %g (%" PetscInt_FMT ",%" PetscInt_FMT ")", err, j, i);
       }
+#if !PetscDefined(HAVE_HYPRE_DEVICE)
       /* Copy from HYPRE to AIJ */
       PetscCall(MatCopy(B, C, str));
       /* Copy from AIJ to HYPRE */
@@ -317,6 +357,7 @@ int main(int argc, char **args)
         PetscCall(MatViewFromOptions(D, NULL, "-view_duplicate_diff"));
         SETERRQ(PetscObjectComm((PetscObject)A), PETSC_ERR_PLIB, "Error test 3 MatDuplicate/MatCopy %g (%" PetscInt_FMT ",%" PetscInt_FMT ")", err, j, i);
       }
+#endif
       PetscCall(MatDestroy(&C));
       PetscCall(MatDestroy(&D));
     }
@@ -356,37 +397,32 @@ int main(int argc, char **args)
       requires: hypre
 
    test:
-      requires: !defined(PETSC_HAVE_HYPRE_DEVICE)
       suffix: 1
       args: -N 11 -M 11
       output_file: output/ex115_1.out
 
    test:
-      requires: !defined(PETSC_HAVE_HYPRE_DEVICE)
       suffix: 2
       nsize: 3
-      args: -N 13 -M 13 -matmatmult_via hypre
+      args: -N 13 -M 13 -matmatmult_via hypre -options_left 0
       output_file: output/ex115_1.out
 
    test:
-      requires: !defined(PETSC_HAVE_HYPRE_DEVICE)
       suffix: 3
       nsize: 4
-      args: -M 13 -N 7 -matmatmult_via hypre
+      args: -M 13 -N 7 -matmatmult_via hypre -options_left 0
       output_file: output/ex115_1.out
 
    test:
-      requires: !defined(PETSC_HAVE_HYPRE_DEVICE)
       suffix: 4
       nsize: 2
       args: -M 12 -N 19
       output_file: output/ex115_1.out
 
    test:
-      requires: !defined(PETSC_HAVE_HYPRE_DEVICE)
       suffix: 5
       nsize: 3
-      args: -M 13 -N 13 -matptap_via hypre -matptap_hypre_outtype hypre
+      args: -M 13 -N 13 -options_left 0 -matptap_via hypre -matptap_hypre_outtype hypre
       output_file: output/ex115_1.out
 
    test:

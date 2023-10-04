@@ -129,12 +129,13 @@ PetscErrorCode TimedSpMV(Mat A, Vec b, PetscReal *time, const char *petscmatform
   PetscInt       i;
   Vec            u;
   PetscLogDouble vstart = 0, vend = 0;
-  PetscBool      isaijcusparse, isaijkokkos;
+  PetscBool      isaijcusparse, isaijkokkos, issellcuda;
 
   PetscFunctionBeginUser;
   PetscCall(PetscStrcmp(petscmatformat, MATAIJCUSPARSE, &isaijcusparse));
   PetscCall(PetscStrcmp(petscmatformat, MATAIJKOKKOS, &isaijkokkos));
-  if (isaijcusparse) PetscCall(VecSetType(b, VECCUDA));
+  PetscCall(PetscStrcmp(petscmatformat, MATSELLCUDA, &issellcuda));
+  if (isaijcusparse || issellcuda) PetscCall(VecSetType(b, VECCUDA));
   if (isaijkokkos) PetscCall(VecSetType(b, VECKOKKOS));
   PetscCall(VecDuplicate(b, &u));
   if (time) *time = 0.0;
@@ -142,7 +143,12 @@ PetscErrorCode TimedSpMV(Mat A, Vec b, PetscReal *time, const char *petscmatform
     if (use_gpu) {
       PetscCall(MatDestroy(&A2));
       PetscCall(MatDuplicate(A, MAT_COPY_VALUES, &A2));
-      PetscCall(MatConvert(A2, petscmatformat, MAT_INPLACE_MATRIX, &A2));
+      if (issellcuda) {
+        PetscCall(MatConvert(A2, MATSELL, MAT_INPLACE_MATRIX, &A2));
+        PetscCall(MatConvert(A2, MATSELLCUDA, MAT_INPLACE_MATRIX, &A2));
+      } else {
+        PetscCall(MatConvert(A2, petscmatformat, MAT_INPLACE_MATRIX, &A2));
+      }
     } else A2 = A;
     /* Timing MatMult */
     if (time) PetscCall(PetscTime(&vstart));
@@ -198,7 +204,7 @@ PetscErrorCode MapToPetscMatType(const char *matformat, PetscBool use_gpu, char 
   } else {
     PetscCall(PetscStrcmp(matformat, "sell", &issell));
     if (issell) {
-      if (use_gpu) PetscCall(PetscStrallocpy(MATSELL, petscmatformat)); // placeholder for SELLCUDA
+      if (use_gpu) PetscCall(PetscStrallocpy(MATSELLCUDA, petscmatformat));
       else PetscCall(PetscStrallocpy(MATSELL, petscmatformat));
     } else {
       PetscCall(PetscStrcmp(matformat, "csrkokkos", &iscsrkokkos));

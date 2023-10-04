@@ -1,6 +1,4 @@
-
-#ifndef _DMIMPL_H
-#define _DMIMPL_H
+#pragma once
 
 #include <petscdm.h>
 #ifdef PETSC_HAVE_LIBCEED
@@ -24,7 +22,7 @@ typedef struct _PetscHashAuxKey {
 
 #define PetscHashAuxKeyEqual(k1, k2) (((k1).label == (k2).label) ? (((k1).value == (k2).value) ? ((k1).part == (k2).part) : 0) : 0)
 
-PETSC_HASH_MAP(HMapAux, PetscHashAuxKey, Vec, PetscHashAuxKeyHash, PetscHashAuxKeyEqual, NULL)
+PETSC_HASH_MAP(HMapAux, PetscHashAuxKey, Vec, PetscHashAuxKeyHash, PetscHashAuxKeyEqual, PETSC_NULLPTR)
 
 struct _n_DMGeneratorFunctionList {
   PetscErrorCode (*generate)(DM, PetscBool, DM *);
@@ -318,9 +316,10 @@ struct _p_DM {
 
   PetscObject dmksp, dmsnes, dmts;
 #ifdef PETSC_HAVE_LIBCEED
-  Ceed                ceed;          /* LibCEED context */
-  CeedElemRestriction ceedERestrict; /* Map from the local vector (Lvector) to the cells (Evector) */
+  Ceed                ceed;          // LibCEED context
+  CeedElemRestriction ceedERestrict; // Map from the local vector (Lvector) to the cells (Evector)
 #endif
+  DMCeed dmceed; // CEED operator and data for this problem
 };
 
 PETSC_EXTERN PetscLogEvent DM_Convert;
@@ -336,6 +335,7 @@ PETSC_EXTERN PetscLogEvent DM_CreateMatrix;
 PETSC_EXTERN PetscLogEvent DM_CreateMassMatrix;
 PETSC_EXTERN PetscLogEvent DM_Load;
 PETSC_EXTERN PetscLogEvent DM_AdaptInterpolator;
+PETSC_EXTERN PetscLogEvent DM_ProjectFunction;
 
 PETSC_EXTERN PetscErrorCode DMCreateGlobalVector_Section_Private(DM, Vec *);
 PETSC_EXTERN PetscErrorCode DMCreateLocalVector_Section_Private(DM, Vec *);
@@ -541,5 +541,3 @@ PETSC_EXTERN PetscErrorCode DMUniversalLabelGetLabel(DMUniversalLabel, DMLabel *
 PETSC_EXTERN PetscErrorCode DMUniversalLabelCreateLabels(DMUniversalLabel, PetscBool, DM);
 PETSC_EXTERN PetscErrorCode DMUniversalLabelSetLabelValue(DMUniversalLabel, DM, PetscBool, PetscInt, PetscInt);
 PETSC_INTERN PetscInt       PetscGCD(PetscInt a, PetscInt b);
-
-#endif

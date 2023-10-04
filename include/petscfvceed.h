@@ -1,5 +1,4 @@
-#ifndef PETSCFVCEED_H
-#define PETSCFVCEED_H
+#pragma once
 
 #include <petscfv.h>
 
@@ -8,6 +7,4 @@
 
 PETSC_EXTERN PetscErrorCode PetscFVGetCeedBasis(PetscFV, CeedBasis *);
 PETSC_EXTERN PetscErrorCode PetscFVSetCeed(PetscFV, Ceed);
-#endif
-
 #endif

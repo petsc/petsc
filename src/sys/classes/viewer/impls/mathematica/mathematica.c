@@ -50,7 +50,7 @@ PetscErrorCode PetscViewerMathematicaInitializePackage(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PetscViewerInitializeMathematicaWorld_Private()
+static PetscErrorCode PetscViewerInitializeMathematicaWorld_Private()
 {
   PetscFunctionBegin;
   if (PETSC_VIEWER_MATHEMATICA_WORLD_PRIVATE) PetscFunctionReturn(PETSC_SUCCESS);
@@ -70,14 +70,14 @@ static PetscErrorCode PetscViewerDestroy_Mathematica(PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PetscViewerDestroyMathematica_Private(void)
+static PetscErrorCode PetscViewerDestroyMathematica_Private(void)
 {
   PetscFunctionBegin;
   if (PETSC_VIEWER_MATHEMATICA_WORLD_PRIVATE) PetscCall(PetscViewerDestroy(PETSC_VIEWER_MATHEMATICA_WORLD_PRIVATE));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PetscViewerMathematicaSetupConnection_Private(PetscViewer v)
+static PetscErrorCode PetscViewerMathematicaSetupConnection_Private(PetscViewer v)
 {
   PetscViewer_Mathematica *vmath = (PetscViewer_Mathematica *)v->data;
 #if defined(MATHEMATICA_3_0)
@@ -264,7 +264,7 @@ PetscErrorCode PetscViewerMathematicaSetLinkName(PetscViewer v, const char *name
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v, PETSC_VIEWER_CLASSID, 1);
-  PetscValidCharPointer(name, 2);
+  PetscAssertPointer(name, 2);
   PetscCall(PetscStrallocpy(name, &vmath->linkname));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -285,7 +285,7 @@ PetscErrorCode PetscViewerMathematicaSetLinkHost(PetscViewer v, const char *host
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v, PETSC_VIEWER_CLASSID, 1);
-  PetscValidCharPointer(host, 2);
+  PetscAssertPointer(host, 2);
   PetscCall(PetscStrallocpy(host, &vmath->linkhost));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -312,15 +312,15 @@ PetscErrorCode PetscViewerMathematicaSetLinkMode(PetscViewer v, LinkMode mode)
 - mode    - [optional] The connection mode, or NULL
 
   Output Parameter:
-. viewer  - The Mathematica viewer
+. v - The Mathematica viewer
 
-   Options Database Keys:
-+    -viewer_math_linkhost <machine> - The host machine for the kernel
-.    -viewer_math_linkname <name>    - The full link name for the connection
-.    -viewer_math_linkport <port>    - The port for the connection
-.    -viewer_math_mode <mode>        - The mode, e.g. Launch, Connect
-.    -viewer_math_type <type>        - The plot type, e.g. Triangulation, Vector
--    -viewer_math_graphics <output>  - The output type, e.g. Motif, PS, PSFile
+  Options Database Keys:
++ -viewer_math_linkhost <machine> - The host machine for the kernel
+. -viewer_math_linkname <name>    - The full link name for the connection
+. -viewer_math_linkport <port>    - The port for the connection
+. -viewer_math_mode <mode>        - The mode, e.g. Launch, Connect
+. -viewer_math_type <type>        - The plot type, e.g. Triangulation, Vector
+- -viewer_math_graphics <output>  - The output type, e.g. Motif, PS, PSFile
 
   Level: intermediate
 
@@ -354,7 +354,7 @@ PetscErrorCode PetscViewerMathematicaOpen(MPI_Comm comm, int port, const char ma
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*
   PetscViewerMathematicaGetLink - Returns the link to Mathematica from a `PETSCVIEWERMATHEMATICA`
 
   Input Parameters:
@@ -364,8 +364,8 @@ PetscErrorCode PetscViewerMathematicaOpen(MPI_Comm comm, int port, const char ma
   Level: intermediate
 
 .seealso: `PETSCVIEWERMATHEMATICA`, `PetscViewerMathematicaOpen()`
-@*/
-PetscErrorCode PetscViewerMathematicaGetLink(PetscViewer viewer, MLINK *link)
+*/
+static PetscErrorCode PetscViewerMathematicaGetLink(PetscViewer viewer, MLINK *link)
 {
   PetscViewer_Mathematica *vmath = (PetscViewer_Mathematica *)viewer->data;
 
@@ -408,7 +408,7 @@ PetscErrorCode PetscViewerMathematicaSkipPackets(PetscViewer viewer, int type)
 . viewer - The Mathematica viewer
 
   Output Parameter:
-. name   - The name for new objects created in Mathematica
+. name - The name for new objects created in Mathematica
 
   Level: intermediate
 
@@ -420,7 +420,7 @@ PetscErrorCode PetscViewerMathematicaGetName(PetscViewer viewer, const char **na
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 1);
-  PetscValidPointer(name, 2);
+  PetscAssertPointer(name, 2);
   *name = vmath->objName;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -434,7 +434,7 @@ PetscErrorCode PetscViewerMathematicaGetName(PetscViewer viewer, const char **na
 
   Level: intermediate
 
-.seealso: `PETSCVIEWERMATHEMATICA`, `PetscViewerMathematicaSetName()`, `PetscViewerMathematicaClearName()`
+.seealso: `PETSCVIEWERMATHEMATICA`, `PetscViewerMathematicaClearName()`
 @*/
 PetscErrorCode PetscViewerMathematicaSetName(PetscViewer viewer, const char name[])
 {
@@ -442,7 +442,7 @@ PetscErrorCode PetscViewerMathematicaSetName(PetscViewer viewer, const char name
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 1);
-  PetscValidPointer(name, 2);
+  PetscAssertPointer(name, 2);
   vmath->objName = name;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -474,7 +474,7 @@ PetscErrorCode PetscViewerMathematicaClearName(PetscViewer viewer)
 . viewer - The Mathematica viewer
 
   Output Parameter:
-. v      - The vector
+. v - The vector
 
   Level: intermediate
 

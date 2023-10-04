@@ -1,19 +1,24 @@
-#ifndef PETSC_CPP_UNORDERED_MAP_HPP
-#define PETSC_CPP_UNORDERED_MAP_HPP
+#pragma once
 
-#if defined(__cplusplus)
-  #include <petsc/private/cpp/type_traits.hpp>
-  #include <petsc/private/cpp/utility.hpp>    // std ::pair
-  #include <petsc/private/cpp/functional.hpp> // std::hash, std::equal_to
+#include <petsc/private/cpp/type_traits.hpp>
+#include <petsc/private/cpp/utility.hpp>    // std ::pair
+#include <petsc/private/cpp/functional.hpp> // std::hash, std::equal_to
 
-  #include <unordered_map>
+#if PETSC_CPP_VERSION >= 17
+  #include <optional>
+  #define PETSC_OPTIONAL_GET_KEY(...)  *(__VA_ARGS__)
+  #define PETSC_KHASH_MAP_USE_OPTIONAL 1
+#else
+  #define PETSC_OPTIONAL_GET_KEY(...)  __VA_ARGS__
+  #define PETSC_KHASH_MAP_USE_OPTIONAL 0
+#endif
 
-  #include <cstdint>   // std::uint32_t
-  #include <climits>   // CHAR_BIT
-  #include <iterator>  // std::inserter
-  #include <limits>    // std::numeric_limits
-  #include <algorithm> // std::fill
-  #include <vector>
+#include <cstdint>   // std::uint32_t
+#include <climits>   // CHAR_BIT
+#include <iterator>  // std::inserter
+#include <limits>    // std::numeric_limits
+#include <algorithm> // std::fill
+#include <vector>
 
 namespace Petsc
 {
@@ -117,6 +122,8 @@ public:
 
   hasher    hash_function() const noexcept;
   key_equal key_eq() const noexcept;
+
+  PetscErrorCode shrink_to_fit() noexcept;
 
   void swap(KHashTable &) noexcept;
 
@@ -244,11 +251,17 @@ private:
   PetscErrorCode khash_maybe_rehash_() noexcept;
   PetscErrorCode khash_erase_(khash_int) noexcept;
 
-  std::vector<value_type> values_{};
-  std::vector<flags_type> flags_{};
-  size_type               count_       = 0;
-  size_type               n_occupied_  = 0;
-  size_type               upper_bound_ = 0;
+#if PETSC_KHASH_MAP_USE_OPTIONAL
+  using internal_value_type = std::optional<value_type>;
+#else
+  using internal_value_type = value_type;
+#endif
+
+  std::vector<internal_value_type> values_{};
+  std::vector<flags_type>          flags_{};
+  size_type                        count_       = 0;
+  size_type                        n_occupied_  = 0;
+  size_type                        upper_bound_ = 0;
 };
 
 // ==========================================================================================
@@ -279,7 +292,7 @@ public:
   using pointer           = value_type *;
 
   table_iterator() noexcept = default;
-  table_iterator(table_type *map, khash_int it) noexcept : map_(map), it_(it) { }
+  table_iterator(table_type *map, khash_int it) noexcept : map_{std::move(map)}, it_{std::move(it)} { }
 
   table_iterator(const table_iterator &) noexcept            = default;
   table_iterator &operator=(const table_iterator &) noexcept = default;
@@ -288,7 +301,7 @@ public:
   table_iterator &operator=(table_iterator &&) noexcept = default;
 
   template <bool other_is_const_it, util::enable_if_t<is_const_it && !other_is_const_it> * = nullptr>
-  table_iterator(const table_iterator<other_is_const_it> &other) noexcept : table_iterator(other.map_, other.it_)
+  table_iterator(const table_iterator<other_is_const_it> &other) noexcept : table_iterator{other.map_, other.it_}
   {
   }
 
@@ -316,14 +329,14 @@ public:
     PetscCallAbort(PETSC_COMM_SELF, check_iterator_inbounds_(1, 1));
     do {
       --it_;
-    } while (it_ > map_begin && !map_->occupied(it_));
+    } while ((it_ > map_begin) && !map_->occupied(it_));
     PetscFunctionReturn(*this);
   }
 
   // postfix
   table_iterator operator--(int) noexcept
   {
-    table_iterator old(*this);
+    table_iterator old{*this};
 
     PetscFunctionBegin;
     --(*this);
@@ -347,7 +360,7 @@ public:
   // postfix
   table_iterator operator++(int) noexcept
   {
-    table_iterator old(*this);
+    table_iterator old{*this};
 
     PetscFunctionBegin;
     ++(*this);
@@ -358,14 +371,14 @@ public:
   {
     PetscFunctionBegin;
     PetscCallAbort(PETSC_COMM_SELF, check_iterator_inbounds_());
-    PetscFunctionReturn(map_->values_[it_]);
+    PetscFunctionReturn(PETSC_OPTIONAL_GET_KEY(map_->values_[it_]));
   }
 
   PETSC_NODISCARD pointer operator->() const noexcept
   {
     PetscFunctionBegin;
     PetscCallAbort(PETSC_COMM_SELF, check_iterator_inbounds_());
-    PetscFunctionReturn(std::addressof(map_->values_[it_]));
+    PetscFunctionReturn(std::addressof(PETSC_OPTIONAL_GET_KEY(map_->values_[it_])));
   }
 
   template <bool rc>
@@ -412,7 +425,7 @@ template <typename Iter>
 inline KHashTable<V, H, KE>::KHashTable(Iter first, Iter last, std::input_iterator_tag) noexcept
 {
   PetscFunctionBegin;
-  std::copy(std::move(first), std::move(last), std::inserter(*this, begin()));
+  PetscCallCXXAbort(PETSC_COMM_SELF, std::copy(std::move(first), std::move(last), std::inserter(*this, begin())));
   PetscFunctionReturnVoid();
 }
 
@@ -425,7 +438,7 @@ inline KHashTable<V, H, KE>::KHashTable(Iter first, Iter last, std::random_acces
 {
   PetscFunctionBegin;
   PetscCallAbort(PETSC_COMM_SELF, reserve(static_cast<size_type>(std::distance(first, last))));
-  std::copy(std::move(first), std::move(last), std::inserter(*this, begin()));
+  PetscCallCXXAbort(PETSC_COMM_SELF, std::copy(std::move(first), std::move(last), std::inserter(*this, begin())));
   PetscFunctionReturnVoid();
 }
 
@@ -613,9 +626,10 @@ inline std::pair<typename KHashTable<V, H, KE>::iterator, bool> KHashTable<V, H,
       khash_int  step = 0;
 
       it = nb;
-      while (!khash_is_empty_(i) && (khash_is_del_(i) || !key_eq()(values_[i], key))) {
+      while (!khash_is_empty_(i) && (khash_is_del_(i) || !key_eq()(PETSC_OPTIONAL_GET_KEY(values_[i]), key))) {
         if (khash_is_del_(i)) site = i;
-        i = (i + (++step)) & mask;
+        ++step;
+        i = (i + step) & mask;
         if (i == last) {
           it = site;
           break;
@@ -624,7 +638,7 @@ inline std::pair<typename KHashTable<V, H, KE>::iterator, bool> KHashTable<V, H,
       if (it == nb) {
         // didn't find a completely empty place to put it, see if we can reuse an existing
         // bucket
-        if (khash_is_empty_(i) && site != nb) {
+        if (khash_is_empty_(i) && (site != nb)) {
           // reuse a deleted element (I think)
           it = site;
         } else {
@@ -673,7 +687,7 @@ inline PetscErrorCode KHashTable<V, H, KE>::khash_erase_(khash_int it) noexcept
   PetscAssert(occupied(it), PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Attempting to erase iterator (index %d) which exists in the map but is not occupied", it);
   --count_;
   PetscCall(khash_set_deleted_<true>(it));
-  PetscCallCXX(values_[it] = value_type{});
+  PetscCallCXX(values_[it] = internal_value_type{});
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -708,8 +722,9 @@ inline PetscErrorCode KHashTable<V, H, KE>::khash_find_(T &&key, khash_int *it) 
     const auto last = i;
     khash_int  step = 0;
 
-    while (!khash_is_empty_(i) && (khash_is_del_(i) || !key_equal()(values_[i], key))) {
-      i = (i + (++step)) & mask;
+    while (!khash_is_empty_(i) && (khash_is_del_(i) || !key_equal()(PETSC_OPTIONAL_GET_KEY(values_[i]), key))) {
+      ++step;
+      i = (i + step) & mask;
       if (i == last) {
         *it = ret;
         PetscFunctionReturn(PETSC_SUCCESS);
@@ -864,40 +879,40 @@ static inline PETSC_CONSTEXPR_14 T round_up_to_next_pow2(T v) noexcept
   return v;
 }
 
-  // compilers sadly don't yet recognize that the above is just searching for the next nonzero
-  // bit (https://godbolt.org/z/3q1qxqK4a) and won't emit the versions below, which usually
-  // boil down to a single tailor-made instruction.
-  //
-  // __builtin_clz():
-  // Returns the number of leading 0-bits in x, starting at the most significant bit
-  // position. If x is 0, the result is undefined.
-  //
-  // see https://gcc.gnu.org/onlinedocs/gcc/Other-Builtins.html
+// compilers sadly don't yet recognize that the above is just searching for the next nonzero
+// bit (https://godbolt.org/z/3q1qxqK4a) and won't emit the versions below, which usually
+// boil down to a single tailor-made instruction.
+//
+// __builtin_clz():
+// Returns the number of leading 0-bits in x, starting at the most significant bit
+// position. If x is 0, the result is undefined.
+//
+// see https://gcc.gnu.org/onlinedocs/gcc/Other-Builtins.html
 
-  #if PetscHasBuiltin(__builtin_clz)
+#if PetscHasBuiltin(__builtin_clz)
 template <>
 inline constexpr unsigned int round_up_to_next_pow2(unsigned int v) noexcept
 {
   return v <= 1 ? 1 : 1 << ((sizeof(v) * CHAR_BIT) - __builtin_clz(v - 1));
 }
-  #endif
+#endif
 
-  #if PetscHasBuiltin(__builtin_clzl)
+#if PetscHasBuiltin(__builtin_clzl)
 template <>
 inline constexpr unsigned long round_up_to_next_pow2(unsigned long v) noexcept
 {
   return v <= 1 ? 1 : 1 << ((sizeof(v) * CHAR_BIT) - __builtin_clzl(v - 1));
 }
-  #endif
+#endif
 
-  // both MSVC and Intel compilers lie about having __builtin_clzll so just disable this
-  #if PetscHasBuiltin(__builtin_clzll) && !PetscDefined(HAVE_WINDOWS_COMPILERS)
+// both MSVC and Intel compilers lie about having __builtin_clzll so just disable this
+#if PetscHasBuiltin(__builtin_clzll) && !PetscDefined(HAVE_WINDOWS_COMPILERS)
 template <>
 inline constexpr unsigned long long round_up_to_next_pow2(unsigned long long v) noexcept
 {
   return v <= 1 ? 1 : 1 << ((sizeof(v) * CHAR_BIT) - __builtin_clzll(v - 1));
 }
-  #endif
+#endif
 
 template <typename T>
 static inline constexpr unsigned integer_log2(T x) noexcept
@@ -916,6 +931,14 @@ inline PetscErrorCode KHashTable<V, H, KE>::resize(size_type req_size) noexcept
   const auto          new_size      = (new_n_buckets >> 1) + (new_n_buckets >> 2);
 
   PetscFunctionBegin;
+  if (req_size == 0) {
+    // resize(0) is nominally equivalent to clear(), but clear() does not actually reduce
+    // capacity (only resets flags_ to default_bit_pattern()). So we manually kill the capacity
+    // first.
+    PetscCallCXX(flags_.clear());
+    PetscCall(clear());
+    PetscFunctionReturn(PETSC_SUCCESS);
+  }
   // hash table count to be changed (shrink or expand); rehash
   if (size() < new_size) {
     const auto old_n_buckets = bucket_count();
@@ -944,11 +967,14 @@ inline PetscErrorCode KHashTable<V, H, KE>::resize(size_type req_size) noexcept
         // key is updated every loop from the swap so need to recompute the hash function each
         // time... could possibly consider stashing the hash value in the key-value pair
         auto      &key  = values_[i];
-        const auto hash = hash_function()(key);
+        const auto hash = hash_function()(PETSC_OPTIONAL_GET_KEY(key));
         auto       j    = hash & new_mask;
         khash_int  step = 0;
 
-        while (!khash_is_empty_(j, new_flags)) j = (j + (++step)) & new_mask;
+        while (!khash_is_empty_(j, new_flags)) {
+          ++step;
+          j = (j + step) & new_mask;
+        }
         PetscCall(khash_set_empty_<false>(j, new_flags));
         if (j < old_n_buckets && occupied(j)) {
           using std::swap;
@@ -1030,6 +1056,10 @@ template <typename V, typename H, typename KE>
 inline typename KHashTable<V, H, KE>::iterator KHashTable<V, H, KE>::erase(const_iterator begin_pos, const_iterator end_pos) noexcept
 {
   PetscFunctionBegin;
+  if (begin_pos == cbegin() && end_pos == cend()) {
+    PetscCallAbort(PETSC_COMM_SELF, clear());
+    PetscFunctionReturn(end());
+  }
   for (; begin_pos != end_pos; ++begin_pos) PetscCallAbort(PETSC_COMM_SELF, khash_erase_(begin_pos.it_));
   PetscFunctionReturn(make_iterator_(begin_pos.it_));
 }
@@ -1075,6 +1105,14 @@ template <typename V, typename H, typename KE>
 inline typename KHashTable<V, H, KE>::key_equal KHashTable<V, H, KE>::key_eq() const noexcept
 {
   return this->second();
+}
+
+template <typename V, typename H, typename KE>
+inline PetscErrorCode KHashTable<V, H, KE>::shrink_to_fit() noexcept
+{
+  PetscFunctionBegin;
+  PetscCall(resize(size()));
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 template <typename V, typename H, typename KE>
@@ -1159,11 +1197,11 @@ struct indirect_equal : KeyEqual {
 //                                             | erased                | erased
 // ==========================================================================================
 template <typename K, typename T, typename H = std::hash<K>,
-  #if PETSC_CPP_VERSION >= 14
+#if PETSC_CPP_VERSION >= 14
           typename KE = std::equal_to<>
-  #else
+#else
           typename KE = std::equal_to<K>
-  #endif
+#endif
           >
 class UnorderedMap;
 
@@ -1289,7 +1327,7 @@ inline typename UnorderedMap<K, T, H, KE>::size_type UnorderedMap<K, T, H, KE>::
   {
     auto it = this->find(key);
 
-    if (it == this->end()) PetscFunctionReturn(PETSC_SUCCESS);
+    if (it == this->end()) PetscFunctionReturn(0);
     PetscCallCXX(this->erase(it));
   }
   PetscFunctionReturn(1);
@@ -1346,6 +1384,4 @@ PETSC_NODISCARD bool operator!=(const UnorderedMap<K, T, H, KE> &lhs, const Unor
 
 } // namespace Petsc
 
-#endif // __cplusplus
-
-#endif // PETSC_CPP_UNORDERED_MAP_HPP
+#undef PETSC_OPTIONAL_GET_KEY

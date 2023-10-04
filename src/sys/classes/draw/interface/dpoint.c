@@ -2,17 +2,17 @@
 #include <petsc/private/drawimpl.h> /*I "petscdraw.h" I*/
 
 /*@
-   PetscDrawPoint - draws a point onto a drawable.
+  PetscDrawPoint - draws a point onto a drawable.
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  draw - the drawing context
-.  xl - horizatonal coordinate of the point
-.  yl - vertical coordinate of the point
--  cl - the color of the point
+  Input Parameters:
++ draw - the drawing context
+. xl   - horizatonal coordinate of the point
+. yl   - vertical coordinate of the point
+- cl   - the color of the point
 
-   Level: beginner
+  Level: beginner
 
 .seealso: `PetscDraw`, `PetscDrawPointPixel()`, `PetscDrawPointSetSize()`, `PetscDrawLine()`, `PetscDrawRectangle()`, `PetscDrawTriangle()`, `PetscDrawEllipse()`,
           `PetscDrawMarker()`, `PetscDrawString()`, `PetscDrawArrow()`
@@ -26,17 +26,17 @@ PetscErrorCode PetscDrawPoint(PetscDraw draw, PetscReal xl, PetscReal yl, int cl
 }
 
 /*@
-   PetscDrawPointPixel - draws a point onto a drawable, in pixel coordinates
+  PetscDrawPointPixel - draws a point onto a drawable, in pixel coordinates
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  draw - the drawing context
-.  x - horizontal pixel coordinates of the point
-.  y - vertical pixel coordinates of the point
--  c - the color of the point
+  Input Parameters:
++ draw - the drawing context
+. x    - horizontal pixel coordinates of the point
+. y    - vertical pixel coordinates of the point
+- c    - the color of the point
 
-   Level: beginner
+  Level: beginner
 
 .seealso: `PetscDraw`, `PetscDrawPoint()`, `PetscDrawPointSetSize()`
 @*/
@@ -49,20 +49,20 @@ PetscErrorCode PetscDrawPointPixel(PetscDraw draw, int x, int y, int c)
 }
 
 /*@
-   PetscDrawPointSetSize - Sets the point size for future draws.  The size is
-   relative to the user coordinates of the window; 0.0 denotes the natural
-   width, 1.0 denotes the entire viewport.
+  PetscDrawPointSetSize - Sets the point size for future draws.  The size is
+  relative to the user coordinates of the window; 0.0 denotes the natural
+  width, 1.0 denotes the entire viewport.
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  draw - the drawing context
--  width - the width in user coordinates
+  Input Parameters:
++ draw  - the drawing context
+- width - the width in user coordinates
 
-   Level: advanced
+  Level: advanced
 
-   Note:
-   Even a size of zero insures that a single pixel is colored.
+  Note:
+  Even a size of zero insures that a single pixel is colored.
 
 .seealso: `PetscDraw`, `PetscDrawPoint()`, `PetscDrawMarker()`
 @*/

@@ -103,7 +103,7 @@ static PetscErrorCode PetscDualSpaceSimpleSetFunctional_Simple(PetscDualSpace sp
 
   Level: intermediate
 
-.seealso: `PetscDualSpace`, `PetscDualSpaceSimpleSetFunctional()`
+.seealso: `PETSCDUALSPACESIMPLE`, `PetscDualSpace`, `PetscDualSpaceSimpleSetFunctional()`
 @*/
 PetscErrorCode PetscDualSpaceSimpleSetDimension(PetscDualSpace sp, PetscInt dim)
 {
@@ -116,21 +116,21 @@ PetscErrorCode PetscDualSpaceSimpleSetDimension(PetscDualSpace sp, PetscInt dim)
 }
 
 /*@
-  PetscDualSpaceSimpleSetFunctional - Set the given basis element for this dual space
+  PetscDualSpaceSimpleSetFunctional - Set the given basis functional for this dual space
 
   Not Collective
 
   Input Parameters:
-+ sp  - the `PetscDualSpace`
-. f - the basis index
-- q - the basis functional
++ sp   - the `PetscDualSpace`
+. func - the basis index
+- q    - the basis functional
 
   Level: intermediate
 
   Note:
   The quadrature will be reweighted so that it has unit volume.
 
-.seealso: `PetscDualSpace`, `PetscDualSpaceSimpleSetDimension()`
+.seealso: `PETSCDUALSPACESIMPLE`, `PetscDualSpace`, `PetscDualSpaceSimpleSetDimension()`
 @*/
 PetscErrorCode PetscDualSpaceSimpleSetFunctional(PetscDualSpace sp, PetscInt func, PetscQuadrature q)
 {
@@ -160,11 +160,14 @@ static PetscErrorCode PetscDualSpaceInitialize_Simple(PetscDualSpace sp)
 }
 
 /*MC
-  PETSCDUALSPACESIMPLE = "simple" - A `PetscDualSpaceType` that encapsulates a dual space of arbitrary functionals
+  PETSCDUALSPACESIMPLE = "simple" - A `PetscDualSpaceType` that encapsulates a dual space of functionals provided with `PetscDualSpaceSimpleSetFunctional()`
 
   Level: intermediate
 
-.seealso: `PetscDualSpace`, `PetscDualSpaceType`, `PetscDualSpaceCreate()`, `PetscDualSpaceSetType()`
+  Developer Note:
+  It is not clear this has a good name
+
+.seealso: `PetscDualSpace`, `PetscDualSpaceSimpleSetFunctional()`, `PetscDualSpaceType`, `PetscDualSpaceCreate()`, `PetscDualSpaceSetType()`
 M*/
 
 PETSC_EXTERN PetscErrorCode PetscDualSpaceCreate_Simple(PetscDualSpace sp)

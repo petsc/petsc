@@ -387,12 +387,12 @@ static PetscErrorCode TSView_EIMEX(TS ts, PetscViewer viewer)
   Logically Collective
 
   Input Parameters:
-+  ts - timestepping context
--  nrows - maximum number of rows
++ ts    - timestepping context
+- nrows - maximum number of rows
 
   Level: intermediate
 
-.seealso: [](chapter_ts), `TSEIMEXSetRowCol()`, `TSEIMEXSetOrdAdapt()`, `TSEIMEX`
+.seealso: [](ch_ts), `TSEIMEXSetRowCol()`, `TSEIMEXSetOrdAdapt()`, `TSEIMEX`
 @*/
 PetscErrorCode TSEIMEXSetMaxRows(TS ts, PetscInt nrows)
 {
@@ -408,13 +408,13 @@ PetscErrorCode TSEIMEXSetMaxRows(TS ts, PetscInt nrows)
   Logically Collective
 
   Input Parameters:
-+  ts - timestepping context
-.  row - the row
--  col - the column
++ ts  - timestepping context
+. row - the row
+- col - the column
 
   Level: intermediate
 
-.seealso: [](chapter_ts), `TSEIMEXSetMaxRows()`, `TSEIMEXSetOrdAdapt()`, `TSEIMEX`
+.seealso: [](ch_ts), `TSEIMEXSetMaxRows()`, `TSEIMEXSetOrdAdapt()`, `TSEIMEX`
 @*/
 PetscErrorCode TSEIMEXSetRowCol(TS ts, PetscInt row, PetscInt col)
 {
@@ -430,12 +430,12 @@ PetscErrorCode TSEIMEXSetRowCol(TS ts, PetscInt row, PetscInt col)
   Logically Collective
 
   Input Parameters:
-+  ts - timestepping context
--  tindex - index in the T table
++ ts  - timestepping context
+- flg - index in the T table
 
   Level: intermediate
 
-.seealso: [](chapter_ts), `TSEIMEXSetRowCol()`, `TSEIMEXSetOrdAdapt()`, `TSEIMEX`
+.seealso: [](ch_ts), `TSEIMEXSetRowCol()`, `TSEIMEX`
 @*/
 PetscErrorCode TSEIMEXSetOrdAdapt(TS ts, PetscBool flg)
 {
@@ -515,7 +515,7 @@ static PetscErrorCode TSEIMEXSetOrdAdapt_EIMEX(TS ts, PetscBool flg)
  Reference:
 . [1] -  E. Constantinescu and A. Sandu, Extrapolated implicit-explicit time stepping, SIAM Journal on Scientific Computing, 31 (2010), pp. 4452-4477.
 
-.seealso: [](chapter_ts), `TSCreate()`, `TS`, `TSSetType()`, `TSEIMEXSetMaxRows()`, `TSEIMEXSetRowCol()`, `TSEIMEXSetOrdAdapt()`, `TSType`
+.seealso: [](ch_ts), `TSCreate()`, `TS`, `TSSetType()`, `TSEIMEXSetMaxRows()`, `TSEIMEXSetRowCol()`, `TSEIMEXSetOrdAdapt()`, `TSType`
  M*/
 PETSC_EXTERN PetscErrorCode TSCreate_EIMEX(TS ts)
 {

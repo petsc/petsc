@@ -1,10 +1,8 @@
-#ifndef PETSCSYCLDEVICE_HPP
-#define PETSCSYCLDEVICE_HPP
+#pragma once
 
-#if defined(__cplusplus)
-  #include "../impldevicebase.hpp" /* I "petscdevice.h" */
+#include "../impldevicebase.hpp" /* I "petscdevice.h" */
 
-  #include <array>
+#include <array>
 
 namespace Petsc
 {
@@ -15,8 +13,8 @@ namespace device
 namespace sycl
 {
 
-  #define PETSC_SYCL_DEVICE_HOST -1 // Note -1 is also used by PETSC_DECIDE, so user needs to pass -2 to explicitly select the host
-  #define PETSC_SYCL_DEVICE_NONE -3
+#define PETSC_SYCL_DEVICE_HOST -1 // Note -1 is also used by PETSC_DECIDE, so user needs to pass -2 to explicitly select the host
+#define PETSC_SYCL_DEVICE_NONE -3
 
 class Device : public ::Petsc::device::impl::DeviceBase<Device> {
 public:
@@ -54,7 +52,3 @@ private:
 } // namespace device
 
 } // namespace Petsc
-
-#endif // __cplusplus
-
-#endif /* PETSCSYCLDEVICE_HPP */

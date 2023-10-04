@@ -1,7 +1,6 @@
 
 #include <../src/ksp/pc/impls/is/nn/nn.h>
 
-/* -------------------------------------------------------------------------- */
 /*
    PCSetUp_NN - Prepares for the use of the NN preconditioner
                     by setting data structures and options.
@@ -27,7 +26,6 @@ static PetscErrorCode PCSetUp_NN(PC pc)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* -------------------------------------------------------------------------- */
 /*
    PCApply_NN - Applies the NN preconditioner to a vector.
 
@@ -93,7 +91,6 @@ static PetscErrorCode PCApply_NN(PC pc, Vec r, Vec z)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* -------------------------------------------------------------------------- */
 /*
    PCDestroy_NN - Destroys the private context for the NN preconditioner
    that was created with PCCreate_NN().
@@ -108,7 +105,7 @@ static PetscErrorCode PCDestroy_NN(PC pc)
   PC_NN *pcnn = (PC_NN *)pc->data;
 
   PetscFunctionBegin;
-  PetscCall(PCISDestroy(pc));
+  PetscCall(PCISReset(pc));
 
   PetscCall(MatDestroy(&pcnn->coarse_mat));
   PetscCall(VecDestroy(&pcnn->coarse_x));
@@ -148,11 +145,11 @@ static PetscErrorCode PCDestroy_NN(PC pc)
    Level: intermediate
 
    Notes:
-    The matrix used with this preconditioner must be of type `MATIS`
+   The matrix used with this preconditioner must be of type `MATIS`
 
-          Unlike more 'conventional' Neumann-Neumann preconditioners this iterates over ALL the
-          degrees of freedom, NOT just those on the interface (this allows the use of approximate solvers
-          on the subdomains; though in our experience using approximate solvers is slower.).
+   Unlike more 'conventional' Neumann-Neumann preconditioners this iterates over ALL the
+   degrees of freedom, NOT just those on the interface (this allows the use of approximate solvers
+   on the subdomains; though in our experience using approximate solvers is slower.).
 
    Contributed by Paulo Goldfeld
 
@@ -171,7 +168,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_NN(PC pc)
   PetscCall(PetscNew(&pcnn));
   pc->data = (void *)pcnn;
 
-  PetscCall(PCISCreate(pc));
+  PetscCall(PCISInitialize(pc));
   pcnn->coarse_mat = NULL;
   pcnn->coarse_x   = NULL;
   pcnn->coarse_b   = NULL;
@@ -238,7 +235,7 @@ PetscErrorCode PCNNCreateCoarseMatrix(PC pc)
 
   /* Set the values of DZ_OUT, in order to send this info to the neighbours */
   /* First, set the auxiliary array pcis->work_N. */
-  PetscCall(PCISScatterArrayNToVecB(pcis->work_N, pcis->D, INSERT_VALUES, SCATTER_REVERSE, pc));
+  PetscCall(PCISScatterArrayNToVecB(pc, pcis->work_N, pcis->D, INSERT_VALUES, SCATTER_REVERSE));
   for (i = 1; i < n_neigh; i++) {
     for (j = 0; j < n_shared[i]; j++) DZ_OUT[i][j] = pcis->work_N[shared[i][j]];
   }
@@ -341,6 +338,7 @@ PetscErrorCode PCNNCreateCoarseMatrix(PC pc)
     KSP inner_ksp;
 
     PetscCall(KSPCreate(PetscObjectComm((PetscObject)pc), &pcnn->ksp_coarse));
+    PetscCall(KSPSetNestLevel(pcnn->ksp_coarse, pc->kspnestlevel));
     PetscCall(PetscObjectIncrementTabLevel((PetscObject)pcnn->ksp_coarse, (PetscObject)pc, 2));
     PetscCall(KSPSetOperators(pcnn->ksp_coarse, pcnn->coarse_mat, pcnn->coarse_mat));
     PetscCall(KSPGetPC(pcnn->ksp_coarse, &pc_ctx));
@@ -404,9 +402,9 @@ PetscErrorCode PCNNApplySchurToChunk(PC pc, PetscInt n, PetscInt *idx, PetscScal
   PetscFunctionBegin;
   PetscCall(PetscArrayzero(array_N, pcis->n));
   for (i = 0; i < n; i++) array_N[idx[i]] = chunk[i];
-  PetscCall(PCISScatterArrayNToVecB(array_N, vec2_B, INSERT_VALUES, SCATTER_FORWARD, pc));
+  PetscCall(PCISScatterArrayNToVecB(pc, array_N, vec2_B, INSERT_VALUES, SCATTER_FORWARD));
   PetscCall(PCISApplySchur(pc, vec2_B, vec1_B, (Vec)0, vec1_D, vec2_D));
-  PetscCall(PCISScatterArrayNToVecB(array_N, vec1_B, INSERT_VALUES, SCATTER_REVERSE, pc));
+  PetscCall(PCISScatterArrayNToVecB(pc, array_N, vec1_B, INSERT_VALUES, SCATTER_REVERSE));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -527,7 +525,7 @@ PetscErrorCode PCNNBalancing(PC pc, Vec r, Vec u, Vec z, Vec vec1_B, Vec vec2_B,
   }
   PetscCall(VecScatterBegin(pcis->global_to_B, z, vec2_B, INSERT_VALUES, SCATTER_FORWARD));
   PetscCall(VecScatterEnd(pcis->global_to_B, z, vec2_B, INSERT_VALUES, SCATTER_FORWARD));
-  PetscCall(PCISScatterArrayNToVecB(work_N, vec2_B, INSERT_VALUES, SCATTER_REVERSE, pc));
+  PetscCall(PCISScatterArrayNToVecB(pc, work_N, vec2_B, INSERT_VALUES, SCATTER_REVERSE));
   for (k = 0, value = 0.0; k < pcis->n_shared[0]; k++) value += pcnn->DZ_IN[0][k] * work_N[pcis->shared[0][k]];
   value *= pcnn->factor_coarse_rhs; /* This factor is set in CreateCoarseMatrix(). */
   {
@@ -546,7 +544,7 @@ PetscErrorCode PCNNBalancing(PC pc, Vec r, Vec u, Vec z, Vec vec1_B, Vec vec2_B,
   PetscCall(VecGetArray(pcnn->coarse_x, &lambda));
   for (k = 0; k < pcis->n_shared[0]; k++) work_N[pcis->shared[0][k]] = *lambda * pcnn->DZ_IN[0][k];
   PetscCall(VecRestoreArray(pcnn->coarse_x, &lambda));
-  PetscCall(PCISScatterArrayNToVecB(work_N, vec2_B, INSERT_VALUES, SCATTER_FORWARD, pc));
+  PetscCall(PCISScatterArrayNToVecB(pc, work_N, vec2_B, INSERT_VALUES, SCATTER_FORWARD));
   PetscCall(VecSet(z, 0.0));
   PetscCall(VecScatterBegin(pcis->global_to_B, vec2_B, z, ADD_VALUES, SCATTER_REVERSE));
   PetscCall(VecScatterEnd(pcis->global_to_B, vec2_B, z, ADD_VALUES, SCATTER_REVERSE));

@@ -47,7 +47,7 @@ cdef extern from * nogil:
 
     PetscErrorCode PetscSequentialPhaseBegin(MPI_Comm,int)
     PetscErrorCode PetscSequentialPhaseEnd(MPI_Comm,int)
-    PetscErrorCode PetscSleep(int)
+    PetscErrorCode PetscSleep(PetscReal)
 
     PetscErrorCode PetscCitationsRegister(const char[],PetscBool*)
 

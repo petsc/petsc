@@ -17,8 +17,8 @@ PetscErrorCode DMView_GLVis(DM dm, PetscViewer viewer, PetscErrorCode (*DMView_G
     PetscViewerGLVisType type;
     PetscViewer          view;
 
-    PetscCall(PetscViewerGLVisGetType_Private(viewer, &type));
-    PetscCall(PetscViewerGLVisGetDMWindow_Private(viewer, &view));
+    PetscCall(PetscViewerGLVisGetType_Internal(viewer, &type));
+    PetscCall(PetscViewerGLVisGetDMWindow_Internal(viewer, &view));
     if (!view) PetscFunctionReturn(PETSC_SUCCESS); /* socket window has been closed */
     if (type == PETSC_VIEWER_GLVIS_SOCKET) {
       PetscMPIInt size, rank;
@@ -33,12 +33,12 @@ PetscErrorCode DMView_GLVis(DM dm, PetscViewer viewer, PetscErrorCode (*DMView_G
       PetscCall(PetscGLVisCollectiveBegin(PetscObjectComm((PetscObject)dm), &view));
       PetscCall(PetscViewerASCIIPrintf(view, "parallel %d %d\nmesh\n", size, rank));
       PetscCall(DMView_GLVis_ASCII(dm, view));
-      PetscCall(PetscViewerGLVisInitWindow_Private(view, PETSC_TRUE, sdim, name));
+      PetscCall(PetscViewerGLVisInitWindow_Internal(view, PETSC_TRUE, sdim, name));
       PetscCall(PetscGLVisCollectiveEnd(PetscObjectComm((PetscObject)dm), &view));
     } else {
       PetscCall(DMView_GLVis_ASCII(dm, view));
     }
-    PetscCall(PetscViewerGLVisRestoreDMWindow_Private(viewer, &view));
+    PetscCall(PetscViewerGLVisRestoreDMWindow_Internal(viewer, &view));
   } else {
     PetscCall(DMView_GLVis_ASCII(dm, viewer));
   }

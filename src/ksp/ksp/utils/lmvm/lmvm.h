@@ -1,5 +1,4 @@
-#ifndef __LMVM_H
-#define __LMVM_H
+#pragma once
 #include <petscksp.h>
 #include <petsc/private/matimpl.h>
 #include <petsc/private/vecimpl.h>
@@ -81,5 +80,3 @@ PETSC_INTERN PetscErrorCode MatSolve_LMVMBFGS(Mat, Vec, Vec);
 /* Mult functions for derived LMVM types (necessary only for DFP and BFGS for re-use under SymBrdn) */
 PETSC_INTERN PetscErrorCode MatMult_LMVMDFP(Mat, Vec, Vec);
 PETSC_INTERN PetscErrorCode MatMult_LMVMBFGS(Mat, Vec, Vec);
-
-#endif

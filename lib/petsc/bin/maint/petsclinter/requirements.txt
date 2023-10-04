@@ -1,0 +1,4 @@
+# PETSc clang linter installation requirements
+clang
+colorama
+tomli; python_version < '3.11'

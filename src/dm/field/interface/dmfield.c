@@ -10,7 +10,7 @@ PETSC_INTERN PetscErrorCode DMFieldCreate(DM dm, PetscInt numComponents, DMField
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(field, 4);
+  PetscAssertPointer(field, 4);
   PetscCall(DMFieldInitializePackage());
 
   PetscCall(PetscHeaderCreate(b, DMFIELD_CLASSID, "DMField", "Field over DM", "DM", PetscObjectComm((PetscObject)dm), DMFieldDestroy, DMFieldView));
@@ -23,14 +23,14 @@ PETSC_INTERN PetscErrorCode DMFieldCreate(DM dm, PetscInt numComponents, DMField
 }
 
 /*@
-   DMFieldDestroy - destroy a `DMField`
+  DMFieldDestroy - destroy a `DMField`
 
-   Collective
+  Collective
 
-   Input Parameter:
-.  field - address of `DMField`
+  Input Parameter:
+. field - address of `DMField`
 
-   Level: advanced
+  Level: advanced
 
 .seealso: `DMField`, `DMFieldCreate()`
 @*/
@@ -50,15 +50,15 @@ PetscErrorCode DMFieldDestroy(DMField *field)
 }
 
 /*@C
-   DMFieldView - view a `DMField`
+  DMFieldView - view a `DMField`
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  field - `DMField`
--  viewer - viewer to display field, for example `PETSC_VIEWER_STDOUT_WORLD`
+  Input Parameters:
++ field  - `DMField`
+- viewer - viewer to display field, for example `PETSC_VIEWER_STDOUT_WORLD`
 
-   Level: advanced
+  Level: advanced
 
 .seealso: `DMField`, `DMFieldCreate()`
 @*/
@@ -87,18 +87,18 @@ PetscErrorCode DMFieldView(DMField field, PetscViewer viewer)
 }
 
 /*@C
-   DMFieldSetType - set the `DMField` implementation
+  DMFieldSetType - set the `DMField` implementation
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  field - the `DMField` context
--  type - a known method
+  Input Parameters:
++ field - the `DMField` context
+- type  - a known method
 
   Level: advanced
 
-   Notes:
-   See "include/petscvec.h" for available methods (for instance)
+  Notes:
+  See "include/petscvec.h" for available methods (for instance)
 +    `DMFIELDDA`    - a field defined only by its values at the corners of a `DMDA`
 .    `DMFIELDDS`    - a field defined by a discretization over a mesh set with `DMSetField()`
 -    `DMFIELDSHELL` - a field defined by arbitrary callbacks
@@ -112,13 +112,13 @@ PetscErrorCode DMFieldSetType(DMField field, DMFieldType type)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(field, DMFIELD_CLASSID, 1);
-  PetscValidCharPointer(type, 2);
+  PetscAssertPointer(type, 2);
 
   PetscCall(PetscObjectTypeCompare((PetscObject)field, type, &match));
   if (match) PetscFunctionReturn(PETSC_SUCCESS);
 
   PetscCall(PetscFunctionListFind(DMFieldList, type, &r));
-  PetscCheck(r, PETSC_COMM_SELF, PETSC_ERR_ARG_UNKNOWN_TYPE, "Unable to find requested DMField type %s", type);
+  PetscCheck(r, PetscObjectComm((PetscObject)field), PETSC_ERR_ARG_UNKNOWN_TYPE, "Unable to find requested DMField type %s", type);
   /* Destroy the previous private DMField context */
   PetscTryTypeMethod(field, destroy);
 
@@ -135,7 +135,7 @@ PetscErrorCode DMFieldSetType(DMField field, DMFieldType type)
   Not Collective
 
   Input Parameter:
-. field  - The `DMField` context
+. field - The `DMField` context
 
   Output Parameter:
 . type - The `DMFieldType` name
@@ -148,7 +148,7 @@ PetscErrorCode DMFieldGetType(DMField field, DMFieldType *type)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(field, DMFIELD_CLASSID, 1);
-  PetscValidPointer(type, 2);
+  PetscAssertPointer(type, 2);
   PetscCall(DMFieldRegisterAll());
   *type = ((PetscObject)field)->type_name;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -173,7 +173,7 @@ PetscErrorCode DMFieldGetNumComponents(DMField field, PetscInt *nc)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(field, DMFIELD_CLASSID, 1);
-  PetscValidIntPointer(nc, 2);
+  PetscAssertPointer(nc, 2);
   *nc = field->numComponents;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -197,7 +197,7 @@ PetscErrorCode DMFieldGetDM(DMField field, DM *dm)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(field, DMFIELD_CLASSID, 1);
-  PetscValidPointer(dm, 2);
+  PetscAssertPointer(dm, 2);
   *dm = field->dm;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -208,8 +208,8 @@ PetscErrorCode DMFieldGetDM(DMField field, DM *dm)
   Collective
 
   Input Parameters:
-+ field - The `DMField` object
-. points - The points at which to evaluate the field.  Should have size d x n,
++ field    - The `DMField` object
+. points   - The points at which to evaluate the field.  Should have size d x n,
            where d is the coordinate dimension of the manifold and n is the number
            of points
 - datatype - The PetscDataType of the output arrays: either `PETSC_REAL` or `PETSC_SCALAR`.
@@ -236,9 +236,9 @@ PetscErrorCode DMFieldEvaluate(DMField field, Vec points, PetscDataType datatype
   PetscFunctionBegin;
   PetscValidHeaderSpecific(field, DMFIELD_CLASSID, 1);
   PetscValidHeaderSpecific(points, VEC_CLASSID, 2);
-  if (B) PetscValidPointer(B, 4);
-  if (D) PetscValidPointer(D, 5);
-  if (H) PetscValidPointer(H, 6);
+  if (B) PetscAssertPointer(B, 4);
+  if (D) PetscAssertPointer(D, 5);
+  if (H) PetscAssertPointer(H, 6);
   if (field->ops->evaluate) {
     PetscCall((*field->ops->evaluate)(field, points, datatype, B, D, H));
   } else SETERRQ(PetscObjectComm((PetscObject)field), PETSC_ERR_SUP, "Not implemented for this type");
@@ -253,9 +253,9 @@ PetscErrorCode DMFieldEvaluate(DMField field, Vec points, PetscDataType datatype
   Not Collective
 
   Input Parameters:
-+ field - The `DMField` object
-. cellIS - Index set for cells on which to evaluate the field
-. points - The quadature containing the points in the reference cell at which to evaluate the field.
++ field    - The `DMField` object
+. cellIS   - Index set for cells on which to evaluate the field
+. points   - The quadature containing the points in the reference cell at which to evaluate the field.
 - datatype - The PetscDataType of the output arrays: either `PETSC_REAL` or `PETSC_SCALAR`.
              If the field is complex and datatype is `PETSC_REAL`, the real part of the
              field is returned.
@@ -281,9 +281,9 @@ PetscErrorCode DMFieldEvaluateFE(DMField field, IS cellIS, PetscQuadrature point
   PetscValidHeaderSpecific(field, DMFIELD_CLASSID, 1);
   PetscValidHeaderSpecific(cellIS, IS_CLASSID, 2);
   PetscValidHeader(points, 3);
-  if (B) PetscValidPointer(B, 5);
-  if (D) PetscValidPointer(D, 6);
-  if (H) PetscValidPointer(H, 7);
+  if (B) PetscAssertPointer(B, 5);
+  if (D) PetscAssertPointer(D, 6);
+  if (H) PetscAssertPointer(H, 7);
   if (field->ops->evaluateFE) {
     PetscCall((*field->ops->evaluateFE)(field, cellIS, points, datatype, B, D, H));
   } else SETERRQ(PetscObjectComm((PetscObject)field), PETSC_ERR_SUP, "Not implemented for this type");
@@ -296,8 +296,8 @@ PetscErrorCode DMFieldEvaluateFE(DMField field, IS cellIS, PetscQuadrature point
   Not Collective
 
   Input Parameters:
-+ field - The `DMField` object
-. cellIS - Index set for cells on which to evaluate the field
++ field    - The `DMField` object
+. cellIS   - Index set for cells on which to evaluate the field
 - datatype - The PetscDataType of the output arrays: either `PETSC_REAL` or `PETSC_SCALAR`.
              If the field is complex and datatype is `PETSC_REAL`, the real part of the
              field is returned.
@@ -322,9 +322,9 @@ PetscErrorCode DMFieldEvaluateFV(DMField field, IS cellIS, PetscDataType datatyp
   PetscFunctionBegin;
   PetscValidHeaderSpecific(field, DMFIELD_CLASSID, 1);
   PetscValidHeaderSpecific(cellIS, IS_CLASSID, 2);
-  if (B) PetscValidPointer(B, 4);
-  if (D) PetscValidPointer(D, 5);
-  if (H) PetscValidPointer(H, 6);
+  if (B) PetscAssertPointer(B, 4);
+  if (D) PetscAssertPointer(D, 5);
+  if (H) PetscAssertPointer(H, 6);
   if (field->ops->evaluateFV) {
     PetscCall((*field->ops->evaluateFV)(field, cellIS, datatype, B, D, H));
   } else SETERRQ(PetscObjectComm((PetscObject)field), PETSC_ERR_SUP, "Not implemented for this type");
@@ -338,7 +338,7 @@ PetscErrorCode DMFieldEvaluateFV(DMField field, IS cellIS, PetscDataType datatyp
   Not Collective
 
   Input Parameters:
-+ field - the `DMField` object
++ field  - the `DMField` object
 - cellIS - the index set of points over which we want know the invariance
 
   Output Parameters:
@@ -354,8 +354,8 @@ PetscErrorCode DMFieldGetDegree(DMField field, IS cellIS, PetscInt *minDegree, P
   PetscFunctionBegin;
   PetscValidHeaderSpecific(field, DMFIELD_CLASSID, 1);
   PetscValidHeaderSpecific(cellIS, IS_CLASSID, 2);
-  if (minDegree) PetscValidIntPointer(minDegree, 3);
-  if (maxDegree) PetscValidIntPointer(maxDegree, 4);
+  if (minDegree) PetscAssertPointer(minDegree, 3);
+  if (maxDegree) PetscAssertPointer(maxDegree, 4);
 
   if (minDegree) *minDegree = -1;
   if (maxDegree) *maxDegree = PETSC_MAX_INT;
@@ -371,7 +371,7 @@ PetscErrorCode DMFieldGetDegree(DMField field, IS cellIS, PetscInt *minDegree, P
   Not Collective
 
   Input Parameters:
-+ field - the `DMField` object
++ field   - the `DMField` object
 - pointIS - the index set of points over which we wish to integrate the field
 
   Output Parameter:
@@ -386,7 +386,7 @@ PetscErrorCode DMFieldCreateDefaultQuadrature(DMField field, IS pointIS, PetscQu
   PetscFunctionBegin;
   PetscValidHeaderSpecific(field, DMFIELD_CLASSID, 1);
   PetscValidHeaderSpecific(pointIS, IS_CLASSID, 2);
-  PetscValidPointer(quad, 3);
+  PetscAssertPointer(quad, 3);
 
   *quad = NULL;
   PetscTryTypeMethod(field, createDefaultQuadrature, pointIS, quad);
@@ -399,9 +399,9 @@ PetscErrorCode DMFieldCreateDefaultQuadrature(DMField field, IS pointIS, PetscQu
   Not Collective
 
   Input Parameters:
-+ field - the `DMField` object
-. pointIS - the index set of points over which we wish to integrate the field
-. quad - the quadrature points at which to evaluate the geometric factors
++ field    - the `DMField` object
+. pointIS  - the index set of points over which we wish to integrate the field
+. quad     - the quadrature points at which to evaluate the geometric factors
 - faceData - whether additional data for facets (the normal vectors and adjacent cells) should
   be calculated
 

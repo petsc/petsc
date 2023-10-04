@@ -1,5 +1,4 @@
-#ifndef PETSCGL_H
-#define PETSCGL_H
+#pragma once
 
 #include <petsc/private/tsimpl.h>
 
@@ -77,5 +76,3 @@ typedef struct TS_GLLE {
   PetscBool setupcalled;
   void     *data;
 } TS_GLLE;
-
-#endif

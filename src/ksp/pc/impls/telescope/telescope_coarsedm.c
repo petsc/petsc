@@ -39,7 +39,7 @@ typedef struct {
   void *dmksp_context_user;
 } PC_Telescope_CoarseDMCtx;
 
-PetscErrorCode PCTelescopeSetUp_scatters_CoarseDM(PC pc, PC_Telescope sred, PC_Telescope_CoarseDMCtx *ctx)
+static PetscErrorCode PCTelescopeSetUp_scatters_CoarseDM(PC pc, PC_Telescope sred, PC_Telescope_CoarseDMCtx *ctx)
 {
   Vec        xred, yred, xtmp, x, xp;
   VecScatter scatter;
@@ -244,7 +244,7 @@ PetscErrorCode PCApply_Telescope_CoarseDM(PC pc, Vec x, Vec y)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PCTelescopeSubNullSpaceCreate_CoarseDM(PC pc, PC_Telescope sred, MatNullSpace nullspace, MatNullSpace *sub_nullspace)
+static PetscErrorCode PCTelescopeSubNullSpaceCreate_CoarseDM(PC pc, PC_Telescope sred, MatNullSpace nullspace, MatNullSpace *sub_nullspace)
 {
   PetscBool                 has_const;
   PetscInt                  k, n = 0;

@@ -1,5 +1,4 @@
-#ifndef EX18_H_
-#define EX18_H_
+#pragma once
 
 #include <petscmat.h>
 
@@ -13,5 +12,3 @@ typedef struct {
 
 PETSC_EXTERN PetscErrorCode FillMatrixKokkosCOO(FEStruct *, Mat);
 PETSC_EXTERN PetscErrorCode FillMatrixCUDACOO(FEStruct *, Mat);
-
-#endif // EX18_H_

@@ -14,28 +14,29 @@
 #if defined(PETSC_HAVE_SYS_SYSTEMINFO_H)
   #include <sys/systeminfo.h>
 #endif
+#include <errno.h>
 
 /*@C
-   PetscGetRealPath - Get the path without symbolic links etc. and in absolute form.
+  PetscGetRealPath - Get the path without symbolic links etc. in absolute form.
 
-   Not Collective
+  Not Collective
 
-   Input Parameter:
-.  path - path to resolve
+  Input Parameter:
+. path - path to resolve
 
-   Output Parameter:
-.  rpath - resolved path
+  Output Parameter:
+. rpath - resolved path
 
-   Level: developer
+  Level: developer
 
-   Notes:
-   rpath is assumed to be of length `PETSC_MAX_PATH_LEN`.
+  Notes:
+  rpath is assumed to be of length `PETSC_MAX_PATH_LEN`.
 
-   Systems that use the automounter often generate absolute paths
-   of the form "/tmp_mnt....".  However, the automounter will fail to
-   mount this path if it is not already mounted, so we remove this from
-   the head of the line.  This may cause problems if, for some reason,
-   /tmp_mnt is valid and not the result of the automounter.
+  Systems that use the automounter often generate absolute paths
+  of the form "/tmp_mnt....".  However, the automounter will fail to
+  mount this path if it is not already mounted, so we remove this from
+  the head of the line.  This may cause problems if, for some reason,
+  /tmp_mnt is valid and not the result of the automounter.
 
 .seealso: `PetscGetFullPath()`
 @*/
@@ -50,7 +51,7 @@ PetscErrorCode PetscGetRealPath(const char path[], char rpath[])
 
   PetscFunctionBegin;
 #if defined(PETSC_HAVE_REALPATH)
-  PetscCheck(realpath(path, rpath), PETSC_COMM_SELF, PETSC_ERR_LIB, "realpath()");
+  PetscCheck(realpath(path, rpath), PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in realpath() due to \"%s\"", strerror(errno));
 #else
   #if defined(PETSC_HAVE_READLINK)
   /* Algorithm: we move through the path, replacing links with the real paths.   */
@@ -61,6 +62,7 @@ PetscErrorCode PetscGetRealPath(const char path[], char rpath[])
     PetscCall(PetscStrncpy(tmp1, rpath, N));
     tmp1[N] = 0;
     n       = readlink(tmp1, tmp3, PETSC_MAX_PATH_LEN);
+    PetscCheck(n > -1, PETSC_COMM_SELF, PETSC_ERR_SYS, "Error in readlink() due to \"%\"", strerror(errno));
     if (n > 0) {
       tmp3[n] = 0; /* readlink does not automatically add 0 to string end */
       if (tmp3[0] != '/') {

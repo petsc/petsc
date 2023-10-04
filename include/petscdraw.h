@@ -1,8 +1,7 @@
 /*
   Interface to the PETSc graphics
 */
-#ifndef PETSCDRAW_H
-#define PETSCDRAW_H
+#pragma once
 #include <petscsys.h>
 #include <petscdrawtypes.h>
 
@@ -82,7 +81,7 @@ PETSC_EXTERN PetscErrorCode PetscDrawViewFromOptions(PetscDraw, PetscObject, con
    Not Collective
 
    Input Parameters:
-+  value - value to map within the interval [min,max]
++  value - value to map within the interval [`min`, `max`]
 .  min - lower end of interval
 -  max - upper end of interval
 
@@ -92,9 +91,9 @@ PETSC_EXTERN PetscErrorCode PetscDrawViewFromOptions(PetscDraw, PetscObject, con
    Level: intermediate
 
    Note:
-   Values outside the interval [min,max] are clipped.
+   Values outside the interval [`min`, `max`] are clipped.
 
-.seealso: `PetscDrawPointPixel()`, `PetscDrawPoint()`, `PetscDrawLine()`, `PetscDrawTriangle()`, `PetscDrawRectangle()`
+.seealso: `PetscDraw`, `PetscDrawPointPixel()`, `PetscDrawPoint()`, `PetscDrawLine()`, `PetscDrawTriangle()`, `PetscDrawRectangle()`
 M*/
 static inline int PetscDrawRealToColor(PetscReal value, PetscReal min, PetscReal max)
 {
@@ -133,15 +132,15 @@ PETSC_EXTERN PetscErrorCode PetscDrawLineGetWidth(PetscDraw, PetscReal *);
 /*E
     PetscDrawMarkerType - How a "mark" is indicate in a figure
 
-   Level: intermediate
-
    Values:
 +  `PETSC_MARKER_CROSS` - a small pixel based x symbol or the character x if that is not available
 .  `PETSC_MARKER_PLUS` - a small pixel based + symbol or the character + if that is not available
 .  `PETSC_MARKER_CIRCLE` - a small pixel based circle symbol or the character o if that is not available
 -  `PETSC_MARKER_POINT` - the make obtained with `PetscDrawPoint()`
 
-.seealso: `PetscDrawMarker()`, `PetscDrawSetMarkerType()`
+   Level: intermediate
+
+.seealso: `PetscDraw`, `PetscDrawMarker()`, `PetscDrawSetMarkerType()`
 E*/
 typedef enum {
   PETSC_DRAW_MARKER_CROSS,
@@ -209,8 +208,6 @@ PETSC_EXTERN PetscErrorCode PetscDrawSetVisible(PetscDraw, PetscBool);
 /*E
     PetscDrawButton - Used to determine which button was pressed
 
-   Level: intermediate
-
    Values:
 +  `PETSC_BUTTON_NONE` - no button was pressed
 .  `PETSC_BUTTON_LEFT` - the left button
@@ -221,6 +218,8 @@ PETSC_EXTERN PetscErrorCode PetscDrawSetVisible(PetscDraw, PetscBool);
 .  `PETSC_BUTTON_LEFT_SHIFT` - the left button and the shift key
 .  `PETSC_BUTTON_CENTER_SHIFT`- the center button and the shift key
 -  `PETSC_BUTTON_RIGHT_SHIFT` - the right button and the shift key
+
+   Level: intermediate
 
 .seealso: `PetscDrawGetMouseButton()`
 E*/
@@ -434,7 +433,7 @@ M*/
     if (_Petsc_isdrawx) { \
       (void)PetscSetXIOErrorHandler(_Petsc_xioerrhdl); \
       PetscCall(PetscMemcpy(&PetscXIOErrorHandlerJumpBuf, &_Petsc_jmpbuf, sizeof(PetscXIOErrorHandlerJumpBuf))); \
-      PetscCallMPI(MPI_Allreduce(&_Petsc_xioerr_local, &_Petsc_xioerr, 1, MPIU_BOOL, MPI_LOR, PetscObjectComm((PetscObject)(draw)))); \
+      PetscCall(MPIU_Allreduce(&_Petsc_xioerr_local, &_Petsc_xioerr, 1, MPIU_BOOL, MPI_LOR, PetscObjectComm((PetscObject)(draw)))); \
       if (_Petsc_xioerr) { \
         PetscCall(PetscDrawSetType((draw), PETSC_DRAW_NULL)); \
         PetscFunctionReturn(PETSC_SUCCESS); \
@@ -447,5 +446,3 @@ M*/
   #define PetscDrawCollectiveBegin(draw)
   #define PetscDrawCollectiveEnd(draw)
 #endif /* PetscDefined(HAVE_X) && PetscDefined(HAVE_SETJMP_H) */
-
-#endif /* PETSCDRAW_H */

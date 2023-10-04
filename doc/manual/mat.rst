@@ -1,4 +1,4 @@
-.. _chapter_matrices:
+.. _ch_matrices:
 
 Matrices
 --------
@@ -41,7 +41,7 @@ or with
 
 .. code-block::
 
-   DMSetSetFromOptions(DM dm)
+   DMSetFromOptions(DM dm)
 
 and the options database option ``-dm_mat_type <aij or baij or aijcusparse etc>`` Matrices can be created for CPU usage, for GPU usage and for usage on
 both the CPUs and GPUs. 
@@ -528,7 +528,7 @@ code that one would use to actually compute the matrices numerical values, calls
 preallocation information (one need not provide the matrix numerical values). Once this is complete one uses ``MatPreallocatorPreallocate()`` to
 provide the accumulated preallocation information to
 the actual matrix one will use for the computations. We hope to simplify this process in the future, allowing the removal of ``MATPREALLOCATOR``,
-instead simply allowing the use of it's efficient insertion process automatically during the first assembly of any matrix type directly without
+instead simply allowing the use of its efficient insertion process automatically during the first assembly of any matrix type directly without
 requiring the detailed preallocation information.
 
 See :any:`doc_matrix` for a table of the matrix types available in PETSc.
@@ -553,27 +553,27 @@ applications based on a fixed number of stored update vectors.
     - PETSc Type
     - Name
     - Property
-  * - "Good" Broyden   :cite:`KEYPREFIX-griewank2012broyden`
+  * - "Good" Broyden   :cite:`keyprefix-griewank2012broyden`
     - ``MATLMVMBrdn``
     - ``lmvmbrdn``
     - Square
-  * - "Bad" Broyden :cite:`KEYPREFIX-griewank2012broyden`
+  * - "Bad" Broyden :cite:`keyprefix-griewank2012broyden`
     - ``MATLMVMBadBrdn``
     - ``lmvmbadbrdn``
     - Square
-  * - Symmetric Rank-1 :cite:`KEYPREFIX-NW99`
+  * - Symmetric Rank-1 :cite:`keyprefix-nw99`
     - ``MATLMVMSR1``
     - ``lmvmsr1``
     - Symmetric
-  * - Davidon-Fletcher-Powell (DFP) :cite:`KEYPREFIX-NW99`
+  * - Davidon-Fletcher-Powell (DFP) :cite:`keyprefix-nw99`
     - ``MATLMVMDFP``
     - ``lmvmdfp``
     - SPD
-  * - Broyden-Fletcher-Goldfarb-Shanno (BFGS) :cite:`KEYPREFIX-NW99`
+  * - Broyden-Fletcher-Goldfarb-Shanno (BFGS) :cite:`keyprefix-nw99`
     - ``MATLMVMBFGS``
     - ``lmvmbfgs``
     - SPD
-  * - Restricted Broyden Family :cite:`KEYPREFIX-erway2017solving`
+  * - Restricted Broyden Family :cite:`keyprefix-erway2017solving`
     - ``MATLMVMSymBrdn``
     - ``lmvmsymbrdn``
     - SPD
@@ -594,7 +594,7 @@ below:
    space while the ``F`` defines the function space for the history of
    updates.
 
--  ``MatLMVMUpdate(MatB, Vec X, Vec F)`` – Applies a nonlinear update to
+-  ``MatLMVMUpdate(Mat B, Vec X, Vec F)`` – Applies a nonlinear update to
    the approximate Jacobian such that :math:`s_k = x_k - x_{k-1}` and
    :math:`y_k = f(x_k) - f(x_{k-1})`, where :math:`k` is the index for
    the update.
@@ -641,7 +641,7 @@ choices below:
    The number of updates to be used in the :math:`S` and :math:`Y`
    matrices is 1 by default (i.e.: the latest update only) and can be
    changed via ``-mat_lmvm_sigma_hist``. This technique is inspired by
-   Gilbert and Lemarechal :cite:`KEYPREFIX-Gilbert-Lemarechal`.
+   Gilbert and Lemarechal :cite:`keyprefix-gilbert-lemarechal`.
 
 -  ``diagonal`` – Uses a full-memory restricted Broyden update formula
    to construct a diagonal matrix for the Jacobian initialization.
@@ -649,7 +649,7 @@ choices below:
    footprint is restricted to only the vector representing the diagonal
    and some additional work vectors used in its construction. The
    diagonal terms are also re-scaled with every update as suggested in
-   :cite:`KEYPREFIX-Gilbert-Lemarechal`. This initialization requires
+   :cite:`keyprefix-gilbert-lemarechal`. This initialization requires
    the most computational effort of the available choices but typically
    results in a significant reduction in the number of function
    evaluations taken to compute a solution.
@@ -1347,5 +1347,5 @@ reduce fill in sparse matrix factorizations.
 
 .. bibliography:: /petsc.bib
    :filter: docname in docnames
-   :keyprefix: KEYPREFIX-
+   :keyprefix: keyprefix-
    :labelprefix: ref-

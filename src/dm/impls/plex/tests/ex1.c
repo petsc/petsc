@@ -187,7 +187,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
       PetscCall(DMGetPointSF(distributedMesh, &sf));
       PetscCall(PetscSFSetUp(sf));
       PetscCall(DMGetNeighbors(distributedMesh, &nranks, NULL));
-      PetscCallMPI(MPI_Allreduce(MPI_IN_PLACE, &nranks, 1, MPIU_INT, MPI_MIN, PetscObjectComm((PetscObject)*dm)));
+      PetscCall(MPIU_Allreduce(MPI_IN_PLACE, &nranks, 1, MPIU_INT, MPI_MIN, PetscObjectComm((PetscObject)*dm)));
       PetscCall(PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_(PetscObjectComm((PetscObject)*dm)), "Minimum number of neighbors: %" PetscInt_FMT "\n", nranks));
       PetscCall(DMDestroy(dm));
       *dm = distributedMesh;
@@ -401,7 +401,11 @@ int main(int argc, char **argv)
     test:
       suffix: exo_4
       requires: exodusii
-     args: -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/simpleblock-100.exo
+      args: -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/simpleblock-100.exo
+    test:
+      suffix: exo_1d_0
+      requires: exodusii
+      args: -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/1d-2elems.e
 
   # Gmsh mesh reader tests
   testset:
@@ -537,7 +541,7 @@ int main(int argc, char **argv)
       args: -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/gmsh-3d-binary.msh4
 
   # Gmsh v41 ascii/binary reader tests
-  testset: # 32bit mesh, sequential
+  testset: # 32-bit mesh, sequential
     args: -dm_coord_space 0 -dm_view ::ascii_info_detail -dm_plex_check_all -dm_plex_gmsh_mark_vertices
     output_file: output/ex1_gmsh_3d_32.out
     test:
@@ -558,7 +562,7 @@ int main(int argc, char **argv)
     suffix: gmsh_hex_20node
     args: -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/gmsh-hex-20node.msh \
           -dm_view -dm_plex_check_all -dm_plex_gmsh_mark_vertices
-  testset:  # 32bit mesh, parallel
+  testset:  # 32-bit mesh, parallel
     args: -dm_coord_space 0 -dist_dm_distribute -petscpartitioner_type simple -dm_view ::ascii_info_detail -dm_plex_check_all -dm_plex_gmsh_mark_vertices
     nsize: 2
     output_file: output/ex1_gmsh_3d_32_np2.out
@@ -572,7 +576,7 @@ int main(int argc, char **argv)
       suffix: gmsh_3d_binary_v41_32_np2_mpiio
       requires: defined(PETSC_HAVE_MPIIO)
       args: -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/gmsh-3d-binary-32.msh -viewer_binary_mpiio
-  testset: # 64bit mesh, sequential
+  testset: # 64-bit mesh, sequential
     args: -dm_coord_space 0 -dm_view ::ascii_info_detail -dm_plex_check_all -dm_plex_gmsh_mark_vertices
     output_file: output/ex1_gmsh_3d_64.out
     test:
@@ -585,7 +589,7 @@ int main(int argc, char **argv)
       suffix: gmsh_3d_binary_v41_64_mpiio
       requires: defined(PETSC_HAVE_MPIIO)
       args: -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/gmsh-3d-binary-64.msh -viewer_binary_mpiio
-  testset:  # 64bit mesh, parallel
+  testset:  # 64-bit mesh, parallel
     args: -dm_coord_space 0 -dist_dm_distribute -petscpartitioner_type simple -dm_view ::ascii_info_detail -dm_plex_check_all -dm_plex_gmsh_mark_vertices
     nsize: 2
     output_file: output/ex1_gmsh_3d_64_np2.out

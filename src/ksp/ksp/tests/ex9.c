@@ -43,7 +43,7 @@ int main(int argc, char *argv[])
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
-  PetscCall(MatCreateAIJ(PETSC_COMM_WORLD, 10, 10, PETSC_DECIDE, PETSC_DECIDE, 1, NULL, 0, NULL, &M));
+  PetscCall(MatCreateFromOptions(PETSC_COMM_WORLD, NULL, 1, 10, 10, PETSC_DECIDE, PETSC_DECIDE, &M));
   PetscCall(MatAssemblyBegin(M, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(M, MAT_FINAL_ASSEMBLY));
   PetscCall(MatShift(M, 1.));
@@ -77,6 +77,7 @@ int main(int argc, char *argv[])
   PetscCall(replace_submats(A));
   PetscCall(replace_submats(P));
   PetscCall(KSPSolve(ksp, b, x));
+  PetscCall(KSPSolveTranspose(ksp, b, x));
 
   PetscCall(KSPDestroy(&ksp));
   PetscCall(VecDestroy(&x));

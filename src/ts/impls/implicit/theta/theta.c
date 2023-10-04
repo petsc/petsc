@@ -179,6 +179,22 @@ static PetscErrorCode TSTheta_SNESSolve(TS ts, Vec b, Vec x)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/* We need to transfer X0 which will be copied into sol_prev */
+static PetscErrorCode TSResizeRegister_Theta(TS ts, PetscBool reg)
+{
+  TS_Theta  *th     = (TS_Theta *)ts->data;
+  const char name[] = "ts:theta:X0";
+
+  PetscFunctionBegin;
+  if (reg && th->vec_sol_prev) {
+    PetscCall(TSResizeRegisterVec(ts, name, th->X0));
+  } else if (!reg) {
+    PetscCall(TSResizeRetrieveVec(ts, name, &th->X0));
+    PetscCall(PetscObjectReference((PetscObject)th->X0));
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 static PetscErrorCode TSStep_Theta(TS ts)
 {
   TS_Theta *th         = (TS_Theta *)ts->data;
@@ -203,11 +219,9 @@ static PetscErrorCode TSStep_Theta(TS ts)
       PetscCall(VecZeroEntries(th->Xdot));
       PetscCall(TSComputeIFunction(ts, ts->ptime, th->X0, th->Xdot, th->affine, PETSC_FALSE));
       PetscCall(VecScale(th->affine, (th->Theta - 1) / th->Theta));
-    } else if (th->affine) { /* Just in case th->endpoint is changed between calls to TSStep_Theta() */
-      PetscCall(VecZeroEntries(th->affine));
     }
     PetscCall(TSPreStage(ts, th->stage_time));
-    PetscCall(TSTheta_SNESSolve(ts, th->affine, th->X));
+    PetscCall(TSTheta_SNESSolve(ts, th->endpoint ? th->affine : NULL, th->X));
     PetscCall(TSPostStage(ts, th->stage_time, 0, &th->X));
     PetscCall(TSAdaptCheckStage(ts->adapt, ts, th->stage_time, th->X, &stageok));
     if (!stageok) goto reject_step;
@@ -1176,9 +1190,11 @@ static PetscErrorCode TSGetStages_Theta(TS ts, PetscInt *ns, Vec *Y[])
 -  -ts_theta_initial_guess_extrapolate <flg> - Extrapolate stage initial guess from previous solution (sometimes unstable)
 
    Notes:
-$  -ts_type theta -ts_theta_theta 1.0 corresponds to backward Euler (`TSBEULER`)
-$  -ts_type theta -ts_theta_theta 0.5 corresponds to the implicit midpoint rule
-$  -ts_type theta -ts_theta_theta 0.5 -ts_theta_endpoint corresponds to Crank-Nicholson (`TSCN`)
+.vb
+  -ts_type theta -ts_theta_theta 1.0 corresponds to backward Euler (TSBEULER)
+  -ts_type theta -ts_theta_theta 0.5 corresponds to the implicit midpoint rule
+  -ts_type theta -ts_theta_theta 0.5 -ts_theta_endpoint corresponds to Crank-Nicholson (TSCN)
+.ve
 
    The endpoint variant of the Theta method and backward Euler can be applied to DAE. The midpoint variant is not suitable for DAEs because it is not stiffly accurate.
 
@@ -1209,7 +1225,7 @@ $  Y_i = X + h sum_j a_ij Y'_j
 
    is interpreted as a formula for Y'_i in terms of Y_i and known values (Y'_j, j<i)
 
-.seealso: [](chapter_ts), `TSCreate()`, `TS`, `TSSetType()`, `TSCN`, `TSBEULER`, `TSThetaSetTheta()`, `TSThetaSetEndpoint()`
+.seealso: [](ch_ts), `TSCreate()`, `TS`, `TSSetType()`, `TSCN`, `TSBEULER`, `TSThetaSetTheta()`, `TSThetaSetEndpoint()`
 M*/
 PETSC_EXTERN PetscErrorCode TSCreate_Theta(TS ts)
 {
@@ -1227,6 +1243,7 @@ PETSC_EXTERN PetscErrorCode TSCreate_Theta(TS ts)
   ts->ops->interpolate    = TSInterpolate_Theta;
   ts->ops->evaluatewlte   = TSEvaluateWLTE_Theta;
   ts->ops->rollback       = TSRollBack_Theta;
+  ts->ops->resizeregister = TSResizeRegister_Theta;
   ts->ops->setfromoptions = TSSetFromOptions_Theta;
   ts->ops->snesfunction   = SNESTSFormFunction_Theta;
   ts->ops->snesjacobian   = SNESTSFormJacobian_Theta;
@@ -1270,23 +1287,23 @@ PETSC_EXTERN PetscErrorCode TSCreate_Theta(TS ts)
   Not Collective
 
   Input Parameter:
-.  ts - timestepping context
+. ts - timestepping context
 
   Output Parameter:
-.  theta - stage abscissa
+. theta - stage abscissa
 
   Level: advanced
 
   Note:
   Use of this function is normally only required to hack `TSTHETA` to use a modified integration scheme.
 
-.seealso: [](chapter_ts), `TSThetaSetTheta()`, `TSTHETA`
+.seealso: [](ch_ts), `TSThetaSetTheta()`, `TSTHETA`
 @*/
 PetscErrorCode TSThetaGetTheta(TS ts, PetscReal *theta)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
-  PetscValidRealPointer(theta, 2);
+  PetscAssertPointer(theta, 2);
   PetscUseMethod(ts, "TSThetaGetTheta_C", (TS, PetscReal *), (ts, theta));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1297,15 +1314,15 @@ PetscErrorCode TSThetaGetTheta(TS ts, PetscReal *theta)
   Not Collective
 
   Input Parameters:
-+  ts - timestepping context
--  theta - stage abscissa
++ ts    - timestepping context
+- theta - stage abscissa
 
   Options Database Key:
-.  -ts_theta_theta <theta> - set theta
+. -ts_theta_theta <theta> - set theta
 
   Level: intermediate
 
-.seealso: [](chapter_ts), `TSThetaGetTheta()`, `TSTHETA`, `TSCN`
+.seealso: [](ch_ts), `TSThetaGetTheta()`, `TSTHETA`, `TSCN`
 @*/
 PetscErrorCode TSThetaSetTheta(TS ts, PetscReal theta)
 {
@@ -1321,20 +1338,20 @@ PetscErrorCode TSThetaSetTheta(TS ts, PetscReal theta)
   Not Collective
 
   Input Parameter:
-.  ts - timestepping context
+. ts - timestepping context
 
   Output Parameter:
-.  endpoint - `PETSC_TRUE` when using the endpoint variant
+. endpoint - `PETSC_TRUE` when using the endpoint variant
 
   Level: advanced
 
-.seealso: [](chapter_ts), `TSThetaSetEndpoint()`, `TSTHETA`, `TSCN`
+.seealso: [](ch_ts), `TSThetaSetEndpoint()`, `TSTHETA`, `TSCN`
 @*/
 PetscErrorCode TSThetaGetEndpoint(TS ts, PetscBool *endpoint)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
-  PetscValidBoolPointer(endpoint, 2);
+  PetscAssertPointer(endpoint, 2);
   PetscUseMethod(ts, "TSThetaGetEndpoint_C", (TS, PetscBool *), (ts, endpoint));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1345,15 +1362,15 @@ PetscErrorCode TSThetaGetEndpoint(TS ts, PetscBool *endpoint)
   Not Collective
 
   Input Parameters:
-+  ts - timestepping context
--  flg - `PETSC_TRUE` to use the endpoint variant
++ ts  - timestepping context
+- flg - `PETSC_TRUE` to use the endpoint variant
 
   Options Database Key:
-.  -ts_theta_endpoint <flg> - use the endpoint variant
+. -ts_theta_endpoint <flg> - use the endpoint variant
 
   Level: intermediate
 
-.seealso: [](chapter_ts), `TSTHETA`, `TSCN`
+.seealso: [](ch_ts), `TSTHETA`, `TSCN`
 @*/
 PetscErrorCode TSThetaSetEndpoint(TS ts, PetscBool flg)
 {
@@ -1391,10 +1408,9 @@ static PetscErrorCode TSView_BEuler(TS ts, PetscViewer viewer)
   Level: beginner
 
   Note:
-  `TSBEULER` is equivalent to `TSTHETA` with Theta=1.0
-$  -ts_type theta -ts_theta_theta 1.0
+  `TSBEULER` is equivalent to `TSTHETA` with Theta=1.0 or `-ts_type theta -ts_theta_theta 1.0`
 
-.seealso: [](chapter_ts), `TSCreate()`, `TS`, `TSSetType()`, `TSEULER`, `TSCN`, `TSTHETA`
+.seealso: [](ch_ts), `TSCreate()`, `TS`, `TSSetType()`, `TSEULER`, `TSCN`, `TSTHETA`
 M*/
 PETSC_EXTERN PetscErrorCode TSCreate_BEuler(TS ts)
 {
@@ -1437,7 +1453,7 @@ static PetscErrorCode TSView_CN(TS ts, PetscViewer viewer)
   -ts_theta_endpoint
 .ve
 
-.seealso: [](chapter_ts), `TSCreate()`, `TS`, `TSSetType()`, `TSBEULER`, `TSTHETA`, `TSType`,
+.seealso: [](ch_ts), `TSCreate()`, `TS`, `TSSetType()`, `TSBEULER`, `TSTHETA`, `TSType`,
 M*/
 PETSC_EXTERN PetscErrorCode TSCreate_CN(TS ts)
 {

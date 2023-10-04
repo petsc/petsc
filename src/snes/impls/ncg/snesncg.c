@@ -127,62 +127,30 @@ static PetscErrorCode SNESView_NCG(SNES snes, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*
-
- Assuming F = SNESComputeFunction(X) compute Y^tJ^tF using a simple secant approximation of the jacobian.
-
- This routine is not currently used. I don't know what its intended purpose is.
-
- Note it has a hardwired differencing parameter of 1e-5
-
- */
-PetscErrorCode SNESNCGComputeYtJtF_Private(SNES snes, Vec X, Vec F, Vec Y, Vec W, Vec G, PetscScalar *ytJtf)
-{
-  PetscScalar ftf, ftg, fty, h;
-
-  PetscFunctionBegin;
-  PetscCall(VecDot(F, F, &ftf));
-  PetscCall(VecDot(F, Y, &fty));
-  h = 1e-5 * fty / fty;
-  PetscCall(VecCopy(X, W));
-  PetscCall(VecAXPY(W, -h, Y)); /* this is arbitrary */
-  PetscCall(SNESComputeFunction(snes, W, G));
-  PetscCall(VecDot(G, F, &ftg));
-  *ytJtf = (ftg - ftf) / h;
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
 /*@
-    SNESNCGSetType - Sets the conjugate update type for nonlinear CG `SNESNCG`.
+  SNESNCGSetType - Sets the conjugate update type for nonlinear CG `SNESNCG`.
 
-    Logically Collective
+  Logically Collective
 
-    Input Parameters:
-+   snes - the iterative context
--   btype - update type
+  Input Parameters:
++ snes  - the iterative context
+- btype - update type, see `SNESNCGType`
 
-    Options Database Key:
-.   -snes_ncg_type <prp,fr,hs,dy,cd> -strategy for selecting algorithm for computing beta
+  Options Database Key:
+. -snes_ncg_type <prp,fr,hs,dy,cd> - strategy for selecting algorithm for computing beta
 
-    Level: intermediate
+  Level: intermediate
 
-    `SNESNCGType`s:
-+   `SNES_NCG_FR` - Fletcher-Reeves update
-.   `SNES_NCG_PRP` - Polak-Ribiere-Polyak update
-.   `SNES_NCG_HS` - Hestenes-Steifel update
-.   `SNES_NCG_DY` - Dai-Yuan update
--   `SNES_NCG_CD` - Conjugate Descent update
+  Notes:
+  `SNES_NCG_PRP` is the default, and the only one that tolerates generalized search directions.
 
-   Notes:
-   `SNES_NCG_PRP` is the default, and the only one that tolerates generalized search directions.
+  It is not clear what "generalized search directions" means, does it mean use with a nonlinear preconditioner,
+  that is using -npc_snes_type <type>, `SNESSetNPC()`, or `SNESGetNPC()`?
 
-   It is not clear what "generalized search directions" means, does it mean use with a nonlinear preconditioner,
-   that is using -npc_snes_type <type>, `SNESSetNPC()`, or `SNESGetNPC()`?
+  Developer Notes:
+  There should be a `SNESNCGSetType()`
 
-   Developer Note:
-   There should be a `SNESNCGSetType()`
-
-.seealso: `SNESNCGType`, `SNES_NCG_FR`, `SNES_NCG_PRP`, `SNES_NCG_HS`, `SNES_NCG_DY`, `SNES_NCG_CD`
+.seealso: `SNESNCG`, `SNESNCGType`, `SNES_NCG_FR`, `SNES_NCG_PRP`, `SNES_NCG_HS`, `SNES_NCG_DY`, `SNES_NCG_CD`
 @*/
 PetscErrorCode SNESNCGSetType(SNES snes, SNESNCGType btype)
 {
@@ -281,10 +249,10 @@ static PetscErrorCode SNESSolve_NCG(SNES snes)
   snes->norm = fnorm;
   PetscCall(PetscObjectSAWsGrantAccess((PetscObject)snes));
   PetscCall(SNESLogConvergenceHistory(snes, fnorm, 0));
-  PetscCall(SNESMonitor(snes, 0, fnorm));
 
   /* test convergence */
-  PetscUseTypeMethod(snes, converged, 0, 0.0, 0.0, fnorm, &snes->reason, snes->cnvP);
+  PetscCall(SNESConverged(snes, 0, 0.0, 0.0, fnorm));
+  PetscCall(SNESMonitor(snes, 0, fnorm));
   if (snes->reason) PetscFunctionReturn(PETSC_SUCCESS);
 
   /* Call general purpose update function */
@@ -316,10 +284,10 @@ static PetscErrorCode SNESSolve_NCG(SNES snes)
     snes->ynorm = ynorm;
     PetscCall(PetscObjectSAWsGrantAccess((PetscObject)snes));
     PetscCall(SNESLogConvergenceHistory(snes, snes->norm, 0));
-    PetscCall(SNESMonitor(snes, snes->iter, snes->norm));
 
     /* Test for convergence */
-    PetscUseTypeMethod(snes, converged, snes->iter, xnorm, ynorm, fnorm, &snes->reason, snes->cnvP);
+    PetscCall(SNESConverged(snes, snes->iter, xnorm, ynorm, fnorm));
+    PetscCall(SNESMonitor(snes, snes->iter, snes->norm));
     if (snes->reason) PetscFunctionReturn(PETSC_SUCCESS);
 
     /* Call general purpose update function */
@@ -392,8 +360,6 @@ static PetscErrorCode SNESSolve_NCG(SNES snes)
     if (ncg->monitor) PetscCall(PetscViewerASCIIPrintf(ncg->monitor, "beta = %e\n", (double)beta));
     PetscCall(VecAYPX(lX, beta, dX));
   }
-  PetscCall(PetscInfo(snes, "Maximum number of iterations has been reached: %" PetscInt_FMT "\n", maxits));
-  if (!snes->reason) snes->reason = SNES_DIVERGED_MAX_IT;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

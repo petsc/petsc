@@ -623,7 +623,7 @@ static PetscErrorCode DMGetCompatibility_Stag(DM dm, DM dm2, PetscBool *compatib
   PetscCall(DMGetDimension(dm, &dim));
   PetscCall(DMGetDimension(dm2, &dim2));
   if (dim != dim2) {
-    PetscCall(PetscInfo((PetscObject)dm, "DMStag objects have different dimensions"));
+    PetscCall(PetscInfo((PetscObject)dm, "DMStag objects have different dimensions\n"));
     *set        = PETSC_TRUE;
     *compatible = PETSC_FALSE;
     PetscFunctionReturn(PETSC_SUCCESS);
@@ -673,7 +673,7 @@ static PetscErrorCode DMHasCreateInjection_Stag(DM dm, PetscBool *flg)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidBoolPointer(flg, 2);
+  PetscAssertPointer(flg, 2);
   *flg = PETSC_FALSE;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -918,7 +918,7 @@ static PetscErrorCode DMSetFromOptions_Stag(DM dm, PetscOptionItems *PetscOption
   This naming is reflected when viewing a `DMSTAG` object with `DMView()`, and in forming
   convenient options prefixes when creating a decomposition with `DMCreateFieldDecomposition()`.
 
-.seealso: [](chapter_stag), `DM`, `DMPRODUCT`, `DMDA`, `DMPLEX`, `DMStagCreate1d()`, `DMStagCreate2d()`, `DMStagCreate3d()`, `DMType`, `DMCreate()`,
+.seealso: [](ch_stag), `DM`, `DMPRODUCT`, `DMDA`, `DMPLEX`, `DMStagCreate1d()`, `DMStagCreate2d()`, `DMStagCreate3d()`, `DMType`, `DMCreate()`,
           `DMSetType()`, `DMStagVecSplitToDMDA()`
 M*/
 
@@ -928,7 +928,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_Stag(DM dm)
   PetscInt i, dim;
 
   PetscFunctionBegin;
-  PetscValidPointer(dm, 1);
+  PetscAssertPointer(dm, 1);
   PetscCall(PetscNew(&stag));
   dm->data = stag;
 

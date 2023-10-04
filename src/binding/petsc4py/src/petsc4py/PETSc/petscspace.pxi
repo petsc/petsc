@@ -60,7 +60,7 @@ cdef extern from * nogil:
     PetscErrorCode PetscDualSpaceDestroy(PetscDualSpace*)
     PetscErrorCode PetscDualSpaceDuplicate(PetscDualSpace, PetscDualSpace*)
     PetscErrorCode PetscDualSpaceView(PetscDualSpace, PetscViewer)
-    
+
     PetscErrorCode PetscDualSpaceGetDM(PetscDualSpace, PetscDM*)
     PetscErrorCode PetscDualSpaceSetDM(PetscDualSpace, PetscDM)
     PetscErrorCode PetscDualSpaceGetDimension(PetscDualSpace, PetscInt*)
@@ -69,7 +69,7 @@ cdef extern from * nogil:
     PetscErrorCode PetscDualSpaceGetOrder(PetscDualSpace, PetscInt*)
     PetscErrorCode PetscDualSpaceSetOrder(PetscDualSpace, PetscInt)
     PetscErrorCode PetscDualSpaceGetNumDof(PetscDualSpace, const PetscInt**)
-    PetscErrorCode PetscDualSpaceSetUp(PetscDualSpace)   
+    PetscErrorCode PetscDualSpaceSetUp(PetscDualSpace)
     PetscErrorCode PetscDualSpaceViewFromOptions(PetscDualSpace,PetscObject, char[])
 
     PetscErrorCode PetscDualSpaceGetFunctional(PetscDualSpace, PetscInt, PetscQuadrature*)
@@ -84,12 +84,12 @@ cdef extern from * nogil:
     PetscErrorCode PetscDualSpaceSimpleSetFunctional(PetscDualSpace, PetscInt, PetscQuadrature)
     PetscErrorCode PetscDualSpaceGetType(PetscDualSpace, PetscDualSpaceType*)
     PetscErrorCode PetscDualSpaceSetType(PetscDualSpace, PetscDualSpaceType)
-    
+
     #int PetscDualSpaceSetFromOptions(PetscDualSpace)
-    
-    
+
+
     #int PetscDualSpaceRefinedSetCellSpaces(PetscDualSpace, const PetscDualSpace [])
-    
+
     # Advanced
     #int PetscDualSpaceCreateAllDataDefault(PetscDualSpace, PetscQuadrature*, PetscMat*)
     #int PetscDualSpaceCreateInteriorDataDefault(PetscDualSpace, PetscQuadrature*, PetscMat*)

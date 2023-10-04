@@ -86,7 +86,7 @@ int main(int argc, char **args)
 
    test:
       requires: double !complex
-      args: -ksp_rtol  1e-18 -pc_type sor -ksp_converged_reason -ksp_gmres_breakdown_tolerance 1.e-9
+      args: -ksp_rtol 1e-18 -pc_type sor -ksp_converged_reason -ksp_gmres_breakdown_tolerance 1.e-9
       output_file: output/ex70.out
 
 TEST*/

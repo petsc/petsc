@@ -11,8 +11,9 @@ const char *const DTProbDensityTypes[] = {"constant", "gaussian", "maxwell_boltz
 
   Not Collective
 
-  Input Parameter:
-. x - Speed in [0, \infty]
+  Input Parameters:
++ x     - Speed in [0, \infty]
+- dummy - Unused
 
   Output Parameter:
 . p - The probability density at x
@@ -32,8 +33,9 @@ PetscErrorCode PetscPDFMaxwellBoltzmann1D(const PetscReal x[], const PetscReal d
 
   Not Collective
 
-  Input Parameter:
-. x - Speed in [0, \infty]
+  Input Parameters:
++ x     - Speed in [0, \infty]
+- dummy - Unused
 
   Output Parameter:
 . p - The probability density at x
@@ -53,8 +55,9 @@ PetscErrorCode PetscCDFMaxwellBoltzmann1D(const PetscReal x[], const PetscReal d
 
   Not Collective
 
-  Input Parameter:
-. x - Speed in [0, \infty]
+  Input Parameters:
++ x     - Speed in [0, \infty]
+- dummy - Unused
 
   Output Parameter:
 . p - The probability density at x
@@ -74,8 +77,9 @@ PetscErrorCode PetscPDFMaxwellBoltzmann2D(const PetscReal x[], const PetscReal d
 
   Not Collective
 
-  Input Parameter:
-. x - Speed in [0, \infty]
+  Input Parameters:
++ x     - Speed in [0, \infty]
+- dummy - Unused
 
   Output Parameter:
 . p - The probability density at x
@@ -95,8 +99,9 @@ PetscErrorCode PetscCDFMaxwellBoltzmann2D(const PetscReal x[], const PetscReal d
 
   Not Collective
 
-  Input Parameter:
-. x - Speed in [0, \infty]
+  Input Parameters:
++ x     - Speed in [0, \infty]
+- dummy - Unused
 
   Output Parameter:
 . p - The probability density at x
@@ -116,8 +121,9 @@ PetscErrorCode PetscPDFMaxwellBoltzmann3D(const PetscReal x[], const PetscReal d
 
   Not Collective
 
-  Input Parameter:
-. x - Speed in [0, \infty]
+  Input Parameters:
++ x     - Speed in [0, \infty]
+- dummy - Unused
 
   Output Parameter:
 . p - The probability density at x
@@ -137,8 +143,9 @@ PetscErrorCode PetscCDFMaxwellBoltzmann3D(const PetscReal x[], const PetscReal d
 
   Not Collective
 
-  Input Parameter:
-. x - Coordinate in [-\infty, \infty]
+  Input Parameters:
++ x     - Coordinate in [-\infty, \infty]
+- scale - Scaling value
 
   Output Parameter:
 . p - The probability density at x
@@ -167,7 +174,7 @@ PetscErrorCode PetscCDFGaussian1D(const PetscReal x[], const PetscReal scale[], 
   Not Collective
 
   Input Parameters:
-+ p - A uniform variable on [0, 1]
++ p     - A uniform variable on [0, 1]
 - dummy - ignored
 
   Output Parameter:
@@ -175,8 +182,11 @@ PetscErrorCode PetscCDFGaussian1D(const PetscReal x[], const PetscReal scale[], 
 
   Level: beginner
 
-  Note: http://www.mimirgames.com/articles/programming/approximations-of-the-inverse-error-function/
-  https://stackoverflow.com/questions/27229371/inverse-error-function-in-c
+  References:
++ * - http://www.mimirgames.com/articles/programming/approximations-of-the-inverse-error-function/
+- * - https://stackoverflow.com/questions/27229371/inverse-error-function-in-c
+
+.seealso: `PetscPDFGaussian2D()`
 @*/
 PetscErrorCode PetscPDFSampleGaussian1D(const PetscReal p[], const PetscReal dummy[], PetscReal x[])
 {
@@ -211,7 +221,7 @@ PetscErrorCode PetscPDFSampleGaussian1D(const PetscReal p[], const PetscReal dum
   Not Collective
 
   Input Parameters:
-+ x - Coordinate in [-\infty, \infty]^2
++ x     - Coordinate in [-\infty, \infty]^2
 - dummy - ignored
 
   Output Parameter:
@@ -233,7 +243,7 @@ PetscErrorCode PetscPDFGaussian2D(const PetscReal x[], const PetscReal dummy[], 
   Not Collective
 
   Input Parameters:
-+ p - A uniform variable on [0, 1]^2
++ p     - A uniform variable on [0, 1]^2
 - dummy - ignored
 
   Output Parameter:
@@ -241,7 +251,8 @@ PetscErrorCode PetscPDFGaussian2D(const PetscReal x[], const PetscReal dummy[], 
 
   Level: beginner
 
-  Note: https://en.wikipedia.org/wiki/Box%E2%80%93Muller_transform
+  References:
+. * - https://en.wikipedia.org/wiki/Box%E2%80%93Muller_transform
 
 .seealso: `PetscPDFGaussian2D()`, `PetscPDFMaxwellBoltzmann3D()`
 @*/
@@ -259,7 +270,7 @@ PetscErrorCode PetscPDFSampleGaussian2D(const PetscReal p[], const PetscReal dum
   Not Collective
 
   Input Parameters:
-+ x - Coordinate in [-\infty, \infty]^3
++ x     - Coordinate in [-\infty, \infty]^3
 - dummy - ignored
 
   Output Parameter:
@@ -281,7 +292,7 @@ PetscErrorCode PetscPDFGaussian3D(const PetscReal x[], const PetscReal dummy[], 
   Not Collective
 
   Input Parameters:
-+ p - A uniform variable on [0, 1]^3
++ p     - A uniform variable on [0, 1]^3
 - dummy - ignored
 
   Output Parameter:
@@ -289,7 +300,7 @@ PetscErrorCode PetscPDFGaussian3D(const PetscReal x[], const PetscReal dummy[], 
 
   Level: beginner
 
-  Reference:
+  References:
   https://en.wikipedia.org/wiki/Box%E2%80%93Muller_transform
 
 .seealso: `PetscPDFGaussian3D()`, `PetscPDFMaxwellBoltzmann3D()`
@@ -306,8 +317,9 @@ PetscErrorCode PetscPDFSampleGaussian3D(const PetscReal p[], const PetscReal dum
 
   Not Collective
 
-  Input Parameter:
-. x - Coordinate in [-1, 1]
+  Input Parameters:
++ x     - Coordinate in [-1, 1]
+- dummy - Unused
 
   Output Parameter:
 . p - The probability density at x
@@ -327,8 +339,9 @@ PetscErrorCode PetscPDFConstant1D(const PetscReal x[], const PetscReal dummy[], 
 
   Not Collective
 
-  Input Parameter:
-. x - Coordinate in [-1, 1]
+  Input Parameters:
++ x     - Coordinate in [-1, 1]
+- dummy - Unused
 
   Output Parameter:
 . p - The cumulative probability at x
@@ -348,8 +361,9 @@ PetscErrorCode PetscCDFConstant1D(const PetscReal x[], const PetscReal dummy[], 
 
   Not Collective
 
-  Input Parameter:
-. p - A uniform variable on [0, 1]
+  Input Parameters:
++ p     - A uniform variable on [0, 1]
+- dummy - Unused
 
   Output Parameter:
 . x - Coordinate in [-1, 1]
@@ -369,8 +383,9 @@ PetscErrorCode PetscPDFSampleConstant1D(const PetscReal p[], const PetscReal dum
 
   Not Collective
 
-  Input Parameter:
-. x - Coordinate in [-1, 1] x [-1, 1]
+  Input Parameters:
++ x     - Coordinate in [-1, 1] x [-1, 1]
+- dummy - Unused
 
   Output Parameter:
 . p - The probability density at x
@@ -390,8 +405,9 @@ PetscErrorCode PetscPDFConstant2D(const PetscReal x[], const PetscReal dummy[], 
 
   Not Collective
 
-  Input Parameter:
-. x - Coordinate in [-1, 1] x [-1, 1]
+  Input Parameters:
++ x     - Coordinate in [-1, 1] x [-1, 1]
+- dummy - Unused
 
   Output Parameter:
 . p - The cumulative probability at x
@@ -411,8 +427,9 @@ PetscErrorCode PetscCDFConstant2D(const PetscReal x[], const PetscReal dummy[], 
 
   Not Collective
 
-  Input Parameter:
-. p - Two uniform variables on [0, 1]
+  Input Parameters:
++ p     - Two uniform variables on [0, 1]
+- dummy - Unused
 
   Output Parameter:
 . x - Coordinate in [-1, 1] x [-1, 1]
@@ -433,8 +450,9 @@ PetscErrorCode PetscPDFSampleConstant2D(const PetscReal p[], const PetscReal dum
 
   Not Collective
 
-  Input Parameter:
-. x - Coordinate in [-1, 1] x [-1, 1] x [-1, 1]
+  Input Parameters:
++ x     - Coordinate in [-1, 1] x [-1, 1] x [-1, 1]
+- dummy - Unused
 
   Output Parameter:
 . p - The probability density at x
@@ -454,8 +472,9 @@ PetscErrorCode PetscPDFConstant3D(const PetscReal x[], const PetscReal dummy[], 
 
   Not Collective
 
-  Input Parameter:
-. x - Coordinate in [-1, 1] x [-1, 1] x [-1, 1]
+  Input Parameters:
++ x     - Coordinate in [-1, 1] x [-1, 1] x [-1, 1]
+- dummy - Unused
 
   Output Parameter:
 . p - The cumulative probability at x
@@ -475,8 +494,9 @@ PetscErrorCode PetscCDFConstant3D(const PetscReal x[], const PetscReal dummy[], 
 
   Not Collective
 
-  Input Parameter:
-. p - Three uniform variables on [0, 1]
+  Input Parameters:
++ p     - Three uniform variables on [0, 1]
+- dummy - Unused
 
   Output Parameter:
 . x - Coordinate in [-1, 1] x [-1, 1] x [-1, 1]
@@ -504,8 +524,8 @@ PetscErrorCode PetscPDFSampleConstant3D(const PetscReal p[], const PetscReal dum
 - name   - The option name for the probility distribution type
 
   Output Parameters:
-+ pdf - The PDF of this type
-. cdf - The CDF of this type
++ pdf     - The PDF of this type
+. cdf     - The CDF of this type
 - sampler - The PDF sampler of this type
 
   Level: intermediate
@@ -522,15 +542,15 @@ PetscErrorCode PetscProbCreateFromOptions(PetscInt dim, const char prefix[], con
   PetscOptionsEnd();
 
   if (pdf) {
-    PetscValidPointer(pdf, 4);
+    PetscAssertPointer(pdf, 4);
     *pdf = NULL;
   }
   if (cdf) {
-    PetscValidPointer(cdf, 5);
+    PetscAssertPointer(cdf, 5);
     *cdf = NULL;
   }
   if (sampler) {
-    PetscValidPointer(sampler, 6);
+    PetscAssertPointer(sampler, 6);
     *sampler = NULL;
   }
   switch (den) {

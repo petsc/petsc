@@ -79,11 +79,13 @@ PetscErrorCode DMInitializePackage(void)
   PetscCall(PetscLogEventRegister("DMCreateMassMat", DM_CLASSID, &DM_CreateMassMatrix));
   PetscCall(PetscLogEventRegister("DMLoad", DM_CLASSID, &DM_Load));
   PetscCall(PetscLogEventRegister("DMAdaptInterp", DM_CLASSID, &DM_AdaptInterpolator));
+  PetscCall(PetscLogEventRegister("DMProjectFunc", DM_CLASSID, &DM_ProjectFunction));
 
   PetscCall(PetscLogEventRegister("DMPlexBuFrCeLi", DM_CLASSID, &DMPLEX_BuildFromCellList));
   PetscCall(PetscLogEventRegister("DMPlexBuCoFrCeLi", DM_CLASSID, &DMPLEX_BuildCoordinatesFromCellList));
   PetscCall(PetscLogEventRegister("DMPlexCreateGmsh", DM_CLASSID, &DMPLEX_CreateGmsh));
   PetscCall(PetscLogEventRegister("DMPlexCrFromFile", DM_CLASSID, &DMPLEX_CreateFromFile));
+  PetscCall(PetscLogEventRegister("DMPlexCrFromOpts", DM_CLASSID, &DMPLEX_CreateFromOptions));
   PetscCall(PetscLogEventRegister("Mesh Partition", DM_CLASSID, &DMPLEX_Partition));
   PetscCall(PetscLogEventRegister("Mesh Migration", DM_CLASSID, &DMPLEX_Migrate));
   PetscCall(PetscLogEventRegister("DMPlexPartSelf", DM_CLASSID, &DMPLEX_PartSelf));
@@ -133,12 +135,15 @@ PetscErrorCode DMInitializePackage(void)
   PetscCall(PetscLogEventRegister("DMPlexMetricAverage", DM_CLASSID, &DMPLEX_MetricAverage));
   PetscCall(PetscLogEventRegister("DMPlexMetricIntersect", DM_CLASSID, &DMPLEX_MetricIntersection));
   PetscCall(PetscLogEventRegister("DMPlexGenerate", DM_CLASSID, &DMPLEX_Generate));
+  PetscCall(PetscLogEventRegister("DMPlexTransform", DM_CLASSID, &DMPLEX_Transform));
+  PetscCall(PetscLogEventRegister("DMPlexGetLocOff", DM_CLASSID, &DMPLEX_GetLocalOffsets));
 
   PetscCall(PetscLogEventRegister("RebalBuildGraph", DM_CLASSID, &DMPLEX_RebalBuildGraph));
   PetscCall(PetscLogEventRegister("RebalGatherGraph", DM_CLASSID, &DMPLEX_RebalGatherGraph));
   PetscCall(PetscLogEventRegister("RebalPartition", DM_CLASSID, &DMPLEX_RebalPartition));
   PetscCall(PetscLogEventRegister("RebalScatterPart", DM_CLASSID, &DMPLEX_RebalScatterPart));
   PetscCall(PetscLogEventRegister("RebalRewriteSF", DM_CLASSID, &DMPLEX_RebalRewriteSF));
+  PetscCall(PetscLogEventRegister("DMPlexUninterp", DM_CLASSID, &DMPLEX_Uninterpolate));
 
   PetscCall(PetscLogEventRegister("DMSwarmMigrate", DM_CLASSID, &DMSWARM_Migrate));
   PetscCall(PetscLogEventRegister("DMSwarmDETSetup", DM_CLASSID, &DMSWARM_DataExchangerTopologySetup));
@@ -181,6 +186,7 @@ PetscErrorCode DMInitializePackage(void)
 #include <petscfe.h>
 
 static PetscBool PetscFEPackageInitialized = PETSC_FALSE;
+
 /*@C
   PetscFEFinalizePackage - This function finalizes everything in the PetscFE package. It is called
   from PetscFinalize().
@@ -255,6 +261,7 @@ PetscErrorCode PetscFEInitializePackage(void)
 #include <petscfv.h>
 
 static PetscBool PetscFVPackageInitialized = PETSC_FALSE;
+
 /*@C
   PetscFVFinalizePackage - This function finalizes everything in the PetscFV package. It is called
   from PetscFinalize().
@@ -322,6 +329,7 @@ PetscErrorCode PetscFVInitializePackage(void)
 #include <petscds.h>
 
 static PetscBool PetscDSPackageInitialized = PETSC_FALSE;
+
 /*@C
   PetscDSFinalizePackage - This function finalizes everything in the PetscDS package. It is called
   from PetscFinalize().

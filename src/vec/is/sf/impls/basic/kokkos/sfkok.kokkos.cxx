@@ -1,6 +1,6 @@
 #include <../src/vec/is/sf/impls/basic/sfpack.h>
 
-#include <Kokkos_Core.hpp>
+#include <petsc_kokkos.hpp>
 
 using DeviceExecutionSpace = Kokkos::DefaultExecutionSpace;
 using DeviceMemorySpace    = typename DeviceExecutionSpace::memory_space;
@@ -232,11 +232,11 @@ static KOKKOS_INLINE_FUNCTION PetscInt MapTidToIndex(const PetscInt *opt, PetscI
 template <typename Type, PetscInt BS, PetscInt EQ>
 static PetscErrorCode Pack(PetscSFLink link, PetscInt count, PetscInt start, PetscSFPackOpt opt, const PetscInt *idx, const void *data_, void *buf_)
 {
-  const PetscInt      *iopt = opt ? opt->array : NULL;
-  const PetscInt       M = EQ ? 1 : link->bs / BS, MBS = M * BS; /* If EQ, then MBS will be a compile-time const */
-  const Type          *data = static_cast<const Type *>(data_);
-  Type                *buf  = static_cast<Type *>(buf_);
-  DeviceExecutionSpace exec;
+  const PetscInt       *iopt = opt ? opt->array : NULL;
+  const PetscInt        M = EQ ? 1 : link->bs / BS, MBS = M * BS; /* If EQ, then MBS will be a compile-time const */
+  const Type           *data = static_cast<const Type *>(data_);
+  Type                 *buf  = static_cast<Type *>(buf_);
+  DeviceExecutionSpace &exec = PetscGetKokkosExecutionSpace();
 
   PetscFunctionBegin;
   Kokkos::parallel_for(
@@ -254,12 +254,12 @@ static PetscErrorCode Pack(PetscSFLink link, PetscInt count, PetscInt start, Pet
 template <typename Type, class Op, PetscInt BS, PetscInt EQ>
 static PetscErrorCode UnpackAndOp(PetscSFLink link, PetscInt count, PetscInt start, PetscSFPackOpt opt, const PetscInt *idx, void *data_, const void *buf_)
 {
-  Op                   op;
-  const PetscInt      *iopt = opt ? opt->array : NULL;
-  const PetscInt       M = EQ ? 1 : link->bs / BS, MBS = M * BS;
-  Type                *data = static_cast<Type *>(data_);
-  const Type          *buf  = static_cast<const Type *>(buf_);
-  DeviceExecutionSpace exec;
+  Op                    op;
+  const PetscInt       *iopt = opt ? opt->array : NULL;
+  const PetscInt        M = EQ ? 1 : link->bs / BS, MBS = M * BS;
+  Type                 *data = static_cast<Type *>(data_);
+  const Type           *buf  = static_cast<const Type *>(buf_);
+  DeviceExecutionSpace &exec = PetscGetKokkosExecutionSpace();
 
   PetscFunctionBegin;
   Kokkos::parallel_for(
@@ -274,11 +274,11 @@ static PetscErrorCode UnpackAndOp(PetscSFLink link, PetscInt count, PetscInt sta
 template <typename Type, class Op, PetscInt BS, PetscInt EQ>
 static PetscErrorCode FetchAndOp(PetscSFLink link, PetscInt count, PetscInt start, PetscSFPackOpt opt, const PetscInt *idx, void *data, void *buf)
 {
-  Op                   op;
-  const PetscInt      *ropt = opt ? opt->array : NULL;
-  const PetscInt       M = EQ ? 1 : link->bs / BS, MBS = M * BS;
-  Type                *rootdata = static_cast<Type *>(data), *leafbuf = static_cast<Type *>(buf);
-  DeviceExecutionSpace exec;
+  Op                    op;
+  const PetscInt       *ropt = opt ? opt->array : NULL;
+  const PetscInt        M = EQ ? 1 : link->bs / BS, MBS = M * BS;
+  Type                 *rootdata = static_cast<Type *>(data), *leafbuf = static_cast<Type *>(buf);
+  DeviceExecutionSpace &exec = PetscGetKokkosExecutionSpace();
 
   PetscFunctionBegin;
   Kokkos::parallel_for(
@@ -293,11 +293,11 @@ static PetscErrorCode FetchAndOp(PetscSFLink link, PetscInt count, PetscInt star
 template <typename Type, class Op, PetscInt BS, PetscInt EQ>
 static PetscErrorCode ScatterAndOp(PetscSFLink link, PetscInt count, PetscInt srcStart, PetscSFPackOpt srcOpt, const PetscInt *srcIdx, const void *src_, PetscInt dstStart, PetscSFPackOpt dstOpt, const PetscInt *dstIdx, void *dst_)
 {
-  PetscInt             srcx = 0, srcy = 0, srcX = 0, srcY = 0, dstx = 0, dsty = 0, dstX = 0, dstY = 0;
-  const PetscInt       M = (EQ) ? 1 : link->bs / BS, MBS = M * BS;
-  const Type          *src = static_cast<const Type *>(src_);
-  Type                *dst = static_cast<Type *>(dst_);
-  DeviceExecutionSpace exec;
+  PetscInt              srcx = 0, srcy = 0, srcX = 0, srcY = 0, dstx = 0, dsty = 0, dstX = 0, dstY = 0;
+  const PetscInt        M = (EQ) ? 1 : link->bs / BS, MBS = M * BS;
+  const Type           *src  = static_cast<const Type *>(src_);
+  Type                 *dst  = static_cast<Type *>(dst_);
+  DeviceExecutionSpace &exec = PetscGetKokkosExecutionSpace();
 
   PetscFunctionBegin;
   /* The 3D shape of source subdomain may be different than that of the destination, which makes it difficult to use CUDA 3D grid and block */
@@ -358,9 +358,9 @@ static PetscErrorCode ScatterAndOp(PetscSFLink link, PetscInt count, PetscInt sr
 template <typename Type, PetscInt BS, PetscInt EQ>
 static PetscErrorCode ScatterAndInsert(PetscSFLink link, PetscInt count, PetscInt srcStart, PetscSFPackOpt srcOpt, const PetscInt *srcIdx, const void *src_, PetscInt dstStart, PetscSFPackOpt dstOpt, const PetscInt *dstIdx, void *dst_)
 {
-  const Type          *src = static_cast<const Type *>(src_);
-  Type                *dst = static_cast<Type *>(dst_);
-  DeviceExecutionSpace exec;
+  const Type           *src  = static_cast<const Type *>(src_);
+  Type                 *dst  = static_cast<Type *>(dst_);
+  DeviceExecutionSpace &exec = PetscGetKokkosExecutionSpace();
 
   PetscFunctionBegin;
   if (!count) PetscFunctionReturn(PETSC_SUCCESS);
@@ -379,13 +379,13 @@ static PetscErrorCode ScatterAndInsert(PetscSFLink link, PetscInt count, PetscIn
 template <typename Type, class Op, PetscInt BS, PetscInt EQ>
 static PetscErrorCode FetchAndOpLocal(PetscSFLink link, PetscInt count, PetscInt rootstart, PetscSFPackOpt rootopt, const PetscInt *rootidx, void *rootdata_, PetscInt leafstart, PetscSFPackOpt leafopt, const PetscInt *leafidx, const void *leafdata_, void *leafupdate_)
 {
-  Op                   op;
-  const PetscInt       M = (EQ) ? 1 : link->bs / BS, MBS = M * BS;
-  const PetscInt      *ropt     = rootopt ? rootopt->array : NULL;
-  const PetscInt      *lopt     = leafopt ? leafopt->array : NULL;
-  Type                *rootdata = static_cast<Type *>(rootdata_), *leafupdate = static_cast<Type *>(leafupdate_);
-  const Type          *leafdata = static_cast<const Type *>(leafdata_);
-  DeviceExecutionSpace exec;
+  Op                    op;
+  const PetscInt        M = (EQ) ? 1 : link->bs / BS, MBS = M * BS;
+  const PetscInt       *ropt     = rootopt ? rootopt->array : NULL;
+  const PetscInt       *lopt     = leafopt ? leafopt->array : NULL;
+  Type                 *rootdata = static_cast<Type *>(rootdata_), *leafupdate = static_cast<Type *>(leafupdate_);
+  const Type           *leafdata = static_cast<const Type *>(leafdata_);
+  DeviceExecutionSpace &exec     = PetscGetKokkosExecutionSpace();
 
   PetscFunctionBegin;
   Kokkos::parallel_for(
@@ -566,7 +566,7 @@ static PetscErrorCode PetscSFLinkSyncDevice_Kokkos(PetscSFLink PETSC_UNUSED link
 
 static PetscErrorCode PetscSFLinkSyncStream_Kokkos(PetscSFLink PETSC_UNUSED link)
 {
-  DeviceExecutionSpace exec;
+  DeviceExecutionSpace &exec = PetscGetKokkosExecutionSpace();
   PetscFunctionBegin;
   exec.fence();
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -574,27 +574,28 @@ static PetscErrorCode PetscSFLinkSyncStream_Kokkos(PetscSFLink PETSC_UNUSED link
 
 static PetscErrorCode PetscSFLinkMemcpy_Kokkos(PetscSFLink PETSC_UNUSED link, PetscMemType dstmtype, void *dst, PetscMemType srcmtype, const void *src, size_t n)
 {
-  DeviceExecutionSpace exec;
+  DeviceExecutionSpace &exec = PetscGetKokkosExecutionSpace();
 
   PetscFunctionBegin;
   if (!n) PetscFunctionReturn(PETSC_SUCCESS);
   if (PetscMemTypeHost(dstmtype) && PetscMemTypeHost(srcmtype)) {
     PetscCall(PetscMemcpy(dst, src, n));
   } else {
-    if (PetscMemTypeDevice(dstmtype) && PetscMemTypeHost(srcmtype)) {
+    if (PetscMemTypeDevice(dstmtype) && PetscMemTypeHost(srcmtype)) { // H2D
       deviceBuffer_t    dbuf(static_cast<char *>(dst), n);
       HostConstBuffer_t sbuf(static_cast<const char *>(src), n);
-      Kokkos::deep_copy(exec, dbuf, sbuf);
+      PetscCallCXX(Kokkos::deep_copy(exec, dbuf, sbuf));
       PetscCall(PetscLogCpuToGpu(n));
-    } else if (PetscMemTypeHost(dstmtype) && PetscMemTypeDevice(srcmtype)) {
+    } else if (PetscMemTypeHost(dstmtype) && PetscMemTypeDevice(srcmtype)) { // D2H
       HostBuffer_t        dbuf(static_cast<char *>(dst), n);
       deviceConstBuffer_t sbuf(static_cast<const char *>(src), n);
-      Kokkos::deep_copy(exec, dbuf, sbuf);
+      PetscCallCXX(Kokkos::deep_copy(exec, dbuf, sbuf));
+      PetscCallCXX(exec.fence()); // make sure dbuf is ready for use immediately on host
       PetscCall(PetscLogGpuToCpu(n));
     } else if (PetscMemTypeDevice(dstmtype) && PetscMemTypeDevice(srcmtype)) {
       deviceBuffer_t      dbuf(static_cast<char *>(dst), n);
       deviceConstBuffer_t sbuf(static_cast<const char *>(src), n);
-      Kokkos::deep_copy(exec, dbuf, sbuf);
+      PetscCallCXX(Kokkos::deep_copy(exec, dbuf, sbuf));
     }
   }
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -606,7 +607,7 @@ PetscErrorCode PetscSFMalloc_Kokkos(PetscMemType mtype, size_t size, void **ptr)
   if (PetscMemTypeHost(mtype)) PetscCall(PetscMalloc(size, ptr));
   else if (PetscMemTypeDevice(mtype)) {
     if (!PetscKokkosInitialized) PetscCall(PetscKokkosInitializeCheck());
-    *ptr = Kokkos::kokkos_malloc<DeviceMemorySpace>(size);
+    PetscCallCXX(*ptr = Kokkos::kokkos_malloc<DeviceMemorySpace>(size));
   } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Wrong PetscMemType %d", (int)mtype);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -616,7 +617,7 @@ PetscErrorCode PetscSFFree_Kokkos(PetscMemType mtype, void *ptr)
   PetscFunctionBegin;
   if (PetscMemTypeHost(mtype)) PetscCall(PetscFree(ptr));
   else if (PetscMemTypeDevice(mtype)) {
-    Kokkos::kokkos_free<DeviceMemorySpace>(ptr);
+    PetscCallCXX(Kokkos::kokkos_free<DeviceMemorySpace>(ptr));
   } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Wrong PetscMemType %d", (int)mtype);
   PetscFunctionReturn(PETSC_SUCCESS);
 }

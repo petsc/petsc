@@ -326,6 +326,6 @@ PetscErrorCode FormInitialSolution(TS ts, Vec X, void *ctx)
 
     test:
       suffix: 2
-      args:   -ts_exact_final_time INTERPOLATE -snes_rtol 1.e-3
+      args: -ts_exact_final_time INTERPOLATE -snes_rtol 1.e-3
 
 TEST*/

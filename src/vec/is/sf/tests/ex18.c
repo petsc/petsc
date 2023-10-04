@@ -54,8 +54,8 @@ static PetscErrorCode PetscSFCheckEqual_Private(PetscSF sf0, PetscSF sf1)
   PetscCall(PetscSFGetGraph(sf0, &nRoot, NULL, NULL, NULL));
   PetscCall(PetscSFGetLeafRange(sf0, NULL, &nLeave));
   nLeave++;
-  PetscCall(VecCreateMPI(comm, nRoot, PETSC_DECIDE, &vecRoot0));
-  PetscCall(VecCreateMPI(comm, nLeave, PETSC_DECIDE, &vecLeave0));
+  PetscCall(VecCreateFromOptions(comm, NULL, 1, nRoot, PETSC_DECIDE, &vecRoot0));
+  PetscCall(VecCreateFromOptions(comm, NULL, 1, nLeave, PETSC_DECIDE, &vecLeave0));
   PetscCall(VecDuplicate(vecRoot0, &vecRoot1));
   PetscCall(VecDuplicate(vecLeave0, &vecLeave1));
   {

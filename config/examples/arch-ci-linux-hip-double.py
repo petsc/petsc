@@ -10,8 +10,8 @@ if __name__ == '__main__':
   import configure
   configure_options = [
     '--package-prefix-hash='+petsc_hash_pkgs,
-    '--with-mpi-dir=/home/users/balay/soft/instinct/gcc-10.2.0/mpich-4.1',
-    '--with-blaslapack-dir=/home/users/balay/soft/instinct/gcc-10.2.0/fblaslapack',
+    #'--with-mpi-dir=/home/users/balay/soft/instinct/gcc-10.2.0/mpich-4.1',
+    #'--with-blaslapack-dir=/home/users/balay/soft/instinct/gcc-10.2.0/fblaslapack',
     '--with-make-np=24',
     '--with-make-test-np=8',
     '--with-hipc=/opt/rocm-5.4.3/bin/hipcc',
@@ -26,9 +26,11 @@ if __name__ == '__main__':
     '--with-clanguage=c',
     '--download-kokkos',
     '--download-kokkos-kernels',
-    '--download-hypre-configure-arguments=--enable-unified-memory',
+    '--download-hypre',
     '--download-magma',
     '--with-magma-fortran-bindings=0',
+    '--download-mfem',
+    '--download-metis',
     '--with-strict-petscerrorcode',
     #'--with-coverage',
   ]

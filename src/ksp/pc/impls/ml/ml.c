@@ -395,7 +395,6 @@ static PetscErrorCode MatWrapML_MPIAIJ(ML_Operator *mlmat, MatReuse reuse, Mat *
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* -------------------------------------------------------------------------- */
 /*
    PCSetCoordinates_ML
 
@@ -444,9 +443,8 @@ static PetscErrorCode PCSetCoordinates_ML(PC pc, PetscInt ndm, PetscInt a_nloc, 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* -----------------------------------------------------------------------------*/
 extern PetscErrorCode PCReset_MG(PC);
-PetscErrorCode        PCReset_ML(PC pc)
+static PetscErrorCode PCReset_ML(PC pc)
 {
   PC_MG   *mg    = (PC_MG *)pc->data;
   PC_ML   *pc_ml = (PC_ML *)mg->innerctx;
@@ -492,7 +490,7 @@ PetscErrorCode        PCReset_ML(PC pc)
   PetscCall(PCReset_MG(pc));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-/* -------------------------------------------------------------------------- */
+
 /*
    PCSetUp_ML - Prepares for the use of the ML preconditioner
                     by setting data structures and options.
@@ -509,7 +507,7 @@ PetscErrorCode        PCReset_ML(PC pc)
 extern PetscErrorCode PCSetFromOptions_MG(PC, PetscOptionItems *PetscOptionsObject);
 extern PetscErrorCode PCReset_MG(PC);
 
-PetscErrorCode PCSetUp_ML(PC pc)
+static PetscErrorCode PCSetUp_ML(PC pc)
 {
   PetscMPIInt      size;
   FineGridCtx     *PetscMLdata;
@@ -608,7 +606,6 @@ PetscErrorCode PCSetUp_ML(PC pc)
   }
 
   /* setup special features of PCML */
-  /*--------------------------------*/
   /* convert A to Aloc to be used by ML at fine grid */
   pc_ml->size = size;
   PetscCall(PetscObjectBaseTypeCompare((PetscObject)A, MATSEQAIJ, &isSeq));
@@ -945,7 +942,6 @@ PetscErrorCode PCSetUp_ML(PC pc)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* -------------------------------------------------------------------------- */
 /*
    PCDestroy_ML - Destroys the private context for the ML preconditioner
    that was created with PCCreate_ML().
@@ -955,7 +951,7 @@ PetscErrorCode PCSetUp_ML(PC pc)
 
    Application Interface Routine: PCDestroy()
 */
-PetscErrorCode PCDestroy_ML(PC pc)
+static PetscErrorCode PCDestroy_ML(PC pc)
 {
   PC_MG *mg    = (PC_MG *)pc->data;
   PC_ML *pc_ml = (PC_ML *)mg->innerctx;
@@ -968,7 +964,7 @@ PetscErrorCode PCDestroy_ML(PC pc)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PCSetFromOptions_ML(PC pc, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode PCSetFromOptions_ML(PC pc, PetscOptionItems *PetscOptionsObject)
 {
   PetscInt    indx, PrintLevel, partindx;
   const char *scheme[] = {"Uncoupled", "Coupled", "MIS", "METIS"};

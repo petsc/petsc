@@ -5,30 +5,33 @@
 #include <../src/ksp/pc/impls/gamg/gamg.h> /*I "petscpc.h" I*/
 #include <petsc/private/kspimpl.h>
 
+// PetscClangLinter pragma disable: -fdoc-sowing-chars
 /*
-   PCGAMGGetDataWithGhosts - Get array of local + ghost data with local data
-    hacks into Mat MPIAIJ so this must have size > 1
+  PCGAMGGetDataWithGhosts - Get array of local + ghost data with local data
+  hacks into Mat MPIAIJ so this must have size > 1
 
-   Input Parameter:
-   . Gmat - MPIAIJ matrix for scatters
-   . data_sz - number of data terms per node (# cols in output)
-   . data_in[nloc*data_sz] - column oriented local data
+  Input Parameters:
++ Gmat    - MPIAIJ matrix for scatters
+. data_sz - number of data terms per node (# cols in output)
+- data_in - column oriented local data of size nloc*data_sz
 
-   Output Parameter:
-   . a_stride - number of rows of output (locals+ghosts)
-   . a_data_out[stride*data_sz] - output data with ghosts
+  Output Parameters:
++ a_stride - number of rows of output (locals+ghosts)
+- a_data_out - output data with ghosts of size stride*data_sz
 
 */
 PetscErrorCode PCGAMGGetDataWithGhosts(Mat Gmat, PetscInt data_sz, PetscReal data_in[], PetscInt *a_stride, PetscReal **a_data_out)
 {
   Vec          tmp_crds;
-  Mat_MPIAIJ  *mpimat = (Mat_MPIAIJ *)Gmat->data;
+  Mat_MPIAIJ  *mpimat;
   PetscInt     nnodes, num_ghosts, dir, kk, jj, my0, Iend, nloc;
   PetscScalar *data_arr;
   PetscReal   *datas;
   PetscBool    isMPIAIJ;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(Gmat, MAT_CLASSID, 1);
+  mpimat = (Mat_MPIAIJ *)Gmat->data;
   PetscCall(PetscObjectBaseTypeCompare((PetscObject)Gmat, MATMPIAIJ, &isMPIAIJ));
   PetscCall(MatGetOwnershipRange(Gmat, &my0, &Iend));
   nloc = Iend - my0;

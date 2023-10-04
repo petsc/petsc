@@ -1,9 +1,9 @@
-  0 KSP Residual norm 4.43032 
-  1 KSP Residual norm 0.198692 
-  2 KSP Residual norm 0.0167081 
-  3 KSP Residual norm 0.00089653 
-  4 KSP Residual norm 8.75366e-05 
-  5 KSP Residual norm 5.59268e-06 
+  0 KSP Residual norm 4.42475 
+  1 KSP Residual norm 0.182536 
+  2 KSP Residual norm 0.0167839 
+  3 KSP Residual norm 0.000990846 
+  4 KSP Residual norm 0.00012208 
+  5 KSP Residual norm 3.30018e-06 
 KSP Object: 1 MPI process
   type: gmres
     restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
@@ -21,9 +21,11 @@ PC Object: 1 MPI process
         Threshold for dropping small values in graph on each level =   -1.   -1.  
         Threshold scaling factor for each level not specified = 1.
         AGG specific options
-          Number of levels to square graph 1
+          Number of levels of aggressive coarsening 1
+          MIS-k aggressive coarsening
+          MIS-2 coarsening on aggressive levels
           Number smoothing steps 1
-        Complexity:    grid = 1.16667    operator = 1.16
+        Complexity:    grid = 1.125    operator = 1.09
   Coarse grid solver -- level 0 -------------------------------
     KSP Object: (mg_coarse_) 1 MPI process
       type: preonly
@@ -52,30 +54,30 @@ PC Object: 1 MPI process
             Factored matrix follows:
               Mat Object: (mg_coarse_sub_) 1 MPI process
                 type: seqaijcusparse
-                rows=4, cols=4
+                rows=3, cols=3
                 package used to perform factorization: cusparse
-                total: nonzeros=16, allocated nonzeros=16
+                total: nonzeros=9, allocated nonzeros=9
                   using I-node routines: found 1 nodes, limit used is 5
         linear system matrix = precond matrix:
         Mat Object: (mg_coarse_sub_) 1 MPI process
           type: seqaijcusparse
-          rows=4, cols=4
-          total: nonzeros=16, allocated nonzeros=16
+          rows=3, cols=3
+          total: nonzeros=9, allocated nonzeros=9
           total number of mallocs used during MatSetValues calls=0
             not using I-node routines
       linear system matrix = precond matrix:
       Mat Object: (mg_coarse_sub_) 1 MPI process
         type: seqaijcusparse
-        rows=4, cols=4
-        total: nonzeros=16, allocated nonzeros=16
+        rows=3, cols=3
+        total: nonzeros=9, allocated nonzeros=9
         total number of mallocs used during MatSetValues calls=0
           not using I-node routines
   Down solver (pre-smoother) on level 1 -------------------------------
     KSP Object: (mg_levels_1_) 1 MPI process
       type: chebyshev
         Chebyshev polynomial of first kind
-        eigenvalue targets used: min 0.185488, max 2.04037
-        eigenvalues provided (min 0.145059, max 1.85488) with transform: [0. 0.1; 0. 1.1]
+        eigenvalue targets used: min 0.186847, max 2.05532
+        eigenvalues provided (min 0.156686, max 1.86847) with transform: [0. 0.1; 0. 1.1]
       maximum iterations=2, nonzero initial guess
       tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
       left preconditioning
@@ -98,4 +100,4 @@ PC Object: 1 MPI process
     total: nonzeros=100, allocated nonzeros=120
     total number of mallocs used during MatSetValues calls=0
       not using I-node routines
-Norm of error 6.48349e-06 iterations 5
+Norm of error 3.84157e-06 iterations 5

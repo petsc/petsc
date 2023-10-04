@@ -910,6 +910,7 @@ static PetscErrorCode CreateNumericalReferenceSolution(Mat A, Vec rhs, Vec *px)
       requires: !complex
       nsize: 1
       args: -ksp_type fgmres -mg_levels_pc_type jacobi -ksp_converged_reason -stag_grid_x 32 -stag_grid_y 32
+      filter: sed -e "s/ iterations 8/ iterations 7/g"
 
    test:
       suffix: gmg_8

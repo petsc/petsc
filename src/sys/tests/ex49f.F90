@@ -63,9 +63,7 @@ program main
   PetscCallA(PetscSortInt(N,x,ierr))
   PetscCallA(PetscTimSort(N,x1,sizeofentry,CompareIntegers,ctx,ierr))
   do i = 1,N
-     if (x1(i) .ne. x(i)) then
-        SETERRA(PETSC_COMM_SELF,PETSC_ERR_PLIB,"PetscTimSort and PetscSortInt arrays did not match")
-     end if
+    PetscCheckA(x1(i) .eq. x(i),PETSC_COMM_SELF,PETSC_ERR_PLIB,'PetscTimSort and PetscSortInt arrays did not match')
   end do
   PetscCallA(PetscSortIntWithArray(N,y,x,ierr))
   PetscCallA(PetscSortIntWithArrayPair(N,x,y,z,ierr))

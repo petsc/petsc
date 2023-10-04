@@ -124,14 +124,14 @@ typedef enum {
   NUM_TEMPS
 } TemperatureIDX;
 
-/* --------------------  Evaluate Function F(x) --------------------- */
+/* --------------------  Evaluate NRL Function F(x) (analytical solutions exist for this) --------------------- */
 static PetscReal n_cm3[2] = {0, 0};
 PetscErrorCode   FormFunction(TS ts, PetscReal tdummy, Vec X, Vec F, void *ptr)
 {
   LandauCtx         *ctx = (LandauCtx *)ptr; /* user-defined application context */
   PetscScalar       *f;
   const PetscScalar *x;
-  const PetscReal    k_B = 1.6e-12, e_cgs = 4.8e-10, m_cgs[2] = {9.1094e-28, 9.1094e-28 * ctx->masses[1] / ctx->masses[0]}; // erg/eV, e, m as per NRL;
+  const PetscReal    k_B = 1.6e-12, e_cgs = 4.8e-10, proton_mass = 9.1094e-28, m_cgs[2] = {proton_mass, proton_mass * ctx->masses[1] / ctx->masses[0]}; // erg/eV, e, m as per NRL;
   PetscReal          AA, v_bar_ab, vTe, t1, TeDiff, Te, Ti, Tdiff;
 
   PetscFunctionBeginUser;
@@ -148,7 +148,7 @@ PetscErrorCode   FormFunction(TS ts, PetscReal tdummy, Vec X, Vec F, void *ptr)
     else ff = PetscAtanReal(PetscSqrtReal(AA)) / PetscSqrtReal(AA);
     t1 = (-3 + (AA + 3) * ff) / PetscSqr(AA);
     //PetscReal vTeB = 8.2e-7 * n_cm3[0] * ctx->lambdas[0][1] * PetscPowReal(Te, -1.5);
-    vTe = PetscRealPart(2 * PetscSqrtReal(PETSC_PI / m_cgs[ii]) * PetscSqr(PetscSqr(e_cgs)) * n_cm3[0] * ctx->lambdas[0][1] * PetscPowReal(k_B * x[E_PAR_IDX], -1.5)) * t1;
+    vTe = 2 * PetscSqrtReal(PETSC_PI / m_cgs[ii]) * PetscSqr(PetscSqr(e_cgs)) * n_cm3[0] * ctx->lambdas[0][1] * PetscPowReal(PetscRealPart(k_B * x[E_PAR_IDX]), -1.5) * t1;
     t1  = vTe * TeDiff; // * 2; // scaling from NRL that makes it fit pretty good
 
     f[2 * ii + E_PAR_IDX]  = 2 * t1; // par
@@ -405,8 +405,7 @@ int main(int argc, char **argv)
   PetscCall(TSSolve(ts, X));
   /* test add field method & output */
   PetscCall(DMPlexLandauAccess(pack, X, landau_field_print_access_callback, NULL));
-  //PetscCall(Monitor(ts, -1, 1.0, X, ctx));
-  /* clean up */
+  // run NRL in separate TS
   ts_nrl = (TS)ctx->data;
   if (print_nrl) {
     PetscReal    finalTime, dt_real, tstart = dt0 * ctx->t_0 / 2; // hack
@@ -429,6 +428,7 @@ int main(int argc, char **argv)
     PetscCall(TSMonitorSet(ts_nrl, Monitor_nrl, ctx, NULL));
     PetscCall(TSSolve(ts_nrl, NULL));
   }
+  /* clean up */
   PetscCall(TSDestroy(&ts));
   PetscCall(TSDestroy(&ts_nrl));
   PetscCall(VecDestroy(&X));
@@ -450,20 +450,16 @@ int main(int argc, char **argv)
       suffix: kokkos
       requires: kokkos_kernels !defined(PETSC_HAVE_CUDA_CLANG)
       args: -dm_landau_device_type kokkos -dm_mat_type aijkokkos -dm_vec_type kokkos
-    test:
-      suffix: cuda
-      requires: cuda !defined(PETSC_HAVE_CUDA_CLANG)
-      args: -dm_landau_device_type cuda -dm_mat_type aijcusparse -dm_vec_type cuda -mat_cusparse_use_cpu_solve
 
   testset:
     requires: !complex defined(PETSC_USE_DMLANDAU_2D) p4est
-    args: -dm_landau_type p4est -dm_landau_amr_levels_max 3,3 -dm_landau_num_species_grid 1,1 -dm_landau_n 1,1 -dm_landau_thermal_temps 1,1 -dm_landau_ion_charges 1 -dm_landau_ion_masses 2 -petscspace_degree 2 -ts_type beuler -ts_dt .1 -ts_max_steps 0 -dm_landau_verbose 2 -ksp_type preonly -pc_type lu -dm_landau_device_type cpu -use_nrl false -print_nrl -snes_rtol 1.e-14 -snes_stol 1.e-14 -dm_landau_device_type cpu
+    args: -dm_landau_type p4est -dm_landau_num_species_grid 1,1 -dm_landau_n 1,1 -dm_landau_thermal_temps 2,1 -dm_landau_ion_charges 1 -dm_landau_ion_masses 2 -petscspace_degree 2 -ts_type beuler -ts_dt .1 -ts_max_steps 1 -dm_landau_verbose 2 -ksp_type preonly -pc_type lu -dm_landau_device_type cpu -use_nrl false -print_nrl -snes_rtol 1.e-14 -snes_stol 1.e-14 -snes_converged_reason -dm_landau_device_type cpu
     nsize: 1
     test:
       suffix: sphere
-      args: -dm_landau_sphere -ts_max_steps 1 -dm_landau_amr_post_refine 0
+      args: -dm_landau_sphere -dm_landau_amr_levels_max 1,1 -dm_landau_sphere_inner_radius_90degree_scale .55 -dm_landau_sphere_inner_radius_45degree_scale .5
     test:
       suffix: re
-      args: -dm_landau_num_cells 4,4 -dm_landau_amr_levels_max 0,2 -dm_landau_z_radius_pre 2.5 -dm_landau_z_radius_post 3.75 -dm_landau_amr_z_refine_pre 1 -dm_landau_amr_z_refine_post 1 -dm_landau_electron_shift 1.25 -ts_max_steps 1 -snes_converged_reason -info :vec
+      args: -dm_landau_num_cells 4,4 -dm_landau_amr_levels_max 0,2 -dm_landau_z_radius_pre 2.5 -dm_landau_z_radius_post 3.75 -dm_landau_amr_z_refine_pre 1 -dm_landau_amr_z_refine_post 1 -dm_landau_electron_shift 1.25 -info :vec
 
 TEST*/

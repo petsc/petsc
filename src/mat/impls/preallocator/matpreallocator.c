@@ -9,7 +9,7 @@ typedef struct {
   PetscBool   used;
 } Mat_Preallocator;
 
-PetscErrorCode MatDestroy_Preallocator(Mat A)
+static PetscErrorCode MatDestroy_Preallocator(Mat A)
 {
   Mat_Preallocator *p = (Mat_Preallocator *)A->data;
 
@@ -23,7 +23,7 @@ PetscErrorCode MatDestroy_Preallocator(Mat A)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatSetUp_Preallocator(Mat A)
+static PetscErrorCode MatSetUp_Preallocator(Mat A)
 {
   Mat_Preallocator *p = (Mat_Preallocator *)A->data;
   PetscInt          m, bs, mbs;
@@ -42,7 +42,7 @@ PetscErrorCode MatSetUp_Preallocator(Mat A)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatSetValues_Preallocator(Mat A, PetscInt m, const PetscInt *rows, PetscInt n, const PetscInt *cols, const PetscScalar *values, InsertMode addv)
+static PetscErrorCode MatSetValues_Preallocator(Mat A, PetscInt m, const PetscInt *rows, PetscInt n, const PetscInt *cols, const PetscScalar *values, InsertMode addv)
 {
   Mat_Preallocator *p = (Mat_Preallocator *)A->data;
   PetscInt          rStart, rEnd, r, cStart, cEnd, c, bs;
@@ -80,7 +80,7 @@ PetscErrorCode MatSetValues_Preallocator(Mat A, PetscInt m, const PetscInt *rows
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatAssemblyBegin_Preallocator(Mat A, MatAssemblyType type)
+static PetscErrorCode MatAssemblyBegin_Preallocator(Mat A, MatAssemblyType type)
 {
   PetscInt nstash, reallocs;
 
@@ -91,7 +91,7 @@ PetscErrorCode MatAssemblyBegin_Preallocator(Mat A, MatAssemblyType type)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatAssemblyEnd_Preallocator(Mat A, MatAssemblyType type)
+static PetscErrorCode MatAssemblyEnd_Preallocator(Mat A, MatAssemblyType type)
 {
   PetscScalar      *val;
   PetscInt         *row, *col;
@@ -123,19 +123,19 @@ PetscErrorCode MatAssemblyEnd_Preallocator(Mat A, MatAssemblyType type)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatView_Preallocator(Mat A, PetscViewer viewer)
+static PetscErrorCode MatView_Preallocator(Mat A, PetscViewer viewer)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatSetOption_Preallocator(Mat A, MatOption op, PetscBool flg)
+static PetscErrorCode MatSetOption_Preallocator(Mat A, MatOption op, PetscBool flg)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatPreallocatorPreallocate_Preallocator(Mat mat, PetscBool fill, Mat A)
+static PetscErrorCode MatPreallocatorPreallocate_Preallocator(Mat mat, PetscBool fill, Mat A)
 {
   Mat_Preallocator *p = (Mat_Preallocator *)mat->data;
   PetscInt          bs;

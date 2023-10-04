@@ -1,8 +1,8 @@
 [0]PETSC ERROR: Error Created
-[0]PETSC ERROR: #1 CreateError() line 9
-[0]PETSC ERROR: #2 CreateError() line 10
-[0]PETSC ERROR: #3 CreateError() line 10
-[0]PETSC ERROR: #4 CreateError() line 10
-[0]PETSC ERROR: #5 CreateError() line 10
-[0]PETSC ERROR: #6 CreateError() line 10
-[0]PETSC ERROR: #7 main() line 21
+[0]PETSC ERROR: #1 CreateError() at ex1.c:0
+[0]PETSC ERROR: #2 CreateError() at ex1.c:0
+[0]PETSC ERROR: #3 CreateError() at ex1.c:0
+[0]PETSC ERROR: #4 CreateError() at ex1.c:0
+[0]PETSC ERROR: #5 CreateError() at ex1.c:0
+[0]PETSC ERROR: #6 CreateError() at ex1.c:0
+[0]PETSC ERROR: #7 main() at ex1.c:0

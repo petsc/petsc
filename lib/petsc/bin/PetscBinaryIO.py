@@ -68,7 +68,7 @@ def decorate_with_conf(f):
         """
         Additional kwargs:
           precision: 'single', 'double', '__float128' for scalars
-          indices: '32bit', '64bit' integer size
+          indices: '32bit', '64-bit' integer size
           complexscalars: True/False
 
           Note these are set in order of preference:

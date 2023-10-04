@@ -5,8 +5,7 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#ifndef EXAMPLES_MEMORYMANAGER_HPP
-#define EXAMPLES_MEMORYMANAGER_HPP
+#pragma once
 
 #include "RAJA/RAJA.hpp"
 
@@ -97,4 +96,3 @@ void deallocate_gpu(T *&ptr)
 #endif
 
 }; // namespace memoryManager
-#endif

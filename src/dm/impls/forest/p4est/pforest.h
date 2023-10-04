@@ -1,3 +1,5 @@
+#pragma once
+
 #include <petscds.h>
 #include <petsc/private/dmimpl.h>
 #include <petsc/private/dmforestimpl.h>
@@ -286,8 +288,8 @@ static PetscErrorCode DMFTopologyCreate_pforest(DM dm, DMForestTopology topology
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidCharPointer(name, 2);
-  PetscValidPointer(topo, 3);
+  PetscAssertPointer(name, 2);
+  PetscAssertPointer(topo, 3);
   PetscCall(PetscStrcmp(name, "brick", &isBrick));
   PetscCall(PetscStrcmp(name, "shell", &isShell));
   PetscCall(PetscStrcmp(name, "sphere", &isSphere));
@@ -871,7 +873,7 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
     if (adaptLabel) {
       /* apply the refinement/coarsening by flags, plus minimum/maximum refinement */
       PetscCall(DMLabelGetNumValues(adaptLabel, &numValues));
-      PetscCallMPI(MPI_Allreduce(&numValues, &numValuesGlobal, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)adaptFrom)));
+      PetscCall(MPIU_Allreduce(&numValues, &numValuesGlobal, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)adaptFrom)));
       PetscCall(DMLabelGetDefaultValue(adaptLabel, &defaultValue));
       if (!numValuesGlobal && defaultValue == DM_ADAPT_COARSEN_LAST) { /* uniform coarsen of the last level only (equivalent to DM_ADAPT_COARSEN for conforming grids)  */
         PetscCall(DMForestGetMinimumRefinement(dm, &ctx.minLevel));
@@ -1312,7 +1314,7 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
   forest->preCoarseToFine = preCoarseToFine;
   forest->coarseToPreFine = coarseToPreFine;
   dm->setupcalled         = PETSC_TRUE;
-  PetscCallMPI(MPI_Allreduce(&ctx.anyChange, &(pforest->adaptivitySuccess), 1, MPIU_BOOL, MPI_LOR, PetscObjectComm((PetscObject)dm)));
+  PetscCall(MPIU_Allreduce(&ctx.anyChange, &(pforest->adaptivitySuccess), 1, MPIU_BOOL, MPI_LOR, PetscObjectComm((PetscObject)dm)));
   PetscCall(DMPforestGetPlex(dm, NULL));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -3729,7 +3731,7 @@ static PetscErrorCode DMPforestMapCoordinates(DM dm, DM plex)
     DM           base;
 
     PetscCall(DMPlexGetHeightStratum(plex, 0, &cStart, &cEnd));
-    PetscCall(DMPlexGetGhostCellStratum(plex, &cEndInterior, NULL));
+    PetscCall(DMPlexGetCellTypeStratum(plex, DM_POLYTOPE_FV_GHOST, &cEndInterior, NULL));
     cEnd = cEndInterior < 0 ? cEnd : cEndInterior;
     PetscCall(DMForestGetBaseDM(dm, &base));
     PetscCall(DMGetCoordinateSection(plex, &coordSec));
@@ -3790,7 +3792,7 @@ static PetscErrorCode DMPforestMapCoordinates(DM dm, DM plex)
     PetscInt cStart, cEnd, cEndInterior;
 
     PetscCall(DMPlexGetHeightStratum(plex, 0, &cStart, &cEnd));
-    PetscCall(DMPlexGetGhostCellStratum(plex, &cEndInterior, NULL));
+    PetscCall(DMPlexGetCellTypeStratum(plex, DM_POLYTOPE_FV_GHOST, &cEndInterior, NULL));
     cEnd = cEndInterior < 0 ? cEnd : cEndInterior;
     if (cLocalStart > 0) {
       p4est_quadrant_t *ghosts = (p4est_quadrant_t *)pforest->ghost->ghosts.array;
@@ -3981,7 +3983,7 @@ static PetscErrorCode DMPforestLocalizeCoordinates(DM dm, DM plex)
   trees       = (p4est_tree_t *)pforest->forest->trees->array;
 
   PetscCall(DMPlexGetHeightStratum(plex, 0, &cStart, &cEnd));
-  PetscCall(DMPlexGetGhostCellStratum(plex, &cEndInterior, NULL));
+  PetscCall(DMPlexGetCellTypeStratum(plex, DM_POLYTOPE_FV_GHOST, &cEndInterior, NULL));
   cEnd = cEndInterior < 0 ? cEnd : cEndInterior;
   cp   = 0;
   if (cLocalStart > 0) {

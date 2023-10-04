@@ -169,7 +169,7 @@ typedef struct {
 #define Factorization_Pivot_Tolerance pow(2.2204460492503131E-16, 2.0 / 3.0)
 #define Factorization_Small_Tolerance 1e-15 /* pow(DBL_EPSILON, 0.8) */
 
-PetscErrorCode MatDestroy_LUSOL(Mat A)
+static PetscErrorCode MatDestroy_LUSOL(Mat A)
 {
   Mat_LUSOL *lusol = (Mat_LUSOL *)A->spptr;
 
@@ -194,7 +194,7 @@ PetscErrorCode MatDestroy_LUSOL(Mat A)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatSolve_LUSOL(Mat A, Vec b, Vec x)
+static PetscErrorCode MatSolve_LUSOL(Mat A, Vec b, Vec x)
 {
   Mat_LUSOL    *lusol = (Mat_LUSOL *)A->spptr;
   double       *xx;
@@ -220,7 +220,7 @@ PetscErrorCode MatSolve_LUSOL(Mat A, Vec b, Vec x)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatLUFactorNumeric_LUSOL(Mat F, Mat A, const MatFactorInfo *info)
+static PetscErrorCode MatLUFactorNumeric_LUSOL(Mat F, Mat A, const MatFactorInfo *info)
 {
   Mat_SeqAIJ *a;
   Mat_LUSOL  *lusol = (Mat_LUSOL *)F->spptr;
@@ -311,7 +311,7 @@ PetscErrorCode MatLUFactorNumeric_LUSOL(Mat F, Mat A, const MatFactorInfo *info)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatLUFactorSymbolic_LUSOL(Mat F, Mat A, IS r, IS c, const MatFactorInfo *info)
+static PetscErrorCode MatLUFactorSymbolic_LUSOL(Mat F, Mat A, IS r, IS c, const MatFactorInfo *info)
 {
   /************************************************************************/
   /* Input                                                                */
@@ -393,7 +393,7 @@ PetscErrorCode MatLUFactorSymbolic_LUSOL(Mat F, Mat A, IS r, IS c, const MatFact
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatFactorGetSolverType_seqaij_lusol(Mat A, MatSolverType *type)
+static PetscErrorCode MatFactorGetSolverType_seqaij_lusol(Mat A, MatSolverType *type)
 {
   PetscFunctionBegin;
   *type = MATSOLVERLUSOL;
@@ -444,5 +444,5 @@ PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_Lusol(void)
 
    Level: beginner
 
-.seealso: [](chapter_matrices), `Mat`, `PCLU`, `PCFactorSetMatSolverType()`, `MatSolverType`
+.seealso: [](ch_matrices), `Mat`, `PCLU`, `PCFactorSetMatSolverType()`, `MatSolverType`
 M*/

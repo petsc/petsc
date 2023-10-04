@@ -45,12 +45,12 @@ static inline PetscErrorCode DMatrix_Invert_3x3_Internal(const PetscReal *inmat,
   return PETSC_SUCCESS;
 }
 
-inline PetscReal DMatrix_Determinant_4x4_Internal(PetscReal inmat[4 * 4])
+static inline PetscReal DMatrix_Determinant_4x4_Internal(PetscReal inmat[4 * 4])
 {
   return inmat[0 + 0 * 4] * (inmat[1 + 1 * 4] * (inmat[2 + 2 * 4] * inmat[3 + 3 * 4] - inmat[2 + 3 * 4] * inmat[3 + 2 * 4]) - inmat[1 + 2 * 4] * (inmat[2 + 1 * 4] * inmat[3 + 3 * 4] - inmat[2 + 3 * 4] * inmat[3 + 1 * 4]) + inmat[1 + 3 * 4] * (inmat[2 + 1 * 4] * inmat[3 + 2 * 4] - inmat[2 + 2 * 4] * inmat[3 + 1 * 4])) - inmat[0 + 1 * 4] * (inmat[1 + 0 * 4] * (inmat[2 + 2 * 4] * inmat[3 + 3 * 4] - inmat[2 + 3 * 4] * inmat[3 + 2 * 4]) - inmat[1 + 2 * 4] * (inmat[2 + 0 * 4] * inmat[3 + 3 * 4] - inmat[2 + 3 * 4] * inmat[3 + 0 * 4]) + inmat[1 + 3 * 4] * (inmat[2 + 0 * 4] * inmat[3 + 2 * 4] - inmat[2 + 2 * 4] * inmat[3 + 0 * 4])) + inmat[0 + 2 * 4] * (inmat[1 + 0 * 4] * (inmat[2 + 1 * 4] * inmat[3 + 3 * 4] - inmat[2 + 3 * 4] * inmat[3 + 1 * 4]) - inmat[1 + 1 * 4] * (inmat[2 + 0 * 4] * inmat[3 + 3 * 4] - inmat[2 + 3 * 4] * inmat[3 + 0 * 4]) + inmat[1 + 3 * 4] * (inmat[2 + 0 * 4] * inmat[3 + 1 * 4] - inmat[2 + 1 * 4] * inmat[3 + 0 * 4])) - inmat[0 + 3 * 4] * (inmat[1 + 0 * 4] * (inmat[2 + 1 * 4] * inmat[3 + 2 * 4] - inmat[2 + 2 * 4] * inmat[3 + 1 * 4]) - inmat[1 + 1 * 4] * (inmat[2 + 0 * 4] * inmat[3 + 2 * 4] - inmat[2 + 2 * 4] * inmat[3 + 0 * 4]) + inmat[1 + 2 * 4] * (inmat[2 + 0 * 4] * inmat[3 + 1 * 4] - inmat[2 + 1 * 4] * inmat[3 + 0 * 4]));
 }
 
-inline PetscErrorCode DMatrix_Invert_4x4_Internal(PetscReal *inmat, PetscReal *outmat, PetscScalar *determinant)
+static inline PetscErrorCode DMatrix_Invert_4x4_Internal(PetscReal *inmat, PetscReal *outmat, PetscScalar *determinant)
 {
   PetscReal det = DMatrix_Determinant_4x4_Internal(inmat);
   if (outmat) {
@@ -75,7 +75,7 @@ inline PetscErrorCode DMatrix_Invert_4x4_Internal(PetscReal *inmat, PetscReal *o
   return PETSC_SUCCESS;
 }
 
-/*@C
+/*
   Compute_Lagrange_Basis_1D_Internal - Evaluate bases and derivatives at quadrature points for a EDGE2 or EDGE3 element.
 
   The routine is given the coordinates of the vertices of a linear or quadratic edge element.
@@ -102,21 +102,20 @@ inline PetscErrorCode DMatrix_Invert_4x4_Internal(PetscReal *inmat, PetscReal *o
 .  PetscReal jxw[npts] -       the jacobian determinant * quadrature weight necessary for assembling discrete contributions
 .  PetscReal phi[npts] -       the bases evaluated at the specified quadrature points
 .  PetscReal dphidx[npts] -    the derivative of the bases wrt X-direction evaluated at the specified quadrature points
-.  jacobian -                  jacobian
-.  ijacobian -                 ijacobian
--  volume -                    volume
+. jacobian  - jacobian
+. ijacobian - ijacobian
+- volume    - volume
 
   Level: advanced
-
-@*/
-PetscErrorCode Compute_Lagrange_Basis_1D_Internal(const PetscInt nverts, const PetscReal *coords, const PetscInt npts, const PetscReal *quad, PetscReal *phypts, PetscReal *jxw, PetscReal *phi, PetscReal *dphidx, PetscReal *jacobian, PetscReal *ijacobian, PetscReal *volume)
+*/
+static PetscErrorCode Compute_Lagrange_Basis_1D_Internal(const PetscInt nverts, const PetscReal *coords, const PetscInt npts, const PetscReal *quad, PetscReal *phypts, PetscReal *jxw, PetscReal *phi, PetscReal *dphidx, PetscReal *jacobian, PetscReal *ijacobian, PetscReal *volume)
 {
   int i, j;
 
   PetscFunctionBegin;
-  PetscValidPointer(jacobian, 9);
-  PetscValidPointer(ijacobian, 10);
-  PetscValidPointer(volume, 11);
+  PetscAssertPointer(jacobian, 9);
+  PetscAssertPointer(ijacobian, 10);
+  PetscAssertPointer(volume, 11);
   if (phypts) PetscCall(PetscArrayzero(phypts, npts * 3));
   if (dphidx) { /* Reset arrays. */
     PetscCall(PetscArrayzero(dphidx, npts * nverts));
@@ -182,7 +181,7 @@ PetscErrorCode Compute_Lagrange_Basis_1D_Internal(const PetscInt nverts, const P
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*
   Compute_Lagrange_Basis_2D_Internal - Evaluate bases and derivatives at quadrature points for a QUAD4 or TRI3 element.
 
   The routine is given the coordinates of the vertices of a quadrangle or triangle.
@@ -213,21 +212,20 @@ PetscErrorCode Compute_Lagrange_Basis_1D_Internal(const PetscInt nverts, const P
 .  PetscReal phi[npts] -       the bases evaluated at the specified quadrature points
 .  PetscReal dphidx[npts] -    the derivative of the bases wrt X-direction evaluated at the specified quadrature points
 .  PetscReal dphidy[npts] -    the derivative of the bases wrt Y-direction evaluated at the specified quadrature points
-.  jacobian -                  jacobian
-.  ijacobian -                 ijacobian
--  volume -                    volume
+. jacobian  - jacobian
+. ijacobian - ijacobian
+- volume    - volume
 
   Level: advanced
-
-@*/
-PetscErrorCode Compute_Lagrange_Basis_2D_Internal(const PetscInt nverts, const PetscReal *coords, const PetscInt npts, const PetscReal *quad, PetscReal *phypts, PetscReal *jxw, PetscReal *phi, PetscReal *dphidx, PetscReal *dphidy, PetscReal *jacobian, PetscReal *ijacobian, PetscReal *volume)
+*/
+static PetscErrorCode Compute_Lagrange_Basis_2D_Internal(const PetscInt nverts, const PetscReal *coords, const PetscInt npts, const PetscReal *quad, PetscReal *phypts, PetscReal *jxw, PetscReal *phi, PetscReal *dphidx, PetscReal *dphidy, PetscReal *jacobian, PetscReal *ijacobian, PetscReal *volume)
 {
   PetscInt i, j, k;
 
   PetscFunctionBegin;
-  PetscValidPointer(jacobian, 10);
-  PetscValidPointer(ijacobian, 11);
-  PetscValidPointer(volume, 12);
+  PetscAssertPointer(jacobian, 10);
+  PetscAssertPointer(ijacobian, 11);
+  PetscAssertPointer(volume, 12);
   PetscCall(PetscArrayzero(phi, npts));
   if (phypts) PetscCall(PetscArrayzero(phypts, npts * 3));
   if (dphidx) { /* Reset arrays. */
@@ -336,7 +334,7 @@ PetscErrorCode Compute_Lagrange_Basis_2D_Internal(const PetscInt nverts, const P
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*
   Compute_Lagrange_Basis_3D_Internal - Evaluate bases and derivatives at quadrature points for a HEX8 or TET4 element.
 
   The routine is given the coordinates of the vertices of a hexahedra or tetrahedra.
@@ -370,21 +368,20 @@ PetscErrorCode Compute_Lagrange_Basis_2D_Internal(const PetscInt nverts, const P
 .  PetscReal dphidx[npts] -    the derivative of the bases wrt X-direction evaluated at the specified quadrature points
 .  PetscReal dphidy[npts] -    the derivative of the bases wrt Y-direction evaluated at the specified quadrature points
 .  PetscReal dphidz[npts] -    the derivative of the bases wrt Z-direction evaluated at the specified quadrature points
-.  jacobian -                  jacobian
-.  ijacobian -                 ijacobian
--  volume -                    volume
+. jacobian  - jacobian
+. ijacobian - ijacobian
+- volume    - volume
 
   Level: advanced
-
-@*/
-PetscErrorCode Compute_Lagrange_Basis_3D_Internal(const PetscInt nverts, const PetscReal *coords, const PetscInt npts, const PetscReal *quad, PetscReal *phypts, PetscReal *jxw, PetscReal *phi, PetscReal *dphidx, PetscReal *dphidy, PetscReal *dphidz, PetscReal *jacobian, PetscReal *ijacobian, PetscReal *volume)
+*/
+static PetscErrorCode Compute_Lagrange_Basis_3D_Internal(const PetscInt nverts, const PetscReal *coords, const PetscInt npts, const PetscReal *quad, PetscReal *phypts, PetscReal *jxw, PetscReal *phi, PetscReal *dphidx, PetscReal *dphidy, PetscReal *dphidz, PetscReal *jacobian, PetscReal *ijacobian, PetscReal *volume)
 {
   PetscInt i, j, k;
 
   PetscFunctionBegin;
-  PetscValidPointer(jacobian, 11);
-  PetscValidPointer(ijacobian, 12);
-  PetscValidPointer(volume, 13);
+  PetscAssertPointer(jacobian, 11);
+  PetscAssertPointer(ijacobian, 12);
+  PetscAssertPointer(volume, 13);
 
   PetscCall(PetscArrayzero(phi, npts));
   if (phypts) PetscCall(PetscArrayzero(phypts, npts * 3));
@@ -541,19 +538,20 @@ PetscErrorCode Compute_Lagrange_Basis_3D_Internal(const PetscInt nverts, const P
   each quadrature point provided, and their derivatives with respect to X, Y and Z as appropriate.
 
   Input Parameters:
-+  PetscInt  nverts -           the number of element vertices
-.  PetscReal coords[3*nverts] - the physical coordinates of the vertices (in canonical numbering)
-.  PetscInt  npts -             the number of evaluation points (quadrature points)
--  PetscReal quad[3*npts] -     the evaluation points (quadrature points) in the reference space
++ dim         - the dimension
+. nverts      - the number of element vertices
+. coordinates - the physical coordinates of the vertices (in canonical numbering)
+- quadrature  - the evaluation points (quadrature points) in the reference space
 
   Output Parameters:
-+  PetscReal phypts[3*npts] -   the evaluation points (quadrature points) transformed to the physical space
-.  PetscReal jxw[npts] -        the jacobian determinant * quadrature weight necessary for assembling discrete contributions
-.  PetscReal fe_basis[npts] -   the bases values evaluated at the specified quadrature points
--  PetscReal fe_basis_derivatives[dim][npts] - the derivative of the bases wrt (X,Y,Z)-directions (depending on the dimension) evaluated at the specified quadrature points
++ phypts                             - the evaluation points (quadrature points) transformed to the physical space
+. jacobian_quadrature_weight_product - the jacobian determinant * quadrature weight necessary for assembling discrete contributions
+. fe_basis                           - the bases values evaluated at the specified quadrature points
+- fe_basis_derivatives               - the derivative of the bases wrt (X,Y,Z)-directions (depending on the dimension) evaluated at the specified quadrature points
 
   Level: advanced
 
+.seealso: `DMMoabCreate()`
 @*/
 PetscErrorCode DMMoabFEMComputeBasis(const PetscInt dim, const PetscInt nverts, const PetscReal *coordinates, const PetscQuadrature quadrature, PetscReal *phypts, PetscReal *jacobian_quadrature_weight_product, PetscReal *fe_basis, PetscReal **fe_basis_derivatives)
 {
@@ -563,9 +561,9 @@ PetscErrorCode DMMoabFEMComputeBasis(const PetscInt dim, const PetscInt nverts, 
   PetscReal        jacobian[9], ijacobian[9], volume;
 
   PetscFunctionBegin;
-  PetscValidPointer(coordinates, 3);
+  PetscAssertPointer(coordinates, 3);
   PetscValidHeaderSpecific(quadrature, PETSCQUADRATURE_CLASSID, 4);
-  PetscValidPointer(fe_basis, 7);
+  PetscAssertPointer(fe_basis, 7);
   compute_der = (fe_basis_derivatives != NULL);
 
   /* Get the quadrature points and weights for the given quadrature rule */
@@ -594,15 +592,15 @@ PetscErrorCode DMMoabFEMComputeBasis(const PetscInt dim, const PetscInt nverts, 
   dimension and polynomial order (deciphered from number of element vertices).
 
   Input Parameters:
-
-+  PetscInt  dim   -   the element dimension (1=EDGE, 2=QUAD/TRI, 3=HEX/TET)
--  PetscInt nverts -   the number of vertices in the physical element
++ dim    - the element dimension (1=EDGE, 2=QUAD/TRI, 3=HEX/TET)
+- nverts - the number of vertices in the physical element
 
   Output Parameter:
-.  PetscQuadrature quadrature -  the quadrature object with default settings to integrate polynomials defined over the element
+. quadrature - the quadrature object with default settings to integrate polynomials defined over the element
 
   Level: advanced
 
+.seealso: `DMMoabCreate()`
 @*/
 PetscErrorCode DMMoabFEMCreateQuadratureDefault(const PetscInt dim, const PetscInt nverts, PetscQuadrature *quadrature)
 {
@@ -678,117 +676,7 @@ PetscErrorCode DMMoabFEMCreateQuadratureDefault(const PetscInt dim, const PetscI
 }
 
 /* Compute Jacobians */
-PetscErrorCode ComputeJacobian_Internal(const PetscInt dim, const PetscInt nverts, const PetscReal *coordinates, const PetscReal *quad, PetscReal *phypts, PetscReal *jacobian, PetscReal *ijacobian, PetscReal *dvolume)
-{
-  PetscInt  i;
-  PetscReal volume = 1.0;
-
-  PetscFunctionBegin;
-  PetscValidPointer(coordinates, 3);
-  PetscValidPointer(quad, 4);
-  PetscValidPointer(jacobian, 5);
-  PetscCall(PetscArrayzero(jacobian, dim * dim));
-  if (ijacobian) PetscCall(PetscArrayzero(ijacobian, dim * dim));
-  if (phypts) PetscCall(PetscArrayzero(phypts, /*npts=1 * */ 3));
-
-  if (dim == 1) {
-    const PetscReal &r = quad[0];
-    if (nverts == 2) { /* Linear Edge */
-      const PetscReal dNi_dxi[2] = {-1.0, 1.0};
-
-      for (i = 0; i < nverts; ++i) {
-        const PetscReal *vertices = coordinates + i * 3;
-        jacobian[0] += dNi_dxi[i] * vertices[0];
-      }
-    } else if (nverts == 3) { /* Quadratic Edge */
-      const PetscReal dNi_dxi[3] = {4 * r - 3.0, 4 * (1.0 - 2.0 * r), 4.0 * r - 1.0};
-
-      for (i = 0; i < nverts; ++i) {
-        const PetscReal *vertices = coordinates + i * 3;
-        jacobian[0] += dNi_dxi[i] * vertices[0];
-      }
-    } else SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "The number of 1-D entity vertices are invalid. Currently only support EDGE2 and EDGE3 basis evaluations in 1-D : %" PetscInt_FMT, nverts);
-
-    if (ijacobian) {
-      /* invert the jacobian */
-      ijacobian[0] = 1.0 / jacobian[0];
-    }
-  } else if (dim == 2) {
-    if (nverts == 4) { /* Linear Quadrangle */
-      const PetscReal &r = quad[0];
-      const PetscReal &s = quad[1];
-
-      const PetscReal dNi_dxi[4]  = {-1.0 + s, 1.0 - s, s, -s};
-      const PetscReal dNi_deta[4] = {-1.0 + r, -r, r, 1.0 - r};
-
-      for (i = 0; i < nverts; ++i) {
-        const PetscReal *vertices = coordinates + i * 3;
-        jacobian[0] += dNi_dxi[i] * vertices[0];
-        jacobian[2] += dNi_dxi[i] * vertices[1];
-        jacobian[1] += dNi_deta[i] * vertices[0];
-        jacobian[3] += dNi_deta[i] * vertices[1];
-      }
-    } else if (nverts == 3) { /* Linear triangle */
-      const PetscReal x2 = coordinates[2 * 3 + 0], y2 = coordinates[2 * 3 + 1];
-
-      /* Jacobian is constant */
-      jacobian[0] = (coordinates[0 * 3 + 0] - x2);
-      jacobian[1] = (coordinates[1 * 3 + 0] - x2);
-      jacobian[2] = (coordinates[0 * 3 + 1] - y2);
-      jacobian[3] = (coordinates[1 * 3 + 1] - y2);
-    } else SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "The number of 2-D entity vertices are invalid. Currently only support QUAD4 and TRI3 basis evaluations in 2-D : %" PetscInt_FMT, nverts);
-
-    /* invert the jacobian */
-    if (ijacobian) PetscCall(DMatrix_Invert_2x2_Internal(jacobian, ijacobian, &volume));
-  } else {
-    if (nverts == 8) { /* Linear Hexahedra */
-      const PetscReal &r          = quad[0];
-      const PetscReal &s          = quad[1];
-      const PetscReal &t          = quad[2];
-      const PetscReal  dNi_dxi[8] = {-(1.0 - s) * (1.0 - t), (1.0 - s) * (1.0 - t), (s) * (1.0 - t), -(s) * (1.0 - t), -(1.0 - s) * (t), (1.0 - s) * (t), (s) * (t), -(s) * (t)};
-
-      const PetscReal dNi_deta[8] = {-(1.0 - r) * (1.0 - t), -(r) * (1.0 - t), (r) * (1.0 - t), (1.0 - r) * (1.0 - t), -(1.0 - r) * (t), -(r) * (t), (r) * (t), (1.0 - r) * (t)};
-
-      const PetscReal dNi_dzeta[8] = {-(1.0 - r) * (1.0 - s), -(r) * (1.0 - s), -(r) * (s), -(1.0 - r) * (s), (1.0 - r) * (1.0 - s), (r) * (1.0 - s), (r) * (s), (1.0 - r) * (s)};
-
-      for (i = 0; i < nverts; ++i) {
-        const PetscReal *vertex = coordinates + i * 3;
-        jacobian[0] += dNi_dxi[i] * vertex[0];
-        jacobian[3] += dNi_dxi[i] * vertex[1];
-        jacobian[6] += dNi_dxi[i] * vertex[2];
-        jacobian[1] += dNi_deta[i] * vertex[0];
-        jacobian[4] += dNi_deta[i] * vertex[1];
-        jacobian[7] += dNi_deta[i] * vertex[2];
-        jacobian[2] += dNi_dzeta[i] * vertex[0];
-        jacobian[5] += dNi_dzeta[i] * vertex[1];
-        jacobian[8] += dNi_dzeta[i] * vertex[2];
-      }
-    } else if (nverts == 4) { /* Linear Tetrahedra */
-      const PetscReal x0 = coordinates[/*0 * 3 +*/ 0], y0 = coordinates[/*0 * 3 +*/ 1], z0 = coordinates[/*0 * 3 +*/ 2];
-
-      /* compute the jacobian */
-      jacobian[0] = coordinates[1 * 3 + 0] - x0;
-      jacobian[1] = coordinates[2 * 3 + 0] - x0;
-      jacobian[2] = coordinates[3 * 3 + 0] - x0;
-      jacobian[3] = coordinates[1 * 3 + 1] - y0;
-      jacobian[4] = coordinates[2 * 3 + 1] - y0;
-      jacobian[5] = coordinates[3 * 3 + 1] - y0;
-      jacobian[6] = coordinates[1 * 3 + 2] - z0;
-      jacobian[7] = coordinates[2 * 3 + 2] - z0;
-      jacobian[8] = coordinates[3 * 3 + 2] - z0;
-    } else SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "The number of 3-D entity vertices are invalid. Currently only support HEX8 and TET4 basis evaluations in 3-D : %" PetscInt_FMT, nverts);
-
-    if (ijacobian) {
-      /* invert the jacobian */
-      PetscCall(DMatrix_Invert_3x3_Internal(jacobian, ijacobian, &volume));
-    }
-  }
-  PetscCheck(volume >= 1e-12, PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Element has zero volume: %g. Degenerate element or invalid connectivity", volume);
-  if (dvolume) *dvolume = volume;
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-PetscErrorCode FEMComputeBasis_JandF(const PetscInt dim, const PetscInt nverts, const PetscReal *coordinates, const PetscReal *quadrature, PetscReal *phypts, PetscReal *phibasis, PetscReal *jacobian, PetscReal *ijacobian, PetscReal *volume)
+static PetscErrorCode FEMComputeBasis_JandF(const PetscInt dim, const PetscInt nverts, const PetscReal *coordinates, const PetscReal *quadrature, PetscReal *phypts, PetscReal *phibasis, PetscReal *jacobian, PetscReal *ijacobian, PetscReal *volume)
 {
   PetscFunctionBegin;
   switch (dim) {
@@ -809,21 +697,25 @@ PetscErrorCode FEMComputeBasis_JandF(const PetscInt dim, const PetscInt nverts, 
 
 /*@C
   DMMoabPToRMapping - Compute the mapping from the physical coordinate system for a given element to the
-  canonical reference element. In addition to finding the inverse mapping evaluation through Newton iteration,
-  the basis function at the parametric point is also evaluated optionally.
+  canonical reference element.
 
   Input Parameters:
-+  PetscInt  dim -         the element dimension (1=EDGE, 2=QUAD/TRI, 3=HEX/TET)
-.  PetscInt nverts -       the number of vertices in the physical element
-.  PetscReal coordinates - the coordinates of vertices in the physical element
--  PetscReal[3] xphy -     the coordinates of physical point for which natural coordinates (in reference frame) are sought
++ dim         - the element dimension (1=EDGE, 2=QUAD/TRI, 3=HEX/TET)
+. nverts      - the number of vertices in the physical element
+. coordinates - the coordinates of vertices in the physical element
+- xphy        - the coordinates of physical point for which natural coordinates (in reference frame) are sought
 
   Output Parameters:
-+  PetscReal[3] natparam - the natural coordinates (in reference frame) corresponding to xphy
--  PetscReal[nverts] phi - the basis functions evaluated at the natural coordinates (natparam)
++ natparam - the natural coordinates (in reference frame) corresponding to xphy
+- phi      - the basis functions evaluated at the natural coordinates (natparam)
 
   Level: advanced
 
+  Notes:
+  In addition to finding the inverse mapping evaluation through Newton iteration, the basis
+  function at the parametric point is also evaluated optionally.
+
+.seealso: `DMMoabCreate()`
 @*/
 PetscErrorCode DMMoabPToRMapping(const PetscInt dim, const PetscInt nverts, const PetscReal *coordinates, const PetscReal *xphy, PetscReal *natparam, PetscReal *phi)
 {
@@ -838,9 +730,9 @@ PetscErrorCode DMMoabPToRMapping(const PetscInt dim, const PetscInt nverts, cons
   PetscReal       error     = 1.0;
 
   PetscFunctionBegin;
-  PetscValidPointer(coordinates, 3);
-  PetscValidPointer(xphy, 4);
-  PetscValidPointer(natparam, 5);
+  PetscAssertPointer(coordinates, 3);
+  PetscAssertPointer(xphy, 4);
+  PetscAssertPointer(natparam, 5);
 
   PetscCall(PetscArrayzero(jacobian, dim * dim));
   PetscCall(PetscArrayzero(ijacobian, dim * dim));

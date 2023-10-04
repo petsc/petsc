@@ -1,3 +1,3 @@
 # Discretization Technology and Quadrature (DT)
 
-DT objects are discretization technology, for instance quadrature, finite element, or finite volume support.
+`DT` provides discretization technology, for instance quadrature, finite element, or finite volume support.

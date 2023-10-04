@@ -11,11 +11,11 @@ static inline PetscErrorCode PetscArgSortPixVal(const PetscDrawXiPixVal v[PETSC_
   PetscDrawXiPixVal vl;
   int               i, last, tmp;
 #define SWAP(a, b) \
-  { \
+  do { \
     tmp = a; \
     a   = b; \
     b   = tmp; \
-  }
+  } while (0)
   PetscFunctionBegin;
   if (right <= 1) {
     if (right == 1) {

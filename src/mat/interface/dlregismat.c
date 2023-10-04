@@ -16,9 +16,10 @@ const char *const  MPChacoEigenTypes[]         = {"LANCZOS", "RQI", "MPChacoEige
 extern PetscErrorCode MatMFFDInitializePackage(void);
 extern PetscErrorCode MatSolverTypeDestroy(void);
 static PetscBool      MatPackageInitialized = PETSC_FALSE;
+
 /*@C
-  MatFinalizePackage - This function destroys everything in the Petsc interface to the `Mat` package. It is
-  called from `PetscFinalize()`.
+  MatFinalizePackage - This function destroys everything in the Petsc interface to the `Mat`
+  package. It is called from `PetscFinalize()`.
 
   Level: developer
 
@@ -103,9 +104,6 @@ PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_Pastix(void);
 #if defined(PETSC_HAVE_SUPERLU_DIST)
 PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_SuperLU_DIST(void);
 #endif
-#if defined(PETSC_HAVE_ELEMENTAL)
-PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_SparseElemental(void);
-#endif
 #if defined(PETSC_HAVE_MKL_PARDISO)
 PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_MKL_Pardiso(void);
 #endif
@@ -139,7 +137,7 @@ PETSC_INTERN PetscErrorCode MatGetFactor_seqaij_bas(Mat, MatFactorType, Mat *);
 
   Level: developer
 
-.seealso: [](chapter_matrices), `Mat`, `PetscInitialize()`, `MatFinalizePackage()`
+.seealso: [](ch_matrices), `Mat`, `PetscInitialize()`, `MatFinalizePackage()`
 @*/
 PetscErrorCode MatInitializePackage(void)
 {
@@ -168,10 +166,11 @@ PetscErrorCode MatInitializePackage(void)
   PetscCall(MatSeqAIJRegisterAll());
   /* Register Events */
   PetscCall(PetscLogEventRegister("MatMult", MAT_CLASSID, &MAT_Mult));
-  PetscCall(PetscLogEventRegister("MatMults", MAT_CLASSID, &MAT_Mults));
   PetscCall(PetscLogEventRegister("MatMultAdd", MAT_CLASSID, &MAT_MultAdd));
   PetscCall(PetscLogEventRegister("MatMultTranspose", MAT_CLASSID, &MAT_MultTranspose));
+  PetscCall(PetscLogEventRegister("MatMultHermitian", MAT_CLASSID, &MAT_MultHermitianTranspose));
   PetscCall(PetscLogEventRegister("MatMultTrAdd", MAT_CLASSID, &MAT_MultTransposeAdd));
+  PetscCall(PetscLogEventRegister("MatMultHTAdd", MAT_CLASSID, &MAT_MultHermitianTransposeAdd));
   PetscCall(PetscLogEventRegister("MatSolve", MAT_CLASSID, &MAT_Solve));
   PetscCall(PetscLogEventRegister("MatSolves", MAT_CLASSID, &MAT_Solves));
   PetscCall(PetscLogEventRegister("MatSolveAdd", MAT_CLASSID, &MAT_SolveAdd));
@@ -236,7 +235,7 @@ PetscErrorCode MatInitializePackage(void)
   PetscCall(PetscLogEventRegister("MatTrnMatMultNum", MAT_CLASSID, &MAT_TransposeMatMultNumeric));
   PetscCall(PetscLogEventRegister("MatTrnColorCreate", MAT_CLASSID, &MAT_TransposeColoringCreate));
   PetscCall(PetscLogEventRegister("MatRedundantMat", MAT_CLASSID, &MAT_RedundantMat));
-  PetscCall(PetscLogEventRegister("MatGetSeqNZStrct", MAT_CLASSID, &MAT_GetSequentialNonzeroStructure));
+  PetscCall(PetscLogEventRegister("MatGetSeqNZStrct", MAT_CLASSID, &MAT_GetSeqNonzeroStructure));
   PetscCall(PetscLogEventRegister("MatGetMultiProcB", MAT_CLASSID, &MAT_GetMultiProcBlock));
   PetscCall(PetscLogEventRegister("MatSetRandom", MAT_CLASSID, &MAT_SetRandom));
 
@@ -250,11 +249,6 @@ PetscErrorCode MatInitializePackage(void)
   PetscCall(PetscLogEventRegister("MatGetBrowsOfAcols", MAT_CLASSID, &MAT_GetBrowsOfAcols));
   PetscCall(PetscLogEventRegister("MatGetBrAoCol", MAT_CLASSID, &MAT_GetBrowsOfAocols));
 
-  PetscCall(PetscLogEventRegister("MatApplyPAPt_Symbolic", MAT_CLASSID, &MAT_Applypapt_symbolic));
-  PetscCall(PetscLogEventRegister("MatApplyPAPt_Numeric", MAT_CLASSID, &MAT_Applypapt_numeric));
-  PetscCall(PetscLogEventRegister("MatApplyPAPt", MAT_CLASSID, &MAT_Applypapt));
-
-  PetscCall(PetscLogEventRegister("MatGetSymTrans", MAT_CLASSID, &MAT_Getsymtranspose));
   PetscCall(PetscLogEventRegister("MatGetSymTransR", MAT_CLASSID, &MAT_Getsymtransreduced));
   PetscCall(PetscLogEventRegister("MatCUSPARSCopyTo", MAT_CLASSID, &MAT_CUSPARSECopyToGPU));
   PetscCall(PetscLogEventRegister("MatCUSPARSCopyFr", MAT_CLASSID, &MAT_CUSPARSECopyFromGPU));
@@ -417,9 +411,6 @@ PetscErrorCode MatInitializePackage(void)
 #endif
 #if defined(PETSC_HAVE_SUPERLU_DIST)
   PetscCall(MatSolverTypeRegister_SuperLU_DIST());
-#endif
-#if defined(PETSC_HAVE_ELEMENTAL)
-  PetscCall(MatSolverTypeRegister_SparseElemental());
 #endif
 #if defined(PETSC_HAVE_MKL_PARDISO)
   PetscCall(MatSolverTypeRegister_MKL_Pardiso());

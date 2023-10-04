@@ -50,7 +50,6 @@ static PetscErrorCode KSPSolve_PIPEBCGS(KSP ksp)
 
   /* Compute initial residual */
   PetscCall(KSPGetPC(ksp, &pc));
-  PetscCall(PCSetUp(pc));
   if (!ksp->guess_zero) {
     PetscCall(KSP_MatMult(ksp, pc->mat, X, Q2));
     PetscCall(VecCopy(B, R));
@@ -225,7 +224,7 @@ static PetscErrorCode KSPSolve_PIPEBCGS(KSP ksp)
     "The communication-hiding pipelined BiCGStab method for the parallel solution of large unsymmetric linear systems",
     Parallel Computing, 65:1-20, 2017.
 
-.seealso: [](chapter_ksp), `KSPFBCGS`, `KSPFBCGSR`, `KSPBCGS`, `KSPBCGSL`, `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPBICG`, `KSPFBCGS`, `KSPSetPCSide()`,
+.seealso: [](ch_ksp), `KSPFBCGS`, `KSPFBCGSR`, `KSPBCGS`, `KSPBCGSL`, `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPBICG`, `KSPFBCGS`, `KSPSetPCSide()`,
            [](sec_pipelineksp), [](doc_faq_pipelined)
 M*/
 PETSC_EXTERN PetscErrorCode KSPCreate_PIPEBCGS(KSP ksp)

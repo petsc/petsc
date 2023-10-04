@@ -248,29 +248,28 @@ static PetscErrorCode PCEisenstatGetNoDiagonalScaling_Eisenstat(PC pc, PetscBool
 }
 
 /*@
-   PCEisenstatSetOmega - Sets the SSOR relaxation coefficient, omega,
-   to use with Eisenstat's trick (where omega = 1.0 by default)
+  PCEisenstatSetOmega - Sets the SSOR relaxation coefficient, omega,
+  to use with Eisenstat's trick (where omega = 1.0 by default)
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  pc - the preconditioner context
--  omega - relaxation coefficient (0 < omega < 2)
+  Input Parameters:
++ pc    - the preconditioner context
+- omega - relaxation coefficient (0 < omega < 2)
 
-   Options Database Key:
-.  -pc_eisenstat_omega <omega> - Sets omega
+  Options Database Key:
+. -pc_eisenstat_omega <omega> - Sets omega
 
-   Level: intermediate
+  Level: intermediate
 
-   Notes:
-   The Eisenstat trick implementation of SSOR requires about 50% of the
-   usual amount of floating point operations used for SSOR + Krylov method;
-   however, the preconditioned problem must be solved with both left
-   and right preconditioning.
+  Notes:
+  The Eisenstat trick implementation of SSOR requires about 50% of the
+  usual amount of floating point operations used for SSOR + Krylov method;
+  however, the preconditioned problem must be solved with both left
+  and right preconditioning.
 
-   To use SSOR without the Eisenstat trick, employ the `PCSOR` preconditioner,
-   which can be chosen with the database options
-$    -pc_type  sor  -pc_sor_symmetric
+  To use SSOR without the Eisenstat trick, employ the `PCSOR` preconditioner,
+  which can be chosen with the database options `-pc_type sor -pc_sor_symmetric`
 
 .seealso: `PCSORSetOmega()`, `PCEISENSTAT`
 @*/
@@ -284,24 +283,24 @@ PetscErrorCode PCEisenstatSetOmega(PC pc, PetscReal omega)
 }
 
 /*@
-   PCEisenstatSetNoDiagonalScaling - Causes the Eisenstat preconditioner, `PCEISENSTAT`
-   not to do additional diagonal preconditioning. For matrices with a constant
-   along the diagonal, this may save a small amount of work.
+  PCEisenstatSetNoDiagonalScaling - Causes the Eisenstat preconditioner, `PCEISENSTAT`
+  not to do additional diagonal preconditioning. For matrices with a constant
+  along the diagonal, this may save a small amount of work.
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  pc - the preconditioner context
--  flg - `PETSC_TRUE` turns off diagonal scaling inside the algorithm
+  Input Parameters:
++ pc  - the preconditioner context
+- flg - `PETSC_TRUE` turns off diagonal scaling inside the algorithm
 
-   Options Database Key:
-.  -pc_eisenstat_no_diagonal_scaling - Activates `PCEisenstatSetNoDiagonalScaling()`
+  Options Database Key:
+. -pc_eisenstat_no_diagonal_scaling - Activates `PCEisenstatSetNoDiagonalScaling()`
 
-   Level: intermediate
+  Level: intermediate
 
-   Note:
-     If you use the `KSPSetDiagonalScaling()` or -ksp_diagonal_scale option then you will
-   likely want to use this routine since it will save you some unneeded flops.
+  Note:
+  If you use the `KSPSetDiagonalScaling()` or -ksp_diagonal_scale option then you will
+  likely want to use this routine since it will save you some unneeded flops.
 
 .seealso: `PCEisenstatSetOmega()`, `PCEISENSTAT`
 @*/
@@ -314,31 +313,30 @@ PetscErrorCode PCEisenstatSetNoDiagonalScaling(PC pc, PetscBool flg)
 }
 
 /*@
-   PCEisenstatGetOmega - Gets the SSOR relaxation coefficient, omega,
-   to use with Eisenstat's trick (where omega = 1.0 by default).
+  PCEisenstatGetOmega - Gets the SSOR relaxation coefficient, omega,
+  to use with Eisenstat's trick (where omega = 1.0 by default).
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameter:
-.  pc - the preconditioner context
+  Input Parameter:
+. pc - the preconditioner context
 
-   Output Parameter:
-.  omega - relaxation coefficient (0 < omega < 2)
+  Output Parameter:
+. omega - relaxation coefficient (0 < omega < 2)
 
-   Options Database Key:
-.  -pc_eisenstat_omega <omega> - Sets omega
+  Options Database Key:
+. -pc_eisenstat_omega <omega> - Sets omega
 
-   Notes:
-   The Eisenstat trick implementation of SSOR requires about 50% of the
-   usual amount of floating point operations used for SSOR + Krylov method;
-   however, the preconditioned problem must be solved with both left
-   and right preconditioning.
+  Notes:
+  The Eisenstat trick implementation of SSOR requires about 50% of the
+  usual amount of floating point operations used for SSOR + Krylov method;
+  however, the preconditioned problem must be solved with both left
+  and right preconditioning.
 
-   To use SSOR without the Eisenstat trick, employ the PCSOR preconditioner,
-   which can be chosen with the database options
-$    -pc_type  sor  -pc_sor_symmetric
+  To use SSOR without the Eisenstat trick, employ the PCSOR preconditioner,
+  which can be chosen with the database options `-pc_type sor -pc_sor_symmetric`
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `PCEISENSTAT`, `PCSORGetOmega()`, `PCEisenstatSetOmega()`
 @*/
@@ -351,26 +349,26 @@ PetscErrorCode PCEisenstatGetOmega(PC pc, PetscReal *omega)
 }
 
 /*@
-   PCEisenstatGetNoDiagonalScaling - Tells if the Eisenstat preconditioner
-   not to do additional diagonal preconditioning. For matrices with a constant
-   along the diagonal, this may save a small amount of work.
+  PCEisenstatGetNoDiagonalScaling - Tells if the Eisenstat preconditioner
+  not to do additional diagonal preconditioning. For matrices with a constant
+  along the diagonal, this may save a small amount of work.
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameter:
-.  pc - the preconditioner context
+  Input Parameter:
+. pc - the preconditioner context
 
-   Output Parameter:
-.  flg - `PETSC_TRUE` means there is no diagonal scaling applied
+  Output Parameter:
+. flg - `PETSC_TRUE` means there is no diagonal scaling applied
 
-   Options Database Key:
-.  -pc_eisenstat_no_diagonal_scaling - Activates `PCEisenstatSetNoDiagonalScaling()`
+  Options Database Key:
+. -pc_eisenstat_no_diagonal_scaling - Activates `PCEisenstatSetNoDiagonalScaling()`
 
-   Level: intermediate
+  Level: intermediate
 
-   Note:
-     If you use the KSPSetDiagonalScaling() or -ksp_diagonal_scale option then you will
-   likely want to use this routine since it will save you some unneeded flops.
+  Note:
+  If you use the KSPSetDiagonalScaling() or -ksp_diagonal_scale option then you will
+  likely want to use this routine since it will save you some unneeded flops.
 
 .seealso: , `PCEISENSTAT`, `PCEisenstatGetOmega()`
 @*/

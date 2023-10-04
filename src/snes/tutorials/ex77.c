@@ -254,13 +254,8 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 {
   PetscFunctionBeginUser;
-  /* TODO The P1 coordinate space gives wrong results when compared to the affine version. Track this down */
-  if (0) {
-    PetscCall(DMPlexCreateBoxMesh(comm, 3, PETSC_TRUE, NULL, NULL, NULL, NULL, PETSC_TRUE, dm));
-  } else {
-    PetscCall(DMCreate(comm, dm));
-    PetscCall(DMSetType(*dm, DMPLEX));
-  }
+  PetscCall(DMCreate(comm, dm));
+  PetscCall(DMSetType(*dm, DMPLEX));
   PetscCall(DMSetFromOptions(*dm));
   /* Label the faces (bit of a hack here, until it is properly implemented for simplices) */
   PetscCall(DMViewFromOptions(*dm, NULL, "-orig_dm_view"));
@@ -458,6 +453,7 @@ int main(int argc, char **argv)
   PetscCall(SetupNearNullSpace(dm, &user));
 
   PetscCall(DMCreateGlobalVector(dm, &u));
+  PetscCall(PetscObjectSetName((PetscObject)u, "u"));
   PetscCall(VecDuplicate(u, &r));
 
   PetscCall(DMSetMatType(dm, MATAIJ));
@@ -489,7 +485,7 @@ int main(int argc, char **argv)
     /* Check residual */
     PetscCall(SNESComputeFunction(snes, u, r));
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Initial Residual\n"));
-    PetscCall(VecChop(r, 1.0e-10));
+    PetscCall(VecFilter(r, 1.0e-10));
     PetscCall(VecView(r, PETSC_VIEWER_STDOUT_WORLD));
     PetscCall(VecNorm(r, NORM_2, &res));
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, "L_2 Residual: %g\n", (double)res));
@@ -505,7 +501,7 @@ int main(int argc, char **argv)
       PetscCall(VecAXPY(r, 1.0, b));
       PetscCall(VecDestroy(&b));
       PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Au - b = Au + F(0)\n"));
-      PetscCall(VecChop(r, 1.0e-10));
+      PetscCall(VecFilter(r, 1.0e-10));
       PetscCall(VecView(r, PETSC_VIEWER_STDOUT_WORLD));
       PetscCall(VecNorm(r, NORM_2, &res));
       PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Linear L_2 Residual: %g\n", (double)res));

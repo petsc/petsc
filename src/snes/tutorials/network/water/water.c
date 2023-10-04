@@ -8,12 +8,10 @@ static char help[] = "This example demonstrates the use of DMNetwork interface f
 
 int main(int argc, char **argv)
 {
-  char         waterdata_file[PETSC_MAX_PATH_LEN] = "sample1.inp";
-  WATERDATA   *waterdata;
-  AppCtx_Water appctx;
-#if defined(PETSC_USE_LOG)
-  PetscLogStage stage1, stage2;
-#endif
+  char                waterdata_file[PETSC_MAX_PATH_LEN] = "sample1.inp";
+  WATERDATA          *waterdata;
+  AppCtx_Water        appctx;
+  PetscLogStage       stage1, stage2;
   PetscMPIInt         crank;
   DM                  networkdm;
   PetscInt           *edgelist = NULL;
@@ -117,7 +115,7 @@ int main(int argc, char **argv)
       requires: !complex double defined(PETSC_HAVE_ATTRIBUTEALIGNED)
 
    test:
-      args: -water_snes_converged_reason -options_left no
+      args: -water_snes_converged_reason -options_left no -fp_trap 0
       localrunfiles: wateroptions sample1.inp
       output_file: output/water.out
       requires: double !complex defined(PETSC_HAVE_ATTRIBUTEALIGNED)
@@ -125,7 +123,7 @@ int main(int argc, char **argv)
    test:
       suffix: 2
       nsize: 3
-      args: -water_snes_converged_reason -options_left no
+      args: -water_snes_converged_reason -options_left no -fp_trap 0
       localrunfiles: wateroptions sample1.inp
       output_file: output/water.out
       requires: double !complex defined(PETSC_HAVE_ATTRIBUTEALIGNED)

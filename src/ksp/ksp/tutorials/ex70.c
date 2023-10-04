@@ -688,7 +688,7 @@ PetscErrorCode MaterialPoint_PopulateCell(DM dm_vp, DM dm_mpoint)
       cnt++;
     }
   }
-  PetscCallMPI(MPI_Allreduce(&cnt, &cnt_g, 1, MPIU_INT, MPI_SUM, PETSC_COMM_WORLD));
+  PetscCall(MPIU_Allreduce(&cnt, &cnt_g, 1, MPIU_INT, MPI_SUM, PETSC_COMM_WORLD));
   if (cnt_g > 0) PetscCall(PetscPrintf(PETSC_COMM_WORLD, ".... ....pop cont: adjusted %" PetscInt_FMT " cells\n", cnt_g));
 
   PetscCall(DMSwarmSortRestoreAccess(dm_mpoint));
@@ -863,7 +863,7 @@ static PetscErrorCode SolveTimeDepStokes(PetscInt mx, PetscInt my)
   PetscReal       dt, dt_max = 0.0;
   PetscReal       vx[2], vy[2], max_v = 0.0, max_v_step, dh;
   const char     *fieldnames[] = {"eta", "rho"};
-  Vec            *pfields;
+  Vec             pfields[2];
   PetscInt        ppcell = 1;
   PetscReal       time, delta_eta = 1.0;
   PetscBool       randomize_coords = PETSC_FALSE;
@@ -1075,7 +1075,9 @@ static PetscErrorCode SolveTimeDepStokes(PetscInt mx, PetscInt my)
   if (!no_view) PetscCall(DMSwarmViewXDMF(dms_mpoint, "ic_coeff_dms.xmf"));
 
   /* project the swarm properties */
-  PetscCall(DMSwarmProjectFields(dms_mpoint, 2, fieldnames, &pfields, PETSC_FALSE));
+  PetscCall(DMCreateGlobalVector(dm_coeff, &pfields[0]));
+  PetscCall(DMCreateGlobalVector(dm_coeff, &pfields[1]));
+  PetscCall(DMSwarmProjectFields(dms_mpoint, 2, fieldnames, pfields, SCATTER_FORWARD));
   eta_v = pfields[0];
   rho_v = pfields[1];
   PetscCall(PetscObjectSetName((PetscObject)eta_v, "eta"));
@@ -1210,7 +1212,7 @@ static PetscErrorCode SolveTimeDepStokes(PetscInt mx, PetscInt my)
 
     /* update coefficients on quadrature points */
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, ".... project\n"));
-    PetscCall(DMSwarmProjectFields(dms_mpoint, 2, fieldnames, &pfields, PETSC_TRUE));
+    PetscCall(DMSwarmProjectFields(dms_mpoint, 2, fieldnames, pfields, SCATTER_FORWARD));
     eta_v = pfields[0];
     rho_v = pfields[1];
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, ".... interp\n"));
@@ -1242,7 +1244,6 @@ static PetscErrorCode SolveTimeDepStokes(PetscInt mx, PetscInt my)
   PetscCall(MatDestroy(&B));
   PetscCall(VecDestroy(&eta_v));
   PetscCall(VecDestroy(&rho_v));
-  PetscCall(PetscFree(pfields));
 
   PetscCall(DMDestroy(&dms_mpoint));
   PetscCall(DMDestroy(&dms_quadrature));

@@ -3,8 +3,6 @@
 
 const char *const MatLMVMSymBroydenScaleTypes[] = {"NONE", "SCALAR", "DIAGONAL", "USER", "MatLMVMSymBrdnScaleType", "MAT_LMVM_SYMBROYDEN_SCALING_", NULL};
 
-/*------------------------------------------------------------*/
-
 /*
   The solution method below is the matrix-free implementation of
   Equation 8.6a in Dennis and More "Quasi-Newton Methods, Motivation
@@ -123,8 +121,6 @@ static PetscErrorCode MatSolve_LMVMSymBrdn(Mat B, Vec F, Vec dX)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*------------------------------------------------------------*/
-
 /*
   The forward-product below is the matrix-free implementation of
   Equation 16 in Dennis and Wolkowicz "Sizing and Least Change Secant
@@ -212,8 +208,6 @@ static PetscErrorCode MatMult_LMVMSymBrdn(Mat B, Vec X, Vec Z)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*------------------------------------------------------------*/
-
 static PetscErrorCode MatUpdate_LMVMSymBrdn(Mat B, Vec X, Vec F)
 {
   Mat_LMVM     *lmvm = (Mat_LMVM *)B->data;
@@ -295,8 +289,6 @@ static PetscErrorCode MatUpdate_LMVMSymBrdn(Mat B, Vec X, Vec F)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*------------------------------------------------------------*/
-
 static PetscErrorCode MatCopy_LMVMSymBrdn(Mat B, Mat M, MatStructure str)
 {
   Mat_LMVM    *bdata = (Mat_LMVM *)B->data;
@@ -340,8 +332,6 @@ static PetscErrorCode MatCopy_LMVMSymBrdn(Mat B, Mat M, MatStructure str)
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-
-/*------------------------------------------------------------*/
 
 static PetscErrorCode MatReset_LMVMSymBrdn(Mat B, PetscBool destructive)
 {
@@ -392,8 +382,6 @@ static PetscErrorCode MatReset_LMVMSymBrdn(Mat B, PetscBool destructive)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*------------------------------------------------------------*/
-
 static PetscErrorCode MatAllocate_LMVMSymBrdn(Mat B, Vec X, Vec F)
 {
   Mat_LMVM    *lmvm = (Mat_LMVM *)B->data;
@@ -421,8 +409,6 @@ static PetscErrorCode MatAllocate_LMVMSymBrdn(Mat B, Vec X, Vec F)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*------------------------------------------------------------*/
-
 static PetscErrorCode MatDestroy_LMVMSymBrdn(Mat B)
 {
   Mat_LMVM    *lmvm = (Mat_LMVM *)B->data;
@@ -442,8 +428,6 @@ static PetscErrorCode MatDestroy_LMVMSymBrdn(Mat B)
   PetscCall(MatDestroy_LMVM(B));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-
-/*------------------------------------------------------------*/
 
 static PetscErrorCode MatSetUp_LMVMSymBrdn(Mat B)
 {
@@ -476,8 +460,6 @@ static PetscErrorCode MatSetUp_LMVMSymBrdn(Mat B)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*------------------------------------------------------------*/
-
 PetscErrorCode MatView_LMVMSymBrdn(Mat B, PetscViewer pv)
 {
   Mat_LMVM    *lmvm = (Mat_LMVM *)B->data;
@@ -496,8 +478,6 @@ PetscErrorCode MatView_LMVMSymBrdn(Mat B, PetscViewer pv)
   if (lsb->scale_type == MAT_LMVM_SYMBROYDEN_SCALE_DIAGONAL) PetscCall(MatView(lsb->D, pv));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-
-/*------------------------------------------------------------*/
 
 PetscErrorCode MatSetFromOptions_LMVMSymBrdn(Mat B, PetscOptionItems *PetscOptionsObject)
 {
@@ -554,8 +534,6 @@ PetscErrorCode MatSetFromOptions_LMVMSymBrdn_Private(Mat B, PetscOptionItems *Pe
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*------------------------------------------------------------*/
-
 PetscErrorCode MatCreate_LMVMSymBrdn(Mat B)
 {
   Mat_LMVM    *lmvm;
@@ -603,20 +581,18 @@ PetscErrorCode MatCreate_LMVMSymBrdn(Mat B)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*------------------------------------------------------------*/
-
 /*@
-   MatLMVMSymBroydenSetDelta - Sets the starting value for the diagonal scaling vector computed
-   in the SymBrdn approximations (also works for BFGS and DFP).
+  MatLMVMSymBroydenSetDelta - Sets the starting value for the diagonal scaling vector computed
+  in the SymBrdn approximations (also works for BFGS and DFP).
 
-   Input Parameters:
-+  B - LMVM matrix
--  delta - initial value for diagonal scaling
+  Input Parameters:
++ B     - `MATLMVM` matrix
+- delta - initial value for diagonal scaling
 
-   Level: intermediate
+  Level: intermediate
 
+.seealso: `MATLMVMSYMBROYDEN`
 @*/
-
 PetscErrorCode MatLMVMSymBroydenSetDelta(Mat B, PetscScalar delta)
 {
   Mat_LMVM    *lmvm = (Mat_LMVM *)B->data;
@@ -635,26 +611,24 @@ PetscErrorCode MatLMVMSymBroydenSetDelta(Mat B, PetscScalar delta)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*------------------------------------------------------------*/
-
 /*@
-    MatLMVMSymBroydenSetScaleType - Sets the scale type for symmetric Broyden-type updates.
+  MatLMVMSymBroydenSetScaleType - Sets the scale type for symmetric Broyden-type updates.
 
-    Input Parameters:
-+   snes - the iterative context
--   rtype - restart type
+  Input Parameters:
++ B     - the `MATLMVM` matrix
+- stype - scale type, see `MatLMVMSymBroydenScaleType`
 
-    Options Database Key:
-.   -mat_lmvm_scale_type <none,scalar,diagonal> - set the scaling type
+  Options Database Key:
+. -mat_lmvm_scale_type <none,scalar,diagonal> - set the scaling type
 
-    Level: intermediate
+  Level: intermediate
 
-    MatLMVMSymBrdnScaleTypes:
-+   MAT_LMVM_SYMBROYDEN_SCALE_NONE - initial Hessian is the identity matrix
-.   MAT_LMVM_SYMBROYDEN_SCALE_SCALAR - use the Shanno scalar as the initial Hessian
--   MAT_LMVM_SYMBROYDEN_SCALE_DIAGONAL - use a diagonalized BFGS update as the initial Hessian
+  MatLMVMSymBrdnScaleTypes\:
++   `MAT_LMVM_SYMBROYDEN_SCALE_NONE` - initial Hessian is the identity matrix
+.   `MAT_LMVM_SYMBROYDEN_SCALE_SCALAR` - use the Shanno scalar as the initial Hessian
+-   `MAT_LMVM_SYMBROYDEN_SCALE_DIAGONAL` - use a diagonalized BFGS update as the initial Hessian
 
-.seealso: [](chapter_ksp), `MATLMVMSYMBROYDEN`, `MatCreateLMVMSymBroyden()`
+.seealso: [](ch_ksp), `MATLMVMSYMBROYDEN`, `MatCreateLMVMSymBroyden()`, `MatLMVMSymBroydenScaleType`
 @*/
 PetscErrorCode MatLMVMSymBroydenSetScaleType(Mat B, MatLMVMSymBroydenScaleType stype)
 {
@@ -667,45 +641,46 @@ PetscErrorCode MatLMVMSymBroydenSetScaleType(Mat B, MatLMVMSymBroydenScaleType s
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*------------------------------------------------------------*/
-
 /*@
-   MatCreateLMVMSymBroyden - Creates a limited-memory Symmetric Broyden-type matrix used
-   for approximating Jacobians. L-SymBrdn is a convex combination of L-DFP and
-   L-BFGS such that SymBrdn = (1 - phi)*BFGS + phi*DFP. The combination factor
-   phi is restricted to the range [0, 1], where the L-SymBrdn matrix is guaranteed
-   to be symmetric positive-definite.
+  MatCreateLMVMSymBroyden - Creates a limited-memory Symmetric Broyden-type matrix used
+  for approximating Jacobians.
 
-   To use the L-SymBrdn matrix with other vector types, the matrix must be
-   created using MatCreate() and MatSetType(), followed by MatLMVMAllocate().
-   This ensures that the internal storage and work vectors are duplicated from the
-   correct type of vector.
+  Collective
 
-   Collective
+  Input Parameters:
++ comm - MPI communicator, set to `PETSC_COMM_SELF`
+. n    - number of local rows for storage vectors
+- N    - global size of the storage vectors
 
-   Input Parameters:
-+  comm - MPI communicator, set to PETSC_COMM_SELF
-.  n - number of local rows for storage vectors
--  N - global size of the storage vectors
+  Output Parameter:
+. B - the matrix
 
-   Output Parameter:
-.  B - the matrix
+  Options Database Keys:
++ -mat_lmvm_phi        - (developer) convex ratio between BFGS and DFP components of the update
+. -mat_lmvm_scale_type - (developer) type of scaling applied to J0 (none, scalar, diagonal)
+. -mat_lmvm_theta      - (developer) convex ratio between BFGS and DFP components of the diagonal J0 scaling
+. -mat_lmvm_rho        - (developer) update limiter for the J0 scaling
+. -mat_lmvm_alpha      - (developer) coefficient factor for the quadratic subproblem in J0 scaling
+. -mat_lmvm_beta       - (developer) exponential factor for the diagonal J0 scaling
+- -mat_lmvm_sigma_hist - (developer) number of past updates to use in J0 scaling
 
-   It is recommended that one use the MatCreate(), MatSetType() and/or MatSetFromOptions()
-   paradigm instead of this routine directly.
+  Level: intermediate
 
-   Options Database Keys:
-+   -mat_lmvm_phi - (developer) convex ratio between BFGS and DFP components of the update
-.   -mat_lmvm_scale_type - (developer) type of scaling applied to J0 (none, scalar, diagonal)
-.   -mat_lmvm_theta - (developer) convex ratio between BFGS and DFP components of the diagonal J0 scaling
-.   -mat_lmvm_rho - (developer) update limiter for the J0 scaling
-.   -mat_lmvm_alpha - (developer) coefficient factor for the quadratic subproblem in J0 scaling
-.   -mat_lmvm_beta - (developer) exponential factor for the diagonal J0 scaling
--   -mat_lmvm_sigma_hist - (developer) number of past updates to use in J0 scaling
+  Notes:
+  It is recommended that one use the `MatCreate()`, `MatSetType()` and/or `MatSetFromOptions()`
+  paradigm instead of this routine directly.
 
-   Level: intermediate
+  L-SymBrdn is a convex combination of L-DFP and
+  L-BFGS such that SymBrdn = (1 - phi)*BFGS + phi*DFP. The combination factor
+  phi is restricted to the range [0, 1], where the L-SymBrdn matrix is guaranteed
+  to be symmetric positive-definite.
 
-.seealso: [](chapter_ksp), `MatCreate()`, `MATLMVM`, `MATLMVMSYMBROYDEN`, `MatCreateLMVMDFP()`, `MatCreateLMVMSR1()`,
+  To use the L-SymBrdn matrix with other vector types, the matrix must be
+  created using MatCreate() and MatSetType(), followed by `MatLMVMAllocate()`.
+  This ensures that the internal storage and work vectors are duplicated from the
+  correct type of vector.
+
+.seealso: [](ch_ksp), `MatCreate()`, `MATLMVM`, `MATLMVMSYMBROYDEN`, `MatCreateLMVMDFP()`, `MatCreateLMVMSR1()`,
           `MatCreateLMVMBFGS()`, `MatCreateLMVMBrdn()`, `MatCreateLMVMBadBrdn()`
 @*/
 PetscErrorCode MatCreateLMVMSymBroyden(MPI_Comm comm, PetscInt n, PetscInt N, Mat *B)
@@ -717,8 +692,6 @@ PetscErrorCode MatCreateLMVMSymBroyden(MPI_Comm comm, PetscInt n, PetscInt N, Ma
   PetscCall(MatSetUp(*B));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-
-/*------------------------------------------------------------*/
 
 PetscErrorCode MatSymBrdnApplyJ0Fwd(Mat B, Vec X, Vec Z)
 {
@@ -746,8 +719,6 @@ PetscErrorCode MatSymBrdnApplyJ0Fwd(Mat B, Vec X, Vec Z)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*------------------------------------------------------------*/
-
 PetscErrorCode MatSymBrdnApplyJ0Inv(Mat B, Vec F, Vec dX)
 {
   Mat_LMVM    *lmvm = (Mat_LMVM *)B->data;
@@ -773,8 +744,6 @@ PetscErrorCode MatSymBrdnApplyJ0Inv(Mat B, Vec F, Vec dX)
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-
-/*------------------------------------------------------------*/
 
 PetscErrorCode MatSymBrdnComputeJ0Scalar(Mat B)
 {

@@ -90,7 +90,7 @@ PetscErrorCode PCTFS_giop(PetscInt *vals, PetscInt *work, PetscInt n, PetscInt *
   PetscCheck(fp = (vfp)PCTFS_ivec_fct_addr(type), PETSC_COMM_SELF, PETSC_ERR_PLIB, "PCTFS_giop() :: Could not retrieve function pointer!");
 
   /* all msgs will be of the same length */
-  /* if not a hypercube must colapse partial dim */
+  /* if not a hypercube must collapse partial dim */
   if (edge_not_pow_2) {
     if (PCTFS_my_id >= PCTFS_floor_num_nodes) {
       PetscCallMPI(MPI_Send(vals, n, MPIU_INT, edge_not_pow_2, MSGTAG0 + PCTFS_my_id, MPI_COMM_WORLD));
@@ -166,7 +166,7 @@ PetscErrorCode PCTFS_grop(PetscScalar *vals, PetscScalar *work, PetscInt n, Pets
   PetscCheck((fp = (vfp)PCTFS_rvec_fct_addr(type)), PETSC_COMM_SELF, PETSC_ERR_PLIB, "PCTFS_grop() :: Could not retrieve function pointer!");
 
   /* all msgs will be of the same length */
-  /* if not a hypercube must colapse partial dim */
+  /* if not a hypercube must collapse partial dim */
   if (edge_not_pow_2) {
     if (PCTFS_my_id >= PCTFS_floor_num_nodes) {
       PetscCallMPI(MPI_Send(vals, n, MPIU_SCALAR, edge_not_pow_2, MSGTAG0 + PCTFS_my_id, MPI_COMM_WORLD));

@@ -6,7 +6,7 @@ class Configure(config.package.Package):
     self.version                = '4.0.0'
     #self.gitcommit              = 'v'+self.version
     self.gitcommit              = '8af76dc862c74cbe880569ff2ccf6e5e54245430' # mar-27,2023 master
-    self.download               = ['git://https://github.com/ecrc/kblas-gpu.git']
+    self.download               = ['git://https://github.com/ecrc/kblas-gpu.git','https://github.com/ecrc/kblas-gpu/archive/'+self.gitcommit+'.tar.gz']
     self.buildLanguages         = ['CUDA'] # uses nvcc to compile everything
     self.functionsCxx           = [1,'struct KBlasHandle; typedef struct KBlasHandle *kblasHandle_t;extern "C" int kblasCreate(kblasHandle_t*);','kblasHandle_t h; kblasCreate(&h)']
     self.liblist                = [['libkblas.a']]
@@ -67,7 +67,7 @@ class Configure(config.package.Package):
       g.write('_USE_MAGMA_ = TRUE\n')
       g.write('_MAGMA_ROOT_ = '+self.magma.directory+'\n')
       g.write('_CUDA_ROOT_ = '+cudaDir+'\n')
-      if self.cuda.cudaArch:
+      if hasattr(self.cuda, 'cudaArch'):
         # TARGET_SM is just used to check min version compatibility, so we pass
         # it the smallest version (or 35 if "all" etc are specified)
         if self.cuda.cudaArchIsVersionList():
@@ -102,7 +102,7 @@ class Configure(config.package.Package):
       try:
         self.logPrintBox('Compiling KBLAS; this may take several minutes')
         output2,err2,ret2 = config.package.Package.executeShellCommand('cd src && ' + self.make.make_jnp, cwd=self.packageDir, timeout=2500, log = self.log)
-        libDir     = os.path.join(self.installDir, self.libdir)
+        libDir     = self.libDir
         includeDir = os.path.join(self.installDir, self.includedir)
         self.logPrintBox('Installing KBLAS; this may take several minutes')
         output,err,ret = config.package.Package.executeShellCommandSeq(

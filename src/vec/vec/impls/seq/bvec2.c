@@ -9,10 +9,6 @@
 #include <petsc/private/glvisvecimpl.h>
 #include <petscblaslapack.h>
 
-#if defined(PETSC_HAVE_HDF5)
-extern PetscErrorCode VecView_MPI_HDF5(Vec, PetscViewer);
-#endif
-
 static PetscErrorCode VecPointwiseApply_Seq(Vec win, Vec xin, Vec yin, PetscScalar (*const func)(PetscScalar, PetscScalar))
 {
   const PetscInt n = win->map->n;
@@ -243,7 +239,7 @@ PetscErrorCode VecNorm_Seq(Vec xin, NormType type, PetscReal *z)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode VecView_Seq_ASCII(Vec xin, PetscViewer viewer)
+static PetscErrorCode VecView_Seq_ASCII(Vec xin, PetscViewer viewer)
 {
   PetscInt           i, n = xin->map->n;
   const char        *name;
@@ -432,7 +428,7 @@ PetscErrorCode VecView_Seq_ASCII(Vec xin, PetscViewer viewer)
 }
 
 #include <petscdraw.h>
-PetscErrorCode VecView_Seq_Draw_LG(Vec xin, PetscViewer v)
+static PetscErrorCode VecView_Seq_Draw_LG(Vec xin, PetscViewer v)
 {
   PetscDraw          draw;
   PetscBool          isnull;
@@ -476,7 +472,7 @@ PetscErrorCode VecView_Seq_Draw_LG(Vec xin, PetscViewer v)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode VecView_Seq_Draw(Vec xin, PetscViewer v)
+static PetscErrorCode VecView_Seq_Draw(Vec xin, PetscViewer v)
 {
   PetscDraw draw;
   PetscBool isnull;
@@ -490,7 +486,7 @@ PetscErrorCode VecView_Seq_Draw(Vec xin, PetscViewer v)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode VecView_Seq_Binary(Vec xin, PetscViewer viewer)
+static PetscErrorCode VecView_Seq_Binary(Vec xin, PetscViewer viewer)
 {
   return VecView_Binary(xin, viewer);
 }
@@ -513,7 +509,7 @@ PetscErrorCode VecView_Seq_Matlab(Vec vec, PetscViewer viewer)
 }
 #endif
 
-PETSC_EXTERN PetscErrorCode VecView_Seq(Vec xin, PetscViewer viewer)
+PetscErrorCode VecView_Seq(Vec xin, PetscViewer viewer)
 {
   PetscBool isdraw, iascii, issocket, isbinary;
 #if defined(PETSC_HAVE_MATHEMATICA)
@@ -726,9 +722,7 @@ PetscErrorCode VecDestroy_Seq(Vec v)
   Vec_Seq *vs = (Vec_Seq *)v->data;
 
   PetscFunctionBegin;
-#if defined(PETSC_USE_LOG)
   PetscCall(PetscLogObjectState((PetscObject)v, "Length=%" PetscInt_FMT, v->map->n));
-#endif
   if (vs) PetscCall(PetscFree(vs->array_allocated));
   PetscCall(VecResetPreallocationCOO_Seq(v));
   PetscCall(PetscObjectComposeFunction((PetscObject)v, "PetscMatlabEnginePut_C", NULL));
@@ -747,10 +741,8 @@ PetscErrorCode VecSetOption_Seq(Vec v, VecOption op, PetscBool flag)
 PetscErrorCode VecDuplicate_Seq(Vec win, Vec *V)
 {
   PetscFunctionBegin;
-  PetscCall(VecCreate(PetscObjectComm((PetscObject)win), V));
-  PetscCall(VecSetSizes(*V, win->map->n, win->map->n));
+  PetscCall(VecCreateWithLayout_Private(win->map, V));
   PetscCall(VecSetType(*V, ((PetscObject)win)->type_name));
-  PetscCall(PetscLayoutReference(win->map, &(*V)->map));
   PetscCall(PetscObjectListDuplicate(((PetscObject)win)->olist, &((PetscObject)(*V))->olist));
   PetscCall(PetscFunctionListDuplicate(((PetscObject)win)->qlist, &((PetscObject)(*V))->qlist));
 
@@ -759,7 +751,7 @@ PetscErrorCode VecDuplicate_Seq(Vec win, Vec *V)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static struct _VecOps DvOps = {
+static const struct _VecOps DvOps = {
   PetscDesignatedInitializer(duplicate, VecDuplicate_Seq), /* 1 */
   PetscDesignatedInitializer(duplicatevecs, VecDuplicateVecs_Default),
   PetscDesignatedInitializer(destroyvecs, VecDestroyVecs_Default),
@@ -848,6 +840,7 @@ static struct _VecOps DvOps = {
   PetscDesignatedInitializer(sum, NULL),
   PetscDesignatedInitializer(setpreallocationcoo, VecSetPreallocationCOO_Seq),
   PetscDesignatedInitializer(setvaluescoo, VecSetValuesCOO_Seq),
+  PetscDesignatedInitializer(errorwnorm, NULL),
 };
 
 /*
@@ -859,7 +852,7 @@ PetscErrorCode VecCreate_Seq_Private(Vec v, const PetscScalar array[])
 
   PetscFunctionBegin;
   PetscCall(PetscNew(&s));
-  PetscCall(PetscMemcpy(v->ops, &DvOps, sizeof(DvOps)));
+  v->ops[0] = DvOps;
 
   v->data            = (void *)s;
   v->petscnative     = PETSC_TRUE;
@@ -877,31 +870,31 @@ PetscErrorCode VecCreate_Seq_Private(Vec v, const PetscScalar array[])
 }
 
 /*@C
-   VecCreateSeqWithArray - Creates a standard,sequential array-style vector,
-   where the user provides the array space to store the vector values.
+  VecCreateSeqWithArray - Creates a standard,sequential array-style vector,
+  where the user provides the array space to store the vector values.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  comm - the communicator, should be `PETSC_COMM_SELF`
-.  bs - the block size
-.  n - the vector length
--  array - memory where the vector elements are to be stored.
+  Input Parameters:
++ comm  - the communicator, should be `PETSC_COMM_SELF`
+. bs    - the block size
+. n     - the vector length
+- array - memory where the vector elements are to be stored.
 
-   Output Parameter:
-.  V - the vector
+  Output Parameter:
+. V - the vector
 
-   Level: intermediate
+  Level: intermediate
 
-   Notes:
-   Use `VecDuplicate()` or `VecDuplicateVecs(`) to form additional vectors of the
-   same type as an existing vector.
+  Notes:
+  Use `VecDuplicate()` or `VecDuplicateVecs(`) to form additional vectors of the
+  same type as an existing vector.
 
-   If the user-provided array is` NULL`, then `VecPlaceArray()` can be used
-   at a later stage to SET the array for storing the vector values.
+  If the user-provided array is` NULL`, then `VecPlaceArray()` can be used
+  at a later stage to SET the array for storing the vector values.
 
-   PETSc does NOT free the array when the vector is destroyed via `VecDestroy()`.
-   The user should not free the array until the vector is destroyed.
+  PETSc does NOT free the array when the vector is destroyed via `VecDestroy()`.
+  The user should not free the array until the vector is destroyed.
 
 .seealso: `VecCreateMPIWithArray()`, `VecCreate()`, `VecDuplicate()`, `VecDuplicateVecs()`,
           `VecCreateGhost()`, `VecCreateSeq()`, `VecPlaceArray()`

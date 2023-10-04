@@ -161,7 +161,7 @@ int main(int argc, char **argv)
      Each processor writes to the file output.<rank> where rank is the
      processor's rank.
   */
-  sprintf(part_name, "output.%d", rank);
+  snprintf(part_name, PETSC_STATIC_ARRAY_LENGTH(part_name), "output.%d", rank);
   fptr1 = fopen(part_name, "w");
   PetscCheck(fptr1, PETSC_COMM_SELF, PETSC_ERR_FILE_OPEN, "Could no open output file");
   PetscCall(PetscMalloc1(user.Nvglobal, &user.gloInd));

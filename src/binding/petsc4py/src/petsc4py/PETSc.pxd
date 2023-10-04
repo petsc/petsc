@@ -262,6 +262,13 @@ ctypedef public api class TAO(Object) [
     ]:
     cdef PetscTAO tao
 
+ctypedef public api class TAOLineSearch(Object) [
+    type   PyPetscTAOLineSearch_Type,
+    object PyPetscTAOLineSearchObject,
+    ]:
+    cdef PetscTAOLineSearch taols
+
+
 ctypedef public api class AO(Object) [
     type   PyPetscAO_Type,
     object PyPetscAOObject,
@@ -322,4 +329,4 @@ cdef extern from * nogil:
     PETSC_ERROR_INITIAL
     PETSC_ERROR_REPEAT
 
-cdef PetscErrorCode CHKERR(PetscErrorCode) nogil except PETSC_ERR_PYTHON
+cdef PetscErrorCode CHKERR(PetscErrorCode) except PETSC_ERR_PYTHON nogil

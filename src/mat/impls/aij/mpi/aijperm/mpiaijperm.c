@@ -1,89 +1,89 @@
 
 #include <../src/mat/impls/aij/mpi/mpiaij.h>
 /*@C
-   MatCreateMPIAIJPERM - Creates a sparse parallel matrix whose local
-   portions are stored as `MATSEQAIJPERM` matrices (a matrix class that inherits
-   from SEQAIJ but includes some optimizations to allow more effective
-   vectorization).
+  MatCreateMPIAIJPERM - Creates a sparse parallel matrix whose local
+  portions are stored as `MATSEQAIJPERM` matrices (a matrix class that inherits
+  from SEQAIJ but includes some optimizations to allow more effective
+  vectorization).
 
-      Collective
+  Collective
 
-   Input Parameters:
-+  comm - MPI communicator
-.  m - number of local rows (or `PETSC_DECIDE` to have calculated if `M` is given)
+  Input Parameters:
++ comm  - MPI communicator
+. m     - number of local rows (or `PETSC_DECIDE` to have calculated if `M` is given)
            This value should be the same as the local size used in creating the
            y vector for the matrix-vector product y = Ax.
-.  n - This value should be the same as the local size used in creating the
+. n     - This value should be the same as the local size used in creating the
        x vector for the matrix-vector product y = Ax. (or PETSC_DECIDE to have
        calculated if `N` is given) For square matrices `n` is almost always `m`.
-.  M - number of global rows (or `PETSC_DETERMINE` to have calculated if `m` is given)
-.  N - number of global columns (or `PETSC_DETERMINE` to have calculated if `n` is given)
-.  d_nz  - number of nonzeros per row in DIAGONAL portion of local submatrix
+. M     - number of global rows (or `PETSC_DETERMINE` to have calculated if `m` is given)
+. N     - number of global columns (or `PETSC_DETERMINE` to have calculated if `n` is given)
+. d_nz  - number of nonzeros per row in DIAGONAL portion of local submatrix
            (same value is used for all local rows)
-.  d_nnz - array containing the number of nonzeros in the various rows of the
+. d_nnz - array containing the number of nonzeros in the various rows of the
            DIAGONAL portion of the local submatrix (possibly different for each row)
            or `NULL`, if `d_nz` is used to specify the nonzero structure.
            The size of this array is equal to the number of local rows, i.e `m`.
            For matrices you plan to factor you must leave room for the diagonal entry and
            put in the entry even if it is zero.
-.  o_nz  - number of nonzeros per row in the OFF-DIAGONAL portion of local
+. o_nz  - number of nonzeros per row in the OFF-DIAGONAL portion of local
            submatrix (same value is used for all local rows).
--  o_nnz - array containing the number of nonzeros in the various rows of the
+- o_nnz - array containing the number of nonzeros in the various rows of the
            OFF-DIAGONAL portion of the local submatrix (possibly different for
            each row) or `NULL`, if `o_nz` is used to specify the nonzero
            structure. The size of this array is equal to the number
            of local rows, i.e `m`.
 
-   Output Parameter:
-.  A - the matrix
+  Output Parameter:
+. A - the matrix
 
-   Options Database Keys:
-+  -mat_no_inode  - Do not use inodes
--  -mat_inode_limit <limit> - Sets inode limit (max limit=5)
+  Options Database Keys:
++ -mat_no_inode            - Do not use inodes
+- -mat_inode_limit <limit> - Sets inode limit (max limit=5)
 
-   Level: intermediate
+  Level: intermediate
 
-   Notes:
-   If the *_nnz parameter is given then the *_nz parameter is ignored
+  Notes:
+  If the *_nnz parameter is given then the *_nz parameter is ignored
 
-   `m`,`n`,`M`,`N` parameters specify the size of the matrix, and its partitioning across
-   processors, while `d_nz`,`d_nnz`,`o_nz`,`o_nnz` parameters specify the approximate
-   storage requirements for this matrix.
+  `m`,`n`,`M`,`N` parameters specify the size of the matrix, and its partitioning across
+  processors, while `d_nz`,`d_nnz`,`o_nz`,`o_nnz` parameters specify the approximate
+  storage requirements for this matrix.
 
-   If `PETSC_DECIDE` or  `PETSC_DETERMINE` is used for a particular argument on one
-   processor than it must be used on all processors that share the object for
-   that argument.
+  If `PETSC_DECIDE` or  `PETSC_DETERMINE` is used for a particular argument on one
+  processor than it must be used on all processors that share the object for
+  that argument.
 
-   The user MUST specify either the local or global matrix dimensions
-   (possibly both).
+  The user MUST specify either the local or global matrix dimensions
+  (possibly both).
 
-   The parallel matrix is partitioned such that the first m0 rows belong to
-   process 0, the next m1 rows belong to process 1, the next m2 rows belong
-   to process 2 etc.. where m0,m1,m2... are the input parameter `m`.
+  The parallel matrix is partitioned such that the first m0 rows belong to
+  process 0, the next m1 rows belong to process 1, the next m2 rows belong
+  to process 2 etc.. where m0,m1,m2... are the input parameter `m`.
 
-   The DIAGONAL portion of the local submatrix of a processor can be defined
-   as the submatrix which is obtained by extraction the part corresponding
-   to the rows r1-r2 and columns r1-r2 of the global matrix, where r1 is the
-   first row that belongs to the processor, and r2 is the last row belonging
-   to the this processor. This is a square mxm matrix. The remaining portion
-   of the local submatrix (mxN) constitute the OFF-DIAGONAL portion.
+  The DIAGONAL portion of the local submatrix of a processor can be defined
+  as the submatrix which is obtained by extraction the part corresponding
+  to the rows r1-r2 and columns r1-r2 of the global matrix, where r1 is the
+  first row that belongs to the processor, and r2 is the last row belonging
+  to the this processor. This is a square mxm matrix. The remaining portion
+  of the local submatrix (mxN) constitute the OFF-DIAGONAL portion.
 
-   If `o_nnz`, `d_nnz` are specified, then `o_nz`, and `d_nz` are ignored.
+  If `o_nnz`, `d_nnz` are specified, then `o_nz`, and `d_nz` are ignored.
 
-   When calling this routine with a single process communicator, a matrix of
-   type `MATSEQAIJPERM` is returned.  If a matrix of type `MATMPIAIJPERM` is desired
-   for this type of communicator, use the construction mechanism
+  When calling this routine with a single process communicator, a matrix of
+  type `MATSEQAIJPERM` is returned.  If a matrix of type `MATMPIAIJPERM` is desired
+  for this type of communicator, use the construction mechanism
 .vb
    MatCreate(...,&A);
    MatSetType(A,MPIAIJ);
    MatMPIAIJSetPreallocation(A,...);
 .ve
 
-   By default, this format uses inodes (identical nodes) when possible.
-   We search for consecutive rows with the same nonzero structure, thereby
-   reusing matrix information to achieve increased efficiency.
+  By default, this format uses inodes (identical nodes) when possible.
+  We search for consecutive rows with the same nonzero structure, thereby
+  reusing matrix information to achieve increased efficiency.
 
-.seealso: [](chapter_matrices), `Mat`, [Sparse Matrix Creation](sec_matsparse), `MATMPIAIJPERM`, `MatCreate()`, `MatCreateSeqAIJPERM()`, `MatSetValues()`
+.seealso: [](ch_matrices), `Mat`, [Sparse Matrix Creation](sec_matsparse), `MATMPIAIJPERM`, `MatCreate()`, `MatCreateSeqAIJPERM()`, `MatSetValues()`
 @*/
 PetscErrorCode MatCreateMPIAIJPERM(MPI_Comm comm, PetscInt m, PetscInt n, PetscInt M, PetscInt N, PetscInt d_nz, const PetscInt d_nnz[], PetscInt o_nz, const PetscInt o_nnz[], Mat *A)
 {
@@ -103,7 +103,7 @@ PetscErrorCode MatCreateMPIAIJPERM(MPI_Comm comm, PetscInt m, PetscInt n, PetscI
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatMPIAIJSetPreallocation_MPIAIJPERM(Mat B, PetscInt d_nz, const PetscInt d_nnz[], PetscInt o_nz, const PetscInt o_nnz[])
+static PetscErrorCode MatMPIAIJSetPreallocation_MPIAIJPERM(Mat B, PetscInt d_nz, const PetscInt d_nnz[], PetscInt o_nz, const PetscInt o_nnz[])
 {
   Mat_MPIAIJ *b = (Mat_MPIAIJ *)B->data;
 
@@ -149,5 +149,5 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJPERM(Mat A)
 
   Level: beginner
 
-.seealso: [](chapter_matrices), `Mat`, `MatCreateMPIAIJPERM()`, `MATSEQAIJPERM`, `MATMPIAIJPERM`, `MATSEQAIJ`, `MATMPIAIJ`, `MATSEQAIJMKL`, `MATMPIAIJMKL`, `MATSEQAIJSELL`, `MATMPIAIJSELL`
+.seealso: [](ch_matrices), `Mat`, `MatCreateMPIAIJPERM()`, `MATSEQAIJPERM`, `MATMPIAIJPERM`, `MATSEQAIJ`, `MATMPIAIJ`, `MATSEQAIJMKL`, `MATMPIAIJMKL`, `MATSEQAIJSELL`, `MATMPIAIJSELL`
 M*/

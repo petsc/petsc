@@ -215,18 +215,16 @@ static PetscErrorCode maxwellian(PetscInt dim, const PetscReal x[], PetscReal kt
 #define MAX_NUM_THRDS 12
 PetscErrorCode go()
 {
-  DM        dm_t[MAX_NUM_THRDS], sw_t[MAX_NUM_THRDS];
-  PetscFE   fe;
-  PetscInt  dim = 2, Nc = 1, i, faces[3];
-  PetscInt  Np[2] = {10, 10}, Np2[2], field = 0, target = 0, Np_t[MAX_NUM_THRDS];
-  PetscReal moments_0[3], moments_1[3], vol = 1;
-  PetscReal lo[3] = {-5, 0, -5}, hi[3] = {5, 5, 5}, h[3], hp[3], *xx_t[MAX_NUM_THRDS], *yy_t[MAX_NUM_THRDS], *wp_t[MAX_NUM_THRDS];
-  Vec       rho_t[MAX_NUM_THRDS], rhs_t[MAX_NUM_THRDS];
-  Mat       M_p_t[MAX_NUM_THRDS];
-#if defined PETSC_USE_LOG
+  DM            dm_t[MAX_NUM_THRDS], sw_t[MAX_NUM_THRDS];
+  PetscFE       fe;
+  PetscInt      dim = 2, Nc = 1, i, faces[3];
+  PetscInt      Np[2] = {10, 10}, Np2[2], field = 0, target = 0, Np_t[MAX_NUM_THRDS];
+  PetscReal     moments_0[3], moments_1[3], vol = 1;
+  PetscReal     lo[3] = {-5, 0, -5}, hi[3] = {5, 5, 5}, h[3], hp[3], *xx_t[MAX_NUM_THRDS], *yy_t[MAX_NUM_THRDS], *wp_t[MAX_NUM_THRDS];
+  Vec           rho_t[MAX_NUM_THRDS], rhs_t[MAX_NUM_THRDS];
+  Mat           M_p_t[MAX_NUM_THRDS];
   PetscLogStage stage;
   PetscLogEvent swarm_create_ev, solve_ev, solve_loop_ev;
-#endif
 #if defined(PETSC_HAVE_OPENMP) && defined(PETSC_HAVE_THREADSAFETY)
   PetscInt numthreads = PetscNumOMPThreads;
 #else
@@ -249,11 +247,13 @@ PetscErrorCode go()
   PetscCall(PetscOptionsGetIntArray(NULL, NULL, "-np", Np, &i, NULL));
   /* Create thread meshes */
   for (int tid = 0; tid < numthreads; tid++) {
+    PetscBool simplex = PETSC_FALSE;
+    PetscCall(PetscOptionsGetBool(NULL, NULL, "-dm_plex_simplex", &simplex, NULL));
     // setup mesh dm_t, could use PETSc's Landau create velocity space mesh here to get dm_t[tid]
     PetscCall(DMCreate(PETSC_COMM_SELF, &dm_t[tid]));
     PetscCall(DMSetType(dm_t[tid], DMPLEX));
     PetscCall(DMSetFromOptions(dm_t[tid]));
-    PetscCall(PetscFECreateDefault(PETSC_COMM_SELF, dim, Nc, PETSC_FALSE, "", PETSC_DECIDE, &fe));
+    PetscCall(PetscFECreateDefault(PETSC_COMM_SELF, dim, Nc, simplex, "", PETSC_DECIDE, &fe));
     PetscCall(PetscFESetFromOptions(fe));
     PetscCall(PetscObjectSetName((PetscObject)fe, "fe"));
     PetscCall(DMSetField(dm_t[tid], field, NULL, (PetscObject)fe));
@@ -361,7 +361,7 @@ int main(int argc, char **argv)
   test:
     suffix: 2
     requires: double triangle
-    args: -dm_plex_simplex 0 -dm_plex_box_faces 8,4 -np 15,15 -dm_plex_box_lower -2.0,0.0 -dm_plex_box_upper 2.0,2.0 -petscspace_degree 2 -dm_plex_hash_location -ftop_ksp_type cg -ftop_pc_type jacobi -dm_view -ftop_ksp_converged_reason -ftop_ksp_rtol 1.e-14
+    args: -dm_plex_simplex 1 -dm_plex_box_faces 8,4 -np 15,15 -dm_plex_box_lower -2.0,0.0 -dm_plex_box_upper 2.0,2.0 -petscspace_degree 2 -ftop_ksp_type cg -ftop_pc_type jacobi -dm_view -ftop_ksp_converged_reason -ftop_ksp_rtol 1.e-14
     filter: grep -v DM_ | grep -v atomic
 
 TEST*/

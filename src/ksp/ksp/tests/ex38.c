@@ -26,16 +26,14 @@ difference. Input parameters include:\n\
 
 int main(int argc, char **args)
 {
-  Vec         x, b, u;        /* approx solution, RHS, working vector */
-  Mat         A;              /* linear system matrix */
-  KSP         ksp;            /* linear solver context */
-  PetscInt    n1, n2;         /* parameters */
-  PetscReal   h, gamma, beta; /* parameters */
-  PetscInt    i, j, Ii, J, Istart, Iend;
-  PetscScalar v, co1, co2;
-#if defined(PETSC_USE_LOG)
+  Vec           x, b, u;        /* approx solution, RHS, working vector */
+  Mat           A;              /* linear system matrix */
+  KSP           ksp;            /* linear solver context */
+  PetscInt      n1, n2;         /* parameters */
+  PetscReal     h, gamma, beta; /* parameters */
+  PetscInt      i, j, Ii, J, Istart, Iend;
+  PetscScalar   v, co1, co2;
   PetscLogStage stage;
-#endif
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &args, (char *)0, help));

@@ -10,29 +10,29 @@ static inline PetscReal Fischer(PetscReal a, PetscReal b)
 }
 
 /*@
-   VecFischer - Evaluates the Fischer-Burmeister function for complementarity
-   problems.
+  VecFischer - Evaluates the Fischer-Burmeister function for complementarity
+  problems.
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  X - current point
-.  F - function evaluated at x
-.  L - lower bounds
--  U - upper bounds
+  Input Parameters:
++ X - current point
+. F - function evaluated at x
+. L - lower bounds
+- U - upper bounds
 
-   Output Parameter:
-.  FB - The Fischer-Burmeister function vector
+  Output Parameter:
+. FB - The Fischer-Burmeister function vector
 
-   Level: developer
+  Level: developer
 
-   Notes:
-   The Fischer-Burmeister function is defined as
+  Notes:
+  The Fischer-Burmeister function is defined as
 $        phi(a,b) := sqrt(a*a + b*b) - a - b
-   and is used reformulate a complementarity problem as a semismooth
-   system of equations.
+  and is used reformulate a complementarity problem as a semismooth
+  system of equations.
 
-   The result of this function is done by cases:
+  The result of this function is done by cases\:
 +  l[i] == -infinity, u[i] == infinity  -- fb[i] = -f[i]
 .  l[i] == -infinity, u[i] finite       -- fb[i] = phi(u[i]-x[i], -f[i])
 .  l[i] finite,       u[i] == infinity  -- fb[i] = phi(x[i]-l[i],  f[i])
@@ -112,35 +112,35 @@ static inline PetscReal SFischer(PetscReal a, PetscReal b, PetscReal c)
 }
 
 /*@
-   VecSFischer - Evaluates the Smoothed Fischer-Burmeister function for
-   complementarity problems.
+  VecSFischer - Evaluates the Smoothed Fischer-Burmeister function for
+  complementarity problems.
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  X - current point
-.  F - function evaluated at x
-.  L - lower bounds
-.  U - upper bounds
--  mu - smoothing parameter
+  Input Parameters:
++ X  - current point
+. F  - function evaluated at x
+. L  - lower bounds
+. U  - upper bounds
+- mu - smoothing parameter
 
-   Output Parameter:
-.  FB - The Smoothed Fischer-Burmeister function vector
+  Output Parameter:
+. FB - The Smoothed Fischer-Burmeister function vector
 
-   Notes:
-   The Smoothed Fischer-Burmeister function is defined as
+  Notes:
+  The Smoothed Fischer-Burmeister function is defined as
 $        phi(a,b) := sqrt(a*a + b*b + 2*mu*mu) - a - b
-   and is used reformulate a complementarity problem as a semismooth
-   system of equations.
+  and is used reformulate a complementarity problem as a semismooth
+  system of equations.
 
-   The result of this function is done by cases:
+  The result of this function is done by cases\:
 +  l[i] == -infinity, u[i] == infinity  -- fb[i] = -f[i] - 2*mu*x[i]
 .  l[i] == -infinity, u[i] finite       -- fb[i] = phi(u[i]-x[i], -f[i], mu)
 .  l[i] finite,       u[i] == infinity  -- fb[i] = phi(x[i]-l[i],  f[i], mu)
 .  l[i] finite < u[i] finite -- fb[i] = phi(x[i]-l[i], phi(u[i]-x[i], -f[u], mu), mu)
 -  otherwise l[i] == u[i] -- fb[i] = l[i] - x[i]
 
-   Level: developer
+  Level: developer
 
 .seealso: `Vec`, `VecFischer()`, `MatDFischer()`, `MatDSFischer()`
 @*/
@@ -218,25 +218,25 @@ static inline PetscReal fischsnorm(PetscReal a, PetscReal b, PetscReal c)
 }
 
 /*@
-   MatDFischer - Calculates an element of the B-subdifferential of the
-   Fischer-Burmeister function for complementarity problems.
+  MatDFischer - Calculates an element of the B-subdifferential of the
+  Fischer-Burmeister function for complementarity problems.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  jac - the jacobian of f at X
-.  X - current point
-.  Con - constraints function evaluated at X
-.  XL - lower bounds
-.  XU - upper bounds
-.  t1 - work vector
--  t2 - work vector
+  Input Parameters:
++ jac - the jacobian of `f` at `X`
+. X   - current point
+. Con - constraints function evaluated at `X`
+. XL  - lower bounds
+. XU  - upper bounds
+. T1  - work vector
+- T2  - work vector
 
-   Output Parameters:
-+  Da - diagonal perturbation component of the result
--  Db - row scaling component of the result
+  Output Parameters:
++ Da - diagonal perturbation component of the result
+- Db - row scaling component of the result
 
-   Level: developer
+  Level: developer
 
 .seealso: `Mat`, `VecFischer()`, `VecSFischer()`, `MatDSFischer()`
 @*/
@@ -362,27 +362,27 @@ PetscErrorCode MatDFischer(Mat jac, Vec X, Vec Con, Vec XL, Vec XU, Vec T1, Vec 
 }
 
 /*@
-   MatDSFischer - Calculates an element of the B-subdifferential of the
-   smoothed Fischer-Burmeister function for complementarity problems.
+  MatDSFischer - Calculates an element of the B-subdifferential of the
+  smoothed Fischer-Burmeister function for complementarity problems.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  jac - the jacobian of f at X
-.  X - current point
-.  F - constraint function evaluated at X
-.  XL - lower bounds
-.  XU - upper bounds
-.  mu - smoothing parameter
-.  T1 - work vector
--  T2 - work vector
+  Input Parameters:
++ jac - the jacobian of f at X
+. X   - current point
+. Con - constraint function evaluated at X
+. XL  - lower bounds
+. XU  - upper bounds
+. mu  - smoothing parameter
+. T1  - work vector
+- T2  - work vector
 
-   Output Parameters:
-+  Da - diagonal perturbation component of the result
-.  Db - row scaling component of the result
--  Dm - derivative with respect to scaling parameter
+  Output Parameters:
++ Da - diagonal perturbation component of the result
+. Db - row scaling component of the result
+- Dm - derivative with respect to scaling parameter
 
-   Level: developer
+  Level: developer
 
 .seealso: `Mat`, `VecFischer()`, `VecDFischer()`, `MatDFischer()`
 @*/
@@ -482,27 +482,27 @@ static inline PetscReal ST_InternalPP(PetscScalar in, PetscReal lb, PetscReal ub
 }
 
 /*@
-   TaoSoftThreshold - Calculates soft thresholding routine with input vector
-   and given lower and upper bound and returns it to output vector.
+  TaoSoftThreshold - Calculates soft thresholding routine with input vector
+  and given lower and upper bound and returns it to output vector.
 
-   Input Parameters:
-+  in - input vector to be thresholded
-.  lb - lower bound
--  ub - upper bound
+  Input Parameters:
++ in - input vector to be thresholded
+. lb - lower bound
+- ub - upper bound
 
-   Output Parameter:
-.  out - Soft thresholded output vector
+  Output Parameter:
+. out - Soft thresholded output vector
 
-   Notes:
-   Soft thresholding is defined as
-   \[ S(input,lb,ub) =
-     \begin{cases}
-    input - ub  \text{input > ub} \\
-    0           \text{lb =< input <= ub} \\
-    input + lb  \text{input < lb} \\
-   \]
+  Notes:
+  Soft thresholding is defined as
+  \[ S(input,lb,ub) =
+  \begin{cases}
+  input - ub  \text{input > ub} \\
+  0           \text{lb =< input <= ub} \\
+  input + lb  \text{input < lb} \\
+  \]
 
-   Level: developer
+  Level: developer
 
 .seealso: `Tao`, `Vec`
 @*/

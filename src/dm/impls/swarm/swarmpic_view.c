@@ -4,7 +4,7 @@
 #include <petsc/private/dmswarmimpl.h>
 #include "../src/dm/impls/swarm/data_bucket.h"
 
-PetscErrorCode private_PetscViewerCreate_XDMF(MPI_Comm comm, const char filename[], PetscViewer *v)
+static PetscErrorCode private_PetscViewerCreate_XDMF(MPI_Comm comm, const char filename[], PetscViewer *v)
 {
   long int      *bytes;
   PetscContainer container;
@@ -32,7 +32,7 @@ PetscErrorCode private_PetscViewerCreate_XDMF(MPI_Comm comm, const char filename
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode private_PetscViewerDestroy_XDMF(PetscViewer *v)
+static PetscErrorCode private_PetscViewerDestroy_XDMF(PetscViewer *v)
 {
   PetscViewer    viewer;
   DM             dm = NULL;
@@ -65,7 +65,7 @@ PetscErrorCode private_PetscViewerDestroy_XDMF(PetscViewer *v)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode private_CreateDataFileNameXDMF(const char filename[], char dfilename[])
+static PetscErrorCode private_CreateDataFileNameXDMF(const char filename[], char dfilename[])
 {
   const char dot_xmf[] = ".xmf";
   size_t     len;
@@ -83,7 +83,7 @@ PetscErrorCode private_CreateDataFileNameXDMF(const char filename[], char dfilen
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode private_DMSwarmView_XDMF(DM dm, PetscViewer viewer)
+static PetscErrorCode private_DMSwarmView_XDMF(DM dm, PetscViewer viewer)
 {
   PetscBool      isswarm = PETSC_FALSE;
   const char    *viewername;
@@ -188,7 +188,7 @@ PetscErrorCode private_DMSwarmView_XDMF(DM dm, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode private_VecView_Swarm_XDMF(Vec x, PetscViewer viewer)
+static PetscErrorCode private_VecView_Swarm_XDMF(Vec x, PetscViewer viewer)
 {
   long int      *bytes     = NULL;
   PetscContainer container = NULL;
@@ -252,7 +252,7 @@ PetscErrorCode private_VecView_Swarm_XDMF(Vec x, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode private_ISView_Swarm_XDMF(IS is, PetscViewer viewer)
+static PetscErrorCode private_ISView_Swarm_XDMF(IS is, PetscViewer viewer)
 {
   long int      *bytes     = NULL;
   PetscContainer container = NULL;
@@ -317,20 +317,20 @@ PetscErrorCode private_ISView_Swarm_XDMF(IS is, PetscViewer viewer)
 }
 
 /*@C
-   DMSwarmViewFieldsXDMF - Write a selection of DMSwarm fields to an XDMF3 file
+  DMSwarmViewFieldsXDMF - Write a selection of DMSwarm fields to an XDMF3 file
 
-   Collective
+  Collective
 
-   Input parameters:
-+  dm - the `DMSWARM`
-.  filename - the file name of the XDMF file (must have the extension .xmf)
-.  nfields - the number of fields to write into the XDMF file
--  field_name_list - array of length nfields containing the textual name of fields to write
+  Input Parameters:
++ dm              - the `DMSWARM`
+. filename        - the file name of the XDMF file (must have the extension .xmf)
+. nfields         - the number of fields to write into the XDMF file
+- field_name_list - array of length nfields containing the textual name of fields to write
 
-   Level: beginner
+  Level: beginner
 
-   Note:
-   Only fields registered with data type `PETSC_DOUBLE` or `PETSC_INT` can be written into the file
+  Note:
+  Only fields registered with data type `PETSC_DOUBLE` or `PETSC_INT` can be written into the file
 
 .seealso: `DM`, `DMSWARM`, `DMSwarmViewXDMF()`
 @*/
@@ -374,21 +374,21 @@ PETSC_EXTERN PetscErrorCode DMSwarmViewFieldsXDMF(DM dm, const char filename[], 
 }
 
 /*@C
-   DMSwarmViewXDMF - Write `DMSWARM` fields to an XDMF3 file
+  DMSwarmViewXDMF - Write `DMSWARM` fields to an XDMF3 file
 
-   Collective
+  Collective
 
-   Input parameters:
-+  dm - the `DMSWARM`
--  filename - the file name of the XDMF file (must have the extension .xmf)
+  Input Parameters:
++ dm       - the `DMSWARM`
+- filename - the file name of the XDMF file (must have the extension .xmf)
 
-   Level: beginner
+  Level: beginner
 
-   Note:
-     Only fields user registered with data type `PETSC_DOUBLE` or `PETSC_INT` will be written into the file
+  Note:
+  Only fields user registered with data type `PETSC_DOUBLE` or `PETSC_INT` will be written into the file
 
-   Developer Note:
-     This should be removed and replaced with the standard use of `PetscViewer`
+  Developer Notes:
+  This should be removed and replaced with the standard use of `PetscViewer`
 
 .seealso: `DM`, `DMSWARM`, `DMSwarmViewFieldsXDMF()`
 @*/

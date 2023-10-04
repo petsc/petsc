@@ -1,0 +1,32 @@
+[0] 1.392e-06 Event begin: Event1
+  [0] 0.0502285 Event begin: Event2
+    [0] 0.150379 Event begin: Event3
+    [0] 0.301448 Event end: Event3
+  [0] 0.301505 Event end: Event2
+[0] 0.301514 Event end: Event1
+[0] 0.401651 Event begin: Event1
+  [0] 0.451806 Event begin: Event2
+    [0] 0.551947 Event begin: Event3
+    [0] 0.703037 Event end: Event3
+  [0] 0.703077 Event end: Event2
+[0] 0.703086 Event end: Event1
+[0] 0.803241 Event begin: Event1
+  [0] 0.85349 Event begin: Event2
+    [0] 0.953649 Event begin: Event3
+    [0] 1.10405 Event end: Event3
+  [0] 1.1041 Event end: Event2
+[0] 1.10411 Event end: Event1
+[0] 1.20436 Event begin: Event1
+  [0] 1.25449 Event begin: Event2
+    [0] 1.35461 Event begin: Event3
+    [0] 1.50487 Event end: Event3
+  [0] 1.50492 Event end: Event2
+[0] 1.50493 Event end: Event1
+[0] 1.50494 Event begin: Event1
+  [0] 1.70517 Event begin: Event1
+    [0] 1.75533 Event begin: Event2
+      [0] 1.85548 Event begin: Event3
+      [0] 2.00585 Event end: Event3
+    [0] 2.00591 Event end: Event2
+  [0] 2.00592 Event end: Event1
+[0] 2.00593 Event end: Event1

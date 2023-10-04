@@ -1,3 +1,5 @@
+#pragma once
+
 #include <../src/ksp/ksp/utils/lmvm/lmvm.h>
 
 /*

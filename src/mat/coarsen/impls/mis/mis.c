@@ -20,7 +20,7 @@
    . a_selected - IS of selected vertices, includes 'ghost' nodes at end with natural local indices
    . a_locals_llist - array of list of nodes rooted at selected nodes
 */
-PetscErrorCode MatCoarsenApply_MIS_private(IS perm, Mat Gmat, PetscBool strict_aggs, PetscCoarsenData **a_locals_llist)
+static PetscErrorCode MatCoarsenApply_MIS_private(IS perm, Mat Gmat, PetscBool strict_aggs, PetscCoarsenData **a_locals_llist)
 {
   Mat_SeqAIJ       *matA, *matB = NULL;
   Mat_MPIAIJ       *mpimat = NULL;
@@ -85,8 +85,8 @@ PetscErrorCode MatCoarsenApply_MIS_private(IS perm, Mat Gmat, PetscBool strict_a
   /* set index into cmpressed row 'lid_cprowID' */
   if (matB) {
     for (ix = 0; ix < matB->compressedrow.nrows; ix++) {
-      lid              = matB->compressedrow.rindex[ix];
-      lid_cprowID[lid] = ix;
+      lid = matB->compressedrow.rindex[ix];
+      if (lid >= 0) lid_cprowID[lid] = ix;
     }
   }
   /* MIS */
@@ -268,7 +268,7 @@ static PetscErrorCode MatCoarsenApply_MIS(MatCoarsen coarse)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatCoarsenView_MIS(MatCoarsen coarse, PetscViewer viewer)
+static PetscErrorCode MatCoarsenView_MIS(MatCoarsen coarse, PetscViewer viewer)
 {
   PetscMPIInt rank;
   PetscBool   iascii;

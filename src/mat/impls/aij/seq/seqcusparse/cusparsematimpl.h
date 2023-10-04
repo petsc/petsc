@@ -1,8 +1,8 @@
-#ifndef PETSC_CUSPARSEMATIMPL_H
-#define PETSC_CUSPARSEMATIMPL_H
+#pragma once
 
 #include <petscpkg_version.h>
 #include <../src/vec/vec/impls/seq/cupm/vecseqcupm.hpp> /* for VecSeq_CUPM */
+#include <../src/sys/objects/device/impls/cupm/cupmthrustutility.hpp>
 #include <petsc/private/petsclegacycupmblas.h>
 
 #include <cusparse_v2.h>
@@ -222,10 +222,8 @@ struct Mat_SeqAIJCUSPARSETriFactors {
   THRUSTINTARRAY  *rpermIndices; /* indices used for any reordering */
   THRUSTINTARRAY  *cpermIndices; /* indices used for any reordering */
   THRUSTARRAY     *workVector;
-  cusparseHandle_t handle;   /* a handle to the cusparse library */
-  PetscInt         nnz;      /* number of nonzeros ... need this for accurate logging between ICC and ILU */
-  PetscScalar     *a_band_d; /* GPU data for banded CSR LU factorization matrix diag(L)=1 */
-  int             *i_band_d; /* this could be optimized away */
+  cusparseHandle_t handle; /* a handle to the cusparse library */
+  PetscInt         nnz;    /* number of nonzeros ... need this for accurate logging between ICC and ILU */
   cudaDeviceProp   dev_prop;
   PetscBool        init_dev_prop;
 
@@ -316,26 +314,13 @@ struct Mat_SeqAIJCUSPARSE {
   cusparseSpMVAlg_t    spmvAlg;
   cusparseSpMMAlg_t    spmmAlg;
 #endif
-  THRUSTINTARRAY            *csr2csc_i;
-  PetscSplitCSRDataStructure deviceMat; /* Matrix on device for, eg, assembly */
-
-  /* Stuff for basic COO support */
-  THRUSTINTARRAY *cooPerm;   /* permutation array that sorts the input coo entris by row and col */
-  THRUSTINTARRAY *cooPerm_a; /* ordered array that indicate i-th nonzero (after sorting) is the j-th unique nonzero */
-
-  /* Stuff for extended COO support */
-  PetscBool   use_extended_coo; /* Use extended COO format */
-  PetscCount *jmap_d;           /* perm[disp+jmap[i]..disp+jmap[i+1]) gives indices of entries in v[] associated with i-th nonzero of the matrix */
-  PetscCount *perm_d;
-
-  Mat_SeqAIJCUSPARSE() : use_extended_coo(PETSC_FALSE), jmap_d(NULL), perm_d(NULL) { }
+  THRUSTINTARRAY *csr2csc_i;
+  THRUSTINTARRAY *coords; /* permutation array used in MatSeqAIJCUSPARSEMergeMats */
 };
 
 typedef struct Mat_SeqAIJCUSPARSETriFactors *Mat_SeqAIJCUSPARSETriFactors_p;
 
 PETSC_INTERN PetscErrorCode MatSeqAIJCUSPARSECopyToGPU(Mat);
-PETSC_INTERN PetscErrorCode MatSetPreallocationCOO_SeqAIJCUSPARSE_Basic(Mat, PetscCount, PetscInt[], PetscInt[]);
-PETSC_INTERN PetscErrorCode MatSetValuesCOO_SeqAIJCUSPARSE_Basic(Mat, const PetscScalar[], InsertMode);
 PETSC_INTERN PetscErrorCode MatSeqAIJCUSPARSEMergeMats(Mat, Mat, MatReuse, Mat *);
 PETSC_INTERN PetscErrorCode MatSeqAIJCUSPARSETriFactors_Reset(Mat_SeqAIJCUSPARSETriFactors_p *);
 
@@ -350,5 +335,3 @@ static inline bool isCudaMem(const void *data)
   PetscCallAbort(PETSC_COMM_SELF, impl::Interface<DeviceType::CUDA>::PetscCUPMGetMemType(data, &mtype));
   PetscFunctionReturn(PetscMemTypeDevice(mtype));
 }
-
-#endif // PETSC_CUSPARSEMATIMPL_H

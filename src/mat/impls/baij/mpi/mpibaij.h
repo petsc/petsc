@@ -1,6 +1,4 @@
-
-#ifndef __MPIBAIJ_H
-#define __MPIBAIJ_H
+#pragma once
 #include <../src/mat/impls/baij/seq/baij.h>
 #include <../src/mat/impls/aij/mpi/mpiaij.h>
 #include <petsc/private/hashmapi.h>
@@ -76,8 +74,8 @@ PETSC_INTERN PetscErrorCode MatLoad_MPIBAIJ_Binary(Mat, PetscViewer);
 
 PETSC_INTERN PetscErrorCode MatCreateColmap_MPIBAIJ_Private(Mat);
 PETSC_INTERN PetscErrorCode MatCreateSubMatrices_MPIBAIJ(Mat, PetscInt, const IS[], const IS[], MatReuse, Mat *[]);
-PETSC_INTERN PetscErrorCode MatCreateSubMatrices_MPIBAIJ_local(Mat, PetscInt, const IS[], const IS[], MatReuse, Mat *);
-PETSC_INTERN PetscErrorCode MatCreateSubMatrix_MPIBAIJ_Private(Mat, IS, IS, PetscInt, MatReuse, Mat *);
+PETSC_INTERN PetscErrorCode MatCreateSubMatrices_MPIBAIJ_local(Mat, PetscInt, const IS[], const IS[], MatReuse, Mat *, PetscBool);
+PETSC_INTERN PetscErrorCode MatCreateSubMatrix_MPIBAIJ_Private(Mat, IS, IS, PetscInt, MatReuse, Mat *, PetscBool);
 PETSC_INTERN PetscErrorCode MatGetMultiProcBlock_MPIBAIJ(Mat, MPI_Comm, MatReuse, Mat *);
 PETSC_INTERN PetscErrorCode MatIncreaseOverlap_MPIBAIJ(Mat, PetscInt, IS[], PetscInt);
 PETSC_INTERN PetscErrorCode MatIncreaseOverlap_MPIBAIJ_Once(Mat, PetscInt, IS *);
@@ -85,4 +83,3 @@ PETSC_INTERN PetscErrorCode MatMPIBAIJSetPreallocation_MPIBAIJ(Mat B, PetscInt b
 PETSC_INTERN PetscErrorCode MatAXPYGetPreallocation_MPIBAIJ(Mat, const PetscInt *, Mat, const PetscInt *, PetscInt *);
 
 PETSC_INTERN PetscErrorCode MatConjugate_SeqBAIJ(Mat);
-#endif

@@ -68,24 +68,22 @@ typedef enum {
   REDUCT,
   FLOPS
 } Stats;
+
 PetscErrorCode PetscLogView_VecScatter(PetscViewer viewer)
 {
-  MPI_Comm            comm      = PetscObjectComm((PetscObject)viewer);
-  PetscEventPerfInfo *eventInfo = NULL;
-  PetscLogDouble      locTotalTime, stats[6], maxstats[6], minstats[6], sumstats[6], avetime, ksptime;
-  PetscStageLog       stageLog;
-  const int           stage = 2;
-  int                 event, events[] = {VEC_ScatterBegin, VEC_ScatterEnd};
-  PetscMPIInt         rank, size;
-  PetscInt            i;
-  char                arch[128], hostname[128], username[128], pname[PETSC_MAX_PATH_LEN], date[128], version[256];
+  MPI_Comm           comm = PetscObjectComm((PetscObject)viewer);
+  PetscEventPerfInfo eventInfo;
+  PetscLogDouble     locTotalTime, stats[6], maxstats[6], minstats[6], sumstats[6], avetime, ksptime;
+  const int          stage    = 2;
+  int                events[] = {VEC_ScatterBegin, VEC_ScatterEnd};
+  PetscMPIInt        rank, size;
+  char               arch[128], hostname[128], username[128], pname[PETSC_MAX_PATH_LEN], date[128], version[256];
 
   PetscFunctionBegin;
   PetscCall(PetscTime(&locTotalTime));
   locTotalTime -= petsc_BaseTime;
   PetscCallMPI(MPI_Comm_size(comm, &size));
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
-  PetscCall(PetscLogGetStageLog(&stageLog));
   PetscCall(PetscViewerASCIIPrintf(viewer, "numProcs   = %d\n", size));
 
   PetscCall(PetscGetArchType(arch, sizeof(arch)));
@@ -110,24 +108,28 @@ PetscErrorCode PetscLogView_VecScatter(PetscViewer viewer)
 
   PetscCall(PetscViewerASCIIPrintf(viewer, "                Time     Min to Max Range   Proportion of KSP\n"));
 
-  eventInfo = stageLog->stageInfo[stage].eventLog->eventInfo;
-  PetscCallMPI(MPI_Allreduce(&eventInfo[KSP_Solve].time, &ksptime, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, PETSC_COMM_WORLD));
+  PetscCall(PetscLogEventGetPerfInfo(stage, KSP_Solve, &eventInfo));
+  PetscCall(MPIU_Allreduce(&eventInfo.time, &ksptime, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, PETSC_COMM_WORLD));
   ksptime = ksptime / size;
 
-  for (i = 0; i < (int)(sizeof(events) / sizeof(int)); i++) {
-    event          = events[i];
-    stats[COUNT]   = eventInfo[event].count;
-    stats[TIME]    = eventInfo[event].time;
-    stats[NUMMESS] = eventInfo[event].numMessages;
-    stats[MESSLEN] = eventInfo[event].messageLength;
-    stats[REDUCT]  = eventInfo[event].numReductions;
-    stats[FLOPS]   = eventInfo[event].flops;
-    PetscCallMPI(MPI_Allreduce(stats, maxstats, 6, MPIU_PETSCLOGDOUBLE, MPI_MAX, PETSC_COMM_WORLD));
-    PetscCallMPI(MPI_Allreduce(stats, minstats, 6, MPIU_PETSCLOGDOUBLE, MPI_MIN, PETSC_COMM_WORLD));
-    PetscCallMPI(MPI_Allreduce(stats, sumstats, 6, MPIU_PETSCLOGDOUBLE, MPI_SUM, PETSC_COMM_WORLD));
+  for (size_t i = 0; i < PETSC_STATIC_ARRAY_LENGTH(events); i++) {
+    PetscEventPerfInfo eventInfo;
+    const char        *name;
+
+    PetscCall(PetscLogEventGetPerfInfo(stage, events[i], &eventInfo));
+    PetscCall(PetscLogEventGetName(events[i], &name));
+    stats[COUNT]   = eventInfo.count;
+    stats[TIME]    = eventInfo.time;
+    stats[NUMMESS] = eventInfo.numMessages;
+    stats[MESSLEN] = eventInfo.messageLength;
+    stats[REDUCT]  = eventInfo.numReductions;
+    stats[FLOPS]   = eventInfo.flops;
+    PetscCall(MPIU_Allreduce(stats, maxstats, 6, MPIU_PETSCLOGDOUBLE, MPI_MAX, PETSC_COMM_WORLD));
+    PetscCall(MPIU_Allreduce(stats, minstats, 6, MPIU_PETSCLOGDOUBLE, MPI_MIN, PETSC_COMM_WORLD));
+    PetscCall(MPIU_Allreduce(stats, sumstats, 6, MPIU_PETSCLOGDOUBLE, MPI_SUM, PETSC_COMM_WORLD));
 
     avetime = sumstats[1] / size;
-    PetscCall(PetscViewerASCIIPrintf(viewer, "%s %4.2e   -%5.1f %% %5.1f %%   %4.2e %%\n", stageLog->eventLog->eventInfo[event].name, avetime, 100. * (avetime - minstats[1]) / avetime, 100. * (maxstats[1] - avetime) / avetime, 100. * avetime / ksptime));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "%s %4.2e   -%5.1f %% %5.1f %%   %4.2e %%\n", name, avetime, 100. * (avetime - minstats[1]) / avetime, 100. * (maxstats[1] - avetime) / avetime, 100. * avetime / ksptime));
   }
   PetscCall(PetscViewerFlush(viewer));
   PetscFunctionReturn(PETSC_SUCCESS);

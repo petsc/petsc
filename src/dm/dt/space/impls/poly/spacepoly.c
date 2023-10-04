@@ -68,6 +68,7 @@ static PetscErrorCode PetscSpaceSetUp_Polynomial(PetscSpace sp)
 
     PetscCall(PetscSpaceSetType(sp, PETSCSPACESUM));
     PetscCall(PetscSpaceSumSetNumSubspaces(sp, Nc));
+    PetscCall(PetscSpaceSumSetInterleave(sp, PETSC_TRUE, PETSC_FALSE));
     PetscCall(PetscSpaceCreate(PetscObjectComm((PetscObject)sp), &subsp));
     PetscCall(PetscObjectGetOptionsPrefix((PetscObject)sp, &prefix));
     PetscCall(PetscObjectSetOptionsPrefix((PetscObject)subsp, prefix));
@@ -225,9 +226,7 @@ static PetscErrorCode PetscSpaceEvaluate_Polynomial(PetscSpace sp, PetscInt npoi
 }
 
 /*@
-  PetscSpacePolynomialSetTensor - Set whether a function space is a space of tensor polynomials (the space is spanned
-  by polynomials whose degree in each variable is bounded by the given order), as opposed to polynomials (the space is
-  spanned by polynomials whose total degree---summing over all variables---is bounded by the given order).
+  PetscSpacePolynomialSetTensor - Set whether a function space is a space of tensor polynomials.
 
   Input Parameters:
 + sp     - the function space object
@@ -237,6 +236,11 @@ static PetscErrorCode PetscSpaceEvaluate_Polynomial(PetscSpace sp, PetscInt npoi
 . -petscspace_poly_tensor <bool> - Whether to use tensor product polynomials in higher dimension
 
   Level: intermediate
+
+  Notes:
+  It is a tensor space if it is spanned by polynomials whose degree in each variable is
+  bounded by the given order, as opposed to the space spanned by polynomials
+  whose total degree---summing over all variables---is bounded by the given order.
 
 .seealso: `PetscSpace`, `PetscSpacePolynomialGetTensor()`, `PetscSpaceSetDegree()`, `PetscSpaceSetNumVariables()`
 @*/
@@ -249,17 +253,21 @@ PetscErrorCode PetscSpacePolynomialSetTensor(PetscSpace sp, PetscBool tensor)
 }
 
 /*@
-  PetscSpacePolynomialGetTensor - Get whether a function space is a space of tensor polynomials (the space is spanned
-  by polynomials whose degree in each variable is bounded by the given order), as opposed to polynomials (the space is
-  spanned by polynomials whose total degree---summing over all variables---is bounded by the given order).
+  PetscSpacePolynomialGetTensor - Get whether a function space is a space of tensor
+  polynomials.
 
   Input Parameter:
-. sp     - the function space object
+. sp - the function space object
 
   Output Parameter:
 . tensor - `PETSC_TRUE` for a tensor polynomial space, `PETSC_FALSE` for a polynomial space
 
   Level: intermediate
+
+  Notes:
+  The space is a tensor space if it is spanned by polynomials whose degree in each variable is
+  bounded by the given order, as opposed to the space spanned by polynomials
+  whose total degree---summing over all variables---is bounded by the given order.
 
 .seealso: `PetscSpace`, `PetscSpacePolynomialSetTensor()`, `PetscSpaceSetDegree()`, `PetscSpaceSetNumVariables()`
 @*/
@@ -267,7 +275,7 @@ PetscErrorCode PetscSpacePolynomialGetTensor(PetscSpace sp, PetscBool *tensor)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
-  PetscValidBoolPointer(tensor, 2);
+  PetscAssertPointer(tensor, 2);
   PetscTryMethod(sp, "PetscSpacePolynomialGetTensor_C", (PetscSpace, PetscBool *), (sp, tensor));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -287,7 +295,7 @@ static PetscErrorCode PetscSpacePolynomialGetTensor_Polynomial(PetscSpace sp, Pe
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
-  PetscValidBoolPointer(tensor, 2);
+  PetscAssertPointer(tensor, 2);
   *tensor = poly->tensor;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

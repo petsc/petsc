@@ -3,42 +3,86 @@
 # Created: Mon Jun 20 17:06:22 2022 (-0400)
 # @author: Jacob Faibussowitsch
 """
+from __future__ import annotations
+
 import itertools
-import clang.cindex as clx
+import clang.cindex as clx # type: ignore[import]
+
+from .._typing import *
+from .._error  import ParsingError, ClassidNotRegisteredError
 
 from ..classes._diag    import DiagnosticManager, Diagnostic
 from ..classes._cursor  import Cursor
 from ..classes._patch   import Patch
 from ..classes._src_pos import SourceRange, SourceLocation
 
-from ..util._clang import *
+from ..util._clang import (
+  clx_scalar_type_kinds, clx_enum_type_kinds, clx_int_type_kinds, clx_conversion_cursor_kinds,
+  clx_function_type_kinds, clx_var_token_kinds, clx_math_cursor_kinds, clx_pointer_type_kinds
+)
 
 # utilities for checking functions
 
+# a dummy class so that type checkers don't complain about functions not having diags attribute
 @DiagnosticManager.register(
-  ('incompatible-function', 'Verify that the correct function was used for a type')
+  ('incompatible-function', 'Verify that the correct function was used for a type'),
+  ('incompatible-type', 'Verify that a particular type matches the expected type'),
+  ('incompatible-type-petscobject', 'Verify that a symbol is a PetscObject'),
+  ('incompatible-classid', 'Verify that the given classid matches the PetscObject type'),
+  ('matching-arg-num', 'Verify that the given argument number matches')
 )
-def add_function_fix_to_bad_source(linter, obj, func_cursor, valid_func_name):
-  """
-  Shorthand for extracting a fix from a function cursor
+class _CodeDiags:
+  diags: DiagnosticMap
+
+def add_function_fix_to_bad_source(linter: Linter, obj: Cursor, func_cursor: Cursor, valid_func_name: str) -> None:
+  r"""Shorthand for extracting a fix from a function cursor
+
+  Parameters
+  ----------
+  linter :
+    the linter instance
+  obj :
+    the cursor representing the object
+  func_cursor :
+    the cursor of the parent function
+  valid_func_name :
+    the name that should be used instead
   """
   call = [
     c for c in func_cursor.get_children() if c.type.get_pointee().kind == clx.TypeKind.FUNCTIONPROTO
   ]
   assert len(call) == 1
-  mess = f'Incorrect use of {func_cursor.displayname}(), use {valid_func_name}() instead'
-  diag = add_function_fix_to_bad_source.diags.incompatible_function
-  linter.add_error_from_cursor(
-    obj, Diagnostic(diag, mess, obj.extent.start, patch=Patch.from_cursor(call[0], valid_func_name))
+  mess = f'Incorrect use of {func_cursor.displayname}(), use {valid_func_name}() instead:\n{Cursor.get_formatted_source_from_cursor(func_cursor, num_context=2)}'
+  linter.add_diagnostic_from_cursor(
+    obj,
+    Diagnostic(
+      Diagnostic.Kind.ERROR, _CodeDiags.diags.incompatible_function, mess,
+      func_cursor.extent.start, patch=Patch.from_cursor(call[0], valid_func_name)
+    ).add_note(
+      f'Due to {obj.get_formatted_blurb()}', location=obj.extent.start
+    )
   )
   return
 
-def convert_to_correct_PetscValidLogicalCollectiveXXX(linter, obj, obj_type, func_cursor=None, **kwargs):
+def convert_to_correct_PetscValidLogicalCollectiveXXX(linter: Linter, obj: Cursor, obj_type: clx.Type, func_cursor: Cursor, **kwargs) -> bool:
+  r"""Try to glean the correct PetscValidLogicalCollectiveXXX from the type.
+
+  Parameters
+  ----------
+  linter :
+    the linter instance
+  obj :
+    the cursor for the object to check
+  obj_type :
+    the type of obj
+  func_cursor :
+    the cursor representing the parent function
+
+  Notes
+  -----
+  Used as a failure hook in the validlogicalcollective checks.
   """
-  Try to glean the correct PetscValidLogicalCollectiveXXX from the type, used as a failure hook in the
-  validlogicalcollective checks.
-  """
-  valid_func_name = None
+  valid_func_name = ''
   obj_type_kind   = obj_type.kind
   if obj_type_kind in clx_scalar_type_kinds:
     if 'PetscReal' in obj.derivedtypename:
@@ -57,54 +101,35 @@ def convert_to_correct_PetscValidLogicalCollectiveXXX(linter, obj, obj_type, fun
       valid_func_name = 'PetscValidLogicalCollectiveMPIInt'
   if valid_func_name:
     add_function_fix_to_bad_source(linter, obj, func_cursor, valid_func_name)
-    return True
-  return False
+  return bool(valid_func_name)
 
-def convert_to_correct_PetscValidXXXPointer(linter, obj, obj_type, func_cursor=None, **kwargs):
-  """
-  Try to glean the correct PetscValidLogicalXXXPointer from the type, used as a failure hook in the
-  validpointer checks.
-  """
-  valid_func_name = None
-  obj_type_kind   = obj_type.kind
-  if obj_type_kind in {clx.TypeKind.RECORD, clx.TypeKind.VOID, clx.TypeKind.POINTER} | clx_array_type_kinds:
-    # pointer to struct or void pointer, use PetscValidPointer() instead
-    valid_func_name = 'PetscValidPointer'
-  elif obj_type_kind in clx_char_type_kinds:
-    valid_func_name = 'PetscValidCharPointer'
-  elif obj_type_kind in clx_scalar_type_kinds:
-    if 'PetscReal' in obj.derivedtypename:
-      valid_func_name = 'PetscValidRealPointer'
-    elif 'PetscScalar' in obj.derivedtypename:
-      valid_func_name = 'PetscValidScalarPointer'
-  elif obj_type_kind in clx_enum_type_kinds:
-    if 'PetscBool' in obj.derivedtypename:
-      valid_func_name = 'PetscValidBoolPointer'
-  elif obj_type_kind in clx_int_type_kinds:
-    if ('PetscInt' in obj.derivedtypename) or ('PetscMPIInt' in obj.derivedtypename):
-      valid_func_name = 'PetscValidIntPointer'
-  if valid_func_name:
-    if valid_func_name != 'PetscValidPointer':
-      count = 0
-      while obj_type.kind == clx.TypeKind.INCOMPLETEARRAY or count > 100:
-        count   += 1
-        obj_type = obj_type.element_type
-      while obj_type.kind == clx.TypeKind.POINTER or count > 100:
-        count   += 1
-        obj_type = obj_type.get_pointee()
-      if count != 0:
-        mess = f'\n{Cursor.error_view_from_cursor(obj)}\n\nExpected to select PetscValidPointer() for object of clang type {obj_type.kind} (a pointer of arrity > 1), chose {valid_func_name}() instead'
-        raise RuntimeError(mess)
-    add_function_fix_to_bad_source(linter, obj, func_cursor, valid_func_name)
-    return True
-  return False
+def check_is_type_x_and_not_type_y(type_x: str, type_y: str, linter: Linter, obj: Cursor, obj_type: clx.Type, func_cursor: Optional[Cursor] = None, valid_func: str = '') -> bool:
+  r"""Check that a cursor is at least some form of derived type X and not some form of type Y
 
-@DiagnosticManager.register(
-  ('incompatible-type', 'Verify that a particular type matches the expected type')
-)
-def check_is_type_x_and_not_type_y(typeX, typeY, linter, obj, obj_type, func_cursor=None, valid_func=None):
-  """
-  Check that a cursor is at least some form of derived type X and not some form of type Y
+  Parameters
+  ----------
+  type_x :
+    the name of type "x"
+  type_y :
+    the name that `type_x` should not be
+  linter :
+    the linter instance
+  obj :
+    the object which is of `type_x`
+  obj_type :
+    the type of `obj`
+  func_cursor : optional
+    the cursor representing the parent function
+  valid_func : optional
+    the name of the valid function name
+
+  Returns
+  -------
+  ret :
+    True, as this routine always fixes the problem
+
+  Notes
+  -----
   i.e. for
 
   myInt **********x;
@@ -112,56 +137,169 @@ def check_is_type_x_and_not_type_y(typeX, typeY, linter, obj, obj_type, func_cur
   you may check that 'x' is some form of 'myInt' instead of say 'PetscBool'
   """
   derived_name = obj.derivedtypename
-  if typeX not in derived_name:
-    if typeY in derived_name:
+  if type_x not in derived_name:
+    if type_y in derived_name:
+      assert func_cursor is not None
       add_function_fix_to_bad_source(linter, obj, func_cursor, valid_func)
     else:
-      mess = f'Incorrect use of {funcName}(), {funcName}() should only be used for {typeX}'
-      linter.add_error_from_cursor(
-        obj, Diagnostic(checkIsTypeXandNotTypeY.diags.incompatible_type, mess, obj.extent.start)
+      mess = f'Incorrect use of {valid_func}(), {valid_func}() should only be used for {type_x}'
+      linter.add_diagnostic_from_cursor(
+        obj,
+        Diagnostic(
+          Diagnostic.Kind.ERROR, _CodeDiags.diags.incompatible_type, mess,
+          obj.extent.start
+        )
       )
   return True
 
-def check_is_PetscScalar_and_not_PetscReal(*args, **kwargs):
+def check_is_PetscScalar_and_not_PetscReal(*args, **kwargs) -> bool:
+  r"""Check that a cursor is a PetscScalar and not a PetscReal
+
+  Parameters
+  ----------
+  *args :
+    positional arguments to `check_is_type_x_and_not_type_y()`
+  **kwargs :
+    keyword arguments to `check_is_type_x_and_not_type_y()`
+
+  Returns
+  -------
+  ret :
+    the return value of `check_is_type_x_and_not_type_y()`
+  """
   return check_is_type_x_and_not_type_y('PetscScalar', 'PetscReal', *args, **kwargs)
 
-def check_is_PetscReal_and_not_PetscScalar(*args, **kwargs):
+def check_is_PetscReal_and_not_PetscScalar(*args, **kwargs) -> bool:
+  r"""Check that a cursor is a PetscReal and not a PetscScalar
+
+  Parameters
+  ----------
+  *args :
+    positional arguments to `check_is_type_x_and_not_type_y()`
+  **kwargs :
+    keyword arguments to `check_is_type_x_and_not_type_y()`
+
+  Returns
+  -------
+  ret :
+    the return value of `check_is_type_x_and_not_type_y()`
+  """
   return check_is_type_x_and_not_type_y('PetscReal', 'PetscScalar', *args, **kwargs)
 
-def check_is_not_type(typename, linter, obj, func_cursor=None, valid_func=None):
-  if isinstance(typename, str):
-    contains = typename in obj.derivedtypename
-  elif isinstance(typename, (tuple, list)):
-    contains = any(t in obj.derivedtypename for t in typename)
-  else:
-    raise ValueError(type(typename))
-  if contains:
+def check_is_not_type(typename: str, linter: Linter, obj: Cursor, func_cursor: Cursor, valid_func: str = '') -> bool:
+  r"""Check a cursor is not of type `typename`
+
+  Parameters
+  ----------
+  typename :
+    the type that the cursor should not be
+  linter :
+    the linter instance
+  obj :
+    the cursor representing the object
+  func_cursor : optional
+    the cursor representing the parent function
+  valid_func : optional
+    the name of the valid function name
+
+  Returns
+  -------
+  ret :
+    True, since this routine always fixes the problem
+  """
+  if typename in obj.derivedtypename:
     add_function_fix_to_bad_source(linter, obj, func_cursor, valid_func)
   return True
 
-def check_int_is_not_PetscBool(linter, obj, *args, **kwargs):
+def check_int_is_not_PetscBool(linter: Linter, obj: Cursor, *args, **kwargs) -> bool:
+  r"""Check an int-like object is not a PetscBool
+
+  Parameters
+  ----------
+  linter :
+    the linter instance
+  obj :
+    the cursor representing the object
+  *args :
+    additional positional arguments to `check_is_not_type()`
+  **kwargs :
+    additional keyword arguments to `check_is_not_type()`
+
+  Returns
+  -------
+  ret :
+    the return value of `check_is_not_type()`
+  """
   return check_is_not_type('PetscBool', linter, obj, **kwargs)
 
-def check_MPIInt_is_not_PetscInt(linter, obj, *args, **kwargs):
+def check_MPIInt_is_not_PetscInt(linter: Linter, obj: Cursor, *args, **kwargs) -> bool:
+  r"""Check a PetscMPIInt object is not a PetscBool
+
+  Parameters
+  ----------
+  linter :
+    the linter instance
+  obj :
+    the cursor representing the object
+  *args :
+    additional positional arguments to `check_is_not_type()`
+  **kwargs :
+    additional keyword arguments to `check_is_not_type()`
+
+  Returns
+  -------
+  ret :
+    the return value of `check_is_not_type()`
+  """
   return check_is_not_type('PetscInt', linter, obj, **kwargs)
 
-@DiagnosticManager.register(
-  ('incompatible-function', 'Verify that the correct function was used for a type')
-)
-def check_is_PetscBool(linter, obj, *args, func_cursor=None, **kwargs):
+def check_is_PetscBool(linter: Linter, obj: Cursor, obj_type: clx.Type, func_cursor: Optional[Cursor] = None, valid_func: str = '') -> bool:
+  r"""Check that a cursor is exactly a PetscBool
+
+  Parameters
+  ----------
+  linter :
+    the linter instance
+  obj :
+    the cursor representing the object
+  obj_type :
+    the type of obj
+  func_cursor : optional
+    the cursor representing the parent function
+  valid_func_name : optional
+    the name that should be used instead, unused
+  """
   if ('PetscBool' not in obj.derivedtypename) and ('bool' not in obj.typename):
-    func_name = func_cursor.displayName
-    mess      = f'Incorrect use of {func_name}(), {func_name}() should only be used for PetscBool or bool'
-    linter.add_error_from_cursor(
-      obj, Diagnostic(check_is_PetscBool.diags.incompatible_function, mess, obj.extent.start)
+    assert func_cursor is not None
+    func_name = func_cursor.displayname
+    mess      = f'Incorrect use of {func_name}(), {func_name}() should only be used for PetscBool or bool:{Cursor.get_formatted_source_from_cursor(func_cursor, num_context=2)}'
+    linter.add_diagnostic_from_cursor(
+      obj,
+      Diagnostic(
+        Diagnostic.Kind.ERROR, _CodeDiags.diags.incompatible_function, mess, obj.extent.start
+      )
     )
   return True
 
-@DiagnosticManager.register(('incompatible-type-petscobject', 'Verify that a symbol is a PetscObject'))
-def check_is_petsc_object(linter, obj):
-  """
-  Returns True if obj is a valid PetscObject, otherwise False. Automatically adds the error to the
-  linter. Raises RuntimeError if obj is a PetscObject that isn't registered in the classid_map.
+def check_is_petsc_object(linter: Linter, obj: Cursor) -> bool:
+  r"""Check if `obj` is a PetscObject
+
+  Parameters
+  ----------
+  linter :
+    the linter instance
+  obj :
+    the cursor to check
+
+  Returns
+  -------
+  is_valid :
+    True if `obj` is a valid PetscObject, False otherwise.
+
+  Raises
+  ------
+  ClassidNotRegisteredError
+    if `obj` is a PetscObject that isn't registered in the classid_map.
   """
   from ._register import classid_map
 
@@ -169,7 +307,7 @@ def check_is_petsc_object(linter, obj):
     # Raise exception here since this isn't a bad source, moreso a failure of this script
     # since it should know about all petsc classes
     err_message = f"{obj}\nUnknown or invalid PETSc class '{obj.derivedtypename}'. If you are introducing a new class, you must register it with this linter! See lib/petsc/bin/maint/petsclinter/petsclinter/checks/_register.py and search for 'Adding new classes' for more information\n"
-    raise RuntimeError(err_message)
+    raise ClassidNotRegisteredError(err_message)
   petsc_object_type = obj.type.get_canonical().get_pointee()
   # Must have a struct here, e.g. _p_Vec
   assert petsc_object_type.kind == clx.TypeKind.RECORD, 'Symbol does not appear to be a struct!'
@@ -186,35 +324,36 @@ def check_is_petsc_object(linter, obj):
   if not is_valid:
     obj_decl = Cursor.cast(petsc_object_type.get_declaration())
     typename = obj_decl.typename
-    warning  = False
     diag     = Diagnostic(
-      check_is_petsc_object.diags.incompatible_type_petscobject,
-      f'Invalid type \'{typename}\', expected a PetscObject (or derived class):\n{obj_decl.get_formatted_location_string()}\n{obj_decl.formatted(nbefore=1, nafter=2)}',
+      Diagnostic.Kind.ERROR, _CodeDiags.diags.incompatible_type_petscobject,
+      f'Invalid type \'{typename}\', expected a PetscObject (or derived class):\n{obj_decl.formatted(num_before_context=1, num_after_context=2)}',
       obj_decl.extent.start
     )
     if typename.startswith('_p_'):
       if len(struct_fields) == 0:
         reason = 'cannot determine fields. Likely the header containing definition of the object is in a nonstandard place'
         # raise a warning instead of an error since this is a failure of the linter
-        warning = True
+        diag.kind = Diagnostic.Kind.WARNING
       else:
         reason = 'its definition is missing a PETSCHEADER as the first struct member'
       mess = f'Type \'{typename}\' is prefixed with \'_p_\' to indicate it is a PetscObject but {reason}. Either replace \'_p_\' with \'_n_\' to indicate it is not a PetscObject or add a PETSCHEADER declaration as the first member.'
       diag.add_note(mess).add_note(
         f'It is ambiguous whether \'{obj.name}\' is intended to be a PetscObject.'
       )
-    if warning:
-      linter.add_warning_from_cursor(obj, diag)
-    else:
-      linter.add_error_from_cursor(obj, diag)
+    linter.add_diagnostic_from_cursor(obj, diag)
   return is_valid
 
-@DiagnosticManager.register(
-  ('incompatible-classid', 'Verify that the given classid matches the PetscObject type')
-)
-def check_matching_classid(linter, obj, obj_classid):
-  """
-  Does the classid match the particular PETSc type
+def check_matching_classid(linter: Linter, obj: Cursor, obj_classid: Cursor) -> None:
+  r"""Does the classid match the particular PETSc type
+
+  Parameters
+  ----------
+  linter :
+    the linter instance
+  obj :
+    the cursor to check
+  obj_classid :
+    the cursor for the classid
   """
   from ._register import classid_map
 
@@ -222,33 +361,23 @@ def check_matching_classid(linter, obj, obj_classid):
   expected = classid_map[obj.typename]
   name     = obj_classid.name
   if name != expected:
-    mess     = f"Classid doesn't match. Expected '{expected}' found '{name}'"
-    diagname = check_matching_classid.diags.incompatible_classid
-    diag     = Diagnostic(
-      diagname, mess, obj.extent.start, patch=Patch.from_cursor(obj_classid, expected)
+    mess     = f"Classid doesn't match. Expected '{expected}' found '{name}':\n{obj_classid.formatted(num_context=2)}"
+    diag = Diagnostic(
+      Diagnostic.Kind.ERROR, _CodeDiags.diags.incompatible_classid, mess, obj_classid.extent.start,
+      patch=Patch.from_cursor(obj_classid, expected)
+    ).add_note(
+      f'For {obj.get_formatted_blurb()}', location=obj.extent.start
     )
-    linter.add_error_from_cursor(obj, diag)
+    linter.add_diagnostic_from_cursor(obj, diag)
   return
 
-def check_traceable_to_parent_args(obj, parent_arg_names, trace=None):
+def _do_check_traceable_to_parent_args(obj: Cursor, parent_arg_names: tuple[str, ...], trace: list[CursorLike]) -> tuple[int, list[CursorLike]]:
   """
-  Try and see if the cursor can be linked to parent function arguments. If it can be successfully linked return the index of the matched object otherwise raises ParsingError.
+  The actual workhorse of `check_traceable_to_parent_args()`
+  """
 
-  myFunction(barType bar)
-  ...
-  fooType foo = bar->baz;
-  macro(foo, barIdx);
-  /* or */
-  macro(bar->baz, barIdx);
-  /* or */
-  initFooFromBar(bar,&foo);
-  macro(foo, barIdx);
-  """
-  if trace is None:
-    trace = []
-  potential_parents = []
-  def_cursor        = obj.get_definition()
-  if def_cursor:
+  potential_parents: list[CursorLike] = []
+  if def_cursor := obj.get_definition():
     assert def_cursor.location != obj.location, 'Object has definition cursor, yet the cursor did not move. This should be handled!'
     if def_cursor.kind == clx.CursorKind.VAR_DECL:
       # found definition, so were in business
@@ -257,26 +386,27 @@ def check_traceable_to_parent_args(obj, parent_arg_names, trace=None):
       convert_or_dereference_cursors = clx_conversion_cursor_kinds | {clx.CursorKind.UNARY_OPERATOR}
       for def_child in def_cursor.get_children():
         if def_child.kind in convert_or_dereference_cursors:
-          potential_parents_temp = [
+          decl_ref_gen = (
             child for child in def_child.walk_preorder() if child.kind == clx.CursorKind.DECL_REF_EXPR
-          ]
+          )
           # Weed out any self-references
-          potential_parents_temp = [
-            parent for parent in potential_parents_temp if parent.spelling != def_cursor.spelling
-          ]
-          potential_parents.extend(potential_parents_temp)
+          potential_parents_gen = (
+            parent for parent in decl_ref_gen if parent.spelling != def_cursor.spelling
+          )
+          potential_parents.extend(potential_parents_gen)
     elif def_cursor.kind == clx.CursorKind.FIELD_DECL:
       # we have deduced that the original cursor may refer to a struct member
       # reference, so we go back and see if indeed this is the case
       for member_child in obj.get_children():
         if member_child.kind == clx.CursorKind.MEMBER_REF_EXPR:
-          potential_parents_temp = [
+          decl_ref_gen = (
             c for c in member_child.walk_preorder() if c.kind == clx.CursorKind.DECL_REF_EXPR
-          ]
-          potential_parents_temp = [
-            parent for parent in potential_parents_temp if parent.spelling != member_child.spelling
-          ]
-          potential_parents.extend(potential_parents_temp)
+          )
+          assert member_child.spelling == def_cursor.spelling, f'{member_child.spelling=}, {def_cursor.spelling=}'
+          potential_parents_gen = (
+            parent for parent in decl_ref_gen if parent.spelling != member_child.spelling
+          )
+          potential_parents.extend(potential_parents_gen)
   elif obj.kind in clx_conversion_cursor_kinds:
     curs = [
       Cursor(c, obj.argidx) for c in obj.walk_preorder() if c.kind == clx.CursorKind.DECL_REF_EXPR
@@ -315,7 +445,7 @@ def check_traceable_to_parent_args(obj, parent_arg_names, trace=None):
       # it's not traceable to a function argument, so maybe its a global static variable
       if len([r for r in all_possible_references if r.storage_class == clx.StorageClass.STATIC]):
         # a global variable is not a function argumment, so this is unhandleable
-        raise pl.ParsingError('PETSC_CLANG_STATIC_ANALYZER_IGNORE')
+        raise ParsingError('PETSC_CLANG_STATIC_ANALYZER_IGNORE')
 
     assert len(arg_refs), f'Could not determine the origin of cursor {obj}'
     # take the first, as this is the earliest
@@ -344,7 +474,7 @@ def check_traceable_to_parent_args(obj, parent_arg_names, trace=None):
 
       idx         = function_prototype[0]
       lambda_expr = lambda t: (t.spelling not in  {'(', ')'}) and t.kind in clx_var_token_kinds
-      iterator    = map(lambda x: x.cursor, itertools.takewhile(lambda_expr, token_group[idx + 2:]))
+      iterator    = (x.cursor for x in itertools.takewhile(lambda_expr, token_group[idx + 2:]))
     # we now have completely different cursor selected, so we recursively call this
     # function
     else:
@@ -352,13 +482,14 @@ def check_traceable_to_parent_args(obj, parent_arg_names, trace=None):
       # assert that the current obj is being assigned to
       assert Cursor.get_name_from_cursor(token_group[0].cursor) == obj.name
       # find the binary operator, it will contain the most comprehensive AST
-      iterator = token_group[[x.spelling for x in token_group].index('=')].cursor.walk_preorder()
-      iterator = [c for c in iterator if c.kind == clx.CursorKind.DECL_REF_EXPR]
+      cursor_gen = token_group[[x.spelling for x in token_group].index('=')].cursor.walk_preorder()
+      iterator   = (c for c in cursor_gen if c.kind == clx.CursorKind.DECL_REF_EXPR)
 
-    alternate_cursor = [c for c in iterator if Cursor.get_name_from_cursor(c) != obj.name]
+    alternate_cursor = (c for c in iterator if Cursor.get_name_from_cursor(c) != obj.name)
     potential_parents.extend(alternate_cursor)
+
   if not potential_parents:
-    raise pl.ParsingError
+    raise ParsingError
   # arguably at this point anything other than len(potential_parents) should be 1,
   # and anything else can be considered a failure of this routine (therefore a RTE)
   # as it should be able to detect the definition.
@@ -366,52 +497,104 @@ def check_traceable_to_parent_args(obj, parent_arg_names, trace=None):
   # If >1 cursor, probably a bug since we should have weeded something out
   parent = potential_parents[0]
   trace.append(parent)
-  if parent.get_definition().kind == clx.CursorKind.PARM_DECL:
+  par_def = parent.get_definition()
+  if par_def and par_def.kind == clx.CursorKind.PARM_DECL:
     name = Cursor.get_name_from_cursor(parent)
     try:
       loc = parent_arg_names.index(name)
     except ValueError as ve:
       # name isn't in the parent arguments, so we raise parsing error from it
-      raise pl.ParsingError from ve
+      raise ParsingError from ve
   else:
     parent = Cursor(parent, obj.argidx)
     # deeper into the rabbit hole
-    loc, trace = check_traceable_to_parent_args(parent, parent_arg_names, trace=trace)
+    loc, trace = _do_check_traceable_to_parent_args(parent, parent_arg_names, trace)
   return loc, trace
 
-@DiagnosticManager.register(('matching-arg-num', 'Verify that the given argument number matches'))
-def check_matching_arg_num(linter, obj, idx, parent_args):
+def check_traceable_to_parent_args(obj: Cursor, parent_arg_names: tuple[str, ...]) -> tuple[int, list[CursorLike]]:
+  r"""Try and see if the cursor can be linked to parent function arguments.
+
+  Parameters
+  ----------
+  obj :
+    the cursor to check
+  parent_arg_names :
+    the set of argument names in the parent function
+
+  Returns
+  -------
+  idx :
+    the index into the `parent_arg_names` to which `obj` has been traced
+  trace :
+    if `obj` is not directly in `parent_arg_names`, then the breadcrumb of cursors that lead from `obj`
+    to `parent_arg_names[idx]`
+
+  Raises
+  ------
+  ParsingError
+    if `obj` cannot be traced back to `parent_arg_names`
+
+  Notes
+  -----
+  Traces `foo` back to `bar` for example for these
+  ```
+  myFunction(barType bar)
+  ...
+  fooType foo = bar->baz;
+  macro(foo, barIdx);
+  /* or */
+  macro(bar->baz, barIdx);
+  /* or */
+  initFooFromBar(bar,&foo);
+  macro(foo, barIdx);
+  ```
   """
-  Is the Arg # correct w.r.t. the function arguments
+  return _do_check_traceable_to_parent_args(obj, parent_arg_names, [])
+
+def check_matching_arg_num(linter: Linter, obj: Cursor, idx_cursor: Cursor, parent_args: tuple[Cursor, ...]) -> None:
+  r"""Is the Arg # correct w.r.t. the function arguments?
+
+  Parameters
+  ----------
+  linter :
+    the linter instance
+  obj :
+    the cursor to check
+  idx :
+    the cursor of the arg idx
+  parent_args :
+    the set of parent function argument cursors
   """
-  diag_name = check_matching_arg_num.diags.matching_arg_num
-  if idx.canonical.kind not in clx_math_cursor_kinds:
+  diag_name = _CodeDiags.diags.matching_arg_num
+  if idx_cursor.canonical.kind not in clx_math_cursor_kinds:
     # sometimes it is impossible to tell if the index is correct so this is a warning not
     # an error. For example in the case of a loop:
-    # for (i = 0; i < n; ++i) PetscValidIntPointer(arr+i, i);
-    linter.add_warning_from_cursor(
-      idx, Diagnostic(
-        diag_name, f"Index value is of unexpected type '{idx.canonical.kind}'", obj.extent.start
+    # for (i = 0; i < n; ++i) PetscAssertPointer(arr+i, i);
+    linter.add_diagnostic_from_cursor(
+      idx_cursor, Diagnostic(
+        Diagnostic.Kind.WARNING, diag_name,
+        f"Index value is of unexpected type '{idx_cursor.canonical.kind}'", obj.extent.start
       )
     )
     return
   try:
-    idx_num = int(idx.name)
+    idx_num = int(idx_cursor.name)
   except ValueError:
-    linter.add_warning_from_cursor(
-      idx, Diagnostic(
-        diag_name, 'Potential argument mismatch, could not determine integer value', obj.extent.start
+    linter.add_diagnostic_from_cursor(
+      idx_cursor, Diagnostic(
+        Diagnostic.Kind.WARNING, diag_name,
+        'Potential argument mismatch, could not determine integer value', obj.extent.start
       )
     )
     return
-  trace            = []
-  parent_arg_names = tuple(s.name for s in parent_args)
+  trace: list[CursorLike] = []
+  parent_arg_names        = tuple(s.name for s in parent_args)
   try:
     expected = parent_args[parent_arg_names.index(obj.name)]
   except ValueError:
     try:
       parent_idx, trace = check_traceable_to_parent_args(obj, parent_arg_names)
-    except pl.ParsingError as pe:
+    except ParsingError as pe:
       # If the parent arguments don't contain the symbol and we couldn't determine a
       # definition then we cannot check for correct numbering, so we cannot do
       # anything here but emit a warning
@@ -426,57 +609,86 @@ def check_matching_arg_num(linter, obj, idx, parent_args):
         parent_func_name = 'UNKNOWN FUNCTION'
         parent_func_src  = '  <could not determine parent function signature from arguments>'
       mess = f"Cannot determine index correctness, parent function '{parent_func_name}' seemingly does not contain the object:\n{parent_func_src}"
-      linter.add_warning_from_cursor(obj, Diagnostic(diag_name, mess, obj.extent.start))
+      linter.add_diagnostic_from_cursor(
+        obj, Diagnostic(Diagnostic.Kind.WARNING, diag_name, mess, obj.extent.start)
+      )
       return
     else:
       expected = parent_args[parent_idx]
   exp_idx = expected.argidx
   if idx_num != exp_idx:
     diag = Diagnostic(
-      diag_name,
-      f"Argument number doesn't match for '{obj.name}'. Expected '{exp_idx}', found '{idx_num}'",
-      idx.extent.start, patch=Patch.from_cursor(idx, exp_idx)
+      Diagnostic.Kind.ERROR, diag_name,
+      f"Argument number doesn't match for '{obj.name}'. Expected '{exp_idx}', found '{idx_num}':\n{idx_cursor.formatted(num_context=2)}",
+      idx_cursor.extent.start, patch=Patch.from_cursor(idx_cursor, str(exp_idx))
     ).add_note(
-      f'\'{obj.name}\' is traceable to argument #{exp_idx} \'{expected.name}\' in enclosing function here:\n{expected.formatted(nboth=2)}',
+      f'\'{obj.name}\' is traceable to argument #{exp_idx} \'{expected.name}\' in enclosing function here:\n{expected.formatted(num_context=2)}',
       location=expected.extent.start
     )
     if trace:
       diag.add_note(f'starting with {obj.get_formatted_blurb().rstrip()}', location=obj.extent.start)
     for cursor in trace:
-      diag.add_note(f'via {Cursor.get_formatted_blurb_from_cursor(cursor).rstrip()}', location=cursor.extent.start)
-    linter.add_error_from_cursor(idx, diag)
+      diag.add_note(
+        f'via {Cursor.get_formatted_blurb_from_cursor(cursor).rstrip()}', location=cursor.extent.start
+      )
+    linter.add_diagnostic_from_cursor(idx_cursor, diag)
   return
 
-@DiagnosticManager.register(
-  ('incompatible-type', 'Verify that a particular type matches the expected type')
-)
-def check_matching_specific_type(linter, obj, expected_type_kinds, pointer, unexpected_not_pointer_function=None, unexpected_pointer_function=None, success_function=None, failure_function=None, permissive=False, pointer_depth=1, **kwargs):
+if TYPE_CHECKING:
+  MatchingTypeCallback = Callable[[Linter, Cursor, Optional[Cursor], str], bool]
+
+def check_matching_specific_type(
+    linter: Linter, obj: Cursor, expected_type_kinds: Collection[clx.TypeKind], pointer: bool,
+    unexpected_not_pointer_function: Optional[MatchingTypeCallback] = None,
+    unexpected_pointer_function: Optional[MatchingTypeCallback] = None,
+    success_function: Optional[MatchingTypeCallback] = None,
+    failure_function: Optional[MatchingTypeCallback] = None,
+    permissive: bool = False, pointer_depth: int = 1, **kwargs
+) -> None:
+  r"""Checks that obj is of a particular kind, for example char. Can optionally handle pointers too.
+
+  Parameters
+  ----------
+  linter :
+    the linter instance
+  obj :
+    the cursor to check
+  expected_type_kinds :
+    the base `clang.cindex.TypeKind` that you want `obj` to be, e.g. clx.TypeKind.ENUM for PetscBool
+  pointer : optional
+    should `obj` be a pointer to your type?
+  unexpected_not_pointer_function : optional
+    callback for when `pointer` is True, and `obj` matches the base type but IS NOT a pointer
+  unexpected_pointer_function : optional
+    callback for when `pointer` is False`, the object matches the base type but IS a pointer
+  success_function : optional
+    callback for when `obj` matches the type and pointer specification
+  failure_function : optional
+    callback for when `obj` does NOT match the base type
+  permissive : optional
+    allow type mismatch (e.g. when checking generic functions like PetscAssertPointer() which can
+    accept anytype)
+  pointer_depth : optional
+    how many levels of pointer to remove (-1 for no limit)
+
+  Raises
+  ------
+  RuntimeError
+    if `success_function` returns False, indicating an unhandled error
+
+  Notes
+  -----
+  The hooks must return True or False to indicate whether they handled the particular situation.
+  This can mean either determining that the object was correct all along (and return True), or that a
+  more helpful error message was logged and/or that a fix was created.
+
+  Returning False indicates that the hook was not successful and that additional error messages should
+  be logged
   """
-  Checks that obj is of a particular kind, for example char. Can optionally handle pointers too.
-
-  Nonstandard arguments:
-
-  expected_type_kinds             - the base type that you want obj to be, e.g. clx.TypeKind.ENUM
-                                    for PetscBool
-  pointer                         - should obj be a pointer to your type?
-  unexpected_not_pointer_function - pointer is TRUE, the object matches the base type but IS NOT
-                                    a pointer
-  unexpected_pointer_function     - pointer is FALSE, the object matches the base type but IS a
-                                    pointer
-  success_function                - the object matches the type and pointer specification
-  failure_function                - the object does NOT match the base type
-  permissive                      - allow type mismatch (e.g. when checking generic functions like
-                                    PetscValidPointer() which can accept anytype)
-  pointer_depth                   - how many levels of pointer to remove (-1 for no limit)
-
-  The hooks must return whether they handled the failure, this can mean either determining
-  that the object was correct all along, or that a more helpful error message was logged
-  and/or that a fix was created.
-  """
-  def always_false(*args, **kwargs):
+  def always_false(*args: Any, **kwargs: Any) -> bool:
     return False
 
-  def always_true(*args, **kwargs):
+  def always_true(*args: Any, **kwargs: Any) -> bool:
     return True
 
   if unexpected_not_pointer_function is None:
@@ -494,7 +706,7 @@ def check_matching_specific_type(linter, obj, expected_type_kinds, pointer, unex
   if pointer_depth < 0:
     pointer_depth = 100
 
-  diag_name = check_matching_specific_type.diags.incompatible_type
+  diag_name = _CodeDiags.diags.incompatible_type
   obj_type  = obj.canonical.type.get_canonical()
   if pointer:
     if obj_type.kind in expected_type_kinds and not permissive:
@@ -502,11 +714,13 @@ def check_matching_specific_type(linter, obj, expected_type_kinds, pointer, unex
       handled = unexpected_not_pointer_function(linter, obj, obj_type, **kwargs)
       if not handled:
         mess = f'Object of clang type {obj_type.kind} is not a pointer. Expected pointer of one of the following types: {expected_type_kinds}'
-        linter.add_error_from_cursor(obj, Diagnostic(diag_name, mess, obj.extent.start))
+        linter.add_diagnostic_from_cursor(
+          obj, Diagnostic(Diagnostic.Kind.ERROR, diag_name, mess, obj.extent.start)
+        )
       return
 
     # get rid of any nested pointer types
-    def cycle_type(obj_type, get_obj_type):
+    def cycle_type(obj_type: clx.Type, get_obj_type: Callable[[clx.Type], clx.Type]) -> clx.Type:
       for _ in range(pointer_depth):
         tmp_type = get_obj_type(obj_type)
         if tmp_type == obj_type:
@@ -519,21 +733,25 @@ def check_matching_specific_type(linter, obj, expected_type_kinds, pointer, unex
     elif obj_type.kind == clx.TypeKind.POINTER:
       obj_type = cycle_type(obj_type, lambda otype: otype.get_pointee())
   else:
-    if obj_type.kind in clx_array_type_kinds or obj_type.kind == clx.TypeKind.POINTER:
+    if obj_type.kind in clx_pointer_type_kinds:
       handled = unexpected_pointer_function(linter, obj, obj_type, **kwargs)
       if not handled:
         mess = f'Object of clang type {obj_type.kind} is a pointer when it should not be'
-        linter.add_error_from_cursor(obj, Diagnostic(diag_name, mess, obj.extent.start))
+        linter.add_diagnostic_from_cursor(
+          obj, Diagnostic(Diagnostic.Kind.ERROR, diag_name, mess, obj.extent.start)
+        )
       return
 
   if permissive or obj_type.kind in expected_type_kinds:
     handled = success_function(linter, obj, obj_type, **kwargs)
     if not handled:
-      error_message = "{}\nType checker successfully matched object of type {} to (one of) expected types:\n- {}\n\nBut user supplied on-successful-match hook '{}' returned non-truthy value '{}' indicating unhandled error!".format(obj, obj_type.kind, '\n- '.join(map(str, expected_type_kinds)), success_function, handled, expected_type_kinds, obj_type.kind)
+      error_message = "{}\nType checker successfully matched object of type {} to (one of) expected types:\n- {}\n\nBut user supplied on-successful-match hook '{}' returned non-truthy value '{}' indicating unhandled error!".format(obj, obj_type.kind, '\n- '.join(map(str, expected_type_kinds)), success_function, handled)
       raise RuntimeError(error_message)
   else:
     handled = failure_function(linter, obj, obj_type, **kwargs)
     if not handled:
       mess = f'Object of clang type {obj_type.kind} is not in expected types: {expected_type_kinds}'
-      linter.add_error_from_cursor(obj, Diagnostic(diag_name, mess, obj.extent.start))
+      linter.add_diagnostic_from_cursor(
+        obj, Diagnostic(Diagnostic.Kind.ERROR, diag_name, mess, obj.extent.start)
+      )
   return

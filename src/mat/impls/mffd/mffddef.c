@@ -106,7 +106,7 @@ static PetscErrorCode MatMFFDSetFromOptions_DS(MatMFFD ctx, PetscOptionItems *Pe
   MatMFFD_DS *hctx = (MatMFFD_DS *)ctx->hctx;
 
   PetscFunctionBegin;
-  PetscOptionsHeadBegin(PetscOptionsObject, "Finite difference matrix free parameters");
+  PetscOptionsHeadBegin(PetscOptionsObject, "Finite difference matrix-free parameters");
   PetscCall(PetscOptionsReal("-mat_mffd_umin", "umin", "MatMFFDDSSetUmin", hctx->umin, &hctx->umin, NULL));
   PetscOptionsHeadEnd();
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -123,7 +123,7 @@ static PetscErrorCode MatMFFDDestroy_DS(MatMFFD ctx)
    The following two routines use the PetscObjectCompose() and PetscObjectQuery()
    mechanism to allow the user to change the Umin parameter used in this method.
 */
-PetscErrorCode MatMFFDDSSetUmin_DS(Mat mat, PetscReal umin)
+static PetscErrorCode MatMFFDDSSetUmin_DS(Mat mat, PetscReal umin)
 {
   MatMFFD     ctx = NULL;
   MatMFFD_DS *hctx;
@@ -137,19 +137,19 @@ PetscErrorCode MatMFFDDSSetUmin_DS(Mat mat, PetscReal umin)
 }
 
 /*@
-    MatMFFDDSSetUmin - Sets the "umin" parameter used by the
-    PETSc routine for computing the differencing parameter, h, which is used
-    for matrix-free Jacobian-vector products for a `MATMFFD` matrix.
+  MatMFFDDSSetUmin - Sets the "umin" parameter used by the
+  PETSc routine for computing the differencing parameter, h, which is used
+  for matrix-free Jacobian-vector products for a `MATMFFD` matrix.
 
-   Input Parameters:
-+  A - the `MATMFFD` matrix
--  umin - the parameter
+  Input Parameters:
++ A    - the `MATMFFD` matrix
+- umin - the parameter
 
-   Level: advanced
+  Level: advanced
 
-   Note:
-   See the manual page for `MatCreateSNESMF()` for a complete description of the
-   algorithm used to compute h.
+  Note:
+  See the manual page for `MatCreateSNESMF()` for a complete description of the
+  algorithm used to compute h.
 
 .seealso: `MATMFFD`, `MatMFFDSetFunctionError()`, `MatCreateSNESMF()`
 @*/

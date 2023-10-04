@@ -255,15 +255,15 @@ static PetscErrorCode SNESView_NASM(SNES snes, PetscViewer viewer)
 }
 
 /*@
-   SNESNASMSetType - Set the type of subdomain update used for the nonlinear additive Schwarz solver
+  SNESNASMSetType - Set the type of subdomain update used for the nonlinear additive Schwarz solver
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  snes - the `SNES` context
--  type - the type of update, `PC_ASM_BASIC` or `PC_ASM_RESTRICT`
+  Input Parameters:
++ snes - the `SNES` context
+- type - the type of update, `PC_ASM_BASIC` or `PC_ASM_RESTRICT`
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `SNESNASM`, `SNESNASMGetType()`, `PCASMSetType()`, `PC_ASM_BASIC`, `PC_ASM_RESTRICT`, `PCASMType`
 @*/
@@ -288,17 +288,17 @@ static PetscErrorCode SNESNASMSetType_NASM(SNES snes, PCASMType type)
 }
 
 /*@
-   SNESNASMGetType - Get the type of subdomain update used for the nonlinear additive Schwarz solver
+  SNESNASMGetType - Get the type of subdomain update used for the nonlinear additive Schwarz solver
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameter:
-.  snes - the `SNES` context
+  Input Parameter:
+. snes - the `SNES` context
 
-   Output Parameter:
-.  type - the type of update
+  Output Parameter:
+. type - the type of update
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `SNESNASM`, `SNESNASMSetType()`, `PCASMGetType()`, `PC_ASM_BASIC`, `PC_ASM_RESTRICT`, `PCASMType`
 @*/
@@ -319,19 +319,19 @@ static PetscErrorCode SNESNASMGetType_NASM(SNES snes, PCASMType *type)
 }
 
 /*@
-   SNESNASMSetSubdomains - Manually Set the context required to restrict and solve subdomain problems in the nonlinear additive Schwarz solver
+  SNESNASMSetSubdomains - Manually Set the context required to restrict and solve subdomain problems in the nonlinear additive Schwarz solver
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  snes - the SNES context
-.  n - the number of local subdomains
-.  subsnes - solvers defined on the local subdomains
-.  iscatter - scatters into the nonoverlapping portions of the local subdomains
-.  oscatter - scatters into the overlapping portions of the local subdomains
--  gscatter - scatters into the (ghosted) local vector of the local subdomain
+  Input Parameters:
++ snes     - the SNES context
+. n        - the number of local subdomains
+. subsnes  - solvers defined on the local subdomains
+. iscatter - scatters into the nonoverlapping portions of the local subdomains
+. oscatter - scatters into the overlapping portions of the local subdomains
+- gscatter - scatters into the (ghosted) local vector of the local subdomain
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `SNESNASM`, `SNESNASMGetSubdomains()`
 @*/
@@ -391,21 +391,21 @@ static PetscErrorCode SNESNASMSetSubdomains_NASM(SNES snes, PetscInt n, SNES sub
 }
 
 /*@
-   SNESNASMGetSubdomains - Get the local subdomain contexts for the nonlinear additive Schwarz solver
+  SNESNASMGetSubdomains - Get the local subdomain contexts for the nonlinear additive Schwarz solver
 
-   Not Collective but some of the objects returned will be parallel
+  Not Collective but some of the objects returned will be parallel
 
-   Input Parameter:
-.  snes - the `SNES` context
+  Input Parameter:
+. snes - the `SNES` context
 
-   Output Parameters:
-+  n - the number of local subdomains
-.  subsnes - solvers defined on the local subdomains
-.  iscatter - scatters into the nonoverlapping portions of the local subdomains
-.  oscatter - scatters into the overlapping portions of the local subdomains
--  gscatter - scatters into the (ghosted) local vector of the local subdomain
+  Output Parameters:
++ n        - the number of local subdomains
+. subsnes  - solvers defined on the local subdomains
+. iscatter - scatters into the nonoverlapping portions of the local subdomains
+. oscatter - scatters into the overlapping portions of the local subdomains
+- gscatter - scatters into the (ghosted) local vector of the local subdomain
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `SNESNASM`, `SNESNASMSetSubdomains()`
 @*/
@@ -433,21 +433,21 @@ static PetscErrorCode SNESNASMGetSubdomains_NASM(SNES snes, PetscInt *n, SNES *s
 }
 
 /*@
-   SNESNASMGetSubdomainVecs - Get the processor-local subdomain vectors for the nonlinear additive Schwarz solver
+  SNESNASMGetSubdomainVecs - Get the processor-local subdomain vectors for the nonlinear additive Schwarz solver
 
-   Not Collective
+  Not Collective
 
-   Input Parameter:
-.  snes - the `SNES` context
+  Input Parameter:
+. snes - the `SNES` context
 
-   Output Parameters:
-+  n - the number of local subdomains
-.  x - The subdomain solution vector
-.  y - The subdomain step vector
-.  b - The subdomain RHS vector
--  xl - The subdomain local vectors (ghosted)
+  Output Parameters:
++ n  - the number of local subdomains
+. x  - The subdomain solution vector
+. y  - The subdomain step vector
+. b  - The subdomain RHS vector
+- xl - The subdomain local vectors (ghosted)
 
-   Level: developer
+  Level: developer
 
 .seealso: `SNESNASM`, `SNESNASMGetSubdomains()`
 @*/
@@ -475,20 +475,20 @@ static PetscErrorCode SNESNASMGetSubdomainVecs_NASM(SNES snes, PetscInt *n, Vec 
 }
 
 /*@
-   SNESNASMSetComputeFinalJacobian - Schedules the computation of the global and subdomain Jacobians upon convergence for the
-   nonlinear additive Schwarz solver
+  SNESNASMSetComputeFinalJacobian - Schedules the computation of the global and subdomain Jacobians upon convergence for the
+  nonlinear additive Schwarz solver
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  snes - the SNES context
--  flg - `PETSC_TRUE` to compute the Jacobians
+  Input Parameters:
++ snes - the SNES context
+- flg  - `PETSC_TRUE` to compute the Jacobians
 
-   Level: developer
+  Level: developer
 
-   Notes:
-   This is used almost exclusively in the implementation of `SNESASPIN`, where the converged subdomain and global Jacobian
-   is needed at each linear iteration.
+  Notes:
+  This is used almost exclusively in the implementation of `SNESASPIN`, where the converged subdomain and global Jacobian
+  is needed at each linear iteration.
 
 .seealso: `SNESNASM`, `SNESNASMGetSubdomains()`
 @*/
@@ -512,18 +512,18 @@ static PetscErrorCode SNESNASMSetComputeFinalJacobian_NASM(SNES snes, PetscBool 
 }
 
 /*@
-   SNESNASMSetDamping - Sets the update damping for `SNESNASM` the nonlinear additive Schwarz solver
+  SNESNASMSetDamping - Sets the update damping for `SNESNASM` the nonlinear additive Schwarz solver
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  snes - the `SNES` context
--  dmp - damping
+  Input Parameters:
++ snes - the `SNES` context
+- dmp  - damping
 
-   Level: intermediate
+  Level: intermediate
 
-   Notes:
-    The new solution is obtained as old solution plus dmp times (sum of the solutions on the subdomains)
+  Notes:
+  The new solution is obtained as old solution plus dmp times (sum of the solutions on the subdomains)
 
 .seealso: `SNESNASM`, `SNESNASMGetDamping()`
 @*/
@@ -547,17 +547,17 @@ static PetscErrorCode SNESNASMSetDamping_NASM(SNES snes, PetscReal dmp)
 }
 
 /*@
-   SNESNASMGetDamping - Gets the update damping for `SNESNASM` the nonlinear additive Schwarz solver
+  SNESNASMGetDamping - Gets the update damping for `SNESNASM` the nonlinear additive Schwarz solver
 
-   Not Collective
+  Not Collective
 
-   Input Parameter:
-.  snes - the SNES context
+  Input Parameter:
+. snes - the SNES context
 
-   Output Parameter:
-.  dmp - damping
+  Output Parameter:
+. dmp - damping
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `SNESNASM`, `SNESNASMSetDamping()`
 @*/
@@ -588,7 +588,7 @@ static PetscErrorCode SNESNASMGetDamping_NASM(SNES snes, PetscReal *dmp)
 
   TODO: All scatters should be packed into one
 */
-PetscErrorCode SNESNASMSolveLocal_Private(SNES snes, Vec B, Vec Y, Vec X)
+static PetscErrorCode SNESNASMSolveLocal_Private(SNES snes, Vec B, Vec Y, Vec X)
 {
   SNES_NASM *nasm = (SNES_NASM *)snes->data;
   SNES       subsnes;
@@ -749,15 +749,15 @@ static PetscErrorCode SNESSolve_NASM(SNES snes)
     snes->norm = fnorm;
     PetscCall(PetscObjectSAWsGrantAccess((PetscObject)snes));
     PetscCall(SNESLogConvergenceHistory(snes, snes->norm, 0));
-    PetscCall(SNESMonitor(snes, 0, snes->norm));
 
     /* test convergence */
-    PetscUseTypeMethod(snes, converged, 0, 0.0, 0.0, fnorm, &snes->reason, snes->cnvP);
+    PetscCall(SNESConverged(snes, 0, 0.0, 0.0, fnorm));
+    PetscCall(SNESMonitor(snes, 0, snes->norm));
     if (snes->reason) PetscFunctionReturn(PETSC_SUCCESS);
   } else {
     PetscCall(PetscObjectSAWsGrantAccess((PetscObject)snes));
     PetscCall(SNESLogConvergenceHistory(snes, snes->norm, 0));
-    PetscCall(SNESMonitor(snes, 0, snes->norm));
+    PetscCall(SNESMonitor(snes, snes->iter, snes->norm));
   }
 
   /* Call general purpose update function */
@@ -778,9 +778,9 @@ static PetscErrorCode SNESSolve_NASM(SNES snes)
     snes->norm = fnorm;
     PetscCall(PetscObjectSAWsGrantAccess((PetscObject)snes));
     PetscCall(SNESLogConvergenceHistory(snes, snes->norm, 0));
-    PetscCall(SNESMonitor(snes, snes->iter, snes->norm));
     /* Test for convergence */
-    if (normschedule == SNES_NORM_ALWAYS) PetscUseTypeMethod(snes, converged, snes->iter, 0.0, 0.0, fnorm, &snes->reason, snes->cnvP);
+    PetscCall(SNESConverged(snes, snes->iter, 0.0, 0.0, fnorm));
+    PetscCall(SNESMonitor(snes, snes->iter, snes->norm));
     if (snes->reason) break;
     /* Call general purpose update function */
     PetscTryTypeMethod(snes, update, snes->iter);
@@ -789,12 +789,6 @@ static PetscErrorCode SNESSolve_NASM(SNES snes)
     PetscCall(SNESNASMComputeFinalJacobian_Private(snes, X));
     SNESCheckJacobianDomainerror(snes);
   }
-  if (normschedule == SNES_NORM_ALWAYS) {
-    if (i == snes->max_its) {
-      PetscCall(PetscInfo(snes, "Maximum number of iterations has been reached: %" PetscInt_FMT "\n", snes->max_its));
-      if (!snes->reason) snes->reason = SNES_DIVERGED_MAX_IT;
-    }
-  } else if (!snes->reason) snes->reason = SNES_CONVERGED_ITS; /* NASM is meant to be used as a nonlinear preconditioner */
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -891,18 +885,18 @@ PETSC_EXTERN PetscErrorCode SNESCreate_NASM(SNES snes)
 }
 
 /*@
-   SNESNASMGetSNES - Gets a subsolver
+  SNESNASMGetSNES - Gets a subsolver
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  snes - the `SNES` context
--  i - the number of the subsnes to get
+  Input Parameters:
++ snes - the `SNES` context
+- i    - the number of the subsnes to get
 
-   Output Parameter:
-.  subsnes - the subsolver context
+  Output Parameter:
+. subsnes - the subsolver context
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `SNESNASM`, `SNESNASMGetNumber()`
 @*/
@@ -917,17 +911,17 @@ PetscErrorCode SNESNASMGetSNES(SNES snes, PetscInt i, SNES *subsnes)
 }
 
 /*@
-   SNESNASMGetNumber - Gets number of subsolvers
+  SNESNASMGetNumber - Gets number of subsolvers
 
-   Not Collective
+  Not Collective
 
-   Input Parameter:
-.  snes - the `SNES` context
+  Input Parameter:
+. snes - the `SNES` context
 
-   Output Parameter:
-.  n - the number of subsolvers
+  Output Parameter:
+. n - the number of subsolvers
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `SNESNASM`, `SNESNASMGetSNES()`
 @*/
@@ -941,15 +935,15 @@ PetscErrorCode SNESNASMGetNumber(SNES snes, PetscInt *n)
 }
 
 /*@
-   SNESNASMSetWeight - Sets weight to use when adding overlapping updates
+  SNESNASMSetWeight - Sets weight to use when adding overlapping updates
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  snes - the `SNES` context
--  weight - the weights to use (typically 1/N for each dof, where N is the number of patches it appears in)
+  Input Parameters:
++ snes   - the `SNES` context
+- weight - the weights to use (typically 1/N for each dof, where N is the number of patches it appears in)
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `SNESNASM`
 @*/

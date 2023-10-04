@@ -15,18 +15,16 @@ Example:
 
 int main(int argc, char **args)
 {
-  Vec         x, b, u; /* approx solution, RHS, exact solution */
-  Mat         A;       /* linear system matrix */
-  KSP         ksp;     /* linear solver context */
-  PetscRandom rctx;    /* random number generator context */
-  PetscReal   norm;    /* norm of solution error */
-  PetscInt    i, j, Ii, J, Istart, Iend, m, n = 7, its, nloc, matdistribute = 0;
-  PetscBool   flg = PETSC_FALSE;
-  PetscScalar v;
-  PetscMPIInt rank, size;
-#if defined(PETSC_USE_LOG)
+  Vec           x, b, u; /* approx solution, RHS, exact solution */
+  Mat           A;       /* linear system matrix */
+  KSP           ksp;     /* linear solver context */
+  PetscRandom   rctx;    /* random number generator context */
+  PetscReal     norm;    /* norm of solution error */
+  PetscInt      i, j, Ii, J, Istart, Iend, m, n = 7, its, nloc, matdistribute = 0;
+  PetscBool     flg = PETSC_FALSE;
+  PetscScalar   v;
+  PetscMPIInt   rank, size;
   PetscLogStage stage;
-#endif
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &args, (char *)0, help));

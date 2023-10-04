@@ -126,8 +126,8 @@ PETSC_EXTERN PetscErrorCode PetscRandomCreate_Rander48(PetscRandom r)
   PetscFunctionBegin;
   PetscCall(PetscNew(&r48));
   /* r48 does not need to be initialized because PetscRandomSeed() is always called before use and sets the needed values */
-  r->data = r48;
-  PetscCall(PetscMemcpy(r->ops, &PetscRandomOps_Values, sizeof(PetscRandomOps_Values)));
+  r->data   = r48;
+  r->ops[0] = PetscRandomOps_Values;
   PetscCall(PetscObjectChangeTypeName((PetscObject)r, PETSCRANDER48));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

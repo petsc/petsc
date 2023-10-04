@@ -660,7 +660,7 @@ int main(int argc, char **argv)
     }
     PetscCall(DMPlexComputeGeometryFVM(user.dm, &cellgeom, &facegeom));
     PetscCall(DMPlexGetHeightStratum(user.dm, 0, &cStart, &cEnd));
-    PetscCall(DMPlexGetGhostCellStratum(user.dm, &cEndInterior, NULL));
+    PetscCall(DMPlexGetCellTypeStratum(user.dm, DM_POLYTOPE_FV_GHOST, &cEndInterior, NULL));
     if (cEndInterior >= 0) cEnd = cEndInterior;
     PetscCall(VecGetDM(cellgeom, &dmCell));
     PetscCall(VecGetArrayRead(cellgeom, &cgeom));

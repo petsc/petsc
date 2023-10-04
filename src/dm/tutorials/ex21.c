@@ -1,5 +1,5 @@
 
-static char help[] = "DMSwarm-PIC demonstator of advecting points within cell DM defined by a DA or PLEX object \n\
+static char help[] = "DMSwarm-PIC demonstrator of advecting points within cell DM defined by a DA or PLEX object \n\
 Options: \n\
 -ppcell   : Number of times to sub-divide the reference cell when layout the initial particle coordinates \n\
 -meshtype : 0 ==> DA , 1 ==> PLEX \n\
@@ -17,7 +17,7 @@ PetscErrorCode pic_advect(PetscInt ppcell, PetscInt meshtype)
   DM             celldm, swarm;
   PetscInt       tk, nt = 200;
   PetscBool      view = PETSC_FALSE;
-  Vec           *pfields;
+  Vec            pfields[1];
   PetscReal      minradius;
   PetscReal      dt;
   PetscReal      vel[]        = {1.0, 0.16};
@@ -131,7 +131,8 @@ PetscErrorCode pic_advect(PetscInt ppcell, PetscInt meshtype)
   }
 
   /* Project initial value of phi onto the mesh */
-  PetscCall(DMSwarmProjectFields(swarm, 1, fieldnames, &pfields, PETSC_FALSE));
+  PetscCall(DMCreateGlobalVector(celldm, &pfields[0]));
+  PetscCall(DMSwarmProjectFields(swarm, 1, fieldnames, pfields, SCATTER_FORWARD));
 
   if (view) {
     /* View swarm all swarm fields using data type PETSC_REAL */
@@ -202,7 +203,7 @@ PetscErrorCode pic_advect(PetscInt ppcell, PetscInt meshtype)
     }
 
     /* Project swarm field "phi" onto the cell DM */
-    PetscCall(DMSwarmProjectFields(swarm, 1, fieldnames, &pfields, PETSC_TRUE));
+    PetscCall(DMSwarmProjectFields(swarm, 1, fieldnames, pfields, SCATTER_FORWARD));
 
     if (view) {
       PetscViewer viewer;
@@ -232,7 +233,6 @@ PetscErrorCode pic_advect(PetscInt ppcell, PetscInt meshtype)
     }
   }
   PetscCall(VecDestroy(&pfields[0]));
-  PetscCall(PetscFree(pfields));
   PetscCall(DMDestroy(&celldm));
   PetscCall(DMDestroy(&swarm));
 

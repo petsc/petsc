@@ -168,6 +168,12 @@ int main(int argc, char **argv)
     args: -dm_coord_space 0 -sub_dm_plex_check_all \
           -dm_view ascii::ascii_info_detail -sub_dm_view ascii::ascii_info_detail -map_view
 
+  test:
+    suffix: 0_vtk
+    requires: triangle
+    args: -dm_coord_space 0 -sub_dm_plex_check_all \
+          -dm_view vtk: -sub_dm_view vtk: -map_view
+
   # These tests check that filtering is stable when boundary point ownership could change, so it needs 3 processes
   testset:
     nsize: 3
@@ -193,10 +199,20 @@ int main(int argc, char **argv)
       suffix: 3
       args: -domain -height 0.625
 
+  # This set tests that global numberings can be made when some strata are missing on a process
+  testset:
+    nsize: 3
+    args: -dm_plex_simplex 0 -dm_plex_box_faces 4,4 -petscpartitioner_type simple -sub_dm_distribute 0 \
+          -sub_dm_plex_check_all -sub_dm_view {{vtk:subdm.vtk: vtk:subdm.vtu :subdm.txt :subdm_d.txt:ascii_info_detail}}
+
+    test:
+      suffix: 3_vtk
+      args: -domain -height 0.625
+
   # This test checks whether filter can extract a lower-dimensional manifold and output a field on it
   testset:
-    args: -volume 0 -dm_plex_simplex 0 -sub_dm_view hdf5:subdm.h5 -vec_view hdf5:subdm.h5::append
     requires: hdf5
+    args: -volume 0 -dm_plex_simplex 0 -sub_dm_view hdf5:subdm.h5 -vec_view hdf5:subdm.h5::append
 
     test:
       suffix: surface_2d

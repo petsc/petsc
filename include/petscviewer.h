@@ -1,8 +1,7 @@
 /*
      PetscViewers are objects where other objects can be looked at or stored.
 */
-#ifndef PETSCVIEWER_H
-#define PETSCVIEWER_H
+#pragma once
 
 #include <petscsys.h>
 #include <petscviewertypes.h>
@@ -38,6 +37,7 @@ typedef const char *PetscViewerType;
 
 PETSC_EXTERN PetscFunctionList PetscViewerList;
 PETSC_EXTERN PetscErrorCode    PetscViewerInitializePackage(void);
+PETSC_EXTERN PetscErrorCode    PetscViewerFinalizePackage(void);
 
 PETSC_EXTERN PetscErrorCode PetscViewerRegister(const char[], PetscErrorCode (*)(PetscViewer));
 
@@ -79,11 +79,11 @@ PETSC_EXTERN PetscErrorCode PetscViewerMatlabOpen(MPI_Comm, const char[], PetscF
 /*E
     PetscViewerGLVisType - indicates what type of `PETSCVIEWERGLVIS` viewer to use
 
-    Level: beginner
-
     Values:
 +   `PETSC_VIEWER_GLVIS_DUMP` - save the data to a file
 -   `PETSC_VIEWER_GLVIS_SOCKET` - communicate the data to another program via a socket
+
+    Level: beginner
 
 .seealso: [](sec_viewers), `PETSCVIEWERGLVIS`, `PetscViewerGLVisOpen()`
 E*/
@@ -115,13 +115,11 @@ PETSC_EXTERN PetscErrorCode PetscViewerWritable(PetscViewer, PetscBool *);
 PETSC_EXTERN PetscErrorCode PetscViewerCheckReadable(PetscViewer);
 PETSC_EXTERN PetscErrorCode PetscViewerCheckWritable(PetscViewer);
 
-#define PETSC_VIEWER_ASCII_VTK_ATTR        PETSC_VIEWER_ASCII_VTK PETSC_DEPRECATED_ENUM("Legacy VTK deprecated; use PetscViewerVTKOpen() with XML (.vtr .vts .vtu) format (since 3.14)")
-#define PETSC_VIEWER_ASCII_VTK_CELL_ATTR   PETSC_VIEWER_ASCII_VTK_CELL PETSC_DEPRECATED_ENUM("Legacy VTK deprecated; use PetscViewerVTKOpen() with XML (.vtr .vts .vtu) format (since 3.14)")
-#define PETSC_VIEWER_ASCII_VTK_COORDS_ATTR PETSC_VIEWER_ASCII_VTK_COORDS PETSC_DEPRECATED_ENUM("Legacy VTK deprecated; use PetscViewerVTKOpen() with XML (.vtr .vts .vtu) format (since 3.14)")
+#define PETSC_VIEWER_ASCII_VTK_ATTR        PETSC_VIEWER_ASCII_VTK PETSC_DEPRECATED_ENUM(3, 14, 0, "PetscViewerVTKOpen() with XML (.vtr.vts.vtu) format", )
+#define PETSC_VIEWER_ASCII_VTK_CELL_ATTR   PETSC_VIEWER_ASCII_VTK_CELL PETSC_DEPRECATED_ENUM(3, 14, 0, "PetscViewerVTKOpen() with XML (.vtr.vts.vtu) format", )
+#define PETSC_VIEWER_ASCII_VTK_COORDS_ATTR PETSC_VIEWER_ASCII_VTK_COORDS PETSC_DEPRECATED_ENUM(3, 14, 0, "PetscViewerVTKOpen() with XML (.vtr .vts .vtu) format", )
 /*E
     PetscViewerFormat - Way a viewer presents the object
-
-   Level: beginner
 
    Values:
 +    `PETSC_VIEWER_DEFAULT` - default format for the specific object being viewed
@@ -148,6 +146,8 @@ PETSC_EXTERN PetscErrorCode PetscViewerCheckWritable(PetscViewer);
 .    `PETSC_VIEWER_DRAW_BASIC` - views the vector with a simple 1d plot
 .    `PETSC_VIEWER_DRAW_LG` - views the vector with a line graph
 -    `PETSC_VIEWER_DRAW_CONTOUR` - views the vector with a contour plot
+
+   Level: beginner
 
    Note:
    A variety of specialized formats also exist
@@ -201,7 +201,7 @@ typedef enum {
 } PetscViewerFormat;
 PETSC_EXTERN const char *const PetscViewerFormats[];
 
-PETSC_EXTERN                PETSC_DEPRECATED_FUNCTION("Use PetscViewerPushFormat()/PetscViewerPopFormat()") PetscErrorCode PetscViewerSetFormat(PetscViewer, PetscViewerFormat);
+PETSC_EXTERN PETSC_DEPRECATED_FUNCTION(3, 7, 0, "PetscViewerPushFormat() / PetscViewerPopFormat()", ) PetscErrorCode PetscViewerSetFormat(PetscViewer, PetscViewerFormat);
 PETSC_EXTERN PetscErrorCode PetscViewerPushFormat(PetscViewer, PetscViewerFormat);
 PETSC_EXTERN PetscErrorCode PetscViewerPopFormat(PetscViewer);
 PETSC_EXTERN PetscErrorCode PetscViewerGetFormat(PetscViewer, PetscViewerFormat *);
@@ -211,6 +211,7 @@ PETSC_EXTERN PetscErrorCode PetscOptionsPushGetViewerOff(PetscBool);
 PETSC_EXTERN PetscErrorCode PetscOptionsPopGetViewerOff(void);
 PETSC_EXTERN PetscErrorCode PetscOptionsGetViewerOff(PetscBool *);
 PETSC_EXTERN PetscErrorCode PetscOptionsGetViewer(MPI_Comm, PetscOptions, const char[], const char[], PetscViewer *, PetscViewerFormat *, PetscBool *);
+PETSC_EXTERN PetscErrorCode PetscOptionsGetViewers(MPI_Comm, PetscOptions, const char[], const char[], PetscInt *, PetscViewer *, PetscViewerFormat *, PetscBool *);
 #define PetscOptionsViewer(a, b, c, d, e, f) PetscOptionsViewer_Private(PetscOptionsObject, a, b, c, d, e, f)
 PETSC_EXTERN PetscErrorCode PetscOptionsViewer_Private(PetscOptionItems *, const char[], const char[], const char[], PetscViewer *, PetscViewerFormat *, PetscBool *);
 
@@ -248,8 +249,8 @@ PETSC_EXTERN PetscErrorCode PetscViewerBinaryGetDescriptor(PetscViewer, int *);
 PETSC_EXTERN PetscErrorCode PetscViewerBinaryGetInfoPointer(PetscViewer, FILE **);
 PETSC_EXTERN PetscErrorCode PetscViewerBinaryRead(PetscViewer, void *, PetscInt, PetscInt *, PetscDataType);
 PETSC_EXTERN PetscErrorCode PetscViewerBinaryWrite(PetscViewer, const void *, PetscInt, PetscDataType);
-PETSC_EXTERN PetscErrorCode PetscViewerBinaryReadAll(PetscViewer, void *, PetscInt, PetscInt, PetscInt, PetscDataType);
-PETSC_EXTERN PetscErrorCode PetscViewerBinaryWriteAll(PetscViewer, const void *, PetscInt, PetscInt, PetscInt, PetscDataType);
+PETSC_EXTERN PetscErrorCode PetscViewerBinaryReadAll(PetscViewer, void *, PetscInt, PetscInt64, PetscInt64, PetscDataType);
+PETSC_EXTERN PetscErrorCode PetscViewerBinaryWriteAll(PetscViewer, const void *, PetscInt, PetscInt64, PetscInt64, PetscDataType);
 PETSC_EXTERN PetscErrorCode PetscViewerStringSPrintf(PetscViewer, const char[], ...) PETSC_ATTRIBUTE_FORMAT(2, 3);
 PETSC_EXTERN PetscErrorCode PetscViewerStringSetString(PetscViewer, char[], size_t);
 PETSC_EXTERN PetscErrorCode PetscViewerStringGetStringRead(PetscViewer, const char *[], size_t *);
@@ -299,7 +300,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerVUFlushDeferred(PetscViewer);
 
 .seealso: [](sec_viewers), `PetscViewer`, `PetscViewerFileSetMode()`
 @*/
-PETSC_DEPRECATED_FUNCTION("Use PetscViewerFileSetMode (since v3.15)") static inline PetscErrorCode PetscViewerVUSetMode(PetscViewer viewer, PetscFileMode mode)
+PETSC_DEPRECATED_FUNCTION(3, 15, 0, "PetscViewerFileSetMode()", ) static inline PetscErrorCode PetscViewerVUSetMode(PetscViewer viewer, PetscFileMode mode)
 {
   return PetscViewerFileSetMode(viewer, mode);
 }
@@ -311,11 +312,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerMathematicaSetName(PetscViewer, const cha
 PETSC_EXTERN PetscErrorCode PetscViewerMathematicaClearName(PetscViewer);
 PETSC_EXTERN PetscErrorCode PetscViewerMathematicaSkipPackets(PetscViewer, int);
 
-PETSC_EXTERN PetscErrorCode PetscViewerSiloGetName(PetscViewer, char **);
-PETSC_EXTERN PetscErrorCode PetscViewerSiloSetName(PetscViewer, const char[]);
 PETSC_EXTERN PetscErrorCode PetscViewerSiloClearName(PetscViewer);
-PETSC_EXTERN PetscErrorCode PetscViewerSiloGetMeshName(PetscViewer, char **);
-PETSC_EXTERN PetscErrorCode PetscViewerSiloSetMeshName(PetscViewer, const char[]);
 PETSC_EXTERN PetscErrorCode PetscViewerSiloClearMeshName(PetscViewer);
 
 typedef enum {
@@ -436,11 +433,11 @@ PETSC_EXTERN PetscErrorCode PetscViewerFlowControlStepMain(PetscViewer, PetscInt
 PETSC_EXTERN PetscErrorCode PetscViewerFlowControlEndMain(PetscViewer, PetscInt *);
 PETSC_EXTERN PetscErrorCode PetscViewerFlowControlStepWorker(PetscViewer, PetscMPIInt, PetscInt *);
 PETSC_EXTERN PetscErrorCode PetscViewerFlowControlEndWorker(PetscViewer, PetscInt *);
-PETSC_DEPRECATED_FUNCTION("Use PetscViewerFlowControlStepMain (since v3.15)") static inline PetscErrorCode PetscViewerFlowControlStepMaster(PetscViewer viewer, PetscInt i, PetscInt *mcnt, PetscInt cnt)
+PETSC_DEPRECATED_FUNCTION(3, 15, 0, "PetscViewerFlowControlStepMain()", ) static inline PetscErrorCode PetscViewerFlowControlStepMaster(PetscViewer viewer, PetscInt i, PetscInt *mcnt, PetscInt cnt)
 {
   return PetscViewerFlowControlStepMain(viewer, i, mcnt, cnt);
 }
-PETSC_DEPRECATED_FUNCTION("Use PetscViewerFlowControlEndMain (since v3.15)") static inline PetscErrorCode PetscViewerFlowControlEndMaster(PetscViewer viewer, PetscInt *mcnt)
+PETSC_DEPRECATED_FUNCTION(3, 15, 0, "PetscViewerFlowControlEndMain()", ) static inline PetscErrorCode PetscViewerFlowControlEndMaster(PetscViewer viewer, PetscInt *mcnt)
 {
   return PetscViewerFlowControlEndMain(viewer, mcnt);
 }
@@ -468,5 +465,3 @@ typedef struct _n_PetscViewers *PetscViewers;
 PETSC_EXTERN PetscErrorCode     PetscViewersCreate(MPI_Comm, PetscViewers *);
 PETSC_EXTERN PetscErrorCode     PetscViewersDestroy(PetscViewers *);
 PETSC_EXTERN PetscErrorCode     PetscViewersGetViewer(PetscViewers, PetscInt, PetscViewer *);
-
-#endif

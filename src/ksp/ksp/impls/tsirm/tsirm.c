@@ -39,7 +39,7 @@ static PetscErrorCode KSPSetUp_TSIRM(KSP ksp)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode KSPSolve_TSIRM(KSP ksp)
+static PetscErrorCode KSPSolve_TSIRM(KSP ksp)
 {
   KSP_TSIRM   *tsirm = (KSP_TSIRM *)ksp->data;
   KSP          sub_ksp;
@@ -130,7 +130,7 @@ PetscErrorCode KSPSolve_TSIRM(KSP ksp)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode KSPSetFromOptions_TSIRM(KSP ksp, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode KSPSetFromOptions_TSIRM(KSP ksp, PetscOptionItems *PetscOptionsObject)
 {
   KSP_TSIRM *tsirm = (KSP_TSIRM *)ksp->data;
 
@@ -144,7 +144,7 @@ PetscErrorCode KSPSetFromOptions_TSIRM(KSP ksp, PetscOptionItems *PetscOptionsOb
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode KSPDestroy_TSIRM(KSP ksp)
+static PetscErrorCode KSPDestroy_TSIRM(KSP ksp)
 {
   KSP_TSIRM *tsirm = (KSP_TSIRM *)ksp->data;
 
@@ -188,7 +188,7 @@ PetscErrorCode KSPDestroy_TSIRM(KSP ksp)
    Contributed by:
    Lilia Ziane Khodja
 
-.seealso: [](chapter_ksp), `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPFGMRES`, `KSPLGMRES`,
+.seealso: [](ch_ksp), `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPFGMRES`, `KSPLGMRES`,
           `KSPGMRESSetRestart()`, `KSPGMRESSetHapTol()`, `KSPGMRESSetPreAllocateVectors()`, `KSPGMRESSetOrthogonalization()`, `KSPGMRESGetOrthogonalization()`,
           `KSPGMRESClassicalGramSchmidtOrthogonalization()`, `KSPGMRESModifiedGramSchmidtOrthogonalization()`,
           `KSPGMRESCGSRefinementType`, `KSPGMRESSetCGSRefinementType()`, `KSPGMRESGetCGSRefinementType()`, `KSPGMRESMonitorKrylov()`, `KSPSetPCSide()`

@@ -77,7 +77,7 @@ int main(int argc, char **argv)
   PetscCall(VecGetLocalSize(fine_ctx.x, &nlocal));
   PetscCall(DMCreateLocalVector(fine_ctx.da, &fine_ctx.localX));
   PetscCall(VecDuplicate(fine_ctx.localX, &fine_ctx.localF));
-  PetscCall(MatCreateAIJ(PETSC_COMM_WORLD, nlocal, nlocal, n, n, 5, NULL, 3, NULL, &A));
+  PetscCall(MatCreateFromOptions(PETSC_COMM_WORLD, NULL, 1, nlocal, nlocal, n, n, &A));
   PetscCall(FormJacobian_Grid(&fine_ctx, &A));
 
   /* create linear solver */

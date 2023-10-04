@@ -1,0 +1,31 @@
+PetscDualSpace Object: 1 MPI process
+  type: sum
+  Dual space with 2 components, size 12
+  Sum dual space of 2 subspaces
+    PetscDualSpace Object: H1 1 MPI process
+      type: sum
+      Dual space with 2 components, size 8
+      Sum dual space of 2 concatenated subspaces (all identical)
+        PetscDualSpace Object: H1 1 MPI process
+          type: lagrange
+          Dual space with 1 components, size 4
+          Continuous tensor Lagrange dual space
+    PetscDualSpace Object: Hdiv 1 MPI process
+      type: lagrange
+      Dual space for 1-forms (stored in dual form) with 2 components, size 4
+      Continuous tensor trimmed Lagrange dual space
+  Quadrature on a unknown of order -1 on 8 points (dim 2)
+Mat Object: Joint dual space projection matrix 1 MPI process
+  type: seqaij
+row 0: (8, 0.)  (9, -1.) 
+row 1: (10, 1.)  (11, 0.) 
+row 2: (12, 0.)  (13, 1.) 
+row 3: (14, -1.)  (15, 0.) 
+row 4: (0, 1.) 
+row 5: (1, 1.) 
+row 6: (2, 1.) 
+row 7: (3, 1.) 
+row 8: (4, 1.) 
+row 9: (5, 1.) 
+row 10: (6, 1.) 
+row 11: (7, 1.) 

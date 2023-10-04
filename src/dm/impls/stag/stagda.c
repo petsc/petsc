@@ -413,13 +413,13 @@ static PetscErrorCode DMStagTransferCoordinatesToDMDA(DM dmstag, DMStagStencilLo
   Collective
 
   Input Parameters:
-+ dm - the `DMSTAG` object
-. vec- Vec object associated with `dm`
++ dm  - the `DMSTAG` object
+. vec - Vec object associated with `dm`
 . loc - which subgrid to extract (see `DMStagStencilLocation`)
-- c - which component to extract (see note below)
+- c   - which component to extract (see note below)
 
   Output Parameters:
-+ pda - the `DMDA`
++ pda    - the `DMDA`
 - pdavec - the new `Vec`
 
   Level: advanced
@@ -431,7 +431,7 @@ static PetscErrorCode DMStagTransferCoordinatesToDMDA(DM dmstag, DMStagStencilLo
 
   The caller is responsible for destroying the created `DMDA` and `Vec`.
 
-.seealso: [](chapter_stag), `DMSTAG`, `DMDA`, `DMStagStencilLocation`, `DM`, `Vec`, `DMStagMigrateVec()`, `DMStagCreateCompatibleDMStag()`
+.seealso: [](ch_stag), `DMSTAG`, `DMDA`, `DMStagStencilLocation`, `DM`, `Vec`, `DMStagMigrateVec()`, `DMStagCreateCompatibleDMStag()`
 @*/
 PetscErrorCode DMStagVecSplitToDMDA(DM dm, Vec vec, DMStagStencilLocation loc, PetscInt c, DM *pda, Vec *pdavec)
 {

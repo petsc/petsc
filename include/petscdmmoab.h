@@ -1,5 +1,4 @@
-#ifndef PETSCMOAB_H
-#define PETSCMOAB_H
+#pragma once
 
 #include <petscvec.h> /*I      "petscvec.h"    I*/
 #include <petscmat.h> /*I      "petscmat.h"    I*/
@@ -129,5 +128,3 @@ PETSC_EXTERN PetscErrorCode DMMoabLoadFromFile(MPI_Comm, PetscInt, PetscInt, con
 
 /* Uniform refinement hierarchy interface */
 PETSC_EXTERN PetscErrorCode DMMoabGenerateHierarchy(DM dm, PetscInt nlevels, PetscInt *ldegrees);
-
-#endif

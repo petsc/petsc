@@ -1,4 +1,6 @@
 #include <petsc/private/petscfeimpl.h> /*I "petscfe.h" I*/
+#include <petsc/private/loghandlerimpl.h>
+#include <../src/sys/logging/handler/impls/default/logdefault.h>
 
 #if defined(PETSC_HAVE_OPENCL)
 
@@ -481,19 +483,19 @@ static PetscErrorCode PetscFEOpenCLCalculateGrid(PetscFE fem, PetscInt N, PetscI
 
 static PetscErrorCode PetscFEOpenCLLogResidual(PetscFE fem, PetscLogDouble time, PetscLogDouble flops)
 {
-  PetscFE_OpenCL   *ocl = (PetscFE_OpenCL *)fem->data;
-  PetscStageLog     stageLog;
-  PetscEventPerfLog eventLog = NULL;
-  int               stage;
+  PetscLogHandler h;
 
   PetscFunctionBegin;
-  PetscCall(PetscLogGetStageLog(&stageLog));
-  PetscCall(PetscStageLogGetCurrent(stageLog, &stage));
-  PetscCall(PetscStageLogGetEventPerfLog(stageLog, stage, &eventLog));
-  /* Log performance info */
-  eventLog->eventInfo[ocl->residualEvent].count++;
-  eventLog->eventInfo[ocl->residualEvent].time += time;
-  eventLog->eventInfo[ocl->residualEvent].flops += flops;
+  PetscCall(PetscLogGetDefaultHandler(&h));
+  if (h) {
+    PetscEventPerfInfo *eventInfo;
+    PetscFE_OpenCL     *ocl = (PetscFE_OpenCL *)fem->data;
+
+    PetscCall(PetscLogHandlerGetEventPerfInfo(h, PETSC_DEFAULT, ocl->residualEvent, &eventInfo));
+    eventInfo->count++;
+    eventInfo->time += time;
+    eventInfo->flops += flops;
+  }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -836,7 +838,7 @@ PetscErrorCode PetscFEOpenCLGetRealType(PetscFE fem, PetscDataType *realType)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fem, PETSCFE_CLASSID, 1);
-  PetscValidPointer(realType, 2);
+  PetscAssertPointer(realType, 2);
   *realType = ocl->realType;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

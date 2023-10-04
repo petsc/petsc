@@ -2,22 +2,22 @@
 #include <petsc/private/drawimpl.h> /*I   "petscdraw.h"  I*/
 
 /*@
-   PetscDrawLGAddCommonPoint - Adds another point to each of the line graphs. All the points share
-      the same new X coordinate.  The new point must have an X coordinate larger than the old points.
+  PetscDrawLGAddCommonPoint - Adds another point to each of the line graphs. All the points share
+  the same new X coordinate.  The new point must have an X coordinate larger than the old points.
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  lg - the line graph context
-.   x - the common x coordinate point
--   y - the new y coordinate point for each curve.
+  Input Parameters:
++ lg - the line graph context
+. x  - the common x coordinate point
+- y  - the new y coordinate point for each curve.
 
-   Level: intermediate
+  Level: intermediate
 
-   Notes:
-   You must call `PetscDrawLGDraw()` to display any added points
+  Notes:
+  You must call `PetscDrawLGDraw()` to display any added points
 
-   Call `PetscDrawLGReset()` to remove all points
+  Call `PetscDrawLGReset()` to remove all points
 
 .seealso: `PetscDrawLG`, `PetscDrawLGCreate()`, `PetscDrawLGAddPoints()`, `PetscDrawLGAddPoint()`, `PetscDrawLGReset()`, `PetscDrawLGDraw()`
 @*/
@@ -52,22 +52,22 @@ PetscErrorCode PetscDrawLGAddCommonPoint(PetscDrawLG lg, const PetscReal x, cons
 }
 
 /*@
-   PetscDrawLGAddPoint - Adds another point to each of the line graphs.
-   The new point must have an X coordinate larger than the old points.
+  PetscDrawLGAddPoint - Adds another point to each of the line graphs.
+  The new point must have an X coordinate larger than the old points.
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  lg - the line graph context
-.  x - array containing the x coordinate for the point on each curve
--  y - array containing the y coordinate for the point on each curve
+  Input Parameters:
++ lg - the line graph context
+. x  - array containing the x coordinate for the point on each curve
+- y  - array containing the y coordinate for the point on each curve
 
-   Level: intermediate
+  Level: intermediate
 
-   Notes:
-   You must call `PetscDrawLGDraw()` to display any added points
+  Notes:
+  You must call `PetscDrawLGDraw()` to display any added points
 
-   Call `PetscDrawLGReset()` to remove all points
+  Call `PetscDrawLGReset()` to remove all points
 
 .seealso: `PetscDrawLG`, `PetscDrawLGCreate()`, `PetscDrawLGAddPoints()`, `PetscDrawLGAddCommonPoint()`, `PetscDrawLGReset()`, `PetscDrawLGDraw()`
 @*/
@@ -108,23 +108,23 @@ PetscErrorCode PetscDrawLGAddPoint(PetscDrawLG lg, const PetscReal *x, const Pet
 }
 
 /*@C
-   PetscDrawLGAddPoints - Adds several points to each of the line graphs.
-   The new points must have an X coordinate larger than the old points.
+  PetscDrawLGAddPoints - Adds several points to each of the line graphs.
+  The new points must have an X coordinate larger than the old points.
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  lg - the line graph context
-.  xx - array of pointers that point to arrays containing the new x coordinates for each curve.
-.  yy - array of pointers that point to arrays containing the new y points for each curve.
--  n - number of points being added
+  Input Parameters:
++ lg - the line graph context
+. xx - array of pointers that point to arrays containing the new x coordinates for each curve.
+. yy - array of pointers that point to arrays containing the new y points for each curve.
+- n  - number of points being added
 
-   Level: intermediate
+  Level: intermediate
 
-   Notes:
-   You must call `PetscDrawLGDraw()` to display any added points
+  Notes:
+  You must call `PetscDrawLGDraw()` to display any added points
 
-   Call `PetscDrawLGReset()` to remove all points
+  Call `PetscDrawLGReset()` to remove all points
 
 .seealso: `PetscDrawLG`, `PetscDrawLGCreate()`, `PetscDrawLGAddPoint()`, `PetscDrawLGAddCommonPoint()`, `PetscDrawLGReset()`, `PetscDrawLGDraw()`
 @*/

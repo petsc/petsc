@@ -129,5 +129,28 @@ used:
 To learn more about the test system details, one can look at the
 :doc:`the PETSc developers documentation </developers/testing>`.
 
+Using the test harness for your own code
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Select a package name, for example, ``mypkg`` and create a sub-directory with that name, say ``/home/mine/mypackage/src/mypkg``.
+In any sub-directory of that directory named ``tests`` or ``tutorials``  put a PETSc makefile, for example,
+``src/ts/tutorials/makefile`` and standalone test applications that the makefile can compile with, for example
+
+
+.. code-block:: console
+
+   $ make mytest
+
+Include at the bottom of the test code a formatted comment indicating what tests should be run, see
+:any:`test_harness`. Also select a directory where you wish the tests to be compiled and run, say ``/home/mine/mytests``.
+
+You can build and run the tests with
+
+.. code-block:: console
+
+   $ make -f ${PETSC_DIR}/gmakefile.test TESTSRCDIR=/home/mine/mypackage/src TESTDIR=/home/mine/mytests pkgs=mypkg
+
+There is not yet a mechanism to have your test code also link against your library, contact us for ideas.
+
 .. [11]
    See https://testanything.org/tap-specification.html

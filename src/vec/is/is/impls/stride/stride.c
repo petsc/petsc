@@ -19,7 +19,7 @@ static PetscErrorCode ISCopy_Stride(IS is, IS isy)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode ISShift_Stride(IS is, PetscInt shift, IS isy)
+static PetscErrorCode ISShift_Stride(IS is, PetscInt shift, IS isy)
 {
   IS_Stride *is_stride = (IS_Stride *)is->data, *isy_stride = (IS_Stride *)isy->data;
 
@@ -29,7 +29,7 @@ PetscErrorCode ISShift_Stride(IS is, PetscInt shift, IS isy)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode ISDuplicate_Stride(IS is, IS *newIS)
+static PetscErrorCode ISDuplicate_Stride(IS is, IS *newIS)
 {
   IS_Stride *sub = (IS_Stride *)is->data;
 
@@ -38,7 +38,7 @@ PetscErrorCode ISDuplicate_Stride(IS is, IS *newIS)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode ISInvertPermutation_Stride(IS is, PetscInt nlocal, IS *perm)
+static PetscErrorCode ISInvertPermutation_Stride(IS is, PetscInt nlocal, IS *perm)
 {
   PetscBool isident;
 
@@ -64,18 +64,18 @@ PetscErrorCode ISInvertPermutation_Stride(IS is, PetscInt nlocal, IS *perm)
 }
 
 /*@
-   ISStrideGetInfo - Returns the first index in a stride index set and the stride width from an `IS` of `ISType` `ISSTRIDE`
+  ISStrideGetInfo - Returns the first index in a stride index set and the stride width from an `IS` of `ISType` `ISSTRIDE`
 
-   Not Collective
+  Not Collective
 
-   Input Parameter:
-.  is - the index set
+  Input Parameter:
+. is - the index set
 
-   Output Parameters:
-+  first - the first index
--  step - the stride width
+  Output Parameters:
++ first - the first index
+- step  - the stride width
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: [](sec_scatter), `IS`, `ISCreateStride()`, `ISGetSize()`, `ISSTRIDE`
 @*/
@@ -86,8 +86,8 @@ PetscErrorCode ISStrideGetInfo(IS is, PetscInt *first, PetscInt *step)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is, IS_CLASSID, 1);
-  if (first) PetscValidIntPointer(first, 2);
-  if (step) PetscValidIntPointer(step, 3);
+  if (first) PetscAssertPointer(first, 2);
+  if (step) PetscAssertPointer(step, 3);
   PetscCall(PetscObjectTypeCompare((PetscObject)is, ISSTRIDE, &flg));
   PetscCheck(flg, PetscObjectComm((PetscObject)is), PETSC_ERR_ARG_WRONG, "IS must be of type ISSTRIDE");
 
@@ -97,7 +97,7 @@ PetscErrorCode ISStrideGetInfo(IS is, PetscInt *first, PetscInt *step)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode ISDestroy_Stride(IS is)
+static PetscErrorCode ISDestroy_Stride(IS is)
 {
   PetscFunctionBegin;
   PetscCall(PetscObjectComposeFunction((PetscObject)is, "ISStrideSetStride_C", NULL));
@@ -106,7 +106,7 @@ PetscErrorCode ISDestroy_Stride(IS is)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode ISToGeneral_Stride(IS inis)
+static PetscErrorCode ISToGeneral_Stride(IS inis)
 {
   const PetscInt *idx;
   PetscInt        n;
@@ -119,7 +119,7 @@ PetscErrorCode ISToGeneral_Stride(IS inis)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode ISLocate_Stride(IS is, PetscInt key, PetscInt *location)
+static PetscErrorCode ISLocate_Stride(IS is, PetscInt key, PetscInt *location)
 {
   IS_Stride *sub = (IS_Stride *)is->data;
   PetscInt   rem, step;
@@ -137,7 +137,7 @@ PetscErrorCode ISLocate_Stride(IS is, PetscInt key, PetscInt *location)
      Returns a legitimate index memory even if
    the stride index set is empty.
 */
-PetscErrorCode ISGetIndices_Stride(IS is, const PetscInt *idx[])
+static PetscErrorCode ISGetIndices_Stride(IS is, const PetscInt *idx[])
 {
   IS_Stride *sub = (IS_Stride *)is->data;
   PetscInt   i, **dx = (PetscInt **)idx;
@@ -151,14 +151,14 @@ PetscErrorCode ISGetIndices_Stride(IS is, const PetscInt *idx[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode ISRestoreIndices_Stride(IS in, const PetscInt *idx[])
+static PetscErrorCode ISRestoreIndices_Stride(IS in, const PetscInt *idx[])
 {
   PetscFunctionBegin;
   PetscCall(PetscFree(*(void **)idx));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode ISView_Stride(IS is, PetscViewer viewer)
+static PetscErrorCode ISView_Stride(IS is, PetscViewer viewer)
 {
   IS_Stride        *sub = (IS_Stride *)is->data;
   PetscInt          i, n = is->map->n;
@@ -207,7 +207,7 @@ PetscErrorCode ISView_Stride(IS is, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode ISSort_Stride(IS is)
+static PetscErrorCode ISSort_Stride(IS is)
 {
   IS_Stride *sub = (IS_Stride *)is->data;
 
@@ -218,7 +218,7 @@ PetscErrorCode ISSort_Stride(IS is)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode ISSorted_Stride(IS is, PetscBool *flg)
+static PetscErrorCode ISSorted_Stride(IS is, PetscBool *flg)
 {
   IS_Stride *sub = (IS_Stride *)is->data;
 
@@ -293,7 +293,7 @@ static PetscErrorCode ISContiguousLocal_Stride(IS is, PetscInt gstart, PetscInt 
 }
 
 // clang-format off
-static struct _ISOps myops = {
+static const struct _ISOps myops = {
   PetscDesignatedInitializer(getindices, ISGetIndices_Stride),
   PetscDesignatedInitializer(restoreindices, ISRestoreIndices_Stride),
   PetscDesignatedInitializer(invertpermutation, ISInvertPermutation_Stride),
@@ -322,20 +322,20 @@ static struct _ISOps myops = {
 // clang-format on
 
 /*@
-   ISStrideSetStride - Sets the stride information for a stride index set.
+  ISStrideSetStride - Sets the stride information for a stride index set.
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  is - the index set
-.  n - the length of the locally owned portion of the index set
-.  first - the first element of the locally owned portion of the index set
--  step - the change to the next index
+  Input Parameters:
++ is    - the index set
+. n     - the length of the locally owned portion of the index set
+. first - the first element of the locally owned portion of the index set
+- step  - the change to the next index
 
-   Level: beginner
+  Level: beginner
 
-   Note:
-   `ISCreateStride()` can be used to create an `ISSTRIDE` and set its stride in one function call
+  Note:
+  `ISCreateStride()` can be used to create an `ISSTRIDE` and set its stride in one function call
 
 .seealso: [](sec_scatter), `IS`, `ISCreateGeneral()`, `ISCreateBlock()`, `ISAllGather()`, `ISSTRIDE`, `ISCreateStride()`, `ISStrideGetInfo()`
 @*/
@@ -348,7 +348,7 @@ PetscErrorCode ISStrideSetStride(IS is, PetscInt n, PetscInt first, PetscInt ste
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode ISStrideSetStride_Stride(IS is, PetscInt n, PetscInt first, PetscInt step)
+static PetscErrorCode ISStrideSetStride_Stride(IS is, PetscInt n, PetscInt first, PetscInt step)
 {
   PetscInt    min, max;
   IS_Stride  *sub = (IS_Stride *)is->data;
@@ -376,27 +376,27 @@ PetscErrorCode ISStrideSetStride_Stride(IS is, PetscInt n, PetscInt first, Petsc
 }
 
 /*@
-   ISCreateStride - Creates a data structure for an index set containing a list of evenly spaced integers.
+  ISCreateStride - Creates a data structure for an index set containing a list of evenly spaced integers.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  comm - the MPI communicator
-.  n - the length of the locally owned portion of the index set
-.  first - the first element of the locally owned portion of the index set
--  step - the change to the next index
+  Input Parameters:
++ comm  - the MPI communicator
+. n     - the length of the locally owned portion of the index set
+. first - the first element of the locally owned portion of the index set
+- step  - the change to the next index
 
-   Output Parameter:
-.  is - the new index set
+  Output Parameter:
+. is - the new index set
 
-   Level: beginner
+  Level: beginner
 
-   Notes:
-   `ISStrideSetStride()` may be used to set the stride of an `ISSTRIDE` that already exists
+  Notes:
+  `ISStrideSetStride()` may be used to set the stride of an `ISSTRIDE` that already exists
 
-   When the communicator is not `MPI_COMM_SELF`, the operations on `IS` are NOT
-   conceptually the same as `MPI_Group` operations. The `IS` are the
-   distributed sets of indices and thus certain operations on them are collective.
+  When the communicator is not `MPI_COMM_SELF`, the operations on `IS` are NOT
+  conceptually the same as `MPI_Group` operations. The `IS` are the
+  distributed sets of indices and thus certain operations on them are collective.
 
 .seealso: [](sec_scatter), `IS`, `ISStrideSetStride()`, `ISCreateGeneral()`, `ISCreateBlock()`, `ISAllGather()`, `ISSTRIDE`
 @*/
@@ -409,14 +409,14 @@ PetscErrorCode ISCreateStride(MPI_Comm comm, PetscInt n, PetscInt first, PetscIn
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PETSC_EXTERN PetscErrorCode ISCreate_Stride(IS is)
+PETSC_INTERN PetscErrorCode ISCreate_Stride(IS is)
 {
   IS_Stride *sub;
 
   PetscFunctionBegin;
   PetscCall(PetscNew(&sub));
-  is->data = (void *)sub;
-  PetscCall(PetscMemcpy(is->ops, &myops, sizeof(myops)));
+  is->data   = (void *)sub;
+  is->ops[0] = myops;
   PetscCall(PetscObjectComposeFunction((PetscObject)is, "ISStrideSetStride_C", ISStrideSetStride_Stride));
   PetscCall(PetscObjectComposeFunction((PetscObject)is, "ISShift_C", ISShift_Stride));
   PetscFunctionReturn(PETSC_SUCCESS);

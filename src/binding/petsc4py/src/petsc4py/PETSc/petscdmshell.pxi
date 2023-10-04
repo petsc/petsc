@@ -77,12 +77,12 @@ cdef PetscErrorCode DMSHELL_CreateGlobalVector(
     cdef DM Dm = subtype_DM(dm)()
     cdef Vec vec
     Dm.dm = dm
-    PetscINCREF(Dm.obj)
+    CHKERR( PetscINCREF(Dm.obj) )
     context = Dm.get_attr('__create_global_vector__')
     assert context is not None and type(context) is tuple
     (create_gvec, args, kargs) = context
     vec = create_gvec(Dm, *args, **kargs)
-    PetscINCREF(vec.obj)
+    CHKERR( PetscINCREF(vec.obj) )
     v[0] = vec.vec
     cdef PetscDM odm = NULL
     CHKERR( VecGetDM(v[0], &odm) )
@@ -96,12 +96,12 @@ cdef PetscErrorCode DMSHELL_CreateLocalVector(
     cdef DM Dm = subtype_DM(dm)()
     cdef Vec vec
     Dm.dm = dm
-    PetscINCREF(Dm.obj)
+    CHKERR( PetscINCREF(Dm.obj) )
     context = Dm.get_attr('__create_local_vector__')
     assert context is not None and type(context) is tuple
     (create_lvec, args, kargs) = context
     vec = create_lvec(Dm, *args, **kargs)
-    PetscINCREF(vec.obj)
+    CHKERR( PetscINCREF(vec.obj) )
     v[0] = vec.vec
     cdef PetscDM odm = NULL
     CHKERR( VecGetDM(v[0], &odm) )
@@ -118,7 +118,7 @@ cdef PetscErrorCode DMSHELL_GlobalToLocalBegin(
     cdef Vec gvec = ref_Vec(g)
     cdef Vec lvec = ref_Vec(l)
     Dm.dm = dm
-    PetscINCREF(Dm.obj)
+    CHKERR( PetscINCREF(Dm.obj) )
     context = Dm.get_attr('__g2l_begin__')
     assert context is not None and type(context) is tuple
     (begin, args, kargs) = context
@@ -134,7 +134,7 @@ cdef PetscErrorCode DMSHELL_GlobalToLocalEnd(
     cdef Vec gvec = ref_Vec(g)
     cdef Vec lvec = ref_Vec(l)
     Dm.dm = dm
-    PetscINCREF(Dm.obj)
+    CHKERR( PetscINCREF(Dm.obj) )
     context = Dm.get_attr('__g2l_end__')
     assert context is not None and type(context) is tuple
     (end, args, kargs) = context
@@ -150,7 +150,7 @@ cdef PetscErrorCode DMSHELL_LocalToGlobalBegin(
     cdef Vec gvec = ref_Vec(g)
     cdef Vec lvec = ref_Vec(l)
     Dm.dm = dm
-    PetscINCREF(Dm.obj)
+    CHKERR( PetscINCREF(Dm.obj) )
     context = Dm.get_attr('__l2g_begin__')
     assert context is not None and type(context) is tuple
     (begin, args, kargs) = context
@@ -166,7 +166,7 @@ cdef PetscErrorCode DMSHELL_LocalToGlobalEnd(
     cdef Vec gvec = ref_Vec(g)
     cdef Vec lvec = ref_Vec(l)
     Dm.dm = dm
-    PetscINCREF(Dm.obj)
+    CHKERR( PetscINCREF(Dm.obj) )
     context = Dm.get_attr('__l2g_end__')
     assert context is not None and type(context) is tuple
     (end, args, kargs) = context
@@ -182,7 +182,7 @@ cdef PetscErrorCode DMSHELL_LocalToLocalBegin(
     cdef Vec gvec = ref_Vec(g)
     cdef Vec lvec = ref_Vec(l)
     Dm.dm = dm
-    PetscINCREF(Dm.obj)
+    CHKERR( PetscINCREF(Dm.obj) )
     context = Dm.get_attr('__l2l_begin__')
     assert context is not None and type(context) is tuple
     (begin, args, kargs) = context
@@ -198,7 +198,7 @@ cdef PetscErrorCode DMSHELL_LocalToLocalEnd(
     cdef Vec gvec = ref_Vec(g)
     cdef Vec lvec = ref_Vec(l)
     Dm.dm = dm
-    PetscINCREF(Dm.obj)
+    CHKERR( PetscINCREF(Dm.obj) )
     context = Dm.get_attr('__l2l_end__')
     assert context is not None and type(context) is tuple
     (end, args, kargs) = context
@@ -211,12 +211,12 @@ cdef PetscErrorCode DMSHELL_CreateMatrix(
     cdef DM Dm = subtype_DM(dm)()
     cdef Mat mat
     Dm.dm = dm
-    PetscINCREF(Dm.obj)
+    CHKERR( PetscINCREF(Dm.obj) )
     context = Dm.get_attr('__create_matrix__')
     assert context is not None and type(context) is tuple
     (matrix, args, kargs) = context
     mat = matrix(Dm, *args, **kargs)
-    PetscINCREF(mat.obj)
+    CHKERR( PetscINCREF(mat.obj) )
     cmat[0] = mat.mat
     cdef PetscDM odm = NULL
     CHKERR( MatGetDM(cmat[0], &odm) )
@@ -232,12 +232,12 @@ cdef PetscErrorCode DMSHELL_Coarsen(
     cdef DM Dmc
     cdef Comm Comm = new_Comm(comm)
     Dm.dm = dm
-    PetscINCREF(Dm.obj)
+    CHKERR( PetscINCREF(Dm.obj) )
     context = Dm.get_attr('__coarsen__')
     assert context is not None and type(context) is tuple
     (coarsen, args, kargs) = context
     Dmc = coarsen(Dm, Comm, *args, **kargs)
-    PetscINCREF(Dmc.obj)
+    CHKERR( PetscINCREF(Dmc.obj) )
     dmc[0] = Dmc.dm
     return PETSC_SUCCESS
 
@@ -249,12 +249,12 @@ cdef PetscErrorCode DMSHELL_Refine(
     cdef DM Dmf
     cdef Comm Comm = new_Comm(comm)
     Dm.dm = dm
-    PetscINCREF(Dm.obj)
+    CHKERR( PetscINCREF(Dm.obj) )
     context = Dm.get_attr('__refine__')
     assert context is not None and type(context) is tuple
     (refine, args, kargs) = context
     Dmf = refine(Dm, Comm, *args, **kargs)
-    PetscINCREF(Dmf.obj)
+    CHKERR( PetscINCREF(Dmf.obj) )
     dmf[0] = Dmf.dm
     return PETSC_SUCCESS
 
@@ -268,21 +268,21 @@ cdef PetscErrorCode DMSHELL_CreateInterpolation(
     cdef Mat mat
     cdef Vec vec
     Dmc.dm = dmc
-    PetscINCREF(Dmc.obj)
+    CHKERR( PetscINCREF(Dmc.obj) )
     Dmf.dm = dmf
-    PetscINCREF(Dmf.obj)
+    CHKERR( PetscINCREF(Dmf.obj) )
     context = Dmc.get_attr('__create_interpolation__')
     assert context is not None and type(context) is tuple
     (interpolation, args, kargs) = context
     mat, vec = interpolation(Dmc, Dmf, *args, **kargs)
-    PetscINCREF(mat.obj)
+    CHKERR( PetscINCREF(mat.obj) )
     cmat[0] = mat.mat
     if cvec == NULL:
         return PETSC_SUCCESS
     if vec is None:
         cvec[0] = NULL
     else:
-        PetscINCREF(vec.obj)
+        CHKERR( PetscINCREF(vec.obj) )
         cvec[0] = vec.vec
     return PETSC_SUCCESS
 
@@ -294,14 +294,14 @@ cdef PetscErrorCode DMSHELL_CreateInjection(
     cdef DM Dmf = subtype_DM(dmf)()
     cdef Mat mat
     Dmc.dm = dmc
-    PetscINCREF(Dmc.obj)
+    CHKERR( PetscINCREF(Dmc.obj) )
     Dmf.dm = dmf
-    PetscINCREF(Dmf.obj)
+    CHKERR( PetscINCREF(Dmf.obj) )
     context = Dmc.get_attr('__create_injection__')
     assert context is not None and type(context) is tuple
     (injection, args, kargs) = context
     mat = injection(Dmc, Dmf, *args, **kargs)
-    PetscINCREF(mat.obj)
+    CHKERR( PetscINCREF(mat.obj) )
     cmat[0] = mat.mat
     return PETSC_SUCCESS
 
@@ -313,14 +313,14 @@ cdef PetscErrorCode DMSHELL_CreateRestriction(
     cdef DM Dmc = subtype_DM(dmc)()
     cdef Mat mat
     Dmf.dm = dmf
-    PetscINCREF(Dmf.obj)
+    CHKERR( PetscINCREF(Dmf.obj) )
     Dmc.dm = dmc
-    PetscINCREF(Dmc.obj)
+    CHKERR( PetscINCREF(Dmc.obj) )
     context = Dmf.get_attr('__create_restriction__')
     assert context is not None and type(context) is tuple
     (restriction, args, kargs) = context
     mat = restriction(Dmf, Dmc, *args, **kargs)
-    PetscINCREF(mat.obj)
+    CHKERR( PetscINCREF(mat.obj) )
     cmat[0] = mat.mat
     return PETSC_SUCCESS
 
@@ -334,7 +334,7 @@ cdef PetscErrorCode DMSHELL_CreateFieldDecomposition(
     cdef int i
     cdef const char *cname = NULL
     Dm.dm = dm
-    PetscINCREF(Dm.obj)
+    CHKERR( PetscINCREF(Dm.obj) )
     context = Dm.get_attr('__create_field_decomp__')
     assert context is not None and type(context) is tuple
     (decomp, args, kargs) = context
@@ -360,13 +360,13 @@ cdef PetscErrorCode DMSHELL_CreateFieldDecomposition(
         CHKERR( PetscMalloc(len(ises)*sizeof(PetscIS), islist) )
         for i in range(len(ises)):
             islist[0][i] = (<IS?>ises[i]).iset
-            PetscINCREF((<IS?>ises[i]).obj)
+            CHKERR( PetscINCREF((<IS?>ises[i]).obj) )
 
     if dmlist != NULL and dms is not None:
         CHKERR( PetscMalloc(len(dms)*sizeof(PetscDM), dmlist) )
         for i in range(len(dms)):
             dmlist[0][i] = (<DM?>dms[i]).dm
-            PetscINCREF((<DM?>dms[i]).obj)
+            CHKERR( PetscINCREF((<DM?>dms[i]).obj) )
     return PETSC_SUCCESS
 
 cdef PetscErrorCode DMSHELL_CreateDomainDecomposition(
@@ -380,7 +380,7 @@ cdef PetscErrorCode DMSHELL_CreateDomainDecomposition(
     cdef int i
     cdef const char *cname = NULL
     Dm.dm = dm
-    PetscINCREF(Dm.obj)
+    CHKERR( PetscINCREF(Dm.obj) )
     context = Dm.get_attr('__create_domain_decomp__')
     assert context is not None and type(context) is tuple
     (decomp, args, kargs) = context
@@ -408,19 +408,19 @@ cdef PetscErrorCode DMSHELL_CreateDomainDecomposition(
         CHKERR( PetscMalloc(len(innerises)*sizeof(PetscIS), innerislist) )
         for i in range(len(innerises)):
             innerislist[0][i] = (<IS?>innerises[i]).iset
-            PetscINCREF((<IS?>innerises[i]).obj)
+            CHKERR( PetscINCREF((<IS?>innerises[i]).obj) )
 
     if outerislist != NULL and outerises is not None:
         CHKERR( PetscMalloc(len(outerises)*sizeof(PetscIS), outerislist) )
         for i in range(len(outerises)):
             outerislist[0][i] = (<IS?>outerises[i]).iset
-            PetscINCREF((<IS?>outerises[i]).obj)
+            CHKERR( PetscINCREF((<IS?>outerises[i]).obj) )
 
     if dmlist != NULL and dms is not None:
         CHKERR( PetscMalloc(len(dms)*sizeof(PetscDM), dmlist) )
         for i in range(len(dms)):
             dmlist[0][i] = (<DM?>dms[i]).dm
-            PetscINCREF((<DM?>dms[i]).obj)
+            CHKERR( PetscINCREF((<DM?>dms[i]).obj) )
     return PETSC_SUCCESS
 
 cdef PetscErrorCode DMSHELL_CreateDomainDecompositionScatters(
@@ -437,13 +437,13 @@ cdef PetscErrorCode DMSHELL_CreateDomainDecompositionScatters(
     cdef DM subdm = None
 
     Dm.dm = dm
-    PetscINCREF(Dm.obj)
+    CHKERR( PetscINCREF(Dm.obj) )
 
     psubdms = []
     for i from 0 <= i < clen:
         subdm = subtype_DM(subdms[i])()
         subdm.dm = subdms[i]
-        PetscINCREF(subdm.obj)
+        CHKERR( PetscINCREF(subdm.obj) )
         psubdms.append(subdm)
 
     context = Dm.get_attr('__create_domain_decomp_scatters__')
@@ -461,13 +461,13 @@ cdef PetscErrorCode DMSHELL_CreateDomainDecompositionScatters(
 
     for i in range(clen):
         iscat[0][i] = (<Scatter?>iscatter[i]).sct
-        PetscINCREF((<Scatter?>iscatter[i]).obj)
+        CHKERR( PetscINCREF((<Scatter?>iscatter[i]).obj) )
 
         oscat[0][i] = (<Scatter?>oscatter[i]).sct
-        PetscINCREF((<Scatter?>oscatter[i]).obj)
+        CHKERR( PetscINCREF((<Scatter?>oscatter[i]).obj) )
 
         gscat[0][i] = (<Scatter?>gscatter[i]).sct
-        PetscINCREF((<Scatter?>gscatter[i]).obj)
+        CHKERR( PetscINCREF((<Scatter?>gscatter[i]).obj) )
 
     return PETSC_SUCCESS
 
@@ -481,7 +481,7 @@ cdef PetscErrorCode DMSHELL_CreateSubDM(
     cdef IS iset
     cdef DM subdm
     dm.dm = cdm
-    PetscINCREF(dm.obj)
+    CHKERR( PetscINCREF(dm.obj) )
     context = dm.get_attr('__create_subdm__')
     assert context is not None and type(context) is tuple
     (create_subdm, args, kargs) = context
@@ -490,8 +490,8 @@ cdef PetscErrorCode DMSHELL_CreateSubDM(
 
     iset, subdm = create_subdm(dm, fields, *args, **kargs)
 
-    PetscINCREF(iset.obj)
-    PetscINCREF(subdm.obj)
+    CHKERR( PetscINCREF(iset.obj) )
+    CHKERR( PetscINCREF(subdm.obj) )
     ciset[0] = iset.iset
     csubdm[0] = subdm.dm
     return PETSC_SUCCESS

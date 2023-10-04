@@ -3,12 +3,12 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.gitcommit              = 'd086b42987308d3f7585a8cbf1070065d766cfaa' # v0.10.0 on Mar 21, 2022
-    self.download               = ['git://https://github.com/CEED/libceed.git']
+    self.gitcommit              = '1ca28fe18cd782d43097b3f85452a07ecf3c15e6' # v0.11.0-426-g1ca28fe18 on Aug 14, 2023
+    self.download               = ['git://https://github.com/CEED/libceed.git','https://github.com/CEED/libceed/archive/'+self.gitcommit+'.tar.gz']
     self.functions              = ['CeedRegister']
     self.includes               = ['ceed.h']
     self.liblist                = [['libceed.a']]
-    self.requires32bitint       = 1;   # TODO: fix for 64 bit integers
+    self.requires32bitint       = 1;   # TODO: fix for 64-bit integers
     return
 
   def setupHelp(self, help):
@@ -27,7 +27,7 @@ class Configure(config.package.Package):
 
   def Install(self):
     import os
-    # TODO: maybe add support for various backends, CUDA, libXSMM, OCCA, MAGMA?
+    # TODO: maybe add support for various backends, libXSMM, OCCA, MAGMA?
     args = ['prefix={0}'.format(self.installDir), 'V=1']
     with self.Language('C'):
       args += [
@@ -50,9 +50,9 @@ class Configure(config.package.Package):
     if self.hip.found:
       with self.Language('HIP'):
         args += [
-          'HIP_DIR={0}'.format(self.hip.hipDir),
+          'ROCM_DIR={0}'.format(self.hip.hipDir),
           'HIPCC={0}'.format(self.getCompiler()),
-          'HIPFLAGS={0}'.format(self.getCompilerFlags()),
+          'HIPCCFLAGS={0}'.format(self.getCompilerFlags()),
           'HIP_ARCH={0}'.format(self.hip.hipArch),
         ]
     if self.setCompilers.LDFLAGS: args += ['LDFLAGS={0}'.format(self.setCompilers.LDFLAGS)]

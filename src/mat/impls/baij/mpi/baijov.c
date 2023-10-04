@@ -531,8 +531,22 @@ PetscErrorCode MatCreateSubMatrices_MPIBAIJ(Mat C, PetscInt ismax, const IS isro
   PetscInt     nmax, nstages_local, nstages, i, pos, max_no, N = C->cmap->N, bs = C->rmap->bs;
   Mat_SeqBAIJ *subc;
   Mat_SubSppt *smat;
+  PetscBool    sym = PETSC_FALSE, flg[2];
 
   PetscFunctionBegin;
+  PetscCall(PetscObjectTypeCompare((PetscObject)C, MATMPISBAIJ, flg));
+  if (flg[0]) {
+    if (isrow == iscol) sym = PETSC_TRUE;
+    else {
+      flg[0] = flg[1] = PETSC_TRUE;
+      for (i = 0; i < ismax; i++) {
+        if (isrow[i] != iscol[i]) flg[0] = PETSC_FALSE;
+        PetscCall(ISGetLocalSize(iscol[0], &nmax));
+        if (nmax == C->cmap->N && flg[1]) PetscCall(ISIdentity(iscol[0], flg + 1));
+      }
+      sym = (PetscBool)(flg[0] || flg[1]);
+    }
+  }
   /* The compression and expansion should be avoided. Doesn't point
      out errors, might change the indices, hence buggey */
   PetscCall(PetscMalloc2(ismax, &isrow_block, ismax, &iscol_block));
@@ -573,7 +587,7 @@ PetscErrorCode MatCreateSubMatrices_MPIBAIJ(Mat C, PetscInt ismax, const IS isro
     else if (pos >= ismax) max_no = 0;
     else max_no = ismax - pos;
 
-    PetscCall(MatCreateSubMatrices_MPIBAIJ_local(C, max_no, isrow_block + pos, iscol_block + pos, scall, *submat + pos));
+    PetscCall(MatCreateSubMatrices_MPIBAIJ_local(C, max_no, isrow_block + pos, iscol_block + pos, scall, *submat + pos, sym));
     if (!max_no) {
       if (scall == MAT_INITIAL_MATRIX) { /* submat[pos] is a dummy matrix */
         smat          = (Mat_SubSppt *)(*submat)[pos]->data;
@@ -598,26 +612,8 @@ PetscErrorCode MatCreateSubMatrices_MPIBAIJ(Mat C, PetscInt ismax, const IS isro
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-#if defined(PETSC_USE_CTABLE)
-PetscErrorCode PetscGetProc(const PetscInt row, const PetscMPIInt size, const PetscInt proc_gnode[], PetscMPIInt *rank)
-{
-  PetscInt    nGlobalNd = proc_gnode[size];
-  PetscMPIInt fproc;
-
-  PetscFunctionBegin;
-  PetscCall(PetscMPIIntCast((PetscInt)(((float)row * (float)size / (float)nGlobalNd + 0.5)), &fproc));
-  if (fproc > size) fproc = size;
-  while (row < proc_gnode[fproc] || row >= proc_gnode[fproc + 1]) {
-    if (row < proc_gnode[fproc]) fproc--;
-    else fproc++;
-  }
-  *rank = fproc;
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-#endif
-
 /* This code is used for BAIJ and SBAIJ matrices (unfortunate dependency) */
-PetscErrorCode MatCreateSubMatrices_MPIBAIJ_local(Mat C, PetscInt ismax, const IS isrow[], const IS iscol[], MatReuse scall, Mat *submats)
+PetscErrorCode MatCreateSubMatrices_MPIBAIJ_local(Mat C, PetscInt ismax, const IS isrow[], const IS iscol[], MatReuse scall, Mat *submats, PetscBool sym)
 {
   Mat_MPIBAIJ     *c = (Mat_MPIBAIJ *)C->data;
   Mat              A = c->A;
@@ -959,7 +955,7 @@ PetscErrorCode MatCreateSubMatrices_MPIBAIJ_local(Mat C, PetscInt ismax, const I
             nzB    = b_i[row + 1] - b_i[row];
             ncols  = nzA + nzB;
             cworkA = a_j + a_i[row];
-            cworkB = b_j + b_i[row];
+            cworkB = b_j ? b_j + b_i[row] : NULL;
 
             /* load the column indices for this row into cols */
             cols = sbuf_aj_i + ct2;
@@ -1029,7 +1025,7 @@ PetscErrorCode MatCreateSubMatrices_MPIBAIJ_local(Mat C, PetscInt ismax, const I
           nzA    = a_i[row + 1] - a_i[row];
           nzB    = b_i[row + 1] - b_i[row];
           cworkA = a_j + a_i[row];
-          cworkB = b_j + b_i[row];
+          cworkB = b_j ? b_j + b_i[row] : NULL;
 
           if (!allcolumns[i]) {
 #if defined(PETSC_USE_CTABLE)
@@ -1144,7 +1140,7 @@ PetscErrorCode MatCreateSubMatrices_MPIBAIJ_local(Mat C, PetscInt ismax, const I
       PetscCall(MatCreate(PETSC_COMM_SELF, submats + i));
       PetscCall(MatSetSizes(submats[i], nrow[i] * bs_tmp, ncol[i] * bs_tmp, PETSC_DETERMINE, PETSC_DETERMINE));
 
-      PetscCall(MatSetType(submats[i], ((PetscObject)A)->type_name));
+      PetscCall(MatSetType(submats[i], sym ? ((PetscObject)A)->type_name : MATSEQBAIJ));
       PetscCall(MatSeqBAIJSetPreallocation(submats[i], bs_tmp, 0, lens[i]));
       PetscCall(MatSeqSBAIJSetPreallocation(submats[i], bs_tmp, 0, lens[i])); /* this subroutine is used by SBAIJ routines */
 
@@ -1261,9 +1257,9 @@ PetscErrorCode MatCreateSubMatrices_MPIBAIJ_local(Mat C, PetscInt ismax, const I
           nzA    = a_i[row + 1] - a_i[row];
           nzB    = b_i[row + 1] - b_i[row];
           ncols  = nzA + nzB;
-          cworkB = b_j + b_i[row];
+          cworkB = b_j ? b_j + b_i[row] : NULL;
           vworkA = a_a + a_i[row] * bs2;
-          vworkB = b_a + b_i[row] * bs2;
+          vworkB = b_a ? b_a + b_i[row] * bs2 : NULL;
 
           /* load the column values for this row into vals*/
           vals = sbuf_aa_i + ct2 * bs2;
@@ -1307,10 +1303,10 @@ PetscErrorCode MatCreateSubMatrices_MPIBAIJ_local(Mat C, PetscInt ismax, const I
         nzA    = a_i[row + 1] - a_i[row];
         nzB    = b_i[row + 1] - b_i[row];
         cworkA = a_j + a_i[row];
-        cworkB = b_j + b_i[row];
+        cworkB = b_j ? b_j + b_i[row] : NULL;
         if (!ijonly) {
           vworkA = a_a + a_i[row] * bs2;
-          vworkB = b_a + b_i[row] * bs2;
+          vworkB = b_a ? b_a + b_i[row] * bs2 : NULL;
         }
 
         if (allrows[i]) {

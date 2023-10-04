@@ -1,4 +1,4 @@
-#include <petsc/private/tsimpl.h> /*I "petscts.h"  I*/
+#include <petsc/private/tsimpl.h> /*I <petscts.h>  I*/
 #include <petscdraw.h>
 
 PetscLogEvent TS_AdjointStep, TS_ForwardStep, TS_JacobianPEval;
@@ -13,26 +13,19 @@ PetscLogEvent TS_AdjointStep, TS_ForwardStep, TS_JacobianPEval;
   Logically Collective
 
   Input Parameters:
-+ ts - `TS` context obtained from `TSCreate()`
++ ts   - `TS` context obtained from `TSCreate()`
 . Amat - JacobianP matrix
 . func - function
-- ctx - [optional] user-defined function context
-
-  Calling sequence of `func`:
-$ PetscErrorCode func(TS ts, PetscReal t, Vec y, Mat A, void *ctx)
-+   t - current timestep
-.   U - input vector (current ODE solution)
-.   A - output matrix
--   ctx - [optional] user-defined function context
+- ctx  - [optional] user-defined function context
 
   Level: intermediate
 
   Note:
-    Amat has the same number of rows and the same row parallel layout as u, Amat has the same number of columns and parallel layout as p
+  `Amat` has the same number of rows and the same row parallel layout as `u`, `Amat` has the same number of columns and parallel layout as `p`
 
-.seealso: [](chapter_ts), `TS`, `TSGetRHSJacobianP()`
+.seealso: [](ch_ts), `TS`, `TSRHSJacobianP`, `TSGetRHSJacobianP()`
 @*/
-PetscErrorCode TSSetRHSJacobianP(TS ts, Mat Amat, PetscErrorCode (*func)(TS, PetscReal, Vec, Mat, void *), void *ctx)
+PetscErrorCode TSSetRHSJacobianP(TS ts, Mat Amat, TSRHSJacobianP func, void *ctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
@@ -59,23 +52,16 @@ PetscErrorCode TSSetRHSJacobianP(TS ts, Mat Amat, PetscErrorCode (*func)(TS, Pet
   Output Parameters:
 + Amat - JacobianP matrix
 . func - function
-- ctx - [optional] user-defined function context
-
-  Calling sequence of `func`:
-$ PetscErrorCode func(TS ts, PetscReal t, Vec y, Mat A, void *ctx)
-+   t - current timestep
-.   U - input vector (current ODE solution)
-.   A - output matrix
--   ctx - [optional] user-defined function context
+- ctx  - [optional] user-defined function context
 
   Level: intermediate
 
   Note:
-    Amat has the same number of rows and the same row parallel layout as u, Amat has the same number of columns and parallel layout as p
+  `Amat` has the same number of rows and the same row parallel layout as `u`, `Amat` has the same number of columns and parallel layout as `p`
 
-.seealso: [](chapter_ts), `TSSetRHSJacobianP()`, `TS`, `TSGetRHSJacobianP()`
+.seealso: [](ch_ts), `TSSetRHSJacobianP()`, `TS`, `TSRHSJacobianP`
 @*/
-PetscErrorCode TSGetRHSJacobianP(TS ts, Mat *Amat, PetscErrorCode (**func)(TS, PetscReal, Vec, Mat, void *), void **ctx)
+PetscErrorCode TSGetRHSJacobianP(TS ts, Mat *Amat, TSRHSJacobianP *func, void **ctx)
 {
   PetscFunctionBegin;
   if (func) *func = ts->rhsjacobianp;
@@ -90,16 +76,16 @@ PetscErrorCode TSGetRHSJacobianP(TS ts, Mat *Amat, PetscErrorCode (**func)(TS, P
   Collective
 
   Input Parameters:
-+ ts   - The `TS` context obtained from `TSCreate()`
-. t - the time
-- U - the solution at which to compute the Jacobian
++ ts - The `TS` context obtained from `TSCreate()`
+. t  - the time
+- U  - the solution at which to compute the Jacobian
 
   Output Parameter:
 . Amat - the computed Jacobian
 
   Level: developer
 
-.seealso: [](chapter_ts), `TSSetRHSJacobianP()`, `TS`
+.seealso: [](ch_ts), `TSSetRHSJacobianP()`, `TS`
 @*/
 PetscErrorCode TSComputeRHSJacobianP(TS ts, PetscReal t, Vec U, Mat Amat)
 {
@@ -127,28 +113,28 @@ PetscErrorCode TSComputeRHSJacobianP(TS ts, PetscReal t, Vec U, Mat Amat)
   Logically Collective
 
   Input Parameters:
-+ ts - `TS` context obtained from `TSCreate()`
++ ts   - `TS` context obtained from `TSCreate()`
 . Amat - JacobianP matrix
 . func - function
-- ctx - [optional] user-defined function context
+- ctx  - [optional] user-defined function context
 
   Calling sequence of `func`:
-$ PetscErrorCode func(TS ts, PetscReal t, Vec y, Mat A, void *ctx)
-+   t - current timestep
-.   U - input vector (current ODE solution)
-.   Udot - time derivative of state vector
-.   shift - shift to apply, see note below
-.   A - output matrix
--   ctx - [optional] user-defined function context
++ ts    - the `TS` context
+. t     - current timestep
+. U     - input vector (current ODE solution)
+. Udot  - time derivative of state vector
+. shift - shift to apply, see note below
+. A     - output matrix
+- ctx   - [optional] user-defined function context
 
   Level: intermediate
 
   Note:
-    Amat has the same number of rows and the same row parallel layout as u, Amat has the same number of columns and parallel layout as p
+  Amat has the same number of rows and the same row parallel layout as u, Amat has the same number of columns and parallel layout as p
 
-.seealso: [](chapter_ts), `TSSetRHSJacobianP()`, `TS`
+.seealso: [](ch_ts), `TSSetRHSJacobianP()`, `TS`
 @*/
-PetscErrorCode TSSetIJacobianP(TS ts, Mat Amat, PetscErrorCode (*func)(TS, PetscReal, Vec, Vec, PetscReal, Mat, void *), void *ctx)
+PetscErrorCode TSSetIJacobianP(TS ts, Mat Amat, PetscErrorCode (*func)(TS ts, PetscReal t, Vec U, Vec Udot, PetscReal shift, Mat A, void *ctx), void *ctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
@@ -170,19 +156,19 @@ PetscErrorCode TSSetIJacobianP(TS ts, Mat Amat, PetscErrorCode (*func)(TS, Petsc
   Collective
 
   Input Parameters:
-+ ts - the `TS` context
-. t - current timestep
-. U - state vector
-. Udot - time derivative of state vector
++ ts    - the `TS` context
+. t     - current timestep
+. U     - state vector
+. Udot  - time derivative of state vector
 . shift - shift to apply, see note below
-- imex - flag indicates if the method is IMEX so that the RHSJacobianP should be kept separate
+- imex  - flag indicates if the method is IMEX so that the RHSJacobianP should be kept separate
 
   Output Parameter:
-. A - Jacobian matrix
+. Amat - Jacobian matrix
 
   Level: developer
 
-.seealso: [](chapter_ts), `TS`, `TSSetIJacobianP()`
+.seealso: [](ch_ts), `TS`, `TSSetIJacobianP()`
 @*/
 PetscErrorCode TSComputeIJacobianP(TS ts, PetscReal t, Vec U, Vec Udot, PetscReal shift, Mat Amat, PetscBool imex)
 {
@@ -221,35 +207,35 @@ PetscErrorCode TSComputeIJacobianP(TS ts, PetscReal t, Vec U, Vec Udot, PetscRea
 }
 
 /*@C
-    TSSetCostIntegrand - Sets the routine for evaluating the integral term in one or more cost functions
+  TSSetCostIntegrand - Sets the routine for evaluating the integral term in one or more cost functions
 
-    Logically Collective
+  Logically Collective
 
-    Input Parameters:
-+   ts - the `TS` context obtained from `TSCreate()`
-.   numcost - number of gradients to be computed, this is the number of cost functions
-.   costintegral - vector that stores the integral values
-.   rf - routine for evaluating the integrand function
-.   drduf - function that computes the gradients of the r's with respect to u
-.   drdpf - function that computes the gradients of the r's with respect to p, can be `NULL` if parametric sensitivity is not desired (`mu` = `NULL`)
-.   fwd - flag indicating whether to evaluate cost integral in the forward run or the adjoint run
--   ctx - [optional] user-defined context for private data for the function evaluation routine (may be `NULL`)
+  Input Parameters:
++ ts           - the `TS` context obtained from `TSCreate()`
+. numcost      - number of gradients to be computed, this is the number of cost functions
+. costintegral - vector that stores the integral values
+. rf           - routine for evaluating the integrand function
+. drduf        - function that computes the gradients of the r's with respect to u
+. drdpf        - function that computes the gradients of the r's with respect to p, can be `NULL` if parametric sensitivity is not desired (`mu` = `NULL`)
+. fwd          - flag indicating whether to evaluate cost integral in the forward run or the adjoint run
+- ctx          - [optional] user-defined context for private data for the function evaluation routine (may be `NULL`)
 
-    Calling sequence of `rf`:
+  Calling sequence of `rf`:
 $   PetscErrorCode rf(TS ts, PetscReal t, Vec U, Vec F, oid *ctx)
 
-    Calling sequence of `drduf`:
+  Calling sequence of `drduf`:
 $   PetscErroCode drduf(TS ts, PetscReal t, Vec U, Vec *dRdU, void *ctx)
 
-    Calling sequence of `drdpf`:
+  Calling sequence of `drdpf`:
 $   PetscErroCode drdpf(TS ts, PetscReal t, Vec U, Vec *dRdP, void *ctx)
 
-    Level: deprecated
+  Level: deprecated
 
-    Note:
-    For optimization there is usually a single cost function (numcost = 1). For sensitivities there may be multiple cost functions
+  Note:
+  For optimization there is usually a single cost function (numcost = 1). For sensitivities there may be multiple cost functions
 
-.seealso: [](chapter_ts), `TS`, `TSSetRHSJacobianP()`, `TSGetCostGradients()`, `TSSetCostGradients()`
+.seealso: [](ch_ts), `TS`, `TSSetRHSJacobianP()`, `TSGetCostGradients()`, `TSSetCostGradients()`
 @*/
 PetscErrorCode TSSetCostIntegrand(TS ts, PetscInt numcost, Vec costintegral, PetscErrorCode (*rf)(TS, PetscReal, Vec, Vec, void *), PetscErrorCode (*drduf)(TS, PetscReal, Vec, Vec *, void *), PetscErrorCode (*drdpf)(TS, PetscReal, Vec, Vec *, void *), PetscBool fwd, void *ctx)
 {
@@ -284,20 +270,20 @@ PetscErrorCode TSSetCostIntegrand(TS ts, PetscInt numcost, Vec costintegral, Pet
 }
 
 /*@C
-   TSGetCostIntegral - Returns the values of the integral term in the cost functions.
-   It is valid to call the routine after a backward run.
+  TSGetCostIntegral - Returns the values of the integral term in the cost functions.
+  It is valid to call the routine after a backward run.
 
-   Not Collective
+  Not Collective
 
-   Input Parameter:
-.  ts - the `TS` context obtained from `TSCreate()`
+  Input Parameter:
+. ts - the `TS` context obtained from `TSCreate()`
 
-   Output Parameter:
-.  v - the vector containing the integrals for each cost function
+  Output Parameter:
+. v - the vector containing the integrals for each cost function
 
-   Level: intermediate
+  Level: intermediate
 
-.seealso: [](chapter_ts), `TS`, `TSAdjointSolve()`, ``TSSetCostIntegrand()`
+.seealso: [](ch_ts), `TS`, `TSAdjointSolve()`, ``TSSetCostIntegrand()`
 @*/
 PetscErrorCode TSGetCostIntegral(TS ts, Vec *v)
 {
@@ -305,30 +291,30 @@ PetscErrorCode TSGetCostIntegral(TS ts, Vec *v)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
-  PetscValidPointer(v, 2);
+  PetscAssertPointer(v, 2);
   PetscCall(TSGetQuadratureTS(ts, NULL, &quadts));
   *v = quadts->vec_sol;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
-   TSComputeCostIntegrand - Evaluates the integral function in the cost functions.
+  TSComputeCostIntegrand - Evaluates the integral function in the cost functions.
 
-   Input Parameters:
-+  ts - the `TS` context
-.  t - current time
--  U - state vector, i.e. current solution
+  Input Parameters:
++ ts - the `TS` context
+. t  - current time
+- U  - state vector, i.e. current solution
 
-   Output Parameter:
-.  Q - vector of size numcost to hold the outputs
+  Output Parameter:
+. Q - vector of size numcost to hold the outputs
 
-   Level: deprecated
+  Level: deprecated
 
-   Note:
-   Most users should not need to explicitly call this routine, as it
-   is used internally within the sensitivity analysis context.
+  Note:
+  Most users should not need to explicitly call this routine, as it
+  is used internally within the sensitivity analysis context.
 
-.seealso: [](chapter_ts), `TS`, `TSAdjointSolve()`, `TSSetCostIntegrand()`
+.seealso: [](ch_ts), `TS`, `TSAdjointSolve()`, `TSSetCostIntegrand()`
 @*/
 PetscErrorCode TSComputeCostIntegrand(TS ts, PetscReal t, Vec U, Vec Q)
 {
@@ -344,6 +330,7 @@ PetscErrorCode TSComputeCostIntegrand(TS ts, PetscReal t, Vec U, Vec Q)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+// PetscClangLinter pragma disable: -fdoc-*
 /*@C
   TSComputeDRDUFunction - Deprecated, use `TSGetQuadratureTS()` then `TSComputeRHSJacobian()`
 
@@ -361,6 +348,7 @@ PetscErrorCode TSComputeDRDUFunction(TS ts, PetscReal t, Vec U, Vec *DRDU)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+// PetscClangLinter pragma disable: -fdoc-*
 /*@C
   TSComputeDRDPFunction - Deprecated, use `TSGetQuadratureTS()` then `TSComputeRHSJacobianP()`
 
@@ -378,13 +366,15 @@ PetscErrorCode TSComputeDRDPFunction(TS ts, PetscReal t, Vec U, Vec *DRDP)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+// PetscClangLinter pragma disable: -fdoc-param-list-func-parameter-documentation
+// PetscClangLinter pragma disable: -fdoc-section-header-unknown
 /*@C
   TSSetIHessianProduct - Sets the function that computes the vector-Hessian-vector product. The Hessian is the second-order derivative of F (IFunction) w.r.t. the state variable.
 
   Logically Collective
 
   Input Parameters:
-+ ts - `TS` context obtained from `TSCreate()`
++ ts   - `TS` context obtained from `TSCreate()`
 . ihp1 - an array of vectors storing the result of vector-Hessian-vector product for F_UU
 . hessianproductfunc1 - vector-Hessian-vector product function for F_UU
 . ihp2 - an array of vectors storing the result of vector-Hessian-vector product for F_UP
@@ -394,18 +384,21 @@ PetscErrorCode TSComputeDRDPFunction(TS ts, PetscReal t, Vec U, Vec *DRDP)
 . ihp4 - an array of vectors storing the result of vector-Hessian-vector product for F_PP
 - hessianproductfunc4 - vector-Hessian-vector product function for F_PP
 
-  Calling sequence of `ihessianproductfunc`:
-$ PetscErrorCode ihessianproductfunc(TS ts, PetscReal t, Vec U, Vec *Vl, Vec Vr, Vec *VHV, void *ctx);
-+   t - current timestep
-.   U - input vector (current ODE solution)
-.   Vl - an array of input vectors to be left-multiplied with the Hessian
-.   Vr - input vector to be right-multiplied with the Hessian
-.   VHV - an array of output vectors for vector-Hessian-vector product
--   ctx - [optional] user-defined function context
+  Calling sequence of `ihessianproductfunc1`:
++ ts  - the `TS` context
++ t   - current timestep
+. U   - input vector (current ODE solution)
+. Vl  - an array of input vectors to be left-multiplied with the Hessian
+. Vr  - input vector to be right-multiplied with the Hessian
+. VHV - an array of output vectors for vector-Hessian-vector product
+- ctx - [optional] user-defined function context
 
   Level: intermediate
 
   Notes:
+  All other functions have the same calling sequence as `rhhessianproductfunc1`, so their
+  descriptions are omitted for brevity.
+
   The first Hessian function and the working array are required.
   As an example to implement the callback functions, the second callback function calculates the vector-Hessian-vector product
   $ Vl_n^T*F_UP*Vr
@@ -416,13 +409,13 @@ $ PetscErrorCode ihessianproductfunc(TS ts, PetscReal t, Vec U, Vec *Vl, Vec Vr,
   $ VHV_n[j] = \sum_i \sum_k {Vl_n[i] * F_UP[i][j][k] * Vr[k]}
   If the cost function is a scalar, there will be only one vector in Vl and VHV.
 
-.seealso: [](chapter_ts), `TS`
+.seealso: [](ch_ts), `TS`
 @*/
-PetscErrorCode TSSetIHessianProduct(TS ts, Vec *ihp1, PetscErrorCode (*ihessianproductfunc1)(TS, PetscReal, Vec, Vec *, Vec, Vec *, void *), Vec *ihp2, PetscErrorCode (*ihessianproductfunc2)(TS, PetscReal, Vec, Vec *, Vec, Vec *, void *), Vec *ihp3, PetscErrorCode (*ihessianproductfunc3)(TS, PetscReal, Vec, Vec *, Vec, Vec *, void *), Vec *ihp4, PetscErrorCode (*ihessianproductfunc4)(TS, PetscReal, Vec, Vec *, Vec, Vec *, void *), void *ctx)
+PetscErrorCode TSSetIHessianProduct(TS ts, Vec *ihp1, PetscErrorCode (*ihessianproductfunc1)(TS ts, PetscReal t, Vec U, Vec *Vl, Vec Vr, Vec *VHV, void *ctx), Vec *ihp2, PetscErrorCode (*ihessianproductfunc2)(TS, PetscReal, Vec, Vec *, Vec, Vec *, void *), Vec *ihp3, PetscErrorCode (*ihessianproductfunc3)(TS, PetscReal, Vec, Vec *, Vec, Vec *, void *), Vec *ihp4, PetscErrorCode (*ihessianproductfunc4)(TS, PetscReal, Vec, Vec *, Vec, Vec *, void *), void *ctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
-  PetscValidPointer(ihp1, 2);
+  PetscAssertPointer(ihp1, 2);
 
   ts->ihessianproductctx = ctx;
   if (ihp1) ts->vecs_fuu = ihp1;
@@ -442,14 +435,14 @@ PetscErrorCode TSSetIHessianProduct(TS ts, Vec *ihp1, PetscErrorCode (*ihessianp
   Collective
 
   Input Parameters:
-+ ts   - The `TS` context obtained from `TSCreate()`
-. t - the time
-. U - the solution at which to compute the Hessian product
++ ts - The `TS` context obtained from `TSCreate()`
+. t  - the time
+. U  - the solution at which to compute the Hessian product
 . Vl - the array of input vectors to be multiplied with the Hessian from the left
 - Vr - the input vector to be multiplied with the Hessian from the right
 
   Output Parameter:
-. VhV - the array of output vectors that store the Hessian product
+. VHV - the array of output vectors that store the Hessian product
 
   Level: developer
 
@@ -457,7 +450,7 @@ PetscErrorCode TSSetIHessianProduct(TS ts, Vec *ihp1, PetscErrorCode (*ihessianp
   `TSComputeIHessianProductFunctionUU()` is typically used for sensitivity implementation,
   so most users would not generally call this routine themselves.
 
-.seealso: [](chapter_ts), `TSSetIHessianProduct()`
+.seealso: [](ch_ts), `TSSetIHessianProduct()`
 @*/
 PetscErrorCode TSComputeIHessianProductFunctionUU(TS ts, PetscReal t, Vec U, Vec *Vl, Vec Vr, Vec *VHV)
 {
@@ -483,14 +476,14 @@ PetscErrorCode TSComputeIHessianProductFunctionUU(TS ts, PetscReal t, Vec U, Vec
   Collective
 
   Input Parameters:
-+ ts   - The `TS` context obtained from `TSCreate()`
-. t - the time
-. U - the solution at which to compute the Hessian product
++ ts - The `TS` context obtained from `TSCreate()`
+. t  - the time
+. U  - the solution at which to compute the Hessian product
 . Vl - the array of input vectors to be multiplied with the Hessian from the left
 - Vr - the input vector to be multiplied with the Hessian from the right
 
   Output Parameter:
-. VhV - the array of output vectors that store the Hessian product
+. VHV - the array of output vectors that store the Hessian product
 
   Level: developer
 
@@ -498,7 +491,7 @@ PetscErrorCode TSComputeIHessianProductFunctionUU(TS ts, PetscReal t, Vec U, Vec
   `TSComputeIHessianProductFunctionUP()` is typically used for sensitivity implementation,
   so most users would not generally call this routine themselves.
 
-.seealso: [](chapter_ts), `TSSetIHessianProduct()`
+.seealso: [](ch_ts), `TSSetIHessianProduct()`
 @*/
 PetscErrorCode TSComputeIHessianProductFunctionUP(TS ts, PetscReal t, Vec U, Vec *Vl, Vec Vr, Vec *VHV)
 {
@@ -524,14 +517,14 @@ PetscErrorCode TSComputeIHessianProductFunctionUP(TS ts, PetscReal t, Vec U, Vec
   Collective
 
   Input Parameters:
-+ ts   - The `TS` context obtained from `TSCreate()`
-. t - the time
-. U - the solution at which to compute the Hessian product
++ ts - The `TS` context obtained from `TSCreate()`
+. t  - the time
+. U  - the solution at which to compute the Hessian product
 . Vl - the array of input vectors to be multiplied with the Hessian from the left
 - Vr - the input vector to be multiplied with the Hessian from the right
 
   Output Parameter:
-. VhV - the array of output vectors that store the Hessian product
+. VHV - the array of output vectors that store the Hessian product
 
   Level: developer
 
@@ -539,7 +532,7 @@ PetscErrorCode TSComputeIHessianProductFunctionUP(TS ts, PetscReal t, Vec U, Vec
   `TSComputeIHessianProductFunctionPU()` is typically used for sensitivity implementation,
   so most users would not generally call this routine themselves.
 
-.seealso: [](chapter_ts), `TSSetIHessianProduct()`
+.seealso: [](ch_ts), `TSSetIHessianProduct()`
 @*/
 PetscErrorCode TSComputeIHessianProductFunctionPU(TS ts, PetscReal t, Vec U, Vec *Vl, Vec Vr, Vec *VHV)
 {
@@ -565,14 +558,14 @@ PetscErrorCode TSComputeIHessianProductFunctionPU(TS ts, PetscReal t, Vec U, Vec
   Collective
 
   Input Parameters:
-+ ts   - The `TS` context obtained from `TSCreate()`
-. t - the time
-. U - the solution at which to compute the Hessian product
++ ts - The `TS` context obtained from `TSCreate()`
+. t  - the time
+. U  - the solution at which to compute the Hessian product
 . Vl - the array of input vectors to be multiplied with the Hessian from the left
 - Vr - the input vector to be multiplied with the Hessian from the right
 
   Output Parameter:
-. VhV - the array of output vectors that store the Hessian product
+. VHV - the array of output vectors that store the Hessian product
 
   Level: developer
 
@@ -580,7 +573,7 @@ PetscErrorCode TSComputeIHessianProductFunctionPU(TS ts, PetscReal t, Vec U, Vec
   `TSComputeIHessianProductFunctionPP()` is typically used for sensitivity implementation,
   so most users would not generally call this routine themselves.
 
-.seealso: [](chapter_ts), `TSSetIHessianProduct()`
+.seealso: [](ch_ts), `TSSetIHessianProduct()`
 @*/
 PetscErrorCode TSComputeIHessianProductFunctionPP(TS ts, PetscReal t, Vec U, Vec *Vl, Vec Vr, Vec *VHV)
 {
@@ -600,13 +593,17 @@ PetscErrorCode TSComputeIHessianProductFunctionPP(TS ts, PetscReal t, Vec U, Vec
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+// PetscClangLinter pragma disable: -fdoc-param-list-func-parameter-documentation
+// PetscClangLinter pragma disable: -fdoc-section-header-unknown
 /*@C
-  TSSetRHSHessianProduct - Sets the function that computes the vector-Hessian-vector product. The Hessian is the second-order derivative of G (RHSFunction) w.r.t. the state variable.
+  TSSetRHSHessianProduct - Sets the function that computes the vector-Hessian-vector
+  product. The Hessian is the second-order derivative of G (RHSFunction) w.r.t. the state
+  variable.
 
   Logically Collective
 
   Input Parameters:
-+ ts - `TS` context obtained from `TSCreate()`
++ ts     - `TS` context obtained from `TSCreate()`
 . rhshp1 - an array of vectors storing the result of vector-Hessian-vector product for G_UU
 . hessianproductfunc1 - vector-Hessian-vector product function for G_UU
 . rhshp2 - an array of vectors storing the result of vector-Hessian-vector product for G_UP
@@ -614,21 +611,26 @@ PetscErrorCode TSComputeIHessianProductFunctionPP(TS ts, PetscReal t, Vec U, Vec
 . rhshp3 - an array of vectors storing the result of vector-Hessian-vector product for G_PU
 . hessianproductfunc3 - vector-Hessian-vector product function for G_PU
 . rhshp4 - an array of vectors storing the result of vector-Hessian-vector product for G_PP
-- hessianproductfunc4 - vector-Hessian-vector product function for G_PP
+. hessianproductfunc4 - vector-Hessian-vector product function for G_PP
+- ctx    - [optional] user-defined function context
 
-  Calling sequence of `ihessianproductfunc`:
-$ PetscErrorCode rhshessianproductfunc(TS ts, PetscReal t, Vec U, Vec *Vl, Vec Vr, Vec *VHV, void *ctx);
-+   t - current timestep
-.   U - input vector (current ODE solution)
-.   Vl - an array of input vectors to be left-multiplied with the Hessian
-.   Vr - input vector to be right-multiplied with the Hessian
-.   VHV - an array of output vectors for vector-Hessian-vector product
--   ctx - [optional] user-defined function context
+  Calling sequence of `rhshessianproductfunc1`:
++ ts  - the `TS` context
+. t   - current timestep
+. U   - input vector (current ODE solution)
+. Vl  - an array of input vectors to be left-multiplied with the Hessian
+. Vr  - input vector to be right-multiplied with the Hessian
+. VHV - an array of output vectors for vector-Hessian-vector product
+- ctx - [optional] user-defined function context
 
   Level: intermediate
 
   Notes:
+  All other functions have the same calling sequence as `rhhessianproductfunc1`, so their
+  descriptions are omitted for brevity.
+
   The first Hessian function and the working array are required.
+
   As an example to implement the callback functions, the second callback function calculates the vector-Hessian-vector product
   $ Vl_n^T*G_UP*Vr
   where the vector Vl_n (n-th element in the array Vl) and Vr are of size N and M respectively, and the Hessian G_UP is of size N x N x M.
@@ -640,11 +642,11 @@ $ PetscErrorCode rhshessianproductfunc(TS ts, PetscReal t, Vec U, Vec *Vl, Vec V
 
 .seealso: `TS`, `TSAdjoint`
 @*/
-PetscErrorCode TSSetRHSHessianProduct(TS ts, Vec *rhshp1, PetscErrorCode (*rhshessianproductfunc1)(TS, PetscReal, Vec, Vec *, Vec, Vec *, void *), Vec *rhshp2, PetscErrorCode (*rhshessianproductfunc2)(TS, PetscReal, Vec, Vec *, Vec, Vec *, void *), Vec *rhshp3, PetscErrorCode (*rhshessianproductfunc3)(TS, PetscReal, Vec, Vec *, Vec, Vec *, void *), Vec *rhshp4, PetscErrorCode (*rhshessianproductfunc4)(TS, PetscReal, Vec, Vec *, Vec, Vec *, void *), void *ctx)
+PetscErrorCode TSSetRHSHessianProduct(TS ts, Vec *rhshp1, PetscErrorCode (*rhshessianproductfunc1)(TS ts, PetscReal t, Vec U, Vec *Vl, Vec Vr, Vec *VHV, void *ctx), Vec *rhshp2, PetscErrorCode (*rhshessianproductfunc2)(TS, PetscReal, Vec, Vec *, Vec, Vec *, void *), Vec *rhshp3, PetscErrorCode (*rhshessianproductfunc3)(TS, PetscReal, Vec, Vec *, Vec, Vec *, void *), Vec *rhshp4, PetscErrorCode (*rhshessianproductfunc4)(TS, PetscReal, Vec, Vec *, Vec, Vec *, void *), void *ctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
-  PetscValidPointer(rhshp1, 2);
+  PetscAssertPointer(rhshp1, 2);
 
   ts->rhshessianproductctx = ctx;
   if (rhshp1) ts->vecs_guu = rhshp1;
@@ -664,14 +666,14 @@ PetscErrorCode TSSetRHSHessianProduct(TS ts, Vec *rhshp1, PetscErrorCode (*rhshe
   Collective
 
   Input Parameters:
-+ ts   - The `TS` context obtained from `TSCreate()`
-. t - the time
-. U - the solution at which to compute the Hessian product
++ ts - The `TS` context obtained from `TSCreate()`
+. t  - the time
+. U  - the solution at which to compute the Hessian product
 . Vl - the array of input vectors to be multiplied with the Hessian from the left
 - Vr - the input vector to be multiplied with the Hessian from the right
 
   Output Parameter:
-. VhV - the array of output vectors that store the Hessian product
+. VHV - the array of output vectors that store the Hessian product
 
   Level: developer
 
@@ -679,7 +681,7 @@ PetscErrorCode TSSetRHSHessianProduct(TS ts, Vec *rhshp1, PetscErrorCode (*rhshe
   `TSComputeRHSHessianProductFunctionUU()` is typically used for sensitivity implementation,
   so most users would not generally call this routine themselves.
 
-.seealso: [](chapter_ts), `TS`, `TSSetRHSHessianProduct()`
+.seealso: [](ch_ts), `TS`, `TSSetRHSHessianProduct()`
 @*/
 PetscErrorCode TSComputeRHSHessianProductFunctionUU(TS ts, PetscReal t, Vec U, Vec *Vl, Vec Vr, Vec *VHV)
 {
@@ -698,14 +700,14 @@ PetscErrorCode TSComputeRHSHessianProductFunctionUU(TS ts, PetscReal t, Vec U, V
   Collective
 
   Input Parameters:
-+ ts   - The `TS` context obtained from `TSCreate()`
-. t - the time
-. U - the solution at which to compute the Hessian product
++ ts - The `TS` context obtained from `TSCreate()`
+. t  - the time
+. U  - the solution at which to compute the Hessian product
 . Vl - the array of input vectors to be multiplied with the Hessian from the left
 - Vr - the input vector to be multiplied with the Hessian from the right
 
   Output Parameter:
-. VhV - the array of output vectors that store the Hessian product
+. VHV - the array of output vectors that store the Hessian product
 
   Level: developer
 
@@ -713,7 +715,7 @@ PetscErrorCode TSComputeRHSHessianProductFunctionUU(TS ts, PetscReal t, Vec U, V
   `TSComputeRHSHessianProductFunctionUP()` is typically used for sensitivity implementation,
   so most users would not generally call this routine themselves.
 
-.seealso: [](chapter_ts), `TS`, `TSSetRHSHessianProduct()`
+.seealso: [](ch_ts), `TS`, `TSSetRHSHessianProduct()`
 @*/
 PetscErrorCode TSComputeRHSHessianProductFunctionUP(TS ts, PetscReal t, Vec U, Vec *Vl, Vec Vr, Vec *VHV)
 {
@@ -732,14 +734,14 @@ PetscErrorCode TSComputeRHSHessianProductFunctionUP(TS ts, PetscReal t, Vec U, V
   Collective
 
   Input Parameters:
-+ ts   - The `TS` context obtained from `TSCreate()`
-. t - the time
-. U - the solution at which to compute the Hessian product
++ ts - The `TS` context obtained from `TSCreate()`
+. t  - the time
+. U  - the solution at which to compute the Hessian product
 . Vl - the array of input vectors to be multiplied with the Hessian from the left
 - Vr - the input vector to be multiplied with the Hessian from the right
 
   Output Parameter:
-. VhV - the array of output vectors that store the Hessian product
+. VHV - the array of output vectors that store the Hessian product
 
   Level: developer
 
@@ -747,7 +749,7 @@ PetscErrorCode TSComputeRHSHessianProductFunctionUP(TS ts, PetscReal t, Vec U, V
   `TSComputeRHSHessianProductFunctionPU()` is typically used for sensitivity implementation,
   so most users would not generally call this routine themselves.
 
-.seealso: [](chapter_ts), `TSSetRHSHessianProduct()`
+.seealso: [](ch_ts), `TSSetRHSHessianProduct()`
 @*/
 PetscErrorCode TSComputeRHSHessianProductFunctionPU(TS ts, PetscReal t, Vec U, Vec *Vl, Vec Vr, Vec *VHV)
 {
@@ -766,14 +768,14 @@ PetscErrorCode TSComputeRHSHessianProductFunctionPU(TS ts, PetscReal t, Vec U, V
   Collective
 
   Input Parameters:
-+ ts   - The `TS` context obtained from `TSCreate()`
-. t - the time
-. U - the solution at which to compute the Hessian product
++ ts - The `TS` context obtained from `TSCreate()`
+. t  - the time
+. U  - the solution at which to compute the Hessian product
 . Vl - the array of input vectors to be multiplied with the Hessian from the left
 - Vr - the input vector to be multiplied with the Hessian from the right
 
   Output Parameter:
-. VhV - the array of output vectors that store the Hessian product
+. VHV - the array of output vectors that store the Hessian product
 
   Level: developer
 
@@ -781,7 +783,7 @@ PetscErrorCode TSComputeRHSHessianProductFunctionPU(TS ts, PetscReal t, Vec U, V
   `TSComputeRHSHessianProductFunctionPP()` is typically used for sensitivity implementation,
   so most users would not generally call this routine themselves.
 
-.seealso: [](chapter_ts), `TSSetRHSHessianProduct()`
+.seealso: [](ch_ts), `TSSetRHSHessianProduct()`
 @*/
 PetscErrorCode TSComputeRHSHessianProductFunctionPP(TS ts, PetscReal t, Vec U, Vec *Vl, Vec Vr, Vec *VHV)
 {
@@ -797,23 +799,23 @@ PetscErrorCode TSComputeRHSHessianProductFunctionPP(TS ts, PetscReal t, Vec U, V
 /* --------------------------- Adjoint sensitivity ---------------------------*/
 
 /*@
-   TSSetCostGradients - Sets the initial value of the gradients of the cost function w.r.t. initial values and w.r.t. the problem parameters
-      for use by the `TS` adjoint routines.
+  TSSetCostGradients - Sets the initial value of the gradients of the cost function w.r.t. initial values and w.r.t. the problem parameters
+  for use by the `TS` adjoint routines.
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  ts - the `TS` context obtained from `TSCreate()`
-.  numcost - number of gradients to be computed, this is the number of cost functions
-.  lambda - gradients with respect to the initial condition variables, the dimension and parallel layout of these vectors is the same as the ODE solution vector
--  mu - gradients with respect to the parameters, the number of entries in these vectors is the same as the number of parameters
+  Input Parameters:
++ ts      - the `TS` context obtained from `TSCreate()`
+. numcost - number of gradients to be computed, this is the number of cost functions
+. lambda  - gradients with respect to the initial condition variables, the dimension and parallel layout of these vectors is the same as the ODE solution vector
+- mu      - gradients with respect to the parameters, the number of entries in these vectors is the same as the number of parameters
 
-   Level: beginner
+  Level: beginner
 
-   Notes:
-    the entries in these vectors must be correctly initialized with the values lambda_i = df/dy|finaltime  mu_i = df/dp|finaltime
+  Notes:
+  the entries in these vectors must be correctly initialized with the values lambda_i = df/dy|finaltime  mu_i = df/dp|finaltime
 
-   After `TSAdjointSolve()` is called the lambda and the mu contain the computed sensitivities
+  After `TSAdjointSolve()` is called the lambda and the mu contain the computed sensitivities
 
 .seealso: `TS`, `TSAdjointSolve()`, `TSGetCostGradients()`
 @*/
@@ -821,7 +823,7 @@ PetscErrorCode TSSetCostGradients(TS ts, PetscInt numcost, Vec *lambda, Vec *mu)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
-  PetscValidPointer(lambda, 3);
+  PetscAssertPointer(lambda, 3);
   ts->vecs_sensi  = lambda;
   ts->vecs_sensip = mu;
   PetscCheck(!ts->numcost || ts->numcost == numcost, PetscObjectComm((PetscObject)ts), PETSC_ERR_USER, "The number of cost functions (2nd parameter of TSSetCostIntegrand()) is inconsistent with the one set by TSSetCostIntegrand");
@@ -830,21 +832,21 @@ PetscErrorCode TSSetCostGradients(TS ts, PetscInt numcost, Vec *lambda, Vec *mu)
 }
 
 /*@
-   TSGetCostGradients - Returns the gradients from the `TSAdjointSolve()`
+  TSGetCostGradients - Returns the gradients from the `TSAdjointSolve()`
 
-   Not Collective, but the vectors returned are parallel if `TS` is parallel
+  Not Collective, but the vectors returned are parallel if `TS` is parallel
 
-   Input Parameter:
-.  ts - the `TS` context obtained from `TSCreate()`
+  Input Parameter:
+. ts - the `TS` context obtained from `TSCreate()`
 
-   Output Parameters:
-+  numcost - size of returned arrays
-.  lambda - vectors containing the gradients of the cost functions with respect to the ODE/DAE solution variables
--  mu - vectors containing the gradients of the cost functions with respect to the problem parameters
+  Output Parameters:
++ numcost - size of returned arrays
+. lambda  - vectors containing the gradients of the cost functions with respect to the ODE/DAE solution variables
+- mu      - vectors containing the gradients of the cost functions with respect to the problem parameters
 
-   Level: intermediate
+  Level: intermediate
 
-.seealso: [](chapter_ts), `TS`, `TSAdjointSolve()`, `TSSetCostGradients()`
+.seealso: [](ch_ts), `TS`, `TSAdjointSolve()`, `TSSetCostGradients()`
 @*/
 PetscErrorCode TSGetCostGradients(TS ts, PetscInt *numcost, Vec **lambda, Vec **mu)
 {
@@ -857,30 +859,30 @@ PetscErrorCode TSGetCostGradients(TS ts, PetscInt *numcost, Vec **lambda, Vec **
 }
 
 /*@
-   TSSetCostHessianProducts - Sets the initial value of the Hessian-vector products of the cost function w.r.t. initial values and w.r.t. the problem parameters
-   for use by the `TS` adjoint routines.
+  TSSetCostHessianProducts - Sets the initial value of the Hessian-vector products of the cost function w.r.t. initial values and w.r.t. the problem parameters
+  for use by the `TS` adjoint routines.
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  ts - the `TS` context obtained from `TSCreate()`
-.  numcost - number of cost functions
-.  lambda2 - Hessian-vector product with respect to the initial condition variables, the dimension and parallel layout of these vectors is the same as the ODE solution vector
-.  mu2 - Hessian-vector product with respect to the parameters, the number of entries in these vectors is the same as the number of parameters
--  dir - the direction vector that are multiplied with the Hessian of the cost functions
+  Input Parameters:
++ ts      - the `TS` context obtained from `TSCreate()`
+. numcost - number of cost functions
+. lambda2 - Hessian-vector product with respect to the initial condition variables, the dimension and parallel layout of these vectors is the same as the ODE solution vector
+. mu2     - Hessian-vector product with respect to the parameters, the number of entries in these vectors is the same as the number of parameters
+- dir     - the direction vector that are multiplied with the Hessian of the cost functions
 
-   Level: beginner
+  Level: beginner
 
-   Notes:
-   Hessian of the cost function is completely different from Hessian of the ODE/DAE system
+  Notes:
+  Hessian of the cost function is completely different from Hessian of the ODE/DAE system
 
-   For second-order adjoint, one needs to call this function and then `TSAdjointSetForward()` before `TSSolve()`.
+  For second-order adjoint, one needs to call this function and then `TSAdjointSetForward()` before `TSSolve()`.
 
-   After `TSAdjointSolve()` is called, the lambda2 and the mu2 will contain the computed second-order adjoint sensitivities, and can be used to produce Hessian-vector product (not the full Hessian matrix). Users must provide a direction vector; it is usually generated by an optimization solver.
+  After `TSAdjointSolve()` is called, the lambda2 and the mu2 will contain the computed second-order adjoint sensitivities, and can be used to produce Hessian-vector product (not the full Hessian matrix). Users must provide a direction vector; it is usually generated by an optimization solver.
 
-   Passing `NULL` for `lambda2` disables the second-order calculation.
+  Passing `NULL` for `lambda2` disables the second-order calculation.
 
-.seealso: [](chapter_ts), `TS`, `TSAdjointSolve()`, `TSAdjointSetForward()`
+.seealso: [](ch_ts), `TS`, `TSAdjointSolve()`, `TSAdjointSetForward()`
 @*/
 PetscErrorCode TSSetCostHessianProducts(TS ts, PetscInt numcost, Vec *lambda2, Vec *mu2, Vec dir)
 {
@@ -895,22 +897,22 @@ PetscErrorCode TSSetCostHessianProducts(TS ts, PetscInt numcost, Vec *lambda2, V
 }
 
 /*@
-   TSGetCostHessianProducts - Returns the gradients from the `TSAdjointSolve()`
+  TSGetCostHessianProducts - Returns the gradients from the `TSAdjointSolve()`
 
-   Not Collective, but vectors returned are parallel if `TS` is parallel
+  Not Collective, but vectors returned are parallel if `TS` is parallel
 
-   Input Parameter:
-.  ts - the `TS` context obtained from `TSCreate()`
+  Input Parameter:
+. ts - the `TS` context obtained from `TSCreate()`
 
-   Output Parameters:
-+  numcost - number of cost functions
-.  lambda2 - Hessian-vector product with respect to the initial condition variables, the dimension and parallel layout of these vectors is the same as the ODE solution vector
-.  mu2 - Hessian-vector product with respect to the parameters, the number of entries in these vectors is the same as the number of parameters
--  dir - the direction vector that are multiplied with the Hessian of the cost functions
+  Output Parameters:
++ numcost - number of cost functions
+. lambda2 - Hessian-vector product with respect to the initial condition variables, the dimension and parallel layout of these vectors is the same as the ODE solution vector
+. mu2     - Hessian-vector product with respect to the parameters, the number of entries in these vectors is the same as the number of parameters
+- dir     - the direction vector that are multiplied with the Hessian of the cost functions
 
-   Level: intermediate
+  Level: intermediate
 
-.seealso: [](chapter_ts), `TSAdjointSolve()`, `TSSetCostHessianProducts()`
+.seealso: [](ch_ts), `TSAdjointSolve()`, `TSSetCostHessianProducts()`
 @*/
 PetscErrorCode TSGetCostHessianProducts(TS ts, PetscInt *numcost, Vec **lambda2, Vec **mu2, Vec *dir)
 {
@@ -929,8 +931,8 @@ PetscErrorCode TSGetCostHessianProducts(TS ts, PetscInt *numcost, Vec **lambda2,
   Logically Collective
 
   Input Parameters:
-+  ts - the `TS` context obtained from `TSCreate()`
--  didp - the derivative of initial values w.r.t. parameters
++ ts   - the `TS` context obtained from `TSCreate()`
+- didp - the derivative of initial values w.r.t. parameters
 
   Level: intermediate
 
@@ -938,7 +940,7 @@ PetscErrorCode TSGetCostHessianProducts(TS ts, PetscInt *numcost, Vec **lambda2,
   When computing sensitivies w.r.t. initial condition, set didp to `NULL` so that the solver will take it as an identity matrix mathematically.
   `TSAdjoint` does not reset the tangent linear solver automatically, `TSAdjointResetForward()` should be called to reset the tangent linear solver.
 
-.seealso: [](chapter_ts), `TSAdjointSolve()`, `TSSetCostHessianProducts()`, `TSAdjointResetForward()`
+.seealso: [](ch_ts), `TSAdjointSolve()`, `TSSetCostHessianProducts()`, `TSAdjointResetForward()`
 @*/
 PetscErrorCode TSAdjointSetForward(TS ts, Mat didp)
 {
@@ -984,11 +986,11 @@ PetscErrorCode TSAdjointSetForward(TS ts, Mat didp)
   Logically Collective
 
   Input Parameter:
-.  ts - the `TS` context obtained from `TSCreate()`
+. ts - the `TS` context obtained from `TSCreate()`
 
   Level: intermediate
 
-.seealso: [](chapter_ts), `TSAdjointSetForward()`
+.seealso: [](ch_ts), `TSAdjointSetForward()`
 @*/
 PetscErrorCode TSAdjointResetForward(TS ts)
 {
@@ -999,17 +1001,17 @@ PetscErrorCode TSAdjointResetForward(TS ts)
 }
 
 /*@
-   TSAdjointSetUp - Sets up the internal data structures for the later use
-   of an adjoint solver
+  TSAdjointSetUp - Sets up the internal data structures for the later use
+  of an adjoint solver
 
-   Collective
+  Collective
 
-   Input Parameter:
-.  ts - the `TS` context obtained from `TSCreate()`
+  Input Parameter:
+. ts - the `TS` context obtained from `TSCreate()`
 
-   Level: advanced
+  Level: advanced
 
-.seealso: [](chapter_ts), `TSCreate()`, `TSAdjointStep()`, `TSSetCostGradients()`
+.seealso: [](ch_ts), `TSCreate()`, `TSAdjointStep()`, `TSSetCostGradients()`
 @*/
 PetscErrorCode TSAdjointSetUp(TS ts)
 {
@@ -1043,14 +1045,14 @@ PetscErrorCode TSAdjointSetUp(TS ts)
 /*@
   TSAdjointReset - Resets a `TS` adjoint context and removes any allocated `Vec`s and `Mat`s.
 
-   Collective
+  Collective
 
-   Input Parameter:
-.  ts - the `TS` context obtained from `TSCreate()`
+  Input Parameter:
+. ts - the `TS` context obtained from `TSCreate()`
 
-   Level: beginner
+  Level: beginner
 
-.seealso: [](chapter_ts), `TSCreate()`, `TSAdjointSetUp()`, `TSADestroy()`
+.seealso: [](ch_ts), `TSCreate()`, `TSAdjointSetUp()`, `TSADestroy()`
 @*/
 PetscErrorCode TSAdjointReset(TS ts)
 {
@@ -1071,21 +1073,21 @@ PetscErrorCode TSAdjointReset(TS ts)
 }
 
 /*@
-   TSAdjointSetSteps - Sets the number of steps the adjoint solver should take backward in time
+  TSAdjointSetSteps - Sets the number of steps the adjoint solver should take backward in time
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  ts - the `TS` context obtained from `TSCreate()`
--  steps - number of steps to use
+  Input Parameters:
++ ts    - the `TS` context obtained from `TSCreate()`
+- steps - number of steps to use
 
-   Level: intermediate
+  Level: intermediate
 
-   Notes:
-    Normally one does not call this and `TSAdjointSolve()` integrates back to the original timestep. One can call this
-          so as to integrate back to less than the original timestep
+  Notes:
+  Normally one does not call this and `TSAdjointSolve()` integrates back to the original timestep. One can call this
+  so as to integrate back to less than the original timestep
 
-.seealso: [](chapter_ts), `TSAdjointSolve()`, `TS`, `TSSetExactFinalTime()`
+.seealso: [](ch_ts), `TSAdjointSolve()`, `TS`, `TSSetExactFinalTime()`
 @*/
 PetscErrorCode TSAdjointSetSteps(TS ts, PetscInt steps)
 {
@@ -1098,11 +1100,11 @@ PetscErrorCode TSAdjointSetSteps(TS ts, PetscInt steps)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+// PetscClangLinter pragma disable: -fdoc-*
 /*@C
   TSAdjointSetRHSJacobian - Deprecated, use `TSSetRHSJacobianP()`
 
   Level: deprecated
-
 @*/
 PetscErrorCode TSAdjointSetRHSJacobian(TS ts, Mat Amat, PetscErrorCode (*func)(TS, PetscReal, Vec, Mat, void *), void *ctx)
 {
@@ -1120,28 +1122,28 @@ PetscErrorCode TSAdjointSetRHSJacobian(TS ts, Mat Amat, PetscErrorCode (*func)(T
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+// PetscClangLinter pragma disable: -fdoc-*
 /*@C
   TSAdjointComputeRHSJacobian - Deprecated, use `TSComputeRHSJacobianP()`
 
   Level: deprecated
-
 @*/
 PetscErrorCode TSAdjointComputeRHSJacobian(TS ts, PetscReal t, Vec U, Mat Amat)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscValidHeaderSpecific(U, VEC_CLASSID, 3);
-  PetscValidPointer(Amat, 4);
+  PetscValidHeaderSpecific(Amat, MAT_CLASSID, 4);
 
   PetscCallBack("TS callback JacobianP for sensitivity analysis", (*ts->rhsjacobianp)(ts, t, U, Amat, ts->rhsjacobianpctx));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+// PetscClangLinter pragma disable: -fdoc-*
 /*@
   TSAdjointComputeDRDYFunction - Deprecated, use `TSGetQuadratureTS()` then `TSComputeRHSJacobian()`
 
   Level: deprecated
-
 @*/
 PetscErrorCode TSAdjointComputeDRDYFunction(TS ts, PetscReal t, Vec U, Vec *DRDU)
 {
@@ -1153,11 +1155,11 @@ PetscErrorCode TSAdjointComputeDRDYFunction(TS ts, PetscReal t, Vec U, Vec *DRDU
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+// PetscClangLinter pragma disable: -fdoc-*
 /*@
   TSAdjointComputeDRDPFunction - Deprecated, use `TSGetQuadratureTS()` then `TSComputeRHSJacobianP()`
 
   Level: deprecated
-
 @*/
 PetscErrorCode TSAdjointComputeDRDPFunction(TS ts, PetscReal t, Vec U, Vec *DRDP)
 {
@@ -1169,14 +1171,15 @@ PetscErrorCode TSAdjointComputeDRDPFunction(TS ts, PetscReal t, Vec U, Vec *DRDP
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+// PetscClangLinter pragma disable: -fdoc-param-list-func-parameter-documentation
 /*@C
-   TSAdjointMonitorSensi - monitors the first lambda sensitivity
+  TSAdjointMonitorSensi - monitors the first lambda sensitivity
 
-   Level: intermediate
+  Level: intermediate
 
-.seealso: [](chapter_ts), `TSAdjointMonitorSet()`
+.seealso: [](ch_ts), `TSAdjointMonitorSet()`
 @*/
-PetscErrorCode TSAdjointMonitorSensi(TS ts, PetscInt step, PetscReal ptime, Vec v, PetscInt numcost, Vec *lambda, Vec *mu, PetscViewerAndFormat *vf)
+static PetscErrorCode TSAdjointMonitorSensi(TS ts, PetscInt step, PetscReal ptime, Vec v, PetscInt numcost, Vec *lambda, Vec *mu, PetscViewerAndFormat *vf)
 {
   PetscViewer viewer = vf->viewer;
 
@@ -1189,23 +1192,23 @@ PetscErrorCode TSAdjointMonitorSensi(TS ts, PetscInt step, PetscReal ptime, Vec 
 }
 
 /*@C
-   TSAdjointMonitorSetFromOptions - Sets a monitor function and viewer appropriate for the type indicated by the user
+  TSAdjointMonitorSetFromOptions - Sets a monitor function and viewer appropriate for the type indicated by the user
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  ts - `TS` object you wish to monitor
-.  name - the monitor type one is seeking
-.  help - message indicating what monitoring is done
-.  manual - manual page for the monitor
-.  monitor - the monitor function
--  monitorsetup - a function that is called once ONLY if the user selected this monitor that may set additional features of the `TS` or `PetscViewer` objects
+  Input Parameters:
++ ts           - `TS` object you wish to monitor
+. name         - the monitor type one is seeking
+. help         - message indicating what monitoring is done
+. manual       - manual page for the monitor
+. monitor      - the monitor function
+- monitorsetup - a function that is called once ONLY if the user selected this monitor that may set additional features of the `TS` or `PetscViewer` objects
 
-   Level: developer
+  Level: developer
 
-.seealso: [](chapter_ts), `PetscOptionsGetViewer()`, `PetscOptionsGetReal()`, `PetscOptionsHasName()`, `PetscOptionsGetString()`,
+.seealso: [](ch_ts), `PetscOptionsGetViewer()`, `PetscOptionsGetReal()`, `PetscOptionsHasName()`, `PetscOptionsGetString()`,
           `PetscOptionsGetIntArray()`, `PetscOptionsGetRealArray()`, `PetscOptionsBool()`
-          `PetscOptionsInt()`, `PetscOptionsString()`, `PetscOptionsReal()`, `PetscOptionsBool()`,
+          `PetscOptionsInt()`, `PetscOptionsString()`, `PetscOptionsReal()`,
           `PetscOptionsName()`, `PetscOptionsBegin()`, `PetscOptionsEnd()`, `PetscOptionsHeadBegin()`,
           `PetscOptionsStringArray()`, `PetscOptionsRealArray()`, `PetscOptionsScalar()`,
           `PetscOptionsBoolGroupBegin()`, `PetscOptionsBoolGroup()`, `PetscOptionsBoolGroupEnd()`,
@@ -1230,43 +1233,44 @@ PetscErrorCode TSAdjointMonitorSetFromOptions(TS ts, const char name[], const ch
 }
 
 /*@C
-   TSAdjointMonitorSet - Sets an ADDITIONAL function that is to be used at every
-   timestep to display the iteration's  progress.
+  TSAdjointMonitorSet - Sets an ADDITIONAL function that is to be used at every
+  timestep to display the iteration's  progress.
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  ts - the `TS` context obtained from `TSCreate()`
-.  adjointmonitor - monitoring routine
-.  adjointmctx - [optional] user-defined context for private data for the
-             monitor routine (use `NULL` if no context is desired)
--  adjointmonitordestroy - [optional] routine that frees monitor context
-          (may be `NULL`)
+  Input Parameters:
++ ts              - the `TS` context obtained from `TSCreate()`
+. adjointmonitor  - monitoring routine
+. adjointmctx     - [optional] user-defined context for private data for the monitor routine
+                    (use `NULL` if no context is desired)
+- adjointmdestroy - [optional] routine that frees monitor context (may be `NULL`)
 
-   Calling sequence of `adjointmonitor`:
-$    PetscErrorCode adjointmonitor(TS ts, PetscInt steps, PetscReal time, Vec u, PetscInt numcost, Vec *lambda, Vec *mu, void *adjointmctx)
-+    ts - the `TS` context
-.    steps - iteration number (after the final time step the monitor routine is called with a step of -1, this is at the final time which may have
-                               been interpolated to)
-.    time - current time
-.    u - current iterate
-.    numcost - number of cost functionos
-.    lambda - sensitivities to initial conditions
-.    mu - sensitivities to parameters
--    adjointmctx - [optional] adjoint monitoring context
+  Calling sequence of `adjointmonitor`:
++ ts          - the `TS` context
+. steps       - iteration number (after the final time step the monitor routine is called with
+                a step of -1, this is at the final time which may have been interpolated to)
+. time        - current time
+. u           - current iterate
+. numcost     - number of cost functionos
+. lambda      - sensitivities to initial conditions
+. mu          - sensitivities to parameters
+- adjointmctx - [optional] adjoint monitoring context
 
-   Level: intermediate
+  Calling sequence of `adjointmdestroy`:
+. mctx - the monitor context to destroy
 
-   Note:
-   This routine adds an additional monitor to the list of monitors that
-   already has been loaded.
+  Level: intermediate
 
-   Fortran Note:
-   Only a single monitor function can be set for each `TS` object
+  Note:
+  This routine adds an additional monitor to the list of monitors that
+  already has been loaded.
 
-.seealso: [](chapter_ts), `TS`, `TSAdjointSolve()`, `TSAdjointMonitorCancel()`
+  Fortran Notes:
+  Only a single monitor function can be set for each `TS` object
+
+.seealso: [](ch_ts), `TS`, `TSAdjointSolve()`, `TSAdjointMonitorCancel()`
 @*/
-PetscErrorCode TSAdjointMonitorSet(TS ts, PetscErrorCode (*adjointmonitor)(TS, PetscInt, PetscReal, Vec, PetscInt, Vec *, Vec *, void *), void *adjointmctx, PetscErrorCode (*adjointmdestroy)(void **))
+PetscErrorCode TSAdjointMonitorSet(TS ts, PetscErrorCode (*adjointmonitor)(TS ts, PetscInt steps, PetscReal time, Vec u, PetscInt numcost, Vec *lambda, Vec *mu, void *adjointmctx), void *adjointmctx, PetscErrorCode (*adjointmdestroy)(void **mctx))
 {
   PetscInt  i;
   PetscBool identical;
@@ -1285,19 +1289,19 @@ PetscErrorCode TSAdjointMonitorSet(TS ts, PetscErrorCode (*adjointmonitor)(TS, P
 }
 
 /*@C
-   TSAdjointMonitorCancel - Clears all the adjoint monitors that have been set on a time-step object.
+  TSAdjointMonitorCancel - Clears all the adjoint monitors that have been set on a time-step object.
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameter:
-.  ts - the `TS` context obtained from `TSCreate()`
+  Input Parameter:
+. ts - the `TS` context obtained from `TSCreate()`
 
-   Notes:
-   There is no way to remove a single, specific monitor.
+  Notes:
+  There is no way to remove a single, specific monitor.
 
-   Level: intermediate
+  Level: intermediate
 
-.seealso: [](chapter_ts), `TS`, `TSAdjointSolve()`, `TSAdjointMonitorSet()`
+.seealso: [](ch_ts), `TS`, `TSAdjointSolve()`, `TSAdjointMonitorSet()`
 @*/
 PetscErrorCode TSAdjointMonitorCancel(TS ts)
 {
@@ -1313,45 +1317,60 @@ PetscErrorCode TSAdjointMonitorCancel(TS ts)
 }
 
 /*@C
-   TSAdjointMonitorDefault - the default monitor of adjoint computations
+  TSAdjointMonitorDefault - the default monitor of adjoint computations
 
-   Level: intermediate
+  Input Parameters:
++ ts      - the `TS` context
+. step    - iteration number (after the final time step the monitor routine is called with a
+step of -1, this is at the final time which may have been interpolated to)
+. time    - current time
+. v       - current iterate
+. numcost - number of cost functionos
+. lambda  - sensitivities to initial conditions
+. mu      - sensitivities to parameters
+- vf      - the viewer and format
 
-.seealso: [](chapter_ts), `TS`, `TSAdjointSolve()`, `TSAdjointMonitorSet()`
+  Level: intermediate
+
+.seealso: [](ch_ts), `TS`, `TSAdjointSolve()`, `TSAdjointMonitorSet()`
 @*/
-PetscErrorCode TSAdjointMonitorDefault(TS ts, PetscInt step, PetscReal ptime, Vec v, PetscInt numcost, Vec *lambda, Vec *mu, PetscViewerAndFormat *vf)
+PetscErrorCode TSAdjointMonitorDefault(TS ts, PetscInt step, PetscReal time, Vec v, PetscInt numcost, Vec *lambda, Vec *mu, PetscViewerAndFormat *vf)
 {
   PetscViewer viewer = vf->viewer;
 
   PetscFunctionBegin;
+  (void)v;
+  (void)numcost;
+  (void)lambda;
+  (void)mu;
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 8);
   PetscCall(PetscViewerPushFormat(viewer, vf->format));
   PetscCall(PetscViewerASCIIAddTab(viewer, ((PetscObject)ts)->tablevel));
-  PetscCall(PetscViewerASCIIPrintf(viewer, "%" PetscInt_FMT " TS dt %g time %g%s", step, (double)ts->time_step, (double)ptime, ts->steprollback ? " (r)\n" : "\n"));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "%" PetscInt_FMT " TS dt %g time %g%s", step, (double)ts->time_step, (double)time, ts->steprollback ? " (r)\n" : "\n"));
   PetscCall(PetscViewerASCIISubtractTab(viewer, ((PetscObject)ts)->tablevel));
   PetscCall(PetscViewerPopFormat(viewer));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
-   TSAdjointMonitorDrawSensi - Monitors progress of the adjoint `TS` solvers by calling
-   `VecView()` for the sensitivities to initial states at each timestep
+  TSAdjointMonitorDrawSensi - Monitors progress of the adjoint `TS` solvers by calling
+  `VecView()` for the sensitivities to initial states at each timestep
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  ts - the `TS` context
-.  step - current time-step
-.  ptime - current time
-.  u - current state
-.  numcost - number of cost functions
-.  lambda - sensitivities to initial conditions
-.  mu - sensitivities to parameters
--  dummy - either a viewer or `NULL`
+  Input Parameters:
++ ts      - the `TS` context
+. step    - current time-step
+. ptime   - current time
+. u       - current state
+. numcost - number of cost functions
+. lambda  - sensitivities to initial conditions
+. mu      - sensitivities to parameters
+- dummy   - either a viewer or `NULL`
 
-   Level: intermediate
+  Level: intermediate
 
-.seealso: [](chapter_ts), `TSAdjointSolve()`, `TSAdjointMonitorSet()`, `TSAdjointMonitorDefault()`, `VecView()`
+.seealso: [](ch_ts), `TSAdjointSolve()`, `TSAdjointMonitorSet()`, `TSAdjointMonitorDefault()`, `VecView()`
 @*/
 PetscErrorCode TSAdjointMonitorDrawSensi(TS ts, PetscInt step, PetscReal ptime, Vec u, PetscInt numcost, Vec *lambda, Vec *mu, void *dummy)
 {
@@ -1373,26 +1392,27 @@ PetscErrorCode TSAdjointMonitorDrawSensi(TS ts, PetscInt step, PetscReal ptime, 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*
-   TSAdjointSetFromOptions - Sets various `TS` adjoint parameters from user options.
+/*@C
+  TSAdjointSetFromOptions - Sets various `TS` adjoint parameters from options database.
 
-   Collective
+  Collective
 
-   Input Parameter:
-.  ts - the `TS` context
+  Input Parameters:
++ ts                 - the `TS` context
+- PetscOptionsObject - the options context
 
-   Options Database Keys:
-+  -ts_adjoint_solve <yes,no> After solving the ODE/DAE solve the adjoint problem (requires -ts_save_trajectory)
-.  -ts_adjoint_monitor - print information at each adjoint time step
--  -ts_adjoint_monitor_draw_sensi - monitor the sensitivity of the first cost function wrt initial conditions (lambda[0]) graphically
+  Options Database Keys:
++ -ts_adjoint_solve <yes,no>     - After solving the ODE/DAE solve the adjoint problem (requires `-ts_save_trajectory`)
+. -ts_adjoint_monitor            - print information at each adjoint time step
+- -ts_adjoint_monitor_draw_sensi - monitor the sensitivity of the first cost function wrt initial conditions (lambda[0]) graphically
 
-   Level: developer
+  Level: developer
 
-   Note:
-    This is not normally called directly by users
+  Note:
+  This is not normally called directly by users
 
-.seealso: [](chapter_ts), `TSSetSaveTrajectory()`, `TSTrajectorySetUp()`
-*/
+.seealso: [](ch_ts), `TSSetSaveTrajectory()`, `TSTrajectorySetUp()`
+@*/
 PetscErrorCode TSAdjointSetFromOptions(TS ts, PetscOptionItems *PetscOptionsObject)
 {
   PetscBool tflg, opt;
@@ -1422,16 +1442,16 @@ PetscErrorCode TSAdjointSetFromOptions(TS ts, PetscOptionItems *PetscOptionsObje
 }
 
 /*@
-   TSAdjointStep - Steps one time step backward in the adjoint run
+  TSAdjointStep - Steps one time step backward in the adjoint run
 
-   Collective
+  Collective
 
-   Input Parameter:
-.  ts - the `TS` context obtained from `TSCreate()`
+  Input Parameter:
+. ts - the `TS` context obtained from `TSCreate()`
 
-   Level: intermediate
+  Level: intermediate
 
-.seealso: [](chapter_ts), `TSAdjointSetUp()`, `TSAdjointSolve()`
+.seealso: [](ch_ts), `TSAdjointSetUp()`, `TSAdjointSolve()`
 @*/
 PetscErrorCode TSAdjointStep(TS ts)
 {
@@ -1459,24 +1479,25 @@ PetscErrorCode TSAdjointStep(TS ts)
 }
 
 /*@
-   TSAdjointSolve - Solves the discrete ajoint problem for an ODE/DAE
+  TSAdjointSolve - Solves the discrete ajoint problem for an ODE/DAE
 
-   Collective
-`
-   Input Parameter:
-.  ts - the `TS` context obtained from `TSCreate()`
+  Collective
+  `
 
-   Options Database Key:
+  Input Parameter:
+. ts - the `TS` context obtained from `TSCreate()`
+
+  Options Database Key:
 . -ts_adjoint_view_solution <viewerinfo> - views the first gradient with respect to the initial values
 
-   Level: intermediate
+  Level: intermediate
 
-   Notes:
-   This must be called after a call to `TSSolve()` that solves the forward problem
+  Notes:
+  This must be called after a call to `TSSolve()` that solves the forward problem
 
-   By default this will integrate back to the initial time, one can use `TSAdjointSetSteps()` to step back to a later time
+  By default this will integrate back to the initial time, one can use `TSAdjointSetSteps()` to step back to a later time
 
-.seealso: [](chapter_ts), `TSAdjointSolve()`, `TSCreate()`, `TSSetCostGradients()`, `TSSetSolution()`, `TSAdjointStep()`
+.seealso: [](ch_ts), `TSCreate()`, `TSSetCostGradients()`, `TSSetSolution()`, `TSAdjointStep()`
 @*/
 PetscErrorCode TSAdjointSolve(TS ts)
 {
@@ -1536,24 +1557,24 @@ PetscErrorCode TSAdjointSolve(TS ts)
 }
 
 /*@C
-   TSAdjointMonitor - Runs all user-provided adjoint monitor routines set using `TSAdjointMonitorSet()`
+  TSAdjointMonitor - Runs all user-provided adjoint monitor routines set using `TSAdjointMonitorSet()`
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  ts - time stepping context obtained from `TSCreate()`
-.  step - step number that has just completed
-.  ptime - model time of the state
-.  u - state at the current model time
-.  numcost - number of cost functions (dimension of lambda  or mu)
-.  lambda - vectors containing the gradients of the cost functions with respect to the ODE/DAE solution variables
--  mu - vectors containing the gradients of the cost functions with respect to the problem parameters
+  Input Parameters:
++ ts      - time stepping context obtained from `TSCreate()`
+. step    - step number that has just completed
+. ptime   - model time of the state
+. u       - state at the current model time
+. numcost - number of cost functions (dimension of lambda  or mu)
+. lambda  - vectors containing the gradients of the cost functions with respect to the ODE/DAE solution variables
+- mu      - vectors containing the gradients of the cost functions with respect to the problem parameters
 
-   Level: developer
+  Level: developer
 
-   Note:
-   `TSAdjointMonitor()` is typically used automatically within the time stepping implementations.
-   Users would almost never call this routine directly.
+  Note:
+  `TSAdjointMonitor()` is typically used automatically within the time stepping implementations.
+  Users would almost never call this routine directly.
 
 .seealso: `TSAdjointMonitorSet()`, `TSAdjointSolve()`
 @*/
@@ -1571,19 +1592,19 @@ PetscErrorCode TSAdjointMonitor(TS ts, PetscInt step, PetscReal ptime, Vec u, Pe
 }
 
 /*@
- TSAdjointCostIntegral - Evaluate the cost integral in the adjoint run.
+  TSAdjointCostIntegral - Evaluate the cost integral in the adjoint run.
 
- Collective
+  Collective
 
- Input Parameter:
- .  ts - time stepping context
+  Input Parameter:
+. ts - time stepping context
 
- Level: advanced
+  Level: advanced
 
- Notes:
- This function cannot be called until `TSAdjointStep()` has been completed.
+  Notes:
+  This function cannot be called until `TSAdjointStep()` has been completed.
 
- .seealso: [](chapter_ts), `TSAdjointSolve()`, `TSAdjointStep()`
+.seealso: [](ch_ts), `TSAdjointSolve()`, `TSAdjointStep()`
  @*/
 PetscErrorCode TSAdjointCostIntegral(TS ts)
 {
@@ -1606,7 +1627,7 @@ PetscErrorCode TSAdjointCostIntegral(TS ts)
 
   Level: advanced
 
-.seealso: [](chapter_ts), `TS`, `TSCreate()`, `TSDestroy()`, `TSSetUp()`
+.seealso: [](ch_ts), `TS`, `TSCreate()`, `TSDestroy()`, `TSSetUp()`
 @*/
 PetscErrorCode TSForwardSetUp(TS ts)
 {
@@ -1629,7 +1650,7 @@ PetscErrorCode TSForwardSetUp(TS ts)
 
   Level: advanced
 
-.seealso: [](chapter_ts), `TSCreate()`, `TSDestroy()`, `TSForwardSetUp()`
+.seealso: [](ch_ts), `TSCreate()`, `TSDestroy()`, `TSForwardSetUp()`
 @*/
 PetscErrorCode TSForwardReset(TS ts)
 {
@@ -1650,13 +1671,13 @@ PetscErrorCode TSForwardReset(TS ts)
   TSForwardSetIntegralGradients - Set the vectors holding forward sensitivities of the integral term.
 
   Input Parameters:
-+ ts - the `TS` context obtained from `TSCreate()`
++ ts        - the `TS` context obtained from `TSCreate()`
 . numfwdint - number of integrals
-- vp - the vectors containing the gradients for each integral w.r.t. parameters
+- vp        - the vectors containing the gradients for each integral w.r.t. parameters
 
   Level: deprecated
 
-.seealso: [](chapter_ts), `TSForwardGetSensitivities()`, `TSForwardSetIntegralGradients()`, `TSForwardGetIntegralGradients()`, `TSForwardStep()`
+.seealso: [](ch_ts), `TSForwardGetSensitivities()`, `TSForwardGetIntegralGradients()`, `TSForwardStep()`
 @*/
 PetscErrorCode TSForwardSetIntegralGradients(TS ts, PetscInt numfwdint, Vec *vp)
 {
@@ -1675,18 +1696,19 @@ PetscErrorCode TSForwardSetIntegralGradients(TS ts, PetscInt numfwdint, Vec *vp)
   Input Parameter:
 . ts - the `TS` context obtained from `TSCreate()`
 
-  Output Parameter:
-. vp - the vectors containing the gradients for each integral w.r.t. parameters
+  Output Parameters:
++ numfwdint - number of integrals
+- vp        - the vectors containing the gradients for each integral w.r.t. parameters
 
   Level: deprecated
 
-.seealso: [](chapter_ts), `TSForwardSetSensitivities()`, `TSForwardSetIntegralGradients()`, `TSForwardGetIntegralGradients()`, `TSForwardStep()`
+.seealso: [](ch_ts), `TSForwardSetSensitivities()`, `TSForwardSetIntegralGradients()`, `TSForwardStep()`
 @*/
 PetscErrorCode TSForwardGetIntegralGradients(TS ts, PetscInt *numfwdint, Vec **vp)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
-  PetscValidPointer(vp, 3);
+  PetscAssertPointer(vp, 3);
   if (numfwdint) *numfwdint = ts->numcost;
   if (vp) *vp = ts->vecs_integral_sensip;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -1705,7 +1727,7 @@ PetscErrorCode TSForwardGetIntegralGradients(TS ts, PetscInt *numfwdint, Vec **v
   Notes:
   This function cannot be called until `TSStep()` has been completed.
 
-.seealso: [](chapter_ts), `TSForwardSetSensitivities()`, `TSForwardGetSensitivities()`, `TSForwardSetIntegralGradients()`, `TSForwardGetIntegralGradients()`, `TSForwardSetUp()`
+.seealso: [](ch_ts), `TSForwardSetSensitivities()`, `TSForwardGetSensitivities()`, `TSForwardSetIntegralGradients()`, `TSForwardGetIntegralGradients()`, `TSForwardSetUp()`
 @*/
 PetscErrorCode TSForwardStep(TS ts)
 {
@@ -1724,7 +1746,7 @@ PetscErrorCode TSForwardStep(TS ts)
   Logically Collective
 
   Input Parameters:
-+ ts - the `TS` context obtained from `TSCreate()`
++ ts   - the `TS` context obtained from `TSCreate()`
 . nump - number of parameters
 - Smat - sensitivities with respect to the parameters, the number of entries in these vectors is the same as the number of parameters
 
@@ -1736,7 +1758,7 @@ PetscErrorCode TSForwardStep(TS ts)
   You must call this function before `TSSolve()`.
   The entries in the sensitivity matrix must be correctly initialized with the values S = dy/dp|startingtime.
 
-.seealso: [](chapter_ts), `TSForwardGetSensitivities()`, `TSForwardSetIntegralGradients()`, `TSForwardGetIntegralGradients()`, `TSForwardStep()`
+.seealso: [](ch_ts), `TSForwardGetSensitivities()`, `TSForwardSetIntegralGradients()`, `TSForwardGetIntegralGradients()`, `TSForwardStep()`
 @*/
 PetscErrorCode TSForwardSetSensitivities(TS ts, PetscInt nump, Mat Smat)
 {
@@ -1759,13 +1781,13 @@ PetscErrorCode TSForwardSetSensitivities(TS ts, PetscInt nump, Mat Smat)
   Not Collective, but Smat returned is parallel if ts is parallel
 
   Output Parameters:
-+ ts - the `TS` context obtained from `TSCreate()`
++ ts   - the `TS` context obtained from `TSCreate()`
 . nump - number of parameters
 - Smat - sensitivities with respect to the parameters, the number of entries in these vectors is the same as the number of parameters
 
   Level: intermediate
 
-.seealso: [](chapter_ts), `TSForwardSetSensitivities()`, `TSForwardSetIntegralGradients()`, `TSForwardGetIntegralGradients()`, `TSForwardStep()`
+.seealso: [](ch_ts), `TSForwardSetSensitivities()`, `TSForwardSetIntegralGradients()`, `TSForwardGetIntegralGradients()`, `TSForwardStep()`
 @*/
 PetscErrorCode TSForwardGetSensitivities(TS ts, PetscInt *nump, Mat *Smat)
 {
@@ -1777,19 +1799,19 @@ PetscErrorCode TSForwardGetSensitivities(TS ts, PetscInt *nump, Mat *Smat)
 }
 
 /*@
-   TSForwardCostIntegral - Evaluate the cost integral in the forward run.
+  TSForwardCostIntegral - Evaluate the cost integral in the forward run.
 
-   Collective
+  Collective
 
-   Input Parameter:
-.  ts - time stepping context
+  Input Parameter:
+. ts - time stepping context
 
-   Level: advanced
+  Level: advanced
 
-   Note:
-   This function cannot be called until `TSStep()` has been completed.
+  Note:
+  This function cannot be called until `TSStep()` has been completed.
 
-.seealso: [](chapter_ts), `TS`, `TSSolve()`, `TSAdjointCostIntegral()`
+.seealso: [](ch_ts), `TS`, `TSSolve()`, `TSAdjointCostIntegral()`
 @*/
 PetscErrorCode TSForwardCostIntegral(TS ts)
 {
@@ -1805,16 +1827,16 @@ PetscErrorCode TSForwardCostIntegral(TS ts)
   Collective
 
   Input Parameters:
-+ ts - the `TS` context obtained from `TSCreate()`
++ ts   - the `TS` context obtained from `TSCreate()`
 - didp - parametric sensitivities of the initial condition
 
   Level: intermediate
 
   Notes:
   `TSSolve()` allows users to pass the initial solution directly to `TS`. But the tangent linear variables cannot be initialized in this way.
-   This function is used to set initial values for tangent linear variables.
+  This function is used to set initial values for tangent linear variables.
 
-.seealso: [](chapter_ts), `TS`, `TSForwardSetSensitivities()`
+.seealso: [](ch_ts), `TS`, `TSForwardSetSensitivities()`
 @*/
 PetscErrorCode TSForwardSetInitialSensitivities(TS ts, Mat didp)
 {
@@ -1826,16 +1848,16 @@ PetscErrorCode TSForwardSetInitialSensitivities(TS ts, Mat didp)
 }
 
 /*@
-   TSForwardGetStages - Get the number of stages and the tangent linear sensitivities at the intermediate stages
+  TSForwardGetStages - Get the number of stages and the tangent linear sensitivities at the intermediate stages
 
-   Input Parameter:
-.  ts - the `TS` context obtained from `TSCreate()`
+  Input Parameter:
+. ts - the `TS` context obtained from `TSCreate()`
 
-   Output Parameters:
-+  ns - number of stages
--  S - tangent linear sensitivities at the intermediate stages
+  Output Parameters:
++ ns - number of stages
+- S  - tangent linear sensitivities at the intermediate stages
 
-   Level: advanced
+  Level: advanced
 
 .seealso: `TS`
 @*/
@@ -1850,18 +1872,18 @@ PetscErrorCode TSForwardGetStages(TS ts, PetscInt *ns, Mat **S)
 }
 
 /*@
-   TSCreateQuadratureTS - Create a sub-`TS` that evaluates integrals over time
+  TSCreateQuadratureTS - Create a sub-`TS` that evaluates integrals over time
 
-   Input Parameters:
-+  ts - the `TS` context obtained from `TSCreate()`
--  fwd - flag indicating whether to evaluate cost integral in the forward run or the adjoint run
+  Input Parameters:
++ ts  - the `TS` context obtained from `TSCreate()`
+- fwd - flag indicating whether to evaluate cost integral in the forward run or the adjoint run
 
-   Output Parameter:
-.  quadts - the child `TS` context
+  Output Parameter:
+. quadts - the child `TS` context
 
-   Level: intermediate
+  Level: intermediate
 
-.seealso: [](chapter_ts), `TSGetQuadratureTS()`
+.seealso: [](ch_ts), `TSGetQuadratureTS()`
 @*/
 PetscErrorCode TSCreateQuadratureTS(TS ts, PetscBool fwd, TS *quadts)
 {
@@ -1869,7 +1891,7 @@ PetscErrorCode TSCreateQuadratureTS(TS ts, PetscBool fwd, TS *quadts)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
-  PetscValidPointer(quadts, 3);
+  PetscAssertPointer(quadts, 3);
   PetscCall(TSDestroy(&ts->quadraturets));
   PetscCall(TSCreate(PetscObjectComm((PetscObject)ts), &ts->quadraturets));
   PetscCall(PetscObjectIncrementTabLevel((PetscObject)ts->quadraturets, (PetscObject)ts, 1));
@@ -1887,18 +1909,18 @@ PetscErrorCode TSCreateQuadratureTS(TS ts, PetscBool fwd, TS *quadts)
 }
 
 /*@
-   TSGetQuadratureTS - Return the sub-`TS` that evaluates integrals over time
+  TSGetQuadratureTS - Return the sub-`TS` that evaluates integrals over time
 
-   Input Parameter:
-.  ts - the `TS` context obtained from `TSCreate()`
+  Input Parameter:
+. ts - the `TS` context obtained from `TSCreate()`
 
-   Output Parameters:
-+  fwd - flag indicating whether to evaluate cost integral in the forward run or the adjoint run
--  quadts - the child `TS` context
+  Output Parameters:
++ fwd    - flag indicating whether to evaluate cost integral in the forward run or the adjoint run
+- quadts - the child `TS` context
 
-   Level: intermediate
+  Level: intermediate
 
-.seealso: [](chapter_ts), `TSCreateQuadratureTS()`
+.seealso: [](ch_ts), `TSCreateQuadratureTS()`
 @*/
 PetscErrorCode TSGetQuadratureTS(TS ts, PetscBool *fwd, TS *quadts)
 {
@@ -1910,24 +1932,24 @@ PetscErrorCode TSGetQuadratureTS(TS ts, PetscBool *fwd, TS *quadts)
 }
 
 /*@
-   TSComputeSNESJacobian - Compute the Jacobian needed for the `SNESSolve()` in `TS`
+  TSComputeSNESJacobian - Compute the Jacobian needed for the `SNESSolve()` in `TS`
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  ts - the `TS` context obtained from `TSCreate()`
--  x - state vector
+  Input Parameters:
++ ts - the `TS` context obtained from `TSCreate()`
+- x  - state vector
 
-   Output Parameters:
-+  J - Jacobian matrix
--  Jpre - preconditioning matrix for J (may be same as J)
+  Output Parameters:
++ J    - Jacobian matrix
+- Jpre - preconditioning matrix for J (may be same as J)
 
-   Level: developer
+  Level: developer
 
-   Note:
-   Uses finite differencing when `TS` Jacobian is not available.
+  Note:
+  Uses finite differencing when `TS` Jacobian is not available.
 
-.seealso: `SNES`, `TS`, `SNESSetJacobian()`, TSSetRHSJacobian()`, `TSSetIJacobian()`
+.seealso: `SNES`, `TS`, `SNESSetJacobian()`, `TSSetRHSJacobian()`, `TSSetIJacobian()`
 @*/
 PetscErrorCode TSComputeSNESJacobian(TS ts, Vec x, Mat J, Mat Jpre)
 {

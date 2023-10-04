@@ -37,7 +37,7 @@ PC Object: 1 MPI process
       Mat Object: (fieldsplit_a_) 1 MPI process
         type: seqaij
         rows=5, cols=5
-        total: nonzeros=5, allocated nonzeros=15
+        total: nonzeros=5, allocated nonzeros=5
         total number of mallocs used during MatSetValues calls=0
           not using I-node routines
     Split number 1 Defined by IS
@@ -100,15 +100,15 @@ PC Object: 1 MPI process
   Mat Object: 1 MPI process
     type: nest
     rows=12, cols=12
-      Matrix object: 
-        type=nest, rows=3, cols=3 
-        MatNest structure: 
-        (0,0) : prefix="fieldsplit_a_", type=seqaij, rows=5, cols=5 
-        (0,1) : type=seqaij, rows=5, cols=3 
-        (0,2) : type=seqaij, rows=5, cols=4 
-        (1,0) : type=seqaij, rows=3, cols=5 
-        (1,1) : prefix="fieldsplit_b_", type=seqaij, rows=3, cols=3 
-        (1,2) : type=seqaij, rows=3, cols=4 
-        (2,0) : type=seqaij, rows=4, cols=5 
-        (2,1) : type=seqaij, rows=4, cols=3 
-        (2,2) : prefix="fieldsplit_c_", type=seqaij, rows=4, cols=4 
+      Matrix object:
+        type=nest, rows=3, cols=3
+        MatNest structure:
+        (0,0) : prefix="fieldsplit_a_", type=seqaij, rows=5, cols=5
+        (0,1) : type=seqaij, rows=5, cols=3
+        (0,2) : type=seqaij, rows=5, cols=4
+        (1,0) : type=seqaij, rows=3, cols=5
+        (1,1) : prefix="fieldsplit_b_", type=seqaij, rows=3, cols=3
+        (1,2) : type=seqaij, rows=3, cols=4
+        (2,0) : type=seqaij, rows=4, cols=5
+        (2,1) : type=seqaij, rows=4, cols=3
+        (2,2) : prefix="fieldsplit_c_", type=seqaij, rows=4, cols=4

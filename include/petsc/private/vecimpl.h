@@ -1,20 +1,16 @@
+#pragma once
 
 /*
-   This private file should not be included in users' code.
-   Defines the fields shared by all vector implementations.
-
+  This private file should not be included in users' code.  Defines the fields shared by all
+  vector implementations.
 */
-
-#ifndef __VECIMPL_H
-#define __VECIMPL_H
 
 #include <petscvec.h>
 #include <petsc/private/petscimpl.h>
 
-PETSC_EXTERN PetscBool      VecRegisterAllCalled;
-PETSC_EXTERN PetscErrorCode VecRegisterAll(void);
-PETSC_EXTERN MPI_Op         MPIU_MAXLOC;
-PETSC_EXTERN MPI_Op         MPIU_MINLOC;
+PETSC_INTERN PetscBool VecRegisterAllCalled;
+PETSC_EXTERN MPI_Op    MPIU_MAXLOC;
+PETSC_EXTERN MPI_Op    MPIU_MINLOC;
 
 /* ----------------------------------------------------------------------------*/
 
@@ -108,14 +104,11 @@ struct _VecOps {
   PetscErrorCode (*sum)(Vec, PetscScalar *);
   PetscErrorCode (*setpreallocationcoo)(Vec, PetscCount, const PetscInt[]);
   PetscErrorCode (*setvaluescoo)(Vec, const PetscScalar[], InsertMode);
+  PetscErrorCode (*errorwnorm)(Vec, Vec, Vec, NormType, PetscReal, Vec, PetscReal, Vec, PetscReal, PetscReal *, PetscInt *, PetscReal *, PetscInt *, PetscReal *, PetscInt *);
+  PetscErrorCode (*maxpby)(Vec, PetscInt, const PetscScalar *, PetscScalar, Vec *); /* y = beta y + alpha[j] x[j] */
 };
 
-#if defined(offsetof) && (defined(__cplusplus) || (PETSC_C_VERSION >= 11))
-  #if (PETSC_C_VERSION >= 11) && (PETSC_C_VERSION < 23)
-    // static_assert() is a keyword since C23, before that defined as macro in assert.h
-    #include <assert.h>
-  #endif
-
+#if defined(offsetof) && (defined(__cplusplus) || (PETSC_C_VERSION >= 23))
 static_assert(offsetof(struct _VecOps, duplicate) == sizeof(void (*)(void)) * VECOP_DUPLICATE, "");
 static_assert(offsetof(struct _VecOps, set) == sizeof(void (*)(void)) * VECOP_SET, "");
 static_assert(offsetof(struct _VecOps, view) == sizeof(void (*)(void)) * VECOP_VIEW, "");
@@ -221,7 +214,7 @@ PETSC_EXTERN PetscLogEvent VEC_CUDACopyFromGPU;
 PETSC_EXTERN PetscLogEvent VEC_HIPCopyToGPU;
 PETSC_EXTERN PetscLogEvent VEC_HIPCopyFromGPU;
 
-PETSC_EXTERN PetscErrorCode VecView_Seq(Vec, PetscViewer);
+PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode VecView_Seq(Vec, PetscViewer);
 #if defined(PETSC_HAVE_VIENNACL)
 PETSC_EXTERN PetscErrorCode VecViennaCLAllocateCheckHost(Vec v);
 PETSC_EXTERN PetscErrorCode VecViennaCLCopyFromGPU(Vec v);
@@ -240,24 +233,25 @@ PETSC_EXTERN PetscErrorCode VecViennaCLCopyFromGPU(Vec v);
 PETSC_EXTERN PetscErrorCode VecGetRootType_Private(Vec, VecType *);
 
 /* Default obtain and release vectors; can be used by any implementation */
-PETSC_EXTERN PetscErrorCode VecDuplicateVecs_Default(Vec, PetscInt, Vec *[]);
-PETSC_EXTERN PetscErrorCode VecDestroyVecs_Default(PetscInt, Vec[]);
-PETSC_EXTERN PetscErrorCode VecView_Binary(Vec, PetscViewer);
-PETSC_EXTERN PetscErrorCode VecLoad_Binary(Vec, PetscViewer);
-PETSC_EXTERN PetscErrorCode VecLoad_Default(Vec, PetscViewer);
+PETSC_INTERN PetscErrorCode VecDuplicateVecs_Default(Vec, PetscInt, Vec *[]);
+PETSC_INTERN PetscErrorCode VecDestroyVecs_Default(PetscInt, Vec[]);
+PETSC_INTERN PetscErrorCode VecView_Binary(Vec, PetscViewer);
 
-PETSC_EXTERN PetscInt NormIds[7]; /* map from NormType to IDs used to cache/retrieve values of norms */
+PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode VecLoad_Default(Vec, PetscViewer);
+
+PETSC_INTERN PetscInt NormIds[7]; /* map from NormType to IDs used to cache/retrieve values of norms */
 
 PETSC_INTERN PetscErrorCode VecStashCreate_Private(MPI_Comm, PetscInt, VecStash *);
 PETSC_INTERN PetscErrorCode VecStashDestroy_Private(VecStash *);
-PETSC_EXTERN PetscErrorCode VecStashExpand_Private(VecStash *, PetscInt);
 PETSC_INTERN PetscErrorCode VecStashScatterEnd_Private(VecStash *);
 PETSC_INTERN PetscErrorCode VecStashSetInitialSize_Private(VecStash *, PetscInt);
 PETSC_INTERN PetscErrorCode VecStashGetInfo_Private(VecStash *, PetscInt *, PetscInt *);
-PETSC_INTERN PetscErrorCode VecStashScatterBegin_Private(VecStash *, PetscInt *);
+PETSC_INTERN PetscErrorCode VecStashScatterBegin_Private(VecStash *, const PetscInt *);
 PETSC_INTERN PetscErrorCode VecStashScatterGetMesg_Private(VecStash *, PetscMPIInt *, PetscInt **, PetscScalar **, PetscInt *);
 PETSC_INTERN PetscErrorCode VecStashSortCompress_Private(VecStash *);
 PETSC_INTERN PetscErrorCode VecStashGetOwnerList_Private(VecStash *, PetscLayout, PetscMPIInt *, PetscMPIInt **);
+
+PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode VecStashExpand_Private(VecStash *, PetscInt);
 
 /*
   VecStashValue_Private - inserts a single value into the stash.
@@ -311,8 +305,8 @@ PETSC_EXTERN PetscErrorCode VecMatlabEnginePut_Default(PetscObject, void *);
 PETSC_EXTERN PetscErrorCode VecMatlabEngineGet_Default(PetscObject, void *);
 #endif
 
-PETSC_EXTERN PetscErrorCode PetscSectionGetField_Internal(PetscSection, PetscSection, Vec, PetscInt, PetscInt, PetscInt, IS *, Vec *);
-PETSC_EXTERN PetscErrorCode PetscSectionRestoreField_Internal(PetscSection, PetscSection, Vec, PetscInt, PetscInt, PetscInt, IS *, Vec *);
+PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode PetscSectionGetField_Internal(PetscSection, PetscSection, Vec, PetscInt, PetscInt, PetscInt, IS *, Vec *);
+PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode PetscSectionRestoreField_Internal(PetscSection, PetscSection, Vec, PetscInt, PetscInt, PetscInt, IS *, Vec *);
 
 #define VecCheckSameLocalSize(x, ar1, y, ar2) \
   do { \
@@ -355,10 +349,9 @@ struct _p_VecTagger {
   PetscBool setupcalled;
 };
 
-PETSC_EXTERN PetscBool      VecTaggerRegisterAllCalled;
-PETSC_EXTERN PetscErrorCode VecTaggerRegisterAll(void);
-PETSC_EXTERN PetscErrorCode VecTaggerComputeIS_FromBoxes(VecTagger, Vec, IS *, PetscBool *);
-PETSC_EXTERN PetscMPIInt    Petsc_Reduction_keyval;
+PETSC_INTERN PetscBool      VecTaggerRegisterAllCalled;
+PETSC_INTERN PetscErrorCode VecTaggerComputeIS_FromBoxes(VecTagger, Vec, IS *, PetscBool *);
+PETSC_INTERN PetscMPIInt    Petsc_Reduction_keyval;
 
 PETSC_INTERN PetscInt       VecGetSubVectorSavedStateId;
 PETSC_INTERN PetscErrorCode VecGetSubVectorContiguityAndBS_Private(Vec, IS, PetscBool *, PetscInt *, PetscInt *);
@@ -369,6 +362,8 @@ PETSC_INTERN PetscErrorCode VecCreate_CUDA(Vec);
 PETSC_INTERN PetscErrorCode VecCreate_SeqCUDA(Vec);
 PETSC_INTERN PetscErrorCode VecCreate_MPICUDA(Vec);
 PETSC_INTERN PetscErrorCode VecCUDAGetArrays_Private(Vec, const PetscScalar **, const PetscScalar **, PetscOffloadMask *);
+PETSC_INTERN PetscErrorCode VecConvert_Seq_SeqCUDA_inplace(Vec);
+PETSC_INTERN PetscErrorCode VecConvert_MPI_MPICUDA_inplace(Vec);
 #endif
 
 #if PetscDefined(HAVE_HIP)
@@ -376,32 +371,97 @@ PETSC_INTERN PetscErrorCode VecCreate_HIP(Vec);
 PETSC_INTERN PetscErrorCode VecCreate_SeqHIP(Vec);
 PETSC_INTERN PetscErrorCode VecCreate_MPIHIP(Vec);
 PETSC_INTERN PetscErrorCode VecHIPGetArrays_Private(Vec, const PetscScalar **, const PetscScalar **, PetscOffloadMask *);
+PETSC_INTERN PetscErrorCode VecConvert_Seq_SeqHIP_inplace(Vec);
+PETSC_INTERN PetscErrorCode VecConvert_MPI_MPIHIP_inplace(Vec);
 #endif
 
 #if defined(PETSC_HAVE_KOKKOS)
-PETSC_INTERN PetscErrorCode VecCreateSeqKokkosWithArrays_Private(MPI_Comm, PetscInt, PetscInt, const PetscScalar *, const PetscScalar *, Vec *);
 PETSC_INTERN PetscErrorCode VecCreateMPIKokkosWithArrays_Private(MPI_Comm, PetscInt, PetscInt, PetscInt, const PetscScalar *, const PetscScalar *, Vec *);
+PETSC_INTERN PetscErrorCode VecConvert_Seq_SeqKokkos_inplace(Vec);
+PETSC_INTERN PetscErrorCode VecConvert_MPI_MPIKokkos_inplace(Vec);
 #endif
+
+PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode VecCreateWithLayout_Private(PetscLayout, Vec *);
 
 /* std::upper_bound(): Given a sorted array, return index of the first element in range [first,last) whose value
    is greater than value, or last if there is no such element.
 */
-static inline PetscErrorCode PetscSortedIntUpperBound(PetscInt *array, PetscCount first, PetscCount last, PetscInt value, PetscCount *upper)
+static inline PetscErrorCode PetscSortedIntUpperBound(const PetscInt *array, PetscCount first, PetscCount last, PetscInt value, PetscCount *upper)
 {
-  PetscCount it, step, count = last - first;
+  PetscCount count = last - first;
 
   PetscFunctionBegin;
   while (count > 0) {
-    it   = first;
-    step = count / 2;
-    it += step;
-    if (!(value < array[it])) {
-      first = ++it;
+    const PetscCount step = count / 2;
+    PetscCount       it   = first + step;
+
+    if (value < array[it]) {
+      count = step;
+    } else {
+      first = it + 1;
       count -= step + 1;
-    } else count = step;
+    }
   }
   *upper = first;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-#endif /* __VECIMPL_H */
+#define VEC_ASYNC_FN_NAME(Base) "Vec" Base "Async_Private_C"
+#define VecAsyncFnName(Base)    VEC_##Base##_ASYNC_FN_NAME
+
+#define VEC_Abs_ASYNC_FN_NAME             VEC_ASYNC_FN_NAME("Abs")
+#define VEC_AXPBY_ASYNC_FN_NAME           VEC_ASYNC_FN_NAME("AXPBY")
+#define VEC_AXPBYPCZ_ASYNC_FN_NAME        VEC_ASYNC_FN_NAME("AXPBYPCZ")
+#define VEC_AXPY_ASYNC_FN_NAME            VEC_ASYNC_FN_NAME("AXPY")
+#define VEC_AYPX_ASYNC_FN_NAME            VEC_ASYNC_FN_NAME("AYPX")
+#define VEC_Conjugate_ASYNC_FN_NAME       VEC_ASYNC_FN_NAME("Conjugate")
+#define VEC_Copy_ASYNC_FN_NAME            VEC_ASYNC_FN_NAME("Copy")
+#define VEC_Exp_ASYNC_FN_NAME             VEC_ASYNC_FN_NAME("Exp")
+#define VEC_Log_ASYNC_FN_NAME             VEC_ASYNC_FN_NAME("Log")
+#define VEC_MAXPY_ASYNC_FN_NAME           VEC_ASYNC_FN_NAME("MAXPY")
+#define VEC_PointwiseDivide_ASYNC_FN_NAME VEC_ASYNC_FN_NAME("PointwiseDivide")
+#define VEC_PointwiseMax_ASYNC_FN_NAME    VEC_ASYNC_FN_NAME("PointwiseMax")
+#define VEC_PointwiseMaxAbs_ASYNC_FN_NAME VEC_ASYNC_FN_NAME("PointwiseMaxAbs")
+#define VEC_PointwiseMin_ASYNC_FN_NAME    VEC_ASYNC_FN_NAME("PointwiseMin")
+#define VEC_PointwiseMult_ASYNC_FN_NAME   VEC_ASYNC_FN_NAME("PointwiseMult")
+#define VEC_Reciprocal_ASYNC_FN_NAME      VEC_ASYNC_FN_NAME("Reciprocal")
+#define VEC_Scale_ASYNC_FN_NAME           VEC_ASYNC_FN_NAME("Scale")
+#define VEC_Set_ASYNC_FN_NAME             VEC_ASYNC_FN_NAME("Set")
+#define VEC_Shift_ASYNC_FN_NAME           VEC_ASYNC_FN_NAME("Shift")
+#define VEC_SqrtAbs_ASYNC_FN_NAME         VEC_ASYNC_FN_NAME("SqrtAbs")
+#define VEC_Swap_ASYNC_FN_NAME            VEC_ASYNC_FN_NAME("Swap")
+#define VEC_WAXPY_ASYNC_FN_NAME           VEC_ASYNC_FN_NAME("WAXPY")
+
+PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode VecAbsAsync_Private(Vec, PetscDeviceContext);
+PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode VecAXPBYAsync_Private(Vec, PetscScalar, PetscScalar, Vec, PetscDeviceContext);
+PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode VecAXPBYPCZAsync_Private(Vec, PetscScalar, PetscScalar, PetscScalar, Vec, Vec, PetscDeviceContext);
+PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode VecAXPYAsync_Private(Vec, PetscScalar, Vec, PetscDeviceContext);
+PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode VecAYPXAsync_Private(Vec, PetscScalar, Vec, PetscDeviceContext);
+PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode VecConjugateAsync_Private(Vec, PetscDeviceContext);
+PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode VecCopyAsync_Private(Vec, Vec, PetscDeviceContext);
+PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode VecExpAsync_Private(Vec, PetscDeviceContext);
+PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode VecLogAsync_Private(Vec, PetscDeviceContext);
+PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode VecMAXPYAsync_Private(Vec, PetscInt, const PetscScalar *, Vec[], PetscDeviceContext);
+PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode VecPointwiseDivideAsync_Private(Vec, Vec, Vec, PetscDeviceContext);
+PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode VecPointwiseMaxAsync_Private(Vec, Vec, Vec, PetscDeviceContext);
+PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode VecPointwiseMaxAbsAsync_Private(Vec, Vec, Vec, PetscDeviceContext);
+PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode VecPointwiseMinAsync_Private(Vec, Vec, Vec, PetscDeviceContext);
+PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode VecPointwiseMultAsync_Private(Vec, Vec, Vec, PetscDeviceContext);
+PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode VecReciprocalAsync_Private(Vec, PetscDeviceContext);
+PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode VecScaleAsync_Private(Vec, PetscScalar, PetscDeviceContext);
+PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode VecSetAsync_Private(Vec, PetscScalar, PetscDeviceContext);
+PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode VecShiftAsync_Private(Vec, PetscScalar, PetscDeviceContext);
+PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode VecSqrtAbsAsync_Private(Vec, PetscDeviceContext);
+PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode VecSwapAsync_Private(Vec, Vec, PetscDeviceContext);
+PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode VecWAXPYAsync_Private(Vec, PetscScalar, Vec, Vec, PetscDeviceContext);
+
+#define VecMethodDispatch(v, dctx, async_name, name, async_arg_types, ...) \
+  do { \
+    PetscErrorCode(*_8_f) async_arg_types = NULL; \
+    if (dctx) PetscCall(PetscObjectQueryFunction((PetscObject)(v), async_name, &_8_f)); \
+    if (_8_f) { \
+      PetscCall((*_8_f)(v, __VA_ARGS__, dctx)); \
+    } else { \
+      PetscUseTypeMethod(v, name, __VA_ARGS__); \
+    } \
+  } while (0)

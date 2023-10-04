@@ -4,14 +4,14 @@
 /*@
   SNESVIComputeMeritFunction - Evaluates the merit function for the mixed complementarity problem.
 
-   Input Parameter:
-.  phi - the `Vec` holding the evaluation of the semismooth function
+  Input Parameter:
+. phi - the `Vec` holding the evaluation of the semismooth function
 
-   Output Parameters:
-+  merit - the merit function 1/2 ||phi||^2
--  phinorm -  the two-norm of the vector, ||phi||
+  Output Parameters:
++ merit   - the merit function 1/2 ||phi||^2
+- phinorm - the two-norm of the vector, ||phi||
 
-   Level: developer
+  Level: developer
 
 .seealso: `SNESVINEWTONSSLS`, `SNESVIComputeFunction()`
 @*/
@@ -36,18 +36,18 @@ static inline PetscScalar DPhi(PetscScalar a, PetscScalar b)
 }
 
 /*@
-   SNESVIComputeFunction - Provides the function that reformulates a system of nonlinear equations in mixed complementarity form to a system of nonlinear
-   equations in semismooth form.
+  SNESVIComputeFunction - Provides the function that reformulates a system of nonlinear equations in mixed complementarity form to a system of nonlinear
+  equations in semismooth form.
 
-   Input Parameters:
-+  snes - the SNES context
-.  X - current iterate
--  functx - user defined function context
+  Input Parameters:
++ snes   - the SNES context
+. X      - current iterate
+- functx - user defined function context
 
-   Output Parameter:
-.  phi - the evaluation of Semismooth function at X
+  Output Parameter:
+. phi - the evaluation of Semismooth function at X
 
-   Level: developer
+  Level: developer
 
 .seealso: `SNESVINEWTONSSLS`, `SNESVIComputeMeritFunction()`
 @*/
@@ -94,7 +94,7 @@ PetscErrorCode SNESVIComputeFunction(SNES snes, Vec X, Vec phi, void *functx)
    SNESVIComputeBsubdifferentialVectors - Computes the diagonal shift (Da) and row scaling (Db) vectors needed for the
                                           the semismooth jacobian.
 */
-PetscErrorCode SNESVIComputeBsubdifferentialVectors(SNES snes, Vec X, Vec F, Mat jac, Vec Da, Vec Db)
+static PetscErrorCode SNESVIComputeBsubdifferentialVectors(SNES snes, Vec X, Vec F, Mat jac, Vec Da, Vec Db)
 {
   PetscScalar *l, *u, *x, *f, *da, *db, da1, da2, db1, db2;
   PetscInt     i, nlocal;
@@ -158,7 +158,7 @@ PetscErrorCode SNESVIComputeBsubdifferentialVectors(SNES snes, Vec X, Vec F, Mat
          Da is the diagonal perturbation matrix stored as a vector
    and   jacfun is the jacobian of the original nonlinear function.
 */
-PetscErrorCode SNESVIComputeJacobian(Mat jac, Mat jac_pre, Vec Da, Vec Db)
+static PetscErrorCode SNESVIComputeJacobian(Mat jac, Mat jac_pre, Vec Da, Vec Db)
 {
   /* Do row scaling  and add diagonal perturbation */
   PetscFunctionBegin;
@@ -171,45 +171,29 @@ PetscErrorCode SNESVIComputeJacobian(Mat jac, Mat jac_pre, Vec Da, Vec Db)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+// PetscClangLinter pragma disable: -fdoc-sowing-chars
 /*
-   SNESVIComputeMeritFunctionGradient - Computes the gradient of the merit function psi.
+  SNESVIComputeMeritFunctionGradient - Computes the gradient of the merit function psi.
 
-   Input Parameters:
+  Input Parameters:
    phi - semismooth function.
    H   - semismooth jacobian
 
-   Output Parameter:
+  Output Parameter:
    dpsi - merit function gradient
 
-   Note:
+  Note:
   The merit function gradient is computed as follows
-        dpsi = H^T*phi
+  dpsi = H^T*phi
 */
-PetscErrorCode SNESVIComputeMeritFunctionGradient(Mat H, Vec phi, Vec dpsi)
+static PetscErrorCode SNESVIComputeMeritFunctionGradient(Mat H, Vec phi, Vec dpsi)
 {
   PetscFunctionBegin;
   PetscCall(MatMultTranspose(H, phi, dpsi));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*
-   SNESSolve_VINEWTONSSLS - Solves the complementarity problem with a semismooth Newton
-   method using a line search.
-
-   Input Parameter:
-.  snes - the SNES context
-
-   Application Interface Routine: SNESSolve()
-
-   Note:
-   This implements essentially a semismooth Newton method with a
-   line search. The default line search does not do any line search
-   but rather takes a full Newton step.
-
-   Developer Note: the code in this file should be slightly modified so that this routine need not exist and the SNESSolve_NEWTONLS() routine is called directly with the appropriate wrapped function and Jacobian evaluations
-
-*/
-PetscErrorCode SNESSolve_VINEWTONSSLS(SNES snes)
+static PetscErrorCode SNESSolve_VINEWTONSSLS(SNES snes)
 {
   SNES_VINEWTONSSLS   *vi = (SNES_VINEWTONSSLS *)snes->data;
   PetscInt             maxits, i, lits;
@@ -259,10 +243,10 @@ PetscErrorCode SNESSolve_VINEWTONSSLS(SNES snes)
   snes->norm = vi->phinorm;
   PetscCall(PetscObjectSAWsGrantAccess((PetscObject)snes));
   PetscCall(SNESLogConvergenceHistory(snes, vi->phinorm, 0));
-  PetscCall(SNESMonitor(snes, 0, vi->phinorm));
 
   /* test convergence */
-  PetscUseTypeMethod(snes, converged, 0, 0.0, 0.0, vi->phinorm, &snes->reason, snes->cnvP);
+  PetscCall(SNESConverged(snes, 0, 0.0, 0.0, vi->phinorm));
+  PetscCall(SNESMonitor(snes, 0, vi->phinorm));
   if (snes->reason) {
     sdm->ops->computefunction = vi->computeuserfunction;
     PetscFunctionReturn(PETSC_SUCCESS);
@@ -345,35 +329,17 @@ PetscErrorCode SNESSolve_VINEWTONSSLS(SNES snes)
     snes->ynorm = ynorm;
     PetscCall(PetscObjectSAWsGrantAccess((PetscObject)snes));
     PetscCall(SNESLogConvergenceHistory(snes, snes->norm, lits));
-    PetscCall(SNESMonitor(snes, snes->iter, snes->norm));
     /* Test for convergence, xnorm = || X || */
     if (snes->ops->converged != SNESConvergedSkip) PetscCall(VecNorm(X, NORM_2, &xnorm));
-    PetscUseTypeMethod(snes, converged, snes->iter, xnorm, ynorm, vi->phinorm, &snes->reason, snes->cnvP);
+    PetscCall(SNESConverged(snes, snes->iter, xnorm, ynorm, vi->phinorm));
+    PetscCall(SNESMonitor(snes, snes->iter, snes->norm));
     if (snes->reason) break;
-  }
-  if (i == maxits) {
-    PetscCall(PetscInfo(snes, "Maximum number of iterations has been reached: %" PetscInt_FMT "\n", maxits));
-    if (!snes->reason) snes->reason = SNES_DIVERGED_MAX_IT;
   }
   sdm->ops->computefunction = vi->computeuserfunction;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*
-   SNESSetUp_VINEWTONSSLS - Sets up the internal data structures for the later use
-   of the SNES nonlinear solver.
-
-   Input Parameter:
-.  snes - the SNES context
-
-   Application Interface Routine: SNESSetUp()
-
-   Note:
-   For basic use of the SNES solvers, the user need not explicitly call
-   SNESSetUp(), since these actions will automatically occur during
-   the call to SNESSolve().
- */
-PetscErrorCode SNESSetUp_VINEWTONSSLS(SNES snes)
+static PetscErrorCode SNESSetUp_VINEWTONSSLS(SNES snes)
 {
   SNES_VINEWTONSSLS *vi = (SNES_VINEWTONSSLS *)snes->data;
 
@@ -388,7 +354,7 @@ PetscErrorCode SNESSetUp_VINEWTONSSLS(SNES snes)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode SNESReset_VINEWTONSSLS(SNES snes)
+static PetscErrorCode SNESReset_VINEWTONSSLS(SNES snes)
 {
   SNES_VINEWTONSSLS *vi = (SNES_VINEWTONSSLS *)snes->data;
 
@@ -403,14 +369,6 @@ PetscErrorCode SNESReset_VINEWTONSSLS(SNES snes)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*
-   SNESSetFromOptions_VINEWTONSSLS - Sets various parameters for the SNESVI method.
-
-   Input Parameter:
-.  snes - the SNES context
-
-   Application Interface Routine: SNESSetFromOptions()
-*/
 static PetscErrorCode SNESSetFromOptions_VINEWTONSSLS(SNES snes, PetscOptionItems *PetscOptionsObject)
 {
   PetscFunctionBegin;

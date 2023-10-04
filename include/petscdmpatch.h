@@ -1,15 +1,14 @@
 /*
   DMPatch, for domains covered by sets of patches.
 */
-#ifndef PETSCDMPATCH_H
-#define PETSCDMPATCH_H
+#pragma once
 
 #include <petscdm.h>
 
 /* SUBMANSEC = DMPatch */
 
 /*S
-  DMPATCH - DM object that encapsulates a domain divided into many patches
+  DMPATCH - `DM` object that encapsulates a domain divided into many patches
 
   Level: intermediate
 
@@ -39,5 +38,3 @@ PETSC_EXTERN PetscErrorCode DMPatchCreateGrid(MPI_Comm, PetscInt, MatStencil, Ma
  - Need routine for viewing a full global vector
  - Jed handles solver
 */
-
-#endif

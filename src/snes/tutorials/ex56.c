@@ -191,20 +191,18 @@ PetscErrorCode zero(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt 
 
 int main(int argc, char **args)
 {
-  Mat         Amat;
-  SNES        snes;
-  KSP         ksp;
-  MPI_Comm    comm;
-  PetscMPIInt rank;
-#if defined(PETSC_USE_LOG)
+  Mat           Amat;
+  SNES          snes;
+  KSP           ksp;
+  MPI_Comm      comm;
+  PetscMPIInt   rank;
   PetscLogStage stage[17];
-#endif
-  PetscBool test_nonzero_cols = PETSC_FALSE, use_nearnullspace = PETSC_TRUE, attach_nearnullspace = PETSC_FALSE;
-  Vec       xx, bb;
-  PetscInt  iter, i, N, dim = 3, max_conv_its, sizes[7], run_type = 1, Ncomp = dim;
-  DM        dm;
-  PetscBool flg;
-  PetscReal Lx, mdisp[10], err[10];
+  PetscBool     test_nonzero_cols = PETSC_FALSE, use_nearnullspace = PETSC_TRUE, attach_nearnullspace = PETSC_FALSE;
+  Vec           xx, bb;
+  PetscInt      iter, i, N, dim = 3, max_conv_its, sizes[7], run_type = 1, Ncomp = dim;
+  DM            dm;
+  PetscBool     flg;
+  PetscReal     Lx, mdisp[10], err[10];
   PetscFunctionBeginUser;
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
@@ -457,14 +455,21 @@ int main(int argc, char **args)
   testset:
     nsize: 4
     requires: !single
-    args: -dm_plex_dim 3 -dm_plex_simplex 0 -dm_plex_box_lower 0,0,0 -dm_plex_box_upper 1,1,1 -dm_plex_box_faces 2,2,1 -petscpartitioner_simple_process_grid 2,2,1 -max_conv_its 2 -petscspace_degree 2 -snes_max_it 1 -ksp_max_it 100 -ksp_type cg -ksp_rtol 1.e-10 -ksp_norm_type unpreconditioned -pc_type gamg -pc_gamg_coarse_eq_limit 10 -pc_gamg_reuse_interpolation true -pc_gamg_aggressive_coarsening 1 -pc_gamg_threshold 0.001 -ksp_converged_reason  -use_mat_nearnullspace true -mg_levels_ksp_max_it 2 -mg_levels_ksp_type chebyshev -mg_levels_ksp_chebyshev_esteig 0,0.2,0,1.1 -mg_levels_pc_type jacobi -petscpartitioner_type simple -my_dm_view -snes_lag_jacobian -2 -snes_type ksponly
+    args: -dm_plex_dim 3 -dm_plex_simplex 0 -dm_plex_box_lower 0,0,0 -dm_plex_box_upper 1,1,1 -dm_plex_box_faces 2,2,1 -petscpartitioner_simple_process_grid 2,2,1 -petscspace_degree 2 -snes_max_it 1 -ksp_max_it 100 -ksp_type cg -ksp_rtol 1.e-10 -ksp_norm_type unpreconditioned -pc_type gamg -pc_gamg_coarse_eq_limit 10 -pc_gamg_reuse_interpolation true -pc_gamg_aggressive_coarsening 1 -pc_gamg_threshold 0.001 -ksp_converged_reason  -use_mat_nearnullspace true -mg_levels_ksp_max_it 2 -mg_levels_ksp_type chebyshev -mg_levels_ksp_chebyshev_esteig 0,0.2,0,1.1 -mg_levels_pc_type jacobi -petscpartitioner_type simple -my_dm_view -snes_lag_jacobian -2 -snes_type ksponly -pc_gamg_aggressive_square_graph -pc_gamg_mis_k_minimum_degree_ordering true
     timeoutfactor: 2
     test:
       suffix: 0
-      args: -run_type 1
+      args: -run_type 1 -max_conv_its 3
     test:
       suffix: 1
-      args: -run_type 2
+      args: -run_type 2 -max_conv_its 2
+
+  test:
+    nsize: 1
+    requires: !single
+    suffix: 2
+    args: -dm_plex_dim 3 -dm_plex_simplex 0 -dm_plex_box_lower 0,0,0 -dm_plex_box_upper 1,1,1 -dm_plex_box_faces 2,2,1 -petscpartitioner_simple_process_grid 2,2,1 -max_conv_its 2 -petscspace_degree 2 -snes_max_it 1 -ksp_type cg -ksp_norm_type unpreconditioned -pc_type gamg -pc_gamg_coarse_eq_limit 10 -pc_gamg_aggressive_coarsening 1 -ksp_converged_reason -use_mat_nearnullspace true -my_dm_view -snes_type ksponly -pc_gamg_aggressive_square_graph
+    timeoutfactor: 2
 
   # HYPRE PtAP broken with complex numbers
   test:
@@ -542,7 +547,7 @@ int main(int argc, char **args)
   testset:
     nsize: 4
     requires: !single
-    args: -dm_plex_dim 3 -dm_plex_simplex 0 -dm_plex_box_lower 0,0,0 -dm_plex_box_upper 1,1,1 -run_type 1 -dm_plex_box_faces 2,2,1 -petscpartitioner_simple_process_grid 2,2,1 -max_conv_its 2 -petscspace_degree 2 -snes_max_it 2 -ksp_max_it 100 -ksp_type cg -ksp_rtol 1.e-10 -ksp_norm_type unpreconditioned -snes_rtol 1.e-10 -pc_type gamg -pc_gamg_esteig_ksp_max_it 10 -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -pc_gamg_coarse_eq_limit 10 -pc_gamg_reuse_interpolation true -pc_gamg_aggressive_coarsening 1 -pc_gamg_threshold 0.05 -pc_gamg_threshold_scale .0 -use_mat_nearnullspace true -mg_levels_ksp_max_it 2 -mg_levels_ksp_type chebyshev -mg_levels_ksp_chebyshev_esteig 0,0.05,0,1.05 -mg_levels_pc_type jacobi -ksp_monitor_short -ksp_converged_reason  -snes_monitor_short -dm_view -petscpartitioner_type simple -pc_gamg_process_eq_limit 20
+    args: -dm_plex_dim 3 -dm_plex_simplex 0 -dm_plex_box_lower 0,0,0 -dm_plex_box_upper 1,1,1 -run_type 1 -dm_plex_box_faces 2,2,1 -petscpartitioner_simple_process_grid 2,2,1 -max_conv_its 2 -petscspace_degree 2 -snes_max_it 2 -ksp_max_it 100 -ksp_type cg -ksp_rtol 1.e-10 -ksp_norm_type unpreconditioned -snes_rtol 1.e-10 -pc_type gamg -pc_gamg_esteig_ksp_max_it 10 -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -pc_gamg_coarse_eq_limit 10 -pc_gamg_reuse_interpolation true -pc_gamg_aggressive_coarsening 1 -pc_gamg_threshold 0.05 -pc_gamg_threshold_scale .0 -use_mat_nearnullspace true -mg_levels_ksp_max_it 2 -mg_levels_ksp_type chebyshev -mg_levels_ksp_chebyshev_esteig 0,0.05,0,1.05 -mg_levels_pc_type jacobi -ksp_monitor_short -ksp_converged_reason  -snes_monitor_short -dm_view -petscpartitioner_type simple -pc_gamg_process_eq_limit 20 -pc_gamg_coarse_eq_limit 40
     output_file: output/ex56_cuda.out
 
     test:

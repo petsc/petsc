@@ -2,15 +2,18 @@
 #include <petscts.h>
 #include <petscdraw.h>
 
-/*
-   TSMonitorLGCtxDestroy - Destroys  line graph contexts that where created with TSMonitorLGCtxNetworkCreate().
+/*@C
+  TSMonitorLGCtxNetworkDestroy - Destroys  line graph contexts that where created with `TSMonitorLGCtxNetworkCreate()`.
 
-   Collective
+  Collective
 
-   Input Parameter:
-.  ctx - the monitor context
+  Input Parameter:
+. ctx - the monitor context
 
-*/
+  Level: intermediate
+
+.seealso: [](ch_ts), `TS`, `TSMonitorLGCtxNetworkSolution()`
+@*/
 PetscErrorCode TSMonitorLGCtxNetworkDestroy(TSMonitorLGCtxNetwork *ctx)
 {
   PetscInt i;
@@ -81,27 +84,28 @@ PetscErrorCode TSMonitorLGCtxNetworkCreate(TS ts, const char host[], const char 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*
-   TSMonitorLGCtxNetworkSolution - Monitors progress of the `TS` solvers for a `DMNETWORK` solution with one window for each vertex and each edge
+/*@C
+  TSMonitorLGCtxNetworkSolution - Monitors progress of the `TS` solvers for a `DMNETWORK` solution with one window for each vertex and each edge
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  ts - the `TS` context
-.  step - current time-step
-.  ptime - current time
-.  u - current solution
--  dctx - the `TSMonitorLGCtxNetwork` object that contains all the options for the monitoring, this is created with `TSMonitorLGCtxCreateNetwork()`
+  Input Parameters:
++ ts    - the `TS` context
+. step  - current time-step
+. ptime - current time
+. u     - current solution
+- dctx  - the `TSMonitorLGCtxNetwork` object that contains all the options for the monitoring, this is created with `TSMonitorLGCtxCreateNetwork()`
 
-   Options Database Key:
-.   -ts_monitor_lg_solution_variables
+  Options Database Key:
+. -ts_monitor_lg_solution_variables - monitor solution variables
 
-   Level: intermediate
+  Level: intermediate
 
-   Note:
-    Each process in a parallel run displays its component solutions in a separate window
+  Note:
+  Each process in a parallel run displays its component solutions in a separate graphics window
 
-*/
+.seealso: [](ch_ts), `TS`, `TSMonitorLGCtxNetworkDestroy()`
+@*/
 PetscErrorCode TSMonitorLGCtxNetworkSolution(TS ts, PetscInt step, PetscReal ptime, Vec u, void *dctx)
 {
   TSMonitorLGCtxNetwork ctx = (TSMonitorLGCtxNetwork)dctx;

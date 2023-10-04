@@ -1,3 +1,6 @@
+#pragma once
+
+#include <petscmat.h>
 
 typedef struct {
   Mat A;

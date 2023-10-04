@@ -19,15 +19,16 @@ typedef struct {
   unsigned  p_flag; /* planner flags, FFTW_ESTIMATE,FFTW_MEASURE, FFTW_PATIENT, FFTW_EXHAUSTIVE */
 } Mat_USFFT;
 
-PetscErrorCode MatApply_USFFT_Private(Mat A, fftw_plan *plan, int direction, Vec x, Vec y)
-{
 #if 0
+static PetscErrorCode MatApply_USFFT_Private(Mat A, fftw_plan *plan, int direction, Vec x, Vec y)
+{
+  #if 0
   PetscScalar    *r_array, *y_array;
   Mat_USFFT* = (Mat_USFFT*)(A->data);
-#endif
+  #endif
 
   PetscFunctionBegin;
-#if 0
+  #if 0
   /* resample x to usfft->resample */
   PetscCall(MatResample_USFFT_Private(A, x));
 
@@ -36,12 +37,12 @@ PetscErrorCode MatApply_USFFT_Private(Mat A, fftw_plan *plan, int direction, Vec
   PetscCall(VecGetArray(y,&y_array));
   if (!*plan) { /* create a plan then execute it*/
     if (usfft->dof == 1) {
-  #if defined(PETSC_DEBUG_USFFT)
+    #if defined(PETSC_DEBUG_USFFT)
       PetscCall(PetscPrintf(PetscObjectComm((PetscObject)A), "direction = %d, usfft->ndim = %d\n", direction, usfft->ndim));
       for (int ii = 0; ii < usfft->ndim; ++ii) {
         PetscCall(PetscPrintf(PetscObjectComm((PetscObject)A), "usfft->outdim[%d] = %d\n", ii, usfft->outdim[ii]));
       }
-  #endif
+    #endif
 
       switch (usfft->dim) {
       case 1:
@@ -73,11 +74,10 @@ PetscErrorCode MatApply_USFFT_Private(Mat A, fftw_plan *plan, int direction, Vec
   }
   PetscCall(VecRestoreArray(y,&y_array));
   PetscCall(VecRestoreArray(x,&x_array));
-#endif
+  #endif
   PetscFunctionReturn(PETSC_SUCCESS);
 } /* MatApply_USFFT_Private() */
 
-#if 0
 PetscErrorCode MatUSFFT_ProjectOnBattleLemarie_Private(Vec x,double *r)
 /* Project onto the Battle-Lemarie function centered around r */
 {

@@ -8,8 +8,8 @@ class Configure(config.package.Package):
     #self.version                = '4.0.0'
     #self.versionname            = 'MFEM_VERSION_STRING'
     #self.versioninclude         = 'mfem/config.hpp'
-    self.gitcommit              = 'v4.4' # tags do not include subminor
-    self.download               = ['git://https://github.com/mfem/mfem.git']
+    self.gitcommit              = 'v4.5.2'
+    self.download               = ['git://https://github.com/mfem/mfem.git','https://github.com/mfem/mfem/archive/'+self.gitcommit+'.tar.gz']
     self.linkedbypetsc          = 0
     self.downloadonWindows      = 1
     self.buildLanguages         = ['Cxx']
@@ -32,6 +32,7 @@ class Configure(config.package.Package):
     self.slepc  = framework.require('config.packages.slepc',self)
     self.ceed   = framework.require('config.packages.libceed',self)
     self.cuda   = framework.require('config.packages.cuda',self)
+    self.hip    = framework.require('config.packages.hip',self)
     self.openmp = framework.require('config.packages.openmp',self)
     self.deps   = [self.mpi,self.hypre,self.metis]
     self.odeps  = [self.slepc,self.ceed,self.cuda,self.openmp]
@@ -49,6 +50,7 @@ class Configure(config.package.Package):
 
 #  def postProcess(self):
     import os
+    import re
 
     buildDir = os.path.join(self.packageDir,'petsc-build')
     configDir = os.path.join(buildDir,'config')
@@ -69,13 +71,15 @@ class Configure(config.package.Package):
     self.pushLanguage('Cxx')
     cxx = self.getCompiler()
     cxxflags = self.getCompilerFlags()
+    self.popLanguage()
     cxxflags = cxxflags.replace('-fvisibility=hidden','') # MFEM is currently broken with -fvisibility=hidden
     # MFEM uses the macro MFEM_BUILD_DIR that builds a path by combining the directory plus other stuff but if the
     # directory name contains  "-linux" this is converted by CPP to the value 1 since that is defined in Linux header files
     # unless the -std=C++11 or -std=C++14 flag is used; we want to support MFEM without this flag
     if '-linux' in self.packageDir:
       cxxflags += ' -Dlinux=linux'
-    self.popLanguage()
+    # MFEM adds C++ standard flags automatically
+    cxxflags = re.sub(r'-std=([^\s]+) ','',cxxflags)
     if 'download-mfem-ghv-cxx' in self.argDB and self.argDB['download-mfem-ghv-cxx']:
       ghv = self.argDB['download-mfem-ghv-cxx']
     else:
@@ -97,7 +101,8 @@ class Configure(config.package.Package):
       g.write('PREFIX = '+prefix+'\n')
       g.write('MPICXX = '+cxx+'\n')
       g.write('export GHV_CXX = '+ghv+'\n')
-      g.write('CXXFLAGS = '+cxxflags+'\n')
+      if not self.hip.found: #MFEM uses hipcc as compiler for everything
+        g.write('CXXFLAGS = '+cxxflags+'\n')
       if self.argDB['with-shared-libraries']:
         g.write('SHARED = YES\n')
         g.write('STATIC = NO\n')
@@ -170,11 +175,22 @@ class Configure(config.package.Package):
         petscNvcc = self.getCompiler()
         cudaFlags = self.getCompilerFlags()
         self.popLanguage()
+        cudaFlags = re.sub(r'-std=([^\s]+) ','',cudaFlags)
         g.write('MFEM_USE_CUDA = YES\n')
         g.write('CUDA_CXX = '+petscNvcc+'\n')
-        if hasattr(self.cuda, 'cudaArch'):
-          g.write(self.cuda.cmakeArchProperty()+'\n')
         g.write('CXXFLAGS := '+cudaFlags+' $(addprefix -Xcompiler ,$(CXXFLAGS))\n')
+      if self.hip.found:
+        self.pushLanguage('HIP')
+        hipcc = self.getCompiler()
+        hipFlags = self.getCompilerFlags()
+        self.popLanguage()
+        hipFlags = re.sub(r'-std=([^\s]+) ','',hipFlags)
+        g.write('MFEM_USE_HIP = YES\n')
+        g.write('HIP_CXX = '+hipcc+'\n')
+        hipFlags = hipFlags.replace('-fvisibility=hidden','')
+        g.write('HIP_FLAGS = '+hipFlags+'\n')
+        g.write('MPI_OPT = '+self.mpi.includepaths+'\n')
+        g.write('MPI_LIB = '+self.mpi.libpaths+' '+self.mpi.mpilibs+'\n')
       g.close()
 
     self.addDefine('HAVE_MFEM',1)

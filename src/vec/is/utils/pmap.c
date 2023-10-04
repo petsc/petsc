@@ -74,10 +74,10 @@ PetscErrorCode PetscLayoutCreate(MPI_Comm comm, PetscLayout *map)
   Collective
 
   Input Parameters:
-+ comm  - the MPI communicator
-. n     - the local size (or `PETSC_DECIDE`)
-. N     - the global size (or `PETSC_DECIDE`)
-- bs    - the block size (or `PETSC_DECIDE`)
++ comm - the MPI communicator
+. n    - the local size (or `PETSC_DECIDE`)
+. N    - the global size (or `PETSC_DECIDE`)
+- bs   - the block size (or `PETSC_DECIDE`)
 
   Output Parameter:
 . map - the new `PetscLayout`
@@ -85,13 +85,13 @@ PetscErrorCode PetscLayoutCreate(MPI_Comm comm, PetscLayout *map)
   Level: advanced
 
   Note:
-$ PetscLayoutCreateFromSizes(comm,n,N,bs,&layout);
+$ PetscLayoutCreateFromSizes(comm, n, N, bs, &layout);
   is a shorthand for
 .vb
-  PetscLayoutCreate(comm,&layout);
-  PetscLayoutSetLocalSize(layout,n);
-  PetscLayoutSetSize(layout,N);
-  PetscLayoutSetBlockSize(layout,bs);
+  PetscLayoutCreate(comm, &layout);
+  PetscLayoutSetLocalSize(layout, n);
+  PetscLayoutSetSize(layout, N);
+  PetscLayoutSetBlockSize(layout, bs);
   PetscLayoutSetUp(layout);
 .ve
 
@@ -199,7 +199,7 @@ PetscErrorCode PetscLayoutCreateFromRanges(MPI_Comm comm, const PetscInt range[]
 
 /*@
   PetscLayoutSetUp - given a map where you have set either the global or local
-                     size sets up the map so that it may be used.
+  size sets up the map so that it may be used.
 
   Collective
 
@@ -209,7 +209,7 @@ PetscErrorCode PetscLayoutCreateFromRanges(MPI_Comm comm, const PetscInt range[]
   Level: developer
 
   Notes:
-    Typical calling sequence
+  Typical calling sequence
 .vb
   PetscLayoutCreate(MPI_Comm,PetscLayout *);
   PetscLayoutSetBlockSize(PetscLayout,1);
@@ -276,7 +276,7 @@ PetscErrorCode PetscLayoutSetUp(PetscLayout map)
   Level: developer
 
   Note:
-    `PetscLayoutSetUp()` does not need to be called on the resulting `PetscLayout`
+  `PetscLayoutSetUp()` does not need to be called on the resulting `PetscLayout`
 
 .seealso: [PetscLayout](sec_matlayout), `PetscLayoutCreate()`, `PetscLayoutDestroy()`, `PetscLayoutSetUp()`, `PetscLayoutReference()`
 @*/
@@ -331,7 +331,7 @@ PetscErrorCode PetscLayoutReference(PetscLayout in, PetscLayout *out)
   Collective
 
   Input Parameters:
-+ in - input `PetscLayout`
++ in   - input `PetscLayout`
 - ltog - the local to global mapping
 
   Level: developer
@@ -365,7 +365,7 @@ PetscErrorCode PetscLayoutSetISLocalToGlobalMapping(PetscLayout in, ISLocalToGlo
 
   Input Parameters:
 + map - pointer to the map
-- n - the local size
+- n   - the local size
 
   Level: developer
 
@@ -381,22 +381,22 @@ PetscErrorCode PetscLayoutSetLocalSize(PetscLayout map, PetscInt n)
 }
 
 /*@
-     PetscLayoutGetLocalSize - Gets the local size for a `PetscLayout` object.
+  PetscLayoutGetLocalSize - Gets the local size for a `PetscLayout` object.
 
-    Not Collective
+  Not Collective
 
-   Input Parameter:
-.    map - pointer to the map
+  Input Parameter:
+. map - pointer to the map
 
-   Output Parameter:
-.    n - the local size
+  Output Parameter:
+. n - the local size
 
-   Level: developer
+  Level: developer
 
-    Note:
-    Call this after the call to `PetscLayoutSetUp()`
+  Note:
+  Call this after the call to `PetscLayoutSetUp()`
 
-.seealso: [PetscLayout](sec_matlayout), `PetscLayoutCreate()`, `PetscLayoutSetSize()`, `PetscLayoutGetSize()`, `PetscLayoutGetLocalSize()`, `PetscLayoutSetUp()`
+.seealso: [PetscLayout](sec_matlayout), `PetscLayoutCreate()`, `PetscLayoutSetSize()`, `PetscLayoutGetSize()`, `PetscLayoutSetUp()`
           `PetscLayoutGetRange()`, `PetscLayoutGetRanges()`, `PetscLayoutSetBlockSize()`, `PetscLayoutGetBlockSize()`
 @*/
 PetscErrorCode PetscLayoutGetLocalSize(PetscLayout map, PetscInt *n)
@@ -413,7 +413,7 @@ PetscErrorCode PetscLayoutGetLocalSize(PetscLayout map, PetscInt *n)
 
   Input Parameters:
 + map - pointer to the map
-- n - the global size
+- n   - the global size
 
   Level: developer
 
@@ -460,7 +460,7 @@ PetscErrorCode PetscLayoutGetSize(PetscLayout map, PetscInt *n)
 
   Input Parameters:
 + map - pointer to the map
-- bs - the size
+- bs  - the size
 
   Level: developer
 
@@ -526,7 +526,7 @@ PetscErrorCode PetscLayoutGetBlockSize(PetscLayout map, PetscInt *bs)
   Call this after the call to `PetscLayoutSetUp()`
 
 .seealso: [PetscLayout](sec_matlayout), `PetscLayoutCreate()`, `PetscLayoutSetLocalSize()`, `PetscLayoutGetLocalSize()`, `PetscLayoutSetSize()`,
-          `PetscLayoutGetSize()`, `PetscLayoutGetRanges()`, `PetscLayoutSetBlockSize()`, `PetscLayoutGetSize()`, `PetscLayoutSetUp()`
+          `PetscLayoutGetSize()`, `PetscLayoutGetRanges()`, `PetscLayoutSetBlockSize()`, `PetscLayoutSetUp()`
 @*/
 PetscErrorCode PetscLayoutGetRange(PetscLayout map, PetscInt *rstart, PetscInt *rend)
 {
@@ -537,27 +537,27 @@ PetscErrorCode PetscLayoutGetRange(PetscLayout map, PetscInt *rstart, PetscInt *
 }
 
 /*@C
-     PetscLayoutGetRanges - gets the ranges of values owned by all processes
+  PetscLayoutGetRanges - gets the ranges of values owned by all processes
 
-    Not Collective
+  Not Collective
 
-   Input Parameter:
-.    map - pointer to the map
+  Input Parameter:
+. map - pointer to the map
 
-   Output Parameter:
-.    range - start of each processors range of indices (the final entry is one more than the
+  Output Parameter:
+. range - start of each processors range of indices (the final entry is one more than the
              last index on the last process)
 
-   Level: developer
+  Level: developer
 
-    Note:
-    Call this after the call to `PetscLayoutSetUp()`
+  Note:
+  Call this after the call to `PetscLayoutSetUp()`
 
-    Fortran Note:
-    In Fortran, use PetscLayoutGetRangesF90()
+  Fortran Notes:
+  In Fortran, use PetscLayoutGetRangesF90()
 
 .seealso: [PetscLayout](sec_matlayout), `PetscLayoutCreate()`, `PetscLayoutSetLocalSize()`, `PetscLayoutGetLocalSize()`, `PetscLayoutSetSize()`,
-          `PetscLayoutGetSize()`, `PetscLayoutGetRange()`, `PetscLayoutSetBlockSize()`, `PetscLayoutGetSize()`, `PetscLayoutSetUp()`
+          `PetscLayoutGetSize()`, `PetscLayoutGetRange()`, `PetscLayoutSetBlockSize()`, `PetscLayoutSetUp()`
 @*/
 PetscErrorCode PetscLayoutGetRanges(PetscLayout map, const PetscInt *range[])
 {

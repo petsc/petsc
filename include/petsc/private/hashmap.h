@@ -1,5 +1,4 @@
-#ifndef PETSC_HASHMAP_H
-#define PETSC_HASHMAP_H
+#pragma once
 
 #include <petsc/private/hashtable.h>
 
@@ -69,7 +68,7 @@ M*/
   static inline PETSC_UNUSED PetscErrorCode Petsc##HashT##Create(Petsc##HashT *ht) \
   { \
     PetscFunctionBegin; \
-    PetscValidPointer(ht, 1); \
+    PetscAssertPointer(ht, 1); \
     *ht = kh_init(HashT); \
     PetscHashAssert(*ht != NULL); \
     PetscFunctionReturn(PETSC_SUCCESS); \
@@ -79,7 +78,7 @@ M*/
   { \
     PetscFunctionBegin; \
     PetscAssert(n >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Hash table size %" PetscInt_FMT " must be >= 0", n); \
-    PetscValidPointer(ht, 2); \
+    PetscAssertPointer(ht, 2); \
     PetscCall(Petsc##HashT##Create(ht)); \
     if (n) PetscCall(Petsc##HashT##Resize(*ht, n)); \
     PetscFunctionReturn(PETSC_SUCCESS); \
@@ -88,7 +87,7 @@ M*/
   static inline PETSC_UNUSED PetscErrorCode Petsc##HashT##Destroy(Petsc##HashT *ht) \
   { \
     PetscFunctionBegin; \
-    PetscValidPointer(ht, 1); \
+    PetscAssertPointer(ht, 1); \
     if (!*ht) PetscFunctionReturn(PETSC_SUCCESS); \
     kh_destroy(HashT, *ht); \
     *ht = NULL; \
@@ -98,7 +97,7 @@ M*/
   static inline PETSC_UNUSED PetscErrorCode Petsc##HashT##Reset(Petsc##HashT ht) \
   { \
     PetscFunctionBegin; \
-    PetscValidPointer(ht, 1); \
+    PetscAssertPointer(ht, 1); \
     kh_reset(HashT, ht); \
     PetscFunctionReturn(PETSC_SUCCESS); \
   } \
@@ -109,8 +108,8 @@ M*/
     KeyType key; \
     ValType val; \
     PetscFunctionBegin; \
-    PetscValidPointer(ht, 1); \
-    PetscValidPointer(hd, 2); \
+    PetscAssertPointer(ht, 1); \
+    PetscAssertPointer(hd, 2); \
     *hd = kh_init(HashT); \
     PetscHashAssert(*hd != NULL); \
     ret = kh_resize(HashT, *hd, kh_size(ht)); \
@@ -126,7 +125,7 @@ M*/
   static inline PETSC_UNUSED PetscErrorCode Petsc##HashT##Clear(Petsc##HashT ht) \
   { \
     PetscFunctionBegin; \
-    PetscValidPointer(ht, 1); \
+    PetscAssertPointer(ht, 1); \
     kh_clear(HashT, ht); \
     PetscFunctionReturn(PETSC_SUCCESS); \
   } \
@@ -135,7 +134,7 @@ M*/
   { \
     int ret; \
     PetscFunctionBegin; \
-    PetscValidPointer(ht, 1); \
+    PetscAssertPointer(ht, 1); \
     ret = kh_resize(HashT, ht, (khint_t)nb); \
     PetscHashAssert(ret >= 0); \
     PetscFunctionReturn(PETSC_SUCCESS); \
@@ -144,8 +143,8 @@ M*/
   static inline PETSC_UNUSED PetscErrorCode Petsc##HashT##GetSize(Petsc##HashT ht, PetscInt *n) \
   { \
     PetscFunctionBegin; \
-    PetscValidPointer(ht, 1); \
-    PetscValidIntPointer(n, 2); \
+    PetscAssertPointer(ht, 1); \
+    PetscAssertPointer(n, 2); \
     *n = (PetscInt)kh_size(ht); \
     PetscFunctionReturn(PETSC_SUCCESS); \
   } \
@@ -153,8 +152,8 @@ M*/
   static inline PETSC_UNUSED PetscErrorCode Petsc##HashT##GetCapacity(Petsc##HashT ht, PetscInt *n) \
   { \
     PetscFunctionBegin; \
-    PetscValidPointer(ht, 1); \
-    PetscValidIntPointer(n, 2); \
+    PetscAssertPointer(ht, 1); \
+    PetscAssertPointer(n, 2); \
     *n = (PetscInt)kh_n_buckets(ht); \
     PetscFunctionReturn(PETSC_SUCCESS); \
   } \
@@ -163,8 +162,8 @@ M*/
   { \
     khiter_t iter; \
     PetscFunctionBeginHot; \
-    PetscValidPointer(ht, 1); \
-    PetscValidPointer(has, 3); \
+    PetscAssertPointer(ht, 1); \
+    PetscAssertPointer(has, 3); \
     iter = kh_get(HashT, ht, key); \
     *has = (iter != kh_end(ht)) ? PETSC_TRUE : PETSC_FALSE; \
     PetscFunctionReturn(PETSC_SUCCESS); \
@@ -174,8 +173,8 @@ M*/
   { \
     khiter_t iter; \
     PetscFunctionBeginHot; \
-    PetscValidPointer(ht, 1); \
-    PetscValidIntPointer(val, 3); \
+    PetscAssertPointer(ht, 1); \
+    PetscAssertPointer(val, 3); \
     iter = kh_get(HashT, ht, key); \
     *val = (iter != kh_end(ht)) ? kh_val(ht, iter) : (DefaultValue); \
     PetscFunctionReturn(PETSC_SUCCESS); \
@@ -187,8 +186,8 @@ M*/
     PetscBool     found = PETSC_FALSE; \
 \
     PetscFunctionBeginHot; \
-    PetscValidPointer(ht, 1); \
-    PetscValidPointer(val, 4); \
+    PetscAssertPointer(ht, 1); \
+    PetscAssertPointer(val, 4); \
     PetscCall(Petsc##HashT##Find(ht, key, &it, &found)); \
     if (found) { \
       PetscHashIterGetVal(ht, it, *val); \
@@ -203,7 +202,7 @@ M*/
     int      ret; \
     khiter_t iter; \
     PetscFunctionBeginHot; \
-    PetscValidPointer(ht, 1); \
+    PetscAssertPointer(ht, 1); \
     iter = kh_put(HashT, ht, key, &ret); \
     PetscHashAssert(ret >= 0); \
     kh_val(ht, iter) = val; \
@@ -214,7 +213,7 @@ M*/
   { \
     khiter_t iter; \
     PetscFunctionBeginHot; \
-    PetscValidPointer(ht, 1); \
+    PetscAssertPointer(ht, 1); \
     iter = kh_get(HashT, ht, key); \
     kh_del(HashT, ht, iter); \
     PetscFunctionReturn(PETSC_SUCCESS); \
@@ -225,8 +224,8 @@ M*/
     int      ret; \
     khiter_t iter; \
     PetscFunctionBeginHot; \
-    PetscValidPointer(ht, 1); \
-    PetscValidPointer(missing, 3); \
+    PetscAssertPointer(ht, 1); \
+    PetscAssertPointer(missing, 3); \
     iter = kh_put(HashT, ht, key, &ret); \
     PetscHashAssert(ret >= 0); \
     kh_val(ht, iter) = val; \
@@ -238,8 +237,8 @@ M*/
   { \
     khiter_t iter; \
     PetscFunctionBeginHot; \
-    PetscValidPointer(ht, 1); \
-    PetscValidPointer(present, 3); \
+    PetscAssertPointer(ht, 1); \
+    PetscAssertPointer(present, 3); \
     iter = kh_get(HashT, ht, key); \
     if (iter != kh_end(ht)) { \
       kh_del(HashT, ht, iter); \
@@ -254,9 +253,9 @@ M*/
 \
   { \
     PetscFunctionBeginHot; \
-    PetscValidPointer(ht, 1); \
-    PetscValidPointer(iter, 2); \
-    PetscValidPointer(found, 3); \
+    PetscAssertPointer(ht, 1); \
+    PetscAssertPointer(iter, 2); \
+    PetscAssertPointer(found, 3); \
     *iter  = kh_get(HashT, ht, key); \
     *found = (*iter != kh_end(ht)) ? PETSC_TRUE : PETSC_FALSE; \
     PetscFunctionReturn(PETSC_SUCCESS); \
@@ -266,9 +265,9 @@ M*/
   { \
     int ret; \
     PetscFunctionBeginHot; \
-    PetscValidPointer(ht, 1); \
-    PetscValidPointer(iter, 2); \
-    PetscValidPointer(missing, 3); \
+    PetscAssertPointer(ht, 1); \
+    PetscAssertPointer(iter, 2); \
+    PetscAssertPointer(missing, 3); \
     *iter = kh_put(HashT, ht, key, &ret); \
     PetscHashAssert(ret >= 0); \
     *missing = ret ? PETSC_TRUE : PETSC_FALSE; \
@@ -278,8 +277,8 @@ M*/
   static inline PETSC_UNUSED PetscErrorCode Petsc##HashT##IterGet(Petsc##HashT ht, PetscHashIter iter, ValType *val) \
   { \
     PetscFunctionBeginHot; \
-    PetscValidPointer(ht, 1); \
-    PetscValidPointer(val, 3); \
+    PetscAssertPointer(ht, 1); \
+    PetscAssertPointer(val, 3); \
     *val = PetscLikely(iter < kh_end(ht) && kh_exist(ht, iter)) ? kh_val(ht, iter) : (DefaultValue); \
     PetscFunctionReturn(PETSC_SUCCESS); \
   } \
@@ -287,7 +286,7 @@ M*/
   static inline PETSC_UNUSED PetscErrorCode Petsc##HashT##IterSet(Petsc##HashT ht, PetscHashIter iter, ValType val) \
   { \
     PetscFunctionBeginHot; \
-    PetscValidPointer(ht, 1); \
+    PetscAssertPointer(ht, 1); \
     if (PetscLikely(iter < kh_end(ht) && kh_exist(ht, iter))) kh_val(ht, iter) = val; \
     PetscFunctionReturn(PETSC_SUCCESS); \
   } \
@@ -295,7 +294,7 @@ M*/
   static inline PETSC_UNUSED PetscErrorCode Petsc##HashT##IterDel(Petsc##HashT ht, PetscHashIter iter) \
   { \
     PetscFunctionBeginHot; \
-    PetscValidPointer(ht, 1); \
+    PetscAssertPointer(ht, 1); \
     if (PetscLikely(iter < kh_end(ht))) kh_del(HashT, ht, iter); \
     PetscFunctionReturn(PETSC_SUCCESS); \
   } \
@@ -305,8 +304,8 @@ M*/
     KeyType  key; \
     PetscInt pos; \
     PetscFunctionBegin; \
-    PetscValidPointer(ht, 1); \
-    PetscValidIntPointer(off, 2); \
+    PetscAssertPointer(ht, 1); \
+    PetscAssertPointer(off, 2); \
     pos = *off; \
     kh_foreach_key(ht, key, array[pos++] = key); \
     *off = pos; \
@@ -318,8 +317,8 @@ M*/
     ValType  val; \
     PetscInt pos; \
     PetscFunctionBegin; \
-    PetscValidPointer(ht, 1); \
-    PetscValidIntPointer(off, 2); \
+    PetscAssertPointer(ht, 1); \
+    PetscAssertPointer(off, 2); \
     pos = *off; \
     kh_foreach_value(ht, val, array[pos++] = val); \
     *off = pos; \
@@ -332,8 +331,8 @@ M*/
     KeyType  key; \
     PetscInt pos; \
     PetscFunctionBegin; \
-    PetscValidPointer(ht, 1); \
-    PetscValidIntPointer(off, 2); \
+    PetscAssertPointer(ht, 1); \
+    PetscAssertPointer(off, 2); \
     pos     = *off; \
     kh_foreach(ht, key, val, { \
       karray[pos]   = key; \
@@ -355,7 +354,7 @@ M*/
     PetscBool     missing = PETSC_FALSE; \
 \
     PetscFunctionBeginHot; \
-    PetscValidPointer(ht, 1); \
+    PetscAssertPointer(ht, 1); \
     PetscCall(Petsc##HashT##Put(ht, key, &it, &missing)); \
     if (!missing) { \
       ValType cur_val; \
@@ -385,5 +384,3 @@ M*/
     PetscCall(Petsc##HashT##IterSet(ht, it, val)); \
     PetscFunctionReturn(PETSC_SUCCESS); \
   }
-
-#endif /* PETSC_HASHMAP_H */

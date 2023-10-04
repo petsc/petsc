@@ -13,18 +13,7 @@ PETSC_EXTERN PetscErrorCode MatCoarsenCreate_MISK(MatCoarsen);
 
   Level: developer
 
-  Adding new methods:
-  To add a new method to the registry. Copy this routine and
-  modify it to incorporate a call to MatCoarsenRegister() for
-  the new method, after the current list.
-
-  Restricting the choices: To prevent all of the methods from being
-  registered and thus save memory, copy this routine and modify it to
-  register a zero, instead of the function name, for those methods you
- do not wish to register.  Make sure that the replacement routine is
-  linked before libpetscmat.a.
-
- .seealso: `MatCoarsen`, `MatCoarsenType`, `MatCoarsenRegister()`, `MatCoarsenRegisterDestroy()`
+.seealso: `MatCoarsen`, `MatCoarsenType`, `MatCoarsenRegister()`, `MatCoarsenRegisterDestroy()`
  @*/
 PetscErrorCode MatCoarsenRegisterAll(void)
 {

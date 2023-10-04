@@ -10,7 +10,7 @@ PetscBool         PetscRandomRegisterAllCalled = PETSC_FALSE;
   Collective
 
   Input Parameters:
-+ rnd   - The random number generator context
++ rnd  - The random number generator context
 - type - The name of the random type
 
   Options Database Key:
@@ -24,7 +24,6 @@ PetscBool         PetscRandomRegisterAllCalled = PETSC_FALSE;
 
 .seealso: `PetscRandom`, `PetscRandomType`, `PetscRandomGetType()`, `PetscRandomCreate()`
 @*/
-
 PetscErrorCode PetscRandomSetType(PetscRandom rnd, PetscRandomType type)
 {
   PetscErrorCode (*r)(PetscRandom);
@@ -36,7 +35,7 @@ PetscErrorCode PetscRandomSetType(PetscRandom rnd, PetscRandomType type)
   if (match) PetscFunctionReturn(PETSC_SUCCESS);
 
   PetscCall(PetscFunctionListFind(PetscRandomList, type, &r));
-  PetscCheck(r, PETSC_COMM_SELF, PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown random type: %s", type);
+  PetscCheck(r, PetscObjectComm((PetscObject)rnd), PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown random type: %s", type);
 
   PetscTryTypeMethod(rnd, destroy);
   rnd->ops->destroy = NULL;
@@ -54,7 +53,7 @@ PetscErrorCode PetscRandomSetType(PetscRandom rnd, PetscRandomType type)
   Not Collective
 
   Input Parameter:
-. rnd  - The random number generator context
+. rnd - The random number generator context
 
   Output Parameter:
 . type - The type name
@@ -67,7 +66,7 @@ PetscErrorCode PetscRandomGetType(PetscRandom rnd, PetscRandomType *type)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(rnd, PETSC_RANDOM_CLASSID, 1);
-  PetscValidPointer(type, 2);
+  PetscAssertPointer(type, 2);
   *type = ((PetscObject)rnd)->type_name;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -88,7 +87,7 @@ PetscErrorCode PetscRandomGetType(PetscRandom rnd, PetscRandomType *type)
 
   For an example of the code needed to interface your own random number generator see src/sys/random/impls/rand/rand.c
 
-  Sample usage:
+  Example Usage:
 .vb
     PetscRandomRegister("my_rand",  MyPetscRandomtorCreate);
 .ve
@@ -98,12 +97,12 @@ PetscErrorCode PetscRandomGetType(PetscRandom rnd, PetscRandomType *type)
     PetscRandomCreate(MPI_Comm, PetscRandom *);
     PetscRandomSetType(PetscRandom,"my_random_name");
 .ve
-   or at runtime via the option
+  or at runtime via the option
 .vb
     -random_type my_random_name
 .ve
 
-.seealso: `PetscRandom`, `PetscRandomRegisterAll()`, `PetscRandomRegisterDestroy()`, `PetscRandomRegister()`
+.seealso: `PetscRandom`, `PetscRandomRegisterAll()`, `PetscRandomRegisterDestroy()`
 @*/
 PetscErrorCode PetscRandomRegister(const char sname[], PetscErrorCode (*function)(PetscRandom))
 {
@@ -133,7 +132,7 @@ PETSC_EXTERN PetscErrorCode PetscRandomCreate_CURAND(PetscRandom);
 /*@C
   PetscRandomRegisterAll - Registers all of the implementations in the `PetscRandom` package.
 
-   Not Collective
+  Not Collective
 
   Level: advanced
 

@@ -1,5 +1,4 @@
-#ifndef __ASM_H
-#define __ASM_H
+#pragma once
 
 #include <petscdm.h>
 #include <petsc/private/pcimpl.h>
@@ -25,4 +24,3 @@ typedef struct {
   /* For multiplicative solve */
   Mat *lmats; /* submatrices for overlapping multiplicative (process) subdomain */
 } PC_ASM;
-#endif

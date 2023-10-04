@@ -19,7 +19,7 @@
 !  -my <yg>, where <yg> = number of grid points in the y-direction
 !  -Nx <npx>, where <npx> = number of processors in the x-direction
 !  -Ny <npy>, where <npy> = number of processors in the y-direction
-!  -mf use matrix free for matrix vector product
+!  -mf use matrix-free for matrix vector product
 !
 
 !  ------------------------------------------------------------------------
@@ -141,10 +141,10 @@
 !     for preallocating matrix memory.
 !
       PetscCallA(VecGetLocalSize(X,m,ierr))
-      PetscCallA(MatCreateAIJ(comm,m,m,N,N,ifive,PETSC_NULL_INTEGER,ithree,PETSC_NULL_INTEGER,B,ierr))
+      PetscCallA(MatCreateFromOptions(comm,PETSC_NULL_CHARACTER,one,m,m,N,N,B,ierr))
 
 !  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-!     if usemf is on then matrix vector product is done via matrix free
+!     if usemf is on then matrix vector product is done via matrix-free
 !     approach. Note this is just an example, and not realistic because
 !     we still use the actual formed matrix, but in reality one would
 !     provide their own subroutine that would directly do the matrix
@@ -157,7 +157,7 @@
          PetscCallA(MatCreateShell(comm,m,m,N,N,PETSC_NULL_INTEGER,J,ierr))
          PetscCallA(MatShellSetOperation(J,MATOP_MULT,mymult,ierr))
       else
-!        If not doing matrix free then matrix operator, J,  and matrix used
+!        If not doing matrix-free then matrix operator, J,  and matrix used
 !        to construct preconditioner, B, are the same
         J = B
       endif

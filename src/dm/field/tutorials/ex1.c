@@ -39,7 +39,7 @@ static PetscErrorCode TestEvaluate(DMField field, PetscInt n, PetscRandom rand)
   PetscCall(DMFieldGetNumComponents(field, &nc));
   PetscCall(DMFieldGetDM(field, &dm));
   PetscCall(DMGetDimension(dm, &dim));
-  PetscCall(VecCreateMPI(PetscObjectComm((PetscObject)field), n * dim, PETSC_DETERMINE, &points));
+  PetscCall(VecCreateFromOptions(PetscObjectComm((PetscObject)field), NULL, 1, n * dim, PETSC_DETERMINE, &points));
   PetscCall(VecSetBlockSize(points, dim));
   PetscCall(VecGetArray(points, &array));
   for (i = 0; i < n * dim; i++) PetscCall(PetscRandomGetValue(rand, &array[i]));

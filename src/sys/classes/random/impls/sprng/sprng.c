@@ -7,14 +7,14 @@ EXTERN_C_BEGIN
 #include <sprng.h>
 EXTERN_C_END
 
-PetscErrorCode PetscRandomSeed_Sprng(PetscRandom r)
+static PetscErrorCode PetscRandomSeed_Sprng(PetscRandom r)
 {
   PetscFunctionBegin;
   init_sprng(r->seed, SPRNG_DEFAULT);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PetscRandomGetValue_Sprng(PetscRandom r, PetscScalar *val)
+static PetscErrorCode PetscRandomGetValue_Sprng(PetscRandom r, PetscScalar *val)
 {
   PetscFunctionBegin;
 #if defined(PETSC_USE_COMPLEX)
@@ -30,7 +30,7 @@ PetscErrorCode PetscRandomGetValue_Sprng(PetscRandom r, PetscScalar *val)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PetscRandomGetValueReal_Sprng(PetscRandom r, PetscReal *val)
+static PetscErrorCode PetscRandomGetValueReal_Sprng(PetscRandom r, PetscReal *val)
 {
   PetscFunctionBegin;
 #if defined(PETSC_USE_COMPLEX)
@@ -70,7 +70,7 @@ M*/
 PETSC_EXTERN PetscErrorCode PetscRandomCreate_Sprng(PetscRandom r)
 {
   PetscFunctionBegin;
-  PetscCall(PetscMemcpy(r->ops, &PetscRandomOps_Values, sizeof(PetscRandomOps_Values)));
+  r->ops = PetscRandomOps_Values;
   PetscCall(PetscObjectChangeTypeName((PetscObject)r, PETSCSPRNG));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

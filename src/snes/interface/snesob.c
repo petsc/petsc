@@ -19,24 +19,24 @@
 M*/
 
 /*@C
-   SNESSetObjective - Sets the objective function minimized by some of the `SNES` linesearch methods, used instead of the 2-norm of the residual
+  SNESSetObjective - Sets the objective function minimized by some of the `SNES` linesearch methods, used instead of the 2-norm of the residual
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  snes - the `SNES` context
-.  obj - objective evaluation routine; see `SNESObjectiveFunction` for details
--  ctx - [optional] user-defined context for private data for the
+  Input Parameters:
++ snes - the `SNES` context
+. obj  - objective evaluation routine; see `SNESObjectiveFunction` for details
+- ctx  - [optional] user-defined context for private data for the
          function evaluation routine (may be `NULL`)
 
-   Level: intermediate
+  Level: intermediate
 
-   Note:
-   Some of the `SNESLineSearch` methods attempt to minimize a given objective provided by this function to determine a step length.
+  Note:
+  Some of the `SNESLineSearch` methods attempt to minimize a given objective provided by this function to determine a step length.
 
-   If not provided then this defaults to the two norm of the function evaluation (set with `SNESSetFunction()`)
+  If not provided then this defaults to the two norm of the function evaluation (set with `SNESSetFunction()`)
 
-   This is not used in the `SNESLINESEARCHCP` line search.
+  This is not used in the `SNESLINESEARCHCP` line search.
 
 .seealso: `SNES`, `SNESLineSearch()`, `SNESGetObjective()`, `SNESComputeObjective()`, `SNESSetFunction()`, `SNESSetJacobian()`, `SNESObjectiveFunction`
 @*/
@@ -52,18 +52,18 @@ PetscErrorCode SNESSetObjective(SNES snes, PetscErrorCode (*obj)(SNES, Vec, Pets
 }
 
 /*@C
-   SNESGetObjective - Returns the objective function set with `SNESSetObjective()`
+  SNESGetObjective - Returns the objective function set with `SNESSetObjective()`
 
-   Not Collective
+  Not Collective
 
-   Input Parameter:
-.  snes - the `SNES` context
+  Input Parameter:
+. snes - the `SNES` context
 
-   Output Parameters:
-+  obj - objective evaluation routine (or `NULL`); see `SNESObjectFunction` for details
--  ctx - the function context (or `NULL`)
+  Output Parameters:
++ obj - objective evaluation routine (or `NULL`); see `SNESObjectFunction` for details
+- ctx - the function context (or `NULL`)
 
-   Level: advanced
+  Level: advanced
 
 .seealso: `SNES`, `SNESSetObjective()`, `SNESGetSolution()`
 @*/
@@ -79,18 +79,18 @@ PetscErrorCode SNESGetObjective(SNES snes, PetscErrorCode (**obj)(SNES, Vec, Pet
 }
 
 /*@C
-   SNESComputeObjective - Computes the objective function that has been provided by `SNESSetObjective()`
+  SNESComputeObjective - Computes the objective function that has been provided by `SNESSetObjective()`
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  snes - the `SNES` context
--  X    - the state vector
+  Input Parameters:
++ snes - the `SNES` context
+- X    - the state vector
 
-   Output Parameter:
-.  ob   - the objective value
+  Output Parameter:
+. ob - the objective value
 
-   Level: developer
+  Level: developer
 
 .seealso: `SNESLineSearch`, `SNES`, `SNESSetObjective()`, `SNESGetSolution()`
 @*/
@@ -102,7 +102,7 @@ PetscErrorCode SNESComputeObjective(SNES snes, Vec X, PetscReal *ob)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
   PetscValidHeaderSpecific(X, VEC_CLASSID, 2);
-  PetscValidRealPointer(ob, 3);
+  PetscAssertPointer(ob, 3);
   PetscCall(SNESGetDM(snes, &dm));
   PetscCall(DMGetDMSNES(dm, &sdm));
   PetscCheck(sdm->ops->computeobjective, PetscObjectComm((PetscObject)snes), PETSC_ERR_ARG_WRONGSTATE, "Must call SNESSetObjective() before SNESComputeObjective().");
@@ -113,33 +113,33 @@ PetscErrorCode SNESComputeObjective(SNES snes, Vec X, PetscReal *ob)
 }
 
 /*@C
-   SNESObjectiveComputeFunctionDefaultFD - Computes the gradient of a user provided objective function
+  SNESObjectiveComputeFunctionDefaultFD - Computes the gradient of a user provided objective function
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  snes - the `SNES` context
-.  X    - the state vector
--  ctx  - the (ignored) function context
+  Input Parameters:
++ snes - the `SNES` context
+. X    - the state vector
+- ctx  - the (ignored) function context
 
-   Output Parameter:
-.  F   - the function value
+  Output Parameter:
+. F - the function value
 
-   Options Database Keys:
-+  -snes_fd_function_eps - Tolerance for including non-zero entries into the gradient, default is 1.e-6
--  -snes_fd_function - Computes function from user provided objective function (set with `SNESSetObjective()`) with finite difference
+  Options Database Keys:
++ -snes_fd_function_eps - Tolerance for including non-zero entries into the gradient, default is 1.e-6
+- -snes_fd_function     - Computes function from user provided objective function (set with `SNESSetObjective()`) with finite difference
 
-   Level: advanced
+  Level: advanced
 
-   Notes:
-   This function can be used with `SNESSetFunction()` to have the nonlinear function solved for with `SNES` defined by the gradient of an objective function
-   `SNESObjectiveComputeFunctionDefaultFD()` is similar in character to `SNESComputeJacobianDefault()`.
-   Therefore, it should be used for debugging purposes only.  Using it in conjunction with
-   `SNESComputeJacobianDefault()` is excessively costly and produces a Jacobian that is quite
-   noisy.  This is often necessary, but should be done with care, even when debugging
-   small problems.
+  Notes:
+  This function can be used with `SNESSetFunction()` to have the nonlinear function solved for with `SNES` defined by the gradient of an objective function
+  `SNESObjectiveComputeFunctionDefaultFD()` is similar in character to `SNESComputeJacobianDefault()`.
+  Therefore, it should be used for debugging purposes only.  Using it in conjunction with
+  `SNESComputeJacobianDefault()` is excessively costly and produces a Jacobian that is quite
+  noisy.  This is often necessary, but should be done with care, even when debugging
+  small problems.
 
-   Note that this uses quadratic interpolation of the objective to form each value in the function.
+  Note that this uses quadratic interpolation of the objective to form each value in the function.
 
 .seealso: `SNESSetObjective()`, `SNESSetFunction()`, `SNESComputeObjective()`, `SNESComputeJacobianDefault()`
 @*/

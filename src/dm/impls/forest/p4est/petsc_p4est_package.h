@@ -1,5 +1,4 @@
-#ifndef PETSC_P4EST_PACKAGE_H
-#define PETSC_P4EST_PACKAGE_H
+#pragma once
 #include <petscsys.h>
 #if defined(PETSC_HAVE_MPIUNI)
   #undef MPI_SUCCESS
@@ -75,5 +74,3 @@ static inline PetscErrorCode P4estTopidxCast(PetscInt a, p4est_topidx_t *b)
 #endif
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-
-#endif

@@ -3,20 +3,20 @@
 #include <petscviewer.h>
 
 /*@C
-   PetscObjectSetName - Sets a string name associated with a PETSc object.
+  PetscObjectSetName - Sets a string name associated with a PETSc object.
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  obj - the Petsc variable
+  Input Parameters:
++ obj  - the Petsc variable
          Thus must be cast with a (`PetscObject`), for example,
          `PetscObjectSetName`((`PetscObject`)mat,name);
--  name - the name to give obj
+- name - the name to give obj
 
-   Level: advanced
+  Level: advanced
 
-   Note:
-    If this routine is not called then the object may end up being name by `PetscObjectName()`.
+  Note:
+  If this routine is not called then the object may end up being name by `PetscObjectName()`.
 
 .seealso: `PetscObjectGetName()`, `PetscObjectName()`
 @*/
@@ -30,24 +30,24 @@ PetscErrorCode PetscObjectSetName(PetscObject obj, const char name[])
 }
 
 /*@C
-      PetscObjectPrintClassNamePrefixType - used in the `XXXView()` methods to display information about the class, name, prefix and type of an object
+  PetscObjectPrintClassNamePrefixType - used in the `XXXView()` methods to display information about the class, name, prefix and type of an object
 
-   Input Parameters:
-+     obj - the PETSc object
--     viewer - ASCII viewer where the information is printed, function does nothing if the viewer is not `PETSCVIEWERASCII` type
+  Input Parameters:
++ obj    - the PETSc object
+- viewer - `PETSCVIEWERASCII` viewer where the information is printed, function does nothing if the viewer is not `PETSCVIEWERASCII` type
 
-   Level: developer
+  Level: developer
 
-   Notes:
-   If the viewer format is `PETSC_VIEWER_ASCII_MATLAB` then the information is printed after a % symbol
-   so that MATLAB will treat it as a comment.
+  Notes:
+  If the viewer format is `PETSC_VIEWER_ASCII_MATLAB` then the information is printed after a % symbol
+  so that MATLAB will treat it as a comment.
 
-   If the viewer format is `PETSC_VIEWER_ASCII_VTK*`, `PETSC_VIEWER_ASCII_LATEX`, or
-   `PETSC_VIEWER_ASCII_MATRIXMARKET` then don't print header information
-   as these formats can't process it.
+  If the viewer format is `PETSC_VIEWER_ASCII_VTK*`, `PETSC_VIEWER_ASCII_LATEX`, or
+  `PETSC_VIEWER_ASCII_MATRIXMARKET` then don't print header information
+  as these formats can't process it.
 
-   Developer Note:
-   The flag donotPetscObjectPrintClassNamePrefixType is useful to prevent double printing of the information when recursion is used to actually print the object.
+  Developer Notes:
+  The flag donotPetscObjectPrintClassNamePrefixType is useful to prevent double printing of the information when recursion is used to actually print the object.
 
 .seealso: `PetscObjectSetName()`, `PetscObjectName()`
 @*/
@@ -79,25 +79,25 @@ PetscErrorCode PetscObjectPrintClassNamePrefixType(PetscObject obj, PetscViewer 
 }
 
 /*@C
-   PetscObjectName - Gives an object a name if it does not have one
+  PetscObjectName - Gives an object a name if it does not have one
 
-   Collective
+  Collective
 
-   Input Parameter:
-.  obj - the Petsc variable
+  Input Parameter:
+. obj - the Petsc variable
          Thus must be cast with a (`PetscObject`), for example,
          `PetscObjectName`((`PetscObject`)mat,name);
 
-   Level: developer
+  Level: developer
 
-   Notes:
-   This is used in a small number of places when an object NEEDS a name, for example when it is saved to MATLAB with that variable name.
+  Notes:
+  This is used in a small number of places when an object NEEDS a name, for example when it is saved to MATLAB with that variable name.
 
-   Use `PetscObjectSetName()` to set the name of an object to what you want. The SAWs viewer requires that no two published objects
-   share the same name.
+  Use `PetscObjectSetName()` to set the name of an object to what you want. The SAWs viewer requires that no two published objects
+  share the same name.
 
-   Developer Note:
-   This needs to generate the exact same string on all ranks that share the object. The current algorithm may not always work.
+  Developer Notes:
+  This needs to generate the exact same string on all ranks that share the object. The current algorithm may not always work.
 
 .seealso: `PetscObjectGetName()`, `PetscObjectSetName()`
 @*/

@@ -3,7 +3,7 @@
 
 static char help[] = "Tests vecScatter Sequential to Sequential for (CUDA) vectors\n\
   -m # : the size of the vectors\n                                      \
-  -n # : the numer of indices (with n<=m)\n                             \
+  -n # : the number of indices (with n<=m)\n                            \
   -toFirst # : the starting index of the output vector for strided scatters\n \
   -toStep # : the step size into the output vector for strided scatters\n \
   -fromFirst # : the starting index of the input vector for strided scatters\n\

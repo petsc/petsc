@@ -1,8 +1,7 @@
 /*
    Private data structure for ILU/ICC/LU/Cholesky preconditioners.
 */
-#ifndef __FACTOR_H
-#define __FACTOR_H
+#pragma once
 
 #include <petsc/private/pcimpl.h>
 
@@ -43,5 +42,3 @@ PETSC_INTERN PetscErrorCode PCSetFromOptions_Factor(PC, PetscOptionItems *PetscO
 PETSC_INTERN PetscErrorCode PCView_Factor(PC, PetscViewer);
 PETSC_INTERN PetscErrorCode PCFactorSetDefaultOrdering_Factor(PC);
 PETSC_INTERN PetscErrorCode PCFactorClearComposedFunctions(PC);
-
-#endif

@@ -699,7 +699,7 @@ PetscErrorCode ConstructCellBoundary(DM dm, User user)
   PetscFunctionBeginUser;
   PetscCall(DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd));
   PetscCall(DMPlexGetHeightStratum(dm, 1, &fStart, &fEnd));
-  PetscCall(DMPlexGetGhostCellStratum(dm, &cEndInterior, NULL));
+  PetscCall(DMPlexGetCellTypeStratum(dm, DM_POLYTOPE_FV_GHOST, &cEndInterior, NULL));
 
   PetscCall(DMHasLabel(dm, name, &hasLabel));
   if (!hasLabel) PetscFunctionReturn(PETSC_SUCCESS);
@@ -793,8 +793,7 @@ PetscErrorCode SplitFaces(DM *dmSplit, const char labelName[], User user)
   PetscCall(DMPlexGetChart(dm, &pStart, &pEnd));
   pEnd += user->numSplitFaces;
   PetscCall(DMPlexSetChart(sdm, pStart, pEnd));
-  PetscCall(DMPlexGetGhostCellStratum(dm, &cEndInterior, NULL));
-  PetscCall(DMPlexSetGhostCellStratum(sdm, cEndInterior, PETSC_DETERMINE));
+  PetscCall(DMPlexGetCellTypeStratum(dm, DM_POLYTOPE_FV_GHOST, &cEndInterior, NULL));
   PetscCall(DMPlexGetHeightStratum(dm, 0, NULL, &cEnd));
   numGhostCells = cEnd - cEndInterior;
   /* Set cone and support sizes */
@@ -1079,7 +1078,7 @@ PetscErrorCode SetUpLocalSpace(DM dm, User user)
 
   PetscFunctionBeginUser;
   PetscCall(DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd));
-  PetscCall(DMPlexGetGhostCellStratum(dm, &cEndInterior, NULL));
+  PetscCall(DMPlexGetCellTypeStratum(dm, DM_POLYTOPE_FV_GHOST, &cEndInterior, NULL));
   PetscCall(PetscSectionCreate(PetscObjectComm((PetscObject)dm), &stateSection));
   phys = user->model->physics;
   PetscCall(PetscSectionSetNumFields(stateSection, phys->nfields));
@@ -1316,9 +1315,9 @@ static PetscErrorCode MonitorVTK(TS ts, PetscInt stepnum, PetscReal time, Vec X,
     PetscCall(VecRestoreArrayRead(cellgeom, &cgeom));
     PetscCall(VecRestoreArrayRead(X, &x));
     PetscCall(DMDestroy(&plex));
-    PetscCallMPI(MPI_Allreduce(MPI_IN_PLACE, fmin, fcount, MPIU_REAL, MPIU_MIN, PetscObjectComm((PetscObject)ts)));
-    PetscCallMPI(MPI_Allreduce(MPI_IN_PLACE, fmax, fcount, MPIU_REAL, MPIU_MAX, PetscObjectComm((PetscObject)ts)));
-    PetscCallMPI(MPI_Allreduce(MPI_IN_PLACE, fintegral, fcount, MPIU_REAL, MPIU_SUM, PetscObjectComm((PetscObject)ts)));
+    PetscCall(MPIU_Allreduce(MPI_IN_PLACE, fmin, fcount, MPIU_REAL, MPIU_MIN, PetscObjectComm((PetscObject)ts)));
+    PetscCall(MPIU_Allreduce(MPI_IN_PLACE, fmax, fcount, MPIU_REAL, MPIU_MAX, PetscObjectComm((PetscObject)ts)));
+    PetscCall(MPIU_Allreduce(MPI_IN_PLACE, fintegral, fcount, MPIU_REAL, MPIU_SUM, PetscObjectComm((PetscObject)ts)));
 
     ftablealloc = fcount * 100;
     ftableused  = 0;

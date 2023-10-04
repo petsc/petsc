@@ -31,33 +31,7 @@ KSP Object: 8 MPI processes
                   total: nonzeros=160, allocated nonzeros=160
                   total number of mallocs used during MatSetValues calls=0
                     not using I-node routines
-              KSP of A00
-                KSP Object: (fetidp_bddc_pc_bddc_dirichlet_) 1 MPI process
-                  type: preonly
-                  maximum iterations=10000, initial guess is zero
-                  tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
-                  left preconditioning
-                  using NONE norm type for convergence test
-                PC Object: (fetidp_bddc_pc_bddc_dirichlet_) 1 MPI process
-                  type: lu
-                    out-of-place factorization
-                    tolerance for zero pivot 2.22045e-14
-                    matrix ordering: nd
-                    factor fill ratio given 5., needed 1.17143
-                      Factored matrix follows:
-                        Mat Object: (fetidp_bddc_pc_bddc_dirichlet_) 1 MPI process
-                          type: seqaij
-                          rows=24, cols=24
-                          package used to perform factorization: petsc
-                          total: nonzeros=328, allocated nonzeros=328
-                            using I-node routines: found 13 nodes, limit used is 5
-                  linear system matrix = precond matrix:
-                  Mat Object: (fetidp_bddc_pc_bddc_dirichlet_) 1 MPI process
-                    type: seqaij
-                    rows=24, cols=24
-                    total: nonzeros=280, allocated nonzeros=280
-                    total number of mallocs used during MatSetValues calls=0
-                      not using I-node routines
+              KSP solver for A00 block viewable with the additional option -fetidp_bddc_pc_bddc_dirichlet_ksp_view
               A01
                 Mat Object: 1 MPI process
                   type: seqaij

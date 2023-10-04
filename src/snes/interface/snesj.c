@@ -1,46 +1,47 @@
 
 #include <petsc/private/snesimpl.h> /*I  "petscsnes.h"  I*/
+#include <petsc/private/vecimpl.h>  /* for Vec->ops->setvalues */
 #include <petscdm.h>
 
 /*@C
-   SNESComputeJacobianDefault - Computes the Jacobian using finite differences.
+  SNESComputeJacobianDefault - Computes the Jacobian using finite differences.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  snes - the `SNES` context
-.  x1 - compute Jacobian at this point
--  ctx - application's function context, as set with `SNESSetFunction()`
+  Input Parameters:
++ snes - the `SNES` context
+. x1   - compute Jacobian at this point
+- ctx  - application's function context, as set with `SNESSetFunction()`
 
-   Output Parameters:
-+  J - Jacobian matrix (not altered in this routine)
--  B - newly computed Jacobian matrix to use with preconditioner (generally the same as `J`)
+  Output Parameters:
++ J - Jacobian matrix (not altered in this routine)
+- B - newly computed Jacobian matrix to use with preconditioner (generally the same as `J`)
 
-   Options Database Keys:
-+  -snes_fd - Activates `SNESComputeJacobianDefault()`
-.  -snes_fd_coloring - Activates a faster computation that uses a graph coloring of the matrix
-.  -snes_test_err - Square root of function error tolerance, default square root of machine
+  Options Database Keys:
++ -snes_fd          - Activates `SNESComputeJacobianDefault()`
+. -snes_fd_coloring - Activates a faster computation that uses a graph coloring of the matrix
+. -snes_test_err    - Square root of function error tolerance, default square root of machine
                     epsilon (1.e-8 in double, 3.e-4 in single)
--  -mat_fd_type - Either wp or ds (see `MATMFFD_WP` or `MATMFFD_DS`)
+- -mat_fd_type      - Either wp or ds (see `MATMFFD_WP` or `MATMFFD_DS`)
 
-   Level: intermediate
+  Level: intermediate
 
-   Notes:
-   This routine is slow and expensive, and is not currently optimized
-   to take advantage of sparsity in the problem.  Although
-   `SNESComputeJacobianDefault()` is not recommended for general use
-   in large-scale applications, It can be useful in checking the
-   correctness of a user-provided Jacobian.
+  Notes:
+  This routine is slow and expensive, and is not currently optimized
+  to take advantage of sparsity in the problem.  Although
+  `SNESComputeJacobianDefault()` is not recommended for general use
+  in large-scale applications, It can be useful in checking the
+  correctness of a user-provided Jacobian.
 
-   An alternative routine that uses coloring to exploit matrix sparsity is
-   `SNESComputeJacobianDefaultColor()`.
+  An alternative routine that uses coloring to exploit matrix sparsity is
+  `SNESComputeJacobianDefaultColor()`.
 
-   This routine ignores the maximum number of function evaluations set with `SNESSetTolerances()` and the function
-   evaluations it performs are not counted in what is returned by of `SNESGetNumberFunctionEvals()`.
+  This routine ignores the maximum number of function evaluations set with `SNESSetTolerances()` and the function
+  evaluations it performs are not counted in what is returned by of `SNESGetNumberFunctionEvals()`.
 
-   This function can be provided to `SNESSetJacobian()` along with a dense matrix to hold the Jacobian
+  This function can be provided to `SNESSetJacobian()` along with a dense matrix to hold the Jacobian
 
-.seealso: `SNES`, `SNESSetJacobian()`, `SNESSetJacobian()`, `SNESComputeJacobianDefaultColor()`, `MatCreateSNESMF()`
+.seealso: `SNES`, `SNESSetJacobian()`, `SNESComputeJacobianDefaultColor()`, `MatCreateSNESMF()`
 @*/
 PetscErrorCode SNESComputeJacobianDefault(SNES snes, Vec x1, Mat J, Mat B, void *ctx)
 {
@@ -112,7 +113,12 @@ PetscErrorCode SNESComputeJacobianDefault(SNES snes, Vec x1, Mat J, Mat B, void 
       if (PetscAbsScalar(dx) < dx_min) dx = (PetscRealPart(dx) < 0. ? -1. : 1.) * dx_par;
       dx *= epsilon;
       wscale = 1.0 / dx;
-      PetscCall(VecSetValues(x2, 1, &i, &dx, ADD_VALUES));
+      if (x2->ops->setvalues) PetscCall(VecSetValues(x2, 1, &i, &dx, ADD_VALUES));
+      else {
+        PetscCall(VecGetArray(x2, &y));
+        y[i - start] += dx;
+        PetscCall(VecRestoreArray(x2, &y));
+      }
     } else {
       wscale = 0.0;
     }

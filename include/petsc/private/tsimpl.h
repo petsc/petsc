@@ -1,5 +1,4 @@
-#ifndef __TSIMPL_H
-#define __TSIMPL_H
+#pragma once
 
 #include <petscts.h>
 #include <petsc/private/petscimpl.h>
@@ -64,6 +63,7 @@ struct _TSOps {
   PetscErrorCode (*startingmethod)(TS);
   PetscErrorCode (*initcondition)(TS, Vec);
   PetscErrorCode (*exacterror)(TS, Vec, Vec);
+  PetscErrorCode (*resizeregister)(TS, PetscBool);
 };
 
 /*
@@ -164,6 +164,9 @@ struct _p_TS {
   TSAdaptType default_adapt_type;
   TSEvent     event;
 
+  /* ---------------- Resize ---------------------*/
+  PetscObjectList resizetransferobjs;
+
   /* ---------------- User (or PETSc) Provided stuff ---------------------*/
   PetscErrorCode (*monitor[MAXTSMONITORS])(TS, PetscInt, PetscReal, Vec, void *);
   PetscErrorCode (*monitordestroy[MAXTSMONITORS])(void **);
@@ -181,6 +184,9 @@ struct _p_TS {
   PetscErrorCode (*postevaluate)(TS);
   PetscErrorCode (*poststep)(TS);
   PetscErrorCode (*functiondomainerror)(TS, PetscReal, Vec, PetscBool *);
+  PetscErrorCode (*resizesetup)(TS, PetscInt, PetscReal, Vec, PetscBool *, void *);
+  PetscErrorCode (*resizetransfer)(TS, PetscInt, Vec[], Vec[], void *);
+  void *resizectx;
 
   /* ---------------------- Sensitivity Analysis support -----------------*/
   TSTrajectory trajectory; /* All solutions are kept here for the entire time integration process */
@@ -562,4 +568,3 @@ struct _n_TSMonitorDrawCtx {
   PetscInt    howoften; /* when > 0 uses step % howoften, when negative only final solution plotted */
   PetscBool   showtimestepandtime;
 };
-#endif

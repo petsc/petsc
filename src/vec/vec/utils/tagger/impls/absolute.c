@@ -28,7 +28,7 @@ static PetscErrorCode VecTaggerComputeBoxes_Absolute(VecTagger tagger, Vec vec, 
 
   Input Parameters:
 + tagger - the `VecTagger` context
-- box - the box: a blocksize array of `VecTaggerBox` boxes
+- box    - the box: a blocksize array of `VecTaggerBox` boxes
 
   Level: advanced
 

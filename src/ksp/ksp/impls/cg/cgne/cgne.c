@@ -1,6 +1,6 @@
 
 /*
-       cgimpl.h defines the simple data structured used to store information
+    cgimpl.h defines the simple data structured used to store information
     related to the type of matrix (e.g. complex symmetric) being solved and
     data used during the optional Lanczo process used to compute eigenvalues
 */
@@ -17,11 +17,6 @@ static PetscErrorCode KSPCGSetType_CGNE(KSP ksp, KSPCGType type)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*
-     KSPSetUp_CGNE - Sets up the workspace needed by the CGNE method.
-
-     IDENTICAL TO THE CG ONE EXCEPT for one extra work vector!
-*/
 static PetscErrorCode KSPSetUp_CGNE(KSP ksp)
 {
   KSP_CG  *cgP   = (KSP_CG *)ksp->data;
@@ -32,8 +27,7 @@ static PetscErrorCode KSPSetUp_CGNE(KSP ksp)
   PetscCall(KSPSetWorkVecs(ksp, 4));
 
   /*
-     If user requested computations of eigenvalues then allocate work
-     work space needed
+     If user requested computations of eigenvalues then allocate work work space needed
   */
   if (ksp->calc_sings) {
     /* get space to store tridiagonal matrix for Lanczos */
@@ -45,17 +39,6 @@ static PetscErrorCode KSPSetUp_CGNE(KSP ksp)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*
-       KSPSolve_CGNE - This routine actually applies the conjugate gradient
-    method
-
-   Input Parameter:
-.     ksp - the Krylov space object that was set to use conjugate gradient, by, for
-            example, KSPCreate(MPI_Comm,KSP *ksp); KSPSetType(ksp,KSPCG);
-
-    Virtually identical to the KSPSolve_CG, it should definitely reuse the same code.
-
-*/
 static PetscErrorCode KSPSolve_CGNE(KSP ksp)
 {
   PetscInt    i, stored_max_it, eigs;
@@ -226,9 +209,9 @@ static PetscErrorCode KSPSolve_CGNE(KSP ksp)
 .   [1] -  Nachtigal, Reddy, and Trefethen, "How fast are nonsymmetric matrix iterations", 1992
 
    Developer Note:
-   This object is subclassed off of `KSPCG`
+   This object is subclassed off of `KSPCG`, see the source code in src/ksp/ksp/impls/cg for comments on the structure of the code
 
-.seealso: [](chapter_ksp), `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, 'KSPCG', `KSPLSQR', 'KSPCGLS`,
+.seealso: [](ch_ksp), `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, 'KSPCG', `KSPLSQR', 'KSPCGLS`,
           `KSPCGSetType()`, `KSPBICG`, `KSPSetComputeEigenvalues()`, `KSPComputeEigenvalues()`
 M*/
 

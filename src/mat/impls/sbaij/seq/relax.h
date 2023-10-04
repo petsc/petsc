@@ -1,4 +1,3 @@
-
 /*
     This is included by sbaij.c to generate unsigned short and regular versions of these two functions
 */
@@ -8,7 +7,7 @@
 
 #if defined(PETSC_KERNEL_USE_UNROLL_4)
   #define PetscSparseDensePlusDot_no_function(sum, r, xv, xi, nnz) \
-    { \
+    do { \
       if (nnz > 0) { \
         PetscInt nnz2 = nnz, rem = nnz & 0x3; \
         switch (rem) { \
@@ -29,11 +28,11 @@
         xv -= nnz; \
         xi -= nnz; \
       } \
-    }
+    } while (0)
 
 #elif defined(PETSC_KERNEL_USE_UNROLL_2)
   #define PetscSparseDensePlusDot_no_function(sum, r, xv, xi, nnz) \
-    { \
+    do { \
       PetscInt __i, __i1, __i2; \
       for (__i = 0; __i < nnz - 1; __i += 2) { \
         __i1 = xi[__i]; \
@@ -41,14 +40,14 @@
         sum += (xv[__i] * r[__i1] + xv[__i + 1] * r[__i2]); \
       } \
       if (nnz & 0x1) sum += xv[__i] * r[xi[__i]]; \
-    }
+    } while (0)
 
 #else
   #define PetscSparseDensePlusDot_no_function(sum, r, xv, xi, nnz) \
-    { \
+    do { \
       PetscInt __i; \
       for (__i = 0; __i < nnz; __i++) sum += xv[__i] * r[xi[__i]]; \
-    }
+    } while (0)
 #endif
 
 #if defined(USESHORT)

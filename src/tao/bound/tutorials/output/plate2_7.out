@@ -40,9 +40,8 @@ Tao Object: 3 MPI processes
         Mat Object: 3 MPI processes
           type: mpiaij
           rows=96, cols=96
-          total: nonzeros=594, allocated nonzeros=960
+          total: nonzeros=748, allocated nonzeros=748
           total number of mallocs used during MatSetValues calls=0
-            not using I-node (on process 0) routines
   total KSP iterations: 65
   Active Set subset type: matrixfree
   convergence tolerances: gatol=1e-05,   steptol=0.,   gttol=0.

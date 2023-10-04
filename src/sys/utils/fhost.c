@@ -18,25 +18,26 @@
 #if defined(PETSC_HAVE_NETDB_H)
   #include <netdb.h>
 #endif
+#include <errno.h>
 
 /*@C
-    PetscGetHostName - Returns the name of the host. This attempts to
-    return the entire Internet name. It may not return the same name
-    as `MPI_Get_processor_name()`.
+  PetscGetHostName - Returns the name of the host. This attempts to
+  return the entire Internet name. It may not return the same name
+  as `MPI_Get_processor_name()`.
 
-    Not Collective
+  Not Collective
 
-    Input Parameter:
-.   nlen - length of name
+  Input Parameter:
+. nlen - length of name
 
-    Output Parameter:
-.   name - contains host name.  Must be long enough to hold the name
+  Output Parameter:
+. name - contains host name.  Must be long enough to hold the name
            This is the fully qualified name, including the domain.
 
-    Level: developer
+  Level: developer
 
-   Fortran Note:
-   This routine has the format
+  Fortran Notes:
+  This routine has the format
 .vb
        character*(64) name
        call PetscGetHostName(name,ierr)
@@ -58,10 +59,10 @@ PetscErrorCode PetscGetHostName(char name[], size_t nlen)
     GetComputerName((LPTSTR)name, (LPDWORD)(&nnlen));
   }
 #elif defined(PETSC_HAVE_UNAME)
-  uname(&utname);
+  PetscCheck(!uname(&utname), PETSC_COMM_SELF, PETSC_ERR_SYS, "uname() due to \"%s\"", strerror(errno));
   PetscCall(PetscStrncpy(name, utname.nodename, nlen));
 #elif defined(PETSC_HAVE_GETHOSTNAME)
-  gethostname(name, nlen);
+  PetscCheck(!gethostname(name, nlen), PETSC_COMM_SELF, PETSC_ERR_SYS, "gethostname() due to \"%s\"", strerror(errno));
 #endif
   /* if there was not enough room then system call will not null terminate name */
   name[nlen - 1] = 0;
@@ -75,7 +76,7 @@ PetscErrorCode PetscGetHostName(char name[], size_t nlen)
     name[l++] = '.';
     name[l]   = 0;
 #if defined(PETSC_HAVE_GETDOMAINNAME)
-    PetscCheck(!getdomainname(name + l, nlen - l), PETSC_COMM_SELF, PETSC_ERR_SYS, "getdomainname()");
+    PetscCheck(!getdomainname(name + l, nlen - l), PETSC_COMM_SELF, PETSC_ERR_SYS, "getdomainname() due to \"%s\"", strerror(errno));
 #endif
     /* check if domain name is not a dnsdomainname and nuke it */
     PetscCall(PetscStrlen(name, &ll));

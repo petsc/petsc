@@ -18,7 +18,7 @@ PETSC_EXTERN PetscErrorCode DMCreateMatrix_Moab(DM dm, Mat *J)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(J, 3);
+  PetscAssertPointer(J, 3);
 
   /* next, need to allocate the non-zero arrays to enable pre-allocation */
   mtype = dm->mattype;
@@ -189,40 +189,39 @@ static PetscErrorCode DMMoabSetBlockFills_Private(PetscInt w, const PetscInt *fi
 }
 
 /*@C
-    DMMoabSetBlockFills - Sets the fill pattern in each block for a multi-component problem
-    of the matrix returned by `DMCreateMatrix()`.
+  DMMoabSetBlockFills - Sets the fill pattern in each block for a multi-component problem
+  of the matrix returned by `DMCreateMatrix()`.
 
-    Logically Collective
+  Logically Collective
 
-    Input Parameters:
-+   dm - the `DMMOAB` object
-.   dfill - the fill pattern in the diagonal block (may be `NULL`, means use dense block)
--   ofill - the fill pattern in the off-diagonal blocks
+  Input Parameters:
++ dm    - the `DMMOAB` object
+. dfill - the fill pattern in the diagonal block (may be `NULL`, means use dense block)
+- ofill - the fill pattern in the off-diagonal blocks
 
-    Level: developer
+  Level: developer
 
-    Notes:
-    This only makes sense when you are doing multicomponent problems but using the
-       MPIAIJ matrix format
+  Notes:
+  This only makes sense when you are doing multicomponent problems but using the
+  MPIAIJ matrix format
 
-           The format for dfill and ofill is a 2 dimensional dof by dof matrix with 1 entries
-       representing coupling and 0 entries for missing coupling. For example
+  The format for dfill and ofill is a 2 dimensional dof by dof matrix with 1 entries
+  representing coupling and 0 entries for missing coupling. For example
 .vb
              dfill[9] = {1, 0, 0,
                          1, 1, 0,
                          0, 1, 1}
 .ve
-       means that row 0 is coupled with only itself in the diagonal block, row 1 is coupled with
-       itself and row 0 (in the diagonal block) and row 2 is coupled with itself and row 1 (in the
-       diagonal block).
+  means that row 0 is coupled with only itself in the diagonal block, row 1 is coupled with
+  itself and row 0 (in the diagonal block) and row 2 is coupled with itself and row 1 (in the
+  diagonal block).
 
-     `DMDASetGetMatrix()` allows you to provide general code for those more complicated nonzero patterns then
-     can be represented in the dfill, ofill format
+  `DMDASetGetMatrix()` allows you to provide general code for those more complicated nonzero patterns then
+  can be represented in the dfill, ofill format
 
-   Contributed by Glenn Hammond
+  Contributed by Glenn Hammond
 
-.seealso `DMCreateMatrix()`, `DMDASetGetMatrix()`, `DMSetMatrixPreallocateOnly()`
-
+.seealso: `DMCreateMatrix()`, `DMDASetGetMatrix()`, `DMSetMatrixPreallocateOnly()`
 @*/
 PetscErrorCode DMMoabSetBlockFills(DM dm, const PetscInt *dfill, const PetscInt *ofill)
 {

@@ -1,10 +1,10 @@
 
-.. _chapter_network:
+.. _ch_network:
 
 Networks
 --------
 
-The DMNetwork class provides
+The ``DMNETWORK`` class provides
 abstractions for representing general unstructured networks such as
 communication networks, power grid, computer networks, transportation
 networks, electrical circuits, graphs, and others.
@@ -12,7 +12,7 @@ networks, electrical circuits, graphs, and others.
 Application flow
 ~~~~~~~~~~~~~~~~
 
-The general flow of an application code using DMNetwork is as
+The general flow of an application code using ``DMNETWORK`` is as
 follows:
 
 #. Create a network object.
@@ -33,13 +33,13 @@ follows:
       DMNetworkRegisterComponent(DM dm, const char *name, size_t size, PetscInt *compkey);
 
    Here, ``name`` is the component name, ``size`` is the size of
-   component data type, and ``compkey`` is an integer key that can be
+   component data, and ``compkey`` is an integer key that can be
    used for setting/getting the component at a vertex or an edge.
 
-#. A DMNetwork can consist of one or more physical subnetworks. When
-   multiple physical subnetworks are used one can (optionally) provide
-   coupling information between subnetworks which consist only of shared vertices of the physical subnetworks. The
-   topological sizes of the network are set by calling
+#. A ``DMNETWORK`` can consist of one or more physical subnetworks. Each subnetwork has its own mathematical model. When
+   multiple subnetworks are used one can (optionally) provide
+   coupling information between subnetworks. That is vertices that are *shared* between multiple subnetworks; edges can only belong to a single subnetwork. The
+   number of subnetwork is set by calling
 
    .. code-block::
 
@@ -77,7 +77,7 @@ follows:
    Here ``anet`` and ``bnet`` are the first and second subnetwork global numberings returned by ``DMNetworkAddSubnetwork()``,
    ``nsv`` is the number of vertices shared by the two subnetworks, ``asv`` and ``bsv`` are the vertex indices in the subnetwork ``anet`` and ``bnet`` .
 
-#. The next step is to have DMNetwork create a bare layout (graph) of
+#. The next step is to have ``DMNETWORK`` create a bare layout (graph) of
    the network by calling
 
    .. code-block::
@@ -98,10 +98,10 @@ follows:
    either ``DMNetworkGetVertexRange()``/``DMNetworkGetEdgeRange()``, ``DMNetworkGetSubnetwork()``, or ``DMNetworkGetSharedVertices()``;
    ``compkey`` is the component key returned when registering the component
    (``DMNetworkRegisterComponent()``); ``compdata`` holds the data for the
-   component; and ``nvar`` is the number of variables associated to the added component at this network point. DMNetwork supports setting multiple components
-   at a vertex/edge. At a shared vertex, DMNetwork currently requires the owner process of the vertex adds all the components and number of variables.
+   component; and ``nvar`` is the number of variables associated to the added component at this network point. ``DMNETWORK`` supports setting multiple components
+   at a vertex/edge. At a shared vertex, ``DMNETWORK`` currently requires the owner process of the vertex adds all the components and number of variables.
 
-   DMNetwork currently assumes the component data to be stored in a
+   ``DMNETWORK`` currently assumes the component data to be stored in a
    contiguous chunk of memory. As such, it does not do any
    packing/unpacking before/after the component data gets distributed.
    Any such serialization (packing/unpacking) should be done by the
@@ -129,7 +129,7 @@ follows:
 Utility functions
 ~~~~~~~~~~~~~~~~~
 
-``DMNetwork`` provides several utility functions for operations on the
+``DMNETWORK`` provides several utility functions for operations on the
 network. The most commonly used functions are: obtaining iterators for
 vertices/edges,
 
@@ -187,7 +187,7 @@ The components and the corresponding number of variables set at a vertex/edge ca
 
    DMNetworkGetComponent(DM dm, PetscInt p, PetscInt compnum, PetscInt *compkey, void **component, PetscInt *nvar)
 
-input ``compnum`` is the component number, output ``compkey`` is the key set by ``DMNetworkRegisterComponent``. An example
+input ``compnum`` is the component number, output ``compkey`` is the key set by ``DMNetworkRegisterComponent()``. An example
 of accessing and retrieving the components and number of variables at vertices is:
 
 .. code-block::

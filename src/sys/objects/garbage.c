@@ -18,42 +18,46 @@ static PetscErrorCode GarbageGetHMap_Private(MPI_Comm comm, PetscGarbage *garbag
 }
 
 /*@C
-    PetscObjectDelayedDestroy - Adds an object to a data structure for
-    later destruction.
+  PetscObjectDelayedDestroy - Adds an object to a data structure for
+  later destruction.
 
-    Not Collective
+  Not Collective
 
-    Input Parameter:
-.   obj - object to be destroyed
+  Input Parameter:
+. obj - object to be destroyed
 
-    Notes:
-    Analogue to `PetscObjectDestroy()` for use in managed languages.
+  Level: developer
 
-    A PETSc object is given a creation index at initialisation based on
-    the communicator it was created on and the order in which it is
-    created. When this function is passed a PETSc object, a pointer to
-    the object is stashed on a garbage dictionary (PetscHMapObj) which is
-    keyed by its creation index.
+  Notes:
+  Analogue to `PetscObjectDestroy()` for use in managed languages.
 
-    Objects stashed on this garbage dictionary can later be destroyed
-    with a call to `PetscGarbageCleanup()`.
+  A PETSc object is given a creation index at initialisation based on
+  the communicator it was created on and the order in which it is
+  created. When this function is passed a PETSc object, a pointer to
+  the object is stashed on a garbage dictionary (`PetscHMapObj`) which is
+  keyed by its creation index.
 
-    This function is intended for use with managed languages such as
-    Python or Julia, which may not destroy objects in a deterministic
-    order.
+  Objects stashed on this garbage dictionary can later be destroyed
+  with a call to `PetscGarbageCleanup()`.
 
-    Level: developer
+  This function is intended for use with managed languages such as
+  Python or Julia, which may not destroy objects in a deterministic
+  order.
 
-.seealso: `PetscGarbageCleanup()`
+  Serial objects (that have a communicator with size 1) are destroyed
+  eagerly since deadlocks cannot occur.
+
+.seealso: `PetscGarbageCleanup()`, `PetscObjectDestroy()`
 @*/
 PetscErrorCode PetscObjectDelayedDestroy(PetscObject *obj)
 {
-  MPI_Comm     petsc_comm;
+  MPI_Comm     comm;
+  PetscMPIInt  size;
   PetscInt     count;
   PetscGarbage garbage;
 
   PetscFunctionBegin;
-  PetscValidPointer(obj, 1);
+  PetscAssertPointer(obj, 1);
   /* Don't stash NULL pointers */
   if (*obj != NULL) {
     /* Elaborate check for getting non-cyclic reference counts */
@@ -67,9 +71,15 @@ PetscErrorCode PetscObjectDelayedDestroy(PetscObject *obj)
     /* Only stash if the (non-cyclic) reference count hits 0 */
     if (count == 0) {
       (*obj)->refct = 1;
-      PetscCall(PetscObjectGetComm(*obj, &petsc_comm));
-      PetscCall(GarbageGetHMap_Private(petsc_comm, &garbage));
-      PetscCall(PetscHMapObjSet(garbage.map, (*obj)->cidx, *obj));
+      PetscCall(PetscObjectGetComm(*obj, &comm));
+      PetscCallMPI(MPI_Comm_size(comm, &size));
+      /* Eagerly destroy serial objects */
+      if (size == 1) {
+        PetscCall(PetscObjectDestroy(obj));
+      } else {
+        PetscCall(GarbageGetHMap_Private(comm, &garbage));
+        PetscCall(PetscHMapObjSet(garbage.map, (*obj)->cidx, *obj));
+      }
     }
   }
   *obj = NULL;
@@ -129,7 +139,7 @@ PetscErrorCode GarbageKeyAllReduceIntersect_Private(MPI_Comm comm, PetscInt64 *s
   PetscCall(PetscSortInt64(*entries, set));
 
   /* Get the maximum size of all key sets */
-  PetscCallMPI(MPI_Allreduce(entries, &max_entries, 1, MPIU_INT, MPI_MAX, comm));
+  PetscCall(MPIU_Allreduce(entries, &max_entries, 1, MPIU_INT, MPI_MAX, comm));
   PetscCall(PetscMalloc1(max_entries + 1, &sendset));
   PetscCall(PetscMalloc1(max_entries + 1, &recvset));
   sendset[0] = (PetscInt64)*entries;
@@ -154,38 +164,38 @@ PetscErrorCode GarbageKeyAllReduceIntersect_Private(MPI_Comm comm, PetscInt64 *s
 }
 
 /*@C
-    PetscGarbageCleanup - Destroys objects placed in the garbage by
-    PetscObjectDelayedDestroy().
+  PetscGarbageCleanup - Destroys objects placed in the garbage by
+  `PetscObjectDelayedDestroy()`.
 
-    Collective
+  Collective
 
-    Input Parameter:
-.   comm      - communicator over which to perform collective cleanup
+  Input Parameter:
+. comm - MPI communicator over which to perform collective cleanup
 
-    Notes:
-    Implements a collective garbage collection.
-    A per- MPI communicator garbage dictionary is created to store
-    references to objects destroyed using PetscObjectDelayedDestroy().
-    Objects that appear in this dictionary on all ranks can be destroyed
-    by calling PetscGarbageCleanup().
+  Level: developer
 
-    This is done as follows:
-    1.  Keys of the garbage dictionary, which correspond to the creation
-        indices of the objects stashed, are sorted.
-    2.  A collective intersection of dictionary keys is performed by all
-        ranks in the communicator.
-    3.  The intersection is broadcast back to all ranks in the
-        communicator.
-    4.  The objects on the dictionary are collectively destroyed in
-        creation index order using a call to PetscObjectDestroy().
+  Notes:
+  Implements a collective garbage collection.
+  A per- MPI communicator garbage dictionary is created to store
+  references to objects destroyed using `PetscObjectDelayedDestroy()`.
+  Objects that appear in this dictionary on all MPI processes can be destroyed
+  by calling `PetscGarbageCleanup()`.
 
-    This function is intended for use with managed languages such as
-    Python or Julia, which may not destroy objects in a deterministic
-    order.
+  This is done as follows\:
+  1.  Keys of the garbage dictionary, which correspond to the creation
+  indices of the objects stashed, are sorted.
+  2.  A collective intersection of dictionary keys is performed by all
+  ranks in the communicator.
+  3.  The intersection is broadcast back to all ranks in the
+  communicator.
+  4.  The objects on the dictionary are collectively destroyed in
+  creation index order using a call to PetscObjectDestroy().
 
-    Level: developer
+  This function is intended for use with managed languages such as
+  Python or Julia, which may not destroy objects in a deterministic
+  order.
 
-.seealso: PetscObjectDelayedDestroy()
+.seealso: `PetscObjectDelayedDestroy()`
 @*/
 PetscErrorCode PetscGarbageCleanup(MPI_Comm comm)
 {

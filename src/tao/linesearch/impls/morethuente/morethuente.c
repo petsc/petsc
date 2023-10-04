@@ -1,3 +1,4 @@
+
 #include <petsc/private/taolinesearchimpl.h>
 #include <../src/tao/linesearch/impls/morethuente/morethuente.h>
 
@@ -136,6 +137,12 @@ static PetscErrorCode TaoLineSearchApply_MT(TaoLineSearch ls, Vec x, PetscReal *
       ls->step = stx;
 
     PetscCall(VecWAXPY(mt->work, ls->step, s, x)); /* W = X + step*S */
+
+    if (ls->step == 0.0) {
+      PetscCall(PetscInfo(ls, "Step size is zero.\n"));
+      ls->reason = TAOLINESEARCH_HALTED_LOWERBOUND;
+      break;
+    }
 
     if (ls->bounded) PetscCall(VecMedian(ls->lower, mt->work, ls->upper, mt->work));
     if (ls->usegts) {

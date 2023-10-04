@@ -3,19 +3,22 @@
 static PetscInt petsc_checkpointer_intensity = 1;
 
 /*@
-   PetscCheckPointerSetIntensity - An intense pointer check registers a signal handler and attempts to dereference to
-   confirm whether the address is valid.  An intensity of 0 never uses signal handlers, 1 uses them when not in a "hot"
-   function, and intensity of 2 always uses a signal handler.
+  PetscCheckPointerSetIntensity - Set the intensity of debug pointer checks
 
-   Not Collective
+  Not Collective
 
-   Input Parameter:
-.  intensity - how much to check pointers for validity
+  Input Parameter:
+. intensity - how much to check pointers for validity
 
-   Options Database Key:
-.  -check_pointer_intensity - intensity (0, 1, or 2)
+  Options Database Key:
+. -check_pointer_intensity - intensity (0, 1, or 2)
 
-   Level: advanced
+  Level: advanced
+
+  Notes:
+  An intense pointer check registers a signal handler and attempts to dereference to confirm
+  whether the address is valid.  An intensity of 0 never uses signal handlers, 1 uses them when
+  not in a "hot" function, and intensity of 2 always uses a signal handler.
 
 .seealso: `PetscCheckPointer()`, `PetscFunctionBeginHot()`
 @*/
@@ -54,18 +57,18 @@ void PetscSignalSegvCheckPointerOrMpi(void)
 }
 
 /*@C
-     PetscCheckPointer - Returns `PETSC_TRUE` if a pointer points to accessible data
+  PetscCheckPointer - Returns `PETSC_TRUE` if a pointer points to accessible data
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+     ptr - the pointer
--     dtype - the type of data the pointer is suppose to point to
+  Input Parameters:
++ ptr   - the pointer
+- dtype - the type of data the pointer is suppose to point to
 
-   Level: developer
+  Level: developer
 
-   Note:
-   This is a non-standard PETSc function in that it returns the result as the return code and does not return an error code
+  Note:
+  This is a non-standard PETSc function in that it returns the result as the return code and does not return an error code
 
 .seealso: `PetscCheckPointerSetIntensity()`
 @*/
@@ -89,7 +92,7 @@ PetscBool PetscCheckPointer(const void *ptr, PetscDataType dtype)
   } else {
     switch (dtype) {
     case PETSC_INT: {
-      PETSC_UNUSED PetscInt x = (PetscInt) * (volatile PetscInt *)ptr;
+      PETSC_UNUSED PetscInt x = *(volatile PetscInt *)ptr;
       break;
     }
   #if defined(PETSC_USE_COMPLEX)

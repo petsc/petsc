@@ -4,7 +4,6 @@ import os
 import sys
 import importlib
 import datetime as date
-import importlib
 
 # Check to ensure that the environmental variable PETSC_DIR has been assigned.
 # MPLCONFIGDIR is needed for matplotlib

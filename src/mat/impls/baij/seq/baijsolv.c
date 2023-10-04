@@ -14,6 +14,7 @@ PetscErrorCode MatSolve_SeqBAIJ_N_inplace(Mat A, Vec bb, Vec xx)
   const PetscScalar *b;
 
   PetscFunctionBegin;
+  PetscCheck(bs > 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Expected bs %" PetscInt_FMT " > 0", bs);
   PetscCall(VecGetArrayRead(bb, &b));
   PetscCall(VecGetArray(xx, &x));
   t = a->solve_work;
@@ -891,103 +892,6 @@ PetscErrorCode MatSolve_SeqBAIJ_4(Mat A, Vec bb, Vec xx)
     x[1 + idc] = t[1 + idt] = v[1] * s1 + v[5] * s2 + v[9] * s3 + v[13] * s4;
     x[2 + idc] = t[2 + idt] = v[2] * s1 + v[6] * s2 + v[10] * s3 + v[14] * s4;
     x[3 + idc] = t[3 + idt] = v[3] * s1 + v[7] * s2 + v[11] * s3 + v[15] * s4;
-  }
-
-  PetscCall(ISRestoreIndices(isrow, &rout));
-  PetscCall(ISRestoreIndices(iscol, &cout));
-  PetscCall(VecRestoreArrayRead(bb, &b));
-  PetscCall(VecRestoreArray(xx, &x));
-  PetscCall(PetscLogFlops(2.0 * 16 * (a->nz) - 4.0 * A->cmap->n));
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-PetscErrorCode MatSolve_SeqBAIJ_4_Demotion(Mat A, Vec bb, Vec xx)
-{
-  Mat_SeqBAIJ       *a     = (Mat_SeqBAIJ *)A->data;
-  IS                 iscol = a->col, isrow = a->row;
-  const PetscInt     n = a->mbs, *vi, *ai = a->i, *aj = a->j;
-  PetscInt           i, nz, idx, idt, idc;
-  const PetscInt    *r, *c, *diag = a->diag, *rout, *cout;
-  const MatScalar   *aa = a->a, *v;
-  MatScalar          s1, s2, s3, s4, x1, x2, x3, x4, *t;
-  PetscScalar       *x;
-  const PetscScalar *b;
-
-  PetscFunctionBegin;
-  PetscCall(VecGetArrayRead(bb, &b));
-  PetscCall(VecGetArray(xx, &x));
-  t = (MatScalar *)a->solve_work;
-
-  PetscCall(ISGetIndices(isrow, &rout));
-  r = rout;
-  PetscCall(ISGetIndices(iscol, &cout));
-  c = cout + (n - 1);
-
-  /* forward solve the lower triangular */
-  idx  = 4 * (*r++);
-  t[0] = (MatScalar)b[idx];
-  t[1] = (MatScalar)b[1 + idx];
-  t[2] = (MatScalar)b[2 + idx];
-  t[3] = (MatScalar)b[3 + idx];
-  for (i = 1; i < n; i++) {
-    v   = aa + 16 * ai[i];
-    vi  = aj + ai[i];
-    nz  = diag[i] - ai[i];
-    idx = 4 * (*r++);
-    s1  = (MatScalar)b[idx];
-    s2  = (MatScalar)b[1 + idx];
-    s3  = (MatScalar)b[2 + idx];
-    s4  = (MatScalar)b[3 + idx];
-    while (nz--) {
-      idx = 4 * (*vi++);
-      x1  = t[idx];
-      x2  = t[1 + idx];
-      x3  = t[2 + idx];
-      x4  = t[3 + idx];
-      s1 -= v[0] * x1 + v[4] * x2 + v[8] * x3 + v[12] * x4;
-      s2 -= v[1] * x1 + v[5] * x2 + v[9] * x3 + v[13] * x4;
-      s3 -= v[2] * x1 + v[6] * x2 + v[10] * x3 + v[14] * x4;
-      s4 -= v[3] * x1 + v[7] * x2 + v[11] * x3 + v[15] * x4;
-      v += 16;
-    }
-    idx        = 4 * i;
-    t[idx]     = s1;
-    t[1 + idx] = s2;
-    t[2 + idx] = s3;
-    t[3 + idx] = s4;
-  }
-  /* backward solve the upper triangular */
-  for (i = n - 1; i >= 0; i--) {
-    v   = aa + 16 * diag[i] + 16;
-    vi  = aj + diag[i] + 1;
-    nz  = ai[i + 1] - diag[i] - 1;
-    idt = 4 * i;
-    s1  = t[idt];
-    s2  = t[1 + idt];
-    s3  = t[2 + idt];
-    s4  = t[3 + idt];
-    while (nz--) {
-      idx = 4 * (*vi++);
-      x1  = t[idx];
-      x2  = t[1 + idx];
-      x3  = t[2 + idx];
-      x4  = t[3 + idx];
-      s1 -= v[0] * x1 + v[4] * x2 + v[8] * x3 + v[12] * x4;
-      s2 -= v[1] * x1 + v[5] * x2 + v[9] * x3 + v[13] * x4;
-      s3 -= v[2] * x1 + v[6] * x2 + v[10] * x3 + v[14] * x4;
-      s4 -= v[3] * x1 + v[7] * x2 + v[11] * x3 + v[15] * x4;
-      v += 16;
-    }
-    idc        = 4 * (*c--);
-    v          = aa + 16 * diag[i];
-    t[idt]     = v[0] * s1 + v[4] * s2 + v[8] * s3 + v[12] * s4;
-    t[1 + idt] = v[1] * s1 + v[5] * s2 + v[9] * s3 + v[13] * s4;
-    t[2 + idt] = v[2] * s1 + v[6] * s2 + v[10] * s3 + v[14] * s4;
-    t[3 + idt] = v[3] * s1 + v[7] * s2 + v[11] * s3 + v[15] * s4;
-    x[idc]     = (PetscScalar)t[idt];
-    x[1 + idc] = (PetscScalar)t[1 + idt];
-    x[2 + idc] = (PetscScalar)t[2 + idt];
-    x[3 + idc] = (PetscScalar)t[3 + idt];
   }
 
   PetscCall(ISRestoreIndices(isrow, &rout));

@@ -34,6 +34,22 @@ typedef struct {
   TSStepStatus status;
 } TS_Alpha;
 
+/* We need to transfer X0 which will be copied into sol_prev */
+static PetscErrorCode TSResizeRegister_Alpha(TS ts, PetscBool reg)
+{
+  TS_Alpha  *th     = (TS_Alpha *)ts->data;
+  const char name[] = "ts:alpha:X0";
+
+  PetscFunctionBegin;
+  if (reg && th->vec_sol_prev) {
+    PetscCall(TSResizeRegisterVec(ts, name, th->X0));
+  } else if (!reg) {
+    PetscCall(TSResizeRetrieveVec(ts, name, &th->X0));
+    PetscCall(PetscObjectReference((PetscObject)th->X0));
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 static PetscErrorCode TSAlpha_StageTime(TS ts)
 {
   TS_Alpha *th      = (TS_Alpha *)ts->data;
@@ -335,7 +351,7 @@ static PetscErrorCode TSSetUp_Alpha(TS ts)
   PetscBool match;
 
   PetscFunctionBegin;
-  PetscCall(VecDuplicate(ts->vec_sol, &th->X0));
+  if (!th->X0) PetscCall(VecDuplicate(ts->vec_sol, &th->X0));
   PetscCall(VecDuplicate(ts->vec_sol, &th->Xa));
   PetscCall(VecDuplicate(ts->vec_sol, &th->X1));
   PetscCall(VecDuplicate(ts->vec_sol, &th->V0));
@@ -424,8 +440,7 @@ static PetscErrorCode TSAlphaGetParams_Alpha(TS ts, PetscReal *alpha_m, PetscRea
 }
 
 /*MC
-      TSALPHA - ODE/DAE solver using the implicit Generalized-Alpha method
-                for first-order systems
+  TSALPHA - ODE/DAE solver using the implicit Generalized-Alpha method for first-order systems
 
   Level: beginner
 
@@ -439,7 +454,7 @@ static PetscErrorCode TSAlphaGetParams_Alpha(TS ts, PetscReal *alpha_m, PetscRea
   Dynamics with Improved Numerical Dissipation: The Generalized-alpha
   Method" ASME Journal of Applied Mechanics, 60, 371:375, 1993.
 
-.seealso: [](chapter_ts), `TS`, `TSCreate()`, `TSSetType()`, `TSAlphaSetRadius()`, `TSAlphaSetParams()`
+.seealso: [](ch_ts), `TS`, `TSCreate()`, `TSSetType()`, `TSAlphaSetRadius()`, `TSAlphaSetParams()`
 M*/
 PETSC_EXTERN PetscErrorCode TSCreate_Alpha(TS ts)
 {
@@ -455,6 +470,7 @@ PETSC_EXTERN PetscErrorCode TSCreate_Alpha(TS ts)
   ts->ops->evaluatewlte   = TSEvaluateWLTE_Alpha;
   ts->ops->rollback       = TSRollBack_Alpha;
   ts->ops->interpolate    = TSInterpolate_Alpha;
+  ts->ops->resizeregister = TSResizeRegister_Alpha;
   ts->ops->snesfunction   = SNESTSFormFunction_Alpha;
   ts->ops->snesjacobian   = SNESTSFormJacobian_Alpha;
   ts->default_adapt_type  = TSADAPTNONE;
@@ -477,27 +493,29 @@ PETSC_EXTERN PetscErrorCode TSCreate_Alpha(TS ts)
 
 /*@
   TSAlphaSetRadius - sets the desired spectral radius of the method for `TSALPHA`
-                     (i.e. high-frequency numerical damping)
+  (i.e. high-frequency numerical damping)
 
   Logically Collective
 
-  The algorithmic parameters \alpha_m and \alpha_f of the
-  generalized-\alpha method can be computed in terms of a specified
-  spectral radius \rho in [0,1] for infinite time step in order to
-  control high-frequency numerical damping:
-    \alpha_m = 0.5*(3-\rho)/(1+\rho)
-    \alpha_f = 1/(1+\rho)
-
   Input Parameters:
-+  ts - timestepping context
--  radius - the desired spectral radius
++ ts     - timestepping context
+- radius - the desired spectral radius
 
   Options Database Key:
-.  -ts_alpha_radius <radius> - set alpha radius
+. -ts_alpha_radius <radius> - set alpha radius
 
   Level: intermediate
 
-.seealso: [](chapter_ts), `TS`, `TSALPHA`, `TSAlphaSetParams()`, `TSAlphaGetParams()`
+  Notes:
+  The algorithmic parameters $\alpha_m$ and $\alpha_f$ of the generalized-$\alpha$ method can
+  be computed in terms of a specified spectral radius $\rho$ in [0, 1] for infinite time step
+  in order to control high-frequency numerical damping\:
+  $$
+  \alpha_m = 0.5*(3-\rho)/(1+\rho)
+  \alpha_f = 1/(1+\rho)
+  $$
+
+.seealso: [](ch_ts), `TS`, `TSALPHA`, `TSAlphaSetParams()`, `TSAlphaGetParams()`
 @*/
 PetscErrorCode TSAlphaSetRadius(TS ts, PetscReal radius)
 {
@@ -514,36 +532,35 @@ PetscErrorCode TSAlphaSetRadius(TS ts, PetscReal radius)
 
   Logically Collective
 
-  Second-order accuracy can be obtained so long as:
-    \gamma = 0.5 + alpha_m - alpha_f
-
-  Unconditional stability requires:
-    \alpha_m >= \alpha_f >= 0.5
-
-  Backward Euler method is recovered with:
-    \alpha_m = \alpha_f = gamma = 1
-
   Input Parameters:
-+  ts - timestepping context
-.  alpha_m - algorithmic parameter
-.  alpha_f - algorithmic parameter
--  gamma   - algorithmic parameter
++ ts      - timestepping context
+. alpha_m - algorithmic parameter
+. alpha_f - algorithmic parameter
+- gamma   - algorithmic parameter
 
-   Options Database Keys:
-+  -ts_alpha_alpha_m <alpha_m> - set alpha_m
-.  -ts_alpha_alpha_f <alpha_f> - set alpha_f
--  -ts_alpha_gamma   <gamma> - set gamma
+  Options Database Keys:
++ -ts_alpha_alpha_m <alpha_m> - set alpha_m
+. -ts_alpha_alpha_f <alpha_f> - set alpha_f
+- -ts_alpha_gamma   <gamma>   - set gamma
 
   Level: advanced
 
   Note:
-  Use of this function is normally only required to hack `TSALPHA` to
-  use a modified integration scheme. Users should call
-  `TSAlphaSetRadius()` to set the desired spectral radius of the methods
-  (i.e. high-frequency damping) in order so select optimal values for
-  these parameters.
+  Second-order accuracy can be obtained so long as\:
+  $\gamma = 0.5 + alpha_m - alpha_f$
 
-.seealso: [](chapter_ts), `TS`, `TSALPHA`, `TSAlphaSetRadius()`, `TSAlphaGetParams()`
+  Unconditional stability requires\:
+  $\alpha_m >= \alpha_f >= 0.5$
+
+  Backward Euler method is recovered with\:
+  $\alpha_m = \alpha_f = gamma = 1$
+
+  Use of this function is normally only required to hack `TSALPHA` to use a modified
+  integration scheme. Users should call `TSAlphaSetRadius()` to set the desired spectral radius
+  of the methods (i.e. high-frequency damping) in order so select optimal values for these
+  parameters.
+
+.seealso: [](ch_ts), `TS`, `TSALPHA`, `TSAlphaSetRadius()`, `TSAlphaGetParams()`
 @*/
 PetscErrorCode TSAlphaSetParams(TS ts, PetscReal alpha_m, PetscReal alpha_f, PetscReal gamma)
 {
@@ -562,31 +579,29 @@ PetscErrorCode TSAlphaSetParams(TS ts, PetscReal alpha_m, PetscReal alpha_f, Pet
   Not Collective
 
   Input Parameter:
-.  ts - timestepping context
+. ts - timestepping context
 
   Output Parameters:
-+  alpha_m - algorithmic parameter
-.  alpha_f - algorithmic parameter
--  gamma   - algorithmic parameter
++ alpha_m - algorithmic parameter
+. alpha_f - algorithmic parameter
+- gamma   - algorithmic parameter
 
   Level: advanced
 
   Note:
-  Use of this function is normally only required to hack `TSALPHA` to
-  use a modified integration scheme. Users should call
-  `TSAlphaSetRadius()` to set the high-frequency damping (i.e. spectral
-  radius of the method) in order so select optimal values for these
-  parameters.
+  Use of this function is normally only required to hack `TSALPHA` to use a modified
+  integration scheme. Users should call `TSAlphaSetRadius()` to set the high-frequency damping
+  (i.e. spectral radius of the method) in order so select optimal values for these parameters.
 
-.seealso: [](chapter_ts), `TS`, `TSALPHA`, `TSAlphaSetRadius()`, `TSAlphaSetParams()`
+.seealso: [](ch_ts), `TS`, `TSALPHA`, `TSAlphaSetRadius()`, `TSAlphaSetParams()`
 @*/
 PetscErrorCode TSAlphaGetParams(TS ts, PetscReal *alpha_m, PetscReal *alpha_f, PetscReal *gamma)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
-  if (alpha_m) PetscValidRealPointer(alpha_m, 2);
-  if (alpha_f) PetscValidRealPointer(alpha_f, 3);
-  if (gamma) PetscValidRealPointer(gamma, 4);
+  if (alpha_m) PetscAssertPointer(alpha_m, 2);
+  if (alpha_f) PetscAssertPointer(alpha_f, 3);
+  if (gamma) PetscAssertPointer(gamma, 4);
   PetscUseMethod(ts, "TSAlphaGetParams_C", (TS, PetscReal *, PetscReal *, PetscReal *), (ts, alpha_m, alpha_f, gamma));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

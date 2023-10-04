@@ -4,7 +4,7 @@
 #include <petsc/private/dmswarmimpl.h>
 #include "../src/dm/impls/swarm/data_bucket.h"
 
-PetscErrorCode private_DMSwarmCreateCellLocalCoords_DA_Q1_Regular(PetscInt dim, PetscInt np[], PetscInt *_npoints, PetscReal **_xi)
+static PetscErrorCode private_DMSwarmCreateCellLocalCoords_DA_Q1_Regular(PetscInt dim, PetscInt np[], PetscInt *_npoints, PetscReal **_xi)
 {
   PetscReal *xi;
   PetscInt   d, npoints = 0, cnt;
@@ -65,7 +65,7 @@ PetscErrorCode private_DMSwarmCreateCellLocalCoords_DA_Q1_Regular(PetscInt dim, 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode private_DMSwarmCreateCellLocalCoords_DA_Q1_Gauss(PetscInt dim, PetscInt np_1d, PetscInt *_npoints, PetscReal **_xi)
+static PetscErrorCode private_DMSwarmCreateCellLocalCoords_DA_Q1_Gauss(PetscInt dim, PetscInt np_1d, PetscInt *_npoints, PetscReal **_xi)
 {
   PetscQuadrature  quadrature;
   const PetscReal *quadrature_xi;
@@ -85,7 +85,7 @@ PetscErrorCode private_DMSwarmCreateCellLocalCoords_DA_Q1_Gauss(PetscInt dim, Pe
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode private_DMSwarmInsertPointsUsingCellDM_DA_Q1(DM dm, DM dmc, PetscInt npoints, DMSwarmPICLayoutType layout)
+static PetscErrorCode private_DMSwarmInsertPointsUsingCellDM_DA_Q1(DM dm, DM dmc, PetscInt npoints, DMSwarmPICLayoutType layout)
 {
   PetscInt           dim, npoints_q;
   PetscInt           nel, npe, e, q, k, d;
@@ -205,118 +205,6 @@ PetscErrorCode private_DMSwarmInsertPointsUsingCellDM_DA(DM dm, DM celldm, DMSwa
   case DMDA_ELEMENT_Q1:
     PetscCheck(dim != 1, PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Support only available for dim = 2, 3");
     PetscCall(private_DMSwarmInsertPointsUsingCellDM_DA_Q1(dm, celldm, layout_param, layout));
-    break;
-  }
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-PetscErrorCode DMSwarmProjectField_ApproxQ1_DA_2D(DM swarm, PetscReal *swarm_field, DM dm, Vec v_field)
-{
-  Vec                v_field_l, denom_l, coor_l, denom;
-  PetscScalar       *_field_l, *_denom_l;
-  PetscInt           k, p, e, npoints, nel, npe;
-  PetscInt          *mpfield_cell;
-  PetscReal         *mpfield_coor;
-  const PetscInt    *element_list;
-  const PetscInt    *element;
-  PetscScalar        xi_p[2], Ni[4];
-  const PetscScalar *_coor;
-
-  PetscFunctionBegin;
-  PetscCall(VecZeroEntries(v_field));
-
-  PetscCall(DMGetLocalVector(dm, &v_field_l));
-  PetscCall(DMGetGlobalVector(dm, &denom));
-  PetscCall(DMGetLocalVector(dm, &denom_l));
-  PetscCall(VecZeroEntries(v_field_l));
-  PetscCall(VecZeroEntries(denom));
-  PetscCall(VecZeroEntries(denom_l));
-
-  PetscCall(VecGetArray(v_field_l, &_field_l));
-  PetscCall(VecGetArray(denom_l, &_denom_l));
-
-  PetscCall(DMGetCoordinatesLocal(dm, &coor_l));
-  PetscCall(VecGetArrayRead(coor_l, &_coor));
-
-  PetscCall(DMDAGetElements(dm, &nel, &npe, &element_list));
-  PetscCall(DMSwarmGetLocalSize(swarm, &npoints));
-  PetscCall(DMSwarmGetField(swarm, DMSwarmPICField_coor, NULL, NULL, (void **)&mpfield_coor));
-  PetscCall(DMSwarmGetField(swarm, DMSwarmPICField_cellid, NULL, NULL, (void **)&mpfield_cell));
-
-  for (p = 0; p < npoints; p++) {
-    PetscReal         *coor_p;
-    const PetscScalar *x0;
-    const PetscScalar *x2;
-    PetscScalar        dx[2];
-
-    e       = mpfield_cell[p];
-    coor_p  = &mpfield_coor[2 * p];
-    element = &element_list[npe * e];
-
-    /* compute local coordinates: (xp-x0)/dx = (xip+1)/2 */
-    x0 = &_coor[2 * element[0]];
-    x2 = &_coor[2 * element[2]];
-
-    dx[0] = x2[0] - x0[0];
-    dx[1] = x2[1] - x0[1];
-
-    xi_p[0] = 2.0 * (coor_p[0] - x0[0]) / dx[0] - 1.0;
-    xi_p[1] = 2.0 * (coor_p[1] - x0[1]) / dx[1] - 1.0;
-
-    /* evaluate basis functions */
-    Ni[0] = 0.25 * (1.0 - xi_p[0]) * (1.0 - xi_p[1]);
-    Ni[1] = 0.25 * (1.0 + xi_p[0]) * (1.0 - xi_p[1]);
-    Ni[2] = 0.25 * (1.0 + xi_p[0]) * (1.0 + xi_p[1]);
-    Ni[3] = 0.25 * (1.0 - xi_p[0]) * (1.0 + xi_p[1]);
-
-    for (k = 0; k < npe; k++) {
-      _field_l[element[k]] += Ni[k] * swarm_field[p];
-      _denom_l[element[k]] += Ni[k];
-    }
-  }
-
-  PetscCall(DMSwarmRestoreField(swarm, DMSwarmPICField_cellid, NULL, NULL, (void **)&mpfield_cell));
-  PetscCall(DMSwarmRestoreField(swarm, DMSwarmPICField_coor, NULL, NULL, (void **)&mpfield_coor));
-  PetscCall(DMDARestoreElements(dm, &nel, &npe, &element_list));
-  PetscCall(VecRestoreArrayRead(coor_l, &_coor));
-  PetscCall(VecRestoreArray(v_field_l, &_field_l));
-  PetscCall(VecRestoreArray(denom_l, &_denom_l));
-
-  PetscCall(DMLocalToGlobalBegin(dm, v_field_l, ADD_VALUES, v_field));
-  PetscCall(DMLocalToGlobalEnd(dm, v_field_l, ADD_VALUES, v_field));
-  PetscCall(DMLocalToGlobalBegin(dm, denom_l, ADD_VALUES, denom));
-  PetscCall(DMLocalToGlobalEnd(dm, denom_l, ADD_VALUES, denom));
-
-  PetscCall(VecPointwiseDivide(v_field, v_field, denom));
-
-  PetscCall(DMRestoreLocalVector(dm, &v_field_l));
-  PetscCall(DMRestoreLocalVector(dm, &denom_l));
-  PetscCall(DMRestoreGlobalVector(dm, &denom));
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-PetscErrorCode private_DMSwarmProjectFields_DA(DM swarm, DM celldm, PetscInt project_type, PetscInt nfields, DMSwarmDataField dfield[], Vec vecs[])
-{
-  PetscInt        f, dim;
-  DMDAElementType etype;
-
-  PetscFunctionBegin;
-  PetscCall(DMDAGetElementType(celldm, &etype));
-  PetscCheck(etype != DMDA_ELEMENT_P1, PetscObjectComm((PetscObject)swarm), PETSC_ERR_SUP, "Only Q1 DMDA supported");
-
-  PetscCall(DMGetDimension(swarm, &dim));
-  switch (dim) {
-  case 2:
-    for (f = 0; f < nfields; f++) {
-      PetscReal *swarm_field;
-
-      PetscCall(DMSwarmDataFieldGetEntries(dfield[f], (void **)&swarm_field));
-      PetscCall(DMSwarmProjectField_ApproxQ1_DA_2D(swarm, swarm_field, celldm, vecs[f]));
-    }
-    break;
-  case 3:
-    SETERRQ(PetscObjectComm((PetscObject)swarm), PETSC_ERR_SUP, "No support for 3D");
-  default:
     break;
   }
   PetscFunctionReturn(PETSC_SUCCESS);

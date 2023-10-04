@@ -1,6 +1,4 @@
-
-#ifndef __SBAIJ_H
-#define __SBAIJ_H
+#pragma once
 #include <petsc/private/matimpl.h>
 #include <../src/mat/impls/baij/seq/baij.h>
 
@@ -158,4 +156,4 @@ PETSC_INTERN PetscErrorCode MatGetRow_SeqSBAIJ(Mat, PetscInt, PetscInt *, PetscI
 PETSC_INTERN PetscErrorCode MatRestoreRow_SeqSBAIJ(Mat, PetscInt, PetscInt *, PetscInt **, PetscScalar **);
 PETSC_INTERN PetscErrorCode MatZeroRows_SeqSBAIJ(Mat, IS, PetscScalar *, Vec, Vec);
 
-#endif
+PETSC_INTERN PetscErrorCode MatEliminateZeros_SeqSBAIJ(Mat, PetscBool);

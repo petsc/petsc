@@ -16,7 +16,7 @@ const char *const PCExoticTypes[] = {"face", "wirebasket", "PCExoticType", "PC_E
       DMDAGetWireBasketInterpolation - Gets the interpolation for a wirebasket based coarse space
 
 */
-PetscErrorCode DMDAGetWireBasketInterpolation(PC pc, DM da, PC_Exotic *exotic, Mat Aglobal, MatReuse reuse, Mat *P)
+static PetscErrorCode DMDAGetWireBasketInterpolation(PC pc, DM da, PC_Exotic *exotic, Mat Aglobal, MatReuse reuse, Mat *P)
 {
   PetscInt               dim, i, j, k, m, n, p, dof, Nint, Nface, Nwire, Nsurf, *Iint, *Isurf, cint = 0, csurf = 0, istart, jstart, kstart, *II, N, c = 0;
   PetscInt               mwidth, nwidth, pwidth, cnt, mp, np, pp, Ntotal, gl[26], *globals, Ng, *IIint, *IIsurf;
@@ -365,7 +365,7 @@ PetscErrorCode DMDAGetWireBasketInterpolation(PC pc, DM da, PC_Exotic *exotic, M
       DMDAGetFaceInterpolation - Gets the interpolation for a face based coarse space
 
 */
-PetscErrorCode DMDAGetFaceInterpolation(PC pc, DM da, PC_Exotic *exotic, Mat Aglobal, MatReuse reuse, Mat *P)
+static PetscErrorCode DMDAGetFaceInterpolation(PC pc, DM da, PC_Exotic *exotic, Mat Aglobal, MatReuse reuse, Mat *P)
 {
   PetscInt               dim, i, j, k, m, n, p, dof, Nint, Nface, Nwire, Nsurf, *Iint, *Isurf, cint = 0, csurf = 0, istart, jstart, kstart, *II, N, c = 0;
   PetscInt               mwidth, nwidth, pwidth, cnt, mp, np, pp, Ntotal, gl[6], *globals, Ng, *IIint, *IIsurf;
@@ -650,29 +650,29 @@ PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
-   PCExoticSetType - Sets the type of coarse grid interpolation to use
+  PCExoticSetType - Sets the type of coarse grid interpolation to use
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  pc - the preconditioner context
--  type - either PC_EXOTIC_FACE or PC_EXOTIC_WIREBASKET (defaults to face)
+  Input Parameters:
++ pc   - the preconditioner context
+- type - either PC_EXOTIC_FACE or PC_EXOTIC_WIREBASKET (defaults to face)
 
-   Notes:
-    The face based interpolation has 1 degree of freedom per face and ignores the
-     edge and vertex values completely in the coarse problem. For any seven point
-     stencil the interpolation of a constant on all faces into the interior is that constant.
+  Notes:
+  The face based interpolation has 1 degree of freedom per face and ignores the
+  edge and vertex values completely in the coarse problem. For any seven point
+  stencil the interpolation of a constant on all faces into the interior is that constant.
 
-     The wirebasket interpolation has 1 degree of freedom per vertex, per edge and
-     per face. A constant on the subdomain boundary is interpolated as that constant
-     in the interior of the domain.
+  The wirebasket interpolation has 1 degree of freedom per vertex, per edge and
+  per face. A constant on the subdomain boundary is interpolated as that constant
+  in the interior of the domain.
 
-     The coarse grid matrix is obtained via the Galerkin computation A_c = R A R^T, hence
-     if A is nonsingular A_c is also nonsingular.
+  The coarse grid matrix is obtained via the Galerkin computation A_c = R A R^T, hence
+  if A is nonsingular A_c is also nonsingular.
 
-     Both interpolations are suitable for only scalar problems.
+  Both interpolations are suitable for only scalar problems.
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `PCEXOTIC`, `PCExoticType()`
 @*/
@@ -695,7 +695,7 @@ static PetscErrorCode PCExoticSetType_Exotic(PC pc, PCExoticType type)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PCSetUp_Exotic(PC pc)
+static PetscErrorCode PCSetUp_Exotic(PC pc)
 {
   Mat        A;
   PC_MG     *mg    = (PC_MG *)pc->data;
@@ -718,7 +718,7 @@ PetscErrorCode PCSetUp_Exotic(PC pc)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PCDestroy_Exotic(PC pc)
+static PetscErrorCode PCDestroy_Exotic(PC pc)
 {
   PC_MG     *mg  = (PC_MG *)pc->data;
   PC_Exotic *ctx = (PC_Exotic *)mg->innerctx;
@@ -732,7 +732,7 @@ PetscErrorCode PCDestroy_Exotic(PC pc)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PCView_Exotic(PC pc, PetscViewer viewer)
+static PetscErrorCode PCView_Exotic(PC pc, PetscViewer viewer)
 {
   PC_MG     *mg = (PC_MG *)pc->data;
   PetscBool  iascii;
@@ -763,7 +763,7 @@ PetscErrorCode PCView_Exotic(PC pc, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PCSetFromOptions_Exotic(PC pc, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode PCSetFromOptions_Exotic(PC pc, PetscOptionItems *PetscOptionsObject)
 {
   PetscBool    flg;
   PC_MG       *mg = (PC_MG *)pc->data;
@@ -779,6 +779,7 @@ PetscErrorCode PCSetFromOptions_Exotic(PC pc, PetscOptionItems *PetscOptionsObje
     if (!ctx->ksp) {
       const char *prefix;
       PetscCall(KSPCreate(PETSC_COMM_SELF, &ctx->ksp));
+      PetscCall(KSPSetNestLevel(ctx->ksp, pc->kspnestlevel));
       PetscCall(KSPSetErrorIfNotConverged(ctx->ksp, pc->erroriffailure));
       PetscCall(PetscObjectIncrementTabLevel((PetscObject)ctx->ksp, (PetscObject)pc, 1));
       PetscCall(PCGetOptionsPrefix(pc, &prefix));

@@ -1,3 +1,5 @@
+#pragma once
+
 static const unsigned char PetscDrawCmap_viridis[256 - PETSC_DRAW_BASIC_COLORS][3] = {
   {68,  1,   84 },
   {68,  2,   85 },

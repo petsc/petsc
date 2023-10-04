@@ -186,25 +186,25 @@
       end subroutine
 
       subroutine PetscSubcommView(a,b,z)
-       import tPetscSubComm,tPetscViewer
+       import tPetscSubcomm,tPetscViewer
        PetscSubcomm a ! PetscSubcomm
        PetscViewer b ! PetscViewer
        PetscErrorCode z
       end subroutine
       subroutine PetscSubcommGetParent(a,b,z)
-       import tPetscSubComm
+       import tPetscSubcomm
        PetscSubcomm a ! PetscSubcomm
        MPI_Comm b ! MPI_Comm
        PetscErrorCode z
        end subroutine
       subroutine PetscSubcommGetContiguousParent(a,b,z)
-       import tPetscSubComm
+       import tPetscSubcomm
        PetscSubcomm a ! PetscSubcomm
        MPI_Comm b ! MPI_Comm
        PetscErrorCode z
        end subroutine
       subroutine PetscSubcommGetChild(a,b,z)
-       import tPetscSubComm
+       import tPetscSubcomm
        PetscSubcomm a ! PetscSubcomm
        MPI_Comm b ! MPI_Comm
        PetscErrorCode z
@@ -248,7 +248,6 @@
       end subroutine PetscLogStagePush
       end Interface
 
-#if defined(PETSC_USE_LOG)
       Interface
       function PetscASend(c, d) bind(c,name='PetscASend') result(i)
           use,intrinsic :: iso_c_binding
@@ -269,10 +268,9 @@
       function PetscAReduce() bind(c,name='PetscAReduce') result(i)
           use,intrinsic :: iso_c_binding
           implicit none
-          integer(c_int)        :: i
+          integer(c_int) :: i
       end function PetscAReduce
       end Interface
-#endif
 
       Interface
         Subroutine PetscIntArray1dDestroyF90(a,ierr)

@@ -8,7 +8,7 @@ CONFIGDIR := $(PETSC_DIR)/config
 # TESTSRCDIR is always relative to gmakefile.test
 #  This must be before includes
 mkfile_path := $(abspath $(lastword $(MAKEFILE_LIST)))
-TESTSRCDIR := $(dir $(mkfile_path))src
+TESTSRCDIR ?= $(dir $(mkfile_path))src
 
 -include $(PETSC_DIR)/$(PETSC_ARCH)/lib/petsc/conf/petscvariables
 -include $(PETSC_DIR)/lib/petsc/conf/variables
@@ -19,7 +19,7 @@ TESTLOGTAPFILE ?= $(TESTDIR)/test_$(PETSC_ARCH)_tap.log
 TESTLOGERRFILE ?= $(TESTDIR)/test_$(PETSC_ARCH)_err.log
 EXAMPLESDIR := $(TESTSRCDIR)
 
-pkgs := sys vec mat dm ksp snes ts tao
+pkgs ?= sys vec mat dm ksp snes ts tao
 
 petscconf      := $(PETSC_DIR)/$(PETSC_ARCH)/include/petscconf.h
 petscvariables := $(PETSC_DIR)/$(PETSC_ARCH)/lib/petsc/conf/petscvariables
@@ -43,8 +43,8 @@ MAKEFLAGS_SILENT=$(findstring s,$(MAKEFLAGS_SHORT))
 V ?= $(if $(MAKEFLAGS_SILENT),0)
 ifeq ($(V),)  # Default
   quiet_HELP := "Use \"$(MAKE) V=1\" to see verbose compile lines, \"$(MAKE) V=0\" to suppress.\n"
-  quiet = @printf $(quiet_HELP)$(eval quiet_HELP:=)"  %10s %s\n" "$1$2" "$@"; $($1)
-  quiettest = @printf "  %10s %s\n" "TEST" "$(@:$(TESTDIR)/counts/%.counts=%)";
+  quiet = @printf $(quiet_HELP)$(eval quiet_HELP:=)" %10s %s\n" "$1$2" "$@"; $($1)
+  quiettest = @printf " %10s %s\n" "TEST" "$(@:$(TESTDIR)/counts/%.counts=%)";
 else ifeq ($(V),0)		# Suppress entire command
   quiet = @$($1)
   quiettest = @
@@ -99,9 +99,9 @@ ifdef TIMEOUT
 endif
 
 $(generatedtest) : $(petscconf) $(petscvariables) $(CONFIGDIR)/gmakegentest.py $(TESTDIR)/.DIR | $$(@D)/.DIR
-	$(PYTHON) $(CONFIGDIR)/gmakegentest.py --petsc-dir=$(PETSC_DIR) --petsc-arch=$(PETSC_ARCH) --testdir=$(TESTDIR)
+	$(PYTHON) $(CONFIGDIR)/gmakegentest.py --petsc-dir=$(PETSC_DIR) --petsc-arch=$(PETSC_ARCH) --testdir=$(TESTDIR) --srcdir $(TESTSRCDIR) --pkg-pkgs "$(pkgs)"
 
-ifneq ($(filter-out help clean check info libs all install install-lib checkbadSource checkbadFileChange allfortranstubs alletags clangformat checkclangformat get%,$(MAKECMDGOALS:clean%=clean)),)
+ifneq ($(filter-out help docs clean check info gmakeinfo libs all install install-lib checkbadSource checkbadFileChange deletefortranstubs allfortranstubs allfortranstubsinplace alletags clangformat checkclangformat get%,$(MAKECMDGOALS:clean%=clean)),)
 include $(generatedtest)
 endif
 
@@ -143,7 +143,7 @@ endif
 #
 # The solution is not ideal in the sense we have to duplicate the same workaround to any external libraries
 # using C++17 inline static variables. We have to wait for GNU to clarify this issue.
-PETSC_COMPILE.kokkos.cxx = $(filter-out -fvisibility=hidden,$(KOKKOS_COMPILE))
+PETSC_COMPILE.kokkos.cxx = $(filter-out -fvisibility=hidden,$(subst -Xcompiler -fvisibility=hidden ,,$(strip $(KOKKOS_COMPILE))))
 
 ifneq ($(RAJA_USE_CUDA_COMPILER),)
   PETSC_COMPILE.raja.cxx  = ${CUDAC} $(MPICXX_INCLUDES) ${CUDAC_FLAGS} -x cu -Xcudafe "--display_error_number" -c --compiler-options="${PETSC_CXXCPPFLAGS} ${PETSC_CC_INCLUDES} ${CUDA_CXXFLAGS}" --expt-extended-lambda --expt-relaxed-constexpr
@@ -425,7 +425,7 @@ report_tests: starttime $(TESTTARGETS)
 	$(PYTHON) $(CONFIGDIR)/report_tests.py -m $(MAKE) -d $(TESTDIR)/counts -t 5 -e $${elapsed_time} $(showreport)
 
 check_output:
-	$(PYTHON) $(CONFIGDIR)/gmakegentest.py --petsc-dir=$(PETSC_DIR) --petsc-arch=$(PETSC_ARCH) --testdir=$(TESTDIR) --check-output
+	$(PYTHON) $(CONFIGDIR)/gmakegentest.py --petsc-dir=$(PETSC_DIR) --petsc-arch=$(PETSC_ARCH) --testdir=$(TESTDIR)  --srcdir $(TESTSRCDIR) --pkg-pkgs "$(pkgs)" --check-output
 
 # If users make is a gnumake then these messages are provided even if the user does not do make -f gmakefile.test
 HASGMAKEFILE := $(filter gmakefile,$(MAKEFILE_LIST))
@@ -450,6 +450,7 @@ help-nontest:
 	-@echo "   libs - build (update) the PETSc and related libraries"
 	-@echo "   check - run a basic check that the libraries are built correctly and can be used"
 	-@echo "   "
+	-@echo "   getmpiexec - print the mpiexec to use to run PETSc programs"
 	-@echo "   getlinklibs - print the libraries that a PETSc application must link against"
 	-@echo "   getincludedirs - print the include directories that a PETSc application must be compiled against"
 	-@echo "   getcflags - print the C compiler flags PETSc is using"
@@ -463,8 +464,9 @@ help-nontest:
 	-@echo "Developer rules:"
 	-@echo "   docs - build all the PETSc documentation locally as a website"
 	-@echo "   clean - delete libraries and Fortran module files (used in $PETSC_DIR)"
-	-@echo "           delete compilied examples, .o and related files (used in tutorials or test directories)"
+	-@echo "           delete compiled examples, .o and related files (used in tutorials or test directories)"
 	-@echo "   clangformat - run clangformat on the PETSc C/C++ source code"
+	-@echo "   clang-tidy - run clang-tidy on the PETSc C code"
 	-@echo "   allfortranstubs - regenerate Fortran stubs/interface definitions, needed after git pulls or source code changes"
 	-@echo "   deletefortranstubs - delete the generated Fortran stubs/interface definitions"
 	-@echo "   checkbadSource - check the source code for violations of coding standards"

@@ -33,7 +33,7 @@ PetscErrorCode MatDestroySubMatrices_Dummy(PetscInt n, Mat *mat[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatDestroy_Dummy(Mat A)
+static PetscErrorCode MatDestroy_Dummy(Mat A)
 {
   PetscFunctionBegin;
   PetscCall(PetscObjectChangeTypeName((PetscObject)A, NULL));

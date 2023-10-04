@@ -1,13 +1,14 @@
 #include <petsc/private/characteristicimpl.h>
 
 static PetscBool CharacteristicPackageInitialized = PETSC_FALSE;
+
 /*@C
   CharacteristicFinalizePackage - This function destroys everything in the `Characteristics` package. It is
   called from `PetscFinalize()`.
 
   Level: developer
 
-.seealso: [](chapter_ts), `PetscFinalize()`, `CharacteristicInitializePackage()`
+.seealso: [](ch_ts), `PetscFinalize()`, `CharacteristicInitializePackage()`
 @*/
 PetscErrorCode CharacteristicFinalizePackage(void)
 {
@@ -25,7 +26,7 @@ PetscErrorCode CharacteristicFinalizePackage(void)
 
   Level: developer
 
-.seealso: [](chapter_ts), `PetscInitialize()`, `CharacteristicFinalizePackage()`
+.seealso: [](ch_ts), `PetscInitialize()`, `CharacteristicFinalizePackage()`
 @*/
 PetscErrorCode CharacteristicInitializePackage(void)
 {

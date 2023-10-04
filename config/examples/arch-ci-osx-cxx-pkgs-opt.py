@@ -5,9 +5,9 @@ petsc_hash_pkgs=os.path.join(os.getenv('HOME'),'petsc-hash-pkgs')
 
 configure_options = [
   '--package-prefix-hash='+petsc_hash_pkgs,
-  '--with-cc=clang',
-  '--with-cxx=clang++',
-  '--with-fc=gfortran', # https://brew.sh/
+  #'--with-cc=clang',
+  #'--with-cxx=clang++',
+  #'--with-fc=gfortran', # https://brew.sh/
 
   'CXXFLAGS=-Wall -Wwrite-strings -Wno-strict-aliasing -Wno-unknown-pragmas -fstack-protector -Wno-deprecated -fno-stack-check',
   '--with-clanguage=cxx',
@@ -16,10 +16,10 @@ configure_options = [
 
   #'--prefix=petsc-install', temporarily disable for gitlab-ci
 
-  #'-download-fblaslapack=1',
-  '--download-mpich=1',
-  '--download-mpich-device=ch3:sock',
-  '--download-mpich-configure-arguments=--disable-two-level-namespace', # workaround for AMREX build failure with MPICH 4.0.1 and above
+  '--download-netlib-lapack=1',
+  #'--download-mpich=1',
+  #'--download-mpich-device=ch3:sock',
+  #'--download-mpich-configure-arguments=--disable-two-level-namespace', # workaround for AMREX build failure with MPICH 4.0.1 and above
   '--download-metis=1',
   '--download-parmetis=1',
   '--download-bison=1',
@@ -40,7 +40,7 @@ configure_options = [
   '--download-chaco=1',
   '--download-spai=1',
   # '--download-moab=1', # disabled since its maxCxxVersion is c++14, but Kokkos-4.0's minCxxVersion is c++17
-  '--download-saws',
+  #'--download-saws', #needs /usr/bin/python [missing in newer MacOS]
   '--download-revolve=1',
   '--download-cams=1',
   '--download-ctetgen=1',

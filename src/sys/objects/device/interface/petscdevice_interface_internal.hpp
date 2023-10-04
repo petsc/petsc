@@ -1,13 +1,29 @@
-#ifndef PETSCDEVICE_INTERFACE_INTERNAL_HPP
-#define PETSCDEVICE_INTERFACE_INTERNAL_HPP
+#pragma once
 
 #include <petsc/private/deviceimpl.h>
 
-#include <petsc/private/cpp/utility.hpp>    // std::pair
-#include <petsc/private/cpp/functional.hpp> //std::equal_to
+#include <petsc/private/cpp/utility.hpp> // std::pair
+#include <petsc/private/cpp/memory.hpp>  // std::weak_ptr, std::shared_ptr
 
 #include <unordered_map>
-#include <unordered_set>
+#include <algorithm> // std::lower_bound
+
+// clang's unordered_set implementaiton outperforms the flat vector implementation in all
+// cases. GCC on the other hand only does so for n > 512, before which it is almost twice as
+// slow! Even when it does surpass the vector, the speedup is tiny (1.2x). So we use
+// unordered_set for clang and hand-rolled flat set for GCC...
+//
+// https://godbolt.org/z/bb7EWf3s5
+//
+// This choice is consequential, since adding/checking marks is done for every
+// PetscDeviceContextMarkIntentFromID() call
+#ifdef __clang__
+  #include <unordered_set>
+  #define PETSC_USE_UNORDERED_SET_FOR_MARKED 1
+#else
+  #include <vector>
+  #define PETSC_USE_UNORDERED_SET_FOR_MARKED 0
+#endif
 
 #if PetscDefined(USE_DEBUG) && PetscDefined(USE_INFO)
   #define PETSC_USE_DEBUG_AND_INFO  1
@@ -24,67 +40,133 @@ PETSC_INTERN PetscErrorCode PetscDeviceContextSetRootStreamType_Internal(PetscSt
 PETSC_INTERN PetscErrorCode PetscDeviceContextSyncClearMap_Internal(PetscDeviceContext);
 PETSC_INTERN PetscErrorCode PetscDeviceContextCheckNotOrphaned_Internal(PetscDeviceContext);
 
-// open up namespace std to specialize equal_to for unordered_map
-namespace std
-{
+struct _n_WeakContext {
+public:
+  using weak_ptr_type = std::weak_ptr<_p_PetscDeviceContext>;
 
-template <>
-struct equal_to<PetscDeviceContext> {
-#if PETSC_CPP_VERSION <= 17
-  using result_type          = bool;
-  using first_argument_type  = PetscDeviceContext;
-  using second_argument_type = PetscDeviceContext;
-#endif
+  constexpr _n_WeakContext() noexcept = default;
 
-  constexpr bool operator()(const PetscDeviceContext &x, const PetscDeviceContext &y) const noexcept { return PetscObjectCast(x)->id == PetscObjectCast(y)->id; }
-};
+  void swap(_n_WeakContext &other) noexcept
+  {
+    using std::swap;
 
-} // namespace std
+    weak_dctx_.swap(other.weak_dctx_);
+    swap(state_, other.state_);
+  }
 
-namespace
-{
+  friend void swap(_n_WeakContext &lhs, _n_WeakContext &rhs) noexcept { lhs.swap(rhs); }
 
-// workaround for bug in:
-// clang: https://bugs.llvm.org/show_bug.cgi?id=36684
-// gcc: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=96645
-//
-// see also:
-// https://stackoverflow.com/questions/53408962/try-to-understand-compiler-error-message-default-member-initializer-required-be
-struct CxxDataParent {
-  PetscObjectId    id    = 0;
-  PetscObjectState state = 0;
+  PETSC_NODISCARD const weak_ptr_type &weak_dctx() const noexcept { return weak_dctx_; }
 
-  constexpr CxxDataParent() noexcept = default;
+  PETSC_NODISCARD PetscObjectState state() const noexcept { return state_; }
 
-  constexpr explicit CxxDataParent(PetscDeviceContext dctx) noexcept : CxxDataParent(PetscObjectCast(dctx)->id, PetscObjectCast(dctx)->state) { }
+  void set_state(PetscObjectState state) noexcept { state_ = state; }
 
 private:
-  // make this private, we do not want to accept any old id and state pairing
-  constexpr CxxDataParent(PetscObjectId id_, PetscObjectState state_) noexcept : id(id_), state(state_) { }
+  weak_ptr_type    weak_dctx_{};
+  PetscObjectState state_{};
+
+  friend class CxxData;
+
+  explicit _n_WeakContext(const std::shared_ptr<_p_PetscDeviceContext> &ptr) noexcept : weak_dctx_{ptr}, state_{PetscObjectCast(ptr.get())->state} { }
 };
 
-struct CxxData {
-  using upstream_type = std::unordered_map<PetscDeviceContext, CxxDataParent>;
-  using dep_type      = std::unordered_set<PetscObjectId>;
+class CxxData {
+public:
+  struct NoOpDeleter {
+    PETSC_CONSTEXPR_14 void operator()(const void *) const noexcept { }
+  };
 
-  // double check we didn't specialize for no reason
-  static_assert(std::is_same<typename upstream_type::key_equal, std::equal_to<PetscDeviceContext>>::value, "");
+  using upstream_type = std::unordered_map<PetscObjectId, _n_WeakContext>;
+#if PETSC_USE_UNORDERED_SET_FOR_MARKED
+  using marked_type = std::unordered_set<PetscObjectId>;
+#else
+  using marked_type = std::vector<PetscObjectId>;
+#endif
+  using shared_ptr_type = std::shared_ptr<_p_PetscDeviceContext>;
 
-  upstream_type upstream{};
-  dep_type      deps{};
+  explicit CxxData(PetscDeviceContext dctx) noexcept : self_{dctx, NoOpDeleter{}} { }
 
-  PetscErrorCode clear() noexcept;
+  PETSC_NODISCARD const upstream_type   &upstream() const noexcept { return upstream_; }
+  PETSC_NODISCARD upstream_type         &upstream() noexcept { return upstream_; }
+  PETSC_NODISCARD const marked_type     &marked_objects() const noexcept { return marked_objects_; }
+  PETSC_NODISCARD marked_type           &marked_objects() noexcept { return marked_objects_; }
+  PETSC_NODISCARD const shared_ptr_type &self() const noexcept { return self_; }
+
+  PetscErrorCode                 reset_self(PetscDeviceContext) noexcept;
+  PetscErrorCode                 clear() noexcept;
+  PETSC_NODISCARD _n_WeakContext weak_snapshot() const noexcept;
+  PetscErrorCode                 add_mark(PetscObjectId) noexcept;
+  PETSC_NODISCARD bool           has_marked(PetscObjectId) const noexcept;
+
+private:
+#if !PETSC_USE_UNORDERED_SET_FOR_MARKED
+  PETSC_NODISCARD std::pair<bool, typename marked_type::iterator> get_marked_(PetscObjectId id) noexcept
+  {
+    auto end = this->marked_objects().end();
+    auto it  = std::lower_bound(this->marked_objects().begin(), end, id);
+
+    return {it != end && *it == id, it};
+  }
+#endif
+
+  upstream_type   upstream_{};
+  marked_type     marked_objects_{};
+  shared_ptr_type self_{};
 };
+
+inline PetscErrorCode CxxData::reset_self(PetscDeviceContext dctx) noexcept
+{
+  PetscFunctionBegin;
+  if (dctx) {
+    PetscCallCXX(self_.reset(dctx, NoOpDeleter{}));
+  } else {
+    PetscCallCXX(self_.reset());
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
 
 inline PetscErrorCode CxxData::clear() noexcept
 {
   PetscFunctionBegin;
-  PetscCallCXX(this->upstream.clear());
-  PetscCallCXX(this->deps.clear());
+  PetscCallCXX(this->upstream().clear());
+  PetscCallCXX(this->marked_objects().clear());
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PETSC_NODISCARD inline CxxData *CxxDataCast(PetscDeviceContext dctx) noexcept
+inline _n_WeakContext CxxData::weak_snapshot() const noexcept
+{
+  return _n_WeakContext{this->self()};
+}
+
+inline PetscErrorCode CxxData::add_mark(PetscObjectId id) noexcept
+{
+  PetscFunctionBegin;
+#if PETSC_USE_UNORDERED_SET_FOR_MARKED
+  PetscCallCXX(marked_objects_.emplace(id));
+#else
+  const auto pair   = get_marked_(id);
+
+  if (!pair.first) PetscCallCXX(marked_objects_.insert(pair.second, id));
+#endif
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+inline bool CxxData::has_marked(PetscObjectId id) const noexcept
+{
+#if PETSC_USE_UNORDERED_SET_FOR_MARKED
+  return marked_objects().find(id) != marked_objects().end();
+#else
+  return const_cast<CxxData *>(this)->get_marked_(id).first;
+#endif
+}
+
+#undef PETSC_USE_UNORDERED_SET_FOR_MARKED
+
+namespace
+{
+
+PETSC_NODISCARD inline constexpr CxxData *CxxDataCast(PetscDeviceContext dctx) noexcept
 {
   return static_cast<CxxData *>(PetscObjectCast(dctx)->cpp);
 }
@@ -109,5 +191,3 @@ inline PetscErrorCode PetscDeviceContextQueryOptions_Internal(PetscOptionItems *
 }
 
 } // anonymous namespace
-
-#endif // PETSCDEVICE_INTERFACE_INTERNAL_HPP

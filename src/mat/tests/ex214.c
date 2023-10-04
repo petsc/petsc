@@ -156,7 +156,7 @@ int main(int argc, char **args)
      thus user must create spRHST=spRHS^T and call MatMatTransposeSolve() */
     PetscCall(MatCreate(PETSC_COMM_WORLD, &spRHST));
     if (rank == 0) {
-      /* MUMPS requirs RHS be centralized on the host! */
+      /* MUMPS requires RHS be centralized on the host! */
       PetscCall(MatSetSizes(spRHST, nrhs, M, PETSC_DECIDE, PETSC_DECIDE));
     } else {
       PetscCall(MatSetSizes(spRHST, 0, 0, PETSC_DECIDE, PETSC_DECIDE));

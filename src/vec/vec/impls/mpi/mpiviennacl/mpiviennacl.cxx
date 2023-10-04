@@ -17,7 +17,7 @@
 .seealso: `VecCreate()`, `VecSetType()`, `VecSetFromOptions()`, `VecCreateMPIWithArray()`, `VECSEQVIENNACL`, `VECMPIVIENNACL`, `VECSTANDARD`, `VecType`, `VecCreateMPI()`, `VecCreateMPI()`
 M*/
 
-PetscErrorCode VecDestroy_MPIViennaCL(Vec v)
+static PetscErrorCode VecDestroy_MPIViennaCL(Vec v)
 {
   PetscFunctionBegin;
   try {
@@ -32,7 +32,7 @@ PetscErrorCode VecDestroy_MPIViennaCL(Vec v)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode VecNorm_MPIViennaCL(Vec xin, NormType type, PetscReal *z)
+static PetscErrorCode VecNorm_MPIViennaCL(Vec xin, NormType type, PetscReal *z)
 {
   PetscReal sum, work = 0.0;
 
@@ -63,7 +63,7 @@ PetscErrorCode VecNorm_MPIViennaCL(Vec xin, NormType type, PetscReal *z)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode VecDot_MPIViennaCL(Vec xin, Vec yin, PetscScalar *z)
+static PetscErrorCode VecDot_MPIViennaCL(Vec xin, Vec yin, PetscScalar *z)
 {
   PetscScalar sum, work;
 
@@ -74,7 +74,7 @@ PetscErrorCode VecDot_MPIViennaCL(Vec xin, Vec yin, PetscScalar *z)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode VecTDot_MPIViennaCL(Vec xin, Vec yin, PetscScalar *z)
+static PetscErrorCode VecTDot_MPIViennaCL(Vec xin, Vec yin, PetscScalar *z)
 {
   PetscScalar sum, work;
 
@@ -85,7 +85,7 @@ PetscErrorCode VecTDot_MPIViennaCL(Vec xin, Vec yin, PetscScalar *z)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode VecMDot_MPIViennaCL(Vec xin, PetscInt nv, const Vec y[], PetscScalar *z)
+static PetscErrorCode VecMDot_MPIViennaCL(Vec xin, PetscInt nv, const Vec y[], PetscScalar *z)
 {
   PetscScalar awork[128], *work = awork;
 
@@ -108,7 +108,7 @@ PetscErrorCode VecMDot_MPIViennaCL(Vec xin, PetscInt nv, const Vec y[], PetscSca
 .seealso: `VecCreate()`, `VecSetType()`, `VecSetFromOptions()`, `VecCreateMPIWithArray()`, `VECMPI`, `VecType`, `VecCreateMPI()`, `VecCreateMPI()`
 M*/
 
-PetscErrorCode VecDuplicate_MPIViennaCL(Vec win, Vec *v)
+static PetscErrorCode VecDuplicate_MPIViennaCL(Vec win, Vec *v)
 {
   Vec_MPI     *vw, *w = (Vec_MPI *)win->data;
   PetscScalar *array;
@@ -118,14 +118,14 @@ PetscErrorCode VecDuplicate_MPIViennaCL(Vec win, Vec *v)
   PetscCall(PetscLayoutReference(win->map, &(*v)->map));
 
   PetscCall(VecCreate_MPI_Private(*v, PETSC_FALSE, w->nghost, 0));
-  vw = (Vec_MPI *)(*v)->data;
-  PetscCall(PetscMemcpy((*v)->ops, win->ops, sizeof(struct _VecOps)));
+  vw           = (Vec_MPI *)(*v)->data;
+  (*v)->ops[0] = win->ops[0];
 
   /* save local representation of the parallel vector (and scatter) if it exists */
   if (w->localrep) {
     PetscCall(VecGetArray(*v, &array));
     PetscCall(VecCreateSeqWithArray(PETSC_COMM_SELF, 1, win->map->n + w->nghost, array, &vw->localrep));
-    PetscCall(PetscMemcpy(vw->localrep->ops, w->localrep->ops, sizeof(struct _VecOps)));
+    vw->localrep->ops[0] = w->localrep->ops[0];
     PetscCall(VecRestoreArray(*v, &array));
     vw->localupdate = w->localupdate;
     if (vw->localupdate) PetscCall(PetscObjectReference((PetscObject)vw->localupdate));
@@ -145,7 +145,7 @@ PetscErrorCode VecDuplicate_MPIViennaCL(Vec win, Vec *v)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode VecDotNorm2_MPIViennaCL(Vec s, Vec t, PetscScalar *dp, PetscScalar *nm)
+static PetscErrorCode VecDotNorm2_MPIViennaCL(Vec s, Vec t, PetscScalar *dp, PetscScalar *nm)
 {
   PetscScalar work[2], sum[2];
 
@@ -157,7 +157,7 @@ PetscErrorCode VecDotNorm2_MPIViennaCL(Vec s, Vec t, PetscScalar *dp, PetscScala
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode VecBindToCPU_MPIViennaCL(Vec vv, PetscBool bind)
+static PetscErrorCode VecBindToCPU_MPIViennaCL(Vec vv, PetscBool bind)
 {
   PetscFunctionBegin;
   vv->boundtocpu = bind;
@@ -258,32 +258,32 @@ PETSC_EXTERN PetscErrorCode VecCreate_ViennaCL(Vec v)
 }
 
 /*@C
-   VecCreateMPIViennaCLWithArray - Creates a parallel, array-style vector,
-   where the user provides the viennacl vector to store the vector values.
+  VecCreateMPIViennaCLWithArray - Creates a parallel, array-style vector,
+  where the user provides the viennacl vector to store the vector values.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  comm  - the MPI communicator to use
-.  bs    - block size, same meaning as VecSetBlockSize()
-.  n     - local vector length, cannot be PETSC_DECIDE
-.  N     - global vector length (or PETSC_DECIDE to have calculated)
--  array - the user provided GPU array to store the vector values
+  Input Parameters:
++ comm  - the MPI communicator to use
+. bs    - block size, same meaning as VecSetBlockSize()
+. n     - local vector length, cannot be PETSC_DECIDE
+. N     - global vector length (or PETSC_DECIDE to have calculated)
+- array - the user provided GPU array to store the vector values
 
-   Output Parameter:
-.  vv - the vector
+  Output Parameter:
+. vv - the vector
 
-   Notes:
-   Use VecDuplicate() or VecDuplicateVecs() to form additional vectors of the
-   same type as an existing vector.
+  Notes:
+  Use VecDuplicate() or VecDuplicateVecs() to form additional vectors of the
+  same type as an existing vector.
 
-   If the user-provided array is NULL, then VecViennaCLPlaceArray() can be used
-   at a later stage to SET the array for storing the vector values.
+  If the user-provided array is NULL, then VecViennaCLPlaceArray() can be used
+  at a later stage to SET the array for storing the vector values.
 
-   PETSc does NOT free the array when the vector is destroyed via VecDestroy().
-   The user should not free the array until the vector is destroyed.
+  PETSc does NOT free the array when the vector is destroyed via VecDestroy().
+  The user should not free the array until the vector is destroyed.
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `VecCreateSeqViennaCLWithArray()`, `VecCreateMPIWithArray()`, `VecCreateSeqWithArray()`,
           `VecCreate()`, `VecCreateMPI()`, `VecCreateGhostWithArray()`, `VecViennaCLPlaceArray()`
@@ -302,34 +302,34 @@ PetscErrorCode VecCreateMPIViennaCLWithArray(MPI_Comm comm, PetscInt bs, PetscIn
 }
 
 /*@C
-   VecCreateMPIViennaCLWithArrays - Creates a parallel, array-style vector,
-   where the user provides the ViennaCL vector to store the vector values.
+  VecCreateMPIViennaCLWithArrays - Creates a parallel, array-style vector,
+  where the user provides the ViennaCL vector to store the vector values.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  comm  - the MPI communicator to use
-.  bs    - block size, same meaning as VecSetBlockSize()
-.  n     - local vector length, cannot be PETSC_DECIDE
-.  N     - global vector length (or PETSC_DECIDE to have calculated)
--  cpuarray - the user provided CPU array to store the vector values
--  viennaclvec - ViennaCL vector where the Vec entries are to be stored on the device.
+  Input Parameters:
++ comm        - the MPI communicator to use
+. bs          - block size, same meaning as VecSetBlockSize()
+. n           - local vector length, cannot be PETSC_DECIDE
+. N           - global vector length (or PETSC_DECIDE to have calculated)
+. cpuarray    - the user provided CPU array to store the vector values
+- viennaclvec - ViennaCL vector where the Vec entries are to be stored on the device.
 
-   Output Parameter:
-.  vv - the vector
+  Output Parameter:
+. vv - the vector
 
-   Notes:
-   If both cpuarray and viennaclvec are provided, the caller must ensure that
-   the provided arrays have identical values.
+  Notes:
+  If both cpuarray and viennaclvec are provided, the caller must ensure that
+  the provided arrays have identical values.
 
-   Use VecDuplicate() or VecDuplicateVecs() to form additional vectors of the
-   same type as an existing vector.
+  Use VecDuplicate() or VecDuplicateVecs() to form additional vectors of the
+  same type as an existing vector.
 
-   PETSc does NOT free the provided arrays when the vector is destroyed via
-   VecDestroy(). The user should not free the array until the vector is
-   destroyed.
+  PETSc does NOT free the provided arrays when the vector is destroyed via
+  VecDestroy(). The user should not free the array until the vector is
+  destroyed.
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `VecCreateSeqViennaCLWithArrays()`, `VecCreateMPIWithArray()`
           `VecCreate()`, `VecDuplicate()`, `VecDuplicateVecs()`, `VecCreateGhost()`,

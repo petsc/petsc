@@ -345,7 +345,7 @@ function petsc_mpiexec_valgrind() {
   npopt=$1;shift
   np=$1;shift
 
-  valgrind="valgrind -q --tool=memcheck --leak-check=yes --num-callers=20 --track-origins=yes --keep-debuginfo=yes --suppressions=$PETSC_DIR/share/petsc/valgrind/petsc-val.supp --error-exitcode=10"
+  valgrind="valgrind -q --tool=memcheck --leak-check=yes --num-callers=20 --track-origins=yes --keep-debuginfo=yes --suppressions=$PETSC_DIR/share/petsc/suppressions/valgrind --error-exitcode=10"
 
   if $printcmd; then
      echo $_mpiexec $npopt $np $valgrind "$@"

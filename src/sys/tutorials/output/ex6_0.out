@@ -1,0 +1,14 @@
+[0:time_removed:MyObjectCreateHandler ] object class: PetscContainer
+[0:time_removed:MyObjectCreateHandler ] object class: PetscContainer
+[0:time_removed:MyObjectCreateHandler ] object class: PetscContainer
+[0:time_removed:MyObjectCreateHandler ] object class: PetscContainer
+[0:time_removed:MyEventBeginHandler   ] event name: User class
+[0:time_removed:MyEventBeginHandler   ]   associated object name: Container 1
+[0:time_removed:MyEventBeginHandler   ]   associated object name: Container 2
+[0:time_removed:MyEventBeginHandler   ]   associated object name: Container 3
+[0:time_removed:MyEventBeginHandler   ]   associated object name: Container 4
+[0:time_removed:MyEventEndHandler     ] event name: User class
+[0:time_removed:MyObjectDestroyHandler] object type:time_removed: Container 1
+[0:time_removed:MyObjectDestroyHandler] object type:time_removed: Container 2
+[0:time_removed:MyObjectDestroyHandler] object type:time_removed: Container 3
+[0:time_removed:MyObjectDestroyHandler] object type:time_removed: Container 4

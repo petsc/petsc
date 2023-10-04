@@ -2,7 +2,7 @@
 
 /*@
   VecWhichEqual - Creates an index set containing the indices
-             where the vectors `Vec1` and `Vec2` have identical elements.
+  where the vectors `Vec1` and `Vec2` have identical elements.
 
   Collective
 
@@ -10,7 +10,7 @@
 + Vec1 - the first vector to compare
 - Vec2 - the second two vector to compare
 
-  OutputParameter:
+  Output Parameter:
 . S - The index set containing the indices i where vec1[i] == vec2[i]
 
   Level: advanced
@@ -74,7 +74,7 @@ PetscErrorCode VecWhichEqual(Vec Vec1, Vec Vec2, IS *S)
 + Vec1 - the first vector to compare
 - Vec2 - the second vector to compare
 
-  OutputParameter:
+  Output Parameter:
 . S - The index set containing the indices i where vec1[i] < vec2[i]
 
   Level: advanced
@@ -140,7 +140,7 @@ PetscErrorCode VecWhichLessThan(Vec Vec1, Vec Vec2, IS *S)
 + Vec1 - the first vector to compare
 - Vec2 - the second vector to compare
 
-  OutputParameter:
+  Output Parameter:
 . S - The index set containing the indices i where vec1[i] > vec2[i]
 
   Level: advanced
@@ -198,16 +198,16 @@ PetscErrorCode VecWhichGreaterThan(Vec Vec1, Vec Vec2, IS *S)
 
 /*@
   VecWhichBetween - Creates an index set containing the indices
-               where  `VecLow` < `V` < `VecHigh`
+  where  `VecLow` < `V` < `VecHigh`
 
   Collective
 
   Input Parameters:
-+ VecLow - lower bound
-. V - Vector to compare
++ VecLow  - lower bound
+. V       - Vector to compare
 - VecHigh - higher bound
 
-  OutputParameter:
+  Output Parameter:
 . S - The index set containing the indices i where veclow[i] < v[i] < vechigh[i]
 
   Level: advanced
@@ -276,18 +276,17 @@ PetscErrorCode VecWhichBetween(Vec VecLow, Vec V, Vec VecHigh, IS *S)
   Collective
 
   Input Parameters:
-+ VecLow - lower bound
-. V - Vector to compare
++ VecLow  - lower bound
+. V       - Vector to compare
 - VecHigh - higher bound
 
-  OutputParameter:
+  Output Parameter:
 . S - The index set containing the indices i where veclow[i] <= v[i] <= vechigh[i]
 
   Level: advanced
 
 .seealso: `Vec`
 @*/
-
 PetscErrorCode VecWhichBetweenOrEqual(Vec VecLow, Vec V, Vec VecHigh, IS *S)
 {
   PetscInt           i, n_vm = 0;
@@ -339,29 +338,32 @@ PetscErrorCode VecWhichBetweenOrEqual(Vec VecLow, Vec V, Vec VecHigh, IS *S)
 }
 
 /*@
-   VecWhichInactive - Creates an index set containing the indices
-  where one of the following holds:
-    a) VecLow(i)  < V(i) < VecHigh(i)
-    b) VecLow(i)  = V(i) and D(i) <= 0 (< 0 when Strong is true)
-    c) VecHigh(i) = V(i) and D(i) >= 0 (> 0 when Strong is true)
+  VecWhichInactive - Creates an `IS` based on a set of vectors
 
   Collective
 
   Input Parameters:
-+ VecLow - lower bound
-. V - Vector to compare
-. D - Direction to compare
++ VecLow  - lower bound
+. V       - Vector to compare
+. D       - Direction to compare
 . VecHigh - higher bound
-- Strong - indicator for applying strongly inactive test
+- Strong  - indicator for applying strongly inactive test
 
-  OutputParameter:
+  Output Parameter:
 . S - The index set containing the indices i where the bound is inactive
 
   Level: advanced
 
+  Notes:
+  Creates an index set containing the indices where one of the following holds\:
+.vb
+  - VecLow(i)  < V(i) < VecHigh(i)
+  - VecLow(i)  = V(i) and D(i) <= 0 (< 0 when Strong is true)
+  - VecHigh(i) = V(i) and D(i) >= 0 (> 0 when Strong is true)
+.ve
+
 .seealso: `Vec`
 @*/
-
 PetscErrorCode VecWhichInactive(Vec VecLow, Vec V, Vec D, Vec VecHigh, PetscBool Strong, IS *S)
 {
   PetscInt           i, n_vm = 0;
@@ -453,7 +455,7 @@ PetscErrorCode VecWhichInactive(Vec VecLow, Vec V, Vec D, Vec VecHigh, PetscBool
 
 /*@
   VecISAXPY - Adds a reduced vector to the appropriate elements of a full-space vector.
-                  vfull[is[i]] += alpha*vreduced[i]
+  vfull[is[i]] += alpha*vreduced[i]
 
   Input Parameters:
 + vfull    - the full-space vector
@@ -462,19 +464,20 @@ PetscErrorCode VecWhichInactive(Vec VecLow, Vec V, Vec D, Vec VecHigh, PetscBool
 - vreduced - the reduced-space vector
 
   Output Parameter:
-. vfull    - the sum of the full-space vector and reduced-space vector
+. vfull - the sum of the full-space vector and reduced-space vector
 
   Level: advanced
 
   Notes:
-    The index set identifies entries in the global vector.
-    Negative indices are skipped; indices outside the ownership range of `vfull` will raise an error.
+  The index set identifies entries in the global vector.
+  Negative indices are skipped; indices outside the ownership range of `vfull` will raise an error.
 
 .seealso: `VecISCopy()`, `VecISSet()`, `VecAXPY()`
 @*/
 PetscErrorCode VecISAXPY(Vec vfull, IS is, PetscScalar alpha, Vec vreduced)
 {
-  PetscInt nfull, nreduced;
+  PetscInt  nfull, nreduced;
+  PetscBool sorted = PETSC_FALSE;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(vfull, VEC_CLASSID, 1);
@@ -482,10 +485,9 @@ PetscErrorCode VecISAXPY(Vec vfull, IS is, PetscScalar alpha, Vec vreduced)
   PetscValidHeaderSpecific(vreduced, VEC_CLASSID, 4);
   PetscCall(VecGetSize(vfull, &nfull));
   PetscCall(VecGetSize(vreduced, &nreduced));
-
-  if (nfull == nreduced) { /* Also takes care of masked vectors */
-    PetscCall(VecAXPY(vfull, alpha, vreduced));
-  } else {
+  if (nfull == nreduced) PetscCall(ISGetInfo(is, IS_SORTED, IS_GLOBAL, PETSC_TRUE, &sorted));
+  if (sorted) PetscCall(VecAXPY(vfull, alpha, vreduced));
+  else {
     PetscScalar       *y;
     const PetscScalar *x;
     PetscInt           i, n, m, rstart, rend;
@@ -496,7 +498,7 @@ PetscErrorCode VecISAXPY(Vec vfull, IS is, PetscScalar alpha, Vec vreduced)
     PetscCall(ISGetIndices(is, &id));
     PetscCall(ISGetLocalSize(is, &n));
     PetscCall(VecGetLocalSize(vreduced, &m));
-    PetscCheck(m == n, PETSC_COMM_SELF, PETSC_ERR_SUP, "IS local length not equal to Vec local length");
+    PetscCheck(m == n, PETSC_COMM_SELF, PETSC_ERR_SUP, "IS local length %" PetscInt_FMT " not equal to Vec local length %" PetscInt_FMT, n, m);
     PetscCall(VecGetOwnershipRange(vfull, &rstart, &rend));
     y -= rstart;
     if (alpha == 1.0) {
@@ -530,13 +532,13 @@ PetscErrorCode VecISAXPY(Vec vfull, IS is, PetscScalar alpha, Vec vreduced)
 - vreduced - the reduced-space vector
 
   Output Parameter:
-. vfull    - the sum of the full-space vector and reduced-space vector
+. vfull - the sum of the full-space vector and reduced-space vector
 
   Level: advanced
 
   Notes:
-    The index set identifies entries in the global vector.
-    Negative indices are skipped; indices outside the ownership range of `vfull` will raise an error.
+  The index set identifies entries in the global vector.
+  Negative indices are skipped; indices outside the ownership range of `vfull` will raise an error.
 .vb
     mode == SCATTER_FORWARD: vfull[is[i]] = vreduced[i]
     mode == SCATTER_REVERSE: vreduced[i] = vfull[is[i]]
@@ -546,7 +548,8 @@ PetscErrorCode VecISAXPY(Vec vfull, IS is, PetscScalar alpha, Vec vreduced)
 @*/
 PetscErrorCode VecISCopy(Vec vfull, IS is, ScatterMode mode, Vec vreduced)
 {
-  PetscInt nfull, nreduced;
+  PetscInt  nfull, nreduced;
+  PetscBool sorted = PETSC_FALSE;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(vfull, VEC_CLASSID, 1);
@@ -554,8 +557,8 @@ PetscErrorCode VecISCopy(Vec vfull, IS is, ScatterMode mode, Vec vreduced)
   PetscValidHeaderSpecific(vreduced, VEC_CLASSID, 4);
   PetscCall(VecGetSize(vfull, &nfull));
   PetscCall(VecGetSize(vreduced, &nreduced));
-
-  if (nfull == nreduced) { /* Also takes care of masked vectors */
+  if (nfull == nreduced) PetscCall(ISGetInfo(is, IS_SORTED, IS_GLOBAL, PETSC_TRUE, &sorted));
+  if (sorted) {
     if (mode == SCATTER_FORWARD) {
       PetscCall(VecCopy(vreduced, vfull));
     } else {
@@ -605,18 +608,18 @@ PetscErrorCode VecISCopy(Vec vfull, IS is, ScatterMode mode, Vec vreduced)
 }
 
 /*@
-   ISComplementVec - Creates the complement of the index set relative to a layout defined by a `Vec`
+  ISComplementVec - Creates the complement of the index set relative to a layout defined by a `Vec`
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  S -  a PETSc `IS`
--  V - the reference vector space
+  Input Parameters:
++ S - a PETSc `IS`
+- V - the reference vector space
 
-   Output Parameter:
-.  T -  the complement of S
+  Output Parameter:
+. T - the complement of S
 
-   Level: advanced
+  Level: advanced
 
 .seealso: `IS`, `Vec`, `ISCreateGeneral()`
 @*/
@@ -631,18 +634,18 @@ PetscErrorCode ISComplementVec(IS S, Vec V, IS *T)
 }
 
 /*@
-   VecISSet - Sets the elements of a vector, specified by an index set, to a constant
+  VecISSet - Sets the elements of a vector, specified by an index set, to a constant
 
-   Input Parameters:
-+  V - the vector
-.  S - index set for the locations in the vector
--  c - the constant
+  Input Parameters:
++ V - the vector
+. S - index set for the locations in the vector
+- c - the constant
 
-   Level: advanced
+  Level: advanced
 
   Notes:
-    The index set identifies entries in the global vector.
-    Negative indices are skipped; indices outside the ownership range of V will raise an error.
+  The index set identifies entries in the global vector.
+  Negative indices are skipped; indices outside the ownership range of V will raise an error.
 
 .seealso: `VecISCopy()`, `VecISAXPY()`, `VecSet()`
 @*/
@@ -680,8 +683,8 @@ PetscErrorCode VecISSet(Vec V, IS S, PetscScalar c)
   If X[i] >= XU[i], then GP[i] = max(G[i],0);
 
   Input Parameters:
-+ G - current gradient vector
-. X - current solution vector with XL[i] <= X[i] <= XU[i]
++ G  - current gradient vector
+. X  - current solution vector with XL[i] <= X[i] <= XU[i]
 . XL - lower bounds
 - XU - upper bounds
 
@@ -691,7 +694,7 @@ PetscErrorCode VecISSet(Vec V, IS S, PetscScalar c)
   Level: advanced
 
   Note:
-    `GP` may be the same vector as `G`
+  `GP` may be the same vector as `G`
 
 .seealso: `Vec`
 @*/
@@ -741,18 +744,18 @@ PetscErrorCode VecBoundGradientProjection(Vec G, Vec X, Vec XL, Vec XU, Vec GP)
 #endif
 
 /*@
-     VecStepMaxBounded - See below
+  VecStepMaxBounded - See below
 
-     Collective
+  Collective
 
-     Input Parameters:
-+      X  - vector with no negative entries
-.      XL - lower bounds
-.      XU - upper bounds
--      DX  - step direction, can have negative, positive or zero entries
+  Input Parameters:
++ X  - vector with no negative entries
+. XL - lower bounds
+. XU - upper bounds
+- DX - step direction, can have negative, positive or zero entries
 
-     Output Parameter:
-.     stepmax -   minimum value so that X[i] + stepmax*DX[i] <= XL[i]  or  XU[i] <= X[i] + stepmax*DX[i]
+  Output Parameter:
+. stepmax - minimum value so that X[i] + stepmax*DX[i] <= XL[i]  or  XU[i] <= X[i] + stepmax*DX[i]
 
   Level: intermediate
 
@@ -791,25 +794,25 @@ PetscErrorCode VecStepMaxBounded(Vec X, Vec DX, Vec XL, Vec XU, PetscReal *stepm
 }
 
 /*@
-     VecStepBoundInfo - See below
+  VecStepBoundInfo - See below
 
-     Collective
+  Collective
 
-     Input Parameters:
-+      X  - vector with no negative entries
-.      XL - lower bounds
-.      XU - upper bounds
--      DX  - step direction, can have negative, positive or zero entries
+  Input Parameters:
++ X  - vector with no negative entries
+. XL - lower bounds
+. XU - upper bounds
+- DX - step direction, can have negative, positive or zero entries
 
-     Output Parameters:
-+     boundmin -  (may be `NULL` this it is not computed) maximum value so that   XL[i] <= X[i] + boundmax*DX[i] <= XU[i]
-.     wolfemin -  (may be `NULL` this it is not computed)
--     boundmax -   (may be `NULL` this it is not computed) minimum value so that X[i] + boundmax*DX[i] <= XL[i]  or  XU[i] <= X[i] + boundmax*DX[i]
+  Output Parameters:
++ boundmin - (may be `NULL` this it is not computed) maximum value so that   XL[i] <= X[i] + boundmax*DX[i] <= XU[i]
+. wolfemin - (may be `NULL` this it is not computed)
+- boundmax - (may be `NULL` this it is not computed) minimum value so that X[i] + boundmax*DX[i] <= XL[i]  or  XU[i] <= X[i] + boundmax*DX[i]
 
   Level: advanced
 
-     Note:
-    For complex numbers only compares the real part
+  Note:
+  For complex numbers only compares the real part
 
 .seealso: `Vec`
 @*/
@@ -869,21 +872,21 @@ PetscErrorCode VecStepBoundInfo(Vec X, Vec DX, Vec XL, Vec XU, PetscReal *boundm
 }
 
 /*@
-     VecStepMax - Returns the largest value so that x[i] + step*DX[i] >= 0 for all i
+  VecStepMax - Returns the largest value so that x[i] + step*DX[i] >= 0 for all i
 
-     Collective
+  Collective
 
-     Input Parameters:
-+      X  - vector with no negative entries
--      DX  - a step direction, can have negative, positive or zero entries
+  Input Parameters:
++ X  - vector with no negative entries
+- DX - a step direction, can have negative, positive or zero entries
 
-     Output Parameter:
-.    step - largest value such that x[i] + step*DX[i] >= 0 for all i
+  Output Parameter:
+. step - largest value such that x[i] + step*DX[i] >= 0 for all i
 
   Level: advanced
 
-     Note:
-    For complex numbers only compares the real part
+  Note:
+  For complex numbers only compares the real part
 
 .seealso: `Vec`
 @*/

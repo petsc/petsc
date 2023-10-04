@@ -24,7 +24,7 @@
 /*
    Private routine to delete tmp/shared storage
 
-   This is called by MPI, not by users.
+   This is called by MPI, not by users, when communicator attributes are deleted
 
    Note: this is declared extern "C" because it is passed to MPI_Comm_create_keyval()
 
@@ -37,29 +37,31 @@ PETSC_EXTERN PetscMPIInt MPIAPI Petsc_DelTmpShared(MPI_Comm comm, PetscMPIInt ke
   PetscFunctionReturn(MPI_SUCCESS);
 }
 
+// "Unknown section 'Environmental Variables'"
+// PetscClangLinter pragma disable: -fdoc-section-header-unknown
 /*@C
-   PetscGetTmp - Gets the name of the tmp directory
+  PetscGetTmp - Gets the name of the "tmp" directory, often this is `/tmp`
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  comm - MPI_Communicator that may share /tmp
--  len - length of string to hold name
+  Input Parameters:
++ comm - MPI_Communicator that may share tmp
+- len  - length of string to hold name
 
-   Output Parameter:
-.  dir - directory name
+  Output Parameter:
+. dir - directory name
 
-   Options Database Keys:
-+    -shared_tmp  - indicates the directory is shared among the MPI ranks
-.    -not_shared_tmp - indicates the directory is not shared among the MPI ranks
--    -tmp tmpdir - name of the directory you wish to use as /tmp
+  Options Database Keys:
++ -shared_tmp     - indicates the directory is known to be shared among the MPI processes
+. -not_shared_tmp - indicates the directory is known to be not shared among the MPI processes
+- -tmp tmpdir     - name of the directory you wish to use as tmp
 
-   Environmental Variables:
-+     `PETSC_SHARED_TMP` - indicates the directory is shared among the MPI ranks
-.     `PETSC_NOT_SHARED_TMP` - indicates the directory is not shared among the MPI ranks
--     `PETSC_TMP` - name of the directory you wish to use as /tmp
+  Environmental Variables:
++ `PETSC_SHARED_TMP`     - indicates the directory is known to be shared among the MPI processes
+. `PETSC_NOT_SHARED_TMP` - indicates the directory is known to be not shared among the MPI processes
+- `PETSC_TMP`            - name of the directory you wish to use as tmp
 
-   Level: developer
+  Level: developer
 
 .seealso: `PetscSharedTmp()`, `PetscSharedWorkingDirectory()`, `PetscGetWorkingDirectory()`, `PetscGetHomeDirectory()`
 @*/
@@ -73,45 +75,47 @@ PetscErrorCode PetscGetTmp(MPI_Comm comm, char dir[], size_t len)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+// "Unknown section 'Environmental Variables'"
+// PetscClangLinter pragma disable: -fdoc-section-header-unknown
 /*@C
-   PetscSharedTmp - Determines if all processors in a communicator share a
-         /tmp or have different ones.
+  PetscSharedTmp - Determines if all processors in a communicator share a
+  tmp directory or have different ones.
 
-   Collective
+  Collective
 
-   Input Parameter:
-.  comm - MPI_Communicator that may share /tmp
+  Input Parameter:
+. comm - MPI_Communicator that may share tmp
 
-   Output Parameter:
-.  shared - `PETSC_TRUE` or `PETSC_FALSE`
+  Output Parameter:
+. shared - `PETSC_TRUE` or `PETSC_FALSE`
 
-   Options Database Keys:
-+    -shared_tmp  - indicates the directory is shared among the MPI ranks
-.    -not_shared_tmp - indicates the directory is not shared among the MPI ranks
--    -tmp tmpdir - name of the directory you wish to use as /tmp
+  Options Database Keys:
++ -shared_tmp     - indicates the directory is known to be shared among the MPI processes
+. -not_shared_tmp - indicates the directory is known to be not shared among the MPI processes
+- -tmp tmpdir     - name of the directory you wish to use as tmp
 
-   Environmental Variables:
-+     `PETSC_SHARED_TMP`  - indicates the directory is shared among the MPI ranks
-.     `PETSC_NOT_SHARED_TMP` - indicates the directory is not shared among the MPI ranks
--     `PETSC_TMP` - name of the directory you wish to use as /tmp
+  Environmental Variables:
++ `PETSC_SHARED_TMP`     - indicates the directory is known to be shared among the MPI processes
+. `PETSC_NOT_SHARED_TMP` - indicates the directory is known to be not shared among the MPI processes
+- `PETSC_TMP`            - name of the directory you wish to use as tmp
 
-   Level: developer
+  Level: developer
 
-   Notes:
-   Stores the status as a MPI attribute so it does not have
-    to be redetermined each time.
+  Notes:
+  Stores the status as a MPI attribute so it does not have
+  to be redetermined each time.
 
-      Assumes that all processors in a communicator either
-       1) have a common /tmp or
-       2) each has a separate /tmp
-      eventually we can write a fancier one that determines which processors
-      share a common /tmp.
+  Assumes that all processors in a communicator either
+  1) have a common tmp or
+  2) each has a separate tmp
+  eventually we can write a fancier one that determines which processors
+  share a common tmp.
 
-   This will be very slow on runs with a large number of processors since
-   it requires O(p*p) file opens.
+  This will be very slow on runs with a large number of processors since
+  it requires O(p*p) file opens.
 
-   If the environmental variable PETSC_TMP is set it will use this directory
-  as the "/tmp" directory.
+  If the environmental variable `PETSC_TMP` is set it will use this directory
+  as the "tmp" directory.
 
 .seealso: `PetscGetTmp()`, `PetscSharedWorkingDirectory()`, `PetscGetWorkingDirectory()`, `PetscGetHomeDirectory()`
 @*/
@@ -196,6 +200,8 @@ PetscErrorCode PetscSharedTmp(MPI_Comm comm, PetscBool *shared)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+// "Unknown section 'Environmental Variables'"
+// PetscClangLinter pragma disable: -fdoc-section-header-unknown
 /*@C
   PetscSharedWorkingDirectory - Determines if all processors in a communicator share a working directory or have different ones.
 
@@ -208,12 +214,12 @@ PetscErrorCode PetscSharedTmp(MPI_Comm comm, PetscBool *shared)
 . shared - `PETSC_TRUE` or `PETSC_FALSE`
 
   Options Database Keys:
-+ -shared_working_directory - indicates the directory is shared among the MPI ranks
-- -not_shared_working_directory - indicates the directory is shared among the MPI ranks
++ -shared_working_directory     - indicates the directory is known to be shared among the MPI processes
+- -not_shared_working_directory - indicates the directory is known to be not shared among the MPI processes
 
   Environmental Variables:
-+ `PETSC_SHARED_WORKING_DIRECTORY` - indicates the directory is shared among the MPI ranks
-- `PETSC_NOT_SHARED_WORKING_DIRECTORY` - indicates the directory is shared among the MPI ranks
++ `PETSC_SHARED_WORKING_DIRECTORY`     - indicates the directory is known to be shared among the MPI processes
+- `PETSC_NOT_SHARED_WORKING_DIRECTORY` - indicates the directory is known to be not shared among the MPI processes
 
   Level: developer
 
@@ -221,8 +227,10 @@ PetscErrorCode PetscSharedTmp(MPI_Comm comm, PetscBool *shared)
   Stores the status as a MPI attribute so it does not have to be redetermined each time.
 
   Assumes that all processors in a communicator either
-$   1) have a common working directory or
-$   2) each has a separate working directory
+.vb
+   1) have a common working directory or
+   2) each has a separate working directory
+.ve
   eventually we can write a fancier one that determines which processors share a common working directory.
 
   This will be very slow on runs with a large number of processors since it requires O(p*p) file opens.
@@ -265,7 +273,7 @@ PetscErrorCode PetscSharedWorkingDirectory(MPI_Comm comm, PetscBool *shared)
     PetscCall(PetscMalloc1(1, &tagvalp));
     PetscCallMPI(MPI_Comm_set_attr(comm, Petsc_SharedWD_keyval, tagvalp));
 
-    PetscCall(PetscGetWorkingDirectory(filename, 240));
+    PetscCall(PetscGetWorkingDirectory(filename, sizeof(filename) - 16));
     PetscCall(PetscStrlcat(filename, "/petsctestshared", sizeof(filename)));
     PetscCallMPI(MPI_Comm_rank(comm, &rank));
 
@@ -305,25 +313,26 @@ PetscErrorCode PetscSharedWorkingDirectory(MPI_Comm comm, PetscBool *shared)
 }
 
 /*@C
-    PetscFileRetrieve - Obtains a file from a URL or compressed
-        and copies into local disk space as uncompressed.
+  PetscFileRetrieve - Obtains a file from a URL or a compressed file
+  and copies into local disk space as uncompressed.
 
-    Collective
+  Collective
 
-    Input Parameters:
-+   comm     - processors accessing the file
-.   url      - name of file, including entire URL (with or without .gz)
--   llen     - length of localname
+  Input Parameters:
++ comm - processors accessing the file
+. url  - name of file, including entire URL (with or without .gz)
+- llen - length of `localname`
 
-    Output Parameters:
-+   localname - name of local copy of file - valid on only process zero
--   found - if found or retrieved the file - valid on all processes
+  Output Parameters:
++ localname - name of local copy of file - valid on only process zero
+- found     - if found or retrieved the file - valid on all processes
 
-    Level: intermediate
+  Level: developer
 
-    Note:
-    if the file already exists local this function just returns without downloading it.
+  Note:
+  if the file already exists locally this function just returns without downloading it.
 
+.seealso: `PetscDLLibraryRetrieve()`
 @*/
 PetscErrorCode PetscFileRetrieve(MPI_Comm comm, const char url[], char localname[], size_t llen, PetscBool *found)
 {

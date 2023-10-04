@@ -461,7 +461,7 @@ PetscErrorCode VecTaggerCDFGetMethod(VecTagger tagger, VecTaggerCDFMethod *metho
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tagger, VEC_TAGGER_CLASSID, 1);
-  PetscValidPointer(method, 2);
+  PetscAssertPointer(method, 2);
   *method = cuml->method;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -473,10 +473,10 @@ PetscErrorCode VecTaggerCDFGetMethod(VecTagger tagger, VecTaggerCDFMethod *metho
 
   Input Parameters:
 + tagger - the `VecTagger` context
-. maxit - the maximum number of iterations: 0 indicates the absolute values will be estimated from an initial guess based only on the minimum, maximum, mean,
+. maxit  - the maximum number of iterations: 0 indicates the absolute values will be estimated from an initial guess based only on the minimum, maximum, mean,
           and standard deviation of the box endpoints.
-. rtol - the acceptable relative tolerance in the absolute values from the initial guess
-- atol - the acceptable absolute tolerance in the absolute values from the initial guess
+. rtol   - the acceptable relative tolerance in the absolute values from the initial guess
+- atol   - the acceptable absolute tolerance in the absolute values from the initial guess
 
   Level: advanced
 
@@ -508,8 +508,8 @@ PetscErrorCode VecTaggerCDFIterativeSetTolerances(VecTagger tagger, PetscInt max
   Output Parameters:
 + maxit - the maximum number of iterations: 0 indicates the absolute values will be estimated from an initial guess based only on the minimum, maximum,
           mean, and standard deviation of the box endpoints.
-. rtol - the acceptable relative tolerance in the absolute values from the initial guess
-- atol - the acceptable absolute tolerance in the absolute values from the initial guess
+. rtol  - the acceptable relative tolerance in the absolute values from the initial guess
+- atol  - the acceptable absolute tolerance in the absolute values from the initial guess
 
   Level: advanced
 
@@ -534,7 +534,7 @@ PetscErrorCode VecTaggerCDFIterativeGetTolerances(VecTagger tagger, PetscInt *ma
 
   Input Parameters:
 + tagger - the `VecTagger` context
-- boxes - a blocksize array of `VecTaggerBox` boxes
+- box    - a blocksize array of `VecTaggerBox` boxes
 
   Level: advanced
 
@@ -557,7 +557,7 @@ PetscErrorCode VecTaggerCDFSetBox(VecTagger tagger, VecTaggerBox *box)
 . tagger - the `VecTagger` context
 
   Output Parameter:
-. boxes - a blocksize array of `VecTaggerBox` boxes
+. box - a blocksize array of `VecTaggerBox` boxes
 
   Level: advanced
 

@@ -7,6 +7,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_MFFD(Mat);
 PETSC_EXTERN PetscErrorCode MatCreate_MAIJ(Mat);
 PETSC_EXTERN PetscErrorCode MatCreate_KAIJ(Mat);
 PETSC_EXTERN PetscErrorCode MatCreate_IS(Mat);
+PETSC_EXTERN PetscErrorCode MatCreate_LRC(Mat);
 
 PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJ(Mat);
 PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJ(Mat);
@@ -62,6 +63,8 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPISELL(Mat);
 #if defined(PETSC_HAVE_CUDA)
 PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJCUSPARSE(Mat);
 PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJCUSPARSE(Mat);
+PETSC_EXTERN PetscErrorCode MatCreate_SeqSELLCUDA(Mat);
+PETSC_EXTERN PetscErrorCode MatCreate_MPISELLCUDA(Mat);
 #endif
 
 #if defined(PETSC_HAVE_HIP)
@@ -97,6 +100,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_HYPRE(Mat);
 #endif
 
 PETSC_EXTERN PetscErrorCode MatCreate_ConstantDiagonal(Mat);
+PETSC_INTERN PetscErrorCode MatCreate_Diagonal(Mat);
 
 #if defined(PETSC_HAVE_H2OPUS)
 PETSC_EXTERN PetscErrorCode MatCreate_H2OPUS(Mat);
@@ -134,6 +138,7 @@ PetscErrorCode MatRegisterAll(void)
   PetscCall(MatRegister(MATIS, MatCreate_IS));
   PetscCall(MatRegister(MATSHELL, MatCreate_Shell));
   PetscCall(MatRegister(MATCOMPOSITE, MatCreate_Composite));
+  PetscCall(MatRegister(MATLRC, MatCreate_LRC));
 
   PetscCall(MatRegisterRootName(MATAIJ, MATSEQAIJ, MATMPIAIJ));
   PetscCall(MatRegister(MATMPIAIJ, MatCreate_MPIAIJ));
@@ -199,6 +204,9 @@ PetscErrorCode MatRegisterAll(void)
   PetscCall(MatRegisterRootName(MATAIJCUSPARSE, MATSEQAIJCUSPARSE, MATMPIAIJCUSPARSE));
   PetscCall(MatRegister(MATSEQAIJCUSPARSE, MatCreate_SeqAIJCUSPARSE));
   PetscCall(MatRegister(MATMPIAIJCUSPARSE, MatCreate_MPIAIJCUSPARSE));
+  PetscCall(MatRegisterRootName(MATSELLCUDA, MATSEQSELLCUDA, MATMPISELLCUDA));
+  PetscCall(MatRegister(MATSEQSELLCUDA, MatCreate_SeqSELLCUDA));
+  PetscCall(MatRegister(MATMPISELLCUDA, MatCreate_MPISELLCUDA));
 #endif
 
 #if defined(PETSC_HAVE_HIP)
@@ -233,6 +241,7 @@ PetscErrorCode MatRegisterAll(void)
   PetscCall(MatRegister(MATDUMMY, MatCreate_Dummy));
 
   PetscCall(MatRegister(MATCONSTANTDIAGONAL, MatCreate_ConstantDiagonal));
+  PetscCall(MatRegister(MATDIAGONAL, MatCreate_Diagonal));
 
 #if defined(PETSC_HAVE_HYPRE)
   PetscCall(MatRegister(MATHYPRE, MatCreate_HYPRE));

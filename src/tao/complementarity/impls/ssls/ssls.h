@@ -48,8 +48,7 @@
      University of Wisconsin - Madison, 1999.
 */
 
-#ifndef __TAO_SSLS_H
-#define __TAO_SSLS_H
+#pragma once
 #include <petsc/private/taoimpl.h>
 
 typedef struct {
@@ -98,5 +97,3 @@ PetscErrorCode TaoView_SSLS(Tao, PetscViewer);
 
 PetscErrorCode Tao_SSLS_Function(TaoLineSearch, Vec, PetscReal *, void *);
 PetscErrorCode Tao_SSLS_FunctionGradient(TaoLineSearch, Vec, PetscReal *, Vec, void *);
-
-#endif

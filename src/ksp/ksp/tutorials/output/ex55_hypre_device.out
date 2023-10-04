@@ -42,11 +42,14 @@ PC Object: 4 MPI processes
       Relax on coarse     Gaussian-elimination
       Relax weight  (all)      1.
       Outer relax weight (all) 1.
+      Maximum size of coarsest grid 9
+      Minimum size of coarsest grid 1
       Not using CF-relaxation
       Not using more complex smoothers.
       Measure type        local
       Coarsen type        PMIS
       Interpolation type  ext+i
+      SpGEMM type         hypre
   linear system matrix = precond matrix:
   Mat Object: 4 MPI processes
     type: hypre

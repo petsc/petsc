@@ -31,7 +31,7 @@ Windows compilers; nor can you use MS-MPI, Intel-MPI or MPICH2).
      - make
      - gcc-core gcc-g++ gcc-fortran
      - liblapack-devel
-     - openmpi libopenmpi-devel
+     - openmpi libopenmpi-devel libhwloc-devel libevent-devel zlib-devel
 
 - `MSYS2 <https://www.msys2.org>`__. See more details below.
 
@@ -87,7 +87,7 @@ interface to Microsoft/Intel compilers).
    and Intel 10 Fortran one can do:
 
    #. Start > Programs > Intel Software Development Tools > Intel Fortran
-      Compiler 10 > Visual Fortran Build Environment (32bit or 64bit depending on
+      Compiler 10 > Visual Fortran Build Environment (32-bit or 64-bit depending on
       your usage). This should start a "dos cmd" shell.
 
    #. Within this shell - run Cygwin terminal/bash-shell ``mintty.exe`` as:

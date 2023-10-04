@@ -492,7 +492,7 @@ PetscErrorCode FormJacobian(SNES snes, Vec X, Mat J, Mat jac, void *ptr)
 
   /*
      Normally since the matrix has already been assembled above; this
-     would do nothing. But in the matrix free mode -snes_mf_operator
+     would do nothing. But in the matrix-free mode -snes_mf_operator
      this tells the "matrix-free" matrix that a new linear system solve
      is about to be done.
   */

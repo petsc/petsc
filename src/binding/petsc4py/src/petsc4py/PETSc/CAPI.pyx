@@ -21,7 +21,7 @@ cdef api object PyPetscComm_New(MPI_Comm arg):
     retv.comm = arg
     return retv
 
-cdef api MPI_Comm PyPetscComm_Get(object arg) except *:
+cdef api MPI_Comm PyPetscComm_Get(object arg) except? MPI_COMM_NULL:
     cdef MPI_Comm retv = MPI_COMM_NULL
     cdef Comm ob = <Comm?> arg
     retv = ob.comm
@@ -270,6 +270,18 @@ cdef api PetscTAO PyPetscTAO_Get(object arg) except ? NULL:
     cdef TAO ob = <TAO?> arg
     retv = ob.tao
     return retv
+
+cdef api object PyPetscTAOLineSearch_New(PetscTAOLineSearch arg):
+    cdef TAOLineSearch retv = TAOLineSearch()
+    setref(&retv.taols, arg)
+    return retv
+
+cdef api PetscTAOLineSearch PyPetscTAOLineSearch_Get(object arg) except ? NULL:
+    cdef PetscTAOLineSearch retv = NULL
+    cdef TAOLineSearch ob = <TAOLineSearch?> arg
+    retv = ob.taols
+    return retv
+
 
 # -- AO --
 

@@ -1,3 +1,5 @@
+#pragma once
+
 /*
    Define type spbas_matrix: sparse matrices using pointers
 
@@ -92,7 +94,6 @@ size_t         spbas_memory_requirement(spbas_matrix);
 PetscErrorCode spbas_delete(spbas_matrix);
 PetscErrorCode spbas_incomplete_cholesky(Mat, const PetscInt *, const PetscInt *, spbas_matrix, PetscReal, PetscReal, spbas_matrix *, PetscBool *);
 PetscErrorCode spbas_matrix_to_crs(spbas_matrix, MatScalar **, PetscInt **, PetscInt **);
-PetscErrorCode spbas_dump(const char *, spbas_matrix);
 PetscErrorCode spbas_transpose(spbas_matrix, spbas_matrix *);
 PetscErrorCode spbas_apply_reordering(spbas_matrix *, const PetscInt *, const PetscInt *);
 PetscErrorCode spbas_pattern_only(PetscInt, PetscInt, PetscInt *, PetscInt *, spbas_matrix *);

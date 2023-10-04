@@ -1,5 +1,4 @@
-#ifndef PETSC_DMSTAG_H
-#define PETSC_DMSTAG_H
+#pragma once
 
 #include <petscdm.h>
 #include <petscdmproduct.h>
@@ -17,7 +16,7 @@
    The order of the enum entries is significant, as it corresponds to the canonical numbering
    of DOFs, and the fact that the numbering starts at 0 may also be used by the implementation.
 
-.seealso: [](chapter_stag), `DMSTAG`, `DMStagStencil`, `DMStagGetLocationSlot()`, `DMStagStencilType`
+.seealso: [](ch_stag), `DMSTAG`, `DMStagStencil`, `DMStagGetLocationSlot()`, `DMStagStencilType`
 E*/
 typedef enum {
   DMSTAG_NULL_LOCATION = 0,
@@ -58,12 +57,12 @@ PETSC_EXTERN const char *const DMStagStencilLocations[]; /* Corresponding string
   in terms of a global element index in each of up to three directions, a "location" as defined by `DMStagStencilLocation`,
   and a component number. Primarily for use with `DMStagMatSetValuesStencil()` (compare with use of `MatStencil` with `MatSetValuesStencil()`).
 
+  Level: beginner
+
   Note:
   The component (c) field must always be set, even if there is a single component at a given location (in which case c should be set to 0).
 
-Level: beginner
-
-.seealso: [](chapter_stag), `DMSTAG`, `DMStagMatSetValuesStencil()`, `DMStagVecSetValuesStencil()`, `DMStagStencilLocation`, `DMStagSetStencilWidth()`,
+.seealso: [](ch_stag), `DMSTAG`, `DMStagMatSetValuesStencil()`, `DMStagVecSetValuesStencil()`, `DMStagStencilLocation`, `DMStagSetStencilWidth()`,
           `DMStagSetStencilType()`, `DMStagVecGetValuesStencil()`, `DMStagStencilLocation`
 S*/
 typedef struct {
@@ -76,7 +75,7 @@ typedef struct {
 
   Level: beginner
 
-.seealso: [](chapter_stag), `DMSTAG`, `DMStagCreate1d()`, `DMStagCreate2d()`, `DMStagCreate3d()`, `DMStagStencil`, `DMDAStencilType`, `DMStagStencilLocation`
+.seealso: [](ch_stag), `DMSTAG`, `DMStagCreate1d()`, `DMStagCreate2d()`, `DMStagCreate3d()`, `DMStagStencil`, `DMDAStencilType`, `DMStagStencilLocation`
 E*/
 
 typedef enum {
@@ -139,41 +138,39 @@ PETSC_EXTERN PetscErrorCode DMStagVecRestoreArrayRead(DM, Vec, void *);
 PETSC_EXTERN PetscErrorCode DMStagVecSetValuesStencil(DM, Vec, PetscInt, const DMStagStencil *, const PetscScalar *, InsertMode);
 PETSC_EXTERN PetscErrorCode DMStagVecSplitToDMDA(DM, Vec, DMStagStencilLocation, PetscInt, DM *, Vec *);
 
-PETSC_DEPRECATED_FUNCTION("Use DMStagGetProductCoordinateArraysRead() (since version 3.13") static inline PetscErrorCode DMStagGet1dCoordinateArraysDOFRead(DM dm, void *ax, void *ay, void *az)
+PETSC_DEPRECATED_FUNCTION(3, 13, 0, "DMStagGetProductCoordinateArraysRead()", ) static inline PetscErrorCode DMStagGet1dCoordinateArraysDOFRead(DM dm, void *ax, void *ay, void *az)
 {
   return DMStagGetProductCoordinateArraysRead(dm, ax, ay, az);
 }
-PETSC_DEPRECATED_FUNCTION("Use DMStagGetProductCoordinateLocationSlot() (since version 3.13") static inline PetscErrorCode DMStagGet1dCoordinateLocationSlot(DM dm, DMStagStencilLocation loc, PetscInt *s)
+PETSC_DEPRECATED_FUNCTION(3, 13, 0, "DMStagGetProductCoordinateLocationSlot()", ) static inline PetscErrorCode DMStagGet1dCoordinateLocationSlot(DM dm, DMStagStencilLocation loc, PetscInt *s)
 {
   return DMStagGetProductCoordinateLocationSlot(dm, loc, s);
 }
-PETSC_DEPRECATED_FUNCTION("Use DMStagGetStencilType() (since version 3.11)") static inline PetscErrorCode DMStagGetGhostType(DM dm, DMStagStencilType *s)
+PETSC_DEPRECATED_FUNCTION(3, 11, 0, "DMStagGetStencilType()", ) static inline PetscErrorCode DMStagGetGhostType(DM dm, DMStagStencilType *s)
 {
   return DMStagGetStencilType(dm, s);
 }
-PETSC_DEPRECATED_FUNCTION("Use DMStagRestoreProductCoordinateArraysRead() (since version 3.13") static inline PetscErrorCode DMStagRestore1dCoordinateArraysDOFRead(DM dm, void *ax, void *ay, void *az)
+PETSC_DEPRECATED_FUNCTION(3, 13, 0, "DMStagRestoreProductCoordinateArraysRead()", ) static inline PetscErrorCode DMStagRestore1dCoordinateArraysDOFRead(DM dm, void *ax, void *ay, void *az)
 {
   return DMStagRestoreProductCoordinateArraysRead(dm, ax, ay, az);
 }
-PETSC_DEPRECATED_FUNCTION("Use DMStagSetStencilType() (since version 3.11)") static inline PetscErrorCode DMStagSetGhostType(DM dm, DMStagStencilType *s)
+PETSC_DEPRECATED_FUNCTION(3, 11, 0, "DMStagSetStencilType()", ) static inline PetscErrorCode DMStagSetGhostType(DM dm, DMStagStencilType *s)
 {
   return DMStagGetStencilType(dm, s);
 }
-PETSC_DEPRECATED_FUNCTION("Use DMStagVecGetArray() (since version 3.13") static inline PetscErrorCode DMStagVecGetArrayDOF(DM dm, Vec v, void *a)
+PETSC_DEPRECATED_FUNCTION(3, 13, 0, "DMStagVecGetArray()", ) static inline PetscErrorCode DMStagVecGetArrayDOF(DM dm, Vec v, void *a)
 {
   return DMStagVecGetArray(dm, v, a);
 }
-PETSC_DEPRECATED_FUNCTION("Use DMStagVecGetArrayRead() (since version 3.13") static inline PetscErrorCode DMStagVecGetArrayDOFRead(DM dm, Vec v, void *a)
+PETSC_DEPRECATED_FUNCTION(3, 13, 0, "DMStagVecGetArrayRead()", ) static inline PetscErrorCode DMStagVecGetArrayDOFRead(DM dm, Vec v, void *a)
 {
   return DMStagVecGetArrayRead(dm, v, a);
 }
-PETSC_DEPRECATED_FUNCTION("Use DMStagVecRestoreArray() (since version 3.13") static inline PetscErrorCode DMStagVecRestoreArrayDOF(DM dm, Vec v, void *a)
+PETSC_DEPRECATED_FUNCTION(3, 13, 0, "DMStagVecRestoreArray()", ) static inline PetscErrorCode DMStagVecRestoreArrayDOF(DM dm, Vec v, void *a)
 {
   return DMStagVecRestoreArray(dm, v, a);
 }
-PETSC_DEPRECATED_FUNCTION("Use DMStagVecRestoreArrayRead() (since version 3.13") static inline PetscErrorCode DMStagVecRestoreArrayDOFRead(DM dm, Vec v, void *a)
+PETSC_DEPRECATED_FUNCTION(3, 13, 0, "DMStagVecRestoreArrayRead()", ) static inline PetscErrorCode DMStagVecRestoreArrayDOFRead(DM dm, Vec v, void *a)
 {
   return DMStagVecRestoreArrayRead(dm, v, a);
 }
-
-#endif // PETSC_DMSTAG_H

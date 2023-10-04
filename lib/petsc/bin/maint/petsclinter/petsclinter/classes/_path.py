@@ -3,41 +3,61 @@
 # Created:
 # @author: Jacob Faibussowitsch
 """
+from __future__ import annotations
+
+from .._typing import *
+
 import pathlib
 
 from .. import __version__
 
-class Path(type(pathlib.Path())):
+# pathlib.Path() actually dynamically selects between pathlib.PosixPath and
+# pathlib.WindowsPath (but this is static on each machine). For this reason, we need to
+# use type(pathlib.Path()) to select the right type at runtime, but the type checkers
+# don't like it because it is -- seemingly -- dynamic. So we arbitrarily pick PosixPath
+# for type checkers.
+#
+# see https://stackoverflow.com/questions/29850801/subclass-pathlib-path-fails
+if TYPE_CHECKING:
+  _PathType = pathlib.PosixPath
+else:
+  _PathType = type(pathlib.Path())
+
+class Path(_PathType):
   """
   a basic pathlib.Path wrapper with some additional utility backported
   """
-  # inheriting pathlib.Path:
-  # https://stackoverflow.com/questions/29850801/subclass-pathlib-path-fails
-  def append_suffix(self, suffix):
-    """
-    Create a path with SUFFIX appended, regardless of whether the current path has a suffix or not
-    """
-    suffix    = str(suffix)
-    dotstring = '' if suffix.startswith('.') else '.'
-    return self.with_suffix(f'{self.suffix}{dotstring}{suffix}')
+  def append_suffix(self, suffix: str) -> Path:
+    r"""Create a path with `suffix` appended, regardless of whether the current path has a suffix
+    or not.
 
-  def append_name(self, name):
-    """
-    Create a path with NAME appended
-    """
-    return self.with_name(f'{self.stem}{name}')
+    Parameters
+    ----------
+    suffix:
+      the suffix to append
 
-  def unlink(self, missing_ok=False):
+    Returns
+    -------
+    path:
+      the path with the suffix
     """
-    backport the missing_ok kwarg
+    suffix     = str(suffix)
+    dotstring  = '' if suffix.startswith('.') else '.'
+    path: Path = self.with_suffix(f'{self.suffix}{dotstring}{suffix}')
+    return path
+
+  def append_name(self, name: str) -> Path:
+    r"""Create a path with `name` appended
+
+    Parameters
+    ----------
+    name:
+      the name to append
+
+    Returns
+    -------
+    path:
+      the path with the name
     """
-    if __version__.py_version_lt(3, 8):
-      try:
-        super().unlink()
-      except FileNotFoundError as fnfe:
-        if missing_ok:
-          return
-        raise
-    else:
-      super().unlink(missing_ok=missing_ok)
-    return
+    path: Path = self.with_name(f'{self.stem}{name}')
+    return path

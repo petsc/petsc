@@ -76,21 +76,21 @@ class BaseTestSNES(object):
         reason = PETSc.SNES.ConvergedReason.CONVERGED_ITS
         snes.reason = reason
         self.assertEqual(snes.reason, reason)
-        self.assertTrue(snes.converged)
-        self.assertFalse(snes.diverged)
-        self.assertFalse(snes.iterating)
+        self.assertTrue(snes.is_converged)
+        self.assertFalse(snes.is_diverged)
+        self.assertFalse(snes.is_iterating)
         reason = PETSc.SNES.ConvergedReason.DIVERGED_MAX_IT
         snes.reason = reason
         self.assertEqual(snes.reason, reason)
-        self.assertFalse(snes.converged)
-        self.assertTrue(snes.diverged)
-        self.assertFalse(snes.iterating)
+        self.assertFalse(snes.is_converged)
+        self.assertTrue(snes.is_diverged)
+        self.assertFalse(snes.is_iterating)
         reason = PETSc.SNES.ConvergedReason.CONVERGED_ITERATING
         snes.reason = reason
         self.assertEqual(snes.reason, reason)
-        self.assertFalse(snes.converged)
-        self.assertFalse(snes.diverged)
-        self.assertTrue(snes.iterating)
+        self.assertFalse(snes.is_converged)
+        self.assertFalse(snes.is_diverged)
+        self.assertTrue(snes.is_iterating)
         #
         self.assertFalse(snes.use_ew)
         self.assertFalse(snes.use_mf)

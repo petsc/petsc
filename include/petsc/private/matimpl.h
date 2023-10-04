@@ -1,6 +1,4 @@
-
-#ifndef __MATIMPL_H
-#define __MATIMPL_H
+#pragma once
 
 #include <petscmat.h>
 #include <petscmatcoarsen.h>
@@ -218,7 +216,7 @@ struct _MatOps {
   PetscErrorCode (*dummy)(Mat);
   /*150*/
   PetscErrorCode (*transposesymbolic)(Mat, Mat *);
-  PetscErrorCode (*eliminatezeros)(Mat);
+  PetscErrorCode (*eliminatezeros)(Mat, PetscBool);
 };
 /*
     If you add MatOps entries above also add them to the MATOP enum
@@ -226,8 +224,6 @@ struct _MatOps {
 */
 
 #include <petscsys.h>
-PETSC_EXTERN PetscErrorCode MatRegisterOp(MPI_Comm, const char[], PetscVoidFunction, const char[], PetscInt, ...);
-PETSC_EXTERN PetscErrorCode MatQueryOp(MPI_Comm, PetscVoidFunction *, const char[], PetscInt, ...);
 
 typedef struct _p_MatRootName *MatRootName;
 struct _p_MatRootName {
@@ -249,7 +245,7 @@ PETSC_INTERN PetscErrorCode MatDiagonalSet_Default(Mat, Vec, InsertMode);
 #if defined(PETSC_HAVE_SCALAPACK)
 PETSC_INTERN PetscErrorCode MatConvert_Dense_ScaLAPACK(Mat, MatType, MatReuse, Mat *);
 #endif
-PETSC_INTERN PetscErrorCode MatSetPreallocationCOO_Basic(Mat, PetscCount, const PetscInt[], const PetscInt[]);
+PETSC_INTERN PetscErrorCode MatSetPreallocationCOO_Basic(Mat, PetscCount, PetscInt[], PetscInt[]);
 PETSC_INTERN PetscErrorCode MatSetValuesCOO_Basic(Mat, const PetscScalar[], InsertMode);
 
 /* these callbacks rely on the old matrix function pointers for
@@ -277,9 +273,9 @@ PETSC_INTERN PetscErrorCode MatCreateGraph_Simple_AIJ(Mat, PetscBool, PetscBool,
 
 #if defined(PETSC_CLANG_STATIC_ANALYZER)
 template <typename Tm>
-void MatCheckPreallocated(Tm, int);
+extern void MatCheckPreallocated(Tm, int);
 template <typename Tm>
-void MatCheckProduct(Tm, int);
+extern void MatCheckProduct(Tm, int);
 #else /* PETSC_CLANG_STATIC_ANALYZER */
   #define MatCheckPreallocated(A, arg) \
     do { \
@@ -590,15 +586,6 @@ typedef struct {
   PetscInt     ignorezeroentries;
 } PetscCSRDataStructure;
 
-struct _n_SplitCSRMat {
-  PetscInt              cstart, cend, rstart, rend;
-  PetscCSRDataStructure diag, offdiag;
-  PetscInt             *colmap;
-  PetscInt              M; // number of columns for out of bounds check
-  PetscMPIInt           rank;
-  PetscBool             allocated_indices;
-};
-
 /*
     MatFDColoring is used to compute Jacobian matrices efficiently
   via coloring. The data structure is explained below in an example.
@@ -784,7 +771,7 @@ static inline PetscErrorCode MatPivotCheck_pd(PETSC_UNUSED Mat mat, const MatFac
       sctx->shift_fraction = sctx->shift_hi;
     } else {
       sctx->shift_lo       = sctx->shift_fraction;
-      sctx->shift_fraction = (sctx->shift_hi + sctx->shift_lo) / 2.;
+      sctx->shift_fraction = (sctx->shift_hi + sctx->shift_lo) / (PetscReal)2.;
     }
     sctx->shift_amount = sctx->shift_fraction * sctx->shift_top;
     sctx->nshift++;
@@ -1274,9 +1261,9 @@ static inline PetscErrorCode PetscIncompleteLLClean(PetscInt idx_start, PetscInt
     } while (0)
 #else
 template <typename Tm>
-void MatCheckSameLocalSize(Tm, int, Tm, int);
+extern void MatCheckSameLocalSize(Tm, int, Tm, int);
 template <typename Tm>
-void MatCheckSameSize(Tm, int, Tm, int);
+extern void MatCheckSameSize(Tm, int, Tm, int);
 #endif
 
 #define VecCheckMatCompatible(M, x, ar1, b, ar2) \
@@ -1623,16 +1610,12 @@ static inline PetscErrorCode PetscLLCondensedDestroy_fast(PetscInt *lnk)
 /* this is extern because it is used in MatFDColoringUseDM() which is in the DM library */
 PETSC_EXTERN PetscErrorCode MatFDColoringApply_AIJ(Mat, MatFDColoring, Vec, void *);
 
-#if defined(PETSC_HAVE_KOKKOS_KERNELS)
-PETSC_INTERN PetscErrorCode MatSeqAIJMoveDiagonalValuesFront_SeqAIJKokkos(Mat, const PetscInt *);
-#endif
-
 PETSC_EXTERN PetscLogEvent MAT_Mult;
-PETSC_EXTERN PetscLogEvent MAT_MultMatrixFree;
-PETSC_EXTERN PetscLogEvent MAT_Mults;
 PETSC_EXTERN PetscLogEvent MAT_MultAdd;
 PETSC_EXTERN PetscLogEvent MAT_MultTranspose;
+PETSC_EXTERN PetscLogEvent MAT_MultHermitianTranspose;
 PETSC_EXTERN PetscLogEvent MAT_MultTransposeAdd;
+PETSC_EXTERN PetscLogEvent MAT_MultHermitianTransposeAdd;
 PETSC_EXTERN PetscLogEvent MAT_Solve;
 PETSC_EXTERN PetscLogEvent MAT_Solves;
 PETSC_EXTERN PetscLogEvent MAT_SolveAdd;
@@ -1663,7 +1646,6 @@ PETSC_EXTERN PetscLogEvent MAT_GetValues;
 PETSC_EXTERN PetscLogEvent MAT_GetRow;
 PETSC_EXTERN PetscLogEvent MAT_GetRowIJ;
 PETSC_EXTERN PetscLogEvent MAT_CreateSubMats;
-PETSC_EXTERN PetscLogEvent MAT_GetColoring;
 PETSC_EXTERN PetscLogEvent MAT_GetOrdering;
 PETSC_EXTERN PetscLogEvent MAT_RedundantMat;
 PETSC_EXTERN PetscLogEvent MAT_IncreaseOverlap;
@@ -1702,12 +1684,8 @@ PETSC_EXTERN PetscLogEvent MAT_TransposeMatMultSymbolic;
 PETSC_EXTERN PetscLogEvent MAT_TransposeMatMultNumeric;
 PETSC_EXTERN PetscLogEvent MAT_MatMatMultSymbolic;
 PETSC_EXTERN PetscLogEvent MAT_MatMatMultNumeric;
-PETSC_EXTERN PetscLogEvent MAT_Applypapt;
-PETSC_EXTERN PetscLogEvent MAT_Applypapt_symbolic;
-PETSC_EXTERN PetscLogEvent MAT_Applypapt_numeric;
-PETSC_EXTERN PetscLogEvent MAT_Getsymtranspose;
 PETSC_EXTERN PetscLogEvent MAT_Getsymtransreduced;
-PETSC_EXTERN PetscLogEvent MAT_GetSequentialNonzeroStructure;
+PETSC_EXTERN PetscLogEvent MAT_GetSeqNonzeroStructure;
 PETSC_EXTERN PetscLogEvent MATMFFD_Mult;
 PETSC_EXTERN PetscLogEvent MAT_GetMultiProcBlock;
 PETSC_EXTERN PetscLogEvent MAT_CUSPARSECopyToGPU;
@@ -1739,5 +1717,4 @@ PETSC_EXTERN PetscLogEvent MAT_H2Opus_Build;
 PETSC_EXTERN PetscLogEvent MAT_H2Opus_Compress;
 PETSC_EXTERN PetscLogEvent MAT_H2Opus_Orthog;
 PETSC_EXTERN PetscLogEvent MAT_H2Opus_LR;
-
-#endif
+PETSC_EXTERN PetscLogEvent MAT_CUDACopyToGPU;

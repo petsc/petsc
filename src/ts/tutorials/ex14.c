@@ -1010,9 +1010,9 @@ static PetscErrorCode THISurfaceStatistics(DM pack, Vec X, PetscReal *min, Petsc
   PetscCall(DMDAVecRestoreArray(da3, X3, &x));
   PetscCall(DMCompositeRestoreAccess(pack, X, &X3, &X2));
 
-  PetscCallMPI(MPI_Allreduce(&umin, min, 1, MPIU_REAL, MPIU_MIN, PetscObjectComm((PetscObject)da3)));
-  PetscCallMPI(MPI_Allreduce(&umax, max, 1, MPIU_REAL, MPIU_MAX, PetscObjectComm((PetscObject)da3)));
-  PetscCallMPI(MPI_Allreduce(&usum, &gusum, 1, MPIU_SCALAR, MPIU_SUM, PetscObjectComm((PetscObject)da3)));
+  PetscCall(MPIU_Allreduce(&umin, min, 1, MPIU_REAL, MPIU_MIN, PetscObjectComm((PetscObject)da3)));
+  PetscCall(MPIU_Allreduce(&umax, max, 1, MPIU_REAL, MPIU_MAX, PetscObjectComm((PetscObject)da3)));
+  PetscCall(MPIU_Allreduce(&usum, &gusum, 1, MPIU_SCALAR, MPIU_SUM, PetscObjectComm((PetscObject)da3)));
   *mean = PetscRealPart(gusum) / (mx * my);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1056,8 +1056,8 @@ static PetscErrorCode THISolveStatistics(THI thi, TS ts, PetscInt coarsened, con
       tmax[2] = PetscMax(c, tmax[2]);
     }
     PetscCall(VecRestoreArray(X, &x));
-    PetscCallMPI(MPI_Allreduce(tmin, min, 3, MPIU_REAL, MPIU_MIN, PetscObjectComm((PetscObject)thi)));
-    PetscCallMPI(MPI_Allreduce(tmax, max, 3, MPIU_REAL, MPIU_MAX, PetscObjectComm((PetscObject)thi)));
+    PetscCall(MPIU_Allreduce(tmin, min, 3, MPIU_REAL, MPIU_MIN, PetscObjectComm((PetscObject)thi)));
+    PetscCall(MPIU_Allreduce(tmax, max, 3, MPIU_REAL, MPIU_MAX, PetscObjectComm((PetscObject)thi)));
     /* Dimensionalize to meters/year */
     nrm2 *= thi->units->year / thi->units->meter;
     for (j = 0; j < 3; j++) {

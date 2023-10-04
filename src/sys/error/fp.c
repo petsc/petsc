@@ -17,6 +17,9 @@
 
 #include <petsc/private/petscimpl.h> /*I  "petscsys.h"  I*/
 #include <signal.h>
+#if defined(PETSC_HAVE_XMMINTRIN_H)
+  #include <xmmintrin.h>
+#endif
 
 struct PetscFPTrapLink {
   PetscFPTrap             trapmode;
@@ -26,25 +29,27 @@ static PetscFPTrap             _trapmode = PETSC_FP_TRAP_OFF; /* Current trappin
 static struct PetscFPTrapLink *_trapstack;                    /* Any pushed states of _trapmode */
 
 /*@
-   PetscFPTrapPush - push a floating point trapping mode, restored using `PetscFPTrapPop()`
+  PetscFPTrapPush - push a floating point trapping mode, restored using `PetscFPTrapPop()`
 
-   Not Collective
+  Not Collective
 
-   Input Parameter:
-.    trap - `PETSC_FP_TRAP_ON` or `PETSC_FP_TRAP_OFF` or any of the values passable to `PetscSetFPTrap()`
+  Input Parameter:
+. trap - `PETSC_FP_TRAP_ON` or `PETSC_FP_TRAP_OFF` or any of the values passable to `PetscSetFPTrap()`
 
-   Level: advanced
+  Level: advanced
 
-   Notes:
-     This only changes the trapping if the new mode is different than the current mode.
+  Notes:
+  This only changes the trapping if the new mode is different than the current mode.
 
-     This routine is called to turn off trapping for certain LAPACK routines that assume that dividing
-     by zero is acceptable. In particular the routine ieeeck().
+  This routine is called to turn off trapping for certain LAPACK routines that assume that dividing
+  by zero is acceptable. In particular the routine ieeeck().
 
-     Most systems by default have all trapping turned off, but certain Fortran compilers have
-     link flags that turn on trapping before the program begins.
-$       gfortran -ffpe-trap=invalid,zero,overflow,underflow,denormal
-$       ifort -fpe0
+  Most systems by default have all trapping turned off, but certain Fortran compilers have
+  link flags that turn on trapping before the program begins.
+.vb
+       gfortran -ffpe-trap=invalid,zero,overflow,underflow,denormal
+       ifort -fpe0
+.ve
 
 .seealso: `PetscFPTrapPop()`, `PetscSetFPTrap()`, `PetscDetermineInitialFPTrap()`
 @*/
@@ -67,11 +72,11 @@ PetscErrorCode PetscFPTrapPush(PetscFPTrap trap)
 }
 
 /*@
-   PetscFPTrapPop - push a floating point trapping mode, to be restored using `PetscFPTrapPop()`
+  PetscFPTrapPop - push a floating point trapping mode, to be restored using `PetscFPTrapPop()`
 
-   Not Collective
+  Not Collective
 
-   Level: advanced
+  Level: advanced
 
 .seealso: `PetscFPTrapPush()`, `PetscSetFPTrap()`, `PetscDetermineInitialFPTrap()`
 @*/
@@ -158,6 +163,8 @@ sigfpe_handler_type PetscDefaultFPTrap(int sig, int code, struct sigcontext *scp
    Level: advanced
 
    Notes:
+   Preferred usage is `PetscFPTrapPush()` and `PetscFPTrapPop()` instead of this routine
+
    Currently only `PETSC_FP_TRAP_OFF` and `PETSC_FP_TRAP_ON` are handled. All others are treated as `PETSC_FP_TRAP_ON`.
 
    The values are bit values and may be |ed together in the function call
@@ -631,7 +638,7 @@ PetscErrorCode PetscDetermineInitialFPTrap(void)
 /* -------------------------Default -----------------------------------*/
 #else
 
-void PetscDefaultFPTrap(int sig)
+static void PetscDefaultFPTrap(int sig)
 {
   PetscErrorCode ierr;
 

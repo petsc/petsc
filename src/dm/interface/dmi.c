@@ -96,7 +96,7 @@ PetscErrorCode DMCreateLocalVector_Section_Private(DM dm, Vec *vec)
 - fields    - The field numbers of the selected fields
 
   Output Parameters:
-+ is - The global indices for the subproblem
++ is    - The global indices for the subproblem
 - subdm - The `DM` for the subproblem, which must already have be cloned from `dm`
 
   Level: intermediate
@@ -105,7 +105,7 @@ PetscErrorCode DMCreateLocalVector_Section_Private(DM dm, Vec *vec)
   This handles all information in the `DM` class and the `PetscSection`. This is used as the basis for creating subDMs in specialized classes,
   such as `DMPLEX` and `DMFOREST`
 
-.seealso `DMCreateSubDM()`, `DMGetLocalSection()`, `DMPlexSetMigrationSF()`, `DMView()`
+.seealso: `DMCreateSubDM()`, `DMGetLocalSection()`, `DMPlexSetMigrationSF()`, `DMView()`
 @*/
 PetscErrorCode DMCreateSectionSubDM(DM dm, PetscInt numFields, const PetscInt fields[], IS *is, DM *subdm)
 {
@@ -193,7 +193,7 @@ PetscErrorCode DMCreateSectionSubDM(DM dm, PetscInt numFields, const PetscInt fi
           }
         }
       }
-      PetscCallMPI(MPI_Allreduce(&set, &rset, 1, MPIU_INT, MPI_PROD, PetscObjectComm((PetscObject)dm)));
+      PetscCall(MPIU_Allreduce(&set, &rset, 1, MPIU_INT, MPI_PROD, PetscObjectComm((PetscObject)dm)));
       if (rset) PetscCall(ISSetBlockSize(*is, bs));
     }
   }
@@ -309,7 +309,7 @@ PetscErrorCode DMCreateSectionSubDM(DM dm, PetscInt numFields, const PetscInt fi
 - len - The number of `DM`s
 
   Output Parameters:
-+ is - The global indices for the subproblem, or `NULL`
++ is      - The global indices for the subproblem, or `NULL`
 - superdm - The `DM` for the superproblem, which must already have be cloned
 
   Level: intermediate
@@ -318,7 +318,7 @@ PetscErrorCode DMCreateSectionSubDM(DM dm, PetscInt numFields, const PetscInt fi
   This handles all information in the `DM` class and the `PetscSection`. This is used as the basis for creating subDMs in specialized classes,
   such as `DMPLEX` and `DMFOREST`
 
-.seealso `DMCreateSuperDM()`, `DMGetLocalSection()`, `DMPlexSetMigrationSF()`, `DMView()`
+.seealso: `DMCreateSuperDM()`, `DMGetLocalSection()`, `DMPlexSetMigrationSF()`, `DMView()`
 @*/
 PetscErrorCode DMCreateSectionSuperDM(DM dms[], PetscInt len, IS **is, DM *superdm)
 {

@@ -48,20 +48,20 @@ static PetscErrorCode PetscShmCommDestroyDuppedComms(void)
 #endif
 
 /*@C
-    PetscShmCommGet - Returns a sub-communicator of all ranks that share a common memory
+  PetscShmCommGet - Returns a sub-communicator of all ranks that share a common memory
 
-    Collective.
+  Collective.
 
-    Input Parameter:
-.   globcomm - `MPI_Comm`, which can be a user MPI_Comm or a PETSc inner MPI_Comm
+  Input Parameter:
+. globcomm - `MPI_Comm`, which can be a user MPI_Comm or a PETSc inner MPI_Comm
 
-    Output Parameter:
-.   pshmcomm - the PETSc shared memory communicator object
+  Output Parameter:
+. pshmcomm - the PETSc shared memory communicator object
 
-    Level: developer
+  Level: developer
 
-    Note:
-       When used with MPICH, MPICH must be configured with --download-mpich-device=ch3:nemesis
+  Note:
+  When used with MPICH, MPICH must be configured with --download-mpich-device=ch3:nemesis
 
 .seealso: `PetscShmCommGlobalToLocal()`, `PetscShmCommLocalToGlobal()`, `PetscShmCommGetMpiShmComm()`
 @*/
@@ -73,7 +73,7 @@ PetscErrorCode PetscShmCommGet(MPI_Comm globcomm, PetscShmComm *pshmcomm)
   PetscCommCounter *counter;
 
   PetscFunctionBegin;
-  PetscValidPointer(pshmcomm, 2);
+  PetscAssertPointer(pshmcomm, 2);
   /* Get a petsc inner comm, since we always want to stash pshmcomm on petsc inner comms */
   PetscCallMPI(MPI_Comm_get_attr(globcomm, Petsc_Counter_keyval, &counter, &flg));
   if (!flg) { /* globcomm is not a petsc comm */
@@ -127,21 +127,21 @@ PetscErrorCode PetscShmCommGet(MPI_Comm globcomm, PetscShmComm *pshmcomm)
 }
 
 /*@C
-    PetscShmCommGlobalToLocal - Given a global rank returns the local rank in the shared memory communicator
+  PetscShmCommGlobalToLocal - Given a global rank returns the local rank in the shared memory communicator
 
-    Input Parameters:
-+   pshmcomm - the shared memory communicator object
--   grank    - the global rank
+  Input Parameters:
++ pshmcomm - the shared memory communicator object
+- grank    - the global rank
 
-    Output Parameter:
-.   lrank - the local rank, or `MPI_PROC_NULL` if it does not exist
+  Output Parameter:
+. lrank - the local rank, or `MPI_PROC_NULL` if it does not exist
 
-    Level: developer
+  Level: developer
 
-    Developer Notes:
-    Assumes the pshmcomm->globranks[] is sorted
+  Developer Notes:
+  Assumes the pshmcomm->globranks[] is sorted
 
-    It may be better to rewrite this to map multiple global ranks to local in the same function call
+  It may be better to rewrite this to map multiple global ranks to local in the same function call
 
 .seealso: `PetscShmCommGet()`, `PetscShmCommLocalToGlobal()`, `PetscShmCommGetMpiShmComm()`
 @*/
@@ -151,8 +151,8 @@ PetscErrorCode PetscShmCommGlobalToLocal(PetscShmComm pshmcomm, PetscMPIInt gran
   PetscBool   flg = PETSC_FALSE;
 
   PetscFunctionBegin;
-  PetscValidPointer(pshmcomm, 1);
-  PetscValidIntPointer(lrank, 3);
+  PetscAssertPointer(pshmcomm, 1);
+  PetscAssertPointer(lrank, 3);
   *lrank = MPI_PROC_NULL;
   if (grank < pshmcomm->globranks[0]) PetscFunctionReturn(PETSC_SUCCESS);
   if (grank > pshmcomm->globranks[pshmcomm->shmsize - 1]) PetscFunctionReturn(PETSC_SUCCESS);
@@ -176,47 +176,47 @@ PetscErrorCode PetscShmCommGlobalToLocal(PetscShmComm pshmcomm, PetscMPIInt gran
 }
 
 /*@C
-    PetscShmCommLocalToGlobal - Given a local rank in the shared memory communicator returns the global rank
+  PetscShmCommLocalToGlobal - Given a local rank in the shared memory communicator returns the global rank
 
-    Input Parameters:
-+   pshmcomm - the shared memory communicator object
--   lrank    - the local rank in the shared memory communicator
+  Input Parameters:
++ pshmcomm - the shared memory communicator object
+- lrank    - the local rank in the shared memory communicator
 
-    Output Parameter:
-.   grank - the global rank in the global communicator where the shared memory communicator is built
+  Output Parameter:
+. grank - the global rank in the global communicator where the shared memory communicator is built
 
-    Level: developer
+  Level: developer
 
 .seealso: `PetscShmCommGlobalToLocal()`, `PetscShmCommGet()`, `PetscShmCommGetMpiShmComm()`
 @*/
 PetscErrorCode PetscShmCommLocalToGlobal(PetscShmComm pshmcomm, PetscMPIInt lrank, PetscMPIInt *grank)
 {
   PetscFunctionBegin;
-  PetscValidPointer(pshmcomm, 1);
-  PetscValidIntPointer(grank, 3);
+  PetscAssertPointer(pshmcomm, 1);
+  PetscAssertPointer(grank, 3);
   PetscCheck(lrank >= 0 && lrank < pshmcomm->shmsize, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "No rank %d in the shared memory communicator", lrank);
   *grank = pshmcomm->globranks[lrank];
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
-    PetscShmCommGetMpiShmComm - Returns the MPI communicator that represents all processes with common shared memory
+  PetscShmCommGetMpiShmComm - Returns the MPI communicator that represents all processes with common shared memory
 
-    Input Parameter:
-.   pshmcomm - PetscShmComm object obtained with PetscShmCommGet()
+  Input Parameter:
+. pshmcomm - PetscShmComm object obtained with PetscShmCommGet()
 
-    Output Parameter:
-.   comm     - the MPI communicator
+  Output Parameter:
+. comm - the MPI communicator
 
-    Level: developer
+  Level: developer
 
 .seealso: `PetscShmCommGlobalToLocal()`, `PetscShmCommGet()`, `PetscShmCommLocalToGlobal()`
 @*/
 PetscErrorCode PetscShmCommGetMpiShmComm(PetscShmComm pshmcomm, MPI_Comm *comm)
 {
   PetscFunctionBegin;
-  PetscValidPointer(pshmcomm, 1);
-  PetscValidPointer(comm, 2);
+  PetscAssertPointer(pshmcomm, 1);
+  PetscAssertPointer(comm, 2);
   *comm = pshmcomm->shmcomm;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -265,7 +265,7 @@ static inline PetscErrorCode PetscOmpCtrlCreateBarrier(PetscOmpCtrl ctrl)
   pthread_barrierattr_t attr;
 
   #if defined(USE_MMAP_ALLOCATE_SHARED_MEMORY) && defined(PETSC_HAVE_MMAP)
-  PetscInt  fd;
+  int       fd;
   PetscChar pathname[PETSC_MAX_PATH_LEN];
   #else
   PetscMPIInt disp_unit;
@@ -281,21 +281,21 @@ static inline PetscErrorCode PetscOmpCtrlCreateBarrier(PetscOmpCtrl ctrl)
     /* mkstemp replaces XXXXXX with a unique file name and opens the file for us */
     fd = mkstemp(pathname);
     PetscCheck(fd != -1, PETSC_COMM_SELF, PETSC_ERR_LIB, "Could not create tmp file %s with mkstemp", pathname);
-    PetscCall(ftruncate(fd, size));
+    PetscCallExternal(ftruncate, fd, size);
     baseptr = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
     PetscCheck(baseptr != MAP_FAILED, PETSC_COMM_SELF, PETSC_ERR_LIB, "mmap() failed");
-    PetscCall(close(fd));
+    PetscCallExternal(close, fd);
     PetscCallMPI(MPI_Bcast(pathname, PETSC_MAX_PATH_LEN, MPI_CHAR, 0, ctrl->omp_comm));
     /* this MPI_Barrier is to wait slaves to open the file before master unlinks it */
     PetscCallMPI(MPI_Barrier(ctrl->omp_comm));
-    PetscCall(unlink(pathname));
+    PetscCallExternal(unlink, pathname);
   } else {
     PetscCallMPI(MPI_Bcast(pathname, PETSC_MAX_PATH_LEN, MPI_CHAR, 0, ctrl->omp_comm));
     fd = open(pathname, O_RDWR);
     PetscCheck(fd != -1, PETSC_COMM_SELF, PETSC_ERR_LIB, "Could not open tmp file %s", pathname);
     baseptr = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
     PetscCheck(baseptr != MAP_FAILED, PETSC_COMM_SELF, PETSC_ERR_LIB, "mmap() failed");
-    PetscCall(close(fd));
+    PetscCallExternal(close, fd);
     PetscCallMPI(MPI_Barrier(ctrl->omp_comm));
   }
   #else
@@ -308,10 +308,10 @@ static inline PetscErrorCode PetscOmpCtrlCreateBarrier(PetscOmpCtrl ctrl)
   /* omp master initializes the barrier */
   if (ctrl->is_omp_master) {
     PetscCallMPI(MPI_Comm_size(ctrl->omp_comm, &ctrl->omp_comm_size));
-    PetscCall(pthread_barrierattr_init(&attr));
-    PetscCall(pthread_barrierattr_setpshared(&attr, PTHREAD_PROCESS_SHARED)); /* make the barrier also work for processes */
-    PetscCall(pthread_barrier_init(ctrl->barrier, &attr, (unsigned int)ctrl->omp_comm_size));
-    PetscCall(pthread_barrierattr_destroy(&attr));
+    PetscCallExternal(pthread_barrierattr_init, &attr);
+    PetscCallExternal(pthread_barrierattr_setpshared, &attr, PTHREAD_PROCESS_SHARED); /* make the barrier also work for processes */
+    PetscCallExternal(pthread_barrier_init, ctrl->barrier, &attr, (unsigned int)ctrl->omp_comm_size);
+    PetscCallExternal(pthread_barrierattr_destroy, &attr);
   }
 
   /* this MPI_Barrier is to make sure the omp barrier is initialized before slaves use it */
@@ -325,10 +325,10 @@ static inline PetscErrorCode PetscOmpCtrlDestroyBarrier(PetscOmpCtrl ctrl)
   PetscFunctionBegin;
   /* this MPI_Barrier is to make sure slaves have finished using the omp barrier before master destroys it */
   PetscCallMPI(MPI_Barrier(ctrl->omp_comm));
-  if (ctrl->is_omp_master) PetscCall(pthread_barrier_destroy(ctrl->barrier));
+  if (ctrl->is_omp_master) PetscCallExternal(pthread_barrier_destroy, ctrl->barrier);
 
   #if defined(USE_MMAP_ALLOCATE_SHARED_MEMORY) && defined(PETSC_HAVE_MMAP)
-  PetscCall(munmap(ctrl->barrier, sizeof(pthread_barrier_t)));
+  PetscCallExternal(munmap, ctrl->barrier, sizeof(pthread_barrier_t));
   #else
   PetscCallMPI(MPI_Win_free(&ctrl->omp_win));
   #endif
@@ -368,13 +368,13 @@ PetscErrorCode PetscOmpCtrlCreate(MPI_Comm petsc_comm, PetscInt nthreads, PetscO
   /*=================================================================================
     Init hwloc
    ==================================================================================*/
-  PetscCall(hwloc_topology_init(&ctrl->topology));
+  PetscCallExternal(hwloc_topology_init, &ctrl->topology);
   #if HWLOC_API_VERSION >= 0x00020000
   /* to filter out unneeded info and have faster hwloc_topology_load */
-  PetscCall(hwloc_topology_set_all_types_filter(ctrl->topology, HWLOC_TYPE_FILTER_KEEP_NONE));
-  PetscCall(hwloc_topology_set_type_filter(ctrl->topology, HWLOC_OBJ_CORE, HWLOC_TYPE_FILTER_KEEP_ALL));
+  PetscCallExternal(hwloc_topology_set_all_types_filter, ctrl->topology, HWLOC_TYPE_FILTER_KEEP_NONE);
+  PetscCallExternal(hwloc_topology_set_type_filter, ctrl->topology, HWLOC_OBJ_CORE, HWLOC_TYPE_FILTER_KEEP_ALL);
   #endif
-  PetscCall(hwloc_topology_load(ctrl->topology));
+  PetscCallExternal(hwloc_topology_load, ctrl->topology);
 
   /*=================================================================================
     Split petsc_comm into multiple omp_comms. Ranks in an omp_comm have access to
@@ -435,7 +435,7 @@ PetscErrorCode PetscOmpCtrlCreate(MPI_Comm petsc_comm, PetscInt nthreads, PetscO
 
   ctrl->cpuset = hwloc_bitmap_alloc();
   PetscCheck(ctrl->cpuset, PETSC_COMM_SELF, PETSC_ERR_LIB, "hwloc_bitmap_alloc() failed");
-  PetscCall(hwloc_get_cpubind(ctrl->topology, ctrl->cpuset, HWLOC_CPUBIND_PROCESS));
+  PetscCallExternal(hwloc_get_cpubind, ctrl->topology, ctrl->cpuset, HWLOC_CPUBIND_PROCESS);
 
   /* hwloc main developer said they will add new APIs hwloc_bitmap_{nr,to,from}_ulongs in 2.1 to help us simplify the following bitmap pack/unpack code */
   nr_cpu_ulongs = (hwloc_bitmap_last(hwloc_topology_get_topology_cpuset(ctrl->topology)) + sizeof(unsigned long) * 8) / sizeof(unsigned long) / 8;
@@ -453,14 +453,14 @@ PetscErrorCode PetscOmpCtrlCreate(MPI_Comm petsc_comm, PetscInt nthreads, PetscO
     PetscCheck(ctrl->omp_cpuset, PETSC_COMM_SELF, PETSC_ERR_LIB, "hwloc_bitmap_alloc() failed");
     if (nr_cpu_ulongs == 1) {
   #if HWLOC_API_VERSION >= 0x00020000
-      PetscCall(hwloc_bitmap_from_ulong(ctrl->omp_cpuset, cpu_ulongs[0]));
+      PetscCallExternal(hwloc_bitmap_from_ulong, ctrl->omp_cpuset, cpu_ulongs[0]);
   #else
       hwloc_bitmap_from_ulong(ctrl->omp_cpuset, cpu_ulongs[0]);
   #endif
     } else {
       for (i = 0; i < nr_cpu_ulongs; i++) {
   #if HWLOC_API_VERSION >= 0x00020000
-        PetscCall(hwloc_bitmap_set_ith_ulong(ctrl->omp_cpuset, (unsigned)i, cpu_ulongs[i]));
+        PetscCallExternal(hwloc_bitmap_set_ith_ulong, ctrl->omp_cpuset, (unsigned)i, cpu_ulongs[i]);
   #else
         hwloc_bitmap_set_ith_ulong(ctrl->omp_cpuset, (unsigned)i, cpu_ulongs[i]);
   #endif
@@ -579,7 +579,7 @@ PetscErrorCode PetscOmpCtrlBarrier(PetscOmpCtrl ctrl)
 PetscErrorCode PetscOmpCtrlOmpRegionOnMasterBegin(PetscOmpCtrl ctrl)
 {
   PetscFunctionBegin;
-  PetscCall(hwloc_set_cpubind(ctrl->topology, ctrl->omp_cpuset, HWLOC_CPUBIND_PROCESS));
+  PetscCallExternal(hwloc_set_cpubind, ctrl->topology, ctrl->omp_cpuset, HWLOC_CPUBIND_PROCESS);
   omp_set_num_threads(ctrl->omp_comm_size); /* may override the OMP_NUM_THREAD env var */
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -601,7 +601,7 @@ PetscErrorCode PetscOmpCtrlOmpRegionOnMasterBegin(PetscOmpCtrl ctrl)
 PetscErrorCode PetscOmpCtrlOmpRegionOnMasterEnd(PetscOmpCtrl ctrl)
 {
   PetscFunctionBegin;
-  PetscCall(hwloc_set_cpubind(ctrl->topology, ctrl->cpuset, HWLOC_CPUBIND_PROCESS));
+  PetscCallExternal(hwloc_set_cpubind, ctrl->topology, ctrl->cpuset, HWLOC_CPUBIND_PROCESS);
   omp_set_num_threads(1);
   PetscFunctionReturn(PETSC_SUCCESS);
 }

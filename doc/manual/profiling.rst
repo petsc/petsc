@@ -27,18 +27,18 @@ activated at runtime. The profiling options include the following:
 -  ``-log_view  [:filename]`` - Prints an ASCII version of performance data at
    program’s conclusion. These statistics are comprehensive and concise
    and require little overhead; thus, ``-log_view`` is intended as the
-   primary means of monitoring the performance of PETSc codes.
+   primary means of monitoring the performance of PETSc codes.  See :any:`sec_ploginfo`
 
 -  ``-info [infofile]`` - Prints verbose information about code to
    stdout or an optional file. This option provides details about
    algorithms, data structures, etc. Since the overhead of printing such
    output slows a code, this option should not be used when evaluating a
-   program’s performance.
+   program’s performance. See :any:`sec_PetscInfo`
 
 -  ``-log_trace [logfile]`` - Traces the beginning and ending of all
    PETSc events. This option, which can be used in conjunction with
    ``-info``, is useful to see where a program is hanging without
-   running in the debugger.
+   running in the debugger. See ``PetscLogTraceBegin()``.
 
 As discussed in :any:`sec_mpelogs`, additional profiling
 can be done with MPE.
@@ -153,8 +153,8 @@ and then solves the resulting linear system; the program then repeats
 this process for a second linear system. This particular case was run on
 four processors of an Intel x86_64 Linux cluster, using restarted GMRES
 and the block Jacobi preconditioner, where each block was solved with
-ILU. The two input files ``medium`` and ``arco6`` can be downloaded from
-`this FTP link <http://ftp.mcs.anl.gov/pub/petsc/Datafiles/matrices/>`__.
+ILU. The two input files ``medium`` and ``arco6`` can be obtained from
+`datafiles  <https://gitlab.com/petsc/datafiles>`__, see :any:`petsc_repositories`.
 
 The first :any:`listing <listing_exparprof>` presents an overall
 performance summary, including times, floating-point operations,
@@ -358,7 +358,15 @@ into the current directory, then opening the logfile in your browser.
 
 The flame graph output can be generated with the option ``-log_view :[logfile]:ascii_flamegraph``.
 It can then be visualised with either `FlameGraph <https://github.com/brendangregg/FlameGraph>`_
-or `speedscope <https://www.speedscope.app>`_.
+or `speedscope <https://www.speedscope.app>`_.  A flamegraph can be visualized directly from
+stdout using, for example,
+`ImageMagick's display utility <https://imagemagick.org/script/display.php>`:
+
+.. code-block::
+
+   cd $PETSC_DIR/src/sys/tests
+   make ex30
+   mpiexec -n 2 ./ex30 -log_view ::ascii_flamegraph | flamegraph | display
 
 Note that user-defined stages (see :any:`sec_profstages`) will be ignored when
 using this nested format.
@@ -524,9 +532,9 @@ and
    PetscLogEventActivateClass(VEC_CLASSID);
    PetscLogEventActivateClass(SNES_CLASSID);
 
-.. _sec_PetscLoginfo:
+.. _sec_PetscInfo:
 
-Interpreting ``-log_info`` Output: Informative Messages
+Interpreting ``-info`` Output: Informative Messages
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Users can activate the printing of verbose information about algorithms,
@@ -536,21 +544,6 @@ throughout the PETSc libraries, can aid the user in understanding
 algorithms and tuning program performance. For example, as discussed in
 :any:`sec_matsparse`, ``-info`` activates the printing of
 information about memory allocation during matrix assembly.
-
-Application programmers can employ this logging as well, by using the
-routine
-
-.. code-block::
-
-   PetscInfo(void* obj,char *message,...)
-
-where ``obj`` is the PETSc object associated most closely with the
-logging statement, ``message``. For example, in the line search Newton
-methods, we use a statement such as
-
-.. code-block::
-
-   PetscInfo(snes,"Cubic step, lambda %g\n",lambda);
 
 One can selectively turn off informative messages about any of the basic
 PETSc objects (e.g., ``Mat``, ``SNES``) with the command
@@ -568,9 +561,35 @@ etc. Messages can be reactivated with the command
 
 Such deactivation can be useful when one wishes to view information
 about higher-level PETSc libraries (e.g., ``TS`` and ``SNES``) without
-seeing all lower level data as well (e.g., ``Mat``). One can deactivate
-events at runtime for matrix and linear solver libraries via
-``-info [no_mat, no_ksp]``.
+seeing all lower level data as well (e.g., ``Mat``).
+
+One can turn on or off logging for particular classes at runtime
+
+.. code-block:: console
+
+   -info [filename][:[~]<list,of,classnames>[:[~]self]]
+
+The ``list,of,classnames`` is a list, separated by commas with no spaces, of classes one wishes to view the information on. For
+example ``vec,ksp``. Information on all other classes will not be displayed. The ~ indicates to not display the list of classes but rather to display all other classes.
+
+``self`` indicates to display information on objects that are associated with ``PETSC_COMM_SELF`` while ``~self`` indicates to display information only for parallel objects.
+
+See ``PetscInfo()`` for links to all the info operations that are available.
+
+Application programmers can log their own messages, as well, by using the
+routine
+
+.. code-block::
+
+   PetscInfo(void* obj,char *message,...)
+
+where ``obj`` is the PETSc object associated most closely with the
+logging statement, ``message``. For example, in the line search Newton
+methods, we use a statement such as
+
+.. code-block::
+
+   PetscInfo(snes,"Cubic step, lambda %g\n",lambda);
 
 Time
 ~~~~
@@ -700,7 +719,7 @@ Next, run your program with TAU. For instance, to profile `ex56`,
 
   cd $PETSC_DIR/src/snes/tutorials
   make ex56
-  mpirun -n 4 tau_exec -T mpi ./ex56 <args>
+  mpirun -n 4 tau_exec -T mpi ./ex56 -log_perfstubs <args>
 
 This should produce four ``profile.*`` files with profile data that can be
 viewed with ``paraprof/pprof``:

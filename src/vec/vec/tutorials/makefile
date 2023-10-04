@@ -16,7 +16,7 @@ testex31: ex31.PETSc
 	 else \
            echo "Possible error running C/C++ src/vec/vec/tutorials/ex31 with MATLAB engine"; \
            echo "See https://petsc.org/release/faq/";\
-           touch ${PETSC_DIR}/check_error;\
+           touch ../../../../check_error;\
            cat ex31_1.tmp;\
          fi
 

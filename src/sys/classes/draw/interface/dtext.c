@@ -2,18 +2,18 @@
 #include <petsc/private/drawimpl.h> /*I "petscdraw.h" I*/
 
 /*@C
-   PetscDrawString - draws text onto a drawable.
+  PetscDrawString - draws text onto a drawable.
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  draw - the drawing context
-.  xl - coordinate of lower left corner of text
-.  yl - coordinate of lower left corner of text
-.  cl - the color of the text
--  text - the text to draw
+  Input Parameters:
++ draw - the drawing context
+. xl   - coordinate of lower left corner of text
+. yl   - coordinate of lower left corner of text
+. cl   - the color of the text
+- text - the text to draw
 
-   Level: beginner
+  Level: beginner
 
 .seealso: `PetscDraw`, `PetscDrawStringVertical()`, `PetscDrawStringCentered()`, `PetscDrawStringBoxed()`, `PetscDrawStringSetSize()`,
           `PetscDrawStringGetSize()`, `PetscDrawLine()`, `PetscDrawRectangle()`, `PetscDrawTriangle()`, `PetscDrawEllipse()`,
@@ -23,24 +23,24 @@ PetscErrorCode PetscDrawString(PetscDraw draw, PetscReal xl, PetscReal yl, int c
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw, PETSC_DRAW_CLASSID, 1);
-  PetscValidCharPointer(text, 5);
+  PetscAssertPointer(text, 5);
   PetscUseTypeMethod(draw, string, xl, yl, cl, text);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
-   PetscDrawStringVertical - draws text onto a drawable.
+  PetscDrawStringVertical - draws text onto a drawable.
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  draw - the drawing context
-.  xl - coordinate of upper left corner of text
-.  yl - coordinate of upper left corner of text
-.  cl - the color of the text
--  text - the text to draw
+  Input Parameters:
++ draw - the drawing context
+. xl   - coordinate of upper left corner of text
+. yl   - coordinate of upper left corner of text
+. cl   - the color of the text
+- text - the text to draw
 
-   Level: beginner
+  Level: beginner
 
 .seealso: `PetscDraw`, `PetscDrawString()`, `PetscDrawStringCentered()`, `PetscDrawStringBoxed()`, `PetscDrawStringSetSize()`,
           `PetscDrawStringGetSize()`
@@ -53,7 +53,7 @@ PetscErrorCode PetscDrawStringVertical(PetscDraw draw, PetscReal xl, PetscReal y
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw, PETSC_DRAW_CLASSID, 1);
-  PetscValidCharPointer(text, 5);
+  PetscAssertPointer(text, 5);
 
   if (draw->ops->stringvertical) PetscUseTypeMethod(draw, stringvertical, xl, yl, cl, text);
   else {
@@ -64,18 +64,18 @@ PetscErrorCode PetscDrawStringVertical(PetscDraw draw, PetscReal xl, PetscReal y
 }
 
 /*@C
-   PetscDrawStringCentered - draws text onto a drawable centered at a point
+  PetscDrawStringCentered - draws text onto a drawable centered at a point
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  draw - the drawing context
-.  xc - the coordinates of right-left center of text
-.  yl - the coordinates of lower edge of text
-.  cl - the color of the text
--  text - the text to draw
+  Input Parameters:
++ draw - the drawing context
+. xc   - the coordinates of right-left center of text
+. yl   - the coordinates of lower edge of text
+. cl   - the color of the text
+- text - the text to draw
 
-   Level: beginner
+  Level: beginner
 
 .seealso: `PetscDraw`, `PetscDrawStringVertical()`, `PetscDrawString()`, `PetscDrawStringBoxed()`, `PetscDrawStringSetSize()`,
           `PetscDrawStringGetSize()`
@@ -87,7 +87,7 @@ PetscErrorCode PetscDrawStringCentered(PetscDraw draw, PetscReal xc, PetscReal y
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw, PETSC_DRAW_CLASSID, 1);
-  PetscValidCharPointer(text, 5);
+  PetscAssertPointer(text, 5);
 
   PetscCall(PetscDrawStringGetSize(draw, &tw, &th));
   PetscCall(PetscStrlen(text, &len));
@@ -97,22 +97,23 @@ PetscErrorCode PetscDrawStringCentered(PetscDraw draw, PetscReal xc, PetscReal y
 }
 
 /*@C
-   PetscDrawStringBoxed - Draws a string with a box around it
+  PetscDrawStringBoxed - Draws a string with a box around it
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  draw - the drawing context
-.  sxl - the coordinates of center of the box
-.  syl - the coordinates of top line of box
-.  sc - the color of the text
-.  bc - the color of the bounding box
--  text - the text to draw
+  Input Parameters:
++ draw - the drawing context
+. sxl  - the coordinates of center of the box
+. syl  - the coordinates of top line of box
+. sc   - the color of the text
+. bc   - the color of the bounding box
+- text - the text to draw
 
-   Output Parameter:
-.   w,h - width and height of resulting box (optional)
+  Output Parameters:
++ w - the width of the resulting box (optional)
+- h - the height of resulting box (optional)
 
-   Level: beginner
+  Level: beginner
 
 .seealso: `PetscDraw`, `PetscDrawStringVertical()`, `PetscDrawString()`, `PetscDrawStringCentered()`, `PetscDrawStringSetSize()`,
           `PetscDrawStringGetSize()`
@@ -126,7 +127,7 @@ PetscErrorCode PetscDrawStringBoxed(PetscDraw draw, PetscReal sxl, PetscReal syl
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw, PETSC_DRAW_CLASSID, 1);
-  PetscValidCharPointer(text, 6);
+  PetscAssertPointer(text, 6);
 
   if (draw->ops->boxedstring) {
     PetscUseTypeMethod(draw, boxedstring, sxl, syl, sc, bc, text, w, h);
@@ -166,19 +167,19 @@ PetscErrorCode PetscDrawStringBoxed(PetscDraw draw, PetscReal sxl, PetscReal syl
 }
 
 /*@
-   PetscDrawStringSetSize - Sets the size for character text.
+  PetscDrawStringSetSize - Sets the size for character text.
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  draw - the drawing context
-.  width - the width in user coordinates
--  height - the character height in user coordinates
+  Input Parameters:
++ draw   - the drawing context
+. width  - the width in user coordinates
+- height - the character height in user coordinates
 
-   Level: advanced
+  Level: advanced
 
-   Note:
-   Only a limited range of sizes are available.
+  Note:
+  Only a limited range of sizes are available.
 
 .seealso: `PetscDraw`, `PetscDrawStringVertical()`, `PetscDrawString()`, `PetscDrawStringCentered()`, `PetscDrawStringBoxed()`,
           `PetscDrawStringGetSize()`
@@ -192,17 +193,17 @@ PetscErrorCode PetscDrawStringSetSize(PetscDraw draw, PetscReal width, PetscReal
 }
 
 /*@
-   PetscDrawStringGetSize - Gets the size for character text.  The width is
-   relative to the user coordinates of the window.
+  PetscDrawStringGetSize - Gets the size for character text.  The width is
+  relative to the user coordinates of the window.
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  draw - the drawing context
-.  width - the width in user coordinates
--  height - the character height
+  Input Parameters:
++ draw   - the drawing context
+. width  - the width in user coordinates
+- height - the character height
 
-   Level: advanced
+  Level: advanced
 
 .seealso: `PetscDraw`, `PetscDrawStringVertical()`, `PetscDrawString()`, `PetscDrawStringCentered()`, `PetscDrawStringBoxed()`,
           `PetscDrawStringSetSize()`

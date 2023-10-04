@@ -7,7 +7,6 @@ class Configure(config.package.Package):
     self.cyver = None
     self.cython = 0
     self.numpy = 0
-    self.skippackagewithoptions = 1
     return
 
   def setupHelp(self,help):

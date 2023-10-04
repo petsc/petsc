@@ -7,7 +7,7 @@ static PetscBool TSPackageInitialized = PETSC_FALSE;
 
   Level: developer
 
-.seealso: [](chapter_ts), `TS`, `PetscFinalize()`, `TSInitializePackage()`
+.seealso: [](ch_ts), `TS`, `PetscFinalize()`, `TSInitializePackage()`
 @*/
 PetscErrorCode TSFinalizePackage(void)
 {
@@ -26,7 +26,7 @@ PetscErrorCode TSFinalizePackage(void)
 
   Level: developer
 
-.seealso: [](chapter_ts), `TS`, `PetscInitialize()`, `TSFinalizePackage()`
+.seealso: [](ch_ts), `TS`, `PetscInitialize()`, `TSFinalizePackage()`
 @*/
 PetscErrorCode TSInitializePackage(void)
 {

@@ -1,0 +1,19 @@
+{% extends "!layout.html" %}
+
+{% macro menu_genindex() -%}
+<ul>
+  <li class="toctree-l1">
+    <a class="reference internal" href="genindex.html">Index</a>
+  </li>
+</ul>
+{%- endmacro %}
+
+{% block menu %}
+  {{ super() }}
+  {%- if builder == 'html' %}
+    {{ menu_genindex() }}
+  {%- endif %}
+  {%- if builder == 'dirhtml' %}
+    {{ menu_genindex() }}
+  {%- endif %}
+{% endblock %}

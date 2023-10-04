@@ -38,7 +38,7 @@ PetscErrorCode MatCreateFromMTX(Mat *A, const char *filein, PetscBool aijonly)
     ja[i]--;                              /* adjust from 1-based to 0-based */
     if ((symmetric && aijonly) || skew) { /* transpose */
       rownz[ia[i]]++;
-      rownz[ja[i]]++;
+      if (ja[i] != ia[i]) rownz[ja[i]]++;
     } else rownz[ia[i]]++;
   }
   PetscCall(PetscFClose(PETSC_COMM_SELF, file));

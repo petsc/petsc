@@ -246,9 +246,7 @@ int main(int argc, char **argv)
   Vec            lambda[1];
   PetscBool      forwardonly = PETSC_FALSE, implicitform = PETSC_TRUE, mf = PETSC_FALSE;
   PetscLogDouble v1, v2;
-#if defined(PETSC_USE_LOG)
-  PetscLogStage stage;
-#endif
+  PetscLogStage  stage;
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
@@ -314,7 +312,7 @@ int main(int argc, char **argv)
     mctx.appctx = &appctx;
     PetscCall(VecDuplicate(x, &mctx.U));
     /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-      Create matrix free context
+      Create matrix-free context
       - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
     PetscCall(DMDAGetInfo(da, PETSC_IGNORE, &Mx, &My, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, &dof, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE));
     PetscCall(DMDAGetCorners(da, NULL, NULL, NULL, &xm, &ym, NULL));

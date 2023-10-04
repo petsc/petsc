@@ -11,13 +11,13 @@ PetscBool         PetscPartitionerRegisterAllCalled = PETSC_FALSE;
   Not Collective
 
   Input Parameters:
-+ sname - The name of a new user-defined creation routine
++ sname    - The name of a new user-defined creation routine
 - function - The creation routine
 
   Notes:
   PetscPartitionerRegister() may be called multiple times to add several user-defined PetscPartitioners
 
-  Sample usage:
+  Example Usage:
 .vb
     PetscPartitionerRegister("my_part", MyPetscPartitionerCreate);
 .ve
@@ -27,7 +27,7 @@ PetscBool         PetscPartitionerRegisterAllCalled = PETSC_FALSE;
     PetscPartitionerCreate(MPI_Comm, PetscPartitioner *);
     PetscPartitionerSetType(PetscPartitioner, "my_part");
 .ve
-   or at runtime via the option
+  or at runtime via the option
 .vb
     -petscpartitioner_type my_part
 .ve
@@ -56,9 +56,6 @@ PETSC_EXTERN PetscErrorCode PetscPartitionerCreate_MatPartitioning(PetscPartitio
   PetscPartitionerRegisterAll - Registers all of the PetscPartitioner components in the DM package.
 
   Not Collective
-
-  Input parameter:
-. path - The dynamic library path
 
   Level: advanced
 

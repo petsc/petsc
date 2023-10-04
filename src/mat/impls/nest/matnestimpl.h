@@ -1,5 +1,4 @@
-#ifndef PETSC_MATNESTIMPL_H
-#define PETSC_MATNESTIMPL_H
+#pragma once
 
 #include <petsc/private/matimpl.h>
 
@@ -17,5 +16,3 @@ typedef struct {
   PetscObjectState    *nnzstate;
   PetscBool            splitassembly;
 } Mat_Nest;
-
-#endif // PETSC_MATNESTIMPL_H

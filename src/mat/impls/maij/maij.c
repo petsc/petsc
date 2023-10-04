@@ -3,22 +3,22 @@
 #include <../src/mat/utils/freespace.h>
 
 /*@
-   MatMAIJGetAIJ - Get the `MATAIJ` matrix describing the blockwise action of the `MATMAIJ` matrix
+  MatMAIJGetAIJ - Get the `MATAIJ` matrix describing the blockwise action of the `MATMAIJ` matrix
 
-   Not Collective, but if the `MATMAIJ` matrix is parallel, the `MATAIJ` matrix is also parallel
+  Not Collective, but if the `MATMAIJ` matrix is parallel, the `MATAIJ` matrix is also parallel
 
-   Input Parameter:
-.  A - the `MATMAIJ` matrix
+  Input Parameter:
+. A - the `MATMAIJ` matrix
 
-   Output Parameter:
-.  B - the `MATAIJ` matrix
+  Output Parameter:
+. B - the `MATAIJ` matrix
 
-   Level: advanced
+  Level: advanced
 
-   Note:
-    The reference count on the `MATAIJ` matrix is not increased so you should not destroy it.
+  Note:
+  The reference count on the `MATAIJ` matrix is not increased so you should not destroy it.
 
-.seealso: [](chapter_matrices), `Mat`, `MATMAIJ`, `MATAIJ`, `MatCreateMAIJ()`
+.seealso: [](ch_matrices), `Mat`, `MATMAIJ`, `MATAIJ`, `MatCreateMAIJ()`
 @*/
 PetscErrorCode MatMAIJGetAIJ(Mat A, Mat *B)
 {
@@ -42,20 +42,20 @@ PetscErrorCode MatMAIJGetAIJ(Mat A, Mat *B)
 }
 
 /*@
-   MatMAIJRedimension - Get a new `MATMAIJ` matrix with the same action, but for a different block size
+  MatMAIJRedimension - Get a new `MATMAIJ` matrix with the same action, but for a different block size
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  A - the `MATMAIJ` matrix
--  dof - the block size for the new matrix
+  Input Parameters:
++ A   - the `MATMAIJ` matrix
+- dof - the block size for the new matrix
 
-   Output Parameter:
-.  B - the new `MATMAIJ` matrix
+  Output Parameter:
+. B - the new `MATMAIJ` matrix
 
-   Level: advanced
+  Level: advanced
 
-.seealso: [](chapter_matrices), `Mat`, `MATMAIJ`, `MatCreateMAIJ()`
+.seealso: [](ch_matrices), `Mat`, `MATMAIJ`, `MatCreateMAIJ()`
 @*/
 PetscErrorCode MatMAIJRedimension(Mat A, PetscInt dof, Mat *B)
 {
@@ -142,7 +142,7 @@ static PetscErrorCode MatDestroy_MPIMAIJ(Mat A)
 
   Level: advanced
 
-.seealso: [](chapter_matrices), `Mat`, `MATAIJ`, `MatMAIJGetAIJ()`, `MatMAIJRedimension()`, `MatCreateMAIJ()`
+.seealso: [](ch_matrices), `Mat`, `MATAIJ`, `MatMAIJGetAIJ()`, `MatMAIJRedimension()`, `MatCreateMAIJ()`
 M*/
 
 PETSC_EXTERN PetscErrorCode MatCreate_MAIJ(Mat A)
@@ -279,8 +279,8 @@ PETSC_FORCE_INLINE static inline PetscErrorCode MatMultTranspose_MatMultTranspos
 
   for (PetscInt i = 0; i < m; i++) {
     const PetscInt     a_ii = a_i[i];
-    const PetscInt    *idx  = a_j + a_ii;
-    const PetscScalar *v    = a_a + a_ii;
+    const PetscInt    *idx  = a_j ? a_j + a_ii : NULL;
+    const PetscScalar *v    = a_a ? a_a + a_ii : NULL;
     const PetscInt     n    = a_i[i + 1] - a_ii;
     PetscScalar        alpha[MAT_SEQMAIJ_MAX_TEMPLATE_SIZE];
 
@@ -1022,7 +1022,7 @@ static PetscErrorCode MatCreateSubMatrices_MAIJ(Mat mat, PetscInt n, const IS ir
   Collective
 
   Input Parameters:
-+ A - the `MATAIJ` matrix describing the action on blocks
++ A   - the `MATAIJ` matrix describing the action on blocks
 - dof - the block size (number of components per node)
 
   Output Parameter:
@@ -1030,16 +1030,7 @@ static PetscErrorCode MatCreateSubMatrices_MAIJ(Mat mat, PetscInt n, const IS ir
 
   Level: advanced
 
-  Operations provided:
-.vb
-    MatMult()
-    MatMultTranspose()
-    MatMultAdd()
-    MatMultTransposeAdd()
-    MatView()
-.ve
-
-.seealso: [](chapter_matrices), `Mat`, `MATAIJ`, `MATMAIJ`, `MatMAIJGetAIJ()`, `MatMAIJRedimension()`, `MATMAIJ`
+.seealso: [](ch_matrices), `Mat`, `MATAIJ`, `MATMAIJ`, `MatMAIJGetAIJ()`, `MatMAIJRedimension()`
 @*/
 PetscErrorCode MatCreateMAIJ(Mat A, PetscInt dof, Mat *maij)
 {

@@ -14,7 +14,7 @@ typedef struct {
 /*
        All processors have the same data so processor 1 prints it
 */
-PetscErrorCode AOView_Basic(AO ao, PetscViewer viewer)
+static PetscErrorCode AOView_Basic(AO ao, PetscViewer viewer)
 {
   PetscMPIInt rank;
   PetscInt    i;
@@ -35,7 +35,7 @@ PetscErrorCode AOView_Basic(AO ao, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode AODestroy_Basic(AO ao)
+static PetscErrorCode AODestroy_Basic(AO ao)
 {
   AO_Basic *aobasic = (AO_Basic *)ao->data;
 
@@ -45,17 +45,7 @@ PetscErrorCode AODestroy_Basic(AO ao)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode AOBasicGetIndices_Private(AO ao, PetscInt **app, PetscInt **petsc)
-{
-  AO_Basic *basic = (AO_Basic *)ao->data;
-
-  PetscFunctionBegin;
-  if (app) *app = basic->app;
-  if (petsc) *petsc = basic->petsc;
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-PetscErrorCode AOPetscToApplication_Basic(AO ao, PetscInt n, PetscInt *ia)
+static PetscErrorCode AOPetscToApplication_Basic(AO ao, PetscInt n, PetscInt *ia)
 {
   PetscInt  i, N = ao->N;
   AO_Basic *aobasic = (AO_Basic *)ao->data;
@@ -71,7 +61,7 @@ PetscErrorCode AOPetscToApplication_Basic(AO ao, PetscInt n, PetscInt *ia)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode AOApplicationToPetsc_Basic(AO ao, PetscInt n, PetscInt *ia)
+static PetscErrorCode AOApplicationToPetsc_Basic(AO ao, PetscInt n, PetscInt *ia)
 {
   PetscInt  i, N = ao->N;
   AO_Basic *aobasic = (AO_Basic *)ao->data;
@@ -87,7 +77,7 @@ PetscErrorCode AOApplicationToPetsc_Basic(AO ao, PetscInt n, PetscInt *ia)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode AOPetscToApplicationPermuteInt_Basic(AO ao, PetscInt block, PetscInt *array)
+static PetscErrorCode AOPetscToApplicationPermuteInt_Basic(AO ao, PetscInt block, PetscInt *array)
 {
   AO_Basic *aobasic = (AO_Basic *)ao->data;
   PetscInt *temp;
@@ -103,7 +93,7 @@ PetscErrorCode AOPetscToApplicationPermuteInt_Basic(AO ao, PetscInt block, Petsc
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode AOApplicationToPetscPermuteInt_Basic(AO ao, PetscInt block, PetscInt *array)
+static PetscErrorCode AOApplicationToPetscPermuteInt_Basic(AO ao, PetscInt block, PetscInt *array)
 {
   AO_Basic *aobasic = (AO_Basic *)ao->data;
   PetscInt *temp;
@@ -119,7 +109,7 @@ PetscErrorCode AOApplicationToPetscPermuteInt_Basic(AO ao, PetscInt block, Petsc
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode AOPetscToApplicationPermuteReal_Basic(AO ao, PetscInt block, PetscReal *array)
+static PetscErrorCode AOPetscToApplicationPermuteReal_Basic(AO ao, PetscInt block, PetscReal *array)
 {
   AO_Basic  *aobasic = (AO_Basic *)ao->data;
   PetscReal *temp;
@@ -135,7 +125,7 @@ PetscErrorCode AOPetscToApplicationPermuteReal_Basic(AO ao, PetscInt block, Pets
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode AOApplicationToPetscPermuteReal_Basic(AO ao, PetscInt block, PetscReal *array)
+static PetscErrorCode AOApplicationToPetscPermuteReal_Basic(AO ao, PetscInt block, PetscReal *array)
 {
   AO_Basic  *aobasic = (AO_Basic *)ao->data;
   PetscReal *temp;
@@ -151,7 +141,7 @@ PetscErrorCode AOApplicationToPetscPermuteReal_Basic(AO ao, PetscInt block, Pets
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static struct _AOOps AOOps_Basic = {
+static const struct _AOOps AOOps_Basic = {
   PetscDesignatedInitializer(view, AOView_Basic),
   PetscDesignatedInitializer(destroy, AODestroy_Basic),
   PetscDesignatedInitializer(petsctoapplication, AOPetscToApplication_Basic),
@@ -162,7 +152,7 @@ static struct _AOOps AOOps_Basic = {
   PetscDesignatedInitializer(applicationtopetscpermutereal, AOApplicationToPetscPermuteReal_Basic),
 };
 
-PETSC_EXTERN PetscErrorCode AOCreate_Basic(AO ao)
+PETSC_INTERN PetscErrorCode AOCreate_Basic(AO ao)
 {
   AO_Basic       *aobasic;
   PetscMPIInt     size, rank, count, *lens, *disp;
@@ -174,8 +164,8 @@ PETSC_EXTERN PetscErrorCode AOCreate_Basic(AO ao)
   PetscFunctionBegin;
   /* create special struct aobasic */
   PetscCall(PetscNew(&aobasic));
-  ao->data = (void *)aobasic;
-  PetscCall(PetscMemcpy(ao->ops, &AOOps_Basic, sizeof(struct _AOOps)));
+  ao->data   = (void *)aobasic;
+  ao->ops[0] = AOOps_Basic;
   PetscCall(PetscObjectChangeTypeName((PetscObject)ao, AOBASIC));
 
   PetscCall(ISGetLocalSize(isapp, &napp));
@@ -261,25 +251,25 @@ PETSC_EXTERN PetscErrorCode AOCreate_Basic(AO ao)
 }
 
 /*@C
-   AOCreateBasic - Creates a basic application ordering using two integer arrays.
+  AOCreateBasic - Creates a basic application ordering using two integer arrays.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  comm - MPI communicator that is to share `AO`
-.  napp - size of integer arrays
-.  myapp - integer array that defines an ordering
--  mypetsc - integer array that defines another ordering (may be NULL to
+  Input Parameters:
++ comm    - MPI communicator that is to share `AO`
+. napp    - size of integer arrays
+. myapp   - integer array that defines an ordering
+- mypetsc - integer array that defines another ordering (may be NULL to
              indicate the natural ordering, that is 0,1,2,3,...)
 
-   Output Parameter:
-.  aoout - the new application ordering
+  Output Parameter:
+. aoout - the new application ordering
 
-   Level: beginner
+  Level: beginner
 
-   Note:
-   The arrays myapp and mypetsc must contain the all the integers 0 to napp-1 with no duplicates; that is there cannot be any "holes"
-   in the indices. Use `AOCreateMapping()` or `AOCreateMappingIS()` if you wish to have "holes" in the indices.
+  Note:
+  The arrays myapp and mypetsc must contain the all the integers 0 to napp-1 with no duplicates; that is there cannot be any "holes"
+  in the indices. Use `AOCreateMapping()` or `AOCreateMappingIS()` if you wish to have "holes" in the indices.
 
 .seealso: [](sec_ao), [](sec_scatter), `AO`, `AOCreateBasicIS()`, `AODestroy()`, `AOPetscToApplication()`, `AOApplicationToPetsc()`
 @*/
@@ -302,23 +292,23 @@ PetscErrorCode AOCreateBasic(MPI_Comm comm, PetscInt napp, const PetscInt myapp[
 }
 
 /*@C
-   AOCreateBasicIS - Creates a basic application ordering using two `IS` index sets.
+  AOCreateBasicIS - Creates a basic application ordering using two `IS` index sets.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  isapp - index set that defines an ordering
--  ispetsc - index set that defines another ordering (may be NULL to use the
+  Input Parameters:
++ isapp   - index set that defines an ordering
+- ispetsc - index set that defines another ordering (may be NULL to use the
              natural ordering)
 
-   Output Parameter:
-.  aoout - the new application ordering
+  Output Parameter:
+. aoout - the new application ordering
 
-   Level: beginner
+  Level: beginner
 
-    Note:
-    The index sets isapp and ispetsc must contain the all the integers 0 to napp-1 (where napp is the length of the index sets) with no duplicates;
-    that is there cannot be any "holes"
+  Note:
+  The index sets isapp and ispetsc must contain the all the integers 0 to napp-1 (where napp is the length of the index sets) with no duplicates;
+  that is there cannot be any "holes"
 
 .seealso: [](sec_ao), [](sec_scatter), `IS`, `AO`, `AOCreateBasic()`, `AODestroy()`
 @*/

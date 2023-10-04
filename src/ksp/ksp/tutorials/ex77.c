@@ -113,8 +113,8 @@ int main(int argc, char **args)
   } else {
     PetscCall(KSPSetOperators(ksp, KA, KA));
     PetscCall(MatGetSize(KA, &M, NULL));
-    PetscCall(VecCreateMPI(PETSC_COMM_WORLD, m * N, M, &cb));
-    PetscCall(VecCreateMPI(PETSC_COMM_WORLD, m * N, M, &cx));
+    PetscCall(VecCreateFromOptions(PETSC_COMM_WORLD, NULL, 1, m * N, M, &cb));
+    PetscCall(VecCreateFromOptions(PETSC_COMM_WORLD, NULL, 1, m * N, M, &cx));
     PetscCall(VecSetRandom(cb, NULL));
     /* solving with MatKAIJ is equivalent to block solving with row-major RHS and solutions */
     /* only applies if MatKAIJGetScaledIdentity() returns true                              */

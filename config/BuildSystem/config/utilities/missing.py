@@ -85,15 +85,6 @@ class Configure(config.base.Configure):
         self.addDefine('MISSING_SIG'+signal, 1)
     return
 
-
-  def configureMissingErrnos(self):
-    '''Check for missing errno values, and define MISSING_<errno value> if necessary'''
-    for errnoval in ['EINTR']:
-      if not self.checkCompile('#include <errno.h>','int i='+errnoval+';(void)i'):
-        self.addDefine('MISSING_ERRNO_'+errnoval, 1)
-    return
-
-
   def configureMissingGetdomainnamePrototype(self):
     '''Check for missing function prototype for getdomainname()'''
     head = self.featureTestMacros() + '''

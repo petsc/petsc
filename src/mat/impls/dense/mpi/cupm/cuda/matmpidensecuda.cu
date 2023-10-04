@@ -17,7 +17,7 @@ static constexpr impl::MatDense_MPI_CUPM<DeviceType::CUDA> mat_cupm{};
 
   Level: beginner
 
-.seealso: [](chapter_matrices), `Mat`, `MATSEQDENSECUDA`, `MATMPIDENSECUDA`, `MATSEQDENSEHIP`,
+.seealso: [](ch_matrices), `Mat`, `MATSEQDENSECUDA`, `MATMPIDENSECUDA`, `MATSEQDENSEHIP`,
 `MATMPIDENSEHIP`, `MATDENSE`
 M*/
 
@@ -31,7 +31,7 @@ M*/
 
   Level: beginner
 
-.seealso: [](chapter_matrices), `Mat`, `MATDENSECUDA`, `MATMPIDENSE`, `MATSEQDENSE`,
+.seealso: [](ch_matrices), `Mat`, `MATDENSECUDA`, `MATMPIDENSE`, `MATSEQDENSE`,
 `MATSEQDENSECUDA`, `MATSEQDENSEHIP`
 M*/
 PETSC_INTERN PetscErrorCode MatCreate_MPIDenseCUDA(Mat A)
@@ -189,7 +189,7 @@ PetscErrorCode MatDenseCUDAGetArrayWrite(Mat A, PetscScalar **a)
   Not Collective
 
   Input Parameters:
-+ A     - the matrix
++ A - the matrix
 - a - the GPU array in column major order
 
   Level: developer
@@ -241,7 +241,7 @@ PetscErrorCode MatDenseCUDAGetArrayRead(Mat A, const PetscScalar **a)
   Not Collective
 
   Input Parameters:
-+ A     - the matrix
++ A - the matrix
 - a - the GPU array in column major order
 
   Level: developer
@@ -309,5 +309,27 @@ PetscErrorCode MatDenseCUDARestoreArray(Mat A, PetscScalar **a)
 {
   PetscFunctionBegin;
   PetscCall(MatDenseCUPMRestoreArray<DeviceType::CUDA>(A, a));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@C
+  MatDenseCUDASetPreallocation - Set the device array used for storing the matrix elements of a
+  `MATDENSECUDA` matrix
+
+  Collective
+
+  Input Parameters:
++ A            - the matrix
+- device_array - the array (or `NULL`)
+
+  Level: intermediate
+
+.seealso: [](ch_matrices), `Mat`, `MATDENSECUDA`, `MatCreate()`, `MatCreateDenseCUDA()`,
+`MatSetValues()`, `MatDenseSetLDA()`
+@*/
+PetscErrorCode MatDenseCUDASetPreallocation(Mat A, PetscScalar *device_array)
+{
+  PetscFunctionBegin;
+  PetscCall(MatDenseCUPMSetPreallocation<DeviceType::CUDA>(A, device_array));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -4,29 +4,29 @@
 #include <petscbt.h>
 
 /*@
-   ISDifference - Computes the difference between two index sets.
+  ISDifference - Computes the difference between two index sets.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  is1 - first index, to have items removed from it
--  is2 - index values to be removed
+  Input Parameters:
++ is1 - first index, to have items removed from it
+- is2 - index values to be removed
 
-   Output Parameter:
-.  isout - is1 - is2
+  Output Parameter:
+. isout - is1 - is2
 
-   Level: intermediate
+  Level: intermediate
 
-   Notes:
-   Negative values are removed from the lists. `is2` may have values
-   that are not in `is1`.
+  Notes:
+  Negative values are removed from the lists. `is2` may have values
+  that are not in `is1`.
 
-   This computation requires O(imax-imin) memory and O(imax-imin)
-   work, where imin and imax are the bounds on the indices in is1.
+  This computation requires O(imax-imin) memory and O(imax-imin)
+  work, where imin and imax are the bounds on the indices in is1.
 
-   If `is2` is `NULL`, the result is the same as for an empty `IS`, i.e., a duplicate of `is1`.
+  If `is2` is `NULL`, the result is the same as for an empty `IS`, i.e., a duplicate of `is1`.
 
-   The difference is computed separately on each MPI rank
+  The difference is computed separately on each MPI rank
 
 .seealso: [](sec_scatter), `IS`, `ISDestroy()`, `ISView()`, `ISSum()`, `ISExpand()`
 @*/
@@ -39,7 +39,7 @@ PetscErrorCode ISDifference(IS is1, IS is2, IS *isout)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is1, IS_CLASSID, 1);
-  PetscValidPointer(isout, 3);
+  PetscAssertPointer(isout, 3);
   if (!is2) {
     PetscCall(ISDuplicate(is1, isout));
     PetscFunctionReturn(PETSC_SUCCESS);
@@ -96,25 +96,25 @@ PetscErrorCode ISDifference(IS is1, IS is2, IS *isout)
 }
 
 /*@
-   ISSum - Computes the sum (union) of two index sets.
+  ISSum - Computes the sum (union) of two index sets.
 
-   Only sequential version (at the moment)
+  Only sequential version (at the moment)
 
-   Input Parameters:
-+  is1 - index set to be extended
--  is2 - index values to be added
+  Input Parameters:
++ is1 - index set to be extended
+- is2 - index values to be added
 
-   Output Parameter:
-.   is3 - the sum; this can not be `is1` or `is2`
+  Output Parameter:
+. is3 - the sum; this can not be `is1` or `is2`
 
-   Level: intermediate
+  Level: intermediate
 
-   Notes:
-   If n1 and n2 are the sizes of the sets, this takes O(n1+n2) time;
+  Notes:
+  If n1 and n2 are the sizes of the sets, this takes O(n1+n2) time;
 
-   Both index sets need to be sorted on input.
+  Both index sets need to be sorted on input.
 
-   The sum is computed separately on each MPI rank
+  The sum is computed separately on each MPI rank
 
 .seealso: [](sec_scatter), `IS`, `ISDestroy()`, `ISView()`, `ISDifference()`, `ISExpand()`
 @*/
@@ -245,28 +245,28 @@ PetscErrorCode ISSum(IS is1, IS is2, IS *is3)
 }
 
 /*@
-   ISExpand - Computes the union of two index sets, by concatenating 2 lists and
-   removing duplicates.
+  ISExpand - Computes the union of two index sets, by concatenating 2 lists and
+  removing duplicates.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  is1 - first index set
--  is2 - index values to be added
+  Input Parameters:
++ is1 - first index set
+- is2 - index values to be added
 
-   Output Parameter:
-.  isout - `is1` + `is2` The index set `is2` is appended to `is1` removing duplicates
+  Output Parameter:
+. isout - `is1` + `is2` The index set `is2` is appended to `is1` removing duplicates
 
-   Level: intermediate
+  Level: intermediate
 
-   Notes:
-   Negative values are removed from the lists. This requires O(imax-imin)
-   memory and O(imax-imin) work, where imin and imax are the bounds on the
-   indices in `is1` and `is2`.
+  Notes:
+  Negative values are removed from the lists. This requires O(imax-imin)
+  memory and O(imax-imin) work, where imin and imax are the bounds on the
+  indices in `is1` and `is2`.
 
-   `is1` and `is2` do not need to be sorted.
+  `is1` and `is2` do not need to be sorted.
 
-   The operations are performed separately on each MPI rank
+  The operations are performed separately on each MPI rank
 
 .seealso: [](sec_scatter), `IS`, `ISDestroy()`, `ISView()`, `ISDifference()`, `ISSum()`, `ISIntersect()`
 @*/
@@ -280,7 +280,7 @@ PetscErrorCode ISExpand(IS is1, IS is2, IS *isout)
   PetscFunctionBegin;
   if (is1) PetscValidHeaderSpecific(is1, IS_CLASSID, 1);
   if (is2) PetscValidHeaderSpecific(is2, IS_CLASSID, 2);
-  PetscValidPointer(isout, 3);
+  PetscAssertPointer(isout, 3);
 
   PetscCheck(is1 || is2, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Both arguments cannot be NULL");
   if (!is1) {
@@ -337,26 +337,26 @@ PetscErrorCode ISExpand(IS is1, IS is2, IS *isout)
 }
 
 /*@
-   ISIntersect - Computes the intersection of two index sets, by sorting and comparing.
+  ISIntersect - Computes the intersection of two index sets, by sorting and comparing.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  is1 - first index set
--  is2 - second index set
+  Input Parameters:
++ is1 - first index set
+- is2 - second index set
 
-   Output Parameter:
-.  isout - the sorted intersection of `is1` and `is2`
+  Output Parameter:
+. isout - the sorted intersection of `is1` and `is2`
 
-   Level: intermediate
+  Level: intermediate
 
-   Notes:
-   Negative values are removed from the lists. This requires O(min(is1,is2))
-   memory and O(max(is1,is2)log(max(is1,is2))) work
+  Notes:
+  Negative values are removed from the lists. This requires O(min(is1,is2))
+  memory and O(max(is1,is2)log(max(is1,is2))) work
 
-   `is1` and `is2` do not need to be sorted.
+  `is1` and `is2` do not need to be sorted.
 
-   The operations are performed separately on each MPI rank
+  The operations are performed separately on each MPI rank
 
 .seealso: [](sec_scatter), `IS`, `ISDestroy()`, `ISView()`, `ISDifference()`, `ISSum()`, `ISExpand()`, `ISConcatenate()`
 @*/
@@ -372,7 +372,7 @@ PetscErrorCode ISIntersect(IS is1, IS is2, IS *isout)
   PetscValidHeaderSpecific(is1, IS_CLASSID, 1);
   PetscValidHeaderSpecific(is2, IS_CLASSID, 2);
   PetscCheckSameComm(is1, 1, is2, 2);
-  PetscValidPointer(isout, 3);
+  PetscAssertPointer(isout, 3);
   PetscCall(PetscObjectGetComm((PetscObject)is1, &comm));
 
   PetscCall(ISGetLocalSize(is1, &n1));
@@ -454,22 +454,22 @@ PetscErrorCode ISIntersect_Caching_Internal(IS is1, IS is2, IS *isect)
 }
 
 /*@
-   ISConcatenate - Forms a new `IS` by locally concatenating the indices from an `IS` list without reordering.
+  ISConcatenate - Forms a new `IS` by locally concatenating the indices from an `IS` list without reordering.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  comm    - communicator of the concatenated `IS`.
-.  len     - size of islist array (nonnegative)
--  islist  - array of index sets
+  Input Parameters:
++ comm   - communicator of the concatenated `IS`.
+. len    - size of islist array (nonnegative)
+- islist - array of index sets
 
-   Output Parameter:
-.  isout   - The concatenated index set; empty, if `len` == 0.
+  Output Parameter:
+. isout - The concatenated index set; empty, if `len` == 0.
 
-   Level: intermediate
+  Level: intermediate
 
-   Notes:
-    The semantics of calling this on comm imply that the comms of the members of `islist` also contain this rank.
+  Notes:
+  The semantics of calling this on comm imply that the comms of the members of `islist` also contain this rank.
 
 .seealso: [](sec_scatter), `IS`, `ISDifference()`, `ISSum()`, `ISExpand()`, `ISIntersect()`
 @*/
@@ -480,12 +480,12 @@ PetscErrorCode ISConcatenate(MPI_Comm comm, PetscInt len, const IS islist[], IS 
   PetscInt       *idx;
 
   PetscFunctionBegin;
-  if (len) PetscValidPointer(islist, 3);
+  if (len) PetscAssertPointer(islist, 3);
   if (PetscDefined(USE_DEBUG)) {
     for (i = 0; i < len; ++i)
       if (islist[i]) PetscValidHeaderSpecific(islist[i], IS_CLASSID, 3);
   }
-  PetscValidPointer(isout, 4);
+  PetscAssertPointer(isout, 4);
   if (!len) {
     PetscCall(ISCreateGeneral(comm, 0, NULL, PETSC_OWN_POINTER, isout));
     PetscFunctionReturn(PETSC_SUCCESS);
@@ -514,20 +514,20 @@ PetscErrorCode ISConcatenate(MPI_Comm comm, PetscInt len, const IS islist[], IS 
 }
 
 /*@
-   ISListToPair  - Convert an `IS` list to a pair of `IS` of equal length defining an equivalent integer multimap.
-                   Each `IS` on the input list is assigned an integer j so that all of the indices of that `IS` are
-                   mapped to j.
+  ISListToPair  - Convert an `IS` list to a pair of `IS` of equal length defining an equivalent integer multimap.
+  Each `IS` on the input list is assigned an integer j so that all of the indices of that `IS` are
+  mapped to j.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  comm    -  `MPI_Comm`
-.  listlen -  `IS` list length
--  islist  -  `IS` list
+  Input Parameters:
++ comm    - `MPI_Comm`
+. listlen - `IS` list length
+- islist  - `IS` list
 
-   Output Parameters:
-+  xis -  domain `IS`
--  yis -  range  `IS`
+  Output Parameters:
++ xis - domain `IS`
+- yis - range  `IS`
 
   Level: developer
 
@@ -578,26 +578,27 @@ PetscErrorCode ISListToPair(MPI_Comm comm, PetscInt listlen, IS islist[], IS *xi
 }
 
 /*@
-   ISPairToList - Convert an `IS` pair encoding an integer map to a list of `IS`.
-                  Each `IS` on the output list contains the preimage for each index on the second input `IS`.
-                  The `IS` on the output list are constructed on the subcommunicators of the input `IS` pair.
-                  Each subcommunicator corresponds to the preimage of some index j -- this subcomm contains
-                  exactly the ranks that assign some indices i to j.  This is essentially the inverse of
-                  `ISListToPair()`.
+  ISPairToList - Convert an `IS` pair encoding an integer map to a list of `IS`.
 
   Collective
 
   Input Parameters:
-+ xis -  domain `IS`
-- yis -  range `IS`
++ xis - domain `IS`
+- yis - range `IS`
 
   Output Parameters:
-+ listlen -  length of `islist`
-- islist  -  list of `IS`s breaking up indis by color
++ listlen - length of `islist`
+- islist  - list of `IS`s breaking up indis by color
 
   Level: developer
 
   Notes:
+  Each `IS` on the output list contains the preimage for each index on the second input
+  `IS`. The `IS` on the output list are constructed on the subcommunicators of the input `IS`
+  pair. Each subcommunicator corresponds to the preimage of some index j -- this subcomm
+  contains exactly the MPI processes that assign some indices i to j.  This is essentially the inverse
+  of `ISListToPair()`.
+
   `xis` and `yis` must be of the same length and have congruent communicators.
 
   The resulting `IS` have subcommunicators in a "deadlock-free" order (see `ISListToPair()`).
@@ -616,8 +617,8 @@ PetscErrorCode ISPairToList(IS xis, IS yis, PetscInt *listlen, IS **islist)
   PetscValidHeaderSpecific(xis, IS_CLASSID, 1);
   PetscValidHeaderSpecific(yis, IS_CLASSID, 2);
   PetscCheckSameComm(xis, 1, yis, 2);
-  PetscValidIntPointer(listlen, 3);
-  PetscValidPointer(islist, 4);
+  PetscAssertPointer(listlen, 3);
+  PetscAssertPointer(islist, 4);
   PetscCall(PetscObjectGetComm((PetscObject)xis, &comm));
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
   PetscCallMPI(MPI_Comm_rank(comm, &size));
@@ -706,19 +707,19 @@ PetscErrorCode ISPairToList(IS xis, IS yis, PetscInt *listlen, IS **islist)
 }
 
 /*@
-   ISEmbed - Embed `IS` `a` into `IS` `b` by finding the locations in `b` that have the same indices as in `a`.
-             If `c` is the `IS` of these locations, we have `a = b*c`, regarded as a composition of the
-             corresponding `ISLocalToGlobalMapping`.
+  ISEmbed - Embed `IS` `a` into `IS` `b` by finding the locations in `b` that have the same indices as in `a`.
+  If `c` is the `IS` of these locations, we have `a = b*c`, regarded as a composition of the
+  corresponding `ISLocalToGlobalMapping`.
 
   Not Collective
 
   Input Parameters:
-+ a    -  `IS` to embed
-. b    -  `IS` to embed into
-- drop -  flag indicating whether to drop indices of `a` that are not in `b`.
++ a    - `IS` to embed
+. b    - `IS` to embed into
+- drop - flag indicating whether to drop indices of `a` that are not in `b`.
 
   Output Parameter:
-. c    -  local embedding indices
+. c - local embedding indices
 
   Level: developer
 
@@ -741,7 +742,7 @@ PetscErrorCode ISEmbed(IS a, IS b, PetscBool drop, IS *c)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(a, IS_CLASSID, 1);
   PetscValidHeaderSpecific(b, IS_CLASSID, 2);
-  PetscValidPointer(c, 4);
+  PetscAssertPointer(c, 4);
   PetscCall(ISLocalToGlobalMappingCreateIS(b, &ltog));
   PetscCall(ISGetLocalSize(a, &alen));
   PetscCall(ISGetIndices(a, &aindices));
@@ -766,11 +767,11 @@ PetscErrorCode ISEmbed(IS a, IS b, PetscBool drop, IS *c)
   Not Collective
 
   Input Parameters:
-+ f      -  `IS` to sort
-- always -  build the permutation even when `f`'s indices are nondecreasing.
++ f      - `IS` to sort
+- always - build the permutation even when `f`'s indices are nondecreasing.
 
   Output Parameter:
-. h    -  permutation or `NULL`, if `f` is nondecreasing and `always` == `PETSC_FALSE`.
+. h - permutation or `NULL`, if `f` is nondecreasing and `always` == `PETSC_FALSE`.
 
   Level: advanced
 
@@ -791,7 +792,7 @@ PetscErrorCode ISSortPermutation(IS f, PetscBool always, IS *h)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(f, IS_CLASSID, 1);
-  PetscValidPointer(h, 3);
+  PetscAssertPointer(h, 3);
   PetscCall(ISGetLocalSize(f, &fsize));
   PetscCall(ISGetIndices(f, &findices));
   *h = NULL;

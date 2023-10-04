@@ -277,7 +277,7 @@ static PetscErrorCode PCBJacobiGetSubKSP_BJacobi(PC pc, PetscInt *n_local, Petsc
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode PCBJacobiSetTotalBlocks_BJacobi(PC pc, PetscInt blocks, PetscInt *lens)
+static PetscErrorCode PCBJacobiSetTotalBlocks_BJacobi(PC pc, PetscInt blocks, const PetscInt *lens)
 {
   PC_BJacobi *jac = (PC_BJacobi *)pc->data;
 
@@ -329,34 +329,34 @@ static PetscErrorCode PCBJacobiGetLocalBlocks_BJacobi(PC pc, PetscInt *blocks, c
 }
 
 /*@C
-   PCBJacobiGetSubKSP - Gets the local `KSP` contexts for all blocks on
-   this processor.
+  PCBJacobiGetSubKSP - Gets the local `KSP` contexts for all blocks on
+  this processor.
 
-   Not Collective
+  Not Collective
 
-   Input Parameter:
-.  pc - the preconditioner context
+  Input Parameter:
+. pc - the preconditioner context
 
-   Output Parameters:
-+  n_local - the number of blocks on this processor, or NULL
-.  first_local - the global number of the first block on this processor, or NULL
--  ksp - the array of KSP contexts
+  Output Parameters:
++ n_local     - the number of blocks on this processor, or NULL
+. first_local - the global number of the first block on this processor, or NULL
+- ksp         - the array of KSP contexts
 
-   Notes:
-   After `PCBJacobiGetSubKSP()` the array of `KSP` contexts is not to be freed.
+  Notes:
+  After `PCBJacobiGetSubKSP()` the array of `KSP` contexts is not to be freed.
 
-   Currently for some matrix implementations only 1 block per processor
-   is supported.
+  Currently for some matrix implementations only 1 block per processor
+  is supported.
 
-   You must call `KSPSetUp()` or `PCSetUp()` before calling `PCBJacobiGetSubKSP()`.
+  You must call `KSPSetUp()` or `PCSetUp()` before calling `PCBJacobiGetSubKSP()`.
 
-   Fortran Usage:
-   You must pass in a `KSP` array that is large enough to contain all the local `KSP`s.
+  Fortran Notes:
+  You must pass in a `KSP` array that is large enough to contain all the local `KSP`s.
 
-   You can call `PCBJacobiGetSubKSP`(pc,nlocal,firstlocal,`PETSC_NULL_KSP`,ierr) to determine how large the
-   `KSP` array must be.
+  You can call `PCBJacobiGetSubKSP`(pc,nlocal,firstlocal,`PETSC_NULL_KSP`,ierr) to determine how large the
+  `KSP` array must be.
 
-   Level: advanced
+  Level: advanced
 
 .seealso: `PCBJACOBI`, `PCASM`, `PCASMGetSubKSP()`
 @*/
@@ -369,24 +369,24 @@ PetscErrorCode PCBJacobiGetSubKSP(PC pc, PetscInt *n_local, PetscInt *first_loca
 }
 
 /*@
-   PCBJacobiSetTotalBlocks - Sets the global number of blocks for the block
-   Jacobi preconditioner.
+  PCBJacobiSetTotalBlocks - Sets the global number of blocks for the block
+  Jacobi preconditioner.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  pc - the preconditioner context
-.  blocks - the number of blocks
--  lens - [optional] integer array containing the size of each block
+  Input Parameters:
++ pc     - the preconditioner context
+. blocks - the number of blocks
+- lens   - [optional] integer array containing the size of each block
 
-   Options Database Key:
-.  -pc_bjacobi_blocks <blocks> - Sets the number of global blocks
+  Options Database Key:
+. -pc_bjacobi_blocks <blocks> - Sets the number of global blocks
 
-   Note:
-   Currently only a limited number of blocking configurations are supported.
-   All processors sharing the `PC` must call this routine with the same data.
+  Note:
+  Currently only a limited number of blocking configurations are supported.
+  All processors sharing the `PC` must call this routine with the same data.
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `PCBJACOBI`, `PCSetUseAmat()`, `PCBJacobiSetLocalBlocks()`
 @*/
@@ -400,19 +400,19 @@ PetscErrorCode PCBJacobiSetTotalBlocks(PC pc, PetscInt blocks, const PetscInt le
 }
 
 /*@C
-   PCBJacobiGetTotalBlocks - Gets the global number of blocks for the block
-   Jacobi, `PCBJACOBI`, preconditioner.
+  PCBJacobiGetTotalBlocks - Gets the global number of blocks for the block
+  Jacobi, `PCBJACOBI`, preconditioner.
 
-   Not Collective
+  Not Collective
 
-   Input Parameter:
-.  pc - the preconditioner context
+  Input Parameter:
+. pc - the preconditioner context
 
-   Output parameters:
-+  blocks - the number of blocks
--  lens - integer array containing the size of each block
+  Output Parameters:
++ blocks - the number of blocks
+- lens   - integer array containing the size of each block
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `PCBJACOBI`, `PCSetUseAmat()`, `PCBJacobiGetLocalBlocks()`
 @*/
@@ -420,29 +420,29 @@ PetscErrorCode PCBJacobiGetTotalBlocks(PC pc, PetscInt *blocks, const PetscInt *
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
-  PetscValidIntPointer(blocks, 2);
+  PetscAssertPointer(blocks, 2);
   PetscUseMethod(pc, "PCBJacobiGetTotalBlocks_C", (PC, PetscInt *, const PetscInt *[]), (pc, blocks, lens));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
-   PCBJacobiSetLocalBlocks - Sets the local number of blocks for the block
-   Jacobi, `PCBJACOBI`,  preconditioner.
+  PCBJacobiSetLocalBlocks - Sets the local number of blocks for the block
+  Jacobi, `PCBJACOBI`,  preconditioner.
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  pc - the preconditioner context
-.  blocks - the number of blocks
--  lens - [optional] integer array containing size of each block
+  Input Parameters:
++ pc     - the preconditioner context
+. blocks - the number of blocks
+- lens   - [optional] integer array containing size of each block
 
-   Options Database Key:
-.  -pc_bjacobi_local_blocks <blocks> - Sets the number of local blocks
+  Options Database Key:
+. -pc_bjacobi_local_blocks <blocks> - Sets the number of local blocks
 
-   Note:
-   Currently only a limited number of blocking configurations are supported.
+  Note:
+  Currently only a limited number of blocking configurations are supported.
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `PCBJACOBI`, `PCSetUseAmat()`, `PCBJacobiSetTotalBlocks()`
 @*/
@@ -456,20 +456,20 @@ PetscErrorCode PCBJacobiSetLocalBlocks(PC pc, PetscInt blocks, const PetscInt le
 }
 
 /*@C
-   PCBJacobiGetLocalBlocks - Gets the local number of blocks for the block
-   Jacobi, `PCBJACOBI`, preconditioner.
+  PCBJacobiGetLocalBlocks - Gets the local number of blocks for the block
+  Jacobi, `PCBJACOBI`, preconditioner.
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  pc - the preconditioner context
-.  blocks - the number of blocks
--  lens - [optional] integer array containing size of each block
+  Input Parameters:
++ pc     - the preconditioner context
+. blocks - the number of blocks
+- lens   - [optional] integer array containing size of each block
 
-   Note:
-   Currently only a limited number of blocking configurations are supported.
+  Note:
+  Currently only a limited number of blocking configurations are supported.
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `PCBJACOBI`, `PCSetUseAmat()`, `PCBJacobiGetTotalBlocks()`
 @*/
@@ -477,7 +477,7 @@ PetscErrorCode PCBJacobiGetLocalBlocks(PC pc, PetscInt *blocks, const PetscInt *
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
-  PetscValidIntPointer(blocks, 2);
+  PetscAssertPointer(blocks, 2);
   PetscUseMethod(pc, "PCBJacobiGetLocalBlocks_C", (PC, PetscInt *, const PetscInt *[]), (pc, blocks, lens));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -730,9 +730,13 @@ static PetscErrorCode PCSetUp_BJacobi_Singleblock(PC pc, Mat mat, Mat pmat)
   PetscFunctionBegin;
   if (!pc->setupcalled) {
     if (!jac->ksp) {
+      PetscInt nestlevel;
+
       wasSetup = PETSC_FALSE;
 
       PetscCall(KSPCreate(PETSC_COMM_SELF, &ksp));
+      PetscCall(PCGetKSPNestLevel(pc, &nestlevel));
+      PetscCall(KSPSetNestLevel(ksp, nestlevel + 1));
       PetscCall(KSPSetErrorIfNotConverged(ksp, pc->erroriffailure));
       PetscCall(PetscObjectIncrementTabLevel((PetscObject)ksp, (PetscObject)pc, 1));
       PetscCall(KSPSetType(ksp, KSPPREONLY));
@@ -1014,6 +1018,8 @@ static PetscErrorCode PCSetUp_BJacobi_Multiblock(PC pc, Mat mat, Mat pmat)
   }
 
   if (!pc->setupcalled) {
+    PetscInt nestlevel;
+
     scall = MAT_INITIAL_MATRIX;
 
     if (!jac->ksp) {
@@ -1036,6 +1042,8 @@ static PetscErrorCode PCSetUp_BJacobi_Multiblock(PC pc, Mat mat, Mat pmat)
 
       for (i = 0; i < n_local; i++) {
         PetscCall(KSPCreate(PETSC_COMM_SELF, &ksp));
+        PetscCall(PCGetKSPNestLevel(pc, &nestlevel));
+        PetscCall(KSPSetNestLevel(ksp, nestlevel + 1));
         PetscCall(KSPSetErrorIfNotConverged(ksp, pc->erroriffailure));
         PetscCall(PetscObjectIncrementTabLevel((PetscObject)ksp, (PetscObject)pc, 1));
         PetscCall(KSPSetType(ksp, KSPPREONLY));
@@ -1232,6 +1240,8 @@ static PetscErrorCode PCSetUp_BJacobi_Multiproc(PC pc)
   PetscCheck(jac->n_local <= 1, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Only a single block in a subcommunicator is supported");
   jac->n_local = 1; /* currently only a single block is supported for a subcommunicator */
   if (!pc->setupcalled) {
+    PetscInt nestlevel;
+
     wasSetup = PETSC_FALSE;
     PetscCall(PetscNew(&mpjac));
     jac->data = (void *)mpjac;
@@ -1252,6 +1262,8 @@ static PetscErrorCode PCSetUp_BJacobi_Multiproc(PC pc)
     /* create a new PC that processors in each subcomm have copy of */
     PetscCall(PetscMalloc1(1, &jac->ksp));
     PetscCall(KSPCreate(subcomm, &jac->ksp[0]));
+    PetscCall(PCGetKSPNestLevel(pc, &nestlevel));
+    PetscCall(KSPSetNestLevel(jac->ksp[0], nestlevel + 1));
     PetscCall(KSPSetErrorIfNotConverged(jac->ksp[0], pc->erroriffailure));
     PetscCall(PetscObjectIncrementTabLevel((PetscObject)jac->ksp[0], (PetscObject)pc, 1));
     PetscCall(KSPSetOperators(jac->ksp[0], mpjac->submats, mpjac->submats));

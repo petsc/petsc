@@ -1081,9 +1081,9 @@ static PetscErrorCode DMDAIntegrateErrors(DM stokes_da, Vec X, Vec X_analytic)
       tu_H1 += u_e_H1;
     }
   }
-  PetscCallMPI(MPI_Allreduce(&tp_L2, &p_L2, 1, MPIU_SCALAR, MPIU_SUM, PETSC_COMM_WORLD));
-  PetscCallMPI(MPI_Allreduce(&tu_L2, &u_L2, 1, MPIU_SCALAR, MPIU_SUM, PETSC_COMM_WORLD));
-  PetscCallMPI(MPI_Allreduce(&tu_H1, &u_H1, 1, MPIU_SCALAR, MPIU_SUM, PETSC_COMM_WORLD));
+  PetscCall(MPIU_Allreduce(&tp_L2, &p_L2, 1, MPIU_SCALAR, MPIU_SUM, PETSC_COMM_WORLD));
+  PetscCall(MPIU_Allreduce(&tu_L2, &u_L2, 1, MPIU_SCALAR, MPIU_SUM, PETSC_COMM_WORLD));
+  PetscCall(MPIU_Allreduce(&tu_H1, &u_H1, 1, MPIU_SCALAR, MPIU_SUM, PETSC_COMM_WORLD));
   p_L2 = PetscSqrtScalar(p_L2);
   u_L2 = PetscSqrtScalar(u_L2);
   u_H1 = PetscSqrtScalar(u_H1);
@@ -1154,7 +1154,7 @@ static PetscErrorCode solve_stokes_2d_coupled(PetscInt mx, PetscInt my)
   PetscCall(DMDAGetInfo(da_Stokes, 0, 0, 0, 0, &cpu_x, &cpu_y, 0, 0, 0, 0, 0, 0, 0));
   PetscCall(DMDAGetElementOwnershipRanges2d(da_Stokes, &lx, &ly));
 
-  prop_dof           = (int)(sizeof(GaussPointCoefficients) / sizeof(PetscScalar)); /* gauss point setup */
+  prop_dof           = (PetscInt)(sizeof(GaussPointCoefficients) / sizeof(PetscScalar)); /* gauss point setup */
   prop_stencil_width = 0;
   PetscCall(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DMDA_STENCIL_BOX, mx, my, cpu_x, cpu_y, prop_dof, prop_stencil_width, lx, ly, &da_prop));
   PetscCall(DMSetFromOptions(da_prop));
@@ -1893,7 +1893,7 @@ static PetscErrorCode DMDABCApplyFreeSlip(DM da_Stokes, Mat A, Vec f)
          args: -change true -stokes_ksp_view
          output_file: output/ex43_2_mumps.out
          # mumps INFO,INFOG,RINFO,RINFOG may vary on different archs, so keep just a stable one
-         filter:  grep -E -v "(INFOG\([^7]|INFO\(|\[0\])"
+         filter:  grep -E -v "(INFOG\([^7]|INFO\(|\[0\])" | grep -v "            total: nonzeros="
 
    test:
       suffix: 3

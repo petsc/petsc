@@ -1,8 +1,7 @@
 /*
       mathematical function module.
 */
-#ifndef PETSCPF_H
-#define PETSCPF_H
+#pragma once
 
 #include <petscvec.h>
 
@@ -30,7 +29,7 @@ typedef const char *PFType;
 #define PFMATLAB   "matlab"
 
 /*S
-     PF - Abstract PETSc mathematical function that can be evaluated with `PFApply()` and may be constructed at run time
+     PF - Abstract PETSc mathematical function that can be evaluated with `PFApply()` and may be constructed at run time (see `PFSTRING`)
 
    Level: beginner
 
@@ -49,6 +48,7 @@ PETSC_EXTERN PetscErrorCode PFApplyVec(PF, Vec, Vec);
 PETSC_EXTERN PetscErrorCode PFStringSetFunction(PF, const char *);
 
 PETSC_EXTERN PetscErrorCode PFInitializePackage(void);
+PETSC_EXTERN PetscErrorCode PFFinalizePackage(void);
 
 PETSC_EXTERN PetscErrorCode PFRegister(const char[], PetscErrorCode (*)(PF, void *));
 
@@ -60,5 +60,3 @@ PETSC_EXTERN PetscErrorCode PFView(PF, PetscViewer);
 PETSC_EXTERN PetscErrorCode PFViewFromOptions(PF, PetscObject, const char[]);
 
 #define PFSetOptionsPrefix(a, s) PetscObjectSetOptionsPrefix((PetscObject)(a), s)
-
-#endif

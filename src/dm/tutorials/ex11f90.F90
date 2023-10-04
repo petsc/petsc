@@ -19,6 +19,9 @@
       PetscInt ys,yl
       PetscInt zs,zl,sw
 
+      PetscInt nen,nel
+      PetscInt, pointer :: elements(:)
+
       m = 5
       n = 6
       p = 4;
@@ -56,6 +59,12 @@
       PetscCallA(DMDAVecRestoreArrayF90(ada,g,x2,ierr))
       PetscCallA(VecView(g,PETSC_VIEWER_STDOUT_WORLD,ierr))
       PetscCallA(DMRestoreGlobalVector(ada,g,ierr))
+
+      PetscCallA(DMDAGetElements(ada,nen,nel,elements,ierr))
+      do i=1,nen*nel
+         PetscCheckA(elements(i) .ge. 0,PETSC_COMM_SELF,PETSC_ERR_PLIB,'Error getting DMDA elements')
+      enddo
+      PetscCallA(DMDARestoreElements(ada,nen,nel,elements,ierr))
       PetscCallA(DMDestroy(ada,ierr))
 
       PetscCallA(DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX, m,n,p,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,dof,s,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,ada,ierr))

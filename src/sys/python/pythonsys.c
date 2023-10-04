@@ -1,7 +1,5 @@
 #include <petsc/private/petscimpl.h> /*I "petscsys.h" I*/
 
-/* ---------------------------------------------------------------- */
-
 #if !defined(PETSC_PYTHON_EXE)
   #define PETSC_PYTHON_EXE "python"
 #endif
@@ -71,8 +69,6 @@ static PetscErrorCode PetscPythonFindLibrary(const char pythonexe[], char python
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* ---------------------------------------------------------------- */
-
 typedef struct _Py_object_t PyObject; /* fake definition */
 
 static PyObject *Py_None = NULL;
@@ -138,8 +134,6 @@ static PetscErrorCode PetscPythonLoadLibrary(const char pythonlib[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* ---------------------------------------------------------------- */
-
 static char      PetscPythonExe[PETSC_MAX_PATH_LEN] = {0};
 static char      PetscPythonLib[PETSC_MAX_PATH_LEN] = {0};
 static PetscBool PetscBeganPython                   = PETSC_FALSE;
@@ -165,8 +159,8 @@ PetscErrorCode PetscPythonFinalize(void)
   PetscPythonInitialize - Initialize Python for use with PETSc and import petsc4py.
 
    Input Parameters:
-+  pyexe - path to the Python interpreter executable, or NULL.
--  pylib - full path to the Python dynamic library, or NULL.
++  pyexe - path to the Python interpreter executable, or `NULL`.
+-  pylib - full path to the Python dynamic library, or `NULL`.
 
   Level: intermediate
 
@@ -273,8 +267,6 @@ PetscErrorCode PetscPythonPrintError(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* ---------------------------------------------------------------- */
-
 PETSC_EXTERN PetscErrorCode (*PetscPythonMonitorSet_C)(PetscObject, const char[]);
 PetscErrorCode (*PetscPythonMonitorSet_C)(PetscObject, const char[]) = NULL;
 
@@ -289,7 +281,7 @@ PetscErrorCode PetscPythonMonitorSet(PetscObject obj, const char url[])
 {
   PetscFunctionBegin;
   PetscValidHeader(obj, 1);
-  PetscValidCharPointer(url, 2);
+  PetscAssertPointer(url, 2);
   if (!PetscPythonMonitorSet_C) {
     PetscCall(PetscPythonInitialize(NULL, NULL));
     PetscCheck(PetscPythonMonitorSet_C, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Couldn't initialize Python support for monitors");
@@ -297,5 +289,3 @@ PetscErrorCode PetscPythonMonitorSet(PetscObject obj, const char url[])
   PetscCall(PetscPythonMonitorSet_C(obj, url));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-
-/* ---------------------------------------------------------------- */

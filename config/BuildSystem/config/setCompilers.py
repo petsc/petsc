@@ -187,7 +187,7 @@ class Configure(config.base.Configure):
       min_ver += 3
 
     available_dialects = ', '.join(map(str, available_dialects))
-    help.addArgument('Compilers', '-with-cxx-dialect=<dialect>',nargs.Arg(None, 'auto', 'Dialect under which to compile C++ sources. Pass "c++17" to use "-std=c++17", "gnu++17" to use "-std=gnu++17" or pass just the numer (e.g. "17") to have PETSc auto-detect gnu extensions. Pass "auto" to let PETSc auto-detect everything or "0" to use the compiler"s default. Available: ({}, auto, 0)'.format(available_dialects)))
+    help.addArgument('Compilers', '-with-cxx-dialect=<dialect>',nargs.Arg(None, 'auto', 'Dialect under which to compile C++ sources. Pass "c++17" to use "-std=c++17", "gnu++17" to use "-std=gnu++17" or pass just the number (e.g. "17") to have PETSc auto-detect gnu extensions. Pass "auto" to let PETSc auto-detect everything or "0" to use the compiler"s default. Available: ({}, auto, 0)'.format(available_dialects)))
     help.addArgument('Compilers', '-with-hip-dialect=<dialect>',nargs.Arg(None, 'auto', 'Dialect under which to compile HIP sources. If set should probably be equivalent to c++ dialect (see --with-cxx-dialect)'))
     help.addArgument('Compilers', '-with-cuda-dialect=<dialect>',nargs.Arg(None, 'auto', 'Dialect under which to compile CUDA sources. If set should probably be equivalent to c++ dialect (see --with-cxx-dialect)'))
     help.addArgument('Compilers', '-with-sycl-dialect=<dialect>',nargs.Arg(None, 'auto', 'Dialect under which to compile SYCL sources. If set should probably be equivalent to c++ dialect (see --with-cxx-dialect)'))
@@ -558,10 +558,10 @@ class Configure(config.base.Configure):
     except RuntimeError:
       pass
 
-  @staticmethod
-  def isWindows(compiler, log, disambiguate_win32fe = False):
+  @classmethod
+  def isWindows(cls, compiler, log):
     '''Returns true if the compiler is a Windows compiler'''
-    if Configure.isCygwin(log):
+    if cls.isCygwin(log):
       compiler = os.path.basename(compiler)
       if compiler.startswith('win_'):
         if log: log.write('Detected Windows compiler\n')
@@ -571,15 +571,17 @@ class Configure(config.base.Configure):
 
   @classmethod
   def isMSVC(cls, compiler, log):
-    """Returns true if the compiler is MSVC"""
-    if cls.isWindows(compiler,log,disambiguate_win32fe=True):
-      output, error, _ = cls.executeShellCommand(compiler+' --version',checkCommand=noCheck,log=log)
-      output = '\n'.join((output,error)).casefold()
-      if all(sub.casefold() in output for sub in ('microsoft','c/c++ optimizing compiler')):
-        if log:
-          log.write('Detected MSVC\n')
-        return 1
-    return 0
+    """
+    Returns true if the compiler is MSVC. Does not distinguish between raw MSVC and win32fe + MSVC
+    """
+    output, error, _ = cls.executeShellCommand(compiler + ' --version', checkCommand=noCheck, log=log)
+    output           = '\n'.join((output, error)).casefold()
+    found            = all(
+      sub.casefold() in output for sub in ('microsoft', 'c/c++ optimizing compiler')
+    )
+    if log:
+      log.write('Detected MSVC\n' if found else 'Did not detect MSVC\n')
+    return int(found)
 
   @staticmethod
   def isSolarisAR(ar, log):
@@ -626,10 +628,14 @@ class Configure(config.base.Configure):
         if log: log.write('Detected Darwin')
         isDarwin_value = True
         import platform
-        v = tuple([int(a) for a in platform.mac_ver()[0].split('.')])
-        if v >= (10,15,0):
-          if log: log.write('Detected Darwin/MacOSX Catalina OS\n')
-          isDarwinCatalina_value = True
+        try:
+          v = tuple([int(a) for a in platform.mac_ver()[0].split('.')])
+          if v >= (10,15,0):
+            if log: log.write('Detected Darwin/MacOSX Catalina OS\n')
+            isDarwinCatalina_value = True
+        except:
+          if log: log.write('MacOS version detecton failed!\n')
+          pass
       if output.find('freebsd') >= 0:
         if log: log.write('Detected FreeBSD')
         isFreeBSD_value = True
@@ -1088,15 +1094,21 @@ class Configure(config.base.Configure):
         break
 
     if maxDialect == -1:
-      ver    = int(withLangDialect[-2:])
+      try:
+        ver = int(withLangDialect[-2:])
+      except ValueError:
+        ver = 9e9
       minver = int(dialects[0].num)
-      if ver == 89 or ver < minver:
-        mess = 'PETSc requires at least C++{}, how old is your compiler?'.format(minver)
-        # throw RTE (which is meant to be caught) as this indicates compiler is too old
-        raise RuntimeError(mess)
-      mess = 'Unknown C++ dialect: {val}'.format(val=withLangDialect)
-      # throw CSE (which is NOT meant to be caught) as this is an unhandled exception
-      raise ConfigureSetupError(mess)
+      if ver in {89, 98} or ver < minver:
+        mess = 'PETSc requires at least C++{} when using {}'.format(minver, language.replace('x', '+'))
+      else:
+        mess = 'Unknown C++ dialect: {}'.format(withLangDialect)
+      if explicit:
+        mess += ' (you have explicitly requested --{}={}). Remove this flag and let configure choose the most appropriate flag for you.'.format(configureArg, withLangDialect)
+        # If the user explicitly requested the dialect throw CSE (which is NOT meant to be
+        # caught) as this indicates a user error
+        raise ConfigureSetupError(mess)
+      raise RuntimeError(mess)
     self.logPrint('checkCxxDialect: dialect {dlct} has been {expl} selected for {lang}'.format(dlct=withLangDialect,expl='EXPLICITLY' if explicit else 'NOT explicitly',lang=LANG))
 
     def checkPackageRange(packageRanges,kind,dialectIdx):
@@ -1179,23 +1191,38 @@ class Configure(config.base.Configure):
               ),
               '' # for extra newline at the end
             ))
-            if flag.endswith(dialects[0].num):
-              # it's the compilers fault we can't try the next dialect
-              dialectNum = dialects[0].num
-            elif withLangDialect in ('NONE','AUTO'):
-              # it's a packages fault we can't try the next dialect
-              packDialects   = self.cxxDialectPackageRanges[0]
-              minPackDialect = max(packDialects.keys())
-              base_mess = '\n'.join((
-                'Using {lang} dialect C++{ver} as lower bound due to package(s):',
-                '\n'.join('- '+s for s in packDialects[minPackDialect]),
-                ' '.join(('But',base_mess))
-              ))
-              dialectNum = minPackDialect[-2:]
+            if withLangDialect in ('NONE','AUTO'):
+              packDialects = self.cxxDialectPackageRanges[0]
+              if packDialects.keys():
+                # it's a packages fault we can't try the next dialect
+                minPackDialect = max(packDialects.keys())
+                base_mess      = '\n'.join((
+                  'Using {lang} dialect C++{ver} as lower bound due to package(s):',
+                  '\n'.join('- '+s for s in packDialects[minPackDialect]),
+                  ' '.join(('But',base_mess))
+                ))
+                dialectNum = minPackDialect[-2:]
+                explicit   = True
+              else:
+                assert flag.endswith(dialects[0].num)
+                # it's the compilers fault we can't try the next dialect
+                dialectNum = dialects[0].num
             else:
               # if nothing else then it's because the user requested a particular version
               dialectNum = dialectNumStr
-            mess = base_mess.format(lang=language.replace('x','+'),compiler=compiler,ver=dialectNum)
+              base_mess  = '\n'.join((
+                base_mess,
+                'Note, you have explicitly requested --{}={}. If you do not need C++{ver}, then remove this flag and let configure choose the most appropriate flag for you.'
+                '\nIf you DO need it, then (assuming your compiler isn\'t just old) try consulting your compilers user manual. There may be other flags (e.g. \'--gcc-toolchain\') you must pass to enable C++{ver}'.format(configureArg, withLangDialect, ver='{ver}')
+              ))
+            if dialectNum.isdigit():
+              ver = dialectNum
+            else:
+              ver = dialectNum.casefold().replace('c++', '').replace('gnu++', '')
+            mess = base_mess.format(lang=language.replace('x','+'),compiler=compiler,ver=ver)
+            if explicit:
+              # if the user explicitly set the version, then this is a hard error
+              raise ConfigureSetupError(mess)
             raise RuntimeError(mess)
         else:
           # success
@@ -1237,6 +1264,7 @@ class Configure(config.base.Configure):
         return
       if not self.checkLink(linkLanguage=linkLanguage,includes=includes,body=body):
         msg = 'Cannot compile/link {} with {}.'.format(language,compiler)
+        msg = '\nIf the above linker messages do not indicate failure of the compiler you can rerun with the option --ignoreLinkOutput=1'
         raise RuntimeError(msg)
       oldlibs     = self.LIBS
       compilerObj = self.framework.getCompilerObject(linkLanguage if linkLanguage else language)
@@ -1409,9 +1437,13 @@ class Configure(config.base.Configure):
     if not hasattr(self, 'CC'):
       raise RuntimeError('Could not locate a functional C compiler')
     try:
-      self.executeShellCommand(self.CC+' --version', log = self.log)
+      (output,error,status) = self.executeShellCommand(self.CC+' --version', log = self.log)
     except:
       pass
+    else:
+      if self.isDarwin(self.log) and self.isARM(self.log) and output.find('x86_64-apple-darwin') > -1:
+        raise RuntimeError('Running on a macOS arm system but your compilers are configured for Intel processors\n' + output + '\n')
+
     (output, error, status) = config.base.Configure.executeShellCommand(compiler+' -v | head -n 20', log = self.log)
     output = output + error
     if '(gcc version 4.8.5 compatibility)' in output or re.match('^Selected GCC installation:.*4.8.5$', output):
@@ -1918,7 +1950,7 @@ class Configure(config.base.Configure):
                   'invalid option','invalid suboption','bad ',' option','petsc error',
                   'unbekannte option','linker input file unused because linking not done',
                   'warning: // comments are not allowed in this language',
-                  'no se reconoce la opci','non reconnue','warning: unsupported linker arg:')
+                  'no se reconoce la opci','non reconnue','warning: unsupported linker arg:','ignoring unknown option')
     outlo = output.lower()
     return any(sub.lower() in outlo for sub in substrings)
 
@@ -2071,7 +2103,7 @@ class Configure(config.base.Configure):
     return
 
   def checkLargeFileIO(self):
-    '''check for large file support with 64bit offset'''
+    '''check for large file support with 64-bit offset'''
     if not self.argDB['with-large-file-io']:
       return
     languages = ['C']
@@ -2157,7 +2189,7 @@ class Configure(config.base.Configure):
     yield ('ar',self.getArchiverFlags('ar'),'ranlib -c')
     yield ('ar',self.getArchiverFlags('ar'),'ranlib')
     yield ('ar',self.getArchiverFlags('ar'),'true')
-    # IBM with 64 bit pointers
+    # IBM with 64-bit pointers
     yield ('ar','-X64 '+self.getArchiverFlags('ar'),'ranlib -c')
     yield ('ar','-X64 '+self.getArchiverFlags('ar'),'ranlib')
     yield ('ar','-X64 '+self.getArchiverFlags('ar'),'true')
@@ -2726,21 +2758,22 @@ if (dlclose(handle)) {
     self.executeTest(self.checkMPICompilerOverride)
     self.executeTest(self.requireMpiLdPath)
     self.executeTest(self.checkInitialFlags)
+    if hasattr(self.framework,'conda_active'):
+      self.framework.additional_error_message = 'Conda may be causing this compiling/linking problem, consider turning off Conda.'
     self.executeTest(self.checkCCompiler)
     self.executeTest(self.checkCPreprocessor)
 
-    def compilerIsDisabledFromOptions(compiler):
-      """Return True if compiler is disabled via configure options (and delete it from the argdb), False otherwise"""
-      disabled = self.argDB.get('with-'+compiler.lower()) == '0'
-      if disabled:
-        COMPILER = compiler.upper()
-        if COMPILER in self.argDB:
-          del self.argDB[COMPILER]
-      return disabled
-
     for LANG in ['Cxx','CUDA','HIP','SYCL']:
       compilerName = LANG.upper() if LANG == 'Cxx' else LANG+'C'
-      if not compilerIsDisabledFromOptions(compilerName):
+      argdbName    = 'with-' + compilerName.casefold()
+      argdbVal     = self.argDB.get(argdbName)
+      if argdbVal == '0':
+        # compiler was explicitly disabled, i.e. --with-cxx=0
+        COMPILER_NAME = compilerName.upper()
+        if COMPILER_NAME in self.argDB:
+          del self.argDB[COMPILER_NAME]
+          continue
+      else:
         self.executeTest(getattr(self,LANG.join(('check','Compiler'))))
         try:
           self.executeTest(self.checkDeviceHostCompiler,args=[LANG])
@@ -2753,6 +2786,15 @@ if (dlclose(handle)) {
             self.executeTest(self.checkCxxDialect,args=[LANG],kargs={'isGNUish':isGNUish})
           except RuntimeError as e:
             self.mesg = str(e)
+            if argdbVal is not None:
+              # user explicitly enabled a compiler, e.g. --with-cxx=clang++, so the fact
+              # that it does not work is an immediate problem
+              self.mesg += '\n'.join((
+                '',
+                'Note, you have explicitly requested --{}={}. If you don\'t need {}, or that specific compiler, remove this flag -- configure may be able to find a more suitable compiler automatically.',
+                'If you DO need the above, then consult your compilers user manual. It\'s possible you may need to add additional flags (or perhaps load additional modules) to enable compliance'
+              )).format(argdbName, argdbVal, LANG.replace('x', '+'))
+              raise config.base.ConfigureSetupError(self.mesg)
             self.logPrint(' '.join(('Error testing',LANG,'compiler:',self.mesg)))
             self.delMakeMacro(compilerName)
             delattr(self,compilerName)
@@ -2774,6 +2816,9 @@ if (dlclose(handle)) {
     self.executeTest(self.checkSharedLinkerPaths)
     self.executeTest(self.checkLibC)
     self.executeTest(self.checkDynamicLinker)
+    if hasattr(self.framework,'conda_active'):
+      del self.framework.additional_error_message
+
     self.executeTest(self.checkPragma)
     self.executeTest(self.checkAtFileOption)
     self.executeTest(self.output)

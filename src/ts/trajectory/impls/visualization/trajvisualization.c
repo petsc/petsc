@@ -79,7 +79,7 @@ static PetscErrorCode TSTrajectorySet_Visualization(TSTrajectory tj, TS ts, Pets
 
   Level: intermediate
 
-.seealso: [](chapter_ts), `TSTrajectoryCreate()`, `TS`, `TSTrajectorySetType()`, `TSTrajectoryType`, `TSTrajectorySetVariableNames()`,
+.seealso: [](ch_ts), `TSTrajectoryCreate()`, `TS`, `TSTrajectorySetType()`, `TSTrajectoryType`, `TSTrajectorySetVariableNames()`,
           `TSTrajectoryType`, `TSTrajectory`
 M*/
 PETSC_EXTERN PetscErrorCode TSTrajectoryCreate_Visualization(TSTrajectory tj, TS ts)

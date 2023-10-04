@@ -15,7 +15,7 @@
              Optionally `NULL`.
 
   Output Parameter:
-. nrecvs    - number of messages received
+. nrecvs - number of messages received
 
   Level: developer
 
@@ -49,7 +49,7 @@ PetscErrorCode PetscGatherNumberOfMessages(MPI_Comm comm, const PetscMPIInt ifla
     }
   } else iflags_local = (PetscMPIInt *)iflags;
 
-  /* Post an allreduce to determine the numer of messages the current node will receive */
+  /* Post an allreduce to determine the number of messages the current MPI rank will receive */
   PetscCall(MPIU_Allreduce(iflags_local, recv_buf, size, MPI_INT, MPI_SUM, comm));
   *nrecvs = recv_buf[rank];
 
@@ -64,15 +64,15 @@ PetscErrorCode PetscGatherNumberOfMessages(MPI_Comm comm, const PetscMPIInt ifla
   Collective
 
   Input Parameters:
-+ comm      - Communicator
-. nsends    - number of messages that are to be sent.
-. nrecvs    - number of messages being received
-- ilengths  - an array of integers of length sizeof(comm)
++ comm     - Communicator
+. nsends   - number of messages that are to be sent.
+. nrecvs   - number of messages being received
+- ilengths - an array of integers of length sizeof(comm)
               a non zero `ilengths`[i] represent a message to i of length `ilengths`[i]
 
   Output Parameters:
-+ onodes    - list of ranks from which messages are expected
-- olengths  - corresponding message lengths
++ onodes   - list of ranks from which messages are expected
+- olengths - corresponding message lengths
 
   Level: developer
 
@@ -99,7 +99,7 @@ PetscErrorCode PetscGatherMessageLengths(MPI_Comm comm, PetscMPIInt nsends, Pets
 
   /* cannot use PetscMalloc3() here because in the call to MPI_Waitall() they MUST be contiguous */
   PetscCall(PetscMalloc2(nrecvs + nsends, &r_waits, nrecvs + nsends, &w_status));
-  s_waits = r_waits + nrecvs;
+  if (nrecvs + nsends) s_waits = r_waits + nrecvs;
 
   /* Post the Irecv to get the message length-info */
   PetscCall(PetscMalloc1(nrecvs, olengths));
@@ -155,7 +155,7 @@ PetscErrorCode PetscGatherNumberOfMessages_Private(MPI_Comm comm, const PetscMPI
     }
   } else iflags_local = (PetscMPIInt *)iflags;
 
-  /* Post an allreduce to determine the numer of messages the current node will receive */
+  /* Post an allreduce to determine the number of messages the current MPI rank will receive */
   PetscCall(MPIU_Allreduce(iflags_local, recv_buf, size, MPI_INT, MPI_SUM, comm));
   *nrecvs = recv_buf[rank];
 
@@ -177,7 +177,7 @@ PetscErrorCode PetscGatherMessageLengths_Private(MPI_Comm comm, PetscMPIInt nsen
 
   /* cannot use PetscMalloc3() here because in the call to MPI_Waitall() they MUST be contiguous */
   PetscCall(PetscMalloc2(nrecvs + nsends, &r_waits, nrecvs + nsends, &w_status));
-  s_waits = r_waits + nrecvs;
+  if (r_waits) s_waits = r_waits + nrecvs;
 
   /* Post the Irecv to get the message length-info */
   PetscCall(PetscMalloc1(nrecvs, olengths));

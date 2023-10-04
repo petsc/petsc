@@ -1,3 +1,4 @@
+#pragma once
 static const unsigned char PetscDrawCmap_plasma[256 - PETSC_DRAW_BASIC_COLORS][3] = {
   {12,  7,   134},
   {16,  7,   135},

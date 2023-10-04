@@ -12,7 +12,7 @@ class Configure(config.package.Package):
     self.liblist           = [['libchaco.a']]
     self.license           = 'http://www.cs.sandia.gov/web1400/1400_download.html'
     self.downloadonWindows = 1
-    self.requires32bitint  = 1;  # 1 means that the package will not work with 64 bit integers
+    self.requires32bitint  = 1;  # 1 means that the package will not work with 64-bit integers
     self.hastests          = 1
     return
 
@@ -44,8 +44,8 @@ class Configure(config.package.Package):
            self.setCompilers.AR+' '+self.setCompilers.AR_FLAGS+' '+'libchaco.'+
            self.setCompilers.AR_LIB_SUFFIX+' `ls */*.o |grep -v main/main.o`',
            self.setCompilers.RANLIB+' libchaco.'+self.setCompilers.AR_LIB_SUFFIX,
-           'mkdir -p '+os.path.join(self.installDir,self.libdir),
-           'cp libchaco.'+self.setCompilers.AR_LIB_SUFFIX+' '+os.path.join(self.installDir,self.libdir)
+           'mkdir -p '+self.libDir,
+           'cp libchaco.'+self.setCompilers.AR_LIB_SUFFIX+' '+self.libDir
           ], cwd=os.path.join(self.packageDir, 'code'), timeout=2500, log = self.log)
 
       except RuntimeError as e:

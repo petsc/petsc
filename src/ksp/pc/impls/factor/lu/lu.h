@@ -1,8 +1,7 @@
 /*
    Private data structure for LU preconditioner.
 */
-#ifndef __LU_H
-#define __LU_H
+#pragma once
 
 #include <../src/ksp/pc/impls/factor/factor.h>
 
@@ -12,5 +11,3 @@ typedef struct {
   PetscBool nonzerosalongdiagonal;
   PetscReal nonzerosalongdiagonaltol;
 } PC_LU;
-
-#endif

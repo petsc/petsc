@@ -3,21 +3,30 @@
 # Created: Mon Jun 20 16:50:07 2022 (-0400)
 # @author: Jacob Faibussowitsch
 """
-import inspect
-import functools
+from __future__ import annotations
 
-from ._patch   import Patch
-from ._src_pos import SourceLocation
+import copy
+import enum
+import inspect
+import contextlib
+
+from .._typing import *
+
+_T = TypeVar('_T')
+
+from ..util._color import Color
+
+from ._src_pos import SourceLocation, SourceRange
 
 class DiagnosticMapProxy:
-  __slots__ = '__diag_map', '__mro'
+  __slots__ = '_diag_map', '_mro'
 
-  def __init__(self, diag_map, mro):
-    self.__diag_map = diag_map
-    self.__mro      = mro
+  def __init__(self, diag_map: DiagnosticMap, mro: tuple[type, ...]) -> None:
+    self._diag_map = diag_map
+    self._mro      = mro
     return
 
-  def __fuzzy_get_attribute__(self, in_diags, in_attr):
+  def _fuzzy_get_attribute(self, in_diags: dict[str, str], in_attr: str) -> tuple[bool, str]:
     try:
       return True, in_diags[in_attr]
     except KeyError:
@@ -25,40 +34,42 @@ class DiagnosticMapProxy:
     attr_items = [v for k, v in in_diags.items() if k.endswith(in_attr)]
     if len(attr_items) == 1:
       return True, attr_items[0]
-    return False, None
+    return False, ''
 
-  def __getattr__(self, attr):
-    diag_map = self.__diag_map
+  def __getattr__(self, attr: str) -> str:
+    diag_map = self._diag_map
     try:
-      return getattr(diag_map, attr)
+      return TYPE_CAST(str, getattr(diag_map, attr))
     except AttributeError:
       pass
     diag_map_diags = diag_map._diags
-    for cls in self.__mro:
+    for cls in self._mro:
       try:
         sub_diag_map = diag_map_diags[cls.__qualname__]
       except KeyError:
         continue
-      success, ret = self.__fuzzy_get_attribute__(sub_diag_map, attr)
+      success, ret = self._fuzzy_get_attribute(sub_diag_map, attr)
       if success:
         return ret
     raise AttributeError(attr)
 
 class DiagnosticMap:
-  """
+  r"""
   A dict-like object that allows 'DiagnosticMap.my_diagnostic_name' to return 'my-diagnostic-name'
   """
   __slots__ = ('_diags',)
 
+  _diags: dict[str, dict[str, str]]
+
   @staticmethod
-  def __sanitize_input(input_it):
+  def _sanitize_input(input_it: Iterable[str]) -> dict[str, str]:
     return {attr.replace('-', '_') : attr for attr in input_it}
 
-  def __init__(self):
+  def __init__(self) -> None:
     self._diags = {'__general' : {}}
     return
 
-  def __getattr__(self, attr):
+  def __getattr__(self, attr: str) -> str:
     diags = self._diags['__general']
     try:
       return diags[attr]
@@ -68,9 +79,8 @@ class DiagnosticMap:
         return attr_items[0]
     raise AttributeError(attr)
 
-  def __get__(self, obj, objtype=None):
-    """
-    We need to do MRO-aware fuzzy lookup. In order to do that we need know about the calling class's
+  def __get__(self, obj: Any, objtype: Optional[type] = None) -> DiagnosticMapProxy:
+    r"""We need to do MRO-aware fuzzy lookup. In order to do that we need know about the calling class's
     type, which is not passed to the regular __getattr__(). But type information *is* passed to
     __get__() (which is called on attribute access), so the workaround is to create a proxy object
     that ends up calling our own __getattr__().
@@ -94,31 +104,60 @@ class DiagnosticMap:
     So we need to first search our own classes namespace, and then search each of our base classes
     namespaces before finally considering children.
     """
+    assert objtype is not None
     return DiagnosticMapProxy(self, inspect.getmro(objtype))
 
-  def update(self, obj, other, **kwargs):
-    if isinstance(other, dict):
-      dmap = self.__sanitize_input(other.keys())
-    elif isinstance(other, (list, tuple)) or inspect.isgenerator(other):
-      dmap = self.__sanitize_input(other)
-    else:
+  def update(self, obj: Any, other: Iterable[str], **kwargs) -> None:
+    if not isinstance(other, (list, tuple)) or inspect.isgenerator(other):
       raise ValueError(type(other))
+
+    dmap = self._sanitize_input(other)
     self._diags['__general'].update(dmap, **kwargs)
     qual_name = obj.__qualname__
     if qual_name not in self._diags:
       self._diags[qual_name] = {}
-    return self._diags[qual_name].update(dmap, **kwargs)
+    self._diags[qual_name].update(dmap, **kwargs)
+    return
 
-class _DiagnosticsManager:
-  __slots__   = 'disabled', 'flagprefix'
-  _registered = {}
+class DiagnosticsManagerCls:
+  __slots__                   = 'disabled', 'flagprefix'
+  _registered: dict[str, str] = {}
+
+  disabled: set[str]
+  flagprefix: str
 
   @classmethod
-  def registered(cls):
+  def registered(cls) -> dict[str, str]:
+    r"""Return the registered diagnostics
+
+    Returns
+    -------
+    registered :
+      the set of registered diagnostics
+    """
     return cls._registered
 
   @staticmethod
-  def __expand_flag(flag):
+  def _expand_flag(flag: Union[Iterable[str], str]) -> str:
+    r"""Expand a flag
+
+    Transforms `['foo', 'bar', 'baz']` into `'foo-bar-baz'`
+
+    Parameters
+    ----------
+    flag :
+      the flag parts to expand
+
+    Returns
+    -------
+    flag :
+      the expanded flag
+
+    Raises
+    ------
+    ValueError
+      if flag is an iterable, but cannot be joined
+    """
     if not isinstance(flag, str):
       try:
         flag = '-'.join(flag)
@@ -127,75 +166,294 @@ class _DiagnosticsManager:
     return flag
 
   @classmethod
-  def flag_prefix(cls, obj):
+  def flag_prefix(cls, obj: object) -> Callable[[str], str]:
+    r"""Return the flag prefix
+
+    Parameters
+    ----------
+    obj :
+      a class instance which may or may implement `__diagnostic_prefix__(flag: str) -> str`
+
+    Returns
+    -------
+    prefix :
+      the prefix
+
+    Notes
+    -----
+    Implementing `__diagnostic_prefix__()` is optional, in which case this routine returns an identity
+    lambda
+    """
     return getattr(obj, '__diagnostic_prefix__', lambda f: f)
 
   @classmethod
-  def check_flag(cls, flag):
-    flag = cls.__expand_flag(flag)
+  def check_flag(cls, flag: str) -> str:
+    r"""Check a flag for validity and expand it
+
+    Parameters
+    ----------
+    flag :
+      the flag to expand
+
+    Returns
+    -------
+    flag :
+      the expanded flag
+
+    Raises
+    ------
+    ValueError
+      if the flag is not registered with the `DiagnosticManager`
+    """
+    flag = cls._expand_flag(flag)
     if flag not in cls._registered:
       raise ValueError(f'Flag \'{flag}\' is not registered with {cls}')
     return flag
 
   @classmethod
-  def register(cls, *args):
-    def decorator(symbol):
-      if inspect.isclass(symbol):
-        wrapper = symbol
-      else:
-        @functools.wraps(symbol)
-        def wrapper(*args, **kwargs):
-          return symbol(*args, **kwargs)
+  def _inject_diag_map(cls, symbol: _T, diag_pairs: Iterable[tuple[str, str]]) -> _T:
+    r"""Does the registering and injecting of the `DiagnosticMap` into some symbol
 
-      symbol_flag_prefix = cls.flag_prefix(wrapper)
-      diag_list          = [(cls.__expand_flag(symbol_flag_prefix(d)), h.casefold()) for d, h in args]
-      if not hasattr(wrapper, 'diags'):
-        wrapper.diags = DiagnosticMap()
-      wrapper.diags.update(wrapper, [d for d, _ in diag_list])
-      cls._registered.update(diag_list)
-      return wrapper
+    Parameters
+    ----------
+    symbol :
+      the symbol to inject the `DiagnosticMap` into
+    diag_pairs :
+      an iterable of pairs of flag - description which should be injected
+
+    Returns
+    -------
+    symbol :
+      the symbol with the injected map
+
+    Notes
+    -----
+    This registeres the flags in `diag_pairs` will be registered with the `DiagnosticsManager`. After
+    this returns `symbol` will have a member `diags` through which the diagnostics can be accessed. So
+    if do
+    ```
+    DiagnosticManager.register('foo-bar-baz', 'check a foo, a bar, and a baz')
+    def MyClass:
+      ...
+      def some_func(self, ...):
+        ...
+        diag = self.diags.foo_bar_baz # can access by replacing '-' with '_' in flag
+    ```
+
+    This function appears to return a `_T` unchanged. But what we really want to do is
+    ```
+    _T = TypeVar('_T')
+
+    class HasDiagMap(Protocol):
+      diags: DiagnosticMap
+
+    def _inject_diag_map(symbol: _T, ...) -> Intersection[HasDiagMap, [_T]]:
+      ...
+    ```
+    I.e. the returned type is *both* whatever it was before, but it now also obeys the diag-map
+    protocol, i.e. it has a member `diags` which is a `DiagnosticMap`. But unfortunately Python has
+    no such 'Intersection' type yet so we need to annotate all the types by hand...
+    """
+    diag_attr          = 'diags'
+    symbol_flag_prefix = cls.flag_prefix(symbol)
+    expanded_diags     = [
+      (cls._expand_flag(symbol_flag_prefix(d)), h.casefold()) for d, h in diag_pairs
+    ]
+    if not hasattr(symbol, diag_attr):
+      setattr(symbol, diag_attr, DiagnosticMap())
+    getattr(symbol, diag_attr).update(symbol, [d for d, _ in expanded_diags])
+    cls._registered.update(expanded_diags)
+    return symbol
+
+  @classmethod
+  def register(cls, *args: tuple[str, str]) -> Callable[[_T], _T]:
+    def decorator(symbol: _T) -> _T:
+      return cls._inject_diag_map(symbol, args)
     return decorator
 
-  def __init__(self, flagprefix='-f'):
+  def __init__(self, flagprefix: str = '-f') -> None:
+    r"""Construct the `DiagnosticManager`
+
+    Parameters
+    ----------
+    flagprefix : '-f', optional
+      the base flag prefix to prepend to all flags
+    """
     self.disabled   = set()
     self.flagprefix = flagprefix if flagprefix.startswith('-') else '-' + flagprefix
     return
 
+  def disable(self, flag: str) -> None:
+    r"""Disable a flag
 
-  def disable(self, flag):
+    Parameters
+    ----------
+    flag :
+      the flag to disable
+    """
     self.disabled.add(self.check_flag(flag))
     return
 
-  def enable(self, flag):
+  def enable(self, flag: str) -> None:
+    r"""Enable a flag
+
+    Parameters
+    ----------
+    flag :
+      the flag to enable
+    """
     self.disabled.discard(self.check_flag(flag))
     return
 
-  def set(self, flag, value):
-    return self.enable(flag) if value else self.disable(flag)
+  def set(self, flag: str, value: bool) -> None:
+    r"""Set enablement of a flag
 
-  def disabled_for(self, flag):
+    Parameters
+    ----------
+    flag :
+      the flag to set
+    value :
+      True to enable, False to disable
+    """
+    if value:
+      self.enable(flag)
+    else:
+      self.disable(flag)
+    return
+
+  def disabled_for(self, flag: str) -> bool:
+    r"""Is `flag` disabled?
+
+    Parameters
+    ----------
+    flag :
+      the flag to check
+
+    Returns
+    -------
+    disabled :
+      True if `flag` is disabled, False otherwise
+    """
     return self.check_flag(flag) in self.disabled
 
-  def enabled_for(self, flag):
+  def enabled_for(self, flag: str) -> bool:
+    r"""Is `flag` enabled?
+
+    Parameters
+    ----------
+    flag :
+      the flag to check
+
+    Returns
+    -------
+    enabled :
+      True if `flag` is enabled, False otherwise
+    """
     return not self.disabled_for(flag)
 
-  def make_command_line_flag(self, flag):
+  def make_command_line_flag(self, flag: str) -> str:
+    r"""Build a command line flag
+
+    Parameters
+    ----------
+    flag :
+      the flag to build for
+
+    Returns
+    -------
+    ret :
+      the full command line flag
+    """
     return f'{self.flagprefix}{self.check_flag(flag)}'
 
-DiagnosticManager = _DiagnosticsManager()
+  @contextlib.contextmanager
+  def push_from(self, dict_like: Mapping[str, Collection[re.Pattern[str]]]):
+    r"""Temporarily enable or disable flags based on `dict_like`
+
+    Parameters
+    ----------
+    dict_like :
+      a dictionary of actions to take
+
+    Yields
+    ------
+    self :
+      the object
+
+    Raises
+    ------
+    ValueError
+      if an unknown key is encountered
+    """
+    if dict_like:
+      dispatcher   = {
+        'disable' : self.disabled.update,
+        'ignore'  : self.disabled.update
+      }
+      reg          = self.registered().keys()
+      old_disabled = copy.deepcopy(self.disabled)
+      for key, values in dict_like.items():
+        mod_flags = [f for f in reg for matcher in values if matcher.match(f)]
+        try:
+          dispatcher[key](mod_flags)
+        except KeyError as ke:
+          raise ValueError(
+            f'Unknown pragma key \'{key}\', expected one of: {list(dispatcher.keys())}'
+          ) from ke
+    try:
+      yield self
+    finally:
+      if dict_like:
+        self.disabled = old_disabled
+
+DiagnosticManager = DiagnosticsManagerCls()
+
+@enum.unique
+class DiagnosticKind(enum.Enum):
+  ERROR   = enum.auto()
+  WARNING = enum.auto()
+
+  def color(self) -> str:
+    if self == DiagnosticKind.ERROR:
+      return Color.bright_red()
+    elif self == DiagnosticKind.WARNING:
+      return Color.bright_yellow()
+    else:
+      raise ValueError(str(self))
 
 class Diagnostic:
   FLAG_SUBST = r'%DIAG_FLAG%'
-  __slots__  = 'flag', 'message', 'location', 'patch', 'clflag', 'notes'
+  Kind       = DiagnosticKind
+  __slots__  = 'flag', 'message', 'location', 'patch', 'clflag', 'notes', 'kind'
 
-  def __init__(self, flag, message, location, patch=None, notes=None):
+  flag: str
+  message: str
+  location: SourceLocation
+  patch: Optional[Patch]
+  clflag: str
+  notes: list[tuple[SourceLocationLike, str]]
+  kind: DiagnosticKind
+
+  def __init__(self, kind: DiagnosticKind, flag: str, message: str, location: SourceLocationLike, patch: Optional[Patch] = None, notes: Optional[list[tuple[SourceLocationLike, str]]] = None) -> None:
+    r"""Construct a `Diagnostic`
+
+    Parameters
+    ----------
+    kind :
+      the kind of `Diagnostic` to create
+    flag :
+      the flag to attribute the diagnostic to
+    message :
+      the informative message
+    location :
+      the location to attribute the diagnostic to
+    patch :
+      a patch to automatically fix the diagnostic
+    notes :
+      a list of notes to initialize the diagnostic with
+    """
     if notes is None:
       notes = []
-    else:
-      assert isinstance(notes, list)
-
-    if patch is not None:
-      assert isinstance(patch, Patch)
 
     self.flag     = DiagnosticManager.check_flag(flag)
     self.message  = str(message)
@@ -203,12 +461,100 @@ class Diagnostic:
     self.patch    = patch
     self.clflag   = f' [{DiagnosticManager.make_command_line_flag(self.flag)}]'
     self.notes    = notes
+    self.kind     = kind
     return
 
-  def __repr__(self):
+  @staticmethod
+  def make_message_from_formattable(message: str, crange: Optional[Formattable] = None, num_context: int = 2, **kwargs) -> str:
+    r"""Make a formatted error message from a formattable object
+
+    Parameters
+    ----------
+    message :
+      the base message
+    crange : optional
+      the formattable object, which must have a method `formatted(num_context: int, **kwargs) -> str`
+      whose formatted text is optionally appended to the message
+    num_context : optional
+      if crange is given, the number of context lines to append
+    **kwargs : optional
+      if crange is given, additional keyword arguments to pass to `SourceRange.formatted()`
+
+    Returns
+    -------
+    mess :
+      the error message
+    """
+    if crange is None:
+      return message
+    return f'{message}:\n{crange.formatted(num_context=num_context, **kwargs)}'
+
+  @classmethod
+  def from_source_range(cls, kind: DiagnosticKind, diag_flag: str, msg: str, src_range: SourceRangeLike, patch: Optional[Patch] = None, **kwargs) -> Diagnostic:
+    r"""Construct a `Diagnostic` from a source_range
+
+    Parameters
+    ----------
+    kind :
+      the `DiagnostiKind`
+    diag_flag :
+      the diagnostic flag to display
+    msg :
+      the base message text
+    src_range :
+      the source range to generate the message from
+    patch : optional
+      the patch to create a fixit form
+    **kwargs :
+      additional keyword arguments to pass to `src_range.formatted()`
+
+    Returns
+    -------
+    diag :
+      the constructed `Diagnostic`
+
+    Notes
+    -----
+    This is the de-facto standard factory for creating `Diagnostic`s as it ensures that the messages
+    are all similarly formatted and displayed. The vast majority of `Diagnostic`s are created via this
+    function
+    """
+    src_range = SourceRange.cast(src_range)
+    return cls(
+      kind, diag_flag,
+      cls.make_message_from_formattable(msg, crange=src_range, **kwargs),
+      src_range.start,
+      patch=patch
+    )
+
+  def __repr__(self) -> str:
     return f'<flag: {self.clflag}, patch: {self.patch}, message: {self.message}, notes: {self.notes}>'
 
-  def add_note(self, note, location = None):
+  def formatted_header(self) -> str:
+    r"""Return the formatted header for this diagnostic, suitable for output
+
+    Returns
+    -------
+    hdr :
+      the formatted header
+    """
+    return f'{self.kind.color()}{self.location}: {self.kind.name.casefold()}:{Color.reset()} {self.format_message()}'
+
+  def add_note(self, note: str, location: Optional[SourceLocationLike] = None) -> Diagnostic:
+    r"""Add a note to a diagnostic
+
+    Parameters
+    ----------
+    note :
+      a useful additional message
+    location : optional
+      a location to attribute the note to, if not given, the location of the diagnostic is used
+
+    Returns
+    -------
+    self :
+      the diagnostic object
+    """
     if location is None:
       location = self.location
     else:
@@ -217,7 +563,14 @@ class Diagnostic:
     self.notes.append((location, note))
     return self
 
-  def format_message(self):
+  def format_message(self) -> str:
+    r"""Format the diagnostic
+
+    Returns
+    -------
+    ret :
+      the formatted diagnostic message, suitable for display to the user
+    """
     message = self.message
     clflag  = self.clflag
     if self.FLAG_SUBST in message:
@@ -234,7 +587,15 @@ class Diagnostic:
     if self.notes:
       notes_tmp = '\n\n'.join(f'{loc} Note: {note}' for loc, note in self.notes)
       message   = f'{message}\n\n{notes_tmp}'
+    assert not message.endswith('\n')
     return message
 
-  def disabled(self):
+  def disabled(self) -> bool:
+    r"""Is the flag for this diagnostic disabled?
+
+    Returns
+    -------
+    disabled :
+      True if this diagnostic is disabled, False otherwise
+    """
     return DiagnosticManager.disabled_for(self.flag.replace('_', '-'))

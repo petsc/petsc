@@ -13,14 +13,13 @@ PetscLogEvent CHARACTERISTIC_FullTimeLocal, CHARACTERISTIC_FullTimeRemote, CHARA
 PetscFunctionList CharacteristicList              = NULL;
 PetscBool         CharacteristicRegisterAllCalled = PETSC_FALSE;
 
-PetscErrorCode DMDAGetNeighborsRank(DM, PetscMPIInt[]);
-PetscInt       DMDAGetNeighborRelative(DM, PetscReal, PetscReal);
-PetscErrorCode DMDAMapToPeriodicDomain(DM, PetscScalar[]);
+static PetscErrorCode DMDAGetNeighborsRank(DM, PetscMPIInt[]);
+static PetscInt       DMDAGetNeighborRelative(DM, PetscReal, PetscReal);
 
-PetscErrorCode CharacteristicHeapSort(Characteristic, Queue, PetscInt);
-PetscErrorCode CharacteristicSiftDown(Characteristic, Queue, PetscInt, PetscInt);
+static PetscErrorCode CharacteristicHeapSort(Characteristic, Queue, PetscInt);
+static PetscErrorCode CharacteristicSiftDown(Characteristic, Queue, PetscInt, PetscInt);
 
-PetscErrorCode CharacteristicView(Characteristic c, PetscViewer viewer)
+static PetscErrorCode CharacteristicView(Characteristic c, PetscViewer viewer)
 {
   PetscBool iascii;
 
@@ -63,7 +62,7 @@ PetscErrorCode CharacteristicCreate(MPI_Comm comm, Characteristic *c)
   Characteristic newC;
 
   PetscFunctionBegin;
-  PetscValidPointer(c, 2);
+  PetscAssertPointer(c, 2);
   *c = NULL;
   PetscCall(CharacteristicInitializePackage());
 
@@ -109,22 +108,22 @@ PetscErrorCode CharacteristicCreate(MPI_Comm comm, Characteristic *c)
 }
 
 /*@C
-   CharacteristicSetType - Builds Characteristic for a particular solver.
+  CharacteristicSetType - Builds Characteristic for a particular solver.
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  c    - the method of characteristics context
--  type - a known method
+  Input Parameters:
++ c    - the method of characteristics context
+- type - a known method
 
-   Options Database Key:
-.  -characteristic_type <method> - Sets the method; use -help for a list
+  Options Database Key:
+. -characteristic_type <method> - Sets the method; use -help for a list
     of available methods
 
   Level: intermediate
 
-   Notes:
-   See "include/petsccharacteristic.h" for available methods
+  Notes:
+  See "include/petsccharacteristic.h" for available methods
 
   Normally, it is best to use the CharacteristicSetFromOptions() command and
   then set the Characteristic type from the options database rather than by using
@@ -138,7 +137,7 @@ PetscErrorCode CharacteristicCreate(MPI_Comm comm, Characteristic *c)
   choosing the appropriate method.  In other words, this routine is
   not for beginners.
 
-.seealso: [](chapter_ts), `CharacteristicType`
+.seealso: [](ch_ts), `CharacteristicType`
 @*/
 PetscErrorCode CharacteristicSetType(Characteristic c, CharacteristicType type)
 {
@@ -147,7 +146,7 @@ PetscErrorCode CharacteristicSetType(Characteristic c, CharacteristicType type)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(c, CHARACTERISTIC_CLASSID, 1);
-  PetscValidCharPointer(type, 2);
+  PetscAssertPointer(type, 2);
 
   PetscCall(PetscObjectTypeCompare((PetscObject)c, type, &match));
   if (match) PetscFunctionReturn(PETSC_SUCCESS);
@@ -160,7 +159,7 @@ PetscErrorCode CharacteristicSetType(Characteristic c, CharacteristicType type)
   }
 
   PetscCall(PetscFunctionListFind(CharacteristicList, type, &r));
-  PetscCheck(r, PETSC_COMM_SELF, PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown Characteristic type given: %s", type);
+  PetscCheck(r, PetscObjectComm((PetscObject)c), PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown Characteristic type given: %s", type);
   c->setupcalled = 0;
   PetscCall((*r)(c));
   PetscCall(PetscObjectChangeTypeName((PetscObject)c, type));
@@ -168,17 +167,17 @@ PetscErrorCode CharacteristicSetType(Characteristic c, CharacteristicType type)
 }
 
 /*@
-   CharacteristicSetUp - Sets up the internal data structures for the
-   later use of an iterative solver.
+  CharacteristicSetUp - Sets up the internal data structures for the
+  later use of an iterative solver.
 
-   Collective
+  Collective
 
-   Input Parameter:
-.  ksp   - iterative context obtained from CharacteristicCreate()
+  Input Parameter:
+. c - iterative context obtained from CharacteristicCreate()
 
-   Level: developer
+  Level: developer
 
-.seealso: [](chapter_ts), `CharacteristicCreate()`, `CharacteristicSolve()`, `CharacteristicDestroy()`
+.seealso: [](ch_ts), `CharacteristicCreate()`, `CharacteristicSolve()`, `CharacteristicDestroy()`
 @*/
 PetscErrorCode CharacteristicSetUp(Characteristic c)
 {
@@ -199,15 +198,15 @@ PetscErrorCode CharacteristicSetUp(Characteristic c)
 /*@C
   CharacteristicRegister -  Adds a solver to the method of characteristics package.
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  sname - name of a new user-defined solver
--  function - routine to create method context
+  Input Parameters:
++ sname    - name of a new user-defined solver
+- function - routine to create method context
 
   Level: advanced
 
-  Sample usage:
+  Example Usage:
 .vb
     CharacteristicRegister("my_char", MyCharCreate);
 .ve
@@ -217,15 +216,15 @@ PetscErrorCode CharacteristicSetUp(Characteristic c)
     CharacteristicCreate(MPI_Comm, Characteristic* &char);
     CharacteristicSetType(char,"my_char");
 .ve
-   or at runtime via the option
+  or at runtime via the option
 .vb
     -characteristic_type my_char
 .ve
 
-   Notes:
-   CharacteristicRegister() may be called multiple times to add several user-defined solvers.
+  Notes:
+  CharacteristicRegister() may be called multiple times to add several user-defined solvers.
 
-.seealso: [](chapter_ts), `CharacteristicRegisterAll()`, `CharacteristicRegisterDestroy()`
+.seealso: [](ch_ts), `CharacteristicRegisterAll()`, `CharacteristicRegisterDestroy()`
 @*/
 PetscErrorCode CharacteristicRegister(const char sname[], PetscErrorCode (*function)(Characteristic))
 {
@@ -632,7 +631,7 @@ PetscErrorCode CharacteristicGetValuesEnd(Characteristic c)
 /*
   Based on code from http://linux.wku.edu/~lamonml/algor/sort/heap.html
 */
-PetscErrorCode CharacteristicHeapSort(Characteristic c, Queue queue, PetscInt size)
+static PetscErrorCode CharacteristicHeapSort(Characteristic c, Queue queue, PetscInt size)
 /*---------------------------------------------------------------------*/
 {
   CharacteristicPointDA2D temp;
@@ -663,7 +662,7 @@ PetscErrorCode CharacteristicHeapSort(Characteristic c, Queue queue, PetscInt si
 /*
   Based on code from http://linux.wku.edu/~lamonml/algor/sort/heap.html
 */
-PetscErrorCode CharacteristicSiftDown(Characteristic c, Queue queue, PetscInt root, PetscInt bottom)
+static PetscErrorCode CharacteristicSiftDown(Characteristic c, Queue queue, PetscInt root, PetscInt bottom)
 /*---------------------------------------------------------------------*/
 {
   PetscBool               done = PETSC_FALSE;
@@ -687,7 +686,7 @@ PetscErrorCode CharacteristicSiftDown(Characteristic c, Queue queue, PetscInt ro
 }
 
 /* [center, left, top-left, top, top-right, right, bottom-right, bottom, bottom-left] */
-PetscErrorCode DMDAGetNeighborsRank(DM da, PetscMPIInt neighbors[])
+static PetscErrorCode DMDAGetNeighborsRank(DM da, PetscMPIInt neighbors[])
 {
   DMBoundaryType bx, by;
   PetscBool      IPeriodic = PETSC_FALSE, JPeriodic = PETSC_FALSE;
@@ -756,7 +755,7 @@ PetscErrorCode DMDAGetNeighborsRank(DM da, PetscMPIInt neighbors[])
     8 | 7 | 6
       |   |
 */
-PetscInt DMDAGetNeighborRelative(DM da, PetscReal ir, PetscReal jr)
+static PetscInt DMDAGetNeighborRelative(DM da, PetscReal ir, PetscReal jr)
 {
   DMDALocalInfo info;
   PetscReal     is, ie, js, je;

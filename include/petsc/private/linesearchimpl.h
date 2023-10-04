@@ -1,5 +1,4 @@
-#ifndef __LINESEARCHIMPL_H
-#define __LINESEARCHIMPL_H
+#pragma once
 
 #include <petscsnes.h>
 #include <petsc/private/petscimpl.h>
@@ -73,5 +72,3 @@ struct _p_LineSearch {
   void    *monitorcontext[MAXSNESLSMONITORS];                               /* monitor context */
   PetscInt numbermonitors;                                                  /* number of monitors */
 };
-
-#endif

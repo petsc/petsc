@@ -169,24 +169,24 @@ PETSC_EXTERN PetscErrorCode PetscDrawCreate_Null(PetscDraw draw)
   draw->port_yr = 1;
   PetscCall(PetscDrawDestroy(&draw->popup));
 
-  PetscCall(PetscMemcpy(draw->ops, &DvOps, sizeof(DvOps)));
-  draw->data = NULL;
+  draw->ops[0] = DvOps;
+  draw->data   = NULL;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
-   PetscDrawOpenNull - Opens a null drawing context. All draw commands to
-   it are ignored.
+  PetscDrawOpenNull - Opens a null drawing context. All draw commands to
+  it are ignored.
 
-   Input Parameter:
-.  comm - MPI communicator
+  Input Parameter:
+. comm - MPI communicator
 
-   Output Parameter:
-.  draw - the drawing context
+  Output Parameter:
+. win - the drawing context
 
-   Level: advanced
+  Level: advanced
 
-.seealso: `PetscDraw`, `PetscDrawIsNull()`, `PETSC_DRAW_NULL`, `PetscDrawOpenX()`, `PetscDrawIsNull()`
+.seealso: `PetscDraw`, `PetscDrawIsNull()`, `PETSC_DRAW_NULL`, `PetscDrawOpenX()`
 @*/
 PetscErrorCode PetscDrawOpenNull(MPI_Comm comm, PetscDraw *win)
 {
@@ -197,25 +197,25 @@ PetscErrorCode PetscDrawOpenNull(MPI_Comm comm, PetscDraw *win)
 }
 
 /*@
-   PetscDrawIsNull - Returns `PETSC_TRUE` if draw is a null draw object.
+  PetscDrawIsNull - Returns `PETSC_TRUE` if draw is a null draw object.
 
-   Not Collective
+  Not Collective
 
-   Input Parameter:
-.  draw - the draw context
+  Input Parameter:
+. draw - the draw context
 
-   Output Parameter:
-.  yes - `PETSC_TRUE` if it is a null draw object; otherwise `PETSC_FALSE`
+  Output Parameter:
+. yes - `PETSC_TRUE` if it is a null draw object; otherwise `PETSC_FALSE`
 
-   Level: advanced
+  Level: advanced
 
-.seealso: `PetscDraw`, `PETSC_DRAW_NULL`, `PetscDrawOpenX()`, `PetscDrawIsNull()`
+.seealso: `PetscDraw`, `PETSC_DRAW_NULL`, `PetscDrawOpenX()`
 @*/
 PetscErrorCode PetscDrawIsNull(PetscDraw draw, PetscBool *yes)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw, PETSC_DRAW_CLASSID, 1);
-  PetscValidBoolPointer(yes, 2);
+  PetscAssertPointer(yes, 2);
   PetscCall(PetscObjectTypeCompare((PetscObject)draw, PETSC_DRAW_NULL, yes));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

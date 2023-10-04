@@ -3,60 +3,111 @@
 # Created: Mon Jun 20 20:07:30 2022 (-0400)
 # @author: Jacob Faibussowitsch
 """
-import clang.cindex as clx
+from __future__ import annotations
 
-classid_map        = {}
-check_function_map = {}
-check_doc_map      = {}
+from .._typing import *
 
-def filter_check_function_map(filter_checks):
+import clang.cindex as clx # type: ignore[import]
+
+_T = TypeVar('_T')
+_U = TypeVar('_U')
+
+classid_map: dict[str, str]                     = {}
+check_function_map: dict[str, FunctionChecker]  = {}
+check_doc_map: dict[clx.CursorKind, DocChecker] = {}
+
+def filter_check_function_map(allowed_symbol_names: Collection[str]) -> None:
+  r"""Remove checks from check_function_map
+
+  Parameters
+  ----------
+  allowed_symbol_names :
+    a set of symbol names
+
+  Notes
+  -----
+  After this routine returns, the check function map will only contain functions whose symbol name
+  was in `allowed_symbol_names`
   """
-  Remove checks from check_function_map if they are not in filterChecks
-  """
-  if filter_checks:
+  if allowed_symbol_names:
     global check_function_map
 
     # note the list, this makes a copy of the keys allowing us to delete entries "in place"
     for key in list(check_function_map.keys()):
-      if key not in filter_checks:
+      if key not in allowed_symbol_names:
         del check_function_map[key]
   return
 
-def __register_base(key, value, target_map, exist_ok):
-  if not exist_ok:
-    assert key not in target_map
+def __register_base(key: _T, value: _U, target_map: dict[_T, _U], exist_ok: bool) -> None:
+  if key in target_map:
+    if not exist_ok:
+      raise RuntimeError(f'Key {key} already registered with check map')
 
   target_map[key] = value
   return
 
-def register_classid(struct_name, classid_name, exist_ok=False):
-  assert isinstance(struct_name, str)
-  assert isinstance(classid_name, str)
+def register_classid(struct_name: str, classid_name: str, exist_ok: bool = False) -> None:
+  r"""Register a classid to match struct names
 
+  Parameters
+  ----------
+  struct_name :
+    the fully qualified structure typename to match against, e.g. _p_PetscObject *
+  classid_name :
+    the string name of the classid variable, e.g. "KSP_CLASSID"
+  exist_ok : optional
+    is it ok if there already exists a classid for this struct?
+
+  Raises
+  ------
+  RuntimeError
+    if a classid has already been registered for `struct_name` and `exist_ok` is False
+  """
   __register_base(struct_name, classid_name, classid_map, exist_ok)
   return
 
-def register_symbol_check(name, function, exist_ok=False):
-  assert isinstance(name, str)
-  assert callable(function)
+def register_symbol_check(name: str, function: FunctionChecker, exist_ok: bool = False) -> None:
+  r"""Register a symbol checking function
 
+  Parameters
+  ----------
+  name :
+    the name of the symbol this checker will trigger on
+  function :
+    the function to check the symbol
+  exist_ok : optional
+    is it ok if there already exists a checker for this kind?
+
+  Raises
+  ------
+  RuntimeError
+    if a function has already been registered for `name` and `exist_ok` is False
+  """
   __register_base(name, function, check_function_map, exist_ok)
   return
 
-def register_doc_check(cursor_kind, function, exist_ok=False):
-  assert isinstance(cursor_kind, clx.CursorKind)
-  assert callable(function)
+def register_doc_check(cursor_kind: clx.CursorKind, function: DocChecker, exist_ok: bool = False) -> None:
+  r"""Register a docs-checking function
 
+  Parameters
+  ----------
+  cursor_kind :
+    the kind of cursor this docs checker will trigger on, (e.g. functions, enums, etc.)
+  function :
+    the function to check the docstring
+  exist_ok : optional
+    is it ok if there already exists a checker for this kind?
+
+  Raises
+  ------
+  RuntimeError
+    if a function has already been registered for `cursor_kind` and `exist_ok` is False
+  """
   __register_base(cursor_kind, function, check_doc_map, exist_ok)
   return
 
-def __register_all_base(input_map, register):
-  for key, value in input_map.items():
-    register(key, value)
-  return
-
-def __register_all_classids():
-  """
+def __register_all_classids() -> None:
+  r"""
   Adding new classes
   ------------------
 
@@ -115,6 +166,7 @@ def __register_all_classids():
     "_p_PetscFV *"                : "PETSCFV_CLASSID",
     "_p_PetscLimiter *"           : "PETSCLIMITER_CLASSID",
     "_p_PetscLinterDummyObj *"    : "PETSC_LINTER_DUMMY_OBJECT",
+    "_p_PetscLogHandler *"        : "PETSCLOGHANDLER_CLASSID",
     "_p_PetscObject *"            : "PETSC_OBJECT_CLASSID",
     "_p_PetscPartitioner *"       : "PETSCPARTITIONER_CLASSID",
     "_p_PetscQuadrature *"        : "PETSCQUADRATURE_CLASSID",
@@ -135,22 +187,18 @@ def __register_all_classids():
     "_p_Vec *"                    : "VEC_CLASSID",
     "_p_VecTagger *"              : "VEC_TAGGER_CLASSID",
   }
-  __register_all_base(default_classid_map, register_classid)
+  for key, value in default_classid_map.items():
+    register_classid(key, value)
   return
 
-def __register_all_symbol_checks():
+def __register_all_symbol_checks() -> None:
   from . import _code
 
   default_checks = {
     "PetscValidHeaderSpecificType"       : _code.checkPetscValidHeaderSpecificType,
     "PetscValidHeaderSpecific"           : _code.checkPetscValidHeaderSpecific,
     "PetscValidHeader"                   : _code.checkPetscValidHeader,
-    "PetscValidPointer"                  : _code.checkPetscValidPointer,
-    "PetscValidCharPointer"              : _code.checkPetscValidCharPointer,
-    "PetscValidIntPointer"               : _code.checkPetscValidIntPointer,
-    "PetscValidBoolPointer"              : _code.checkPetscValidBoolPointer,
-    "PetscValidScalarPointer"            : _code.checkPetscValidScalarPointer,
-    "PetscValidRealPointer"              : _code.checkPetscValidRealPointer,
+    "PetscAssertPointer"                 : _code.check_obj_idx_generic,
     "PetscCheckSameType"                 : _code.check_obj_idx_generic,
     "PetscValidType"                     : _code.check_obj_idx_generic,
     "PetscCheckSameComm"                 : _code.check_obj_idx_generic,
@@ -173,20 +221,22 @@ def __register_all_symbol_checks():
     "PetscCheckCompatibleDeviceContexts" : _code.check_obj_idx_generic,
     "PetscSFCheckGraphSet"               : _code.check_obj_idx_generic,
   }
-  __register_all_base(default_checks, register_symbol_check)
+  for key, value in default_checks.items():
+    register_symbol_check(key, value)
   return
 
-def __register_all_doc_checks():
+def __register_all_doc_checks() -> None:
   from . import _docs
 
   default_checks = {
     clx.CursorKind.FUNCTION_DECL : _docs.check_petsc_function_docstring,
     clx.CursorKind.ENUM_DECL     : _docs.check_petsc_enum_docstring,
   }
-  __register_all_base(default_checks, register_doc_check)
+  for key, value in default_checks.items():
+    register_doc_check(key, value)
   return
 
-def __register_all():
+def __register_all() -> None:
   __register_all_classids()
   __register_all_symbol_checks()
   __register_all_doc_checks()

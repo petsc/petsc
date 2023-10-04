@@ -1,70 +1,101 @@
   Residual norms for laplace_ solve.
-  0 KSP preconditioned resid norm 0.000000000000e+00 true resid norm 0.000000000000e+00 ||r(i)||/||b||            nan
+  0 KSP preconditioned resid norm 0.000000000000e+00 true resid norm 0.000000000000e+00 ||r(i)||/||b|| inf
 Linear laplace_ solve converged due to CONVERGED_ATOL iterations 0
   Residual norms for laplace_ solve.
-  0 KSP preconditioned resid norm 1.599556887302e-03 true resid norm 6.332573977646e-03 ||r(i)||/||b|| 1.000000000000e+00
-  1 KSP preconditioned resid norm 2.450568845173e-05 true resid norm 2.427556813898e-05 ||r(i)||/||b|| 3.833444066295e-03
-  2 KSP preconditioned resid norm 1.346676384199e-07 true resid norm 5.006978829999e-07 ||r(i)||/||b|| 7.906704047476e-05
-  3 KSP preconditioned resid norm 5.026754472170e-09 true resid norm 5.647483882046e-09 ||r(i)||/||b|| 8.918149084371e-07
+  0 KSP preconditioned resid norm 1.602461993477e-03 true resid norm 6.332573977646e-03 ||r(i)||/||b|| 1.000000000000e+00
+  1 KSP preconditioned resid norm 5.184579733428e-06 true resid norm 4.777895148690e-06 ||r(i)||/||b|| 7.544949597992e-04
+  2 KSP preconditioned resid norm 2.344360105075e-07 true resid norm 6.162214905620e-07 ||r(i)||/||b|| 9.730979736474e-05
+  3 KSP preconditioned resid norm 1.811237581069e-08 true resid norm 4.798814915941e-08 ||r(i)||/||b|| 7.577984770302e-06
+  4 KSP preconditioned resid norm 3.192402469915e-09 true resid norm 3.303169797207e-09 ||r(i)||/||b|| 5.216156666889e-07
 Linear laplace_ solve converged due to CONVERGED_RTOL iterations 3
-  0 TAO,  Function value: 0.000160406,  Residual: 8.40881e-05 
+  0 TAO,  Function value: 0.000160406,  Residual: 8.40882e-05 
   Residual norms for laplace_ solve.
-  0 KSP preconditioned resid norm 1.512763469438e-10 true resid norm 1.497401807348e-10 ||r(i)||/||b|| 7.566732461024e-07
+  0 KSP preconditioned resid norm 1.031070864687e-10 true resid norm 9.499400779950e-11 ||r(i)||/||b|| 4.800275159876e-07
 Linear laplace_ solve converged due to CONVERGED_RTOL iterations 0
   Residual norms for laplace_ solve.
-  0 KSP preconditioned resid norm 4.836119283038e-09 true resid norm 4.787009933239e-09 ||r(i)||/||b|| 7.566732461024e-07
+  0 KSP preconditioned resid norm 3.296206309582e-09 true resid norm 3.036841197016e-09 ||r(i)||/||b|| 4.800275159876e-07
 Linear laplace_ solve converged due to CONVERGED_RTOL iterations 0
   Residual norms for laplace_ solve.
-  0 KSP preconditioned resid norm 7.563817347165e-10 true resid norm 7.487009036740e-10 ||r(i)||/||b|| 7.566732461024e-07
+  0 KSP preconditioned resid norm 5.155354323383e-10 true resid norm 4.749700389975e-10 ||r(i)||/||b|| 4.800275159876e-07
 Linear laplace_ solve converged due to CONVERGED_RTOL iterations 0
   Residual norms for laplace_ solve.
-  0 KSP preconditioned resid norm 4.817209764045e-09 true resid norm 4.768292434800e-09 ||r(i)||/||b|| 7.566732461024e-07
+  0 KSP preconditioned resid norm 3.283317938829e-09 true resid norm 3.024966959889e-09 ||r(i)||/||b|| 4.800275159876e-07
 Linear laplace_ solve converged due to CONVERGED_RTOL iterations 0
   Residual norms for laplace_ solve.
-  0 KSP preconditioned resid norm 3.176803285751e-09 true resid norm 3.144543795431e-09 ||r(i)||/||b|| 7.566732461024e-07
+  0 KSP preconditioned resid norm 2.165248815878e-09 true resid norm 1.994874163790e-09 ||r(i)||/||b|| 4.800275159876e-07
 Linear laplace_ solve converged due to CONVERGED_RTOL iterations 0
   Residual norms for laplace_ solve.
-  0 KSP preconditioned resid norm 4.741571688071e-09 true resid norm 4.693422441042e-09 ||r(i)||/||b|| 7.566732461024e-07
+  0 KSP preconditioned resid norm 3.231764455814e-09 true resid norm 2.977470011384e-09 ||r(i)||/||b|| 4.800275159876e-07
 Linear laplace_ solve converged due to CONVERGED_RTOL iterations 0
   Residual norms for laplace_ solve.
-  0 KSP preconditioned resid norm 1.285848949015e-08 true resid norm 1.272791536246e-08 ||r(i)||/||b|| 7.566732461024e-07
+  0 KSP preconditioned resid norm 8.764102350444e-09 true resid norm 8.074490662958e-09 ||r(i)||/||b|| 4.800275159876e-07
 Linear laplace_ solve converged due to CONVERGED_RTOL iterations 0
   Residual norms for laplace_ solve.
-  0 KSP preconditioned resid norm 4.439019384554e-09 true resid norm 4.393942466013e-09 ||r(i)||/||b|| 7.566732461024e-07
+  0 KSP preconditioned resid norm 3.025550523346e-09 true resid norm 2.787482217361e-09 ||r(i)||/||b|| 4.800275159876e-07
 Linear laplace_ solve converged due to CONVERGED_RTOL iterations 0
   Residual norms for laplace_ solve.
-  0 KSP preconditioned resid norm 5.158523430776e-08 true resid norm 5.106140163056e-08 ||r(i)||/||b|| 7.566732461024e-07
+  0 KSP preconditioned resid norm 3.515951648414e-08 true resid norm 3.239295665963e-08 ||r(i)||/||b|| 4.800275159876e-07
 Linear laplace_ solve converged due to CONVERGED_RTOL iterations 0
   Residual norms for laplace_ solve.
-  0 KSP preconditioned resid norm 3.228810170716e-09 true resid norm 3.196022565894e-09 ||r(i)||/||b|| 7.566732461024e-07
+  0 KSP preconditioned resid norm 2.200694793722e-09 true resid norm 2.027531041272e-09 ||r(i)||/||b|| 4.800275159876e-07
 Linear laplace_ solve converged due to CONVERGED_RTOL iterations 0
   1 TAO,  Function value: 7.13795e-05,  Residual: 5.60575e-05 
   Residual norms for laplace_ solve.
-  0 KSP preconditioned resid norm 7.644360435657e-08 true resid norm 7.566734234212e-08 ||r(i)||/||b|| 7.566732461024e-07
+  0 KSP preconditioned resid norm 5.210248494303e-08 true resid norm 4.800275161213e-08 ||r(i)||/||b|| 4.800275159876e-07
 Linear laplace_ solve converged due to CONVERGED_RTOL iterations 0
   Residual norms for laplace_ solve.
-  0 KSP preconditioned resid norm 2.451987108966e-09 true resid norm 2.427087910868e-09 ||r(i)||/||b|| 7.566732461024e-07
+  0 KSP preconditioned resid norm 1.671227646841e-09 true resid norm 1.539725517918e-09 ||r(i)||/||b|| 4.800275159876e-07
 Linear laplace_ solve converged due to CONVERGED_RTOL iterations 0
   2 TAO,  Function value: 4.11942e-05,  Residual: 1.18012e-05 
   Residual norms for laplace_ solve.
-  0 KSP preconditioned resid norm 7.646643956607e-08 true resid norm 7.568994566743e-08 ||r(i)||/||b|| 7.566732461024e-07
+  0 KSP preconditioned resid norm 5.211804282476e-08 true resid norm 4.801708530599e-08 ||r(i)||/||b|| 4.800275159876e-07
 Linear laplace_ solve converged due to CONVERGED_RTOL iterations 0
   Residual norms for laplace_ solve.
-  0 KSP preconditioned resid norm 2.451273509685e-09 true resid norm 2.426381557864e-09 ||r(i)||/||b|| 7.566732461024e-07
-Linear laplace_ solve converged due to CONVERGED_RTOL iterations 0
-  3 TAO,  Function value: 4.11703e-05,  Residual: 1.17977e-05 
-  Residual norms for laplace_ solve.
-  0 KSP preconditioned resid norm 1.445301159825e-07 true resid norm 1.430624557390e-07 ||r(i)||/||b|| 7.566732461024e-07
+  0 KSP preconditioned resid norm 1.670741463522e-09 true resid norm 1.539277590507e-09 ||r(i)||/||b|| 4.800275159876e-07
 Linear laplace_ solve converged due to CONVERGED_RTOL iterations 0
   Residual norms for laplace_ solve.
-  0 KSP preconditioned resid norm 3.242863662392e-10 true resid norm 3.209933348576e-10 ||r(i)||/||b|| 7.566732461024e-07
-Linear laplace_ solve converged due to CONVERGED_RTOL iterations 0
-  4 TAO,  Function value: 9.54606e-07,  Residual: 1.22852e-06 
-  Residual norms for laplace_ solve.
-  0 KSP preconditioned resid norm 1.504626274693e-07 true resid norm 1.489347243429e-07 ||r(i)||/||b|| 7.566732461024e-07
+  0 KSP preconditioned resid norm 5.218027434778e-08 true resid norm 4.807442008145e-08 ||r(i)||/||b|| 4.800275159876e-07
 Linear laplace_ solve converged due to CONVERGED_RTOL iterations 0
   Residual norms for laplace_ solve.
-  0 KSP preconditioned resid norm 1.388956214057e-10 true resid norm 1.374851777768e-10 ||r(i)||/||b|| 7.566732461024e-07
+  0 KSP preconditioned resid norm 1.668796730207e-09 true resid norm 1.537485880864e-09 ||r(i)||/||b|| 4.800275159876e-07
 Linear laplace_ solve converged due to CONVERGED_RTOL iterations 0
-  5 TAO,  Function value: 3.98343e-07,  Residual: 4.94137e-07 
-TAO solve converged due to CONVERGED_GATOL iterations 5
+  Residual norms for laplace_ solve.
+  0 KSP preconditioned resid norm 5.242920043595e-08 true resid norm 4.830375918330e-08 ||r(i)||/||b|| 4.800275159876e-07
+Linear laplace_ solve converged due to CONVERGED_RTOL iterations 0
+  Residual norms for laplace_ solve.
+  0 KSP preconditioned resid norm 1.661017799635e-09 true resid norm 1.530319042289e-09 ||r(i)||/||b|| 4.800275159876e-07
+Linear laplace_ solve converged due to CONVERGED_RTOL iterations 0
+  Residual norms for laplace_ solve.
+  0 KSP preconditioned resid norm 5.342490480560e-08 true resid norm 4.922111559067e-08 ||r(i)||/||b|| 4.800275159876e-07
+Linear laplace_ solve converged due to CONVERGED_RTOL iterations 0
+  Residual norms for laplace_ solve.
+  0 KSP preconditioned resid norm 1.629902075188e-09 true resid norm 1.501651687993e-09 ||r(i)||/||b|| 4.800275159876e-07
+Linear laplace_ solve converged due to CONVERGED_RTOL iterations 0
+  Residual norms for laplace_ solve.
+  0 KSP preconditioned resid norm 5.740772216287e-08 true resid norm 5.289054122017e-08 ||r(i)||/||b|| 4.800275159876e-07
+Linear laplace_ solve converged due to CONVERGED_RTOL iterations 0
+  Residual norms for laplace_ solve.
+  0 KSP preconditioned resid norm 1.505439177116e-09 true resid norm 1.386982270806e-09 ||r(i)||/||b|| 4.800275159876e-07
+Linear laplace_ solve converged due to CONVERGED_RTOL iterations 0
+  Residual norms for laplace_ solve.
+  0 KSP preconditioned resid norm 7.333899170673e-08 true resid norm 6.756824373816e-08 ||r(i)||/||b|| 4.800275159876e-07
+Linear laplace_ solve converged due to CONVERGED_RTOL iterations 0
+  Residual norms for laplace_ solve.
+  0 KSP preconditioned resid norm 1.007587584681e-09 true resid norm 9.283046020598e-10 ||r(i)||/||b|| 4.800275159876e-07
+Linear laplace_ solve converged due to CONVERGED_RTOL iterations 0
+  3 TAO,  Function value: 1.50569e-05,  Residual: 7.09179e-06 
+  Residual norms for laplace_ solve.
+  0 KSP preconditioned resid norm 9.849938775947e-08 true resid norm 9.074887022245e-08 ||r(i)||/||b|| 4.800275159876e-07
+Linear laplace_ solve converged due to CONVERGED_RTOL iterations 0
+  Residual norms for laplace_ solve.
+  0 KSP preconditioned resid norm 2.213261248257e-10 true resid norm 2.039108692629e-10 ||r(i)||/||b|| 4.800275159876e-07
+Linear laplace_ solve converged due to CONVERGED_RTOL iterations 0
+  4 TAO,  Function value: 9.56482e-07,  Residual: 1.22975e-06 
+  Residual norms for laplace_ solve.
+  0 KSP preconditioned resid norm 1.029014030985e-07 true resid norm 9.480450881315e-08 ||r(i)||/||b|| 4.800275159876e-07
+Linear laplace_ solve converged due to CONVERGED_RTOL iterations 0
+  Residual norms for laplace_ solve.
+  0 KSP preconditioned resid norm 8.376330611577e-11 true resid norm 7.717231111434e-11 ||r(i)||/||b|| 4.800275159876e-07
+Linear laplace_ solve converged due to CONVERGED_RTOL iterations 0
+  5 TAO,  Function value: 3.72527e-07,  Residual: 4.30802e-07 
+  TAO  solve converged due to CONVERGED_GATOL iterations 5

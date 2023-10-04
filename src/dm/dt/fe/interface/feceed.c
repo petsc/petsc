@@ -51,7 +51,7 @@ PetscErrorCode PetscFEGetCeedBasis(PetscFE fe, CeedBasis *basis)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fe, PETSCFE_CLASSID, 1);
-  PetscValidPointer(basis, 2);
+  PetscAssertPointer(basis, 2);
   if (!fe->ceedBasis && fe->ceed) {
     PetscCall(PetscFEGetSpatialDimension(fe, &dim));
     PetscCall(PetscFEGetNumComponents(fe, &Nc));

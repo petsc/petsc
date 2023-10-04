@@ -8,7 +8,7 @@
 #include <../src/mat/utils/freespace.h>
 #include <../src/mat/impls/dense/seq/dense.h> /*I "petscmat.h" I*/
 
-PetscErrorCode MatDestroy_SeqAIJ_RARt(void *data)
+static PetscErrorCode MatDestroy_SeqAIJ_RARt(void *data)
 {
   Mat_RARt *rart = (Mat_RARt *)data;
 
@@ -101,7 +101,7 @@ PetscErrorCode MatRARtSymbolic_SeqAIJ_SeqAIJ_colorrart(Mat A, Mat R, PetscReal f
 /*
  RAB = R * A * B, R and A in seqaij format, B in dense format;
 */
-PetscErrorCode MatMatMatMultNumeric_SeqAIJ_SeqAIJ_SeqDense(Mat R, Mat A, Mat B, Mat RAB, PetscScalar *work)
+static PetscErrorCode MatMatMatMultNumeric_SeqAIJ_SeqAIJ_SeqDense(Mat R, Mat A, Mat B, Mat RAB, PetscScalar *work)
 {
   Mat_SeqAIJ        *a = (Mat_SeqAIJ *)A->data, *r = (Mat_SeqAIJ *)R->data;
   PetscScalar        r1, r2, r3, r4;

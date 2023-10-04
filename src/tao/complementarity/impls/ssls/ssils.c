@@ -1,6 +1,6 @@
 #include <../src/tao/complementarity/impls/ssls/ssls.h>
 
-PetscErrorCode TaoSetUp_SSILS(Tao tao)
+static PetscErrorCode TaoSetUp_SSILS(Tao tao)
 {
   TAO_SSLS *ssls = (TAO_SSLS *)tao->data;
 
@@ -16,7 +16,7 @@ PetscErrorCode TaoSetUp_SSILS(Tao tao)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode TaoDestroy_SSILS(Tao tao)
+static PetscErrorCode TaoDestroy_SSILS(Tao tao)
 {
   TAO_SSLS *ssls = (TAO_SSLS *)tao->data;
 

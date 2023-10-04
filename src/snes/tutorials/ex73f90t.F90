@@ -135,9 +135,7 @@
       nfour = 4
       itwo = 2
       PetscCallA(PetscOptionsGetReal(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-par', solver%lambda,flg,ierr))
-      if (solver%lambda .ge. lambda_max .or. solver%lambda .lt. lambda_min) then
-         SETERRA(PETSC_COMM_SELF,PETSC_ERR_USER,'Lambda provided with -par is out of range')
-      endif
+      PetscCheckA(solver%lambda .le. lambda_max .and. solver%lambda .ge. lambda_min,PETSC_COMM_SELF,PETSC_ERR_USER,'Lambda provided with -par is out of range')
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !  Create vector data structures; set function evaluation routine

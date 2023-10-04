@@ -70,7 +70,7 @@ typedef struct {
 
      Level: intermediate
 
-.seealso: [](chapter_ts), `TSROSW`
+.seealso: [](ch_ts), `TSROSW`
 M*/
 
 /*MC
@@ -80,7 +80,7 @@ M*/
 
      Level: intermediate
 
-.seealso: [](chapter_ts), `TSROSW`
+.seealso: [](ch_ts), `TSROSW`
 M*/
 
 /*MC
@@ -90,7 +90,7 @@ M*/
 
      Level: intermediate
 
-.seealso: [](chapter_ts), `TSROSW`
+.seealso: [](ch_ts), `TSROSW`
 M*/
 
 /*MC
@@ -100,7 +100,7 @@ M*/
 
      Level: intermediate
 
-.seealso: [](chapter_ts), `TSROSW`
+.seealso: [](ch_ts), `TSROSW`
 M*/
 
 /*MC
@@ -115,7 +115,7 @@ M*/
      References:
 .  * - Rang and Angermann, New Rosenbrock W methods of order 3 for partial differential algebraic equations of index 1, 2005.
 
-.seealso: [](chapter_ts), `TSROSW`
+.seealso: [](ch_ts), `TSROSW`
 M*/
 
 /*MC
@@ -130,7 +130,7 @@ M*/
      References:
 .  * - Rang and Angermann, New Rosenbrock W methods of order 3 for partial differential algebraic equations of index 1, 2005.
 
-.seealso: [](chapter_ts), `TSROSW`
+.seealso: [](ch_ts), `TSROSW`
 M*/
 
 /*MC
@@ -145,7 +145,7 @@ M*/
      References:
 .  * - Sandu et al, Benchmarking stiff ODE solvers for atmospheric chemistry problems II, Rosenbrock solvers, 1997.
 
-.seealso: [](chapter_ts), `TSROSW`, `TSROSWSANDU3`
+.seealso: [](ch_ts), `TSROSW`, `TSROSWSANDU3`
 M*/
 
 /*MC
@@ -163,7 +163,7 @@ M*/
      References:
 .  * - Sandu et al, Benchmarking stiff ODE solvers for atmospheric chemistry problems II, Rosenbrock solvers, 1997.
 
-.seealso: [](chapter_ts), `TSROSW`, `TSROSWRODAS3`
+.seealso: [](ch_ts), `TSROSW`, `TSROSWRODAS3`
 M*/
 
 /*MC
@@ -178,7 +178,7 @@ M*/
      References:
 . * - Emil Constantinescu
 
-.seealso: [](chapter_ts), `TSROSW`, `TSROSWLASSP3P4S2C`, `TSROSWLLSSP3P4S2C`, `SSP`
+.seealso: [](ch_ts), `TSROSW`, `TSROSWLASSP3P4S2C`, `TSROSWLLSSP3P4S2C`, `SSP`
 M*/
 
 /*MC
@@ -193,7 +193,7 @@ M*/
      References:
 . * - Emil Constantinescu
 
-.seealso: [](chapter_ts), `TSROSW`, `TSROSWASSP3P3S1C`, `TSROSWLLSSP3P4S2C`, `TSSSP`
+.seealso: [](ch_ts), `TSROSW`, `TSROSWASSP3P3S1C`, `TSROSWLLSSP3P4S2C`, `TSSSP`
 M*/
 
 /*MC
@@ -208,7 +208,7 @@ M*/
      References:
 . * - Emil Constantinescu
 
-.seealso: [](chapter_ts), `TSROSW`, `TSROSWASSP3P3S1C`, `TSROSWLASSP3P4S2C`, `TSSSP`
+.seealso: [](ch_ts), `TSROSW`, `TSROSWASSP3P3S1C`, `TSROSWLASSP3P4S2C`, `TSSSP`
 M*/
 
 /*MC
@@ -228,7 +228,7 @@ M*/
 
      Hairer's code ros4.f
 
-.seealso: [](chapter_ts), `TSROSW`, `TSROSWSHAMP4`, `TSROSWVELDD4`, `TSROSW4L`
+.seealso: [](ch_ts), `TSROSW`, `TSROSWSHAMP4`, `TSROSWVELDD4`, `TSROSW4L`
 M*/
 
 /*MC
@@ -248,7 +248,7 @@ M*/
 
      Hairer's code ros4.f
 
-.seealso: [](chapter_ts), `TSROSW`, `TSROSWGRK4T`, `TSROSWVELDD4`, `TSROSW4L`
+.seealso: [](ch_ts), `TSROSW`, `TSROSWGRK4T`, `TSROSWVELDD4`, `TSROSW4L`
 M*/
 
 /*MC
@@ -268,7 +268,7 @@ M*/
 
      Hairer's code ros4.f
 
-.seealso: [](chapter_ts), `TSROSW`, `TSROSWGRK4T`, `TSROSWSHAMP4`, `TSROSW4L`
+.seealso: [](ch_ts), `TSROSW`, `TSROSWGRK4T`, `TSROSWSHAMP4`, `TSROSW4L`
 M*/
 
 /*MC
@@ -287,7 +287,7 @@ M*/
 
      Hairer's code ros4.f
 
-.seealso: [](chapter_ts), `TSROSW`, `TSROSWGRK4T`, `TSROSWSHAMP4`, `TSROSW4L`
+.seealso: [](ch_ts), `TSROSW`, `TSROSWGRK4T`, `TSROSWSHAMP4`, `TSROSW4L`
 M*/
 
 /*@C
@@ -297,7 +297,7 @@ M*/
 
   Level: advanced
 
-.seealso: [](chapter_ts), `TSROSW`, `TSRosWRegisterDestroy()`
+.seealso: [](ch_ts), `TSROSW`, `TSRosWRegisterDestroy()`
 @*/
 PetscErrorCode TSRosWRegisterAll(void)
 {
@@ -325,13 +325,17 @@ PetscErrorCode TSRosWRegisterAll(void)
 
   {
     /*const PetscReal g = 1. + 1./PetscSqrtReal(2.0);   Direct evaluation: 1.707106781186547524401. Used for setting up arrays of values known at compile time below. */
-    const PetscReal A[2][2] =
-      {
-        {0,  0},
-        {1., 0}
-    },
-                    Gamma[2][2] = {{1.707106781186547524401, 0}, {-2. * 1.707106781186547524401, 1.707106781186547524401}}, b[2] = {0.5, 0.5}, b1[2] = {1.0, 0.0};
-    PetscReal binterpt[2][2];
+    const PetscReal A[2][2] = {
+      {0,  0},
+      {1., 0}
+    };
+    const PetscReal Gamma[2][2] = {
+      {1.707106781186547524401,       0                      },
+      {-2. * 1.707106781186547524401, 1.707106781186547524401}
+    };
+    const PetscReal b[2]  = {0.5, 0.5};
+    const PetscReal b1[2] = {1.0, 0.0};
+    PetscReal       binterpt[2][2];
     binterpt[0][0] = 1.707106781186547524401 - 1.0;
     binterpt[1][0] = 2.0 - 1.707106781186547524401;
     binterpt[0][1] = 1.707106781186547524401 - 1.5;
@@ -341,13 +345,17 @@ PetscErrorCode TSRosWRegisterAll(void)
   }
   {
     /*const PetscReal g = 1. - 1./PetscSqrtReal(2.0);   Direct evaluation: 0.2928932188134524755992. Used for setting up arrays of values known at compile time below. */
-    const PetscReal A[2][2] =
-      {
-        {0,  0},
-        {1., 0}
-    },
-                    Gamma[2][2] = {{0.2928932188134524755992, 0}, {-2. * 0.2928932188134524755992, 0.2928932188134524755992}}, b[2] = {0.5, 0.5}, b1[2] = {1.0, 0.0};
-    PetscReal binterpt[2][2];
+    const PetscReal A[2][2] = {
+      {0,  0},
+      {1., 0}
+    };
+    const PetscReal Gamma[2][2] = {
+      {0.2928932188134524755992,       0                       },
+      {-2. * 0.2928932188134524755992, 0.2928932188134524755992}
+    };
+    const PetscReal b[2]  = {0.5, 0.5};
+    const PetscReal b1[2] = {1.0, 0.0};
+    PetscReal       binterpt[2][2];
     binterpt[0][0] = 0.2928932188134524755992 - 1.0;
     binterpt[1][0] = 2.0 - 0.2928932188134524755992;
     binterpt[0][1] = 0.2928932188134524755992 - 1.5;
@@ -358,13 +366,18 @@ PetscErrorCode TSRosWRegisterAll(void)
   {
     /*const PetscReal g = 7.8867513459481287e-01; Directly written in-place below */
     PetscReal       binterpt[3][2];
-    const PetscReal A[3][3] =
-      {
-        {0,                      0, 0},
-        {1.5773502691896257e+00, 0, 0},
-        {0.5,                    0, 0}
-    },
-                    Gamma[3][3] = {{7.8867513459481287e-01, 0, 0}, {-1.5773502691896257e+00, 7.8867513459481287e-01, 0}, {-6.7075317547305480e-01, -1.7075317547305482e-01, 7.8867513459481287e-01}}, b[3] = {1.0566243270259355e-01, 4.9038105676657971e-02, 8.4529946162074843e-01}, b2[3] = {-1.7863279495408180e-01, 1. / 3., 8.4529946162074843e-01};
+    const PetscReal A[3][3] = {
+      {0,                      0, 0},
+      {1.5773502691896257e+00, 0, 0},
+      {0.5,                    0, 0}
+    };
+    const PetscReal Gamma[3][3] = {
+      {7.8867513459481287e-01,  0,                       0                     },
+      {-1.5773502691896257e+00, 7.8867513459481287e-01,  0                     },
+      {-6.7075317547305480e-01, -1.7075317547305482e-01, 7.8867513459481287e-01}
+    };
+    const PetscReal b[3]  = {1.0566243270259355e-01, 4.9038105676657971e-02, 8.4529946162074843e-01};
+    const PetscReal b2[3] = {-1.7863279495408180e-01, 1. / 3., 8.4529946162074843e-01};
 
     binterpt[0][0] = -0.8094010767585034;
     binterpt[1][0] = -0.5;
@@ -378,14 +391,20 @@ PetscErrorCode TSRosWRegisterAll(void)
   {
     PetscReal binterpt[4][3];
     /*const PetscReal g = 4.3586652150845900e-01; Directly written in-place below */
-    const PetscReal A[4][4] =
-      {
-        {0,                      0,                       0,  0},
-        {8.7173304301691801e-01, 0,                       0,  0},
-        {8.4457060015369423e-01, -1.1299064236484185e-01, 0,  0},
-        {0,                      0,                       1., 0}
-    },
-                    Gamma[4][4] = {{4.3586652150845900e-01, 0, 0, 0}, {-8.7173304301691801e-01, 4.3586652150845900e-01, 0, 0}, {-9.0338057013044082e-01, 5.4180672388095326e-02, 4.3586652150845900e-01, 0}, {2.4212380706095346e-01, -1.2232505839045147e+00, 5.4526025533510214e-01, 4.3586652150845900e-01}}, b[4] = {2.4212380706095346e-01, -1.2232505839045147e+00, 1.5452602553351020e+00, 4.3586652150845900e-01}, b2[4] = {3.7810903145819369e-01, -9.6042292212423178e-02, 5.0000000000000000e-01, 2.1793326075422950e-01};
+    const PetscReal A[4][4] = {
+      {0,                      0,                       0,  0},
+      {8.7173304301691801e-01, 0,                       0,  0},
+      {8.4457060015369423e-01, -1.1299064236484185e-01, 0,  0},
+      {0,                      0,                       1., 0}
+    };
+    const PetscReal Gamma[4][4] = {
+      {4.3586652150845900e-01,  0,                       0,                      0                     },
+      {-8.7173304301691801e-01, 4.3586652150845900e-01,  0,                      0                     },
+      {-9.0338057013044082e-01, 5.4180672388095326e-02,  4.3586652150845900e-01, 0                     },
+      {2.4212380706095346e-01,  -1.2232505839045147e+00, 5.4526025533510214e-01, 4.3586652150845900e-01}
+    };
+    const PetscReal b[4]  = {2.4212380706095346e-01, -1.2232505839045147e+00, 1.5452602553351020e+00, 4.3586652150845900e-01};
+    const PetscReal b2[4] = {3.7810903145819369e-01, -9.6042292212423178e-02, 5.0000000000000000e-01, 2.1793326075422950e-01};
 
     binterpt[0][0] = 1.0564298455794094;
     binterpt[1][0] = 2.296429974281067;
@@ -404,26 +423,37 @@ PetscErrorCode TSRosWRegisterAll(void)
   }
   {
     /* const PetscReal g = 0.5;       Directly written in-place below */
-    const PetscReal A[4][4] =
-      {
-        {0,    0,     0,   0},
-        {0,    0,     0,   0},
-        {1.,   0,     0,   0},
-        {0.75, -0.25, 0.5, 0}
-    },
-                    Gamma[4][4] = {{0.5, 0, 0, 0}, {1., 0.5, 0, 0}, {-0.25, -0.25, 0.5, 0}, {1. / 12, 1. / 12, -2. / 3, 0.5}}, b[4] = {5. / 6, -1. / 6, -1. / 6, 0.5}, b2[4] = {0.75, -0.25, 0.5, 0};
+    const PetscReal A[4][4] = {
+      {0,    0,     0,   0},
+      {0,    0,     0,   0},
+      {1.,   0,     0,   0},
+      {0.75, -0.25, 0.5, 0}
+    };
+    const PetscReal Gamma[4][4] = {
+      {0.5,     0,       0,       0  },
+      {1.,      0.5,     0,       0  },
+      {-0.25,   -0.25,   0.5,     0  },
+      {1. / 12, 1. / 12, -2. / 3, 0.5}
+    };
+    const PetscReal b[4]  = {5. / 6, -1. / 6, -1. / 6, 0.5};
+    const PetscReal b2[4] = {0.75, -0.25, 0.5, 0};
 
     PetscCall(TSRosWRegister(TSROSWRODAS3, 3, 4, &A[0][0], &Gamma[0][0], b, b2, 0, NULL));
   }
   {
     /*const PetscReal g = 0.43586652150845899941601945119356;       Directly written in-place below */
-    const PetscReal A[3][3] =
-      {
-        {0,                                  0, 0},
-        {0.43586652150845899941601945119356, 0, 0},
-        {0.43586652150845899941601945119356, 0, 0}
-    },
-                    Gamma[3][3] = {{0.43586652150845899941601945119356, 0, 0}, {-0.19294655696029095575009695436041, 0.43586652150845899941601945119356, 0}, {0, 1.74927148125794685173529749738960, 0.43586652150845899941601945119356}}, b[3] = {-0.75457412385404315829818998646589, 1.94100407061964420292840123379419, -0.18642994676560104463021124732829}, b2[3] = {-1.53358745784149585370766523913002, 2.81745131148625772213931745457622, -0.28386385364476186843165221544619};
+    const PetscReal A[3][3] = {
+      {0,                                  0, 0},
+      {0.43586652150845899941601945119356, 0, 0},
+      {0.43586652150845899941601945119356, 0, 0}
+    };
+    const PetscReal Gamma[3][3] = {
+      {0.43586652150845899941601945119356,  0,                                  0                                 },
+      {-0.19294655696029095575009695436041, 0.43586652150845899941601945119356, 0                                 },
+      {0,                                   1.74927148125794685173529749738960, 0.43586652150845899941601945119356}
+    };
+    const PetscReal b[3]  = {-0.75457412385404315829818998646589, 1.94100407061964420292840123379419, -0.18642994676560104463021124732829};
+    const PetscReal b2[3] = {-1.53358745784149585370766523913002, 2.81745131148625772213931745457622, -0.28386385364476186843165221544619};
 
     PetscReal binterpt[3][2];
     binterpt[0][0] = 3.793692883777660870425141387941;
@@ -440,14 +470,19 @@ PetscErrorCode TSRosWRegisterAll(void)
      * Direct evaluation: s3 = 1.732050807568877293527;
      *                     g = 0.7886751345948128822546;
      * Values are directly inserted below to ensure availability at compile time (compiler warnings otherwise...) */
-    const PetscReal A[3][3] =
-      {
-        {0,    0,    0},
-        {1,    0,    0},
-        {0.25, 0.25, 0}
-    },
-                    Gamma[3][3] = {{0, 0, 0}, {(-3.0 - 1.732050807568877293527) / 6.0, 0.7886751345948128822546, 0}, {(-3.0 - 1.732050807568877293527) / 24.0, (-3.0 - 1.732050807568877293527) / 8.0, 0.7886751345948128822546}}, b[3] = {1. / 6., 1. / 6., 2. / 3.}, b2[3] = {1. / 4., 1. / 4., 1. / 2.};
-    PetscReal binterpt[3][2];
+    const PetscReal A[3][3] = {
+      {0,    0,    0},
+      {1,    0,    0},
+      {0.25, 0.25, 0}
+    };
+    const PetscReal Gamma[3][3] = {
+      {0,                                       0,                                      0                       },
+      {(-3.0 - 1.732050807568877293527) / 6.0,  0.7886751345948128822546,               0                       },
+      {(-3.0 - 1.732050807568877293527) / 24.0, (-3.0 - 1.732050807568877293527) / 8.0, 0.7886751345948128822546}
+    };
+    const PetscReal b[3]  = {1. / 6., 1. / 6., 2. / 3.};
+    const PetscReal b2[3] = {1. / 4., 1. / 4., 1. / 2.};
+    PetscReal       binterpt[3][2];
 
     binterpt[0][0] = 0.089316397477040902157517886164709;
     binterpt[1][0] = -0.91068360252295909784248211383529;
@@ -460,15 +495,21 @@ PetscErrorCode TSRosWRegisterAll(void)
   }
 
   {
-    const PetscReal A[4][4] =
-      {
-        {0,       0,       0,       0},
-        {1. / 2., 0,       0,       0},
-        {1. / 2., 1. / 2., 0,       0},
-        {1. / 6., 1. / 6., 1. / 6., 0}
-    },
-                    Gamma[4][4] = {{1. / 2., 0, 0, 0}, {0.0, 1. / 4., 0, 0}, {-2., -2. / 3., 2. / 3., 0}, {1. / 2., 5. / 36., -2. / 9, 0}}, b[4] = {1. / 6., 1. / 6., 1. / 6., 1. / 2.}, b2[4] = {1. / 8., 3. / 4., 1. / 8., 0};
-    PetscReal binterpt[4][3];
+    const PetscReal A[4][4] = {
+      {0,       0,       0,       0},
+      {1. / 2., 0,       0,       0},
+      {1. / 2., 1. / 2., 0,       0},
+      {1. / 6., 1. / 6., 1. / 6., 0}
+    };
+    const PetscReal Gamma[4][4] = {
+      {1. / 2., 0,        0,       0},
+      {0.0,     1. / 4.,  0,       0},
+      {-2.,     -2. / 3., 2. / 3., 0},
+      {1. / 2., 5. / 36., -2. / 9, 0}
+    };
+    const PetscReal b[4]  = {1. / 6., 1. / 6., 1. / 6., 1. / 2.};
+    const PetscReal b2[4] = {1. / 8., 3. / 4., 1. / 8., 0};
+    PetscReal       binterpt[4][3];
 
     binterpt[0][0] = 6.25;
     binterpt[1][0] = -30.25;
@@ -487,15 +528,21 @@ PetscErrorCode TSRosWRegisterAll(void)
   }
 
   {
-    const PetscReal A[4][4] =
-      {
-        {0,       0,       0,       0},
-        {1. / 2., 0,       0,       0},
-        {1. / 2., 1. / 2., 0,       0},
-        {1. / 6., 1. / 6., 1. / 6., 0}
-    },
-                    Gamma[4][4] = {{1. / 2., 0, 0, 0}, {0.0, 3. / 4., 0, 0}, {-2. / 3., -23. / 9., 2. / 9., 0}, {1. / 18., 65. / 108., -2. / 27, 0}}, b[4] = {1. / 6., 1. / 6., 1. / 6., 1. / 2.}, b2[4] = {3. / 16., 10. / 16., 3. / 16., 0};
-    PetscReal binterpt[4][3];
+    const PetscReal A[4][4] = {
+      {0,       0,       0,       0},
+      {1. / 2., 0,       0,       0},
+      {1. / 2., 1. / 2., 0,       0},
+      {1. / 6., 1. / 6., 1. / 6., 0}
+    };
+    const PetscReal Gamma[4][4] = {
+      {1. / 2.,  0,          0,        0},
+      {0.0,      3. / 4.,    0,        0},
+      {-2. / 3., -23. / 9.,  2. / 9.,  0},
+      {1. / 18., 65. / 108., -2. / 27, 0}
+    };
+    const PetscReal b[4]  = {1. / 6., 1. / 6., 1. / 6., 1. / 2.};
+    const PetscReal b2[4] = {3. / 16., 10. / 16., 3. / 16., 0};
+    PetscReal       binterpt[4][3];
 
     binterpt[0][0] = 1.6911764705882352941176470588235;
     binterpt[1][0] = 3.6813725490196078431372549019608;
@@ -584,13 +631,13 @@ PetscErrorCode TSRosWRegisterAll(void)
 }
 
 /*@C
-   TSRosWRegisterDestroy - Frees the list of schemes that were registered by `TSRosWRegister()`.
+  TSRosWRegisterDestroy - Frees the list of schemes that were registered by `TSRosWRegister()`.
 
-   Not Collective
+  Not Collective
 
-   Level: advanced
+  Level: advanced
 
-.seealso: [](chapter_ts), `TSRosWRegister()`, `TSRosWRegisterAll()`
+.seealso: [](ch_ts), `TSRosWRegister()`, `TSRosWRegisterAll()`
 @*/
 PetscErrorCode TSRosWRegisterDestroy(void)
 {
@@ -617,7 +664,7 @@ PetscErrorCode TSRosWRegisterDestroy(void)
 
   Level: developer
 
-.seealso: [](chapter_ts), `TSROSW`, `PetscInitialize()`, `TSRosWFinalizePackage()`
+.seealso: [](ch_ts), `TSROSW`, `PetscInitialize()`, `TSRosWFinalizePackage()`
 @*/
 PetscErrorCode TSRosWInitializePackage(void)
 {
@@ -635,7 +682,7 @@ PetscErrorCode TSRosWInitializePackage(void)
 
   Level: developer
 
-.seealso: [](chapter_ts), `TSROSW`, `PetscFinalize()`, `TSRosWInitializePackage()`
+.seealso: [](ch_ts), `TSROSW`, `PetscFinalize()`, `TSRosWInitializePackage()`
 @*/
 PetscErrorCode TSRosWFinalizePackage(void)
 {
@@ -646,27 +693,27 @@ PetscErrorCode TSRosWFinalizePackage(void)
 }
 
 /*@C
-   TSRosWRegister - register a `TSROSW`, Rosenbrock W scheme by providing the entries in the Butcher tableau and optionally embedded approximations and interpolation
+  TSRosWRegister - register a `TSROSW`, Rosenbrock W scheme by providing the entries in the Butcher tableau and optionally embedded approximations and interpolation
 
-   Not Collective, but the same schemes should be registered on all processes on which they will be used
+  Not Collective, but the same schemes should be registered on all processes on which they will be used
 
-   Input Parameters:
-+  name - identifier for method
-.  order - approximation order of method
-.  s - number of stages, this is the dimension of the matrices below
-.  A - Table of propagated stage coefficients (dimension s*s, row-major), strictly lower triangular
-.  Gamma - Table of coefficients in implicit stage equations (dimension s*s, row-major), lower triangular with nonzero diagonal
-.  b - Step completion table (dimension s)
-.  bembed - Step completion table for a scheme of order one less (dimension s, NULL if no embedded scheme is available)
-.  pinterp - Order of the interpolation scheme, equal to the number of columns of binterpt
--  binterpt - Coefficients of the interpolation formula (dimension s*pinterp)
+  Input Parameters:
++ name     - identifier for method
+. order    - approximation order of method
+. s        - number of stages, this is the dimension of the matrices below
+. A        - Table of propagated stage coefficients (dimension s*s, row-major), strictly lower triangular
+. Gamma    - Table of coefficients in implicit stage equations (dimension s*s, row-major), lower triangular with nonzero diagonal
+. b        - Step completion table (dimension s)
+. bembed   - Step completion table for a scheme of order one less (dimension s, NULL if no embedded scheme is available)
+. pinterp  - Order of the interpolation scheme, equal to the number of columns of binterpt
+- binterpt - Coefficients of the interpolation formula (dimension s*pinterp)
 
-   Level: advanced
+  Level: advanced
 
-   Note:
-   Several Rosenbrock W methods are provided, this function is only needed to create new methods.
+  Note:
+  Several Rosenbrock W methods are provided, this function is only needed to create new methods.
 
-.seealso: [](chapter_ts), `TSROSW`
+.seealso: [](ch_ts), `TSROSW`
 @*/
 PetscErrorCode TSRosWRegister(TSRosWType name, PetscInt order, PetscInt s, const PetscReal A[], const PetscReal Gamma[], const PetscReal b[], const PetscReal bembed[], PetscInt pinterp, const PetscReal binterpt[])
 {
@@ -676,11 +723,11 @@ PetscErrorCode TSRosWRegister(TSRosWType name, PetscInt order, PetscInt s, const
   PetscScalar    *GammaInv;
 
   PetscFunctionBegin;
-  PetscValidCharPointer(name, 1);
-  PetscValidRealPointer(A, 4);
-  PetscValidRealPointer(Gamma, 5);
-  PetscValidRealPointer(b, 6);
-  if (bembed) PetscValidRealPointer(bembed, 7);
+  PetscAssertPointer(name, 1);
+  PetscAssertPointer(A, 4);
+  PetscAssertPointer(Gamma, 5);
+  PetscAssertPointer(b, 6);
+  if (bembed) PetscAssertPointer(bembed, 7);
 
   PetscCall(TSRosWInitializePackage());
   PetscCall(PetscNew(&link));
@@ -778,26 +825,26 @@ PetscErrorCode TSRosWRegister(TSRosWType name, PetscInt order, PetscInt s, const
 }
 
 /*@C
-   TSRosWRegisterRos4 - register a fourth order Rosenbrock scheme by providing parameter choices
+  TSRosWRegisterRos4 - register a fourth order Rosenbrock scheme by providing parameter choices
 
-   Not Collective, but the same schemes should be registered on all processes on which they will be used
+  Not Collective, but the same schemes should be registered on all processes on which they will be used
 
-   Input Parameters:
-+  name - identifier for method
-.  gamma - leading coefficient (diagonal entry)
-.  a2 - design parameter, see Table 7.2 of Hairer&Wanner
-.  a3 - design parameter or PETSC_DEFAULT to satisfy one of the order five conditions (Eq 7.22)
-.  b3 - design parameter, see Table 7.2 of Hairer&Wanner
--  e4 - design parameter for embedded method, see coefficient E4 in ros4.f code from Hairer
+  Input Parameters:
++ name  - identifier for method
+. gamma - leading coefficient (diagonal entry)
+. a2    - design parameter, see Table 7.2 of Hairer&Wanner
+. a3    - design parameter or PETSC_DEFAULT to satisfy one of the order five conditions (Eq 7.22)
+. b3    - design parameter, see Table 7.2 of Hairer&Wanner
+- e4    - design parameter for embedded method, see coefficient E4 in ros4.f code from Hairer
 
-   Level: developer
+  Level: developer
 
-   Notes:
-   This routine encodes the design of fourth order Rosenbrock methods as described in Hairer and Wanner volume 2.
-   It is used here to implement several methods from the book and can be used to experiment with new methods.
-   It was written this way instead of by copying coefficients in order to provide better than double precision satisfaction of the order conditions.
+  Notes:
+  This routine encodes the design of fourth order Rosenbrock methods as described in Hairer and Wanner volume 2.
+  It is used here to implement several methods from the book and can be used to experiment with new methods.
+  It was written this way instead of by copying coefficients in order to provide better than double precision satisfaction of the order conditions.
 
-.seealso: [](chapter_ts), `TSRosW`, `TSRosWRegister()`
+.seealso: [](ch_ts), `TSRosW`, `TSRosWRegister()`
 @*/
 PetscErrorCode TSRosWRegisterRos4(TSRosWType name, PetscReal gamma, PetscReal a2, PetscReal a3, PetscReal b3, PetscReal e4)
 {
@@ -1449,18 +1496,18 @@ static PetscErrorCode TSLoad_RosW(TS ts, PetscViewer viewer)
   Logically Collective
 
   Input Parameters:
-+  ts - timestepping context
--  roswtype - type of Rosenbrock-W scheme
++ ts       - timestepping context
+- roswtype - type of Rosenbrock-W scheme
 
   Level: beginner
 
-.seealso: [](chapter_ts), `TSRosWGetType()`, `TSROSW`, `TSROSW2M`, `TSROSW2P`, `TSROSWRA3PW`, `TSROSWRA34PW2`, `TSROSWRODAS3`, `TSROSWSANDU3`, `TSROSWASSP3P3S1C`, `TSROSWLASSP3P4S2C`, `TSROSWLLSSP3P4S2C`, `TSROSWARK3`
+.seealso: [](ch_ts), `TSRosWGetType()`, `TSROSW`, `TSROSW2M`, `TSROSW2P`, `TSROSWRA3PW`, `TSROSWRA34PW2`, `TSROSWRODAS3`, `TSROSWSANDU3`, `TSROSWASSP3P3S1C`, `TSROSWLASSP3P4S2C`, `TSROSWLLSSP3P4S2C`, `TSROSWARK3`
 @*/
 PetscErrorCode TSRosWSetType(TS ts, TSRosWType roswtype)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
-  PetscValidCharPointer(roswtype, 2);
+  PetscAssertPointer(roswtype, 2);
   PetscTryMethod(ts, "TSRosWSetType_C", (TS, TSRosWType), (ts, roswtype));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1471,14 +1518,14 @@ PetscErrorCode TSRosWSetType(TS ts, TSRosWType roswtype)
   Logically Collective
 
   Input Parameter:
-.  ts - timestepping context
+. ts - timestepping context
 
   Output Parameter:
-.  rostype - type of Rosenbrock-W scheme
+. rostype - type of Rosenbrock-W scheme
 
   Level: intermediate
 
-.seealso: [](chapter_ts), `TSRosWType`, `TSRosWSetType()`
+.seealso: [](ch_ts), `TSRosWType`, `TSRosWSetType()`
 @*/
 PetscErrorCode TSRosWGetType(TS ts, TSRosWType *rostype)
 {
@@ -1494,12 +1541,12 @@ PetscErrorCode TSRosWGetType(TS ts, TSRosWType *rostype)
   Logically Collective
 
   Input Parameters:
-+  ts - timestepping context
--  flg - `PETSC_TRUE` to recompute the Jacobian at each stage
++ ts  - timestepping context
+- flg - `PETSC_TRUE` to recompute the Jacobian at each stage
 
   Level: intermediate
 
-.seealso: [](chapter_ts), `TSRosWType`, `TSRosWGetType()`
+.seealso: [](ch_ts), `TSRosWType`, `TSRosWGetType()`
 @*/
 PetscErrorCode TSRosWSetRecomputeJacobian(TS ts, PetscBool flg)
 {
@@ -1608,8 +1655,10 @@ $  A = Alpha Gamma^{-1}, bt^T = b^T Gamma^{-1}
 
   to rewrite the method as
 
-$  [M/(h gamma_ii) - J] y_i = f(u_0 + sum_j a_ij y_j) + M sum_j (c_ij/h) y_j
-$  u_1 = u_0 + sum_j bt_j y_j
+.vb
+  [M/(h gamma_ii) - J] y_i = f(u_0 + sum_j a_ij y_j) + M sum_j (c_ij/h) y_j
+  u_1 = u_0 + sum_j bt_j y_j
+.ve
 
    where we have introduced the mass matrix M. Continue by defining
 
@@ -1627,7 +1676,7 @@ $  g(u_0 + sum_j a_ij y_j + y_i, ydot_i) = 0
 
    with initial guess y_i = 0.
 
-.seealso: [](chapter_ts), `TSCreate()`, `TS`, `TSSetType()`, `TSRosWSetType()`, `TSRosWRegister()`, `TSROSWTHETA1`, `TSROSWTHETA2`, `TSROSW2M`, `TSROSW2P`, `TSROSWRA3PW`, `TSROSWRA34PW2`, `TSROSWRODAS3`,
+.seealso: [](ch_ts), `TSCreate()`, `TS`, `TSSetType()`, `TSRosWSetType()`, `TSRosWRegister()`, `TSROSWTHETA1`, `TSROSWTHETA2`, `TSROSW2M`, `TSROSW2P`, `TSROSWRA3PW`, `TSROSWRA34PW2`, `TSROSWRODAS3`,
           `TSROSWSANDU3`, `TSROSWASSP3P3S1C`, `TSROSWLASSP3P4S2C`, `TSROSWLLSSP3P4S2C`, `TSROSWGRK4T`, `TSROSWSHAMP4`, `TSROSWVELDD4`, `TSROSW4L`, `TSType`
 M*/
 PETSC_EXTERN PetscErrorCode TSCreate_RosW(TS ts)

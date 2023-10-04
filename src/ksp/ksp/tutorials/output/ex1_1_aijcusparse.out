@@ -1,15 +1,15 @@
-  0 KSP Residual norm 0.707107
-  1 KSP Residual norm 0.316228
-  2 KSP Residual norm 0.188982
-  3 KSP Residual norm 0.129099
-  4 KSP Residual norm 0.0953463
+  0 KSP Residual norm 0.707107 
+  1 KSP Residual norm 0.316228 
+  2 KSP Residual norm 0.188982 
+  3 KSP Residual norm 0.129099 
+  4 KSP Residual norm 0.0953463 
   5 KSP Residual norm < 1.e-11
 KSP Object: 1 MPI process
   type: gmres
     restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with one step of iterative refinement
     happy breakdown tolerance 1e-30
   maximum iterations=10000, initial guess is zero
-  tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+  tolerances:  relative=1e-05, absolute=1e-25, divergence=10000.
   left preconditioning
   using PRECONDITIONED norm type for convergence test
 PC Object: 1 MPI process
@@ -22,10 +22,28 @@ PC Object: 1 MPI process
     total: nonzeros=28, allocated nonzeros=28
     total number of mallocs used during MatSetValues calls=0
       not using I-node routines
-Norm of error 2.90785e-15, Iterations 5
- 0 KSP Residual norm 0.353553
- 1 KSP Residual norm 0.0857493
- 2 KSP Residual norm 0.0227273
- 3 KSP Residual norm 0.0060831
- 4 KSP Residual norm 0.0016298
- 5 KSP Residual norm < 1.e-11
+Norm of error 5.26414e-07, Iterations 5
+  0 KSP Residual norm 0.353553 
+  1 KSP Residual norm 0.0857493 
+  2 KSP Residual norm 0.0227273 
+  3 KSP Residual norm 0.0060831 
+  4 KSP Residual norm 0.0016298 
+  5 KSP Residual norm < 1.e-11
+KSP Object: 1 MPI process
+  type: gmres
+    restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with one step of iterative refinement
+    happy breakdown tolerance 1e-30
+  maximum iterations=10000, initial guess is zero
+  tolerances:  relative=1e-05, absolute=1e-25, divergence=10000.
+  left preconditioning
+  using PRECONDITIONED norm type for convergence test
+PC Object: 1 MPI process
+  type: jacobi
+    type DIAGONAL
+  linear system matrix = precond matrix:
+  Mat Object: 1 MPI process
+    type: seqaijcusparse
+    rows=10, cols=10
+    total: nonzeros=28, allocated nonzeros=28
+    total number of mallocs used during MatSetValues calls=0
+      not using I-node routines

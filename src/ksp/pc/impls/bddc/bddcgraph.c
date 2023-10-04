@@ -595,6 +595,7 @@ PetscErrorCode PCBDDCGraphComputeConnectedComponents(PCBDDCGraph graph)
         PetscInt sharingprocs   = cum_recv_counts[i + 1] - cum_recv_counts[i] + 1; /* count myself */
         PetscInt buffer_size    = graph->subset_size[i];
 
+        PetscCheck(buffer_size >= 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Expected buffer_size %" PetscInt_FMT " >= 0", buffer_size);
         /* compute pointers */
         for (j = 1; j < buffer_size; j++) refine_buffer[j] = refine_buffer[j - 1] + sharingprocs;
         /* analyze contributions from subdomains that share the i-th subset
@@ -1235,7 +1236,7 @@ PetscErrorCode PCBDDCGraphInit(PCBDDCGraph graph, ISLocalToGlobalMapping l2gmap,
   PetscInt n;
 
   PetscFunctionBegin;
-  PetscValidPointer(graph, 1);
+  PetscAssertPointer(graph, 1);
   PetscValidHeaderSpecific(l2gmap, IS_LTOGM_CLASSID, 2);
   PetscValidLogicalCollectiveInt(l2gmap, N, 3);
   PetscValidLogicalCollectiveInt(l2gmap, maxcount, 4);

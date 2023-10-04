@@ -302,7 +302,7 @@ static PetscErrorCode FormObjectiveLocal(DMDALocalInfo *info, PetscScalar **x, P
     }
   }
   PetscCall(PetscLogFlops(12.0 * info->ym * info->xm));
-  PetscCallMPI(MPI_Allreduce(&lobj, obj, 1, MPIU_REAL, MPIU_SUM, comm));
+  PetscCall(MPIU_Allreduce(&lobj, obj, 1, MPIU_REAL, MPIU_SUM, comm));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -564,7 +564,7 @@ int main(int argc, char **argv)
   PetscReal bratu_lambda_max = 6.81;
   PetscReal bratu_lambda_min = 0.;
   PetscInt  MMS              = 1;
-  PetscBool flg              = PETSC_FALSE, setMMS;
+  PetscBool flg, setMMS;
   DM        da;
   Vec       r = NULL;
   KSP       ksp;
@@ -583,6 +583,7 @@ int main(int argc, char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize problem parameters
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+  user.ncoo  = 0;
   user.param = 6.0;
   PetscCall(PetscOptionsGetReal(NULL, NULL, "-par", &user.param, NULL));
   PetscCheck(user.param <= bratu_lambda_max && user.param >= bratu_lambda_min, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Lambda, %g, is out of range, [%g, %g]", (double)user.param, (double)bratu_lambda_min, (double)bratu_lambda_max);
@@ -606,6 +607,10 @@ int main(int argc, char **argv)
      Create distributed array (DMDA) to manage parallel grid and vectors
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   PetscCall(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DMDA_STENCIL_STAR, 4, 4, PETSC_DECIDE, PETSC_DECIDE, 1, 1, NULL, NULL, &da));
+  if (useKokkos) {
+    PetscCall(DMSetVecType(da, VECKOKKOS));
+    PetscCall(DMSetMatType(da, MATAIJKOKKOS));
+  }
   PetscCall(DMSetFromOptions(da));
   PetscCall(DMSetUp(da));
   PetscCall(DMDASetUniformCoordinates(da, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0));
@@ -652,12 +657,14 @@ int main(int argc, char **argv)
     PetscCall(DMDASNESSetFunctionLocal(da, INSERT_VALUES, (DMDASNESFunction)FormFunctionLocal, &user));
   }
 
+  flg = PETSC_FALSE;
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-fd", &flg, NULL));
   if (!flg) {
     if (useKokkos) PetscCall(DMDASNESSetJacobianLocalVec(da, (DMDASNESJacobianVec)FormJacobianLocalVec, &user));
     else PetscCall(DMDASNESSetJacobianLocal(da, (DMDASNESJacobian)FormJacobianLocal, &user));
   }
 
+  flg = PETSC_FALSE;
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-obj", &flg, NULL));
   if (flg) {
     if (useKokkos) PetscCall(DMDASNESSetObjectiveLocalVec(da, (DMDASNESObjectiveVec)FormObjectiveLocalVec, &user));
@@ -730,7 +737,7 @@ int main(int argc, char **argv)
 
 /*TEST
   build:
-    requires: kokkos_kernels
+    requires: !windows_compilers
     depends: ex55k.kokkos.cxx
 
   testset:
@@ -741,8 +748,36 @@ int main(int argc, char **argv)
 
     test:
       suffix: asm_0
+      args: -fd {{0 1}}
+
     test:
+      requires: kokkos_kernels
       suffix: asm_0_kok
-      args: -use_kokkos 1 -dm_mat_type aijkokkos -dm_vec_type kokkos
+      args: -use_kokkos -fd {{0 1}}
+
+  testset:
+    output_file: output/ex55_1.out
+    requires: !single
+    args: -snes_monitor
+    filter: grep -v "type"
+
+    test:
+      suffix: 1
+      args: -fd {{0 1}}
+
+    test:
+      requires: kokkos_kernels
+      suffix: 1_kok
+      args: -use_kokkos -fd {{0 1}}
+
+    test:
+      requires: h2opus
+      suffix: 1_h2opus
+      args: -pc_type h2opus -fd {{0 1}}
+
+    test:
+      requires: h2opus kokkos_kernels
+      suffix: 1_h2opus_k
+      args: -use_kokkos -pc_type h2opus -fd {{0 1}}
 
 TEST*/

@@ -149,7 +149,7 @@ Changes: 2.0.22
    as ``user(3) = vec`` you have to declare those arrays to be of
    type ``PetscFortranAddr`` instead of as integer. Note that
    ``PetscFortranAddr`` is simply integer on 32 bit machines and
-   integer*8 on 64 bit machines.
+   integer*8 on 64-bit machines.
 -  The Fortran90-specific routines such as ``VecGetArrayF90()`` now
    work with the IBM Fortran compiler, the SGI Fortran 90 compiler,
    and the Cray T3E Fortran compiler.

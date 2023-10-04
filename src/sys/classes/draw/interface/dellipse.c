@@ -11,8 +11,10 @@
 
   Input Parameters:
 + draw - The drawing context
-. x,y  - The center
-. a,b  - The major and minor axes lengths
+. x    - The x coordinate of the center
+. y    - The y coordinate of the center
+. a    - The major axes length
+. b    - The minor axes length
 - c    - The color
 
   Level: beginner

@@ -10,28 +10,28 @@ static PetscErrorCode PetscDrawSave_SAWs(PetscDraw);
 #endif
 
 /*@C
-   PetscDrawSetSave - Saves images produced in a `PetscDraw` into a file
+  PetscDrawSetSave - Saves images produced in a `PetscDraw` into a file
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  draw      - the graphics context
--  filename  - name of the file, if .ext then uses name of draw object plus .ext using .ext to determine the image type
+  Input Parameters:
++ draw     - the graphics context
+- filename - name of the file, if .ext then uses name of draw object plus .ext using .ext to determine the image type
 
-   Options Database Keys:
-+  -draw_save <filename>  - filename could be name.ext or .ext (where .ext determines the type of graphics file to save, for example .png)
-.  -draw_save_final_image [optional filename] - saves the final image displayed in a window
--  -draw_save_single_file - saves each new image in the same file, normally each new image is saved in a new file with filename/filename_%d.ext
+  Options Database Keys:
++ -draw_save <filename>                      - filename could be name.ext or .ext (where .ext determines the type of graphics file to save, for example .png)
+. -draw_save_final_image [optional filename] - saves the final image displayed in a window
+- -draw_save_single_file                     - saves each new image in the same file, normally each new image is saved in a new file with filename/filename_%d.ext
 
-   Level: intermediate
+  Level: intermediate
 
-   Note:
-    You should call this BEFORE creating your image and calling `PetscDrawSave()`.
-   The supported image types are .png, .gif, .jpg, and .ppm (PETSc chooses the default in that order).
-   Support for .png images requires configure --with-libpng.
-   Support for .gif images requires configure --with-giflib.
-   Support for .jpg images requires configure --with-libjpeg.
-   Support for .ppm images is built-in. The PPM format has no compression (640x480 pixels ~ 900 KiB).
+  Note:
+  You should call this BEFORE creating your image and calling `PetscDrawSave()`.
+  The supported image types are .png, .gif, .jpg, and .ppm (PETSc chooses the default in that order).
+  Support for .png images requires configure --with-libpng.
+  Support for .gif images requires configure --with-giflib.
+  Support for .jpg images requires configure --with-libjpeg.
+  Support for .ppm images is built-in. The PPM format has no compression (640x480 pixels ~ 900 KiB).
 
 .seealso: `PetscDraw`, `PetscDrawOpenX()`, `PetscDrawOpenImage()`, `PetscDrawSetFromOptions()`, `PetscDrawCreate()`, `PetscDrawDestroy()`, `PetscDrawSetSaveFinalImage()`
 @*/
@@ -43,7 +43,7 @@ PetscErrorCode PetscDrawSetSave(PetscDraw draw, const char filename[])
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw, PETSC_DRAW_CLASSID, 1);
-  if (filename) PetscValidCharPointer(filename, 2);
+  if (filename) PetscAssertPointer(filename, 2);
 
   /* determine save filename and image extension */
   if (filename && filename[0]) {
@@ -77,22 +77,22 @@ PetscErrorCode PetscDrawSetSave(PetscDraw draw, const char filename[])
 }
 
 /*@C
-   PetscDrawSetSaveMovie - Saves a movie produced from a `PetscDraw` into a file
+  PetscDrawSetSaveMovie - Saves a movie produced from a `PetscDraw` into a file
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  draw      - the graphics context
--  movieext  - optional extension defining the movie format
+  Input Parameters:
++ draw     - the graphics context
+- movieext - optional extension defining the movie format
 
-   Options Database Key:
-.  -draw_save_movie <.ext> - saves a movie with extension .ext
+  Options Database Key:
+. -draw_save_movie <.ext> - saves a movie with extension .ext
 
-   Level: intermediate
+  Level: intermediate
 
-   Note:
-    You should call this AFTER calling `PetscDrawSetSave()` and BEFORE creating your image with `PetscDrawSave()`.
-   The ffmpeg utility must be in your path to make the movie.
+  Note:
+  You should call this AFTER calling `PetscDrawSetSave()` and BEFORE creating your image with `PetscDrawSave()`.
+  The ffmpeg utility must be in your path to make the movie.
 
 .seealso: `PetscDraw`, `PetscDrawSetSave()`, `PetscDrawSetFromOptions()`, `PetscDrawCreate()`, `PetscDrawDestroy()`
 @*/
@@ -100,7 +100,7 @@ PetscErrorCode PetscDrawSetSaveMovie(PetscDraw draw, const char movieext[])
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw, PETSC_DRAW_CLASSID, 1);
-  if (movieext) PetscValidCharPointer(movieext, 2);
+  if (movieext) PetscAssertPointer(movieext, 2);
 
   if (!draw->savefilename) PetscCall(PetscDrawSetSave(draw, ""));
   PetscCall(PetscDrawMovieCheckFormat(&movieext));
@@ -112,23 +112,23 @@ PetscErrorCode PetscDrawSetSaveMovie(PetscDraw draw, const char movieext[])
 }
 
 /*@C
-   PetscDrawSetSaveFinalImage - Saves the final image produced in a `PetscDraw` into a file
+  PetscDrawSetSaveFinalImage - Saves the final image produced in a `PetscDraw` into a file
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  draw      - the graphics context
--  filename  - name of the file, if NULL or empty uses name set with `PetscDrawSetSave()` or the name of the draw object
+  Input Parameters:
++ draw     - the graphics context
+- filename - name of the file, if NULL or empty uses name set with `PetscDrawSetSave()` or the name of the draw object
 
-   Options Database Key:
-.  -draw_save_final_image  <filename> - filename could be name.ext or .ext (where .ext determines the type of graphics file to save, for example .png)
+  Options Database Key:
+. -draw_save_final_image  <filename> - filename could be name.ext or .ext (where .ext determines the type of graphics file to save, for example .png)
 
-   Level: intermediate
+  Level: intermediate
 
-   Notes:
-    You should call this BEFORE creating your image and calling `PetscDrawSave()`.
+  Notes:
+  You should call this BEFORE creating your image and calling `PetscDrawSave()`.
 
-   The supported image types are .png, .gif, and .ppm (PETSc chooses the default in that order).
+  The supported image types are .png, .gif, and .ppm (PETSc chooses the default in that order).
 .vb
    Support for .png images requires configure --with-libpng.
    Support for .gif images requires configure --with-giflib.
@@ -158,17 +158,17 @@ PetscErrorCode PetscDrawSetSaveFinalImage(PetscDraw draw, const char filename[])
 }
 
 /*@
-   PetscDrawSave - Saves a drawn image
+  PetscDrawSave - Saves a drawn image
 
-   Collective
+  Collective
 
-   Input Parameter:
-.  draw - the drawing context
+  Input Parameter:
+. draw - the drawing context
 
-   Level: advanced
+  Level: advanced
 
-   Note:
-    this is not normally called by the user.
+  Note:
+  this is not normally called by the user.
 
 .seealso: `PetscDraw`, `PetscDrawSetSave()`
 @*/
@@ -236,19 +236,19 @@ finally:
 }
 
 /*@
-   PetscDrawSaveMovie - Saves a movie from previously saved images
+  PetscDrawSaveMovie - Saves a movie from previously saved images
 
-   Collective
+  Collective
 
-   Input Parameter:
-.  draw - the drawing context
+  Input Parameter:
+. draw - the drawing context
 
-   Level: advanced
+  Level: advanced
 
-   Notes:
-   This is not normally called by the user.
+  Notes:
+  This is not normally called by the user.
 
-   The ffmpeg utility must be in your path to make the movie.
+  The ffmpeg utility must be in your path to make the movie.
 
 .seealso: `PetscDraw`, `PetscDrawSetSave()`, `PetscDrawSetSaveMovie()`
 @*/

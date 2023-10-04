@@ -4,20 +4,20 @@
 PetscClassId PETSC_DRAWLG_CLASSID = 0;
 
 /*@
-   PetscDrawLGGetAxis - Gets the axis context associated with a line graph.
-   This is useful if one wants to change some axis property, such as
-   labels, color, etc. The axis context should not be destroyed by the
-   application code.
+  PetscDrawLGGetAxis - Gets the axis context associated with a line graph.
+  This is useful if one wants to change some axis property, such as
+  labels, color, etc. The axis context should not be destroyed by the
+  application code.
 
-   Not Collective, if lg is parallel then axis is parallel
+  Not Collective, if lg is parallel then axis is parallel
 
-   Input Parameter:
-.  lg - the line graph context
+  Input Parameter:
+. lg - the line graph context
 
-   Output Parameter:
-.  axis - the axis context
+  Output Parameter:
+. axis - the axis context
 
-   Level: advanced
+  Level: advanced
 
 .seealso: `PetscDrawLGCreate()`, `PetscDrawAxis`, `PetscDrawLG`
 @*/
@@ -25,23 +25,23 @@ PetscErrorCode PetscDrawLGGetAxis(PetscDrawLG lg, PetscDrawAxis *axis)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(lg, PETSC_DRAWLG_CLASSID, 1);
-  PetscValidPointer(axis, 2);
+  PetscAssertPointer(axis, 2);
   *axis = lg->axis;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
-   PetscDrawLGGetDraw - Gets the draw context associated with a line graph.
+  PetscDrawLGGetDraw - Gets the draw context associated with a line graph.
 
-   Not Collective, if lg is parallel then draw is parallel
+  Not Collective, if lg is parallel then draw is parallel
 
-   Input Parameter:
-.  lg - the line graph context
+  Input Parameter:
+. lg - the line graph context
 
-   Output Parameter:
-.  draw - the draw context
+  Output Parameter:
+. draw - the draw context
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `PetscDrawLGCreate()`, `PetscDraw`, `PetscDrawLG`
 @*/
@@ -49,7 +49,7 @@ PetscErrorCode PetscDrawLGGetDraw(PetscDrawLG lg, PetscDraw *draw)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(lg, PETSC_DRAWLG_CLASSID, 1);
-  PetscValidPointer(draw, 2);
+  PetscAssertPointer(draw, 2);
   *draw = lg->win;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -57,16 +57,16 @@ PetscErrorCode PetscDrawLGGetDraw(PetscDrawLG lg, PetscDraw *draw)
 /*@
   PetscDrawLGSPDraw - Redraws a line graph and a scatter plot on the same `PetscDraw` they must share
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  lg - the line graph context
--  spin - the scatter plot
+  Input Parameters:
++ lg   - the line graph context
+- spin - the scatter plot
 
-   Level: intermediate
+  Level: intermediate
 
-   Developer Note:
-    This code cheats and uses the fact that the `PetscDrawLG` and `PetscDrawSP` structs are the same
+  Developer Notes:
+  This code cheats and uses the fact that the `PetscDrawLG` and `PetscDrawSP` structs are the same
 
 .seealso: `PetscDrawLGDraw()`, `PetscDrawSPDraw()`
 @*/
@@ -121,26 +121,26 @@ PetscErrorCode PetscDrawLGSPDraw(PetscDrawLG lg, PetscDrawSP spin)
 }
 
 /*@
-    PetscDrawLGCreate - Creates a line graph data structure.
+  PetscDrawLGCreate - Creates a line graph data structure.
 
-    Collective
+  Collective
 
-    Input Parameters:
-+   draw - the window where the graph will be made.
--   dim - the number of curves which will be drawn
+  Input Parameters:
++ draw - the window where the graph will be made.
+- dim  - the number of curves which will be drawn
 
-    Output Parameter:
-.   outlg - the line graph context
+  Output Parameter:
+. outlg - the line graph context
 
-    Level: intermediate
+  Level: intermediate
 
-    Notes:
-    The MPI communicator that owns the `PetscDraw` owns this `PetscDrawLG`, but the calls to set options and add points are ignored on all processes except the
-           zeroth MPI process in the communicator.
+  Notes:
+  The MPI communicator that owns the `PetscDraw` owns this `PetscDrawLG`, but the calls to set options and add points are ignored on all processes except the
+  zeroth MPI process in the communicator.
 
-    All MPI ranks in the communicator must call `PetscDrawLGDraw()` to display the updated graph.
+  All MPI ranks in the communicator must call `PetscDrawLGDraw()` to display the updated graph.
 
-.seealso: `PetscDrawLGCreate`, `PetscDrawLGDestroy()`, `PetscDrawLGAddPoint()`, `PetscDrawLGAddCommonPoint()`, `PetscDrawLGAddPoints()`, `PetscDrawLGDraw()`, `PetscDrawLGSave()`,
+.seealso: `PetscDrawLGDestroy()`, `PetscDrawLGAddPoint()`, `PetscDrawLGAddCommonPoint()`, `PetscDrawLGAddPoints()`, `PetscDrawLGDraw()`, `PetscDrawLGSave()`,
           `PetscDrawLGView()`, `PetscDrawLGReset()`, `PetscDrawLGSetDimension()`, `PetscDrawLGGetDimension()`, `PetscDrawLGSetLegend()`, `PetscDrawLGGetAxis()`,
           `PetscDrawLGGetDraw()`, `PetscDrawLGSetUseMarkers()`, `PetscDrawLGSetLimits()`, `PetscDrawLGSetColors()`, `PetscDrawLGSetOptionsPrefix()`, `PetscDrawLGSetFromOptions()`
 @*/
@@ -151,7 +151,7 @@ PetscErrorCode PetscDrawLGCreate(PetscDraw draw, PetscInt dim, PetscDrawLG *outl
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw, PETSC_DRAW_CLASSID, 1);
   PetscValidLogicalCollectiveInt(draw, dim, 2);
-  PetscValidPointer(outlg, 3);
+  PetscAssertPointer(outlg, 3);
 
   PetscCall(PetscHeaderCreate(lg, PETSC_DRAWLG_CLASSID, "DrawLG", "Line Graph", "Draw", PetscObjectComm((PetscObject)draw), PetscDrawLGDestroy, NULL));
   PetscCall(PetscDrawLGSetOptionsPrefix(lg, ((PetscObject)draw)->prefix));
@@ -181,15 +181,15 @@ PetscErrorCode PetscDrawLGCreate(PetscDraw draw, PetscInt dim, PetscDrawLG *outl
 }
 
 /*@
-   PetscDrawLGSetColors - Sets the color of each line graph drawn
+  PetscDrawLGSetColors - Sets the color of each line graph drawn
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  lg - the line graph context.
--  colors - the colors
+  Input Parameters:
++ lg     - the line graph context.
+- colors - the colors
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `PetscDrawLG`, `PetscDrawLGCreate()`
 @*/
@@ -197,7 +197,7 @@ PetscErrorCode PetscDrawLGSetColors(PetscDrawLG lg, const int colors[])
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(lg, PETSC_DRAWLG_CLASSID, 1);
-  if (lg->dim) PetscValidIntPointer(colors, 2);
+  if (lg->dim) PetscAssertPointer(colors, 2);
 
   PetscCall(PetscFree(lg->colors));
   PetscCall(PetscMalloc1(lg->dim, &lg->colors));
@@ -206,18 +206,18 @@ PetscErrorCode PetscDrawLGSetColors(PetscDrawLG lg, const int colors[])
 }
 
 /*@C
-   PetscDrawLGSetLegend - sets the names of each curve plotted
+  PetscDrawLGSetLegend - sets the names of each curve plotted
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  lg - the line graph context.
--  names - the names for each curve
+  Input Parameters:
++ lg    - the line graph context.
+- names - the names for each curve
 
-   Level: intermediate
+  Level: intermediate
 
-   Note:
-    Call `PetscDrawLGGetAxis()` and then change properties of the `PetscDrawAxis` for detailed control of the plot
+  Note:
+  Call `PetscDrawLGGetAxis()` and then change properties of the `PetscDrawAxis` for detailed control of the plot
 
 .seealso: `PetscDrawLGGetAxis()`, `PetscDrawAxis`, `PetscDrawAxisSetColors()`, `PetscDrawAxisSetLabels()`, `PetscDrawAxisSetHoldLimits()`
 @*/
@@ -227,7 +227,7 @@ PetscErrorCode PetscDrawLGSetLegend(PetscDrawLG lg, const char *const *names)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(lg, PETSC_DRAWLG_CLASSID, 1);
-  if (names) PetscValidPointer(names, 2);
+  if (names) PetscAssertPointer(names, 2);
 
   if (lg->legend) {
     for (i = 0; i < lg->dim; i++) PetscCall(PetscFree(lg->legend[i]));
@@ -241,17 +241,17 @@ PetscErrorCode PetscDrawLGSetLegend(PetscDrawLG lg, const char *const *names)
 }
 
 /*@
-   PetscDrawLGGetDimension - Get the number of curves that are to be drawn.
+  PetscDrawLGGetDimension - Get the number of curves that are to be drawn.
 
-   Not Collective
+  Not Collective
 
-   Input Parameter:
-.  lg - the line graph context.
+  Input Parameter:
+. lg - the line graph context.
 
-   Output Parameter:
-.  dim - the number of curves.
+  Output Parameter:
+. dim - the number of curves.
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `PetscDrawLGC`, `PetscDrawLGCreate()`, `PetscDrawLGSetDimension()`
 @*/
@@ -259,21 +259,21 @@ PetscErrorCode PetscDrawLGGetDimension(PetscDrawLG lg, PetscInt *dim)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(lg, PETSC_DRAWLG_CLASSID, 1);
-  PetscValidIntPointer(dim, 2);
+  PetscAssertPointer(dim, 2);
   *dim = lg->dim;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
-   PetscDrawLGSetDimension - Change the number of curves that are to be drawn.
+  PetscDrawLGSetDimension - Change the number of curves that are to be drawn.
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  lg - the line graph context.
--  dim - the number of curves.
+  Input Parameters:
++ lg  - the line graph context.
+- dim - the number of curves.
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `PetscDrawLGCreate()`, `PetscDrawLGGetDimension()`
 @*/
@@ -299,20 +299,20 @@ PetscErrorCode PetscDrawLGSetDimension(PetscDrawLG lg, PetscInt dim)
 }
 
 /*@
-   PetscDrawLGSetLimits - Sets the axis limits for a line graph. If more
-   points are added after this call, the limits will be adjusted to
-   include those additional points.
+  PetscDrawLGSetLimits - Sets the axis limits for a line graph. If more
+  points are added after this call, the limits will be adjusted to
+  include those additional points.
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  xlg - the line graph context
-.  x_min - the horizontal lower limit
-.  x_max - the horizontal upper limit
-.  y_min - the vertical lower limit
--  y_max - the vertical upper limit
+  Input Parameters:
++ lg    - the line graph context
+. x_min - the horizontal lower limit
+. x_max - the horizontal upper limit
+. y_min - the vertical lower limit
+- y_max - the vertical upper limit
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `PetscDrawLGCreate()`, `PetscDrawLG`, `PetscDrawAxis`
 @*/
@@ -329,14 +329,14 @@ PetscErrorCode PetscDrawLGSetLimits(PetscDrawLG lg, PetscReal x_min, PetscReal x
 }
 
 /*@
-   PetscDrawLGReset - Clears line graph to allow for reuse with new data.
+  PetscDrawLGReset - Clears line graph to allow for reuse with new data.
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameter:
-.  lg - the line graph context.
+  Input Parameter:
+. lg - the line graph context.
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `PetscDrawLG`, `PetscDrawLGCreate()`
 @*/
@@ -354,14 +354,14 @@ PetscErrorCode PetscDrawLGReset(PetscDrawLG lg)
 }
 
 /*@
-   PetscDrawLGDestroy - Frees all space taken up by line graph data structure.
+  PetscDrawLGDestroy - Frees all space taken up by line graph data structure.
 
-   Collective
+  Collective
 
-   Input Parameter:
-.  lg - the line graph context
+  Input Parameter:
+. lg - the line graph context
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `PetscDrawLG`, `PetscDrawLGCreate()`
 @*/
@@ -389,18 +389,18 @@ PetscErrorCode PetscDrawLGDestroy(PetscDrawLG *lg)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 /*@
-   PetscDrawLGSetUseMarkers - Causes the line graph object to draw a marker for each data-point.
+  PetscDrawLGSetUseMarkers - Causes the line graph object to draw a marker for each data-point.
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  lg - the linegraph context
--  flg - should mark each data point
+  Input Parameters:
++ lg  - the linegraph context
+- flg - should mark each data point
 
-   Options Database Key:
-.  -lg_use_markers  <true,false> - true means it draws a marker for each point
+  Options Database Key:
+. -lg_use_markers  <true,false> - true means it draws a marker for each point
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `PetscDrawLG`, `PetscDrawLGCreate()`
 @*/
@@ -414,14 +414,14 @@ PetscErrorCode PetscDrawLGSetUseMarkers(PetscDrawLG lg, PetscBool flg)
 }
 
 /*@
-   PetscDrawLGDraw - Redraws a line graph.
+  PetscDrawLGDraw - Redraws a line graph.
 
-   Collective
+  Collective
 
-   Input Parameter:
-.  lg - the line graph context
+  Input Parameter:
+. lg - the line graph context
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `PetscDrawLG`, `PetscDrawSPDraw()`, `PetscDrawLGSPDraw()`, `PetscDrawLGReset()`
 @*/
@@ -507,7 +507,7 @@ PetscErrorCode PetscDrawLGDraw(PetscDrawLG lg)
 
   Level: intermediate
 
-.seealso: `PetscDrawLG`, `PetscDrawSave()`, `PetscDrawLGCreate()`, `PetscDrawLGGetDraw()`, `PetscDrawSetSave()`, `PetscDrawSave()`
+.seealso: `PetscDrawLG`, `PetscDrawSave()`, `PetscDrawLGCreate()`, `PetscDrawLGGetDraw()`, `PetscDrawSetSave()`
 @*/
 PetscErrorCode PetscDrawLGSave(PetscDrawLG lg)
 {
@@ -522,8 +522,9 @@ PetscErrorCode PetscDrawLGSave(PetscDrawLG lg)
 
   Collective
 
-  Input Parameter:
-. lg - the line graph context
+  Input Parameters:
++ lg     - the line graph context
+- viewer - the viewer to view it with
 
   Level: beginner
 
@@ -550,16 +551,16 @@ PetscErrorCode PetscDrawLGView(PetscDrawLG lg, PetscViewer viewer)
 }
 
 /*@C
-   PetscDrawLGSetOptionsPrefix - Sets the prefix used for searching for all
-   `PetscDrawLG` options in the database.
+  PetscDrawLGSetOptionsPrefix - Sets the prefix used for searching for all
+  `PetscDrawLG` options in the database.
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameters:
-+  lg - the line graph context
--  prefix - the prefix to prepend to all option names
+  Input Parameters:
++ lg     - the line graph context
+- prefix - the prefix to prepend to all option names
 
-   Level: advanced
+  Level: advanced
 
 .seealso: `PetscDrawLG`, `PetscDrawLGSetFromOptions()`, `PetscDrawLGCreate()`
 @*/
@@ -572,17 +573,17 @@ PetscErrorCode PetscDrawLGSetOptionsPrefix(PetscDrawLG lg, const char prefix[])
 }
 
 /*@
-    PetscDrawLGSetFromOptions - Sets options related to the line graph object
+  PetscDrawLGSetFromOptions - Sets options related to the line graph object
 
-    Collective
+  Collective
 
-    Input Parameters:
-.   lg - the line graph context
+  Input Parameters:
+. lg - the line graph context
 
-    Options Database Key:
-.  -lg_use_markers  <true,false> - true means it draws a marker for each point
+  Options Database Key:
+. -lg_use_markers  <true,false> - true means it draws a marker for each point
 
-    Level: intermediate
+  Level: intermediate
 
 .seealso: `PetscDrawLG`, `PetscDrawLGDestroy()`, `PetscDrawLGCreate()`
 @*/

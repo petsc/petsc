@@ -1,154 +1,210 @@
+@@ -4,5 +4,5 @@
+ #include <petsc/private/petscimpl.h>
+ 
+-PetscErrorCode testDuplicatesWithChanges(PetscInt *a, PetscScalar *b)
++static PetscErrorCode testDuplicatesWithChanges(PetscInt *a, PetscScalar *b)
+ {
+   /* no remove */
 @@ -9,5 +9,5 @@
-   PetscValidIntPointer(a, 1);
+   PetscAssertPointer(a, 1);
    /* remove */
--  PetscValidIntPointer(a, 1);
+-  PetscAssertPointer(a, 1);
 +  
    /* no remove */
-   PetscValidIntPointer(b, 5);
+   PetscAssertPointer(b, 5);
 @@ -11,5 +11,5 @@
-   PetscValidIntPointer(a, 1);
+   PetscAssertPointer(a, 1);
    /* no remove */
--  PetscValidIntPointer(b, 5);
-+  PetscValidScalarPointer(b, 2);
+-  PetscAssertPointer(b, 5);
++  PetscAssertPointer(b, 2);
    /* ~should~ be removed but won't be */
-   PetscValidScalarPointer(b, 7);
+   PetscAssertPointer(b, 7);
 @@ -13,5 +13,5 @@
-   PetscValidIntPointer(b, 5);
+   PetscAssertPointer(b, 5);
    /* ~should~ be removed but won't be */
--  PetscValidScalarPointer(b, 7);
-+  PetscValidScalarPointer(b, 2);
-   PetscValidScalarPointer(b, 3);
+-  PetscAssertPointer(b, 7);
++  PetscAssertPointer(b, 2);
+   PetscAssertPointer(b, 3);
    return 0;
 @@ -14,5 +14,5 @@
    /* ~should~ be removed but won't be */
-   PetscValidScalarPointer(b, 7);
--  PetscValidScalarPointer(b, 3);
-+  PetscValidScalarPointer(b, 2);
+   PetscAssertPointer(b, 7);
+-  PetscAssertPointer(b, 3);
++  PetscAssertPointer(b, 2);
    return 0;
  }
+@@ -18,5 +18,5 @@
+ }
+ 
+-PetscErrorCode testDuplicatesScoped(PetscInt *a, PetscScalar *b)
++static PetscErrorCode testDuplicatesScoped(PetscInt *a, PetscScalar *b)
+ {
+   /* no remove */
 @@ -24,5 +24,5 @@
-   PetscValidScalarPointer(b, 2);
+   PetscAssertPointer(b, 2);
    /* remove */
--  PetscValidIntPointer(a, 1);
+-  PetscAssertPointer(a, 1);
 +  
-   PetscValidScalarPointer(b, 2);
+   PetscAssertPointer(b, 2);
    {
 @@ -25,5 +25,5 @@
    /* remove */
-   PetscValidIntPointer(a, 1);
--  PetscValidScalarPointer(b, 2);
+   PetscAssertPointer(a, 1);
+-  PetscAssertPointer(b, 2);
 +  
    {
      /* remove */
 @@ -28,5 +28,5 @@
    {
      /* remove */
--    PetscValidIntPointer(a, 1);
+-    PetscAssertPointer(a, 1);
 +    
-     PetscValidScalarPointer(b, 2);
+     PetscAssertPointer(b, 2);
    }
 @@ -29,5 +29,5 @@
      /* remove */
-     PetscValidIntPointer(a, 1);
--    PetscValidScalarPointer(b, 2);
+     PetscAssertPointer(a, 1);
+-    PetscAssertPointer(b, 2);
 +    
    }
    return 0;
+@@ -34,5 +34,5 @@
+ }
+ 
+-PetscErrorCode testDuplicatesDoubleScoped(PetscInt *a, PetscScalar *b)
++static PetscErrorCode testDuplicatesDoubleScoped(PetscInt *a, PetscScalar *b)
+ {
+   /* no remove */
 @@ -40,5 +40,5 @@
-   PetscValidScalarPointer(b, 2);
+   PetscAssertPointer(b, 2);
    /* remove */
--  PetscValidIntPointer(a, 1);
+-  PetscAssertPointer(a, 1);
 +  
-   PetscValidScalarPointer(b, 2);
+   PetscAssertPointer(b, 2);
    {
 @@ -41,5 +41,5 @@
    /* remove */
-   PetscValidIntPointer(a, 1);
--  PetscValidScalarPointer(b, 2);
+   PetscAssertPointer(a, 1);
+-  PetscAssertPointer(b, 2);
 +  
    {
      /* remove */
 @@ -44,5 +44,5 @@
    {
      /* remove */
--    PetscValidIntPointer(a, 1);
+-    PetscAssertPointer(a, 1);
 +    
-     PetscValidScalarPointer(b, 2);
+     PetscAssertPointer(b, 2);
    }
 @@ -45,5 +45,5 @@
      /* remove */
-     PetscValidIntPointer(a, 1);
--    PetscValidScalarPointer(b, 2);
+     PetscAssertPointer(a, 1);
+-    PetscAssertPointer(b, 2);
 +    
    }
    {
 @@ -49,5 +49,5 @@
    {
      /* remove */
--    PetscValidIntPointer(a, 1);
+-    PetscAssertPointer(a, 1);
 +    
-     PetscValidScalarPointer(b, 2);
+     PetscAssertPointer(b, 2);
    }
 @@ -50,5 +50,5 @@
      /* remove */
-     PetscValidIntPointer(a, 1);
--    PetscValidScalarPointer(b, 2);
+     PetscAssertPointer(a, 1);
+-    PetscAssertPointer(b, 2);
 +    
    }
    return 0;
+@@ -55,5 +55,5 @@
+ }
+ 
+-PetscErrorCode testNoDuplicatesSwitch(PetscInt *a, PetscScalar *b, PetscBool cond)
++static PetscErrorCode testNoDuplicatesSwitch(PetscInt *a, PetscScalar *b, PetscBool cond)
+ {
+   switch (cond) {
+@@ -72,5 +72,5 @@
+ }
+ 
+-PetscErrorCode testDuplicatesNoChangesSwitch(PetscInt *a, PetscScalar *b, PetscBool cond)
++static PetscErrorCode testDuplicatesNoChangesSwitch(PetscInt *a, PetscScalar *b, PetscBool cond)
+ {
+   /* no remove */
 @@ -80,5 +80,5 @@
    case PETSC_TRUE:
      /* remove */
--    PetscValidIntPointer(a, 1);
+-    PetscAssertPointer(a, 1);
 +    
-     PetscValidScalarPointer(b, 2);
+     PetscAssertPointer(b, 2);
      break;
 @@ -81,5 +81,5 @@
      /* remove */
-     PetscValidIntPointer(a, 1);
--    PetscValidScalarPointer(b, 2);
+     PetscAssertPointer(a, 1);
+-    PetscAssertPointer(b, 2);
 +    
      break;
    case PETSC_FALSE:
 @@ -85,5 +85,5 @@
    case PETSC_FALSE:
      /* remove */
--    PetscValidIntPointer(a, 1);
+-    PetscAssertPointer(a, 1);
 +    
-     PetscValidScalarPointer(b, 2);
+     PetscAssertPointer(b, 2);
      break;
 @@ -86,5 +86,5 @@
      /* remove */
-     PetscValidIntPointer(a, 1);
--    PetscValidScalarPointer(b, 2);
+     PetscAssertPointer(a, 1);
+-    PetscAssertPointer(b, 2);
 +    
      break;
    }
+@@ -92,5 +92,5 @@
+ }
+ 
+-PetscErrorCode testNoDuplicatesIfElse(PetscInt *a, PetscScalar *b, PetscBool cond)
++static PetscErrorCode testNoDuplicatesIfElse(PetscInt *a, PetscScalar *b, PetscBool cond)
+ {
+   if (cond) {
+@@ -106,5 +106,5 @@
+ }
+ 
+-PetscErrorCode testDuplicatesIfElse(PetscInt *a, PetscScalar *b, PetscBool cond)
++static PetscErrorCode testDuplicatesIfElse(PetscInt *a, PetscScalar *b, PetscBool cond)
+ {
+   /* no remove */
 @@ -113,5 +113,5 @@
    if (cond) {
      /* remove */
--    PetscValidIntPointer(a, 1);
+-    PetscAssertPointer(a, 1);
 +    
-     PetscValidScalarPointer(b, 2);
+     PetscAssertPointer(b, 2);
    } else {
 @@ -114,5 +114,5 @@
      /* remove */
-     PetscValidIntPointer(a, 1);
--    PetscValidScalarPointer(b, 2);
+     PetscAssertPointer(a, 1);
+-    PetscAssertPointer(b, 2);
 +    
    } else {
      /* remove */
 @@ -117,5 +117,5 @@
    } else {
      /* remove */
--    PetscValidIntPointer(a, 1);
+-    PetscAssertPointer(a, 1);
 +    
-     PetscValidScalarPointer(b, 2);
+     PetscAssertPointer(b, 2);
    }
 @@ -118,5 +118,5 @@
      /* remove */
-     PetscValidIntPointer(a, 1);
--    PetscValidScalarPointer(b, 2);
+     PetscAssertPointer(a, 1);
+-    PetscAssertPointer(b, 2);
 +    
    }
    return 0;
+@@ -123,5 +123,5 @@
+ }
+ 
+-PetscErrorCode testNoDuplicatesIfElseIfElse(PetscInt *a, PetscScalar *b, PetscBool cond)
++static PetscErrorCode testNoDuplicatesIfElseIfElse(PetscInt *a, PetscScalar *b, PetscBool cond)
+ {
+   if (cond) {

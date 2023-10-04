@@ -2,26 +2,26 @@
 #include <petsc/private/matimpl.h> /*I   "petscmat.h"  I*/
 
 /*@
-   MatGetColumnVector - Gets the values from a given column of a matrix.
+  MatGetColumnVector - Gets the values from a given column of a matrix.
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  A - the matrix
-.  yy - the vector
--  col - the column requested (in global numbering)
+  Input Parameters:
++ A   - the matrix
+. yy  - the vector
+- col - the column requested (in global numbering)
 
-   Level: advanced
+  Level: advanced
 
-   Notes:
-   If a `MatType` does not implement the operation, each processor for which this is called
-   gets the values for its rows using `MatGetRow()`.
+  Notes:
+  If a `MatType` does not implement the operation, each processor for which this is called
+  gets the values for its rows using `MatGetRow()`.
 
-   The vector must have the same parallel row layout as the matrix.
+  The vector must have the same parallel row layout as the matrix.
 
-   Contributed by: Denis Vanderstraeten
+  Contributed by: Denis Vanderstraeten
 
-.seealso: [](chapter_matrices), `Mat`, `MatGetRow()`, `MatGetDiagonal()`, `MatMult()`
+.seealso: [](ch_matrices), `Mat`, `MatGetRow()`, `MatGetDiagonal()`, `MatMult()`
 @*/
 PetscErrorCode MatGetColumnVector(Mat A, Vec yy, PetscInt col)
 {
@@ -67,22 +67,22 @@ PetscErrorCode MatGetColumnVector(Mat A, Vec yy, PetscInt col)
 }
 
 /*@
-   MatGetColumnNorms - Gets the norms of each column of a sparse or dense matrix.
+  MatGetColumnNorms - Gets the norms of each column of a sparse or dense matrix.
 
-   Input Parameters:
-+  A - the matrix
--  type - `NORM_2`, `NORM_1` or `NORM_INFINITY`
+  Input Parameters:
++ A    - the matrix
+- type - `NORM_2`, `NORM_1` or `NORM_INFINITY`
 
-   Output Parameter:
-.  norms - an array as large as the TOTAL number of columns in the matrix
+  Output Parameter:
+. norms - an array as large as the TOTAL number of columns in the matrix
 
-   Level: intermediate
+  Level: intermediate
 
-   Note:
-    Each process has ALL the column norms after the call. Because of the way this is computed each process gets all the values,
-    if each process wants only some of the values it should extract the ones it wants from the array.
+  Note:
+  Each process has ALL the column norms after the call. Because of the way this is computed each process gets all the values,
+  if each process wants only some of the values it should extract the ones it wants from the array.
 
-.seealso: [](chapter_matrices), `Mat`, `NormType`, `MatNorm()`
+.seealso: [](ch_matrices), `Mat`, `NormType`, `MatNorm()`
 @*/
 PetscErrorCode MatGetColumnNorms(Mat A, NormType type, PetscReal norms[])
 {
@@ -98,21 +98,21 @@ PetscErrorCode MatGetColumnNorms(Mat A, NormType type, PetscReal norms[])
 }
 
 /*@
-   MatGetColumnSumsRealPart - Gets the sums of the real part of each column of a sparse or dense matrix.
+  MatGetColumnSumsRealPart - Gets the sums of the real part of each column of a sparse or dense matrix.
 
-   Input Parameter:
-.  A - the matrix
+  Input Parameter:
+. A - the matrix
 
-   Output Parameter:
-.  sums - an array as large as the TOTAL number of columns in the matrix
+  Output Parameter:
+. sums - an array as large as the TOTAL number of columns in the matrix
 
-   Level: intermediate
+  Level: intermediate
 
-   Note:
-    Each process has ALL the column sums after the call. Because of the way this is computed each process gets all the values,
-    if each process wants only some of the values it should extract the ones it wants from the array.
+  Note:
+  Each process has ALL the column sums after the call. Because of the way this is computed each process gets all the values,
+  if each process wants only some of the values it should extract the ones it wants from the array.
 
-.seealso: [](chapter_matrices), `Mat`, `MatGetColumnSumsImaginaryPart()`, `VecSum()`, `MatGetColumnMeans()`, `MatGetColumnNorms()`, `MatGetColumnReductions()`
+.seealso: [](ch_matrices), `Mat`, `MatGetColumnSumsImaginaryPart()`, `VecSum()`, `MatGetColumnMeans()`, `MatGetColumnNorms()`, `MatGetColumnReductions()`
 @*/
 PetscErrorCode MatGetColumnSumsRealPart(Mat A, PetscReal sums[])
 {
@@ -122,21 +122,21 @@ PetscErrorCode MatGetColumnSumsRealPart(Mat A, PetscReal sums[])
 }
 
 /*@
-   MatGetColumnSumsImaginaryPart - Gets the sums of the imaginary part of each column of a sparse or dense matrix.
+  MatGetColumnSumsImaginaryPart - Gets the sums of the imaginary part of each column of a sparse or dense matrix.
 
-   Input Parameter:
-.  A - the matrix
+  Input Parameter:
+. A - the matrix
 
-   Output Parameter:
-.  sums - an array as large as the TOTAL number of columns in the matrix
+  Output Parameter:
+. sums - an array as large as the TOTAL number of columns in the matrix
 
-   Level: intermediate
+  Level: intermediate
 
-   Note:
-    Each process has ALL the column sums after the call. Because of the way this is computed each process gets all the values,
-    if each process wants only some of the values it should extract the ones it wants from the array.
+  Note:
+  Each process has ALL the column sums after the call. Because of the way this is computed each process gets all the values,
+  if each process wants only some of the values it should extract the ones it wants from the array.
 
-.seealso: [](chapter_matrices), `Mat`, `MatGetColumnSumsRealPart()`, `VecSum()`, `MatGetColumnMeans()`, `MatGetColumnNorms()`, `MatGetColumnReductions()`
+.seealso: [](ch_matrices), `Mat`, `MatGetColumnSumsRealPart()`, `VecSum()`, `MatGetColumnMeans()`, `MatGetColumnNorms()`, `MatGetColumnReductions()`
 @*/
 PetscErrorCode MatGetColumnSumsImaginaryPart(Mat A, PetscReal sums[])
 {
@@ -146,21 +146,21 @@ PetscErrorCode MatGetColumnSumsImaginaryPart(Mat A, PetscReal sums[])
 }
 
 /*@
-   MatGetColumnSums - Gets the sums of each column of a sparse or dense matrix.
+  MatGetColumnSums - Gets the sums of each column of a sparse or dense matrix.
 
-   Input Parameter:
-.  A - the matrix
+  Input Parameter:
+. A - the matrix
 
-   Output Parameter:
-.  sums - an array as large as the TOTAL number of columns in the matrix
+  Output Parameter:
+. sums - an array as large as the TOTAL number of columns in the matrix
 
-   Level: intermediate
+  Level: intermediate
 
-   Note:
-    Each process has ALL the column sums after the call. Because of the way this is computed each process gets all the values,
-    if each process wants only some of the values it should extract the ones it wants from the array.
+  Note:
+  Each process has ALL the column sums after the call. Because of the way this is computed each process gets all the values,
+  if each process wants only some of the values it should extract the ones it wants from the array.
 
-.seealso: [](chapter_matrices), `Mat`, `VecSum()`, `MatGetColumnMeans()`, `MatGetColumnNorms()`, `MatGetColumnReductions()`
+.seealso: [](ch_matrices), `Mat`, `VecSum()`, `MatGetColumnMeans()`, `MatGetColumnNorms()`, `MatGetColumnReductions()`
 @*/
 PetscErrorCode MatGetColumnSums(Mat A, PetscScalar sums[])
 {
@@ -187,21 +187,21 @@ PetscErrorCode MatGetColumnSums(Mat A, PetscScalar sums[])
 }
 
 /*@
-   MatGetColumnMeansRealPart - Gets the arithmetic means of the real part of each column of a sparse or dense matrix.
+  MatGetColumnMeansRealPart - Gets the arithmetic means of the real part of each column of a sparse or dense matrix.
 
-   Input Parameter:
-.  A - the matrix
+  Input Parameter:
+. A - the matrix
 
-   Output Parameter:
-.  sums - an array as large as the TOTAL number of columns in the matrix
+  Output Parameter:
+. means - an array as large as the TOTAL number of columns in the matrix
 
-   Level: intermediate
+  Level: intermediate
 
-   Note:
-    Each process has ALL the column means after the call. Because of the way this is computed each process gets all the values,
-    if each process wants only some of the values it should extract the ones it wants from the array.
+  Note:
+  Each process has ALL the column means after the call. Because of the way this is computed each process gets all the values,
+  if each process wants only some of the values it should extract the ones it wants from the array.
 
-.seealso: [](chapter_matrices), `Mat`, `MatGetColumnMeansImaginaryPart()`, `VecSum()`, `MatGetColumnSums()`, `MatGetColumnNorms()`, `MatGetColumnReductions()`
+.seealso: [](ch_matrices), `Mat`, `MatGetColumnMeansImaginaryPart()`, `VecSum()`, `MatGetColumnSums()`, `MatGetColumnNorms()`, `MatGetColumnReductions()`
 @*/
 PetscErrorCode MatGetColumnMeansRealPart(Mat A, PetscReal means[])
 {
@@ -211,21 +211,21 @@ PetscErrorCode MatGetColumnMeansRealPart(Mat A, PetscReal means[])
 }
 
 /*@
-   MatGetColumnMeansImaginaryPart - Gets the arithmetic means of the imaginary part of each column of a sparse or dense matrix.
+  MatGetColumnMeansImaginaryPart - Gets the arithmetic means of the imaginary part of each column of a sparse or dense matrix.
 
-   Input Parameter:
-.  A - the matrix
+  Input Parameter:
+. A - the matrix
 
-   Output Parameter:
-.  sums - an array as large as the TOTAL number of columns in the matrix
+  Output Parameter:
+. means - an array as large as the TOTAL number of columns in the matrix
 
-   Level: intermediate
+  Level: intermediate
 
-   Note:
-    Each process has ALL the column means after the call. Because of the way this is computed each process gets all the values,
-    if each process wants only some of the values it should extract the ones it wants from the array.
+  Note:
+  Each process has ALL the column means after the call. Because of the way this is computed each process gets all the values,
+  if each process wants only some of the values it should extract the ones it wants from the array.
 
-.seealso: [](chapter_matrices), `Mat`, `MatGetColumnMeansRealPart()`, `VecSum()`, `MatGetColumnSums()`, `MatGetColumnNorms()`, `MatGetColumnReductions()`
+.seealso: [](ch_matrices), `Mat`, `MatGetColumnMeansRealPart()`, `VecSum()`, `MatGetColumnSums()`, `MatGetColumnNorms()`, `MatGetColumnReductions()`
 @*/
 PetscErrorCode MatGetColumnMeansImaginaryPart(Mat A, PetscReal means[])
 {
@@ -235,21 +235,21 @@ PetscErrorCode MatGetColumnMeansImaginaryPart(Mat A, PetscReal means[])
 }
 
 /*@
-   MatGetColumnMeans - Gets the arithmetic means of each column of a sparse or dense matrix.
+  MatGetColumnMeans - Gets the arithmetic means of each column of a sparse or dense matrix.
 
-   Input Parameter:
-.  A - the matrix
+  Input Parameter:
+. A - the matrix
 
-   Output Parameter:
-.  means - an array as large as the TOTAL number of columns in the matrix
+  Output Parameter:
+. means - an array as large as the TOTAL number of columns in the matrix
 
-   Level: intermediate
+  Level: intermediate
 
-   Note:
-    Each process has ALL the column means after the call. Because of the way this is computed each process gets all the values,
-    if each process wants only some of the values it should extract the ones it wants from the array.
+  Note:
+  Each process has ALL the column means after the call. Because of the way this is computed each process gets all the values,
+  if each process wants only some of the values it should extract the ones it wants from the array.
 
-.seealso: [](chapter_matrices), `Mat`, `VecSum()`, `MatGetColumnSums()`, `MatGetColumnNorms()`, `MatGetColumnReductions()`
+.seealso: [](ch_matrices), `Mat`, `VecSum()`, `MatGetColumnSums()`, `MatGetColumnNorms()`, `MatGetColumnReductions()`
 @*/
 PetscErrorCode MatGetColumnMeans(Mat A, PetscScalar means[])
 {
@@ -276,27 +276,27 @@ PetscErrorCode MatGetColumnMeans(Mat A, PetscScalar means[])
 }
 
 /*@
-    MatGetColumnReductions - Gets the reductions of each column of a sparse or dense matrix.
+  MatGetColumnReductions - Gets the reductions of each column of a sparse or dense matrix.
 
   Input Parameters:
-+  A - the matrix
--  type - A constant defined in `NormType` or `ReductionType`: `NORM_2`, `NORM_1`, `NORM_INFINITY`, `REDUCTION_SUM_REALPART`,
++ A    - the matrix
+- type - A constant defined in `NormType` or `ReductionType`: `NORM_2`, `NORM_1`, `NORM_INFINITY`, `REDUCTION_SUM_REALPART`,
           `REDUCTION_SUM_IMAGINARYPART`, `REDUCTION_MEAN_REALPART`, `REDUCTION_MEAN_IMAGINARYPART`
 
   Output Parameter:
-.  reductions - an array as large as the TOTAL number of columns in the matrix
+. reductions - an array as large as the TOTAL number of columns in the matrix
 
-   Level: developer
+  Level: developer
 
-   Note:
-    Each process has ALL the column reductions after the call. Because of the way this is computed each process gets all the values,
-    if each process wants only some of the values it should extract the ones it wants from the array.
+  Note:
+  Each process has ALL the column reductions after the call. Because of the way this is computed each process gets all the values,
+  if each process wants only some of the values it should extract the ones it wants from the array.
 
-  Developer Note:
-    This routine is primarily intended as a back-end.
-    `MatGetColumnNorms()`, `MatGetColumnSums()`, and `MatGetColumnMeans()` are implemented using this routine.
+  Developer Notes:
+  This routine is primarily intended as a back-end.
+  `MatGetColumnNorms()`, `MatGetColumnSums()`, and `MatGetColumnMeans()` are implemented using this routine.
 
-.seealso: [](chapter_matrices), `Mat`, `ReductionType`, `NormType`, `MatGetColumnNorms()`, `MatGetColumnSums()`, `MatGetColumnMeans()`
+.seealso: [](ch_matrices), `Mat`, `ReductionType`, `NormType`, `MatGetColumnNorms()`, `MatGetColumnSums()`, `MatGetColumnMeans()`
 @*/
 PetscErrorCode MatGetColumnReductions(Mat A, PetscInt type, PetscReal reductions[])
 {

@@ -1,5 +1,9 @@
 #include <petsc.h>
 
+#if PetscDefined(HAVE_HYPRE_DEVICE)
+  #include <petsc/private/petschypre.h>
+#endif
+
 static char help[] = "Solves a linear system with a block of right-hand sides, apply a preconditioner to the same block.\n\n";
 
 PetscErrorCode MatApply(PC pc, Mat X, Mat Y)
@@ -11,14 +15,12 @@ PetscErrorCode MatApply(PC pc, Mat X, Mat Y)
 
 int main(int argc, char **args)
 {
-  Mat       A, X, B; /* computed solutions and RHS */
-  KSP       ksp;     /* linear solver context */
-  PC        pc;      /* preconditioner context */
-  PetscInt  m = 10;
-  PetscBool flg, transpose = PETSC_FALSE;
-#if defined(PETSC_USE_LOG)
-  PetscLogEvent event;
-#endif
+  Mat                A, X, B; /* computed solutions and RHS */
+  KSP                ksp;     /* linear solver context */
+  PC                 pc;      /* preconditioner context */
+  PetscInt           m = 10;
+  PetscBool          flg, transpose = PETSC_FALSE;
+  PetscLogEvent      event;
   PetscEventPerfInfo info;
 
   PetscFunctionBeginUser;
@@ -43,12 +45,29 @@ int main(int argc, char **args)
   if (flg) {
     PetscCall(MatConvert(B, MATDENSECUDA, MAT_INPLACE_MATRIX, &B));
     PetscCall(MatConvert(X, MATDENSECUDA, MAT_INPLACE_MATRIX, &X));
+  } else {
+    PetscCall(PetscObjectTypeCompareAny((PetscObject)A, &flg, MATSEQAIJHIPSPARSE, MATMPIAIJHIPSPARSE, ""));
+    if (flg) {
+      PetscCall(MatConvert(B, MATDENSEHIP, MAT_INPLACE_MATRIX, &B));
+      PetscCall(MatConvert(X, MATDENSEHIP, MAT_INPLACE_MATRIX, &X));
+    }
   }
   PetscCall(KSPCreate(PETSC_COMM_WORLD, &ksp));
   PetscCall(KSPSetOperators(ksp, A, A));
   PetscCall(KSPSetFromOptions(ksp));
   PetscCall(KSPGetPC(ksp, &pc));
-  PetscCall(PCShellSetMatApply(pc, MatApply));
+  PetscCall(PetscObjectTypeCompare((PetscObject)pc, PCHYPRE, &flg));
+  if (flg && PetscDefined(HAVE_HYPRE_DEVICE)) {
+#if defined(HYPRE_USING_HIP)
+    PetscCall(MatConvert(A, MATAIJHIPSPARSE, MAT_INPLACE_MATRIX, &A));
+    PetscCall(MatConvert(B, MATDENSEHIP, MAT_INPLACE_MATRIX, &B));
+    PetscCall(MatConvert(X, MATDENSEHIP, MAT_INPLACE_MATRIX, &X));
+#elif defined(HYPRE_USING_CUDA)
+    PetscCall(MatConvert(A, MATAIJCUSPARSE, MAT_INPLACE_MATRIX, &A));
+    PetscCall(MatConvert(B, MATDENSECUDA, MAT_INPLACE_MATRIX, &B));
+    PetscCall(MatConvert(X, MATDENSECUDA, MAT_INPLACE_MATRIX, &X));
+#endif
+  } else PetscCall(PCShellSetMatApply(pc, MatApply));
   PetscCall(KSPMatSolve(ksp, B, X));
   PetscCall(PCMatApply(pc, B, X));
   if (transpose) {
@@ -190,5 +209,18 @@ int main(int argc, char **args)
          output_file: output/ex77_preonly.out
          requires: hpddm
          args: -ksp_type hpddm -ksp_hpddm_type preonly
+
+   testset:
+      requires: hypre !complex
+      args: -pc_type hypre -pc_hypre_boomeramg_relax_type_all l1scaled-Jacobi -pc_hypre_boomeramg_no_CF
+      test:
+         suffix: 9
+         output_file: output/ex77_preonly.out
+         args: -ksp_type preonly
+      test:
+         suffix: 9_hpddm
+         output_file: output/ex77_preonly.out
+         requires: hpddm !hip
+         args: -ksp_type hpddm -ksp_max_it 15 -ksp_error_if_not_converged
 
 TEST*/

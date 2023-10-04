@@ -1,5 +1,4 @@
-#ifndef __TAOLINESEARCH_IMPL_H
-#define __TAOLINESEARCH_IMPL_H
+#pragma once
 #include <petscvec.h>
 #include <petsc/private/petscimpl.h>
 #include <petsctaolinesearch.h>
@@ -68,4 +67,3 @@ struct _p_TaoLineSearch {
 
 PETSC_EXTERN PetscLogEvent TAOLINESEARCH_Apply;
 PETSC_EXTERN PetscLogEvent TAOLINESEARCH_Eval;
-#endif

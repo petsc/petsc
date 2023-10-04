@@ -1,13 +1,13 @@
-[0] lnu = 1023 | lnp = 512
-[0] s_u = 0 | e_u = 1023
-[0] s_p = 0 | e_p = 512
-[0] is_u (offset) = 0
-[0] is_p (offset) = 1023
-[1] lnu = 1023 | lnp = 512
-[1] s_u = 1023 | e_u = 2046
-[1] s_p = 512 | e_p = 1024
-[1] is_u (offset) = 1535
-[1] is_p (offset) = 2558
+[0] lnu = 1023 | lnp = 512 
+[0] s_u = 0 | e_u = 1023 
+[0] s_p = 0 | e_p = 512 
+[0] is_u (offset) = 0 
+[0] is_p (offset) = 1023 
+[1] lnu = 1023 | lnp = 512 
+[1] s_u = 1023 | e_u = 2046 
+[1] s_p = 512 | e_p = 1024 
+[1] is_u (offset) = 1535 
+[1] is_p (offset) = 2558 
 KSP Object: (fc_) 2 MPI processes
   type: gmres
     restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
@@ -21,9 +21,6 @@ PC Object: (fc_) 2 MPI processes
   PC has not been set up so information may be incomplete
     out-of-place factorization
     tolerance for zero pivot 2.22045e-14
-    matrix ordering: external
-    matrix solver type: mumps
-    matrix not yet factored; no additional information available
   linear system matrix followed by preconditioner matrix:
   Mat Object: 2 MPI processes
     type: nest

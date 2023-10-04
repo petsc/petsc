@@ -612,7 +612,7 @@ static PetscErrorCode IPMComputeKKT(Tao tao)
 }
 
 /* evaluate user info at current point */
-PetscErrorCode IPMEvaluate(Tao tao)
+static PetscErrorCode IPMEvaluate(Tao tao)
 {
   TAO_IPM *ipmP = (TAO_IPM *)tao->data;
 
@@ -635,7 +635,7 @@ PetscErrorCode IPMEvaluate(Tao tao)
 }
 
 /* Push initial point away from bounds */
-PetscErrorCode IPMPushInitialPoint(Tao tao)
+static PetscErrorCode IPMPushInitialPoint(Tao tao)
 {
   TAO_IPM *ipmP = (TAO_IPM *)tao->data;
 
@@ -654,7 +654,7 @@ PetscErrorCode IPMPushInitialPoint(Tao tao)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode IPMUpdateAi(Tao tao)
+static PetscErrorCode IPMUpdateAi(Tao tao)
 {
   /* Ai =     Ji
               I (w/lb)
@@ -787,7 +787,7 @@ PetscErrorCode IPMUpdateAi(Tao tao)
               [Ae , 0,   0  , 0];
               [Ai ,-I,   0 ,  0];
               [ 0 , S ,  0,   Y ];  */
-PetscErrorCode IPMUpdateK(Tao tao)
+static PetscErrorCode IPMUpdateK(Tao tao)
 {
   TAO_IPM         *ipmP = (TAO_IPM *)tao->data;
   MPI_Comm         comm;
@@ -967,7 +967,7 @@ PetscErrorCode IPMUpdateK(Tao tao)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode IPMGatherRHS(Tao tao, Vec RHS, Vec X1, Vec X2, Vec X3, Vec X4)
+static PetscErrorCode IPMGatherRHS(Tao tao, Vec RHS, Vec X1, Vec X2, Vec X3, Vec X4)
 {
   TAO_IPM *ipmP = (TAO_IPM *)tao->data;
 
@@ -997,7 +997,7 @@ PetscErrorCode IPMGatherRHS(Tao tao, Vec RHS, Vec X1, Vec X2, Vec X3, Vec X4)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode IPMScatterStep(Tao tao, Vec STEP, Vec X1, Vec X2, Vec X3, Vec X4)
+static PetscErrorCode IPMScatterStep(Tao tao, Vec STEP, Vec X1, Vec X2, Vec X3, Vec X4)
 {
   TAO_IPM *ipmP = (TAO_IPM *)tao->data;
 

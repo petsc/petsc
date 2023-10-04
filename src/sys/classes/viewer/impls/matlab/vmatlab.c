@@ -9,21 +9,21 @@ typedef struct {
 } PetscViewer_Matlab;
 
 /*@C
-    PetscViewerMatlabPutArray - Puts an array into the `PETSCVIEWERMATLAB` viewer.
+  PetscViewerMatlabPutArray - Puts an array into the `PETSCVIEWERMATLAB` viewer.
 
-      Not Collective: only processor zero saves `array`
+  Not Collective, only processor zero saves `array`
 
-    Input Parameters:
-+    mfile - the viewer
-.    m - the first dimensions of `array`
-.    n - the second dimensions of `array`
-.    array - the array (represented in one dimension)
--    name - the MATLAB name of `array`
+  Input Parameters:
++ mfile - the viewer
+. m     - the first dimensions of `array`
+. n     - the second dimensions of `array`
+. array - the array (represented in one dimension)
+- name  - the MATLAB name of `array`
 
-   Level: advanced
+  Level: advanced
 
-    Note:
-    Only writes `array` values on processor 0.
+  Note:
+  Only writes `array` values on processor 0.
 
 .seealso: `PETSCVIEWERMATLAB`, `PetscViewerMatlabGetArray()`
 @*/
@@ -60,21 +60,21 @@ PetscErrorCode PetscViewerMatlabPutVariable(PetscViewer viewer, const char *name
 }
 
 /*@C
-    PetscViewerMatlabGetArray - Gets a variable from a `PETSCVIEWERMATLAB` viewer into an array
+  PetscViewerMatlabGetArray - Gets a variable from a `PETSCVIEWERMATLAB` viewer into an array
 
-    Not Collective; only processor zero reads in the array
+  Not Collective; only processor zero reads in the array
 
-    Input Parameters:
-+    mfile - the MATLAB file viewer
-.    m - the first dimensions of `array`
-.    n - the second dimensions of `array`
-.    array - the array (represented in one dimension)
--    name - the MATLAB name of `array`
+  Input Parameters:
++ mfile - the MATLAB file viewer
+. m     - the first dimensions of `array`
+. n     - the second dimensions of `array`
+. array - the array (represented in one dimension)
+- name  - the MATLAB name of `array`
 
-   Level: advanced
+  Level: advanced
 
-    Note:
-    Only reads in `array` values on processor 0.
+  Note:
+  Only reads in `array` values on processor 0.
 
 .seealso: `PETSCVIEWERMATLAB`, `PetscViewerMatlabPutArray()`
 @*/
@@ -96,7 +96,7 @@ PetscErrorCode PetscViewerMatlabGetArray(PetscViewer mfile, int m, int n, PetscS
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PetscViewerFileSetMode_Matlab(PetscViewer viewer, PetscFileMode type)
+static PetscErrorCode PetscViewerFileSetMode_Matlab(PetscViewer viewer, PetscFileMode type)
 {
   PetscViewer_Matlab *vmatlab = (PetscViewer_Matlab *)viewer->data;
 
@@ -108,7 +108,7 @@ PetscErrorCode PetscViewerFileSetMode_Matlab(PetscViewer viewer, PetscFileMode t
 /*
         Actually opens the file
 */
-PetscErrorCode PetscViewerFileSetName_Matlab(PetscViewer viewer, const char name[])
+static PetscErrorCode PetscViewerFileSetName_Matlab(PetscViewer viewer, const char name[])
 {
   PetscViewer_Matlab *vmatlab = (PetscViewer_Matlab *)viewer->data;
   PetscFileMode       type    = vmatlab->btype;
@@ -129,7 +129,7 @@ PetscErrorCode PetscViewerFileSetName_Matlab(PetscViewer viewer, const char name
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PetscViewerDestroy_Matlab(PetscViewer v)
+static PetscErrorCode PetscViewerDestroy_Matlab(PetscViewer v)
 {
   PetscViewer_Matlab *vf = (PetscViewer_Matlab *)v->data;
 
@@ -197,34 +197,34 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_Matlab(PetscViewer viewer)
 }
 
 /*@C
-   PetscViewerMatlabOpen - Opens a Matlab .mat file for output
+  PetscViewerMatlabOpen - Opens a Matlab .mat file for output
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  comm - MPI communicator
-.  name - name of file
--  type - type of file
+  Input Parameters:
++ comm - MPI communicator
+. name - name of file
+- type - type of file
 .vb
     FILE_MODE_WRITE - create new file for MATLAB output
     FILE_MODE_READ - open existing file for MATLAB input
     FILE_MODE_WRITE - open existing file for MATLAB output
 .ve
 
-   Output Parameter:
-.  binv - PetscViewer for MATLAB output to use with the specified file
+  Output Parameter:
+. binv - PetscViewer for MATLAB output to use with the specified file
 
-   Level: beginner
+  Level: beginner
 
-   Notes:
-   This `PetscViewer` should be destroyed with `PetscViewerDestroy()`.
+  Notes:
+  This `PetscViewer` should be destroyed with `PetscViewerDestroy()`.
 
-   For writing files it only opens the file on processor 0 in the communicator.
+  For writing files it only opens the file on processor 0 in the communicator.
 
-   This only saves `Vec`s it cannot be used to save `Mat`s. We recommend using the `PETSCVIEWERBINARY` to save objects to be loaded into MATLAB
-   instead of this routine.
+  This only saves `Vec`s it cannot be used to save `Mat`s. We recommend using the `PETSCVIEWERBINARY` to save objects to be loaded into MATLAB
+  instead of this routine.
 
-   PETSc must be configured with the option `--with-matlab` for this functionality
+  PETSc must be configured with the option `--with-matlab` for this functionality
 
 .seealso: `PETSCVIEWERMATLAB`, `PetscViewerASCIIOpen()`, `PetscViewerPushFormat()`, `PetscViewerDestroy()`, `PETSCVIEWERBINARY`, `PetscViewerBinaryOpen()`
           `VecView()`, `MatView()`, `VecLoad()`, `MatLoad()`
@@ -258,10 +258,12 @@ static PetscMPIInt Petsc_Viewer_Matlab_keyval = MPI_KEYVAL_INVALID;
 
      Level: intermediate
 
-     Note:
+     Notes:
+     This object is destroyed in `PetscFinalize()`, `PetscViewerDestroy()` should never be called on it
+
      Unlike almost all other PETSc routines, `PETSC_VIEWER_MATLAB_()` does not return
      an error code.  The matlab PetscViewer is usually used in the form
-$       XXXView(XXX object,PETSC_VIEWER_MATLAB_(comm));
+$       XXXView(XXX object, PETSC_VIEWER_MATLAB_(comm));
 
      Use `PETSC_VIEWER_SOCKET_()` or `PetscViewerSocketOpen()` to communicator with an interactive MATLAB session.
 
@@ -307,7 +309,8 @@ PetscViewer PETSC_VIEWER_MATLAB_(MPI_Comm comm)
         PetscFunctionReturn(NULL);
       }
     }
-    ierr = PetscViewerMatlabOpen(ncomm, fname, FILE_MODE_WRITE, &viewer);
+    ierr                              = PetscViewerMatlabOpen(ncomm, fname, FILE_MODE_WRITE, &viewer);
+    ((PetscObject)viewer)->persistent = PETSC_TRUE;
     if (ierr) {
       PetscError(PETSC_COMM_SELF, __LINE__, "PETSC_VIEWER_MATLAB_", __FILE__, PETSC_ERR_PLIB, PETSC_ERROR_REPEAT, " ");
       PetscFunctionReturn(NULL);

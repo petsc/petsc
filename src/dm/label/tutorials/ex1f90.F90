@@ -13,10 +13,10 @@ program  ex1f90
   izero = 0
 
   PetscCallA(PetscInitialize(ierr))
-  PetscCallA(PetscOptionsGetString(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,"-i",filename,flg,ierr))
-  PetscCallA(PetscOptionsGetBool(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,"-interpolate",interpolate,flg,ierr))
+  PetscCallA(PetscOptionsGetString(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-i',filename,flg,ierr))
+  PetscCallA(PetscOptionsGetBool(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-interpolate',interpolate,flg,ierr))
 
-  PetscCallA(DMPlexCreateFromFile(PETSC_COMM_WORLD,filename,"ex1f90_plex",interpolate,dm,ierr))
+  PetscCallA(DMPlexCreateFromFile(PETSC_COMM_WORLD,filename,'ex1f90_plex',interpolate,dm,ierr))
   PetscCallA(DMPlexDistribute(dm,izero,PETSC_NULL_SF,dmDist,ierr))
   if (dmDist /= PETSC_NULL_DM) then
     PetscCallA(DMDestroy(dm,ierr))
@@ -46,18 +46,18 @@ contains
       write(IObuffer,*) 'label ',l,' name: ',trim(labelName),'\n'
       PetscCall(PetscViewerASCIIPrintf(viewer, IObuffer, ierr))
 
-      PetscCall(PetscViewerASCIIPrintf(viewer, "IS of values\n", ierr))
+      PetscCall(PetscViewerASCIIPrintf(viewer, 'IS of values\n', ierr))
       PetscCall(DMGetLabel(dm, labelName, label, ierr))
       PetscCall(DMLabelGetValueIS(label, labelIS, ierr))
 !      PetscCall(PetscViewerASCIIPushTab(viewer,ierr))
       PetscCall(ISView(labelIS, viewer, ierr))
 !      PetscCall(PetscViewerASCIIPopTab(viewer,ierr))
       PetscCall(ISDestroy(labelIS, ierr))
-      PetscCall(PetscViewerASCIIPrintf(viewer, "\n", ierr))
+      PetscCall(PetscViewerASCIIPrintf(viewer, '\n', ierr))
     end do
 
-    PetscCall(PetscViewerASCIIPrintf(viewer,"\n\nCell Set label IS\n",ierr))
-    PetscCall(DMGetLabel(dm, "Cell Sets", label, ierr))
+    PetscCall(PetscViewerASCIIPrintf(viewer,'\n\nCell Set label IS\n',ierr))
+    PetscCall(DMGetLabel(dm, 'Cell Sets', label, ierr))
     PetscCall(DMLabelGetValueIS(label, labelIS, ierr))
     PetscCall(ISView(labelIS, viewer, ierr))
     PetscCall(ISDestroy(labelIS, ierr))

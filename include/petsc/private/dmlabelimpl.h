@@ -1,5 +1,4 @@
-#ifndef _LABELIMPL_H
-#define _LABELIMPL_H
+#pragma once
 
 #include <petscdmlabel.h>
 #include <petscbt.h>
@@ -46,4 +45,3 @@ PETSC_INTERN PetscErrorCode DMLabelLookupStratum(DMLabel, PetscInt, PetscInt *);
 PETSC_INTERN PetscErrorCode DMLabelGetStratumSize_Private(DMLabel, PetscInt, PetscInt *);
 PETSC_INTERN PetscErrorCode PetscSectionSymCreate_Label(PetscSectionSym);
 PETSC_INTERN PetscErrorCode DMLabelMakeAllInvalid_Internal(DMLabel);
-#endif

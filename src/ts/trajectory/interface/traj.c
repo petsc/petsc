@@ -13,7 +13,7 @@ PetscLogEvent     TSTrajectory_Set, TSTrajectory_Get, TSTrajectory_GetVecs, TSTr
   Not Collective
 
   Input Parameters:
-+ sname        - the name of a new user-defined creation routine
++ sname    - the name of a new user-defined creation routine
 - function - the creation routine itself
 
   Level: developer
@@ -21,7 +21,7 @@ PetscLogEvent     TSTrajectory_Set, TSTrajectory_Get, TSTrajectory_GetVecs, TSTr
   Note:
   `TSTrajectoryRegister()` may be called multiple times to add several user-defined tses.
 
-.seealso: [](chapter_ts), `TSTrajectoryRegisterAll()`
+.seealso: [](ch_ts), `TSTrajectoryRegisterAll()`
 @*/
 PetscErrorCode TSTrajectoryRegister(const char sname[], PetscErrorCode (*function)(TSTrajectory, TS))
 {
@@ -47,7 +47,7 @@ PetscErrorCode TSTrajectoryRegister(const char sname[], PetscErrorCode (*functio
   Note:
   Usually one does not call this routine, it is called automatically during `TSSolve()`
 
-.seealso: [](chapter_ts), `TSTrajectorySetUp()`, `TSTrajectoryDestroy()`, `TSTrajectorySetType()`, `TSTrajectorySetVariableNames()`, `TSGetTrajectory()`, `TSTrajectoryGet()`, `TSTrajectoryGetVecs()`
+.seealso: [](ch_ts), `TSTrajectorySetUp()`, `TSTrajectoryDestroy()`, `TSTrajectorySetType()`, `TSTrajectorySetVariableNames()`, `TSGetTrajectory()`, `TSTrajectoryGet()`, `TSTrajectoryGetVecs()`
 @*/
 PetscErrorCode TSTrajectorySet(TSTrajectory tj, TS ts, PetscInt stepnum, PetscReal time, Vec X)
 {
@@ -81,13 +81,13 @@ PetscErrorCode TSTrajectorySet(TSTrajectory tj, TS ts, PetscInt stepnum, PetscRe
 
   Level: developer
 
-.seealso: [](chapter_ts), `TS`, `TSTrajectorySet()`
+.seealso: [](ch_ts), `TS`, `TSTrajectorySet()`
 @*/
 PetscErrorCode TSTrajectoryGetNumSteps(TSTrajectory tj, PetscInt *steps)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tj, TSTRAJECTORY_CLASSID, 1);
-  PetscValidIntPointer(steps, 2);
+  PetscAssertPointer(steps, 2);
   PetscCall(TSHistoryGetNumSteps(tj->tsh, steps));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -103,14 +103,14 @@ PetscErrorCode TSTrajectoryGetNumSteps(TSTrajectory tj, PetscInt *steps)
 - stepnum - the step number
 
   Output Parameter:
-. time    - the time associated with the step number
+. time - the time associated with the step number
 
   Level: developer
 
   Note:
   Usually one does not call this routine, it is called automatically during `TSSolve()`
 
-.seealso: [](chapter_ts), `TS`, `TSSolve()`, `TSTrajectorySetUp()`, `TSTrajectoryDestroy()`, `TSTrajectorySetType()`, `TSTrajectorySetVariableNames()`, `TSGetTrajectory()`, `TSTrajectorySet()`, `TSTrajectoryGetVecs()`, `TSGetSolution()`
+.seealso: [](ch_ts), `TS`, `TSSolve()`, `TSTrajectorySetUp()`, `TSTrajectoryDestroy()`, `TSTrajectorySetType()`, `TSTrajectorySetVariableNames()`, `TSGetTrajectory()`, `TSTrajectorySet()`, `TSTrajectoryGetVecs()`, `TSGetSolution()`
 @*/
 PetscErrorCode TSTrajectoryGet(TSTrajectory tj, TS ts, PetscInt stepnum, PetscReal *time)
 {
@@ -119,7 +119,7 @@ PetscErrorCode TSTrajectoryGet(TSTrajectory tj, TS ts, PetscInt stepnum, PetscRe
   PetscValidHeaderSpecific(tj, TSTRAJECTORY_CLASSID, 1);
   PetscValidHeaderSpecific(ts, TS_CLASSID, 2);
   PetscValidLogicalCollectiveInt(tj, stepnum, 3);
-  PetscValidRealPointer(time, 4);
+  PetscAssertPointer(time, 4);
   PetscCheck(tj->setupcalled, PetscObjectComm((PetscObject)tj), PETSC_ERR_ORDER, "TSTrajectorySetUp should be called first");
   PetscCheck(stepnum >= 0, PetscObjectComm((PetscObject)tj), PETSC_ERR_PLIB, "Requesting negative step number");
   if (tj->monitor) {
@@ -153,7 +153,7 @@ PetscErrorCode TSTrajectoryGet(TSTrajectory tj, TS ts, PetscInt stepnum, PetscRe
   If the step number is `PETSC_DECIDE`, the time argument is used to inquire the trajectory.
   If the requested time does not match any in the trajectory, Lagrangian interpolations are returned.
 
-.seealso: [](chapter_ts), `TS`, `TSTrajectory`, `TSTrajectorySetUp()`, `TSTrajectoryDestroy()`, `TSTrajectorySetType()`, `TSTrajectorySetVariableNames()`, `TSGetTrajectory()`, `TSTrajectorySet()`, `TSTrajectoryGet()`
+.seealso: [](ch_ts), `TS`, `TSTrajectory`, `TSTrajectorySetUp()`, `TSTrajectoryDestroy()`, `TSTrajectorySetType()`, `TSTrajectorySetVariableNames()`, `TSGetTrajectory()`, `TSTrajectorySet()`, `TSTrajectoryGet()`
 @*/
 PetscErrorCode TSTrajectoryGetVecs(TSTrajectory tj, TS ts, PetscInt stepnum, PetscReal *time, Vec U, Vec Udot)
 {
@@ -162,7 +162,7 @@ PetscErrorCode TSTrajectoryGetVecs(TSTrajectory tj, TS ts, PetscInt stepnum, Pet
   PetscValidHeaderSpecific(tj, TSTRAJECTORY_CLASSID, 1);
   if (ts) PetscValidHeaderSpecific(ts, TS_CLASSID, 2);
   PetscValidLogicalCollectiveInt(tj, stepnum, 3);
-  PetscValidRealPointer(time, 4);
+  PetscAssertPointer(time, 4);
   if (U) PetscValidHeaderSpecific(U, VEC_CLASSID, 5);
   if (Udot) PetscValidHeaderSpecific(Udot, VEC_CLASSID, 6);
   if (!U && !Udot) PetscFunctionReturn(PETSC_SUCCESS);
@@ -253,18 +253,18 @@ PetscErrorCode TSTrajectoryGetVecs(TSTrajectory tj, TS ts, PetscInt stepnum, Pet
 }
 
 /*@C
-   TSTrajectoryViewFromOptions - View a `TSTrajectory` based on values in the options database
+  TSTrajectoryViewFromOptions - View a `TSTrajectory` based on values in the options database
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  A - the `TSTrajectory` context
-.  obj - Optional object that provides prefix used for option name
--  name - command line option
+  Input Parameters:
++ A    - the `TSTrajectory` context
+. obj  - Optional object that provides prefix used for option name
+- name - command line option
 
-   Level: intermediate
+  Level: intermediate
 
-.seealso: [](chapter_ts), `TSTrajectory`, `TSTrajectoryView`, `PetscObjectViewFromOptions()`, `TSTrajectoryCreate()`
+.seealso: [](ch_ts), `TSTrajectory`, `TSTrajectoryView`, `PetscObjectViewFromOptions()`, `TSTrajectoryCreate()`
 @*/
 PetscErrorCode TSTrajectoryViewFromOptions(TSTrajectory A, PetscObject obj, const char name[])
 {
@@ -275,31 +275,31 @@ PetscErrorCode TSTrajectoryViewFromOptions(TSTrajectory A, PetscObject obj, cons
 }
 
 /*@C
-    TSTrajectoryView - Prints information about the trajectory object
+  TSTrajectoryView - Prints information about the trajectory object
 
-    Collective
+  Collective
 
-    Input Parameters:
-+   tj - the `TSTrajectory` context obtained from `TSTrajectoryCreate()`
--   viewer - visualization context
+  Input Parameters:
++ tj     - the `TSTrajectory` context obtained from `TSTrajectoryCreate()`
+- viewer - visualization context
 
-    Options Database Key:
-.   -ts_trajectory_view - calls `TSTrajectoryView()` at end of `TSAdjointStep()`
+  Options Database Key:
+. -ts_trajectory_view - calls `TSTrajectoryView()` at end of `TSAdjointStep()`
 
-    Level: developer
+  Level: developer
 
-    Notes:
-    The available visualization contexts include
+  Notes:
+  The available visualization contexts include
 +     `PETSC_VIEWER_STDOUT_SELF` - standard output (default)
 -     `PETSC_VIEWER_STDOUT_WORLD` - synchronized standard
-         output where only the first processor opens
-         the file.  All other processors send their
-         data to the first processor to print.
+  output where only the first processor opens
+  the file.  All other processors send their
+  data to the first processor to print.
 
-    The user can open an alternative visualization context with
-    `PetscViewerASCIIOpen()` - output to a specified file.
+  The user can open an alternative visualization context with
+  `PetscViewerASCIIOpen()` - output to a specified file.
 
-.seealso: [](chapter_ts), `TS`, `TSTrajectory`, `PetscViewer`, `PetscViewerASCIIOpen()`
+.seealso: [](ch_ts), `TS`, `TSTrajectory`, `PetscViewer`, `PetscViewerASCIIOpen()`
 @*/
 PetscErrorCode TSTrajectoryView(TSTrajectory tj, PetscViewer viewer)
 {
@@ -325,45 +325,45 @@ PetscErrorCode TSTrajectoryView(TSTrajectory tj, PetscViewer viewer)
 }
 
 /*@C
-   TSTrajectorySetVariableNames - Sets the name of each component in the solution vector so that it may be saved with the trajectory
+  TSTrajectorySetVariableNames - Sets the name of each component in the solution vector so that it may be saved with the trajectory
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  tr - the trajectory context
--  names - the names of the components, final string must be NULL
+  Input Parameters:
++ ctx   - the trajectory context
+- names - the names of the components, final string must be NULL
 
-   Level: intermediate
+  Level: intermediate
 
-   Fortran Note:
-   Fortran interface is not possible because of the string array argument
+  Fortran Notes:
+  Fortran interface is not possible because of the string array argument
 
-.seealso: [](chapter_ts), `TSTrajectory`, `TSGetTrajectory()`
+.seealso: [](ch_ts), `TSTrajectory`, `TSGetTrajectory()`
 @*/
 PetscErrorCode TSTrajectorySetVariableNames(TSTrajectory ctx, const char *const *names)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ctx, TSTRAJECTORY_CLASSID, 1);
-  PetscValidPointer(names, 2);
+  PetscAssertPointer(names, 2);
   PetscCall(PetscStrArrayDestroy(&ctx->names));
   PetscCall(PetscStrArrayallocpy(names, &ctx->names));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
-   TSTrajectorySetTransform - Solution vector will be transformed by provided function before being saved to disk
+  TSTrajectorySetTransform - Solution vector will be transformed by provided function before being saved to disk
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  tj - the `TSTrajectory` context
-.  transform - the transform function
-.  destroy - function to destroy the optional context
--  ctx - optional context used by transform function
+  Input Parameters:
++ tj        - the `TSTrajectory` context
+. transform - the transform function
+. destroy   - function to destroy the optional context
+- tctx      - optional context used by transform function
 
-   Level: intermediate
+  Level: intermediate
 
-.seealso: [](chapter_ts), `TSTrajectorySetVariableNames()`, `TSTrajectory`, `TSMonitorLGSetTransform()`
+.seealso: [](ch_ts), `TSTrajectorySetVariableNames()`, `TSTrajectory`, `TSMonitorLGSetTransform()`
 @*/
 PetscErrorCode TSTrajectorySetTransform(TSTrajectory tj, PetscErrorCode (*transform)(void *, Vec, Vec *), PetscErrorCode (*destroy)(void *), void *tctx)
 {
@@ -384,21 +384,21 @@ PetscErrorCode TSTrajectorySetTransform(TSTrajectory tj, PetscErrorCode (*transf
 . comm - the communicator
 
   Output Parameter:
-. tj   - the trajectory object
+. tj - the trajectory object
 
   Level: developer
 
   Notes:
-    Usually one does not call this routine, it is called automatically when one calls `TSSetSaveTrajectory()`.
+  Usually one does not call this routine, it is called automatically when one calls `TSSetSaveTrajectory()`.
 
-.seealso: [](chapter_ts), `TS`, `TSTrajectory`, `TSTrajectorySetUp()`, `TSTrajectoryDestroy()`, `TSTrajectorySetType()`, `TSTrajectorySetVariableNames()`, `TSGetTrajectory()`, `TSTrajectorySetKeepFiles()`
+.seealso: [](ch_ts), `TS`, `TSTrajectory`, `TSTrajectorySetUp()`, `TSTrajectoryDestroy()`, `TSTrajectorySetType()`, `TSTrajectorySetVariableNames()`, `TSGetTrajectory()`, `TSTrajectorySetKeepFiles()`
 @*/
 PetscErrorCode TSTrajectoryCreate(MPI_Comm comm, TSTrajectory *tj)
 {
   TSTrajectory t;
 
   PetscFunctionBegin;
-  PetscValidPointer(tj, 2);
+  PetscAssertPointer(tj, 2);
   *tj = NULL;
   PetscCall(TSInitializePackage());
 
@@ -444,12 +444,12 @@ PetscErrorCode TSTrajectoryCreate(MPI_Comm comm, TSTrajectory *tj)
   Options Database Key:
 . -ts_trajectory_type <type> - Sets the method; use -help for a list of available methods (for instance, basic)
 
-   Level: developer
+  Level: developer
 
-  Developer Note:
+  Developer Notes:
   Why does this option require access to the `TS`
 
-.seealso: [](chapter_ts), `TSTrajectory`, `TS`, `TSTrajectoryCreate()`, `TSTrajectorySetFromOptions()`, `TSTrajectoryDestroy()`, `TSTrajectoryGetType()`
+.seealso: [](ch_ts), `TSTrajectory`, `TS`, `TSTrajectoryCreate()`, `TSTrajectorySetFromOptions()`, `TSTrajectoryDestroy()`, `TSTrajectoryGetType()`
 @*/
 PetscErrorCode TSTrajectorySetType(TSTrajectory tj, TS ts, TSTrajectoryType type)
 {
@@ -462,7 +462,7 @@ PetscErrorCode TSTrajectorySetType(TSTrajectory tj, TS ts, TSTrajectoryType type
   if (match) PetscFunctionReturn(PETSC_SUCCESS);
 
   PetscCall(PetscFunctionListFind(TSTrajectoryList, type, &r));
-  PetscCheck(r, PETSC_COMM_SELF, PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown TSTrajectory type: %s", type);
+  PetscCheck(r, PetscObjectComm((PetscObject)tj), PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown TSTrajectory type: %s", type);
   if (tj->ops->destroy) {
     PetscCall((*(tj)->ops->destroy)(tj));
 
@@ -481,15 +481,15 @@ PetscErrorCode TSTrajectorySetType(TSTrajectory tj, TS ts, TSTrajectoryType type
   Collective
 
   Input Parameters:
-+ tj   - the `TSTrajectory` context
-- ts   - the `TS` context
++ tj - the `TSTrajectory` context
+- ts - the `TS` context
 
   Output Parameter:
 . type - a known method
 
   Level: developer
 
-.seealso: [](chapter_ts), `TS`, `TSTrajectory`, `TSTrajectoryCreate()`, `TSTrajectorySetFromOptions()`, `TSTrajectoryDestroy()`, `TSTrajectorySetType()`
+.seealso: [](ch_ts), `TS`, `TSTrajectory`, `TSTrajectoryCreate()`, `TSTrajectorySetFromOptions()`, `TSTrajectoryDestroy()`, `TSTrajectorySetType()`
 @*/
 PetscErrorCode TSTrajectoryGetType(TSTrajectory tj, TS ts, TSTrajectoryType *type)
 {
@@ -511,7 +511,7 @@ PETSC_EXTERN PetscErrorCode TSTrajectoryCreate_Visualization(TSTrajectory, TS);
 
   Level: developer
 
-.seealso: [](chapter_ts), `TSTrajectory`, `TSTrajectoryRegister()`
+.seealso: [](ch_ts), `TSTrajectory`, `TSTrajectoryRegister()`
 @*/
 PetscErrorCode TSTrajectoryRegisterAll(void)
 {
@@ -527,16 +527,16 @@ PetscErrorCode TSTrajectoryRegisterAll(void)
 }
 
 /*@
-   TSTrajectoryReset - Resets a trajectory context
+  TSTrajectoryReset - Resets a trajectory context
 
-   Collective
+  Collective
 
-   Input Parameter:
-.  tj - the `TSTrajectory` context obtained from `TSGetTrajectory()`
+  Input Parameter:
+. tj - the `TSTrajectory` context obtained from `TSGetTrajectory()`
 
-   Level: developer
+  Level: developer
 
-.seealso: [](chapter_ts), `TS`, `TSTrajectory`, `TSTrajectoryCreate()`, `TSTrajectorySetUp()`
+.seealso: [](ch_ts), `TS`, `TSTrajectory`, `TSTrajectoryCreate()`, `TSTrajectorySetUp()`
 @*/
 PetscErrorCode TSTrajectoryReset(TSTrajectory tj)
 {
@@ -552,16 +552,16 @@ PetscErrorCode TSTrajectoryReset(TSTrajectory tj)
 }
 
 /*@
-   TSTrajectoryDestroy - Destroys a trajectory context
+  TSTrajectoryDestroy - Destroys a trajectory context
 
-   Collective
+  Collective
 
-   Input Parameter:
-.  tj - the `TSTrajectory` context obtained from `TSTrajectoryCreate()`
+  Input Parameter:
+. tj - the `TSTrajectory` context obtained from `TSTrajectoryCreate()`
 
-   Level: developer
+  Level: developer
 
-.seealso: [](chapter_ts), `TSTrajectory`, `TSTrajectoryCreate()`, `TSTrajectorySetUp()`
+.seealso: [](ch_ts), `TSTrajectory`, `TSTrajectoryCreate()`, `TSTrajectorySetUp()`
 @*/
 PetscErrorCode TSTrajectoryDestroy(TSTrajectory *tj)
 {
@@ -613,7 +613,7 @@ PetscErrorCode TSTrajectoryDestroy(TSTrajectory *tj)
 
   Level: developer
 
-.seealso: [](chapter_ts), `TSTrajectory`, `TSTrajectoryType`, `TSTrajectorySetFromOptions()`, `TSTrajectorySetType()`
+.seealso: [](ch_ts), `TSTrajectory`, `TSTrajectoryType`, `TSTrajectorySetFromOptions()`, `TSTrajectorySetType()`
 */
 static PetscErrorCode TSTrajectorySetTypeFromOptions_Private(PetscOptionItems *PetscOptionsObject, TSTrajectory tj, TS ts)
 {
@@ -636,20 +636,20 @@ static PetscErrorCode TSTrajectorySetTypeFromOptions_Private(PetscOptionItems *P
 }
 
 /*@
-   TSTrajectorySetUseHistory - Use `TSHistory` in `TSTrajectory`
+  TSTrajectorySetUseHistory - Use `TSHistory` in `TSTrajectory`
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  tj - the `TSTrajectory` context
--  flg - `PETSC_TRUE` to save, `PETSC_FALSE` to disable
+  Input Parameters:
++ tj  - the `TSTrajectory` context
+- flg - `PETSC_TRUE` to save, `PETSC_FALSE` to disable
 
-   Options Database Key:
-.  -ts_trajectory_use_history - have it use `TSHistory`
+  Options Database Key:
+. -ts_trajectory_use_history - have it use `TSHistory`
 
-   Level: advanced
+  Level: advanced
 
-.seealso: [](chapter_ts), `TSTrajectory`, `TSTrajectoryCreate()`, `TSTrajectoryDestroy()`, `TSTrajectorySetUp()`
+.seealso: [](ch_ts), `TSTrajectory`, `TSTrajectoryCreate()`, `TSTrajectoryDestroy()`, `TSTrajectorySetUp()`
 @*/
 PetscErrorCode TSTrajectorySetUseHistory(TSTrajectory tj, PetscBool flg)
 {
@@ -661,20 +661,20 @@ PetscErrorCode TSTrajectorySetUseHistory(TSTrajectory tj, PetscBool flg)
 }
 
 /*@
-   TSTrajectorySetMonitor - Monitor the schedules generated by the `TSTrajectory` checkpointing controller
+  TSTrajectorySetMonitor - Monitor the schedules generated by the `TSTrajectory` checkpointing controller
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  tj - the `TSTrajectory` context
--  flg - `PETSC_TRUE` to active a monitor, `PETSC_FALSE` to disable
+  Input Parameters:
++ tj  - the `TSTrajectory` context
+- flg - `PETSC_TRUE` to active a monitor, `PETSC_FALSE` to disable
 
-   Options Database Key:
-.  -ts_trajectory_monitor - print `TSTrajectory` information
+  Options Database Key:
+. -ts_trajectory_monitor - print `TSTrajectory` information
 
-   Level: developer
+  Level: developer
 
-.seealso: [](chapter_ts), `TSTrajectory`, `TSTrajectoryCreate()`, `TSTrajectoryDestroy()`, `TSTrajectorySetUp()`
+.seealso: [](ch_ts), `TSTrajectory`, `TSTrajectoryCreate()`, `TSTrajectoryDestroy()`, `TSTrajectorySetUp()`
 @*/
 PetscErrorCode TSTrajectorySetMonitor(TSTrajectory tj, PetscBool flg)
 {
@@ -687,23 +687,23 @@ PetscErrorCode TSTrajectorySetMonitor(TSTrajectory tj, PetscBool flg)
 }
 
 /*@
-   TSTrajectorySetKeepFiles - Keep the files generated by the `TSTrajectory` once the program is done
+  TSTrajectorySetKeepFiles - Keep the files generated by the `TSTrajectory` once the program is done
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  tj - the `TSTrajectory` context
--  flg - `PETSC_TRUE` to save, `PETSC_FALSE` to disable
+  Input Parameters:
++ tj  - the `TSTrajectory` context
+- flg - `PETSC_TRUE` to save, `PETSC_FALSE` to disable
 
-   Options Database Key:
-.  -ts_trajectory_keep_files - have it keep the files
+  Options Database Key:
+. -ts_trajectory_keep_files - have it keep the files
 
-   Level: advanced
+  Level: advanced
 
-   Note:
-    By default the `TSTrajectory` used for adjoint computations, `TSTRAJECTORYBASIC`, removes the files it generates at the end of the run. This causes the files to be kept.
+  Note:
+  By default the `TSTrajectory` used for adjoint computations, `TSTRAJECTORYBASIC`, removes the files it generates at the end of the run. This causes the files to be kept.
 
-.seealso: [](chapter_ts), `TSTrajectoryCreate()`, `TSTrajectoryDestroy()`, `TSTrajectorySetUp()`, `TSTrajectorySetMonitor()`
+.seealso: [](ch_ts), `TSTrajectoryCreate()`, `TSTrajectoryDestroy()`, `TSTrajectorySetUp()`, `TSTrajectorySetMonitor()`
 @*/
 PetscErrorCode TSTrajectorySetKeepFiles(TSTrajectory tj, PetscBool flg)
 {
@@ -715,25 +715,25 @@ PetscErrorCode TSTrajectorySetKeepFiles(TSTrajectory tj, PetscBool flg)
 }
 
 /*@C
-   TSTrajectorySetDirname - Specify the name of the directory where `TSTrajectory` disk checkpoints are stored.
+  TSTrajectorySetDirname - Specify the name of the directory where `TSTrajectory` disk checkpoints are stored.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  tj      - the `TSTrajectory` context
--  dirname - the directory name
+  Input Parameters:
++ tj      - the `TSTrajectory` context
+- dirname - the directory name
 
-   Options Database Key:
-.  -ts_trajectory_dirname - set the directory name
+  Options Database Key:
+. -ts_trajectory_dirname - set the directory name
 
-   Level: developer
+  Level: developer
 
-   Notes:
-    The final location of the files is determined by dirname/filetemplate where filetemplate was provided by `TSTrajectorySetFiletemplate()`
+  Notes:
+  The final location of the files is determined by dirname/filetemplate where filetemplate was provided by `TSTrajectorySetFiletemplate()`
 
-   If this is not called `TSTrajectory` selects a unique new name for the directory
+  If this is not called `TSTrajectory` selects a unique new name for the directory
 
-.seealso: [](chapter_ts), `TSTrajectory`, `TSTrajectorySetFiletemplate()`, `TSTrajectorySetUp()`
+.seealso: [](ch_ts), `TSTrajectory`, `TSTrajectorySetFiletemplate()`, `TSTrajectorySetUp()`
 @*/
 PetscErrorCode TSTrajectorySetDirname(TSTrajectory tj, const char dirname[])
 {
@@ -749,26 +749,26 @@ PetscErrorCode TSTrajectorySetDirname(TSTrajectory tj, const char dirname[])
 }
 
 /*@C
-   TSTrajectorySetFiletemplate - Specify the name template for the files storing `TSTrajectory` checkpoints.
+  TSTrajectorySetFiletemplate - Specify the name template for the files storing `TSTrajectory` checkpoints.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  tj      - the `TSTrajectory` context
--  filetemplate - the template
+  Input Parameters:
++ tj           - the `TSTrajectory` context
+- filetemplate - the template
 
-   Options Database Key:
-.  -ts_trajectory_file_template - set the file name template
+  Options Database Key:
+. -ts_trajectory_file_template - set the file name template
 
-   Level: developer
+  Level: developer
 
-   Notes:
-    The name template should be of the form, for example filename-%06" PetscInt_FMT ".bin It should not begin with a leading /
+  Notes:
+  The name template should be of the form, for example filename-%06" PetscInt_FMT ".bin It should not begin with a leading /
 
-   The final location of the files is determined by dirname/filetemplate where dirname was provided by `TSTrajectorySetDirname()`. The %06" PetscInt_FMT " is replaced by the
-   timestep counter
+  The final location of the files is determined by dirname/filetemplate where dirname was provided by `TSTrajectorySetDirname()`. The %06" PetscInt_FMT " is replaced by the
+  timestep counter
 
-.seealso: [](chapter_ts), `TSTrajectory`, `TSTrajectorySetDirname()`, `TSTrajectorySetUp()`
+.seealso: [](ch_ts), `TSTrajectory`, `TSTrajectorySetDirname()`, `TSTrajectorySetUp()`
 @*/
 PetscErrorCode TSTrajectorySetFiletemplate(TSTrajectory tj, const char filetemplate[])
 {
@@ -776,7 +776,7 @@ PetscErrorCode TSTrajectorySetFiletemplate(TSTrajectory tj, const char filetempl
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tj, TSTRAJECTORY_CLASSID, 1);
-  PetscValidCharPointer(filetemplate, 2);
+  PetscAssertPointer(filetemplate, 2);
   PetscCheck(!tj->dirfiletemplate, PetscObjectComm((PetscObject)tj), PETSC_ERR_ARG_WRONGSTATE, "Cannot set filetemplate after TSTrajectory has been setup");
 
   PetscCheck(filetemplate[0], PetscObjectComm((PetscObject)tj), PETSC_ERR_USER, "-ts_trajectory_file_template requires a file name template, e.g. filename-%%06" PetscInt_FMT ".bin");
@@ -794,25 +794,25 @@ PetscErrorCode TSTrajectorySetFiletemplate(TSTrajectory tj, const char filetempl
 }
 
 /*@
-   TSTrajectorySetFromOptions - Sets various `TSTrajectory` parameters from user options.
+  TSTrajectorySetFromOptions - Sets various `TSTrajectory` parameters from user options.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  tj - the `TSTrajectory` context obtained from `TSGetTrajectory()`
--  ts - the `TS` context
+  Input Parameters:
++ tj - the `TSTrajectory` context obtained from `TSGetTrajectory()`
+- ts - the `TS` context
 
-   Options Database Keys:
-+  -ts_trajectory_type <type> - basic, memory, singlefile, visualization
-.  -ts_trajectory_keep_files <true,false> - keep the files generated by the code after the program ends. This is true by default for singlefile and visualization
--  -ts_trajectory_monitor - print `TSTrajectory` information
+  Options Database Keys:
++ -ts_trajectory_type <type>             - basic, memory, singlefile, visualization
+. -ts_trajectory_keep_files <true,false> - keep the files generated by the code after the program ends. This is true by default for singlefile and visualization
+- -ts_trajectory_monitor                 - print `TSTrajectory` information
 
-   Level: developer
+  Level: developer
 
-   Note:
-    This is not normally called directly by users
+  Note:
+  This is not normally called directly by users
 
-.seealso: [](chapter_ts), `TSTrajectory`, `TSSetSaveTrajectory()`, `TSTrajectorySetUp()`
+.seealso: [](ch_ts), `TSTrajectory`, `TSSetSaveTrajectory()`, `TSTrajectorySetUp()`
 @*/
 PetscErrorCode TSTrajectorySetFromOptions(TSTrajectory tj, TS ts)
 {
@@ -847,18 +847,18 @@ PetscErrorCode TSTrajectorySetFromOptions(TSTrajectory tj, TS ts)
 }
 
 /*@
-   TSTrajectorySetUp - Sets up the internal data structures, e.g. stacks, for the later use
-   of a `TS` `TSTrajectory`.
+  TSTrajectorySetUp - Sets up the internal data structures, e.g. stacks, for the later use
+  of a `TS` `TSTrajectory`.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  tj - the `TSTrajectory` context
--  ts - the TS context obtained from `TSCreate()`
+  Input Parameters:
++ tj - the `TSTrajectory` context
+- ts - the TS context obtained from `TSCreate()`
 
-   Level: developer
+  Level: developer
 
-.seealso: [](chapter_ts), `TSTrajectory`, `TSSetSaveTrajectory()`, `TSTrajectoryCreate()`, `TSTrajectoryDestroy()`
+.seealso: [](ch_ts), `TSTrajectory`, `TSSetSaveTrajectory()`, `TSTrajectoryCreate()`, `TSTrajectoryDestroy()`
 @*/
 PetscErrorCode TSTrajectorySetUp(TSTrajectory tj, TS ts)
 {
@@ -890,17 +890,17 @@ PetscErrorCode TSTrajectorySetUp(TSTrajectory tj, TS ts)
 }
 
 /*@
-   TSTrajectorySetSolutionOnly - Tells the trajectory to store just the solution, and not any intermediate stage information
+  TSTrajectorySetSolutionOnly - Tells the trajectory to store just the solution, and not any intermediate stage information
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  tj  - the `TSTrajectory` context obtained with `TSGetTrajectory()`
--  flg - the boolean flag
+  Input Parameters:
++ tj            - the `TSTrajectory` context obtained with `TSGetTrajectory()`
+- solution_only - the boolean flag
 
-   Level: developer
+  Level: developer
 
-.seealso: [](chapter_ts), `TSTrajectory`, `TSSetSaveTrajectory()`, `TSTrajectoryCreate()`, `TSTrajectoryDestroy()`, `TSTrajectoryGetSolutionOnly()`
+.seealso: [](ch_ts), `TSTrajectory`, `TSSetSaveTrajectory()`, `TSTrajectoryCreate()`, `TSTrajectoryDestroy()`, `TSTrajectoryGetSolutionOnly()`
 @*/
 PetscErrorCode TSTrajectorySetSolutionOnly(TSTrajectory tj, PetscBool solution_only)
 {
@@ -912,52 +912,52 @@ PetscErrorCode TSTrajectorySetSolutionOnly(TSTrajectory tj, PetscBool solution_o
 }
 
 /*@
-   TSTrajectoryGetSolutionOnly - Gets the value set with `TSTrajectorySetSolutionOnly()`.
+  TSTrajectoryGetSolutionOnly - Gets the value set with `TSTrajectorySetSolutionOnly()`.
 
-   Logically Collective
+  Logically Collective
 
-   Input Parameter:
-.  tj  - the `TSTrajectory` context
+  Input Parameter:
+. tj - the `TSTrajectory` context
 
-   Output Parameter:
-.  flg - the boolean flag
+  Output Parameter:
+. solution_only - the boolean flag
 
-   Level: developer
+  Level: developer
 
-.seealso: [](chapter_ts), `TSTrajectory`, `TSSetSaveTrajectory()`, `TSTrajectoryCreate()`, `TSTrajectoryDestroy()`, `TSTrajectorySetSolutionOnly()`
+.seealso: [](ch_ts), `TSTrajectory`, `TSSetSaveTrajectory()`, `TSTrajectoryCreate()`, `TSTrajectoryDestroy()`, `TSTrajectorySetSolutionOnly()`
 @*/
 PetscErrorCode TSTrajectoryGetSolutionOnly(TSTrajectory tj, PetscBool *solution_only)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tj, TSTRAJECTORY_CLASSID, 1);
-  PetscValidBoolPointer(solution_only, 2);
+  PetscAssertPointer(solution_only, 2);
   *solution_only = tj->solution_only;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
-   TSTrajectoryGetUpdatedHistoryVecs - Get updated state and time-derivative history vectors.
+  TSTrajectoryGetUpdatedHistoryVecs - Get updated state and time-derivative history vectors.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  tj   - the `TSTrajectory` context
-.  ts   - the `TS` solver context
--  time - the requested time
+  Input Parameters:
++ tj   - the `TSTrajectory` context
+. ts   - the `TS` solver context
+- time - the requested time
 
-   Output Parameters:
-+  U    - state vector at given time (can be interpolated)
--  Udot - time-derivative vector at given time (can be interpolated)
+  Output Parameters:
++ U    - state vector at given time (can be interpolated)
+- Udot - time-derivative vector at given time (can be interpolated)
 
-   Level: developer
+  Level: developer
 
-   Notes:
-   The vectors are interpolated if time does not match any time step stored in the `TSTrajectory()`. Pass NULL to not request a vector.
+  Notes:
+  The vectors are interpolated if time does not match any time step stored in the `TSTrajectory()`. Pass NULL to not request a vector.
 
-   This function differs from `TSTrajectoryGetVecs()` since the vectors obtained cannot be modified, and they need to be returned by
-   calling `TSTrajectoryRestoreUpdatedHistoryVecs()`.
+  This function differs from `TSTrajectoryGetVecs()` since the vectors obtained cannot be modified, and they need to be returned by
+  calling `TSTrajectoryRestoreUpdatedHistoryVecs()`.
 
-.seealso: [](chapter_ts), `TSTrajectory`, `TSSetSaveTrajectory()`, `TSTrajectoryCreate()`, `TSTrajectoryDestroy()`, `TSTrajectoryRestoreUpdatedHistoryVecs()`, `TSTrajectoryGetVecs()`
+.seealso: [](ch_ts), `TSTrajectory`, `TSSetSaveTrajectory()`, `TSTrajectoryCreate()`, `TSTrajectoryDestroy()`, `TSTrajectoryRestoreUpdatedHistoryVecs()`, `TSTrajectoryGetVecs()`
 @*/
 PetscErrorCode TSTrajectoryGetUpdatedHistoryVecs(TSTrajectory tj, TS ts, PetscReal time, Vec *U, Vec *Udot)
 {
@@ -965,8 +965,8 @@ PetscErrorCode TSTrajectoryGetUpdatedHistoryVecs(TSTrajectory tj, TS ts, PetscRe
   PetscValidHeaderSpecific(tj, TSTRAJECTORY_CLASSID, 1);
   PetscValidHeaderSpecific(ts, TS_CLASSID, 2);
   PetscValidLogicalCollectiveReal(tj, time, 3);
-  if (U) PetscValidPointer(U, 4);
-  if (Udot) PetscValidPointer(Udot, 5);
+  if (U) PetscAssertPointer(U, 4);
+  if (Udot) PetscAssertPointer(Udot, 5);
   if (U && !tj->U) {
     DM dm;
 
@@ -992,18 +992,18 @@ PetscErrorCode TSTrajectoryGetUpdatedHistoryVecs(TSTrajectory tj, TS ts, PetscRe
 }
 
 /*@
-   TSTrajectoryRestoreUpdatedHistoryVecs - Restores updated state and time-derivative history vectors obtained with `TSTrajectoryGetUpdatedHistoryVecs()`.
+  TSTrajectoryRestoreUpdatedHistoryVecs - Restores updated state and time-derivative history vectors obtained with `TSTrajectoryGetUpdatedHistoryVecs()`.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  tj   - the `TSTrajectory` context
-.  U    - state vector at given time (can be interpolated)
--  Udot - time-derivative vector at given time (can be interpolated)
+  Input Parameters:
++ tj   - the `TSTrajectory` context
+. U    - state vector at given time (can be interpolated)
+- Udot - time-derivative vector at given time (can be interpolated)
 
-   Level: developer
+  Level: developer
 
-.seealso: [](chapter_ts), `TSTrajectory`, `TSTrajectoryGetUpdatedHistoryVecs()`
+.seealso: [](ch_ts), `TSTrajectory`, `TSTrajectoryGetUpdatedHistoryVecs()`
 @*/
 PetscErrorCode TSTrajectoryRestoreUpdatedHistoryVecs(TSTrajectory tj, Vec *U, Vec *Udot)
 {

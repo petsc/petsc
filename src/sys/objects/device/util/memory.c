@@ -19,13 +19,13 @@
 
   Level: intermediate
 
-.seelso: `PetscMemType`, `PetscDeviceMalloc()`, `PetscDeviceCalloc()`, `PetscDeviceFree()`,
+.seealso: `PetscMemType`, `PetscDeviceMalloc()`, `PetscDeviceCalloc()`, `PetscDeviceFree()`,
 `PetscDeviceArrayCopy()`, `PetscDeviceArrayZero()`
 @*/
 PetscErrorCode PetscGetMemType(const void *ptr, PetscMemType *type)
 {
   PetscFunctionBegin;
-  PetscValidPointer(type, 2);
+  PetscAssertPointer(type, 2);
   *type = PETSC_MEMTYPE_HOST;
   if (!ptr) PetscFunctionReturn(PETSC_SUCCESS);
 #if PetscDefined(HAVE_CUDA)

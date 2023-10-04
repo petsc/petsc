@@ -81,7 +81,7 @@ PetscErrorCode VecStashDestroy_Private(VecStash *stash)
 }
 
 /*
-   VecStashScatterEnd_Private - This is called as the fial stage of
+   VecStashScatterEnd_Private - This is called as the final stage of
    scatter. The final stages of message passing is done here, and
    all the memory used for message passing is cleanedu up. This
    routine also resets the stash, and deallocates the memory used
@@ -217,7 +217,7 @@ PetscErrorCode VecStashExpand_Private(VecStash *stash, PetscInt incr)
   ranges specified blocked global indices, and for the regular stash in
   the proper global indices.
 */
-PetscErrorCode VecStashScatterBegin_Private(VecStash *stash, PetscInt *owners)
+PetscErrorCode VecStashScatterBegin_Private(VecStash *stash, const PetscInt *owners)
 {
   PetscMPIInt  size = stash->size, tag1 = stash->tag1, tag2 = stash->tag2;
   PetscInt    *owner, *start, *nprocs, nsends, nreceives;

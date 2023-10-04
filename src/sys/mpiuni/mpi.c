@@ -583,7 +583,7 @@ int MPI_Finalized(int *flag)
 #endif
 
 /* Do not build fortran interface if MPI namespace collision is to be avoided */
-#if defined(PETSC_HAVE_FORTRAN)
+#if defined(PETSC_USE_FORTRAN_BINDINGS)
 
 PETSC_EXTERN void mpiunisetmoduleblock_(void);
 
@@ -828,7 +828,7 @@ PETSC_EXTERN void petsc_mpi_exscan_(void *sendbuf, void *recvbuf, int *count, in
   *ierr = MPI_SUCCESS;
 }
 
-#endif /* PETSC_HAVE_FORTRAN */
+#endif /* PETSC_USE_FORTRAN_BINDINGS */
 
 #if defined(__cplusplus)
 }

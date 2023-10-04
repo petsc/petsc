@@ -1,33 +1,36 @@
 #include "../vecmpicupm.hpp" /*I <petscvec.h> I*/
+#include "../vecmpicupm_impl.hpp"
 
 using namespace Petsc::vec::cupm;
 using Petsc::device::cupm::DeviceType;
 
+template class impl::VecMPI_CUPM<DeviceType::HIP>;
+
 static constexpr auto VecMPI_HIP = impl::VecMPI_CUPM<DeviceType::HIP>{};
 
 /*MC
-  VECHIP - VECHIP = "hip" - A VECSEQHIP on a single-process communicator, and VECMPIHIP
+  VECHIP - VECHIP = "hip" - A `VECSEQHIP` on a single-process communicator, and `VECMPIHIP`
   otherwise.
 
   Options Database Keys:
-. -vec_type hip - sets the vector type to VECHIP during a call to VecSetFromOptions()
+. -vec_type hip - sets the vector type to `VECHIP` during a call to `VecSetFromOptions()`
 
   Level: beginner
 
-.seealso: VecCreate(), VecSetType(), VecSetFromOptions(), VecCreateMPIWithArray(), VECSEQHIP,
-VECMPIHIP, VECSTANDARD, VecType, VecCreateMPI(), VecSetPinnedMemoryMin()
+.seealso: `VecCreate()`, `VecSetType()`, `VecSetFromOptions()`, `VecCreateMPIWithArray()`, `VECSEQHIP`,
+`VECMPIHIP`, `VECSTANDARD`, `VecType`, `VecCreateMPI()`, `VecSetPinnedMemoryMin()`
 M*/
 
 /*MC
   VECMPIHIP - VECMPIHIP = "mpihip" - The basic parallel vector, modified to use HIP
 
   Options Database Keys:
-. -vec_type mpihip - sets the vector type to VECMPIHIP during a call to VecSetFromOptions()
+. -vec_type mpihip - sets the vector type to `VECMPIHIP` during a call to `VecSetFromOptions()`
 
   Level: beginner
 
-.seealso: VecCreate(), VecSetType(), VecSetFromOptions(), VecCreateMPIWithArray(), VECMPI,
-VecType, VecCreateMPI(), VecSetPinnedMemoryMin()
+.seealso: `VecCreate()`, `VecSetType()`, `VecSetFromOptions()`, `VecCreateMPIWithArray()`, `VECMPI`,
+`VecType`, `VecCreateMPI()`, `VecSetPinnedMemoryMin()`
 M*/
 
 PetscErrorCode VecCreate_HIP(Vec v)
@@ -44,6 +47,13 @@ PetscErrorCode VecCreate_MPIHIP(Vec v)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+PetscErrorCode VecConvert_MPI_MPIHIP_inplace(Vec v)
+{
+  PetscFunctionBegin;
+  PetscCall(VecMPI_HIP.Convert_IMPL_IMPLCUPM(v));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 PetscErrorCode VecHIPGetArrays_Private(Vec v, const PetscScalar **host_array, const PetscScalar **device_array, PetscOffloadMask *mask)
 {
   PetscDeviceContext dctx;
@@ -55,6 +65,7 @@ PetscErrorCode VecHIPGetArrays_Private(Vec v, const PetscScalar **host_array, co
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+// PetscClangLinter pragma disable: -fdoc-internal-linkage
 /*@
   VecCreateMPIHIP - Creates a standard, parallel, array-style vector for HIP devices.
 
@@ -62,32 +73,33 @@ PetscErrorCode VecHIPGetArrays_Private(Vec v, const PetscScalar **host_array, co
 
   Input Parameters:
 + comm - the MPI communicator to use
-. n    - local vector length (or PETSC_DECIDE to have calculated if N is given)
-- N    - global vector length (or PETSC_DETERMINE to have calculated if n is given)
+. n    - local vector length (or `PETSC_DECIDE` to have calculated if N is given)
+- N    - global vector length (or `PETSC_DETERMINE` to have calculated if n is given)
 
   Output Parameter:
 . v - the vector
 
   Notes:
-  Use VecDuplicate() or VecDuplicateVecs() to form additional vectors of the same type as an
+  Use `VecDuplicate()` or `VecDuplicateVecs()` to form additional vectors of the same type as an
   existing vector.
 
-  This function may initialize PetscDevice, which may incur a device synchronization.
+  This function may initialize `PetscDevice`, which may incur a device synchronization.
 
   Level: intermediate
 
-.seealso: VecCreateMPIHIPWithArray(), VecCreateMPIHIPWithArrays(), VecCreateSeqHIP(),
-VecCreateSeq(), VecCreateMPI(), VecCreate(), VecDuplicate(), VecDuplicateVecs(),
-VecCreateGhost(), VecCreateMPIWithArray(), VecCreateGhostWithArray(), VecMPISetGhost()
+.seealso: `VecCreateMPIHIPWithArray()`, `VecCreateMPIHIPWithArrays()`, `VecCreateSeqHIP()`,
+`VecCreateSeq()`, `VecCreateMPI()`, `VecCreate()`, `VecDuplicate()`, `VecDuplicateVecs()`,
+`VecCreateGhost()`, `VecCreateMPIWithArray()`, `VecCreateGhostWithArray()`, `VecMPISetGhost()`
 @*/
 PetscErrorCode VecCreateMPIHIP(MPI_Comm comm, PetscInt n, PetscInt N, Vec *v)
 {
   PetscFunctionBegin;
-  PetscValidPointer(v, 4);
+  PetscAssertPointer(v, 4);
   PetscCall(VecCreateMPICUPMAsync<DeviceType::HIP>(comm, n, N, v));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+// PetscClangLinter pragma disable: -fdoc-internal-linkage
 /*@C
   VecCreateMPIHIPWithArrays - Creates a parallel, array-style vector using HIP, where the
   user provides the complete array space to store the vector values.
@@ -96,24 +108,24 @@ PetscErrorCode VecCreateMPIHIP(MPI_Comm comm, PetscInt n, PetscInt N, Vec *v)
 
   Input Parameters:
 + comm     - the MPI communicator to use
-. bs       - block size, same meaning as VecSetBlockSize()
-. n        - local vector length, cannot be PETSC_DECIDE
-. N        - global vector length (or PETSC_DECIDE to have calculated)
-. cpuarray - CPU memory where the vector elements are to be stored (or NULL)
-- gpuarray - GPU memory where the vector elements are to be stored (or NULL)
+. bs       - block size, same meaning as `VecSetBlockSize()`
+. n        - local vector length, cannot be `PETSC_DECIDE`
+. N        - global vector length (or `PETSC_DECIDE` to have calculated)
+. cpuarray - CPU memory where the vector elements are to be stored (or `NULL`)
+- gpuarray - GPU memory where the vector elements are to be stored (or `NULL`)
 
   Output Parameter:
 . v - the vector
 
   Notes:
-  See VecCreateSeqHIPWithArrays() for further discussion, this routine shares identical
+  See `VecCreateSeqHIPWithArrays()` for further discussion, this routine shares identical
   semantics.
 
   Level: intermediate
 
-.seealso: VecCreateMPIHIP(), VecCreateSeqHIPWithArrays(), VecCreateMPIWithArray(),
-VecCreateSeqWithArray(), VecCreate(), VecDuplicate(), VecDuplicateVecs(), VecCreateGhost(),
-VecCreateMPI(), VecCreateGhostWithArray(), VecPlaceArray()
+.seealso: `VecCreateMPIHIP()`, `VecCreateSeqHIPWithArrays()`, `VecCreateMPIWithArray()`,
+`VecCreateSeqWithArray()`, `VecCreate()`, `VecDuplicate()`, `VecDuplicateVecs()`, `VecCreateGhost()`,
+`VecCreateMPI()`, `VecCreateGhostWithArray()`, `VecPlaceArray()`
 @*/
 PetscErrorCode VecCreateMPIHIPWithArrays(MPI_Comm comm, PetscInt bs, PetscInt n, PetscInt N, const PetscScalar cpuarray[], const PetscScalar gpuarray[], Vec *v)
 {
@@ -122,30 +134,32 @@ PetscErrorCode VecCreateMPIHIPWithArrays(MPI_Comm comm, PetscInt bs, PetscInt n,
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+// PetscClangLinter pragma disable: -fdoc-internal-linkage
 /*@C
   VecCreateMPIHIPWithArray - Creates a parallel, array-style vector using HIP, where the
   user provides the device array space to store the vector values.
+
   Collective
 
   Input Parameters:
 + comm  - the MPI communicator to use
-. bs    - block size, same meaning as VecSetBlockSize()
-. n     - local vector length, cannot be PETSC_DECIDE
-. N     - global vector length (or PETSC_DECIDE to have calculated)
+. bs    - block size, same meaning as `VecSetBlockSize()`
+. n     - local vector length, cannot be `PETSC_DECIDE`
+. N     - global vector length (or `PETSC_DECIDE` to have calculated)
 - gpuarray - the user provided GPU array to store the vector values
 
   Output Parameter:
 . v - the vector
 
   Notes:
-  See VecCreateSeqHIPWithArray() for further discussion, this routine shares identical
+  See `VecCreateSeqHIPWithArray()` for further discussion, this routine shares identical
   semantics.
 
   Level: intermediate
 
-.seealso: VecCreateMPIHIP(), VecCreateSeqHIPWithArray(), VecCreateMPIWithArray(),
-VecCreateSeqWithArray(), VecCreate(), VecDuplicate(), VecDuplicateVecs(), VecCreateGhost(),
-VecCreateMPI(), VecCreateGhostWithArray(), VecPlaceArray()
+.seealso: `VecCreateMPIHIP()`, `VecCreateSeqHIPWithArray()`, `VecCreateMPIWithArray()`,
+`VecCreateSeqWithArray()`, `VecCreate()`, `VecDuplicate()`, `VecDuplicateVecs()`, `VecCreateGhost()`,
+`VecCreateMPI()`, `VecCreateGhostWithArray()`, `VecPlaceArray()`
 @*/
 PetscErrorCode VecCreateMPIHIPWithArray(MPI_Comm comm, PetscInt bs, PetscInt n, PetscInt N, const PetscScalar gpuarray[], Vec *v)
 {

@@ -10,8 +10,7 @@
        does not have some arguments in single and some in double.
 
 */
-#ifndef __ILU_H
-#define __ILU_H
+#pragma once
 #include <petscblaslapack.h>
 
 /*
@@ -65,9 +64,9 @@ PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_15(MatScalar *, PetscIn
       PetscScalar  _one = 1.0, _zero = 0.0; \
       PetscCall(PetscBLASIntCast(bs, &_bbs)); \
       PetscCall(PetscArraycpy((W), (A), (bs) * (bs))); \
-      PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(A, 2)); \
-      PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(B, 3)); \
-      PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(W, 4)); \
+      PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscAssertPointer(A, 2)); \
+      PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscAssertPointer(B, 3)); \
+      PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscAssertPointer(W, 4)); \
       PetscCallBLAS("BLASgemm", BLASgemm_("N", "N", &(_bbs), &(_bbs), &(_bbs), &_one, (W), &(_bbs), (B), &(_bbs), &_zero, (A), &(_bbs))); \
     } while (0)
 
@@ -82,9 +81,9 @@ PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_15(MatScalar *, PetscIn
       PetscScalar  _mone = -1.0, _one = 1.0; \
       PetscBLASInt _bbs; \
       PetscCall(PetscBLASIntCast(bs, &_bbs)); \
-      PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(A, 2)); \
-      PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(B, 3)); \
-      PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(C, 4)); \
+      PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscAssertPointer(A, 2)); \
+      PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscAssertPointer(B, 3)); \
+      PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscAssertPointer(C, 4)); \
       PetscCallBLAS("BLASgemm", BLASgemm_("N", "N", &(_bbs), &(_bbs), &(_bbs), &_mone, (B), &(_bbs), (C), &(_bbs), &_one, (A), &(_bbs))); \
     } while (0)
 
@@ -99,9 +98,9 @@ PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_15(MatScalar *, PetscIn
       PetscScalar  _one = 1.0; \
       PetscBLASInt _bbs; \
       PetscCall(PetscBLASIntCast(bs, &_bbs)); \
-      PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(A, 2)); \
-      PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(B, 3)); \
-      PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(C, 4)); \
+      PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscAssertPointer(A, 2)); \
+      PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscAssertPointer(B, 3)); \
+      PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscAssertPointer(C, 4)); \
       PetscCallBLAS("BLASgemm", BLASgemm_("T", "N", &(_bbs), &(_bbs), &(_bbs), &_one, (B), &(_bbs), (C), &(_bbs), &_one, (A), &(_bbs))); \
     } while (0)
 
@@ -117,9 +116,9 @@ PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_15(MatScalar *, PetscIn
       PetscScalar  _one  = 1.0; \
       PetscBLASInt _ione = 1, _bbs; \
       PetscCall(PetscBLASIntCast(bs, &_bbs)); \
-      PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(v, 2)); \
-      PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(A, 3)); \
-      PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(w, 4)); \
+      PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscAssertPointer(v, 2)); \
+      PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscAssertPointer(A, 3)); \
+      PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscAssertPointer(w, 4)); \
       PetscCallBLAS("BLASgemv", BLASgemv_("T", &(_bbs), &(_bbs), &_one, A, &(_bbs), w, &_ione, &_one, v, &_ione)); \
     } while (0)
 
@@ -135,9 +134,9 @@ PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_15(MatScalar *, PetscIn
       PetscScalar  _mone = -1.0, _one = 1.0; \
       PetscBLASInt _ione = 1, _bbs; \
       PetscCall(PetscBLASIntCast(bs, &_bbs)); \
-      PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(v, 2)); \
-      PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(A, 3)); \
-      PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(w, 4)); \
+      PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscAssertPointer(v, 2)); \
+      PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscAssertPointer(A, 3)); \
+      PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscAssertPointer(w, 4)); \
       PetscCallBLAS("BLASgemv", BLASgemv_("N", &(_bbs), &(_bbs), &_mone, A, &(_bbs), w, &_ione, &_one, v, &_ione)); \
     } while (0)
 
@@ -153,9 +152,9 @@ PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_15(MatScalar *, PetscIn
       PetscScalar  _mone = -1.0, _one = 1.0; \
       PetscBLASInt _ione = 1, _bbs; \
       PetscCall(PetscBLASIntCast(bs, &_bbs)); \
-      PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(v, 2)); \
-      PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(A, 3)); \
-      PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(w, 4)); \
+      PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscAssertPointer(v, 2)); \
+      PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscAssertPointer(A, 3)); \
+      PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscAssertPointer(w, 4)); \
       PetscCallBLAS("BLASgemv", BLASgemv_("T", &(_bbs), &(_bbs), &_mone, A, &(_bbs), w, &_ione, &_one, v, &_ione)); \
     } while (0)
 
@@ -171,9 +170,9 @@ PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_15(MatScalar *, PetscIn
       PetscScalar  _one  = 1.0; \
       PetscBLASInt _ione = 1, _bbs; \
       PetscCall(PetscBLASIntCast(bs, &_bbs)); \
-      PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(v, 2)); \
-      PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(A, 3)); \
-      PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(w, 4)); \
+      PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscAssertPointer(v, 2)); \
+      PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscAssertPointer(A, 3)); \
+      PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscAssertPointer(w, 4)); \
       PetscCallBLAS("BLASgemv", BLASgemv_("N", &(_bbs), &(_bbs), &_one, A, &(_bbs), w, &_ione, &_one, v, &_ione)); \
     } while (0)
 
@@ -190,9 +189,9 @@ PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_15(MatScalar *, PetscIn
       PetscBLASInt _ione = 1, _bbs, _bncols; \
       PetscCall(PetscBLASIntCast(bs, &_bbs)); \
       PetscCall(PetscBLASIntCast(ncols, &_bncols)); \
-      PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(v, 3)); \
-      PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(A, 4)); \
-      PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(w, 5)); \
+      PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscAssertPointer(v, 3)); \
+      PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscAssertPointer(A, 4)); \
+      PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscAssertPointer(w, 5)); \
       PetscCallBLAS("BLASgemv", BLASgemv_("N", &(_bbs), &(_bncols), &_one, A, &(_bbs), v, &_ione, &_one, w, &_ione)); \
     } while (0)
 
@@ -209,9 +208,9 @@ PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_15(MatScalar *, PetscIn
       PetscBLASInt _ione = 1, _bbs, _bncols; \
       PetscCall(PetscBLASIntCast(bs, &_bbs)); \
       PetscCall(PetscBLASIntCast(ncols, &_bncols)); \
-      PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(w, 3)); \
-      PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(A, 4)); \
-      PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(v, 5)); \
+      PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscAssertPointer(w, 3)); \
+      PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscAssertPointer(A, 4)); \
+      PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscAssertPointer(v, 5)); \
       PetscCallBLAS("BLASgemv", BLASgemv_("N", &(_bbs), &(_bncols), &_mone, A, &(_bbs), v, &_ione, &_one, w, &_ione)); \
     } while (0)
 
@@ -227,9 +226,9 @@ PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_15(MatScalar *, PetscIn
       PetscScalar  _zero = 0.0, _one = 1.0; \
       PetscBLASInt _ione = 1, _bbs; \
       PetscCall(PetscBLASIntCast(bs, &_bbs)); \
-      PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(v, 2)); \
-      PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(A, 3)); \
-      PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(w, 4)); \
+      PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscAssertPointer(v, 2)); \
+      PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscAssertPointer(A, 3)); \
+      PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscAssertPointer(w, 4)); \
       PetscCallBLAS("BLASgemv", BLASgemv_("N", &(_bbs), &(_bbs), &_one, A, &(_bbs), v, &_ione, &_zero, w, &_ione)); \
     } while (0)
 
@@ -245,9 +244,9 @@ PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_15(MatScalar *, PetscIn
       PetscScalar  _zero = 0.0, _one = 1.0; \
       PetscBLASInt _ione = 1, _bbs; \
       PetscCall(PetscBLASIntCast(bs, &_bbs)); \
-      PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(v, 2)); \
-      PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(A, 3)); \
-      PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(w, 4)); \
+      PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscAssertPointer(v, 2)); \
+      PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscAssertPointer(A, 3)); \
+      PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscAssertPointer(w, 4)); \
       PetscCallBLAS("BLASgemv", BLASgemv_("T", &(_bbs), &(_bbs), &_one, A, &(_bbs), v, &_ione, &_zero, w, &_ione)); \
     } while (0)
 
@@ -260,9 +259,9 @@ PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_15(MatScalar *, PetscIn
       PetscBLASInt _ione = 1, _bbs, _bncols; \
       PetscCall(PetscBLASIntCast(bs, &_bbs)); \
       PetscCall(PetscBLASIntCast(ncols, &_bncols)); \
-      PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(x, 3)); \
-      PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(A, 4)); \
-      PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(z, 5)); \
+      PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscAssertPointer(x, 3)); \
+      PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscAssertPointer(A, 4)); \
+      PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscAssertPointer(z, 5)); \
       PetscCallBLAS("BLASgemv", BLASgemv_("N", &(_bbs), &_bncols, &_one, A, &(_bbs), x, &_ione, &_zero, z, &_ione)); \
     } while (0)
 
@@ -275,18 +274,18 @@ PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_15(MatScalar *, PetscIn
       PetscBLASInt _ione = 1, _bbs, _bncols; \
       PetscCall(PetscBLASIntCast(bs, &_bbs)); \
       PetscCall(PetscBLASIntCast(ncols, &_bncols)); \
-      PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(x, 3)); \
-      PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(A, 4)); \
-      PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(z, 5)); \
+      PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscAssertPointer(x, 3)); \
+      PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscAssertPointer(A, 4)); \
+      PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscAssertPointer(z, 5)); \
       PetscCallBLAS("BLASgemv", BLASgemv_("T", &_bbs, &_bncols, &_one, A, &_bbs, x, &_ione, &_one, z, &_ione)); \
     } while (0)
 
 #else /* !defined(PETSC_USE_REAL_MAT_SINGLE) */
-  /*
+/*
        Version that calls Fortran routines; can handle different precision
    of matrix (array) and vectors
 */
-  /*
+/*
      These are Fortran kernels: They replace certain BLAS routines but
    have some arguments that may be single precision,rather than double
    These routines are provided in src/fortran/kernels/sgemv.F
@@ -390,5 +389,3 @@ PETSC_EXTERN void msgemm_(PetscInt *, MatScalar *, MatScalar *, MatScalar *);
   #define PetscKernel_v_gets_v_plus_Atranspose_times_w(bs, v, A, w)
 
 #endif /* !defined(PETSC_USE_REAL_MAT_SINGLE) */
-
-#endif /* __ILU_H */

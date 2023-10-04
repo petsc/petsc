@@ -19,6 +19,8 @@ PETSC_EXTERN PetscErrorCode VecCreate_MPIKokkos(Vec);
 PETSC_EXTERN PetscErrorCode VecCreate_Kokkos(Vec);
 #endif
 
+PetscBool VecRegisterAllCalled = PETSC_FALSE;
+
 /*@C
   VecRegisterAll - Registers all of the vector types in the `Vec` package.
 
@@ -26,7 +28,7 @@ PETSC_EXTERN PetscErrorCode VecCreate_Kokkos(Vec);
 
   Level: advanced
 
-.seealso: [](chapter_vectors), `Vec`, `VecType`, `VecRegister()`, `VecRegisterDestroy()`, `VecRegister()`
+.seealso: [](ch_vectors), `Vec`, `VecType`, `VecRegister()`, `VecRegisterDestroy()`
 @*/
 PetscErrorCode VecRegisterAll(void)
 {

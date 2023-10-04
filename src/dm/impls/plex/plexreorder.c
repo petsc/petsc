@@ -45,13 +45,13 @@ static PetscErrorCode DMPlexCreateOrderingClosure_Static(DM dm, PetscInt numPoin
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@
+/*@C
   DMPlexGetOrdering - Calculate a reordering of the mesh
 
   Collective
 
   Input Parameters:
-+ dm - The DMPlex object
++ dm    - The DMPlex object
 . otype - type of reordering, see `MatOrderingType`
 - label - [Optional] Label used to segregate ordering into sets, or `NULL`
 
@@ -73,7 +73,7 @@ PetscErrorCode DMPlexGetOrdering(DM dm, MatOrderingType otype, DMLabel label, IS
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(perm, 4);
+  PetscAssertPointer(perm, 4);
   PetscCall(DMPlexCreateNeighborCSR(dm, 0, &numCells, &start, &adjacency));
   PetscCall(PetscMalloc3(numCells, &cperm, numCells, &mask, numCells * 2, &xls));
   if (numCells) {
@@ -231,7 +231,7 @@ static PetscErrorCode DMPlexRemapCoordinates_Private(IS perm, PetscSection cs, V
   Collective
 
   Input Parameters:
-+ dm - The `DMPLEX` object
++ dm   - The `DMPLEX` object
 - perm - The point permutation, `perm`[old point number] = new point number
 
   Output Parameter:
@@ -250,7 +250,7 @@ PetscErrorCode DMPlexPermute(DM dm, IS perm, DM *pdm)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidHeaderSpecific(perm, IS_CLASSID, 2);
-  PetscValidPointer(pdm, 3);
+  PetscAssertPointer(pdm, 3);
   PetscCall(DMCreate(PetscObjectComm((PetscObject)dm), pdm));
   PetscCall(DMSetType(*pdm, DMPLEX));
   PetscCall(PetscObjectGetName((PetscObject)dm, &name));
@@ -381,8 +381,8 @@ PetscErrorCode DMPlexReorderSetDefault_Plex(DM dm, DMPlexReorderDefaultFlag reor
   Logically Collective
 
   Input Parameters:
-+ dm        - The `DM`
-- reorder   - Flag for reordering
++ dm      - The `DM`
+- reorder - Flag for reordering
 
   Level: intermediate
 
@@ -411,7 +411,7 @@ PetscErrorCode DMPlexReorderGetDefault_Plex(DM dm, DMPlexReorderDefaultFlag *reo
   Not Collective
 
   Input Parameter:
-. dm      - The `DM`
+. dm - The `DM`
 
   Output Parameter:
 . reorder - Flag for reordering
@@ -424,7 +424,7 @@ PetscErrorCode DMPlexReorderGetDefault(DM dm, DMPlexReorderDefaultFlag *reorder)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(reorder, 2);
+  PetscAssertPointer(reorder, 2);
   PetscUseMethod(dm, "DMPlexReorderGetDefault_C", (DM, DMPlexReorderDefaultFlag *), (dm, reorder));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

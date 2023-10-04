@@ -1,3 +1,5 @@
+#pragma once
+
 #include <petsc/private/kspimpl.h>
 #include <petsc/private/matimpl.h>
 #include <petscksp.h>

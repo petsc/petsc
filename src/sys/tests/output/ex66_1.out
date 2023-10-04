@@ -1,0 +1,43 @@
+Demonstrates PETSc Error Handlers
+The error is a contrived error to test error handling
+[0]PETSC ERROR: --------------------- Error Message --------------------------------------------------------------
+[0]PETSC ERROR: Error Created
+[0]PETSC ERROR: See https://petsc.org/release/faq/ for trouble shooting.
+[0]PETSC ERROR: #1 CreateError() at ex66.c:0
+[0]PETSC ERROR: #2 CreateError() at ex66.c:0
+[0]PETSC ERROR: #3 CreateError() at ex66.c:0
+[0]PETSC ERROR: #4 CreateError() at ex66.c:0
+[0]PETSC ERROR: #5 CreateError() at ex66.c:0
+[0]PETSC ERROR: #6 CreateError() at ex66.c:0
+[0]PETSC ERROR: --------------------- Error Message --------------------------------------------------------------
+[0]PETSC ERROR:   It appears a new error in the code was triggered after a previous error, possibly because:
+[0]PETSC ERROR:   -  The first error was not properly handled via (for example) the use of
+[0]PETSC ERROR:      PetscCall(TheFunctionThatErrors()); or
+[0]PETSC ERROR:   -  The second error was triggered while handling the first error.
+[0]PETSC ERROR:   Above is the traceback for the previous unhandled error, below the traceback for the next error
+[0]PETSC ERROR:   ALL ERRORS in the PETSc libraries are fatal, you should add the appropriate error checking to the code
+[0]PETSC ERROR: Error Created
+[0]PETSC ERROR: See https://petsc.org/release/faq/ for trouble shooting.
+[0]PETSC ERROR: #1 CreateError() at ex66.c:0
+[0]PETSC ERROR: #2 CreateError() at ex66.c:0
+[0]PETSC ERROR: #3 CreateError() at ex66.c:0
+[0]PETSC ERROR: #4 CreateError() at ex66.c:0
+[0]PETSC ERROR: #5 CreateError() at ex66.c:0
+[0]PETSC ERROR: #6 CreateError() at ex66.c:0
+[0]PETSC ERROR: --------------------- Error Message --------------------------------------------------------------
+[0]PETSC ERROR:   It appears a new error in the code was triggered after a previous error, possibly because:
+[0]PETSC ERROR:   -  The first error was not properly handled via (for example) the use of
+[0]PETSC ERROR:      PetscCall(TheFunctionThatErrors()); or
+[0]PETSC ERROR:   -  The second error was triggered while handling the first error.
+[0]PETSC ERROR:   Above is the traceback for the previous unhandled error, below the traceback for the next error
+[0]PETSC ERROR:   ALL ERRORS in the PETSc libraries are fatal, you should add the appropriate error checking to the code
+[0]PETSC ERROR: Error Created
+[0]PETSC ERROR: See https://petsc.org/release/faq/ for trouble shooting.
+[0]PETSC ERROR: #1 CreateError() at ex66.c:0
+[0]PETSC ERROR: #2 CreateError() at ex66.c:0
+[0]PETSC ERROR: #3 CreateError() at ex66.c:0
+[0]PETSC ERROR: #4 CreateError() at ex66.c:0
+[0]PETSC ERROR: #5 CreateError() at ex66.c:0
+[0]PETSC ERROR: #6 CreateError() at ex66.c:0
+[0]PETSC ERROR: #7 main() at ex66.c:0
+[0]PETSC ERROR: ----------------End of Error Message -------send entire error message to petsc-maint@mcs.anl.gov----------

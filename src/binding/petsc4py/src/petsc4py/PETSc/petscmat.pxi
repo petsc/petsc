@@ -104,7 +104,6 @@ cdef extern from * nogil:
     PetscMatSolverType MATSOLVERUMFPACK
     PetscMatSolverType MATSOLVERCHOLMOD
     PetscMatSolverType MATSOLVERKLU
-    PetscMatSolverType MATSOLVERSPARSEELEMENTAL
     PetscMatSolverType MATSOLVERELEMENTAL
     PetscMatSolverType MATSOLVERSCALAPACK
     PetscMatSolverType MATSOLVERESSL
@@ -326,7 +325,7 @@ cdef extern from * nogil:
     PetscErrorCode MatDiagonalScale(PetscMat,PetscVec,PetscVec)
     PetscErrorCode MatScale(PetscMat,PetscScalar)
     PetscErrorCode MatShift(PetscMat,PetscScalar)
-    PetscErrorCode MatChop(PetscMat,PetscReal)
+    PetscErrorCode MatFilter(PetscMat,PetscReal,PetscBool,PetscBool)
     PetscErrorCode MatSetRandom(PetscMat,PetscRandom)
     PetscErrorCode MatAXPY(PetscMat,PetscScalar,PetscMat,PetscMatStructure)
     PetscErrorCode MatAYPX(PetscMat,PetscScalar,PetscMat,PetscMatStructure)
@@ -384,6 +383,8 @@ cdef extern from * nogil:
     PetscErrorCode MatMultAdd(PetscMat,PetscVec,PetscVec,PetscVec)
     PetscErrorCode MatMultTranspose(PetscMat,PetscVec,PetscVec)
     PetscErrorCode MatMultTransposeAdd(PetscMat,PetscVec,PetscVec,PetscVec)
+
+    # FIXME: Why?
     PetscErrorCode MatMultHermitian"MatMultHermitianTranspose"(PetscMat,PetscVec,PetscVec)
     PetscErrorCode MatMultHermitianAdd"MatMultHermitianTransposeAdd"(PetscMat,PetscVec,PetscVec,PetscVec)
 
@@ -447,6 +448,7 @@ cdef extern from * nogil:
     PetscErrorCode MatSetUnfactored(PetscMat)
 
     PetscErrorCode MatLRCGetMats(PetscMat,PetscMat*,PetscMat*,PetscVec*,PetscMat*)
+    PetscErrorCode MatLRCSetMats(PetscMat,PetscMat,PetscMat,PetscVec,PetscMat)
 
     PetscErrorCode MatMumpsSetIcntl(PetscMat,PetscInt,PetscInt)
     PetscErrorCode MatMumpsGetIcntl(PetscMat,PetscInt,PetscInt*)
@@ -530,7 +532,7 @@ cdef extern from * nogil:
 cdef inline NullSpace ref_NullSpace(PetscNullSpace nsp):
     cdef NullSpace ob = <NullSpace> NullSpace()
     ob.nsp = nsp
-    PetscINCREF(ob.obj)
+    CHKERR( PetscINCREF(ob.obj) )
     return ob
 
 cdef PetscErrorCode NullSpace_Function(
@@ -549,7 +551,7 @@ cdef PetscErrorCode NullSpace_Function(
 cdef inline Mat ref_Mat(PetscMat mat):
     cdef Mat ob = <Mat> Mat()
     ob.mat = mat
-    PetscINCREF(ob.obj)
+    CHKERR( PetscINCREF(ob.obj) )
     return ob
 
 # -----------------------------------------------------------------------------
@@ -592,12 +594,11 @@ cdef Mat mat_isub(Mat self, other):
         self.setDiagonal(diag, PETSC_ADD_VALUES)
         diag.destroy()
     else:
-        self.shift(other)
+        self.shift(-other)
     return self
 
 cdef Mat mat_imul(Mat self, other):
-    if (isinstance(other, tuple) or
-        isinstance(other, list)):
+    if isinstance(other, (tuple, list)):
         L, R = other
         self.diagonalScale(L, R)
     else:
@@ -627,16 +628,22 @@ cdef Mat mat_add(Mat self, other):
 cdef Mat mat_sub(Mat self, other):
     return mat_isub(mat_pos(self), other)
 
-cdef Mat mat_mul(Mat self, other):
-    if isinstance(other, Mat):
-        return self.matMult(other)
-    else:
-        return mat_imul(mat_pos(self), other)
-
 cdef Vec mat_mul_vec(Mat self, Vec other):
+    #CHKERR( MatMult(self.mat, other.vec, result.vec) )
     cdef Vec result = self.createVecLeft()
     self.mult(other, result)
     return result
+
+cdef Mat mat_mul_mat(Mat self, Mat other):
+    return self.matMult(other)
+
+cdef Mat mat_mul(Mat self, other):
+    if isinstance(other, Vec):
+        return mat_mul_vec(self, <Vec>other)
+    elif isinstance(other, Mat):
+        return mat_mul_mat(self, <Mat>other)
+    else:
+        return mat_imul(mat_pos(self), other)
 
 cdef Mat mat_div(Mat self, other):
     return mat_idiv(mat_pos(self), other)
@@ -656,7 +663,7 @@ cdef Mat mat_rmul(Mat self, other):
 
 cdef Mat mat_rdiv(Mat self, other):
     <void>self; <void>other; # unused
-    raise NotImplementedError
+    return NotImplemented
 
 # -----------------------------------------------------------------------------
 
@@ -1134,33 +1141,8 @@ cdef PetscErrorCode mat_setitem(Mat self, object ij, object v) except PETSC_ERR_
 
 # -----------------------------------------------------------------------------
 
-#@cython.internal
-cdef class _Mat_Stencil:
-   cdef PetscMatStencil stencil
-   property i:
-       def __set__(self, value):
-           self.stencil.i = asInt(value)
-   property j:
-       def __set__(self, value):
-           self.stencil.j = asInt(value)
-   property k:
-       def __set__(self, value):
-           self.stencil.k = asInt(value)
-   property c:
-       def __set__(self, value):
-           self.stencil.c = asInt(value)
-   property index:
-       def __set__(self, value):
-           cdef PetscMatStencil *s = &self.stencil
-           s.k = s.j = s.i = 0
-           asDims(value, &s.i, &s.j, &s.k)
-   property field:
-       def __set__(self, value):
-           cdef PetscMatStencil *s = &self.stencil
-           s.c = asInt(value)
-
 cdef matsetvaluestencil(PetscMat A,
-                        _Mat_Stencil r, _Mat_Stencil c, object value,
+                        MatStencil r, MatStencil c, object value,
                         PetscInsertMode im, int blocked):
     # block size
     cdef PetscInt rbs=1, cbs=1

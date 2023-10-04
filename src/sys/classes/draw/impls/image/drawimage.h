@@ -1,5 +1,4 @@
-#ifndef _PETSCIMAGE_H
-#define _PETSCIMAGE_H
+#pragma once
 
 #include <petscdraw.h>
 
@@ -348,5 +347,3 @@ static inline void PetscImageDrawText(PetscImage img, int x, int y, int c, const
     }
   }
 }
-
-#endif

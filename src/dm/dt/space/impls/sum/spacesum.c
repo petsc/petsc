@@ -1,14 +1,18 @@
 #include <petsc/private/petscfeimpl.h> /*I "petscfe.h" I*/
+
 /*@
-  PetscSpaceSumGetNumSubspaces - Get the number of spaces in the sum
+  PetscSpaceSumGetNumSubspaces - Get the number of spaces in the sum space
 
   Input Parameter:
-. sp  - the function space object
+. sp - the function space object
 
   Output Parameter:
 . numSumSpaces - the number of spaces
 
-Level: intermediate
+  Level: intermediate
+
+  Note:
+  The name NumSubspaces is slightly misleading because it is actually getting the number of defining spaces of the sum, not a number of Subspaces of it
 
 .seealso: `PETSCSPACESUM`, `PetscSpace`, `PetscSpaceSumSetNumSubspaces()`, `PetscSpaceSetDegree()`, `PetscSpaceSetNumVariables()`
 @*/
@@ -16,19 +20,22 @@ PetscErrorCode PetscSpaceSumGetNumSubspaces(PetscSpace sp, PetscInt *numSumSpace
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
-  PetscValidIntPointer(numSumSpaces, 2);
+  PetscAssertPointer(numSumSpaces, 2);
   PetscTryMethod(sp, "PetscSpaceSumGetNumSubspaces_C", (PetscSpace, PetscInt *), (sp, numSumSpaces));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
-  PetscSpaceSumSetNumSubspaces - Set the number of spaces in the sum
+  PetscSpaceSumSetNumSubspaces - Set the number of spaces in the sum space
 
   Input Parameters:
-+ sp  - the function space object
++ sp           - the function space object
 - numSumSpaces - the number of spaces
 
-Level: intermediate
+  Level: intermediate
+
+  Note:
+  The name NumSubspaces is slightly misleading because it is actually setting the number of defining spaces of the sum, not a number of Subspaces of it
 
 .seealso: `PETSCSPACESUM`, `PetscSpace`, `PetscSpaceSumGetNumSubspaces()`, `PetscSpaceSetDegree()`, `PetscSpaceSetNumVariables()`
 @*/
@@ -41,17 +48,20 @@ PetscErrorCode PetscSpaceSumSetNumSubspaces(PetscSpace sp, PetscInt numSumSpaces
 }
 
 /*@
- PetscSpaceSumGetConcatenate - Get the concatenate flag for this space.
- A concatenated sum space will have number of components equal to the sum of the number of components of all subspaces. A non-concatenated,
- or direct sum space will have the same number of components as its subspaces .
+  PetscSpaceSumGetConcatenate - Get the concatenate flag for this space.
 
- Input Parameter:
+  Input Parameter:
 . sp - the function space object
 
- Output Parameter:
+  Output Parameter:
 . concatenate - flag indicating whether subspaces are concatenated.
 
-Level: intermediate
+  Level: intermediate
+
+  Notes:
+  A concatenated sum space will have the number of components equal to the sum of the number of
+  components of all subspaces. A non-concatenated, or direct sum space will have the same
+  number of components as its subspaces.
 
 .seealso: `PETSCSPACESUM`, `PetscSpace`, `PetscSpaceSumSetConcatenate()`
 @*/
@@ -65,14 +75,17 @@ PetscErrorCode PetscSpaceSumGetConcatenate(PetscSpace sp, PetscBool *concatenate
 
 /*@
   PetscSpaceSumSetConcatenate - Sets the concatenate flag for this space.
-  A concatenated sum space will have number of components equal to the sum of the number of components of all subspaces. A non-concatenated,
-  or direct sum space will have the same number of components as its subspaces .
 
- Input Parameters:
-+ sp - the function space object
+  Input Parameters:
++ sp          - the function space object
 - concatenate - are subspaces concatenated components (true) or direct summands (false)
 
   Level: intermediate
+
+  Notes:
+  A concatenated sum space will have the number of components equal to the sum of the number of
+  components of all subspaces. A non-concatenated, or direct sum space will have the same
+  number of components as its subspaces .
 
 .seealso: `PETSCSPACESUM`, `PetscSpace`, `PetscSpaceSumGetConcatenate()`
 @*/
@@ -85,16 +98,19 @@ PetscErrorCode PetscSpaceSumSetConcatenate(PetscSpace sp, PetscBool concatenate)
 }
 
 /*@
-  PetscSpaceSumGetSubspace - Get a space in the sum
+  PetscSpaceSumGetSubspace - Get a space in the sum space
 
   Input Parameters:
 + sp - the function space object
 - s  - The space number
 
   Output Parameter:
-. subsp - the PetscSpace
+. subsp - the `PetscSpace`
 
   Level: intermediate
+
+  Note:
+  The name GetSubspace is slightly misleading because it is actually getting one of the defining spaces of the sum, not a Subspace of it
 
 .seealso: `PETSCSPACESUM`, `PetscSpace`, `PetscSpaceSumSetSubspace()`, `PetscSpaceSetDegree()`, `PetscSpaceSetNumVariables()`
 @*/
@@ -102,13 +118,13 @@ PetscErrorCode PetscSpaceSumGetSubspace(PetscSpace sp, PetscInt s, PetscSpace *s
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
-  PetscValidPointer(subsp, 3);
+  PetscAssertPointer(subsp, 3);
   PetscTryMethod(sp, "PetscSpaceSumGetSubspace_C", (PetscSpace, PetscInt, PetscSpace *), (sp, s, subsp));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
-  PetscSpaceSumSetSubspace - Set a space in the sum
+  PetscSpaceSumSetSubspace - Set a space in the sum space
 
   Input Parameters:
 + sp    - the function space object
@@ -116,6 +132,9 @@ PetscErrorCode PetscSpaceSumGetSubspace(PetscSpace sp, PetscInt s, PetscSpace *s
 - subsp - the number of spaces
 
   Level: intermediate
+
+  Note:
+  The name SetSubspace is slightly misleading because it is actually setting one of the defining spaces of the sum, not a Subspace of it
 
 .seealso: `PETSCSPACESUM`, `PetscSpace`, `PetscSpaceSumGetSubspace()`, `PetscSpaceSetDegree()`, `PetscSpaceSetNumVariables()`
 @*/
@@ -366,6 +385,8 @@ static PetscErrorCode PetscSpaceDestroy_Sum(PetscSpace sp)
   PetscCall(PetscObjectComposeFunction((PetscObject)sp, "PetscSpaceSumGetNumSubspaces_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)sp, "PetscSpaceSumGetConcatenate_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)sp, "PetscSpaceSumSetConcatenate_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)sp, "PetscSpaceSumGetInterleave_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)sp, "PetscSpaceSumSetInterleave_C", NULL));
   PetscCall(PetscFree(sum));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -436,12 +457,13 @@ static PetscErrorCode PetscSpaceEvaluate_Sum(PetscSpace sp, PetscInt npoints, co
 
         for (j = 0; j < spdim; ++j) {
           PetscInt c;
+          PetscInt b = sum->interleave_basis ? (j * Ns + s) : (j + offset);
 
           for (c = 0; c < sNc; ++c) {
             PetscInt compoffset, BInd, sBInd;
 
-            compoffset = concatenate ? c + ncoffset : c;
-            BInd       = (p * pdimfull + j + offset) * Nc + compoffset;
+            compoffset = concatenate ? (sum->interleave_components ? (c * Ns + s) : (c + ncoffset)) : c;
+            BInd       = (p * pdimfull + b) * Nc + compoffset;
             sBInd      = (p * spdim + j) * sNc + c;
             if (B) B[BInd] = sB[sBInd];
             if (D || H) {
@@ -522,6 +544,74 @@ static PetscErrorCode PetscSpaceGetHeightSubspace_Sum(PetscSpace sp, PetscInt he
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@
+  PetscSpaceSumSetInterleave - Set whether the basis functions and components of a uniform sum are interleaved
+
+  Logically collective
+
+  Input Parameters:
++ sp                    - a `PetscSpace` of type `PETSCSPACESUM`
+. interleave_basis      - if `PETSC_TRUE`, the basis vectors of the subspaces are interleaved
+- interleave_components - if `PETSC_TRUE` and the space concatenates components (`PetscSpaceSumGetConcatenate()`),
+                          interleave the concatenated components
+
+  Level: developer
+
+.seealso: `PetscSpace`, `PETSCSPACESUM`, `PETSCFEVECTOR`, `PetscSpaceSumGetInterleave()`
+@*/
+PetscErrorCode PetscSpaceSumSetInterleave(PetscSpace sp, PetscBool interleave_basis, PetscBool interleave_components)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
+  PetscTryMethod(sp, "PetscSpaceSumSetInterleave_C", (PetscSpace, PetscBool, PetscBool), (sp, interleave_basis, interleave_components));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode PetscSpaceSumSetInterleave_Sum(PetscSpace sp, PetscBool interleave_basis, PetscBool interleave_components)
+{
+  PetscSpace_Sum *sum = (PetscSpace_Sum *)sp->data;
+  PetscFunctionBegin;
+  sum->interleave_basis      = interleave_basis;
+  sum->interleave_components = interleave_components;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  PetscSpaceSumGetInterleave - Get whether the basis functions and components of a uniform sum are interleaved
+
+  Logically collective
+
+  Input Parameter:
+. sp - a `PetscSpace` of type `PETSCSPACESUM`
+
+  Output Parameters:
++ interleave_basis      - if `PETSC_TRUE`, the basis vectors of the subspaces are interleaved
+- interleave_components - if `PETSC_TRUE` and the space concatenates components (`PetscSpaceSumGetConcatenate()`),
+                          interleave the concatenated components
+
+  Level: developer
+
+.seealso: `PetscSpace`, `PETSCSPACESUM`, `PETSCFEVECTOR`, `PetscSpaceSumSetInterleave()`
+@*/
+PetscErrorCode PetscSpaceSumGetInterleave(PetscSpace sp, PetscBool *interleave_basis, PetscBool *interleave_components)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
+  if (interleave_basis) PetscAssertPointer(interleave_basis, 2);
+  if (interleave_components) PetscAssertPointer(interleave_components, 3);
+  PetscTryMethod(sp, "PetscSpaceSumGetInterleave_C", (PetscSpace, PetscBool *, PetscBool *), (sp, interleave_basis, interleave_components));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode PetscSpaceSumGetInterleave_Sum(PetscSpace sp, PetscBool *interleave_basis, PetscBool *interleave_components)
+{
+  PetscSpace_Sum *sum = (PetscSpace_Sum *)sp->data;
+  PetscFunctionBegin;
+  if (interleave_basis) *interleave_basis = sum->interleave_basis;
+  if (interleave_components) *interleave_components = sum->interleave_components;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 static PetscErrorCode PetscSpaceInitialize_Sum(PetscSpace sp)
 {
   PetscFunctionBegin;
@@ -539,18 +629,23 @@ static PetscErrorCode PetscSpaceInitialize_Sum(PetscSpace sp)
   PetscCall(PetscObjectComposeFunction((PetscObject)sp, "PetscSpaceSumSetSubspace_C", PetscSpaceSumSetSubspace_Sum));
   PetscCall(PetscObjectComposeFunction((PetscObject)sp, "PetscSpaceSumGetConcatenate_C", PetscSpaceSumGetConcatenate_Sum));
   PetscCall(PetscObjectComposeFunction((PetscObject)sp, "PetscSpaceSumSetConcatenate_C", PetscSpaceSumSetConcatenate_Sum));
+  PetscCall(PetscObjectComposeFunction((PetscObject)sp, "PetscSpaceSumGetInterleave_C", PetscSpaceSumGetInterleave_Sum));
+  PetscCall(PetscObjectComposeFunction((PetscObject)sp, "PetscSpaceSumSetInterleave_C", PetscSpaceSumSetInterleave_Sum));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
   PETSCSPACESUM = "sum" - A `PetscSpace` object that encapsulates a sum of subspaces.
-  That sum can either be direct or concatenate a concatenation. For example if A and B are spaces each with 2 components,
-  the direct sum of A and B will also have 2 components while the concatenated sum will have 4 components.In both cases A and B must be defined over the
-  same number of variables.
 
   Level: intermediate
 
-.seealso: `PetscSpace`, `PetscSpaceType`, `PetscSpaceCreate()`, `PetscSpaceSetType()`
+  Note:
+   That sum can either be direct or a concatenation. For example if A and B are spaces each with 2 components,
+  the direct sum of A and B will also have 2 components while the concatenated sum will have 4 components. In both cases A and B must be defined over the
+  same number of variables.
+
+.seealso: `PetscSpace`, `PetscSpaceType`, `PetscSpaceCreate()`, `PetscSpaceSetType()`, `PetscSpaceSumGetNumSubspaces()`, `PetscSpaceSumSetNumSubspaces()`,
+          `PetscSpaceSumGetConcatenate()`, `PetscSpaceSumSetConcatenate()`
 M*/
 PETSC_EXTERN PetscErrorCode PetscSpaceCreate_Sum(PetscSpace sp)
 {
@@ -570,7 +665,6 @@ PETSC_EXTERN PetscErrorCode PetscSpaceCreateSum(PetscInt numSubspaces, const Pet
   PetscInt i, Nv, Nc = 0;
 
   PetscFunctionBegin;
-  if (sumSpace) PetscCall(PetscSpaceDestroy(sumSpace));
   PetscCall(PetscSpaceCreate(PetscObjectComm((PetscObject)subspaces[0]), sumSpace));
   PetscCall(PetscSpaceSetType(*sumSpace, PETSCSPACESUM));
   PetscCall(PetscSpaceSumSetNumSubspaces(*sumSpace, numSubspaces));

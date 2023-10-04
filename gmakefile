@@ -52,6 +52,7 @@ libpetscall := $(if $(filter-out no,$(BUILDSHAREDLIB)),$(libpetscall_shared),$(l
 generated      := $(PETSC_ARCH)/lib/petsc/conf/files
 
 libs : $(libpetscall)
+
 .PHONY: libs
 
 .SECONDEXPANSION:		# to expand $$(@D)/.DIR
@@ -63,7 +64,7 @@ $(generated) : $(petscconf) $(petscvariables) config/gmakegen.py
 	$(PYTHON) ./config/gmakegen.py --petsc-arch=$(PETSC_ARCH)
 
 # Skip including generated files (which triggers rebuilding them) when we're just going to clean anyway.
-ifneq ($(filter-out clean check info,$(MAKECMDGOALS:clean%=clean)),)
+ifneq ($(filter-out alletags deletefortranstubs allfortranstubs allfortranstubsinplace help clean check info gmakeinfo,$(MAKECMDGOALS:clean%=clean)),)
 include $(generated)
 endif
 
@@ -88,8 +89,9 @@ ifneq ($(KOKKOS_LIB),)
 langs += kokkos.cxx
 endif
 
-concatlang = $(foreach lang, $(langs), $(srcs-$(1).$(lang):src/%.$(lang)=$(OBJDIR)/%.o))
+concatlang = $(foreach lang, $(langs), $(srcs-$(1).$(lang):%.$(lang)=$(OBJDIR)/%.o))
 srcs.o := $(foreach pkg, $(pkgs), $(call concatlang,$(pkg)))
+srcs.tidy := $(foreach pkg, $(pkgs), $(srcs-$(pkg).c:%.c=$(OBJDIR)/%.tidy))
 concatlangsrc = $(foreach lang, $(langs), $(srcs-$(1).$(lang)))
 csrc := $(foreach pkg, $(pkgs),  $(srcs-$(pkg).c))
 showcsrc:
@@ -188,27 +190,27 @@ $(call soname_function,%) : $(call libname_function,%)
 
 .PRECIOUS: $(call soname_function,%)
 
-$(OBJDIR)/%.o : src/%.sycl.cxx | $$(@D)/.DIR
+$(OBJDIR)/%.o : %.sycl.cxx | $$(@D)/.DIR
 	$(PETSC_COMPILE.sycl.cxx) $(abspath $<) -o $@
 
-$(OBJDIR)/%.o : src/%.c | $$(@D)/.DIR
+$(OBJDIR)/%.o : %.c | $$(@D)/.DIR
 	$(PETSC_COMPILE.c) $(abspath $<) -o $@
 
-$(OBJDIR)/%.o : src/%.kokkos.cxx | $$(@D)/.DIR
+$(OBJDIR)/%.o : %.kokkos.cxx | $$(@D)/.DIR
 	$(PETSC_COMPILE.kokkos.cxx) $(abspath $<) -o $@
 
-$(OBJDIR)/%.o : src/%.cxx | $$(@D)/.DIR
+$(OBJDIR)/%.o : %.cxx | $$(@D)/.DIR
 	$(PETSC_COMPILE.cxx) $(abspath $<) -o $@
 
-$(OBJDIR)/%.o : src/%.hip.cpp | $$(@D)/.DIR
+$(OBJDIR)/%.o : %.hip.cpp | $$(@D)/.DIR
 	$(PETSC_COMPILE.hip.cpp) $(abspath $<) -o $@
 
-$(OBJDIR)/%.o : src/%.cu | $$(@D)/.DIR
+$(OBJDIR)/%.o : %.cu | $$(@D)/.DIR
 	$(PETSC_COMPILE.cu) $(abspath $<) -o $@ # Compile first so that if there is an error, it comes from a normal compile
 	@$(PETSC_GENDEPS.cu) $(abspath $<) -o $(@:%.o=%.d) # Generate the dependencies for later
 
 FCMOD = cd
-$(OBJDIR)/%.o : src/%.F | $$(@D)/.DIR
+$(OBJDIR)/%.o : %.F | $$(@D)/.DIR
 ifeq ($(FC_MODULE_OUTPUT_FLAG),)
 	$(call quiet,FCMOD) $(MODDIR) && $(FC) -c $(FC_FLAGS) $(FFLAGS) $(FCPPFLAGS) $(FC_DEPFLAGS) $(abspath $<) -o $(abspath $@)
 else
@@ -216,40 +218,47 @@ else
 endif
 	-@$(GFORTRAN_DEP_CLEANUP)
 
-$(OBJDIR)/%.o : src/%.F90 | $$(@D)/.DIR
+$(OBJDIR)/%.o : %.F90 | $$(@D)/.DIR
 ifeq ($(FC_MODULE_OUTPUT_FLAG),)
 	$(call quiet,FCMOD) $(MODDIR) && $(FC) -c $(FC_FLAGS) $(FFLAGS) $(FCPPFLAGS) $(FC_DEPFLAGS) $(abspath $<) -o $(abspath $@)
 else
 	$(PETSC_COMPILE.F) $(abspath $<) -o $@ $(FC_MODULE_OUTPUT_FLAG)$(MODDIR)
 endif
 	-@$(GFORTRAN_DEP_CLEANUP)
+
+# Combine with Jacob's massive lint project?
+# Only works with ./configure --with-mpi=0 since clang-tidy cannot find MPI include files (love MPI compiler wrappers, the worse thing to come from MPI)
+$(OBJDIR)/%.tidy : %.c | $$(@D)/.DIR
+	clang-tidy --checks="-*analyzer*,-*diagnostic*,bugprone-too-small-loop-variable"  $(abspath $<) -- ${CCPPFLAGS}  -Wno-implicit-function-declaration -Wno-error=implicit-function-declaration
+
+clang-tidy: $(srcs.tidy)
 
 # Hack: manual dependencies on object files
 ifeq ($(MPI_IS_MPIUNI),1)
   MPIUNI_MOD := $(MODDIR)/mpiuni.mod
-  $(OBJDIR)/sys/mpiuni/fsrc/somempifort.o : $(OBJDIR)/sys/mpiuni/f90-mod/mpiunimod.o
+  $(OBJDIR)/src/sys/mpiuni/fsrc/somempifort.o : $(OBJDIR)/src/sys/mpiuni/f90-mod/mpiunimod.o
 endif
-$(OBJDIR)/sys/f90-mod/petscsysmod.o   : $(if $(MPIUNI_MOD),$(OBJDIR)/sys/mpiuni/f90-mod/mpiunimod.o)
-$(OBJDIR)/vec/f90-mod/petscvecmod.o   : $(OBJDIR)/sys/f90-mod/petscsysmod.o
-$(OBJDIR)/mat/f90-mod/petscmatmod.o   : $(OBJDIR)/vec/f90-mod/petscvecmod.o
-$(OBJDIR)/dm/f90-mod/petscdmmod.o     : $(OBJDIR)/mat/f90-mod/petscmatmod.o
-$(OBJDIR)/dm/f90-mod/petscdmdamod.o   : $(OBJDIR)/dm/f90-mod/petscdmmod.o
-$(OBJDIR)/dm/f90-mod/petscdmplexmod.o : $(OBJDIR)/dm/f90-mod/petscdmmod.o
-$(OBJDIR)/dm/f90-mod/petscdmswarmmod.o : $(OBJDIR)/dm/f90-mod/petscdmmod.o
-$(OBJDIR)/ksp/f90-mod/petsckspdefmod.o : $(OBJDIR)/dm/f90-mod/petscdmplexmod.o
-$(OBJDIR)/ksp/f90-mod/petscpcmod.o    : $(OBJDIR)/ksp/f90-mod/petsckspdefmod.o
-$(OBJDIR)/ksp/f90-mod/petsckspmod.o   : $(OBJDIR)/ksp/f90-mod/petscpcmod.o
-$(OBJDIR)/snes/f90-mod/petscsnesmod.o : $(OBJDIR)/ksp/f90-mod/petsckspmod.o
-$(OBJDIR)/ts/f90-mod/petsctsmod.o     : $(OBJDIR)/snes/f90-mod/petscsnesmod.o
-$(OBJDIR)/tao/f90-mod/petsctaomod.o   : $(OBJDIR)/ts/f90-mod/petsctsmod.o
+$(OBJDIR)/src/sys/f90-mod/petscsysmod.o   : $(if $(MPIUNI_MOD),$(OBJDIR)/src/sys/mpiuni/f90-mod/mpiunimod.o)
+$(OBJDIR)/src/vec/f90-mod/petscvecmod.o   : $(OBJDIR)/src/sys/f90-mod/petscsysmod.o
+$(OBJDIR)/src/mat/f90-mod/petscmatmod.o   : $(OBJDIR)/src/vec/f90-mod/petscvecmod.o
+$(OBJDIR)/src/dm/f90-mod/petscdmmod.o     : $(OBJDIR)/src/mat/f90-mod/petscmatmod.o
+$(OBJDIR)/src/dm/f90-mod/petscdmdamod.o   : $(OBJDIR)/src/dm/f90-mod/petscdmmod.o
+$(OBJDIR)/src/dm/f90-mod/petscdmplexmod.o : $(OBJDIR)/src/dm/f90-mod/petscdmmod.o
+$(OBJDIR)/src/dm/f90-mod/petscdmswarmmod.o : $(OBJDIR)/src/dm/f90-mod/petscdmmod.o
+$(OBJDIR)/src/ksp/f90-mod/petsckspdefmod.o : $(OBJDIR)/src/dm/f90-mod/petscdmplexmod.o
+$(OBJDIR)/src/ksp/f90-mod/petscpcmod.o    : $(OBJDIR)/src/ksp/f90-mod/petsckspdefmod.o
+$(OBJDIR)/src/ksp/f90-mod/petsckspmod.o   : $(OBJDIR)/src/ksp/f90-mod/petscpcmod.o
+$(OBJDIR)/src/snes/f90-mod/petscsnesmod.o : $(OBJDIR)/src/ksp/f90-mod/petsckspmod.o
+$(OBJDIR)/src/ts/f90-mod/petsctsmod.o     : $(OBJDIR)/src/snes/f90-mod/petscsnesmod.o
+$(OBJDIR)/src/tao/f90-mod/petsctaomod.o   : $(OBJDIR)/src/ts/f90-mod/petsctsmod.o
 # F2003 interface
-$(OBJDIR)/sys/objects/f2003-src/fsrc/optionenum.o   : $(OBJDIR)/sys/f90-mod/petscsysmod.o
-$(OBJDIR)/sys/classes/bag/f2003-src/fsrc/bagenum.o  : $(OBJDIR)/sys/f90-mod/petscsysmod.o
+$(OBJDIR)/src/sys/objects/f2003-src/fsrc/optionenum.o   : $(OBJDIR)/src/sys/f90-mod/petscsysmod.o
+$(OBJDIR)/src/sys/classes/bag/f2003-src/fsrc/bagenum.o  : $(OBJDIR)/src/sys/f90-mod/petscsysmod.o
 
 # all sources should get recompiled when petscvariables changes (i.e when configure is rerun or when petscvariables is manually edited.)
 $(srcs.o) : $(petscvariables)
 
-.PHONY: clean all print
+.PHONY: clean all print clang-tidy
 
 clean:
 	${RM} -r $(OBJDIR) $(LIBDIR)/libpetsc* $(MODDIR)/petsc*.mod $(MPIUNI_MOD) $(generated)
@@ -265,5 +274,79 @@ allobj.d := $(srcs.o:%.o=%.d)
 # below has quadratic complexity, taking more than one second for a
 # do-nothing build of PETSc (much worse for larger projects)
 $(allobj.d) : ;
+
+gmakeinfo:
+	-@echo "=========================================="
+	-@echo " "
+	-@echo "See documentation/faq.html and documentation/bugreporting.html"
+	-@echo "for help with installation problems.  Please send EVERYTHING"
+	-@echo "printed out below when reporting problems.  Please check the"
+	-@echo "mailing list archives and consider subscribing."
+	-@echo " "
+	-@echo "  https://petsc.org/release/community/mailing/"
+	-@echo " "
+	-@echo "=========================================="
+	-@echo Starting make run on `hostname` at `date +'%a, %d %b %Y %H:%M:%S %z'`
+	-@echo Machine characteristics: `uname -a`
+	-@echo "-----------------------------------------"
+	-@echo "Using PETSc directory: ${PETSC_DIR}"
+	-@echo "Using PETSc arch: ${PETSC_ARCH}"
+	-@echo "-----------------------------------------"
+	-@grep "define PETSC_VERSION" ${PETSC_DIR}/include/petscversion.h | ${SED} "s/........//" | head -n 7
+	-@echo "-----------------------------------------"
+	-@echo "Using configure Options: ${CONFIGURE_OPTIONS}"
+	-@echo "Using configuration flags:"
+	-@grep "\#define " ${PETSCCONF_H} | tail -n +2
+	-@echo "-----------------------------------------"
+	-@echo "Using C compile: ${PETSC_CCOMPILE_SINGLE}"
+	-@if [  "${MPICC_SHOW}" != "" ]; then \
+             printf  "mpicc -show: %b\n" "${MPICC_SHOW}";\
+          fi; \
+        printf  "C compiler version: %b\n" "${C_VERSION}"; \
+        if [ "${CXX}" != "" ]; then \
+        echo "Using C++ compile: ${PETSC_CXXCOMPILE_SINGLE}";\
+        if [ "${MPICXX_SHOW}" != "" ]; then \
+               printf "mpicxx -show: %b\n" "${MPICXX_SHOW}"; \
+            fi;\
+            printf  "C++ compiler version: %b\n" "${Cxx_VERSION}"; \
+          fi
+	-@if [ "${FC}" != "" ]; then \
+	   echo "Using Fortran compile: ${PETSC_FCOMPILE_SINGLE}";\
+           if [ "${MPIFC_SHOW}" != "" ]; then \
+             printf "mpif90 -show: %b\n" "${MPIFC_SHOW}"; \
+           fi; \
+             printf  "Fortran compiler version: %b\n" "${FC_VERSION}"; \
+         fi
+	-@if [ "${CUDAC}" != "" ]; then \
+	   echo "Using CUDA compile: ${PETSC_CUCOMPILE_SINGLE}";\
+         fi
+	-@if [ "${CLANGUAGE}" = "CXX" ]; then \
+           echo "Using C++ compiler to compile PETSc";\
+        fi
+	-@echo "-----------------------------------------"
+	-@echo "Using C/C++ linker: ${PCC_LINKER}"
+	-@echo "Using C/C++ flags: ${PCC_LINKER_FLAGS}"
+	-@if [ "${FC}" != "" ]; then \
+	   echo "Using Fortran linker: ${FC_LINKER}";\
+	   echo "Using Fortran flags: ${FC_LINKER_FLAGS}";\
+         fi
+	-@echo "-----------------------------------------"
+	-@echo "Using system modules: ${LOADEDMODULES}"
+	-@if [ "${MPI_IS_MPIUNI}" = "1" ]; then \
+           echo Using mpi.h: mpiuni; \
+        else \
+           TESTDIR=`mktemp -q -d -t petscmpi-XXXXXXXX` && \
+           echo '#include <mpi.h>' > $${TESTDIR}/mpitest.c && \
+           BUF=`${CPP} ${PETSC_CPPFLAGS} ${PETSC_CC_INCLUDES} $${TESTDIR}/mpitest.c |grep 'mpi\.h' | ( head -1 ; cat > /dev/null )` && \
+           echo Using mpi.h: $${BUF}; ${RM} -rf $${TESTDIR}; \
+        fi
+	-@echo "-----------------------------------------"
+	-@echo "Using libraries: ${PETSC_LIB}"
+	-@echo "------------------------------------------"
+	-@echo "Using mpiexec: ${MPIEXEC}"
+	-@echo "------------------------------------------"
+	-@echo "Using MAKE: ${MAKE}"
+	-@echo "Default MAKEFLAGS: MAKE_NP:${MAKE_NP} MAKE_LOAD:${MAKE_LOAD} MAKEFLAGS:${MAKEFLAGS}"
+	-@echo "=========================================="
 
 -include $(allobj.d)

@@ -5,6 +5,13 @@
 #include <petsc/private/pcimpl.h> /*I "petscksp.h" I*/
 #include <petscksp.h>
 
+typedef struct _PC_FieldSplitLink *PC_FieldSplitLink;
+struct _PC_FieldSplitLink {
+  char             *splitname;
+  IS                is;
+  PC_FieldSplitLink next, previous;
+};
+
 typedef struct {
   KSP          ksp;
   Vec          x, b;
@@ -14,7 +21,30 @@ typedef struct {
   PetscScalar *diag;
   Vec          work;
   PetscBool    zerodiag;
+
+  PetscInt          nsplits;
+  PC_FieldSplitLink splitlinks;
 } PC_Redistribute;
+
+static PetscErrorCode PCFieldSplitSetIS_Redistribute(PC pc, const char splitname[], IS is)
+{
+  PC_Redistribute   *red  = (PC_Redistribute *)pc->data;
+  PC_FieldSplitLink *next = &red->splitlinks;
+
+  PetscFunctionBegin;
+  while (*next) next = &(*next)->next;
+  PetscCall(PetscNew(next));
+  if (splitname) {
+    PetscCall(PetscStrallocpy(splitname, &(*next)->splitname));
+  } else {
+    PetscCall(PetscMalloc1(8, &(*next)->splitname));
+    PetscCall(PetscSNPrintf((*next)->splitname, 7, "%" PetscInt_FMT, red->nsplits++));
+  }
+  PetscCall(PetscObjectReference((PetscObject)is));
+  PetscCall(ISDestroy(&(*next)->is));
+  (*next)->is = is;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
 
 static PetscErrorCode PCView_Redistribute(PC pc, PetscViewer viewer)
 {
@@ -42,7 +72,7 @@ static PetscErrorCode PCSetUp_Redistribute(PC pc)
 {
   PC_Redistribute         *red = (PC_Redistribute *)pc->data;
   MPI_Comm                 comm;
-  PetscInt                 rstart, rend, i, nz, cnt, *rows, ncnt, dcnt, *drows;
+  PetscInt                 rstart, rend, nrstart, nrend, i, nz, cnt, *rows, ncnt, dcnt, *drows;
   PetscLayout              map, nmap;
   PetscMPIInt              size, tag, n;
   PETSC_UNUSED PetscMPIInt imdex;
@@ -58,14 +88,18 @@ static PetscErrorCode PCSetUp_Redistribute(PC pc)
   Mat                      tmat;
   const PetscScalar       *d, *values;
   const PetscInt          *cols;
+  PC_FieldSplitLink       *next = &red->splitlinks;
 
   PetscFunctionBegin;
   if (pc->setupcalled) {
+    PetscCheck(pc->flag == SAME_NONZERO_PATTERN, PetscObjectComm((PetscObject)pc), PETSC_ERR_SUP, "PC is not supported for a change in the nonzero structure of the matrix");
     PetscCall(KSPGetOperators(red->ksp, NULL, &tmat));
     PetscCall(MatCreateSubMatrix(pc->pmat, red->is, red->is, MAT_REUSE_MATRIX, &tmat));
     PetscCall(KSPSetOperators(red->ksp, tmat, tmat));
   } else {
-    PetscInt NN;
+    PetscInt          NN;
+    PC                ipc;
+    PetscVoidFunction fptr;
 
     PetscCall(PetscObjectGetComm((PetscObject)pc, &comm));
     PetscCallMPI(MPI_Comm_size(comm, &size));
@@ -109,8 +143,8 @@ static PetscErrorCode PCSetUp_Redistribute(PC pc)
     PetscCall(PetscLayoutSetLocalSize(map, cnt));
     PetscCall(PetscLayoutSetBlockSize(map, 1));
     PetscCall(PetscLayoutSetUp(map));
-    rstart = map->rstart;
-    rend   = map->rend;
+    nrstart = map->rstart;
+    nrend   = map->rend;
 
     /* create PetscLayout for load-balanced non-diagonal rows on each process */
     PetscCall(PetscLayoutCreate(comm, &nmap));
@@ -123,8 +157,10 @@ static PetscErrorCode PCSetUp_Redistribute(PC pc)
     PetscCall(PetscInfo(pc, "Number of diagonal rows eliminated %" PetscInt_FMT ", percentage eliminated %g\n", NN - ncnt, (double)(((PetscReal)(NN - ncnt)) / ((PetscReal)(NN)))));
 
     if (size > 1) {
-      /* the following block of code assumes MPI can send messages to self, which is not supported for MPI-uni hence we need to handle the size 1 case as a special case */
       /*
+        the following block of code assumes MPI can send messages to self, which is not supported for MPI-uni hence we need to handle
+        the size 1 case as a special case
+
        this code is taken from VecScatterCreate_PtoS()
        Determines what rows need to be moved where to
        load balance the non-diagonal rows
@@ -134,12 +170,12 @@ static PetscErrorCode PCSetUp_Redistribute(PC pc)
       PetscCall(PetscArrayzero(sizes, size));
       j      = 0;
       nsends = 0;
-      for (i = rstart; i < rend; i++) {
+      for (i = nrstart; i < nrend; i++) {
         if (i < nmap->range[j]) j = 0;
         for (; j < size; j++) {
           if (i < nmap->range[j + 1]) {
             if (!sizes[j]++) nsends++;
-            owner[i - rstart] = j;
+            owner[i - nrstart] = j;
             break;
           }
         }
@@ -167,7 +203,7 @@ static PetscErrorCode PCSetUp_Redistribute(PC pc)
       starts[0] = 0;
       for (i = 1; i < size; i++) starts[i] = starts[i - 1] + sizes[i - 1];
       for (i = 0; i < cnt; i++) svalues[starts[owner[i]]++] = rows[i];
-      for (i = 0; i < cnt; i++) rows[i] = rows[i] - rstart;
+      for (i = 0; i < cnt; i++) rows[i] = rows[i] - nrstart;
       red->drows = drows;
       red->dcnt  = dcnt;
       PetscCall(PetscFree(rows));
@@ -210,16 +246,69 @@ static PetscErrorCode PCSetUp_Redistribute(PC pc)
       slen       = cnt;
     }
     PetscCall(PetscLayoutDestroy(&map));
-    PetscCall(PetscLayoutDestroy(&nmap));
 
     PetscCall(VecCreateMPI(comm, slen, PETSC_DETERMINE, &red->b));
     PetscCall(VecDuplicate(red->b, &red->x));
     PetscCall(MatCreateVecs(pc->pmat, &tvec, NULL));
     PetscCall(VecScatterCreate(tvec, red->is, red->b, NULL, &red->scatter));
+
+    /* Map the PCFIELDSPLIT fields to redistributed KSP */
+    PetscCall(KSPGetPC(red->ksp, &ipc));
+    PetscCall(PetscObjectQueryFunction((PetscObject)ipc, "PCFieldSplitSetIS_C", &fptr));
+    if (fptr && *next) {
+      PetscScalar       *atvec;
+      const PetscScalar *ab;
+      PetscInt           primes[] = {2, 3, 5, 7, 11, 13, 17, 19};
+      PetscInt           cnt      = 0;
+
+      PetscCheck(red->nsplits <= (PetscInt)PETSC_STATIC_ARRAY_LENGTH(primes), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "No support for this many fields");
+      PetscCall(VecSet(tvec, 1.0));
+      PetscCall(VecGetArray(tvec, &atvec));
+
+      while (*next) {
+        const PetscInt *indices;
+        PetscInt        n;
+
+        PetscCall(ISGetIndices((*next)->is, &indices));
+        PetscCall(ISGetLocalSize((*next)->is, &n));
+        for (PetscInt i = 0; i < n; i++) atvec[indices[i] - rstart] *= primes[cnt];
+        PetscCall(ISRestoreIndices((*next)->is, &indices));
+        cnt++;
+        next = &(*next)->next;
+      }
+      PetscCall(VecRestoreArray(tvec, &atvec));
+      PetscCall(VecScatterBegin(red->scatter, tvec, red->b, INSERT_VALUES, SCATTER_FORWARD));
+      PetscCall(VecScatterEnd(red->scatter, tvec, red->b, INSERT_VALUES, SCATTER_FORWARD));
+      cnt = 0;
+      PetscCall(VecGetArrayRead(red->b, &ab));
+      next = &red->splitlinks;
+      while (*next) {
+        PetscInt  n = 0;
+        PetscInt *indices;
+        IS        ris;
+
+        for (PetscInt i = 0; i < nmap->rend - nmap->rstart; i++) {
+          if (!(((PetscInt)PetscRealPart(ab[i])) % primes[cnt])) n++;
+        }
+        PetscCall(PetscMalloc1(n, &indices));
+        n = 0;
+        for (PetscInt i = 0; i < nmap->rend - nmap->rstart; i++) {
+          if (!(((PetscInt)PetscRealPart(ab[i])) % primes[cnt])) indices[n++] = i + nmap->rstart;
+        }
+        PetscCall(ISCreateGeneral(comm, n, indices, PETSC_OWN_POINTER, &ris));
+        PetscCall(PCFieldSplitSetIS(ipc, (*next)->splitname, ris));
+
+        PetscCall(ISDestroy(&ris));
+        cnt++;
+        next = &(*next)->next;
+      }
+      PetscCall(VecRestoreArrayRead(red->b, &ab));
+    }
     PetscCall(VecDestroy(&tvec));
     PetscCall(MatCreateSubMatrix(pc->pmat, red->is, red->is, MAT_INITIAL_MATRIX, &tmat));
     PetscCall(KSPSetOperators(red->ksp, tmat, tmat));
     PetscCall(MatDestroy(&tmat));
+    PetscCall(PetscLayoutDestroy(&nmap));
   }
 
   /* get diagonal portion of matrix */
@@ -248,9 +337,16 @@ static PetscErrorCode PCApply_Redistribute(PC pc, Vec b, Vec x)
   const PetscInt    *drows = red->drows;
   PetscScalar       *xwork;
   const PetscScalar *bwork, *diag = red->diag;
+  PetscBool          nonzero_guess;
 
   PetscFunctionBegin;
   if (!red->work) PetscCall(VecDuplicate(b, &red->work));
+  PetscCall(KSPGetInitialGuessNonzero(red->ksp, &nonzero_guess));
+  if (nonzero_guess) {
+    PetscCall(VecScatterBegin(red->scatter, x, red->x, INSERT_VALUES, SCATTER_FORWARD));
+    PetscCall(VecScatterEnd(red->scatter, x, red->x, INSERT_VALUES, SCATTER_FORWARD));
+  }
+
   /* compute the rows of solution that have diagonal entries only */
   PetscCall(VecSet(x, 0.0)); /* x = diag(A)^{-1} b */
   PetscCall(VecGetArray(x, &xwork));
@@ -259,7 +355,7 @@ static PetscErrorCode PCApply_Redistribute(PC pc, Vec b, Vec x)
     for (i = 0; i < dcnt; i++) {
       if (diag[i] == 0.0 && bwork[drows[i]] != 0.0) {
         PetscCheck(!pc->erroriffailure, PETSC_COMM_SELF, PETSC_ERR_CONV_FAILED, "Linear system is inconsistent, zero matrix row but nonzero right hand side");
-        PetscCall(PetscInfo(pc, "Linear system is inconsistent, zero matrix row but nonzero right hand side"));
+        PetscCall(PetscInfo(pc, "Linear system is inconsistent, zero matrix row but nonzero right hand side\n"));
         PetscCall(VecSetInf(x));
         pc->failedreasonrank = PC_INCONSISTENT_RHS;
       }
@@ -284,9 +380,20 @@ static PetscErrorCode PCApply_Redistribute(PC pc, Vec b, Vec x)
 
 static PetscErrorCode PCDestroy_Redistribute(PC pc)
 {
-  PC_Redistribute *red = (PC_Redistribute *)pc->data;
+  PC_Redistribute  *red  = (PC_Redistribute *)pc->data;
+  PC_FieldSplitLink next = red->splitlinks;
 
   PetscFunctionBegin;
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCFieldSplitSetIS_C", NULL));
+
+  while (next) {
+    PC_FieldSplitLink ilink;
+    PetscCall(PetscFree(next->splitname));
+    PetscCall(ISDestroy(&next->is));
+    ilink = next;
+    next  = next->next;
+    PetscCall(PetscFree(ilink));
+  }
   PetscCall(VecScatterDestroy(&red->scatter));
   PetscCall(ISDestroy(&red->is));
   PetscCall(VecDestroy(&red->b));
@@ -309,17 +416,17 @@ static PetscErrorCode PCSetFromOptions_Redistribute(PC pc, PetscOptionItems *Pet
 }
 
 /*@
-   PCRedistributeGetKSP - Gets the `KSP` created by the `PCREDISTRIBUTE`
+  PCRedistributeGetKSP - Gets the `KSP` created by the `PCREDISTRIBUTE`
 
-   Not Collective
+  Not Collective
 
-   Input Parameter:
-.  pc - the preconditioner context
+  Input Parameter:
+. pc - the preconditioner context
 
-   Output Parameter:
-.  innerksp - the inner `KSP`
+  Output Parameter:
+. innerksp - the inner `KSP`
 
-   Level: advanced
+  Level: advanced
 
 .seealso: `KSP`, `PCREDISTRIBUTE`
 @*/
@@ -329,7 +436,7 @@ PetscErrorCode PCRedistributeGetKSP(PC pc, KSP *innerksp)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
-  PetscValidPointer(innerksp, 2);
+  PetscAssertPointer(innerksp, 2);
   *innerksp = red->ksp;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -348,13 +455,16 @@ PetscErrorCode PCRedistributeGetKSP(PC pc, KSP *innerksp)
      If you have used `MatZeroRows()` to eliminate (for example, Dirichlet) boundary conditions for a symmetric problem then you can use, for example, `-ksp_type preonly
      -pc_type redistribute -redistribute_ksp_type cg -redistribute_pc_type bjacobi -redistribute_sub_pc_type icc` to take advantage of the symmetry.
 
+     Supports the function `PCFieldSplitSetIS()`; passs the appropriate reduced field indices to an inner `PCFIELDSPLIT`, set with, for example
+     `-ksp_type preonly -pc_type redistribute -redistribute_pc_type fieldsplit. Does not support the `PCFIELDSPLIT` options database keys.
+
      This does NOT call a partitioner to reorder rows to lower communication; the ordering of the rows in the original matrix and redistributed matrix is the same. Rows are moved
      between MPI processes inside the preconditioner to balance the number of rows on each process.
 
      Developer Note:
      Should add an option to this preconditioner to use a partitioner to redistribute the rows to lower communication.
 
-.seealso: `PCCreate()`, `PCSetType()`, `PCType`, `PCRedistributeGetKSP()`, `MatZeroRows()`
+.seealso: `PCCreate()`, `PCSetType()`, `PCType`, `PCRedistributeGetKSP()`, `MatZeroRows()`, `PCFieldSplitSetIS()`, `PCFIELDSPLIT`
 M*/
 
 PETSC_EXTERN PetscErrorCode PCCreate_Redistribute(PC pc)
@@ -374,10 +484,12 @@ PETSC_EXTERN PetscErrorCode PCCreate_Redistribute(PC pc)
   pc->ops->view           = PCView_Redistribute;
 
   PetscCall(KSPCreate(PetscObjectComm((PetscObject)pc), &red->ksp));
+  PetscCall(KSPSetNestLevel(red->ksp, pc->kspnestlevel));
   PetscCall(KSPSetErrorIfNotConverged(red->ksp, pc->erroriffailure));
   PetscCall(PetscObjectIncrementTabLevel((PetscObject)red->ksp, (PetscObject)pc, 1));
   PetscCall(PCGetOptionsPrefix(pc, &prefix));
   PetscCall(KSPSetOptionsPrefix(red->ksp, prefix));
   PetscCall(KSPAppendOptionsPrefix(red->ksp, "redistribute_"));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCFieldSplitSetIS_C", PCFieldSplitSetIS_Redistribute));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

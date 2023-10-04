@@ -1,6 +1,6 @@
 #include <petsc/private/matimpl.h> /*I  "petscmat.h"  I*/
 
-PETSC_INTERN PetscErrorCode MatCreateADA(Mat, Vec, Vec, Mat *);
+static PetscErrorCode MatCreateADA(Mat, Vec, Vec, Mat *);
 
 typedef struct {
   Mat      A;
@@ -328,7 +328,7 @@ static PetscErrorCode MatNorm_ADA(Mat mat, NormType type, PetscReal *norm)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*
    MatCreateADA - Creates a matrix M=A^T D1 A + D2 where D1, D2 are diagonal
 
    Collective
@@ -348,8 +348,8 @@ static PetscErrorCode MatNorm_ADA(Mat mat, NormType type, PetscReal *norm)
    this data after matrix `J` has been destroyed.
 
 .seealso: `Mat`, `MatCreate()`
-@*/
-PetscErrorCode MatCreateADA(Mat mat, Vec d1, Vec d2, Mat *J)
+*/
+static PetscErrorCode MatCreateADA(Mat mat, Vec d1, Vec d2, Mat *J)
 {
   MPI_Comm     comm = PetscObjectComm((PetscObject)mat);
   TaoMatADACtx ctx;

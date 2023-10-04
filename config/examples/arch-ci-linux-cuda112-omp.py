@@ -19,6 +19,8 @@ if __name__ == '__main__':
     '--with-threadsafety',
     '--download-kokkos',
     '--download-kokkos-kernels',
+    '--download-hypre',
+    '--download-hypre-configure-arguments=--enable-unified-memory',
     '--with-strict-petscerrorcode',
     #'--with-coverage',
   ]

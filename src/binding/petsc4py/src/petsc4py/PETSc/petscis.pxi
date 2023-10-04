@@ -97,13 +97,13 @@ cdef extern from * nogil:
 cdef inline IS ref_IS(PetscIS iset):
     cdef IS ob = <IS> IS()
     ob.iset = iset
-    PetscINCREF(ob.obj)
+    CHKERR( PetscINCREF(ob.obj) )
     return ob
 
 cdef inline LGMap ref_LGMap(PetscLGMap lgm):
     cdef LGMap ob = <LGMap> LGMap()
     ob.lgm = lgm
-    PetscINCREF(ob.obj)
+    CHKERR( PetscINCREF(ob.obj) )
     return ob
 
 # --------------------------------------------------------------------

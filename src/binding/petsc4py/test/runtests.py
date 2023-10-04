@@ -142,7 +142,6 @@ def setup_unittest(options):
 def import_package(options, pkgname):
     args = [sys.argv[0]]
     if options.memdebug:
-        args.append('-malloc')
         args.append('-malloc_debug')
         args.append('-malloc_dump')
     if options.summary:
@@ -167,7 +166,7 @@ def print_banner(options):
         writeln(getpackageinfo('numpy'))
         for entry in components:
             writeln(getlibraryinfo(entry))
-            writeln(getpackageinfo('%s4py' % entry))
+            writeln(getpackageinfo('%s4py' % entry.lower()))
 
 
 def load_tests(options, args):

@@ -7,6 +7,5 @@
 -num_option_5 -5.5 # (source: file)
 -num_option_6 -.6 # (source: file)
 -option1 # (source: file)
--options_left 0 # (source: command line)
 -options_view # (source: command line)
 #End of PETSc Option Table entries

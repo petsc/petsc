@@ -13,6 +13,7 @@ class Configure(config.package.CMakePackage):
     self.linkedbypetsc     = 0
     self.makerulename      = 'alquimia'    # make on the alquimia directory tries to build executables that will fail so force only building the libraries
     self.useddirectly      = 0
+    self.skippackagelibincludedirs = 1
     return
 
   def setupDependencies(self, framework):
@@ -34,10 +35,6 @@ class Configure(config.package.CMakePackage):
       raise RuntimeError('Alquimia does not support --with-alquimia; only --download-alquimia')
     if 'with-alquimia-dir' in self.framework.clArgDB:
       raise RuntimeError('Alquimia does not support --with-alquimia-dir; only --download-alquimia')
-    if 'with-alquimia-include' in self.framework.clArgDB:
-      raise RuntimeError('Alquimia does not support --with-alquimia-include; only --download-alquimia')
-    if 'with-alquimia-lib' in self.framework.clArgDB:
-      raise RuntimeError('Alquimia does not support --with-alquimia-lib; only --download-alquimia')
 
     self.checkDownload()
     self.include = [os.path.join(self.installDir,'include')]

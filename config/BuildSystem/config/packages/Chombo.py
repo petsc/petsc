@@ -113,7 +113,7 @@ class Configure(config.package.Package):
         output,err,ret = config.package.Package.executeShellCommandSeq(
           ['make clean',
            'make lib',
-           'cp -f lib*.'+self.setCompilers.AR_LIB_SUFFIX+' '+os.path.join(self.installDir,self.libdir,''),
+           'cp -f lib*.'+self.setCompilers.AR_LIB_SUFFIX+' '+os.path.join(self.libDir,''),
            'cp -f include/*.H '+os.path.join(self.installDir,self.includedir,'')
           ], cwd=os.path.join(self.packageDir,'lib'), timeout=2500, log = self.log)
       except RuntimeError as e:

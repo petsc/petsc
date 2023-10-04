@@ -342,13 +342,16 @@ PetscErrorCode FormJacobian(SNES snes, Vec x, Mat jac, Mat B, void *dummy)
  */
 PetscErrorCode Monitor(SNES snes, PetscInt its, PetscReal fnorm, void *ctx)
 {
-  MonitorCtx *monP = (MonitorCtx *)ctx;
-  Vec         x;
+  MonitorCtx         *monP = (MonitorCtx *)ctx;
+  Vec                 x;
+  SNESConvergedReason reason;
 
   PetscFunctionBeginUser;
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "iter = %" PetscInt_FMT ", SNES Function norm %g\n", its, (double)fnorm));
+  PetscCall(SNESGetConvergedReason(snes, &reason));
   PetscCall(SNESGetSolution(snes, &x));
   PetscCall(VecView(x, monP->viewer));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "  converged = %s\n", SNESConvergedReasons[reason]));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -369,6 +372,12 @@ PetscErrorCode Monitor(SNES snes, PetscInt its, PetscReal fnorm, void *ctx)
    test:
       suffix: 4
       args: -nox -snes_monitor_cancel -snes_monitor_short -snes_type newtontrdc -snes_view
+      requires: !single
+
+   test:
+      suffix: 5
+      filter: grep -v atol | sed -e "s/CONVERGED_ITS/DIVERGED_MAX_IT/g" | sed -e "s/CONVERGED_FNORM_RELATIVE/DIVERGED_MAX_IT/g"
+      args: -nox -snes_type {{newtonls newtontr ncg ngmres qn anderson nrichardson ms ksponly ksptransposeonly vinewtonrsls vinewtonssls fas ms}} -snes_max_it 1
       requires: !single
 
 TEST*/

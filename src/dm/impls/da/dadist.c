@@ -5,7 +5,7 @@
 
 #include <petsc/private/dmdaimpl.h> /*I   "petscdmda.h"   I*/
 
-PetscErrorCode VecDuplicate_MPI_DA(Vec g, Vec *gg)
+static PetscErrorCode VecDuplicate_MPI_DA(Vec g, Vec *gg)
 {
   DM          da;
   PetscLayout map;
@@ -24,7 +24,7 @@ PetscErrorCode DMCreateGlobalVector_DA(DM da, Vec *g)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da, DM_CLASSID, 1);
-  PetscValidPointer(g, 2);
+  PetscAssertPointer(g, 2);
   PetscCall(VecCreate(PetscObjectComm((PetscObject)da), g));
   PetscCall(VecSetSizes(*g, dd->Nlocal, PETSC_DETERMINE));
   PetscCall(VecSetBlockSize(*g, dd->w));
@@ -42,26 +42,26 @@ PetscErrorCode DMCreateGlobalVector_DA(DM da, Vec *g)
 }
 
 /*@
-   DMDACreateNaturalVector - Creates a parallel PETSc vector that
-   will hold vector values in the natural numbering, rather than in
-   the PETSc parallel numbering associated with the `DMDA`.
+  DMDACreateNaturalVector - Creates a parallel PETSc vector that
+  will hold vector values in the natural numbering, rather than in
+  the PETSc parallel numbering associated with the `DMDA`.
 
-   Collective
+  Collective
 
-   Input Parameter:
-.  da - the distributed array
+  Input Parameter:
+. da - the distributed array
 
-   Output Parameter:
-.  g - the distributed global vector
+  Output Parameter:
+. g - the distributed global vector
 
-   Level: developer
+  Level: developer
 
-   Notes:
-   The output parameter, g, is a regular PETSc vector that should be destroyed
-   with a call to `VecDestroy()` when usage is finished.
+  Notes:
+  The output parameter, g, is a regular PETSc vector that should be destroyed
+  with a call to `VecDestroy()` when usage is finished.
 
-   The number of local entries in the vector on each process is the same
-   as in a vector created with `DMCreateGlobalVector()`.
+  The number of local entries in the vector on each process is the same
+  as in a vector created with `DMCreateGlobalVector()`.
 
 .seealso: `DM`, `DMDA`, `DMCreateLocalVector()`, `VecDuplicate()`, `VecDuplicateVecs()`,
           `DMDACreate1d()`, `DMDACreate2d()`, `DMDACreate3d()`, `DMGlobalToLocalBegin()`,
@@ -74,7 +74,7 @@ PetscErrorCode DMDACreateNaturalVector(DM da, Vec *g)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(da, DM_CLASSID, 1, DMDA);
-  PetscValidPointer(g, 2);
+  PetscAssertPointer(g, 2);
   if (dd->natural) {
     PetscCall(PetscObjectGetReference((PetscObject)dd->natural, &cnt));
     if (cnt == 1) { /* object is not currently used by anyone */

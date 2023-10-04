@@ -9,22 +9,22 @@
   Collective
 
   Input Parameters:
-+ comm - MPI communicator
-. bndx - boundary type: `DM_BOUNDARY_NONE`, `DM_BOUNDARY_PERIODIC`, or `DM_BOUNDARY_GHOSTED`
-. M - global number of elements
-. dof0 - number of degrees of freedom per vertex/0-cell
-. dof1 - number of degrees of freedom per element/1-cell
-. stencilType - ghost/halo region type: `DMSTAG_STENCIL_BOX` or `DMSTAG_STENCIL_NONE`
++ comm         - MPI communicator
+. bndx         - boundary type: `DM_BOUNDARY_NONE`, `DM_BOUNDARY_PERIODIC`, or `DM_BOUNDARY_GHOSTED`
+. M            - global number of elements
+. dof0         - number of degrees of freedom per vertex/0-cell
+. dof1         - number of degrees of freedom per element/1-cell
+. stencilType  - ghost/halo region type: `DMSTAG_STENCIL_BOX` or `DMSTAG_STENCIL_NONE`
 . stencilWidth - width, in elements, of halo/ghost region
-- lx - array of local sizes, of length equal to the comm size, summing to M
+- lx           - array of local sizes, of length equal to the comm size, summing to M
 
   Output Parameter:
 . dm - the new DMStag object
 
   Options Database Keys:
-+ -dm_view - calls `DMViewFromOptions()` at the conclusion of `DMSetUp()`
-. -stag_grid_x <nx> - number of elements in the x direction
-. -stag_ghost_stencil_width - width of ghost region, in elements
++ -dm_view                                      - calls `DMViewFromOptions()` at the conclusion of `DMSetUp()`
+. -stag_grid_x <nx>                             - number of elements in the x direction
+. -stag_ghost_stencil_width                     - width of ghost region, in elements
 - -stag_boundary_type_x <none,ghosted,periodic> - `DMBoundaryType` value
 
   Level: beginner
@@ -34,7 +34,7 @@
   If you wish to use the options database (see the keys above) to change values in the `DMSTAG`, you must call
   `DMSetFromOptions()` after this function but before `DMSetUp()`.
 
-.seealso: [](chapter_stag), `DMSTAG`, `DMStagCreate2d()`, `DMStagCreate3d()`, `DMDestroy()`, `DMView()`, `DMCreateGlobalVector()`, `DMCreateLocalVector()`, `DMLocalToGlobalBegin()`, `DMDACreate1d()`
+.seealso: [](ch_stag), `DMSTAG`, `DMStagCreate2d()`, `DMStagCreate3d()`, `DMDestroy()`, `DMView()`, `DMCreateGlobalVector()`, `DMCreateLocalVector()`, `DMLocalToGlobalBegin()`, `DMDACreate1d()`
 @*/
 PETSC_EXTERN PetscErrorCode DMStagCreate1d(MPI_Comm comm, DMBoundaryType bndx, PetscInt M, PetscInt dof0, PetscInt dof1, DMStagStencilType stencilType, PetscInt stencilWidth, const PetscInt lx[], DM *dm)
 {

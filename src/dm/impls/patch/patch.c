@@ -24,7 +24,7 @@ Solver loop to update \tau:
   Collective
 
   Input Parameters:
-+ dm - the `DM`
++ dm    - the `DM`
 . lower - the lower left corner of the requested patch
 . upper - the upper right corner of the requested patch
 - commz - the new communicator for the patch, `MPI_COMM_NULL` indicates that the given rank will not own a patch
@@ -308,7 +308,7 @@ PetscErrorCode DMPatchSolve(DM dm)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode DMPatchView_ASCII(DM dm, PetscViewer viewer)
+static PetscErrorCode DMPatchView_ASCII(DM dm, PetscViewer viewer)
 {
   DM_Patch         *mesh = (DM_Patch *)dm->data;
   PetscViewerFormat format;
@@ -402,7 +402,7 @@ PetscErrorCode DMPatchGetPatchSize(DM dm, MatStencil *patchSize)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(patchSize, 2);
+  PetscAssertPointer(patchSize, 2);
   *patchSize = mesh->patchSize;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -423,7 +423,7 @@ PetscErrorCode DMPatchGetCommSize(DM dm, MatStencil *commSize)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(commSize, 2);
+  PetscAssertPointer(commSize, 2);
   *commSize = mesh->commSize;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

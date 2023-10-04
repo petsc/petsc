@@ -14,7 +14,7 @@ PetscErrorCode VecDuplicate_Shared(Vec win, Vec *v)
   PetscScalar *array;
 
   PetscFunctionBegin;
-  /* first processor allocates entire array and sends it's address to the others */
+  /* first processor allocates entire array and sends its address to the others */
   PetscCall(PetscSharedMalloc(PetscObjectComm((PetscObject)win), win->map->n * sizeof(PetscScalar), win->map->N * sizeof(PetscScalar), (void **)&array));
 
   PetscCall(VecCreate(PetscObjectComm((PetscObject)win), v));
@@ -154,28 +154,28 @@ PETSC_EXTERN PetscErrorCode VecCreate_Shared(Vec vv)
 #endif
 
 /*@
-   VecCreateShared - Creates a parallel vector that uses shared memory.
+  VecCreateShared - Creates a parallel vector that uses shared memory.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  comm - the MPI communicator to use
-.  n - local vector length (or `PETSC_DECIDE` to have calculated if `N` is given)
--  N - global vector length (or `PETSC_DECIDE` to have calculated if `n` is given)
+  Input Parameters:
++ comm - the MPI communicator to use
+. n    - local vector length (or `PETSC_DECIDE` to have calculated if `N` is given)
+- N    - global vector length (or `PETSC_DECIDE` to have calculated if `n` is given)
 
-   Output Parameter:
-.  vv - the vector
+  Output Parameter:
+. v - the vector
 
-   Level: advanced
+  Level: advanced
 
-   Notes:
-   Currently `VecCreateShared()` is available only on the SGI; otherwise,
-   this routine is the same as `VecCreateMPI()`.
+  Notes:
+  Currently `VecCreateShared()` is available only on the SGI; otherwise,
+  this routine is the same as `VecCreateMPI()`.
 
-   Use `VecDuplicate()` or `VecDuplicateVecs()` to form additional vectors of the
-   same type as an existing vector.
+  Use `VecDuplicate()` or `VecDuplicateVecs()` to form additional vectors of the
+  same type as an existing vector.
 
-.seealso: [](chapter_vectors), `Vec`, `VecType`, `VecCreateSeq()`, `VecCreate()`, `VecCreateMPI()`, `VecDuplicate()`, `VecDuplicateVecs()`,
+.seealso: [](ch_vectors), `Vec`, `VecType`, `VecCreateSeq()`, `VecCreate()`, `VecCreateMPI()`, `VecDuplicate()`, `VecDuplicateVecs()`,
           `VecCreateGhost()`, `VecCreateMPIWithArray()`, `VecCreateGhostWithArray()`
 @*/
 PetscErrorCode VecCreateShared(MPI_Comm comm, PetscInt n, PetscInt N, Vec *v)

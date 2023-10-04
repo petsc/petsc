@@ -24,10 +24,14 @@ static PetscErrorCode MatSetValues_MPI_Hash(Mat A, PetscInt m, const PetscInt *r
     PetscScalar value;
     if (rows[r] < 0) continue;
     if (rows[r] < rStart || rows[r] >= rEnd) {
-      if (a->roworiented) {
-        PetscCall(MatStashValuesRow_Private(&A->stash, rows[r], n, cols, values + r * n, PETSC_FALSE));
-      } else {
-        PetscCall(MatStashValuesCol_Private(&A->stash, rows[r], n, cols, values + r, m, PETSC_FALSE));
+      PetscCheck(!A->nooffprocentries, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Setting off process row %" PetscInt_FMT " even though MatSetOption(,MAT_NO_OFF_PROC_ENTRIES,PETSC_TRUE) was set", rows[r]);
+      if (!a->donotstash) {
+        A->assembled = PETSC_FALSE;
+        if (a->roworiented) {
+          PetscCall(MatStashValuesRow_Private(&A->stash, rows[r], n, cols, values + r * n, PETSC_FALSE));
+        } else {
+          PetscCall(MatStashValuesCol_Private(&A->stash, rows[r], n, cols, values + r, m, PETSC_FALSE));
+        }
       }
     } else {
       for (PetscInt c = 0; c < n; ++c) {
@@ -47,9 +51,11 @@ static PetscErrorCode MatSetValues_MPI_Hash(Mat A, PetscInt m, const PetscInt *r
 
 static PetscErrorCode MatAssemblyBegin_MPI_Hash(Mat A, PETSC_UNUSED MatAssemblyType type)
 {
+  PetscConcat(Mat_MPI, TYPE) *a = (PetscConcat(Mat_MPI, TYPE) *)A->data;
   PetscInt nstash, reallocs;
 
   PetscFunctionBegin;
+  if (a->donotstash || A->nooffprocentries) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(MatStashScatterBegin_Private(A, &A->stash, A->rmap->range));
   PetscCall(MatStashGetInfo_Private(&A->stash, &nstash, &reallocs));
   PetscCall(PetscInfo(A, "Stash has %" PetscInt_FMT " entries, uses %" PetscInt_FMT " mallocs.\n", nstash, reallocs));
@@ -65,28 +71,30 @@ static PetscErrorCode MatAssemblyEnd_MPI_Hash(Mat A, MatAssemblyType type)
   PetscInt     j, ncols, flg, rstart;
 
   PetscFunctionBegin;
-  while (1) {
-    PetscCall(MatStashScatterGetMesg_Private(&A->stash, &n, &row, &col, &val, &flg));
-    if (!flg) break;
+  if (!a->donotstash && !A->nooffprocentries) {
+    while (1) {
+      PetscCall(MatStashScatterGetMesg_Private(&A->stash, &n, &row, &col, &val, &flg));
+      if (!flg) break;
 
-    for (PetscInt i = 0; i < n;) {
-      /* Now identify the consecutive vals belonging to the same row */
-      for (j = i, rstart = row[j]; j < n; j++) {
-        if (row[j] != rstart) break;
+      for (PetscInt i = 0; i < n;) {
+        /* Now identify the consecutive vals belonging to the same row */
+        for (j = i, rstart = row[j]; j < n; j++) {
+          if (row[j] != rstart) break;
+        }
+        if (j < n) ncols = j - i;
+        else ncols = n - i;
+        /* Now assemble all these values with a single function call */
+        PetscCall(MatSetValues_MPI_Hash(A, 1, row + i, ncols, col + i, val + i, A->insertmode));
+        i = j;
       }
-      if (j < n) ncols = j - i;
-      else ncols = n - i;
-      /* Now assemble all these values with a single function call */
-      PetscCall(MatSetValues_MPI_Hash(A, 1, row + i, ncols, col + i, val + i, A->insertmode));
-      i = j;
     }
+    PetscCall(MatStashScatterEnd_Private(&A->stash));
   }
-  PetscCall(MatStashScatterEnd_Private(&A->stash));
   if (type != MAT_FINAL_ASSEMBLY) PetscFunctionReturn(PETSC_SUCCESS);
 
   A->insertmode = NOT_SET_VALUES; /* this was set by the previous calls to MatSetValues() */
 
-  PetscCall(PetscMemcpy(&A->ops, &a->cops, sizeof(*(A->ops))));
+  A->ops[0]      = a->cops;
   A->hash_active = PETSC_FALSE;
 
   PetscCall(MatAssemblyBegin(a->A, MAT_FINAL_ASSEMBLY));
@@ -179,8 +187,7 @@ static PetscErrorCode MatSetUp_MPI_Hash(Mat A)
   PetscCall(MatSetUp(a->B));
 
   /* keep a record of the operations so they can be reset when the hash handling is complete */
-  PetscCall(PetscMemcpy(&a->cops, &A->ops, sizeof(*(A->ops))));
-
+  a->cops                  = A->ops[0];
   A->ops->assemblybegin    = MatAssemblyBegin_MPI_Hash;
   A->ops->assemblyend      = MatAssemblyEnd_MPI_Hash;
   A->ops->setvalues        = MatSetValues_MPI_Hash;

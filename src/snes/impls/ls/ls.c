@@ -113,20 +113,17 @@ static PetscErrorCode SNESNEWTONLSCheckResidual_Private(SNES snes, Mat A, Vec F,
      above description applies to these categories also.
 
 */
+
+// PetscClangLinter pragma disable: -fdoc-sowing-chars
 /*
-   SNESSolve_NEWTONLS - Solves a nonlinear system with a truncated Newton
-   method with a line search.
+  SNESSolve_NEWTONLS - Solves a nonlinear system with a truncated Newton
+  method with a line search.
 
-   Input Parameter:
-.  snes - the SNES context
-
-   Output Parameter:
-.  outits - number of iterations until termination
-
-   Application Interface Routine: SNESSolve()
+  Input Parameter:
+. snes - the SNES context
 
 */
-PetscErrorCode SNESSolve_NEWTONLS(SNES snes)
+static PetscErrorCode SNESSolve_NEWTONLS(SNES snes)
 {
   PetscInt             maxits, i, lits;
   SNESLineSearchReason lssucceed;
@@ -161,7 +158,7 @@ PetscErrorCode SNESSolve_NEWTONLS(SNES snes)
     PetscCall(SNESApplyNPC(snes, X, NULL, F));
     PetscCall(SNESGetConvergedReason(snes->npc, &reason));
     if (reason < 0 && reason != SNES_DIVERGED_MAX_IT && reason != SNES_DIVERGED_TR_DELTA) {
-      snes->reason = SNES_DIVERGED_INNER;
+      PetscCall(SNESSetConvergedReason(snes, SNES_DIVERGED_INNER));
       PetscFunctionReturn(PETSC_SUCCESS);
     }
 
@@ -179,10 +176,10 @@ PetscErrorCode SNESSolve_NEWTONLS(SNES snes)
   snes->norm = fnorm;
   PetscCall(PetscObjectSAWsGrantAccess((PetscObject)snes));
   PetscCall(SNESLogConvergenceHistory(snes, fnorm, 0));
-  PetscCall(SNESMonitor(snes, 0, fnorm));
 
   /* test convergence */
-  PetscUseTypeMethod(snes, converged, 0, 0.0, 0.0, fnorm, &snes->reason, snes->cnvP);
+  PetscCall(SNESConverged(snes, 0, 0.0, 0.0, fnorm));
+  PetscCall(SNESMonitor(snes, 0, fnorm));
   if (snes->reason) PetscFunctionReturn(PETSC_SUCCESS);
 
   for (i = 0; i < maxits; i++) {
@@ -198,7 +195,7 @@ PetscErrorCode SNESSolve_NEWTONLS(SNES snes)
         PetscCall(PetscLogEventEnd(SNES_NPCSolve, snes->npc, X, snes->vec_rhs, 0));
         PetscCall(SNESGetConvergedReason(snes->npc, &reason));
         if (reason < 0 && reason != SNES_DIVERGED_MAX_IT && reason != SNES_DIVERGED_TR_DELTA) {
-          snes->reason = SNES_DIVERGED_INNER;
+          PetscCall(SNESSetConvergedReason(snes, SNES_DIVERGED_INNER));
           PetscFunctionReturn(PETSC_SUCCESS);
         }
         PetscCall(SNESGetNPCFunction(snes, F, &fnorm));
@@ -206,7 +203,7 @@ PetscErrorCode SNESSolve_NEWTONLS(SNES snes)
         PetscCall(SNESApplyNPC(snes, X, F, F));
         PetscCall(SNESGetConvergedReason(snes->npc, &reason));
         if (reason < 0 && reason != SNES_DIVERGED_MAX_IT && reason != SNES_DIVERGED_TR_DELTA) {
-          snes->reason = SNES_DIVERGED_INNER;
+          PetscCall(SNESSetConvergedReason(snes, SNES_DIVERGED_INNER));
           PetscFunctionReturn(PETSC_SUCCESS);
         }
       }
@@ -263,14 +260,10 @@ PetscErrorCode SNESSolve_NEWTONLS(SNES snes)
     snes->xnorm = xnorm;
     PetscCall(PetscObjectSAWsGrantAccess((PetscObject)snes));
     PetscCall(SNESLogConvergenceHistory(snes, snes->norm, lits));
-    PetscCall(SNESMonitor(snes, snes->iter, snes->norm));
     /* Test for convergence */
-    PetscUseTypeMethod(snes, converged, snes->iter, xnorm, ynorm, fnorm, &snes->reason, snes->cnvP);
+    PetscCall(SNESConverged(snes, snes->iter, xnorm, ynorm, fnorm));
+    PetscCall(SNESMonitor(snes, snes->iter, snes->norm));
     if (snes->reason) break;
-  }
-  if (i == maxits) {
-    PetscCall(PetscInfo(snes, "Maximum number of iterations has been reached: %" PetscInt_FMT "\n", maxits));
-    if (!snes->reason) snes->reason = SNES_DIVERGED_MAX_IT;
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -286,7 +279,7 @@ PetscErrorCode SNESSolve_NEWTONLS(SNES snes)
    Application Interface Routine: SNESSetUp()
 
  */
-PetscErrorCode SNESSetUp_NEWTONLS(SNES snes)
+static PetscErrorCode SNESSetUp_NEWTONLS(SNES snes)
 {
   PetscFunctionBegin;
   PetscCall(SNESSetUpMatrices(snes));
@@ -294,7 +287,7 @@ PetscErrorCode SNESSetUp_NEWTONLS(SNES snes)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode SNESReset_NEWTONLS(SNES snes)
+static PetscErrorCode SNESReset_NEWTONLS(SNES snes)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -309,7 +302,7 @@ PetscErrorCode SNESReset_NEWTONLS(SNES snes)
 
    Application Interface Routine: SNESDestroy()
  */
-PetscErrorCode SNESDestroy_NEWTONLS(SNES snes)
+static PetscErrorCode SNESDestroy_NEWTONLS(SNES snes)
 {
   PetscFunctionBegin;
   PetscCall(SNESReset_NEWTONLS(snes));

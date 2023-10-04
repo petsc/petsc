@@ -31,7 +31,7 @@
       }; \
       b1[0] = -b; \
       b1[1] = b; \
-      PetscCallMPI(MPI_Allreduce(b1, b2, 3, MPIU_REAL, MPIU_MAX, a)); \
+      PetscCall(MPIU_Allreduce(b1, b2, 3, MPIU_REAL, MPIU_MAX, a)); \
       PetscCheck((b2[2] == 1) || PetscEqualReal(-b2[0], b2[1]), a, PETSC_ERR_ARG_WRONG, "Real value must be same on all processes, argument # %d", c); \
     } while (0)
 
@@ -62,7 +62,7 @@ struct _n_TSHistory {
 PetscErrorCode TSHistoryGetNumSteps(TSHistory tsh, PetscInt *n)
 {
   PetscFunctionBegin;
-  PetscValidIntPointer(n, 2);
+  PetscAssertPointer(n, 2);
   *n = tsh->n;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -98,7 +98,7 @@ PetscErrorCode TSHistoryGetTime(TSHistory tsh, PetscBool backward, PetscInt step
 {
   PetscFunctionBegin;
   if (!t) PetscFunctionReturn(PETSC_SUCCESS);
-  PetscValidRealPointer(t, 4);
+  PetscAssertPointer(t, 4);
   if (!tsh->sorted) {
     PetscCall(PetscSortRealWithArrayInt(tsh->n, tsh->hist, tsh->hist_id));
     tsh->sorted = PETSC_TRUE;
@@ -113,7 +113,7 @@ PetscErrorCode TSHistoryGetTimeStep(TSHistory tsh, PetscBool backward, PetscInt 
 {
   PetscFunctionBegin;
   if (!dt) PetscFunctionReturn(PETSC_SUCCESS);
-  PetscValidRealPointer(dt, 4);
+  PetscAssertPointer(dt, 4);
   if (!tsh->sorted) {
     PetscCall(PetscSortRealWithArrayInt(tsh->n, tsh->hist, tsh->hist_id));
     tsh->sorted = PETSC_TRUE;
@@ -127,7 +127,7 @@ PetscErrorCode TSHistoryGetTimeStep(TSHistory tsh, PetscBool backward, PetscInt 
 PetscErrorCode TSHistoryGetLocFromTime(TSHistory tsh, PetscReal time, PetscInt *loc)
 {
   PetscFunctionBegin;
-  PetscValidIntPointer(loc, 3);
+  PetscAssertPointer(loc, 3);
   if (!tsh->sorted) {
     PetscCall(PetscSortRealWithArrayInt(tsh->n, tsh->hist, tsh->hist_id));
     tsh->sorted = PETSC_TRUE;
@@ -141,7 +141,7 @@ PetscErrorCode TSHistorySetHistory(TSHistory tsh, PetscInt n, PetscReal hist[], 
   PetscFunctionBegin;
   PetscValidLogicalCollectiveIntComm(tsh->comm, n, 2);
   PetscCheck(n >= 0, tsh->comm, PETSC_ERR_ARG_OUTOFRANGE, "Cannot request a negative size for history storage");
-  if (n) PetscValidRealPointer(hist, 3);
+  if (n) PetscAssertPointer(hist, 3);
   PetscCall(PetscFree(tsh->hist));
   PetscCall(PetscFree(tsh->hist_id));
   tsh->n = (size_t)n;
@@ -184,7 +184,7 @@ PetscErrorCode TSHistoryCreate(MPI_Comm comm, TSHistory *hst)
   TSHistory tsh;
 
   PetscFunctionBegin;
-  PetscValidPointer(hst, 2);
+  PetscAssertPointer(hst, 2);
   *hst = NULL;
   PetscCall(PetscNew(&tsh));
   PetscCall(PetscCommDuplicate(comm, &tsh->comm, NULL));

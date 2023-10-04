@@ -298,7 +298,7 @@ static PetscErrorCode KSPSolve_PIPEGCR(KSP ksp)
 
   /* Is A symmetric? */
   PetscCall(PetscObjectTypeCompareAny((PetscObject)A, &issym, MATSBAIJ, MATSEQSBAIJ, MATMPISBAIJ, ""));
-  if (!issym) PetscCall(PetscInfo(A, "Matrix type is not any of MATSBAIJ,MATSEQSBAIJ,MATMPISBAIJ. Is matrix A symmetric (as required by CR methods)?"));
+  if (!issym) PetscCall(PetscInfo(A, "Matrix type is not any of MATSBAIJ,MATSEQSBAIJ,MATMPISBAIJ. Is matrix A symmetric (as required by CR methods)?\n"));
 
   /* logging */
   PetscCall(PetscObjectSAWsTakeAccess((PetscObject)ksp));
@@ -425,15 +425,15 @@ static PetscErrorCode KSPDestroy_PIPEGCR(KSP ksp)
   Logically Collective
 
   Input Parameters:
-+  ksp - the Krylov space context
--  unroll_w - use unrolling
++ ksp      - the Krylov space context
+- unroll_w - use unrolling
 
   Level: intermediate
 
   Options Database Key:
-. -ksp_pipegcr_unroll_w <bool> -  use unrolling
+. -ksp_pipegcr_unroll_w <bool> - use unrolling
 
-.seealso: [](chapter_ksp), `KSPPIPEGCR`, `KSPPIPEGCRSetTruncationType()`, `KSPPIPEGCRSetNprealloc()`, `KSPPIPEGCRGetUnrollW()`
+.seealso: [](ch_ksp), `KSPPIPEGCR`, `KSPPIPEGCRSetTruncationType()`, `KSPPIPEGCRSetNprealloc()`, `KSPPIPEGCRGetUnrollW()`
 @*/
 PetscErrorCode KSPPIPEGCRSetUnrollW(KSP ksp, PetscBool unroll_w)
 {
@@ -451,15 +451,15 @@ PetscErrorCode KSPPIPEGCRSetUnrollW(KSP ksp, PetscBool unroll_w)
 
   Logically Collective
 
-   Input Parameter:
-.  ksp - the Krylov space context
+  Input Parameter:
+. ksp - the Krylov space context
 
-   Output Parameter:
-.  unroll_w - `KSPPIPEGCR` uses unrolling (bool)
+  Output Parameter:
+. unroll_w - `KSPPIPEGCR` uses unrolling (bool)
 
   Level: intermediate
 
-.seealso: [](chapter_ksp), `KSPPIPEGCR`, `KSPPIPEGCRGetTruncationType()`, `KSPPIPEGCRGetNprealloc()`, `KSPPIPEGCRSetUnrollW()`
+.seealso: [](ch_ksp), `KSPPIPEGCR`, `KSPPIPEGCRGetTruncationType()`, `KSPPIPEGCRGetNprealloc()`, `KSPPIPEGCRSetUnrollW()`
 @*/
 PetscErrorCode KSPPIPEGCRGetUnrollW(KSP ksp, PetscBool *unroll_w)
 {
@@ -477,8 +477,8 @@ PetscErrorCode KSPPIPEGCRGetUnrollW(KSP ksp, PetscBool *unroll_w)
   Logically Collective
 
   Input Parameters:
-+  ksp - the Krylov space context
--  mmax - the maximum number of previous directions to orthogonalize against
++ ksp  - the Krylov space context
+- mmax - the maximum number of previous directions to orthogonalize against
 
   Options Database Key:
 . -ksp_pipegcr_mmax <N> - maximum number of previous directions
@@ -486,11 +486,11 @@ PetscErrorCode KSPPIPEGCRGetUnrollW(KSP ksp, PetscBool *unroll_w)
   Level: intermediate
 
   Note:
-   mmax + 1 directions are stored (mmax previous ones along with a current one)
+  mmax + 1 directions are stored (mmax previous ones along with a current one)
   and whether all are used in each iteration also depends on the truncation strategy
   (see `KSPPIPEGCRSetTruncationType`)
 
-.seealso: [](chapter_ksp), `KSPPIPEGCR`, `KSPPIPEGCRSetTruncationType()`, `KSPPIPEGCRSetNprealloc()`
+.seealso: [](ch_ksp), `KSPPIPEGCR`, `KSPPIPEGCRSetTruncationType()`, `KSPPIPEGCRSetNprealloc()`
 @*/
 PetscErrorCode KSPPIPEGCRSetMmax(KSP ksp, PetscInt mmax)
 {
@@ -506,19 +506,18 @@ PetscErrorCode KSPPIPEGCRSetMmax(KSP ksp, PetscInt mmax)
 /*@
   KSPPIPEGCRGetMmax - get the maximum number of previous directions `KSPPIPEGCR` will store
 
-   Not Collective
+  Not Collective
 
-   Input Parameter:
-.  ksp - the Krylov space context
+  Input Parameter:
+. ksp - the Krylov space context
 
-   Output Parameter:
-.  mmax - the maximum number of previous directions allowed for orthogonalization
+  Output Parameter:
+. mmax - the maximum number of previous directions allowed for orthogonalization
 
-   Level: intermediate
+  Level: intermediate
 
-.seealso: [](chapter_ksp), `KSPPIPEGCR`, `KSPPIPEGCRGetTruncationType()`, `KSPPIPEGCRGetNprealloc()`, `KSPPIPEGCRSetMmax()`
+.seealso: [](ch_ksp), `KSPPIPEGCR`, `KSPPIPEGCRGetTruncationType()`, `KSPPIPEGCRGetNprealloc()`, `KSPPIPEGCRSetMmax()`
 @*/
-
 PetscErrorCode KSPPIPEGCRGetMmax(KSP ksp, PetscInt *mmax)
 {
   KSP_PIPEGCR *pipegcr = (KSP_PIPEGCR *)ksp->data;
@@ -535,15 +534,15 @@ PetscErrorCode KSPPIPEGCRGetMmax(KSP ksp, PetscInt *mmax)
   Logically Collective
 
   Input Parameters:
-+  ksp - the Krylov space context
--  nprealloc - the number of vectors to preallocate
++ ksp       - the Krylov space context
+- nprealloc - the number of vectors to preallocate
 
   Level: advanced
 
   Options Database Key:
 . -ksp_pipegcr_nprealloc <N> - number of vectors to preallocate
 
-.seealso: [](chapter_ksp), `KSPPIPEGCR`, `KSPPIPEGCRGetTruncationType()`, `KSPPIPEGCRGetNprealloc()`
+.seealso: [](ch_ksp), `KSPPIPEGCR`, `KSPPIPEGCRGetTruncationType()`, `KSPPIPEGCRGetNprealloc()`
 @*/
 PetscErrorCode KSPPIPEGCRSetNprealloc(KSP ksp, PetscInt nprealloc)
 {
@@ -559,17 +558,17 @@ PetscErrorCode KSPPIPEGCRSetNprealloc(KSP ksp, PetscInt nprealloc)
 /*@
   KSPPIPEGCRGetNprealloc - get the number of directions preallocate by `KSPPIPEGCR`
 
-   Not Collective
+  Not Collective
 
-   Input Parameter:
-.  ksp - the Krylov space context
+  Input Parameter:
+. ksp - the Krylov space context
 
-   Output Parameter:
-.  nprealloc - the number of directions preallocated
+  Output Parameter:
+. nprealloc - the number of directions preallocated
 
-   Level: advanced
+  Level: advanced
 
-.seealso: [](chapter_ksp), `KSPPIPEGCR`, `KSPPIPEGCRGetTruncationType()`, `KSPPIPEGCRSetNprealloc()`
+.seealso: [](ch_ksp), `KSPPIPEGCR`, `KSPPIPEGCRGetTruncationType()`, `KSPPIPEGCRSetNprealloc()`
 @*/
 PetscErrorCode KSPPIPEGCRGetNprealloc(KSP ksp, PetscInt *nprealloc)
 {
@@ -587,8 +586,8 @@ PetscErrorCode KSPPIPEGCRGetNprealloc(KSP ksp, PetscInt *nprealloc)
   Logically Collective
 
   Input Parameters:
-+  ksp - the Krylov space context
--  truncstrat - the choice of strategy
++ ksp        - the Krylov space context
+- truncstrat - the choice of strategy
 .vb
   KSP_FCD_TRUNC_TYPE_STANDARD uses all (up to mmax) stored directions
   KSP_FCD_TRUNC_TYPE_NOTAY uses the last max(1,mod(i,mmax)) directions at iteration i=0,1,..
@@ -599,7 +598,7 @@ PetscErrorCode KSPPIPEGCRGetNprealloc(KSP ksp, PetscInt *nprealloc)
 
   Level: intermediate
 
-.seealso: [](chapter_ksp), `KSPPIPEGCR`, `KSPPIPEGCRSetTruncationType`, `KSPPIPEGCRTruncationType`, `KSPFCDTruncationType`
+.seealso: [](ch_ksp), `KSPPIPEGCR`, `KSPPIPEGCRTruncationType`, `KSPFCDTruncationType`
 @*/
 PetscErrorCode KSPPIPEGCRSetTruncationType(KSP ksp, KSPFCDTruncationType truncstrat)
 {
@@ -617,11 +616,11 @@ PetscErrorCode KSPPIPEGCRSetTruncationType(KSP ksp, KSPFCDTruncationType truncst
 
   Not Collective
 
-   Input Parameter:
-.  ksp - the Krylov space context
+  Input Parameter:
+. ksp - the Krylov space context
 
-   Output Parameter:
-.  truncstrat - the strategy type
+  Output Parameter:
+. truncstrat - the strategy type
 .vb
   KSP_FCD_TRUNC_TYPE_STANDARD uses all (up to mmax) stored directions
   KSP_FCD_TRUNC_TYPE_NOTAY uses the last max(1,mod(i,mmax)) directions at iteration i=0,1,..
@@ -630,9 +629,9 @@ PetscErrorCode KSPPIPEGCRSetTruncationType(KSP ksp, KSPFCDTruncationType truncst
   Options Database Key:
 . -ksp_pipegcr_truncation_type <standard,notay> - which stored basis vectors to orthogonalize against
 
-   Level: intermediate
+  Level: intermediate
 
-.seealso: [](chapter_ksp), `KSPPIPEGCR`, `KSPPIPEGCRSetTruncationType`, `KSPPIPEGCRTruncationType`, `KSPFCDTruncationType`
+.seealso: [](ch_ksp), `KSPPIPEGCR`, `KSPPIPEGCRSetTruncationType`, `KSPPIPEGCRTruncationType`, `KSPFCDTruncationType`
 @*/
 PetscErrorCode KSPPIPEGCRGetTruncationType(KSP ksp, KSPFCDTruncationType *truncstrat)
 {
@@ -679,37 +678,36 @@ static PetscErrorCode KSPPIPEGCRSetModifyPC_PIPEGCR(KSP ksp, KSPPIPEGCRModifyPCF
 }
 
 /*@C
- KSPPIPEGCRSetModifyPC - Sets the routine used by `KSPPIPEGCR` to modify the preconditioner at each iteration
+  KSPPIPEGCRSetModifyPC - Sets the routine used by `KSPPIPEGCR` to modify the preconditioner at each iteration
 
- Logically Collective
+  Logically Collective
 
- Input Parameters:
- +  ksp      - iterative context obtained from KSPCreate()
- .  function - user defined function to modify the preconditioner
- .  ctx      - user provided context for the modify preconditioner function
- -  destroy  - the function to use to destroy the user provided application context.
+  Input Parameters:
++ ksp      - iterative context obtained from KSPCreate()
+. function - user defined function to modify the preconditioner
+. ctx      - user provided context for the modify preconditioner function
+- destroy  - the function to use to destroy the user provided application context.
 
- Calling Sequence of `function`:
-$  PetscErrorCode function (KSP ksp, PetscInt n, PetscReal rnorm, void *ctx)
+  Calling sequence of `function`:
 + ksp   - iterative context
 . n     - the total number of PIPEGCR iterations that have occurred
 . rnorm - 2-norm residual value
 - ctx   - the user provided application context
 
- Calling Sequence of `destroy`:
-$ PetscErrorCode destroy(void *ctx)
+  Calling sequence of `destroy`:
+. ctx - the user provided application context
 
- Level: intermediate
+  Level: intermediate
 
- Notes:
- The default modifypc routine is `KSPPIPEGCRModifyPCNoChange()`
+  Notes:
+  The default modifypc routine is `KSPPIPEGCRModifyPCNoChange()`
 
- .seealso: [](chapter_ksp), `KSPPIPEGCR`, `KSPPIPEGCRModifyPCNoChange()`
+.seealso: [](ch_ksp), `KSPPIPEGCR`, `KSPPIPEGCRModifyPCNoChange()`
  @*/
-PetscErrorCode KSPPIPEGCRSetModifyPC(KSP ksp, PetscErrorCode (*function)(KSP, PetscInt, PetscReal, void *), void *data, PetscErrorCode (*destroy)(void *))
+PetscErrorCode KSPPIPEGCRSetModifyPC(KSP ksp, PetscErrorCode (*function)(KSP ksp, PetscInt n, PetscReal rnorm, void *ctx), void *ctx, PetscErrorCode (*destroy)(void *ctx))
 {
   PetscFunctionBegin;
-  PetscUseMethod(ksp, "KSPPIPEGCRSetModifyPC_C", (KSP, PetscErrorCode(*)(KSP, PetscInt, PetscReal, void *), void *data, PetscErrorCode (*)(void *)), (ksp, function, data, destroy));
+  PetscUseMethod(ksp, "KSPPIPEGCRSetModifyPC_C", (KSP, PetscErrorCode(*)(KSP, PetscInt, PetscReal, void *), void *ctx, PetscErrorCode (*)(void *)), (ksp, function, ctx, destroy));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -745,12 +743,10 @@ PetscErrorCode KSPPIPEGCRSetModifyPC(KSP ksp, PetscErrorCode (*function)(KSP, Pe
   Sascha M. Schnepp and Patrick Sanan
 
   Reference:
-    P. Sanan, S.M. Schnepp, and D.A. May,
-    "Pipelined, Flexible Krylov Subspace Methods,"
-    SIAM Journal on Scientific Computing 2016 38:5, C441-C470,
-    DOI: 10.1137/15M1049130
+. * - P. Sanan, S.M. Schnepp, and D.A. May, "Pipelined, Flexible Krylov Subspace Methods,"
+    SIAM Journal on Scientific Computing 2016 38:5, C441-C470, DOI: 10.1137/15M1049130
 
-.seealso: [](chapter_ksp), [](sec_flexibleksp), [](sec_pipelineksp), [](doc_faq_pipelined), `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`,
+.seealso: [](ch_ksp), [](sec_flexibleksp), [](sec_pipelineksp), [](doc_faq_pipelined), `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`,
           `KSPPIPEFGMRES`, `KSPPIPECG`, `KSPPIPECR`, `KSPPIPEFCG`, `KSPPIPEGCRSetTruncationType()`, `KSPPIPEGCRSetNprealloc()`, `KSPPIPEGCRSetUnrollW()`, `KSPPIPEGCRSetMmax()`
 M*/
 PETSC_EXTERN PetscErrorCode KSPCreate_PIPEGCR(KSP ksp)

@@ -1,5 +1,4 @@
-#ifndef PETSCPARTITIONER_H
-#define PETSCPARTITIONER_H
+#pragma once
 
 #include <petscsection.h>
 
@@ -10,7 +9,10 @@
 
   Level: intermediate
 
-.seealso: `PetscPartitionerCreate()`, `PetscPartitionerSetType()`, `PetscPartitionerType`
+  Note:
+  Also consider `MatPartitioning` which provides an alternative API for partitioning.
+
+.seealso: `PetscPartitionerCreate()`, `PetscPartitionerSetType()`, `PetscPartitionerType`, `MatPartitioning`, `MatPartitioningCreate()`
 S*/
 typedef struct _p_PetscPartitioner *PetscPartitioner;
 
@@ -55,5 +57,3 @@ PETSC_EXTERN PetscErrorCode PetscPartitionerShellGetRandom(PetscPartitioner, Pet
 #include <petscmat.h>
 #define PETSCPARTITIONERMATPARTITIONING "matpartitioning"
 PETSC_EXTERN PetscErrorCode PetscPartitionerMatPartitioningGetMatPartitioning(PetscPartitioner, MatPartitioning *);
-
-#endif

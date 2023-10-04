@@ -31,7 +31,7 @@ static PetscErrorCode PetscViewerFileClose_VU(PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PetscViewerDestroy_VU(PetscViewer viewer)
+static PetscErrorCode PetscViewerDestroy_VU(PetscViewer viewer)
 {
   PetscViewer_VU *vu = (PetscViewer_VU *)viewer->data;
 
@@ -45,7 +45,7 @@ PetscErrorCode PetscViewerDestroy_VU(PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PetscViewerFlush_VU(PetscViewer viewer)
+static PetscErrorCode PetscViewerFlush_VU(PetscViewer viewer)
 {
   PetscMPIInt rank;
 
@@ -125,9 +125,7 @@ static PetscErrorCode PetscViewerFileSetName_VU(PetscViewer viewer, const char n
   }
 
   PetscCheck(vu->fd, PETSC_COMM_SELF, PETSC_ERR_FILE_OPEN, "Cannot open PetscViewer file: %s", fname);
-#if defined(PETSC_USE_LOG)
   PetscCall(PetscLogObjectState((PetscObject)viewer, "File: %s", name));
-#endif
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -176,7 +174,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_VU(PetscViewer viewer)
 . viewer - The `PetscViewer`
 
   Output Parameter:
-. fd     - The file pointer
+. fd - The file pointer
 
   Level: intermediate
 
@@ -188,7 +186,7 @@ PetscErrorCode PetscViewerVUGetPointer(PetscViewer viewer, FILE **fd)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 1);
-  PetscValidPointer(fd, 2);
+  PetscAssertPointer(fd, 2);
   *fd = vu->fd;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -223,14 +221,14 @@ PetscErrorCode PetscViewerVUSetVecSeen(PetscViewer viewer, PetscBool vecSeen)
   Not Collective
 
   Input Parameter:
-. viewer  - The `PETSCVIEWERVU` `PetscViewer`
+. viewer - The `PETSCVIEWERVU` `PetscViewer`
 
   Output Parameter:
 . vecSeen - The flag which indicates whether we have viewed a vector
 
   Level: advanced
 
-.seealso: [](sec_viewers), `PETSCVIEWERVU`, `PetscViewerVUGetVecSeen()`
+.seealso: [](sec_viewers), `PETSCVIEWERVU`
 @*/
 PetscErrorCode PetscViewerVUGetVecSeen(PetscViewer viewer, PetscBool *vecSeen)
 {
@@ -238,7 +236,7 @@ PetscErrorCode PetscViewerVUGetVecSeen(PetscViewer viewer, PetscBool *vecSeen)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 1);
-  PetscValidBoolPointer(vecSeen, 2);
+  PetscAssertPointer(vecSeen, 2);
   *vecSeen = vu->vecSeen;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

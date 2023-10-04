@@ -20,20 +20,20 @@ static PetscErrorCode PetscPartitionerMatPartitioningGetMatPartitioning_MatParti
   Not Collective
 
   Input Parameter:
-. part     - The PetscPartitioner
+. part - The PetscPartitioner
 
   Output Parameter:
-. mp       - The MatPartitioning
+. mp - The MatPartitioning
 
   Level: developer
 
-.seealso `DMPlexDistribute()`, `PetscPartitionerCreate()`
+.seealso: `DMPlexDistribute()`, `PetscPartitionerCreate()`
 @*/
 PetscErrorCode PetscPartitionerMatPartitioningGetMatPartitioning(PetscPartitioner part, MatPartitioning *mp)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part, PETSCPARTITIONER_CLASSID, 1);
-  PetscValidPointer(mp, 2);
+  PetscAssertPointer(mp, 2);
   PetscUseMethod(part, "PetscPartitionerMatPartitioningGetMatPartitioning_C", (PetscPartitioner, MatPartitioning *), (part, mp));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

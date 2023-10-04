@@ -1,31 +1,31 @@
 #include <petsc/private/matimpl.h> /*I   "petscmat.h"  I*/
 
 /*@C
-   MatCheckCompressedRow - Determines whether the compressed row matrix format should be used.
-      Compressed row format provides high performance routines by taking advantage of zero rows.
+  MatCheckCompressedRow - Determines whether the compressed row matrix format should be used.
+  Compressed row format provides high performance routines by taking advantage of zero rows.
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  A             - the matrix
-.  nrows         - number of rows with nonzero entries
-.  compressedrow - pointer to the struct Mat_CompressedRow
-.  ai            - row pointer used by `MATSEQAIJ` and `MATSEQBAIJ`
-.  mbs           - number of (block) rows represented by `ai`
--  ratio         - ratio of (num of zero rows)/m, used to determine if the compressed row format should be used
+  Input Parameters:
++ A             - the matrix
+. nrows         - number of rows with nonzero entries
+. compressedrow - pointer to the struct Mat_CompressedRow
+. ai            - row pointer used by `MATSEQAIJ` and `MATSEQBAIJ`
+. mbs           - number of (block) rows represented by `ai`
+- ratio         - ratio of (num of zero rows)/m, used to determine if the compressed row format should be used
 
-   Level: developer
+  Level: developer
 
-   Note:
-   Supported types are `MATAIJ`, `MATBAIJ` and `MATSBAIJ`.
+  Note:
+  Supported types are `MATAIJ`, `MATBAIJ` and `MATSBAIJ`.
 
-   Developer Note:
-   The reason this takes the `compressedrow`, `ai` and `mbs` arguments is because it is called by both the `MATSEQAIJ` and `MATSEQBAIJ` matrices and
-   the values are not therefore obtained by directly taking the values from the matrix object.
-   This is not a general public routine and hence is not listed in petscmat.h (it exposes a private data structure) but it is used
-   by some preconditioners and hence is labeled as `PETSC_EXTERN`
+  Developer Notes:
+  The reason this takes the `compressedrow`, `ai` and `mbs` arguments is because it is called by both the `MATSEQAIJ` and `MATSEQBAIJ` matrices and
+  the values are not therefore obtained by directly taking the values from the matrix object.
+  This is not a general public routine and hence is not listed in petscmat.h (it exposes a private data structure) but it is used
+  by some preconditioners and hence is labeled as `PETSC_EXTERN`
 
-.seealso: `Mat`, `MATAIJ`, `MATBAIJ`, `MATSBAIJ`.
+.seealso: `Mat`, `MATAIJ`, `MATBAIJ`, `MATSBAIJ.`
 @*/
 PETSC_EXTERN PetscErrorCode MatCheckCompressedRow(Mat A, PetscInt nrows, Mat_CompressedRow *compressedrow, PetscInt *ai, PetscInt mbs, PetscReal ratio)
 {
@@ -59,6 +59,7 @@ PETSC_EXTERN PetscErrorCode MatCheckCompressedRow(Mat A, PetscInt nrows, Mat_Com
       cpi[row + 1] = ai[i + 1]; /* compressed row pointer */
       ridx[row++]  = i;         /* compressed row local index */
     }
+    while (row < nrows) ridx[row++] = -1; // pad array
     compressedrow->nrows  = nrows;
     compressedrow->i      = cpi;
     compressedrow->rindex = ridx;

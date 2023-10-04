@@ -129,12 +129,6 @@ int main(int argc, char **args)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   PetscCall(KSPSolve(ksp, b, x));
 
-  /*
-     View solver info; we could instead use the option -ksp_view to
-     print this info to the screen at the conclusion of KSPSolve().
-  */
-  PetscCall(KSPView(ksp, PETSC_VIEWER_STDOUT_SELF));
-
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
                       Check the solution and clean up
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -151,11 +145,23 @@ int main(int argc, char **args)
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
   */
+  PetscCall(KSPDestroy(&ksp));
+
+  /* test if prefixes properly propogate to PCMPI objects */
+  if (PCMPIServerActive) {
+    PetscCall(KSPCreate(PETSC_COMM_SELF, &ksp));
+    PetscCall(KSPSetOptionsPrefix(ksp, "prefix_test_"));
+    PetscCall(MatSetOptionsPrefix(A, "prefix_test_"));
+    PetscCall(KSPSetOperators(ksp, A, A));
+    PetscCall(KSPSetFromOptions(ksp));
+    PetscCall(KSPSolve(ksp, b, x));
+    PetscCall(KSPDestroy(&ksp));
+  }
+
   PetscCall(VecDestroy(&x));
   PetscCall(VecDestroy(&u));
   PetscCall(VecDestroy(&b));
   PetscCall(MatDestroy(&A));
-  PetscCall(KSPDestroy(&ksp));
 
   /*
      Always call PetscFinalize() before exiting a program.  This routine
@@ -180,6 +186,7 @@ int main(int argc, char **args)
       suffix: 2_aijcusparse
       requires: cuda
       args: -pc_type sor -pc_sor_symmetric -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always -mat_type aijcusparse -vec_type cuda
+      args: -ksp_view
 
    test:
       suffix: 3
@@ -188,33 +195,31 @@ int main(int argc, char **args)
    test:
       suffix: 3_aijcusparse
       requires: cuda
-      args: -pc_type eisenstat -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always -mat_type aijcusparse -vec_type cuda
+      args: -pc_type eisenstat -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always -mat_type aijcusparse -vec_type cuda -ksp_view
 
    test:
       suffix: aijcusparse
       requires: cuda
-      args: -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always -mat_type aijcusparse -vec_type cuda
+      args: -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always -mat_type aijcusparse -vec_type cuda -ksp_view
       output_file: output/ex1_1_aijcusparse.out
 
    test:
       requires: defined(PETSC_USE_SINGLE_LIBRARY)
       suffix: mpi_linear_solver_server_1
       nsize: 3
-      filter: sed 's?ATOL?RTOL?g'
-      args: -mpi_linear_solver_server -mpi_linear_solver_server_view -pc_type mpi -ksp_type preonly -mpi_ksp_monitor -mpi_ksp_converged_reason -mat_view -mpi_pc_type none -mpi_ksp_view -mpi_mat_view -pc_mpi_minimum_count_per_rank 5
+      filter: sed 's?ATOL?RTOL?g' | grep -v HERMITIAN
+      # use the MPI Linear Solver Server
+      args: -mpi_linear_solver_server -mpi_linear_solver_server_view
+      # controls for the use of PCMPI on a particular system
+      args: -mpi_linear_solver_server_minimum_count_per_rank 5 -mpi_linear_solver_server_ksp_view -mpi_linear_solver_server_mat_view
+      # the usual options for the linear solver (in this case using the server)
+      args: -ksp_monitor -ksp_converged_reason -mat_view -ksp_view  -ksp_type cg -pc_type none
+      # the options for the prefixed objects
+      args: -prefix_test_mpi_linear_solver_server_mat_view -prefix_test_ksp_monitor -prefix_test_mpi_linear_solver_server_minimum_count_per_rank 5
 
    test:
-      requires: defined(PETSC_USE_SINGLE_LIBRARY)
-      suffix: mpi_linear_solver_server_2
-      nsize: 3
-      filter: sed 's?ATOL?RTOL?g'
-      args: -mpi_linear_solver_server  -mpi_linear_solver_server_view -pc_type mpi -ksp_type preonly -mpi_ksp_monitor -mpi_ksp_converged_reason -mat_view -mpi_pc_type none -mpi_ksp_view
-
-   test:
-      requires: defined(PETSC_USE_SINGLE_LIBRARY)
-      suffix: mpi_linear_solver_server_3
-      nsize: 3
-      filter: sed 's?ATOL?RTOL?g'
-      args: -mpi_linear_solver_server  -mpi_linear_solver_server_view -pc_type mpi -ksp_type preonly -mpi_ksp_monitor -mpi_ksp_converged_reason -mat_view -mpi_pc_type none -mpi_ksp_view -mpi_mat_view -pc_mpi_always_use_server
+      requires: !__float128
+      suffix: minit
+      args: -ksp_monitor -pc_type none -ksp_min_it 8
 
 TEST*/

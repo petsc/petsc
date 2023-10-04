@@ -1,8 +1,7 @@
 /*
    A star forest (SF) describes a communication pattern
 */
-#ifndef PETSCSF_H
-#define PETSCSF_H
+#pragma once
 
 #include <petscsys.h>
 #include <petscsftypes.h>
@@ -192,36 +191,34 @@ PETSC_EXTERN PetscErrorCode PetscSFScatterEnd(PetscSF, MPI_Datatype, const void 
 PETSC_EXTERN PetscErrorCode PetscSFCompose(PetscSF, PetscSF, PetscSF *);
 PETSC_EXTERN PetscErrorCode PetscSFComposeInverse(PetscSF, PetscSF, PetscSF *);
 
-#define MPIU_REPLACE MPI_REPLACE PETSC_DEPRECATED_MACRO("GCC warning \"MPIU_REPLACE macro is deprecated use MPI_REPLACE (since version 3.15)\"")
+#define MPIU_REPLACE MPI_REPLACE PETSC_DEPRECATED_MACRO(3, 15, 0, "MPI_REPLACE", )
 
-PETSC_DEPRECATED_FUNCTION("Use PetscSFGetRootRanks (since v3.12)")
+PETSC_DEPRECATED_FUNCTION(3, 12, 0, "PetscSFGetRootRanks()", )
 static inline PetscErrorCode PetscSFGetRanks(PetscSF sf, PetscInt *nranks, const PetscMPIInt **ranks, const PetscInt **roffset, const PetscInt **rmine, const PetscInt **rremote)
 {
   return PetscSFGetRootRanks(sf, nranks, ranks, roffset, rmine, rremote);
 }
 
-PETSC_DEPRECATED_FUNCTION("Use PetscSFCreateEmbeddedRootSF (since v3.15)")
+PETSC_DEPRECATED_FUNCTION(3, 15, 0, "PetscSFCreateEmbeddedRootSF()", )
 static inline PetscErrorCode PetscSFCreateEmbeddedSF(PetscSF sf, PetscInt nselected, const PetscInt *selected, PetscSF *esf)
 {
   return PetscSFCreateEmbeddedRootSF(sf, nselected, selected, esf);
 }
 
-PETSC_DEPRECATED_FUNCTION("Use PetscSFBcastBegin (since v3.15)")
+PETSC_DEPRECATED_FUNCTION(3, 15, 0, "PetscSFBcastBegin()", )
 static inline PetscErrorCode PetscSFBcastAndOpBegin(PetscSF sf, MPI_Datatype unit, const void *rootdata, void *leafdata, MPI_Op op)
 {
   return PetscSFBcastBegin(sf, unit, rootdata, leafdata, op);
 }
 
-PETSC_DEPRECATED_FUNCTION("Use PetscSFBcastEnd (since v3.15)")
+PETSC_DEPRECATED_FUNCTION(3, 15, 0, "PetscSFBcastEnd()", )
 static inline PetscErrorCode PetscSFBcastAndOpEnd(PetscSF sf, MPI_Datatype unit, const void *rootdata, void *leafdata, MPI_Op op)
 {
   return PetscSFBcastEnd(sf, unit, rootdata, leafdata, op);
 }
 
-PETSC_DEPRECATED_FUNCTION("Use PetscSFBcastWithMemTypeBegin (since v3.15)")
+PETSC_DEPRECATED_FUNCTION(3, 15, 0, "PetscSFBcastWithMemTypeBegin()", )
 static inline PetscErrorCode PetscSFBcastAndOpWithMemtypeBegin(PetscSF sf, MPI_Datatype unit, PetscMemType rootmtype, const void *rootdata, PetscMemType leafmtype, void *leafdata, MPI_Op op)
 {
   return PetscSFBcastWithMemTypeBegin(sf, unit, rootmtype, rootdata, leafmtype, leafdata, op);
 }
-
-#endif

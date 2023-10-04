@@ -9,16 +9,16 @@ struct _n_PetscViewers {
 };
 
 /*@C
-   PetscViewersDestroy - Destroys a set of `PetscViewer`s created with `PetscViewersCreate()`.
+  PetscViewersDestroy - Destroys a set of `PetscViewer`s created with `PetscViewersCreate()`.
 
-   Collective
+  Collective
 
-   Input Parameter:
-.  v - the `PetscViewer`s to be destroyed.
+  Input Parameter:
+. v - the `PetscViewers` to be destroyed.
 
-   Level: intermediate
+  Level: intermediate
 
-.seealso: [](sec_viewers), `PetscViewer`, `PetscViewerDestroy()`, `PetscViewers()`, `PetscViewerSocketOpen()`, `PetscViewerASCIIOpen()`, `PetscViewerCreate()`, `PetscViewerDrawOpen()`, `PetscViewersCreate()`
+.seealso: [](sec_viewers), `PetscViewer`, `PetscViewerDestroy()`, `PetscViewers`, `PetscViewerSocketOpen()`, `PetscViewerASCIIOpen()`, `PetscViewerCreate()`, `PetscViewerDrawOpen()`, `PetscViewersCreate()`
 @*/
 PetscErrorCode PetscViewersDestroy(PetscViewers *v)
 {
@@ -33,24 +33,24 @@ PetscErrorCode PetscViewersDestroy(PetscViewers *v)
 }
 
 /*@C
-   PetscViewersCreate - Creates a container to hold a set of `PetscViewer`s. The container is essentially a sparse, growable in length array of `PetscViewer`s
+  PetscViewersCreate - Creates a container to hold a set of `PetscViewer`'s. The container is essentially a sparse, growable in length array of `PetscViewer`s
 
-   Collective
+  Collective
 
-   Input Parameter:
-.   comm - the MPI communicator
+  Input Parameter:
+. comm - the MPI communicator
 
-   Output Parameter:
-.  v - the collection of `PetscViewer`s
+  Output Parameter:
+. v - the collection of `PetscViewers`
 
-   Level: intermediate
+  Level: intermediate
 
-.seealso: [](sec_viewers), `PetscViewer`, `PetscViewerCreate()`, `PetscViewersDestroy()`
+.seealso: [](sec_viewers), `PetscViewer`, `PetscViewers`, `PetscViewerCreate()`, `PetscViewersDestroy()`
 @*/
 PetscErrorCode PetscViewersCreate(MPI_Comm comm, PetscViewers *v)
 {
   PetscFunctionBegin;
-  PetscValidPointer(v, 2);
+  PetscAssertPointer(v, 2);
   PetscCall(PetscNew(v));
   (*v)->n    = 64;
   (*v)->comm = comm;
@@ -60,26 +60,26 @@ PetscErrorCode PetscViewersCreate(MPI_Comm comm, PetscViewers *v)
 }
 
 /*@C
-   PetscViewersGetViewer - Gets a `PetscViewer` from a `PetscViewer` collection
+  PetscViewersGetViewer - Gets a `PetscViewer` from a `PetscViewers` collection
 
-   Collective if the viewer has not previously be obtained.
+  Collective if the viewer has not previously be obtained.
 
-   Input Parameters:
-+   viewers - object created with `PetscViewersCreate()`
--   n - number of `PetscViewer` you want
+  Input Parameters:
++ viewers - object created with `PetscViewersCreate()`
+- n       - number of `PetscViewer` you want
 
-   Output Parameter:
-.  viewer - the `PetscViewer`
+  Output Parameter:
+. viewer - the `PetscViewer`
 
-   Level: intermediate
+  Level: intermediate
 
-.seealso: [](sec_viewers), `PetscViewer`, `PetscViewersCreate()`, `PetscViewersDestroy()`
+.seealso: [](sec_viewers), `PetscViewer`, `PetscViewers`, `PetscViewersCreate()`, `PetscViewersDestroy()`
 @*/
 PetscErrorCode PetscViewersGetViewer(PetscViewers viewers, PetscInt n, PetscViewer *viewer)
 {
   PetscFunctionBegin;
-  PetscValidPointer(viewers, 1);
-  PetscValidPointer(viewer, 3);
+  PetscAssertPointer(viewers, 1);
+  PetscAssertPointer(viewer, 3);
   PetscCheck(n >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Cannot access using a negative index - %" PetscInt_FMT, n);
   if (n >= viewers->n) {
     PetscViewer *v;
@@ -96,7 +96,7 @@ PetscErrorCode PetscViewersGetViewer(PetscViewers viewers, PetscInt n, PetscView
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*
+/*@C
   PetscMonitorCompare - Checks if two monitors are identical; if they are then it destroys the new one
 
   Not Collective
@@ -115,11 +115,11 @@ PetscErrorCode PetscViewersGetViewer(PetscViewers viewers, PetscInt n, PetscView
   Level: developer
 
 .seealso: [](sec_viewers), `DMMonitorSetFromOptions()`, `KSPMonitorSetFromOptions()`, `SNESMonitorSetFromOptions()`
-*/
+@*/
 PetscErrorCode PetscMonitorCompare(PetscErrorCode (*nmon)(void), void *nmctx, PetscErrorCode (*nmdestroy)(void **), PetscErrorCode (*mon)(void), void *mctx, PetscErrorCode (*mdestroy)(void **), PetscBool *identical)
 {
   PetscFunctionBegin;
-  PetscValidBoolPointer(identical, 7);
+  PetscAssertPointer(identical, 7);
   *identical = PETSC_FALSE;
   if (nmon == mon && nmdestroy == mdestroy) {
     if (nmctx == mctx) *identical = PETSC_TRUE;

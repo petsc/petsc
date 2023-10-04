@@ -4,7 +4,7 @@
 */
 #include <../src/ksp/ksp/impls/rich/richardsonimpl.h> /*I "petscksp.h" I*/
 
-PetscErrorCode KSPSetUp_Richardson(KSP ksp)
+static PetscErrorCode KSPSetUp_Richardson(KSP ksp)
 {
   KSP_Richardson *richardsonP = (KSP_Richardson *)ksp->data;
 
@@ -17,7 +17,7 @@ PetscErrorCode KSPSetUp_Richardson(KSP ksp)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode KSPSolve_Richardson(KSP ksp)
+static PetscErrorCode KSPSolve_Richardson(KSP ksp)
 {
   PetscInt        i, maxit;
   PetscReal       rnorm = 0.0, abr;
@@ -147,7 +147,7 @@ PetscErrorCode KSPSolve_Richardson(KSP ksp)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode KSPView_Richardson(KSP ksp, PetscViewer viewer)
+static PetscErrorCode KSPView_Richardson(KSP ksp, PetscViewer viewer)
 {
   KSP_Richardson *richardsonP = (KSP_Richardson *)ksp->data;
   PetscBool       iascii;
@@ -164,7 +164,7 @@ PetscErrorCode KSPView_Richardson(KSP ksp, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode KSPSetFromOptions_Richardson(KSP ksp, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode KSPSetFromOptions_Richardson(KSP ksp, PetscOptionItems *PetscOptionsObject)
 {
   KSP_Richardson *rich = (KSP_Richardson *)ksp->data;
   PetscReal       tmp;
@@ -180,7 +180,7 @@ PetscErrorCode KSPSetFromOptions_Richardson(KSP ksp, PetscOptionItems *PetscOpti
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode KSPDestroy_Richardson(KSP ksp)
+static PetscErrorCode KSPDestroy_Richardson(KSP ksp)
 {
   PetscFunctionBegin;
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPRichardsonSetScale_C", NULL));
@@ -249,7 +249,7 @@ static PetscErrorCode KSPBuildResidual_Richardson(KSP ksp, Vec t, Vec v, Vec *V)
 
     If using direct solvers such as `PCLU` and `PCCHOLESKY` one generally uses `KSPPREONLY` which uses exactly one iteration
 
-$    -ksp_type richardson -pc_type jacobi gives one classically Jacobi preconditioning
+    `-ksp_type richardson -pc_type jacobi` gives one classical Jacobi preconditioning
 
   Reference:
 . * - L. F. Richardson, "The Approximate Arithmetical Solution by Finite Differences of Physical Problems Involving
@@ -257,7 +257,7 @@ $    -ksp_type richardson -pc_type jacobi gives one classically Jacobi precondit
   Philosophical Transactions of the Royal Society of London. Series A,
   Containing Papers of a Mathematical or Physical Character, Vol. 210, 1911 (1911).
 
-.seealso: [](chapter_ksp), `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`,
+.seealso: [](ch_ksp), `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`,
           `KSPRichardsonSetScale()`, `KSPPREONLY`
 M*/
 

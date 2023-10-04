@@ -68,6 +68,9 @@ class Configure(config.base.Configure):
       newincludes.append(j)
     return ' '.join(newincludes)
 
+  def getDefineMacro(self, macro):
+    return 'HAVE_MACRO_'+macro
+
   def getDefineName(self, header):
     return 'HAVE_'+header.upper().replace('.', '_').replace('/', '_')
 
@@ -83,13 +86,17 @@ class Configure(config.base.Configure):
       if adddefine: self.addDefine(self.getDefineName(header), found)
     return found
 
-  def checkInclude(self, incl, hfiles, otherIncludes = [], timeout = 600.0):
+  def checkInclude(self, incl, hfiles, otherIncludes = [], macro = None, timeout = 600.0):
     '''Checks if a particular include file can be found along particular include paths'''
     if not isinstance(hfiles, list):
       hfiles = [hfiles]
     if not isinstance(incl, list):
-      inclu = [incl]
-    self.log.write('Checking for header files ' +str(hfiles)+ ' in '+str(incl)+'\n')
+      incl = [incl]
+    strmac = ''
+    if macro is not None:
+      strmac = 'defined macro {} in '.format(macro)
+    self.log.write('Checking for ' + strmac + 'header files ' +str(hfiles)+ ' in '+str(incl)+'\n')
+    found = False
     for hfile in hfiles:
       flagsArg = self.getPreprocessorFlagsArg()
       self.logPrint('Checking include with compiler flags var '+flagsArg+' '+str(incl+otherIncludes))
@@ -97,11 +104,18 @@ class Configure(config.base.Configure):
       oldFlags = getattr(self.compilers, flagsArg)
       #self.compilers.CPPFLAGS += ' '+' '.join([self.getIncludeArgument(inc) for inc in incl+otherIncludes])
       setattr(self.compilers, flagsArg, getattr(self.compilers, flagsArg)+' '+' '.join([self.getIncludeArgument(inc) for inc in incl+otherIncludes]))
-      found = self.checkPreprocess('#include <' +hfile+ '>\n', timeout = timeout)
+      body = '#include <' +hfile+ '>\n'
+      if macro is not None:
+        body += '#if !defined({})\n#error {} not defined\n#endif\n'.format(macro,macro)
+      found = self.checkPreprocess(body, timeout = timeout)
       #self.compilers.CPPFLAGS = oldFlags
       setattr(self.compilers, flagsArg, oldFlags)
-      if not found: return 0
-    self.log.write('Found header files ' +str(hfiles)+ ' in '+str(incl)+'\n')
+      if found and macro is not None:
+        self.addDefine(self.getDefineMacro(macro), 1)
+      if not found and macro is None: return 0
+    if macro is not None and not found:
+      return 0
+    self.log.write('Found ' + strmac + 'header files ' +str(hfiles)+ ' in '+str(incl)+'\n')
     return 1
 
   def checkStdC(self):
