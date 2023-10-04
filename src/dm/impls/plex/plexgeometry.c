@@ -386,7 +386,7 @@ static PetscErrorCode DMPlexGetPlaneHexIntersection_Internal(DM dm, PetscInt dim
 + Nint      - the number of intersection points, in [0, 4]
 - intPoints - the coordinates of the intersection points, should be length at least 12
 
-  Note: The `pos` argument is only meaningfull if the number of intersections is 0. The algorithmic idea comes from https://github.com/chrisk314/tet-plane-intersection.
+  Note: The `pos` argument is only meaningful if the number of intersections is 0. The algorithmic idea comes from https://github.com/chrisk314/tet-plane-intersection.
 
   Level: developer
 
@@ -1062,7 +1062,7 @@ static PetscErrorCode DMPlexComputeGridHash_Internal(DM dm, PetscGridHash *local
             }
           }
           /*
-             In 3 dimensions, if two adjacent planes have at least 3 intersections outside the cell in the apprpriate direction,
+             In 3 dimensions, if two adjacent planes have at least 3 intersections outside the cell in the appropriate direction,
              we then check the 3rd planar dimension. If a plane falls between intersection points, the cell belongs to that box.
              If the planes are on opposite sides of the intersection points, the cell belongs to that box and it passes through the cell.
           */

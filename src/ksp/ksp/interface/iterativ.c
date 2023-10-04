@@ -1704,7 +1704,7 @@ PetscErrorCode KSPBuildSolutionDefault(KSP ksp, Vec v, Vec *V)
 
   Note:
   Some `KSP` methods such as `KSPGMRES` do not compute the explicit residual at each iteration, this routine takes the information
-  they have computed during the previous iterations and uses it to compute the explicit residual vai the formula r = b - A*x.
+  they have computed during the previous iterations and uses it to compute the explicit residual via the formula r = b - A*x.
 
   Developer Notes:
   This is PETSC_EXTERN because it may be used by user written plugin `KSPType` implementations

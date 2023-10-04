@@ -521,7 +521,7 @@ PetscErrorCode PetscPDFSampleConstant3D(const PetscReal p[], const PetscReal dum
   Input Parameters:
 + dim    - The dimension of sample points
 . prefix - The options prefix, or NULL
-- name   - The option name for the probility distribution type
+- name   - The option name for the probability distribution type
 
   Output Parameters:
 + pdf     - The PDF of this type

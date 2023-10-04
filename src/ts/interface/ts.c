@@ -3738,7 +3738,7 @@ static PetscErrorCode TSResizeTransferVecs(TS ts, PetscInt cnt, Vec vecsin[], Ve
 
   Input Parameters:
 + ts   - The `TS` context obtained from `TSCreate()`
-. name - A string identifiying the vector
+. name - A string identifying the vector
 - vec  - The vector
 
   Level: developer
@@ -3766,7 +3766,7 @@ PetscErrorCode TSResizeRegisterVec(TS ts, const char *name, Vec vec)
 
   Input Parameters:
 + ts   - The `TS` context obtained from `TSCreate()`
-. name - A string identifiying the vector
+. name - A string identifying the vector
 - vec  - The vector
 
   Level: developer

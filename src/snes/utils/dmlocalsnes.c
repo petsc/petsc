@@ -206,7 +206,7 @@ PetscErrorCode DMSNESSetFunctionLocal(DM dm, PetscErrorCode (*func)(DM, Vec, Vec
   Calling sequence of `func`:
 $  PetscErrorCode func(DM dm, Vec X, void *ctx)
 + dm  - the `DM` context
-. X   - ghosted solution vector, approriate locations (such as essential boundary condition nodes) should be filled
+. X   - ghosted solution vector, appropriate locations (such as essential boundary condition nodes) should be filled
 - ctx - a user provided context
 
   Level: advanced

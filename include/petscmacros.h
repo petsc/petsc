@@ -390,7 +390,7 @@ M*/
 
   Example Usage:
 .vb
-  // may be used in place of '\0' or other such teminators in the definition of char arrays
+  // may be used in place of '\0' or other such terminators in the definition of char arrays
   const char *const MyEnumTypes[] = {
     "foo",
     "bar",

@@ -415,7 +415,7 @@ PetscBool PCMPIServerActive = PETSC_FALSE;
 
   This could be implemented directly at the `KSP` level instead of using the `PCMPI` wrapper object
 
-  The code could be extended to allow an MPI + OpenMP application to use the linear solver server concept accross all shared-memory
+  The code could be extended to allow an MPI + OpenMP application to use the linear solver server concept across all shared-memory
   nodes with a single MPI process per node for the user application but multiple MPI processes per node for the linear solver.
 
   The concept could also be extended for users's callbacks for `SNES`, `TS`, and `Tao` where the `SNESSolve()` for example, runs on

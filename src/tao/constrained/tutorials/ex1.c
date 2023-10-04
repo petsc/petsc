@@ -208,7 +208,7 @@ PetscErrorCode InitializeProblem(AppCtx *user)
   PetscCall(VecSetFromOptions(user->ci));
   PetscCall(VecSetUp(user->ci));
 
-  /* nexn & nixn matricies for equally and inequalty constraints */
+  /* nexn & nixn matrices for equally and inequalty constraints */
   if (!user->noeqflag) {
     PetscCall(MatCreate(PETSC_COMM_WORLD, &user->Ae));
     PetscCall(MatSetSizes(user->Ae, neloc, nloc, user->ne, user->n));
