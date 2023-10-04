@@ -73,7 +73,7 @@ int main(int argc, char **args)
   PetscCall(VecDuplicate(b, &u));
   PetscCall(VecSet(x, 0.0));
 
-  /* Create dense matric B and X. Set B as an identity matrix */
+  /* Create dense matrices B and X. Set B as an identity matrix */
   PetscCall(MatGetSize(A, &M, &N));
   PetscCall(MatCreate(MPI_COMM_SELF, &B));
   PetscCall(MatSetSizes(B, M, N, M, N));

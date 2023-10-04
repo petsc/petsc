@@ -29,7 +29,7 @@ static PetscErrorCode DMView_Network_CSV(DM dm, PetscViewer viewer)
   PetscCall(DMGetCoordinateDM(dm, &dmcoords));
 
   PetscCall(DMGetCoordinateDim(dmcoords, &i));
-  PetscCheck(i == 2, PETSC_COMM_WORLD, PETSC_ERR_SUP, "dim %" PetscInt_FMT " != 2 is not supporte yet", i);
+  PetscCheck(i == 2, PETSC_COMM_WORLD, PETSC_ERR_SUP, "dim %" PetscInt_FMT " != 2 is not supported yet", i);
 
   // Get the coordinate vector from dm
   PetscCall(DMGetCoordinatesLocal(dm, &allVertexCoords));

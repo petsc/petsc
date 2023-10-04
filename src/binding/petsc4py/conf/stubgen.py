@@ -133,7 +133,7 @@ def visit_class(cls, outer=None, done=None):
         '__module__',
         '__weakref__',
         '__pyx_vtable__',
-        '__enum2str',  # FIXME refactor implemetation
+        '__enum2str',  # FIXME refactor implementation
         '_traceback_', # FIXME maybe refactor?
         '__lt__',
         '__le__',

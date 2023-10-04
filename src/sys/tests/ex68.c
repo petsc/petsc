@@ -28,12 +28,12 @@ int main(int argc, char **argv)
   /* This test simulates a program with unrelated logging stages and events
      that has to "stop the world" to lazily initialize a runtime.
 
-     - Pausing events should send the log data for the runtime initalization
+     - Pausing events should send the log data for the runtime initialization
        to the Main Stage
 
      - Turning the Main Stage invisible should hide it from -log_view
 
-     So the runtime intialization should be more or less missing from -log_view. */
+     So the runtime initialization should be more or less missing from -log_view. */
 
   PetscCall(PetscClassIdRegister("External runtime", &runtime_classid));
   PetscCall(PetscLogEventRegister("External runtime initialization", runtime_classid, &runtime_event));

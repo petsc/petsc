@@ -996,7 +996,7 @@ static PetscErrorCode PCGAMGCoarsen_AGG(PC a_pc, Mat *a_Gmat1, PetscCoarsenData 
     PetscCall(MatDestroy(&Gmat1));
     *a_Gmat1 = Gmat2; /* output */
     PetscCall(PetscCDGetMat(llist, &mat));
-    PetscCheck(!mat, comm, PETSC_ERR_ARG_WRONG, "Unexpected auxilary matrix with squared graph");
+    PetscCheck(!mat, comm, PETSC_ERR_ARG_WRONG, "Unexpected auxiliary matrix with squared graph");
   } else {
     PetscCoarsenData *llist = *agg_lists;
     /* see if we have a matrix that takes precedence (returned from MatCoarsenApply) */

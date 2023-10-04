@@ -6195,7 +6195,7 @@ PetscErrorCode DMPlexComputeJacobian_Hybrid_Internal(DM dm, PetscFormKey key[], 
 
   Input Parameters:
 + dm     - The mesh
-. key    - The PetscWeakFormKey indcating where integration should happen
+. key    - The PetscWeakFormKey indicating where integration should happen
 . cellIS - The cells to integrate over
 . t      - The time
 . X_tShift - The multiplier for the Jacobian with respect to X_t

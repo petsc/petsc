@@ -84,22 +84,22 @@ int main(int argc, char **args)
     PetscCall(MatMPIAIJGetSeqAIJ(A, &Aseq, NULL, NULL));
   }
   PetscCall(PCASMCreateSubdomains(Aseq, nblocks, &loc_blocks)); // A
-  Mat nest, arrray[10000];
-  for (Ii = 0; Ii < 10000; Ii++) arrray[Ii] = NULL;
+  Mat nest, array[10000];
+  for (Ii = 0; Ii < 10000; Ii++) array[Ii] = NULL;
   for (PetscInt bid = 0; bid < nblocks; bid++) {
     Mat matblock;
     PetscCall(MatCreateSubMatrix(Aseq, loc_blocks[bid], loc_blocks[bid], MAT_INITIAL_MATRIX, &matblock));
     //PetscCall(MatViewFromOptions(matblock, NULL, "-view_b"));
-    arrray[bid * nblocks + bid] = matblock;
+    array[bid * nblocks + bid] = matblock;
   }
   PetscCall(MatCreate(PETSC_COMM_SELF, &nest));
   PetscCall(MatSetFromOptions(nest));
   PetscCall(MatSetType(nest, MATNEST));
-  PetscCall(MatNestSetSubMats(nest, nblocks, NULL, nblocks, NULL, arrray));
+  PetscCall(MatNestSetSubMats(nest, nblocks, NULL, nblocks, NULL, array));
   PetscCall(MatSetUp(nest));
   PetscCall(MatConvert(nest, MATAIJKOKKOS, MAT_INITIAL_MATRIX, &AA));
   PetscCall(MatDestroy(&nest));
-  for (PetscInt bid = 0; bid < nblocks; bid++) PetscCall(MatDestroy(&arrray[bid * nblocks + bid]));
+  for (PetscInt bid = 0; bid < nblocks; bid++) PetscCall(MatDestroy(&array[bid * nblocks + bid]));
   if (ismpi) {
     Mat AAseq;
     PetscCall(MatCreate(PETSC_COMM_WORLD, &Pmat));

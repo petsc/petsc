@@ -937,7 +937,7 @@ PetscErrorCode TSGetCostHessianProducts(TS ts, PetscInt *numcost, Vec **lambda2,
   Level: intermediate
 
   Notes:
-  When computing sensitivies w.r.t. initial condition, set didp to `NULL` so that the solver will take it as an identity matrix mathematically.
+  When computing sensitivities w.r.t. initial condition, set didp to `NULL` so that the solver will take it as an identity matrix mathematically.
   `TSAdjoint` does not reset the tangent linear solver automatically, `TSAdjointResetForward()` should be called to reset the tangent linear solver.
 
 .seealso: [](ch_ts), `TSAdjointSolve()`, `TSSetCostHessianProducts()`, `TSAdjointResetForward()`

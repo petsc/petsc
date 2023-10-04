@@ -146,7 +146,7 @@ int main(int argc, char **args)
   */
   PetscCall(KSPDestroy(&ksp));
 
-  /* test if prefixes properly propogate to PCMPI objects */
+  /* test if prefixes properly propagate to PCMPI objects */
   if (PCMPIServerActive) {
     PetscCall(KSPCreate(PETSC_COMM_SELF, &ksp));
     PetscCall(KSPSetOptionsPrefix(ksp, "prefix_test_"));
