@@ -4,7 +4,7 @@
 
 .. _Open MPI:     http://www.open-mpi.org
 
-.. _PETSc:        http://www.mcs.anl.gov/petsc/
+.. _PETSc:        https://petsc.org
 
 .. _SLEPc:        http://slepc.upv.es
 

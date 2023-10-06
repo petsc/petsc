@@ -1,4 +1,3 @@
-
 #include <petsc/private/dmdaimpl.h> /*I   "petscdmda.h"   I*/
 
 /*@C

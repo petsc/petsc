@@ -1,4 +1,3 @@
-
 /*
        Inverts 4 by 4 matrix using gaussian elimination with partial pivoting.
 

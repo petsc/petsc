@@ -1,4 +1,3 @@
-
 static char help[] = "Demonstrates VecStrideScatter() and VecStrideGather() with subvectors that are also strided.\n\n";
 
 /*

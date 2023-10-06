@@ -1,4 +1,3 @@
-
 #include <petsc/private/matimpl.h> /*I       "petscmat.h"   I*/
 
 PETSC_INTERN PetscErrorCode MatGetOrdering_Natural(Mat, MatOrderingType, IS *, IS *);

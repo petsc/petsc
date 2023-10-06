@@ -1,4 +1,3 @@
-
 /* TODO change to
 #include <../src/mat/impls/dense/seq/dense.h>
 */

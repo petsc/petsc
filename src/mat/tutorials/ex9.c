@@ -1,4 +1,3 @@
-
 static char help[] = "Tests MatCreateComposite()\n\n";
 
 /*

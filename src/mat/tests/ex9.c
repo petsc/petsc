@@ -1,4 +1,3 @@
-
 static char help[] = "Tests MPI parallel matrix creation. Test MatCreateRedundantMatrix() \n\n";
 
 #include <petscmat.h>

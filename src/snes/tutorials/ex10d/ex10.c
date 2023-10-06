@@ -1,4 +1,3 @@
-
 /*
    Include "petscsnes.h" so that we can use SNES solvers.  Note that this
    file automatically includes:

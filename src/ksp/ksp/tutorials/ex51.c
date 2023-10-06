@@ -1,4 +1,3 @@
-
 static char help[] = "This example solves a linear system in parallel with KSP.  The matrix\n\
 uses arbitrary order polynomials for finite elements on the unit square.  To test the parallel\n\
 matrix assembly, the matrix is intentionally laid out across processors\n\

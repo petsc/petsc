@@ -1,4 +1,3 @@
-
 static char help[] = "Test PetscSFConcatenate()\n\n";
 
 #include <petscsf.h>

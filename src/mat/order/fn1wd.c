@@ -1,4 +1,3 @@
-
 /* fn1wd.f -- translated by f2c (version 19931217).*/
 
 #include <petsc/private/matorderimpl.h>

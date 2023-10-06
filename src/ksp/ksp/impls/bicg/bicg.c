@@ -1,4 +1,3 @@
-
 #include <petsc/private/kspimpl.h>
 
 static PetscErrorCode KSPSetUp_BiCG(KSP ksp)

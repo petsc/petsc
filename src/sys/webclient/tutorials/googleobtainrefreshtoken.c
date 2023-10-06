@@ -1,4 +1,3 @@
-
 /*
      Obtains a refresh token that you can use in the future to access Google Drive from PETSc code
 

@@ -1,4 +1,3 @@
-
 #include <../src/mat/impls/baij/seq/baij.h>
 #include <../src/mat/impls/dense/seq/dense.h>
 #include <../src/mat/impls/sbaij/seq/sbaij.h>

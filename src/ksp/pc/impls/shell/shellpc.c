@@ -749,7 +749,7 @@ PetscErrorCode PCShellSetPostSolve(PC pc, PetscErrorCode (*postsolve)(PC pc, KSP
   Level: intermediate
 
   Note:
-  This is seperate from the name you can provide with `PetscObjectSetName()`
+  This is separate from the name you can provide with `PetscObjectSetName()`
 
 .seealso: `PCSHELL`, `PCShellGetName()`, `PetscObjectSetName()`, `PetscObjectGetName()`
 @*/

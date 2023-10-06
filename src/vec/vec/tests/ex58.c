@@ -1,4 +1,3 @@
-
 static char help[] = "Test VecCreate{Seq|MPI}CUDAWithArrays.\n\n";
 
 #include "petsc.h"

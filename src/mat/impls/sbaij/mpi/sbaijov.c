@@ -1,4 +1,3 @@
-
 /*
    Routines to compute overlapping regions of a parallel MPI matrix.
    Used for finding submatrices that were shared across processors.

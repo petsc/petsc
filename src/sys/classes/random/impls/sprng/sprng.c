@@ -1,4 +1,3 @@
-
 #include <petsc/private/randomimpl.h>
 
 #define USE_MPI

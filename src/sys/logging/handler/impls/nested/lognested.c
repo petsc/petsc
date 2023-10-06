@@ -1,4 +1,3 @@
-
 #include <petscviewer.h>
 #include "lognested.h"
 #include "xmlviewer.h"

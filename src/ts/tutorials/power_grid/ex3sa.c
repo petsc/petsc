@@ -1,4 +1,3 @@
-
 static char help[] = "Adjoint and tangent linear sensitivity analysis of the basic equation for generator stability analysis.\n";
 
 /*F

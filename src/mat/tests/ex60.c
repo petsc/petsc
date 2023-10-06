@@ -1,4 +1,3 @@
-
 static char help[] = "Tests MatGetColumnVector().";
 
 #include <petscmat.h>

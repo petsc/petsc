@@ -1,4 +1,3 @@
-
 #include <petsc/private/matimpl.h> /*I   "petscmat.h"  I*/
 
 static PetscErrorCode MatMultEqual_Private(Mat A, Mat B, PetscInt n, PetscBool *flg, PetscInt t, PetscInt add)

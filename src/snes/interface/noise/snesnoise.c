@@ -1,4 +1,3 @@
-
 #include <petsc/private/snesimpl.h>
 
 PETSC_INTERN PetscErrorCode SNESDiffParameterCreate_More(SNES, Vec, void **);

@@ -1,4 +1,3 @@
-
 static char help[] = "Tests ISLocalToGlobalMappingSetBlockSize.\n\n";
 
 #include <petscis.h>

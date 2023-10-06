@@ -1,4 +1,3 @@
-
 static char help[] = "Test saving SeqSBAIJ matrix that is missing diagonal entries.";
 
 #include <petscmat.h>

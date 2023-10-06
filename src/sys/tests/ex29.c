@@ -1,4 +1,3 @@
-
 static char help[] = "Tests PetscInt64Mult()\n";
 
 #include <petscsys.h>

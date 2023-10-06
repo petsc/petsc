@@ -1,4 +1,3 @@
-
 static char help[] = "Tests PetscObjectSetOptions() for TS object\n\n";
 
 /* ------------------------------------------------------------------------

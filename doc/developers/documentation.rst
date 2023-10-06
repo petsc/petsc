@@ -247,8 +247,8 @@ Building Classic Documentation
 Some of the documentation is built by a "classic" process as described below using the documentation tools listed below, which are
 automatically downloaded and installed if needed while building the PETSc documentation./
 
-* `Sowing <http://ftp.mcs.anl.gov/pub/sowing/sowing.tar.gz>`__: Developed by Bill Gropp, this produces the PETSc manual pages; see the `Sowing documentation <http://wgropp.cs.illinois.edu/projects/software/sowing/doctext/doctext.htm>`__ and :ref:`manual_page_format`.
-* `C2html <http://ftp.mcs.anl.gov/pub/petsc/c2html.tar.gz>`__: This generates the HTML versions of all the source code.
+* `Sowing <https://bitbucket.org/petsc/pkg-sowing>`__: Developed by Bill Gropp, this produces the PETSc manual pages; see the `Sowing documentation <http://wgropp.cs.illinois.edu/projects/software/sowing/doctext/doctext.htm>`__ and :ref:`manual_page_format`.
+* `C2html <https://gitlab.com/petsc/pkg-c2html>`__: This generates the HTML versions of all the source code.
 
 Sowing and C2html are build tools that do not use the compilers specified to PETSc's ``configure``, as they
 need to work in cross-compilation environments. Thus, they default to using ``gcc``, ``g++``, and ``flex`` from

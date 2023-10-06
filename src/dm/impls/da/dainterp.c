@@ -1,4 +1,3 @@
-
 /*
   Code for interpolating between grids represented by DMDAs
 */

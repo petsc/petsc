@@ -1,4 +1,3 @@
-
 static char help[] = "Tests MatHYPRE\n";
 
 #include <petscmathypre.h>

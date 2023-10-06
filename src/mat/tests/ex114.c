@@ -1,4 +1,3 @@
-
 static char help[] = "Tests MatGetRowMax(), MatGetRowMin(), MatGetRowMaxAbs()\n";
 
 #include <petscmat.h>

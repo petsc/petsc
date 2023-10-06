@@ -1,4 +1,3 @@
-
 #include <petsc/private/matimpl.h> /*I "petscmat.h" I*/
 
 static PetscErrorCode MatMult_Centering(Mat A, Vec xx, Vec yy)

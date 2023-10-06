@@ -1,4 +1,3 @@
-
 #include <../src/sys/classes/viewer/impls/ascii/asciiimpl.h> /*I "petscviewer.h" I*/
 
 #define QUEUESTRINGSIZE 8192
@@ -525,7 +524,7 @@ extern void petscfortranprinttounit_(PetscInt *, const char *, PetscErrorCode *,
 
 // PetscClangLinter pragma disable: -fdoc-synopsis-macro-explicit-synopsis-valid-header
 /*MC
-  PetscViewerASCIISetFileUnit - sets the `PETSCVIEWERASCII` to write to a Fortan IO unit
+  PetscViewerASCIISetFileUnit - sets the `PETSCVIEWERASCII` to write to a Fortran IO unit
 
   Synopsis:
   #include <petscviewer.h>
@@ -561,7 +560,7 @@ PETSC_EXTERN void petscviewerasciisetfileunit_(PetscViewer *lab, PetscInt *unit,
 
 // PetscClangLinter pragma disable: -fdoc-synopsis-macro-explicit-synopsis-valid-header
 /*MC
-  PetscViewerASCIIOpenWithFileUnit - opens a `PETSCVIEWERASCII` to write to a Fortan IO unit
+  PetscViewerASCIIOpenWithFileUnit - opens a `PETSCVIEWERASCII` to write to a Fortran IO unit
 
   Synopsis:
   #include <petscviewer.h>

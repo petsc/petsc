@@ -1,4 +1,3 @@
-
 static char help[] = "Scatters from a parallel vector to a sequential vector.\n\
   Using a blocked send and a strided receive.\n\n";
 

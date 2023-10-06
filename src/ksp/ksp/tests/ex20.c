@@ -1,4 +1,3 @@
-
 static char help[] = "Bilinear elements on the unit square for Laplacian.  To test the parallel\n\
 matrix assembly,the matrix is intentionally laid out across processors\n\
 differently from the way it is assembled.  Input arguments are:\n\

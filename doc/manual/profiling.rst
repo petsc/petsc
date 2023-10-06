@@ -676,28 +676,44 @@ time for PETSc programs that use these macros.
 NVIDIA Nsight Systems profiling
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-When a CUDA executable is preceeded by
-``nsys profile -f true -o filename``, the default event profiling will add annotations to the
-Nsight Systems data that can help the navigation of ``file-name``  with the Nsight Systems GUI
-(https://developer.nvidia.com/nsight-systems). The Nsight Systems GUI
-lets you see a timeline of code performance information like kernels,
-mallocs, CPU-GPU communication, and high-level data like register
-usage in a kernel, among other things in a popup window when the mouse
-hovers over the section. The PETSc events are automatically also
-displayed in Nsight if the option -log_view is also used.
-
-For and MPI parallel job, only one process can call ``nsys``.
-For example one can in a bash script use something like:
+Nsight Systems will generate profiling data with a CUDA executable
+with the command ``nsys``.
+For example, in serial
 
 .. code-block:: bash
 
-   if [ "$OMPI_COMM_WORLD_RANK" == "0" ]; then
-       nsys profile -f true -o output "$@"
-   else
-       "$@"
-   fi
+   nsys profile -t nvtx,cuda -o file --stats=true --force-overwrite true ./a.out
+
+will generate a file ``file.qdstrm`` with performance data that is
+annotated with PETSc events (methods) and Kokkos device kernel names.
+The Nsight Systems GUI, ``nsys-ui``, can be used to navigate this file
+(https://developer.nvidia.com/nsight-systems). The Nsight Systems GUI
+lets you see a timeline of code performance information like kernels,
+memory mallocs and frees, CPU-GPU communication, and high-level data like time, sizes
+of memory copies, and more, in a popup window when the mouse
+hovers over the section.
+To view the data, start ``nsys-ui`` without any arguments and then ``Import`` the
+``.qdstrm`` file in the GUI.
+A side effect of this viewing process is the generation of a file ``file.nsys-rep``, which can be viewed directly
+with ``nsys-ui`` in the future.
+
+For an MPI parallel job, only one process can call ``nsys``,
+say have rank zero output ``nsys`` data and have all other
+ranks call the executable directly. For example with MPICH
+or OpenMPI - we can run a parallel job on 4 MPI tasks as:
+
+.. code-block:: console
+
+   mpiexec -n 1 nsys profile -t nvtx,cuda -o file_name --stats=true --force-overwrite true ./a.out : -n 3 ./a.out
 
 .. _sec_using_tau:
+
+Note: The Nsight GUI can open profiling reports from elsewhere. For
+example, a report from a compute node can be analyzed on your local
+machine, but care should be taken to use the exact same versions of
+Nsight Systems that generated the report.
+To check the version of Nsight on the compute node run ``nsys-ui`` and
+note the version number at the top of the window.
 
 Using TAU
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

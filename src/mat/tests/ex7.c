@@ -1,4 +1,3 @@
-
 static char help[] = "Tests matrix factorization.  Note that most users should\n\
 employ the KSP  interface to the linear solvers instead of using the factorization\n\
 routines directly.\n\n";

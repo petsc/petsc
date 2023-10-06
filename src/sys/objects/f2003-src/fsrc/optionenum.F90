@@ -1,4 +1,3 @@
-
 #include "petsc/finclude/petscsys.h"
 
 #if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)

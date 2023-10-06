@@ -1,4 +1,3 @@
-
 #include <petsc/private/pcmgimpl.h> /*I "petscksp.h" I*/
 
 /*@C

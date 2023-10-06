@@ -1,4 +1,3 @@
-
 static char help[] = "Tests Elemental interface.\n\n";
 
 #include <petscmat.h>

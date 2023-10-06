@@ -1,4 +1,3 @@
-
 static char help[] = "Solves a time-dependent nonlinear PDE with lower and upper bounds on the interior grid points. Uses implicit\n\
 timestepping.  Runtime options include:\n\
   -M <xg>, where <xg> = number of grid points\n\

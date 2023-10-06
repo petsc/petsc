@@ -1,4 +1,3 @@
-
 static char help[] = "Tests string options with spaces";
 
 #include <petscsys.h>

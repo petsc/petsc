@@ -1,4 +1,3 @@
-
 static char help[] = "Demonstrates call PETSc and Chombo in the same program.\n\n";
 
 #include <petscsys.h>

@@ -1,4 +1,3 @@
-
 /*
        Formatted test for ISStride routines.
 */

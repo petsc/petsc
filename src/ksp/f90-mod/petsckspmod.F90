@@ -8,4 +8,3 @@
 #include <../src/ksp/f90-mod/ftn-auto-interfaces/petscksp.h90>
         end interface
         end module petscksp
-

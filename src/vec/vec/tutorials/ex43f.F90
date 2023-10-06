@@ -1,4 +1,3 @@
-
     module ex43fmodule
 #include <petsc/finclude/petscvec.h>
       use,intrinsic :: iso_c_binding

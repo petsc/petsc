@@ -1,4 +1,3 @@
-
 static char help[] = "Illustrate how to solves a matrix-free linear system with KSP.\n\n";
 
 /*

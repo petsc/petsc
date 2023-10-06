@@ -1,4 +1,3 @@
-
 static char help[] = "Tests DMSwarm with DMShell\n\n";
 
 #include <petscsf.h>

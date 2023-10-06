@@ -1,4 +1,3 @@
-
 /*
        Provides the calling sequences for all the basic PetscDraw routines.
 */

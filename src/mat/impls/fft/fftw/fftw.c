@@ -1,4 +1,3 @@
-
 /*
     Provides an interface to the FFTW package.
     Testing examples can be found in ~src/mat/tests

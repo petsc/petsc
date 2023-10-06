@@ -1,4 +1,3 @@
-
 /*
    Defines a direct QR factorization preconditioner for any Mat implementation
    Note: this need not be considered a preconditioner since it supplies

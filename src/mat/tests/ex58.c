@@ -1,4 +1,3 @@
-
 static char help[] = "Tests MatTranspose() and MatEqual() for MPIAIJ matrices.\n\n";
 
 #include <petscmat.h>

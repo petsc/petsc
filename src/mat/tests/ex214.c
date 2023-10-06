@@ -1,4 +1,3 @@
-
 static char help[] = "Tests MatMatSolve() and MatMatTransposeSolve() for computing inv(A) with MUMPS.\n\
 Example: mpiexec -n <np> ./ex214 -displ \n\n";
 

@@ -1,4 +1,3 @@
-
 #include <../src/mat/impls/baij/seq/baij.h>
 #include <../src/mat/impls/sbaij/seq/sbaij.h>
 #include <petsc/private/kernels/blockinvert.h>

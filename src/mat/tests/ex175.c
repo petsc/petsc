@@ -1,4 +1,3 @@
-
 static char help[] = "Tests MatCreateHermitianTranspose().\n\n";
 
 #include <petscmat.h>

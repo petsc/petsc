@@ -1,4 +1,3 @@
-
 static char help[] = "Tests various DMComposite routines.\n\n";
 
 #include <petscdm.h>

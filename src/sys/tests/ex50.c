@@ -1,4 +1,3 @@
-
 static char help[] = "Tests using PetscViewerGetSubViewer() recursively\n\n";
 
 #include <petscsys.h>

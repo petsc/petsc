@@ -1,4 +1,3 @@
-
 static char help[] = "Solves two linear systems in parallel with KSP.  The code\n\
 illustrates repeated solution of linear systems with the same preconditioner\n\
 method but different matrices (having the same nonzero structure).  The code\n\

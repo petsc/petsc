@@ -1,4 +1,3 @@
-
 /*
     This file implements pipelined BiCGStab (pipe-BiCGStab).
 */

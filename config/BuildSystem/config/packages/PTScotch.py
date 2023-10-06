@@ -8,7 +8,7 @@ class Configure(config.package.Package):
     self.gitcommit        = 'v'+self.version
     self.download         = ['git://https://gitlab.inria.fr/scotch/scotch.git',
                              'https://gitlab.inria.fr/scotch/scotch/-/archive/'+self.gitcommit+'/scotch-'+self.gitcommit+'.tar.gz',
-                             'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/scotch-'+self.gitcommit+'.tar.gz']
+                             'https://web.cels.anl.gov/projects/petsc/download/externalpackages/scotch-'+self.gitcommit+'.tar.gz']
     self.downloaddirnames = ['scotch','petsc-pkg-scotch']
     self.liblist          = [['libptesmumps.a','libptscotchparmetisv3.a','libptscotch.a','libptscotcherr.a','libesmumps.a','libscotch.a','libscotcherr.a'],['libptesmumps.a','libptscotchparmetis.a','libptscotch.a','libptscotcherr.a','libesmumps.a','libscotch.a','libscotcherr.a'],
                              ['libptesmumps.a','libptscotchparmetis.a','libptscotch.a','libptscotcherr.a','libesmumps.a','libscotch.a','libscotcherr.a']]

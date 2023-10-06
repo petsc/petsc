@@ -1,4 +1,3 @@
-
 static char help[] = "Solves a linear system in parallel with KSP.\n\
 Input parameters include:\n\
   -view_exact_sol   : write exact solution vector to stdout\n\

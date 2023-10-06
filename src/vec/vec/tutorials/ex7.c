@@ -1,4 +1,3 @@
-
 static char help[] = "Demonstrates calling a Fortran computational routine from C.\n\
 Also demonstrates passing  PETSc objects, MPI Communicators from C to Fortran\n\
 and from Fortran to C\n\n";

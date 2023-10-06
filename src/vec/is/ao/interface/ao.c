@@ -1,4 +1,3 @@
-
 /*
    Defines the abstract operations on AO (application orderings)
 */

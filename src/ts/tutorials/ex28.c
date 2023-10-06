@@ -1,4 +1,3 @@
-
 static char help[] = "Loads a previously saved TS.";
 
 /*

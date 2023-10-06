@@ -1,4 +1,3 @@
-
 /*
    This file contains simple code to manage access to fonts, insuring that
    library routines access/load fonts only once

@@ -1,4 +1,3 @@
-
 static char help[] = "Solves an ill-conditioned tridiagonal linear system with KSP for testing GMRES breakdown tolerance.\n\n";
 
 #include <petscksp.h>

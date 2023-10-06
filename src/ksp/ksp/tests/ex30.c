@@ -1,4 +1,3 @@
-
 static char help[] = "Reads a PETSc matrix and vector from a file and solves a linear system.\n\
 It is copied and intended to move dirty codes from ksp/tutorials/ex10.c and simplify ex10.c.\n\
   Input parameters include\n\

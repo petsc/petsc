@@ -1,4 +1,3 @@
-
 #include <petsc/private/snesimpl.h> /*I  "petscsnes.h"   I*/
 /* matimpl.h is needed only for logging of matrix operation */
 #include <petsc/private/matimpl.h>

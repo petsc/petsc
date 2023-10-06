@@ -661,6 +661,7 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
         PetscCall(MatCreateSubMatrix(pc->pmat, ilink->is, ilink->is_col, MAT_INITIAL_MATRIX, &jac->pmat[i]));
         PetscCall(KSPGetOptionsPrefix(ilink->ksp, &prefix));
         PetscCall(MatSetOptionsPrefix(jac->pmat[i], prefix));
+        PetscCall(MatSetFromOptions(jac->pmat[i]));
         PetscCall(MatViewFromOptions(jac->pmat[i], NULL, "-mat_view"));
       }
       /* create work vectors for each split */

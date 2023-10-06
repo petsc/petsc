@@ -1,4 +1,3 @@
-
 static char help[] = "Krylov methods to solve u''  = f in parallel with periodic boundary conditions,\n\
                       with a singular, inconsistent system.\n\n";
 

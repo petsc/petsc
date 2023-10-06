@@ -1,4 +1,3 @@
-
 static char help[] = "Tests solving linear system with KSPFGMRES + PCSOR (omega != 1) on a matrix obtained from MatTransposeMatMult.\n\n";
 
 #include <petscksp.h>

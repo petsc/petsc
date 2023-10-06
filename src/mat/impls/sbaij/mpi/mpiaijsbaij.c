@@ -1,4 +1,3 @@
-
 #include <../src/mat/impls/sbaij/mpi/mpisbaij.h> /*I "petscmat.h" I*/
 #include <../src/mat/impls/aij/mpi/mpiaij.h>
 #include <petsc/private/matimpl.h>

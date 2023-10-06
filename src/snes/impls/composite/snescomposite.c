@@ -1,4 +1,3 @@
-
 /*
       Defines a SNES that can consist of a collection of SNESes
 */

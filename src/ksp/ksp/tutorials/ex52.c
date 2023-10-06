@@ -1,4 +1,3 @@
-
 static char help[] = "Solves a linear system in parallel with KSP. Modified from ex2.c \n\
                       Illustrate how to use external packages MUMPS, SUPERLU and STRUMPACK \n\
 Input parameters include:\n\

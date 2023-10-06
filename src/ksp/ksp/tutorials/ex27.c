@@ -1,4 +1,3 @@
-
 static char help[] = "Reads a PETSc matrix and vector from a file and solves the normal equations.\n\n";
 
 /*

@@ -1027,7 +1027,7 @@ the options database ``-pc_gasm_type`` ``[basic``, ``interpolate``,
 
 Unlike ``PCASM``, however, ``PCGASM`` allows the user to define
 subdomains that span multiple MPI ranks. The simplest way to do this is
-using a call to ``PCGASMSetTotalSubdomains(PC pc,PetscPetscInt N)`` with
+using a call to ``PCGASMSetTotalSubdomains(PC pc,PetscInt N)`` with
 the total number of subdomains ``N`` that is smaller than the MPI
 communicator ``size``. In this case ``PCGASM`` will coalesce ``size/N``
 consecutive single-rank subdomains into a single multi-rank subdomain.
@@ -1271,12 +1271,12 @@ and are using a modest number of point smoothing steps (e.g., 1-4
 iterations of SOR), then you may be fairly close to textbook multigrid
 efficiency. Although you also need to check the setup costs. This can be
 determined by running with ``-log_view`` and check that the time for the
-Galerkin coarse grid construction (``MatPtAP``) is not (much) more than
-the time spent in each solve (``KSPSolve``). If the ``MatPtAP`` time is
+Galerkin coarse grid construction (``MatPtAP()``) is not (much) more than
+the time spent in each solve (``KSPSolve()``). If the ``MatPtAP()`` time is
 too large then one can increase the coarsening rate by decreasing the
 threshold and using aggressive coarsening 
 (``-pc_gamg_aggressive_coarsening <N>``, squares the graph on the finest N
-levels). Likewise if your ``MatPtAP`` time is small and your convergence
+levels). Likewise if your ``MatPtAP()`` time is small and your convergence
 rate is not ideal then you could decrease the coarsening rate.
 
 PETSc’s AMG solver is constructed as a framework for developers to
@@ -1284,8 +1284,8 @@ easily add AMG capabilities, like a new AMG methods or an AMG component
 like a matrix triple product. Contact us directly if you are interested
 in contributing.
 
-It is possible but not recommended to use algebraic multigrid as a "standalone" solver, that is not accelerating it with a Krylov method. Use a `KSPType` of `KSPRICHARDSON`
-(or equivalently `-ksp_type richardson`) to achieve this. Using `KSPPREONLY` will not work since it only applies a single cycle of multigrid.
+It is possible but not recommended to use algebraic multigrid as a "standalone" solver, that is not accelerating it with a Krylov method. Use a ``KSPType`` of ``KSPRICHARDSON``
+(or equivalently `-ksp_type richardson`) to achieve this. Using ``KSPPREONLY`` will not work since it only applies a single cycle of multigrid.
 
 Adaptive Interpolation
 ``````````````````````
@@ -1406,9 +1406,9 @@ This indicates that the generalized eigenvector associated with that eigenvalue 
 Balancing Domain Decomposition by Constraints
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-PETSc provides the Balancing Domain Decomposition by Constraints (BDDC)
+PETSc provides the Balancing Domain Decomposition by Constraints (``PCBDDC``)
 method for preconditioning parallel finite element problems stored in
-unassembled format (see ``MATIS``). BDDC is a 2-level non-overlapping
+unassembled format (see ``MATIS``). ``PCBDDC`` is a 2-level non-overlapping
 domain decomposition method which can be easily adapted to different
 problems and discretizations by means of few user customizations. The
 application of the preconditioner to a vector consists in the static
@@ -1476,7 +1476,7 @@ elements, a user defined change of basis of the degrees of freedom can
 be beneficial for ``PCBDDC``; use ``PCBDDCSetChangeOfBasisMat()`` to
 customize the change of basis.
 
-The BDDC method is usually robust with respect to jumps in the material
+The ``PCBDDC`` method is usually robust with respect to jumps in the material
 parameters aligned with the interface; for PDEs with more than one
 material parameter you may also consider to use the so-called deluxe
 scaling, available via the command line switch
@@ -1484,7 +1484,7 @@ scaling, available via the command line switch
 ``PCISSetSubdomainScalingFactor()``,
 ``PCISSetSubdomainDiagonalScaling()`` or
 ``PCISSetUseStiffnessScaling()``. However, the convergence properties of
-the BDDC method degrades in presence of large jumps in the material
+the `PCBDDC`` method degrades in presence of large jumps in the material
 coefficients not aligned with the interface; for such cases, PETSc has
 the capability of adaptively computing the primal constraints. Adaptive
 selection of constraints could be requested by specifying a threshold
@@ -1495,13 +1495,13 @@ values corresponding to more robust preconditioners. For SPD problems in
 Raviart-Thomas or Brezzi-Douglas-Marini elements), such a threshold is a
 very accurate estimator of the condition number of the resulting
 preconditioned operator. Since the adaptive selection of constraints for
-BDDC methods is still an active topic of research, its implementation is
+`PCBDDC`` methods is still an active topic of research, its implementation is
 currently limited to SPD problems; moreover, because the technique
 requires the explicit knowledge of the local Schur complements, it needs
 the external package MUMPS.
 
 When solving problems decomposed in thousands of subdomains or more, the
-solution of the BDDC coarse problem could become a bottleneck; in order
+solution of the ``PCBDDC`` coarse problem could become a bottleneck; in order
 to overcome this issue, the user could either consider to solve the
 parallel coarse problem on a subset of the communicator associated with
 ``PCBDDC`` by using the command line switch
@@ -1897,7 +1897,7 @@ matrices can also be stored using the ``MATNEST`` format which holds
 separate assembled blocks. Each of these nested matrices is itself
 distributed in parallel. It is more efficient to use ``MATNEST`` with
 the methods described in this section because there are fewer copies and
-better formats (e.g. ``BAIJ`` or ``SBAIJ``) can be used for the
+better formats (e.g. ``MATBAIJ`` or ``MATSBAIJ``) can be used for the
 components, but it is not possible to use many other methods with
 ``MATNEST``. See :any:`sec_matnest` for more on assembling
 block matrices without depending on a specific matrix format.
@@ -2032,7 +2032,7 @@ and not out of ``Amat`` (i.e., :math:`A` itself). As discussed above in
 :any:`sec_combining-pcs`, however, it is
 possible to use ``Amat`` instead of ``Pmat`` by calling
 ``PCSetUseAmat(pc)`` or using ``-pc_use_amat`` on the command line.
-Alternatively, you can have ``PCFieldSplit`` extract the diagonal blocks
+Alternatively, you can have ``PCFIELDSPLIT`` extract the diagonal blocks
 :math:`A_{00}, A_{11}` etc. out of ``Amat`` by calling
 ``PCFieldSplitSetDiagUseAmat(pc,PETSC_TRUE)`` or supplying command-line
 argument ``-pc_fieldsplit_diag_use_amat``. Similarly,
@@ -2160,7 +2160,7 @@ The effectiveness of the Schur complement preconditioner depends on the
 availability of a good preconditioner :math:`\hat Sp` for the Schur
 complement matrix. In general, you are responsible for supplying
 :math:`\hat Sp` via
-``PCFieldSplitSchurPrecondition(pc,PC_FIELDSPLIT_SCHUR_PRE_USER,Sp)``.
+``PCFieldSplitSetSchurPre(pc,PC_FIELDSPLIT_SCHUR_PRE_USER,Sp)``.
 In the absence of a good problem-specific :math:`\hat Sp`, you can use
 some of the built-in options.
 
@@ -2437,7 +2437,7 @@ One can also create matrices with the appropriate capabilities by
 calling ``MatCreate()`` followed by ``MatSetType()`` specifying the
 desired matrix type from :any:`tab-externaloptions`. These
 matrix types inherit capabilities from their PETSc matrix parents:
-``seqaij``, ``mpiaij``, etc. As a result, the preallocation routines
+``MATSEQAIJ``, ``MATMPIAIJ``, etc. As a result, the preallocation routines
 ``MatSeqAIJSetPreallocation()``, ``MatMPIAIJSetPreallocation()``, etc.
 and any other type specific routines of the base class are supported.
 One can also call ``MatConvert()`` inplace to convert the matrix to and
@@ -2463,7 +2463,7 @@ Using PETSc's MPI parallel linear solvers from a non-MPI program
 Using PETSc's MPI linear solver server it is possible to use multiple MPI processes to solve a
 a linear system when the application code, including the matrix generation, is run on a single
 MPI rank (with or without OpenMP). The application code must be built with MPI and must call
-``PetscIntialize()`` at the very beginning of the program and end with ``PetscFinalize()``. The
+``PetscInitialize()`` at the very beginning of the program and end with ``PetscFinalize()``. The
 application code may utilize OpenMP.
 The code may create multiple matrices and `KSP` objects and call `KSPSolve()`, similarly the
 code may utilize the `SNES` nonlinear solvers, the `TS` ODE integrators, and the `TAO` optimization algorithms

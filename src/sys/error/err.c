@@ -1,4 +1,3 @@
-
 /*
       Code that allows one to set the error handlers
       Portions of this code are under:

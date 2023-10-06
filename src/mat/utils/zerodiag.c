@@ -1,4 +1,3 @@
-
 /*
     This file contains routines to reorder a matrix so that the diagonal
     elements are nonzero.

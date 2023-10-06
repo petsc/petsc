@@ -1,4 +1,3 @@
-
 /*
   Code for manipulating distributed regular arrays in parallel.
 */

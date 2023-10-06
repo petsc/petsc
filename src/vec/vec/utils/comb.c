@@ -1,4 +1,3 @@
-
 /*
       Split phase global vector reductions with support for combining the
    communication portion of several operations. Using MPI-1.1 support only

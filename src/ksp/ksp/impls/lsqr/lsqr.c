@@ -1,4 +1,3 @@
-
 /* lourens.vanzanen@shell.com contributed the standard error estimates of the solution, Jul 25, 2006 */
 /* Bas van't Hof contributed the preconditioned aspects Feb 10, 2010 */
 

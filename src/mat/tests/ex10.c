@@ -1,4 +1,3 @@
-
 static char help[] = "Tests repeated use of assembly for matrices.\n\n";
 
 #include <petscmat.h>

@@ -1,4 +1,3 @@
-
 static char help[] = "Partition a tiny grid using hierarchical partitioning.\n\n";
 
 /*

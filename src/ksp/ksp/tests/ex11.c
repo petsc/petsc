@@ -1,6 +1,6 @@
 static const char help[] = "Solves a Q1-P0 Stokes problem from Underworld.\n\
 \n\
-You can obtain a sample matrix from http://ftp.mcs.anl.gov/pub/petsc/Datafiles/matrices/underworld32.gz\n\
+You can obtain a sample matrix from https://web.cels.anl.gov/projects/petsc/download/Datafiles/matrices/underworld32.gz\n\
 and run with -f underworld32.gz\n\n";
 
 #include <petscksp.h>
@@ -279,7 +279,7 @@ int main(int argc, char **argv)
 /*TEST
 
     test:
-      args: -f ${DATAFILESPATH}/matrices/underworld32.gz -fc_ksp_view -fc_ksp_monitor_short -fc_ksp_type fgmres -fc_ksp_max_it 4000 -fc_ksp_diagonal_scale -fc_pc_type fieldsplit -fc_pc_fieldsplit_type SCHUR -fc_pc_fieldsplit_schur_fact_type UPPER -fc_fieldsplit_velocity_ksp_type cg -fc_fieldsplit_velocity_pc_type cholesky -fc_fieldsplit_velocity_pc_factor_mat_ordering_type nd -fc_fieldsplit_pressure_ksp_max_it 100 -fc_fieldsplit_pressure_ksp_constant_null_space -fc_fieldsplit_pressure_ksp_monitor_short -fc_fieldsplit_pressure_pc_type lsc -fc_fieldsplit_pressure_lsc_ksp_type cg -fc_fieldsplit_pressure_lsc_ksp_max_it 100 -fc_fieldsplit_pressure_lsc_ksp_constant_null_space -fc_fieldsplit_pressure_lsc_ksp_converged_reason -fc_fieldsplit_pressure_lsc_pc_type icc -test_fs {{0 1}separate output} -fc_pc_fieldsplit_off_diag_use_amat {{0 1}separate output} -fc_pc_fieldsplit_diag_use_amat {{0 1}separate output}
+      args: -f ${DATAFILESPATH}/matrices/underworld32.gz -fc_ksp_view -fc_ksp_monitor_short -fc_ksp_type fgmres -fc_ksp_max_it 4000 -fc_ksp_diagonal_scale -fc_pc_type fieldsplit -fc_pc_fieldsplit_type SCHUR -fc_pc_fieldsplit_schur_fact_type UPPER -fc_fieldsplit_velocity_ksp_type cg -fc_fieldsplit_velocity_pc_type cholesky -fc_fieldsplit_velocity_pc_factor_mat_ordering_type nd -fc_fieldsplit_pressure_ksp_max_it 100 -fc_fieldsplit_pressure_ksp_constant_null_space -fc_fieldsplit_pressure_ksp_monitor_short -fc_fieldsplit_pressure_pc_type lsc -fc_fieldsplit_pressure_lsc_ksp_type cg -fc_fieldsplit_pressure_lsc_ksp_max_it 100 -fc_fieldsplit_pressure_lsc_ksp_constant_null_space -fc_fieldsplit_pressure_lsc_ksp_converged_reason -fc_fieldsplit_pressure_lsc_pc_type icc -test_fs {{0 1}separate output} -fc_pc_fieldsplit_off_diag_use_amat {{0 1}separate output} -fc_pc_fieldsplit_diag_use_amat {{0 1}separate output} -fc_fieldsplit_velocity_mat_block_size 2
       requires: datafilespath double !complex !defined(PETSC_USE_64BIT_INDICES)
 
     test:

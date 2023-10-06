@@ -1,4 +1,3 @@
-
 /*
       Inverts 6 by 6 matrix using gaussian elimination with partial pivoting.
 

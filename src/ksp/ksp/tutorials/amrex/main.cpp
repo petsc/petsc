@@ -1,4 +1,3 @@
-
 #include <AMReX.H>
 #include "MyTest.H"
 

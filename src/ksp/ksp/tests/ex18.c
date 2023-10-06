@@ -1,4 +1,3 @@
-
 static char help[] = "Reads a PETSc matrix and vector from a file and solves a linear system.\n\
 Input arguments are:\n\
   -f <input_file> : file to load.  For example see $PETSC_DIR/share/petsc/datafiles/matrices\n\n";

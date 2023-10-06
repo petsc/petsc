@@ -5,7 +5,7 @@ class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
     self.download          = ['https://downloads.sourceforge.net/project/boost/boost/1.78.0/boost_1_78_0.tar.gz',
-                              'https://ftp.mcs.anl.gov/pub/petsc/externalpackages/boost_1_78_0.tar.gz']
+                              'https://web.cels.anl.gov/projects/petsc/download/externalpackages/boost_1_78_0.tar.gz']
     self.includes          = ['boost/multi_index_container.hpp']
     self.liblist           = []
     self.buildLanguages    = ['Cxx']

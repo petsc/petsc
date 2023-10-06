@@ -135,7 +135,8 @@ typedef struct _p_PetscLogHandler *PetscLogHandler;
 . `PETSCLOGHANDLERTRACE` (`PetscLogTraceBegin()`)            - traces profiling events in an output stream
 . `PETSCLOGHANDLERMPE` (`PetscLogMPEBegin()`)                - outputs parallel performance visualization using MPE
 . `PETSCLOGHANDLERPERFSTUBS` (`PetscLogPerfstubsBegin()`)    - outputs instrumentation data for PerfStubs/TAU
-- `PETSCLOGHANDLERLEGACY` (`PetscLogLegacyCallbacksBegin()`) - adapts legacy callbacks to the `PetscLogHandler` interface
+. `PETSCLOGHANDLERLEGACY` (`PetscLogLegacyCallbacksBegin()`) - adapts legacy callbacks to the `PetscLogHandler` interface
+- `PETSCLOGHANDLERNVTX`                                      - creates NVTX ranges for events that are visible in Nsight
 
 .seealso: [](ch_profiling), `PetscLogHandler`, `PetscLogHandlerSetType()`, `PetscLogHandlerGetType()`
 J*/
@@ -147,6 +148,7 @@ typedef const char *PetscLogHandlerType;
 #define PETSCLOGHANDLERMPE       "mpe"
 #define PETSCLOGHANDLERPERFSTUBS "perfstubs"
 #define PETSCLOGHANDLERLEGACY    "legacy"
+#define PETSCLOGHANDLERNVTX      "nvtx"
 
 typedef struct _n_PetscLogRegistry *PetscLogRegistry;
 

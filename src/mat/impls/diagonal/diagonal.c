@@ -1,4 +1,3 @@
-
 #include <petsc/private/matimpl.h> /*I "petscmat.h" I*/
 
 typedef struct {
@@ -7,6 +6,8 @@ typedef struct {
   Vec              inv_diag;
   PetscBool        inv_diag_valid;
   PetscObjectState diag_state, inv_diag_state;
+  PetscInt        *col;
+  PetscScalar     *val;
 } Mat_Diagonal;
 
 static PetscErrorCode MatDiagonalSetUpDiagonal(Mat A)
@@ -47,6 +48,35 @@ static PetscErrorCode MatAXPY_Diagonal(Mat Y, PetscScalar a, Mat X, MatStructure
   PetscCall(MatDiagonalSetUpDiagonal(X));
   PetscCall(VecAXPY(yctx->diag, a, xctx->diag));
   yctx->inv_diag_valid = PETSC_FALSE;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode MatGetRow_Diagonal(Mat A, PetscInt row, PetscInt *ncols, PetscInt **cols, PetscScalar **vals)
+{
+  Mat_Diagonal *mat = (Mat_Diagonal *)A->data;
+
+  PetscFunctionBegin;
+  if (ncols) *ncols = 1;
+  if (cols) {
+    if (!mat->col) PetscCall(PetscMalloc1(1, &mat->col));
+    *mat->col = row;
+    *cols     = mat->col;
+  }
+  if (vals) {
+    const PetscScalar *v;
+
+    if (!mat->val) PetscCall(PetscMalloc1(1, &mat->val));
+    PetscCall(VecGetArrayRead(mat->diag, &v));
+    *mat->val = v[row];
+    *vals     = mat->val;
+    PetscCall(VecRestoreArrayRead(mat->diag, &v));
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode MatRestoreRow_Diagonal(Mat A, PetscInt row, PetscInt *ncols, PetscInt **cols, PetscScalar **vals)
+{
+  PetscFunctionBegin;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -284,6 +314,8 @@ static PetscErrorCode MatDestroy_Diagonal(Mat mat)
   PetscFunctionBegin;
   PetscCall(VecDestroy(&ctx->diag));
   PetscCall(VecDestroy(&ctx->inv_diag));
+  PetscCall(PetscFree(ctx->col));
+  PetscCall(PetscFree(ctx->val));
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatDiagonalGetDiagonal_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatDiagonalRestoreDiagonal_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatDiagonalGetInverseDiagonal_C", NULL));
@@ -503,6 +535,8 @@ PetscErrorCode MatCreateDiagonal(Vec diag, Mat *J)
   PetscCall(PetscFree((*J)->defaultvectype));
   PetscCall(PetscStrallocpy(type, &(*J)->defaultvectype));
   PetscCall(MatSetUp(*J));
+  ctx->col = NULL;
+  ctx->val = NULL;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -528,6 +562,8 @@ PETSC_INTERN PetscErrorCode MatCreate_Diagonal(Mat A)
   A->symmetric                   = PETSC_BOOL3_TRUE;
   if (!PetscDefined(USE_COMPLEX)) A->hermitian = PETSC_BOOL3_TRUE;
 
+  A->ops->getrow           = MatGetRow_Diagonal;
+  A->ops->restorerow       = MatRestoreRow_Diagonal;
   A->ops->mult             = MatMult_Diagonal;
   A->ops->multadd          = MatMultAdd_Diagonal;
   A->ops->multtranspose    = MatMult_Diagonal;

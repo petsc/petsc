@@ -1,4 +1,3 @@
-
 static char help[] = "Tests shared memory subcommunicators\n\n";
 #include <petscsys.h>
 #include <petscvec.h>

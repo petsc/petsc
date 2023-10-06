@@ -1,4 +1,3 @@
-
 static char help[] = "Partition tiny grid.\n\n";
 
 /*

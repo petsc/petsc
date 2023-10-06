@@ -3738,7 +3738,7 @@ static PetscErrorCode TSResizeTransferVecs(TS ts, PetscInt cnt, Vec vecsin[], Ve
 
   Input Parameters:
 + ts   - The `TS` context obtained from `TSCreate()`
-. name - A string identifiying the vector
+. name - A string identifying the vector
 - vec  - The vector
 
   Level: developer
@@ -3766,7 +3766,7 @@ PetscErrorCode TSResizeRegisterVec(TS ts, const char *name, Vec vec)
 
   Input Parameters:
 + ts   - The `TS` context obtained from `TSCreate()`
-. name - A string identifiying the vector
+. name - A string identifying the vector
 - vec  - The vector
 
   Level: developer
@@ -4538,7 +4538,7 @@ PetscErrorCode TSComputeIFunctionLinear(TS ts, PetscReal t, Vec U, Vec Udot, Vec
 }
 
 /*@C
-  TSComputeIJacobianConstant - Reuses a time-independent for a semi-implicit DAE or ODE
+  TSComputeIJacobianConstant - Reuses the matrix previously computed with the provided `TSIJacobian()` for a semi-implicit DAE or ODE
 
   Collective
 

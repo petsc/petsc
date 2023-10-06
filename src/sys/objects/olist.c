@@ -1,4 +1,3 @@
-
 /*
          Provides a general mechanism to maintain a linked list of PETSc objects.
      This is used to allow PETSc objects to carry a list of "composed" objects

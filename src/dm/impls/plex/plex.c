@@ -9064,7 +9064,7 @@ PetscErrorCode DMPlexCheckGeometry(DM dm)
 
   For the complete list of DMPlexCheck* functions, see `DMSetFromOptions()`.
 
-  Extra roots can come from priodic cuts, where additional points appear on the boundary
+  Extra roots can come from periodic cuts, where additional points appear on the boundary
 
 .seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMGetPointSF()`, `DMSetFromOptions()`
 @*/

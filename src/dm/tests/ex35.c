@@ -1,4 +1,3 @@
-
 static char help[] = "MatLoad test for loading matrices that are created by DMCreateMatrix() and\n\
                       stored in binary via MatView_MPI_DA.MatView_MPI_DA stores the matrix\n\
                       in natural ordering. Hence MatLoad() has to read the matrix first in\n\

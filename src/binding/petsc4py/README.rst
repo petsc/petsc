@@ -27,6 +27,4 @@ Dependencies
 Documentation
 -------------
 
-* https://petsc4py.readthedocs.org/, This does not contain the epydoc-generated API reference.
-
-* https://www.mcs.anl.gov/petsc/petsc4py-current/docs/, This is for the last release, not the in-development version.
+* https://petsc.org/release/petsc4py/petsc4py/

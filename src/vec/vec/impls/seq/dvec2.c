@@ -1,4 +1,3 @@
-
 /*
    Defines some vector operation functions that are shared by
    sequential and parallel vectors.
@@ -90,6 +89,10 @@ PetscErrorCode VecMDot_Seq(Vec xin, PetscInt nv, const Vec yin[], PetscScalar *z
   const Vec         *yy = (Vec *)yin;
 
   PetscFunctionBegin;
+  if (n == 0) {
+    PetscCall(PetscArrayzero(z, nv));
+    PetscFunctionReturn(PETSC_SUCCESS);
+  }
   PetscCall(VecGetArrayRead(xin, &xbase));
   x = xbase;
   switch (nv_rem) {

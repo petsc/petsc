@@ -1,4 +1,3 @@
-
 /*
    Code for manipulating distributed regular 3d arrays in parallel.
    File created by Peter Mell  7/14/95

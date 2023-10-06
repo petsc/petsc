@@ -1,4 +1,3 @@
-
 #include <petsc/private/petscimpl.h> /*I "petscsys.h" I*/
 
 /* Logging support */

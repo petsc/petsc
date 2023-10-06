@@ -1,4 +1,3 @@
-
 static char help[] = "Test leaf sorting in PetscSFSetGraph()\n\n";
 
 #include <petscsf.h>

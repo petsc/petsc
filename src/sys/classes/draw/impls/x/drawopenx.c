@@ -1,4 +1,3 @@
-
 /*
     Defines the operations for the X PetscDraw implementation.
 */

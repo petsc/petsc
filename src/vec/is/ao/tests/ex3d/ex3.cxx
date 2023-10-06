@@ -1,4 +1,3 @@
-
 static char help[] = "AO test contributed by Sebastian Steiger <steiger@purdue.edu>, March 2011\n\n";
 
 /*

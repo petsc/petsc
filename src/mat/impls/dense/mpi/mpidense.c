@@ -1,4 +1,3 @@
-
 /*
    Basic functions for basic parallel dense matrices.
    Portions of this code are under:
@@ -1339,9 +1338,10 @@ static PetscErrorCode MatConvert_MPIDense_MPIAIJ(Mat A, MatType newtype, MatReus
 #if defined(PETSC_HAVE_ELEMENTAL)
 PETSC_INTERN PetscErrorCode MatConvert_MPIDense_Elemental(Mat A, MatType newtype, MatReuse reuse, Mat *newmat)
 {
-  Mat          mat_elemental;
-  PetscScalar *v;
-  PetscInt     m = A->rmap->n, N = A->cmap->N, rstart = A->rmap->rstart, i, *rows, *cols;
+  Mat_MPIDense *a = (Mat_MPIDense *)A->data;
+  Mat           mat_elemental;
+  PetscScalar  *v;
+  PetscInt      m = A->rmap->n, N = A->cmap->N, rstart = A->rmap->rstart, i, *rows, *cols, lda;
 
   PetscFunctionBegin;
   if (reuse == MAT_REUSE_MATRIX) {
@@ -1361,7 +1361,11 @@ PETSC_INTERN PetscErrorCode MatConvert_MPIDense_Elemental(Mat A, MatType newtype
 
   /* PETSc-Elemental interface uses axpy for setting off-processor entries, only ADD_VALUES is allowed */
   PetscCall(MatDenseGetArray(A, &v));
-  PetscCall(MatSetValues(mat_elemental, m, rows, N, cols, v, ADD_VALUES));
+  PetscCall(MatDenseGetLDA(a->A, &lda));
+  if (lda == m) PetscCall(MatSetValues(mat_elemental, m, rows, N, cols, v, ADD_VALUES));
+  else {
+    for (i = 0; i < N; i++) PetscCall(MatSetValues(mat_elemental, m, rows, 1, &i, v + lda * i, ADD_VALUES));
+  }
   PetscCall(MatAssemblyBegin(mat_elemental, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(mat_elemental, MAT_FINAL_ASSEMBLY));
   PetscCall(MatDenseRestoreArray(A, &v));

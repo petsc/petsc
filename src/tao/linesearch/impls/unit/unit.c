@@ -1,4 +1,3 @@
-
 #include <petsc/private/taolinesearchimpl.h>
 
 static PetscErrorCode TaoLineSearchDestroy_Unit(TaoLineSearch ls)

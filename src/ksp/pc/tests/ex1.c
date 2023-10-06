@@ -1,4 +1,3 @@
-
 static char help[] = "Tests the creation of a PC context.\n\n";
 
 #include <petscpc.h>

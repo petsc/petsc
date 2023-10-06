@@ -1,4 +1,3 @@
-
 #include <../src/snes/impls/ntrdc/ntrdcimpl.h> /*I   "petscsnes.h"   I*/
 
 typedef struct {

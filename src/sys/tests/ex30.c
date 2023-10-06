@@ -1,4 +1,3 @@
-
 static char help[] = "Tests several PetscLogHandler implementations.\n\n";
 
 #include <petscsys.h>
@@ -226,5 +225,11 @@ int main(int argc, char **argv)
     args: -log_trace trace.log
     temporaries: trace.log
     filter: cat trace.log.0
+
+  # test -log_nvtx
+  test:
+    suffix: 10
+    requires: cuda defined(PETSC_USE_LOG)
+    args: -device_enable eager -log_nvtx -info :loghandler
 
  TEST*/

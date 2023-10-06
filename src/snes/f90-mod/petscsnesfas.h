@@ -7,4 +7,3 @@
 !
       PetscEnum, parameter :: SNES_FAS_MULTIPLICATIVE = 0
       PetscEnum, parameter :: SNES_FAS_ADDITIVE = 1
-

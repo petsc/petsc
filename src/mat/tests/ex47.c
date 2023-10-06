@@ -1,4 +1,3 @@
-
 static char help[] = "Tests the various routines in MatBAIJ format.\n\
 Input arguments are:\n\
   -f <input_file> : file to load.  For example see $PETSC_DIR/share/petsc/datafiles/matrices\n\n";

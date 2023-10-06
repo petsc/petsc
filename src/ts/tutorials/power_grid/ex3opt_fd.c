@@ -1,4 +1,3 @@
-
 static char help[] = "Finds optimal parameter P_m for the generator system while maintaining generator stability.\n";
 
 /*F

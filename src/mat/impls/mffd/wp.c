@@ -1,4 +1,3 @@
-
 /*MC
      MATMFFD_WP - Implements an approach for computing the differencing parameter
         h used with the finite difference based matrix-free Jacobian.

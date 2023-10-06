@@ -1,4 +1,3 @@
-
 static char help[] = "Demonstrates Pattern Formation with Reaction-Diffusion Equations.\n";
 
 /*F

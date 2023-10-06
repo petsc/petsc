@@ -1,4 +1,3 @@
-
 /*
   Defines the basic matrix operations for the SELL matrix storage format.
 */

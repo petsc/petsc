@@ -1,4 +1,3 @@
-
 static char help[] = "Tests ISComplement().\n\n";
 
 #include <petscis.h>

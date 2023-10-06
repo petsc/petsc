@@ -1,4 +1,3 @@
-
 static char help[] = "Solves the motion of spring.\n\
 Input parameters include:\n";
 

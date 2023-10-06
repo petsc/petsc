@@ -1,4 +1,3 @@
-
 static char help[] = "Tests external direct solvers. Simplified from ex125.c\n\
 Example: mpiexec -n <np> ./ex130 -f <matrix binary file> -mat_solver_type 1 -mat_superlu_equil \n\n";
 

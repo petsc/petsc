@@ -30,7 +30,7 @@
   Level: developer
 
   Notes:
-  Ussers do not directly employ this routine
+  Users do not directly employ this routine
 
   Use `PetscPushErrorHandler()` to set the desired error handler.  The
   currently available PETSc error handlers include `PetscTraceBackErrorHandler()`,

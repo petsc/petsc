@@ -1,4 +1,3 @@
-
 #include <petscviewer.h>
 #include <petsc/private/drawimpl.h> /*I   "petscdraw.h"  I*/
 PetscClassId PETSC_DRAWLG_CLASSID = 0;

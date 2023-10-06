@@ -1,4 +1,3 @@
-
 static char help[] = "Tests relaxation for dense matrices.\n\n";
 
 #include <petscmat.h>

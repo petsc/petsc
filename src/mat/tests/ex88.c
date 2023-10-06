@@ -1,4 +1,3 @@
-
 static char help[] = "Tests MatShift(), MatScale(), and MatDiagonalScale() for SHELL and NEST matrices\n\n";
 
 #include <petscmat.h>

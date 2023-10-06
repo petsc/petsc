@@ -1,4 +1,3 @@
-
 #include <../src/ksp/ksp/impls/cg/nash/nashimpl.h> /*I "petscksp.h" I*/
 
 #define NASH_PRECONDITIONED_DIRECTION   0

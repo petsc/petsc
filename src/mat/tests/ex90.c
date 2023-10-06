@@ -1,4 +1,3 @@
-
 static char help[] = "Tests MatPtAP() \n";
 
 #include <petscmat.h>

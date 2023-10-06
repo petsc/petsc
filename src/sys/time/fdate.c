@@ -1,4 +1,3 @@
-
 #include <petscsys.h>
 #if defined(PETSC_HAVE_SYS_TIME_H)
   #include <sys/time.h>

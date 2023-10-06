@@ -1,4 +1,3 @@
-
 #include <petsc/private/petscimpl.h>
 #include <petsc/private/loghandlerimpl.h>
 
@@ -18,6 +17,9 @@ PETSC_INTERN PetscErrorCode PetscLogHandlerCreate_MPE(PetscLogHandler);
 PETSC_INTERN PetscErrorCode PetscLogHandlerCreate_Perfstubs(PetscLogHandler);
 #endif
 PETSC_INTERN PetscErrorCode PetscLogHandlerCreate_Legacy(PetscLogHandler);
+#if PetscDefined(HAVE_CUDA)
+PETSC_INTERN PetscErrorCode PetscLogHandlerCreate_NVTX(PetscLogHandler);
+#endif
 
 static PetscErrorCode PetscLogHandlerRegisterAll(void)
 {
@@ -34,6 +36,9 @@ static PetscErrorCode PetscLogHandlerRegisterAll(void)
   PetscCall(PetscLogHandlerRegister(PETSCLOGHANDLERPERFSTUBS, PetscLogHandlerCreate_Perfstubs));
 #endif
   PetscCall(PetscLogHandlerRegister(PETSCLOGHANDLERLEGACY, PetscLogHandlerCreate_Legacy));
+#if PetscDefined(HAVE_CUDA)
+  PetscCall(PetscLogHandlerRegister(PETSCLOGHANDLERNVTX, PetscLogHandlerCreate_NVTX));
+#endif
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

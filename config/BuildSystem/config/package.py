@@ -345,7 +345,7 @@ class Package(config.base.Configure):
     - flag_to_remove - the flag to remove
     - pair_prefix    - (Optional) if not None, indicates that FLAG_TO_REMOVE is in a pair, and
                        is prefixed by str(pair_prefix). For example, pair_prefix='-Xcompiler' indicates
-                       that the flag is specificied as <COMPILER_NAME> -Xcompiler FLAG_TO_REMOVE
+                       that the flag is specified as <COMPILER_NAME> -Xcompiler FLAG_TO_REMOVE
 
     Return
     ------

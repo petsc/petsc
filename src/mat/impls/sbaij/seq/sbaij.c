@@ -1,4 +1,3 @@
-
 /*
     Defines the basic matrix operations for the SBAIJ (compressed row)
   matrix storage format.
@@ -319,7 +318,6 @@ PetscErrorCode MatGetRow_SeqSBAIJ(Mat A, PetscInt row, PetscInt *nz, PetscInt **
 PetscErrorCode MatRestoreRow_SeqSBAIJ(Mat A, PetscInt row, PetscInt *nz, PetscInt **idx, PetscScalar **v)
 {
   PetscFunctionBegin;
-  if (nz) *nz = 0;
   if (idx) PetscCall(PetscFree(*idx));
   if (v) PetscCall(PetscFree(*v));
   PetscFunctionReturn(PETSC_SUCCESS);

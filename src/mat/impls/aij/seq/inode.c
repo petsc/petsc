@@ -1,4 +1,3 @@
-
 /*
   This file provides high performance routines for the Inode format (compressed sparse row)
   by taking advantage of rows with identical nonzero structure (I-nodes).
@@ -4529,7 +4528,7 @@ PetscErrorCode MatInodeAdjustForInodes_SeqAIJ_Inode(Mat A, IS *rperm, IS *cperm)
   PetscCall(ISGetIndices(ris, &ridx));
   PetscCall(ISGetIndices(cis, &cidx));
 
-  /* Form the inode structure for the rows of permuted matric using inv perm*/
+  /* Form the inode structure for the rows of permuted matrix using inv perm*/
   for (i = 0, tns[0] = 0; i < nslim_row; ++i) tns[i + 1] = tns[i] + ns_row[i];
 
   /* Construct the permutations for rows*/

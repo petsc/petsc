@@ -1,4 +1,3 @@
-
 static char help[] = "Tests repeated VecDotBegin()/VecDotEnd().\n\n";
 
 #include <petscvec.h>

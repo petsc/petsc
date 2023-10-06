@@ -1,4 +1,3 @@
-
 #include <petsc/private/viewerimpl.h> /*I     "petscsys.h"   I*/
 
 #define QUEUESTRINGSIZE 1024

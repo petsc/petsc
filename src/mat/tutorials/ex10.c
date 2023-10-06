@@ -1,4 +1,3 @@
-
 static char help[] = "Reads a PETSc matrix and computes the 2 norm of the columns\n\n";
 
 /*

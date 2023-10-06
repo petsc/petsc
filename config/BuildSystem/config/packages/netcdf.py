@@ -8,7 +8,7 @@ class Configure(config.package.GNUPackage):
     self.versionname      = 'NC_VERSION_MAJOR.NC_VERSION_MINOR.NC_VERSION_PATCH'
     self.versioninclude   = 'netcdf_meta.h'
     self.download         = ['https://github.com/Unidata/netcdf-c/archive/v%s.tar.gz' % self.version,
-                             'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/netcdf-%s.tar.gz' % self.version,]
+                             'https://web.cels.anl.gov/projects/petsc/download/externalpackages/netcdf-%s.tar.gz' % self.version,]
     self.functions        = ['nccreate']
     self.includes         = ['netcdf.h']
     self.liblist          = [['libnetcdf.a']]

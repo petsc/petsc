@@ -1,4 +1,3 @@
-
 #include <../src/vec/vec/impls/nest/vecnestimpl.h> /*I  "petscvec.h"   I*/
 
 /* check all blocks are filled */

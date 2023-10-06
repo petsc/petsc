@@ -1,4 +1,3 @@
-
 static char help[] = "Tests DMDA with variable multiple degrees of freedom per node.\n\n";
 
 /*

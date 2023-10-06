@@ -1,4 +1,3 @@
-
 static char help[] = "Tests MATLMVM classes.\n\n";
 
 #include <petscksp.h>

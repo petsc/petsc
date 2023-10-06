@@ -1,4 +1,3 @@
-
 #include <../src/ksp/ksp/impls/qcg/qcgimpl.h> /*I "petscksp.h" I*/
 
 /*
@@ -126,7 +125,7 @@ PetscErrorCode KSPQCGGetQuadratic(KSP ksp, PetscReal *quadratic)
 static PetscErrorCode KSPSolve_QCG(KSP ksp)
 {
   /*
-   Correpondence with documentation above:
+   Correspondence with documentation above:
       B = g = gradient,
       X = s = step
    Note:  This is not coded correctly for complex arithmetic!

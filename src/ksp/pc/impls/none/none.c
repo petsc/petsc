@@ -1,4 +1,3 @@
-
 /*
     Identity preconditioner, simply copies vector x to y.
 */

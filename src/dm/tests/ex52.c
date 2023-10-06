@@ -1,4 +1,3 @@
-
 static char help[] = "Tests periodic boundary conditions for DMDA1d with periodic boundary conditions.\n\n";
 
 #include <petscdmda.h>

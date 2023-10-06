@@ -1,4 +1,3 @@
-
 static char help[] = "Tests MatReorderForNonzeroDiagonal().\n\n";
 
 #include <petscmat.h>

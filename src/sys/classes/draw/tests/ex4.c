@@ -1,4 +1,3 @@
-
 static char help[] = "Demonstrates use of PetscDrawZoom()\n";
 
 #if defined(PETSC_APPLE_FRAMEWORK)

@@ -1,4 +1,3 @@
-
 static char help[] = "Reads in a binary file, extracts a submatrix from it, and writes to another binary file.\n\
 Options:\n\
   -fin  <mat>  : input matrix file\n\

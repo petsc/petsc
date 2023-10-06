@@ -1,4 +1,3 @@
-
 #include <petscviewer.h>
 #include <petsc/private/logimpl.h> /*I "petscsys.h" I*/
 #include <petsc/private/loghandlerimpl.h>
@@ -658,7 +657,7 @@ PetscErrorCode PetscLogHandlerDump(PetscLogHandler handler, const char sname[])
 }
 
 /*@
-  PetscLogHandlerStageSetVisible - Set the visiblity of logging stage in `PetscLogHandlerView()` for a log handler
+  PetscLogHandlerStageSetVisible - Set the visibility of logging stage in `PetscLogHandlerView()` for a log handler
 
   Not collective
 
@@ -685,7 +684,7 @@ PetscErrorCode PetscLogHandlerStageSetVisible(PetscLogHandler handler, PetscLogS
 }
 
 /*@
-  PetscLogHandlerStageGetVisible - Get the visiblity of logging stage in `PetscLogHandlerView()` for a log handler
+  PetscLogHandlerStageGetVisible - Get the visibility of logging stage in `PetscLogHandlerView()` for a log handler
 
   Not collective
 

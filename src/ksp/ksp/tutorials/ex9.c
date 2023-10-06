@@ -1,4 +1,3 @@
-
 static char help[] = "The solution of 2 different linear systems with different linear solvers.\n\
 Also, this example illustrates the repeated\n\
 solution of linear systems, while reusing matrix, vector, and solver data\n\

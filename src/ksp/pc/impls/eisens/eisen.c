@@ -1,4 +1,3 @@
-
 /*
    Defines a  Eisenstat trick SSOR  preconditioner. This uses about
  %50 of the usual amount of floating point ops used for SSOR + Krylov

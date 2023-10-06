@@ -1,4 +1,3 @@
-
 static char help[] = "Tests MatOption MAT_FORCE_DIAGONAL_ENTRIES.\n\n";
 
 #include <petscmat.h>

@@ -1,4 +1,3 @@
-
 #include <petsc/private/petscimpl.h> /*I  "petscsys.h"   I*/
 
 #if defined(PETSC_USE_DEBUG) && !defined(PETSC_HAVE_THREADSAFETY)

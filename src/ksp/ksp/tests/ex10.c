@@ -1,4 +1,3 @@
-
 static char help[] = "Linear elastiticty with dimensions using 20 node serendipity elements.\n\
 This also demonstrates use of  block\n\
 diagonal data structure.  Input arguments are:\n\

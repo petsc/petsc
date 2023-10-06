@@ -1,4 +1,3 @@
-
 /*
     Factorization code for SBAIJ format.
 */

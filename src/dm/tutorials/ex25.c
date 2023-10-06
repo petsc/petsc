@@ -1,4 +1,3 @@
-
 static char help[] = "Takes a patch of a large DMDA vector to one process.\n\n";
 
 #include <petscdm.h>
