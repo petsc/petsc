@@ -1,4 +1,3 @@
-
 static char help[] = "Tests MatIncreaseOverlap() and MatCreateSubmatrices() for the parallel case.\n\
 This example is similar to ex40.c; here the index sets used are random.\n\
 Input arguments are:\n\

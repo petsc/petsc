@@ -1,4 +1,3 @@
-
 static char help[] = "Tests MatShellTestMult()\n\n";
 
 #include <petscmat.h>

@@ -1967,7 +1967,7 @@ PETSC_INTERN PetscErrorCode MatAXPY_Dense_Nest(Mat Y, PetscScalar a, Mat X)
 static PetscErrorCode MatConvert_Nest_AIJ(Mat A, MatType newtype, MatReuse reuse, Mat *newmat)
 {
   Mat_Nest   *nest = (Mat_Nest *)A->data;
-  PetscInt    m, n, M, N, i, j, k, *dnnz, *onnz, rstart, cstart, cend;
+  PetscInt    m, n, M, N, i, j, k, *dnnz, *onnz = NULL, rstart, cstart, cend;
   PetscMPIInt size;
   Mat         C;
 
@@ -2049,10 +2049,12 @@ static PetscErrorCode MatConvert_Nest_AIJ(Mat A, MatType newtype, MatReuse reuse
     PetscCall(MatSetSizes(C, m, n, M, N));
   }
   PetscCall(PetscMalloc1(2 * m, &dnnz));
-  onnz = dnnz + m;
-  for (k = 0; k < m; k++) {
-    dnnz[k] = 0;
-    onnz[k] = 0;
+  if (m) {
+    onnz = dnnz + m;
+    for (k = 0; k < m; k++) {
+      dnnz[k] = 0;
+      onnz[k] = 0;
+    }
   }
   for (j = 0; j < nest->nc; ++j) {
     IS              bNis;

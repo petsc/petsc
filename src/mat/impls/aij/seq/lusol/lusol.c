@@ -1,4 +1,3 @@
-
 /*
         Provides an interface to the LUSOL package of ....
 

@@ -6,7 +6,7 @@ class Configure(config.package.Package):
     self.version      = '1.2.13'
     self.versionname  = 'ZLIB_VERSION'
     self.download     = ['http://www.zlib.net/zlib-'+self.version+'.tar.gz',
-                         'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/zlib-'+self.version+'.tar.gz']
+                         'https://web.cels.anl.gov/projects/petsc/download/externalpackages/zlib-'+self.version+'.tar.gz']
     self.functions    = ['compress', 'uncompress']
     self.includes     = ['zlib.h']
     self.liblist      = [['libz.a'],['zlib.lib']]

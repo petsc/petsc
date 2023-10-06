@@ -91,7 +91,7 @@ typedef struct {
 } DMSubnetwork;
 
 /*
-  Stucture storing default viewing options for the DMNetwork
+  Structure storing default viewing options for the DMNetwork
 */
 typedef struct {
   PetscBool showallranks;   /* Shows each rank individually as well */

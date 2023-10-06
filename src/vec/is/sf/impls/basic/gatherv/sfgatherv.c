@@ -1,4 +1,3 @@
-
 #include <../src/vec/is/sf/impls/basic/gatherv/sfgatherv.h>
 
 /* Reuse the type. The difference is some fields (displs, recvcounts) are only significant

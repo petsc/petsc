@@ -352,10 +352,9 @@ static PetscErrorCode MatGetRow_Htool(Mat A, PetscInt row, PetscInt *nz, PetscIn
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MatRestoreRow_Htool(Mat, PetscInt, PetscInt *nz, PetscInt **idx, PetscScalar **v)
+static PetscErrorCode MatRestoreRow_Htool(Mat, PetscInt, PetscInt *, PetscInt **idx, PetscScalar **v)
 {
   PetscFunctionBegin;
-  if (nz) *nz = 0;
   if (idx) PetscCall(PetscFree(*idx));
   if (v) PetscCall(PetscFree(*v));
   PetscFunctionReturn(PETSC_SUCCESS);

@@ -1,4 +1,3 @@
-
 static char help[] = "Basic equation for generator stability analysis.\n";
 
 /*F
@@ -282,6 +281,8 @@ int main(int argc, char **argv)
   PetscCall(TSSetRHSFunction(quadts, NULL, (TSRHSFunction)CostIntegrand, &ctx));
   PetscCall(TSSetRHSJacobian(quadts, DRDU, DRDU, (TSRHSJacobian)DRDUJacobianTranspose, &ctx));
   PetscCall(TSSetRHSJacobianP(quadts, DRDP, (TSRHSJacobianP)DRDPJacobianTranspose, &ctx));
+  PetscCall(TSSetCostGradients(ts, 1, lambda, mu));
+  PetscCall(TSSetRHSJacobianP(ts, Jacp, RHSJacobianP, &ctx));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set initial conditions
@@ -304,7 +305,6 @@ int main(int argc, char **argv)
   PetscCall(VecGetArray(mu[0], &x_ptr));
   x_ptr[0] = -1.0;
   PetscCall(VecRestoreArray(mu[0], &x_ptr));
-  PetscCall(TSSetCostGradients(ts, 1, lambda, mu));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set solver options
@@ -347,9 +347,6 @@ int main(int argc, char **argv)
   PetscCall(VecGetArray(mu[0], &x_ptr));
   x_ptr[0] = -1.0;
   PetscCall(VecRestoreArray(mu[0], &x_ptr));
-
-  /*   Set RHS JacobianP */
-  PetscCall(TSSetRHSJacobianP(ts, Jacp, RHSJacobianP, &ctx));
 
   PetscCall(TSAdjointSolve(ts));
 

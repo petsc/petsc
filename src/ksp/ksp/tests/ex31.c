@@ -1,4 +1,3 @@
-
 static char help[] = "Test partition. Reads a PETSc matrix and vector from a file and solves a linear system.\n\
 This   Input parameters include\n\
   -f <input_file> : file to load \n\

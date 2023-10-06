@@ -1,4 +1,3 @@
-
 /*
    Support for the parallel dense matrix vector multiply
 */

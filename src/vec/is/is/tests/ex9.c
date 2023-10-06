@@ -1,4 +1,3 @@
-
 static char help[] = "Test ISLocalToGlobalMappingCreateSF(), PetscSFSetGraphLayout(), PetscSFGetGraphLayout().\n\n";
 
 #include <petscis.h>

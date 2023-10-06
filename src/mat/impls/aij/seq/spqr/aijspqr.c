@@ -1,4 +1,3 @@
-
 #include <petscsys.h>
 #include <../src/mat/impls/aij/seq/aij.h>
 #include <../src/mat/impls/sbaij/seq/cholmod/cholmodimpl.h>

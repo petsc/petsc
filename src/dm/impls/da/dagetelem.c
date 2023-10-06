@@ -1,4 +1,3 @@
-
 #include <petsc/private/dmdaimpl.h> /*I  "petscdmda.h"   I*/
 
 static PetscErrorCode DMDAGetElements_1D(DM dm, PetscInt *nel, PetscInt *nen, const PetscInt *e[])

@@ -1,4 +1,3 @@
-
 /*
    This is where the abstract matrix operations are defined that are
   used for finite difference computations of Jacobians using coloring.

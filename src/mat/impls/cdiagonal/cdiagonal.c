@@ -1,4 +1,3 @@
-
 #include <petsc/private/matimpl.h> /*I "petscmat.h" I*/
 
 typedef struct {
@@ -45,7 +44,6 @@ static PetscErrorCode MatGetRow_ConstantDiagonal(Mat A, PetscInt row, PetscInt *
 static PetscErrorCode MatRestoreRow_ConstantDiagonal(Mat A, PetscInt row, PetscInt *ncols, PetscInt *cols[], PetscScalar *vals[])
 {
   PetscFunctionBegin;
-  if (ncols) *ncols = 0;
   if (cols) PetscCall(PetscFree(*cols));
   if (vals) PetscCall(PetscFree(*vals));
   PetscFunctionReturn(PETSC_SUCCESS);

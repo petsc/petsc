@@ -1,4 +1,3 @@
-
 static char help[] = "Tests MatILUFactorSymbolic() on matrix with missing diagonal.\n\n";
 
 #include <petscmat.h>

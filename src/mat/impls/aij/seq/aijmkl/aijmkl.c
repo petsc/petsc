@@ -1,4 +1,3 @@
-
 /*
   Defines basic operations for the MATSEQAIJMKL matrix class.
   This class is derived from the MATSEQAIJ class and retains the

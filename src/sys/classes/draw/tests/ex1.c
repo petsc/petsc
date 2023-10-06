@@ -1,4 +1,3 @@
-
 static char help[] = "Demonstrates opening and drawing in a window\n";
 
 #include <petscsys.h>

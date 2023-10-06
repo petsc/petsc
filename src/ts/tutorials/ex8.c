@@ -1,4 +1,3 @@
-
 static char help[] = "Nonlinear DAE benchmark problems.\n";
 
 /*

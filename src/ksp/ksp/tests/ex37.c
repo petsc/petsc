@@ -1,4 +1,3 @@
-
 static char help[] = "Test MatGetMultiProcBlock() and MatCreateRedundantMatrix() \n\
 Reads a PETSc matrix and vector from a file and solves a linear system.\n\n";
 /*

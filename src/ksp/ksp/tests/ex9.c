@@ -1,4 +1,3 @@
-
 static char help[] = "Tests repeated setups and solves of PCFIELDSPLIT.\n\n";
 #include <petscksp.h>
 

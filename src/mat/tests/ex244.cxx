@@ -1,4 +1,3 @@
-
 static char help[] = "Tests MatConvert(), MatLoad() for MATSCALAPACK interface.\n\n";
 /*
  Example:

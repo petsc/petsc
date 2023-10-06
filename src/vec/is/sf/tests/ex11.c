@@ -1,4 +1,3 @@
-
 static char help[] = "Scatters between parallel vectors. \n\
 uses block index sets\n\n";
 

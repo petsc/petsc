@@ -1,4 +1,3 @@
-
 /*
 Inhomogeneous Laplacian in 3-D. Modeled by the partial differential equation
 

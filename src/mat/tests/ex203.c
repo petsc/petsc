@@ -1,4 +1,3 @@
-
 static char help[] = "Tests incorrect use of MatDiagonalSet() for SHELL matrices\n\n";
 
 #include <petscmat.h>

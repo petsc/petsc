@@ -1,4 +1,3 @@
-
 static char help[] = "Tests MatConvert() from SeqDense to SeqAIJ \n\n";
 
 #include <petscmat.h>

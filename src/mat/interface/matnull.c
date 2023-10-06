@@ -1,4 +1,3 @@
-
 /*
     Routines to project vectors out of null spaces.
 */

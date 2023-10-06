@@ -1,4 +1,3 @@
-
 static char help[] = "Tests options file parsing.\n\n";
 
 #include <petscsys.h>

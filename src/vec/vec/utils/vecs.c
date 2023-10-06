@@ -1,4 +1,3 @@
-
 #include <petscvec.h>
 
 PetscErrorCode VecsDestroy(Vecs x)

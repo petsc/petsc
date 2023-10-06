@@ -1,4 +1,3 @@
-
 /*
      Additive Multigrid V Cycle routine
 */

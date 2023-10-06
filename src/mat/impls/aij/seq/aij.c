@@ -2257,9 +2257,6 @@ PetscErrorCode MatGetRow_SeqAIJ(Mat A, PetscInt row, PetscInt *nz, PetscInt **id
 PetscErrorCode MatRestoreRow_SeqAIJ(Mat A, PetscInt row, PetscInt *nz, PetscInt **idx, PetscScalar **v)
 {
   PetscFunctionBegin;
-  if (nz) *nz = 0;
-  if (idx) *idx = NULL;
-  if (v) *v = NULL;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -2588,7 +2585,7 @@ PetscErrorCode MatCreateSubMatrix_SeqAIJ(Mat A, IS isrow, IS iscol, PetscInt csi
       PetscCall(MatSetSizes(C, nrows, ncols, PETSC_DETERMINE, PETSC_DETERMINE));
       PetscCall(ISGetBlockSize(isrow, &rbs));
       PetscCall(ISGetBlockSize(iscol, &cbs));
-      PetscCall(MatSetBlockSizes(C, rbs, cbs));
+      if (rbs > 1 || cbs > 1) PetscCall(MatSetBlockSizes(C, rbs, cbs));
       PetscCall(MatSetType(C, ((PetscObject)A)->type_name));
       PetscCall(MatSeqAIJSetPreallocation_SeqAIJ(C, 0, lens));
     }

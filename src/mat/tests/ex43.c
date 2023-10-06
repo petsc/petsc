@@ -1,4 +1,3 @@
-
 static char help[] = "Saves a dense matrix in a dense format (binary).\n\n";
 
 #include <petscmat.h>

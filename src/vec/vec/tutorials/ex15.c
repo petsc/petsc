@@ -1,4 +1,3 @@
-
 static char help[] = "Tests Mathematica I/O of vectors and illustrates the use of user-defined event logging.\n\n";
 
 #include <petscvec.h>

@@ -6,7 +6,7 @@ class Configure(config.package.GNUPackage):
     self.version          = '2.5.0'
     self.maxversion       = '2.5.100000'
     self.versionname      = 'SUNDIALS_PACKAGE_VERSION'
-    self.download         = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/sundials-'+self.version+'p1.tar.gz']
+    self.download         = ['https://web.cels.anl.gov/projects/petsc/download/externalpackages/sundials-'+self.version+'p1.tar.gz']
     self.downloaddirnames = ['sundials']
     self.functions        = ['CVSpgmr','CVDense']
     self.includes         = ['sundials/sundials_nvector.h']

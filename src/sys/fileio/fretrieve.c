@@ -1,4 +1,3 @@
-
 /*
       Code for opening and closing files.
 */

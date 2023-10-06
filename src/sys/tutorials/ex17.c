@@ -1,4 +1,3 @@
-
 static char help[] = "Demonstrates PetscGetVersonNumber().\n\n";
 
 #include <petscsys.h>

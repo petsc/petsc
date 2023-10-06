@@ -36,7 +36,7 @@ static PetscErrorCode MatDestroy_FFT(Mat A)
   Level: intermediate
 
   Note:
-  This serves as a base class for all FFT marix classes, currently `MATFFTW` or `MATSEQCUFFT`
+  This serves as a base class for all FFT matrix classes, currently `MATFFTW` or `MATSEQCUFFT`
 
 .seealso: [](ch_matrices), `Mat`, `MATFFTW`, `MATSEQCUFFT`, `MatCreateVecsFFTW()`
 @*/

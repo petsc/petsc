@@ -1,4 +1,3 @@
-
 /*
      Provides utility routines for split MPI communicator.
 */

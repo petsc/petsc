@@ -1,4 +1,3 @@
-
 static char help[] = "Test event log of VecScatter with various block sizes\n\n";
 
 #include <petscvec.h>

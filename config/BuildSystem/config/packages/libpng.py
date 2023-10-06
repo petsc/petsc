@@ -6,7 +6,7 @@ class Configure(config.package.GNUPackage):
     self.versionname      = 'PNG_HEADER_VERSION_STRING'
     self.version          = '1.6.37'
     self.download         = ['https://sourceforge.net/projects/libpng/files/libpng16/'+self.version+'/libpng-1.6.37.tar.gz',
-                             'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/libpng-'+self.version+'.tar.gz']
+                             'https://web.cels.anl.gov/projects/petsc/download/externalpackages/libpng-'+self.version+'.tar.gz']
     self.includes         = ['png.h']
     self.liblist          = [['libpng.a']]
     self.functions        = ['png_create_write_struct']

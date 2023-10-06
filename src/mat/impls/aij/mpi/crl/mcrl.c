@@ -1,4 +1,3 @@
-
 /*
   Defines a matrix-vector product for the MATMPIAIJCRL matrix class.
   This class is derived from the MATMPIAIJ class and retains the

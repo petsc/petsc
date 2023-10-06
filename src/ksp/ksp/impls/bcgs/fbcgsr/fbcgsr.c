@@ -1,4 +1,3 @@
-
 /*
     This file implements FBiCGStab-R.
     FBiCGStab-R is a mathematically equivalent variant of FBiCGStab. Differences are:

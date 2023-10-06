@@ -1,4 +1,3 @@
-
 static char help[] = "Solves a linear system in parallel with KSP. \n\
 Contributed by Jose E. Roman, SLEPc developer, for testing repeated call of KSPSetOperators(), 2014 \n\n";
 

@@ -1,4 +1,3 @@
-
 static char help[] = "Tests MatCreateMPIAIJWithArrays() abd MatUpdateMPIAIJWithArray()\n";
 
 #include <petscmat.h>

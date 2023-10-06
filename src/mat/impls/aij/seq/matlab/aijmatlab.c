@@ -1,4 +1,3 @@
-
 /*
         Provides an interface for the MATLAB engine sparse solver
 

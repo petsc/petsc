@@ -687,7 +687,7 @@ __device__ static float atomicMax(float *address, float val)
     #endif
   #endif
 
-/* As of ROCm 3.10 llint atomicMin/Max(llint*, llint) is not supported */
+  #if PETSC_PKG_HIP_VERSION_LT(5, 7, 0)
 __device__ static llint atomicMin(llint *address, llint val)
 {
   ullint *address_as_ull = (ullint *)(address);
@@ -709,6 +709,7 @@ __device__ static llint atomicMax(llint *address, llint val)
   } while (assumed != old);
   return (llint)old;
 }
+  #endif
 
 template <typename Type>
 struct AtomicMin {

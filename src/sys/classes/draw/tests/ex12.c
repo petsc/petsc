@@ -1,4 +1,3 @@
-
 static char help[] = "Makes a simple bar graph.\n";
 
 #include <petscsys.h>

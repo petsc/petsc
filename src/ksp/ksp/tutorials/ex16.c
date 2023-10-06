@@ -1,4 +1,3 @@
-
 /* Usage:  mpiexec ex16 [-help] [all PETSc options] */
 
 static char help[] = "Solves a sequence of linear systems with different right-hand-side vectors.\n\

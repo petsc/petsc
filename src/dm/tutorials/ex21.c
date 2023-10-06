@@ -1,4 +1,3 @@
-
 static char help[] = "DMSwarm-PIC demonstrator of advecting points within cell DM defined by a DA or PLEX object \n\
 Options: \n\
 -ppcell   : Number of times to sub-divide the reference cell when layout the initial particle coordinates \n\

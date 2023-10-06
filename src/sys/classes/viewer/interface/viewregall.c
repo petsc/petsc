@@ -1,4 +1,3 @@
-
 #include <petsc/private/viewerimpl.h> /*I "petscsys.h" I*/
 
 PETSC_EXTERN PetscErrorCode PetscViewerCreate_Socket(PetscViewer);

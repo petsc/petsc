@@ -1,4 +1,3 @@
-
 /*
     Defines the basic matrix operations for the ADJ adjacency list matrix data-structure.
 */

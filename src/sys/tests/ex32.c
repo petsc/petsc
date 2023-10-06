@@ -1,4 +1,3 @@
-
 static char help[] = "Tests deletion of mixed case options";
 
 #include <petscsys.h>

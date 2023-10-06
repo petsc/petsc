@@ -1,4 +1,3 @@
-
 static char help[] = "Reads a PETSc matrix and vector from a file; expands the matrix with the vector\n\n";
 
 /*

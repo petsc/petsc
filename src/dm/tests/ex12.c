@@ -1,4 +1,3 @@
-
 /*
    Simple example to show how PETSc programs can be run from MATLAB.
   See ex12.m.

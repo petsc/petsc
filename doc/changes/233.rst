@@ -138,7 +138,7 @@ Changes: 2.3.3
 
 .. rubric:: Fortran:
 
-.. rubric:: `ExternalPackages <https://www.mcs.anl.gov/petsc/miscellaneous/external.html>`__:
+.. rubric:: ExternalPackages:
 
 -  Hypre interface is updated to use version 2.0.0
 -  Mumps interface is updated to use version 4.7.3

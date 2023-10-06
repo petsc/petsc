@@ -1,4 +1,3 @@
-
 static char help[] = "Tests MatTranspose() with MAT_REUSE_MATRIX and different nonzero pattern\n\n";
 
 #include <petscmat.h>

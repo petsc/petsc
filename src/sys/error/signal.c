@@ -1,4 +1,3 @@
-
 /*
       Routines to handle signals the program will receive.
     Usually this will call the error handlers.

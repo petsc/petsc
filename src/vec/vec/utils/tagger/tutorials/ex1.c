@@ -1,4 +1,3 @@
-
 static char help[] = "VecTagger interface routines.\n\n";
 
 #include <petscvec.h>

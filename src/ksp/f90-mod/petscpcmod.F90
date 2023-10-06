@@ -9,4 +9,3 @@
 #include <../src/ksp/f90-mod/ftn-auto-interfaces/petscpc.h90>
         end interface
         end module petscpc
-

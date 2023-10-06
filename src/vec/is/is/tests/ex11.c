@@ -1,4 +1,3 @@
-
 static char help[] = "Tests ISSortGlobal().\n\n";
 
 #include <petscis.h>

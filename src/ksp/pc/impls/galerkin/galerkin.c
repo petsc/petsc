@@ -1,4 +1,3 @@
-
 /*
       Defines a preconditioner defined by R^T S R
 */

@@ -1,4 +1,3 @@
-
 static char help[] = "Tests MatIncreaseOverlap(), MatCreateSubMatrices() for parallel MatSBAIJ format.\n";
 /* Example of usage:
       mpiexec -n 2 ./ex92 -nd 2 -ov 3 -mat_block_size 2 -view_id 0 -test_overlap -test_submat

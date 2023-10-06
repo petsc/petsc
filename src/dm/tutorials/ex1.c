@@ -1,4 +1,3 @@
-
 static char help[] = "Tests VecView() contour plotting for 2d DMDAs.\n\n";
 
 /*

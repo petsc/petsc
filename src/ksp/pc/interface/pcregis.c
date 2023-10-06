@@ -1,4 +1,3 @@
-
 #include <petsc/private/pcimpl.h> /*I   "petscpc.h"   I*/
 
 PETSC_EXTERN PetscErrorCode PCCreate_Jacobi(PC);

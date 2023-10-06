@@ -1,4 +1,4 @@
-//gives users a visual of the nested matricies
+//gives users a visual of the nested matrices
 //instead of using subscript of subscript of subscript, etc. simply put the id of the matrix in the first subscript level. for example, A_{010}
 
 //this function is recursive and should always be called with parameter "0"

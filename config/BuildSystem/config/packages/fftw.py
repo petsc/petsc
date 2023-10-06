@@ -5,7 +5,7 @@ class Configure(config.package.GNUPackage):
     config.package.GNUPackage.__init__(self, framework)
     # host locally as fftw.org url can expire after new release.
     self.download   = ['http://www.fftw.org/fftw-3.3.10.tar.gz',
-                       'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/fftw-3.3.8.tar.gz']
+                       'https://web.cels.anl.gov/projects/petsc/download/externalpackages/fftw-3.3.8.tar.gz']
     self.functions  = ['fftw_malloc']
     self.includes   = ['fftw3.h']
     self.liblist    = [['libfftw3_mpi.a','libfftw3.a'],['libfftw3.a']]

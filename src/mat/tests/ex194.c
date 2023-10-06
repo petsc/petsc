@@ -1,4 +1,3 @@
-
 static char help[] = "Tests MatCreateSubmatrix() with certain entire rows of matrix, modified from ex181.c.";
 
 #include <petscmat.h>

@@ -1,4 +1,3 @@
-
 static char help[] = "This example uses the same problem set up of ex9busdmnetwork.c. \n\
 It demonstrates setting and accessing of variables for individual components, instead of \n\
 the network vertices (as used in ex9busdmnetwork.c). This is especially useful where vertices \n\

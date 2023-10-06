@@ -1,4 +1,3 @@
-
 static char help[] = "Tests LU, Cholesky factorization and MatMatSolve() for a ScaLAPACK dense matrix.\n\n";
 
 #include <petscmat.h>

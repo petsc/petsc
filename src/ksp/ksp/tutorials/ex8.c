@@ -1,4 +1,3 @@
-
 static char help[] = "Illustrates use of the preconditioner ASM.\n\
 The Additive Schwarz Method for solving a linear system in parallel with KSP.  The\n\
 code indicates the procedure for setting user-defined subdomains.  Input\n\

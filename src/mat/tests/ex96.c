@@ -1,4 +1,3 @@
-
 static char help[] = "Tests sequential and parallel DMCreateMatrix(), MatMatMult() and MatPtAP()\n\
   -Mx <xg>, where <xg> = number of coarse grid points in the x-direction\n\
   -My <yg>, where <yg> = number of coarse grid points in the y-direction\n\

@@ -1,4 +1,3 @@
-
 static char help[] = "Tests VecView()/VecLoad() for DMDA vectors (this tests DMDAGlobalToNatural()).\n\n";
 
 #include <petscdm.h>

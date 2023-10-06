@@ -1,4 +1,3 @@
-
 /*
      Tools to help solve the coarse grid problem redundantly.
   Provides two scatter contexts that (1) map from the usual global vector

@@ -54,7 +54,7 @@ means that this shares some data structures with the parent including diag, ilen
   PetscInt    *block_row_map;   /* starting row of the current block, CUDA only */ \
   PetscInt     chunksize;       /* chunk size, CUDA only */ \
   PetscInt     totalchunks;     /* total number of chunks, CUDA only */ \
-  PetscInt    *chunk_slice_map; /* starting slice of the currect chunk, CUDA only */ \
+  PetscInt    *chunk_slice_map; /* starting slice of the current chunk, CUDA only */ \
   PetscInt    *getrowcols;      /* workarray for MatGetRow_SeqSELL */ \
   PetscScalar *getrowvals       /* workarray for MatGetRow_SeqSELL */
 
@@ -101,7 +101,7 @@ static inline PetscErrorCode MatSeqXSELLFreeSELL(Mat AA, MatScalar **val, PetscI
       PetscCall(PetscArraycpy(new_colidx + SIDX[SID + 1] + SH * MUL, COLIDX + SIDX[SID + 1], SIDX[Ain->totalslices] - SIDX[SID + 1])); \
       /* update slice_idx */ \
       for (ii = SID + 1; ii <= Ain->totalslices; ii++) { SIDX[ii] += SH * MUL; } \
-      /* update pointers. Notice that they point to the FIRST postion of the row */ \
+      /* update pointers. Notice that they point to the FIRST position of the row */ \
       CP = new_colidx + SIDX[SID] + (ROW % SH); \
       VP = new_val + SIDX[SID] + (ROW % SH); \
       /* free up old matrix storage */ \
@@ -153,7 +153,7 @@ static inline PetscErrorCode MatSeqXSELLFreeSELL(Mat AA, MatScalar **val, PetscI
           PetscCall(PetscArraycpy(new_colidx, a->colidx, a->sliidx[row / a->sliceheight + 1])); \
           PetscCall(PetscArraycpy(new_val + a->sliidx[row / a->sliceheight + 1] + a->sliceheight, a->val + a->sliidx[row / a->sliceheight + 1], a->sliidx[a->totalslices] - a->sliidx[row / a->sliceheight + 1])); \
           PetscCall(PetscArraycpy(new_colidx + a->sliidx[row / a->sliceheight + 1] + a->sliceheight, a->colidx + a->sliidx[row / a->sliceheight + 1], a->sliidx[a->totalslices] - a->sliidx[row / a->sliceheight + 1])); \
-          /* update pointers. Notice that they point to the FIRST postion of the row */ \
+          /* update pointers. Notice that they point to the FIRST position of the row */ \
           cp = new_colidx + a->sliidx[row / a->sliceheight] + (row % a->sliceheight); \
           vp = new_val + a->sliidx[row / a->sliceheight] + (row % a->sliceheight); \
           /* free up old matrix storage */ \

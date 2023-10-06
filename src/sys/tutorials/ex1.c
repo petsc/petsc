@@ -1,4 +1,3 @@
-
 static char help[] = "Introductory example that illustrates printing.\n\n";
 
 #include <petscsys.h>

@@ -185,4 +185,4 @@ Changes: 3.0.0
 -  PetscLogFlopsNoCheck() no longer exists; you can simply call
    PetscLogFlops() it no longer has a return in it.
 
-.. rubric:: `ExternalPackages <https://www.mcs.anl.gov/petsc/miscellaneous/external.html>`__:
+.. rubric:: ExternalPackages:

@@ -1,4 +1,3 @@
-
 #include <petsc/private/drawimpl.h> /*I "petscdraw.h" I*/
 
 PETSC_EXTERN PetscErrorCode PetscDrawCreate_Image(PetscDraw);

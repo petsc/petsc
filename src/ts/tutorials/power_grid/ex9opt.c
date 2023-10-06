@@ -1,4 +1,3 @@
-
 static char help[] = "Basic equation for generator stability analysis.\n";
 
 /*F

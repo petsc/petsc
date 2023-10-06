@@ -1,4 +1,3 @@
-
 static char help[] = "Plots a simple line graph.\n";
 
 #if defined(PETSC_APPLE_FRAMEWORK)

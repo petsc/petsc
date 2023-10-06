@@ -1,4 +1,3 @@
-
 /*
   Defines matrix-matrix product routines for pairs of MPIAIJ matrices
           C = A^T * B

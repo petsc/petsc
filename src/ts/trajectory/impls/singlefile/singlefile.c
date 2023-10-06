@@ -1,4 +1,3 @@
-
 #include <petsc/private/tsimpl.h> /*I "petscts.h"  I*/
 
 typedef struct {

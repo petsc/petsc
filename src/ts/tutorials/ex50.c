@@ -1,4 +1,3 @@
-
 static char help[] = "Solves one dimensional Burger's equation compares with exact solution\n\n";
 
 /*

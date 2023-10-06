@@ -1,4 +1,3 @@
-
 static char help[] = "Illustrates creating an options database.\n\n";
 
 #include <petscsys.h>

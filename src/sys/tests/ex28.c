@@ -1,4 +1,3 @@
-
 static char help[] = "Tests PetscAtan2Real\n";
 
 #include <petscsys.h>

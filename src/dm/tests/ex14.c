@@ -1,4 +1,3 @@
-
 static char help[] = "Tests saving DMDA vectors to files.\n\n";
 
 /*

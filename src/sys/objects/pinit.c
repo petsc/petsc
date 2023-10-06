@@ -446,7 +446,7 @@ PetscErrorCode PetscCitationsInitialize(void)
     and Jose~E. Roman and Karl Rupp and Patrick Sanan and Jason Sarich and Barry~F. Smith\n\
     and Stefano Zampini and Hong Zhang and Hong Zhang and Junchao Zhang},\n\
   Title = {{PETSc/TAO} Users Manual},\n\
-  Number = {ANL-21/39 - Revision 3.19},\n\
+  Number = {ANL-21/39 - Revision 3.20},\n\
   Doi = {10.2172/1968587},\n\
   Institution = {Argonne National Laboratory},\n\
   Year = {2023}\n}\n",
@@ -1188,6 +1188,7 @@ PETSC_INTERN PetscErrorCode PetscInitialize_Common(const char *prog, const char 
 . -log_all [filename]                                  - Same as `-log`.
 . -log_mpe [filename]                                  - Creates a logfile viewable by the utility Jumpshot (in MPICH distribution)
 . -log_perfstubs                                       - Starts a log handler with the perfstubs interface (which is used by TAU)
+. -log_nvtx                                            - Starts an nvtx log handler for use with Nsight
 . -viewfromoptions on,off                              - Enable or disable `XXXSetFromOptions()` calls, for applications with many small solves turn this off
 - -check_pointer_intensity 0,1,2                       - if pointers are checked for validity (debug version only), using 0 will result in faster code
 

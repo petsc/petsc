@@ -1,4 +1,3 @@
-
 #include <petsc/private/vecimpl.h> /*I  "petscvec.h"   I*/
 
 static PetscErrorCode VecCreate_Common_Private(Vec v)

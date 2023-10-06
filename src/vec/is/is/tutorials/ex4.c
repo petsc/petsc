@@ -1,4 +1,3 @@
-
 static char help[] = "Demonstrates using ISLocalToGlobalMappings.\n\n";
 
 #include <petscis.h>

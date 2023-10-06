@@ -1,4 +1,3 @@
-
 static char help[] = "Tests various 1-dimensional DMDA routines.\n\n";
 
 #include <petscdm.h>

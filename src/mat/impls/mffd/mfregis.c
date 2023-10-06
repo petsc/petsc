@@ -1,4 +1,3 @@
-
 #include <../src/mat/impls/mffd/mffdimpl.h> /*I  "petscmat.h"   I*/
 
 PETSC_EXTERN PetscErrorCode MatCreateMFFD_DS(MatMFFD);

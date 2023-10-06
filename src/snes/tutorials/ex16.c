@@ -1,4 +1,3 @@
-
 static char help[] = "Large-deformation Elasticity Buckling Example";
 
 /*F-----------------------------------------------------------------------

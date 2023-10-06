@@ -1,4 +1,3 @@
-
 /*
      This file implements a Jacobi preconditioner in PETSc as part of PC.
      You can use this as a starting point for implementing your own

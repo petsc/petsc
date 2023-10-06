@@ -7,8 +7,7 @@ class Configure(config.package.CMakePackage):
     self.version          = '6.0.1'
     self.minversion       = '5.2.1' # bugs in 5.2.0 prevent it from functioning
     self.versionname      = 'SUPERLU_MAJOR_VERSION.SUPERLU_MINOR_VERSION.SUPERLU_PATCH_VERSION'
-    # self.gitcommit        = 'v'+self.version
-    self.gitcommit        = 'baeea941129895a3718b558a2b8f2c65df1be15f' # master, may-7-2023
+    self.gitcommit        = 'v'+self.version
     self.download         = ['git://https://github.com/xiaoyeli/superlu','https://github.com/xiaoyeli/superlu/archive/'+self.gitcommit+'.tar.gz']
     self.functions        = ['set_default_options']
     self.includes         = ['slu_ddefs.h']
@@ -33,7 +32,7 @@ class Configure(config.package.CMakePackage):
   def formCMakeConfigureArgs(self):
     args = config.package.CMakePackage.formCMakeConfigureArgs(self)
     args.append('-DUSE_XSDK_DEFAULTS=YES')
-
+    args.append('-DCMAKE_DISABLE_FIND_PACKAGE_Doxygen=TRUE')
     args.append('-DTPL_BLAS_LIBRARIES="'+self.libraries.toString(self.blasLapack.dlib)+'"')
 
     #  Tests are broken on Apple since they depend on a shared library that is not resolved against BLAS

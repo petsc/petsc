@@ -204,4 +204,10 @@ PETSC_INTERN PetscInt PetscLogGetTid(void);
 
 PETSC_EXTERN PetscBool PetscLogGpuTimeFlag;
 
+#if PetscDefined(USE_LOG)
+PETSC_INTERN PetscErrorCode PetscLogTypeBegin(PetscLogHandlerType type);
+#else
+  #define PetscLogTypeBegin(t) ((void)(t), PETSC_SUCCESS)
+#endif
+
 #define PETSC_LOG_VIEW_FROM_OPTIONS_MAX 4

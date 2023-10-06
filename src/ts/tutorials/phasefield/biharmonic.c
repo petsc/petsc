@@ -1,4 +1,3 @@
-
 static char help[] = "Solves biharmonic equation in 1d.\n";
 
 /*

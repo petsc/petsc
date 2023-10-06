@@ -1,4 +1,3 @@
-
 static char help[] = "Tests PetscMergeIntArray\n";
 
 #include <petscsys.h>

@@ -1,4 +1,3 @@
-
 /*
    Support for the parallel AIJ matrix vector multiply
 */

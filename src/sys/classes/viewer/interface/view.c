@@ -1,4 +1,3 @@
-
 #include <petsc/private/viewerimpl.h> /*I "petscviewer.h" I*/
 #include <petscdraw.h>
 

@@ -1,4 +1,3 @@
-
 static char help[] = "Tests VecMax() with index.\n\
   -n <length> : vector length\n\n";
 

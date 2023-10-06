@@ -1,4 +1,3 @@
-
 #include <petsc/private/snesimpl.h>
 #include <petsc/private/linesearchimpl.h>
 

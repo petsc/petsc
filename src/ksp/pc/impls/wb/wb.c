@@ -1,4 +1,3 @@
-
 #include <petscdmda.h>              /*I "petscdmda.h" I*/
 #include <petsc/private/pcmgimpl.h> /*I "petscksp.h" I*/
 #include <petsc/private/hashmapi.h>

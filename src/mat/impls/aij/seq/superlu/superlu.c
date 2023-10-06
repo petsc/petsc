@@ -1,4 +1,3 @@
-
 /*
      This file implements a subclass of the SeqAIJ matrix class that uses
      the SuperLU sparse solver.

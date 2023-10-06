@@ -1,4 +1,3 @@
-
 static char help[] = "Demonstrates scattering with strided index sets.\n\n";
 
 #include <petscvec.h>

@@ -1,4 +1,3 @@
-
 /*
    Include files needed for the ViennaCL row-scaling preconditioner:
      pcimpl.h - private include file intended for use by all preconditioners

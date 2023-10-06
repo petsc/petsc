@@ -1,4 +1,3 @@
-
 static const char help[] = "Tries to solve u`` + u^{2} = f for an easy case and an impossible case.\n\n";
 
 /*

@@ -1,4 +1,3 @@
-
 /*
       PETSc code to log object creation and destruction and PETSc events.
 
@@ -417,7 +416,7 @@ PETSC_UNUSED static PetscErrorCode PetscLogEventEndIsActive(PetscBool *isActive)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode PetscLogTypeBegin(PetscLogHandlerType type)
+PETSC_INTERN PetscErrorCode PetscLogTypeBegin(PetscLogHandlerType type)
 {
   PetscLogHandler handler;
 
@@ -1279,7 +1278,7 @@ PetscErrorCode PetscLogEventDeactivate(PetscLogEvent event)
   The event may be either a pre-defined PETSc event (found in
   include/petsclog.h) or an event number obtained with `PetscLogEventRegister()`).
 
-  PETSc's default log handler (`PetscLogDefaultBegin()`) respects this function because it can make the output of `PetscLogView()` easier to interpret, but other handlers (such as the nested handler, `PetscLogNestedBegin()`) ignore it because surpressing events is not helpful in their output formats.
+  PETSc's default log handler (`PetscLogDefaultBegin()`) respects this function because it can make the output of `PetscLogView()` easier to interpret, but other handlers (such as the nested handler, `PetscLogNestedBegin()`) ignore it because suppressing events is not helpful in their output formats.
 
 .seealso: [](ch_profiling), `PetscLogEventActivate()`, `PetscLogEVentDeactivate()`, `PetscLogEventDeactivatePop()`
 @*/
@@ -1458,10 +1457,10 @@ M*/
 
   Input Parameters:
 + e  - `PetscLogEvent` obtained from `PetscLogEventRegister()`
-. o1 - object assocated with the event, or NULL
-. o2 - object assocated with the event, or NULL
-. o3 - object assocated with the event, or NULL
-- o4 - object assocated with the event, or NULL
+. o1 - object associated with the event, or `NULL`
+. o2 - object associated with the event, or `NULL`
+. o3 - object associated with the event, or `NULL`
+- o4 - object associated with the event, or `NULL`
 
   Fortran Synopsis:
   void PetscLogEventBegin(int e, PetscErrorCode ierr)
@@ -1500,10 +1499,10 @@ M*/
 
   Input Parameters:
 + e  - `PetscLogEvent` obtained from `PetscLogEventRegister()`
-. o1 - object assocated with the event, or NULL
-. o2 - object assocated with the event, or NULL
-. o3 - object assocated with the event, or NULL
-- o4 - object assocated with the event, or NULL
+. o1 - object associated with the event, or `NULL`
+. o2 - object associated with the event, or `NULL`
+. o3 - object associated with the event, or `NULL`
+- o4 - object associated with the event, or `NULL`
 
   Fortran Synopsis:
   void PetscLogEventEnd(int e, PetscErrorCode ierr)

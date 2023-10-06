@@ -1,4 +1,3 @@
-
 static char help[] = "Tests DMSwarm\n\n";
 
 #include <petscdm.h>

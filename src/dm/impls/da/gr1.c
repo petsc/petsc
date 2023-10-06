@@ -1,4 +1,3 @@
-
 /*
    Plots vectors obtained with DMDACreate1d()
 */

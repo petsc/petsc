@@ -1,4 +1,3 @@
-
 /*
   Defines basic operations for the MATSEQAIJPERM matrix class.
   This class is derived from the MATSEQAIJ class and retains the

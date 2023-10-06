@@ -1,4 +1,3 @@
-
 static char help[] = "Computes the integral of 2*x/(1+x^2) from x=0..1 \nThis is equal to the ln(2).\n\n";
 
 /*

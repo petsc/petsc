@@ -1,4 +1,3 @@
-
 static char help[] = "Nonlinear, time-dependent PDE in 2d.\n";
 
 /*

@@ -1,4 +1,3 @@
-
 static char help[] = "Solves a linear system in parallel with KSP,\n\
 demonstrating how to register a new preconditioner (PC) type.\n\
 Input parameters include:\n\

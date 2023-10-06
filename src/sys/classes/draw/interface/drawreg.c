@@ -1,4 +1,3 @@
-
 /*
        Provides the registration process for PETSc PetscDraw routines
 */

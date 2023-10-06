@@ -1,4 +1,3 @@
-
 static char help[] = "Tests MatCreateLRC()\n\n";
 
 #include <petscmat.h>

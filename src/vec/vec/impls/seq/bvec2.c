@@ -1,4 +1,3 @@
-
 /*
    Implements the sequential vectors.
 */

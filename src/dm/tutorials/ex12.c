@@ -1,4 +1,3 @@
-
 static char help[] = "Tests DMGetGlobalVector() and DMRestoreGlobalVector().\n\n";
 
 /*

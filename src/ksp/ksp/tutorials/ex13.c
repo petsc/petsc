@@ -1,4 +1,3 @@
-
 static char help[] = "Solves a variable Poisson problem with KSP.\n\n";
 
 /*

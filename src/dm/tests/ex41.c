@@ -1,4 +1,3 @@
-
 static char help[] = "Tests mirror boundary conditions in 3-d.\n\n";
 
 #include <petscdm.h>

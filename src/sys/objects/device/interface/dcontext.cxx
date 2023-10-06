@@ -1077,7 +1077,7 @@ PetscErrorCode PetscDeviceContextViewFromOptions(PetscDeviceContext dctx, PetscO
 
   Note:
   This routine is dangerous. It exists only for the most experienced users and
-  internal PETSc developement.
+  internal PETSc development.
 
   There is no way for PETSc's auto-dependency system to track what the caller does with the
   stream.

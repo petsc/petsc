@@ -1,4 +1,3 @@
-
 #include <petsc/private/viewerimpl.h>
 #include <mat.h>
 

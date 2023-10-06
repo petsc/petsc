@@ -1,4 +1,3 @@
-
 static char help[] = "Demonstrates PetscOptionsPush()/PetscOptionsPop().\n\n";
 
 #include <petscsys.h>

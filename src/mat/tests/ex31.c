@@ -1,4 +1,3 @@
-
 static char help[] = "Tests binary I/O of matrices and illustrates user-defined event logging.\n\n";
 
 #include <petscmat.h>

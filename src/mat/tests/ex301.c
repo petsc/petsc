@@ -1,4 +1,3 @@
-
 static char help[] = "Tests for bugs in A->offloadmask consistency for GPU matrices\n\n";
 
 #include <petscmat.h>

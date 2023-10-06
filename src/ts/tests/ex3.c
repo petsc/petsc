@@ -1,4 +1,3 @@
-
 static char help[] = "Solves 1D heat equation with FEM formulation.\n\
 Input arguments are\n\
   -useAlhs: solve Alhs*U' =  (Arhs*U + g) \n\

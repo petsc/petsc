@@ -1,4 +1,3 @@
-
 #include <../src/sys/classes/viewer/impls/draw/vdraw.h> /*I "petscdraw.h" I*/
 #include <petscviewer.h>                                /*I "petscviewer.h" I*/
 

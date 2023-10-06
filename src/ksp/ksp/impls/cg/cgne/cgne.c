@@ -1,4 +1,3 @@
-
 /*
     cgimpl.h defines the simple data structured used to store information
     related to the type of matrix (e.g. complex symmetric) being solved and

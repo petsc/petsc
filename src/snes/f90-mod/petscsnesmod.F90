@@ -1,4 +1,3 @@
-
         module petscsnesdefdummy
         use petsckspdef
 #include <../src/snes/f90-mod/petscsnes.h>
@@ -45,4 +44,3 @@
 #include <../src/snes/f90-mod/ftn-auto-interfaces/petscsnes.h90>
         end interface
         end module
-

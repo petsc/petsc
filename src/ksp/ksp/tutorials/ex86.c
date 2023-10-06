@@ -1,4 +1,3 @@
-
 static char help[] = "Solves a one-dimensional steady upwind advection system with KSP.\n\n";
 
 /*

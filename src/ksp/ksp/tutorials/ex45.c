@@ -1,4 +1,3 @@
-
 /*
 Laplacian in 3D. Modeled by the partial differential equation
 

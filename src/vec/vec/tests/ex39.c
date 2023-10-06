@@ -1,4 +1,3 @@
-
 static char help[] = "This example is intended for showing how subvectors can\n\
                       share the pointer with the main vector using VecGetArray()\n\
                       and VecPlaceArray() routines so that vector operations done\n\

@@ -5,7 +5,7 @@ class Configure(config.package.GNUPackage):
     config.package.GNUPackage.__init__(self, framework)
     self.versionname      = 'JPEG_LIB_VERSION_MAJOR.JPEG_LIB_VERSION_MINOR'
     self.download         = ['http://www.ijg.org/files/jpegsrc.v9c.tar.gz',
-                             'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/jpegsrc.v9c.tar.gz']
+                             'https://web.cels.anl.gov/projects/petsc/download/externalpackages/jpegsrc.v9c.tar.gz']
     self.downloaddirnames  = ['jpeg']
     self.includes         = ['jpeglib.h']
     self.liblist          = [['libjpeg.a']]

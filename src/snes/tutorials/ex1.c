@@ -1,4 +1,3 @@
-
 static char help[] = "Newton's method for a two-variable system, sequential.\n\n";
 
 /*

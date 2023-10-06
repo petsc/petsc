@@ -1,4 +1,3 @@
-
 /*
      Shows any outstanding Globus file requests
 

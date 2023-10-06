@@ -1,4 +1,3 @@
-
 #include <petsc/private/matimpl.h> /*I "petscmatcoarsen.h" I*/
 
 /* Logging support */
