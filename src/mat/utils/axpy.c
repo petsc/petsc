@@ -450,7 +450,7 @@ PetscErrorCode MatComputeOperatorTranspose(Mat inmat, MatType mattype, Mat *mat)
 
   Level: intermediate
 
-.seealso: [](ch_matrices), `Mat`, `MatCreate()`, `MatZeroEntries()`, `MatRemoveZeros()`, `VecFilter()`
+.seealso: [](ch_matrices), `Mat`, `MatCreate()`, `MatZeroEntries()`, `MatEliminateZeros()`, `VecFilter()`
  @*/
 PetscErrorCode MatFilter(Mat A, PetscReal tol, PetscBool compress, PetscBool keep)
 {
