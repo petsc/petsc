@@ -1,23 +1,46 @@
 DM Object: box 4 MPI processes
   type: plex
-box in 2 dimensions:
-  Number of 0-cells per rank: 289 289 289 289
-  Number of 1-cells per rank: 544 544 544 544
-  Number of 2-cells per rank: 256 256 256 256
+box in 3 dimensions:
+  Number of 0-cells per rank: 125 125 125 125
+  Number of 1-cells per rank: 300 300 300 300
+  Number of 2-cells per rank: 240 240 240 240
+  Number of 3-cells per rank: 64 64 64 64
 Labels:
-  celltype: 3 strata with value/size (0 (289), 1 (544), 4 (256))
-  depth: 3 strata with value/size (0 (289), 1 (544), 2 (256))
-  marker: 1 strata with value/size (1 (65))
-  Face Sets: 2 strata with value/size (1 (30), 4 (30))
-Number equations N = 3969
-  Linear solve converged due to CONVERGED_RTOL iterations 12
-  Linear solve converged due to CONVERGED_RTOL iterations 12
-  Linear solve converged due to CONVERGED_RTOL iterations 12
-  Linear solve converged due to CONVERGED_RTOL iterations 12
-  Linear solve converged due to CONVERGED_RTOL iterations 12
-  Linear solve converged due to CONVERGED_RTOL iterations 12
-  Linear solve converged due to CONVERGED_RTOL iterations 12
-  Linear solve converged due to CONVERGED_RTOL iterations 12
-  Linear solve converged due to CONVERGED_RTOL iterations 12
-  Linear solve converged due to CONVERGED_RTOL iterations 12
-  Linear solve converged due to CONVERGED_RTOL iterations 12
+  celltype: 4 strata with value/size (0 (125), 1 (300), 4 (240), 7 (64))
+  depth: 4 strata with value/size (0 (125), 1 (300), 2 (240), 3 (64))
+  marker: 1 strata with value/size (1 (281))
+  Face Sets: 4 strata with value/size (1 (49), 2 (49), 3 (49), 6 (49))
+Number equations N = 1575
+    0 KSP Residual norm 9.464430422668e+00 
+    1 KSP Residual norm 5.316796513063e-01 
+    2 KSP Residual norm 2.772727904537e-02 
+    3 KSP Residual norm 1.942085442331e-03 
+    4 KSP Residual norm 9.591407510089e-05 
+    5 KSP Residual norm 3.697952103036e-06 
+    6 KSP Residual norm 1.807845677198e-07 
+    7 KSP Residual norm 1.242411760501e-08 
+    8 KSP Residual norm 5.251887957613e-10 
+    9 KSP Residual norm 2.236459207599e-11 
+   10 KSP Residual norm 1.136036505519e-12 
+    0 KSP Residual norm 9.464430422668e+00 
+    1 KSP Residual norm 5.316796513063e-01 
+    2 KSP Residual norm 2.772727904537e-02 
+    3 KSP Residual norm 1.942085442331e-03 
+    4 KSP Residual norm 9.591407510089e-05 
+    5 KSP Residual norm 3.697952103036e-06 
+    6 KSP Residual norm 1.807845677198e-07 
+    7 KSP Residual norm 1.242411760501e-08 
+    8 KSP Residual norm 5.251887957613e-10 
+    9 KSP Residual norm 2.236459207599e-11 
+   10 KSP Residual norm 1.136036505519e-12 
+    0 KSP Residual norm 9.464430422668e+00 
+    1 KSP Residual norm 5.316796513063e-01 
+    2 KSP Residual norm 2.772727904537e-02 
+    3 KSP Residual norm 1.942085442331e-03 
+    4 KSP Residual norm 9.591407510089e-05 
+    5 KSP Residual norm 3.697952103036e-06 
+    6 KSP Residual norm 1.807845677198e-07 
+    7 KSP Residual norm 1.242411760501e-08 
+    8 KSP Residual norm 5.251887957613e-10 
+    9 KSP Residual norm 2.236459207599e-11 
+   10 KSP Residual norm 1.136036505519e-12 
