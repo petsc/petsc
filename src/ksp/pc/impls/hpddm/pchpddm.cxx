@@ -182,6 +182,34 @@ static PetscErrorCode PCHPDDMSetAuxiliaryMat_HPDDM(PC pc, IS is, Mat A, PetscErr
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+typedef struct {
+  KSP      ksp;
+  PetscInt its;
+} PC_KSP;
+
+static inline PetscErrorCode PCSetUp_KSP_Private(PC pc)
+{
+  PC_KSP           *data   = (PC_KSP *)pc->data;
+  const std::string prefix = ((PetscObject)data->ksp)->prefix;
+  std::string       sub;
+
+  PetscFunctionBegin;
+  PetscCheck(prefix.size() >= 9, PETSC_COMM_SELF, PETSC_ERR_PLIB, "The prefix of this PCKSP should be of length at least 9 to hold the suffix pc_hpddm_");
+  sub = prefix.substr(0, prefix.size() - 9);
+  PetscCall(PCSetType(pc, PCHPDDM));
+  PetscCall(PCSetOptionsPrefix(pc, sub.c_str()));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode PCSetUp_KSP(PC pc)
+{
+  PetscFunctionBegin;
+  PetscCall(PCSetUp_KSP_Private(pc));
+  PetscCall(PCSetFromOptions(pc));
+  PetscCall(PCSetUp(pc));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 /*@C
   PCHPDDMSetAuxiliaryMat - Sets the auxiliary matrix used by `PCHPDDM` for the concurrent GenEO problems at the finest level.
 
@@ -219,6 +247,7 @@ PetscErrorCode PCHPDDMSetAuxiliaryMat(PC pc, IS is, Mat A, PetscErrorCode (*setu
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   if (is) PetscValidHeaderSpecific(is, IS_CLASSID, 2);
   if (A) PetscValidHeaderSpecific(A, MAT_CLASSID, 3);
+  if (pc->ops->setup == PCSetUp_KSP) PetscCall(PCSetUp_KSP_Private(pc));
   PetscTryMethod(pc, "PCHPDDMSetAuxiliaryMat_C", (PC, IS, Mat, PetscErrorCode(*)(Mat, PetscReal, Vec, Vec, PetscReal, IS, void *), void *), (pc, is, A, setup, ctx));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1676,6 +1705,7 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
             PetscCall(PCSetOptionsPrefix(pc, nullptr));
             PetscCall(PCSetType(pc, PCKSP));                                    /* replace the PC associated to the Schur complement by PCKSP */
             PetscCall(KSPCreate(PetscObjectComm((PetscObject)pc), &inner_ksp)); /* new KSP that will be attached to the previously set PC */
+            pc->ops->setup = PCSetUp_KSP;
             PetscCall(PetscObjectGetTabLevel((PetscObject)pc, &n));
             PetscCall(PetscObjectSetTabLevel((PetscObject)inner_ksp, n + 2));
             PetscCall(KSPSetOperators(inner_ksp, pc->mat, pc->pmat));
@@ -1713,7 +1743,6 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
             PetscCall(PetscObjectCompose((PetscObject)(std::get<0>(*ctx)[1]), "_PCHPDDM_Schur", (PetscObject)container));
             PetscCall(PetscObjectDereference((PetscObject)container));
             PetscCall(PCSetUp(std::get<0>(*ctx)[1]));
-            PetscCall(PCSetUp(pc));
             PetscCall(KSPSetOperators(inner_ksp, S, S));
             PetscCall(MatCreateVecs(std::get<1>(*ctx)[0], std::get<3>(*ctx), std::get<3>(*ctx) + 1));
             PetscCall(VecDuplicate(std::get<3>(*ctx)[0], std::get<3>(*ctx) + 2));
