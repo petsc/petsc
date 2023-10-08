@@ -6,9 +6,8 @@ class Configure(config.package.Package):
     config.package.Package.__init__(self, framework)
     self.minversion       = '20200101'
     self.versionname      = '__SYCL_COMPILER_VERSION' # The build date of the SYCL library, presented in the format YYYYMMDD.
-    self.versioninclude   = 'CL/sycl/version.hpp'
-    # CL/sycl.h is dpcpp.  Other SYCL impls may use SYCL/sycl.hpp -- defer
-    self.includes         = ['CL/sycl.hpp']
+    self.versioninclude   = 'sycl/version.hpp'
+    self.includes         = ['sycl/sycl.hpp']
     self.includedir       = 'include/sycl'
     self.functionsCxx     = [1,'namespace sycl = cl;','sycl::device::get_devices()']
     # Unlike CUDA or HIP, the blas issues are just part of MKL and handled as such.

@@ -119,9 +119,14 @@ static PetscErrorCode PCGAMGCreateLevel_GAMG(PC pc, Mat Amat_fine, PetscInt cr_b
     SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "should not be here");
 #endif
   } else if (pc_gamg->level_reduction_factors[pc_gamg->current_level] > 0) {
-    PetscCheck(nactive % pc_gamg->level_reduction_factors[pc_gamg->current_level] == 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "odd number of active process %d wrt reduction factor %" PetscInt_FMT, nactive, pc_gamg->level_reduction_factors[pc_gamg->current_level]);
-    new_size = nactive / pc_gamg->level_reduction_factors[pc_gamg->current_level];
-    PetscCall(PetscInfo(pc, "%s: Manually setting reduction to %d active processes (%d/%" PetscInt_FMT ")\n", ((PetscObject)pc)->prefix, new_size, nactive, pc_gamg->level_reduction_factors[pc_gamg->current_level]));
+    if (nactive < pc_gamg->level_reduction_factors[pc_gamg->current_level]) {
+      new_size = 1;
+      PetscCall(PetscInfo(pc, "%s: reduction factor too small for %d active processes: reduce to one process\n", ((PetscObject)pc)->prefix, new_size));
+    } else {
+      PetscCheck(nactive % pc_gamg->level_reduction_factors[pc_gamg->current_level] == 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "odd number of active process %d wrt reduction factor %" PetscInt_FMT, nactive, pc_gamg->level_reduction_factors[pc_gamg->current_level]);
+      new_size = nactive / pc_gamg->level_reduction_factors[pc_gamg->current_level];
+      PetscCall(PetscInfo(pc, "%s: Manually setting reduction to %d active processes (%d/%" PetscInt_FMT ")\n", ((PetscObject)pc)->prefix, new_size, nactive, pc_gamg->level_reduction_factors[pc_gamg->current_level]));
+    }
   } else if (is_last && !pc_gamg->use_parallel_coarse_grid_solver) {
     new_size = 1;
     PetscCall(PetscInfo(pc, "%s: Force coarsest grid reduction to %d active processes\n", ((PetscObject)pc)->prefix, new_size));
@@ -373,7 +378,6 @@ static PetscErrorCode PCGAMGCreateLevel_GAMG(PC pc, Mat Amat_fine, PetscInt cr_b
       PetscCall(VecDestroy(&dest_crd));
     }
     /* move A and P (columns) with new layout */
-    /* PetscCall(PetscLogEventBegin(petsc_gamg_setup_events[SET13],0,0,0,0)); */
     /*
       Invert for MatCreateSubMatrix
     */
@@ -386,8 +390,6 @@ static PetscErrorCode PCGAMGCreateLevel_GAMG(PC pc, Mat Amat_fine, PetscInt cr_b
       *Pcolumnperm = new_eq_indices;
     }
     PetscCall(ISDestroy(&is_eq_num));
-    /* PetscCall(PetscLogEventEnd(petsc_gamg_setup_events[SET13],0,0,0,0)); */
-    /* PetscCall(PetscLogEventBegin(petsc_gamg_setup_events[SET14],0,0,0,0)); */
 
     /* 'a_Amat_crs' output */
     {
@@ -414,7 +416,6 @@ static PetscErrorCode PCGAMGCreateLevel_GAMG(PC pc, Mat Amat_fine, PetscInt cr_b
     }
     PetscCall(MatDestroy(&Cmat));
 
-    /* PetscCall(PetscLogEventEnd(petsc_gamg_setup_events[SET14],0,0,0,0)); */
     /* prolongator */
     {
       IS       findices;
@@ -422,14 +423,12 @@ static PetscErrorCode PCGAMGCreateLevel_GAMG(PC pc, Mat Amat_fine, PetscInt cr_b
       Mat      Pnew;
 
       PetscCall(MatGetOwnershipRange(Pold, &Istart, &Iend));
-      /* PetscCall(PetscLogEventBegin(petsc_gamg_setup_events[SET15],0,0,0,0)); */
       PetscCall(ISCreateStride(comm, Iend - Istart, Istart, 1, &findices));
       PetscCall(ISSetBlockSize(findices, f_bs));
       PetscCall(MatCreateSubMatrix(Pold, findices, new_eq_indices, MAT_INITIAL_MATRIX, &Pnew));
       PetscCall(ISDestroy(&findices));
       PetscCall(MatSetOption(Pnew, MAT_FORM_EXPLICIT_TRANSPOSE, PETSC_TRUE));
 
-      /* PetscCall(PetscLogEventEnd(petsc_gamg_setup_events[SET15],0,0,0,0)); */
       PetscCall(MatDestroy(a_P_inout));
 
       /* output - repartitioned */
