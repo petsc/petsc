@@ -117,7 +117,7 @@ PC Object: (fc_) 4 MPI processes
           total: nonzeros=34952, allocated nonzeros=34952
           total number of mallocs used during MatSetValues calls=0
             using I-node (on process 0) routines: found 279 nodes, limit used is 5
-    KSP solver for S = A11 - A10 inv(A00) A01 
+    KSP solver for S = A11 - A10 inv(A00) A01
       KSP Object: (fc_fieldsplit_pressure_) 4 MPI processes
         type: fgmres
           restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
@@ -344,7 +344,7 @@ PC Object: (fc_) 4 MPI processes
           total: nonzeros=34952, allocated nonzeros=34952
           total number of mallocs used during MatSetValues calls=0
             using I-node (on process 0) routines: found 279 nodes, limit used is 5
-    KSP solver for S = A11 - A10 inv(A00) A01 
+    KSP solver for S = A11 - A10 inv(A00) A01
       KSP Object: (fc_fieldsplit_pressure_) 4 MPI processes
         type: fgmres
           restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement

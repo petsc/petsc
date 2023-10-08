@@ -10,7 +10,7 @@ Input parameters include:
  https://petsc.org/
 See https://petsc.org/release/changes for recent updates.
 See https://petsc.org/release/faq for problems.
-See https://petsc.org/release/manualpages for help. 
+See https://petsc.org/release/manualpages for help.
 ----------------------------------------
 Options for all PETSc programs:
  -version: prints PETSc version
