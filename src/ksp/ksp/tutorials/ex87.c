@@ -24,7 +24,7 @@ int main(int argc, char **args)
    *      if the option -empty_A11 is not set (or set to false), a pressure with a zero mean-value is computed
    */
   char      dir[PETSC_MAX_PATH_LEN], prefix[PETSC_MAX_PATH_LEN];
-  PetscBool flg[3] = {PETSC_FALSE, PETSC_FALSE, PETSC_FALSE};
+  PetscBool flg[4] = {PETSC_FALSE, PETSC_FALSE, PETSC_FALSE, PETSC_FALSE};
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &args, NULL, help));
@@ -59,20 +59,21 @@ int main(int argc, char **args)
   /* transposing the off-diagonal block */
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-transpose", flg + 1, NULL));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-permute", flg + 2, NULL));
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-explicit", flg + 3, NULL));
   if (flg[1]) {
-    if (!flg[2]) PetscCall(MatCreateTranspose(A[2], A + 1));
-    else {
+    if (flg[2]) {
       PetscCall(MatTranspose(A[2], MAT_INITIAL_MATRIX, A + 1));
       PetscCall(MatDestroy(A + 2));
-      PetscCall(MatCreateTranspose(A[1], A + 2));
     }
+    if (!flg[3]) PetscCall(MatCreateTranspose(A[2 - flg[2]], A + 1 + flg[2]));
+    else PetscCall(MatTranspose(A[2 - flg[2]], MAT_INITIAL_MATRIX, A + 1 + flg[2]));
   } else {
-    if (!flg[2]) PetscCall(MatCreateHermitianTranspose(A[2], A + 1));
-    else {
+    if (flg[2]) {
       PetscCall(MatHermitianTranspose(A[2], MAT_INITIAL_MATRIX, A + 1));
       PetscCall(MatDestroy(A + 2));
-      PetscCall(MatCreateHermitianTranspose(A[1], A + 2));
     }
+    if (!flg[3]) PetscCall(MatCreateHermitianTranspose(A[2 - flg[2]], A + 1 + flg[2]));
+    else PetscCall(MatHermitianTranspose(A[2 - flg[2]], MAT_INITIAL_MATRIX, A + 1 + flg[2]));
   }
   if (flg[0]) PetscCall(MatDestroy(A + 3));
   /* global coefficient matrix */
@@ -172,7 +173,7 @@ PetscErrorCode MatAndISLoad(const char *prefix, const char *identifier, Mat A, I
         requires: mumps
         suffix: 2
         output_file: output/ex87_1_system-stokes.out
-        args: -viewer -system stokes -empty_A11 -transpose {{false true}shared output} -permute {{false true}shared output} -fieldsplit_1_pc_hpddm_ksp_pc_side right -fieldsplit_1_pc_hpddm_coarse_mat_type baij -fieldsplit_1_pc_hpddm_levels_1_sub_mat_mumps_icntl_26 1
+        args: -viewer -system stokes -empty_A11 -transpose {{false true}shared output} -permute {{false true}shared output} -fieldsplit_1_pc_hpddm_ksp_pc_side right -fieldsplit_1_pc_hpddm_coarse_mat_type baij -fieldsplit_1_pc_hpddm_levels_1_sub_mat_mumps_icntl_26 1 -explicit {{false true}shared output}
         filter: grep -v -e "action of " -e "                            " -e "block size" -e "total: nonzeros=" -e "using I-node" -e "aij" -e "transpose" -e "diagonal" -e "total number of" -e "                rows=" | sed -e "s/      right preconditioning/      left preconditioning/g" -e "s/      using UNPRECONDITIONED/      using PRECONDITIONED/g"
       test:
         suffix: 1_petsc
