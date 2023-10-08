@@ -222,13 +222,13 @@ static PetscErrorCode PCView_FieldSplit_Schur(PC pc, PetscViewer viewer)
     } else PetscCall(PetscViewerASCIIPrintf(viewer, "  not yet available\n"));
     PetscCall(PetscViewerASCIIPopTab(viewer));
     if (jac->head && jac->kspupper != jac->head->ksp) {
-      PetscCall(PetscViewerASCIIPrintf(viewer, "KSP solver for upper A00 in upper triangular factor \n"));
+      PetscCall(PetscViewerASCIIPrintf(viewer, "KSP solver for upper A00 in upper triangular factor\n"));
       PetscCall(PetscViewerASCIIPushTab(viewer));
       if (jac->kspupper) PetscCall(KSPView(jac->kspupper, viewer));
       else PetscCall(PetscViewerASCIIPrintf(viewer, "  not yet available\n"));
       PetscCall(PetscViewerASCIIPopTab(viewer));
     }
-    PetscCall(PetscViewerASCIIPrintf(viewer, "KSP solver for S = A11 - A10 inv(A00) A01 \n"));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "KSP solver for S = A11 - A10 inv(A00) A01\n"));
     PetscCall(PetscViewerASCIIPushTab(viewer));
     if (jac->kspschur) {
       PetscCall(KSPView(jac->kspschur, viewer));

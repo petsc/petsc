@@ -515,8 +515,8 @@ PetscErrorCode MatFilter(Mat A, PetscReal tol, PetscBool compress, PetscBool kee
     PetscCall(MatRestoreRowUpperTriangular(A));
     PetscCall(PetscFree2(newCols, newVals));
     PetscCall(MatSetOption(A, MAT_NO_OFF_PROC_ENTRIES, flg)); /* reset option to its user-defined value */
-    if (nnz0 > 0) PetscCall(PetscInfo(NULL, "Filtering left %g %% edges in graph\n", 100 * (double)nnz1 / (double)nnz0));
-    else PetscCall(PetscInfo(NULL, "Warning: %d edges to filter with %d rows\n", (int)nnz0, (int)maxRows));
+    if (nnz0 > 0) PetscCall(PetscInfo(NULL, "Filtering left %g%% edges in graph\n", 100 * (double)nnz1 / (double)nnz0));
+    else PetscCall(PetscInfo(NULL, "Warning: %" PetscInt_FMT " edges to filter with %" PetscInt_FMT " rows\n", nnz0, maxRows));
   }
   if (compress && A->ops->eliminatezeros) {
     Mat       B;
