@@ -455,7 +455,7 @@ int main(int argc, char **args)
   testset:
     nsize: 4
     requires: !single
-    args: -dm_plex_dim 3 -dm_plex_simplex 0 -dm_plex_box_lower 0,0,0 -dm_plex_box_upper 1,1,1 -dm_plex_box_faces 2,2,1 -petscpartitioner_simple_process_grid 2,2,1 -petscspace_degree 2 -snes_max_it 1 -ksp_max_it 100 -ksp_type cg -ksp_rtol 1.e-10 -ksp_norm_type unpreconditioned -pc_type gamg -pc_gamg_coarse_eq_limit 10 -pc_gamg_reuse_interpolation true -pc_gamg_aggressive_coarsening 1 -pc_gamg_threshold 0.001 -ksp_converged_reason  -use_mat_nearnullspace true -mg_levels_ksp_max_it 2 -mg_levels_ksp_type chebyshev -mg_levels_ksp_chebyshev_esteig 0,0.2,0,1.1 -mg_levels_pc_type jacobi -petscpartitioner_type simple -my_dm_view -snes_lag_jacobian -2 -snes_type ksponly -pc_gamg_aggressive_square_graph -pc_gamg_mis_k_minimum_degree_ordering true
+    args: -dm_plex_dim 3 -dm_plex_simplex 0 -dm_plex_box_lower 0,0,0 -dm_plex_box_upper 1,1,1 -dm_plex_box_faces 2,2,1 -petscpartitioner_simple_process_grid 2,2,1 -petscspace_degree 2 -snes_max_it 1 -ksp_max_it 100 -ksp_type cg -ksp_rtol 1.e-10 -ksp_norm_type unpreconditioned -pc_type gamg -pc_gamg_coarse_eq_limit 10 -pc_gamg_reuse_interpolation true -pc_gamg_aggressive_coarsening 1 -pc_gamg_threshold 0.001 -ksp_converged_reason  -use_mat_nearnullspace true -mg_levels_ksp_max_it 2 -mg_levels_ksp_type chebyshev -mg_levels_ksp_chebyshev_esteig 0,0.2,0,1.1 -mg_levels_pc_type jacobi -petscpartitioner_type simple -my_dm_view -snes_lag_jacobian -2 -snes_type ksponly -pc_gamg_aggressive_square_graph -pc_gamg_mis_k_minimum_degree_ordering true -pc_gamg_low_memory_threshold_filter
     timeoutfactor: 2
     test:
       suffix: 0
