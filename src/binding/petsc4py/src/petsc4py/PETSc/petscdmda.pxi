@@ -113,7 +113,7 @@ cdef inline PetscDMDAElementType daelementtype(object etype) \
         else: raise ValueError("unknown element type: %s" % etype)
     return etype
 
-cdef inline PetscErrorCode DMDAGetDim(PetscDM da, PetscInt *dim) nogil:
+cdef inline PetscErrorCode DMDAGetDim(PetscDM da, PetscInt *dim) noexcept nogil:
      return DMDAGetInfo(da, dim,
                         NULL, NULL, NULL,
                         NULL, NULL, NULL,
