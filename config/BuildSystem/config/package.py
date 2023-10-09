@@ -1227,7 +1227,7 @@ To use currently downloaded (local) git snapshot - use: --download-'+self.packag
 {x}
 #define  PetscXstr_(s) PetscStr_(s)
 #define  PetscStr_(s)  #s
-char     *ver = "petscpkgver(" PetscXstr_({y}) ")";
+const char *ver = "petscpkgver(" PetscXstr_({y}) ")";
 '''.format(x=includeLines, y=self.versionname))
        # Ex. char *ver = "petscpkgver(" "20211206" ")";
        # But after stripping spaces, quotes etc below, it becomes char*ver=petscpkgver(20211206);
@@ -1241,20 +1241,18 @@ char     *ver = "petscpkgver(" PetscXstr_({y}) ")";
       return
     self.popLanguage()
     setattr(self.compilers, flagsArg,oldFlags)
-    #strip #lines
-    output = re.sub('#.*\n','\n',output)
-    #strip newlines,spaces,quotes
-    output = re.sub('[\n "]*','',output)
-    #strip backslash. Mumps' version macro already has "" around it, giving output: char *ver = petscpkgver(" "\"5.4.1\"" ")";
-    output = output.replace('\\','')
-    #now split over ';'
-    loutput = output.split(';')
+    # the preprocessor output might be very long, but the petscpkgver line should be at the end. Therefore, we partition it backwards
+    [mid, right] = output.rpartition('petscpkgver')[1:]
     version = ''
-    for i in loutput:
-      if i.find('petscpkgver') >=0:
-        self.log.write('Found version string: ' + i +'\n')
-        version = i.split('(')[1].split(')')[0]
-        break
+    if mid: # if mid is not empty, then it should be 'petscpkgver', meaning we found the version string
+      verLine = right.split(';',1)[0] # get the string before the first ';'. Preprocessor might dump multiline result.
+      self.log.write('Found the raw version string: ' + verLine +'\n')
+      # strip backslashs, spaces and quotes. Note Mumps' version macro has "" around it, giving output: (" "\"5.4.1\"" ")";
+      for char in ['\\', ' ', '"']:
+          verLine = verLine.replace(char, '')
+      # get the string between the outer ()
+      version = verLine.split('(', 1)[-1].rsplit(')',1)[0]
+      self.log.write('This is the processed version string: ' + version +'\n')
     if not version:
       self.log.write('For '+self.package+' unable to find version information: output below, skipping version check\n')
       self.log.write(output)
