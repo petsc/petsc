@@ -165,6 +165,22 @@ class BaseTestKSP(object):
         self.ksp.setConvergenceTest(None)
         self.assertEqual(getrefcount(converged), refcnt)
 
+    def testAddConvergenceTest(self):
+        def converged(ksp, its, rnorm):
+            return True
+        refcnt = getrefcount(converged)
+        self.ksp.addConvergenceTest(converged,prepend=True)
+        self.assertEqual(getrefcount(converged), refcnt + 1)
+        self.testSolve()
+        self.ksp.setConvergenceTest(None)
+        self.assertEqual(getrefcount(converged), refcnt)
+        self.testSolve()
+        self.ksp.addConvergenceTest(converged,prepend=False)
+        self.assertEqual(getrefcount(converged), refcnt + 1)
+        self.testSolve()
+        self.ksp.setConvergenceTest(None)
+        self.assertEqual(getrefcount(converged), refcnt)
+
 # --------------------------------------------------------------------
 
 class TestKSPPREONLY(BaseTestKSP, unittest.TestCase):
@@ -210,6 +226,9 @@ class TestKSPGMRES(BaseTestKSP, unittest.TestCase):
 
 class TestKSPFGMRES(BaseTestKSP, unittest.TestCase):
     KSP_TYPE = PETSc.KSP.Type.FGMRES
+
+class TestKSPLSQR(BaseTestKSP, unittest.TestCase):
+    KSP_TYPE = PETSc.KSP.Type.LSQR
 
 # --------------------------------------------------------------------
 
