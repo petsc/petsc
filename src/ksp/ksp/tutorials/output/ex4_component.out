@@ -1,8 +1,7 @@
-  0 KSP Residual norm 1.364430446565e+01 
-  1 KSP Residual norm 6.180480379074e-01 
-  2 KSP Residual norm 3.045669366295e-02 
-  3 KSP Residual norm 3.325235029085e-03 
-  4 KSP Residual norm 2.617904552097e-04 
-  5 KSP Residual norm 1.447443063030e-05 
-  6 KSP Residual norm 1.626989857400e-06 
-Norm of error 1.91984e-06 iterations 6
+  0 KSP Residual norm 1.416833013240e+01 
+  1 KSP Residual norm 5.486643994593e-01 
+  2 KSP Residual norm 2.826269401587e-02 
+  3 KSP Residual norm 1.727350695282e-03 
+  4 KSP Residual norm 1.863940336484e-04 
+  5 KSP Residual norm 1.230070354543e-05 
+Norm of error 1.5279e-05 iterations 5

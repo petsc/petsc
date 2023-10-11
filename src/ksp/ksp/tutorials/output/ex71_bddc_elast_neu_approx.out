@@ -100,8 +100,7 @@ PC Object: 8 MPI processes
             Threshold scaling factor for each level not specified = 1.
             AGG specific options
               Number of levels of aggressive coarsening 1
-              MIS-k aggressive coarsening
-              MIS-2 coarsening on aggressive levels
+              Square graph aggressive coarsening
               Number smoothing steps 1
             Complexity:    grid = 1.06452    operator = 1.02271
       Coarse grid solver -- level 0 -------------------------------
