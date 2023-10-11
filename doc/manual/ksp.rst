@@ -1484,7 +1484,7 @@ scaling, available via the command line switch
 ``PCISSetSubdomainScalingFactor()``,
 ``PCISSetSubdomainDiagonalScaling()`` or
 ``PCISSetUseStiffnessScaling()``. However, the convergence properties of
-the `PCBDDC`` method degrades in presence of large jumps in the material
+the ``PCBDDC`` method degrades in presence of large jumps in the material
 coefficients not aligned with the interface; for such cases, PETSc has
 the capability of adaptively computing the primal constraints. Adaptive
 selection of constraints could be requested by specifying a threshold

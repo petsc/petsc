@@ -19,7 +19,7 @@ PetscErrorCode DMRestrictHook_Coordinates(DM, DM, void *);
 
   Level: intermediate
 
-.seealso: [](ch_stag), `DMSTAG`, `DMBoundaryType``
+.seealso: [](ch_stag), `DMSTAG`, `DMBoundaryType`
 @*/
 PetscErrorCode DMStagGetBoundaryTypes(DM dm, DMBoundaryType *boundaryTypeX, DMBoundaryType *boundaryTypeY, DMBoundaryType *boundaryTypeZ)
 {
