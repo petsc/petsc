@@ -33,6 +33,7 @@ static PetscErrorCode KSPChebyshevComputeExtremeEigenvalues_Private(KSP kspest, 
   PetscCall(PetscFree2(re, im));
   *emax = max;
   *emin = min;
+  PetscCall(PetscInfo(kspest, " eigen estimate min/max = %g %g\n", (double)min, (double)max));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
