@@ -415,7 +415,7 @@ PetscErrorCode SNESLineSearchGetPostCheck(SNESLineSearch linesearch, PetscErrorC
   This calls any function provided with `SNESLineSearchSetPreCheck()`
 
 .seealso: `SNESLineSearch`, `SNESGetLineSearch()`, `SNESLineSearchPostCheck()`, `SNESLineSearchSetPreCheck()`, `SNESLineSearchGetPreCheck()`, `SNESLineSearchSetPostCheck()`,
-          `SNESLineSearchGetPostCheck()``
+          `SNESLineSearchGetPostCheck()`
 @*/
 PetscErrorCode SNESLineSearchPreCheck(SNESLineSearch linesearch, Vec X, Vec Y, PetscBool *changed)
 {

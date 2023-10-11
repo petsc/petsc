@@ -189,7 +189,7 @@ PetscErrorCode DMPlexGetUseCeed(DM dm, PetscBool *useCeed)
 
   Level: intermediate
 
-.seealso: `DMPlexGetUseCeed()``
+.seealso: `DMPlexGetUseCeed()`
 @*/
 PetscErrorCode DMPlexSetUseCeed(DM dm, PetscBool useCeed)
 {

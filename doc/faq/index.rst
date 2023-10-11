@@ -669,8 +669,8 @@ PETSc also contains a balancing Neumann-Neumann type preconditioner, see the man
 for ``PCBDDC``. This requires matrices be constructed with ``MatCreateIS()`` via the finite
 element method. See ``src/ksp/ksp/tests/ex59.c`` for an example.
 
-You have ``MATAIJ`` and ``MATBAIJ`` matrix formats, and ``MATSBAIJ`` for symmetric storage, how come no `MATSAIJ``?
--------------------------------------------------------------------------------------------------------------------
+You have ``MATAIJ`` and ``MATBAIJ`` matrix formats, and ``MATSBAIJ`` for symmetric storage, how come no ``MATSAIJ``?
+--------------------------------------------------------------------------------------------------------------------
 
 Just for historical reasons; the ``MATSBAIJ`` format with blocksize one is just as efficient as
 a `MATSAIJ` would be.
