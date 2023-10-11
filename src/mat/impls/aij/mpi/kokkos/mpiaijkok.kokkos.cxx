@@ -1710,6 +1710,21 @@ static PetscErrorCode MatDestroy_MPIAIJKokkos(Mat A)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+static PetscErrorCode MatShift_MPIAIJKokkos(Mat A, PetscScalar a)
+{
+  Mat_MPIAIJ *mpiaij = static_cast<Mat_MPIAIJ *>(A->data);
+  PetscBool   congruent;
+
+  PetscFunctionBegin;
+  PetscCall(MatHasCongruentLayouts(A, &congruent));
+  if (congruent) { // square matrix and the diagonals are solely in the diag block
+    PetscCall(MatShift(mpiaij->A, a));
+  } else { // too hard, use the general version
+    PetscCall(MatShift_Basic(A, a));
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 static PetscErrorCode MatSetOps_MPIAIJKokkos(Mat B)
 {
   PetscFunctionBegin;
@@ -1719,6 +1734,7 @@ static PetscErrorCode MatSetOps_MPIAIJKokkos(Mat B)
   B->ops->multtranspose         = MatMultTranspose_MPIAIJKokkos;
   B->ops->productsetfromoptions = MatProductSetFromOptions_MPIAIJKokkos;
   B->ops->destroy               = MatDestroy_MPIAIJKokkos;
+  B->ops->shift                 = MatShift_MPIAIJKokkos;
 
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatMPIAIJSetPreallocation_C", MatMPIAIJSetPreallocation_MPIAIJKokkos));
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatMPIAIJGetLocalMatMerge_C", MatMPIAIJGetLocalMatMerge_MPIAIJKokkos));

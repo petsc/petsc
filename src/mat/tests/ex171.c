@@ -20,6 +20,7 @@ int main(int argc, char **args)
   /* Load matrix A */
   PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD, file, FILE_MODE_READ, &fd));
   PetscCall(MatCreate(PETSC_COMM_WORLD, &A));
+  PetscCall(MatSetFromOptions(A));
   PetscCall(MatLoad(A, fd));
   PetscCall(PetscViewerDestroy(&fd));
   PetscCall(MatCreateVecs(A, &x, NULL));
@@ -39,9 +40,19 @@ int main(int argc, char **args)
 
 /*TEST
 
-   test:
+   testset:
       nsize: 4
       requires: datafilespath !complex double !defined(PETSC_USE_64BIT_INDICES)
       args: -f ${wPETSC_DIR}/share/petsc/datafiles/matrices/ns-real-int32-float64 -malloc_dump
+      output_file: output/ex171_1.out
+
+      test:
+        suffix: 1
+        args: -mat_type aij
+
+      test:
+        suffix: 2
+        requires: kokkos_kernels
+        args: -mat_type aijkokkos
 
 TEST*/
