@@ -66,10 +66,10 @@ static PetscErrorCode MatCholeskyFactorSymbolic_SeqSBAIJ_MSR(Mat F, Mat A, IS pe
   }
 
   /* initialization */
-  PetscCall(PetscMalloc1(mbs + 1, &iu));
+  PetscCall(PetscShmgetAllocateArray(mbs + 1, sizeof(PetscInt), (void **)&iu));
   umax = (PetscInt)(f * ai[mbs] + 1);
   umax += mbs + 1;
-  PetscCall(PetscMalloc1(umax, &ju));
+  PetscCall(PetscShmgetAllocateArray(umax, sizeof(PetscInt), (void **)&ju));
   iu[0] = mbs + 1;
   juidx = mbs + 1; /* index for ju */
   /* jl linked list for pivot row -- linked list for col index */
@@ -146,9 +146,9 @@ static PetscErrorCode MatCholeskyFactorSymbolic_SeqSBAIJ_MSR(Mat F, Mat A, IS pe
       umax += maxadd;
 
       /* allocate a longer ju */
-      PetscCall(PetscMalloc1(umax, &jutmp));
+      PetscCall(PetscShmgetAllocateArray(umax, sizeof(PetscInt), (void **)&jutmp));
       PetscCall(PetscArraycpy(jutmp, ju, iu[k]));
-      PetscCall(PetscFree(ju));
+      PetscCall(PetscShmgetDeallocateArray((void **)&ju));
       ju = jutmp;
       reallocs++; /* count how many times we realloc */
     }
@@ -179,18 +179,16 @@ static PetscErrorCode MatCholeskyFactorSymbolic_SeqSBAIJ_MSR(Mat F, Mat A, IS pe
   /* put together the new matrix */
   PetscCall(MatSeqSBAIJSetPreallocation(F, bs, MAT_SKIP_ALLOCATION, NULL));
 
-  b               = (Mat_SeqSBAIJ *)(F)->data;
-  b->singlemalloc = PETSC_FALSE;
-  b->free_a       = PETSC_TRUE;
-  b->free_ij      = PETSC_TRUE;
-
-  PetscCall(PetscMalloc1((iu[mbs] + 1) * bs2, &b->a));
-  b->j    = ju;
-  b->i    = iu;
-  b->diag = NULL;
-  b->ilen = NULL;
-  b->imax = NULL;
-  b->row  = perm;
+  b          = (Mat_SeqSBAIJ *)(F)->data;
+  b->free_ij = PETSC_TRUE;
+  PetscCall(PetscShmgetAllocateArray((iu[mbs] + 1) * bs2, sizeof(PetscScalar), (void **)&b->a));
+  b->free_a = PETSC_TRUE;
+  b->j      = ju;
+  b->i      = iu;
+  b->diag   = NULL;
+  b->ilen   = NULL;
+  b->imax   = NULL;
+  b->row    = perm;
 
   b->pivotinblocks = PETSC_FALSE; /* need to get from MatFactorInfo */
 
@@ -248,7 +246,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqSBAIJ(Mat fact, Mat A, IS perm, cons
   PetscCall(ISGetIndices(perm, &rip));
 
   /* initialization */
-  PetscCall(PetscMalloc1(mbs + 1, &ui));
+  PetscCall(PetscShmgetAllocateArray(mbs + 1, sizeof(PetscInt), (void **)&ui));
   PetscCall(PetscMalloc1(mbs + 1, &udiag));
   ui[0] = 0;
 
@@ -334,20 +332,17 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqSBAIJ(Mat fact, Mat A, IS perm, cons
   PetscCall(PetscFree4(ui_ptr, il, jl, cols));
 
   /* destroy list of free space and other temporary array(s) */
-  PetscCall(PetscMalloc1(ui[mbs] + 1, &uj));
+  PetscCall(PetscShmgetAllocateArray(ui[mbs] + 1, sizeof(PetscInt), (void **)&uj));
   PetscCall(PetscFreeSpaceContiguous_Cholesky(&free_space, uj, mbs, ui, udiag)); /* store matrix factor */
   PetscCall(PetscLLDestroy(lnk, lnkbt));
 
   /* put together the new matrix in MATSEQSBAIJ format */
   PetscCall(MatSeqSBAIJSetPreallocation(fact, bs, MAT_SKIP_ALLOCATION, NULL));
 
-  b               = (Mat_SeqSBAIJ *)fact->data;
-  b->singlemalloc = PETSC_FALSE;
-  b->free_a       = PETSC_TRUE;
-  b->free_ij      = PETSC_TRUE;
-
-  PetscCall(PetscMalloc1(ui[mbs] + 1, &b->a));
-
+  b          = (Mat_SeqSBAIJ *)fact->data;
+  b->free_ij = PETSC_TRUE;
+  PetscCall(PetscShmgetAllocateArray(ui[mbs] + 1, sizeof(PetscScalar), (void **)&b->a));
+  b->free_a    = PETSC_TRUE;
   b->j         = uj;
   b->i         = ui;
   b->diag      = udiag;
@@ -427,7 +422,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqSBAIJ_inplace(Mat fact, Mat A, IS pe
   PetscCall(ISGetIndices(perm, &rip));
 
   /* initialization */
-  PetscCall(PetscMalloc1(mbs + 1, &ui));
+  PetscCall(PetscShmgetAllocateArray(mbs + 1, sizeof(PetscInt), (void **)&ui));
   ui[0] = 0;
 
   /* jl: linked list for storing indices of the pivot rows
@@ -512,26 +507,23 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqSBAIJ_inplace(Mat fact, Mat A, IS pe
   PetscCall(PetscFree4(ui_ptr, il, jl, cols));
 
   /* destroy list of free space and other temporary array(s) */
-  PetscCall(PetscMalloc1(ui[mbs] + 1, &uj));
+  PetscCall(PetscShmgetAllocateArray(ui[mbs] + 1, sizeof(PetscInt), (void **)&uj));
   PetscCall(PetscFreeSpaceContiguous(&free_space, uj));
   PetscCall(PetscLLDestroy(lnk, lnkbt));
 
   /* put together the new matrix in MATSEQSBAIJ format */
   PetscCall(MatSeqSBAIJSetPreallocation(fact, bs, MAT_SKIP_ALLOCATION, NULL));
 
-  b               = (Mat_SeqSBAIJ *)fact->data;
-  b->singlemalloc = PETSC_FALSE;
-  b->free_a       = PETSC_TRUE;
-  b->free_ij      = PETSC_TRUE;
-
-  PetscCall(PetscMalloc1(ui[mbs] + 1, &b->a));
-
-  b->j    = uj;
-  b->i    = ui;
-  b->diag = NULL;
-  b->ilen = NULL;
-  b->imax = NULL;
-  b->row  = perm;
+  b = (Mat_SeqSBAIJ *)fact->data;
+  PetscCall(PetscShmgetAllocateArray(ui[mbs] + 1, sizeof(PetscScalar), (void **)&b->a));
+  b->free_a  = PETSC_TRUE;
+  b->free_ij = PETSC_TRUE;
+  b->j       = uj;
+  b->i       = ui;
+  b->diag    = NULL;
+  b->ilen    = NULL;
+  b->imax    = NULL;
+  b->row     = perm;
 
   b->pivotinblocks = PETSC_FALSE; /* need to get from MatFactorInfo */
 

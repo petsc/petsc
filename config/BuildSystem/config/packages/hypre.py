@@ -133,7 +133,7 @@ class Configure(config.package.GNUPackage):
 
     if self.usesopenmp == 'no':
       if hasattr(self,'openmp') and hasattr(self.openmp,'ompflag'):
-        args = rmValueArgStartsWith(args,['CC','CXX','FC'],self.openmp.ompflag)        
+        args = self.rmValueArgStartsWith(args,['CC','CXX','FC'],self.openmp.ompflag)
 
     args.append('CUCC="'+cucc+'"')
     args.append('CUFLAGS="'+devflags+'"')

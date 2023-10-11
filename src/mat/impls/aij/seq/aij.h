@@ -44,14 +44,13 @@ typedef struct {
     Struct header shared by SeqAIJ, SeqBAIJ and SeqSBAIJ matrix formats
 */
 #define SEQAIJHEADER(datatype) \
-  PetscBool         roworiented;  /* if true, row-oriented input, default */ \
-  PetscInt          nonew;        /* 1 don't add new nonzeros, -1 generate error on new */ \
-  PetscInt          nounused;     /* -1 generate error on unused space */ \
-  PetscBool         singlemalloc; /* if true a, i, and j have been obtained with one big malloc */ \
-  PetscInt          maxnz;        /* allocated nonzeros */ \
-  PetscInt         *imax;         /* maximum space allocated for each row */ \
-  PetscInt         *ilen;         /* actual length of each row */ \
-  PetscInt         *ipre;         /* space preallocated for each row by user */ \
+  PetscBool         roworiented; /* if true, row-oriented input, default */ \
+  PetscInt          nonew;       /* 1 don't add new nonzeros, -1 generate error on new */ \
+  PetscInt          nounused;    /* -1 generate error on unused space */ \
+  PetscInt          maxnz;       /* allocated nonzeros */ \
+  PetscInt         *imax;        /* maximum space allocated for each row */ \
+  PetscInt         *ilen;        /* actual length of each row */ \
+  PetscInt         *ipre;        /* space preallocated for each row by user */ \
   PetscBool         free_imax_ilen; \
   PetscInt          reallocs;           /* number of mallocs done during MatSetValues() \
                                         as more values are set than were prealloced */ \
@@ -192,6 +191,26 @@ typedef struct {
   } \
   (void)0
 
+static inline PetscErrorCode MatXAIJAllocatea(Mat A, PetscInt nz, PetscScalar **array)
+{
+  Mat_SeqAIJ *a = (Mat_SeqAIJ *)A->data;
+
+  PetscFunctionBegin;
+  PetscCall(PetscShmgetAllocateArray(nz, sizeof(PetscScalar), (void **)array));
+  a->free_a = PETSC_TRUE;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static inline PetscErrorCode MatXAIJDeallocatea(Mat A, PetscScalar **array)
+{
+  Mat_SeqAIJ *a = (Mat_SeqAIJ *)A->data;
+
+  PetscFunctionBegin;
+  if (a->free_a) PetscCall(PetscShmgetDeallocateArray((void **)array));
+  a->free_a = PETSC_FALSE;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 /*
   Frees the a, i, and j arrays from the XAIJ (AIJ, BAIJ, and SBAIJ) matrix types
 */
@@ -200,13 +219,9 @@ static inline PetscErrorCode MatSeqXAIJFreeAIJ(Mat AA, MatScalar **a, PetscInt *
   Mat_SeqAIJ *A = (Mat_SeqAIJ *)AA->data;
 
   PetscFunctionBegin;
-  if (A->singlemalloc) {
-    PetscCall(PetscFree3(*a, *j, *i));
-  } else {
-    if (A->free_a) PetscCall(PetscFree(*a));
-    if (A->free_ij) PetscCall(PetscFree(*j));
-    if (A->free_ij) PetscCall(PetscFree(*i));
-  }
+  if (A->free_a) PetscCall(PetscShmgetDeallocateArray((void **)a));
+  if (A->free_ij) PetscCall(PetscShmgetDeallocateArray((void **)j));
+  if (A->free_ij) PetscCall(PetscShmgetDeallocateArray((void **)i));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 /*
@@ -216,15 +231,17 @@ static inline PetscErrorCode MatSeqXAIJFreeAIJ(Mat AA, MatScalar **a, PetscInt *
 #define MatSeqXAIJReallocateAIJ(Amat, AM, BS2, NROW, ROW, COL, RMAX, AA, AI, AJ, RP, AP, AIMAX, NONEW, datatype) \
   do { \
     if (NROW >= RMAX) { \
-      Mat_SeqAIJ *Ain = (Mat_SeqAIJ *)Amat->data; \
-      /* there is no extra room in row, therefore enlarge */ \
-      PetscInt  CHUNKSIZE = 15, new_nz = AI[AM] + CHUNKSIZE, len, *new_i = NULL, *new_j = NULL; \
-      datatype *new_a; \
+      Mat_SeqAIJ *Ain       = (Mat_SeqAIJ *)Amat->data; \
+      PetscInt    CHUNKSIZE = 15, new_nz = AI[AM] + CHUNKSIZE, len, *new_i = NULL, *new_j = NULL; \
+      datatype   *new_a; \
 \
       PetscCheck(NONEW != -2, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "New nonzero at (%" PetscInt_FMT ",%" PetscInt_FMT ") caused a malloc. Use MatSetOption(A, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_FALSE) to turn off this check", ROW, COL); \
       /* malloc new storage space */ \
-      PetscCall(PetscMalloc3(BS2 *new_nz, &new_a, new_nz, &new_j, AM + 1, &new_i)); \
-\
+      PetscCall(PetscShmgetAllocateArray(BS2 *new_nz, sizeof(PetscScalar), (void **)&new_a)); \
+      PetscCall(PetscShmgetAllocateArray(new_nz, sizeof(PetscInt), (void **)&new_j)); \
+      PetscCall(PetscShmgetAllocateArray(AM + 1, sizeof(PetscInt), (void **)&new_i)); \
+      Ain->free_a  = PETSC_TRUE; \
+      Ain->free_ij = PETSC_TRUE; \
       /* copy over old data into new slots */ \
       for (ii = 0; ii < ROW + 1; ii++) new_i[ii] = AI[ii]; \
       for (ii = ROW + 1; ii < AM + 1; ii++) new_i[ii] = AI[ii] + CHUNKSIZE; \
@@ -239,8 +256,7 @@ static inline PetscErrorCode MatSeqXAIJFreeAIJ(Mat AA, MatScalar **a, PetscInt *
       AA     = new_a; \
       Ain->a = (MatScalar *)new_a; \
       AI = Ain->i = new_i; \
-      AJ = Ain->j       = new_j; \
-      Ain->singlemalloc = PETSC_TRUE; \
+      AJ = Ain->j = new_j; \
 \
       RP   = AJ + AI[ROW]; \
       AP   = AA + BS2 * AI[ROW]; \
@@ -260,8 +276,10 @@ static inline PetscErrorCode MatSeqXAIJFreeAIJ(Mat AA, MatScalar **a, PetscInt *
 \
       PetscCheck(NONEW != -2, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "New nonzero at (%" PetscInt_FMT ",%" PetscInt_FMT ") caused a malloc. Use MatSetOption(A, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_FALSE) to turn off this check", ROW, COL); \
       /* malloc new storage space */ \
-      PetscCall(PetscMalloc1(new_nz, &new_j)); \
-      PetscCall(PetscMalloc1(AM + 1, &new_i)); \
+      PetscCall(PetscShmgetAllocateArray(new_nz, sizeof(PetscInt), (void **)&new_j)); \
+      PetscCall(PetscShmgetAllocateArray(AM + 1, sizeof(PetscInt), (void **)&new_i)); \
+      Ain->free_a  = PETSC_FALSE; \
+      Ain->free_ij = PETSC_TRUE; \
 \
       /* copy over old data into new slots */ \
       for (ii = 0; ii < ROW + 1; ii++) new_i[ii] = AI[ii]; \
@@ -274,9 +292,7 @@ static inline PetscErrorCode MatSeqXAIJFreeAIJ(Mat AA, MatScalar **a, PetscInt *
       PetscCall(MatSeqXAIJFreeAIJ(A, &Ain->a, &Ain->j, &Ain->i)); \
       Ain->a = NULL; \
       AI = Ain->i = new_i; \
-      AJ = Ain->j       = new_j; \
-      Ain->singlemalloc = PETSC_FALSE; \
-      Ain->free_a       = PETSC_FALSE; \
+      AJ = Ain->j = new_j; \
 \
       RP   = AJ + AI[ROW]; \
       RMAX = AIMAX[ROW] = AIMAX[ROW] + CHUNKSIZE; \

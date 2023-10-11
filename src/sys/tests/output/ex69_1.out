@@ -1,0 +1,3 @@
+Wall clock time from MPI_Wtime()     0.000207
+Wall clock time from omp_get_wtime() 0.000207
+Value of x(22) 4.60719e+28

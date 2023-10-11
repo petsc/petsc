@@ -1,5 +1,6 @@
 /*
   A simplification of the Stream benchmark for OpenMP
+  The array for each thread is a large distance from the array for the other threads
   Original code developed by John D. McCalpin
 */
 #include <stdio.h>
@@ -8,10 +9,11 @@
 #include <float.h>
 #include <sys/time.h>
 #include <stdlib.h>
+#include <omp.h>
 #include <petscsys.h>
 
-//#define N 2*4*20000000
-#define N 80000000
+#define NTIMESINNER 1
+#define N 2*4*20000000
 //#define N 1200000
 //#define N 120000
 #define NTIMES       50
@@ -24,17 +26,18 @@
 # define MAX(x,y) ((x)>(y) ? (x) : (y))
 # endif
 
-static double a[N+OFFSET],b[N+OFFSET],c[N+OFFSET];
+static double a[64][10000000],b[64][10000000],c[64][10000000];
 static double  mintime = FLT_MAX;
 static double bytes =  3 * sizeof(double) * N;
 
-int main(int argc,char **argv)
+int main()
 {
-  MPI_Init(&argc,&argv);
   const static double scalar = 3.0;
 #pragma omp threadprivate(scalar)
   double       times[NTIMES],rate;
   int          size;
+  static int   n;
+#pragma omp threadprivate(n)
   char         *env;
   FILE         *fd;
 
@@ -43,10 +46,13 @@ int main(int argc,char **argv)
   sscanf(env,"%d",&size);
 
 #pragma omp parallel for schedule(static)
-  for (int j=0; j<N; j++) {
-    a[j] = 1.0;
-    b[j] = 2.0;
-    c[j] = 3.0;
+  for (int j=0; j<size; j++) {
+    n = (N / size + ((N % size) > omp_get_thread_num()));
+    for (int i=0; i<n; i++){
+      a[j][i] = 1.0;
+      b[j][i] = 2.0;
+      c[j][i] = 3.0;
+    }
   }
 
   /*  --- MAIN LOOP --- repeat test cases NTIMES times --- */
@@ -54,18 +60,25 @@ int main(int argc,char **argv)
   {
     times[k] = MPI_Wtime();
     // https://www.openmp.org/wp-content/uploads/OpenMP-API-Specification-5-2.pdf
-    // #pragma omp parallel for  (same performance as below)
-    // #pragma omp parallel for simd schedule(static)  (same performance as below)
+// #pragma omp parallel for  (same performance as below)
+// #pragma omp parallel for simd schedule(static)  (same performance as below)
 #pragma omp parallel for schedule(static)
-    for (register int j=0; j<N; j++) a[j] = b[j]+scalar*c[j];
+    for (int j=0; j<size; j++) {
+      n = (N / size + ((N % size) > omp_get_thread_num()));
+      double *aa = a[j];  // these don't change the timings
+      const double *bb = b[j];
+      const double *cc = c[j];
+      for (int l=0; l<NTIMESINNER; l++) {
+        for (register int i=0; i<n; i++) aa[i] = bb[i]+scalar*cc[i];
+          if (size == 65) printf("never printed %g\n",a[0][11]);
+      }
+    }
     times[k] = MPI_Wtime() - times[k];
   }
   for (int k=1; k<NTIMES; k++) {  /* note -- skip first iteration */
       mintime = MIN(mintime, times[k]);
   }
-
-  if (size == 65) printf("Never printed %g\n",a[11]);
-  rate = 1.0E-06 * bytes/mintime;
+  rate = 1.0E-06 * bytes*NTIMESINNER/mintime;
 
   if (size == 1) {
     printf("%d %11.4f   Rate (MB/s) 1\n",size, rate);
@@ -79,6 +92,5 @@ int main(int argc,char **argv)
     fclose(fd);
     printf("%d %11.4f   Rate (MB/s) %g \n", size, rate,rate/prate);
   }
-  MPI_Finalize();
   return 0;
 }

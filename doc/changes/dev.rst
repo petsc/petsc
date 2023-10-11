@@ -28,6 +28,9 @@ Changes: Development
 
 .. rubric:: PetscViewer:
 
+- Add ``PetscViewerASCIIStdoutSetFileUnit()``
+- Add ``PetscShmgetAllocateArrayScalar()``, ``PetscShmgetDeallocateArrayScalar()``, ``PetscShmgetAllocateArrayInt()``, and ``PetscShmgetDeallocateArrayInt()`` for Fortran
+
 .. rubric:: PetscDraw:
 
 .. rubric:: AO:

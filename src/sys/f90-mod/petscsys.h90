@@ -93,10 +93,6 @@
       end Subroutine PetscErrorMPI
 #endif
 
-      subroutine PetscFinalize(ierr)
-       PetscErrorCode, intent(out) :: ierr
-      end Subroutine PetscFinalize
-
       subroutine PetscSubcommGetParent(a,b,z)
        import tPetscSubcomm
        PetscSubcomm a ! PetscSubcomm
@@ -119,6 +115,11 @@
       subroutine MPIU_abort(comm,ierr)
       MPI_Comm,intent(in) ::  comm
       PetscErrorCode,intent(in) ::  ierr
+      end subroutine
+
+      subroutine PetscViewerASCIIStdoutSetFileUnit(unit,z)
+        integer4 unit
+        PetscErrorCode,intent(out) :: z
       end subroutine
 
       subroutine PetscLogEventBegin(event,ierr)
@@ -160,5 +161,35 @@
         Subroutine PetscIntArray1dDestroyF90(a,ierr)
           PetscInt, Pointer :: a(:)
           PetscErrorCode    :: ierr
+        End Subroutine
+      End Interface
+
+      Interface PetscShmgetAllocateArrayScalar
+        Subroutine PetscShmgetAllocateArrayScalar(start, len, d1, ierr)
+          PetscInt :: start, len
+          PetscScalar, pointer :: d1(:)
+          PetscErrorCode ierr
+        End Subroutine
+      End Interface
+
+      Interface PetscShmgetDeallocateArrayScalar
+        Subroutine PetscShmgetDeallocateArrayScalar(d1, ierr)
+          PetscScalar, pointer :: d1(:)
+          PetscErrorCode ierr
+        End Subroutine
+      End Interface
+
+      Interface PetscShmgetAllocateArrayInt
+        Subroutine PetscShmgetAllocateArrayInt(start, len, d1, ierr)
+          PetscInt :: start, len
+          PetscInt, pointer :: d1(:)
+          PetscErrorCode ierr
+        End Subroutine
+      End Interface
+
+      Interface PetscShmgetDeallocateArrayInt
+        Subroutine PetscShmgetDeallocateArrayInt(d1, ierr)
+          PetscInt, pointer :: d1(:)
+          PetscErrorCode ierr
         End Subroutine
       End Interface

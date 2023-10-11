@@ -860,4 +860,4 @@ M*/
 
 .seealso: `PetscMemcpy()`, `PetscMemcmp()`, `PetscMemzero()`, `PetscArraycmp()`, `PetscArraycpy()`, `PetscMemmove()`, `PetscStrallocpy()`, `PetscArraymove()`
 M*/
-#define PetscArrayzero(str1, cnt) PetscMemzero((str1), (size_t)(cnt) * sizeof(*(str1)))
+#define PetscArrayzero(str1, cnt) PetscMemzero((str1), ((size_t)(cnt)) * sizeof(*(str1)))

@@ -60,7 +60,9 @@ batch system), run the following from ``$PETSC_DIR``:
 
 
 This will provide a summary of the bandwidth with different number of MPI
-processes and potential speedups. If you have a batch system:
+processes and potential speedups. See :any:`ch_streams` for a detailed discussion.
+
+If you have a batch system:
 
 .. code-block:: console
 

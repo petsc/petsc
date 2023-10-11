@@ -1,0 +1,8 @@
+ CPU time reported by cpu_time()               2.9999999999995308E-006
+ Wall clock time reported by system_clock()    5.0000000000000004E-006
+ Wall clock time reported by omp_get_wtime()   4.0000013541430235E-006
+ Value of x(22)   4.6071866343312918E+028
+ CPU time reported by cpu_time()               0.0000000000000000     
+ Wall clock time reported by system_clock()    9.9999999999999995E-007
+ Wall clock time reported by omp_get_wtime()   1.0000076144933701E-006
+ Value of x(22)   4.6071866343312918E+028

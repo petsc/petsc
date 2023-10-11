@@ -22,7 +22,7 @@ PETSC_INTERN PetscErrorCode MatSetSeqAIJWithArrays_private(MPI_Comm comm, PetscI
 {
   PetscInt    ii;
   Mat_SeqAIJ *aij;
-  PetscBool   isseqaij, osingle, ofree_a, ofree_ij;
+  PetscBool   isseqaij, ofree_a, ofree_ij;
 
   PetscFunctionBegin;
   PetscCheck(m <= 0 || !i[0], PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "i (row indices) must start with 0");
@@ -36,7 +36,6 @@ PETSC_INTERN PetscErrorCode MatSetSeqAIJWithArrays_private(MPI_Comm comm, PetscI
   }
 
   aij      = (Mat_SeqAIJ *)(mat)->data;
-  osingle  = aij->singlemalloc;
   ofree_a  = aij->free_a;
   ofree_ij = aij->free_ij;
   /* changes the free flags */
@@ -55,21 +54,16 @@ PETSC_INTERN PetscErrorCode MatSetSeqAIJWithArrays_private(MPI_Comm comm, PetscI
   aij->maxnz = i[m];
   aij->nz    = i[m];
 
-  if (osingle) {
-    PetscCall(PetscFree3(aij->a, aij->j, aij->i));
-  } else {
-    if (ofree_a) PetscCall(PetscFree(aij->a));
-    if (ofree_ij) PetscCall(PetscFree(aij->j));
-    if (ofree_ij) PetscCall(PetscFree(aij->i));
-  }
-  aij->i     = i;
-  aij->j     = j;
-  aij->a     = a;
-  aij->nonew = -1; /* this indicates that inserting a new value in the matrix that generates a new nonzero is an error */
-  /* default to not retain ownership */
-  aij->singlemalloc = PETSC_FALSE;
-  aij->free_a       = PETSC_FALSE;
-  aij->free_ij      = PETSC_FALSE;
+  if (ofree_a) PetscCall(PetscShmgetDeallocateArray((void **)&aij->a));
+  if (ofree_ij) PetscCall(PetscShmgetDeallocateArray((void **)&aij->j));
+  if (ofree_ij) PetscCall(PetscShmgetDeallocateArray((void **)&aij->i));
+
+  aij->i       = i;
+  aij->j       = j;
+  aij->a       = a;
+  aij->nonew   = -1; /* this indicates that inserting a new value in the matrix that generates a new nonzero is an error */
+  aij->free_a  = PETSC_FALSE;
+  aij->free_ij = PETSC_FALSE;
   PetscCall(MatCheckCompressedRow(mat, aij->nonzerorowcnt, &aij->compressedrow, aij->i, m, 0.6));
   // Always build the diag info when i, j are set
   PetscCall(MatMarkDiagonal_SeqAIJ(mat));

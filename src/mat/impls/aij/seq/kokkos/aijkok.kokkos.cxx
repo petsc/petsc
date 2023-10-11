@@ -1521,15 +1521,14 @@ PETSC_INTERN PetscErrorCode MatSetSeqAIJKokkosWithCSRMatrix(Mat A, Mat_SeqAIJKok
   PetscCallCXX(akok->j_dual.sync_host(exec));
   PetscCallCXX(exec.fence());
 
-  aseq->i            = akok->i_host_data();
-  aseq->j            = akok->j_host_data();
-  aseq->a            = akok->a_host_data();
-  aseq->nonew        = -1; /*this indicates that inserting a new value in the matrix that generates a new nonzero is an error*/
-  aseq->singlemalloc = PETSC_FALSE;
-  aseq->free_a       = PETSC_FALSE;
-  aseq->free_ij      = PETSC_FALSE;
-  aseq->nz           = akok->nnz();
-  aseq->maxnz        = aseq->nz;
+  aseq->i       = akok->i_host_data();
+  aseq->j       = akok->j_host_data();
+  aseq->a       = akok->a_host_data();
+  aseq->nonew   = -1; /*this indicates that inserting a new value in the matrix that generates a new nonzero is an error*/
+  aseq->free_a  = PETSC_FALSE;
+  aseq->free_ij = PETSC_FALSE;
+  aseq->nz      = akok->nnz();
+  aseq->maxnz   = aseq->nz;
 
   PetscCall(PetscMalloc1(m, &aseq->imax));
   PetscCall(PetscMalloc1(m, &aseq->ilen));

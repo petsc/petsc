@@ -545,6 +545,7 @@ PETSC_EXTERN PetscErrorCode KSPLSQRMonitorResidualDrawLGCreate(PetscViewer, Pets
 PETSC_EXTERN PetscErrorCode PCRedundantGetKSP(PC, KSP *);
 PETSC_EXTERN PetscErrorCode PCRedistributeGetKSP(PC, KSP *);
 PETSC_EXTERN PetscErrorCode PCTelescopeGetKSP(PC, KSP *);
+PETSC_EXTERN PetscErrorCode PCMPIGetKSP(PC, KSP *);
 
 /*E
    KSPNormType - Norm calculated by the `KSP` and passed in the Krylov convergence

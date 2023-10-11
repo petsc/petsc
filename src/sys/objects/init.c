@@ -174,7 +174,7 @@ static void Petsc_MPI_DebuggerOnError(MPI_Comm *comm, PetscMPIInt *flag, ...)
   if (PetscAttachDebugger()) PETSCABORT(*comm, (PetscErrorCode)*flag); /* hopeless so get out */
 }
 
-/*@C
+/*@
   PetscEnd - Calls `PetscFinalize()` and then ends the program. This is useful if one
   wishes a clean exit somewhere deep in the program.
 

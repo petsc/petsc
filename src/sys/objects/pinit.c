@@ -429,9 +429,10 @@ PETSC_EXTERN PetscMPIInt PetscDataRep_write_conv_fn(void *, MPI_Datatype, PetscM
 PetscMPIInt PETSC_MPI_ERROR_CLASS = MPI_ERR_LASTCODE, PETSC_MPI_ERROR_CODE;
 
 PETSC_INTERN int    PetscGlobalArgc;
-PETSC_INTERN char **PetscGlobalArgs;
-int                 PetscGlobalArgc = 0;
-char              **PetscGlobalArgs = NULL;
+PETSC_INTERN char **PetscGlobalArgs, **PetscGlobalArgsFortran;
+int                 PetscGlobalArgc        = 0;
+char              **PetscGlobalArgs        = NULL;
+char              **PetscGlobalArgsFortran = NULL;
 PetscSegBuffer      PetscCitationsList;
 
 PetscErrorCode PetscCitationsInitialize(void)
@@ -513,7 +514,7 @@ PetscErrorCode PetscGetProgramName(char name[], size_t len)
   This is usually used to pass the command line arguments into other libraries
   that are called internally deep in PETSc or the application.
 
-  The first argument contains the program name as is normal for C arguments.
+  The first argument contains the program name as is normal for C programs.
 
 .seealso: `PetscFinalize()`, `PetscInitializeFortran()`, `PetscGetArguments()`, `PetscInitialize()`
 @*/
@@ -1153,6 +1154,7 @@ PETSC_INTERN PetscErrorCode PetscInitialize_Common(const char *prog, const char 
   if (flg) PetscCall(PetscPythonInitialize(NULL, NULL));
 
   PetscCall(PetscOptionsHasName(NULL, NULL, "-mpi_linear_solver_server", &flg));
+  if (flg) PetscCall(PetscInfo(NULL, "Running MPI Linear Solver Server\n"));
   if (PetscDefined(USE_SINGLE_LIBRARY) && flg) PetscCall(PCMPIServerBegin());
   else PetscCheck(!flg, PETSC_COMM_WORLD, PETSC_ERR_SUP, "PETSc configured using -with-single-library=0; -mpi_linear_solver_server not supported in that case");
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -1365,8 +1367,9 @@ PetscErrorCode PetscFreeMPIResources(void)
 }
 
 PETSC_INTERN PetscErrorCode PetscLogFinalize(void);
+PETSC_EXTERN PetscErrorCode PetscFreeAlign(void *, int, const char[], const char[]);
 
-/*@C
+/*@
   PetscFinalize - Checks for options to be called at the conclusion
   of the program. `MPI_Finalize()` is called only if the user had not
   called `MPI_Init()` before calling `PetscInitialize()`.
@@ -1403,6 +1406,10 @@ PetscErrorCode PetscFinalize(void)
 
   PetscCall(PetscOptionsHasName(NULL, NULL, "-mpi_linear_solver_server", &flg));
   if (PetscDefined(USE_SINGLE_LIBRARY) && flg) PetscCall(PCMPIServerEnd());
+
+  PetscCall(PetscFreeAlign(PetscGlobalArgsFortran, 0, NULL, NULL));
+  PetscGlobalArgc = 0;
+  PetscGlobalArgs = NULL;
 
   /* Clean up Garbage automatically on COMM_SELF and COMM_WORLD at finalize */
   {
@@ -1659,9 +1666,6 @@ PetscErrorCode PetscFinalize(void)
 
   /* Can be destroyed only after all the options are used */
   PetscCall(PetscOptionsDestroyDefault());
-
-  PetscGlobalArgc = 0;
-  PetscGlobalArgs = NULL;
 
 #if defined(PETSC_HAVE_NVSHMEM)
   if (PetscBeganNvshmem) {

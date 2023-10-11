@@ -60,9 +60,7 @@ static PetscErrorCode MatICCFactorSymbolic_SeqAIJ_Bas(Mat fact, Mat A, IS perm, 
 
   /* put together the new matrix in MATSEQSBAIJ format */
 
-  b               = (Mat_SeqSBAIJ *)(fact)->data;
-  b->singlemalloc = PETSC_FALSE;
-
+  b = (Mat_SeqSBAIJ *)(fact)->data;
   PetscCall(PetscMalloc1(ui[am] + 1, &b->a));
 
   b->j    = uj;

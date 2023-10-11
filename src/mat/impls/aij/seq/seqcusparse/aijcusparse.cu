@@ -3298,11 +3298,10 @@ static PetscErrorCode MatProductSymbolic_SeqAIJCUSPARSE_SeqAIJCUSPARSE(Mat C)
   PetscCall(PetscLogGpuFlops(mmdata->flops));
   PetscCall(PetscLogGpuTimeEnd());
 finalizesym:
-  c->singlemalloc = PETSC_FALSE;
-  c->free_a       = PETSC_TRUE;
-  c->free_ij      = PETSC_TRUE;
-  PetscCall(PetscMalloc1(m + 1, &c->i));
-  PetscCall(PetscMalloc1(c->nz, &c->j));
+  c->free_a = PETSC_TRUE;
+  PetscCall(PetscShmgetAllocateArray(c->nz, sizeof(PetscInt), (void **)&c->j));
+  PetscCall(PetscShmgetAllocateArray(m + 1, sizeof(PetscInt), (void **)&c->i));
+  c->free_ij = PETSC_TRUE;
   if (PetscDefined(USE_64BIT_INDICES)) { /* 32 to 64-bit conversion on the GPU and then copy to host (lazy) */
     PetscInt      *d_i = c->i;
     THRUSTINTARRAY ii(Ccsr->row_offsets->size());
@@ -4839,11 +4838,10 @@ PetscErrorCode MatSeqAIJCUSPARSEMergeMats(Mat A, Mat B, MatReuse reuse, Mat *C)
       }
     }
 
-    c->singlemalloc = PETSC_FALSE;
-    c->free_a       = PETSC_TRUE;
-    c->free_ij      = PETSC_TRUE;
-    PetscCall(PetscMalloc1(m + 1, &c->i));
-    PetscCall(PetscMalloc1(c->nz, &c->j));
+    c->free_a = PETSC_TRUE;
+    PetscCall(PetscShmgetAllocateArray(c->nz, sizeof(PetscInt), (void **)&c->j));
+    PetscCall(PetscShmgetAllocateArray(m + 1, sizeof(PetscInt), (void **)&c->i));
+    c->free_ij = PETSC_TRUE;
     if (PetscDefined(USE_64BIT_INDICES)) { /* 32 to 64-bit conversion on the GPU and then copy to host (lazy) */
       THRUSTINTARRAY ii(Ccsr->row_offsets->size());
       THRUSTINTARRAY jj(Ccsr->column_indices->size());

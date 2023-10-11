@@ -134,10 +134,15 @@ if (drand48_ptr() > 0.5) return 1;
       self.popLanguage()
     return
 
+  def configureMissingShmget(self):
+    if self.functions.check('shmget'):
+      self.addDefine('HAVE_SHMGET',1)
+
   def configure(self):
     self.executeTest(self.configureMissingUtypeTypedefs)
     self.executeTest(self.configureMissingFunctions)
     self.executeTest(self.configureMissingSignals)
     self.executeTest(self.configureMissingGetdomainnamePrototype)
     self.executeTest(self.configureMissingSrandPrototype)
+    self.executeTest(self.configureMissingShmget)
     return

@@ -110,16 +110,14 @@ PetscErrorCode MatViennaCLCopyFromGPU(Mat A, const ViennaCLAIJMatrix *Agpu)
       a->nz           = Agpu->nnz();
       a->maxnz        = a->nz; /* Since we allocate exactly the right amount */
       A->preallocated = PETSC_TRUE;
-      if (a->singlemalloc) {
-        if (a->a) PetscCall(PetscFree3(a->a, a->j, a->i));
-      } else {
-        if (a->i) PetscCall(PetscFree(a->i));
-        if (a->j) PetscCall(PetscFree(a->j));
-        if (a->a) PetscCall(PetscFree(a->a));
-      }
-      PetscCall(PetscMalloc3(a->nz, &a->a, a->nz, &a->j, m + 1, &a->i));
-
-      a->singlemalloc = PETSC_TRUE;
+      if (a->free_a) PetscCall(PetscShmgetDeallocateArray((void **)a->a));
+      if (a->free_ij) PetscCall(PetscShmgetDeallocateArray((void **)a->j));
+      if (a->free_ij) PetscCall(PetscShmgetDeallocateArray((void **)a->i));
+      PetscCall(PetscShmgetAllocateArray(a->nz, sizeof(PetscScalar), (void **)&a->a));
+      PetscCall(PetscShmgetAllocateArray(a->nz, sizeof(PetscInt), (void **)&a->j));
+      PetscCall(PetscShmgetAllocateArray(m + 1, sizeof(PetscInt), (void **)&a->i));
+      a->free_a  = PETSC_TRUE;
+      a->free_ij = PETSC_TRUE;
 
       /* Setup row lengths */
       PetscCall(PetscFree(a->imax));

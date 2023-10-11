@@ -62,11 +62,12 @@ static PetscErrorCode MatSeqAIJFromMatlab(mxArray *mmat, Mat mat)
   }
   if (nz != aij->nz) {
     /* number of nonzeros in matrix has changed, so need new data structure */
-    PetscCall(MatSeqXAIJFreeAIJ(mat, &aij->a, &aij->j, &aij->i));
     aij->nz = nz;
-    PetscCall(PetscMalloc3(aij->nz, &aij->a, aij->nz, &aij->j, mat->rmap->n + 1, &aij->i));
-
-    aij->singlemalloc = PETSC_TRUE;
+    PetscCall(PetscShmgetAllocateArray(aij->nz, sizeof(PetscScalar), (void **)&aij->a));
+    PetscCall(PetscShmgetAllocateArray(aij->nz, sizeof(PetscInt), (void **)&aij->j));
+    PetscCall(PetscShmgetAllocateArray(mat->rmap->n + 1, sizeof(PetscInt), (void **)&aij->i));
+    aij->free_a  = PETSC_TRUE;
+    aij->free_ij = PETSC_TRUE;
   }
 
   PetscCall(PetscArraycpy(aij->a, mxGetPr(mmat), aij->nz));
