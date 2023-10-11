@@ -62,9 +62,7 @@ Field deformation:
    18 KSP Residual norm 1.34069e-08 
    19 KSP Residual norm 3.70078e-09 
    20 KSP Residual norm 1.02855e-09 
-   21 KSP Residual norm 3.106e-10 
-   22 KSP Residual norm 8.452e-11 
-  Linear solve converged due to CONVERGED_RTOL iterations 22
+  Linear solve converged due to CONVERGED_RTOL iterations 20
   1 SNES Function norm 8.450e-11 
 [0] 0) N=          27, max displ=4.1232123e+01, error=1.850e+01
 [0] 1) N=         441, max displ=5.3174288e+01, disp diff= 1.19e+01, error=6.557e+00, rate=1.5
