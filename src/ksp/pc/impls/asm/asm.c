@@ -743,6 +743,11 @@ static PetscErrorCode PCASMSetLocalSubdomains_ASM(PC pc, PetscInt n, IS is[], IS
     }
     PetscCall(PCASMDestroySubdomains(osm->n_local_true, osm->is, osm->is_local));
 
+    if (osm->ksp && osm->n_local_true != n) {
+      for (i = 0; i < osm->n_local_true; i++) PetscCall(KSPDestroy(&osm->ksp[i]));
+      PetscCall(PetscFree(osm->ksp));
+    }
+
     osm->n_local_true = n;
     osm->is           = NULL;
     osm->is_local     = NULL;
