@@ -1832,8 +1832,8 @@ PetscErrorCode DMPlexDistribute(DM dm, PetscInt overlap, PetscSF *sf, DM *dmPara
   if (flg) PetscCall(PetscSFView(sfPoint, NULL));
 
   if (overlap > 0) {
-    DM                 dmOverlap;
-    PetscSF            sfOverlap, sfOverlapPoint;
+    DM      dmOverlap;
+    PetscSF sfOverlap, sfOverlapPoint;
 
     /* Add the partition overlap to the distributed DM */
     PetscCall(DMPlexDistributeOverlap(*dmParallel, overlap, &sfOverlap, &dmOverlap));

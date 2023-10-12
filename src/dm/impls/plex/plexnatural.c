@@ -19,8 +19,11 @@
 PetscErrorCode DMPlexSetMigrationSF(DM dm, PetscSF migrationSF)
 {
   PetscFunctionBegin;
-  dm->sfMigration = migrationSF;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  if (migrationSF) PetscValidHeaderSpecific(migrationSF, PETSCSF_CLASSID, 2);
   PetscCall(PetscObjectReference((PetscObject)migrationSF));
+  PetscCall(PetscSFDestroy(&dm->sfMigration));
+  dm->sfMigration = migrationSF;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
