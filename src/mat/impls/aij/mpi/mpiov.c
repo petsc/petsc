@@ -1461,7 +1461,7 @@ PetscErrorCode MatCreateSubMatrices_MPIAIJ_SingleIS_Local(Mat C, PetscInt ismax,
         nzB    = bi[row + 1] - bi[row];
         ncols  = nzA + nzB;
         cworkA = aj + ai[row];
-        cworkB = bj + bi[row];
+        cworkB = bj ? bj + bi[row] : NULL;
 
         /* load the column indices for this row into cols*/
         cols = sbuf_aj_i + ct2;
@@ -1532,7 +1532,7 @@ PetscErrorCode MatCreateSubMatrices_MPIAIJ_SingleIS_Local(Mat C, PetscInt ismax,
 
         /* off-diagonal part B = c->B */
         ncols = bi[row - rstart + 1] - bi[row - rstart];
-        cols  = bj + bi[row - rstart];
+        cols  = bj ? bj + bi[row - rstart] : NULL;
         if (!allcolumns) {
           for (k = 0; k < ncols; k++) {
 #if defined(PETSC_USE_CTABLE)
@@ -1725,9 +1725,9 @@ PetscErrorCode MatCreateSubMatrices_MPIAIJ_SingleIS_Local(Mat C, PetscInt ismax,
       nzA    = ai[row + 1] - ai[row];
       nzB    = bi[row + 1] - bi[row];
       ncols  = nzA + nzB;
-      cworkB = bj + bi[row];
+      cworkB = bj ? bj + bi[row] : NULL;
       vworkA = a_a + ai[row];
-      vworkB = b_a + bi[row];
+      vworkB = b_a ? b_a + bi[row] : NULL;
 
       /* load the column values for this row into vals*/
       vals = sbuf_aa_i + ct2;
@@ -1798,8 +1798,8 @@ PetscErrorCode MatCreateSubMatrices_MPIAIJ_SingleIS_Local(Mat C, PetscInt ismax,
 
         /* off-diagonal part B = c->B */
         ncols = bi[Crow + 1] - bi[Crow];
-        cols  = bj + bi[Crow];
-        vals  = b_a + bi[Crow];
+        cols  = bj ? bj + bi[Crow] : NULL;
+        vals  = b_a ? b_a + bi[Crow] : NULL;
         for (k = 0; k < ncols; k++) {
           PetscCall(PetscHMapIGetWithDefault(cmap, bmap[cols[k]] + 1, 0, &tcol));
           if (tcol) {
