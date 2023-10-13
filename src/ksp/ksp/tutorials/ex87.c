@@ -1,4 +1,5 @@
 #include <petscksp.h>
+#include "petsc/private/petscimpl.h"
 
 static char help[] = "Solves a saddle-point linear system using PCHPDDM.\n\n";
 
@@ -6,7 +7,7 @@ static PetscErrorCode MatAndISLoad(const char *prefix, const char *identifier, M
 
 int main(int argc, char **args)
 {
-  Vec               b;               /* computed solution and RHS */
+  Vec               b, x;            /* computed solution and RHS */
   Mat               A[4], aux[2], S; /* linear system matrix */
   KSP               ksp, *subksp;    /* linear solver context */
   PC                pc;
@@ -24,7 +25,7 @@ int main(int argc, char **args)
    *      if the option -empty_A11 is not set (or set to false), a pressure with a zero mean-value is computed
    */
   char      dir[PETSC_MAX_PATH_LEN], prefix[PETSC_MAX_PATH_LEN];
-  PetscBool flg[3] = {PETSC_FALSE, PETSC_FALSE, PETSC_FALSE};
+  PetscBool flg[4] = {PETSC_FALSE, PETSC_FALSE, PETSC_FALSE, PETSC_FALSE};
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &args, NULL, help));
@@ -59,20 +60,21 @@ int main(int argc, char **args)
   /* transposing the off-diagonal block */
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-transpose", flg + 1, NULL));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-permute", flg + 2, NULL));
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-explicit", flg + 3, NULL));
   if (flg[1]) {
-    if (!flg[2]) PetscCall(MatCreateTranspose(A[2], A + 1));
-    else {
+    if (flg[2]) {
       PetscCall(MatTranspose(A[2], MAT_INITIAL_MATRIX, A + 1));
       PetscCall(MatDestroy(A + 2));
-      PetscCall(MatCreateTranspose(A[1], A + 2));
     }
+    if (!flg[3]) PetscCall(MatCreateTranspose(A[2 - flg[2]], A + 1 + flg[2]));
+    else PetscCall(MatTranspose(A[2 - flg[2]], MAT_INITIAL_MATRIX, A + 1 + flg[2]));
   } else {
-    if (!flg[2]) PetscCall(MatCreateHermitianTranspose(A[2], A + 1));
-    else {
+    if (flg[2]) {
       PetscCall(MatHermitianTranspose(A[2], MAT_INITIAL_MATRIX, A + 1));
       PetscCall(MatDestroy(A + 2));
-      PetscCall(MatCreateHermitianTranspose(A[1], A + 2));
     }
+    if (!flg[3]) PetscCall(MatCreateHermitianTranspose(A[2 - flg[2]], A + 1 + flg[2]));
+    else PetscCall(MatHermitianTranspose(A[2 - flg[2]], MAT_INITIAL_MATRIX, A + 1 + flg[2]));
   }
   if (flg[0]) PetscCall(MatDestroy(A + 3));
   /* global coefficient matrix */
@@ -98,15 +100,42 @@ int main(int argc, char **args)
   PetscCall(PCSetFromOptions(pc));
   PetscCall(PetscFree(subksp));
   PetscCall(KSPSetFromOptions(ksp));
-  PetscCall(MatCreateVecs(S, &b, NULL));
+  PetscCall(MatCreateVecs(S, &b, &x));
   PetscCall(PetscSNPrintf(prefix, sizeof(prefix), "%s/rhs_%s.dat", dir, id == 1 ? "B" : "A"));
   PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD, prefix, FILE_MODE_READ, &viewer));
   PetscCall(VecLoad(b, viewer));
   PetscCall(PetscViewerDestroy(&viewer));
-  PetscCall(KSPSolve(ksp, b, b));
-  flg[0] = PETSC_FALSE;
-  PetscCall(PetscOptionsGetBool(NULL, NULL, "-viewer", flg, NULL));
-  if (flg[0]) PetscCall(PCView(pc, PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(KSPSolve(ksp, b, x));
+  flg[1] = PETSC_FALSE;
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-viewer", flg + 1, NULL));
+  if (flg[1]) PetscCall(PCView(pc, PETSC_VIEWER_STDOUT_WORLD));
+  flg[1] = PETSC_FALSE;
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-successive_solves", flg + 1, NULL));
+  if (flg[1]) {
+    KSPConvergedReason reason[2];
+    PetscInt           iterations[2];
+    PetscCall(KSPGetConvergedReason(ksp, reason));
+    PetscCall(KSPGetTotalIterations(ksp, iterations));
+    PetscCall(KSPMonitorCancel(ksp));
+    PetscCall(PetscOptionsClearValue(NULL, "-ksp_monitor"));
+    PetscCall(PetscObjectStateIncrease((PetscObject)S));
+    PetscCall(KSPSetUp(ksp));
+    PetscCall(KSPGetPC(ksp, &pc));
+    PetscCall(PCFieldSplitGetSubKSP(pc, &n, &subksp));
+    PetscCall(KSPGetPC(subksp[0], &pc));
+    PetscCall(PCHPDDMSetAuxiliaryMat(pc, is[0], aux[0], NULL, NULL));
+    PetscCall(PCSetFromOptions(pc));
+    PetscCall(KSPGetPC(subksp[1], &pc));
+    if (!flg[0]) PetscCall(PCHPDDMSetAuxiliaryMat(pc, is[1], aux[1], NULL, NULL));
+    PetscCall(PCSetFromOptions(pc));
+    PetscCall(PetscFree(subksp));
+    PetscCall(KSPSolve(ksp, b, x));
+    PetscCall(KSPGetConvergedReason(ksp, reason + 1));
+    PetscCall(KSPGetTotalIterations(ksp, iterations + 1));
+    iterations[1] -= iterations[0];
+    PetscCheck(reason[0] == reason[1] && PetscAbs(iterations[0] - iterations[1]) <= 3, PetscObjectComm((PetscObject)ksp), PETSC_ERR_PLIB, "Successive calls to KSPSolve() did not converge for the same reason (%s v. %s) or with the same number of iterations (+/- 3, %" PetscInt_FMT " v. %" PetscInt_FMT ")", KSPConvergedReasons[reason[0]], KSPConvergedReasons[reason[1]], iterations[0], iterations[1]);
+  }
+  PetscCall(VecDestroy(&x));
   PetscCall(VecDestroy(&b));
   PetscCall(KSPDestroy(&ksp));
   PetscCall(MatDestroy(&S));
@@ -172,7 +201,7 @@ PetscErrorCode MatAndISLoad(const char *prefix, const char *identifier, Mat A, I
         requires: mumps
         suffix: 2
         output_file: output/ex87_1_system-stokes.out
-        args: -viewer -system stokes -empty_A11 -transpose {{false true}shared output} -permute {{false true}shared output} -fieldsplit_1_pc_hpddm_ksp_pc_side right -fieldsplit_1_pc_hpddm_coarse_mat_type baij -fieldsplit_1_pc_hpddm_levels_1_sub_mat_mumps_icntl_26 1
+        args: -viewer -system stokes -empty_A11 -transpose {{false true}shared output} -permute {{false true}shared output} -fieldsplit_1_pc_hpddm_ksp_pc_side right -fieldsplit_1_pc_hpddm_coarse_mat_type baij -fieldsplit_1_pc_hpddm_levels_1_sub_mat_mumps_icntl_26 1 -explicit {{false true}shared output}
         filter: grep -v -e "action of " -e "                            " -e "block size" -e "total: nonzeros=" -e "using I-node" -e "aij" -e "transpose" -e "diagonal" -e "total number of" -e "                rows=" | sed -e "s/      right preconditioning/      left preconditioning/g" -e "s/      using UNPRECONDITIONED/      using PRECONDITIONED/g"
       test:
         suffix: 1_petsc
@@ -180,11 +209,11 @@ PetscErrorCode MatAndISLoad(const char *prefix, const char *identifier, Mat A, I
       test:
         suffix: 2_petsc
         output_file: output/ex87_1_petsc_system-stokes.out
-        args: -system stokes -empty_A11 -transpose -fieldsplit_1_pc_hpddm_ksp_pc_side right -fieldsplit_1_pc_hpddm_levels_1_sub_pc_factor_mat_solver_type petsc -fieldsplit_1_pc_hpddm_coarse_mat_type baij -fieldsplit_1_pc_hpddm_levels_1_eps_threshold 0.3 -fieldsplit_1_pc_hpddm_levels_1_sub_pc_factor_shift_type inblocks
+        args: -system stokes -empty_A11 -transpose -fieldsplit_1_pc_hpddm_ksp_pc_side right -fieldsplit_1_pc_hpddm_levels_1_sub_pc_factor_mat_solver_type petsc -fieldsplit_1_pc_hpddm_coarse_mat_type baij -fieldsplit_1_pc_hpddm_levels_1_eps_threshold 0.3 -fieldsplit_1_pc_hpddm_levels_1_sub_pc_factor_shift_type inblocks -successive_solves
         filter: sed -e "s/type: transpose/type: hermitiantranspose/g"
       test:
         suffix: threshold
         output_file: output/ex87_1_petsc_system-elasticity.out
-        args: -fieldsplit_1_pc_hpddm_ksp_pc_side left -fieldsplit_1_pc_hpddm_levels_1_eps_threshold 0.2 -fieldsplit_1_pc_hpddm_coarse_mat_type {{baij sbaij}shared output}
+        args: -fieldsplit_1_pc_hpddm_ksp_pc_side left -fieldsplit_1_pc_hpddm_levels_1_eps_threshold 0.2 -fieldsplit_1_pc_hpddm_coarse_mat_type {{baij sbaij}shared output} -successive_solves
 
 TEST*/

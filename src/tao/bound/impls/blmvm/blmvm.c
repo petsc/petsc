@@ -218,7 +218,7 @@ static PetscErrorCode TaoComputeDual_BLMVM(Tao tao, Vec DXL, Vec DXU)
 
   Level: beginner
 
-.seealso: `Tao`, `TAOLMVM`, `TAOBLMVM``TaoLMVMGetH0()`, `TaoLMVMGetH0KSP()`
+.seealso: `Tao`, `TAOLMVM`, `TAOBLMVM`, `TaoLMVMGetH0()`, `TaoLMVMGetH0KSP()`
 M*/
 PETSC_EXTERN PetscErrorCode TaoCreate_BLMVM(Tao tao)
 {
@@ -361,7 +361,7 @@ PetscErrorCode TaoLMVMGetH0(Tao tao, Mat *H0)
 
   Level: advanced
 
-.seealso: `Tao`, `TAOLMVM`, `TAOBLMVM``TaoLMVMGetH0()`
+.seealso: `Tao`, `TAOLMVM`, `TAOBLMVM`, `TaoLMVMGetH0()`
 @*/
 PetscErrorCode TaoLMVMGetH0KSP(Tao tao, KSP *ksp)
 {

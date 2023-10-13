@@ -13,6 +13,7 @@ typedef struct {
   PetscInt   aggressive_mis_k;             // the k in MIS-k
   PetscBool  use_aggressive_square_graph;
   PetscBool  use_minimum_degree_ordering;
+  PetscBool  use_low_mem_filter;
   MatCoarsen crs;
 } PC_GAMG_AGG;
 
@@ -66,7 +67,7 @@ static PetscErrorCode PCGAMGSetNSmooths_AGG(PC pc, PetscInt n)
 
   Level: intermediate
 
-.seealso: `PCGAMG`, `PCGAMGSetThreshold()`, `PCGAMGMISkSetAggressive()`, `PCGAMGSetAggressiveSquareGraph()`, `PCGAMGMISkSetMinDegreeOrdering()`
+.seealso: `PCGAMG`, `PCGAMGSetThreshold()`, `PCGAMGMISkSetAggressive()`, `PCGAMGSetAggressiveSquareGraph()`, `PCGAMGMISkSetMinDegreeOrdering()`, `PCGAMGSetLowMemoryFilter()`
 @*/
 PetscErrorCode PCGAMGSetAggressiveLevels(PC pc, PetscInt n)
 {
@@ -91,7 +92,7 @@ PetscErrorCode PCGAMGSetAggressiveLevels(PC pc, PetscInt n)
 
   Level: intermediate
 
-.seealso: `PCGAMG`, `PCGAMGSetThreshold()`, `PCGAMGSetAggressiveLevels()`, `PCGAMGSetAggressiveSquareGraph()`, `PCGAMGMISkSetMinDegreeOrdering()`
+.seealso: `PCGAMG`, `PCGAMGSetThreshold()`, `PCGAMGSetAggressiveLevels()`, `PCGAMGSetAggressiveSquareGraph()`, `PCGAMGMISkSetMinDegreeOrdering()`, `PCGAMGSetLowMemoryFilter()`
 @*/
 PetscErrorCode PCGAMGMISkSetAggressive(PC pc, PetscInt n)
 {
@@ -116,7 +117,7 @@ PetscErrorCode PCGAMGMISkSetAggressive(PC pc, PetscInt n)
 
   Level: intermediate
 
-.seealso: `PCGAMG`, `PCGAMGSetThreshold()`, `PCGAMGSetAggressiveLevels()`, `PCGAMGMISkSetAggressive()`, `PCGAMGMISkSetMinDegreeOrdering()`
+.seealso: `PCGAMG`, `PCGAMGSetThreshold()`, `PCGAMGSetAggressiveLevels()`, `PCGAMGMISkSetAggressive()`, `PCGAMGMISkSetMinDegreeOrdering()`, `PCGAMGSetLowMemoryFilter()`
 @*/
 PetscErrorCode PCGAMGSetAggressiveSquareGraph(PC pc, PetscBool b)
 {
@@ -141,7 +142,7 @@ PetscErrorCode PCGAMGSetAggressiveSquareGraph(PC pc, PetscBool b)
 
   Level: intermediate
 
-.seealso: `PCGAMG`, `PCGAMGSetThreshold()`, `PCGAMGSetAggressiveLevels()`, `PCGAMGMISkSetAggressive()`, `PCGAMGSetAggressiveSquareGraph()`
+.seealso: `PCGAMG`, `PCGAMGSetThreshold()`, `PCGAMGSetAggressiveLevels()`, `PCGAMGMISkSetAggressive()`, `PCGAMGSetAggressiveSquareGraph()`, `PCGAMGSetLowMemoryFilter()`
 @*/
 PetscErrorCode PCGAMGMISkSetMinDegreeOrdering(PC pc, PetscBool b)
 {
@@ -149,6 +150,31 @@ PetscErrorCode PCGAMGMISkSetMinDegreeOrdering(PC pc, PetscBool b)
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscValidLogicalCollectiveBool(pc, b, 2);
   PetscTryMethod(pc, "PCGAMGMISkSetMinDegreeOrdering_C", (PC, PetscBool), (pc, b));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  PCGAMGSetLowMemoryFilter - Use low memory graph/matrix filter
+
+  Logically Collective
+
+  Input Parameters:
++ pc - the preconditioner context
+- b  - default false
+
+  Options Database Key:
+. -pc_gamg_low_memory_threshold_filter <bool,default=false> - Use low memory graph/matrix filter
+
+  Level: intermediate
+
+.seealso: `PCGAMG`, `PCGAMGSetThreshold()`, `PCGAMGSetAggressiveLevels()`, `PCGAMGMISkSetAggressive()`, `PCGAMGSetAggressiveSquareGraph()`, `PCGAMGMISkSetMinDegreeOrdering()`
+@*/
+PetscErrorCode PCGAMGSetLowMemoryFilter(PC pc, PetscBool b)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
+  PetscValidLogicalCollectiveBool(pc, b, 2);
+  PetscTryMethod(pc, "PCGAMGSetLowMemoryFilter_C", (PC, PetscBool), (pc, b));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -185,6 +211,17 @@ static PetscErrorCode PCGAMGSetAggressiveSquareGraph_AGG(PC pc, PetscBool b)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+static PetscErrorCode PCGAMGSetLowMemoryFilter_AGG(PC pc, PetscBool b)
+{
+  PC_MG       *mg          = (PC_MG *)pc->data;
+  PC_GAMG     *pc_gamg     = (PC_GAMG *)mg->innerctx;
+  PC_GAMG_AGG *pc_gamg_agg = (PC_GAMG_AGG *)pc_gamg->subctx;
+
+  PetscFunctionBegin;
+  pc_gamg_agg->use_low_mem_filter = b;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 static PetscErrorCode PCGAMGMISkSetMinDegreeOrdering_AGG(PC pc, PetscBool b)
 {
   PC_MG       *mg          = (PC_MG *)pc->data;
@@ -201,27 +238,26 @@ static PetscErrorCode PCSetFromOptions_GAMG_AGG(PC pc, PetscOptionItems *PetscOp
   PC_MG       *mg          = (PC_MG *)pc->data;
   PC_GAMG     *pc_gamg     = (PC_GAMG *)mg->innerctx;
   PC_GAMG_AGG *pc_gamg_agg = (PC_GAMG_AGG *)pc_gamg->subctx;
+  PetscBool    n_aggressive_flg, old_sq_provided = PETSC_FALSE, new_sq_provided = PETSC_FALSE, new_sqr_graph = pc_gamg_agg->use_aggressive_square_graph;
+  PetscInt     nsq_graph_old = 0;
 
   PetscFunctionBegin;
   PetscOptionsHeadBegin(PetscOptionsObject, "GAMG-AGG options");
-  {
-    PetscBool flg;
-    PetscCall(PetscOptionsInt("-pc_gamg_agg_nsmooths", "smoothing steps for smoothed aggregation, usually 1", "PCGAMGSetNSmooths", pc_gamg_agg->nsmooths, &pc_gamg_agg->nsmooths, NULL));
-    PetscCall(PetscOptionsInt("-pc_gamg_aggressive_coarsening", "Number of aggressive coarsening (MIS-2) levels from finest", "PCGAMGSetAggressiveLevels", pc_gamg_agg->aggressive_coarsening_levels, &pc_gamg_agg->aggressive_coarsening_levels, &flg));
-    if (!flg) {
-      PetscCall(
-        PetscOptionsInt("-pc_gamg_square_graph", "Number of aggressive coarsening (MIS-2) levels from finest (deprecated alias for -pc_gamg_aggressive_coarsening)", "PCGAMGSetAggressiveLevels", pc_gamg_agg->aggressive_coarsening_levels, &pc_gamg_agg->aggressive_coarsening_levels, NULL));
-    } else {
-      PetscCall(
-        PetscOptionsInt("-pc_gamg_square_graph", "Number of aggressive coarsening (MIS-2) levels from finest (alias for -pc_gamg_aggressive_coarsening, deprecated)", "PCGAMGSetAggressiveLevels", pc_gamg_agg->aggressive_coarsening_levels, &pc_gamg_agg->aggressive_coarsening_levels, &flg));
-      if (flg) PetscCall(PetscInfo(pc, "Warning: both -pc_gamg_square_graph and -pc_gamg_aggressive_coarsening are used. -pc_gamg_square_graph is deprecated, Number of aggressive levels is %d\n", (int)pc_gamg_agg->aggressive_coarsening_levels));
-    }
-    if (pc_gamg_agg->aggressive_coarsening_levels > 0) {
-      PetscCall(PetscOptionsBool("-pc_gamg_aggressive_square_graph", "Use square graph (A'A) or MIS-k (k=2) for aggressive coarsening", "PCGAMGSetAggressiveSquareGraph", pc_gamg_agg->use_aggressive_square_graph, &pc_gamg_agg->use_aggressive_square_graph, NULL));
-    }
-    PetscCall(PetscOptionsBool("-pc_gamg_mis_k_minimum_degree_ordering", "Use minimum degree ordering for greedy MIS", "PCGAMGMISkSetMinDegreeOrdering", pc_gamg_agg->use_minimum_degree_ordering, &pc_gamg_agg->use_minimum_degree_ordering, NULL));
-    PetscCall(PetscOptionsInt("-pc_gamg_aggressive_mis_k", "Number of levels of multigrid to use.", "PCGAMGMISkSetAggressive", pc_gamg_agg->aggressive_mis_k, &pc_gamg_agg->aggressive_mis_k, NULL));
+  PetscCall(PetscOptionsInt("-pc_gamg_agg_nsmooths", "smoothing steps for smoothed aggregation, usually 1", "PCGAMGSetNSmooths", pc_gamg_agg->nsmooths, &pc_gamg_agg->nsmooths, NULL));
+  // aggressive coarsening logic with deprecated -pc_gamg_square_graph
+  PetscCall(PetscOptionsInt("-pc_gamg_aggressive_coarsening", "Number of aggressive coarsening (MIS-2) levels from finest", "PCGAMGSetAggressiveLevels", pc_gamg_agg->aggressive_coarsening_levels, &pc_gamg_agg->aggressive_coarsening_levels, &n_aggressive_flg));
+  if (!n_aggressive_flg)
+    PetscCall(PetscOptionsInt("-pc_gamg_square_graph", "Number of aggressive coarsening (MIS-2) levels from finest (deprecated alias for -pc_gamg_aggressive_coarsening)", "PCGAMGSetAggressiveLevels", nsq_graph_old, &nsq_graph_old, &old_sq_provided));
+  PetscCall(PetscOptionsBool("-pc_gamg_aggressive_square_graph", "Use square graph (A'A) or MIS-k (k=2) for aggressive coarsening", "PCGAMGSetAggressiveSquareGraph", new_sqr_graph, &pc_gamg_agg->use_aggressive_square_graph, &new_sq_provided));
+  if (!new_sq_provided && old_sq_provided) {
+    pc_gamg_agg->aggressive_coarsening_levels = nsq_graph_old; // could be zero
+    pc_gamg_agg->use_aggressive_square_graph  = PETSC_TRUE;
   }
+  if (new_sq_provided && old_sq_provided)
+    PetscCall(PetscInfo(pc, "Warning: both -pc_gamg_square_graph and -pc_gamg_aggressive_coarsening are used. -pc_gamg_square_graph is deprecated, Number of aggressive levels is %d\n", (int)pc_gamg_agg->aggressive_coarsening_levels));
+  PetscCall(PetscOptionsBool("-pc_gamg_mis_k_minimum_degree_ordering", "Use minimum degree ordering for greedy MIS", "PCGAMGMISkSetMinDegreeOrdering", pc_gamg_agg->use_minimum_degree_ordering, &pc_gamg_agg->use_minimum_degree_ordering, NULL));
+  PetscCall(PetscOptionsBool("-pc_gamg_low_memory_threshold_filter", "Use the (built-in) low memory graph/matrix filter", "PCGAMGSetLowMemoryFilter", pc_gamg_agg->use_low_mem_filter, &pc_gamg_agg->use_low_mem_filter, NULL));
+  PetscCall(PetscOptionsInt("-pc_gamg_aggressive_mis_k", "Number of levels of multigrid to use.", "PCGAMGMISkSetAggressive", pc_gamg_agg->aggressive_mis_k, &pc_gamg_agg->aggressive_mis_k, NULL));
   PetscOptionsHeadEnd();
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -237,6 +273,7 @@ static PetscErrorCode PCDestroy_GAMG_AGG(PC pc)
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCGAMGSetAggressiveLevels_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCGAMGMISkSetAggressive_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCGAMGMISkSetMinDegreeOrdering_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCGAMGSetLowMemoryFilter_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCGAMGSetAggressiveSquareGraph_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCSetCoordinates_C", NULL));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -560,9 +597,8 @@ static PetscErrorCode PCGAMGCreateGraph_AGG(PC pc, Mat Amat, Mat *a_Gmat)
   PetscInt        bs;
 
   PetscFunctionBegin;
-  PetscCall(PetscLogEventBegin(petsc_gamg_setup_events[GAMG_GRAPH], 0, 0, 0, 0));
+  PetscCall(PetscLogEventBegin(petsc_gamg_setup_events[GAMG_COARSEN], 0, 0, 0, 0));
   /* Note: depending on the algorithm that will be used for computing the coarse grid points this should pass PETSC_TRUE or PETSC_FALSE as the first argument */
-
   /* MATCOARSENHEM requires numerical weights for edges so ensure they are computed */
   PetscCall(MatCoarsenCreate(PetscObjectComm((PetscObject)pc), &pc_gamg_agg->crs));
   PetscCall(PetscObjectGetOptionsPrefix((PetscObject)pc, &prefix));
@@ -570,8 +606,103 @@ static PetscErrorCode PCGAMGCreateGraph_AGG(PC pc, Mat Amat, Mat *a_Gmat)
   PetscCall(MatCoarsenSetFromOptions(pc_gamg_agg->crs));
   PetscCall(PetscObjectTypeCompare((PetscObject)pc_gamg_agg->crs, MATCOARSENHEM, &ishem));
   if (ishem) pc_gamg_agg->aggressive_coarsening_levels = 0; // aggressive and HEM does not make sense
-  PetscCall(MatGetInfo(Amat, MAT_LOCAL, &info0));           /* global reduction */
-  PetscCall(MatCreateGraph(Amat, PETSC_TRUE, (vfilter >= 0 || ishem) ? PETSC_TRUE : PETSC_FALSE, vfilter, a_Gmat));
+  PetscCall(PetscLogEventEnd(petsc_gamg_setup_events[GAMG_COARSEN], 0, 0, 0, 0));
+  PetscCall(PetscLogEventBegin(petsc_gamg_setup_events[GAMG_GRAPH], 0, 0, 0, 0));
+  PetscCall(MatGetInfo(Amat, MAT_LOCAL, &info0)); /* global reduction */
+
+  if (ishem || pc_gamg_agg->use_low_mem_filter) {
+    PetscCall(MatCreateGraph(Amat, PETSC_TRUE, (vfilter >= 0 || ishem) ? PETSC_TRUE : PETSC_FALSE, vfilter, a_Gmat));
+  } else {
+    // make scalar graph, symetrize if not know to be symetric, scale, but do not filter (expensive)
+    PetscCall(MatCreateGraph(Amat, PETSC_TRUE, PETSC_TRUE, -1, a_Gmat));
+    if (vfilter >= 0) {
+      PetscInt           Istart, Iend, ncols, nnz0, nnz1, NN, MM, nloc;
+      Mat                tGmat, Gmat = *a_Gmat;
+      MPI_Comm           comm;
+      const PetscScalar *vals;
+      const PetscInt    *idx;
+      PetscInt          *d_nnz, *o_nnz, kk, *garray = NULL, *AJ, maxcols = 0;
+      MatScalar         *AA; // this is checked in graph
+      PetscBool          isseqaij;
+      Mat                a, b, c;
+      MatType            jtype;
+
+      PetscCall(PetscObjectGetComm((PetscObject)Gmat, &comm));
+      PetscCall(PetscObjectBaseTypeCompare((PetscObject)Gmat, MATSEQAIJ, &isseqaij));
+      PetscCall(MatGetType(Gmat, &jtype));
+      PetscCall(MatCreate(comm, &tGmat));
+      PetscCall(MatSetType(tGmat, jtype));
+
+      /* TODO GPU: this can be called when filter = 0 -> Probably provide MatAIJThresholdCompress that compresses the entries below a threshold?
+        Also, if the matrix is symmetric, can we skip this
+        operation? It can be very expensive on large matrices. */
+
+      // global sizes
+      PetscCall(MatGetSize(Gmat, &MM, &NN));
+      PetscCall(MatGetOwnershipRange(Gmat, &Istart, &Iend));
+      nloc = Iend - Istart;
+      PetscCall(PetscMalloc2(nloc, &d_nnz, nloc, &o_nnz));
+      if (isseqaij) {
+        a = Gmat;
+        b = NULL;
+      } else {
+        Mat_MPIAIJ *d = (Mat_MPIAIJ *)Gmat->data;
+        a             = d->A;
+        b             = d->B;
+        garray        = d->garray;
+      }
+      /* Determine upper bound on non-zeros needed in new filtered matrix */
+      for (PetscInt row = 0; row < nloc; row++) {
+        PetscCall(MatGetRow(a, row, &ncols, NULL, NULL));
+        d_nnz[row] = ncols;
+        if (ncols > maxcols) maxcols = ncols;
+        PetscCall(MatRestoreRow(a, row, &ncols, NULL, NULL));
+      }
+      if (b) {
+        for (PetscInt row = 0; row < nloc; row++) {
+          PetscCall(MatGetRow(b, row, &ncols, NULL, NULL));
+          o_nnz[row] = ncols;
+          if (ncols > maxcols) maxcols = ncols;
+          PetscCall(MatRestoreRow(b, row, &ncols, NULL, NULL));
+        }
+      }
+      PetscCall(MatSetSizes(tGmat, nloc, nloc, MM, MM));
+      PetscCall(MatSetBlockSizes(tGmat, 1, 1));
+      PetscCall(MatSeqAIJSetPreallocation(tGmat, 0, d_nnz));
+      PetscCall(MatMPIAIJSetPreallocation(tGmat, 0, d_nnz, 0, o_nnz));
+      PetscCall(MatSetOption(tGmat, MAT_NO_OFF_PROC_ENTRIES, PETSC_TRUE));
+      PetscCall(PetscFree2(d_nnz, o_nnz));
+      PetscCall(PetscMalloc2(maxcols, &AA, maxcols, &AJ));
+      nnz0 = nnz1 = 0;
+      for (c = a, kk = 0; c && kk < 2; c = b, kk++) {
+        for (PetscInt row = 0, grow = Istart, ncol_row, jj; row < nloc; row++, grow++) {
+          PetscCall(MatGetRow(c, row, &ncols, &idx, &vals));
+          for (ncol_row = jj = 0; jj < ncols; jj++, nnz0++) {
+            PetscScalar sv = PetscAbs(PetscRealPart(vals[jj]));
+            if (PetscRealPart(sv) > vfilter) {
+              PetscInt cid = idx[jj] + Istart; //diag
+              nnz1++;
+              if (c != a) cid = garray[idx[jj]];
+              AA[ncol_row] = vals[jj];
+              AJ[ncol_row] = cid;
+              ncol_row++;
+            }
+          }
+          PetscCall(MatRestoreRow(c, row, &ncols, &idx, &vals));
+          PetscCall(MatSetValues(tGmat, 1, &grow, ncol_row, AJ, AA, INSERT_VALUES));
+        }
+      }
+      PetscCall(PetscFree2(AA, AJ));
+      PetscCall(MatAssemblyBegin(tGmat, MAT_FINAL_ASSEMBLY));
+      PetscCall(MatAssemblyEnd(tGmat, MAT_FINAL_ASSEMBLY));
+      PetscCall(MatPropagateSymmetryOptions(Gmat, tGmat)); /* Normal Mat options are not relevant ? */
+      PetscCall(PetscInfo(pc, "\t %g%% nnz after filtering, with threshold %g, %g nnz ave. (N=%" PetscInt_FMT ", max row size %" PetscInt_FMT "\n", (!nnz0) ? 1. : 100. * (double)nnz1 / (double)nnz0, (double)vfilter, (!nloc) ? 1. : (double)nnz0 / (double)nloc, MM, maxcols));
+      PetscCall(MatViewFromOptions(tGmat, NULL, "-mat_filter_graph_view"));
+      PetscCall(MatDestroy(&Gmat));
+      *a_Gmat = tGmat;
+    }
+  }
+
   PetscCall(MatGetInfo(*a_Gmat, MAT_LOCAL, &info1)); /* global reduction */
   PetscCall(MatGetBlockSize(Amat, &bs));
   if (info0.nz_used > 0) PetscCall(PetscInfo(pc, "Filtering left %g %% edges in graph (%e %e)\n", 100.0 * info1.nz_used * (double)(bs * bs) / info0.nz_used, info0.nz_used, info1.nz_used));
@@ -1300,14 +1431,16 @@ PetscErrorCode PCCreateGAMG_AGG(PC pc)
 
   pc_gamg_agg->nsmooths                     = 1;
   pc_gamg_agg->aggressive_coarsening_levels = 1;
-  pc_gamg_agg->use_aggressive_square_graph  = PETSC_FALSE;
+  pc_gamg_agg->use_aggressive_square_graph  = PETSC_TRUE;
   pc_gamg_agg->use_minimum_degree_ordering  = PETSC_FALSE;
+  pc_gamg_agg->use_low_mem_filter           = PETSC_FALSE;
   pc_gamg_agg->aggressive_mis_k             = 2;
 
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCGAMGSetNSmooths_C", PCGAMGSetNSmooths_AGG));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCGAMGSetAggressiveLevels_C", PCGAMGSetAggressiveLevels_AGG));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCGAMGSetAggressiveSquareGraph_C", PCGAMGSetAggressiveSquareGraph_AGG));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCGAMGMISkSetMinDegreeOrdering_C", PCGAMGMISkSetMinDegreeOrdering_AGG));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCGAMGSetLowMemoryFilter_C", PCGAMGSetLowMemoryFilter_AGG));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCGAMGMISkSetAggressive_C", PCGAMGMISkSetAggressive_AGG));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCSetCoordinates_C", PCSetCoordinates_AGG));
   PetscFunctionReturn(PETSC_SUCCESS);

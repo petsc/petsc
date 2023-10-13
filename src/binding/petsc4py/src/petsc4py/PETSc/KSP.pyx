@@ -1019,27 +1019,21 @@ cdef class KSP(Object):
         Must be called after the KSP type has been set so put this
         after a call to `setType`, or `setFromOptions`.
 
-        The default convergence test, `petsc.KSPConvergedDefault`,
-        aborts if the residual grows to more than 10000 times the
-        initial residual.
-
         The default is a combination of relative and absolute
         tolerances. The residual value that is tested may be an
         approximation; routines that need exact values should compute
         them.
 
-        In the default PETSc convergence test, the precise values of
-        reason are macros such as ``KSP_CONVERGED_RTOL``, which are
-        defined in ``petsch``.
-
         See Also
         --------
-        setTolerances, getConvergenceTest, petsc.KSPSetConvergenceTest
-        petsc.KSPConvergedDefault
+        addConvergenceTest, ConvergedReason, setTolerances,
+        getConvergenceTest, buildResidual,
+        petsc.KSPSetConvergenceTest, petsc.KSPConvergedDefault
 
         """
         cdef PetscKSPNormType normtype = KSP_NORM_NONE
         cdef void* cctx = NULL
+        cdef PetscBool islsqr = PETSC_FALSE
         if converged is not None:
             CHKERR( KSPSetConvergenceTest(
                     self.ksp, KSP_Converged, NULL, NULL) )
@@ -1047,17 +1041,74 @@ cdef class KSP(Object):
             if kargs is None: kargs = {}
             self.set_attr('__converged__', (converged, args, kargs))
         else:
+            # this is wrong in general, since different KSP may use
+            # different convergence tests (like KSPLSQR for example)
+            # Now we handle LSQR explicitly, but a proper mechanism,
+            # say KSPGetDefaultConverged would be more appropriate
             CHKERR( KSPGetNormType(self.ksp, &normtype) )
             if normtype != KSP_NORM_NONE:
+                CHKERR( PetscObjectTypeCompare(<PetscObject>self.ksp,
+                KSPLSQR,  &islsqr)  )
                 CHKERR( KSPConvergedDefaultCreate(&cctx) )
-                CHKERR( KSPSetConvergenceTest(
-                        self.ksp, KSPConvergedDefault,
-                        cctx, KSPConvergedDefaultDestroy) )
+                if not islsqr:
+                    CHKERR( KSPSetConvergenceTest(
+                    self.ksp, KSPConvergedDefault,
+                    cctx, KSPConvergedDefaultDestroy) )
+                else:
+                    CHKERR( KSPSetConvergenceTest(
+                    self.ksp, KSPLSQRConvergedDefault,
+                    cctx, KSPConvergedDefaultDestroy) )
             else:
                 CHKERR( KSPSetConvergenceTest(
                         self.ksp, KSPConvergedSkip,
                         NULL, NULL) )
             self.set_attr('__converged__', None)
+
+    def addConvergenceTest(
+        self,
+        converged: KSPConvergenceTestFunction,
+        args: tuple[Any, ...] | None = None,
+        kargs: dict[str, Any] | None = None,
+        prepend: bool = False
+    ) -> None:
+        """Add the function to be used to determine convergence.
+
+        Logically collective.
+
+        Parameters
+        ----------
+        converged
+            Callback which computes the convergence.
+        args
+            Positional arguments for callback function.
+        kargs
+            Keyword arguments for callback function.
+        prepend
+            Whether to prepend this call before the default
+            convergence test or call it after.
+
+        Notes
+        -----
+        Cannot be mixed with a call to `setConvergenceTest`.
+        It can only be called once. If called multiple times, it will
+        generate an error.
+
+        See Also
+        --------
+        setTolerances, getConvergenceTest, setConvergenceTest,
+        petsc.KSPSetConvergenceTest, petsc.KSPConvergedDefault
+
+        """
+        cdef PetscKSPNormType normtype = KSP_NORM_NONE
+        cdef void* cctx = NULL
+        cdef object oconverged = self.get_attr("__converged__")
+        cdef PetscBool pre = asBool(prepend)
+        if converged is None: return
+        if oconverged is not None: raise NotImplementedError("converged callback already set or added")
+        CHKERR( KSPAddConvergenceTest(self.ksp, KSP_Converged, pre) )
+        if args is None: args = ()
+        if kargs is None: kargs = {}
+        self.set_attr('__converged__', (converged, args, kargs))
 
     def getConvergenceTest(self) -> KSPConvergenceTestFunction:
         """Return the function to be used to determine convergence.

@@ -1,19 +1,17 @@
     Linear mg_levels_1_ solve converged due to CONVERGED_ITS iterations 5 res rate 0.785382 R^2 0.964726
-    Linear mg_levels_1_ solve converged due to CONVERGED_ITS iterations 5 res rate 0.701388 R^2 0.971059
-    Linear mg_levels_1_ solve converged due to CONVERGED_ITS iterations 5 res rate 0.755143 R^2 0.959278
-    Linear mg_levels_1_ solve converged due to CONVERGED_ITS iterations 5 res rate 0.716751 R^2 0.956753
-    Linear mg_levels_1_ solve converged due to CONVERGED_ITS iterations 5 res rate 0.837236 R^2 0.953923
-    Linear mg_levels_1_ solve converged due to CONVERGED_ITS iterations 5 res rate 0.699107 R^2 0.969818
-    Linear mg_levels_1_ solve converged due to CONVERGED_ITS iterations 5 res rate 0.772214 R^2 0.994919
-    Linear mg_levels_1_ solve converged due to CONVERGED_ITS iterations 5 res rate 0.669227 R^2 0.978278
-    Linear mg_levels_1_ solve converged due to CONVERGED_ITS iterations 5 res rate 0.801124 R^2 0.99316
-    Linear mg_levels_1_ solve converged due to CONVERGED_ITS iterations 5 res rate 0.691274 R^2 0.968393
-    Linear mg_levels_1_ solve converged due to CONVERGED_ITS iterations 5 res rate 0.767754 R^2 0.965693
-    Linear mg_levels_1_ solve converged due to CONVERGED_ITS iterations 5 res rate 0.671652 R^2 0.969605
-    Linear mg_levels_1_ solve converged due to CONVERGED_ITS iterations 5 res rate 0.75174 R^2 0.960298
-    Linear mg_levels_1_ solve converged due to CONVERGED_ITS iterations 5 res rate 0.687122 R^2 0.971218
-    Linear mg_levels_1_ solve converged due to CONVERGED_ITS iterations 5 res rate 0.790672 R^2 0.983521
-    Linear mg_levels_1_ solve converged due to CONVERGED_ITS iterations 5 res rate 0.718961 R^2 0.984581
-    Linear mg_levels_1_ solve converged due to CONVERGED_ITS iterations 5 res rate 0.677079 R^2 0.996786
-    Linear mg_levels_1_ solve converged due to CONVERGED_ITS iterations 5 res rate 0.657274 R^2 0.994943
-  Linear solve converged due to CONVERGED_RTOL iterations 9 res rate 0.0481038 R^2 0.992156
+    Linear mg_levels_1_ solve converged due to CONVERGED_ITS iterations 5 res rate 0.648211 R^2 0.977138
+    Linear mg_levels_1_ solve converged due to CONVERGED_ITS iterations 5 res rate 0.736109 R^2 0.966395
+    Linear mg_levels_1_ solve converged due to CONVERGED_ITS iterations 5 res rate 0.656634 R^2 0.976822
+    Linear mg_levels_1_ solve converged due to CONVERGED_ITS iterations 5 res rate 0.764618 R^2 0.975077
+    Linear mg_levels_1_ solve converged due to CONVERGED_ITS iterations 5 res rate 0.644732 R^2 0.983111
+    Linear mg_levels_1_ solve converged due to CONVERGED_ITS iterations 5 res rate 0.776005 R^2 0.973403
+    Linear mg_levels_1_ solve converged due to CONVERGED_ITS iterations 5 res rate 0.636778 R^2 0.984096
+    Linear mg_levels_1_ solve converged due to CONVERGED_ITS iterations 5 res rate 0.75345 R^2 0.943944
+    Linear mg_levels_1_ solve converged due to CONVERGED_ITS iterations 5 res rate 0.647287 R^2 0.982318
+    Linear mg_levels_1_ solve converged due to CONVERGED_ITS iterations 5 res rate 0.731487 R^2 0.934219
+    Linear mg_levels_1_ solve converged due to CONVERGED_ITS iterations 5 res rate 0.649731 R^2 0.982862
+    Linear mg_levels_1_ solve converged due to CONVERGED_ITS iterations 5 res rate 0.767749 R^2 0.973188
+    Linear mg_levels_1_ solve converged due to CONVERGED_ITS iterations 5 res rate 0.646792 R^2 0.984326
+    Linear mg_levels_1_ solve converged due to CONVERGED_ITS iterations 5 res rate 0.7541 R^2 0.982906
+    Linear mg_levels_1_ solve converged due to CONVERGED_ITS iterations 5 res rate 0.646283 R^2 0.982323
+  Linear solve converged due to CONVERGED_RTOL iterations 8 res rate 0.027893 R^2 0.997364

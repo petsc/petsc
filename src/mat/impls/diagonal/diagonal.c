@@ -320,6 +320,9 @@ static PetscErrorCode MatDestroy_Diagonal(Mat mat)
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatDiagonalRestoreDiagonal_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatDiagonalGetInverseDiagonal_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatDiagonalRestoreInverseDiagonal_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatProductSetFromOptions_diagonal_seqdense_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatProductSetFromOptions_diagonal_mpidense_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatProductSetFromOptions_diagonal_dense_C", NULL));
   PetscCall(PetscFree(mat->data));
   mat->structural_symmetry_eternal = PETSC_FALSE;
   mat->symmetry_eternal            = PETSC_FALSE;
@@ -540,6 +543,75 @@ PetscErrorCode MatCreateDiagonal(Vec diag, Mat *J)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+static PetscErrorCode MatProductNumeric_Diagonal_Dense(Mat C)
+{
+  Mat                A, B;
+  Mat_Diagonal      *a;
+  PetscScalar       *c;
+  const PetscScalar *b, *alpha;
+  PetscInt           ldb, ldc;
+
+  PetscFunctionBegin;
+  MatCheckProduct(C, 1);
+  A = C->product->A;
+  B = C->product->B;
+  a = (Mat_Diagonal *)A->data;
+  PetscCall(VecGetArrayRead(a->diag, &alpha));
+  PetscCall(MatDenseGetLDA(B, &ldb));
+  PetscCall(MatDenseGetLDA(C, &ldc));
+  PetscCall(MatDenseGetArrayRead(B, &b));
+  PetscCall(MatDenseGetArrayWrite(C, &c));
+  for (PetscInt j = 0; j < B->cmap->N; j++)
+    for (PetscInt i = 0; i < B->rmap->n; i++) c[i + j * ldc] = alpha[i] * b[i + j * ldb];
+  PetscCall(MatDenseRestoreArrayWrite(C, &c));
+  PetscCall(MatDenseRestoreArrayRead(B, &b));
+  PetscCall(VecRestoreArrayRead(a->diag, &alpha));
+  PetscCall(PetscLogFlops(B->cmap->N * B->rmap->n));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode MatProductSymbolic_Diagonal_Dense(Mat C)
+{
+  Mat      A, B;
+  PetscInt n, N, m, M;
+
+  PetscFunctionBegin;
+  MatCheckProduct(C, 1);
+  PetscCheck(!C->product->data, PetscObjectComm((PetscObject)C), PETSC_ERR_PLIB, "Product data not empty");
+  A = C->product->A;
+  B = C->product->B;
+  PetscCall(MatDiagonalSetUpDiagonal(A));
+  PetscCall(MatGetLocalSize(C, &m, &n));
+  PetscCall(MatGetSize(C, &M, &N));
+  if (m == PETSC_DECIDE || n == PETSC_DECIDE || M == PETSC_DECIDE || N == PETSC_DECIDE) {
+    PetscCall(MatGetLocalSize(B, NULL, &n));
+    PetscCall(MatGetSize(B, NULL, &N));
+    PetscCall(MatGetLocalSize(A, &m, NULL));
+    PetscCall(MatGetSize(A, &M, NULL));
+    PetscCall(MatSetSizes(C, m, n, M, N));
+  }
+  PetscCall(MatSetType(C, ((PetscObject)B)->type_name));
+  PetscCall(MatSetUp(C));
+  C->ops->productnumeric = MatProductNumeric_Diagonal_Dense;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode MatProductSetFromOptions_Diagonal_Dense_AB(Mat C)
+{
+  PetscFunctionBegin;
+  C->ops->productsymbolic = MatProductSymbolic_Diagonal_Dense;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode MatProductSetFromOptions_Diagonal_Dense(Mat C)
+{
+  Mat_Product *product = C->product;
+
+  PetscFunctionBegin;
+  if (product->type == MATPRODUCT_AB || product->type == MATPRODUCT_AtB) PetscCall(MatProductSetFromOptions_Diagonal_Dense_AB(C));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 /*MC
    MATDIAGONAL - MATDIAGONAL = "diagonal" - A diagonal matrix type with the diagonal implemented as a `Vec`.  Useful for
    cases where `VecPointwiseMult()` or `VecPointwiseDivide()` should be thought of as the actions of a linear operator.
@@ -588,6 +660,9 @@ PETSC_INTERN PetscErrorCode MatCreate_Diagonal(Mat A)
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatDiagonalRestoreDiagonal_C", MatDiagonalRestoreDiagonal_Diagonal));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatDiagonalGetInverseDiagonal_C", MatDiagonalGetInverseDiagonal_Diagonal));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatDiagonalRestoreInverseDiagonal_C", MatDiagonalRestoreInverseDiagonal_Diagonal));
+  PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatProductSetFromOptions_diagonal_seqdense_C", MatProductSetFromOptions_Diagonal_Dense));
+  PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatProductSetFromOptions_diagonal_mpidense_C", MatProductSetFromOptions_Diagonal_Dense));
+  PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatProductSetFromOptions_diagonal_dense_C", MatProductSetFromOptions_Diagonal_Dense));
   PetscCall(PetscObjectChangeTypeName((PetscObject)A, MATDIAGONAL));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

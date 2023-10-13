@@ -291,9 +291,12 @@ clean:: allclean
 distclean:
 	@if [ -f ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/reconfigure-${PETSC_ARCH}.py ]; then \
 	  echo "*** Preserving ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/reconfigure-${PETSC_ARCH}.py in ${PETSC_DIR} ***"; \
-          mv -f ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/reconfigure-${PETSC_ARCH}.py ${PETSC_DIR}/; fi
-	@echo "*** Deleting all build files in ${PETSC_DIR}/${PETSC_ARCH} ***"
-	-${RM} -rf ${PETSC_DIR}/${PETSC_ARCH}/
+          mv -f ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/reconfigure-${PETSC_ARCH}.py ${PETSC_DIR}/; \
+	  echo "*** Deleting all build files in ${PETSC_DIR}/${PETSC_ARCH} ***"; \
+	  ${RM} -rf ${PETSC_DIR}/${PETSC_ARCH}/ ; \
+        else  \
+	  echo "*** Build files in PETSC_ARCH=${PETSC_ARCH} not found. Skipping delete! ***"; \
+        fi
 
 info:
 	+@${OMAKE} -f gmakefile gmakeinfo

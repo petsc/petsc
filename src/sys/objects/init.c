@@ -342,7 +342,7 @@ PETSC_INTERN PetscErrorCode PetscOptionsCheckInitial_Private(const char help[])
     PetscCall((*PetscHelpPrintf)(comm, "%s", PETSC_AUTHOR_INFO));
     PetscCall((*PetscHelpPrintf)(comm, "See https://petsc.org/release/changes for recent updates.\n"));
     PetscCall((*PetscHelpPrintf)(comm, "See https://petsc.org/release/faq for problems.\n"));
-    PetscCall((*PetscHelpPrintf)(comm, "See https://petsc.org/release/manualpages for help. \n"));
+    PetscCall((*PetscHelpPrintf)(comm, "See https://petsc.org/release/manualpages for help.\n"));
     if (!PetscCIEnabledPortableErrorOutput) PetscCall((*PetscHelpPrintf)(comm, "Libraries linked from %s\n", PETSC_LIB_DIR));
     PetscCall((*PetscHelpPrintf)(comm, "----------------------------------------\n"));
   }

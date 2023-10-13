@@ -87,7 +87,7 @@ manualpages:
 html:
 	-@export htmlmap_tmp=$$(mktemp) ;\
           petsc_dir=$$(realpath ${PETSC_DIR}); LOCDIR=$$(pwd | sed s"?$${petsc_dir}/??"g)/; \
-          sed -e s?man+manualpages/?man+ROOT/manualpages/? ${HTMLMAP} > $$htmlmap_tmp ;\
+          sed -e s?man+manualpages/?man+HTML_ROOT/manualpages/? ${HTMLMAP} > $$htmlmap_tmp ;\
           cat ${PETSC_DIR}/doc/classic/mpi.www.index >> $$htmlmap_tmp ;\
           ROOT=`echo $${LOCDIR} | sed -e s?/[-a-z_0-9]*?/..?g -e s?src/??g -e s?include/??g` ;\
           loc=`pwd | sed -e s?\$${PETSC_DIR}?$${LOC}/?g -e s?/disks??g`;  \
@@ -112,7 +112,7 @@ html:
               awk '{ sub(/<pre width="80">/,"<pre width=\"80\">\n"); print }' | \
               ${PYTHON} ${PETSC_DIR}/lib/petsc/bin/maint/fixinclude.py $$i $${PETSC_DIR} | \
               grep -E -v '(PetscValid|#if !defined\(__|#define __|#undef __|EXTERN_C )' | \
-              ${MAPNAMES} -map $$htmlmap_tmp -inhtml | sed -e s?ROOT?$${IROOT}?g >> $${loc}/$$i.html ; \
+              ${MAPNAMES} -map $$htmlmap_tmp -inhtml | sed -e s?HTML_ROOT?$${IROOT}?g >> $${loc}/$$i.html ; \
             fi; \
           done ;\
           loc=`pwd | sed -e s?\$${PETSC_DIR}?$${LOC}/?g -e s?/disks??g`; ${RM} $${loc}/index.html; \
