@@ -409,6 +409,9 @@ cdef class Mat(Object):
     def __rtruediv__(self, other):
         return mat_rdiv(self, other)
 
+    def __matmul__(self, other):
+        return mat_matmul(self, other)
+
     #
 
     def __getitem__(self, ij):

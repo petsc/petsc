@@ -311,6 +311,15 @@ cdef Vec vec_mul(Vec self, other):
 cdef Vec vec_div(Vec self, other):
     return vec_idiv(vec_pos(self), other)
 
+cdef object vec_matmul(Vec self, other):
+    if isinstance(other, Vec):
+        return self.dot(other)
+    if isinstance(other, Mat):
+        result = other.createVecRight()
+        other.multTranspose(self, result)
+        return result
+    return NotImplemented
+
 # reflected binary operations
 
 cdef Vec vec_radd(Vec self, other):
