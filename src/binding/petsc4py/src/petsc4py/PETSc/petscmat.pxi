@@ -637,7 +637,7 @@ cdef Vec mat_mul_vec(Mat self, Vec other):
 cdef Mat mat_mul_mat(Mat self, Mat other):
     return self.matMult(other)
 
-cdef Mat mat_mul(Mat self, other):
+cdef object mat_mul(Mat self, other):
     if isinstance(other, Vec):
         return mat_mul_vec(self, <Vec>other)
     elif isinstance(other, Mat):
