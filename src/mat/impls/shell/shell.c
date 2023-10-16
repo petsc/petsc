@@ -1656,10 +1656,10 @@ PETSC_EXTERN PetscErrorCode MatCreate_Shell(Mat A)
 
   Input Parameters:
 + comm - MPI communicator
-. m    - number of local rows (must be given)
-. n    - number of local columns (must be given)
-. M    - number of global rows (may be `PETSC_DETERMINE`)
-. N    - number of global columns (may be `PETSC_DETERMINE`)
+. m    - number of local rows (or `PETSC_DECIDE` to have calculated if `M` is given)
+. n    - number of local columns (or `PETSC_DECIDE` to have calculated if `N` is given)
+. M    - number of global rows (may be `PETSC_DETERMINE` to have calculated if `m` is given)
+. N    - number of global columns (may be `PETSC_DETERMINE` to have calculated if `n` is given)
 - ctx  - pointer to data needed by the shell matrix routines
 
   Output Parameter:
