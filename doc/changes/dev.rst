@@ -52,6 +52,7 @@ Changes: Development
 .. rubric:: TS:
 
 - Add support for custom predictor callbacks in the second-order generalized-alpha method using ``TSAlpha2SetPredictor()``
+- Allow adaptivity to change time step size in first step of second-order generalized-alpha method.
 
 .. rubric:: TAO:
 
