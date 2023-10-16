@@ -53,10 +53,13 @@ static PetscErrorCode MatAssemblyEnd_SeqAIJKokkos(Mat A, MatAssemblyType mode)
   */
   if (!aijkok || aijkok->nonzerostate != A->nonzerostate) { /* aijkok might not exist yet or nonzero pattern has changed */
     delete aijkok;
-    aijkok   = new Mat_SeqAIJKokkos(A->rmap->n, A->cmap->n, aijseq->nz, aijseq->i, aijseq->j, aijseq->a, A->nonzerostate, PETSC_FALSE /*don't copy mat values to device*/);
+    aijkok   = new Mat_SeqAIJKokkos(A->rmap->n, A->cmap->n, aijseq, A->nonzerostate, PETSC_FALSE /*don't copy mat values to device*/);
     A->spptr = aijkok;
+  } else if (A->rmap->n && aijkok->diag_dual.extent(0) == 0) { // MatProduct might directly produce AIJ on device, but not the diag.
+    MatRowMapKokkosViewHost diag_h(aijseq->diag, A->rmap->n);
+    auto                    diag_d = Kokkos::create_mirror_view_and_copy(DefaultMemorySpace(), diag_h);
+    aijkok->diag_dual              = MatRowMapKokkosDualView(diag_d, diag_h);
   }
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -549,7 +552,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJKokkos(Mat A, MatType mtype,
     aseq = static_cast<Mat_SeqAIJ *>(A->data);
     if (A->assembled) { /* Copy i, j (but not values) to device for an assembled matrix if not yet */
       PetscCheck(!A->spptr, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Expect NULL (Mat_SeqAIJKokkos*)A->spptr");
-      A->spptr = new Mat_SeqAIJKokkos(A->rmap->n, A->cmap->n, aseq->nz, aseq->i, aseq->j, aseq->a, A->nonzerostate, PETSC_FALSE);
+      A->spptr = new Mat_SeqAIJKokkos(A->rmap->n, A->cmap->n, aseq, A->nonzerostate, PETSC_FALSE);
     }
   }
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -568,9 +571,9 @@ static PetscErrorCode MatDuplicate_SeqAIJKokkos(Mat A, MatDuplicateOption dupOpt
   /* Do not copy values on host as A's latest values might be on device. We don't want to do sync blindly */
   PetscCall(MatDuplicate_SeqAIJ(A, MAT_DO_NOT_COPY_VALUES, B));
   mat = *B;
-  if (A->preallocated) {
+  if (A->assembled) {
     bseq = static_cast<Mat_SeqAIJ *>(mat->data);
-    bkok = new Mat_SeqAIJKokkos(mat->rmap->n, mat->cmap->n, bseq->nz, bseq->i, bseq->j, bseq->a, mat->nonzerostate, PETSC_FALSE);
+    bkok = new Mat_SeqAIJKokkos(mat->rmap->n, mat->cmap->n, bseq, mat->nonzerostate, PETSC_FALSE);
     bkok->a_dual.clear_sync_state(); /* Clear B's sync state as it will be decided below */
     /* Now copy values to B if needed */
     if (dupOption == MAT_COPY_VALUES) {
@@ -991,6 +994,106 @@ static PetscErrorCode MatScale_SeqAIJKokkos(Mat A, PetscScalar a)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+// add a to A's diagonal (if A is square) or main diagonal (if A is rectangular)
+static PetscErrorCode MatShift_SeqAIJKokkos(Mat A, PetscScalar a)
+{
+  Mat_SeqAIJ *aijseq = static_cast<Mat_SeqAIJ *>(A->data);
+
+  PetscFunctionBegin;
+  if (A->assembled && aijseq->diagonaldense) { // no missing diagonals
+    PetscInt n = PetscMin(A->rmap->n, A->cmap->n);
+
+    PetscCall(PetscLogGpuTimeBegin());
+    PetscCall(MatSeqAIJKokkosSyncDevice(A));
+    const auto  aijkok = static_cast<Mat_SeqAIJKokkos *>(A->spptr);
+    const auto &Aa     = aijkok->a_dual.view_device();
+    const auto &Adiag  = aijkok->diag_dual.view_device();
+    PetscCallCXX(Kokkos::parallel_for(
+      n, KOKKOS_LAMBDA(const PetscInt i) { Aa(Adiag(i)) += a; }));
+    PetscCall(MatSeqAIJKokkosModifyDevice(A));
+    PetscCall(PetscLogGpuFlops(n));
+    PetscCall(PetscLogGpuTimeEnd());
+  } else { // need reassembly, very slow!
+    PetscCall(MatShift_Basic(A, a));
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode MatDiagonalSet_SeqAIJKokkos(Mat Y, Vec D, InsertMode is)
+{
+  Mat_SeqAIJ *aijseq = static_cast<Mat_SeqAIJ *>(Y->data);
+
+  PetscFunctionBegin;
+  if (Y->assembled && aijseq->diagonaldense) { // no missing diagonals
+    ConstPetscScalarKokkosView dv;
+    PetscInt                   n, nv;
+
+    PetscCall(PetscLogGpuTimeBegin());
+    PetscCall(MatSeqAIJKokkosSyncDevice(Y));
+    PetscCall(VecGetKokkosView(D, &dv));
+    PetscCall(VecGetLocalSize(D, &nv));
+    n = PetscMin(Y->rmap->n, Y->cmap->n);
+    PetscCheck(n == nv, PetscObjectComm((PetscObject)Y), PETSC_ERR_ARG_SIZ, "Matrix size and vector size do not match");
+
+    const auto  aijkok = static_cast<Mat_SeqAIJKokkos *>(Y->spptr);
+    const auto &Aa     = aijkok->a_dual.view_device();
+    const auto &Adiag  = aijkok->diag_dual.view_device();
+    PetscCallCXX(Kokkos::parallel_for(
+      n, KOKKOS_LAMBDA(const PetscInt i) {
+        if (is == INSERT_VALUES) Aa(Adiag(i)) = dv(i);
+        else Aa(Adiag(i)) += dv(i);
+      }));
+    PetscCall(VecRestoreKokkosView(D, &dv));
+    PetscCall(MatSeqAIJKokkosModifyDevice(Y));
+    PetscCall(PetscLogGpuFlops(n));
+    PetscCall(PetscLogGpuTimeEnd());
+  } else { // need reassembly, very slow!
+    PetscCall(MatDiagonalSet_Default(Y, D, is));
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode MatDiagonalScale_SeqAIJKokkos(Mat A, Vec ll, Vec rr)
+{
+  Mat_SeqAIJ                *aijseq = static_cast<Mat_SeqAIJ *>(A->data);
+  PetscInt                   m = A->rmap->n, n = A->cmap->n, nz = aijseq->nz;
+  ConstPetscScalarKokkosView lv, rv;
+
+  PetscFunctionBegin;
+  PetscCall(PetscLogGpuTimeBegin());
+  PetscCall(MatSeqAIJKokkosSyncDevice(A));
+  const auto  aijkok = static_cast<Mat_SeqAIJKokkos *>(A->spptr);
+  const auto &Aa     = aijkok->a_dual.view_device();
+  const auto &Ai     = aijkok->i_dual.view_device();
+  const auto &Aj     = aijkok->j_dual.view_device();
+  if (ll) {
+    PetscCall(VecGetLocalSize(ll, &m));
+    PetscCheck(m == A->rmap->n, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Left scaling vector wrong length");
+    PetscCall(VecGetKokkosView(ll, &lv));
+    PetscCallCXX(Kokkos::parallel_for( // for each row
+      Kokkos::TeamPolicy<>(m, Kokkos::AUTO()), KOKKOS_LAMBDA(const KokkosTeamMemberType &t) {
+        PetscInt i   = t.league_rank(); // row i
+        PetscInt len = Ai(i + 1) - Ai(i);
+        // scale entries on the row
+        Kokkos::parallel_for(Kokkos::TeamThreadRange(t, len), [&](PetscInt j) { Aa(Ai(i) + j) *= lv(i); });
+      }));
+    PetscCall(VecRestoreKokkosView(ll, &lv));
+    PetscCall(PetscLogGpuFlops(nz));
+  }
+  if (rr) {
+    PetscCall(VecGetLocalSize(rr, &n));
+    PetscCheck(n == A->cmap->n, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Right scaling vector wrong length");
+    PetscCall(VecGetKokkosView(rr, &rv));
+    PetscCallCXX(Kokkos::parallel_for( // for each nonzero
+      nz, KOKKOS_LAMBDA(const PetscInt k) { Aa(k) *= rv(Aj(k)); }));
+    PetscCall(VecRestoreKokkosView(rr, &lv));
+    PetscCall(PetscLogGpuFlops(nz));
+  }
+  PetscCall(MatSeqAIJKokkosModifyDevice(A));
+  PetscCall(PetscLogGpuTimeEnd());
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 static PetscErrorCode MatZeroEntries_SeqAIJKokkos(Mat A)
 {
   Mat_SeqAIJKokkos *aijkok;
@@ -1008,7 +1111,6 @@ static PetscErrorCode MatZeroEntries_SeqAIJKokkos(Mat A)
 
 static PetscErrorCode MatGetDiagonal_SeqAIJKokkos(Mat A, Vec x)
 {
-  Mat_SeqAIJ           *aijseq;
   Mat_SeqAIJKokkos     *aijkok;
   PetscInt              n;
   PetscScalarKokkosView xv;
@@ -1020,12 +1122,6 @@ static PetscErrorCode MatGetDiagonal_SeqAIJKokkos(Mat A, Vec x)
 
   PetscCall(MatSeqAIJKokkosSyncDevice(A));
   aijkok = static_cast<Mat_SeqAIJKokkos *>(A->spptr);
-
-  if (A->rmap->n && aijkok->diag_dual.extent(0) == 0) { /* Set the diagonal pointer if not already */
-    PetscCall(MatMarkDiagonal_SeqAIJ(A));
-    aijseq = static_cast<Mat_SeqAIJ *>(A->data);
-    aijkok->SetDiagonal(aijseq->diag);
-  }
 
   const auto &Aa    = aijkok->a_dual.view_device();
   const auto &Ai    = aijkok->i_dual.view_device();
@@ -1231,7 +1327,7 @@ static PetscErrorCode MatSetPreallocationCOO_SeqAIJKokkos(Mat mat, PetscCount co
   aseq = static_cast<Mat_SeqAIJ *>(mat->data);
   akok = static_cast<Mat_SeqAIJKokkos *>(mat->spptr);
   delete akok;
-  mat->spptr = akok = new Mat_SeqAIJKokkos(mat->rmap->n, mat->cmap->n, aseq->nz, aseq->i, aseq->j, aseq->a, mat->nonzerostate + 1, PETSC_FALSE);
+  mat->spptr = akok = new Mat_SeqAIJKokkos(mat->rmap->n, mat->cmap->n, aseq, mat->nonzerostate + 1, PETSC_FALSE);
   PetscCall(MatZeroEntries_SeqAIJKokkos(mat));
 
   // Copy the COO struct to device
@@ -1323,6 +1419,9 @@ static PetscErrorCode MatSetOps_SeqAIJKokkos(Mat A)
   A->ops->transpose                 = MatTranspose_SeqAIJKokkos;
   A->ops->setoption                 = MatSetOption_SeqAIJKokkos;
   A->ops->getdiagonal               = MatGetDiagonal_SeqAIJKokkos;
+  A->ops->shift                     = MatShift_SeqAIJKokkos;
+  A->ops->diagonalset               = MatDiagonalSet_SeqAIJKokkos;
+  A->ops->diagonalscale             = MatDiagonalScale_SeqAIJKokkos;
   a->ops->getarray                  = MatSeqAIJGetArray_SeqAIJKokkos;
   a->ops->restorearray              = MatSeqAIJRestoreArray_SeqAIJKokkos;
   a->ops->getarrayread              = MatSeqAIJGetArrayRead_SeqAIJKokkos;
@@ -1352,16 +1451,9 @@ static PetscErrorCode MatSetOps_SeqAIJKokkos(Mat A)
 PETSC_INTERN PetscErrorCode MatInvertVariableBlockDiagonal_SeqAIJKokkos(Mat A, const PetscIntKokkosView &bs, const PetscIntKokkosView &bs2, const PetscIntKokkosView &blkMap, PetscScalarKokkosView &work, PetscScalarKokkosView &diagVal)
 {
   Mat_SeqAIJKokkos *akok    = static_cast<Mat_SeqAIJKokkos *>(A->spptr);
-  PetscInt          N       = A->rmap->n;
   PetscInt          nblocks = bs.extent(0) - 1;
 
   PetscFunctionBegin;
-  // Set the diagonal pointer on device if not already
-  if (N && akok->diag_dual.extent(0) == 0) {
-    PetscCall(MatMarkDiagonal_SeqAIJ(A));
-    akok->SetDiagonal(static_cast<Mat_SeqAIJ *>(A->data)->diag);
-  }
-
   PetscCall(MatSeqAIJKokkosSyncDevice(A)); // Since we'll access A's value on device
 
   // Pull out the diagonal blocks of the matrix and then invert the blocks

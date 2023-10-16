@@ -93,20 +93,23 @@ struct Mat_SeqAIJKokkos {
   PetscBool           transpose_updated, hermitian_updated; /* Are At, Ah updated wrt the matrix? */
   MatRowMapKokkosView transpose_perm;                       // A permutation array making Ta(i) = Aa(perm(i)), where T = A^t
 
-  /* Construct a nrows by ncols matrix with nnz nonzeros from the given (i,j,a) on host. Caller also specifies a nonzero state */
-  Mat_SeqAIJKokkos(PetscInt nrows, PetscInt ncols, PetscInt nnz, const MatRowMapType *i, MatColIdxType *j, MatScalarType *a, PetscObjectState nzstate, PetscBool copyValues = PETSC_TRUE)
+  /* Construct a nrows by ncols matrix with given aseq on host. Caller also specifies a nonzero state */
+  Mat_SeqAIJKokkos(PetscInt nrows, PetscInt ncols, Mat_SeqAIJ *aseq, PetscObjectState nzstate, PetscBool copyValues = PETSC_TRUE)
   {
-    MatScalarKokkosViewHost a_h(a, nnz);
-    MatRowMapKokkosViewHost i_h(const_cast<MatRowMapType *>(i), nrows + 1);
-    MatColIdxKokkosViewHost j_h(j, nnz);
+    MatScalarKokkosViewHost a_h(aseq->a, aseq->nz);
+    MatRowMapKokkosViewHost i_h(const_cast<MatRowMapType *>(aseq->i), nrows + 1);
+    MatColIdxKokkosViewHost j_h(aseq->j, aseq->nz);
+    MatRowMapKokkosViewHost diag_h(aseq->diag, nrows);
 
-    auto a_d = Kokkos::create_mirror_view(Kokkos::WithoutInitializing, DefaultMemorySpace(), a_h);
-    auto i_d = Kokkos::create_mirror_view_and_copy(DefaultMemorySpace(), i_h);
-    auto j_d = Kokkos::create_mirror_view_and_copy(DefaultMemorySpace(), j_h);
+    auto a_d    = Kokkos::create_mirror_view(Kokkos::WithoutInitializing, DefaultMemorySpace(), a_h);
+    auto i_d    = Kokkos::create_mirror_view_and_copy(DefaultMemorySpace(), i_h);
+    auto j_d    = Kokkos::create_mirror_view_and_copy(DefaultMemorySpace(), j_h);
+    auto diag_d = Kokkos::create_mirror_view_and_copy(DefaultMemorySpace(), diag_h);
 
-    a_dual = MatScalarKokkosDualView(a_d, a_h);
-    i_dual = MatRowMapKokkosDualView(i_d, i_h);
-    j_dual = MatColIdxKokkosDualView(j_d, j_h);
+    a_dual    = MatScalarKokkosDualView(a_d, a_h);
+    i_dual    = MatRowMapKokkosDualView(i_d, i_h);
+    j_dual    = MatColIdxKokkosDualView(j_d, j_h);
+    diag_dual = MatColIdxKokkosDualView(diag_d, diag_h);
 
     a_dual.modify_host(); /* Since caller provided values on host */
     if (copyValues) a_dual.sync_device();
@@ -127,6 +130,7 @@ struct Mat_SeqAIJKokkos {
     auto                i_h = Kokkos::create_mirror_view_and_copy(Kokkos::HostSpace(), i_d);
     auto                j_h = Kokkos::create_mirror_view_and_copy(Kokkos::HostSpace(), j_d);
 
+    // diag_dual is set until MatAssemblyEnd() where we copy diag from host to device
     a_dual = MatScalarKokkosDualView(a_d, a_h);
     a_dual.modify_device(); /* since we did not copy a_d to a_h, we mark device has the latest data */
     i_dual = MatRowMapKokkosDualView(i_d, i_h);
