@@ -38,7 +38,50 @@ typedef struct {
   Vec vec_lte_work[2];
 
   TSStepStatus status;
+
+  TSAlpha2Predictor predictor;
+  void             *predictor_ctx;
 } TS_Alpha;
+
+/*@C
+  TSAlpha2SetPredictor - sets the callback for computing a predictor (i.e., initial guess
+  for the nonlinear solver).
+
+  Input Parameters:
++ ts        - timestepping context
+. predictor - callback to set the predictor in each step
+- ctx       - the application context, which may be set to `NULL` if not used
+
+  Level: intermediate
+
+  Notes:
+
+  If this function is never called, a same-state-vector predictor will be used, i.e.,
+  the initial guess will be the converged solution from the previous time step, without regard
+  for the previous velocity or acceleration.
+
+.seealso: [](ch_ts), `TS`, `TSALPHA2`, `TSAlpha2Predictor`
+@*/
+PetscErrorCode TSAlpha2SetPredictor(TS ts, TSAlpha2Predictor predictor, void *ctx)
+{
+  TS_Alpha *th = (TS_Alpha *)(ts->data);
+
+  PetscFunctionBegin;
+  th->predictor     = predictor;
+  th->predictor_ctx = ctx;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode TSAlpha_ApplyPredictor(TS ts, Vec X1)
+{
+  /* Apply a custom predictor if set, or default to same-displacement. */
+  TS_Alpha *th = (TS_Alpha *)(ts->data);
+
+  PetscFunctionBegin;
+  if (th->predictor) PetscCall(th->predictor(ts, th->X0, th->V0, th->A0, X1, th->predictor_ctx));
+  else PetscCall(VecCopy(th->X0, X1));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
 
 static PetscErrorCode TSAlpha_StageTime(TS ts)
 {
@@ -136,7 +179,7 @@ static PetscErrorCode TSAlpha_Restart(TS ts, PetscBool *initok)
   PetscCall(VecCopy(X0, th->X0));
   PetscCall(VecCopy(V0, th->V0));
   PetscCall(TSPreStage(ts, th->stage_time));
-  PetscCall(VecCopy(th->X0, X1));
+  PetscCall(TSAlpha_ApplyPredictor(ts, X1));
   PetscCall(TSAlpha_SNESSolve(ts, NULL, X1));
   PetscCall(VecCopy(th->V1, V1));
   PetscCall(TSPostStage(ts, th->stage_time, 0, &X1));
@@ -148,7 +191,7 @@ static PetscErrorCode TSAlpha_Restart(TS ts, PetscBool *initok)
   PetscCall(VecCopy(X1, th->X0));
   PetscCall(VecCopy(V1, th->V0));
   PetscCall(TSPreStage(ts, th->stage_time));
-  PetscCall(VecCopy(th->X0, X2));
+  PetscCall(TSAlpha_ApplyPredictor(ts, X2));
   PetscCall(TSAlpha_SNESSolve(ts, NULL, X2));
   PetscCall(VecCopy(th->V1, V2));
   PetscCall(TSPostStage(ts, th->stage_time, 0, &X2));
@@ -214,7 +257,7 @@ static PetscErrorCode TSStep_Alpha(TS ts)
     }
 
     PetscCall(TSAlpha_StageTime(ts));
-    PetscCall(VecCopy(th->X0, th->X1));
+    PetscCall(TSAlpha_ApplyPredictor(ts, th->X1));
     PetscCall(TSPreStage(ts, th->stage_time));
     PetscCall(TSAlpha_SNESSolve(ts, NULL, th->X1));
     PetscCall(TSPostStage(ts, th->stage_time, 0, &th->Xa));
@@ -539,6 +582,9 @@ PETSC_EXTERN PetscErrorCode TSCreate_Alpha2(TS ts)
   th->Gamma   = 0.5;
   th->Beta    = 0.25;
   th->order   = 2;
+
+  th->predictor     = NULL;
+  th->predictor_ctx = NULL;
 
   PetscCall(PetscObjectComposeFunction((PetscObject)ts, "TSAlpha2SetRadius_C", TSAlpha2SetRadius_Alpha));
   PetscCall(PetscObjectComposeFunction((PetscObject)ts, "TSAlpha2SetParams_C", TSAlpha2SetParams_Alpha));

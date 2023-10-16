@@ -51,6 +51,8 @@ Changes: Development
 
 .. rubric:: TS:
 
+- Add support for custom predictor callbacks in the second-order generalized-alpha method using ``TSAlpha2SetPredictor()``
+
 .. rubric:: TAO:
 
 .. rubric:: DM/DA:
