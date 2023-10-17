@@ -1371,6 +1371,25 @@ PETSC_EXTERN PetscErrorCode TSAlpha2SetRadius(TS, PetscReal);
 PETSC_EXTERN PetscErrorCode TSAlpha2SetParams(TS, PetscReal, PetscReal, PetscReal, PetscReal);
 PETSC_EXTERN PetscErrorCode TSAlpha2GetParams(TS, PetscReal *, PetscReal *, PetscReal *, PetscReal *);
 
+/*S
+  TSAlpha2Predictor - A callback to set the predictor (i.e., the initial guess for the nonlinear solver) in
+  a second-order generalized-alpha time integrator.
+
+  Calling Sequence:
+  + ts   - the `TS` context obtained from `TSCreate()`
+  . X0   - the previous time step's state vector
+  . V0   - the previous time step's first derivative of the state vector
+  . A0   - the previous time step's second derivative of the state vector
+  . X1   - the vector into which the initial guess for the current time step will be written
+  - ctx  - [optional] user-defined context for the predictor evaluation routine (may be `NULL`)
+
+  Level: intermediate
+
+  .seealso: [](ch_ts), `TS`, `TSAlpha2SetPredictor()`
+S*/
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*TSAlpha2Predictor)(TS ts, Vec X0, Vec V0, Vec A0, Vec X1, void *ctx);
+PETSC_EXTERN PetscErrorCode TSAlpha2SetPredictor(TS, TSAlpha2Predictor, void *ctx);
+
 PETSC_EXTERN PetscErrorCode TSSetDM(TS, DM);
 PETSC_EXTERN PetscErrorCode TSGetDM(TS, DM *);
 

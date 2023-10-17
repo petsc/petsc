@@ -3,9 +3,10 @@ static char help[] = "Single-DOF oscillator formulated as a second-order system.
 #include <petscts.h>
 
 typedef struct {
-  PetscReal Omega;  /* natural frequency */
-  PetscReal Xi;     /* damping coefficient  */
-  PetscReal u0, v0; /* initial conditions */
+  PetscReal Omega;    /* natural frequency */
+  PetscReal Xi;       /* damping coefficient  */
+  PetscReal u0, v0;   /* initial conditions */
+  PetscBool use_pred; /* whether to use a predictor callback */
 } UserParams;
 
 static void Exact(PetscReal t, PetscReal omega, PetscReal xi, PetscReal u0, PetscReal v0, PetscReal *ut, PetscReal *vt)
@@ -46,6 +47,20 @@ PetscErrorCode Solution(TS ts, PetscReal t, Vec X, void *ctx)
   PetscCall(VecGetArray(X, &x));
   x[0] = (PetscScalar)u;
   PetscCall(VecRestoreArray(X, &x));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+PetscErrorCode Predictor(TS ts, Vec X0, Vec V0, Vec A0, Vec X1, void *ctx)
+{
+  PetscReal dt, accel_fac;
+
+  PetscFunctionBeginUser;
+  PetscCall(TSGetTimeStep(ts, &dt));
+  accel_fac = 0.5 * dt * dt;
+  /* X1 = X0 + dt*V0 + accel_fac*A0 */
+  PetscCall(VecCopy(X0, X1));
+  PetscCall(VecAXPY(X1, dt, V0));
+  PetscCall(VecAXPY(X1, accel_fac, A0));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -143,7 +158,7 @@ int main(int argc, char *argv[])
   Mat          J;
   Vec          U, V;
   PetscScalar *u, *v;
-  UserParams   user = {/*Omega=*/1, /*Xi=*/0, /*u0=*/1, /*,v0=*/0};
+  UserParams   user = {/*Omega=*/1, /*Xi=*/0, /*u0=*/1, /*,v0=*/0, /*,use_pred=*/PETSC_FALSE};
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
@@ -155,6 +170,7 @@ int main(int argc, char *argv[])
   PetscCall(PetscOptionsReal("-damping", "Damping coefficient", __FILE__, user.Xi, &user.Xi, NULL));
   PetscCall(PetscOptionsReal("-initial_u", "Initial displacement", __FILE__, user.u0, &user.u0, NULL));
   PetscCall(PetscOptionsReal("-initial_v", "Initial velocity", __FILE__, user.v0, &user.v0, NULL));
+  PetscCall(PetscOptionsBool("-use_pred", "Use a custom predictor", __FILE__, user.use_pred, &user.use_pred, NULL));
   PetscOptionsEnd();
 
   PetscCall(TSCreate(PETSC_COMM_SELF, &ts));
@@ -187,6 +203,8 @@ int main(int argc, char *argv[])
   PetscCall(VecRestoreArrayWrite(U, &u));
   PetscCall(VecRestoreArrayWrite(V, &v));
 
+  if (user.use_pred) PetscCall(TSAlpha2SetPredictor(ts, Predictor, NULL));
+
   PetscCall(TS2SetSolution(ts, U, V));
   PetscCall(TSSetFromOptions(ts));
   PetscCall(TSSolve(ts, NULL));
@@ -202,7 +220,7 @@ int main(int argc, char *argv[])
 
     test:
       suffix: a
-      args: -ts_max_steps 10 -ts_view
+      args: -ts_max_steps 10 -ts_view -use_pred
       requires: !single
 
     test:
