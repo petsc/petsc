@@ -1505,6 +1505,20 @@ cdef class SNES(Object):
         """
         CHKERR( SNESSetUp(self.snes) )
 
+    def setUpMatrices(self) -> None:
+        """Ensures that matrices are available for Newton-like methods.
+
+        Collective.
+
+        This is only of use to implementers of custom SNES types.
+
+        See Also
+        --------
+        setUp, petsc.SNESSetUpMatrices
+
+        """
+        CHKERR( SNESSetUpMatrices(self.snes) )
+
     def reset(self) -> None:
         """Reset the solver.
 
