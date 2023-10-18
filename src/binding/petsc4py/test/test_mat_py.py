@@ -506,6 +506,11 @@ class TestScaledIdentity(TestMatrix):
         s = self._getCtx().s
         self.assertTrue(s == sold * -0.5)
 
+    def testDiagonalMat(self):
+        s = self._getCtx().s
+        B = PETSc.Mat().createConstantDiagonal(self.A.getSizes(), s, comm=self.A.getComm())
+        self.assertTrue(self.A.equal(B))
+
 class TestDiagonal(TestMatrix):
 
     PYCLS = 'Diagonal'
@@ -611,6 +616,11 @@ class TestDiagonal(TestMatrix):
         self.A.scale(-0.5)
         D = self._getCtx().D
         self.assertTrue(D.equal(-0.5*old))
+
+    def testDiagonalMat(self):
+        D = self._getCtx().D.copy()
+        B = PETSc.Mat().createDiagonal(D)
+        self.assertTrue(self.A.equal(B))
 
 
 # --------------------------------------------------------------------

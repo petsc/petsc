@@ -90,6 +90,7 @@ class MatType(object):
     LMVMSYMBADBROYDEN = S_(MATLMVMSYMBADBROYDEN)
     LMVMDIAGBBROYDEN = S_(MATLMVMDIAGBROYDEN)
     CONSTANTDIAGONAL = S_(MATCONSTANTDIAGONAL)
+    DIAGONAL         = S_(MATDIAGONAL)
     H2OPUS           = S_(MATH2OPUS)
 
 class MatOption(object):
@@ -635,6 +636,25 @@ cdef class Mat(Object):
         cdef PetscVecType cval = NULL
         CHKERR( MatGetVecType(self.mat, &cval) )
         return bytes2str(cval)
+
+    def setNestVecType(self, vec_type: Vec.Type | str) -> None:
+        """Set the vector type for a `Type.NEST` matrix.
+
+        Collective.
+
+        Parameters
+        ----------
+        vec_type
+            Vector type used when creating vectors with `createVecs`.
+
+        See Also
+        --------
+        getVecType, petsc.MatNestSetVecType
+
+        """
+        cdef PetscVecType cval = NULL
+        vec_type = str2bytes(vec_type, &cval)
+        CHKERR( MatNestSetVecType(self.mat, cval) )
 
     #
 
@@ -1291,7 +1311,7 @@ cdef class Mat(Object):
 
     def createNest(
         self,
-        mats: Sequence[Mat],
+        mats: Sequence[Sequence[Mat]],
         isrows: Sequence[IS] | None = None,
         iscols: Sequence[IS] | None = None,
         comm: Comm | None = None,
@@ -1303,9 +1323,9 @@ cdef class Mat(Object):
         Parameters
         ----------
         mats
-            Row-aligned iterable of matrices with size
-            ``len(isrows)*len(iscols)``. Empty submatrices can be set with
-            `None`.
+            Iterable of matrix block rows with size ``len(isrows)``.
+            Each matrix block row must be of size ``len(iscols)``.
+            Empty submatrices can be set with `None`.
         isrows
             Index set for each nested row block, defaults to contiguous
             ordering.
@@ -1485,6 +1505,64 @@ cdef class Mat(Object):
         if lgmapc is not None:
            lgmc = lgmapc.lgm
         CHKERR( MatCreateIS(ccomm, bs, m, n, M, N, lgmr, lgmc, &newmat) )
+        CHKERR( PetscCLEAR(self.obj) ); self.mat = newmat
+        return self
+
+    def createConstantDiagonal(
+        self,
+        size: MatSizeSpec,
+        diag: float,
+        comm: Comm | None = None,
+        ) -> Self:
+        """Create a diagonal matrix of type `Type.CONSTANTDIAGONAL`.
+
+        Collective.
+
+        Parameters
+        ----------
+        size
+            Matrix size.
+        diag
+            The diagonal value.
+        comm
+            MPI communicator, defaults to `Sys.getDefaultComm`.
+
+        See Also
+        --------
+        createDiagonal
+
+        """
+        cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
+        cdef PetscInt rbs = 0, cbs = 0, m = 0, n = 0, M = 0, N = 0
+        Mat_Sizes(size, None, &rbs, &cbs, &m, &n, &M, &N)
+        Sys_Layout(ccomm, rbs, &m, &M)
+        Sys_Layout(ccomm, cbs, &n, &N)
+        cdef PetscMat newmat = NULL
+        CHKERR( MatCreateConstantDiagonal(ccomm, m, n, M, N, diag, &newmat) )
+        CHKERR( PetscCLEAR(self.obj) ); self.mat = newmat
+        return self
+
+    def createDiagonal(
+        self,
+        Vec diag,
+        ) -> Self:
+        """Create a diagonal matrix of type `Type.DIAGONAL`.
+
+        Collective.
+
+        Parameters
+        ----------
+        diag
+            The vector holding diagonal values.
+
+        See Also
+        --------
+        createConstantDiagonal
+
+        """
+        cdef PetscVec dvec = diag.vec
+        cdef PetscMat newmat = NULL
+        CHKERR( MatCreateDiagonal(dvec, &newmat) )
         CHKERR( PetscCLEAR(self.obj) ); self.mat = newmat
         return self
 
