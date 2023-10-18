@@ -1,7 +1,6 @@
 -include ../../../../../petscdir.mk
 
 LIBBASE  = libpetscksp
-DIRS     = pipecr
 MANSEC   = KSP
 
 include ${PETSC_DIR}/lib/petsc/conf/variables

@@ -2,8 +2,8 @@
 #requiresdefine   'PETSC_USE_FORTRAN_BINDINGS'
 #
 
-LIBBASE	   = libpetscdm
-MANSEC	   = DM
+LIBBASE    = libpetscdm
+MANSEC     = DM
 CLEANFILES = *.mod
 
 include ${PETSC_DIR}/lib/petsc/conf/variables

@@ -3,7 +3,7 @@
          (tab-width                . 8)
          (show-trailing-whitespace . t)))
  (c-mode . ((c-tab-always-indent        . t)
-            (c-basic-offset		. 2)
+            (c-basic-offset             . 2)
             (c-comment-only-line-offset . 0)
             (c-block-comment-prefix     . "")
             (c-hanging-braces-alist     . ((substatement-open after)

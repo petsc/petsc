@@ -1,6 +1,5 @@
 -include ../../../../../petscdir.mk
 
-DIRS     = interface impls
 LIBBASE  = libpetscdm
 MANSEC   = DM
 SUBMANSEC= DMPlex

@@ -1,6 +1,5 @@
 -include ../../../../petscdir.mk
 
-DIRS     = matlab tagger
 LIBBASE  = libpetscvec
 MANSEC   = Vec
 

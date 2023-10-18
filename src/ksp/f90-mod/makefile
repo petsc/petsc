@@ -2,8 +2,8 @@
 #requiresdefine   'PETSC_USE_FORTRAN_BINDINGS'
 #
 
-LIBBASE	   = libpetscksp
-MANSEC	   = KSP
+LIBBASE    = libpetscksp
+MANSEC   = KSP
 CLEANFILES = *.mod
 
 include ${PETSC_DIR}/lib/petsc/conf/variables

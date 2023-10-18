@@ -1,7 +1,6 @@
 -include ../../../petscdir.mk
 #requiresscalar    real
 
-DIRS      = interface impls
 MANSEC    = TS
 SUBMANSEC = Characteristic
 

@@ -176,7 +176,7 @@ class Configure(config.package.Package):
     g.write('#EXTRALIB   := $(EXTRALIB) -L$(METIS_HOME) -lmetis\n')
     g.write('\n')
     g.write('# Scotch always needed to compile\n')
-    g.write('#scotch								\n')
+    g.write('#scotch                                                           \n')
     if usempi:
       g.write('CCPASTIX   := $(CCPASTIX) -DDISTRIBUTED -DWITH_SCOTCH '+self.headers.toString(self.scotch.include)+'\n')
     else:

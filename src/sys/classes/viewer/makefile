@@ -1,6 +1,5 @@
 -include ../../../../petscdir.mk
 
-DIRS      = impls tests tutorials interface utils
 MANSEC    = Sys
 SUBMANSEC = Viewer
 

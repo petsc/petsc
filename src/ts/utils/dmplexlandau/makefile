@@ -1,6 +1,5 @@
 -include ../../../../petscdir.mk
 
-DIRS     = tutorials kokkos
 LIBBASE  = libpetscts
 MANSEC   = TS
 SUBMANSEC= LANDAU

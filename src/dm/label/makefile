@@ -1,6 +1,5 @@
 -include ../../../petscdir.mk
 
-DIRS     = impls tutorials
 LIBBASE  = libpetscdm
 MANSEC   = DM
 SUBMANSEC= DMLabel

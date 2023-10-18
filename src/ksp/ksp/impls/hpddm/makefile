@@ -3,7 +3,6 @@
 
 CXXFLAGS  = ${HPDDM_INCLUDE}
 LIBBASE   = libpetscksp
-DIRS      = cuda
 MANSEC    = KSP
 
 include ${PETSC_DIR}/lib/petsc/conf/variables

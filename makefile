@@ -17,7 +17,6 @@
 #
 # This makefile does not require GNUmake
 ALL: all
-DIRS = src include interfaces share/petsc/matlab
 
 # next line defines PETSC_DIR and PETSC_ARCH if they are not set
 include ././${PETSC_ARCH}/lib/petsc/conf/petscvariables

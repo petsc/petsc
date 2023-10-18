@@ -4,7 +4,6 @@
 CFLAGS   = ${HYPRE_INCLUDE}
 LIBBASE  = libpetscmat
 MANSEC   = Mat
-DIRS     = cuda hip kokkos
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules.doc

@@ -2,7 +2,6 @@
 
 CFLAGS   = ${MATLAB_INCLUDE}
 LIBBASE  = libpetscdm
-DIRS     = usfft hypre kokkos tests
 MANSEC   = DM
 SUBMANSEC= DMDA
 

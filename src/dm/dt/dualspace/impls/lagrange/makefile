@@ -1,7 +1,6 @@
 -include ../../../../../../petscdir.mk
 
 LIBBASE   = libpetscdm
-DIRS      = tests tutorials
 MANSEC    = DM
 SUBMANSEC = DUALSPACE
 

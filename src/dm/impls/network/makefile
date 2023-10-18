@@ -1,6 +1,5 @@
 -include ../../../../petscdir.mk
 
-DIRS     = tests
 LIBBASE  = libpetscdm
 MANSEC   = DM
 SUBMANSEC= DMNetwork

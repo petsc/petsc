@@ -1,6 +1,5 @@
 -include ../../../petscdir.mk
 
-DIRS      = interface impls tests tutorials
 MANSEC    = KSP
 SUBMANSEC = PC
 
