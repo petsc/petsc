@@ -32,18 +32,23 @@ libs: ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/files ${PETSC_DIR}/${PETSC_ARCH}
         cmd="${OMAKE_PRINTDIR} -f gmakefile $${make_j} $${make_l} ${MAKE_PAR_OUT_FLG} V=${V} libs"; \
         cd ${PETSC_DIR} && echo $${cmd} && exec $${cmd}
 
-# Does nothing; needed for some rules that require actions.
-foo:
-
-# Performs the specified action on all directories
+# Performs the specified action on all source/include directories except output; used by c2html and cleanhtml
 tree: ${ACTION}
-	-@for dir in `ls -d ${DIRS} | grep -v "\."` ; do (cd $$dir ; ${OMAKE} ACTION=${ACTION} PETSC_ARCH=${PETSC_ARCH} LOC=${LOC} tree);  done
+	-@for dir in `ls -d */ 2> /dev/null` foo ;  do \
+            if [[ $${dir} != "doc/" && $${dir} != "output/" ]]; then \
+              if [[ -f $${dir}makefile ]]; then \
+	        (cd $$dir ; ${OMAKE} ACTION=${ACTION} PETSC_ARCH=${PETSC_ARCH}  LOC=${LOC} tree) ; \
+              fi; \
+           fi; \
+	 done
 
-# Performs the specified action on all source/include directories except tutorial and test
+# Performs the specified action on all source/include directories except tutorial, test, and output; used by allmanualpages
 tree_src: ${ACTION}
-	-@for dir in `ls -d ${DIRS} | grep -v "\."` ;  do \
-           if [[ $$dir != "tests" && $$dir != "tutorials" && $$dir != "doc" ]]; then \
-	      (cd $$dir ; ${OMAKE} ACTION=${ACTION} PETSC_ARCH=${PETSC_ARCH}  LOC=${LOC} tree_src) ; \
+	-@for dir in `ls -d */ 2> /dev/null` foo ;  do \
+            if [[ $${dir} != "tests/" && $${dir} != "tutorials/" && $${dir} != "doc/" && $${dir} != "output/" ]]; then \
+              if [[ -f $${dir}makefile ]]; then \
+	        (cd $$dir ; ${OMAKE} ACTION=${ACTION} PETSC_ARCH=${PETSC_ARCH}  LOC=${LOC} tree_src) ; \
+              fi; \
            fi; \
 	 done
 
@@ -127,7 +132,7 @@ html:
               fi; \
             done ;\
           else \
-            for file in ${DIRS} foo; do \
+            for file in `ls -d */ 2> /dev/null` foo; do \
               if [ -d $$file ]; then \
                 echo "<a href=\"$${file}/\">$${file}/</a><br>" >> $${loc}/index.html; \
               fi; \
@@ -142,5 +147,5 @@ html:
           ${RM} $$htmlmap_tmp
 
 cleanhtml:
-	-@${RM} {makefile,index}.html *.{c,cxx,cu,F,F90,h,h90,m}.html *.{c,cxx,cu}.gcov.html
+	-@${RM} index.html *.{c,cxx,cu,F,F90,h,h90,m}.html *.{c,cxx,cu}.gcov.html
 
