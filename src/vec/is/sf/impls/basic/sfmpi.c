@@ -1,56 +1,17 @@
-/* Mainly for MPI_Isend in SFBASIC. Once SFNEIGHBOR, SFALLGHATERV etc have a persistent version,
-   we can also do abstractions like Prepare/StartCommunication.
-*/
-
 #include <../src/vec/is/sf/impls/basic/sfpack.h>
 
-/* Start MPI requests. If use non-GPU aware MPI, we might need to copy data from device buf to host buf */
-static PetscErrorCode PetscSFLinkStartRequests_MPI(PetscSF sf, PetscSFLink link, PetscSFDirection direction)
-{
-  PetscMPIInt    nreqs;
-  MPI_Request   *reqs = NULL;
-  PetscSF_Basic *bas  = (PetscSF_Basic *)sf->data;
-  PetscInt       buflen;
-
-  PetscFunctionBegin;
-  buflen = (direction == PETSCSF_ROOT2LEAF) ? sf->leafbuflen[PETSCSF_REMOTE] : bas->rootbuflen[PETSCSF_REMOTE];
-  if (buflen) {
-    if (direction == PETSCSF_ROOT2LEAF) {
-      nreqs = sf->nleafreqs;
-      PetscCall(PetscSFLinkGetMPIBuffersAndRequests(sf, link, direction, NULL, NULL, NULL, &reqs));
-    } else { /* leaf to root */
-      nreqs = bas->nrootreqs;
-      PetscCall(PetscSFLinkGetMPIBuffersAndRequests(sf, link, direction, NULL, NULL, &reqs, NULL));
-    }
-    PetscCallMPI(MPI_Startall_irecv(buflen, link->unit, nreqs, reqs));
-  }
-
-  buflen = (direction == PETSCSF_ROOT2LEAF) ? bas->rootbuflen[PETSCSF_REMOTE] : sf->leafbuflen[PETSCSF_REMOTE];
-  if (buflen) {
-    if (direction == PETSCSF_ROOT2LEAF) {
-      nreqs = bas->nrootreqs;
-      PetscCall(PetscSFLinkCopyRootBufferInCaseNotUseGpuAwareMPI(sf, link, PETSC_TRUE /*device2host before sending */));
-      PetscCall(PetscSFLinkGetMPIBuffersAndRequests(sf, link, direction, NULL, NULL, &reqs, NULL));
-    } else { /* leaf to root */
-      nreqs = sf->nleafreqs;
-      PetscCall(PetscSFLinkCopyLeafBufferInCaseNotUseGpuAwareMPI(sf, link, PETSC_TRUE));
-      PetscCall(PetscSFLinkGetMPIBuffersAndRequests(sf, link, direction, NULL, NULL, NULL, &reqs));
-    }
-    PetscCall(PetscSFLinkSyncStreamBeforeCallMPI(sf, link, direction));
-    PetscCallMPI(MPI_Startall_isend(buflen, link->unit, nreqs, reqs));
-  }
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-static PetscErrorCode PetscSFLinkWaitRequests_MPI(PetscSF sf, PetscSFLink link, PetscSFDirection direction)
+// Though there is no default machanism to start a communication, we have a
+// default to finish communication, which is just waiting on the requests.
+// It should work for both non-blocking or persistent send/recvs or collectivwes.
+static PetscErrorCode PetscSFLinkFinishCommunication_Default(PetscSF sf, PetscSFLink link, PetscSFDirection direction)
 {
   PetscSF_Basic     *bas           = (PetscSF_Basic *)sf->data;
   const PetscMemType rootmtype_mpi = link->rootmtype_mpi, leafmtype_mpi = link->leafmtype_mpi;
   const PetscInt     rootdirect_mpi = link->rootdirect_mpi, leafdirect_mpi = link->leafdirect_mpi;
 
   PetscFunctionBegin;
-  PetscCallMPI(MPI_Waitall(bas->nrootreqs, link->rootreqs[direction][rootmtype_mpi][rootdirect_mpi], MPI_STATUSES_IGNORE));
-  PetscCallMPI(MPI_Waitall(sf->nleafreqs, link->leafreqs[direction][leafmtype_mpi][leafdirect_mpi], MPI_STATUSES_IGNORE));
+  if (bas->nrootreqs) PetscCallMPI(MPI_Waitall(bas->nrootreqs, link->rootreqs[direction][rootmtype_mpi][rootdirect_mpi], MPI_STATUSES_IGNORE));
+  if (sf->nleafreqs) PetscCallMPI(MPI_Waitall(sf->nleafreqs, link->leafreqs[direction][leafmtype_mpi][leafdirect_mpi], MPI_STATUSES_IGNORE));
   if (direction == PETSCSF_ROOT2LEAF) {
     PetscCall(PetscSFLinkCopyLeafBufferInCaseNotUseGpuAwareMPI(sf, link, PETSC_FALSE /* host2device after recving */));
   } else {
@@ -58,71 +19,6 @@ static PetscErrorCode PetscSFLinkWaitRequests_MPI(PetscSF sf, PetscSFLink link, 
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-
-#if defined(PETSC_HAVE_MPIX_STREAM)
-// issue MPIX_Isend/Irecv_enqueue()
-static PetscErrorCode PetscSFLinkStartEnqueue_MPIX_Stream(PetscSF sf, PetscSFLink link, PetscSFDirection direction)
-{
-  PetscSF_Basic     *bas = (PetscSF_Basic *)sf->data;
-  PetscInt           i, j, cnt, nrootranks, ndrootranks, nleafranks, ndleafranks;
-  const PetscInt    *rootoffset, *leafoffset;
-  MPI_Aint           disp;
-  MPI_Comm           stream_comm   = sf->stream_comm;
-  MPI_Datatype       unit          = link->unit;
-  const PetscMemType rootmtype_mpi = link->rootmtype_mpi, leafmtype_mpi = link->leafmtype_mpi; /* Used to select buffers passed to MPI */
-  const PetscInt     rootdirect_mpi = link->rootdirect_mpi, leafdirect_mpi = link->leafdirect_mpi;
-
-  PetscFunctionBegin;
-  if (bas->rootbuflen[PETSCSF_REMOTE]) {
-    PetscCall(PetscSFGetRootInfo_Basic(sf, &nrootranks, &ndrootranks, NULL, &rootoffset, NULL));
-    if (direction == PETSCSF_LEAF2ROOT) {
-      for (i = ndrootranks, j = 0; i < nrootranks; i++, j++) {
-        disp = (rootoffset[i] - rootoffset[ndrootranks]) * link->unitbytes;
-        cnt  = rootoffset[i + 1] - rootoffset[i];
-        PetscCallMPI(MPIX_Irecv_enqueue(link->rootbuf[PETSCSF_REMOTE][rootmtype_mpi] + disp, cnt, unit, bas->iranks[i], link->tag, stream_comm, link->rootreqs[direction][rootmtype_mpi][rootdirect_mpi] + j));
-      }
-    } else { // PETSCSF_ROOT2LEAF
-      for (i = ndrootranks, j = 0; i < nrootranks; i++, j++) {
-        disp = (rootoffset[i] - rootoffset[ndrootranks]) * link->unitbytes;
-        cnt  = rootoffset[i + 1] - rootoffset[i];
-        // no need to sync the gpu stream!
-        PetscCallMPI(MPIX_Isend_enqueue(link->rootbuf[PETSCSF_REMOTE][rootmtype_mpi] + disp, cnt, unit, bas->iranks[i], link->tag, stream_comm, link->rootreqs[direction][rootmtype_mpi][rootdirect_mpi] + j));
-      }
-    }
-  }
-
-  if (sf->leafbuflen[PETSCSF_REMOTE]) {
-    PetscCall(PetscSFGetLeafInfo_Basic(sf, &nleafranks, &ndleafranks, NULL, &leafoffset, NULL, NULL));
-    if (direction == PETSCSF_LEAF2ROOT) {
-      for (i = ndleafranks, j = 0; i < nleafranks; i++, j++) {
-        disp = (leafoffset[i] - leafoffset[ndleafranks]) * link->unitbytes;
-        cnt  = leafoffset[i + 1] - leafoffset[i];
-        // no need to sync the gpu stream!
-        PetscCallMPI(MPIX_Isend_enqueue(link->leafbuf[PETSCSF_REMOTE][leafmtype_mpi] + disp, cnt, unit, sf->ranks[i], link->tag, stream_comm, link->leafreqs[direction][leafmtype_mpi][leafdirect_mpi] + j));
-      }
-    } else { // PETSCSF_ROOT2LEAF
-      for (i = ndleafranks, j = 0; i < nleafranks; i++, j++) {
-        disp = (leafoffset[i] - leafoffset[ndleafranks]) * link->unitbytes;
-        cnt  = leafoffset[i + 1] - leafoffset[i];
-        PetscCallMPI(MPIX_Irecv_enqueue(link->leafbuf[PETSCSF_REMOTE][leafmtype_mpi] + disp, cnt, unit, sf->ranks[i], link->tag, stream_comm, link->leafreqs[direction][leafmtype_mpi][leafdirect_mpi] + j));
-      }
-    }
-  }
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-static PetscErrorCode PetscSFLinkWaitEnqueue_MPIX_Stream(PetscSF sf, PetscSFLink link, PetscSFDirection direction)
-{
-  PetscSF_Basic     *bas           = (PetscSF_Basic *)sf->data;
-  const PetscMemType rootmtype_mpi = link->rootmtype_mpi, leafmtype_mpi = link->leafmtype_mpi;
-  const PetscInt     rootdirect_mpi = link->rootdirect_mpi, leafdirect_mpi = link->leafdirect_mpi;
-
-  PetscFunctionBegin;
-  PetscCallMPI(MPIX_Waitall_enqueue(bas->nrootreqs, link->rootreqs[direction][rootmtype_mpi][rootdirect_mpi], MPI_STATUSES_IGNORE));
-  PetscCallMPI(MPIX_Waitall_enqueue(sf->nleafreqs, link->leafreqs[direction][leafmtype_mpi][leafdirect_mpi], MPI_STATUSES_IGNORE));
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-#endif
 
 /*
    The routine Creates a communication link for the given operation. It first looks up its link cache. If
@@ -228,14 +124,11 @@ PetscErrorCode PetscSFLinkCreate_MPI(PetscSF sf, MPI_Datatype unit, PetscMemType
         }
       }
     }
-  link->StartCommunication  = PetscSFLinkStartRequests_MPI;
-  link->FinishCommunication = PetscSFLinkWaitRequests_MPI;
-#if defined(PETSC_HAVE_MPIX_STREAM)
-  if (sf->use_stream_aware_mpi && (PetscMemTypeDevice(rootmtype_mpi) || PetscMemTypeDevice(leafmtype_mpi))) {
-    link->StartCommunication  = PetscSFLinkStartEnqueue_MPIX_Stream;
-    link->FinishCommunication = PetscSFLinkWaitEnqueue_MPIX_Stream;
-  }
-#endif
+
+  link->FinishCommunication = PetscSFLinkFinishCommunication_Default;
+  // each SF type could customize their communication by setting function pointers in the link.
+  // Currently only BASIC and NEIGHBOR use this abstraction.
+  PetscTryTypeMethod(sf, SetCommunicationOps, link);
 
 found:
 

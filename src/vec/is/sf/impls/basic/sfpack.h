@@ -55,6 +55,7 @@ struct _n_PetscSFLink {
   PetscErrorCode (*Memcpy)(PetscSFLink, PetscMemType, void *, PetscMemType, const void *, size_t); /* Async device memcopy might use stream in the link */
   PetscErrorCode (*PrePack)(PetscSF, PetscSFLink, PetscSFDirection);
   PetscErrorCode (*PostUnpack)(PetscSF, PetscSFLink, PetscSFDirection);
+  PetscErrorCode (*InitMPIRequests)(PetscSF, PetscSFLink, PetscSFDirection); // init (persistent) MPI requests
   PetscErrorCode (*StartCommunication)(PetscSF, PetscSFLink, PetscSFDirection);
   PetscErrorCode (*FinishCommunication)(PetscSF, PetscSFLink, PetscSFDirection);
   PetscErrorCode (*SyncDevice)(PetscSFLink);
@@ -230,7 +231,6 @@ PETSC_INTERN PetscErrorCode PetscSFLinkGetUnpackAndOp(PetscSFLink, PetscMemType,
 PETSC_INTERN PetscErrorCode PetscSFLinkGetFetchAndOp(PetscSFLink, PetscMemType, MPI_Op, PetscBool, PetscErrorCode (**FetchAndOp)(PetscSFLink, PetscInt, PetscInt, PetscSFPackOpt, const PetscInt *, void *, void *));
 PETSC_INTERN PetscErrorCode PetscSFLinkGetScatterAndOp(PetscSFLink, PetscMemType, MPI_Op, PetscBool, PetscErrorCode (**ScatterAndOp)(PetscSFLink, PetscInt, PetscInt, PetscSFPackOpt, const PetscInt *, const void *, PetscInt, PetscSFPackOpt, const PetscInt *, void *));
 PETSC_INTERN PetscErrorCode PetscSFLinkGetFetchAndOpLocal(PetscSFLink, PetscMemType, MPI_Op, PetscBool, PetscErrorCode (**FetchAndOpLocal)(PetscSFLink, PetscInt, PetscInt, PetscSFPackOpt, const PetscInt *, void *, PetscInt, PetscSFPackOpt, const PetscInt *, const void *, void *));
-PETSC_INTERN PetscErrorCode PetscSFLinkGetMPIBuffersAndRequests(PetscSF, PetscSFLink, PetscSFDirection, void **, void **, MPI_Request **, MPI_Request **);
 
 /* Do Pack/Unpack/Fetch/Scatter with the link */
 PETSC_INTERN PetscErrorCode PetscSFLinkPackRootData(PetscSF, PetscSFLink, PetscSFScope, const void *);
@@ -262,6 +262,21 @@ PETSC_INTERN PetscErrorCode PetscSFLinkSetUp_Kokkos(PetscSF, PetscSFLink, MPI_Da
 PETSC_INTERN PetscErrorCode PetscSFLinkCreate_NVSHMEM(PetscSF, MPI_Datatype, PetscMemType, const void *, PetscMemType, const void *, MPI_Op, PetscSFOperation, PetscSFLink *);
 PETSC_INTERN PetscErrorCode PetscSFLinkNvshmemCheck(PetscSF, PetscMemType, const void *, PetscMemType, const void *, PetscBool *);
 #endif
+
+static inline PetscErrorCode PetscSFLinkGetMPIBuffersAndRequests(PetscSF sf, PetscSFLink link, PetscSFDirection direction, void **rootbuf, void **leafbuf, MPI_Request **rootreqs, MPI_Request **leafreqs)
+{
+  const PetscMemType rootmtype_mpi = link->rootmtype_mpi, leafmtype_mpi = link->leafmtype_mpi; /* memtype of buffers passed to MPI */
+  const PetscInt     rootdirect_mpi = link->rootdirect_mpi, leafdirect_mpi = link->leafdirect_mpi;
+
+  PetscFunctionBegin;
+  if (link->InitMPIRequests) PetscCall((*link->InitMPIRequests)(sf, link, direction)); // init (persistent) MPI requests
+
+  if (rootbuf) *rootbuf = link->rootbuf[PETSCSF_REMOTE][rootmtype_mpi];
+  if (leafbuf) *leafbuf = link->leafbuf[PETSCSF_REMOTE][leafmtype_mpi];
+  if (rootreqs) *rootreqs = link->rootreqs[direction][rootmtype_mpi][rootdirect_mpi];
+  if (leafreqs) *leafreqs = link->leafreqs[direction][leafmtype_mpi][leafdirect_mpi];
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
 
 static inline PetscErrorCode PetscSFLinkStartCommunication(PetscSF sf, PetscSFLink link, PetscSFDirection direction)
 {

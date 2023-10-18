@@ -5,6 +5,38 @@
 /* Reuse the type. The difference is some fields (i.e., displs, recvcounts) are not used, which is not a big deal */
 typedef PetscSF_Allgatherv PetscSF_Alltoall;
 
+static PetscErrorCode PetscSFLinkStartCommunication_Alltoall(PetscSF sf, PetscSFLink link, PetscSFDirection direction)
+{
+  MPI_Comm     comm    = MPI_COMM_NULL;
+  void        *rootbuf = NULL, *leafbuf = NULL;
+  MPI_Request *req  = NULL;
+  MPI_Datatype unit = link->unit;
+
+  PetscFunctionBegin;
+  if (direction == PETSCSF_ROOT2LEAF) {
+    PetscCall(PetscSFLinkCopyRootBufferInCaseNotUseGpuAwareMPI(sf, link, PETSC_TRUE /* device2host before sending */));
+  } else {
+    PetscCall(PetscSFLinkCopyLeafBufferInCaseNotUseGpuAwareMPI(sf, link, PETSC_TRUE /* device2host */));
+  }
+  PetscCall(PetscObjectGetComm((PetscObject)sf, &comm));
+  PetscCall(PetscSFLinkGetMPIBuffersAndRequests(sf, link, direction, &rootbuf, &leafbuf, &req, NULL));
+  PetscCall(PetscSFLinkSyncStreamBeforeCallMPI(sf, link, direction));
+
+  if (direction == PETSCSF_ROOT2LEAF) {
+    PetscCallMPI(MPIU_Ialltoall(rootbuf, 1, unit, leafbuf, 1, unit, comm, req));
+  } else {
+    PetscCallMPI(MPIU_Ialltoall(leafbuf, 1, unit, rootbuf, 1, unit, comm, req));
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode PetscSFSetCommunicationOps_Alltoall(PetscSF sf, PetscSFLink link)
+{
+  PetscFunctionBegin;
+  link->StartCommunication = PetscSFLinkStartCommunication_Alltoall;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 /*===================================================================================*/
 /*              Implementations of SF public APIs                                    */
 /*===================================================================================*/
@@ -27,42 +59,6 @@ static PetscErrorCode PetscSFGetGraph_Alltoall(PetscSF sf, PetscInt *nroots, Pet
     }
     *iremote = sf->remote;
   }
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-static PetscErrorCode PetscSFBcastBegin_Alltoall(PetscSF sf, MPI_Datatype unit, PetscMemType rootmtype, const void *rootdata, PetscMemType leafmtype, void *leafdata, MPI_Op op)
-{
-  PetscSFLink  link;
-  MPI_Comm     comm;
-  void        *rootbuf = NULL, *leafbuf = NULL; /* buffer used by MPI */
-  MPI_Request *req;
-
-  PetscFunctionBegin;
-  PetscCall(PetscSFLinkCreate(sf, unit, rootmtype, rootdata, leafmtype, leafdata, op, PETSCSF_BCAST, &link));
-  PetscCall(PetscSFLinkPackRootData(sf, link, PETSCSF_REMOTE, rootdata));
-  PetscCall(PetscSFLinkCopyRootBufferInCaseNotUseGpuAwareMPI(sf, link, PETSC_TRUE /* device2host before sending */));
-  PetscCall(PetscObjectGetComm((PetscObject)sf, &comm));
-  PetscCall(PetscSFLinkGetMPIBuffersAndRequests(sf, link, PETSCSF_ROOT2LEAF, &rootbuf, &leafbuf, &req, NULL));
-  PetscCall(PetscSFLinkSyncStreamBeforeCallMPI(sf, link, PETSCSF_ROOT2LEAF));
-  PetscCallMPI(MPIU_Ialltoall(rootbuf, 1, unit, leafbuf, 1, unit, comm, req));
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-static PetscErrorCode PetscSFReduceBegin_Alltoall(PetscSF sf, MPI_Datatype unit, PetscMemType leafmtype, const void *leafdata, PetscMemType rootmtype, void *rootdata, MPI_Op op)
-{
-  PetscSFLink  link;
-  MPI_Comm     comm;
-  void        *rootbuf = NULL, *leafbuf = NULL; /* buffer used by MPI */
-  MPI_Request *req;
-
-  PetscFunctionBegin;
-  PetscCall(PetscSFLinkCreate(sf, unit, rootmtype, rootdata, leafmtype, leafdata, op, PETSCSF_REDUCE, &link));
-  PetscCall(PetscSFLinkPackLeafData(sf, link, PETSCSF_REMOTE, leafdata));
-  PetscCall(PetscSFLinkCopyLeafBufferInCaseNotUseGpuAwareMPI(sf, link, PETSC_TRUE /* device2host before sending */));
-  PetscCall(PetscObjectGetComm((PetscObject)sf, &comm));
-  PetscCall(PetscSFLinkGetMPIBuffersAndRequests(sf, link, PETSCSF_LEAF2ROOT, &rootbuf, &leafbuf, &req, NULL));
-  PetscCall(PetscSFLinkSyncStreamBeforeCallMPI(sf, link, PETSCSF_LEAF2ROOT));
-  PetscCallMPI(MPIU_Ialltoall(leafbuf, 1, unit, rootbuf, 1, unit, comm, req));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -195,8 +191,10 @@ PETSC_INTERN PetscErrorCode PetscSFCreate_Alltoall(PetscSF sf)
   PetscSF_Alltoall *dat = (PetscSF_Alltoall *)sf->data;
 
   PetscFunctionBegin;
-  sf->ops->BcastEnd  = PetscSFBcastEnd_Basic;
-  sf->ops->ReduceEnd = PetscSFReduceEnd_Basic;
+  sf->ops->BcastBegin  = PetscSFBcastBegin_Basic;
+  sf->ops->BcastEnd    = PetscSFBcastEnd_Basic;
+  sf->ops->ReduceBegin = PetscSFReduceBegin_Basic;
+  sf->ops->ReduceEnd   = PetscSFReduceEnd_Basic;
 
   /* Inherit from Allgatherv. It is astonishing Alltoall can inherit so much from Allgather(v) */
   sf->ops->Destroy       = PetscSFDestroy_Allgatherv;
@@ -213,10 +211,10 @@ PETSC_INTERN PetscErrorCode PetscSFCreate_Alltoall(PetscSF sf)
 
   /* Alltoall stuff */
   sf->ops->GetGraph             = PetscSFGetGraph_Alltoall;
-  sf->ops->BcastBegin           = PetscSFBcastBegin_Alltoall;
-  sf->ops->ReduceBegin          = PetscSFReduceBegin_Alltoall;
   sf->ops->CreateLocalSF        = PetscSFCreateLocalSF_Alltoall;
   sf->ops->CreateEmbeddedRootSF = PetscSFCreateEmbeddedRootSF_Alltoall;
+
+  sf->ops->SetCommunicationOps = PetscSFSetCommunicationOps_Alltoall;
 
   PetscCall(PetscNew(&dat));
   sf->data = (void *)dat;

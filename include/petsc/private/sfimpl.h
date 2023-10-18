@@ -40,6 +40,8 @@ typedef enum {
   PETSCSF_BACKEND_KOKKOS
 } PetscSFBackend;
 
+typedef struct _n_PetscSFLink *PetscSFLink;
+
 struct _PetscSFOps {
   PetscErrorCode (*Reset)(PetscSF);
   PetscErrorCode (*Destroy)(PetscSF);
@@ -60,6 +62,7 @@ struct _PetscSFOps {
   PetscErrorCode (*GetGraph)(PetscSF, PetscInt *, PetscInt *, const PetscInt **, const PetscSFNode **);
   PetscErrorCode (*CreateEmbeddedRootSF)(PetscSF, PetscInt, const PetscInt *, PetscSF *);
   PetscErrorCode (*CreateEmbeddedLeafSF)(PetscSF, PetscInt, const PetscInt *, PetscSF *);
+  PetscErrorCode (*SetCommunicationOps)(PetscSF, PetscSFLink);
 
   PetscErrorCode (*Malloc)(PetscMemType, size_t, void **);
   PetscErrorCode (*Free)(PetscMemType, void *);

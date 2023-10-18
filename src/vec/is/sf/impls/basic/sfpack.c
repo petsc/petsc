@@ -435,66 +435,6 @@ PetscErrorCode PetscSFLinkCreate(PetscSF sf, MPI_Datatype unit, PetscMemType roo
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* Return root/leaf buffers and MPI requests attached to the link for MPI communication in the given direction.
-   If the sf uses persistent requests and the requests have not been initialized, then initialize them.
-*/
-PetscErrorCode PetscSFLinkGetMPIBuffersAndRequests(PetscSF sf, PetscSFLink link, PetscSFDirection direction, void **rootbuf, void **leafbuf, MPI_Request **rootreqs, MPI_Request **leafreqs)
-{
-  PetscSF_Basic     *bas = (PetscSF_Basic *)sf->data;
-  PetscInt           i, j, cnt, nrootranks, ndrootranks, nleafranks, ndleafranks;
-  const PetscInt    *rootoffset, *leafoffset;
-  MPI_Aint           disp;
-  MPI_Comm           comm          = PetscObjectComm((PetscObject)sf);
-  MPI_Datatype       unit          = link->unit;
-  const PetscMemType rootmtype_mpi = link->rootmtype_mpi, leafmtype_mpi = link->leafmtype_mpi; /* Used to select buffers passed to MPI */
-  const PetscInt     rootdirect_mpi = link->rootdirect_mpi, leafdirect_mpi = link->leafdirect_mpi;
-
-  PetscFunctionBegin;
-  /* Init persistent MPI requests if not yet. Currently only SFBasic uses persistent MPI */
-  if (sf->persistent) {
-    if (rootreqs && bas->rootbuflen[PETSCSF_REMOTE] && !link->rootreqsinited[direction][rootmtype_mpi][rootdirect_mpi]) {
-      PetscCall(PetscSFGetRootInfo_Basic(sf, &nrootranks, &ndrootranks, NULL, &rootoffset, NULL));
-      if (direction == PETSCSF_LEAF2ROOT) {
-        for (i = ndrootranks, j = 0; i < nrootranks; i++, j++) {
-          disp = (rootoffset[i] - rootoffset[ndrootranks]) * link->unitbytes;
-          cnt  = rootoffset[i + 1] - rootoffset[i];
-          PetscCallMPI(MPIU_Recv_init(link->rootbuf[PETSCSF_REMOTE][rootmtype_mpi] + disp, cnt, unit, bas->iranks[i], link->tag, comm, link->rootreqs[direction][rootmtype_mpi][rootdirect_mpi] + j));
-        }
-      } else { /* PETSCSF_ROOT2LEAF */
-        for (i = ndrootranks, j = 0; i < nrootranks; i++, j++) {
-          disp = (rootoffset[i] - rootoffset[ndrootranks]) * link->unitbytes;
-          cnt  = rootoffset[i + 1] - rootoffset[i];
-          PetscCallMPI(MPIU_Send_init(link->rootbuf[PETSCSF_REMOTE][rootmtype_mpi] + disp, cnt, unit, bas->iranks[i], link->tag, comm, link->rootreqs[direction][rootmtype_mpi][rootdirect_mpi] + j));
-        }
-      }
-      link->rootreqsinited[direction][rootmtype_mpi][rootdirect_mpi] = PETSC_TRUE;
-    }
-
-    if (leafreqs && sf->leafbuflen[PETSCSF_REMOTE] && !link->leafreqsinited[direction][leafmtype_mpi][leafdirect_mpi]) {
-      PetscCall(PetscSFGetLeafInfo_Basic(sf, &nleafranks, &ndleafranks, NULL, &leafoffset, NULL, NULL));
-      if (direction == PETSCSF_LEAF2ROOT) {
-        for (i = ndleafranks, j = 0; i < nleafranks; i++, j++) {
-          disp = (leafoffset[i] - leafoffset[ndleafranks]) * link->unitbytes;
-          cnt  = leafoffset[i + 1] - leafoffset[i];
-          PetscCallMPI(MPIU_Send_init(link->leafbuf[PETSCSF_REMOTE][leafmtype_mpi] + disp, cnt, unit, sf->ranks[i], link->tag, comm, link->leafreqs[direction][leafmtype_mpi][leafdirect_mpi] + j));
-        }
-      } else { /* PETSCSF_ROOT2LEAF */
-        for (i = ndleafranks, j = 0; i < nleafranks; i++, j++) {
-          disp = (leafoffset[i] - leafoffset[ndleafranks]) * link->unitbytes;
-          cnt  = leafoffset[i + 1] - leafoffset[i];
-          PetscCallMPI(MPIU_Recv_init(link->leafbuf[PETSCSF_REMOTE][leafmtype_mpi] + disp, cnt, unit, sf->ranks[i], link->tag, comm, link->leafreqs[direction][leafmtype_mpi][leafdirect_mpi] + j));
-        }
-      }
-      link->leafreqsinited[direction][leafmtype_mpi][leafdirect_mpi] = PETSC_TRUE;
-    }
-  }
-  if (rootbuf) *rootbuf = link->rootbuf[PETSCSF_REMOTE][rootmtype_mpi];
-  if (leafbuf) *leafbuf = link->leafbuf[PETSCSF_REMOTE][leafmtype_mpi];
-  if (rootreqs) *rootreqs = link->rootreqs[direction][rootmtype_mpi][rootdirect_mpi];
-  if (leafreqs) *leafreqs = link->leafreqs[direction][leafmtype_mpi][leafdirect_mpi];
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
 PetscErrorCode PetscSFLinkGetInUse(PetscSF sf, MPI_Datatype unit, const void *rootdata, const void *leafdata, PetscCopyMode cmode, PetscSFLink *mylink)
 {
   PetscSFLink    link, *p;
