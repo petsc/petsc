@@ -944,7 +944,7 @@ PETSC_EXTERN PetscErrorCode MatCreateMPIMatConcatenateSeqMat(MPI_Comm, Mat, Pets
    Note:
    For efficiency one should use `MatSetValues()` and set several values simultaneously.
 
-.seealso: [](ch_matrices), `Mat`, `MatAssemblyBegin()`, `MatAssemblyEnd`, `InsertMode`, `MatGetValue()`, `MatSetValues()`,
+.seealso: [](ch_matrices), `Mat`, `MatAssemblyBegin()`, `MatAssemblyEnd()`, `InsertMode`, `MatGetValue()`, `MatSetValues()`,
           `MatSetValueLocal()`, `MatSetValuesLocal()`
 @*/
 static inline PetscErrorCode MatSetValue(Mat mat, PetscInt i, PetscInt j, PetscScalar va, InsertMode mode)
@@ -968,13 +968,13 @@ static inline PetscErrorCode MatSetValue(Mat mat, PetscInt i, PetscInt j, PetscS
    Level: advanced
 
    Notes:
-   The matrix must have been assembled with `MatAssemblyBegin()` and `MatAssemblyEnd` before this call
+   The matrix must have been assembled with `MatAssemblyBegin()` and `MatAssemblyEnd()` before this call
 
    For efficiency one should use `MatGetValues()` and get several values simultaneously.
 
    See notes for `MatGetValues()`.
 
-.seealso: [](ch_matrices), `Mat`, `MatAssemblyBegin()`, `MatAssemblyEnd`, `MatSetValue()`, `MatGetValueLocal()`, `MatGetValues()`
+.seealso: [](ch_matrices), `Mat`, `MatAssemblyBegin()`, `MatAssemblyEnd()`, `MatSetValue()`, `MatGetValueLocal()`, `MatGetValues()`
 @*/
 static inline PetscErrorCode MatGetValue(Mat mat, PetscInt row, PetscInt col, PetscScalar *va)
 {

@@ -34,7 +34,8 @@ enum FortranMatOperation {
   FORTRAN_MATOP_SET_RANDOM         = 18,
   FORTRAN_MATOP_ASSEMBLY_BEGIN     = 19,
   FORTRAN_MATOP_ASSEMBLY_END       = 20,
-  FORTRAN_MATOP_SIZE               = 21
+  FORTRAN_MATOP_DUPLICATE          = 21,
+  FORTRAN_MATOP_SIZE               = 22
 };
 
 /*
@@ -186,6 +187,12 @@ static PetscErrorCode ourassemblyend(Mat mat, MatAssemblyType type)
   return PETSC_SUCCESS;
 }
 
+static PetscErrorCode ourduplicate(Mat mat, MatDuplicateOption op, Mat *M)
+{
+  PetscCallFortranVoidFunction((*(void (*)(Mat *, MatDuplicateOption *, Mat *, PetscErrorCode *))(((PetscObject)mat)->fortran_func_pointers[FORTRAN_MATOP_DUPLICATE]))(&mat, &op, M, &ierr));
+  return PETSC_SUCCESS;
+}
+
 PETSC_EXTERN void matshellsetoperation_(Mat *mat, MatOperation *op, PetscErrorCode (*f)(Mat *, Vec *, Vec *, PetscErrorCode *), PetscErrorCode *ierr)
 {
   MPI_Comm comm;
@@ -278,6 +285,10 @@ PETSC_EXTERN void matshellsetoperation_(Mat *mat, MatOperation *op, PetscErrorCo
   case MATOP_ASSEMBLY_END:
     *ierr                                                                  = MatShellSetOperation(*mat, *op, (PetscVoidFunction)ourassemblyend);
     ((PetscObject)*mat)->fortran_func_pointers[FORTRAN_MATOP_ASSEMBLY_END] = (PetscVoidFunction)f;
+    break;
+  case MATOP_DUPLICATE:
+    *ierr                                                               = MatShellSetOperation(*mat, *op, (PetscVoidFunction)ourduplicate);
+    ((PetscObject)*mat)->fortran_func_pointers[FORTRAN_MATOP_DUPLICATE] = (PetscVoidFunction)f;
     break;
   default:
     *ierr = PetscError(comm, __LINE__, "MatShellSetOperation_Fortran", __FILE__, PETSC_ERR_ARG_WRONG, PETSC_ERROR_INITIAL, "Cannot set that matrix operation");
