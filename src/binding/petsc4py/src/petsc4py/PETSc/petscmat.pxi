@@ -637,7 +637,7 @@ cdef Vec mat_mul_vec(Mat self, Vec other):
 cdef Mat mat_mul_mat(Mat self, Mat other):
     return self.matMult(other)
 
-cdef Mat mat_mul(Mat self, other):
+cdef object mat_mul(Mat self, other):
     if isinstance(other, Vec):
         return mat_mul_vec(self, <Vec>other)
     elif isinstance(other, Mat):
@@ -647,6 +647,13 @@ cdef Mat mat_mul(Mat self, other):
 
 cdef Mat mat_div(Mat self, other):
     return mat_idiv(mat_pos(self), other)
+
+cdef object mat_matmul(Mat self, other):
+    if isinstance(other, Vec):
+        return mat_mul_vec(self, <Vec>other)
+    if isinstance(other, Mat):
+        return mat_mul_mat(self, <Mat>other)
+    return NotImplemented
 
 # reflected binary operations
 
