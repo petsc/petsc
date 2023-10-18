@@ -33,34 +33,6 @@ def getlangsplit(name):
     if loc > -1: return os.path.join(os.path.dirname(name),file[:loc])
     raise RuntimeError("No . in filename")
 
-class Mistakes(object):
-    def __init__(self, log, verbose=False):
-        self.mistakes = []
-        self.verbose = verbose
-        self.log = log
-
-    def compareDirLists(self,root, mdirs, dirs):
-        if SKIPDIRS.intersection(pathsplit(None, root)):
-            return
-        smdirs = set(mdirs).difference(AUTODIRS)
-        sdirs  = set(dirs).difference(AUTODIRS)
-        if not smdirs.issubset(sdirs):
-            self.mistakes.append('%s/makefile contains a directory not on the filesystem: %r' % (root, sorted(smdirs - sdirs)))
-        if not self.verbose: return
-        if smdirs != sdirs:
-            from sys import stderr
-            stderr.write('Directory mismatch at %s:\n\t%s: %r\n\t%s: %r\n\t%s: %r\n'
-                         % (root,
-                            'in makefile   ',sorted(smdirs),
-                            'on filesystem ',sorted(sdirs),
-                            'symmetric diff',sorted(smdirs.symmetric_difference(sdirs))))
-
-    def summary(self):
-        for m in self.mistakes:
-            self.log.write(m + '\n')
-        if self.mistakes:
-            raise RuntimeError('\n\nThe PETSc makefiles contain mistakes or files are missing on the filesystem.\n%s\nPossible reasons:\n\t1. Files were deleted locally, try "git checkout filename", where "filename" is the missing file.\n\t2. Files were deleted from the repository, but were not removed from the makefile. Send mail to petsc-maint@mcs.anl.gov.\n\t3. Someone forgot to "add" new files to the repository. Send mail to petsc-maint@mcs.anl.gov.\n\n' % ('\n'.join(self.mistakes)))
-
 def stripsplit(line):
   return line[len('#requires'):].replace("'","").split()
 
@@ -76,7 +48,7 @@ class debuglogger(object):
         self._log.debug(string)
 
 class Petsc(object):
-    def __init__(self, petsc_dir=None, petsc_arch=None, pkg_dir=None, pkg_name=None, pkg_arch=None, pkg_pkgs=None, verbose=False):
+    def __init__(self, petsc_dir=None, petsc_arch=None, pkg_dir=None, pkg_name=None, pkg_arch=None, pkg_pkgs=None):
         if petsc_dir is None:
             petsc_dir = os.environ.get('PETSC_DIR')
             if petsc_dir is None:
@@ -118,7 +90,6 @@ class Petsc(object):
             # Disable logging if path is not writeable (e.g., prefix install)
             logging.basicConfig(filename='/dev/null', level=logging.DEBUG)
         self.log = logging.getLogger('gmakegen')
-        self.mistakes = Mistakes(debuglogger(self.log), verbose=verbose)
         self.gendeps = []
 
     def arch_path(self, *args):
@@ -185,6 +156,7 @@ class Petsc(object):
         for root, dirs, files in chain.from_iterable(os.walk(path) for path in [os.path.join(self.pkg_dir, 'src', pkg),os.path.join(self.pkg_dir, self.pkg_arch, 'src', pkg)]):
             if SKIPDIRS.intersection(pathsplit(self.pkg_dir, root)): continue
             dirs.sort()
+            dirs[:] = list(set(dirs).difference(SKIPDIRS))
             files.sort()
             makefile = os.path.join(root,'makefile')
             if os.path.isfile(makefile):
@@ -193,11 +165,6 @@ class Petsc(object):
               if not all(self.inconf(key, val) for key, val in conditions):
                 dirs[:] = []
                 continue
-              makevars = parse_makefile(makefile)
-              mdirs = makevars.get('DIRS','').split() # Directories specified in the makefile
-              self.mistakes.compareDirLists(root, mdirs, dirs) # diagnostic output to find unused directories
-              candidates = set(mdirs).union(AUTODIRS).difference(SKIPDIRS)
-              dirs[:] = list(candidates.intersection(dirs))
             allsource = []
             def mkrel(src):
                 return self.relpath(root, src)
@@ -229,9 +196,6 @@ class Petsc(object):
         fd.write('\n')
         fd.write('build $libdir/libpetsc.so : %s_LINK_SHARED %s\n\n' % ('CF'[self.have_fortran], ' '.join(libobjs)))
         fd.write('build petsc : phony || $libdir/libpetsc.so\n\n')
-
-    def summary(self):
-        self.mistakes.summary()
 
 def WriteGnuMake(petsc):
     arch_files = petsc.pkg_arch_path('lib',petsc.pkg_name,'conf', 'files')
@@ -298,18 +262,16 @@ def WriteNinja(petsc):
                                                            petsc.arch_path('lib','petsc','conf', 'petscvariables'),
                                                        ' '.join(os.path.join(petsc.pkg_dir, dep) for dep in petsc.gendeps)))
 
-def main(petsc_dir=None, petsc_arch=None, pkg_dir=None, pkg_name=None, pkg_arch=None, pkg_pkgs=None, output=None, verbose=False):
+def main(petsc_dir=None, petsc_arch=None, pkg_dir=None, pkg_name=None, pkg_arch=None, pkg_pkgs=None, output=None):
     if output is None:
         output = 'gnumake'
     writer = dict(gnumake=WriteGnuMake, ninja=WriteNinja)
-    petsc = Petsc(petsc_dir=petsc_dir, petsc_arch=petsc_arch, pkg_dir=pkg_dir, pkg_name=pkg_name, pkg_arch=pkg_arch, pkg_pkgs=pkg_pkgs, verbose=verbose)
+    petsc = Petsc(petsc_dir=petsc_dir, petsc_arch=petsc_arch, pkg_dir=pkg_dir, pkg_name=pkg_name, pkg_arch=pkg_arch, pkg_pkgs=pkg_pkgs)
     writer[output](petsc)
-    petsc.summary()
 
 if __name__ == '__main__':
     import optparse
     parser = optparse.OptionParser()
-    parser.add_option('--verbose', help='Show mismatches between makefiles and the filesystem', action='store_true', default=False)
     parser.add_option('--petsc-arch', help='Set PETSC_ARCH different from environment', default=os.environ.get('PETSC_ARCH'))
     parser.add_option('--pkg-dir', help='Set the directory of the package (different from PETSc) you want to generate the makefile rules for', default=None)
     parser.add_option('--pkg-name', help='Set the name of the package you want to generate the makefile rules for', default=None)
@@ -321,4 +283,4 @@ if __name__ == '__main__':
         import sys
         sys.stderr.write('Unknown arguments: %s\n' % ' '.join(extra_args))
         exit(1)
-    main(petsc_arch=opts.petsc_arch, pkg_dir=opts.pkg_dir, pkg_name=opts.pkg_name, pkg_arch=opts.pkg_arch, pkg_pkgs=opts.pkg_pkgs, output=opts.output, verbose=opts.verbose)
+    main(petsc_arch=opts.petsc_arch, pkg_dir=opts.pkg_dir, pkg_name=opts.pkg_name, pkg_arch=opts.pkg_arch, pkg_pkgs=opts.pkg_pkgs, output=opts.output)

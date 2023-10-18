@@ -1,4 +1,5 @@
 -include ../../../petscdir.mk
+#requirespackage 'PETSC_HAVE_YAML_SEE_README'
 
 MANSEC    = Sys
 
