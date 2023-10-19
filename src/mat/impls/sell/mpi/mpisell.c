@@ -664,7 +664,6 @@ static PetscErrorCode MatView_MPISELL_ASCIIorDraworSocket(Mat mat, PetscViewer v
       PetscCall(MatView_SeqSELL(((Mat_MPISELL *)(A->data))->A, sviewer));
     }
     PetscCall(PetscViewerRestoreSubViewer(viewer, PETSC_COMM_SELF, &sviewer));
-    PetscCall(PetscViewerFlush(viewer));
     PetscCall(MatDestroy(&A));
   }
   PetscFunctionReturn(PETSC_SUCCESS);

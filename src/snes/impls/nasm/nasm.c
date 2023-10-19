@@ -242,7 +242,6 @@ static PetscErrorCode SNESView_NASM(SNES snes, PetscViewer viewer)
         PetscCall(PetscViewerASCIIPrintf(sviewer, "- - - - - - - - - - - - - - - - - -\n"));
       }
       PetscCall(PetscViewerRestoreSubViewer(viewer, PETSC_COMM_SELF, &sviewer));
-      PetscCall(PetscViewerFlush(viewer));
       PetscCall(PetscViewerASCIIPopTab(viewer));
     }
   } else if (isstring) {

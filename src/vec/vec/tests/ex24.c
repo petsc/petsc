@@ -60,7 +60,6 @@ int main(int argc, char **argv)
   PetscCall(VecView(y, sviewer));
   PetscCall(PetscFFlush(PETSC_STDOUT));
   PetscCall(PetscViewerRestoreSubViewer(PETSC_VIEWER_STDOUT_WORLD, PETSC_COMM_SELF, &sviewer));
-  PetscCall(PetscViewerFlush(PETSC_VIEWER_STDOUT_WORLD));
   PetscCall(PetscViewerASCIIPopSynchronized(PETSC_VIEWER_STDOUT_WORLD));
 
   PetscCall(VecScatterDestroy(&ctx));

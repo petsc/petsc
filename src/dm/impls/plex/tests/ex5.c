@@ -1001,7 +1001,6 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
       PetscCall(PetscViewerASCIIPrintf(viewer, "Rank %d\n", rank));
       PetscCall(DMLabelView(hybridLabel, viewer));
       PetscCall(PetscViewerRestoreSubViewer(PETSC_VIEWER_STDOUT_WORLD, PETSC_COMM_SELF, &viewer));
-      PetscCall(PetscViewerFlush(PETSC_VIEWER_STDOUT_WORLD));
     }
     PetscCall(DMLabelDestroy(&hybridLabel));
     PetscCall(DMDestroy(&dmInterface));

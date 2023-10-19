@@ -48,7 +48,6 @@
         PetscCallA(ISView(subdomains_IS(i), singleton, ierr))
       end do
       PetscCallA(PetscViewerRestoreSubViewer(PETSC_VIEWER_STDOUT_WORLD, PETSC_COMM_SELF, singleton, ierr))
-      PetscCallA(PetscViewerFlush(PETSC_VIEWER_STDOUT_WORLD, ierr))
       PetscCallA(PCGASMDestroySubdomains(NSub, subdomains_IS, inflated_IS, ierr))
 
       if (size == 1) then

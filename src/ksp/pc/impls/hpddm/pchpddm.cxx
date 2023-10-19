@@ -566,7 +566,6 @@ static PetscErrorCode PCView_HPDDM(PC pc, PetscViewer viewer)
         PetscCall(PetscViewerRestoreSubViewer(viewer, PetscSubcommChild(subcomm), &subviewer));
         PetscCall(PetscViewerASCIIPopTab(viewer));
         PetscCall(PetscSubcommDestroy(&subcomm));
-        PetscCall(PetscViewerFlush(viewer));
       }
     }
     PetscCall(PetscViewerGetFormat(viewer, &format));

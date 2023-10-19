@@ -659,7 +659,7 @@ PetscErrorCode PetscViewerASCIIPrintf(PetscViewer viewer, const char format[], .
 {
   PetscViewer_ASCII *ascii = (PetscViewer_ASCII *)viewer->data;
   PetscMPIInt        rank;
-  PetscInt           tab, intab = ascii->tab;
+  PetscInt           tab = 0, intab = ascii->tab;
   FILE              *fd = ascii->fd;
   PetscBool          iascii;
 
@@ -678,27 +678,16 @@ PetscErrorCode PetscViewerASCIIPrintf(PetscViewer viewer, const char format[], .
     size_t  fullLength;
 
     PetscCall(PetscCalloc1(QUEUESTRINGSIZE, &string));
+    for (; tab < ascii->tab; tab++) { string[2 * tab] = string[2 * tab + 1] = ' '; }
     va_start(Argp, format);
-    PetscCall(PetscVSNPrintf(string, QUEUESTRINGSIZE, format, &fullLength, Argp));
+    PetscCall(PetscVSNPrintf(string + 2 * intab, QUEUESTRINGSIZE - 2 * intab, format, &fullLength, Argp));
     va_end(Argp);
-    PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "%s", string));
+    PetscCall(PetscViewerASCIISynchronizedPrintf(ascii->bviewer, "%s", string));
     PetscCall(PetscFree(string));
   } else { /* write directly to file */
     va_list Argp;
-    /* flush my own messages that I may have queued up */
-    PrintfQueue next = ascii->petsc_printfqueuebase, previous;
-    PetscInt    i;
-    for (i = 0; i < ascii->petsc_printfqueuelength; i++) {
-      if (!ascii->fileunit) PetscCall(PetscFPrintf(PETSC_COMM_SELF, fd, "%s", next->string));
-      else PetscCall(PetscFPrintfFortran(ascii->fileunit, next->string));
-      previous = next;
-      next     = next->next;
-      PetscCall(PetscFree(previous->string));
-      PetscCall(PetscFree(previous));
-    }
-    ascii->petsc_printfqueue       = NULL;
-    ascii->petsc_printfqueuelength = 0;
-    tab                            = intab;
+
+    tab = intab;
     while (tab--) {
       if (!ascii->fileunit) PetscCall(PetscFPrintf(PETSC_COMM_SELF, fd, "  "));
       else PetscCall(PetscFPrintfFortran(ascii->fileunit, "   "));
@@ -854,8 +843,8 @@ static PetscErrorCode PetscViewerGetSubViewer_ASCII(PetscViewer viewer, MPI_Comm
   PetscViewer_ASCII *vascii = (PetscViewer_ASCII *)viewer->data, *ovascii;
 
   PetscFunctionBegin;
-  PetscCall(PetscViewerASCIIPushSynchronized(viewer));
   PetscCheck(!vascii->sviewer, PETSC_COMM_SELF, PETSC_ERR_ORDER, "SubViewer already obtained from PetscViewer and not restored");
+  PetscCall(PetscViewerASCIIPushSynchronized(viewer));
   /*
      The following line is a bug; it does another PetscViewerASCIIPushSynchronized() on viewer, but if it is removed the code won't work
      because it relies on this behavior in other places. In particular this line causes the synchronized flush to occur when the viewer is destroyed
@@ -870,7 +859,6 @@ static PetscErrorCode PetscViewerGetSubViewer_ASCII(PetscViewer viewer, MPI_Comm
   PetscCall(PetscViewerASCIIPushSynchronized(*outviewer));
   ovascii            = (PetscViewer_ASCII *)(*outviewer)->data;
   ovascii->fd        = vascii->fd;
-  ovascii->tab       = vascii->tab;
   ovascii->closefile = PETSC_FALSE;
 
   vascii->sviewer                                      = *outviewer;
@@ -892,6 +880,7 @@ static PetscErrorCode PetscViewerRestoreSubViewer_ASCII(PetscViewer viewer, MPI_
   ascii->sviewer             = NULL;
   (*outviewer)->ops->destroy = PetscViewerDestroy_ASCII;
   PetscCall(PetscViewerDestroy(outviewer));
+  PetscCall(PetscViewerFlush(viewer));
   PetscCall(PetscViewerASCIIPopSynchronized(viewer));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -993,10 +982,9 @@ PetscErrorCode PetscViewerASCIISynchronizedPrintf(PetscViewer viewer, const char
 {
   PetscViewer_ASCII *vascii = (PetscViewer_ASCII *)viewer->data;
   PetscMPIInt        rank;
-  PetscInt           tab = vascii->tab;
+  PetscInt           tab = 0;
   MPI_Comm           comm;
-  FILE              *fp;
-  PetscBool          iascii, hasbviewer = PETSC_FALSE;
+  PetscBool          iascii;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 1);
@@ -1009,31 +997,22 @@ PetscErrorCode PetscViewerASCIISynchronizedPrintf(PetscViewer viewer, const char
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
 
   if (vascii->bviewer) {
-    hasbviewer = PETSC_TRUE;
-    if (rank == 0) {
-      vascii = (PetscViewer_ASCII *)vascii->bviewer->data;
-      PetscCall(PetscObjectGetComm((PetscObject)viewer, &comm));
-      PetscCallMPI(MPI_Comm_rank(comm, &rank));
-    }
-  }
-
-  fp = vascii->fd;
-
-  if (rank == 0 && !hasbviewer) { /* First processor prints immediately to fp */
+    char   *string;
     va_list Argp;
-    /* flush my own messages that I may have queued up */
-    PrintfQueue next = vascii->petsc_printfqueuebase, previous;
-    PetscInt    i;
-    for (i = 0; i < vascii->petsc_printfqueuelength; i++) {
-      PetscCall(PetscFPrintf(comm, fp, "%s", next->string));
-      previous = next;
-      next     = next->next;
-      PetscCall(PetscFree(previous->string));
-      PetscCall(PetscFree(previous));
-    }
-    vascii->petsc_printfqueue       = NULL;
-    vascii->petsc_printfqueuelength = 0;
+    size_t  fullLength;
 
+    PetscCall(PetscCalloc1(QUEUESTRINGSIZE, &string));
+    for (; tab < vascii->tab; tab++) { string[2 * tab] = string[2 * tab + 1] = ' '; }
+    va_start(Argp, format);
+    PetscCall(PetscVSNPrintf(string + 2 * tab, QUEUESTRINGSIZE - 2 * tab, format, &fullLength, Argp));
+    va_end(Argp);
+    PetscCall(PetscViewerASCIISynchronizedPrintf(vascii->bviewer, "%s", string));
+    PetscCall(PetscFree(string));
+  } else if (rank == 0) { /* First processor prints immediately to fp */
+    va_list Argp;
+    FILE   *fp = vascii->fd;
+
+    tab = vascii->tab;
     while (tab--) PetscCall(PetscFPrintf(PETSC_COMM_SELF, fp, "  "));
 
     va_start(Argp, format);

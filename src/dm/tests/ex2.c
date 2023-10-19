@@ -62,7 +62,6 @@ int main(int argc, char **argv)
     PetscCall(PetscViewerGetSubViewer(PETSC_VIEWER_STDOUT_WORLD, PETSC_COMM_SELF, &sviewer));
     PetscCall(VecView(local, sviewer));
     PetscCall(PetscViewerRestoreSubViewer(PETSC_VIEWER_STDOUT_WORLD, PETSC_COMM_SELF, &sviewer));
-    PetscCall(PetscViewerFlush(PETSC_VIEWER_STDOUT_WORLD));
     PetscCall(PetscViewerASCIIPopSynchronized(PETSC_VIEWER_STDOUT_WORLD));
   }
   PetscCall(PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD, "\nLocal to global mapping\n"));
