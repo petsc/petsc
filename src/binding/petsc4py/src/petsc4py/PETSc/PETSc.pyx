@@ -64,12 +64,12 @@ cdef extern from *:
 
 cdef object PetscError = <object>PyExc_RuntimeError
 
-cdef PetscErrorCode SETERR(PetscErrorCode ierr) with gil:
+cdef inline int SETERR(PetscErrorCode ierr) except -1 nogil:
     if (<void*>PetscError) != NULL:
-        PyErr_SetObject(PetscError, <long>ierr)
+        with gil: PyErr_SetObject(PetscError, <long>ierr)
     else:
-        PyErr_SetObject(<object>PyExc_RuntimeError, <long>ierr)
-    return ierr
+        with gil: PyErr_SetObject(<object>PyExc_RuntimeError, <long>ierr)
+    return 0
 
 cdef inline PetscErrorCode CHKERR(PetscErrorCode ierr) except PETSC_ERR_PYTHON nogil:
     if ierr == PETSC_SUCCESS:
@@ -85,23 +85,22 @@ cdef inline PetscErrorCode CHKERR(PetscErrorCode ierr) except PETSC_ERR_PYTHON n
 cdef extern from * nogil:
     enum: MPI_SUCCESS = 0
     enum: MPI_MAX_ERROR_STRING
-    int MPI_Error_string(int, char *, int *)
-
+    int MPI_Error_string(int, char[], int*)
+    PetscErrorCode PetscSNPrintf(char[], size_t, const char[], ...)
     PetscErrorCode PetscERROR(MPI_Comm, char[], PetscErrorCode, int, char[], char[])
 
-cdef inline int SETERRMPI(int ierr) with gil:
-    cdef char[MPI_MAX_ERROR_STRING] mpi_err_str
-    cdef int                        result_len = <int>sizeof(mpi_err_str)
+cdef inline int SETERRMPI(int ierr) except -1 nogil:
+    cdef char mpi_err_str[MPI_MAX_ERROR_STRING]
+    cdef int  result_len = <int>sizeof(mpi_err_str)
 
     <void>memset(mpi_err_str, 0, result_len)
     <void>MPI_Error_string(ierr, mpi_err_str, &result_len);
     <void>result_len
 
-    cdef str         error_str   = "MPI Error " + bytes2str(mpi_err_str) + " " + str(ierr)
-    cdef const char *c_error_str = NULL
+    cdef char error_str[MPI_MAX_ERROR_STRING+64]
+    <void>PetscSNPrintf(error_str, sizeof(error_str), b"MPI Error %s %d", mpi_err_str, ierr)
 
-    str2bytes(error_str, &c_error_str)
-    <void>PetscERROR(PETSC_COMM_SELF, "Unknown Python Function", PETSC_ERR_MPI, PETSC_ERROR_INITIAL, "%s", c_error_str)
+    <void>PetscERROR(PETSC_COMM_SELF, "Unknown Python Function", PETSC_ERR_MPI, PETSC_ERROR_INITIAL, "%s", error_str)
     <void>SETERR(PETSC_ERR_MPI)
     return ierr
 
@@ -278,7 +277,7 @@ cdef PetscErrorCode traceback(
     PetscErrorType p,
     const char    *mess,
     void          *ctx,
-) with gil:
+) except (<PetscErrorCode>-1) with gil:
     cdef PetscLogDouble mem=0
     cdef PetscLogDouble rss=0
     cdef const char    *text=NULL
@@ -318,7 +317,7 @@ cdef PetscErrorCode PetscPythonErrorHandler(
     PetscErrorType p,
     const char    *mess,
     void          *ctx,
-) nogil:
+) except (<PetscErrorCode>-1) nogil:
     global tracebacklist
     if (<void*>tracebacklist) != NULL and Py_IsInitialized():
         return traceback(comm, line, cfunc, cfile, n, p, mess, ctx)

@@ -3,9 +3,10 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.version      = '1.2.13'
+    self.version      = '1.3'
     self.versionname  = 'ZLIB_VERSION'
     self.download     = ['http://www.zlib.net/zlib-'+self.version+'.tar.gz',
+                         'https://github.com/madler/zlib/releases/download/v'+self.version+'/zlib-'+self.version+'.tar.gz',
                          'https://web.cels.anl.gov/projects/petsc/download/externalpackages/zlib-'+self.version+'.tar.gz']
     self.functions    = ['compress', 'uncompress']
     self.includes     = ['zlib.h']
@@ -44,7 +45,7 @@ class Configure(config.package.Package):
     self.log.write('zlibDir = '+self.packageDir+' installDir '+self.installDir+'\n')
     self.logPrintBox('Building and installing zlib; this may take several minutes')
     try:
-      output,err,ret  = config.base.Configure.executeShellCommand('cd '+self.packageDir+' && ' + args + ' ./configure '+cargs+' && '+self.make.make_jnp+' && '+self.make.make+' install', timeout=600, log = self.log)
+      output,err,ret = config.base.Configure.executeShellCommand('cd '+self.packageDir+' && ' + args + ' ./configure '+cargs+' && '+self.make.make_jnp+' && '+self.make.make+' install', timeout=600, log = self.log)
     except RuntimeError as e:
       raise RuntimeError('Error building/install zlib files from '+os.path.join(self.packageDir, 'zlib')+' to '+self.packageDir)
     self.postInstall(output+err,conffile)

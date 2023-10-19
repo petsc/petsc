@@ -8,8 +8,9 @@ class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
 
-    self.minversion       = '4.1'
-    self.versionname      = 'HIP_VERSION_MAJOR.HIP_VERSION_MINOR'
+    self.minversion       = '4.1.0'
+    # HIP_VERSION_PATCH (e.g., 31061) is not necessarily the AMD advertised patch version, e.g., in 5.6.0
+    self.versionname      = 'HIP_VERSION_MAJOR.HIP_VERSION_MINOR.HIP_VERSION_PATCH'
     self.versioninclude   = 'hip/hip_version.h'
     self.requiresversion  = 1
     self.functionsCxx     = [1,'', 'rocblas_create']

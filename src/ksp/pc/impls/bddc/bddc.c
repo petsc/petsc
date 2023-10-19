@@ -988,7 +988,7 @@ static PetscErrorCode PCBDDCGetNeumannBoundariesLocal_BDDC(PC pc, IS *NeumannBou
   or a global-to-local map of the global `IS` (if provided with `PCBDDCSetNeumannBoundaries()`).
   In the latter case, the `IS` will be available after `PCSetUp()`.
 
-.seealso: `PCBDDC``PCBDDCSetNeumannBoundaries()`, `PCBDDCSetNeumannBoundariesLocal)`, `PCBDDCGetNeumannBoundaries()`
+.seealso: `PCBDDC`, `PCBDDCSetNeumannBoundaries()`, `PCBDDCSetNeumannBoundariesLocal)`, `PCBDDCGetNeumannBoundaries()`
 @*/
 PetscErrorCode PCBDDCGetNeumannBoundariesLocal(PC pc, IS *NeumannBoundaries)
 {

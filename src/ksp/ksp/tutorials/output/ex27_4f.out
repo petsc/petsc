@@ -30,7 +30,7 @@ PC Object: 4 MPI processes
           rows=4889, cols=4889
           total: nonzeros=1, allocated nonzeros=1
           total number of mallocs used during MatSetValues calls=0
-    KSP solver for S = A11 - A10 inv(A00) A01 
+    KSP solver for S = A11 - A10 inv(A00) A01
       KSP Object: (fieldsplit_1_) 4 MPI processes
         type: preonly
         maximum iterations=10000, initial guess is zero

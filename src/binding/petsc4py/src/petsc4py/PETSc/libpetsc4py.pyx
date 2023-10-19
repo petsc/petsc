@@ -33,7 +33,7 @@ cdef char *FUNCT = NULL
 cdef char *fstack[1024]
 cdef int   istack = 0
 
-cdef inline void FunctionBegin(char name[]) nogil:
+cdef inline void FunctionBegin(char name[]) noexcept nogil:
     global istack, fstack, FUNCT
     FUNCT = name
     fstack[istack] = FUNCT
@@ -42,7 +42,7 @@ cdef inline void FunctionBegin(char name[]) nogil:
         istack = 0
     return
 
-cdef inline PetscErrorCode FunctionEnd() nogil:
+cdef inline PetscErrorCode FunctionEnd() noexcept nogil:
     global istack, fstack, FUNCT
     FUNCT = NULL
     istack -= 1
@@ -51,33 +51,33 @@ cdef inline PetscErrorCode FunctionEnd() nogil:
     FUNCT = fstack[istack]
     return PETSC_SUCCESS
 
-cdef PetscErrorCode PetscSETERR(PetscErrorCode ierr,char msg[]) nogil:
+cdef PetscErrorCode PetscSETERR(PetscErrorCode ierr,char msg[]) noexcept nogil:
     global istack, fstack
     istack = 0
     fstack[istack] = NULL;
     return PetscERROR(PETSC_COMM_SELF,FUNCT,ierr,
                       PETSC_ERROR_INITIAL, msg, NULL)
 
-cdef PetscErrorCode UNSUPPORTED(char msg[]) nogil:
+cdef PetscErrorCode UNSUPPORTED(char msg[]) noexcept nogil:
     return PetscERROR(PETSC_COMM_SELF,FUNCT,PETSC_ERR_USER,
                       PETSC_ERROR_INITIAL,b"method %s()",msg)
 
 # --------------------------------------------------------------------
 
-cdef inline PetscInt getRef(void *pobj) nogil:
+cdef inline PetscInt getRef(void *pobj) noexcept nogil:
     cdef PetscObject obj = <PetscObject>pobj
     if obj == NULL: return 0
     else: return obj.refct
 
-cdef inline void addRef(void *pobj) nogil:
+cdef inline void addRef(void *pobj) noexcept nogil:
     cdef PetscObject obj = <PetscObject>pobj
     if obj != NULL: obj.refct += 1
 
-cdef inline void delRef(void *pobj) nogil:
+cdef inline void delRef(void *pobj) noexcept nogil:
     cdef PetscObject obj = <PetscObject>pobj
     if obj != NULL: obj.refct -= 1
 
-cdef inline PetscObject newRef(void *pobj) nogil:
+cdef inline PetscObject newRef(void *pobj) noexcept nogil:
     cdef PetscObject obj = <PetscObject>pobj
     cdef int ierr = 0
     if obj != NULL:
@@ -85,12 +85,12 @@ cdef inline PetscObject newRef(void *pobj) nogil:
         if ierr: return NULL # XXX warning!
     return obj
 
-cdef inline const char* getPrefix(void *pobj) nogil:
+cdef inline const char* getPrefix(void *pobj) noexcept nogil:
     cdef PetscObject obj = <PetscObject>pobj
     if obj == NULL: return NULL
     return obj.prefix
 
-cdef inline int getCommSize(void *pobj) nogil:
+cdef inline int getCommSize(void *pobj) noexcept nogil:
     cdef PetscObject obj = <PetscObject>pobj
     if obj == NULL: return 0
     cdef int size = 0

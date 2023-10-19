@@ -140,6 +140,7 @@ cdef extern from * nogil:
     PetscErrorCode KSPConvergedDefaultCreate(void**)
     PetscErrorCode KSPConvergedDefaultDestroy(void*)
     PetscErrorCode KSPConvergedDefault(PetscKSP,PetscInt,PetscReal,PetscKSPConvergedReason*,void*) except PETSC_ERR_PYTHON
+    PetscErrorCode KSPLSQRConvergedDefault(PetscKSP,PetscInt,PetscReal,PetscKSPConvergedReason*,void*) except PETSC_ERR_PYTHON
     PetscErrorCode KSPConvergedSkip(PetscKSP,PetscInt,PetscReal,PetscKSPConvergedReason*,void*) except PETSC_ERR_PYTHON
 
     PetscErrorCode KSPMonitorSet(PetscKSP,PetscKSPMonitorFunction,void*,PetscKSPCtxDel)
@@ -215,6 +216,7 @@ cdef extern from * nogil: # custom.h
     PetscErrorCode KSPSetResidualNorm(PetscKSP,PetscReal)
     PetscErrorCode KSPConvergenceTestCall(PetscKSP,PetscInt,PetscReal,PetscKSPConvergedReason*)
     PetscErrorCode KSPSetConvergedReason(PetscKSP,PetscKSPConvergedReason)
+    PetscErrorCode KSPAddConvergenceTest(PetscKSP,PetscKSPConvergedFunction,PetscBool)
 
 # -----------------------------------------------------------------------------
 
