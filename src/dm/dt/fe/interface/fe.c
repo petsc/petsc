@@ -2387,7 +2387,7 @@ PetscErrorCode PetscFEUpdateElementVec_Internal(PetscFE fe, PetscTabulation T, P
   return PETSC_SUCCESS;
 }
 
-PetscErrorCode PetscFEUpdateElementVec_Hybrid_Internal(PetscFE fe, PetscTabulation T, PetscInt r, PetscInt s, PetscScalar tmpBasis[], PetscScalar tmpBasisDer[], PetscFEGeom *fegeom, PetscScalar f0[], PetscScalar f1[], PetscScalar elemVec[])
+PetscErrorCode PetscFEUpdateElementVec_Hybrid_Internal(PetscFE fe, PetscTabulation T, PetscInt r, PetscInt side, PetscScalar tmpBasis[], PetscScalar tmpBasisDer[], PetscFEGeom *fegeom, PetscScalar f0[], PetscScalar f1[], PetscScalar elemVec[])
 {
   const PetscInt   dE       = T->cdim;
   const PetscInt   Nq       = T->Np;
@@ -2395,27 +2395,42 @@ PetscErrorCode PetscFEUpdateElementVec_Hybrid_Internal(PetscFE fe, PetscTabulati
   const PetscInt   Nc       = T->Nc;
   const PetscReal *basis    = &T->T[0][r * Nq * Nb * Nc];
   const PetscReal *basisDer = &T->T[1][r * Nq * Nb * Nc * dE];
-  PetscInt         q, b, c, d;
 
-  for (q = 0; q < Nq; ++q) {
-    for (b = 0; b < Nb; ++b) {
-      for (c = 0; c < Nc; ++c) {
+  for (PetscInt q = 0; q < Nq; ++q) {
+    for (PetscInt b = 0; b < Nb; ++b) {
+      for (PetscInt c = 0; c < Nc; ++c) {
         const PetscInt bcidx = b * Nc + c;
 
         tmpBasis[bcidx] = basis[q * Nb * Nc + bcidx];
-        for (d = 0; d < dE; ++d) tmpBasisDer[bcidx * dE + d] = basisDer[q * Nb * Nc * dE + bcidx * dE + d];
+        for (PetscInt d = 0; d < dE; ++d) tmpBasisDer[bcidx * dE + d] = basisDer[q * Nb * Nc * dE + bcidx * dE + d];
       }
     }
     PetscCall(PetscFEPushforward(fe, fegeom, Nb, tmpBasis));
     // TODO This is currently broken since we do not pull the geometry down to the lower dimension
     // PetscCall(PetscFEPushforwardGradient(fe, fegeom, Nb, tmpBasisDer));
-    for (b = 0; b < Nb; ++b) {
-      for (c = 0; c < Nc; ++c) {
-        const PetscInt bcidx = b * Nc + c;
-        const PetscInt qcidx = q * Nc + c;
+    if (side == 2) {
+      // Integrating over whole cohesive cell, so insert for both sides
+      for (PetscInt s = 0; s < 2; ++s) {
+        for (PetscInt b = 0; b < Nb; ++b) {
+          for (PetscInt c = 0; c < Nc; ++c) {
+            const PetscInt bcidx = b * Nc + c;
+            const PetscInt qcidx = (q * 2 + s) * Nc + c;
 
-        elemVec[Nb * s + b] += tmpBasis[bcidx] * f0[qcidx];
-        for (d = 0; d < dE; ++d) elemVec[Nb * s + b] += tmpBasisDer[bcidx * dE + d] * f1[qcidx * dE + d];
+            elemVec[Nb * s + b] += tmpBasis[bcidx] * f0[qcidx];
+            for (PetscInt d = 0; d < dE; ++d) elemVec[Nb * s + b] += tmpBasisDer[bcidx * dE + d] * f1[qcidx * dE + d];
+          }
+        }
+      }
+    } else {
+      // Integrating over endcaps of cohesive cell, so insert for correct side
+      for (PetscInt b = 0; b < Nb; ++b) {
+        for (PetscInt c = 0; c < Nc; ++c) {
+          const PetscInt bcidx = b * Nc + c;
+          const PetscInt qcidx = q * Nc + c;
+
+          elemVec[Nb * side + b] += tmpBasis[bcidx] * f0[qcidx];
+          for (PetscInt d = 0; d < dE; ++d) elemVec[Nb * side + b] += tmpBasisDer[bcidx * dE + d] * f1[qcidx * dE + d];
+        }
       }
     }
   }
@@ -2481,7 +2496,7 @@ PetscErrorCode PetscFEUpdateElementMat_Internal(PetscFE feI, PetscFE feJ, PetscI
   return PETSC_SUCCESS;
 }
 
-PetscErrorCode PetscFEUpdateElementMat_Hybrid_Internal(PetscFE feI, PetscBool isHybridI, PetscFE feJ, PetscBool isHybridJ, PetscInt r, PetscInt s, PetscInt q, PetscTabulation TI, PetscScalar tmpBasisI[], PetscScalar tmpBasisDerI[], PetscTabulation TJ, PetscScalar tmpBasisJ[], PetscScalar tmpBasisDerJ[], PetscFEGeom *fegeom, const PetscScalar g0[], const PetscScalar g1[], const PetscScalar g2[], const PetscScalar g3[], PetscInt eOffset, PetscInt totDim, PetscInt offsetI, PetscInt offsetJ, PetscScalar elemMat[])
+PetscErrorCode PetscFEUpdateElementMat_Hybrid_Internal(PetscFE feI, PetscBool isHybridI, PetscFE feJ, PetscBool isHybridJ, PetscInt r, PetscInt s, PetscInt t, PetscInt q, PetscTabulation TI, PetscScalar tmpBasisI[], PetscScalar tmpBasisDerI[], PetscTabulation TJ, PetscScalar tmpBasisJ[], PetscScalar tmpBasisDerJ[], PetscFEGeom *fegeom, const PetscScalar g0[], const PetscScalar g1[], const PetscScalar g2[], const PetscScalar g3[], PetscInt eOffset, PetscInt totDim, PetscInt offsetI, PetscInt offsetJ, PetscScalar elemMat[])
 {
   const PetscInt   dE        = TI->cdim;
   const PetscInt   NqI       = TI->Np;
@@ -2495,7 +2510,7 @@ PetscErrorCode PetscFEUpdateElementMat_Hybrid_Internal(PetscFE feI, PetscBool is
   const PetscReal *basisJ    = &TJ->T[0][(r * NqJ + q) * NbJ * NcJ];
   const PetscReal *basisDerJ = &TJ->T[1][(r * NqJ + q) * NbJ * NcJ * dE];
   const PetscInt   so        = isHybridI ? 0 : s;
-  const PetscInt   to        = isHybridJ ? 0 : s;
+  const PetscInt   to        = isHybridJ ? 0 : t;
   PetscInt         f, fc, g, gc, df, dg;
 
   for (f = 0; f < NbI; ++f) {
