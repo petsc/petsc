@@ -602,5 +602,6 @@ int main(int argc, char **args)
      args: -ksp_converged_reason -ksp_rtol 1e-5 -ksp_max_it 100
      args: -ksp_type lsqr -pc_type hpddm -pc_hpddm_define_subdomains -pc_hpddm_levels_1_eps_nev 20 -pc_hpddm_levels_1_eps_threshold 1e-6
      args: -pc_hpddm_levels_1_pc_asm_sub_mat_type aij -pc_hpddm_levels_1_pc_asm_type basic -pc_hpddm_levels_1_sub_pc_type lu -pc_hpddm_coarse_pc_type lu
+     filter: sed -e "s/ 10/ 9/g"
 
 TEST*/

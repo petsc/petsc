@@ -3,7 +3,7 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.version          = '5.6.1'
+    self.version          = '5.6.2'
     self.minversion       = '5.2.1'
     self.versionname      = 'MUMPS_VERSION'
     self.requiresversion  = 1
@@ -22,6 +22,7 @@ class Configure(config.package.Package):
     import nargs
     config.package.Package.setupHelp(self, help)
     help.addArgument('MUMPS', '-with-mumps-serial', nargs.ArgBool(None, 0, 'Use serial build of MUMPS'))
+    help.addArgument('MUMPS', '-download-mumps-avoid-mpi-in-place', nargs.ArgBool(None, 0, 'Let MUMPS not use MPI_IN_PLACE. Since MUMPS-5.6.2, it can be used to avoid a bug in MPICH older than 4.0b1'))
     return
 
   def setupDependencies(self, framework):
@@ -167,6 +168,15 @@ class Configure(config.package.Package):
         g.write('LIBS += '+self.libraries.toString(self.hwloc.lib)+'\n')
         g.write('OPTF += -DUSE_LIBHWLOC\n')
         g.write('OPTC += -DUSE_LIBHWLOC\n')
+      # To avoid a bug related to MPI_IN_PLACE and old MPICH releases, see MR 4410
+      self.avoid_mpi_in_place = 0
+      if 'download-mumps-avoid-mpi-in-place' in self.framework.clArgDB: # user-provided value takes precedence
+        self.avoid_mpi_in_place = self.clArgDB['download-mumps-avoid-mpi-in-place']
+      elif hasattr(self.mpi, 'mpich_numversion') and int(self.mpi.mpich_numversion) < 40000101:
+        self.avoid_mpi_in_place = 1
+      if self.avoid_mpi_in_place:
+        g.write('CDEFS += -DAVOID_MPI_IN_PLACE') # only take effect since mumps-5.6.2
+        self.addDefine('HAVE_MUMPS_AVOID_MPI_IN_PLACE', 1)
     g.close()
     if self.installNeeded('Makefile.inc'):
       try:

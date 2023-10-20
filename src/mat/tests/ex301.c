@@ -61,28 +61,25 @@ int main(int argc, char **args)
 }
 
 /*TEST
+  testset:
+    output_file: output/empty.out
 
-   test:
+    test:
       suffix: aijviennacl_1
-      nsize: 1
+      nsize: {{1 2}}
       args: -mat_type aijviennacl
       requires: viennacl
 
-   test:
-      suffix: aijviennacl_2
-      nsize: 2
-      args: -mat_type aijviennacl
-      requires: viennacl
-
-   test:
+    test:
       suffix: aijcusparse_1
-      nsize: 1
+      nsize: {{1 2}}
       args: -mat_type aijcusparse
       requires: cuda
 
-   test:
-      suffix: aijcusparse_2
-      nsize: 2
-      args: -mat_type aijcusparse
-      requires: cuda
+    test:
+      suffix: kokkos
+      nsize: {{1 2}}
+      args: -mat_type aijkokkos
+      requires: kokkos_kernels
+
 TEST*/

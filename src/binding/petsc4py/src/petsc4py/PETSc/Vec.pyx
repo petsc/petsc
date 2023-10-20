@@ -104,6 +104,8 @@ cdef class Vec(Object):
     def __rtruediv__(self, other):
         return vec_rdiv(self, other)
 
+    def __matmul__(self, other):
+        return vec_matmul(self, other)
     #
 
     #def __len__(self):
