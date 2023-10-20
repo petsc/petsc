@@ -107,10 +107,73 @@ static PetscErrorCode PetscSFLinkStartCommunication_Neighbor(PetscSF sf, PetscSF
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+#if defined(PETSC_HAVE_MPI_PERSISTENT_NEIGHBORHOOD_COLLECTIVES)
+static PetscErrorCode PetscSFLinkInitMPIRequests_Persistent_Neighbor(PetscSF sf, PetscSFLink link, PetscSFDirection direction)
+{
+  PetscSF_Neighbor  *dat           = (PetscSF_Neighbor *)sf->data;
+  MPI_Comm           distcomm      = MPI_COMM_NULL;
+  const PetscMemType rootmtype_mpi = link->rootmtype_mpi, leafmtype_mpi = link->leafmtype_mpi; /* Used to select buffers passed to MPI */
+  const PetscInt     rootdirect_mpi = link->rootdirect_mpi;
+  MPI_Request       *req            = link->rootreqs[direction][rootmtype_mpi][rootdirect_mpi];
+  void              *rootbuf = link->rootbuf[PETSCSF_REMOTE][rootmtype_mpi], *leafbuf = link->leafbuf[PETSCSF_REMOTE][leafmtype_mpi];
+  MPI_Info           info;
+
+  PetscFunctionBegin;
+  PetscCall(PetscSFGetDistComm_Neighbor(sf, direction, &distcomm));
+  if (dat->rootdegree || dat->leafdegree) {
+    if (!link->rootreqsinited[direction][rootmtype_mpi][rootdirect_mpi]) {
+      PetscCallMPI(MPI_Info_create(&info)); // currently, we don't use info
+      if (direction == PETSCSF_ROOT2LEAF) {
+        PetscCallMPI(MPIU_Neighbor_alltoallv_init(rootbuf, dat->rootcounts, dat->rootdispls, link->unit, leafbuf, dat->leafcounts, dat->leafdispls, link->unit, distcomm, info, req));
+      } else {
+        PetscCallMPI(MPIU_Neighbor_alltoallv_init(leafbuf, dat->leafcounts, dat->leafdispls, link->unit, rootbuf, dat->rootcounts, dat->rootdispls, link->unit, distcomm, info, req));
+      }
+      link->rootreqsinited[direction][rootmtype_mpi][rootdirect_mpi] = PETSC_TRUE;
+      PetscCallMPI(MPI_Info_free(&info));
+    }
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+// Start MPI requests. If use non-GPU aware MPI, we might need to copy data from device buf to host buf
+static PetscErrorCode PetscSFLinkStartCommunication_Persistent_Neighbor(PetscSF sf, PetscSFLink link, PetscSFDirection direction)
+{
+  PetscSF_Neighbor *dat = (PetscSF_Neighbor *)sf->data;
+  MPI_Request      *req = NULL;
+
+  PetscFunctionBegin;
+  if (direction == PETSCSF_ROOT2LEAF) {
+    PetscCall(PetscSFLinkCopyRootBufferInCaseNotUseGpuAwareMPI(sf, link, PETSC_TRUE /* device2host before sending */));
+  } else {
+    PetscCall(PetscSFLinkCopyLeafBufferInCaseNotUseGpuAwareMPI(sf, link, PETSC_TRUE /* device2host */));
+  }
+
+  PetscCall(PetscSFLinkGetMPIBuffersAndRequests(sf, link, direction, NULL, NULL, &req, NULL));
+  PetscCall(PetscSFLinkSyncStreamBeforeCallMPI(sf, link, direction));
+  if (dat->rootdegree || dat->leafdegree) {
+    PetscCallMPI(MPI_Start(req));
+    if (direction == PETSCSF_ROOT2LEAF) {
+      PetscCall(PetscLogMPIMessages(dat->rootdegree, dat->rootcounts, link->unit, dat->leafdegree, dat->leafcounts, link->unit));
+    } else {
+      PetscCall(PetscLogMPIMessages(dat->leafdegree, dat->leafcounts, link->unit, dat->rootdegree, dat->rootcounts, link->unit));
+    }
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+#endif
+
 static PetscErrorCode PetscSFSetCommunicationOps_Neighbor(PetscSF sf, PetscSFLink link)
 {
   PetscFunctionBegin;
-  link->StartCommunication = PetscSFLinkStartCommunication_Neighbor;
+#if defined(PETSC_HAVE_MPI_PERSISTENT_NEIGHBORHOOD_COLLECTIVES)
+  if (sf->persistent) {
+    link->InitMPIRequests    = PetscSFLinkInitMPIRequests_Persistent_Neighbor;
+    link->StartCommunication = PetscSFLinkStartCommunication_Persistent_Neighbor;
+  } else
+#endif
+  {
+    link->StartCommunication = PetscSFLinkStartCommunication_Neighbor;
+  }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -128,7 +191,6 @@ static PetscErrorCode PetscSFSetUp_Neighbor(PetscSF sf)
   /* SFNeighbor inherits from Basic */
   PetscCall(PetscSFSetUp_Basic(sf));
   /* SFNeighbor specific */
-  sf->persistent = PETSC_FALSE;
   PetscCall(PetscSFGetRootInfo_Basic(sf, &nrootranks, &ndrootranks, NULL, &rootoffset, NULL));
   PetscCall(PetscSFGetLeafInfo_Basic(sf, &nleafranks, &ndleafranks, NULL, &leafoffset, NULL, NULL));
   dat->rootdegree = m = (PetscMPIInt)(nrootranks - ndrootranks);
@@ -216,6 +278,13 @@ PETSC_INTERN PetscErrorCode PetscSFCreate_Neighbor(PetscSF sf)
   sf->ops->Reset               = PetscSFReset_Neighbor;
   sf->ops->Destroy             = PetscSFDestroy_Neighbor;
   sf->ops->SetCommunicationOps = PetscSFSetCommunicationOps_Neighbor;
+
+#if defined(PETSC_HAVE_MPI_PERSISTENT_NEIGHBORHOOD_COLLECTIVES)
+  PetscObjectOptionsBegin((PetscObject)sf);
+  PetscCall(PetscOptionsBool("-sf_neighbor_persistent", "Use MPI-4 persistent neighborhood collectives; used along with -sf_type neighbor", "PetscSFCreate", sf->persistent, &sf->persistent, NULL));
+  PetscOptionsEnd();
+#endif
+  sf->collective = PETSC_TRUE;
 
   PetscCall(PetscNew(&dat));
   sf->data = (void *)dat;

@@ -505,11 +505,16 @@ int main(int argc, char **argv)
 
   testset:
     args: -print_timing false -its 10 -n 8
-    nsize: {{1 3}}
+    nsize: {{3 5}}
     output_file: output/bench_kspsolve_ksp.out
 
     test:
       suffix: ksp
+
+    test:
+      suffix: nbr
+      requires: defined(PETSC_HAVE_MPI_PERSISTENT_NEIGHBORHOOD_COLLECTIVES)
+      args: -sf_type neighbor -sf_neighbor_persistent {{0 1}}
 
     test:
       suffix: hip_ksp
@@ -525,4 +530,10 @@ int main(int argc, char **argv)
       suffix: kok_ksp
       requires: kokkos_kernels
       args: -mat_type aijkokkos
+
+    test:
+      suffix: kok_nbr
+      requires: kokkos_kernels defined(PETSC_HAVE_MPI_PERSISTENT_NEIGHBORHOOD_COLLECTIVES)
+      args: -mat_type aijkokkos -sf_type neighbor -sf_neighbor_persistent {{0 1}}
+
 TEST*/

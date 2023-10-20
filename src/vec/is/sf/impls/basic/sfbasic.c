@@ -162,6 +162,7 @@ static PetscErrorCode PetscSFSetCommunicationOps_Basic(PetscSF sf, PetscSFLink l
   link->InitMPIRequests    = PetscSFLinkInitMPIRequests_Persistent_Basic;
   link->StartCommunication = PetscSFLinkStartCommunication_Persistent_Basic;
 #if defined(PETSC_HAVE_MPIX_STREAM)
+  const PetscMemType rootmtype_mpi = link->rootmtype_mpi, leafmtype_mpi = link->leafmtype_mpi;
   if (sf->use_stream_aware_mpi && (PetscMemTypeDevice(rootmtype_mpi) || PetscMemTypeDevice(leafmtype_mpi))) {
     link->StartCommunication  = PetscSFLinkStartCommunication_MPIX_Stream;
     link->FinishCommunication = PetscSFLinkFinishCommunication_MPIX_Stream;
@@ -244,7 +245,6 @@ PETSC_INTERN PetscErrorCode PetscSFSetUp_Basic(PetscSF sf)
 
   sf->nleafreqs  = nRemoteRootRanks;
   bas->nrootreqs = nRemoteLeafRanks;
-  sf->persistent = PETSC_TRUE;
 
   /* Setup fields related to packing, such as rootbuflen[] */
   PetscCall(PetscSFSetUpPackFields(sf));
@@ -619,6 +619,9 @@ PETSC_EXTERN PetscErrorCode PetscSFCreate_Basic(PetscSF sf)
   sf->ops->GetLeafRanks         = PetscSFGetLeafRanks_Basic;
   sf->ops->CreateEmbeddedRootSF = PetscSFCreateEmbeddedRootSF_Basic;
   sf->ops->SetCommunicationOps  = PetscSFSetCommunicationOps_Basic;
+
+  sf->persistent = PETSC_TRUE; // currently SFBASIC always uses persistent send/recv
+  sf->collective = PETSC_FALSE;
 
   PetscCall(PetscNew(&dat));
   sf->data = (void *)dat;

@@ -1,4 +1,13 @@
 {
+	<mpich-4.0.2 issue-6738 with bench_kspsolve_nbr in src/ksp/ksp/tutorials/>
+	Memcheck:Cond
+	fun:MPID_Startall
+	fun:internal_Start
+	fun:PMPI_Start
+	fun:PetscSFLinkStartCommunication_Persistent_Neighbor
+}
+
+{
    <mpich-3.1.3 issue with runex2_window in src/vec/is/sf/tutorials>
    Memcheck:Param
    writev(vector[...])

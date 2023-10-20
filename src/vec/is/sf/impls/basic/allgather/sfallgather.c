@@ -136,6 +136,8 @@ PETSC_INTERN PetscErrorCode PetscSFCreate_Allgather(PetscSF sf)
   sf->ops->ReduceBegin = PetscSFReduceBegin_Allgather;
   sf->ops->BcastToZero = PetscSFBcastToZero_Allgather;
 
+  sf->collective = PETSC_TRUE;
+
   PetscCall(PetscNew(&dat));
   sf->data = (void *)dat;
   PetscFunctionReturn(PETSC_SUCCESS);

@@ -480,11 +480,19 @@ int main(int argc, char **argv)
       args: -world2subs -vectype cuda
       requires: cuda
 
+   testset:
+     nsize: 7
+     args: -world2sub -sf_type neighbor
+     output_file: output/ex9_1.out
+     # segfaults with NECMPI
+     requires: defined(PETSC_HAVE_MPI_NEIGHBORHOOD_COLLECTIVES) !defined(PETSC_HAVE_NECMPI)
+
      test:
-       suffix: 7
-       args: -world2sub -sf_type neighbor
-       output_file: output/ex9_1.out
-       # OpenMPI has a bug wrt MPI_Neighbor_alltoallv etc (https://github.com/open-mpi/ompi/pull/6782). Once the patch is in, we can remove !define(PETSC_HAVE_OMPI_MAJOR_VERSION)
-       # segfaults with NECMPI
-       requires: defined(PETSC_HAVE_MPI_NEIGHBORHOOD_COLLECTIVES) !defined(PETSC_HAVE_OMPI_MAJOR_VERSION) !defined(PETSC_HAVE_NECMPI)
+       suffix: 71
+
+     test:
+       suffix: 72
+       requires: defined(PETSC_HAVE_MPI_PERSISTENT_NEIGHBORHOOD_COLLECTIVES)
+       args: -sf_neighbor_persistent
+
 TEST*/

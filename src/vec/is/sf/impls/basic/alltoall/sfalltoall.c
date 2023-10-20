@@ -216,6 +216,8 @@ PETSC_INTERN PetscErrorCode PetscSFCreate_Alltoall(PetscSF sf)
 
   sf->ops->SetCommunicationOps = PetscSFSetCommunicationOps_Alltoall;
 
+  sf->collective = PETSC_TRUE;
+
   PetscCall(PetscNew(&dat));
   sf->data = (void *)dat;
   PetscFunctionReturn(PETSC_SUCCESS);

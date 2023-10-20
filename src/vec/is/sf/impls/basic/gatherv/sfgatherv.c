@@ -75,6 +75,8 @@ PETSC_INTERN PetscErrorCode PetscSFCreate_Gatherv(PetscSF sf)
 
   sf->ops->SetCommunicationOps = PetscSFSetCommunicationOps_Gatherv;
 
+  sf->collective = PETSC_TRUE;
+
   PetscCall(PetscNew(&dat));
   sf->data = (void *)dat;
   PetscFunctionReturn(PETSC_SUCCESS);

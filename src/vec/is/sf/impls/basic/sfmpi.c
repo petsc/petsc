@@ -50,7 +50,6 @@ PetscErrorCode PetscSFLinkCreate_MPI(PetscSF sf, MPI_Datatype unit, PetscMemType
   PetscInt         rootdirect_mpi, leafdirect_mpi; /* root/leafdirect seen by MPI*/
 
   PetscFunctionBegin;
-
   /* Can we directly use root/leafdirect with the given sf, sfop and op? */
   for (i = PETSCSF_LOCAL; i <= PETSCSF_REMOTE; i++) {
     if (sfop == PETSCSF_BCAST) {
@@ -63,6 +62,17 @@ PetscErrorCode PetscSFLinkCreate_MPI(PetscSF sf, MPI_Datatype unit, PetscMemType
       rootdirect[i] = PETSC_FALSE;                                                          /* FETCH always need a separate rootbuf */
       leafdirect[i] = PETSC_FALSE;                                                          /* We also force allocating a separate leafbuf so that leafdata and leafupdate can share mpi requests */
     }
+  }
+
+  // NEVER use root/leafdirect[] for persistent collectives. Otherwise, suppose for the first time, all ranks build
+  // a persistent MPI request in a collective call. Then in a second call to PetscSFBcast, one rank uses root/leafdirect
+  // but with new rootdata/leafdata pointers. Other ranks keep using the same rootdata/leafdata pointers as last time.
+  // Only that rank will try to rebuild the request with a collective call, resulting in hanging. We could to call
+  // MPI_Allreduce() every time to detect changes in root/leafdata, but that is too expensive for sparse communication.
+  // So we always set root/leafdirect[] to false and allocate additional root/leaf buffers for persistent collectives.
+  if (sf->persistent && sf->collective) {
+    rootdirect[PETSCSF_REMOTE] = PETSC_FALSE;
+    leafdirect[PETSCSF_REMOTE] = PETSC_FALSE;
   }
 
   if (sf->use_gpu_aware_mpi) {
@@ -85,7 +95,7 @@ PetscErrorCode PetscSFLinkCreate_MPI(PetscSF sf, MPI_Datatype unit, PetscMemType
       PetscCall(MPIPetsc_Type_compare(unit, link->unit, &match));
       if (match) {
         /* If root/leafdata will be directly passed to MPI, test if the data used to initialized the MPI requests matches with the current.
-           If not, free old requests. New requests will be lazily init'ed until one calls PetscSFLinkGetMPIBuffersAndRequests().
+           If not, free old requests. New requests will be lazily init'ed until one calls PetscSFLinkGetMPIBuffersAndRequests() with the same tag.
         */
         if (rootdirect_mpi && sf->persistent && link->rootreqsinited[direction][rootmtype][1] && link->rootdatadirect[direction][rootmtype] != rootdata) {
           reqs = link->rootreqs[direction][rootmtype][1]; /* Here, rootmtype = rootmtype_mpi */

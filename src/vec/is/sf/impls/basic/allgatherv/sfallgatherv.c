@@ -430,6 +430,8 @@ PETSC_INTERN PetscErrorCode PetscSFCreate_Allgatherv(PetscSF sf)
   sf->ops->CreateLocalSF   = PetscSFCreateLocalSF_Allgatherv;
   sf->ops->BcastToZero     = PetscSFBcastToZero_Allgatherv;
 
+  sf->collective = PETSC_TRUE;
+
   PetscCall(PetscNew(&dat));
   dat->bcast_root = -1;
   sf->data        = (void *)dat;
