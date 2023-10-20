@@ -2394,7 +2394,7 @@ class Configure(config.base.Configure):
         if self.sharedLibraries: break
         self.delMakeMacro('LD_SHARED')
         del self.LD_SHARED
-        del self.sharedLinker
+        if hasattr(self,'sharedLinker'): del self.sharedLinker
     return
 
   def checkLinkerFlag(self, flag, filterAlways = 0):

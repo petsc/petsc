@@ -217,6 +217,41 @@ class BaseTestVec(object):
         z.set(len(x)+1)
         assert (y.equal(z))
 
+    def testBinOp(self):
+        x = self.vec
+        x.set(1)
+        n = x.getSize()
+        y = 2 + 2*x + 1 - x*3 - 1
+        self.assertEqual(y.min()[1], 1)
+        self.assertEqual(y.max()[1], 1)
+        z = (4*x)/(2*y)
+        self.assertEqual(z.min()[1], 2)
+        self.assertEqual(z.max()[1], 2)
+        z = z/2
+        self.assertEqual(z.min()[1], 1)
+        self.assertEqual(z.max()[1], 1)
+        s = (+x) @ (-y)
+        self.assertEqual(s, -n)
+        #
+        M, N = n, 2*n
+        A = PETSc.Mat().createDense((M, N), comm=self.COMM)
+        A.setUp()
+        rs, re = A.getOwnershipRange()
+        cs, ce = A.getOwnershipRangeColumn()
+        a, b = 3, 5
+        for i in range(rs, re):
+            for j in range(N):
+                A[i, j] = a*i + b*j
+        A.assemble()
+        y = x @ A
+        self.assertEqual(y.getSize(), N)
+        for i in range(cs, ce):
+            self.assertEqual(y[i], a*M*(M-1)/2 + b*i*M)
+        y.set(1)
+        z = A @ y
+        self.assertEqual(z.getSize(), M)
+        for i in range(rs, re):
+            self.assertEqual(z[i], b*N*(N-1)/2 + a*i*N)
 
 # --------------------------------------------------------------------
 

@@ -83,6 +83,7 @@ cdef extern from * nogil:
     PetscMatType MATLMVMSYMBADBROYDEN
     PetscMatType MATLMVMDIAGBROYDEN
     PetscMatType MATCONSTANTDIAGONAL
+    PetscMatType MATDIAGONAL
     PetscMatType MATH2OPUS
 
     ctypedef const char* PetscMatOrderingType "MatOrderingType"
@@ -224,6 +225,8 @@ cdef extern from * nogil:
     PetscErrorCode MatCreateSeqAIJWithArrays(MPI_Comm,PetscInt,PetscInt,PetscInt[],PetscInt[],PetscScalar[],PetscMat*)
     PetscErrorCode MatCreateMPIAIJWithArrays(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt[],PetscInt[],PetscScalar[],PetscMat*)
     PetscErrorCode MatCreateMPIAIJWithSplitArrays(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt[],PetscInt[],PetscScalar[],PetscInt[],PetscInt[],PetscScalar[],PetscMat*)
+    PetscErrorCode MatCreateDiagonal(PetscVec,PetscMat*)
+    PetscErrorCode MatCreateConstantDiagonal(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,PetscScalar,PetscMat*)
 
     PetscErrorCode MatSetSizes(PetscMat,PetscInt,PetscInt,PetscInt,PetscInt)
     PetscErrorCode MatSetBlockSize(PetscMat,PetscInt)
@@ -271,6 +274,7 @@ cdef extern from * nogil:
     PetscErrorCode MatNestGetLocalISs(PetscMat,PetscIS*,PetscIS*)
     PetscErrorCode MatNestGetSize(PetscMat,PetscInt*,PetscInt*)
     PetscErrorCode MatNestGetSubMat(PetscMat,PetscInt,PetscInt,PetscMat*)
+    PetscErrorCode MatNestSetVecType(PetscMat,PetscVecType)
 
     PetscErrorCode MatEqual(PetscMat,PetscMat,PetscBool*)
     PetscErrorCode MatLoad(PetscMat,PetscViewer)
@@ -637,7 +641,7 @@ cdef Vec mat_mul_vec(Mat self, Vec other):
 cdef Mat mat_mul_mat(Mat self, Mat other):
     return self.matMult(other)
 
-cdef Mat mat_mul(Mat self, other):
+cdef object mat_mul(Mat self, other):
     if isinstance(other, Vec):
         return mat_mul_vec(self, <Vec>other)
     elif isinstance(other, Mat):
@@ -647,6 +651,13 @@ cdef Mat mat_mul(Mat self, other):
 
 cdef Mat mat_div(Mat self, other):
     return mat_idiv(mat_pos(self), other)
+
+cdef object mat_matmul(Mat self, other):
+    if isinstance(other, Vec):
+        return mat_mul_vec(self, <Vec>other)
+    if isinstance(other, Mat):
+        return mat_mul_mat(self, <Mat>other)
+    return NotImplemented
 
 # reflected binary operations
 

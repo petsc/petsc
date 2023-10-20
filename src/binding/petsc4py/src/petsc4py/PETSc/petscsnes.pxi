@@ -175,6 +175,7 @@ cdef extern from * nogil:
     PetscErrorCode SNESMonitor(PetscSNES,PetscInt,PetscReal)
 
     PetscErrorCode SNESSetUp(PetscSNES)
+    PetscErrorCode SNESSetUpMatrices(PetscSNES)
     PetscErrorCode SNESReset(PetscSNES)
     PetscErrorCode SNESSolve(PetscSNES,PetscVec,PetscVec)
 
