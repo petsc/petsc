@@ -98,6 +98,7 @@ Changes: Development
 - Change ``PetscViewerCGNSGetSolutionTime()`` to no longer error if "TimeValues" array isn't found in CGNS file
 - Add ``PetscViewerCGNSGetSolutionIteration()``
 - Add ``DMPlexGetInterpolatePreferTensor()`` and ``DMPlexSetInterpolatePreferTensor()``
+- Add ``PetscCallEGADS()``
 
 .. rubric:: FE/FV:
 

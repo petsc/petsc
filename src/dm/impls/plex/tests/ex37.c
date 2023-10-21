@@ -18,7 +18,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->filename[0] = '\0';
   options->volumeMesh  = PETSC_TRUE;
 
-  PetscOptionsBegin(comm, "", "EGADSPlex Problem Options", "EGADSLite");
+  PetscOptionsBegin(comm, "", "EGADSPlex Problem Options", "EGADSlite");
   PetscCall(PetscOptionsString("-filename", "The CAD file", "ex37.c", options->filename, options->filename, sizeof(options->filename), NULL));
   PetscCall(PetscOptionsBool("-volume_mesh", "Create a volume mesh", "ex37.c", options->volumeMesh, &options->volumeMesh, NULL));
   PetscOptionsEnd();
@@ -83,15 +83,14 @@ int main(int argc, char *argv[])
     PetscCall(DMPlexSetRefinementUniform(dm, PETSC_TRUE));
     PetscCall(DMViewFromOptions(dm, NULL, "-pre_dm_view"));
 
-    PetscCall(DMPlexInflateToGeomModel(dm));
+    PetscCall(DMPlexInflateToGeomModel(dm, PETSC_TRUE));
     PetscCall(DMViewFromOptions(dm, NULL, "-inf_dm_view"));
 
     PetscCall(DMSetFromOptions(dm));
     PetscCall(DMViewFromOptions(dm, NULL, "-dm_view"));
     PetscCall(ComputeVolume(dm));
+    PetscCall(DMDestroy(&dm));
   }
-
-  PetscCall(DMDestroy(&dm));
   PetscCall(DMDestroy(&surface));
   PetscCall(PetscFinalize());
   return 0;
@@ -100,39 +99,39 @@ int main(int argc, char *argv[])
 /*TEST
 
   build:
-    requires: egads tetgen
+    requires: egads tetgen datafilespath
 
   test:
     suffix: sphere_0
-    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/unit_sphere.egadslite -dm_refine 1 -sur_dm_view -dm_plex_check_all -dm_plex_egads_print_model -sur_dm_plex_view_labels "EGADS Body ID","EGADS Face ID","EGADS Edge ID"
+    args: -filename ${DATAFILESPATH}/meshes/cad/sphere_example.egadslite -dm_refine 1 -sur_dm_view -dm_plex_check_all -dm_plex_geom_print_model -sur_dm_plex_view_labels "EGADS Body ID","EGADS Face ID","EGADS Edge ID"
 
   test:
     suffix: sphere_egads
-    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/unit_sphere.egads -dm_refine 1 -sur_dm_view -dm_plex_check_all -dm_plex_egads_print_model -sur_dm_plex_view_labels "EGADS Body ID","EGADS Face ID","EGADS Edge ID"
+    args: -filename ${DATAFILESPATH}/meshes/cad/sphere_example.egads -dm_refine 1 -sur_dm_view -dm_plex_check_all -dm_plex_geom_print_model -sur_dm_plex_view_labels "EGADS Body ID","EGADS Face ID","EGADS Edge ID"
 
   test:
     suffix: sphere_iges
     TODO: broken
-    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/unit_sphere.igs -dm_refine 1 -sur_dm_view -dm_plex_check_all -dm_plex_egads_print_model -sur_dm_plex_view_labels "EGADS Body ID","EGADS Face ID","EGADS Edge ID"
+    args: -filename ${DATAFILESPATH}/meshes/cad/sphere_example.igs -dm_refine 1 -sur_dm_view -dm_plex_check_all -dm_plex_geom_print_model -sur_dm_plex_view_labels "EGADS Body ID","EGADS Face ID","EGADS Edge ID"
 
   test:
     suffix: sphere_step
-    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/unit_sphere.stp -dm_refine 1 -sur_dm_view -dm_plex_check_all -dm_plex_egads_print_model -sur_dm_plex_view_labels "EGADS Body ID","EGADS Face ID","EGADS Edge ID"
+    args: -filename ${DATAFILESPATH}/meshes/cad/sphere_example.stp -dm_refine 1 -sur_dm_view -dm_plex_check_all -dm_plex_geom_print_model -sur_dm_plex_view_labels "EGADS Body ID","EGADS Face ID","EGADS Edge ID"
 
   test:
     suffix: nozzle_0
-    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/nozzle.egadslite -sur_dm_refine 1 -sur_dm_view -dm_plex_check_all
+    args: -filename ${DATAFILESPATH}/meshes/cad/nozzle.egadslite -sur_dm_refine 1 -sur_dm_view -dm_plex_check_all
 
   test:
     suffix: nozzle_egads
-    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/nozzle.egads -sur_dm_refine 1 -sur_dm_view -dm_plex_check_all
+    args: -filename ${DATAFILESPATH}/meshes/cad/nozzle.egads -sur_dm_refine 1 -sur_dm_view -dm_plex_check_all
 
   test:
     suffix: nozzle_iges
-    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/nozzle.igs -sur_dm_refine 1 -sur_dm_view -dm_plex_check_all
+    args: -filename ${DATAFILESPATH}/meshes/cad/nozzle.igs -sur_dm_refine 1 -sur_dm_view -dm_plex_check_all
 
   test:
     suffix: nozzle_step
-    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/nozzle.stp -sur_dm_refine 1 -sur_dm_view -dm_plex_check_all
+    args: -filename ${DATAFILESPATH}/meshes/cad/nozzle.stp -sur_dm_refine 1 -sur_dm_view -dm_plex_check_all
 
 TEST*/

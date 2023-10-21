@@ -1,0 +1,364 @@
+ EGADS WARNING: OpenCASCADE 7.5.0 NOT an Authorized Release!
+  STEP Reader Info: Using METRE
+ Number of BODIES (nbodies): 1 
+
+   BODY 0 TOPOLOGY SUMMARY 
+      Number of SHELLS: 1 
+      Number of FACES: 8 
+      Number of LOOPS: 8 
+      Number of EDGES: 20 
+      Number of NODES: 6 
+
+      BODY 0 TOPOLOGY DETAILS 
+         SHELL ID: 1 :: sense = 1
+           FACE ID: 1 :: sense = 1 
+             GEOMETRY CLASS: SURFACE 
+             GEOMETRY TYPE:  BSPLINE 
+
+             RANGE (umin, umax) = (1.570796, 3.141593) 
+                   (vmin, vmax) = (0.000000, 1.570796) 
+
+             LOOP ID: 1 :: sense = 1
+               EDGE ID: 1 :: sense = -1
+                 GEOMETRY CLASS: CURVE 
+                 GEOMETRY TYPE:  BSPLINE 
+                 Peri = 0 :: Range = 0.000000, 1.570796, 0.000000, 0.000000 
+                 NODE ID: 1 
+                    (x, y, z) = (0.000000, 0.025400, 0.000000) 
+                 NODE ID: 2 
+                    (x, y, z) = (-0.000000, 0.000000, 0.025400) 
+               EDGE ID: 2 :: sense = 1
+                 GEOMETRY CLASS: CURVE 
+                 GEOMETRY TYPE:  BSPLINE 
+                 Peri = 0 :: Range = 1.570796, 3.141593, 0.000000, 0.000000 
+                 NODE ID: 1 
+                    (x, y, z) = (0.000000, 0.025400, 0.000000) 
+                 NODE ID: 3 
+                    (x, y, z) = (-0.025400, 0.000000, 0.000000) 
+               EDGE ID: 3 :: sense = 1
+                 GEOMETRY CLASS: CURVE 
+                 GEOMETRY TYPE:  BSPLINE 
+                 Peri = 0 :: Range = 0.000000, 1.570796, 0.000000, 0.000000 
+                 NODE ID: 3 
+                    (x, y, z) = (-0.025400, 0.000000, 0.000000) 
+                 NODE ID: 2 
+                    (x, y, z) = (-0.000000, 0.000000, 0.025400) 
+               EDGE ID: 4 :: sense = -1
+                 EDGE 4 is DEGENERATE 
+                 Peri = 0 :: Range = 1.570796, 3.141593, 0.000000, 0.000000 
+                 NODE ID: 2 
+                    (x, y, z) = (-0.000000, 0.000000, 0.025400) 
+           FACE ID: 2 :: sense = 1 
+             GEOMETRY CLASS: SURFACE 
+             GEOMETRY TYPE:  BSPLINE 
+
+             RANGE (umin, umax) = (3.141593, 4.712389) 
+                   (vmin, vmax) = (0.000000, 1.570796) 
+
+             LOOP ID: 2 :: sense = 1
+               EDGE ID: 3 :: sense = -1
+                 GEOMETRY CLASS: CURVE 
+                 GEOMETRY TYPE:  BSPLINE 
+                 Peri = 0 :: Range = 0.000000, 1.570796, 0.000000, 0.000000 
+                 NODE ID: 3 
+                    (x, y, z) = (-0.025400, 0.000000, 0.000000) 
+                 NODE ID: 2 
+                    (x, y, z) = (-0.000000, 0.000000, 0.025400) 
+               EDGE ID: 5 :: sense = 1
+                 GEOMETRY CLASS: CURVE 
+                 GEOMETRY TYPE:  BSPLINE 
+                 Peri = 0 :: Range = 3.141593, 4.712389, 0.000000, 0.000000 
+                 NODE ID: 3 
+                    (x, y, z) = (-0.025400, 0.000000, 0.000000) 
+                 NODE ID: 4 
+                    (x, y, z) = (-0.000000, -0.025400, 0.000000) 
+               EDGE ID: 6 :: sense = 1
+                 GEOMETRY CLASS: CURVE 
+                 GEOMETRY TYPE:  BSPLINE 
+                 Peri = 0 :: Range = 0.000000, 1.570796, 0.000000, 0.000000 
+                 NODE ID: 4 
+                    (x, y, z) = (-0.000000, -0.025400, 0.000000) 
+                 NODE ID: 2 
+                    (x, y, z) = (-0.000000, 0.000000, 0.025400) 
+               EDGE ID: 7 :: sense = -1
+                 EDGE 7 is DEGENERATE 
+                 Peri = 0 :: Range = 3.141593, 4.712389, 0.000000, 0.000000 
+                 NODE ID: 2 
+                    (x, y, z) = (-0.000000, 0.000000, 0.025400) 
+           FACE ID: 3 :: sense = 1 
+             GEOMETRY CLASS: SURFACE 
+             GEOMETRY TYPE:  BSPLINE 
+
+             RANGE (umin, umax) = (4.712389, 6.283185) 
+                   (vmin, vmax) = (0.000000, 1.570796) 
+
+             LOOP ID: 3 :: sense = 1
+               EDGE ID: 6 :: sense = -1
+                 GEOMETRY CLASS: CURVE 
+                 GEOMETRY TYPE:  BSPLINE 
+                 Peri = 0 :: Range = 0.000000, 1.570796, 0.000000, 0.000000 
+                 NODE ID: 4 
+                    (x, y, z) = (-0.000000, -0.025400, 0.000000) 
+                 NODE ID: 2 
+                    (x, y, z) = (-0.000000, 0.000000, 0.025400) 
+               EDGE ID: 8 :: sense = 1
+                 GEOMETRY CLASS: CURVE 
+                 GEOMETRY TYPE:  BSPLINE 
+                 Peri = 0 :: Range = 4.712389, 6.283185, 0.000000, 0.000000 
+                 NODE ID: 4 
+                    (x, y, z) = (-0.000000, -0.025400, 0.000000) 
+                 NODE ID: 5 
+                    (x, y, z) = (0.025400, -0.000000, 0.000000) 
+               EDGE ID: 9 :: sense = 1
+                 GEOMETRY CLASS: CURVE 
+                 GEOMETRY TYPE:  BSPLINE 
+                 Peri = 0 :: Range = 0.000000, 1.570796, 0.000000, 0.000000 
+                 NODE ID: 5 
+                    (x, y, z) = (0.025400, -0.000000, 0.000000) 
+                 NODE ID: 2 
+                    (x, y, z) = (-0.000000, 0.000000, 0.025400) 
+               EDGE ID: 10 :: sense = -1
+                 EDGE 10 is DEGENERATE 
+                 Peri = 0 :: Range = 4.712389, 6.283185, 0.000000, 0.000000 
+                 NODE ID: 2 
+                    (x, y, z) = (-0.000000, 0.000000, 0.025400) 
+           FACE ID: 4 :: sense = 1 
+             GEOMETRY CLASS: SURFACE 
+             GEOMETRY TYPE:  BSPLINE 
+
+             RANGE (umin, umax) = (4.712389, 6.283185) 
+                   (vmin, vmax) = (-1.570796, 0.000000) 
+
+             LOOP ID: 4 :: sense = 1
+               EDGE ID: 11 :: sense = -1
+                 GEOMETRY CLASS: CURVE 
+                 GEOMETRY TYPE:  BSPLINE 
+                 Peri = 0 :: Range = -1.570796, 0.000000, 0.000000, 0.000000 
+                 NODE ID: 6 
+                    (x, y, z) = (-0.000000, -0.000000, -0.025400) 
+                 NODE ID: 4 
+                    (x, y, z) = (-0.000000, -0.025400, 0.000000) 
+               EDGE ID: 12 :: sense = 1
+                 EDGE 12 is DEGENERATE 
+                 Peri = 0 :: Range = 4.712389, 6.283185, 0.000000, 0.000000 
+                 NODE ID: 6 
+                    (x, y, z) = (-0.000000, -0.000000, -0.025400) 
+               EDGE ID: 13 :: sense = 1
+                 GEOMETRY CLASS: CURVE 
+                 GEOMETRY TYPE:  BSPLINE 
+                 Peri = 0 :: Range = -1.570796, 0.000000, 0.000000, 0.000000 
+                 NODE ID: 6 
+                    (x, y, z) = (-0.000000, -0.000000, -0.025400) 
+                 NODE ID: 5 
+                    (x, y, z) = (0.025400, -0.000000, 0.000000) 
+               EDGE ID: 8 :: sense = -1
+                 GEOMETRY CLASS: CURVE 
+                 GEOMETRY TYPE:  BSPLINE 
+                 Peri = 0 :: Range = 4.712389, 6.283185, 0.000000, 0.000000 
+                 NODE ID: 4 
+                    (x, y, z) = (-0.000000, -0.025400, 0.000000) 
+                 NODE ID: 5 
+                    (x, y, z) = (0.025400, -0.000000, 0.000000) 
+           FACE ID: 5 :: sense = 1 
+             GEOMETRY CLASS: SURFACE 
+             GEOMETRY TYPE:  BSPLINE 
+
+             RANGE (umin, umax) = (1.570796, 3.141593) 
+                   (vmin, vmax) = (-1.570796, 0.000000) 
+
+             LOOP ID: 5 :: sense = 1
+               EDGE ID: 14 :: sense = -1
+                 GEOMETRY CLASS: CURVE 
+                 GEOMETRY TYPE:  BSPLINE 
+                 Peri = 0 :: Range = -1.570796, 0.000000, 0.000000, 0.000000 
+                 NODE ID: 6 
+                    (x, y, z) = (-0.000000, -0.000000, -0.025400) 
+                 NODE ID: 1 
+                    (x, y, z) = (0.000000, 0.025400, 0.000000) 
+               EDGE ID: 15 :: sense = 1
+                 EDGE 15 is DEGENERATE 
+                 Peri = 0 :: Range = 1.570796, 3.141593, 0.000000, 0.000000 
+                 NODE ID: 6 
+                    (x, y, z) = (-0.000000, -0.000000, -0.025400) 
+               EDGE ID: 16 :: sense = 1
+                 GEOMETRY CLASS: CURVE 
+                 GEOMETRY TYPE:  BSPLINE 
+                 Peri = 0 :: Range = -1.570796, 0.000000, 0.000000, 0.000000 
+                 NODE ID: 6 
+                    (x, y, z) = (-0.000000, -0.000000, -0.025400) 
+                 NODE ID: 3 
+                    (x, y, z) = (-0.025400, 0.000000, 0.000000) 
+               EDGE ID: 2 :: sense = -1
+                 GEOMETRY CLASS: CURVE 
+                 GEOMETRY TYPE:  BSPLINE 
+                 Peri = 0 :: Range = 1.570796, 3.141593, 0.000000, 0.000000 
+                 NODE ID: 1 
+                    (x, y, z) = (0.000000, 0.025400, 0.000000) 
+                 NODE ID: 3 
+                    (x, y, z) = (-0.025400, 0.000000, 0.000000) 
+           FACE ID: 6 :: sense = 1 
+             GEOMETRY CLASS: SURFACE 
+             GEOMETRY TYPE:  BSPLINE 
+
+             RANGE (umin, umax) = (3.141593, 4.712389) 
+                   (vmin, vmax) = (-1.570796, 0.000000) 
+
+             LOOP ID: 6 :: sense = 1
+               EDGE ID: 16 :: sense = -1
+                 GEOMETRY CLASS: CURVE 
+                 GEOMETRY TYPE:  BSPLINE 
+                 Peri = 0 :: Range = -1.570796, 0.000000, 0.000000, 0.000000 
+                 NODE ID: 6 
+                    (x, y, z) = (-0.000000, -0.000000, -0.025400) 
+                 NODE ID: 3 
+                    (x, y, z) = (-0.025400, 0.000000, 0.000000) 
+               EDGE ID: 17 :: sense = 1
+                 EDGE 17 is DEGENERATE 
+                 Peri = 0 :: Range = 3.141593, 4.712389, 0.000000, 0.000000 
+                 NODE ID: 6 
+                    (x, y, z) = (-0.000000, -0.000000, -0.025400) 
+               EDGE ID: 11 :: sense = 1
+                 GEOMETRY CLASS: CURVE 
+                 GEOMETRY TYPE:  BSPLINE 
+                 Peri = 0 :: Range = -1.570796, 0.000000, 0.000000, 0.000000 
+                 NODE ID: 6 
+                    (x, y, z) = (-0.000000, -0.000000, -0.025400) 
+                 NODE ID: 4 
+                    (x, y, z) = (-0.000000, -0.025400, 0.000000) 
+               EDGE ID: 5 :: sense = -1
+                 GEOMETRY CLASS: CURVE 
+                 GEOMETRY TYPE:  BSPLINE 
+                 Peri = 0 :: Range = 3.141593, 4.712389, 0.000000, 0.000000 
+                 NODE ID: 3 
+                    (x, y, z) = (-0.025400, 0.000000, 0.000000) 
+                 NODE ID: 4 
+                    (x, y, z) = (-0.000000, -0.025400, 0.000000) 
+           FACE ID: 7 :: sense = 1 
+             GEOMETRY CLASS: SURFACE 
+             GEOMETRY TYPE:  BSPLINE 
+
+             RANGE (umin, umax) = (0.000000, 1.570796) 
+                   (vmin, vmax) = (-1.570796, 0.000000) 
+
+             LOOP ID: 7 :: sense = 1
+               EDGE ID: 13 :: sense = -1
+                 GEOMETRY CLASS: CURVE 
+                 GEOMETRY TYPE:  BSPLINE 
+                 Peri = 0 :: Range = -1.570796, 0.000000, 0.000000, 0.000000 
+                 NODE ID: 6 
+                    (x, y, z) = (-0.000000, -0.000000, -0.025400) 
+                 NODE ID: 5 
+                    (x, y, z) = (0.025400, -0.000000, 0.000000) 
+               EDGE ID: 18 :: sense = 1
+                 EDGE 18 is DEGENERATE 
+                 Peri = 0 :: Range = 0.000000, 1.570796, 0.000000, 0.000000 
+                 NODE ID: 6 
+                    (x, y, z) = (-0.000000, -0.000000, -0.025400) 
+               EDGE ID: 14 :: sense = 1
+                 GEOMETRY CLASS: CURVE 
+                 GEOMETRY TYPE:  BSPLINE 
+                 Peri = 0 :: Range = -1.570796, 0.000000, 0.000000, 0.000000 
+                 NODE ID: 6 
+                    (x, y, z) = (-0.000000, -0.000000, -0.025400) 
+                 NODE ID: 1 
+                    (x, y, z) = (0.000000, 0.025400, 0.000000) 
+               EDGE ID: 19 :: sense = -1
+                 GEOMETRY CLASS: CURVE 
+                 GEOMETRY TYPE:  BSPLINE 
+                 Peri = 0 :: Range = 0.000000, 1.570796, 0.000000, 0.000000 
+                 NODE ID: 5 
+                    (x, y, z) = (0.025400, -0.000000, 0.000000) 
+                 NODE ID: 1 
+                    (x, y, z) = (0.000000, 0.025400, 0.000000) 
+           FACE ID: 8 :: sense = 1 
+             GEOMETRY CLASS: SURFACE 
+             GEOMETRY TYPE:  BSPLINE 
+
+             RANGE (umin, umax) = (0.000000, 1.570796) 
+                   (vmin, vmax) = (0.000000, 1.570796) 
+
+             LOOP ID: 8 :: sense = 1
+               EDGE ID: 9 :: sense = -1
+                 GEOMETRY CLASS: CURVE 
+                 GEOMETRY TYPE:  BSPLINE 
+                 Peri = 0 :: Range = 0.000000, 1.570796, 0.000000, 0.000000 
+                 NODE ID: 5 
+                    (x, y, z) = (0.025400, -0.000000, 0.000000) 
+                 NODE ID: 2 
+                    (x, y, z) = (-0.000000, 0.000000, 0.025400) 
+               EDGE ID: 19 :: sense = 1
+                 GEOMETRY CLASS: CURVE 
+                 GEOMETRY TYPE:  BSPLINE 
+                 Peri = 0 :: Range = 0.000000, 1.570796, 0.000000, 0.000000 
+                 NODE ID: 5 
+                    (x, y, z) = (0.025400, -0.000000, 0.000000) 
+                 NODE ID: 1 
+                    (x, y, z) = (0.000000, 0.025400, 0.000000) 
+               EDGE ID: 1 :: sense = 1
+                 GEOMETRY CLASS: CURVE 
+                 GEOMETRY TYPE:  BSPLINE 
+                 Peri = 0 :: Range = 0.000000, 1.570796, 0.000000, 0.000000 
+                 NODE ID: 1 
+                    (x, y, z) = (0.000000, 0.025400, 0.000000) 
+                 NODE ID: 2 
+                    (x, y, z) = (-0.000000, 0.000000, 0.025400) 
+               EDGE ID: 20 :: sense = -1
+                 EDGE 20 is DEGENERATE 
+                 Peri = 0 :: Range = 0.000000, 1.570796, 0.000000, 0.000000 
+                 NODE ID: 2 
+                    (x, y, z) = (-0.000000, 0.000000, 0.025400) 
+
+
+DM Object: Nozzle_Mesh 1 MPI process
+  type: plex
+Nozzle_Mesh in 2 dimensions:
+  Number of 0-cells per rank: 98
+  Number of 1-cells per rank: 288
+  Number of 2-cells per rank: 192
+Labels:
+  celltype: 3 strata with value/size (0 (98), 1 (288), 3 (192))
+  depth: 3 strata with value/size (0 (98), 1 (288), 2 (192))
+  EGADS Body ID: 1 strata with value/size (0 (578))
+  EGADS Face ID: 8 strata with value/size (1 (61), 2 (61), 3 (61), 4 (61), 5 (61), 6 (61), 7 (61), 8 (61))
+  EGADS Edge ID: 12 strata with value/size (1 (7), 2 (7), 3 (7), 5 (7), 6 (7), 8 (7), 9 (7), 11 (7), 13 (7), 14 (7), 16 (7), 19 (7))
+  EGADS Vertex ID: 6 strata with value/size (1 (1), 2 (1), 3 (1), 4 (1), 5 (1), 6 (1))
+    dim = 2
+Nozzle_Mesh Surface Area = 7.837808e-03 
+
+  num = 1 
+DM Object: nozzle_meshes_1 1 MPI process
+  type: plex
+nozzle_meshes_1 in 2 dimensions:
+  Number of 0-cells per rank: 386
+  Number of 1-cells per rank: 1152
+  Number of 2-cells per rank: 768
+Labels:
+  celltype: 3 strata with value/size (0 (386), 1 (1152), 3 (768))
+  depth: 3 strata with value/size (0 (386), 1 (1152), 2 (768))
+  EGADS Body ID: 1 strata with value/size (0 (2306))
+  EGADS Face ID: 8 strata with value/size (1 (265), 2 (265), 3 (265), 4 (265), 5 (265), 6 (265), 7 (265), 8 (265))
+  EGADS Edge ID: 12 strata with value/size (1 (15), 2 (15), 3 (15), 5 (15), 6 (15), 8 (15), 9 (15), 11 (15), 13 (15), 14 (15), 16 (15), 19 (15))
+  EGADS Vertex ID: 6 strata with value/size (1 (1), 2 (1), 3 (1), 4 (1), 5 (1), 6 (1))
+[32;1m
+*******************************************************************
+******        Statistics on Transfer (Write)                 ******[0m
+[32;1m
+*******************************************************************
+******        Transfer Mode = 0  I.E.  As Is       ******[0m
+[32;1m******        Transferring Shape, ShapeType = 2                      ******[0m
+[32;1m** WorkSession : Sending all data[0m
+[32;1m Step File Name : newGeom_clean_1.stp(402 ents)  Write  Done[0m
+DM Object: Nozzle_Mesh_Step_1 1 MPI process
+  type: plex
+Nozzle_Mesh_Step_1 in 2 dimensions:
+  Number of 0-cells per rank: 386
+  Number of 1-cells per rank: 1152
+  Number of 2-cells per rank: 768
+Labels:
+  celltype: 3 strata with value/size (0 (386), 1 (1152), 3 (768))
+  depth: 3 strata with value/size (0 (386), 1 (1152), 2 (768))
+  EGADS Body ID: 1 strata with value/size (0 (2306))
+  EGADS Face ID: 8 strata with value/size (1 (265), 2 (265), 3 (265), 4 (265), 5 (265), 6 (265), 7 (265), 8 (265))
+  EGADS Edge ID: 12 strata with value/size (1 (15), 2 (15), 3 (15), 5 (15), 6 (15), 8 (15), 9 (15), 11 (15), 13 (15), 14 (15), 16 (15), 19 (15))
+  EGADS Vertex ID: 6 strata with value/size (1 (1), 2 (1), 3 (1), 4 (1), 5 (1), 6 (1))
+ EGADS Info: 0 Objects, 0 Reference in Use (of 934) at Close!

@@ -64,8 +64,8 @@ PetscErrorCode DMGeomModelRegisterAll(void)
   PetscCall(DMGeomModelRegister("ball", DMSnapToGeomModelBall));
   PetscCall(DMGeomModelRegister("cylinder", DMSnapToGeomModelCylinder));
 #if defined(PETSC_HAVE_EGADS)
+  // FIXME: Brandon uses DMPlexSnapToGeomModel() here instead
   PetscCall(DMGeomModelRegister("egads", DMSnapToGeomModel_EGADS));
-  PetscCall(DMGeomModelRegister("egadslite", DMSnapToGeomModel_EGADSLite));
 #endif
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -141,8 +141,8 @@ PetscErrorCode DMSetSnapToGeomModel(DM dm, const char name[])
     PetscCall(PetscObjectQuery((PetscObject)dm, "EGADS Model", &modelObj));
     if (modelObj) name = "egads";
     else {
-      PetscCall(PetscObjectQuery((PetscObject)dm, "EGADSLite Model", &modelObj));
-      if (modelObj) name = "egadslite";
+      PetscCall(PetscObjectQuery((PetscObject)dm, "EGADSlite Model", &modelObj));
+      if (modelObj) name = "egads";
     }
   }
   if (!name) PetscFunctionReturn(PETSC_SUCCESS);
