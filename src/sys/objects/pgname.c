@@ -3,18 +3,18 @@
 /*@C
   PetscObjectGetName - Gets a string name associated with a PETSc object.
 
-  Not Collective unless object has not been named yet
+  Not Collective unless `obj` has not yet been named
 
   Input Parameters:
-+ obj  - the Petsc variable
++ obj  - the PETSc variable
          Thus must be cast with a (`PetscObject`), for example,
          `PetscObjectGetName`((`PetscObject`)mat,&name);
-- name - the name associated with obj
+- name - the name associated with `obj`
+
+  Level: intermediate
 
   Note:
   Calls `PetscObjectName()` if a name has not yet been provided to the object.
-
-  Level: intermediate
 
 .seealso: `PetscObjectSetName()`, `PetscObjectName()`, `PetscObject`, `PetscObjectGetId()`
 @*/
