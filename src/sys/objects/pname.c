@@ -2,12 +2,12 @@
 #include <petscviewer.h>
 
 /*@C
-  PetscObjectSetName - Sets a string name associated with a PETSc object.
+  PetscObjectSetName - Sets a string name for a PETSc object.
 
   Not Collective
 
   Input Parameters:
-+ obj  - the Petsc variable
++ obj  - the PETSc object
          Thus must be cast with a (`PetscObject`), for example,
          `PetscObjectSetName`((`PetscObject`)mat,name);
 - name - the name to give obj
@@ -15,7 +15,7 @@
   Level: advanced
 
   Note:
-  If this routine is not called then the object may end up being name by `PetscObjectName()`.
+  If this routine is not called then `obj` may end up being named by `PetscObjectName()`.
 
 .seealso: `PetscObjectGetName()`, `PetscObjectName()`
 @*/
@@ -46,7 +46,7 @@ PetscErrorCode PetscObjectSetName(PetscObject obj, const char name[])
   as these formats can't process it.
 
   Developer Notes:
-  The flag donotPetscObjectPrintClassNamePrefixType is useful to prevent double printing of the information when recursion is used to actually print the object.
+  The flag `donotPetscObjectPrintClassNamePrefixType` is useful to prevent double printing of the information when recursion is used to actually print the object.
 
 .seealso: `PetscObjectSetName()`, `PetscObjectName()`
 @*/
@@ -78,12 +78,12 @@ PetscErrorCode PetscObjectPrintClassNamePrefixType(PetscObject obj, PetscViewer 
 }
 
 /*@C
-  PetscObjectName - Gives an object a name if it does not have one
+  PetscObjectName - Gives `obj` a name if it does not have one
 
   Collective
 
   Input Parameter:
-. obj - the Petsc variable
+. obj - the PETSc object
          Thus must be cast with a (`PetscObject`), for example,
          `PetscObjectName`((`PetscObject`)mat,name);
 
@@ -96,7 +96,7 @@ PetscErrorCode PetscObjectPrintClassNamePrefixType(PetscObject obj, PetscViewer 
   share the same name.
 
   Developer Notes:
-  This needs to generate the exact same string on all ranks that share the object. The current algorithm may not always work.
+  This needs to generate the exact same string on all MPI processes that share `obj`. The current algorithm may not always work.
 
 .seealso: `PetscObjectGetName()`, `PetscObjectSetName()`
 @*/

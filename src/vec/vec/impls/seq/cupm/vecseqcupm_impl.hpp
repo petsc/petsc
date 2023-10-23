@@ -532,12 +532,21 @@ inline PetscErrorCode VecSeq_CUPM<T>::AXPY(Vec yin, PetscScalar alpha, Vec xin) 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+namespace detail
+{
+
+struct divides {
+  PETSC_HOSTDEVICE_INLINE_DECL PetscScalar operator()(const PetscScalar &lhs, const PetscScalar &rhs) const noexcept { return rhs == PetscScalar{0.0} ? rhs : lhs / rhs; }
+};
+
+} // namespace detail
+
 // VecPointwiseDivideAsync_Private
 template <device::cupm::DeviceType T>
 inline PetscErrorCode VecSeq_CUPM<T>::PointwiseDivideAsync(Vec wout, Vec xin, Vec yin, PetscDeviceContext dctx) noexcept
 {
   PetscFunctionBegin;
-  PetscCall(PointwiseBinaryDispatch_(VecPointwiseDivide_Seq, thrust::divides<PetscScalar>{}, wout, xin, yin, dctx));
+  PetscCall(PointwiseBinaryDispatch_(VecPointwiseDivide_Seq, detail::divides{}, wout, xin, yin, dctx));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -572,7 +581,7 @@ namespace detail
 {
 
 struct MaximumRealPart {
-  PETSC_HOSTDEVICE_INLINE_DECL PetscScalar operator()(PetscScalar lhs, PetscScalar rhs) const noexcept { return thrust::maximum<PetscReal>{}(PetscRealPart(lhs), PetscRealPart(rhs)); }
+  PETSC_HOSTDEVICE_INLINE_DECL PetscScalar operator()(const PetscScalar &lhs, const PetscScalar &rhs) const noexcept { return thrust::maximum<PetscReal>{}(PetscRealPart(lhs), PetscRealPart(rhs)); }
 };
 
 } // namespace detail
@@ -599,7 +608,7 @@ namespace detail
 {
 
 struct MaximumAbsoluteValue {
-  PETSC_HOSTDEVICE_INLINE_DECL PetscScalar operator()(PetscScalar lhs, PetscScalar rhs) const noexcept { return thrust::maximum<PetscReal>{}(PetscAbsScalar(lhs), PetscAbsScalar(rhs)); }
+  PETSC_HOSTDEVICE_INLINE_DECL PetscScalar operator()(const PetscScalar &lhs, const PetscScalar &rhs) const noexcept { return thrust::maximum<PetscReal>{}(PetscAbsScalar(lhs), PetscAbsScalar(rhs)); }
 };
 
 } // namespace detail
@@ -626,7 +635,7 @@ namespace detail
 {
 
 struct MinimumRealPart {
-  PETSC_HOSTDEVICE_INLINE_DECL PetscScalar operator()(PetscScalar lhs, PetscScalar rhs) const noexcept { return thrust::minimum<PetscReal>{}(PetscRealPart(lhs), PetscRealPart(rhs)); }
+  PETSC_HOSTDEVICE_INLINE_DECL PetscScalar operator()(const PetscScalar &lhs, const PetscScalar &rhs) const noexcept { return thrust::minimum<PetscReal>{}(PetscRealPart(lhs), PetscRealPart(rhs)); }
 };
 
 } // namespace detail
@@ -653,7 +662,7 @@ namespace detail
 {
 
 struct Reciprocal {
-  PETSC_HOSTDEVICE_INLINE_DECL PetscScalar operator()(PetscScalar s) const noexcept
+  PETSC_HOSTDEVICE_INLINE_DECL PetscScalar operator()(const PetscScalar &s) const noexcept
   {
     // yes all of this verbosity is needed because sometimes PetscScalar is a thrust::complex
     // and then it matters whether we do s ? true : false vs s == 0, as well as whether we wrap
@@ -686,7 +695,7 @@ namespace detail
 {
 
 struct AbsoluteValue {
-  PETSC_HOSTDEVICE_INLINE_DECL PetscScalar operator()(PetscScalar s) const noexcept { return PetscAbsScalar(s); }
+  PETSC_HOSTDEVICE_INLINE_DECL PetscScalar operator()(const PetscScalar &s) const noexcept { return PetscAbsScalar(s); }
 };
 
 } // namespace detail
@@ -713,7 +722,7 @@ namespace detail
 {
 
 struct SquareRootAbsoluteValue {
-  PETSC_HOSTDEVICE_INLINE_DECL PetscScalar operator()(PetscScalar s) const noexcept { return PetscSqrtReal(PetscAbsScalar(s)); }
+  PETSC_HOSTDEVICE_INLINE_DECL PetscScalar operator()(const PetscScalar &s) const noexcept { return PetscSqrtReal(PetscAbsScalar(s)); }
 };
 
 } // namespace detail
@@ -740,7 +749,7 @@ namespace detail
 {
 
 struct Exponent {
-  PETSC_HOSTDEVICE_INLINE_DECL PetscScalar operator()(PetscScalar s) const noexcept { return PetscExpScalar(s); }
+  PETSC_HOSTDEVICE_INLINE_DECL PetscScalar operator()(const PetscScalar &s) const noexcept { return PetscExpScalar(s); }
 };
 
 } // namespace detail
@@ -767,7 +776,7 @@ namespace detail
 {
 
 struct Logarithm {
-  PETSC_HOSTDEVICE_INLINE_DECL PetscScalar operator()(PetscScalar s) const noexcept { return PetscLogScalar(s); }
+  PETSC_HOSTDEVICE_INLINE_DECL PetscScalar operator()(const PetscScalar &s) const noexcept { return PetscLogScalar(s); }
 };
 
 } // namespace detail
@@ -1954,7 +1963,7 @@ inline PetscErrorCode VecSeq_CUPM<T>::DotNorm2(Vec s, Vec t, PetscScalar *dp, Pe
 namespace detail
 {
 struct conjugate {
-  PETSC_NODISCARD PETSC_HOSTDEVICE_INLINE_DECL PetscScalar operator()(PetscScalar x) const noexcept { return PetscConj(x); }
+  PETSC_NODISCARD PETSC_HOSTDEVICE_INLINE_DECL PetscScalar operator()(const PetscScalar &x) const noexcept { return PetscConj(x); }
 };
 
 } // namespace detail
@@ -1981,9 +1990,9 @@ namespace detail
 {
 
 struct real_part {
-  PETSC_NODISCARD PETSC_HOSTDEVICE_INLINE_DECL thrust::tuple<PetscReal, PetscInt> operator()(const thrust::tuple<PetscScalar, PetscInt> &x) const { return {PetscRealPart(x.get<0>()), x.get<1>()}; }
+  PETSC_NODISCARD PETSC_HOSTDEVICE_INLINE_DECL thrust::tuple<PetscReal, PetscInt> operator()(const thrust::tuple<PetscScalar, PetscInt> &x) const noexcept { return {PetscRealPart(x.get<0>()), x.get<1>()}; }
 
-  PETSC_NODISCARD PETSC_HOSTDEVICE_INLINE_DECL PetscReal operator()(PetscScalar x) const { return PetscRealPart(x); }
+  PETSC_NODISCARD PETSC_HOSTDEVICE_INLINE_DECL PetscReal operator()(const PetscScalar &x) const noexcept { return PetscRealPart(x); }
 };
 
 // deriving from Operator allows us to "store" an instance of the operator in the class but

@@ -177,14 +177,14 @@ def fix_config_vars(names, values):
         if 'ARCHFLAGS' in os.environ:
             ARCHFLAGS = os.environ['ARCHFLAGS']
             for i, flag in enumerate(list(values)):
-                flag, count = re.subn('-arch\s+\w+', ' ', str(flag))
+                flag, count = re.subn(r'-arch\s+\w+', ' ', str(flag))
                 if count and ARCHFLAGS:
                     flag = flag + ' ' + ARCHFLAGS
                 values[i] = flag
         if 'SDKROOT' in os.environ:
             SDKROOT = os.environ['SDKROOT']
             for i, flag in enumerate(list(values)):
-                flag, count = re.subn('-isysroot [^ \t]*', ' ', str(flag))
+                flag, count = re.subn(r'-isysroot [^ \t]*', ' ', str(flag))
                 if count and SDKROOT:
                     flag = flag + ' ' + '-isysroot ' + SDKROOT
                 values[i] = flag
@@ -915,7 +915,7 @@ from distutils.text_file import TextFile
 
 # Regexes needed for parsing Makefile-like syntaxes
 import re as _re
-_variable_rx = _re.compile("([a-zA-Z][a-zA-Z0-9_]+)\s*=\s*(.*)")
+_variable_rx = _re.compile(r"([a-zA-Z][a-zA-Z0-9_]+)\s*=\s*(.*)")
 _findvar1_rx = _re.compile(r"\$\(([A-Za-z][A-Za-z0-9_]*)\)")
 _findvar2_rx = _re.compile(r"\${([A-Za-z][A-Za-z0-9_]*)}")
 

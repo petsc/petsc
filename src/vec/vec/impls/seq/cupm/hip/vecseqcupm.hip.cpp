@@ -8,6 +8,18 @@ template class impl::VecSeq_CUPM<DeviceType::HIP>;
 
 static constexpr auto VecSeq_HIP = impl::VecSeq_CUPM<DeviceType::HIP>{};
 
+/*MC
+  VECSEQHIP - VECSEQHIP = "seqcuda" - The basic sequential vector, modified to use HIP
+
+  Options Database Key:
+. -vec_type seqcuda - sets the vector type to `VECSEQHIP` during a call to `VecSetFromOptions()`
+
+  Level: beginner
+
+.seealso: `VecCreate()`, `VecSetType()`, `VecSetFromOptions()`, `VecCreateMPIWithArray()`, `VECSEQ`,
+`VecType`, `VecCreateMPI()`, `VecSetPinnedMemoryMin()`, `VECCUDA`, `VECHIP`, VECMPICUDA`, `VECMPIHIP`, `VECSEQCUDA`
+M*/
+
 PetscErrorCode VecCreate_SeqHIP(Vec v)
 {
   PetscFunctionBegin;

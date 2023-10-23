@@ -9,7 +9,7 @@ template class impl::VecMPI_CUPM<DeviceType::CUDA>;
 static constexpr auto VecMPI_CUDA = impl::VecMPI_CUPM<DeviceType::CUDA>{};
 
 /*MC
-  VECCUDA - VECCUDA = "cuda" - A `VECSEQCUDA` on a single-process communicator, and `VECMPICUDA`
+  VECCUDA - VECCUDA = "cuda" - A `VECSEQCUDA` on a single-process MPI communicator, and `VECMPICUDA`
   otherwise.
 
   Options Database Keys:
@@ -18,8 +18,15 @@ static constexpr auto VecMPI_CUDA = impl::VecMPI_CUPM<DeviceType::CUDA>{};
   Level: beginner
 
 .seealso: `VecCreate()`, `VecSetType()`, `VecSetFromOptions()`, `VecCreateMPIWithArray()`, `VECSEQCUDA`,
-`VECMPICUDA`, `VECSTANDARD`, `VecType`, `VecCreateMPI()`, `VecSetPinnedMemoryMin()`
+`VECMPICUDA`, `VECSTANDARD`, `VecType`, `VecCreateMPI()`, `VecSetPinnedMemoryMin()`, `VECHIP`
 M*/
+
+PetscErrorCode VecCreate_CUDA(Vec v)
+{
+  PetscFunctionBegin;
+  PetscCall(VecMPI_CUDA.Create_CUPM(v));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
 
 /*MC
   VECMPICUDA - VECMPICUDA = "mpicuda" - The basic parallel vector, modified to use CUDA
@@ -30,15 +37,8 @@ M*/
   Level: beginner
 
 .seealso: `VecCreate()`, `VecSetType()`, `VecSetFromOptions()`, `VecCreateMPIWithArray()`, `VECMPI`,
-`VecType`, `VecCreateMPI()`, `VecSetPinnedMemoryMin()`
+`VecType`, `VecCreateMPI()`, `VecSetPinnedMemoryMin()`, `VECSEQHIP`, `VECMPIHIP`
 M*/
-
-PetscErrorCode VecCreate_CUDA(Vec v)
-{
-  PetscFunctionBegin;
-  PetscCall(VecMPI_CUDA.Create_CUPM(v));
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
 
 PetscErrorCode VecCreate_MPICUDA(Vec v)
 {

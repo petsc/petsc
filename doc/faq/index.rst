@@ -485,8 +485,8 @@ This happens for generally one of two reasons:
 
 .. _mpi-network-misconfigure:
 
-What does it mean when ``make check`` hangs or errors on ``PetscOptionsInsertFile()``?
---------------------------------------------------------------------------------------
+What does it mean when ``make check`` hangs or errors on `PetscOptionsInsertFile()`?
+------------------------------------------------------------------------------------
 
 For example:
 
@@ -669,11 +669,11 @@ PETSc also contains a balancing Neumann-Neumann type preconditioner, see the man
 for ``PCBDDC``. This requires matrices be constructed with ``MatCreateIS()`` via the finite
 element method. See ``src/ksp/ksp/tests/ex59.c`` for an example.
 
-You have ``MATAIJ`` and ``MATBAIJ`` matrix formats, and ``MATSBAIJ`` for symmetric storage, how come no ``MATSAIJ``?
---------------------------------------------------------------------------------------------------------------------
+You have `MATAIJ` and `MATBAIJ` matrix formats, and `MATSBAIJ` for symmetric storage, how come no ``MATSAIJ``?
+--------------------------------------------------------------------------------------------------------------
 
 Just for historical reasons; the ``MATSBAIJ`` format with blocksize one is just as efficient as
-a `MATSAIJ` would be.
+a ``MATSAIJ`` would be.
 
 Can I Create BAIJ matrices with different size blocks for different block rows?
 -------------------------------------------------------------------------------
@@ -887,8 +887,8 @@ See the :ref:`section <sec_writing_application_codes>` of the users manual on wr
 application codes with PETSc. 
 
 
-How can I put carriage returns in ``PetscPrintf()`` statements from Fortran?
-----------------------------------------------------------------------------
+How can I put carriage returns in `PetscPrintf()` statements from Fortran?
+--------------------------------------------------------------------------
 
 You can use the same notation as in C, just put a ``\n`` in the string. Note that no other C
 format instruction is supported.
@@ -978,8 +978,8 @@ the only general purpose way to determine which approach is best for your proble
    the problem since the performance benefits depend on the exact problem and and problem
    size!
 
-How can I use Newton's Method Jacobian free? Can I difference a different function than provided with ``SNESSetFunction()``?
-----------------------------------------------------------------------------------------------------------------------------
+How can I use Newton's Method Jacobian free? Can I difference a different function than provided with `SNESSetFunction()`?
+--------------------------------------------------------------------------------------------------------------------------
 
 The simplest way is with the option ``-snes_mf``, this will use finite differencing of the
 function provided to ``SNESComputeFunction()`` to approximate the action of Jacobian.
@@ -1814,8 +1814,8 @@ Use the following code-snippet:
    end subroutine convergence
    end program test_snes
 
-In C++ I get a crash on VecDestroy() (or some other PETSc object) at the end of the program
--------------------------------------------------------------------------------------------
+In C++ I get a crash on `VecDestroy()` (or some other PETSc object) at the end of the program
+---------------------------------------------------------------------------------------------
 
 This can happen when the destructor for a C++ class is automatically called at the end of
 the program after ``PetscFinalize()``. Use the following code-snippet:
@@ -1998,8 +1998,8 @@ will not work. You must add ``MatSetType()`` or ``MatSetFromOptions()`` before t
 
 .. _split-ownership:
 
-What does error detected in PetscSplitOwnership() about "sum of local lengths ...": mean?
------------------------------------------------------------------------------------------
+What does error detected in `PetscSplitOwnership()` about "sum of local lengths ...": mean?
+-------------------------------------------------------------------------------------------
 
 In a previous call to ``VecSetSizes()``, ``MatSetSizes()``, ``VecCreateXXX()`` or
 ``MatCreateXXX()`` you passed in local and global sizes that do not make sense for the
@@ -2100,8 +2100,8 @@ This error can also happen if your matrix is singular, see ``MatSetNullSpace()``
 to handle this. If this error occurs in the zeroth row of the matrix, it is likely you
 have an error in the code that generates the matrix.
 
-You create draw windows or ``PETSCVIEWERDRAW`` windows or use options ``-ksp_monitor draw::draw_lg`` or ``-snes_monitor draw::draw_lg`` and the program seems to run OK but windows never open
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+You create draw windows or `PETSCVIEWERDRAW` windows or use options ``-ksp_monitor draw::draw_lg`` or ``-snes_monitor draw::draw_lg`` and the program seems to run OK but windows never open
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 The libraries were compiled without support for X windows. Make sure that ``configure``
 was run with the option ``--with-x``.
@@ -2146,8 +2146,8 @@ The following may help:
 
 - Make sure you do not link with the MPI profiling libraries.
 
-When calling ``MatPartitioningApply()`` you get a message "Error! Key 16615 Not Found"
---------------------------------------------------------------------------------------
+When calling `MatPartitioningApply()` you get a message "Error! Key 16615 Not Found"
+------------------------------------------------------------------------------------
 
 The graph of the matrix you are using is not symmetric. You must use symmetric matrices
 for partitioning.

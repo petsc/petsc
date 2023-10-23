@@ -8,6 +8,18 @@ template class impl::VecSeq_CUPM<DeviceType::CUDA>;
 
 static constexpr auto VecSeq_CUDA = impl::VecSeq_CUPM<DeviceType::CUDA>{};
 
+/*MC
+  VECSEQCUDA - VECSEQCUDA = "seqcuda" - The basic sequential vector, modified to use CUDA
+
+  Options Database Key:
+. -vec_type seqcuda - sets the vector type to `VECSEQCUDA` during a call to `VecSetFromOptions()`
+
+  Level: beginner
+
+.seealso: `VecCreate()`, `VecSetType()`, `VecSetFromOptions()`, `VecCreateMPIWithArray()`, `VECSEQ`,
+`VecType`, `VecCreateMPI()`, `VecSetPinnedMemoryMin()`, `VECCUDA`, `VECHIP`, VECMPICUDA`, `VECMPIHIP`, `VECSEQHIP`
+M*/
+
 PetscErrorCode VecCreate_SeqCUDA(Vec v)
 {
   PetscFunctionBegin;
