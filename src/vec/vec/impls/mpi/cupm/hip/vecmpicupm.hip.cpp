@@ -9,28 +9,16 @@ template class impl::VecMPI_CUPM<DeviceType::HIP>;
 static constexpr auto VecMPI_HIP = impl::VecMPI_CUPM<DeviceType::HIP>{};
 
 /*MC
-  VECHIP - VECHIP = "hip" - A `VECSEQHIP` on a single-process communicator, and `VECMPIHIP`
+  VECHIP - VECHIP = "hip" - A `VECSEQHIP` on a single-process MPI communicator, and `VECMPIHIP`
   otherwise.
 
-  Options Database Keys:
+  Options Database Key:
 . -vec_type hip - sets the vector type to `VECHIP` during a call to `VecSetFromOptions()`
 
   Level: beginner
 
 .seealso: `VecCreate()`, `VecSetType()`, `VecSetFromOptions()`, `VecCreateMPIWithArray()`, `VECSEQHIP`,
-`VECMPIHIP`, `VECSTANDARD`, `VecType`, `VecCreateMPI()`, `VecSetPinnedMemoryMin()`
-M*/
-
-/*MC
-  VECMPIHIP - VECMPIHIP = "mpihip" - The basic parallel vector, modified to use HIP
-
-  Options Database Keys:
-. -vec_type mpihip - sets the vector type to `VECMPIHIP` during a call to `VecSetFromOptions()`
-
-  Level: beginner
-
-.seealso: `VecCreate()`, `VecSetType()`, `VecSetFromOptions()`, `VecCreateMPIWithArray()`, `VECMPI`,
-`VecType`, `VecCreateMPI()`, `VecSetPinnedMemoryMin()`
+`VECMPIHIP`, `VECSTANDARD`, `VecType`, `VecCreateMPI()`, `VecSetPinnedMemoryMin()`, `VECCUDA`
 M*/
 
 PetscErrorCode VecCreate_HIP(Vec v)
@@ -39,6 +27,18 @@ PetscErrorCode VecCreate_HIP(Vec v)
   PetscCall(VecMPI_HIP.Create_CUPM(v));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
+
+/*MC
+  VECMPIHIP - VECMPIHIP = "mpihip" - The basic parallel vector, modified to use HIP
+
+  Options Database Key:
+. -vec_type mpihip - sets the vector type to `VECMPIHIP` during a call to `VecSetFromOptions()`
+
+  Level: beginner
+
+.seealso: `VecCreate()`, `VecSetType()`, `VecSetFromOptions()`, `VecCreateMPIWithArray()`, `VECMPI`,
+`VecType`, `VecCreateMPI()`, `VecSetPinnedMemoryMin()`
+M*/
 
 PetscErrorCode VecCreate_MPIHIP(Vec v)
 {

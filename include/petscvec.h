@@ -93,21 +93,21 @@ J*/
 typedef const char *VecType;
 #define VECSEQ         "seq"
 #define VECMPI         "mpi"
-#define VECSTANDARD    "standard" /* seq on one process and mpi on several */
+#define VECSTANDARD    "standard" /* seq on one process and mpi on multiple */
 #define VECSHARED      "shared"
 #define VECSEQVIENNACL "seqviennacl"
 #define VECMPIVIENNACL "mpiviennacl"
-#define VECVIENNACL    "viennacl" /* seqviennacl on one process and mpiviennacl on several */
+#define VECVIENNACL    "viennacl" /* seqviennacl on one process and mpiviennacl on multiple */
 #define VECSEQCUDA     "seqcuda"
 #define VECMPICUDA     "mpicuda"
-#define VECCUDA        "cuda" /* seqcuda on one process and mpicuda on several */
+#define VECCUDA        "cuda" /* seqcuda on one process and mpicuda on multiple */
 #define VECSEQHIP      "seqhip"
 #define VECMPIHIP      "mpihip"
-#define VECHIP         "hip" /* seqcuda on one process and mpicuda on several */
+#define VECHIP         "hip" /* seqhip on one process and mpihip on multiple */
 #define VECNEST        "nest"
 #define VECSEQKOKKOS   "seqkokkos"
 #define VECMPIKOKKOS   "mpikokkos"
-#define VECKOKKOS      "kokkos" /* seqkokkos on one process and mpikokkos on several */
+#define VECKOKKOS      "kokkos" /* seqkokkos on one process and mpikokkos on multiple */
 
 /* Dynamic creation and loading functions */
 PETSC_EXTERN PetscErrorCode VecScatterSetType(VecScatter, VecScatterType);
