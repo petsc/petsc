@@ -125,6 +125,15 @@ int main(int argc, char **argv)
   if (v > -PETSC_SMALL && v < PETSC_SMALL) v = 0.0;
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "VecPointwiseDivide %g\n", (double)v));
 
+  PetscCall(VecSetValue(y, 0, 0.0, INSERT_VALUES));
+  PetscCall(VecAssemblyBegin(y));
+  PetscCall(VecAssemblyEnd(y));
+  PetscCall(VecPointwiseDivide(w, x, y));
+  PetscCall(VecNorm(w, NORM_2, &norm));
+  v = norm - 9.0 * PetscSqrtReal((PetscReal)n);
+  if (v > -PETSC_SMALL && v < PETSC_SMALL) v = 0.0;
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "VecPointwiseDivide %g\n", (double)v));
+
   dots[0] = one;
   dots[1] = three;
   dots[2] = two;
