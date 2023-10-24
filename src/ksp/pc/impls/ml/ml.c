@@ -693,11 +693,11 @@ static PetscErrorCode PCSetUp_ML(PC pc)
         for (j = 0; j < mlocal; j++) nullvec[(i + !!has_const) * mlocal + j] = v[j];
         PetscCall(VecRestoreArrayRead(vecs[i], &v));
       }
-      PetscStackCallExternalVoid("ML_Aggregate_Create", PetscCall(ML_Aggregate_Set_NullSpace(agg_object, bs, nvec + !!has_const, nullvec, mlocal)));
+      PetscStackCallExternalVoid("ML_Aggregate_Create", ML_Aggregate_Set_NullSpace(agg_object, bs, nvec + !!has_const, nullvec, mlocal));
       PetscCall(PetscFree(nullvec));
     } break;
     case PCML_NULLSPACE_BLOCK:
-      PetscStackCallExternalVoid("ML_Aggregate_Set_NullSpace", PetscCall(ML_Aggregate_Set_NullSpace(agg_object, bs, bs, 0, 0)));
+      PetscStackCallExternalVoid("ML_Aggregate_Set_NullSpace", ML_Aggregate_Set_NullSpace(agg_object, bs, bs, 0, 0));
       break;
     case PCML_NULLSPACE_SCALAR:
       break;

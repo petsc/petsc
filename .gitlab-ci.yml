@@ -989,16 +989,16 @@ osx-cxx-cmplx-pkgs-dbg:
     TEST_ARCH: arch-ci-osx-cxx-cmplx-pkgs-dbg
     INIT_SCRIPT: .zprofile
 
-osx-cxx-pkgs-opt:
+osx-cxx-pkgs-opt-arm:
   extends:
     - .stage-3
     - .osx_test
     - .coverage-disable
   tags:
-    - os:macos-x64
+    - os:macos-arm
   variables:
     PETSC_OPTIONS: -vecscatter_mpi1 false -options_left false
-    TEST_ARCH: arch-ci-osx-cxx-pkgs-opt
+    TEST_ARCH: arch-ci-osx-cxx-pkgs-opt-arm
     MAKE_CXXFLAGS: -Werror -Wno-pass-failed
     INIT_SCRIPT: .zprofile
 
