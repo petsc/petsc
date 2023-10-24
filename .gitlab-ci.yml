@@ -390,17 +390,17 @@ pause-for-approval:
 # (in a blue box beneath it)
 #
 
-.disable-osx-m1:
+osx-arm:
   extends:
     - .stage-3
     - .osx_test
     - .coverage-disable
   tags:
-    - os:macos-m1
+    - os:macos-arm
   variables:
-    TEST_ARCH: arch-ci-osx-m1
+    TEST_ARCH: arch-ci-osx-arm
     PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump
-    INIT_SCRIPT: /Volumes/Scratch/svcpetsc/soft/py3venv/cython3setup.sh
+    INIT_SCRIPT: .zprofile
 
 freebsd-cxx-cmplx-64idx-dbg:
   extends:
@@ -642,17 +642,17 @@ linux-without-fc:
   variables:
     TEST_ARCH: arch-ci-linux-without-fc
 
-.disable-linux-cmplx-single:
+linux-cmplx-single-arm:
   extends:
     - .stage-3
     - .linux_test
-    # gcovr is not on si
+    # gcovr does not work on arm/linux
     - .coverage-disable
   tags:
-    - name:si
+    - arch:arm, os:linux
   variables:
     FLEXIBLAS: netlib
-    TEST_ARCH: arch-ci-linux-cmplx-single
+    TEST_ARCH: arch-ci-linux-cmplx-single-arm
 
 linux-gcc-cxx-avx2:
   extends:
