@@ -78,6 +78,8 @@ class Configure(config.package.CMakePackage):
   def formCMakeConfigureArgs(self):
     args = config.package.CMakePackage.formCMakeConfigureArgs(self)
     args.append('-DUSE_XSDK_DEFAULTS=YES')
+    # Whether code deprecated in major release 4 is available
+    args.append('-DKokkos_ENABLE_DEPRECATED_CODE_4=OFF')
 
     # always use C/C++'s alignment (i.e., sizeof(RealType)) for complex,
     # instead of Kokkos's default "alignas(2 * sizeof(RealType))"
