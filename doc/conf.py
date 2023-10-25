@@ -116,7 +116,8 @@ html_theme_options = {
     "logo": {
         "image_light": os.path.basename(html_logo_light),
         "image_dark": os.path.basename(html_logo_dark)
-    }
+    },
+    "navigation_with_keys":True
 }
 
 try:
