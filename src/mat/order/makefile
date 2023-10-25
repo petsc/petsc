@@ -1,9 +1,9 @@
 -include ../../../petscdir.mk
 #
-#  All the Sparspack routines have been converted to C with the F2C
+#  The SPARSEPACK routines have been converted to C with the F2C
 # converter.
 #
-#  All Sparsepack routines are prepended with SPARSEPACK to reduce
+#  SPARSEPACK routines are prepended with SPARSEPACK to reduce
 # name space pollution.
 #
 #  This code uses the original SPARSEPACK software that was released
