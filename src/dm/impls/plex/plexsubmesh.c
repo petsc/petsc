@@ -3338,7 +3338,7 @@ static PetscErrorCode DMPlexFilterLabels_Internal(DM dm, const PetscInt numSubPo
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode DMPlexCreateSubmeshGeneric_Interpolated(DM dm, DMLabel label, PetscInt value, PetscBool markedFaces, PetscBool isCohesive, PetscInt cellHeight, DM subdm)
+static PetscErrorCode DMPlexCreateSubmeshGeneric_Interpolated(DM dm, DMLabel label, PetscInt value, PetscBool markedFaces, PetscBool isCohesive, PetscInt cellHeight, PetscSF *ownershipTransferSF, DM subdm)
 {
   MPI_Comm         comm;
   DMLabel          subpointMap;
@@ -3623,6 +3623,40 @@ static PetscErrorCode DMPlexCreateSubmeshGeneric_Interpolated(DM dm, DMLabel lab
       PetscCall(PetscSFReduceEnd(sfPoint, MPIU_2INT, newLocalPoints, newOwners, MPI_MAXLOC));
       for (p = pStart; p < pEnd; ++p)
         if (newOwners[p - pStart].rank >= size) newOwners[p - pStart].rank -= size;
+      if (ownershipTransferSF) {
+        PetscSFNode *iremote1 = NULL, *newOwners1 = NULL;
+        PetscInt    *ilocal1 = NULL;
+        PetscInt     nleaves1, point;
+
+        for (p = 0; p < numSubpoints; ++p) {
+          point                                = subpoints[p];
+          newLocalPoints[point - pStart].index = point;
+        }
+        PetscCall(PetscMalloc1(numRoots, &newOwners1));
+        for (p = 0; p < numRoots; ++p) {
+          newOwners1[p].rank  = -1;
+          newOwners1[p].index = -1;
+        }
+        PetscCall(PetscSFReduceBegin(sfPoint, MPIU_2INT, newLocalPoints, newOwners1, MPI_MAXLOC));
+        PetscCall(PetscSFReduceEnd(sfPoint, MPIU_2INT, newLocalPoints, newOwners1, MPI_MAXLOC));
+        for (p = 0, nleaves1 = 0; p < numRoots; ++p) {
+          if (newOwners[p].rank >= 0 && newOwners[p].rank != rank) { ++nleaves1; }
+        }
+        PetscCall(PetscMalloc1(nleaves1, &ilocal1));
+        PetscCall(PetscMalloc1(nleaves1, &iremote1));
+        for (p = 0, nleaves1 = 0; p < numRoots; ++p) {
+          if (newOwners[p].rank >= 0 && newOwners[p].rank != rank) {
+            ilocal1[nleaves1]        = pStart + p;
+            iremote1[nleaves1].rank  = newOwners[p].rank;
+            iremote1[nleaves1].index = newOwners1[p].index;
+            ++nleaves1;
+          }
+        }
+        PetscCall(PetscFree(newOwners1));
+        PetscCall(PetscSFCreate(PetscObjectComm((PetscObject)sfPoint), ownershipTransferSF));
+        PetscCall(PetscSFSetFromOptions(*ownershipTransferSF));
+        PetscCall(PetscSFSetGraph(*ownershipTransferSF, pEnd - pStart, nleaves1, ilocal1, PETSC_OWN_POINTER, iremote1, PETSC_OWN_POINTER));
+      }
       PetscCall(PetscSFBcastBegin(sfPoint, MPIU_2INT, newOwners, newLocalPoints, MPI_REPLACE));
       PetscCall(PetscSFBcastEnd(sfPoint, MPIU_2INT, newOwners, newLocalPoints, MPI_REPLACE));
       PetscCall(PetscMalloc1(numSubleaves, &slocalPoints));
@@ -3664,7 +3698,7 @@ static PetscErrorCode DMPlexCreateSubmeshGeneric_Interpolated(DM dm, DMLabel lab
 static PetscErrorCode DMPlexCreateSubmesh_Interpolated(DM dm, DMLabel vertexLabel, PetscInt value, PetscBool markedFaces, DM subdm)
 {
   PetscFunctionBegin;
-  PetscCall(DMPlexCreateSubmeshGeneric_Interpolated(dm, vertexLabel, value, markedFaces, PETSC_FALSE, 1, subdm));
+  PetscCall(DMPlexCreateSubmeshGeneric_Interpolated(dm, vertexLabel, value, markedFaces, PETSC_FALSE, 1, NULL, subdm));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -3924,7 +3958,7 @@ static PetscErrorCode DMPlexCreateCohesiveSubmesh_Interpolated(DM dm, const char
 
   PetscFunctionBegin;
   if (labelname) PetscCall(DMGetLabel(dm, labelname, &label));
-  PetscCall(DMPlexCreateSubmeshGeneric_Interpolated(dm, label, value, PETSC_FALSE, PETSC_TRUE, 1, subdm));
+  PetscCall(DMPlexCreateSubmeshGeneric_Interpolated(dm, label, value, PETSC_FALSE, PETSC_TRUE, 1, NULL, subdm));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -4032,27 +4066,32 @@ PetscErrorCode DMPlexReorderCohesiveSupports(DM dm)
 - value     - The label value to use
 
   Output Parameter:
-. subdm - The new mesh
++ ownershipTransferSF - The `PetscSF` representing the ownership transfers between parent local meshes due to submeshing.
+- subdm               - The new mesh
 
   Level: developer
 
   Note:
   This function produces a `DMLabel` mapping original points in the submesh to their depth. This can be obtained using `DMPlexGetSubpointMap()`.
 
+  On a given rank, the leaves of the ownershipTransferSF are the points in the local mesh that this rank gives up ownership of (in the submesh), and
+  the remote locations for these leaves are tuples of rank and point that represent the new owners.
+
 .seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexGetSubpointMap()`, `DMGetLabel()`, `DMLabelSetValue()`, `DMPlexCreateSubmesh()`
 @*/
-PetscErrorCode DMPlexFilter(DM dm, DMLabel cellLabel, PetscInt value, DM *subdm)
+PetscErrorCode DMPlexFilter(DM dm, DMLabel cellLabel, PetscInt value, PetscSF *ownershipTransferSF, DM *subdm)
 {
   PetscInt dim, overlap;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscAssertPointer(subdm, 4);
+  if (ownershipTransferSF) PetscAssertPointer(ownershipTransferSF, 4);
+  PetscAssertPointer(subdm, 5);
   PetscCall(DMGetDimension(dm, &dim));
   PetscCall(DMCreate(PetscObjectComm((PetscObject)dm), subdm));
   PetscCall(DMSetType(*subdm, DMPLEX));
   /* Extract submesh in place, could be empty on some procs, could have inconsistency if procs do not both extract a shared cell */
-  PetscCall(DMPlexCreateSubmeshGeneric_Interpolated(dm, cellLabel, value, PETSC_FALSE, PETSC_FALSE, 0, *subdm));
+  PetscCall(DMPlexCreateSubmeshGeneric_Interpolated(dm, cellLabel, value, PETSC_FALSE, PETSC_FALSE, 0, ownershipTransferSF, *subdm));
   PetscCall(DMPlexCopy_Internal(dm, PETSC_TRUE, PETSC_TRUE, *subdm));
   // It is possible to obtain a surface mesh where some faces are in SF
   //   We should either mark the mesh as having an overlap, or delete these from the SF

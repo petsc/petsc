@@ -86,7 +86,7 @@ static PetscErrorCode CreateVolumeSubmesh(DM dm, PetscBool domain, PetscBool low
   PetscFunctionBegin;
   if (domain) PetscCall(CreateHalfDomainLabel(dm, lower, height, &label));
   else PetscCall(CreateHalfCellsLabel(dm, lower, &label));
-  PetscCall(DMPlexFilter(dm, label, 1, subdm));
+  PetscCall(DMPlexFilter(dm, label, 1, NULL, subdm));
   PetscCall(PetscObjectSetName((PetscObject)*subdm, "Submesh"));
   PetscCall(PetscObjectSetOptionsPrefix((PetscObject)*subdm, "sub_"));
   PetscCall(DMViewFromOptions(*subdm, NULL, "-dm_view"));
@@ -105,7 +105,7 @@ static PetscErrorCode TestBoundaryField(DM dm)
 
   PetscFunctionBeginUser;
   PetscCall(CreateLineLabel(dm, 0.5, &label));
-  PetscCall(DMPlexFilter(dm, label, 1, &subdm));
+  PetscCall(DMPlexFilter(dm, label, 1, NULL, &subdm));
   PetscCall(PetscObjectSetName((PetscObject)subdm, "Submesh"));
   PetscCall(PetscObjectSetOptionsPrefix((PetscObject)subdm, "sub_"));
   PetscCall(DMViewFromOptions(subdm, NULL, "-dm_view"));

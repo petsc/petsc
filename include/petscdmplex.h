@@ -112,7 +112,7 @@ PETSC_EXTERN PetscErrorCode DMPlexInterpolatePointSF(DM, PetscSF);
 PETSC_EXTERN PetscErrorCode DMPlexIsInterpolated(DM, DMPlexInterpolatedFlag *);
 PETSC_EXTERN PetscErrorCode DMPlexIsInterpolatedCollective(DM, DMPlexInterpolatedFlag *);
 
-PETSC_EXTERN PetscErrorCode DMPlexFilter(DM, DMLabel, PetscInt, DM *);
+PETSC_EXTERN PetscErrorCode DMPlexFilter(DM, DMLabel, PetscInt, PetscSF *, DM *);
 PETSC_EXTERN PetscErrorCode DMPlexGetCellNumbering(DM, IS *);
 PETSC_EXTERN PetscErrorCode DMPlexGetVertexNumbering(DM, IS *);
 PETSC_EXTERN PetscErrorCode DMPlexCreatePointNumbering(DM, IS *);

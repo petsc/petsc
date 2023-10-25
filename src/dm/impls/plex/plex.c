@@ -10428,7 +10428,7 @@ PetscErrorCode DMCreateSubDomainDM_Plex(DM dm, DMLabel label, PetscInt value, IS
   PetscCheck(section, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Must set default section for DM before splitting subdomain");
   PetscCheck(subdm, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Must set output subDM for splitting subdomain");
   /* Create subdomain */
-  PetscCall(DMPlexFilter(dm, label, value, subdm));
+  PetscCall(DMPlexFilter(dm, label, value, NULL, subdm));
   /* Create submodel */
   PetscCall(DMPlexGetSubpointIS(*subdm, &subis));
   PetscCall(PetscSectionCreateSubmeshSection(section, subis, &subsection));
