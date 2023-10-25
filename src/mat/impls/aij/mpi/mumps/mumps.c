@@ -394,7 +394,8 @@ static PetscErrorCode MatConvertToTriples_seqaij_seqaij(Mat A, PetscInt shift, M
     mumps->irn = row;
     mumps->jcn = col;
     mumps->nnz = nz;
-  } else PetscCall(PetscArraycpy(mumps->val, av, aa->nz));
+  } else if (mumps->nest_vals) PetscCall(PetscArraycpy(mumps->val, av, aa->nz)); /* MatConvertToTriples_nest_xaij() allocates mumps->val outside of MatConvertToTriples_seqaij_seqaij(), so one needs to copy the memory */
+  else mumps->val = (PetscScalar *)av;                                           /* in the default case, mumps->val is never allocated, one just needs to update the mumps->val pointer */
   PetscCall(MatSeqAIJRestoreArrayRead(A, &av));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -417,7 +418,8 @@ static PetscErrorCode MatConvertToTriples_seqsell_seqaij(Mat A, PetscInt shift, 
     mumps->jcn = col;
     mumps->nnz = nz;
     mumps->val = a->val;
-  } else PetscCall(PetscArraycpy(mumps->val, a->val, nz));
+  } else if (mumps->nest_vals) PetscCall(PetscArraycpy(mumps->val, a->val, nz)); /* MatConvertToTriples_nest_xaij() allocates mumps->val outside of MatConvertToTriples_seqsell_seqaij(), so one needs to copy the memory */
+  else mumps->val = a->val;                                                      /* in the default case, mumps->val is never allocated, one just needs to update the mumps->val pointer */
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -453,7 +455,8 @@ static PetscErrorCode MatConvertToTriples_seqbaij_seqaij(Mat A, PetscInt shift, 
     mumps->jcn = col;
     mumps->nnz = nz;
     mumps->val = aa->a;
-  } else PetscCall(PetscArraycpy(mumps->val, aa->a, nz));
+  } else if (mumps->nest_vals) PetscCall(PetscArraycpy(mumps->val, aa->a, nz)); /* MatConvertToTriples_nest_xaij() allocates mumps->val outside of MatConvertToTriples_seqbaij_seqaij(), so one needs to copy the memory */
+  else mumps->val = aa->a;                                                      /* in the default case, mumps->val is never allocated, one just needs to update the mumps->val pointer */
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -526,7 +529,9 @@ static PetscErrorCode MatConvertToTriples_seqsbaij_seqsbaij(Mat A, PetscInt shif
       }
     }
     PetscCheck(nz == aa->nz, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Different numbers of nonzeros %" PetscInt64_FMT " != %" PetscInt_FMT, nz, aa->nz);
-  } else PetscCall(PetscArraycpy(mumps->val, aa->a, aa->nz)); /* bs == 1 and MAT_REUSE_MATRIX */
+  } else if (mumps->nest_vals)
+    PetscCall(PetscArraycpy(mumps->val, aa->a, aa->nz)); /* bs == 1 and MAT_REUSE_MATRIX, MatConvertToTriples_nest_xaij() allocates mumps->val outside of MatConvertToTriples_seqsbaij_seqsbaij(), so one needs to copy the memory */
+  else mumps->val = aa->a;                               /* in the default case, mumps->val is never allocated, one just needs to update the mumps->val pointer */
   if (reuse == MAT_INITIAL_MATRIX) mumps->nnz = nz;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1002,7 +1007,8 @@ static PetscErrorCode MatConvertToTriples_diagonal_xaij(Mat A, PetscInt shift, M
     mumps->irn = row;
     mumps->jcn = col;
     mumps->nnz = M;
-  } else PetscCall(PetscArraycpy(mumps->val, av, M));
+  } else if (mumps->nest_vals) PetscCall(PetscArraycpy(mumps->val, av, M)); /* MatConvertToTriples_nest_xaij() allocates mumps->val outside of MatConvertToTriples_diagonal_xaij(), so one needs to copy the memory */
+  else mumps->val = (PetscScalar *)av;                                      /* in the default case, mumps->val is never allocated, one just needs to update the mumps->val pointer */
   PetscCall(VecRestoreArrayRead(v, &av));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
