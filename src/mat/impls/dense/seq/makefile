@@ -1,6 +1,5 @@
 -include ../../../../../petscdir.mk
 
-DIRS     = cupm
 LIBBASE  = libpetscmat
 MANSEC   = Mat
 

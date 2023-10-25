@@ -1,7 +1,6 @@
 -include ../../../../../petscdir.mk
 
 LIBBASE   = libpetscksp
-DIRS      = cuda kokkos
 MANSEC    = KSP
 SUBMANSEC = PC
 

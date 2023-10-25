@@ -1,6 +1,5 @@
 -include ../../../../petscdir.mk
 
-DIRS     = tests tutorials
 LIBBASE  = libpetscdm
 MANSEC   = DM
 SUBMANSEC= DMStag

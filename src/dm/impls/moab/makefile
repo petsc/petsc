@@ -1,7 +1,6 @@
 -include ../../../../petscdir.mk
 #requirespackage  'PETSC_HAVE_MOAB'
 
-DIRS     = tests
 LIBBASE  = libpetscdm
 MANSEC   = DM
 SUBMANSEC= DMMOAB

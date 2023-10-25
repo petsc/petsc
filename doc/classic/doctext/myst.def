@@ -52,4 +52,4 @@ location           **Location:**<A HREF="PETSC_DOC_OUT_ROOT_PLACEHOLDER/%1#%rq0"
 mantitle           # %1%n
 mantitlemany       %n%n# %1%n
 bofmanyend
-anchor	           <a name="%1"></a>
+anchor             <a name="%1"></a>

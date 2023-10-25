@@ -1,7 +1,7 @@
 -include ../../../../../petscdir.mk
 
 LIBBASE   = libpetscvec
-MANSEC	  = Vec
+MANSEC    = Vec
 SUBMANSEC = PetscSF
 
 include ${PETSC_DIR}/lib/petsc/conf/variables

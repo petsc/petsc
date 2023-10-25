@@ -1,6 +1,5 @@
 -include ../../../../petscdir.mk
 
-DIRS     = p4est tests tutorials
 LIBBASE  = libpetscdm
 MANSEC   = DM
 SUBMANSEC= DMForest

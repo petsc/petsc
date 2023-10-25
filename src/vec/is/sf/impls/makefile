@@ -1,7 +1,6 @@
 -include ../../../../../petscdir.mk
 
-LIBBASE	  = libpetscvec
-DIRS	  = window basic
+LIBBASE   = libpetscvec
 MANSEC    = Vec
 SUBMANSEC = PetscSF
 

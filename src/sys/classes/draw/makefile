@@ -1,7 +1,6 @@
 -include ../../../../petscdir.mk
 
 LIBBASE   = libpetscsys
-DIRS      = interface impls tests utils
 MANSEC    = Sys
 SUBMANSEC = Draw
 

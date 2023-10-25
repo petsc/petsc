@@ -2,6 +2,10 @@ This directory contains a partial and slightly modified copy of
 (LibYAML)[https://pyyaml.org/wiki/LibYAML] sources corresponding to
 release 0.2.5. A copy of the LibYAML [license](License) is also included.
 
+The source files are not compiled directly into the PETSc library. Rather they
+are included in src/sys/objects/optionsyaml.c as static functions so they do not
+pollute the public symbolic name space.
+
 A list of the modifications follow:
 
 * The emitter API and other output-related parts have been removed,

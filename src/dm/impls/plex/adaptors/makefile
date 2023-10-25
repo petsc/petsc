@@ -1,6 +1,5 @@
 -include ../../../../../petscdir.mk
 
-DIRS     = pragmatic mmg parmmg
 LIBBASE  = libpetscdm
 MANSEC   = DM
 SUBMANSEC= DMPlex

@@ -1,6 +1,5 @@
 -include ../../../../petscdir.mk
 
-DIRS     = parmetis ptscotch chaco simple shell gather matpart
 LIBBASE  = libpetscdm
 MANSEC   = DM
 

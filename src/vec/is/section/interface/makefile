@@ -1,6 +1,6 @@
 -include ../../../../../petscdir.mk
 
-LIBBASE	  = libpetscvec
+LIBBASE   = libpetscvec
 MANSEC    = Vec
 SUBMANSEC = PetscSection
 

@@ -1,6 +1,5 @@
 -include ../../../../../petscdir.mk
 
-DIRS     = triangle tetgen ctetgen
 LIBBASE  = libpetscdm
 MANSEC   = DM
 SUBMANSEC= DMPlex

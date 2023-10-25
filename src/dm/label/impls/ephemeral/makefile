@@ -1,7 +1,6 @@
 -include ../../../../petscdir.mk
 
 LIBBASE  = libpetscdm
-DIRS     = plex
 MANSEC   = DM
 SUBMANSEC= DMLabel
 

@@ -1,7 +1,6 @@
 -include ../../../../../petscdir.mk
 
 LIBBASE  = libpetscmat
-DIRS     = ftn-kernels baijmkl
 MANSEC   = Mat
 
 include ${PETSC_DIR}/lib/petsc/conf/variables

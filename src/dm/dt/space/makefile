@@ -1,6 +1,5 @@
 -include ../../../../petscdir.mk
 
-DIRS      = interface impls
 MANSEC    = DM
 SUBMANSEC = SPACE
 

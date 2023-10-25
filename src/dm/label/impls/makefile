@@ -1,6 +1,5 @@
 -include ../../../petscdir.mk
 
-DIRS      = ephemeral
 MANSEC    = DM
 SUBMANSEC = DMLabel
 

@@ -1,6 +1,5 @@
 -include ../../../petscdir.mk
 
-DIRS      = interface impls utils
 LIBBASE   = libpetscmat
 MANSEC    = Mat
 SUBMANSEC = MatOrderings

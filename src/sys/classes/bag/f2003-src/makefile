@@ -2,7 +2,6 @@
 #requiresdefine   'PETSC_USE_FORTRAN_BINDINGS'
 #requiresdefine   'PETSC_USING_F2003'
 
-DIRS     = fsrc
 LIBBASE  = libpetscsys
 MANSEC   = Sys
 

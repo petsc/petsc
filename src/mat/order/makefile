@@ -11,7 +11,6 @@
 # IT IS NOT THE VERSION OF SPARSEPACK THAT REQUIRES A LICENSE
 
 LIBBASE   = libpetscmat
-DIRS      = amd metisnd
 MANSEC    = Mat
 SUBMANSEC = MatOrderings
 
