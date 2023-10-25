@@ -2057,7 +2057,7 @@ static PetscErrorCode MatMPISBAIJSetPreallocationCSR_MPISBAIJ(Mat B, PetscInt bs
   for (i = 0; i < m; i++) {
     nz = ii[i + 1] - ii[i];
     PetscCheck(nz >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Local row %" PetscInt_FMT " has a negative number of columns %" PetscInt_FMT, i, nz);
-    /* count the ones on the diagonal and above, split into diagonal and off diagonal portions. */
+    /* count the ones on the diagonal and above, split into diagonal and off-diagonal portions. */
     JJ = jj + ii[i];
     bd = 0;
     for (j = 0; j < nz; j++) {

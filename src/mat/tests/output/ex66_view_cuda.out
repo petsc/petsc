@@ -67,7 +67,7 @@
     H-Matrix constructed from Kernel
     PointCloud dim 2
     Admissibility parameters: leaf size 17, eta 0.9
-    Offdiagonal blocks approximation order 4
+    Off-diagonal blocks approximation order 4
     Number of samples for norms 2
     Memory consumption GB (CPU): 0. (dense) 0. (low rank) 0. (total)
     Memory consumption GB (GPU): 3.2368e-05 (dense) 2.8392e-05 (low rank) 6.076e-05 (total)

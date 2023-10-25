@@ -40,7 +40,7 @@ static PetscErrorCode GreedyColoringLocalDistanceOne_Private(MatColoring mc, Pet
   PetscCall(PetscObjectBaseTypeCompare((PetscObject)m, MATSEQAIJ, &isSEQAIJ));
   PetscCheck(isMPIAIJ || isSEQAIJ, PetscObjectComm((PetscObject)mc), PETSC_ERR_ARG_WRONG, "Matrix must be AIJ for greedy coloring");
   if (isMPIAIJ) {
-    /* get the CSR data for on and off diagonal portions of m */
+    /* get the CSR data for on and off-diagonal portions of m */
     Mat_SeqAIJ *dseq;
     Mat_SeqAIJ *oseq;
     md   = aij->A;

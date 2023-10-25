@@ -35,7 +35,7 @@ The command line options include:\n\
 
    The Laplacian is approximated in the following way: each edge is given a weight
    of one meaning that the diagonal term will have the weight equal to the degree
-   of a node. The off diagonal terms will get a weight of -1.
+   of a node. The off-diagonal terms will get a weight of -1.
 
    -----------------------------------------------------------------------*/
 

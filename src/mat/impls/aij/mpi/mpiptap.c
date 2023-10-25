@@ -594,7 +594,7 @@ static inline PetscErrorCode MatPtAPSymbolicComputeOneRowOfAP_private(Mat A, Mat
     pj   = pd->j + pd->i[row];
     for (k = 0; k < nzpi; k++) PetscCall(PetscHSetIAdd(dht, pj[k] * dof + offset + pcstart));
   }
-  /* off diag P */
+  /* off-diagonal P */
   for (j = 0; j < nzi; j++) {
     row    = aj[j];
     offset = row % dof;
@@ -604,7 +604,7 @@ static inline PetscErrorCode MatPtAPSymbolicComputeOneRowOfAP_private(Mat A, Mat
     for (k = 0; k < nzpi; k++) PetscCall(PetscHSetIAdd(oht, p->garray[pj[k]] * dof + offset));
   }
 
-  /* off diagonal part: Ao[i, :]*P_oth */
+  /* off-diagonal part: Ao[i, :]*P_oth */
   if (ao) {
     ai  = ao->i;
     pi  = p_oth->i;
@@ -668,7 +668,7 @@ static inline PetscErrorCode MatPtAPNumericComputeOneRowOfAP_private(Mat A, Mat 
     PetscCall(PetscLogFlops(2.0 * nzpi));
   }
 
-  /* off diagonal part: Ao[i, :]*P_oth */
+  /* off-diagonal part: Ao[i, :]*P_oth */
   if (ao) {
     ai  = ao->i;
     pi  = p_oth->i;
@@ -1043,7 +1043,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIXAIJ_allatonce(Mat A, Mat P, PetscInt d
     PetscCall(PetscHSetIClear(ht));
     offset = i % dof;
     ii     = i / dof;
-    /* If the off diag is empty, we should not do any calculation */
+    /* If the off-diagonal is empty, do not do any calculation */
     nzi = po->i[ii + 1] - po->i[ii];
     if (!nzi) continue;
 
@@ -1193,7 +1193,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIXAIJ_allatonce(Mat A, Mat P, PetscInt d
       /* diag part */
       if (col >= pcstart && col < pcend) {
         PetscCall(PetscHSetIAdd(hta[i], col));
-      } else { /* off diag */
+      } else { /* off-diagonal */
         PetscCall(PetscHSetIAdd(hto[i], col));
       }
     }
@@ -1317,7 +1317,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIXAIJ_allatonce_merged(Mat A, Mat P, Pet
     PetscCall(PetscHSetIClear(oht));
     offset = i % dof;
     ii     = i / dof;
-    /* If the off diag is empty, we should not do any calculation */
+    /* If the off-diagonal is empty, do not do any calculation */
     nzi  = po->i[ii + 1] - po->i[ii];
     dnzi = pd->i[ii + 1] - pd->i[ii];
     if (!nzi && !dnzi) continue;
@@ -1447,10 +1447,10 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIXAIJ_allatonce_merged(Mat A, Mat P, Pet
     rdj = c_othj + ptap->c_othi[i];
     for (j = 0; j < nzi; j++) {
       col = rdj[j];
-      /* diag part */
+      /* diagonal part */
       if (col >= pcstart && col < pcend) {
         PetscCall(PetscHSetIAdd(htd[i], col));
-      } else { /* off diag */
+      } else { /* off-diagonal */
         PetscCall(PetscHSetIAdd(hto[i], col));
       }
     }

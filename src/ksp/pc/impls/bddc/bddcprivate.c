@@ -5391,7 +5391,7 @@ PetscErrorCode PCBDDCSetUpLocalSolvers(PC pc, PetscBool dirichlet, PetscBool neu
       } else {
         PetscCall(MatConvert(pcbddc->local_mat, MATSEQAIJ, MAT_INPLACE_MATRIX, &pcbddc->local_mat));
       }
-    } else if (issbaij) { /* need to convert to BAIJ to get offdiagonal blocks */
+    } else if (issbaij) { /* need to convert to BAIJ to get off-diagonal blocks */
       if (matis->A == pcbddc->local_mat) {
         PetscCall(MatDestroy(&pcbddc->local_mat));
         PetscCall(MatConvert(matis->A, mbs > 1 ? MATSEQBAIJ : MATSEQAIJ, MAT_INITIAL_MATRIX, &pcbddc->local_mat));
