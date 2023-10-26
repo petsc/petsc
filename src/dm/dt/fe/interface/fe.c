@@ -1788,6 +1788,7 @@ PetscErrorCode PetscFERefine(PetscFE fe, PetscFE *feRef)
   PetscCall(PetscDualSpaceDuplicate(Q, &Qref));
   PetscCall(PetscDualSpaceSetType(Qref, PETSCDUALSPACEREFINED));
   PetscCall(DMRefine(K, PetscObjectComm((PetscObject)fe), &Kref));
+  PetscCall(DMGetCoordinatesLocalSetUp(Kref));
   PetscCall(PetscDualSpaceSetDM(Qref, Kref));
   PetscCall(DMPlexGetHeightStratum(Kref, 0, &cStart, &cEnd));
   PetscCall(PetscMalloc1(cEnd - cStart, &cellSpaces));

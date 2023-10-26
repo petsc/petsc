@@ -121,7 +121,7 @@ PetscErrorCode DMPlexExtrude(DM dm, PetscInt layers, PetscReal thickness, PetscB
 
     PetscCall(PetscFEGetBasisSpace((PetscFE)disc, &sp));
     PetscCall(PetscSpaceGetDegree(sp, &deg, NULL));
-    PetscCall(DMPlexCreateCoordinateSpace(*edm, deg, NULL));
+    PetscCall(DMPlexCreateCoordinateSpace(*edm, deg, PETSC_TRUE, NULL));
   }
   PetscCall(DMPlexTransformCreateDiscLabels(tr, *edm));
   PetscCall(DMPlexTransformDestroy(&tr));

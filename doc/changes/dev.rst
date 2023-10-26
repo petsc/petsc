@@ -62,6 +62,9 @@ Changes: Development
 
 .. rubric:: DMPlex:
 
+- Replace ``DMProjectCoordinates()`` with ``DMSetCoordinateDisc()``
+- Add argument to ``DMPlexCreateCoordinateSpace()``
+
 .. rubric:: FE/FV:
 
 .. rubric:: DMNetwork:

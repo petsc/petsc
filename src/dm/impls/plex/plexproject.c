@@ -617,6 +617,7 @@ static PetscErrorCode DMProjectLocal_Generic_Plex(DM dm, PetscReal time, Vec loc
   }
   if (localU && localU != localX) PetscCall(DMPlexInsertBoundaryValues(plex, PETSC_TRUE, localU, time, NULL, NULL, NULL));
   PetscCall(DMGetCoordinateField(dm, &coordField));
+  PetscCheck(coordField, PETSC_COMM_SELF, PETSC_ERR_USER, "DM must have a coordinate field");
   /**** No collective calls below this point ****/
   /* Determine height for iteration of all meshes */
   {

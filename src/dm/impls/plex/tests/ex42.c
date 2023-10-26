@@ -241,7 +241,7 @@ static PetscErrorCode SetupDiscretization(DM dm)
   PetscCall(DMPlexSetClosurePermutationTensor(dm, PETSC_DETERMINE, NULL));
   PetscCall(DMGetCoordinateDim(dm, &cnc));
   PetscCall(PetscFECreateDefault(PETSC_COMM_SELF, dim, cnc, simplex, NULL, PETSC_DETERMINE, &cfe));
-  PetscCall(DMProjectCoordinates(dm, cfe));
+  PetscCall(DMSetCoordinateDisc(dm, cfe, PETSC_TRUE));
   PetscCall(PetscFEDestroy(&cfe));
   PetscCall(DMGetCoordinateDM(dm, &cdm));
   PetscCall(DMPlexSetClosurePermutationTensor(cdm, PETSC_DETERMINE, NULL));

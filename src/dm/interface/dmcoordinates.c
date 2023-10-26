@@ -1,6 +1,6 @@
 #include <petsc/private/dmimpl.h> /*I      "petscdm.h"          I*/
 
-#include <petscdmplex.h> /* For DMProjectCoordinates() */
+#include <petscdmplex.h> /* For DMCreateAffineCoordinates_Internal() */
 #include <petscsf.h>     /* For DMLocatePoints() */
 
 PetscErrorCode DMRestrictHook_Coordinates(DM dm, DM dmc, void *ctx)
@@ -964,37 +964,78 @@ PetscErrorCode DMGetBoundingBox(DM dm, PetscReal gmin[], PetscReal gmax[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static void evaluate_coordinates(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar xnew[])
+static PetscErrorCode DMCreateAffineCoordinates_Internal(DM dm)
 {
-  for (PetscInt i = 0; i < dim; i++) xnew[i] = x[i];
+  DM             cdm;
+  PetscFE        feLinear;
+  DMPolytopeType ct;
+  PetscInt       dim, dE, cStart, cEnd, gct;
+
+  PetscFunctionBegin;
+  PetscCall(DMGetCoordinateDM(dm, &cdm));
+  PetscCall(DMGetDimension(dm, &dim));
+  PetscCall(DMGetCoordinateDim(dm, &dE));
+  PetscCall(DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd));
+  if (cEnd > cStart) PetscCall(DMPlexGetCellType(dm, cStart, &ct));
+  else ct = DM_POLYTOPE_UNKNOWN;
+  gct = (PetscInt)ct;
+  PetscCall(MPIU_Allreduce(MPI_IN_PLACE, &gct, 1, MPIU_INT, MPI_MIN, PetscObjectComm((PetscObject)dm)));
+  ct = (DMPolytopeType)gct;
+  // Work around current bug in PetscDualSpaceSetUp_Lagrange()
+  //   Can be seen in plex_tutorials-ex10_1
+  if (ct != DM_POLYTOPE_SEG_PRISM_TENSOR && ct != DM_POLYTOPE_TRI_PRISM_TENSOR && ct != DM_POLYTOPE_QUAD_PRISM_TENSOR) {
+    PetscCall(PetscFECreateLagrangeByCell(PETSC_COMM_SELF, dim, dE, ct, 1, -1, &feLinear));
+    PetscCall(DMSetField(cdm, 0, NULL, (PetscObject)feLinear));
+    PetscCall(PetscFEDestroy(&feLinear));
+    PetscCall(DMCreateDS(cdm));
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+PetscErrorCode DMGetCoordinateDegree_Internal(DM dm, PetscInt *degree)
+{
+  DM           cdm;
+  PetscFE      fe;
+  PetscSpace   sp;
+  PetscClassId id;
+
+  PetscFunctionBegin;
+  *degree = 1;
+  PetscCall(DMGetCoordinateDM(dm, &cdm));
+  PetscCall(DMGetField(cdm, 0, NULL, (PetscObject *)&fe));
+  PetscCall(PetscObjectGetClassId((PetscObject)fe, &id));
+  if (id != PETSCFE_CLASSID) PetscFunctionReturn(PETSC_SUCCESS);
+  PetscCall(PetscFEGetBasisSpace(fe, &sp));
+  PetscCall(PetscSpaceGetDegree(sp, degree, NULL));
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
-  DMProjectCoordinates - Project coordinates to a different space
+  DMSetCoordinateDisc - Set a coordinate space
 
   Input Parameters:
-+ dm   - The `DM` object
-- disc - The new coordinate discretization or NULL to ensure a coordinate discretization exists
++ dm      - The `DM` object
+. disc    - The new coordinate discretization or NULL to ensure a coordinate discretization exists
+- project - Project coordinates to new discretization
 
   Level: intermediate
 
   Notes:
-  A `PetscFE` defines an approximation space using a `PetscSpace`, which represents the basis functions, and a `PetscDualSpace`, which defines the interpolation operation
-  in the space.
+  A `PetscFE` defines an approximation space using a `PetscSpace`, which represents the basis functions, and a `PetscDualSpace`, which defines the interpolation operation in the space.
 
   This function takes the current mesh coordinates, which are discretized using some `PetscFE` space, and projects this function into a new `PetscFE` space.
-  The coordinate projection is done on the continuous coordinates, and if possible, the discontinuous coordinates are also updated.
+  The coordinate projection is done on the continuous coordinates, but the discontinuous coordinates are not updated.
 
   Developer Notes:
   With more effort, we could directly project the discontinuous coordinates also.
 
 .seealso: `DM`, `PetscFE`, `DMGetCoordinateField()`
 @*/
-PetscErrorCode DMProjectCoordinates(DM dm, PetscFE disc)
+PetscErrorCode DMSetCoordinateDisc(DM dm, PetscFE disc, PetscBool project)
 {
+  DM           cdmOld, cdmNew;
   PetscFE      discOld;
   PetscClassId classid;
-  DM           cdmOld, cdmNew;
   Vec          coordsOld, coordsNew;
   PetscBool    same_space = PETSC_TRUE;
   const char  *prefix;
@@ -1009,23 +1050,7 @@ PetscErrorCode DMProjectCoordinates(DM dm, PetscFE disc)
   PetscCall(PetscObjectGetClassId((PetscObject)discOld, &classid));
   if (classid != PETSCFE_CLASSID) {
     if (classid == PETSC_CONTAINER_CLASSID) {
-      PetscFE        feLinear;
-      DMPolytopeType ct;
-      PetscInt       dim, dE, cStart, cEnd, ctTmp;
-
-      /* Assume linear vertex coordinates */
-      PetscCall(DMGetDimension(dm, &dim));
-      PetscCall(DMGetCoordinateDim(dm, &dE));
-      PetscCall(DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd));
-      if (cEnd > cStart) PetscCall(DMPlexGetCellType(dm, cStart, &ct));
-      else ct = DM_POLYTOPE_UNKNOWN;
-      ctTmp = (PetscInt)ct;
-      PetscCall(MPIU_Allreduce(MPI_IN_PLACE, &ctTmp, 1, MPIU_INT, MPI_MIN, PetscObjectComm((PetscObject)dm)));
-      ct = (DMPolytopeType)ctTmp;
-      PetscCall(PetscFECreateLagrangeByCell(PETSC_COMM_SELF, dim, dE, ct, 1, -1, &feLinear));
-      PetscCall(DMSetField(cdmOld, 0, NULL, (PetscObject)feLinear));
-      PetscCall(PetscFEDestroy(&feLinear));
-      PetscCall(DMCreateDS(cdmOld));
+      PetscCall(DMCreateAffineCoordinates_Internal(dm));
       PetscCall(DMGetField(cdmOld, 0, NULL, (PetscObject *)&discOld));
     } else {
       const char *discname;
@@ -1034,51 +1059,53 @@ PetscErrorCode DMProjectCoordinates(DM dm, PetscFE disc)
       SETERRQ(PetscObjectComm((PetscObject)discOld), PETSC_ERR_SUP, "Discretization type %s not supported", discname);
     }
   }
+  // Linear space has been created by now
   if (!disc) PetscFunctionReturn(PETSC_SUCCESS);
-  { // Check if the new space is the same as the old modulo quadrature
+  // Check if the new space is the same as the old modulo quadrature
+  {
     PetscDualSpace dsOld, ds;
     PetscCall(PetscFEGetDualSpace(discOld, &dsOld));
     PetscCall(PetscFEGetDualSpace(disc, &ds));
     PetscCall(PetscDualSpaceEqual(dsOld, ds, &same_space));
   }
-  /* Make a fresh clone of the coordinate DM */
+  // Make a fresh clone of the coordinate DM
   PetscCall(DMClone(cdmOld, &cdmNew));
   cdmNew->cloneOpts = PETSC_TRUE;
   PetscCall(PetscObjectGetOptionsPrefix((PetscObject)cdmOld, &prefix));
   PetscCall(PetscObjectSetOptionsPrefix((PetscObject)cdmNew, prefix));
   PetscCall(DMSetField(cdmNew, 0, NULL, (PetscObject)disc));
   PetscCall(DMCreateDS(cdmNew));
+  {
+    PetscDS ds, nds;
+
+    PetscCall(DMGetDS(cdmOld, &ds));
+    PetscCall(DMGetDS(cdmNew, &nds));
+    PetscCall(PetscDSCopyConstants(ds, nds));
+  }
   if (cdmOld->periodic.setup) {
     cdmNew->periodic.setup = cdmOld->periodic.setup;
     PetscCall(cdmNew->periodic.setup(cdmNew));
   }
   if (dm->setfromoptionscalled) PetscCall(DMSetFromOptions(cdmNew));
-  PetscCall(DMGetCoordinates(dm, &coordsOld));
-  PetscCall(DMCreateGlobalVector(cdmNew, &coordsNew));
-  if (same_space) {
-    // Need to copy so that the new vector has the right dm
-    PetscCall(VecCopy(coordsOld, coordsNew));
-  } else { // Project the coordinate vector from old to new space
-    void (*funcs[])(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]) = {evaluate_coordinates};
-    // We can't call DMProjectField directly because it depends on KSP for DMGlobalToLocalSolve(), but we can use the core strategy
-    Vec X_new_loc;
-    PetscCall(DMCreateLocalVector(cdmNew, &X_new_loc));
-    PetscCall(DMSetCoordinateDM(cdmNew, cdmOld));
-    // See DMPlexRemapGeometry() for a similar pattern handling the coordinate field
-    DMField cf;
-    PetscCall(DMGetCoordinateField(dm, &cf));
-    cdmNew->coordinates[0].field = cf;
-    PetscCall(DMProjectFieldLocal(cdmNew, 0.0, NULL, funcs, INSERT_VALUES, X_new_loc));
-    cdmNew->coordinates[0].field = NULL;
-    PetscCall(DMSetCoordinateDM(cdmNew, NULL));
-    PetscCall(DMLocalToGlobal(cdmNew, X_new_loc, INSERT_VALUES, coordsNew));
-    PetscCall(VecDestroy(&X_new_loc));
+  if (project) {
+    PetscCall(DMGetCoordinates(dm, &coordsOld));
+    PetscCall(DMCreateGlobalVector(cdmNew, &coordsNew));
+    if (same_space) {
+      // Need to copy so that the new vector has the right dm
+      PetscCall(VecCopy(coordsOld, coordsNew));
+    } else {
+      Mat In;
+
+      PetscCall(DMCreateInterpolation(cdmOld, cdmNew, &In, NULL));
+      PetscCall(MatMult(In, coordsOld, coordsNew));
+      PetscCall(MatDestroy(&In));
+    }
+    PetscCall(DMSetCoordinates(dm, coordsNew));
+    PetscCall(VecDestroy(&coordsNew));
   }
   /* Set new coordinate structures */
   PetscCall(DMSetCoordinateField(dm, NULL));
   PetscCall(DMSetCoordinateDM(dm, cdmNew));
-  PetscCall(DMSetCoordinates(dm, coordsNew));
-  PetscCall(VecDestroy(&coordsNew));
   PetscCall(DMDestroy(&cdmNew));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
