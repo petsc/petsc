@@ -280,7 +280,7 @@ static PetscErrorCode triangulateAndFormProl(IS selected_2, PetscInt data_stride
     /* find points and set prolongation */
     for (mm = clid = 0; mm < nFineLoc; mm++) {
       PetscBool ise;
-      PetscCall(PetscCDEmptyAt(agg_lists_1, mm, &ise));
+      PetscCall(PetscCDIsEmptyAt(agg_lists_1, mm, &ise));
       if (!ise) {
         const PetscInt lid = mm;
         PetscScalar    AA[3][3];
@@ -625,7 +625,7 @@ static PetscErrorCode PCGAMGProlongator_GEO(PC pc, Mat Amat, Mat Gmat, PetscCoar
   PetscCheck((Iend - Istart) % bs == 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "(Iend %" PetscInt_FMT " - Istart %" PetscInt_FMT ") %% bs %" PetscInt_FMT, Iend, Istart, bs);
 
   /* get 'nLocalSelected' */
-  PetscCall(PetscCDGetMIS(agg_lists, &selected_1));
+  PetscCall(PetscCDGetNonemptyIS(agg_lists, &selected_1));
   PetscCall(ISGetSize(selected_1, &jj));
   PetscCall(PetscMalloc1(jj, &clid_flid));
   PetscCall(ISGetIndices(selected_1, &selected_idx));

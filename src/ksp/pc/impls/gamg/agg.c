@@ -467,7 +467,7 @@ static PetscErrorCode formProl0(PetscCoarsenData *agg_llists, PetscInt bs, Petsc
   /* count selected -- same as number of cols of P */
   for (nSelected = mm = 0; mm < nloc; mm++) {
     PetscBool ise;
-    PetscCall(PetscCDEmptyAt(agg_llists, mm, &ise));
+    PetscCall(PetscCDIsEmptyAt(agg_llists, mm, &ise));
     if (!ise) nSelected++;
   }
   PetscCall(MatGetOwnershipRangeColumn(a_Prol, &ii, &jj));
@@ -484,7 +484,7 @@ static PetscErrorCode formProl0(PetscCoarsenData *agg_llists, PetscInt bs, Petsc
   /* find points and set prolongation */
   minsz = 100;
   for (mm = clid = 0; mm < nloc; mm++) {
-    PetscCall(PetscCDSizeAt(agg_llists, mm, &jj));
+    PetscCall(PetscCDCountAt(agg_llists, mm, &jj));
     if (jj > 0) {
       const PetscInt lid = mm, cgid = my0crs + clid;
       PetscInt       cids[100]; /* max bs */
@@ -605,7 +605,11 @@ static PetscErrorCode PCGAMGCreateGraph_AGG(PC pc, Mat Amat, Mat *a_Gmat)
   PetscCall(PetscObjectSetOptionsPrefix((PetscObject)pc_gamg_agg->crs, prefix));
   PetscCall(MatCoarsenSetFromOptions(pc_gamg_agg->crs));
   PetscCall(PetscObjectTypeCompare((PetscObject)pc_gamg_agg->crs, MATCOARSENHEM, &ishem));
-  if (ishem) pc_gamg_agg->aggressive_coarsening_levels = 0; // aggressive and HEM does not make sense
+  if (ishem) {
+    pc_gamg_agg->aggressive_coarsening_levels = 0;                                         // aggressive and HEM does not make sense
+    PetscCall(MatCoarsenSetMaximumIterations(pc_gamg_agg->crs, pc_gamg_agg->crs->max_it)); // for code coverage
+    PetscCall(MatCoarsenSetThreshold(pc_gamg_agg->crs, vfilter));                          // for code coverage
+  }
   PetscCall(PetscLogEventEnd(petsc_gamg_setup_events[GAMG_COARSEN], 0, 0, 0, 0));
   PetscCall(PetscLogEventBegin(petsc_gamg_setup_events[GAMG_GRAPH], 0, 0, 0, 0));
   PetscCall(MatGetInfo(Amat, MAT_LOCAL, &info0)); /* global reduction */
@@ -1180,7 +1184,7 @@ static PetscErrorCode PCGAMGProlongator_AGG(PC pc, Mat Amat, Mat Gmat, PetscCoar
   for (ii = 0, nLocalSelected = 0; ii < nloc; ii++) {
     PetscBool ise;
     /* filter out singletons 0 or 1? */
-    PetscCall(PetscCDEmptyAt(agg_lists, ii, &ise));
+    PetscCall(PetscCDIsEmptyAt(agg_lists, ii, &ise));
     if (!ise) nLocalSelected++;
   }
 
@@ -1278,6 +1282,7 @@ static PetscErrorCode PCGAMGProlongator_AGG(PC pc, Mat Amat, Mat Gmat, PetscCoar
   PetscCall(PetscFree(flid_fgid));
 
   *a_P_out = Prol; /* out */
+  PetscCall(MatViewFromOptions(Prol, NULL, "-view_P"));
 
   PetscCall(PetscLogEventEnd(petsc_gamg_setup_events[GAMG_PROL], 0, 0, 0, 0));
   PetscFunctionReturn(PETSC_SUCCESS);
