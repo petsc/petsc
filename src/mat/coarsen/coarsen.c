@@ -164,41 +164,11 @@ PetscErrorCode MatCoarsenDestroy(MatCoarsen *agg)
   }
 
   if ((*agg)->ops->destroy) PetscCall((*(*agg)->ops->destroy)((*agg)));
-
   if ((*agg)->agg_lists) PetscCall(PetscCDDestroy((*agg)->agg_lists));
+  PetscCall(PetscObjectComposeFunction((PetscObject)(*agg), "MatCoarsenSetMaximumIterations_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)(*agg), "MatCoarsenSetThreshold_C", NULL));
 
   PetscCall(PetscHeaderDestroy(agg));
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-/*@
-  MatCoarsenCreate - Creates a coarsen context.
-
-  Collective
-
-  Input Parameter:
-. comm - MPI communicator
-
-  Output Parameter:
-. newcrs - location to put the context
-
-  Level: advanced
-
-.seealso: `MatCoarsen`, `MatCoarsenSetType()`, `MatCoarsenApply()`, `MatCoarsenDestroy()`,
-          `MatCoarsenSetAdjacency()`, `MatCoarsenGetData()`
-
-@*/
-PetscErrorCode MatCoarsenCreate(MPI_Comm comm, MatCoarsen *newcrs)
-{
-  MatCoarsen agg;
-
-  PetscFunctionBegin;
-  *newcrs = NULL;
-
-  PetscCall(MatInitializePackage());
-  PetscCall(PetscHeaderCreate(agg, MAT_COARSEN_CLASSID, "MatCoarsen", "Matrix/graph coarsen", "MatCoarsen", comm, MatCoarsenDestroy, MatCoarsenView));
-
-  *newcrs = agg;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -395,9 +365,12 @@ PetscErrorCode MatCoarsenSetFromOptions(MatCoarsen coarser)
   } else {
     def = ((PetscObject)coarser)->type_name;
   }
-
   PetscCall(PetscOptionsFList("-mat_coarsen_type", "Type of aggregator", "MatCoarsenSetType", MatCoarsenList, def, type, 256, &flag));
   if (flag) PetscCall(MatCoarsenSetType(coarser, type));
+
+  PetscCall(PetscOptionsInt("-mat_coarsen_max_it", "Number of iterations (for HEM)", "MatCoarsenSetMaximumIterations", coarser->max_it, &coarser->max_it, NULL));
+  PetscCall(PetscOptionsInt("-mat_coarsen_threshold", "Threshold (for HEM)", "MatCoarsenSetThreshold", coarser->max_it, &coarser->max_it, NULL));
+
   /*
    Set the type if it was never set.
    */
@@ -406,5 +379,102 @@ PetscErrorCode MatCoarsenSetFromOptions(MatCoarsen coarser)
   PetscTryTypeMethod(coarser, setfromoptions, PetscOptionsObject);
   PetscOptionsEnd();
 
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  MatCoarsenSetMaximumIterations - Max HEM iterations
+
+  Logically Collective
+
+  Input Parameters:
++ coarse - the coarsen context
+- b      - number of HEM iterations
+
+  Options Database Key:
+. -mat_coarsen_max_it <default=4> - Max HEM iterations
+
+  Level: intermediate
+
+.seealso: `MatCoarsen`, `MatCoarsenType`, `MatCoarsenApply()`, `MatCoarsenCreate()`, `MatCoarsenSetType()`
+@*/
+PetscErrorCode MatCoarsenSetMaximumIterations(MatCoarsen coarse, PetscInt b)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(coarse, MAT_COARSEN_CLASSID, 1);
+  PetscValidLogicalCollectiveInt(coarse, b, 2);
+  PetscTryMethod(coarse, "MatCoarsenSetMaximumIterations_C", (MatCoarsen, PetscInt), (coarse, b));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode MatCoarsenSetMaximumIterations_MATCOARSEN(MatCoarsen coarse, PetscInt b)
+{
+  PetscFunctionBegin;
+  coarse->max_it = b;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  MatCoarsenSetThreshold - Max HEM iterations
+
+  Logically Collective
+
+  Input Parameters:
++ coarse - the coarsen context
+- b      - threshold value
+
+  Options Database Key:
+. -mat_coarsen_threshold <-1> - Max HEM iterations
+
+  Level: intermediate
+
+.seealso: `MatCoarsen`, `MatCoarsenType`, `MatCoarsenApply()`, `MatCoarsenCreate()`, `MatCoarsenSetType()`
+@*/
+PetscErrorCode MatCoarsenSetThreshold(MatCoarsen coarse, PetscReal b)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(coarse, MAT_COARSEN_CLASSID, 1);
+  PetscValidLogicalCollectiveReal(coarse, b, 2);
+  PetscTryMethod(coarse, "MatCoarsenSetThreshold_C", (MatCoarsen, PetscReal), (coarse, b));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode MatCoarsenSetThreshold_MATCOARSEN(MatCoarsen coarse, PetscReal b)
+{
+  PetscFunctionBegin;
+  coarse->threshold = b;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  MatCoarsenCreate - Creates a coarsen context.
+
+  Collective
+
+  Input Parameter:
+. comm - MPI communicator
+
+  Output Parameter:
+. newcrs - location to put the context
+
+  Level: advanced
+
+.seealso: `MatCoarsen`, `MatCoarsenSetType()`, `MatCoarsenApply()`, `MatCoarsenDestroy()`,
+          `MatCoarsenSetAdjacency()`, `MatCoarsenGetData()`
+
+@*/
+PetscErrorCode MatCoarsenCreate(MPI_Comm comm, MatCoarsen *newcrs)
+{
+  MatCoarsen agg;
+
+  PetscFunctionBegin;
+  *newcrs = NULL;
+
+  PetscCall(MatInitializePackage());
+  PetscCall(PetscHeaderCreate(agg, MAT_COARSEN_CLASSID, "MatCoarsen", "Matrix/graph coarsen", "MatCoarsen", comm, MatCoarsenDestroy, MatCoarsenView));
+  PetscCall(PetscObjectComposeFunction((PetscObject)agg, "MatCoarsenSetMaximumIterations_C", MatCoarsenSetMaximumIterations_MATCOARSEN));
+  PetscCall(PetscObjectComposeFunction((PetscObject)agg, "MatCoarsenSetThreshold_C", MatCoarsenSetThreshold_MATCOARSEN));
+
+  *newcrs = agg;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

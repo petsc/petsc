@@ -223,7 +223,7 @@ static PetscErrorCode PCGAMGProlongator_Classical_Direct(PC pc, Mat A, Mat G, Pe
   cn = 0;
   for (i = 0; i < fn; i++) {
     /* filter out singletons */
-    PetscCall(PetscCDEmptyAt(agg_lists, i, &iscoarse));
+    PetscCall(PetscCDIsEmptyAt(agg_lists, i, &iscoarse));
     lcid[i] = -1;
     if (!iscoarse) cn++;
   }
@@ -234,7 +234,7 @@ static PetscErrorCode PCGAMGProlongator_Classical_Direct(PC pc, Mat A, Mat G, Pe
 
   cn = 0;
   for (i = 0; i < fn; i++) {
-    PetscCall(PetscCDEmptyAt(agg_lists, i, &iscoarse));
+    PetscCall(PetscCDIsEmptyAt(agg_lists, i, &iscoarse));
     if (!iscoarse) {
       lcid[i] = cs + cn;
       cn++;
@@ -596,7 +596,7 @@ static PetscErrorCode PCGAMGProlongator_Classical_Standard(PC pc, Mat A, Mat G, 
   /* create coarse vector */
   cn = 0;
   for (i = 0; i < fn; i++) {
-    PetscCall(PetscCDEmptyAt(agg_lists, i, &iscoarse));
+    PetscCall(PetscCDIsEmptyAt(agg_lists, i, &iscoarse));
     if (!iscoarse) cn++;
   }
   PetscCall(PetscMalloc1(fn, &gcid));
@@ -604,7 +604,7 @@ static PetscErrorCode PCGAMGProlongator_Classical_Standard(PC pc, Mat A, Mat G, 
   PetscCall(VecGetOwnershipRange(cv, &cs, &ce));
   cn = 0;
   for (i = 0; i < fn; i++) {
-    PetscCall(PetscCDEmptyAt(agg_lists, i, &iscoarse));
+    PetscCall(PetscCDIsEmptyAt(agg_lists, i, &iscoarse));
     if (!iscoarse) {
       gcid[i] = cs + cn;
       cn++;

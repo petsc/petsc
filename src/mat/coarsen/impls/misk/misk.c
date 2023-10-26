@@ -318,14 +318,15 @@ static PetscErrorCode MatCoarsenApply_MISK_private(IS perm, const PetscInt misk,
     }
     PetscCall(MatDestroy(&Rtot));
 
-    /* make fake matrix, get largest */
+    /* make fake matrix, get largest nnz */
     for (int lid = 0; lid < nloc; lid++) {
-      PetscCall(PetscCDSizeAt(agg_lists, lid, &jj));
+      PetscCall(PetscCDCountAt(agg_lists, lid, &jj));
       if (jj > max_osz) max_osz = jj;
     }
     PetscCall(MatGetSize(Gmat, &MM, &NN));
     if (max_osz > MM - nloc) max_osz = MM - nloc;
     PetscCall(MatGetOwnershipRange(Gmat, &Istart, NULL));
+    /* matrix of ghost adj for square graph */
     PetscCall(MatCreateAIJ(comm, nloc, nloc, PETSC_DETERMINE, PETSC_DETERMINE, 0, NULL, max_osz, NULL, &mat));
     for (PetscInt lid = 0, gidi = Istart; lid < nloc; lid++, gidi++) {
       PetscCDIntNd *pos;
