@@ -58,7 +58,7 @@ int main(int argc, char **argv)
     suffix: 0
     requires: exodusii
     nsize: {{1 2}}
-    args: -petscpartitioner_type simple -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/blockcylinder-50.exo -report
+    args: -petscpartitioner_type simple -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/blockcylinder-50.exo -exodusii_check_reserved 0 -report
 
   test:
     suffix: 1

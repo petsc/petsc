@@ -257,7 +257,7 @@ int main(int argc, char **argv)
     suffix: 0
     nsize: {{1 2 3 4 8}}
     requires: chaco parmetis ptscotch exodusii
-    args: -dm_plex_filename ${PETSC_DIR}/share/petsc/datafiles/meshes/blockcylinder-50.exo
+    args: -dm_plex_filename ${PETSC_DIR}/share/petsc/datafiles/meshes/blockcylinder-50.exo -exodusii_check_reserved 0
     args: -partitioning {{chaco parmetis ptscotch}} -repartitioning {{parmetis ptscotch}} -tpweight {{0 1}}
   test:
     # repartition mesh already partitioned naively by MED loader

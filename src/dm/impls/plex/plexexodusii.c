@@ -1499,6 +1499,7 @@ PetscErrorCode DMPlexCreateExodus(MPI_Comm comm, PetscInt exoid, PetscBool inter
   Vec          coordinates;
   PetscScalar *coords;
   PetscInt     coordSize, v;
+  PetscBool    checkReserved = PETSC_TRUE;
   /* Read from ex_get_init() */
   char title[PETSC_MAX_PATH_LEN + 1];
   int  dim = 0, dimEmbed = 0, numVertices = 0, numCells = 0;
@@ -1523,6 +1524,7 @@ PetscErrorCode DMPlexCreateExodus(MPI_Comm comm, PetscInt exoid, PetscBool inter
   PetscCall(DMPlexSetChart(*dm, 0, numCells + numVertices));
   /*   We do not want this label automatically computed, instead we compute it here */
   PetscCall(DMCreateLabel(*dm, "celltype"));
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-exodusii_check_reserved", &checkReserved, NULL));
 
   /* Read cell sets information */
   if (rank == 0) {
@@ -1683,7 +1685,7 @@ PetscErrorCode DMPlexCreateExodus(MPI_Comm comm, PetscInt exoid, PetscBool inter
     /* Read from ex_get_side_set_param() */
     int num_side_in_set;
     /* Read from ex_get_side_set_node_list() */
-    int *fs_vertex_count_list, *fs_vertex_list;
+    int *fs_vertex_count_list, *fs_vertex_list, *fs_side_list;
     /* Read side set labels */
     char   fs_name[MAX_STR_LENGTH + 1];
     size_t fs_name_len;
@@ -1694,19 +1696,22 @@ PetscErrorCode DMPlexCreateExodus(MPI_Comm comm, PetscInt exoid, PetscBool inter
     // Ids 1 and 2 are reserved by ExodusII for indicating things in 3D
     for (fs = 0; fs < num_fs; ++fs) {
       PetscCallExternal(ex_get_set_param, exoid, EX_SIDE_SET, fs_id[fs], &num_side_in_set, NULL);
-      PetscCall(PetscMalloc2(num_side_in_set, &fs_vertex_count_list, num_side_in_set * 4, &fs_vertex_list));
+      PetscCall(PetscMalloc3(num_side_in_set, &fs_vertex_count_list, num_side_in_set * 4, &fs_vertex_list, num_side_in_set, &fs_side_list));
       PetscCallExternal(ex_get_side_set_node_list, exoid, fs_id[fs], fs_vertex_count_list, fs_vertex_list);
+      PetscCallExternal(ex_get_set, exoid, EX_SIDE_SET, fs_id[fs], NULL, fs_side_list);
+
       /* Get the specific name associated with this side set ID. */
       int fs_name_err = ex_get_name(exoid, EX_SIDE_SET, fs_id[fs], fs_name);
       if (!fs_name_err) {
         PetscCall(PetscStrlen(fs_name, &fs_name_len));
         if (fs_name_len == 0) PetscCall(PetscStrncpy(fs_name, "Face Sets", MAX_STR_LENGTH));
       }
-      PetscCheck(fs_id[fs] != 1 && fs_id[fs] != 2, comm, PETSC_ERR_ARG_WRONG, "Side set %s marker cannot be %d since this is reserved by ExodusII", fs_name, fs_id[fs]);
       for (f = 0, voff = 0; f < num_side_in_set; ++f) {
         const PetscInt *faces    = NULL;
         PetscInt        faceSize = fs_vertex_count_list[f], numFaces;
         PetscInt        faceVertices[4], v;
+
+        if (checkReserved) PetscCheck(fs_side_list[f] != 1 && fs_side_list[f] != 2, comm, PETSC_ERR_ARG_WRONG, "Side set %s marker cannot be %d since this is reserved by ExodusII", fs_name, fs_side_list[f]);
 
         PetscCheck(faceSize <= 4, comm, PETSC_ERR_ARG_WRONG, "ExodusII side cannot have %" PetscInt_FMT " > 4 vertices", faceSize);
         for (v = 0; v < faceSize; ++v, ++voff) faceVertices[v] = fs_vertex_list[voff] + numCells - 1;
@@ -1717,7 +1722,7 @@ PetscErrorCode DMPlexCreateExodus(MPI_Comm comm, PetscInt exoid, PetscBool inter
         if (!fs_name_err) PetscCall(DMSetLabelValue(*dm, fs_name, faces[0], fs_id[fs]));
         PetscCall(DMPlexRestoreJoin(*dm, faceSize, faceVertices, &numFaces, &faces));
       }
-      PetscCall(PetscFree2(fs_vertex_count_list, fs_vertex_list));
+      PetscCall(PetscFree3(fs_vertex_count_list, fs_vertex_list, fs_side_list));
     }
     PetscCall(PetscFree(fs_id));
   }
