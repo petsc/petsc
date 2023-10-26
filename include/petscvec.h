@@ -701,8 +701,8 @@ typedef enum {
   VECOP_SET        = 10,
   VECOP_VIEW       = 33,
   VECOP_LOAD       = 41,
-  VECOP_VIEWNATIVE = 68,
-  VECOP_LOADNATIVE = 69
+  VECOP_VIEWNATIVE = 69,
+  VECOP_LOADNATIVE = 70
 } VecOperation;
 PETSC_EXTERN PetscErrorCode VecSetOperation(Vec, VecOperation, void (*)(void));
 
@@ -715,6 +715,7 @@ PETSC_EXTERN PetscErrorCode VecCreateGhost(MPI_Comm, PetscInt, PetscInt, PetscIn
 PETSC_EXTERN PetscErrorCode VecCreateGhostWithArray(MPI_Comm, PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscScalar[], Vec *);
 PETSC_EXTERN PetscErrorCode VecCreateGhostBlock(MPI_Comm, PetscInt, PetscInt, PetscInt, PetscInt, const PetscInt[], Vec *);
 PETSC_EXTERN PetscErrorCode VecCreateGhostBlockWithArray(MPI_Comm, PetscInt, PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscScalar[], Vec *);
+PETSC_EXTERN PetscErrorCode VecGhostGetGhostIS(Vec, IS *);
 PETSC_EXTERN PetscErrorCode VecGhostGetLocalForm(Vec, Vec *);
 PETSC_EXTERN PetscErrorCode VecGhostRestoreLocalForm(Vec, Vec *);
 PETSC_EXTERN PetscErrorCode VecGhostIsLocalForm(Vec, Vec, PetscBool *);
