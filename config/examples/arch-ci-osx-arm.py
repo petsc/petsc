@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 
 import os
+petsc_hash_pkgs=os.path.join(os.getenv('HOME'),'petsc-hash-pkgs')
 
 configure_options = [
-  '--package-prefix-hash=/Volumes/Scratch/svcpetsc/petsc-hash-pkgs',
-  '--with-mpi-dir=/Volumes/Scratch/svcpetsc/soft/mpich-4.0.1',
+  '--package-prefix-hash='+petsc_hash_pkgs,
+  '--with-mpi-dir=/Users/petsc/soft/mpich-4.1.2',
   '--with-64-bit-indices=1',
   '--with-clanguage=cxx',
   'CXXFLAGS=-Wall -Wwrite-strings -Wno-strict-aliasing -Wno-unknown-pragmas -fstack-protector -fno-stack-check -Wno-deprecated -fvisibility=hidden',

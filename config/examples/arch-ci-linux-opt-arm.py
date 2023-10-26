@@ -23,9 +23,9 @@ configure_options = [
   '--download-triangle=1',
   '--download-superlu=1',
   #'--download-superlu_dist=1', Release 7.2 has MPI leaks
-  #'--download-scalapack=1',
+  '--download-scalapack=1',
   '--download-elemental=1',
-  #'--download-spai=1',
+  #'--download-spai=1', has MPI leaks
   '--download-parms=1',
   '--download-libceed',
   '--download-chaco=1',
