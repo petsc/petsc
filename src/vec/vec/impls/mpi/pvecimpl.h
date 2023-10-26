@@ -20,6 +20,7 @@ typedef struct {
 typedef struct {
   VECHEADER
   PetscInt   nghost;      /* number of ghost points on this process */
+  IS         ghost;       /* global indices of ghost values */
   Vec        localrep;    /* local representation of vector */
   VecScatter localupdate; /* scatter to update ghost values */
 
