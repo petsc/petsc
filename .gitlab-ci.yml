@@ -390,17 +390,17 @@ pause-for-approval:
 # (in a blue box beneath it)
 #
 
-.disable-osx-m1:
+osx-arm:
   extends:
     - .stage-3
     - .osx_test
     - .coverage-disable
   tags:
-    - os:macos-m1
+    - os:macos-arm
   variables:
-    TEST_ARCH: arch-ci-osx-m1
+    TEST_ARCH: arch-ci-osx-arm
     PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump
-    INIT_SCRIPT: /Volumes/Scratch/svcpetsc/soft/py3venv/cython3setup.sh
+    INIT_SCRIPT: .zprofile
 
 freebsd-cxx-cmplx-64idx-dbg:
   extends:
@@ -642,17 +642,17 @@ linux-without-fc:
   variables:
     TEST_ARCH: arch-ci-linux-without-fc
 
-.disable-linux-cmplx-single:
+linux-cmplx-single-arm:
   extends:
     - .stage-3
     - .linux_test
-    # gcovr is not on si
+    # gcovr does not work on arm/linux
     - .coverage-disable
   tags:
-    - name:si
+    - arch:arm, os:linux
   variables:
     FLEXIBLAS: netlib
-    TEST_ARCH: arch-ci-linux-cmplx-single
+    TEST_ARCH: arch-ci-linux-cmplx-single-arm
 
 linux-gcc-cxx-avx2:
   extends:
@@ -860,15 +860,16 @@ linux-intel:
     TEST_ARCH: arch-ci-linux-intel
     LOAD_MODULES: intel-oneapi-compilers/2023.0.0 intel-oneapi-mkl/2022.0.2
 
-linux-opt-misc:
+linux-opt-arm:
   extends:
     - .stage-3
     - .linux_test
+    # gcovr does not work on arm/linux
+    - .coverage-disable
   tags:
-    - gce-u22-stage3, linux-fast
+    - arch:arm, os:linux
   variables:
-    TEST_ARCH: arch-ci-linux-opt-misc
-    LOAD_MODULES: gcc/8.5.0
+    TEST_ARCH: arch-ci-linux-opt-arm
 
 linux-pkgs-64idx:
   extends:
@@ -989,16 +990,16 @@ osx-cxx-cmplx-pkgs-dbg:
     TEST_ARCH: arch-ci-osx-cxx-cmplx-pkgs-dbg
     INIT_SCRIPT: .zprofile
 
-osx-cxx-pkgs-opt:
+osx-cxx-pkgs-opt-arm:
   extends:
     - .stage-3
     - .osx_test
     - .coverage-disable
   tags:
-    - os:macos-x64
+    - os:macos-arm
   variables:
     PETSC_OPTIONS: -vecscatter_mpi1 false -options_left false
-    TEST_ARCH: arch-ci-osx-cxx-pkgs-opt
+    TEST_ARCH: arch-ci-osx-cxx-pkgs-opt-arm
     MAKE_CXXFLAGS: -Werror -Wno-pass-failed
     INIT_SCRIPT: .zprofile
 
@@ -1052,7 +1053,6 @@ coverage-analyze:
     - linux-pkgs-valgrind
     - linux-nagfor
     - linux-xsdk-dbg
-    - linux-opt-misc
     - linux-pkgs-64idx
     - linux-pkgs-opt
     - linux-64idx-i8

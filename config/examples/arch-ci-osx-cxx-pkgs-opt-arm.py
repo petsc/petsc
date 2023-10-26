@@ -20,6 +20,7 @@ configure_options = [
   #'--download-mpich=1',
   #'--download-mpich-device=ch3:sock',
   #'--download-mpich-configure-arguments=--disable-two-level-namespace', # workaround for AMREX build failure with MPICH 4.0.1 and above
+  '--with-mpi-dir=/Users/petsc/soft/mpich-4.1.2',
   '--download-metis=1',
   '--download-parmetis=1',
   '--download-bison=1',
@@ -28,7 +29,7 @@ configure_options = [
   '--download-superlu=1',
   '--download-superlu_dist=1',
   '--download-scalapack=1',
-  '--download-mumps=1',
+  #'--download-mumps=1', #'make check gives error
   '--download-parms=1',
   '--download-hdf5=1',
   '--download-med=1',
@@ -56,6 +57,12 @@ configure_options = [
   '--download-kokkos=1',
   '--download-kokkos-kernels=1',
   '--download-htool=1',
+  '--download-exodusii',
+  '--download-ks',
+  '--download-ml',
+  '--download-netcdf',
+  '--download-pnetcdf',
+  '--download-zlib',
   '--with-strict-petscerrorcode',
   ]
 

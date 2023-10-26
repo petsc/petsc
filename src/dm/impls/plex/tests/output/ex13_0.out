@@ -198,7 +198,7 @@ Label 'Face Sets':
 4 0
 5 32
 6 0
-7 -128
+7 128
 [0]BT for parallel flipped cells:
 0 0
 1 2
@@ -207,7 +207,7 @@ Label 'Face Sets':
 4 0
 5 32
 6 0
-7 -128
+7 128
 DM Object: Simplicial Mesh 1 MPI process
   type: plex
 Simplicial Mesh in 2 dimensions:

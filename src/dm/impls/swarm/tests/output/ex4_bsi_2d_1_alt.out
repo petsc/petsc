@@ -1,0 +1,39 @@
+DM Object: box 1 MPI process
+  type: plex
+box in 2 dimensions:
+  Number of 0-cells per rank: 4
+  Number of 1-cells per rank: 4
+  Number of 2-cells per rank: 1
+Labels:
+  marker: 1 strata with value/size (1 (8))
+  Face Sets: 4 strata with value/size (4 (1), 2 (1), 1 (1), 3 (1))
+  depth: 3 strata with value/size (0 (4), 1 (4), 2 (1))
+  celltype: 3 strata with value/size (4 (1), 0 (4), 1 (4))
+Time     Step Part     Energy Mod Energy
+0.000000    0    0  1969.6730  1969.6730
+0.000500   50    0  1969.7133  1969.6730
+0.001000  100    0  1969.7534  1969.6730
+p0 error [0.00 0.00] sol [0.978703 -4.014168] exact [0.978683 -4.014168] energy/exact energy 1969.75 / 1969.67 (0.0040849084%)
+Time     Step Part     Energy Mod Energy
+0.000000    0    0  1969.6730  1969.6730
+0.000250   50    0  1969.6831  1969.6730
+0.000500  100    0  1969.6931  1969.6730
+0.000750  150    0  1969.7032  1969.6730
+0.001000  200    0  1969.7132  1969.6730
+p0 error [0.00 0.00] sol [0.978693 -4.014168] exact [0.978683 -4.014168] energy/exact energy 1969.71 / 1969.67 (0.0020424332%)
+Time     Step Part     Energy Mod Energy
+0.000000    0    0  1969.6730  1969.6730
+0.000125   50    0  1969.6755  1969.6730
+0.000250  100    0  1969.6780  1969.6730
+0.000375  150    0  1969.6806  1969.6730
+0.000500  200    0  1969.6831  1969.6730
+0.000625  250    0  1969.6856  1969.6730
+0.000750  300    0  1969.6881  1969.6730
+0.000875  350    0  1969.6906  1969.6730
+0.001000  400    0  1969.6931  1969.6730
+p0 error [0.00 0.00] sol [0.978688 -4.014168] exact [0.978683 -4.014168] energy/exact energy 1969.69 / 1969.67 (0.0010212113%)
+L_2 convergence rate: 1.0
+Time     Step Part     Energy Mod Energy
+0.000000    0    0  1969.6730  1969.6730
+0.000500   50    0  1969.7133  1969.6730
+0.001000  100    0  1969.7534  1969.6730
