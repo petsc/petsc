@@ -40,6 +40,8 @@ typedef enum {
   PETSCSF_BACKEND_KOKKOS
 } PetscSFBackend;
 
+typedef struct _n_PetscSFLink *PetscSFLink;
+
 struct _PetscSFOps {
   PetscErrorCode (*Reset)(PetscSF);
   PetscErrorCode (*Destroy)(PetscSF);
@@ -60,6 +62,7 @@ struct _PetscSFOps {
   PetscErrorCode (*GetGraph)(PetscSF, PetscInt *, PetscInt *, const PetscInt **, const PetscSFNode **);
   PetscErrorCode (*CreateEmbeddedRootSF)(PetscSF, PetscInt, const PetscInt *, PetscSF *);
   PetscErrorCode (*CreateEmbeddedLeafSF)(PetscSF, PetscInt, const PetscInt *, PetscSF *);
+  PetscErrorCode (*SetCommunicationOps)(PetscSF, PetscSFLink);
 
   PetscErrorCode (*Malloc)(PetscMemType, size_t, void **);
   PetscErrorCode (*Free)(PetscMemType, void *);
@@ -116,6 +119,7 @@ struct _p_PetscSF {
   PetscBool      setupcalled;          /* Type and communication structures have been set up */
   PetscSFPattern pattern;              /* Pattern of the graph */
   PetscBool      persistent;           /* Does this SF use MPI persistent requests for communication */
+  PetscBool      collective;           /* Is this SF collective? Currently only SFBASIC/SFWINDOW are not collective */
   PetscLayout    map;                  /* Layout of leaves over all processes when building a patterned graph */
   PetscBool      unknown_input_stream; /* If true, SF does not know which streams root/leafdata is on. Default is false, since we only use petsc default stream */
   PetscBool      use_gpu_aware_mpi;    /* If true, SF assumes it can pass GPU pointers to MPI */

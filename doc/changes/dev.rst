@@ -27,6 +27,8 @@ Changes: Development
 
 .. rubric:: VecScatter / PetscSF:
 
+- Add MPI-4.0 persistent neighborhood collectives support. Use -sf_neighbor_persistent along with -sf_type neighbor to enable it
+
 .. rubric:: PF:
 
 .. rubric:: Vec:

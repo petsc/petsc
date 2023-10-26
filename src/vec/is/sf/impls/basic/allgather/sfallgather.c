@@ -3,8 +3,6 @@
 /* Reuse the type. The difference is some fields (i.e., displs, recvcounts) are not used in Allgather on rank != 0, which is not a big deal */
 typedef PetscSF_Allgatherv PetscSF_Allgather;
 
-PETSC_INTERN PetscErrorCode PetscSFBcastBegin_Gather(PetscSF, MPI_Datatype, PetscMemType, const void *, PetscMemType, void *, MPI_Op);
-
 PetscErrorCode PetscSFSetUp_Allgather(PetscSF sf)
 {
   PetscInt           i;
@@ -36,7 +34,7 @@ static PetscErrorCode PetscSFBcastBegin_Allgather(PetscSF sf, MPI_Datatype unit,
   PetscMPIInt  sendcount;
   MPI_Comm     comm;
   void        *rootbuf = NULL, *leafbuf = NULL; /* buffer seen by MPI */
-  MPI_Request *req;
+  MPI_Request *req = NULL;
 
   PetscFunctionBegin;
   PetscCall(PetscSFLinkCreate(sf, unit, rootmtype, rootdata, leafmtype, leafdata, op, PETSCSF_BCAST, &link));
@@ -58,7 +56,7 @@ static PetscErrorCode PetscSFReduceBegin_Allgather(PetscSF sf, MPI_Datatype unit
   PetscMPIInt        rank, count, recvcount;
   void              *rootbuf = NULL, *leafbuf = NULL; /* buffer seen by MPI */
   PetscSF_Allgather *dat = (PetscSF_Allgather *)sf->data;
-  MPI_Request       *req;
+  MPI_Request       *req = NULL;
 
   PetscFunctionBegin;
   PetscCall(PetscSFLinkCreate(sf, unit, rootmtype, rootdata, leafmtype, leafdata, op, PETSCSF_REDUCE, &link));
@@ -88,11 +86,22 @@ static PetscErrorCode PetscSFReduceBegin_Allgather(PetscSF sf, MPI_Datatype unit
 
 static PetscErrorCode PetscSFBcastToZero_Allgather(PetscSF sf, MPI_Datatype unit, PetscMemType rootmtype, const void *rootdata, PetscMemType leafmtype, void *leafdata)
 {
-  PetscSFLink link;
-  PetscMPIInt rank;
+  PetscSFLink  link;
+  PetscMPIInt  rank;
+  PetscMPIInt  sendcount;
+  MPI_Comm     comm;
+  void        *rootbuf = NULL, *leafbuf = NULL;
+  MPI_Request *req = NULL;
 
   PetscFunctionBegin;
-  PetscCall(PetscSFBcastBegin_Gather(sf, unit, rootmtype, rootdata, leafmtype, leafdata, MPI_REPLACE));
+  PetscCall(PetscSFLinkCreate(sf, unit, rootmtype, rootdata, leafmtype, leafdata, MPI_REPLACE, PETSCSF_BCAST, &link));
+  PetscCall(PetscSFLinkPackRootData(sf, link, PETSCSF_REMOTE, rootdata));
+  PetscCall(PetscSFLinkCopyRootBufferInCaseNotUseGpuAwareMPI(sf, link, PETSC_TRUE /* device2host before sending */));
+  PetscCall(PetscObjectGetComm((PetscObject)sf, &comm));
+  PetscCall(PetscMPIIntCast(sf->nroots, &sendcount));
+  PetscCall(PetscSFLinkGetMPIBuffersAndRequests(sf, link, PETSCSF_ROOT2LEAF, &rootbuf, &leafbuf, &req, NULL));
+  PetscCall(PetscSFLinkSyncStreamBeforeCallMPI(sf, link, PETSCSF_ROOT2LEAF));
+  PetscCallMPI(MPIU_Igather(rootbuf == leafbuf ? MPI_IN_PLACE : rootbuf, sendcount, unit, leafbuf, sendcount, unit, 0 /*rank 0*/, comm, req));
   PetscCall(PetscSFLinkGetInUse(sf, unit, rootdata, leafdata, PETSC_OWN_POINTER, &link));
   PetscCall(PetscSFLinkFinishCommunication(sf, link, PETSCSF_ROOT2LEAF));
   PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)sf), &rank));
@@ -126,6 +135,8 @@ PETSC_INTERN PetscErrorCode PetscSFCreate_Allgather(PetscSF sf)
   sf->ops->BcastBegin  = PetscSFBcastBegin_Allgather;
   sf->ops->ReduceBegin = PetscSFReduceBegin_Allgather;
   sf->ops->BcastToZero = PetscSFBcastToZero_Allgather;
+
+  sf->collective = PETSC_TRUE;
 
   PetscCall(PetscNew(&dat));
   sf->data = (void *)dat;

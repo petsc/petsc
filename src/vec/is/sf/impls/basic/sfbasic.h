@@ -2,8 +2,6 @@
 
 #include <petsc/private/sfimpl.h> /*I "petscsf.h" I*/
 
-typedef struct _n_PetscSFLink *PetscSFLink;
-
 #define SFBASICHEADER \
   PetscMPIInt    niranks;          /* Number of incoming ranks (ranks accessing my roots) */ \
   PetscMPIInt    ndiranks;         /* Number of incoming ranks (ranks accessing my roots) in distinguished set */ \
@@ -68,9 +66,12 @@ PETSC_INTERN PetscErrorCode PetscSFSetUp_Basic(PetscSF);
 PETSC_INTERN PetscErrorCode PetscSFView_Basic(PetscSF, PetscViewer);
 PETSC_INTERN PetscErrorCode PetscSFReset_Basic(PetscSF);
 PETSC_INTERN PetscErrorCode PetscSFDestroy_Basic(PetscSF);
+PETSC_INTERN PetscErrorCode PetscSFBcastBegin_Basic(PetscSF, MPI_Datatype, PetscMemType, const void *, PetscMemType, void *, MPI_Op);
 PETSC_INTERN PetscErrorCode PetscSFBcastEnd_Basic(PetscSF, MPI_Datatype, const void *, void *, MPI_Op);
+PETSC_INTERN PetscErrorCode PetscSFReduceBegin_Basic(PetscSF, MPI_Datatype, PetscMemType, const void *, PetscMemType, void *, MPI_Op);
 PETSC_INTERN PetscErrorCode PetscSFReduceEnd_Basic(PetscSF, MPI_Datatype, const void *, void *, MPI_Op);
 PETSC_INTERN PetscErrorCode PetscSFFetchAndOpBegin_Basic(PetscSF, MPI_Datatype, PetscMemType, void *, PetscMemType, const void *, void *, MPI_Op);
+PETSC_INTERN PetscErrorCode PetscSFFetchAndOpEnd_Basic(PetscSF, MPI_Datatype, void *, const void *, void *, MPI_Op);
 PETSC_INTERN PetscErrorCode PetscSFCreateEmbeddedRootSF_Basic(PetscSF, PetscInt, const PetscInt *, PetscSF *);
 PETSC_INTERN PetscErrorCode PetscSFGetLeafRanks_Basic(PetscSF, PetscInt *, const PetscMPIInt **, const PetscInt **, const PetscInt **);
 

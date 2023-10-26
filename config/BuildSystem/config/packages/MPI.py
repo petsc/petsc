@@ -541,6 +541,14 @@ Unable to run hostname to check the network')
     ''' + ('if (MPI_Reduce_local_c(0,0,0,MPI_INT,MPI_SUM)) return 1;\n' if self.haveReduceLocal == 1 else '')):
       self.addDefine('HAVE_MPI_LARGE_COUNT', 1)
 
+    if self.checkLink('#include <mpi.h>\n',
+    '''
+      MPI_Request req;
+      MPI_Info    info;
+      if (MPI_Neighbor_alltoallv_init(0,0,0,MPI_INT,0,0,0,MPI_INT,MPI_COMM_WORLD,info,&req)) return 1;
+    '''):
+      self.addDefine('HAVE_MPI_PERSISTENT_NEIGHBORHOOD_COLLECTIVES', 1)
+
     self.compilers.CPPFLAGS = oldFlags
     self.compilers.LIBS = oldLibs
     self.logWrite(self.framework.restoreLog())
