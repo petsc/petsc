@@ -29,6 +29,7 @@ configure_options = [
   '--download-amrex',
   '--download-hypre',
   '--download-ks',
+  '--download-sprng',
   '--with-ssl=1',
   '--with-tau-perfstubs=0',
   '--with-strict-petscerrorcode',
