@@ -51,8 +51,10 @@ static struct _PetscRandomOps PetscRandomOps_Values = {
 /*MC
    PETSCSPRNG - access to the publicly available random number generator sprng
 
-   Options Database Keys:
+   Options Database Key:
 . -random_type <rand,rand48,sprng> - select the random number generator at runtime
+
+  Level: beginner
 
    Note:
    PETSc must be ./configure with the option --download-sprng to use this random number generator.
@@ -60,8 +62,6 @@ static struct _PetscRandomOps PetscRandomOps_Values = {
    Developer Note:
    This is NOT currently using a parallel random number generator. Sprng does have
    an MPI version we should investigate.
-
-  Level: beginner
 
 .seealso: `RandomCreate()`, `RandomSetType()`, `PETSCRAND`, `PETSCRAND48`, `PetscRandomSetFromOptions()`
 M*/

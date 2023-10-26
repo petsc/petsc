@@ -18,13 +18,12 @@
 PetscClassId PETSC_RANDOM_CLASSID;
 
 /*@C
-  PetscRandomDestroy - Destroys a context that has been formed by
-  `PetscRandomCreate()`.
+  PetscRandomDestroy - Destroys a `PetscRandom` object that was created by `PetscRandomCreate()`.
 
   Collective
 
   Input Parameter:
-. r - the random number generator context
+. r - the random number generator object
 
   Level: intermediate
 
@@ -151,10 +150,10 @@ static PetscErrorCode PetscRandomSetTypeFromOptions_Private(PetscRandom rnd, Pet
 - -random_no_imaginary_part - makes the imaginary part of the random number zero, this is useful when you want the
                               same code to produce the same result when run with real numbers or complex numbers for regression testing purposes
 
+  Level: beginner
+
   Note:
   Must be called after `PetscRandomCreate()` but before the rnd is used.
-
-  Level: beginner
 
 .seealso: `PetscRandom`, `PetscRandomCreate()`, `PetscRandomSetType()`
 @*/
@@ -230,6 +229,8 @@ PetscErrorCode PetscRandomViewFromOptions(PetscRandom A, PetscObject obj, const 
 + rnd    - The random number generator context
 - viewer - an optional visualization context
 
+  Level: beginner
+
   Note:
   The available visualization contexts include
 +     `PETSC_VIEWER_STDOUT_SELF` - standard output (default)
@@ -237,8 +238,6 @@ PetscErrorCode PetscRandomViewFromOptions(PetscRandom A, PetscObject obj, const 
   output where only the first processor opens
   the file.  All other processors send their
   data to the first processor to print.
-
-  Level: beginner
 
 .seealso: `PetscRandom`, `PetscRealView()`, `PetscScalarView()`, `PetscIntView()`
 @*/
@@ -287,7 +286,7 @@ PetscErrorCode PetscRandomView(PetscRandom rnd, PetscViewer viewer)
 }
 
 /*@
-  PetscRandomCreate - Creates a context for generating random numbers,
+  PetscRandomCreate - Creates an object for generating random numbers,
   and initializes the random-number generator.
 
   Collective
@@ -296,7 +295,7 @@ PetscErrorCode PetscRandomView(PetscRandom rnd, PetscViewer viewer)
 . comm - MPI communicator
 
   Output Parameter:
-. r - the random number generator context
+. r - the random number generator object
 
   Level: intermediate
 

@@ -115,13 +115,13 @@ static struct _PetscRandomOps PetscRandomOps_Values = {
 /*MC
    PETSCRANDOM123 - access to Random123 counter based pseudorandom number generators (currently threefry4x64)
 
-   Options Database Keys:
+   Options Database Key:
 . -random_type <rand,rand48,sprng,random123> - select the random number generator at runtim
 
-   Note:
-   PETSc must be ./configure with the option --download-random123 to use this random number generator.
-
   Level: beginner
+
+  Note:
+   PETSc must be ./configure with the option --download-random123 to use this random number generator.
 
 .seealso: `RandomCreate()`, `RandomSetType()`, `PETSCRAND`, `PETSCRAND48`, `PETSCSPRNG`, `PetscRandomSetFromOptions()`
 M*/
