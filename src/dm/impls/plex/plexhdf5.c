@@ -363,7 +363,6 @@ PetscErrorCode VecView_Plex_Local_HDF5_Internal(Vec v, PetscViewer viewer)
         fgroup = (ft[t] == PETSC_VTK_POINT_VECTOR_FIELD) || (ft[t] == PETSC_VTK_POINT_FIELD) ? "/vertex_fields" : "/cell_fields";
         PetscCall(PetscSectionGetFieldName(section, f, &fname));
         if (!fname || ft[t] == PETSC_VTK_INVALID) continue;
-        PetscCall(PetscViewerHDF5PushGroup(viewer, fgroup));
 
         if (!t) {
           PetscCall(PetscViewerHDF5PushGroup(viewer, fgroup));
