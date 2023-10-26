@@ -109,7 +109,7 @@ cdef extern from * nogil:
     PetscErrorCode DMGetCoordinateDim(PetscDM,PetscInt*)
     PetscErrorCode DMSetCoordinateDim(PetscDM,PetscInt)
     PetscErrorCode DMLocalizeCoordinates(PetscDM)
-    PetscErrorCode DMProjectCoordinates(PetscDM, PetscFE)
+    PetscErrorCode DMSetCoordinateDisc(PetscDM,PetscFE,PetscBool)
 
     PetscErrorCode DMCreateInterpolation(PetscDM,PetscDM,PetscMat*,PetscVec*)
     PetscErrorCode DMCreateInjection(PetscDM,PetscDM,PetscMat*)

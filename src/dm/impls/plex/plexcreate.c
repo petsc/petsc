@@ -182,53 +182,43 @@ PetscErrorCode DMPlexInterpolateInPlace_Internal(DM dm)
   Input Parameters:
 + dm        - The `DMPLEX`
 . degree    - The degree of the finite element or `PETSC_DECIDE`
+. project   - Flag to project current coordinates into the space
 - coordFunc - An optional function to map new points from refinement to the surface
 
   Level: advanced
 
 .seealso: [](ch_unstructured), `DM`, `DMPLEX`, `PetscPointFunc`, `PetscFECreateLagrange()`, `DMGetCoordinateDM()`
 @*/
-PetscErrorCode DMPlexCreateCoordinateSpace(DM dm, PetscInt degree, PetscPointFunc coordFunc)
+PetscErrorCode DMPlexCreateCoordinateSpace(DM dm, PetscInt degree, PetscBool project, PetscPointFunc coordFunc)
 {
-  DM_Plex     *mesh = (DM_Plex *)dm->data;
-  DM           cdm;
-  PetscDS      cds;
-  PetscFE      fe;
-  PetscClassId id;
+  DM_Plex *mesh = (DM_Plex *)dm->data;
+  PetscFE  fe   = NULL;
+  DM       cdm;
+  PetscInt dim, dE, qorder;
 
   PetscFunctionBegin;
+  PetscCall(DMGetDimension(dm, &dim));
+  PetscCall(DMGetCoordinateDim(dm, &dE));
+  qorder = degree;
   PetscCall(DMGetCoordinateDM(dm, &cdm));
-  PetscCall(DMGetDS(cdm, &cds));
-  PetscCall(PetscDSGetDiscretization(cds, 0, (PetscObject *)&fe));
-  PetscCall(PetscObjectGetClassId((PetscObject)fe, &id));
-  if (id != PETSCFE_CLASSID) {
-    PetscInt dim, dE, qorder;
+  PetscObjectOptionsBegin((PetscObject)cdm);
+  PetscCall(PetscOptionsBoundedInt("-default_quadrature_order", "Quadrature order is one less than quadrature points per edge", "DMPlexCreateCoordinateSpace", qorder, &qorder, NULL, 0));
+  PetscOptionsEnd();
+  if (degree >= 0) {
+    DMPolytopeType ct = DM_POLYTOPE_UNKNOWN;
+    PetscInt       cStart, cEnd, gct;
 
-    PetscCall(DMGetDimension(dm, &dim));
-    PetscCall(DMGetCoordinateDim(dm, &dE));
-    qorder = degree;
-    PetscObjectOptionsBegin((PetscObject)cdm);
-    PetscCall(PetscOptionsBoundedInt("-default_quadrature_order", "Quadrature order is one less than quadrature points per edge", "DMPlexCreateCoordinateSpace", qorder, &qorder, NULL, 0));
-    PetscOptionsEnd();
-    if (degree == PETSC_DECIDE) fe = NULL;
-    else {
-      DMPolytopeType ct;
-      PetscInt       cStart, cEnd, ctTmp;
-
-      PetscCall(DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd));
-      // Want to match cell types
-      if (cEnd > cStart) PetscCall(DMPlexGetCellType(dm, cStart, &ct));
-      else ct = DM_POLYTOPE_UNKNOWN;
-      ctTmp = (PetscInt)ct;
-      PetscCall(MPIU_Allreduce(MPI_IN_PLACE, &ctTmp, 1, MPIU_INT, MPI_MIN, PetscObjectComm((PetscObject)dm)));
-      ct = (DMPolytopeType)ctTmp;
-      // Work around current bug
-      if (ct == DM_POLYTOPE_SEG_PRISM_TENSOR || ct == DM_POLYTOPE_TRI_PRISM_TENSOR || ct == DM_POLYTOPE_QUAD_PRISM_TENSOR) fe = NULL;
-      else PetscCall(PetscFECreateLagrangeByCell(PETSC_COMM_SELF, dim, dE, ct, degree, qorder, &fe));
-    }
-    if (fe) PetscCall(DMProjectCoordinates(dm, fe));
-    PetscCall(PetscFEDestroy(&fe));
+    PetscCall(DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd));
+    if (cEnd > cStart) PetscCall(DMPlexGetCellType(dm, cStart, &ct));
+    gct = (PetscInt)ct;
+    PetscCall(MPIU_Allreduce(MPI_IN_PLACE, &gct, 1, MPIU_INT, MPI_MIN, PetscObjectComm((PetscObject)dm)));
+    ct = (DMPolytopeType)gct;
+    // Work around current bug in PetscDualSpaceSetUp_Lagrange()
+    //   Can be seen in plex_tutorials-ex10_1
+    if (ct != DM_POLYTOPE_SEG_PRISM_TENSOR && ct != DM_POLYTOPE_TRI_PRISM_TENSOR && ct != DM_POLYTOPE_QUAD_PRISM_TENSOR) PetscCall(PetscFECreateLagrangeByCell(PETSC_COMM_SELF, dim, dE, ct, degree, qorder, &fe));
   }
+  PetscCall(DMSetCoordinateDisc(dm, fe, project));
+  PetscCall(PetscFEDestroy(&fe));
   mesh->coordFunc = coordFunc;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -2118,7 +2108,7 @@ static PetscErrorCode DMPlexCreateHexCylinderMesh_Internal(DM dm, DMBoundaryType
     PetscDS     cds;
     PetscScalar c[2] = {1.0, 1.0};
 
-    PetscCall(DMPlexCreateCoordinateSpace(dm, 1, snapToCylinder));
+    PetscCall(DMPlexCreateCoordinateSpace(dm, 1, PETSC_TRUE, snapToCylinder));
     PetscCall(DMGetCoordinateDM(dm, &cdm));
     PetscCall(DMGetDS(cdm, &cds));
     PetscCall(PetscDSSetConstants(cds, 2, c));
@@ -2789,7 +2779,7 @@ static PetscErrorCode DMPlexCreateSphereMesh_Internal(DM dm, PetscInt dim, Petsc
     PetscDS     cds;
     PetscScalar c = R;
 
-    PetscCall(DMPlexCreateCoordinateSpace(dm, 1, snapToSphere));
+    PetscCall(DMPlexCreateCoordinateSpace(dm, 1, PETSC_TRUE, snapToSphere));
     PetscCall(DMGetCoordinateDM(dm, &cdm));
     PetscCall(DMGetDS(cdm, &cds));
     PetscCall(PetscDSSetConstants(cds, 1, &c));
@@ -3936,7 +3926,7 @@ static PetscErrorCode DMPlexCreateFromOptions_Internal(PetscOptionItems *PetscOp
         PetscCall(DMSetPeriodicity(dm, NULL, NULL, NULL));
         PetscCall(DMSetCellCoordinatesLocal(dm, NULL));
         PetscCall(DMSetCellCoordinates(dm, NULL));
-        PetscCall(DMPlexCreateCoordinateSpace(dm, 1, NULL));
+        PetscCall(DMPlexCreateCoordinateSpace(dm, 1, PETSC_TRUE, NULL));
         PetscCall(DMGetCoordinateDM(dm, &cdm));
         PetscCall(DMGetDS(cdm, &cds));
         PetscCall(PetscDSSetConstants(cds, 2, bounds));
@@ -4270,14 +4260,15 @@ static PetscErrorCode DMSetFromOptions_Plex(DM dm, PetscOptionItems *PetscOption
   /* Create coordinate space */
   if (created) {
     DM_Plex  *mesh   = (DM_Plex *)dm->data;
-    PetscInt  degree = 1;
+    PetscInt  degree = 1, deg;
     PetscInt  height = 0;
     DM        cdm;
     PetscBool flg;
 
     PetscCall(PetscOptionsBool("-dm_coord_space", "Use an FEM space for coordinates", "", coordSpace, &coordSpace, &flg));
     PetscCall(PetscOptionsInt("-dm_coord_petscspace_degree", "FEM degree for coordinate space", "", degree, &degree, NULL));
-    if (coordSpace) PetscCall(DMPlexCreateCoordinateSpace(dm, degree, mesh->coordFunc));
+    PetscCall(DMGetCoordinateDegree_Internal(dm, &deg));
+    if (coordSpace && deg <= 1) PetscCall(DMPlexCreateCoordinateSpace(dm, degree, PETSC_TRUE, mesh->coordFunc));
     PetscCall(DMGetCoordinateDM(dm, &cdm));
     if (flg && !coordSpace) {
       PetscDS      cds;

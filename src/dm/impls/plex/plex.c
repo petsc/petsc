@@ -1848,6 +1848,52 @@ static PetscErrorCode DMPlexView_Draw(DM dm, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+static PetscErrorCode DMPlexCreateHighOrderSurrogate_Internal(DM dm, DM *hdm)
+{
+  DM           odm = dm, rdm = dm, cdm;
+  PetscFE      fe;
+  PetscSpace   sp;
+  PetscClassId id;
+  PetscInt     degree;
+  PetscBool    hoView = PETSC_TRUE;
+
+  PetscFunctionBegin;
+  PetscObjectOptionsBegin((PetscObject)dm);
+  PetscCall(PetscOptionsBool("-dm_plex_high_order_view", "Subsample to view meshes with high order coordinates", "DMPlexCreateHighOrderSurrogate_Internal", hoView, &hoView, NULL));
+  PetscOptionsEnd();
+  PetscCall(PetscObjectReference((PetscObject)dm));
+  *hdm = dm;
+  if (!hoView) PetscFunctionReturn(PETSC_SUCCESS);
+  PetscCall(DMGetCoordinateDM(dm, &cdm));
+  PetscCall(DMGetField(cdm, 0, NULL, (PetscObject *)&fe));
+  PetscCall(PetscObjectGetClassId((PetscObject)fe, &id));
+  if (id != PETSCFE_CLASSID) PetscFunctionReturn(PETSC_SUCCESS);
+  PetscCall(PetscFEGetBasisSpace(fe, &sp));
+  PetscCall(PetscSpaceGetDegree(sp, &degree, NULL));
+  for (PetscInt r = 0, rd = PetscCeilReal(((PetscReal)degree) / 2.); r < (PetscInt)PetscCeilReal(PetscLog2Real(degree)); ++r, rd = PetscCeilReal(((PetscReal)rd) / 2.)) {
+    DM  cdm, rcdm;
+    Mat In;
+    Vec cl, rcl;
+
+    PetscCall(DMRefine(odm, PetscObjectComm((PetscObject)odm), &rdm));
+    if (rd > 1) PetscCall(DMPlexCreateCoordinateSpace(rdm, rd, PETSC_FALSE, NULL));
+    PetscCall(PetscObjectSetName((PetscObject)rdm, "Refined Mesh with Linear Coordinates"));
+    PetscCall(DMGetCoordinateDM(odm, &cdm));
+    PetscCall(DMGetCoordinateDM(rdm, &rcdm));
+    PetscCall(DMGetCoordinatesLocal(odm, &cl));
+    PetscCall(DMGetCoordinatesLocal(rdm, &rcl));
+    PetscCall(DMSetCoarseDM(rcdm, cdm));
+    PetscCall(DMCreateInterpolation(cdm, rcdm, &In, NULL));
+    PetscCall(MatMult(In, cl, rcl));
+    PetscCall(MatDestroy(&In));
+    PetscCall(DMSetCoordinatesLocal(rdm, rcl));
+    PetscCall(DMDestroy(&odm));
+    odm = rdm;
+  }
+  *hdm = rdm;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 #if defined(PETSC_HAVE_EXODUSII)
   #include <exodusII.h>
   #include <petscviewerexodusii.h>
@@ -1882,7 +1928,11 @@ PetscErrorCode DMView_Plex(DM dm, PetscViewer viewer)
   } else if (isvtk) {
     PetscCall(DMPlexVTKWriteAll((PetscObject)dm, viewer));
   } else if (isdraw) {
-    PetscCall(DMPlexView_Draw(dm, viewer));
+    DM hdm;
+
+    PetscCall(DMPlexCreateHighOrderSurrogate_Internal(dm, &hdm));
+    PetscCall(DMPlexView_Draw(hdm, viewer));
+    PetscCall(DMDestroy(&hdm));
   } else if (isglvis) {
     PetscCall(DMPlexView_GLVis(dm, viewer));
 #if defined(PETSC_HAVE_EXODUSII)

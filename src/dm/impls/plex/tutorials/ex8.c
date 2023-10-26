@@ -37,7 +37,7 @@ int main(int argc, char **argv)
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscOptionsBegin(PETSC_COMM_WORLD, NULL, "Tensor closure restrictions", "DMPLEX");
   PetscCall(PetscOptionsBool("-closure_tensor", "Apply DMPlexSetClosurePermutationTensor", "ex8.c", tensor, &tensor, NULL));
-  PetscCall(PetscOptionsBool("-project_coordinates", "Call DMProjectCoordinates explicitly", "ex8.c", project, &project, NULL));
+  PetscCall(PetscOptionsBool("-project_coordinates", "Call DMSetCoordinateDisc() explicitly", "ex8.c", project, &project, NULL));
   PetscCall(PetscOptionsBool("-view_coord", "View coordinates of element closures", "ex8.c", view_coord, &view_coord, NULL));
   PetscOptionsEnd();
 
@@ -49,7 +49,7 @@ int main(int argc, char **argv)
     PetscInt cdim;
     PetscCall(DMGetCoordinateDim(dm, &cdim));
     PetscCall(PetscFECreateLagrange(PETSC_COMM_SELF, cdim, cdim, PETSC_FALSE, 1, 1, &fe_coords));
-    PetscCall(DMProjectCoordinates(dm, fe_coords));
+    PetscCall(DMSetCoordinateDisc(dm, fe_coords, PETSC_TRUE));
     PetscCall(PetscFEDestroy(&fe_coords));
   }
   PetscCall(DMViewFromOptions(dm, NULL, "-dm_view"));
