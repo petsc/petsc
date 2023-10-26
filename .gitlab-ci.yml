@@ -860,15 +860,16 @@ linux-intel:
     TEST_ARCH: arch-ci-linux-intel
     LOAD_MODULES: intel-oneapi-compilers/2023.0.0 intel-oneapi-mkl/2022.0.2
 
-linux-opt-misc:
+linux-opt-arm:
   extends:
     - .stage-3
     - .linux_test
+    # gcovr does not work on arm/linux
+    - .coverage-disable
   tags:
-    - gce-u22-stage3, linux-fast
+    - arch:arm, os:linux
   variables:
-    TEST_ARCH: arch-ci-linux-opt-misc
-    LOAD_MODULES: gcc/8.5.0
+    TEST_ARCH: arch-ci-linux-opt-arm
 
 linux-pkgs-64idx:
   extends:
@@ -1052,7 +1053,6 @@ coverage-analyze:
     - linux-pkgs-valgrind
     - linux-nagfor
     - linux-xsdk-dbg
-    - linux-opt-misc
     - linux-pkgs-64idx
     - linux-pkgs-opt
     - linux-64idx-i8
