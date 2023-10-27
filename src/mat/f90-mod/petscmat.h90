@@ -649,6 +649,42 @@
       End Interface
 
       Interface
+        Subroutine MatDenseGetArrayReadF90(v,array,ierr)
+          import tMat
+          PetscScalar, pointer :: array(:,:)
+          PetscErrorCode ierr
+          Mat     v
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine MatDenseRestoreArrayReadF90(v,array,ierr)
+          import tMat
+          PetscScalar, pointer :: array(:,:)
+          PetscErrorCode ierr
+          Mat     v
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine MatDenseGetArrayWriteF90(v,array,ierr)
+          import tMat
+          PetscScalar, pointer :: array(:,:)
+          PetscErrorCode ierr
+          Mat     v
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine MatDenseRestoreArrayWriteF90(v,array,ierr)
+          import tMat
+          PetscScalar, pointer :: array(:,:)
+          PetscErrorCode ierr
+          Mat     v
+        End Subroutine
+      End Interface
+
+      Interface
         Subroutine MatDenseGetColumnF90(v,col,array,ierr)
           import tMat
           PetscScalar, pointer :: array(:)
