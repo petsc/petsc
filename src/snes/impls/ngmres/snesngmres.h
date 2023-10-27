@@ -26,11 +26,11 @@ typedef struct {
 
   /* Line searches */
   SNESLineSearch additive_linesearch; /* Line search for the additive variant */
+  PetscReal      descent_ls_test;     /* restart GMRES when X_A -X_M is not a descent direction */
 
   /* Selection constants */
   PetscBool candidate;       /* use candidate storage approach */
   PetscBool approxfunc;      /* approximate the function rather than recomputing it */
-  PetscBool singlereduction; /* use a single reduction (with more local work) for tolerance selection */
   PetscReal gammaA;          /* Criterion A residual tolerance */
   PetscReal epsilonB;        /* Criterion B difference tolerance */
   PetscReal deltaB;          /* Criterion B residual tolerance */
@@ -64,9 +64,10 @@ typedef struct {
 PETSC_INTERN PetscErrorCode SNESNGMRESUpdateSubspace_Private(SNES, PetscInt, PetscInt, Vec, PetscReal, Vec);
 PETSC_INTERN PetscErrorCode SNESNGMRESFormCombinedSolution_Private(SNES, PetscInt, PetscInt, Vec, Vec, PetscReal, Vec, Vec, Vec);
 PETSC_INTERN PetscErrorCode SNESNGMRESNorms_Private(SNES, PetscInt, Vec, Vec, Vec, Vec, Vec, Vec, Vec, PetscReal *, PetscReal *, PetscReal *, PetscReal *, PetscReal *, PetscReal *, PetscReal *, PetscReal *);
-PETSC_INTERN PetscErrorCode SNESNGMRESSelect_Private(SNES, PetscInt, Vec, Vec, PetscReal, PetscReal, PetscReal, Vec, Vec, PetscReal, PetscReal, PetscReal, PetscReal, PetscReal, PetscReal, Vec, Vec, Vec, PetscReal *, PetscReal *, PetscReal *);
-PETSC_INTERN PetscErrorCode SNESNGMRESSelectRestart_Private(SNES, PetscInt, PetscReal, PetscReal, PetscReal, PetscReal, PetscReal, PetscBool *);
+PETSC_INTERN PetscErrorCode SNESNGMRESSelect_Private(SNES, PetscInt, Vec, Vec, PetscReal, PetscReal, PetscReal, PetscReal, Vec, Vec, PetscReal, PetscReal, PetscReal, PetscReal, PetscReal, PetscReal, PetscReal, Vec, Vec, Vec, PetscReal *, PetscReal *, PetscReal *);
+PETSC_INTERN PetscErrorCode SNESNGMRESSelectRestart_Private(SNES, PetscInt, PetscReal, PetscReal, PetscReal, PetscReal, PetscReal, PetscReal, PetscBool *);
 
+PETSC_INTERN PetscErrorCode SNESNGMRESGetAdditiveLineSearch_Private(SNES, SNESLineSearch *);
 PETSC_INTERN PetscErrorCode SNESDestroy_NGMRES(SNES);
 PETSC_INTERN PetscErrorCode SNESReset_NGMRES(SNES);
 PETSC_INTERN PetscErrorCode SNESSetUp_NGMRES(SNES);

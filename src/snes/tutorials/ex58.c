@@ -28,8 +28,6 @@ The command line options are:\n\
 */
 
 /*
-     This is a new version of the ../tests/ex8.c code
-
      Run, for example, with the options ./ex58 -snes_vi_monitor -ksp_monitor -mg_levels_ksp_monitor -pc_type mg -pc_mg_levels 2 -pc_mg_galerkin pmat -ksp_type fgmres
 
      Or to run with grid sequencing on the nonlinear problem (note that you do not need to provide the number of

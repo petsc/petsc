@@ -1,0 +1,62 @@
+
+---- Minimum Surface Area Problem -----
+mx: 10     my: 10   
+
+    0 SNES Function norm 2.077854860018e-01, Update norm 0.000000000000e+00, Objective 1.460759596221e+00
+picked X_A, obj(X_A) = 1.435992e+00, ||F_A||_2 = 1.245460e-01, obj(X_M) = 1.433029e+00, ||F_M||_2 = 1.424325e-01
+    1 SNES Function norm 1.245459748169e-01, Update norm 6.746710553575e-01, Objective 1.435992366305e+00
+picked X_A, obj(X_A) = 1.424799e+00, ||F_A||_2 = 7.843667e-02, obj(X_M) = 1.426283e+00, ||F_M||_2 = 1.227432e-01
+    2 SNES Function norm 7.843666637088e-02, Update norm 8.034614627840e-01, Objective 1.424798704775e+00
+picked X_A, obj(X_A) = 1.419734e+00, ||F_A||_2 = 4.359360e-02, obj(X_M) = 1.421600e+00, ||F_M||_2 = 8.124702e-02
+    3 SNES Function norm 4.359359996399e-02, Update norm 9.072493648181e-01, Objective 1.419733513394e+00
+picked X_A, obj(X_A) = 1.418493e+00, ||F_A||_2 = 9.410893e-03, obj(X_M) = 1.419083e+00, ||F_M||_2 = 3.187438e-02
+    4 SNES Function norm 9.410892729567e-03, Update norm 9.654655896051e-01, Objective 1.418493394926e+00
+picked X_A, obj(X_A) = 1.418471e+00, ||F_A||_2 = 2.482764e-03, obj(X_M) = 1.418475e+00, ||F_M||_2 = 3.826875e-03
+    5 SNES Function norm 2.482763706006e-03, Update norm 9.675168702714e-01, Objective 1.418470889902e+00
+picked X_A, obj(X_A) = 1.418470e+00, ||F_A||_2 = 8.361183e-04, obj(X_M) = 1.418470e+00, ||F_M||_2 = 1.165492e-03
+    6 SNES Function norm 8.361183483059e-04, Update norm 9.679105969220e-01, Objective 1.418469627383e+00
+picked X_A, obj(X_A) = 1.418469e+00, ||F_A||_2 = 3.412178e-04, obj(X_M) = 1.418469e+00, ||F_M||_2 = 4.793377e-04
+    7 SNES Function norm 3.412178120880e-04, Update norm 9.679478380159e-01, Objective 1.418469477243e+00
+picked X_A, obj(X_A) = 1.418469e+00, ||F_A||_2 = 2.031769e-04, obj(X_M) = 1.418469e+00, ||F_M||_2 = 2.953762e-04
+    8 SNES Function norm 2.031769119520e-04, Update norm 9.679544885647e-01, Objective 1.418469448030e+00
+picked X_A, obj(X_A) = 1.418469e+00, ||F_A||_2 = 1.230674e-04, obj(X_M) = 1.418469e+00, ||F_M||_2 = 2.158998e-04
+    9 SNES Function norm 1.230674225780e-04, Update norm 9.679588000651e-01, Objective 1.418469430444e+00
+picked X_A, obj(X_A) = 1.418469e+00, ||F_A||_2 = 5.101029e-05, obj(X_M) = 1.418469e+00, ||F_M||_2 = 1.091792e-04
+   10 SNES Function norm 5.101029435267e-05, Update norm 9.679614977781e-01, Objective 1.418469423383e+00
+  Nonlinear solve converged due to CONVERGED_FNORM_ABS iterations 10
+Tao Object: 1 MPI process
+  type: snes
+  SNES Object: 1 MPI process
+    type: ngmres
+      Number of stored past updates: 30
+      Residual selection: gammaA=2e+00, gammaC=2e+00
+      Difference restart: epsilonB=1e-01, deltaB=9e-01
+      Restart on F_M residual increase: FALSE
+    maximum iterations=10000, maximum function evaluations=30000
+    tolerances: relative=1e-08, absolute=0.0001, solution=1e-08
+    total number of function evaluations=11
+    norm schedule ALWAYS
+    SNESLineSearch Object: 1 MPI process
+      type: basic
+      maxstep=1.000000e+08, minlambda=1.000000e-12
+      tolerances: relative=1.000000e-08, absolute=1.000000e-15, lambda=1.000000e-08
+      maximum iterations=1
+    SNES Object: (npc_) 1 MPI process
+      type: ncg
+        type: FR
+      maximum iterations=1, maximum function evaluations=30000
+      tolerances: relative=0., absolute=0., solution=0.
+      total number of function evaluations=20
+      norm schedule FINALONLY
+      SNESLineSearch Object: (npc_) 1 MPI process
+        type: cp
+        maxstep=1.000000e+08, minlambda=1.000000e-12
+        tolerances: relative=1.000000e-08, absolute=1.000000e-15, lambda=1.000000e-08
+        maximum iterations=1
+  convergence tolerances: gatol=1e-08,   steptol=0.,   gttol=0.
+  Residual in Function/Gradient:=5.10103e-05
+  Objective value=1.41847
+  total number of iterations=10,                          (max: 2000)
+  total number of function evaluations=53,                  max: 4000
+  total number of function/gradient evaluations=31,      (max: 4000)
+  Solution converged:    User Terminated

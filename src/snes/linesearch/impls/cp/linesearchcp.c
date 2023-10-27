@@ -97,19 +97,17 @@ static PetscErrorCode SNESLineSearchApply_CP(SNESLineSearch linesearch)
   PetscCall(VecWAXPY(W, -lambda, Y, X));
   if (linesearch->ops->viproject) PetscCall((*linesearch->ops->viproject)(snes, W));
   /* postcheck */
+  PetscCall(SNESLineSearchSetLambda(linesearch, lambda));
   PetscCall(SNESLineSearchPostCheck(linesearch, X, Y, W, &changed_y, &changed_w));
-  if (changed_y && !changed_w) {
-    PetscCall(VecAXPY(X, -lambda, Y));
-    if (linesearch->ops->viproject) PetscCall((*linesearch->ops->viproject)(snes, X));
-  } else {
-    PetscCall(VecCopy(W, X));
+  if (changed_y) {
+    if (!changed_w) PetscCall(VecWAXPY(W, -lambda, Y, X));
+    if (linesearch->ops->viproject) PetscCall((*linesearch->ops->viproject)(snes, W));
   }
+  PetscCall(VecCopy(W, X));
   PetscCall((*linesearch->ops->snesfunc)(snes, X, F));
 
   PetscCall(SNESLineSearchComputeNorms(linesearch));
   PetscCall(SNESLineSearchGetNorms(linesearch, &xnorm, &gnorm, &ynorm));
-
-  PetscCall(SNESLineSearchSetLambda(linesearch, lambda));
 
   if (monitor) {
     PetscCall(PetscViewerASCIIAddTab(monitor, ((PetscObject)linesearch)->tablevel));
