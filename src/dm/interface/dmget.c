@@ -110,7 +110,7 @@ alldone:
 /*@
   DMGetGlobalVector - Gets a PETSc vector that may be used with the `DM` global routines.
 
-  Collective on dm
+  Collective
 
   Input Parameter:
 . dm - the `DM`

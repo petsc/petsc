@@ -630,7 +630,7 @@ PetscErrorCode PetscObjectGetReference(PetscObject obj, PetscInt *cnt)
   referenced by one less `PetscObject`. This decreases the reference
   count for that object by one.
 
-  Collective on obj if reference reaches 0 otherwise Logically Collective
+  Collective on `obj` if reference reaches 0 otherwise Logically Collective
 
   Input Parameter:
 . obj - the PETSc object; this must be cast with (`PetscObject`), for example,
