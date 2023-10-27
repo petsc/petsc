@@ -2198,9 +2198,9 @@ PetscErrorCode MatDenseRestoreArray(Mat A, PetscScalar **array)
 }
 
 /*@C
-  MatDenseGetArrayRead - gives read-only access to the array where the data for a `MATDENSE`  matrix is stored
+  MatDenseGetArrayRead - gives read-only access to the array where the data for a `MATDENSE` matrix is stored
 
-  Not Collective; No Fortran Support
+  Not Collective
 
   Input Parameter:
 . A - a dense matrix
@@ -2224,7 +2224,7 @@ PetscErrorCode MatDenseGetArrayRead(Mat A, const PetscScalar **array)
 /*@C
   MatDenseRestoreArrayRead - returns access to the array where the data for a `MATDENSE` matrix is stored obtained by `MatDenseGetArrayRead()`
 
-  Not Collective; No Fortran Support
+  Not Collective
 
   Input Parameters:
 + A     - a dense matrix
@@ -2246,7 +2246,7 @@ PetscErrorCode MatDenseRestoreArrayRead(Mat A, const PetscScalar **array)
 /*@C
   MatDenseGetArrayWrite - gives write-only access to the array where the data for a `MATDENSE` matrix is stored
 
-  Not Collective; No Fortran Support
+  Not Collective
 
   Input Parameter:
 . A - a dense matrix
@@ -2270,7 +2270,7 @@ PetscErrorCode MatDenseGetArrayWrite(Mat A, PetscScalar **array)
 /*@C
   MatDenseRestoreArrayWrite - returns access to the array where the data for a `MATDENSE` matrix is stored obtained by `MatDenseGetArrayWrite()`
 
-  Not Collective; No Fortran Support
+  Not Collective
 
   Input Parameters:
 + A     - a dense matrix
@@ -2307,7 +2307,7 @@ PetscErrorCode MatDenseRestoreArrayWrite(Mat A, PetscScalar **array)
 
   Level: intermediate
 
-  Notes:
+  Note:
   If the matrix is of a device type such as `MATDENSECUDA`, `MATDENSEHIP`, etc.,
   an array on device is always returned and is guaranteed to contain the matrix's latest data.
 
@@ -2392,7 +2392,7 @@ PetscErrorCode MatDenseRestoreArrayAndMemType(Mat A, PetscScalar **array)
 
   Level: intermediate
 
-  Notes:
+  Note:
   If the matrix is of a device type such as `MATDENSECUDA`, `MATDENSEHIP`, etc.,
   an array on device is always returned and is guaranteed to contain the matrix's latest data.
 
@@ -2475,7 +2475,7 @@ PetscErrorCode MatDenseRestoreArrayReadAndMemType(Mat A, const PetscScalar **arr
 
   Level: intermediate
 
-  Notes:
+  Note:
   If the matrix is of a device type such as `MATDENSECUDA`, `MATDENSEHIP`, etc.,
   an array on device is always returned and is guaranteed to contain the matrix's latest data.
 
@@ -3239,8 +3239,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqDense,
 
 /*@C
   MatCreateSeqDense - Creates a `MATSEQDENSE` that
-  is stored in column major order (the usual Fortran manner). Many
-  of the matrix operations use the BLAS and LAPACK routines.
+  is stored in column major order (the usual Fortran format).
 
   Collective
 
@@ -3260,6 +3259,9 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqDense,
   The data input variable is intended primarily for Fortran programmers
   who wish to allocate their own matrix memory space.  Most users should
   set `data` = `NULL`.
+
+  Developer Note:
+  Many of the matrix operations for this variant use the BLAS and LAPACK routines.
 
 .seealso: [](ch_matrices), `Mat`, `MATSEQDENSE`, `MatCreate()`, `MatCreateDense()`, `MatSetValues()`
 @*/
@@ -3720,14 +3722,14 @@ PetscErrorCode MatDenseGetColumnVec(Mat A, PetscInt col, Vec *v)
 }
 
 /*@
-  MatDenseRestoreColumnVec - Returns access to a column of a dense matrix obtained from MatDenseGetColumnVec().
+  MatDenseRestoreColumnVec - Returns access to a column of a dense matrix obtained from `MatDenseGetColumnVec()`.
 
   Collective
 
   Input Parameters:
-+ A   - the Mat object
++ A   - the `Mat` object
 . col - the column index
-- v   - the Vec object (may be `NULL`)
+- v   - the `Vec` object (may be `NULL`)
 
   Level: intermediate
 
@@ -3746,7 +3748,7 @@ PetscErrorCode MatDenseRestoreColumnVec(Mat A, PetscInt col, Vec *v)
 }
 
 /*@
-  MatDenseGetColumnVecRead - Gives read-only access to a column of a dense matrix, represented as a Vec.
+  MatDenseGetColumnVecRead - Gives read-only access to a column of a dense matrix, represented as a `Vec`.
 
   Collective
 
@@ -3782,14 +3784,14 @@ PetscErrorCode MatDenseGetColumnVecRead(Mat A, PetscInt col, Vec *v)
 }
 
 /*@
-  MatDenseRestoreColumnVecRead - Returns access to a column of a dense matrix obtained from MatDenseGetColumnVecRead().
+  MatDenseRestoreColumnVecRead - Returns access to a column of a dense matrix obtained from `MatDenseGetColumnVecRead()`.
 
   Collective
 
   Input Parameters:
 + A   - the `Mat` object
 . col - the column index
-- v   - the Vec object (may be `NULL`)
+- v   - the `Vec` object (may be `NULL`)
 
   Level: intermediate
 
@@ -3808,7 +3810,7 @@ PetscErrorCode MatDenseRestoreColumnVecRead(Mat A, PetscInt col, Vec *v)
 }
 
 /*@
-  MatDenseGetColumnVecWrite - Gives write-only access to a column of a dense matrix, represented as a Vec.
+  MatDenseGetColumnVecWrite - Gives write-only access to a column of a dense matrix, represented as a `Vec`.
 
   Collective
 
@@ -3842,7 +3844,7 @@ PetscErrorCode MatDenseGetColumnVecWrite(Mat A, PetscInt col, Vec *v)
 }
 
 /*@
-  MatDenseRestoreColumnVecWrite - Returns access to a column of a dense matrix obtained from MatDenseGetColumnVecWrite().
+  MatDenseRestoreColumnVecWrite - Returns access to a column of a dense matrix obtained from `MatDenseGetColumnVecWrite()`.
 
   Collective
 
@@ -3868,12 +3870,12 @@ PetscErrorCode MatDenseRestoreColumnVecWrite(Mat A, PetscInt col, Vec *v)
 }
 
 /*@
-  MatDenseGetSubMatrix - Gives access to a block of rows and columns of a dense matrix, represented as a Mat.
+  MatDenseGetSubMatrix - Gives access to a block of rows and columns of a dense matrix, represented as a `Mat`.
 
   Collective
 
   Input Parameters:
-+ A      - the Mat object
++ A      - the `Mat` object
 . rbegin - the first global row index in the block (if `PETSC_DECIDE`, is 0)
 . rend   - the global row index past the last one in the block (if `PETSC_DECIDE`, is `M`)
 . cbegin - the first global column index in the block (if `PETSC_DECIDE`, is 0)
@@ -3915,7 +3917,7 @@ PetscErrorCode MatDenseGetSubMatrix(Mat A, PetscInt rbegin, PetscInt rend, Petsc
 }
 
 /*@
-  MatDenseRestoreSubMatrix - Returns access to a block of columns of a dense matrix obtained from MatDenseGetSubMatrix().
+  MatDenseRestoreSubMatrix - Returns access to a block of columns of a dense matrix obtained from `MatDenseGetSubMatrix()`.
 
   Collective
 
