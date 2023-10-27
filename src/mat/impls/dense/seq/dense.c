@@ -2123,7 +2123,7 @@ PetscErrorCode MatDenseGetLDA(Mat A, PetscInt *lda)
 /*@
   MatDenseSetLDA - Sets the leading dimension of the array used by the `MATDENSE` matrix
 
-  Not Collective
+  Collective if the matrix layouts have not yet been setup
 
   Input Parameters:
 + A   - a `MATDENSE` or `MATDENSECUDA` matrix
