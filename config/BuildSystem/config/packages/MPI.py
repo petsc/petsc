@@ -249,10 +249,13 @@ shared libraries and run with --known-mpi-shared-libraries=1')
       # Support for spaces and () in executable names; also needs to handle optional arguments at the end
       # TODO: This support for spaces and () should be moved to core BuildSystem
       self.mpiexec = self.mpiexec.replace(' ', r'\\ ').replace('(', r'\\(').replace(')', r'\\)').replace(r'\ -',' -')
-      if (hasattr(self, 'ompi_major_version') and int(self.ompi_major_version) >= 3):
-        (out, err, ret) = Configure.executeShellCommand(self.mpiexec+' -help all', checkCommand = noCheck, timeout = 60, log = self.log, threads = 1)
-        if out.find('--oversubscribe') >=0:
-          mpiexecargs += ' --oversubscribe'
+      if hasattr(self, 'ompi_major_version'):
+        if int(self.ompi_major_version) >= 5:
+          mpiexecargs += ' --oversubscribe' # alias to --map-by :OVERSUBSCRIBE
+        elif int(self.ompi_major_version) >= 3:
+          (out, err, ret) = Configure.executeShellCommand(self.mpiexec+' -help all', checkCommand = noCheck, timeout = 60, log = self.log, threads = 1)
+          if out.find('--oversubscribe') >=0:
+            mpiexecargs += ' --oversubscribe'
 
     self.getExecutable(self.mpiexec, getFullPath=1, resultName='mpiexecExecutable',setMakeMacro=0)
 
