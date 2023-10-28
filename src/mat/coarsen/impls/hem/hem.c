@@ -856,7 +856,7 @@ static PetscErrorCode MatCoarsenApply_HEM_private(Mat a_Gmat, const PetscInt n_i
           PetscCallMPI(MPI_Probe(comm_procs[proc_idx] /* MPI_ANY_SOURCE */, tag1, comm, &status));
           {
 #define BF_SZ 10000
-            PetscInt          rbuff[BF_SZ], *pt, *pt2, *pt3, *sbuff, tmp;
+            PetscInt          rbuff[BF_SZ] = {0, 0}, *pt, *pt2, *pt3, *sbuff, tmp;
             MPI_Request      *request;
             int               rcount, scount, ndel;
             const PetscMPIInt proc = status.MPI_SOURCE;
