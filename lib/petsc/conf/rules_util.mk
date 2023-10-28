@@ -2,7 +2,7 @@
 #
 #    Contains rules that are shared between SLEPc and PETSc
 #
-#    This file is not included by rules, or rules.doc. In PETSc it is only included by the toplevel makefile
+#    This file is not included by rules, or rules_doc.mk. In PETSc it is only included by the toplevel makefile
 
 # ********* Rules for printing PETSc library properties useful for building applications  ***********************************************************
 
