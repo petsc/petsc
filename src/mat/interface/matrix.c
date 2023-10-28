@@ -5344,7 +5344,7 @@ PetscErrorCode MatTransposeCheckNonzeroState_Private(Mat A, Mat B)
   Only available for `MATAIJ` matrices.
 
   The sequential algorithm has a running time of the order of the number of nonzeros; the parallel
-  test involves parallel copies of the block-offdiagonal parts of the matrix.
+  test involves parallel copies of the block off-diagonal parts of the matrix.
 
 .seealso: [](ch_matrices), `Mat`, `MatTranspose()`, `MatIsSymmetric()`, `MatIsHermitian()`
 @*/
@@ -5417,7 +5417,7 @@ PetscErrorCode MatHermitianTranspose(Mat mat, MatReuse reuse, Mat *B)
 
   The sequential algorithm
   has a running time of the order of the number of nonzeros; the parallel
-  test involves parallel copies of the block-offdiagonal parts of the matrix.
+  test involves parallel copies of the block off-diagonal parts of the matrix.
 
 .seealso: [](ch_matrices), `Mat`, `MatTranspose()`, `MatIsSymmetric()`, `MatIsHermitian()`, `MatIsTranspose()`
 @*/

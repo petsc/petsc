@@ -78,7 +78,7 @@ static PetscErrorCode TSMPRKGenerateTableau2(PetscInt ratio, PetscInt s, const P
         A1[(k * s + i) * ratio * s + k * s + j] = Abase[i * s + j];
         A2[(k * s + i) * ratio * s + k * s + j] = Abase[i * s + j] / ratio;
       }
-    /* off diagonal blocks */
+    /* off-diagonal blocks */
     for (l = 0; l < k; l++)
       for (i = 0; i < s; i++)
         for (j = 0; j < s; j++) A2[(k * s + i) * ratio * s + l * s + j] = bbase[j] / ratio;
