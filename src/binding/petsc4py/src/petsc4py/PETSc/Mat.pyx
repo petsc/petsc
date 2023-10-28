@@ -4763,7 +4763,7 @@ cdef class Mat(Object):
         onnz:
             The sequence whose length corresponds to the number of local rows
             and values which represent the number of nonzeros in the various
-            rows of the *off diagonal* of the local submatrix.
+            rows of the *off-diagonal* of the local submatrix.
 
         See Also
         --------

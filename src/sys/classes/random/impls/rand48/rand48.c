@@ -44,9 +44,9 @@ static struct _PetscRandomOps PetscRandomOps_Values = {
 };
 
 /*MC
-   PETSCRAND48 - access to the basic Unix drand48() random number generator
+   PETSCRAND48 - access to the basic Unix `drand48()` random number generator
 
-   Options Database Keys:
+   Options Database Key:
 . -random_type <rand,rand48,sprng> - select the random number generator at runtime
 
   Level: beginner

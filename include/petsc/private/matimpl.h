@@ -724,7 +724,7 @@ typedef struct {
   PetscInt    nshift, nshift_max;
   PetscReal   shift_amount, shift_lo, shift_hi, shift_top, shift_fraction;
   PetscBool   newshift;
-  PetscReal   rs; /* active row sum of abs(offdiagonals) */
+  PetscReal   rs; /* active row sum of abs(off-diagonals) */
   PetscScalar pv; /* pivot of the active row */
 } FactorShiftCtx;
 

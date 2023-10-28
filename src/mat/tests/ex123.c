@@ -167,7 +167,7 @@ int main(int argc, char **args)
   PetscCall(MatDestroy(&At));
   if (ishypre) PetscCall(MatDestroy(&T));
 
-  /* test providing diagonal first, then offdiagonal */
+  /* test providing diagonal first, then off-diagonal */
   PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)A), &size));
   PetscCall(PetscObjectBaseTypeCompare((PetscObject)A, MATMPIAIJ, &ismpiaij));
   if ((ismpiaij || ishypre) && size > 1) {
