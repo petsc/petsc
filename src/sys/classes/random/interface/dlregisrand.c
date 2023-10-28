@@ -3,7 +3,7 @@
 static PetscBool PetscRandomPackageInitialized = PETSC_FALSE;
 
 /*@C
-  PetscRandomFinalizePackage - This function destroys everything in the Petsc interface to the `PetscRandom` package. It is
+  PetscRandomFinalizePackage - This function frees everything in the `PetscRandom` package. It is
   called from `PetscFinalize()`.
 
   Level: developer
