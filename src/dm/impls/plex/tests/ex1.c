@@ -937,16 +937,27 @@ int main(int argc, char **argv)
     test:
       suffix: sphere_3
       args: -dm_plex_simplex 0 -ref_dm_refine 2
+    test:
+      suffix: sphere_4
+      args: -dm_plex_dim 1 -ref_dm_refine 2
 
-  test:
-    suffix: ball_0
-    requires: ctetgen
-    args: -dm_plex_dim 3 -dm_plex_shape ball -dm_plex_check_all -dm_view
+  testset:
+    args: -dm_plex_shape ball -dm_plex_check_all -dm_view
 
-  test:
-    suffix: ball_1
-    requires: ctetgen
-    args: -dm_plex_dim 3 -dm_plex_shape ball -bd_dm_refine 2 -dm_plex_check_all -dm_view
+    test:
+      suffix: ball_0
+      requires: ctetgen
+      args: -dm_plex_dim 3
+
+    test:
+      suffix: ball_1
+      requires: ctetgen
+      args: -dm_plex_dim 3 -bd_dm_refine 2
+
+    test:
+      suffix: ball_2
+      requires: triangle
+      args: -dm_plex_dim 2 -bd_dm_refine 2
 
   test:
     suffix: schwarz_p_extrude
