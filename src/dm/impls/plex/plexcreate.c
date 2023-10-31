@@ -2347,6 +2347,31 @@ static PetscErrorCode DMPlexCreateSphereMesh_Internal(DM dm, PetscInt dim, Petsc
   PetscCall(DMSetCoordinateDim(dm, dim + 1));
   PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)dm), &rank));
   switch (dim) {
+  case 1:
+    numCells = 16;
+    numVerts = numCells;
+
+    // Build Topology
+    PetscCall(DMPlexSetChart(dm, 0, numCells + numVerts));
+    for (PetscInt c = 0; c < numCells; c++) PetscCall(DMPlexSetConeSize(dm, c, embedDim));
+    PetscCall(DMSetUp(dm));
+    for (PetscInt c = 0; c < numCells; ++c) {
+      PetscInt cone[2];
+
+      cone[0] = c + numCells;
+      cone[1] = (c + 1) % numVerts + numCells;
+      PetscCall(DMPlexSetCone(dm, c, cone));
+    }
+    PetscCall(DMPlexSymmetrize(dm));
+    PetscCall(DMPlexStratify(dm));
+    PetscCall(PetscMalloc1(numVerts * embedDim, &coordsIn));
+    for (PetscInt v = 0; v < numVerts; ++v) {
+      const PetscReal rad = 2. * PETSC_PI * v / numVerts;
+
+      coordsIn[v * embedDim + 0] = PetscCosReal(rad);
+      coordsIn[v * embedDim + 1] = PetscSinReal(rad);
+    }
+    break;
   case 2:
     if (simplex) {
       const PetscReal radius    = PetscSqrtReal(1 + PETSC_PHI * PETSC_PHI) / (1.0 + PETSC_PHI);
