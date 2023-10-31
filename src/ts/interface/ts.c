@@ -4892,7 +4892,7 @@ PetscErrorCode TSSetErrorIfStepFails(TS ts, PetscBool err)
 /*@
   TSGetAdapt - Get the adaptive controller context for the current method
 
-  Collective on `ts` if controller has not been created yet
+  Collective if controller has not yet been created
 
   Input Parameter:
 . ts - time stepping context

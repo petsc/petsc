@@ -521,7 +521,7 @@ PetscErrorCode PetscFunctionListGet(PetscFunctionList list, const char ***array,
 /*@C
   PetscFunctionListPrintTypes - Prints the methods available in a list of functions
 
-  Collective over MPI_Comm
+  Collective
 
   Input Parameters:
 + comm   - the communicator (usually `MPI_COMM_WORLD`)

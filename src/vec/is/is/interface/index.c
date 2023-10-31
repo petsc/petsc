@@ -418,7 +418,7 @@ static PetscErrorCode ISSetInfo_Internal(IS is, ISInfo info, ISInfoType type, IS
 /*@
   ISSetInfo - Set known information about an index set.
 
-  Logically Collective on `is` if `ISInfoType` is `IS_GLOBAL`
+  Logically Collective if `ISInfoType` is `IS_GLOBAL`
 
   Input Parameters:
 + is        - the index set

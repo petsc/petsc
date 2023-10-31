@@ -184,7 +184,7 @@ PetscErrorCode PetscLogHandlerEventEnd(PetscLogHandler h, PetscLogEvent e, Petsc
 /*@
   PetscLogHandlerEventSync - Synchronize a logging event
 
-  Collective over comm
+  Collective
 
   Input Parameters:
 + h    - the `PetscLogHandler`
