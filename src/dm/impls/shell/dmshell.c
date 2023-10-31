@@ -532,7 +532,7 @@ PetscErrorCode DMShellSetCreateLocalVector(DM dm, PetscErrorCode (*func)(DM, Vec
 /*@C
   DMShellSetGlobalToLocal - Sets the routines used to perform a global to local scatter
 
-  Logically Collective on dm
+  Logically Collective
 
   Input Parameters:
 + dm    - the `DMSHELL`
@@ -559,7 +559,7 @@ PetscErrorCode DMShellSetGlobalToLocal(DM dm, PetscErrorCode (*begin)(DM, Vec, I
 /*@C
   DMShellSetLocalToGlobal - Sets the routines used to perform a local to global scatter
 
-  Logically Collective on dm
+  Logically Collective
 
   Input Parameters:
 + dm    - the `DMSHELL`
@@ -586,7 +586,7 @@ PetscErrorCode DMShellSetLocalToGlobal(DM dm, PetscErrorCode (*begin)(DM, Vec, I
 /*@C
   DMShellSetLocalToLocal - Sets the routines used to perform a local to local scatter
 
-  Logically Collective on dm
+  Logically Collective
 
   Input Parameters:
 + dm    - the `DMSHELL`
@@ -613,7 +613,7 @@ PetscErrorCode DMShellSetLocalToLocal(DM dm, PetscErrorCode (*begin)(DM, Vec, In
 /*@
   DMShellSetGlobalToLocalVecScatter - Sets a `VecScatter` context for global to local communication
 
-  Logically Collective on dm
+  Logically Collective
 
   Input Parameters:
 + dm   - the `DMSHELL`
@@ -639,7 +639,7 @@ PetscErrorCode DMShellSetGlobalToLocalVecScatter(DM dm, VecScatter gtol)
 /*@
   DMShellSetLocalToGlobalVecScatter - Sets a` VecScatter` context for local to global communication
 
-  Logically Collective on dm
+  Logically Collective
 
   Input Parameters:
 + dm   - the `DMSHELL`

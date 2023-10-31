@@ -1386,7 +1386,7 @@ PetscErrorCode SNESLineSearchSetComputeNorms(SNESLineSearch linesearch, PetscBoo
 /*@
   SNESLineSearchGetVecs - Gets the vectors from the `SNESLineSearch` context
 
-  Not Collective on but the vectors are parallel
+  Not Collective but the vectors are parallel
 
   Input Parameter:
 . linesearch - linesearch context

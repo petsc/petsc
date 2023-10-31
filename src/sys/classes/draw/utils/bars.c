@@ -10,7 +10,7 @@ PetscClassId PETSC_DRAWBAR_CLASSID = 0;
 /*@C
   PetscDrawBarCreate - Creates a bar graph data structure.
 
-  Collective over draw
+  Collective
 
   Input Parameter:
 . draw - The window where the graph will be made
@@ -98,7 +98,7 @@ PetscErrorCode PetscDrawBarSetData(PetscDrawBar bar, PetscInt bins, const PetscR
 /*@C
   PetscDrawBarDestroy - Frees all space taken up by bar graph data structure.
 
-  Collective over bar
+  Collective
 
   Input Parameter:
 . bar - The bar graph context
@@ -366,7 +366,7 @@ PetscErrorCode PetscDrawBarGetDraw(PetscDrawBar bar, PetscDraw *draw)
 /*@
   PetscDrawBarSetFromOptions - Sets options related to the display of the `PetscDrawBar`
 
-  Collective over bar
+  Collective
 
   Input Parameter:
 . bar - the bar graph context
