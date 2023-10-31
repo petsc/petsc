@@ -30,7 +30,7 @@ int main(int argc, char **argv)
   DM           dm;
   PetscSection section;
   PetscFE      fe;
-  PetscInt     dim, c, cStart, cEnd;
+  PetscInt     dim, Nf = 1, c, cStart, cEnd;
   PetscBool    view_coord = PETSC_FALSE, tensor = PETSC_TRUE, project = PETSC_FALSE;
 
   PetscFunctionBeginUser;
@@ -39,6 +39,7 @@ int main(int argc, char **argv)
   PetscCall(PetscOptionsBool("-closure_tensor", "Apply DMPlexSetClosurePermutationTensor", "ex8.c", tensor, &tensor, NULL));
   PetscCall(PetscOptionsBool("-project_coordinates", "Call DMSetCoordinateDisc() explicitly", "ex8.c", project, &project, NULL));
   PetscCall(PetscOptionsBool("-view_coord", "View coordinates of element closures", "ex8.c", view_coord, &view_coord, NULL));
+  PetscCall(PetscOptionsBoundedInt("-num_fields", "The number of fields to use", "ex8.c", Nf, &Nf, NULL, 1));
   PetscOptionsEnd();
 
   PetscCall(DMCreate(PETSC_COMM_WORLD, &dm));
@@ -55,8 +56,19 @@ int main(int argc, char **argv)
   PetscCall(DMViewFromOptions(dm, NULL, "-dm_view"));
   PetscCall(DMGetDimension(dm, &dim));
 
-  PetscCall(PetscFECreateDefault(PETSC_COMM_SELF, dim, 1, PETSC_FALSE, NULL, PETSC_DETERMINE, &fe));
-  PetscCall(DMAddField(dm, NULL, (PetscObject)fe));
+  if (Nf == 1) {
+    PetscCall(PetscFECreateDefault(PETSC_COMM_SELF, dim, 1, PETSC_FALSE, NULL, PETSC_DETERMINE, &fe));
+    PetscCall(DMAddField(dm, NULL, (PetscObject)fe));
+    PetscCall(PetscFEDestroy(&fe));
+  } else {
+    for (PetscInt f = 0; f < Nf; ++f) {
+      char prefix[16];
+      PetscCall(PetscSNPrintf(prefix, 16, "f%" PetscInt_FMT "_", f));
+      PetscCall(PetscFECreateDefault(PETSC_COMM_SELF, dim, 1, PETSC_FALSE, prefix, PETSC_DETERMINE, &fe));
+      PetscCall(DMAddField(dm, NULL, (PetscObject)fe));
+      PetscCall(PetscFEDestroy(&fe));
+    }
+  }
   PetscCall(DMCreateDS(dm));
   if (tensor) PetscCall(DMPlexSetClosurePermutationTensor(dm, PETSC_DETERMINE, NULL));
   PetscCall(DMGetLocalSection(dm, &section));
@@ -94,7 +106,6 @@ int main(int argc, char **argv)
     PetscCall(DMGetCoordinatesLocal(dm, &X));
     PetscCall(ViewOffsets(cdm, X));
   }
-  PetscCall(PetscFEDestroy(&fe));
   PetscCall(DMDestroy(&dm));
   PetscCall(PetscFinalize());
   return 0;
@@ -108,6 +119,18 @@ int main(int argc, char **argv)
   test:
     suffix: 2d_q1
     args: -dm_plex_dim 2 -petscspace_degree 1 -dm_plex_simplex 0 -dm_plex_box_faces 2,2
+  test:
+    suffix: 2d_q2_q1
+    args: -dm_plex_dim 2 -num_fields 2 -f0_petscspace_degree 2 -f1_petscspace_degree 1 -dm_plex_simplex 0 -dm_plex_box_faces 2,1
+  test:
+    suffix: 2d_q1_discontinuous
+    args: -dm_plex_dim 2 -petscspace_degree 1 -dm_plex_simplex 0 -dm_plex_box_faces 2,2 -petscdualspace_lagrange_continuity 0
+  test:
+    suffix: 2d_q1_q1_discontinuous
+    args: -dm_plex_dim 2 -num_fields 2 -f0_petscspace_degree 1 -f1_petscspace_degree 1 -dm_plex_simplex 0 -dm_plex_box_faces 2,1 -f1_petscdualspace_lagrange_continuity 0
+  test:
+    suffix: 2d_q2_p0_discontinuous
+    args: -dm_plex_dim 2 -num_fields 2 -f0_petscspace_degree 2 -f1_petscspace_degree 0 -dm_plex_simplex 0 -dm_plex_box_faces 2,1 -f1_petscdualspace_lagrange_continuity 0
   test:
     suffix: 2d_q2
     args: -dm_plex_dim 2 -petscspace_degree 2 -dm_plex_simplex 0 -dm_plex_box_faces 2,2
