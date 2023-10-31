@@ -199,7 +199,12 @@ static PetscErrorCode PetscSFSetUp_Neighbor(PetscSF sf)
   dat->nrootreqs      = 1; // collectives only need one MPI_Request. We just put it in rootreqs[]
 
   /* Only setup MPI displs/counts for non-distinguished ranks. Distinguished ranks use shared memory */
+#if !PetscDefined(HAVE_OPENMPI) || (defined(PETSC_HAVE_OMPI_MAJOR_VERSION) && PETSC_HAVE_OMPI_MAJOR_VERSION < 5)
   PetscCall(PetscMalloc6(m, &dat->rootdispls, m, &dat->rootcounts, m, &dat->rootweights, n, &dat->leafdispls, n, &dat->leafcounts, n, &dat->leafweights));
+#else // workaround for an OpenMPI bug, https://github.com/open-mpi/ompi/issues/12037
+  PetscMPIInt m2 = m ? m : 1, n2 = n ? n : 1;
+  PetscCall(PetscMalloc6(m2, &dat->rootdispls, m2, &dat->rootcounts, m2, &dat->rootweights, n2, &dat->leafdispls, n2, &dat->leafcounts, n2, &dat->leafweights));
+#endif
 
 #if defined(PETSC_HAVE_MPI_LARGE_COUNT) && defined(PETSC_USE_64BIT_INDICES)
   for (i = ndrootranks, j = 0; i < nrootranks; i++, j++) {
