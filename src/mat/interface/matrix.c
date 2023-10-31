@@ -4325,7 +4325,10 @@ PetscErrorCode MatConvert(Mat mat, MatType newtype, MatReuse reuse, Mat *M)
   PetscCall(PetscObjectTypeCompare((PetscObject)mat, newtype, &sametype));
   PetscCall(PetscStrcmp(newtype, "same", &issame));
   PetscCheck(!(reuse == MAT_INPLACE_MATRIX) || !(mat != *M), PetscObjectComm((PetscObject)mat), PETSC_ERR_SUP, "MAT_INPLACE_MATRIX requires same input and output matrix");
-  PetscCheck(!(reuse == MAT_REUSE_MATRIX) || !(mat == *M), PetscObjectComm((PetscObject)mat), PETSC_ERR_SUP, "MAT_REUSE_MATRIX means reuse matrix in final argument, perhaps you mean MAT_INPLACE_MATRIX");
+  if (reuse == MAT_REUSE_MATRIX) {
+    PetscValidHeaderSpecific(*M, MAT_CLASSID, 4);
+    PetscCheck(mat != *M, PetscObjectComm((PetscObject)mat), PETSC_ERR_SUP, "MAT_REUSE_MATRIX means reuse matrix in final argument, perhaps you mean MAT_INPLACE_MATRIX");
+  }
 
   if ((reuse == MAT_INPLACE_MATRIX) && (issame || sametype)) {
     PetscCall(PetscInfo(mat, "Early return for inplace %s %d %d\n", ((PetscObject)mat)->type_name, sametype, issame));
