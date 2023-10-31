@@ -2337,7 +2337,7 @@ static PetscErrorCode DMPlexCreateSphereMesh_Internal(DM dm, PetscInt dim, Petsc
   Vec            coordinates;
   PetscScalar   *coords;
   PetscReal     *coordsIn;
-  PetscInt       numCells, numEdges, numVerts = 0, firstVertex = 0, v, firstEdge, coordSize, d, c, e;
+  PetscInt       numCells, numEdges, numVerts = 0, firstVertex = 0, v, firstEdge, coordSize, d, e;
   PetscMPIInt    rank;
 
   PetscFunctionBegin;
@@ -2380,7 +2380,7 @@ static PetscErrorCode DMPlexCreateSphereMesh_Internal(DM dm, PetscInt dim, Petsc
       PetscReal       vertex[3] = {0.0, 1.0 / (1.0 + PETSC_PHI), PETSC_PHI / (1.0 + PETSC_PHI)};
       PetscInt        s[3]      = {1, 1, 1};
       PetscInt        cone[3];
-      PetscInt       *graph, p, i, j, k;
+      PetscInt       *graph;
 
       vertex[0] *= R / radius;
       vertex[1] *= R / radius;
@@ -2398,7 +2398,7 @@ static PetscErrorCode DMPlexCreateSphereMesh_Internal(DM dm, PetscInt dim, Petsc
       /* Construct vertices */
       PetscCall(PetscCalloc1(numVerts * embedDim, &coordsIn));
       if (rank == 0) {
-        for (p = 0, i = 0; p < embedDim; ++p) {
+        for (PetscInt p = 0, i = 0; p < embedDim; ++p) {
           for (s[1] = -1; s[1] < 2; s[1] += 2) {
             for (s[2] = -1; s[2] < 2; s[2] += 2) {
               for (d = 0; d < embedDim; ++d) coordsIn[i * embedDim + d] = s[(d + p) % embedDim] * vertex[(d + p) % embedDim];
@@ -2409,8 +2409,9 @@ static PetscErrorCode DMPlexCreateSphereMesh_Internal(DM dm, PetscInt dim, Petsc
       }
       /* Construct graph */
       PetscCall(PetscCalloc1(numVerts * numVerts, &graph));
-      for (i = 0; i < numVerts; ++i) {
-        for (j = 0, k = 0; j < numVerts; ++j) {
+      for (PetscInt i = 0; i < numVerts; ++i) {
+        PetscInt k = 0;
+        for (PetscInt j = 0; j < numVerts; ++j) {
           if (PetscAbsReal(DiffNormReal(embedDim, &coordsIn[i * embedDim], &coordsIn[j * embedDim]) - edgeLen) < PETSC_SMALL) {
             graph[i * numVerts + j] = 1;
             ++k;
@@ -2420,12 +2421,12 @@ static PetscErrorCode DMPlexCreateSphereMesh_Internal(DM dm, PetscInt dim, Petsc
       }
       /* Build Topology */
       PetscCall(DMPlexSetChart(dm, 0, numCells + numVerts));
-      for (c = 0; c < numCells; c++) PetscCall(DMPlexSetConeSize(dm, c, embedDim));
+      for (PetscInt c = 0; c < numCells; c++) PetscCall(DMPlexSetConeSize(dm, c, embedDim));
       PetscCall(DMSetUp(dm)); /* Allocate space for cones */
       /* Cells */
-      for (i = 0, c = 0; i < numVerts; ++i) {
-        for (j = 0; j < i; ++j) {
-          for (k = 0; k < j; ++k) {
+      for (PetscInt i = 0, c = 0; i < numVerts; ++i) {
+        for (PetscInt j = 0; j < i; ++j) {
+          for (PetscInt k = 0; k < j; ++k) {
             if (graph[i * numVerts + j] && graph[j * numVerts + k] && graph[k * numVerts + i]) {
               cone[0] = firstVertex + i;
               cone[1] = firstVertex + j;
@@ -2489,7 +2490,7 @@ static PetscErrorCode DMPlexCreateSphereMesh_Internal(DM dm, PetscInt dim, Petsc
       firstEdge   = numCells + numVerts;
       /* Build Topology */
       PetscCall(DMPlexSetChart(dm, 0, numCells + numEdges + numVerts));
-      for (c = 0; c < numCells; c++) PetscCall(DMPlexSetConeSize(dm, c, 4));
+      for (PetscInt c = 0; c < numCells; c++) PetscCall(DMPlexSetConeSize(dm, c, 4));
       for (e = firstEdge; e < firstEdge + numEdges; ++e) PetscCall(DMPlexSetConeSize(dm, e, 2));
       PetscCall(DMSetUp(dm)); /* Allocate space for cones */
       if (rank == 0) {
@@ -2728,11 +2729,11 @@ static PetscErrorCode DMPlexCreateSphereMesh_Internal(DM dm, PetscInt dim, Petsc
       }
       /* Build Topology */
       PetscCall(DMPlexSetChart(dm, 0, numCells + numVerts));
-      for (c = 0; c < numCells; c++) PetscCall(DMPlexSetConeSize(dm, c, embedDim));
+      for (PetscInt c = 0; c < numCells; c++) PetscCall(DMPlexSetConeSize(dm, c, embedDim));
       PetscCall(DMSetUp(dm)); /* Allocate space for cones */
       /* Cells */
       if (rank == 0) {
-        for (i = 0, c = 0; i < numVerts; ++i) {
+        for (PetscInt i = 0, c = 0; i < numVerts; ++i) {
           for (j = 0; j < i; ++j) {
             for (k = 0; k < j; ++k) {
               for (l = 0; l < k; ++l) {
