@@ -71,7 +71,7 @@ in the DAG. In order to preallocate correctly, we first provide sizes,
 
 .. code-block::
 
-   DMPlexSetConeSize(dm, point, number of points that cover the point);
+   /* DMPlexSetConeSize(dm, point, number of points that cover the point); */
    DMPlexSetConeSize(dm, 0, 3);
    DMPlexSetConeSize(dm, 1, 3);
    DMPlexSetConeSize(dm, 6, 2);
@@ -85,7 +85,7 @@ and then point values (recall each point is an integer that represents a single 
 
 .. code-block::
 
-   DMPlexSetCone(dm, point, [points that cover the point]);
+   /* DMPlexSetCone(dm, point, [points that cover the point]); */
    DMPlexSetCone(dm, 0, [6, 7, 8]);
    DMPlexSetCone(dm, 1, [7, 9, 10]);
    DMPlexSetCone(dm, 6, [2, 3]);
