@@ -198,15 +198,25 @@ PetscErrorCode DMPlexGetAdjacency_Internal(DM dm, PetscInt p, PetscBool useCone,
     }
   }
   if (!*adj) {
-    PetscInt depth, coneSeries, supportSeries, maxC, maxS, pStart, pEnd;
+    PetscInt depth, maxC, maxS, maxP, pStart, pEnd;
 
     PetscCall(DMPlexGetChart(dm, &pStart, &pEnd));
     PetscCall(DMPlexGetDepth(dm, &depth));
     depth = PetscMax(depth, -depth);
     PetscCall(DMPlexGetMaxSizes(dm, &maxC, &maxS));
-    coneSeries    = (maxC > 1) ? ((PetscPowInt(maxC, depth + 1) - 1) / (maxC - 1)) : depth + 1;
-    supportSeries = (maxS > 1) ? ((PetscPowInt(maxS, depth + 1) - 1) / (maxS - 1)) : depth + 1;
-    asiz          = PetscMax(PetscPowInt(maxS, depth) * coneSeries, PetscPowInt(maxC, depth) * supportSeries);
+    maxP = maxS * maxC;
+    /* Adjacency can be as large as supp(cl(cell)) or cl(supp(vertex)),
+           supp(cell) + supp(maxC faces) + supp(maxC^2 edges) + supp(maxC^3 vertices)
+         = 0 + maxS*maxC + maxS^2*maxC^2 + maxS^3*maxC^3
+         = \sum^d_{i=0} (maxS*maxC)^i - 1
+         = (maxS*maxC)^{d+1} - 1 / (maxS*maxC - 1) - 1
+      We could improve this by getting the max by strata:
+           supp[d](cell) + supp[d-1](maxC[d] faces) + supp[1](maxC[d]*maxC[d-1] edges) + supp[0](maxC[d]*maxC[d-1]*maxC[d-2] vertices)
+         = 0 + maxS[d-1]*maxC[d] + maxS[1]*maxC[d]*maxC[d-1] + maxS[0]*maxC[d]*maxC[d-1]*maxC[d-2]
+      and the same with S and C reversed
+    */
+    if ((depth == 3 && maxP > 200) || (depth == 2 && maxP > 580)) asiz = pEnd - pStart;
+    else asiz = (maxP > 1) ? ((PetscPowInt(maxP, depth + 1) - 1) / (maxP - 1)) : depth + 1;
     asiz *= maxAnchors;
     asiz = PetscMin(asiz, pEnd - pStart);
     PetscCall(PetscMalloc1(asiz, adj));
