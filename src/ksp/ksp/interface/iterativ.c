@@ -22,7 +22,7 @@
 
   Level: intermediate
 
-  Note:
+  Notes:
   For some methods, such as `KSPGMRES`, the norm is not computed directly from the residual.
 
   The type of norm used by the method can be controlled with `KSPSetNormType()`
@@ -115,7 +115,7 @@ PetscErrorCode KSPGetTotalIterations(KSP ksp, PetscInt *its)
   The type of norm used by the method can be controlled with `KSPSetNormType()`
 
   This is not called directly by users, rather one calls `KSPMonitorSet()`, with this function as an argument, to cause the monitor
-  to be used during the KSP solve.
+  to be used during the `KSP` solve.
 
 .seealso: [](ch_ksp), `KSP`, `KSPMonitorSet()`, `KSPMonitorTrueResidual()`, `KSPMonitorResidualDraw()`, `KSPMonitorResidualDrawLG()`,
           `KSPMonitorResidualRange()`, `KSPMonitorTrueResidualDraw()`, `KSPMonitorTrueResidualDrawLG()`, `KSPMonitorTrueResidualMax()`,
@@ -1252,7 +1252,7 @@ PetscErrorCode KSPMonitorDynamicToleranceDestroy(void **ctx)
 
   Level: advanced
 
-  Notes:
+  Note:
   This should be used as the convergence test with the option
   `KSPSetNormType`(ksp,`KSP_NORM_NONE`), since norms of the residual are
   not computed. Convergence is then declared after the maximum number
@@ -1286,7 +1286,7 @@ PetscErrorCode KSPConvergedSkip(KSP ksp, PetscInt n, PetscReal rnorm, KSPConverg
 
   Level: advanced
 
-  Notes:
+  Note:
   This is currently used only by a subset of the Krylov solvers, namely `KSPCG`, `KSPSTCG`, `KSPQCG`, `KSPGLTR`, `KSPNASH`, and `KSPMINRES`.
 
 .seealso: [](ch_ksp), `KSP`, `KSPConvergedReason`, `KSPGetConvergedNegativeCurvature()`
@@ -1647,8 +1647,8 @@ PetscErrorCode KSPConvergedDefaultDestroy(void *ctx)
   Some `KSP` methods such as `KSPGMRES` do not compute the explicit solution at each iteration, this routine takes the information
   they have computed during the previous iterations and uses it to compute the explicit solution
 
-  Developer Notes:
-  This is PETSC_EXTERN because it may be used by user written plugin `KSPType` implementations
+  Developer Note:
+  This is `PETSC_EXTERN` because it may be used by user written plugin `KSPType` implementations
 
 .seealso: [](ch_ksp), `KSP`, `KSPGetSolution()`, `KSPBuildResidualDefault()`
 */
@@ -1706,8 +1706,8 @@ PetscErrorCode KSPBuildSolutionDefault(KSP ksp, Vec v, Vec *V)
   Some `KSP` methods such as `KSPGMRES` do not compute the explicit residual at each iteration, this routine takes the information
   they have computed during the previous iterations and uses it to compute the explicit residual via the formula r = b - A*x.
 
-  Developer Notes:
-  This is PETSC_EXTERN because it may be used by user written plugin `KSPType` implementations
+  Developer Note:
+  This is `PETSC_EXTERN` because it may be used by user written plugin `KSPType` implementations
 
 .seealso: [](ch_ksp), `KSP`, `KSPBuildSolutionDefault()`
 @*/
@@ -1747,7 +1747,7 @@ PetscErrorCode KSPBuildResidualDefault(KSP ksp, Vec t, Vec v, Vec *V)
 
   The vectors are new vectors that are not owned by the `KSP`, they should be destroyed with calls to `VecDestroyVecs()` when no longer needed.
 
-  Developer Notes:
+  Developer Note:
   First tries to duplicate the rhs and solution vectors of the `KSP`, if they do not exist tries to get them from the matrix with `MatCreateVecs()`, if
   that does not exist tries to get them from the `DM` (if it is provided) with `DMCreateGlobalVectors()`.
 
@@ -1840,8 +1840,8 @@ PetscErrorCode KSPCreateVecs(KSP ksp, PetscInt rightn, Vec **right, PetscInt lef
 
   Level: developer
 
-  Developer Notes:
-  This is PETSC_EXTERN because it may be used by user written plugin `KSPType` implementations
+  Developer Note:
+  This is `PETSC_EXTERN` because it may be used by user written plugin `KSPType` implementations
 
 .seealso: [](ch_ksp), `KSP`, `KSPCreateVecs()`
 @*/
@@ -1863,8 +1863,8 @@ PetscErrorCode KSPSetWorkVecs(KSP ksp, PetscInt nw)
 
   Level: advanced
 
-  Developer Notes:
-  This is PETSC_EXTERN because it may be used by user written plugin `KSPType` implementations
+  Developer Note:
+  This is `PETSC_EXTERN` because it may be used by user written plugin `KSPType` implementations
 
 .seealso: [](ch_ksp), `KSP`, `KSPDestroy()`
 */
@@ -1892,7 +1892,7 @@ PetscErrorCode KSPDestroyDefault(KSP ksp)
 
   Level: intermediate
 
-  Notes:
+  Note:
   If this routine is called before or doing the `KSPSolve()` the value of `KSP_CONVERGED_ITERATING` is returned
 
 .seealso: [](ch_ksp), `KSPConvergedReason`, `KSP`, `KSPSetConvergenceTest()`, `KSPConvergedDefault()`, `KSPSetTolerances()`,
@@ -2047,7 +2047,7 @@ PetscErrorCode KSPGetDM(KSP ksp, DM *dm)
 
   Use `KSPGetApplicationContext()` to get access to the context at a later time.
 
-  Fortran Notes:
+  Fortran Note:
   To use this from Fortran you must write a Fortran interface definition for this
   function that tells Fortran the Fortran derived data type that you are passing in as the ctx argument.
 
@@ -2078,7 +2078,7 @@ PetscErrorCode KSPSetApplicationContext(KSP ksp, void *ctx)
 
   Level: intermediate
 
-  Fortran Notes:
+  Fortran Note:
   To use this from Fortran you must write a Fortran interface definition for this
   function that tells Fortran the Fortran derived data type that you are passing in as the ctx argument.
 
@@ -2108,13 +2108,13 @@ PetscErrorCode KSPGetApplicationContext(KSP ksp, void *ctx)
   Level: developer
 
   Note:
-  This is called within `PCApply()` implementations to check if an error has been detected on any particular MPI ranks. By initializing the vector
-  with Inf the next call to `KSPCheckNorm()` or `KSPCheckDot()` will provide the same information to all the MPI ranks that an error occurred on
-  at least one of the ranks.
+  This is called within `PCApply()` implementations to check if an error has been detected on any particular MPI processes. By initializing the vector
+  with Inf the next call to `KSPCheckNorm()` or `KSPCheckDot()` will provide the same information to all the MPI processes that an error occurred on
+  at least one of the processes.
 
   This may be called by a subset of the processes in the `PC`.
 
-  Developer Notes:
+  Developer Note:
   This is used to manage returning with appropriate information from preconditioners whose inner `KSP` solvers have failed in some way
 
 .seealso: [](ch_ksp), `KSP`, `KSPCreate()`, `KSPSetType()`, `KSPCheckNorm()`, `KSPCheckDot()`

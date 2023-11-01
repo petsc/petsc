@@ -24,7 +24,7 @@ $     -ksp_guess_type my_initial_guess
 
   Level: developer
 
-  Notes:
+  Note:
   `KSPGuessRegister()` may be called multiple times to add several user-defined solvers.
 
 .seealso: [](ch_ksp), `KSPGuess`, `KSPGuessRegisterAll()`
@@ -102,7 +102,7 @@ PetscErrorCode KSPGuessSetFromOptions(KSPGuess guess)
 
   Level: developer
 
-  Notes:
+  Note:
   Ignored by the first and second Fischer guess types
 
 .seealso: [](ch_ksp), `KSPGuess`, `KSPGuessType`, `KSPGuessSetFromOptions()`
