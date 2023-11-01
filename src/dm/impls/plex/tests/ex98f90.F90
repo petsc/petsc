@@ -109,7 +109,7 @@ end program ex98f90
 !   build:
 !     requires: exodusii pnetcdf !complex
 !   testset:
-!     args: -i ${wPETSC_DIR}/share/petsc/datafiles/meshes/SquareFaceSet.exo -exodusii_check_reserved 0 -dm_view -dm_section_view
+!     args: -i ${wPETSC_DIR}/share/petsc/datafiles/meshes/SquareFaceSet.exo -dm_view -dm_section_view
 !     nsize: 1
 !     test:
 !       suffix: 0

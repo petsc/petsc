@@ -233,7 +233,7 @@ int main(int argc, char **argv)
 
   testset:
     requires: exodusii
-    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/blockcylinder-50.exo -exodusii_check_reserved 0
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/blockcylinder-50.exo
     test:
       suffix: 2
       nsize: {{1 2 4 8}separate output}
