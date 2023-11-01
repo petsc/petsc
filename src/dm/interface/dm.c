@@ -6020,6 +6020,10 @@ PetscErrorCode DMCreateDS(DM dm)
   /* Setup DSes */
   if (doSetup) {
     for (s = 0; s < dm->Nds; ++s) {
+      if (dm->setfromoptionscalled) {
+        PetscCall(PetscDSSetFromOptions(dm->probs[s].ds));
+        if (dm->probs[s].dsIn) PetscCall(PetscDSSetFromOptions(dm->probs[s].dsIn));
+      }
       PetscCall(PetscDSSetUp(dm->probs[s].ds));
       if (dm->probs[s].dsIn) PetscCall(PetscDSSetUp(dm->probs[s].dsIn));
     }
