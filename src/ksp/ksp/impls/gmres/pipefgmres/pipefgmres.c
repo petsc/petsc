@@ -145,7 +145,7 @@ static PetscErrorCode KSPPIPEFGMRESCycle(PetscInt *itcount, KSP ksp)
 
     /* The work to be overlapped with the inner products follows.
        This is application of the preconditioner and the operator
-       to compute intermediate quantites which will be combined (locally)
+       to compute intermediate quantities which will be combined (locally)
        with the results of the inner products.
        */
     PetscCall(KSP_PCApply(ksp, ZVEC(loc_it), Q));

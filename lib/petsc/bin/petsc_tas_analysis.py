@@ -625,7 +625,7 @@ def dataProces(cmdLineArgs, fileName):
                 luFactorMin.append(luFactorTempMin)
                 luFactorMean.append(totalLuFactor/nProcs)
 
-            #Calculats the growth rate of statistics between levels
+            #Calculates the growth rate of statistics between levels
             if level >= 1:
                 timeGrowthRate.append(meanTime[level]/meanTime[level-1])
                 flopGrowthRate.append(meanFlop[level]/meanFlop[level-1])

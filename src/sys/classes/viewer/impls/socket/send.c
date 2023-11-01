@@ -274,7 +274,7 @@ static PetscErrorCode PetscSocketListen(int listenport, int *t)
    `PETSC_VIEWER_SOCKET_()` or if
     `NULL` is passed for machine or PETSC_DEFAULT is passed for port
 + -viewer_socket_machine <machine> - the machine where the socket is available
-- -viewer_socket_port <port>       - the socket to conntect to
+- -viewer_socket_port <port>       - the socket to connect to
 
   Environmental variables:
 +   `PETSC_VIEWER_SOCKET_MACHINE` - machine name

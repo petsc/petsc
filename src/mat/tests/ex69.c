@@ -114,7 +114,7 @@ int main(int argc, char **argv)
 
   /* Test MatMatMult */
   if (use_shell) {
-    /* we could have called the general convertor below, but we explicit set the operations
+    /* we could have called the general converter below, but we explicitly set the operations
        ourselves to test MatProductSymbolic_X_Dense, MatProductNumeric_X_Dense code */
     /* PetscCall(MatConvert(A,MATSHELL,MAT_INITIAL_MATRIX,&S)); */
     PetscCall(MatCreateShell(PetscObjectComm((PetscObject)v), nloc, nloc, n, n, A, &S));

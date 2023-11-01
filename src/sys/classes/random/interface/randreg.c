@@ -82,7 +82,7 @@ PetscErrorCode PetscRandomGetType(PetscRandom rnd, PetscRandomType *type)
   Level: advanced
 
   Notes:
-  `PetscRandomRegister()` may be called multiple times to add several user-defined randome number generators
+  `PetscRandomRegister()` may be called multiple times to add several user-defined random number generators
 
   For an example of the code needed to interface your own random number generator see src/sys/random/impls/rand/rand.c
 
