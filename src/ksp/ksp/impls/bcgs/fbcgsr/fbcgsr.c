@@ -101,7 +101,7 @@ static PetscErrorCode KSPSolve_FBCGSR(KSP ksp)
     PetscCall(KSP_PCApply(ksp, P, P2));      /* p2 <- K p */
     PetscCall(KSP_MatMult(ksp, mat, P2, V)); /* v <- A p2 */
 
-    /* inner prodcuts */
+    /* inner products */
     if (i == 0) {
       tau = rho * rho;
       PetscCall(VecDot(V, RP, &sigma)); /* sigma <- (v,rp) */
@@ -133,7 +133,7 @@ static PetscErrorCode KSPSolve_FBCGSR(KSP ksp)
     PetscCall(KSP_PCApply(ksp, S, S2));      /* s2 <- K s */
     PetscCall(KSP_MatMult(ksp, mat, S2, T)); /* t <- A s2 */
 
-    /* inner prodcuts */
+    /* inner products */
     PetscCall(PetscLogEventBegin(VEC_ReduceArithmetic, 0, 0, 0, 0));
     xi1 = xi2 = xi3 = xi4 = 0.0;
     for (j = 0; j < N; j++) {

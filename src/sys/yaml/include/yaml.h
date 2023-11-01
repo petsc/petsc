@@ -610,7 +610,7 @@ yaml_document_delete(yaml_document_t *document);
  * @param[in]       document        A document object.
  * @param[in]       index           The node id.
  *
- * @returns the node objct or @c NULL if @c node_id is out of range.
+ * @returns the node object or @c NULL if @c node_id is out of range.
  */
 
 YAML_DECLARE(yaml_node_t *)
