@@ -3818,7 +3818,7 @@ static PetscErrorCode DMPlexGetTransitiveClosure_Depth1_Private(DM dm, PetscInt 
   PetscFunctionBeginHot;
   if (ornt) {
     PetscCall(DMPlexGetCellType(dm, p, &ct));
-    if (ct == DM_POLYTOPE_FV_GHOST || ct == DM_POLYTOPE_INTERIOR_GHOST || ct == DM_POLYTOPE_UNKNOWN) ct = DM_POLYTOPE_UNKNOWN;
+    if (ct == DM_POLYTOPE_FV_GHOST || ct == DM_POLYTOPE_INTERIOR_GHOST || ct == DM_POLYTOPE_UNKNOWN || ct == DM_POLYTOPE_UNKNOWN_CELL || ct == DM_POLYTOPE_UNKNOWN_FACE) ct = DM_POLYTOPE_UNKNOWN;
   }
   if (*points) {
     closure = *points;
@@ -3940,7 +3940,7 @@ PetscErrorCode DMPlexGetTransitiveClosure_Internal(DM dm, PetscInt p, PetscInt o
     PetscFunctionReturn(PETSC_SUCCESS);
   }
   PetscCall(DMPlexGetCellType(dm, p, &ct));
-  if (ct == DM_POLYTOPE_FV_GHOST || ct == DM_POLYTOPE_INTERIOR_GHOST || ct == DM_POLYTOPE_UNKNOWN) ct = DM_POLYTOPE_UNKNOWN;
+  if (ct == DM_POLYTOPE_FV_GHOST || ct == DM_POLYTOPE_INTERIOR_GHOST || ct == DM_POLYTOPE_UNKNOWN || ct == DM_POLYTOPE_UNKNOWN_CELL || ct == DM_POLYTOPE_UNKNOWN_FACE) ct = DM_POLYTOPE_UNKNOWN;
   if (ct == DM_POLYTOPE_SEG_PRISM_TENSOR || ct == DM_POLYTOPE_TRI_PRISM_TENSOR || ct == DM_POLYTOPE_QUAD_PRISM_TENSOR) {
     PetscCall(DMPlexTransitiveClosure_Tensor_Internal(dm, p, ct, ornt, useCone, numPoints, points));
     PetscFunctionReturn(PETSC_SUCCESS);
@@ -4532,7 +4532,7 @@ PetscErrorCode DMPlexComputeCellTypes(DM dm)
 
     PetscCall(DMPlexGetPointDepth(dm, p, &pdepth));
     PetscCall(DMPlexComputeCellType_Internal(dm, p, pdepth, &ct));
-    PetscCheck(ct != DM_POLYTOPE_UNKNOWN, PETSC_COMM_SELF, PETSC_ERR_SUP, "Point %" PetscInt_FMT " is screwed up", p);
+    PetscCheck(ct != DM_POLYTOPE_UNKNOWN && ct != DM_POLYTOPE_UNKNOWN_CELL && ct != DM_POLYTOPE_UNKNOWN_FACE, PETSC_COMM_SELF, PETSC_ERR_SUP, "Point %" PetscInt_FMT " is screwed up", p);
     PetscCall(DMLabelSetValue(ctLabel, p, ct));
     mesh->cellTypes[p - pStart].value_as_uint8 = ct;
   }

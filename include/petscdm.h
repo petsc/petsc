@@ -447,6 +447,7 @@ static inline PetscInt DMPolytopeTypeGetDim(DMPolytopeType ct)
   case DM_POLYTOPE_TRIANGLE:
   case DM_POLYTOPE_QUADRILATERAL:
   case DM_POLYTOPE_SEG_PRISM_TENSOR:
+  case DM_POLYTOPE_UNKNOWN_FACE:
     return 2;
   case DM_POLYTOPE_TETRAHEDRON:
   case DM_POLYTOPE_HEXAHEDRON:
@@ -454,6 +455,7 @@ static inline PetscInt DMPolytopeTypeGetDim(DMPolytopeType ct)
   case DM_POLYTOPE_TRI_PRISM_TENSOR:
   case DM_POLYTOPE_QUAD_PRISM_TENSOR:
   case DM_POLYTOPE_PYRAMID:
+  case DM_POLYTOPE_UNKNOWN_CELL:
     return 3;
   default:
     return -1;

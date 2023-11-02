@@ -23,8 +23,9 @@ PetscLogEvent DM_Convert, DM_GlobalToLocal, DM_LocalToGlobal, DM_LocalToLocal, D
 const char *const DMBoundaryTypes[]          = {"NONE", "GHOSTED", "MIRROR", "PERIODIC", "TWIST", "DMBoundaryType", "DM_BOUNDARY_", NULL};
 const char *const DMBoundaryConditionTypes[] = {"INVALID", "ESSENTIAL", "NATURAL", "INVALID", "INVALID", "ESSENTIAL_FIELD", "NATURAL_FIELD", "INVALID", "INVALID", "ESSENTIAL_BD_FIELD", "NATURAL_RIEMANN", "DMBoundaryConditionType", "DM_BC_", NULL};
 const char *const DMBlockingTypes[]          = {"TOPOLOGICAL_POINT", "FIELD_NODE", "DMBlockingType", "DM_BLOCKING_", NULL};
-const char *const DMPolytopeTypes[]   = {"vertex",  "segment",       "tensor_segment",      "triangle", "quadrilateral", "tensor_quad",    "tetrahedron",  "hexahedron", "triangular_prism", "tensor_triangular_prism", "tensor_quadrilateral_prism",
-                                         "pyramid", "FV_ghost_cell", "interior_ghost_cell", "unknown",  "invalid",       "DMPolytopeType", "DM_POLYTOPE_", NULL};
+const char *const DMPolytopeTypes[] =
+  {"vertex",  "segment",      "tensor_segment", "triangle", "quadrilateral",  "tensor_quad",  "tetrahedron", "hexahedron", "triangular_prism", "tensor_triangular_prism", "tensor_quadrilateral_prism", "pyramid", "FV_ghost_cell", "interior_ghost_cell",
+   "unknown", "unknown_cell", "unknown_face",   "invalid",  "DMPolytopeType", "DM_POLYTOPE_", NULL};
 const char *const DMCopyLabelsModes[] = {"replace", "keep", "fail", "DMCopyLabelsMode", "DM_COPY_LABELS_", NULL};
 
 /*@
