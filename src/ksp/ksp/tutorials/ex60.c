@@ -208,8 +208,14 @@ int main(int argc, char **argv)
       requires: !complex !single
 
    test:
+      suffix: 1
       nsize: 2
       args: -ksp_monitor_short -ksp_rtol 1e-6 -diagfunc 1 -ksp_type fcg -ksp_fcg_mmax 1 -eta 0.1
+
+   test:
+      suffix: 1_eigs
+      nsize: 2
+      args: -ksp_rtol 1e-6 -diagfunc 1 -ksp_type fcg -ksp_fcg_mmax 1 -eta 0.1 -ksp_monitor_singular_value
 
    test:
       suffix: 2

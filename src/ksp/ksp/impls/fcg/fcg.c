@@ -228,6 +228,16 @@ static PetscErrorCode KSPSolve_FCG(KSP ksp)
       SETERRQ(PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "%s", KSPNormTypes[ksp->normtype]);
     }
 
+    if (eigs) {
+      if (i > 0) {
+        PetscCheck(ksp->max_it == stored_max_it, PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "Can not change maxit AND calculate eigenvalues");
+        e[i] = PetscSqrtReal(PetscAbsScalar(beta / betaold)) / alphaold;
+        d[i] = PetscSqrtReal(PetscAbsScalar(beta / betaold)) * e[i] + 1.0 / alpha;
+      } else {
+        d[i] = PetscSqrtReal(PetscAbsScalar(beta)) * e[i] + 1.0 / alpha;
+      }
+    }
+
     /* Check for convergence */
     ksp->rnorm = dp;
     PetscCall(KSPLogResidualHistory(ksp, dp));
@@ -240,17 +250,6 @@ static PetscErrorCode KSPSolve_FCG(KSP ksp)
 
     /* Compute current C (which is W/dpi) */
     PetscCall(VecScale(Ccurr, 1.0 / dpi)); /*   w <- ci/dpi   */
-
-    if (eigs) {
-      if (i > 0) {
-        PetscCheck(ksp->max_it == stored_max_it, PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "Can not change maxit AND calculate eigenvalues");
-        e[i] = PetscSqrtReal(PetscAbsScalar(beta / betaold)) / alphaold;
-        d[i] = PetscSqrtReal(PetscAbsScalar(beta / betaold)) * e[i] + 1.0 / alpha;
-      } else {
-        d[i] = PetscSqrtReal(PetscAbsScalar(beta)) * e[i] + 1.0 / alpha;
-      }
-      fcg->ned = ksp->its - 1;
-    }
     ++i;
   } while (i < ksp->max_it);
   if (i >= ksp->max_it) ksp->reason = KSP_DIVERGED_ITS;
