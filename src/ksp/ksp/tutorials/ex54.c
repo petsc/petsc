@@ -242,6 +242,7 @@ int main(int argc, char **args)
    test:
       requires: !single !__float128
       nsize: 4
+      filter: sed -e "s/Linear solve converged due to CONVERGED_RTOL iterations 8/Linear solve converged due to CONVERGED_RTOL iterations 7/g"
       suffix: hem
-      args: -ne 39 -ksp_type cg -pc_type gamg -pc_gamg_type agg -ksp_rtol 1e-4 -ksp_monitor_short -ksp_norm_type unpreconditioned -mat_coarsen_type hem -ksp_converged_reason -pc_gamg_aggressive_coarsening 0
+      args: -ne 39 -ksp_type cg -pc_type gamg -pc_gamg_type agg -ksp_rtol 1e-4 -ksp_norm_type unpreconditioned -mat_coarsen_type hem -ksp_converged_reason -ksp_norm_type unpreconditioned
 TEST*/

@@ -45,7 +45,7 @@ Changes: Development
 
 - Add ``MatCoarsenSetMaximumIterations()`` with corresponding option ``-mat_coarsen_max_it <4>``. The number of iteration of the coarsening method. Used for the HEM coarsener
 - Add ``MatCoarsenSetThreshold()`` with corresponding option ``-mat_coarsen_threshold <-1>``. Threshold for filtering graph for HEM. Like GAMG < 0 means no filtering
-- Change API for several PetscCD methods used internally in GAMG and MatCoarsen (eg, change ``PetscCDSetChuckSize()`` to ``PetscCDSetChunckSize()``)
+- Change API for several PetscCD methods used internally in GAMG and MatCoarsen (eg, change ``PetscCDSetChuckSize()`` to ``PetscCDSetChunckSize()``), remove Mat argument from``PetscCDGetASMBlocks()``
 
 .. rubric:: PC:
 

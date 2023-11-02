@@ -26,7 +26,7 @@ static PetscErrorCode MatCoarsenApply_MIS_private(IS perm, Mat Gmat, PetscBool s
   Mat_MPIAIJ       *mpimat = NULL;
   MPI_Comm          comm;
   PetscInt          num_fine_ghosts, kk, n, ix, j, *idx, *ii, Iend, my0, nremoved, gid, lid, cpid, lidj, sgid, t1, t2, slid, nDone, nselected = 0, state, statej;
-  PetscInt         *cpcol_gid, *cpcol_state, *lid_cprowID, *lid_gid, *cpcol_sel_gid, *icpcol_gid, *lid_state, *lid_parent_gid = NULL;
+  PetscInt         *cpcol_gid, *cpcol_state, *lid_cprowID, *lid_gid, *cpcol_sel_gid, *icpcol_gid, *lid_state, *lid_parent_gid = NULL, nrm_tot = 0;
   PetscBool        *lid_removed;
   PetscBool         isMPI, isAIJ, isOK;
   const PetscInt   *perm_ix;
@@ -34,10 +34,12 @@ static PetscErrorCode MatCoarsenApply_MIS_private(IS perm, Mat Gmat, PetscBool s
   PetscCoarsenData *agg_lists;
   PetscLayout       layout;
   PetscSF           sf;
+  IS                info_is;
 
   PetscFunctionBegin;
   PetscCall(PetscObjectGetComm((PetscObject)Gmat, &comm));
-
+  PetscCall(ISCreate(comm, &info_is));
+  PetscCall(PetscInfo(info_is, "mis: nloc = %d\n", (int)nloc));
   /* get submatrices */
   PetscCall(PetscObjectBaseTypeCompare((PetscObject)Gmat, MATMPIAIJ, &isMPI));
   if (isMPI) {
@@ -48,7 +50,7 @@ static PetscErrorCode MatCoarsenApply_MIS_private(IS perm, Mat Gmat, PetscBool s
     PetscCall(MatCheckCompressedRow(mpimat->B, matB->nonzerorowcnt, &matB->compressedrow, matB->i, Gmat->rmap->n, -1.0));
   } else {
     PetscCall(PetscObjectBaseTypeCompare((PetscObject)Gmat, MATSEQAIJ, &isAIJ));
-    PetscCheck(isAIJ, PETSC_COMM_SELF, PETSC_ERR_USER, "Require AIJ matrix.");
+    PetscCheck(isAIJ, comm, PETSC_ERR_PLIB, "Require AIJ matrix.");
     matA = (Mat_SeqAIJ *)Gmat->data;
   }
   PetscCall(MatGetOwnershipRange(Gmat, &my0, &Iend));
@@ -91,6 +93,7 @@ static PetscErrorCode MatCoarsenApply_MIS_private(IS perm, Mat Gmat, PetscBool s
   }
   /* MIS */
   nremoved = nDone = 0;
+
   PetscCall(ISGetIndices(perm, &perm_ix));
   while (nDone < nloc || PETSC_TRUE) { /* asynchronous not implemented */
     /* check all vertices */
@@ -109,6 +112,7 @@ static PetscErrorCode MatCoarsenApply_MIS_private(IS perm, Mat Gmat, PetscBool s
             cpid   = idx[j]; /* compressed row ID in B mat */
             gid    = cpcol_gid[cpid];
             statej = cpcol_state[cpid];
+            PetscCheck(!MIS_IS_SELECTED(statej), PETSC_COMM_SELF, PETSC_ERR_SUP, "selected ghost: %d", (int)gid);
             if (statej == MIS_NOT_DONE && gid >= Iend) { /* should be (pe>rank), use gid as pe proxy */
               isOK = PETSC_FALSE;                        /* can not delete */
               break;
@@ -125,13 +129,14 @@ static PetscErrorCode MatCoarsenApply_MIS_private(IS perm, Mat Gmat, PetscBool s
             ix = lid_cprowID[lid];
             if (ix == -1 || !(matB->compressedrow.i[ix + 1] - matB->compressedrow.i[ix])) {
               nremoved++;
+              nrm_tot++;
               lid_removed[lid] = PETSC_TRUE;
-              /* should select this because it is technically in the MIS but lets not */
-              continue; /* one local adj (me) and no ghost - singleton */
+              continue;
+              // lid_state[lidj] = MIS_REMOVED; /* add singleton to MIS (can cause low rank with elasticity on fine grid) */
             }
           }
           /* SELECTED state encoded with global index */
-          lid_state[lid] = lid + my0; /* needed???? */
+          lid_state[lid] = lid + my0;
           nselected++;
           if (strict_aggs) {
             PetscCall(PetscCDAppendID(agg_lists, lid, lid + my0));
@@ -208,7 +213,7 @@ static PetscErrorCode MatCoarsenApply_MIS_private(IS perm, Mat Gmat, PetscBool s
     } else break; /* all done */
   }               /* outer parallel MIS loop */
   PetscCall(ISRestoreIndices(perm, &perm_ix));
-  PetscCall(PetscInfo(Gmat, "\t removed %" PetscInt_FMT " of %" PetscInt_FMT " vertices.  %" PetscInt_FMT " selected.\n", nremoved, nloc, nselected));
+  PetscCall(PetscInfo(info_is, "\t removed %" PetscInt_FMT " of %" PetscInt_FMT " vertices.  %" PetscInt_FMT " selected.\n", nremoved, nloc, nselected));
 
   /* tell adj who my lid_parent_gid vertices belong to - fill in agg_lists selected ghost lists */
   if (strict_aggs && matB) {
@@ -241,6 +246,18 @@ static PetscErrorCode MatCoarsenApply_MIS_private(IS perm, Mat Gmat, PetscBool s
   PetscCall(PetscFree(lid_removed));
   if (strict_aggs) PetscCall(PetscFree(lid_parent_gid));
   PetscCall(PetscFree(lid_state));
+  if (strict_aggs) {
+    // check sizes -- all vertices must get in graph
+    PetscInt aa[2] = {0, nrm_tot}, bb[2], MM;
+    PetscCall(MatGetSize(Gmat, &MM, NULL));
+    // check sizes -- all vertices must get in graph
+    PetscCall(PetscCDCount(agg_lists, &aa[0]));
+    PetscCall(MPIU_Allreduce(aa, bb, 2, MPIU_INT, MPI_SUM, comm));
+    if (MM != bb[0]) PetscCall(PetscInfo(info_is, "Warning: N = %" PetscInt_FMT ", sum of aggregates %" PetscInt_FMT ", %" PetscInt_FMT " removed total\n", MM, bb[0], bb[1]));
+    PetscCheck(MM >= bb[0], comm, PETSC_ERR_PLIB, "Sum of aggs too big");
+  }
+  PetscCall(ISDestroy(&info_is));
+
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -311,7 +328,6 @@ static PetscErrorCode MatCoarsenView_MIS(MatCoarsen coarse, PetscViewer viewer)
 
 .seealso: `MatCoarsen`, `MatCoarsenApply()`, `MatCoarsenGetData()`, `MatCoarsenSetType()`, `MatCoarsenType`
 M*/
-
 PETSC_EXTERN PetscErrorCode MatCoarsenCreate_MIS(MatCoarsen coarse)
 {
   PetscFunctionBegin;

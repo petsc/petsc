@@ -591,7 +591,7 @@ static PetscErrorCode PCGAMGCreateGraph_AGG(PC pc, Mat Amat, Mat *a_Gmat)
   PC_GAMG        *pc_gamg     = (PC_GAMG *)mg->innerctx;
   PC_GAMG_AGG    *pc_gamg_agg = (PC_GAMG_AGG *)pc_gamg->subctx;
   const PetscReal vfilter     = pc_gamg->threshold[pc_gamg->current_level];
-  PetscBool       ishem;
+  PetscBool       ishem, ismis;
   const char     *prefix;
   MatInfo         info0, info1;
   PetscInt        bs;
@@ -606,9 +606,16 @@ static PetscErrorCode PCGAMGCreateGraph_AGG(PC pc, Mat Amat, Mat *a_Gmat)
   PetscCall(MatCoarsenSetFromOptions(pc_gamg_agg->crs));
   PetscCall(PetscObjectTypeCompare((PetscObject)pc_gamg_agg->crs, MATCOARSENHEM, &ishem));
   if (ishem) {
+    if (pc_gamg_agg->aggressive_coarsening_levels) PetscCall(PetscInfo(pc, "HEM and aggressive coarsening ignored: HEM using %d iterations\n", (int)pc_gamg_agg->crs->max_it));
     pc_gamg_agg->aggressive_coarsening_levels = 0;                                         // aggressive and HEM does not make sense
     PetscCall(MatCoarsenSetMaximumIterations(pc_gamg_agg->crs, pc_gamg_agg->crs->max_it)); // for code coverage
     PetscCall(MatCoarsenSetThreshold(pc_gamg_agg->crs, vfilter));                          // for code coverage
+  } else {
+    PetscCall(PetscObjectTypeCompare((PetscObject)pc_gamg_agg->crs, MATCOARSENMIS, &ismis));
+    if (ismis && pc_gamg_agg->aggressive_coarsening_levels && !pc_gamg_agg->use_aggressive_square_graph) {
+      PetscCall(PetscInfo(pc, "MIS and aggressive coarsening and no square graph: force square graph\n"));
+      pc_gamg_agg->use_aggressive_square_graph = PETSC_TRUE;
+    }
   }
   PetscCall(PetscLogEventEnd(petsc_gamg_setup_events[GAMG_COARSEN], 0, 0, 0, 0));
   PetscCall(PetscLogEventBegin(petsc_gamg_setup_events[GAMG_GRAPH], 0, 0, 0, 0));
@@ -1125,7 +1132,7 @@ static PetscErrorCode PCGAMGCoarsen_AGG(PC a_pc, Mat *a_Gmat1, PetscCoarsenData 
   PetscCall(PetscFree2(permute, degree));
   PetscCall(PetscLogEventEnd(petsc_gamg_setup_events[GAMG_MIS], 0, 0, 0, 0));
 
-  if (Gmat2 != Gmat1) {
+  if (Gmat2 != Gmat1) { // square graph, we need ghosts for selected
     PetscCoarsenData *llist = *agg_lists;
     PetscCall(fixAggregatesWithSquare(a_pc, Gmat2, Gmat1, *agg_lists));
     PetscCall(MatDestroy(&Gmat1));
