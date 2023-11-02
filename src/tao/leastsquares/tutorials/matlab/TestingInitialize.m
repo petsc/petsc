@@ -1,7 +1,7 @@
 % Sample calling syntax for testing taopounders and comparing to fminsearch
 % TestingInitialize is called once before solving any instances
 
-% Make the test problem accessible to the matlab session and load the data matrix
+% Make the test problem accessible to the MATLAB session and load the data matrix
 addpath('more_wild_probs/')
 load dfo.dat
 

@@ -5,7 +5,7 @@ function ex41(np,opt)
 %
 % Run with option -on_error_attach_debugger to debug
 %
-%  Requires the Matlab mex routines in ${PETSC_DIR}/share/petsc/matlab and ${PETSC_DIR}/${PETSC_ARCH}/lib/matlab,
+%  Requires the MATLAB mex routines in ${PETSC_DIR}/share/petsc/matlab and ${PETSC_DIR}/${PETSC_ARCH}/lib/matlab,
 %  these require PETSc be configured with --with-matlab
 %  Make sure that ${PETSC_DIR}/share/petsc/matlab and ${PETSC_DIR}/${PETSC_ARCH}/lib/matlab is in your MATLABPATH or
 %  $prefix/share/petsc/matlab and $prefix/lib/matlab if you ran ./configure with --prefix

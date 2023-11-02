@@ -1,7 +1,7 @@
 function localF = ex5m(localX,hx,hy,lambda)
 %
-%  Matlab routine that does the FormFunction() for ex5.c
-%  when using the Matlab engine
+%  MATLAB routine that does the FormFunction() for ex5.c
+%  when using the MATLAB engine
 %
 [m,n] = size(localX);
 %

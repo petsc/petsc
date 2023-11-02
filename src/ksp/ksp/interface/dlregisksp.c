@@ -121,8 +121,8 @@ const char *const  KSPFCDTruncationTypes[] = {"STANDARD", "NOTAY", "KSPFCDTrunca
 static PetscBool KSPPackageInitialized = PETSC_FALSE;
 
 /*@C
-  KSPFinalizePackage - This function destroys everything in the Petsc interface to the KSP package. It is
-  called from PetscFinalize().
+  KSPFinalizePackage - This function destroys everything in the `KSP` package. It is
+  called from `PetscFinalize()`.
 
   Level: developer
 

@@ -122,7 +122,7 @@ Features
    matrix. We also provide ICC(k) and Cholesky factorization
    (currently only for block size of 1) for the SeqSBAIJ matrices
 -  augmented the SeqAIJ matrices to support -mat_aij_matlab that
-   causes the matrices to use the Matlab engine for sparse LU, and
+   causes the matrices to use the MATLAB engine for sparse LU, and
    ILUDT factorization and solves. Which have pivoting and thus are
    more robust than PETSc's default.
 
@@ -155,8 +155,8 @@ Features
    SNES; see src/snes/examples/tutorials/ex5m.c. This functionality
    is accessed via the commands
    PetscMatlabEngineCreate(),Put(),Get(),Evaluate() and Destroy() It
-   even imports the Matlab flop counts correctly. Obviously you need
-   enough Matlab licenses for each node. Note: Matlab itself is not
+   even imports the MATLAB flop counts correctly. Obviously you need
+   enough MATLAB licenses for each node. Note: MATLAB itself is not
    directly doing any parallel computing.
 -  added PetscSetHelpVersionFunctions() for developers of other
    libraries that use PETSc.

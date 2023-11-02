@@ -14,8 +14,8 @@ class Configure(config.package.Package):
     import nargs
     help.addArgument('MATLAB', '-with-matlab=<bool>',         nargs.ArgBool(None, 0, 'Activate Matlab'))
     help.addArgument('MATLAB', '-with-matlab-socket=<bool>',  nargs.ArgBool(None, 1, 'Build socket code for Matlab'))
-    help.addArgument('MATLAB', '-with-matlab-dir=<root dir>', nargs.ArgDir(None, None, 'Specify the root directory of the Matlab installation'))
-    help.addArgument('MATLAB', '-with-matlab-arch=<string>',  nargs.ArgString(None, None, 'Use Matlab Architecture (default use first-found)'))
+    help.addArgument('MATLAB', '-with-matlab-dir=<root dir>', nargs.ArgDir(None, None, 'Specify the root directory of the MATLAB installation'))
+    help.addArgument('MATLAB', '-with-matlab-arch=<string>',  nargs.ArgString(None, None, 'Use MATLAB Architecture (default use first-found)'))
     return
 
   def __str__(self):
@@ -80,7 +80,7 @@ class Configure(config.package.Package):
               continue
           else:
             self.matlab_arch = ls[0]
-          self.log.write('Configuring PETSc to use the MATLAB at '+matlab+' Matlab arch '+self.matlab_arch+'\n')
+          self.log.write('Configuring PETSc to use the MATLAB at '+matlab+' MATLAB arch '+self.matlab_arch+'\n')
           self.mex = os.path.join(matlab,'bin','mex')
           if 'with-matlab-arch' in self.argDB:
             self.mex = self.mex+' -'+self.argDB['with-matlab-arch']

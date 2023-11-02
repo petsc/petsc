@@ -74,11 +74,11 @@ PetscErrorCode KSPSetOptionsPrefix(KSP ksp, const char prefix[])
 + ksp    - the Krylov context
 - prefix - the prefix string to prepend to all `KSP` option requests
 
-  Notes:
+  Level: advanced
+
+  Note:
   A hyphen (-) must NOT be given at the beginning of the prefix name.
   The first character of all runtime options is AUTOMATICALLY the hyphen.
-
-  Level: advanced
 
 .seealso: [](ch_ksp), `KSP`, `KSPSetOptionsPrefix()`, `KSPGetOptionsPrefix()`, `KSPSetFromOptions()`
 @*/
@@ -199,11 +199,11 @@ PetscErrorCode KSPGetGuess(KSP ksp, KSPGuess *guess)
   Output Parameter:
 . prefix - pointer to the prefix string used is returned
 
-  Notes:
-  On the fortran side, the user should pass in a string 'prefix' of
-  sufficient length to hold the prefix.
-
   Level: advanced
+
+  Note:
+  From Fortran the user should pass in a string 'prefix' of
+  sufficient length to hold the prefix.
 
 .seealso: [](ch_ksp), `KSP`, `KSPSetFromOptions()`, `KSPSetOptionsPrefix()`, `KSPAppendOptionsPrefix()`
 @*/
@@ -329,11 +329,11 @@ PETSC_INTERN PetscErrorCode KSPCheckPCMPI(KSP);
 . -ksp_error_if_not_converged                                             - stop the program as soon as an error is detected in a `KSPSolve()`, `KSP_DIVERGED_ITS` is not treated as an error on inner solves
 - -ksp_converged_rate                                                     - view the convergence rate at the end of the solve
 
-  Notes:
+  Level: beginner
+
+  Note:
   To see all options, run your program with the -help option
   or consult [](ch_ksp)
-
-  Level: beginner
 
 .seealso: [](ch_ksp), `KSP`, `KSPSetOptionsPrefix()`, `KSPResetFromOptions()`, `KSPSetUseFischerGuess()`
 @*/

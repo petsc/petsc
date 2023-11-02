@@ -2271,7 +2271,7 @@ M*/
   Level: intermediate
 
   Note:
-  Only works in C/C++ not fortran
+  Only works in C/C++ not Fortran
 
 .seealso: [](ch_profiling), `PetscLogEventRegister()`, `PetscLogEventBegin()`, `PetscLogEventEnd()`, `PetscPreLoadBegin()`, `PetscPreLoadStage()`
 M*/
@@ -2297,7 +2297,7 @@ M*/
   Level: intermediate
 
   Note:
-  Only works in C/C++ not fortran
+  Only works in C/C++ not Fortran
 
 .seealso: [](ch_profiling), `PetscLogEventRegister()`, `PetscLogEventBegin()`, `PetscLogEventEnd()`, `PetscPreLoadBegin()`, `PetscPreLoadEnd()`
 M*/
@@ -2414,7 +2414,7 @@ PetscErrorCode PetscLogGpuTimeEnd(void)
 
 #endif /* PETSC_USE_LOG*/
 
-/* -- Utility functions for logging from fortran -- */
+/* -- Utility functions for logging from Fortran -- */
 
 PETSC_EXTERN PetscErrorCode PetscASend(int count, int datatype)
 {

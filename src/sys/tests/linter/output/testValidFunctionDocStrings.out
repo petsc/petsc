@@ -301,7 +301,7 @@
            [33m[1m^^^^^^^^^^^^^[0m
   124:   testCustomFortranInterfaceDocString - Lorem ipsum dolor sit amet, consectetur adipiscing elit
   125: 
-[31m[1m./src/sys/tests/linter/testValidFunctionDocStrings.c:123:3: error:[0m Function requires custom fortran interface but missing 'C' from docstring header [-fdoc-param-list-func-fortran-interface]:
+[31m[1m./src/sys/tests/linter/testValidFunctionDocStrings.c:123:3: error:[0m Function requires custom Fortran interface but missing 'C' from docstring header [-fdoc-param-list-func-fortran-interface]:
   121: }
   122: 
 > 123: /*[33m[1m@[0m asdadsadasdas
@@ -656,7 +656,7 @@
                                                                    [33m[1m^^^^^[0m
   379: */
   380: 
-[31m[1m./src/sys/tests/linter/testValidFunctionDocStrings.c:386:3: error:[0m Function requires custom fortran interface but missing 'C' from docstring header [-fdoc-param-list-func-fortran-interface]:
+[31m[1m./src/sys/tests/linter/testValidFunctionDocStrings.c:386:3: error:[0m Function requires custom Fortran interface but missing 'C' from docstring header [-fdoc-param-list-func-fortran-interface]:
   384: }
   385: 
 > 386: /*[33m[1m@[0m

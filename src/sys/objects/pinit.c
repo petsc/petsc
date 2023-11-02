@@ -44,9 +44,9 @@ PETSC_INTERN PetscErrorCode PetscCloseHistoryFile(FILE **);
 /* user may set these BEFORE calling PetscInitialize() */
 MPI_Comm PETSC_COMM_WORLD = MPI_COMM_NULL;
 #if PetscDefined(HAVE_MPI_INIT_THREAD)
-PetscMPIInt PETSC_MPI_THREAD_REQUIRED = MPI_THREAD_FUNNELED;
+PetscMPIInt PETSC_MPI_THREAD_REQUIRED = PETSC_DECIDE;
 #else
-PetscMPIInt PETSC_MPI_THREAD_REQUIRED = 0;
+PetscMPIInt PETSC_MPI_THREAD_REQUIRED = MPI_THREAD_SINGLE;
 #endif
 
 PetscMPIInt Petsc_Counter_keyval      = MPI_KEYVAL_INVALID;
@@ -1245,8 +1245,10 @@ PetscErrorCode PetscInitialize(int *argc, char ***args, const char file[], const
     PetscCall(PetscPreMPIInit_Private());
 #if defined(PETSC_HAVE_MPI_INIT_THREAD)
     {
-      PetscMPIInt PETSC_UNUSED provided;
-      PetscCallMPI(MPI_Init_thread(argc, args, PETSC_MPI_THREAD_REQUIRED, &provided));
+      PetscMPIInt provided;
+      PetscCallMPI(MPI_Init_thread(argc, args, PETSC_MPI_THREAD_REQUIRED == PETSC_DECIDE ? MPI_THREAD_FUNNELED : PETSC_MPI_THREAD_REQUIRED, &provided));
+      PetscCheck(PETSC_MPI_THREAD_REQUIRED == PETSC_DECIDE || provided >= PETSC_MPI_THREAD_REQUIRED, PETSC_COMM_SELF, PETSC_ERR_MPI, "The MPI implementation's provided thread level is less than what you required");
+      if (PETSC_MPI_THREAD_REQUIRED == PETSC_DECIDE) PETSC_MPI_THREAD_REQUIRED = MPI_THREAD_FUNNELED; // assign it a valid value after check-up
     }
 #else
     PetscCallMPI(MPI_Init(argc, args));

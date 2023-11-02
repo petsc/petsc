@@ -84,7 +84,7 @@ static PetscErrorCode DMKSPCopy(DMKSP kdm, DMKSP nkdm)
 }
 
 /*@C
-  DMGetDMKSP - get read-only private `DMKSP` context from a `DM`
+  DMGetDMKSP - get the read-only private `DMKSP` context from a `DM`
 
   Logically Collective
 
@@ -199,7 +199,7 @@ PetscErrorCode DMCopyDMKSP(DM dmsrc, DM dmdest)
   associated with the `DM`.  This makes the interface consistent regardless of whether the user interacts with a `DM` or
   not.
 
-  Developer Notes:
+  Developer Note:
   If `DM` took a more central role at some later date, this could become the primary method of setting the matrix.
 
 .seealso: [](ch_ksp), `DMKSP`, `DM`, `KSP`, `DMKSPSetContext()`, `DMKSPGetComputeOperators()`, `KSPSetOperators()`
@@ -261,7 +261,7 @@ PetscErrorCode DMKSPGetComputeOperators(DM dm, PetscErrorCode (**func)(KSP, Mat,
   associated with the `DM`.  This makes the interface consistent regardless of whether the user interacts with a `DM` or
   not.
 
-  Developer Notes:
+  Developer Note:
   If `DM` took a more central role at some later date, this could become the primary method of setting the matrix.
 
 .seealso: [](ch_ksp), `DMKSP`, `DM`, `KSP`, `DMKSPSetContext()`, `DMKSPGetComputeRHS()`, `KSPSetRHS()`

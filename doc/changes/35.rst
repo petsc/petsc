@@ -37,7 +37,7 @@ Changes: 3.5
    type. ``PetscMalloc1()`` is now available for allocating arrays,
    and ``PetscCalloc1()`` through ``PetscCalloc7()`` have been added
    for when cleared (zeroed) memory is needed.
--  Moved matlab scripts like PetscBinaryRead.m PetscBinaryWrite.m
+-  Moved MATLAB scripts like PetscBinaryRead.m PetscBinaryWrite.m
    from bin/matlab to share/petsc/matlab
 
 .. rubric:: IS:
