@@ -7,7 +7,7 @@ With exact solution:
 
    u(x,y,z) = 1.0
 
-Exampe usage:
+Example usage:
 
   Run on GPU (requires respective backends installed):
     ./bench_kspsolve -mat_type aijcusparse

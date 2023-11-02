@@ -3,9 +3,8 @@
 #include <petsc/private/kspimpl.h> /*I "petscksp.h" I*/
 
 typedef struct {
-  KSPCGType    type;       /* type of system (symmetric of Hermitian) */
-  PetscScalar  emin, emax; /* eigenvalues */
-  PetscInt     ned;        /* size of following arrays */
+  /* same header start as KSP_CG */
+  KSPCGType    type; /* type of system (symmetric of Hermitian) */
   PetscScalar *e, *d;
   PetscReal   *ee, *dd; /* work space for Lanczos algorithm */
 

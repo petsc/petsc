@@ -5484,7 +5484,7 @@ static PetscErrorCode MatCreateSeqSubMatrixWithRows_Private(Mat P, IS rows, Mat 
   }
   /* Create SF to communicate how many nonzero columns for each row */
   PetscCall(PetscSFCreate(comm, &sf));
-  /* SF will figure out the number of nonzero colunms for each row, and their
+  /* SF will figure out the number of nonzero columns for each row, and their
    * offsets
    * */
   PetscCall(PetscSFSetGraph(sf, plocalsize, nrows, NULL, PETSC_OWN_POINTER, iremote, PETSC_OWN_POINTER));
