@@ -294,7 +294,7 @@ static PetscErrorCode KSPSolve_MINRES(KSP ksp)
     xnorm   = Norm3(xl2norm, ul, u);
 
     // Update w. Update x except if it will become too big
-    //if (Acond < minres->TranCond && flag != flag0 && QLPiter == 0) { // I believe they have a typo in the matlab code
+    //if (Acond < minres->TranCond && flag != flag0 && QLPiter == 0) { // I believe they have a typo in the MATLAB code
     if ((Acond < minres->TranCond || !minres->qlp) && flag == flag0 && QLPiter == 0) { // MINRES
       KSPMinresSwap3(WL2, WL, W);
       PetscCall(VecAXPBY(W, 1.0 / gama_tmp, 0.0, V));
@@ -419,7 +419,7 @@ static PetscErrorCode KSPSolve_MINRES(KSP ksp)
       relres = relresl;
     }
 
-    if (minres->monitor) { /* Mimics matlab code with extra flag */
+    if (minres->monitor) { /* Mimics MATLAB code with extra flag */
       PetscCall(PetscViewerPushFormat(minres->viewer, minres->viewer_fmt));
       if (ksp->its == 1) PetscCall(PetscViewerASCIIPrintf(minres->viewer, "        flag      rnorm     Arnorm   Compatible         LS      Anorm      Acond      xnorm\n"));
       PetscCall(PetscViewerASCIIPrintf(minres->viewer, "%s %5d   %2d %10.2e %10.2e   %10.2e %10.2e %10.2e %10.2e %10.2e\n", QLPiter == 1 ? "P" : " ", (int)ksp->its - 1, (int)flag, (double)rnorml, (double)Arnorml, (double)relresl, (double)relAresl, (double)Anorml, (double)Acondl, (double)xnorml));
@@ -842,7 +842,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_MINRES(KSP ksp)
 #else
   minres->haptol = 1.e-50;
 #endif
-  /* those are set as 1.e7 in the matlab code -> use 1.0/sqrt(eps) to support single precision */
+  /* those are set as 1.e7 in the MATLAB code -> use 1.0/sqrt(eps) to support single precision */
   minres->maxxnorm = 1.0 / PETSC_SQRT_MACHINE_EPSILON;
   minres->TranCond = 1.0 / PETSC_SQRT_MACHINE_EPSILON;
 

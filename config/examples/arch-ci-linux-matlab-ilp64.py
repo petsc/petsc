@@ -11,7 +11,7 @@ petsc_hash_pkgs=os.path.join(os.getenv('HOME'),'petsc-hash-pkgs')
 
 # Note: MATLAB build requires petsc shared libraries
 
-# Some versions of Matlab [R2013a] conflicted with -lgfortan - so the following workaround worked.
+# Some versions of MATLAB [R2013a] conflicted with -lgfortan - so the following workaround worked.
 # export LD_PRELOAD=/usr/lib/gcc/x86_64-linux-gnu/4.6/libgfortran.so
 
 # find MATLAB location
@@ -27,7 +27,7 @@ if __name__ == '__main__':
   configure_options = [
     '--package-prefix-hash='+petsc_hash_pkgs,
     '--download-mpich=1', # /usr/bin/mpicc does not resolve '__gcov_merge_add'? and gcc-4.4 gives gcov errors
-    '--with-display=140.221.10.20:0.0', # for matlab example with graphics
+    '--with-display=140.221.10.20:0.0', # for MATLAB example with graphics
     '--with-blaslapack-dir='+matlab_dir,
     '--with-matlab=1',
 # matlab-engine is deprecated, no longer needed but still allowed

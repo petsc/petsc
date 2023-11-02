@@ -3,7 +3,7 @@
 % from results.mat and produces a performance profile comparing
 % taopounders to fminsearch.
 
-% Make the test problem accessible to the matlab session and load the data matrix
+% Make the test problem accessible to the MATLAB session and load the data matrix
 addpath('more_wild_probs/')
 load dfo.dat
 

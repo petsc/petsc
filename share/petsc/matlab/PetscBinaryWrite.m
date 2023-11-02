@@ -48,7 +48,7 @@ end
 for l=1:nargin-1
   A = varargin{l};
   if issparse(A) || min(size(A)) > 1
-    % save sparse matrix in special Matlab format
+    % save sparse matrix in special MATLAB format
     if ~issparse(A)
         A = sparse(A);
     end
