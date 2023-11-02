@@ -664,7 +664,7 @@ PetscErrorCode DMDAGetInterpolationType(DM da, DMDAInterpolationType *ctype)
   Do not free the array, it is freed when the `DMDA` is destroyed.
 
   Fortran Notes:
-  In fortran you must pass in an array of the appropriate length.
+  In Fortran you must pass in an array of the appropriate length.
 
 .seealso: `DMDA`, `DM`
 @*/

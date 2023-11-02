@@ -4,7 +4,7 @@ program ex62f90
     implicit none
 #include "exodusII.inc"
 
-    ! Get the fortran kind associated with PetscInt and PetscReal so that we can use literal constants.
+    ! Get the Fortran kind associated with PetscInt and PetscReal so that we can use literal constants.
     PetscInt                           :: dummyPetscInt
     PetscReal                          :: dummyPetscreal
     integer,parameter                  :: kPI = kind(dummyPetscInt)
