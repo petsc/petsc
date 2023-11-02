@@ -54,7 +54,9 @@
       PetscEnum, parameter :: DM_POLYTOPE_FV_GHOST = 12
       PetscEnum, parameter :: DM_POLYTOPE_INTERIOR_GHOST = 13
       PetscEnum, parameter :: DM_POLYTOPE_UNKNOWN = 14
-      PetscEnum, parameter :: DM_NUM_POLYTOPES = 15
+      PetscEnum, parameter :: DM_POLYTOPE_UNKNOWN_CELL = 15
+      PetscEnum, parameter :: DM_POLYTOPE_UNKNOWN_FACE = 16
+      PetscEnum, parameter :: DM_NUM_POLYTOPES = 17
 !
 ! DMCopyLabelsMode
 !

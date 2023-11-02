@@ -42,6 +42,8 @@ class DMPolytopeType(object):
     FV_GHOST           = DM_POLYTOPE_FV_GHOST
     INTERIOR_GHOST     = DM_POLYTOPE_INTERIOR_GHOST
     UNKNOWN            = DM_POLYTOPE_UNKNOWN
+    UNKNOWN_CELL       = DM_POLYTOPE_UNKNOWN_CELL
+    UNKNOWN_FACE       = DM_POLYTOPE_UNKNOWN_FACE
 
 # --------------------------------------------------------------------
 
