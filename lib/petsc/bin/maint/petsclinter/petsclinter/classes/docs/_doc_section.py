@@ -402,7 +402,7 @@ class EnumSynopsis(Synopsis):
 
 @DiagnosticManager.register(
   ('parameter-documentation','Verify that if a, b, c are documented then the function exactly has parameters a, b, and c and vice versa'),
-  ('fortran-interface','Verify that functions needing a custom fortran interface have the correct sowing indentifiers'),
+  ('fortran-interface','Verify that functions needing a custom Fortran interface have the correct sowing indentifiers'),
 )
 class FunctionParameterList(ParameterList):
   diags: DiagnosticMap # satisfy type checkers
@@ -448,7 +448,7 @@ class FunctionParameterList(ParameterList):
     return canon_type
 
   def _check_fortran_interface(self, docstring: PetscDocStringImpl, fnargs: tuple[Cursor, ...]) -> None:
-    r"""Ensure that functions which require a custom fortran interface are correctly tagged with 'C'
+    r"""Ensure that functions which require a custom Fortran interface are correctly tagged with 'C'
     sowing designator
 
     Parameters
@@ -474,7 +474,7 @@ class FunctionParameterList(ParameterList):
         assert 'C' not in sowing_chars
         diag = docstring.make_diagnostic(
           Diagnostic.Kind.ERROR, self.diags.fortran_interface,
-          f"Function requires custom fortran interface but missing 'C' from docstring header {Diagnostic.FLAG_SUBST}",
+          f"Function requires custom Fortran interface but missing 'C' from docstring header {Diagnostic.FLAG_SUBST}",
           begin_sowing_range, patch=Patch(begin_sowing_range, sowing_chars + 'C')
         )
         for reason_cursor, reason_type in requires_c:

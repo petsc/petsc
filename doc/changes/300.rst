@@ -5,11 +5,11 @@ Changes: 3.0.0
 
 .. rubric:: General:
 
--  Changed the Matlab engine portion of the Matlab configure code to
+-  Changed the MATLAB engine portion of the MATLAB configure code to
    require a separate flag --with-matlab-engine
 -  Changed the Socket viewer to be the same as the binary viewer
    except for its creation
--  Changed the Matlab Socket code to work the same as the Matlab
+-  Changed the MATLAB Socket code to work the same as the Matlab
    binary reader except for its creation
 -  You can now replace the PetscVFPrintf() function pointer to
    redirect all stdout/stderr output in Microsoft Windows for example.
@@ -174,7 +174,7 @@ Changes: 3.0.0
 -  added PETSC_VIEWER_STDOUT_(comm) for Fortran
 -  binary viewer now supports MPI IO for Vec loading and storing, use
    -viewer_binary_mpiio or PetscViewerBinarySetMPIIO() to enable it.
--  Reworked the Matlab objects sreader and freader to be called
+-  Reworked the MATLAB objects sreader and freader to be called
    PetscOpenSocket and PetscOpenFile, now PetscBinaryWrite and
    PetscBinaryRead can be used on the same socket connection to send
    matrix/vectors in both directions. See

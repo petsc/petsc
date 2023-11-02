@@ -1,5 +1,5 @@
 function Set = PetscReadBinaryMatlab(filename)
-% PETSCREADBINARYMATLAB - Reads and interprets matlab specific lines
+% PETSCREADBINARYMATLAB - Reads and interprets MATLAB specific lines
 %   from the .info files produced by PetscViewerBinaryMatlab
 %
 %   Input filename can be the name of the binary file with or without
@@ -8,7 +8,7 @@ function Set = PetscReadBinaryMatlab(filename)
 %   This function returns a single struct containing all objects submitted
 %   to the PetscViewerBinaryMatlab viewer.
 
-  matlabHeader = ['%$$ '; '#$$ ']; % string that marks a matlab line for evaluation (could be passed)
+  matlabHeader = ['%$$ '; '#$$ ']; % string that marks a MATLAB line for evaluation (could be passed)
   matlabHeaderLen = size(matlabHeader,2);
 
   if (isempty(strfind(filename,'.info')))

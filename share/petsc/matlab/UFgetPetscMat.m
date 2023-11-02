@@ -2,7 +2,7 @@
 % modified from UFget_example.m 
 %   This script 
 %     (1) gets the selected index file of the UF sparse matrix collection,
-%     (2) loads in matrices in matlab format in increasing order of
+%     (2) loads in matrices in MATLAB format in increasing order of
 %         number of rows in the selected matrices,
 %     (3) writes into PETSc binary format in the given directory with
 %         each matrix named as A_{id}
@@ -18,7 +18,7 @@ f = find (index.nrows == index.ncols & index.nrows > 940000 & index.isReal) ;
 f = f (j) ;
 
 for i = f
-    %loads in matrix in matlab format 
+    %loads in matrix in MATLAB format 
     %---------------------------------
     fprintf ('Loading %s%s%s, please wait ...\n', ...
         index.Group {i}, filesep, index.Name {i}) ;

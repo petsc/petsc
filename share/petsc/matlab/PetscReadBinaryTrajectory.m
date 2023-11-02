@@ -1,9 +1,9 @@
-function [varargout] = PetscBinaryReadTrajectory(inarg)
+function [varargout] = PetscReadBinaryTrajectory(inarg)
 %
 %   [varargout] = PetscBinaryReadTrajectory(inarg)
 %
 %  Read in the trajectory information saved in a folder of PETSc binary file
-%  Emit as Matlab struct
+%  Emit as MATLAB struct
 %
 %  Examples: A = PetscBinaryReadTrajectory('myfolder'); read from myfolder.
 %            A = PetscBinaryReadTrajectory(); read from folder 'TS-data' or 'Visualization-data' if they exist, TS-data has the priority.

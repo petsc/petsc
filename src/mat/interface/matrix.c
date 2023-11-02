@@ -1006,11 +1006,11 @@ PetscErrorCode MatViewFromOptions(Mat A, PetscObject obj, const char name[])
 + -mat_view ::ascii_info           - Prints info on matrix at conclusion of `MatAssemblyEnd()`
 . -mat_view ::ascii_info_detail    - Prints more detailed info
 . -mat_view                        - Prints matrix in ASCII format
-. -mat_view ::ascii_matlab         - Prints matrix in Matlab format
+. -mat_view ::ascii_matlab         - Prints matrix in MATLAB format
 . -mat_view draw                   - PetscDraws nonzero structure of matrix, using `MatView()` and `PetscDrawOpenX()`.
 . -display <name>                  - Sets display name (default is host)
 . -draw_pause <sec>                - Sets number of seconds to pause after display
-. -mat_view socket                 - Sends matrix to socket, can be accessed from Matlab (see Users-Manual: ch_matlab for details)
+. -mat_view socket                 - Sends matrix to socket, can be accessed from MATLAB (see Users-Manual: ch_matlab for details)
 . -viewer_socket_machine <machine> - -
 . -viewer_socket_port <port>       - -
 . -mat_view binary                 - save matrix to file in binary format
@@ -1039,7 +1039,7 @@ PetscErrorCode MatViewFromOptions(Mat A, PetscObject obj, const char name[])
   format of ASCII printed objects (when using `PETSC_VIEWER_STDOUT_SELF`,
   `PETSC_VIEWER_STDOUT_WORLD` and `PetscViewerASCIIOpen()`).  Available formats include
 +    `PETSC_VIEWER_DEFAULT` - default, prints matrix contents
-.    `PETSC_VIEWER_ASCII_MATLAB` - prints matrix contents in Matlab format
+.    `PETSC_VIEWER_ASCII_MATLAB` - prints matrix contents in MATLAB format
 .    `PETSC_VIEWER_ASCII_DENSE` - prints entire matrix including zeros
 .    `PETSC_VIEWER_ASCII_COMMON` - prints matrix contents, using a sparse
   format common among all matrix types
@@ -1058,7 +1058,7 @@ PetscErrorCode MatViewFromOptions(Mat A, PetscObject obj, const char name[])
   See the manual page for `MatLoad()` for the exact format of the binary file when the binary
   viewer is used.
 
-  See share/petsc/matlab/PetscBinaryRead.m for a Matlab code that can read in the binary file when the binary
+  See share/petsc/matlab/PetscBinaryRead.m for a MATLAB code that can read in the binary file when the binary
   viewer is used and lib/petsc/bin/PetscBinaryIO.py for loading them into Python.
 
   One can use '-mat_view draw -draw_pause -1' to pause the graphical display of matrix nonzero structure,
@@ -5735,11 +5735,11 @@ PetscErrorCode MatAssembled(Mat mat, PetscBool *assembled)
 + -mat_view ::ascii_info             - Prints info on matrix at conclusion of `MatAssemblyEnd()`
 . -mat_view ::ascii_info_detail      - Prints more detailed info
 . -mat_view                          - Prints matrix in ASCII format
-. -mat_view ::ascii_matlab           - Prints matrix in Matlab format
+. -mat_view ::ascii_matlab           - Prints matrix in MATLAB format
 . -mat_view draw                     - draws nonzero structure of matrix, using `MatView()` and `PetscDrawOpenX()`.
 . -display <name>                    - Sets display name (default is host)
 . -draw_pause <sec>                  - Sets number of seconds to pause after display
-. -mat_view socket                   - Sends matrix to socket, can be accessed from Matlab (See [Using MATLAB with PETSc](ch_matlab))
+. -mat_view socket                   - Sends matrix to socket, can be accessed from MATLAB (See [Using MATLAB with PETSc](ch_matlab))
 . -viewer_socket_machine <machine>   - Machine to use for socket
 . -viewer_socket_port <port>         - Port number to use for socket
 - -mat_view binary:filename[:append] - Save matrix to file in binary format

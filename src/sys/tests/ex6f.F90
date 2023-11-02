@@ -1,5 +1,5 @@
 !
-!  Program to test random number generation routines from fortran.
+!  Tests random number generation routines from Fortran.
 !
       program main
 

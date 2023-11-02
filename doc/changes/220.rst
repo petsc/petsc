@@ -53,7 +53,7 @@ Changes: 2.2.0
 
 .. rubric:: SYS:
 
--  added new PETSC_VIEWER_MATLAB for saving variables to Matlab .mat
+-  added new PETSC_VIEWER_MATLAB for saving variables to MATLAB .mat
    files
 -  eliminated PetscViewerXXXXType and PetscViewerXXXSetType()
    replaced with PetscViewerFileType and PetscViewerSetFileType()

@@ -1,5 +1,5 @@
 function fvec = dfovec(m,n,x,nprob)
-%     This is a Matlab version of the subroutine dfovec.f
+%     This is a MATLAB version of the subroutine dfovec.f
 %     This subroutine specifies the nonlinear benchmark problems in
 %
 %     Benchmarking Derivative-Free Optimization Algorithms

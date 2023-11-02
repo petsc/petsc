@@ -52,7 +52,7 @@
       PetscEnum, parameter :: SNES_NORM_FINAL_ONLY             =  3
       PetscEnum, parameter :: SNES_NORM_INITIAL_FINAL_ONLY     =  4
 !
-!  Some PETSc fortran functions that the user might pass as arguments
+!  Some PETSc Fortran functions that the user might pass as arguments
 !
       external SNESCOMPUTEJACOBIANDEFAULT
       external MATMFFDCOMPUTEJACOBIAN

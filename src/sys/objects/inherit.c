@@ -245,7 +245,7 @@ PetscErrorCode PetscObjectCopyFortranFunctionPointers(PetscObject src, PetscObje
 }
 
 /*@C
-  PetscObjectSetFortranCallback - set fortran callback function pointer and context
+  PetscObjectSetFortranCallback - set Fortran callback function pointer and context
 
   Logically Collective
 
@@ -288,7 +288,7 @@ PetscErrorCode PetscObjectSetFortranCallback(PetscObject obj, PetscFortranCallba
 }
 
 /*@C
-  PetscObjectGetFortranCallback - get fortran callback function pointer and context
+  PetscObjectGetFortranCallback - get Fortran callback function pointer and context
 
   Logically Collective
 

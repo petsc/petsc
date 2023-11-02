@@ -13,7 +13,7 @@ function [varargout] = PetscBinaryRead(inarg,varargin)
 %            c = PetscBinaryRead();       read from default socket PETSc uses
 %
 %  Argument may be file name (string), socket number (integer)
-%  or any Matlab class that provides the read() and close() methods
+%  or any MATLAB class that provides the read() and close() methods
 %  [We provide PetscOpenFile() and PetscOpenSocket() for binary files and sockets]
 %  For example: fd = PetscOpenFile('filename');
 %                a = PetscBinaryRead(fd);
@@ -21,7 +21,7 @@ function [varargout] = PetscBinaryRead(inarg,varargin)
 %
 %  'complex', true indicates the numbers in the file are complex, that is PETSc was built with --with-scalar-type=complex
 %  'indices','int64' indicates the PETSc program was built with --with-64-bit-indices
-%  'cell',cnt  means return a Matlab cell array containing the first cnt objects in the file, use 10,000 to read in all objects
+%  'cell',cnt  means return a MATLAB cell array containing the first cnt objects in the file, use 10,000 to read in all objects
 %  'precision','float32' indicates the PETSc program was built with --with-precision=single
 %
 %  Examples:  A = PetscBinaryRead('myfile','cell',10000);  read all objects in file
@@ -160,7 +160,7 @@ for l=1:narg
 
   elseif  header == 1211218 % Petsc IS Object
     m = double(read(fd,1,indices));
-    v = read(fd,m,'int') + 1; % Indexing in Matlab starts at 1, 0 in PETSc
+    v = read(fd,m,'int') + 1; % Indexing in MATLAB starts at 1, 0 in PETSc
     if arecell
       result{l} = v;
     else

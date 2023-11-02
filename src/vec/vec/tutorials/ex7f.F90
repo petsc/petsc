@@ -5,7 +5,7 @@
        use petscvec
        implicit none
 !
-!  This routine demonstrates how a computational module may be written
+!  Demonstrates how a computational module may be written
 !  in Fortran and called from a C routine, passing down PETSc objects.
 !
 
@@ -17,7 +17,7 @@
 
 !
 !     The Objects vec,comm created in a C routine are now
-!     used in fortran routines.
+!     used in Fortran routines.
 !
        PetscCall(VecSet(vec,two,ierr))
        PetscCallMPI(MPI_Comm_rank(comm,rank,ierr))
@@ -28,12 +28,12 @@
 !
        PetscCall(ex7c(vec,comm,ierr))
 !
-!     IO from the fortran routines may cause all kinds of
+!     IO from the Fortran routines may cause all kinds of
 !
 ! 100   format ('[',i1,']',' Calling VecView from Fortran')
 !       write(6,100) rank
 !
-!  Now Call a Petsc Routine from Fortran
+!  Now Call a PETSc Routine from Fortran
 !
        PetscCall(VecView(vec,PETSC_VIEWER_STDOUT_WORLD,ierr))
        return
