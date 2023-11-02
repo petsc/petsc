@@ -207,7 +207,7 @@ static PetscErrorCode PetscLogGetHandler(PetscLogHandlerType type, PetscLogHandl
   Output Parameter:
 . state - The `PetscLogState` changed by registrations (such as
           `PetscLogEventRegister()`) and actions (such as `PetscLogEventBegin()` or
-          `PetscLogStagePush()`), or NULL if logging is not active
+          `PetscLogStagePush()`), or `NULL` if logging is not active
 
   Level: developer
 
@@ -244,7 +244,6 @@ static PetscErrorCode PetscLogHandlerCopyToHot(PetscLogHandler h, PetscLogHandle
   Level: developer
 
   Notes:
-
   Users should only need this if they create their own log handlers: handlers that are started
   from the command line (such as `-log_view` and `-log_trace`) or from a function like
   `PetscLogNestedBegin()` will automatically be started.
@@ -256,9 +255,9 @@ static PetscErrorCode PetscLogHandlerCopyToHot(PetscLogHandler h, PetscLogHandle
   When a log handler is started, stages that have already been pushed with `PetscLogStagePush()`,
   will be pushed for the new log handler, but it will not be informed of any events that are
   in progress.  It is recommended to start any user-defined log handlers immediately following
-  before any user-defined stages are pushed.
+  `PetscInitialize()`  before any user-defined stages are pushed.
 
-.seealso: [](ch_profiling), `PetscLogHandler`, `PetscLogState`, `PetscLogHandlerStop()`
+.seealso: [](ch_profiling), `PetscLogHandler`, `PetscLogState`, `PetscLogHandlerStop()`, `PetscInitialize()`
 @*/
 PetscErrorCode PetscLogHandlerStart(PetscLogHandler h)
 {
