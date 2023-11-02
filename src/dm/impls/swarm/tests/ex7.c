@@ -335,6 +335,9 @@ PetscErrorCode go()
 int main(int argc, char **argv)
 {
   PetscFunctionBeginUser;
+#if defined(PETSC_HAVE_OPENMP) && defined(PETSC_HAVE_THREADSAFETY)
+  PETSC_MPI_THREAD_REQUIRED = MPI_THREAD_MULTIPLE; // use thread multiple if multiple threads call petsc
+#endif
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCall(go());
   PetscCall(PetscFinalize());
