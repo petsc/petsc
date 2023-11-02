@@ -3758,11 +3758,11 @@ static PetscErrorCode MatGetFactor_nest_mumps(Mat A, MatFactorType ftype, Mat *F
       if (ftype == MAT_FACTOR_CHOLESKY) {
         if (r == c) {
           if (!isSeqAIJ && !isMPIAIJ && !isSeqBAIJ && !isMPIBAIJ && !isSeqSBAIJ && !isMPISBAIJ && !isDiag && !isDense) {
-            PetscCall(PetscInfo(sub, "MAT_CHOLESKY_FACTOR not supported for diagonal block of type %s.\n", ((PetscObject)sub)->type_name));
+            PetscCall(PetscInfo(sub, "MAT_FACTOR_CHOLESKY not supported for diagonal block of type %s.\n", ((PetscObject)sub)->type_name));
             flg = PETSC_FALSE;
           }
         } else if (!isSeqAIJ && !isMPIAIJ && !isSeqBAIJ && !isMPIBAIJ && !isDiag && !isDense) {
-          PetscCall(PetscInfo(sub, "MAT_CHOLESKY_FACTOR not supported for off-diagonal block of type %s.\n", ((PetscObject)sub)->type_name));
+          PetscCall(PetscInfo(sub, "MAT_FACTOR_CHOLESKY not supported for off-diagonal block of type %s.\n", ((PetscObject)sub)->type_name));
           flg = PETSC_FALSE;
         }
       } else if (!isSeqAIJ && !isMPIAIJ && !isSeqBAIJ && !isMPIBAIJ && !isDiag && !isDense) {
