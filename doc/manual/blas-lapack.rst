@@ -65,6 +65,4 @@ PETSc also provides access to OpenBLAS via the ``--download-openblas`` configure
 routines for many other operations. See the OpenBLAS manual for more information. The configure option ``--download-openblas`` provides a full BLAS/LAPACK implementation.
 
 BLIS does not bundle LAPACK with it so PETSc's configure attempts to locate a compatible system LAPACK library to use if ``--download-blis`` is
-selected. One can use ``--download-f2cblaslapack --download-blis``. This is recommended as a portable high-performance option.
-
-
+selected. One can use ``--download-f2cblaslapack --download-blis``. This is recommended as a portable high-performance option. It is possible if you use ``--download-blis`` without ``--download-f2cblaslapack`` the BLIS library installed will **not** be used! Instead, PETSc will link in some LAPACK implementation and the BLAS that comes with that implementation!

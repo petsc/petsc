@@ -1,5 +1,10 @@
 import config.package
 
+#
+# If --download-blis is used WITHOUT --download-f2cblaslapack it is possible that the installed BLIS libraries will NOT be used!
+# This is because some automatically detected LAPACK libraries are so intimately connected to their own BLAS they do not utilize
+# the other BLAS symbols provided in the link line (that, in this situation, come from BLIS)
+#
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
@@ -15,7 +20,8 @@ class Configure(config.package.Package):
   def setupHelp(self, help):
     import nargs
     config.package.Package.setupHelp(self, help)
-    help.addArgument(self.PACKAGE,'-download-blis-use-pthreads=<bool>',nargs.ArgBool(None,0,'Use pthreads threading support for '+self.name ))
+    help.addArgument(self.PACKAGE,'-download-blis-use-pthreads=<bool>',nargs.ArgBool(None,1,'Use pthreads threading support for '+self.name ))
+    help.addArgument(self.PACKAGE,'-download-blis-use-openmp=<bool>',nargs.ArgBool(None,1,'Use OpenMP threading support for '+self.name))
     help.addArgument(self.PACKAGE,'-download-blis-enable-cblas-headers=<bool>',nargs.ArgBool(None,0,'Enable CBLAS headers for '+self.name ))
     help.addArgument(self.PACKAGE,'-download-blis-complex-return=<string>',nargs.ArgString(None,None,'Specify the method of returning complex numbers from blas routines ('+self.name+' supports "gnu" and "intel")'))
     return
@@ -49,23 +55,23 @@ class Configure(config.package.Package):
 
   def Install(self):
     import os
-    with self.Language('C'):
-      cc = self.getCompiler()
+    self.logPrintBox('Configuring BLIS; this may take several minutes')
+    args = ['./configure', '--prefix='+self.installDir]
     try:
-      self.logPrintBox('Configuring BLIS; this may take several minutes')
-      args = ['./configure', '--prefix='+self.installDir]
       if self.argDB['with-64-bit-blas-indices']:
         args.append('--blas-int-size=64')
         self.known64 = '64'
       else:
         self.known64 = '32'
-      if self.argDB['download-blis-use-pthreads']:
-        if not self.pthread.found: raise RuntimeError("--download-blis-use-pthreads option selected but pthreads is not available")
-        args.append('--enable-threading=pthreads')
-        self.usespthreads = 'yes'
-      elif self.openmp.found:
-        args.append('--enable-threading=openmp')
-        self.usesopenmp = 'yes'
+      threads = []
+      if self.argDB['download-blis-use-pthreads'] and self.pthread.found:
+          threads.append('pthreads')
+          self.usespthreads = 'yes'
+      if self.argDB['download-blis-use-openmp'] and self.openmp.found:
+          threads.append('openmp')
+          self.usesopenmp = 'yes'
+      if threads:
+        args.append('--enable-threading='+','.join(threads))
       if self.argDB['download-blis-enable-cblas-headers']:
         args.append('--enable-cblas')
       try:
@@ -74,7 +80,13 @@ class Configure(config.package.Package):
         pass
       if self.complex_return:
         args.append('--complex-return=' + self.complex_return)
-      args.append('CC=' + cc)
+      with self.Language('C'):
+        args.append('CC=' + self.getCompiler())
+      with self.Language('Cxx'):
+        args.append('CXX=' + self.getCompiler())
+      if hasattr(self.compilers, 'FC'):
+        with self.Language('FC'):
+          args.append('FC=' + self.getCompiler())
       args.append('auto')
       config.package.Package.executeShellCommand(args, cwd=self.packageDir, timeout=60, log=self.log)
     except RuntimeError as e:
@@ -86,5 +98,3 @@ class Configure(config.package.Package):
     except RuntimeError as e:
       raise RuntimeError('Error running make on BLIS: '+str(e))
     return self.installDir
-
-

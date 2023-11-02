@@ -13,6 +13,9 @@ Changes: Development
 
 .. rubric:: Configure/Build:
 
+- Add ``--download-blis-use-openmp=0`` to force ``download-blis`` to not build with OpenMP when ``with-openmp`` is provided
+- Add ```PetscBLASSetNumThreads()`` and ``PetscBLASGetNumThreads()`` for controlling how many threads the BLAS routines use
+
 .. rubric:: Sys:
 
 .. rubric:: Event Logging:
