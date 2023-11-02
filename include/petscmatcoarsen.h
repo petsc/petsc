@@ -89,7 +89,7 @@ PETSC_EXTERN PetscErrorCode PetscCDCount(const PetscCoarsenData *, PetscInt *_sz
 
 PETSC_EXTERN PetscErrorCode PetscCDGetHeadPos(const PetscCoarsenData *, PetscInt, PetscCDIntNd **);
 PETSC_EXTERN PetscErrorCode PetscCDGetNextPos(const PetscCoarsenData *, PetscInt, PetscCDIntNd **);
-PETSC_EXTERN PetscErrorCode PetscCDGetASMBlocks(const PetscCoarsenData *, const PetscInt, Mat, PetscInt *, IS **);
+PETSC_EXTERN PetscErrorCode PetscCDGetASMBlocks(const PetscCoarsenData *, const PetscInt, PetscInt *, IS **);
 
 PETSC_EXTERN PetscErrorCode MatCoarsenMISKSetDistance(MatCoarsen, PetscInt);
 PETSC_EXTERN PetscErrorCode MatCoarsenMISKGetDistance(MatCoarsen, PetscInt *);

@@ -432,15 +432,17 @@
 !
 !  testset:
 !   nsize: 4
-!   args: -ne 39 -theta 30.0 -epsilon 1.e-1 -blob_center 0.,0. -ksp_type cg -pc_type gamg -pc_gamg_type agg -ksp_rtol 1e-4 -pc_gamg_aggressive_square_graph false -ksp_monitor_short -ksp_norm_type unpreconditioned
+!   args: -ne 39 -theta 30.0 -epsilon 1.e-1 -blob_center 0.,0. -ksp_type cg -pc_type gamg -pc_gamg_type agg -ksp_rtol 1e-4 -pc_gamg_aggressive_square_graph false -ksp_norm_type unpreconditioned
 !   requires: !single
 !   test:
 !      suffix: misk
-!      args: -mat_coarsen_type misk -pc_gamg_aggressive_coarsening 0
-!      output_file: output/ex54f_mis.out
+!      args: -mat_coarsen_type misk -pc_gamg_aggressive_coarsening 0 -ksp_monitor_short
 !   test:
 !      suffix: mis
-!      args: -mat_coarsen_type mis
-!      output_file: output/ex54f_mis.out
+!      args: -mat_coarsen_type mis -ksp_monitor_short
+!   test:
+!      suffix: hem
+!      args: -mat_coarsen_type hem -ksp_converged_reason
+!      filter: sed -e "s/Linear solve converged due to CONVERGED_RTOL iterations 1[2-3]/Linear solve converged due to CONVERGED_RTOL iterations 11/g"
 !
 !TEST*/
