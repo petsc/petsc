@@ -4,8 +4,8 @@ import os
 class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.GNUPackage.__init__(self, framework)
-    self.version                = '4.1.6'
-    self.download               = ['https://download.open-mpi.org/release/open-mpi/v4.1/openmpi-'+self.version+'.tar.gz',
+    self.version                = '5.0.0'
+    self.download               = ['https://download.open-mpi.org/release/open-mpi/v5.0/openmpi-'+self.version+'.tar.gz',
                                    'https://web.cels.anl.gov/projects/petsc/download/externalpackages/openmpi-'+self.version+'.tar.gz']
     self.downloaddirnames       = ['openmpi','ompi']
     self.skippackagewithoptions = 1
@@ -24,6 +24,7 @@ class Configure(config.package.GNUPackage):
     args = config.package.GNUPackage.formGNUConfigureArgs(self)
     args.append('--with-rsh=ssh')
     args.append('--disable-man-pages')
+    args.append('--disable-sphinx')
     args.append('MAKE='+self.make.make)
     if hasattr(self.compilers, 'FC'):
       self.pushLanguage('FC')
