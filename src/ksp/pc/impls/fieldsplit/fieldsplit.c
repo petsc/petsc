@@ -3165,7 +3165,7 @@ PetscErrorCode PCFieldSplitSetDetectSaddlePoint(PC pc, PetscBool flg)
 
       the preconditioner using `full` factorization is logically
       ```{math}
-      \left[\begin{array}{cc} I & -\text{ksp}(A_{00}) \\ 0 & I \end{array}\right] \left[\begin{array}{cc} \text{inv}(A_{00}) & 0 \\ 0 & \text{ksp}(S) \end{array}\right] \left[\begin{array}{cc} I & 0 \\ -A_{10} \text{ksp}(A_{00}) & I \end{array}\right]
+      \left[\begin{array}{cc} I & -\text{ksp}(A_{00}) A_{01} \\ 0 & I \end{array}\right] \left[\begin{array}{cc} \text{inv}(A_{00}) & 0 \\ 0 & \text{ksp}(S) \end{array}\right] \left[\begin{array}{cc} I & 0 \\ -A_{10} \text{ksp}(A_{00}) & I \end{array}\right]
       ```
      where the action of $\text{inv}(A_{00})$ is applied using the KSP solver with prefix `-fieldsplit_0_`.  $S$ is the Schur complement
      ```{math}
