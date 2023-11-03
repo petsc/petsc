@@ -2335,3 +2335,6 @@ PETSC_EXTERN PetscErrorCode PCMPICommsDestroy(void);
 PETSC_EXTERN PetscBool      PCMPIServerActive;
 
 #define PETSC_HAVE_FORTRAN PETSC_DEPRECATED_MACRO(3, 20, 0, "PETSC_USE_FORTRAN_BINDINGS", ) PETSC_USE_FORTRAN_BINDINGS
+
+PETSC_EXTERN PetscErrorCode PetscBLASSetNumThreads(PetscInt);
+PETSC_EXTERN PetscErrorCode PetscBLASGetNumThreads(PetscInt *);

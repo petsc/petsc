@@ -79,6 +79,8 @@ PetscSpinlock PetscViewerASCIISpinLockStderr;
 PetscSpinlock PetscCommSpinLock;
 #endif
 
+extern PetscInt PetscNumBLASThreads;
+
 /*@C
   PetscInitializeNoPointers - Calls PetscInitialize() from C/C++ without the pointers to argc and args
 
@@ -751,6 +753,7 @@ PETSC_INTERN PetscErrorCode PetscInitialize_Common(const char *prog, const char 
   PetscMPIInt size;
   PetscBool   flg = PETSC_TRUE;
   char        hostname[256];
+  PetscBool   blas_view_flag = PETSC_FALSE;
 
   PetscFunctionBegin;
   if (PetscInitializeCalled) PetscFunctionReturn(PETSC_SUCCESS);
@@ -1055,6 +1058,44 @@ PETSC_INTERN PetscErrorCode PetscInitialize_Common(const char *prog, const char 
     if (omp_view_flag) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "OpenMP: number of threads %" PetscInt_FMT "\n", PetscNumOMPThreads));
   }
 #endif
+
+  PetscOptionsBegin(PETSC_COMM_WORLD, NULL, "BLAS options", "Sys");
+  PetscCall(PetscOptionsName("-blas_view", "Display number of threads to use for BLAS operations", NULL, &blas_view_flag));
+#if defined(PETSC_HAVE_BLI_THREAD_SET_NUM_THREADS) || defined(PETSC_HAVE_MKL_SET_NUM_THREADS) || defined(PETSC_HAVE_OPENBLAS_SET_NUM_THREADS)
+  {
+    char *threads = NULL;
+
+    /* determine any default number of threads requested in the environment; TODO: Apple libraries? */
+  #if defined(PETSC_HAVE_BLI_THREAD_SET_NUM_THREADS)
+    threads = getenv("BLIS_NUM_THREADS");
+    if (threads) PetscCall(PetscInfo(NULL, "BLAS: Environment number of BLIS threads %s given by BLIS_NUM_THREADS\n", threads));
+    if (!threads) {
+      threads = getenv("OMP_NUM_THREADS");
+      if (threads) PetscCall(PetscInfo(NULL, "BLAS: Environment number of BLIS threads %s given by OMP_NUM_THREADS\n", threads));
+    }
+  #elif defined(PETSC_HAVE_MKL_SET_NUM_THREADS)
+    threads = getenv("MKL_NUM_THREADS");
+    if (threads) PetscCall(PetscInfo(NULL, "BLAS: Environment number of MKL threads %s given by MKL_NUM_THREADS\n", threads));
+  #elif defined(PETSC_HAVE_OPENBLAS_SET_NUM_THREADS)
+    threads = getenv("OPENBLAS_NUM_THREADS");
+    if (threads) PetscCall(PetscInfo(NULL, "BLAS: Environment number of OpenBLAS threads %s given by OPENBLAS_NUM_THREADS\n", threads));
+    if (!threads) {
+      threads = getenv("OMP_NUM_THREADS");
+      if (threads) PetscCall(PetscInfo(NULL, "BLAS: Environment number of OpenBLAS threads %s given by OMP_NUM_THREADS\n", threads));
+    }
+  #endif
+    if (threads) (void)sscanf(threads, "%" PetscInt_FMT, &PetscNumBLASThreads);
+    PetscCall(PetscOptionsInt("-blas_num_threads", "Number of threads to use for BLAS operations", "None", PetscNumBLASThreads, &PetscNumBLASThreads, &flg));
+    PetscCall(PetscBLASSetNumThreads(PetscNumBLASThreads));
+    if (blas_view_flag) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "BLAS: number of threads %" PetscInt_FMT "\n", PetscNumBLASThreads));
+  }
+#elif defined(PETSC_HAVE_APPLE_ACCELERATE)
+  PetscCall(PetscInfo(NULL, "BLAS: Apple Accelerate library, thread support with no user control\n"));
+  if (blas_view_flag) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "BLAS: Apple Accelerate library, thread support with no user control\n"));
+#else
+  if (blas_view_flag) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "BLAS: no thread support\n"));
+#endif
+  PetscOptionsEnd();
 
 #if defined(PETSC_USE_PETSC_MPI_EXTERNAL32)
   /*
