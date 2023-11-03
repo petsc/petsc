@@ -545,14 +545,14 @@ static PetscErrorCode PCView_HPDDM(PC pc, PetscViewer viewer)
       PetscCall(PetscViewerASCIISetTab(viewer, tabs));
     }
     PetscCall(PetscViewerASCIIPrintf(viewer, "grid and operator complexities: %g %g\n", (double)gc, (double)oc));
+    PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)pc), &size));
+    PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)pc), &rank));
     if (data->levels[0]->ksp) {
       PetscCall(KSPView(data->levels[0]->ksp, viewer));
       if (data->levels[0]->pc) PetscCall(PCView(data->levels[0]->pc, viewer));
       for (i = 1; i < data->N; ++i) {
         if (data->levels[i]->ksp) color = 1;
         else color = 0;
-        PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)pc), &size));
-        PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)pc), &rank));
         PetscCall(PetscSubcommCreate(PetscObjectComm((PetscObject)pc), &subcomm));
         PetscCall(PetscSubcommSetNumber(subcomm, PetscMin(size, 2)));
         PetscCall(PetscSubcommSetTypeGeneral(subcomm, color, rank));
