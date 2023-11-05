@@ -101,7 +101,7 @@ PetscErrorCode PCGetType(PC pc, PCType *type)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-extern PetscErrorCode PCGetDefaultType_Private(PC, const char *[]);
+PETSC_INTERN PetscErrorCode PCGetDefaultType_Private(PC, const char *[]);
 
 /*@
   PCSetFromOptions - Sets `PC` options from the options database.
@@ -134,17 +134,17 @@ PetscErrorCode PCSetFromOptions(PC pc)
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
 
   PetscCall(PCRegisterAll());
-  PetscObjectOptionsBegin((PetscObject)pc);
   if (!((PetscObject)pc)->type_name) {
     PetscCall(PCGetDefaultType_Private(pc, &def));
   } else {
     def = ((PetscObject)pc)->type_name;
   }
+  PetscObjectOptionsBegin((PetscObject)pc);
 
   PetscCall(PetscOptionsFList("-pc_type", "Preconditioner", "PCSetType", PCList, def, type, 256, &flg));
   if (flg) {
     PetscCall(PCSetType(pc, type));
-  } else if (!((PetscObject)pc)->type_name) {
+  } else if (!((PetscObject)pc)->type_name && def) {
     PetscCall(PCSetType(pc, def));
   }
 
