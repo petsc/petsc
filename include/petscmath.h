@@ -782,7 +782,28 @@ M*/
   #define PETSC_SMALL                5.e-3F
 #endif
 
+/*MC
+    PETSC_INFINITY - a finite number that represents infinity for setting certain bounds in `Tao`
+
+   Level: intermediate
+
+  Note:
+  This is not the IEEE infinity value
+
+.seealso: `PETSC_NINFINITY`, `SNESVIGetVariableBounds()`, `SNESVISetComputeVariableBounds()`, `SNESVISetVariableBounds()`
+M*/
 #define PETSC_INFINITY  (PETSC_MAX_REAL / 4)
+
+/*MC
+    PETSC_NINFINITY - a finite number that represents negative infinity for setting certain bounds in `Tao`
+
+   Level: intermediate
+
+  Note:
+  This is not the negative IEEE infinity value
+
+.seealso: `PETSC_INFINITY`, `SNESVIGetVariableBounds()`, `SNESVISetComputeVariableBounds()`, `SNESVISetVariableBounds()`
+M*/
 #define PETSC_NINFINITY (-PETSC_INFINITY)
 
 PETSC_EXTERN PetscBool  PetscIsInfReal(PetscReal);
